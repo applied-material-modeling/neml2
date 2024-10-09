@@ -1,21 +1,18 @@
 [Tensors]
   [times]
-    type = VTestTimeSeries
+    type = ScalarVTestTimeSeries
     vtest = 'chaboche.vtest'
     variable = 'time'
-    variable_type = 'SCALAR'
   []
   [strains]
-    type = VTestTimeSeries
+    type = SR2VTestTimeSeries
     vtest = 'chaboche.vtest'
     variable = 'strain'
-    variable_type = 'SYMR2'
   []
   [stresses]
-    type = VTestTimeSeries
+    type = SR2VTestTimeSeries
     vtest = 'chaboche.vtest'
     variable = 'stress'
-    variable_type = 'SYMR2'
   []
 []
 
@@ -25,6 +22,7 @@
     model = 'model'
     times = 'times'
     prescribed_strains = 'strains'
+    save_as = 'result.pt'
   []
   [verification]
     type = VTestVerification

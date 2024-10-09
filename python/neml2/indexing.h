@@ -32,7 +32,38 @@ namespace pybind11
 namespace detail
 {
 /**
- * @brief This specialization enables type conversion between Python object <--> TensorIndex
+ * @brief Type conversion between Python object <--> at::indexing::Slice
+ */
+template <>
+struct type_caster<at::indexing::Slice>
+{
+public:
+  PYBIND11_TYPE_CASTER(at::indexing::Slice, const_name("Any"));
+
+  bool load(handle src, bool)
+  {
+    PyObject * slice = src.ptr();
+
+    if (!PySlice_Check(slice))
+      return false;
+
+    const auto val = torch::autograd::__PySlice_Unpack(slice);
+    value = at::indexing::Slice(val.start, val.stop, val.step);
+    return true;
+  }
+
+  static handle
+  cast(const at::indexing::Slice & src, return_value_policy /* policy */, handle /* parent */)
+  {
+    auto start = THPUtils_packInt64(src.start().expect_int());
+    auto stop = THPUtils_packInt64(src.stop().expect_int());
+    auto step = THPUtils_packInt64(src.step().expect_int());
+    return PySlice_New(start, stop, step);
+  }
+};
+
+/**
+ * @brief Type conversion between Python object <--> TensorIndex
  */
 template <>
 struct type_caster<at::indexing::TensorIndex>

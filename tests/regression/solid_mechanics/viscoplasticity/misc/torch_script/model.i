@@ -57,6 +57,16 @@ nbatch = 20
     end = max_strain
     nstep = ${ntime}
   []
+  [G0]
+    type = Scalar
+    values = '0.0'
+    batch_shape = '(${nbatch})'
+  []
+  [C0]
+    type = Scalar
+    values = '0.0'
+    batch_shape = '(${nbatch})'
+  []
 []
 
 [Drivers]
@@ -66,9 +76,10 @@ nbatch = 20
     times = 'times'
     prescribed_strains = 'strains'
     prescribed_temperatures = 'temperatures'
+    ic_scalar_names = 'state/G state/C'
+    ic_scalar_values = 'G0 C0'
     predictor = LINEAR_EXTRAPOLATION
     save_as = 'result.pt'
-    enable_AD = true
   []
   [regression]
     type = TransientRegression

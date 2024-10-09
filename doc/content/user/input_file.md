@@ -101,4 +101,4 @@ In the following example,
   []
 []
 ```
-option "reference_value" is referenced by its name "p0", and hence an object with the corresponding name must exist under the `[Tensors]` section. The option "ideal_gas_constant" is referenced by value, and a `Scalar` filled with the given value `1e3` is returned.
+option "reference_value" is referenced by its name "p0", and hence an object with the corresponding name must exist under the `[Tensors]` section. The option "activation_energy" is referenced by value, and a `Scalar` filled with the given value `1e3` is returned.

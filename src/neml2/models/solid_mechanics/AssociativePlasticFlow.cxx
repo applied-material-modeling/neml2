@@ -70,7 +70,7 @@ AssociativePlasticFlow::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (dout_din)
   {
-    auto I = SR2::identity_map(options());
+    auto I = SR2::identity_map(_gamma_dot.options());
 
     if (_gamma_dot.is_dependent())
       _Ep_dot.d(_gamma_dot) = _NM;

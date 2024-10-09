@@ -35,7 +35,7 @@ public:
   NEMLException() = default;
 
   NEMLException(const std::string & msg)
-    : _msg(msg)
+    : _msg("NEMLException: " + msg)
   {
   }
 

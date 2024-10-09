@@ -28,6 +28,59 @@ namespace py = pybind11;
 using namespace neml2;
 
 void
-def_SR2(py::class_<SR2> & /*c*/)
+def_SR2(py::class_<SR2> & c)
 {
+  c.def_static(
+       "fill",
+       [](const Real & a, NEML2_TENSOR_OPTIONS_VARGS)
+       { return SR2::fill(a, NEML2_TENSOR_OPTIONS); },
+       py::arg("value"),
+       py::kw_only(),
+       PY_ARG_TENSOR_OPTIONS)
+      .def_static("fill", py::overload_cast<const Scalar &>(&SR2::fill), py::arg("value"))
+      .def_static(
+          "fill",
+          [](const Real & a11, const Real & a22, const Real & a33, NEML2_TENSOR_OPTIONS_VARGS)
+          { return SR2::fill(a11, a22, a33, NEML2_TENSOR_OPTIONS); },
+          py::arg("value_00"),
+          py::arg("value_11"),
+          py::arg("value_22"),
+          py::kw_only(),
+          PY_ARG_TENSOR_OPTIONS)
+      .def_static("fill",
+                  py::overload_cast<const Scalar &, const Scalar &, const Scalar &>(&SR2::fill),
+                  py::arg("value_00"),
+                  py::arg("value_11"),
+                  py::arg("value_22"))
+      .def_static(
+          "fill",
+          [](const Real & a11,
+             const Real & a22,
+             const Real & a33,
+             const Real & a23,
+             const Real & a13,
+             const Real & a12,
+             NEML2_TENSOR_OPTIONS_VARGS)
+          { return SR2::fill(a11, a22, a33, a23, a13, a12, NEML2_TENSOR_OPTIONS); },
+          py::arg("value_00"),
+          py::arg("value_11"),
+          py::arg("value_22"),
+          py::arg("value_12"),
+          py::arg("value_02"),
+          py::arg("value_01"),
+          py::kw_only(),
+          PY_ARG_TENSOR_OPTIONS)
+      .def_static("fill",
+                  py::overload_cast<const Scalar &,
+                                    const Scalar &,
+                                    const Scalar &,
+                                    const Scalar &,
+                                    const Scalar &,
+                                    const Scalar &>(&SR2::fill),
+                  py::arg("value_00"),
+                  py::arg("value_11"),
+                  py::arg("value_22"),
+                  py::arg("value_12"),
+                  py::arg("value_02"),
+                  py::arg("value_01"));
 }

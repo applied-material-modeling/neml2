@@ -27,7 +27,6 @@
 #include "neml2/drivers/Driver.h"
 #include "neml2/models/Model.h"
 #include "neml2/tensors/tensors.h"
-#include "neml2/tensors/LabeledVector.h"
 
 namespace neml2
 {
@@ -40,12 +39,11 @@ public:
 
   bool run() override;
 
-  bool run(Model & model);
-
 private:
   template <typename T>
-  void
-  fill_vector(LabeledVector & vec, const std::string & option_vars, const std::string & option_vals)
+  void set_variable(std::map<VariableName, Tensor> & storage,
+                    const std::string & option_vars,
+                    const std::string & option_vals)
   {
     const auto vars = input_options().get<std::vector<VariableName>>(option_vars);
     const auto vals = input_options().get<std::vector<CrossRef<T>>>(option_vals);
@@ -56,35 +54,27 @@ private:
                 vars.size(),
                 " variables.");
     for (size_t i = 0; i < vars.size(); i++)
-      vec.base_index_put_(vars[i], T(vals[i]));
+      storage[vars[i]] = T(vals[i]);
   }
 
-  void check_all(Model & model);
-  void check_values(Model & model);
-  void check_derivatives(Model & model, bool first, bool second);
-  void check_second_derivatives(Model & model, bool first, bool second);
-  void check_AD_parameter_derivatives(Model & model);
+  void check_all();
+  void check_value();
+  void check_dvalue();
+  void check_d2value();
+  void check_AD_parameter_derivatives();
 
   Model & _model;
-  Model & _model_disable_AD;
-  const TensorShape _batch_shape;
   const bool _check_values;
-  const bool _check_1st_deriv;
-  const bool _check_2nd_deriv;
-  const bool _check_AD_1st_deriv;
-  const bool _check_AD_2nd_deriv;
-  const bool _check_AD_derivs;
+  const bool _check_derivs;
+  const bool _check_secderivs;
   const bool _check_AD_param_derivs;
   const bool _check_cuda;
-  const bool _check_disable_AD;
 
-  int _deriv_order;
+  std::map<VariableName, Tensor> _in;
+  std::map<VariableName, Tensor> _out;
 
-  LabeledVector _in;
-  LabeledVector _out;
-
-  Real _out_rtol;
-  Real _out_atol;
+  Real _val_rtol;
+  Real _val_atol;
   Real _deriv_rtol;
   Real _deriv_atol;
   Real _secderiv_rtol;

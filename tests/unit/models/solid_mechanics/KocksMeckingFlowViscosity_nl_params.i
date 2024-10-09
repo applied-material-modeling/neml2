@@ -2,17 +2,13 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    batch_shape = '(5)'
     input_scalar_names = 'forces/T params/A params/B params/mu'
     input_scalar_values = '1000 A_in B_in mu_in'
     output_scalar_names = 'parameters/p'
     output_scalar_values = 'p_correct'
     check_second_derivatives = true
-    check_AD_first_derivatives = false
-    check_AD_second_derivatives = false
-    check_AD_derivatives = false
-    derivatives_abs_tol = 0.01
-    second_derivatives_abs_tol = 1e-3
+    derivative_abs_tol = 0.01
+    second_derivative_abs_tol = 1e-3
   []
 []
 

@@ -40,6 +40,7 @@ No action is needed to manually obtain the optional dependencies. The compatible
 - [argparse](https://github.com/p-ranav/argparse) for command-line argument parsing.
 - [pybind11](https://github.com/pybind/pybind11) for building Python bindings.
 - Python packages
+  - [graphviz](https://github.com/xflr6/graphviz) for model visualization
   - [pytest](https://docs.pytest.org/en/stable/index.html) for testing Pythin bindings
   - [PyYAML](https://pyyaml.org/) for extracting syntax documentation
   - [pybind11-stubgen](https://github.com/sizmailov/pybind11-stubgen) for extracting stubs from Python bindings

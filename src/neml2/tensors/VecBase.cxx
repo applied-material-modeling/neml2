@@ -42,7 +42,7 @@ template <class Derived>
 Derived
 VecBase<Derived>::fill(const Scalar & v1, const Scalar & v2, const Scalar & v3)
 {
-  return Derived(torch::stack({v1, v2, v3}, -1), v1.batch_dim());
+  return Derived(torch::stack({v1, v2, v3}, -1), v1.batch_sizes());
 }
 
 template <class Derived>

@@ -52,6 +52,13 @@ public:
   /// Construct from another torch::Tensor given batch dimension
   explicit PrimitiveTensor(const torch::Tensor & tensor, Size batch_dim);
 
+  /// Construct from another torch::Tensor given batch shape
+  explicit PrimitiveTensor(const torch::Tensor & tensor, const TraceableTensorShape & batch_shape);
+
+  /// Copy constructor
+  template <class Derived2>
+  PrimitiveTensor(const TensorBase<Derived2> & tensor);
+
   /// Construct from another torch::Tensor and infer batch dimension
   PrimitiveTensor(const torch::Tensor & tensor);
 
@@ -63,27 +70,28 @@ public:
   empty(const torch::TensorOptions & options = default_tensor_options());
   /// Empty tensor given batch shape
   [[nodiscard]] static Derived
-  empty(TensorShapeRef batch_shape,
+  empty(const TraceableTensorShape & batch_shape,
         const torch::TensorOptions & options = default_tensor_options());
   /// Unbatched zero tensor
   [[nodiscard]] static Derived
   zeros(const torch::TensorOptions & options = default_tensor_options());
   /// Zero tensor given batch shape
   [[nodiscard]] static Derived
-  zeros(TensorShapeRef batch_shape,
+  zeros(const TraceableTensorShape & batch_shape,
         const torch::TensorOptions & options = default_tensor_options());
   /// Unbatched unit tensor
   [[nodiscard]] static Derived
   ones(const torch::TensorOptions & options = default_tensor_options());
   /// Unit tensor given batch shape
   [[nodiscard]] static Derived
-  ones(TensorShapeRef batch_shape, const torch::TensorOptions & options = default_tensor_options());
+  ones(const TraceableTensorShape & batch_shape,
+       const torch::TensorOptions & options = default_tensor_options());
   /// Unbatched tensor filled with a given value given base shape
   [[nodiscard]] static Derived
   full(Real init, const torch::TensorOptions & options = default_tensor_options());
   /// Full tensor given batch shape
   [[nodiscard]] static Derived
-  full(TensorShapeRef batch_shape,
+  full(const TraceableTensorShape & batch_shape,
        Real init,
        const torch::TensorOptions & options = default_tensor_options());
 
@@ -110,6 +118,30 @@ PrimitiveTensor<Derived, S...>::PrimitiveTensor(const torch::Tensor & tensor, Si
 }
 
 template <class Derived, Size... S>
+PrimitiveTensor<Derived, S...>::PrimitiveTensor(const torch::Tensor & tensor,
+                                                const TraceableTensorShape & batch_shape)
+  : TensorBase<Derived>(tensor, batch_shape)
+{
+  neml_assert_dbg(this->base_sizes() == const_base_sizes,
+                  "Base shape mismatch: trying to create a tensor with base shape ",
+                  const_base_sizes,
+                  " from a tensor with base shape ",
+                  this->base_sizes());
+}
+
+template <class Derived, Size... S>
+template <class Derived2>
+PrimitiveTensor<Derived, S...>::PrimitiveTensor(const TensorBase<Derived2> & tensor)
+  : TensorBase<Derived>(tensor)
+{
+  neml_assert_dbg(this->base_sizes() == const_base_sizes,
+                  "Base shape mismatch: trying to create a tensor with base shape ",
+                  const_base_sizes,
+                  " from a tensor with base shape ",
+                  this->base_sizes());
+}
+
+template <class Derived, Size... S>
 PrimitiveTensor<Derived, S...>::PrimitiveTensor(const torch::Tensor & tensor)
   : TensorBase<Derived>(tensor, tensor.dim() - const_base_dim)
 {
@@ -123,71 +155,67 @@ PrimitiveTensor<Derived, S...>::PrimitiveTensor(const torch::Tensor & tensor)
 template <class Derived, Size... S>
 PrimitiveTensor<Derived, S...>::operator Tensor() const
 {
-  return Tensor(*this, this->batch_dim());
+  return Tensor(*this, this->batch_sizes());
 }
 
 template <class Derived, Size... S>
 Derived
 PrimitiveTensor<Derived, S...>::empty(const torch::TensorOptions & options)
 {
-  return Derived(torch::empty(const_base_sizes, options), 0);
+  return Tensor::empty(const_base_sizes, options);
 }
 
 template <class Derived, Size... S>
 Derived
-PrimitiveTensor<Derived, S...>::empty(TensorShapeRef batch_shape,
+PrimitiveTensor<Derived, S...>::empty(const TraceableTensorShape & batch_shape,
                                       const torch::TensorOptions & options)
 {
-  return Derived(torch::empty(utils::add_shapes(batch_shape, const_base_sizes), options),
-                 batch_shape.size());
+  return Tensor::empty(batch_shape, const_base_sizes, options);
 }
 
 template <class Derived, Size... S>
 Derived
 PrimitiveTensor<Derived, S...>::zeros(const torch::TensorOptions & options)
 {
-  return Derived(torch::zeros(const_base_sizes, options), 0);
+  return Tensor::zeros(const_base_sizes, options);
 }
 
 template <class Derived, Size... S>
 Derived
-PrimitiveTensor<Derived, S...>::zeros(TensorShapeRef batch_shape,
+PrimitiveTensor<Derived, S...>::zeros(const TraceableTensorShape & batch_shape,
                                       const torch::TensorOptions & options)
 {
-  return Derived(torch::zeros(utils::add_shapes(batch_shape, const_base_sizes), options),
-                 batch_shape.size());
+  return Tensor::zeros(batch_shape, const_base_sizes, options);
 }
 
 template <class Derived, Size... S>
 Derived
 PrimitiveTensor<Derived, S...>::ones(const torch::TensorOptions & options)
 {
-  return Derived(torch::ones(const_base_sizes, options), 0);
+  return Tensor::ones(const_base_sizes, options);
 }
 
 template <class Derived, Size... S>
 Derived
-PrimitiveTensor<Derived, S...>::ones(TensorShapeRef batch_shape,
+PrimitiveTensor<Derived, S...>::ones(const TraceableTensorShape & batch_shape,
                                      const torch::TensorOptions & options)
 {
-  return Derived(torch::ones(utils::add_shapes(batch_shape, const_base_sizes), options),
-                 batch_shape.size());
+  return Tensor::ones(batch_shape, const_base_sizes, options);
 }
 
 template <class Derived, Size... S>
 Derived
 PrimitiveTensor<Derived, S...>::full(Real init, const torch::TensorOptions & options)
 {
-  return Derived(torch::full(const_base_sizes, init, options), 0);
+  return Tensor::full(const_base_sizes, init, options);
 }
 
 template <class Derived, Size... S>
 Derived
-PrimitiveTensor<Derived, S...>::full(TensorShapeRef batch_shape,
+PrimitiveTensor<Derived, S...>::full(const TraceableTensorShape & batch_shape,
                                      Real init,
                                      const torch::TensorOptions & options)
 {
-  return Derived(torch::full(utils::add_shapes(batch_shape, const_base_sizes), init, options),
-                 batch_shape.size());
+  return Tensor::full(batch_shape, const_base_sizes, init, options);
 }
 } // namespace neml2

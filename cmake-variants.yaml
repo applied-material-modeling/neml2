@@ -36,7 +36,7 @@ libneml2:
       long: Build the runner for benchmarking and profiling
       buildType: Release
       settings:
-        NEML2_TESTS: OFF
+        NEML2_TESTS: ON
         NEML2_RUNNER: ON
         NEML2_RUNNER_AS_PROFILER: ON
         NEML2_PYBIND: OFF

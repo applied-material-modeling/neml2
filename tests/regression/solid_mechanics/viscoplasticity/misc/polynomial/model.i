@@ -110,7 +110,6 @@
     prescribed_strains = 'strains'
     prescribed_temperatures = 'temperatures'
     save_as = 'result.pt'
-    enable_AD = true
   []
   [regression]
     type = TransientRegression

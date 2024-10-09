@@ -2,20 +2,16 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    batch_shape = '(10,3)'
     output_skewr2_names = 'state/internal/plastic_vorticity'
     output_skewr2_values = 'wp'
     input_rot_names = 'state/orientation'
     input_rot_values = 'R'
     input_batch_tensor_names = 'state/internal/slip_rates'
     input_batch_tensor_values = 'gamma'
-    derivatives_rel_tol = 0
-    derivatives_abs_tol = 5e-6
-    second_derivatives_rel_tol = 0
-    second_derivatives_abs_tol = 5e-6
-    check_AD_first_derivatives = false
-    check_AD_second_derivatives = false
-    check_AD_derivatives = false
+    derivative_rel_tol = 0
+    derivative_abs_tol = 5e-6
+    second_derivative_rel_tol = 0
+    second_derivative_abs_tol = 5e-6
   []
 []
 

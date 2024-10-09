@@ -10,8 +10,7 @@
     output_scalar_values = '-0.8165'
     output_symr2_names = 'state/internal/NM state/internal/NX'
     output_symr2_values = 'NM NX'
-    output_abs_tol = 1e-4
-    check_AD_first_derivatives = false
+    value_abs_tol = 1e-4
   []
 []
 

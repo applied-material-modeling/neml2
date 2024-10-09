@@ -47,6 +47,10 @@ public:
    * @param options The options extracted from the input file.
    */
   LinspacePrimitiveTensor(const OptionSet & options);
+
+private:
+  /// Helper to make the tensor given user input options
+  T make(const OptionSet & options) const;
 };
 
 #define LINSPACEPRIMITIVETENSOR_TYPEDEF(T) typedef LinspacePrimitiveTensor<T> Linspace##T

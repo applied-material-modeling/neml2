@@ -62,7 +62,7 @@ ResolvedShear::ResolvedShear(const OptionSet & options)
   : Model(options),
     _crystal_geometry(register_data<crystallography::CrystalGeometry>(
         options.get<std::string>("crystal_geometry_name"))),
-    _rss(declare_output_variable_list<Scalar>(_crystal_geometry.nslip(), "resolved_shears")),
+    _rss(declare_output_variable<Scalar>("resolved_shears", _crystal_geometry.nslip())),
     _S(declare_input_variable<SR2>("stress")),
     _R(declare_input_variable<R2>("orientation"))
 {
@@ -73,22 +73,22 @@ ResolvedShear::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
 
+  const auto D = broadcast_batch_dim(_S, _R);
+
+  // Unsqueeze a batch dimension for slip systems
   const auto S = SR2(_S).batch_unsqueeze(-1);
   const auto R = R2(_R).batch_unsqueeze(-1);
 
   if (out)
-    _rss = Tensor(_crystal_geometry.M().rotate(R).inner(S), batch_dim());
+    _rss = _crystal_geometry.M().rotate(R).inner(S);
 
   if (dout_din)
   {
     if (_S.is_dependent())
-      _rss.d(_S) = Tensor(_crystal_geometry.M().rotate(R), batch_dim());
+      _rss.d(_S) = Tensor(_crystal_geometry.M().rotate(R), D);
 
     if (_R.is_dependent())
-      _rss.d(_R) =
-          Tensor(SR2(_crystal_geometry.M().drotate(R).movedim(-3, -1))
-                     .inner(SR2(_S).batch_unsqueeze(-1).batch_unsqueeze(-1).batch_unsqueeze(-1)),
-                 batch_dim());
+      _rss.d(_R) = Tensor(torch::einsum("...ijk,...i", {_crystal_geometry.M().drotate(R), S}), D);
   }
 }
 

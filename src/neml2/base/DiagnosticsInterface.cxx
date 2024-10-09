@@ -23,7 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/base/DiagnosticsInterface.h"
-#include "neml2/tensors/Variable.h"
+#include "neml2/models/Variable.h"
 
 namespace neml2
 {

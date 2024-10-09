@@ -26,6 +26,7 @@ Assuming the above input file is named "input_file.i", the C++ code snippet belo
 #include "neml2/base/Factory.h"
 #include "neml2/models/Model.h"
 #include "neml2/tensors/tensors.h"
+#include "neml2/misc/math.h"
 
 int main() {
   auto & model = neml2::load_model("input.i", "model");
@@ -36,35 +37,65 @@ int main() {
 }
 ```
 
+## Inspecting model information
+
+Once the model is loaded, it can be streamed to provide a high-level summary of the model, i.e.,
+```cpp
+  std::cout << model << std::endl;
+```
+The example model produces the following summary
+```
+Name:       model
+Dtype:      double
+Device:     cpu
+Input:      forces/E [SR2]
+Output:     state/S [SR2]
+Parameters: E [Scalar]
+            nu [Scalar]
+```
+
 ## Evaluate the model
 
-Suppose we want to perform 3 material updates simultaneously, the model should be initialized using the neml2::Model::reinit method with the correct batch shape (refer to the [tensor system documentation](@ref system-tensors) for more detailed explanation on the term "batch"):
+Suppose we want to perform 3 material updates simultaneously, the input variables shall have a batch size of 3 (refer to the [tensor system documentation](@ref system-tensors) for more detailed explanation on the term "batch"). The following code constructs the 3 input strains and performs 3 material updates _simultaneously_.
 
 ```cpp
-  model.reinit({3});
+  auto strain_name = neml2::VariableName("forces", "E");
+  auto stress_name = neml2::VariableName("state", "S");
+
+  auto strain1 = neml2::SR2::fill(0.1, 0.2, 0.3, -0.1, -0.1, 0.2);
+  auto strain2 = neml2::SR2::fill(0.2, 0.2, 0.1, -0.1, -0.2, -0.5);
+  auto strain3 = neml2::SR2::fill(0.3, -0.2, 0.05, -0.1, -0.3, 0.1);
+  auto strain = neml2::math::batch_stack({strain1, strain2, strain3});
+
+  auto output = model.value({{strain_name, strain}});
+  auto stress = output.at(stress_name)
 ```
 
-Finally, the following code constructs the 3 input strains `in` and performs 3 material updates _simultaneously_. Output stresses are stored in the tensor `out`.
+The forward operator is invoked using the neml2::Model::value method which takes a map of neml2::Tensor with keys being neml2::VariableName. Other forward operator APIs are available to additionally calculate the first and second derivatives of the output variables with respect to the input variables. There exist a total of 6 variants of the forward operator:
 
+| Method                                     | Output variable values | 1st order derivatives | 2nd order derivatives |
+| :----------------------------------------- | :--------------------: | :-------------------: | :-------------------: |
+| neml2::Model::value                        |    \f$\checkmark\f$    |                       |                       |
+| neml2::Model::dvalue                       |                        |   \f$\checkmark\f$    |                       |
+| neml2::Model::d2value                      |                        |                       |   \f$\checkmark\f$    |
+| neml2::Model::value_and_dvalue             |    \f$\checkmark\f$    |   \f$\checkmark\f$    |                       |
+| neml2::Model::dvalue_and_d2value           |                        |   \f$\checkmark\f$    |   \f$\checkmark\f$    |
+| neml2::Model::value_and_dvalue_and_d2value |    \f$\checkmark\f$    |   \f$\checkmark\f$    |   \f$\checkmark\f$    |
+
+
+## Model parameters
+
+Each model contains zero or more parameters. The parameters are initialized with values specified in the input file. In the above example, the elasticity model contains two parameters: `E` and `nu`. Model parameters can be retrieved using the neml2::Model::get_parameter method, the parameter value can be updated using the assignment operator, and automatic differentiation can be used to track the derivatives w.r.t. a parameter:
 ```cpp
-  auto in = neml2::LabeledVector::empty({3}, {model.input_axis()});
-
-  in.batch_index_put_({0}, neml2::SR2::fill(0.1, 0.2, 0.3, -0.1, -0.1, 0.2));
-  in.batch_index_put_({1}, neml2::SR2::fill(0.2, 0.2, 0.1, -0.1, -0.2, -0.5));
-  in.batch_index_put_({2}, neml2::SR2::fill(0.3, -0.2, 0.05, -0.1, -0.3, 0.1));
-
-  auto out = model.value(in);
+  auto & E = model.get_parameter("E");
+  E = neml2::Scalar::full(200.0);
+  E.requires_grad_();
 ```
-
-## Enable/disable automatic differentiation {#disable-ad}
-
-By default, automatic differentiation is enabled. During every model evaluation, variables are re-allocated, and variable views are reconfigured. This default behavior avoids in-place operations and is mandatory to use PyTorch automatic differentiation (AD) (i.e. for parameter gradient or AD forward operator).
-
-The default behavior is flexible and powerful. However, if PyTorch AD is not needed, i.e., once the model is fully calibrated/trained, the variable reallocation and view reconfiguration can be skipped. The `enable_AD` option is designed for that purpose.
-
-When AD is disabled, no function graph is built, tensor version numbers are not incremented, and the variables and variable views are setup once and for all, all of which speed up evaluation. Furthermore, this mode is fully compatible with PyTorch's [inference mode](https://pytorch.org/cppdocs/notes/inference_mode.html)
-
-To disable AD, use the optional second argument passed to `neml2::get_model`, i.e.
+Alternatively, the parameter value can be directly updated using the neml2::Model::set_parameter or neml2::Model::set_parameters method:
 ```cpp
-auto & model = neml2::get_model("model", /*disable_AD=*/true);
+  model.set_parameter("E", neml2::Scalar::full(200.0));
+```
+```cpp
+  model.set_parameters({{"E", neml2::Scalar::full(200.0)},
+                        {"nu", neml2::Scalar::full(0.25)}});
 ```

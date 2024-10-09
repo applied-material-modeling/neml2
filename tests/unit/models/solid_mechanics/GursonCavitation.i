@@ -2,7 +2,6 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    batch_shape = '(10)'
     input_scalar_names = 'state/internal/f'
     input_scalar_values = '0.1'
     input_symr2_names = 'state/internal/Ep_rate'

@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/tensors/LabeledAxisAccessor.h"
+#include "neml2/models/LabeledAxisAccessor.h"
 #include "neml2/misc/error.h"
 #include "neml2/misc/parser_utils.h"
 
@@ -44,6 +44,12 @@ size_t
 LabeledAxisAccessor::size() const
 {
   return _item_names.size();
+}
+
+const std::string &
+LabeledAxisAccessor::operator[](size_t i) const
+{
+  return _item_names[i];
 }
 
 LabeledAxisAccessor
@@ -69,24 +75,27 @@ LabeledAxisAccessor::prepend(const LabeledAxisAccessor & axis) const
 }
 
 LabeledAxisAccessor
-LabeledAxisAccessor::slice(size_t n) const
+LabeledAxisAccessor::slice(int64_t n) const
 {
-  neml_assert(size() >= n, "cannot apply slice");
+  n = n < 0 ? int64_t(size()) + n : n;
+  neml_assert(size() >= std::size_t(n), "cannot apply slice");
   c10::SmallVector<std::string> new_names(_item_names.begin() + n, _item_names.end());
   return new_names;
 }
 
 LabeledAxisAccessor
-LabeledAxisAccessor::slice(size_t n1, size_t n2) const
+LabeledAxisAccessor::slice(int64_t n1, int64_t n2) const
 {
-  neml_assert(size() >= n1, "cannot apply slice");
-  neml_assert(size() >= n2, "cannot apply slice");
+  n1 = n1 < 0 ? int64_t(size()) + n1 : n1;
+  n2 = n2 < 0 ? int64_t(size()) + n2 : n2;
+  neml_assert(size() >= std::size_t(n1), "cannot apply slice");
+  neml_assert(size() >= std::size_t(n2), "cannot apply slice");
   c10::SmallVector<std::string> new_names(_item_names.begin() + n1, _item_names.begin() + n2);
   return new_names;
 }
 
 LabeledAxisAccessor
-LabeledAxisAccessor::remount(const LabeledAxisAccessor & axis, size_t n) const
+LabeledAxisAccessor::remount(const LabeledAxisAccessor & axis, Size n) const
 {
   return slice(n).prepend(axis);
 }
@@ -94,7 +103,7 @@ LabeledAxisAccessor::remount(const LabeledAxisAccessor & axis, size_t n) const
 bool
 LabeledAxisAccessor::start_with(const LabeledAxisAccessor & axis) const
 {
-  return slice(0, axis.size()) == axis;
+  return slice(0, int64_t(axis.size())) == axis;
 }
 
 LabeledAxisAccessor

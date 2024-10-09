@@ -2,7 +2,6 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    batch_shape = '(1)'
     input_scalar_names = "state/foo state/foo_rate old_state/foo
                           state/bar state/bar_rate old_state/bar
                           state/baz state/baz_rate old_state/baz
@@ -13,7 +12,6 @@
                            1.3 1.1"
     output_scalar_names = 'residual/foo_bar_baz'
     output_scalar_values = '1.0'
-    check_AD_first_derivatives = false
   []
 []
 

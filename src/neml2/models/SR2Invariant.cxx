@@ -77,7 +77,7 @@ SR2Invariant::set_value(bool out, bool dout_din, bool d2out_din2)
       return;
 
     if (dout_din)
-      _invariant.d(_A) = SR2::identity(options());
+      _invariant.d(_A) = SR2::identity(_A.options());
 
     if (d2out_din2)
     {
@@ -94,15 +94,15 @@ SR2Invariant::set_value(bool out, bool dout_din, bool d2out_din2)
 
     if (dout_din || d2out_din2)
     {
-      auto I2 = SR2::identity(options());
+      auto I2 = SR2::identity(_A.options());
 
       if (dout_din)
         _invariant.d(_A) = A.tr() * I2 - A;
 
       if (d2out_din2)
       {
-        auto I2xI2 = SSR4::identity(options());
-        auto I4sym = SSR4::identity_sym(options());
+        auto I2xI2 = SSR4::identity(_A.options());
+        auto I4sym = SSR4::identity_sym(_A.options());
         _invariant.d(_A, _A) = I2xI2 - I4sym;
       }
     }
@@ -127,8 +127,8 @@ SR2Invariant::set_value(bool out, bool dout_din, bool d2out_din2)
 
       if (d2out_din2)
       {
-        auto I = SSR4::identity_sym(options());
-        auto J = SSR4::identity_dev(options());
+        auto I = SSR4::identity_sym(_A.options());
+        auto J = SSR4::identity_dev(_A.options());
         _invariant.d(_A, _A) = 3.0 / 2.0 * (I - 2.0 / 3.0 * dvm_dA.outer(dvm_dA)) * J / vm;
       }
     }
@@ -152,7 +152,7 @@ SR2Invariant::set_value(bool out, bool dout_din, bool d2out_din2)
 
       if (d2out_din2)
         _invariant.d(_A, _A) =
-            2.0 / 3.0 * (SSR4::identity_sym(options()) - 3.0 / 2.0 * d.outer(d)) / r;
+            2.0 / 3.0 * (SSR4::identity_sym(_A.options()) - 3.0 / 2.0 * d.outer(d)) / r;
     }
   }
   else

@@ -29,9 +29,9 @@
 namespace neml2
 {
 /**
- * @brief The (logical) scalar
+ * @brief Scalar
  *
- * The logical storage space is (), i.e., scalar.
+ * The storage space is (), i.e., scalar.
  *
  */
 class Scalar : public PrimitiveTensor<Scalar>

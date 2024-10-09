@@ -36,11 +36,9 @@ public:
 
   ImplicitUpdate(const OptionSet & options);
 
-  virtual void diagnose(std::vector<Diagnosis> & diagnoses) const override;
+  void diagnose(std::vector<Diagnosis> & diagnoses) const override;
 
-  virtual void check_AD_limitation() const override;
-
-  virtual void setup_output_views() override;
+  void link_output_variables() override;
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
@@ -50,9 +48,5 @@ protected:
 
   /// The nonlinear solver used to solve the nonlinear system
   NonlinearSolver & _solver;
-
-private:
-  /// Derivative views to avoid slicing during evaluation
-  Tensor _ds_dsn, _ds_df, _ds_dfn, _ds_dp;
 };
 } // namespace neml2

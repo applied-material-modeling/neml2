@@ -109,25 +109,29 @@ NewtonWithTrustRegion::subproblem_solver_options(const OptionSet & options) cons
 }
 
 void
-NewtonWithTrustRegion::prepare(const NonlinearSystem & /*system*/, const Tensor & x)
+NewtonWithTrustRegion::prepare(const NonlinearSystem & /*system*/,
+                               const NonlinearSystem::SOL<true> & x)
 {
   _delta = Scalar::full(x.batch_sizes(), _delta_0, x.options());
 }
 
 void
-NewtonWithTrustRegion::update(NonlinearSystem & system, Tensor & x)
+NewtonWithTrustRegion::update(NonlinearSystem & system,
+                              NonlinearSystem::SOL<true> & x,
+                              const NonlinearSystem::RES<true> & r,
+                              const NonlinearSystem::JAC<true> & J)
 {
-  auto p = solve_direction(system);
+  auto p = solve_direction(r, J);
 
   // Predicted reduction in the merit function
-  auto nR = system.residual_norm();
-  auto red_b = merit_function_reduction(system, p);
+  auto nr = math::linalg::vector_norm(r);
+  auto red_b = merit_function_reduction(r, J, p);
 
   // Actual reduction in the objective function
-  auto xp = x + system.scale_direction(p);
-  system.residual_and_Jacobian(xp);
-  auto nRp = system.residual_norm();
-  auto red_a = 0.5 * torch::pow(nR, 2.0) - 0.5 * torch::pow(nRp, 2.0);
+  NonlinearSystem::SOL<true> xp(Tensor(x) + Tensor(p));
+  auto rp = system.residual(xp);
+  auto nrp = math::linalg::vector_norm(rp);
+  auto red_a = 0.5 * math::pow(nr, 2.0) - 0.5 * math::pow(nrp, 2.0);
 
   // Quality of the subproblem solution compared to the quadratic model
   auto rho = red_a / red_b;
@@ -149,50 +153,53 @@ NewtonWithTrustRegion::update(NonlinearSystem & system, Tensor & x)
     std::cout << "     RHO MIN/MAX            : " << std::scientific << torch::min(rho).item<Real>()
               << "/" << std::scientific << torch::max(rho).item<Real>() << std::endl;
     std::cout << "     ACCEPTANCE RATE        : " << torch::sum(accept).item<Size>() << "/"
-              << utils::storage_size(_delta.batch_sizes()) << std::endl;
+              << utils::storage_size(_delta.batch_sizes().concrete()) << std::endl;
     std::cout << "     ADJUSTED DELTA MIN/MAX : " << std::scientific
               << torch::min(_delta).item<Real>() << "/" << std::scientific
               << torch::max(_delta).item<Real>() << std::endl;
   }
 
-  x.variable_data().copy_(torch::where(accept, xp, x));
-  system.set_solution(x);
+  x = NonlinearSystem::SOL<true>(math::where(accept, Tensor(xp), x.variable_data()));
 }
 
-Tensor
-NewtonWithTrustRegion::solve_direction(const NonlinearSystem & system)
+NonlinearSystem::SOL<true>
+NewtonWithTrustRegion::solve_direction(const NonlinearSystem::RES<true> & r,
+                                       const NonlinearSystem::JAC<true> & J)
 {
   // The full Newton step
-  auto p_newton = Newton::solve_direction(system);
+  auto p_newton = Newton::solve_direction(r, J);
 
   // The trust region step (obtained by solving the bound constrained subproblem)
-  _subproblem.reinit(system, _delta);
-  auto s = _subproblem.solution().clone();
-  auto [succeeded, iters] = _subproblem_solver.solve(_subproblem, s);
-  s = Tensor(torch::clamp(s, 0.0), s.batch_dim());
+  _subproblem.reinit(r, J, _delta);
+  auto res = _subproblem_solver.solve(_subproblem,
+                                      NonlinearSystem::SOL<false>(Tensor::zeros_like(_delta)));
+
+  // Do some printing if verbose
+  if (verbose)
+  {
+    std::cout << "     TRUST-REGION ITERATIONS: " << res.iterations << std::endl;
+    std::cout << "     ACTIVE CONSTRAINTS     : " << torch::sum(res.solution > 0).item<Size>()
+              << "/" << utils::storage_size(res.solution.batch_sizes().concrete()) << std::endl;
+  }
+
+  auto s = Scalar(torch::clamp(res.solution, 0.0), _delta.batch_sizes());
   auto p_trust = -_subproblem.preconditioned_direction(s);
 
   // Now select between the two... Basically take the full Newton step whenever possible
   auto newton_inside_trust_region =
       (math::linalg::vector_norm(p_newton) <= math::sqrt(2.0 * _delta)).unsqueeze(-1);
 
-  // Do some printing if verbose
-  if (verbose)
-  {
-    std::cout << "     TRUST-REGION ITERATIONS: " << iters << std::endl;
-    std::cout << "     ACTIVE CONSTRAINTS     : " << torch::sum(s > 0).item<Size>() << "/"
-              << utils::storage_size(s.batch_sizes()) << std::endl;
-  }
-
-  return Tensor(torch::where(newton_inside_trust_region, p_newton, p_trust), p_newton.batch_dim());
+  return NonlinearSystem::SOL<true>(
+      Tensor(torch::where(newton_inside_trust_region, p_newton, p_trust), p_newton.batch_sizes()));
 }
 
 Scalar
-NewtonWithTrustRegion::merit_function_reduction(const NonlinearSystem & system,
-                                                const Tensor & p) const
+NewtonWithTrustRegion::merit_function_reduction(const NonlinearSystem::RES<true> & r,
+                                                const NonlinearSystem::JAC<true> & J,
+                                                const NonlinearSystem::SOL<true> & p) const
 {
-  auto Jp = math::bmv(system.get_Jacobian(), p);
-  return -math::bvv(system.get_residual(), Jp) - 0.5 * math::bvv(Jp, Jp);
+  auto Jp = math::bmv(J, p);
+  return -math::bvv(r, Jp) - 0.5 * math::bvv(Jp, Jp);
 }
 
 } // namespace neml2

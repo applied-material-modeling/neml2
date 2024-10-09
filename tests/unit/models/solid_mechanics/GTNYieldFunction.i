@@ -2,13 +2,12 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    batch_shape = '(10)'
     input_scalar_names = 'state/internal/se state/internal/sp state/internal/f state/internal/k'
     input_scalar_values = '70 30 0.1 20'
     output_scalar_names = 'state/internal/fp'
     output_scalar_values = '0.28441415168201506'
     check_second_derivatives = true
-    derivatives_abs_tol = 1e-06
+    derivative_abs_tol = 1e-06
   []
 []
 

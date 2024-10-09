@@ -44,24 +44,25 @@ Newton::Newton(const OptionSet & options)
 {
 }
 
-std::tuple<bool, size_t>
-Newton::solve(NonlinearSystem & system, Tensor & x)
+Newton::Result
+Newton::solve(NonlinearSystem & system, const NonlinearSystem::SOL<false> & x0)
 {
+  // Solve always takes place in the "scaled" space
+  auto x = system.scale(x0);
+
   // The initial residual for relative convergence check
-  system.residual();
-  auto nR = system.residual_norm();
+  auto R = system.residual(x);
+  auto nR = math::linalg::vector_norm(R);
   auto nR0 = nR.clone();
 
   // Check for initial convergence
   if (converged(0, nR0, nR0))
   {
     // The final update is only necessary if we use AD
-    if (system.is_AD_enabled())
-    {
-      system.Jacobian();
-      final_update(system, x);
-    }
-    return {true, 0};
+    if (R.requires_grad())
+      final_update(system, x, R, system.Jacobian<true>());
+
+    return {RetCode::SUCCESS, system.unscale(x), 0};
   }
 
   // Prepare any solver internal data before the iterative update
@@ -73,25 +74,23 @@ Newton::solve(NonlinearSystem & system, Tensor & x)
   // 3. i > miters (failure)
   for (size_t i = 1; i < miters; i++)
   {
-    system.Jacobian();
-    update(system, x);
-    system.residual();
-    nR = system.residual_norm();
+    auto J = system.Jacobian<true>();
+    update(system, x, R, J);
+    R = system.residual(x);
+    nR = math::linalg::vector_norm(R);
 
     // Check for convergence
     if (converged(i, nR, nR0))
     {
       // The final update is only necessary if we use AD
-      if (system.is_AD_enabled())
-      {
-        system.Jacobian();
-        final_update(system, x);
-      }
-      return {true, i};
+      if (R.requires_grad())
+        final_update(system, x, R, system.Jacobian<true>());
+
+      return {RetCode::SUCCESS, system.unscale(x), i};
     }
   }
 
-  return {false, miters};
+  return {RetCode::MAXITER, system.unscale(x), miters};
 }
 
 bool
@@ -108,29 +107,30 @@ Newton::converged(size_t itr, const torch::Tensor & nR, const torch::Tensor & nR
 }
 
 void
-Newton::update(NonlinearSystem & system, Tensor & x)
+Newton::update(NonlinearSystem & /*system*/,
+               NonlinearSystem::SOL<true> & x,
+               const NonlinearSystem::RES<true> & r,
+               const NonlinearSystem::JAC<true> & J)
 {
-  auto dx = solve_direction(system);
-
-  x.variable_data() += system.scale_direction(dx);
-  system.set_solution(x);
+  x = NonlinearSystem::SOL<true>(x.variable_data() + Tensor(solve_direction(r, J)));
 }
 
 void
-Newton::final_update(NonlinearSystem & system, Tensor & x)
+Newton::final_update(NonlinearSystem & /*system*/,
+                     NonlinearSystem::SOL<true> & x,
+                     const NonlinearSystem::RES<true> & r,
+                     const NonlinearSystem::JAC<true> & J)
 {
-  auto dx = solve_direction(system);
-  x += system.scale_direction(dx);
+  x = NonlinearSystem::SOL<true>(Tensor(x) + Tensor(solve_direction(r, J)));
 }
 
-Tensor
-Newton::solve_direction(const NonlinearSystem & system)
+NonlinearSystem::SOL<true>
+Newton::solve_direction(const NonlinearSystem::RES<true> & r, const NonlinearSystem::JAC<true> & J)
 {
-  // Special case when this is a scalar system
-  if (system.get_residual().base_dim() == 0)
-    return -system.get_residual() / system.get_Jacobian();
+  if (r.base_dim() == 0 && J.base_dim() == 0)
+    return NonlinearSystem::SOL<true>(-Tensor(r) / Tensor(J));
 
-  return -math::linalg::solve(system.get_Jacobian(), system.get_residual());
+  return NonlinearSystem::SOL<true>(-math::linalg::solve(J, r));
 }
 
 } // namespace neml2

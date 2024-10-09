@@ -62,15 +62,15 @@ void
 ThermalEigenstrain::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   if (out)
-    _eg = _alpha * (_T - _T0) * SR2::identity(options());
+    _eg = _alpha * (_T - _T0) * SR2::identity(_T.options());
 
   if (dout_din)
   {
     if (_T.is_dependent())
-      _eg.d(_T) = _alpha * SR2::identity(options());
+      _eg.d(_T) = _alpha * SR2::identity(_T.options());
 
     if (const auto * const alpha = nl_param("alpha"))
-      _eg.d(*alpha) = (_T - _T0) * SR2::identity(options());
+      _eg.d(*alpha) = (_T - _T0) * SR2::identity(_T.options());
   }
 
   if (d2out_din2)
@@ -78,8 +78,8 @@ ThermalEigenstrain::set_value(bool out, bool dout_din, bool d2out_din2)
     if (_T.is_dependent())
       if (const auto * const alpha = nl_param("alpha"))
       {
-        _eg.d(_T, *alpha) = SR2::identity(options());
-        _eg.d(*alpha, _T) = SR2::identity(options());
+        _eg.d(_T, *alpha) = SR2::identity(_T.options());
+        _eg.d(*alpha, _T) = SR2::identity(_T.options());
       }
   }
 }

@@ -111,9 +111,10 @@
     prescribed_vorticity = 'vorticity'
     ic_rot_names = 'state/orientation'
     ic_rot_values = 'initial_orientation'
-    predictor = 'CP_PREVIOUS_STATE'
+    predictor = 'PREVIOUS_STATE'
+    cp_warmup = true
+    cp_warmup_elastic_scale = 0.1
     save_as = 'result.pt'
-    cp_elastic_scale = 0.1
   []
   [regression]
     type = TransientRegression
@@ -262,7 +263,7 @@
   # Cache information from sub-system #2
   ############################################################################
   [cache2]
-    type = CopyWR2
+    type = CopyRot
     from = 'state/orientation'
     to = 'forces/tmp/orientation'
   []

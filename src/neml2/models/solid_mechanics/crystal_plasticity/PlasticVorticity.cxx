@@ -66,7 +66,7 @@ PlasticVorticity::PlasticVorticity(const OptionSet & options)
         options.get<std::string>("crystal_geometry_name"))),
     _Wp(declare_output_variable<WR2>("plastic_vorticity")),
     _R(declare_input_variable<R2>("orientation")),
-    _gamma_dot(declare_input_variable_list<Scalar>(_crystal_geometry.nslip(), "slip_rates"))
+    _gamma_dot(declare_input_variable<Scalar>("slip_rates", _crystal_geometry.nslip()))
 {
 }
 
@@ -75,20 +75,22 @@ PlasticVorticity::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
 
-  const auto Wp_crystal = math::batch_sum(Scalar(_gamma_dot.value()) * _crystal_geometry.W(), -1);
+  const auto Wp_crystal = math::batch_sum(_gamma_dot * _crystal_geometry.W(), -1);
 
   if (out)
-    _Wp = Wp_crystal.rotate(R2(_R));
+    _Wp = Wp_crystal.rotate(_R);
 
   if (dout_din)
   {
     if (_gamma_dot.is_dependent())
-      _Wp.d(_gamma_dot) =
-          Tensor(_crystal_geometry.W().rotate(R2(_R).batch_unsqueeze(-1)), batch_dim())
-              .base_transpose(-1, -2);
+    {
+      const auto d_Wp_d_gamma_dot = _crystal_geometry.W().rotate(R2(_R).batch_unsqueeze(-1));
+      const auto B = d_Wp_d_gamma_dot.batch_sizes().slice(0, -1);
+      _Wp.d(_gamma_dot) = Tensor(d_Wp_d_gamma_dot, B).base_transpose(-1, -2);
+    }
 
     if (_R.is_dependent())
-      _Wp.d(_R) = Wp_crystal.drotate(R2(_R));
+      _Wp.d(_R) = Wp_crystal.drotate(_R);
   }
 }
 } // namespace neml2

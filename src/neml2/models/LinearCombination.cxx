@@ -80,7 +80,8 @@ LinearCombination<T>::make_coef(const OptionSet & options) const
 {
   const auto coefs_in = options.get<std::vector<CrossRef<Scalar>>>("coefficients");
   const std::vector<Scalar> coefs(coefs_in.begin(), coefs_in.end());
-  return math::base_stack(coefs);
+  const std::vector<Tensor> coefs_tensors(coefs.begin(), coefs.end());
+  return math::base_stack(coefs_tensors);
 }
 
 template <typename T>
@@ -91,16 +92,21 @@ LinearCombination<T>::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (out)
   {
-    std::vector<T> vals;
+    std::vector<Tensor> vals;
     for (auto from_var : _from)
       vals.push_back(from_var->value());
 
-    _to = math::batch_sum(Scalar(_coef) * math::batch_stack(vals, -1), -1);
+    // Broadcast and expand batch shape
+    const auto batch_sizes = utils::broadcast_batch_sizes(vals);
+    for (std::size_t i = 0; i < vals.size(); ++i)
+      vals[i] = vals[i].batch_expand(batch_sizes);
+
+    _to = math::batch_sum(Scalar(_coef, 1) * math::batch_stack(vals, -1), -1);
   }
 
   if (dout_din)
   {
-    const auto deriv = Scalar(_coef) * T::identity_map(options()).batch_expand(N);
+    const auto deriv = Scalar(_coef, 1) * T::identity_map(_coef.options()).batch_expand(N);
     for (Size i = 0; i < N; i++)
       if (_from[i]->is_dependent())
         _to.d(*_from[i]) = deriv.batch_index({indexing::Ellipsis, i});

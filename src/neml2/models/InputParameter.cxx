@@ -62,7 +62,7 @@ InputParameter<T>::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (dout_din)
     if (_input_var.is_dependent())
-      this->_p.d(_input_var) = T::identity_map(this->options());
+      this->_p.d(_input_var) = T::identity_map(_input_var.options());
 
   // This is zero
   (void)d2out_din2;

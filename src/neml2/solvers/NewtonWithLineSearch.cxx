@@ -61,44 +61,47 @@ NewtonWithLineSearch::NewtonWithLineSearch(const OptionSet & options)
 }
 
 void
-NewtonWithLineSearch::update(NonlinearSystem & system, Tensor & x)
+NewtonWithLineSearch::update(NonlinearSystem & system,
+                             NonlinearSystem::SOL<true> & x,
+                             const NonlinearSystem::RES<true> & r,
+                             const NonlinearSystem::JAC<true> & J)
 {
-  auto dx = solve_direction(system);
-
-  linesearch(system, x, dx);
-  x.variable_data() += system.scale_direction(_alpha * dx);
-  system.set_solution(x);
+  auto dx = solve_direction(r, J);
+  auto alpha = linesearch(system, x, dx, r);
+  x = NonlinearSystem::SOL<true>(x.variable_data() + alpha * Tensor(dx));
 }
 
-void
-NewtonWithLineSearch::linesearch(NonlinearSystem & system, const Tensor & x, const Tensor & dx)
+Scalar
+NewtonWithLineSearch::linesearch(NonlinearSystem & system,
+                                 const NonlinearSystem::SOL<true> & x,
+                                 const NonlinearSystem::SOL<true> & dx,
+                                 const NonlinearSystem::RES<true> & R0) const
 {
-  _alpha = Scalar::ones(x.batch_sizes(), x.options());
+  auto alpha = Scalar::ones(x.batch_sizes(), x.options());
+  const auto nR02 = math::bvv(R0, R0);
 
-  const auto & R = system.get_residual();
-  auto R0 = R.clone();
-  auto nR02 = math::bvv(R0, R0);
-
-  for (size_t i = 1; i < _linesearch_miter; i++)
+  for (std::size_t i = 1; i < _linesearch_miter; i++)
   {
-    system.set_solution(x + system.scale_direction(_alpha * dx));
-    system.residual();
+    NonlinearSystem::SOL<true> xp(Tensor(x) + alpha * Tensor(dx));
+    auto R = system.residual(xp);
     auto nR2 = math::bvv(R, R);
-    auto crit = nR02 + 2.0 * _linesearch_c * _alpha * math::bvv(R0, dx);
+    auto crit = nR02 + 2.0 * _linesearch_c * alpha * math::bvv(R0, dx);
     if (verbose)
-      std::cout << "     LS ITERATION " << std::setw(3) << i << ", alpha = " << std::scientific
-                << torch::min(_alpha).item<Real>() << ", |R| = " << std::scientific
-                << torch::max(torch::sqrt(nR2)).item<Real>() << ", |Rc| = " << std::scientific
-                << torch::min(torch::sqrt(crit)).item<Real>() << std::endl;
+      std::cout << "     LS ITERATION " << std::setw(3) << i << ", min(alpha) = " << std::scientific
+                << torch::min(alpha).item<Real>() << ", max(||R||) = " << std::scientific
+                << torch::max(math::sqrt(nR2)).item<Real>() << ", min(||Rc||) = " << std::scientific
+                << torch::min(math::sqrt(crit)).item<Real>() << std::endl;
 
     auto stop = torch::logical_or(nR2 <= crit, nR2 <= std::pow(atol, 2));
 
     if (torch::all(stop).item<bool>())
       break;
 
-    _alpha.batch_index_put_({torch::logical_not(stop)},
-                            _alpha.batch_index({torch::logical_not(stop)}) / _linesearch_sigma);
+    alpha.batch_index_put_({torch::logical_not(stop)},
+                           alpha.batch_index({torch::logical_not(stop)}) / _linesearch_sigma);
   }
+
+  return alpha;
 }
 
 } // namespace neml2

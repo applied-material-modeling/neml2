@@ -47,6 +47,10 @@ public:
    * @param options The options extracted from the input file.
    */
   LogspacePrimitiveTensor(const OptionSet & options);
+
+private:
+  /// Helper to make the tensor given user input options
+  T make(const OptionSet & options) const;
 };
 
 #define LOGSPACEPRIMITIVETENSOR_TYPEDEF(T) typedef LogspacePrimitiveTensor<T> Logspace##T

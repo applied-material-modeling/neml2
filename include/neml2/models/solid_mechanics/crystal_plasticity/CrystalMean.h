@@ -22,20 +22,35 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <pybind11/pybind11.h>
+#pragma once
 
-#include "python/neml2/tensors/LabeledTensor.h"
-#include "neml2/tensors/LabeledMatrix.h"
+#include "neml2/models/Model.h"
 
-namespace py = pybind11;
-using namespace neml2;
-
-void
-def_LabeledMatrix(py::module_ & m)
+namespace neml2
 {
-  auto c = py::class_<LabeledMatrix>(m, "LabeledMatrix");
-
-  def_LabeledBatchView<LabeledMatrix>(m, "LabeledMatrixBatchView");
-  def_LabeledBaseView<LabeledMatrix>(m, "LabeledMatrixBaseView");
-  def_LabeledTensor<LabeledMatrix, 2>(c);
+namespace crystallography
+{
+class CrystalGeometry;
 }
+
+template <typename T>
+class CrystalMean : public Model
+{
+public:
+  static OptionSet expected_options();
+
+  CrystalMean(const OptionSet & options);
+
+protected:
+  void set_value(bool out, bool dout_din, bool d2out_din2) override;
+
+  /// Crystal geometry class with slip geometry
+  const crystallography::CrystalGeometry & _crystal_geometry;
+
+  /// Original variable (with list dimensions)
+  const Variable<T> & _from;
+
+  /// Reduced variable (without list dimensions)
+  Variable<T> & _to;
+};
+} // namespace neml2

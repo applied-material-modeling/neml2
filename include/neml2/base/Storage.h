@@ -148,6 +148,7 @@ public:
   const T * query_value(const I & i) const { return has_key(i) ? pointer_value(i).get() : nullptr; }
   T * query_value(const I & i)
   {
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     return has_key(i) ? const_cast<T *>(std::as_const(*this).query_value(i)) : nullptr;
   }
   ///@}

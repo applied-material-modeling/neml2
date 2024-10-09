@@ -77,7 +77,7 @@ MixedControlSetup::MixedControlSetup(const OptionSet & options)
 void
 MixedControlSetup::set_value(bool out, bool dout_din, bool d2out_din2)
 {
-  auto [dstrain, dstress] = make_operators(_control.tensor());
+  auto [dstrain, dstress] = make_operators(_control);
 
   if (out)
   {
@@ -112,10 +112,9 @@ MixedControlSetup::make_operators(const SR2 & control) const
   auto stress_select = control > _threshold;
 
   // This also converts these to floats
-  auto ones_stress = Tensor(strain_select.to(_stress.tensor().options()), control.batch_dim());
+  auto ones_stress = Tensor(strain_select.to(control.options()), control.batch_sizes());
   auto ones_strain = Tensor::ones_like(control) - ones_stress;
 
-  // auto dstrain = SSR4(Tensor(torch::diag_embed(ones_stress), batch_dim()));
   auto dstrain = math::base_diag_embed(ones_stress);
   auto dstress = math::base_diag_embed(ones_strain);
 

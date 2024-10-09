@@ -2,14 +2,13 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    batch_shape = '(10)'
     input_scalar_names = 'state/internal/gamma_rate'
     input_scalar_values = '0.01'
     input_symr2_names = 'state/internal/NM state/internal/X'
     input_symr2_values = 'NM X'
     output_symr2_names = 'state/internal/X_rate'
     output_symr2_values = 'X_rate'
-    output_abs_tol = 1e-4
+    value_abs_tol = 1e-4
   []
 []
 

@@ -2,18 +2,14 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    batch_shape = '()'
     output_batch_tensor_names = 'state/internal/resolved_shears'
     output_batch_tensor_values = 'shears'
     input_symr2_names = 'state/internal/cauchy_stress'
     input_symr2_values = 'stress'
     input_rot_names = 'state/orientation'
     input_rot_values = 'R'
-    derivatives_rel_tol = 1e-4
-    derivatives_abs_tol = 5e-6
-    check_AD_first_derivatives = false
-    check_AD_second_derivatives = false
-    check_AD_derivatives = false
+    derivative_rel_tol = 1e-4
+    derivative_abs_tol = 5e-6
   []
 []
 
@@ -48,9 +44,9 @@
 [Data]
   [crystal_geometry]
     type = CubicCrystal
-    lattice_parameter = "a"
-    slip_directions = "sdirs"
-    slip_planes = "splanes"
+    lattice_parameter = 'a'
+    slip_directions = 'sdirs'
+    slip_planes = 'splanes'
   []
 []
 

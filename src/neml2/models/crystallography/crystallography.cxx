@@ -138,7 +138,7 @@ unique_bidirectional(const R2 & ops, const Vec & inp)
   // list of Vecs aren't convertable into a TensorList
   std::vector<torch::Tensor> unique{torch::Tensor(options.batch_index({0}))};
   Vec unique_vecs = Vec(torch::stack(unique));
-  for (Size i = 1; i < options.batch_sizes()[0]; i++)
+  for (Size i = 1; i < options.batch_size(0).concrete(); i++)
   {
     auto vi = options.batch_index({i});
     // Compares list of vectors to vector to figure out if any are the same

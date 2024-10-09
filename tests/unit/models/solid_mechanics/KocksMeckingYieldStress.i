@@ -2,10 +2,8 @@
   [unit]
     type = ModelUnitTest
     model = 'p'
-    batch_shape = '(5)'
     output_scalar_names = 'parameters/p'
     output_scalar_values = 'p_correct'
-    check_second_derivatives = true
   []
 []
 

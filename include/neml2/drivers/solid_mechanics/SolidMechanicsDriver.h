@@ -56,7 +56,7 @@ protected:
    * STRESS: Use stress control to drive the update.
    * MIXED: Use mixed stress/strain control with signal provided by _control_name
    */
-  const std::string _control;
+  const EnumSelection _control;
 
   /**
    * The value of the driving force, depending on `_control` this is either the prescribed strain or

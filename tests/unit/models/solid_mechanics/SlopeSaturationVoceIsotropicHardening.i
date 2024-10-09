@@ -2,7 +2,6 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    batch_shape = '(10)'
     input_scalar_names = 'state/internal/gamma_rate state/internal/k'
     input_scalar_values = '0.1 50.0'
     output_scalar_names = 'state/internal/k_rate'

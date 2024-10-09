@@ -10,7 +10,7 @@
     input_scalar_values = '1.3 1.1'
     output_rot_names = 'residual/foo'
     output_rot_values = 'res'
-    output_rel_tol = 1e-4
+    value_rel_tol = 1e-4
   []
 []
 

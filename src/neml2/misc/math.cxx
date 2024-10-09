@@ -132,7 +132,7 @@ full_to_reduced(const Tensor & full,
       factor * torch::gather(full.reshape(utils::add_shapes(starting_shape, 9, trailing_shape)),
                              starting_dim,
                              map),
-      batch_dim);
+      full.batch_sizes());
 }
 
 Tensor
@@ -155,7 +155,7 @@ reduced_to_full(const Tensor & reduced,
 
   return Tensor((factor * torch::gather(reduced, starting_dim, map))
                     .reshape(utils::add_shapes(starting_shape, 3, 3, trailing_shape)),
-                batch_dim);
+                reduced.batch_sizes());
 }
 
 Tensor
@@ -199,46 +199,33 @@ skew_to_full(const Tensor & skew, Size dim)
 }
 
 Tensor
-jacrev(const Tensor & y, const Tensor & p)
+jacrev(const Tensor & y, const Tensor & x, bool retain_graph, bool create_graph, bool allow_unused)
 {
-  neml_assert(p.batch_sizes() == y.batch_sizes(),
-              "The batch shape of the parameter must be the same as the batch shape "
-              "of the output. However, the batch shape of the parameter is ",
-              p.batch_sizes(),
-              ", and the batch shape of the output is ",
-              y.batch_sizes());
+  // Return undefined Tensor if y does not contain any gradient graph
+  if (!y.requires_grad())
+    return Tensor();
 
-  // flatten y to handle arbitrarily shaped output
-  auto yf =
-      Tensor(y.reshape(utils::add_shapes(y.batch_sizes(), utils::storage_size(y.base_sizes()))),
-             y.batch_dim());
+  // Flatten y to handle arbitrarily shaped output
+  const auto yf = y.base_flatten();
+  const auto G = Tensor::identity(yf.base_size(0), yf.options()).batch_expand(yf.batch_sizes());
 
-  neml_assert_dbg(yf.base_dim() == 1, "Flattened output must be flat.");
+  auto dyf_dx = Tensor::zeros(
+      yf.batch_sizes(), utils::add_shapes(yf.base_size(0), x.base_sizes()), yf.options());
 
-  auto dyf_dp = Tensor::zeros(
-      yf.batch_sizes(), utils::add_shapes(yf.base_sizes(), p.base_sizes()), yf.options());
-
-  if (yf.requires_grad())
-    for (Size i = 0; i < yf.base_sizes()[0]; i++)
-    {
-      auto v = Tensor::zeros_like(yf);
-      v.index_put_({torch::indexing::Ellipsis, i}, 1.0);
-      const auto dyfi_dp = torch::autograd::grad({yf},
-                                                 {p},
-                                                 {v},
-                                                 /*retain_graph=*/true,
-                                                 /*create_graph=*/false,
-                                                 /*allow_unused=*/true)[0];
-      if (dyfi_dp.defined())
-        dyf_dp.base_index_put_({i, torch::indexing::Ellipsis}, dyfi_dp);
-    }
+  for (Size i = 0; i < yf.base_size(0); i++)
+  {
+    const auto dyfi_dx = torch::autograd::grad({yf},
+                                               {x},
+                                               {G.base_index({i})},
+                                               /*retain_graph=*/retain_graph,
+                                               /*create_graph=*/create_graph,
+                                               /*allow_unused=*/allow_unused)[0];
+    if (dyfi_dx.defined())
+      dyf_dx.base_index_put_({i}, dyfi_dx);
+  }
 
   // Reshape the derivative back to the correct shape
-  const auto dy_dp =
-      Tensor(dyf_dp.reshape(utils::add_shapes(y.batch_sizes(), y.base_sizes(), p.base_sizes())),
-             y.batch_dim());
-
-  return dy_dp;
+  return dyf_dx.base_reshape(utils::add_shapes(y.base_sizes(), x.base_sizes()));
 }
 
 Tensor
@@ -247,7 +234,7 @@ base_diag_embed(const Tensor & a, Size offset, Size d1, Size d2)
   return Tensor(
       torch::diag_embed(
           a, offset, d1 < 0 ? d1 : d1 + a.batch_dim() + 1, d2 < 0 ? d2 : d2 + a.batch_dim() + 1),
-      a.batch_dim());
+      a.batch_sizes());
 }
 
 SR2
@@ -306,9 +293,41 @@ d_multiply_and_make_skew_d_second(const SR2 & a)
 }
 
 Tensor
+base_cat(const std::vector<Tensor> & tensors, Size d)
+{
+  neml_assert_dbg(!tensors.empty(), "base_cat must be given at least one tensor");
+  std::vector<torch::Tensor> torch_tensors(tensors.begin(), tensors.end());
+  auto d2 = d < 0 ? d : d + tensors.begin()->batch_dim();
+  return neml2::Tensor(torch::cat(torch_tensors, d2), tensors.begin()->batch_sizes());
+}
+
+Tensor
+base_stack(const std::vector<Tensor> & tensors, Size d)
+{
+  neml_assert_dbg(!tensors.empty(), "base_stack must be given at least one tensor");
+  std::vector<torch::Tensor> torch_tensors(tensors.begin(), tensors.end());
+  auto d2 = d < 0 ? d : d + tensors.begin()->batch_dim();
+  return neml2::Tensor(torch::stack(torch_tensors, d2), tensors.begin()->batch_sizes());
+}
+
+Tensor
+base_sum(const Tensor & a, Size d)
+{
+  auto d2 = d < 0 ? d : d + a.batch_dim();
+  return Tensor(torch::sum(a, d2), a.batch_sizes());
+}
+
+Tensor
+base_mean(const Tensor & a, Size d)
+{
+  auto d2 = d < 0 ? d : d + a.batch_dim();
+  return Tensor(torch::mean(a, d2), a.batch_sizes());
+}
+
+Tensor
 pow(const Real & a, const Tensor & n)
 {
-  return Tensor(torch::pow(a, n), n.batch_dim());
+  return Tensor(torch::pow(a, n), n.batch_sizes());
 }
 
 Tensor
@@ -328,38 +347,38 @@ vector_norm(const Tensor & v)
                   v.base_dim(),
                   " instead of 0 or 1.");
 
-  // If the vector is a logical scalar just return its absolute value
+  // If the vector is a scalar just return its absolute value
   if (v.base_dim() == 0)
     return math::abs(v);
 
   return Tensor(torch::linalg::vector_norm(
                     v, /*order=*/2, /*dim=*/-1, /*keepdim=*/false, /*dtype=*/c10::nullopt),
-                v.batch_dim());
+                v.batch_sizes());
 }
 
 Tensor
 inv(const Tensor & m)
 {
-  return Tensor(torch::linalg::inv(m), m.batch_dim());
+  return Tensor(torch::linalg::inv(m), m.batch_sizes());
 }
 
 Tensor
 solve(const Tensor & A, const Tensor & B)
 {
-  return Tensor(torch::linalg::solve(A, B, /*left=*/true), A.batch_dim());
+  return Tensor(torch::linalg::solve(A, B, /*left=*/true), A.batch_sizes());
 }
 
 std::tuple<Tensor, Tensor>
 lu_factor(const Tensor & A, bool pivot)
 {
   auto [LU, pivots] = torch::linalg_lu_factor(A, pivot);
-  return {Tensor(LU, A.batch_dim()), Tensor(pivots, A.batch_dim())};
+  return {Tensor(LU, A.batch_sizes()), Tensor(pivots, A.batch_sizes())};
 }
 
 Tensor
 lu_solve(const Tensor & LU, const Tensor & pivots, const Tensor & B, bool left, bool adjoint)
 {
-  return Tensor(torch::linalg_lu_solve(LU, pivots, B, left, adjoint), B.batch_dim());
+  return Tensor(torch::linalg_lu_solve(LU, pivots, B, left, adjoint), B.batch_sizes());
 }
 } // namespace linalg
 } // namespace math

@@ -75,12 +75,12 @@ LargeDeformationIncrementalSolidMechanicsDriver::LargeDeformationIncrementalSoli
 {
   if (_control == "STRAIN")
   {
-    _driving_force = SR2(options.get<CrossRef<torch::Tensor>>("prescribed_deformation_rate"), 2);
+    _driving_force = SR2(options.get<CrossRef<torch::Tensor>>("prescribed_deformation_rate"));
     _driving_force_name = options.get<VariableName>("deformation_rate");
   }
   else if (_control == "STRESS")
   {
-    _driving_force = SR2(options.get<CrossRef<torch::Tensor>>("prescribed_cauchy_stress_rate"), 2);
+    _driving_force = SR2(options.get<CrossRef<torch::Tensor>>("prescribed_cauchy_stress_rate"));
     _driving_force_name = options.get<VariableName>("cauchy_stress_rate");
   }
   else
@@ -97,58 +97,36 @@ LargeDeformationIncrementalSolidMechanicsDriver::diagnose(std::vector<Diagnosis>
 {
   TransientDriver::diagnose(diagnoses);
 
+  diagnostic_assert(diagnoses,
+                    _driving_force.batch_dim() >= 1,
+                    "Input driving force (strain, stress, or mixed conditions) should have at "
+                    "least one batch dimension for time steps but instead has batch dimension ",
+                    _driving_force.batch_dim());
+
+  diagnostic_assert(diagnoses,
+                    _time.batch_size(0) == _driving_force.batch_size(0),
+                    "Input driving force (strain, stress, or mixed conditions) and time should "
+                    "have the same number of time steps. The input time has ",
+                    _time.batch_size(0),
+                    " time steps, while the input driving force has ",
+                    _driving_force.batch_size(0),
+                    " time steps");
+
   diagnostic_assert(
       diagnoses,
-      _driving_force.dim() == 3,
-      "Input deformation rate/stress rate should have dimension 3 but instead has dimension",
-      _driving_force.dim());
-  diagnostic_assert(
-      diagnoses,
-      _time.sizes()[0] == _driving_force.sizes()[0],
-      "Input deformation rate/stress rate and time should have the same number of time "
-      "steps. The input "
-      "time has ",
-      _time.sizes()[0],
-      " time steps, while the input deformation rate/stress rate has ",
-      _driving_force.sizes()[0],
+      _time.batch_size(0) == _vorticity.batch_size(0),
+      "Input vorticity and time should have the same number of time steps. The input time has ",
+      _time.batch_size(0),
+      " time steps, while the input driving force has ",
+      _vorticity.batch_size(0),
       " time steps");
-  diagnostic_assert(
-      diagnoses,
-      _vorticity.sizes()[0] == _driving_force.sizes()[0],
-      "Input vorticity and deformation rate/stress rate should have the same number of "
-      "time steps.  The input vorticity "
-      "has ",
-      _vorticity.sizes()[0],
-      " time steps, while the input deformation rate/stress rate has ",
-      _driving_force.sizes()[0],
-      " time steps");
-  diagnostic_assert(
-      diagnoses,
-      _time.sizes()[1] == _driving_force.sizes()[1],
-      "Input deformation rate/stress rate and time should have the same batch size. The "
-      "input time has a "
-      "batch size of ",
-      _time.sizes()[1],
-      " while the input strain/stress has a batch size of ",
-      _driving_force.sizes()[1]);
-  diagnostic_assert(
-      diagnoses,
-      _driving_force.sizes()[2] == 6,
-      "Input strain/stress should have final dimension 6 but instead has final dimension ",
-      _driving_force.sizes()[2]);
-  diagnostic_assert(
-      diagnoses,
-      _vorticity.sizes()[2] == 3,
-      "Input vorticity should have final dimension 3, but instead has final dimension ",
-      _vorticity.sizes()[2]);
 }
 
 void
 LargeDeformationIncrementalSolidMechanicsDriver::update_forces()
 {
   TransientDriver::update_forces();
-  auto current_driving_force = _driving_force.batch_index({_step_count});
-  _in.base_index_put_(_driving_force_name, current_driving_force);
-  _in.base_index_put_(_vorticity_name, _vorticity.batch_index({_step_count}));
+  _in[_driving_force_name] = _driving_force.batch_index({_step_count});
+  _in[_vorticity_name] = _vorticity.batch_index({_step_count});
 }
 }

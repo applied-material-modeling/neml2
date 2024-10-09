@@ -59,7 +59,7 @@ public:
   }
   // These methods mirror TensorBase (the batch_xxx ones)
   Size dim() const { return _data->batch_dim(); }
-  TensorShapeRef sizes() const { return _data->batch_sizes(); }
+  TensorShape sizes() const { return _data->batch_sizes().concrete(); }
   Derived index(const indexing::TensorIndices & i) const { return _data->batch_index(i); }
   void index_put_(const indexing::TensorIndices & i, const torch::Tensor & t)
   {
@@ -121,7 +121,15 @@ def_BatchView(py::module_ & m, const std::string & name)
       py::class_<BatchView<Derived>>(m, name.c_str())
           .def(py::init<Derived *>())
           .def("dim", &BatchView<Derived>::dim)
-          .def_property_readonly("shape", &BatchView<Derived>::sizes)
+          .def_property_readonly("shape",
+                                 [](const BatchView<Derived> & self)
+                                 {
+                                   const auto s = self.sizes();
+                                   py::tuple pys(s.size());
+                                   for (std::size_t i = 0; i < s.size(); i++)
+                                     pys[i] = s[i];
+                                   return pys;
+                                 })
           .def("__getitem__", &BatchView<Derived>::index)
           .def("__getitem__",
                [](BatchView<Derived> * self, at::indexing::TensorIndex index)
@@ -253,15 +261,13 @@ def_TensorBase(py::class_<Derived> & c)
                   py::arg("start"),
                   py::arg("end"),
                   py::arg("nstep"),
-                  py::arg("dim") = 0,
-                  py::arg("batch_dim") = -1)
+                  py::arg("dim") = 0)
       .def_static("logspace",
                   &Derived::logspace,
                   py::arg("start"),
                   py::arg("end"),
                   py::arg("nstep"),
                   py::arg("dim") = 0,
-                  py::arg("batch_dim") = -1,
                   py::arg("base") = 10.0);
 }
 } // namespace neml2
