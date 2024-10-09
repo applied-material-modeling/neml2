@@ -4,6 +4,7 @@ include(NEML2UnityGroup)
 file(GLOB_RECURSE SRCS *.cxx)
 add_library(neml2 SHARED ${SRCS})
 set_target_properties(neml2 PROPERTIES INSTALL_RPATH "${EXEC_DIR};${Torch_LINK_DIRECTORIES}")
+set_target_properties(neml2 PROPERTIES LINK_WHAT_YOU_USE TRUE)
 
 if(NEML2_CLANG_TIDY)
   find_program(NEML2_CLANG_TIDY_EXE NAMES "${NEML2_CLANG_TIDY_PATH}")

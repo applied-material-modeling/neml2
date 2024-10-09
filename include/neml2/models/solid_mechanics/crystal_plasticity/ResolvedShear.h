@@ -49,7 +49,7 @@ protected:
   const crystallography::CrystalGeometry & _crystal_geometry;
 
   /// Resolved shear stresses
-  Variable<Tensor> & _rss;
+  Variable<Scalar> & _rss;
 
   /// Stress
   const Variable<SR2> & _S;

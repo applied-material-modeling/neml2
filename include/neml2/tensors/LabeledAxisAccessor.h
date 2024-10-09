@@ -71,7 +71,14 @@ public:
   }
 
   template <typename Container,
-            typename = std::enable_if_t<!std::is_convertible_v<Container, std::string>>>
+            typename = typename std::enable_if_t<
+                !std::is_convertible_v<Container, std::string> &&
+                std::is_convertible_v<typename std::iterator_traits<
+                                          decltype(std::declval<Container>().begin())>::value_type,
+                                      std::string> &&
+                std::is_convertible_v<typename std::iterator_traits<
+                                          decltype(std::declval<Container>().end())>::value_type,
+                                      std::string>>>
   LabeledAxisAccessor(const Container & c)
   {
     _item_names.append(c.begin(), c.end());

@@ -196,7 +196,7 @@ CrystalGeometry::setup_schmid_tensors(const Vec & A,
   if (slip_directions.batch_sizes() != slip_planes.batch_sizes())
     neml_assert("Input slip directions and planes must have the same batch sizes");
 
-  auto bshape = slip_planes.batch_sizes();
+  auto bshape = slip_planes.batch_sizes().concrete();
   auto nbatch = slip_planes.batch_dim();
 
   // Loop over each slip system
@@ -219,7 +219,7 @@ CrystalGeometry::setup_schmid_tensors(const Vec & A,
     // We could do this in a vectorized manner, but I don't think it's worth it as
     // this code only runs once
     Size last = offsets.back();
-    for (Size j = 0; j < direction_options.batch_sizes()[direction_options.batch_dim() - 1]; j++)
+    for (Size j = 0; j < direction_options.batch_size(-1).concrete(); j++)
     {
       auto di = direction_options.batch_index({indexing::Ellipsis, j});
       auto dps = plane_options.dot(di);

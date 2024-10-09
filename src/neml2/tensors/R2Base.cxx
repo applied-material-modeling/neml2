@@ -51,7 +51,7 @@ R2Base<Derived>::fill(const Scalar & a)
                                torch::stack({zero, a, zero}, -1),
                                torch::stack({zero, zero, a}, -1)},
                               -2),
-                 a.batch_dim());
+                 a.batch_sizes());
 }
 
 template <class Derived>
@@ -73,7 +73,7 @@ R2Base<Derived>::fill(const Scalar & a11, const Scalar & a22, const Scalar & a33
                                torch::stack({zero, a22, zero}, -1),
                                torch::stack({zero, zero, a33}, -1)},
                               -2),
-                 a11.batch_dim());
+                 a11.batch_sizes());
 }
 
 template <class Derived>
@@ -107,7 +107,7 @@ R2Base<Derived>::fill(const Scalar & a11,
                                torch::stack({a12, a22, a23}, -1),
                                torch::stack({a13, a23, a33}, -1)},
                               -2),
-                 a11.batch_dim());
+                 a11.batch_sizes());
 }
 
 template <class Derived>
@@ -150,7 +150,7 @@ R2Base<Derived>::fill(const Scalar & a11,
                                torch::stack({a21, a22, a23}, -1),
                                torch::stack({a31, a32, a33}, -1)},
                               -2),
-                 a11.batch_dim());
+                 a11.batch_sizes());
 }
 
 template <class Derived>
@@ -162,7 +162,7 @@ R2Base<Derived>::skew(const Vec & v)
                                torch::stack({v(2), z, -v(0)}, -1),
                                torch::stack({-v(1), v(0), z}, -1)},
                               -2),
-                 v.batch_dim());
+                 v.batch_sizes());
 }
 
 template <class Derived>

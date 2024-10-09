@@ -67,9 +67,7 @@ finite_differencing_derivative(F && f,
   }
 
   // Flatten x to support arbitrarily shaped input
-  auto xf =
-      Tensor(x.reshape(utils::add_shapes(x.batch_sizes(), utils::storage_size(x.base_sizes()))),
-             x.batch_dim());
+  auto xf = x.base_flatten();
 
   auto y0 = Tensor(f(x)).clone();
 
@@ -90,9 +88,7 @@ finite_differencing_derivative(F && f,
   }
 
   // Reshape the derivative back to the correct shape
-  auto dy_dx =
-      Tensor(dy_dxf.reshape(utils::add_shapes(x.batch_sizes(), y0.base_sizes(), x.base_sizes())),
-             x.batch_dim());
+  auto dy_dx = dy_dxf.base_reshape(utils::add_shapes(y0.base_sizes(), x.base_sizes()));
 
   return dy_dx;
 }

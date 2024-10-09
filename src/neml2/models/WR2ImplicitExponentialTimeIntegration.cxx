@@ -93,7 +93,7 @@ WR2ImplicitExponentialTimeIntegration::set_value(bool out, bool dout_din, bool d
   if (dout_din)
   {
     const auto de = (_s_dot * dt).dexp();
-    _r.d(_s) = R2::identity(options());
+    _r.d(_s) = R2::identity(_s.options());
     _r.d(_s_dot) = -Rot(_sn).drotate(inc) * de * dt;
 
     if (currently_solving_nonlinear_system())

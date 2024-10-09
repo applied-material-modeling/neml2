@@ -33,46 +33,45 @@ TrustRegionSubProblem::TrustRegionSubProblem(const OptionSet & options)
 }
 
 void
-TrustRegionSubProblem::reinit(const NonlinearSystem & system, const Scalar & delta)
+TrustRegionSubProblem::reinit(const NonlinearSystem::RES<true> & r,
+                              const NonlinearSystem::JAC<true> & J,
+                              const Scalar & delta)
 {
-  _batch_sizes = delta.batch_sizes().vec();
-  _options = delta.options();
-
-  _solution = Scalar::zeros(_batch_sizes, _options);
-  _residual = Scalar::empty(_batch_sizes, _options);
-  _Jacobian = Scalar::empty(_batch_sizes, _options);
-
-  _R = system.get_residual();
-  _J = system.get_Jacobian();
-  _delta = delta.clone();
-
-  _JJ = math::bmm(_J.base_transpose(0, 1), _J);
-  _JR = math::bmv(_J.base_transpose(0, 1), _R);
+  _delta = delta;
+  _JJ = math::bmm(J.base_transpose(0, 1), J);
+  _Jr = math::bmv(J.base_transpose(0, 1), r);
 }
 
 void
-TrustRegionSubProblem::assemble(bool residual, bool Jacobian)
+TrustRegionSubProblem::set_guess(const NonlinearSystem::SOL<false> & x)
 {
-  auto s = Scalar(_solution);
-  auto p = -preconditioned_direction(s);
+  _s = Scalar(x);
+}
+
+void
+TrustRegionSubProblem::assemble(NonlinearSystem::RES<false> * residual,
+                                NonlinearSystem::JAC<false> * Jacobian)
+{
+  auto p = -preconditioned_direction(_s);
   auto np = math::sqrt(math::bvv(p, p));
 
   if (residual)
-    _residual = 1.0 / np - 1.0 / math::sqrt(2.0 * _delta);
+    *residual = NonlinearSystem::RES<false>(1.0 / np - 1.0 / math::sqrt(2.0 * _delta));
 
   if (Jacobian)
-    _Jacobian = 1.0 / math::pow(np, 3.0) * math::bvv(p, preconditioned_solve(s, p));
+    *Jacobian = NonlinearSystem::JAC<false>(1.0 / math::pow(np, 3.0) *
+                                            math::bvv(p, preconditioned_solve(_s, p)));
 }
 
 Tensor
 TrustRegionSubProblem::preconditioned_solve(const Scalar & s, const Tensor & v) const
 {
-  return math::linalg::solve(_JJ + s * Tensor::identity(v.base_sizes()[0], _options), v);
+  return math::linalg::solve(_JJ + s * Tensor::identity(v.base_sizes()[0], v.options()), v);
 }
 
 Tensor
 TrustRegionSubProblem::preconditioned_direction(const Scalar & s) const
 {
-  return preconditioned_solve(s, _JR);
+  return preconditioned_solve(s, _Jr);
 }
 } // namespace neml2

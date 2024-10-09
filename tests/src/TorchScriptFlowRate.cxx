@@ -64,17 +64,6 @@ TorchScriptFlowRate::TorchScriptFlowRate(const OptionSet & options)
 }
 
 void
-TorchScriptFlowRate::reinit(TensorShapeRef batch_shape,
-                            int deriv_order,
-                            const torch::Device & device,
-                            const torch::Dtype & dtype)
-{
-  Model::reinit(batch_shape, deriv_order, device, dtype);
-  _surrogate->to(device);
-  _surrogate->to(dtype);
-}
-
-void
 TorchScriptFlowRate::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   neml_assert_dbg(!dout_din || !d2out_din2,

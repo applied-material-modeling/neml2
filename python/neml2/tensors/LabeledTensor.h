@@ -208,7 +208,7 @@ def_LabeledTensor(py::class_<Derived> & c)
   // Static methods
   c.def_static(
        "empty",
-       [](const TensorShapeRef & batch_shape,
+       [](TensorShapeRef batch_shape,
           const std::array<const LabeledAxis *, D> & axes,
           NEML2_TENSOR_OPTIONS_VARGS)
        { return Derived::empty(batch_shape, axes, NEML2_TENSOR_OPTIONS); },
@@ -218,7 +218,7 @@ def_LabeledTensor(py::class_<Derived> & c)
        PY_ARG_TENSOR_OPTIONS)
       .def_static(
           "zeros",
-          [](const TensorShapeRef & batch_shape,
+          [](TensorShapeRef batch_shape,
              const std::array<const LabeledAxis *, D> & axes,
              NEML2_TENSOR_OPTIONS_VARGS)
           { return Derived::zeros(batch_shape, axes, NEML2_TENSOR_OPTIONS); },

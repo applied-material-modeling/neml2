@@ -46,12 +46,12 @@ protected:
   const crystallography::CrystalGeometry & _crystal_geometry;
 
   /// Slip rates
-  Variable<Tensor> & _g;
+  Variable<Scalar> & _g;
 
   /// Resolved shears
-  const Variable<Tensor> & _rss;
+  const Variable<Scalar> & _rss;
 
   /// Slip strengths, mapped from internal variables
-  const Variable<Tensor> & _tau;
+  const Variable<Scalar> & _tau;
 };
 } // namespace neml2

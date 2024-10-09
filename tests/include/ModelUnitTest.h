@@ -66,7 +66,6 @@ private:
   void check_AD_parameter_derivatives(Model & model);
 
   Model & _model;
-  Model & _model_disable_AD;
   const TensorShape _batch_shape;
   const bool _check_values;
   const bool _check_1st_deriv;
@@ -76,7 +75,6 @@ private:
   const bool _check_AD_derivs;
   const bool _check_AD_param_derivs;
   const bool _check_cuda;
-  const bool _check_disable_AD;
 
   int _deriv_order;
 

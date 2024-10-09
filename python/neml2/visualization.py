@@ -172,9 +172,9 @@ def _add_variables(graph, config, model, input):
                             continue
                         vlabel = "{}_{}_{}".format(model.name, xname, vname)
                         vtype = str(
-                            model.input_type(subaxis + "/" + var)
+                            model.input_type(vname)
                             if input
-                            else model.output_type(subaxis + "/" + var)
+                            else model.output_type(vname)
                         ).split(".")[-1]
                         s.node(
                             name=vlabel,

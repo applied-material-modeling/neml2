@@ -43,258 +43,161 @@ public:
 
   LabeledAxis & declare_axis(const std::string & name);
 
-  /// Setup the layouts of all the registered axes
+  /// Setup the layout of all the registered axes
   virtual void setup_layout();
 
   ///@{
-  /// Get an input variable
-  template <typename T = Tensor>
-  Variable<T> & get_input_variable(const VariableName & name)
-  {
-    auto var_base_ptr = _input_views.query_value(name);
-    neml_assert(var_base_ptr, "Input variable ", name, " does not exist.");
-    auto var_ptr = dynamic_cast<Variable<T> *>(var_base_ptr);
-    neml_assert(
-        var_ptr, "Input variable ", name, " exist but cannot be cast to the requested type.");
-    return *var_ptr;
-  }
-  template <typename T = Tensor>
-  const Variable<T> & get_input_variable(const VariableName & name) const
-  {
-    const auto var_base_ptr = _input_views.query_value(name);
-    neml_assert(var_base_ptr, "Input variable ", name, " does not exist.");
-    const auto var_ptr = dynamic_cast<const Variable<T> *>(var_base_ptr);
-    neml_assert(
-        var_ptr, "Input variable ", name, " exist but cannot be cast to the requested type.");
-    return *var_ptr;
-  }
-  ///@}
-
-  ///@{
-  /// Get an output variable
-  template <typename T = Tensor>
-  const Variable<T> & get_output_variable(const VariableName & name)
-  {
-    return std::as_const(*this).get_output_variable<T>(name);
-  }
-  template <typename T = Tensor>
-  const Variable<T> & get_output_variable(const VariableName & name) const
-  {
-    const auto var_base_ptr = _output_views.query_value(name);
-    neml_assert(var_base_ptr, "Output variable ", name, " does not exist.");
-    const auto var_ptr = dynamic_cast<const Variable<T> *>(var_base_ptr);
-    neml_assert(
-        var_ptr, "Output variable ", name, " exist but cannot be cast to the requested type.");
-    return *var_ptr;
-  }
-  ///@}
-
-  ///@{
-  /// Definition of the input variables
+  /// Definition of the input axis showing the layout of input variables
   LabeledAxis & input_axis() { return _input_axis; }
   const LabeledAxis & input_axis() const { return _input_axis; }
   ///@}
 
   ///@{
-  /// Which variables this object defines as output
+  /// Definition of the output axis showing the layout of output variables
   LabeledAxis & output_axis() { return _output_axis; }
   const LabeledAxis & output_axis() const { return _output_axis; }
   ///@}
 
   ///@{
-  /// Input variable views
-  Storage<VariableName, VariableBase> & input_variables() { return _input_views; }
-  const Storage<VariableName, VariableBase> & input_variables() const { return _input_views; }
+  /// Variables
+  Storage<VariableName, VariableBase> & variables() { return _variables; }
+  const Storage<VariableName, VariableBase> & variables() const { return _variables; }
   ///@}
 
   ///@{
-  /// Output variable views
-  Storage<VariableName, VariableBase> & output_variables() { return _output_views; }
-  const Storage<VariableName, VariableBase> & output_variables() const { return _output_views; }
+  /// Lookup a variable by name
+  VariableBase & variable(const VariableName &);
+  const VariableBase & variable(const VariableName &) const;
   ///@}
 
-  ///@{
-  /// Input storage
-  LabeledVector & input_storage() { return _in; }
-  const LabeledVector & input_storage() const { return _in; }
-  ///@}
+  /// List of variables that match the given ftype
+  std::vector<const VariableBase *> variables(FType) const;
+  std::vector<VariableBase *> variables(FType);
 
-  ///@{
-  /// Output storage
-  LabeledVector & output_storage() { return _out; }
-  const LabeledVector & output_storage() const { return _out; }
-  ///@}
+  /// Assign variable values
+  void assign_values(const LabeledVector & vals);
 
-  ///@{
-  /// Derivative storage
-  LabeledMatrix & derivative_storage() { return _dout_din; }
-  const LabeledMatrix & derivative_storage() const { return _dout_din; }
-  ///@}
+  /// Assign derivatives
+  void assign_derivatives(const LabeledMatrix & derivs);
 
-  ///@{
-  /// Second derivative storage
-  LabeledTensor3D & second_derivative_storage() { return _d2out_din2; }
-  const LabeledTensor3D & second_derivative_storage() const { return _d2out_din2; }
-  ///@}
+  /// Assemble (flattened) variable values into a vector
+  LabeledVector assemble_values(const LabeledAxis & axis) const;
 
-  /// Get the view of an input variable
-  VariableBase * input_variable(const VariableName &);
-  /// Get the view of an output variable
-  VariableBase * output_variable(const VariableName &);
+  /// Assemble derivatives into a matrix
+  LabeledMatrix assemble_derivatives(const LabeledAxis & yaxis, const LabeledAxis & xaxis) const;
 
-  /// Get the variable type of an input variable
-  TensorType input_type(const VariableName &) const;
-  /// Get the variable type of an output variable
-  TensorType output_type(const VariableName &) const;
+  /// Assemble second derivatives into a 3D tensor
+  LabeledTensor3D assemble_second_derivatives(const LabeledAxis & yaxis,
+                                              const LabeledAxis & x1axis,
+                                              const LabeledAxis & x2axis) const;
 
 protected:
-  /// Cache the variable's batch shape
-  virtual void cache(TensorShapeRef batch_shape);
-
-  /**
-   * @brief Allocate variable storages given the batch shape and tensor options
-   *
-   * @param batch_shape Batch shape of the allocated tensors
-   * @param options Tensor options of the allocated tensors
-   * @param in Whether to allocate tensor storage for input
-   * @param out Whether to allocate tensor storage for output
-   * @param dout_din Whether to allocate tensor storage for the first derivatives
-   * @param d2out_din2 Whether to allocate tensor storage for the second derivatives
-   */
-  virtual void allocate_variables(TensorShapeRef batch_shape,
-                                  const torch::TensorOptions & options,
-                                  bool in,
-                                  bool out,
-                                  bool dout_din,
-                                  bool d2out_din2);
-
-  /// Tell each input variable view which tensor storage(s) to view into
-  virtual void setup_input_views(VariableStore * host = nullptr);
-
-  /// Tell each output variable view which tensor storage(s) to view into
-  virtual void setup_output_views(bool out, bool dout_din, bool d2out_din2);
-
-  /// Zero out derivative and second derivative storage
-  virtual void zero(bool dout_din, bool d2out_din2);
+  /// Cleanup after evaluation
+  virtual void clear();
 
   /// Declare an input variable
-  template <typename T, typename... S>
-  const Variable<T> & declare_input_variable(S &&... name)
+  template <typename T, typename S>
+  const Variable<T> &
+  declare_input_variable(S && name, TensorShapeRef list_shape = {}, TensorShapeRef base_shape = {})
   {
-    const auto var_name = variable_name(std::forward<S>(name)...);
-    declare_variable<T>(_input_axis, var_name);
-    return *create_variable_view<T>(_input_views, var_name);
-  }
+    if constexpr (!std::is_same_v<T, Tensor>)
+      neml_assert(base_shape.empty(),
+                  "Creating a Variable of primitive tensor type does not require a base shape.");
 
-  /// Declare an input variable (with unknown base shape at compile time)
-  template <typename... S>
-  const Variable<Tensor> & declare_input_variable(Size sz, TensorType t, S &&... name)
-  {
-    const auto var_name = variable_name(std::forward<S>(name)...);
-    declare_variable(_input_axis, var_name, sz);
-    return *create_variable_view<Tensor>(_input_views, var_name, t, sz);
-  }
+    const auto var_name = variable_name(std::forward<S>(name));
+    const auto list_sz = utils::storage_size(list_shape);
+    const auto base_sz =
+        std::is_same_v<T, Tensor> ? utils::storage_size(base_shape) : T::const_base_storage;
+    const auto sz = list_sz * base_sz;
 
-  /// Declare an input variable that is a list of tensors of fixed size
-  template <typename T, typename... S>
-  const Variable<Tensor> & declare_input_variable_list(Size list_size, S &&... name)
-  {
-    return declare_input_variable(
-        list_size * T::const_base_storage, TensorType::kTensor, std::forward<S>(name)...);
+    _input_axis.add(var_name, sz);
+    return *create_variable<T>(var_name, FType::INPUT, list_shape, base_shape);
   }
 
   /// Declare an output variable
-  template <typename T, typename... S>
-  Variable<T> & declare_output_variable(S &&... name)
+  template <typename T, typename S>
+  Variable<T> &
+  declare_output_variable(S && name, TensorShapeRef list_shape = {}, TensorShapeRef base_shape = {})
   {
-    const auto var_name = variable_name(std::forward<S>(name)...);
-    declare_variable<T>(_output_axis, var_name);
-    return *create_variable_view<T>(_output_views, var_name);
+    if constexpr (!std::is_same_v<T, Tensor>)
+      neml_assert(base_shape.empty(),
+                  "Creating a Variable of primitive tensor type does not require a base shape.");
+
+    const auto var_name = variable_name(std::forward<S>(name));
+    const auto list_sz = utils::storage_size(list_shape);
+    const auto base_sz =
+        std::is_same_v<T, Tensor> ? utils::storage_size(base_shape) : T::const_base_storage;
+    const auto sz = list_sz * base_sz;
+
+    _output_axis.add(var_name, sz);
+    return *create_variable<T>(var_name, FType::OUTPUT, list_shape, base_shape);
   }
 
-  /// Declare an input variable (with unknown base shape at compile time)
-  template <typename... S>
-  Variable<Tensor> & declare_output_variable(Size sz, TensorType t, S &&... name)
+  /// Clone a variable and put it on the input axis
+  const VariableBase * clone_input_variable(const VariableBase & var,
+                                            const VariableName & new_name = {})
   {
-    const auto var_name = variable_name(std::forward<S>(name)...);
-    declare_variable(_output_axis, var_name, sz);
-    return *create_variable_view<Tensor>(_output_views, var_name, t, sz);
+    neml_assert(&var.owner() != _object, "Trying to clone a variable from the same model.");
+
+    const auto var_name = new_name.empty() ? var.name() : new_name;
+    const auto * var_exist = _variables.query_value(var_name);
+    const auto ftype = var_exist ? (var_exist->ftype() | FType::INPUT) : FType::INPUT;
+    auto var_clone = var.clone(var_name, _object, ftype);
+
+    _input_axis.add(var_name, var_clone->assembly_storage());
+    return _variables.set_pointer(var_name, std::move(var_clone));
   }
 
-  /// Declare an output variable that is a list of tensors of fixed size
-  template <typename T, typename... S>
-  Variable<Tensor> & declare_output_variable_list(Size list_size, S &&... name)
+  /// Clone a variable and put it on the output axis
+  VariableBase * clone_output_variable(const VariableBase & var, const VariableName & new_name = {})
   {
-    return declare_output_variable(
-        list_size * T::const_base_storage, TensorType::kTensor, std::forward<S>(name)...);
-  }
+    neml_assert(&var.owner() != _object, "Trying to clone a variable from the same model.");
 
-  /// Declare an item recursively on an axis
-  template <typename T>
-  VariableName declare_variable(LabeledAxis & axis, const VariableName & var) const
-  {
-    return declare_variable(axis, var, T::const_base_storage);
-  }
+    const auto var_name = new_name.empty() ? var.name() : new_name;
+    const auto * var_exist = _variables.query_value(var_name);
+    const auto ftype = var_exist ? (var_exist->ftype() | FType::OUTPUT) : FType::OUTPUT;
+    auto var_clone = var.clone(var_name, _object, ftype);
 
-  /// Declare an item (with known storage size) recursively on an axis
-  VariableName declare_variable(LabeledAxis & axis, const VariableName & var, Size sz) const
-  {
-    axis.add(var, sz);
-    return var;
-  }
-
-  /// Declare a subaxis recursively on an axis
-  VariableName declare_subaxis(LabeledAxis & axis, const VariableName & subaxis) const
-  {
-    axis.add<LabeledAxis>(subaxis);
-    return subaxis;
+    _output_axis.add(var_name, var_clone->assembly_storage());
+    return _variables.set_pointer(var_name, std::move(var_clone));
   }
 
 private:
-  // Helper method to construct variable name in place
-  template <typename... S>
-  VariableName variable_name(S &&... name) const
+  // Helper method to construct variable name
+  template <typename S>
+  VariableName variable_name(S && name) const
   {
-    using FirstType = std::tuple_element_t<0, std::tuple<S...>>;
+    if constexpr (std::is_convertible_v<S, std::string>)
+      if (_object_options.contains<VariableName>(name))
+        return _object_options.get<VariableName>(name);
 
-    if constexpr (sizeof...(name) == 1 && std::is_convertible_v<FirstType, std::string>)
-    {
-      if (_options.contains<VariableName>(name...))
-        return _options.get<VariableName>(name...);
-      return VariableName(std::forward<S>(name)...);
-    }
-    else
-      return VariableName(std::forward<S>(name)...);
+    return name;
   }
 
-  // Create a variable view (doesn't setup the view)
+  // Create a variable
   template <typename T>
-  Variable<T> * create_variable_view(Storage<VariableName, VariableBase> & views,
-                                     const VariableName & name,
-                                     TensorType t = TensorTypeEnum<T>::value,
-                                     Size sz = -1)
+  Variable<T> * create_variable(const VariableName & name,
+                                FType ft,
+                                TensorShapeRef list_shape,
+                                TensorShapeRef base_shape)
   {
-    if constexpr (std::is_same_v<T, Tensor>)
-      neml_assert(sz > 0, "Allocating a Tensor requires a known storage size.");
-
-    // Make sure we don't duplicate variable allocation
-    VariableBase * var_base_ptr = views.query_value(name);
+    // Make sure we don't duplicate variables
+    VariableBase * var_base_ptr = _variables.query_value(name);
     neml_assert(!var_base_ptr,
-                "Trying to allocate variable ",
+                "Trying to create variable ",
                 name,
                 ", but a variable with the same name already exists.");
 
     // Allocate
     if constexpr (std::is_same_v<T, Tensor>)
     {
-      auto var = std::make_unique<Variable<Tensor>>(name, _object, sz, t);
-      var_base_ptr = views.set_pointer(name, std::move(var));
+      auto var = std::make_unique<Variable<Tensor>>(name, _object, ft, list_shape, base_shape);
+      var_base_ptr = _variables.set_pointer(name, std::move(var));
     }
     else
     {
-      (void)t;
-      auto var = std::make_unique<Variable<T>>(name, _object);
-      var_base_ptr = views.set_pointer(name, std::move(var));
+      auto var = std::make_unique<Variable<T>>(name, _object, ft, list_shape);
+      var_base_ptr = _variables.set_pointer(name, std::move(var));
     }
 
     // Cast it to the concrete type
@@ -305,23 +208,19 @@ private:
     return var_ptr;
   }
 
+  /// Model using this interface
   Model * _object;
 
   /**
-   * @brief Parsed input file options. These options are useful for example when we declare a
-   * variable using an input option name.
+   * @brief Parsed input file options for this object.
+
+   * These options are useful for example when we declare a variable using an input option name.
    *
    */
-  const OptionSet _options;
+  const OptionSet _object_options;
 
   /// All the declared axes
   Storage<std::string, LabeledAxis> _axes;
-
-  /// Input variable views
-  Storage<VariableName, VariableBase> _input_views;
-
-  /// Output variable views
-  Storage<VariableName, VariableBase> _output_views;
 
   /// The input axis
   LabeledAxis & _input_axis;
@@ -329,16 +228,7 @@ private:
   /// The output axis
   LabeledAxis & _output_axis;
 
-  /// The storage for input variable values
-  LabeledVector _in;
-
-  /// The storage for output variable values
-  LabeledVector _out;
-
-  /// The storage for output variable 1st derivatives w.r.t. input variables
-  LabeledMatrix _dout_din;
-
-  /// The storage for output variable 2nd derivatives w.r.t. input variables
-  LabeledTensor3D _d2out_din2;
+  /// Variables
+  Storage<VariableName, VariableBase> _variables;
 };
 } // namespace neml2

@@ -73,7 +73,7 @@ PowerLawKinematicHardeningStaticRecovery::set_value(bool out, bool dout_din, boo
 
   if (dout_din)
   {
-    auto I = SR2::identity_map(options());
+    auto I = SR2::identity_map(_X.options());
 
     if (_X.is_dependent())
       _X_dot.d(_X) = -math::pow(s, _n - 3) * ((_n - 1) * SR2(_X).outer(SR2(_X)) + s * s * I) /

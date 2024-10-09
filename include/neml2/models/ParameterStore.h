@@ -140,11 +140,12 @@ private:
   NEML2Object * _object;
 
   /**
-   * @brief Parsed input file options. These options could be convenient when we look up a
-   * cross-referenced tensor value by its name.
+   * @brief Parsed input file options for this object.
+   *
+   * These options could be convenient when we look up a cross-referenced tensor value by its name.
    *
    */
-  const OptionSet _options;
+  const OptionSet _object_options;
 
   /// The actual storage for all the parameters
   Storage<std::string, TensorValueBase> _param_values;

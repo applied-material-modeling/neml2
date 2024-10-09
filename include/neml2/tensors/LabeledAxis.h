@@ -69,7 +69,7 @@ public:
   };
 
   /// Empty constructor
-  LabeledAxis();
+  LabeledAxis(const LabeledAxisAccessor & prefix = {});
 
   /// (Shallow) copy constructor
   LabeledAxis(const LabeledAxis & other);
@@ -83,7 +83,7 @@ public:
     {
       if (!accessor.empty() && !has_subaxis(accessor.slice(0, 1)))
       {
-        _subaxes.emplace(accessor.vec()[0], std::make_shared<LabeledAxis>());
+        _subaxes.emplace(accessor.vec()[0], std::make_shared<LabeledAxis>(accessor.slice(0, 1)));
         subaxis(accessor.vec()[0]).add<LabeledAxis>(accessor.slice(1));
       }
       return *this;
@@ -120,10 +120,10 @@ public:
   ///@}
 
   /// Number of variables
-  size_t nvariable(bool recursive = true) const;
+  std::size_t nvariable(bool recursive = true) const;
 
   /// Number of subaxes
-  size_t nsubaxis(bool recursive = false) const;
+  std::size_t nsubaxis(bool recursive = false) const;
 
   /// Does the item exist?
   bool has_item(const LabeledAxisAccessor & name) const
@@ -150,6 +150,7 @@ public:
 
   /// Get the total storage size of *this* axis or the storage size of an item
   Size storage_size(const LabeledAxisAccessor & name = {}) const;
+  Size storage_size(std::size_t i) const;
 
   /// Get the layout
   const AxisLayout & layout() const { return _layout; }
@@ -161,21 +162,31 @@ public:
   std::vector<std::pair<indexing::TensorIndex, indexing::TensorIndex>>
   common_indices(const LabeledAxis & other, bool recursive = true) const;
 
-  /// Sort a set of LabeledAxisAccessors by their indices
-  std::vector<LabeledAxisAccessor>
-  sort_by_assembly_order(const std::set<LabeledAxisAccessor> &) const;
-
   /// Get the variables
   const std::map<std::string, Size> & variables() const { return _variables; }
 
   /// Get the variable names
-  std::set<LabeledAxisAccessor> variable_names(bool recursive = true) const;
+  std::vector<LabeledAxisAccessor> variable_names(bool recursive = true, bool sort = true) const;
+
+  /// Get the fully qualified variable names
+  std::vector<LabeledAxisAccessor> qualified_variable_names(bool recursive = true,
+                                                            bool sort = true) const;
+
+  /// Get the storage sizes on this axis (by variables)
+  std::vector<Size> variable_sizes() const;
 
   /// Get the subaxes
   const std::map<std::string, std::shared_ptr<LabeledAxis>> & subaxes() const { return _subaxes; }
 
   /// Get subaxes' names
-  std::set<LabeledAxisAccessor> subaxis_names(bool recursive = false) const;
+  std::vector<LabeledAxisAccessor> subaxis_names(bool recursive = false, bool sort = true) const;
+
+  /// Get fully qualified subaxes' names
+  std::vector<LabeledAxisAccessor> qualified_subaxis_names(bool recursive = false,
+                                                           bool sort = true) const;
+
+  /// Get the storage sizes on this axis (by subaxes)
+  std::vector<Size> subaxis_sizes() const;
 
   /// Get a sub-axis
   const LabeledAxis & subaxis(const LabeledAxisAccessor & name) const;
@@ -218,6 +229,13 @@ private:
                       std::vector<Size> & idxb,
                       Size offseta,
                       Size offsetb) const;
+
+  /// Sort a set of LabeledAxisAccessors by their indices
+  std::vector<LabeledAxisAccessor>
+  sort_by_assembly_order(const std::vector<LabeledAxisAccessor> &) const;
+
+  /// Prefix used to generate fully qualified item names
+  const LabeledAxisAccessor _prefix;
 
   /// Variables and their sizes
   std::map<std::string, Size> _variables;

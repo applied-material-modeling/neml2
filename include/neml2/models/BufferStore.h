@@ -100,11 +100,12 @@ private:
   NEML2Object * _object;
 
   /**
-   * @brief Parsed input file options. These options could be convenient when we look up a
-   * cross-referenced tensor value by its name.
+   * @brief Parsed input file options for this object.
+
+   * These options are useful for example when we declare a variable using an input option name.
    *
    */
-  const OptionSet _options;
+  const OptionSet _object_options;
 
   /// The actual storage for all the buffers
   Storage<std::string, TensorValueBase> _buffer_values;
@@ -146,10 +147,10 @@ template <typename T, typename>
 const T &
 BufferStore::declare_buffer(const std::string & name, const std::string & input_option_name)
 {
-  if (_options.contains<T>(input_option_name))
-    return declare_buffer(name, _options.get<T>(input_option_name));
-  else if (_options.contains<CrossRef<T>>(input_option_name))
-    return declare_buffer(name, T(_options.get<CrossRef<T>>(input_option_name)));
+  if (_object_options.contains<T>(input_option_name))
+    return declare_buffer(name, _object_options.get<T>(input_option_name));
+  else if (_object_options.contains<CrossRef<T>>(input_option_name))
+    return declare_buffer(name, T(_object_options.get<CrossRef<T>>(input_option_name)));
 
   throw NEMLException(
       "Trying to register buffer named " + name + " from input option named " + input_option_name +

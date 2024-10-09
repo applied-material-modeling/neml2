@@ -35,7 +35,6 @@ TEST_CASE("ParameterStore", "[models]")
 {
   auto & model = reload_model("unit/models/solid_mechanics/LinearIsotropicElasticity.i", "model");
   auto batch_shape = TensorShape{5, 2};
-  model.reinit(batch_shape);
 
   SECTION("class ParameterStore")
   {

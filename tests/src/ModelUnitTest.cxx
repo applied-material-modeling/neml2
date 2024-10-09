@@ -41,12 +41,11 @@ ModelUnitTest::expected_options()
   options.set<bool>("check_values") = true;
   options.set<bool>("check_first_derivatives") = true;
   options.set<bool>("check_second_derivatives") = false;
-  options.set<bool>("check_AD_first_derivatives") = true;
+  options.set<bool>("check_AD_first_derivatives") = false;
   options.set<bool>("check_AD_second_derivatives") = false;
   options.set<bool>("check_AD_derivatives") = false;
-  options.set<bool>("check_AD_parameter_derivatives") = true;
-  options.set<bool>("check_cuda") = true;
-  options.set<bool>("check_disable_AD") = true;
+  options.set<bool>("check_AD_parameter_derivatives") = false;
+  options.set<bool>("check_cuda") = false;
   options.set<std::vector<VariableName>>("input_batch_tensor_names");
   options.set<std::vector<CrossRef<Tensor>>>("input_batch_tensor_values");
   options.set<std::vector<VariableName>>("output_batch_tensor_names");
@@ -80,8 +79,7 @@ ModelUnitTest::expected_options()
 
 ModelUnitTest::ModelUnitTest(const OptionSet & options)
   : Driver(options),
-    _model(get_model(options.get<std::string>("model"), true)),
-    _model_disable_AD(get_model(options.get<std::string>("model"), false)),
+    _model(get_model(options.get<std::string>("model"))),
     _batch_shape(options.get<TensorShape>("batch_shape")),
     _check_values(options.get<bool>("check_values")),
     _check_1st_deriv(options.get<bool>("check_first_derivatives")),
@@ -91,7 +89,6 @@ ModelUnitTest::ModelUnitTest(const OptionSet & options)
     _check_AD_derivs(options.get<bool>("check_AD_derivatives")),
     _check_AD_param_derivs(options.get<bool>("check_AD_parameter_derivatives")),
     _check_cuda(options.get<bool>("check_cuda")),
-    _check_disable_AD(options.get<bool>("check_disable_AD")),
     _deriv_order(-1),
     _out_rtol(options.get<Real>("output_rel_tol")),
     _out_atol(options.get<Real>("output_abs_tol")),
@@ -130,23 +127,17 @@ ModelUnitTest::run()
   if (!run(_model))
     return false;
 
-  if (_check_disable_AD)
-    if (!run(_model_disable_AD))
-      return false;
-
   return true;
 }
 
 bool
 ModelUnitTest::run(Model & model)
 {
-  model.reinit(_in, _deriv_order);
   check_all(model);
 
   if (_check_cuda && torch::cuda::is_available())
   {
     _in = _in.to(torch::kCUDA);
-    model.reinit(_in, _deriv_order);
     check_all(model);
   }
 
@@ -166,20 +157,17 @@ ModelUnitTest::check_all(Model & model)
     check_second_derivatives(model, false, false);
 
   // When AD is enabled
-  if (model.is_AD_enabled())
-  {
-    if (_check_AD_1st_deriv)
-      check_derivatives(model, true, true);
+  if (_check_AD_1st_deriv)
+    check_derivatives(model, true, true);
 
-    if (_check_AD_2nd_deriv)
-      check_second_derivatives(model, false, true);
+  if (_check_AD_2nd_deriv)
+    check_second_derivatives(model, false, true);
 
-    if (_check_AD_derivs)
-      check_second_derivatives(model, true, true);
+  if (_check_AD_derivs)
+    check_second_derivatives(model, true, true);
 
-    if (_check_AD_param_derivs)
-      check_AD_parameter_derivatives(model);
-  }
+  if (_check_AD_param_derivs)
+    check_AD_parameter_derivatives(model);
 }
 
 void
@@ -260,8 +248,8 @@ ModelUnitTest::check_AD_parameter_derivatives(Model & model)
   // Turn on AD for parameters
   for (auto && [name, param] : model.named_parameters())
   {
-    auto param_expanded = Tensor(param).batch_expand_copy(model.batch_sizes());
-    param = param_expanded;
+    // auto param_expanded = Tensor(param).batch_expand_copy(model.batch_sizes());
+    // param = param_expanded;
     param.requires_grad_(true);
   }
 

@@ -66,13 +66,13 @@ public:
 
   /// Setup new empty storage
   [[nodiscard]] static Derived
-  empty(TensorShapeRef batch_shape,
+  empty(const TraceableTensorShape & batch_shape,
         const std::array<const LabeledAxis *, D> & axes,
         const torch::TensorOptions & options = default_tensor_options());
 
   /// Setup new storage with zeros
   [[nodiscard]] static Derived
-  zeros(TensorShapeRef batch_shape,
+  zeros(const TraceableTensorShape & batch_shape,
         const std::array<const LabeledAxis *, D> & axes,
         const torch::TensorOptions & options = default_tensor_options());
 
@@ -127,9 +127,9 @@ public:
   /// Return the number of base dimensions
   constexpr Size base_dim() const { return D; }
   /// Return the batch size
-  TensorShapeRef batch_sizes() const;
+  const TraceableTensorShape & batch_sizes() const;
   /// Return the length of some batch axis
-  Size batch_size(Size d) const;
+  TraceableSize batch_size(Size d) const;
   /// Return the base size
   TensorShapeRef base_sizes() const;
   /// Return the length of some base axis

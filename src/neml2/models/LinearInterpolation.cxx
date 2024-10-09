@@ -43,9 +43,6 @@ LinearInterpolation<T>::expected_options()
 template <typename T>
 LinearInterpolation<T>::LinearInterpolation(const OptionSet & options)
   : Interpolation<T>(options),
-    _interp_batch_sizes(
-        utils::broadcast_sizes(this->_X.batch_sizes().slice(0, this->_X.batch_dim() - 1),
-                               this->_Y.batch_sizes().slice(0, this->_Y.batch_dim() - 1))),
     _X0(this->template declare_buffer<Scalar>(
         "X0", this->_X.batch_index({indexing::Ellipsis, indexing::Slice(indexing::None, -1)}))),
     _X1(this->template declare_buffer<Scalar>(
@@ -63,8 +60,8 @@ void
 LinearInterpolation<T>::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   const auto x = Scalar(this->_x);
-  const auto loc = torch::logical_and(torch::gt(x.batch_unsqueeze(-1), _X0),
-                                      torch::le(x.batch_unsqueeze(-1), _X1));
+  const auto loc = Scalar(torch::logical_and(torch::gt(x.batch_unsqueeze(-1), _X0),
+                                             torch::le(x.batch_unsqueeze(-1), _X1)));
   const auto si = mask<T>(_slope, loc);
 
   if (out)

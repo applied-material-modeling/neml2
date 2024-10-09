@@ -88,7 +88,7 @@ ForwardEulerTimeIntegration<T>::set_value(bool out, bool dout_din, bool d2out_di
 
   if (dout_din)
   {
-    auto I = T::identity_map(options());
+    auto I = T::identity_map(_ds_dt.options());
 
     _s.d(_ds_dt) = I * (_t - _tn);
 

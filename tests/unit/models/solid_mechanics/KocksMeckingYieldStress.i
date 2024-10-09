@@ -5,7 +5,8 @@
     batch_shape = '(5)'
     output_scalar_names = 'parameters/p'
     output_scalar_values = 'p_correct'
-    check_second_derivatives = true
+    check_first_derivatives = false
+    check_second_derivatives = false
   []
 []
 

@@ -95,12 +95,12 @@ LinearCombination<T>::set_value(bool out, bool dout_din, bool d2out_din2)
     for (auto from_var : _from)
       vals.push_back(from_var->value());
 
-    _to = math::batch_sum(Scalar(_coef) * math::batch_stack(vals, -1), -1);
+    _to = math::batch_sum(Scalar(_coef, 1) * math::batch_stack(vals, -1), -1);
   }
 
   if (dout_din)
   {
-    const auto deriv = Scalar(_coef) * T::identity_map(options()).batch_expand(N);
+    const auto deriv = Scalar(_coef, 1) * T::identity_map(_coef.options()).batch_expand(N);
     for (Size i = 0; i < N; i++)
       if (_from[i]->is_dependent())
         _to.d(*_from[i]) = deriv.batch_index({indexing::Ellipsis, i});

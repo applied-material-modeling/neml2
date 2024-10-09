@@ -24,6 +24,7 @@
 
 #include "neml2/tensors/LabeledTensor3D.h"
 #include "neml2/tensors/LabeledMatrix.h"
+#include "neml2/misc/math.h"
 
 namespace neml2
 {
@@ -38,26 +39,66 @@ LabeledTensor3D::fill(const LabeledTensor3D & other, bool recursive)
 }
 
 LabeledTensor3D
-LabeledTensor3D::chain(const LabeledTensor3D & other,
-                       const LabeledMatrix & dself,
-                       const LabeledMatrix & dother) const
+LabeledTensor3D::assemble(std::vector<std::vector<std::vector<Tensor>>> & vals,
+                          const LabeledAxis & yaxis,
+                          const LabeledAxis & xaxis1,
+                          const LabeledAxis & xaxis2)
 {
-  // This function expresses the second oreder chain rule, which can be expressed as
-  // d2y/dx2 = d2y/du2 du/dx du/dx + dy/du d2u/dx2
-  // In index notation this is
-  // (d2y/dx2)_{ijk} = (d2y/du2)_{ipq} (du/dx)_{pj} (du/dx)_{qk} + (dy/du)_{ip} (d2u/dx2)_{pjk}
+  auto rows = std::vector<Tensor>(vals.size());
 
-  // Make sure we are conformal
-  neml_assert_dbg(batch_sizes() == other.batch_sizes(), "Batch sizes are not the same");
-  neml_assert_dbg(batch_sizes() == dself.batch_sizes(), "Batch sizes are not the same");
-  neml_assert_dbg(batch_sizes() == dother.batch_sizes(), "Batch sizes are not the same");
-  neml_assert_dbg(axis(1) == axis(2), "Self labels are not conformal");
-  neml_assert_dbg(other.axis(1) == other.axis(2), "Other labels are not conformal");
-  neml_assert_dbg(axis(2) == other.axis(0), "Self and other labels are not conformal");
+  for (std::size_t i = 0; i < vals.size(); ++i)
+  {
+    if (!vals[i].empty())
+    {
+      auto cols = std::vector<Tensor>(vals[i].size());
+      for (std::size_t j = 0; j < vals[i].size(); ++j)
+      {
+        if (!vals[i][j].empty())
+        {
+          const auto batch_sizes = utils::broadcast_batch_sizes(vals[i][j]);
+          const auto options = torch::TensorOptions()
+                                   .dtype(utils::same_dtype(vals[i][j]))
+                                   .device(utils::same_device(vals[i][j]));
+          for (std::size_t k = 0; k < vals[i][j].size(); ++k)
+            if (!vals[i][j][k].defined())
+              vals[i][j][k] = Tensor::zeros(
+                  batch_sizes,
+                  {yaxis.storage_size(i), xaxis1.storage_size(j), xaxis2.storage_size(k)},
+                  options);
+            else
+              vals[i][j][k] = vals[i][j][k].batch_expand(batch_sizes);
 
-  // If all the sizes are correct then executing the chain rule is pretty easy
-  return LabeledTensor3D(torch::einsum("...ipq,...pj,...qk", {*this, dother, dother}) +
-                             torch::einsum("...ip,...pjk", {dself, other}),
-                         {&axis(0), &other.axis(1), &other.axis(2)});
+          cols[j] = math::base_cat(vals[i][j], -1);
+        }
+      }
+
+      const auto batch_sizes = utils::broadcast_batch_sizes(cols);
+      const auto options =
+          torch::TensorOptions().dtype(utils::same_dtype(cols)).device(utils::same_device(cols));
+      for (std::size_t j = 0; j < cols.size(); ++j)
+        if (!cols[j].defined())
+          cols[j] =
+              Tensor::zeros(batch_sizes,
+                            {yaxis.storage_size(i), xaxis1.storage_size(j), xaxis2.storage_size()},
+                            options);
+        else
+          cols[j] = cols[j].batch_expand(batch_sizes);
+
+      rows[i] = math::base_cat(cols, -2);
+    }
+  }
+
+  const auto batch_sizes = utils::broadcast_batch_sizes(rows);
+  const auto options =
+      torch::TensorOptions().dtype(utils::same_dtype(rows)).device(utils::same_device(rows));
+  for (std::size_t i = 0; i < rows.size(); ++i)
+    if (!rows[i].defined())
+      rows[i] = Tensor::zeros(batch_sizes,
+                              {yaxis.storage_size(i), xaxis1.storage_size(), xaxis2.storage_size()},
+                              options);
+    else
+      rows[i] = rows[i].batch_expand(batch_sizes);
+
+  return LabeledTensor3D(math::base_cat(rows, -3), {&yaxis, &xaxis1, &xaxis2});
 }
 } // namespace neml2

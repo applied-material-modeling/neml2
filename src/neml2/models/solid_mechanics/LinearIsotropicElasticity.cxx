@@ -76,8 +76,8 @@ LinearIsotropicElasticity::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (dout_din)
   {
-    const auto I = SSR4::identity_vol(options());
-    const auto J = SSR4::identity_dev(options());
+    const auto I = SSR4::identity_vol(_from.options());
+    const auto J = SSR4::identity_dev(_from.options());
 
     if (_from.is_dependent())
       _to.d(_from) = vf * I + df * J;

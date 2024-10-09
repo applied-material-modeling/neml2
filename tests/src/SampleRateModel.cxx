@@ -31,13 +31,13 @@ register_NEML2_object(SampleRateModel);
 
 SampleRateModel::SampleRateModel(const OptionSet & options)
   : Model(options),
-    foo(declare_input_variable<Scalar>("state", "foo")),
-    bar(declare_input_variable<Scalar>("state", "bar")),
-    baz(declare_input_variable<SR2>("state", "baz")),
-    T(declare_input_variable<Scalar>("forces", "temperature")),
-    foo_dot(declare_output_variable<Scalar>("state", "foo_rate")),
-    bar_dot(declare_output_variable<Scalar>("state", "bar_rate")),
-    baz_dot(declare_output_variable<SR2>("state", "baz_rate")),
+    foo(declare_input_variable<Scalar>(VariableName{"state", "foo"})),
+    bar(declare_input_variable<Scalar>(VariableName{"state", "bar"})),
+    baz(declare_input_variable<SR2>(VariableName{"state", "baz"})),
+    T(declare_input_variable<Scalar>(VariableName{"forces", "temperature"})),
+    foo_dot(declare_output_variable<Scalar>(VariableName{"state", "foo_rate"})),
+    bar_dot(declare_output_variable<Scalar>(VariableName{"state", "bar_rate"})),
+    baz_dot(declare_output_variable<SR2>(VariableName{"state", "baz_rate"})),
     _a(declare_parameter<Scalar>("a", Scalar(-0.01, default_tensor_options()))),
     _b(declare_parameter<Scalar>("b", Scalar(-0.5, default_tensor_options()))),
     _c(declare_parameter<Scalar>("c", Scalar(-0.9, default_tensor_options())))
@@ -58,7 +58,7 @@ SampleRateModel::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (dout_din)
   {
-    auto I = SR2::identity(options());
+    auto I = SR2::identity(foo.options());
 
     foo_dot.d(foo) = 2 * foo * T;
     foo_dot.d(bar) = T;
@@ -70,7 +70,7 @@ SampleRateModel::set_value(bool out, bool dout_din, bool d2out_din2)
 
     baz_dot.d(foo) = baz * (T - 3);
     baz_dot.d(bar) = baz * (T - 3);
-    baz_dot.d(baz) = (foo + bar) * (T - 3) * SR2::identity_map(options());
+    baz_dot.d(baz) = (foo + bar) * (T - 3) * SR2::identity_map(foo.options());
 
     if (!currently_solving_nonlinear_system())
     {

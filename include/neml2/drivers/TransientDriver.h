@@ -90,8 +90,6 @@ protected:
   /// Save the results into the destination file/path.
   virtual void output() const;
 
-  /// Whether to disable automatic differentiation
-  const bool _enable_AD;
   /// The model which the driver uses to perform constitutive updates.
   Model & _model;
   /// The device on which to evaluate the model
@@ -108,9 +106,9 @@ protected:
   /// The batch size
   Size _nbatch;
   /// The input to the constitutive model
-  LabeledVector & _in;
+  LabeledVector _in;
   /// The output of the constitutive model
-  LabeledVector & _out;
+  LabeledVector _out;
 
   /// The predictor used to set the initial guess
   std::string _predictor;

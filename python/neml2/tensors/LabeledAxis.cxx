@@ -50,29 +50,28 @@ def_LabeledAxis(py::module_ & m)
                    py::return_value_policy::reference)
                .def(
                    "variable_names",
-                   [](const LabeledAxis & self, bool recursive)
+                   [](const LabeledAxis & self, bool recursive, bool sorted)
                    {
-                     auto vars = self.sort_by_assembly_order(self.variable_names(recursive));
+                     auto vars = self.variable_names(recursive, sorted);
                      std::vector<std::string> var_names;
                      for (const auto & var : vars)
                        var_names.push_back(utils::stringify(var));
                      return var_names;
                    },
-                   py::arg("recursive") = true)
+                   py::arg("recursive") = true,
+                   py::arg("sorted") = true)
                .def(
                    "subaxis_names",
-                   [](const LabeledAxis & self, bool recursive)
+                   [](const LabeledAxis & self, bool recursive, bool sorted)
                    {
-                     auto subaxes_unsrt = self.subaxis_names(recursive);
-                     auto subaxes = recursive ? std::vector<LabeledAxisAccessor>(
-                                                    subaxes_unsrt.begin(), subaxes_unsrt.end())
-                                              : self.sort_by_assembly_order(subaxes_unsrt);
+                     auto subaxes = self.subaxis_names(recursive, sorted);
                      std::vector<std::string> subaxis_names;
                      for (const auto & subaxis : subaxes)
                        subaxis_names.push_back(utils::stringify(subaxis));
                      return subaxis_names;
                    },
-                   py::arg("recursive") = false)
+                   py::arg("recursive") = false,
+                   py::arg("sorted") = true)
                .def("storage_size",
                     py::overload_cast<const LabeledAxisAccessor &>(&LabeledAxis::storage_size,
                                                                    py::const_),

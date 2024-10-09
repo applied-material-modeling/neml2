@@ -39,7 +39,6 @@ TEST_CASE("training")
 
   // Reinitialize the model to have the correct batch shape and derivative order
   Size nbatch = 2;
-  model.reinit(TensorShape{nbatch}, /*deriv_order=*/0);
 
   // Request parameter gradient
   auto & p = model.named_parameters()["yield.sy"];

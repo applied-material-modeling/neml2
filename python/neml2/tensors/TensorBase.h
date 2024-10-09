@@ -253,15 +253,13 @@ def_TensorBase(py::class_<Derived> & c)
                   py::arg("start"),
                   py::arg("end"),
                   py::arg("nstep"),
-                  py::arg("dim") = 0,
-                  py::arg("batch_dim") = -1)
+                  py::arg("dim") = 0)
       .def_static("logspace",
                   &Derived::logspace,
                   py::arg("start"),
                   py::arg("end"),
                   py::arg("nstep"),
                   py::arg("dim") = 0,
-                  py::arg("batch_dim") = -1,
                   py::arg("base") = 10.0);
 }
 } // namespace neml2

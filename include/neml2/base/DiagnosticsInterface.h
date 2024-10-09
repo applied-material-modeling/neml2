@@ -75,10 +75,7 @@ public:
   void diagnostic_assert_old_force(std::vector<Diagnosis> & diagnoses,
                                    const VariableBase & v) const;
   void diagnostic_assert_residual(std::vector<Diagnosis> & diagnoses, const VariableBase & v) const;
-  void diagnostic_check_input_variable(std::vector<Diagnosis> & diagnoses,
-                                       const VariableBase & v) const;
-  void diagnostic_check_output_variable(std::vector<Diagnosis> & diagnoses,
-                                        const VariableBase & v) const;
+  void diagnostic_check_variable(std::vector<Diagnosis> & diagnoses, const VariableBase & v) const;
 
 private:
   NEML2Object * _object;

@@ -56,27 +56,24 @@ reload_input(const std::filesystem::path & path, const std::string & additional_
 }
 
 Model &
-get_model(const std::string & mname, bool enable_ad, bool force_create)
+get_model(const std::string & mname, bool force_create)
 {
   OptionSet extra_opts;
-  extra_opts.set<bool>("_enable_AD") = enable_ad;
-  auto & model = Factory::get_object<Model>("Models", mname, extra_opts, force_create);
-  model.reinit();
-  return model;
+  return Factory::get_object<Model>("Models", mname, extra_opts, force_create);
 }
 
 Model &
-load_model(const std::filesystem::path & path, const std::string & mname, bool enable_ad)
+load_model(const std::filesystem::path & path, const std::string & mname)
 {
   load_input(path);
-  return get_model(mname, enable_ad);
+  return get_model(mname);
 }
 
 Model &
-reload_model(const std::filesystem::path & path, const std::string & mname, bool enable_ad)
+reload_model(const std::filesystem::path & path, const std::string & mname)
 {
   Factory::clear();
-  return load_model(path, mname, enable_ad);
+  return load_model(path, mname);
 }
 
 Driver &

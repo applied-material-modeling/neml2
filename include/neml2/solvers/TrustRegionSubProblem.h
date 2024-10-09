@@ -40,25 +40,21 @@ class TrustRegionSubProblem : public NonlinearSystem
 public:
   TrustRegionSubProblem(const OptionSet & options);
 
-  virtual void reinit(const NonlinearSystem & system, const Scalar & delta);
+  /// Record the current state of the underlying problem
+  void reinit(const RES<true> & r, const JAC<true> & J, const Scalar & delta);
 
   Tensor preconditioned_direction(const Scalar & s) const;
 
 protected:
-  virtual void assemble(bool residual, bool Jacobian) override;
+  void set_guess(const SOL<false> & x) override;
+
+  void assemble(RES<false> * residual, JAC<false> * Jacobian) override;
 
   Tensor preconditioned_solve(const Scalar & s, const Tensor & v) const;
 
-  TensorShape _batch_sizes;
-
-  torch::TensorOptions _options;
-
 private:
-  /// Residual of the underlying nonlinear problem
-  Tensor _R;
-
-  /// Jacobian of the underlying nonlinear problem
-  Tensor _J;
+  /// Solution to the Lagrange multiplier
+  Scalar _s;
 
   /// The trust region radius
   Scalar _delta;
@@ -67,6 +63,6 @@ private:
   Tensor _JJ;
 
   /// Temporary Jacobian-Residual product
-  Tensor _JR;
+  Tensor _Jr;
 };
 } // namespace neml2

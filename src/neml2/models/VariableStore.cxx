@@ -29,7 +29,7 @@ namespace neml2
 {
 VariableStore::VariableStore(const OptionSet & options, Model * object)
   : _object(object),
-    _options(options),
+    _object_options(options),
     _input_axis(declare_axis("input")),
     _output_axis(declare_axis("output"))
 {
@@ -54,98 +54,129 @@ VariableStore::setup_layout()
   output_axis().setup_layout();
 }
 
-VariableBase *
-VariableStore::input_variable(const VariableName & name)
+VariableBase &
+VariableStore::variable(const VariableName & name)
 {
-  return _input_views.query_value(name);
+  auto var_ptr = _variables.query_value(name);
+  neml_assert(var_ptr, "Variable ", name, " does not exist in model ", _object->name());
+  return *var_ptr;
 }
 
-VariableBase *
-VariableStore::output_variable(const VariableName & name)
+const VariableBase &
+VariableStore::variable(const VariableName & name) const
 {
-  return _output_views.query_value(name);
+  const auto var_ptr = _variables.query_value(name);
+  neml_assert(var_ptr, "Variable ", name, " does not exist in model ", _object->name());
+  return *var_ptr;
 }
 
-TensorType
-VariableStore::input_type(const VariableName & name) const
+std::vector<const VariableBase *>
+VariableStore::variables(FType ft) const
 {
-  const auto * var_ptr = _input_views.query_value(name);
-  neml_assert(var_ptr, "Input variable ", name, " does not exist.");
-  return var_ptr->type();
+  std::vector<const VariableBase *> vars;
+  for (auto && [name, var] : variables())
+    if ((var.ftype() & ft) != FType::NONE)
+      vars.push_back(&var);
+  return vars;
 }
 
-TensorType
-VariableStore::output_type(const VariableName & name) const
+std::vector<VariableBase *>
+VariableStore::variables(FType ft)
 {
-  const auto * var_ptr = _output_views.query_value(name);
-  neml_assert(var_ptr, "Output variable ", name, " does not exist.");
-  return var_ptr->type();
-}
-
-void
-VariableStore::cache(TensorShapeRef batch_shape)
-{
-  for (auto && [name, var] : input_variables())
-    var.cache(batch_shape);
-  for (auto && [name, var] : output_variables())
-    var.cache(batch_shape);
-}
-
-void
-VariableStore::allocate_variables(TensorShapeRef batch_shape,
-                                  const torch::TensorOptions & options,
-                                  bool in,
-                                  bool out,
-                                  bool dout_din,
-                                  bool d2out_din2)
-{
-  // Allocate input storage only if this is a host model
-  if (in && _object->host() == _object)
-    _in = LabeledVector::zeros(batch_shape, {&input_axis()}, options);
-
-  // Allocate output storage
-  if (out)
-    _out = LabeledVector::zeros(batch_shape, {&output_axis()}, options);
-
-  if (dout_din)
-    _dout_din = LabeledMatrix::zeros(batch_shape, {&output_axis(), &input_axis()}, options);
-
-  if (d2out_din2)
-    _d2out_din2 = LabeledTensor3D::zeros(
-        batch_shape, {&output_axis(), &input_axis(), &input_axis()}, options);
+  std::vector<VariableBase *> vars;
+  for (auto && [name, var] : variables())
+    if ((var.ftype() & ft) != FType::NONE)
+      vars.push_back(&var);
+  return vars;
 }
 
 void
-VariableStore::setup_input_views(VariableStore * host)
+VariableStore::clear()
 {
-  neml_assert_dbg(host || _object->host<VariableStore>() == host,
-                  "setup_input_views called on a non-host model without specifying the host as an "
-                  "argument");
-  for (auto && [name, var] : input_variables())
+  for (auto && [name, var] : variables())
+    var.clear();
+}
+
+void
+VariableStore::assign_values(const LabeledVector & vals)
+{
+  // The vector could be empty. Let's be lenient in this case, as this is a no-op in the worst case.
+  if (vals.base_size(0) == 0)
+    return;
+
+  for (const auto & [var, val] : vals.split_variables(/*qualified=*/true))
+    variable(var).set(val);
+}
+
+void
+VariableStore::assign_derivatives(const LabeledMatrix & derivs)
+{
+  // The matrix could be empty. Let's be lenient in this case, as this is a no-op in the worst case.
+  if (derivs.base_size(0) == 0 || derivs.base_size(1) == 0)
+    return;
+
+  for (const auto & [yvar, deriv] : derivs.disassemble_variables(/*qualified=*/true))
+    variable(yvar).derivatives().insert(deriv.begin(), deriv.end());
+}
+
+LabeledVector
+VariableStore::assemble_values(const LabeledAxis & axis) const
+{
+  neml_assert_dbg(axis.storage_size(), "Cannot assemble values for an empty axis.");
+
+  auto vars = axis.qualified_variable_names();
+  auto vals_flat = std::vector<Tensor>(vars.size());
+  for (std::size_t i = 0; i < vars.size(); ++i)
+    vals_flat[i] = variable(vars[i]).get().base_flatten();
+  return LabeledVector::assemble(vals_flat, axis);
+}
+
+LabeledMatrix
+VariableStore::assemble_derivatives(const LabeledAxis & yaxis, const LabeledAxis & xaxis) const
+{
+  neml_assert_dbg(yaxis.storage_size(), "Cannot assemble derivatives for an empty yaxis.");
+  neml_assert_dbg(xaxis.storage_size(), "Cannot assemble derivatives for an empty xaxis.");
+
+  auto yvars = yaxis.qualified_variable_names();
+  auto xvars = xaxis.qualified_variable_names();
+  auto vals_flat = std::vector<std::vector<Tensor>>(yvars.size());
+  for (std::size_t i = 0; i < yvars.size(); ++i)
   {
-    if (_object->host<VariableStore>() == host)
-      var.setup_views(&host->input_storage());
-    else
-      var.setup_views(host->input_variable(name));
+    const auto & derivs = variable(yvars[i]).derivatives();
+    vals_flat[i].resize(xvars.size());
+    for (std::size_t j = 0; j < xvars.size(); ++j)
+      if (derivs.count(xvars[j]))
+        vals_flat[i][j] = derivs.at(xvars[j]);
   }
+  return LabeledMatrix::assemble(vals_flat, yaxis, xaxis);
 }
 
-void
-VariableStore::setup_output_views(bool out, bool dout_din, bool d2out_din2)
+LabeledTensor3D
+VariableStore::assemble_second_derivatives(const LabeledAxis & yaxis,
+                                           const LabeledAxis & x1axis,
+                                           const LabeledAxis & x2axis) const
 {
-  for (auto && [name, var] : output_variables())
-    var.setup_views(out ? &_out : nullptr,
-                    dout_din ? &_dout_din : nullptr,
-                    d2out_din2 ? &_d2out_din2 : nullptr);
-}
+  neml_assert_dbg(yaxis.storage_size(), "Cannot assemble derivatives for an empty yaxis.");
+  neml_assert_dbg(x1axis.storage_size(), "Cannot assemble derivatives for an empty x1axis.");
+  neml_assert_dbg(x2axis.storage_size(), "Cannot assemble derivatives for an empty x2axis.");
 
-void
-VariableStore::zero(bool dout_din, bool d2out_din2)
-{
-  if (dout_din)
-    _dout_din.zero_();
-
-  if (d2out_din2)
-    _d2out_din2.zero_();
+  auto yvars = yaxis.qualified_variable_names();
+  auto x1vars = x1axis.qualified_variable_names();
+  auto x2vars = x2axis.qualified_variable_names();
+  auto vals_flat = std::vector<std::vector<std::vector<Tensor>>>(yvars.size());
+  for (std::size_t i = 0; i < yvars.size(); ++i)
+  {
+    const auto & secderivs = variable(yvars[i]).second_derivatives();
+    vals_flat[i].resize(x1vars.size());
+    for (std::size_t j = 0; j < x1vars.size(); ++j)
+      if (secderivs.count(x1vars[j]))
+      {
+        vals_flat[i][j].resize(x2vars.size());
+        for (std::size_t k = 0; k < x2vars.size(); ++k)
+          if (secderivs.at(x1vars[j]).count(x2vars[k]))
+            vals_flat[i][j][k] = secderivs.at(x1vars[j]).at(x2vars[k]);
+      }
+  }
+  return LabeledTensor3D::assemble(vals_flat, yaxis, x1axis, x2axis);
 }
 } // namespace neml2

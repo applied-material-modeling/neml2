@@ -24,6 +24,7 @@
 
 #include "neml2/tensors/LabeledVector.h"
 #include "neml2/tensors/LabeledMatrix.h"
+#include "neml2/misc/math.h"
 
 namespace neml2
 {
@@ -39,6 +40,48 @@ LabeledVector::fill(const LabeledVector & other, bool recursive)
   const auto indices = axis(0).common_indices(other.axis(0), recursive);
   for (const auto & [idx, idx_other] : indices)
     _tensor.base_index_put_({idx}, other.tensor().base_index({idx_other}));
+}
+
+std::map<LabeledAxisAccessor, Tensor>
+LabeledVector::split_variables(bool qualified) const
+{
+  std::map<LabeledAxisAccessor, Tensor> ret;
+
+  const auto vars = qualified ? axis(0).qualified_variable_names() : axis(0).variable_names();
+  const auto vals = tensor().split(axis(0).variable_sizes(), -1);
+  for (std::size_t i = 0; i < vars.size(); ++i)
+    ret[vars[i]] = Tensor(vals[i], batch_sizes());
+
+  return ret;
+}
+
+std::map<LabeledAxisAccessor, LabeledVector>
+LabeledVector::split_subaxes(bool qualified) const
+{
+  std::map<LabeledAxisAccessor, LabeledVector> ret;
+
+  const auto keys = qualified ? axis(0).qualified_subaxis_names() : axis(0).subaxis_names();
+  const auto subaxes = axis(0).subaxis_names();
+  const auto vals = tensor().split(axis(0).subaxis_sizes(), -1);
+  for (std::size_t i = 0; i < subaxes.size(); ++i)
+    ret[keys[i]] = LabeledVector(Tensor(vals[i], batch_sizes()), {&axis(0).subaxis(subaxes[i])});
+
+  return ret;
+}
+
+LabeledVector
+LabeledVector::assemble(std::vector<Tensor> & vals, const LabeledAxis & axis)
+{
+  const auto batch_sizes = utils::broadcast_batch_sizes(vals);
+  const auto options =
+      torch::TensorOptions().dtype(utils::same_dtype(vals)).device(utils::same_device(vals));
+  for (std::size_t i = 0; i < vals.size(); ++i)
+    if (!vals[i].defined())
+      vals[i] = Tensor::zeros(batch_sizes, axis.storage_size(i), options);
+    else
+      vals[i] = vals[i].batch_expand(batch_sizes);
+
+  return LabeledVector(math::base_cat(vals, -1), {&axis});
 }
 
 namespace utils

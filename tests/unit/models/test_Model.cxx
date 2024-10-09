@@ -27,16 +27,16 @@
 
 #include "utils.h"
 #include "neml2/models/Model.h"
+#include "neml2/jit/StaticGraphFunction.h"
+#include "neml2/base/guards.h"
 
 using namespace neml2;
 
 TEST_CASE("Model", "[models]")
 {
-
   SECTION("check_input")
   {
     auto & model = reload_model("unit/models/ComposedModel3.i", "model");
-    model.reinit({5, 2});
 
     // Input has incorrect batch shape
     auto in1 = LabeledVector::empty({2, 5}, {&model.input_axis()});
@@ -50,36 +50,31 @@ TEST_CASE("Model", "[models]")
         Catch::Matchers::ContainsSubstring("The provided input has base storage size"));
   }
 
-  SECTION("input_type")
+  SECTION("variable type")
   {
     auto & model = reload_model("unit/models/ComposedModel3.i", "model");
 
-    REQUIRE(model.input_type({"forces", "t"}) == TensorType::kScalar);
-    REQUIRE(model.input_type({"forces", "temperature"}) == TensorType::kScalar);
-    REQUIRE(model.input_type({"old_forces", "t"}) == TensorType::kScalar);
-    REQUIRE(model.input_type({"old_state", "bar"}) == TensorType::kScalar);
-    REQUIRE(model.input_type({"old_state", "baz"}) == TensorType::kSR2);
-    REQUIRE(model.input_type({"old_state", "foo"}) == TensorType::kScalar);
-    REQUIRE(model.input_type({"state", "bar"}) == TensorType::kScalar);
-    REQUIRE(model.input_type({"state", "baz"}) == TensorType::kSR2);
-    REQUIRE(model.input_type({"state", "foo"}) == TensorType::kScalar);
+    REQUIRE(model.variable({"forces", "t"}).type() == TensorType::kScalar);
+    REQUIRE(model.variable({"forces", "temperature"}).type() == TensorType::kScalar);
+    REQUIRE(model.variable({"old_forces", "t"}).type() == TensorType::kScalar);
+    REQUIRE(model.variable({"old_state", "bar"}).type() == TensorType::kScalar);
+    REQUIRE(model.variable({"old_state", "baz"}).type() == TensorType::kSR2);
+    REQUIRE(model.variable({"old_state", "foo"}).type() == TensorType::kScalar);
+    REQUIRE(model.variable({"state", "bar"}).type() == TensorType::kScalar);
+    REQUIRE(model.variable({"state", "baz"}).type() == TensorType::kSR2);
+    REQUIRE(model.variable({"state", "foo"}).type() == TensorType::kScalar);
+    REQUIRE(model.variable({"state", "sum"}).type() == TensorType::kScalar);
 
-    REQUIRE(utils::stringify(model.input_type({"forces", "t"})) == "Scalar");
-    REQUIRE(utils::stringify(model.input_type({"forces", "temperature"})) == "Scalar");
-    REQUIRE(utils::stringify(model.input_type({"old_forces", "t"})) == "Scalar");
-    REQUIRE(utils::stringify(model.input_type({"old_state", "bar"})) == "Scalar");
-    REQUIRE(utils::stringify(model.input_type({"old_state", "baz"})) == "SR2");
-    REQUIRE(utils::stringify(model.input_type({"old_state", "foo"})) == "Scalar");
-    REQUIRE(utils::stringify(model.input_type({"state", "bar"})) == "Scalar");
-    REQUIRE(utils::stringify(model.input_type({"state", "baz"})) == "SR2");
-    REQUIRE(utils::stringify(model.input_type({"state", "foo"})) == "Scalar");
-  }
-
-  SECTION("output_type")
-  {
-    auto & model = reload_model("unit/models/ComposedModel3.i", "model");
-    REQUIRE(model.output_type({"state", "sum"}) == TensorType::kScalar);
-    REQUIRE(utils::stringify(model.output_type({"state", "sum"})) == "Scalar");
+    REQUIRE(utils::stringify(model.variable({"forces", "t"}).type()) == "Scalar");
+    REQUIRE(utils::stringify(model.variable({"forces", "temperature"}).type()) == "Scalar");
+    REQUIRE(utils::stringify(model.variable({"old_forces", "t"}).type()) == "Scalar");
+    REQUIRE(utils::stringify(model.variable({"old_state", "bar"}).type()) == "Scalar");
+    REQUIRE(utils::stringify(model.variable({"old_state", "baz"}).type()) == "SR2");
+    REQUIRE(utils::stringify(model.variable({"old_state", "foo"}).type()) == "Scalar");
+    REQUIRE(utils::stringify(model.variable({"state", "bar"}).type()) == "Scalar");
+    REQUIRE(utils::stringify(model.variable({"state", "baz"}).type()) == "SR2");
+    REQUIRE(utils::stringify(model.variable({"state", "foo"}).type()) == "Scalar");
+    REQUIRE(utils::stringify(model.variable({"state", "sum"}).type()) == "Scalar");
   }
 
   SECTION("diagnose")
@@ -117,5 +112,22 @@ TEST_CASE("Model", "[models]")
               "This model is part of a nonlinear system. At least one of the input variables is "
               "solve-dependent, so all output variables MUST be solve-dependent"));
     }
+  }
+
+  SECTION("jit")
+  {
+    auto & model = reload_model("unit/models/ComposedModel2.i", "model");
+
+    // Trace the value method
+    auto forward = [&model](torch::Tensor & x) -> std::tuple<torch::Tensor>
+    { return {model.value(LabeledVector(x, {&model.input_axis()}))}; };
+    auto forward_jit = neml2::jit::StaticGraphFunction<std::tuple<torch::Tensor>, torch::Tensor>(
+        "model.value", forward, {torch::rand({1, 1, model.input_axis().storage_size()})});
+
+    // Traced model should be generalizable and yield the sam result
+    auto x = torch::rand({5, 8, model.input_axis().storage_size()});
+    auto [y] = forward_jit(x);
+    REQUIRE(TensorShape(y.sizes()) == TensorShape{5, 8, model.output_axis().storage_size()});
+    REQUIRE(torch::allclose(y, model.value(LabeledVector(x, {&model.input_axis()}))));
   }
 }

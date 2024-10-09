@@ -38,9 +38,6 @@ TransientDriver::expected_options()
   options.set<std::string>("model");
   options.set("model").doc() = "The material model to be updated by the driver";
 
-  options.set<bool>("enable_AD") = false;
-  options.set("enable_AD").doc() = "Enable automatic differentiation";
-
   options.set<CrossRef<torch::Tensor>>("times");
   options.set("times").doc() =
       "Time steps to perform the material update. The times tensor must have exactly 2 dimensions. "
@@ -103,16 +100,15 @@ TransientDriver::expected_options()
 
 TransientDriver::TransientDriver(const OptionSet & options)
   : Driver(options),
-    _enable_AD(options.get<bool>("enable_AD")),
-    _model(get_model(options.get<std::string>("model"), _enable_AD)),
+    _model(get_model(options.get<std::string>("model"))),
     _device(options.get<std::string>("device")),
     _time(options.get<CrossRef<torch::Tensor>>("times"), 2),
     _step_count(0),
     _time_name(options.get<VariableName>("time")),
-    _nsteps(_time.batch_sizes()[0]),
-    _nbatch(_time.batch_sizes()[1]),
-    _in(_model.input_storage()),
-    _out(_model.output_storage()),
+    _nsteps(_time.batch_size(0).concrete()),
+    _nbatch(_time.batch_size(1).concrete()),
+    _in(),
+    _out(),
     _predictor(options.get<std::string>("predictor")),
     _save_as(options.get<std::string>("save_as")),
     _show_params(options.get<bool>("show_parameters")),
@@ -128,8 +124,6 @@ TransientDriver::TransientDriver(const OptionSet & options)
     _ic_sr2_values(options.get<std::vector<CrossRef<SR2>>>("ic_sr2_values")),
     _cp_elastic_scale(options.get<Real>("cp_elastic_scale"))
 {
-  _model.reinit({_nbatch}, 0, _device);
-
   _time = _time.to(_device);
   _result_in = _result_in.to(_device);
   _result_out = _result_out.to(_device);

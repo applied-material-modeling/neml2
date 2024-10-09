@@ -44,5 +44,9 @@ public:
    * @param options The options extracted from the input file.
    */
   LogspaceTensor(const OptionSet & options);
+
+private:
+  /// Helper to make the tensor given user input options
+  Tensor make(const OptionSet & options) const;
 };
 } // namespace neml2

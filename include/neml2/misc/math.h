@@ -246,7 +246,7 @@ base_cat(const std::vector<T> & tensors, Size d = 0)
   neml_assert_dbg(!tensors.empty(), "base_cat must be given at least one tensor");
   std::vector<torch::Tensor> torch_tensors(tensors.begin(), tensors.end());
   auto d2 = d < 0 ? d : d + tensors.begin()->batch_dim();
-  return neml2::Tensor(torch::cat(torch_tensors, d2), tensors.begin()->batch_dim());
+  return neml2::Tensor(torch::cat(torch_tensors, d2), tensors.begin()->batch_sizes());
 }
 
 template <class T, typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<T>, T>>>
@@ -266,7 +266,7 @@ base_stack(const std::vector<T> & tensors, Size d = 0)
   neml_assert_dbg(!tensors.empty(), "base_stack must be given at least one tensor");
   std::vector<torch::Tensor> torch_tensors(tensors.begin(), tensors.end());
   auto d2 = d < 0 ? d : d + tensors.begin()->batch_dim();
-  return neml2::Tensor(torch::stack(torch_tensors, d2), tensors.begin()->batch_dim());
+  return neml2::Tensor(torch::stack(torch_tensors, d2), tensors.begin()->batch_sizes());
 }
 
 template <class T, typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<T>, T>>>
@@ -283,14 +283,14 @@ T
 base_sum(const T & a, Size d = 0)
 {
   auto d2 = d < 0 ? d : d + a.batch_dim();
-  return T(torch::sum(a, d2), a.batch_dim());
+  return T(torch::sum(a, d2), a.batch_sizes());
 }
 
 template <class T, typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<T>, T>>>
 T
 pow(const T & a, const Real & n)
 {
-  return T(torch::pow(a, n), a.batch_dim());
+  return T(torch::pow(a, n), a.batch_sizes());
 }
 
 Tensor pow(const Real & a, const Tensor & n);
@@ -301,28 +301,28 @@ template <class T, typename = typename std::enable_if_t<std::is_base_of_v<Tensor
 T
 sign(const T & a)
 {
-  return T(torch::sign(a), a.batch_dim());
+  return T(torch::sign(a), a.batch_sizes());
 }
 
 template <class T, typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<T>, T>>>
 T
 cosh(const T & a)
 {
-  return T(torch::cosh(a), a.batch_dim());
+  return T(torch::cosh(a), a.batch_sizes());
 }
 
 template <class T, typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<T>, T>>>
 T
 sinh(const T & a)
 {
-  return T(torch::sinh(a), a.batch_dim());
+  return T(torch::sinh(a), a.batch_sizes());
 }
 
 template <class T, typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<T>, T>>>
 T
 tanh(const T & a)
 {
-  return T(torch::tanh(a), a.batch_dim());
+  return T(torch::tanh(a), a.batch_sizes());
 }
 
 template <class T, typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<T>, T>>>
@@ -364,28 +364,28 @@ template <class T, typename = typename std::enable_if_t<std::is_base_of_v<Tensor
 T
 sqrt(const T & a)
 {
-  return T(torch::sqrt(a), a.batch_dim());
+  return T(torch::sqrt(a), a.batch_sizes());
 }
 
 template <class T, typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<T>, T>>>
 T
 exp(const T & a)
 {
-  return T(torch::exp(a), a.batch_dim());
+  return T(torch::exp(a), a.batch_sizes());
 }
 
 template <class T, typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<T>, T>>>
 T
 abs(const T & a)
 {
-  return T(torch::abs(a), a.batch_dim());
+  return T(torch::abs(a), a.batch_sizes());
 }
 
 template <class T, typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<T>, T>>>
 T
 diff(const T & a, Size n = 1, Size dim = -1)
 {
-  return T(torch::diff(a, n, dim), a.batch_dim());
+  return T(torch::diff(a, n, dim), a.batch_sizes());
 }
 
 template <class T, typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<T>, T>>>
@@ -401,7 +401,7 @@ template <class T, typename = typename std::enable_if_t<std::is_base_of_v<Tensor
 T
 log(const T & a)
 {
-  return T(torch::log(a), a.batch_dim());
+  return T(torch::log(a), a.batch_sizes());
 }
 
 namespace linalg

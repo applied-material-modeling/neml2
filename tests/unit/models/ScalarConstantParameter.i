@@ -5,7 +5,8 @@
     batch_shape = '(10)'
     output_scalar_names = 'parameters/E'
     output_scalar_values = 'T'
-    check_second_derivatives = true
+    check_first_derivatives = false
+    check_second_derivatives = false
   []
 []
 

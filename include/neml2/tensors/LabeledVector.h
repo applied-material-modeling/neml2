@@ -45,6 +45,15 @@ public:
   /// Fill (override) another vector into this vector.
   /// The item set of the other vector must be a subset of this vector's item set.
   void fill(const LabeledVector & other, bool recursive = true);
+
+  /// Split the vector by variables
+  std::map<LabeledAxisAccessor, Tensor> split_variables(bool qualified = true) const;
+
+  /// Split the vector by subaxes
+  std::map<LabeledAxisAccessor, LabeledVector> split_subaxes(bool qualified = true) const;
+
+  /// Assemble a vector of vectors
+  static LabeledVector assemble(std::vector<Tensor> & vals, const LabeledAxis & axis);
 };
 
 namespace utils

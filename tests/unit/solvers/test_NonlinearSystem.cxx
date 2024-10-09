@@ -34,18 +34,19 @@ TEST_CASE("NonlinearSystem", "[solvers]")
   // Initial guess
   TensorShape batch_sz = {2};
   Size nbase = 4;
-  auto x0 = Tensor::full(batch_sz, nbase, 2.0, default_tensor_options());
+  auto x0 =
+      NonlinearSystem::SOL<false>(Tensor::full(batch_sz, nbase, 2.0, default_tensor_options()));
 
   // Create the nonlinear system
   auto options = PowerTestSystem::expected_options();
   options.set<bool>("automatic_scaling") = true;
   PowerTestSystem system(options);
-  system.reinit(x0);
 
   SECTION("Automatic scaling can reduce condition number")
   {
-    system.set_solution(x0);
-    system.init_scaling();
-    REQUIRE(torch::max(torch::linalg_cond(system.Jacobian(x0))).item<Real>() == Catch::Approx(1.0));
+    system.init_scaling(x0);
+    auto x0p = system.scale(x0);
+    REQUIRE(torch::max(torch::linalg_cond(system.Jacobian(x0p))).item<Real>() ==
+            Catch::Approx(1.0));
   }
 }

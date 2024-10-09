@@ -33,12 +33,11 @@ class TestNonlinearSystem : public NonlinearSystem
 public:
   TestNonlinearSystem(const OptionSet & options);
 
-  virtual void reinit(const Tensor & x);
-  virtual Tensor exact_solution() const = 0;
+  void set_guess(const SOL<false> & x) override;
+  virtual Tensor exact_solution(const SOL<false> & x) const = 0;
 
 protected:
-  TensorShape _batch_sizes;
-  torch::TensorOptions _options;
+  Tensor _x;
 };
 
 class PowerTestSystem : public TestNonlinearSystem
@@ -46,10 +45,10 @@ class PowerTestSystem : public TestNonlinearSystem
 public:
   PowerTestSystem(const OptionSet & options);
 
-  virtual Tensor exact_solution() const override;
+  Tensor exact_solution(const SOL<false> & x) const override;
 
 protected:
-  virtual void assemble(bool, bool) override;
+  void assemble(RES<false> *, JAC<false> *) override;
 };
 
 class RosenbrockTestSystem : public TestNonlinearSystem
@@ -57,9 +56,9 @@ class RosenbrockTestSystem : public TestNonlinearSystem
 public:
   RosenbrockTestSystem(const neml2::OptionSet & options);
 
-  virtual neml2::Tensor exact_solution() const override;
+  neml2::Tensor exact_solution(const SOL<false> & x) const override;
 
 protected:
-  virtual void assemble(bool, bool) override;
+  void assemble(RES<false> *, JAC<false> *) override;
 };
 }

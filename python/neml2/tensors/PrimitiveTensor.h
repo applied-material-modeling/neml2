@@ -65,7 +65,7 @@ def_PRIMITIVETENSOR(py::class_<Derived> & c)
        PY_ARG_TENSOR_OPTIONS)
       .def_static(
           "empty",
-          [](const TensorShapeRef & batch_shape, NEML2_TENSOR_OPTIONS_VARGS)
+          [](TensorShapeRef batch_shape, NEML2_TENSOR_OPTIONS_VARGS)
           { return Derived::empty(batch_shape, NEML2_TENSOR_OPTIONS); },
           py::arg("batch_shape"),
           py::kw_only(),
@@ -77,7 +77,7 @@ def_PRIMITIVETENSOR(py::class_<Derived> & c)
           PY_ARG_TENSOR_OPTIONS)
       .def_static(
           "zeros",
-          [](const TensorShapeRef & batch_shape, NEML2_TENSOR_OPTIONS_VARGS)
+          [](TensorShapeRef batch_shape, NEML2_TENSOR_OPTIONS_VARGS)
           { return Derived::zeros(batch_shape, NEML2_TENSOR_OPTIONS); },
           py::arg("batch_shape"),
           py::kw_only(),
@@ -89,7 +89,7 @@ def_PRIMITIVETENSOR(py::class_<Derived> & c)
           PY_ARG_TENSOR_OPTIONS)
       .def_static(
           "ones",
-          [](const TensorShapeRef & batch_shape, NEML2_TENSOR_OPTIONS_VARGS)
+          [](TensorShapeRef batch_shape, NEML2_TENSOR_OPTIONS_VARGS)
           { return Derived::ones(batch_shape, NEML2_TENSOR_OPTIONS); },
           py::arg("batch_shape"),
           py::kw_only(),
@@ -103,7 +103,7 @@ def_PRIMITIVETENSOR(py::class_<Derived> & c)
           PY_ARG_TENSOR_OPTIONS)
       .def_static(
           "full",
-          [](const TensorShapeRef & batch_shape, Real init, NEML2_TENSOR_OPTIONS_VARGS)
+          [](TensorShapeRef batch_shape, Real init, NEML2_TENSOR_OPTIONS_VARGS)
           { return Derived::full(batch_shape, init, NEML2_TENSOR_OPTIONS); },
           py::arg("batch_shape"),
           py::arg("fill_value"),

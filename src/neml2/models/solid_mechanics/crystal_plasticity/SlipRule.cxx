@@ -58,9 +58,9 @@ SlipRule::SlipRule(const OptionSet & options)
   : Model(options),
     _crystal_geometry(register_data<crystallography::CrystalGeometry>(
         options.get<std::string>("crystal_geometry_name"))),
-    _g(declare_output_variable_list<Scalar>(_crystal_geometry.nslip(), "slip_rates")),
-    _rss(declare_input_variable_list<Scalar>(_crystal_geometry.nslip(), "resolved_shears")),
-    _tau(declare_input_variable_list<Scalar>(_crystal_geometry.nslip(), "slip_strengths"))
+    _g(declare_output_variable<Scalar>("slip_rates", _crystal_geometry.nslip())),
+    _rss(declare_input_variable<Scalar>("resolved_shears", _crystal_geometry.nslip())),
+    _tau(declare_input_variable<Scalar>("slip_strengths", _crystal_geometry.nslip()))
 {
 }
 } // namespace neml2

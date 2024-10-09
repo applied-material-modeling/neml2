@@ -81,7 +81,7 @@ ElasticStrainRate::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (dout_din)
   {
-    const auto I = SSR4::identity_sym(options());
+    const auto I = SSR4::identity_sym(_d.options());
 
     if (_e.is_dependent())
       _e_dot.d(_e) = math::d_skew_and_sym_to_sym_d_sym(WR2(_w));
