@@ -1,9 +1,9 @@
-name: Documentation
+name: Build documentation
 
 on:
   push:
     branches: [main]
-  pull_request_target:
+  pull_request:
     branches: [main]
     types:
       - opened
@@ -20,11 +20,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        if: github.event_name == 'pull_request_target'
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          submodules: recursive
       - uses: actions/checkout@v4
         if: github.event_name == 'push'
         with:
@@ -74,17 +69,8 @@ jobs:
         run: |
           mkdir -p build/doc/build/html
           echo "This is a fake build" > build/doc/build/html/index.html
-      - name: Preview GitHub Pages
-        if: github.event_name == 'pull_request_target'
-        uses: rossjrw/pr-preview-action@v1
+      - name: Upload documentation
+        uses: actions/upload-artifact@v4
         with:
-          source-dir: build/doc/build/html
-          token: ${{ secrets.COMMENT }}
-      - name: Deploy to GitHub Pages
-        if: github.event_name == 'push'
-        uses: JamesIves/github-pages-deploy-action@v4.4.1
-        with:
-          branch: gh-pages
-          folder: build/doc/build/html
-          clean-exclude: pr-preview/
-          force: false
+          name: doc
+          path: build/doc/build/html
