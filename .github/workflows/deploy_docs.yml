@@ -10,15 +10,15 @@ jobs:
   preview:
     runs-on: ubuntu-latest
     if: >
-      github.event.workflow_run.event == 'pull_request' &&
-      github.event.workflow_run.conclusion == 'success'
+      github.event.workflow_run.event == 'pull_request'
     steps:
       - name: Download documentation
         uses: dawidd6/action-download-artifact@v6
         with:
+          workflow: build_docs.yml
+          workflow_conclusion: success
           name: doc-${{ github.sha }}
           path: html
-          allow_forks: true
       - name: Preview GitHub Pages
         uses: rossjrw/pr-preview-action@v1
         with:
@@ -26,15 +26,15 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     if: >
-      github.event.workflow_run.event == 'push' &&
-      github.event.workflow_run.conclusion == 'success'
+      github.event.workflow_run.event == 'push'
     steps:
       - name: Download documentation
         uses: dawidd6/action-download-artifact@v6
         with:
+          workflow: build_docs.yml
+          workflow_conclusion: success
           name: doc-${{ github.sha }}
           path: html
-          allow_forks: true
       - name: Deploy GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4.4.1
         with:
