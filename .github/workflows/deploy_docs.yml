@@ -18,6 +18,7 @@ jobs:
         with:
           name: doc-${{ github.sha }}
           path: html
+          allow_forks: true
       - name: Preview GitHub Pages
         uses: rossjrw/pr-preview-action@v1
         with:
@@ -33,6 +34,7 @@ jobs:
         with:
           name: doc-${{ github.sha }}
           path: html
+          allow_forks: true
       - name: Deploy GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4.4.1
         with:
