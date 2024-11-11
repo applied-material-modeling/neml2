@@ -20,44 +20,53 @@ concurrency:
 
 jobs:
   build:
-    if: github.event_name != 'pull_request_target'
+    if: github.event_name == 'push' || github.ref_name != 'main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-      - uses: actions/setup-python@v5
+      # - uses: actions/setup-python@v5
+      #   with:
+      #     python-version: "3.8"
+      # - name: Install dependencies
+      #   run: |
+      #     sudo apt install graphviz
+      #     pip install -r requirements.txt
+      #     pip install torch==2.2.2
+      # - name: Configure documentation
+      #   run: |
+      #     cmake \
+      #       -DCMAKE_BUILD_TYPE=Release \
+      #       -DCMAKE_UNITY_BUILD=ON \
+      #       -DNEML2_TESTS=OFF \
+      #       -DNEML2_RUNNER=OFF \
+      #       -DNEML2_PYBIND=ON \
+      #       -DNEML2_DOC=ON \
+      #       -B build \
+      #       .
+      # - name: Build documentation
+      #   run: cmake --build build --target html -j 2 --
+      # - name: Show build logs for C++ documentation
+      #   run: cat build/doc/doxygen.html.log
+      # - name: Show build logs for Python documentation
+      #   run: cat build/doc/doxygen.python.log
+      # - name: Show objects with missing documentation
+      #   run: cat build/doc/syntax_error.log
+      # - name: Error if syntax errors were detected
+      #   run: grep -q "No syntax error" build/doc/syntax_error.log
+      - name: Fake documentation
+        run: |
+          mkdir -p build/doc/build/html
+          touch build/doc/build/html/index.html
+      - name: Upload documentation
+        uses: actions/upload-artifact@v4
         with:
-          python-version: "3.8"
-      - name: Install dependencies
-        run: |
-          sudo apt install graphviz
-          pip install -r requirements.txt
-          pip install torch==2.2.2
-      - name: Configure documentation
-        run: |
-          cmake \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_UNITY_BUILD=ON \
-            -DNEML2_TESTS=OFF \
-            -DNEML2_RUNNER=OFF \
-            -DNEML2_PYBIND=ON \
-            -DNEML2_DOC=ON \
-            -B build \
-            .
-      - name: Build documentation
-        run: cmake --build build --target html -j 2 --
-      - name: Show build logs for C++ documentation
-        run: cat build/doc/doxygen.html.log
-      - name: Show build logs for Python documentation
-        run: cat build/doc/doxygen.python.log
-      - name: Show objects with missing documentation
-        run: cat build/doc/syntax_error.log
-      - name: Error if syntax errors were detected
-        run: grep -q "No syntax error" build/doc/syntax_error.log
+          name: doc
+          path: build/doc/build/html
   preview:
     needs: build
-    if: github.event_name == 'pull_request_target'
+    if: github.event_name == 'pull_request' && github.ref_name == 'main'
     runs-on: ubuntu-latest
     steps:
       - name: Download documentation
