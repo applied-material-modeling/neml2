@@ -3,8 +3,6 @@ name: Documentation
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
   pull_request_target:
     branches: [main]
     types:
@@ -20,7 +18,6 @@ concurrency:
 
 jobs:
   build:
-    if: github.event_name == 'push' || github.ref_name != 'main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -59,45 +56,16 @@ jobs:
         run: |
           mkdir -p build/doc/build/html
           touch build/doc/build/html/index.html
-      - name: Upload documentation
-        uses: actions/upload-artifact@v4
-        with:
-          name: doc
-          path: build/doc/build/html
-  preview:
-    needs: build
-    if: github.event_name == 'pull_request' && github.ref_name == 'main'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-      - name: Download documentation
-        uses: actions/download-artifact@v4
-        with:
-          name: doc
-          path: html
       - name: Preview GitHub Pages
+        if: github.event_name == 'pull_request'
         uses: rossjrw/pr-preview-action@v1
         with:
-          source-dir: html
-  deploy:
-    needs: build
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-      - name: Download documentation
-        uses: actions/download-artifact@v4
-        with:
-          name: doc
-          path: html
+          source-dir: build/doc/build/html
       - name: Deploy to GitHub Pages
+        if: github.event_name == 'push'
         uses: JamesIves/github-pages-deploy-action@v4.4.1
         with:
           branch: gh-pages
-          folder: html
+          folder: build/doc/build/html
           clean-exclude: pr-preview/
           force: false
