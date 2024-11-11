@@ -77,8 +77,10 @@ jobs:
       - name: Preview GitHub Pages
         if: github.event_name == 'pull_request_target'
         uses: rossjrw/pr-preview-action@v1
+        environment: pr
         with:
           source-dir: build/doc/build/html
+          token: ${{ secrets.COMMENT }}
       - name: Deploy to GitHub Pages
         if: github.event_name == 'push'
         uses: JamesIves/github-pages-deploy-action@v4.4.1
