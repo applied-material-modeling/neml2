@@ -73,6 +73,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: doc
+          path: html
       - name: Preview GitHub Pages
         uses: rossjrw/pr-preview-action@v1
         with:
@@ -86,6 +87,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: doc
+          path: html
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4.4.1
         with:
