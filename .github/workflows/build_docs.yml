@@ -1,18 +1,17 @@
 name: Documentation
 
 on:
-  # Triggers the workflow on push or pull request
   push:
     branches: [main]
   pull_request:
+    branches: [main]
+  pull_request_target:
     branches: [main]
     types:
       - opened
       - reopened
       - synchronize
       - closed # This is important for the ghpage preview to clean up after itself
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
 
 # Newer commits should cancel old runs
 concurrency:
@@ -21,6 +20,7 @@ concurrency:
 
 jobs:
   build:
+    if: github.event_name != 'pull_request_target'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,11 +29,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.8"
-      - run: sudo apt install graphviz
-      - run: pip install -r requirements.txt
-      - name: Install PyTorch
-        run: pip install torch==2.2.2
-      - run: |
+      - name: Install dependencies
+        run: |
+          sudo apt install graphviz
+          pip install -r requirements.txt
+          pip install torch==2.2.2
+      - name: Configure documentation
+        run: |
           cmake \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_UNITY_BUILD=ON \
@@ -43,28 +45,42 @@ jobs:
             -DNEML2_DOC=ON \
             -B build \
             .
-      - run: cmake --build build --target html -j 2 --
-      - run: cat build/doc/doxygen.html.log
-      - run: cat build/doc/doxygen.python.log
+      - name: Build documentation
+        run: cmake --build build --target html -j 2 --
+      - name: Show build logs for C++ documentation
+        run: cat build/doc/doxygen.html.log
+      - name: Show build logs for Python documentation
+        run: cat build/doc/doxygen.python.log
+      - name: Show objects with missing documentation
+        run: cat build/doc/syntax_error.log
+      - name: Error if syntax errors were detected
+        run: grep -q "No syntax error" build/doc/syntax_error.log
+  preview:
+    needs: build
+    if: github.event_name == 'pull_request_target'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download documentation
+        uses: actions/download-artifact@v4
+        with:
+          name: doc
       - name: Preview GitHub Pages
-        if: ${{ github.event_name == 'pull_request' }}
         uses: rossjrw/pr-preview-action@v1
         with:
-          source-dir: build/doc/build/html
+          source-dir: html
+  deploy:
+    needs: build
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download documentation
+        uses: actions/download-artifact@v4
+        with:
+          name: doc
       - name: Deploy to GitHub Pages
-        if: ${{ github.event_name == 'push' }}
         uses: JamesIves/github-pages-deploy-action@v4.4.1
         with:
           branch: gh-pages
-          folder: build/doc/build/html
+          folder: html
           clean-exclude: pr-preview/
           force: false
-      - name: Scold users about missing docs
-        if: ${{ github.event_name == 'pull_request'}}
-        uses: thollander/actions-comment-pull-request@v2
-        with:
-          filePath: build/doc/syntax_error.log
-          comment_tag: doc_scold
-          GITHUB_TOKEN: ${{ secrets.PR_ACTION }}
-      - name: Error if syntax errors were detected
-        run: grep -q "No syntax error" build/doc/syntax_error.log
