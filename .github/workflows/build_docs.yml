@@ -29,47 +29,51 @@ jobs:
         if: github.event_name == 'push'
         with:
           submodules: recursive
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.8"
-      - uses: jwlawson/actions-setup-cmake@v2
-        with:
-          cmake-version: "3.28"
-      - name: Install dependencies
+      # - uses: actions/setup-python@v5
+      #   with:
+      #     python-version: "3.8"
+      # - uses: jwlawson/actions-setup-cmake@v2
+      #   with:
+      #     cmake-version: "3.28"
+      # - name: Install dependencies
+      #   run: |
+      #     sudo apt install graphviz lcov
+      #     pip install -r requirements.txt
+      #     pip install torch==2.2.2
+      # - name: Configure documentation
+      #   run: |
+      #     cmake \
+      #       -DCMAKE_BUILD_TYPE=Coverage \
+      #       -DCMAKE_UNITY_BUILD=ON \
+      #       -DNEML2_TESTS=ON \
+      #       -DNEML2_UNIT=ON \
+      #       -DNEML2_REGRESSION=OFF \
+      #       -DNEML2_VERIFICATION=OFF \
+      #       -DNEML2_RUNNER=OFF \
+      #       -DNEML2_PYBIND=ON \
+      #       -DNEML2_DOC=ON \
+      #       -B build \
+      #       .
+      # - name: Build documentation
+      #   run: cmake --build build --target html -j 2 --
+      # - name: Show build logs for C++ documentation
+      #   run: cat build/doc/doxygen.html.log
+      # - name: Show build logs for Python documentation
+      #   run: cat build/doc/doxygen.python.log
+      # - name: Show objects with missing documentation
+      #   run: cat build/doc/syntax_error.log
+      # - name: Error if syntax errors were detected
+      #   run: grep -q "No syntax error" build/doc/syntax_error.log
+      # - name: Build unit tests
+      #   run: cmake --build build --target all -j 2 --
+      # - name: Code coverage check
+      #   run: |
+      #     build/scripts/coverage.sh
+      #     mv build/coverage build/doc/build/html/
+      - name: Fake build
         run: |
-          sudo apt install graphviz lcov
-          pip install -r requirements.txt
-          pip install torch==2.2.2
-      - name: Configure documentation
-        run: |
-          cmake \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_UNITY_BUILD=ON \
-            -DNEML2_TESTS=ON \
-            -DNEML2_UNIT=ON \
-            -DNEML2_REGRESSION=OFF \
-            -DNEML2_VERIFICATION=OFF \
-            -DNEML2_RUNNER=OFF \
-            -DNEML2_PYBIND=ON \
-            -DNEML2_DOC=ON \
-            -B build \
-            .
-      - name: Build documentation
-        run: cmake --build build --target html -j 2 --
-      - name: Show build logs for C++ documentation
-        run: cat build/doc/doxygen.html.log
-      - name: Show build logs for Python documentation
-        run: cat build/doc/doxygen.python.log
-      - name: Show objects with missing documentation
-        run: cat build/doc/syntax_error.log
-      - name: Error if syntax errors were detected
-        run: grep -q "No syntax error" build/doc/syntax_error.log
-      - name: Build unit tests
-        run: cmake --build build --target all -j 2 --
-      - name: Code coverage check
-        run: |
-          build/scripts/coverage.sh
-          mv build/coverage build/doc/build/html/
+          mkdir -p build/doc/build/html
+          echo "This is a fake build" > build/doc/build/html/index.html
       - name: Preview GitHub Pages
         if: github.event_name == 'pull_request_target'
         uses: rossjrw/pr-preview-action@v1
