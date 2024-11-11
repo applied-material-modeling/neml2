@@ -14,9 +14,9 @@ jobs:
       github.event.workflow_run.conclusion == 'success'
     steps:
       - name: Download documentation
-        uses: actions/download-artifact@v4
+        uses: dawidd6/action-download-artifact@v6
         with:
-          name: doc
+          name: doc-${{ github.sha }}
           path: html
       - name: Preview GitHub Pages
         uses: rossjrw/pr-preview-action@v1
@@ -29,9 +29,9 @@ jobs:
       github.event.workflow_run.conclusion == 'success'
     steps:
       - name: Download documentation
-        uses: actions/download-artifact@v4
+        uses: dawidd6/action-download-artifact@v6
         with:
-          name: doc
+          name: doc-${{ github.sha }}
           path: html
       - name: Deploy GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4.4.1

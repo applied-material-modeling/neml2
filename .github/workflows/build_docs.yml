@@ -72,5 +72,5 @@ jobs:
       - name: Upload documentation
         uses: actions/upload-artifact@v4
         with:
-          name: doc
+          name: doc-${{ github.sha }}
           path: build/doc/build/html
