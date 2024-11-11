@@ -1,9 +1,9 @@
-name: Build documentation
+name: Documentation
 
 on:
   push:
     branches: [main]
-  pull_request:
+  pull_request_target:
     branches: [main]
 
 # Newer commits should cancel old runs
@@ -13,10 +13,10 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.sha }}
           submodules: recursive
       # - uses: actions/setup-python@v5
       #   with:
@@ -63,8 +63,25 @@ jobs:
         run: |
           mkdir -p build/doc/build/html
           echo "This is a fake build" > build/doc/build/html/index.html
-      - name: Upload documentation
-        uses: actions/upload-artifact@v4
+      - name: Deploy preview to GitHub Pages
+        if: github.event_name == 'pull_request_target'
+        uses: JamesIves/github-pages-deploy-action@v4.4.1
         with:
-          name: doc-${{ github.sha }}
-          path: build/doc/build/html
+          branch: gh-pages
+          folder: html
+          target-folder: pr-preview/pr-${{ github.event.number }}
+          force: false
+      - name: Update comment with preview link
+        if: github.event_name == 'pull_request_target'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          message: |
+            Documentation preview: <https://applied-material-modeling.github.io/neml2/pr-preview/pr-${{ github.event.number }}>
+      - name: Deploy to GitHub Pages
+        if: github.event_name == 'push'
+        uses: JamesIves/github-pages-deploy-action@v4.4.1
+        with:
+          branch: gh-pages
+          folder: html
+          clean-exclude: pr-preview/
+          force: false

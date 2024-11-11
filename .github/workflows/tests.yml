@@ -1,4 +1,4 @@
-name: Run tests for the C++ backend
+name: Test C++ backend
 
 on:
   push:
