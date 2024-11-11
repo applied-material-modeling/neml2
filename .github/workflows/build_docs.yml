@@ -77,7 +77,6 @@ jobs:
       - name: Preview GitHub Pages
         if: github.event_name == 'pull_request_target'
         uses: rossjrw/pr-preview-action@v1
-        environment: pr
         with:
           source-dir: build/doc/build/html
           token: ${{ secrets.COMMENT }}
