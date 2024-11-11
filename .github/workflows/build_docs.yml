@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v4
         if: github.event_name == 'pull_request_target'
         with:
-          ref: ${{ github.head_ref }}
+          ref: ${{ github.event.pull_request.head.sha }}
           submodules: recursive
       - uses: actions/checkout@v4
         if: github.event_name == 'push'
@@ -70,22 +70,13 @@ jobs:
         run: |
           build/scripts/coverage.sh
           mv build/coverage build/doc/build/html/
-  preview:
-    needs: build
-    if: github.event_name == 'pull_request_target'
-    runs-on: ubuntu-latest
-    environment: pr
-    steps:
       - name: Preview GitHub Pages
+        if: github.event_name == 'pull_request_target'
         uses: rossjrw/pr-preview-action@v1
         with:
           source-dir: build/doc/build/html
-  deploy:
-    needs: build
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
       - name: Deploy to GitHub Pages
+        if: github.event_name == 'push'
         uses: JamesIves/github-pages-deploy-action@v4.4.1
         with:
           branch: gh-pages
