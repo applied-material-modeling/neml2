@@ -9,8 +9,7 @@ on:
 jobs:
   preview:
     runs-on: ubuntu-latest
-    if: >
-      github.event.workflow_run.event == 'pull_request'
+    if: github.event.workflow_run.event == 'pull_request'
     steps:
       - uses: actions/checkout@v4
       - name: Download documentation
@@ -20,14 +19,16 @@ jobs:
           workflow_conclusion: success
           name: doc-${{ github.sha }}
           path: html
-      - name: Preview GitHub Pages
-        uses: rossjrw/pr-preview-action@v1
+      - name: Deploy preview to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4.4.1
         with:
-          source-dir: html
+          branch: gh-pages
+          folder: html
+          target-folder: pr-preview/pr-${{ github.event.number }}
+          force: false
   deploy:
     runs-on: ubuntu-latest
-    if: >
-      github.event.workflow_run.event == 'push'
+    if: github.event.workflow_run.event == 'push'
     steps:
       - uses: actions/checkout@v4
       - name: Download documentation
@@ -37,7 +38,7 @@ jobs:
           workflow_conclusion: success
           name: doc-${{ github.sha }}
           path: html
-      - name: Deploy GitHub Pages
+      - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4.4.1
         with:
           branch: gh-pages
