@@ -5,16 +5,9 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
   release:
     types:
       - published
-
-permissions:
-  contents: read # Required when overriding permissions
-  pull-requests: write # For posting coverage report
-  checks: write
 
 # Newer commits should cancel old runs
 concurrency:
@@ -31,6 +24,7 @@ jobs:
         with:
           options: "--check -v"
           src: "python/neml2 python/tests"
+
   build-test:
     name: Build and test Python bindings
     needs: black
@@ -67,6 +61,7 @@ jobs:
         with:
           files: pytest.xml
           check_name: Python Binding Test Results (${{ matrix.os }})
+
   sdist:
     name: Build source distribution
     runs-on: ubuntu-latest
@@ -80,6 +75,7 @@ jobs:
         with:
           name: package-sdist
           path: dist/*.tar.gz
+
   PyPI:
     needs: sdist
     environment: pypi

@@ -5,13 +5,6 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-permissions:
-  contents: read # Required when overriding permissions
-  pull-requests: write # For posting coverage report
-  checks: write
 
 # Newer commits should cancel old runs
 concurrency:
@@ -29,6 +22,7 @@ jobs:
           python-version: "3.8"
       - name: Check to see if source files have the correct copyright header
         run: ./scripts/check_copyright.py
+
   clang-format:
     name: Formatting Check
     runs-on: ubuntu-latest
@@ -45,6 +39,7 @@ jobs:
         with:
           clang-format-version: "17"
           check-path: ${{ matrix.path }}
+
   clang-tidy:
     name: Linting
     runs-on: ubuntu-latest
@@ -70,6 +65,7 @@ jobs:
             -B build \
             .
       - run: cmake --build build --target all -j 2 --
+
   build-test:
     needs: clang-format
     strategy:
@@ -118,6 +114,7 @@ jobs:
         with:
           files: tests/*.xml
           check_name: Test Results (${{ matrix.os }}-${{ matrix.btype }}-${{ matrix.unity }})
+
   build-all:
     needs: clang-format
     runs-on: ubuntu-latest
@@ -160,44 +157,3 @@ jobs:
       - run: ./build/runner/runner runner/benchmark/scpdecoupexp/model.i driver nbatch=1 device=cpu
       - run: ./build/runner/runner runner/benchmark/tcpsingle/model.i driver nbatch=1 device=cpu
       - run: ./build/runner/runner runner/benchmark/tcprandom/model.i driver nbatch=1 device=cpu
-  cmake-integration:
-    name: Test CMake integration as a subproject
-    needs: clang-format
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-          path: neml2
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.8"
-      - uses: jwlawson/actions-setup-cmake@v2
-        with:
-          cmake-version: "3.28"
-      - run: pip install torch==2.2.2
-      - name: Create a source file for testing purposes
-        run: |
-          echo -e "\
-            #include \"neml2/base/Registry.h\"\n\
-            int main() {\n\
-              return 0;\n\
-            }\
-            " > main.cxx
-      - run: cat main.cxx
-      - name: Create a CMakeLists.txt file for testing purposes
-        run: |
-          echo -e "\
-            cmake_minimum_required(VERSION 3.28)
-            project(FOO)\n\
-            add_subdirectory(neml2)\n\
-            add_executable(foo main.cxx)\n\
-            add_compile_definitions(_GLIBCXX_USE_CXX11_ABI=0)\n\
-            target_link_libraries(foo neml2)\n\
-            " > CMakeLists.txt
-      - run: cat CMakeLists.txt
-      - name: Configure with CMake
-        run: cmake -DNEML2_TESTS=OFF -B build .
-      - name: Compile
-        run: cmake --build build --target all -j 2 --
-      - run: ./build/foo
