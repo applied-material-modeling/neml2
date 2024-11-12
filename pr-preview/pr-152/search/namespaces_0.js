@@ -1,9 +1,0 @@
-var searchData=
-[
-  ['neml2_0',['neml2',['../namespaceneml2.html',1,'']]],
-  ['neml2_3a_3acrystallography_1',['crystallography',['../namespaceneml2_1_1crystallography.html',1,'neml2']]],
-  ['neml2_3a_3acrystallography_3a_3acrystal_5fsymmetry_5foperators_2',['crystal_symmetry_operators',['../namespaceneml2_1_1crystallography_1_1crystal__symmetry__operators.html',1,'neml2::crystallography']]],
-  ['neml2_3a_3amath_3',['math',['../namespaceneml2_1_1math.html',1,'neml2']]],
-  ['neml2_3a_3amath_3a_3alinalg_4',['linalg',['../namespaceneml2_1_1math_1_1linalg.html',1,'neml2::math']]],
-  ['neml2_3a_3autils_5',['utils',['../namespaceneml2_1_1utils.html',1,'neml2']]]
-];

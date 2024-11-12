@@ -1,9 +1,0 @@
-<map id="EmptyFixedDimTensor&lt; T &gt;" name="EmptyFixedDimTensor&lt; T &gt;">
-<area shape="rect" id="Node000001" title="Create an empty FixedDimTensor of type T from the input file." alt="" coords="5,152,211,177"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="43,79,82,104"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="80,114,103,150,98,153,75,117"/>
-<area shape="rect" id="Node000003" href="$classneml2_1_1UserTensor.html" title=" " alt="" coords="106,79,201,104"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="141,117,118,153,113,150,136,114"/>
-<area shape="rect" id="Node000004" href="$classneml2_1_1NEML2Object.html" title="The base class of all &quot;manufacturable&quot; objects in the NEML2 library." alt="" coords="99,5,208,31"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="156,44,156,79,151,79,151,44"/>
-</map>
