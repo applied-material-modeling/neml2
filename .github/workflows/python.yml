@@ -28,6 +28,9 @@ jobs:
   build-test:
     name: Build and test Python bindings
     needs: black
+    permissions:
+      contents: read
+      check: write
     strategy:
       fail-fast: false
       matrix:
@@ -52,18 +55,12 @@ jobs:
       - name: Publish Test Results
         if: matrix.os == 'ubuntu-latest'
         uses: EnricoMi/publish-unit-test-result-action@v2
-        permissions:
-          contents: read
-          check: write
         with:
           files: pytest.xml
           check_name: Python Binding Test Results (${{ matrix.os }})
       - name: Publish Test Results
         if: matrix.os == 'macos-12'
         uses: EnricoMi/publish-unit-test-result-action/composite@v2
-        permissions:
-          contents: read
-          check: write
         with:
           files: pytest.xml
           check_name: Python Binding Test Results (${{ matrix.os }})

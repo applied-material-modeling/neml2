@@ -68,6 +68,9 @@ jobs:
 
   build-test:
     needs: clang-format
+    permissions:
+      contents: read
+      check: write
     strategy:
       matrix:
         os: [ubuntu-latest, macos-12]
@@ -105,18 +108,12 @@ jobs:
       - name: Publish Test Results
         if: matrix.os == 'ubuntu-latest'
         uses: EnricoMi/publish-unit-test-result-action@v2
-        permissions:
-          contents: read
-          check: write
         with:
           files: tests/*.xml
           check_name: Test Results (${{ matrix.os }}-${{ matrix.btype }}-${{ matrix.unity }})
       - name: Publish Test Results
         if: matrix.os == 'macos-12'
         uses: EnricoMi/publish-unit-test-result-action/composite@v2
-        permissions:
-          contents: read
-          check: write
         with:
           files: tests/*.xml
           check_name: Test Results (${{ matrix.os }}-${{ matrix.btype }}-${{ matrix.unity }})
