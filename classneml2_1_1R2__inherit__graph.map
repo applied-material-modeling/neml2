@@ -1,0 +1,15 @@
+<map id="R2" name="R2">
+<area shape="rect" id="Node000001" title="A basic R2." alt="" coords="96,299,135,324"/>
+<area shape="rect" id="Node000006" href="$classneml2_1_1FillR2.html" title="Create a filled R2 from the input file." alt="" coords="15,372,74,397"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="96,336,58,374,54,370,92,332"/>
+<area shape="rect" id="Node000007" href="$classneml2_1_1crystallography_1_1SymmetryFromOrbifold.html" title="Provide the correct symmetry operators for a given crystal class." alt="" coords="99,372,273,397"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="139,332,176,370,173,374,135,336"/>
+<area shape="rect" id="Node000002" href="$classneml2_1_1R2Base.html" title=" " alt="" coords="56,225,175,251"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="118,264,118,299,113,299,113,264"/>
+<area shape="rect" id="Node000003" href="$classneml2_1_1PrimitiveTensor.html" title="PrimitiveTensor inherits from TensorBase and additionally templates on the base shape." alt="" coords="5,152,225,177"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="118,191,118,225,113,225,113,191"/>
+<area shape="rect" id="Node000004" href="$classneml2_1_1TensorBase.html" title="NEML2&#39;s enhanced tensor type." alt="" coords="27,79,204,104"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="118,118,118,152,113,152,113,118"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="83,5,147,31"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="118,44,118,79,113,79,113,44"/>
+</map>
