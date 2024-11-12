@@ -14,6 +14,9 @@ concurrency:
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -67,8 +70,6 @@ jobs:
       - name: Deploy preview to GitHub Pages
         if: github.event_name == 'pull_request_target'
         uses: JamesIves/github-pages-deploy-action@v4.4.1
-        permissions:
-          contents: write
         with:
           branch: gh-pages
           folder: build/doc/build/html
@@ -77,9 +78,6 @@ jobs:
       - name: Update comment with preview link
         if: github.event_name == 'pull_request_target'
         uses: marocchino/sticky-pull-request-comment@v2
-        permissions:
-          contents: read
-          pull-requests: write
         with:
           message: |
             Documentation preview: <https://applied-material-modeling.github.io/neml2/pr-preview/pr-${{ github.event.number }}>
