@@ -103,14 +103,20 @@ jobs:
       - run: cd tests && ../build/tests/verification/verification_tests -r junit > verification_tests.xml
         continue-on-error: true
       - name: Publish Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
         if: matrix.os == 'ubuntu-latest'
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        permissions:
+          contents: read
+          check: write
         with:
           files: tests/*.xml
           check_name: Test Results (${{ matrix.os }}-${{ matrix.btype }}-${{ matrix.unity }})
       - name: Publish Test Results
-        uses: EnricoMi/publish-unit-test-result-action/composite@v2
         if: matrix.os == 'macos-12'
+        uses: EnricoMi/publish-unit-test-result-action/composite@v2
+        permissions:
+          contents: read
+          check: write
         with:
           files: tests/*.xml
           check_name: Test Results (${{ matrix.os }}-${{ matrix.btype }}-${{ matrix.unity }})
