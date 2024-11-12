@@ -143,7 +143,7 @@ Alternatively, you may use CMake's `FetchContent` module to integrate NEML2 into
 FetchContent_Declare(
   neml2
   GIT_REPOSITORY https://github.com/reverendbedford/neml2.git
-  GIT_TAG v1.4.0
+  GIT_TAG v2.0.0
 )
 FetchContent_MakeAvailable(neml2)
 
