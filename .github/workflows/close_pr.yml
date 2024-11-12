@@ -1,0 +1,28 @@
+name: Clean up after pull request
+
+on:
+  pull_request_target:
+    branches: [main]
+    types: [closed]
+
+jobs:
+  delete-preview:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+      - name: Delete preview
+        run: |
+          git rm -r --cached pr-preview/pr-${{ github.event.number }}
+          git commit -m 'Remove preview for PR #${{ github.event.number }}'
+          git push origin gh-pages
+      - name: Comment on the pull request
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          message: |
+            Documentation preview removed.
+            To view the documentation, please visit the [main documentation page](https://applied-material-modeling.github.io/neml2).
