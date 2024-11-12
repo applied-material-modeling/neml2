@@ -30,7 +30,7 @@ jobs:
     needs: black
     permissions:
       contents: read
-      check: write
+      checks: write
     strategy:
       fail-fast: false
       matrix:
