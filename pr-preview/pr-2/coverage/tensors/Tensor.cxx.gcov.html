@@ -1,0 +1,232 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - tensors/Tensor.cxx</title>
+  <link rel="stylesheet" type="text/css" href="../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../index.html">top level</a> - <a href="index.html">tensors</a> - Tensor.cxx<span style="font-size: 80%;"> (source / <a href="Tensor.cxx.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">48</td>
+            <td class="headerCovTableEntry">48</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2024-11-13 01:47:23</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">14</td>
+            <td class="headerCovTableEntry">14</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : // Copyright 2024, UChicago Argonne, LLC</a>
+<a name="2"><span class="lineNum">       2 </span>            : // All Rights Reserved</a>
+<a name="3"><span class="lineNum">       3 </span>            : // Software Name: NEML2 -- the New Engineering material Model Library, version 2</a>
+<a name="4"><span class="lineNum">       4 </span>            : // By: Argonne National Laboratory</a>
+<a name="5"><span class="lineNum">       5 </span>            : // OPEN SOURCE LICENSE (MIT)</a>
+<a name="6"><span class="lineNum">       6 </span>            : //</a>
+<a name="7"><span class="lineNum">       7 </span>            : // Permission is hereby granted, free of charge, to any person obtaining a copy</a>
+<a name="8"><span class="lineNum">       8 </span>            : // of this software and associated documentation files (the &quot;Software&quot;), to deal</a>
+<a name="9"><span class="lineNum">       9 </span>            : // in the Software without restriction, including without limitation the rights</a>
+<a name="10"><span class="lineNum">      10 </span>            : // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</a>
+<a name="11"><span class="lineNum">      11 </span>            : // copies of the Software, and to permit persons to whom the Software is</a>
+<a name="12"><span class="lineNum">      12 </span>            : // furnished to do so, subject to the following conditions:</a>
+<a name="13"><span class="lineNum">      13 </span>            : //</a>
+<a name="14"><span class="lineNum">      14 </span>            : // The above copyright notice and this permission notice shall be included in</a>
+<a name="15"><span class="lineNum">      15 </span>            : // all copies or substantial portions of the Software.</a>
+<a name="16"><span class="lineNum">      16 </span>            : //</a>
+<a name="17"><span class="lineNum">      17 </span>            : // THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</a>
+<a name="18"><span class="lineNum">      18 </span>            : // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</a>
+<a name="19"><span class="lineNum">      19 </span>            : // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</a>
+<a name="20"><span class="lineNum">      20 </span>            : // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</a>
+<a name="21"><span class="lineNum">      21 </span>            : // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</a>
+<a name="22"><span class="lineNum">      22 </span>            : // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</a>
+<a name="23"><span class="lineNum">      23 </span>            : // THE SOFTWARE.</a>
+<a name="24"><span class="lineNum">      24 </span>            : </a>
+<a name="25"><span class="lineNum">      25 </span>            : #include &quot;neml2/tensors/Tensor.h&quot;</a>
+<a name="26"><span class="lineNum">      26 </span>            : </a>
+<a name="27"><span class="lineNum">      27 </span>            : namespace neml2</a>
+<a name="28"><span class="lineNum">      28 </span>            : {</a>
+<a name="29"><span class="lineNum">      29 </span>            : Tensor</a>
+<a name="30"><span class="lineNum">      30 </span><span class="lineCov">          1 : Tensor::empty(const TensorShapeRef &amp; base_shape, const torch::TensorOptions &amp; options)</span></a>
+<a name="31"><span class="lineNum">      31 </span>            : {</a>
+<a name="32"><span class="lineNum">      32 </span><span class="lineCov">          2 :   return Tensor(torch::empty(base_shape, options), 0);</span></a>
+<a name="33"><span class="lineNum">      33 </span>            : }</a>
+<a name="34"><span class="lineNum">      34 </span>            : </a>
+<a name="35"><span class="lineNum">      35 </span>            : Tensor</a>
+<a name="36"><span class="lineNum">      36 </span><span class="lineCov">        378 : Tensor::empty(const TensorShapeRef &amp; batch_shape,</span></a>
+<a name="37"><span class="lineNum">      37 </span>            :               const TensorShapeRef &amp; base_shape,</a>
+<a name="38"><span class="lineNum">      38 </span>            :               const torch::TensorOptions &amp; options)</a>
+<a name="39"><span class="lineNum">      39 </span>            : {</a>
+<a name="40"><span class="lineNum">      40 </span><span class="lineCov">        756 :   return Tensor(torch::empty(utils::add_shapes(batch_shape, base_shape), options),</span></a>
+<a name="41"><span class="lineNum">      41 </span><span class="lineCov">       1134 :                 Size(batch_shape.size()));</span></a>
+<a name="42"><span class="lineNum">      42 </span>            : }</a>
+<a name="43"><span class="lineNum">      43 </span>            : </a>
+<a name="44"><span class="lineNum">      44 </span>            : Tensor</a>
+<a name="45"><span class="lineNum">      45 </span><span class="lineCov">          1 : Tensor::zeros(const TensorShapeRef &amp; base_shape, const torch::TensorOptions &amp; options)</span></a>
+<a name="46"><span class="lineNum">      46 </span>            : {</a>
+<a name="47"><span class="lineNum">      47 </span><span class="lineCov">          2 :   return Tensor(torch::zeros(base_shape, options), 0);</span></a>
+<a name="48"><span class="lineNum">      48 </span>            : }</a>
+<a name="49"><span class="lineNum">      49 </span>            : </a>
+<a name="50"><span class="lineNum">      50 </span>            : Tensor</a>
+<a name="51"><span class="lineNum">      51 </span><span class="lineCov">      28755 : Tensor::zeros(const TensorShapeRef &amp; batch_shape,</span></a>
+<a name="52"><span class="lineNum">      52 </span>            :               const TensorShapeRef &amp; base_shape,</a>
+<a name="53"><span class="lineNum">      53 </span>            :               const torch::TensorOptions &amp; options)</a>
+<a name="54"><span class="lineNum">      54 </span>            : {</a>
+<a name="55"><span class="lineNum">      55 </span><span class="lineCov">      57510 :   return Tensor(torch::zeros(utils::add_shapes(batch_shape, base_shape), options),</span></a>
+<a name="56"><span class="lineNum">      56 </span><span class="lineCov">      86265 :                 Size(batch_shape.size()));</span></a>
+<a name="57"><span class="lineNum">      57 </span>            : }</a>
+<a name="58"><span class="lineNum">      58 </span>            : </a>
+<a name="59"><span class="lineNum">      59 </span>            : Tensor</a>
+<a name="60"><span class="lineNum">      60 </span><span class="lineCov">          6 : Tensor::ones(const TensorShapeRef &amp; base_shape, const torch::TensorOptions &amp; options)</span></a>
+<a name="61"><span class="lineNum">      61 </span>            : {</a>
+<a name="62"><span class="lineNum">      62 </span><span class="lineCov">         12 :   return Tensor(torch::ones(base_shape, options), 0);</span></a>
+<a name="63"><span class="lineNum">      63 </span>            : }</a>
+<a name="64"><span class="lineNum">      64 </span>            : </a>
+<a name="65"><span class="lineNum">      65 </span>            : Tensor</a>
+<a name="66"><span class="lineNum">      66 </span><span class="lineCov">         12 : Tensor::ones(const TensorShapeRef &amp; batch_shape,</span></a>
+<a name="67"><span class="lineNum">      67 </span>            :              const TensorShapeRef &amp; base_shape,</a>
+<a name="68"><span class="lineNum">      68 </span>            :              const torch::TensorOptions &amp; options)</a>
+<a name="69"><span class="lineNum">      69 </span>            : {</a>
+<a name="70"><span class="lineNum">      70 </span><span class="lineCov">         24 :   return Tensor(torch::ones(utils::add_shapes(batch_shape, base_shape), options),</span></a>
+<a name="71"><span class="lineNum">      71 </span><span class="lineCov">         36 :                 Size(batch_shape.size()));</span></a>
+<a name="72"><span class="lineNum">      72 </span>            : }</a>
+<a name="73"><span class="lineNum">      73 </span>            : </a>
+<a name="74"><span class="lineNum">      74 </span>            : Tensor</a>
+<a name="75"><span class="lineNum">      75 </span><span class="lineCov">         11 : Tensor::full(const TensorShapeRef &amp; base_shape, Real init, const torch::TensorOptions &amp; options)</span></a>
+<a name="76"><span class="lineNum">      76 </span>            : {</a>
+<a name="77"><span class="lineNum">      77 </span><span class="lineCov">         22 :   return Tensor(torch::full(base_shape, init, options), 0);</span></a>
+<a name="78"><span class="lineNum">      78 </span>            : }</a>
+<a name="79"><span class="lineNum">      79 </span>            : </a>
+<a name="80"><span class="lineNum">      80 </span>            : Tensor</a>
+<a name="81"><span class="lineNum">      81 </span><span class="lineCov">         52 : Tensor::full(const TensorShapeRef &amp; batch_shape,</span></a>
+<a name="82"><span class="lineNum">      82 </span>            :              const TensorShapeRef &amp; base_shape,</a>
+<a name="83"><span class="lineNum">      83 </span>            :              Real init,</a>
+<a name="84"><span class="lineNum">      84 </span>            :              const torch::TensorOptions &amp; options)</a>
+<a name="85"><span class="lineNum">      85 </span>            : {</a>
+<a name="86"><span class="lineNum">      86 </span><span class="lineCov">        104 :   return Tensor(torch::full(utils::add_shapes(batch_shape, base_shape), init, options),</span></a>
+<a name="87"><span class="lineNum">      87 </span><span class="lineCov">        156 :                 Size(batch_shape.size()));</span></a>
+<a name="88"><span class="lineNum">      88 </span>            : }</a>
+<a name="89"><span class="lineNum">      89 </span>            : </a>
+<a name="90"><span class="lineNum">      90 </span>            : Tensor</a>
+<a name="91"><span class="lineNum">      91 </span><span class="lineCov">       1918 : Tensor::identity(Size n, const torch::TensorOptions &amp; options)</span></a>
+<a name="92"><span class="lineNum">      92 </span>            : {</a>
+<a name="93"><span class="lineNum">      93 </span><span class="lineCov">       3836 :   return Tensor(torch::eye(n, options), 0);</span></a>
+<a name="94"><span class="lineNum">      94 </span>            : }</a>
+<a name="95"><span class="lineNum">      95 </span>            : </a>
+<a name="96"><span class="lineNum">      96 </span>            : Tensor</a>
+<a name="97"><span class="lineNum">      97 </span><span class="lineCov">       1673 : Tensor::identity(const TensorShapeRef &amp; batch_shape, Size n, const torch::TensorOptions &amp; options)</span></a>
+<a name="98"><span class="lineNum">      98 </span>            : {</a>
+<a name="99"><span class="lineNum">      99 </span><span class="lineCov">       3346 :   return identity(n, options).batch_expand_copy(batch_shape);</span></a>
+<a name="100"><span class="lineNum">     100 </span>            : }</a>
+<a name="101"><span class="lineNum">     101 </span>            : </a>
+<a name="102"><span class="lineNum">     102 </span>            : namespace math</a>
+<a name="103"><span class="lineNum">     103 </span>            : {</a>
+<a name="104"><span class="lineNum">     104 </span>            : Tensor</a>
+<a name="105"><span class="lineNum">     105 </span><span class="lineCov">       8613 : bmm(const Tensor &amp; a, const Tensor &amp; b)</span></a>
+<a name="106"><span class="lineNum">     106 </span>            : {</a>
+<a name="107"><span class="lineNum">     107 </span><span class="lineCov">       8613 :   neml_assert_batch_broadcastable_dbg(a, b);</span></a>
+<a name="108"><span class="lineNum">     108 </span><span class="lineCov">       8613 :   neml_assert_dbg(a.base_dim() == 2,</span></a>
+<a name="109"><span class="lineNum">     109 </span>            :                   &quot;The first tensor in bmm has base dimension &quot;,</a>
+<a name="110"><span class="lineNum">     110 </span><span class="lineCov">       8613 :                   a.base_dim(),</span></a>
+<a name="111"><span class="lineNum">     111 </span>            :                   &quot; instead of 2.&quot;);</a>
+<a name="112"><span class="lineNum">     112 </span><span class="lineCov">       8613 :   neml_assert_dbg(b.base_dim() == 2,</span></a>
+<a name="113"><span class="lineNum">     113 </span>            :                   &quot;The second tensor in bmm has base dimension &quot;,</a>
+<a name="114"><span class="lineNum">     114 </span><span class="lineCov">       8613 :                   b.base_dim(),</span></a>
+<a name="115"><span class="lineNum">     115 </span>            :                   &quot; instead of 2.&quot;);</a>
+<a name="116"><span class="lineNum">     116 </span><span class="lineCov">      17226 :   return Tensor(torch::matmul(a, b), broadcast_batch_dim(a, b));</span></a>
+<a name="117"><span class="lineNum">     117 </span>            : }</a>
+<a name="118"><span class="lineNum">     118 </span>            : </a>
+<a name="119"><span class="lineNum">     119 </span>            : Tensor</a>
+<a name="120"><span class="lineNum">     120 </span><span class="lineCov">         39 : bmv(const Tensor &amp; a, const Tensor &amp; v)</span></a>
+<a name="121"><span class="lineNum">     121 </span>            : {</a>
+<a name="122"><span class="lineNum">     122 </span><span class="lineCov">         39 :   neml_assert_batch_broadcastable_dbg(a, v);</span></a>
+<a name="123"><span class="lineNum">     123 </span><span class="lineCov">         39 :   neml_assert_dbg(a.base_dim() == 2,</span></a>
+<a name="124"><span class="lineNum">     124 </span>            :                   &quot;The first tensor in bmv has base dimension &quot;,</a>
+<a name="125"><span class="lineNum">     125 </span><span class="lineCov">         39 :                   a.base_dim(),</span></a>
+<a name="126"><span class="lineNum">     126 </span>            :                   &quot; instead of 2.&quot;);</a>
+<a name="127"><span class="lineNum">     127 </span><span class="lineCov">         39 :   neml_assert_dbg(v.base_dim() == 1,</span></a>
+<a name="128"><span class="lineNum">     128 </span>            :                   &quot;The second tensor in bmv has base dimension &quot;,</a>
+<a name="129"><span class="lineNum">     129 </span><span class="lineCov">         39 :                   v.base_dim(),</span></a>
+<a name="130"><span class="lineNum">     130 </span>            :                   &quot; instead of 1.&quot;);</a>
+<a name="131"><span class="lineNum">     131 </span><span class="lineCov">         78 :   return Tensor(torch::matmul(a, v.base_unsqueeze(-1)).squeeze(-1), broadcast_batch_dim(a, v));</span></a>
+<a name="132"><span class="lineNum">     132 </span>            : }</a>
+<a name="133"><span class="lineNum">     133 </span>            : </a>
+<a name="134"><span class="lineNum">     134 </span>            : Tensor</a>
+<a name="135"><span class="lineNum">     135 </span><span class="lineCov">        675 : bvv(const Tensor &amp; a, const Tensor &amp; b)</span></a>
+<a name="136"><span class="lineNum">     136 </span>            : {</a>
+<a name="137"><span class="lineNum">     137 </span><span class="lineCov">        675 :   neml_assert_batch_broadcastable_dbg(a, b);</span></a>
+<a name="138"><span class="lineNum">     138 </span><span class="lineCov">        675 :   neml_assert_dbg(a.base_dim() == 1,</span></a>
+<a name="139"><span class="lineNum">     139 </span>            :                   &quot;The first tensor in bvv has base dimension &quot;,</a>
+<a name="140"><span class="lineNum">     140 </span><span class="lineCov">        675 :                   a.base_dim(),</span></a>
+<a name="141"><span class="lineNum">     141 </span>            :                   &quot; instead of 1.&quot;);</a>
+<a name="142"><span class="lineNum">     142 </span><span class="lineCov">        675 :   neml_assert_dbg(b.base_dim() == 1,</span></a>
+<a name="143"><span class="lineNum">     143 </span>            :                   &quot;The second tensor in bvv has base dimension &quot;,</a>
+<a name="144"><span class="lineNum">     144 </span><span class="lineCov">        675 :                   b.base_dim(),</span></a>
+<a name="145"><span class="lineNum">     145 </span>            :                   &quot; instead of 1.&quot;);</a>
+<a name="146"><span class="lineNum">     146 </span><span class="lineCov">       1350 :   return Tensor(torch::sum(a * b, -1), broadcast_batch_dim(a, b));</span></a>
+<a name="147"><span class="lineNum">     147 </span>            : }</a>
+<a name="148"><span class="lineNum">     148 </span>            : }</a>
+<a name="149"><span class="lineNum">     149 </span>            : </a>
+<a name="150"><span class="lineNum">     150 </span>            : Tensor</a>
+<a name="151"><span class="lineNum">     151 </span><span class="lineCov">        812 : operator*(const Tensor &amp; a, const Tensor &amp; b)</span></a>
+<a name="152"><span class="lineNum">     152 </span>            : {</a>
+<a name="153"><span class="lineNum">     153 </span><span class="lineCov">        812 :   neml_assert_broadcastable_dbg(a, b);</span></a>
+<a name="154"><span class="lineNum">     154 </span><span class="lineCov">       1624 :   return Tensor(torch::operator*(a, b), broadcast_batch_dim(a, b));</span></a>
+<a name="155"><span class="lineNum">     155 </span>            : }</a>
+<a name="156"><span class="lineNum">     156 </span>            : } // end namespace neml2</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.14</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

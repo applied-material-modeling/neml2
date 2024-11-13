@@ -1,0 +1,5 @@
+<map id="LabeledTensor3D" name="LabeledTensor3D">
+<area shape="rect" id="Node000001" title="A single&#45;batched, logically 3D LabeledTensor." alt="" coords="54,93,187,119"/>
+<area shape="rect" id="Node000002" href="$classneml2_1_1LabeledTensor.html" title=" " alt="" coords="5,5,236,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="123,59,123,93,118,93,118,59"/>
+</map>
