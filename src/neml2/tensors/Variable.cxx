@@ -207,6 +207,7 @@ VariableBase::total_second_derivatives(const DependencyResolver<Model, VariableN
 void
 Derivative::operator=(const Tensor & val)
 {
+  std::cout << val.batch_sizes() << ", " << val.base_sizes() << std::endl;
   *_deriv = val.base_reshape(_base_sizes);
 }
 }

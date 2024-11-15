@@ -82,11 +82,18 @@ ResolvedShear::set_value(bool out, bool dout_din, bool d2out_din2)
   if (dout_din)
   {
     if (_S.is_dependent())
-      _rss.d(_S) = _crystal_geometry.M().rotate(R);
+    {
+      std::cout << "_R.batch_sizes() = " << _R.batch_sizes() << std::endl;
+      auto tmp = Tensor(_crystal_geometry.M().rotate(R), _R.batch_sizes());
+      std::cout << tmp.batch_sizes() << ", " << tmp.base_sizes() << std::endl;
+      _rss.d(_S) = tmp;
+      std::cout << "_rss.d(_S).batch_sizes() = " << _rss.derivatives().at(_S.name()).batch_sizes()
+                << std::endl;
+    }
 
-    if (_R.is_dependent())
-      _rss.d(_R) = SR2(_crystal_geometry.M().drotate(R).movedim(-3, -1))
-                       .inner(SR2(_S).batch_unsqueeze(-1).batch_unsqueeze(-1).batch_unsqueeze(-1));
+    // if (_R.is_dependent())
+    //   _rss.d(_R) = SR2(_crystal_geometry.M().drotate(R).movedim(-3, -1))
+    //                    .inner(SR2(_S).batch_unsqueeze(-1).batch_unsqueeze(-1).batch_unsqueeze(-1));
   }
 }
 
