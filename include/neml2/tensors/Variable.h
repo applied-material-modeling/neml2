@@ -286,14 +286,19 @@ public:
       const_cast<Variable<T> *>(_ref)->set(val);
     }
     else
+    {
       _value = T(val.base_reshape(utils::add_shapes(list_sizes(), base_sizes())),
                  utils::add_traceable_shapes(val.batch_sizes(), list_sizes()));
+    }
   }
 
   Tensor get() const override
   {
-    return _ref ? _ref->get()
-                : Tensor(_value, _value.batch_sizes().slice(0, _value.batch_dim() - list_dim()));
+    if (_ref)
+      return _ref->get();
+
+    auto batch_sizes = _value.batch_sizes().slice(0, _value.batch_dim() - list_dim());
+    return Tensor(_value, batch_sizes);
   }
 
   /// Suppressed constructor to prevent accidental dereferencing

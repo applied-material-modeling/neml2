@@ -261,13 +261,13 @@ Derived
 TensorBase<Derived>::batch_expand(const TraceableSize & batch_size, Size dim) const
 {
   // We don't want to touch other batch dimensions and the base dimensions, so put -1 for them.
-  auto net = std::vector<Size>(dim(), -1);
-  auto i = dim >= 0 ? dim : dim - base_dim();
+  auto net = std::vector<Size>(this->dim(), -1);
+  auto i = dim >= 0 ? dim : this->dim() + dim - base_dim();
   net[i] = batch_size.concrete();
 
   // Record the batch sizes in the traced graph if we are tracing
   if (const auto * const s = batch_size.traceable())
-    torch::jit::tracer::ArgumentStash::stashIntArrayRefElem("size", dim(), i, *s);
+    torch::jit::tracer::ArgumentStash::stashIntArrayRefElem("size", this->dim(), i, *s);
 
   return Derived(expand(net), batch_dim());
 }
@@ -289,12 +289,12 @@ template <class Derived>
 neml2::Tensor
 TensorBase<Derived>::base_expand(Size base_size, Size dim) const
 {
-  if (base_size(dim) == base_size)
+  if (this->base_size(dim) == base_size)
     return *this;
 
   // We don't want to touch the batch dimensions and other base dimensions, so put -1 for them.
-  auto net = std::vector<Size>(dim(), -1);
-  auto i = dim < 0 ? dim : dim + batch_dim();
+  auto net = std::vector<Size>(this->dim(), -1);
+  auto i = dim < 0 ? this->dim() + dim : dim + batch_dim();
   net[i] = base_size;
   return neml2::Tensor(expand(net), batch_sizes());
 }

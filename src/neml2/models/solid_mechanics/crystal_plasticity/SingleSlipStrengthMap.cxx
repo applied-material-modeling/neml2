@@ -65,6 +65,6 @@ SingleSlipStrengthMap::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (dout_din)
     if (_tau_bar.is_dependent())
-      _tau.d(_tau_bar) = Scalar::ones(_tau_bar.options());
+      _tau.d(_tau_bar) = Tensor::ones(_crystal_geometry.nslip(), _tau_bar.options());
 }
 } // namespace neml2
