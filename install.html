@@ -142,14 +142,15 @@ Dependencies</h1>
 <h2><a class="anchor" id="autotoc_md14"></a>
 Required dependencies</h2>
 <ul>
-<li><a href="https://pytorch.org/get-started/locally/">PyTorch</a>, version 2.2.2.</li>
+<li><a href="https://pytorch.org/get-started/locally/">PyTorch</a>, version 2.5.1.</li>
 </ul>
-<p>Other PyTorch releases with a few minor versions around are likely to be compatible. In the PyTorch official download page, several download options are provided: conda, pip, libTorch, and source distribution.</p><ul>
+<p>Recent PyTorch releases within a few minor versions are likely to be compatible. In the PyTorch official download page, several download options are provided: conda, pip, libTorch, and source distribution.</p><ul>
 <li><b>Recommended</b>: If you choose to download PyTorch using conda or pip, the NEML2 CMake script can automatically detect and use the PyTorch installation.</li>
 <li>If you choose to download libTorch or build PyTorch from source, you will need to set <code>LIBTORCH_DIR</code> to be the location of libTorch when using CMake to configure NEML2.</li>
 </ul>
 <dl class="section note"><dt>Note</dt><dd>The libTorch distributions from the official website come with two flavors: "Pre-cxx11 ABI" and "cxx11 ABI". Both variants are supported by NEML2. If you are unsure, we recommend the one with "cxx11 ABI".</dd></dl>
 <p>If no PyTorch installation can be detected and <code>LIBTORCH_DIR</code> is not set at configure time, the NEML2 CMake script will automatically download and use the libTorch obtained from the official website. Note, however, that this method only works on Linux and Mac systems.</p>
+<dl class="section note"><dt>Note</dt><dd>We strive to keep up with the rapid development of PyTorch. The NEML2 PyTorch dependency is updated on a quarterly basis. If there is a particular version of PyTorch you'd like to use which is found to be incompatible with NEML2, please feel free to <a href="https://github.com/applied-material-modeling/neml2/issues">create an issue</a>.</dd></dl>
 <h2><a class="anchor" id="autotoc_md15"></a>
 Optional dependencies</h2>
 <dl class="section note"><dt>Note</dt><dd>No action is needed to manually obtain the optional dependencies. The compatible optional dependencies will be automatically downloaded and configured by CMake depending on the build customization.</dd></dl>
@@ -175,7 +176,7 @@ Build and install</h1>
 <h2><a class="anchor" id="autotoc_md17"></a>
 C++ backend</h2>
 <p>First, obtain the NEML2 source code.</p>
-<div class="fragment"><div class="line">git clone https://github.com/reverendbedford/neml2.git</div>
+<div class="fragment"><div class="line">git clone https://github.com/applied-material-modeling/neml2.git</div>
 <div class="line">cd neml2</div>
 <div class="line">git checkout main</div>
 </div><!-- fragment --><p>Then, configure NEML2. See <a class="el" href="#install-build-customization">build customization</a> for possible configuration options.</p>
@@ -241,7 +242,7 @@ CMake integration</h1>
 </div><!-- fragment --><p>The above snippet assumes NEML2 is checked out to the directory neml2, i.e., as a git submodule. Alternatively, you may use CMake's <code>FetchContent</code> module to integrate NEML2 into your project:</p>
 <div class="fragment"><div class="line">FetchContent_Declare(</div>
 <div class="line">  neml2</div>
-<div class="line">  GIT_REPOSITORY https://github.com/reverendbedford/neml2.git</div>
+<div class="line">  GIT_REPOSITORY https://github.com/applied-material-modeling/neml2.git</div>
 <div class="line">  GIT_TAG v2.0.0</div>
 <div class="line">)</div>
 <div class="line">FetchContent_MakeAvailable(neml2)</div>

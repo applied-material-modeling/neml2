@@ -1,11 +1,11 @@
 var classtensors_1_1LabeledMatrix =
 [
     [ "__init__", "classtensors_1_1LabeledMatrix.html#abc1b785959b47505de72feabab160402", null ],
-    [ "__init__", "classtensors_1_1LabeledMatrix.html#a9e46416f86f825439fa76239adc11dfb", null ],
-    [ "__init__", "classtensors_1_1LabeledMatrix.html#ae0e25ee21d7fa15bba7d6bbd7cb69c19", null ],
+    [ "__init__", "classtensors_1_1LabeledMatrix.html#a5914bc8e4b3e3f44a5f96b5088083c08", null ],
+    [ "__init__", "classtensors_1_1LabeledMatrix.html#a89da8dfdb67dc2b8c2724e81605c03da", null ],
     [ "__init__", "classtensors_1_1LabeledMatrix.html#a0d7beab06995ed6066d18bfb2f024e77", null ],
     [ "__str__", "classtensors_1_1LabeledMatrix.html#ae07f7930f92d3591c93e2381cd5be285", null ],
-    [ "axes", "classtensors_1_1LabeledMatrix.html#a03e54b5b4444d0b539d653b00e253425", null ],
+    [ "axes", "classtensors_1_1LabeledMatrix.html#ac3e4d8abdba3467ff44433263e8e2b41", null ],
     [ "base", "classtensors_1_1LabeledMatrix.html#a021001a34342ac89db2cb8078b37b04b", null ],
     [ "batch", "classtensors_1_1LabeledMatrix.html#a9b024e7702983159b3575473f6518abd", null ],
     [ "batched", "classtensors_1_1LabeledMatrix.html#a4f23ac09ae87619a0f06e9b932a84ecd", null ],

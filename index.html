@@ -112,20 +112,20 @@ $(function(){initNavTree('index.html',''); initResizable(); });
   <div class="headertitle"><div class="title">NEML2 </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="md__2home_2runner_2work_2neml2_2neml2_2README"></a> <a href="https://reverendbedford.github.io/neml2/"><img src="https://github.com/reverendbedford/neml2/actions/workflows/build_docs.yml/badge.svg?branch=main" alt="Documentation" style="pointer-events: none;" class="inline"/></a> <a href="https://github.com/reverendbedford/neml2/actions/workflows/tests.yml"><img src="https://github.com/reverendbedford/neml2/actions/workflows/tests.yml/badge.svg?branch=main" alt="tests" style="pointer-events: none;" class="inline"/></a></p>
+<div class="textblock"><p><a class="anchor" id="md__2home_2runner_2work_2neml2_2neml2_2README"></a> <a href="https://applied-material-modeling.github.io/neml2/"><img src="https://github.com/applied-material-modeling/neml2/actions/workflows/build_docs.yml/badge.svg?branch=main" alt="Documentation" style="pointer-events: none;" class="inline"/></a> <a href="https://github.com/applied-material-modeling/neml2/actions/workflows/cpp.yml"><img src="https://github.com/applied-material-modeling/neml2/actions/workflows/cpp.yml/badge.svg?branch=main" alt="C++ backend testing" style="pointer-events: none;" class="inline"/></a> <a href="https://github.com/applied-material-modeling/neml2/actions/workflows/python.yml"><img src="https://github.com/applied-material-modeling/neml2/actions/workflows/python.yml/badge.svg?branch=main" alt="Python package testing" style="pointer-events: none;" class="inline"/></a></p>
 <h1><a class="anchor" id="autotoc_md1"></a>
 Overview</h1>
 <h2><a class="anchor" id="autotoc_md2"></a>
 The New Engineering Material model Library, version 2</h2>
 <p>NEML2 is an offshoot of <a href="https://github.com/Argonne-National-Laboratory/neml">NEML</a>, an earlier material modeling code developed at Argonne National Laboratory. Like its predecessor, NEML2 provides a flexible, modular way to build material models from smaller blocks. Unlike its predecessor, NEML2 vectorizes the material update to efficiently run on GPUs. In addition, NEML2 models can use <a href="https://pytorch.org/cppdocs/">PyTorch</a> as the backend to provide first-class support for automatic differentiation, operator fusion, lazy tensor evaluation, inference mode, etc.</p>
-<p>NEML2 is provided as open source software under a MIT <a href="https://raw.githubusercontent.com/reverendbedford/neml2/main/LICENSE">license</a>.</p>
+<p>NEML2 is provided as open source software under a MIT <a href="https://raw.githubusercontent.com/applied-material-modeling/neml2/main/LICENSE">license</a>.</p>
 <blockquote class="doxtable">
 <p>&zwj;<b>Disclaimer</b></p>
 <p>NEML2 is <em>not</em> a database of material models. There are many example material models in the library for testing and verification purposes. These models do not represent the response of any actual material. </p>
 </blockquote>
 <h2><a class="anchor" id="autotoc_md3"></a>
 Quick installation</h2>
-<p>Building should be as easy as cloning the repository, configuring with CMake, compiling with <code>make</code>, and installing with <code>make install</code>. Refer to the <a href="https://reverendbedford.github.io/neml2/install.html">installation guide</a> for more detailed instructions and finer control over various dependencies as well as other build customization.</p>
+<p>Building should be as easy as cloning the repository, configuring with CMake, compiling with <code>make</code>, and installing with <code>make install</code>. Refer to the <a href="https://applied-material-modeling.github.io/neml2/install.html">installation guide</a> for more detailed instructions and finer control over various dependencies as well as other build customization.</p>
 <h2><a class="anchor" id="autotoc_md4"></a>
 Features and design philosophy</h2>
 <h3>Vectorization</h3>
