@@ -1,0 +1,17 @@
+<map id="Orientation" name="Orientation">
+<area shape="rect" id="Node000001" title="Create batch of rotations, with various methods." alt="" coords="140,372,235,397"/>
+<area shape="rect" id="Node000002" href="$classneml2_1_1Rot.html" title="Rotation stored as modified Rodrigues parameters." alt="" coords="111,299,155,324"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="152,333,181,370,176,374,148,337"/>
+<area shape="rect" id="Node000003" href="$classneml2_1_1VecBase.html" title=" " alt="" coords="51,225,180,251"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="124,263,132,298,127,299,119,265"/>
+<area shape="rect" id="Node000004" href="$classneml2_1_1PrimitiveTensor.html" title="PrimitiveTensor inherits from TensorBase and additionally templates on the base shape." alt="" coords="5,152,225,177"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="118,191,118,225,113,225,113,191"/>
+<area shape="rect" id="Node000005" href="$classneml2_1_1TensorBase.html" title="NEML2&#39;s enhanced tensor type." alt="" coords="27,79,204,104"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="118,118,118,152,113,152,113,118"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="83,5,147,31"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="118,44,118,79,113,79,113,44"/>
+<area shape="rect" id="Node000007" href="$classneml2_1_1UserTensorBase.html" title=" " alt="" coords="187,299,313,324"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="233,336,199,374,195,370,229,333"/>
+<area shape="rect" id="Node000008" href="$classneml2_1_1NEML2Object.html" title="The base class of all &quot;manufacturable&quot; objects in the NEML2 library." alt="" coords="205,225,314,251"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="259,265,254,299,249,298,253,264"/>
+</map>
