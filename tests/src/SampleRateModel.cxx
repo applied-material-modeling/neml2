@@ -89,7 +89,7 @@ SampleRateModelTmpl<false>::set_value(bool out, bool dout_din, bool d2out_din2)
 
 template <>
 void
-SampleRateModelTmpl<true>::set_value(bool out, bool dout_din, bool d2out_din2)
+SampleRateModelTmpl<true>::set_value(bool out, bool /*dout_din*/, bool /*d2out_din2*/)
 {
   if (out)
   {

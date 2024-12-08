@@ -53,7 +53,7 @@ VTestTimeSeries<T>::VTestTimeSeries(const OptionSet & options)
 
 template <typename T>
 T
-VTestTimeSeries<T>::init(const OptionSet & options) const
+VTestTimeSeries<T>::init(const OptionSet & /*options*/) const
 {
   throw NEMLException(name() + " has not been implemented");
   return T();
