@@ -62,7 +62,6 @@
     driver = 'driver'
     variables = 'output.state/mean_cauchy_stress'
     references = 'stresses'
-    taylor_average = true
     # Looser tolerances here are because the NEML(1) model was generated with lagged, explict
     # integration on the orientations
     atol = 1.0

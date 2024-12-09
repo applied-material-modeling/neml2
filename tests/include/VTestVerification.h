@@ -53,9 +53,6 @@ private:
 
   Real _rtol;
   Real _atol;
-
-  /// Check the average of the model output instead...
-  bool _taylor_average;
 };
 
 std::string diff(const torch::jit::named_buffer_list & res,
