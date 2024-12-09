@@ -34,9 +34,9 @@ class Rot;
 class R3;
 
 /**
- * @brief Base class for the (logical) vector.
+ * @brief Base class 3-vector.
  *
- * The logical storage space is (3). This class provides common operations for vector.
+ * The storage space is (3). This class provides common operations for vector.
  */
 template <class Derived>
 class VecBase : public PrimitiveTensor<Derived, 3>

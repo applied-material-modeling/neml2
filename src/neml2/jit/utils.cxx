@@ -22,20 +22,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <pybind11/pybind11.h>
+#include "neml2/jit/utils.h"
 
-#include "python/neml2/tensors/LabeledTensor.h"
-#include "neml2/tensors/LabeledVector.h"
-
-namespace py = pybind11;
-using namespace neml2;
+namespace neml2
+{
+void
+neml_assert_tracing()
+{
+  neml_assert(torch::jit::tracer::isTracing(), "Expected to be tracing but not tracing");
+}
 
 void
-def_LabeledVector(py::module_ & m)
+neml_assert_tracing_dbg()
 {
-  auto c = py::class_<LabeledVector>(m, "LabeledVector");
-
-  def_LabeledBatchView<LabeledVector>(m, "LabeledVectorBatchView");
-  def_LabeledBaseView<LabeledVector>(m, "LabeledVectorBaseView");
-  def_LabeledTensor<LabeledVector, 1>(c);
+#ifndef NDEBUG
+  neml_assert_tracing();
+#endif
 }
+} // namespace neml2

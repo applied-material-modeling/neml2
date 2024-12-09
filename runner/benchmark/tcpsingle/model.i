@@ -90,9 +90,10 @@
     prescribed_vorticity = 'vorticity'
     ic_rot_names = 'state/orientation'
     ic_rot_values = 'initial_orientation'
-    predictor = 'CP_PREVIOUS_STATE'
+    predictor = 'PREVIOUS_STATE'
+    cp_warmup = true
+    cp_warmup_elastic_scale = 0.05
     device = ${device}
-    cp_elastic_scale = 0.05
   []
 []
 

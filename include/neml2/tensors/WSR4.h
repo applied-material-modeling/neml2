@@ -31,10 +31,10 @@ namespace neml2
 class R4;
 
 /**
- * @brief The (logical) symmetric fourth order tensor, with skew symmetry in the first two
+ * @brief The symmetric fourth order tensor, with skew symmetry in the first two
  * dimensionss and symmetry in the second two
  *
- * Mandel notation/reduced skew is used, and so the logical storage space is (3, 6).
+ * Mandel notation/reduced skew is used, and so the storage space is (3, 6).
  */
 class WSR4 : public PrimitiveTensor<WSR4, 3, 6>
 {

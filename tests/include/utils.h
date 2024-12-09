@@ -67,32 +67,23 @@ finite_differencing_derivative(F && f,
   }
 
   // Flatten x to support arbitrarily shaped input
-  auto xf =
-      Tensor(x.reshape(utils::add_shapes(x.batch_sizes(), utils::storage_size(x.base_sizes()))),
-             x.batch_dim());
-
+  auto xf = x.base_flatten();
   auto y0 = Tensor(f(x)).clone();
-
-  auto dy_dxf = Tensor::empty(
-      x.batch_sizes(), utils::add_shapes(y0.base_sizes(), xf.base_sizes()), x.options());
-
-  for (Size i = 0; i < xf.base_sizes()[0]; i++)
+  auto dy_dxf = std::vector<Tensor>(xf.base_size(0));
+  for (Size i = 0; i < xf.base_size(0); i++)
   {
     auto dx = eps * Scalar(math::abs(xf.base_index({i})));
     dx.index_put_({dx < aeps}, aeps);
 
     auto xf1 = xf.clone();
     xf1.base_index_put_({i}, xf1.base_index({i}) + dx);
-    auto x1 = Tensor(xf1.reshape(x.sizes()), x.batch_dim());
+    auto x1 = Tensor(xf1.reshape(x.sizes()), x.batch_sizes());
 
     auto y1 = Tensor(f(x1)).clone();
-    dy_dxf.base_index_put_({indexing::Ellipsis, i}, (y1 - y0) / dx);
+    dy_dxf[i] = (y1 - y0) / dx;
   }
 
   // Reshape the derivative back to the correct shape
-  auto dy_dx =
-      Tensor(dy_dxf.reshape(utils::add_shapes(x.batch_sizes(), y0.base_sizes(), x.base_sizes())),
-             x.batch_dim());
-
-  return dy_dx;
+  auto dy_dx = math::base_stack(dy_dxf, -1);
+  return dy_dx.base_reshape(utils::add_shapes(y0.base_sizes(), x.base_sizes()));
 }

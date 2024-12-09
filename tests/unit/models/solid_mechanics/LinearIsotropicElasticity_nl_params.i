@@ -2,14 +2,12 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    batch_shape = '(10)'
     input_scalar_names = 'params/E params/nu'
     input_scalar_values = '100 0.3'
     input_symr2_names = 'state/internal/Ee'
     input_symr2_values = 'Ee'
     output_symr2_names = 'state/S'
     output_symr2_values = 'S'
-    check_AD_first_derivatives = false
   []
 []
 

@@ -35,9 +35,9 @@ class SR2;
 class WSR4;
 
 /**
- * @brief A skew rank 2, represented as an axial vector
+ * @brief A skew-symmetric second order tensor, represented as an axial vector
  *
- * The logical storage space is (3).
+ * The storage space is (3).
  */
 class WR2 : public VecBase<WR2>
 {

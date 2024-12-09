@@ -28,7 +28,7 @@
 #include "neml2/base/CrossRef.h"
 #include "neml2/base/Settings.h"
 #include "neml2/base/EnumSelection.h"
-#include "neml2/tensors/LabeledAxis.h"
+#include "neml2/models/LabeledAxis.h"
 #include "neml2/tensors/tensors.h"
 #include <memory>
 

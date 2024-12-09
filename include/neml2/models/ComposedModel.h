@@ -38,52 +38,18 @@ public:
 
   ComposedModel(const OptionSet & options);
 
-  virtual void check_AD_limitation() const override;
-
-  virtual std::map<std::string, const VariableBase *>
+  std::map<std::string, const VariableBase *>
   named_nonlinear_parameters(bool recursive = false) const override;
 
-  virtual std::map<std::string, Model *>
+  std::map<std::string, Model *>
   named_nonlinear_parameter_models(bool recursive = false) const override;
 
-  virtual void setup() override;
-
-  using AssemblyIndices = std::map<indexing::TensorIndex,
-                                   std::pair<indexing::TensorIndex, Model *>,
-                                   LabeledAxis::AssemblySliceCmp>;
-
 protected:
-  virtual void allocate_variables(bool in, bool out) override;
-
-  /**
-   * Setup each of the sub-model's input views. Note the logic is different from the base class's.
-   * The sub-models in a composed model should not all view into the host's input storage. Instead,
-   * the non-inbound input variables should view into dependent models' output storage. This avoids
-   * all the copying when passing a sub-model's output as another sub-model's input.
-   *
-   */
-  virtual void setup_submodel_input_views(VariableStore * host) override;
-
-  virtual void setup_output_views() override;
-
+  void link_input_variables(Model * submodel) override;
+  void link_output_variables(Model * submodel) override;
   void set_value(bool, bool, bool) override;
 
 private:
-  /// Consolidate assembly indices
-  AssemblyIndices consolidate(const AssemblyIndices & indices) const;
-
-  /// Helper method to evaluate one single model in the threaded set_value loop
-  void set_value_async(Model * i, bool out, bool dout_din, bool d2out_din2);
-
-  /// Helper method to recursively apply chain rule
-  void apply_chain_rule(Model * i);
-
-  /// Helper method to recursively apply second order chain rule
-  void apply_second_order_chain_rule(Model * i);
-
-  /// Helper to rethrow exceptions collected from other threads
-  void rethrow_exceptions() const;
-
   /// Additional outbound items in the dependency graph
   const std::vector<VariableName> _additional_outputs;
 
@@ -92,26 +58,5 @@ private:
 
   /// Helper to resolve model dependency
   DependencyResolver<Model, VariableName> _dependency;
-
-  /// Assembly indices
-  std::map<Model *, AssemblyIndices> _assembly_indices;
-
-  /// Cache for partial derivatives of model inputs w.r.t. total input
-  std::map<Model *, std::vector<Tensor>> _dpin_din_views;
-
-  /// Cache for partial derivatives of model outputs w.r.t. total input
-  std::map<Model *, LabeledMatrix> _dpout_din;
-
-  /// Cache for second partial derivatives of model inputs w.r.t. total input
-  std::map<Model *, std::vector<Tensor>> _d2pin_din2_views;
-
-  /// Cache for second partial derivatives of model outputs w.r.t. total input
-  std::map<Model *, LabeledTensor3D> _d2pout_din2;
-
-  /// Threaded evaluation results of sub-models
-  std::map<Model *, std::future<void>> _async_results;
-
-  /// Threaded evaluation exceptions of sub-models
-  std::map<std::thread::id, std::exception_ptr> _async_exceptions;
 };
 } // namespace neml2

@@ -28,10 +28,11 @@
 
 namespace neml2
 {
-class SampleRateModel : public Model
+template <bool AD>
+class SampleRateModelTmpl : public Model
 {
 public:
-  SampleRateModel(const OptionSet & options);
+  SampleRateModelTmpl(const OptionSet & options);
 
   const Variable<Scalar> & foo;
   const Variable<Scalar> & bar;
@@ -44,6 +45,8 @@ public:
 
 protected:
   void set_value(bool, bool, bool) override;
+
+  void request_AD() override;
 
   const Scalar & _a;
   const Scalar & _b;

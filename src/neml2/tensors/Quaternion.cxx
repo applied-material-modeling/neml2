@@ -44,7 +44,7 @@ Quaternion::fill(const Real & s,
 Quaternion
 Quaternion::fill(const Scalar & s, const Scalar & q1, const Scalar & q2, const Scalar & q3)
 {
-  return Quaternion(torch::stack({s, q1, q2, q3}, -1), s.batch_dim());
+  return Quaternion(torch::stack({s, q1, q2, q3}, -1), s.batch_sizes());
 }
 
 Scalar

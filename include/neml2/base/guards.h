@@ -63,7 +63,7 @@ struct SolvingNonlinearSystem
   const bool prev_bool;
 };
 
-// A RAII guard that sets number of interop threads for a local region
+// Set number of interop threads for a local region
 struct InterOpThread
 {
   InterOpThread(unsigned int num)
@@ -78,7 +78,7 @@ struct InterOpThread
   unsigned int prev_num;
 };
 
-// A RAII guard that sets number of intraop threads for a local region
+// Set number of intraop threads for a local region
 struct IntraOpThread
 {
   IntraOpThread(unsigned int num)
@@ -91,5 +91,12 @@ struct IntraOpThread
   ~IntraOpThread() { at::set_num_threads(prev_num); }
 
   unsigned int prev_num;
+};
+
+// Global switch for requesting AD for variable derivatives
+struct RequestingAD
+{
+  RequestingAD() { currently_requesting_AD() = true; }
+  ~RequestingAD() { currently_requesting_AD() = false; }
 };
 }

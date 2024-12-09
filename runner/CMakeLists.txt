@@ -14,6 +14,7 @@ option(NEML2_RUNNER_AS_PROFILER "Additionally link the runner against gperftools
 
 if(NEML2_RUNNER_AS_PROFILER)
   FetchContent_MakeAvailable(gperftools)
+  set_target_properties(runner PROPERTIES LINK_WHAT_YOU_USE TRUE)
   target_link_libraries(runner PRIVATE profiler)
 endif()
 

@@ -14,7 +14,6 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    batch_shape = '(10)'
     input_symr2_names = 'state/internal/O'
     input_symr2_values = 'foo'
     output_scalar_names = 'state/internal/I2'

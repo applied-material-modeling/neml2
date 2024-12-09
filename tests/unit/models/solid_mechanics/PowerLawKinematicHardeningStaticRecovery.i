@@ -2,15 +2,13 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    batch_shape = '(10)'
     input_scalar_names = 'params/tau params/n'
     input_scalar_values = '120.0 2.0'
     input_symr2_names = 'state/internal/X'
     input_symr2_values = 'X'
     output_symr2_names = 'state/internal/X_recovery_rate'
     output_symr2_values = 'X_rate'
-    output_abs_tol = 1.0e-4
-    check_AD_first_derivatives = false
+    value_abs_tol = 1.0e-4
   []
 []
 

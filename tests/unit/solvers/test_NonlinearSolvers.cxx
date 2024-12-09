@@ -50,51 +50,51 @@ TEMPLATE_LIST_TEST_CASE("NonlinearSolvers", "[solvers]", solver_types)
     SECTION("power")
     {
       // Initial guess
-      auto x = Tensor::full(batch_sz, nbase, 2.0, default_tensor_options());
+      auto x =
+          NonlinearSystem::SOL<false>(Tensor::full(batch_sz, nbase, 2.0, default_tensor_options()));
 
       // Create the nonlinear system
       auto options = PowerTestSystem::expected_options();
       PowerTestSystem system(options);
-      system.reinit(x);
 
-      auto [succeeded, iters] = solver.solve(system, x);
+      auto res = solver.solve(system, x);
 
-      REQUIRE(succeeded);
-      REQUIRE(torch::allclose(x, system.exact_solution()));
+      REQUIRE(res.ret == NonlinearSolver::RetCode::SUCCESS);
+      REQUIRE(torch::allclose(res.solution, system.exact_solution(x)));
     }
 
     SECTION("Rosenbrock")
     {
       // Initial guess
-      auto x = Tensor::full(batch_sz, nbase, 0.75, default_tensor_options());
+      auto x = NonlinearSystem::SOL<false>(
+          Tensor::full(batch_sz, nbase, 0.75, default_tensor_options()));
 
       // Create the nonlinear system
       auto options = RosenbrockTestSystem::expected_options();
       PowerTestSystem system(options);
-      system.reinit(x);
 
-      auto [succeeded, iters] = solver.solve(system, x);
+      auto res = solver.solve(system, x);
 
-      REQUIRE(succeeded);
-      REQUIRE(torch::allclose(x, system.exact_solution()));
+      REQUIRE(res.ret == NonlinearSolver::RetCode::SUCCESS);
+      REQUIRE(torch::allclose(res.solution, system.exact_solution(x)));
     }
   }
 
   SECTION("automatic scaling")
   {
     // Initial guess
-    auto x = Tensor::full(batch_sz, nbase, 2.0, default_tensor_options());
+    auto x =
+        NonlinearSystem::SOL<false>(Tensor::full(batch_sz, nbase, 2.0, default_tensor_options()));
 
     // Create the nonlinear system (with automatic scaling)
     auto options = PowerTestSystem::expected_options();
     options.set<bool>("automatic_scaling") = true;
     PowerTestSystem system(options);
-    system.reinit(x);
 
-    system.init_scaling(solver.verbose);
-    auto [succeeded, iters] = solver.solve(system, x);
+    system.init_scaling(x, solver.verbose);
+    auto res = solver.solve(system, x);
 
-    REQUIRE(succeeded);
-    REQUIRE(torch::allclose(x, system.exact_solution()));
+    REQUIRE(res.ret == NonlinearSolver::RetCode::SUCCESS);
+    REQUIRE(torch::allclose(res.solution, system.exact_solution(x)));
   }
 }

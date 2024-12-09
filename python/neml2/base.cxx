@@ -23,14 +23,64 @@
 // THE SOFTWARE.
 
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 #include <pybind11/stl/filesystem.h>
 
+#include "python/neml2/indexing.h"
 #include "python/neml2/types.h"
-#include "neml2/models/Model.h"
+
 #include "neml2/base/Factory.h"
+#include "neml2/models/Model.h"
+#include "neml2/models/Assembler.h"
+#include "neml2/misc/utils.h"
+#include "neml2/misc/parser_utils.h"
 
 namespace py = pybind11;
 using namespace neml2;
+
+std::map<VariableName, Tensor>
+unpack_model_input(const Model & model, py::dict pyinputs)
+{
+  std::vector<VariableName> input_names;
+  std::vector<Tensor> input_values;
+  for (auto && [key, val] : pyinputs)
+  {
+    try
+    {
+      input_names.push_back(key.cast<VariableName>());
+    }
+    catch (py::cast_error &)
+    {
+      throw py::cast_error("neml2.Model.value: Invalid input key type -- dictionary "
+                           "keys must be convertible to neml2.VariableName");
+    }
+
+    try
+    {
+      input_values.push_back(val.cast<Tensor>());
+    }
+    catch (py::cast_error &)
+    {
+      if (THPVariable_Check(val.ptr()))
+      {
+        const auto x = THPVariable_Unpack(val.ptr());
+        const auto & xvar = model.input_variable(input_names.back());
+        const auto batch_dim = x.dim() - xvar.list_dim() - xvar.base_dim();
+        input_values.push_back(Tensor(x, batch_dim));
+      }
+      else
+        throw py::cast_error(
+            "neml2.Model.value: Invalid input value type -- dictionary values must "
+            "be neml2.Tensor or torch.Tensor");
+    }
+  }
+
+  std::map<VariableName, Tensor> inputs;
+  for (size_t i = 0; i < input_names.size(); ++i)
+    inputs[input_names[i]] = input_values[i];
+
+  return inputs;
+}
 
 PYBIND11_MODULE(base, m)
 {
@@ -38,14 +88,16 @@ PYBIND11_MODULE(base, m)
 
   py::module_::import("neml2.tensors");
 
-  // Definitions
-  auto model_cls =
-      py::class_<Model, std::shared_ptr<Model>>(m, "Model", "A thin wrapper around neml2::Model");
+  // "Forward" declarations
+  auto axis_accessor_cls = py::class_<LabeledAxisAccessor>(m, "LabeledAxisAccessor");
+  auto axis_cls = py::class_<LabeledAxis>(m, "LabeledAxis");
   auto tensor_value_cls =
       py::class_<TensorValueBase>(m,
                                   "TensorValue",
                                   "The interface for working with tensor values (parameters, "
                                   "buffers, etc.) managed by models.");
+  auto model_cls =
+      py::class_<Model, std::shared_ptr<Model>>(m, "Model", "A thin wrapper around neml2::Model");
 
   // Factory methods
   m.def("load_input", &load_input, py::arg("path"), py::arg("cli_args") = "", R"(
@@ -68,7 +120,6 @@ where it is desirable to deallocate models on-the-fly.
   m.def("get_model",
         &get_model,
         py::arg("model"),
-        py::arg("enable_AD") = true,
         py::arg("force_create") = true,
         py::return_value_policy::reference,
         R"(
@@ -76,14 +127,12 @@ Create a models.Model from given input options. The input file must have
 already been parsed and loaded.
 
 :param model:        Name of the model
-:param enable_AD:    Enable automatic differentiation
 :param force_create: Whether to force create the model even if one has already been created
 )");
   m.def("load_model",
         &load_model,
         py::arg("path"),
         py::arg("model"),
-        py::arg("enable_AD") = true,
         py::return_value_policy::reference,
         R"(
 A convenient function to load an input file and get a model.
@@ -96,13 +145,11 @@ base.get_model if you need finer control over the model creation behavior.
 
 :param path:      Path to the input file to be parsed
 :param model:     Name of the model
-:param enable_AD: Enable automatic differentiation
 )");
   m.def("reload_model",
         &reload_model,
         py::arg("path"),
         py::arg("model"),
-        py::arg("enable_AD") = true,
         py::return_value_policy::reference,
         R"(
 Similar to base.load_model, except that this function additionally clears the
@@ -113,7 +160,6 @@ where it is desirable to deallocate models on-the-fly.
 
 :param path:      Path to the input file to be parsed
 :param model:     Name of the model
-:param enable_AD: Enable automatic differentiation
 )");
   m.def(
       "diagnose",
@@ -125,28 +171,75 @@ Diagnose common issues in model setup. Raises a runtime error including all iden
 :param model: Model to be diagnosed
 )");
 
+  // neml2.base.LabeledAxisAccessor
+  axis_accessor_cls.def(py::init<>())
+      .def(py::init([](const std::string & str) { return utils::parse<LabeledAxisAccessor>(str); }))
+      .def(py::init<const LabeledAxisAccessor &>())
+      .def("with_suffix", &LabeledAxisAccessor::with_suffix)
+      .def("append", &LabeledAxisAccessor::append)
+      .def("prepend", &LabeledAxisAccessor::prepend)
+      .def("start_with", &LabeledAxisAccessor::start_with)
+      .def("__repr__", [](const LabeledAxisAccessor & self) { return utils::stringify(self); })
+      .def("__bool__", [](const LabeledAxisAccessor & self) { return !self.empty(); })
+      .def("__len__", [](const LabeledAxisAccessor & self) { return self.size(); })
+      .def("__hash__",
+           [](const LabeledAxisAccessor & self)
+           { return py::hash(py::cast(utils::stringify(self))); })
+      .def("__eq__",
+           [](const LabeledAxisAccessor & a, const LabeledAxisAccessor & b) { return a == b; })
+      .def("__ne__",
+           [](const LabeledAxisAccessor & a, const LabeledAxisAccessor & b) { return a == b; });
+
+  // Make LabeledAxisAccessor implicitly convertible from py::str
+  py::implicitly_convertible<std::string, LabeledAxisAccessor>();
+
+  // neml2.base.LabeledAxis
+  axis_cls.def("has_state", &LabeledAxis::has_state)
+      .def("has_old_state", &LabeledAxis::has_old_state)
+      .def("has_forces", &LabeledAxis::has_forces)
+      .def("has_old_forces", &LabeledAxis::has_old_forces)
+      .def("has_residual", &LabeledAxis::has_residual)
+      .def("has_parameters", &LabeledAxis::has_parameters)
+      .def("size", py::overload_cast<>(&LabeledAxis::size, py::const_))
+      .def("size",
+           py::overload_cast<const LabeledAxisAccessor &>(&LabeledAxis::size, py::const_),
+           py::arg("name"))
+      .def("slice", &LabeledAxis::slice, py::arg("name"))
+      .def("nvariable", &LabeledAxis::nvariable)
+      .def("has_variable", &LabeledAxis::has_variable, py::arg("name"))
+      .def("variable_id", &LabeledAxis::variable_id, py::arg("name"))
+      .def("variable_names", &LabeledAxis::variable_names)
+      .def("variable_slices", &LabeledAxis::variable_slices)
+      .def("variable_slice", &LabeledAxis::variable_slice, py::arg("name"))
+      .def("variable_sizes", &LabeledAxis::variable_sizes)
+      .def("variable_size", &LabeledAxis::variable_size, py::arg("name"))
+      .def("nsubaxis", &LabeledAxis::nsubaxis)
+      .def("has_subaxis", &LabeledAxis::has_subaxis, py::arg("name"))
+      .def("subaxis_id", &LabeledAxis::subaxis_id, py::arg("name"))
+      .def("subaxes", &LabeledAxis::subaxes, py::return_value_policy::reference)
+      .def("subaxis",
+           py::overload_cast<const LabeledAxisAccessor &>(&LabeledAxis::subaxis, py::const_),
+           py::arg("name"),
+           py::return_value_policy::reference)
+      .def("subaxis_names", &LabeledAxis::subaxis_names)
+      .def("subaxis_slices", &LabeledAxis::subaxis_slices)
+      .def("subaxis_slice", &LabeledAxis::subaxis_slice, py::arg("name"))
+      .def("subaxis_sizes", &LabeledAxis::subaxis_sizes)
+      .def("subaxis_size", &LabeledAxis::subaxis_size, py::arg("name"))
+      .def("__repr__", [](const LabeledAxis & self) { return utils::stringify(self); })
+      .def("__eq__", [](const LabeledAxis & a, const LabeledAxis & b) { return a == b; })
+      .def("__ne__", [](const LabeledAxis & a, const LabeledAxis & b) { return a == b; });
+
   // neml2.base.TensorValue
   tensor_value_cls
       .def(
           "torch",
-          [](const TensorValueBase & self) { return torch::Tensor(Tensor(self)).clone(); },
-          R"(
-Convert this to a torch.Tensor.
-
-This conversion takes ownership of the tensor, and so any modification to the
-returned torch.Tensor does not affect the original tensors.TensorValue. Use
-tensors.TensorValue.set_ instead to modify the tensor value.
-)")
+          [](const TensorValueBase & self) { return torch::Tensor(Tensor(self)); },
+          "Convert to a torch.Tensor")
       .def(
           "tensor",
-          [](const TensorValueBase & self) { return Tensor(self).clone(); },
-          R"(
-Convert this to a tensors.Tensor.
-
-This conversion takes ownership of the tensor, and so any modification to the
-returned tensors.Tensor does not affect the original tensors.TensorValue. Use
-tensors.TensorValue.set_ instead to modify the tensor value.
-)")
+          [](const TensorValueBase & self) { return Tensor(self); },
+          "Convert to a tensors.Tensor")
       .def_property_readonly(
           "requires_grad",
           [](const TensorValueBase & self) { return Tensor(self).requires_grad(); },
@@ -168,30 +261,7 @@ tensors.TensorValue.set_ instead to modify the tensor value.
   // neml2.base.Model
   model_cls.def_property_readonly("name", &Model::name, "Name of the model")
       .def_property_readonly("type", &Model::type, "Type of the model")
-      .def_property_readonly(
-          "is_AD_enabled",
-          &Model::is_AD_enabled,
-          "Whether automatic differentiation is enabled for this model. This property cannot be "
-          "modified once the model is created. Use the `enable_AD` option of base.load_model or "
-          "base.get_model to control this property.")
-      .def("reinit",
-           py::overload_cast<TensorShapeRef, int, const torch::Device &, const torch::Dtype &>(
-               &Model::reinit),
-           py::arg("batch_shape") = TensorShapeRef{},
-           py::arg("deriv_order") = 0,
-           py::arg("device") = torch::Device(default_device()),
-           py::arg("dtype") = torch::Dtype(default_dtype()),
-           R"(
-(Re)initialize the model with given batch shape, derivative order, device, and dtype.
-
-:param batch_shape: Batch shape used to allocate input, output, and derivative storage
-:param deriv_order: An integer ranging from 0-2. When set to 0, only the output storage
-    will be allocated; when set to 1, both the output and the first derivative storage
-    are allocated; when set to 2, the second derivative storage is additionally allocated.
-:param device:      Device on which the model will be evaluated. All parameters, buffers,
-    and custom data are synced to the given device.
-:param dtype:       Floating point scalar type used throughout the model.
-)")
+      .def("__str__", [](const Model & self) { return utils::stringify(self); })
       .def(
           "input_axis",
           [](const Model & self) { return &self.input_axis(); },
@@ -206,75 +276,17 @@ tensors.TensorValue.set_ instead to modify the tensor value.
           "associated slicing indices.")
       .def(
           "input_type",
-          &Model::input_type,
+          [](const Model & self, const VariableName & name)
+          { return self.input_variable(name).type(); },
           py::arg("variable"),
           "Introspect the underlying tensor type of an input variable. @returns tensors.TensorType")
-      .def("output_type",
-           &Model::output_type,
-           py::arg("variable"),
-           "Introspect the underlying tensor type of an output variable. @returns "
-           "tensors.TensorType")
       .def(
-          "value",
-          [](Model & self, py::object x)
-          {
-            // Check if it is a torch.Tensor, if it is, we can wrap it as a LabeledVector since we
-            // know a LabeledVector has base_dim == 1.
-            if (THPVariable_Check(x.ptr()))
-            {
-              auto & x_torch = THPVariable_Unpack(x.ptr());
-              auto y = self.value(LabeledVector(x_torch, {&self.input_axis()}));
-              return py::cast(torch::Tensor(y));
-            }
-
-            // Check if it is a neml2.Tensor
-            try
-            {
-              auto y = self.value(LabeledVector(x.cast<Tensor>(), {&self.input_axis()}));
-              return py::cast(y.tensor());
-            }
-            catch (py::cast_error &)
-            {
-            }
-
-            // Otherwise, hope it is a LabeledVector
-            return py::cast(self.value(x.cast<LabeledVector>()));
-          },
-          "Evaluate the model with given input and return the output. Note that the input can "
-          "either be of type torch.Tensor, tensors.Tensor, or tensors.LabeledVector. The returned "
-          "output will be of the covariant type of the input.")
-      .def(
-          "value_and_dvalue",
-          [](Model & self, py::object x)
-          {
-            // Check if it is a torch.Tensor, if it is, we can wrap it as a LabeledVector since we
-            // know a LabeledVector has base_dim == 1.
-            if (THPVariable_Check(x.ptr()))
-            {
-              auto & x_torch = THPVariable_Unpack(x.ptr());
-              auto [y, dy_dx] = self.value_and_dvalue(LabeledVector(x_torch, {&self.input_axis()}));
-              return py::make_tuple(torch::Tensor(y), torch::Tensor(dy_dx));
-            }
-
-            // Check if it is a neml2.Tensor
-            try
-            {
-              auto [y, dy_dx] =
-                  self.value_and_dvalue(LabeledVector(x.cast<Tensor>(), {&self.input_axis()}));
-              return py::make_tuple(y.tensor(), dy_dx.tensor());
-            }
-            catch (py::cast_error &)
-            {
-            }
-
-            // Otherwise, hope it is a LabeledVector
-            auto [y, dy_dx] = self.value_and_dvalue(x.cast<LabeledVector>());
-            return py::make_tuple(y, dy_dx);
-          },
-          "Evaluate the model with given input and return the output as well the first derivative. "
-          "Note that the input can either be of type torch.Tensor, tensors.Tensor, or "
-          "tensors.LabeledVector. The returned output and derivative will be of the covariant type "
-          "of the input.")
+          "output_type",
+          [](const Model & self, const VariableName & name)
+          { return self.output_variable(name).type(); },
+          py::arg("variable"),
+          "Introspect the underlying tensor type of an output variable. @returns "
+          "tensors.TensorType")
       .def(
           "named_parameters",
           [](Model & self)
@@ -309,23 +321,54 @@ tensors.TensorValue.set_ instead to modify the tensor value.
           },
           py::return_value_policy::reference,
           "Get the sub-models registered to this model")
-      .def(
-          "get_parameter",
-          [](Model & self, const std::string & name) { return &self.get_parameter(name); },
-          py::return_value_policy::reference,
-          "Get a model parameter given its name")
-      .def("set_parameter", &Model::set_parameter, "Set the value for a model parameter")
+      .def("__getattr__",
+           py::overload_cast<const std::string &>(&Model::get_parameter, py::const_),
+           py::return_value_policy::reference,
+           "Get a model parameter given its name")
+      .def("__setattr__", &Model::set_parameter, "Set the value for a model parameter")
       .def("set_parameters", &Model::set_parameters, "Set the values for multiple model parameters")
+      .def("value",
+           [](Model & self, py::dict pyinputs)
+           { return self.value(unpack_model_input(self, pyinputs)); })
+      .def("dvalue",
+           [](Model & self, py::dict pyinputs)
+           { return self.dvalue(unpack_model_input(self, pyinputs)); })
+      .def("d2value",
+           [](Model & self, py::dict pyinputs)
+           { return self.d2value(unpack_model_input(self, pyinputs)); })
+      .def("value_and_dvalue",
+           [](Model & self, py::dict pyinputs)
+           { return self.value_and_dvalue(unpack_model_input(self, pyinputs)); })
+      .def("dvalue_and_d2value",
+           [](Model & self, py::dict pyinputs)
+           { return self.dvalue_and_d2value(unpack_model_input(self, pyinputs)); })
+      .def("value_and_dvalue_and_d2value",
+           [](Model & self, py::dict pyinputs)
+           { return self.value_and_dvalue_and_d2value(unpack_model_input(self, pyinputs)); })
       .def(
           "dependency",
           [](const Model & self)
           {
             std::map<std::string, const Model *> deps;
             for (auto && [name, var] : self.input_variables())
-              if (var.src())
-                deps[utils::stringify(name)] = &var.src()->owner();
+              if (var.ref() != &var)
+                deps[utils::stringify(name)] = &var.ref()->owner();
             return deps;
           },
           py::return_value_policy::reference,
           "Get the dictionary describing this model's dependency information, if any.");
+
+  // neml2.base.VectorAssembler
+  py::class_<VectorAssembler>(m, "VectorAssembler")
+      .def(py::init<const LabeledAxis &>())
+      .def("assemble", &VectorAssembler::assemble)
+      .def("disassemble", &VectorAssembler::disassemble)
+      .def("split", &VectorAssembler::split);
+
+  // neml2.base.MatrixAssembler
+  py::class_<MatrixAssembler>(m, "MatrixAssembler")
+      .def(py::init<const LabeledAxis &, const LabeledAxis &>())
+      .def("assemble", &MatrixAssembler::assemble)
+      .def("disassemble", &MatrixAssembler::disassemble)
+      .def("split", &MatrixAssembler::split);
 }

@@ -68,7 +68,7 @@ GursonCavitation::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (dout_din)
   {
-    const auto I = SR2::identity(options());
+    const auto I = SR2::identity(_phi.options());
 
     if (_phi.is_dependent())
       _phi_dot.d(_phi) = -ep_dot;

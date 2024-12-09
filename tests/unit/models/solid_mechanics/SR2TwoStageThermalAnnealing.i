@@ -2,7 +2,6 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    batch_shape = '(7)'
     input_scalar_names = 'forces/T'
     input_scalar_values = 'temperature_in'
     input_symr2_names = 'state/internal/k_rate_unmodified state/internal/k'
@@ -10,7 +9,7 @@
     output_symr2_names = 'state/internal/k_rate'
     output_symr2_values = 'correct_values'
     check_second_derivatives = false
-    output_abs_tol = 1e-4
+    value_abs_tol = 1e-4
   []
 []
 

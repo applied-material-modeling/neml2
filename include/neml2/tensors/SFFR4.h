@@ -29,9 +29,9 @@
 namespace neml2
 {
 /**
- * @brief The logical fourth order tensor with minor symmetry in the 1st and 2nd dimensions.
+ * @brief The fourth order tensor with minor symmetry in the 1st and 2nd dimensions.
  *
- * Mandel notation is used, and so the logical storage space is (6, 3, 3).
+ * Mandel notation is used, and so the storage space is (6, 3, 3).
  */
 class SFFR4 : public PrimitiveTensor<SFFR4, 6, 3, 3>
 {

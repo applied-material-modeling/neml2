@@ -2,7 +2,6 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    batch_shape = '()'
     input_rot_names = 'state/orientation'
     input_rot_values = 'R_in'
     output_rot_names = 'state/output_orientation'

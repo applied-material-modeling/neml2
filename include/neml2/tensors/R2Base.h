@@ -41,9 +41,9 @@ template <class>
 class VecBase;
 
 /**
- * @brief The (logical) full second order tensor.
+ * @brief Base class for second order tensor.
  *
- * The logical storage space is (3, 3).
+ * The storage space is (3, 3).
  */
 template <class Derived>
 class R2Base : public PrimitiveTensor<Derived, 3, 3>

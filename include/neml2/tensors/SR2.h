@@ -38,9 +38,9 @@ class SWR4;
 class WR2;
 
 /**
- * @brief The (logical) symmetric second order tensor.
+ * @brief The symmetric second order tensor.
  *
- * Mandel notation is used, and so the logical storage space is (6).
+ * Mandel notation is used, and so the storage space is (6).
  */
 class SR2 : public PrimitiveTensor<SR2, 6>
 {

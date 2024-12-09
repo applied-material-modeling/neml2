@@ -13,12 +13,11 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    batch_shape = '(10)'
     input_symr2_names = 'state/M'
     input_symr2_values = 'M'
     output_symr2_names = 'state/NM'
     output_symr2_values = 'NM'
-    derivatives_abs_tol = 1e-6
+    derivative_abs_tol = 1e-6
   []
 []
 

@@ -35,7 +35,7 @@ class Scalar;
  *
  * Our convention is s q1 q2 q3, i.e. the scalar part first
  *
- * The logical storage space is (4,).
+ * The storage space is (4,).
  *
  * Currently we only use this for data storage, so the only
  * method needed is to convert it to an R2

@@ -112,12 +112,14 @@ jobs:
         with:
           files: tests/*.xml
           check_name: Test Results (${{ matrix.os }}-${{ matrix.btype }}-${{ matrix.unity }})
+          check_run: false
       - name: Publish Test Results
         if: matrix.os == 'macos-latest'
         uses: EnricoMi/publish-unit-test-result-action/macos@v2
         with:
           files: tests/*.xml
           check_name: Test Results (${{ matrix.os }}-${{ matrix.btype }}-${{ matrix.unity }})
+          check_run: false
 
   build-all:
     needs: clang-format

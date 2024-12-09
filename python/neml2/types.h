@@ -30,7 +30,7 @@
 #include <torch/csrc/DynamicTypes.h>
 
 #include "neml2/misc/types.h"
-#include "neml2/tensors/LabeledAxisAccessor.h"
+#include "neml2/models/LabeledAxisAccessor.h"
 
 #define NEML2_TENSOR_OPTIONS_VARGS                                                                 \
   const torch::Dtype &dtype, const torch::Device &device, bool requires_grad
@@ -86,46 +86,13 @@ public:
 #endif
 
 /**
- * @brief This specialization exposes neml2::indexing::TensorShape
- */
-template <>
-struct type_caster<neml2::TensorShape>
-{
-public:
-  PYBIND11_TYPE_CASTER(neml2::TensorShape, const_name("[int, ...]"));
-
-  bool load(handle src, bool)
-  {
-    // if src is an iterable
-    if (isinstance<iterable>(src))
-    {
-      auto src_iterable = reinterpret_borrow<iterable>(src);
-      for (auto item : src_iterable)
-        value.push_back(item.cast<neml2::Size>());
-      return true;
-    }
-
-    return false;
-  }
-
-  static handle
-  cast(const neml2::TensorShape & src, return_value_policy /* policy */, handle /* parent */)
-  {
-    list l;
-    for (const auto & val : src)
-      l.append(val);
-    return l;
-  }
-};
-
-/**
  * @brief This specialization exposes neml2::indexing::TensorIndices
  */
 template <>
 struct type_caster<neml2::indexing::TensorIndices>
 {
 public:
-  PYBIND11_TYPE_CASTER(neml2::indexing::TensorIndices, const_name("[Any, ...]"));
+  PYBIND11_TYPE_CASTER(neml2::indexing::TensorIndices, const_name("list[Any]"));
 
   bool load(handle src, bool)
   {
@@ -159,7 +126,7 @@ template <>
 struct type_caster<neml2::indexing::TensorLabels>
 {
 public:
-  PYBIND11_TYPE_CASTER(neml2::indexing::TensorLabels, const_name("[str, ...]"));
+  PYBIND11_TYPE_CASTER(neml2::indexing::TensorLabels, const_name("list[str]"));
 
   bool load(handle src, bool)
   {

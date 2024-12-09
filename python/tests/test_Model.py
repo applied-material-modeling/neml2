@@ -26,18 +26,15 @@ import pytest
 from pathlib import Path
 import torch
 import neml2
-from neml2.tensors import Tensor, LabeledVector, LabeledMatrix, TensorType
+from neml2.tensors import Scalar, TensorType
 
 
 def test_get_model():
     pwd = Path(__file__).parent
     neml2.reload_input(pwd / "test_Model.i")
 
-    model1 = neml2.get_model("model")
-    assert model1.is_AD_enabled
-
-    model2 = neml2.get_model("model", enable_AD=False)
-    assert not model2.is_AD_enabled
+    model = neml2.get_model("model")
+    assert model
 
 
 def test_diagnose():
@@ -48,128 +45,67 @@ def test_diagnose():
         neml2.diagnose(model)
 
 
-def test_input_type():
-    pwd = Path(__file__).parent
-    neml2.reload_input(pwd / "test_training.i")
-    model = neml2.get_model("model")
-    assert model.input_type("forces/E") == TensorType.SR2
-    assert model.input_type("forces/t") == TensorType.Scalar
-    assert model.input_type("old_forces/E") == TensorType.SR2
-    assert model.input_type("old_forces/t") == TensorType.Scalar
-    assert model.input_type("state/S") == TensorType.SR2
-    assert model.input_type("old_state/S") == TensorType.SR2
-
-
-def test_output_type():
-    pwd = Path(__file__).parent
-    model = neml2.reload_model(pwd / "test_training.i", "model")
-    assert model.output_type("state/S") == TensorType.SR2
-
-
-def test_dependency():
-    pwd = Path(__file__).parent
-    model = neml2.reload_model(pwd / "test_Model.i", "model")
-    submodels = model.named_submodels()
-
-    assert submodels["foo"].dependency()["forces/t"].name == "model"
-    assert submodels["foo"].dependency()["old_forces/t"].name == "model"
-    assert submodels["foo"].dependency()["old_state/foo"].name == "model"
-    assert submodels["foo"].dependency()["state/foo"].name == "model"
-    assert submodels["foo"].dependency()["state/foo_rate"].name == "model"
-
-    assert submodels["bar"].dependency()["forces/t"].name == "model"
-    assert submodels["bar"].dependency()["old_forces/t"].name == "model"
-    assert submodels["bar"].dependency()["old_state/bar"].name == "model"
-    assert submodels["bar"].dependency()["state/bar"].name == "model"
-    assert submodels["bar"].dependency()["state/bar_rate"].name == "model"
-
-    assert submodels["baz"].dependency()["residual/foo"].name == "foo"
-    assert submodels["baz"].dependency()["residual/bar"].name == "bar"
-
-
-def test_value():
+def test_forward():
     pwd = Path(__file__).parent
     model = neml2.reload_model(pwd / "test_Model.i", "model")
 
-    a = torch.linspace(0, 1, 8).expand(5, 2, 8)
-    x = Tensor(a, 2)
-    model.reinit(x.batch.shape)
-    x = LabeledVector(x, [model.input_axis()])
+    # Note input variables can have different batch shapes,
+    # and values can be either neml2.Tensor or torch.Tensor
+    x = {
+        "forces/t": Scalar.full((1, 2), 0.1),
+        "old_forces/t": torch.zeros((3, 1, 1)),
+        "state/foo_rate": Scalar.full(0.1),
+        "state/foo": Scalar.full(1.5),
+        "old_state/foo": torch.ones(5, 2) * 2,
+        "state/bar_rate": Scalar.full(-0.2),
+        "state/bar": Scalar.full(1.5),
+        "old_state/bar": Scalar.full(2.0),
+    }
 
-    y_correct = torch.tensor(0.9591836144729537, dtype=torch.float64)
+    def check_y(y):
+        val = y["residual/foo_bar"].torch()
+        assert val.shape == (3, 5, 2)
+        assert torch.allclose(val, torch.full((3, 5, 2), -0.99))
 
-    # Evaluate the model using a torch.Tensor
-    y = model.value(x.torch())
-    assert isinstance(y, torch.Tensor)
-    assert y.shape == (5, 2, 1)
-    assert torch.allclose(y, y_correct)
+    def check_dy_dx(dy_dx):
+        val = dy_dx["residual/foo_bar"]["forces/t"].torch()
+        assert val.shape == (1, 1)
+        assert torch.allclose(val, torch.tensor(0.1))
 
-    # Evaluate the model using a neml2.Tensor
-    y = model.value(x.tensor())
-    assert isinstance(y, Tensor)
-    assert y.batch.shape == (5, 2)
-    assert y.base.shape == (1,)
-    assert torch.allclose(y.torch(), y_correct)
+        val = dy_dx["residual/foo_bar"]["old_forces/t"].torch()
+        assert val.shape == (1, 1)
+        assert torch.allclose(val, torch.tensor(-0.1))
 
-    # Evaluate the model using a neml2.LabeledVector
+        val = dy_dx["residual/foo_bar"]["old_state/bar"].torch()
+        assert val.shape == (1, 1)
+        assert torch.allclose(val, torch.tensor(-1.0))
+
+        val = dy_dx["residual/foo_bar"]["old_state/foo"].torch()
+        assert val.shape == (1, 1)
+        assert torch.allclose(val, torch.tensor(-1.0))
+
+        val = dy_dx["residual/foo_bar"]["state/bar"].torch()
+        assert val.shape == (1, 1)
+        assert torch.allclose(val, torch.tensor(1.0))
+
+        val = dy_dx["residual/foo_bar"]["state/bar_rate"].torch()
+        assert val.shape == (3, 1, 2, 1, 1)
+        assert torch.allclose(val, torch.tensor(-0.1))
+
+        val = dy_dx["residual/foo_bar"]["state/foo"].torch()
+        assert val.shape == (1, 1)
+        assert torch.allclose(val, torch.tensor(1.0))
+
+        val = dy_dx["residual/foo_bar"]["state/foo_rate"].torch()
+        assert val.shape == (3, 1, 2, 1, 1)
+        assert torch.allclose(val, torch.tensor(-0.1))
+
     y = model.value(x)
-    assert isinstance(y, LabeledVector)
-    assert y.batch.shape == (5, 2)
-    assert y.base.shape == (1,)
-    assert torch.allclose(y.torch(), y_correct)
+    check_y(y)
 
+    dy_dx = model.dvalue(x)
+    check_dy_dx(dy_dx)
 
-def test_value_and_dvalue():
-    pwd = Path(__file__).parent
-    model = neml2.reload_model(pwd / "test_Model.i", "model")
-
-    a = torch.linspace(0, 1, 8).expand(5, 2, 8)
-    x = Tensor(a, 2)
-    model.reinit(x.batch.shape, 1)
-    x = LabeledVector(x, [model.input_axis()])
-
-    y_correct = torch.tensor(0.9591836144729537, dtype=torch.float64)
-    dy_dx_correct = torch.tensor(
-        [
-            -1.7142857313156128,
-            1.7142857313156128,
-            -1.0,
-            -1.0,
-            1.0,
-            0.1428571492433548,
-            1.0,
-            0.1428571492433548,
-        ],
-        dtype=torch.float64,
-    )
-
-    # Evaluate the model using a torch.Tensor
-    y, dy_dx = model.value_and_dvalue(x.torch())
-    assert isinstance(y, torch.Tensor)
-    assert isinstance(dy_dx, torch.Tensor)
-    assert y.shape == (5, 2, 1)
-    assert dy_dx.shape == (5, 2, 1, 8)
-    assert torch.allclose(y, y_correct)
-    assert torch.allclose(dy_dx, dy_dx_correct)
-
-    # Evaluate the model using a neml2.Tensor
-    y, dy_dx = model.value_and_dvalue(x.tensor())
-    assert isinstance(y, Tensor)
-    assert isinstance(dy_dx, Tensor)
-    assert y.batch.shape == (5, 2)
-    assert y.base.shape == (1,)
-    assert dy_dx.batch.shape == (5, 2)
-    assert dy_dx.base.shape == (1, 8)
-    assert torch.allclose(y.torch(), y_correct)
-    assert torch.allclose(dy_dx.torch(), dy_dx_correct)
-
-    # Evaluate the model using a neml2.LabeledVector
     y, dy_dx = model.value_and_dvalue(x)
-    assert isinstance(y, LabeledVector)
-    assert isinstance(dy_dx, LabeledMatrix)
-    assert y.batch.shape == (5, 2)
-    assert y.base.shape == (1,)
-    assert dy_dx.batch.shape == (5, 2)
-    assert dy_dx.base.shape == (1, 8)
-    assert torch.allclose(y.torch(), y_correct)
-    assert torch.allclose(dy_dx.torch(), dy_dx_correct)
+    check_y(y)
+    check_dy_dx(dy_dx)

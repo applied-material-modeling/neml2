@@ -29,9 +29,10 @@ namespace neml2
 {
 VariableStore::VariableStore(const OptionSet & options, Model * object)
   : _object(object),
-    _options(options),
+    _object_options(options),
     _input_axis(declare_axis("input")),
-    _output_axis(declare_axis("output"))
+    _output_axis(declare_axis("output")),
+    _tensor_options(default_tensor_options())
 {
 }
 
@@ -54,98 +55,126 @@ VariableStore::setup_layout()
   output_axis().setup_layout();
 }
 
-VariableBase *
+VariableBase &
 VariableStore::input_variable(const VariableName & name)
 {
-  return _input_views.query_value(name);
+  auto * var_ptr = _input_variables.query_value(name);
+  neml_assert(var_ptr, "Input variable ", name, " does not exist in model ", _object->name());
+  return *var_ptr;
 }
 
-VariableBase *
+const VariableBase &
+VariableStore::input_variable(const VariableName & name) const
+{
+  const auto * var_ptr = _input_variables.query_value(name);
+  neml_assert(var_ptr, "INput variable ", name, " does not exist in model ", _object->name());
+  return *var_ptr;
+}
+
+VariableBase &
 VariableStore::output_variable(const VariableName & name)
 {
-  return _output_views.query_value(name);
+  auto * var_ptr = _output_variables.query_value(name);
+  neml_assert(var_ptr, "Output variable ", name, " does not exist in model ", _object->name());
+  return *var_ptr;
 }
 
-TensorType
-VariableStore::input_type(const VariableName & name) const
+const VariableBase &
+VariableStore::output_variable(const VariableName & name) const
 {
-  const auto * var_ptr = _input_views.query_value(name);
-  neml_assert(var_ptr, "Input variable ", name, " does not exist.");
-  return var_ptr->type();
-}
-
-TensorType
-VariableStore::output_type(const VariableName & name) const
-{
-  const auto * var_ptr = _output_views.query_value(name);
-  neml_assert(var_ptr, "Output variable ", name, " does not exist.");
-  return var_ptr->type();
+  const auto * var_ptr = _output_variables.query_value(name);
+  neml_assert(var_ptr, "Output variable ", name, " does not exist in model ", _object->name());
+  return *var_ptr;
 }
 
 void
-VariableStore::cache(TensorShapeRef batch_shape)
+VariableStore::clear_input()
 {
   for (auto && [name, var] : input_variables())
-    var.cache(batch_shape);
+    if (var.owning())
+      var.clear();
+}
+
+void
+VariableStore::clear_output()
+{
   for (auto && [name, var] : output_variables())
-    var.cache(batch_shape);
+    if (var.owning())
+      var.clear();
 }
 
 void
-VariableStore::allocate_variables(TensorShapeRef batch_shape,
-                                  const torch::TensorOptions & options,
-                                  bool in,
-                                  bool out,
-                                  bool dout_din,
-                                  bool d2out_din2)
+VariableStore::zero_input()
 {
-  // Allocate input storage only if this is a host model
-  if (in && _object->host() == _object)
-    _in = LabeledVector::zeros(batch_shape, {&input_axis()}, options);
-
-  // Allocate output storage
-  if (out)
-    _out = LabeledVector::zeros(batch_shape, {&output_axis()}, options);
-
-  if (dout_din)
-    _dout_din = LabeledMatrix::zeros(batch_shape, {&output_axis(), &input_axis()}, options);
-
-  if (d2out_din2)
-    _d2out_din2 = LabeledTensor3D::zeros(
-        batch_shape, {&output_axis(), &input_axis(), &input_axis()}, options);
-}
-
-void
-VariableStore::setup_input_views(VariableStore * host)
-{
-  neml_assert_dbg(host || _object->host<VariableStore>() == host,
-                  "setup_input_views called on a non-host model without specifying the host as an "
-                  "argument");
   for (auto && [name, var] : input_variables())
-  {
-    if (_object->host<VariableStore>() == host)
-      var.setup_views(&host->input_storage());
-    else
-      var.setup_views(host->input_variable(name));
-  }
+    if (var.owning())
+      var.zero(_tensor_options);
 }
 
 void
-VariableStore::setup_output_views(bool out, bool dout_din, bool d2out_din2)
+VariableStore::zero_output()
 {
   for (auto && [name, var] : output_variables())
-    var.setup_views(out ? &_out : nullptr,
-                    dout_din ? &_dout_din : nullptr,
-                    d2out_din2 ? &_d2out_din2 : nullptr);
+    if (var.owning())
+      var.zero(_tensor_options);
 }
 
 void
-VariableStore::zero(bool dout_din, bool d2out_din2)
+VariableStore::assign_input(const std::map<VariableName, Tensor> & vals)
 {
-  if (dout_din)
-    _dout_din.zero_();
-
-  if (d2out_din2)
-    _d2out_din2.zero_();
+  for (const auto & [name, val] : vals)
+    input_variable(name).set(val.clone());
 }
+
+void
+VariableStore::assign_output(const std::map<VariableName, Tensor> & vals)
+{
+  for (const auto & [name, val] : vals)
+    output_variable(name).set(val.clone());
+}
+
+void
+VariableStore::assign_output_derivatives(
+    const std::map<VariableName, std::map<VariableName, Tensor>> & derivs)
+{
+  for (const auto & [yvar, deriv] : derivs)
+    output_variable(yvar).derivatives().insert(deriv.begin(), deriv.end());
+}
+
+std::map<VariableName, Tensor>
+VariableStore::collect_input() const
+{
+  std::map<VariableName, Tensor> vals;
+  for (auto && [name, var] : input_variables())
+    vals[name] = var.tensor();
+  return vals;
+}
+
+std::map<VariableName, Tensor>
+VariableStore::collect_output() const
+{
+  std::map<VariableName, Tensor> vals;
+  for (auto && [name, var] : output_variables())
+    vals[name] = var.tensor();
+  return vals;
+}
+
+std::map<VariableName, std::map<VariableName, Tensor>>
+VariableStore::collect_output_derivatives() const
+{
+  std::map<VariableName, std::map<VariableName, Tensor>> derivs;
+  for (auto && [name, var] : output_variables())
+    derivs[name] = var.derivatives();
+  return derivs;
+}
+
+std::map<VariableName, std::map<VariableName, std::map<VariableName, Tensor>>>
+VariableStore::collect_output_second_derivatives() const
+{
+  std::map<VariableName, std::map<VariableName, std::map<VariableName, Tensor>>> sec_derivs;
+  for (auto && [name, var] : output_variables())
+    sec_derivs[name] = var.second_derivatives();
+  return sec_derivs;
+}
+
 } // namespace neml2

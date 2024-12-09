@@ -53,7 +53,7 @@ Normality::expected_options()
 
 Normality::Normality(const OptionSet & options)
   : Model(options),
-    _model(register_model<Model>(options.get<std::string>("model"), /*extra_deriv_order=*/1)),
+    _model(register_model<Model>(options.get<std::string>("model"))),
     _f(options.get<VariableName>("function"))
 {
   // Set up the conjugate pairs
@@ -65,27 +65,10 @@ Normality::Normality(const OptionSet & options)
               " variables are being mapped to ",
               to.size(),
               " variables.");
+
+  // Declare output variables
   for (size_t i = 0; i < from.size(); i++)
-  {
-    auto sz = _model.output_axis().storage_size(_f) * _model.input_axis().storage_size(from[i]);
-    _conjugate_pairs.emplace(from[i],
-                             &declare_output_variable(sz, input_variable(from[i])->type(), to[i]));
-  }
-}
-
-void
-Normality::setup_output_views()
-{
-  Model::setup_output_views();
-
-  for (auto && [ivar, var] : _conjugate_pairs)
-  {
-    _f_deriv_views[ivar] = _model.derivative_storage().base_index({_f, ivar});
-    if (requires_grad())
-      for (auto && [jvar, j] : input_variables())
-        _f_secderiv_views[ivar][jvar] =
-            _model.second_derivative_storage().base_index({_f, ivar, jvar});
-  }
+    _conjugate_pairs.emplace(from[i], clone_output_variable(_model.input_variable(from[i]), to[i]));
 }
 
 void
@@ -94,22 +77,30 @@ Normality::set_value(bool out, bool dout_din, bool d2out_din2)
   neml_assert_dbg(!d2out_din2, "Normality doesn't implement second derivatives.");
 
   {
-    SolvingNonlinearSystem not_solving(false);
+    SolvingNonlinearSystem guard(false);
     if (out && !dout_din)
       _model.dvalue();
     else
       _model.dvalue_and_d2value();
   }
 
-  for (auto && [ivar, var] : _conjugate_pairs)
+  const auto & fvar = _model.output_variable(_f);
+  for (auto && [iname, ivar] : _conjugate_pairs)
   {
+    if (!fvar.derivatives().count(iname))
+    {
+      (*ivar) = Tensor::zeros(ivar->base_sizes(), fvar.options());
+      continue;
+    }
+
     if (out)
-      (*var) = _f_deriv_views[ivar];
+      (*ivar) = fvar.derivatives().at(iname).base_reshape(ivar->base_sizes());
 
     if (dout_din)
-      for (auto && [jvar, j] : input_variables())
-        if (j.is_dependent())
-          var->d(j) = _f_secderiv_views[ivar][jvar];
+      for (auto && [jname, jvar] : _model.input_variables())
+        if (jvar.is_dependent() && fvar.second_derivatives().count(iname) &&
+            fvar.second_derivatives().at(iname).count(jname))
+          ivar->d(jvar) = fvar.second_derivatives().at(iname).at(jname);
   }
 }
 } // namespace neml2

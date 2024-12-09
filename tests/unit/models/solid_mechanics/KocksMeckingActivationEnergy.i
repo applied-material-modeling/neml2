@@ -2,14 +2,10 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    batch_shape = '(5)'
     input_scalar_names = 'forces/T forces/effective_strain_rate'
     input_scalar_values = 'T 1.1'
     output_scalar_names = 'forces/g'
     output_scalar_values = 'g_correct'
-    check_AD_first_derivatives = false
-    check_AD_second_derivatives = false
-    check_AD_derivatives = false
   []
 []
 

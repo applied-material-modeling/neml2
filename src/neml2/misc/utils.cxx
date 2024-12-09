@@ -24,6 +24,7 @@
 
 #include "neml2/misc/utils.h"
 #include <cxxabi.h>
+#include <torch/csrc/jit/frontend/tracer.h>
 
 namespace neml2
 {
@@ -34,6 +35,22 @@ demangle(const char * name)
 {
   // c10 already has an implementation, let's not reinvent the wheels
   return c10::demangle(name);
+}
+
+TraceableTensorShape
+extract_batch_sizes(const torch::Tensor & tensor, Size batch_dim)
+{
+  // Put the batch sizes into the traced graph if we are tracing
+  // TODO: This could be optimized
+  if (torch::jit::tracer::isTracing())
+  {
+    TraceableTensorShape sizes;
+    for (Size i = 0; i < batch_dim; ++i)
+      sizes.emplace_back(torch::jit::tracer::getSizeOf(tensor, i));
+    return sizes;
+  }
+
+  return tensor.sizes().slice(0, batch_dim);
 }
 
 Size
@@ -51,12 +68,13 @@ pad_prepend(TensorShapeRef s, Size dim, Size pad)
   return s2;
 }
 
-TensorShape
-pad_append(TensorShapeRef s, Size dim, Size pad)
+torch::Tensor
+pad_prepend(const torch::Tensor & s, Size dim, Size pad)
 {
-  TensorShape s2(s);
-  s2.insert(s2.end(), dim - s.size(), pad);
-  return s2;
+  neml_assert_dbg(s.defined(), "pad_prepend: shape must be defined");
+  neml_assert_dbg(s.scalar_type() == torch::kInt64, "pad_prepend: shape must be of type int64");
+  neml_assert_dbg(s.dim() == 1, "pad_prepend: shape must be 1D");
+  return torch::cat({torch::full({dim - s.size(0)}, pad, s.options()), s});
 }
 
 // LCOV_EXCL_START
@@ -77,6 +95,12 @@ TensorShape
 add_shapes_impl(TensorShape & net)
 {
   return std::move(net);
+}
+
+TraceableTensorShape
+add_traceable_shapes_impl(TraceableTensorShape & net)
+{
+  return net;
 }
 } // namespace details
 } // namespace utils

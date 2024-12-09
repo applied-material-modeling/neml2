@@ -62,25 +62,35 @@ ChabochePlasticHardening::set_value(bool out, bool dout_din, bool d2out_din2)
   neml_assert_dbg(!d2out_din2,
                   "ChabochePlasticHardening model doesn't implement second derivatives.");
 
-  FredrickArmstrongPlasticHardening::set_value(out, dout_din, d2out_din2);
-
   // The effective stress
   auto s = SR2(_X).norm(machine_precision());
+  // The part that's proportional to the plastic strain rate
+  auto g_term = 2.0 / 3.0 * _C * _NM - _g * _X;
+  // The static recovery term
+  auto s_term = -_A * math::pow(s, _a - 1) * _X;
 
   if (out)
-  {
-    // The static recovery term
-    auto s_term = -_A * math::pow(s, _a - 1) * _X;
-    _X_dot = _X_dot + s_term;
-  }
+    _X_dot = g_term * _gamma_dot + s_term;
 
   if (dout_din)
   {
-    auto I = SR2::identity_map(options());
+    auto I = SR2::identity_map(_X.options());
+
+    if (_gamma_dot.is_dependent())
+      _X_dot.d(_gamma_dot) = g_term;
+
+    if (_NM.is_dependent())
+      _X_dot.d(_NM) = 2.0 / 3.0 * _C * _gamma_dot * I;
 
     if (_X.is_dependent())
-      _X_dot.d(_X) = SSR4(_X_dot.d(_X).value(), batch_dim()) -
+      _X_dot.d(_X) = -_g * _gamma_dot * I -
                      _A * math::pow(s, _a - 3) * ((_a - 1) * SR2(_X).outer(SR2(_X)) + s * s * I);
+
+    if (const auto * const C = nl_param("C"))
+      _X_dot.d(*C) = 2.0 / 3.0 * _NM * _gamma_dot;
+
+    if (const auto * const g = nl_param("g"))
+      _X_dot.d(*g) = -_X * _gamma_dot;
 
     if (const auto * const A = nl_param("A"))
       _X_dot.d(*A) = -math::pow(s, _a - 1) * _X;

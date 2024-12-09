@@ -8,6 +8,14 @@ target_compile_options(verification_tests PRIVATE -Wall -Wextra -pedantic -Werro
 register_unity_group(verification_tests .)
 target_link_libraries(verification_tests PRIVATE testutils Catch2::Catch2WithMain)
 
+option(NEML2_VERIFICATION_AS_PROFILER "Additionally link the verification test executable against gperftools profiler" OFF)
+
+if(NEML2_VERIFICATION_AS_PROFILER)
+  FetchContent_MakeAvailable(gperftools)
+  set_target_properties(verification_tests PROPERTIES LINK_WHAT_YOU_USE TRUE)
+  target_link_libraries(verification_tests PRIVATE profiler)
+endif()
+
 install(TARGETS verification_tests COMPONENT Development)
 install(DIRECTORY .
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/verification

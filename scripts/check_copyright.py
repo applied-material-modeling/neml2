@@ -35,13 +35,13 @@ def should_check(path):
         if Path(rootdir) / Path(exclude_dir) in path.parents:
             return False
 
-    if path.name in exclude_files:
+    if str(path) in exclude_files:
         return False
 
     if path.suffix in extensions:
         return True
 
-    if path.name in additional_files:
+    if str(path) in additional_files:
         return True
 
     return False
@@ -131,7 +131,7 @@ if __name__ == "__main__":
     additional_files = {}
 
     exclude_dirs = []
-    exclude_files = []
+    exclude_files = ["include/neml2/misc/bitmask_operators.h"]
 
     rootdir = Path(".")
 

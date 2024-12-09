@@ -25,6 +25,7 @@
 #pragma once
 
 #include <torch/types.h>
+#include "neml2/misc/bitmask_operators.h"
 
 namespace neml2
 {
@@ -41,6 +42,88 @@ using namespace torch::indexing;
 using TensorIndices = torch::SmallVector<TensorIndex>;
 using TensorIndicesRef = torch::ArrayRef<TensorIndex>;
 }
+
+/**
+ * @brief Traceable size
+ *
+ * Similar to neml2::TraceableTensorShape, but only for a single dimension.
+ * @see neml2::TraceableTensorShape
+ */
+struct TraceableSize : public std::variant<Size, torch::Tensor>
+{
+  using std::variant<Size, torch::Tensor>::variant;
+
+  /// @return a pointer to the torch::Tensor representing the traceable size if it is traceable, otherwise a nullptr
+  const torch::Tensor * traceable() const noexcept;
+
+  /// @return the concrete size (without any traceable information)
+  Size concrete() const;
+
+  /// @return the size represented as a scalar tensor (possibly traceable)
+  torch::Tensor as_tensor() const;
+};
+
+/// Comparison operators
+///@{
+bool operator==(const TraceableSize & lhs, const TraceableSize & rhs);
+bool operator!=(const TraceableSize & lhs, const TraceableSize & rhs);
+///@}
+
+/// Streaming operator
+std::ostream & operator<<(std::ostream & os, const TraceableSize & s);
+
+/**
+ * @brief Traceable tensor shape
+ *
+ * A tensor shape can be either a concrete shape or a traceable tensor. This is useful when we need
+ * to trace a function graph and let it generalize to other batch shapes.
+ */
+struct TraceableTensorShape : public torch::SmallVector<TraceableSize>
+{
+  using torch::SmallVector<TraceableSize>::SmallVector;
+  using Size = int64_t;
+
+  TraceableTensorShape(const TensorShape & shape);
+  TraceableTensorShape(TensorShapeRef shape);
+  TraceableTensorShape(Size shape);
+  TraceableTensorShape(const torch::Tensor & shape);
+
+  /// Slice the shape, semantically the same as ArrayRef::slice, but traceable.
+  TraceableTensorShape slice(Size start, Size end) const;
+
+  /// Chop-off the first N elements of the shape, semantically the same as ArrayRef::slice, but traceable.
+  TraceableTensorShape slice(Size N) const;
+
+  /// @return the concrete shape (without any traceable information)
+  TensorShape concrete() const;
+
+  /// @return the shape represented as a scalar tensor (possibly traceable)
+  torch::Tensor as_tensor() const;
+};
+
+/// Comparison operators
+///@{
+bool operator==(const TraceableTensorShape & lhs, const TraceableTensorShape & rhs);
+bool operator!=(const TraceableTensorShape & lhs, const TraceableTensorShape & rhs);
+///@}
+
+/**
+ * @brief Role in a function definition
+ *
+ * NONE is the default value,
+ * INPUT stands for input variable,
+ * OUTPUT stands for output variable,
+ * PARAMETER stands for parameter (could request AD),
+ * BUFFER stands for buffer.
+ */
+enum class FType : int8_t
+{
+  NONE = 0,
+  INPUT = 1 << 0,
+  OUTPUT = 1 << 1,
+  PARAMETER = 1 << 2,
+  BUFFER = 1 << 3
+};
 
 /**
  * @name RAII style default tensor options
@@ -88,4 +171,17 @@ std::string & parameter_name_separator();
  * by examining whether the current evaluation is part of the solve.
  */
 bool & currently_solving_nonlinear_system();
+
+/**
+ * A model can request automatic differentiation (AD) for variable derivatives. While the model is
+ * making the request, this boolean flag is set to true.
+ */
+bool & currently_requesting_AD();
 } // namespace neml2
+
+// Enable bitmask operations for FType
+template <>
+struct enable_bitmask_operators<neml2::FType>
+{
+  static const bool enable = true;
+};

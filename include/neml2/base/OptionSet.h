@@ -39,24 +39,6 @@ namespace neml2
 class OptionSet;
 class LabeledAxisAccessor;
 
-/**
- * @brief Role in a function definition
- *
- * NONE is the default value,
- * INPUT stands for input variable,
- * OUTPUT stands for output variable,
- * PARAMETER stands for parameter (could request AD),
- * BUFFER stands for buffer.
- */
-enum class FType : int8_t
-{
-  NONE,
-  INPUT,
-  OUTPUT,
-  PARAMETER,
-  BUFFER
-};
-
 namespace details
 {
 /**
@@ -74,6 +56,9 @@ template <typename P>
 void _print_helper(std::ostream & os, const P *);
 template <typename P>
 void _print_helper(std::ostream & os, const std::vector<P> *);
+/// The evil vector of bool :/
+template <>
+void _print_helper(std::ostream & os, const std::vector<bool> *);
 template <typename P>
 void _print_helper(std::ostream & os, const std::vector<std::vector<P>> *);
 /// Specialization so that we don't print out unprintable characters
@@ -570,13 +555,20 @@ _print_helper(std::ostream & os, const std::vector<P> * option)
     os << p << " ";
 }
 
+template <>
+inline void
+_print_helper(std::ostream & os, const std::vector<bool> * option)
+{
+  for (const auto p : *option)
+    os << static_cast<bool>(p) << " ";
+}
+
 template <typename P>
 void
 _print_helper(std::ostream & os, const std::vector<std::vector<P>> * option)
 {
   for (const auto & pv : *option)
-    for (const auto & p : pv)
-      os << p << " ";
+    _print_helper(os, &pv);
 }
 } // namespace details
 // LCOV_EXCL_STOP

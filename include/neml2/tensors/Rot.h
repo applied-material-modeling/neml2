@@ -37,7 +37,7 @@ class R3;
 /**
  * @brief Rotation stored as modified Rodrigues parameters
  *
- * The logical storage space is (3).
+ * The storage space is (3).
  *
  * One way to define this convention is that the three parameters are the values of the vector n
  * tan(theta/4) where n is the rotation axis and theta the rotation angle.

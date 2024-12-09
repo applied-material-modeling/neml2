@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/ImplicitUpdate.h"
+#include "neml2/models/Assembler.h"
 #include "neml2/misc/math.h"
 #include "neml2/base/guards.h"
 
@@ -50,11 +51,10 @@ ImplicitUpdate::expected_options()
 ImplicitUpdate::ImplicitUpdate(const OptionSet & options)
   : Model(options),
     _model(register_model<Model>(options.get<std::string>("implicit_model"),
-                                 /*extra_deriv_order=*/0,
                                  /*nonlinear=*/true)),
     _solver(Factory::get_object<NonlinearSolver>("Solvers", options.get<std::string>("solver")))
 {
-  neml_assert(_model.output_axis().has_subaxis("residual"),
+  neml_assert(_model.output_axis().has_residual(),
               "The implicit model'",
               _model.name(),
               "' registered in '",
@@ -65,10 +65,8 @@ ImplicitUpdate::ImplicitUpdate(const OptionSet & options)
   //      already been taken care of by the `register_model` call.
   //   2. Output variables of the "implicit_model" on the "residual" subaxis should be *provided* by
   //      *this* model.
-  for (auto var : _model.output_axis().subaxis("residual").variable_names())
-    declare_output_variable(_model.output_axis().subaxis("residual").storage_size(var),
-                            _model.output_variable(var.prepend("residual"))->type(),
-                            var.prepend("state"));
+  for (auto && [name, var] : _model.output_variables())
+    clone_output_variable(var, name.remount("state"));
 }
 
 void
@@ -98,29 +96,11 @@ ImplicitUpdate::diagnose(std::vector<Diagnosis> & diagnoses) const
 }
 
 void
-ImplicitUpdate::check_AD_limitation() const
+ImplicitUpdate::link_output_variables()
 {
-  neml_assert_dbg(!using_AD_1st_derivative() && !using_AD_2nd_derivative(),
-                  "ImplicitUpdate does not support AD because it uses in-place operations to "
-                  "iteratively update the trial solution until convergence.");
-}
-
-void
-ImplicitUpdate::setup_output_views()
-{
-  Model::setup_output_views();
-
-  if (requires_grad())
-  {
-    if (input_axis().has_old_state())
-      _ds_dsn = derivative_storage().base_index({"state", "old_state"});
-    if (input_axis().has_forces())
-      _ds_df = derivative_storage().base_index({"state", "forces"});
-    if (input_axis().has_old_forces())
-      _ds_dfn = derivative_storage().base_index({"state", "old_forces"});
-    if (input_axis().has_parameters())
-      _ds_dp = derivative_storage().base_index({"state", "parameters"});
-  }
+  Model::link_output_variables();
+  for (auto && [name, var] : output_variables())
+    var.ref(input_variable(name), /*ref_is_mutable=*/true);
 }
 
 void
@@ -128,48 +108,62 @@ ImplicitUpdate::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   neml_assert_dbg(!d2out_din2, "This model does not define the second derivatives.");
 
-  // Apply initial guess
-  LabeledVector sol0(_model.solution(), {&output_axis()});
-  sol0.fill(host<VariableStore>()->input_storage());
-  if (sol0.tensor().requires_grad())
-    sol0.detach_();
-
   // The trial state is used as the initial guess
-  // Perform automatic scaling
-  _model.init_scaling(_solver.verbose);
+  const auto sol_assember = VectorAssembler(_model.input_axis().subaxis("state"));
+  auto x0 = NonlinearSystem::SOL<false>(sol_assember.assemble(_model.collect_input()));
 
-  // Solution
-  Tensor sol;
+  // Perform automatic scaling (using the trial state)
+  // TODO: Add an interface to allow user to specify where (and when) to evaluate the Jacobian for
+  // automatic scaling.
+  _model.init_scaling(x0, _solver.verbose);
 
   // Solve for the next state
+  NonlinearSolver::Result res;
   {
     SolvingNonlinearSystem solving;
-    sol = _model.solution().clone();
-    auto [succeeded, iters] = _solver.solve(_model, sol);
-    neml_assert(succeeded, "Nonlinear solve failed.");
+    res = _solver.solve(_model, x0);
+    neml_assert(res.ret == NonlinearSolver::RetCode::SUCCESS, "Nonlinear solve failed.");
   }
 
   if (out)
-    output_storage().copy_(sol);
+  {
+    // You may be tempted to assign the solution, i.e., res.solution, to the output variables. But
+    // we don't have to. Think about it: The output variables share the same name as those input
+    // variables on the state subaxis, and since we don't duplicate storage for variables with the
+    // same name, they are essentially the same variable with FType::INPUT | FType::OUTPUT. During
+    // the nonlinear solve, we have to iteratively update the guess (i.e., the input variables on
+    // the state subaxis) until convergece. Once the nonlinear system has converged, the input
+    // variables on the state subaxis _must_ contain the solution. Therefore, the output variables
+    // _must_ also contain the solution upon convergence.
+
+    // All that being said, if the result has AD graph, we need to propagate the graph to the output
+    if (res.solution.requires_grad())
+      assign_output(sol_assember.disassemble(res.solution));
+  }
 
   // Use the implicit function theorem (IFT) to calculate the other derivatives
   if (dout_din)
   {
-    // IFT requires dresidual/dinput evaluated at the solution:
-    _model.prepare();
+    // IFT requires the Jacobian evaluated at the solution:
     _model.dvalue();
-    auto && [dr_ds, dr_dsn, dr_df, dr_dfn, dr_dp] = _model.get_system_matrices();
+    const auto jac_assembler = MatrixAssembler(_model.output_axis(), _model.input_axis());
+    const auto J = jac_assembler.assemble(_model.collect_output_derivatives());
+    const auto derivs = jac_assembler.split(J).at("residual");
+    const auto dr_ds = derivs.at("state");
+
+    // Factorize the Jacobian once and for all
+    const auto [LU, pivot] = math::linalg::lu_factor(dr_ds);
 
     // The actual IFT:
-    auto [LU, pivot] = math::linalg::lu_factor(dr_ds);
-    if (input_axis().has_old_state())
-      _ds_dsn.index_put_({torch::indexing::Slice()}, -math::linalg::lu_solve(LU, pivot, dr_dsn));
-    if (input_axis().has_forces())
-      _ds_df.index_put_({torch::indexing::Slice()}, -math::linalg::lu_solve(LU, pivot, dr_df));
-    if (input_axis().has_old_forces())
-      _ds_dfn.index_put_({torch::indexing::Slice()}, -math::linalg::lu_solve(LU, pivot, dr_dfn));
-    if (input_axis().has_parameters())
-      _ds_dp.index_put_({torch::indexing::Slice()}, -math::linalg::lu_solve(LU, pivot, dr_dp));
+    for (const auto & [subaxis, deriv] : derivs)
+    {
+      if (subaxis == "state")
+        continue;
+      const auto ift_assembler =
+          MatrixAssembler(output_axis(), _model.input_axis().subaxis(subaxis));
+      assign_output_derivatives(
+          ift_assembler.disassemble(-math::linalg::lu_solve(LU, pivot, deriv)));
+    }
   }
 }
 } // namespace neml2

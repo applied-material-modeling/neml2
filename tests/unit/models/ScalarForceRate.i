@@ -2,7 +2,6 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    batch_shape = '(10)'
     input_scalar_names = 'forces/foo old_forces/foo forces/t old_forces/t'
     input_scalar_values = '-0.3 0 1.3 1.1'
     output_scalar_names = 'forces/foo_rate'

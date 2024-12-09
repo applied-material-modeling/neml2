@@ -48,12 +48,12 @@ TEST_CASE("Factory", "[base]")
 
     REQUIRE(summodel.input_axis().has_subaxis("state"));
     REQUIRE(summodel.input_axis().subaxis("state").has_subaxis("substate"));
-    REQUIRE(summodel.input_axis().subaxis("state").has_variable<Scalar>("A"));
-    REQUIRE(summodel.input_axis().subaxis("state").subaxis("substate").has_variable<Scalar>("B"));
+    REQUIRE(summodel.input_axis().subaxis("state").has_variable("A"));
+    REQUIRE(summodel.input_axis().subaxis("state").subaxis("substate").has_variable("B"));
 
     REQUIRE(summodel.output_axis().has_subaxis("state"));
     REQUIRE(summodel.output_axis().subaxis("state").has_subaxis("outsub"));
-    REQUIRE(summodel.output_axis().subaxis("state").subaxis("outsub").has_variable<Scalar>("C"));
+    REQUIRE(summodel.output_axis().subaxis("state").subaxis("outsub").has_variable("C"));
   }
 
   SECTION("loaded_options")

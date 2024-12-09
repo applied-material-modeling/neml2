@@ -35,10 +35,10 @@ class SSFR5;
 class Rot;
 
 /**
- * @brief The (logical) symmetric fourth order tensor, with symmetry in the first two dimensionss as
+ * @brief The symmetric fourth order tensor, with symmetry in the first two dimensionss as
  * well as in the last two dimensions.
  *
- * Mandel notation is used, and so the logical storage space is (6, 6).
+ * Mandel notation is used, and so the storage space is (6, 6).
  */
 class SSR4 : public PrimitiveTensor<SSR4, 6, 6>
 {

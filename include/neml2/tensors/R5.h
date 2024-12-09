@@ -29,9 +29,9 @@
 namespace neml2
 {
 /**
- * @brief The (logical) full fifth order tensor.
+ * @brief Fifth order tensor without symmetry.
  *
- * The logical storage space is (3, 3, 3, 3, 3).
+ * The storage space is (3, 3, 3, 3, 3).
  */
 class R5 : public PrimitiveTensor<R5, 3, 3, 3, 3, 3>
 {

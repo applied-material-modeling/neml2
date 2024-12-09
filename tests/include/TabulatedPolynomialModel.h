@@ -51,6 +51,8 @@ public:
   static OptionSet expected_options();
 
 protected:
+  void request_AD() override;
+
   void set_value(bool, bool, bool) override;
 
   /**

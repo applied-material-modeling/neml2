@@ -23,7 +23,9 @@
 // THE SOFTWARE.
 
 #include "neml2/models/Model.h"
-#include <torch/autograd.h>
+#include "neml2/models/Assembler.h"
+#include "neml2/base/guards.h"
+#include "neml2/misc/math.h"
 
 namespace neml2
 {
@@ -36,17 +38,8 @@ Model::expected_options()
 
   options.section() = "Models";
 
-  options.set<bool>("_use_AD_first_derivative") = false;
-  options.set<bool>("_use_AD_second_derivative") = false;
-  options.set<int>("_extra_derivative_order") = 0;
   options.set<bool>("_nonlinear_system") = false;
-  options.set<bool>("_enable_AD") = true;
-
-  options.set("_use_AD_first_derivative").suppressed() = true;
-  options.set("_use_AD_second_derivative").suppressed() = true;
-  options.set("_extra_derivative_order").suppressed() = true;
   options.set("_nonlinear_system").suppressed() = true;
-  options.set("_enable_AD").suppressed() = true;
 
   return options;
 }
@@ -57,18 +50,18 @@ Model::Model(const OptionSet & options)
     VariableStore(options, this),
     NonlinearSystem(options),
     DiagnosticsInterface(this),
-    _options(default_tensor_options()),
-    _nonlinear_system(options.get<bool>("_nonlinear_system")),
-    _deriv_order(-1),
-    _extra_deriv_order(options.get<int>("_extra_derivative_order")),
-    _enable_AD(options.get<bool>("_enable_AD")),
-    _AD_1st_deriv(options.get<bool>("_use_AD_first_derivative")),
-    _AD_2nd_deriv(options.get<bool>("_use_AD_second_derivative"))
-#ifndef NDEBUG
-    ,
-    _evaluated_once(false)
-#endif
+    _nonlinear_system(options.get<bool>("_nonlinear_system"))
 {
+}
+
+void
+Model::to(const torch::TensorOptions & options)
+{
+  send_buffers_to(options);
+  send_parameters_to(options);
+
+  for (auto * submodel : registered_models())
+    submodel->to(options);
 }
 
 void
@@ -88,7 +81,7 @@ Model::diagnose(std::vector<Diagnosis> & diagnoses) const
 
   // Check for statefulness
   if (this == host())
-    if (input_axis().has_subaxis("old_state"))
+    if (input_axis().has_old_state())
       for (auto var : input_axis().subaxis("old_state").variable_names())
         diagnostic_assert(diagnoses,
                           output_axis().has_variable(var.prepend("state")),
@@ -116,8 +109,8 @@ Model::diagnose_nl_sys(std::vector<Diagnosis> & diagnoses) const
           diagnoses,
           var.is_solve_dependent(),
           "This model is part of a nonlinear system. At least one of the input variables is "
-          "solve-dependent, so all output variables MUST be solve-dependent, i.e., they must be on "
-          "one of the following sub-axes: state, residual, parameters. However, got output "
+          "solve-dependent, so all output variables MUST be solve-dependent, i.e., they must be "
+          "on one of the following sub-axes: state, residual, parameters. However, got output "
           "variable ",
           name);
 }
@@ -125,490 +118,207 @@ Model::diagnose_nl_sys(std::vector<Diagnosis> & diagnoses) const
 void
 Model::setup()
 {
-  // Setup input and output axes
   setup_layout();
-}
 
-std::tuple<const Tensor &, const Tensor &, const Tensor &, const Tensor &, const Tensor &>
-Model::get_system_matrices() const
-{
-  neml_assert_dbg(is_nonlinear_system(), "This is not a nonlinear system");
-  return {_dr_ds, _dr_dsn, _dr_df, _dr_dfn, _dr_dp};
-}
-
-void
-Model::reinit(const Tensor & tensor, int deriv_order)
-{
-  reinit(tensor.batch_sizes(), deriv_order, tensor.device(), tensor.scalar_type());
-}
-
-void
-Model::reinit(TensorShapeRef batch_shape,
-              int deriv_order,
-              const torch::Device & device,
-              const torch::Dtype & dtype)
-{
-  neml_assert(host() == this, "This method should only be called on the host model.");
-
-  // Cache configuration
-  cache(batch_shape, deriv_order, device, dtype);
-
-  // Sync buffers and parameters
-  send_buffers_to(options());
-  send_parameters_to(options());
-
-  // Allocate variable storage and set up variable views
-  reinit(/*in=*/true, /*out=*/true);
-}
-
-void
-Model::reinit(bool in, bool out)
-{
-  // Allocate variable storage
-  allocate_variables(in, out);
-
-  // Setup variable views
-  setup_output_views();
-  setup_nonlinear_system();
-  setup_input_views(this);
-}
-
-void
-Model::prepare()
-{
-  if (is_AD_disabled())
-    zero();
-  else
-    reinit(false, true);
-}
-
-void
-Model::allocate_variables(bool in, bool out)
-{
-#ifndef NDEBUG
-  _evaluated_once = false;
-#endif
-
-  check_AD_limitation();
-
-  VariableStore::allocate_variables(batch_sizes(),
-                                    options(),
-                                    /*in=*/in,
-                                    /*out=*/out,
-                                    /*dout_din=*/out && requires_grad(),
-                                    /*d2out_din2=*/out && requires_2nd_grad());
-
-  if (in && is_nonlinear_system())
+  if (host() == this)
   {
-    _ndof = output_axis().storage_size("residual");
-    _solution = Tensor::empty(batch_sizes(), _ndof, options());
+    link_output_variables();
+    link_input_variables();
   }
 
-  for (auto * submodel : registered_models())
-    submodel->allocate_variables(in, out);
-}
-
-void
-Model::setup_input_views(VariableStore * host)
-{
-  VariableStore::setup_input_views(host);
-  setup_submodel_input_views(this);
-}
-
-void
-Model::setup_submodel_input_views(VariableStore * host)
-{
-  for (auto * submodel : registered_models())
   {
-    for (auto && [name, var] : submodel->input_variables())
-      var.setup_views(host->input_variable(name));
-    submodel->setup_submodel_input_views(submodel);
+    RequestingAD AD;
+    request_AD();
   }
 }
 
 void
-Model::setup_output_views()
+Model::link_input_variables()
 {
-  VariableStore::setup_output_views(true, requires_grad(), requires_2nd_grad());
-  setup_submodel_output_views();
-
-  if (is_nonlinear_system() && requires_grad())
+  for (auto * submodel : _registered_models)
   {
-    if (input_axis().has_state())
-      _dr_ds = derivative_storage().base_index({"residual", "state"});
-    if (input_axis().has_old_state())
-      _dr_dsn = derivative_storage().base_index({"residual", "old_state"});
-    if (input_axis().has_forces())
-      _dr_df = derivative_storage().base_index({"residual", "forces"});
-    if (input_axis().has_old_forces())
-      _dr_dfn = derivative_storage().base_index({"residual", "old_forces"});
-    if (input_axis().has_parameters())
-      _dr_dp = derivative_storage().base_index({"residual", "parameters"});
+    link_input_variables(submodel);
+    submodel->link_input_variables();
   }
 }
 
 void
-Model::setup_submodel_output_views()
+Model::link_input_variables(Model * submodel)
 {
-  for (auto * submodel : registered_models())
-    submodel->setup_output_views();
+  for (auto && [name, var] : submodel->input_variables())
+    var.ref(input_variable(name), submodel->is_nonlinear_system());
 }
 
 void
-Model::setup_nonlinear_system()
+Model::link_output_variables()
 {
-  if (is_nonlinear_system())
+  for (auto * submodel : _registered_models)
   {
-    _residual = output_storage().base_index({"residual"});
-    if (requires_grad())
-      _Jacobian = derivative_storage().base_index({"residual", "state"});
+    link_output_variables(submodel);
+    submodel->link_output_variables();
   }
-
-  for (auto * submodel : registered_models())
-    submodel->setup_nonlinear_system();
 }
 
 void
-Model::zero()
+Model::link_output_variables(Model * /*submodel*/)
 {
-  VariableStore::zero(requires_grad(), requires_2nd_grad());
-
-  for (auto * submodel : registered_models())
-    submodel->zero();
 }
 
 void
-Model::set_solution(const Tensor & x)
+Model::request_AD(VariableBase & y, const VariableBase & u)
 {
-  NonlinearSystem::set_solution(x);
-
-  // Also update the model input variables
-  LabeledVector sol(x, {&output_axis().subaxis("residual")});
-  host<VariableStore>()->input_storage().slice("state").fill(sol);
+  _ad_derivs[&y].insert(&u);
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+  _ad_args.insert(const_cast<VariableBase *>(&u));
 }
 
 void
-Model::cache(TensorShapeRef batch_shape,
-             int deriv_order,
-             const torch::Device & device,
-             const torch::Dtype & dtype)
+Model::request_AD(VariableBase & y, const VariableBase & u1, const VariableBase & u2)
 {
-  _batch_sizes = batch_shape.empty() ? TensorShape{1} : TensorShape(batch_shape);
-  VariableStore::cache(_batch_sizes);
-
-  auto deriv_order_new = deriv_order + _extra_deriv_order;
-
-  // Nonlinear system requires the first derivatives to be solved
-  if (is_nonlinear_system())
-    deriv_order_new = std::max(deriv_order_new, 1);
-
-  _deriv_order = std::max(deriv_order_new, _deriv_order);
-
-  _options = default_tensor_options().device(device).dtype(dtype);
-
-  for (auto * submodel : registered_models())
-    submodel->cache(batch_shape, _deriv_order, device, dtype);
+  _ad_secderivs[&y][&u1].insert(&u2);
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+  _ad_args.insert(const_cast<VariableBase *>(&u2));
 }
 
 void
-Model::check_AD_limitation() const
+Model::clear_input()
 {
-  if (_AD_1st_deriv && !_AD_2nd_deriv)
-    throw NEMLException("AD derivative is requested, but AD second derivative is not requested.");
-  if (_AD_1st_deriv || _AD_2nd_deriv)
-    neml_assert(is_AD_enabled(), "AD is requested but not enabled");
+  VariableStore::clear_input();
+  for (auto * submodel : _registered_models)
+    submodel->clear_input();
 }
 
 void
-Model::input_requires_grad_(bool req)
+Model::clear_output()
 {
-  for (auto && [name, var] : input_variables())
-    var.requires_grad_(req);
+  VariableStore::clear_output();
+  for (auto * submodel : _registered_models)
+    submodel->clear_output();
 }
 
 void
-Model::use_AD_derivatives(bool first, bool second)
+Model::zero_input()
 {
-  _AD_1st_deriv = first;
-  _AD_2nd_deriv = second;
-  check_AD_limitation();
+  VariableStore::zero_input();
+  for (auto * submodel : _registered_models)
+    submodel->zero_input();
 }
 
 void
-Model::check_input(const LabeledVector & in) const
+Model::zero_output()
 {
-  neml_assert(utils::sizes_broadcastable(in.batch_sizes(), batch_sizes()),
-              "The provided input has batch shape ",
-              in.batch_sizes(),
-              " which cannot be broadcast to the model's batch shape ",
-              batch_sizes(),
-              ". Make sure the model has been initialized using `reinit` and that the provided "
-              "input has the correct shape.");
-  neml_assert(in.base_storage() == input_storage().base_storage(),
-              "The provided input has base storage size ",
-              in.base_storage(),
-              ", but the model's input storage expects a base storage size of ",
-              input_storage().base_storage(),
-              ". Make sure the model has been initialized using `reinit` and that the provided "
-              "input has the correct shape.");
+  VariableStore::zero_output();
+  for (auto * submodel : _registered_models)
+    submodel->zero_output();
 }
 
-void
-Model::set_input(const LabeledVector & in)
+std::map<VariableName, Tensor>
+Model::value(const std::map<VariableName, Tensor> & in)
 {
-  neml_assert_dbg(in.axis(0) == input_axis(),
-                  "Incompatible input axis. The model has input axis: \n",
-                  input_axis(),
-                  "The input vector has axis: \n",
-                  in.axis(0));
-  input_storage().copy_(in.tensor().batch_expand(batch_sizes()).clone());
-}
-
-LabeledVector
-Model::get_output()
-{
-  return output_storage().clone();
-}
-
-LabeledMatrix
-Model::get_doutput_dinput()
-{
-  return derivative_storage().clone();
-}
-
-LabeledTensor3D
-Model::get_d2output_dinput2()
-{
-  return second_derivative_storage().clone();
-}
-
-LabeledVector
-Model::value(const LabeledVector & in)
-{
-  check_input(in);
-  set_input(in);
-  prepare();
-
+  zero_input();
+  assign_input(in);
+  zero_output();
   value();
-  return get_output();
+  return collect_output();
 }
 
-std::tuple<LabeledVector, LabeledMatrix>
-Model::value_and_dvalue(const LabeledVector & in)
+std::tuple<std::map<VariableName, Tensor>, std::map<VariableName, std::map<VariableName, Tensor>>>
+Model::value_and_dvalue(const std::map<VariableName, Tensor> & in)
 {
-  check_input(in);
-  set_input(in);
-  prepare();
-
+  zero_input();
+  assign_input(in);
+  zero_output();
   value_and_dvalue();
-  return {get_output(), get_doutput_dinput()};
+  return {collect_output(), collect_output_derivatives()};
 }
 
-LabeledMatrix
-Model::dvalue(const LabeledVector & in)
+std::map<VariableName, std::map<VariableName, Tensor>>
+Model::dvalue(const std::map<VariableName, Tensor> & in)
 {
-  check_input(in);
-  set_input(in);
-  prepare();
-
+  zero_input();
+  assign_input(in);
+  zero_output();
   dvalue();
-  return get_doutput_dinput();
+  return collect_output_derivatives();
 }
 
-std::tuple<LabeledVector, LabeledMatrix, LabeledTensor3D>
-Model::value_and_dvalue_and_d2value(const LabeledVector & in)
+std::tuple<std::map<VariableName, Tensor>,
+           std::map<VariableName, std::map<VariableName, Tensor>>,
+           std::map<VariableName, std::map<VariableName, std::map<VariableName, Tensor>>>>
+Model::value_and_dvalue_and_d2value(const std::map<VariableName, Tensor> & in)
 {
-  check_input(in);
-  set_input(in);
-  prepare();
-
+  zero_input();
+  assign_input(in);
+  zero_output();
   value_and_dvalue_and_d2value();
-  return {get_output(), get_doutput_dinput(), get_d2output_dinput2()};
+  return {collect_output(), collect_output_derivatives(), collect_output_second_derivatives()};
 }
 
-std::tuple<LabeledMatrix, LabeledTensor3D>
-Model::dvalue_and_d2value(const LabeledVector & in)
+std::tuple<std::map<VariableName, std::map<VariableName, Tensor>>,
+           std::map<VariableName, std::map<VariableName, std::map<VariableName, Tensor>>>>
+Model::dvalue_and_d2value(const std::map<VariableName, Tensor> & in)
 {
-  check_input(in);
-  set_input(in);
-  prepare();
-
+  zero_input();
+  assign_input(in);
+  zero_output();
   dvalue_and_d2value();
-  return {get_doutput_dinput(), get_d2output_dinput2()};
+  return {collect_output_derivatives(), collect_output_second_derivatives()};
 }
 
-LabeledTensor3D
-Model::d2value(const LabeledVector & in)
+std::map<VariableName, std::map<VariableName, std::map<VariableName, Tensor>>>
+Model::d2value(const std::map<VariableName, Tensor> & in)
 {
-  check_input(in);
-  set_input(in);
-  prepare();
-
+  zero_input();
+  assign_input(in);
+  zero_output();
   d2value();
-  return get_d2output_dinput2();
+  return collect_output_second_derivatives();
 }
 
 void
 Model::value()
 {
-  check_inplace_dbg();
-  {
-    c10::InferenceMode guard(is_AD_disabled());
-    set_value(true, false, false);
-  }
+  set_value(true, false, false);
 }
 
 void
 Model::value_and_dvalue()
 {
-  neml_assert_dbg(requires_grad(),
-                  name(),
-                  ": value_and_dvalue() is called but derivative storage hasn't been allocated.");
-
-  check_inplace_dbg();
-
-  if (!_AD_1st_deriv)
-  {
-    c10::InferenceMode guard(is_AD_disabled());
-    set_value(true, true, false);
-  }
-  else
-  {
-    input_requires_grad_();
-    set_value(true, false, false);
-    extract_derivatives(/*retain_graph=*/true, /*create_graph=*/false, /*allow_unused=*/true);
-  }
+  enable_AD();
+  set_value(true, true, false);
+  extract_AD_derivatives(true, false);
 }
 
 void
 Model::dvalue()
 {
-  neml_assert_dbg(requires_grad(),
-                  name(),
-                  ": dvalue() is called but derivative storage hasn't been allocated.");
-
-  check_inplace_dbg();
-
-  if (!_AD_1st_deriv)
-  {
-    c10::InferenceMode guard(is_AD_disabled());
-    set_value(false, true, false);
-  }
-  else
-  {
-    input_requires_grad_();
-    set_value(true, false, false);
-    extract_derivatives(/*retain_graph=*/true, /*create_graph=*/false, /*allow_unused=*/true);
-  }
+  enable_AD();
+  set_value(AD_need_value(true, false), true, false);
+  extract_AD_derivatives(true, false);
 }
 
 void
 Model::value_and_dvalue_and_d2value()
 {
-  neml_assert_dbg(requires_2nd_grad(),
-                  name(),
-                  ": value_and_dvalue_and_d2value() is called but second derivative storage hasn't "
-                  "been allocated.");
-
-  check_inplace_dbg();
-
-  if (!_AD_2nd_deriv)
-  {
-    c10::InferenceMode guard(is_AD_disabled());
-    set_value(true, true, true);
-  }
-  else
-  {
-    input_requires_grad_();
-
-    if (!_AD_1st_deriv)
-      set_value(true, true, false);
-    else
-    {
-      set_value(true, false, false);
-      extract_derivatives(/*retain_graph=*/true, /*create_graph=*/true, /*allow_unused=*/true);
-    }
-
-    extract_second_derivatives(
-        /*retain_graph=*/true, /*create_graph=*/false, /*allow_unused=*/true);
-  }
+  enable_AD();
+  set_value(true, true, true);
+  extract_AD_derivatives(true, true);
 }
 
 void
 Model::dvalue_and_d2value()
 {
-  neml_assert_dbg(requires_2nd_grad(),
-                  name(),
-                  ": dvalue_and_d2value() is called but second derivative storage hasn't "
-                  "been allocated.");
-
-  check_inplace_dbg();
-
-  if (!_AD_2nd_deriv)
-  {
-    c10::InferenceMode guard(is_AD_disabled());
-    set_value(false, true, true);
-  }
-  else
-  {
-    input_requires_grad_();
-
-    if (!_AD_1st_deriv)
-      set_value(false, true, false);
-    else
-    {
-      set_value(true, false, false);
-      extract_derivatives(/*retain_graph=*/true, /*create_graph=*/true, /*allow_unused=*/true);
-    }
-
-    extract_second_derivatives(
-        /*retain_graph=*/true, /*create_graph=*/false, /*allow_unused=*/true);
-  }
+  enable_AD();
+  set_value(AD_need_value(true, true), true, true);
+  extract_AD_derivatives(true, true);
 }
 
 void
 Model::d2value()
 {
-  neml_assert_dbg(requires_2nd_grad(),
-                  name(),
-                  ": d2value() is called but second derivative storage hasn't been allocated.");
-
-  check_inplace_dbg();
-
-  if (!_AD_2nd_deriv)
-  {
-    c10::InferenceMode guard(is_AD_disabled());
-    set_value(false, false, true);
-  }
-  else
-  {
-    input_requires_grad_();
-
-    if (!_AD_1st_deriv)
-      set_value(false, true, false);
-    else
-    {
-      set_value(true, false, false);
-      extract_derivatives(/*retain_graph=*/true, /*create_graph=*/true, /*allow_unused=*/true);
-    }
-
-    extract_second_derivatives(
-        /*retain_graph=*/true, /*create_graph=*/false, /*allow_unused=*/true);
-  }
-}
-
-void
-Model::check_inplace_dbg()
-{
-#ifndef NDEBUG
-  neml_assert_dbg(!_enable_AD || !_evaluated_once,
-                  "Model '",
-                  name(),
-                  "' is being evaluated a second time, which could lead to in-place modification "
-                  "of function graph. If you do not need to use automatic differentiation, set "
-                  "enable_AD = false to avoid this error.");
-  _evaluated_once = true;
-#endif
+  enable_AD();
+  set_value(AD_need_value(false, true), false, true);
+  extract_AD_derivatives(false, true);
 }
 
 Model *
@@ -625,79 +335,186 @@ Model::registered_model(const std::string & name) const
 std::set<VariableName>
 Model::consumed_items() const
 {
-  return input_axis().variable_names();
+  auto items = input_axis().variable_names();
+  return {items.begin(), items.end()};
 }
 
 std::set<VariableName>
 Model::provided_items() const
 {
-  return output_axis().variable_names();
+  auto items = output_axis().variable_names();
+  return {items.begin(), items.end()};
 }
 
 void
-Model::assemble(bool residual, bool Jacobian)
+Model::set_guess(const SOL<false> & x)
 {
-  prepare();
+  const auto sol_assember = VectorAssembler(input_axis().subaxis("state"));
+  assign_input(sol_assember.disassemble(x));
+}
 
+void
+Model::assemble(NonlinearSystem::RES<false> * residual, NonlinearSystem::JAC<false> * Jacobian)
+{
   if (residual && !Jacobian)
     value();
-  else if (residual && Jacobian)
-    value_and_dvalue();
   else if (!residual && Jacobian)
     dvalue();
+  else if (residual && Jacobian)
+    value_and_dvalue();
+
+  if (residual)
+  {
+    const auto res_assembler = VectorAssembler(output_axis().subaxis("residual"));
+    *residual = RES<false>(res_assembler.assemble(collect_output()));
+  }
+  if (Jacobian)
+  {
+    const auto jac_assembler =
+        MatrixAssembler(output_axis().subaxis("residual"), input_axis().subaxis("state"));
+    *Jacobian = JAC<false>(jac_assembler.assemble(collect_output_derivatives()));
+  }
+}
+
+bool
+Model::AD_need_value(bool dout, bool d2out) const
+{
+  if (dout)
+    if (!_ad_derivs.empty())
+      return true;
+
+  if (d2out)
+    for (auto && [y, u1u2s] : _ad_secderivs)
+      for (auto && [u1, u2s] : u1u2s)
+        if (_ad_derivs.count(y) && _ad_derivs.at(y).count(u1))
+          return true;
+
+  return false;
 }
 
 void
-Model::extract_derivatives(bool retain_graph, bool create_graph, bool allow_unused)
+Model::enable_AD()
 {
-  // Loop over rows to retrieve the derivatives
-  if (output_storage().tensor().requires_grad())
-    for (Size i = 0; i < output_storage().base_sizes()[0]; i++)
+  for (auto * ad_arg : _ad_args)
+    ad_arg->requires_grad_();
+}
+
+void
+Model::extract_AD_derivatives(bool dout, bool d2out)
+{
+  neml_assert(dout || d2out, "At least one of the output derivatives must be requested.");
+
+  bool create_graph = false;
+
+  for (auto && [y, us] : _ad_derivs)
+  {
+    if (!dout && d2out)
+      if (!_ad_secderivs.count(y))
+        continue;
+
+    for (const auto * u : us)
     {
-      auto grad_outputs = Tensor::zeros_like(output_storage());
-      grad_outputs.index_put_({torch::indexing::Ellipsis, i}, 1.0);
-      for (auto && [name, var] : input_variables())
+      if (!dout && d2out)
       {
-        auto dyi_dvar = torch::autograd::grad({output_storage()},
-                                              {var.tensor()},
-                                              {grad_outputs},
-                                              retain_graph,
-                                              create_graph,
-                                              allow_unused)[0];
-
-        if (dyi_dvar.defined())
-        {
-          derivative_storage().tensor().base_index_put_(
-              {i, input_axis().indices(name)},
-              dyi_dvar.reshape(utils::add_shapes(batch_sizes(), var.base_storage())));
-        }
+        if (!_ad_secderivs.at(y).count(u))
+          continue;
+        create_graph = true;
       }
+
+      const auto dy_du = math::jacrev(y->tensor(),
+                                      u->tensor(),
+                                      /*retain_graph=*/true,
+                                      /*create_graph=*/create_graph,
+                                      /*allow_unused=*/true);
+      if (dy_du.defined())
+        y->d(*u) = dy_du;
     }
-}
+  }
 
-void
-Model::extract_second_derivatives(bool retain_graph, bool create_graph, bool allow_unused)
-{
-  // Loop over rows to retrieve the second derivatives
-  if (derivative_storage().tensor().requires_grad())
-    for (Size i = 0; i < derivative_storage().base_sizes()[0]; i++)
-      for (Size j = 0; j < derivative_storage().base_sizes()[1]; j++)
+  if (d2out)
+  {
+    for (auto && [y, u1u2s] : _ad_secderivs)
+      for (auto && [u1, u2s] : u1u2s)
       {
-        auto grad_outputs = torch::zeros_like(derivative_storage());
-        grad_outputs.index_put_({torch::indexing::Ellipsis, i, j}, 1.0);
-        for (auto && [name, var] : input_variables())
+        const auto & dy_du1 = y->derivatives()[u1->name()];
+
+        if (!dy_du1.defined() || !dy_du1.requires_grad())
+          continue;
+
+        for (const auto * u2 : u2s)
         {
-          auto dydxij_dvar = torch::autograd::grad({derivative_storage()},
-                                                   {var.tensor()},
-                                                   {grad_outputs},
-                                                   retain_graph,
-                                                   create_graph,
-                                                   allow_unused)[0];
-          if (dydxij_dvar.defined())
-            second_derivative_storage().tensor().base_index_put_(
-                {i, j, input_axis().indices(name)},
-                dydxij_dvar.reshape(utils::add_shapes(batch_sizes(), var.base_storage())));
+          const auto d2y_du1u2 = math::jacrev(dy_du1,
+                                              u2->tensor(),
+                                              /*retain_graph=*/true,
+                                              /*create_graph=*/false,
+                                              /*allow_unused=*/true);
+          if (d2y_du1u2.defined())
+            y->d(*u1, *u2) = d2y_du1u2;
         }
       }
+  }
 }
+
+// LCOV_EXCL_START
+std::ostream &
+operator<<(std::ostream & os, const Model & model)
+{
+  bool first = false;
+  const std::string tab = "            ";
+
+  os << "Name:       " << model.name() << '\n';
+  os << "Dtype:      " << model.tensor_options().dtype() << '\n';
+  os << "Device:     " << model.tensor_options().device() << '\n';
+
+  if (!model.input_variables().empty())
+  {
+    os << "Input:      ";
+    first = true;
+    for (auto && [name, var] : model.input_variables())
+    {
+      os << (first ? "" : tab);
+      os << name << " [" << var.type() << "]\n";
+      first = false;
+    }
+  }
+
+  if (!model.input_variables().empty())
+  {
+    os << "Output:     ";
+    first = true;
+    for (auto && [name, var] : model.output_variables())
+    {
+      os << (first ? "" : tab);
+      os << name << " [" << var.type() << "]\n";
+      first = false;
+    }
+  }
+
+  if (!model.named_parameters().empty())
+  {
+    os << "Parameters: ";
+    first = true;
+    for (auto && [name, param] : model.named_parameters())
+    {
+      os << (first ? "" : tab);
+      os << name << " [" << param.type() << "]\n";
+      first = false;
+    }
+  }
+
+  if (!model.named_buffers().empty())
+  {
+    os << "Buffers:    ";
+    first = true;
+    for (auto && [name, buffer] : model.named_buffers())
+    {
+      os << (first ? "" : tab);
+      os << name << " [" << buffer.type() << "]\n";
+      first = false;
+    }
+  }
+
+  return os;
+}
+// LCOV_EXCL_STOP
 } // namespace neml2

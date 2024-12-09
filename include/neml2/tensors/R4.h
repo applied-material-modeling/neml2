@@ -35,9 +35,9 @@ class Rot;
 class WWR4;
 
 /**
- * @brief The (logical) full fourth order tensor.
+ * @brief Fourth order tensor without symmetry.
  *
- * The logical storage space is (3, 3, 3, 3).
+ * The storage space is (3, 3, 3, 3).
  */
 class R4 : public PrimitiveTensor<R4, 3, 3, 3, 3>
 {

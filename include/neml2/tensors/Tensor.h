@@ -28,43 +28,70 @@
 
 namespace neml2
 {
+class Tensor;
+
+namespace utils
+{
+/// @brief Find the broadcast batch shape of all the tensors
+/// The returned batch shape will be _traceable_. @see neml2::TraceableTensorShape
+TraceableTensorShape broadcast_batch_sizes(const std::vector<Tensor> & tensors);
+
+/// Make sure all tensors have the same dtype and return the common dtype
+torch::Dtype same_dtype(const std::vector<Tensor> & tensors);
+
+/// Make sure all tensors have the same device and return the common device
+torch::Device same_device(const std::vector<Tensor> & tensors);
+} // namespace utils
+
 class Tensor : public TensorBase<Tensor>
 {
 public:
-  using TensorBase<Tensor>::TensorBase;
+  /// Default constructor
+  Tensor() = default;
+
+  /// Construct from another torch::Tensor
+  Tensor(const torch::Tensor & tensor, Size batch_dim);
+
+  /// Construct from another torch::Tensor with given batch shape
+  Tensor(const torch::Tensor & tensor, const TraceableTensorShape & batch_shape);
+
+  /// Copy constructor
+  template <class Derived2>
+  Tensor(const TensorBase<Derived2> & tensor)
+    : TensorBase<Tensor>(tensor)
+  {
+  }
 
   /// Unbatched empty tensor given base shape
   [[nodiscard]] static Tensor
-  empty(const TensorShapeRef & base_shape,
-        const torch::TensorOptions & options = default_tensor_options());
+  empty(TensorShapeRef base_shape, const torch::TensorOptions & options = default_tensor_options());
   /// Empty tensor given batch and base shapes
   [[nodiscard]] static Tensor
-  empty(const TensorShapeRef & batch_shape,
-        const TensorShapeRef & base_shape,
+  empty(const TraceableTensorShape & batch_shape,
+        TensorShapeRef base_shape,
         const torch::TensorOptions & options = default_tensor_options());
   /// Unbatched tensor filled with zeros given base shape
   [[nodiscard]] static Tensor
-  zeros(const TensorShapeRef & base_shape,
-        const torch::TensorOptions & options = default_tensor_options());
+  zeros(TensorShapeRef base_shape, const torch::TensorOptions & options = default_tensor_options());
   /// Zero tensor given batch and base shapes
   [[nodiscard]] static Tensor
-  zeros(const TensorShapeRef & batch_shape,
-        const TensorShapeRef & base_shape,
+  zeros(const TraceableTensorShape & batch_shape,
+        TensorShapeRef base_shape,
         const torch::TensorOptions & options = default_tensor_options());
   /// Unbatched tensor filled with ones given base shape
-  [[nodiscard]] static Tensor ones(const TensorShapeRef & base_shape,
+  [[nodiscard]] static Tensor ones(TensorShapeRef base_shape,
                                    const torch::TensorOptions & options = default_tensor_options());
   /// Unit tensor given batch and base shapes
-  [[nodiscard]] static Tensor ones(const TensorShapeRef & batch_shape,
-                                   const TensorShapeRef & base_shape,
+  [[nodiscard]] static Tensor ones(const TraceableTensorShape & batch_shape,
+                                   TensorShapeRef base_shape,
                                    const torch::TensorOptions & options = default_tensor_options());
   /// Unbatched tensor filled with a given value given base shape
-  [[nodiscard]] static Tensor full(const TensorShapeRef & base_shape,
+  [[nodiscard]] static Tensor full(TensorShapeRef base_shape,
                                    Real init,
                                    const torch::TensorOptions & options = default_tensor_options());
   /// Full tensor given batch and base shapes
-  [[nodiscard]] static Tensor full(const TensorShapeRef & batch_shape,
-                                   const TensorShapeRef & base_shape,
+  [[nodiscard]] static Tensor full(const TraceableTensorShape & batch_shape,
+                                   TensorShapeRef base_shape,
                                    Real init,
                                    const torch::TensorOptions & options = default_tensor_options());
   /// Unbatched identity tensor
@@ -72,7 +99,7 @@ public:
   identity(Size n, const torch::TensorOptions & options = default_tensor_options());
   /// Identity tensor given batch shape and base length
   [[nodiscard]] static Tensor
-  identity(const TensorShapeRef & batch_shape,
+  identity(const TraceableTensorShape & batch_shape,
            Size n,
            const torch::TensorOptions & options = default_tensor_options());
 };

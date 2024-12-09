@@ -142,10 +142,10 @@ TEST_CASE("SymmetryFromOrbifold", "[tensors]")
     auto cls = GENERATE("1", "2", "222", "42", "4", "3", "6", "32", "622", "23", "432");
     auto & grp = Factory::get_object<R2>("Tensors", fmt_name(cls));
     // A loop is forgivable here I hope...
-    for (Size i = 0; i < grp.batch_sizes()[0]; i++)
+    for (Size i = 0; i < grp.batch_size(0).concrete(); i++)
     {
       R2 op_i = grp.batch_index({i});
-      for (Size j = 0; j < grp.batch_sizes()[0]; j++)
+      for (Size j = 0; j < grp.batch_size(0).concrete(); j++)
       {
         R2 op_j = grp.batch_index({j});
         R2 prod = op_i * op_j;
@@ -159,7 +159,7 @@ TEST_CASE("SymmetryFromOrbifold", "[tensors]")
     auto cls = GENERATE("1", "2", "222", "42", "4", "3", "6", "32", "622", "23", "432");
     auto & grp = Factory::get_object<R2>("Tensors", fmt_name(cls));
     // A loop is forgivable here I hope...
-    for (Size i = 0; i < grp.batch_sizes()[0]; i++)
+    for (Size i = 0; i < grp.batch_size(0).concrete(); i++)
     {
       R2 inv = grp.batch_index({i}).inverse();
       REQUIRE(torch::any(torch::all(torch::isclose(grp, inv).flatten(1), 1)).item().toBool());

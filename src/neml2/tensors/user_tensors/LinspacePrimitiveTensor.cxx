@@ -54,21 +54,35 @@ LinspacePrimitiveTensor<T>::expected_options()
   options.set<Size>("dim") = 0;
   options.set("dim").doc() = "Where to insert the new dimension";
 
-  options.set<Size>("batch_dim") = -1;
-  options.set("batch_dim").doc() = "Batch dimension of the output";
+  options.set<TensorShape>("batch_expand") = TensorShape();
+  options.set("batch_expand").doc() = "After construction, perform an additional batch expanding "
+                                      "operation into the given batch shape.";
 
   return options;
 }
 
 template <typename T>
 LinspacePrimitiveTensor<T>::LinspacePrimitiveTensor(const OptionSet & options)
-  : T(T::linspace(options.get<CrossRef<T>>("start"),
-                  options.get<CrossRef<T>>("end"),
-                  options.get<Size>("nstep"),
-                  options.get<Size>("dim"),
-                  options.get<Size>("batch_dim"))),
+  : T(make(options)),
     UserTensorBase(options)
 {
+}
+
+template <typename T>
+T
+LinspacePrimitiveTensor<T>::make(const OptionSet & options) const
+{
+  auto t = T::linspace(options.get<CrossRef<T>>("start"),
+                       options.get<CrossRef<T>>("end"),
+                       options.get<Size>("nstep"),
+                       options.get<Size>("dim"));
+
+  // Expand if requested
+  auto S = options.get<TensorShape>("batch_expand");
+  if (!S.empty())
+    t = t.batch_expand(S);
+
+  return t;
 }
 
 #define LINSPACEPRIMITIVETENSOR_INSTANTIATE_PRIMITIVETENSOR(T)                                     \

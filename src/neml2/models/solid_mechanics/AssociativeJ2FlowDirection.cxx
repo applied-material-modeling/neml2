@@ -68,8 +68,8 @@ AssociativeJ2FlowDirection::set_value(bool out, bool dout_din, bool d2out_din2)
   if (dout_din)
     if (_M.is_dependent())
     {
-      auto I = SSR4::identity_sym(options());
-      auto J = SSR4::identity_dev(options());
+      auto I = SSR4::identity_sym(_M.options());
+      auto J = SSR4::identity_dev(_M.options());
 
       _N.d(_M) = 3.0 / 2.0 * (I - 2.0 / 3.0 * dvm_dM.outer(dvm_dM)) * J / vm;
     }

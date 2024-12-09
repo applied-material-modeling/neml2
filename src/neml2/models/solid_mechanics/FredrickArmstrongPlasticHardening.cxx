@@ -89,7 +89,7 @@ FredrickArmstrongPlasticHardening::set_value(bool out, bool dout_din, bool d2out
 
   if (dout_din)
   {
-    auto I = SR2::identity_map(options());
+    auto I = SR2::identity_map(_X.options());
 
     if (_gamma_dot.is_dependent())
       _X_dot.d(_gamma_dot) = g_term;

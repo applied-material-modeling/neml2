@@ -68,7 +68,6 @@ nbatch = 20
     prescribed_temperatures = 'temperatures'
     predictor = LINEAR_EXTRAPOLATION
     save_as = 'result.pt'
-    enable_AD = true
   []
   [regression]
     type = TransientRegression
@@ -166,7 +165,7 @@ nbatch = 20
     youngs_modulus = 1e5
     poisson_ratio = 0.3
     elastic_trial_stress = 'forces/s'
-    inelastic_strain = 'state/ep'
+    equivalent_plastic_strain = 'state/ep'
     updated_trial_stress = 'state/s'
   []
   [rom]

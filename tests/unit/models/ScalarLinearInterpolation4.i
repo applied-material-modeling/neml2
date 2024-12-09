@@ -2,7 +2,6 @@
   [unit]
     type = ModelUnitTest
     model = 'E'
-    batch_shape = '(7,8,5)'
     input_scalar_names = 'forces/T'
     input_scalar_values = '300'
     output_scalar_names = 'parameters/E'

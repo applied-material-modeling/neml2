@@ -33,9 +33,9 @@ class Vec;
 class R2;
 
 /**
- * @brief The (logical) full third order tensor.
+ * @brief Third order tensor without symmetry.
  *
- * The logical storage space is (3, 3, 3).
+ * The storage space is (3, 3, 3).
  */
 class R3 : public PrimitiveTensor<R3, 3, 3, 3>
 {

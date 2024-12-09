@@ -2,7 +2,6 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    batch_shape = '(7)'
     input_scalar_names = 'forces/T state/internal/k_rate_unmodified state/internal/k'
     input_scalar_values = 'temperature_in 20.0 100.0'
     output_scalar_names = 'state/internal/k_rate'

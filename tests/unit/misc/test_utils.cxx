@@ -116,11 +116,4 @@ TEST_CASE("utils", "[misc]")
     REQUIRE(utils::pad_prepend({3, 5}, 3, 3) == TensorShape{3, 3, 5});
     REQUIRE(utils::pad_prepend({3, 5}, 2) == TensorShape{3, 5});
   }
-
-  SECTION("pad_append")
-  {
-    REQUIRE(utils::pad_append({3, 5}, 5, 1) == TensorShape{3, 5, 1, 1, 1});
-    REQUIRE(utils::pad_append({3, 5}, 3, 3) == TensorShape{3, 5, 3});
-    REQUIRE(utils::pad_append({3, 5}, 2) == TensorShape{3, 5});
-  }
 }

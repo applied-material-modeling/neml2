@@ -34,9 +34,9 @@ class R2;
 class Rot;
 
 /**
- * @brief The (logical) vector.
+ * @brief 3-vector.
  *
- * The logical storage space is (3).
+ * The storage space is (3).
  */
 class Vec : public VecBase<Vec>, public Transformable<Vec>
 {

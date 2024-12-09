@@ -39,16 +39,14 @@ def_Tensor(py::class_<Tensor> & c)
   // Static methods
   c.def_static(
        "empty",
-       [](const TensorShapeRef & base_shape, NEML2_TENSOR_OPTIONS_VARGS)
+       [](TensorShapeRef base_shape, NEML2_TENSOR_OPTIONS_VARGS)
        { return Tensor::empty(base_shape, NEML2_TENSOR_OPTIONS); },
        py::arg("base_shape"),
        py::kw_only(),
        PY_ARG_TENSOR_OPTIONS)
       .def_static(
           "empty",
-          [](const TensorShapeRef & batch_shape,
-             const TensorShapeRef & base_shape,
-             NEML2_TENSOR_OPTIONS_VARGS)
+          [](TensorShapeRef batch_shape, TensorShapeRef base_shape, NEML2_TENSOR_OPTIONS_VARGS)
           { return Tensor::empty(batch_shape, base_shape, NEML2_TENSOR_OPTIONS); },
           py::arg("batch_shape"),
           py::arg("base_shape"),
@@ -56,16 +54,14 @@ def_Tensor(py::class_<Tensor> & c)
           PY_ARG_TENSOR_OPTIONS)
       .def_static(
           "zeros",
-          [](const TensorShapeRef & base_shape, NEML2_TENSOR_OPTIONS_VARGS)
+          [](TensorShapeRef base_shape, NEML2_TENSOR_OPTIONS_VARGS)
           { return Tensor::zeros(base_shape, NEML2_TENSOR_OPTIONS); },
           py::arg("base_shape"),
           py::kw_only(),
           PY_ARG_TENSOR_OPTIONS)
       .def_static(
           "zeros",
-          [](const TensorShapeRef & batch_shape,
-             const TensorShapeRef & base_shape,
-             NEML2_TENSOR_OPTIONS_VARGS)
+          [](TensorShapeRef batch_shape, TensorShapeRef base_shape, NEML2_TENSOR_OPTIONS_VARGS)
           { return Tensor::zeros(batch_shape, base_shape, NEML2_TENSOR_OPTIONS); },
           py::arg("batch_shape"),
           py::arg("base_shape"),
@@ -73,16 +69,14 @@ def_Tensor(py::class_<Tensor> & c)
           PY_ARG_TENSOR_OPTIONS)
       .def_static(
           "ones",
-          [](const TensorShapeRef & base_shape, NEML2_TENSOR_OPTIONS_VARGS)
+          [](TensorShapeRef base_shape, NEML2_TENSOR_OPTIONS_VARGS)
           { return Tensor::ones(base_shape, NEML2_TENSOR_OPTIONS); },
           py::arg("base_shape"),
           py::kw_only(),
           PY_ARG_TENSOR_OPTIONS)
       .def_static(
           "ones",
-          [](const TensorShapeRef & batch_shape,
-             const TensorShapeRef & base_shape,
-             NEML2_TENSOR_OPTIONS_VARGS)
+          [](TensorShapeRef batch_shape, TensorShapeRef base_shape, NEML2_TENSOR_OPTIONS_VARGS)
           { return Tensor::ones(batch_shape, base_shape, NEML2_TENSOR_OPTIONS); },
           py::arg("batch_shape"),
           py::arg("base_shape"),
@@ -90,7 +84,7 @@ def_Tensor(py::class_<Tensor> & c)
           PY_ARG_TENSOR_OPTIONS)
       .def_static(
           "full",
-          [](const TensorShapeRef & base_shape, Real init, NEML2_TENSOR_OPTIONS_VARGS)
+          [](TensorShapeRef base_shape, Real init, NEML2_TENSOR_OPTIONS_VARGS)
           { return Tensor::full(base_shape, init, NEML2_TENSOR_OPTIONS); },
           py::arg("base_shape"),
           py::arg("fill_value"),
@@ -98,8 +92,8 @@ def_Tensor(py::class_<Tensor> & c)
           PY_ARG_TENSOR_OPTIONS)
       .def_static(
           "full",
-          [](const TensorShapeRef & batch_shape,
-             const TensorShapeRef & base_shape,
+          [](TensorShapeRef batch_shape,
+             TensorShapeRef base_shape,
              Real init,
              NEML2_TENSOR_OPTIONS_VARGS)
           { return Tensor::full(batch_shape, base_shape, init, NEML2_TENSOR_OPTIONS); },
@@ -117,7 +111,7 @@ def_Tensor(py::class_<Tensor> & c)
           PY_ARG_TENSOR_OPTIONS)
       .def_static(
           "identity",
-          [](const TensorShapeRef & batch_shape, Size n, NEML2_TENSOR_OPTIONS_VARGS)
+          [](TensorShapeRef batch_shape, Size n, NEML2_TENSOR_OPTIONS_VARGS)
           { return Tensor::identity(batch_shape, n, NEML2_TENSOR_OPTIONS); },
           py::arg("batch_shape"),
           py::arg("n"),

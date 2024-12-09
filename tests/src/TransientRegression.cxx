@@ -24,6 +24,7 @@
 
 #include "TransientRegression.h"
 #include "neml2/drivers/TransientDriver.h"
+#include "neml2/misc/parser_utils.h"
 #include <iomanip>
 #include <torch/script.h>
 
@@ -63,6 +64,10 @@ TransientRegression::diagnose(std::vector<Diagnosis> & diagnoses) const
                     "Reference file '",
                     _reference.string(),
                     "' does not exist.");
+  diagnostic_assert(diagnoses,
+                    !_driver.save_as_path().empty(),
+                    "The driver does not save any results. Use the save_as option to specify the "
+                    "destination file/path.");
 }
 
 bool
@@ -73,7 +78,7 @@ TransientRegression::run()
   // Verify the result
   auto res = torch::jit::load(_driver.save_as_path());
   auto res_ref = torch::jit::load(_reference);
-  auto err_msg = diff(res.named_buffers(true), res_ref.named_buffers(true), _rtol, _atol);
+  auto err_msg = diff(res.named_buffers(), res_ref.named_buffers(), _rtol, _atol);
 
   neml_assert(err_msg.empty(), err_msg);
 

@@ -25,6 +25,7 @@
 #pragma once
 
 #include "neml2/drivers/Driver.h"
+#include <torch/jit.h>
 
 namespace neml2
 {
@@ -47,16 +48,15 @@ private:
   /// The driver that will run the NEML2 model
   TransientDriver & _driver;
 
-  /// The variables to be compared
-  std::vector<std::string> _variables;
-
   /// The variables with the correct values (from the vtest file)
-  std::vector<CrossRef<torch::Tensor>> _references;
+  std::map<std::string, torch::Tensor> _ref;
 
   Real _rtol;
   Real _atol;
-
-  /// Check the average of the model output instead...
-  bool _taylor_average;
 };
+
+std::string diff(const torch::jit::named_buffer_list & res,
+                 const std::map<std::string, torch::Tensor> & ref_map,
+                 Real rtol,
+                 Real atol);
 } // namespace neml2
