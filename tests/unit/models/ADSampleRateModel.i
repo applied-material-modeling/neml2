@@ -10,8 +10,8 @@
     output_Scalar_values = '301.5 -89.02'
     output_SR2_names = 'state/baz_rate'
     output_SR2_values = '145.5'
-    check_values = false
-    check_derivatives = false
+    check_values = true
+    check_derivatives = true
     check_second_derivatives = true
   []
 []

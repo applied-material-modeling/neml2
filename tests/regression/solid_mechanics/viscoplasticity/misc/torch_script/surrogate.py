@@ -43,17 +43,17 @@ class Surrogate(torch.nn.Module):
 
     def __init__(self, dtype):
         super().__init__()
-        self.A1 = torch.nn.Parameter(torch.tensor(5e-3, dtype=dtype))
-        self.A2 = torch.nn.Parameter(torch.tensor(2e-3, dtype=dtype))
-        self.sy = torch.nn.Parameter(torch.tensor(1000.0, dtype=dtype))
-        self.eta = torch.nn.Parameter(torch.tensor(10.0, dtype=dtype))
-        self.n = torch.nn.Parameter(torch.tensor(3.0, dtype=dtype))
-        self.Q = torch.nn.Parameter(torch.tensor(5e4, dtype=dtype))
-        self.R = torch.nn.Parameter(torch.tensor(8.3145, dtype=dtype))
-        self.G0 = torch.nn.Parameter(torch.tensor(3e-3, dtype=dtype))
-        self.C0 = torch.nn.Parameter(torch.tensor(4e-3, dtype=dtype))
+        self.A1 = torch.nn.Parameter(torch.tensor(5e-3, dtype=dtype), requires_grad=False)
+        self.A2 = torch.nn.Parameter(torch.tensor(2e-3, dtype=dtype), requires_grad=False)
+        self.sy = torch.nn.Parameter(torch.tensor(1000.0, dtype=dtype), requires_grad=False)
+        self.eta = torch.nn.Parameter(torch.tensor(10.0, dtype=dtype), requires_grad=False)
+        self.n = torch.nn.Parameter(torch.tensor(3.0, dtype=dtype), requires_grad=False)
+        self.Q = torch.nn.Parameter(torch.tensor(5e4, dtype=dtype), requires_grad=False)
+        self.R = torch.nn.Parameter(torch.tensor(8.3145, dtype=dtype), requires_grad=False)
+        self.G0 = torch.nn.Parameter(torch.tensor(3e-3, dtype=dtype), requires_grad=False)
+        self.C0 = torch.nn.Parameter(torch.tensor(4e-3, dtype=dtype), requires_grad=False)
 
-    def forward(self, x):
+    def forward(self, s, T, G, C):
         """
         The forward operator maps 4 inputs to 3 outputs.
 
@@ -68,11 +68,6 @@ class Surrogate(torch.nn.Module):
             G_dot: rate of grain growth
             C_dot: reaction rate
         """
-        s = x[..., 0]
-        T = x[..., 1]
-        G = x[..., 2]
-        C = x[..., 3]
-
         f = s - self.sy
         Hf = (torch.sign(f) + 1.0) / 2.0
         rep = (torch.abs(f) / self.eta) ** self.n * Hf
@@ -84,7 +79,7 @@ class Surrogate(torch.nn.Module):
         G_dot = self.A1 + rG
         C_dot = self.A2 + rC
 
-        return torch.stack([ep_dot, G_dot, C_dot], dim=-1)
+        return ep_dot, G_dot, C_dot
 
 
 if __name__ == "__main__":

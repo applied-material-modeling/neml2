@@ -79,9 +79,9 @@ Normality::set_value(bool out, bool dout_din, bool d2out_din2)
   {
     SolvingNonlinearSystem guard(false);
     if (out && !dout_din)
-      _model.dvalue();
+      _model.forward_maybe_jit(false, true, false);
     else
-      _model.dvalue_and_d2value();
+      _model.forward_maybe_jit(false, true, true);
   }
 
   const auto & fvar = _model.output_variable(_f);

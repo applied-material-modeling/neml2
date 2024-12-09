@@ -24,6 +24,8 @@
 
 #pragma once
 
+#include <ATen/core/stack.h>
+
 #include "neml2/base/NEML2Object.h"
 #include "neml2/base/Storage.h"
 #include "neml2/models/LabeledAxis.h"
@@ -96,11 +98,13 @@ public:
   ///@}
 
   ///@{
-  /// Assign variable values
+  /// Assign input variable values
   void assign_input(const ValueMap & vals);
+  /// Assign output variable values
   void assign_output(const ValueMap & vals);
   /// Assign variable derivatives
-  void assign_output_derivatives(const DerivMap & derivs);
+  void
+  assign_output_derivatives(const std::map<VariableName, std::map<VariableName, Tensor>> & derivs);
   ///@}
 
   ///@{
@@ -180,6 +184,18 @@ protected:
     _output_axis.add_variable(var_name, var_clone->assembly_storage());
     return _output_variables.set_pointer(var_name, std::move(var_clone));
   }
+
+  /// Assign stack to input variables
+  void assign_input_stack(torch::jit::Stack & stack);
+
+  /// Assign stack to output variables and derivatives
+  void assign_output_stack(torch::jit::Stack & stack, bool out, bool dout, bool d2out);
+
+  /// Collect stack from input variables
+  torch::jit::Stack collect_input_stack() const;
+
+  /// Collect stack from output variables and derivatives
+  torch::jit::Stack collect_output_stack(bool out, bool dout, bool d2out) const;
 
 private:
   // Helper method to construct variable name

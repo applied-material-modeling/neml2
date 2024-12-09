@@ -145,6 +145,114 @@ VariableStore::assign_output_derivatives(const DerivMap & derivs)
   }
 }
 
+void
+VariableStore::assign_input_stack(torch::jit::Stack & stack)
+{
+  const auto & vars = input_axis().variable_names();
+  neml_assert_dbg(stack.size() >= vars.size(),
+                  "Number of input variables in the stack (",
+                  stack.size(),
+                  ") is smaller than the number of input variables in the model (",
+                  vars.size(),
+                  ").");
+
+  // Last n tensors in the stack are the input variables
+  for (std::size_t i = 0; i < vars.size(); i++)
+    input_variable(vars[i]).set(stack[stack.size() - vars.size() + i].toTensor(), /*force=*/true);
+
+  // Drop the input variables from the stack
+  torch::jit::drop(stack, vars.size());
+}
+
+void
+VariableStore::assign_output_stack(torch::jit::Stack & stack, bool out, bool dout, bool d2out)
+{
+  neml_assert_dbg(out || dout || d2out,
+                  "At least one of the output/derivative flags must be true.");
+
+  neml_assert_dbg(!stack.empty(), "Empty output stack.");
+  const auto stacklist = stack.back().toTensorVector();
+
+  // With our protocol, the last tensor in the list is the sparsity tensor
+  const auto sparsity_tensor = stacklist.back().contiguous();
+  neml_assert_dbg(torch::sum(sparsity_tensor).item<Size>() == Size(stacklist.size()) - 1,
+                  "Sparsity tensor has incorrect size. Got ",
+                  torch::sum(sparsity_tensor).item<Size>(),
+                  " expected ",
+                  Size(stacklist.size()) - 1);
+  const std::vector<std::uint8_t> sparsity(sparsity_tensor.data_ptr<std::uint8_t>(),
+                                           sparsity_tensor.data_ptr<std::uint8_t>() +
+                                               sparsity_tensor.size(0));
+
+  const auto & yvars = output_axis().variable_names();
+  const auto & xvars = input_axis().variable_names();
+
+  std::size_t sti = 0; // stack counter
+  std::size_t spi = 0; // sparsity counter
+
+  if (out)
+  {
+    for (std::size_t i = 0; i < yvars.size(); i++)
+    {
+      neml_assert(sparsity[spi++], "Corrupted sparsity tensor.");
+      output_variable(yvars[i]).set(stacklist[sti++], /*force=*/true);
+    }
+  }
+
+  if (dout)
+  {
+    for (std::size_t i = 0; i < yvars.size(); i++)
+    {
+      auto & derivs = output_variable(yvars[i]).derivatives();
+      for (std::size_t j = 0; j < xvars.size(); j++)
+      {
+        if (sparsity[spi++])
+        {
+          const auto & val = stacklist[sti++];
+          neml_assert_dbg(val.dim() >= 2,
+                          "Derivative tensor d(",
+                          yvars[i],
+                          ")/d(",
+                          xvars[j],
+                          ") must have at least 2 dimensions. Got ",
+                          val.dim(),
+                          ".");
+          derivs[xvars[j]] = Tensor(val, val.dim() - 2);
+        }
+      }
+    }
+  }
+
+  if (d2out)
+  {
+    for (std::size_t i = 0; i < yvars.size(); i++)
+    {
+      auto & derivs = output_variable(yvars[i]).second_derivatives();
+      for (std::size_t j = 0; j < xvars.size(); j++)
+        for (std::size_t k = 0; k < xvars.size(); k++)
+        {
+          if (sparsity[spi++])
+          {
+            const auto & val = stacklist[sti++];
+            neml_assert_dbg(val.dim() >= 3,
+                            "Second derivative tensor d2(",
+                            yvars[i],
+                            ")/d(",
+                            xvars[j],
+                            ")d(",
+                            xvars[k],
+                            ") must have at least 3 dimensions. Got ",
+                            val.dim(),
+                            ".");
+            derivs[xvars[j]][xvars[k]] = Tensor(val, val.dim() - 3);
+          }
+        }
+    }
+  }
+
+  torch::jit::drop(stack, 1);
+}
+
 ValueMap
 VariableStore::collect_input() const
 {
@@ -179,6 +287,84 @@ VariableStore::collect_output_second_derivatives() const
   for (auto && [name, var] : output_variables())
     sec_derivs[name] = var.second_derivatives();
   return sec_derivs;
+}
+
+torch::jit::Stack
+VariableStore::collect_input_stack() const
+{
+  torch::jit::Stack stack;
+  const auto & vars = input_axis().variable_names();
+  stack.reserve(vars.size());
+  for (const auto & name : vars)
+    stack.push_back(input_variable(name).tensor());
+  return stack;
+}
+
+torch::jit::Stack
+VariableStore::collect_output_stack(bool out, bool dout, bool d2out) const
+{
+  neml_assert_dbg(out || dout || d2out,
+                  "At least one of the output/derivative flags must be true.");
+
+  const auto & yvars = output_axis().variable_names();
+  const auto & xvars = input_axis().variable_names();
+
+  std::vector<torch::Tensor> stacklist;
+  std::vector<std::uint8_t> sparsity;
+
+  if (out)
+  {
+    sparsity.insert(sparsity.end(), yvars.size(), 1);
+    for (const auto & yvar : yvars)
+      stacklist.push_back(output_variable(yvar).tensor());
+  }
+
+  if (dout)
+  {
+    for (const auto & yvar : yvars)
+    {
+      const auto & derivs = output_variable(yvar).derivatives();
+      for (const auto & xvar : xvars)
+      {
+        const auto & deriv = derivs.find(xvar);
+        sparsity.push_back(deriv != derivs.end() ? 1 : 0);
+        if (sparsity.back())
+          stacklist.push_back(deriv->second);
+      }
+    }
+  }
+
+  if (d2out)
+  {
+    for (const auto & yvar : yvars)
+    {
+      const auto & derivs = output_variable(yvar).second_derivatives();
+      for (const auto & x1var : xvars)
+      {
+        const auto & x1derivs = derivs.find(x1var);
+        if (x1derivs != derivs.end())
+          for (const auto & x2var : xvars)
+          {
+            const auto & x1x2deriv = x1derivs->second.find(x2var);
+            sparsity.push_back(x1x2deriv != x1derivs->second.end() ? 1 : 0);
+            if (sparsity.back())
+              stacklist.push_back(x1x2deriv->second);
+          }
+        else
+          sparsity.insert(sparsity.end(), xvars.size(), 0);
+      }
+    }
+  }
+
+  const auto sparsity_tensor = torch::tensor(sparsity, torch::kUInt8);
+  neml_assert_dbg(torch::sum(sparsity_tensor).item<Size>() == Size(stacklist.size()),
+                  "Sparsity tensor has incorrect size. Got ",
+                  torch::sum(sparsity_tensor).item<Size>(),
+                  " expected ",
+                  Size(stacklist.size()));
+  stacklist.push_back(sparsity_tensor);
+
+  return {stacklist};
 }
 
 } // namespace neml2

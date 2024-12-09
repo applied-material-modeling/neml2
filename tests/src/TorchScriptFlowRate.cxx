@@ -44,6 +44,9 @@ TorchScriptFlowRate::expected_options()
   options.set<VariableName>("internal_state_2_rate") = VariableName(STATE, "C_rate");
   // The machine learning model
   options.set<std::string>("torch_script");
+  // No jitting :/
+  options.set<bool>("jit") = false;
+  options.set("jit").suppressed() = true;
   return options;
 }
 
@@ -78,12 +81,6 @@ TorchScriptFlowRate::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (out)
   {
-    // Broadcast and expand batch shape
-    std::vector<Tensor> inputs = {_s, _T, _G, _C};
-    const auto batch_sizes = utils::broadcast_batch_sizes(inputs);
-    for (std::size_t i = 0; i < inputs.size(); ++i)
-      inputs[i] = inputs[i].batch_expand(batch_sizes);
-
     // This example model has 4 input variables:
     //
     //   von Mises stress
@@ -91,19 +88,19 @@ TorchScriptFlowRate::set_value(bool out, bool dout_din, bool d2out_din2)
     //   internal state 1
     //   internal state 2
     //
-    // First concatenate them together and unsqueeze to shape (...; 4)
-    auto x = math::base_stack(inputs, /*dim=*/-1);
+    const torch::jit::Stack x = {_s.value(), _T.value(), _G.value(), _C.value()};
 
     // Send it through the surrogate model loaded from torch script
-    auto y = _surrogate->forward({x}).toTensor();
+    const auto y = _surrogate->forward(x).toTuple()->elements();
+    neml_assert_dbg(y.size() == 3, "Expecting 3 output variables in the tuple, got ", y.size());
 
     // Assuming the output is in the following order
     //
     //   equivalent plastic strain rate
     //   internal state 1 rate
     //   internal state 2 rate
-    _ep_dot = Scalar(y.index({torch::indexing::Ellipsis, 0}));
-    _G_dot = Scalar(y.index({torch::indexing::Ellipsis, 1}));
-    _C_dot = Scalar(y.index({torch::indexing::Ellipsis, 2}));
+    _ep_dot = Scalar(y[0].toTensor());
+    _G_dot = Scalar(y[1].toTensor());
+    _C_dot = Scalar(y[2].toTensor());
   }
 }

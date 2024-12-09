@@ -45,6 +45,10 @@ ImplicitUpdate::expected_options()
   options.set<std::string>("solver");
   options.set("solver").doc() = "Solver used to solve the implicit system";
 
+  // No jitting :/
+  options.set<bool>("jit") = false;
+  options.set("jit").suppressed() = true;
+
   return options;
 }
 
@@ -145,7 +149,7 @@ ImplicitUpdate::set_value(bool out, bool dout_din, bool d2out_din2)
   if (dout_din)
   {
     // IFT requires the Jacobian evaluated at the solution:
-    _model.dvalue();
+    _model.forward(false, true, false);
     const auto jac_assembler = MatrixAssembler(_model.output_axis(), _model.input_axis());
     const auto J = jac_assembler.assemble_by_variable(_model.collect_output_derivatives());
     const auto derivs = jac_assembler.split_by_subaxis(J).at(RESIDUAL);

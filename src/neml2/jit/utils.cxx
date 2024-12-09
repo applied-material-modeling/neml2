@@ -33,10 +33,24 @@ neml_assert_tracing()
 }
 
 void
+neml_assert_not_tracing()
+{
+  neml_assert(!torch::jit::tracer::isTracing(), "Tracing is prohibited in this region");
+}
+
+void
 neml_assert_tracing_dbg()
 {
 #ifndef NDEBUG
   neml_assert_tracing();
+#endif
+}
+
+void
+neml_assert_not_tracing_dbg()
+{
+#ifndef NDEBUG
+  neml_assert_not_tracing();
 #endif
 }
 } // namespace neml2

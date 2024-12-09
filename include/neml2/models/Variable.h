@@ -145,6 +145,10 @@ public:
   /// Set the variable value
   virtual void set(const Tensor & val) = 0;
 
+  /// Set the variable value from a torch::Tensor (with inferred batch shape)
+  /// If force is true, the value is set even if the variable is a reference
+  virtual void set(const torch::Tensor & val, bool force = false) = 0;
+
   /// Get the variable value (with flattened base dimensions, i.e., for assembly purposes)
   virtual Tensor get() const = 0;
 
@@ -266,6 +270,8 @@ public:
   void zero(const torch::TensorOptions & options) override;
 
   void set(const Tensor & val) override;
+
+  void set(const torch::Tensor & val, bool force = false) override;
 
   Tensor get() const override { return tensor().base_flatten(); }
 

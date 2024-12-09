@@ -253,4 +253,39 @@ FOR_ALL_TENSORBASE(PARAMETERSTORE_INTANTIATE_TENSORBASE);
   template const T & ParameterStore::declare_parameter<T>(                                         \
       const std::string &, const std::string &, bool)
 FOR_ALL_PRIMITIVETENSOR(PARAMETERSTORE_INTANTIATE_PRIMITIVETENSOR);
+
+void
+ParameterStore::assign_parameter_stack(torch::jit::Stack & stack)
+{
+  const auto & params = _object->host<ParameterStore>()->named_parameters();
+
+  neml_assert_dbg(stack.size() >= params.size(),
+                  "Stack size (",
+                  stack.size(),
+                  ") is smaller than the number of parameters in the model (",
+                  params.size(),
+                  ").");
+
+  // Last n tensors in the stack are the parameters
+  std::size_t i = stack.size() - params.size();
+  for (auto && [name, param] : params)
+  {
+    const auto tensor = stack[i++].toTensor();
+    param = Tensor(tensor, tensor.dim() - Tensor(param).base_dim());
+  }
+
+  // Drop the input variables from the stack
+  torch::jit::drop(stack, params.size());
+}
+
+torch::jit::Stack
+ParameterStore::collect_parameter_stack() const
+{
+  const auto & params = _object->host<ParameterStore>()->named_parameters();
+  torch::jit::Stack stack;
+  stack.reserve(params.size());
+  for (auto && [name, param] : params)
+    stack.push_back(Tensor(param));
+  return stack;
+}
 } // namespace neml2

@@ -57,6 +57,10 @@ ComposedModel::expected_options()
   options.set("automatic_nonlinear_parameter").doc() =
       "Whether to automatically add dependent nonlinear parameters";
 
+  // No jitting :/
+  options.set<bool>("jit") = false;
+  options.set("jit").suppressed() = true;
+
   return options;
 }
 
@@ -167,11 +171,11 @@ ComposedModel::set_value(bool out, bool dout_din, bool d2out_din2)
   for (auto * i : registered_models())
   {
     if (out && !dout_din && !d2out_din2)
-      i->value();
+      i->forward_maybe_jit(true, false, false);
     else if (dout_din && !d2out_din2)
-      i->value_and_dvalue();
+      i->forward_maybe_jit(true, true, false);
     else if (d2out_din2)
-      i->value_and_dvalue_and_d2value();
+      i->forward_maybe_jit(true, true, true);
     else
       throw NEMLException("Unsupported call signature to set_value");
   }

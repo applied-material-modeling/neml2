@@ -24,6 +24,8 @@
 
 #pragma once
 
+#include <ATen/core/stack.h>
+
 #include "neml2/base/NEML2Object.h"
 #include "neml2/base/OptionSet.h"
 #include "neml2/base/Storage.h"
@@ -154,6 +156,12 @@ protected:
   const T & declare_parameter(const std::string & name,
                               const std::string & input_option_name,
                               bool allow_nonlinear = false);
+
+  /// Assign stack to parameters
+  void assign_parameter_stack(torch::jit::Stack & stack);
+
+  /// Collect stack from parameters
+  torch::jit::Stack collect_parameter_stack() const;
 
   /// Map from nonlinear parameter names to their corresponding variable views
   std::map<std::string, const VariableBase *> _nl_params;

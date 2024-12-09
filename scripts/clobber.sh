@@ -24,17 +24,47 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+# This script removes all files/directories that are not tracked by git
+# except the following files/directories
+EXCLUDE_LIST='.vscode/ .env'
+
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 NEML2_DIR=$(dirname "$SCRIPT_DIR")
 
 # go to the git root
 cd $NEML2_DIR
 
-# files to clobber
-FILES=$(git ls-files . ':!:_deps' ':!:.vscode' ':!:.env' --ignored --exclude-standard --others)
+# files/directories to clobber
+FILES_ALL=$(git ls-files . --ignored --exclude-standard --others --directory)
+
+# filter out excluded files/directories
+FILES=()
+COUNT=0
+for FILE in $FILES_ALL; do
+  if [[ ! " ${EXCLUDE_LIST[*]} " =~ " $FILE " ]]; then
+    FILES+=($FILE)
+    COUNT=$((COUNT+1))
+  fi
+done
+
+# check if there are any files to remove
+if [ $COUNT -eq 0 ]; then
+  echo "No files to remove."
+  exit
+fi
 
 # remove files
-echo "Removing the following files..."
+echo "The following directories/files are going to be removed:"
+echo "--------------------------------------------------------"
 printf "%s\n" "${FILES[@]}"
-rm -rf ${FILES[@]}
+echo "--------------------------------------------------------"
 
+# prompt user
+while true; do
+    read -p "Do you wish to remove the above directories/files? [y/n] " yn
+    case $yn in
+        y ) rm -rf ${FILES[@]}; break;;
+        n ) exit;;
+        * ) echo "Please enter y (for yes) or n (for no).";;
+    esac
+done

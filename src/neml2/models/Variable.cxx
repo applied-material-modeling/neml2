@@ -329,9 +329,14 @@ Variable<T>::zero(const torch::TensorOptions & options)
   }
   else
   {
-    neml_assert_dbg(
-        _ref_is_mutable,
-        "Trying to zero a referencing variable, but the referenced variable is not mutable.");
+    neml_assert_dbg(_ref_is_mutable,
+                    "Model '",
+                    owner().name(),
+                    "' is trying to zero a variable '",
+                    name(),
+                    "' declared by model '",
+                    ref()->owner().name(),
+                    "' , but the referenced variable is not mutable.");
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     const_cast<VariableBase *>(ref())->zero(options);
   }
@@ -347,8 +352,39 @@ Variable<T>::set(const Tensor & val)
   else
   {
     neml_assert_dbg(_ref_is_mutable,
-                    "Trying to assign value to a referencing variable, but the referenced "
-                    "variable is not mutable.");
+                    "Model '",
+                    owner().name(),
+                    "' is trying to assign value to a variable '",
+                    name(),
+                    "' declared by model '",
+                    ref()->owner().name(),
+                    "' , but the referenced variable is not mutable.");
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+    const_cast<VariableBase *>(ref())->set(val);
+  }
+}
+
+template <typename T>
+void
+Variable<T>::set(const torch::Tensor & val, bool force)
+{
+  if (owning())
+  {
+    if constexpr (std::is_same_v<T, Tensor>)
+      _value = T(val, val.dim() - base_dim());
+    else
+      _value = T(val);
+  }
+  else
+  {
+    neml_assert_dbg(_ref_is_mutable || force,
+                    "Model '",
+                    owner().name(),
+                    "' is trying to assign value to a variable '",
+                    name(),
+                    "' declared by model '",
+                    ref()->owner().name(),
+                    "' , but the referenced variable is not mutable.");
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     const_cast<VariableBase *>(ref())->set(val);
   }
@@ -388,8 +424,13 @@ Variable<T>::operator=(const Tensor & val)
   else
   {
     neml_assert_dbg(_ref_is_mutable,
-                    "Trying to assign value to a referencing variable, but the referenced "
-                    "variable is not mutable.");
+                    "Model '",
+                    owner().name(),
+                    "' is trying to assign value to a variable '",
+                    name(),
+                    "' declared by model '",
+                    ref()->owner().name(),
+                    "' , but the referenced variable is not mutable.");
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     *const_cast<VariableBase *>(ref()) = val;
   }
@@ -406,9 +447,14 @@ Variable<T>::clear()
   }
   else
   {
-    neml_assert_dbg(
-        _ref_is_mutable,
-        "Trying to clear a referencing variable, but the referenced variable is not mutable.");
+    neml_assert_dbg(_ref_is_mutable,
+                    "Model '",
+                    owner().name(),
+                    "' is trying to clear a variable '",
+                    name(),
+                    "' declared by model '",
+                    ref()->owner().name(),
+                    "' , but the referenced variable is not mutable.");
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     const_cast<VariableBase *>(ref())->clear();
   }

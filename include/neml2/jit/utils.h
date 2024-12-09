@@ -35,6 +35,12 @@ namespace neml2
 /// Assert that we are currently tracing
 void neml_assert_tracing();
 
+/// Assert that we are currently NOT tracing
+void neml_assert_not_tracing();
+
 /// Assert that we are currently tracing (only effective in debug mode)
 void neml_assert_tracing_dbg();
+
+/// Assert that we are currently NOT tracing (only effective in debug mode)
+void neml_assert_not_tracing_dbg();
 } // namespace neml2
