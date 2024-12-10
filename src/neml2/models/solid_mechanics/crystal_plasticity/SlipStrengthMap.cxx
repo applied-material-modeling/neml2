@@ -50,7 +50,7 @@ SlipStrengthMap::SlipStrengthMap(const OptionSet & options)
   : Model(options),
     _crystal_geometry(register_data<crystallography::CrystalGeometry>(
         options.get<std::string>("crystal_geometry_name"))),
-    _tau(declare_output_variable_list<Scalar>(_crystal_geometry.nslip(), "slip_strengths"))
+    _tau(declare_output_variable<Scalar>("slip_strengths", _crystal_geometry.nslip()))
 {
 }
 } // namespace neml2

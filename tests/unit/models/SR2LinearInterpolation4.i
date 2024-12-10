@@ -2,7 +2,6 @@
   [unit]
     type = ModelUnitTest
     model = 'D'
-    batch_shape = '(7,8,2)'
     input_scalar_names = 'forces/T'
     input_scalar_values = '300'
     output_symr2_names = 'parameters/D'

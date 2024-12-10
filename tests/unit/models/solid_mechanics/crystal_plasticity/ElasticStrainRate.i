@@ -2,7 +2,6 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    batch_shape = '(10,3)'
     input_symr2_names = 'state/elastic_strain forces/deformation_rate state/internal/plastic_deformation_rate'
     input_symr2_values = 'e d dp'
     input_skewr2_names = 'forces/vorticity'

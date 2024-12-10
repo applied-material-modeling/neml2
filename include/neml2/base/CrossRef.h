@@ -24,8 +24,6 @@
 
 #pragma once
 
-#include "neml2/tensors/tensors.h"
-
 #include <sstream>
 
 namespace neml2
@@ -93,16 +91,6 @@ private:
   /// The raw string literal.
   std::string _raw_str;
 };
-
-// Specializations
-template <>
-CrossRef<torch::Tensor>::operator torch::Tensor() const;
-template <>
-CrossRef<Tensor>::operator Tensor() const;
-#define CROSSREF_SPECIALIZE_PRIMITIVETENSOR(T)                                                     \
-  template <>                                                                                      \
-  CrossRef<T>::operator T() const
-FOR_ALL_PRIMITIVETENSOR(CROSSREF_SPECIALIZE_PRIMITIVETENSOR);
 } // namespace neml2
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -26,95 +26,87 @@
 
 namespace neml2
 {
-register_NEML2_object(SolidMechanicsDriver);
-
 OptionSet
 SolidMechanicsDriver::expected_options()
 {
   OptionSet options = TransientDriver::expected_options();
-  options.doc() =
-      "Driver for small deformation solid mechanics material model with optional thermal coupling.";
+  options.doc() = "Driver for solid mechanics material model with optional thermal coupling.";
 
-  options.set<std::string>("control") = "STRAIN";
-  options.set("control").doc() = "External control of the material update. Options are STRAIN and "
-                                 "STRESS, for strain control and stress control, respectively.";
-
-  options.set<VariableName>("total_strain") = VariableName("forces", "E");
-  options.set("total_strain").doc() = "Total strain";
-
-  options.set<VariableName>("cauchy_stress") = VariableName("forces", "S");
-  options.set("cauchy_stress").doc() = "Cauchy stress";
+  EnumSelection control_selection({"STRAIN", "STRESS", "MIXED"}, "STRAIN");
+  options.set<EnumSelection>("control") = control_selection;
+  options.set("control").doc() =
+      "External control of the material update. Options are " + control_selection.candidates_str();
 
   options.set<VariableName>("temperature") = VariableName("forces", "T");
   options.set("temperature").doc() = "Name of temperature";
-
-  options.set<VariableName>("fixed_values") = VariableName("forces", "fixed_values");
-  options.set("fixed_values").doc() = "Name of fixed values (when control = MIXED)";
-
-  options.set<CrossRef<torch::Tensor>>("prescribed_strains");
-  options.set("prescribed_strains").doc() = "Prescribed strain (when control = STRAIN)";
-
-  options.set<CrossRef<torch::Tensor>>("prescribed_stresses");
-  options.set("prescribed_stresses").doc() = "Prescribed stress (when control = STRESS)";
-
-  options.set<CrossRef<torch::Tensor>>("prescribed_temperatures");
-  options.set("prescribed_temperatures").doc() =
+  options.set<CrossRef<torch::Tensor>>("prescribed_temperature");
+  options.set("prescribed_temperature").doc() =
       "Actual prescibed temperature values, when providing temperatures to the model";
 
-  options.set<CrossRef<torch::Tensor>>("prescribed_mixed_conditions");
-  options.set("prescribed_mixed_conditions").doc() =
+  options.set<VariableName>("mixed_driving_force") = VariableName("forces", "fixed_values");
+  options.set("mixed_driving_force").doc() = "Name of mixed driving force when using mixed control";
+  options.set<CrossRef<torch::Tensor>>("prescribed_mixed_driving_force");
+  options.set("prescribed_mixed_driving_force").doc() =
       "The fixed, controlled values provided as user input for the mixed control case.  Where the "
-      "control signal is 0 these are strain values, where it is 1 these are stress values";
+      "control signal is 0 these are strain/deformation values, where it is 1 these are stress "
+      "values";
 
-  options.set<VariableName>("control_name") = VariableName("forces", "control");
-  options.set("control_name").doc() = "The name of the control signal on the input axis";
-
-  options.set<CrossRef<torch::Tensor>>("prescribed_control");
-  options.set("prescribed_control").doc() = "The actual values of the control signal.  0 implies "
-                                            "strain control, 1 implies stress control";
+  options.set<VariableName>("mixed_control_signal") = VariableName("forces", "control");
+  options.set("mixed_control_signal").doc() =
+      "The name of the control signal for mixed control on the input axis";
+  options.set<CrossRef<torch::Tensor>>("prescribed_mixed_control_signal");
+  options.set("prescribed_mixed_control_signal").doc() =
+      "The actual values of the control signal for mixed control. 0 implies strain/deformation "
+      "control, 1 implies stress control";
 
   return options;
 }
 
 SolidMechanicsDriver::SolidMechanicsDriver(const OptionSet & options)
   : TransientDriver(options),
-    _control(options.get<std::string>("control")),
-    _control_name(options.get<VariableName>("control_name")),
-    _temperature_name(options.get<VariableName>("temperature")),
-    _temperature_prescribed(
-        !options.get<CrossRef<torch::Tensor>>("prescribed_temperatures").raw().empty()),
-    _temperature(_temperature_prescribed
-                     ? Scalar(options.get<CrossRef<torch::Tensor>>("prescribed_temperatures"), 2)
-                     : Scalar()),
-    _control_signal(_control == "MIXED"
-                        ? SR2(options.get<CrossRef<torch::Tensor>>("prescribed_control"), 2)
-                        : SR2())
-
+    _control(options.get<EnumSelection>("control")),
+    _temperature_prescribed(options.get("prescribed_temperature").user_specified())
 {
+}
+
+void
+SolidMechanicsDriver::setup()
+{
+  TransientDriver::setup();
+
   if (_control == "STRAIN")
-  {
-    _driving_force = SR2(options.get<CrossRef<torch::Tensor>>("prescribed_strains"), 2);
-    _driving_force_name = options.get<VariableName>("total_strain");
-  }
+    init_strain_control(input_options());
   else if (_control == "STRESS")
-  {
-    _driving_force = SR2(options.get<CrossRef<torch::Tensor>>("prescribed_stresses"), 2);
-    _driving_force_name = options.get<VariableName>("cauchy_stress");
-  }
+    init_stress_control(input_options());
   else if (_control == "MIXED")
-  {
-    _driving_force = SR2(options.get<CrossRef<torch::Tensor>>("prescribed_mixed_conditions"), 2);
-    _driving_force_name = options.get<VariableName>("fixed_values");
-  }
+    init_mixed_control(input_options());
   else
     // LCOV_EXCL_START
     throw NEMLException("Unsupported control type.");
   // LCOV_EXCL_STOP
 
+  if (_temperature_prescribed)
+    init_temperature_control(input_options());
+}
+
+void
+SolidMechanicsDriver::init_mixed_control(const OptionSet & options)
+{
+  _driving_force_name = options.get<VariableName>("mixed_driving_force");
+  _driving_force = SR2(options.get<CrossRef<torch::Tensor>>("prescribed_mixed_driving_force"));
   _driving_force = _driving_force.to(_device);
 
-  if (_temperature_prescribed)
-    _temperature = _temperature.to(_device);
+  _mixed_control_name = options.get<VariableName>("mixed_control_signal");
+  _mixed_control = SR2(options.get<CrossRef<torch::Tensor>>("prescribed_mixed_control_signal"));
+  _mixed_control = _mixed_control.to(_device);
+}
+
+void
+SolidMechanicsDriver::init_temperature_control(const OptionSet & options)
+{
+  _temperature_name = options.get<VariableName>("temperature");
+  _temperature = Scalar(options.get<CrossRef<torch::Tensor>>("prescribed_temperature"));
+  _temperature = _temperature.to(_device);
 }
 
 void
@@ -123,81 +115,51 @@ SolidMechanicsDriver::diagnose(std::vector<Diagnosis> & diagnoses) const
   TransientDriver::diagnose(diagnoses);
 
   diagnostic_assert(diagnoses,
-                    _driving_force.dim() == 3,
-                    "Input strain/stress should have dimension 3 but instead has dimension",
-                    _driving_force.dim());
+                    _driving_force.batch_dim() >= 1,
+                    "Input driving force (strain, stress, or mixed conditions) should have at "
+                    "least one batch dimension for time steps but instead has batch dimension ",
+                    _driving_force.batch_dim());
 
-  diagnostic_assert(
-      diagnoses,
-      _time.sizes()[0] == _driving_force.sizes()[0],
-      "Input strain/stress and time should have the same number of time steps. The input "
-      "time has ",
-      _time.sizes()[0],
-      " time steps, while the input strain/stress has ",
-      _driving_force.sizes()[0],
-      " time steps");
-
-  diagnostic_assert(
-      diagnoses,
-      _time.sizes()[1] == _driving_force.sizes()[1],
-      "Input strain/stress and time should have the same batch size. The input time has a "
-      "batch size of ",
-      _time.sizes()[1],
-      " while the input strain/stress has a batch size of ",
-      _driving_force.sizes()[1]);
-
-  diagnostic_assert(
-      diagnoses,
-      _driving_force.sizes()[2] == 6,
-      "Input strain/stress should have final dimension 6 but instead has final dimension ",
-      _driving_force.sizes()[2]);
+  diagnostic_assert(diagnoses,
+                    _time.batch_size(0) == _driving_force.batch_size(0),
+                    "Input driving force (strain, stress, or mixed conditions) and time should "
+                    "have the same number of time steps. The input time has ",
+                    _time.batch_size(0),
+                    " time steps, while the input driving force has ",
+                    _driving_force.batch_size(0),
+                    " time steps");
 
   if (_temperature_prescribed)
   {
-    diagnostic_assert(
-        diagnoses,
-        _temperature.batch_dim() == 2,
-        "Input temperature should have 2 batch dimensions but instead has batch dimension",
-        _temperature.batch_dim());
+    diagnostic_assert(diagnoses,
+                      _temperature.batch_dim() >= 1,
+                      "Input temperature should have at least one batch dimension for time steps "
+                      "but instead has batch dimension ",
+                      _temperature.batch_dim());
 
     diagnostic_assert(
         diagnoses,
-        _time.sizes()[0] == _temperature.sizes()[0],
-        "Input temperature and time should have the same number of time steps. The input "
-        "time has ",
-        _time.sizes()[0],
+        _time.batch_size(0) == _temperature.batch_size(0),
+        "Input temperature and time should have the same number of time steps. The input time has ",
+        _time.batch_size(0),
         " time steps, while the input temperature has ",
-        _temperature.sizes()[0],
+        _temperature.batch_size(0),
         " time steps");
-
-    diagnostic_assert(
-        diagnoses,
-        _time.sizes()[1] == _temperature.sizes()[1],
-        "Input temperature and time should have the same batch size. The input time has a "
-        "batch size of ",
-        _time.sizes()[1],
-        " while the input temperature has a batch size of ",
-        _temperature.sizes()[1]);
   }
 
   if (_control == "MIXED")
   {
+    diagnostic_assert(diagnoses,
+                      _mixed_control.batch_dim() >= 1,
+                      "Input control signal should have at least one batch dimension but instead "
+                      "has batch dimension ",
+                      _mixed_control.batch_dim());
     diagnostic_assert(
         diagnoses,
-        _control_signal.batch_dim() == 2,
-        "Input control signal should have 2 batch dimensions but instead has batch dimension",
-        _control_signal.batch_dim());
-    diagnostic_assert(
-        diagnoses,
-        _control_signal.sizes()[0] == _time.sizes()[0],
-        "Input control signal should have the same number of steps steps as time, but instead has",
-        _control_signal.sizes()[0],
-        "time steps");
-    diagnostic_assert(
-        diagnoses,
-        _control_signal.sizes()[1] == _time.sizes()[1],
-        "Input control signal should have the same batch size as time, but instead has batch size",
-        _control_signal.sizes()[1]);
+        _mixed_control.batch_size(0) == _time.batch_size(0),
+        "Input control signal should have the same number of steps steps as time, but instead has ",
+        _mixed_control.batch_size(0),
+        " time steps");
   }
 }
 
@@ -206,19 +168,12 @@ SolidMechanicsDriver::update_forces()
 {
   TransientDriver::update_forces();
 
-  auto current_driving_force = _driving_force.batch_index({_step_count});
-  _in.base_index_put_(_driving_force_name, current_driving_force);
+  _in[_driving_force_name] = _driving_force.batch_index({_step_count});
 
   if (_temperature_prescribed)
-  {
-    auto current_temperature = _temperature.batch_index({_step_count});
-    _in.base_index_put_(_temperature_name, current_temperature);
-  }
+    _in[_temperature_name] = _temperature.batch_index({_step_count});
 
   if (_control == "MIXED")
-  {
-    auto current_control = _control_signal.batch_index({_step_count});
-    _in.base_index_put_(_control_name, current_control);
-  }
+    _in[_mixed_control_name] = _mixed_control.batch_index({_step_count});
 }
 }

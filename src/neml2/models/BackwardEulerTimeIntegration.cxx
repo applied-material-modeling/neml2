@@ -90,7 +90,7 @@ BackwardEulerTimeIntegration<T>::set_value(bool out, bool dout_din, bool d2out_d
 
   if (dout_din)
   {
-    auto I = T::identity_map(options());
+    auto I = T::identity_map(_s.options());
 
     _r.d(_s) = I;
     _r.d(_ds_dt) = -I * (_t - _tn);

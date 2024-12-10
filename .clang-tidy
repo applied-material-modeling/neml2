@@ -7,6 +7,7 @@ Checks: >
   -cppcoreguidelines-macro-usage,
   -cppcoreguidelines-slicing,
   -cppcoreguidelines-pro-bounds-constant-array-index,
+  -cppcoreguidelines-c-copy-assignment-signature,
   bugprone-*,
   -bugprone-easily-swappable-parameters,
   readability-*,

@@ -44,6 +44,6 @@ TEST_CASE("LogspaceTensor", "[tensors/user_tensors]")
     Size nstep = 100;
     Size dim = 0;
     Real base = 10;
-    REQUIRE(torch::allclose(*a, Tensor::logspace(*a0, *a1, nstep, dim, -1, base)));
+    REQUIRE(torch::allclose(*a, Tensor::logspace(*a0, *a1, nstep, dim, base)));
   }
 }

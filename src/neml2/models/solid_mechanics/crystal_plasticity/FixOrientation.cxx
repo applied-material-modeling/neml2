@@ -74,7 +74,7 @@ FixOrientation::set_value(bool out, bool dout_din, bool d2out_din2)
   if (dout_din)
     if (_input.is_dependent())
     {
-      const auto I = R2::identity(options());
+      const auto I = R2::identity(_input.options());
       _output.d(_input) =
           math::where((Rot(_input).norm_sq() < _threshold).unsqueeze(-1).unsqueeze(-1),
                       I,

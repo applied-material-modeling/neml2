@@ -10,9 +10,9 @@ Currently, PyTorch is the only supported tensor backend in NEML2. Therefore, all
 
 ### Dynamically shaped tensor {#dynamically-shaped-tensor}
 
-neml2::Tensor is a general-purpose *dynamically shaped* tensor type for batched tensors. With a view towards vectorization, the same set of operations can be "simultaneously" applied to a "batch" of (logically the same) tensors. To provide a unified user interface for dealing with such batched operation, NEML2 assumes that the *first* \f$N\f$ dimensions of a tensor are batched dimensions, and the following dimensions are the base (logical) dimensions.
+neml2::Tensor is a general-purpose *dynamically shaped* tensor type for batched tensors. With a view towards vectorization, the same set of operations can be "simultaneously" applied to a "batch" of tensors. To provide a unified user interface for dealing with such batched operation, NEML2 assumes that the *first* \f$N\f$ dimensions of a tensor are batched dimensions, and the following dimensions are the base dimensions.
 
-> Unlike PyTorch, NEML2 explicitly distinguishes between batch dimensions and base (logical) dimensions.
+> Unlike PyTorch, NEML2 explicitly distinguishes between batch dimensions and base dimensions.
 
 A `Tensor` can be created from a `torch::Tensor` and a batch dimension:
 ```cpp
@@ -23,7 +23,7 @@ The batch sizes of `A` is `(1, 1)`:
 auto batch_sz = A.batch_sizes();
 neml2_assert(batch_sz == TensorShape{1, 1});
 ```
-and the base (logical) sizes of `A` is `(5, 2)`:
+and the base sizes of `A` is `(5, 2)`:
 ```cpp
 auto base_sz = A.base_sizes();
 neml2_assert(batch_sz == TensorShape{5, 2});
@@ -91,7 +91,7 @@ _Base-broadcastable_ follows a similar definition. Most binary operators on dyna
 
 ### Tensor indexing {#tensor-indexing}
 
-In defining the forward operator of a material model, many logically different tensors representing inputs, outputs, residuals, and Jacobians have to be created, copied, and destroyed on the fly. These operations occupy a significant amount of computing time, especially on GPUs.
+In defining the forward operator of a material model, many different tensors representing inputs, outputs, residuals, and Jacobians have to be created, copied, and destroyed on the fly. These operations occupy a significant amount of computing time, especially on GPUs.
 
 To address this challenge, NEML2 creates *views*, instead of copies, of tensors whenever possible. As its name suggests, the view of a tensor is a possibly different interpretation of the underlying data. Quoting the PyTorch documentation:
 
@@ -128,64 +128,3 @@ A.batch_index_put_({Slice(0, 2)}, torch::zeros({2, 3}));
 ```
 A detailed explanation on tensor indexing APIs is available as part of the official [PyTorch documentation](https://pytorch.org/cppdocs/notes/tensor_indexing.html).
 
-### Tensor labeling {#tensor-labeling}
-
-In the context of material modeling, oftentimes views of tensors have practical/physical meanings. For example, given a logically 1D tensor with base size 9, its underlying data in an arbitrary batch may look like
-```
-equivalent plastic strain   2.1
-            cauchy stress  -2.1
-                              0
-                            1.3
-                           -1.1
-                            2.5
-                            2.5
-              temperature 102.9
-                     time   3.6
-```
-where component 0 stores the scalar-valued equivalent plastic strain, components 1-6 store the tensor-valued cauchy stress (we use the Mandel notation for symmetric second order tensors), component 7 stores the scalar-valued temperature, and component 8 stores the scalar-valued time.
-
-The string indicating the physical meaning of the view, e.g., "cauchy stress", is called a "label", and the view of the tensor indexed by a label is called a "labeled view", i.e.,
-```
-            cauchy stress  -2.1
-                              0
-                            1.3
-                           -1.1
-                            2.5
-                            2.5
-```
-
-NEML2 provides a data structure named [LabeledAxis](@ref neml2::LabeledAxis) to facilitate the creation and modification of labels, and a data structure named [LabeledTensor](@ref neml2::LabeledTensor) to facilitate the creation and modification of labeled views.
-
-The [LabeledAxis](@ref neml2::LabeledAxis) contains all information regarding how an axis of a `LabeledTensor` is labeled. The following naming convention is used:
-- Item: A labelable slice of data
-- Variable: An item that is also of a [NEML2 primitive tensor type](@ref tensor-types)
-- Sub-axis: An item of type `LabeledAxis`
-
-So yes, an axis can be labeled recursively, e.g.,
-
-```
-     0 1 2 3 4 5     6     7 8 9 10 11 12   13   14
-/// |-----------| |-----| |              | |  | |  |
-///       a          b    |              | |  | |  |
-/// |-------------------| |--------------| |--| |--|
-///          sub                  a          b    c
-```
-The above example represents an axis of size 15. This axis has 4 items: `a`, `b`, `c`, and `sub`.
-- "a" is a variable of storage size 6 (possibly of type `SR2`).
-- "b" is a variable of type `Scalar`.
-- "c" is a variable of type `Scalar`.
-- "sub" is a sub-axis of type `LabeledAxis`. "sub" by itself represents an axis of size 7, containing 2 items:
-  - "a" is a variable of storage size 6.
-  - "b" is a variable of type `Scalar`.
-
-Duplicate labels are *not* allowed on the same level of the axis, e.g. "a", "b", "c", and "sub" share the same level and so must be different. However, items on different levels of an axis can share the same label, e.g., "a" on the sub-axis "sub" has the same label as "a" on the main axis. In NEML2 convention, item names are always fully qualified, and a sub-axis is prefixed with a left slash, e.g. item "b" on the sub-axis "sub" can be denoted as "sub/b" on the main axis.
-
-> A label cannot contain: white spaces, quotes, left slash (`/`), or new line.
->
-> Due to performance considerations, a `LabeledAxis` can only be modified, e.g., adding/removing variables and sub-axis, at the time a model is constructed. After the model construction phase, the `LabeledAxis` associated with that model can no longer be modified over the entire course of the simulation.
-
-Refer to the documentation for a complete list of APIs for creating and modifying a [LabeledAxis](@ref neml2::LabeledAxis).
-
-[LabeledTensor](@ref neml2::LabeledTensor) is the primary data structure in NEML2 for working with labeled tensor views. Each `LabeledTensor` consists of one `Tensor` and one or more `LabeledAxis`s. The `LabeledTensor` is templated on the base dimension \f$D\f$. [LabeledVector](@ref neml2::LabeledVector) and [LabeledMatrix](@ref neml2::LabeledMatrix) are the two most widely used data structures in NEML2.
-
-`LabeledTensor` handles the creation, modification, and accessing of labeled tensors. Recall that all primitive data types in a labeled tensor are flattened, e.g., a symmetric fourth order tensor of type `SSR4` with batch size `(5)` and base size `(6, 6)` are flattened to have base size `(36)` in the labeled tensor. The documentation provides a complete list of APIs.

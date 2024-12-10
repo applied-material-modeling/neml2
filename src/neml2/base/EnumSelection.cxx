@@ -123,6 +123,18 @@ EnumSelection::operator!=(const EnumSelection & other) const
   return !(*this == other);
 }
 
+bool
+EnumSelection::operator==(const std::string & other) const
+{
+  return _selection == other;
+}
+
+bool
+EnumSelection::operator!=(const std::string & other) const
+{
+  return _selection != other;
+}
+
 std::string
 EnumSelection::candidates_str() const
 {

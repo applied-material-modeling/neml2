@@ -24,10 +24,15 @@
 
 #include "neml2/tensors/user_tensors/UserPrimitiveTensor.h"
 
+#include "neml2/tensors/tensors.h"
+
 namespace neml2
 {
-#define USERPRIMITIVETENSOR_REGISTER(T) register_NEML2_object_alias(User##T, #T)
+#define USERPRIMITIVETENSOR_REGISTER(T)                                                            \
+  using User##T = UserPrimitiveTensor<T>;                                                          \
+  register_NEML2_object_alias(User##T, #T)
 FOR_ALL_PRIMITIVETENSOR(USERPRIMITIVETENSOR_REGISTER);
+#undef USERPRIMITIVETENSOR_REGISTER
 
 template <typename T>
 OptionSet
@@ -71,7 +76,4 @@ UserPrimitiveTensor<T>::UserPrimitiveTensor(const OptionSet & options)
                 " or the total storage size ",
                 utils::storage_size(this->sizes()));
 }
-
-#define USERPRIMITIVETENSOR_INSTANTIATE_PRIMITIVETENSOR(T) template class UserPrimitiveTensor<T>
-FOR_ALL_PRIMITIVETENSOR(USERPRIMITIVETENSOR_INSTANTIATE_PRIMITIVETENSOR);
 } // namespace neml2

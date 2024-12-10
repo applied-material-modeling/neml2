@@ -22,33 +22,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-
-#include "neml2/tensors/LabeledTensor.h"
+#include "neml2/jit/utils.h"
 
 namespace neml2
 {
-class LabeledMatrix;
-
-/**
- * @brief A single-batched, logically 1D LabeledTensor.
- *
- */
-class LabeledVector : public LabeledTensor<LabeledVector, 1>
+void
+neml_assert_tracing()
 {
-public:
-  using LabeledTensor<LabeledVector, 1>::LabeledTensor;
+  neml_assert(torch::jit::tracer::isTracing(), "Expected to be tracing but not tracing");
+}
 
-  /// Slice the logically 1D tensor by a single sub-axis
-  LabeledVector slice(const std::string & name) const;
-
-  /// Fill (override) another vector into this vector.
-  /// The item set of the other vector must be a subset of this vector's item set.
-  void fill(const LabeledVector & other, bool recursive = true);
-};
-
-namespace utils
+void
+neml_assert_tracing_dbg()
 {
-bool allclose(const LabeledVector & a, const LabeledVector & b, Real rtol = 1e-5, Real atol = 1e-8);
-} // namespaca utils
+#ifndef NDEBUG
+  neml_assert_tracing();
+#endif
+}
 } // namespace neml2

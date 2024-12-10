@@ -23,11 +23,15 @@
 // THE SOFTWARE.
 
 #include "neml2/tensors/user_tensors/EmptyPrimitiveTensor.h"
+#include "neml2/tensors/tensors.h"
 
 namespace neml2
 {
-#define EMPTYPRIMITIVETENSOR_REGISTER(T) register_NEML2_object_alias(Empty##T, "Empty" #T)
+#define EMPTYPRIMITIVETENSOR_REGISTER(T)                                                           \
+  using Empty##T = EmptyPrimitiveTensor<T>;                                                        \
+  register_NEML2_object_alias(Empty##T, "Empty" #T)
 FOR_ALL_PRIMITIVETENSOR(EMPTYPRIMITIVETENSOR_REGISTER);
+#undef EMPTYPRIMITIVETENSOR_REGISTER
 
 template <typename T>
 OptionSet
@@ -53,7 +57,4 @@ EmptyPrimitiveTensor<T>::EmptyPrimitiveTensor(const OptionSet & options)
     UserTensorBase(options)
 {
 }
-
-#define EMPTYPRIMITIVETENSOR_INSTANTIATE_PRIMITIVETENSOR(T) template class EmptyPrimitiveTensor<T>
-FOR_ALL_PRIMITIVETENSOR(EMPTYPRIMITIVETENSOR_INSTANTIATE_PRIMITIVETENSOR);
 } // namespace neml2

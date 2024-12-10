@@ -26,6 +26,8 @@
 #include "neml2/drivers/TransientDriver.h"
 #include "neml2/misc/parser_utils.h"
 
+#include <torch/script.h>
+
 namespace neml2
 {
 register_NEML2_object(VTestVerification);
@@ -39,19 +41,25 @@ VTestVerification::expected_options()
   options.set<std::vector<CrossRef<torch::Tensor>>>("references");
   options.set<Real>("rtol") = 1e-5;
   options.set<Real>("atol") = 1e-8;
-  options.set<bool>("taylor_average") = false;
   return options;
 }
 
 VTestVerification::VTestVerification(const OptionSet & options)
   : Driver(options),
     _driver(Factory::get_object<TransientDriver>("Drivers", options.get<std::string>("driver"))),
-    _variables(options.get<std::vector<std::string>>("variables")),
-    _references(options.get<std::vector<CrossRef<torch::Tensor>>>("references")),
     _rtol(options.get<Real>("rtol")),
-    _atol(options.get<Real>("atol")),
-    _taylor_average(options.get<bool>("taylor_average"))
+    _atol(options.get<Real>("atol"))
 {
+  const auto vars = options.get<std::vector<std::string>>("variables");
+  const auto vals = options.get<std::vector<CrossRef<torch::Tensor>>>("references");
+  neml_assert(vars.size() == vals.size(),
+              "Must provide the same number of variables and references. ",
+              vars.size(),
+              " variables provided, while ",
+              vals.size(),
+              " references provided.");
+  for (std::size_t i = 0; i < vars.size(); i++)
+    _ref[vars[i]] = vals[i];
 }
 
 void
@@ -59,13 +67,11 @@ VTestVerification::diagnose(std::vector<Diagnosis> & diagnoses) const
 {
   Driver::diagnose(diagnoses);
   _driver.diagnose(diagnoses);
+
   diagnostic_assert(diagnoses,
-                    _variables.size() == _references.size(),
-                    "Must provide the same number of variables and reference variables. ",
-                    _variables.size(),
-                    " variables provided, while ",
-                    _references.size(),
-                    " reference variables provided.");
+                    !_driver.save_as_path().empty(),
+                    "The driver does not save any results. Use the save_as option to specify the "
+                    "destination file/path.");
 }
 
 bool
@@ -73,45 +79,59 @@ VTestVerification::run()
 {
   _driver.run();
 
-  // Verify the variable values against the references
-  std::ostringstream err;
-  for (size_t i = 0; i < _variables.size(); i++)
-    compare(_variables[i], _references[i], err);
+  auto res = torch::jit::load(_driver.save_as_path());
+  auto err_msg = diff(res.named_buffers(), _ref, _rtol, _atol);
 
-  auto err_msg = err.str();
   neml_assert(err_msg.empty(), err_msg);
 
   return true;
 }
 
-void
-VTestVerification::compare(const std::string & var,
-                           torch::Tensor ref,
-                           std::ostringstream & err) const
+std::string
+diff(const torch::jit::named_buffer_list & res,
+     const std::map<std::string, torch::Tensor> & ref_map,
+     Real rtol,
+     Real atol)
 {
-  // NEML2 results
-  const auto res = _driver.result();
+  std::map<std::string, torch::Tensor> res_map;
+  for (auto item : res)
+    res_map.emplace(item.name, item.value);
 
-  // Variable to check
-  auto tokens = utils::split(var, ".");
-  auto axis = tokens[0];
-  auto name = tokens[1];
-  auto neml2_tensor = res->at<torch::nn::Module>(axis).named_buffers(true)[name];
+  std::ostringstream err_msg;
 
-  // Average, if requested
-  torch::Tensor comp;
-  if (_taylor_average)
-    comp = torch::sum(neml2_tensor, 1).unsqueeze(1) / ((Real)neml2_tensor.sizes()[1]);
-  else
-    comp = neml2_tensor;
-
-  // Check
-  if (!torch::allclose(comp, ref, _rtol, _atol))
+  for (const auto & [name, val] : ref_map)
   {
-    auto diff = torch::abs(comp - ref) - _rtol * torch::abs(ref);
-    err << "Result has wrong value for variable " << var
-        << ". Maximum mixed difference = " << std::scientific << diff.max().item<Real>()
-        << " > atol = " << std::scientific << _atol << "\n";
+    const auto tokens = utils::split(name, ".");
+    if (tokens.size() < 2)
+      err_msg << "Invalid reference variable name " << name << ".\n";
+    const auto nstep = val.size(0);
+    for (Size i = 0; i < nstep; i++)
+    {
+      const auto refi = val.index({i}).squeeze();
+      auto restokens = tokens;
+      restokens.insert(restokens.begin() + 1, std::to_string(i));
+      const auto resname = utils::join(restokens, ".");
+
+      if (!res_map.count(resname))
+      {
+        if (!torch::allclose(refi, torch::zeros_like(refi)))
+          err_msg << "Result is missing variable " << resname << ".\n";
+        continue;
+      }
+
+      const auto resi = res_map[resname].squeeze();
+      if (!torch::allclose(resi, refi, rtol, atol))
+      {
+        const auto diff = torch::abs(resi - refi) - rtol * torch::abs(refi);
+        err_msg << "Result has wrong value for variable " << resname
+                << ". Maximum mixed difference = " << std::scientific << diff.max().item<Real>()
+                << " > atol = " << std::scientific << atol << "\n";
+        err_msg << "Reference: " << refi << "\n";
+        err_msg << "Result: " << resi << "\n";
+      }
+    }
   }
+
+  return err_msg.str();
 }
 }

@@ -104,16 +104,17 @@
 
 [Drivers]
   [driver]
-    type = LargeDeformationIncrementalSolidMechanicsDriver
+    type = LDISolidMechanicsDriver
     model = 'model'
-    times = 'times'
+    prescribed_time = 'times'
     prescribed_deformation_rate = 'deformation_rate'
     prescribed_vorticity = 'vorticity'
     ic_rot_names = 'state/orientation'
     ic_rot_values = 'initial_orientation'
-    predictor = 'CP_PREVIOUS_STATE'
+    predictor = 'PREVIOUS_STATE'
+    cp_warmup = true
+    cp_warmup_elastic_scale = 0.1
     save_as = 'unit/drivers/solid_mechanics/test_LargeDeformationIncrementalSolidMechanicsDriver.pt'
-    cp_elastic_scale = 0.01
   []
 []
 

@@ -26,6 +26,7 @@
 
 #include "utils.h"
 #include "neml2/tensors/user_tensors/UserPrimitiveTensor.h"
+#include "neml2/tensors/tensors.h"
 
 using namespace neml2;
 

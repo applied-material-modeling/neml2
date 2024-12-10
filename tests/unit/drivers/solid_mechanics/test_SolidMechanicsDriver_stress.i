@@ -40,10 +40,10 @@
 
 [Drivers]
   [driver]
-    type = SolidMechanicsDriver
+    type = SDTSolidMechanicsDriver
     model = 'model'
-    times = 'times'
-    prescribed_stresses = 'stresses'
+    prescribed_time = 'times'
+    prescribed_stress = 'stresses'
     control = 'STRESS'
     save_as = 'unit/drivers/solid_mechanics/test_SolidMechanicsDriver_stress.pt'
   []

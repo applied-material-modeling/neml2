@@ -63,20 +63,17 @@ void reload_input(const std::filesystem::path & path, const std::string & additi
  * The input file must have already been parsed and loaded.
  *
  * @param mname Name of the model
- * @param enable_ad Enable automatic differentiation
  * @param force_create Whether to force create the model even if one has already been manufactured
  */
-Model & get_model(const std::string & mname, bool enable_ad = true, bool force_create = true);
+Model & get_model(const std::string & mname, bool force_create = true);
 
 /**
  * @brief A convenient function to load an input file and get a model
  *
  * @param path Path to the input file to be parsed
  * @param mname Name of the model
- * @param enable_ad Enable automatic differentiation
  */
-Model &
-load_model(const std::filesystem::path & path, const std::string & mname, bool enable_ad = true);
+Model & load_model(const std::filesystem::path & path, const std::string & mname);
 
 /**
  * @brief Similar to neml2::load_model, but additionally clear the Factory before loading the model,
@@ -84,10 +81,8 @@ load_model(const std::filesystem::path & path, const std::string & mname, bool e
  *
  * @param path Path to the input file to be parsed
  * @param mname Name of the model
- * @param enable_ad Enable automatic differentiation
  */
-Model &
-reload_model(const std::filesystem::path & path, const std::string & mname, bool enable_ad = true);
+Model & reload_model(const std::filesystem::path & path, const std::string & mname);
 
 /**
  * @brief A convenient function to manufacture a neml2::Driver

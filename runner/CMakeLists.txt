@@ -10,13 +10,6 @@ register_unity_group(runner .)
 target_compile_options(runner PRIVATE -Wall -Wextra -pedantic -Werror)
 target_link_libraries(runner PRIVATE neml2 argparse)
 
-option(NEML2_RUNNER_AS_PROFILER "Additionally link the runner against gperftools profiler" OFF)
-
-if(NEML2_RUNNER_AS_PROFILER)
-  FetchContent_MakeAvailable(gperftools)
-  target_link_libraries(runner PRIVATE profiler)
-endif()
-
 install(TARGETS runner)
 install(DIRECTORY benchmark
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/benchmark

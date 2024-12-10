@@ -28,6 +28,8 @@
 #include "utils.h"
 #include "neml2/misc/math.h"
 #include "neml2/base/CrossRef.h"
+#include "neml2/tensors/SR2.h"
+#include "neml2/tensors/Scalar.h"
 
 using namespace neml2;
 

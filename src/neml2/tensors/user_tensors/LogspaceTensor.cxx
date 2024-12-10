@@ -23,7 +23,6 @@
 // THE SOFTWARE.
 
 #include "neml2/tensors/user_tensors/LogspaceTensor.h"
-#include "neml2/base/CrossRef.h"
 
 namespace neml2
 {
@@ -48,23 +47,43 @@ LogspaceTensor::expected_options()
   options.set<Size>("dim") = 0;
   options.set("dim").doc() = "Where to insert the new dimension";
 
+  options.set<Real>("base") = 10;
+  options.set("base").doc() = "Exponent base";
+
   options.set<Size>("batch_dim") = -1;
   options.set("batch_dim").doc() = "Batch dimension of the output";
 
-  options.set<Real>("base") = 10;
-  options.set("base").doc() = "Exponent base";
+  options.set<TensorShape>("batch_expand") = TensorShape();
+  options.set("batch_expand").doc() = "After construction, perform an additional batch expanding "
+                                      "operation into the given batch shape.";
 
   return options;
 }
 
 LogspaceTensor::LogspaceTensor(const OptionSet & options)
-  : Tensor(Tensor::logspace(options.get<CrossRef<Tensor>>("start"),
-                            options.get<CrossRef<Tensor>>("end"),
-                            options.get<Size>("nstep"),
-                            options.get<Size>("dim"),
-                            options.get<Size>("batch_dim"),
-                            options.get<Real>("base"))),
+  : Tensor(make(options)),
     UserTensorBase(options)
 {
+}
+
+Tensor
+LogspaceTensor::make(const OptionSet & options) const
+{
+  auto t = Tensor::logspace(options.get<CrossRef<Tensor>>("start"),
+                            options.get<CrossRef<Tensor>>("end"),
+                            options.get<Size>("nstep"),
+                            options.get<Size>("dim"));
+
+  // Change batch dimension if requested
+  auto B = options.get<Size>("batch_dim");
+  if (B >= 0)
+    t = Tensor(t, B);
+
+  // Expand if requested
+  auto S = options.get<TensorShape>("batch_expand");
+  if (!S.empty())
+    t = t.batch_expand(S);
+
+  return t;
 }
 } // namespace neml2

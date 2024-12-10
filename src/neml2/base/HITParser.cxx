@@ -28,7 +28,7 @@
 #include "neml2/base/CrossRef.h"
 #include "neml2/base/Settings.h"
 #include "neml2/base/EnumSelection.h"
-#include "neml2/tensors/LabeledAxis.h"
+#include "neml2/models/LabeledAxis.h"
 #include "neml2/tensors/tensors.h"
 #include <memory>
 
@@ -160,6 +160,8 @@ HITParser::extract_option(hit::Node * n, OptionSet & options) const
         // LCOV_EXCL_START
         else neml_assert(false, "Unsupported option type for option ", n->fullpath());
         // LCOV_EXCL_STOP
+
+        option->user_specified() = true;
 
         break;
       }

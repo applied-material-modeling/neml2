@@ -62,25 +62,23 @@ PowerLawSlipRule::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
 
-  // Grab the input
-  const auto rss = Scalar(_rss, batch_dim() + 1);
-  const auto tau = Scalar(_tau, batch_dim() + 1);
+  const auto D = broadcast_batch_dim(_rss, _tau, _gamma0, _n);
 
   if (out)
-    _g = Tensor(_gamma0 * math::pow(abs(rss / tau), _n - 1.0) * rss / tau, batch_dim());
+    _g = _gamma0 * math::pow(math::abs(_rss / _tau), _n - 1.0) * _rss / _tau;
 
   if (dout_din)
   {
     if (_rss.is_dependent())
-      _g.d(_rss) =
-          Tensor(math::batch_diag_embed(_gamma0 * _n * math::pow(abs(rss / tau), _n - 1.0) / tau),
-                 batch_dim());
+      _g.d(_rss) = Tensor(
+          math::batch_diag_embed(_gamma0 * _n * math::pow(math::abs(_rss / _tau), _n - 1.0) / _tau),
+          D);
 
     if (_tau.is_dependent())
-      _g.d(_tau) =
-          Tensor(math::batch_diag_embed(-_n * _gamma0 * rss * math::pow(abs(rss), _n - 1.0) /
-                                        math::pow(tau, _n + 1)),
-                 batch_dim());
+      _g.d(_tau) = Tensor(math::batch_diag_embed(-_n * _gamma0 * _rss *
+                                                 math::pow(math::abs(_rss.value()), _n - 1.0) /
+                                                 math::pow(_tau, _n + 1)),
+                          D);
   }
 }
 } // namespace neml2

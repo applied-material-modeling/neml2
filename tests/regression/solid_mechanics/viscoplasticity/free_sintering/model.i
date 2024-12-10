@@ -71,11 +71,11 @@ nstep = 100
 
 [Drivers]
   [driver]
-    type = SolidMechanicsDriver
+    type = SDTSolidMechanicsDriver
     model = 'model'
-    times = 'times'
-    prescribed_strains = 'strains'
-    prescribed_temperatures = 'temperatures'
+    prescribed_time = 'times'
+    prescribed_strain = 'strains'
+    prescribed_temperature = 'temperatures'
     ic_scalar_names = 'state/internal/f'
     ic_scalar_values = 'f0'
     save_as = 'result.pt'

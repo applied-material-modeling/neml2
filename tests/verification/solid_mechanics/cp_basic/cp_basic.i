@@ -1,27 +1,23 @@
 [Tensors]
   [times]
-    type = VTestTimeSeries
+    type = ScalarVTestTimeSeries
     vtest = 'cp_basic.vtest'
     variable = 'time'
-    variable_type = 'SCALAR'
   []
   [deformation_rate]
-    type = VTestTimeSeries
+    type = SR2VTestTimeSeries
     vtest = 'cp_basic.vtest'
     variable = 'deformation_rate'
-    variable_type = 'SYMR2'
   []
   [stresses]
-    type = VTestTimeSeries
+    type = SR2VTestTimeSeries
     vtest = 'cp_basic.vtest'
     variable = 'stress'
-    variable_type = 'SYMR2'
   []
   [vorticity]
-    type = VTestTimeSeries
+    type = WR2VTestTimeSeries
     vtest = 'cp_basic.vtest'
     variable = 'vorticity'
-    variable_type = 'WR2'
   []
   [a]
     type = Scalar
@@ -43,15 +39,17 @@
 
 [Drivers]
   [driver]
-    type = LargeDeformationIncrementalSolidMechanicsDriver
+    type = LDISolidMechanicsDriver
     model = 'model_with_stress'
-    times = 'times'
+    prescribed_time = 'times'
     prescribed_deformation_rate = 'deformation_rate'
     prescribed_vorticity = 'vorticity'
     ic_rot_names = 'state/orientation'
     ic_rot_values = 'initial_orientation'
-    predictor = 'CP_PREVIOUS_STATE'
-    cp_elastic_scale = 0.05
+    predictor = 'PREVIOUS_STATE'
+    cp_warmup = true
+    cp_warmup_elastic_scale = 0.05
+    save_as = 'result.pt'
   []
   [verification]
     type = VTestVerification

@@ -61,10 +61,10 @@ SingleSlipStrengthMap::set_value(bool out, bool dout_din, bool d2out_din2)
   neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
 
   if (out)
-    _tau = (_tau_bar + _tau_const).base_unsqueeze(0).base_expand_as(_tau.value());
+    _tau = (_tau_bar + _tau_const).batch_unsqueeze(-1).batch_expand(_crystal_geometry.nslip(), -1);
 
   if (dout_din)
     if (_tau_bar.is_dependent())
-      _tau.d(_tau_bar) = Scalar::ones(options()).base_expand_as(_tau.d(_tau_bar).value());
+      _tau.d(_tau_bar) = Tensor::ones(_crystal_geometry.nslip(), _tau_bar.options());
 }
 } // namespace neml2

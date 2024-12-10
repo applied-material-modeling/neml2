@@ -40,6 +40,7 @@ No action is needed to manually obtain the optional dependencies. The compatible
 - [argparse](https://github.com/p-ranav/argparse) for command-line argument parsing.
 - [pybind11](https://github.com/pybind/pybind11) for building Python bindings.
 - Python packages
+  - [graphviz](https://github.com/xflr6/graphviz) for model visualization
   - [pytest](https://docs.pytest.org/en/stable/index.html) for testing Pythin bindings
   - [PyYAML](https://pyyaml.org/) for extracting syntax documentation
   - [pybind11-stubgen](https://github.com/sizmailov/pybind11-stubgen) for extracting stubs from Python bindings
@@ -110,21 +111,21 @@ turns on the `NEML2_PYBIND` option, and additional targets for building the Pyth
 
 Commonly used configuration options are summarized below. Default options are <u>underlined</u>.
 
-| Option                   | Values (<u>default</u>)                                     | Description                                                                               |
-| :----------------------- | :---------------------------------------------------------- | :---------------------------------------------------------------------------------------- |
-| CMAKE_BUILD_TYPE         | <u>Debug</u>, Release, MinSizeRel, RelWithDebInfo, Coverage | CMake [Reference](https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html)     |
-| CMAKE_INSTALL_PREFIX     |                                                             | CMake [Reference](https://cmake.org/cmake/help/latest/variable/CMAKE_INSTALL_PREFIX.html) |
-| CMAKE_UNITY_BUILD        |                                                             | CMake [Reference](https://cmake.org/cmake/help/latest/variable/CMAKE_UNITY_BUILD.html)    |
-| NEML2_TESTS              | <u>ON</u>, OFF                                              | Master knob for including/excluding all tests                                             |
-| NEML2_UNIT               | <u>ON</u>, OFF                                              | Create the unit testing target                                                            |
-| NEML2_REGRESSION         | <u>ON</u>, OFF                                              | Create the regression testing target                                                      |
-| NEML2_VERIFICATION       | <u>ON</u>, OFF                                              | Create the verification testing target                                                    |
-| NEML2_RUNNER             | ON, <u>OFF</u>                                              | Create a simple runner                                                                    |
-| NEML2_RUNNER_AS_PROFILER | ON, <u>OFF</u>                                              | Make the runner a profiler by linking against gperftools                                  |
-| NEML2_DOC                | ON, <u>OFF</u>                                              | Create the documentation target                                                           |
-| NEML2_PYBIND             | ON, <u>OFF</u>                                              | Create the Python bindings target                                                         |
-| NEML2_CLANG_TIDY         | ON, <u>OFF</u>                                              | Run clang-tidy linting diagnostics                                                        |
-| NEML2_CLANG_TIDY_PATH    | <u>"clang-tidy"</u>                                         | Path to clang-tidy executable                                                             |
+| Option                | Values (<u>default</u>)                                     | Description                                                                               |
+| :-------------------- | :---------------------------------------------------------- | :---------------------------------------------------------------------------------------- |
+| CMAKE_BUILD_TYPE      | <u>Debug</u>, Release, MinSizeRel, RelWithDebInfo, Coverage | CMake [Reference](https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html)     |
+| CMAKE_INSTALL_PREFIX  |                                                             | CMake [Reference](https://cmake.org/cmake/help/latest/variable/CMAKE_INSTALL_PREFIX.html) |
+| CMAKE_UNITY_BUILD     |                                                             | CMake [Reference](https://cmake.org/cmake/help/latest/variable/CMAKE_UNITY_BUILD.html)    |
+| NEML2_TESTS           | <u>ON</u>, OFF                                              | Master knob for including/excluding all tests                                             |
+| NEML2_UNIT            | <u>ON</u>, OFF                                              | Create the unit testing target                                                            |
+| NEML2_REGRESSION      | <u>ON</u>, OFF                                              | Create the regression testing target                                                      |
+| NEML2_VERIFICATION    | <u>ON</u>, OFF                                              | Create the verification testing target                                                    |
+| NEML2_RUNNER          | ON, <u>OFF</u>                                              | Create a simple runner                                                                    |
+| NEML2_CPU_PROFILER    | ON, <u>OFF</u>                                              | Linking against gperftools libprofiler to enable CPU profiling                            |
+| NEML2_DOC             | ON, <u>OFF</u>                                              | Create the documentation target                                                           |
+| NEML2_PYBIND          | ON, <u>OFF</u>                                              | Create the Python bindings target                                                         |
+| NEML2_CLANG_TIDY      | ON, <u>OFF</u>                                              | Run clang-tidy linting diagnostics                                                        |
+| NEML2_CLANG_TIDY_PATH | <u>"clang-tidy"</u>                                         | Path to clang-tidy executable                                                             |
 
 Visual Studio Code users are encouraged to use the predefined [CMake variants](https://vector-of-bool.github.io/docs/vscode-cmake-tools/variants.html) in `cmake-variants.yaml` to configure the build.
 

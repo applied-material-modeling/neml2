@@ -20,7 +20,6 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    batch_shape = '(5)'
     input_scalar_names = 'state/internal/fp state/internal/gamma_rate'
     input_scalar_values = 'fp gamma_rate'
     output_scalar_names = 'residual/internal/gamma_rate'

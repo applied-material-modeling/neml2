@@ -23,11 +23,15 @@
 // THE SOFTWARE.
 
 #include "neml2/tensors/user_tensors/FullPrimitiveTensor.h"
+#include "neml2/tensors/tensors.h"
 
 namespace neml2
 {
-#define FULLPRIMITIVETENSOR_REGISTER(T) register_NEML2_object_alias(Full##T, "Full" #T)
+#define FULLPRIMITIVETENSOR_REGISTER(T)                                                            \
+  using Full##T = FullPrimitiveTensor<T>;                                                          \
+  register_NEML2_object_alias(Full##T, "Full" #T)
 FOR_ALL_PRIMITIVETENSOR(FULLPRIMITIVETENSOR_REGISTER);
+#undef FULLPRIMITIVETENSOR_REGISTER
 
 template <typename T>
 OptionSet
@@ -58,7 +62,4 @@ FullPrimitiveTensor<T>::FullPrimitiveTensor(const OptionSet & options)
     UserTensorBase(options)
 {
 }
-
-#define FULLPRIMITIVETENSOR_INSTANTIATE_PRIMITIVETENSOR(T) template class FullPrimitiveTensor<T>
-FOR_ALL_PRIMITIVETENSOR(FULLPRIMITIVETENSOR_INSTANTIATE_PRIMITIVETENSOR);
 } // namespace neml2

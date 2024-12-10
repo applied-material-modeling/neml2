@@ -59,12 +59,14 @@ jobs:
         with:
           files: pytest.xml
           check_name: Python Binding Test Results (${{ matrix.os }})
+          check_run: false
       - name: Publish Test Results
         if: matrix.os == 'macos-latest'
         uses: EnricoMi/publish-unit-test-result-action/macos@v2
         with:
           files: pytest.xml
           check_name: Python Binding Test Results (${{ matrix.os }})
+          check_run: false
 
   sdist:
     name: Build source distribution

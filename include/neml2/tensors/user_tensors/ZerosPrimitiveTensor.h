@@ -26,8 +26,6 @@
 
 #include "neml2/tensors/user_tensors/UserTensorBase.h"
 
-#include "neml2/tensors/tensors.h"
-
 namespace neml2
 {
 /**
@@ -48,7 +46,4 @@ public:
    */
   ZerosPrimitiveTensor(const OptionSet & options);
 };
-
-#define ZEROSPRIMITIVETENSOR_TYPEDEF(T) typedef ZerosPrimitiveTensor<T> Zeros##T
-FOR_ALL_PRIMITIVETENSOR(ZEROSPRIMITIVETENSOR_TYPEDEF);
 } // namespace neml2

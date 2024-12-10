@@ -37,43 +37,46 @@ TEST_CASE("training")
   // called on the objective function to propagate the gradient onto the parameter.
   auto & model = reload_model("regression/regression_training.i", "model");
 
-  // Reinitialize the model to have the correct batch shape and derivative order
+  // Batch shape
   Size nbatch = 2;
-  model.reinit(TensorShape{nbatch}, /*deriv_order=*/0);
 
   // Request parameter gradient
   auto & p = model.named_parameters()["yield.sy"];
   p = Scalar(5, default_tensor_options().requires_grad(true));
 
-  // Initial state
-  auto force0 = torch::tensor({0.0, 0.0, 0.01, -0.01, -0.01, 0.02, 0.0}, default_tensor_options())
-                    .expand({nbatch, 7});
-  auto state0 = torch::zeros({nbatch, 7}, default_tensor_options());
+  // Variables
+  VariableName strain("forces", "E");
+  VariableName time("forces", "t");
+  VariableName stress("state", "S");
+  VariableName ep("state", "internal", "ep");
 
   // Evaluate the model for the first time
-  auto force1 = torch::tensor({0.01, 0.01, 0.01, -0.02, -0.03, 0.04, 1.0}, default_tensor_options())
-                    .expand({nbatch, 7});
-  auto state1 =
-      torch::tensor({100.0, 100.0, 200.0, -50.0, -150.0, 50.0, 0.001}, default_tensor_options())
-          .expand({nbatch, 7});
-  auto x1 = torch::cat({force0, force1, state0, state1}, -1);
-  auto y1 = model.value(LabeledVector(Tensor(x1, 1), {&model.input_axis()}));
-  state1 = torch::Tensor(y1) * 1e-2;
+  std::map<VariableName, Tensor> x1;
+  x1[strain.old()] = SR2::fill(0.0, 0.0, 0.01, -0.01, -0.01, 0.02).batch_expand(nbatch);
+  x1[strain] = SR2::fill(0.01, 0.01, 0.01, -0.02, -0.03, 0.04).batch_expand(nbatch);
+  x1[time] = Scalar::full(1.0).batch_expand(nbatch);
+  x1[stress] = SR2::fill(100.0, 100.0, 200.0, -50.0, -150.0, 50.0).batch_expand(nbatch);
+  x1[ep] = Scalar::full(0.001).batch_expand(nbatch);
+  const auto r1 = model.value(x1);
 
   // Evaluate the model for the second time
-  auto force2 = torch::tensor({0.02, 0.02, 0.03, -0.02, -0.01, 0.01, 5.0}, default_tensor_options())
-                    .expand({nbatch, 7});
-  auto state2 =
-      torch::tensor({100.0, 100.0, 200.0, -50.0, -150.0, 50.0, 0.001}, default_tensor_options())
-          .expand({nbatch, 7});
-  auto x2 = torch::cat({force1, force2, state1, state2}, -1);
-  auto y2 = model.value(LabeledVector(Tensor(x2, 1), {&model.input_axis()}));
-  state2 = torch::Tensor(y2) * 1e-2;
+  std::map<VariableName, Tensor> x2;
+  x2[strain.old()] = x1[strain];
+  x2[time.old()] = x1[time];
+  x2[stress.old()] = r1.at(stress.remount("residual")) * 1e-2;
+  x2[ep.old()] = r1.at(ep.remount("residual")) * 1e-2;
+  x2[strain] = SR2::fill(0.02, 0.02, 0.03, -0.02, -0.01, 0.01).batch_expand(nbatch);
+  x2[time] = Scalar::full(5.0).batch_expand(nbatch);
+  x2[stress] = SR2::fill(100.0, 100.0, 200.0, -50.0, -150.0, 50.0).batch_expand(nbatch);
+  x2[ep] = Scalar::full(0.001).batch_expand(nbatch);
+  const auto r2 = model.value(x2);
 
   // Evaluate the objective function
-  auto f = torch::norm(state2);
+  const auto s2 = r2.at(stress.remount("residual")) * 1e-2;
+  const auto ep2 = r2.at(ep.remount("residual")) * 1e-2;
+  const auto f = torch::norm(torch::cat({s2.base_flatten(), ep2.base_flatten()}, -1));
 
   // Check the parameter gradient
   f.backward();
-  REQUIRE(Tensor(p).grad().item<Real>() == Catch::Approx(-127.5426));
+  REQUIRE(Tensor(p).grad().item<Real>() == Catch::Approx(-172.543));
 }

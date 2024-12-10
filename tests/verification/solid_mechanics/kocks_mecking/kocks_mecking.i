@@ -1,27 +1,23 @@
 [Tensors]
   [times]
-    type = VTestTimeSeries
+    type = ScalarVTestTimeSeries
     vtest = 'kocks_mecking.vtest'
     variable = 'time'
-    variable_type = 'SCALAR'
   []
   [strains]
-    type = VTestTimeSeries
+    type = SR2VTestTimeSeries
     vtest = 'kocks_mecking.vtest'
     variable = 'strain'
-    variable_type = 'SYMR2'
   []
   [stresses]
-    type = VTestTimeSeries
+    type = SR2VTestTimeSeries
     vtest = 'kocks_mecking.vtest'
     variable = 'stress'
-    variable_type = 'SYMR2'
   []
   [temperatures]
-    type = VTestTimeSeries
+    type = ScalarVTestTimeSeries
     vtest = 'kocks_mecking.vtest'
     variable = 'temperature'
-    variable_type = 'SCALAR'
   []
 
   [T_controls]
@@ -43,11 +39,12 @@
 
 [Drivers]
   [driver]
-    type = SolidMechanicsDriver
+    type = SDTSolidMechanicsDriver
     model = 'model'
-    times = 'times'
-    prescribed_strains = 'strains'
-    prescribed_temperatures = 'temperatures'
+    prescribed_time = 'times'
+    prescribed_strain = 'strains'
+    prescribed_temperature = 'temperatures'
+    save_as = 'result.pt'
   []
   [verification]
     type = VTestVerification
@@ -104,6 +101,7 @@
   [flow]
     type = ComposedModel
     models = 'vonmises yield'
+    automatic_nonlinear_parameter = false
   []
   [normality]
     type = Normality

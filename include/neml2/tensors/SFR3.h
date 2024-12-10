@@ -29,9 +29,9 @@
 namespace neml2
 {
 /**
- * @brief The logical third order tensor with symmetry in the first two dimensions.
+ * @brief The third order tensor with symmetry in the first two dimensions.
  *
- * Mandel notation is used for the first two symmetry dimensions, and so the logical storage space
+ * Mandel notation is used for the first two symmetry dimensions, and so the storage space
  * is (6, 3).
  */
 class SFR3 : public PrimitiveTensor<SFR3, 6, 3>

@@ -28,7 +28,7 @@ namespace neml2
 {
 BufferStore::BufferStore(const OptionSet & options, NEML2Object * object)
   : _object(object),
-    _options(options)
+    _object_options(options)
 {
 }
 
@@ -43,8 +43,6 @@ BufferStore::named_buffers()
 void
 BufferStore::send_buffers_to(const torch::TensorOptions & options)
 {
-  neml_assert(_object->host() == _object, "This method should only be called on the host model.");
-
   for (auto && [name, buffer] : _buffer_values)
     buffer.to_(options);
 }

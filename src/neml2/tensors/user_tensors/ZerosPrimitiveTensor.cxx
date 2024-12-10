@@ -24,10 +24,15 @@
 
 #include "neml2/tensors/user_tensors/ZerosPrimitiveTensor.h"
 
+#include "neml2/tensors/tensors.h"
+
 namespace neml2
 {
-#define ZEROSPRIMITIVETENSOR_REGISTER(T) register_NEML2_object_alias(Zeros##T, "Zeros" #T)
+#define ZEROSPRIMITIVETENSOR_REGISTER(T)                                                           \
+  using Zeros##T = ZerosPrimitiveTensor<T>;                                                        \
+  register_NEML2_object_alias(Zeros##T, "Zeros" #T)
 FOR_ALL_PRIMITIVETENSOR(ZEROSPRIMITIVETENSOR_REGISTER);
+#undef ZEROSPRIMITIVETENSOR_REGISTER
 
 template <typename T>
 OptionSet
@@ -52,7 +57,4 @@ ZerosPrimitiveTensor<T>::ZerosPrimitiveTensor(const OptionSet & options)
     UserTensorBase(options)
 {
 }
-
-#define ZEROSPRIMITIVETENSOR_INSTANTIATE_PRIMITIVETENSOR(T) template class ZerosPrimitiveTensor<T>
-FOR_ALL_PRIMITIVETENSOR(ZEROSPRIMITIVETENSOR_INSTANTIATE_PRIMITIVETENSOR);
 } // namespace neml2

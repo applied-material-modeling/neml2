@@ -29,62 +29,69 @@
 
 namespace neml2
 {
-register_NEML2_object(VTestTimeSeries);
+#define REGISTER_VTESTTIMESERIES(T)                                                                \
+  using T##VTestTimeSeries = VTestTimeSeries<T>;                                                   \
+  register_NEML2_object(T##VTestTimeSeries)
+FOR_ALL_PRIMITIVETENSOR(REGISTER_VTESTTIMESERIES);
 
-const std::map<std::string, TensorShape> VTestTimeSeries::shape_map = {
-    {"SCALAR", {}}, {"SYMR2", {-1}}, {"WR2", {-1}}};
-
+template <typename T>
 OptionSet
-VTestTimeSeries::expected_options()
+VTestTimeSeries<T>::expected_options()
 {
   OptionSet options = NEML2Object::expected_options();
   options.set<std::string>("vtest");
   options.set<std::string>("variable");
-  options.set<std::string>("variable_type");
-
-  options.set<Size>("expand_batch") = 1;
   return options;
 }
 
-// The last {-1} in the expand will be a problem eventually if we use non-logically 1D tensors,
-// but it works for now
-VTestTimeSeries::VTestTimeSeries(const OptionSet & options)
+template <typename T>
+VTestTimeSeries<T>::VTestTimeSeries(const OptionSet & options)
   : NEML2Object(options),
-    torch::Tensor(init(options).expand(utils::add_shapes(
-        TensorShape{-1, options.get<Size>("expand_batch")},
-        VTestTimeSeries::shape_map.at(options.get<std::string>("variable_type")))))
+    T(init(options))
 {
 }
 
-torch::Tensor
-VTestTimeSeries::init(const OptionSet & options) const
+template <typename T>
+T
+VTestTimeSeries<T>::init(const OptionSet & /*options*/) const
+{
+  throw NEMLException(name() + " has not been implemented");
+  return T();
+}
+
+template <>
+Scalar
+VTestTimeSeries<Scalar>::init(const OptionSet & options) const
 {
   VTestParser table(options.get<std::string>("vtest"));
   auto var = options.get<std::string>("variable");
-  auto var_type = options.get<std::string>("variable_type");
+  return Scalar(table[var]);
+}
 
-  if (var_type == "SCALAR")
-    return table[var].unsqueeze(-1);
-  else if (var_type == "SYMR2")
-  {
-    auto val_xx = table[var + "_xx"].unsqueeze(-1);
-    auto val_yy = table[var + "_yy"].unsqueeze(-1);
-    auto val_zz = table[var + "_zz"].unsqueeze(-1);
-    auto val_yz = table[var + "_yz"].unsqueeze(-1);
-    auto val_xz = table[var + "_xz"].unsqueeze(-1);
-    auto val_xy = table[var + "_xy"].unsqueeze(-1);
-    // The vtest format provides SR2 in Mandel notation already
-    return torch::stack({val_xx, val_yy, val_zz, val_yz, val_xz, val_xy}, -1);
-  }
-  else if (var_type == "WR2")
-  {
-    auto val_zy = table[var + "_zy"].unsqueeze(-1);
-    auto val_xz = table[var + "_xz"].unsqueeze(-1);
-    auto val_yx = table[var + "_yx"].unsqueeze(-1);
-    return torch::stack({val_zy, val_xz, val_yx}, -1);
-  }
+template <>
+SR2
+VTestTimeSeries<SR2>::init(const OptionSet & options) const
+{
+  VTestParser table(options.get<std::string>("vtest"));
+  auto var = options.get<std::string>("variable");
+  auto val_xx = table[var + "_xx"];
+  auto val_yy = table[var + "_yy"];
+  auto val_zz = table[var + "_zz"];
+  auto val_yz = table[var + "_yz"];
+  auto val_xz = table[var + "_xz"];
+  auto val_xy = table[var + "_xy"];
+  return SR2(torch::stack({val_xx, val_yy, val_zz, val_yz, val_xz, val_xy}, -1));
+}
 
-  neml_assert("Unrecognized variable_type: ", var_type);
-  return torch::Tensor();
+template <>
+WR2
+VTestTimeSeries<WR2>::init(const OptionSet & options) const
+{
+  VTestParser table(options.get<std::string>("vtest"));
+  auto var = options.get<std::string>("variable");
+  auto val_zy = table[var + "_zy"];
+  auto val_xz = table[var + "_xz"];
+  auto val_yx = table[var + "_yx"];
+  return WR2(torch::stack({val_zy, val_xz, val_yx}, -1));
 }
 } // namespace neml2

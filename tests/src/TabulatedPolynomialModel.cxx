@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "TabulatedPolynomialModel.h"
+#include "neml2/misc/math.h"
 
 namespace neml2
 {
@@ -50,9 +51,6 @@ TabulatedPolynomialModel::expected_options()
   options.set<CrossRef<Tensor>>("temperature_tile_lower_bounds");
   options.set<CrossRef<Tensor>>("temperature_tile_upper_bounds");
   options.set<Real>("index_sharpness") = 1.0;
-  // Use AD
-  options.set<bool>("_use_AD_first_derivative") = true;
-  options.set<bool>("_use_AD_second_derivative") = true;
   return options;
 }
 
@@ -86,10 +84,25 @@ TabulatedPolynomialModel::smooth_index(const torch::Tensor & x,
 }
 
 void
+TabulatedPolynomialModel::request_AD()
+{
+  std::vector<const VariableBase *> inputs = {&_s, &_T, &_s1, &_s2};
+  _ep_dot.request_AD(inputs);
+  _s1_dot.request_AD(inputs);
+  _s2_dot.request_AD(inputs);
+}
+
+void
 TabulatedPolynomialModel::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   neml_assert_dbg(!dout_din || !d2out_din2,
                   "Only AD derivatives are currently supported for this model");
+
+  // Broadcast and expand batch shape
+  std::vector<Tensor> inputs = {_s, _T, _s1, _s2};
+  const auto batch_sizes = utils::broadcast_batch_sizes(inputs);
+  for (std::size_t i = 0; i < inputs.size(); ++i)
+    inputs[i] = inputs[i].batch_expand(batch_sizes);
 
   // This example model has 4 input variables:
   //
@@ -100,7 +113,7 @@ TabulatedPolynomialModel::set_value(bool out, bool dout_din, bool d2out_din2)
   //
   // First concatenate them together and unsqueeze to shape (...; 1, 1, 4, 1) so that we can do
   // batched matrix vector product
-  auto x = torch::stack({Scalar(_s), Scalar(_T), Scalar(_s1), Scalar(_s2)}, /*dim=*/-1);
+  torch::Tensor x = math::base_stack(inputs, /*dim=*/-1);
   x = x.unsqueeze(-2).unsqueeze(-2).unsqueeze(-1);
 
   // The smooth index ij is of shape (...; 2, 3)

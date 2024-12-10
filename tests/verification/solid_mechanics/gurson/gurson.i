@@ -1,21 +1,18 @@
 [Tensors]
   [times]
-    type = VTestTimeSeries
+    type = ScalarVTestTimeSeries
     vtest = 'gurson.vtest'
     variable = 'time'
-    variable_type = 'SCALAR'
   []
   [strains]
-    type = VTestTimeSeries
+    type = SR2VTestTimeSeries
     vtest = 'gurson.vtest'
     variable = 'strain'
-    variable_type = 'SYMR2'
   []
   [stresses]
-    type = VTestTimeSeries
+    type = SR2VTestTimeSeries
     vtest = 'gurson.vtest'
     variable = 'stress'
-    variable_type = 'SYMR2'
   []
   [f0]
     type = Scalar
@@ -25,12 +22,13 @@
 
 [Drivers]
   [driver]
-    type = SolidMechanicsDriver
+    type = SDTSolidMechanicsDriver
     model = 'model'
-    times = 'times'
-    prescribed_strains = 'strains'
+    prescribed_time = 'times'
+    prescribed_strain = 'strains'
     ic_scalar_names = 'state/internal/f'
     ic_scalar_values = 'f0'
+    save_as = 'result.pt'
   []
   [verification]
     type = VTestVerification

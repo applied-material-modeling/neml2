@@ -80,7 +80,8 @@ LinearIsotropicElasticJ2TrialStressUpdate::set_value(bool out, bool dout_din, bo
   if (dout_din)
   {
     if (_elastic_trial_stress.is_dependent())
-      _updated_trial_stress.d(_elastic_trial_stress) = Scalar::identity_map(options());
+      _updated_trial_stress.d(_elastic_trial_stress) =
+          Scalar::identity_map(_elastic_trial_stress.options());
 
     if (_inelastic_strain.is_dependent())
       _updated_trial_stress.d(_inelastic_strain) = -three_shear;

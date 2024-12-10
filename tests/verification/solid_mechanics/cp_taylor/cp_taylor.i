@@ -1,30 +1,23 @@
 [Tensors]
   [times]
-    type = VTestTimeSeries
+    type = ScalarVTestTimeSeries
     vtest = 'cp_taylor.vtest'
     variable = 'time'
-    variable_type = 'SCALAR'
-    expand_batch = 5
   []
   [deformation_rate]
-    type = VTestTimeSeries
+    type = SR2VTestTimeSeries
     vtest = 'cp_taylor.vtest'
     variable = 'deformation_rate'
-    variable_type = 'SYMR2'
-    expand_batch = 5
   []
   [stresses]
-    type = VTestTimeSeries
+    type = SR2VTestTimeSeries
     vtest = 'cp_taylor.vtest'
     variable = 'stress'
-    variable_type = 'SYMR2'
   []
   [vorticity]
-    type = VTestTimeSeries
+    type = WR2VTestTimeSeries
     vtest = 'cp_taylor.vtest'
     variable = 'vorticity'
-    variable_type = 'WR2'
-    expand_batch = 5
   []
   [a]
     type = Scalar
@@ -53,21 +46,22 @@
 
 [Drivers]
   [driver]
-    type = LargeDeformationIncrementalSolidMechanicsDriver
+    type = LDISolidMechanicsDriver
     model = 'model_with_stress'
-    times = 'times'
+    prescribed_time = 'times'
     prescribed_deformation_rate = 'deformation_rate'
     prescribed_vorticity = 'vorticity'
     ic_rot_names = 'state/orientation'
     ic_rot_values = 'initial_orientation'
-    predictor = 'CP_PREVIOUS_STATE'
+    predictor = 'PREVIOUS_STATE'
+    cp_warmup = true
+    save_as = 'result.pt'
   []
   [verification]
     type = VTestVerification
     driver = 'driver'
-    variables = 'output.state/internal/cauchy_stress'
+    variables = 'output.state/mean_cauchy_stress'
     references = 'stresses'
-    taylor_average = true
     # Looser tolerances here are because the NEML(1) model was generated with lagged, explict
     # integration on the orientations
     atol = 1.0
@@ -160,9 +154,14 @@
     implicit_model = 'implicit_rate'
     solver = 'newton'
   []
+  [average_stress]
+    type = SR2CrystalMean
+    from = 'state/internal/cauchy_stress'
+    to = 'state/mean_cauchy_stress'
+  []
   [model_with_stress]
     type = ComposedModel
-    models = 'model elasticity'
-    additional_outputs = 'state/elastic_strain'
+    models = 'model elasticity average_stress'
+    additional_outputs = 'state/elastic_strain state/internal/cauchy_stress'
   []
 []

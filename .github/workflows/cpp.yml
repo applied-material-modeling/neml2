@@ -112,12 +112,14 @@ jobs:
         with:
           files: tests/*.xml
           check_name: Test Results (${{ matrix.os }}-${{ matrix.btype }}-${{ matrix.unity }})
+          check_run: false
       - name: Publish Test Results
         if: matrix.os == 'macos-latest'
         uses: EnricoMi/publish-unit-test-result-action/macos@v2
         with:
           files: tests/*.xml
           check_name: Test Results (${{ matrix.os }}-${{ matrix.btype }}-${{ matrix.unity }})
+          check_run: false
 
   build-all:
     needs: clang-format
@@ -143,7 +145,7 @@ jobs:
             -DCMAKE_UNITY_BUILD=${{ matrix.unity }} \
             -DNEML2_TESTS=ON \
             -DNEML2_RUNNER=ON \
-            -DNEML2_RUNNER_AS_PROFILER=ON \
+            -DNEML2_CPU_PROFILER=ON \
             -DNEML2_PYBIND=OFF \
             -DNEML2_DOC=OFF \
             -B build \

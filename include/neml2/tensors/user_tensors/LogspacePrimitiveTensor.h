@@ -26,8 +26,6 @@
 
 #include "neml2/tensors/user_tensors/UserTensorBase.h"
 
-#include "neml2/tensors/tensors.h"
-
 namespace neml2
 {
 /**
@@ -47,8 +45,9 @@ public:
    * @param options The options extracted from the input file.
    */
   LogspacePrimitiveTensor(const OptionSet & options);
-};
 
-#define LOGSPACEPRIMITIVETENSOR_TYPEDEF(T) typedef LogspacePrimitiveTensor<T> Logspace##T
-FOR_ALL_PRIMITIVETENSOR(LOGSPACEPRIMITIVETENSOR_TYPEDEF);
+private:
+  /// Helper to make the tensor given user input options
+  T make(const OptionSet & options) const;
+};
 } // namespace neml2

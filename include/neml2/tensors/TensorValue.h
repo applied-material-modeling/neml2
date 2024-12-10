@@ -23,10 +23,13 @@
 // THE SOFTWARE.
 #pragma once
 
-#include "neml2/tensors/tensors.h"
+#include "neml2/tensors/Tensor.h"
 
 namespace neml2
 {
+// Forward declaration
+enum class TensorType : int8_t;
+
 /**
  * @brief The base class to allow us to set up a polymorphic container of Tensors. The concrete
  * definitions will be templated on the actual tensor type.
@@ -65,16 +68,11 @@ public:
   {
   }
 
-  virtual void to_(const torch::TensorOptions & options) override { _value = _value.to(options); }
-
-  virtual void requires_grad_(bool req = true) override { _value.requires_grad_(req); }
-
-  virtual operator Tensor() const override { return _value; }
-
-  virtual void operator=(const Tensor & val) override { _value = T(val); }
-
-  virtual TensorType type() const override { return TensorTypeEnum<T>::value; }
-
+  void to_(const torch::TensorOptions & options) override;
+  void requires_grad_(bool req = true) override;
+  operator Tensor() const override;
+  void operator=(const Tensor & val) override;
+  TensorType type() const override;
   T & value() { return _value; }
 
 private:

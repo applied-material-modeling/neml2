@@ -26,8 +26,6 @@
 
 #include "neml2/tensors/user_tensors/UserTensorBase.h"
 
-#include "neml2/tensors/tensors.h"
-
 namespace neml2
 {
 /**
@@ -47,8 +45,9 @@ public:
    * @param options The options extracted from the input file.
    */
   LinspacePrimitiveTensor(const OptionSet & options);
-};
 
-#define LINSPACEPRIMITIVETENSOR_TYPEDEF(T) typedef LinspacePrimitiveTensor<T> Linspace##T
-FOR_ALL_PRIMITIVETENSOR(LINSPACEPRIMITIVETENSOR_TYPEDEF);
+private:
+  /// Helper to make the tensor given user input options
+  T make(const OptionSet & options) const;
+};
 } // namespace neml2

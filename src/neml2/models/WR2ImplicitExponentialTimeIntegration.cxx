@@ -66,7 +66,7 @@ WR2ImplicitExponentialTimeIntegration::WR2ImplicitExponentialTimeIntegration(
                : declare_input_variable<WR2>("rate")),
     _t(declare_input_variable<Scalar>("time")),
     _tn(declare_input_variable<Scalar>(_t.name().old())),
-    _r(declare_output_variable<Vec>(_s.name().remount("residual")))
+    _r(declare_output_variable<Rot>(_s.name().remount("residual")))
 {
 }
 
@@ -93,7 +93,7 @@ WR2ImplicitExponentialTimeIntegration::set_value(bool out, bool dout_din, bool d
   if (dout_din)
   {
     const auto de = (_s_dot * dt).dexp();
-    _r.d(_s) = R2::identity(options());
+    _r.d(_s) = R2::identity(_s.options());
     _r.d(_s_dot) = -Rot(_sn).drotate(inc) * de * dt;
 
     if (currently_solving_nonlinear_system())

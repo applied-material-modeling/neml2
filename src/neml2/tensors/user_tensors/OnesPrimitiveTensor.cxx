@@ -23,11 +23,15 @@
 // THE SOFTWARE.
 
 #include "neml2/tensors/user_tensors/OnesPrimitiveTensor.h"
+#include "neml2/tensors/tensors.h"
 
 namespace neml2
 {
-#define ONESPRIMITIVETENSOR_REGISTER(T) register_NEML2_object_alias(Ones##T, "Ones" #T)
+#define ONESPRIMITIVETENSOR_REGISTER(T)                                                            \
+  using Ones##T = OnesPrimitiveTensor<T>;                                                          \
+  register_NEML2_object_alias(Ones##T, "Ones" #T)
 FOR_ALL_PRIMITIVETENSOR(ONESPRIMITIVETENSOR_REGISTER);
+#undef ONESPRIMITIVETENSOR_REGISTER
 
 template <typename T>
 OptionSet
@@ -52,7 +56,4 @@ OnesPrimitiveTensor<T>::OnesPrimitiveTensor(const OptionSet & options)
     UserTensorBase(options)
 {
 }
-
-#define ONESPRIMITIVETENSOR_INSTANTIATE_PRIMITIVETENSOR(T) template class OnesPrimitiveTensor<T>
-FOR_ALL_PRIMITIVETENSOR(ONESPRIMITIVETENSOR_INSTANTIATE_PRIMITIVETENSOR);
 } // namespace neml2

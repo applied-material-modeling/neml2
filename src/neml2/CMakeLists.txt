@@ -9,13 +9,9 @@ if(NEML2_CLANG_TIDY)
   find_program(NEML2_CLANG_TIDY_EXE NAMES "${NEML2_CLANG_TIDY_PATH}")
 
   if(NEML2_CLANG_TIDY_EXE)
-    # if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     set(CLANG_TIDY_COMMAND "${NEML2_CLANG_TIDY_EXE}")
     set_target_properties(neml2 PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND}")
 
-  # else()
-  # message(FATAL_ERROR "NEML2_CLANG_TIDY is incompatible with the compiler ${CMAKE_CXX_COMPILER_ID}")
-  # endif()
   else()
     message(FATAL_ERROR "NEML2_CLANG_TIDY is enabled but clang-tidy executable cannot be found.")
   endif()
@@ -43,6 +39,14 @@ install(TARGETS neml2 COMPONENT Development FILE_SET HEADERS)
 target_include_directories(neml2 SYSTEM PUBLIC ${Torch_INCLUDE_DIRECTORIES})
 target_link_directories(neml2 PUBLIC ${Torch_LINK_DIRECTORIES})
 target_link_libraries(neml2 PUBLIC ${Torch_LIBRARIES})
+
+# gperftools
+option(NEML2_CPU_PROFILER "Link against gperftools libprofiler to enable CPU profiling" OFF)
+
+if(NEML2_CPU_PROFILER)
+  FetchContent_MakeAvailable(gperftools)
+  target_link_libraries(neml2 PUBLIC profiler)
+endif()
 
 # HIT (WASP) for parsing
 message(STATUS "Configuring HIT")

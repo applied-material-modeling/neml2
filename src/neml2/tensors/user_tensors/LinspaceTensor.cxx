@@ -23,7 +23,6 @@
 // THE SOFTWARE.
 
 #include "neml2/tensors/user_tensors/LinspaceTensor.h"
-#include "neml2/base/CrossRef.h"
 
 namespace neml2
 {
@@ -59,15 +58,29 @@ LinspaceTensor::expected_options()
 }
 
 LinspaceTensor::LinspaceTensor(const OptionSet & options)
-  : Tensor(Tensor::linspace(options.get<CrossRef<Tensor>>("start"),
-                            options.get<CrossRef<Tensor>>("end"),
-                            options.get<Size>("nstep"),
-                            options.get<Size>("dim"),
-                            options.get<Size>("batch_dim"))),
+  : Tensor(make(options)),
     UserTensorBase(options)
 {
-  auto bs = options.get<TensorShape>("batch_expand");
-  if (!bs.empty())
-    this->batch_expand(bs);
+}
+
+Tensor
+LinspaceTensor::make(const OptionSet & options) const
+{
+  auto t = Tensor::linspace(options.get<CrossRef<Tensor>>("start"),
+                            options.get<CrossRef<Tensor>>("end"),
+                            options.get<Size>("nstep"),
+                            options.get<Size>("dim"));
+
+  // Change batch dimension if requested
+  auto B = options.get<Size>("batch_dim");
+  if (B >= 0)
+    t = Tensor(t, B);
+
+  // Expand if requested
+  auto S = options.get<TensorShape>("batch_expand");
+  if (!S.empty())
+    t = t.batch_expand(S);
+
+  return t;
 }
 } // namespace neml2

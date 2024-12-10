@@ -63,12 +63,6 @@ TEST_CASE("HITParser", "[base]")
         REQUIRE(settings.get<std::string>("parameter_name_separator") == "::");
       }
 
-      SECTION("default values")
-      {
-        REQUIRE(options.get<bool>("_use_AD_first_derivative") == false);
-        REQUIRE(options.get<bool>("_use_AD_second_derivative") == false);
-      }
-
       SECTION("booleans")
       {
         REQUIRE(options.get<bool>("bool") == true);

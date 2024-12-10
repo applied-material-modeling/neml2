@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/tensors/user_tensors/FillR2.h"
+#include "neml2/tensors/Scalar.h"
 
 namespace neml2
 {

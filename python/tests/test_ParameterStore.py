@@ -32,9 +32,6 @@ def test_named_parameters():
     pwd = Path(__file__).parent
     model = neml2.reload_model(pwd / "test_ParameterStore.i", "model")
 
-    # Setup variable views with batch shape (5,2)
-    model.reinit([5, 2])
-
     # This model has two parameters
     E = model.named_parameters()["E"]
     nu = model.named_parameters()["nu"]
@@ -48,48 +45,27 @@ def test_get_parameter():
     pwd = Path(__file__).parent
     model = neml2.reload_model(pwd / "test_ParameterStore.i", "model")
 
-    # Setup variable views with batch shape (5,2)
-    model.reinit([5, 2])
-
-    # This model has two parameters
-    E = model.get_parameter("E")
-    nu = model.get_parameter("nu")
-
     # Parameters should have the correct value
-    assert torch.allclose(E.torch(), torch.tensor(100.0, dtype=torch.float64))
-    assert torch.allclose(nu.torch(), torch.tensor(0.3, dtype=torch.float64))
+    assert torch.allclose(model.E.torch(), torch.tensor(100.0, dtype=torch.float64))
+    assert torch.allclose(model.nu.torch(), torch.tensor(0.3, dtype=torch.float64))
 
 
 def test_set_parameter():
     pwd = Path(__file__).parent
     model = neml2.reload_model(pwd / "test_ParameterStore.i", "model")
 
-    # Setup variable views with batch shape (5,2)
-    model.reinit([5, 2])
-
     # This model has two parameters
-    E = model.get_parameter("E")
-    nu = model.get_parameter("nu")
-
-    # This model has two parameters
-    model.set_parameter("E", neml2.Scalar.full(200.0))
-    model.set_parameter("nu", neml2.Scalar.full(0.2))
+    model.E = neml2.Scalar.full(200.0)
+    model.nu = neml2.Scalar.full(0.2)
 
     # Parameters should have the correct value
-    assert torch.allclose(E.torch(), torch.tensor(200.0, dtype=torch.float64))
-    assert torch.allclose(nu.torch(), torch.tensor(0.2, dtype=torch.float64))
+    assert torch.allclose(model.E.torch(), torch.tensor(200.0, dtype=torch.float64))
+    assert torch.allclose(model.nu.torch(), torch.tensor(0.2, dtype=torch.float64))
 
 
 def test_set_parameters():
     pwd = Path(__file__).parent
     model = neml2.reload_model(pwd / "test_ParameterStore.i", "model")
-
-    # Setup variable views with batch shape (5,2)
-    model.reinit([5, 2])
-
-    # This model has two parameters
-    E = model.get_parameter("E")
-    nu = model.get_parameter("nu")
 
     # This model has two parameters
     model.set_parameters(
@@ -100,44 +76,5 @@ def test_set_parameters():
     )
 
     # Parameters should have the correct value
-    assert torch.allclose(E.torch(), torch.tensor(200.0, dtype=torch.float64))
-    assert torch.allclose(nu.torch(), torch.tensor(0.2, dtype=torch.float64))
-
-
-def test_parameter_derivative():
-    pwd = Path(__file__).parent
-    model = neml2.reload_model(pwd / "test_ParameterStore.i", "model")
-
-    # Strain of batch shape (5,2)
-    e = neml2.SR2(torch.tensor([0.1, 0.2, 0.05, 0, 0, 0]).expand(5, 2, 6))
-
-    # The input vector only contains strain
-    x = neml2.LabeledVector(neml2.Tensor(e), [model.input_axis()])
-
-    # Setup variable views
-    model.reinit(x.batch.shape)
-
-    # This model has two parameters
-    E = model.named_parameters()["E"]
-    nu = model.named_parameters()["nu"]
-
-    # Model parameters do not require grad by default
-    assert not E.requires_grad
-    assert not nu.requires_grad
-
-    # Set parameters to requires_grad=True
-    E.requires_grad_(True)
-    nu.requires_grad_(True)
-    assert E.requires_grad
-    assert nu.requires_grad
-
-    # Forward
-    y = model.value(x)
-    assert y.torch().requires_grad
-
-    # dy/dp * x
-    y.torch().backward(gradient=x.torch())
-    assert torch.allclose(E.grad, torch.tensor(1.1105769561746945, dtype=torch.float64))
-    assert torch.allclose(
-        nu.grad, torch.tensor(503.51332861533353, dtype=torch.float64)
-    )
+    assert torch.allclose(model.E.torch(), torch.tensor(200.0, dtype=torch.float64))
+    assert torch.allclose(model.nu.torch(), torch.tensor(0.2, dtype=torch.float64))

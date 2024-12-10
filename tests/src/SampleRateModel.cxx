@@ -27,25 +27,31 @@
 
 namespace neml2
 {
-register_NEML2_object(SampleRateModel);
+using SampleRateModel = SampleRateModelTmpl<false>;
+using ADSampleRateModel = SampleRateModelTmpl<true>;
 
-SampleRateModel::SampleRateModel(const OptionSet & options)
+register_NEML2_object(SampleRateModel);
+register_NEML2_object(ADSampleRateModel);
+
+template <bool AD>
+SampleRateModelTmpl<AD>::SampleRateModelTmpl(const OptionSet & options)
   : Model(options),
-    foo(declare_input_variable<Scalar>("state", "foo")),
-    bar(declare_input_variable<Scalar>("state", "bar")),
-    baz(declare_input_variable<SR2>("state", "baz")),
-    T(declare_input_variable<Scalar>("forces", "temperature")),
-    foo_dot(declare_output_variable<Scalar>("state", "foo_rate")),
-    bar_dot(declare_output_variable<Scalar>("state", "bar_rate")),
-    baz_dot(declare_output_variable<SR2>("state", "baz_rate")),
+    foo(declare_input_variable<Scalar>(VariableName{"state", "foo"})),
+    bar(declare_input_variable<Scalar>(VariableName{"state", "bar"})),
+    baz(declare_input_variable<SR2>(VariableName{"state", "baz"})),
+    T(declare_input_variable<Scalar>(VariableName{"forces", "temperature"})),
+    foo_dot(declare_output_variable<Scalar>(VariableName{"state", "foo_rate"})),
+    bar_dot(declare_output_variable<Scalar>(VariableName{"state", "bar_rate"})),
+    baz_dot(declare_output_variable<SR2>(VariableName{"state", "baz_rate"})),
     _a(declare_parameter<Scalar>("a", Scalar(-0.01, default_tensor_options()))),
     _b(declare_parameter<Scalar>("b", Scalar(-0.5, default_tensor_options()))),
     _c(declare_parameter<Scalar>("c", Scalar(-0.9, default_tensor_options())))
 {
 }
 
+template <>
 void
-SampleRateModel::set_value(bool out, bool dout_din, bool d2out_din2)
+SampleRateModelTmpl<false>::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
 
@@ -58,7 +64,7 @@ SampleRateModel::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (dout_din)
   {
-    auto I = SR2::identity(options());
+    auto I = SR2::identity(foo.options());
 
     foo_dot.d(foo) = 2 * foo * T;
     foo_dot.d(bar) = T;
@@ -70,7 +76,7 @@ SampleRateModel::set_value(bool out, bool dout_din, bool d2out_din2)
 
     baz_dot.d(foo) = baz * (T - 3);
     baz_dot.d(bar) = baz * (T - 3);
-    baz_dot.d(baz) = (foo + bar) * (T - 3) * SR2::identity_map(options());
+    baz_dot.d(baz) = (foo + bar) * (T - 3) * SR2::identity_map(foo.options());
 
     if (!currently_solving_nonlinear_system())
     {
@@ -78,6 +84,38 @@ SampleRateModel::set_value(bool out, bool dout_din, bool d2out_din2)
       bar_dot.d(T) = _c;
       baz_dot.d(T) = (foo + bar) * baz;
     }
+  }
+}
+
+template <>
+void
+SampleRateModelTmpl<true>::set_value(bool out, bool /*dout_din*/, bool /*d2out_din2*/)
+{
+  if (out)
+  {
+    foo_dot = (foo * foo + bar) * T + SR2(baz).tr();
+    bar_dot = _a * bar + _b * foo + _c * T + SR2(baz).tr();
+    baz_dot = (foo + bar) * baz * (T - 3);
+  }
+}
+
+template <bool AD>
+void
+SampleRateModelTmpl<AD>::request_AD()
+{
+  if constexpr (AD)
+  {
+    std::vector<const VariableBase *> inputs = {&foo, &bar, &baz, &T};
+
+    // First derivatives
+    foo_dot.request_AD(inputs);
+    bar_dot.request_AD(inputs);
+    baz_dot.request_AD(inputs);
+
+    // Second derivatives
+    foo_dot.request_AD(inputs, inputs);
+    bar_dot.request_AD(inputs, inputs);
+    baz_dot.request_AD(inputs, inputs);
   }
 }
 }

@@ -23,7 +23,10 @@
 // THE SOFTWARE.
 
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
+#include "python/neml2/indexing.h"
+#include "python/neml2/types.h"
 #include "neml2/tensors/tensors.h"
 #include "neml2/misc/math.h"
 
@@ -41,18 +44,31 @@ PYBIND11_MODULE(math, m)
   m.def("bmm", &math::bmm);
   m.def("bmv", &math::bmv);
   m.def("bvv", &math::bvv);
+  m.def("base_cat", &math::base_cat, py::arg("values"), py::arg("dim") = 0);
+  m.def("base_stack", &math::base_stack, py::arg("values"), py::arg("dim") = 0);
+  m.def("base_sum", &math::base_sum, py::arg("values"), py::arg("dim") = 0);
+  m.def("base_mean", &math::base_mean, py::arg("values"), py::arg("dim") = 0);
 
   // Templated methods
   // These methods are special because the argument could be anything derived from TensorBase,
   // so we need to bind every possible instantiation.
 #define MATH_DEF_TENSORBASE(T)                                                                     \
-  m.def("sign", &math::sign<T>)                                                                    \
+  m.def("batch_cat", &math::batch_cat<T>, py::arg("values"), py::arg("dim") = 0)                   \
+      .def("batch_stack", &math::batch_stack<T>, py::arg("values"), py::arg("dim") = 0)            \
+      .def("batch_sum", &math::batch_sum<T>, py::arg("values"), py::arg("dim") = 0)                \
+      .def("batch_mean", &math::batch_mean<T>, py::arg("values"), py::arg("dim") = 0)              \
+      .def("sign", &math::sign<T>)                                                                 \
+      .def("cosh", &math::cosh<T>)                                                                 \
+      .def("sinh", &math::sinh<T>)                                                                 \
+      .def("tanh", &math::tanh<T>)                                                                 \
+      .def("where", &math::where<T>)                                                               \
       .def("heaviside", &math::heaviside<T>)                                                       \
       .def("macaulay", &math::macaulay<T>)                                                         \
       .def("dmacaulay", &math::dmacaulay<T>)                                                       \
       .def("sqrt", &math::sqrt<T>)                                                                 \
       .def("exp", &math::exp<T>)                                                                   \
-      .def("abs", &math::abs<T>)
+      .def("abs", &math::abs<T>)                                                                   \
+      .def("log", &math::log<T>)
 
   FOR_ALL_TENSORBASE(MATH_DEF_TENSORBASE);
 }

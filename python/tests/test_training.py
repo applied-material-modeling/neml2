@@ -31,26 +31,25 @@ import neml2
 def test_parameter_gradient():
     pwd = Path(__file__).parent
     model = neml2.reload_model(pwd / "test_training.i", "model")
+    xassembler = neml2.VectorAssembler(model.input_axis())
+    yassembler = neml2.VectorAssembler(model.output_axis())
 
     # Initialize the model with the correct batch shape
     B = (2, 5)
-    model.reinit(batch_shape=B, deriv_order=1)
 
     # Define the input
-    ndof = 26
+    ndof = model.input_axis().size()
     x = torch.linspace(0, 0.2, ndof).expand(*B, -1)
-    x = neml2.LabeledVector(neml2.Tensor(x, len(B)), [model.input_axis()])
+    x = neml2.Tensor(x, len(B))
 
     # Say I want to get the parameter gradient on the flow viscosity
     p = model.named_parameters()["flow_rate.eta"]
     p.requires_grad_(True)
 
-    # Evaluate the model
-    y = model.value(x)
+    # Evaluate the model and the loss function
+    y = model.value(xassembler.disassemble(x))
+    f = torch.norm(yassembler.assemble(y).torch())
 
-    # Evaluate the loss function
-    f = torch.norm(y.torch())
-
-    # Get the parameter gradient
+    # # Get the parameter gradient
     f.backward()
     assert math.isclose(p.grad.item(), 0.023917, rel_tol=1e-6, abs_tol=1e-6)

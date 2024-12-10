@@ -68,12 +68,12 @@
 
 [Drivers]
   [driver]
-    type = SolidMechanicsDriver
+    type = SDTSolidMechanicsDriver
     model = 'model'
-    times = 'times'
-    prescribed_strains = 'strains'
+    prescribed_time = 'times'
+    prescribed_strain = 'strains'
     save_as = 'result.pt'
-    prescribed_temperatures = 'temperatures'
+    prescribed_temperature = 'temperatures'
   []
   [regression]
     type = TransientRegression

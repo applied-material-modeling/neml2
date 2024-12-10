@@ -24,64 +24,33 @@
 
 #pragma once
 
-#include "neml2/drivers/TransientDriver.h"
-
-#include "neml2/tensors/WR2.h"
+#include "neml2/models/Model.h"
 
 namespace neml2
 {
-/**
- * @brief The transient driver specialized for solid mechanics problems.
- *
- */
-class LargeDeformationIncrementalSolidMechanicsDriver : public TransientDriver
+namespace crystallography
+{
+class CrystalGeometry;
+}
+
+template <typename T>
+class CrystalMean : public Model
 {
 public:
   static OptionSet expected_options();
 
-  /**
-   * @brief Construct a new LargeDeformationIncrementalSolidMechanicsDriver object
-   *
-   * @param options The options extracted from the input file
-   */
-  LargeDeformationIncrementalSolidMechanicsDriver(const OptionSet & options);
-
-  void diagnose(std::vector<Diagnosis> &) const override;
+  CrystalMean(const OptionSet & options);
 
 protected:
-  virtual void update_forces() override;
+  void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  /**
-   * @brief The control method to drive the constitutive update.
-   *
-   * STRAIN: Use strain control to drive the update.
-   * STRESS: Use stress control to drive the update.
-   */
-  std::string _control;
+  /// Crystal geometry class with slip geometry
+  const crystallography::CrystalGeometry & _crystal_geometry;
 
-  /**
-   * The value of the driving force, depending on `_control` this is either the prescribed strain or
-   * the prescribed stress.
-   */
-  SR2 _driving_force;
+  /// Original variable (with list dimensions)
+  const Variable<T> & _from;
 
-  /**
-   * The name of the driving force, depending on `_control` this is either the prescribed strain or
-   * the prescribed stress.
-   */
-  VariableName _driving_force_name;
-
-  /**
-   * The name of the total vorticity
-   */
-  VariableName _vorticity_name;
-
-  /// Whether vorticity is prescribed
-  const bool _vorticity_prescribed;
-
-  /**
-   * The value of the (total) vorticity
-   */
-  WR2 _vorticity;
+  /// Reduced variable (without list dimensions)
+  Variable<T> & _to;
 };
-}
+} // namespace neml2

@@ -31,23 +31,31 @@ namespace neml2
 /**
  * @brief The transient driver specialized for solid mechanics problems.
  *
+ * Derived classes should implement the `update_forces` method to update the driving forces based on
+ * the assumptions on kinematics, i.e., small vs large deformation, incremental vs total etc.
+ *
  */
 class SolidMechanicsDriver : public TransientDriver
 {
 public:
   static OptionSet expected_options();
 
-  /**
-   * @brief Construct a new SolidMechanicsDriver object
-   *
-   * @param options The options extracted from the input file
-   */
   SolidMechanicsDriver(const OptionSet & options);
+
+  void setup() override;
 
   void diagnose(std::vector<Diagnosis> &) const override;
 
 protected:
-  virtual void update_forces() override;
+  void update_forces() override;
+
+  ///@{
+  /// Control-specific initialization
+  virtual void init_strain_control(const OptionSet &) = 0;
+  virtual void init_stress_control(const OptionSet &) = 0;
+  virtual void init_mixed_control(const OptionSet &);
+  virtual void init_temperature_control(const OptionSet &);
+  ///@}
 
   /**
    * @brief The control method to drive the constitutive update.
@@ -56,33 +64,29 @@ protected:
    * STRESS: Use stress control to drive the update.
    * MIXED: Use mixed stress/strain control with signal provided by _control_name
    */
-  const std::string _control;
+  const EnumSelection _control;
 
-  /**
-   * The value of the driving force, depending on `_control` this is either the prescribed strain or
-   * the prescribed stress.
-   */
-  SR2 _driving_force;
-
-  /**
-   * The name of the driving force, depending on `_control` this is either the prescribed strain or
-   * the prescribed stress.
-   */
+  ///@{
+  /// The name of the driving force
   VariableName _driving_force_name;
+  /// The value of the driving force
+  SR2 _driving_force;
+  ///@}
 
+  ///@{
   /// Name of the control signal for mixed stress/strain control
-  const VariableName _control_name;
+  VariableName _mixed_control_name;
+  /// Actual control signal, when used for control == "MIXED"
+  SR2 _mixed_control;
+  ///@}
 
-  /// Name of the temperature variable
-  const VariableName _temperature_name;
-
+  ///@{
   /// Whether temperature is prescribed
   const bool _temperature_prescribed;
-
+  /// Name of the temperature variable
+  VariableName _temperature_name;
   /// Temperature
   Scalar _temperature;
-
-  /// Actual control signal, when used for control == "MIXED"
-  SR2 _control_signal;
+  ///@}
 };
 }

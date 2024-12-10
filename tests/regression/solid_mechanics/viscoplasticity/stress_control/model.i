@@ -45,11 +45,11 @@
 
 [Drivers]
   [driver]
-    type = SolidMechanicsDriver
+    type = SDTSolidMechanicsDriver
     model = 'model'
-    times = 'times'
+    prescribed_time = 'times'
     control = 'STRESS'
-    prescribed_stresses = 'stresses'
+    prescribed_stress = 'stresses'
     predictor = LINEAR_EXTRAPOLATION
     save_as = 'result.pt'
   []

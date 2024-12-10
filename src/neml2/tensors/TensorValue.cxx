@@ -22,33 +22,46 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-
-#include "neml2/tensors/LabeledTensor.h"
+#include "neml2/tensors/TensorValue.h"
+#include "neml2/tensors/tensors.h"
 
 namespace neml2
 {
-class LabeledVector;
-
-/**
- * @brief A single-batched, logically 2D LabeledTensor.
- *
- */
-class LabeledMatrix : public LabeledTensor<LabeledMatrix, 2>
+template <typename T>
+void
+TensorValue<T>::to_(const torch::TensorOptions & options)
 {
-public:
-  using LabeledTensor<LabeledMatrix, 2>::LabeledTensor;
+  _value = _value.to(options);
+}
 
-  /// Create a labeled identity tensor
-  static LabeledMatrix identity(TensorShapeRef batch_size,
-                                const LabeledAxis & axis,
-                                const torch::TensorOptions & options = default_tensor_options());
+template <typename T>
+void
+TensorValue<T>::requires_grad_(bool req)
+{
+  _value.requires_grad_(req);
+}
 
-  /// Fill another matrix into this matrix.
-  /// The item set of the other matrix must be a subset of this matrix's item set.
-  void fill(const LabeledMatrix & other, bool recursive = true);
+template <typename T>
+TensorValue<T>::operator Tensor() const
+{
+  return _value;
+}
 
-  /// Chain rule product of two derivatives
-  LabeledMatrix chain(const LabeledMatrix & other) const;
-};
+template <typename T>
+void
+TensorValue<T>::operator=(const Tensor & val)
+{
+  _value = T(val);
+}
+
+template <typename T>
+TensorType
+TensorValue<T>::type() const
+{
+  return TensorTypeEnum<T>::value;
+}
+
+#define INSTANTIATE_TENSORVALUE(T) template class TensorValue<T>
+FOR_ALL_TENSORBASE(INSTANTIATE_TENSORVALUE);
+#undef INSTANTIATE_TENSORVALUE
 } // namespace neml2

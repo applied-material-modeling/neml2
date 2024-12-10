@@ -22,20 +22,22 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <pybind11/pybind11.h>
+#pragma once
 
-#include "python/neml2/tensors/LabeledTensor.h"
-#include "neml2/tensors/LabeledMatrix.h"
+#include "neml2/drivers/solid_mechanics/SolidMechanicsDriver.h"
 
-namespace py = pybind11;
-using namespace neml2;
-
-void
-def_LabeledMatrix(py::module_ & m)
+namespace neml2
 {
-  auto c = py::class_<LabeledMatrix>(m, "LabeledMatrix");
+/// Small deformation total solid mechanics driver
+class SDTSolidMechanicsDriver : public SolidMechanicsDriver
+{
+public:
+  static OptionSet expected_options();
 
-  def_LabeledBatchView<LabeledMatrix>(m, "LabeledMatrixBatchView");
-  def_LabeledBaseView<LabeledMatrix>(m, "LabeledMatrixBaseView");
-  def_LabeledTensor<LabeledMatrix, 2>(c);
+  SDTSolidMechanicsDriver(const OptionSet & options);
+
+protected:
+  void init_strain_control(const OptionSet & options) override;
+  void init_stress_control(const OptionSet & options) override;
+};
 }

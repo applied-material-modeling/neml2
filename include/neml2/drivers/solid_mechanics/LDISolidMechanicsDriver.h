@@ -24,28 +24,49 @@
 
 #pragma once
 
-#include "neml2/tensors/LabeledTensor.h"
+#include "neml2/drivers/solid_mechanics/SolidMechanicsDriver.h"
+
+#include "neml2/tensors/WR2.h"
 
 namespace neml2
 {
-class LabeledMatrix;
-
-/**
- * @brief A single-batched, logically 3D LabeledTensor.
- *
- */
-class LabeledTensor3D : public LabeledTensor<LabeledTensor3D, 3>
+/// Large deformation incremental solid mechanics driver
+class LDISolidMechanicsDriver : public SolidMechanicsDriver
 {
 public:
-  using LabeledTensor<LabeledTensor3D, 3>::LabeledTensor;
+  static OptionSet expected_options();
 
-  /// Fill another tensor into this tensor.
-  /// The item set of the other tensor must be a subset of this tensor's item set.
-  void fill(const LabeledTensor3D & other, bool recursive = true);
+  LDISolidMechanicsDriver(const OptionSet & options);
 
-  /// Second order chain rule product of two derivatives
-  LabeledTensor3D chain(const LabeledTensor3D & other,
-                        const LabeledMatrix & dself,
-                        const LabeledMatrix & dother) const;
+  void setup() override;
+
+  void diagnose(std::vector<Diagnosis> &) const override;
+
+protected:
+  void init_strain_control(const OptionSet & options) override;
+  void init_stress_control(const OptionSet & options) override;
+  virtual void init_vorticity_control(const OptionSet & options);
+
+  void update_forces() override;
+
+  void apply_predictor() override;
+
+  ///@{
+  /// Whether vorticity is prescribed
+  const bool _vorticity_prescribed;
+  /// The name of the total vorticity
+  VariableName _vorticity_name;
+  /// The value of the (total) vorticity
+  WR2 _vorticity;
+  ///@}
+
+  ///@{
+  /// Whether to perform the CP warmup
+  const bool _cp_warmup;
+  /// Scale value for initial cp warmup
+  const Real _cp_warmup_elastic_scale;
+  /// Name of the elastic strain variable for the CP warmup
+  const VariableName _cp_warmup_elastic_strain;
+  ///@}
 };
-} // namespace neml2
+}

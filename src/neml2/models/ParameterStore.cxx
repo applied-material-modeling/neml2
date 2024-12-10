@@ -25,21 +25,19 @@
 #include "neml2/models/ParameterStore.h"
 #include "neml2/models/NonlinearParameter.h"
 #include "neml2/tensors/macros.h"
-#include "neml2/tensors/Variable.h"
+#include "neml2/models/Variable.h"
 
 namespace neml2
 {
 ParameterStore::ParameterStore(const OptionSet & options, NEML2Object * object)
   : _object(object),
-    _options(options)
+    _object_options(options)
 {
 }
 
 void
 ParameterStore::send_parameters_to(const torch::TensorOptions & options)
 {
-  neml_assert(_object->host() == _object, "This method should only be called on the host model.");
-
   for (auto && [name, param] : _param_values)
     param.to_(options);
 }
@@ -142,14 +140,14 @@ ParameterStore::declare_parameter(const std::string & name,
                                   const std::string & input_option_name,
                                   bool allow_nonlinear)
 {
-  if (_options.contains<T>(input_option_name))
-    return declare_parameter(name, _options.get<T>(input_option_name));
+  if (_object_options.contains<T>(input_option_name))
+    return declare_parameter(name, _object_options.get<T>(input_option_name));
 
-  if (_options.contains<CrossRef<T>>(input_option_name))
+  if (_object_options.contains<CrossRef<T>>(input_option_name))
   {
     try
     {
-      return declare_parameter(name, T(_options.get<CrossRef<T>>(input_option_name)));
+      return declare_parameter(name, T(_object_options.get<CrossRef<T>>(input_option_name)));
     }
     catch (const NEMLException & e1)
     {
@@ -181,8 +179,7 @@ ParameterStore::declare_parameter(const std::string & name,
 
         OptionSet extra_opts;
         extra_opts.set<NEML2Object *>("_host") = model->host();
-        extra_opts.set<bool>("_enable_AD") = model->input_options().get<bool>("_enable_AD");
-        auto pname = _options.get<CrossRef<T>>(input_option_name).raw();
+        auto pname = _object_options.get<CrossRef<T>>(input_option_name).raw();
         auto & nl_param = Factory::get_object<NonlinearParameter<T>>(
             "Models", pname, extra_opts, /*force_create=*/false);
         model->template declare_input_variable<T>(VariableName(pname).prepend("parameters"));

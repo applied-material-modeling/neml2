@@ -43,6 +43,6 @@ protected:
   const crystallography::CrystalGeometry & _crystal_geometry;
 
   /// Slip strengths
-  Variable<Tensor> & _tau;
+  Variable<Scalar> & _tau;
 };
 } // namespace neml2

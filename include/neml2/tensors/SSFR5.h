@@ -29,10 +29,10 @@
 namespace neml2
 {
 /**
- * @brief The logical fifth order tensor with minor symmetry in the 1st and 2nd dimensions as well
+ * @brief The fifth order tensor with minor symmetry in the 1st and 2nd dimensions as well
  * as in the 3rd and 4th dimensions.
  *
- * Mandel notation is used, and so the logical storage space is (6, 6, 3).
+ * Mandel notation is used, and so the storage space is (6, 6, 3).
  */
 class SSFR5 : public PrimitiveTensor<SSFR5, 6, 6, 3>
 {

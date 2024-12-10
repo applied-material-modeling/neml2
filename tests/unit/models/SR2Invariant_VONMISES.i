@@ -14,12 +14,11 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    batch_shape = '(10)'
     input_symr2_names = 'state/internal/O'
     input_symr2_values = 'foo'
     output_scalar_names = 'state/internal/VM'
     output_scalar_values = '15.2970585408'
-    derivatives_abs_tol = 1e-6
+    derivative_abs_tol = 1e-6
     check_second_derivatives = true
   []
 []

@@ -25,7 +25,6 @@
 #include <pybind11/pybind11.h>
 
 #include "neml2/tensors/macros.h"
-// #include "neml2/tensors/LabeledAxisAccessor.h"
 
 #include "python/neml2/tensors/TensorBase.h"
 #include "python/neml2/tensors/PrimitiveTensor.h"
@@ -38,11 +37,6 @@ using namespace neml2;
 // Forward declarations
 #define TENSOR_CUSTOM_DEF_FWD(T) void def_##T(py::class_<T> &)
 FOR_ALL_TENSORBASE(TENSOR_CUSTOM_DEF_FWD);
-
-void def_LabeledAxisAccessor(py::module_ & m);
-void def_LabeledAxis(py::module_ & m);
-void def_LabeledVector(py::module_ & m);
-void def_LabeledMatrix(py::module_ & m);
 
 PYBIND11_MODULE(tensors, m)
 {
@@ -89,10 +83,4 @@ PYBIND11_MODULE(tensors, m)
   // Tensor specific methods
 #define TENSOR_CUSTOM_DEF(T) def_##T(c_##T)
   FOR_ALL_TENSORBASE(TENSOR_CUSTOM_DEF);
-
-  // Labeled tensors
-  def_LabeledAxisAccessor(m);
-  def_LabeledAxis(m);
-  def_LabeledVector(m);
-  def_LabeledMatrix(m);
 }

@@ -8,6 +8,7 @@ libneml2:
       settings:
         NEML2_TESTS: ON
         NEML2_RUNNER: OFF
+        NEML2_CPU_PROFILER: OFF
         NEML2_PYBIND: OFF
         NEML2_DOC: OFF
         NEML2_CLANG_TIDY: OFF
@@ -18,6 +19,7 @@ libneml2:
       settings:
         NEML2_TESTS: OFF
         NEML2_RUNNER: OFF
+        NEML2_CPU_PROFILER: OFF
         NEML2_PYBIND: OFF
         NEML2_DOC: OFF
         NEML2_CLANG_TIDY: ON
@@ -28,6 +30,7 @@ libneml2:
       settings:
         NEML2_TESTS: ON
         NEML2_RUNNER: OFF
+        NEML2_CPU_PROFILER: OFF
         NEML2_PYBIND: ON
         NEML2_DOC: OFF
         NEML2_CLANG_TIDY: OFF
@@ -36,9 +39,9 @@ libneml2:
       long: Build the runner for benchmarking and profiling
       buildType: Release
       settings:
-        NEML2_TESTS: OFF
+        NEML2_TESTS: ON
         NEML2_RUNNER: ON
-        NEML2_RUNNER_AS_PROFILER: ON
+        NEML2_CPU_PROFILER: ON
         NEML2_PYBIND: OFF
         NEML2_DOC: OFF
         NEML2_CLANG_TIDY: OFF
@@ -52,6 +55,7 @@ libneml2:
         NEML2_REGRESSION: OFF
         NEML2_VERIFICATION: OFF
         NEML2_RUNNER: OFF
+        NEML2_CPU_PROFILER: OFF
         NEML2_PYBIND: OFF
         NEML2_DOC: OFF
         NEML2_CLANG_TIDY: OFF
@@ -62,6 +66,7 @@ libneml2:
       settings:
         NEML2_TESTS: OFF
         NEML2_RUNNER: OFF
+        NEML2_CPU_PROFILER: OFF
         NEML2_PYBIND: ON
         NEML2_DOC: ON
         NEML2_CLANG_TIDY: OFF

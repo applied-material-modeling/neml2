@@ -97,13 +97,13 @@
 
 [Drivers]
   [driver]
-    type = SolidMechanicsDriver
+    type = SDTSolidMechanicsDriver
     model = 'model'
-    times = 'times'
-    prescribed_mixed_conditions = 'conditions'
-    prescribed_control = 'control'
+    prescribed_time = 'times'
+    prescribed_mixed_driving_force = 'conditions'
+    prescribed_mixed_control_signal = 'control'
     save_as = 'result.pt'
-    prescribed_temperatures = 'temperatures'
+    prescribed_temperature = 'temperatures'
     control = 'MIXED'
   []
   [regression]

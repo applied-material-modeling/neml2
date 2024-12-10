@@ -39,24 +39,6 @@ namespace neml2
 class OptionSet;
 class LabeledAxisAccessor;
 
-/**
- * @brief Role in a function definition
- *
- * NONE is the default value,
- * INPUT stands for input variable,
- * OUTPUT stands for output variable,
- * PARAMETER stands for parameter (could request AD),
- * BUFFER stands for buffer.
- */
-enum class FType : int8_t
-{
-  NONE,
-  INPUT,
-  OUTPUT,
-  PARAMETER,
-  BUFFER
-};
-
 namespace details
 {
 /**
@@ -74,6 +56,9 @@ template <typename P>
 void _print_helper(std::ostream & os, const P *);
 template <typename P>
 void _print_helper(std::ostream & os, const std::vector<P> *);
+/// The evil vector of bool :/
+template <>
+void _print_helper(std::ostream & os, const std::vector<bool> *);
 template <typename P>
 void _print_helper(std::ostream & os, const std::vector<std::vector<P>> *);
 /// Specialization so that we don't print out unprintable characters
@@ -198,6 +183,12 @@ public:
     /// A writable reference to the option's suppression status
     bool & suppressed() { return _metadata.suppressed; }
 
+    /// A readonly reference to the option's user_specified status
+    const bool & user_specified() const { return _metadata.user_specified; }
+
+    /// A writable reference to the option's user_specified status
+    bool & user_specified() { return _metadata.user_specified; }
+
     /**
      * Prints the option value to the specified stream.
      * Must be reimplemented in derived classes.
@@ -270,11 +261,21 @@ public:
        * accept it, or print a warning and ignores it.
        */
       bool suppressed = false;
+      /**
+       * @brief Whether this option has been specified by the user from the input file
+       *
+       * In occasions, options are optional. This field is used to determine whether the user has
+       * specified the option. If the user has not specified the option, the default (sometimes
+       * undefined) value is used. It is therefore important to check this flag before retrieving
+       * optional options.
+       */
+      bool user_specified = false;
 
       bool operator==(const Metadata & other) const
       {
         return name == other.name && type == other.type && ftype == other.ftype &&
-               doc == other.doc && suppressed == other.suppressed;
+               doc == other.doc && suppressed == other.suppressed &&
+               user_specified == other.user_specified;
       }
 
       bool operator!=(const Metadata & other) const { return !(*this == other); }
@@ -570,13 +571,20 @@ _print_helper(std::ostream & os, const std::vector<P> * option)
     os << p << " ";
 }
 
+template <>
+inline void
+_print_helper(std::ostream & os, const std::vector<bool> * option)
+{
+  for (const auto p : *option)
+    os << static_cast<bool>(p) << " ";
+}
+
 template <typename P>
 void
 _print_helper(std::ostream & os, const std::vector<std::vector<P>> * option)
 {
   for (const auto & pv : *option)
-    for (const auto & p : pv)
-      os << p << " ";
+    _print_helper(os, &pv);
 }
 } // namespace details
 // LCOV_EXCL_STOP

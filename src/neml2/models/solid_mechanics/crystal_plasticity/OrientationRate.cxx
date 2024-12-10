@@ -81,7 +81,7 @@ OrientationRate::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (dout_din)
   {
-    const auto I = WWR4::identity(options());
+    const auto I = WWR4::identity(_w.options());
 
     if (_e.is_dependent())
       _R_dot.d(_e) = math::d_multiply_and_make_skew_d_second(SR2(_dp));

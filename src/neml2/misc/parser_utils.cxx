@@ -23,7 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/misc/parser_utils.h"
-#include "neml2/tensors/Variable.h"
+#include "neml2/models/Variable.h"
 
 namespace neml2
 {
@@ -40,6 +40,19 @@ operator>>(std::stringstream & in, torch::Tensor & /**/)
 {
   throw ParserException("Cannot parse torch::Tensor");
   return in;
+}
+
+std::string
+join(const std::vector<std::string> & strs, const std::string & delim)
+{
+  std::string result;
+  for (size_t i = 0; i < strs.size(); i++)
+  {
+    result += strs[i];
+    if (i < strs.size() - 1)
+      result += delim;
+  }
+  return result;
 }
 
 std::vector<std::string>

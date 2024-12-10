@@ -90,7 +90,7 @@ SSR4::isotropic_E_nu(const Scalar & E, const Scalar & nu)
                             torch::stack({zero, zero, zero, zero, C4, zero}, -1),
                             torch::stack({zero, zero, zero, zero, zero, C4}, -1)},
                            -1),
-              E.batch_dim());
+              E.batch_sizes());
 }
 
 SSR4

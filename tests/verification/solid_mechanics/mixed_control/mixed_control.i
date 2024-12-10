@@ -1,21 +1,18 @@
 [Tensors]
   [times]
-    type = VTestTimeSeries
+    type = ScalarVTestTimeSeries
     vtest = 'mixed_control.vtest'
     variable = 'time'
-    variable_type = 'SCALAR'
   []
   [strains]
-    type = VTestTimeSeries
+    type = SR2VTestTimeSeries
     vtest = 'mixed_control.vtest'
     variable = 'strain'
-    variable_type = 'SYMR2'
   []
   [stresses]
-    type = VTestTimeSeries
+    type = SR2VTestTimeSeries
     vtest = 'mixed_control.vtest'
     variable = 'stress'
-    variable_type = 'SYMR2'
   []
   [one_control]
     type = FullScalar
@@ -35,12 +32,13 @@
 
 [Drivers]
   [driver]
-    type = SolidMechanicsDriver
+    type = SDTSolidMechanicsDriver
     model = 'model_with_output'
     control = 'MIXED'
-    times = 'times'
-    prescribed_mixed_conditions = 'stresses'
-    prescribed_control = 'control'
+    prescribed_time = 'times'
+    prescribed_mixed_driving_force = 'stresses'
+    prescribed_mixed_control_signal = 'control'
+    save_as = 'result.pt'
   []
   [verification]
     type = VTestVerification

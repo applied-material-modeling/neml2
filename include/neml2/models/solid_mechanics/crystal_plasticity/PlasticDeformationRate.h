@@ -55,6 +55,6 @@ protected:
   const Variable<R2> & _R;
 
   /// Slip rates
-  const Variable<Tensor> & _g;
+  const Variable<Scalar> & _g;
 };
 } // namespace neml2

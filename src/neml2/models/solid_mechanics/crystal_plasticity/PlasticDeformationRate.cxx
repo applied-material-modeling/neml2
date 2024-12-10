@@ -67,7 +67,7 @@ PlasticDeformationRate::PlasticDeformationRate(const OptionSet & options)
         options.get<std::string>("crystal_geometry_name"))),
     _dp(declare_output_variable<SR2>("plastic_deformation_rate")),
     _R(declare_input_variable<R2>("orientation")),
-    _g(declare_input_variable_list<Scalar>(_crystal_geometry.nslip(), "slip_rates"))
+    _g(declare_input_variable<Scalar>("slip_rates", _crystal_geometry.nslip()))
 {
 }
 
@@ -76,21 +76,21 @@ PlasticDeformationRate::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
 
-  // Grab the input
-  const auto g = Scalar(_g, batch_dim() + 1);
-  const auto dp_crystal = math::batch_sum(g * _crystal_geometry.M(), -1);
+  const auto dp_crystal = math::batch_sum(_g * _crystal_geometry.M(), -1);
 
   if (out)
-    _dp = dp_crystal.rotate(R2(_R));
+    _dp = dp_crystal.rotate(_R);
 
   if (dout_din)
   {
     if (_g.is_dependent())
-      _dp.d(_g) = Tensor(_crystal_geometry.M().rotate(R2(_R).batch_unsqueeze(-1)), batch_dim())
-                      .base_transpose(-2, -1);
+    {
+      const auto ddp_dg = _crystal_geometry.M().rotate(R2(_R).batch_unsqueeze(-1));
+      _dp.d(_g) = Tensor(ddp_dg, ddp_dg.batch_sizes().slice(0, -1)).base_transpose(-2, -1);
+    }
 
     if (_R.is_dependent())
-      _dp.d(_R) = dp_crystal.drotate(R2(_R));
+      _dp.d(_R) = dp_crystal.drotate(_R);
   }
 }
 } // namespace neml2

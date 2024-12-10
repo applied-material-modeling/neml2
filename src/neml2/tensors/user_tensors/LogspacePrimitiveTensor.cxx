@@ -23,10 +23,13 @@
 // THE SOFTWARE.
 
 #include "neml2/tensors/user_tensors/LogspacePrimitiveTensor.h"
+#include "neml2/tensors/tensors.h"
 
 namespace neml2
 {
-#define LOGSPACEPRIMITIVETENSOR_REGISTER(T) register_NEML2_object_alias(Logspace##T, "Logspace" #T)
+#define LOGSPACEPRIMITIVETENSOR_REGISTER(T)                                                        \
+  using Logspace##T = LogspacePrimitiveTensor<T>;                                                  \
+  register_NEML2_object_alias(Logspace##T, "Logspace" #T)
 FOR_ALL_PRIMITIVETENSOR(LOGSPACEPRIMITIVETENSOR_REGISTER);
 
 template <typename T>
@@ -54,28 +57,38 @@ LogspacePrimitiveTensor<T>::expected_options()
   options.set<Size>("dim") = 0;
   options.set("dim").doc() = "Where to insert the new dimension";
 
-  options.set<Size>("batch_dim") = -1;
-  options.set("batch_dim").doc() = "Batch dimension of the output";
-
   options.set<Real>("base") = 10;
   options.set("base").doc() = "Exponent base";
+
+  options.set<TensorShape>("batch_expand") = TensorShape();
+  options.set("batch_expand").doc() = "After construction, perform an additional batch expanding "
+                                      "operation into the given batch shape.";
 
   return options;
 }
 
 template <typename T>
 LogspacePrimitiveTensor<T>::LogspacePrimitiveTensor(const OptionSet & options)
-  : T(T::logspace(options.get<CrossRef<T>>("start"),
-                  options.get<CrossRef<T>>("end"),
-                  options.get<Size>("nstep"),
-                  options.get<Size>("dim"),
-                  options.get<Size>("batch_dim"),
-                  options.get<Real>("base"))),
+  : T(make(options)),
     UserTensorBase(options)
 {
 }
 
-#define LOGSPACEPRIMITIVETENSOR_INSTANTIATE_PRIMITIVETENSOR(T)                                     \
-  template class LogspacePrimitiveTensor<T>
-FOR_ALL_PRIMITIVETENSOR(LOGSPACEPRIMITIVETENSOR_INSTANTIATE_PRIMITIVETENSOR);
+template <typename T>
+T
+LogspacePrimitiveTensor<T>::make(const OptionSet & options) const
+{
+  auto t = T::logspace(options.get<CrossRef<T>>("start"),
+                       options.get<CrossRef<T>>("end"),
+                       options.get<Size>("nstep"),
+                       options.get<Size>("dim"),
+                       options.get<Real>("base"));
+
+  // Expand if requested
+  auto S = options.get<TensorShape>("batch_expand");
+  if (!S.empty())
+    t = t.batch_expand(S);
+
+  return t;
+}
 } // namespace neml2

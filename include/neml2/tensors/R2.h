@@ -34,9 +34,9 @@ class WR2;
 class R4;
 
 /**
- * @brief A basic R2
+ * @brief Second order tensor without symmetry.
  *
- * The logical storage space is (3,3).
+ * The storage space is (3,3).
  */
 class R2 : public R2Base<R2>
 {

@@ -28,6 +28,7 @@
 #include "neml2/tensors/tensors.h"
 
 #include <filesystem>
+#include <torch/nn/modules/container/modulelist.h>
 #include <torch/nn/modules/container/moduledict.h>
 #include <torch/serialize.h>
 
@@ -61,8 +62,11 @@ public:
   /**
    * @brief The results (input and output) from all time steps.
    *
-   * @return torch::nn::ModuleDict The results (input and output) from all time steps. Keys of the
-   * dict are "input" and "output". Each buffer in the submodules correspond to a variable.
+   * @return torch::nn::ModuleDict The results (input and output) from all time steps. The keys of
+   * the dict are "input" and "output". The values are torch::nn::ModuleList with length equal to
+   * the number of time steps. Each ModuleList contains the input/output variables at each time step
+   * in the form of torch::nn::ModuleDict whose keys are variable names and values are variable
+   * values.
    */
   virtual torch::nn::ModuleDict result() const;
 
@@ -83,37 +87,30 @@ protected:
   virtual void solve_step();
   /// Save the input of the current time step.
   virtual void store_input();
-  /// Save the output of the current time step.
-  virtual void store_output();
   // @}
 
   /// Save the results into the destination file/path.
   virtual void output() const;
 
-  /// Whether to disable automatic differentiation
-  const bool _enable_AD;
   /// The model which the driver uses to perform constitutive updates.
   Model & _model;
   /// The device on which to evaluate the model
   const torch::Device _device;
 
+  /// VariableName for the time
+  const VariableName _time_name;
   /// The current time
   Scalar _time;
   /// The current step count
   Size _step_count;
-  /// VariableName for the time
-  VariableName _time_name;
   /// Total number of steps
-  Size _nsteps;
-  /// The batch size
-  Size _nbatch;
+  const Size _nsteps;
   /// The input to the constitutive model
-  LabeledVector & _in;
-  /// The output of the constitutive model
-  LabeledVector & _out;
+  std::map<VariableName, Tensor> _in;
 
   /// The predictor used to set the initial guess
-  std::string _predictor;
+  const EnumSelection _predictor;
+
   /// The destination file name or file path
   std::string _save_as;
   /// Set to true to list all the model parameters at the beginning
@@ -124,35 +121,35 @@ protected:
   const bool _show_output;
 
   /// Inputs from all time steps
-  LabeledVector _result_in;
+  std::vector<std::map<VariableName, Tensor>> _result_in;
   /// Outputs from all time steps
-  LabeledVector _result_out;
-
-  /// Names for scalar initial conditions
-  std::vector<VariableName> _ic_scalar_names;
-  /// Values for the scalar initial conditions
-  std::vector<CrossRef<Scalar>> _ic_scalar_values;
-  /// Names for the Rot initial conditions
-  std::vector<VariableName> _ic_rot_names;
-  /// Values for the Rot initial conditions
-  std::vector<CrossRef<Rot>> _ic_rot_values;
-  /// Names for the SR2 initial conditions
-  std::vector<VariableName> _ic_sr2_names;
-  /// Values for the SR2 initial conditions
-  std::vector<CrossRef<SR2>> _ic_sr2_values;
-
-  /// Scale value for initial cp predictor
-  Real _cp_elastic_scale;
+  std::vector<std::map<VariableName, Tensor>> _result_out;
 
 private:
   void output_pt(const std::filesystem::path & out) const;
 
   template <typename T>
-  void set_IC(const std::vector<VariableName> & ic_names,
-              const std::vector<CrossRef<T>> & ic_values)
+  void set_ic(const std::string & name_opt, const std::string & value_opt)
   {
-    for (size_t i = 0; i < ic_names.size(); i++)
-      _out.base_index_put_(ic_names[i], T(ic_values[i]));
+    const auto names = input_options().get<std::vector<VariableName>>(name_opt);
+    const auto vals = input_options().get<std::vector<CrossRef<T>>>(value_opt);
+    neml_assert(names.size() == vals.size(),
+                "Number of initial condition names ",
+                name_opt,
+                " and number of initial condition values ",
+                value_opt,
+                " should be the same but instead have ",
+                names.size(),
+                " and ",
+                vals.size(),
+                " respectively.");
+    for (std::size_t i = 0; i < names.size(); i++)
+    {
+      neml_assert(names[i].start_with("state"),
+                  "Initial condition names should start with 'state' but instead got ",
+                  names[i]);
+      _result_out[0][names[i]] = T(vals[i]).to(_device);
+    }
   }
 };
 } // namespace neml2

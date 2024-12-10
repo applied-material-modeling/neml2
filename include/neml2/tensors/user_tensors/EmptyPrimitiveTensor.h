@@ -26,8 +26,6 @@
 
 #include "neml2/tensors/user_tensors/UserTensorBase.h"
 
-#include "neml2/tensors/tensors.h"
-
 namespace neml2
 {
 /**
@@ -48,7 +46,4 @@ public:
    */
   EmptyPrimitiveTensor(const OptionSet & options);
 };
-
-#define EMPTYPRIMITIVETENSOR_TYPEDEF(T) typedef EmptyPrimitiveTensor<T> Empty##T
-FOR_ALL_PRIMITIVETENSOR(EMPTYPRIMITIVETENSOR_TYPEDEF);
 } // namespace neml2

@@ -57,18 +57,29 @@ nbatch = 20
     end = max_strain
     nstep = ${ntime}
   []
+  [G0]
+    type = Scalar
+    values = '0.0'
+    batch_shape = '(${nbatch})'
+  []
+  [C0]
+    type = Scalar
+    values = '0.0'
+    batch_shape = '(${nbatch})'
+  []
 []
 
 [Drivers]
   [driver]
-    type = SolidMechanicsDriver
+    type = SDTSolidMechanicsDriver
     model = 'model'
-    times = 'times'
-    prescribed_strains = 'strains'
-    prescribed_temperatures = 'temperatures'
+    prescribed_time = 'times'
+    prescribed_strain = 'strains'
+    prescribed_temperature = 'temperatures'
+    ic_scalar_names = 'state/G state/C'
+    ic_scalar_values = 'G0 C0'
     predictor = LINEAR_EXTRAPOLATION
     save_as = 'result.pt'
-    enable_AD = true
   []
   [regression]
     type = TransientRegression

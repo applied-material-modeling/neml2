@@ -66,6 +66,6 @@ protected:
   const Variable<Scalar> & _tn;
 
   /// Nonlinear residual
-  Variable<Vec> & _r;
+  Variable<Rot> & _r;
 };
 } // namespace neml2

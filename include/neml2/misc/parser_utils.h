@@ -51,6 +51,8 @@ namespace utils
 /// This is a dummy to prevent compilers whining about not know how to >> torch::Tensor
 std::stringstream & operator>>(std::stringstream & in, torch::Tensor &);
 
+std::string join(const std::vector<std::string> & strs, const std::string & delim);
+
 std::vector<std::string> split(const std::string & str, const std::string & delims);
 
 std::string trim(const std::string & str, const std::string & white_space = " \t\n\v\f\r");

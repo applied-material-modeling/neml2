@@ -43,10 +43,10 @@ nt = 100
 
 [Drivers]
   [driver]
-    type = SolidMechanicsDriver
+    type = SDTSolidMechanicsDriver
     model = 'model'
-    times = 'times'
-    prescribed_strains = 'strains'
+    prescribed_time = 'times'
+    prescribed_strain = 'strains'
     save_as = 'result.pt'
     predictor = 'LINEAR_EXTRAPOLATION'
   []

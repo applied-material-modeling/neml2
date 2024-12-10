@@ -6,7 +6,7 @@ set_target_properties(unit_tests PROPERTIES INSTALL_RPATH "${EXEC_DIR}/../lib;${
 
 target_compile_options(unit_tests PRIVATE -Wall -Wextra -pedantic -Werror)
 register_unity_group(unit_tests .)
-target_link_libraries(unit_tests testutils Catch2::Catch2WithMain)
+target_link_libraries(unit_tests PRIVATE testutils Catch2::Catch2WithMain)
 
 install(TARGETS unit_tests COMPONENT Development)
 install(DIRECTORY .

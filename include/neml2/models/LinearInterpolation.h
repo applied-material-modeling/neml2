@@ -94,29 +94,27 @@ private:
    * So if some day we relax the 2nd assumption, this method need to be adapted accordingly.
    */
   template <typename T2>
-  T2 mask(const T2 & in, const torch::Tensor & m) const;
+  T2 mask(const T2 & in, const Scalar & m) const;
 
-  /// Batch shape of the interpolant, excluding the last dimension which is the interpolation axis
-  const TensorShape _interp_batch_sizes;
+  /// Slope of each interval
+  const T & _slope;
   /// Starting abscissa of each interval
   const Scalar & _X0;
   /// Ending abscissa of each interval
   const Scalar & _X1;
   /// Starting ordinate of each interval
   const T & _Y0;
-  /// Slope of each interval
-  const T & _slope;
 };
 
 template <typename T>
 template <typename T2>
 T2
-LinearInterpolation<T>::mask(const T2 & in, const torch::Tensor & m) const
+LinearInterpolation<T>::mask(const T2 & in, const Scalar & m) const
 {
-  auto in_expand = in.batch_expand(m.sizes());
-  auto in_mask = in_expand.index({m});
-  return in_mask.reshape(utils::add_shapes(
-      in_expand.batch_sizes().slice(0, in_expand.batch_dim() - 1), in.base_sizes()));
+  // Resulting batch shape
+  const auto B = m.batch_sizes().slice(0, -1);
+  // Use advanced (boolean) indexing to select the correct interval
+  return T2(in.batch_expand_as(m).index({m})).batch_reshape(B);
 }
 
 typedef LinearInterpolation<Scalar> ScalarLinearInterpolation;
