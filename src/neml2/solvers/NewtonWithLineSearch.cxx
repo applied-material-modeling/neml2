@@ -36,6 +36,8 @@ NewtonWithLineSearch::expected_options()
   OptionSet options = Newton::expected_options();
   options.doc() = "The Newton-Raphson solver with line search.";
 
+  options.set<std::string>("linesearch_type") = "backtracking";
+
   options.set<unsigned int>("max_linesearch_iterations") = 10;
   options.set("max_linesearch_iterations").doc() =
       "Maximum allowable linesearch iterations. No error is produced upon reaching the maximum "
@@ -56,7 +58,8 @@ NewtonWithLineSearch::NewtonWithLineSearch(const OptionSet & options)
   : Newton(options),
     _linesearch_miter(options.get<unsigned int>("max_linesearch_iterations")),
     _linesearch_sigma(options.get<Real>("linesearch_cutback")),
-    _linesearch_c(options.get<Real>("linesearch_stopping_criteria"))
+    _linesearch_c(options.get<Real>("linesearch_stopping_criteria")),
+    _type(options.get<std::string>("linesearch_type"))
 {
 }
 
@@ -79,27 +82,59 @@ NewtonWithLineSearch::linesearch(NonlinearSystem & system,
 {
   auto alpha = Scalar::ones(x.batch_sizes(), x.options());
   const auto nR02 = math::bvv(R0, R0);
+  bool check = false;
+  bool flag = false;
+  auto crit = nR02;
 
   for (std::size_t i = 1; i < _linesearch_miter; i++)
   {
     NonlinearSystem::Sol<true> xp(Tensor(x) + alpha * Tensor(dx));
     auto R = system.residual(xp);
     auto nR2 = math::bvv(R, R);
-    auto crit = nR02 + 2.0 * _linesearch_c * alpha * math::bvv(R0, dx);
+
+    if (_type == "backtracking")
+      crit = nR02 + 2.0 * _linesearch_c * alpha * math::bvv(R0, dx);
+    else if (_type == "strong_wolfe")
+      crit = (1.0 - _linesearch_c * alpha) * nR02;
+    else
+      neml_assert(false, "Line Search type '", _type, "' has not yet been implemented");
+
+    // std::cout << "nR02: " << nR02.item<Real>() << std::endl;
+    // std::cout << "math::bvv(R0, dx): " << math::bvv(R0, dx).item<Real>() << std::endl;
+    // std::cout << "R: \n" << R << std::endl;
+    // std::cout << "nR2: " << nR2.item<Real>() << std::endl;
+
+    if (std::isnan(torch::max(nR2).item<Real>()))
+      neml_assert(false, "One of the residual componenet is NAN");
+
     if (verbose)
       std::cout << "     LS ITERATION " << std::setw(3) << i << ", min(alpha) = " << std::scientific
                 << torch::min(alpha).item<Real>() << ", max(||R||) = " << std::scientific
                 << torch::max(math::sqrt(nR2)).item<Real>() << ", min(||Rc||) = " << std::scientific
                 << torch::min(math::sqrt(crit)).item<Real>() << std::endl;
 
-    auto stop = torch::logical_or(nR2 <= crit, nR2 <= std::pow(atol, 2));
+    auto stop = Scalar(torch::logical_or(nR2 <= crit, nR2 <= std::pow(atol, 2)));
+
+    if (torch::max(crit).item<Real>() < 0)
+      flag = true;
 
     if (torch::all(stop).item<bool>())
+    {
+      check = true;
       break;
+    }
 
+    alpha = alpha.batch_expand_as(stop).clone();
     alpha.batch_index_put_({torch::logical_not(stop)},
                            alpha.batch_index({torch::logical_not(stop)}) / _linesearch_sigma);
   }
+
+  if (flag)
+    neml_assert(check,
+                "NOnlinear Solver failed to converge: Line Search produces negative stopping "
+                "criteria, try with other "
+                "linesearch_type, increase linesearch_cutback "
+                "or reduce linesearch_stopping_criteria");
 
   return alpha;
 }
