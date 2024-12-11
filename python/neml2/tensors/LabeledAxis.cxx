@@ -46,7 +46,7 @@ def_LabeledAxis(py::module_ & m)
                .def(
                    "subaxis",
                    [](const LabeledAxis & self, const LabeledAxisAccessor & name)
-                   { return self.subaxis(name); },
+                   { return &self.subaxis(name); },
                    py::return_value_policy::reference)
                .def(
                    "variable_names",

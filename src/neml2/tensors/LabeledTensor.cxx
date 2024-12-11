@@ -328,6 +328,25 @@ LabeledTensor<Derived, D>::labels_to_indices(indexing::TensorLabelsRef labels) c
   return indices;
 }
 
+template <class Derived, Size D>
+void
+LabeledTensor<Derived, D>::fill(const Derived & other, Size odim, bool recursive)
+{
+  neml_assert_dbg(odim < D, "Common axis for fill must be less than the tensor dimension");
+  for (Size i = 0; i < Size(axes().size()) && i != odim; i++)
+    neml_assert_dbg(axis(i) == other.axis(i),
+                    "Can only accumulate matrices with conformal common axes");
+  const auto cindices = axis(odim).common_indices(other.axis(odim), recursive);
+  for (const auto & [idx, idx_other] : cindices)
+  {
+    indexing::TensorIndices indices(base_dim(), indexing::Slice());
+    indexing::TensorIndices indices_other(base_dim(), indexing::Slice());
+    indices[odim] = idx;
+    indices_other[odim] = idx_other;
+    _tensor.base_index_put_(indices, other.tensor().base_index(indices_other));
+  }
+}
+
 template class LabeledTensor<LabeledVector, 1>;
 template class LabeledTensor<LabeledMatrix, 2>;
 template class LabeledTensor<LabeledTensor3D, 3>;

@@ -203,7 +203,12 @@ def_LabeledTensor(py::class_<Derived> & c)
       .def_property_readonly("device", &Derived::device)
       .def("requires_grad_", &Derived::requires_grad_)
       .def_property_readonly("requires_grad", &Derived::requires_grad)
-      .def_property_readonly("grad", [](Derived * self) { return self->tensor().grad(); });
+      .def_property_readonly("grad", [](Derived * self) { return self->tensor().grad(); })
+      .def("fill",
+           &Derived::fill,
+           py::arg("other"),
+           py::arg("odim") = 0,
+           py::arg("recursive") = true);
 
   // Static methods
   c.def_static(

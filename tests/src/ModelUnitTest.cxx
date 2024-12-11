@@ -118,7 +118,7 @@ ModelUnitTest::ModelUnitTest(const OptionSet & options)
 
   if (_check_2nd_deriv || _check_AD_2nd_deriv || _check_AD_derivs)
     _deriv_order = 2;
-  else if (_check_1st_deriv)
+  else if (_check_1st_deriv || _check_AD_1st_deriv)
     _deriv_order = 1;
   else
     _deriv_order = 0;

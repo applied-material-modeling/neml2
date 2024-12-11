@@ -42,19 +42,7 @@ LinearInterpolation<T>::expected_options()
 
 template <typename T>
 LinearInterpolation<T>::LinearInterpolation(const OptionSet & options)
-  : Interpolation<T>(options),
-    _interp_batch_sizes(
-        utils::broadcast_sizes(this->_X.batch_sizes().slice(0, this->_X.batch_dim() - 1),
-                               this->_Y.batch_sizes().slice(0, this->_Y.batch_dim() - 1))),
-    _X0(this->template declare_buffer<Scalar>(
-        "X0", this->_X.batch_index({indexing::Ellipsis, indexing::Slice(indexing::None, -1)}))),
-    _X1(this->template declare_buffer<Scalar>(
-        "X1", this->_X.batch_index({indexing::Ellipsis, indexing::Slice(1, indexing::None)}))),
-    _Y0(this->template declare_buffer<T>(
-        "Y0", this->_Y.batch_index({indexing::Ellipsis, indexing::Slice(indexing::None, -1)}))),
-    _slope(this->template declare_buffer<T>("S",
-                                            math::diff(this->_Y, 1, this->_Y.batch_dim() - 1) /
-                                                math::diff(this->_X, 1, this->_X.batch_dim() - 1)))
+  : Interpolation<T>(options)
 {
 }
 
@@ -62,15 +50,21 @@ template <typename T>
 void
 LinearInterpolation<T>::set_value(bool out, bool dout_din, bool d2out_din2)
 {
+  const auto X0 = this->_X.batch_index({indexing::Ellipsis, indexing::Slice(indexing::None, -1)});
+  const auto X1 = this->_X.batch_index({indexing::Ellipsis, indexing::Slice(1, indexing::None)});
+  const auto Y0 = this->_Y.batch_index({indexing::Ellipsis, indexing::Slice(indexing::None, -1)});
+  const auto slope = math::diff(this->_Y, 1, this->_Y.batch_dim() - 1) /
+                     math::diff(this->_X, 1, this->_X.batch_dim() - 1);
+
   const auto x = Scalar(this->_x);
-  const auto loc = torch::logical_and(torch::gt(x.batch_unsqueeze(-1), _X0),
-                                      torch::le(x.batch_unsqueeze(-1), _X1));
-  const auto si = mask<T>(_slope, loc);
+  const auto loc = torch::logical_and(torch::gt(x.batch_unsqueeze(-1), X0),
+                                      torch::le(x.batch_unsqueeze(-1), X1));
+  const auto si = mask<T>(slope, loc);
 
   if (out)
   {
-    const auto X0i = mask<Scalar>(_X0, loc);
-    const auto Y0i = mask<T>(_Y0, loc);
+    const auto X0i = mask<Scalar>(X0, loc);
+    const auto Y0i = mask<T>(Y0, loc);
     this->_p = Y0i + si * (x - X0i);
   }
 

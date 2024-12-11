@@ -22,32 +22,32 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/tensors/LabeledMatrix.h"
-#include "neml2/tensors/LabeledVector.h"
-#include "neml2/misc/math.h"
+#pragma once
+
+#include "neml2/models/NonlinearParameter.h"
 
 namespace neml2
 {
-LabeledMatrix
-LabeledMatrix::identity(TensorShapeRef batch_size,
-                        const LabeledAxis & axis,
-                        const torch::TensorOptions & options)
+/**
+ * @brief A scalar-valued parameter defined by (C-B) / A
+ */
+class KocksMeckingIntercept : public NonlinearParameter<Scalar>
 {
-  return LabeledMatrix(Tensor::identity(batch_size, axis.storage_size(), options), {&axis, &axis});
+public:
+  static OptionSet expected_options();
+
+  KocksMeckingIntercept(const OptionSet & options);
+
+protected:
+  void set_value(bool out, bool dout_din, bool d2out_din2) override;
+
+  /// KM A
+  const Scalar & _A;
+
+  /// KM B
+  const Scalar & _B;
+
+  /// KM C
+  const Scalar & _C;
+};
 }
-
-LabeledMatrix
-LabeledMatrix::chain(const LabeledMatrix & other) const
-{
-  // This function expresses a chain rule, which is just a dot product between the values of this
-  // and the values of the input The main annoyance is just getting the names correct
-
-  // Check that we are conformal
-  neml_assert_dbg(batch_sizes() == other.batch_sizes(),
-                  "LabeledMatrix batch sizes are not the same");
-  neml_assert_dbg(axis(1) == other.axis(0), "Labels are not conformal");
-
-  // If all the sizes are correct then executing the chain rule is pretty easy
-  return LabeledMatrix(math::bmm(*this, other), {&axis(0), &other.axis(1)});
-}
-} // namespace neml2

@@ -160,6 +160,15 @@ public:
   /// Get a specific labeled axis
   const LabeledAxis & axis(Size i = 0) const { return *_axes[i]; }
 
+  /**
+   * @brief Fill with another LabeledTensor that matches this one on all but one axis
+   *
+   * @param Derived The LabeledTensor to fill from
+   * @param Size The common axis, default 0
+   * @param bool If true, fill recursively down subaxes
+   */
+  void fill(const Derived & other, Size odim = 0, bool recursive = true);
+
 protected:
   /// The tensor
   Tensor _tensor;

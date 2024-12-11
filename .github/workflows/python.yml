@@ -47,10 +47,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.9"
-      - name: Install Python dependencies
-        run: pip install -r requirements.txt
       - name: Install PyTorch
         run: pip install torch==2.5.1
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
       - run: pip install -v .
       - run: pytest --junitxml=pytest.xml python/tests
       - name: Publish Test Results

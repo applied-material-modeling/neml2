@@ -33,14 +33,6 @@ LabeledVector::slice(const std::string & name) const
   return LabeledVector(_tensor.base_index({_axes[0]->indices(name)}), {&_axes[0]->subaxis(name)});
 }
 
-void
-LabeledVector::fill(const LabeledVector & other, bool recursive)
-{
-  const auto indices = axis(0).common_indices(other.axis(0), recursive);
-  for (const auto & [idx, idx_other] : indices)
-    _tensor.base_index_put_({idx}, other.tensor().base_index({idx_other}));
-}
-
 namespace utils
 {
 bool

@@ -43,6 +43,11 @@ install(FILES
   DESTINATION .
 )
 
+# pyzag subpackage
+configure_file(neml2/pyzag/__init__.py ${NEML2_BINARY_DIR}/python/neml2/pyzag/__init__.py COPYONLY)
+configure_file(neml2/pyzag/interface.py ${NEML2_BINARY_DIR}/python/neml2/pyzag/interface.py COPYONLY)
+install(DIRECTORY neml2/pyzag DESTINATION .)
+
 # Tests
 if(NEML2_TESTS)
   add_subdirectory(tests)

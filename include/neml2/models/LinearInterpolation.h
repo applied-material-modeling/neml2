@@ -95,17 +95,6 @@ private:
    */
   template <typename T2>
   T2 mask(const T2 & in, const torch::Tensor & m) const;
-
-  /// Batch shape of the interpolant, excluding the last dimension which is the interpolation axis
-  const TensorShape _interp_batch_sizes;
-  /// Starting abscissa of each interval
-  const Scalar & _X0;
-  /// Ending abscissa of each interval
-  const Scalar & _X1;
-  /// Starting ordinate of each interval
-  const T & _Y0;
-  /// Slope of each interval
-  const T & _slope;
 };
 
 template <typename T>

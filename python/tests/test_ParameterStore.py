@@ -104,6 +104,41 @@ def test_set_parameters():
     assert torch.allclose(nu.torch(), torch.tensor(0.2, dtype=torch.float64))
 
 
+def test_change_batch_dimensions():
+    pwd = Path(__file__).parent
+    model = neml2.reload_model(pwd / "test_ParameterStore.i", "model")
+
+    # Setup variable views with batch shape (5,2)
+    model.reinit([5, 2])
+
+    # This model has two parameters
+    E = model.get_parameter("E")
+    nu = model.get_parameter("nu")
+
+    # This model has two parameters
+    model.set_parameters(
+        {
+            "E": neml2.Scalar.full((5, 2), 200.0),
+            "nu": neml2.Scalar.full((5, 2), 0.2),
+        }
+    )
+
+    # Should have correct shape
+    assert E.tensor().batch.shape == (5, 2)
+    assert nu.tensor().batch.shape == (5, 2)
+
+    # Now go back
+    model.set_parameters(
+        {
+            "E": neml2.Scalar.full(200.0),
+            "nu": neml2.Scalar.full(0.2),
+        }
+    )
+
+    assert E.tensor().batch.shape == tuple()
+    assert nu.tensor().batch.shape == tuple()
+
+
 def test_parameter_derivative():
     pwd = Path(__file__).parent
     model = neml2.reload_model(pwd / "test_ParameterStore.i", "model")

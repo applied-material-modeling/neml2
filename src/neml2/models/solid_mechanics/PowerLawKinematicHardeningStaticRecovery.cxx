@@ -83,7 +83,8 @@ PowerLawKinematicHardeningStaticRecovery::set_value(bool out, bool dout_din, boo
       _X_dot.d(*tau) = _n * math::pow(s / _tau, _n - 1) * _X / (_tau * _tau);
 
     if (const auto * const n = nl_param("n"))
-      _X_dot.d(*n) = -_X / s * math::pow(s / _tau, _n) * math::log(s / _tau);
+      _X_dot.d(*n) =
+          -_X / s * math::pow(s / _tau, _n) * math::log((s + machine_precision()) / _tau);
   }
 }
 

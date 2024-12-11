@@ -22,10 +22,4 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import torch
-
-from .base import *
-from .tensors import *
-from .math import *
-
-from . import pyzag
+from .interface import *
