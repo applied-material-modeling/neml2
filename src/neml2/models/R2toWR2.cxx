@@ -22,19 +22,19 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/R2toSR2.h"
+#include "neml2/models/R2toWR2.h"
 
 #include "neml2/misc/math.h"
 
 namespace neml2
 {
-register_NEML2_object(R2toSR2);
+register_NEML2_object(R2toWR2);
 
 OptionSet
-R2toSR2::expected_options()
+R2toWR2::expected_options()
 {
   OptionSet options = Model::expected_options();
-  options.doc() = "Extract the symmetric part of a R2 tensor";
+  options.doc() = "Extract the skew symmetric part of a R2 tensor";
 
   options.set_input("input");
   options.set("input").doc() = "Rank two tensor to split";
@@ -45,23 +45,26 @@ R2toSR2::expected_options()
   return options;
 }
 
-R2toSR2::R2toSR2(const OptionSet & options)
+R2toWR2::R2toWR2(const OptionSet & options)
   : Model(options),
     _input(declare_input_variable<R2>("input")),
-    _output(declare_output_variable<SR2>("output"))
+    _output(declare_output_variable<WR2>("output"))
 {
 }
 
 void
-R2toSR2::set_value(bool out, bool dout_din, bool d2out_din2)
+R2toWR2::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   auto A = R2(_input);
 
   if (out)
-    _output = SR2(A);
+    _output = WR2(A);
 
   if (dout_din)
-    _output.d(_input) = math::mandel_to_full(SSR4::identity_sym(A.options()), 1);
+  {
+    auto I = R2(torch::eye(3, A.options()));
+    _output.d(_input) = 0.5 * math::skew_to_full(I, 1);
+  }
 
   // Second derivative is zero
   (void)d2out_din2;
