@@ -55,7 +55,9 @@ TEST_CASE("ZerosPrimitiveTensor", "[tensors/user_tensors]")
   test_ZerosPrimitiveTensor(R3, f, B);
   test_ZerosPrimitiveTensor(SFR3, g, B);
   test_ZerosPrimitiveTensor(R4, h, B);
-  test_ZerosPrimitiveTensor(SSR4, i, B);
-  test_ZerosPrimitiveTensor(R5, j, B);
-  test_ZerosPrimitiveTensor(SSFR5, k, B);
+  test_ZerosPrimitiveTensor(SFR4, i, B);
+  test_ZerosPrimitiveTensor(WFR4, j, B);
+  test_ZerosPrimitiveTensor(SSR4, k, B);
+  test_ZerosPrimitiveTensor(R5, l, B);
+  test_ZerosPrimitiveTensor(SSFR5, m, B);
 }

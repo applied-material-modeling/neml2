@@ -40,16 +40,26 @@
     value = 1.3
   []
   [i]
-    type = FullSSR4
+    type = FullSFR4
     batch_shape = '(2,1)'
     value = 1.3
   []
   [j]
-    type = FullR5
+    type = FullWFR4
     batch_shape = '(2,1)'
     value = 1.3
   []
   [k]
+    type = FullSSR4
+    batch_shape = '(2,1)'
+    value = 1.3
+  []
+  [l]
+    type = FullR5
+    batch_shape = '(2,1)'
+    value = 1.3
+  []
+  [m]
     type = FullSSFR5
     batch_shape = '(2,1)'
     value = 1.3

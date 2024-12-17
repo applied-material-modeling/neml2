@@ -62,7 +62,9 @@ TEST_CASE("LinspacePrimitiveTensor", "[tensors/user_tensors]")
   test_LinspacePrimitiveTensor(R3, f, B, nstep, dim);
   test_LinspacePrimitiveTensor(SFR3, g, B, nstep, dim);
   test_LinspacePrimitiveTensor(R4, h, B, nstep, dim);
-  test_LinspacePrimitiveTensor(SSR4, i, B, nstep, dim);
-  test_LinspacePrimitiveTensor(R5, j, B, nstep, dim);
-  test_LinspacePrimitiveTensor(SSFR5, k, B, nstep, dim);
+  test_LinspacePrimitiveTensor(SFR4, i, B, nstep, dim);
+  test_LinspacePrimitiveTensor(WFR4, j, B, nstep, dim);
+  test_LinspacePrimitiveTensor(SSR4, k, B, nstep, dim);
+  test_LinspacePrimitiveTensor(R5, l, B, nstep, dim);
+  test_LinspacePrimitiveTensor(SSFR5, m, B, nstep, dim);
 }

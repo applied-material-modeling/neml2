@@ -63,7 +63,9 @@ TEST_CASE("LogspacePrimitiveTensor", "[tensors/user_tensors]")
   test_LogspacePrimitiveTensor(R3, f, B, nstep, dim, base);
   test_LogspacePrimitiveTensor(SFR3, g, B, nstep, dim, base);
   test_LogspacePrimitiveTensor(R4, h, B, nstep, dim, base);
-  test_LogspacePrimitiveTensor(SSR4, i, B, nstep, dim, base);
-  test_LogspacePrimitiveTensor(R5, j, B, nstep, dim, base);
-  test_LogspacePrimitiveTensor(SSFR5, k, B, nstep, dim, base);
+  test_LogspacePrimitiveTensor(SFR4, i, B, nstep, dim, base);
+  test_LogspacePrimitiveTensor(WFR4, j, B, nstep, dim, base);
+  test_LogspacePrimitiveTensor(SSR4, k, B, nstep, dim, base);
+  test_LogspacePrimitiveTensor(R5, l, B, nstep, dim, base);
+  test_LogspacePrimitiveTensor(SSFR5, m, B, nstep, dim, base);
 }

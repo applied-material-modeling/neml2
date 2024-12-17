@@ -32,14 +32,22 @@
     batch_shape = '(2,1)'
   []
   [i]
-    type = EmptySSR4
+    type = EmptySFR4
     batch_shape = '(2,1)'
   []
   [j]
-    type = EmptyR5
+    type = EmptyWFR4
     batch_shape = '(2,1)'
   []
   [k]
+    type = EmptySSR4
+    batch_shape = '(2,1)'
+  []
+  [l]
+    type = EmptyR5
+    batch_shape = '(2,1)'
+  []
+  [m]
     type = EmptySSFR5
     batch_shape = '(2,1)'
   []

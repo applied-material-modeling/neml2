@@ -55,7 +55,9 @@ TEST_CASE("FullPrimitiveTensor", "[tensors/user_tensors]")
   test_FullPrimitiveTensor(R3, f, B, 1.3);
   test_FullPrimitiveTensor(SFR3, g, B, 1.3);
   test_FullPrimitiveTensor(R4, h, B, 1.3);
-  test_FullPrimitiveTensor(SSR4, i, B, 1.3);
-  test_FullPrimitiveTensor(R5, j, B, 1.3);
-  test_FullPrimitiveTensor(SSFR5, k, B, 1.3);
+  test_FullPrimitiveTensor(SFR4, i, B, 1.3);
+  test_FullPrimitiveTensor(WFR4, j, B, 1.3);
+  test_FullPrimitiveTensor(SSR4, k, B, 1.3);
+  test_FullPrimitiveTensor(R5, l, B, 1.3);
+  test_FullPrimitiveTensor(SSFR5, m, B, 1.3);
 }

@@ -144,17 +144,17 @@
   []
 
   [i0]
-    type = FullSSR4
+    type = FullSFR4
     batch_shape = '(2,1)'
     value = 1.3
   []
   [i1]
-    type = FullSSR4
+    type = FullSFR4
     batch_shape = '(2,1)'
     value = 1211
   []
   [i]
-    type = LogspaceSSR4
+    type = LogspaceSFR4
     start = 'i0'
     end = 'i1'
     nstep = 100
@@ -162,17 +162,17 @@
   []
 
   [j0]
-    type = FullR5
+    type = FullWFR4
     batch_shape = '(2,1)'
     value = 1.3
   []
   [j1]
-    type = FullR5
+    type = FullWFR4
     batch_shape = '(2,1)'
-    value = 55
+    value = 1211
   []
   [j]
-    type = LogspaceR5
+    type = LogspaceWFR4
     start = 'j0'
     end = 'j1'
     nstep = 100
@@ -180,19 +180,55 @@
   []
 
   [k0]
-    type = FullSSFR5
+    type = FullSSR4
     batch_shape = '(2,1)'
     value = 1.3
   []
   [k1]
+    type = FullSSR4
+    batch_shape = '(2,1)'
+    value = 1211
+  []
+  [k]
+    type = LogspaceSSR4
+    start = 'k0'
+    end = 'k1'
+    nstep = 100
+    dim = 0
+  []
+
+  [l0]
+    type = FullR5
+    batch_shape = '(2,1)'
+    value = 1.3
+  []
+  [l1]
+    type = FullR5
+    batch_shape = '(2,1)'
+    value = 55
+  []
+  [l]
+    type = LogspaceR5
+    start = 'l0'
+    end = 'l1'
+    nstep = 100
+    dim = 0
+  []
+
+  [m0]
+    type = FullSSFR5
+    batch_shape = '(2,1)'
+    value = 1.3
+  []
+  [m1]
     type = FullSSFR5
     batch_shape = '(2,1)'
     value = 13
   []
-  [k]
+  [m]
     type = LogspaceSSFR5
-    start = 'k0'
-    end = 'k1'
+    start = 'm0'
+    end = 'm1'
     nstep = 100
     dim = 0
   []

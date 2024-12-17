@@ -144,17 +144,17 @@
   []
 
   [i0]
-    type = FullSSR4
+    type = FullSFR4
     batch_shape = '(2,1)'
     value = 1.3
   []
   [i1]
-    type = FullSSR4
+    type = FullSFR4
     batch_shape = '(2,1)'
-    value = 1211
+    value = 2
   []
   [i]
-    type = LinspaceSSR4
+    type = LinspaceSFR4
     start = 'i0'
     end = 'i1'
     nstep = 100
@@ -162,17 +162,17 @@
   []
 
   [j0]
-    type = FullR5
+    type = FullWFR4
     batch_shape = '(2,1)'
     value = 1.3
   []
   [j1]
-    type = FullR5
+    type = FullWFR4
     batch_shape = '(2,1)'
-    value = 55
+    value = 2
   []
   [j]
-    type = LinspaceR5
+    type = LinspaceWFR4
     start = 'j0'
     end = 'j1'
     nstep = 100
@@ -180,19 +180,55 @@
   []
 
   [k0]
-    type = FullSSFR5
+    type = FullSSR4
     batch_shape = '(2,1)'
     value = 1.3
   []
   [k1]
+    type = FullSSR4
+    batch_shape = '(2,1)'
+    value = 1211
+  []
+  [k]
+    type = LinspaceSSR4
+    start = 'k0'
+    end = 'k1'
+    nstep = 100
+    dim = 0
+  []
+
+  [l0]
+    type = FullR5
+    batch_shape = '(2,1)'
+    value = 1.3
+  []
+  [l1]
+    type = FullR5
+    batch_shape = '(2,1)'
+    value = 55
+  []
+  [l]
+    type = LinspaceR5
+    start = 'l0'
+    end = 'l1'
+    nstep = 100
+    dim = 0
+  []
+
+  [m0]
+    type = FullSSFR5
+    batch_shape = '(2,1)'
+    value = 1.3
+  []
+  [m1]
     type = FullSSFR5
     batch_shape = '(2,1)'
     value = 13
   []
-  [k]
+  [m]
     type = LinspaceSSFR5
-    start = 'k0'
-    end = 'k1'
+    start = 'm0'
+    end = 'm1'
     nstep = 100
     dim = 0
   []

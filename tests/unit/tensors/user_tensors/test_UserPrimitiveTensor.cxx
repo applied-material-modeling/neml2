@@ -60,6 +60,12 @@ TEST_CASE("UserPrimitiveTensor", "[tensors/user_tensors]")
     const auto user_R4 = Factory::get_object_ptr<R4>("Tensors", "R4");
     REQUIRE(user_R4->batch_sizes() == TensorShape{3, 2});
 
+    const auto user_SFR4 = Factory::get_object_ptr<SFR4>("Tensors", "SFR4");
+    REQUIRE(user_SFR4->batch_sizes() == TensorShape{3, 2});
+
+    const auto user_WFR4 = Factory::get_object_ptr<WFR4>("Tensors", "WFR4");
+    REQUIRE(user_WFR4->batch_sizes() == TensorShape{3, 2});
+
     const auto user_SSR4 = Factory::get_object_ptr<SSR4>("Tensors", "SSR4");
     REQUIRE(user_SSR4->batch_sizes() == TensorShape{3, 2});
 

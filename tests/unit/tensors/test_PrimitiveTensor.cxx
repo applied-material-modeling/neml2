@@ -32,6 +32,8 @@
 #include "neml2/tensors/R3.h"
 #include "neml2/tensors/SFR3.h"
 #include "neml2/tensors/R4.h"
+#include "neml2/tensors/SFR4.h"
+#include "neml2/tensors/WFR4.h"
 #include "neml2/tensors/SSR4.h"
 #include "neml2/tensors/R5.h"
 #include "neml2/tensors/SSFR5.h"
@@ -55,6 +57,8 @@ TEST_CASE("PrimitiveTensor", "[tensors]")
       REQUIRE(SR2::const_base_sizes == TensorShape{6});
       REQUIRE(R3::const_base_sizes == TensorShape{3, 3, 3});
       REQUIRE(SFR3::const_base_sizes == TensorShape{6, 3});
+      REQUIRE(SFR4::const_base_sizes == TensorShape{6, 3, 3});
+      REQUIRE(WFR4::const_base_sizes == TensorShape{3, 3, 3});
       REQUIRE(R4::const_base_sizes == TensorShape{3, 3, 3, 3});
       REQUIRE(SSR4::const_base_sizes == TensorShape{6, 6});
       REQUIRE(R5::const_base_sizes == TensorShape{3, 3, 3, 3, 3});
@@ -70,6 +74,8 @@ TEST_CASE("PrimitiveTensor", "[tensors]")
       REQUIRE(R3::const_base_dim == 3);
       REQUIRE(SFR3::const_base_dim == 2);
       REQUIRE(R4::const_base_dim == 4);
+      REQUIRE(SFR4::const_base_dim == 3);
+      REQUIRE(WFR4::const_base_dim == 3);
       REQUIRE(SSR4::const_base_dim == 2);
       REQUIRE(R5::const_base_dim == 5);
       REQUIRE(SSFR5::const_base_dim == 3);

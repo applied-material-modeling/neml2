@@ -53,7 +53,9 @@ TEST_CASE("EmptyPrimitiveTensor", "[tensors/user_tensors]")
   test_EmptyPrimitiveTensor(R3, f, B);
   test_EmptyPrimitiveTensor(SFR3, g, B);
   test_EmptyPrimitiveTensor(R4, h, B);
-  test_EmptyPrimitiveTensor(SSR4, i, B);
-  test_EmptyPrimitiveTensor(R5, j, B);
-  test_EmptyPrimitiveTensor(SSFR5, k, B);
+  test_EmptyPrimitiveTensor(SFR4, i, B);
+  test_EmptyPrimitiveTensor(WFR4, j, B);
+  test_EmptyPrimitiveTensor(SSR4, k, B);
+  test_EmptyPrimitiveTensor(R5, l, B);
+  test_EmptyPrimitiveTensor(SSFR5, m, B);
 }
