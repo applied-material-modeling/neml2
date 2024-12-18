@@ -42,7 +42,7 @@ protected:
   /// Input full second order tensor
   const Variable<R2> & _input;
 
-  /// Invariant of the input tensor
+  /// Output skew symmetric rank two tensor
   Variable<WR2> & _output;
 };
 } // namespace neml2

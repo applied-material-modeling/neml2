@@ -62,8 +62,7 @@ R2toWR2::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (dout_din)
   {
-    auto I = R2(torch::eye(3, A.options()));
-    _output.d(_input) = 0.5 * math::skew_to_full(I, 1);
+    _output.d(_input) = 0.5 * math::skew_to_full(R2::identity(A.options()), 1);
   }
 
   // Second derivative is zero
