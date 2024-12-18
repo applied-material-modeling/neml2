@@ -2,10 +2,10 @@
     [unit]
       type = ModelUnitTest
       model = 'model'
-      input_scalar_names = 'state/h state/r1 state/alpha params/oL'
-      input_scalar_values = 'h rr alpha oLiquid'
-      output_scalar_names = 'state/pcond'
-      output_scalar_values = 'phi_cond'
+      input_Scalar_names = 'state/h state/r1 state/alpha params/oL'
+      input_Scalar_values = 'h rr alpha oLiquid'
+      output_Scalar_names = 'state/pcond'
+      output_Scalar_values = 'phi_cond'
       check_derivatives = true
       derivative_abs_tol = 1e-4
   []
@@ -46,11 +46,11 @@
     []
     [model0]
         type = ProductGrowthWithLiquid
-        Liquid_Molar_Volume = 'omega_L'
-        Product_Height = 'state/h'
-        Inlet_Gap = 'state/r1'
-        Liquid_Saturation = 'state/alpha'
-        Phi_Condition = 'state/pcond'
+        liquid_molar_volume = 'omega_L'
+        product_height = 'state/h'
+        inlet_gap = 'state/r1'
+        liquid_saturation = 'state/alpha'
+        phi_condition = 'state/pcond'
     []
     [model]
         type = ComposedModel

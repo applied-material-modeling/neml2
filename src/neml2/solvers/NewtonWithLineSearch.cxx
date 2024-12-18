@@ -37,6 +37,9 @@ NewtonWithLineSearch::expected_options()
   options.doc() = "The Newton-Raphson solver with line search.";
 
   options.set<std::string>("linesearch_type") = "backtracking";
+  options.set("linesearch_type").doc() =
+      "The type of linesearch used. Choice between backtracking and strong_wolfe. "
+      "Default: backtracking.";
 
   options.set<unsigned int>("max_linesearch_iterations") = 10;
   options.set("max_linesearch_iterations").doc() =

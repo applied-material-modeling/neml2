@@ -2,11 +2,10 @@
     [unit]
       type = ModelUnitTest
       model = 'model'
-      input_scalar_names = 'state/in state/switch state/mreact state/current'
-      input_scalar_values = 'in switch mreact current'
-      output_scalar_names = 'residual/total'
-      output_scalar_values = 'total'
-      check_derivatives = true
+      input_Scalar_names = 'state/in state/switch state/mreact state/current'
+      input_Scalar_values = 'in switch mreact current'
+      output_Scalar_names = 'residual/total'
+      output_Scalar_values = 'total'
   []
 []
 
@@ -41,10 +40,10 @@
 [Models]
     [model]
         type = ChemMassBalance
-        In = 'state/in'
-        Switch = 'state/switch'
-        Minus_Reaction = 'state/mreact'
-        Current = 'state/current'
-        Total = 'residual/total'
+        in = 'state/in'
+        switch = 'state/switch'
+        minus_reaction = 'state/mreact'
+        current = 'state/current'
+        total = 'residual/total'
     []
 []

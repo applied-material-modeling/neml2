@@ -52,14 +52,14 @@ nbatch = '(5)'
       prescribed_time = 'times'
       time = 'forces/tt'
 
-      Prescribed_Liquid_Inlet_Rate = 'aLInDot'
-      Liquid_Inlet_Rate = 'forces/aLInDot'
+      prescribed_liquid_inlet_rate = 'aLInDot'
+      liquid_inlet_rate = 'forces/aLInDot'
       
       show_input_axis = true
       show_output_axis = true
       show_parameters = false
-      ic_scalar_names = 'state/alpha state/delta state/h state/alphaP'
-      ic_scalar_values = '1e-4 1e-2 1e-3 1e-3'
+      ic_Scalar_names = 'state/alpha state/delta state/h state/alphaP'
+      ic_Scalar_values = '1e-4 1e-2 1e-3 1e-3'
       save_as = 'test.pt'
 
       verbose = true
@@ -85,18 +85,18 @@ nbatch = '(5)'
 [Models]
     [inlet_gap]
         type = InletGap
-        Product_Thickness_Growth_Ratio = 'M'
-        Initial_Porosity = 'phi0'
-        Product_Thickness = 'state/delta'
-        Inlet_Gap = 'state/r1'
+        product_thickness_growth_ratio = 'M'
+        initial_porosity = 'phi0'
+        product_thickness = 'state/delta'
+        inlet_gap = 'state/r1'
     []
     [product_growth]
         type = ProductGrowthWithLiquid
-        Liquid_Molar_Volume = 'omega_L'
-        Product_Height = 'state/h'
-        Inlet_Gap = 'state/r1'
-        Liquid_Saturation = 'state/alpha'
-        Phi_Condition = 'state/pcond'
+        liquid_molar_volume = 'omega_L'
+        product_height = 'state/h'
+        inlet_gap = 'state/r1'
+        liquid_saturation = 'state/alpha'
+        phi_condition = 'state/pcond'
     []
     [hdot]
         type = ScalarVariableRate
@@ -106,9 +106,9 @@ nbatch = '(5)'
     []
     [fbcond]
         type = FischerBurmeister
-        Condition_A = 'state/pcond'
-        Condition_B = 'state/hdot'
-        Fischer_Burmeister = 'residual/h'
+        condition_a = 'state/pcond'
+        condition_b = 'state/hdot'
+        fischer_burmeister = 'residual/h'
     []
     ############### H RESIDUAL ############### 
     [residual_h]
@@ -118,15 +118,15 @@ nbatch = '(5)'
     #############################################
     [product_geo]
         type = ProductGeometricRelation
-        Product_Molar_Volume = 'omega_P'
-        Product_Height = 'state/h'
-        Inlet_Gap = 'state/r1'
-        Product_Thickness = 'state/delta'
-        Product_Saturation = 'state/alphaP'
+        product_molar_volume = 'omega_P'
+        product_height = 'state/h'
+        inlet_gap = 'state/r1'
+        product_thickness = 'state/delta'
+        product_saturation = 'state/alphaP'
     []
     [alpha_transition]
         type = SwitchingFunction
-        Smooth_Degree = 100.0
+        smooth_degree = 100.0
         variable = 'state/h'
         switch_out = 'state/alpha_transition'
     []
@@ -144,11 +144,11 @@ nbatch = '(5)'
     []
     [mass_balance]
         type = ChemMassBalance
-        In = 'forces/aLInDot'
-        Switch = 'state/alpha_transition'
-        Minus_Reaction = 'state/aRdot'
-        Current = 'state/alphadot'
-        Total = 'residual/alpha'
+        in = 'forces/aLInDot'
+        switch = 'state/alpha_transition'
+        minus_reaction = 'state/aRdot'
+        current = 'state/alphadot'
+        total = 'residual/alpha'
     []
     ############### ALPHA RESIDUAL ############### 
     [residual_alpha]
@@ -158,35 +158,35 @@ nbatch = '(5)'
     #############################################
     [deficient_scale]
         type = LiquidDeficientPowerScale
-        Liquid_Molar_Volume = 'omega_L'
-        Power = 'p'
-        Product_Height = 'state/h'
-        Inlet_Gap = 'state/r1'
-        Liquid_Saturation = 'state/alpha'
-        Scale = 'state/def_scale'
+        liquid_molar_volume = 'omega_L'
+        power = 'p'
+        product_height = 'state/h'
+        inlet_gap = 'state/r1'
+        liquid_saturation = 'state/alpha'
+        scale = 'state/def_scale'
     []
     [perfect_growth]
         type = LiquidProductDiffusion1D
-        Liquid_Product_Density_Ratio = 0.8
-        Initial_Porosity = 'phi0'
-        Product_Thickness_Growth_Ratio = 'M'
-        Liquid_Product_Diffusion_Coefficient = 5e-7
-        Representative_Pores_Size = 'lc'
+        liquid_product_density_ratio = 0.8
+        initial_porosity = 'phi0'
+        product_thickness_growth_ratio = 'M'
+        liquid_product_diffusion_coefficient = 5e-7
+        representative_pores_size = 'lc'
 
-        Inlet_Gap = 'state/r1'
-        Product_Thickness = 'state/delta'
-        Ideal_Thickness_Growth = 'state/delta_growth'
+        inlet_gap = 'state/r1'
+        product_thickness = 'state/delta'
+        ideal_thickness_growth = 'state/delta_growth'
     []
     [delta_dcrit_ratio]
         type = ProductThicknessLimit
-        Initial_Porosity = 'phi0'
-        Product_Thickness_Growth_Ratio = 'M'
-        Product_Thickness = 'state/delta'
-        Limit_Ratio = 'state/dratio'
+        initial_porosity = 'phi0'
+        product_thickness_growth_ratio = 'M'
+        product_thickness = 'state/delta'
+        limit_ratio = 'state/dratio'
     []
     [delta_limit]
         type = SwitchingFunction
-        Smooth_Degree = 100.0
+        smooth_degree = 100.0
         variable = 'state/dratio'
         switch_out = 'state/dlimit'
     []
@@ -197,12 +197,12 @@ nbatch = '(5)'
         rate = 'state/ddot'
     []
     [product_thickness_growth]
-        type = ProductWidthGrowthRate
-        Thickness_Rate = 'state/ddot'
-        Scale = 'state/def_scale'
-        Ideal_Thickness_Growth = 'state/delta_growth'
-        Switch = 'state/dlimit'
-        Residual_Delta = 'residual/delta'
+        type = ProductThicknessGrowthRate
+        thickness_rate = 'state/ddot'
+        scale = 'state/def_scale'
+        ideal_thickness_growth = 'state/delta_growth'
+        switch = 'state/dlimit'
+        residual_delta = 'residual/delta'
     []
     ############### DELTA RESIDUAL ############### 
     [residual_delta]
@@ -222,11 +222,11 @@ nbatch = '(5)'
     []
     [aSiC_new]
         type = ProductGeometricRelation
-        Product_Molar_Volume = 'omega_P'
-        Product_Height = 'state/h'
-        Inlet_Gap = 'state/r1'
-        Product_Thickness = 'state/delta'
-        Product_Saturation = 'state/alphaP'
+        product_molar_volume = 'omega_P'
+        product_height = 'state/h'
+        inlet_gap = 'state/r1'
+        product_thickness = 'state/delta'
+        product_saturation = 'state/alphaP'
     []
     [model]
         type = ComposedModel

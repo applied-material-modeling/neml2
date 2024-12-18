@@ -2,10 +2,10 @@
     [unit]
       type = ModelUnitTest
       model = 'model'
-      input_scalar_names = 'state/h state/r1 state/delta params/oP'
-      input_scalar_values = 'h rr delta oProduct'
-      output_scalar_names = 'state/alphaP'
-      output_scalar_values = 'alphaP'
+      input_Scalar_names = 'state/h state/r1 state/delta params/oP'
+      input_Scalar_values = 'h rr delta oProduct'
+      output_Scalar_names = 'state/alphaP'
+      output_Scalar_values = 'alphaP'
       check_derivatives = true
   []
 []
@@ -45,11 +45,11 @@
     []
     [model0]
         type = ProductGeometricRelation
-        Product_Molar_Volume = 'omega_P'
-        Product_Height = 'state/h'
-        Inlet_Gap = 'state/r1'
-        Product_Thickness = 'state/delta'
-        Product_Saturation = 'state/alphaP'
+        product_molar_volume = 'omega_P'
+        product_height = 'state/h'
+        inlet_gap = 'state/r1'
+        product_thickness = 'state/delta'
+        product_saturation = 'state/alphaP'
     []
     [model]
         type = ComposedModel

@@ -32,9 +32,15 @@ OptionSet
 LiquidInfiltrationDriver::expected_options()
 {
   OptionSet options = TransientDriver::expected_options();
+  options.doc() = "Driver for Liquid Infiltration Process";
 
-  options.set<CrossRef<torch::Tensor>>("Prescribed_Liquid_Inlet_Rate");
-  options.set<VariableName>("Liquid_Inlet_Rate") = VariableName("forces", "aInDot");
+  options.set<CrossRef<torch::Tensor>>("prescribed_liquid_inlet_rate");
+  options.set("prescribed_liquid_inlet_rate").doc() =
+      "Liquid saturate rate (mol/V) introducted to the RVE at the inlet";
+
+  options.set<VariableName>("liquid_inlet_rate") = VariableName("forces", "aInDot");
+  options.set("liquid_inlet_rate").doc() = "Name of the liquid_inlet_rate.";
+
   return options;
 }
 
@@ -50,9 +56,9 @@ void
 LiquidInfiltrationDriver::setup()
 {
   TransientDriver::setup();
-  _driving_force_name = input_options().get<VariableName>("Liquid_Inlet_Rate");
+  _driving_force_name = input_options().get<VariableName>("liquid_inlet_rate");
   _driving_force =
-      Scalar(input_options().get<CrossRef<torch::Tensor>>("Prescribed_Liquid_Inlet_Rate"));
+      Scalar(input_options().get<CrossRef<torch::Tensor>>("prescribed_liquid_inlet_rate"));
   _driving_force = _driving_force.to(_device);
 }
 

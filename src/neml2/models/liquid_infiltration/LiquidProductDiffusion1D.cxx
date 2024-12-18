@@ -1,3 +1,27 @@
+// Copyright 2024, UChicago Argonne, LLC
+// All Rights Reserved
+// Software Name: NEML2 -- the New Engineering material Model Library, version 2
+// By: Argonne National Laboratory
+// OPEN SOURCE LICENSE (MIT)
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
 #include "neml2/models/liquid_infiltration/LiquidProductDiffusion1D.h"
 #include "neml2/misc/math.h"
 
@@ -8,16 +32,37 @@ OptionSet
 LiquidProductDiffusion1D::expected_options()
 {
   OptionSet options = Model::expected_options();
-  options.set<CrossRef<Scalar>>("Liquid_Product_Density_Ratio");
-  options.set<CrossRef<Scalar>>("Initial_Porosity");
-  options.set<CrossRef<Scalar>>("Product_Thickness_Growth_Ratio");
-  options.set<CrossRef<Scalar>>("Liquid_Product_Diffusion_Coefficient");
-  options.set<CrossRef<Scalar>>("Representative_Pores_Size");
+  options.doc() = "Product thickness growth based on the 1D Diffusion equation of liquid through "
+                  "the product to react with the solid.";
 
-  options.set<VariableName>("Inlet_Gap") = VariableName("state", "r1");
-  options.set<VariableName>("Product_Thickness") = VariableName("state", "delta");
+  options.set_parameter<CrossRef<Scalar>>("liquid_product_density_ratio");
+  options.set("liquid_product_density_ratio").doc() =
+      "The ratio between the density of the liquid and the density of the product.";
 
-  options.set<VariableName>("Ideal_Thickness_Growth") = VariableName("state", "delta_growth");
+  options.set_parameter<CrossRef<Scalar>>("initial_porosity");
+  options.set("initial_porosity").doc() =
+      "Initial porosity of the RVE in the absence of product and liquid.";
+
+  options.set_parameter<CrossRef<Scalar>>("product_thickness_growth_ratio");
+  options.set("product_thickness_growth_ratio").doc() =
+      "Volume expansion ratio towards the liquid from the product - solid reactions."
+      "Value should be between 0 and 1. For Si + C -> SiC, set this to 0.576.";
+
+  options.set_parameter<CrossRef<Scalar>>("liquid_product_diffusion_coefficient");
+  options.set("liquid_product_diffusion_coefficient").doc() =
+      "The diffusion coefficient of the liquid through the product.";
+
+  options.set_parameter<CrossRef<Scalar>>("representative_pores_size");
+  options.set("representative_pores_size").doc() = "Representative pores size of the RVE.";
+
+  options.set_input("inlet_gap") = VariableName("state", "r1");
+  options.set("inlet_gap").doc() = "The width of the RVE's inlet.";
+
+  options.set_input("product_thickness") = VariableName("state", "delta");
+  options.set("product_thickness").doc() = "Thickness of the product in the RVE.";
+
+  options.set_output("ideal_thickness_growth") = VariableName("state", "delta_growth");
+  options.set("ideal_thickness_growth").doc() = "Ideal's product's thickness growth.";
 
   return options;
 }
@@ -25,15 +70,15 @@ LiquidProductDiffusion1D::expected_options()
 LiquidProductDiffusion1D::LiquidProductDiffusion1D(const OptionSet & options)
   : Model(options),
     _rho_rat(declare_parameter<Scalar>(
-        "rho_rat", "Liquid_Product_Density_Ratio", /*allow_nonlinear=*/true)),
-    _phi0(declare_parameter<Scalar>("phi0", "Initial_Porosity")),
-    _M(declare_parameter<Scalar>("M", "Product_Thickness_Growth_Ratio")),
+        "rho_rat", "liquid_product_density_ratio", /*allow_nonlinear=*/true)),
+    _phi0(declare_parameter<Scalar>("phi0", "initial_porosity")),
+    _M(declare_parameter<Scalar>("M", "product_thickness_growth_ratio")),
     _D(declare_parameter<Scalar>(
-        "D", "Liquid_Product_Diffusion_Coefficient", /*allow_nonlinear=*/true)),
-    _lc(declare_parameter<Scalar>("lc", "Representative_Pores_Size")),
-    _r1(declare_input_variable<Scalar>("Inlet_Gap")),
-    _sqrtd(declare_input_variable<Scalar>("Product_Thickness")),
-    _sqrtd_growth(declare_output_variable<Scalar>("Ideal_Thickness_Growth"))
+        "D", "liquid_product_diffusion_coefficient", /*allow_nonlinear=*/true)),
+    _lc(declare_parameter<Scalar>("lc", "representative_pores_size")),
+    _r1(declare_input_variable<Scalar>("inlet_gap")),
+    _sqrtd(declare_input_variable<Scalar>("product_thickness")),
+    _sqrtd_growth(declare_output_variable<Scalar>("ideal_thickness_growth"))
 {
 }
 

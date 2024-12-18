@@ -2,10 +2,10 @@
     [unit]
       type = ModelUnitTest
       model = 'model'
-      input_scalar_names = 'state/h state/r1 state/alpha params/oL'
-      input_scalar_values = 'h rr alpha oLiquid'
-      output_scalar_names = 'state/scale'
-      output_scalar_values = 'scale'
+      input_Scalar_names = 'state/h state/r1 state/alpha params/oL'
+      input_Scalar_values = 'h rr alpha oLiquid'
+      output_Scalar_names = 'state/scale'
+      output_Scalar_values = 'scale'
       check_derivatives = true
       derivative_abs_tol = 1e-4
   []
@@ -37,6 +37,11 @@
         values = "13262.7105 31.85900071 1789596.55"
         batch_shape = '(3)'
     []
+    [p]
+        type = Scalar
+        values = "0.8"
+        batch_shape = '(3)'
+    []
 []
 
 [Models]
@@ -46,12 +51,12 @@
     []
     [model0]
         type = LiquidDeficientPowerScale
-        Liquid_Molar_Volume = 'omega_L'
-        Power = 0.8
-        Product_Height = 'state/h'
-        Inlet_Gap = 'state/r1'
-        Liquid_Saturation = 'state/alpha'
-        Scale = 'state/scale'
+        liquid_molar_volume = 'omega_L'
+        power = 'p'
+        product_height = 'state/h'
+        inlet_gap = 'state/r1'
+        liquid_saturation = 'state/alpha'
+        scale = 'state/scale'
     []
     [model]
         type = ComposedModel

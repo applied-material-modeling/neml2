@@ -2,11 +2,11 @@
     [unit]
       type = ModelUnitTest
       model = 'model'
-      input_scalar_names = 'state/var'
-      input_scalar_values = 'in'
-      output_scalar_names = 'state/out'
-      output_scalar_values = 'out'
-      check_derivatives = true
+      input_Scalar_names = 'state/var'
+      input_Scalar_values = 'in'
+      output_Scalar_names = 'state/out'
+      output_Scalar_values = 'out'
+      check_AD_parameter_derivatives = false
   []
 []
 
@@ -26,7 +26,7 @@
 [Models]
     [model]
         type = SwitchingFunction
-        Smooth_Degree = 10.0
+        smooth_degree = 10.0
         variable = 'state/var'
         switch_out = 'state/out'
     []

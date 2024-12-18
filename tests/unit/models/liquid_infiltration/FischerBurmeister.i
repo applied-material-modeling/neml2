@@ -2,11 +2,11 @@
     [unit]
       type = ModelUnitTest
       model = 'model'
-      input_scalar_names = 'state/a state/b'
-      input_scalar_values = 'var1 var2'
-      output_scalar_names = 'state/fb'
-      output_scalar_values = 'fbcond'
-      check_derivatives = true
+      input_Scalar_names = 'state/a state/b'
+      input_Scalar_values = 'var1 var2'
+      output_Scalar_names = 'state/fb'
+      output_Scalar_values = 'fbcond'
+      check_AD_parameter_derivatives = false
   []
 []
 
@@ -31,8 +31,8 @@
 [Models]
     [model]
         type = FischerBurmeister
-        Condition_A = 'state/a'
-        Condition_B = 'state/b'
-        Fischer_Burmeister = 'state/fb'
+        condition_a = 'state/a'
+        condition_b = 'state/b'
+        fischer_burmeister = 'state/fb'
     []
 []

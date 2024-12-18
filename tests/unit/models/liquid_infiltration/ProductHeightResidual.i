@@ -2,11 +2,11 @@
     [unit]
       type = ModelUnitTest
       model = 'model'
-      input_scalar_names = 'state/delta state/h old_state/h state/alpha forces/t old_forces/t'
-      input_scalar_values = 'delta h hn alpha t tn'
-      output_scalar_names = 'residual/r_h'
-      output_scalar_values = 'r_h'
-      check_derivatives = true
+      input_Scalar_names = 'state/delta state/h old_state/h state/alpha forces/t old_forces/t'
+      input_Scalar_values = 'delta h hn alpha t tn'
+      output_Scalar_names = 'residual/r_h'
+      output_Scalar_values = 'r_h'
+      check_AD_parameter_derivatives = false
   []
 []
 
@@ -51,18 +51,18 @@
 [Models]
     [inlet_gap]
         type = InletGap
-        Product_Thickness_Growth_Ratio = 0.576
-        Initial_Porosity = 0.5
-        Product_Thickness = 'state/delta'
-        Inlet_Gap = 'state/r1'
+        product_thickness_growth_ratio = 0.576
+        initial_porosity = 0.5
+        product_thickness = 'state/delta'
+        inlet_gap = 'state/r1'
     []
     [product_growth]
         type = ProductGrowthWithLiquid
-        Liquid_Molar_Volume = 0.00001256
-        Product_Height = 'state/h'
-        Inlet_Gap = 'state/r1'
-        Liquid_Saturation = 'state/alpha'
-        Phi_Condition = 'state/pcond'
+        liquid_molar_volume = 0.00001256
+        product_height = 'state/h'
+        inlet_gap = 'state/r1'
+        liquid_saturation = 'state/alpha'
+        phi_condition = 'state/pcond'
     []
     [hdot]
         type = ScalarVariableRate
@@ -72,9 +72,9 @@
     []
     [model0]
         type = FischerBurmeister
-        Condition_A = 'state/pcond'
-        Condition_B = 'state/hdot'
-        Fischer_Burmeister = 'residual/r_h'
+        condition_a = 'state/pcond'
+        condition_b = 'state/hdot'
+        fischer_burmeister = 'residual/r_h'
     []
     [model]
         type = ComposedModel

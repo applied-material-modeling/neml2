@@ -2,11 +2,11 @@
     [unit]
       type = ModelUnitTest
       model = 'model'
-      input_scalar_names = 'state/ddot state/scale state/dideal state/switch'
-      input_scalar_values = 'ddot scale dideal switch'
-      output_scalar_names = 'residual/rdelta'
-      output_scalar_values = 'rdelta'
-      check_derivatives = true
+      input_Scalar_names = 'state/ddot state/scale state/dideal state/switch'
+      input_Scalar_values = 'ddot scale dideal switch'
+      output_Scalar_names = 'residual/rdelta'
+      output_Scalar_values = 'rdelta'
+      check_AD_parameter_derivatives = false
       derivative_abs_tol = 1e-4
   []
 []
@@ -41,11 +41,11 @@
 
 [Models]
     [model]
-        type = ProductWidthGrowthRate
-        Thickness_Rate = 'state/ddot'
-        Scale = 'state/scale'
-        Ideal_Thickness_Growth = 'state/dideal'
-        Switch = 'state/switch'
-        Residual_Delta = 'residual/rdelta'
+        type = ProductThicknessGrowthRate
+        thickness_rate = 'state/ddot'
+        scale = 'state/scale'
+        ideal_thickness_growth = 'state/dideal'
+        switch = 'state/switch'
+        residual_delta = 'residual/rdelta'
     []
 []

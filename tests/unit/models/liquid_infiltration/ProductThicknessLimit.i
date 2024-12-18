@@ -2,11 +2,11 @@
     [unit]
       type = ModelUnitTest
       model = 'model1'
-      input_scalar_names = 'state/delta'
-      input_scalar_values = 'delta'
-      output_scalar_names = 'state/dratio'
-      output_scalar_values = 'dratio1'
-      check_derivatives = true
+      input_Scalar_names = 'state/delta'
+      input_Scalar_values = 'delta'
+      output_Scalar_names = 'state/dratio'
+      output_Scalar_values = 'dratio1'
+      check_AD_parameter_derivatives = false
   []
 []
 
@@ -31,9 +31,9 @@
 [Models]
     [model1]
         type = ProductThicknessLimit
-        Initial_Porosity = 0.5
-        Product_Thickness_Growth_Ratio = 'M'
-        Product_Thickness = 'state/delta'
-        Limit_Ratio = 'state/dratio'
+        initial_porosity = 0.5
+        product_thickness_growth_ratio = 'M'
+        product_thickness = 'state/delta'
+        limit_ratio = 'state/dratio'
     []
 []
