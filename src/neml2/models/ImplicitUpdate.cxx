@@ -117,6 +117,9 @@ ImplicitUpdate::set_value(bool out, bool dout_din, bool d2out_din2)
   // automatic scaling.
   _model.init_scaling(x0, _solver.verbose);
 
+  // std::cout << _model.input_axis().subaxis("state") << std::endl;
+  // exit(2);
+
   // Solve for the next state
   NonlinearSolver::Result res;
   {

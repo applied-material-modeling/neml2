@@ -158,6 +158,8 @@ pow(const Derived & a, const Scalar & n)
   net.insert(net.end(), a.base_dim(), torch::indexing::None);
   return Derived(torch::pow(a, n.index(net)), broadcast_batch_dim(a, n));
 }
+
+Scalar sigmoid(const Scalar & a, const Scalar & n);
 }
 
 } // namespace neml2

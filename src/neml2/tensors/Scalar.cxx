@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/tensors/Scalar.h"
+#include "neml2/misc/math.h"
 
 namespace neml2
 {
@@ -63,4 +64,20 @@ abs(const Scalar & a)
   return Scalar(torch::abs(a), a.batch_sizes());
 }
 
+namespace math
+{
+Scalar
+sigmoid(const Scalar & a, const Scalar & n)
+{
+  neml_assert_broadcastable_dbg(a, n);
+  return 1.0 / 2.0 * (1.0 + math::tanh(n * a));
+}
+
+Scalar
+pow(const Scalar & a, const Scalar & n)
+{
+  neml_assert_broadcastable_dbg(a, n);
+  return torch::pow(a, n);
+}
+} // namespace math
 } // namespace neml2
