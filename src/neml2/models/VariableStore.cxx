@@ -138,7 +138,11 @@ void
 VariableStore::assign_output_derivatives(const DerivMap & derivs)
 {
   for (const auto & [yvar, deriv] : derivs)
-    output_variable(yvar).derivatives().insert(deriv.begin(), deriv.end());
+  {
+    auto & y = output_variable(yvar);
+    for (const auto & [xvar, val] : deriv)
+      y.derivatives().insert_or_assign(xvar, val.clone());
+  }
 }
 
 ValueMap
