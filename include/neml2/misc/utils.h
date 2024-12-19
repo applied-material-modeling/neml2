@@ -130,7 +130,7 @@ TraceableTensorShape extract_batch_sizes(const torch::Tensor & tensor, Size batc
 Size storage_size(TensorShapeRef shape);
 
 template <typename... S>
-TensorShape add_shapes(S &&... shape);
+TensorShape add_shapes(const S &... shape);
 
 template <typename... S>
 TraceableTensorShape add_traceable_shapes(S &&... shape);
@@ -154,7 +154,7 @@ std::string stringify(const T & t);
 namespace details
 {
 template <typename... S>
-TensorShape add_shapes_impl(TensorShape &, TensorShapeRef, S &&...);
+TensorShape add_shapes_impl(TensorShape &, TensorShapeRef, const S &...);
 TensorShape add_shapes_impl(TensorShape &);
 
 template <typename... S>
@@ -298,10 +298,10 @@ broadcast_sizes(const T &... shapes)
 
 template <typename... S>
 TensorShape
-add_shapes(S &&... shape)
+add_shapes(const S &... shape)
 {
   TensorShape net;
-  return details::add_shapes_impl(net, std::forward<S>(shape)...);
+  return details::add_shapes_impl(net, shape...);
 }
 
 template <typename... S>
@@ -332,10 +332,10 @@ namespace details
 {
 template <typename... S>
 TensorShape
-add_shapes_impl(TensorShape & net, TensorShapeRef s, S &&... rest)
+add_shapes_impl(TensorShape & net, TensorShapeRef s, const S &... rest)
 {
   net.insert(net.end(), s.begin(), s.end());
-  return add_shapes_impl(net, std::forward<S>(rest)...);
+  return add_shapes_impl(net, rest...);
 }
 
 template <typename... S>
