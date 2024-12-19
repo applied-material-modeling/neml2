@@ -64,7 +64,6 @@ FromTorchScript::load_torch_tensor(const OptionSet & options) const
   bool found = false;
   for (auto item : data.named_buffers())
   {
-    std::cout << item.name << std::endl;
     if (item.name == tensor_name)
     {
       t = item.value;
