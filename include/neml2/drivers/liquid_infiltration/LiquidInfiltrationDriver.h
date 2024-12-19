@@ -44,7 +44,7 @@ public:
    */
   LiquidInfiltrationDriver(const OptionSet & options);
 
-  void setup() override;
+  // void setup() override;
 
   void diagnose(std::vector<Diagnosis> &) const override;
 
@@ -52,7 +52,7 @@ protected:
   void update_forces() override;
 
   Scalar _inlet_mass_flow_rate;
-  VariableName _inlet_mass_flow_rate_name;
-  // const VariableName _inlet_mass_flow_rate_name;
+  // VariableName _inlet_mass_flow_rate_name;
+  const VariableName _inlet_mass_flow_rate_name;
 };
 }

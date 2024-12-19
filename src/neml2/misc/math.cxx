@@ -345,12 +345,12 @@ pow(const Tensor & a, const Tensor & n)
   return Tensor(torch::pow(a, n), broadcast_batch_dim(a, n));
 }
 
-// Tensor
-// sigmoid(const Tensor & a, const Tensor & n)
-//{
-//   neml_assert_broadcastable_dbg(a, n);
-//   return Tensor(1.0 / 2.0 * (1.0 + tanh(n * a)), broadcast_batch_dim(a, n));
-// }
+Tensor
+sigmoid(const Tensor & a, const Tensor & n)
+{
+  neml_assert_broadcastable_dbg(a, n);
+  return Tensor(1.0 / 2.0 * (1.0 + tanh(n * a)));
+}
 
 namespace linalg
 {

@@ -45,18 +45,10 @@ LiquidInfiltrationDriver::expected_options()
 }
 
 LiquidInfiltrationDriver::LiquidInfiltrationDriver(const OptionSet & options)
-  : TransientDriver(options)
-//_inlet_mass_flow_rate(options.get<CrossRef<Scalar>>("prescribed_liquid_inlet_rate")),
-//_inlet_mass_flow_rate_name(options.get<VariableName>("liquid_inlet_rate"))
+  : TransientDriver(options),
+    _inlet_mass_flow_rate(options.get<CrossRef<Scalar>>("prescribed_liquid_inlet_rate")),
+    _inlet_mass_flow_rate_name(options.get<VariableName>("liquid_inlet_rate"))
 {
-}
-
-void
-LiquidInfiltrationDriver::setup()
-{
-  TransientDriver::setup();
-  _inlet_mass_flow_rate_name = input_options().get<VariableName>("liquid_inlet_rate");
-  _inlet_mass_flow_rate = input_options().get<CrossRef<Scalar>>("prescribed_liquid_inlet_rate");
   _inlet_mass_flow_rate = _inlet_mass_flow_rate.to(_device);
 }
 

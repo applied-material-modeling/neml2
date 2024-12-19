@@ -66,11 +66,11 @@ abs(const Scalar & a)
 
 namespace math
 {
-Scalar
-sigmoid(const Scalar & a, const Scalar & n)
-{
-  neml_assert_broadcastable_dbg(a, n);
-  return 1.0 / 2.0 * (1.0 + math::tanh(n * a));
-}
+// Scalar
+// sigmoid(const Scalar & a, const Scalar & n)
+//{
+//   neml_assert_broadcastable_dbg(a, n);
+//   return 1.0 / 2.0 * (1.0 + math::tanh(n * a));
+// }
 } // namespace math
 } // namespace neml2
