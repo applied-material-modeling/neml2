@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/liquid_infiltration/FischerBurmeister.h"
+#include "neml2/models/FischerBurmeister.h"
 #include "neml2/misc/math.h"
 
 namespace neml2

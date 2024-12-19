@@ -38,7 +38,7 @@ FromTorchScript::expected_options()
   OptionSet options = UserTensorBase::expected_options();
   options.doc() = "Get the tensor from torch script. The torch scrip should have the "
                   "named_buffers and the associated tensor. Refer to "
-                  "tests/regression/liquid_infiltration/generate_load_file.py for an example";
+                  "tests/regression/liquid_infiltration/gold/generate_load_file.py for an example";
 
   options.set<std::string>("pytorch_pt_file");
   options.set("pytorch_pt_file").doc() = "Name of the torch script file.";
