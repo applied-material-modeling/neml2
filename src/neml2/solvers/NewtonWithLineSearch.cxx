@@ -36,10 +36,11 @@ NewtonWithLineSearch::expected_options()
   OptionSet options = Newton::expected_options();
   options.doc() = "The Newton-Raphson solver with line search.";
 
-  options.set<std::string>("linesearch_type") = "backtracking";
-  options.set("linesearch_type").doc() =
-      "The type of linesearch used. Choice between backtracking and strong_wolfe. "
-      "Default: backtracking.";
+  EnumSelection linesearch_type({"BACKTRACKING", "STRONG_WOLFE"}, "BACKTRACKING");
+  options.set<EnumSelection>("linesearch_type") = linesearch_type;
+  options.set("linesearch_type").doc() = "The type of linesearch used."
+                                         "Default: BACKTRACKING. Options are " +
+                                         linesearch_type.candidates_str();
 
   options.set<unsigned int>("max_linesearch_iterations") = 10;
   options.set("max_linesearch_iterations").doc() =
@@ -62,7 +63,7 @@ NewtonWithLineSearch::NewtonWithLineSearch(const OptionSet & options)
     _linesearch_miter(options.get<unsigned int>("max_linesearch_iterations")),
     _linesearch_sigma(options.get<Real>("linesearch_cutback")),
     _linesearch_c(options.get<Real>("linesearch_stopping_criteria")),
-    _type(options.get<std::string>("linesearch_type"))
+    _type(options.get<EnumSelection>("linesearch_type"))
 {
 }
 
@@ -95,12 +96,10 @@ NewtonWithLineSearch::linesearch(NonlinearSystem & system,
     auto R = system.residual(xp);
     auto nR2 = math::bvv(R, R);
 
-    if (_type == "backtracking")
+    if (_type == "BACKTRACKING")
       crit = nR02 + 2.0 * _linesearch_c * alpha * math::bvv(R0, dx);
-    else if (_type == "strong_wolfe")
+    else if (_type == "STRONG_WOLFE")
       crit = (1.0 - _linesearch_c * alpha) * nR02;
-    else
-      neml_assert(false, "Line Search type '", _type, "' has not yet been implemented");
 
     // std::cout << "nR02: " << nR02.item<Real>() << std::endl;
     // std::cout << "math::bvv(R0, dx): " << math::bvv(R0, dx).item<Real>() << std::endl;

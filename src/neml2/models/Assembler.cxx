@@ -46,7 +46,6 @@ VectorAssembler::assemble_by_variable(const ValueMap & vals_dict) const
     if (val != vals_dict.end())
     {
       vals[i] = val->second.base_flatten();
-      // std::cout << "In VecAssembler, " << vars[i] << ": " << vals[i].item<Real>() << std::endl;
       neml_assert_dbg(vals[i].base_size(0) == _axis.variable_sizes()[i],
                       "Invalid size for variable ",
                       vars[i],

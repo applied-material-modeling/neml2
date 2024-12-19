@@ -39,20 +39,20 @@ LiquidDeficientPowerScale::expected_options()
       "Current implementation assumed a simple power scale \\f$ \\frac{h_{Si}}{h_{SiC}}^p \\f$";
 
   options.set_parameter<CrossRef<Scalar>>("liquid_molar_volume");
-  options.set("liquid_molar_volume").doc() = "Infiltrated liquid's molar volume (mol/V).";
+  options.set("liquid_molar_volume").doc() =
+      "Infiltrated liquid's molar volume, units of molar mass per volume.";
 
   options.set_parameter<CrossRef<Scalar>>("power");
   options.set("power").doc() = "Power p in the model.";
 
   options.set_input("inlet_gap") = VariableName("state", "r1");
-  options.set("inlet_gap").doc() = "The width of the RVE's inlet.";
+  options.set("inlet_gap").doc() = "The width of the inlet.";
 
   options.set_input("product_height") = VariableName("state", "h");
-  options.set("product_height").doc() = "The product's height in the RVE.";
+  options.set("product_height").doc() = "The product's height.";
 
   options.set_input("liquid_saturation") = VariableName("state", "alpha");
-  options.set("liquid_saturation").doc() =
-      "The current amount of the infiltrated liquid in the RVE.";
+  options.set("liquid_saturation").doc() = "The current amount of the infiltrated liquid.";
 
   options.set_output("scale") = VariableName("state", "scale");
   options.set("scale").doc() = "Scaling relation of the model.";

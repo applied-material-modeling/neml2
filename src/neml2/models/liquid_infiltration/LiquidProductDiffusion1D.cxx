@@ -40,8 +40,7 @@ LiquidProductDiffusion1D::expected_options()
       "The ratio between the density of the liquid and the density of the product.";
 
   options.set_parameter<CrossRef<Scalar>>("initial_porosity");
-  options.set("initial_porosity").doc() =
-      "Initial porosity of the RVE in the absence of product and liquid.";
+  options.set("initial_porosity").doc() = "Initial porosity in the absence of product and liquid.";
 
   options.set_parameter<CrossRef<Scalar>>("product_thickness_growth_ratio");
   options.set("product_thickness_growth_ratio").doc() =
@@ -53,13 +52,13 @@ LiquidProductDiffusion1D::expected_options()
       "The diffusion coefficient of the liquid through the product.";
 
   options.set_parameter<CrossRef<Scalar>>("representative_pores_size");
-  options.set("representative_pores_size").doc() = "Representative pores size of the RVE.";
+  options.set("representative_pores_size").doc() = "Representative pores size.";
 
   options.set_input("inlet_gap") = VariableName("state", "r1");
-  options.set("inlet_gap").doc() = "The width of the RVE's inlet.";
+  options.set("inlet_gap").doc() = "The width of the inlet.";
 
   options.set_input("product_thickness") = VariableName("state", "delta");
-  options.set("product_thickness").doc() = "Thickness of the product in the RVE.";
+  options.set("product_thickness").doc() = "Thickness of the product.";
 
   options.set_output("ideal_thickness_growth") = VariableName("state", "delta_growth");
   options.set("ideal_thickness_growth").doc() = "Ideal's product's thickness growth.";
@@ -105,7 +104,8 @@ LiquidProductDiffusion1D::set_value(bool out, bool dout_din, bool d2out_din2)
       _sqrtd_growth.d(*rho_rat) = Dbar * _r1 / denom;
 
     if (D)
-      _sqrtd_growth.d(*D) = _rho_rat * _r1 / denom / (_lc * _lc);
+      //      _sqrtd_growth.d(*D) = _rho_rat * _r1 / denom / (_lc * _lc);
+      _sqrtd_growth.d(*D) = _rho_rat * _r1 / denom / (math::pow(_lc, 2.0));
 
     _sqrtd_growth.d(_r1) = Dbar * _rho_rat / denom;
     _sqrtd_growth.d(_sqrtd) =

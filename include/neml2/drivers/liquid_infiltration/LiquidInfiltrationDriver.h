@@ -29,7 +29,7 @@
 namespace neml2
 {
 /**
- * @brief The transient driver specialized for solid mechanics problems.
+ * @brief The transient driver specialized for liquid infiltration problems.
  *
  */
 class LiquidInfiltrationDriver : public TransientDriver
@@ -49,13 +49,10 @@ public:
   void diagnose(std::vector<Diagnosis> &) const override;
 
 protected:
-  virtual void update_forces() override;
+  void update_forces() override;
 
-  /**
-   * The value of the driving force, depending on `_control` this is either the prescribed strain or
-   * the prescribed stress.
-   */
-  Scalar _driving_force;
-  VariableName _driving_force_name;
+  Scalar _inlet_mass_flow_rate;
+  VariableName _inlet_mass_flow_rate_name;
+  // const VariableName _inlet_mass_flow_rate_name;
 };
 }

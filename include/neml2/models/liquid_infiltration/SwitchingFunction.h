@@ -28,6 +28,9 @@
 
 namespace neml2
 {
+/**
+ * @brief Define the general smoothen switching function
+ */
 class SwitchingFunction : public Model
 {
 public:
@@ -40,6 +43,10 @@ protected:
 
   // Parameter
   const Scalar & _nn;
+  const Scalar & _scale;
+  const Scalar & _offset;
+  const EnumSelection & _type;
+  const bool & _one_substract_cond;
 
   // State Variables
   const Variable<Scalar> & _var;

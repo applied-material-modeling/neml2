@@ -27,6 +27,10 @@
     [model]
         type = SwitchingFunction
         smooth_degree = 10.0
+        smooth_type = 'SIGMOID'
+        scale = 1.0
+        offset = 1.0
+        one_subtract_condition = true
         variable = 'state/var'
         switch_out = 'state/out'
     []

@@ -28,10 +28,14 @@
 
 namespace neml2
 {
+/**
+ * @brief Define the growth of the product thickness, based on 1D diffusion in a semi-infinite
+ * medium.
+ */
 class LiquidProductDiffusion1D : public Model
 {
 public:
-  static OptionSet expected_options(); // shared by all
+  static OptionSet expected_options();
 
   LiquidProductDiffusion1D(const OptionSet & options);
 

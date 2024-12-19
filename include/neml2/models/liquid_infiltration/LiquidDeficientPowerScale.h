@@ -28,10 +28,13 @@
 
 namespace neml2
 {
+/**
+ * @brief Define the diminising behaviour of the product growth from ideal situation.
+ */
 class LiquidDeficientPowerScale : public Model
 {
 public:
-  static OptionSet expected_options(); // shared by all
+  static OptionSet expected_options();
 
   LiquidDeficientPowerScale(const OptionSet & options);
 

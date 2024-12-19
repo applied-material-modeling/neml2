@@ -28,6 +28,10 @@
 
 namespace neml2
 {
+/**
+ * @brief Define the residual associated with effective growth of the product thickness, accouting
+ * for liquid deficiency and maximum allowable product's thickness.
+ */
 class ProductThicknessGrowthRate : public Model
 {
 public:

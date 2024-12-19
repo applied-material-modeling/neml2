@@ -32,17 +32,32 @@ OptionSet
 SwitchingFunction::expected_options()
 {
   OptionSet options = Model::expected_options();
-  options.doc() = "Smooth switching function of the form \\f$ 1 - \\sigmoid{x - 1, n} \\f$, "
+  options.doc() = "Smoothen function \\f$ g \\f$ where \\f$ g(x/xc - x0) \\f$, "
                   "where n controls the sharpness of the transition.";
 
   options.set_parameter<CrossRef<Scalar>>("smooth_degree");
   options.set("smooth_degree").doc() = "n, sharpness of the transition.";
 
+  EnumSelection function_choice({"SIGMOID"}, "SIGMOID");
+  options.set<EnumSelection>("smooth_type") = function_choice;
+  options.set("smooth_type").doc() =
+      "Function used. Options are " + function_choice.candidates_str();
+
+  options.set_parameter<CrossRef<Scalar>>("scale");
+  options.set("scale").doc() = "xc, rescaling of input variable x.";
+
+  options.set_parameter<CrossRef<Scalar>>("offset");
+  options.set("offset").doc() = "x0, offset to the smoothen function.";
+
+  options.set<bool>("one_subtract_condition") = false;
+  options.set("one_subtract_condition").doc() =
+      "Whether takes 1 to subtract the function, aka \\f$ 1-g \\f$ ";
+
   options.set_input("variable") = VariableName("state", "var");
-  options.set("variable").doc() = "x, input to the sigmoid function.";
+  options.set("variable").doc() = "x, input variable.";
 
   options.set_output("switch_out") = VariableName("state", "out");
-  options.set("switch_out").doc() = "Smooth switching function.";
+  options.set("switch_out").doc() = "g, smooth switching function.";
 
   return options;
 }
@@ -50,6 +65,10 @@ SwitchingFunction::expected_options()
 SwitchingFunction::SwitchingFunction(const OptionSet & options)
   : Model(options),
     _nn(declare_parameter<Scalar>("nn", "smooth_degree")),
+    _scale(declare_parameter<Scalar>("scale", "scale")),
+    _offset(declare_parameter<Scalar>("offset", "offset")),
+    _type(options.get<EnumSelection>("smooth_type")),
+    _one_substract_cond(options.get<bool>("one_subtract_condition")),
     _var(declare_input_variable<Scalar>("variable")),
     _smooth(declare_output_variable<Scalar>("switch_out"))
 {
@@ -62,13 +81,23 @@ SwitchingFunction::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (out)
   {
-    _smooth = 1.0 - math::sigmoid(_var - 1.0, _nn);
+    //_smooth = math::sigmoid(_var - 1.0, _nn);
+    _smooth = math::sigmoid(_var / _scale - _offset, _nn);
+    if (_one_substract_cond)
+      _smooth = 1.0 - _smooth;
   }
 
   if (dout_din)
   {
-    _smooth.d(_var) =
-        1.0 / 2.0 * (_nn * (math::tanh(_nn * (_var - 1.0)) * math::tanh(_nn * (_var - 1.0)) - 1.0));
+    auto dsdvar = -(_nn * (math::pow(math::tanh(_nn * (_offset - _var / _scale)), 2.0) - 1.0)) /
+                  (2.0 * _scale);
+    if (_one_substract_cond)
+      dsdvar = -dsdvar;
+
+    _smooth.d(_var) = dsdvar;
+    //_smooth.d(_var) =
+    //    1.0 / 2.0 * (_nn * (math::tanh(_nn * (_var - 1.0)) * math::tanh(_nn * (_var - 1.0))
+    //    - 1.0));
   }
 }
 }

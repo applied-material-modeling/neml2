@@ -25,13 +25,18 @@
 #pragma once
 
 #include "neml2/models/Model.h"
+// #include "include/neml2/models"
+// #include "src/neml2/models"
 
 namespace neml2
 {
+/**
+ * @brief Define the Fischer Burmeister Complementary Conditions.
+ */
 class FischerBurmeister : public Model
 {
 public:
-  static OptionSet expected_options(); // shared by all
+  static OptionSet expected_options();
 
   FischerBurmeister(const OptionSet & options);
 
@@ -43,7 +48,6 @@ protected:
   const Variable<Scalar> & _b;
 
   // Residual Variables
-  // Variable<Vec> & _residual;
   Variable<Scalar> & _fb;
 };
 }

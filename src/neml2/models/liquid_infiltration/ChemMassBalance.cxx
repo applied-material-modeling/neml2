@@ -32,7 +32,7 @@ OptionSet
 ChemMassBalance::expected_options()
 {
   OptionSet options = Model::expected_options();
-  options.doc() = "Chemical mass balance of the infiltrated RVE model: \\f$ total = current - "
+  options.doc() = "Chemical mass balance of the infiltrated model: \\f$ total = current - "
                   "switch * in + minus_reaction \\f$";
 
   options.set_input("in") = VariableName("state", "in");
@@ -48,7 +48,7 @@ ChemMassBalance::expected_options()
   options.set("current").doc() = "The current mass rate in the system";
 
   options.set_output("total") = VariableName("residual", "total");
-  options.set("total").doc() = "Chemical mass balance of the infiltrated RVE model.";
+  options.set("total").doc() = "Chemical mass balance of the infiltrated model.";
 
   return options;
 }

@@ -28,6 +28,9 @@
 
 namespace neml2
 {
+/**
+ * @brief Read the tensors provided by a torch script file
+ */
 class FromTorchScript : public UserTensorBase
 {
 public:

@@ -32,61 +32,56 @@ OptionSet
 LiquidInfiltrationDriver::expected_options()
 {
   OptionSet options = TransientDriver::expected_options();
-  options.doc() = "Driver for Liquid Infiltration Process";
+  options.doc() = "Driver for the liquid infiltration process";
 
-  options.set<CrossRef<torch::Tensor>>("prescribed_liquid_inlet_rate");
+  options.set<CrossRef<Scalar>>("prescribed_liquid_inlet_rate");
   options.set("prescribed_liquid_inlet_rate").doc() =
-      "Liquid saturate rate (mol/V) introducted to the RVE at the inlet";
+      "Liquid saturate rate, with a units of molar mass per volume, introducted at the inlet";
 
-  options.set<VariableName>("liquid_inlet_rate") = VariableName("forces", "aInDot");
-  options.set("liquid_inlet_rate").doc() = "Name of the liquid_inlet_rate.";
+  options.set<VariableName>("liquid_inlet_rate") = VariableName("forces", "alpha_in_rate");
+  options.set("liquid_inlet_rate").doc() = "Name of the variable for inlet mass flow rate.";
 
   return options;
 }
 
 LiquidInfiltrationDriver::LiquidInfiltrationDriver(const OptionSet & options)
   : TransientDriver(options)
-//_driving_force(options.get<CrossRef<torch::Tensor>>("Prescribed_Liquid_Inlet_Rate"), 2),
-//_driving_force_name(options.get<VariableName>("Liquid_Inlet_Rate"))
+//_inlet_mass_flow_rate(options.get<CrossRef<Scalar>>("prescribed_liquid_inlet_rate")),
+//_inlet_mass_flow_rate_name(options.get<VariableName>("liquid_inlet_rate"))
 {
-  //_driving_force = _driving_force.to(_device);
 }
 
 void
 LiquidInfiltrationDriver::setup()
 {
   TransientDriver::setup();
-  _driving_force_name = input_options().get<VariableName>("liquid_inlet_rate");
-  _driving_force =
-      Scalar(input_options().get<CrossRef<torch::Tensor>>("prescribed_liquid_inlet_rate"));
-  _driving_force = _driving_force.to(_device);
+  _inlet_mass_flow_rate_name = input_options().get<VariableName>("liquid_inlet_rate");
+  _inlet_mass_flow_rate = input_options().get<CrossRef<Scalar>>("prescribed_liquid_inlet_rate");
+  _inlet_mass_flow_rate = _inlet_mass_flow_rate.to(_device);
 }
 
 void
 LiquidInfiltrationDriver::diagnose(std::vector<Diagnosis> & diagnoses) const
 {
   TransientDriver::diagnose(diagnoses);
-  diagnostic_assert(diagnoses,
-                    _driving_force.batch_dim() >= 1,
-                    "Liquid_Inlet_Rate should have at least one batch dimension but instead "
-                    "has batch dimension ",
-                    _driving_force.batch_dim());
   diagnostic_assert(
       diagnoses,
-      _driving_force.batch_size(0) == _time.batch_size(0),
-      "Liquid_Inlet_Rate should have the same number of steps as time, but instead has ",
-      _driving_force.batch_size(0),
-      " time steps");
+      _inlet_mass_flow_rate.batch_dim() >= 1,
+      "prescribed_liquid_inlet_rate should have at least one batch dimension but instead "
+      "has batch dimension ",
+      _inlet_mass_flow_rate.batch_dim());
+  diagnostic_assert(
+      diagnoses,
+      _inlet_mass_flow_rate.batch_size(0) == _time.batch_size(0),
+      "prescribed_liquid_inlet_rate should have the same number of steps as time, but instead has ",
+      _inlet_mass_flow_rate.batch_size(0),
+      " steps");
 }
 
 void
 LiquidInfiltrationDriver::update_forces()
 {
   TransientDriver::update_forces();
-
-  // auto current_driving_force = _driving_force.batch_index({_step_count});
-  //_in.base_index_put_(_driving_force_name, current_driving_force);
-  _in[_driving_force_name] = _driving_force.batch_index({_step_count});
-  //_in[_temperature_name] = _temperature.batch_index({_step_count});
+  _in[_inlet_mass_flow_rate_name] = _inlet_mass_flow_rate.batch_index({_step_count});
 }
 }

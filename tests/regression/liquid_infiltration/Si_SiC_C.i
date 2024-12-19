@@ -74,7 +74,7 @@ nbatch = '(5)'
 [Solvers]
     [newton]
         type = NewtonWithLineSearch
-        linesearch_type = strong_wolfe
+        linesearch_type = STRONG_WOLFE
         rel_tol = 1e-8
         abs_tol = 1e-10
         max_its = 100
@@ -127,6 +127,10 @@ nbatch = '(5)'
     [alpha_transition]
         type = SwitchingFunction
         smooth_degree = 100.0
+        smooth_type = 'SIGMOID'
+        scale = 1.0
+        offset = 1.0
+        one_subtract_condition = true
         variable = 'state/h'
         switch_out = 'state/alpha_transition'
     []
@@ -187,6 +191,10 @@ nbatch = '(5)'
     [delta_limit]
         type = SwitchingFunction
         smooth_degree = 100.0
+        smooth_type = 'SIGMOID'
+        scale = 1.0
+        offset = 1.0
+        one_subtract_condition = true
         variable = 'state/dratio'
         switch_out = 'state/dlimit'
     []

@@ -28,10 +28,13 @@
 
 namespace neml2
 {
+/**
+ * @brief Define the local chemical mass balance with chemical reactions.
+ */
 class ChemMassBalance : public Model
 {
 public:
-  static OptionSet expected_options(); // shared by all
+  static OptionSet expected_options();
 
   ChemMassBalance(const OptionSet & options);
 

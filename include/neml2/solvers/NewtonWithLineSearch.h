@@ -64,6 +64,6 @@ protected:
   /// Stopping criteria for linesearch
   Real _linesearch_c;
 
-  std::string _type;
+  EnumSelection _type;
 };
 } // namespace neml2

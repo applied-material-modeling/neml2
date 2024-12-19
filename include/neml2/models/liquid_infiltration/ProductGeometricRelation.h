@@ -28,10 +28,13 @@
 
 namespace neml2
 {
+/**
+ * @brief Define the relationship between the product saturation and its corresponding geometry.
+ */
 class ProductGeometricRelation : public Model
 {
 public:
-  static OptionSet expected_options(); // shared by all
+  static OptionSet expected_options();
 
   ProductGeometricRelation(const OptionSet & options);
 
@@ -47,7 +50,6 @@ protected:
   const Variable<Scalar> & _h;
 
   // Residual Variables
-  // Variable<Vec> & _residual;
   Variable<Scalar> & _alphaP;
 };
 }

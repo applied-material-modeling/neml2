@@ -28,6 +28,9 @@
 
 namespace neml2
 {
+/**
+ * @brief Define the maximum allowable of the product's thickness
+ */
 class ProductThicknessLimit : public Model
 {
 public:

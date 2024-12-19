@@ -72,12 +72,5 @@ sigmoid(const Scalar & a, const Scalar & n)
   neml_assert_broadcastable_dbg(a, n);
   return 1.0 / 2.0 * (1.0 + math::tanh(n * a));
 }
-
-Scalar
-pow(const Scalar & a, const Scalar & n)
-{
-  neml_assert_broadcastable_dbg(a, n);
-  return torch::pow(a, n);
-}
 } // namespace math
 } // namespace neml2

@@ -28,6 +28,10 @@
 
 namespace neml2
 {
+/**
+ * @brief Define the growth of the product height in the abundance of liquid to sustain the chemical
+ * reaction.
+ */
 class ProductGrowthWithLiquid : public Model
 {
 public:

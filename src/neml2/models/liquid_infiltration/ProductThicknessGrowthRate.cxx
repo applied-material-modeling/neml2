@@ -74,13 +74,7 @@ ProductThicknessGrowthRate::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (out)
   {
-    // std::cout << "_ddot = " << _ddot.value().item<Real>() << std::endl;
-    // std::cout << "_scale = " << _scale.value().item<Real>() << std::endl;
-    // std::cout << "_rate = " << _rate.value().item<Real>() << std::endl;
-    // std::cout << "_smooth = " << _smooth.value().item<Real>() << std::endl;
-
     _rdelta = _ddot - _scale * _rate * _smooth;
-    // std::cout << "_rdelta = " << _rdelta.value().item<Real>() << std::endl;
   }
 
   if (dout_din)

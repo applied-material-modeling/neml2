@@ -36,8 +36,7 @@ ProductThicknessLimit::expected_options()
   options.doc() = "Maximum allowable thickness for the product.";
 
   options.set_parameter<CrossRef<Scalar>>("initial_porosity");
-  options.set("initial_porosity").doc() =
-      "Initial porosity of the RVE in the absence of product and liquid.";
+  options.set("initial_porosity").doc() = "Initial porosity in the absence of product and liquid.";
 
   options.set_parameter<CrossRef<Scalar>>("product_thickness_growth_ratio");
   options.set("product_thickness_growth_ratio").doc() =
@@ -45,7 +44,7 @@ ProductThicknessLimit::expected_options()
       "Value should be between 0 and 1. For Si + C -> SiC, set this to 0.576.";
 
   options.set_input("product_thickness") = VariableName("state", "delta");
-  options.set("product_thickness").doc() = "Thickness of the product in the RVE";
+  options.set("product_thickness").doc() = "Thickness of the product.";
 
   options.set_output("limit_ratio") = VariableName("state", "dratio");
   options.set("limit_ratio").doc() = "Maximum allowable thickness for the product.";

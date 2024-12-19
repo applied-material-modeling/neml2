@@ -28,10 +28,13 @@
 
 namespace neml2
 {
+/**
+ * @brief Define inlet gap where the liquid flows into
+ */
 class InletGap : public Model
 {
 public:
-  static OptionSet expected_options(); // shared by all
+  static OptionSet expected_options();
 
   InletGap(const OptionSet & options);
 
@@ -44,8 +47,7 @@ protected:
   // State Variables
   const Variable<Scalar> & _sqrtd;
 
-  // Residual Variables
-  // Variable<Vec> & _residual;
+  // Output Variables
   Variable<Scalar> & _r1;
 };
 }

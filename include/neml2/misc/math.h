@@ -293,9 +293,18 @@ pow(const T & a, const Real & n)
   return T(torch::pow(a, n), a.batch_sizes());
 }
 
+// template <class T, typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<T>, T>>>
+// T
+// sigmoid(const T & a, const Real & n)
+//{
+//   return T(1.0 / 2.0 * (1.0 + torch::tanh(n * a)), a.batch_sizes());
+// }
+
 Tensor pow(const Real & a, const Tensor & n);
 
 Tensor pow(const Tensor & a, const Tensor & n);
+
+// Tensor sigmoid(const Tensor & a, const Tensor & n);
 
 template <class T, typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<T>, T>>>
 T

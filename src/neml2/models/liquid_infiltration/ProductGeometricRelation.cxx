@@ -35,19 +35,21 @@ ProductGeometricRelation::expected_options()
   options.doc() = "Relationship between the product height, width and its saturation in mol/V.";
 
   options.set_parameter<CrossRef<Scalar>>("product_molar_volume");
-  options.set("product_molar_volume").doc() = "Product's molar volume (mol/V).";
+  options.set("product_molar_volume").doc() =
+      "Product's molar volume, units of molar mass per volume.";
 
   options.set_input("inlet_gap") = VariableName("state", "r1");
-  options.set("inlet_gap").doc() = "The width of the RVE's inlet.";
+  options.set("inlet_gap").doc() = "The width of the inlet.";
 
   options.set_input("product_height") = VariableName("state", "h");
-  options.set("product_height").doc() = "Height of the product in the RVE.";
+  options.set("product_height").doc() = "Height of the product.";
 
   options.set_input("product_thickness") = VariableName("state", "delta");
-  options.set("product_thickness").doc() = "Thickness of the product in the RVE.";
+  options.set("product_thickness").doc() = "Thickness of the product.";
 
   options.set_output("product_saturation") = VariableName("state", "alphaP");
-  options.set("product_saturation").doc() = "The saturation of the product in mol/V.";
+  options.set("product_saturation").doc() =
+      "The saturation of the product, units of molar mass per volume.";
 
   return options;
 }
