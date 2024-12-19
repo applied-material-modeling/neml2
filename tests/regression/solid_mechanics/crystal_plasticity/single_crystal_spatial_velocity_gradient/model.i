@@ -160,8 +160,8 @@
   []
   [elasticity]
     type = LinearIsotropicElasticity
-    youngs_modulus = 1e5
-    poisson_ratio = 0.25
+    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
+    coefficients = '1e5 0.25'
     strain = "state/elastic_strain"
     stress = "state/internal/cauchy_stress"
   []
@@ -222,9 +222,14 @@
     implicit_model = 'implicit_rate'
     solver = 'newton'
   []
+  [full_stress]
+    type = SR2toR2
+    input = 'state/internal/cauchy_stress'
+    output = 'state/internal/full_cauchy_stress'
+  []
   [model_with_stress]
     type = ComposedModel
-    models = 'model elasticity'
+    models = 'model elasticity full_stress'
     additional_outputs = 'state/elastic_strain'
   []
 []
