@@ -146,20 +146,22 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         Args:
             exclude_parameters (list of str): NEML2 parameters to exclude
         """
+        self.parameter_names = []
         for pname, param in self.model.named_parameters().items():
             if "." in pname:
                 errmsg = "Parameter name {} contains a period, which is not allowed. \nMake sure Settings/parameter_name_separator='_' in the NEML2 input file."
                 raise ValueError(errmsg.format(pname))
             if pname in exclude_parameters:
                 continue
+            self.parameter_names.append(pname)
             param.requires_grad_(True)
             self.register_parameter(pname, torch.nn.Parameter(param.torch()))
 
     def _update_parameter_values(self):
         """Copy over new parameter values"""
-
-        for pname, new_value in self.named_parameters():
+        for pname in self.parameter_names:
             # We may need to update the batch shapes
+            new_value = getattr(self, pname)
             current_value = self.model.get_parameter(pname).tensor()
             batch_dim = new_value.dim() - current_value.base.dim()
             self.model.set_parameter(pname, Tensor(new_value.clone(), batch_dim))

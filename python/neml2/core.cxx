@@ -277,6 +277,11 @@ Diagnose common issues in model setup. Raises a runtime error including all iden
 
   // neml2.core.Model
   model_cls.def_property_readonly("name", &Model::name, "Name of the model")
+      .def(
+          "to",
+          [](Model & self, NEML2_TENSOR_OPTIONS_VARGS) { return self.to(NEML2_TENSOR_OPTIONS); },
+          py::kw_only(),
+          PY_ARG_TENSOR_OPTIONS)
       .def_property_readonly("type", &Model::type, "Type of the model")
       .def("__str__", [](const Model & self) { return utils::stringify(self); })
       .def(
