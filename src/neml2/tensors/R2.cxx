@@ -53,6 +53,6 @@ R2::R2(const Rot & r)
 R4
 R2::identity_map(const torch::TensorOptions & options)
 {
-  return SSR4::identity(options);
+  return torch::eye(9, options).view({3, 3, 3, 3});
 }
 } // namespace neml2

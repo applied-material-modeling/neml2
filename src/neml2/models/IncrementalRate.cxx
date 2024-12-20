@@ -76,7 +76,7 @@ IncrementalRate<T>::set_value(bool out, bool dout_din, bool d2out_din2)
   if (dout_din)
   {
     if (_dv.is_dependent())
-      _dv_dt.d(_dv) = Tensor(torch::eye(_dv.base_storage(), _dv.options()) / dt, dt.batch_dim());
+      _dv_dt.d(_dv) = T::identity_map(_dv.options()) / dt;
     if (_t.is_dependent())
       _dv_dt.d(_t) = -_dv / dt / dt;
     if (_tn.is_dependent())
