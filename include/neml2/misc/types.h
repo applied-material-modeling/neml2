@@ -25,6 +25,7 @@
 #pragma once
 
 #include <torch/types.h>
+#include <variant>
 
 namespace neml2
 {
