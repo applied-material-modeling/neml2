@@ -57,10 +57,6 @@ ComposedModel::expected_options()
   options.set("automatic_nonlinear_parameter").doc() =
       "Whether to automatically add dependent nonlinear parameters";
 
-  // No jitting :/
-  options.set<bool>("jit") = false;
-  options.set("jit").suppressed() = true;
-
   return options;
 }
 
@@ -128,6 +124,18 @@ ComposedModel::ComposedModel(const OptionSet & options)
       if (_nl_params.count(pname))
         _nl_param_models[pname] = pmodel;
   }
+
+  // Is JIT enabled?
+  _jit = Model::is_jit_enabled(); // boolean read from input file
+
+  // If any submodel does not support JIT, disable JIT
+  if (_jit)
+    for (const auto * submodel : registered_models())
+      if (!submodel->is_jit_enabled())
+      {
+        _jit = false;
+        break;
+      }
 }
 
 std::map<std::string, const VariableBase *>

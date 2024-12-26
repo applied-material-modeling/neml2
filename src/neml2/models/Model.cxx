@@ -250,7 +250,7 @@ Model::forward(bool out, bool dout, bool d2out)
 void
 Model::forward_maybe_jit(bool out, bool dout, bool d2out)
 {
-  if (!_jit || torch::jit::tracer::isTracing())
+  if (!is_jit_enabled() || torch::jit::tracer::isTracing())
   {
     forward(out, dout, d2out);
     return;

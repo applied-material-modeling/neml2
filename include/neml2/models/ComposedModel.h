@@ -44,6 +44,8 @@ public:
   std::map<std::string, Model *>
   named_nonlinear_parameter_models(bool recursive = false) const override;
 
+  bool is_jit_enabled() const override { return _jit; }
+
 protected:
   void link_input_variables(Model * submodel) override;
   void link_output_variables(Model * submodel) override;
@@ -58,5 +60,8 @@ private:
 
   /// Helper to resolve model dependency
   DependencyResolver<Model, VariableName> _dependency;
+
+  /// Whether JIT is enabled
+  bool _jit;
 };
 } // namespace neml2

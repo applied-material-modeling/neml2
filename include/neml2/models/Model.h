@@ -80,6 +80,9 @@ public:
   /// Whether this model defines one or more nonlinear equations to be solved
   virtual bool is_nonlinear_system() const { return _nonlinear_system; }
 
+  /// Whether JIT is enabled
+  virtual bool is_jit_enabled() const { return _jit; }
+
   /// The models that may be used during the evaluation of this model
   const std::vector<Model *> & registered_models() const { return _registered_models; }
   /// Get a registered model by its name
@@ -89,11 +92,6 @@ public:
   std::set<VariableName> consumed_items() const override;
   /// The variables that this model defines as part of its output
   std::set<VariableName> provided_items() const override;
-
-  void clear_input() override;
-  void clear_output() override;
-  void zero_input() override;
-  void zero_output() override;
 
   /// Request to use AD to compute the first derivative of a variable
   void request_AD(VariableBase & y, const VariableBase & u);
@@ -145,6 +143,11 @@ protected:
   virtual void link_input_variables(Model * submodel);
   virtual void link_output_variables();
   virtual void link_output_variables(Model * submodel);
+
+  void clear_input() override;
+  void clear_output() override;
+  void zero_input() override;
+  void zero_output() override;
 
   /**
    * Request the use of automatic differentiation to compute variable derivatives

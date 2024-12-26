@@ -43,13 +43,20 @@ main(int argc, char * argv[])
       .help("additional command-line arguments to pass to the input file parser");
 
   // Optional arguments
-  auto & excl_group = program.add_mutually_exclusive_group();
-  excl_group.add_argument("-d", "--diagnose")
+  program.add_argument("-d", "--diagnose")
       .help("run diagnostics on common problems and exit (without further execution)")
       .flag();
-  excl_group.add_argument("-t", "--time")
+  program.add_argument("-t", "--time")
       .help("output the elapsed wall time during model evaluation")
       .flag();
+  program.add_argument("-n", "--num-runs")
+      .default_value(1)
+      .help("number of runs to measure the model evaluation time")
+      .scan<'u', std::size_t>();
+  program.add_argument("--warmup")
+      .default_value(0)
+      .help("number of warmup runs before actually measuring the model evaluation time")
+      .scan<'u', std::size_t>();
 
   try
   {
@@ -95,10 +102,19 @@ main(int argc, char * argv[])
         return 0;
       }
 
+      if (program["--time"] == true)
       {
-        neml2::TimedSection ts(drivername, "Driver::run");
-        driver.run();
+        std::cout << "Warming up...\n";
+        for (std::size_t i = 0; i < program.get<std::size_t>("--warmup"); i++)
+          driver.run();
       }
+
+      if (program["--time"] == true)
+        for (std::size_t i = 0; i < program.get<std::size_t>("--num-runs"); i++)
+        {
+          neml2::TimedSection ts(drivername, "Driver::run");
+          driver.run();
+        }
 
       if (program["--time"] == true)
       {
