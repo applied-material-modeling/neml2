@@ -112,7 +112,7 @@ if __name__ == "__main__":
 
     with open(logfile, "w") as log:
         missing = 0
-        log.write("## Syntax check\n\n")
+        log.write("### Syntax check\n\n")
         sections = get_sections(syntax)
         for section in sections:
             with open((outdir / section.lower()).with_suffix(".md"), "w") as stream:

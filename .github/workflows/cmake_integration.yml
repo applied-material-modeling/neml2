@@ -12,22 +12,15 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  cmake-integration:
-    name: Test CMake integration as a subproject
+  test:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: applied-material-modeling/neml2-ci@main
         with:
-          submodules: recursive
           path: neml2
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.9"
-      - uses: jwlawson/actions-setup-cmake@v2
-        with:
-          cmake-version: "3.28"
-      - name: Install PyTorch
-        run: pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cpu
+          python-version: 3.9
+          cmake-version: 3.28
+          torch-version: 2.5.1
       - name: Create a source file for testing purposes
         run: |
           echo -e "\
@@ -47,7 +40,7 @@ jobs:
             target_link_libraries(foo neml2)\n\
             " > CMakeLists.txt
       - name: Configure with CMake
-        run: cmake -DNEML2_TESTS=OFF -B build .
+        run: cmake -DNEML2_TESTS=OFF -GNinja -B build .
       - name: Compile
-        run: cmake --build build --target all -j 2 --
+        run: cmake --build build --target all
       - run: ./build/foo

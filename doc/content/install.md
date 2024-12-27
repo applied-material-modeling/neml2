@@ -69,7 +69,7 @@ cmake --preset release -S .
 Finally, compile NEML2.
 
 ```
-cmake --build --preset release
+cmake --build --preset release-cpp
 ```
 
 \note

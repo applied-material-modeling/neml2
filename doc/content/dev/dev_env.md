@@ -8,7 +8,7 @@ The CMake configure and build commands were introduced in the [Installation Guid
 
 ```
 cmake --preset release -S .
-cmake --build --preset release
+cmake --build --preset release-cpp
 ```
 which uses the CMake preset named "release". The configure and build commands can take other CMake presets in the following form
 

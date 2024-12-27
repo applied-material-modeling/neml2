@@ -8,85 +8,93 @@ on:
 
 # Newer commits should cancel old runs
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request_target.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build-deploy:
-    runs-on: ubuntu-22.04
+  documentation:
     permissions:
-      contents: write
+      contents: read
       pull-requests: write
+    runs-on: ubuntu-22.04
     steps:
-      # Setup
-      - uses: actions/checkout@v4
-        if: github.event_name == 'push'
+      - uses: applied-material-modeling/neml2-ci@main
         with:
-          submodules: recursive
-      - uses: actions/checkout@v4
-        if: github.event_name == 'pull_request_target'
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          submodules: recursive
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.9"
-      - uses: jwlawson/actions-setup-cmake@v2
-        with:
-          cmake-version: "3.28"
-      - name: Install dependencies
-        run: |
-          sudo apt install graphviz lcov
-          pip install -r requirements.txt
-      - name: Install PyTorch
-        run: pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cpu
-
-      # Configure and build
-      - name: Configure documentation
-        run: |
-          cmake \
-            -DCMAKE_BUILD_TYPE=Coverage \
-            -DCMAKE_UNITY_BUILD=ON \
-            -DNEML2_TESTS=OFF \
-            -DNEML2_RUNNER=OFF \
-            -DNEML2_PYBIND=ON \
-            -DNEML2_DOC=ON \
-            -B build \
-            .
-      - name: Build documentation
-        run: cmake --build build --target html -j 2 --
+          ref: ${{ github.event.pull_request_target.head.ref || github.ref }}
+          python-version: 3.9
+          cmake-version: 3.28
+          torch-version: 2.5.1
+      - name: Configure
+        run: cmake --preset dev -GNinja -S .
+      - name: Build
+        run: cmake --build --preset dev-doc
 
       # Documentation error checking
       - name: Show build logs for C++ documentation
-        run: cat build/doc/doxygen.html.log
-      - name: Show build logs for Python documentation
-        run: cat build/doc/doxygen.python.log
-      - name: Warn about syntax errors
-        if: ${{ github.event_name == 'pull_request_target'}}
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-          header: syntax-error
-          path: build/doc/syntax_error.log
-      - name: Error if syntax errors were detected
-        run: grep -q "No syntax error" build/doc/syntax_error.log
-
-      # Code coverage
-      - name: Build unit tests
-        run: cmake --build build --target all -j 2 --
-      - name: Code coverage check
         run: |
-          build/scripts/coverage.sh
-          mv build/coverage build/doc/build/html/
+          echo '### C++ documentation build log' >> $GITHUB_STEP_SUMMARY
+          cat build/dev/doc/doxygen.html.log >> $GITHUB_STEP_SUMMARY
+      - name: Show build logs for Python documentation
+        run: |
+          echo '### Python documentation build log' >> $GITHUB_STEP_SUMMARY
+          cat build/dev/doc/doxygen.python.log >> $GITHUB_STEP_SUMMARY
+      - name: Warn about syntax errors
+        run: |
+          cat build/dev/doc/syntax_error.log >> $GITHUB_STEP_SUMMARY
+      - name: Error if syntax errors were detected
+        run: grep -q "No syntax error" build/dev/doc/syntax_error.log
 
-      # Preview PR documentation and coverage
+      - name: Upload documentation
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation
+          path: build/dev/doc/build/html
+
+  coverage:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: applied-material-modeling/neml2-ci@main
+        with:
+          python-version: 3.9
+          cmake-version: 3.28
+          torch-version: 2.5.1
+      - name: Configure
+        run: cmake --preset coverage -GNinja -S .
+      - name: Build
+        run: cmake --build --preset coverage
+      - name: Code coverage check
+        run: build/coverage/scripts/coverage.sh
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: build/coverage/coverage
+
+  deploy:
+    needs: [documentation, coverage]
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: documentation
+          path: site/html
+      - uses: actions/download-artifact@v4
+        with:
+          name: coverage
+          path: site/html/coverage
+
+      # PR preview
       - name: Deploy preview to GitHub Pages
         if: github.event_name == 'pull_request_target'
         uses: JamesIves/github-pages-deploy-action@v4.4.1
         with:
           branch: gh-pages
-          folder: build/doc/build/html
+          folder: site/html
           target-folder: pr-preview/pr-${{ github.event.number }}
-          force: false
       - name: Update comment with preview link
         if: github.event_name == 'pull_request_target'
         uses: marocchino/sticky-pull-request-comment@v2
@@ -102,6 +110,6 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4.4.1
         with:
           branch: gh-pages
-          folder: build/doc/build/html
+          folder: site/html
           clean-exclude: pr-preview/
-          force: false
+          single-commit: true

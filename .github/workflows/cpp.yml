@@ -13,7 +13,6 @@ concurrency:
 
 jobs:
   clang-format:
-    name: Formatting Check
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -31,106 +30,102 @@ jobs:
 
   # TODO: Re-enable the linting checks
 
-  build-test:
+  test:
     needs: clang-format
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, macos-latest]
+        btype: [Release, Debug]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: applied-material-modeling/neml2-ci@main
+        with:
+          python-version: 3.9
+          cmake-version: 3.28
+          torch-version: 2.5.1
+      - name: Configure
+        run: cmake --preset dev -GNinja -DCMAKE_BUILD_TYPE=${{ matrix.btype }} -S .
+      - name: Build
+        run: cmake --build --preset dev-cpp
+      - run: cd tests && ../build/dev/tests/unit/unit_tests -r junit > ${{ matrix.os }}-${{ matrix.btype }}-unit_tests.xml
+        continue-on-error: true
+      - run: cd tests && ../build/dev/tests/regression/regression_tests -r junit > ${{ matrix.os }}-${{ matrix.btype }}-regression_tests.xml
+        continue-on-error: true
+      - run: cd tests && ../build/dev/tests/verification/verification_tests -r junit > ${{ matrix.os }}-${{ matrix.btype }}-verification_tests.xml
+        continue-on-error: true
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.os }}-${{ matrix.btype }}
+          path: tests/*.xml
+
+  publish-test-results:
+    needs: test
     permissions:
       contents: read
       checks: write
       pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: test-results
+          pattern: test-results-*
+          merge-multiple: true
+      - uses: EnricoMi/publish-unit-test-result-action/linux@v2
+        with:
+          files: test-results/*.xml
+          check_name: Test Results (C++ backend)
+          check_run: false
+          action_fail: true
+          comment_mode: off
+      - name: Check for missing tests
+        run: |
+          ntest=$(find test-results -name "*.xml" | wc -l)
+          if [ $ntest -ne 12 ]; then
+            echo "Expected 12 test results, found $ntest" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+  runner:
+    needs: clang-format
     strategy:
       matrix:
         os: [ubuntu-22.04, macos-latest]
         btype: [Release, Debug]
-        unity: [ON, OFF]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: applied-material-modeling/neml2-ci@main
         with:
-          submodules: recursive
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.9"
-      - uses: jwlawson/actions-setup-cmake@v2
-        with:
-          cmake-version: "3.28"
-      - name: Install PyTorch (Ubuntu)
-        if: matrix.os == 'ubuntu-22.04'
-        run: pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cpu
-      - name: Install PyTorch (MacOS)
-        if: matrix.os == 'macos-latest'
-        run: pip install torch==2.5.1
-      - run: |
-          cmake \
-            -DCMAKE_BUILD_TYPE=${{ matrix.btype }} \
-            -DCMAKE_UNITY_BUILD=${{ matrix.unity }} \
-            -DNEML2_TESTS=ON \
-            -DNEML2_RUNNER=OFF \
-            -DNEML2_PYBIND=OFF \
-            -DNEML2_DOC=OFF \
-            -B build \
-            .
-      - run: cmake --build build --target all -j 2 --
-      - run: cd tests && ../build/tests/unit/unit_tests -r junit > unit_tests.xml
-        continue-on-error: true
-      - run: cd tests && ../build/tests/regression/regression_tests -r junit > regression_tests.xml
-        continue-on-error: true
-      - run: cd tests && ../build/tests/verification/verification_tests -r junit > verification_tests.xml
-        continue-on-error: true
-      - name: Publish Test Results
-        if: matrix.os == 'ubuntu-22.04'
-        uses: EnricoMi/publish-unit-test-result-action/linux@v2
-        with:
-          files: tests/*.xml
-          check_name: Test Results (${{ matrix.os }}-${{ matrix.btype }}-${{ matrix.unity }})
-          check_run: false
-      - name: Publish Test Results
-        if: matrix.os == 'macos-latest'
-        uses: EnricoMi/publish-unit-test-result-action/macos@v2
-        with:
-          files: tests/*.xml
-          check_name: Test Results (${{ matrix.os }}-${{ matrix.btype }}-${{ matrix.unity }})
-          check_run: false
-
-  build-all:
-    needs: clang-format
-    runs-on: ubuntu-22.04
-    strategy:
-      matrix:
-        btype: [Release, Debug]
-        unity: [ON, OFF]
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.9"
-      - uses: jwlawson/actions-setup-cmake@v2
-        with:
-          cmake-version: "3.28"
-      - name: Install PyTorch
-        run: pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cpu
-      - run: |
-          cmake \
-            -DCMAKE_BUILD_TYPE=${{ matrix.btype }} \
-            -DCMAKE_UNITY_BUILD=${{ matrix.unity }} \
-            -DNEML2_TESTS=ON \
-            -DNEML2_RUNNER=ON \
-            -DNEML2_CPU_PROFILER=ON \
-            -DNEML2_PYBIND=OFF \
-            -DNEML2_DOC=OFF \
-            -B build \
-            .
-      - run: cmake --build build --target all -j 2 --
-      - run: ./build/runner/runner runner/benchmark/elasticity/model.i driver nbatch=1 device=cpu
-      - run: ./build/runner/runner runner/benchmark/radret/model.i driver nbatch=1 device=cpu
-      - run: ./build/runner/runner runner/benchmark/isoharden/model.i driver nbatch=1 device=cpu
-      - run: ./build/runner/runner runner/benchmark/chaboche2/model.i driver nbatch=1 device=cpu
-      - run: ./build/runner/runner runner/benchmark/chaboche4/model.i driver nbatch=1 device=cpu
-      - run: ./build/runner/runner runner/benchmark/chaboche6/model.i driver nbatch=1 device=cpu
-      - run: ./build/runner/runner runner/benchmark/gtntheig/model.i driver nbatch=1 device=cpu
-      - run: ./build/runner/runner runner/benchmark/scpcoup/model.i driver nbatch=1 device=cpu
-      - run: ./build/runner/runner runner/benchmark/scpdecoup/model.i driver nbatch=1 device=cpu
-      - run: ./build/runner/runner runner/benchmark/scpdecoupexp/model.i driver nbatch=1 device=cpu
-      - run: ./build/runner/runner runner/benchmark/tcpsingle/model.i driver nbatch=1 device=cpu
-      - run: ./build/runner/runner runner/benchmark/tcprandom/model.i driver nbatch=1 device=cpu
+          python-version: 3.9
+          cmake-version: 3.28
+          torch-version: 2.5.1
+      - name: Configure
+        run: cmake --preset benchmark -GNinja -DCMAKE_BUILD_TYPE=${{ matrix.btype }} -S .
+      - name: Build
+        run: cmake --build --preset benchmark
+      - if: always()
+        run: ./build/benchmark/runner/runner runner/benchmark/elasticity/model.i driver nbatch=1 device=cpu
+      - if: always()
+        run: ./build/benchmark/runner/runner runner/benchmark/radret/model.i driver nbatch=1 device=cpu
+      - if: always()
+        run: ./build/benchmark/runner/runner runner/benchmark/isoharden/model.i driver nbatch=1 device=cpu
+      - if: always()
+        run: ./build/benchmark/runner/runner runner/benchmark/chaboche2/model.i driver nbatch=1 device=cpu
+      - if: always()
+        run: ./build/benchmark/runner/runner runner/benchmark/chaboche4/model.i driver nbatch=1 device=cpu
+      - if: always()
+        run: ./build/benchmark/runner/runner runner/benchmark/chaboche6/model.i driver nbatch=1 device=cpu
+      - if: always()
+        run: ./build/benchmark/runner/runner runner/benchmark/gtntheig/model.i driver nbatch=1 device=cpu
+      - if: always()
+        run: ./build/benchmark/runner/runner runner/benchmark/scpcoup/model.i driver nbatch=1 device=cpu
+      - if: always()
+        run: ./build/benchmark/runner/runner runner/benchmark/scpdecoup/model.i driver nbatch=1 device=cpu
+      - if: always()
+        run: ./build/benchmark/runner/runner runner/benchmark/scpdecoupexp/model.i driver nbatch=1 device=cpu
+      - if: always()
+        run: ./build/benchmark/runner/runner runner/benchmark/tcpsingle/model.i driver nbatch=1 device=cpu
+      - if: always()
+        run: ./build/benchmark/runner/runner runner/benchmark/tcprandom/model.i driver nbatch=1 device=cpu
