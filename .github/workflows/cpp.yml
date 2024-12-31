@@ -48,45 +48,19 @@ jobs:
         run: cmake --preset dev -GNinja -DCMAKE_BUILD_TYPE=${{ matrix.btype }} -S .
       - name: Build
         run: cmake --build --preset dev-cpp
-      - run: cd tests && ../build/dev/tests/unit/unit_tests -r junit > ${{ matrix.os }}-${{ matrix.btype }}-unit_tests.xml
-        continue-on-error: true
-      - run: cd tests && ../build/dev/tests/regression/regression_tests -r junit > ${{ matrix.os }}-${{ matrix.btype }}-regression_tests.xml
-        continue-on-error: true
-      - run: cd tests && ../build/dev/tests/verification/verification_tests -r junit > ${{ matrix.os }}-${{ matrix.btype }}-verification_tests.xml
-        continue-on-error: true
-      - name: Upload test results
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-${{ matrix.os }}-${{ matrix.btype }}
-          path: tests/*.xml
-
-  publish-test-results:
-    needs: test
-    permissions:
-      contents: read
-      checks: write
-      pull-requests: write
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          path: test-results
-          pattern: test-results-*
-          merge-multiple: true
+      - run: |
+          cd tests
+          ../build/dev/tests/unit/unit_tests -r JUnit::out=unit_tests.xml -r console::out=-::colour-mode=ansi
+          ../build/dev/tests/regression/regression_tests -r JUnit::out=regression_tests.xml -r console::out=-::colour-mode=ansi
+          ../build/dev/tests/verification/verification_tests -r JUnit::out=verification_tests.xml -r console::out=-::colour-mode=ansi
       - uses: EnricoMi/publish-unit-test-result-action/linux@v2
+        if: always()
         with:
-          files: test-results/*.xml
-          check_name: Test Results (C++ backend)
+          files: tests/*.xml
+          check_name: Test Results
           check_run: false
           action_fail: true
           comment_mode: off
-      - name: Check for missing tests
-        run: |
-          ntest=$(find test-results -name "*.xml" | wc -l)
-          if [ $ntest -ne 12 ]; then
-            echo "Expected 12 test results, found $ntest" >> $GITHUB_STEP_SUMMARY
-            exit 1
-          fi
 
   runner:
     needs: clang-format

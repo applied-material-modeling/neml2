@@ -47,7 +47,7 @@
     {
       "name": "release",
       "displayName": "Release",
-      "description": "Production build with HTML documentation for C++ backend and Python bindings",
+      "description": "Production build for C++ backend and Python bindings",
       "binaryDir": "${sourceDir}/build/${presetName}",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",

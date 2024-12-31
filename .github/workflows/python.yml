@@ -42,31 +42,12 @@ jobs:
         run: cmake --preset dev -GNinja -DCMAKE_BUILD_TYPE=${{ matrix.btype }} -S .
       - name: Build
         run: cmake --build --preset dev-python
-      - run: PYTHONPATH=build/dev/python pytest --junitxml=${{ matrix.os }}-${{ matrix.btype }}-pytest.xml python/tests
-        continue-on-error: true
-      - name: Upload test results
-        uses: actions/upload-artifact@v4
-        with:
-          name: python-test-results-${{ matrix.os }}-${{ matrix.btype }}
-          path: ${{ matrix.os }}-${{ matrix.btype }}-pytest.xml
-
-  publish-test-results:
-    needs: test
-    permissions:
-      contents: read
-      checks: write
-      pull-requests: write
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          path: python-test-results
-          pattern: python-test-results-*
-          merge-multiple: true
+      - run: PYTHONPATH=build/dev/python pytest -vv --junitxml=pytest.xml python/tests
       - uses: EnricoMi/publish-unit-test-result-action/linux@v2
+        if: always()
         with:
-          files: python-test-results/*.xml
-          check_name: Test Results (Python package)
+          files: pytest.xml
+          check_name: Test Results
           check_run: false
           action_fail: true
           comment_mode: off
