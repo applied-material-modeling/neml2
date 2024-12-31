@@ -42,8 +42,10 @@ jobs:
         run: cmake --preset dev -GNinja -DCMAKE_BUILD_TYPE=${{ matrix.btype }} -S .
       - name: Build
         run: cmake --build --preset dev-python
-      - run: PYTHONPATH=build/dev/python pytest -vv --junitxml=pytest.xml python/tests
-      - uses: EnricoMi/publish-unit-test-result-action/linux@v2
+      - name: Run tests
+        run: PYTHONPATH=build/dev/python pytest -vv --junitxml=pytest.xml python/tests
+      - name: Test results
+        uses: EnricoMi/publish-unit-test-result-action/linux@v2
         if: always()
         with:
           files: pytest.xml
