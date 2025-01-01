@@ -323,9 +323,9 @@ Variable<T>::zero(const torch::TensorOptions & options)
   if (owning())
   {
     if constexpr (std::is_same_v<T, Tensor>)
-      _value = T::zeros(base_sizes(), options);
+      _value = T::zeros(list_sizes(), base_sizes(), options);
     else
-      _value = T::zeros(options);
+      _value = T::zeros(list_sizes(), options);
   }
   else
   {

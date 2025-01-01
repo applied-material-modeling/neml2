@@ -272,25 +272,58 @@ Model::forward_maybe_jit(bool out, bool dout, bool d2out)
   }
   else
   {
-    auto disable_name_lookup = [](const torch::Tensor & /*var*/) -> std::string { return ""; };
     auto forward_wrap = [&](torch::jit::Stack inputs) -> torch::jit::Stack
     {
       assign_input_stack(inputs);
       forward(out, dout, d2out);
       return collect_output_stack(out, dout, d2out);
     };
-    auto trace = std::get<0>(torch::jit::tracer::trace(collect_input_stack(),
-                                                       forward_wrap,
-                                                       disable_name_lookup,
-                                                       /*strict=*/false,
-                                                       /*force_outplace=*/false));
-    auto new_function = std::make_unique<torch::jit::GraphFunction>(
-        name() + ".forward", trace->graph, /*function_creator=*/nullptr);
+    auto trace = std::get<0>(torch::jit::tracer::trace(
+        collect_input_stack(),
+        forward_wrap,
+        [this](const torch::Tensor & var) { return variable_name_lookup(var); },
+        /*strict=*/false,
+        /*force_outplace=*/false));
+    auto new_function =
+        std::make_unique<torch::jit::GraphFunction>(name() + ".forward",
+                                                    trace->graph,
+                                                    /*function_creator=*/nullptr,
+                                                    torch::jit::ExecutorExecutionMode::PROFILING);
     traced_functions[forward_op_idx] = {new_schema, std::move(new_function)};
 
     // Rerun this method -- this time using the jitted graph (without tracing)
     forward_maybe_jit(out, dout, d2out);
   }
+}
+
+std::string
+Model::variable_name_lookup(const torch::Tensor & var)
+{
+  // Look for the variable in the input and output variables
+  for (auto && [ivar, val] : input_variables())
+    if (val.tensor().data_ptr() == var.data_ptr())
+      return name() + "::" + utils::stringify(ivar);
+  for (auto && [ovar, val] : output_variables())
+    if (val.tensor().data_ptr() == var.data_ptr())
+      return name() + "::" + utils::stringify(ovar);
+
+  // Look for the variable in the parameter and buffer store
+  for (auto && [pname, pval] : host<ParameterStore>()->named_parameters())
+    if (Tensor(pval).data_ptr() == var.data_ptr())
+      return name() + "::" + utils::stringify(pname);
+  for (auto && [bname, bval] : host<BufferStore>()->named_buffers())
+    if (Tensor(bval).data_ptr() == var.data_ptr())
+      return name() + "::" + utils::stringify(bname);
+
+  // Look for the variable in the registered models
+  for (auto * submodel : registered_models())
+  {
+    const auto name = submodel->variable_name_lookup(var);
+    if (!name.empty())
+      return name;
+  }
+
+  return "";
 }
 
 ValueMap
@@ -351,6 +384,20 @@ Model::d2value(const ValueMap & in)
   zero_output();
   forward_maybe_jit(false, false, true);
   return collect_output_second_derivatives();
+}
+
+const torch::jit::GraphFunction *
+Model::traced_function(bool out, bool dout, bool d2out) const
+{
+  const auto i = forward_operator_index(out, dout, d2out);
+  return _traced_functions[i].second.get();
+}
+
+const torch::jit::GraphFunction *
+Model::traced_function_nl_sys(bool out, bool dout, bool d2out) const
+{
+  const auto i = forward_operator_index(out, dout, d2out);
+  return _traced_functions_nl_sys[i].second.get();
 }
 
 Model *

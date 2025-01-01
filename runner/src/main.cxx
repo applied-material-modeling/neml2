@@ -51,12 +51,12 @@ main(int argc, char * argv[])
       .flag();
   program.add_argument("-n", "--num-runs")
       .default_value(1)
-      .help("number of runs to measure the model evaluation time")
-      .scan<'u', std::size_t>();
+      .help("number of times to run the driver")
+      .scan<'i', int>();
   program.add_argument("--warmup")
       .default_value(0)
       .help("number of warmup runs before actually measuring the model evaluation time")
-      .scan<'u', std::size_t>();
+      .scan<'i', int>();
 
   try
   {
@@ -99,22 +99,21 @@ main(int argc, char * argv[])
           return 0;
         }
         std::cout << "No issue identified :)\n";
-        return 0;
       }
 
       if (program["--time"] == true)
       {
-        std::cout << "Warming up...\n";
-        for (std::size_t i = 0; i < program.get<std::size_t>("--warmup"); i++)
+        if (program.get<int>("--warmup") > 0)
+          std::cout << "Warming up...\n";
+        for (int i = 0; i < program.get<int>("--warmup"); i++)
           driver.run();
       }
 
-      if (program["--time"] == true)
-        for (std::size_t i = 0; i < program.get<std::size_t>("--num-runs"); i++)
-        {
-          neml2::TimedSection ts(drivername, "Driver::run");
-          driver.run();
-        }
+      for (int i = 0; i < program.get<int>("--num-runs"); i++)
+      {
+        neml2::TimedSection ts(drivername, "Driver::run");
+        driver.run();
+      }
 
       if (program["--time"] == true)
       {

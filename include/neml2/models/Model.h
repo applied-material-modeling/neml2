@@ -112,6 +112,9 @@ public:
    */
   void forward_maybe_jit(bool out, bool dout, bool d2out);
 
+  /// Look up the name of a variable in the traced graph
+  std::string variable_name_lookup(const torch::Tensor & var);
+
   /// Convenient shortcut to construct and return the model value
   virtual ValueMap value(const ValueMap & in);
 
@@ -130,6 +133,12 @@ public:
 
   /// Convenient shortcut to construct and return the model's first and second derivative
   virtual std::tuple<DerivMap, SecDerivMap> dvalue_and_d2value(const ValueMap & in);
+
+  /// Get the last traced function for the forward operator
+  const torch::jit::GraphFunction * traced_function(bool out, bool dout, bool d2out) const;
+
+  /// Get the last traced function for the forward operator of the nonlinear system
+  const torch::jit::GraphFunction * traced_function_nl_sys(bool out, bool dout, bool d2out) const;
 
   /// Declaration of nonlinear parameters may require manipulation of input
   friend class ParameterStore;
