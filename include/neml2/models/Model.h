@@ -60,7 +60,8 @@ public:
   struct TraceSchema
   {
     std::vector<Size> batch_dims;
-    bool operator==(const TraceSchema & other) const { return batch_dims == other.batch_dims; }
+    bool operator==(const TraceSchema & other) const;
+    bool operator<(const TraceSchema & other) const;
   };
 
   static OptionSet expected_options();
@@ -133,12 +134,6 @@ public:
 
   /// Convenient shortcut to construct and return the model's first and second derivative
   virtual std::tuple<DerivMap, SecDerivMap> dvalue_and_d2value(const ValueMap & in);
-
-  /// Get the last traced function for the forward operator
-  const torch::jit::GraphFunction * traced_function(bool out, bool dout, bool d2out) const;
-
-  /// Get the last traced function for the forward operator of the nonlinear system
-  const torch::jit::GraphFunction * traced_function_nl_sys(bool out, bool dout, bool d2out) const;
 
   /// Declaration of nonlinear parameters may require manipulation of input
   friend class ParameterStore;
@@ -274,11 +269,11 @@ private:
    * 6, 110, yes, yes, no
    * 7, 111, yes, yes, yes
    */
-  std::array<std::pair<TraceSchema, std::unique_ptr<torch::jit::GraphFunction>>, 8>
+  std::array<std::map<TraceSchema, std::unique_ptr<torch::jit::GraphFunction>>, 8>
       _traced_functions;
 
   /// Similar to _trace_functions, but for the forward operator of the nonlinear system
-  std::array<std::pair<TraceSchema, std::unique_ptr<torch::jit::GraphFunction>>, 8>
+  std::array<std::map<TraceSchema, std::unique_ptr<torch::jit::GraphFunction>>, 8>
       _traced_functions_nl_sys;
 };
 

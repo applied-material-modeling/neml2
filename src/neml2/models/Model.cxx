@@ -32,6 +32,18 @@
 
 namespace neml2
 {
+bool
+Model::TraceSchema::operator==(const TraceSchema & other) const
+{
+  return batch_dims == other.batch_dims;
+}
+
+bool
+Model::TraceSchema::operator<(const TraceSchema & other) const
+{
+  return batch_dims < other.batch_dims;
+}
+
 OptionSet
 Model::expected_options()
 {
@@ -260,11 +272,12 @@ Model::forward_maybe_jit(bool out, bool dout, bool d2out)
       currently_solving_nonlinear_system() ? _traced_functions_nl_sys : _traced_functions;
 
   const auto forward_op_idx = forward_operator_index(out, dout, d2out);
-  auto & [trace_schema, traced_function] = traced_functions[forward_op_idx];
   const auto new_schema = compute_trace_schema();
+  auto traced_schema_and_function = traced_functions[forward_op_idx].find(new_schema);
 
-  if (traced_function && trace_schema == new_schema)
+  if (traced_schema_and_function != traced_functions[forward_op_idx].end())
   {
+    auto & [trace_schema, traced_function] = *traced_schema_and_function;
     torch::InferenceMode mode_guard(_production);
     auto stack = collect_input_stack();
     traced_function->run(stack);
@@ -289,7 +302,7 @@ Model::forward_maybe_jit(bool out, bool dout, bool d2out)
                                                     trace->graph,
                                                     /*function_creator=*/nullptr,
                                                     torch::jit::ExecutorExecutionMode::PROFILING);
-    traced_functions[forward_op_idx] = {new_schema, std::move(new_function)};
+    traced_functions[forward_op_idx].emplace(new_schema, std::move(new_function));
 
     // Rerun this method -- this time using the jitted graph (without tracing)
     forward_maybe_jit(out, dout, d2out);
@@ -384,20 +397,6 @@ Model::d2value(const ValueMap & in)
   zero_output();
   forward_maybe_jit(false, false, true);
   return collect_output_second_derivatives();
-}
-
-const torch::jit::GraphFunction *
-Model::traced_function(bool out, bool dout, bool d2out) const
-{
-  const auto i = forward_operator_index(out, dout, d2out);
-  return _traced_functions[i].second.get();
-}
-
-const torch::jit::GraphFunction *
-Model::traced_function_nl_sys(bool out, bool dout, bool d2out) const
-{
-  const auto i = forward_operator_index(out, dout, d2out);
-  return _traced_functions_nl_sys[i].second.get();
 }
 
 Model *
