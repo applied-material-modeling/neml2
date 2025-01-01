@@ -346,7 +346,11 @@ Model::value(const ValueMap & in)
   assign_input(in);
   zero_output();
   forward_maybe_jit(true, false, false);
-  return collect_output();
+
+  const auto values = collect_output();
+  clear_input();
+  clear_output();
+  return values;
 }
 
 std::tuple<ValueMap, DerivMap>
@@ -356,7 +360,12 @@ Model::value_and_dvalue(const ValueMap & in)
   assign_input(in);
   zero_output();
   forward_maybe_jit(true, true, false);
-  return {collect_output(), collect_output_derivatives()};
+
+  const auto values = collect_output();
+  const auto derivs = collect_output_derivatives();
+  clear_input();
+  clear_output();
+  return {values, derivs};
 }
 
 DerivMap
@@ -366,7 +375,11 @@ Model::dvalue(const ValueMap & in)
   assign_input(in);
   zero_output();
   forward_maybe_jit(false, true, false);
-  return collect_output_derivatives();
+
+  const auto derivs = collect_output_derivatives();
+  clear_input();
+  clear_output();
+  return derivs;
 }
 
 std::tuple<ValueMap, DerivMap, SecDerivMap>
@@ -376,7 +389,13 @@ Model::value_and_dvalue_and_d2value(const ValueMap & in)
   assign_input(in);
   zero_output();
   forward_maybe_jit(true, true, true);
-  return {collect_output(), collect_output_derivatives(), collect_output_second_derivatives()};
+
+  const auto values = collect_output();
+  const auto derivs = collect_output_derivatives();
+  const auto secderivs = collect_output_second_derivatives();
+  clear_input();
+  clear_output();
+  return {values, derivs, secderivs};
 }
 
 std::tuple<DerivMap, SecDerivMap>
@@ -386,7 +405,12 @@ Model::dvalue_and_d2value(const ValueMap & in)
   assign_input(in);
   zero_output();
   forward_maybe_jit(false, true, true);
-  return {collect_output_derivatives(), collect_output_second_derivatives()};
+
+  const auto derivs = collect_output_derivatives();
+  const auto secderivs = collect_output_second_derivatives();
+  clear_input();
+  clear_output();
+  return {derivs, secderivs};
 }
 
 SecDerivMap
@@ -396,7 +420,11 @@ Model::d2value(const ValueMap & in)
   assign_input(in);
   zero_output();
   forward_maybe_jit(false, false, true);
-  return collect_output_second_derivatives();
+
+  const auto secderivs = collect_output_second_derivatives();
+  clear_input();
+  clear_output();
+  return secderivs;
 }
 
 Model *
@@ -427,13 +455,16 @@ Model::provided_items() const
 void
 Model::assign_input_stack(torch::jit::Stack & stack)
 {
-  neml_assert_dbg(stack.size() ==
-                      input_axis().nvariable() + host<ParameterStore>()->named_parameters().size(),
-                  "Stack size (",
-                  stack.size(),
-                  ") must equal to the number of input variables and parameters in the model (",
-                  input_axis().nvariable() + host<ParameterStore>()->named_parameters().size(),
-                  ").");
+#ifndef NDEBUG
+  const auto nstack = input_axis().nvariable() + host<ParameterStore>()->named_parameters().size();
+  neml_assert_dbg(
+      stack.size() == nstack,
+      "Stack size (",
+      stack.size(),
+      ") must equal to the number of input variables, parameters, and buffers in the model (",
+      nstack,
+      ").");
+#endif
 
   assign_parameter_stack(stack);
   VariableStore::assign_input_stack(stack);

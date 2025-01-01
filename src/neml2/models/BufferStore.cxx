@@ -118,4 +118,39 @@ BufferStore::declare_buffer(const std::string & name, const std::string & input_
   template const T & BufferStore::declare_buffer<T>(const std::string &, const CrossRef<T> &);     \
   template const T & BufferStore::declare_buffer<T>(const std::string &, const std::string &)
 FOR_ALL_TENSORBASE(BUFFERSTORE_INTANTIATE_TENSORBASE);
+
+void
+BufferStore::assign_buffer_stack(torch::jit::Stack & stack)
+{
+  const auto & buffers = _object->host<BufferStore>()->named_buffers();
+
+  neml_assert_dbg(stack.size() >= buffers.size(),
+                  "Stack size (",
+                  stack.size(),
+                  ") is smaller than the number of buffers in the model (",
+                  buffers.size(),
+                  ").");
+
+  // Last n tensors in the stack are the buffers
+  std::size_t i = stack.size() - buffers.size();
+  for (auto && [name, buffer] : buffers)
+  {
+    const auto tensor = stack[i++].toTensor();
+    buffer = Tensor(tensor, tensor.dim() - Tensor(buffer).base_dim());
+  }
+
+  // Drop the input variables from the stack
+  torch::jit::drop(stack, buffers.size());
+}
+
+torch::jit::Stack
+BufferStore::collect_buffer_stack() const
+{
+  const auto & buffers = _object->host<BufferStore>()->named_buffers();
+  torch::jit::Stack stack;
+  stack.reserve(buffers.size());
+  for (auto && [name, buffer] : buffers)
+    stack.push_back(Tensor(buffer));
+  return stack;
+}
 } // namespace neml2

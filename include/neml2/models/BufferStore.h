@@ -118,6 +118,12 @@ protected:
   template <typename T, typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<T>, T>>>
   const T & declare_buffer(const std::string & name, const std::string & input_option_name);
 
+  /// Assign stack to buffers
+  void assign_buffer_stack(torch::jit::Stack & stack);
+
+  /// Collect stack from buffers
+  torch::jit::Stack collect_buffer_stack() const;
+
 private:
   NEML2Object * _object;
 

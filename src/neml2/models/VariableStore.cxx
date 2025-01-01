@@ -327,7 +327,7 @@ VariableStore::collect_output_stack(bool out, bool dout, bool d2out) const
       for (const auto & xvar : xvars)
       {
         const auto & deriv = derivs.find(xvar);
-        sparsity.push_back(deriv != derivs.end() ? 1 : 0);
+        sparsity.push_back(deriv == derivs.end() || !input_variable(xvar).is_dependent() ? 0 : 1);
         if (sparsity.back())
           stacklist.push_back(deriv->second);
       }
@@ -342,11 +342,13 @@ VariableStore::collect_output_stack(bool out, bool dout, bool d2out) const
       for (const auto & x1var : xvars)
       {
         const auto & x1derivs = derivs.find(x1var);
-        if (x1derivs != derivs.end())
+        if (x1derivs != derivs.end() && input_variable(x1var).is_dependent())
           for (const auto & x2var : xvars)
           {
             const auto & x1x2deriv = x1derivs->second.find(x2var);
-            sparsity.push_back(x1x2deriv != x1derivs->second.end() ? 1 : 0);
+            sparsity.push_back(
+                x1x2deriv == x1derivs->second.end() || !input_variable(x2var).is_dependent() ? 0
+                                                                                             : 1);
             if (sparsity.back())
               stacklist.push_back(x1x2deriv->second);
           }
