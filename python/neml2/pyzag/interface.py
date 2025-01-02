@@ -153,6 +153,10 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
                 raise ValueError(errmsg.format(pname))
             if pname in exclude_parameters:
                 continue
+            # We need to separately track the parameter names because of the reparameterization system
+            # What torch does when it reparamterizes models is replace the variable with a lambda method that calls the scaling function
+            # over some new, reparamterized, variable.  If we rely on using torch.named_parameters() we will get the new "unscaled" variable, rather
+            # than the scaled value we want to pass to the model.  Caching the names prevents this.
             self.parameter_names.append(pname)
             param.requires_grad_(True)
             self.register_parameter(pname, torch.nn.Parameter(param.torch()))
@@ -160,9 +164,10 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
     def _update_parameter_values(self):
         """Copy over new parameter values"""
         for pname in self.parameter_names:
-            # We may need to update the batch shapes
+            # See comment in _setup_parameters, using getattr here lets us reparamterize things with torch
             new_value = getattr(self, pname)
             current_value = self.model.get_parameter(pname).tensor()
+            # We may need to update the batch shape
             batch_dim = new_value.dim() - current_value.base.dim()
             self.model.set_parameter(pname, Tensor(new_value.clone(), batch_dim))
 

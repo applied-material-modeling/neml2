@@ -31,12 +31,12 @@
 namespace neml2
 {
 template <typename T>
-class IncrementalRate : public Model
+class IncrementToRate : public Model
 {
 public:
   static OptionSet expected_options();
 
-  IncrementalRate(const OptionSet & options);
+  IncrementToRate(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
@@ -54,5 +54,8 @@ protected:
   Variable<T> & _dv_dt;
 };
 
-typedef IncrementalRate<R2> R2IncrementalRate;
+typedef IncrementToRate<R2> R2IncrementToRate;
+typedef IncrementToRate<Scalar> ScalarIncrementToRate;
+typedef IncrementToRate<SR2> SR2IncrementToRate;
+typedef IncrementToRate<Vec> VecIncrementToRate;
 } // namespace neml2

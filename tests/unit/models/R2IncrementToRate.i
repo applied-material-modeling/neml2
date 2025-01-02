@@ -24,7 +24,7 @@
 
 [Models]
   [model]
-    type = R2IncrementalRate
+    type = R2IncrementToRate
     variable = 'forces/foo'
     rate = 'forces/foo_rate'
   []

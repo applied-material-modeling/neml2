@@ -22,27 +22,30 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/IncrementalRate.h"
+#include "neml2/models/IncrementToRate.h"
 
 namespace neml2
 {
-register_NEML2_object(R2IncrementalRate);
+register_NEML2_object(R2IncrementToRate);
+register_NEML2_object(ScalarIncrementToRate);
+register_NEML2_object(SR2IncrementToRate);
+register_NEML2_object(VecIncrementToRate);
 
 template <typename T>
 OptionSet
-IncrementalRate<T>::expected_options()
+IncrementToRate<T>::expected_options()
 {
   OptionSet options = Model::expected_options();
   options.doc() = "Calculate the first order discrete time derivative of a variable as \\f$ "
                   "\\dot{f} = \\frac{\\Delta f}{t-t_n} \\f$, where \\f$ \\Deltaf \\f$ is the "
-                  "incremental force variable, "
+                  "variable with the increment, "
                   "and \\f$ t \\f$ is time.";
 
   options.set_output("rate");
   options.set("rate").doc() = "The variable's rate of change";
 
   options.set_input("variable");
-  options.set("variable").doc() = "The variable to take time derivative with";
+  options.set("variable").doc() = "The incremental value";
 
   options.set_input("time") = VariableName(FORCES, "t");
   options.set("time").doc() = "Time";
@@ -51,7 +54,7 @@ IncrementalRate<T>::expected_options()
 }
 
 template <typename T>
-IncrementalRate<T>::IncrementalRate(const OptionSet & options)
+IncrementToRate<T>::IncrementToRate(const OptionSet & options)
   : Model(options),
     _dv(declare_input_variable<T>("variable")),
     _t(declare_input_variable<Scalar>("time")),
@@ -64,9 +67,9 @@ IncrementalRate<T>::IncrementalRate(const OptionSet & options)
 
 template <typename T>
 void
-IncrementalRate<T>::set_value(bool out, bool dout_din, bool d2out_din2)
+IncrementToRate<T>::set_value(bool out, bool dout_din, bool d2out_din2)
 {
-  neml_assert(!d2out_din2, "IncrementalRate does not implement second derivatives");
+  neml_assert(!d2out_din2, "IncrementToRate does not implement second derivatives");
 
   auto dt = _t - _tn;
 
@@ -84,5 +87,8 @@ IncrementalRate<T>::set_value(bool out, bool dout_din, bool d2out_din2)
   }
 }
 
-template class IncrementalRate<R2>;
+template class IncrementToRate<R2>;
+template class IncrementToRate<Scalar>;
+template class IncrementToRate<SR2>;
+template class IncrementToRate<Vec>;
 } // namespace neml2
