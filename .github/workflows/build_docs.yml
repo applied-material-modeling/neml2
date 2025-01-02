@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: applied-material-modeling/neml2-ci@main
         with:
-          ref: ${{ github.event.pull_request.head.ref || github.ref }}
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
           python-version: 3.9
           cmake-version: 3.28
           torch-version: 2.5.1
@@ -55,6 +55,7 @@ jobs:
     steps:
       - uses: applied-material-modeling/neml2-ci@main
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
           python-version: 3.9
           cmake-version: 3.28
           torch-version: 2.5.1
