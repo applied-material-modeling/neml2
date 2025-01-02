@@ -78,10 +78,10 @@ Normality::set_value(bool out, bool dout_din, bool d2out_din2)
 
   {
     SolvingNonlinearSystem guard(false);
-    if (out && !dout_din)
-      _model.forward_maybe_jit(false, true, false);
-    else
-      _model.forward_maybe_jit(false, true, true);
+    // Since normality maps the derivatives to the output variables, we need to evaluate the
+    // sub-model's derivatives if normality asks for output variables, and evaluate the sub-model's
+    // second derivatives if normality asks for derivatives of output variables.
+    _model.forward_maybe_jit(false, out, dout_din);
   }
 
   const auto & fvar = _model.output_variable(_f);
