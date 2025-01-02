@@ -6,11 +6,7 @@ add_library(neml2 SHARED ${SRCS})
 set_target_properties(neml2 PROPERTIES INSTALL_RPATH "${EXEC_DIR};${Torch_LINK_DIRECTORIES}")
 
 # NEML2 (private) compile options
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-  target_compile_options(neml2 PRIVATE -Wall -Wextra -pedantic -Werror)
-else()
-  target_compile_options(neml2 PRIVATE -Wall -Wextra -pedantic)
-endif()
+target_compile_options(neml2 PRIVATE -Wall -Wextra -pedantic -Werror)
 
 # Group source files together if UNITY build is requested
 register_unity_group(neml2 .)

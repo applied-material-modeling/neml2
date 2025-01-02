@@ -16,7 +16,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - uses: applied-material-modeling/neml2-ci@main
         with:
@@ -51,7 +51,7 @@ jobs:
           path: build/dev/doc/build/html
 
   coverage:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - uses: applied-material-modeling/neml2-ci@main
         with:

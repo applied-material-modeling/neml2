@@ -35,7 +35,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, macos-latest]
+        os: [ubuntu-latest, macos-latest]
         btype: [Release, Debug]
     runs-on: ${{ matrix.os }}
     steps:
@@ -68,7 +68,7 @@ jobs:
     needs: clang-format
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-latest]
+        os: [ubuntu-latest, macos-latest]
         btype: [Release, Debug]
     runs-on: ${{ matrix.os }}
     steps:

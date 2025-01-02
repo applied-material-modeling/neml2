@@ -87,18 +87,4 @@ indentation(int level, int indent)
 }
 // LCOV_EXCL_STOP
 
-namespace details
-{
-TensorShape
-add_shapes_impl(TensorShape & net)
-{
-  return std::move(net);
-}
-
-TraceableTensorShape
-add_traceable_shapes_impl(TraceableTensorShape & net)
-{
-  return net;
-}
-} // namespace details
 } // namespace neml2
