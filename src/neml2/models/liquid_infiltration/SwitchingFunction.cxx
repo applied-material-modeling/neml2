@@ -50,8 +50,7 @@ SwitchingFunction::expected_options()
   options.set("offset").doc() = "x0, offset to the smoothen function.";
 
   options.set<bool>("one_subtract_condition") = false;
-  options.set("one_subtract_condition").doc() =
-      "Whether takes 1 to subtract the function, aka \\f$ 1-g \\f$ ";
+  options.set("one_subtract_condition").doc() = "Whether takes 1 to subtract the function.";
 
   options.set_input("variable") = VariableName("state", "var");
   options.set("variable").doc() = "x, input variable.";
