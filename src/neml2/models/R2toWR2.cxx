@@ -40,7 +40,7 @@ R2toWR2::expected_options()
   options.set("input").doc() = "Rank two tensor to split";
 
   options.set_output("output");
-  options.set("output").doc() = "Output symmetric rank two tensor";
+  options.set("output").doc() = "Output skew symmetric rank two tensor";
 
   return options;
 }
