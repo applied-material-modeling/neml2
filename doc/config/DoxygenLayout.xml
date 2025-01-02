@@ -33,6 +33,7 @@
     </tab>
     <tab type="usergroup" title="Physics Documentation">
       <tab type="user" url="@ref solid-mechanics" title="Solid Mechanics"/>
+      <tab type="user" url="@ref liquid-infiltration" title="Liquid Infiltration"/>
     </tab>
     <tab type="user" url="@ref faq" title="Frequently Asked Questions"/>
     <tab type="usergroup" title="C++ API Reference">

@@ -70,14 +70,7 @@ ChemMassBalance::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (out)
   {
-
-    // std::cout << "_current = " << _current.value().item<Real>() << std::endl;
-    // std::cout << "_switch = " << _switch.value().item<Real>() << std::endl;
-    // std::cout << "_in = " << _in.value().item<Real>() << std::endl;
-    // std::cout << "_mreact = " << _mreact.value().item<Real>() << std::endl;
-
     _total = _current - _switch * _in + _mreact;
-    // std::cout << "_total = " << _total.value().item<Real>() << std::endl;
   }
 
   if (dout_din)
