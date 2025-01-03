@@ -213,12 +213,13 @@ jacrev(const Tensor & y, const Tensor & x, bool retain_graph, bool create_graph,
               ". This implies that x has been broadcast during the operations, and so math::jacrev "
               "can no longer calculate the element-wise Jacobian.");
 
+  const auto opt = y.options().requires_grad(false);
+
   // Flatten y to handle arbitrarily shaped output
   const auto yf = y.base_flatten().batch_expand(batch_sizes);
-  const auto G = Tensor::identity(yf.base_size(0), yf.options()).batch_expand(yf.batch_sizes());
+  const auto G = Tensor::identity(yf.base_size(0), opt).batch_expand(yf.batch_sizes());
 
-  auto dyf_dx =
-      Tensor::zeros(batch_sizes, utils::add_shapes(yf.base_size(0), x.base_sizes()), yf.options());
+  auto dyf_dx = Tensor::zeros(batch_sizes, utils::add_shapes(yf.base_size(0), x.base_sizes()), opt);
 
   for (Size i = 0; i < yf.base_size(0); i++)
   {
@@ -229,7 +230,7 @@ jacrev(const Tensor & y, const Tensor & x, bool retain_graph, bool create_graph,
                                                /*create_graph=*/create_graph,
                                                /*allow_unused=*/allow_unused)[0];
     if (dyfi_dx.defined())
-      dyf_dx.base_index_put_({i}, dyfi_dx);
+      dyf_dx.base_index_put_({i}, dyfi_dx.detach());
   }
 
   // Reshape the derivative back to the correct shape

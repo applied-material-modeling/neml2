@@ -118,6 +118,13 @@ public:
   ///@}
 
 protected:
+  /**
+   * @brief Send padding variables to options
+   *
+   * @param options The target options
+   */
+  virtual void send_variables_to(const torch::TensorOptions & options);
+
   /// Declare an input variable
   template <typename T, typename S>
   const Variable<T> &
@@ -269,7 +276,7 @@ private:
   /// Output variables
   Storage<VariableName, VariableBase> _output_variables;
 
-  /// Current tensor options
+  /// Current tensor options for padding variables
   torch::TensorOptions _tensor_options;
 };
 } // namespace neml2

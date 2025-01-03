@@ -60,6 +60,7 @@ public:
   struct TraceSchema
   {
     std::vector<Size> batch_dims;
+    torch::DispatchKey dispatch_key;
     bool operator==(const TraceSchema & other) const;
     bool operator<(const TraceSchema & other) const;
   };

@@ -3,7 +3,11 @@ include(NEML2UnityGroup)
 # Add all the source files
 file(GLOB_RECURSE SRCS *.cxx)
 add_library(neml2 SHARED ${SRCS})
-set_target_properties(neml2 PROPERTIES INSTALL_RPATH "${EXEC_DIR};${Torch_LINK_DIRECTORIES}")
+set_target_properties(neml2
+  PROPERTIES
+  INSTALL_RPATH "${EXEC_DIR};${Torch_LINK_DIRECTORIES}"
+  LINK_WHAT_YOU_USE TRUE
+)
 
 # NEML2 (private) compile options
 target_compile_options(neml2 PRIVATE -Wall -Wextra -pedantic -Werror)

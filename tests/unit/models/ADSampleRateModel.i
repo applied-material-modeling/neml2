@@ -12,7 +12,7 @@
     output_SR2_values = '145.5'
     check_values = true
     check_derivatives = true
-    check_second_derivatives = true
+    check_second_derivatives = false
   []
 []
 

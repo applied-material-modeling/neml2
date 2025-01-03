@@ -88,6 +88,12 @@ VariableStore::output_variable(const VariableName & name) const
 }
 
 void
+VariableStore::send_variables_to(const torch::TensorOptions & options)
+{
+  _tensor_options = options;
+}
+
+void
 VariableStore::clear_input()
 {
   for (auto && [name, var] : input_variables())

@@ -61,7 +61,7 @@ ModelUnitTest::expected_options()
   options.set<bool>("check_derivatives") = true;
   options.set<bool>("check_second_derivatives") = false;
   options.set<bool>("check_AD_parameter_derivatives") = true;
-  options.set<bool>("check_cuda") = false;
+  options.set<bool>("check_cuda") = true;
 
   options.set<Real>("value_rel_tol") = 1e-5;
   options.set<Real>("value_abs_tol") = 1e-8;
@@ -156,7 +156,7 @@ ModelUnitTest::check_value()
   {
     neml_assert(
         out.find(name) != out.end(), "The model is missing the expected output '", name, "'.");
-    neml_assert(torch::allclose(out.at(name), expected_value, _val_rtol, _val_atol),
+    neml_assert(torch::allclose(out.at(name).to(torch::kCPU), expected_value, _val_rtol, _val_atol),
                 "The model gives values that are different from expected for output '",
                 name,
                 "'. The expected values are:\n",

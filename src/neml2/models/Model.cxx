@@ -35,12 +35,14 @@ namespace neml2
 bool
 Model::TraceSchema::operator==(const TraceSchema & other) const
 {
-  return batch_dims == other.batch_dims;
+  return batch_dims == other.batch_dims && dispatch_key == other.dispatch_key;
 }
 
 bool
 Model::TraceSchema::operator<(const TraceSchema & other) const
 {
+  if (dispatch_key != other.dispatch_key)
+    return dispatch_key < other.dispatch_key;
   return batch_dims < other.batch_dims;
 }
 
@@ -85,6 +87,7 @@ Model::to(const torch::TensorOptions & options)
 {
   send_buffers_to(options);
   send_parameters_to(options);
+  send_variables_to(options);
 
   for (auto * submodel : registered_models())
     submodel->to(options);
@@ -234,7 +237,9 @@ Model::compute_trace_schema() const
   for (auto && [name, param] : host<ParameterStore>()->named_parameters())
     batch_dims.push_back(Tensor(param).batch_dim());
 
-  return TraceSchema{batch_dims};
+  const auto dispatch_key = tensor_options().computeDispatchKey();
+
+  return TraceSchema{batch_dims, dispatch_key};
 }
 
 std::size_t
