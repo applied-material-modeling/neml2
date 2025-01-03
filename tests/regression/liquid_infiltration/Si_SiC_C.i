@@ -62,7 +62,7 @@ nbatch = '(5)'
       ic_Scalar_values = '1e-4 1e-2 1e-3 1e-3'
       save_as = 'test.pt'
 
-      verbose = true
+      verbose = false
     []
     [regression]
       type = TransientRegression
@@ -78,7 +78,7 @@ nbatch = '(5)'
         rel_tol = 1e-8
         abs_tol = 1e-10
         max_its = 100
-        verbose = true
+        verbose = false
     []
 []
 
