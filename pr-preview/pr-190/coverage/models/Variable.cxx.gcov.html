@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-01-03 18:41:51</td>
+            <td class="headerValue">2025-01-03 19:43:24</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryLo">32.7&nbsp;%</td>
@@ -454,16 +454,16 @@
 <span id="L392"><span class="lineNum">     392</span>              : </span>
 <span id="L393"><span class="lineNum">     393</span>              : template &lt;typename T&gt;</span>
 <span id="L394"><span class="lineNum">     394</span>              : Tensor</span>
-<span id="L395"><span class="lineNum">     395</span> <span class="tlaGNC">     2081326 : Variable&lt;T&gt;::tensor() const</span></span>
+<span id="L395"><span class="lineNum">     395</span> <span class="tlaGNC">     2082514 : Variable&lt;T&gt;::tensor() const</span></span>
 <span id="L396"><span class="lineNum">     396</span>              : {</span>
-<span id="L397"><span class="lineNum">     397</span> <span class="tlaGNC">     2081326 :   if (owning())</span></span>
+<span id="L397"><span class="lineNum">     397</span> <span class="tlaGNC">     2082514 :   if (owning())</span></span>
 <span id="L398"><span class="lineNum">     398</span>              :   {</span>
-<span id="L399"><span class="lineNum">     399</span> <span class="tlaGNC">     1260661 :     neml_assert_dbg(_value.defined(), &quot;Variable '&quot;, name(), &quot;' has undefined value.&quot;);</span></span>
-<span id="L400"><span class="lineNum">     400</span> <span class="tlaGNC">     1260661 :     auto batch_sizes = _value.batch_sizes().slice(0, _value.batch_dim() - list_dim());</span></span>
-<span id="L401"><span class="lineNum">     401</span> <span class="tlaGNC">     1260661 :     return Tensor(_value, batch_sizes);</span></span>
-<span id="L402"><span class="lineNum">     402</span> <span class="tlaGNC">     1260661 :   }</span></span>
+<span id="L399"><span class="lineNum">     399</span> <span class="tlaGNC">     1261320 :     neml_assert_dbg(_value.defined(), &quot;Variable '&quot;, name(), &quot;' has undefined value.&quot;);</span></span>
+<span id="L400"><span class="lineNum">     400</span> <span class="tlaGNC">     1261320 :     auto batch_sizes = _value.batch_sizes().slice(0, _value.batch_dim() - list_dim());</span></span>
+<span id="L401"><span class="lineNum">     401</span> <span class="tlaGNC">     1261320 :     return Tensor(_value, batch_sizes);</span></span>
+<span id="L402"><span class="lineNum">     402</span> <span class="tlaGNC">     1261320 :   }</span></span>
 <span id="L403"><span class="lineNum">     403</span>              : </span>
-<span id="L404"><span class="lineNum">     404</span> <span class="tlaGNC">      820665 :   return ref()-&gt;tensor();</span></span>
+<span id="L404"><span class="lineNum">     404</span> <span class="tlaGNC">      821194 :   return ref()-&gt;tensor();</span></span>
 <span id="L405"><span class="lineNum">     405</span>              : }</span>
 <span id="L406"><span class="lineNum">     406</span>              : </span>
 <span id="L407"><span class="lineNum">     407</span>              : template &lt;typename T&gt;</span>
