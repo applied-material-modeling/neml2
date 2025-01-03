@@ -46,7 +46,7 @@ protected:
   const Scalar & _scale;
   const Scalar & _offset;
   const EnumSelection & _type;
-  const bool & _one_substract_cond;
+  const bool _one_substract_cond;
 
   // State Variables
   const Variable<Scalar> & _var;

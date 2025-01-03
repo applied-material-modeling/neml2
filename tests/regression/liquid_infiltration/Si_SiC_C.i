@@ -4,12 +4,12 @@ nbatch = '(5)'
     ############### Run condition ############### 
     [times]
         type = ScalarFromTorchScript
-        pytorch_pt_file = 'aLIndot.pt'
+        pytorch_pt_file = 'gold/aLIndot.pt'
         tensor_name = 'time'
     []
     [aLInDot]
         type = ScalarFromTorchScript
-        pytorch_pt_file = 'aLIndot.pt'
+        pytorch_pt_file = 'gold/aLIndot.pt'
         tensor_name = 'data'
     []
     ############### Simulation parameters ############### 
