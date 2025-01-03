@@ -63,5 +63,7 @@ protected:
 
   /// Stopping criteria for linesearch
   Real _linesearch_c;
+
+  EnumSelection _type;
 };
 } // namespace neml2
