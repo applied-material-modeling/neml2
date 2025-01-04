@@ -76,8 +76,6 @@ nbatch = 20
     prescribed_time = 'times'
     prescribed_strain = 'strains'
     prescribed_temperature = 'temperatures'
-    ic_Scalar_names = 'state/G state/C'
-    ic_Scalar_values = 'G0 C0'
     predictor = LINEAR_EXTRAPOLATION
     save_as = 'result.pt'
   []
@@ -184,29 +182,16 @@ nbatch = 20
     type = TorchScriptFlowRate
     von_mises_stress = 'state/s'
     temperature = 'forces/T'
-    internal_state_1 = 'state/G'
-    internal_state_2 = 'state/C'
     equivalent_plastic_strain_rate = 'state/ep_rate'
-    internal_state_1_rate = 'state/G_rate'
-    internal_state_2_rate = 'state/C_rate'
     torch_script = 'gold/surrogate.pt'
   []
   [integrate_ep]
     type = ScalarBackwardEulerTimeIntegration
     variable = 'state/ep'
   []
-  [integrate_G]
-    type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/G'
-  []
-  [integrate_C]
-    type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/C'
-  []
   [rate]
     type = ComposedModel
-    models = "trial_stress_update rom
-              integrate_ep integrate_G integrate_C"
+    models = 'trial_stress_update rom integrate_ep'
   []
   [radial_return]
     type = ImplicitUpdate
@@ -220,6 +205,6 @@ nbatch = 20
   [model]
     type = ComposedModel
     models = 'trial_state radial_return plastic_update stress_update trial_stress_update rom'
-    additional_outputs = 'state/s state/ep_rate state/G_rate state/C_rate state/ep state/G state/C state/S state/Ep'
+    additional_outputs = 'state/s state/ep_rate state/ep state/S state/Ep'
   []
 []

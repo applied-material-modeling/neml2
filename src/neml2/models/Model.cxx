@@ -547,24 +547,34 @@ Model::extract_AD_derivatives(bool dout, bool d2out)
       if (!_ad_secderivs.count(y))
         continue;
 
+    // Gather all dependent variables
+    std::vector<Tensor> uts;
     for (const auto * u : us)
-    {
-      bool create_graph = false;
-      if (!dout && d2out)
-      {
-        if (!_ad_secderivs.at(y).count(u))
-          continue;
-        create_graph = true;
-      }
+      if (u->is_dependent())
+        uts.push_back(u->tensor());
 
-      const auto dy_du = math::jacrev(y->tensor(),
-                                      u->tensor(),
-                                      /*retain_graph=*/true,
-                                      /*create_graph=*/create_graph,
-                                      /*allow_unused=*/true);
-      if (dy_du.defined())
-        y->d(*u) = dy_du;
-    }
+    // Check if we need to create the graph (i.e., if any of the second derivatives are requested)
+    bool create_graph = false;
+    for (const auto * u : us)
+      if (u->is_dependent())
+        if (!create_graph && !dout && d2out)
+          if (_ad_secderivs.at(y).count(u))
+            create_graph = true;
+
+    const auto dy_dus = math::jacrev(y->tensor(),
+                                     uts,
+                                     /*retain_graph=*/true,
+                                     /*create_graph=*/create_graph,
+                                     /*allow_unused=*/true);
+
+    std::size_t i = 0;
+    for (const auto * u : us)
+      if (u->is_dependent())
+      {
+        if (dy_dus[i].defined())
+          y->d(*u) = dy_dus[i];
+        i++;
+      }
   }
 
   if (d2out)
@@ -572,21 +582,33 @@ Model::extract_AD_derivatives(bool dout, bool d2out)
     for (auto && [y, u1u2s] : _ad_secderivs)
       for (auto && [u1, u2s] : u1u2s)
       {
+        if (!u1->is_dependent())
+          continue;
+
         const auto & dy_du1 = y->derivatives()[u1->name()];
 
         if (!dy_du1.defined() || !dy_du1.requires_grad())
           continue;
 
+        std::vector<Tensor> u2ts;
         for (const auto * u2 : u2s)
-        {
-          const auto d2y_du1u2 = math::jacrev(dy_du1,
-                                              u2->tensor(),
-                                              /*retain_graph=*/true,
-                                              /*create_graph=*/false,
-                                              /*allow_unused=*/true);
-          if (d2y_du1u2.defined())
-            y->d(*u1, *u2) = d2y_du1u2;
-        }
+          if (u2->is_dependent())
+            u2ts.push_back(u2->tensor());
+
+        const auto d2y_du1u2s = math::jacrev(dy_du1,
+                                             u2ts,
+                                             /*retain_graph=*/true,
+                                             /*create_graph=*/false,
+                                             /*allow_unused=*/true);
+
+        std::size_t i = 0;
+        for (const auto * u2 : u2s)
+          if (u2->is_dependent())
+          {
+            if (d2y_du1u2s[i].defined())
+              y->d(*u1, *u2) = d2y_du1u2s[i];
+            i++;
+          }
       }
   }
 }
