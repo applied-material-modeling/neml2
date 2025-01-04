@@ -196,45 +196,74 @@ skew_to_full(const Tensor & skew, Size dim)
       dim);
 }
 
-Tensor
-jacrev(const Tensor & y, const Tensor & x, bool retain_graph, bool create_graph, bool allow_unused)
+std::vector<Tensor>
+jacrev(const Tensor & y,
+       const std::vector<Tensor> & xs,
+       bool retain_graph,
+       bool create_graph,
+       bool allow_unused)
 {
+  std::vector<Tensor> dy_dxs(xs.size());
+
   // Return undefined Tensor if y does not contain any gradient graph
   if (!y.requires_grad())
-    return Tensor();
+    return dy_dxs;
 
-  // Broadcast batch shapes
-  const auto batch_sizes = utils::broadcast_batch_sizes({y, x});
-  neml_assert(batch_sizes == x.batch_sizes(),
-              "In math::jacrev, the broadcast batch shape of y and x is ",
-              batch_sizes,
-              ", and the batch shape of x is ",
-              x.batch_sizes(),
-              ". This implies that x has been broadcast during the operations, and so math::jacrev "
-              "can no longer calculate the element-wise Jacobian.");
+  // Check batch shapes
+  for (std::size_t i = 0; i < xs.size(); i++)
+    neml_assert_dbg(y.batch_sizes() == xs[i].batch_sizes(),
+                    "In math::jacrev, the output variable batch shape ",
+                    y.batch_sizes(),
+                    " is different from the batch shape of x[",
+                    i,
+                    "] ",
+                    xs[i].batch_sizes(),
+                    ".");
 
   const auto opt = y.options().requires_grad(false);
 
   // Flatten y to handle arbitrarily shaped output
-  const auto yf = y.base_flatten().batch_expand(batch_sizes);
-  const auto G = Tensor::identity(yf.base_size(0), opt).batch_expand(yf.batch_sizes());
+  const auto yf = y.base_flatten();
+  const auto G = Scalar::full(1.0, opt).batch_expand(yf.batch_sizes());
 
-  auto dyf_dx = Tensor::zeros(batch_sizes, utils::add_shapes(yf.base_size(0), x.base_sizes()), opt);
+  // Initialie derivatives to zero
+  std::vector<torch::Tensor> xts(xs.begin(), xs.end());
+  std::vector<Tensor> dyf_dxs(xs.size());
+  for (std::size_t i = 0; i < xs.size(); i++)
+    dyf_dxs[i] = Tensor::zeros(
+        yf.batch_sizes(), utils::add_shapes(yf.base_size(0), xs[i].base_sizes()), opt);
 
+  // Use autograd to calculate the derivatives
   for (Size i = 0; i < yf.base_size(0); i++)
   {
-    const auto dyfi_dx = torch::autograd::grad({yf},
-                                               {x},
-                                               {G.base_index({i})},
-                                               /*retain_graph=*/retain_graph,
-                                               /*create_graph=*/create_graph,
-                                               /*allow_unused=*/allow_unused)[0];
-    if (dyfi_dx.defined())
-      dyf_dx.base_index_put_({i}, dyfi_dx.detach());
+    const auto dyfi_dxs = torch::autograd::grad({yf.base_index({i})},
+                                                {xts},
+                                                {G},
+                                                /*retain_graph=*/retain_graph,
+                                                /*create_graph=*/create_graph,
+                                                /*allow_unused=*/allow_unused);
+    neml_assert_dbg(dyfi_dxs.size() == xs.size(),
+                    "In math::jacrev, the number of derivatives is ",
+                    dyfi_dxs.size(),
+                    " but the number of input tensors is ",
+                    xs.size(),
+                    ".");
+    for (std::size_t j = 0; j < xs.size(); j++)
+      if (dyfi_dxs[j].defined())
+        dyf_dxs[j].base_index_put_({Size(i)}, dyfi_dxs[j]);
   }
 
   // Reshape the derivative back to the correct shape
-  return dyf_dx.base_reshape(utils::add_shapes(y.base_sizes(), x.base_sizes()));
+  for (std::size_t i = 0; i < xs.size(); i++)
+    dy_dxs[i] = dyf_dxs[i].base_reshape(utils::add_shapes(y.base_sizes(), xs[i].base_sizes()));
+
+  return dy_dxs;
+}
+
+Tensor
+jacrev(const Tensor & y, const Tensor & x, bool retain_graph, bool create_graph, bool allow_unused)
+{
+  return jacrev(y, std::vector<Tensor>{x}, retain_graph, create_graph, allow_unused)[0];
 }
 
 Tensor

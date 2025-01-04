@@ -43,8 +43,6 @@ class Surrogate(torch.nn.Module):
 
     def __init__(self, dtype):
         super().__init__()
-        self.A1 = torch.nn.Parameter(torch.tensor(5e-3, dtype=dtype), requires_grad=False)
-        self.A2 = torch.nn.Parameter(torch.tensor(2e-3, dtype=dtype), requires_grad=False)
         self.sy = torch.nn.Parameter(torch.tensor(1000.0, dtype=dtype), requires_grad=False)
         self.eta = torch.nn.Parameter(torch.tensor(10.0, dtype=dtype), requires_grad=False)
         self.n = torch.nn.Parameter(torch.tensor(3.0, dtype=dtype), requires_grad=False)
@@ -76,10 +74,8 @@ class Surrogate(torch.nn.Module):
         aT = torch.exp(-self.Q / self.R / T)
 
         ep_dot = aT * (rG + rC) * rep
-        G_dot = self.A1 + rG
-        C_dot = self.A2 + rC
 
-        return ep_dot, G_dot, C_dot
+        return ep_dot
 
 
 if __name__ == "__main__":

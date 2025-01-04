@@ -206,7 +206,7 @@ Tensor skew_to_full(const Tensor & skew, Size dim = 0);
  * some restrictions on batch shapes.
  *
  * @param y The `Tensor` to to be differentiated
- * @param x The argument to take derivatives with respect to
+ * @param xs The arguments to take derivatives with respect to
  * @param retain_graph Whether to retain the computation graph (necessary if y has base storage size
  * > 1)
  * @param create_graph Whether to create the computation graph (necessary if you want to
@@ -214,6 +214,13 @@ Tensor skew_to_full(const Tensor & skew, Size dim = 0);
  * @param allow_unused Whether to allow unused input argument \p x
  * @return Tensor \f$\partial y/\partial p\f$
  */
+std::vector<Tensor> jacrev(const Tensor & y,
+                           const std::vector<Tensor> & xs,
+                           bool retain_graph = false,
+                           bool create_graph = false,
+                           bool allow_unused = false);
+
+/// Similar to the other jacrev, but for a single input
 Tensor jacrev(const Tensor & y,
               const Tensor & x,
               bool retain_graph = false,

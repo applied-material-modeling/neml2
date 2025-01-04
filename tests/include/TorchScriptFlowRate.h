@@ -31,9 +31,8 @@
 namespace neml2
 {
 /**
- * @brief This class spits out the creep strain rate along with the rate of two other internal
- * variables, given the von Mises stress, temperature, and the current internal state as input.
-
+ * @brief This class spits out the creep strain rate given the von Mises stress and temperature
+ *
  * Interestingly, the model is defined by a "neural network" loaded from a torch script. So this
  * example demonstrates the usage of pretrained machine learning model as part (or all) of the
  * material model.
@@ -56,19 +55,12 @@ protected:
   const Variable<Scalar> & _s;
   /// Temperature
   const Variable<Scalar> & _T;
-  /// Internal variables, could be grain size, stoichiometries, etc.
-  const Variable<Scalar> & _G;
-  const Variable<Scalar> & _C;
   // @}
 
   /// Model output
   // @{
   /// Creep strain rate
   Variable<Scalar> & _ep_dot;
-  /// Rate of the 1st internal state
-  Variable<Scalar> & _G_dot;
-  /// Rate of the 2nd internal state
-  Variable<Scalar> & _C_dot;
   // @}
 
   /// The torch script to be used as the forward operator

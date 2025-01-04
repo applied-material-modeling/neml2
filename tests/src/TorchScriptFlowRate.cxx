@@ -36,12 +36,8 @@ TorchScriptFlowRate::expected_options()
   // Model inputs
   options.set<VariableName>("von_mises_stress") = VariableName(STATE, "s");
   options.set<VariableName>("temperature") = VariableName(FORCES, "T");
-  options.set<VariableName>("internal_state_1") = VariableName(STATE, "G");
-  options.set<VariableName>("internal_state_2") = VariableName(STATE, "C");
   // Model outputs
   options.set<VariableName>("equivalent_plastic_strain_rate") = VariableName(STATE, "ep_rate");
-  options.set<VariableName>("internal_state_1_rate") = VariableName(STATE, "G_rate");
-  options.set<VariableName>("internal_state_2_rate") = VariableName(STATE, "C_rate");
   // The machine learning model
   options.set<std::string>("torch_script");
   // No jitting :/
@@ -54,11 +50,7 @@ TorchScriptFlowRate::TorchScriptFlowRate(const OptionSet & options)
   : Model(options),
     _s(declare_input_variable<Scalar>("von_mises_stress")),
     _T(declare_input_variable<Scalar>("temperature")),
-    _G(declare_input_variable<Scalar>("internal_state_1")),
-    _C(declare_input_variable<Scalar>("internal_state_2")),
     _ep_dot(declare_output_variable<Scalar>("equivalent_plastic_strain_rate")),
-    _G_dot(declare_output_variable<Scalar>("internal_state_1_rate")),
-    _C_dot(declare_output_variable<Scalar>("internal_state_2_rate")),
     _surrogate(std::make_unique<torch::jit::script::Module>(
         torch::jit::load(options.get<std::string>("torch_script"))))
 {
@@ -67,10 +59,8 @@ TorchScriptFlowRate::TorchScriptFlowRate(const OptionSet & options)
 void
 TorchScriptFlowRate::request_AD()
 {
-  std::vector<const VariableBase *> inputs = {&_s, &_T, &_G, &_C};
+  std::vector<const VariableBase *> inputs = {&_s, &_T};
   _ep_dot.request_AD(inputs);
-  _G_dot.request_AD(inputs);
-  _C_dot.request_AD(inputs);
 }
 
 void
@@ -88,19 +78,14 @@ TorchScriptFlowRate::set_value(bool out, bool dout_din, bool d2out_din2)
     //   internal state 1
     //   internal state 2
     //
-    const torch::jit::Stack x = {_s.value(), _T.value(), _G.value(), _C.value()};
+    const auto G = Scalar::full(0.1, _s.options());
+    const auto C = Scalar::full(0.2, _s.options());
+    const torch::jit::Stack x = {_s.value(), _T.value(), G, C};
 
     // Send it through the surrogate model loaded from torch script
-    const auto y = _surrogate->forward(x).toTuple()->elements();
-    neml_assert_dbg(y.size() == 3, "Expecting 3 output variables in the tuple, got ", y.size());
+    const auto y = _surrogate->forward(x).toTensor();
 
-    // Assuming the output is in the following order
-    //
-    //   equivalent plastic strain rate
-    //   internal state 1 rate
-    //   internal state 2 rate
-    _ep_dot = Scalar(y[0].toTensor());
-    _G_dot = Scalar(y[1].toTensor());
-    _C_dot = Scalar(y[2].toTensor());
+    // Eequivalent plastic strain rate
+    _ep_dot = Scalar(y);
   }
 }
