@@ -46,6 +46,8 @@ set(HIT_VERSION "2b56209d3f1a1c5f0bede15a3e13981b599a5f91")
 set(CATCH2_VERSION "3.5.4")
 set(GPERFTOOLS_VERSION "2.15")
 set(ARGPARSE_VERSION "3.0")
+set(TIMPI_VERSION "1.8.5_bootstrapped")
+set(HWLOC_VERSION "2.11.2")
 include(NEML2Dependencies)
 
 # ----------------------------------------------------------------------------

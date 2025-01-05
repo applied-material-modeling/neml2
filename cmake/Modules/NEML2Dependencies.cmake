@@ -1,5 +1,4 @@
-include(FetchContent) # For downloading dependencies
-include(ExternalProject) # TriBITs really really is only designed for standalone build
+include(FetchContent)
 
 set(FETCHCONTENT_BASE_DIR ${NEML2_SOURCE_DIR}/_deps)
 
@@ -39,30 +38,7 @@ FetchContent_Declare(
   GIT_TAG v${PYBIND11_VERSION}
 )
 
-# WASP and HIT for parsing input files
-ExternalProject_Add(
-  wasp
-  GIT_REPOSITORY https://code.ornl.gov/neams-workbench/wasp.git
-  GIT_TAG ${WASP_VERSION}
-  PREFIX ${FETCHCONTENT_BASE_DIR}/wasp
-  CMAKE_ARGS
-  -DCMAKE_CXX_FLAGS:STRING=-D_GLIBCXX_USE_CXX11_ABI=${GLIBCXX_USE_CXX11_ABI}
-  -DCMAKE_BUILD_TYPE:STRING=RELEASE
-  -DCMAKE_INSTALL_PREFIX:STRING=${NEML2_BINARY_DIR}/wasp/install
-  -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-  -Dwasp_ENABLE_ALL_PACKAGES:BOOL=OFF
-  -Dwasp_ENABLE_wasphit:BOOL=ON
-  -Dwasp_ENABLE_testframework:BOOL=OFF
-  -Dwasp_ENABLE_TESTS:BOOL=OFF
-  -DBUILD_SHARED_LIBS:BOOL=OFF
-  -DDISABLE_HIT_TYPE_PROMOTION:BOOL=ON
-  TEST_EXCLUDE_FROM_MAIN ON
-  LOG_DOWNLOAD ON
-  LOG_CONFIGURE ON
-  LOG_BUILD ON
-  LOG_INSTALL ON
-  LOG_OUTPUT_ON_FAILURE ON
-)
+# HIT for parsing input files
 FetchContent_Declare(
   hit
   GIT_REPOSITORY https://github.com/idaholab/hit.git
@@ -90,3 +66,5 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/p-ranav/argparse.git
   GIT_TAG v${ARGPARSE_VERSION}
 )
+
+# TIMPI

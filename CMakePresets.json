@@ -13,7 +13,8 @@
         "NEML2_RUNNER": "OFF",
         "NEML2_CPU_PROFILER": "OFF",
         "NEML2_PYBIND": "ON",
-        "NEML2_DOC": "ON"
+        "NEML2_DOC": "ON",
+        "NEML2_WORK_DISPATCHER": "ON"
       }
     },
     {
@@ -27,7 +28,8 @@
         "NEML2_RUNNER": "ON",
         "NEML2_CPU_PROFILER": "ON",
         "NEML2_PYBIND": "OFF",
-        "NEML2_DOC": "OFF"
+        "NEML2_DOC": "OFF",
+        "NEML2_WORK_DISPATCHER": "ON"
       }
     },
     {
@@ -41,7 +43,8 @@
         "NEML2_RUNNER": "OFF",
         "NEML2_CPU_PROFILER": "OFF",
         "NEML2_PYBIND": "OFF",
-        "NEML2_DOC": "OFF"
+        "NEML2_DOC": "OFF",
+        "NEML2_WORK_DISPATCHER": "OFF"
       }
     },
     {
@@ -55,7 +58,8 @@
         "NEML2_RUNNER": "OFF",
         "NEML2_CPU_PROFILER": "OFF",
         "NEML2_PYBIND": "ON",
-        "NEML2_DOC": "OFF"
+        "NEML2_DOC": "OFF",
+        "NEML2_WORK_DISPATCHER": "ON"
       }
     }
   ],
