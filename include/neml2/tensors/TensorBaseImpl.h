@@ -228,6 +228,26 @@ TensorBase<Derived>::base_index(indexing::TensorIndicesRef indices) const
 }
 
 template <class Derived>
+Derived
+TensorBase<Derived>::batch_slice(Size dim, const indexing::Slice & index) const
+{
+  auto i = dim >= 0 ? dim : this->dim() + dim - base_dim();
+  auto res = this->slice(
+      i, index.start().expect_int(), index.stop().expect_int(), index.step().expect_int());
+  return Derived(res, res.dim() - base_dim());
+}
+
+template <class Derived>
+neml2::Tensor
+TensorBase<Derived>::base_slice(Size dim, const indexing::Slice & index) const
+{
+  auto i = dim < 0 ? this->dim() + dim : dim + batch_dim();
+  auto res = this->slice(
+      i, index.start().expect_int(), index.stop().expect_int(), index.step().expect_int());
+  return Derived(res, batch_sizes());
+}
+
+template <class Derived>
 void
 TensorBase<Derived>::batch_index_put_(indexing::TensorIndicesRef indices,
                                       const torch::Tensor & other)
