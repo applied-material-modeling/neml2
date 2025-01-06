@@ -1,15 +1,16 @@
-include(FetchContent)
+project(wasp)
+cmake_minimum_required(VERSION 3.28)
 include(ExternalProject)
 
 ExternalProject_Add(
-  wasp_ext
+  wasp
   GIT_REPOSITORY https://code.ornl.gov/neams-workbench/wasp.git
-  GIT_TAG ${WASP_VERSION}
-  PREFIX ${FETCHCONTENT_BASE_DIR}/wasp
+  GIT_TAG ${VERSION}
+  PREFIX ${PREFIX}
   CMAKE_ARGS
   -DCMAKE_CXX_FLAGS:STRING=-D_GLIBCXX_USE_CXX11_ABI=${GLIBCXX_USE_CXX11_ABI}
   -DCMAKE_BUILD_TYPE:STRING=RELEASE
-  -DCMAKE_INSTALL_PREFIX:STRING=${NEML2_BINARY_DIR}/wasp/install
+  -DCMAKE_INSTALL_PREFIX:STRING=${INSTALL_PREFIX}
   -DCMAKE_POSITION_INDEPENDENT_CODE=ON
   -Dwasp_ENABLE_ALL_PACKAGES:BOOL=OFF
   -Dwasp_ENABLE_wasphit:BOOL=ON

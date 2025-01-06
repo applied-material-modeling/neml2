@@ -29,6 +29,7 @@ list(APPEND CMAKE_MODULE_PATH ${NEML2_SOURCE_DIR}/cmake/Modules) # CMake modules
 set(CMAKE_CXX_FLAGS_COVERAGE "-O0 -fprofile-arcs -ftest-coverage" CACHE STRING "Flags used by C++ compiler during coverage builds." FORCE)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY ON)
 set(NEML2_TESTS ON CACHE BOOL "Build NEML2 tests")
 set(NEML2_RUNNER OFF CACHE BOOL "Build a simple runner for benchmarking, profiling, debugging, etc.")
 set(NEML2_PYBIND OFF CACHE BOOL "Build NEML2 Python bindings")
