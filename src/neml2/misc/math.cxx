@@ -226,7 +226,7 @@ jacrev(const Tensor & y,
   const auto yf = y.base_flatten();
   const auto G = Scalar::full(1.0, opt).batch_expand(yf.batch_sizes());
 
-  // Initialie derivatives to zero
+  // Initialize derivatives to zero
   std::vector<torch::Tensor> xts(xs.begin(), xs.end());
   std::vector<Tensor> dyf_dxs(xs.size());
   for (std::size_t i = 0; i < xs.size(); i++)
