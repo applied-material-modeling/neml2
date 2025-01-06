@@ -1,5 +1,7 @@
-project(wasp)
 cmake_minimum_required(VERSION 3.28)
+set(CMAKE_C_COMPILER_WORKS TRUE)
+set(CMAKE_CXX_COMPILER_WORKS TRUE)
+project(wasp)
 include(ExternalProject)
 
 ExternalProject_Add(

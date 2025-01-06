@@ -2,7 +2,7 @@
 # Project metadata
 # ----------------------------------------------------------------------------
 cmake_minimum_required(VERSION 3.28)
-project(NEML2 VERSION 2.0.0 LANGUAGES CXX)
+project(NEML2 VERSION 2.0.0 LANGUAGES C CXX)
 
 # ----------------------------------------------------------------------------
 # Policy
@@ -41,7 +41,7 @@ set(NEML2_DOC OFF CACHE BOOL "Build NEML2 documentation (html)")
 set(PYTORCH_VERSION "2.5.1")
 set(DOXYGEN_VERSION "1.10.0")
 set(DOXYGEN_AWESOME_VERSION "2.3.2")
-set(PYBIND11_VERSION "2.12.0")
+set(PYBIND11_VERSION "2.13.6")
 set(WASP_VERSION "c8c9ce4259115973f147e345608450d87dc390c4")
 set(HIT_VERSION "2b56209d3f1a1c5f0bede15a3e13981b599a5f91")
 set(CATCH2_VERSION "3.5.4")

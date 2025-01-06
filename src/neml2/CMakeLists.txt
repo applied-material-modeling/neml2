@@ -40,6 +40,66 @@ if(NEML2_CPU_PROFILER)
   target_link_libraries(neml2 PUBLIC profiler)
 endif()
 
+# Work dispatcher
+option(NEML2_WORK_DISPATCHER "Enable NEML2 work dispatcher" OFF)
+
+if(NEML2_WORK_DISPATCHER)
+  find_package(MPI REQUIRED)
+
+  if(MPI_CXX_FOUND)
+    set(CMAKE_C_COMPILER ${MPI_C_COMPILER})
+    set(CMAKE_CXX_COMPILER ${MPI_CXX_COMPILER})
+    target_link_libraries(neml2 PUBLIC MPI::MPI_CXX)
+  else()
+    message(FATAL_ERROR "MPI C++ compiler (required for work dispatcher) not found")
+  endif()
+
+  target_compile_definitions(neml2 PUBLIC NEML2_WORK_DISPATCHER)
+
+  # TIMPI
+  if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(timpi_BUILD_TYPE "dbg")
+  else()
+    set(timpi_BUILD_TYPE "opt")
+  endif()
+
+  message(STATUS "Configuring TIMPI")
+  set(timpi_BUILD_DIR ${NEML2_BINARY_DIR}/timpi/build)
+  set(timpi_INSTALL_DIR ${NEML2_BINARY_DIR}/timpi/install)
+  execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${timpi_BUILD_DIR})
+  execute_process(
+    COMMAND ${CMAKE_COMMAND} \\
+    -DVERSION=${TIMPI_VERSION} \\
+    -DPREFIX=${FETCHCONTENT_BASE_DIR}/timpi \\
+    -DBUILD_TYPE=${timpi_BUILD_TYPE} \\
+    -DINSTALL_PREFIX=${timpi_INSTALL_DIR} \\
+    ${NEML2_SOURCE_DIR}/cmake/timpi
+    WORKING_DIRECTORY ${timpi_BUILD_DIR}
+    OUTPUT_QUIET
+    OUTPUT_FILE ${timpi_BUILD_DIR}/configure.log
+    ERROR_QUIET
+    ERROR_FILE ${timpi_BUILD_DIR}/configure.err
+    COMMAND_ERROR_IS_FATAL ANY
+  )
+  execute_process(
+    COMMAND ${CMAKE_COMMAND} --build ${timpi_BUILD_DIR}
+    WORKING_DIRECTORY ${timpi_BUILD_DIR}
+    OUTPUT_QUIET
+    OUTPUT_FILE ${timpi_BUILD_DIR}/build.log
+    ERROR_QUIET
+    ERROR_FILE ${timpi_BUILD_DIR}/build.err
+    COMMAND_ERROR_IS_FATAL ANY
+  )
+
+  install(DIRECTORY
+    ${timpi_INSTALL_DIR}/include/timpi
+    TYPE INCLUDE
+  )
+  target_include_directories(neml2 SYSTEM PUBLIC ${timpi_INSTALL_DIR}/include)
+  target_link_libraries(neml2 PRIVATE timpi_${timpi_BUILD_TYPE})
+  target_link_directories(neml2 PRIVATE ${timpi_INSTALL_DIR}/lib)
+endif()
+
 # wasp
 message(STATUS "Configuring WASP")
 set(wasp_BUILD_DIR ${NEML2_BINARY_DIR}/wasp/build)
@@ -99,61 +159,3 @@ target_sources(hit
 )
 install(TARGETS hit COMPONENT Development FILE_SET HEADERS)
 target_link_libraries(neml2 PUBLIC hit)
-
-# Work dispatcher
-option(NEML2_WORK_DISPATCHER "Enable NEML2 work dispatcher" OFF)
-
-if(NEML2_WORK_DISPATCHER)
-  find_package(MPI REQUIRED)
-
-  if(MPI_CXX_FOUND)
-    target_link_libraries(neml2 PUBLIC MPI::MPI_CXX)
-  else()
-    message(FATAL_ERROR "MPI C++ compiler (required for work dispatcher) not found")
-  endif()
-
-  target_compile_definitions(neml2 PUBLIC NEML2_WORK_DISPATCHER)
-
-  # TIMPI
-  if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(timpi_BUILD_TYPE "dbg")
-  else()
-    set(timpi_BUILD_TYPE "opt")
-  endif()
-
-  message(STATUS "Configuring TIMPI")
-  set(timpi_BUILD_DIR ${NEML2_BINARY_DIR}/timpi/build)
-  set(timpi_INSTALL_DIR ${NEML2_BINARY_DIR}/timpi/install)
-  execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${timpi_BUILD_DIR})
-  execute_process(
-    COMMAND ${CMAKE_COMMAND} \\
-    -DVERSION=${TIMPI_VERSION} \\
-    -DPREFIX=${FETCHCONTENT_BASE_DIR}/timpi \\
-    -DBUILD_TYPE=${timpi_BUILD_TYPE} \\
-    -DINSTALL_PREFIX=${timpi_INSTALL_DIR} \\
-    ${NEML2_SOURCE_DIR}/cmake/timpi
-    WORKING_DIRECTORY ${timpi_BUILD_DIR}
-    OUTPUT_QUIET
-    OUTPUT_FILE ${timpi_BUILD_DIR}/configure.log
-    ERROR_QUIET
-    ERROR_FILE ${timpi_BUILD_DIR}/configure.err
-    COMMAND_ERROR_IS_FATAL ANY
-  )
-  execute_process(
-    COMMAND ${CMAKE_COMMAND} --build ${timpi_BUILD_DIR}
-    WORKING_DIRECTORY ${timpi_BUILD_DIR}
-    OUTPUT_QUIET
-    OUTPUT_FILE ${timpi_BUILD_DIR}/build.log
-    ERROR_QUIET
-    ERROR_FILE ${timpi_BUILD_DIR}/build.err
-    COMMAND_ERROR_IS_FATAL ANY
-  )
-
-  install(DIRECTORY
-    ${timpi_INSTALL_DIR}/include/timpi
-    TYPE INCLUDE
-  )
-  target_include_directories(neml2 SYSTEM PUBLIC ${timpi_INSTALL_DIR}/include)
-  target_link_libraries(neml2 PRIVATE timpi_${timpi_BUILD_TYPE})
-  target_link_directories(neml2 PRIVATE ${timpi_INSTALL_DIR}/lib)
-endif()
