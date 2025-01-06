@@ -69,6 +69,8 @@ if(NEML2_WORK_DISPATCHER)
   execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${timpi_BUILD_DIR})
   execute_process(
     COMMAND ${CMAKE_COMMAND} \\
+    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} \\
+    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} \\
     -DVERSION=${TIMPI_VERSION} \\
     -DPREFIX=${FETCHCONTENT_BASE_DIR}/timpi \\
     -DBUILD_TYPE=${timpi_BUILD_TYPE} \\
@@ -101,14 +103,23 @@ if(NEML2_WORK_DISPATCHER)
 endif()
 
 # wasp
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  set(wasp_BUILD_TYPE "Debug")
+else()
+  set(wasp_BUILD_TYPE "RelWithDebInfo")
+endif()
+
 message(STATUS "Configuring WASP")
 set(wasp_BUILD_DIR ${NEML2_BINARY_DIR}/wasp/build)
 set(wasp_INSTALL_DIR ${NEML2_BINARY_DIR}/wasp/install)
 execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${wasp_BUILD_DIR})
 execute_process(
   COMMAND ${CMAKE_COMMAND} \\
+  -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} \\
+  -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} \\
   -DVERSION=${WASP_VERSION} \\
   -DPREFIX=${FETCHCONTENT_BASE_DIR}/wasp \\
+  -DBUILD_TYPE=${wasp_BUILD_TYPE} \\
   -DGLIBCXX_USE_CXX11_ABI=${GLIBCXX_USE_CXX11_ABI} \\
   -DINSTALL_PREFIX=${wasp_INSTALL_DIR} \\
   ${NEML2_SOURCE_DIR}/cmake/wasp
