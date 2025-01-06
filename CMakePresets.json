@@ -72,7 +72,8 @@
       "targets": [
         "unit_tests",
         "regression_tests",
-        "verification_tests"
+        "verification_tests",
+        "dispatcher_tests"
       ]
     },
     {

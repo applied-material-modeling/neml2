@@ -106,20 +106,4 @@ if(NEML2_WORK_DISPATCHER)
   target_include_directories(neml2 SYSTEM PUBLIC ${timpi_INSTALL_DIR}/include)
   target_link_libraries(neml2 PRIVATE timpi_${timpi_BUILD_TYPE})
   target_link_directories(neml2 PRIVATE ${timpi_INSTALL_DIR}/lib)
-
-  # hwloc
-  include(Addhwloc)
-  add_dependencies(neml2 hwloc_ext)
-  set(hwloc_INSTALL_DIR ${NEML2_BINARY_DIR}/hwloc/install)
-  install(DIRECTORY
-    ${hwloc_INSTALL_DIR}/include/hwloc
-    TYPE INCLUDE
-  )
-  install(FILES
-    ${hwloc_INSTALL_DIR}/include/hwloc.h
-    TYPE INCLUDE
-  )
-  target_include_directories(neml2 SYSTEM PUBLIC ${hwloc_INSTALL_DIR}/include)
-  target_link_libraries(neml2 PRIVATE hwloc)
-  target_link_directories(neml2 PRIVATE ${hwloc_INSTALL_DIR}/lib)
 endif()
