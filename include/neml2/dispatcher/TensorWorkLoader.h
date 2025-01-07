@@ -22,34 +22,31 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/dispatcher/SliceWorkGenerator.h"
+#pragma once
 
-#include "neml2/misc/error.h"
+#include "neml2/dispatcher/SliceWorkGenerator.h"
+#include "neml2/tensors/Tensor.h"
 
 namespace neml2
 {
-SliceWorkGenerator::SliceWorkGenerator(std::size_t start, std::size_t stop)
-  : _start(start),
-    _stop(stop)
+class TensorWorkLoader : public WorkGenerator<Tensor>
 {
-  neml_assert(_start < _stop,
-              "Invalid slice, expect start < stop. Got start = ",
-              _start,
-              ", stop = ",
-              _stop);
-}
+public:
+  TensorWorkLoader(const Tensor & tensor, Size batch_dim);
 
-std::size_t
-SliceWorkGenerator::total() const
-{
-  return _stop - _start;
-}
+  std::size_t total() const override;
 
-std::pair<std::size_t, indexing::Slice>
-SliceWorkGenerator::generate(std::size_t n)
-{
-  std::size_t m = std::min(n, _stop - _start - offset());
-  indexing::Slice work(_start + offset(), _start + offset() + m);
-  return {m, std::move(work)};
-}
+protected:
+  std::pair<std::size_t, Tensor> generate(std::size_t n) override;
+
+private:
+  /// The tensor to load work from
+  const Tensor _tensor;
+
+  /// The batch dimension of the tensor along which to load work
+  const Size _batch_dim;
+
+  /// The slice generator that generates slicing indices for the tensor
+  SliceWorkGenerator _slice_gen;
+};
 } // namespace neml2

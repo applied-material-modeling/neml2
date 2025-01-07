@@ -55,6 +55,9 @@ public:
     return std::make_pair(m, work);
   }
 
+  /// @brief Total number of batches that will be generated
+  virtual std::size_t total() const = 0;
+
   /// @brief Return the current offset, i.e., the number of batches that have been generated
   std::size_t offset() const { return _offset; }
 
@@ -62,7 +65,7 @@ public:
   virtual void reset() { _offset = 0; }
 
   /// @brief Whether the generator has more work to generate
-  virtual bool has_more() const = 0;
+  bool has_more() const { return offset() < total(); }
 
 protected:
   /**

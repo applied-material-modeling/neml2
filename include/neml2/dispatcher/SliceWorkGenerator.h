@@ -34,7 +34,7 @@ class SliceWorkGenerator : public WorkGenerator<indexing::Slice>
 public:
   SliceWorkGenerator(std::size_t start, std::size_t stop);
 
-  bool has_more() const override;
+  std::size_t total() const override;
 
 protected:
   std::pair<std::size_t, indexing::Slice> generate(std::size_t n) override;

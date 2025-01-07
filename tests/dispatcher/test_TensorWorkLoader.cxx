@@ -24,46 +24,48 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include "neml2/dispatcher/SliceWorkGenerator.h"
+#include "neml2/dispatcher/TensorWorkLoader.h"
 
 using namespace neml2;
 
-TEST_CASE("SliceWorkGenerator", "[dispatcher]")
+TEST_CASE("TensorWorkLoader", "[dispatcher]")
 {
-  SliceWorkGenerator generator(50, 2000);
+  auto start = Tensor::zeros({5, 5}, {2, 3});
+  auto end = Tensor::full({5, 5}, {2, 3}, 100.0);
+  auto ten = Tensor::linspace(start, end, 100, 1);
+  REQUIRE(ten.batch_sizes() == TensorShape{5, 100, 5});
+  REQUIRE(ten.base_sizes() == TensorShape{2, 3});
+
+  TensorWorkLoader loader(ten, 1);
+  REQUIRE(loader.total() == 100);
+  REQUIRE(loader.offset() == 0);
 
   std::size_t n;
-  indexing::Slice work;
+  Tensor work;
 
-  REQUIRE(generator.has_more());
-  std::tie(n, work) = generator.next(1);
+  REQUIRE(loader.has_more());
+  std::tie(n, work) = loader.next(1);
+  REQUIRE(loader.offset() == 1);
   REQUIRE(n == 1);
-  REQUIRE(work.start() == 50);
-  REQUIRE(work.stop() == 51);
+  REQUIRE(work.batch_sizes() == TensorShape{5, 1, 5});
+  REQUIRE(work.base_sizes() == TensorShape{2, 3});
+  REQUIRE(torch::allclose(work, ten.slice(1, 0, 1)));
 
-  REQUIRE(generator.has_more());
-  std::tie(n, work) = generator.next(2);
+  REQUIRE(loader.has_more());
+  std::tie(n, work) = loader.next(2);
+  REQUIRE(loader.offset() == 3);
   REQUIRE(n == 2);
-  REQUIRE(work.start() == 51);
-  REQUIRE(work.stop() == 53);
+  REQUIRE(work.batch_sizes() == TensorShape{5, 2, 5});
+  REQUIRE(work.base_sizes() == TensorShape{2, 3});
+  REQUIRE(torch::allclose(work, ten.slice(1, 1, 3)));
 
-  REQUIRE(generator.has_more());
-  std::tie(n, work) = generator.next(1000);
-  REQUIRE(n == 1000);
-  REQUIRE(work.start() == 53);
-  REQUIRE(work.stop() == 1053);
+  REQUIRE(loader.has_more());
+  std::tie(n, work) = loader.next(1000);
+  REQUIRE(loader.offset() == 100);
+  REQUIRE(n == 97);
+  REQUIRE(work.batch_sizes() == TensorShape{5, 97, 5});
+  REQUIRE(work.base_sizes() == TensorShape{2, 3});
+  REQUIRE(torch::allclose(work, ten.slice(1, 3)));
 
-  REQUIRE(generator.has_more());
-  std::tie(n, work) = generator.next(946);
-  REQUIRE(n == 946);
-  REQUIRE(work.start() == 1053);
-  REQUIRE(work.stop() == 1999);
-
-  REQUIRE(generator.has_more());
-  std::tie(n, work) = generator.next(5);
-  REQUIRE(n == 1);
-  REQUIRE(work.start() == 1999);
-  REQUIRE(work.stop() == 2000);
-
-  REQUIRE(!generator.has_more());
+  REQUIRE(!loader.has_more());
 }

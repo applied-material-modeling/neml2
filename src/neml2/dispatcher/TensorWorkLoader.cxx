@@ -22,34 +22,28 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/dispatcher/SliceWorkGenerator.h"
-
-#include "neml2/misc/error.h"
+#include "neml2/dispatcher/TensorWorkLoader.h"
 
 namespace neml2
 {
-SliceWorkGenerator::SliceWorkGenerator(std::size_t start, std::size_t stop)
-  : _start(start),
-    _stop(stop)
+TensorWorkLoader::TensorWorkLoader(const Tensor & tensor, Size batch_dim)
+  : _tensor(tensor),
+    _batch_dim(batch_dim),
+    _slice_gen(0, tensor.size(batch_dim))
 {
-  neml_assert(_start < _stop,
-              "Invalid slice, expect start < stop. Got start = ",
-              _start,
-              ", stop = ",
-              _stop);
 }
 
 std::size_t
-SliceWorkGenerator::total() const
+TensorWorkLoader::total() const
 {
-  return _stop - _start;
+  return _slice_gen.total();
 }
 
-std::pair<std::size_t, indexing::Slice>
-SliceWorkGenerator::generate(std::size_t n)
+std::pair<std::size_t, Tensor>
+TensorWorkLoader::generate(std::size_t n)
 {
-  std::size_t m = std::min(n, _stop - _start - offset());
-  indexing::Slice work(_start + offset(), _start + offset() + m);
+  auto && [m, slice] = _slice_gen.next(n);
+  auto work = _tensor.batch_slice(_batch_dim, slice);
   return {m, std::move(work)};
 }
 } // namespace neml2

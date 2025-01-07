@@ -22,34 +22,55 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <catch2/catch_test_macros.hpp>
+
 #include "neml2/dispatcher/SliceWorkGenerator.h"
 
-#include "neml2/misc/error.h"
+using namespace neml2;
 
-namespace neml2
+TEST_CASE("SliceWorkGenerator", "[dispatcher]")
 {
-SliceWorkGenerator::SliceWorkGenerator(std::size_t start, std::size_t stop)
-  : _start(start),
-    _stop(stop)
-{
-  neml_assert(_start < _stop,
-              "Invalid slice, expect start < stop. Got start = ",
-              _start,
-              ", stop = ",
-              _stop);
-}
+  SliceWorkGenerator generator(50, 2000);
+  REQUIRE(generator.total() == 1950);
+  REQUIRE(generator.offset() == 0);
 
-std::size_t
-SliceWorkGenerator::total() const
-{
-  return _stop - _start;
-}
+  std::size_t n;
+  indexing::Slice work;
 
-std::pair<std::size_t, indexing::Slice>
-SliceWorkGenerator::generate(std::size_t n)
-{
-  std::size_t m = std::min(n, _stop - _start - offset());
-  indexing::Slice work(_start + offset(), _start + offset() + m);
-  return {m, std::move(work)};
+  REQUIRE(generator.has_more());
+  std::tie(n, work) = generator.next(1);
+  REQUIRE(generator.offset() == 1);
+  REQUIRE(n == 1);
+  REQUIRE(work.start() == 50);
+  REQUIRE(work.stop() == 51);
+
+  REQUIRE(generator.has_more());
+  std::tie(n, work) = generator.next(2);
+  REQUIRE(generator.offset() == 3);
+  REQUIRE(n == 2);
+  REQUIRE(work.start() == 51);
+  REQUIRE(work.stop() == 53);
+
+  REQUIRE(generator.has_more());
+  std::tie(n, work) = generator.next(1000);
+  REQUIRE(generator.offset() == 1003);
+  REQUIRE(n == 1000);
+  REQUIRE(work.start() == 53);
+  REQUIRE(work.stop() == 1053);
+
+  REQUIRE(generator.has_more());
+  std::tie(n, work) = generator.next(946);
+  REQUIRE(generator.offset() == 1949);
+  REQUIRE(n == 946);
+  REQUIRE(work.start() == 1053);
+  REQUIRE(work.stop() == 1999);
+
+  REQUIRE(generator.has_more());
+  std::tie(n, work) = generator.next(5);
+  REQUIRE(generator.offset() == 1950);
+  REQUIRE(n == 1);
+  REQUIRE(work.start() == 1999);
+  REQUIRE(work.stop() == 2000);
+
+  REQUIRE(!generator.has_more());
 }
-} // namespace neml2

@@ -22,34 +22,53 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/dispatcher/SliceWorkGenerator.h"
-
-#include "neml2/misc/error.h"
+#include "neml2/dispatcher/ValueMapWorkLoader.h"
 
 namespace neml2
 {
-SliceWorkGenerator::SliceWorkGenerator(std::size_t start, std::size_t stop)
-  : _start(start),
-    _stop(stop)
+std::size_t
+broadcast_batch_size(const ValueMap & value_map, Size batch_dim)
 {
-  neml_assert(_start < _stop,
-              "Invalid slice, expect start < stop. Got start = ",
-              _start,
-              ", stop = ",
-              _stop);
+  Size size = 0;
+  for (auto && [key, tensor] : value_map)
+    size = std::max(size, tensor.batch_size(batch_dim).concrete());
+  for (auto && [key, tensor] : value_map)
+  {
+    auto s = tensor.batch_size(batch_dim).concrete();
+    neml_assert(s == 1 || s == size,
+                "Batch sizes along batch dimension ",
+                batch_dim,
+                " are not compatible. Expected 1 or ",
+                size,
+                ", got ",
+                s,
+                ".");
+  }
+  return size;
+}
+
+ValueMapWorkLoader::ValueMapWorkLoader(const ValueMap & value_map, Size batch_dim)
+  : _value_map(value_map),
+    _batch_dim(batch_dim),
+    _slice_gen(0, broadcast_batch_size(value_map, batch_dim))
+{
 }
 
 std::size_t
-SliceWorkGenerator::total() const
+ValueMapWorkLoader::total() const
 {
-  return _stop - _start;
+  return _slice_gen.total();
 }
 
-std::pair<std::size_t, indexing::Slice>
-SliceWorkGenerator::generate(std::size_t n)
+std::pair<std::size_t, ValueMap>
+ValueMapWorkLoader::generate(std::size_t n)
 {
-  std::size_t m = std::min(n, _stop - _start - offset());
-  indexing::Slice work(_start + offset(), _start + offset() + m);
+  auto && [m, slice] = _slice_gen.next(n);
+
+  ValueMap work;
+  for (auto && [key, tensor] : _value_map)
+    work[key] = tensor.size(_batch_dim) == 1 ? tensor : tensor.batch_slice(_batch_dim, slice);
+
   return {m, std::move(work)};
 }
 } // namespace neml2

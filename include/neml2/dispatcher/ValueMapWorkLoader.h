@@ -24,9 +24,29 @@
 
 #pragma once
 
+#include "neml2/dispatcher/TensorWorkLoader.h"
+#include "neml2/models/map_types.h"
+
 namespace neml2
 {
-class WorkDispatcher
+class ValueMapWorkLoader : public WorkGenerator<ValueMap>
 {
+public:
+  ValueMapWorkLoader(const ValueMap & value_map, Size batch_dim);
+
+  std::size_t total() const override;
+
+protected:
+  std::pair<std::size_t, ValueMap> generate(std::size_t n) override;
+
+private:
+  /// The map of tensors to load work from
+  const ValueMap _value_map;
+
+  /// The batch dimension of the tensor along which to load work
+  const Size _batch_dim;
+
+  /// The slice generator that generates slicing indices for the tensor
+  SliceWorkGenerator _slice_gen;
 };
 } // namespace neml2
