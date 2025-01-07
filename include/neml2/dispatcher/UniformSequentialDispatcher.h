@@ -22,53 +22,39 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/dispatcher/ValueMapWorkLoader.h"
+#pragma once
+
+#include "neml2/dispatcher/SequentialDispatcher.h"
 
 namespace neml2
 {
-std::size_t
-broadcast_batch_size(const ValueMap & value_map, Size batch_dim)
+/// A simple sequential work dispatcher with constant batch size (the final batch size may be smaller)
+template <typename I,
+          typename O,
+          typename Of = typename std::vector<O>,
+          typename Ip = typename type_identity<I>::type,
+          typename Op = typename type_identity<O>::type>
+class UniformSequentialDispatcher : public SequentialDispatcher<I, O, Of, Ip, Op>
 {
-  Size size = 0;
-  for (auto && [key, tensor] : value_map)
-    size = std::max(size, tensor.batch_size(batch_dim).concrete());
-  for (auto && [key, tensor] : value_map)
+public:
+  using BaseDispatcher = SequentialDispatcher<I, O, Of, Ip, Op>;
+
+  UniformSequentialDispatcher(
+      std::size_t batch_size,
+      std::function<O(I &&)> && dispatch,
+      std::function<Of(std::vector<Op> &&)> && reduce = &BaseDispatcher::default_reduce,
+      std::function<I(Ip &&)> && preprocess = &BaseDispatcher::default_preprocess,
+      std::function<Op(O &&)> && postprocess = &BaseDispatcher::default_postprocess)
+    : SequentialDispatcher<I, O, Of, Ip, Op>(
+          std::move(dispatch), std::move(reduce), std::move(preprocess), std::move(postprocess)),
+      _batch_size(batch_size)
   {
-    auto s = tensor.batch_size(batch_dim).concrete();
-    neml_assert(s == 1 || s == size,
-                "Batch sizes along batch dimension ",
-                batch_dim,
-                " are not compatible. Expected 1 or ",
-                size,
-                ", got ",
-                s,
-                ".");
   }
-  return size;
-}
 
-ValueMapWorkLoader::ValueMapWorkLoader(const ValueMap & value_map, Size batch_dim)
-  : _value_map(value_map),
-    _batch_dim(batch_dim),
-    _slice_gen(0, broadcast_batch_size(value_map, batch_dim))
-{
-}
+  std::size_t next_batch_size() const { return _batch_size; }
 
-std::size_t
-ValueMapWorkLoader::total() const
-{
-  return _slice_gen.total();
-}
-
-std::pair<std::size_t, ValueMap>
-ValueMapWorkLoader::generate(std::size_t n)
-{
-  auto && [m, slice] = _slice_gen.next(n);
-
-  ValueMap work;
-  for (auto && [key, tensor] : _value_map)
-    work[key] = tensor.size(_batch_dim) == 1 ? tensor : tensor.batch_slice(_batch_dim, slice);
-
-  return {m, std::move(work)};
-}
+private:
+  /// Next batch size
+  const std::size_t _batch_size;
+};
 } // namespace neml2

@@ -29,10 +29,10 @@
 
 namespace neml2
 {
-class SliceWorkGenerator : public WorkGenerator<indexing::Slice>
+class SliceGenerator : public WorkGenerator<indexing::Slice>
 {
 public:
-  SliceWorkGenerator(std::size_t start, std::size_t stop);
+  SliceGenerator(std::size_t start, std::size_t stop);
 
   std::size_t total() const override;
 

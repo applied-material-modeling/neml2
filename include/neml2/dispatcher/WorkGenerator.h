@@ -33,8 +33,6 @@ template <typename T>
 class WorkGenerator
 {
 public:
-  WorkGenerator() = default;
-
   /**
    * @brief Generate the next \p n batches of work
    *

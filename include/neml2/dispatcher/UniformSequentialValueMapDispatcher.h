@@ -22,34 +22,31 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/dispatcher/SliceWorkGenerator.h"
+#pragma once
 
-#include "neml2/misc/error.h"
+#include "neml2/dispatcher/UniformSequentialDispatcher.h"
+#include "neml2/dispatcher/ValueMapLoader.h"
 
 namespace neml2
 {
-SliceWorkGenerator::SliceWorkGenerator(std::size_t start, std::size_t stop)
-  : _start(start),
-    _stop(stop)
+/// A simple sequential work dispatcher for dispatching ValueMap using a ValueMapLoader without preprocessing or postprocessing
+class UniformSequentialValueMapDispatcher
+  : public UniformSequentialDispatcher<ValueMap, ValueMap, ValueMap>
 {
-  neml_assert(_start < _stop,
-              "Invalid slice, expect start < stop. Got start = ",
-              _start,
-              ", stop = ",
-              _stop);
-}
+public:
+  UniformSequentialValueMapDispatcher(Size batch_dim,
+                                      std::size_t batch_size,
+                                      std::function<ValueMap(ValueMap &&)> && dispatch,
+                                      std::function<ValueMap(std::vector<ValueMap> &&)> && reduce =
+                                          std::bind(&default_reduce, std::placeholders::_1, 0));
 
-std::size_t
-SliceWorkGenerator::total() const
-{
-  return _stop - _start;
-}
+  ValueMap operator()(const ValueMap & x);
 
-std::pair<std::size_t, indexing::Slice>
-SliceWorkGenerator::generate(std::size_t n)
-{
-  std::size_t m = std::min(n, _stop - _start - offset());
-  indexing::Slice work(_start + offset(), _start + offset() + m);
-  return {m, std::move(work)};
-}
+protected:
+  /// Default reduce function
+  static ValueMap default_reduce(std::vector<ValueMap> && results, Size batch_dim);
+
+private:
+  const Size _batch_dim;
+};
 } // namespace neml2

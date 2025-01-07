@@ -24,12 +24,12 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include "neml2/dispatcher/ValueMapWorkLoader.h"
+#include "neml2/dispatcher/ValueMapLoader.h"
 #include "neml2/models/Model.h"
 
 using namespace neml2;
 
-TEST_CASE("ValueMapWorkLoader", "[dispatcher]")
+TEST_CASE("ValueMapLoader", "[dispatcher]")
 {
   const auto strain_name = VariableName{"state", "strain"};
   const auto strain0 = SR2::fill(0.1, 0.05, -0.01).batch_expand({5, 5});
@@ -39,7 +39,7 @@ TEST_CASE("ValueMapWorkLoader", "[dispatcher]")
   const auto temperature = Scalar::full(300).batch_expand({5, 1, 5});
   const auto value_map = ValueMap{{strain_name, strain}, {temperature_name, temperature}};
 
-  ValueMapWorkLoader loader(value_map, 1);
+  ValueMapLoader loader(value_map, 1);
   REQUIRE(loader.total() == 100);
   REQUIRE(loader.offset() == 0);
 

@@ -24,53 +24,39 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include "neml2/dispatcher/SliceWorkGenerator.h"
+#include "neml2/dispatcher/SliceGenerator.h"
+#include "neml2/dispatcher/UniformSequentialDispatcher.h"
+#include "neml2/misc/types.h"
 
 using namespace neml2;
 
-TEST_CASE("SliceWorkGenerator", "[dispatcher]")
+TEST_CASE("UniformSequentialDispatcher", "[dispatcher]")
 {
-  SliceWorkGenerator generator(50, 2000);
-  REQUIRE(generator.total() == 1950);
-  REQUIRE(generator.offset() == 0);
+  // A dummy function to test the dispatcher
+  auto func = [](indexing::Slice && x) -> Size
+  { return x.start().expect_int() * x.stop().expect_int() * x.step().expect_int(); };
 
-  std::size_t n;
-  indexing::Slice work;
+  // A dummy reduction function
+  auto reduction = [](std::vector<Size> && results) -> Size
+  {
+    Size sum = 0;
+    for (const auto & result : results)
+      sum += result;
+    return sum;
+  };
 
-  REQUIRE(generator.has_more());
-  std::tie(n, work) = generator.next(1);
-  REQUIRE(generator.offset() == 1);
-  REQUIRE(n == 1);
-  REQUIRE(work.start() == 50);
-  REQUIRE(work.stop() == 51);
+  UniformSequentialDispatcher<indexing::Slice, Size, Size> dispatcher(345, func, reduction);
+  SliceGenerator generator(50, 2000);
+  auto result = dispatcher.run(generator);
 
-  REQUIRE(generator.has_more());
-  std::tie(n, work) = generator.next(2);
-  REQUIRE(generator.offset() == 3);
-  REQUIRE(n == 2);
-  REQUIRE(work.start() == 51);
-  REQUIRE(work.stop() == 53);
-
-  REQUIRE(generator.has_more());
-  std::tie(n, work) = generator.next(1000);
-  REQUIRE(generator.offset() == 1003);
-  REQUIRE(n == 1000);
-  REQUIRE(work.start() == 53);
-  REQUIRE(work.stop() == 1053);
-
-  REQUIRE(generator.has_more());
-  std::tie(n, work) = generator.next(946);
-  REQUIRE(generator.offset() == 1949);
-  REQUIRE(n == 946);
-  REQUIRE(work.start() == 1053);
-  REQUIRE(work.stop() == 1999);
-
-  REQUIRE(generator.has_more());
-  std::tie(n, work) = generator.next(5);
-  REQUIRE(generator.offset() == 1950);
-  REQUIRE(n == 1);
-  REQUIRE(work.start() == 1999);
-  REQUIRE(work.stop() == 2000);
-
-  REQUIRE(!generator.has_more());
+  // The generated slices and results should be
+  //   (50, 395, 1) -> 19750
+  //   (395, 740, 1) -> 292300
+  //   (740, 1085, 1) -> 802900
+  //   (1085, 1430, 1) -> 1551550
+  //   (1430, 1775, 1) -> 2538250
+  //   (1775, 2000, 1) -> 3550000
+  // After reduction, the result should be
+  //   8754750
+  REQUIRE(result == 8754750);
 }

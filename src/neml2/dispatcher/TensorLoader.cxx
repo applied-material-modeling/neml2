@@ -22,11 +22,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/dispatcher/TensorWorkLoader.h"
+#include "neml2/dispatcher/TensorLoader.h"
 
 namespace neml2
 {
-TensorWorkLoader::TensorWorkLoader(const Tensor & tensor, Size batch_dim)
+TensorLoader::TensorLoader(const Tensor & tensor, Size batch_dim)
   : _tensor(tensor),
     _batch_dim(batch_dim),
     _slice_gen(0, tensor.size(batch_dim))
@@ -34,13 +34,13 @@ TensorWorkLoader::TensorWorkLoader(const Tensor & tensor, Size batch_dim)
 }
 
 std::size_t
-TensorWorkLoader::total() const
+TensorLoader::total() const
 {
   return _slice_gen.total();
 }
 
 std::pair<std::size_t, Tensor>
-TensorWorkLoader::generate(std::size_t n)
+TensorLoader::generate(std::size_t n)
 {
   auto && [m, slice] = _slice_gen.next(n);
   auto work = _tensor.batch_slice(_batch_dim, slice);

@@ -22,31 +22,53 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-
-#include "neml2/dispatcher/TensorWorkLoader.h"
-#include "neml2/models/map_types.h"
+#include "neml2/dispatcher/ValueMapLoader.h"
 
 namespace neml2
 {
-class ValueMapWorkLoader : public WorkGenerator<ValueMap>
+std::size_t
+broadcast_batch_size(const ValueMap & value_map, Size batch_dim)
 {
-public:
-  ValueMapWorkLoader(const ValueMap & value_map, Size batch_dim);
+  Size size = 0;
+  for (auto && [key, tensor] : value_map)
+    size = std::max(size, tensor.batch_size(batch_dim).concrete());
+  for (auto && [key, tensor] : value_map)
+  {
+    auto s = tensor.batch_size(batch_dim).concrete();
+    neml_assert(s == 1 || s == size,
+                "Batch sizes along batch dimension ",
+                batch_dim,
+                " are not compatible. Expected 1 or ",
+                size,
+                ", got ",
+                s,
+                ".");
+  }
+  return size;
+}
 
-  std::size_t total() const override;
+ValueMapLoader::ValueMapLoader(const ValueMap & value_map, Size batch_dim)
+  : _value_map(value_map),
+    _batch_dim(batch_dim),
+    _slice_gen(0, broadcast_batch_size(value_map, batch_dim))
+{
+}
 
-protected:
-  std::pair<std::size_t, ValueMap> generate(std::size_t n) override;
+std::size_t
+ValueMapLoader::total() const
+{
+  return _slice_gen.total();
+}
 
-private:
-  /// The map of tensors to load work from
-  const ValueMap _value_map;
+std::pair<std::size_t, ValueMap>
+ValueMapLoader::generate(std::size_t n)
+{
+  auto && [m, slice] = _slice_gen.next(n);
 
-  /// The batch dimension of the tensor along which to load work
-  const Size _batch_dim;
+  ValueMap work;
+  for (auto && [key, tensor] : _value_map)
+    work[key] = tensor.size(_batch_dim) == 1 ? tensor : tensor.batch_slice(_batch_dim, slice);
 
-  /// The slice generator that generates slicing indices for the tensor
-  SliceWorkGenerator _slice_gen;
-};
+  return {m, std::move(work)};
+}
 } // namespace neml2
