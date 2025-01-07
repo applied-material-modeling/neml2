@@ -24,20 +24,20 @@
 
 #pragma once
 
-#include "neml2/dispatcher/WorkLoader.h"
+#include "neml2/dispatcher/WorkGenerator.h"
 #include "neml2/misc/types.h"
 
 namespace neml2
 {
-class SliceWorkLoader : public WorkLoader<indexing::Slice>
+class SliceWorkGenerator : public WorkGenerator<indexing::Slice>
 {
 public:
-  SliceWorkLoader(std::size_t start, std::size_t stop);
+  SliceWorkGenerator(std::size_t start, std::size_t stop);
 
   bool has_more() const override;
 
 protected:
-  std::pair<std::size_t, indexing::Slice> load(std::size_t n) override;
+  std::pair<std::size_t, indexing::Slice> generate(std::size_t n) override;
 
 private:
   std::size_t _start;

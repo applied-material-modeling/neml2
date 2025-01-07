@@ -22,13 +22,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/dispatcher/SliceWorkLoader.h"
+#include "neml2/dispatcher/SliceWorkGenerator.h"
 
 #include "neml2/misc/error.h"
 
 namespace neml2
 {
-SliceWorkLoader::SliceWorkLoader(std::size_t start, std::size_t stop)
+SliceWorkGenerator::SliceWorkGenerator(std::size_t start, std::size_t stop)
   : _start(start),
     _stop(stop)
 {
@@ -40,13 +40,13 @@ SliceWorkLoader::SliceWorkLoader(std::size_t start, std::size_t stop)
 }
 
 bool
-SliceWorkLoader::has_more() const
+SliceWorkGenerator::has_more() const
 {
   return offset() < (_stop - _start);
 }
 
 std::pair<std::size_t, indexing::Slice>
-SliceWorkLoader::load(std::size_t n)
+SliceWorkGenerator::generate(std::size_t n)
 {
   std::size_t m = std::min(n, _stop - _start - offset());
   indexing::Slice work(_start + offset(), _start + offset() + m);

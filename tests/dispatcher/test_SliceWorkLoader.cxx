@@ -24,46 +24,46 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include "neml2/dispatcher/SliceWorkLoader.h"
+#include "neml2/dispatcher/SliceWorkGenerator.h"
 
 using namespace neml2;
 
-TEST_CASE("SliceWorkLoader", "[dispatcher]")
+TEST_CASE("SliceWorkGenerator", "[dispatcher]")
 {
-  SliceWorkLoader loader(50, 2000);
+  SliceWorkGenerator generator(50, 2000);
 
   std::size_t n;
   indexing::Slice work;
 
-  REQUIRE(loader.has_more());
-  std::tie(n, work) = loader.next(1);
+  REQUIRE(generator.has_more());
+  std::tie(n, work) = generator.next(1);
   REQUIRE(n == 1);
   REQUIRE(work.start() == 50);
   REQUIRE(work.stop() == 51);
 
-  REQUIRE(loader.has_more());
-  std::tie(n, work) = loader.next(2);
+  REQUIRE(generator.has_more());
+  std::tie(n, work) = generator.next(2);
   REQUIRE(n == 2);
   REQUIRE(work.start() == 51);
   REQUIRE(work.stop() == 53);
 
-  REQUIRE(loader.has_more());
-  std::tie(n, work) = loader.next(1000);
+  REQUIRE(generator.has_more());
+  std::tie(n, work) = generator.next(1000);
   REQUIRE(n == 1000);
   REQUIRE(work.start() == 53);
   REQUIRE(work.stop() == 1053);
 
-  REQUIRE(loader.has_more());
-  std::tie(n, work) = loader.next(946);
+  REQUIRE(generator.has_more());
+  std::tie(n, work) = generator.next(946);
   REQUIRE(n == 946);
   REQUIRE(work.start() == 1053);
   REQUIRE(work.stop() == 1999);
 
-  REQUIRE(loader.has_more());
-  std::tie(n, work) = loader.next(5);
+  REQUIRE(generator.has_more());
+  std::tie(n, work) = generator.next(5);
   REQUIRE(n == 1);
   REQUIRE(work.start() == 1999);
   REQUIRE(work.stop() == 2000);
 
-  REQUIRE(!loader.has_more());
+  REQUIRE(!generator.has_more());
 }
