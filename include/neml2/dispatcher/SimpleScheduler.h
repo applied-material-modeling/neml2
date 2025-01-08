@@ -44,15 +44,11 @@ public:
                   std::size_t batch_size,
                   std::size_t capacity = std::numeric_limits<std::size_t>::max());
 
-  torch::Device next_device() const override;
+  bool next(torch::Device &, std::size_t &) const override;
 
-  std::size_t next_batch_size() const override;
+  void dispatched(torch::Device, std::size_t) override;
 
-  bool is_available(torch::Device, std::size_t) const override;
-
-  void dispatched(torch::Device, std::size_t n) override;
-
-  void completed(torch::Device, std::size_t n) override;
+  void completed(torch::Device, std::size_t) override;
 
 private:
   /// The device to dispatch to

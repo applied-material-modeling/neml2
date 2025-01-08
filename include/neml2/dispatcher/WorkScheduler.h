@@ -31,14 +31,13 @@ namespace neml2
 class WorkScheduler
 {
 public:
-  /// Next device where work should be dispatched
-  virtual torch::Device next_device() const = 0;
-
-  /// Next batch size to dispatch
-  virtual std::size_t next_batch_size() const = 0;
-
-  /// Check if the target device can accept more work
-  virtual bool is_available(torch::Device, std::size_t) const = 0;
+  /**
+   * @brief Device and batch size for the next dispatch
+   *
+   * @return true If there is a worker available
+   * @return false If there is no worker available
+   */
+  virtual bool next(torch::Device &, std::size_t &) const = 0;
 
   /// Update the schedule with the dispatch of the last batch
   virtual void dispatched(torch::Device, std::size_t) = 0;

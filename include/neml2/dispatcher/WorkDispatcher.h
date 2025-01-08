@@ -132,27 +132,23 @@ WorkDispatcher<I, O, Of, Ip, Op>::run(WorkGenerator<Ip> & generator,
   if constexpr (!std::is_same_v<Of, std::vector<Op>>)
     neml_assert(bool(_reduce), "Reduce function is not set");
 
+  torch::Device device = torch::kCPU;
+  std::size_t n = 0;
   std::vector<Op> results;
   while (generator.has_more())
   {
-    // Get the next device and batch size
-    auto device = scheduler.next_device();
-    auto n = scheduler.next_batch_size();
-    neml_assert(n > 0, "Scheduler returned a batch size of ", n);
-
-    // Generate and preprocess work
-    // Note that these steps are done _before_ checking if the worker is available. This is
-    // because the worker may be available immediately after the work is generated and preprocessed,
-    // and we want to dispatch the work as soon as possible.
-    auto && [m, work] = generator.next(n);
-    if (_preprocess)
-      work = _preprocess(std::move(work), device);
-
-    // Wait until the worker is available to take m batches of work
-    while (!scheduler.is_available(device, m))
+    // Wait until the worker is available
+    while (!scheduler.next(device, n))
       // TODO: In theory this could hang if the worker pool is overloaded and no work is completed.
       // We may want to add a timeout here.
       continue;
+
+    neml_assert(n > 0, "Scheduler returned a batch size of ", n);
+
+    // Generate and preprocess work
+    auto && [m, work] = generator.next(n);
+    if (_preprocess)
+      work = _preprocess(std::move(work), device);
 
     // Dispatch
     auto result = _dispatch(std::move(work), device);
@@ -191,26 +187,15 @@ WorkDispatcher<I, O, Of, Ip, Op>::run_async(WorkGenerator<Ip> & generator,
   if constexpr (!std::is_same_v<Of, std::vector<Op>>)
     neml_assert(bool(_reduce), "Reduce function is not set");
 
+  torch::Device device = torch::kCPU;
+  std::size_t n = 0;
   using FutureResult = std::tuple<std::size_t, torch::Device, std::size_t, std::future<O>>;
   std::vector<FutureResult> future_results;
   std::vector<Op> results;
   while (generator.has_more())
   {
-    // Get the next device and batch size
-    auto device = scheduler.next_device();
-    auto n = scheduler.next_batch_size();
-    neml_assert(n > 0, "Scheduler returned a batch size of ", n);
-
-    // Generate and preprocess work
-    // Note that these steps are done _before_ checking if the worker is available. This is
-    // because the worker may be available immediately after the work is generated and preprocessed,
-    // and we want to dispatch the work as soon as possible.
-    auto && [m, work] = generator.next(n);
-    if (_preprocess)
-      work = _preprocess(std::move(work), device);
-
-    // Wait until the worker is available to take m batches of work
-    while (!scheduler.is_available(device, m))
+    // Wait until the worker is available
+    while (!scheduler.next(device, n))
     {
       // Check if any of the dispatched work has completed
       for (auto it = future_results.begin(); it != future_results.end();)
@@ -229,6 +214,13 @@ WorkDispatcher<I, O, Of, Ip, Op>::run_async(WorkGenerator<Ip> & generator,
           ++it;
       }
     }
+
+    neml_assert(n > 0, "Scheduler returned a batch size of ", n);
+
+    // Generate and preprocess work
+    auto && [m, work] = generator.next(n);
+    if (_preprocess)
+      work = _preprocess(std::move(work), device);
 
     // Dispatch
     auto result = std::async(std::launch::async, _dispatch, std::move(work), device);

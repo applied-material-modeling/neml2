@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/dispatcher/SimpleScheduler.h"
+#include "neml2/misc/error.h"
 
 namespace neml2
 {
@@ -33,22 +34,15 @@ SimpleScheduler::SimpleScheduler(torch::Device device, std::size_t batch_size, s
 {
 }
 
-torch::Device
-SimpleScheduler::next_device() const
-{
-  return _device;
-};
-
-std::size_t
-SimpleScheduler::next_batch_size() const
-{
-  return _batch_size;
-};
-
 bool
-SimpleScheduler::is_available(torch::Device, std::size_t) const
+SimpleScheduler::next(torch::Device & device, std::size_t & batch_size) const
 {
-  return _load + _batch_size <= _capacity;
+  if (_load + _batch_size > _capacity)
+    return false;
+
+  device = _device;
+  batch_size = _batch_size;
+  return true;
 }
 
 void
@@ -60,6 +54,7 @@ SimpleScheduler::dispatched(torch::Device, std::size_t n)
 void
 SimpleScheduler::completed(torch::Device, std::size_t n)
 {
+  neml_assert(_load >= n, "Load underflow");
   _load -= n;
 }
 } // namespace neml2
