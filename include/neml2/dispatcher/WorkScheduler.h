@@ -24,37 +24,26 @@
 
 #pragma once
 
-#include "neml2/dispatcher/SequentialDispatcher.h"
+#include "neml2/misc/types.h"
 
 namespace neml2
 {
-/// A simple sequential work dispatcher with constant batch size (the final batch size may be smaller)
-template <typename I,
-          typename O,
-          typename Of = typename std::vector<O>,
-          typename Ip = typename type_identity<I>::type,
-          typename Op = typename type_identity<O>::type>
-class UniformSequentialDispatcher : public SequentialDispatcher<I, O, Of, Ip, Op>
+class WorkScheduler
 {
 public:
-  using BaseDispatcher = SequentialDispatcher<I, O, Of, Ip, Op>;
+  /// Next device where work should be dispatched
+  virtual torch::Device next_device() const = 0;
 
-  UniformSequentialDispatcher(
-      std::size_t batch_size,
-      std::function<O(I &&)> && dispatch,
-      std::function<Of(std::vector<Op> &&)> && reduce = &BaseDispatcher::default_reduce,
-      std::function<I(Ip &&)> && preprocess = &BaseDispatcher::default_preprocess,
-      std::function<Op(O &&)> && postprocess = &BaseDispatcher::default_postprocess)
-    : SequentialDispatcher<I, O, Of, Ip, Op>(
-          std::move(dispatch), std::move(reduce), std::move(preprocess), std::move(postprocess)),
-      _batch_size(batch_size)
-  {
-  }
+  /// Next batch size to dispatch
+  virtual std::size_t next_batch_size() const = 0;
 
-  std::size_t next_batch_size() const { return _batch_size; }
+  /// Check if the target device can accept more work
+  virtual bool is_available(torch::Device, std::size_t) const = 0;
 
-private:
-  /// Next batch size
-  const std::size_t _batch_size;
+  /// Update the schedule with the dispatch of the last batch
+  virtual void dispatched(torch::Device, std::size_t) = 0;
+
+  /// Update the schedule with the completion of the last batch
+  virtual void completed(torch::Device, std::size_t) = 0;
 };
 } // namespace neml2

@@ -22,41 +22,41 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <catch2/catch_test_macros.hpp>
+#pragma once
 
-#include "neml2/dispatcher/SliceGenerator.h"
-#include "neml2/dispatcher/UniformSequentialDispatcher.h"
-#include "neml2/misc/types.h"
+#include "neml2/dispatcher/WorkScheduler.h"
 
-using namespace neml2;
-
-TEST_CASE("UniformSequentialDispatcher", "[dispatcher]")
+namespace neml2
 {
-  // A dummy function to test the dispatcher
-  auto func = [](indexing::Slice && x) -> Size
-  { return x.start().expect_int() * x.stop().expect_int() * x.step().expect_int(); };
-
-  // A dummy reduction function
-  auto reduction = [](std::vector<Size> && results) -> Size
+/**
+ * @brief A very simple scheduler
+ *
+ * This schedule is simple in the sense that
+ * - It dispatches to a single device
+ * - It dispatches a fixed batch size
+ * - It does not care if the device is available
+ */
+class SimpleScheduler : public WorkScheduler
+{
+public:
+  SimpleScheduler(torch::Device device, std::size_t batch_size)
+    : _device(device),
+      _batch_size(batch_size)
   {
-    Size sum = 0;
-    for (const auto & result : results)
-      sum += result;
-    return sum;
-  };
+  }
 
-  UniformSequentialDispatcher<indexing::Slice, Size, Size> dispatcher(345, func, reduction);
-  SliceGenerator generator(50, 2000);
-  auto result = dispatcher.run(generator);
+  torch::Device next_device() const override { return _device; };
 
-  // The generated slices and results should be
-  //   (50, 395, 1) -> 19750
-  //   (395, 740, 1) -> 292300
-  //   (740, 1085, 1) -> 802900
-  //   (1085, 1430, 1) -> 1551550
-  //   (1430, 1775, 1) -> 2538250
-  //   (1775, 2000, 1) -> 3550000
-  // After reduction, the result should be
-  //   8754750
-  REQUIRE(result == 8754750);
-}
+  std::size_t next_batch_size() const override { return _batch_size; };
+
+  bool is_available(torch::Device, std::size_t) const override { return true; }
+
+  void dispatched(torch::Device, std::size_t) override {}
+
+  void completed(torch::Device, std::size_t) override {}
+
+private:
+  torch::Device _device;
+  std::size_t _batch_size;
+};
+} // namespace neml2
