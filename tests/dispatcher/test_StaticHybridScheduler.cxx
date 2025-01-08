@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_all.hpp>
 
 #include "neml2/dispatcher/StaticHybridScheduler.h"
 
@@ -42,7 +43,7 @@ TEST_CASE("StaticHybridScheduler", "[dispatcher]")
     REQUIRE(status[0].device == torch::Device("cpu"));
     REQUIRE(status[0].batch_size == 2);
     REQUIRE(status[0].capacity == 3);
-    REQUIRE(status[0].priority == 1);
+    REQUIRE(status[0].priority == Catch::Approx(1.0));
     REQUIRE(status[0].load == 0);
 
     scheduler.dispatched(torch::kCPU, 1);
@@ -58,29 +59,29 @@ TEST_CASE("StaticHybridScheduler", "[dispatcher]")
   SECTION("multiple devices")
   {
     StaticHybridScheduler scheduler(
-        /*device_list=*/{torch::Device("cuda:1"), torch::Device("cpu"), torch::Device("cuda:0")},
-        /*batch_sizes=*/{4, 2, 3},
-        /*capacities=*/{5, 3, 4},
-        /*priorities=*/{1, 3, 2});
+        /*device_list=*/{torch::Device("cpu"), torch::Device("cuda:0"), torch::Device("cuda:1")},
+        /*batch_sizes=*/{2, 3, 4},
+        /*capacities=*/{3, 4, 5},
+        /*priorities=*/{3, 2, 1});
     const auto & status = scheduler.status();
     REQUIRE(status.size() == 3);
 
     REQUIRE(status[0].device == torch::Device("cpu"));
     REQUIRE(status[0].batch_size == 2);
     REQUIRE(status[0].capacity == 3);
-    REQUIRE(status[0].priority == 3);
+    REQUIRE(status[0].priority == Catch::Approx(3.0));
     REQUIRE(status[0].load == 0);
 
     REQUIRE(status[1].device == torch::Device("cuda:0"));
     REQUIRE(status[1].batch_size == 3);
     REQUIRE(status[1].capacity == 4);
-    REQUIRE(status[1].priority == 2);
+    REQUIRE(status[1].priority == Catch::Approx(2.0));
     REQUIRE(status[1].load == 0);
 
     REQUIRE(status[2].device == torch::Device("cuda:1"));
     REQUIRE(status[2].batch_size == 4);
     REQUIRE(status[2].capacity == 5);
-    REQUIRE(status[2].priority == 1);
+    REQUIRE(status[2].priority == Catch::Approx(1.0));
     REQUIRE(status[2].load == 0);
 
     scheduler.dispatched(torch::Device("cpu"), 1);

@@ -30,7 +30,7 @@ namespace neml2
 StaticHybridScheduler::StaticHybridScheduler(const std::vector<torch::Device> & device_list,
                                              const std::vector<std::size_t> & batch_sizes,
                                              const std::vector<std::size_t> & capacities,
-                                             const std::vector<std::size_t> & priorities)
+                                             const std::vector<double> & priorities)
 {
   // First pass:
   // - Check if any CPU device is present
@@ -88,7 +88,7 @@ StaticHybridScheduler::StaticHybridScheduler(const std::vector<torch::Device> & 
   // Expand priorities if necessary
   auto priorities_expand = priorities;
   if (priorities.empty())
-    priorities_expand.resize(device_list.size(), 0);
+    priorities_expand.resize(device_list.size(), 1.0);
   else
     neml_assert(priorities.size() == device_list.size(),
                 "Number of priorities must match the number of devices.");
@@ -97,26 +97,34 @@ StaticHybridScheduler::StaticHybridScheduler(const std::vector<torch::Device> & 
   for (std::size_t i = 0; i < device_list.size(); ++i)
     _devices.emplace_back(
         device_list[i], batch_sizes_expand[i], capacities_expand[i], priorities_expand[i]);
-
-  // Sort devices by priority (if provided)
-  if (!priorities.empty())
-    std::sort(_devices.begin(),
-              _devices.end(),
-              [](const DeviceStatus & a, const DeviceStatus & b)
-              { return a.priority > b.priority; });
 }
 
 bool
 StaticHybridScheduler::next(torch::Device & device, std::size_t & n) const
 {
+  bool available = false;
+  double max_availability = std::numeric_limits<double>::lowest();
+
   for (const auto & i : _devices)
     if ((i.load + i.batch_size) <= i.capacity)
     {
-      device = i.device;
-      n = i.batch_size;
-      return true;
+      auto availability =
+          _custom_availability_calculator ? _custom_availability_calculator(i) : i.priority;
+      if (!available || availability > max_availability)
+      {
+        available = true;
+        device = i.device;
+        n = i.batch_size;
+      }
     }
-  return false;
+
+  return available;
+}
+
+void
+StaticHybridScheduler::set_availability_calculator(std::function<double(const DeviceStatus &)> f)
+{
+  _custom_availability_calculator = std::move(f);
 }
 
 void

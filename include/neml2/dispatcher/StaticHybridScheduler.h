@@ -37,6 +37,27 @@ namespace neml2
 class StaticHybridScheduler : public WorkScheduler
 {
 public:
+  struct DeviceStatus
+  {
+    DeviceStatus(torch::Device device,
+                 std::size_t batch_size,
+                 std::size_t capacity,
+                 double priority)
+      : device(device),
+        batch_size(batch_size),
+        capacity(capacity),
+        priority(priority),
+        load(0)
+    {
+    }
+
+    torch::Device device;
+    std::size_t batch_size;
+    std::size_t capacity;
+    double priority;
+    std::size_t load;
+  };
+
   /**
    * The constructor takes a device list, along with the batch sizes, capacities, and priorities for
    * each device.
@@ -54,9 +75,9 @@ public:
    * otherwise, the number of capacities should match the number of devices.
    *
    * An optional list of priorities can be provided. The number of priorities should match the
-   * number of devices. If no priorities are provided, the priorities are determined by the order
-   * specified by the \p device_list. If duplicate priorities are provided, the corresponding
-   * devices have equal priority, and their relative dispatch order is undefined.
+   * number of devices. If no priorities are provided, all devices have the same priority. Note that
+   * this dispatcher chooses the device to dispatch not only based on the priority but also based on
+   * the availability of the device. See next() for more details.
    *
    * \note For developers, below is a summary of the construct of torch::Device:
    * torch::Device represents a compute device on which a tensor is located. A device is uniquely
@@ -72,34 +93,27 @@ public:
   StaticHybridScheduler(const std::vector<torch::Device> & device_list,
                         const std::vector<std::size_t> & batch_sizes,
                         const std::vector<std::size_t> & capacities = {},
-                        const std::vector<std::size_t> & priorities = {});
+                        const std::vector<double> & priorities = {});
 
+  /**
+   * @brief Pick the next device to dispatch work to
+   *
+   * The function returns the device and the number of batches to dispatch. The device is chosen
+   * based on the availability of the available devices. A device is said to be available if (load +
+   * batch_size) <= capacity. If multiple devices are available, the device with the highest
+   * availability will be chosen.
+   *
+   * By default, the availability is the device's priority, a custom function can be set using
+   * set_availability_calculator().
+   */
   bool next(torch::Device &, std::size_t &) const override;
+
+  /// Set a custom availability calculator
+  void set_availability_calculator(std::function<double(const DeviceStatus &)>);
 
   void dispatched(torch::Device, std::size_t) override;
 
   void completed(torch::Device, std::size_t) override;
-
-  struct DeviceStatus
-  {
-    DeviceStatus(torch::Device device,
-                 std::size_t batch_size,
-                 std::size_t capacity,
-                 std::size_t priority)
-      : device(device),
-        batch_size(batch_size),
-        capacity(capacity),
-        priority(priority),
-        load(0)
-    {
-    }
-
-    torch::Device device;
-    std::size_t batch_size;
-    std::size_t capacity;
-    std::size_t priority;
-    std::size_t load;
-  };
 
   const std::vector<DeviceStatus> & status() const { return _devices; }
 
@@ -112,5 +126,8 @@ private:
 
   /// The devices to dispatch to (in order of priority)
   std::vector<DeviceStatus> _devices;
+
+  /// The availability calculator
+  std::function<double(const DeviceStatus &)> _custom_availability_calculator;
 };
 } // namespace neml2
