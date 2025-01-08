@@ -120,6 +120,12 @@ WorkDispatcher<I, O, Of, Ip, Op>::run(WorkGenerator<Ip> & generator,
                                       WorkScheduler & scheduler) const
 {
   neml_assert(bool(_dispatch), "Dispatch function is not set");
+  if constexpr (!std::is_same_v<I, Ip>)
+    neml_assert(bool(_preprocess), "Preprocess function is not set");
+  if constexpr (!std::is_same_v<O, Op>)
+    neml_assert(bool(_postprocess), "Postprocess function is not set");
+  if constexpr (!std::is_same_v<Of, std::vector<Op>>)
+    neml_assert(bool(_reduce), "Reduce function is not set");
 
   std::vector<Op> results;
   while (generator.has_more())
@@ -136,8 +142,6 @@ WorkDispatcher<I, O, Of, Ip, Op>::run(WorkGenerator<Ip> & generator,
     auto && [m, work] = generator.next(n);
     if (_preprocess)
       work = _preprocess(std::move(work), device);
-    else
-      neml_assert(std::is_same_v<I, Ip>, "Preprocess function is not set");
 
     // Wait until the worker is available to take m batches of work
     while (!scheduler.is_available(device, m))
@@ -156,16 +160,12 @@ WorkDispatcher<I, O, Of, Ip, Op>::run(WorkGenerator<Ip> & generator,
     // Postprocess
     if (_postprocess)
       result = _postprocess(std::move(result));
-    else
-      neml_assert(std::is_same_v<O, Op>, "Postprocess function is not set");
 
     results.push_back(result);
   }
 
   if (_reduce)
     return _reduce(std::move(results));
-  else
-    neml_assert(std::is_same_v<Of, std::vector<Op>>, "Reduce function is not set");
 
   if constexpr (std::is_same<Of, std::vector<Op>>::value)
     return results;
