@@ -34,7 +34,7 @@
 
 using namespace neml2;
 
-TEST_CASE("SimpleScheduler", "[dispatcher]")
+TEST_CASE("WorkDispatcher ValueMapLoader SimpleScheduler", "[dispatcher]")
 {
   // Along which batch dimension to dispatch work
   const Size batch_dim = 1;
@@ -88,9 +88,19 @@ TEST_CASE("SimpleScheduler", "[dispatcher]")
 
   SECTION("cpu")
   {
-    SimpleScheduler scheduler(torch::kCPU, 23);
-    auto y = dispatcher.run(loader, scheduler);
-    REQUIRE(torch::allclose(y[stress_name], stress));
+    SimpleScheduler scheduler(torch::kCPU, 23, 55);
+
+    SECTION("run")
+    {
+      auto y = dispatcher.run(loader, scheduler);
+      REQUIRE(torch::allclose(y[stress_name], stress));
+    }
+
+    SECTION("run_async")
+    {
+      auto y = dispatcher.run_async(loader, scheduler);
+      REQUIRE(torch::allclose(y[stress_name], stress));
+    }
   }
 
   SECTION("cuda")
@@ -99,9 +109,20 @@ TEST_CASE("SimpleScheduler", "[dispatcher]")
       SKIP("cuda not available");
 
     auto device = torch::Device("cuda:0");
-    SimpleScheduler scheduler(device, 23);
-    auto y = dispatcher.run(loader, scheduler);
-    REQUIRE(y[stress_name].device() == device);
-    REQUIRE(torch::allclose(y[stress_name].to(torch::kCPU), stress));
+    SimpleScheduler scheduler(device, 23, 55);
+
+    SECTION("run")
+    {
+      auto y = dispatcher.run(loader, scheduler);
+      REQUIRE(y[stress_name].device() == device);
+      REQUIRE(torch::allclose(y[stress_name].to(torch::kCPU), stress));
+    }
+
+    SECTION("run_async")
+    {
+      auto y = dispatcher.run_async(loader, scheduler);
+      REQUIRE(y[stress_name].device() == device);
+      REQUIRE(torch::allclose(y[stress_name].to(torch::kCPU), stress));
+    }
   }
 }

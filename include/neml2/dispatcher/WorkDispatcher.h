@@ -25,6 +25,7 @@
 #pragma once
 
 #include <functional>
+#include <future>
 
 #include "neml2/dispatcher/WorkGenerator.h"
 #include "neml2/dispatcher/WorkScheduler.h"
@@ -94,7 +95,11 @@ public:
   {
   }
 
+  /// Run the dispatching loop
   Of run(WorkGenerator<Ip> &, WorkScheduler &) const;
+
+  /// Run the dispatching loop asynchronously
+  Of run_async(WorkGenerator<Ip> &, WorkScheduler &) const;
 
 protected:
   /// Function to dispatch preprocessed work to the worker and retrieve the result
@@ -162,6 +167,87 @@ WorkDispatcher<I, O, Of, Ip, Op>::run(WorkGenerator<Ip> & generator,
       result = _postprocess(std::move(result));
 
     results.push_back(result);
+  }
+
+  if (_reduce)
+    return _reduce(std::move(results));
+
+  if constexpr (std::is_same<Of, std::vector<Op>>::value)
+    return results;
+
+  throw NEMLException("Internal error: unreachable code");
+}
+
+template <typename I, typename O, typename Of, typename Ip, typename Op>
+Of
+WorkDispatcher<I, O, Of, Ip, Op>::run_async(WorkGenerator<Ip> & generator,
+                                            WorkScheduler & scheduler) const
+{
+  neml_assert(bool(_dispatch), "Dispatch function is not set");
+  if constexpr (!std::is_same_v<I, Ip>)
+    neml_assert(bool(_preprocess), "Preprocess function is not set");
+  if constexpr (!std::is_same_v<O, Op>)
+    neml_assert(bool(_postprocess), "Postprocess function is not set");
+  if constexpr (!std::is_same_v<Of, std::vector<Op>>)
+    neml_assert(bool(_reduce), "Reduce function is not set");
+
+  using FutureResult = std::tuple<std::size_t, torch::Device, std::size_t, std::future<O>>;
+  std::vector<FutureResult> future_results;
+  std::vector<Op> results;
+  while (generator.has_more())
+  {
+    // Get the next device and batch size
+    auto device = scheduler.next_device();
+    auto n = scheduler.next_batch_size();
+    neml_assert(n > 0, "Scheduler returned a batch size of ", n);
+
+    // Generate and preprocess work
+    // Note that these steps are done _before_ checking if the worker is available. This is
+    // because the worker may be available immediately after the work is generated and preprocessed,
+    // and we want to dispatch the work as soon as possible.
+    auto && [m, work] = generator.next(n);
+    if (_preprocess)
+      work = _preprocess(std::move(work), device);
+
+    // Wait until the worker is available to take m batches of work
+    while (!scheduler.is_available(device, m))
+    {
+      // Check if any of the dispatched work has completed
+      for (auto it = future_results.begin(); it != future_results.end();)
+      {
+        auto && [idx, device, m, future] = *it;
+        if (future.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+        {
+          auto result = future.get();
+          if (_postprocess)
+            result = _postprocess(std::move(result));
+          results[idx] = result;
+          scheduler.completed(device, m);
+          it = future_results.erase(it);
+        }
+        else
+          ++it;
+      }
+    }
+
+    // Dispatch
+    auto result = std::async(std::launch::async, _dispatch, std::move(work), device);
+    future_results.emplace_back(results.size(), device, m, std::move(result));
+    results.resize(results.size() + 1); // Reserve space for the result
+
+    // Tell the scheduler that we have dispatched m batches.
+    scheduler.dispatched(device, m);
+  }
+
+  // Wait for all the dispatched work to complete
+  for (auto && [idx, device, m, future] : future_results)
+  {
+    future.wait();
+    auto result = future.get();
+    if (_postprocess)
+      result = _postprocess(std::move(result));
+    results[idx] = result;
+    scheduler.completed(device, m);
   }
 
   if (_reduce)

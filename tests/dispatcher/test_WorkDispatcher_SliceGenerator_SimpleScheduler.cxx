@@ -31,10 +31,10 @@
 
 using namespace neml2;
 
-TEST_CASE("WorkDispatcher", "[dispatcher]")
+TEST_CASE("WorkDispatcher SliceGenerator SimpleScheduler", "[dispatcher]")
 {
   SliceGenerator generator(50, 2000);
-  SimpleScheduler scheduler(torch::kCPU, 345);
+  SimpleScheduler scheduler(torch::kCPU, /*batch_size=*/345, /*capacity=*/800);
 
   SECTION("no reduction, no preprecessing, no postprocessing")
   {
@@ -42,7 +42,7 @@ TEST_CASE("WorkDispatcher", "[dispatcher]")
     { return x.start().expect_int() * x.stop().expect_int() * x.step().expect_int(); };
 
     WorkDispatcher<indexing::Slice, Size> dispatcher(func);
-    auto result = dispatcher.run(generator, scheduler);
+
     // The generated slices and results should be
     //   (50, 395, 1) -> 19750
     //   (395, 740, 1) -> 292300
@@ -51,7 +51,18 @@ TEST_CASE("WorkDispatcher", "[dispatcher]")
     //   (1430, 1775, 1) -> 2538250
     //   (1775, 2000, 1) -> 3550000
     std::vector<Size> expected = {19750, 292300, 802900, 1551550, 2538250, 3550000};
-    REQUIRE(result == expected);
+
+    SECTION("run")
+    {
+      auto result = dispatcher.run(generator, scheduler);
+      REQUIRE(result == expected);
+    }
+
+    SECTION("run_async")
+    {
+      auto result = dispatcher.run_async(generator, scheduler);
+      REQUIRE(result == expected);
+    }
   }
 
   SECTION("with reduction, no preprecessing, no postprocessing")
@@ -67,7 +78,7 @@ TEST_CASE("WorkDispatcher", "[dispatcher]")
     };
 
     WorkDispatcher<indexing::Slice, Size, Size> dispatcher(func, red);
-    auto result = dispatcher.run(generator, scheduler);
+
     // The generated slices and results should be
     //   (50, 395, 1) -> 19750
     //   (395, 740, 1) -> 292300
@@ -76,7 +87,18 @@ TEST_CASE("WorkDispatcher", "[dispatcher]")
     //   (1430, 1775, 1) -> 2538250
     //   (1775, 2000, 1) -> 3550000
     // The expected result is the sum of the above results
-    REQUIRE(result == 8754750);
+
+    SECTION("run")
+    {
+      auto result = dispatcher.run(generator, scheduler);
+      REQUIRE(result == 8754750);
+    }
+
+    SECTION("run_async")
+    {
+      auto result = dispatcher.run_async(generator, scheduler);
+      REQUIRE(result == 8754750);
+    }
   }
 
   SECTION("with reduction, with preprecessing, with postprocessing")
@@ -95,7 +117,7 @@ TEST_CASE("WorkDispatcher", "[dispatcher]")
     auto postprocess = [](Size result) -> Size { return result + 1; };
 
     WorkDispatcher<indexing::Slice, Size, Size> dispatcher(func, red, preprocess, postprocess);
-    auto result = dispatcher.run(generator, scheduler);
+
     // The generated slices and results should be
     //   (50, 395, 1) -> (51, 394, 1) -> 20094 -> 20095
     //   (395, 740, 1) -> (396, 739, 1) -> 292644 -> 292645
@@ -104,6 +126,17 @@ TEST_CASE("WorkDispatcher", "[dispatcher]")
     //   (1430, 1775, 1) -> (1431, 1774, 1) -> 2538594 -> 2538595
     //   (1775, 2000, 1) -> (1776, 1999, 1) -> 3550224 -> 3550225
     // The expected result is the sum of the above results
-    REQUIRE(result == 8756700);
+
+    SECTION("run")
+    {
+      auto result = dispatcher.run(generator, scheduler);
+      REQUIRE(result == 8756700);
+    }
+
+    SECTION("run_async")
+    {
+      auto result = dispatcher.run(generator, scheduler);
+      REQUIRE(result == 8756700);
+    }
   }
 }

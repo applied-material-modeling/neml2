@@ -22,49 +22,44 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-
-#include "neml2/dispatcher/WorkScheduler.h"
+#include "neml2/dispatcher/SimpleScheduler.h"
 
 namespace neml2
 {
-/**
- * @brief A very simple scheduler
- *
- * This schedule is simple in the sense that
- * - It dispatches to a single device
- * - It dispatches a fixed batch size
- * - It does not perform parallel communication with other ranks (if any) to determine the
- *   availability of the device
- */
-class SimpleScheduler : public WorkScheduler
+SimpleScheduler::SimpleScheduler(torch::Device device, std::size_t batch_size, std::size_t capacity)
+  : _device(device),
+    _batch_size(batch_size),
+    _capacity(capacity)
 {
-public:
-  SimpleScheduler(torch::Device device,
-                  std::size_t batch_size,
-                  std::size_t capacity = std::numeric_limits<std::size_t>::max());
+}
 
-  torch::Device next_device() const override;
-
-  std::size_t next_batch_size() const override;
-
-  bool is_available(torch::Device, std::size_t) const override;
-
-  void dispatched(torch::Device, std::size_t n) override;
-
-  void completed(torch::Device, std::size_t n) override;
-
-private:
-  /// The device to dispatch to
-  torch::Device _device;
-
-  /// The batch size to dispatch
-  std::size_t _batch_size;
-
-  /// The capacity of the device
-  std::size_t _capacity;
-
-  /// Current load on the device
-  std::size_t _load = 0;
+torch::Device
+SimpleScheduler::next_device() const
+{
+  return _device;
 };
+
+std::size_t
+SimpleScheduler::next_batch_size() const
+{
+  return _batch_size;
+};
+
+bool
+SimpleScheduler::is_available(torch::Device, std::size_t) const
+{
+  return _load + _batch_size <= _capacity;
+}
+
+void
+SimpleScheduler::dispatched(torch::Device, std::size_t n)
+{
+  _load += n;
+}
+
+void
+SimpleScheduler::completed(torch::Device, std::size_t n)
+{
+  _load -= n;
+}
 } // namespace neml2
