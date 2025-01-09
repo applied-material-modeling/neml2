@@ -28,6 +28,10 @@
 
 namespace neml2
 {
+class Scalar;
+class Vec;
+class SR2;
+
 template <typename T>
 class VariableRate : public Model
 {
@@ -36,7 +40,7 @@ public:
 
   VariableRate(const OptionSet & options);
 
-  void diagnose(std::vector<Diagnosis> & diagnoses) const override;
+  void diagnose() const override;
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
@@ -56,8 +60,4 @@ protected:
   /// Variable rate
   Variable<T> & _dv_dt;
 };
-
-typedef VariableRate<Scalar> ScalarVariableRate;
-typedef VariableRate<Vec> VecVariableRate;
-typedef VariableRate<SR2> SR2VariableRate;
 } // namespace neml2

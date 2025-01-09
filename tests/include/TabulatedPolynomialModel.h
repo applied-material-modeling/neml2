@@ -28,6 +28,8 @@
 
 namespace neml2
 {
+class Scalar;
+
 /**
  * @brief This class spits out the creep strain rate along with the rate of two other internal
  * variables, given the von Mises stress, temperature, and the current internal state as input.
@@ -61,10 +63,9 @@ protected:
    * @param x The function argument
    * @param lb Lower bounds of the table intervals
    * @param ub Upper bounds of the table intervals
-   * @return torch::Tensor The smooth Kronecker delta
+   * @return ATensor The smooth Kronecker delta
    */
-  torch::Tensor
-  smooth_index(const torch::Tensor & x, const torch::Tensor & lb, const torch::Tensor & ub) const;
+  ATensor smooth_index(const ATensor & x, const ATensor & lb, const ATensor & ub) const;
 
   /**
    * The coefficient matrices:

@@ -27,6 +27,9 @@
 
 #include "utils.h"
 #include "neml2/models/Model.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/SR2.h"
+#include "neml2/tensors/TensorValue.h"
 
 using namespace neml2;
 
@@ -35,14 +38,14 @@ TEST_CASE("training")
   // This regression test loads a NEML2 model as if it is being used as an external library/package.
   // A parameter gradient is requested before the model is called twice, after which backward() is
   // called on the objective function to propagate the gradient onto the parameter.
-  auto & model = reload_model("regression/regression_training.i", "model");
+  auto & model = reload_model("regression_training.i", "model");
 
   // Batch shape
   Size nbatch = 2;
 
   // Request parameter gradient
-  auto & p = model.named_parameters()["yield_sy"];
-  p = Scalar(5, default_tensor_options().requires_grad(true));
+  auto & p = model.get_parameter("yield_sy");
+  p = Scalar::create(5, default_tensor_options().requires_grad(true));
 
   // Variables
   VariableName strain(FORCES, "E");
@@ -74,7 +77,7 @@ TEST_CASE("training")
   // Evaluate the objective function
   const auto s2 = r2.at(stress.remount(RESIDUAL)) * 1e-2;
   const auto ep2 = r2.at(ep.remount(RESIDUAL)) * 1e-2;
-  const auto f = torch::norm(torch::cat({s2.base_flatten(), ep2.base_flatten()}, -1));
+  const auto f = at::norm(at::cat({s2.base_flatten(), ep2.base_flatten()}, -1));
 
   // Check the parameter gradient
   f.backward();

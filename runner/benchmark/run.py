@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 
 # Copyright 2024, UChicago Argonne, LLC
 # All Rights Reserved

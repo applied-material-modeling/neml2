@@ -27,6 +27,10 @@
 #include "neml2/tensors/R2.h"
 #include "neml2/tensors/Rot.h"
 
+#include "neml2/tensors/functions/linalg/vecdot.h"
+#include "neml2/tensors/functions/linalg/cross.h"
+#include "neml2/tensors/functions/linalg/outer.h"
+
 namespace neml2
 {
 Vec::Vec(const Rot & r)
@@ -35,9 +39,27 @@ Vec::Vec(const Rot & r)
 }
 
 R2
-Vec::identity_map(const torch::TensorOptions & options)
+Vec::identity_map(const TensorOptions & options)
 {
   return R2::identity(options);
+}
+
+Scalar
+Vec::dot(const Vec & v) const
+{
+  return linalg::vecdot(*this, v);
+}
+
+Vec
+Vec::cross(const Vec & v) const
+{
+  return linalg::cross(*this, v);
+}
+
+R2
+Vec::outer(const Vec & v) const
+{
+  return linalg::outer(*this, v);
 }
 
 Vec

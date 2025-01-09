@@ -23,12 +23,11 @@
 // THE SOFTWARE.
 
 #include "neml2/models/InputParameter.h"
+#include "neml2/misc/assertions.h"
+#include "neml2/tensors/tensors.h"
 
 namespace neml2
 {
-#define INPUTPARAMETER_REGISTER(T) register_NEML2_object(T##InputParameter)
-FOR_ALL_PRIMITIVETENSOR(INPUTPARAMETER_REGISTER);
-
 template <typename T>
 OptionSet
 InputParameter<T>::expected_options()
@@ -36,6 +35,9 @@ InputParameter<T>::expected_options()
   OptionSet options = NonlinearParameter<T>::expected_options();
   options.doc() = "A parameter that is defined through an input variable. This essentially "
                   "converts a nonlinear parameter to an input variable";
+
+  options.set<bool>("define_second_derivatives") = true;
+
   options.set_input("from");
   options.set("from").doc() = "The input variable that defines this nonlinear parameter";
   return options;
@@ -46,7 +48,7 @@ InputParameter<T>::InputParameter(const OptionSet & options)
   : NonlinearParameter<T>(options),
     _input_var(this->template declare_input_variable<T>("from"))
 {
-  neml_assert(utils::stringify(_input_var.name()) != this->name(),
+  neml_assert(_input_var.name().str() != this->name(),
               "InputParameter must use an input variable name different from the parameter name. "
               "They both has name '",
               this->name(),
@@ -55,7 +57,7 @@ InputParameter<T>::InputParameter(const OptionSet & options)
 
 template <typename T>
 void
-InputParameter<T>::set_value(bool out, bool dout_din, bool d2out_din2)
+InputParameter<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   if (out)
     this->_p = _input_var.value();
@@ -63,8 +65,11 @@ InputParameter<T>::set_value(bool out, bool dout_din, bool d2out_din2)
   if (dout_din)
     if (_input_var.is_dependent())
       this->_p.d(_input_var) = T::identity_map(_input_var.options());
-
-  // This is zero
-  (void)d2out_din2;
 }
+
+#define REGISTER(T)                                                                                \
+  using T##InputParameter = InputParameter<T>;                                                     \
+  register_NEML2_object(T##InputParameter);                                                        \
+  template class InputParameter<T>
+FOR_ALL_PRIMITIVETENSOR(REGISTER);
 } // namespace neml2

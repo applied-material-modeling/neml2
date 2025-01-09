@@ -31,31 +31,28 @@ using namespace neml2;
 
 TEST_CASE("Symmetry operator definitions", "[tensors]")
 {
-  torch::manual_seed(42);
+  at::manual_seed(42);
   const auto & DTO = default_tensor_options();
 
   SECTION("definitions")
   {
-    SECTION("identity") { REQUIRE(torch::allclose(identity_transform(DTO), R2::identity(DTO))); }
+    SECTION("identity") { REQUIRE(at::allclose(identity_transform(DTO), R2::identity(DTO))); }
     auto r = Rot::fill(0.1, -0.15, 0.05, DTO);
     SECTION("proper rotation")
     {
-      REQUIRE(torch::allclose(proper_rotation_transform(r), r.euler_rodrigues()));
+      REQUIRE(at::allclose(proper_rotation_transform(r), r.euler_rodrigues()));
     }
     SECTION("improper rotation")
     {
-      R2 ref = R2::identity(DTO) - 2 * (r / r.norm()).outer(r / r.norm());
-      REQUIRE(torch::allclose(improper_rotation_transform(r), r.euler_rodrigues() * ref));
-      REQUIRE(torch::allclose(improper_rotation_transform(r), ref * r.euler_rodrigues()));
+      auto ref = R2::identity(DTO) - 2 * (Vec(r) / r.norm()).outer(Vec(r) / r.norm());
+      REQUIRE(at::allclose(improper_rotation_transform(r), r.euler_rodrigues() * ref));
+      REQUIRE(at::allclose(improper_rotation_transform(r), ref * r.euler_rodrigues()));
     }
-    SECTION("inversion")
-    {
-      REQUIRE(torch::allclose(inversion_transform(DTO), R2::fill(-1.0, DTO)));
-    }
+    SECTION("inversion") { REQUIRE(at::allclose(inversion_transform(DTO), R2::fill(-1.0, DTO))); }
     SECTION("quaternion")
     {
       auto q = Quaternion::fill(-0.30411437, -0.15205718, 0.91234311, 0.22808578, DTO);
-      REQUIRE(torch::allclose(transform_from_quaternion(q), q.to_R2()));
+      REQUIRE(at::allclose(transform_from_quaternion(q), q.to_R2()));
     }
   }
 }

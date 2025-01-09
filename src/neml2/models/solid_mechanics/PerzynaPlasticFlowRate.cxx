@@ -23,7 +23,11 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/PerzynaPlasticFlowRate.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/functions/heaviside.h"
+#include "neml2/tensors/functions/abs.h"
+#include "neml2/tensors/functions/pow.h"
+#include "neml2/tensors/functions/log.h"
 
 namespace neml2
 {
@@ -39,10 +43,10 @@ PerzynaPlasticFlowRate::expected_options()
       "where \\f$ f \\f$ is the yield function, \\f$ \\eta \\f$ is the reference stress, and \\f$ "
       "n \\f$ is the power-law exponent.";
 
-  options.set_parameter<CrossRef<Scalar>>("reference_stress");
+  options.set_parameter<TensorName>("reference_stress");
   options.set("reference_stress").doc() = "Reference stress";
 
-  options.set_parameter<CrossRef<Scalar>>("exponent");
+  options.set_parameter<TensorName>("exponent");
   options.set("exponent").doc() = "Power-law exponent";
 
   return options;
@@ -56,34 +60,29 @@ PerzynaPlasticFlowRate::PerzynaPlasticFlowRate(const OptionSet & options)
 }
 
 void
-PerzynaPlasticFlowRate::set_value(bool out, bool dout_din, bool d2out_din2)
+PerzynaPlasticFlowRate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "PerzynaPlasticFlowRate doesn't implement second derivatives.");
-
   // Compute the Perzyna approximation of the yield surface
-  auto Hf = math::heaviside(Scalar(_f));
-  auto f_abs = math::abs(Scalar(_f));
-  auto gamma_dot_m = math::pow(f_abs / _eta, _n);
+  auto Hf = heaviside(Scalar(_f));
+  auto f_abs = abs(Scalar(_f));
+  auto gamma_dot_m = pow(f_abs / _eta, _n);
   auto gamma_dot = gamma_dot_m * Hf;
 
   if (out)
     _gamma_dot = gamma_dot;
 
-  if (dout_din || d2out_din2)
+  if (dout_din)
   {
     auto dgamma_dot_df = _n / f_abs * gamma_dot;
 
-    if (dout_din)
-    {
-      if (_f.is_dependent())
-        _gamma_dot.d(_f) = dgamma_dot_df;
+    if (_f.is_dependent())
+      _gamma_dot.d(_f) = dgamma_dot_df;
 
-      if (const auto * const eta = nl_param("eta"))
-        _gamma_dot.d(*eta) = -_n * gamma_dot / _eta;
+    if (const auto * const eta = nl_param("eta"))
+      _gamma_dot.d(*eta) = -_n * gamma_dot / _eta;
 
-      if (const auto * const n = nl_param("n"))
-        _gamma_dot.d(*n) = gamma_dot * math::log(f_abs / _eta);
-    }
+    if (const auto * const n = nl_param("n"))
+      _gamma_dot.d(*n) = gamma_dot * log(f_abs / _eta);
   }
 }
 } // namespace neml2

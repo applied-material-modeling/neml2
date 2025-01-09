@@ -1,4 +1,4 @@
-#! /usr/bin/bash
+#!/usr/bin/bash
 
 # Copyright 2024, UChicago Argonne, LLC
 # All Rights Reserved
@@ -24,15 +24,18 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+export TOOL="${GCOV_TOOL}"
 export SRC_DIR=${NEML2_SOURCE_DIR}/src/neml2
-export OBJ_DIR=${NEML2_BINARY_DIR}/src/neml2/CMakeFiles/neml2.dir
+export OBJ_DIR=${NEML2_BINARY_DIR}/src/neml2/CMakeFiles
 export COVERAGE_DIR=${NEML2_BINARY_DIR}/coverage
+export MED=25
+export HIGH=75
 
 mkdir -p $COVERAGE_DIR
-lcov --gcov-tool gcov --capture --initial --directory $OBJ_DIR --output-file $COVERAGE_DIR/initialize.info
+lcov --gcov-tool $TOOL --capture --initial --directory $OBJ_DIR --output-file $COVERAGE_DIR/initialize.info
 cd ${NEML2_SOURCE_DIR}/tests
 ${NEML2_BINARY_DIR}/tests/unit/unit_tests || true
-lcov --gcov-tool gcov --capture --ignore-errors gcov,source --directory $OBJ_DIR --output-file $COVERAGE_DIR/covered.info
-lcov --gcov-tool gcov --add-tracefile $COVERAGE_DIR/initialize.info --add-tracefile $COVERAGE_DIR/covered.info --output-file $COVERAGE_DIR/final.info
-lcov --gcov-tool gcov --extract $COVERAGE_DIR/final.info \*$SRC_DIR/\* --output-file $COVERAGE_DIR/coverage.info
-genhtml $COVERAGE_DIR/coverage.info --output-directory $COVERAGE_DIR > $COVERAGE_DIR/genhtml.out
+lcov --gcov-tool $TOOL --capture --ignore-errors gcov,source --directory $OBJ_DIR --output-file $COVERAGE_DIR/covered.info
+lcov --gcov-tool $TOOL --add-tracefile $COVERAGE_DIR/initialize.info --add-tracefile $COVERAGE_DIR/covered.info --output-file $COVERAGE_DIR/final.info
+lcov --gcov-tool $TOOL --extract $COVERAGE_DIR/final.info \*$SRC_DIR/\* --output-file $COVERAGE_DIR/coverage.info
+genhtml $COVERAGE_DIR/coverage.info --output-directory $COVERAGE_DIR --rc genhtml_med_limit=$MED --rc genhtml_hi_limit=$HIGH > $COVERAGE_DIR/genhtml.out

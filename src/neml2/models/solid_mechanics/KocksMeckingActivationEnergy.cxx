@@ -23,7 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/KocksMeckingActivationEnergy.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/functions/log.h"
 
 namespace neml2
 {
@@ -40,7 +41,7 @@ KocksMeckingActivationEnergy::expected_options()
       "temperature, \\f$ b \\f$ the Burgers vector length, \\f$ \\dot{\\varepsilon}_0 \\f$ a "
       "reference strain rate, and \\f$ \\dot{\\varepsilon} \\f$ the current strain rate.";
 
-  options.set_parameter<CrossRef<Scalar>>("shear_modulus");
+  options.set_parameter<TensorName>("shear_modulus");
   options.set("shear_modulus").doc() = "The shear modulus";
 
   options.set<Real>("eps0");
@@ -75,23 +76,21 @@ KocksMeckingActivationEnergy::KocksMeckingActivationEnergy(const OptionSet & opt
 }
 
 void
-KocksMeckingActivationEnergy::set_value(bool out, bool dout_din, bool d2out_din2)
+KocksMeckingActivationEnergy::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert(!d2out_din2, "Second derivatives not implemented");
-
   if (out)
-    _g = _k * _T / (_mu * _b3) * math::log(_eps0 / _eps_dot);
+    _g = _k * _T / (_mu * _b3) * log(_eps0 / _eps_dot);
 
   if (dout_din)
   {
     if (_T.is_dependent())
-      _g.d(_T) = _k / (_mu * _b3) * math::log(_eps0 / _eps_dot);
+      _g.d(_T) = _k / (_mu * _b3) * log(_eps0 / _eps_dot);
 
     if (_eps_dot.is_dependent())
       _g.d(_eps_dot) = -_k * _T / (_mu * _b3 * _eps_dot);
 
     if (const auto * const mu = nl_param("mu"))
-      _g.d(*mu) = -_k * _T / (_b3 * _mu * _mu) * math::log(_eps0 / _eps_dot);
+      _g.d(*mu) = -_k * _T / (_b3 * _mu * _mu) * log(_eps0 / _eps_dot);
   }
 }
 } // namespace neml2

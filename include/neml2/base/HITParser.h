@@ -23,11 +23,13 @@
 // THE SOFTWARE.
 #pragma once
 
-#include "neml2/base/Parser.h"
 #include "hit/hit.h"
+#include "neml2/base/Parser.h"
 
 namespace neml2
 {
+class OptionSet;
+
 /**
  * @copydoc neml2::Parser
  *

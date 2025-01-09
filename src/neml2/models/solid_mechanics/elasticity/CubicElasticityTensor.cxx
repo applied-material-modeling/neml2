@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/elasticity/CubicElasticityTensor.h"
+#include "neml2/tensors/SSR4.h"
 
 namespace neml2
 {
@@ -45,10 +46,8 @@ CubicElasticityTensor::CubicElasticityTensor(const OptionSet & options)
 }
 
 void
-CubicElasticityTensor::set_value(bool out, bool dout_din, bool d2out_din2)
+CubicElasticityTensor::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "CubicElasticityTensor doesn't implement second derivatives.");
-
   const auto [C1_and_dC1, C2_and_dC2, C3_and_dC3] = _converter.convert(_constants);
   const auto & [C1, dC1] = C1_and_dC1;
   const auto & [C2, dC2] = C2_and_dC2;

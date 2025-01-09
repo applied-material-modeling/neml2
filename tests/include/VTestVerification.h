@@ -25,7 +25,19 @@
 #pragma once
 
 #include "neml2/drivers/Driver.h"
-#include <torch/jit.h>
+
+namespace jit
+{
+template <typename T>
+struct slot_list_impl;
+namespace detail
+{
+struct BufferPolicy;
+template <typename P>
+struct NamedPolicy;
+} // namespace detail
+using named_buffer_list = slot_list_impl<detail::NamedPolicy<detail::BufferPolicy>>;
+} // namespace jit
 
 namespace neml2
 {
@@ -38,25 +50,23 @@ public:
 
   VTestVerification(const OptionSet & options);
 
-  virtual void diagnose(std::vector<Diagnosis> & diagnoses) const override;
+  void diagnose() const override;
 
   bool run() override;
 
 private:
-  void compare(const std::string & var, torch::Tensor ref, std::ostringstream & err) const;
-
   /// The driver that will run the NEML2 model
   TransientDriver & _driver;
 
   /// The variables with the correct values (from the vtest file)
-  std::map<std::string, torch::Tensor> _ref;
+  std::map<std::string, ATensor> _ref;
 
   Real _rtol;
   Real _atol;
 };
 
-std::string diff(const torch::jit::named_buffer_list & res,
-                 const std::map<std::string, torch::Tensor> & ref_map,
+std::string diff(const jit::named_buffer_list & res,
+                 const std::map<std::string, ATensor> & ref_map,
                  Real rtol,
                  Real atol);
 } // namespace neml2

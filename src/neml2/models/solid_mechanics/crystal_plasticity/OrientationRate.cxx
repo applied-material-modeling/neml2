@@ -24,8 +24,11 @@
 
 #include "neml2/models/solid_mechanics/crystal_plasticity/OrientationRate.h"
 
-#include "neml2/tensors/tensors.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/WR2.h"
+#include "neml2/tensors/SR2.h"
+#include "neml2/tensors/R4.h"
+#include "neml2/tensors/WWR4.h"
+#include "neml2/tensors/WSR4.h"
 
 namespace neml2
 {
@@ -71,26 +74,51 @@ OrientationRate::OrientationRate(const OptionSet & options)
 {
 }
 
-void
-OrientationRate::set_value(bool out, bool dout_din, bool d2out_din2)
+WR2
+multiply_and_make_skew(const SR2 & a, const SR2 & b)
 {
-  neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
+  auto A = R2(a);
+  auto B = R2(b);
 
+  return WR2(A * B - B * A);
+}
+
+WSR4
+d_multiply_and_make_skew_d_first(const SR2 & b)
+{
+  auto I = R2::identity(b.options());
+  auto B = R2(b);
+  return WSR4(
+      R4(at::einsum("...ia,...bj->...ijab", {I, B}) - at::einsum("...ia,...jb->...ijab", {B, I})));
+}
+
+WSR4
+d_multiply_and_make_skew_d_second(const SR2 & a)
+{
+  auto I = R2::identity(a.options());
+  auto A = R2(a);
+  return WSR4(
+      R4(at::einsum("...ia,...jb->...ijab", {A, I}) - at::einsum("...ia,...bj->...ijab", {I, A})));
+}
+
+void
+OrientationRate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
+{
   if (out)
-    _R_dot = _w - _wp + math::multiply_and_make_skew(SR2(_dp), SR2(_e));
+    _R_dot = _w - _wp + multiply_and_make_skew(SR2(_dp), SR2(_e));
 
   if (dout_din)
   {
     const auto I = WWR4::identity(_w.options());
 
     if (_e.is_dependent())
-      _R_dot.d(_e) = math::d_multiply_and_make_skew_d_second(SR2(_dp));
+      _R_dot.d(_e) = d_multiply_and_make_skew_d_second(SR2(_dp));
 
     if (_w.is_dependent())
       _R_dot.d(_w) = I;
 
     if (_dp.is_dependent())
-      _R_dot.d(_dp) = math::d_multiply_and_make_skew_d_first(SR2(_e));
+      _R_dot.d(_dp) = d_multiply_and_make_skew_d_first(SR2(_e));
 
     if (_wp.is_dependent())
       _R_dot.d(_wp) = -I;

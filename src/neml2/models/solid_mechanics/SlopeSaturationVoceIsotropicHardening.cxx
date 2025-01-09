@@ -23,7 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/SlopeSaturationVoceIsotropicHardening.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/functions/sign.h"
 
 namespace neml2
 {
@@ -49,9 +50,9 @@ SlopeSaturationVoceIsotropicHardening::expected_options()
   options.set("isotropic_hardening_rate").doc() =
       "Rate of isotropic hardening, defaults to isotropic_hardening + _rate";
 
-  options.set_parameter<CrossRef<Scalar>>("saturated_hardening");
+  options.set_parameter<TensorName>("saturated_hardening");
   options.set("saturated_hardening").doc() = "Saturated isotropic hardening";
-  options.set_parameter<CrossRef<Scalar>>("initial_hardening_rate");
+  options.set_parameter<TensorName>("initial_hardening_rate");
   options.set("initial_hardening_rate").doc() = "Initial hardening rate";
 
   return options;
@@ -71,28 +72,24 @@ SlopeSaturationVoceIsotropicHardening::SlopeSaturationVoceIsotropicHardening(
 }
 
 void
-SlopeSaturationVoceIsotropicHardening::set_value(bool out, bool dout_din, bool d2out_din2)
+SlopeSaturationVoceIsotropicHardening::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(
-      !d2out_din2,
-      "SlopeSaturationVoceIsotropicHardening model doesn't implement second derivatives.");
-
   if (out)
-    _h_dot = math::sign(_R) * _theta0 * (1.0 - _h / _R) * _gamma_dot;
+    _h_dot = sign(_R) * _theta0 * (1.0 - _h / _R) * _gamma_dot;
 
   if (dout_din)
   {
     if (_gamma_dot.is_dependent())
-      _h_dot.d(_gamma_dot) = math::sign(_R) * _theta0 * (1.0 - _h / _R);
+      _h_dot.d(_gamma_dot) = sign(_R) * _theta0 * (1.0 - _h / _R);
 
     if (_h.is_dependent())
-      _h_dot.d(_h) = -math::sign(_R) * _theta0 / _R * _gamma_dot;
+      _h_dot.d(_h) = -sign(_R) * _theta0 / _R * _gamma_dot;
 
     if (const auto * const R = nl_param("R"))
-      _h_dot.d(*R) = _gamma_dot * _h * math::sign(_R) * _theta0 / (_R * _R);
+      _h_dot.d(*R) = _gamma_dot * _h * sign(_R) * _theta0 / (_R * _R);
 
     if (const auto * const theta0 = nl_param("theta0"))
-      _h_dot.d(*theta0) = math::sign(_R) * (1.0 - _h / _R) * _gamma_dot;
+      _h_dot.d(*theta0) = sign(_R) * (1.0 - _h / _R) * _gamma_dot;
   }
 }
 } // namespace neml2

@@ -24,11 +24,9 @@
 
 #pragma once
 
-#include <torch/jit.h>
-#include <torch/csrc/jit/frontend/tracer.h>
-
 #include "neml2/misc/types.h"
-#include "neml2/misc/error.h"
+#include "neml2/misc/errors.h"
+#include "neml2/jit/TraceableTensorShape.h"
 
 namespace neml2
 {
@@ -43,4 +41,53 @@ void neml_assert_tracing_dbg();
 
 /// Assert that we are currently NOT tracing (only effective in debug mode)
 void neml_assert_not_tracing_dbg();
+
+namespace utils
+{
+/// @brief Extract the batch shape of a tensor given batch dimension
+/// The extracted batch shape will be _traceable_. @see neml2::TraceableTensorShape
+TraceableTensorShape extract_batch_sizes(const ATensor & tensor, Size batch_dim);
+
+template <typename... S>
+TraceableTensorShape add_traceable_shapes(const S &... shape);
+
+namespace details
+{
+template <typename... S>
+TraceableTensorShape
+add_traceable_shapes_impl(TraceableTensorShape &, const TraceableTensorShape &, const S &...);
+} // namespace details
+} // namespace utils
 } // namespace neml2
+
+///////////////////////////////////////////////////////////////////////////////
+// Implementation
+///////////////////////////////////////////////////////////////////////////////
+
+namespace neml2::utils
+{
+template <typename... S>
+TraceableTensorShape
+add_traceable_shapes(const S &... shape)
+{
+  TraceableTensorShape net;
+  return details::add_traceable_shapes_impl(net, shape...);
+}
+
+namespace details
+{
+template <typename... S>
+TraceableTensorShape
+add_traceable_shapes_impl(TraceableTensorShape & net,
+                          const TraceableTensorShape & s,
+                          const S &... rest)
+{
+  net.insert(net.end(), s.begin(), s.end());
+
+  if constexpr (sizeof...(rest) == 0)
+    return std::move(net);
+  else
+    return add_traceable_shapes_impl(net, rest...);
+}
+} // namespace details
+} // namespace neml2::utils

@@ -1,0 +1,29 @@
+cmake_minimum_required(VERSION 3.28)
+project(HIT LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+
+add_library(hit STATIC
+  src/hit/parse.cc
+  src/hit/lex.cc
+  src/hit/braceexpr.cc
+)
+target_sources(hit
+  PUBLIC
+  FILE_SET HEADERS
+  BASE_DIRS include
+  FILES
+  include/hit/braceexpr.h
+  include/hit/hit.h
+  include/hit/lex.h
+  include/hit/parse.h
+)
+target_include_directories(hit PUBLIC ${WASP_INCLUDE_DIR})
+target_link_directories(hit PUBLIC ${WASP_LINK_DIR})
+target_link_libraries(hit PUBLIC waspcore wasphit)
+target_compile_definitions(hit PUBLIC _GLIBCXX_USE_CXX11_ABI=${GLIBCXX_USE_CXX11_ABI})
+set_target_properties(hit PROPERTIES UNITY_BUILD OFF POSITION_INDEPENDENT_CODE ON)
+
+install(TARGETS hit LIBRARY)
+install(TARGETS hit FILE_SET HEADERS)

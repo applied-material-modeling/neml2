@@ -1,0 +1,66 @@
+# Dependency management {#dependency-management}
+
+[TOC]
+
+## Dependency search
+
+In most cases, there is no need to manually obtain the dependent libraries/packages. The build system will automatically search for the required packages at usual locations. If the package is already installed on the system, it will be used to build NEML2. Otherwise, a compatible version of the package will be downloaded and installed under the NEML2 build directory.
+
+In case the package of interest has been installed at a non-conventional location, and CMake's default searching mechanism fails to find it, some special configure options can be used to help locate it. For a package named `<PackageName>`, the following variables are tried in sequence:
+- `<PackageName>_ROOT` CMake variable
+- `<PACKAGENAME>_ROOT` CMake variable
+- `<PackageName>_ROOT` enviroment variable
+- `<PACKAGENAME>_ROOT` environment variable
+
+Please refer to the [CMake documentation](https://cmake.org/cmake/help/latest/command/find_package.html#config-mode-search-procedure) for additional hints that can be used to facilitate the package search procedure.
+
+The following table summarizes the names of the packages required by each configure options. The first row lists the packages required by the base library.
+
+| Option                | Required package(s) |
+| :-------------------- | :------------------ |
+|                       | Torch, WASP, HIT    |
+| NEML2_TESTS           | Catch2              |
+| NEML2_RUNNER          |                     |
+| NEML2_PYBIND          | Python              |
+| NEML2_DOC             | Doxygen             |
+| NEML2_CPU_PROFILER    | Gperftools          |
+| NEML2_WORK_DISPATCHER | MPI                 |
+
+## List of dependencies
+
+### C++ backend dependencies
+
+- [PyTorch](https://pytorch.org/get-started/locally/), version 2.5.1.
+- [HIT](https://github.com/idaholab/moose/tree/master/framework/contrib/hit) for input file parsing.
+- [WASP](https://code.ornl.gov/neams-workbench/wasp) as the lexing and parsing backend for HIT.
+- [Catch2](https://github.com/catchorg/Catch2) for unit and regression testing.
+- [gperftools](https://github.com/gperftools/gperftools) for profiling.
+
+Recent PyTorch releases within a few minor versions are likely to be compatible. In the PyTorch official download page, several download options are provided: conda, pip, libTorch, and source distribution.
+- **Recommended**: If you choose to download PyTorch using conda or pip, the NEML2 CMake script can automatically detect and use the PyTorch installation.
+- If you choose to download libTorch or build PyTorch from source, you will need to set `LIBTORCH_DIR` to be the location of libTorch when using CMake to configure NEML2.
+
+\note
+The libTorch distributions from the official website come with two flavors: "Pre-cxx11 ABI" and "cxx11 ABI". Both variants are supported by NEML2. If you are unsure, we recommend the one with "cxx11 ABI".
+
+If no PyTorch installation can be detected and `LIBTORCH_DIR` is not set at configure time, the NEML2 CMake script will automatically download and use the libTorch obtained from the official website. Note, however, that this method only works on Linux and Mac systems.
+
+\note
+We strive to keep up with the rapid development of PyTorch. The NEML2 PyTorch dependency is updated on a quarterly basis. If there is a particular version of PyTorch you'd like to use which is found to be incompatible with NEML2, please feel free to [create an issue](https://github.com/applied-material-modeling/neml2/issues).
+
+
+### Python package dependencies
+
+- Python development libraries.
+- [pybind11](https://github.com/pybind/pybind11) for building Python bindings.
+
+### Other dependencies
+
+- [Doxygen](https://github.com/doxygen/doxygen) for building the documentation.
+- [Doxygen Awesome](https://github.com/jothepro/doxygen-awesome-css) the documentation theme.
+- [argparse](https://github.com/p-ranav/argparse) for command-line argument parsing.
+- Python packages
+  - [graphviz](https://github.com/xflr6/graphviz) for model visualization
+  - [pytest](https://docs.pytest.org/en/stable/index.html) for testing Pythin bindings
+  - [PyYAML](https://pyyaml.org/) for extracting syntax documentation
+  - [pybind11-stubgen](https://github.com/sizmailov/pybind11-stubgen) for extracting stubs from Python bindings

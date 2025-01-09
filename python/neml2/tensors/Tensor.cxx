@@ -25,6 +25,7 @@
 #include "python/neml2/tensors/TensorBase.h"
 
 #include "neml2/tensors/macros.h"
+#include "neml2/tensors/functions/pow.h"
 
 namespace py = pybind11;
 using namespace neml2;
@@ -119,5 +120,5 @@ def_Tensor(py::class_<Tensor> & c)
           PY_ARG_TENSOR_OPTIONS);
 
   // Operators
-  c.def("__pow__", [](const Tensor & a, const Tensor & b) { return math::pow(a, b); });
+  c.def("__pow__", [](const Tensor & a, const Tensor & b) { return neml2::pow(a, b); });
 }

@@ -56,8 +56,7 @@ public:
   explicit R2(const Rot & r);
 
   /// The derivative of a R2 with respect to itself
-  [[nodiscard]] static R4
-  identity_map(const torch::TensorOptions & options = default_tensor_options());
+  [[nodiscard]] static R4 identity_map(const TensorOptions & options = default_tensor_options());
 };
 
 } // namespace neml2

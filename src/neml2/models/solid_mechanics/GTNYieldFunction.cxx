@@ -23,7 +23,10 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/GTNYieldFunction.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/functions/pow.h"
+#include "neml2/tensors/functions/cosh.h"
+#include "neml2/tensors/functions/sinh.h"
 
 namespace neml2
 {
@@ -43,17 +46,19 @@ GTNYieldFunction::expected_options()
       "void growth back stress (sintering stress). \\f$ q_1 \\f$, \\f$ q_2 \\f$, and \\f$ q_3 \\f$ "
       "are parameters controlling the yield mechanisms.";
 
-  options.set_parameter<CrossRef<Scalar>>("yield_stress");
+  options.set<bool>("define_second_derivatives") = true;
+
+  options.set_parameter<TensorName>("yield_stress");
   options.set("yield_stress").doc() = "Yield stress";
 
-  options.set_parameter<CrossRef<Scalar>>("q1");
+  options.set_parameter<TensorName>("q1");
   options.set("q1").doc() =
       "Parameter controlling the balance/competition between plastic flow and void evolution.";
 
-  options.set_parameter<CrossRef<Scalar>>("q2");
+  options.set_parameter<TensorName>("q2");
   options.set("q2").doc() = "Void evolution rate";
 
-  options.set_parameter<CrossRef<Scalar>>("q3");
+  options.set_parameter<TensorName>("q3");
   options.set("q3").doc() = "Pore pressure";
 
   options.set_input("flow_invariant") = VariableName(STATE, "internal", "se");
@@ -97,37 +102,37 @@ GTNYieldFunction::set_value(bool out, bool dout_din, bool d2out_din2)
   const auto sf = _h ? _s0 + (*_h) : _s0;
 
   if (out)
-    _f = math::pow(_se / sf, 2.0) + 2 * _q1 * _phi * math::cosh(_q2 / 2.0 * _sp / sf) -
-         (1.0 + _q3 * math::pow(Scalar(_phi), 2.0));
+    _f = pow(_se / sf, 2.0) + 2 * _q1 * _phi * cosh(_q2 / 2.0 * _sp / sf) -
+         (1.0 + _q3 * pow(Scalar(_phi), 2.0));
 
   if (dout_din)
   {
     if (_se.is_dependent())
-      _f.d(_se) = 2.0 * _se / math::pow(sf, 2.0);
+      _f.d(_se) = 2.0 * _se / pow(sf, 2.0);
 
     if (_sp.is_dependent())
-      _f.d(_sp) = _q1 * _phi * _q2 / sf * math::sinh(_q2 / 2.0 * _sp / sf);
+      _f.d(_sp) = _q1 * _phi * _q2 / sf * sinh(_q2 / 2.0 * _sp / sf);
 
     if (_phi.is_dependent())
-      _f.d(_phi) = 2.0 * _q1 * math::cosh(_q2 / 2.0 * _sp / sf) - 2.0 * _q3 * _phi;
+      _f.d(_phi) = 2.0 * _q1 * cosh(_q2 / 2.0 * _sp / sf) - 2.0 * _q3 * _phi;
 
     if (_h)
-      _f.d(*_h) = -2 * math::pow(Scalar(_se), 2.0) / math::pow(sf, 3.0) -
-                  _q1 * _phi * _q2 * _sp / math::pow(sf, 2.0) * math::sinh(_q2 / 2.0 * _sp / sf);
+      _f.d(*_h) = -2 * pow(Scalar(_se), 2.0) / pow(sf, 3.0) -
+                  _q1 * _phi * _q2 * _sp / pow(sf, 2.0) * sinh(_q2 / 2.0 * _sp / sf);
 
     // Handle the case of nonlinear parameters
     if (const auto * const sy = nl_param("sy"))
-      _f.d(*sy) = -2 * math::pow(Scalar(_se), 2.0) / math::pow(sf, 3.0) -
-                  _q1 * _phi * _q2 * _sp / math::pow(sf, 2.0) * math::sinh(_q2 / 2.0 * _sp / sf);
+      _f.d(*sy) = -2 * pow(Scalar(_se), 2.0) / pow(sf, 3.0) -
+                  _q1 * _phi * _q2 * _sp / pow(sf, 2.0) * sinh(_q2 / 2.0 * _sp / sf);
 
     if (const auto * const q1 = nl_param("q1"))
-      _f.d(*q1) = 2.0 * _phi * math::cosh(_q2 / 2.0 * _sp / sf);
+      _f.d(*q1) = 2.0 * _phi * cosh(_q2 / 2.0 * _sp / sf);
 
     if (const auto * const q2 = nl_param("q2"))
-      _f.d(*q2) = _q1 * _phi * _sp / sf * math::sinh(_q2 / 2.0 * _sp / sf);
+      _f.d(*q2) = _q1 * _phi * _sp / sf * sinh(_q2 / 2.0 * _sp / sf);
 
     if (const auto * const q3 = nl_param("q3"))
-      _f.d(*q3) = -math::pow(Scalar(_phi), 2.0);
+      _f.d(*q3) = -pow(Scalar(_phi), 2.0);
   }
 
   if (d2out_din2)
@@ -168,13 +173,13 @@ GTNYieldFunction::set_value(bool out, bool dout_din, bool d2out_din2)
     ////////////////////////////////////////////////////////////////////////////////////////////////
     if (_se.is_dependent())
     {
-      _f.d(_se, _se) = 2.0 / math::pow(sf, 2.0);
+      _f.d(_se, _se) = 2.0 / pow(sf, 2.0);
 
       if (_h)
-        _f.d(_se, *_h) = -4.0 * _se / math::pow(sf, 3.0);
+        _f.d(_se, *_h) = -4.0 * _se / pow(sf, 3.0);
 
       if (sy)
-        _f.d(_se, *sy) = -4.0 * _se / math::pow(sf, 3.0);
+        _f.d(_se, *sy) = -4.0 * _se / pow(sf, 3.0);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -186,31 +191,31 @@ GTNYieldFunction::set_value(bool out, bool dout_din, bool d2out_din2)
     ////////////////////////////////////////////////////////////////////////////////////////////////
     if (_sp.is_dependent())
     {
-      _f.d(_sp, _sp) = _phi * _q1 * math::pow(_q2, 2.0) / (2.0 * math::pow(sf, 2.0)) *
-                       math::cosh(_q2 / 2.0 * _sp / sf);
+      _f.d(_sp, _sp) =
+          _phi * _q1 * pow(_q2, 2.0) / (2.0 * pow(sf, 2.0)) * cosh(_q2 / 2.0 * _sp / sf);
 
       if (_phi.is_dependent())
-        _f.d(_sp, _phi) = _q1 * _q2 * math::sinh(_q2 / 2.0 * _sp / sf) / sf;
+        _f.d(_sp, _phi) = _q1 * _q2 * sinh(_q2 / 2.0 * _sp / sf) / sf;
 
       if (_h)
-        _f.d(_sp, *_h) = -_phi * _q1 * _q2 *
-                         (_q2 * _sp * math::cosh(_q2 / 2.0 * _sp / sf) +
-                          2 * sf * math::sinh(_q2 / 2.0 * _sp / sf)) /
-                         (2 * math::pow(sf, 3.0));
+        _f.d(_sp, *_h) =
+            -_phi * _q1 * _q2 *
+            (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) + 2 * sf * sinh(_q2 / 2.0 * _sp / sf)) /
+            (2 * pow(sf, 3.0));
       if (sy)
-        _f.d(_sp, *sy) = -_phi * _q1 * _q2 *
-                         (_q2 * _sp * math::cosh(_q2 / 2.0 * _sp / sf) +
-                          2 * sf * math::sinh(_q2 / 2.0 * _sp / sf)) /
-                         (2 * math::pow(sf, 3.0));
+        _f.d(_sp, *sy) =
+            -_phi * _q1 * _q2 *
+            (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) + 2 * sf * sinh(_q2 / 2.0 * _sp / sf)) /
+            (2 * pow(sf, 3.0));
 
       if (q1)
-        _f.d(_sp, *q1) = _phi * _q2 * math::sinh(_q2 / 2.0 * _sp / sf) / sf;
+        _f.d(_sp, *q1) = _phi * _q2 * sinh(_q2 / 2.0 * _sp / sf) / sf;
 
       if (q2)
-        _f.d(_sp, *q2) = _phi * _q1 *
-                         (_q2 * _sp * math::cosh(_q2 / 2.0 * _sp / sf) +
-                          2.0 * sf * math::sinh(_q2 / 2.0 * _sp / sf)) /
-                         (2.0 * math::pow(sf, 2.0));
+        _f.d(_sp, *q2) =
+            _phi * _q1 *
+            (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) + 2.0 * sf * sinh(_q2 / 2.0 * _sp / sf)) /
+            (2.0 * pow(sf, 2.0));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -223,21 +228,21 @@ GTNYieldFunction::set_value(bool out, bool dout_din, bool d2out_din2)
     if (_phi.is_dependent())
     {
       if (_sp.is_dependent())
-        _f.d(_phi, _sp) = _q1 * _q2 * math::sinh(_q2 / 2.0 * _sp / sf) / sf;
+        _f.d(_phi, _sp) = _q1 * _q2 * sinh(_q2 / 2.0 * _sp / sf) / sf;
 
       _f.d(_phi, _phi) = -2.0 * _q3;
 
       if (_h)
-        _f.d(_phi, *_h) = -_q1 * _q2 * _sp * math::sinh(_q2 / 2.0 * _sp / sf) / math::pow(sf, 2.0);
+        _f.d(_phi, *_h) = -_q1 * _q2 * _sp * sinh(_q2 / 2.0 * _sp / sf) / pow(sf, 2.0);
 
       if (sy)
-        _f.d(_phi, *sy) = -_q1 * _q2 * _sp * math::sinh(_q2 / 2.0 * _sp / sf) / math::pow(sf, 2.0);
+        _f.d(_phi, *sy) = -_q1 * _q2 * _sp * sinh(_q2 / 2.0 * _sp / sf) / pow(sf, 2.0);
 
       if (q1)
-        _f.d(_phi, *q1) = 2 * math::cosh(_q2 / 2.0 * _sp / sf);
+        _f.d(_phi, *q1) = 2 * cosh(_q2 / 2.0 * _sp / sf);
 
       if (q2)
-        _f.d(_phi, *q2) = _q1 * _sp * math::sinh(_q2 / 2.0 * _sp / sf) / sf;
+        _f.d(_phi, *q2) = _q1 * _sp * sinh(_q2 / 2.0 * _sp / sf) / sf;
 
       if (q3)
         _f.d(_phi, *q3) = -2.0 * _phi;
@@ -253,38 +258,37 @@ GTNYieldFunction::set_value(bool out, bool dout_din, bool d2out_din2)
     if (_h)
     {
       if (_se.is_dependent())
-        _f.d(*_h, _se) = -4.0 * _se / math::pow(sf, 3.0);
+        _f.d(*_h, _se) = -4.0 * _se / pow(sf, 3.0);
 
       if (_sp.is_dependent())
-        _f.d(*_h, _sp) = -_phi * _q1 * _q2 *
-                         (_q2 * _sp * math::cosh(_q2 / 2.0 * _sp / sf) +
-                          2.0 * sf * math::sinh(_q2 / 2.0 * _sp / sf)) /
-                         (2.0 * math::pow(sf, 3.0));
+        _f.d(*_h, _sp) =
+            -_phi * _q1 * _q2 *
+            (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) + 2.0 * sf * sinh(_q2 / 2.0 * _sp / sf)) /
+            (2.0 * pow(sf, 3.0));
 
       if (_phi.is_dependent())
-        _f.d(*_h, _phi) = -_q1 * _q2 * _sp * math::sinh(_q2 / 2.0 * _sp / sf) / math::pow(sf, 2.0);
+        _f.d(*_h, _phi) = -_q1 * _q2 * _sp * sinh(_q2 / 2.0 * _sp / sf) / pow(sf, 2.0);
 
-      _f.d(*_h, *_h) =
-          (12 * math::pow(Scalar(_se), 2.0) + _phi * _q1 * _q2 * _sp *
-                                                  (_q2 * _sp * math::cosh(_q2 / 2.0 * _sp / sf) +
-                                                   4.0 * sf * math::sinh(_q2 / 2.0 * _sp / sf))) /
-          (2 * math::pow(sf, 4.0));
+      _f.d(*_h, *_h) = (12 * pow(Scalar(_se), 2.0) + _phi * _q1 * _q2 * _sp *
+                                                         (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) +
+                                                          4.0 * sf * sinh(_q2 / 2.0 * _sp / sf))) /
+                       (2 * pow(sf, 4.0));
 
       if (sy)
         _f.d(*_h, *sy) =
-            (12 * math::pow(Scalar(_se), 2.0) + _phi * _q1 * _q2 * _sp *
-                                                    (_q2 * _sp * math::cosh(_q2 / 2.0 * _sp / sf) +
-                                                     4.0 * sf * math::sinh(_q2 / 2.0 * _sp / sf))) /
-            (2 * math::pow(sf, 4.0));
+            (12 * pow(Scalar(_se), 2.0) +
+             _phi * _q1 * _q2 * _sp *
+                 (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) + 4.0 * sf * sinh(_q2 / 2.0 * _sp / sf))) /
+            (2 * pow(sf, 4.0));
 
       if (q1)
-        _f.d(*_h, *q1) = -_phi * _q2 * _sp * math::sinh(_q2 / 2.0 * _sp / sf) / math::pow(sf, 2.0);
+        _f.d(*_h, *q1) = -_phi * _q2 * _sp * sinh(_q2 / 2.0 * _sp / sf) / pow(sf, 2.0);
 
       if (q2)
-        _f.d(*_h, *q2) = -_phi * _q1 * _sp *
-                         (_q2 * _sp * math::cosh(_q2 / 2.0 * _sp / sf) +
-                          2.0 * sf * math::sinh(_q2 / 2.0 * _sp / sf)) /
-                         (2 * math::pow(sf, 3.0));
+        _f.d(*_h, *q2) =
+            -_phi * _q1 * _sp *
+            (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) + 2.0 * sf * sinh(_q2 / 2.0 * _sp / sf)) /
+            (2 * pow(sf, 3.0));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -297,32 +301,31 @@ GTNYieldFunction::set_value(bool out, bool dout_din, bool d2out_din2)
     if (sy)
     {
       if (_se.is_dependent())
-        _f.d(*sy, _se) = -4.0 * _se / math::pow(sf, 3.0);
+        _f.d(*sy, _se) = -4.0 * _se / pow(sf, 3.0);
 
       if (_phi.is_dependent())
-        _f.d(*sy, _phi) = -_q1 * _q2 * _sp * math::sinh(_q2 / 2.0 * _sp / sf) / math::pow(sf, 2.0);
+        _f.d(*sy, _phi) = -_q1 * _q2 * _sp * sinh(_q2 / 2.0 * _sp / sf) / pow(sf, 2.0);
 
       if (_h)
         _f.d(*sy, *_h) =
-            (12 * math::pow(Scalar(_se), 2.0) + _phi * _q1 * _q2 * _sp *
-                                                    (_q2 * _sp * math::cosh(_q2 / 2.0 * _sp / sf) +
-                                                     4.0 * sf * math::sinh(_q2 / 2.0 * _sp / sf))) /
-            (2 * math::pow(sf, 4.0));
+            (12 * pow(Scalar(_se), 2.0) +
+             _phi * _q1 * _q2 * _sp *
+                 (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) + 4.0 * sf * sinh(_q2 / 2.0 * _sp / sf))) /
+            (2 * pow(sf, 4.0));
 
-      _f.d(*sy, *sy) =
-          (12 * math::pow(Scalar(_se), 2.0) + _phi * _q1 * _q2 * _sp *
-                                                  (_q2 * _sp * math::cosh(_q2 / 2.0 * _sp / sf) +
-                                                   4.0 * sf * math::sinh(_q2 / 2.0 * _sp / sf))) /
-          (2 * math::pow(sf, 4.0));
+      _f.d(*sy, *sy) = (12 * pow(Scalar(_se), 2.0) + _phi * _q1 * _q2 * _sp *
+                                                         (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) +
+                                                          4.0 * sf * sinh(_q2 / 2.0 * _sp / sf))) /
+                       (2 * pow(sf, 4.0));
 
       if (q1)
-        _f.d(*sy, *q1) = -_phi * _q2 * _sp * math::sinh(_q2 / 2.0 * _sp / sf) / math::pow(sf, 2.0);
+        _f.d(*sy, *q1) = -_phi * _q2 * _sp * sinh(_q2 / 2.0 * _sp / sf) / pow(sf, 2.0);
 
       if (q2)
-        _f.d(*sy, *q2) = -_phi * _q1 * _sp *
-                         (_q2 * _sp * math::cosh(_q2 / 2.0 * _sp / sf) +
-                          2.0 * sf * math::sinh(_q2 / 2.0 * _sp / sf)) /
-                         (2 * math::pow(sf, 3.0));
+        _f.d(*sy, *q2) =
+            -_phi * _q1 * _sp *
+            (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) + 2.0 * sf * sinh(_q2 / 2.0 * _sp / sf)) /
+            (2 * pow(sf, 3.0));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -335,19 +338,19 @@ GTNYieldFunction::set_value(bool out, bool dout_din, bool d2out_din2)
     if (q1)
     {
       if (_sp.is_dependent())
-        _f.d(*q1, _sp) = _phi * _q2 * math::sinh(_q2 / 2.0 * _sp / sf) / sf;
+        _f.d(*q1, _sp) = _phi * _q2 * sinh(_q2 / 2.0 * _sp / sf) / sf;
 
       if (_phi.is_dependent())
-        _f.d(*q1, _phi) = 2.0 * math::cosh(_q2 / 2.0 * _sp / sf);
+        _f.d(*q1, _phi) = 2.0 * cosh(_q2 / 2.0 * _sp / sf);
 
       if (_h)
-        _f.d(*q1, *_h) = -_phi * _q2 * _sp * math::sinh(_q2 / 2.0 * _sp / sf) / math::pow(sf, 2.0);
+        _f.d(*q1, *_h) = -_phi * _q2 * _sp * sinh(_q2 / 2.0 * _sp / sf) / pow(sf, 2.0);
 
       if (sy)
-        _f.d(*q1, *sy) = -_phi * _q2 * _sp * math::sinh(_q2 / 2.0 * _sp / sf) / math::pow(sf, 2.0);
+        _f.d(*q1, *sy) = -_phi * _q2 * _sp * sinh(_q2 / 2.0 * _sp / sf) / pow(sf, 2.0);
 
       if (q2)
-        _f.d(*q1, *q2) = _phi * _sp * math::sinh(_q2 / 2.0 * _sp / sf) / sf;
+        _f.d(*q1, *q2) = _phi * _sp * sinh(_q2 / 2.0 * _sp / sf) / sf;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -360,31 +363,31 @@ GTNYieldFunction::set_value(bool out, bool dout_din, bool d2out_din2)
     if (q2)
     {
       if (_sp.is_dependent())
-        _f.d(*q2, _sp) = _phi * _q1 *
-                         (_q2 * _sp * math::cosh(_q2 / 2.0 * _sp / sf) +
-                          2 * sf * math::sinh(_q2 / 2.0 * _sp / sf)) /
-                         (2 * math::pow(sf, 2.0));
+        _f.d(*q2, _sp) =
+            _phi * _q1 *
+            (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) + 2 * sf * sinh(_q2 / 2.0 * _sp / sf)) /
+            (2 * pow(sf, 2.0));
 
       if (_phi.is_dependent())
-        _f.d(*q2, _phi) = _q1 * _sp * math::sinh(_q2 / 2.0 * _sp / sf) / sf;
+        _f.d(*q2, _phi) = _q1 * _sp * sinh(_q2 / 2.0 * _sp / sf) / sf;
 
       if (_h)
-        _f.d(*q2, *_h) = -_phi * _q1 * _sp *
-                         (_q2 * _sp * math::cosh(_q2 / 2.0 * _sp / sf) +
-                          2 * sf * math::sinh(_q2 / 2.0 * _sp / sf)) /
-                         (2 * math::pow(sf, 3.0));
+        _f.d(*q2, *_h) =
+            -_phi * _q1 * _sp *
+            (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) + 2 * sf * sinh(_q2 / 2.0 * _sp / sf)) /
+            (2 * pow(sf, 3.0));
 
       if (sy)
-        _f.d(*q2, *sy) = -_phi * _q1 * _sp *
-                         (_q2 * _sp * math::cosh(_q2 / 2.0 * _sp / sf) +
-                          2 * sf * math::sinh(_q2 / 2.0 * _sp / sf)) /
-                         (2 * math::pow(sf, 3.0));
+        _f.d(*q2, *sy) =
+            -_phi * _q1 * _sp *
+            (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) + 2 * sf * sinh(_q2 / 2.0 * _sp / sf)) /
+            (2 * pow(sf, 3.0));
 
       if (q1)
-        _f.d(*q2, *q1) = _phi * _sp * math::sinh(_q2 / 2.0 * _sp / sf) / sf;
+        _f.d(*q2, *q1) = _phi * _sp * sinh(_q2 / 2.0 * _sp / sf) / sf;
 
-      _f.d(*q2, *q2) = _phi * _q1 * math::pow(Scalar(_sp), 2.0) * math::cosh(_q2 / 2.0 * _sp / sf) /
-                       (2 * math::pow(sf, 2.0));
+      _f.d(*q2, *q2) =
+          _phi * _q1 * pow(Scalar(_sp), 2.0) * cosh(_q2 / 2.0 * _sp / sf) / (2 * pow(sf, 2.0));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

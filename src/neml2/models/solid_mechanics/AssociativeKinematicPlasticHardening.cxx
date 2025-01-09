@@ -23,6 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/AssociativeKinematicPlasticHardening.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
 
 namespace neml2
@@ -59,11 +61,8 @@ AssociativeKinematicPlasticHardening::AssociativeKinematicPlasticHardening(
 }
 
 void
-AssociativeKinematicPlasticHardening::set_value(bool out, bool dout_din, bool d2out_din2)
+AssociativeKinematicPlasticHardening::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2,
-                  "AssociativeKinematicPlasticHardening doesn't implement second derivatives.");
-
   // For associative flow,
   // Kp_dot = - gamma_dot * NX
   //     NX = df/dX

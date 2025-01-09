@@ -34,7 +34,7 @@ namespace fs = std::filesystem;
 TEST_CASE("solid mechanics")
 {
   const auto pwd = fs::current_path();
-  const auto search_path = pwd / "regression" / "solid_mechanics";
+  const auto search_path = pwd / "solid_mechanics";
 
   // Find all regression tests
   std::vector<fs::path> tests;

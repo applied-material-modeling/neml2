@@ -1,172 +1,209 @@
-include(NEML2UnityGroup)
+# ----------------------------------------------------------------------------
+# Torch
+# ----------------------------------------------------------------------------
+find_package(Torch)
 
-# Add all the source files
-file(GLOB_RECURSE SRCS *.cxx)
-add_library(neml2 SHARED ${SRCS})
-set_target_properties(neml2
-  PROPERTIES
-  INSTALL_RPATH "${EXEC_DIR};${Torch_LINK_DIRECTORIES}"
-  LINK_WHAT_YOU_USE TRUE
-)
-
-# NEML2 (private) compile options
-target_compile_options(neml2 PRIVATE -Wall -Wextra -pedantic -Werror)
-
-# Group source files together if UNITY build is requested
-register_unity_group(neml2 .)
-
-# NEML2 headers
-file(GLOB_RECURSE _NEML2_HEADERS ${NEML2_SOURCE_DIR}/include/*.h)
-target_include_directories(neml2 PUBLIC ${NEML2_SOURCE_DIR}/include ${NEML2_BINARY_DIR}/include)
-target_sources(neml2
-  PUBLIC
-  FILE_SET HEADERS
-  BASE_DIRS ${NEML2_SOURCE_DIR}/include
-  FILES
-  ${_NEML2_HEADERS}
-)
-install(TARGETS neml2 COMPONENT Development FILE_SET HEADERS)
-
-# torch
-target_include_directories(neml2 SYSTEM PUBLIC ${Torch_INCLUDE_DIRECTORIES})
-target_link_directories(neml2 PUBLIC ${Torch_LINK_DIRECTORIES})
-target_link_libraries(neml2 PUBLIC ${Torch_LIBRARIES})
-
-# gperftools
-option(NEML2_CPU_PROFILER "Link against gperftools libprofiler to enable CPU profiling" OFF)
-
-if(NEML2_CPU_PROFILER)
-  FetchContent_MakeAvailable(gperftools)
-  target_link_libraries(neml2 PUBLIC profiler)
+if(NOT Torch_FOUND)
+  include(DownloadTorch)
+  set(Torch_ROOT ${torch_SOURCE_DIR} CACHE PATH "Torch root directory" FORCE)
+  find_package(Torch REQUIRED)
 endif()
 
-# Work dispatcher
-option(NEML2_WORK_DISPATCHER "Enable NEML2 work dispatcher" OFF)
+add_compile_definitions(_GLIBCXX_USE_CXX11_ABI=${GLIBCXX_USE_CXX11_ABI})
+cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${Torch_LINK_DIR} Torch_DOWNLOADED)
 
-if(NEML2_WORK_DISPATCHER)
-  find_package(MPI REQUIRED)
-
-  if(MPI_CXX_FOUND)
-    set(CMAKE_C_COMPILER ${MPI_C_COMPILER})
-    set(CMAKE_CXX_COMPILER ${MPI_CXX_COMPILER})
-    target_link_libraries(neml2 PUBLIC MPI::MPI_CXX)
-  else()
-    message(FATAL_ERROR "MPI C++ compiler (required for work dispatcher) not found")
-  endif()
-
-  target_compile_definitions(neml2 PUBLIC NEML2_WORK_DISPATCHER)
-
-  # TIMPI
-  if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(timpi_BUILD_TYPE "dbg")
-  else()
-    set(timpi_BUILD_TYPE "opt")
-  endif()
-
-  message(STATUS "Configuring TIMPI")
-  set(timpi_BUILD_DIR ${NEML2_BINARY_DIR}/timpi/build)
-  set(timpi_INSTALL_DIR ${NEML2_BINARY_DIR}/timpi/install)
-  execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${timpi_BUILD_DIR})
-  execute_process(
-    COMMAND ${CMAKE_COMMAND} \\
-    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} \\
-    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} \\
-    -DVERSION=${TIMPI_VERSION} \\
-    -DPREFIX=${FETCHCONTENT_BASE_DIR}/timpi \\
-    -DBUILD_TYPE=${timpi_BUILD_TYPE} \\
-    -DINSTALL_PREFIX=${timpi_INSTALL_DIR} \\
-    ${NEML2_SOURCE_DIR}/cmake/timpi
-    WORKING_DIRECTORY ${timpi_BUILD_DIR}
-    OUTPUT_QUIET
-    OUTPUT_FILE ${timpi_BUILD_DIR}/configure.log
-    ERROR_QUIET
-    ERROR_FILE ${timpi_BUILD_DIR}/configure.err
-    COMMAND_ERROR_IS_FATAL ANY
-  )
-  execute_process(
-    COMMAND ${CMAKE_COMMAND} --build ${timpi_BUILD_DIR}
-    WORKING_DIRECTORY ${timpi_BUILD_DIR}
-    OUTPUT_QUIET
-    OUTPUT_FILE ${timpi_BUILD_DIR}/build.log
-    ERROR_QUIET
-    ERROR_FILE ${timpi_BUILD_DIR}/build.err
-    COMMAND_ERROR_IS_FATAL ANY
-  )
-
-  install(DIRECTORY
-    ${timpi_INSTALL_DIR}/include/timpi
-    TYPE INCLUDE
-  )
-  target_include_directories(neml2 SYSTEM PUBLIC ${timpi_INSTALL_DIR}/include)
-  target_link_libraries(neml2 PRIVATE timpi_${timpi_BUILD_TYPE})
-  target_link_directories(neml2 PRIVATE ${timpi_INSTALL_DIR}/lib)
+if(Torch_DOWNLOADED)
+  install(DIRECTORY ${Torch_INCLUDE_DIR} TYPE INCLUDE COMPONENT libneml2-dev)
+  install(DIRECTORY ${Torch_LINK_DIR} DESTINATION . COMPONENT libneml2)
 endif()
 
-# wasp
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-  set(wasp_BUILD_TYPE "Debug")
-else()
-  set(wasp_BUILD_TYPE "RelWithDebInfo")
-endif()
-
-message(STATUS "Configuring WASP")
-set(wasp_BUILD_DIR ${NEML2_BINARY_DIR}/wasp/build)
-set(wasp_INSTALL_DIR ${NEML2_BINARY_DIR}/wasp/install)
-execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${wasp_BUILD_DIR})
-execute_process(
-  COMMAND ${CMAKE_COMMAND} \\
-  -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} \\
-  -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} \\
-  -DVERSION=${WASP_VERSION} \\
-  -DPREFIX=${FETCHCONTENT_BASE_DIR}/wasp \\
-  -DBUILD_TYPE=${wasp_BUILD_TYPE} \\
-  -DGLIBCXX_USE_CXX11_ABI=${GLIBCXX_USE_CXX11_ABI} \\
-  -DINSTALL_PREFIX=${wasp_INSTALL_DIR} \\
-  ${NEML2_SOURCE_DIR}/cmake/wasp
-  WORKING_DIRECTORY ${wasp_BUILD_DIR}
-  OUTPUT_QUIET
-  OUTPUT_FILE ${wasp_BUILD_DIR}/configure.log
-  ERROR_QUIET
-  ERROR_FILE ${wasp_BUILD_DIR}/configure.err
-  COMMAND_ERROR_IS_FATAL ANY
-)
-execute_process(
-  COMMAND ${CMAKE_COMMAND} --build ${wasp_BUILD_DIR}
-  OUTPUT_QUIET
-  OUTPUT_FILE ${wasp_BUILD_DIR}/build.log
-  ERROR_QUIET
-  ERROR_FILE ${wasp_BUILD_DIR}/build.err
-  COMMAND_ERROR_IS_FATAL ANY
-)
-
+# ----------------------------------------------------------------------------
 # HIT
-message(STATUS "Configuring HIT")
-FetchContent_MakeAvailable(hit)
+# ----------------------------------------------------------------------------
+find_package(HIT)
 
-add_library(hit SHARED
-  ${hit_SOURCE_DIR}/src/hit/parse.cc
-  ${hit_SOURCE_DIR}/src/hit/lex.cc
-  ${hit_SOURCE_DIR}/src/hit/braceexpr.cc
-)
-install(DIRECTORY
-  ${wasp_INSTALL_DIR}/include/waspcore
-  ${wasp_INSTALL_DIR}/include/wasphit
-  TYPE INCLUDE
-)
+if(NOT HIT_FOUND)
+  # ----------------------------------------------------------------------------
+  # WASP
+  # ----------------------------------------------------------------------------
+  if(NOT WASP_FOUND)
+    include(DownloadWASP)
+    set(WASP_ROOT ${WASP_INSTALL_DIR} CACHE PATH "WASP root directory" FORCE)
+    find_package(WASP REQUIRED)
+  endif()
 
-set_target_properties(hit PROPERTIES UNITY_BUILD OFF)
-target_include_directories(hit SYSTEM PUBLIC ${hit_SOURCE_DIR}/include ${wasp_INSTALL_DIR}/include)
-target_link_libraries(hit PRIVATE waspcore wasphit)
-target_link_directories(hit PRIVATE ${wasp_INSTALL_DIR}/lib)
-target_sources(hit
-  PUBLIC
-  FILE_SET HEADERS
-  BASE_DIRS ${hit_SOURCE_DIR}/include
-  FILES
-  ${hit_SOURCE_DIR}/include/hit/braceexpr.h
-  ${hit_SOURCE_DIR}/include/hit/hit.h
-  ${hit_SOURCE_DIR}/include/hit/lex.h
-  ${hit_SOURCE_DIR}/include/hit/parse.h
-)
-install(TARGETS hit COMPONENT Development FILE_SET HEADERS)
-target_link_libraries(neml2 PUBLIC hit)
+  cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${WASP_LINK_DIR} WASP_DOWNLOADED)
+
+  if(WASP_DOWNLOADED)
+    install(DIRECTORY ${WASP_INCLUDE_DIR}/waspcore ${WASP_INCLUDE_DIR}/wasphit TYPE INCLUDE COMPONENT libneml2-dev)
+  endif()
+
+  include(DownloadHIT)
+  set(HIT_ROOT ${HIT_INSTALL_DIR} CACHE PATH "HIT root directory" FORCE)
+  find_package(HIT REQUIRED)
+endif()
+
+cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${HIT_LINK_DIR} HIT_DOWNLOADED)
+
+if(HIT_DOWNLOADED)
+  install(DIRECTORY ${HIT_INCLUDE_DIR}/hit TYPE INCLUDE COMPONENT libneml2-dev)
+endif()
+
+# ----------------------------------------------------------------------------
+# TIMPI
+# ----------------------------------------------------------------------------
+if(NEML2_WORK_DISPATCHER)
+  find_package(TIMPI)
+
+  if(NOT TIMPI_FOUND)
+    include(DownloadTIMPI)
+    set(TIMPI_ROOT ${TIMPI_INSTALL_DIR} CACHE PATH "TIMPI root directory" FORCE)
+    find_package(TIMPI REQUIRED)
+  endif()
+
+  cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${TIMPI_LINK_DIR} TIMPI_DOWNLOADED)
+
+  if(TIMPI_DOWNLOADED)
+    install(DIRECTORY ${TIMPI_INCLUDE_DIR}/timpi TYPE INCLUDE COMPONENT libneml2-dev)
+  endif()
+endif()
+
+# ----------------------------------------------------------------------------
+# CPU Profiler
+# ----------------------------------------------------------------------------
+if(NEML2_CPU_PROFILER)
+  find_package(Gperftools)
+
+  if(NOT Gperftools_FOUND)
+    include(DownloadGperftools)
+    set(GPERFTOOLS_ROOT ${GPERFTOOLS_INSTALL_DIR} CACHE PATH "gperftools root directory" FORCE)
+    find_package(Gperftools REQUIRED)
+  endif()
+
+  cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${Gperftools_LINK_DIR} Gperftools_DOWNLOADED)
+
+  if(Gperftools_DOWNLOADED)
+    # libneml2-dev does not need gperftools headers
+  endif()
+endif()
+
+# ----------------------------------------------------------------------------
+# Helper function to add a submodule
+# ----------------------------------------------------------------------------
+function(neml2_add_submodule mname TYPE mdir)
+  file(GLOB_RECURSE msrcs ${mdir}/*.cxx)
+  file(GLOB_RECURSE mheaders ${NEML2_SOURCE_DIR}/include/neml2/${mdir}/*.h)
+  add_library(${mname} ${TYPE} ${msrcs})
+  target_sources(${mname}
+    PUBLIC
+    FILE_SET HEADERS
+    BASE_DIRS ${NEML2_SOURCE_DIR}/include
+    FILES
+    ${mheaders}
+  )
+
+  target_compile_options(${mname} PRIVATE -Wall -Wextra -pedantic)
+
+  if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_options(${mname} PRIVATE -Werror)
+  endif()
+
+  if(NEML2_CPU_PROFILER)
+    target_link_libraries(${mname} PRIVATE Gperftools::profiler)
+  endif()
+
+  install(TARGETS ${mname} FILE_SET HEADERS COMPONENT libneml2-dev)
+  install(TARGETS ${mname} LIBRARY COMPONENT libneml2)
+endfunction()
+
+# ----------------------------------------------------------------------------
+# Submodules
+# ----------------------------------------------------------------------------
+# libneml2_misc
+neml2_add_submodule(neml2_misc SHARED misc)
+target_link_libraries(neml2_misc PUBLIC Torch::Torch)
+set_target_properties(neml2_misc PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
+
+if(NEML2_PCH)
+  target_precompile_headers(neml2_misc PUBLIC
+    ${NEML2_SOURCE_DIR}/include/neml2/misc/types.h
+    ${NEML2_SOURCE_DIR}/include/neml2/misc/assertions.h
+  )
+endif()
+
+# libneml2_jit
+neml2_add_submodule(neml2_jit SHARED jit)
+target_link_libraries(neml2_jit PUBLIC neml2_misc)
+
+if(NEML2_PCH)
+  target_precompile_headers(neml2_jit PUBLIC ${NEML2_SOURCE_DIR}/include/neml2/jit/types.h)
+endif()
+
+# libneml2_tensor
+neml2_add_submodule(neml2_tensor SHARED tensors)
+target_link_libraries(neml2_tensor PUBLIC neml2_jit)
+
+if(NEML2_PCH)
+  target_precompile_headers(neml2_tensor PUBLIC
+    ${NEML2_SOURCE_DIR}/include/neml2/tensors/TensorBase.h
+    ${NEML2_SOURCE_DIR}/include/neml2/tensors/TensorBaseImpl.h
+    ${NEML2_SOURCE_DIR}/include/neml2/tensors/PrimitiveTensor.h
+    ${NEML2_SOURCE_DIR}/include/neml2/tensors/assertions.h
+    ${NEML2_SOURCE_DIR}/include/neml2/tensors/shape_utils.h
+  )
+endif()
+
+# libneml2_base
+neml2_add_submodule(neml2_base SHARED base)
+target_link_libraries(neml2_base PUBLIC neml2_tensor HIT)
+set_target_properties(neml2_base PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
+
+if(NEML2_PCH)
+  target_precompile_headers(neml2_base PUBLIC
+    ${NEML2_SOURCE_DIR}/include/neml2/base/Option.h
+  )
+endif()
+
+# libneml2_user_tensor
+neml2_add_submodule(neml2_user_tensor SHARED user_tensors)
+target_link_libraries(neml2_user_tensor PUBLIC neml2_tensor neml2_base)
+
+# libneml2_solver
+neml2_add_submodule(neml2_solver SHARED solvers)
+target_link_libraries(neml2_solver PUBLIC neml2_tensor neml2_base)
+
+# libneml2_model
+neml2_add_submodule(neml2_model SHARED models)
+target_link_libraries(neml2_model PUBLIC neml2_solver neml2_tensor neml2_base)
+
+if(NEML2_PCH)
+  target_precompile_headers(neml2_model PUBLIC
+    ${NEML2_SOURCE_DIR}/include/neml2/models/Model.h
+  )
+endif()
+
+# libneml2_driver
+neml2_add_submodule(neml2_driver SHARED drivers)
+target_link_libraries(neml2_driver PUBLIC neml2_model neml2_tensor neml2_base)
+
+# libneml2
+#
+# This library is a wrapper of all neml2 library components.
+#
+# Since neml2 relies on dynamic loading of object symbols, targets who link
+# against neml2 should preferrably use LINK_WHAT_YOU_USE. Otherwise, dlopen-like
+# utilities shall be used to load the runtime objects.
+add_library(neml2 INTERFACE)
+target_link_libraries(neml2 INTERFACE neml2_driver neml2_solver neml2_model neml2_user_tensor neml2_base)
+
+# ----------------------------------------------------------------------------
+# Optional submodules
+# ----------------------------------------------------------------------------
+# libneml2_dispatcher
+if(NEML2_WORK_DISPATCHER)
+  neml2_add_submodule(neml2_dispatcher SHARED dispatchers)
+  target_link_libraries(neml2_dispatcher PUBLIC neml2_tensor neml2_model)
+  target_link_libraries(neml2_dispatcher PUBLIC TIMPI)
+  set_target_properties(neml2_dispatcher PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
+  target_link_libraries(neml2 INTERFACE neml2_dispatcher)
+endif()

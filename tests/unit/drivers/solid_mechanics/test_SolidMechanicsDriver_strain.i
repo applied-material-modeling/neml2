@@ -44,7 +44,7 @@
     model = 'model'
     prescribed_time = 'times'
     prescribed_strain = 'strains'
-    save_as = 'unit/drivers/solid_mechanics/test_SolidMechanicsDriver_strain.pt'
+    save_as = 'drivers/solid_mechanics/test_SolidMechanicsDriver_strain.pt'
   []
 []
 

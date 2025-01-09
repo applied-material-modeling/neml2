@@ -28,6 +28,8 @@
 
 namespace neml2
 {
+class Scalar;
+
 template <typename T>
 class LinearCombination : public Model
 {
@@ -48,8 +50,4 @@ protected:
   /// Scaling coefficient for each term
   std::vector<const Scalar *> _coefs;
 };
-
-typedef LinearCombination<Scalar> ScalarLinearCombination;
-typedef LinearCombination<Vec> VecLinearCombination;
-typedef LinearCombination<SR2> SR2LinearCombination;
 } // namespace neml2

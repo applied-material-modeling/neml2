@@ -47,7 +47,7 @@ public:
   virtual ~TensorValueBase() = default;
 
   /// Send the value to the target options
-  virtual void to_(const torch::TensorOptions &) = 0;
+  virtual void to_(const TensorOptions &) = 0;
 
   /// Require grad
   virtual void requires_grad_(bool req = true) = 0;
@@ -72,7 +72,7 @@ public:
   {
   }
 
-  void to_(const torch::TensorOptions & options) override;
+  void to_(const TensorOptions & options) override;
   void requires_grad_(bool req = true) override;
   operator Tensor() const override;
   void operator=(const Tensor & val) override;

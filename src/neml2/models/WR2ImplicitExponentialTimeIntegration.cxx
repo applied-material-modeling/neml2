@@ -24,6 +24,7 @@
 
 #include "neml2/models/WR2ImplicitExponentialTimeIntegration.h"
 
+#include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/Rot.h"
 #include "neml2/tensors/WR2.h"
 #include "neml2/tensors/R2.h"
@@ -71,19 +72,17 @@ WR2ImplicitExponentialTimeIntegration::WR2ImplicitExponentialTimeIntegration(
 }
 
 void
-WR2ImplicitExponentialTimeIntegration::diagnose(std::vector<Diagnosis> & diagnoses) const
+WR2ImplicitExponentialTimeIntegration::diagnose() const
 {
-  Model::diagnose(diagnoses);
-  diagnostic_assert_state(diagnoses, _s);
-  diagnostic_assert_state(diagnoses, _s_dot);
-  diagnostic_assert_force(diagnoses, _t);
+  Model::diagnose();
+  diagnostic_assert_state(_s);
+  diagnostic_assert_state(_s_dot);
+  diagnostic_assert_force(_t);
 }
 
 void
-WR2ImplicitExponentialTimeIntegration::set_value(bool out, bool dout_din, bool d2out_din2)
+WR2ImplicitExponentialTimeIntegration::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
-
   const auto dt = _t - _tn;
   const auto inc = (_s_dot * dt).exp();
 

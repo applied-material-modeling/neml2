@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include "neml2/models/LabeledAxis.h"
+#include "neml2/base/LabeledAxis.h"
 #include "neml2/tensors/Tensor.h"
 #include "neml2/models/map_types.h"
 

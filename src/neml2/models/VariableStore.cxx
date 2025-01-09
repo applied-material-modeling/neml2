@@ -24,6 +24,12 @@
 
 #include "neml2/models/VariableStore.h"
 #include "neml2/models/Model.h"
+#include "neml2/misc/assertions.h"
+#include "neml2/models/map_types.h"
+#include "neml2/models/Variable.h"
+#include "neml2/base/LabeledAxis.h"
+#include "neml2/tensors/tensors.h"
+#include "neml2/tensors/functions/sum.h"
 
 namespace neml2
 {
@@ -39,13 +45,14 @@ VariableStore::VariableStore(OptionSet options, Model * object)
 LabeledAxis &
 VariableStore::declare_axis(const std::string & name)
 {
-  neml_assert(!_axes.has_key(name),
+  neml_assert(!_axes.count(name),
               "Trying to declare an axis named ",
               name,
               ", but an axis with the same name already exists.");
 
   auto axis = std::make_unique<LabeledAxis>();
-  return *_axes.set_pointer(name, std::move(axis));
+  auto [it, success] = _axes.emplace(name, std::move(axis));
+  return *it->second;
 }
 
 void
@@ -55,40 +62,160 @@ VariableStore::setup_layout()
   output_axis().setup_layout();
 }
 
+template <typename T>
+const Variable<T> &
+VariableStore::declare_input_variable(const char * name, TensorShapeRef list_shape)
+{
+  if (_object_options.contains<VariableName>(name))
+    return declare_input_variable<T>(_object_options.get<VariableName>(name), list_shape);
+
+  return declare_input_variable<T>(VariableName(name), list_shape);
+}
+
+template <typename T>
+const Variable<T> &
+VariableStore::declare_input_variable(const VariableName & name, TensorShapeRef list_shape)
+{
+  const auto list_sz = utils::storage_size(list_shape);
+  const auto base_sz = T::const_base_storage;
+  const auto sz = list_sz * base_sz;
+
+  _input_axis.add_variable(name, sz);
+  return *create_variable<T>(_input_variables, name, list_shape);
+}
+#define INSTANTIATE_DECLARE_INPUT_VARIABLE(T)                                                      \
+  template const Variable<T> & VariableStore::declare_input_variable<T>(const char *,              \
+                                                                        TensorShapeRef);           \
+  template const Variable<T> & VariableStore::declare_input_variable<T>(const VariableName &,      \
+                                                                        TensorShapeRef)
+FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_DECLARE_INPUT_VARIABLE);
+
+template <typename T>
+Variable<T> &
+VariableStore::declare_output_variable(const char * name, TensorShapeRef list_shape)
+{
+  if (_object_options.contains<VariableName>(name))
+    return declare_output_variable<T>(_object_options.get<VariableName>(name), list_shape);
+
+  return declare_output_variable<T>(VariableName(name), list_shape);
+}
+
+template <typename T>
+Variable<T> &
+VariableStore::declare_output_variable(const VariableName & name, TensorShapeRef list_shape)
+{
+  const auto list_sz = utils::storage_size(list_shape);
+  const auto base_sz = T::const_base_storage;
+  const auto sz = list_sz * base_sz;
+
+  _output_axis.add_variable(name, sz);
+  return *create_variable<T>(_output_variables, name, list_shape);
+}
+#define INSTANTIATE_DECLARE_OUTPUT_VARIABLE(T)                                                     \
+  template Variable<T> & VariableStore::declare_output_variable<T>(const char *, TensorShapeRef);  \
+  template Variable<T> & VariableStore::declare_output_variable<T>(const VariableName &,           \
+                                                                   TensorShapeRef)
+FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_DECLARE_OUTPUT_VARIABLE);
+
+const VariableBase *
+VariableStore::clone_input_variable(const VariableBase & var, const VariableName & new_name)
+{
+  neml_assert(&var.owner() != _object, "Trying to clone a variable from the same model.");
+
+  const auto var_name = new_name.empty() ? var.name() : new_name;
+  neml_assert(
+      !_input_variables.count(var_name), "Input variable '", var_name.str(), "' already exists.");
+  auto var_clone = var.clone(var_name, _object);
+
+  _input_axis.add_variable(var_name, var_clone->assembly_storage());
+  auto [it, success] = _input_variables.emplace(var_name, std::move(var_clone));
+  return it->second.get();
+}
+
+VariableBase *
+VariableStore::clone_output_variable(const VariableBase & var, const VariableName & new_name)
+{
+  neml_assert(&var.owner() != _object, "Trying to clone a variable from the same model.");
+
+  const auto var_name = new_name.empty() ? var.name() : new_name;
+  neml_assert(
+      !_output_variables.count(var_name), "Output variable '", var_name, "' already exists.");
+  auto var_clone = var.clone(var_name, _object);
+
+  _output_axis.add_variable(var_name, var_clone->assembly_storage());
+  auto [it, success] = _output_variables.emplace(var_name, std::move(var_clone));
+  return it->second.get();
+}
+
+template <typename T>
+Variable<T> *
+VariableStore::create_variable(VariableStorage & variables,
+                               const VariableName & name,
+                               TensorShapeRef list_shape)
+{
+  // Make sure we don't duplicate variables
+  neml_assert(!variables.count(name),
+              "Trying to create variable '",
+              name,
+              "', but a variable with the same name already exists.");
+
+  // Allocate
+  std::unique_ptr<VariableBase> var;
+  var = std::make_unique<Variable<T>>(name, _object, list_shape);
+  auto [it, success] = variables.emplace(name, std::move(var));
+  auto * var_base_ptr = it->second.get();
+
+  // Cast it to the concrete type
+  auto var_ptr = dynamic_cast<Variable<T> *>(var_base_ptr);
+  if (!var_ptr)
+    throw NEMLException("Internal error: Failed to cast variable '" + name.str() +
+                        "' to its concrete type.");
+
+  return var_ptr;
+}
+#define INSTANTIATE_CREATE_VARIABLE(T)                                                             \
+  template Variable<T> * VariableStore::create_variable<T>(                                        \
+      VariableStorage &, const VariableName &, TensorShapeRef);
+FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_CREATE_VARIABLE);
+
 VariableBase &
 VariableStore::input_variable(const VariableName & name)
 {
-  auto * var_ptr = _input_variables.query_value(name);
-  neml_assert(var_ptr, "Input variable ", name, " does not exist in model ", _object->name());
-  return *var_ptr;
+  auto it = _input_variables.find(name);
+  neml_assert(it != _input_variables.end(),
+              "Input variable ",
+              name,
+              " does not exist in model ",
+              _object->name());
+  return *it->second;
 }
 
 const VariableBase &
 VariableStore::input_variable(const VariableName & name) const
 {
-  const auto * var_ptr = _input_variables.query_value(name);
-  neml_assert(var_ptr, "Input variable ", name, " does not exist in model ", _object->name());
-  return *var_ptr;
+  return const_cast<VariableStore *>(this)->input_variable(name);
 }
 
 VariableBase &
 VariableStore::output_variable(const VariableName & name)
 {
-  auto * var_ptr = _output_variables.query_value(name);
-  neml_assert(var_ptr, "Output variable ", name, " does not exist in model ", _object->name());
-  return *var_ptr;
+  auto it = _output_variables.find(name);
+  neml_assert(it != _output_variables.end(),
+              "Output variable ",
+              name,
+              " does not exist in model ",
+              _object->name());
+  return *it->second;
 }
 
 const VariableBase &
 VariableStore::output_variable(const VariableName & name) const
 {
-  const auto * var_ptr = _output_variables.query_value(name);
-  neml_assert(var_ptr, "Output variable ", name, " does not exist in model ", _object->name());
-  return *var_ptr;
+  return const_cast<VariableStore *>(this)->output_variable(name);
 }
 
 void
-VariableStore::send_variables_to(const torch::TensorOptions & options)
+VariableStore::send_variables_to(const TensorOptions & options)
 {
   _tensor_options = options;
 }
@@ -97,32 +224,32 @@ void
 VariableStore::clear_input()
 {
   for (auto && [name, var] : input_variables())
-    if (var.owning())
-      var.clear();
+    if (var->owning())
+      var->clear();
 }
 
 void
 VariableStore::clear_output()
 {
   for (auto && [name, var] : output_variables())
-    if (var.owning())
-      var.clear();
+    if (var->owning())
+      var->clear();
 }
 
 void
 VariableStore::zero_input()
 {
   for (auto && [name, var] : input_variables())
-    if (var.owning())
-      var.zero(_tensor_options);
+    if (var->owning())
+      var->zero(_tensor_options);
 }
 
 void
 VariableStore::zero_output()
 {
   for (auto && [name, var] : output_variables())
-    if (var.owning())
-      var.zero(_tensor_options);
+    if (var->owning())
+      var->zero(_tensor_options);
 }
 
 void
@@ -152,7 +279,7 @@ VariableStore::assign_output_derivatives(const DerivMap & derivs)
 }
 
 void
-VariableStore::assign_input_stack(torch::jit::Stack & stack)
+VariableStore::assign_input_stack(jit::Stack & stack)
 {
   const auto & vars = input_axis().variable_names();
   neml_assert_dbg(stack.size() >= vars.size(),
@@ -167,11 +294,11 @@ VariableStore::assign_input_stack(torch::jit::Stack & stack)
     input_variable(vars[i]).set(stack[stack.size() - vars.size() + i].toTensor(), /*force=*/true);
 
   // Drop the input variables from the stack
-  torch::jit::drop(stack, vars.size());
+  jit::drop(stack, vars.size());
 }
 
 void
-VariableStore::assign_output_stack(torch::jit::Stack & stack, bool out, bool dout, bool d2out)
+VariableStore::assign_output_stack(jit::Stack & stack, bool out, bool dout, bool d2out)
 {
   neml_assert_dbg(out || dout || d2out,
                   "At least one of the output/derivative flags must be true.");
@@ -181,9 +308,9 @@ VariableStore::assign_output_stack(torch::jit::Stack & stack, bool out, bool dou
 
   // With our protocol, the last tensor in the list is the sparsity tensor
   const auto sparsity_tensor = stacklist.back().contiguous();
-  neml_assert_dbg(torch::sum(sparsity_tensor).item<Size>() == Size(stacklist.size()) - 1,
+  neml_assert_dbg(at::sum(sparsity_tensor).item<Size>() == Size(stacklist.size()) - 1,
                   "Sparsity tensor has incorrect size. Got ",
-                  torch::sum(sparsity_tensor).item<Size>(),
+                  at::sum(sparsity_tensor).item<Size>(),
                   " expected ",
                   Size(stacklist.size()) - 1);
   const std::vector<std::uint8_t> sparsity(sparsity_tensor.data_ptr<std::uint8_t>(),
@@ -256,7 +383,7 @@ VariableStore::assign_output_stack(torch::jit::Stack & stack, bool out, bool dou
     }
   }
 
-  torch::jit::drop(stack, 1);
+  jit::drop(stack, 1);
 }
 
 ValueMap
@@ -264,7 +391,7 @@ VariableStore::collect_input() const
 {
   ValueMap vals;
   for (auto && [name, var] : input_variables())
-    vals[name] = var.tensor();
+    vals[name] = var->tensor();
   return vals;
 }
 
@@ -273,7 +400,7 @@ VariableStore::collect_output() const
 {
   ValueMap vals;
   for (auto && [name, var] : output_variables())
-    vals[name] = var.tensor();
+    vals[name] = var->tensor();
   return vals;
 }
 
@@ -282,7 +409,7 @@ VariableStore::collect_output_derivatives() const
 {
   DerivMap derivs;
   for (auto && [name, var] : output_variables())
-    derivs[name] = var.derivatives();
+    derivs[name] = var->derivatives();
   return derivs;
 }
 
@@ -291,14 +418,14 @@ VariableStore::collect_output_second_derivatives() const
 {
   SecDerivMap sec_derivs;
   for (auto && [name, var] : output_variables())
-    sec_derivs[name] = var.second_derivatives();
+    sec_derivs[name] = var->second_derivatives();
   return sec_derivs;
 }
 
-torch::jit::Stack
+jit::Stack
 VariableStore::collect_input_stack() const
 {
-  torch::jit::Stack stack;
+  jit::Stack stack;
   const auto & vars = input_axis().variable_names();
   stack.reserve(vars.size());
   for (const auto & name : vars)
@@ -306,7 +433,7 @@ VariableStore::collect_input_stack() const
   return stack;
 }
 
-torch::jit::Stack
+jit::Stack
 VariableStore::collect_output_stack(bool out, bool dout, bool d2out) const
 {
   neml_assert_dbg(out || dout || d2out,
@@ -315,7 +442,7 @@ VariableStore::collect_output_stack(bool out, bool dout, bool d2out) const
   const auto & yvars = output_axis().variable_names();
   const auto & xvars = input_axis().variable_names();
 
-  std::vector<torch::Tensor> stacklist;
+  std::vector<ATensor> stacklist;
   std::vector<std::uint8_t> sparsity;
 
   if (out)
@@ -364,11 +491,12 @@ VariableStore::collect_output_stack(bool out, bool dout, bool d2out) const
     }
   }
 
-  const auto sparsity_tensor = torch::tensor(sparsity, torch::kUInt8);
-  neml_assert_dbg(torch::sum(sparsity_tensor).item<Size>() == Size(stacklist.size()),
-                  "Sparsity tensor has incorrect size. Got ",
-                  torch::sum(sparsity_tensor).item<Size>(),
-                  " expected ",
+  const auto sparsity_tensor = Tensor::create(sparsity, kUInt8);
+  const auto nnz = base_sum(sparsity_tensor).item<Size>();
+  neml_assert_dbg(nnz == Size(stacklist.size()),
+                  "Corrupted sparsity tensor. Got ",
+                  nnz,
+                  " non-zero entries, expected ",
                   Size(stacklist.size()));
   stacklist.push_back(sparsity_tensor);
 

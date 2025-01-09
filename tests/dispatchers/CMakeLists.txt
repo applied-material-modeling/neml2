@@ -1,0 +1,16 @@
+file(GLOB_RECURSE srcs *.cxx)
+add_executable(dispatcher_tests ${srcs})
+target_link_libraries(dispatcher_tests PRIVATE testutils Catch2::Catch2)
+target_compile_options(dispatcher_tests PRIVATE -Wall -Wextra -pedantic)
+set_target_properties(dispatcher_tests PROPERTIES LINK_WHAT_YOU_USE TRUE INSTALL_RPATH_USE_LINK_PATH ON)
+
+install(TARGETS dispatcher_tests COMPONENT libneml2)
+install(DIRECTORY .
+  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/neml2/dispatcher
+  COMPONENT libneml2
+  FILES_MATCHING
+  PATTERN "*.i"
+  PATTERN "*.pt"
+  PATTERN "*.vtest"
+  PATTERN "*.xml"
+)

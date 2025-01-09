@@ -23,14 +23,23 @@
 // THE SOFTWARE.
 
 #include "neml2/base/MultiEnumSelection.h"
-#include "neml2/misc/parser_utils.h"
+#include "neml2/base/Parser.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {
 std::ostream &
 operator<<(std::ostream & os, const MultiEnumSelection & es)
 {
-  os << utils::stringify(std::vector<std::string>(es));
+  auto selections = std::vector<std::string>(es);
+  os << '(';
+  for (size_t i = 0; i < selections.size(); i++)
+  {
+    os << selections[i];
+    if (i < selections.size() - 1)
+      os << ", ";
+  }
+  os << ')';
   return os;
 }
 

@@ -23,125 +23,61 @@
 // THE SOFTWARE.
 
 #include "neml2/base/DiagnosticsInterface.h"
-#include "neml2/models/Variable.h"
+#include "neml2/base/NEML2Object.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {
-void
+Diagnosing::Diagnosing(bool ongoing)
+  : prev_state(current_diagnostic_state())
+{
+  current_diagnostic_state().ongoing = ongoing;
+}
+
+Diagnosing::~Diagnosing() { current_diagnostic_state() = prev_state; }
+
+DiagnosticState &
+current_diagnostic_state()
+{
+  static DiagnosticState _diagnostic_state;
+  return _diagnostic_state;
+}
+
+std::vector<Diagnosis> &
+current_diagnoses()
+{
+  static std::vector<Diagnosis> _diagnoses;
+  return _diagnoses;
+}
+
+std::vector<Diagnosis>
 diagnose(const DiagnosticsInterface & patient)
 {
-  std::vector<Diagnosis> diagnoses;
-  patient.diagnose(diagnoses);
+  auto & state = current_diagnostic_state();
+  state.patient_name = patient.object().name();
+  state.patient_type = patient.object().type();
 
-  if (!diagnoses.empty())
+  // Run diagnostics
   {
-    std::stringstream message;
-    for (auto & diagnosis : diagnoses)
-      message << diagnosis.what() << "\n\n";
-    throw NEMLException(message.str());
+    Diagnosing guard;
+    patient.diagnose();
   }
+
+  // Get the new diagnoses
+  auto new_diagnoses = current_diagnoses();
+
+  // Reset to a clean state before returning
+  if (!state.ongoing)
+  {
+    current_diagnoses().clear();
+    state.reset();
+  }
+
+  return new_diagnoses;
 }
 
 DiagnosticsInterface::DiagnosticsInterface(NEML2Object * object)
   : _object(object)
 {
-}
-
-void
-DiagnosticsInterface::diagnostic_assert_state(std::vector<Diagnosis> & diagnoses,
-                                              const VariableBase & v) const
-{
-  diagnostic_assert(
-      diagnoses, v.is_state(), "Variable ", v.name(), " must be on the ", STATE, " sub-axis.");
-}
-
-void
-DiagnosticsInterface::diagnostic_assert_old_state(std::vector<Diagnosis> & diagnoses,
-                                                  const VariableBase & v) const
-{
-  diagnostic_assert(diagnoses,
-                    v.is_old_state(),
-                    "Variable ",
-                    v.name(),
-                    " must be on the ",
-                    OLD_STATE,
-                    " sub-axis.");
-}
-
-void
-DiagnosticsInterface::diagnostic_assert_force(std::vector<Diagnosis> & diagnoses,
-                                              const VariableBase & v) const
-{
-  diagnostic_assert(
-      diagnoses, v.is_force(), "Variable ", v.name(), " must be on the ", FORCES, " sub-axis.");
-}
-
-void
-DiagnosticsInterface::diagnostic_assert_old_force(std::vector<Diagnosis> & diagnoses,
-                                                  const VariableBase & v) const
-{
-  diagnostic_assert(diagnoses,
-                    v.is_old_force(),
-                    "Variable ",
-                    v.name(),
-                    " must be on the ",
-                    OLD_FORCES,
-                    " sub-axis.");
-}
-
-void
-DiagnosticsInterface::diagnostic_assert_residual(std::vector<Diagnosis> & diagnoses,
-                                                 const VariableBase & v) const
-{
-  diagnostic_assert(diagnoses,
-                    v.is_residual(),
-                    "Variable ",
-                    v.name(),
-                    " must be on the ",
-                    RESIDUAL,
-                    " sub-axis.");
-}
-
-void
-DiagnosticsInterface::diagnostic_check_input_variable(std::vector<Diagnosis> & diagnoses,
-                                                      const VariableBase & v) const
-{
-  diagnostic_assert(diagnoses,
-                    v.is_state() || v.is_old_state() || v.is_force() || v.is_old_force() ||
-                        v.is_residual() || v.is_parameter(),
-                    "Input variable ",
-                    v.name(),
-                    " must be on one of the following sub-axes: ",
-                    STATE,
-                    ", ",
-                    OLD_STATE,
-                    ", ",
-                    FORCES,
-                    ", ",
-                    OLD_FORCES,
-                    ", ",
-                    RESIDUAL,
-                    ", ",
-                    PARAMETERS,
-                    ".");
-}
-
-void
-DiagnosticsInterface::diagnostic_check_output_variable(std::vector<Diagnosis> & diagnoses,
-                                                       const VariableBase & v) const
-{
-  diagnostic_assert(diagnoses,
-                    v.is_state() || v.is_force() || v.is_residual() || v.is_parameter(),
-                    "Output variable ",
-                    v.name(),
-                    " must be on one of the following sub-axes: ",
-                    STATE,
-                    ", ",
-                    FORCES,
-                    ", ",
-                    RESIDUAL,
-                    ", ",
-                    PARAMETERS,
-                    ".");
 }
 } // namespace neml2

@@ -28,6 +28,8 @@
 
 namespace neml2
 {
+class Scalar;
+
 /// Linear slip hardening of the type \f$\dot{\bar{\tau}} = \theta \sum \left|\dot{\gamma}_i \right|\f$
 class LinearSingleSlipHardeningRule : public SingleSlipHardeningRule
 {

@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/crystal_plasticity/SingleSlipStrengthMap.h"
+#include "neml2/tensors/Scalar.h"
 
 namespace neml2
 {
@@ -42,7 +43,7 @@ SingleSlipStrengthMap::expected_options()
   options.set_input("slip_hardening") = VariableName(STATE, "internal", "slip_hardening");
   options.set("slip_hardening").doc() = "The name of the evovling, scalar strength";
 
-  options.set_parameter<CrossRef<Scalar>>("constant_strength");
+  options.set_parameter<TensorName>("constant_strength");
   options.set("constant_strength").doc() = "The constant slip system strength";
 
   return options;
@@ -56,10 +57,8 @@ SingleSlipStrengthMap::SingleSlipStrengthMap(const OptionSet & options)
 }
 
 void
-SingleSlipStrengthMap::set_value(bool out, bool dout_din, bool d2out_din2)
+SingleSlipStrengthMap::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
-
   if (out)
     _tau = (_tau_bar + _tau_const).batch_unsqueeze(-1).batch_expand(_crystal_geometry.nslip(), -1);
 

@@ -23,7 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/VoceIsotropicHardening.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/functions/exp.h"
 
 namespace neml2
 {
@@ -37,9 +38,11 @@ VoceIsotropicHardening::expected_options()
                   "\\right] \\f$, where \\f$ R \\f$ is the isotropic hardening upon saturation, "
                   "and \\f$ d \\f$ is the hardening rate.";
 
-  options.set_parameter<CrossRef<Scalar>>("saturated_hardening");
+  options.set<bool>("define_second_derivatives") = true;
+
+  options.set_parameter<TensorName>("saturated_hardening");
   options.set("saturated_hardening").doc() = "Saturated isotropic hardening";
-  options.set_parameter<CrossRef<Scalar>>("saturation_rate");
+  options.set_parameter<TensorName>("saturation_rate");
   options.set("saturation_rate").doc() = "Hardening saturation rate";
 
   return options;
@@ -56,22 +59,22 @@ void
 VoceIsotropicHardening::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   if (out)
-    _h = _R * (-math::exp(-_d * _ep) + 1.0);
+    _h = _R * (-exp(-_d * _ep) + 1.0);
 
   if (dout_din)
   {
     if (_ep.is_dependent())
-      _h.d(_ep) = _R * _d * math::exp(-_d * _ep);
+      _h.d(_ep) = _R * _d * exp(-_d * _ep);
 
     if (const auto * const R = nl_param("R"))
-      _h.d(*R) = -math::exp(-_d * _ep) + 1.0;
+      _h.d(*R) = -exp(-_d * _ep) + 1.0;
 
     if (const auto * const d = nl_param("d"))
-      _h.d(*d) = _ep * _R * math::exp(-_d * _ep);
+      _h.d(*d) = _ep * _R * exp(-_d * _ep);
   }
 
   if (d2out_din2)
     if (_ep.is_dependent())
-      _h.d(_ep, _ep) = -_R * _d * _d * math::exp(-_d * _ep);
+      _h.d(_ep, _ep) = -_R * _d * _d * exp(-_d * _ep);
 }
 } // namespace neml2

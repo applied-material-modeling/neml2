@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 
 # Copyright 2024, UChicago Argonne, LLC
 # All Rights Reserved
@@ -128,7 +128,7 @@ if __name__ == "__main__":
     extensions = {".h": "//", ".cxx": "//", ".py": "#", ".sh": "#"}
     additional_files = {}
 
-    exclude_dirs = []
+    exclude_dirs = ["cmake"]
     exclude_files = []
 
     rootdir = Path(".")

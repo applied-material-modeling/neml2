@@ -40,7 +40,7 @@ public:
 
   void setup() override;
 
-  void diagnose(std::vector<Diagnosis> &) const override;
+  void diagnose() const override;
 
 protected:
   void init_strain_control(const OptionSet & options) override;

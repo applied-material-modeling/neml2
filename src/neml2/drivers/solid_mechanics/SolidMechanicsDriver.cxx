@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/drivers/solid_mechanics/SolidMechanicsDriver.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {
@@ -39,13 +40,13 @@ SolidMechanicsDriver::expected_options()
 
   options.set<VariableName>("temperature") = VariableName(FORCES, "T");
   options.set("temperature").doc() = "Name of temperature";
-  options.set<CrossRef<torch::Tensor>>("prescribed_temperature");
+  options.set<TensorName>("prescribed_temperature");
   options.set("prescribed_temperature").doc() =
       "Actual prescibed temperature values, when providing temperatures to the model";
 
   options.set<VariableName>("mixed_driving_force") = VariableName(FORCES, "fixed_values");
   options.set("mixed_driving_force").doc() = "Name of mixed driving force when using mixed control";
-  options.set<CrossRef<torch::Tensor>>("prescribed_mixed_driving_force");
+  options.set<TensorName>("prescribed_mixed_driving_force");
   options.set("prescribed_mixed_driving_force").doc() =
       "The fixed, controlled values provided as user input for the mixed control case.  Where the "
       "control signal is 0 these are strain/deformation values, where it is 1 these are stress "
@@ -54,7 +55,7 @@ SolidMechanicsDriver::expected_options()
   options.set<VariableName>("mixed_control_signal") = VariableName(FORCES, "control");
   options.set("mixed_control_signal").doc() =
       "The name of the control signal for mixed control on the input axis";
-  options.set<CrossRef<torch::Tensor>>("prescribed_mixed_control_signal");
+  options.set<TensorName>("prescribed_mixed_control_signal");
   options.set("prescribed_mixed_control_signal").doc() =
       "The actual values of the control signal for mixed control. 0 implies strain/deformation "
       "control, 1 implies stress control";
@@ -93,11 +94,11 @@ void
 SolidMechanicsDriver::init_mixed_control(const OptionSet & options)
 {
   _driving_force_name = options.get<VariableName>("mixed_driving_force");
-  _driving_force = SR2(options.get<CrossRef<torch::Tensor>>("prescribed_mixed_driving_force"));
+  _driving_force = SR2(options.get<TensorName>("prescribed_mixed_driving_force"));
   _driving_force = _driving_force.to(_device);
 
   _mixed_control_name = options.get<VariableName>("mixed_control_signal");
-  _mixed_control = SR2(options.get<CrossRef<torch::Tensor>>("prescribed_mixed_control_signal"));
+  _mixed_control = SR2(options.get<TensorName>("prescribed_mixed_control_signal"));
   _mixed_control = _mixed_control.to(_device);
 }
 
@@ -105,23 +106,21 @@ void
 SolidMechanicsDriver::init_temperature_control(const OptionSet & options)
 {
   _temperature_name = options.get<VariableName>("temperature");
-  _temperature = Scalar(options.get<CrossRef<torch::Tensor>>("prescribed_temperature"));
+  _temperature = Scalar(options.get<TensorName>("prescribed_temperature"));
   _temperature = _temperature.to(_device);
 }
 
 void
-SolidMechanicsDriver::diagnose(std::vector<Diagnosis> & diagnoses) const
+SolidMechanicsDriver::diagnose() const
 {
-  TransientDriver::diagnose(diagnoses);
+  TransientDriver::diagnose();
 
-  diagnostic_assert(diagnoses,
-                    _driving_force.batch_dim() >= 1,
+  diagnostic_assert(_driving_force.batch_dim() >= 1,
                     "Input driving force (strain, stress, or mixed conditions) should have at "
                     "least one batch dimension for time steps but instead has batch dimension ",
                     _driving_force.batch_dim());
 
-  diagnostic_assert(diagnoses,
-                    _time.batch_size(0) == _driving_force.batch_size(0),
+  diagnostic_assert(_time.batch_size(0) == _driving_force.batch_size(0),
                     "Input driving force (strain, stress, or mixed conditions) and time should "
                     "have the same number of time steps. The input time has ",
                     _time.batch_size(0),
@@ -131,14 +130,12 @@ SolidMechanicsDriver::diagnose(std::vector<Diagnosis> & diagnoses) const
 
   if (_temperature_prescribed)
   {
-    diagnostic_assert(diagnoses,
-                      _temperature.batch_dim() >= 1,
+    diagnostic_assert(_temperature.batch_dim() >= 1,
                       "Input temperature should have at least one batch dimension for time steps "
                       "but instead has batch dimension ",
                       _temperature.batch_dim());
 
     diagnostic_assert(
-        diagnoses,
         _time.batch_size(0) == _temperature.batch_size(0),
         "Input temperature and time should have the same number of time steps. The input time has ",
         _time.batch_size(0),
@@ -149,13 +146,11 @@ SolidMechanicsDriver::diagnose(std::vector<Diagnosis> & diagnoses) const
 
   if (_control == "MIXED")
   {
-    diagnostic_assert(diagnoses,
-                      _mixed_control.batch_dim() >= 1,
+    diagnostic_assert(_mixed_control.batch_dim() >= 1,
                       "Input control signal should have at least one batch dimension but instead "
                       "has batch dimension ",
                       _mixed_control.batch_dim());
     diagnostic_assert(
-        diagnoses,
         _mixed_control.batch_size(0) == _time.batch_size(0),
         "Input control signal should have the same number of steps steps as time, but instead has ",
         _mixed_control.batch_size(0),

@@ -26,9 +26,11 @@
 
 #include "neml2/models/crystallography/CrystalGeometry.h"
 
-#include "neml2/tensors/tensors.h"
+#include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/list_tensors.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/functions/abs.h"
+#include "neml2/tensors/functions/sum.h"
+#include "neml2/tensors/functions/sign.h"
 
 namespace neml2
 {
@@ -67,11 +69,11 @@ void
 SumSlipRates::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   if (out)
-    _sg = math::batch_sum(math::abs(_g.value()), -1);
+    _sg = batch_sum(abs(_g.value()), -1);
 
   if (dout_din)
     if (_g.is_dependent())
-      _sg.d(_g) = Tensor(math::sign(_g.value()).batch_unsqueeze(-1), _g.batch_dim());
+      _sg.d(_g) = Tensor(sign(_g.value()).batch_unsqueeze(-1), _g.batch_dim());
 }
 
 } // namespace neml2

@@ -19,9 +19,9 @@ The first argument is the nonlinear system of equations to be solved, and the se
 While the convergence criteria are defined by the specific solvers derived from the base class, it is generally recommended to use both `atol` and `rtol` in the convergence check. Below is an example convergence criteria
 ```cpp
 bool
-MySolver::converged(const torch::Tensor & nR, const torch::Tensor & nR0) const
+MySolver::converged(const ATensor & nR, const ATensor & nR0) const
 {
-  return torch::all(torch::logical_or(nR < atol, nR / nR0 < rtol)).item<bool>();
+  return at::all(at::logical_or(nR < atol, nR / nR0 < rtol)).item<bool>();
 }
 ```
 where `nR` is the vector norm of the current residual, and `nR0` is the vector norm of the initial residual (evaluated at the initial guess). The above statement makes sure the current residual is either below the absolute tolerance or has been sufficiently reduced, and the condition is applied to _all_ batches of the residual norm.

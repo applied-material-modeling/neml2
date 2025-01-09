@@ -22,7 +22,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <torch/nn/modules/container/moduledict.h>
+#include <torch/nn/modules/container/modulelist.h>
+#include <torch/serialize.h>
+
 #include "neml2/drivers/TransientDriver.h"
+#include "neml2/misc/assertions.h"
 
 namespace fs = std::filesystem;
 
@@ -34,10 +39,10 @@ set_ic(ValueMap & storage,
        const OptionSet & options,
        const std::string & name_opt,
        const std::string & value_opt,
-       const torch::Device & device)
+       const Device & device)
 {
   const auto names = options.get<std::vector<VariableName>>(name_opt);
-  const auto vals = options.get<std::vector<CrossRef<T>>>(value_opt);
+  const auto vals = options.get<std::vector<TensorName>>(value_opt);
   neml_assert(names.size() == vals.size(),
               "Number of initial condition names ",
               name_opt,
@@ -67,7 +72,7 @@ TransientDriver::expected_options()
 
   options.set<VariableName>("time") = VariableName(FORCES, "t");
   options.set("time").doc() = "Time";
-  options.set<CrossRef<Scalar>>("prescribed_time");
+  options.set<TensorName>("prescribed_time");
   options.set("prescribed_time").doc() =
       "Time steps to perform the material update. The times tensor must "
       "have at least one batch dimension representing time steps";
@@ -100,7 +105,7 @@ TransientDriver::expected_options()
 #define OPTION_IC_(T)                                                                              \
   options.set<std::vector<VariableName>>("ic_" #T "_names");                                       \
   options.set("ic_" #T "_names").doc() = "Apply initial conditions to these " #T " variables";     \
-  options.set<std::vector<CrossRef<T>>>("ic_" #T "_values");                                       \
+  options.set<std::vector<TensorName>>("ic_" #T "_values");                                        \
   options.set("ic_" #T "_values").doc() = "Initial condition values for the " #T " variables"
   FOR_ALL_TENSORBASE(OPTION_IC_);
 
@@ -112,7 +117,7 @@ TransientDriver::TransientDriver(const OptionSet & options)
     _model(get_model(options.get<std::string>("model"))),
     _device(options.get<std::string>("device")),
     _time_name(options.get<VariableName>("time")),
-    _time(options.get<CrossRef<Scalar>>("prescribed_time")),
+    _time(options.get<TensorName>("prescribed_time")),
     _step_count(0),
     _nsteps(_time.batch_size(0).concrete()),
     _predictor(options.get<EnumSelection>("predictor")),
@@ -127,13 +132,12 @@ TransientDriver::TransientDriver(const OptionSet & options)
 }
 
 void
-TransientDriver::diagnose(std::vector<Diagnosis> & diagnoses) const
+TransientDriver::diagnose() const
 {
-  Driver::diagnose(diagnoses);
-  _model.diagnose(diagnoses);
+  Driver::diagnose();
+  neml2::diagnose(_model);
 
   diagnostic_assert(
-      diagnoses,
       _time.batch_dim() >= 1,
       "Input time should have at least one batch dimension but instead has batch dimension ",
       _time.batch_dim());
@@ -143,8 +147,7 @@ TransientDriver::diagnose(std::vector<Diagnosis> & diagnoses) const
   const auto & output_state = _model.output_axis().subaxis(STATE);
   if (_model.input_axis().has_old_state())
     for (const auto & var : input_old_state.variable_names())
-      diagnostic_assert(diagnoses,
-                        output_state.has_variable(var),
+      diagnostic_assert(output_state.has_variable(var),
                         "Input axis has old state variable ",
                         var,
                         ", but the corresponding output state variable doesn't exist.");
@@ -245,7 +248,7 @@ TransientDriver::apply_ic()
   for (auto && [name, var] : _model.output_variables())
     if (!_result_out[0].count(name))
       _result_out[0][name] =
-          Tensor::zeros(utils::add_shapes(var.list_sizes(), var.base_sizes())).to(_device);
+          Tensor::zeros(utils::add_shapes(var->list_sizes(), var->base_sizes())).to(_device);
 }
 
 void

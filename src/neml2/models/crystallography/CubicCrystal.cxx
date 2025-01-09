@@ -24,7 +24,7 @@
 
 #include "neml2/models/crystallography/CubicCrystal.h"
 
-#include "neml2/models/crystallography/crystallography.h"
+#include "neml2/tensors/crystallography.h"
 #include "neml2/tensors/tensors.h"
 
 namespace neml2::crystallography
@@ -42,17 +42,16 @@ CubicCrystal::expected_options()
   options.set("crystal_class").suppressed() = true;
   options.set("lattice_vectors").suppressed() = true;
 
-  options.set<CrossRef<Scalar>>("lattice_parameter");
+  options.set<TensorName>("lattice_parameter");
   options.set("lattice_parameter").doc() = "The lattice parameter";
 
   return options;
 }
 
 CubicCrystal::CubicCrystal(const OptionSet & options)
-  : CrystalGeometry(
-        options,
-        symmetry_operations_from_orbifold("432"),
-        Vec(torch::Tensor(R2::fill(options.get<CrossRef<Scalar>>("lattice_parameter")))))
+  : CrystalGeometry(options,
+                    symmetry_operations_from_orbifold("432"),
+                    Vec(ATensor(R2::fill(Scalar(options.get<TensorName>("lattice_parameter"))))))
 {
 }
 

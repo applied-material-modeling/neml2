@@ -25,7 +25,7 @@ jobs:
       - name: Run clang-format style check
         uses: jidicula/clang-format-action@v4.11.0
         with:
-          clang-format-version: "17"
+          clang-format-version: "19"
           check-path: ${{ matrix.path }}
 
   # TODO: Re-enable the linting checks
@@ -50,11 +50,10 @@ jobs:
         run: cmake --build --preset dev-cpp
       - name: Run tests
         run: |
-          cd tests
-          ../build/dev/tests/unit/unit_tests -r JUnit::out=unit_tests.xml -r console::out=-::colour-mode=ansi
-          ../build/dev/tests/regression/regression_tests -r JUnit::out=regression_tests.xml -r console::out=-::colour-mode=ansi
-          ../build/dev/tests/verification/verification_tests -r JUnit::out=verification_tests.xml -r console::out=-::colour-mode=ansi
-          ../build/dev/tests/dispatcher/dispatcher_tests -r JUnit::out=dispatcher_tests.xml -r console::out=-::colour-mode=ansi
+          ./build/dev/tests/unit/unit_tests -r JUnit::out=unit_tests.xml -r console::out=-::colour-mode=ansi
+          ./build/dev/tests/regression/regression_tests -r JUnit::out=regression_tests.xml -r console::out=-::colour-mode=ansi
+          ./build/dev/tests/verification/verification_tests -r JUnit::out=verification_tests.xml -r console::out=-::colour-mode=ansi
+          ./build/dev/tests/dispatchers/dispatcher_tests -r JUnit::out=dispatcher_tests.xml -r console::out=-::colour-mode=ansi
       - name: Test results
         uses: EnricoMi/publish-unit-test-result-action/linux@v2
         if: always()
@@ -78,30 +77,8 @@ jobs:
           cmake-version: 3.28
           torch-version: 2.5.1
       - name: Configure
-        run: cmake --preset benchmark -GNinja -S .
+        run: cmake --preset runner -GNinja -S .
       - name: Build
-        run: cmake --build --preset benchmark
-      - if: always()
-        run: ./build/benchmark/runner/runner runner/benchmark/elasticity/model.i driver nbatch=1 device=cpu
-      - if: always()
-        run: ./build/benchmark/runner/runner runner/benchmark/radret/model.i driver nbatch=1 device=cpu
-      - if: always()
-        run: ./build/benchmark/runner/runner runner/benchmark/isoharden/model.i driver nbatch=1 device=cpu
-      - if: always()
-        run: ./build/benchmark/runner/runner runner/benchmark/chaboche2/model.i driver nbatch=1 device=cpu
-      - if: always()
-        run: ./build/benchmark/runner/runner runner/benchmark/chaboche4/model.i driver nbatch=1 device=cpu
-      - if: always()
-        run: ./build/benchmark/runner/runner runner/benchmark/chaboche6/model.i driver nbatch=1 device=cpu
-      - if: always()
-        run: ./build/benchmark/runner/runner runner/benchmark/gtntheig/model.i driver nbatch=1 device=cpu
-      - if: always()
-        run: ./build/benchmark/runner/runner runner/benchmark/scpcoup/model.i driver nbatch=1 device=cpu
-      - if: always()
-        run: ./build/benchmark/runner/runner runner/benchmark/scpdecoup/model.i driver nbatch=1 device=cpu
-      - if: always()
-        run: ./build/benchmark/runner/runner runner/benchmark/scpdecoupexp/model.i driver nbatch=1 device=cpu
-      - if: always()
-        run: ./build/benchmark/runner/runner runner/benchmark/tcpsingle/model.i driver nbatch=1 device=cpu
-      - if: always()
-        run: ./build/benchmark/runner/runner runner/benchmark/tcprandom/model.i driver nbatch=1 device=cpu
+        run: cmake --build --preset runner
+      - name: Run tests
+        run: ctest --preset runner --output-on-failure

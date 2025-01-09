@@ -23,7 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/models/ArrheniusParameter.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/functions/exp.h"
+#include "neml2/tensors/Scalar.h"
 
 namespace neml2
 {
@@ -38,10 +39,12 @@ ArrheniusParameter::expected_options()
                   "\\f$ p_0 \\f$ is the reference value, \\f$ Q \\f$ is the activation energy, "
                   "\\f$ R \\f$ is the ideal gas constant, and \\f$ T \\f$ is the temperature.";
 
-  options.set_parameter<CrossRef<Scalar>>("reference_value");
+  options.set<bool>("define_second_derivatives") = true;
+
+  options.set_parameter<TensorName>("reference_value");
   options.set("reference_value").doc() = "Reference value";
 
-  options.set_parameter<CrossRef<Scalar>>("activation_energy");
+  options.set_parameter<TensorName>("activation_energy");
   options.set("activation_energy").doc() = "Activation energy";
 
   options.set<Real>("ideal_gas_constant");
@@ -65,7 +68,7 @@ ArrheniusParameter::ArrheniusParameter(const OptionSet & options)
 void
 ArrheniusParameter::set_value(bool out, bool dout_din, bool d2out_din2)
 {
-  const auto p = _p0 * math::exp(-_Q / _R / _T);
+  const auto p = _p0 * exp(-_Q / _R / _T);
 
   if (out)
     _p = p;

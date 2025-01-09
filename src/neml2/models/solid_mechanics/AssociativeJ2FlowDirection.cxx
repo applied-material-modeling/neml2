@@ -23,6 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/AssociativeJ2FlowDirection.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
 
 namespace neml2
@@ -52,10 +54,8 @@ AssociativeJ2FlowDirection::AssociativeJ2FlowDirection(const OptionSet & options
 }
 
 void
-AssociativeJ2FlowDirection::set_value(bool out, bool dout_din, bool d2out_din2)
+AssociativeJ2FlowDirection::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "Second derivatives not implemented");
-
   auto S = SR2(_M).dev();
   auto vm = std::sqrt(3.0 / 2.0) * S.norm(machine_precision());
   auto dvm_dM = 3.0 / 2.0 * S / vm;

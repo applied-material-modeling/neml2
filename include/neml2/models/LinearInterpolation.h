@@ -25,6 +25,7 @@
 #pragma once
 
 #include "neml2/models/Interpolation.h"
+#include "neml2/tensors/Scalar.h"
 
 namespace neml2
 {
@@ -107,8 +108,4 @@ LinearInterpolation<T>::mask(const T2 & in, const Scalar & m) const
   // Use advanced (boolean) indexing to select the correct interval
   return T2(in.batch_expand_as(m).index({m})).batch_reshape(B);
 }
-
-typedef LinearInterpolation<Scalar> ScalarLinearInterpolation;
-typedef LinearInterpolation<Vec> VecLinearInterpolation;
-typedef LinearInterpolation<SR2> SR2LinearInterpolation;
 } // namespace neml2

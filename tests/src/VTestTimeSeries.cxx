@@ -29,11 +29,6 @@
 
 namespace neml2
 {
-#define REGISTER_VTESTTIMESERIES(T)                                                                \
-  using T##VTestTimeSeries = VTestTimeSeries<T>;                                                   \
-  register_NEML2_object(T##VTestTimeSeries)
-FOR_ALL_PRIMITIVETENSOR(REGISTER_VTESTTIMESERIES);
-
 template <typename T>
 OptionSet
 VTestTimeSeries<T>::expected_options()
@@ -80,7 +75,7 @@ VTestTimeSeries<SR2>::init(const OptionSet & options) const
   auto val_yz = table[var + "_yz"];
   auto val_xz = table[var + "_xz"];
   auto val_xy = table[var + "_xy"];
-  return SR2(torch::stack({val_xx, val_yy, val_zz, val_yz, val_xz, val_xy}, -1));
+  return SR2(at::stack({val_xx, val_yy, val_zz, val_yz, val_xz, val_xy}, -1));
 }
 
 template <>
@@ -92,6 +87,11 @@ VTestTimeSeries<WR2>::init(const OptionSet & options) const
   auto val_zy = table[var + "_zy"];
   auto val_xz = table[var + "_xz"];
   auto val_yx = table[var + "_yx"];
-  return WR2(torch::stack({val_zy, val_xz, val_yx}, -1));
+  return WR2(at::stack({val_zy, val_xz, val_yx}, -1));
 }
+
+#define REGISTER_VTESTTIMESERIES(T)                                                                \
+  using T##VTestTimeSeries = VTestTimeSeries<T>;                                                   \
+  register_NEML2_object(T##VTestTimeSeries)
+FOR_ALL_PRIMITIVETENSOR(REGISTER_VTESTTIMESERIES);
 } // namespace neml2

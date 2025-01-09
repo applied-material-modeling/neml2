@@ -22,10 +22,18 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <iostream>
+
 #include "neml2/base/OptionCollection.h"
+#include "neml2/base/Settings.h"
 
 namespace neml2
 {
+OptionCollection::OptionCollection()
+  : _settings(Settings::expected_options())
+{
+}
+
 std::map<std::string, OptionSet> &
 OptionCollection::operator[](const std::string & section)
 {

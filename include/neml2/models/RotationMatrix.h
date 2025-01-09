@@ -25,10 +25,13 @@
 #pragma once
 
 #include "neml2/models/Model.h"
-#include "neml2/tensors/Rot.h"
 
 namespace neml2
 {
+class Rot;
+class R2;
+class R3;
+
 /**
  * @brief Convert a Rodrigues vector (Rot) to a second order tensor (R2).
  *

@@ -24,22 +24,27 @@
 
 #include "neml2/tensors/Quaternion.h"
 
-#include "neml2/misc/math.h"
-
 #include "neml2/tensors/R2.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/Rot.h"
 #include "neml2/tensors/Tensor.h"
 
+#include "neml2/tensors/functions/cat.h"
+#include "neml2/tensors/functions/stack.h"
+#include "neml2/tensors/functions/bvv.h"
+#include "neml2/tensors/functions/abs.h"
+#include "neml2/tensors/functions/acos.h"
+#include "neml2/tensors/functions/minimum.h"
+#include "neml2/tensors/functions/linalg/vecdot.h"
+
 namespace neml2
 {
 
-// TODO: replace torch::cat with math::base_cat
+// TODO: replace at::cat with base_cat
 Quaternion::Quaternion(const Rot & r)
-  : Quaternion(
-        torch::cat(
-            {((1 - r.norm_sq()) / (1 + r.norm_sq())).unsqueeze(-1), 2 * r / (1 + r.norm_sq())}, -1),
-        r.batch_dim())
+  : Quaternion(base_cat(
+        {((1 - r.norm_sq()) / (1 + r.norm_sq())).base_unsqueeze(-1), 2 * r / (1 + r.norm_sq())},
+        -1))
 {
 }
 
@@ -48,7 +53,7 @@ Quaternion::fill(const Real & s,
                  const Real & q1,
                  const Real & q2,
                  const Real & q3,
-                 const torch::TensorOptions & options)
+                 const TensorOptions & options)
 {
   return Quaternion::fill(
       Scalar(s, options), Scalar(q1, options), Scalar(q2, options), Scalar(q3, options));
@@ -57,7 +62,7 @@ Quaternion::fill(const Real & s,
 Quaternion
 Quaternion::fill(const Scalar & s, const Scalar & q1, const Scalar & q2, const Scalar & q3)
 {
-  return Quaternion(torch::stack({s, q1, q2, q3}, -1), s.batch_sizes());
+  return Quaternion(base_stack({s, q1, q2, q3}, -1));
 }
 
 Scalar
@@ -89,14 +94,13 @@ Quaternion::to_R2() const
 Scalar
 Quaternion::dot(const Quaternion & other) const
 {
-  return math::bvv(*this, other);
+  return bvv(*this, other);
 }
 
 Scalar
 Quaternion::dist(const Quaternion & other) const
 {
-  Scalar dp = math::abs(this->dot(other));
-  // I hate floating point math
-  return 2.0 * math::arccos(math::minimum(dp, Scalar::ones_like(dp)));
+  Scalar dp = neml2::abs(linalg::vecdot(*this, other));
+  return 2.0 * neml2::acos(neml2::minimum(dp, Scalar::ones_like(dp)));
 }
 } // namespace neml2

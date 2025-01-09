@@ -24,8 +24,14 @@
 
 #include "neml2/models/crystallography/CrystalGeometry.h"
 
-#include "neml2/models/crystallography/crystallography.h"
-#include "neml2/tensors/tensors.h"
+#include "neml2/tensors/crystallography.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/Vec.h"
+#include "neml2/tensors/R2.h"
+#include "neml2/tensors/SR2.h"
+#include "neml2/tensors/WR2.h"
+#include "neml2/tensors/MillerIndex.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2::crystallography
 {
@@ -40,17 +46,17 @@ CrystalGeometry::expected_options()
   options.doc() =
       "A Data object storing basic crystallographic information for a given crystal system.";
 
-  options.set<CrossRef<R2>>("crystal_class");
+  options.set<TensorName>("crystal_class");
   options.set("crystal_class").doc() = "The set of symmetry operations defining the crystal class.";
 
-  options.set<CrossRef<Vec>>("lattice_vectors");
+  options.set<TensorName>("lattice_vectors");
   options.set("lattice_vectors").doc() =
       "The three lattice vectors defining the crystal translational symmetry";
 
-  options.set<CrossRef<MillerIndex>>("slip_directions");
+  options.set<TensorName>("slip_directions");
   options.set("slip_directions").doc() = "A list of Miller indices defining the slip directions";
 
-  options.set<CrossRef<MillerIndex>>("slip_planes");
+  options.set<TensorName>("slip_planes");
   options.set("slip_planes").doc() = "A list of Miller indices defining the slip planes";
 
   return options;
@@ -58,12 +64,12 @@ CrystalGeometry::expected_options()
 
 CrystalGeometry::CrystalGeometry(const OptionSet & options)
   : CrystalGeometry(options,
-                    options.get<CrossRef<R2>>("crystal_class"),
-                    options.get<CrossRef<Vec>>("lattice_vectors"),
-                    setup_schmid_tensors(options.get<CrossRef<Vec>>("lattice_vectors"),
-                                         options.get<CrossRef<R2>>("crystal_class"),
-                                         options.get<CrossRef<MillerIndex>>("slip_directions"),
-                                         options.get<CrossRef<MillerIndex>>("slip_planes")))
+                    R2(options.get<TensorName>("crystal_class")),
+                    Vec(options.get<TensorName>("lattice_vectors")),
+                    setup_schmid_tensors(Vec(options.get<TensorName>("lattice_vectors")),
+                                         R2(options.get<TensorName>("crystal_class")),
+                                         MillerIndex(options.get<TensorName>("slip_directions")),
+                                         MillerIndex(options.get<TensorName>("slip_planes"))))
 {
 }
 
@@ -75,8 +81,8 @@ CrystalGeometry::CrystalGeometry(const OptionSet & options,
                     lattice_vectors,
                     setup_schmid_tensors(lattice_vectors,
                                          cclass,
-                                         options.get<CrossRef<MillerIndex>>("slip_directions"),
-                                         options.get<CrossRef<MillerIndex>>("slip_planes")))
+                                         MillerIndex(options.get<TensorName>("slip_directions")),
+                                         MillerIndex(options.get<TensorName>("slip_planes"))))
 {
 }
 
@@ -167,9 +173,9 @@ CrystalGeometry::make_reciprocal_lattice(const Vec & lattice_vectors)
   auto a2 = lattice_vectors.batch_index({1});
   auto a3 = lattice_vectors.batch_index({2});
 
-  Vec rl = Vec(torch::stack({a2.cross(a3) / a1.dot(a2.cross(a3)),
-                             a3.cross(a1) / a2.dot(a3.cross(a1)),
-                             a1.cross(a2) / a3.dot(a1.cross(a2))}));
+  Vec rl = Vec(at::stack({a2.cross(a3) / a1.dot(a2.cross(a3)),
+                          a3.cross(a1) / a2.dot(a3.cross(a1)),
+                          a1.cross(a2) / a3.dot(a1.cross(a2))}));
 
   return rl;
 }
@@ -178,7 +184,7 @@ Vec
 CrystalGeometry::miller_to_cartesian(const Vec & A, const MillerIndex & d)
 {
   // Take advantage that a collection of 3 vectors is a R2
-  return R2(torch::Tensor(A)) * d.reduce().to_vec();
+  return R2(ATensor(A)) * d.reduce().to_vec();
 }
 
 std::tuple<Vec, Vec, Scalar, std::vector<Size>>
@@ -198,16 +204,16 @@ CrystalGeometry::setup_schmid_tensors(const Vec & A,
   auto nbatch = slip_planes.batch_dim();
 
   // Loop over each slip system
-  std::vector<torch::Tensor> cartesian_slip_directions;
-  std::vector<torch::Tensor> cartesian_slip_planes;
-  std::vector<torch::Tensor> burgers_vectors;
+  std::vector<ATensor> cartesian_slip_directions;
+  std::vector<ATensor> cartesian_slip_planes;
+  std::vector<ATensor> burgers_vectors;
   std::vector<Size> offsets = {0};
 
   for (Size i = 0; i < bshape[nbatch - 1]; i++)
   {
     // Get the cartesian slip plane and direction
-    auto cmd = slip_directions.batch_index({torch::indexing::Ellipsis, i});
-    auto cmp = slip_planes.batch_index({torch::indexing::Ellipsis, i});
+    auto cmd = slip_directions.batch_index({indexing::Ellipsis, i});
+    auto cmp = slip_planes.batch_index({indexing::Ellipsis, i});
 
     // Get the families of symmetry-equivalent planes and directions
     auto direction_options = unique_bidirectional(cls, miller_to_cartesian(A, cmd));
@@ -221,8 +227,7 @@ CrystalGeometry::setup_schmid_tensors(const Vec & A,
     {
       auto di = direction_options.batch_index({indexing::Ellipsis, j});
       auto dps = plane_options.dot(di);
-      auto inds =
-          torch::where(torch::isclose(torch::abs(dps), torch::tensor(0.0, dps.dtype()))).front();
+      auto inds = at::where(at::isclose(at::abs(dps), at::scalar_tensor(0.0, dps.dtype()))).front();
       // We could very easily vectorize this loop, but again whatever
       for (Size kk = 0; kk < inds.sizes()[0]; kk++)
       {
@@ -237,9 +242,9 @@ CrystalGeometry::setup_schmid_tensors(const Vec & A,
     offsets.push_back(last);
   }
 
-  return std::make_tuple(Vec(torch::stack(cartesian_slip_directions)),
-                         Vec(torch::stack(cartesian_slip_planes)),
-                         Scalar(torch::stack(burgers_vectors)),
+  return std::make_tuple(Vec(at::stack(cartesian_slip_directions)),
+                         Vec(at::stack(cartesian_slip_planes)),
+                         Scalar(at::stack(burgers_vectors)),
                          offsets);
 }
 

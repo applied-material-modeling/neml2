@@ -22,9 +22,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/solvers/NewtonWithLineSearch.h"
 #include <iomanip>
-#include "neml2/misc/math.h"
+
+#include "neml2/solvers/NewtonWithLineSearch.h"
+#include "neml2/tensors/functions/bvv.h"
+#include "neml2/tensors/functions/sqrt.h"
 
 namespace neml2
 {
@@ -78,27 +80,27 @@ NewtonWithLineSearch::linesearch(NonlinearSystem & system,
                                  const NonlinearSystem::Res<true> & R0) const
 {
   auto alpha = Scalar::ones(x.batch_sizes(), x.options());
-  const auto nR02 = math::bvv(R0, R0);
+  const auto nR02 = bvv(R0, R0);
 
   for (std::size_t i = 1; i < _linesearch_miter; i++)
   {
     NonlinearSystem::Sol<true> xp(Tensor(x) + alpha * Tensor(dx));
     auto R = system.residual(xp);
-    auto nR2 = math::bvv(R, R);
-    auto crit = nR02 + 2.0 * _linesearch_c * alpha * math::bvv(R0, dx);
+    auto nR2 = bvv(R, R);
+    auto crit = nR02 + 2.0 * _linesearch_c * alpha * bvv(R0, dx);
     if (verbose)
       std::cout << "     LS ITERATION " << std::setw(3) << i << ", min(alpha) = " << std::scientific
-                << torch::min(alpha).item<Real>() << ", max(||R||) = " << std::scientific
-                << torch::max(math::sqrt(nR2)).item<Real>() << ", min(||Rc||) = " << std::scientific
-                << torch::min(math::sqrt(crit)).item<Real>() << std::endl;
+                << at::min(alpha).item<Real>() << ", max(||R||) = " << std::scientific
+                << at::max(sqrt(nR2)).item<Real>() << ", min(||Rc||) = " << std::scientific
+                << at::min(sqrt(crit)).item<Real>() << std::endl;
 
-    auto stop = torch::logical_or(nR2 <= crit, nR2 <= std::pow(atol, 2));
+    auto stop = at::logical_or(nR2 <= crit, nR2 <= std::pow(atol, 2));
 
-    if (torch::all(stop).item<bool>())
+    if (at::all(stop).item<bool>())
       break;
 
-    alpha.batch_index_put_({torch::logical_not(stop)},
-                           alpha.batch_index({torch::logical_not(stop)}) / _linesearch_sigma);
+    alpha.batch_index_put_({at::logical_not(stop)},
+                           alpha.batch_index({at::logical_not(stop)}) / _linesearch_sigma);
   }
 
   return alpha;

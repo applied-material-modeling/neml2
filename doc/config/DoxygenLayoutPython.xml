@@ -4,6 +4,8 @@
     <tab type="mainpage" visible="yes"/>
     <tab type="user" url="../install.html" title="Installation Guide"/>
     <tab type="usergroup" title="User Guide">
+      <tab type="user" url="../dependency-management.html" title="Dependency Management"/>
+      <tab type="user" url="../cmake-integration.html" title="CMake Integration"/>
       <tab type="user" url="../input-file.html" title="Input File"/>
       <tab type="user" url="../cpp-backend.html" title="C++ Backend"/>
       <tab type="user" url="../python-package.html" title="Python Package"/>

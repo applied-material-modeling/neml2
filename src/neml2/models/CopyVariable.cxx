@@ -23,12 +23,10 @@
 // THE SOFTWARE.
 
 #include "neml2/models/CopyVariable.h"
+#include "neml2/tensors/tensors.h"
 
 namespace neml2
 {
-#define COPYVARIABLE_REGISTER_PRIMITIVETENSOR(T) register_NEML2_object(Copy##T)
-FOR_ALL_PRIMITIVETENSOR(COPYVARIABLE_REGISTER_PRIMITIVETENSOR);
-
 template <typename T>
 OptionSet
 CopyVariable<T>::expected_options()
@@ -70,6 +68,9 @@ CopyVariable<T>::set_value(bool out, bool dout_din, bool d2out_din2)
   }
 }
 
-#define COPYVARIABLE_INSTANTIATE_PRIMITIVETENSOR(T) template class CopyVariable<T>
-FOR_ALL_PRIMITIVETENSOR(COPYVARIABLE_INSTANTIATE_PRIMITIVETENSOR);
+#define REGISTER_COPYVARIABLE(T)                                                                   \
+  using Copy##T = CopyVariable<T>;                                                                 \
+  register_NEML2_object(Copy##T);                                                                  \
+  template class CopyVariable<T>
+FOR_ALL_PRIMITIVETENSOR(REGISTER_COPYVARIABLE);
 } // namespace neml2

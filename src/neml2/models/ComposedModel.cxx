@@ -23,7 +23,6 @@
 // THE SOFTWARE.
 
 #include "neml2/models/ComposedModel.h"
-#include "neml2/misc/math.h"
 
 namespace neml2
 {
@@ -69,7 +68,7 @@ ComposedModel::ComposedModel(const OptionSet & options)
   // be registered as a sub-model by different models, and it could be evaluated with _different_
   // input, and hence yields _different_ output values.
   for (const auto & model_name : options.get<std::vector<std::string>>("models"))
-    register_model<Model>(model_name, /*nonlinear=*/false, /*merge_input=*/false);
+    register_model(model_name, /*nonlinear=*/false, /*merge_input=*/false);
 
   // Each sub-model may have nonlinear parameters. In our design, nonlinear parameters _are_
   // models. Since we do not want to put the burden of "adding nonlinear parameters in the input
@@ -123,6 +122,42 @@ ComposedModel::ComposedModel(const OptionSet & options)
     for (auto && [pname, pmodel] : submodel->named_nonlinear_parameter_models(/*recursive=*/true))
       if (_nl_params.count(pname))
         _nl_param_models[pname] = pmodel;
+  }
+
+  // Check if this composed model defines values
+  _defines_value = true;
+  for (const auto * submodel : registered_models())
+    if (!submodel->defines_values())
+    {
+      _defines_value = false;
+      _defines_dvalue = false;
+      _defines_d2value = false;
+      break;
+    }
+
+  // Check if this composed model defines derivatives
+  if (_defines_value)
+  {
+    _defines_dvalue = true;
+    for (const auto * submodel : registered_models())
+      if (!submodel->defines_derivatives())
+      {
+        _defines_dvalue = false;
+        _defines_d2value = false;
+        break;
+      }
+  }
+
+  // Check if this composed model defines second derivatives
+  if (_defines_dvalue)
+  {
+    _defines_d2value = true;
+    for (const auto * submodel : registered_models())
+      if (!submodel->defines_second_derivatives())
+      {
+        _defines_d2value = false;
+        break;
+      }
   }
 
   // Is JIT enabled?
@@ -190,10 +225,10 @@ ComposedModel::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (dout_din)
     for (auto && [name, var] : output_variables())
-      var.apply_chain_rule(_dependency);
+      var->apply_chain_rule(_dependency);
 
   if (d2out_din2)
     for (auto && [name, var] : output_variables())
-      var.apply_second_order_chain_rule(_dependency);
+      var->apply_second_order_chain_rule(_dependency);
 }
 } // namespace neml2

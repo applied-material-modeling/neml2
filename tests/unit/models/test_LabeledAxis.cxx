@@ -26,10 +26,11 @@
 #include <catch2/generators/catch_generators_all.hpp>
 #include <catch2/matchers/catch_matchers_templated.hpp>
 
-#include "neml2/models/LabeledAxis.h"
+#include "neml2/base/LabeledAxis.h"
 #include "neml2/tensors/tensors.h"
 
 using namespace neml2;
+using SizePair = std::pair<Size, Size>;
 
 struct EqualsSlice : Catch::Matchers::MatcherGenericBase
 {
@@ -216,25 +217,25 @@ TEST_CASE("LabeledAxis", "[models]")
     {
       if (setup)
       {
-        REQUIRE_THAT(a.variable_slices()[0], EqualsSlice(indexing::Slice(0, 6)));
-        REQUIRE_THAT(a.variable_slices()[1], EqualsSlice(indexing::Slice(6, 7)));
-        REQUIRE_THAT(a.variable_slices()[2], EqualsSlice(indexing::Slice(7, 13)));
-        REQUIRE_THAT(a.variable_slices()[3], EqualsSlice(indexing::Slice(13, 14)));
-        REQUIRE_THAT(a.variable_slices()[4], EqualsSlice(indexing::Slice(14, 20)));
-        REQUIRE_THAT(a.variable_slices()[5], EqualsSlice(indexing::Slice(20, 21)));
-        REQUIRE_THAT(a.variable_slices()[6], EqualsSlice(indexing::Slice(21, 26)));
-        REQUIRE_THAT(a.variable_slices()[7], EqualsSlice(indexing::Slice(26, 27)));
+        REQUIRE(a.variable_slices()[0] == SizePair{0, 6});
+        REQUIRE(a.variable_slices()[1] == SizePair{6, 7});
+        REQUIRE(a.variable_slices()[2] == SizePair{7, 13});
+        REQUIRE(a.variable_slices()[3] == SizePair{13, 14});
+        REQUIRE(a.variable_slices()[4] == SizePair{14, 20});
+        REQUIRE(a.variable_slices()[5] == SizePair{20, 21});
+        REQUIRE(a.variable_slices()[6] == SizePair{21, 26});
+        REQUIRE(a.variable_slices()[7] == SizePair{26, 27});
 
-        REQUIRE_THAT(sub1.variable_slices()[0], EqualsSlice(indexing::Slice(0, 6)));
-        REQUIRE_THAT(sub1.variable_slices()[1], EqualsSlice(indexing::Slice(6, 7)));
-        REQUIRE_THAT(sub1.variable_slices()[2], EqualsSlice(indexing::Slice(7, 13)));
-        REQUIRE_THAT(sub1.variable_slices()[3], EqualsSlice(indexing::Slice(13, 14)));
+        REQUIRE(sub1.variable_slices()[0] == SizePair{0, 6});
+        REQUIRE(sub1.variable_slices()[1] == SizePair{6, 7});
+        REQUIRE(sub1.variable_slices()[2] == SizePair{7, 13});
+        REQUIRE(sub1.variable_slices()[3] == SizePair{13, 14});
 
-        REQUIRE_THAT(sub2.variable_slices()[0], EqualsSlice(indexing::Slice(0, 6)));
-        REQUIRE_THAT(sub2.variable_slices()[1], EqualsSlice(indexing::Slice(6, 7)));
+        REQUIRE(sub2.variable_slices()[0] == SizePair{0, 6});
+        REQUIRE(sub2.variable_slices()[1] == SizePair{6, 7});
 
-        REQUIRE_THAT(sub3.variable_slices()[0], EqualsSlice(indexing::Slice(0, 5)));
-        REQUIRE_THAT(sub3.variable_slices()[1], EqualsSlice(indexing::Slice(5, 6)));
+        REQUIRE(sub3.variable_slices()[0] == SizePair{0, 5});
+        REQUIRE(sub3.variable_slices()[1] == SizePair{5, 6});
       }
     }
 
@@ -242,31 +243,27 @@ TEST_CASE("LabeledAxis", "[models]")
     {
       if (setup)
       {
-        REQUIRE_THAT(a.variable_slice("r2t"), EqualsSlice(indexing::Slice(0, 6)));
-        REQUIRE_THAT(a.variable_slice("scalar"), EqualsSlice(indexing::Slice(6, 7)));
-        REQUIRE_THAT(a.variable_slice({"sub1", "r2t"}), EqualsSlice(indexing::Slice(7, 13)));
-        REQUIRE_THAT(a.variable_slice({"sub1", "scalar"}), EqualsSlice(indexing::Slice(13, 14)));
-        REQUIRE_THAT(a.variable_slice({"sub1", "sub2", "r2t"}),
-                     EqualsSlice(indexing::Slice(14, 20)));
-        REQUIRE_THAT(a.variable_slice({"sub1", "sub2", "scalar"}),
-                     EqualsSlice(indexing::Slice(20, 21)));
-        REQUIRE_THAT(a.variable_slice({"sub1", "sub3", "foo"}),
-                     EqualsSlice(indexing::Slice(21, 26)));
-        REQUIRE_THAT(a.variable_slice({"sub1", "sub3", "scalar"}),
-                     EqualsSlice(indexing::Slice(26, 27)));
+        REQUIRE(a.variable_slice("r2t") == SizePair{0, 6});
+        REQUIRE(a.variable_slice("scalar") == SizePair{6, 7});
+        REQUIRE(a.variable_slice({"sub1", "r2t"}) == SizePair{7, 13});
+        REQUIRE(a.variable_slice({"sub1", "scalar"}) == SizePair{13, 14});
+        REQUIRE(a.variable_slice({"sub1", "sub2", "r2t"}) == SizePair{14, 20});
+        REQUIRE(a.variable_slice({"sub1", "sub2", "scalar"}) == SizePair{20, 21});
+        REQUIRE(a.variable_slice({"sub1", "sub3", "foo"}) == SizePair{21, 26});
+        REQUIRE(a.variable_slice({"sub1", "sub3", "scalar"}) == SizePair{26, 27});
 
-        REQUIRE_THAT(sub1.variable_slice("r2t"), EqualsSlice(indexing::Slice(0, 6)));
-        REQUIRE_THAT(sub1.variable_slice("scalar"), EqualsSlice(indexing::Slice(6, 7)));
-        REQUIRE_THAT(sub1.variable_slice({"sub2", "r2t"}), EqualsSlice(indexing::Slice(7, 13)));
-        REQUIRE_THAT(sub1.variable_slice({"sub2", "scalar"}), EqualsSlice(indexing::Slice(13, 14)));
-        REQUIRE_THAT(sub1.variable_slice({"sub3", "foo"}), EqualsSlice(indexing::Slice(14, 19)));
-        REQUIRE_THAT(sub1.variable_slice({"sub3", "scalar"}), EqualsSlice(indexing::Slice(19, 20)));
+        REQUIRE(sub1.variable_slice("r2t") == SizePair{0, 6});
+        REQUIRE(sub1.variable_slice("scalar") == SizePair{6, 7});
+        REQUIRE(sub1.variable_slice({"sub2", "r2t"}) == SizePair{7, 13});
+        REQUIRE(sub1.variable_slice({"sub2", "scalar"}) == SizePair{13, 14});
+        REQUIRE(sub1.variable_slice({"sub3", "foo"}) == SizePair{14, 19});
+        REQUIRE(sub1.variable_slice({"sub3", "scalar"}) == SizePair{19, 20});
 
-        REQUIRE_THAT(sub2.variable_slice("r2t"), EqualsSlice(indexing::Slice(0, 6)));
-        REQUIRE_THAT(sub2.variable_slice("scalar"), EqualsSlice(indexing::Slice(6, 7)));
+        REQUIRE(sub2.variable_slice("r2t") == SizePair{0, 6});
+        REQUIRE(sub2.variable_slice("scalar") == SizePair{6, 7});
 
-        REQUIRE_THAT(sub3.variable_slice("foo"), EqualsSlice(indexing::Slice(0, 5)));
-        REQUIRE_THAT(sub3.variable_slice("scalar"), EqualsSlice(indexing::Slice(5, 6)));
+        REQUIRE(sub3.variable_slice("foo") == SizePair{0, 5});
+        REQUIRE(sub3.variable_slice("scalar") == SizePair{5, 6});
       }
     }
 
@@ -366,9 +363,9 @@ TEST_CASE("LabeledAxis", "[models]")
     {
       if (setup)
       {
-        REQUIRE_THAT(a.subaxis_slices()[0], EqualsSlice(indexing::Slice(7, 27)));
-        REQUIRE_THAT(sub1.subaxis_slices()[0], EqualsSlice(indexing::Slice(7, 14)));
-        REQUIRE_THAT(sub1.subaxis_slices()[1], EqualsSlice(indexing::Slice(14, 20)));
+        REQUIRE(a.subaxis_slices()[0] == SizePair{7, 27});
+        REQUIRE(sub1.subaxis_slices()[0] == SizePair{7, 14});
+        REQUIRE(sub1.subaxis_slices()[1] == SizePair{14, 20});
       }
     }
 
@@ -376,11 +373,11 @@ TEST_CASE("LabeledAxis", "[models]")
     {
       if (setup)
       {
-        REQUIRE_THAT(a.subaxis_slice("sub1"), EqualsSlice(indexing::Slice(7, 27)));
-        REQUIRE_THAT(a.subaxis_slice({"sub1", "sub2"}), EqualsSlice(indexing::Slice(14, 21)));
-        REQUIRE_THAT(a.subaxis_slice({"sub1", "sub3"}), EqualsSlice(indexing::Slice(21, 27)));
-        REQUIRE_THAT(sub1.subaxis_slice("sub2"), EqualsSlice(indexing::Slice(7, 14)));
-        REQUIRE_THAT(sub1.subaxis_slice("sub3"), EqualsSlice(indexing::Slice(14, 20)));
+        REQUIRE(a.subaxis_slice("sub1") == SizePair{7, 27});
+        REQUIRE(a.subaxis_slice({"sub1", "sub2"}) == SizePair{14, 21});
+        REQUIRE(a.subaxis_slice({"sub1", "sub3"}) == SizePair{21, 27});
+        REQUIRE(sub1.subaxis_slice("sub2") == SizePair{7, 14});
+        REQUIRE(sub1.subaxis_slice("sub3") == SizePair{14, 20});
       }
     }
 

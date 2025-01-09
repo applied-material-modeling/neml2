@@ -18,7 +18,7 @@ The following input file defines a linear isotropic elasticity material model:
 []
 ```
 
-The input file defines two parameters: Young's modulus of 100 and Poisson's ratio of 0.3. While optional, the input file also sets the variable names of strain and stress to be "forces/E" and "state/S", respectively (refer to the documentation on [tensor labeling](@ref tensor-labeling) for variable naming conventions).
+The input file defines two parameters: Young's modulus of 100 and Poisson's ratio of 0.3. While optional, the input file also sets the variable names of strain and stress to be "forces/E" and "state/S", respectively (refer to the [documentation](@ref naming-conventions)).
 
 Assuming the above input file is named "input_file.i", the C++ code snippet below parses the input file and loads the material model (into the heap).
 
@@ -26,7 +26,7 @@ Assuming the above input file is named "input_file.i", the C++ code snippet belo
 #include "neml2/base/Factory.h"
 #include "neml2/models/Model.h"
 #include "neml2/tensors/tensors.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/functions/batch_stack.h"
 
 int main() {
   auto & model = neml2::load_model("input.i", "model");
@@ -65,7 +65,7 @@ Suppose we want to perform 3 material updates simultaneously, the input variable
   auto strain1 = neml2::SR2::fill(0.1, 0.2, 0.3, -0.1, -0.1, 0.2);
   auto strain2 = neml2::SR2::fill(0.2, 0.2, 0.1, -0.1, -0.2, -0.5);
   auto strain3 = neml2::SR2::fill(0.3, -0.2, 0.05, -0.1, -0.3, 0.1);
-  auto strain = neml2::math::batch_stack({strain1, strain2, strain3});
+  auto strain = neml2::batch_stack({strain1, strain2, strain3});
 
   auto output = model.value({{strain_name, strain}});
   auto stress = output.at(stress_name)

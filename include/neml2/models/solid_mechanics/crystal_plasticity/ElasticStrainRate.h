@@ -28,6 +28,9 @@
 
 namespace neml2
 {
+class SR2;
+class WR2;
+
 /// Calculate the elastic strain rate from crystal model kinematics
 class ElasticStrainRate : public Model
 {

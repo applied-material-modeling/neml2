@@ -34,5 +34,8 @@ def_Vec(py::class_<Vec> & c)
   c.def(py::init<const Rot &>());
 
   // Methods
-  c.def("transform", &Vec::transform);
+  c.def("transform", &Vec::transform)
+      .def("dot", &Vec::dot)
+      .def("cross", &Vec::cross)
+      .def("outer", &Vec::outer);
 }

@@ -26,10 +26,6 @@
 
 namespace neml2
 {
-register_NEML2_object(ScalarBackwardEulerTimeIntegration);
-register_NEML2_object(VecBackwardEulerTimeIntegration);
-register_NEML2_object(SR2BackwardEulerTimeIntegration);
-
 template <typename T>
 OptionSet
 BackwardEulerTimeIntegration<T>::expected_options()
@@ -71,20 +67,18 @@ BackwardEulerTimeIntegration<T>::BackwardEulerTimeIntegration(const OptionSet & 
 
 template <typename T>
 void
-BackwardEulerTimeIntegration<T>::diagnose(std::vector<Diagnosis> & diagnoses) const
+BackwardEulerTimeIntegration<T>::diagnose() const
 {
-  Model::diagnose(diagnoses);
-  diagnostic_assert_state(diagnoses, _s);
-  diagnostic_assert_state(diagnoses, _ds_dt);
-  diagnostic_assert_force(diagnoses, _t);
+  Model::diagnose();
+  diagnostic_assert_state(_s);
+  diagnostic_assert_state(_ds_dt);
+  diagnostic_assert_force(_t);
 }
 
 template <typename T>
 void
-BackwardEulerTimeIntegration<T>::set_value(bool out, bool dout_din, bool d2out_din2)
+BackwardEulerTimeIntegration<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert(!d2out_din2, "BackwardEulerTimeIntegration does not implement second derivatives");
-
   if (out)
     _r = _s - _sn - _ds_dt * (_t - _tn);
 
@@ -104,7 +98,11 @@ BackwardEulerTimeIntegration<T>::set_value(bool out, bool dout_din, bool d2out_d
   }
 }
 
-template class BackwardEulerTimeIntegration<Scalar>;
-template class BackwardEulerTimeIntegration<Vec>;
-template class BackwardEulerTimeIntegration<SR2>;
+#define REGISTER(T)                                                                                \
+  using T##BackwardEulerTimeIntegration = BackwardEulerTimeIntegration<T>;                         \
+  register_NEML2_object(T##BackwardEulerTimeIntegration);                                          \
+  template class BackwardEulerTimeIntegration<T>
+REGISTER(Scalar);
+REGISTER(Vec);
+REGISTER(SR2);
 } // namespace neml2

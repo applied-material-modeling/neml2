@@ -37,7 +37,7 @@ public:
 
   BackwardEulerTimeIntegration(const OptionSet & options);
 
-  void diagnose(std::vector<Diagnosis> & diagnoses) const override;
+  void diagnose() const override;
 
 private:
   const VariableName _var_name;

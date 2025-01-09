@@ -23,7 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/base/EnumSelection.h"
-#include "neml2/misc/parser_utils.h"
+#include "neml2/misc/string_utils.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {

@@ -1,21 +1,51 @@
-include(NEML2UnityGroup)
+# ------------------------------------------------------------------------------
+# argparse
+# ------------------------------------------------------------------------------
+include(DownloadArgparse)
+add_dependencies(deps argparse)
 
-message(STATUS "Configuring argparse")
-FetchContent_MakeAvailable(argparse)
-
+# ------------------------------------------------------------------------------
+# runner
+# ------------------------------------------------------------------------------
 file(GLOB_RECURSE srcs src/*.cxx)
 add_executable(runner ${srcs})
-set_target_properties(runner PROPERTIES INSTALL_RPATH "${EXEC_DIR}/../lib;${Torch_LINK_DIRECTORIES}")
-register_unity_group(runner .)
+
 target_compile_options(runner PRIVATE -Wall -Wextra -pedantic)
 target_link_libraries(runner PRIVATE neml2 argparse)
+set_target_properties(runner PROPERTIES LINK_WHAT_YOU_USE ON INSTALL_RPATH_USE_LINK_PATH ON)
 
-install(TARGETS runner)
+install(TARGETS runner COMPONENT libneml2)
 install(DIRECTORY benchmark
-  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/benchmark
+  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/neml2/benchmark
+  COMPONENT libneml2
   FILES_MATCHING
   PATTERN "*.i"
   PATTERN "*.pt"
   PATTERN "*.vtest"
   PATTERN "*.xml"
 )
+
+# ------------------------------------------------------------------------------
+# tests
+# ------------------------------------------------------------------------------
+set(BENCHMARK_DIR ${NEML2_SOURCE_DIR}/runner/benchmark)
+list(APPEND BENCHMARK_ARGS "driver")
+list(APPEND BENCHMARK_ARGS "nbatch=1")
+list(APPEND BENCHMARK_ARGS "device=cpu")
+
+macro(add_benchmark name)
+  add_test(NAME ${name} COMMAND runner ${BENCHMARK_DIR}/${name}/model.i ${BENCHMARK_ARGS})
+endmacro()
+
+add_benchmark(elasticity)
+add_benchmark(radret)
+add_benchmark(isoharden)
+add_benchmark(chaboche2)
+add_benchmark(chaboche4)
+add_benchmark(chaboche6)
+add_benchmark(gtntheig)
+add_benchmark(scpcoup)
+add_benchmark(scpdecoup)
+add_benchmark(scpdecoupexp)
+add_benchmark(tcpsingle)
+add_benchmark(tcprandom)

@@ -33,11 +33,22 @@
 
 // The following are not directly used by Solver itself.
 // We put them here so that derived classes can add expected options of these types.
-#include "neml2/base/CrossRef.h"
+#include "neml2/base/TensorName.h"
 #include "neml2/base/EnumSelection.h"
 
 namespace neml2
 {
+class Driver;
+
+/**
+ * @brief A convenient function to manufacture a neml2::Driver
+ *
+ * The input file must have already been parsed and loaded.
+ *
+ * @param dname Name of the driver
+ */
+Driver & get_driver(const std::string & dname);
+
 /**
  * @brief The Driver drives the execution of a NEML2 Model.
  *
@@ -54,7 +65,7 @@ public:
    */
   Driver(const OptionSet & options);
 
-  void diagnose(std::vector<Diagnosis> &) const override {}
+  void diagnose() const override {}
 
   /// Let the driver run, return \p true upon successful completion, and return \p false otherwise.
   virtual bool run() = 0;

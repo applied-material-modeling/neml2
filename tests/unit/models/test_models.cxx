@@ -34,7 +34,7 @@ namespace fs = std::filesystem;
 TEST_CASE("models")
 {
   const auto pwd = fs::absolute(fs::current_path());
-  const auto search_path = pwd / "unit" / "models";
+  const auto search_path = pwd / "models";
 
   // Find all unit tests
   std::vector<fs::path> tests;

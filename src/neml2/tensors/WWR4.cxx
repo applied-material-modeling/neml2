@@ -24,21 +24,21 @@
 
 #include "neml2/tensors/WWR4.h"
 #include "neml2/tensors/R4.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/mandel_notation.h"
 
 namespace neml2
 {
 
 WWR4::WWR4(const R4 & F)
-  : WWR4(math::full_to_skew(
-        math::full_to_skew(F - F.transpose(0, 1) - F.transpose(2, 3) + F.transpose_minor(), 1)))
+  : WWR4(full_to_skew(
+        full_to_skew(F - F.transpose(0, 1) - F.transpose(2, 3) + F.transpose_minor(), 1)))
 {
 }
 
 WWR4
-WWR4::identity(const torch::TensorOptions & options)
+WWR4::identity(const TensorOptions & options)
 {
-  return WWR4(torch::eye(3, options), 0);
+  return WWR4(at::eye(3, options), 0);
 }
 
 } // neml2

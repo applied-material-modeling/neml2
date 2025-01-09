@@ -33,7 +33,7 @@ TEST_CASE("SolidMechanicsDriver", "[SolidMechanicsDriver]")
 {
   SECTION("strain control")
   {
-    reload_input("unit/drivers/solid_mechanics/test_SolidMechanicsDriver_strain.i");
+    reload_input("drivers/solid_mechanics/test_SolidMechanicsDriver_strain.i");
     auto & driver = get_driver("driver");
     diagnose(driver);
     REQUIRE(driver.run());
@@ -41,7 +41,7 @@ TEST_CASE("SolidMechanicsDriver", "[SolidMechanicsDriver]")
 
   SECTION("stress control")
   {
-    reload_input("unit/drivers/solid_mechanics/test_SolidMechanicsDriver_stress.i");
+    reload_input("drivers/solid_mechanics/test_SolidMechanicsDriver_stress.i");
     auto & driver = get_driver("driver");
     diagnose(driver);
     REQUIRE(driver.run());
@@ -49,7 +49,7 @@ TEST_CASE("SolidMechanicsDriver", "[SolidMechanicsDriver]")
 
   SECTION("mixed control")
   {
-    reload_input("unit/drivers/solid_mechanics/test_SolidMechanicsDriver_mixed.i");
+    reload_input("drivers/solid_mechanics/test_SolidMechanicsDriver_mixed.i");
     auto & driver = get_driver("driver");
     diagnose(driver);
     REQUIRE(driver.run());
@@ -57,7 +57,7 @@ TEST_CASE("SolidMechanicsDriver", "[SolidMechanicsDriver]")
 
   SECTION("temperature dependent")
   {
-    reload_input("unit/drivers/solid_mechanics/test_SolidMechanicsDriver_temperature.i");
+    reload_input("drivers/solid_mechanics/test_SolidMechanicsDriver_temperature.i");
     auto & driver = get_driver("driver");
     diagnose(driver);
     REQUIRE(driver.run());
@@ -65,8 +65,7 @@ TEST_CASE("SolidMechanicsDriver", "[SolidMechanicsDriver]")
 
   SECTION("large deformation incremental")
   {
-    reload_input(
-        "unit/drivers/solid_mechanics/test_LargeDeformationIncrementalSolidMechanicsDriver.i");
+    reload_input("drivers/solid_mechanics/test_LargeDeformationIncrementalSolidMechanicsDriver.i");
     auto & driver = get_driver("driver");
     diagnose(driver);
     REQUIRE(driver.run());

@@ -23,6 +23,9 @@
 // THE SOFTWARE.
 
 #include "neml2/models/RotationMatrix.h"
+#include "neml2/tensors/Rot.h"
+#include "neml2/tensors/R2.h"
+#include "neml2/tensors/R3.h"
 
 namespace neml2
 {
@@ -52,10 +55,8 @@ RotationMatrix::RotationMatrix(const OptionSet & options)
 }
 
 void
-RotationMatrix::set_value(bool out, bool dout_din, bool d2out_din2)
+RotationMatrix::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert(!d2out_din2, "Second derivatives not implemented");
-
   if (out)
     _to = Rot(_from).euler_rodrigues();
 

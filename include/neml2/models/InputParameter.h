@@ -44,7 +44,4 @@ protected:
 
   const Variable<T> & _input_var;
 };
-
-#define INPUTPARAMETER_TYPEDEF_PRIMITIVETENSOR(T) typedef InputParameter<T> T##InputParameter
-FOR_ALL_PRIMITIVETENSOR(INPUTPARAMETER_TYPEDEF_PRIMITIVETENSOR);
 } // namespace neml2

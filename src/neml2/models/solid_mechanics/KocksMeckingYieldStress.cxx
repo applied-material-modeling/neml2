@@ -23,7 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/KocksMeckingYieldStress.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/functions/exp.h"
 
 namespace neml2
 {
@@ -38,9 +39,11 @@ KocksMeckingYieldStress::expected_options()
                   "\\mu \\f$ with \\f$ \\mu \\f$ the shear modulus and \\f$ C \\f$ the horizontal "
                   "intercept from the Kocks-Mecking diagram.";
 
-  options.set_parameter<CrossRef<Scalar>>("C");
+  options.set<bool>("define_second_derivatives") = true;
+
+  options.set_parameter<TensorName>("C");
   options.set("C").doc() = "The Kocks-Mecking horizontal intercept";
-  options.set_parameter<CrossRef<Scalar>>("shear_modulus");
+  options.set_parameter<TensorName>("shear_modulus");
   options.set("shear_modulus").doc() = "The shear modulus";
 
   return options;
@@ -57,27 +60,27 @@ void
 KocksMeckingYieldStress::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   if (out)
-    _p = _mu * math::exp(_C);
+    _p = _mu * exp(_C);
 
   if (dout_din)
   {
     if (const auto * const mu = nl_param("mu"))
-      _p.d(*mu) = math::exp(_C);
+      _p.d(*mu) = exp(_C);
 
     if (const auto * const C = nl_param("C"))
-      _p.d(*C) = _mu * math::exp(_C);
+      _p.d(*C) = _mu * exp(_C);
   }
 
   if (d2out_din2)
   {
     if (const auto * const C = nl_param("C"))
     {
-      _p.d(*C, *C) = _mu * math::exp(_C);
+      _p.d(*C, *C) = _mu * exp(_C);
 
       if (const auto * const mu = nl_param("mu"))
       {
-        _p.d(*C, *mu) = math::exp(_C);
-        _p.d(*mu, *C) = math::exp(_C);
+        _p.d(*C, *mu) = exp(_C);
+        _p.d(*mu, *C) = exp(_C);
       }
     }
   }

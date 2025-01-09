@@ -28,6 +28,10 @@
 
 namespace neml2
 {
+class Scalar;
+class Rot;
+class WR2;
+
 /// Explicit exponential time integration for rotations
 // This function takes as input a skew tensor giving the spin and does the rotational update
 class WR2ExplicitExponentialTimeIntegration : public Model
@@ -37,7 +41,7 @@ public:
 
   WR2ExplicitExponentialTimeIntegration(const OptionSet & options);
 
-  void diagnose(std::vector<Diagnosis> & diagnoses) const override;
+  void diagnose() const override;
 
 private:
   /// Variable name

@@ -27,7 +27,38 @@
 #include "neml2/base/Parser.h"
 #include "neml2/base/Factory.h"
 #include "neml2/tensors/Scalar.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/functions/abs.h"
+#include "neml2/tensors/functions/stack.h"
+
+/**
+ * @brief A utility function to guess the path to the test directory based on a hint and some
+ * heuristics.
+ *
+ * Given the stem of the test directory \p stem, the \p hint is considered valid if it exists and
+ * ends with \p stem. If the hint is not valid, we search for the test directory at a few places in
+ * the following order:
+ * 1. {hint}/stem
+ * 2. {hint}/tests/stem
+ * 3. {hint}/share/neml2/stem
+ *
+ * If the test directory is still not found, we traverse up to 4 levels from the executable path as
+ * alternative hints, i.e.,
+ * 1. hint = {exec_prefix}
+ * 2. hint = {exec_prefix}/..
+ * 3. hint = {exec_prefix}/../..
+ * 4. hint = {exec_prefix}/../../..
+ * 5. hint = {exec_prefix}/../../../..
+ * where {exec_prefix} is the directory where the executable is located.
+ *
+ * A nonzero return code is returned if the test directory is not found.
+ *
+ * Upon exit, the \p hint is updated to the absolute path of the test directory if error code is 0.
+ *
+ * @param stem The stem of the test directory, e.g., unit, regression, etc.
+ * @param hint The hint to the test directory
+ */
+int
+guess_test_dir(const std::string & stem, std::string & hint, const std::string & exec_prefix = "");
 
 /**
  * @brief A simple finite-differencing helper to numerically approximate the derivative of the
@@ -55,7 +86,7 @@ finite_differencing_derivative(F && f,
   {
     auto y0 = Tensor(f(x)).clone();
 
-    auto dx = eps * Scalar(neml2::math::abs(x));
+    auto dx = eps * Scalar(neml2::abs(x));
     dx.index_put_({dx < aeps}, aeps);
 
     auto x1 = x + dx;
@@ -72,7 +103,7 @@ finite_differencing_derivative(F && f,
   auto dy_dxf = std::vector<Tensor>(xf.base_size(0));
   for (Size i = 0; i < xf.base_size(0); i++)
   {
-    auto dx = eps * Scalar(math::abs(xf.base_index({i})));
+    auto dx = eps * Scalar(abs(xf.base_index({i})));
     dx.index_put_({dx < aeps}, aeps);
 
     auto xf1 = xf.clone();
@@ -84,6 +115,6 @@ finite_differencing_derivative(F && f,
   }
 
   // Reshape the derivative back to the correct shape
-  auto dy_dx = math::base_stack(dy_dxf, -1);
+  auto dy_dx = base_stack(dy_dxf, -1);
   return dy_dx.base_reshape(utils::add_shapes(y0.base_sizes(), x.base_sizes()));
 }
