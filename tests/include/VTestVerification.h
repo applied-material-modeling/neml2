@@ -25,7 +25,19 @@
 #pragma once
 
 #include "neml2/drivers/Driver.h"
-#include <torch/jit.h>
+
+namespace torch::jit
+{
+template <typename T>
+struct slot_list_impl;
+namespace detail
+{
+struct BufferPolicy;
+template <typename P>
+struct NamedPolicy;
+} // namespace detail
+using named_buffer_list = slot_list_impl<detail::NamedPolicy<detail::BufferPolicy>>;
+} // namespace torch::jit
 
 namespace neml2
 {
@@ -38,7 +50,7 @@ public:
 
   VTestVerification(const OptionSet & options);
 
-  virtual void diagnose(std::vector<Diagnosis> & diagnoses) const override;
+  void diagnose() const override;
 
   bool run() override;
 

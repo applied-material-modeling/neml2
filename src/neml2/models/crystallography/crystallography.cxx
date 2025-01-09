@@ -26,6 +26,7 @@
 
 #include "neml2/tensors/Transformable.h"
 #include "neml2/tensors/tensors.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2::crystallography
 {

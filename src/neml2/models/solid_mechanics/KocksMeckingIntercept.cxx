@@ -23,8 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/KocksMeckingIntercept.h"
-
-#include "neml2/misc/math.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/math.h"
 
 namespace neml2
 {
@@ -34,17 +34,18 @@ OptionSet
 KocksMeckingIntercept::expected_options()
 {
   OptionSet options = NonlinearParameter<Scalar>::expected_options();
-
   options.doc() = "The critical value of the normalized activation energy given by \\f$ g_0 "
                   "\\frac{C-B}{A} \\f$";
 
-  options.set_parameter<CrossRef<Scalar>>("A");
+  options.set<bool>("define_second_derivatives") = true;
+
+  options.set_parameter<TensorName>("A");
   options.set("A").doc() = "The Kocks-Mecking slope";
 
-  options.set_parameter<CrossRef<Scalar>>("B");
+  options.set_parameter<TensorName>("B");
   options.set("B").doc() = "The Kocks-Mecking intercept";
 
-  options.set_parameter<CrossRef<Scalar>>("C");
+  options.set_parameter<TensorName>("C");
   options.set("C").doc() = "The Kocks-Mecking horizontal value";
 
   return options;

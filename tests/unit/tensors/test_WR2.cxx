@@ -26,7 +26,7 @@
 
 #include "utils.h"
 #include "neml2/tensors/tensors.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
 
 using namespace neml2;
 

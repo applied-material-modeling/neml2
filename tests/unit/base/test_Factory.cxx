@@ -26,6 +26,7 @@
 #include "neml2/models/LinearCombination.h"
 
 using namespace neml2;
+using ScalarLinearCombination = LinearCombination<Scalar>;
 
 TEST_CASE("Factory", "[base]")
 {

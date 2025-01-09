@@ -23,7 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/KocksMeckingFlowViscosity.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
+#include "neml2/tensors/Scalar.h"
 
 namespace neml2
 {
@@ -43,11 +44,13 @@ KocksMeckingFlowViscosity::expected_options()
       "\\f$ T \\f$ absolute temperature, \\f$ A \\f$ the Kocks-Mecking slope parameter, and \\f$ B "
       "\\f$ the Kocks-Mecking intercept parameter.";
 
-  options.set_parameter<CrossRef<Scalar>>("A");
+  options.set<bool>("define_second_derivatives") = true;
+
+  options.set_parameter<TensorName>("A");
   options.set("A").doc() = "The Kocks-Mecking slope parameter";
-  options.set_parameter<CrossRef<Scalar>>("B");
+  options.set_parameter<TensorName>("B");
   options.set("B").doc() = "The Kocks-Mecking intercept parameter";
-  options.set_parameter<CrossRef<Scalar>>("shear_modulus");
+  options.set_parameter<TensorName>("shear_modulus");
   options.set("shear_modulus").doc() = "The shear modulus";
 
   options.set<Real>("eps0");

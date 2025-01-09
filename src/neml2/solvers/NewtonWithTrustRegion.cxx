@@ -23,7 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/solvers/NewtonWithTrustRegion.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
 #include <iomanip>
 
 namespace neml2

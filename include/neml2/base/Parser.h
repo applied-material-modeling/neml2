@@ -25,11 +25,12 @@
 
 #include <filesystem>
 
-#include "neml2/base/OptionCollection.h"
-#include "neml2/misc/parser_utils.h"
+#include "neml2/misc/string_utils.h"
 
 namespace neml2
 {
+class OptionCollection;
+
 /**
  * @brief A parser is responsible for parsing an input file into a collection of options which
  * can be used by the Factory to manufacture corresponding objects.

@@ -30,6 +30,8 @@
 
 namespace neml2
 {
+class Scalar;
+
 /// Parent class of maps between internal variables and the slip system strengths
 class SlipStrengthMap : public Model
 {

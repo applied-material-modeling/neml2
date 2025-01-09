@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include "neml2/misc/parser_utils.h"
+#include "neml2/misc/string_utils.h"
 
 class VTestParser
 {

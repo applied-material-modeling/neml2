@@ -22,11 +22,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <iomanip>
+
+#include <torch/csrc/jit/serialization/import.h>
+
 #include "TransientRegression.h"
 #include "neml2/drivers/TransientDriver.h"
-#include "neml2/misc/parser_utils.h"
-#include <iomanip>
-#include <torch/script.h>
+#include "neml2/misc/string_utils.h"
+#include "neml2/misc/assertions.h"
 
 namespace fs = std::filesystem;
 
@@ -55,17 +58,13 @@ TransientRegression::TransientRegression(const OptionSet & options)
 }
 
 void
-TransientRegression::diagnose(std::vector<Diagnosis> & diagnoses) const
+TransientRegression::diagnose() const
 {
-  Driver::diagnose(diagnoses);
-  _driver.diagnose(diagnoses);
-  diagnostic_assert(diagnoses,
-                    fs::exists(_reference),
-                    "Reference file '",
-                    _reference.string(),
-                    "' does not exist.");
-  diagnostic_assert(diagnoses,
-                    !_driver.save_as_path().empty(),
+  Driver::diagnose();
+  neml2::diagnose(_driver);
+  diagnostic_assert(
+      fs::exists(_reference), "Reference file '", _reference.string(), "' does not exist.");
+  diagnostic_assert(!_driver.save_as_path().empty(),
                     "The driver does not save any results. Use the save_as option to specify the "
                     "destination file/path.");
 }

@@ -23,7 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/KocksMeckingYieldStress.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
+#include "neml2/tensors/Scalar.h"
 
 namespace neml2
 {
@@ -38,9 +39,11 @@ KocksMeckingYieldStress::expected_options()
                   "\\mu \\f$ with \\f$ \\mu \\f$ the shear modulus and \\f$ C \\f$ the horizontal "
                   "intercept from the Kocks-Mecking diagram.";
 
-  options.set_parameter<CrossRef<Scalar>>("C");
+  options.set<bool>("define_second_derivatives") = true;
+
+  options.set_parameter<TensorName>("C");
   options.set("C").doc() = "The Kocks-Mecking horizontal intercept";
-  options.set_parameter<CrossRef<Scalar>>("shear_modulus");
+  options.set_parameter<TensorName>("shear_modulus");
   options.set("shear_modulus").doc() = "The shear modulus";
 
   return options;

@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/R2.h"
@@ -34,6 +34,7 @@
 #include "neml2/tensors/SWR4.h"
 #include "neml2/tensors/WR2.h"
 #include "neml2/tensors/R4.h"
+#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
@@ -187,7 +188,7 @@ Scalar
 SR2::inner(const SR2 & other) const
 {
   neml_assert_broadcastable_dbg(*this, other);
-  return Scalar(torch::linalg_vecdot(*this, other), broadcast_batch_dim(*this, other));
+  return Scalar(torch::linalg_vecdot(*this, other), utils::broadcast_batch_dim(*this, other));
 }
 
 Scalar
@@ -206,7 +207,7 @@ SSR4
 SR2::outer(const SR2 & other) const
 {
   neml_assert_broadcastable_dbg(*this, other);
-  return SSR4(torch::einsum("...i,...j", {*this, other}), broadcast_batch_dim(*this, other));
+  return SSR4(torch::einsum("...i,...j", {*this, other}), utils::broadcast_batch_dim(*this, other));
 }
 
 SR2

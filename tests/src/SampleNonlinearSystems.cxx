@@ -24,7 +24,8 @@
 
 #include "SampleNonlinearSystems.h"
 #include "neml2/tensors/Scalar.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {

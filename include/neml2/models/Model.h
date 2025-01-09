@@ -26,7 +26,7 @@
 
 #include <torch/csrc/jit/api/function_impl.h>
 
-#include "neml2/base/DependencyDefinition.h"
+#include "neml2/models/DependencyDefinition.h"
 #include "neml2/base/DiagnosticsInterface.h"
 
 #include "neml2/models/Data.h"
@@ -34,8 +34,45 @@
 #include "neml2/models/VariableStore.h"
 #include "neml2/solvers/NonlinearSystem.h"
 
+// These headers are not directly used by Model, but are included here so that derived classes do
+// not have to include them separately. This is a convenience for the user, and is a reasonable
+// choice since these headers are light and bring in little dependency.
+#include "neml2/tensors/TensorName.h"
+#include "neml2/base/LabeledAxis.h"
+#include "neml2/models/Variable.h"
+#include "neml2/tensors/TensorValue.h"
+
 namespace neml2
 {
+class Model;
+
+/**
+ * @brief A convenient function to manufacture a neml2::Model
+ *
+ * The input file must have already been parsed and loaded.
+ *
+ * @param mname Name of the model
+ * @param force_create Whether to force create the model even if one has already been manufactured
+ */
+Model & get_model(const std::string & mname, bool force_create = true);
+
+/**
+ * @brief A convenient function to load an input file and get a model
+ *
+ * @param path Path to the input file to be parsed
+ * @param mname Name of the model
+ */
+Model & load_model(const std::filesystem::path & path, const std::string & mname);
+
+/**
+ * @brief Similar to neml2::load_model, but additionally clear the Factory before loading the model,
+ * therefore all previously loaded models become dangling.
+ *
+ * @param path Path to the input file to be parsed
+ * @param mname Name of the model
+ */
+Model & reload_model(const std::filesystem::path & path, const std::string & mname);
+
 /**
  * @brief The base class for all constitutive models.
  *
@@ -74,16 +111,27 @@ public:
    */
   Model(const OptionSet & options);
 
-  /// Send model to a different device or dtype
-  virtual void to(const torch::TensorOptions & options);
+  void setup() override;
 
-  void diagnose(std::vector<Diagnosis> &) const override;
+  void diagnose() const override;
+
+  /// Whether this model defines output values
+  virtual bool defines_values() const { return _defines_value; }
+
+  /// Whether this model defines first derivatives
+  virtual bool defines_derivatives() const { return _defines_dvalue; }
+
+  /// Whether this model defines second derivatives
+  virtual bool defines_second_derivatives() const { return _defines_d2value; }
 
   /// Whether this model defines one or more nonlinear equations to be solved
   virtual bool is_nonlinear_system() const { return _nonlinear_system; }
 
   /// Whether JIT is enabled
   virtual bool is_jit_enabled() const { return _jit; }
+
+  /// Send model to a different device or dtype
+  virtual void to(const torch::TensorOptions & options);
 
   /// The models that may be used during the evaluation of this model
   const std::vector<Model *> & registered_models() const { return _registered_models; }
@@ -143,7 +191,17 @@ public:
   friend class ComposedModel;
 
 protected:
-  void setup() override;
+  void diagnostic_assert_state(const VariableBase & v) const;
+  void diagnostic_assert_old_state(const VariableBase & v) const;
+  void diagnostic_assert_force(const VariableBase & v) const;
+  void diagnostic_assert_old_force(const VariableBase & v) const;
+  void diagnostic_assert_residual(const VariableBase & v) const;
+  void diagnostic_check_input_variable(const VariableBase & v) const;
+  void diagnostic_check_output_variable(const VariableBase & v) const;
+
+  /// Additional diagnostics for a nonlinear system
+  void diagnose_nl_sys() const;
+
   virtual void link_input_variables();
   virtual void link_input_variables(Model * submodel);
   virtual void link_output_variables();
@@ -169,9 +227,6 @@ protected:
    */
   virtual void request_AD() {}
 
-  /// Additional diagnostics for a nonlinear system
-  void diagnose_nl_sys(std::vector<Diagnosis> & diagnoses) const;
-
   /// The map between input -> output, and optionally its derivatives
   virtual void set_value(bool out, bool dout_din, bool d2out_din2) = 0;
 
@@ -187,26 +242,25 @@ protected:
    * input axis. This will make sure that the input variables of the registered model are "ready" by
    * the time *this* model is evaluated.
    */
-  template <typename T, typename = typename std::enable_if_t<std::is_base_of_v<Model, T>>>
+  template <typename T = Model, typename = typename std::enable_if_t<std::is_base_of_v<Model, T>>>
   T & register_model(const std::string & name, bool nonlinear = false, bool merge_input = true)
   {
-    neml_assert(name != this->name(),
-                "Model named '",
-                this->name(),
-                "' is trying to register itself as a sub-model. This is not allowed.");
+    if (name == this->name())
+      throw NEMLException("Model named '" + this->name() +
+                          "' is trying to register itself as a sub-model. This is not allowed.");
 
     OptionSet extra_opts;
     extra_opts.set<NEML2Object *>("_host") = host();
     extra_opts.set<bool>("_nonlinear_system") = nonlinear;
 
-    auto model = Factory::get_object_ptr<Model>("Models", name, extra_opts);
+    auto model = Factory::get_object_ptr<T>("Models", name, extra_opts);
 
     if (merge_input)
       for (auto && [name, var] : model->input_variables())
-        clone_input_variable(var);
+        clone_input_variable(*var);
 
     _registered_models.push_back(model.get());
-    return *(std::dynamic_pointer_cast<T>(model));
+    return *model;
   }
 
   void assign_input_stack(torch::jit::Stack & stack);
@@ -236,6 +290,13 @@ private:
 
   /// Compute the trace schema
   TraceSchema compute_trace_schema() const;
+
+  ///@{
+  /// Whether this model defines the value, first derivative, and second derivative
+  bool _defines_value;
+  bool _defines_dvalue;
+  bool _defines_d2value;
+  ///@}
 
   /// Whether this is a nonlinear system
   bool _nonlinear_system;

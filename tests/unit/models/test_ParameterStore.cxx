@@ -27,7 +27,9 @@
 
 #include "utils.h"
 #include "neml2/models/Model.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
+#include "neml2/tensors/tensors.h"
+#include "neml2/tensors/TensorValue.h"
 
 using namespace neml2;
 
@@ -43,8 +45,8 @@ TEST_CASE("ParameterStore", "[models]")
       auto & params = model.named_parameters();
 
       REQUIRE(params.size() == 2);
-      REQUIRE(params.has_key("E"));
-      REQUIRE(params.has_key("nu"));
+      REQUIRE(params.count("E"));
+      REQUIRE(params.count("nu"));
     }
 
     SECTION("get_parameter")
@@ -63,14 +65,14 @@ TEST_CASE("ParameterStore", "[models]")
       // dictionary.
       E = Scalar::full({1, 2}, 1.0);
       nu = Scalar::full({5, 1}, 0.3);
-      REQUIRE(Tensor(params["E"]).batch_sizes() == TensorShape{1, 2});
-      REQUIRE(Tensor(params["nu"]).batch_sizes() == TensorShape{5, 1});
+      REQUIRE(Tensor(*params["E"]).batch_sizes() == TensorShape{1, 2});
+      REQUIRE(Tensor(*params["nu"]).batch_sizes() == TensorShape{5, 1});
 
       // Same thing say when the user wants to use torch AD
       E.requires_grad_(true);
       nu.requires_grad_(true);
-      REQUIRE(Tensor(params["E"]).requires_grad());
-      REQUIRE(Tensor(params["nu"]).requires_grad());
+      REQUIRE(Tensor(*params["E"]).requires_grad());
+      REQUIRE(Tensor(*params["nu"]).requires_grad());
     }
   }
 }
@@ -80,11 +82,11 @@ TEST_CASE("Nested parameter registration")
   auto & model = reload_model("unit/models/test_ParameterStore.i", "model");
 
   const auto & params = model.named_parameters();
-  REQUIRE(params.has_key("E1::value"));
-  REQUIRE(params.has_key("E2::value"));
-  REQUIRE(params.has_key("E3::value"));
-  REQUIRE(params.has_key("elasticity1::nu"));
-  REQUIRE(params.has_key("elasticity2::nu"));
-  REQUIRE(params.has_key("elasticity2_another::nu"));
-  REQUIRE(params.has_key("elasticity3::nu"));
+  REQUIRE(params.count("E1::value"));
+  REQUIRE(params.count("E2::value"));
+  REQUIRE(params.count("E3::value"));
+  REQUIRE(params.count("elasticity1::nu"));
+  REQUIRE(params.count("elasticity2::nu"));
+  REQUIRE(params.count("elasticity2_another::nu"));
+  REQUIRE(params.count("elasticity3::nu"));
 }

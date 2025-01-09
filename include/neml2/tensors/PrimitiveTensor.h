@@ -110,11 +110,10 @@ template <class Derived, Size... S>
 PrimitiveTensor<Derived, S...>::PrimitiveTensor(const torch::Tensor & tensor, Size batch_dim)
   : TensorBase<Derived>(tensor, batch_dim)
 {
-  neml_assert_dbg(this->base_sizes() == const_base_sizes,
-                  "Base shape mismatch: trying to create a tensor with base shape ",
-                  const_base_sizes,
-                  " from a tensor with base shape ",
-                  this->base_sizes());
+#ifndef NDEBUG
+  if (this->base_sizes() != const_base_sizes)
+    throw NEMLException("Base shape mismatch");
+#endif
 }
 
 template <class Derived, Size... S>
@@ -122,11 +121,10 @@ PrimitiveTensor<Derived, S...>::PrimitiveTensor(const torch::Tensor & tensor,
                                                 const TraceableTensorShape & batch_shape)
   : TensorBase<Derived>(tensor, batch_shape)
 {
-  neml_assert_dbg(this->base_sizes() == const_base_sizes,
-                  "Base shape mismatch: trying to create a tensor with base shape ",
-                  const_base_sizes,
-                  " from a tensor with base shape ",
-                  this->base_sizes());
+#ifndef NDEBUG
+  if (this->base_sizes() != const_base_sizes)
+    throw NEMLException("Base shape mismatch");
+#endif
 }
 
 template <class Derived, Size... S>
@@ -134,22 +132,20 @@ template <class Derived2>
 PrimitiveTensor<Derived, S...>::PrimitiveTensor(const TensorBase<Derived2> & tensor)
   : TensorBase<Derived>(tensor)
 {
-  neml_assert_dbg(this->base_sizes() == const_base_sizes,
-                  "Base shape mismatch: trying to create a tensor with base shape ",
-                  const_base_sizes,
-                  " from a tensor with base shape ",
-                  this->base_sizes());
+#ifndef NDEBUG
+  if (this->base_sizes() != const_base_sizes)
+    throw NEMLException("Base shape mismatch");
+#endif
 }
 
 template <class Derived, Size... S>
 PrimitiveTensor<Derived, S...>::PrimitiveTensor(const torch::Tensor & tensor)
   : TensorBase<Derived>(tensor, tensor.dim() - const_base_dim)
 {
-  neml_assert_dbg(this->base_sizes() == const_base_sizes,
-                  "Base shape mismatch: trying to create a tensor with base shape ",
-                  const_base_sizes,
-                  " from a tensor with shape ",
-                  tensor.sizes());
+#ifndef NDEBUG
+  if (this->base_sizes() != const_base_sizes)
+    throw NEMLException("Base shape mismatch");
+#endif
 }
 
 template <class Derived, Size... S>

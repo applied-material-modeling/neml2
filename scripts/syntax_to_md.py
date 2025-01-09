@@ -40,7 +40,6 @@ def demangle(type):
     type = type.replace("neml2::", "")
     type = type.replace("std::", "")
     type = type.replace("at::", "")
-    type = re.sub("CrossRef<(.+)>", r"\1 🔗", type)
     type = type.replace("LabeledAxisAccessor", "variable name")
     type = re.sub("vector<(.+)>", r"list of \1", type)
     # Call all integral/floating point types "number", as this syntax documentation faces the general audience potentially without computer science background

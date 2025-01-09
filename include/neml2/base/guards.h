@@ -24,8 +24,6 @@
 
 #pragma once
 
-#include <ATen/Parallel.h>
-
 #include <string>
 #include <map>
 #include <chrono>
@@ -53,39 +51,16 @@ private:
   const std::chrono::time_point<std::chrono::high_resolution_clock> _t0;
 };
 
-// Guard a region where implicit solve is being performed
-struct SolvingNonlinearSystem
-{
-  SolvingNonlinearSystem(bool solving = true)
-    : prev_bool(currently_solving_nonlinear_system())
-  {
-    currently_solving_nonlinear_system() = solving;
-  }
-
-  SolvingNonlinearSystem(const SolvingNonlinearSystem &) = delete;
-  SolvingNonlinearSystem(SolvingNonlinearSystem &&) = delete;
-  SolvingNonlinearSystem & operator=(const SolvingNonlinearSystem &) = delete;
-  SolvingNonlinearSystem & operator=(SolvingNonlinearSystem &&) = delete;
-  ~SolvingNonlinearSystem() { currently_solving_nonlinear_system() = prev_bool; }
-
-  const bool prev_bool;
-};
-
 // Set number of interop threads for a local region
 struct InterOpThread
 {
-  InterOpThread(int num)
-    : prev_num(at::get_num_interop_threads())
-  {
-    if (num > 0)
-      at::set_num_interop_threads(num);
-  }
+  InterOpThread(int num);
 
   InterOpThread(const InterOpThread &) = delete;
   InterOpThread(InterOpThread &&) = delete;
   InterOpThread & operator=(const InterOpThread &) = delete;
   InterOpThread & operator=(InterOpThread &&) = delete;
-  ~InterOpThread() { at::set_num_interop_threads(prev_num); }
+  ~InterOpThread();
 
   int prev_num;
 };
@@ -93,18 +68,13 @@ struct InterOpThread
 // Set number of intraop threads for a local region
 struct IntraOpThread
 {
-  IntraOpThread(int num)
-    : prev_num(at::get_num_threads())
-  {
-    if (num > 0)
-      at::set_num_threads(num);
-  }
+  IntraOpThread(int num);
 
   IntraOpThread(const IntraOpThread &) = delete;
   IntraOpThread(IntraOpThread &&) = delete;
   IntraOpThread & operator=(const IntraOpThread &) = delete;
   IntraOpThread & operator=(IntraOpThread &&) = delete;
-  ~IntraOpThread() { at::set_num_threads(prev_num); }
+  ~IntraOpThread();
 
   int prev_num;
 };

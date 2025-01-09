@@ -22,13 +22,25 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <torch/csrc/jit/frontend/tracer.h>
+
 #include "neml2/tensors/Tensor.h"
 #include "neml2/jit/utils.h"
+#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
 namespace utils
 {
+torch::Tensor
+pad_prepend(const torch::Tensor & s, Size dim, Size pad)
+{
+  neml_assert_dbg(s.defined(), "pad_prepend: shape must be defined");
+  neml_assert_dbg(s.scalar_type() == torch::kInt64, "pad_prepend: shape must be of type int64");
+  neml_assert_dbg(s.dim() == 1, "pad_prepend: shape must be 1D");
+  return torch::cat({torch::full({dim - s.size(0)}, pad, s.options()), s});
+}
+
 TraceableTensorShape
 broadcast_batch_sizes(const std::vector<Tensor> & tensors)
 {
@@ -216,7 +228,7 @@ bmm(const Tensor & a, const Tensor & b)
                   "The second tensor in bmm has base dimension ",
                   b.base_dim(),
                   " instead of 2.");
-  return Tensor(torch::matmul(a, b), broadcast_batch_dim(a, b));
+  return Tensor(torch::matmul(a, b), utils::broadcast_batch_dim(a, b));
 }
 
 Tensor
@@ -231,7 +243,8 @@ bmv(const Tensor & a, const Tensor & v)
                   "The second tensor in bmv has base dimension ",
                   v.base_dim(),
                   " instead of 1.");
-  return Tensor(torch::matmul(a, v.base_unsqueeze(-1)).squeeze(-1), broadcast_batch_dim(a, v));
+  return Tensor(torch::matmul(a, v.base_unsqueeze(-1)).squeeze(-1),
+                utils::broadcast_batch_dim(a, v));
 }
 
 Tensor
@@ -246,7 +259,7 @@ bvv(const Tensor & a, const Tensor & b)
                   "The second tensor in bvv has base dimension ",
                   b.base_dim(),
                   " instead of 1.");
-  return Tensor(torch::sum(a * b, -1), broadcast_batch_dim(a, b));
+  return Tensor(torch::sum(a * b, -1), utils::broadcast_batch_dim(a, b));
 }
 }
 
@@ -254,6 +267,6 @@ Tensor
 operator*(const Tensor & a, const Tensor & b)
 {
   neml_assert_broadcastable_dbg(a, b);
-  return Tensor(torch::operator*(a, b), broadcast_batch_dim(a, b));
+  return Tensor(torch::operator*(a, b), utils::broadcast_batch_dim(a, b));
 }
 } // end namespace neml2

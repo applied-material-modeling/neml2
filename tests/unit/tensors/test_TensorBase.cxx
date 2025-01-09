@@ -26,7 +26,7 @@
 #include <catch2/matchers/catch_matchers_all.hpp>
 
 #include "neml2/tensors/Tensor.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
 
 using namespace neml2;
 

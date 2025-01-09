@@ -25,8 +25,12 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_all.hpp>
 
+#include <torch/types.h>
+
 #include "neml2/base/Settings.h"
 #include "neml2/base/HITParser.h"
+#include "neml2/misc/defaults.h"
+#include "neml2/base/OptionCollection.h"
 
 using namespace neml2;
 

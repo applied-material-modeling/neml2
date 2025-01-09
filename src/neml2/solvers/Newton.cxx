@@ -24,7 +24,7 @@
 
 #include "neml2/solvers/Newton.h"
 #include <iomanip>
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
 
 namespace neml2
 {

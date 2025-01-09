@@ -88,17 +88,18 @@ main(int argc, char * argv[])
       {
         std::cout << "Running diagnostics on input file '" << input << "' driver '" << drivername
                   << "'...\n";
-        try
-        {
-          neml2::diagnose(driver);
-        }
-        catch (const neml2::NEMLException & e)
+
+        const auto diagnoses = neml2::diagnose(driver);
+
+        if (!diagnoses.empty())
         {
           std::cout << "Found the following potential issues(s):\n";
-          std::cout << e.what() << std::endl;
-          return 0;
+          for (const auto & e : diagnoses)
+            std::cout << e.what() << std::endl;
+          return 1;
         }
-        std::cout << "No issue identified :)\n";
+        else
+          std::cout << "No issue identified :)\n";
       }
 
       if (program["--time"] == true)

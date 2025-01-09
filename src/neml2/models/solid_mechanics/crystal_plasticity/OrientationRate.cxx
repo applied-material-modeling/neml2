@@ -24,8 +24,11 @@
 
 #include "neml2/models/solid_mechanics/crystal_plasticity/OrientationRate.h"
 
-#include "neml2/tensors/tensors.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/WR2.h"
+#include "neml2/tensors/SR2.h"
+#include "neml2/tensors/WWR4.h"
+#include "neml2/tensors/WSR4.h"
+#include "neml2/tensors/math.h"
 
 namespace neml2
 {
@@ -72,10 +75,8 @@ OrientationRate::OrientationRate(const OptionSet & options)
 }
 
 void
-OrientationRate::set_value(bool out, bool dout_din, bool d2out_din2)
+OrientationRate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
-
   if (out)
     _R_dot = _w - _wp + math::multiply_and_make_skew(SR2(_dp), SR2(_e));
 

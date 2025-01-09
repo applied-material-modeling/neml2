@@ -29,10 +29,12 @@
 
 #pragma once
 
+#include <torch/csrc/jit/frontend/tracer.h>
+
 #include "neml2/tensors/TensorBase.h"
 #include "neml2/tensors/Scalar.h"
-#include "neml2/misc/math.h"
 #include "neml2/jit/utils.h"
+#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
@@ -102,7 +104,7 @@ TensorBase<Derived>::linspace(const Derived & start, const Derived & end, Size n
 
   if (nstep > 1)
   {
-    auto Bd = broadcast_batch_dim(start, end);
+    auto Bd = utils::broadcast_batch_dim(start, end);
     auto diff = (end - start).batch_unsqueeze(dim);
 
     indexing::TensorIndices net(dim, indexing::None);
@@ -122,7 +124,7 @@ TensorBase<Derived>::logspace(
     const Derived & start, const Derived & end, Size nstep, Size dim, Real base)
 {
   auto exponent = neml2::Tensor::linspace(start, end, nstep, dim);
-  return math::pow(base, exponent);
+  return Derived(torch::pow(base, exponent), exponent.batch_sizes());
 }
 
 template <class Derived>

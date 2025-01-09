@@ -23,8 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/base/Parser.h"
-#include "neml2/base/Factory.h"
-#include "neml2/base/HITParser.h"
+#include "neml2/base/OptionCollection.h"
 
 namespace neml2
 {

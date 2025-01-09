@@ -22,10 +22,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <torch/types.h>
+#include <ATen/Parallel.h>
+
+#include "neml2/misc/defaults.h"
 #include "neml2/base/Settings.h"
 #include "neml2/base/EnumSelection.h"
-
-#include <ATen/Parallel.h>
+#include "neml2/base/OptionSet.h"
 
 namespace neml2
 {
@@ -128,8 +131,5 @@ Settings::Settings(const OptionSet & options)
   // Buffer/parameter name separator
   buffer_name_separator() = options.get<std::string>("buffer_name_separator");
   parameter_name_separator() = options.get<std::string>("parameter_name_separator");
-
-  // Not solving anything right now
-  currently_solving_nonlinear_system() = false;
 }
 } // namespace neml2

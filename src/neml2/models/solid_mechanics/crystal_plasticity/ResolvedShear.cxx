@@ -25,7 +25,10 @@
 #include "neml2/models/solid_mechanics/crystal_plasticity/ResolvedShear.h"
 #include "neml2/models/crystallography/CrystalGeometry.h"
 
-#include "neml2/tensors/tensors.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/R2.h"
+#include "neml2/tensors/SR2.h"
+#include "neml2/tensors/SFFR4.h"
 #include "neml2/tensors/list_tensors.h"
 
 namespace neml2
@@ -69,11 +72,9 @@ ResolvedShear::ResolvedShear(const OptionSet & options)
 }
 
 void
-ResolvedShear::set_value(bool out, bool dout_din, bool d2out_din2)
+ResolvedShear::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
-
-  const auto D = broadcast_batch_dim(_S, _R);
+  const auto D = utils::broadcast_batch_dim(_S, _R);
 
   // Unsqueeze a batch dimension for slip systems
   const auto S = SR2(_S).batch_unsqueeze(-1);

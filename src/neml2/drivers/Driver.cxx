@@ -23,9 +23,16 @@
 // THE SOFTWARE.
 
 #include "neml2/drivers/Driver.h"
+#include "neml2/base/Factory.h"
 
 namespace neml2
 {
+Driver &
+get_driver(const std::string & dname)
+{
+  return Factory::get_object<Driver>("Drivers", dname);
+}
+
 OptionSet
 Driver::expected_options()
 {

@@ -24,14 +24,16 @@
 
 #pragma once
 
+#include <filesystem>
+
 #include "neml2/drivers/Driver.h"
 #include "neml2/tensors/tensors.h"
 #include "neml2/models/map_types.h"
 
-#include <filesystem>
-#include <torch/nn/modules/container/modulelist.h>
-#include <torch/nn/modules/container/moduledict.h>
-#include <torch/serialize.h>
+namespace torch::nn
+{
+class ModuleDict;
+}
 
 namespace neml2
 {
@@ -51,7 +53,7 @@ public:
    */
   TransientDriver(const OptionSet & options);
 
-  void diagnose(std::vector<Diagnosis> &) const override;
+  void diagnose() const override;
 
   bool run() override;
 

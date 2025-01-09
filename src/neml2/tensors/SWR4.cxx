@@ -24,7 +24,7 @@
 
 #include "neml2/tensors/SWR4.h"
 #include "neml2/tensors/R4.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
 
 namespace neml2
 {

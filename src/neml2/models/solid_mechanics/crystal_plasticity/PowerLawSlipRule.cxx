@@ -24,7 +24,8 @@
 
 #include "neml2/models/solid_mechanics/crystal_plasticity/PowerLawSlipRule.h"
 #include "neml2/models/solid_mechanics/crystal_plasticity/SlipRule.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
+#include "neml2/tensors/Scalar.h"
 
 namespace neml2
 {
@@ -41,10 +42,10 @@ PowerLawSlipRule::expected_options()
       "resolved shear, \\f$ \\hat{\\tau}_i \\f$ the slip system strength, \\f$ n \\f$ the rate "
       "senstivity, and \\f$ \\dot{\\gamma}_0 \\f$ a reference slip rate.";
 
-  options.set_parameter<CrossRef<Scalar>>("gamma0");
+  options.set_parameter<TensorName>("gamma0");
   options.set("gamma0").doc() = "Reference slip rate";
 
-  options.set_parameter<CrossRef<Scalar>>("n");
+  options.set_parameter<TensorName>("n");
   options.set("n").doc() = "Rate sensitivity exponent";
 
   return options;
@@ -58,11 +59,9 @@ PowerLawSlipRule::PowerLawSlipRule(const OptionSet & options)
 }
 
 void
-PowerLawSlipRule::set_value(bool out, bool dout_din, bool d2out_din2)
+PowerLawSlipRule::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
-
-  const auto D = broadcast_batch_dim(_rss, _tau, _gamma0, _n);
+  const auto D = utils::broadcast_batch_dim(_rss, _tau, _gamma0, _n);
 
   if (out)
     _g = _gamma0 * math::pow(math::abs(_rss / _tau), _n - 1.0) * _rss / _tau;

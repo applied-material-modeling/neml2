@@ -26,7 +26,7 @@ Assuming the above input file is named "input_file.i", the C++ code snippet belo
 #include "neml2/base/Factory.h"
 #include "neml2/models/Model.h"
 #include "neml2/tensors/tensors.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
 
 int main() {
   auto & model = neml2::load_model("input.i", "model");

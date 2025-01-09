@@ -23,7 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/elasticity/GeneralElasticity.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
+#include "neml2/tensors/SSFR5.h"
 #include "neml2/tensors/SSSSR8.h"
 
 namespace neml2
@@ -37,7 +38,7 @@ GeneralElasticity::expected_options()
   options.doc() += " This verion implements a general relation using the elasticity tensor, "
                    "expressed as an SSR4 object";
 
-  options.set_parameter<CrossRef<SSR4>>("elastic_stiffness_tensor");
+  options.set_parameter<TensorName>("elastic_stiffness_tensor");
   options.set("elastic_stiffness_tensor").doc() = "Elastic stiffness tensor";
 
   return options;
@@ -50,10 +51,8 @@ GeneralElasticity::GeneralElasticity(const OptionSet & options)
 }
 
 void
-GeneralElasticity::set_value(bool out, bool dout_din, bool d2out_din2)
+GeneralElasticity::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "GeneralElasticity doesn't implement second derivatives.");
-
   const auto A = _T.rotate(_R);
   const auto Ainv = _compliance ? A.inverse() : SSR4();
 

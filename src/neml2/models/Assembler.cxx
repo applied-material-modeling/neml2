@@ -23,7 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/models/Assembler.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {

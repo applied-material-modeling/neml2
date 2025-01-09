@@ -23,7 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/PowerLawIsotropicHardeningStaticRecovery.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
+#include "neml2/tensors/Scalar.h"
 
 namespace neml2
 {
@@ -37,9 +38,9 @@ PowerLawIsotropicHardeningStaticRecovery::expected_options()
                   "\\f$ \\dot{k} = -\\left(\\frac{\\lVert k \\rVert}{\\tau}\\right)^{n-1} "
                   "\\frac{k}{\\tau} \\f$";
 
-  options.set_parameter<CrossRef<Scalar>>("tau");
+  options.set_parameter<TensorName>("tau");
   options.set("tau").doc() = "Recovery rate";
-  options.set_parameter<CrossRef<Scalar>>("n");
+  options.set_parameter<TensorName>("n");
   options.set("n").doc() = "Recovery exponent";
 
   return options;
@@ -54,12 +55,8 @@ PowerLawIsotropicHardeningStaticRecovery::PowerLawIsotropicHardeningStaticRecove
 }
 
 void
-PowerLawIsotropicHardeningStaticRecovery::set_value(bool out, bool dout_din, bool d2out_din2)
+PowerLawIsotropicHardeningStaticRecovery::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(
-      !d2out_din2,
-      "PowerLawIsotropicHardeningStaticRecovery model doesn't implement second derivatives.");
-
   if (out)
     _h_dot = -math::pow(math::abs(Scalar(_h)) / _tau, _n - 1.0) * _h / _tau;
 

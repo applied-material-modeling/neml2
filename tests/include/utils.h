@@ -27,7 +27,7 @@
 #include "neml2/base/Parser.h"
 #include "neml2/base/Factory.h"
 #include "neml2/tensors/Scalar.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
 
 /**
  * @brief A simple finite-differencing helper to numerically approximate the derivative of the

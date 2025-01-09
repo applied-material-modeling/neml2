@@ -30,6 +30,28 @@
 namespace neml2
 {
 /**
+ * A model can be _implicit. An implicit model need to be "solved": the state variables should be
+ * iteratively updated until the residual becomes zero. During the solve, we only need derivatives
+ * with respect to the input state. Therefore, the model can/should avoid unnecessary computations
+ * by examining whether the current evaluation is part of the solve.
+ */
+bool & currently_solving_nonlinear_system();
+
+// Guard a region where implicit solve is being performed
+struct SolvingNonlinearSystem
+{
+  SolvingNonlinearSystem(bool solving = true);
+
+  SolvingNonlinearSystem(const SolvingNonlinearSystem &) = delete;
+  SolvingNonlinearSystem(SolvingNonlinearSystem &&) = delete;
+  SolvingNonlinearSystem & operator=(const SolvingNonlinearSystem &) = delete;
+  SolvingNonlinearSystem & operator=(SolvingNonlinearSystem &&) = delete;
+  ~SolvingNonlinearSystem();
+
+  const bool prev_bool;
+};
+
+/**
  * @brief Definition of a nonlinear system of equations.
  *
  */

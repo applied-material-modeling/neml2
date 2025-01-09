@@ -27,7 +27,6 @@
 #include "neml2/drivers/Driver.h"
 
 #include <filesystem>
-#include <torch/jit.h>
 
 namespace neml2
 {
@@ -40,7 +39,7 @@ public:
 
   TransientRegression(const OptionSet & options);
 
-  virtual void diagnose(std::vector<Diagnosis> & diagnoses) const override;
+  void diagnose() const override;
 
   bool run() override;
 

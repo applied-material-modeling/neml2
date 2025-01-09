@@ -24,7 +24,8 @@
 
 #include "VTestVerification.h"
 #include "neml2/drivers/TransientDriver.h"
-#include "neml2/misc/parser_utils.h"
+#include "neml2/misc/string_utils.h"
+#include "neml2/misc/assertions.h"
 
 #include <torch/script.h>
 
@@ -38,7 +39,7 @@ VTestVerification::expected_options()
   OptionSet options = Driver::expected_options();
   options.set<std::string>("driver");
   options.set<std::vector<std::string>>("variables");
-  options.set<std::vector<CrossRef<torch::Tensor>>>("references");
+  options.set<std::vector<TensorName>>("references");
   options.set<Real>("rtol") = 1e-5;
   options.set<Real>("atol") = 1e-8;
   return options;
@@ -51,7 +52,7 @@ VTestVerification::VTestVerification(const OptionSet & options)
     _atol(options.get<Real>("atol"))
 {
   const auto vars = options.get<std::vector<std::string>>("variables");
-  const auto vals = options.get<std::vector<CrossRef<torch::Tensor>>>("references");
+  const auto vals = options.get<std::vector<TensorName>>("references");
   neml_assert(vars.size() == vals.size(),
               "Must provide the same number of variables and references. ",
               vars.size(),
@@ -59,17 +60,16 @@ VTestVerification::VTestVerification(const OptionSet & options)
               vals.size(),
               " references provided.");
   for (std::size_t i = 0; i < vars.size(); i++)
-    _ref[vars[i]] = vals[i];
+    _ref[vars[i]] = torch::Tensor(vals[i]);
 }
 
 void
-VTestVerification::diagnose(std::vector<Diagnosis> & diagnoses) const
+VTestVerification::diagnose() const
 {
-  Driver::diagnose(diagnoses);
-  _driver.diagnose(diagnoses);
+  Driver::diagnose();
+  neml2::diagnose(_driver);
 
-  diagnostic_assert(diagnoses,
-                    !_driver.save_as_path().empty(),
+  diagnostic_assert(!_driver.save_as_path().empty(),
                     "The driver does not save any results. Use the save_as option to specify the "
                     "destination file/path.");
 }

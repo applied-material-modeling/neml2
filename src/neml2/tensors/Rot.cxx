@@ -32,7 +32,8 @@
 #include "neml2/tensors/SSR4.h"
 #include "neml2/tensors/WR2.h"
 #include "neml2/tensors/Quaternion.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {

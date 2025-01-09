@@ -23,7 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/RateIndependentPlasticFlowConstraint.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
+#include "neml2/tensors/Scalar.h"
 
 namespace neml2
 {
@@ -56,10 +57,8 @@ RateIndependentPlasticFlowConstraint::RateIndependentPlasticFlowConstraint(
 }
 
 void
-RateIndependentPlasticFlowConstraint::set_value(bool out, bool dout_din, bool d2out_din2)
+RateIndependentPlasticFlowConstraint::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
-
   const auto FB = _gamma_dot - _fp - math::sqrt(_gamma_dot * _gamma_dot + _fp * _fp);
 
   if (out)

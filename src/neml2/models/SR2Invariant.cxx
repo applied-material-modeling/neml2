@@ -23,7 +23,10 @@
 // THE SOFTWARE.
 
 #include "neml2/models/SR2Invariant.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
+#include "neml2/base/EnumSelection.h"
 
 namespace neml2
 {
@@ -34,6 +37,8 @@ SR2Invariant::expected_options()
 {
   OptionSet options = Model::expected_options();
   options.doc() = "Calculate the invariant of a symmetric second order tensor (of type SR2).";
+
+  options.set<bool>("define_second_derivatives") = true;
 
   options.set_input("tensor");
   options.set("tensor").doc() = "SR2 which is used to calculate the invariant of";

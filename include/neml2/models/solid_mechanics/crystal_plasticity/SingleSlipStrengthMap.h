@@ -28,6 +28,8 @@
 
 namespace neml2
 {
+class Scalar;
+
 /// A map between the internal variables and the slip strength, for the case where all systems share the same strength
 class SingleSlipStrengthMap : public SlipStrengthMap
 {

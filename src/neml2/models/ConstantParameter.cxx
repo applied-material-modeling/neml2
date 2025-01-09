@@ -23,11 +23,15 @@
 // THE SOFTWARE.
 
 #include "neml2/models/ConstantParameter.h"
+#include "neml2/tensors/tensors.h"
 
 namespace neml2
 {
-#define CONSTANTPARAMETER_REGISTER(T) register_NEML2_object(T##ConstantParameter)
-FOR_ALL_PRIMITIVETENSOR(CONSTANTPARAMETER_REGISTER);
+#define REGISTER_CONSTANTPARAMETER(T)                                                              \
+  using T##ConstantParameter = ConstantParameter<T>;                                               \
+  register_NEML2_object(T##ConstantParameter);                                                     \
+  template class ConstantParameter<T>
+FOR_ALL_PRIMITIVETENSOR(REGISTER_CONSTANTPARAMETER);
 
 template <typename T>
 OptionSet
@@ -37,7 +41,7 @@ ConstantParameter<T>::expected_options()
   options.doc() = "A parameter that is just a constant value, generally used to refer to a "
                   "parameter in more than one downstream object.";
 
-  options.set_parameter<CrossRef<T>>("value");
+  options.set_parameter<TensorName>("value");
   options.set("value").doc() = "The constant value of the parameter";
   return options;
 }

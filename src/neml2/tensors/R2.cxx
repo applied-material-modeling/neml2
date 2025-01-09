@@ -24,7 +24,7 @@
 
 #include "neml2/tensors/R2.h"
 
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
 
 #include "neml2/tensors/Rot.h"
 #include "neml2/tensors/SR2.h"

@@ -23,8 +23,10 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/PowerLawKinematicHardeningStaticRecovery.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
 
 namespace neml2
 {
@@ -41,10 +43,10 @@ PowerLawKinematicHardeningStaticRecovery::expected_options()
       "where \\f$ n \\f$ is the power law recovery exponent and \\f$\\tau\\f$ is the recovery "
       "rate.";
 
-  options.set_parameter<CrossRef<Scalar>>("tau");
+  options.set_parameter<TensorName>("tau");
   options.set("tau").doc() = "Static recovery rate";
 
-  options.set_parameter<CrossRef<Scalar>>("n");
+  options.set_parameter<TensorName>("n");
   options.set("n").doc() = "Static recovery exponent";
 
   return options;
@@ -59,12 +61,8 @@ PowerLawKinematicHardeningStaticRecovery::PowerLawKinematicHardeningStaticRecove
 }
 
 void
-PowerLawKinematicHardeningStaticRecovery::set_value(bool out, bool dout_din, bool d2out_din2)
+PowerLawKinematicHardeningStaticRecovery::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(
-      !d2out_din2,
-      "PowerLawKinematicHardeningStaticRecovery model doesn't implement second derivatives.");
-
   // The effective stress
   auto s = SR2(_X).norm(machine_precision());
 

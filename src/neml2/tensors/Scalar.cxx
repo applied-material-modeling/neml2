@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
@@ -46,7 +47,7 @@ minimum(const Scalar & a, const Scalar & b)
   neml_assert_batch_broadcastable_dbg(a, b);
   indexing::TensorIndices net{torch::indexing::Ellipsis};
   net.insert(net.end(), a.base_dim(), torch::indexing::None);
-  return Scalar(torch::minimum(a, b.index(net)), broadcast_batch_dim(a, b));
+  return Scalar(torch::minimum(a, b.index(net)), utils::broadcast_batch_dim(a, b));
 }
 }
 

@@ -23,10 +23,29 @@
 // THE SOFTWARE.
 
 #include "neml2/solvers/NonlinearSystem.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {
+bool &
+currently_solving_nonlinear_system()
+{
+  static bool _solving_nl_sys = false;
+  return _solving_nl_sys;
+}
+
+SolvingNonlinearSystem::SolvingNonlinearSystem(bool solving)
+  : prev_bool(currently_solving_nonlinear_system())
+{
+  currently_solving_nonlinear_system() = solving;
+}
+
+SolvingNonlinearSystem::~SolvingNonlinearSystem()
+{
+  currently_solving_nonlinear_system() = prev_bool;
+}
+
 OptionSet
 NonlinearSystem::expected_options()
 {

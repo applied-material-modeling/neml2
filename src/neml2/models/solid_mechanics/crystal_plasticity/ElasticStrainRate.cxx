@@ -24,8 +24,11 @@
 
 #include "neml2/models/solid_mechanics/crystal_plasticity/ElasticStrainRate.h"
 
-#include "neml2/tensors/tensors.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/SR2.h"
+#include "neml2/tensors/WR2.h"
+#include "neml2/tensors/SSR4.h"
+#include "neml2/tensors/SWR4.h"
+#include "neml2/tensors/math.h"
 
 namespace neml2
 {
@@ -72,10 +75,8 @@ ElasticStrainRate::ElasticStrainRate(const OptionSet & options)
 }
 
 void
-ElasticStrainRate::set_value(bool out, bool dout_din, bool d2out_din2)
+ElasticStrainRate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
-
   if (out)
     _e_dot = _d - _dp + math::skew_and_sym_to_sym(SR2(_e), WR2(_w));
 

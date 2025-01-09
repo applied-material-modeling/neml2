@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
 #include "neml2/tensors/SSR4.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/SR2.h"
@@ -32,6 +32,7 @@
 #include "neml2/tensors/Rot.h"
 #include "neml2/tensors/SSSSR8.h"
 #include "neml2/tensors/R8.h"
+#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
@@ -223,20 +224,20 @@ SR2
 operator*(const SSR4 & a, const SR2 & b)
 {
   neml_assert_batch_broadcastable_dbg(a, b);
-  return SR2(torch::matmul(a, b.unsqueeze(-1)).squeeze(-1), broadcast_batch_dim(a, b));
+  return SR2(torch::matmul(a, b.unsqueeze(-1)).squeeze(-1), utils::broadcast_batch_dim(a, b));
 }
 
 SR2
 operator*(const SR2 & a, const SSR4 & b)
 {
   neml_assert_batch_broadcastable_dbg(a, b);
-  return SR2(torch::matmul(a.unsqueeze(-2), b).squeeze(-2), broadcast_batch_dim(a, b));
+  return SR2(torch::matmul(a.unsqueeze(-2), b).squeeze(-2), utils::broadcast_batch_dim(a, b));
 }
 
 SSR4
 operator*(const SSR4 & a, const SSR4 & b)
 {
   neml_assert_broadcastable_dbg(a, b);
-  return SSR4(torch::matmul(a, b), broadcast_batch_dim(a, b));
+  return SSR4(torch::matmul(a, b), utils::broadcast_batch_dim(a, b));
 }
 } // namespace neml2

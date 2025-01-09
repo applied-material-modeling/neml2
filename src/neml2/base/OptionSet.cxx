@@ -22,8 +22,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <iostream>
+
 #include "neml2/base/OptionSet.h"
-#include "neml2/models/LabeledAxisAccessor.h"
+#include "neml2/base/LabeledAxisAccessor.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {
@@ -46,7 +49,7 @@ OptionSet::contains(const std::string & name) const
   return _values.find(name) != _values.end();
 }
 
-const OptionSet::OptionBase &
+const OptionBase &
 OptionSet::get(const std::string & name) const
 {
   neml_assert(this->contains(name),
@@ -58,7 +61,7 @@ OptionSet::get(const std::string & name) const
   return *_values.at(name);
 }
 
-OptionSet::OptionBase &
+OptionBase &
 OptionSet::set(const std::string & name)
 {
   neml_assert(this->contains(name),
@@ -125,9 +128,11 @@ OptionSet::operator+=(OptionSet && source)
 }
 
 // LCOV_EXCL_START
-void
-OptionSet::print(std::ostream & os) const
+std::string
+OptionSet::to_str() const
 {
+  std::ostringstream os;
+
   OptionSet::const_iterator it = _values.begin();
 
   os << "  section: " << section() << '\n';
@@ -157,31 +162,14 @@ OptionSet::print(std::ostream & os) const
     if (++it != _values.end())
       os << '\n';
   }
-}
 
-std::ostream &
-operator<<(std::ostream & os, FType f)
-{
-  if (f == FType::NONE)
-    os << "NONE";
-  else if (f == FType::INPUT)
-    os << "INPUT";
-  else if (f == FType::OUTPUT)
-    os << "OUTPUT";
-  else if (f == FType::PARAMETER)
-    os << "PARAMETER";
-  else if (f == FType::BUFFER)
-    os << "BUFFER";
-  else
-    throw NEMLException("Unknown FType");
-
-  return os;
+  return os.str();
 }
 
 std::ostream &
 operator<<(std::ostream & os, const OptionSet & p)
 {
-  p.print(os);
+  os << p.to_str();
   return os;
 }
 // LCOV_EXCL_STOP

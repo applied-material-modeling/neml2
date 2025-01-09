@@ -28,6 +28,8 @@
 
 namespace neml2
 {
+class Rot;
+
 /**
  * @brief Swap orientation plane when the singularity at \f$ 2 \pi \f$ is met with the modified
  * Rodrigues vector.

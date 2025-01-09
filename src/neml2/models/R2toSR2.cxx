@@ -23,8 +23,10 @@
 // THE SOFTWARE.
 
 #include "neml2/models/R2toSR2.h"
-
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
+#include "neml2/tensors/R2.h"
+#include "neml2/tensors/SR2.h"
+#include "neml2/tensors/SSR4.h"
 
 namespace neml2
 {
@@ -35,6 +37,8 @@ R2toSR2::expected_options()
 {
   OptionSet options = Model::expected_options();
   options.doc() = "Extract the symmetric part of a R2 tensor";
+
+  options.set<bool>("define_second_derivatives") = true;
 
   options.set_input("input");
   options.set("input").doc() = "Rank two tensor to split";

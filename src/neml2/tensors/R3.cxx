@@ -26,6 +26,7 @@
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/Vec.h"
 #include "neml2/tensors/R2.h"
+#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
@@ -50,6 +51,6 @@ R2
 R3::contract_k(const Vec & v) const
 {
   neml_assert_batch_broadcastable_dbg(*this, v);
-  return R2(torch::einsum("...ijk,...k", {*this, v}), broadcast_batch_dim(*this, v));
+  return R2(torch::einsum("...ijk,...k", {*this, v}), utils::broadcast_batch_dim(*this, v));
 }
 } // namespace neml2

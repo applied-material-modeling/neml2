@@ -23,8 +23,10 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/ChabochePlasticHardening.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
 
 namespace neml2
 {
@@ -40,10 +42,10 @@ ChabochePlasticHardening::expected_options()
       "recovery, and static recovery.  \\f$ A \\f$ and \\f$ a \\f$ are additional material "
       "parameters.";
 
-  options.set_parameter<CrossRef<Scalar>>("A");
+  options.set_parameter<TensorName>("A");
   options.set("A").doc() = "Static recovery prefactor";
 
-  options.set_parameter<CrossRef<Scalar>>("a");
+  options.set_parameter<TensorName>("a");
   options.set("a").doc() = "Static recovery exponent";
 
   return options;
@@ -57,11 +59,8 @@ ChabochePlasticHardening::ChabochePlasticHardening(const OptionSet & options)
 }
 
 void
-ChabochePlasticHardening::set_value(bool out, bool dout_din, bool d2out_din2)
+ChabochePlasticHardening::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2,
-                  "ChabochePlasticHardening model doesn't implement second derivatives.");
-
   // The effective stress
   auto s = SR2(_X).norm(machine_precision());
   // The part that's proportional to the plastic strain rate

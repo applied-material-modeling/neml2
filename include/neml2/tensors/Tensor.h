@@ -25,6 +25,7 @@
 #pragma once
 
 #include "neml2/tensors/TensorBase.h"
+#include "neml2/misc/defaults.h"
 
 namespace neml2
 {

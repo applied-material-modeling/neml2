@@ -28,7 +28,9 @@
 #include "neml2/base/Factory.h"
 #include "neml2/models/Model.h"
 #include "neml2/models/Assembler.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/SR2.h"
 
 using namespace neml2;
 

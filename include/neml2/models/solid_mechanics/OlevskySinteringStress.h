@@ -28,6 +28,8 @@
 
 namespace neml2
 {
+class Scalar;
+
 /**
  * The Olevsky-Skorohod sintering stress model taken from
  *

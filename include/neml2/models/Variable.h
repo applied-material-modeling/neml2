@@ -24,10 +24,12 @@
 
 #pragma once
 
-#include "neml2/models/LabeledAxisAccessor.h"
-#include "neml2/base/DependencyResolver.h"
-#include "neml2/tensors/Tensor.h"
-#include "neml2/models/map_types.h"
+#include <memory>
+
+#include <c10/util/ArrayRef.h>
+
+#include "neml2/models/map_types_fwd.h"
+#include "neml2/base/LabeledAxisAccessor.h"
 
 namespace neml2
 {
@@ -35,6 +37,10 @@ namespace neml2
 class Model;
 class Derivative;
 enum class TensorType : int8_t;
+template <typename, typename>
+class DependencyResolver;
+class TraceableSize;
+class TraceableTensorShape;
 
 /**
  * @brief Base class of variable
@@ -86,44 +92,41 @@ public:
   // These methods mirror TensorBase
   ///@{
   /// Tensor options
-  torch::TensorOptions options() const { return tensor().options(); }
+  torch::TensorOptions options() const;
   /// Scalar type
-  torch::Dtype scalar_type() const { return tensor().scalar_type(); }
+  torch::Dtype scalar_type() const;
   /// Device
-  torch::Device device() const { return tensor().device(); }
+  torch::Device device() const;
   /// Number of tensor dimensions
-  Size dim() const { return tensor().dim(); }
+  Size dim() const;
   /// Tensor shape
-  TensorShapeRef sizes() const { return tensor().sizes(); }
+  TensorShapeRef sizes() const;
   /// Size of a dimension
-  Size size(Size dim) const { return tensor().size(dim); }
+  Size size(Size dim) const;
   /// Whether the tensor is batched
-  bool batched() const { return tensor().batched(); }
+  bool batched() const;
   /// Return the number of batch dimensions
-  Size batch_dim() const { return tensor().batch_dim(); }
+  Size batch_dim() const;
   /// Return the number of list dimensions
-  Size list_dim() const { return Size(list_sizes().size()); }
+  Size list_dim() const;
   /// Return the number of base dimensions
-  Size base_dim() const { return Size(base_sizes().size()); }
+  Size base_dim() const;
   /// Return the batch shape
-  TraceableTensorShape batch_sizes() const { return tensor().batch_sizes(); }
+  TraceableTensorShape batch_sizes() const;
   /// Return the list shape
-  TensorShapeRef list_sizes() const { return _list_sizes; }
+  TensorShapeRef list_sizes() const;
   /// Return the base shape
   virtual TensorShapeRef base_sizes() const = 0;
   /// Return the size of a batch axis
-  TraceableSize batch_size(Size dim) const { return tensor().batch_size(dim); }
+  TraceableSize batch_size(Size dim) const;
   /// Return the size of a base axis
-  Size base_size(Size dim) const { return base_sizes()[dim]; }
+  Size base_size(Size dim) const;
   /// Return the size of a list axis
-  Size list_size(Size dim) const { return list_sizes()[dim]; }
+  Size list_size(Size dim) const;
   /// Base storage of the variable
-  Size base_storage() const { return utils::storage_size(base_sizes()); }
+  Size base_storage() const;
   /// Assembly storage of the variable
-  Size assembly_storage() const
-  {
-    return utils::storage_size(list_sizes()) * utils::storage_size(base_sizes());
-  }
+  Size assembly_storage() const;
   ///@}
 
   /// Clone this variable
@@ -156,7 +159,7 @@ public:
   virtual Tensor tensor() const = 0;
 
   /// Check if this variable is part of the AD function graph
-  bool requires_grad() const { return tensor().requires_grad(); }
+  bool requires_grad() const;
 
   /// Mark this variable as a leaf variable in tracing function graph for AD
   virtual void requires_grad_(bool req = true) = 0;
@@ -273,7 +276,7 @@ public:
 
   void set(const torch::Tensor & val, bool force = false) override;
 
-  Tensor get() const override { return tensor().base_flatten(); }
+  Tensor get() const override;
 
   Tensor tensor() const override;
 
@@ -292,10 +295,7 @@ public:
 
   /// Convert to Tensor
   template <typename T2 = T, typename = typename std::enable_if_t<!std::is_same_v<T2, Tensor>>>
-  operator Tensor() const
-  {
-    return value();
-  }
+  operator Tensor() const;
 
   void clear() override;
 

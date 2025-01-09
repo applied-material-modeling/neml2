@@ -28,6 +28,9 @@
 
 namespace neml2
 {
+class WR2;
+class SR2;
+
 /// Calculate the orientation rate from the crystal model kinetics
 // Strictly this is the *spin* not the rotation rate.  But the integration routines
 // expect spin.

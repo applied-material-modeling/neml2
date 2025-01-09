@@ -63,10 +63,13 @@ template <class Derived,
 Derived
 operator+(const Derived & a, const Scalar & b)
 {
-  neml_assert_batch_broadcastable_dbg(a, b);
+#ifndef NDEBUG
+  if (!utils::batch_broadcastable(a, b))
+    throw NEMLException("Cannot broadcast tensors");
+#endif
   indexing::TensorIndices net{torch::indexing::Ellipsis};
   net.insert(net.end(), a.base_dim(), torch::indexing::None);
-  return Derived(torch::operator+(a, b.index(net)), broadcast_batch_dim(a, b));
+  return Derived(torch::operator+(a, b.index(net)), utils::broadcast_batch_dim(a, b));
 }
 
 template <class Derived,
@@ -84,10 +87,13 @@ template <class Derived,
 Derived
 operator-(const Derived & a, const Scalar & b)
 {
-  neml_assert_batch_broadcastable_dbg(a, b);
+#ifndef NDEBUG
+  if (!utils::batch_broadcastable(a, b))
+    throw NEMLException("Cannot broadcast tensors");
+#endif
   indexing::TensorIndices net{torch::indexing::Ellipsis};
   net.insert(net.end(), a.base_dim(), torch::indexing::None);
-  return Derived(torch::operator-(a, b.index(net)), broadcast_batch_dim(a, b));
+  return Derived(torch::operator-(a, b.index(net)), utils::broadcast_batch_dim(a, b));
 }
 
 template <class Derived,
@@ -105,10 +111,13 @@ template <class Derived,
 Derived
 operator*(const Derived & a, const Scalar & b)
 {
-  neml_assert_batch_broadcastable_dbg(a, b);
+#ifndef NDEBUG
+  if (!utils::batch_broadcastable(a, b))
+    throw NEMLException("Cannot broadcast tensors");
+#endif
   indexing::TensorIndices net{torch::indexing::Ellipsis};
   net.insert(net.end(), a.base_dim(), torch::indexing::None);
-  return Derived(torch::operator*(a, b.index(net)), broadcast_batch_dim(a, b));
+  return Derived(torch::operator*(a, b.index(net)), utils::broadcast_batch_dim(a, b));
 }
 
 template <class Derived,
@@ -128,10 +137,13 @@ template <class Derived,
 Derived
 operator/(const Derived & a, const Scalar & b)
 {
-  neml_assert_batch_broadcastable_dbg(a, b);
+#ifndef NDEBUG
+  if (!utils::batch_broadcastable(a, b))
+    throw NEMLException("Cannot broadcast tensors");
+#endif
   indexing::TensorIndices net{torch::indexing::Ellipsis};
   net.insert(net.end(), a.base_dim(), torch::indexing::None);
-  return Derived(torch::operator/(a, b.index(net)), broadcast_batch_dim(a, b));
+  return Derived(torch::operator/(a, b.index(net)), utils::broadcast_batch_dim(a, b));
 }
 
 template <class Derived,
@@ -140,10 +152,13 @@ template <class Derived,
 Derived
 operator/(const Scalar & a, const Derived & b)
 {
-  neml_assert_batch_broadcastable_dbg(a, b);
+#ifndef NDEBUG
+  if (!utils::batch_broadcastable(a, b))
+    throw NEMLException("Cannot broadcast tensors");
+#endif
   indexing::TensorIndices net{torch::indexing::Ellipsis};
   net.insert(net.end(), b.base_dim(), torch::indexing::None);
-  return Derived(torch::operator/(a.index(net), b), broadcast_batch_dim(a, b));
+  return Derived(torch::operator/(a.index(net), b), utils::broadcast_batch_dim(a, b));
 }
 
 namespace math
@@ -153,10 +168,13 @@ template <class Derived,
 Derived
 pow(const Derived & a, const Scalar & n)
 {
-  neml_assert_batch_broadcastable_dbg(a, n);
+#ifndef NDEBUG
+  if (!utils::batch_broadcastable(a, n))
+    throw NEMLException("Cannot broadcast tensors");
+#endif
   indexing::TensorIndices net{torch::indexing::Ellipsis};
   net.insert(net.end(), a.base_dim(), torch::indexing::None);
-  return Derived(torch::pow(a, n.index(net)), broadcast_batch_dim(a, n));
+  return Derived(torch::pow(a, n.index(net)), utils::broadcast_batch_dim(a, n));
 }
 }
 

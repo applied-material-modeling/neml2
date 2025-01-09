@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/crystal_plasticity/VoceSingleSlipHardeningRule.h"
+#include "neml2/tensors/Scalar.h"
 
 namespace neml2
 {
@@ -39,9 +40,9 @@ VoceSingleSlipHardeningRule::expected_options()
                   "saturated, maximum value of the slip system strength, and \\f$ \\dot{\\gamma}_i "
                   "\\f$ is the slip rate on each system.";
 
-  options.set_parameter<CrossRef<Scalar>>("initial_slope");
+  options.set_parameter<TensorName>("initial_slope");
   options.set("initial_slope").doc() = "The initial rate of hardening";
-  options.set_parameter<CrossRef<Scalar>>("saturated_hardening");
+  options.set_parameter<TensorName>("saturated_hardening");
   options.set("saturated_hardening").doc() =
       "The final, saturated value of the slip system strength";
   return options;
@@ -55,10 +56,8 @@ VoceSingleSlipHardeningRule::VoceSingleSlipHardeningRule(const OptionSet & optio
 }
 
 void
-VoceSingleSlipHardeningRule::set_value(bool out, bool dout_din, bool d2out_din2)
+VoceSingleSlipHardeningRule::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
-
   if (out)
     _tau_dot = _theta_0 * (1 - _tau / _tau_f) * _gamma_dot_sum;
 

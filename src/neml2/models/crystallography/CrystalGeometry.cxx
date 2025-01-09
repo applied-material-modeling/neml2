@@ -25,7 +25,13 @@
 #include "neml2/models/crystallography/CrystalGeometry.h"
 
 #include "neml2/models/crystallography/crystallography.h"
-#include "neml2/tensors/tensors.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/Vec.h"
+#include "neml2/tensors/R2.h"
+#include "neml2/tensors/SR2.h"
+#include "neml2/tensors/WR2.h"
+#include "neml2/tensors/MillerIndex.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2::crystallography
 {
@@ -40,17 +46,17 @@ CrystalGeometry::expected_options()
   options.doc() =
       "A Data object storing basic crystallographic information for a given crystal system.";
 
-  options.set<CrossRef<R2>>("crystal_class");
+  options.set<TensorName>("crystal_class");
   options.set("crystal_class").doc() = "The set of symmetry operations defining the crystal class.";
 
-  options.set<CrossRef<Vec>>("lattice_vectors");
+  options.set<TensorName>("lattice_vectors");
   options.set("lattice_vectors").doc() =
       "The three lattice vectors defining the crystal translational symmetry";
 
-  options.set<CrossRef<MillerIndex>>("slip_directions");
+  options.set<TensorName>("slip_directions");
   options.set("slip_directions").doc() = "A list of Miller indices defining the slip directions";
 
-  options.set<CrossRef<MillerIndex>>("slip_planes");
+  options.set<TensorName>("slip_planes");
   options.set("slip_planes").doc() = "A list of Miller indices defining the slip planes";
 
   return options;
@@ -58,12 +64,12 @@ CrystalGeometry::expected_options()
 
 CrystalGeometry::CrystalGeometry(const OptionSet & options)
   : CrystalGeometry(options,
-                    options.get<CrossRef<R2>>("crystal_class"),
-                    options.get<CrossRef<Vec>>("lattice_vectors"),
-                    setup_schmid_tensors(options.get<CrossRef<Vec>>("lattice_vectors"),
-                                         options.get<CrossRef<R2>>("crystal_class"),
-                                         options.get<CrossRef<MillerIndex>>("slip_directions"),
-                                         options.get<CrossRef<MillerIndex>>("slip_planes")))
+                    R2(options.get<TensorName>("crystal_class")),
+                    Vec(options.get<TensorName>("lattice_vectors")),
+                    setup_schmid_tensors(Vec(options.get<TensorName>("lattice_vectors")),
+                                         R2(options.get<TensorName>("crystal_class")),
+                                         MillerIndex(options.get<TensorName>("slip_directions")),
+                                         MillerIndex(options.get<TensorName>("slip_planes"))))
 {
 }
 
@@ -75,8 +81,8 @@ CrystalGeometry::CrystalGeometry(const OptionSet & options,
                     lattice_vectors,
                     setup_schmid_tensors(lattice_vectors,
                                          cclass,
-                                         options.get<CrossRef<MillerIndex>>("slip_directions"),
-                                         options.get<CrossRef<MillerIndex>>("slip_planes")))
+                                         MillerIndex(options.get<TensorName>("slip_directions")),
+                                         MillerIndex(options.get<TensorName>("slip_planes"))))
 {
 }
 

@@ -24,19 +24,18 @@
 
 #pragma once
 
-#include "neml2/base/NEML2Object.h"
-#include "neml2/base/OptionSet.h"
-#include "neml2/base/Storage.h"
-#include "neml2/tensors/TensorValue.h"
+#include <memory>
 
-// The following are not directly used by BufferStore itself.
-// We put them here so that derived classes can add expected options of these types.
-#include "neml2/base/CrossRef.h"
-#include "neml2/base/EnumSelection.h"
-#include "neml2/tensors/tensors.h"
+#include "neml2/base/OptionSet.h"
 
 namespace neml2
 {
+class NEML2Object;
+class TensorName;
+class TensorValueBase;
+template <typename T>
+class TensorBase;
+
 /// Interface for object which can store buffers
 class BufferStore
 {
@@ -51,19 +50,22 @@ public:
 
   ///@{
   /// @returns the buffer storage
-  const Storage<std::string, TensorValueBase> & named_buffers() const
+  const std::map<std::string, std::unique_ptr<TensorValueBase>> & named_buffers() const
   {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     return const_cast<BufferStore *>(this)->named_buffers();
   }
-  Storage<std::string, TensorValueBase> & named_buffers();
+  std::map<std::string, std::unique_ptr<TensorValueBase>> & named_buffers();
   ///}@
 
+  /// Get a read-only reference of a buffer
+  const TensorValueBase & get_buffer(const std::string & name) const
+  {
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+    return const_cast<BufferStore *>(this)->get_buffer(name);
+  }
   /// Get a writable reference of a buffer
   TensorValueBase & get_buffer(const std::string & name);
-
-  /// Get a read-only reference of a buffer
-  const TensorValueBase & get_buffer(const std::string & name) const;
 
 protected:
   /**
@@ -97,11 +99,11 @@ protected:
    *
    * @tparam T Buffer type. See @ref statically-shaped-tensor for supported types.
    * @param name Buffer name.
-   * @param crossref The cross-ref'ed "string" that defines the value of the buffer.
+   * @param tensorname The cross-ref'ed "string" that defines the value of the buffer.
    * @return T The value of the registered buffer.
    */
   template <typename T, typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<T>, T>>>
-  const T & declare_buffer(const std::string & name, const CrossRef<T> & crossref);
+  const T & declare_buffer(const std::string & name, const TensorName & tensorname);
 
   /**
    * @brief Declare a buffer.
@@ -136,7 +138,7 @@ private:
   const OptionSet _object_options;
 
   /// The actual storage for all the buffers
-  Storage<std::string, TensorValueBase> _buffer_values;
+  std::map<std::string, std::unique_ptr<TensorValueBase>> _buffer_values;
 };
 
 } // namespace neml2

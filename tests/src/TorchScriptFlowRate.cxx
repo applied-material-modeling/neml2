@@ -22,8 +22,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <torch/csrc/jit/serialization/import.h>
+
 #include "TorchScriptFlowRate.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
+#include "neml2/misc/assertions.h"
+#include "neml2/tensors/Scalar.h"
 
 using namespace neml2;
 
@@ -64,11 +68,8 @@ TorchScriptFlowRate::request_AD()
 }
 
 void
-TorchScriptFlowRate::set_value(bool out, bool dout_din, bool d2out_din2)
+TorchScriptFlowRate::set_value(bool out, bool /*dout_din*/, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!dout_din || !d2out_din2,
-                  "Only AD derivatives are currently supported for this model");
-
   if (out)
   {
     // This example model has 4 input variables:

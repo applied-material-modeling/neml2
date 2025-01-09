@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
 #include "neml2/tensors/R2Base.h"
 #include "neml2/tensors/R2.h"
 #include "neml2/tensors/Scalar.h"
@@ -32,6 +32,7 @@
 #include "neml2/tensors/R4.h"
 #include "neml2/tensors/Rot.h"
 #include "neml2/tensors/WR2.h"
+#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
@@ -195,7 +196,7 @@ R2Base<Derived>::drotate(const Rot & r) const
 
   return R3(torch::einsum("...itl,...tm,...jm", {F, *this, R}) +
                 torch::einsum("...ik,...kt,...jtl", {R, *this, F}),
-            broadcast_batch_dim(*this, F, R));
+            utils::broadcast_batch_dim(*this, F, R));
 }
 
 template <class Derived>
@@ -233,7 +234,7 @@ Vec
 operator*(const Derived1 & A, const Derived2 & b)
 {
   neml_assert_batch_broadcastable_dbg(A, b);
-  return Vec(torch::einsum("...ik,...k", {A, b}), broadcast_batch_dim(A, b));
+  return Vec(torch::einsum("...ik,...k", {A, b}), utils::broadcast_batch_dim(A, b));
 }
 
 template <class Derived1, class Derived2, typename, typename>
@@ -241,7 +242,7 @@ R2
 operator*(const Derived1 & A, const Derived2 & B)
 {
   neml_assert_broadcastable_dbg(A, B);
-  return R2(torch::einsum("...ik,...kj", {A, B}), broadcast_batch_dim(A, B));
+  return R2(torch::einsum("...ik,...kj", {A, B}), utils::broadcast_batch_dim(A, B));
 }
 
 // template instantiation

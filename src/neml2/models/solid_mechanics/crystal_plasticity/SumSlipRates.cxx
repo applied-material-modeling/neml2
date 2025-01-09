@@ -26,9 +26,9 @@
 
 #include "neml2/models/crystallography/CrystalGeometry.h"
 
-#include "neml2/tensors/tensors.h"
+#include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/list_tensors.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
 
 namespace neml2
 {

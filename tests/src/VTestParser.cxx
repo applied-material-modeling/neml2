@@ -22,9 +22,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "VTestParser.h"
-
 #include <fstream>
+#include <torch/types.h>
+
+#include "neml2/misc/defaults.h"
+#include "neml2/misc/assertions.h"
+#include "VTestParser.h"
 
 using namespace neml2;
 

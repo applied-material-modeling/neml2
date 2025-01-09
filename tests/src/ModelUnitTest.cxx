@@ -24,7 +24,8 @@
 
 #include "ModelUnitTest.h"
 #include "utils.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
+#include "neml2/misc/assertions.h"
 
 #include <torch/cuda.h>
 
@@ -38,7 +39,7 @@ set_variable(ValueMap & storage,
              const std::string & option_vals)
 {
   const auto vars = options.get<std::vector<VariableName>>(option_vars);
-  const auto vals = options.get<std::vector<CrossRef<T>>>(option_vals);
+  const auto vals = options.get<std::vector<TensorName>>(option_vals);
   neml_assert(vars.size() == vals.size(),
               "Trying to assign ",
               vals.size(),
@@ -74,9 +75,9 @@ ModelUnitTest::expected_options()
 
 #define OPTION_SET_(T)                                                                             \
   options.set<std::vector<VariableName>>("input_" #T "_names");                                    \
-  options.set<std::vector<CrossRef<T>>>("input_" #T "_values");                                    \
+  options.set<std::vector<TensorName>>("input_" #T "_values");                                     \
   options.set<std::vector<VariableName>>("output_" #T "_names");                                   \
-  options.set<std::vector<CrossRef<T>>>("output_" #T "_values")
+  options.set<std::vector<TensorName>>("output_" #T "_values")
   FOR_ALL_TENSORBASE(OPTION_SET_);
 
   return options;
@@ -271,7 +272,7 @@ ModelUnitTest::check_AD_parameter_derivatives()
 {
   // Turn on AD for parameters
   for (auto && [name, param] : _model.named_parameters())
-    param.requires_grad_(true);
+    param->requires_grad_(true);
 
   // Evaluate the model
   auto out = _model.value(_in);
@@ -281,8 +282,11 @@ ModelUnitTest::check_AD_parameter_derivatives()
   for (const auto & yname : _model.output_axis().variable_names())
     for (auto && [pname, param] : _model.named_parameters())
     {
-      auto deriv = math::jacrev(
-          out[yname], param, /*retain_graph=*/true, /*create_graph=*/false, /*allow_unused=*/true);
+      auto deriv = math::jacrev(out[yname],
+                                Tensor(*param),
+                                /*retain_graph=*/true,
+                                /*create_graph=*/false,
+                                /*allow_unused=*/true);
       if (deriv.defined())
         exact[yname][pname] = deriv;
     }
@@ -294,13 +298,13 @@ ModelUnitTest::check_AD_parameter_derivatives()
       auto numerical = finite_differencing_derivative(
           [&, &pname = pname](const Tensor & x)
           {
-            auto p0 = Tensor(_model.get_parameter(pname)).clone();
+            auto p0 = Tensor(*param).clone();
             _model.set_parameter(pname, x);
             auto out = _model.value(_in)[yname];
             _model.set_parameter(pname, p0);
             return out;
           },
-          param);
+          Tensor(*param));
       if (exact.count(yname) && exact[yname].count(pname))
         neml_assert(torch::allclose(exact[yname][pname], numerical, _param_rtol, _param_atol),
                     "The model gives derivative of output variable '",

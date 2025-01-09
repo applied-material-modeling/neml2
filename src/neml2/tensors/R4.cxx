@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
 #include "neml2/tensors/R4.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/R2.h"
@@ -32,6 +32,7 @@
 #include "neml2/tensors/Rot.h"
 #include "neml2/tensors/WWR4.h"
 #include "neml2/tensors/R8.h"
+#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
@@ -53,7 +54,7 @@ R4::rotate(const Rot & r) const
   neml_assert_batch_broadcastable_dbg(*this, R);
 
   auto res = torch::einsum("...im,...jn,...ko,...lp,...mnop", {R, R, R, R, *this});
-  return R4(res, broadcast_batch_dim(*this, R));
+  return R4(res, utils::broadcast_batch_dim(*this, R));
 }
 
 R5
@@ -69,7 +70,7 @@ R4::drotate(const Rot & r) const
   auto res4 = torch::einsum("...im,...jn,...ko,...mnop,...lpt->...ijklt", {R, R, R, *this, F});
   auto res = res1 + res2 + res3 + res4;
 
-  return R5(res, broadcast_batch_dim(*this, R, F));
+  return R5(res, utils::broadcast_batch_dim(*this, R, F));
 }
 
 R8

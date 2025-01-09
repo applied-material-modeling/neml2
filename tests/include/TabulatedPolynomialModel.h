@@ -28,6 +28,8 @@
 
 namespace neml2
 {
+class Scalar;
+
 /**
  * @brief This class spits out the creep strain rate along with the rate of two other internal
  * variables, given the von Mises stress, temperature, and the current internal state as input.

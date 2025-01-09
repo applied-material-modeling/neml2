@@ -26,10 +26,10 @@
 
 #include "neml2/base/Registry.h"
 #include "neml2/models/Data.h"
-#include "neml2/tensors/TensorBase.h"
 
 namespace neml2
 {
+class Scalar;
 class Vec;
 class R2;
 class SR2;
@@ -153,7 +153,8 @@ template <class Derived, typename>
 Derived
 CrystalGeometry::slip_slice(const Derived & tensor, Size grp) const
 {
-  neml_assert_dbg(grp < nslip_groups());
+  if (grp >= nslip_groups())
+    throw NEMLException("Invalid slip group index");
   return tensor.batch_index({torch::indexing::Ellipsis,
                              torch::indexing::Slice(_slip_offsets[grp], _slip_offsets[grp + 1])});
 }

@@ -28,7 +28,7 @@
 #include "python/neml2/indexing.h"
 #include "python/neml2/types.h"
 #include "neml2/tensors/tensors.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
 
 namespace py = pybind11;
 using namespace neml2;

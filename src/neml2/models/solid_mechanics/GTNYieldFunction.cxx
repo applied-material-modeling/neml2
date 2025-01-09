@@ -23,7 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/GTNYieldFunction.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
+#include "neml2/tensors/Scalar.h"
 
 namespace neml2
 {
@@ -43,17 +44,19 @@ GTNYieldFunction::expected_options()
       "void growth back stress (sintering stress). \\f$ q_1 \\f$, \\f$ q_2 \\f$, and \\f$ q_3 \\f$ "
       "are parameters controlling the yield mechanisms.";
 
-  options.set_parameter<CrossRef<Scalar>>("yield_stress");
+  options.set<bool>("define_second_derivatives") = true;
+
+  options.set_parameter<TensorName>("yield_stress");
   options.set("yield_stress").doc() = "Yield stress";
 
-  options.set_parameter<CrossRef<Scalar>>("q1");
+  options.set_parameter<TensorName>("q1");
   options.set("q1").doc() =
       "Parameter controlling the balance/competition between plastic flow and void evolution.";
 
-  options.set_parameter<CrossRef<Scalar>>("q2");
+  options.set_parameter<TensorName>("q2");
   options.set("q2").doc() = "Void evolution rate";
 
-  options.set_parameter<CrossRef<Scalar>>("q3");
+  options.set_parameter<TensorName>("q3");
   options.set("q3").doc() = "Pore pressure";
 
   options.set_input("flow_invariant") = VariableName(STATE, "internal", "se");

@@ -23,7 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/SlopeSaturationVoceIsotropicHardening.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
+#include "neml2/tensors/Scalar.h"
 
 namespace neml2
 {
@@ -49,9 +50,9 @@ SlopeSaturationVoceIsotropicHardening::expected_options()
   options.set("isotropic_hardening_rate").doc() =
       "Rate of isotropic hardening, defaults to isotropic_hardening + _rate";
 
-  options.set_parameter<CrossRef<Scalar>>("saturated_hardening");
+  options.set_parameter<TensorName>("saturated_hardening");
   options.set("saturated_hardening").doc() = "Saturated isotropic hardening";
-  options.set_parameter<CrossRef<Scalar>>("initial_hardening_rate");
+  options.set_parameter<TensorName>("initial_hardening_rate");
   options.set("initial_hardening_rate").doc() = "Initial hardening rate";
 
   return options;
@@ -71,12 +72,8 @@ SlopeSaturationVoceIsotropicHardening::SlopeSaturationVoceIsotropicHardening(
 }
 
 void
-SlopeSaturationVoceIsotropicHardening::set_value(bool out, bool dout_din, bool d2out_din2)
+SlopeSaturationVoceIsotropicHardening::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(
-      !d2out_din2,
-      "SlopeSaturationVoceIsotropicHardening model doesn't implement second derivatives.");
-
   if (out)
     _h_dot = _theta0 * (1.0 - _h / _R) * _gamma_dot;
 

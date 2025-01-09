@@ -95,7 +95,6 @@ template <class Derived2>
 Scalar
 VecBase<Derived>::dot(const VecBase<Derived2> & v) const
 {
-  neml_assert_broadcastable_dbg(*this, v);
   auto res = torch::linalg_vecdot(*this, v);
   return Scalar(res, res.dim());
 }
@@ -105,9 +104,12 @@ template <class Derived2>
 Derived
 VecBase<Derived>::cross(const VecBase<Derived2> & v) const
 {
-  neml_assert_broadcastable_dbg(*this, v);
+#ifndef NDEBUG
+  if (!utils::broadcastable(*this, v))
+    throw NEMLException("Cannot broadcast tensors");
+#endif
 
-  auto batch_dim = broadcast_batch_dim(*this, v);
+  auto batch_dim = utils::broadcast_batch_dim(*this, v);
   auto pair = torch::broadcast_tensors({*this, v});
 
   return Derived(torch::linalg_cross(pair[0], pair[1]), batch_dim);

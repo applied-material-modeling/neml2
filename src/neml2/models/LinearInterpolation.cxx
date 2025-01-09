@@ -23,13 +23,20 @@
 // THE SOFTWARE.
 
 #include "neml2/models/LinearInterpolation.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/Vec.h"
+#include "neml2/tensors/SR2.h"
 
 namespace neml2
 {
-register_NEML2_object(ScalarLinearInterpolation);
-register_NEML2_object(VecLinearInterpolation);
-register_NEML2_object(SR2LinearInterpolation);
+#define REGISTER(T)                                                                                \
+  using T##LinearInterpolation = LinearInterpolation<T>;                                           \
+  register_NEML2_object(T##LinearInterpolation);                                                   \
+  template class LinearInterpolation<T>
+REGISTER(Scalar);
+REGISTER(Vec);
+REGISTER(SR2);
 
 template <typename T>
 OptionSet
@@ -37,6 +44,7 @@ LinearInterpolation<T>::expected_options()
 {
   OptionSet options = Interpolation<T>::expected_options();
   options.doc() += " This object performs a _linear interpolation_.";
+  options.set<bool>("define_second_derivatives") = true;
   return options;
 }
 
@@ -80,8 +88,4 @@ LinearInterpolation<T>::set_value(bool out, bool dout_din, bool d2out_din2)
     // zero
   }
 }
-
-template class LinearInterpolation<Scalar>;
-template class LinearInterpolation<Vec>;
-template class LinearInterpolation<SR2>;
 } // namespace neml2

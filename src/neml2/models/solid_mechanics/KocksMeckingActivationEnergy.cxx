@@ -23,7 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/KocksMeckingActivationEnergy.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
+#include "neml2/tensors/Scalar.h"
 
 namespace neml2
 {
@@ -40,7 +41,7 @@ KocksMeckingActivationEnergy::expected_options()
       "temperature, \\f$ b \\f$ the Burgers vector length, \\f$ \\dot{\\varepsilon}_0 \\f$ a "
       "reference strain rate, and \\f$ \\dot{\\varepsilon} \\f$ the current strain rate.";
 
-  options.set_parameter<CrossRef<Scalar>>("shear_modulus");
+  options.set_parameter<TensorName>("shear_modulus");
   options.set("shear_modulus").doc() = "The shear modulus";
 
   options.set<Real>("eps0");
@@ -75,10 +76,8 @@ KocksMeckingActivationEnergy::KocksMeckingActivationEnergy(const OptionSet & opt
 }
 
 void
-KocksMeckingActivationEnergy::set_value(bool out, bool dout_din, bool d2out_din2)
+KocksMeckingActivationEnergy::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert(!d2out_din2, "Second derivatives not implemented");
-
   if (out)
     _g = _k * _T / (_mu * _b3) * math::log(_eps0 / _eps_dot);
 

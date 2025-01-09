@@ -28,6 +28,9 @@
 
 namespace neml2
 {
+class Scalar;
+class R2;
+class SR2;
 namespace crystallography
 {
 class CrystalGeometry;

@@ -22,7 +22,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <torch/csrc/jit/frontend/tracer.h>
+
 #include "neml2/jit/utils.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {
@@ -53,4 +56,23 @@ neml_assert_not_tracing_dbg()
   neml_assert_not_tracing();
 #endif
 }
+
+namespace utils
+{
+TraceableTensorShape
+extract_batch_sizes(const torch::Tensor & tensor, Size batch_dim)
+{
+  // Put the batch sizes into the traced graph if we are tracing
+  // TODO: This could be optimized
+  if (torch::jit::tracer::isTracing())
+  {
+    TraceableTensorShape sizes;
+    for (Size i = 0; i < batch_dim; ++i)
+      sizes.emplace_back(torch::jit::tracer::getSizeOf(tensor, i));
+    return sizes;
+  }
+
+  return tensor.sizes().slice(0, batch_dim);
+}
+} // namespace utils
 } // namespace neml2

@@ -28,6 +28,8 @@
 
 namespace neml2
 {
+class SR2;
+
 /// The plastic flow direction assuming an associative J2 flow.
 class AssociativeJ2FlowDirection : public Model
 {

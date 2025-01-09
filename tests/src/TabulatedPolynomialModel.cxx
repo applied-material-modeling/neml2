@@ -23,7 +23,9 @@
 // THE SOFTWARE.
 
 #include "TabulatedPolynomialModel.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
+#include "neml2/misc/assertions.h"
+#include "neml2/tensors/Scalar.h"
 
 namespace neml2
 {
@@ -43,13 +45,13 @@ TabulatedPolynomialModel::expected_options()
   options.set<VariableName>("internal_state_1_rate") = VariableName(STATE, "s1_rate");
   options.set<VariableName>("internal_state_2_rate") = VariableName(STATE, "s2_rate");
   // Model constants
-  options.set<CrossRef<Tensor>>("A0");
-  options.set<CrossRef<Tensor>>("A1");
-  options.set<CrossRef<Tensor>>("A2");
-  options.set<CrossRef<Tensor>>("stress_tile_lower_bounds");
-  options.set<CrossRef<Tensor>>("stress_tile_upper_bounds");
-  options.set<CrossRef<Tensor>>("temperature_tile_lower_bounds");
-  options.set<CrossRef<Tensor>>("temperature_tile_upper_bounds");
+  options.set<TensorName>("A0");
+  options.set<TensorName>("A1");
+  options.set<TensorName>("A2");
+  options.set<TensorName>("stress_tile_lower_bounds");
+  options.set<TensorName>("stress_tile_upper_bounds");
+  options.set<TensorName>("temperature_tile_lower_bounds");
+  options.set<TensorName>("temperature_tile_upper_bounds");
   options.set<Real>("index_sharpness") = 1.0;
   return options;
 }
@@ -93,11 +95,8 @@ TabulatedPolynomialModel::request_AD()
 }
 
 void
-TabulatedPolynomialModel::set_value(bool out, bool dout_din, bool d2out_din2)
+TabulatedPolynomialModel::set_value(bool out, bool /*dout_din*/, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!dout_din || !d2out_din2,
-                  "Only AD derivatives are currently supported for this model");
-
   // Broadcast and expand batch shape
   std::vector<Tensor> inputs = {_s, _T, _s1, _s2};
   const auto batch_sizes = utils::broadcast_batch_sizes(inputs);

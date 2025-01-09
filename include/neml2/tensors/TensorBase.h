@@ -24,7 +24,9 @@
 
 #pragma once
 
-#include "neml2/misc/utils.h"
+#include <torch/types.h>
+#include "neml2/jit/TraceableTensorShape.h"
+#include "neml2/tensors/shape_utils.h"
 
 namespace neml2
 {
@@ -267,8 +269,11 @@ template <class Derived,
 Derived
 operator+(const Derived & a, const Derived & b)
 {
-  neml_assert_broadcastable_dbg(a, b);
-  return Derived(torch::operator+(a, b), broadcast_batch_dim(a, b));
+#ifndef NDEBUG
+  if (!utils::broadcastable(a, b))
+    throw NEMLException("Cannot broadcast tensors");
+#endif
+  return Derived(torch::operator+(a, b), utils::broadcast_batch_dim(a, b));
 }
 
 template <class Derived,
@@ -292,8 +297,11 @@ template <class Derived,
 Derived
 operator-(const Derived & a, const Derived & b)
 {
-  neml_assert_broadcastable_dbg(a, b);
-  return Derived(torch::operator-(a, b), broadcast_batch_dim(a, b));
+#ifndef NDEBUG
+  if (!utils::broadcastable(a, b))
+    throw NEMLException("Cannot broadcast tensors");
+#endif
+  return Derived(torch::operator-(a, b), utils::broadcast_batch_dim(a, b));
 }
 
 template <class Derived,
@@ -333,7 +341,10 @@ template <class Derived,
 Derived
 operator/(const Derived & a, const Derived & b)
 {
-  neml_assert_broadcastable_dbg(a, b);
-  return Derived(torch::operator/(a, b), broadcast_batch_dim(a, b));
+#ifndef NDEBUG
+  if (!utils::broadcastable(a, b))
+    throw NEMLException("Cannot broadcast tensors");
+#endif
+  return Derived(torch::operator/(a, b), utils::broadcast_batch_dim(a, b));
 }
 } // namespace neml2

@@ -27,6 +27,9 @@
 
 #include "utils.h"
 #include "neml2/models/Model.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/SR2.h"
+#include "neml2/tensors/TensorValue.h"
 
 using namespace neml2;
 
@@ -41,7 +44,7 @@ TEST_CASE("training")
   Size nbatch = 2;
 
   // Request parameter gradient
-  auto & p = model.named_parameters()["yield_sy"];
+  auto & p = model.get_parameter("yield_sy");
   p = Scalar(5, default_tensor_options().requires_grad(true));
 
   // Variables

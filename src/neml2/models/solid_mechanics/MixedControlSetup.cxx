@@ -23,7 +23,9 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/MixedControlSetup.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/math.h"
+#include "neml2/tensors/SR2.h"
+#include "neml2/tensors/SSR4.h"
 
 namespace neml2
 {
@@ -43,7 +45,7 @@ MixedControlSetup::expected_options()
       "The name of the control signal.  Values less than the threshold are "
       "strain control, greater are stress control";
 
-  options.set<CrossRef<Tensor>>("threshold") = "0.5";
+  options.set<TensorName>("threshold") = "0.5";
   options.set("threshold").doc() = "The threshold to switch between strain and stress control";
 
   options.set_input("mixed_state") = VariableName(STATE, "mixed_state");
@@ -65,7 +67,7 @@ MixedControlSetup::expected_options()
 
 MixedControlSetup::MixedControlSetup(const OptionSet & options)
   : Model(options),
-    _threshold(options.get<CrossRef<Tensor>>("threshold")),
+    _threshold(options.get<TensorName>("threshold")),
     _control(declare_input_variable<SR2>("control")),
     _fixed_values(declare_input_variable<SR2>("fixed_values")),
     _mixed_state(declare_input_variable<SR2>("mixed_state")),

@@ -28,6 +28,9 @@
 
 namespace neml2
 {
+class Scalar;
+class SR2;
+
 class GursonCavitation : public Model
 {
 public:
