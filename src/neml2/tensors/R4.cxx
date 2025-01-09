@@ -22,7 +22,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/misc/math.h"
 #include "neml2/tensors/R4.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/R2.h"
@@ -32,17 +31,19 @@
 #include "neml2/tensors/Rot.h"
 #include "neml2/tensors/WWR4.h"
 #include "neml2/tensors/R8.h"
+#include "neml2/tensors/assertions.h"
+#include "neml2/tensors/mandel_notation.h"
 
 namespace neml2
 {
 
 R4::R4(const SSR4 & T)
-  : R4(math::mandel_to_full(math::mandel_to_full(T, 1)))
+  : R4(mandel_to_full(mandel_to_full(T, 1)))
 {
 }
 
 R4::R4(const WWR4 & T)
-  : R4(math::skew_to_full(math::skew_to_full(T, 1)))
+  : R4(skew_to_full(skew_to_full(T, 1)))
 {
 }
 
@@ -52,8 +53,8 @@ R4::rotate(const Rot & r) const
   R2 R = r.euler_rodrigues();
   neml_assert_batch_broadcastable_dbg(*this, R);
 
-  auto res = torch::einsum("...im,...jn,...ko,...lp,...mnop", {R, R, R, R, *this});
-  return R4(res, broadcast_batch_dim(*this, R));
+  auto res = at::einsum("...im,...jn,...ko,...lp,...mnop", {R, R, R, R, *this});
+  return R4(res, utils::broadcast_batch_dim(*this, R));
 }
 
 R5
@@ -63,13 +64,13 @@ R4::drotate(const Rot & r) const
   R3 F = r.deuler_rodrigues();
   neml_assert_batch_broadcastable_dbg(*this, R, F);
 
-  auto res1 = torch::einsum("...jn,...ko,...lp,...mnop,...imt->...ijklt", {R, R, R, *this, F});
-  auto res2 = torch::einsum("...im,...ko,...lp,...mnop,...jnt->...ijklt", {R, R, R, *this, F});
-  auto res3 = torch::einsum("...im,...jn,...lp,...mnop,...kot->...ijklt", {R, R, R, *this, F});
-  auto res4 = torch::einsum("...im,...jn,...ko,...mnop,...lpt->...ijklt", {R, R, R, *this, F});
+  auto res1 = at::einsum("...jn,...ko,...lp,...mnop,...imt->...ijklt", {R, R, R, *this, F});
+  auto res2 = at::einsum("...im,...ko,...lp,...mnop,...jnt->...ijklt", {R, R, R, *this, F});
+  auto res3 = at::einsum("...im,...jn,...lp,...mnop,...kot->...ijklt", {R, R, R, *this, F});
+  auto res4 = at::einsum("...im,...jn,...ko,...mnop,...lpt->...ijklt", {R, R, R, *this, F});
   auto res = res1 + res2 + res3 + res4;
 
-  return R5(res, broadcast_batch_dim(*this, R, F));
+  return R5(res, utils::broadcast_batch_dim(*this, R, F));
 }
 
 R8
@@ -78,7 +79,7 @@ R4::drotate_self(const Rot & r) const
   R2 R = r.euler_rodrigues();
   neml_assert_batch_broadcastable_dbg(*this, R);
 
-  auto res = R8(torch::einsum("...im,...jn,...ko,...lp->...ijklmnop", {R, R, R, R}), R.batch_dim());
+  auto res = R8(at::einsum("...im,...jn,...ko,...lp->...ijklmnop", {R, R, R, R}), R.batch_dim());
 
   if (res.batch_dim() < this->batch_dim())
     return res.batch_expand_as(*this);

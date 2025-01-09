@@ -26,6 +26,7 @@
 #include <catch2/matchers/catch_matchers_all.hpp>
 
 #include "neml2/base/OptionSet.h"
+#include "neml2/misc/string_utils.h"
 
 using namespace neml2;
 

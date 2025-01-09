@@ -23,7 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/RateIndependentPlasticFlowConstraint.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/functions/sqrt.h"
 
 namespace neml2
 {
@@ -56,11 +57,9 @@ RateIndependentPlasticFlowConstraint::RateIndependentPlasticFlowConstraint(
 }
 
 void
-RateIndependentPlasticFlowConstraint::set_value(bool out, bool dout_din, bool d2out_din2)
+RateIndependentPlasticFlowConstraint::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
-
-  const auto FB = _gamma_dot - _fp - math::sqrt(_gamma_dot * _gamma_dot + _fp * _fp);
+  const auto FB = _gamma_dot - _fp - sqrt(_gamma_dot * _gamma_dot + _fp * _fp);
 
   if (out)
     _r = FB;
@@ -71,10 +70,10 @@ RateIndependentPlasticFlowConstraint::set_value(bool out, bool dout_din, bool d2
 
     if (_gamma_dot.is_dependent())
       _r.d(_gamma_dot) =
-          I - _gamma_dot / math::sqrt(_gamma_dot * _gamma_dot + _fp * _fp + machine_precision());
+          I - _gamma_dot / sqrt(_gamma_dot * _gamma_dot + _fp * _fp + machine_precision());
 
     if (_fp.is_dependent())
-      _r.d(_fp) = -I - _fp / math::sqrt(_gamma_dot * _gamma_dot + _fp * _fp + machine_precision());
+      _r.d(_fp) = -I - _fp / sqrt(_gamma_dot * _gamma_dot + _fp * _fp + machine_precision());
   }
 }
 

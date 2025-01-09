@@ -28,6 +28,8 @@
 
 namespace neml2
 {
+class Scalar;
+
 class IsotropicHardeningStaticRecovery : public Model
 {
 public:

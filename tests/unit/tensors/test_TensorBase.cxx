@@ -26,13 +26,19 @@
 #include <catch2/matchers/catch_matchers_all.hpp>
 
 #include "neml2/tensors/Tensor.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/functions/pow.h"
+#include "neml2/tensors/functions/sign.h"
+#include "neml2/tensors/functions/heaviside.h"
+#include "neml2/tensors/functions/macaulay.h"
+#include "neml2/tensors/functions/sqrt.h"
+#include "neml2/tensors/functions/exp.h"
+#include "neml2/tensors/functions/abs.h"
 
 using namespace neml2;
 
 TEST_CASE("TensorBase", "[tensors]")
 {
-  torch::manual_seed(42);
+  at::manual_seed(42);
   const auto & DTO = default_tensor_options();
 
   TensorShape B = {5, 3, 1, 2};             // batch shape
@@ -55,7 +61,7 @@ TEST_CASE("TensorBase", "[tensors]")
 
       SECTION("Tensor and batch dimension")
       {
-        auto a = Tensor(torch::zeros(BD, DTO), B.size());
+        auto a = Tensor(at::zeros(BD, DTO), B.size());
         REQUIRE(a.dim() == n);
         REQUIRE(a.batch_dim() == Bn);
         REQUIRE(a.base_dim() == Dn);
@@ -67,7 +73,7 @@ TEST_CASE("TensorBase", "[tensors]")
 
       SECTION("copy")
       {
-        auto a = Tensor(torch::zeros(BD, DTO), B.size());
+        auto a = Tensor(at::zeros(BD, DTO), B.size());
         auto b = Tensor(a);
         REQUIRE(b.dim() == a.dim());
         REQUIRE(b.batch_dim() == a.batch_dim());
@@ -134,7 +140,7 @@ TEST_CASE("TensorBase", "[tensors]")
         REQUIRE(a.batch_sizes() == TensorShape{});
         REQUIRE(a.base_sizes() == D);
         REQUIRE(a.base_storage() == L);
-        REQUIRE(torch::allclose(a, torch::zeros_like(a)));
+        REQUIRE(at::allclose(a, at::zeros_like(a)));
       }
 
       SECTION("batched")
@@ -148,7 +154,7 @@ TEST_CASE("TensorBase", "[tensors]")
         REQUIRE(a.batch_sizes() == B);
         REQUIRE(a.base_sizes() == D);
         REQUIRE(a.base_storage() == L);
-        REQUIRE(torch::allclose(a, torch::zeros_like(a)));
+        REQUIRE(at::allclose(a, at::zeros_like(a)));
       }
     }
 
@@ -163,7 +169,7 @@ TEST_CASE("TensorBase", "[tensors]")
       REQUIRE(b.batch_sizes() == a.batch_sizes());
       REQUIRE(b.base_sizes() == a.base_sizes());
       REQUIRE(b.base_storage() == a.base_storage());
-      REQUIRE(torch::allclose(b, torch::zeros_like(b)));
+      REQUIRE(at::allclose(b, at::zeros_like(b)));
     }
 
     SECTION("ones")
@@ -179,7 +185,7 @@ TEST_CASE("TensorBase", "[tensors]")
         REQUIRE(a.batch_sizes() == TensorShape{});
         REQUIRE(a.base_sizes() == D);
         REQUIRE(a.base_storage() == L);
-        REQUIRE(torch::allclose(a, torch::ones_like(a)));
+        REQUIRE(at::allclose(a, at::ones_like(a)));
       }
 
       SECTION("batched")
@@ -193,7 +199,7 @@ TEST_CASE("TensorBase", "[tensors]")
         REQUIRE(a.batch_sizes() == B);
         REQUIRE(a.base_sizes() == D);
         REQUIRE(a.base_storage() == L);
-        REQUIRE(torch::allclose(a, torch::ones_like(a)));
+        REQUIRE(at::allclose(a, at::ones_like(a)));
       }
     }
 
@@ -208,7 +214,7 @@ TEST_CASE("TensorBase", "[tensors]")
       REQUIRE(b.batch_sizes() == a.batch_sizes());
       REQUIRE(b.base_sizes() == a.base_sizes());
       REQUIRE(b.base_storage() == a.base_storage());
-      REQUIRE(torch::allclose(b, torch::ones_like(b)));
+      REQUIRE(at::allclose(b, at::ones_like(b)));
     }
 
     SECTION("full")
@@ -225,7 +231,7 @@ TEST_CASE("TensorBase", "[tensors]")
         REQUIRE(a.batch_sizes() == TensorShape{});
         REQUIRE(a.base_sizes() == D);
         REQUIRE(a.base_storage() == L);
-        REQUIRE(torch::allclose(a, torch::full_like(a, init)));
+        REQUIRE(at::allclose(a, at::full_like(a, init)));
       }
 
       SECTION("batched")
@@ -240,7 +246,7 @@ TEST_CASE("TensorBase", "[tensors]")
         REQUIRE(a.batch_sizes() == B);
         REQUIRE(a.base_sizes() == D);
         REQUIRE(a.base_storage() == L);
-        REQUIRE(torch::allclose(a, torch::full_like(a, init)));
+        REQUIRE(at::allclose(a, at::full_like(a, init)));
       }
     }
 
@@ -256,7 +262,7 @@ TEST_CASE("TensorBase", "[tensors]")
       REQUIRE(b.batch_sizes() == a.batch_sizes());
       REQUIRE(b.base_sizes() == a.base_sizes());
       REQUIRE(b.base_storage() == a.base_storage());
-      REQUIRE(torch::allclose(b, init * torch::ones_like(b)));
+      REQUIRE(at::allclose(b, init * at::ones_like(b)));
     }
 
     SECTION("identity")
@@ -274,7 +280,7 @@ TEST_CASE("TensorBase", "[tensors]")
         REQUIRE(a.batch_sizes() == TensorShape{});
         REQUIRE(a.base_sizes() == Deye);
         REQUIRE(a.base_storage() == n * n);
-        REQUIRE(torch::allclose(a, torch::eye(n, DTO)));
+        REQUIRE(at::allclose(a, at::eye(n, DTO)));
       }
 
       SECTION("batched")
@@ -291,7 +297,7 @@ TEST_CASE("TensorBase", "[tensors]")
         REQUIRE(a.batch_sizes() == B);
         REQUIRE(a.base_sizes() == Deye);
         REQUIRE(a.base_storage() == n * n);
-        REQUIRE(torch::allclose(a, torch::eye(n, DTO).expand(utils::add_shapes(B, -1, -1))));
+        REQUIRE(at::allclose(a, at::eye(n, DTO).expand(utils::add_shapes(B, -1, -1))));
       }
     }
 
@@ -317,22 +323,22 @@ TEST_CASE("TensorBase", "[tensors]")
 
     SECTION("batch_index")
     {
-      auto a = torch::rand({5, 3, 2, 1, 3}, DTO);
+      auto a = at::rand({5, 3, 2, 1, 3}, DTO);
       auto b = Tensor(a, 3);
       indexing::TensorIndices i1 = {0};
       indexing::TensorIndices i2 = {2, 1};
       indexing::TensorIndices i3 = {indexing::Slice(), indexing::Slice(0, 2), 1};
       indexing::TensorIndices i4a = {2, indexing::Ellipsis, indexing::Slice(), indexing::Slice()};
       indexing::TensorIndices i4b = {2, indexing::Ellipsis};
-      REQUIRE(torch::allclose(a.index(i1), b.batch_index(i1)));
-      REQUIRE(torch::allclose(a.index(i2), b.batch_index(i2)));
-      REQUIRE(torch::allclose(a.index(i3), b.batch_index(i3)));
-      REQUIRE(torch::allclose(a.index(i4a), b.batch_index(i4b)));
+      REQUIRE(at::allclose(a.index(i1), b.batch_index(i1)));
+      REQUIRE(at::allclose(a.index(i2), b.batch_index(i2)));
+      REQUIRE(at::allclose(a.index(i3), b.batch_index(i3)));
+      REQUIRE(at::allclose(a.index(i4a), b.batch_index(i4b)));
     }
 
     SECTION("base_index")
     {
-      auto a = torch::rand({5, 3, 2, 1, 3}, DTO);
+      auto a = at::rand({5, 3, 2, 1, 3}, DTO);
       auto b = Tensor(a, 3);
       indexing::TensorIndices i1a = {indexing::Slice(), indexing::Slice(), indexing::Slice(), 0};
       indexing::TensorIndices i1b = {0};
@@ -347,28 +353,28 @@ TEST_CASE("TensorBase", "[tensors]")
                                      indexing::Slice(),
                                      indexing::Slice(1, indexing::None)};
       indexing::TensorIndices i4b = {indexing::Slice(), indexing::Slice(1, indexing::None)};
-      REQUIRE(torch::allclose(a.index(i1a), b.base_index(i1b)));
-      REQUIRE(torch::allclose(a.index(i2a), b.base_index(i2b)));
-      REQUIRE(torch::allclose(a.index(i3a), b.base_index(i3b)));
-      REQUIRE(torch::allclose(a.index(i4a), b.base_index(i4b)));
+      REQUIRE(at::allclose(a.index(i1a), b.base_index(i1b)));
+      REQUIRE(at::allclose(a.index(i2a), b.base_index(i2b)));
+      REQUIRE(at::allclose(a.index(i3a), b.base_index(i3b)));
+      REQUIRE(at::allclose(a.index(i4a), b.base_index(i4b)));
     }
 
     SECTION("batch_index_put")
     {
-      auto a = torch::rand({5, 3, 2, 1, 3}, DTO);
+      auto a = at::rand({5, 3, 2, 1, 3}, DTO);
       auto b = Tensor(a, 3);
-      auto c = torch::rand({3, 2, 1, 3}, DTO);
+      auto c = at::rand({3, 2, 1, 3}, DTO);
       indexing::TensorIndices ia = {2, indexing::Ellipsis, indexing::Slice(), indexing::Slice()};
       indexing::TensorIndices ib = {2, indexing::Ellipsis};
       b.batch_index_put_(ib, c);
-      REQUIRE(torch::allclose(a.index(ia), c));
+      REQUIRE(at::allclose(a.index(ia), c));
     }
 
     SECTION("base_index_put")
     {
-      auto a = torch::rand({5, 3, 2, 1, 3}, DTO);
+      auto a = at::rand({5, 3, 2, 1, 3}, DTO);
       auto b = Tensor(a, 3);
-      auto c = torch::rand({5, 3, 2, 1, 2}, DTO);
+      auto c = at::rand({5, 3, 2, 1, 2}, DTO);
       indexing::TensorIndices ia = {indexing::Slice(),
                                     indexing::Slice(),
                                     indexing::Slice(),
@@ -376,7 +382,7 @@ TEST_CASE("TensorBase", "[tensors]")
                                     indexing::Slice(1, indexing::None)};
       indexing::TensorIndices ib = {indexing::Slice(), indexing::Slice(1, indexing::None)};
       b.base_index_put_(ib, c);
-      REQUIRE(torch::allclose(a.index(ia), c));
+      REQUIRE(at::allclose(a.index(ia), c));
     }
 
     SECTION("batch_expand")
@@ -387,7 +393,7 @@ TEST_CASE("TensorBase", "[tensors]")
       auto b = a.batch_expand(s);
       REQUIRE(b.batch_sizes() == s);
       REQUIRE(b.base_sizes() == a.base_sizes());
-      REQUIRE(torch::sum(a - b).item<Real>() == Catch::Approx(0));
+      REQUIRE(at::sum(a - b).item<Real>() == Catch::Approx(0));
     }
 
     SECTION("base_expand")
@@ -401,8 +407,8 @@ TEST_CASE("TensorBase", "[tensors]")
       // This is fun, as a and b are NOT broadcastable based on our broadcasting rules for batched
       // tensors because they have different base shapes. However, they _should_ be broadcastable
       // based on libTorch's original broadcasting rules. So we need to interpret them as
-      // torch::Tensors first before we can compute a - b. This is the correct behavior.
-      REQUIRE(torch::sum(torch::Tensor(a) - torch::Tensor(b)).item<Real>() == Catch::Approx(0));
+      // ATensors first before we can compute a - b. This is the correct behavior.
+      REQUIRE(at::sum(ATensor(a) - ATensor(b)).item<Real>() == Catch::Approx(0));
     }
 
     SECTION("batch_expand_as")
@@ -435,7 +441,7 @@ TEST_CASE("TensorBase", "[tensors]")
       auto b = a.batch_expand_copy(s);
       REQUIRE(b.batch_sizes() == s);
       REQUIRE(b.base_sizes() == a.base_sizes());
-      REQUIRE(torch::sum(a - b).item<Real>() == Catch::Approx(0));
+      REQUIRE(at::sum(a - b).item<Real>() == Catch::Approx(0));
     }
 
     SECTION("base_expand_copy")
@@ -449,8 +455,8 @@ TEST_CASE("TensorBase", "[tensors]")
       // This is fun, as a and b are NOT broadcastable based on our broadcasting rules for batched
       // tensors because they have different base shapes. However, they _should_ be broadcastable
       // based on libTorch's original broadcasting rules. So we need to interpret them as
-      // torch::Tensors first before we can compute a - b. This is the correct behavior.
-      REQUIRE(torch::sum(torch::Tensor(a) - torch::Tensor(b)).item<Real>() == Catch::Approx(0));
+      // ATensors first before we can compute a - b. This is the correct behavior.
+      REQUIRE(at::sum(ATensor(a) - ATensor(b)).item<Real>() == Catch::Approx(0));
     }
 
     SECTION("batch_unsqueeze")
@@ -506,126 +512,116 @@ TEST_CASE("TensorBase", "[tensors]")
 
   SECTION("operator+")
   {
-    auto a = Tensor(torch::tensor({{3.1, 2.2}, {2.2, -1.1}}, DTO), 0);
+    auto a = Tensor::create({{3.1, 2.2}, {2.2, -1.1}}, DTO);
     auto b = Tensor::full({}, {2, 2}, 2.0, DTO);
-    auto c = Tensor(torch::tensor({{5.1, 4.2}, {4.2, 0.9}}, DTO), 0);
-    REQUIRE(torch::allclose(a + 2.0, c));
-    REQUIRE(torch::allclose(a.batch_expand(B) + 2.0, c.batch_expand(B)));
-    REQUIRE(torch::allclose(2.0 + a, c));
-    REQUIRE(torch::allclose(2.0 + a.batch_expand(B), c.batch_expand(B)));
-    REQUIRE(torch::allclose(a + b, c));
-    REQUIRE(torch::allclose(a + b.batch_expand(B), c.batch_expand(B)));
-    REQUIRE(torch::allclose(a.batch_expand(B) + b, c.batch_expand(B)));
-    REQUIRE(torch::allclose(a.batch_expand(B) + b.batch_expand(B), c.batch_expand(B)));
+    auto c = Tensor::create({{5.1, 4.2}, {4.2, 0.9}}, DTO);
+    REQUIRE(at::allclose(a + 2.0, c));
+    REQUIRE(at::allclose(a.batch_expand(B) + 2.0, c.batch_expand(B)));
+    REQUIRE(at::allclose(2.0 + a, c));
+    REQUIRE(at::allclose(2.0 + a.batch_expand(B), c.batch_expand(B)));
+    REQUIRE(at::allclose(a + b, c));
+    REQUIRE(at::allclose(a + b.batch_expand(B), c.batch_expand(B)));
+    REQUIRE(at::allclose(a.batch_expand(B) + b, c.batch_expand(B)));
+    REQUIRE(at::allclose(a.batch_expand(B) + b.batch_expand(B), c.batch_expand(B)));
   }
 
   SECTION("operator-")
   {
-    auto a = Tensor(torch::tensor({{3.1, 2.2}, {2.2, -1.1}}, DTO), 0);
+    auto a = Tensor::create({{3.1, 2.2}, {2.2, -1.1}}, DTO);
     auto b = Tensor::full({}, {2, 2}, 2.0, DTO);
-    auto c = Tensor(torch::tensor({{1.1, 0.2}, {0.2, -3.1}}, DTO), 0);
-    REQUIRE(torch::allclose(a - 2.0, c));
-    REQUIRE(torch::allclose(a.batch_expand(B) - 2.0, c.batch_expand(B)));
-    REQUIRE(torch::allclose(2.0 - a, -c));
-    REQUIRE(torch::allclose(2.0 - a.batch_expand(B), -c.batch_expand(B)));
-    REQUIRE(torch::allclose(a - b, c));
-    REQUIRE(torch::allclose(a - b.batch_expand(B), c.batch_expand(B)));
-    REQUIRE(torch::allclose(a.batch_expand(B) - b, c.batch_expand(B)));
-    REQUIRE(torch::allclose(a.batch_expand(B) - b.batch_expand(B), c.batch_expand(B)));
+    auto c = Tensor::create({{1.1, 0.2}, {0.2, -3.1}}, DTO);
+    REQUIRE(at::allclose(a - 2.0, c));
+    REQUIRE(at::allclose(a.batch_expand(B) - 2.0, c.batch_expand(B)));
+    REQUIRE(at::allclose(2.0 - a, -c));
+    REQUIRE(at::allclose(2.0 - a.batch_expand(B), -c.batch_expand(B)));
+    REQUIRE(at::allclose(a - b, c));
+    REQUIRE(at::allclose(a - b.batch_expand(B), c.batch_expand(B)));
+    REQUIRE(at::allclose(a.batch_expand(B) - b, c.batch_expand(B)));
+    REQUIRE(at::allclose(a.batch_expand(B) - b.batch_expand(B), c.batch_expand(B)));
   }
 
   SECTION("operator*")
   {
-    auto a = Tensor(torch::tensor({{3.1, 2.2}, {2.2, -1.1}}, DTO), 0);
+    auto a = Tensor::create({{3.1, 2.2}, {2.2, -1.1}}, DTO);
     auto b = Tensor::full({}, {2, 2}, 2.0, DTO);
-    auto c = Tensor(torch::tensor({{6.2, 4.4}, {4.4, -2.2}}, DTO), 0);
-    REQUIRE(torch::allclose(a * 2.0, c));
-    REQUIRE(torch::allclose(a.batch_expand(B) * 2.0, c.batch_expand(B)));
-    REQUIRE(torch::allclose(2.0 * a, c));
-    REQUIRE(torch::allclose(2.0 * a.batch_expand(B), c.batch_expand(B)));
+    auto c = Tensor::create({{6.2, 4.4}, {4.4, -2.2}}, DTO);
+    REQUIRE(at::allclose(a * 2.0, c));
+    REQUIRE(at::allclose(a.batch_expand(B) * 2.0, c.batch_expand(B)));
+    REQUIRE(at::allclose(2.0 * a, c));
+    REQUIRE(at::allclose(2.0 * a.batch_expand(B), c.batch_expand(B)));
   }
 
   SECTION("operator/")
   {
-    auto a = Tensor(torch::tensor({{3.1, 2.2}, {2.2, -1.1}}, DTO), 0);
+    auto a = Tensor::create({{3.1, 2.2}, {2.2, -1.1}}, DTO);
     auto b = Tensor::full({}, {2, 2}, 2.0, DTO);
-    auto c = Tensor(torch::tensor({{1.55, 1.1}, {1.1, -0.55}}, DTO), 0);
-    auto cinv = Tensor(1.0 / torch::tensor({{1.55, 1.1}, {1.1, -0.55}}, DTO), 0);
-    REQUIRE(torch::allclose(a / 2.0, c));
-    REQUIRE(torch::allclose(a.batch_expand(B) / 2.0, c.batch_expand(B)));
-    REQUIRE(torch::allclose(2.0 / a, cinv));
-    REQUIRE(torch::allclose(2.0 / a.batch_expand(B), cinv.batch_expand(B)));
-    REQUIRE(torch::allclose(a / b, c));
-    REQUIRE(torch::allclose(a / b.batch_expand(B), c.batch_expand(B)));
-    REQUIRE(torch::allclose(a.batch_expand(B) / b, c.batch_expand(B)));
-    REQUIRE(torch::allclose(a.batch_expand(B) / b.batch_expand(B), c.batch_expand(B)));
+    auto c = Tensor::create({{1.55, 1.1}, {1.1, -0.55}}, DTO);
+    auto cinv = 1.0 / Tensor::create({{1.55, 1.1}, {1.1, -0.55}}, DTO);
+    REQUIRE(at::allclose(a / 2.0, c));
+    REQUIRE(at::allclose(a.batch_expand(B) / 2.0, c.batch_expand(B)));
+    REQUIRE(at::allclose(2.0 / a, cinv));
+    REQUIRE(at::allclose(2.0 / a.batch_expand(B), cinv.batch_expand(B)));
+    REQUIRE(at::allclose(a / b, c));
+    REQUIRE(at::allclose(a / b.batch_expand(B), c.batch_expand(B)));
+    REQUIRE(at::allclose(a.batch_expand(B) / b, c.batch_expand(B)));
+    REQUIRE(at::allclose(a.batch_expand(B) / b.batch_expand(B), c.batch_expand(B)));
   }
 
   SECTION("pow")
   {
-    auto a = Tensor(torch::tensor({{3.0, 2.0}, {2.0, -1.1}}, DTO), 0);
+    auto a = Tensor::create({{3.0, 2.0}, {2.0, -1.1}}, DTO);
     auto b = Tensor::full({}, {2, 2}, 2.0, DTO);
-    auto c = Tensor(torch::tensor({{9.0, 4.0}, {4.0, 1.21}}, DTO), 0);
-    REQUIRE(torch::allclose(math::pow(a, 2.0), c));
-    REQUIRE(torch::allclose(math::pow(a.batch_expand(B), 2.0), c.batch_expand(B)));
+    auto c = Tensor::create({{9.0, 4.0}, {4.0, 1.21}}, DTO);
+    REQUIRE(at::allclose(pow(a, 2.0), c));
+    REQUIRE(at::allclose(pow(a.batch_expand(B), 2.0), c.batch_expand(B)));
   }
 
   SECTION("sign")
   {
-    auto a = Tensor(torch::tensor({{3.0, 2.0}, {2.0, -1.1}}, DTO), 0);
-    auto b = Tensor(torch::tensor({{1.0, 1.0}, {1.0, -1.0}}, DTO), 0);
-    REQUIRE(torch::allclose(math::sign(a), b));
-    REQUIRE(torch::allclose(math::sign(a.batch_expand(B)), b.batch_expand(B)));
+    auto a = Tensor::create({{3.0, 2.0}, {2.0, -1.1}}, DTO);
+    auto b = Tensor::create({{1.0, 1.0}, {1.0, -1.0}}, DTO);
+    REQUIRE(at::allclose(sign(a), b));
+    REQUIRE(at::allclose(sign(a.batch_expand(B)), b.batch_expand(B)));
   }
 
   SECTION("heaviside")
   {
-    auto a = Tensor(torch::tensor({{3.0, 2.0}, {2.0, -1.1}}, DTO), 0);
-    auto b = Tensor(torch::tensor({{1.0, 1.0}, {1.0, 0.0}}, DTO), 0);
-    REQUIRE(torch::allclose(math::heaviside(a), b));
-    REQUIRE(torch::allclose(math::heaviside(a.batch_expand(B)), b.batch_expand(B)));
+    auto a = Tensor::create({{3.0, 2.0}, {2.0, -1.1}}, DTO);
+    auto b = Tensor::create({{1.0, 1.0}, {1.0, 0.0}}, DTO);
+    REQUIRE(at::allclose(heaviside(a), b));
+    REQUIRE(at::allclose(heaviside(a.batch_expand(B)), b.batch_expand(B)));
   }
 
   SECTION("macaulay")
   {
-    auto a = Tensor(torch::tensor({{3.0, 2.0}, {2.0, -1.1}}, DTO), 0);
-    auto b = Tensor(torch::tensor({{3.0, 2.0}, {2.0, 0.0}}, DTO), 0);
-    REQUIRE(torch::allclose(math::macaulay(a), b));
-    REQUIRE(torch::allclose(math::macaulay(a.batch_expand(B)), b.batch_expand(B)));
-  }
-
-  SECTION("dmacaulay")
-  {
-    auto a = Tensor(torch::tensor({{3.0, 2.0}, {2.0, -1.1}}, DTO), 0);
-    auto b = Tensor(torch::tensor({{1.0, 1.0}, {1.0, 0.0}}, DTO), 0);
-    REQUIRE(torch::allclose(math::dmacaulay(a), b));
-    REQUIRE(torch::allclose(math::dmacaulay(a.batch_expand(B)), b.batch_expand(B)));
+    auto a = Tensor::create({{3.0, 2.0}, {2.0, -1.1}}, DTO);
+    auto b = Tensor::create({{3.0, 2.0}, {2.0, 0.0}}, DTO);
+    REQUIRE(at::allclose(macaulay(a), b));
+    REQUIRE(at::allclose(macaulay(a.batch_expand(B)), b.batch_expand(B)));
   }
 
   SECTION("sqrt")
   {
-    auto a = Tensor(torch::tensor({{4.0, 9.0}, {25.0, 64.0}}, DTO), 0);
-    auto b = Tensor(torch::tensor({{2.0, 3.0}, {5.0, 8.0}}, DTO), 0);
-    REQUIRE(torch::allclose(math::sqrt(a), b));
-    REQUIRE(torch::allclose(math::sqrt(a.batch_expand(B)), b.batch_expand(B)));
+    auto a = Tensor::create({{4.0, 9.0}, {25.0, 64.0}}, DTO);
+    auto b = Tensor::create({{2.0, 3.0}, {5.0, 8.0}}, DTO);
+    REQUIRE(at::allclose(sqrt(a), b));
+    REQUIRE(at::allclose(sqrt(a.batch_expand(B)), b.batch_expand(B)));
   }
 
   SECTION("exp")
   {
-    auto a = Tensor(torch::tensor({{3.0, 2.0}, {2.0, -1.1}}, DTO), 0);
-    auto b = Tensor(
-        torch::tensor(
-            {{20.085536923187668, 7.38905609893065}, {7.38905609893065, 0.33287108369807955}}, DTO),
-        0);
-    REQUIRE(torch::allclose(math::exp(a), b));
-    REQUIRE(torch::allclose(math::exp(a.batch_expand(B)), b.batch_expand(B)));
+    auto a = Tensor::create({{3.0, 2.0}, {2.0, -1.1}}, DTO);
+    auto b = Tensor::create(
+        {{20.085536923187668, 7.38905609893065}, {7.38905609893065, 0.33287108369807955}}, DTO);
+    REQUIRE(at::allclose(exp(a), b));
+    REQUIRE(at::allclose(exp(a.batch_expand(B)), b.batch_expand(B)));
   }
 
   SECTION("abs")
   {
-    auto a = Tensor(torch::tensor({{3.0, 2.0}, {2.0, -1.1}}, DTO), 0);
-    auto b = Tensor(torch::tensor({{3.0, 2.0}, {2.0, 1.1}}, DTO), 0);
-    REQUIRE(torch::allclose(math::abs(a), b));
-    REQUIRE(torch::allclose(math::abs(a.batch_expand(B)), b.batch_expand(B)));
+    auto a = Tensor::create({{3.0, 2.0}, {2.0, -1.1}}, DTO);
+    auto b = Tensor::create({{3.0, 2.0}, {2.0, 1.1}}, DTO);
+    REQUIRE(at::allclose(abs(a), b));
+    REQUIRE(at::allclose(abs(a.batch_expand(B)), b.batch_expand(B)));
   }
 }

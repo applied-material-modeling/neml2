@@ -34,7 +34,7 @@ using namespace neml2;
 
 TEST_CASE("Symmetry transforms", "[crystallography]")
 {
-  torch::manual_seed(42);
+  at::manual_seed(42);
   const auto & DTO = default_tensor_options();
 
   TensorShape B = {5, 3, 1, 2}; // batch shape
@@ -46,8 +46,8 @@ TEST_CASE("Symmetry transforms", "[crystallography]")
     SECTION("Identity")
     {
       auto op = identity_transform(DTO);
-      REQUIRE(torch::allclose(v.transform(op), v));
-      REQUIRE(torch::allclose(vb.transform(op), vb));
+      REQUIRE(at::allclose(v.transform(op), v));
+      REQUIRE(at::allclose(vb.transform(op), vb));
     }
     // 90 about z
     auto r = Rot::fill(0.0, 0, 0.41421356, DTO);
@@ -55,23 +55,23 @@ TEST_CASE("Symmetry transforms", "[crystallography]")
     {
       auto op = proper_rotation_transform(r);
       auto correct = Vec::fill(2.0, 1.0, 3.0, DTO);
-      REQUIRE(torch::allclose(v.transform(op), correct));
-      REQUIRE(torch::allclose(vb.transform(op), correct.batch_expand(B)));
+      REQUIRE(at::allclose(v.transform(op), correct));
+      REQUIRE(at::allclose(vb.transform(op), correct.batch_expand(B)));
     }
     // 90 about z
     SECTION("ImproperRotation")
     {
       auto op = improper_rotation_transform(r);
       auto correct = Vec::fill(2.0, 1.0, -3.0, DTO);
-      REQUIRE(torch::allclose(v.transform(op), correct));
-      REQUIRE(torch::allclose(vb.transform(op), correct.batch_expand(B)));
+      REQUIRE(at::allclose(v.transform(op), correct));
+      REQUIRE(at::allclose(vb.transform(op), correct.batch_expand(B)));
     }
     SECTION("Inversion")
     {
       auto op = inversion_transform(DTO);
       auto correct = Vec::fill(-1.0, 2.0, -3.0, DTO);
-      REQUIRE(torch::allclose(v.transform(op), correct));
-      REQUIRE(torch::allclose(vb.transform(op), correct.batch_expand(B)));
+      REQUIRE(at::allclose(v.transform(op), correct));
+      REQUIRE(at::allclose(vb.transform(op), correct.batch_expand(B)));
     }
   }
 }

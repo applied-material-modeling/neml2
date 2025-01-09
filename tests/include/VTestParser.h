@@ -24,7 +24,8 @@
 
 #pragma once
 
-#include "neml2/misc/parser_utils.h"
+#include "neml2/tensors/Tensor.h"
+#include "neml2/misc/string_utils.h"
 
 class VTestParser
 {
@@ -35,7 +36,7 @@ public:
 
   const std::vector<std::string> & headers() const { return _headers; }
 
-  torch::Tensor operator[](const std::string & key) const { return _data.at(key); }
+  neml2::Tensor operator[](const std::string & key) const { return _data.at(key); }
 
 private:
   void parse();
@@ -48,5 +49,5 @@ private:
 
   std::vector<std::string> _headers;
 
-  std::map<std::string, torch::Tensor> _data;
+  std::map<std::string, neml2::Tensor> _data;
 };

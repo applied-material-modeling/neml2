@@ -24,7 +24,8 @@
 
 #include "SampleNonlinearSystems.h"
 #include "neml2/tensors/Scalar.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/functions/pow.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {
@@ -53,8 +54,7 @@ PowerTestSystem::assemble(NonlinearSystem::Res<false> * residual,
   {
     *residual = NonlinearSystem::Res<false>(Tensor::zeros_like(_x));
     for (Size i = 0; i < _x.base_size(0); i++)
-      residual->base_index_put_({i},
-                                math::pow(_x.base_index({i}), Scalar(i + 1, _x.options())) - 1.0);
+      residual->base_index_put_({i}, pow(_x.base_index({i}), Scalar(i + 1, _x.options())) - 1.0);
   }
 
   if (Jacobian)
@@ -62,8 +62,7 @@ PowerTestSystem::assemble(NonlinearSystem::Res<false> * residual,
     *Jacobian = NonlinearSystem::Jac<false>(
         Tensor::zeros(_x.batch_sizes(), {_x.base_size(0), _x.base_size(0)}, _x.options()));
     for (Size i = 0; i < _x.base_size(0); i++)
-      Jacobian->base_index_put_({i, i},
-                                (i + 1) * math::pow(_x.base_index({i}), Scalar(i, _x.options())));
+      Jacobian->base_index_put_({i, i}, (i + 1) * pow(_x.base_index({i}), Scalar(i, _x.options())));
   }
 }
 
@@ -96,10 +95,10 @@ RosenbrockTestSystem::assemble(NonlinearSystem::Res<false> * residual,
 
     *residual = NonlinearSystem::Res<false>(Tensor::zeros_like(_x));
     residual->base_index_put_({indexing::Slice(1, -1)},
-                              200 * (xm - math::pow(xm_m1, 2.0)) -
-                                  400 * (xm_p1 - math::pow(xm, 2.0)) * xm - 2 * (1 - xm));
-    residual->base_index_put_({0}, -400 * x0 * (x1 - math::pow(x0, 2.0)) - 2 * (1 - x0));
-    residual->base_index_put_({-1}, 200.0 * (xn1 - math::pow(xn2, 2.0)));
+                              200 * (xm - pow(xm_m1, 2.0)) - 400 * (xm_p1 - pow(xm, 2.0)) * xm -
+                                  2 * (1 - xm));
+    residual->base_index_put_({0}, -400 * x0 * (x1 - pow(x0, 2.0)) - 2 * (1 - x0));
+    residual->base_index_put_({-1}, 200.0 * (xn1 - pow(xn2, 2.0)));
   }
 
   if (Jacobian)
@@ -112,16 +111,14 @@ RosenbrockTestSystem::assemble(NonlinearSystem::Res<false> * residual,
     auto x1 = _x.base_index({1});
 
     auto d1 = -400 * s_x0n1;
-    auto H = torch::diag_embed(d1, -1) + torch::diag_embed(d1, 1);
+    auto H = at::diag_embed(d1, -1) + at::diag_embed(d1, 1);
     auto diagonal = Tensor::zeros_like(_x);
 
-    diagonal.base_index_put_({0}, 1200 * math::pow(x0, 2.0) - 400.0 * x1 + 2);
+    diagonal.base_index_put_({0}, 1200 * pow(x0, 2.0) - 400.0 * x1 + 2);
     diagonal.base_index_put_({-1}, Scalar(200.0, _x.options()));
-    diagonal.base_index_put_({indexing::Slice(1, -1)},
-                             202 + 1200 * math::pow(s_x11, 2.0) - 400 * s_x2);
+    diagonal.base_index_put_({indexing::Slice(1, -1)}, 202 + 1200 * pow(s_x11, 2.0) - 400 * s_x2);
 
-    *Jacobian =
-        NonlinearSystem::Jac<false>(Tensor(torch::diag_embed(diagonal) + H, _x.batch_sizes()));
+    *Jacobian = NonlinearSystem::Jac<false>(Tensor(at::diag_embed(diagonal) + H, _x.batch_sizes()));
   }
 }
 

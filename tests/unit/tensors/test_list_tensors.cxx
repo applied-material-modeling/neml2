@@ -32,7 +32,7 @@ using namespace neml2;
 
 TEST_CASE("list_tensors", "[tensors]")
 {
-  torch::manual_seed(42);
+  at::manual_seed(42);
   const auto & DTO = default_tensor_options();
 
   TensorShape B = {5, 3, 1, 2}; // batch shape

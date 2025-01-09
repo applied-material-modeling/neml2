@@ -43,8 +43,7 @@ public:
   using PrimitiveTensor<R3, 3, 3, 3>::PrimitiveTensor;
 
   /// Alternating symbol
-  [[nodiscard]] static R3
-  levi_civita(const torch::TensorOptions & options = default_tensor_options());
+  [[nodiscard]] static R3 levi_civita(const TensorOptions & options = default_tensor_options());
 
   /// Accessor
   Scalar operator()(Size i, Size j, Size k) const;

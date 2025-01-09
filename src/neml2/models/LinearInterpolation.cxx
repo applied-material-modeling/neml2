@@ -23,13 +23,20 @@
 // THE SOFTWARE.
 
 #include "neml2/models/LinearInterpolation.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/functions/diff.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/Vec.h"
+#include "neml2/tensors/SR2.h"
 
 namespace neml2
 {
-register_NEML2_object(ScalarLinearInterpolation);
-register_NEML2_object(VecLinearInterpolation);
-register_NEML2_object(SR2LinearInterpolation);
+#define REGISTER(T)                                                                                \
+  using T##LinearInterpolation = LinearInterpolation<T>;                                           \
+  register_NEML2_object(T##LinearInterpolation);                                                   \
+  template class LinearInterpolation<T>
+REGISTER(Scalar);
+REGISTER(Vec);
+REGISTER(SR2);
 
 template <typename T>
 OptionSet
@@ -37,6 +44,7 @@ LinearInterpolation<T>::expected_options()
 {
   OptionSet options = Interpolation<T>::expected_options();
   options.doc() += " This object performs a _linear interpolation_.";
+  options.set<bool>("define_second_derivatives") = true;
   return options;
 }
 
@@ -50,8 +58,8 @@ template <typename T>
 void
 LinearInterpolation<T>::set_value(bool out, bool dout_din, bool d2out_din2)
 {
-  const auto slope = math::diff(this->_Y, 1, this->_Y.batch_dim() - 1) /
-                     math::diff(this->_X, 1, this->_X.batch_dim() - 1);
+  const auto slope =
+      diff(this->_Y, 1, this->_Y.batch_dim() - 1) / diff(this->_X, 1, this->_X.batch_dim() - 1);
   const auto X0 = this->_X.batch_index({indexing::Ellipsis, indexing::Slice(indexing::None, -1)})
                       .batch_expand_as(slope);
   const auto X1 = this->_X.batch_index({indexing::Ellipsis, indexing::Slice(1, indexing::None)})
@@ -60,8 +68,8 @@ LinearInterpolation<T>::set_value(bool out, bool dout_din, bool d2out_din2)
                       .batch_expand_as(slope);
 
   const auto x = Scalar(this->_x);
-  const auto loc = Scalar(torch::logical_and(torch::gt(x.batch_unsqueeze(-1), X0),
-                                             torch::le(x.batch_unsqueeze(-1), X1)));
+  const auto loc =
+      Scalar(at::logical_and(at::gt(x.batch_unsqueeze(-1), X0), at::le(x.batch_unsqueeze(-1), X1)));
   const auto si = mask<T>(slope, loc);
 
   if (out)
@@ -80,8 +88,4 @@ LinearInterpolation<T>::set_value(bool out, bool dout_din, bool d2out_din2)
     // zero
   }
 }
-
-template class LinearInterpolation<Scalar>;
-template class LinearInterpolation<Vec>;
-template class LinearInterpolation<SR2>;
 } // namespace neml2

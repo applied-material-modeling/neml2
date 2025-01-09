@@ -28,6 +28,8 @@
 
 namespace neml2
 {
+class Scalar;
+
 /// Any slip rule where all systems share the same strength
 class SingleSlipHardeningRule : public Model
 {

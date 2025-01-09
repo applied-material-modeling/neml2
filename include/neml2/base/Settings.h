@@ -24,10 +24,10 @@
 
 #pragma once
 
-#include "neml2/base/OptionSet.h"
-
 namespace neml2
 {
+class OptionSet;
+
 class Settings
 {
 public:

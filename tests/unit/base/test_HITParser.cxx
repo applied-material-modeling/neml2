@@ -26,12 +26,40 @@
 #include <catch2/matchers/catch_matchers_all.hpp>
 
 #include "neml2/base/HITParser.h"
+#include "neml2/base/TensorName.h"
+#include "neml2/base/EnumSelection.h"
+
 #include "SampleParserTestingModel.h"
 
 using namespace neml2;
 
 TEST_CASE("HITParser", "[base]")
 {
+  SECTION("parse")
+  {
+    SECTION("TensorShape")
+    {
+      REQUIRE(utils::parse<TensorShape>("(1,2,3,4,5,6)") == TensorShape{1, 2, 3, 4, 5, 6});
+      REQUIRE(utils::parse<TensorShape>("(1,2,3)") == TensorShape{1, 2, 3});
+      REQUIRE(utils::parse<TensorShape>("(1,2,3,)") == TensorShape{1, 2, 3});
+      REQUIRE(utils::parse<TensorShape>("(,1,2,3)") == TensorShape{1, 2, 3});
+      REQUIRE(utils::parse<TensorShape>("(,1,2,3,)") == TensorShape{1, 2, 3});
+      REQUIRE(utils::parse<TensorShape>("( ,  1, 2, 3 , )") == TensorShape{1, 2, 3});
+      REQUIRE(utils::parse<TensorShape>("()") == TensorShape{});
+      REQUIRE_THROWS_WITH(
+          utils::parse<TensorShape>("1"),
+          Catch::Matchers::ContainsSubstring("a shape must start with '(' and end with ')'"));
+    }
+
+    SECTION("bool")
+    {
+      REQUIRE(utils::parse<bool>("true"));
+      REQUIRE(!utils::parse<bool>("false"));
+      REQUIRE_THROWS_WITH(utils::parse<bool>("off"),
+                          Catch::Matchers::ContainsSubstring("Failed to parse boolean value"));
+    }
+  }
+
   SECTION("class HITParser")
   {
     HITParser parser;
@@ -51,10 +79,8 @@ TEST_CASE("HITParser", "[base]")
       SECTION("global settings")
       {
         auto & settings = all_options.settings();
-        REQUIRE(settings.get<EnumSelection>("default_floating_point_type").as<torch::Dtype>() ==
-                torch::kFloat16);
-        REQUIRE(settings.get<EnumSelection>("default_integer_type").as<torch::Dtype>() ==
-                torch::kInt32);
+        REQUIRE(settings.get<EnumSelection>("default_floating_point_type").as<Dtype>() == kFloat16);
+        REQUIRE(settings.get<EnumSelection>("default_integer_type").as<Dtype>() == kInt32);
         REQUIRE(settings.get<std::string>("default_device") == "cuda:1");
         REQUIRE(settings.get<Real>("machine_precision") == Catch::Approx(0.5));
         REQUIRE(settings.get<Real>("tolerance") == Catch::Approx(0.1));

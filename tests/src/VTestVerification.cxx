@@ -22,11 +22,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <torch/script.h>
+
 #include "VTestVerification.h"
 #include "neml2/drivers/TransientDriver.h"
-#include "neml2/misc/parser_utils.h"
-
-#include <torch/script.h>
+#include "neml2/misc/string_utils.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {
@@ -38,7 +39,7 @@ VTestVerification::expected_options()
   OptionSet options = Driver::expected_options();
   options.set<std::string>("driver");
   options.set<std::vector<std::string>>("variables");
-  options.set<std::vector<CrossRef<torch::Tensor>>>("references");
+  options.set<std::vector<TensorName>>("references");
   options.set<Real>("rtol") = 1e-5;
   options.set<Real>("atol") = 1e-8;
   return options;
@@ -51,7 +52,7 @@ VTestVerification::VTestVerification(const OptionSet & options)
     _atol(options.get<Real>("atol"))
 {
   const auto vars = options.get<std::vector<std::string>>("variables");
-  const auto vals = options.get<std::vector<CrossRef<torch::Tensor>>>("references");
+  const auto vals = options.get<std::vector<TensorName>>("references");
   neml_assert(vars.size() == vals.size(),
               "Must provide the same number of variables and references. ",
               vars.size(),
@@ -59,17 +60,16 @@ VTestVerification::VTestVerification(const OptionSet & options)
               vals.size(),
               " references provided.");
   for (std::size_t i = 0; i < vars.size(); i++)
-    _ref[vars[i]] = vals[i];
+    _ref[vars[i]] = ATensor(vals[i]);
 }
 
 void
-VTestVerification::diagnose(std::vector<Diagnosis> & diagnoses) const
+VTestVerification::diagnose() const
 {
-  Driver::diagnose(diagnoses);
-  _driver.diagnose(diagnoses);
+  Driver::diagnose();
+  neml2::diagnose(_driver);
 
-  diagnostic_assert(diagnoses,
-                    !_driver.save_as_path().empty(),
+  diagnostic_assert(!_driver.save_as_path().empty(),
                     "The driver does not save any results. Use the save_as option to specify the "
                     "destination file/path.");
 }
@@ -79,7 +79,7 @@ VTestVerification::run()
 {
   _driver.run();
 
-  auto res = torch::jit::load(_driver.save_as_path());
+  auto res = jit::load(_driver.save_as_path());
   auto err_msg = diff(res.named_buffers(), _ref, _rtol, _atol);
 
   neml_assert(err_msg.empty(), err_msg);
@@ -88,12 +88,12 @@ VTestVerification::run()
 }
 
 std::string
-diff(const torch::jit::named_buffer_list & res,
-     const std::map<std::string, torch::Tensor> & ref_map,
+diff(const jit::named_buffer_list & res,
+     const std::map<std::string, ATensor> & ref_map,
      Real rtol,
      Real atol)
 {
-  std::map<std::string, torch::Tensor> res_map;
+  std::map<std::string, ATensor> res_map;
   for (auto item : res)
     res_map.emplace(item.name, item.value);
 
@@ -114,15 +114,15 @@ diff(const torch::jit::named_buffer_list & res,
 
       if (!res_map.count(resname))
       {
-        if (!torch::allclose(refi, torch::zeros_like(refi)))
+        if (!at::allclose(refi, at::zeros_like(refi)))
           err_msg << "Result is missing variable " << resname << ".\n";
         continue;
       }
 
       const auto resi = res_map[resname].squeeze();
-      if (!torch::allclose(resi, refi, rtol, atol))
+      if (!at::allclose(resi, refi, rtol, atol))
       {
-        const auto diff = torch::abs(resi - refi) - rtol * torch::abs(refi);
+        const auto diff = at::abs(resi - refi) - rtol * at::abs(refi);
         err_msg << "Result has wrong value for variable " << resname
                 << ". Maximum mixed difference = " << std::scientific << diff.max().item<Real>()
                 << " > atol = " << std::scientific << atol << "\n";

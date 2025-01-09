@@ -22,7 +22,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/misc/math.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/R2.h"
@@ -34,19 +33,24 @@
 #include "neml2/tensors/SWR4.h"
 #include "neml2/tensors/WR2.h"
 #include "neml2/tensors/R4.h"
+#include "neml2/tensors/assertions.h"
 
-#include <ATen/ops/linalg_vecdot.h>
+#include "neml2/tensors/mandel_notation.h"
+#include "neml2/tensors/functions/sqrt.h"
+#include "neml2/tensors/functions/sum.h"
+#include "neml2/tensors/functions/stack.h"
+#include "neml2/tensors/functions/linalg/vecdot.h"
 
 namespace neml2
 {
 
 SR2::SR2(const R2 & T)
-  : SR2(math::full_to_mandel((T + T.transpose()) / 2.0))
+  : SR2(full_to_mandel((T + T.transpose()) / 2.0))
 {
 }
 
 SR2
-SR2::fill(const Real & a, const torch::TensorOptions & options)
+SR2::fill(const Real & a, const TensorOptions & options)
 {
   return SR2::fill(Scalar(a, options));
 }
@@ -54,15 +58,12 @@ SR2::fill(const Real & a, const torch::TensorOptions & options)
 SR2
 SR2::fill(const Scalar & a)
 {
-  auto zero = torch::zeros_like(a);
-  return SR2(torch::stack({a, a, a, zero, zero, zero}, -1), a.batch_sizes());
+  auto zero = Scalar::zeros_like(a);
+  return SR2(base_stack({a, a, a, zero, zero, zero}, -1));
 }
 
 SR2
-SR2::fill(const Real & a11,
-          const Real & a22,
-          const Real & a33,
-          const torch::TensorOptions & options)
+SR2::fill(const Real & a11, const Real & a22, const Real & a33, const TensorOptions & options)
 {
   return SR2::fill(Scalar(a11, options), Scalar(a22, options), Scalar(a33, options));
 }
@@ -70,8 +71,8 @@ SR2::fill(const Real & a11,
 SR2
 SR2::fill(const Scalar & a11, const Scalar & a22, const Scalar & a33)
 {
-  auto zero = torch::zeros_like(a11);
-  return SR2(torch::stack({a11, a22, a33, zero, zero, zero}, -1), a11.batch_sizes());
+  auto zero = Scalar::zeros_like(a11);
+  return SR2(base_stack({a11, a22, a33, zero, zero, zero}, -1));
 }
 
 SR2
@@ -81,7 +82,7 @@ SR2::fill(const Real & a11,
           const Real & a23,
           const Real & a13,
           const Real & a12,
-          const torch::TensorOptions & options)
+          const TensorOptions & options)
 {
   return SR2::fill(Scalar(a11, options),
                    Scalar(a22, options),
@@ -99,24 +100,18 @@ SR2::fill(const Scalar & a11,
           const Scalar & a13,
           const Scalar & a12)
 {
-  return SR2(torch::stack({a11,
-                           a22,
-                           a33,
-                           math::mandel_factor(3) * a23,
-                           math::mandel_factor(4) * a13,
-                           math::mandel_factor(5) * a12},
-                          -1),
-             a11.batch_sizes());
+  return SR2(base_stack(
+      {a11, a22, a33, mandel_factor(3) * a23, mandel_factor(4) * a13, mandel_factor(5) * a12}, -1));
 }
 
 SR2
-SR2::identity(const torch::TensorOptions & options)
+SR2::identity(const TensorOptions & options)
 {
-  return SR2(torch::tensor({1, 1, 1, 0, 0, 0}, options), 0);
+  return SR2::create({1, 1, 1, 0, 0, 0}, options);
 }
 
 SSR4
-SR2::identity_map(const torch::TensorOptions & options)
+SR2::identity_map(const TensorOptions & options)
 {
   return SSR4::identity_sym(options);
 }
@@ -137,27 +132,27 @@ SFR3
 SR2::drotate(const Rot & r) const
 {
   auto dR = R2(*this).drotate(r);
-  return math::full_to_mandel(dR);
+  return full_to_mandel(dR);
 }
 
 SFFR4
 SR2::drotate(const R2 & R) const
 {
   auto dR = R2(*this).drotate(R);
-  return math::full_to_mandel(dR);
+  return full_to_mandel(dR);
 }
 
 Scalar
 SR2::operator()(Size i, Size j) const
 {
-  Size a = math::mandel_reverse_index[i][j];
-  return base_index({a}) / math::mandel_factor(a);
+  Size a = mandel_reverse_index[i][j];
+  return base_index({a}) / mandel_factor(a);
 }
 
 Scalar
 SR2::tr() const
 {
-  return Scalar(torch::sum(base_index({torch::indexing::Slice(0, 3)}), {-1}), batch_sizes());
+  return Scalar(base_sum(base_index({indexing::Slice(0, 3)}), -1), batch_sizes());
 }
 
 SR2
@@ -188,8 +183,7 @@ SR2::det() const
 Scalar
 SR2::inner(const SR2 & other) const
 {
-  neml_assert_broadcastable_dbg(*this, other);
-  return Scalar(torch::linalg_vecdot(*this, other), broadcast_batch_dim(*this, other));
+  return linalg::vecdot(*this, other);
 }
 
 Scalar
@@ -201,14 +195,14 @@ SR2::norm_sq() const
 Scalar
 SR2::norm(Real eps) const
 {
-  return math::sqrt(norm_sq() + eps);
+  return neml2::sqrt(norm_sq() + eps);
 }
 
 SSR4
 SR2::outer(const SR2 & other) const
 {
   neml_assert_broadcastable_dbg(*this, other);
-  return SSR4(torch::einsum("...i,...j", {*this, other}), broadcast_batch_dim(*this, other));
+  return SSR4(at::einsum("...i,...j", {*this, other}), utils::broadcast_batch_dim(*this, other));
 }
 
 SR2

@@ -25,9 +25,12 @@
 #include "neml2/models/solid_mechanics/crystal_plasticity/PlasticDeformationRate.h"
 #include "neml2/models/crystallography/CrystalGeometry.h"
 
-#include "neml2/tensors/tensors.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/R2.h"
+#include "neml2/tensors/SR2.h"
+#include "neml2/tensors/SFFR4.h"
 #include "neml2/tensors/list_tensors.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/functions/sum.h"
 
 namespace neml2
 {
@@ -72,11 +75,9 @@ PlasticDeformationRate::PlasticDeformationRate(const OptionSet & options)
 }
 
 void
-PlasticDeformationRate::set_value(bool out, bool dout_din, bool d2out_din2)
+PlasticDeformationRate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
-
-  const auto dp_crystal = math::batch_sum(_g * _crystal_geometry.M(), -1);
+  const auto dp_crystal = batch_sum(_g * _crystal_geometry.M(), -1);
 
   if (out)
     _dp = dp_crystal.rotate(_R);

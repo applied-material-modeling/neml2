@@ -23,13 +23,20 @@
 // THE SOFTWARE.
 
 #include "neml2/models/ForwardEulerTimeIntegration.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/Vec.h"
+#include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
 
 namespace neml2
 {
-register_NEML2_object(ScalarForwardEulerTimeIntegration);
-register_NEML2_object(VecForwardEulerTimeIntegration);
-register_NEML2_object(SR2ForwardEulerTimeIntegration);
+#define REGISTER(T)                                                                                \
+  using T##ForwardEulerTimeIntegration = ForwardEulerTimeIntegration<T>;                           \
+  register_NEML2_object(T##ForwardEulerTimeIntegration);                                           \
+  template class ForwardEulerTimeIntegration<T>
+REGISTER(Scalar);
+REGISTER(Vec);
+REGISTER(SR2);
 
 template <typename T>
 OptionSet
@@ -69,20 +76,18 @@ ForwardEulerTimeIntegration<T>::ForwardEulerTimeIntegration(const OptionSet & op
 
 template <typename T>
 void
-ForwardEulerTimeIntegration<T>::diagnose(std::vector<Diagnosis> & diagnoses) const
+ForwardEulerTimeIntegration<T>::diagnose() const
 {
-  Model::diagnose(diagnoses);
-  diagnostic_assert_state(diagnoses, _s);
-  diagnostic_assert_state(diagnoses, _ds_dt);
-  diagnostic_assert_force(diagnoses, _t);
+  Model::diagnose();
+  diagnostic_assert_state(_s);
+  diagnostic_assert_state(_ds_dt);
+  diagnostic_assert_force(_t);
 }
 
 template <typename T>
 void
-ForwardEulerTimeIntegration<T>::set_value(bool out, bool dout_din, bool d2out_din2)
+ForwardEulerTimeIntegration<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert(!d2out_din2, "ForwardEulerTimeIntegration does not implement second derivatives");
-
   if (out)
     _s = _sn + _ds_dt * (_t - _tn);
 
@@ -100,8 +105,4 @@ ForwardEulerTimeIntegration<T>::set_value(bool out, bool dout_din, bool d2out_di
     _s.d(_tn) = -_ds_dt;
   }
 }
-
-template class ForwardEulerTimeIntegration<Scalar>;
-template class ForwardEulerTimeIntegration<Vec>;
-template class ForwardEulerTimeIntegration<SR2>;
 } // namespace neml2

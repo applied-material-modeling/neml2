@@ -28,6 +28,8 @@
 
 namespace neml2
 {
+class Scalar;
+
 /// Voce slip hardening when all slip systems share the same hardening value, \f$\dot{\bar{\tau}} = \theta_0 \left(1 - \frac{\bar{\tau}}{\tau_{sat}} \right) \sum \left|\dot{\gamma}_i \right|\f$
 class VoceSingleSlipHardeningRule : public SingleSlipHardeningRule
 {

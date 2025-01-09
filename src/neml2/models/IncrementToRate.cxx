@@ -23,13 +23,23 @@
 // THE SOFTWARE.
 
 #include "neml2/models/IncrementToRate.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/Vec.h"
+#include "neml2/tensors/SR2.h"
+#include "neml2/tensors/R2.h"
+#include "neml2/tensors/SSR4.h"
+#include "neml2/tensors/R4.h"
 
 namespace neml2
 {
-register_NEML2_object(R2IncrementToRate);
-register_NEML2_object(ScalarIncrementToRate);
-register_NEML2_object(SR2IncrementToRate);
-register_NEML2_object(VecIncrementToRate);
+#define REGISTER(T)                                                                                \
+  using T##IncrementToRate = IncrementToRate<T>;                                                   \
+  register_NEML2_object(T##IncrementToRate);                                                       \
+  template class IncrementToRate<T>
+REGISTER(Scalar);
+REGISTER(Vec);
+REGISTER(SR2);
+REGISTER(R2);
 
 template <typename T>
 OptionSet
@@ -67,10 +77,8 @@ IncrementToRate<T>::IncrementToRate(const OptionSet & options)
 
 template <typename T>
 void
-IncrementToRate<T>::set_value(bool out, bool dout_din, bool d2out_din2)
+IncrementToRate<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert(!d2out_din2, "IncrementToRate does not implement second derivatives");
-
   auto dt = _t - _tn;
 
   if (out)
@@ -86,9 +94,4 @@ IncrementToRate<T>::set_value(bool out, bool dout_din, bool d2out_din2)
       _dv_dt.d(_tn) = _dv / dt / dt;
   }
 }
-
-template class IncrementToRate<R2>;
-template class IncrementToRate<Scalar>;
-template class IncrementToRate<SR2>;
-template class IncrementToRate<Vec>;
 } // namespace neml2

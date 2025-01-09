@@ -23,6 +23,11 @@
 // THE SOFTWARE.
 
 #include "neml2/models/BufferStore.h"
+#include "neml2/misc/assertions.h"
+#include "neml2/base/NEML2Object.h"
+#include "neml2/base/TensorName.h"
+#include "neml2/tensors/tensors.h"
+#include "neml2/tensors/TensorValue.h"
 
 namespace neml2
 {
@@ -32,7 +37,7 @@ BufferStore::BufferStore(OptionSet options, NEML2Object * object)
 {
 }
 
-Storage<std::string, TensorValueBase> &
+std::map<std::string, std::unique_ptr<TensorValueBase>> &
 BufferStore::named_buffers()
 {
   neml_assert(_object->host() == _object,
@@ -44,25 +49,15 @@ TensorValueBase &
 BufferStore::get_buffer(const std::string & name)
 {
   neml_assert(_object->host() == _object, "This method should only be called on the host model.");
-  auto * base_ptr = _buffer_values.query_value(name);
-  neml_assert(base_ptr, "Buffer named ", name, " does not exist.");
-  return *base_ptr;
-}
-
-const TensorValueBase &
-BufferStore::get_buffer(const std::string & name) const
-{
-  neml_assert(_object->host() == _object, "This method should only be called on the host model.");
-  const auto * base_ptr = _buffer_values.query_value(name);
-  neml_assert(base_ptr, "Buffer named ", name, " does not exist.");
-  return *base_ptr;
+  neml_assert(_buffer_values.count(name), "Buffer named ", name, " does not exist.");
+  return *_buffer_values[name];
 }
 
 void
-BufferStore::send_buffers_to(const torch::TensorOptions & options)
+BufferStore::send_buffers_to(const TensorOptions & options)
 {
   for (auto && [name, buffer] : _buffer_values)
-    buffer.to_(options);
+    buffer->to_(options);
 }
 
 template <typename T, typename>
@@ -76,12 +71,13 @@ BufferStore::declare_buffer(const std::string & name, const T & rawval)
   TensorValueBase * base_ptr = nullptr;
 
   // If the buffer already exists, return its reference
-  if (_buffer_values.has_key(name))
+  if (_buffer_values.count(name))
     base_ptr = &get_buffer(name);
   else
   {
     auto val = std::make_unique<TensorValue<T>>(rawval);
-    base_ptr = _buffer_values.set_pointer(name, std::move(val));
+    auto [it, success] = _buffer_values.emplace(name, std::move(val));
+    base_ptr = it->second.get();
   }
 
   auto ptr = dynamic_cast<TensorValue<T> *>(base_ptr);
@@ -91,9 +87,9 @@ BufferStore::declare_buffer(const std::string & name, const T & rawval)
 
 template <typename T, typename>
 const T &
-BufferStore::declare_buffer(const std::string & name, const CrossRef<T> & crossref)
+BufferStore::declare_buffer(const std::string & name, const TensorName & tensorname)
 {
-  return declare_buffer(name, T(crossref));
+  return declare_buffer(name, T(tensorname));
 }
 
 template <typename T, typename>
@@ -103,8 +99,8 @@ BufferStore::declare_buffer(const std::string & name, const std::string & input_
   if (_object_options.contains<T>(input_option_name))
     return declare_buffer(name, _object_options.get<T>(input_option_name));
 
-  if (_object_options.contains<CrossRef<T>>(input_option_name))
-    return declare_buffer(name, T(_object_options.get<CrossRef<T>>(input_option_name)));
+  if (_object_options.contains<TensorName>(input_option_name))
+    return declare_buffer(name, T(_object_options.get<TensorName>(input_option_name)));
 
   throw NEMLException(
       "Trying to register buffer named " + name + " from input option named " + input_option_name +
@@ -115,12 +111,12 @@ BufferStore::declare_buffer(const std::string & name, const std::string & input_
 
 #define BUFFERSTORE_INTANTIATE_TENSORBASE(T)                                                       \
   template const T & BufferStore::declare_buffer<T>(const std::string &, const T &);               \
-  template const T & BufferStore::declare_buffer<T>(const std::string &, const CrossRef<T> &);     \
+  template const T & BufferStore::declare_buffer<T>(const std::string &, const TensorName &);      \
   template const T & BufferStore::declare_buffer<T>(const std::string &, const std::string &)
 FOR_ALL_TENSORBASE(BUFFERSTORE_INTANTIATE_TENSORBASE);
 
 void
-BufferStore::assign_buffer_stack(torch::jit::Stack & stack)
+BufferStore::assign_buffer_stack(jit::Stack & stack)
 {
   const auto & buffers = _object->host<BufferStore>()->named_buffers();
 
@@ -136,21 +132,21 @@ BufferStore::assign_buffer_stack(torch::jit::Stack & stack)
   for (auto && [name, buffer] : buffers)
   {
     const auto tensor = stack[i++].toTensor();
-    buffer = Tensor(tensor, tensor.dim() - Tensor(buffer).base_dim());
+    (*buffer) = Tensor(tensor, tensor.dim() - Tensor(*buffer).base_dim());
   }
 
   // Drop the input variables from the stack
-  torch::jit::drop(stack, buffers.size());
+  jit::drop(stack, buffers.size());
 }
 
-torch::jit::Stack
+jit::Stack
 BufferStore::collect_buffer_stack() const
 {
   const auto & buffers = _object->host<BufferStore>()->named_buffers();
-  torch::jit::Stack stack;
+  jit::Stack stack;
   stack.reserve(buffers.size());
   for (auto && [name, buffer] : buffers)
-    stack.push_back(Tensor(buffer));
+    stack.push_back(Tensor(*buffer));
   return stack;
 }
 } // namespace neml2

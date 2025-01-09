@@ -21,9 +21,13 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+
 #pragma once
 
-#include "neml2/base/OptionSet.h"
+#include <memory>
+#include <map>
+
+#include "neml2/misc/string_utils.h"
 
 namespace neml2
 {
@@ -38,6 +42,7 @@ namespace neml2
   static const char dummyvar_for_registering_obj_##classname =                                     \
       Registry::add<classname>(registryname)
 
+class OptionSet;
 class NEML2Object;
 
 using BuildPtr = std::shared_ptr<NEML2Object> (*)(const OptionSet & options);

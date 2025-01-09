@@ -29,7 +29,6 @@ list(APPEND CMAKE_MODULE_PATH ${NEML2_SOURCE_DIR}/cmake/Modules) # CMake modules
 set(CMAKE_CXX_FLAGS_COVERAGE "-O0 -fprofile-arcs -ftest-coverage" CACHE STRING "Flags used by C++ compiler during coverage builds." FORCE)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY ON)
 set(NEML2_TESTS ON CACHE BOOL "Build NEML2 tests")
 set(NEML2_RUNNER OFF CACHE BOOL "Build a simple runner for benchmarking, profiling, debugging, etc.")
 set(NEML2_PYBIND OFF CACHE BOOL "Build NEML2 Python bindings")
@@ -48,7 +47,6 @@ set(CATCH2_VERSION "3.5.4")
 set(GPERFTOOLS_VERSION "2.15")
 set(ARGPARSE_VERSION "3.0")
 set(TIMPI_VERSION "1.8.5_bootstrapped")
-set(HWLOC_VERSION "2.11.2")
 include(NEML2Dependencies)
 
 # ----------------------------------------------------------------------------
@@ -88,6 +86,9 @@ endif()
 # ----------------------------------------------------------------------------
 # base neml2 library
 add_subdirectory(src/neml2)
+
+# Re-export the libraries for when neml2 is included as a subdirectory
+set(NEML2_LIBS ${NEML2_LIBS} PARENT_SCOPE)
 
 # tests
 if(NEML2_TESTS)

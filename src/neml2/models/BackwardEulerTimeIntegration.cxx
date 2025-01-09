@@ -71,20 +71,18 @@ BackwardEulerTimeIntegration<T>::BackwardEulerTimeIntegration(const OptionSet & 
 
 template <typename T>
 void
-BackwardEulerTimeIntegration<T>::diagnose(std::vector<Diagnosis> & diagnoses) const
+BackwardEulerTimeIntegration<T>::diagnose() const
 {
-  Model::diagnose(diagnoses);
-  diagnostic_assert_state(diagnoses, _s);
-  diagnostic_assert_state(diagnoses, _ds_dt);
-  diagnostic_assert_force(diagnoses, _t);
+  Model::diagnose();
+  diagnostic_assert_state(_s);
+  diagnostic_assert_state(_ds_dt);
+  diagnostic_assert_force(_t);
 }
 
 template <typename T>
 void
-BackwardEulerTimeIntegration<T>::set_value(bool out, bool dout_din, bool d2out_din2)
+BackwardEulerTimeIntegration<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert(!d2out_din2, "BackwardEulerTimeIntegration does not implement second derivatives");
-
   if (out)
     _r = _s - _sn - _ds_dt * (_t - _tn);
 

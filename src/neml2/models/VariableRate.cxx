@@ -23,13 +23,20 @@
 // THE SOFTWARE.
 
 #include "neml2/models/VariableRate.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/Vec.h"
+#include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
 
 namespace neml2
 {
-register_NEML2_object(ScalarVariableRate);
-register_NEML2_object(VecVariableRate);
-register_NEML2_object(SR2VariableRate);
+#define REGISTER(T)                                                                                \
+  using T##VariableRate = VariableRate<T>;                                                         \
+  register_NEML2_object(T##VariableRate);                                                          \
+  template class VariableRate<T>
+REGISTER(Scalar);
+REGISTER(Vec);
+REGISTER(SR2);
 
 template <typename T>
 OptionSet
@@ -67,18 +74,16 @@ VariableRate<T>::VariableRate(const OptionSet & options)
 
 template <typename T>
 void
-VariableRate<T>::diagnose(std::vector<Diagnosis> & diagnoses) const
+VariableRate<T>::diagnose() const
 {
-  Model::diagnose(diagnoses);
-  diagnostic_assert_force(diagnoses, _t);
+  Model::diagnose();
+  diagnostic_assert_force(_t);
 }
 
 template <typename T>
 void
-VariableRate<T>::set_value(bool out, bool dout_din, bool d2out_din2)
+VariableRate<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert(!d2out_din2, "VariableRate does not implement second derivatives");
-
   auto dv = _v - _vn;
   auto dt = _t - _tn;
 
@@ -102,8 +107,4 @@ VariableRate<T>::set_value(bool out, bool dout_din, bool d2out_din2)
     _dv_dt.d(_tn) = dv / dt / dt;
   }
 }
-
-template class VariableRate<Scalar>;
-template class VariableRate<Vec>;
-template class VariableRate<SR2>;
 } // namespace neml2

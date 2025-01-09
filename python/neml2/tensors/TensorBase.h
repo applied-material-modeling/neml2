@@ -30,7 +30,8 @@
 #include "python/neml2/types.h"
 #include "neml2/tensors/tensors.h"
 #include "neml2/tensors/macros.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/functions/pow.h"
+#include "neml2/misc/string_utils.h"
 
 namespace py = pybind11;
 
@@ -249,9 +250,9 @@ def_TensorBase(py::class_<Derived> & c)
       .def(py::self / Scalar())
       .def(py::self / py::self)
       .def(-py::self)
-      .def("__pow__", [](const Derived & a, float b) { return math::pow(a, b); })
-      .def("__pow__", [](const Derived & a, const Scalar & b) { return math::pow(a, b); })
-      .def("__rpow__", [](const Derived & a, float b) { return math::pow(b, a); });
+      .def("__pow__", [](const Derived & a, float b) { return neml2::pow(a, b); })
+      .def("__pow__", [](const Derived & a, const Scalar & b) { return neml2::pow(a, b); })
+      .def("__rpow__", [](const Derived & a, float b) { return neml2::pow(b, a); });
 
   // Static methods
   c.def_static("empty_like", &Derived::empty_like)

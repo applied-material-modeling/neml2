@@ -25,7 +25,6 @@
 #pragma once
 
 #include "neml2/models/Model.h"
-#include "neml2/tensors/macros.h"
 
 namespace neml2
 {
@@ -49,7 +48,4 @@ protected:
   /// Souce variable
   const Variable<T> & _from;
 };
-
-#define COPYVARIABLE_TYPEDEF_PRIMITIVETENSOR(T) typedef CopyVariable<T> Copy##T
-FOR_ALL_PRIMITIVETENSOR(COPYVARIABLE_TYPEDEF_PRIMITIVETENSOR);
 } // namespace neml2

@@ -25,7 +25,7 @@ jobs:
       - name: Run clang-format style check
         uses: jidicula/clang-format-action@v4.11.0
         with:
-          clang-format-version: "17"
+          clang-format-version: "19"
           check-path: ${{ matrix.path }}
 
   # TODO: Re-enable the linting checks
@@ -54,7 +54,7 @@ jobs:
           ../build/dev/tests/unit/unit_tests -r JUnit::out=unit_tests.xml -r console::out=-::colour-mode=ansi
           ../build/dev/tests/regression/regression_tests -r JUnit::out=regression_tests.xml -r console::out=-::colour-mode=ansi
           ../build/dev/tests/verification/verification_tests -r JUnit::out=verification_tests.xml -r console::out=-::colour-mode=ansi
-          ../build/dev/tests/dispatcher/dispatcher_tests -r JUnit::out=dispatcher_tests.xml -r console::out=-::colour-mode=ansi
+          ../build/dev/tests/dispatchers/dispatcher_tests -r JUnit::out=dispatcher_tests.xml -r console::out=-::colour-mode=ansi
       - name: Test results
         uses: EnricoMi/publish-unit-test-result-action/linux@v2
         if: always()

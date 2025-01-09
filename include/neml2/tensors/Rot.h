@@ -53,11 +53,10 @@ public:
   Rot(const Vec & v);
 
   /// The identity rotation, helpfully the zero vector
-  [[nodiscard]] static Rot
-  identity(const torch::TensorOptions & options = default_tensor_options());
+  [[nodiscard]] static Rot identity(const TensorOptions & options = default_tensor_options());
 
   /// Fill from an array of Euler angles
-  static Rot fill_euler_angles(const torch::Tensor & vals,
+  static Rot fill_euler_angles(const Vec & v,
                                const std::string & angle_convention,
                                const std::string & angle_type);
 

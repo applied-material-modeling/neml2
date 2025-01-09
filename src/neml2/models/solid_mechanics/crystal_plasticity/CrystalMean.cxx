@@ -25,7 +25,7 @@
 #include "neml2/models/solid_mechanics/crystal_plasticity/CrystalMean.h"
 #include "neml2/models/crystallography/CrystalGeometry.h"
 #include "neml2/tensors/tensors.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/functions/mean.h"
 
 namespace neml2
 {
@@ -68,7 +68,7 @@ void
 CrystalMean<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   if (out)
-    _to = math::batch_mean(T(_from), -1);
+    _to = batch_mean(T(_from), -1);
 
   if (dout_din)
     if (_from.is_dependent())

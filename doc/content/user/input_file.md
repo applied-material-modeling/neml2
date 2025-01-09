@@ -76,7 +76,7 @@ The cross-referencing mechanism allows object options in the input file to _refe
 ```
 In the above example, the object of type `ImplicitUpdate` references an implicit model named "implicit_rate" and a solver named "newton".
 
-In addition to directly referencing objects by their names, a few special types support more flexible referencing mechanisms. `torch::Tensor`, `Tensor`, and all primitive tensor types with fixed base shapes such as `Scalar`, `SR2`, etc, can be referenced either by value or by name.
+In addition to directly referencing objects by their names, a few special types support more flexible referencing mechanisms. `ATensor`, `Tensor`, and all primitive tensor types with fixed base shapes such as `Scalar`, `SR2`, etc, can be referenced either by value or by name.
 
 When a tensor is referenced by value, the parser will parse the input option value as a numeric literal and return a tensor filled with the specified value; when a tensor is referenced by name, the parser will look for and return the object under the `[Tensors]` section with the given name.
 

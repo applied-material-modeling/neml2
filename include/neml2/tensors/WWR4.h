@@ -43,7 +43,7 @@ public:
   WWR4(const R4 & F);
 
   /// Create the identity tensor \f$\delta_{ij}\delta_{kl}\f$
-  static WWR4 identity(const torch::TensorOptions & options = default_tensor_options());
+  static WWR4 identity(const TensorOptions & options = default_tensor_options());
 };
 
 } // namespace neml2

@@ -23,7 +23,10 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/PowerLawIsotropicHardeningStaticRecovery.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/functions/abs.h"
+#include "neml2/tensors/functions/log.h"
+#include "neml2/tensors/functions/pow.h"
 
 namespace neml2
 {
@@ -37,9 +40,9 @@ PowerLawIsotropicHardeningStaticRecovery::expected_options()
                   "\\f$ \\dot{k} = -\\left(\\frac{\\lVert k \\rVert}{\\tau}\\right)^{n-1} "
                   "\\frac{k}{\\tau} \\f$";
 
-  options.set_parameter<CrossRef<Scalar>>("tau");
+  options.set_parameter<TensorName>("tau");
   options.set("tau").doc() = "Recovery rate";
-  options.set_parameter<CrossRef<Scalar>>("n");
+  options.set_parameter<TensorName>("n");
   options.set("n").doc() = "Recovery exponent";
 
   return options;
@@ -54,27 +57,22 @@ PowerLawIsotropicHardeningStaticRecovery::PowerLawIsotropicHardeningStaticRecove
 }
 
 void
-PowerLawIsotropicHardeningStaticRecovery::set_value(bool out, bool dout_din, bool d2out_din2)
+PowerLawIsotropicHardeningStaticRecovery::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(
-      !d2out_din2,
-      "PowerLawIsotropicHardeningStaticRecovery model doesn't implement second derivatives.");
-
   if (out)
-    _h_dot = -math::pow(math::abs(Scalar(_h)) / _tau, _n - 1.0) * _h / _tau;
+    _h_dot = -pow(abs(Scalar(_h)) / _tau, _n - 1.0) * _h / _tau;
 
   if (dout_din)
   {
     if (_h.is_dependent())
-      _h_dot.d(_h) = -_n * math::pow(math::abs(_h / _tau), _n - 1) / math::abs(_tau);
+      _h_dot.d(_h) = -_n * pow(abs(_h / _tau), _n - 1) / abs(_tau);
 
     if (const auto * const tau = nl_param("tau"))
-      _h_dot.d(*tau) =
-          _n * _h * math::pow(_tau, -1 - _n) * math::pow(math::abs(Scalar(_h)), _n - 1);
+      _h_dot.d(*tau) = _n * _h * pow(_tau, -1 - _n) * pow(abs(Scalar(_h)), _n - 1);
 
     if (const auto * const n = nl_param("n"))
-      _h_dot.d(*n) = -_h * math::pow(_tau, -_n) * math::pow(math::abs(Scalar(_h)), _n - 1) *
-                     math::log(math::abs(Scalar(_h) + machine_precision()) / _tau);
+      _h_dot.d(*n) = -_h * pow(_tau, -_n) * pow(abs(Scalar(_h)), _n - 1) *
+                     log(abs(Scalar(_h) + machine_precision()) / _tau);
   }
 }
 } // namespace neml2

@@ -26,7 +26,7 @@ Assuming the above input file is named "input_file.i", the C++ code snippet belo
 #include "neml2/base/Factory.h"
 #include "neml2/models/Model.h"
 #include "neml2/tensors/tensors.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/functions/batch_stack.h"
 
 int main() {
   auto & model = neml2::load_model("input.i", "model");
@@ -65,7 +65,7 @@ Suppose we want to perform 3 material updates simultaneously, the input variable
   auto strain1 = neml2::SR2::fill(0.1, 0.2, 0.3, -0.1, -0.1, 0.2);
   auto strain2 = neml2::SR2::fill(0.2, 0.2, 0.1, -0.1, -0.2, -0.5);
   auto strain3 = neml2::SR2::fill(0.3, -0.2, 0.05, -0.1, -0.3, 0.1);
-  auto strain = neml2::math::batch_stack({strain1, strain2, strain3});
+  auto strain = neml2::batch_stack({strain1, strain2, strain3});
 
   auto output = model.value({{strain_name, strain}});
   auto stress = output.at(stress_name)

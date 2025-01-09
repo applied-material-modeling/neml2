@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/AssociativeIsotropicPlasticHardening.h"
+#include "neml2/tensors/Scalar.h"
 
 namespace neml2
 {
@@ -57,11 +58,8 @@ AssociativeIsotropicPlasticHardening::AssociativeIsotropicPlasticHardening(
 }
 
 void
-AssociativeIsotropicPlasticHardening::set_value(bool out, bool dout_din, bool d2out_din2)
+AssociativeIsotropicPlasticHardening::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2,
-                  "AssociativeIsotropicPlasticHardening doesn't implement second derivatives.");
-
   // For associative flow,
   // ep_dot = - gamma_dot * Nk
   //     Nk = df/dk

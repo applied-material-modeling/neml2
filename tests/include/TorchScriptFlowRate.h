@@ -24,12 +24,17 @@
 
 #pragma once
 
-#include <torch/script.h>
-
 #include "neml2/models/Model.h"
+
+namespace jit
+{
+struct Module;
+}
 
 namespace neml2
 {
+class Scalar;
+
 /**
  * @brief This class spits out the creep strain rate given the von Mises stress and temperature
  *
@@ -64,6 +69,6 @@ protected:
   // @}
 
   /// The torch script to be used as the forward operator
-  std::unique_ptr<torch::jit::script::Module> _surrogate;
+  std::unique_ptr<jit::Module> _surrogate;
 };
 }

@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/OlevskySinteringStress.h"
+#include "neml2/tensors/Scalar.h"
 
 namespace neml2
 {
@@ -38,16 +39,18 @@ OlevskySinteringStress::expected_options()
                   "\\f$ \\gamma \\f$ is the surface tension, \\f$ r \\f$ is the size of the "
                   "particles/powders, and \\f$ \\phi \\f$ is the void fraction.";
 
+  options.set<bool>("define_second_derivatives") = true;
+
   options.set_output("sintering_stress") = VariableName(STATE, "internal", "ss");
   options.set("sintering_stress").doc() = "Sintering stress";
 
   options.set_input("void_fraction") = VariableName(STATE, "internal", "f");
   options.set("void_fraction").doc() = "Void fraction";
 
-  options.set_parameter<CrossRef<Scalar>>("surface_tension");
+  options.set_parameter<TensorName>("surface_tension");
   options.set("surface_tension").doc() = "Surface tension";
 
-  options.set_parameter<CrossRef<Scalar>>("particle_radius");
+  options.set_parameter<TensorName>("particle_radius");
   options.set("particle_radius").doc() = "Particle radius";
 
   return options;

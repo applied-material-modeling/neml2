@@ -25,7 +25,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_all.hpp>
 
-#include "neml2/misc/utils.h"
+#include "neml2/misc/string_utils.h"
 #include "neml2/base/MultiEnumSelection.h"
 
 using namespace neml2;
@@ -109,7 +109,7 @@ TEST_CASE("MultiEnumSelection", "[base]")
     };
 
     MultiEnumSelection es({"a", "b", "c"}, {5, 2, 1}, {"a", "b"});
-    REQUIRE(utils::stringify(es) == "a b");
+    REQUIRE(utils::stringify(es) == "(a, b)");
   }
 
   SECTION("Errors")

@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/YieldFunction.h"
+#include "neml2/tensors/Scalar.h"
 
 namespace neml2
 {
@@ -37,7 +38,9 @@ YieldFunction::expected_options()
       "\\f$, where \\f$ \\bar{\\sigma} \\f$ is the effective stress, \\f$ \\sigma_y \\f$ is the "
       "yield stress, and \\f$ h \\f$ is the isotropic hardening.";
 
-  options.set_parameter<CrossRef<Scalar>>("yield_stress");
+  options.set<bool>("define_second_derivatives") = true;
+
+  options.set_parameter<TensorName>("yield_stress");
   options.set("yield_stress").doc() = "Yield stress";
 
   options.set_input("effective_stress") = VariableName(STATE, "internal", "s");

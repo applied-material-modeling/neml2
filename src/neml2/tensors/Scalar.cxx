@@ -23,44 +23,30 @@
 // THE SOFTWARE.
 
 #include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
-
-Scalar::Scalar(Real init, const torch::TensorOptions & options)
-  : Scalar(Scalar::full(init, options))
+Scalar::Scalar(Real init, const TensorOptions & options)
+  : Scalar(at::scalar_tensor(init, options))
 {
+  neml_assert_dbg(
+      !options.requires_grad(),
+      "When creating a Scalar from a Real, requires_grad must be false. If you are "
+      "trying to create a Scalar as a leaf variable, use Scalar::create or Scalar::full.");
 }
 
 Scalar
-Scalar::identity_map(const torch::TensorOptions & options)
+Scalar::identity_map(const TensorOptions & options)
 {
   return Scalar::ones(options);
 }
 
-namespace math
+neml2::Tensor
+Scalar::base_unsqueeze_to(Size n) const
 {
-Scalar
-minimum(const Scalar & a, const Scalar & b)
-{
-  neml_assert_batch_broadcastable_dbg(a, b);
-  indexing::TensorIndices net{torch::indexing::Ellipsis};
-  net.insert(net.end(), a.base_dim(), torch::indexing::None);
-  return Scalar(torch::minimum(a, b.index(net)), broadcast_batch_dim(a, b));
+  indexing::TensorIndices net{indexing::Ellipsis};
+  net.insert(net.end(), n, indexing::None);
+  return neml2::Tensor(index(net), batch_sizes());
 }
-}
-
-Scalar
-operator*(const Scalar & a, const Scalar & b)
-{
-  neml_assert_batch_broadcastable_dbg(a, b);
-  return torch::operator*(a, b);
-}
-
-Scalar
-abs(const Scalar & a)
-{
-  return Scalar(torch::abs(a), a.batch_sizes());
-}
-
 } // namespace neml2

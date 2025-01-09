@@ -28,6 +28,8 @@
 
 namespace neml2
 {
+class Scalar;
+
 /**
  * @brief Simple linear map between equivalent strain and hardening
  *

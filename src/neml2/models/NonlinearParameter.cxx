@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/NonlinearParameter.h"
+#include "neml2/tensors/tensors.h"
 
 namespace neml2
 {

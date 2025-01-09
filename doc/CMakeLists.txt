@@ -45,7 +45,7 @@ add_custom_target(syntax-cpp
 # Extract all Python API
 # ----------------------------------------------------------------------------
 add_custom_target(syntax-python
-  DEPENDS core reserved math tensors crystallography
+  DEPENDS ${NEML2_PYTHON_MODULES}
   WORKING_DIRECTORY ${NEML2_BINARY_DIR}/python
   COMMAND ${CMAKE_COMMAND} -E make_directory ${NEML2_BINARY_DIR}/doc/content/python
   COMMAND PYTHONPATH=. pybind11-stubgen -o ${NEML2_BINARY_DIR}/doc/content/python neml2

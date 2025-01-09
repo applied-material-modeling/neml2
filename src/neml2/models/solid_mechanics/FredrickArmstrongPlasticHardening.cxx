@@ -23,8 +23,9 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/FredrickArmstrongPlasticHardening.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
-#include "neml2/misc/math.h"
 
 namespace neml2
 {
@@ -52,10 +53,10 @@ FredrickArmstrongPlasticHardening::expected_options()
   options.set_input("flow_direction") = VariableName(STATE, "internal", "NM");
   options.set("flow_direction").doc() = "Flow direction";
 
-  options.set_parameter<CrossRef<Scalar>>("C");
+  options.set_parameter<TensorName>("C");
   options.set("C").doc() = "Kinematic hardening coefficient";
 
-  options.set_parameter<CrossRef<Scalar>>("g");
+  options.set_parameter<TensorName>("g");
   options.set("g").doc() = "Dynamic recovery coefficient";
 
   return options;
@@ -74,11 +75,8 @@ FredrickArmstrongPlasticHardening::FredrickArmstrongPlasticHardening(const Optio
 }
 
 void
-FredrickArmstrongPlasticHardening::set_value(bool out, bool dout_din, bool d2out_din2)
+FredrickArmstrongPlasticHardening::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2,
-                  "FredrickArmstrongPlasticHardening model doesn't implement second derivatives.");
-
   // The effective stress
   auto s = SR2(_X).norm(machine_precision());
   // The part that's proportional to the plastic strain rate

@@ -27,7 +27,6 @@
 #include "neml2/drivers/Driver.h"
 
 #include <filesystem>
-#include <torch/jit.h>
 
 namespace neml2
 {
@@ -40,7 +39,7 @@ public:
 
   TransientRegression(const OptionSet & options);
 
-  virtual void diagnose(std::vector<Diagnosis> & diagnoses) const override;
+  void diagnose() const override;
 
   bool run() override;
 
@@ -55,8 +54,8 @@ private:
   Real _atol;
 };
 
-std::string diff(const torch::jit::named_buffer_list & res,
-                 const torch::jit::named_buffer_list & ref,
+std::string diff(const jit::named_buffer_list & res,
+                 const jit::named_buffer_list & ref,
                  Real rtol = 1e-5,
                  Real atol = 1e-8);
 } // namespace neml2
