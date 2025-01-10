@@ -29,7 +29,7 @@
 
 namespace neml2
 {
-class ValueMapLoader : public WorkGenerator<ValueMap>
+class ValueMapLoader : public FixedSizeWorkGenerator<ValueMap>
 {
 public:
   ValueMapLoader(const ValueMap & value_map, Size batch_dim);

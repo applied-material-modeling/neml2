@@ -24,43 +24,23 @@
 
 #pragma once
 
-#include "neml2/dispatcher/WorkScheduler.h"
+#include "neml2/dispatcher/WorkGenerator.h"
 
 namespace neml2
 {
 /**
- * @brief A very simple scheduler
+ * @brief Interface for work generators that generate a fixed number of batches, i.e., the total
+ * amount of work is known at construction time
  *
- * This schedule is simple in the sense that
- * - It dispatches to a single device
- * - It dispatches a fixed batch size
- * - It does not perform parallel communication with other ranks (if any) to determine the
- *   availability of the device
  */
-class SimpleScheduler : public WorkScheduler
+template <typename T>
+class FixedSizeWorkGenerator : public WorkGenerator<T>
 {
 public:
-  SimpleScheduler(torch::Device device,
-                  std::size_t batch_size,
-                  std::size_t capacity = std::numeric_limits<std::size_t>::max());
+  /// @brief Whether the generator has more work to generate
+  bool has_more() const override { return WorkGenerator<T>::offset() < total(); }
 
-  bool schedule_work(torch::Device &, std::size_t &) const override;
-
-  void dispatched_work(torch::Device, std::size_t) override;
-
-  void completed_work(torch::Device, std::size_t) override;
-
-private:
-  /// The device to dispatch to
-  torch::Device _device;
-
-  /// The batch size to dispatch
-  std::size_t _batch_size;
-
-  /// The capacity of the device
-  std::size_t _capacity;
-
-  /// Current load on the device
-  std::size_t _load = 0;
+  /// @brief Total (fixed) number of batches that will be generated
+  virtual std::size_t total() const = 0;
 };
 } // namespace neml2

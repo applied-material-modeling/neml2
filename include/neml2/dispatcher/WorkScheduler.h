@@ -28,21 +28,32 @@
 
 namespace neml2
 {
+/**
+ * @brief Scheduler for work dispatching
+ *
+ * The scheduler is responsible for determining
+ * 1. The amount (number of batches) of work to be dispatched next
+ * 2. Where (e.g., to which device) the next batch of work should be dispatched
+ *
+ * The scheduler is also responsible for updating its internal state when work is dispatched.
+ *
+ * @see WorkGenerator, WorkDispatcher
+ */
 class WorkScheduler
 {
 public:
   /**
-   * @brief Device and batch size for the next dispatch
+   * @brief Determine the device and batch size for the next dispatch
    *
-   * @return true If there is a worker available
-   * @return false If there is no worker available
+   * @return true If work has been scheduled, i.e., there is a worker available
+   * @return false If work cannot be scheduled, i.e., there is no worker available
    */
-  virtual bool next(torch::Device &, std::size_t &) const = 0;
+  virtual bool schedule_work(torch::Device &, std::size_t &) const = 0;
 
   /// Update the schedule with the dispatch of the last batch
-  virtual void dispatched(torch::Device, std::size_t) = 0;
+  virtual void dispatched_work(torch::Device, std::size_t) = 0;
 
   /// Update the schedule with the completion of the last batch
-  virtual void completed(torch::Device, std::size_t) = 0;
+  virtual void completed_work(torch::Device, std::size_t) = 0;
 };
 } // namespace neml2

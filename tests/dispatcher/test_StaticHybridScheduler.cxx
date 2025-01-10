@@ -46,13 +46,13 @@ TEST_CASE("StaticHybridScheduler", "[dispatcher]")
     REQUIRE(status[0].priority == Catch::Approx(1.0));
     REQUIRE(status[0].load == 0);
 
-    scheduler.dispatched(torch::kCPU, 1);
+    scheduler.dispatched_work(torch::kCPU, 1);
     REQUIRE(status[0].load == 1);
 
-    scheduler.dispatched(torch::kCPU, 2);
+    scheduler.dispatched_work(torch::kCPU, 2);
     REQUIRE(status[0].load == 3);
 
-    scheduler.completed(torch::kCPU, 1);
+    scheduler.completed_work(torch::kCPU, 1);
     REQUIRE(status[0].load == 2);
   }
 
@@ -84,22 +84,22 @@ TEST_CASE("StaticHybridScheduler", "[dispatcher]")
     REQUIRE(status[2].priority == Catch::Approx(1.0));
     REQUIRE(status[2].load == 0);
 
-    scheduler.dispatched(torch::Device("cpu"), 1);
+    scheduler.dispatched_work(torch::Device("cpu"), 1);
     REQUIRE(status[0].load == 1);
 
-    scheduler.dispatched(torch::Device("cuda:0"), 2);
+    scheduler.dispatched_work(torch::Device("cuda:0"), 2);
     REQUIRE(status[1].load == 2);
 
-    scheduler.dispatched(torch::Device("cuda:1"), 3);
+    scheduler.dispatched_work(torch::Device("cuda:1"), 3);
     REQUIRE(status[2].load == 3);
 
-    scheduler.completed(torch::Device("cpu"), 1);
+    scheduler.completed_work(torch::Device("cpu"), 1);
     REQUIRE(status[0].load == 0);
 
-    scheduler.completed(torch::Device("cuda:0"), 2);
+    scheduler.completed_work(torch::Device("cuda:0"), 2);
     REQUIRE(status[1].load == 0);
 
-    scheduler.completed(torch::Device("cuda:1"), 3);
+    scheduler.completed_work(torch::Device("cuda:1"), 3);
     REQUIRE(status[2].load == 0);
   }
 }

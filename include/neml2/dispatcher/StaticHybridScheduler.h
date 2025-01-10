@@ -106,14 +106,14 @@ public:
    * By default, the availability is the device's priority, a custom function can be set using
    * set_availability_calculator().
    */
-  bool next(torch::Device &, std::size_t &) const override;
+  bool schedule_work(torch::Device &, std::size_t &) const override;
 
   /// Set a custom availability calculator
   void set_availability_calculator(std::function<double(const DeviceStatus &)>);
 
-  void dispatched(torch::Device, std::size_t) override;
+  void dispatched_work(torch::Device, std::size_t) override;
 
-  void completed(torch::Device, std::size_t) override;
+  void completed_work(torch::Device, std::size_t) override;
 
   const std::vector<DeviceStatus> & status() const { return _devices; }
 

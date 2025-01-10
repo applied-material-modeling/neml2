@@ -36,7 +36,7 @@ TEST_CASE("WorkDispatcher SliceGenerator SimpleScheduler", "[dispatcher]")
   SliceGenerator generator(50, 2000);
   SimpleScheduler scheduler(torch::kCPU, /*batch_size=*/345, /*capacity=*/800);
 
-  SECTION("no reduction, no preprecessing, no postprocessing")
+  SECTION("no reduction, no preprocessing, no postprocessing")
   {
     auto func = [](indexing::Slice && x, torch::Device /*device*/) -> Size
     { return x.start().expect_int() * x.stop().expect_int() * x.step().expect_int(); };
@@ -65,7 +65,7 @@ TEST_CASE("WorkDispatcher SliceGenerator SimpleScheduler", "[dispatcher]")
     }
   }
 
-  SECTION("with reduction, no preprecessing, no postprocessing")
+  SECTION("with reduction, no preprocessing, no postprocessing")
   {
     auto func = [](indexing::Slice && x, torch::Device /*device*/) -> Size
     { return x.start().expect_int() * x.stop().expect_int() * x.step().expect_int(); };
@@ -101,7 +101,7 @@ TEST_CASE("WorkDispatcher SliceGenerator SimpleScheduler", "[dispatcher]")
     }
   }
 
-  SECTION("with reduction, with preprecessing, with postprocessing")
+  SECTION("with reduction, with preprocessing, with postprocessing")
   {
     auto func = [](indexing::Slice && x, torch::Device /*device*/) -> Size
     { return x.start().expect_int() * x.stop().expect_int() * x.step().expect_int(); };

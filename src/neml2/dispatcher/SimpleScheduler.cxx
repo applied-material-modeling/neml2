@@ -35,7 +35,7 @@ SimpleScheduler::SimpleScheduler(torch::Device device, std::size_t batch_size, s
 }
 
 bool
-SimpleScheduler::next(torch::Device & device, std::size_t & batch_size) const
+SimpleScheduler::schedule_work(torch::Device & device, std::size_t & batch_size) const
 {
   if (_load + _batch_size > _capacity)
     return false;
@@ -46,13 +46,13 @@ SimpleScheduler::next(torch::Device & device, std::size_t & batch_size) const
 }
 
 void
-SimpleScheduler::dispatched(torch::Device, std::size_t n)
+SimpleScheduler::dispatched_work(torch::Device, std::size_t n)
 {
   _load += n;
 }
 
 void
-SimpleScheduler::completed(torch::Device, std::size_t n)
+SimpleScheduler::completed_work(torch::Device, std::size_t n)
 {
   neml_assert(_load >= n, "Load underflow");
   _load -= n;

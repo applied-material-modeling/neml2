@@ -100,7 +100,7 @@ StaticHybridScheduler::StaticHybridScheduler(const std::vector<torch::Device> & 
 }
 
 bool
-StaticHybridScheduler::next(torch::Device & device, std::size_t & n) const
+StaticHybridScheduler::schedule_work(torch::Device & device, std::size_t & n) const
 {
   bool available = false;
   double max_availability = std::numeric_limits<double>::lowest();
@@ -128,7 +128,7 @@ StaticHybridScheduler::set_availability_calculator(std::function<double(const De
 }
 
 void
-StaticHybridScheduler::dispatched(torch::Device device, std::size_t n)
+StaticHybridScheduler::dispatched_work(torch::Device device, std::size_t n)
 {
   for (auto & i : _devices)
     if (i.device == device)
@@ -143,7 +143,7 @@ StaticHybridScheduler::dispatched(torch::Device device, std::size_t n)
 }
 
 void
-StaticHybridScheduler::completed(torch::Device device, std::size_t n)
+StaticHybridScheduler::completed_work(torch::Device device, std::size_t n)
 {
   for (auto & i : _devices)
     if (i.device == device)

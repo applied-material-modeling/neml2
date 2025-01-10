@@ -24,12 +24,12 @@
 
 #pragma once
 
-#include "neml2/dispatcher/WorkGenerator.h"
+#include "neml2/dispatcher/FixedSizeWorkGenerator.h"
 #include "neml2/misc/types.h"
 
 namespace neml2
 {
-class SliceGenerator : public WorkGenerator<indexing::Slice>
+class SliceGenerator : public FixedSizeWorkGenerator<indexing::Slice>
 {
 public:
   SliceGenerator(std::size_t start, std::size_t stop);

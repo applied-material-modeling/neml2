@@ -29,7 +29,7 @@
 
 namespace neml2
 {
-class TensorLoader : public WorkGenerator<Tensor>
+class TensorLoader : public FixedSizeWorkGenerator<Tensor>
 {
 public:
   TensorLoader(const Tensor & tensor, Size batch_dim);
