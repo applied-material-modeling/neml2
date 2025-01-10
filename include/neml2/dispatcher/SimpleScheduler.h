@@ -40,6 +40,15 @@ namespace neml2
 class SimpleScheduler : public WorkScheduler
 {
 public:
+  /**
+   * @brief Construct a new Simple Scheduler object
+   *
+   * @param device Device on which to dispatch
+   * @param batch_size The (fixed) batch size to dispatch each time
+   * @param capacity The capacity of the device, i.e., the maximum number of work batches that can
+   * be simultaneously handled by the device at any given time. The default capacity is set to the
+   * maximum value of size_t
+   */
   SimpleScheduler(torch::Device device,
                   std::size_t batch_size,
                   std::size_t capacity = std::numeric_limits<std::size_t>::max());
