@@ -30,7 +30,7 @@
 
 namespace neml2
 {
-using NScalar = c10::Scalar;
+using LScalar = c10::Scalar;
 using Real = double;
 using Size = int64_t;
 using Integer = int64_t;

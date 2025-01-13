@@ -98,6 +98,12 @@ Tensor::operator=(Tensor && tensor) noexcept
 }
 
 Tensor
+Tensor::to(const TensorOptions & options) const
+{
+  return Tensor(std::move(at::Tensor::to(options)), std::move(_batch_sizes));
+}
+
+Tensor
 Tensor::clone() const
 {
   return Tensor(std::move(at::Tensor::clone()), std::move(_batch_sizes));
@@ -109,16 +115,32 @@ Tensor::detach() const
   return Tensor(std::move(at::Tensor::detach()), std::move(_batch_sizes));
 }
 
-Tensor
-Tensor::to(const TensorOptions & options) const
+Tensor &
+Tensor::detach_()
 {
-  return Tensor(std::move(at::Tensor::to(options)), std::move(_batch_sizes));
+  at::Tensor::detach_();
+  return *this;
 }
 
-Tensor
-Tensor::operator-() const
+Tensor &
+Tensor::copy_(const at::Tensor & other)
 {
-  return Tensor(std::move(at::Tensor::operator-(*this)), std::move(_batch_sizes));
+  at::Tensor::copy_(other);
+  return *this;
+}
+
+Tensor &
+Tensor::zero_()
+{
+  at::Tensor::zero_();
+  return *this;
+}
+
+Tensor &
+Tensor::requires_grad_(bool req)
+{
+  at::Tensor::requires_grad_(req);
+  return *this;
 }
 
 bool
@@ -175,7 +197,7 @@ Tensor
 Tensor::batch_index(indexing::TensorIndicesRef indices) const
 {
   indexing::TensorIndices indices_vec(indices);
-  indices_vec.insert(indices_vec.end(), base_dim(), torch::indexing::Slice());
+  indices_vec.insert(indices_vec.end(), base_dim(), indexing::Slice());
   auto res = this->index(indices_vec);
   return Tensor(res, res.dim() - base_dim());
 }
@@ -183,7 +205,7 @@ Tensor::batch_index(indexing::TensorIndicesRef indices) const
 Tensor
 Tensor::base_index(indexing::TensorIndicesRef indices) const
 {
-  indexing::TensorIndices indices2(batch_dim(), torch::indexing::Slice());
+  indexing::TensorIndices indices2(batch_dim(), indexing::Slice());
   indices2.insert(indices2.end(), indices.begin(), indices.end());
   return Tensor(this->index(indices2), batch_sizes());
 }
@@ -192,7 +214,7 @@ Tensor
 Tensor::batch_slice(Size dim, const indexing::Slice & index) const
 {
   dim = utils::bound_dim(dim, 0, batch_dim());
-  auto res = torch().slice(
+  auto res = at::Tensor::slice(
       i, index.start().expect_int(), index.stop().expect_int(), index.step().expect_int());
   return Tensor(res, res.dim() - base_dim());
 }
@@ -201,41 +223,45 @@ Tensor
 Tensor::base_slice(Size dim, const indexing::Slice & index) const
 {
   dim = utils::bound_dim(dim, batch_dim(), dim());
-  auto res = torch().slice(
+  auto res = at::Tensor::slice(
       i, index.start().expect_int(), index.stop().expect_int(), index.step().expect_int());
   return Tensor(res, batch_sizes());
 }
 
-void
+Tensor &
 Tensor::batch_index_put_(indexing::TensorIndicesRef indices, const at::Tensor & other)
 {
   indexing::TensorIndices indices_vec(indices);
-  indices_vec.insert(indices_vec.end(), base_dim(), torch::indexing::Slice());
-  this->index_put_(indices_vec, other);
+  indices_vec.insert(indices_vec.end(), base_dim(), indexing::Slice());
+  at::Tensor::index_put_(indices_vec, other);
+  return *this;
 }
 
-void
-Tensor::batch_index_put_(indexing::TensorIndicesRef indices, const NScalar & v)
+Tensor &
+Tensor::batch_index_put_(indexing::TensorIndicesRef indices, const LScalar & v)
 {
   indexing::TensorIndices indices_vec(indices);
-  indices_vec.insert(indices_vec.end(), base_dim(), torch::indexing::Slice());
-  this->index_put_(indices_vec, v);
+  indices_vec.insert(indices_vec.end(), base_dim(), indexing::Slice());
+  at::Tensor::index_put_(indices_vec, v);
+  return *this;
 }
 
-void
+Tensor &
 Tensor::base_index_put_(indexing::TensorIndicesRef indices, const at::Tensor & other)
 {
-  indexing::TensorIndices indices2(batch_dim(), torch::indexing::Slice());
+  indexing::TensorIndices indices2(batch_dim(), indexing::Slice());
   indices2.insert(indices2.end(), indices.begin(), indices.end());
-  this->index_put_(indices2, other);
+  at::Tensor::index_put_(indices2, other);
+  return *this;
 }
 
-void
-Tensor::base_index_put_(indexing::TensorIndicesRef indices, const NScalar & v)
+Tensor &
+Tensor::base_index_put_(indexing::TensorIndicesRef indices, const LScalar & v)
 {
-  indexing::TensorIndices indices2(batch_dim(), torch::indexing::Slice());
+  indexing::TensorIndices indices2(batch_dim(), indexing::Slice());
   indices2.insert(indices2.end(), indices.begin(), indices.end());
-  this->index_put_(indices2, v);
+  at::Tensor::index_put_(indices2, v);
+  return *this;
 }
 
 Tensor
@@ -395,13 +421,216 @@ Tensor::base_flatten() const
 }
 
 Tensor
-operator+(const Tensor & a, const NScalar & b)
+Tensor::operator~() const
 {
-  return Tensor(torch::operator+(a, b), a.batch_sizes());
+  return Tensor(std::move(bitwise_not()), std::move(_batch_sizes));
 }
 
 Tensor
-operator+(const NScalar & a, const Tensor & b)
+Tensor::operator-() const
+{
+  return Tensor(std::move(neg()), std::move(_batch_sizes));
+}
+
+Tensor &
+operator+=(const Tensor & other)
+{
+  add_(other);
+  return *this;
+}
+
+Tensor &
+operator+=(const LScalar & other)
+{
+  add_(other);
+  return *this;
+}
+
+Tensor &
+operator-=(const Tensor & other)
+{
+  sub_(other);
+  return *this;
+}
+
+Tensor &
+operator-=(const LScalar & other)
+{
+  sub_(other);
+  return *this;
+}
+
+Tensor &
+operator*=(const Tensor & other)
+{
+  mul_(other);
+  return *this;
+}
+
+Tensor &
+operator*=(const LScalar & other)
+{
+  mul_(other);
+  return *this;
+}
+
+Tensor &
+operator/=(const Tensor & other)
+{
+  div_(other);
+  return *this;
+}
+
+Tensor &
+operator/=(const LScalar & other)
+{
+  div_(other);
+  return *this;
+}
+
+Tensor &
+operator&=(const Tensor & other)
+{
+  bitwise_and_(other);
+  return *this;
+}
+
+Tensor &
+operator|=(const Tensor & other)
+{
+  bitwise_or_(other);
+  return *this;
+}
+
+Tensor &
+operator^=(const Tensor & other)
+{
+  bitwise_xor_(other);
+  return *this;
+}
+
+Tensor
+operator==(const Tensor & a, const LScalar & b)
+{
+  return Tensor(std::move(at::eq(a, b)), a.batch_sizes());
+}
+
+Tensor
+operator==(const LScalar & a, const Tensor & b)
+{
+  return b == a;
+}
+
+Tensor
+operator==(const Tensor & a, const Tensor & b)
+{
+  neml_assert_broadcastable_dbg(a, b);
+  return Tensor(std::move(at::eq(a, b)), utils::broadcast_batch_dim(a, b));
+}
+
+Tensor
+operator!=(const Tensor & a, const LScalar & b)
+{
+  return Tensor(std::move(at::ne(a, b)), a.batch_sizes());
+}
+
+Tensor
+operator!=(const LScalar & a, const Tensor & b)
+{
+  return b != a;
+}
+
+Tensor
+operator!=(const Tensor & a, const Tensor & b)
+{
+  neml_assert_broadcastable_dbg(a, b);
+  return Tensor(std::move(at::ne(a, b)), utils::broadcast_batch_dim(a, b));
+}
+
+Tensor
+operator>=(const Tensor & a, const LScalar & b)
+{
+  return Tensor(std::move(at::ge(a, b)), a.batch_sizes());
+}
+
+Tensor
+operator>=(const LScalar & a, const Tensor & b)
+{
+  return b <= a;
+}
+
+Tensor
+operator>=(const Tensor & a, const Tensor & b)
+{
+  neml_assert_broadcastable_dbg(a, b);
+  return Tensor(std::move(at::ge(a, b)), utils::broadcast_batch_dim(a, b));
+}
+
+Tensor
+operator<=(const Tensor & a, const LScalar & b)
+{
+  return Tensor(std::move(at::le(a, b)), a.batch_sizes());
+}
+
+Tensor
+operator<=(const LScalar & a, const Tensor & b)
+{
+  return b >= a;
+}
+
+Tensor
+operator<=(const Tensor & a, const Tensor & b)
+{
+  neml_assert_broadcastable_dbg(a, b);
+  return Tensor(std::move(at::le(a, b)), utils::broadcast_batch_dim(a, b));
+}
+
+Tensor
+operator>(const Tensor & a, const LScalar & b)
+{
+  return Tensor(std::move(at::gt(a, b)), a.batch_sizes());
+}
+
+Tensor
+operator>(const LScalar & a, const Tensor & b)
+{
+  return b < a;
+}
+
+Tensor
+operator>(const Tensor & a, const Tensor & b)
+{
+  neml_assert_broadcastable_dbg(a, b);
+  return Tensor(std::move(at::gt(a, b)), utils::broadcast_batch_dim(a, b));
+}
+
+Tensor
+operator<(const Tensor & a, const LScalar & b)
+{
+  return Tensor(std::move(at::lt(a, b)), a.batch_sizes());
+}
+
+Tensor
+operator<(const LScalar & a, const Tensor & b)
+{
+  return b > a;
+}
+
+Tensor
+operator<(const Tensor & a, const Tensor & b)
+{
+  neml_assert_broadcastable_dbg(a, b);
+  return Tensor(std::move(at::lt(a, b)), utils::broadcast_batch_dim(a, b));
+}
+
+Tensor
+operator+(const Tensor & a, const LScalar & b)
+{
+  return Tensor(at::add(a, b), a.batch_sizes());
+}
+
+Tensor
+operator+(const LScalar & a, const Tensor & b)
 {
   return b + a;
 }
@@ -409,21 +638,18 @@ operator+(const NScalar & a, const Tensor & b)
 Tensor
 operator+(const Tensor & a, const Tensor & b)
 {
-#ifndef NDEBUG
-  if (!utils::broadcastable(a, b))
-    throw NEMLException("Cannot broadcast tensors");
-#endif
-  return Tensor(torch::operator+(a, b), utils::broadcast_batch_dim(a, b));
+  neml_assert_broadcastable_dbg(a, b);
+  return Tensor(at::add(a, b), utils::broadcast_batch_dim(a, b));
 }
 
 Tensor
-operator-(const Tensor & a, const NScalar & b)
+operator-(const Tensor & a, const LScalar & b)
 {
-  return Tensor(torch::operator-(a, b), a.batch_sizes());
+  return Tensor(at::sub(a, b), a.batch_sizes());
 }
 
 Tensor
-operator-(const NScalar & a, const Tensor & b)
+operator-(const LScalar & a, const Tensor & b)
 {
   return -b + a;
 }
@@ -431,21 +657,18 @@ operator-(const NScalar & a, const Tensor & b)
 Tensor
 operator-(const Tensor & a, const Tensor & b)
 {
-#ifndef NDEBUG
-  if (!utils::broadcastable(a, b))
-    throw NEMLException("Cannot broadcast tensors");
-#endif
-  return Tensor(torch::operator-(a, b), utils::broadcast_batch_dim(a, b));
+  neml_assert_broadcastable_dbg(a, b);
+  return Tensor(at::sub(a, b), utils::broadcast_batch_dim(a, b));
 }
 
 Tensor
-operator*(const Tensor & a, const NScalar & b)
+operator*(const Tensor & a, const LScalar & b)
 {
-  return Tensor(torch::operator*(a, b), a.batch_sizes());
+  return Tensor(at::mul(a, b), a.batch_sizes());
 }
 
 Tensor
-operator*(const NScalar & a, const Tensor & b)
+operator*(const LScalar & a, const Tensor & b)
 {
   return b * a;
 }
@@ -453,81 +676,26 @@ operator*(const NScalar & a, const Tensor & b)
 Tensor
 operator*(const Tensor & a, const Tensor & b)
 {
-#ifndef NDEBUG
-  if (!utils::broadcastable(a, b))
-    throw NEMLException("Cannot broadcast tensors");
-#endif
-  return Tensor(torch::operator*(a, b), utils::broadcast_batch_dim(a, b));
+  neml_assert_broadcastable_dbg(a, b);
+  return Tensor(at::mul(a, b), utils::broadcast_batch_dim(a, b));
 }
 
 Tensor
-operator/(const Tensor & a, const NScalar & b)
+operator/(const Tensor & a, const LScalar & b)
 {
-  return Tensor(torch::operator/(a, b), a.batch_sizes());
+  return Tensor(at::div(a, b), a.batch_sizes());
 }
 
 Tensor
-operator/(const NScalar & a, const Tensor & b)
+operator/(const LScalar & a, const Tensor & b)
 {
-  return Tensor(torch::operator/(a, b), b.batch_sizes());
+  return Tensor(at::mul(b.reciprocal(), a), b.batch_sizes());
 }
 
 Tensor
 operator/(const Tensor & a, const Tensor & b)
 {
-#ifndef NDEBUG
-  if (!utils::broadcastable(a, b))
-    throw NEMLException("Cannot broadcast tensors");
-#endif
-  return Tensor(torch::operator/(a, b), utils::broadcast_batch_dim(a, b));
+  neml_assert_broadcastable_dbg(a, b);
+  return Tensor(at::div(a, b), utils::broadcast_batch_dim(a, b));
 }
-
-namespace math
-{
-Tensor
-bmm(const Tensor & a, const Tensor & b)
-{
-  neml_assert_batch_broadcastable_dbg(a, b);
-  neml_assert_dbg(a.base_dim() == 2,
-                  "The first tensor in bmm has base dimension ",
-                  a.base_dim(),
-                  " instead of 2.");
-  neml_assert_dbg(b.base_dim() == 2,
-                  "The second tensor in bmm has base dimension ",
-                  b.base_dim(),
-                  " instead of 2.");
-  return Tensor(torch::matmul(a, b), utils::broadcast_batch_dim(a, b));
-}
-
-Tensor
-bmv(const Tensor & a, const Tensor & v)
-{
-  neml_assert_batch_broadcastable_dbg(a, v);
-  neml_assert_dbg(a.base_dim() == 2,
-                  "The first tensor in bmv has base dimension ",
-                  a.base_dim(),
-                  " instead of 2.");
-  neml_assert_dbg(v.base_dim() == 1,
-                  "The second tensor in bmv has base dimension ",
-                  v.base_dim(),
-                  " instead of 1.");
-  return Tensor(torch::matmul(a, v.base_unsqueeze(-1)).squeeze(-1),
-                utils::broadcast_batch_dim(a, v));
-}
-
-Tensor
-bvv(const Tensor & a, const Tensor & b)
-{
-  neml_assert_batch_broadcastable_dbg(a, b);
-  neml_assert_dbg(a.base_dim() == 1,
-                  "The first tensor in bvv has base dimension ",
-                  a.base_dim(),
-                  " instead of 1.");
-  neml_assert_dbg(b.base_dim() == 1,
-                  "The second tensor in bvv has base dimension ",
-                  b.base_dim(),
-                  " instead of 1.");
-  return Tensor(torch::sum(a * b, -1), utils::broadcast_batch_dim(a, b));
-}
-} // namespace math
 } // namespace neml2

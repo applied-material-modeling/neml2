@@ -164,6 +164,32 @@ Tensor full_to_skew(const Tensor & full, Size dim = 0);
 Tensor skew_to_full(const Tensor & skew, Size dim = 0);
 
 /**
+ * @brief Batched matrix-matrix product
+ *
+ * The input matrices \p a and \p b must have exactly 2 base dimensions. The batch shapes must
+ * broadcast.
+ */
+Tensor bmm(const Tensor & a, const Tensor & b);
+
+/**
+ * @brief Batched matrix-vector product
+ *
+ * The input tensor \p a must have exactly 2 base dimensions.
+ * The input tensor \p v must have exactly 1 base dimension.
+ * The batch shapes must broadcast.
+ */
+Tensor bmv(const Tensor & a, const Tensor & v);
+
+/**
+ * @brief Batched vector-vector (dot) product
+ *
+ * The input tensor \p a must have exactly 1 base dimension.
+ * The input tensor \p b must have exactly 1 base dimension.
+ * The batch shapes must broadcast.
+ */
+Tensor bvv(const Tensor & a, const Tensor & b);
+
+/**
  * @brief Use automatic differentiation (AD) to calculate the derivatives of a Tensor w.r.t. another
  * Tensor
  *

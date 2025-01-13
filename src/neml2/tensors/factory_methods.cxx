@@ -52,7 +52,7 @@ ones_like(const Tensor & other)
 }
 
 Tensor
-full_like(const Tensor & other, const NScalar & init)
+full_like(const Tensor & other, const LScalar & init)
 {
   return Tensor(torch::full_like(other, init), other.batch_sizes());
 }
@@ -121,7 +121,7 @@ ones(const TraceableTensorShape & batch_shape,
 }
 
 Tensor
-full(TensorShapeRef base_shape, const NScalar & init, const TensorOptions & options)
+full(TensorShapeRef base_shape, const LScalar & init, const TensorOptions & options)
 {
   return Tensor(torch::full(base_shape, init, options), 0);
 }
@@ -129,7 +129,7 @@ full(TensorShapeRef base_shape, const NScalar & init, const TensorOptions & opti
 Tensor
 full(const TraceableTensorShape & batch_shape,
      TensorShapeRef base_shape,
-     const NScalar & init,
+     const LScalar & init,
      const TensorOptions & options)
 {
   // Record batch shape

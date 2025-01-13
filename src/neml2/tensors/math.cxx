@@ -121,6 +121,52 @@ skew_to_full(const Tensor & skew, Size dim)
       dim);
 }
 
+Tensor
+bmm(const Tensor & a, const Tensor & b)
+{
+  neml_assert_batch_broadcastable_dbg(a, b);
+  neml_assert_dbg(a.base_dim() == 2,
+                  "The first tensor in bmm has base dimension ",
+                  a.base_dim(),
+                  " instead of 2.");
+  neml_assert_dbg(b.base_dim() == 2,
+                  "The second tensor in bmm has base dimension ",
+                  b.base_dim(),
+                  " instead of 2.");
+  return Tensor(torch::matmul(a, b), utils::broadcast_batch_dim(a, b));
+}
+
+Tensor
+bmv(const Tensor & a, const Tensor & v)
+{
+  neml_assert_batch_broadcastable_dbg(a, v);
+  neml_assert_dbg(a.base_dim() == 2,
+                  "The first tensor in bmv has base dimension ",
+                  a.base_dim(),
+                  " instead of 2.");
+  neml_assert_dbg(v.base_dim() == 1,
+                  "The second tensor in bmv has base dimension ",
+                  v.base_dim(),
+                  " instead of 1.");
+  return Tensor(torch::matmul(a, v.base_unsqueeze(-1)).squeeze(-1),
+                utils::broadcast_batch_dim(a, v));
+}
+
+Tensor
+bvv(const Tensor & a, const Tensor & b)
+{
+  neml_assert_batch_broadcastable_dbg(a, b);
+  neml_assert_dbg(a.base_dim() == 1,
+                  "The first tensor in bvv has base dimension ",
+                  a.base_dim(),
+                  " instead of 1.");
+  neml_assert_dbg(b.base_dim() == 1,
+                  "The second tensor in bvv has base dimension ",
+                  b.base_dim(),
+                  " instead of 1.");
+  return Tensor(torch::sum(a * b, -1), utils::broadcast_batch_dim(a, b));
+}
+
 std::vector<Tensor>
 jacrev(const Tensor & y,
        const std::vector<Tensor> & xs,

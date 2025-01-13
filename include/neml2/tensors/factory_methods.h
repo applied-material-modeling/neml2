@@ -39,7 +39,7 @@ class Tensor;
 [[nodiscard]] Tensor ones_like(const Tensor & other);
 /// Full tensor like another, i.e. same batch and base shapes, same tensor options, etc.,
 /// but filled with a different value
-[[nodiscard]] Tensor full_like(const Tensor & other, const NScalar & init);
+[[nodiscard]] Tensor full_like(const Tensor & other, const LScalar & init);
 
 /// Unbatched empty tensor given base shape
 [[nodiscard]] Tensor empty(TensorShapeRef base_shape,
@@ -64,12 +64,12 @@ class Tensor;
                           const TensorOptions & options = default_tensor_options());
 /// Unbatched tensor filled with a given value given base shape
 [[nodiscard]] Tensor full(TensorShapeRef base_shape,
-                          const NScalar & init,
+                          const LScalar & init,
                           const TensorOptions & options = default_tensor_options());
 /// Full tensor given batch and base shapes
 [[nodiscard]] Tensor full(const TraceableTensorShape & batch_shape,
                           TensorShapeRef base_shape,
-                          const NScalar & init,
+                          const LScalar & init,
                           const TensorOptions & options = default_tensor_options());
 /// Unbatched identity tensor
 [[nodiscard]] Tensor identity(Size n, const TensorOptions & options = default_tensor_options());

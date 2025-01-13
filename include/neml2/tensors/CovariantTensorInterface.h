@@ -35,7 +35,7 @@ namespace neml2
  * Pattern (CRTP).
  */
 template <class Derived, Size... S>
-class PrimitiveTensor : public Tensor
+class PrimitiveTensor : protected Tensor
 {
 public:
   /// The base shape
@@ -58,42 +58,144 @@ public:
 
   /// @name Meta operations
   ///@{
-  /// Clone (take ownership)
-  Tensor clone() const;
-  /// Discard function graph
-  Tensor detach() const;
   /// Change tensor options
-  Tensor to(const TensorOptions & options) const;
-  /// Negation
-  Tensor operator-() const;
+  Derived to(const TensorOptions & options) const;
+  /// Clone (take ownership)
+  Derived clone() const;
+  /// Discard function graph
+  Derived detach() const;
+  /// Detach from gradient graphs in place
+  Derived & detach_();
+  /// Copy another tensor
+  Derived & copy_(const at::Tensor & other);
+  /// Set all entries to zero
+  Derived & zero_();
+  /// Get the requires_grad property
+  using Tensor::requires_grad;
+  /// Set the requires_grad property
+  Derived & requires_grad_(bool req);
+  ///@}
+
+  /// @name Tensor information
+  ///@{
+  /// Whether this is defined
+  using Tensor::defined;
+  /// Tensor options
+  using Tensor::options;
+  /// Scalar type
+  using Tensor::scalar_type;
+  /// Dtype
+  using Tensor::dtype;
+  /// Device
+  using Tensor::device;
+  /// Number of tensor dimensions
+  using Tensor::dim;
+  /// Tensor shape
+  using Tensor::sizes;
+  /// Size of a dimension
+  using Tensor::size;
+  /// Whether the tensor is batched
+  using Tensor::batched;
+  /// Return the number of batch dimensions
+  using Tensor::batch_dim;
+  /// Return the number of base dimensions
+  using Tensor::base_dim;
+  /// Return the batch size
+  using Tensor::batch_sizes;
+  /// Return the size of a batch axis
+  using Tensor::batch_size;
+  /// Return the base size
+  using Tensor::base_sizes;
+  /// Return the size of a base axis
+  Size base_size(Size dim) const;
+  /// Return the flattened storage needed just for the base indices
+  Size base_storage() const;
   ///@}
 
   /// @name Getter and setter
   ///@{
+  /// Regular tensor indexing
+  using Tensor::index;
+  /// Regular tensor assignment
+  using Tensor::index_put_;
   /// Get a tensor by slicing on the batch dimensions
-  Tensor batch_index(indexing::TensorIndicesRef indices) const;
+  Derived batch_index(indexing::TensorIndicesRef indices) const;
+  /// Get a tensor by slicing on the base dimensions
+  using Tensor::base_index;
   /// Get a tensor by slicing along a batch dimension
-  Tensor batch_slice(Size dim, const indexing::Slice & index) const;
+  Derived batch_slice(Size dim, const indexing::Slice & index) const;
+  /// Get a tensor by slicing along a base dimension
+  using Tensor::base_slice;
+  ///@{
+  /// Set values by slicing on the batch dimensions
+  Derived & batch_index_put_(indexing::TensorIndicesRef indices, const at::Tensor & other);
+  Derived & batch_index_put_(indexing::TensorIndicesRef indices, const LScalar & v);
+  ///@}
+  ///@{
+  /// Set values by slicing on the base dimensions
+  using Tensor::base_index_put_;
+  ///@}
   /// Variable data without function graph
-  Tensor variable_data() const;
+  Derived variable_data() const;
   ///@}
 
   /// @name Modifiers
   ///@{
+  /// Plain expand without distinguishing batch and base dimensions
+  using Tensor::expand;
   /// Return a new view of the tensor with values broadcast along the batch dimensions.
-  Tensor batch_expand(const TraceableTensorShape & batch_shape) const;
+  Derived batch_expand(const TraceableTensorShape & batch_shape) const;
   /// Return a new view of the tensor with values broadcast along a given batch dimension.
-  Tensor batch_expand(const TraceableSize & batch_size, Size dim) const;
+  Derived batch_expand(const TraceableSize & batch_size, Size dim) const;
+  /// Return a new view of the tensor with values broadcast along the base dimensions.
+  /// Return a new view of the tensor with values broadcast along a given base dimension.
+  using Tensor::base_expand;
+  /// Plain expand_as without distinguishing batch and base dimensions
+  using Tensor::expand_as;
   /// Expand the batch to have the same shape as another tensor
-  Tensor batch_expand_as(const Tensor & other) const;
+  Derived batch_expand_as(const Tensor & other) const;
+  /// Expand the base to have the same shape as another tensor
+  using Tensor::base_expand_as;
   /// Return a new tensor with values broadcast along the batch dimensions.
-  Tensor batch_expand_copy(const TraceableTensorShape & batch_shape) const;
+  Derived batch_expand_copy(const TraceableTensorShape & batch_shape) const;
+  /// Return a new tensor with values broadcast along the base dimensions.
+  using Tensor::base_expand_copy;
+  /// Plain reshape without distinguishing batch and base dimensions
+  using Tensor::reshape;
   /// Reshape batch dimensions
-  Tensor batch_reshape(const TraceableTensorShape & batch_shape) const;
+  Derived batch_reshape(const TraceableTensorShape & batch_shape) const;
+  /// Reshape base dimensions
+  using Tensor::base_reshape;
+  /// Plain unsqueeze without distinguishing batch and base dimensions
+  using Tensor::unsqueeze;
   /// Unsqueeze a batch dimension
-  Tensor batch_unsqueeze(Size d) const;
+  Derived batch_unsqueeze(Size d) const;
+  /// Unsqueeze a base dimension
+  using Tensor::base_unsqueeze;
+  /// Plain transpose without distinguishing batch and base dimensions
+  using Tensor::transpose;
   /// Transpose two batch dimensions
-  Tensor batch_transpose(Size d1, Size d2) const;
+  Derived batch_transpose(Size d1, Size d2) const;
+  /// Transpose two base dimensions
+  using Tensor::base_transpose;
+  /// Plain flatten without distinguishing batch and base dimensions
+  using Tensor::flatten;
+  /// Flatten base dimensions
+  using Tensor::base_flatten;
+  ///@}
+
+  ///@{
+  /// Operators
+  Derived operator~() const;
+  Derived operator-() const;
+  Derived & operator+=(const Tensor & other);
+  Derived & operator+=(const LScalar & other);
+  Derived & operator-=(const Tensor & other);
+  Derived & operator-=(const LScalar & other);
+  Derived & operator*=(const Tensor & other);
+  Derived & operator*=(const LScalar & other);
+  Derived & operator/=(const Tensor & other);
+  Derived & operator/=(const LScalar & other);
   ///@}
 };
 } // namespace neml2
