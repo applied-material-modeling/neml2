@@ -92,7 +92,7 @@ NewtonWithLineSearch::linesearch(NonlinearSystem & system,
                 << torch::max(math::sqrt(nR2)).item<Real>() << ", min(||Rc||) = " << std::scientific
                 << torch::min(math::sqrt(crit)).item<Real>() << std::endl;
 
-    auto stop = torch::logical_or(nR2 <= crit, nR2 <= std::pow(atol, 2));
+    auto stop = torch::logical_or(nR2.torch() <= crit.torch(), nR2.torch() <= std::pow(atol, 2));
 
     if (torch::all(stop).item<bool>())
       break;

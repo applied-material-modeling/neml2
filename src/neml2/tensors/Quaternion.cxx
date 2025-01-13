@@ -36,10 +36,9 @@ namespace neml2
 
 // TODO: replace torch::cat with math::base_cat
 Quaternion::Quaternion(const Rot & r)
-  : Quaternion(
-        torch::cat(
-            {((1 - r.norm_sq()) / (1 + r.norm_sq())).unsqueeze(-1), 2 * r / (1 + r.norm_sq())}, -1),
-        r.batch_dim())
+  : Quaternion(math::base_cat(
+        {((1 - r.norm_sq()) / (1 + r.norm_sq())).base_unsqueeze(-1), 2 * r / (1 + r.norm_sq())},
+        -1))
 {
 }
 

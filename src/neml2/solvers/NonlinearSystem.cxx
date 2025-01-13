@@ -117,8 +117,10 @@ NonlinearSystem::init_scaling(const NonlinearSystem::Sol<false> & x, const bool 
   for (unsigned int itr = 0; itr < _autoscale_miter; itr++)
   {
     // check for convergence
-    auto rR = torch::max(torch::abs(1.0 - 1.0 / torch::sqrt(std::get<0>(Jp.max(-1))))).item<Real>();
-    auto rC = torch::max(torch::abs(1.0 - 1.0 / torch::sqrt(std::get<0>(Jp.max(-2))))).item<Real>();
+    auto rR = torch::max(torch::abs(1.0 - 1.0 / torch::sqrt(std::get<0>(Jp.torch().max(-1)))))
+                  .item<Real>();
+    auto rC = torch::max(torch::abs(1.0 - 1.0 / torch::sqrt(std::get<0>(Jp.torch().max(-2)))))
+                  .item<Real>();
     if (verbose)
       std::cout << "ITERATION " << itr << ", ROW ILLNESS = " << std::scientific << rR
                 << ", COL ILLNESS = " << std::scientific << rC << std::endl;
@@ -130,10 +132,10 @@ NonlinearSystem::init_scaling(const NonlinearSystem::Sol<false> & x, const bool 
     {
       auto ar = 1.0 / torch::sqrt(torch::max(Jp.base_index({i})));
       auto ac = 1.0 / torch::sqrt(torch::max(Jp.base_index({indexing::Slice(), i})));
-      _row_scaling.base_index({i}) *= ar;
-      _col_scaling.base_index({i}) *= ac;
-      Jp.base_index({i}) *= ar;
-      Jp.base_index({indexing::Slice(), i}) *= ac;
+      _row_scaling.base_index({i}).torch() *= ar;
+      _col_scaling.base_index({i}).torch() *= ac;
+      Jp.base_index({i}).torch() *= ar;
+      Jp.base_index({indexing::Slice(), i}).torch() *= ac;
     }
   }
 

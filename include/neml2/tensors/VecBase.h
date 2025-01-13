@@ -120,6 +120,6 @@ template <class Derived2>
 R2
 VecBase<Derived>::outer(const VecBase<Derived2> & v) const
 {
-  return torch::matmul(this->unsqueeze(-1), v.unsqueeze(-2));
+  return torch::matmul(this->torch().unsqueeze(-1), v.torch().unsqueeze(-2));
 }
 } // namespace neml2

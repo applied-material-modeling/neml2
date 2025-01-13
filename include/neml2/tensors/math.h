@@ -24,6 +24,7 @@
 
 #pragma once
 
+#include <torch/types.h>
 #include "neml2/tensors/Tensor.h"
 
 namespace neml2

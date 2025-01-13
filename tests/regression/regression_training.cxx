@@ -81,5 +81,5 @@ TEST_CASE("training")
 
   // Check the parameter gradient
   f.backward();
-  REQUIRE(Tensor(p).grad().item<Real>() == Catch::Approx(-172.543));
+  REQUIRE(Tensor(p).torch().grad().item<Real>() == Catch::Approx(-172.543));
 }

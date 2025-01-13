@@ -24,7 +24,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include "neml2/tensors/shape_utils.h"
+#include "neml2/tensors/utils.h"
 #include "neml2/misc/defaults.h"
 #include "neml2/tensors/Tensor.h"
 

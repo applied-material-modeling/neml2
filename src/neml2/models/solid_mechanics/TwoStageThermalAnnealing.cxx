@@ -99,8 +99,8 @@ TwoStageThermalAnnealing<T>::set_value(bool out, bool dout_din, bool /*d2out_din
 {
   auto one = Scalar::ones_like(_T);
   auto zero = Scalar::zeros_like(_T);
-  auto base_region = math::where(_T < _T1, one, zero);
-  auto recover_region = math::where(_T >= _T2, one, zero);
+  auto base_region = math::where(_T.value().torch() < _T1, one, zero);
+  auto recover_region = math::where(_T.value().torch() >= _T2, one, zero);
 
   if (out)
     _modified_rate = base_region * _base_rate + recover_region * -_base_h / _tau;

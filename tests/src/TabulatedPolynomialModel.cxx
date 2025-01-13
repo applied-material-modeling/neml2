@@ -124,7 +124,7 @@ TabulatedPolynomialModel::set_value(bool out, bool /*dout_din*/, bool /*d2out_di
   {
     // Map input to output (just a 2nd order polynomial)
     // After squeezing, y is of shape (...; 2, 3, 3)
-    auto y = _A0.unsqueeze(-1) + torch::matmul(_A1, x) + torch::matmul(_A2, x * x);
+    auto y = _A0.torch().unsqueeze(-1) + torch::matmul(_A1, x) + torch::matmul(_A2, x * x);
     y = y.squeeze(-1);
 
     // Now y contains outputs from each cell of the table. We need to "select" the cell.

@@ -22,10 +22,19 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/tensors/shape_utils.h"
+#include "neml2/tensors/utils.h"
 
 namespace neml2::utils
 {
+Size
+bound_dim(Size d, Size a, Size b)
+{
+  neml_assert_dbg(a < b, "Invalid bounds: [", a, ", ", b, ")");
+  d = d >= 0 ? d + a : d + b;
+  neml_assert_dbg(d >= a && d < b, "Failed to bound dimension ", d, " to [", a, ", ", b, ")");
+  return d;
+}
+
 Size
 storage_size(TensorShapeRef shape)
 {

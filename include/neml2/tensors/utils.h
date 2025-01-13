@@ -25,11 +25,25 @@
 #pragma once
 
 #include <vector>
-#include "neml2/tensors/indexing.h"
 #include "neml2/misc/errors.h"
 
 namespace neml2::utils
 {
+/**
+ * @brief Bound a (possibly negative) dimension offset \p d to given bounds [a, b).
+ *
+ * Note that \p d is the offset from \p a.
+ *
+ * If \p d is non-negative, forward indexing is used, i.e., counting from \p a towards \p b.
+ * Otherwise, backward indexing is used.
+ *
+ * @param d The offset dimension relative to \p a
+ * @param a The lower bound (inclusive)
+ * @param b The upper bound (exclusive)
+ * @return Size Tensor dimension after bounding
+ */
+Size bound_dim(Size d, Size a, Size b);
+
 /**
  * Two tensors are said to be broadcastable if
  * 1. Base shapes are the same

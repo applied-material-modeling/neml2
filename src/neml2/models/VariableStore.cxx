@@ -453,7 +453,7 @@ VariableStore::collect_input_stack() const
   const auto & vars = input_axis().variable_names();
   stack.reserve(vars.size());
   for (const auto & name : vars)
-    stack.push_back(input_variable(name).tensor());
+    stack.push_back(input_variable(name).tensor().torch());
   return stack;
 }
 

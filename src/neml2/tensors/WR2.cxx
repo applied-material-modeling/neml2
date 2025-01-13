@@ -69,7 +69,7 @@ WR2::exp() const
   Rot res_actual = (*this) * Scalar(torch::tan(norm2 / 2.0) /
                                     (2.0 * torch::Tensor(norm2) * torch::cos(norm2 / 2)));
 
-  return torch::where((norm2 > thresh).unsqueeze(-1), res_actual, res_taylor);
+  return torch::where((norm2.torch() > thresh).unsqueeze(-1), res_actual, res_taylor);
 }
 
 R2
@@ -91,7 +91,7 @@ WR2::dexp() const
 
   R2 res_actual = f1 * R2::identity(options()) + f2 * this->outer(*this);
 
-  return torch::where((norm2 > thresh).unsqueeze(-1).unsqueeze(-1), res_actual, res_taylor);
+  return torch::where((norm2.torch() > thresh).unsqueeze(-1).unsqueeze(-1), res_actual, res_taylor);
 }
 
 } // namespace neml2

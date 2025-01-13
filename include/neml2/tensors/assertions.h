@@ -24,8 +24,9 @@
 
 #pragma once
 
+#include <c10/util/ArrayRef.h>
 #include "neml2/misc/assertions.h"
-#include "neml2/tensors/shape_utils.h"
+#include "neml2/tensors/utils.h"
 
 namespace neml2
 {

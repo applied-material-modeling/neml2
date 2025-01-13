@@ -68,20 +68,26 @@ GeneralElasticity::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
     {
       const auto dA_dR = _T.drotate(_R);
       if (_compliance)
-        _to.d(_R) = Tensor(torch::einsum("...ijkl,...klm,...j", {A.dinverse(), dA_dR, _from}),
-                           A.batch_sizes());
+        _to.d(_R) =
+            Tensor(torch::einsum("...ijkl,...klm,...j",
+                                 {A.dinverse().torch(), dA_dR.torch(), _from.value().torch()}),
+                   A.batch_sizes());
       else
-        _to.d(_R) = Tensor(torch::einsum("...ijk,...j", {dA_dR, _from}), A.batch_sizes());
+        _to.d(_R) = Tensor(torch::einsum("...ijk,...j", {dA_dR.torch(), _from.value().torch()}),
+                           A.batch_sizes());
     }
 
     if (const auto * const T = nl_param("T"))
     {
       const auto dA_dT = _T.drotate_self(_R);
       if (_compliance)
-        _to.d(*T) = Tensor(torch::einsum("...ijkl,...klmn,...j", {A.dinverse(), dA_dT, _from}),
-                           A.batch_sizes());
+        _to.d(*T) =
+            Tensor(torch::einsum("...ijkl,...klmn,...j",
+                                 {A.dinverse().torch(), dA_dT.torch(), _from.value().torch()}),
+                   A.batch_sizes());
       else
-        _to.d(*T) = Tensor(torch::einsum("...ijkl,...j", {dA_dT, _from}), A.batch_sizes());
+        _to.d(*T) = Tensor(torch::einsum("...ijkl,...j", {dA_dT.torch(), _from.value().torch()}),
+                           A.batch_sizes());
     }
   }
 }

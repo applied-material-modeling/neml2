@@ -137,15 +137,16 @@ NewtonWithTrustRegion::update(NonlinearSystem & system,
   auto rho = red_a / red_b;
 
   // Adjust the trust region based on the quality of the subproblem
-  _delta.batch_index_put_({rho < _reduce_criteria},
-                          _reduce_factor * _delta.batch_index({rho < _reduce_criteria}));
+  _delta.batch_index_put_({rho.torch() < _reduce_criteria},
+                          _reduce_factor * _delta.batch_index({rho.torch() < _reduce_criteria}));
   _delta.batch_index_put_(
-      {rho > _expand_criteria},
-      torch::clamp(
-          _expand_factor * _delta.batch_index({rho > _expand_criteria}), c10::nullopt, _delta_max));
+      {rho.torch() > _expand_criteria},
+      torch::clamp(_expand_factor * _delta.batch_index({rho.torch() > _expand_criteria}),
+                   c10::nullopt,
+                   _delta_max));
 
   // Accept or reject the current step
-  auto accept = (rho >= _accept_criteria).unsqueeze(-1);
+  auto accept = (rho.torch() >= _accept_criteria).unsqueeze(-1);
 
   // Do some printing if verbose
   if (verbose)
@@ -178,8 +179,9 @@ NewtonWithTrustRegion::solve_direction(const NonlinearSystem::Res<true> & r,
   if (verbose)
   {
     std::cout << "     TRUST-REGION ITERATIONS: " << res.iterations << std::endl;
-    std::cout << "     ACTIVE CONSTRAINTS     : " << torch::sum(res.solution > 0).item<Size>()
-              << "/" << utils::storage_size(res.solution.batch_sizes().concrete()) << std::endl;
+    std::cout << "     ACTIVE CONSTRAINTS     : "
+              << torch::sum(res.solution.torch() > 0).item<Size>() << "/"
+              << utils::storage_size(res.solution.batch_sizes().concrete()) << std::endl;
   }
 
   auto s = Scalar(torch::clamp(res.solution, 0.0), _delta.batch_sizes());
@@ -187,7 +189,8 @@ NewtonWithTrustRegion::solve_direction(const NonlinearSystem::Res<true> & r,
 
   // Now select between the two... Basically take the full Newton step whenever possible
   auto newton_inside_trust_region =
-      (math::linalg::vector_norm(p_newton) <= math::sqrt(2.0 * _delta)).unsqueeze(-1);
+      (math::linalg::vector_norm(p_newton).torch() <= math::sqrt(2.0 * _delta).torch())
+          .unsqueeze(-1);
 
   return NonlinearSystem::Sol<true>(
       Tensor(torch::where(newton_inside_trust_region, p_newton, p_trust), p_newton.batch_sizes()));

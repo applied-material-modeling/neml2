@@ -146,7 +146,7 @@ BufferStore::collect_buffer_stack() const
   torch::jit::Stack stack;
   stack.reserve(buffers.size());
   for (auto && [name, buffer] : buffers)
-    stack.push_back(Tensor(*buffer));
+    stack.push_back(Tensor(*buffer).torch());
   return stack;
 }
 } // namespace neml2

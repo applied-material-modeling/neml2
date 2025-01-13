@@ -81,7 +81,7 @@ VectorAssembler::split_by_variable(const Tensor & tensor) const
   ValueMap ret;
 
   const auto keys = _axis.variable_names();
-  const auto vals = tensor.split(_axis.variable_sizes(), -1);
+  const auto vals = tensor.torch().split(_axis.variable_sizes(), -1);
 
   for (std::size_t i = 0; i < keys.size(); ++i)
     ret[_axis.qualify(keys[i])] = Tensor(vals[i], tensor.batch_sizes());
@@ -95,7 +95,7 @@ VectorAssembler::split_by_subaxis(const Tensor & tensor) const
   std::map<SubaxisName, Tensor> ret;
 
   const auto keys = _axis.subaxis_names();
-  const auto vals = tensor.split(_axis.subaxis_sizes(), -1);
+  const auto vals = tensor.torch().split(_axis.subaxis_sizes(), -1);
 
   for (std::size_t i = 0; i < keys.size(); ++i)
     ret[_axis.qualify(keys[i])] = Tensor(vals[i], tensor.batch_sizes());
@@ -190,7 +190,7 @@ MatrixAssembler::split_by_variable(const Tensor & tensor) const
   const auto yvars = _yaxis.variable_names();
   const auto xvars = _xaxis.variable_names();
 
-  const auto rows = tensor.split(_yaxis.variable_sizes(), -2);
+  const auto rows = tensor.torch().split(_yaxis.variable_sizes(), -2);
   for (std::size_t i = 0; i < yvars.size(); ++i)
   {
     const auto vals = rows[i].split(_xaxis.variable_sizes(), -1);
@@ -210,7 +210,7 @@ MatrixAssembler::split_by_subaxis(const Tensor & tensor) const
   const auto ynames = _yaxis.subaxis_names();
   const auto xnames = _xaxis.subaxis_names();
 
-  const auto rows = tensor.split(_yaxis.subaxis_sizes(), -2);
+  const auto rows = tensor.torch().split(_yaxis.subaxis_sizes(), -2);
   for (std::size_t i = 0; i < ynames.size(); ++i)
   {
     const auto vals = rows[i].split(_xaxis.subaxis_sizes(), -1);

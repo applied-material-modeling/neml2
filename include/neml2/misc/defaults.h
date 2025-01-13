@@ -24,6 +24,7 @@
 
 #pragma once
 
+#include <string>
 #include "neml2/misc/types.h"
 
 namespace neml2
@@ -41,15 +42,15 @@ namespace neml2
  */
 ///@{
 /// Default floating point tensor options
-torch::TensorOptions & default_tensor_options();
+TensorOptions & default_tensor_options();
 /// Default integral tensor options
-torch::TensorOptions & default_integer_tensor_options();
+TensorOptions & default_integer_tensor_options();
 /// Default floating point type
-torch::Dtype & default_dtype();
+Dtype & default_dtype();
 /// Default integral type
-torch::Dtype & default_integer_dtype();
+Dtype & default_integer_dtype();
 /// Default device
-torch::Device & default_device();
+Device & default_device();
 ///@}
 
 /// @name Default tolerances

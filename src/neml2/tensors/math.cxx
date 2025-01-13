@@ -22,7 +22,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <torch/types.h>
 #include <torch/autograd.h>
 #include <torch/linalg.h>
 
@@ -52,11 +51,11 @@ full_to_reduced(const Tensor & full,
       rmap.index(net).expand(utils::add_shapes(starting_shape, rmap.sizes()[0], trailing_shape));
   auto factor = rfactors.to(full).index(net);
 
-  return Tensor(
-      factor * torch::gather(full.reshape(utils::add_shapes(starting_shape, 9, trailing_shape)),
-                             starting_dim,
-                             map),
-      full.batch_sizes());
+  return Tensor(factor * torch::gather(full.torch().reshape(
+                                           utils::add_shapes(starting_shape, 9, trailing_shape)),
+                                       starting_dim,
+                                       map),
+                full.batch_sizes());
 }
 
 Tensor

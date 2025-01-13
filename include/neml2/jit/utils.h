@@ -30,6 +30,11 @@
 
 namespace neml2
 {
+using TracerArgumentStash = torch::jit::tracer::ArgumentStash;
+
+/// Whether we are currently tracing
+bool is_tracing();
+
 /// Assert that we are currently tracing
 void neml_assert_tracing();
 
@@ -44,12 +49,29 @@ void neml_assert_not_tracing_dbg();
 
 namespace utils
 {
-/// @brief Extract the batch shape of a tensor given batch dimension
-/// The extracted batch shape will be _traceable_. @see neml2::TraceableTensorShape
-TraceableTensorShape extract_batch_sizes(const torch::Tensor & tensor, Size batch_dim);
+/**
+ * @brief Extract the shape of leading \p dim dimensions of a tensor
+ *
+ * The extracted shape will be _traceable_. @see neml2::TraceableTensorShape
+ */
+TraceableTensorShape trace_leading_sizes(const torch::Tensor & tensor, Size dim);
+
+/**
+ * @brief Extract the size of a tensor at a given dimension \p dim
+ *
+ * The extracted size will be _traceable_. @see neml2::TraceableSize
+ */
+TraceableSize trace_size(const Tensor & tensor, Size dim);
 
 template <typename... S>
 TraceableTensorShape add_traceable_shapes(const S &... shape);
+
+/**
+ * @brief Find the broadcast batch shape of all the tensors
+ *
+ * The returned batch shape will be _traceable_. @see neml2::TraceableTensorShape
+ */
+TraceableTensorShape broadcast_batch_sizes(const std::vector<Tensor> & tensors);
 
 namespace details
 {

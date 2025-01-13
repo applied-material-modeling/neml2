@@ -280,7 +280,7 @@ ParameterStore::collect_parameter_stack() const
   torch::jit::Stack stack;
   stack.reserve(params.size());
   for (auto && [name, param] : params)
-    stack.push_back(Tensor(*param));
+    stack.push_back(Tensor(*param).torch());
   return stack;
 }
 } // namespace neml2

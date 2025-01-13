@@ -238,7 +238,8 @@ Rot::dist(const Rot & r) const
   auto st = this->shadow();
   auto sr = r.shadow();
 
-  return this->gdist(r).minimum(this->gdist(sr)).minimum(sr.gdist(r)).minimum(sr.gdist(st));
+  return torch::minimum(torch::minimum(this->gdist(r), this->gdist(sr)),
+                        torch::minimum(sr.gdist(r), sr.gdist(st)));
 }
 
 Scalar

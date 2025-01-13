@@ -98,7 +98,7 @@ Orientation::fill(const OptionSet & options) const
     throw NEMLException("Unknown Orientation input_type " + input_type);
 
   if (options.get<bool>("normalize"))
-    return math::where((R.norm_sq() < 1.0).unsqueeze(-1), R, R.shadow());
+    return math::where((R.norm_sq().torch() < 1.0).unsqueeze(-1), R, R.shadow());
 
   return R;
 }

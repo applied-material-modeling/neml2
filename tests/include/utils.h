@@ -56,7 +56,7 @@ finite_differencing_derivative(F && f,
     auto y0 = Tensor(f(x)).clone();
 
     auto dx = eps * Scalar(neml2::math::abs(x));
-    dx.index_put_({dx < aeps}, aeps);
+    dx.index_put_({dx.torch() < aeps}, aeps);
 
     auto x1 = x + dx;
 
@@ -73,11 +73,11 @@ finite_differencing_derivative(F && f,
   for (Size i = 0; i < xf.base_size(0); i++)
   {
     auto dx = eps * Scalar(math::abs(xf.base_index({i})));
-    dx.index_put_({dx < aeps}, aeps);
+    dx.index_put_({dx.torch() < aeps}, aeps);
 
     auto xf1 = xf.clone();
     xf1.base_index_put_({i}, xf1.base_index({i}) + dx);
-    auto x1 = Tensor(xf1.reshape(x.sizes()), x.batch_sizes());
+    auto x1 = Tensor(xf1.torch().reshape(x.sizes()), x.batch_sizes());
 
     auto y1 = Tensor(f(x1)).clone();
     dy_dxf[i] = (y1 - y0) / dx;

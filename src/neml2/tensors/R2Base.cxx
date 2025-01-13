@@ -22,6 +22,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <torch/types.h>
+#include <torch/linalg.h>
+
 #include "neml2/tensors/math.h"
 #include "neml2/tensors/R2Base.h"
 #include "neml2/tensors/R2.h"
@@ -219,7 +222,7 @@ template <class Derived>
 Derived
 R2Base<Derived>::inverse() const
 {
-  return torch::Tensor::inverse();
+  return Derived(torch::linalg_inv(*this), this->batch_sizes());
 }
 
 template <class Derived>

@@ -25,7 +25,7 @@
 #include <iostream>
 
 #include "neml2/tensors/tensors.h"
-#include "neml2/tensors/TensorBaseImpl.h"
+#include "neml2/tensors/TensorBaseBody.h"
 
 namespace neml2
 {

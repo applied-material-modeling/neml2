@@ -66,15 +66,16 @@ void
 FixOrientation::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   if (out)
-    _output = math::where(
-        (Rot(_input).norm_sq() < _threshold).unsqueeze(-1), Rot(_input), Rot(_input).shadow());
+    _output = math::where((Rot(_input).norm_sq().torch() < _threshold).unsqueeze(-1),
+                          Rot(_input),
+                          Rot(_input).shadow());
 
   if (dout_din)
     if (_input.is_dependent())
     {
       const auto I = R2::identity(_input.options());
       _output.d(_input) =
-          math::where((Rot(_input).norm_sq() < _threshold).unsqueeze(-1).unsqueeze(-1),
+          math::where((Rot(_input).norm_sq().torch() < _threshold).unsqueeze(-1).unsqueeze(-1),
                       I,
                       Rot(_input).dshadow());
     }

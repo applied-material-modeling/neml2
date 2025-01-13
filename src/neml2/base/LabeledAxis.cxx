@@ -24,7 +24,7 @@
 
 #include "neml2/base/LabeledAxis.h"
 #include "neml2/tensors/indexing.h"
-#include "neml2/tensors/shape_utils.h"
+#include "neml2/tensors/utils.h"
 #include "neml2/misc/assertions.h"
 #include "neml2/tensors/tensors.h"
 

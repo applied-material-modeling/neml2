@@ -386,7 +386,7 @@ Model::forward(bool out, bool dout, bool d2out)
                   type(),
                   "' is requested to compute second derivatives, but it does not define them.");
 
-  torch::InferenceMode mode_guard(_production && !torch::jit::tracer::isTracing());
+  torch::InferenceMode mode_guard(_production && !is_tracing());
 
   if (dout || d2out)
     enable_AD();
@@ -402,7 +402,7 @@ Model::forward(bool out, bool dout, bool d2out)
 void
 Model::forward_maybe_jit(bool out, bool dout, bool d2out)
 {
-  if (!is_jit_enabled() || torch::jit::tracer::isTracing())
+  if (!is_jit_enabled() || is_tracing())
   {
     forward(out, dout, d2out);
     return;
@@ -454,18 +454,18 @@ Model::variable_name_lookup(const torch::Tensor & var)
 {
   // Look for the variable in the input and output variables
   for (auto && [ivar, val] : input_variables())
-    if (val->tensor().data_ptr() == var.data_ptr())
+    if (val->tensor().torch().data_ptr() == var.data_ptr())
       return name() + "::" + utils::stringify(ivar);
   for (auto && [ovar, val] : output_variables())
-    if (val->tensor().data_ptr() == var.data_ptr())
+    if (val->tensor().torch().data_ptr() == var.data_ptr())
       return name() + "::" + utils::stringify(ovar);
 
   // Look for the variable in the parameter and buffer store
   for (auto && [pname, pval] : host<ParameterStore>()->named_parameters())
-    if (Tensor(*pval).data_ptr() == var.data_ptr())
+    if (Tensor(*pval).torch().data_ptr() == var.data_ptr())
       return name() + "::" + utils::stringify(pname);
   for (auto && [bname, bval] : host<BufferStore>()->named_buffers())
-    if (Tensor(*bval).data_ptr() == var.data_ptr())
+    if (Tensor(*bval).torch().data_ptr() == var.data_ptr())
       return name() + "::" + utils::stringify(bname);
 
   // Look for the variable in the registered models

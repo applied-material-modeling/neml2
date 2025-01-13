@@ -24,57 +24,33 @@
 
 #pragma once
 
-#include <cstdint>
-#include <iosfwd>
-
-namespace c10
-{
-template <typename T, unsigned N>
-class SmallVector;
-template <typename T>
-class ArrayRef;
-struct TensorOptions;
-enum class ScalarType : int8_t;
-struct Device;
-} // namespace c10
-
-namespace at
-{
-class Tensor;
-using ScalarType = c10::ScalarType;
-namespace indexing
-{
-struct Slice;
-struct TensorIndex;
-}
-} // namespace at
-
-namespace torch
-{
-using Tensor = at::Tensor;
-template <typename T, unsigned N>
-using SmallVector = c10::SmallVector<T, N>;
-template <typename T>
-using ArrayRef = c10::ArrayRef<T>;
-using TensorOptions = c10::TensorOptions;
-using Dtype = at::ScalarType;
-using Device = c10::Device;
-} // namespace torch
+#include <c10/core/Scalar.h>
+#include <c10/core/TensorOptions.h>
+#include "neml2/tensors/indexing_fwd.h"
 
 namespace neml2
 {
+using NScalar = c10::Scalar;
 using Real = double;
 using Size = int64_t;
 using Integer = int64_t;
-using TensorShape = torch::SmallVector<Size, 8>;
-using TensorShapeRef = torch::ArrayRef<Size>;
+using TensorShape = c10::SmallVector<Size>;
+using TensorShapeRef = c10::ArrayRef<Size>;
 
-namespace indexing
-{
-using namespace at::indexing;
-using TensorIndices = torch::SmallVector<TensorIndex, 8>;
-using TensorIndicesRef = torch::ArrayRef<TensorIndex>;
-} // namespace indexing
+using TensorOptions = c10::TensorOptions;
+using TypeMeta = caffe2::TypeMeta;
+using Dtype = c10::ScalarType;
+using Device = c10::Device;
+
+/// Fixed width dtypes.
+constexpr auto kUInt8 = c10::kByte;
+constexpr auto kInt8 = c10::kChar;
+constexpr auto kInt16 = c10::kShort;
+constexpr auto kInt32 = c10::kInt;
+constexpr auto kInt64 = c10::kLong;
+constexpr auto kFloat16 = c10::kHalf;
+constexpr auto kFloat32 = c10::kFloat;
+constexpr auto kFloat64 = c10::kDouble;
 
 /**
  * @brief Role in a function definition

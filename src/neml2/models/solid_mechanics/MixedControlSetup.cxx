@@ -110,8 +110,8 @@ MixedControlSetup::set_value(bool out, bool dout_din, bool d2out_din2)
 std::pair<SSR4, SSR4>
 MixedControlSetup::make_operators(const SR2 & control) const
 {
-  auto strain_select = control <= _threshold;
-  auto stress_select = control > _threshold;
+  auto strain_select = control.torch() <= _threshold.torch();
+  auto stress_select = control.torch() > _threshold.torch();
 
   // This also converts these to floats
   auto ones_stress = Tensor(strain_select.to(control.options()), control.batch_sizes());

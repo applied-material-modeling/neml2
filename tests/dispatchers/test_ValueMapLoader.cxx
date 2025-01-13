@@ -54,10 +54,10 @@ TEST_CASE("ValueMapLoader", "[dispatchers]")
   REQUIRE(n == 1);
   REQUIRE(work[strain_name].batch_sizes() == TensorShape{5, 1, 5});
   REQUIRE(work[strain_name].base_sizes() == TensorShape{6});
-  REQUIRE(torch::allclose(work[strain_name], strain.slice(1, 0, 1)));
+  REQUIRE(torch::allclose(work[strain_name], strain.torch().slice(1, 0, 1)));
   REQUIRE(work[temperature_name].batch_sizes() == TensorShape{5, 1, 5});
   REQUIRE(work[temperature_name].base_sizes() == TensorShape{});
-  REQUIRE(torch::allclose(work[temperature_name], temperature.slice(1, 0, 1)));
+  REQUIRE(torch::allclose(work[temperature_name], temperature.torch().slice(1, 0, 1)));
 
   REQUIRE(loader.has_more());
   std::tie(n, work) = loader.next(2);
@@ -65,10 +65,10 @@ TEST_CASE("ValueMapLoader", "[dispatchers]")
   REQUIRE(n == 2);
   REQUIRE(work[strain_name].batch_sizes() == TensorShape{5, 2, 5});
   REQUIRE(work[strain_name].base_sizes() == TensorShape{6});
-  REQUIRE(torch::allclose(work[strain_name], strain.slice(1, 1, 3)));
+  REQUIRE(torch::allclose(work[strain_name], strain.torch().slice(1, 1, 3)));
   REQUIRE(work[temperature_name].batch_sizes() == TensorShape{5, 1, 5});
   REQUIRE(work[temperature_name].base_sizes() == TensorShape{});
-  REQUIRE(torch::allclose(work[temperature_name], temperature.slice(1, 0, 1)));
+  REQUIRE(torch::allclose(work[temperature_name], temperature.torch().slice(1, 0, 1)));
 
   REQUIRE(loader.has_more());
   std::tie(n, work) = loader.next(1000);
@@ -76,10 +76,10 @@ TEST_CASE("ValueMapLoader", "[dispatchers]")
   REQUIRE(n == 97);
   REQUIRE(work[strain_name].batch_sizes() == TensorShape{5, 97, 5});
   REQUIRE(work[strain_name].base_sizes() == TensorShape{6});
-  REQUIRE(torch::allclose(work[strain_name], strain.slice(1, 3, 100)));
+  REQUIRE(torch::allclose(work[strain_name], strain.torch().slice(1, 3, 100)));
   REQUIRE(work[temperature_name].batch_sizes() == TensorShape{5, 1, 5});
   REQUIRE(work[temperature_name].base_sizes() == TensorShape{});
-  REQUIRE(torch::allclose(work[temperature_name], temperature.slice(1, 0, 1)));
+  REQUIRE(torch::allclose(work[temperature_name], temperature.torch().slice(1, 0, 1)));
 
   REQUIRE(!loader.has_more());
 }

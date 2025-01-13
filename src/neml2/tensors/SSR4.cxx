@@ -224,14 +224,16 @@ SR2
 operator*(const SSR4 & a, const SR2 & b)
 {
   neml_assert_batch_broadcastable_dbg(a, b);
-  return SR2(torch::matmul(a, b.unsqueeze(-1)).squeeze(-1), utils::broadcast_batch_dim(a, b));
+  return SR2(torch::matmul(a, b.torch().unsqueeze(-1)).squeeze(-1),
+             utils::broadcast_batch_dim(a, b));
 }
 
 SR2
 operator*(const SR2 & a, const SSR4 & b)
 {
   neml_assert_batch_broadcastable_dbg(a, b);
-  return SR2(torch::matmul(a.unsqueeze(-2), b).squeeze(-2), utils::broadcast_batch_dim(a, b));
+  return SR2(torch::matmul(a.torch().unsqueeze(-2), b).squeeze(-2),
+             utils::broadcast_batch_dim(a, b));
 }
 
 SSR4

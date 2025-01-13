@@ -50,7 +50,7 @@ TEST_CASE("MillerIndex", "[tensors]")
   SECTION("Convert to normalized vector")
   {
     auto right = Vec::fill(1.0, 2.0, -1.0, DTO);
-    right /= right.norm();
+    right.torch() /= right.torch().norm();
     REQUIRE(torch::allclose(m.to_normalized_vec(), right));
     REQUIRE(torch::allclose(mb.to_normalized_vec(), right.batch_expand(B)));
   }
@@ -58,10 +58,10 @@ TEST_CASE("MillerIndex", "[tensors]")
   SECTION("GCD reduction")
   {
     auto a = MillerIndex::fill(2, 2, 6, IDTO);
-    REQUIRE(torch::all(a.reduce() == MillerIndex::fill(1, 1, 3, IDTO)).item<bool>());
+    REQUIRE(torch::all(a.reduce().torch() == MillerIndex::fill(1, 1, 3, IDTO)).item<bool>());
     auto b = MillerIndex::fill(-2, 2, 6, IDTO);
-    REQUIRE(torch::all(b.reduce() == MillerIndex::fill(-1, 1, 3)).item<bool>());
+    REQUIRE(torch::all(b.reduce().torch() == MillerIndex::fill(-1, 1, 3)).item<bool>());
     auto c = MillerIndex::fill(8, 4, 2, IDTO);
-    REQUIRE(torch::all(c.reduce() == MillerIndex::fill(4, 2, 1, IDTO)).item<bool>());
+    REQUIRE(torch::all(c.reduce().torch() == MillerIndex::fill(4, 2, 1, IDTO)).item<bool>());
   }
 }

@@ -22,48 +22,44 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <torch/types.h>
-
-#include "neml2/misc/types.h"
 #include "neml2/misc/defaults.h"
-#include "neml2/misc/assertions.h"
 
 namespace neml2
 {
-torch::TensorOptions &
+TensorOptions &
 default_tensor_options()
 {
-  static torch::TensorOptions _default_tensor_options =
-      torch::TensorOptions().dtype(default_dtype()).device(default_device());
+  static TensorOptions _default_tensor_options =
+      TensorOptions().dtype(default_dtype()).device(default_device());
   return _default_tensor_options;
 }
 
-torch::TensorOptions &
+TensorOptions &
 default_integer_tensor_options()
 {
-  static torch::TensorOptions _default_integer_tensor_options =
-      torch::TensorOptions().dtype(default_integer_dtype()).device(default_device());
+  static TensorOptions _default_integer_tensor_options =
+      TensorOptions().dtype(default_integer_dtype()).device(default_device());
   return _default_integer_tensor_options;
 }
 
-torch::Dtype &
+Dtype &
 default_dtype()
 {
-  static torch::Dtype _default_dtype = torch::kFloat64;
+  static Dtype _default_dtype = kFloat64;
   return _default_dtype;
 }
 
-torch::Dtype &
+Dtype &
 default_integer_dtype()
 {
-  static torch::Dtype _default_integer_dtype = torch::kInt64;
+  static Dtype _default_integer_dtype = kInt64;
   return _default_integer_dtype;
 }
 
-torch::Device &
+Device &
 default_device()
 {
-  static torch::Device _default_device = torch::kCPU;
+  static Device _default_device = kCPU;
   return _default_device;
 }
 

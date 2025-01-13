@@ -24,36 +24,17 @@
 
 #pragma once
 
-#include "neml2/misc/types.h"
+#include <c10/util/ArrayRef.h>
 
-namespace neml2
+namespace at::indexing
 {
-/**
- * @brief Traceable size
- *
- * Similar to neml2::TraceableTensorShape, but only for a single dimension.
- * @see neml2::TraceableTensorShape
- */
-struct TraceableSize : public std::variant<Size, torch::Tensor>
+struct Slice;
+struct TensorIndex;
+}
+
+namespace neml2::indexing
 {
-  using std::variant<Size, torch::Tensor>::variant;
-
-  /// @return a pointer to the torch::Tensor representing the traceable size if it is traceable, otherwise a nullptr
-  const torch::Tensor * traceable() const noexcept;
-
-  /// @return the concrete size (without any traceable information)
-  Size concrete() const;
-
-  /// @return the size represented as a scalar tensor (possibly traceable)
-  torch::Tensor as_tensor() const;
-};
-
-/// Comparison operators
-///@{
-bool operator==(const TraceableSize & lhs, const TraceableSize & rhs);
-bool operator!=(const TraceableSize & lhs, const TraceableSize & rhs);
-///@}
-
-/// Streaming operator
-std::ostream & operator<<(std::ostream & os, const TraceableSize & s);
-} // namespace neml2
+using namespace at::indexing;
+using TensorIndices = c10::SmallVector<TensorIndex>;
+using TensorIndicesRef = c10::ArrayRef<TensorIndex>;
+} // namespace neml2::indexing

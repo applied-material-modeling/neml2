@@ -29,16 +29,22 @@
 
 namespace neml2
 {
+bool
+is_tracing()
+{
+  return torch::jit::tracer::isTracing();
+}
+
 void
 neml_assert_tracing()
 {
-  neml_assert(torch::jit::tracer::isTracing(), "Expected to be tracing but not tracing");
+  neml_assert(is_tracing(), "Expected to be tracing but not tracing");
 }
 
 void
 neml_assert_not_tracing()
 {
-  neml_assert(!torch::jit::tracer::isTracing(), "Tracing is prohibited in this region");
+  neml_assert(!is_tracing(), "Tracing is prohibited in this region");
 }
 
 void
@@ -60,19 +66,55 @@ neml_assert_not_tracing_dbg()
 namespace utils
 {
 TraceableTensorShape
-extract_batch_sizes(const torch::Tensor & tensor, Size batch_dim)
+extract_leading_sizes(const torch::Tensor & tensor, Size dim)
 {
-  // Put the batch sizes into the traced graph if we are tracing
-  // TODO: This could be optimized
-  if (torch::jit::tracer::isTracing())
-  {
-    TraceableTensorShape sizes;
-    for (Size i = 0; i < batch_dim; ++i)
-      sizes.emplace_back(torch::jit::tracer::getSizeOf(tensor, i));
-    return sizes;
-  }
+  TraceableTensorShape sizes;
+  for (Size i = 0; i < dim; ++i)
+    sizes.emplace_back(extract_size(tensor, i));
+  return sizes;
+}
 
-  return tensor.sizes().slice(0, batch_dim);
+TraceableSize
+extract_size(const torch::Tensor & tensor, Size dim)
+{
+  neml_assert_tracing_dbg();
+  neml_assert_dbg(dim >= 0, "Requested dimension is out of bounds: ", dim, " < 0");
+  neml_assert_dbg(
+      tensor.dim() >= dim, "Requested dimension is out of bounds: ", dim, " >= ", tensor.dim());
+
+  return torch::jit::tracer::getSizeOf(tensor, dim);
+}
+
+torch::Tensor
+pad_prepend(const torch::Tensor & s, Size dim, Size pad)
+{
+  neml_assert_dbg(s.defined(), "pad_prepend: shape must be defined");
+  neml_assert_dbg(s.scalar_type() == torch::kInt64, "pad_prepend: shape must be of type int64");
+  neml_assert_dbg(s.dim() == 1, "pad_prepend: shape must be 1D");
+  return torch::cat({torch::full({dim - s.size(0)}, pad, s.options()), s});
+}
+
+TraceableTensorShape
+broadcast_batch_sizes(const std::vector<Tensor> & tensors)
+{
+  Size dim = 0;
+  auto shapes = std::vector<torch::Tensor>{};
+  for (const auto & t : tensors)
+    if (t.defined())
+    {
+      dim = t.batch_dim() > dim ? t.batch_dim() : dim;
+      const auto shape = t.batch_sizes().as_tensor();
+      if (shape.defined())
+        shapes.push_back(shape);
+    }
+  if (shapes.empty())
+    return TraceableTensorShape(TensorShape{});
+  /// Pre-pad ones to the shapes
+  for (auto & s : shapes)
+    s = pad_prepend(s, dim, 1);
+  /// Braodcast
+  const auto all_shapes = torch::stack(shapes);
+  return std::get<0>(torch::max(all_shapes, 0));
 }
 } // namespace utils
 } // namespace neml2

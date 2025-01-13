@@ -24,7 +24,6 @@
 
 #pragma once
 
-#include "neml2/misc/types.h"
-#include <c10/util/SmallVector.h>
-#include <c10/util/ArrayRef.h>
 #include <ATen/TensorIndexing.h>
+
+#include "neml2/tensors/indexing_fwd.h"

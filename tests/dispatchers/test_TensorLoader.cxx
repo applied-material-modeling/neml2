@@ -49,7 +49,7 @@ TEST_CASE("TensorLoader", "[dispatchers]")
   REQUIRE(n == 1);
   REQUIRE(work.batch_sizes() == TensorShape{5, 1, 5});
   REQUIRE(work.base_sizes() == TensorShape{2, 3});
-  REQUIRE(torch::allclose(work, ten.slice(1, 0, 1)));
+  REQUIRE(torch::allclose(work, ten.torch().slice(1, 0, 1)));
 
   REQUIRE(loader.has_more());
   std::tie(n, work) = loader.next(2);
@@ -57,7 +57,7 @@ TEST_CASE("TensorLoader", "[dispatchers]")
   REQUIRE(n == 2);
   REQUIRE(work.batch_sizes() == TensorShape{5, 2, 5});
   REQUIRE(work.base_sizes() == TensorShape{2, 3});
-  REQUIRE(torch::allclose(work, ten.slice(1, 1, 3)));
+  REQUIRE(torch::allclose(work, ten.torch().slice(1, 1, 3)));
 
   REQUIRE(loader.has_more());
   std::tie(n, work) = loader.next(1000);
@@ -65,7 +65,7 @@ TEST_CASE("TensorLoader", "[dispatchers]")
   REQUIRE(n == 97);
   REQUIRE(work.batch_sizes() == TensorShape{5, 97, 5});
   REQUIRE(work.base_sizes() == TensorShape{2, 3});
-  REQUIRE(torch::allclose(work, ten.slice(1, 3)));
+  REQUIRE(torch::allclose(work, ten.torch().slice(1, 3)));
 
   REQUIRE(!loader.has_more());
 }
