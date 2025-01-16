@@ -1,0 +1,5 @@
+<map id="StaticHybridScheduler" name="StaticHybridScheduler">
+<area shape="rect" id="Node000001" title="A scheduler for multiple devices with static priority management." alt="" coords="5,79,172,104"/>
+<area shape="rect" id="Node000002" href="$classneml2_1_1WorkScheduler.html" title="Scheduler for work dispatching." alt="" coords="29,5,148,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="91,44,91,79,86,79,86,44"/>
+</map>
