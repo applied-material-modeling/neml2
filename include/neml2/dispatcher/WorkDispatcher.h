@@ -104,6 +104,9 @@ public:
   Of run_async(WorkGenerator<Ip> &, WorkScheduler &) const;
 
 protected:
+  /// Helper function to validate that the dispatcher is properly configured
+  void validate() const;
+
   /// Function to dispatch preprocessed work to the worker and retrieve the result
   std::function<O(Ip &&, torch::Device)> _dispatch;
 
@@ -122,9 +125,8 @@ protected:
 ////////////////////////////////////////////////////////////////////////////////
 
 template <typename I, typename O, typename Of, typename Ip, typename Op>
-Of
-WorkDispatcher<I, O, Of, Ip, Op>::run(WorkGenerator<Ip> & generator,
-                                      WorkScheduler & scheduler) const
+void
+WorkDispatcher<I, O, Of, Ip, Op>::validate() const
 {
   neml_assert(bool(_dispatch), "Dispatch function is not set");
   if constexpr (!std::is_same_v<I, Ip>)
@@ -133,6 +135,14 @@ WorkDispatcher<I, O, Of, Ip, Op>::run(WorkGenerator<Ip> & generator,
     neml_assert(bool(_postprocess), "Postprocess function is not set");
   if constexpr (!std::is_same_v<Of, std::vector<Op>>)
     neml_assert(bool(_reduce), "Reduce function is not set");
+}
+
+template <typename I, typename O, typename Of, typename Ip, typename Op>
+Of
+WorkDispatcher<I, O, Of, Ip, Op>::run(WorkGenerator<Ip> & generator,
+                                      WorkScheduler & scheduler) const
+{
+  validate();
 
   torch::Device device = torch::kCPU;
   std::size_t n = 0;
@@ -181,13 +191,7 @@ Of
 WorkDispatcher<I, O, Of, Ip, Op>::run_async(WorkGenerator<Ip> & generator,
                                             WorkScheduler & scheduler) const
 {
-  neml_assert(bool(_dispatch), "Dispatch function is not set");
-  if constexpr (!std::is_same_v<I, Ip>)
-    neml_assert(bool(_preprocess), "Preprocess function is not set");
-  if constexpr (!std::is_same_v<O, Op>)
-    neml_assert(bool(_postprocess), "Postprocess function is not set");
-  if constexpr (!std::is_same_v<Of, std::vector<Op>>)
-    neml_assert(bool(_reduce), "Reduce function is not set");
+  validate();
 
   torch::Device device = torch::kCPU;
   std::size_t n = 0;
