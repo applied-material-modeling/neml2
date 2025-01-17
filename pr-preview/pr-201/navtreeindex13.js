@@ -1,5 +1,7 @@
 var NAVTREEINDEX13 =
 {
+"namespaceneml2.html#acb7e5f3cc4d212e6fb605d1e51a55684":[8,0,0,357],
+"namespaceneml2.html#ace1cc249596dc11892449a2fc9f21cb3":[8,0,0,266],
 "namespaceneml2.html#ace4c5247290728af9f0f16e3ff54b585":[8,0,0,352],
 "namespaceneml2.html#acfd0f6bc05c40545cdb14eb1b47881f1":[8,0,0,273],
 "namespaceneml2.html#ad14a01c31ef794ac16de33d58bb5b908":[8,0,0,374],
@@ -247,7 +249,5 @@ var NAVTREEINDEX13 =
 "structneml2_1_1NonlinearSystem_1_1Res.html#aa22bc17c0d20ee3553902e62814df6b4":[8,0,0,99,1,0],
 "structneml2_1_1NonlinearSystem_1_1Res.html#acfc1c9f7c80199d7e5413060261874f6":[8,1,0,97,1,2],
 "structneml2_1_1NonlinearSystem_1_1Res.html#acfc1c9f7c80199d7e5413060261874f6":[8,0,0,99,1,2],
-"structneml2_1_1NonlinearSystem_1_1Sol.html":[8,0,0,99,2],
-"structneml2_1_1NonlinearSystem_1_1Sol.html":[8,1,0,97,2],
-"structneml2_1_1NonlinearSystem_1_1Sol.html#a0a435011c7ed9a54457d0b4eae876f2a":[8,1,0,97,2,0]
+"structneml2_1_1NonlinearSystem_1_1Sol.html":[8,0,0,99,2]
 };

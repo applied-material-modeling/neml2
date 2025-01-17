@@ -1,5 +1,7 @@
 var NAVTREEINDEX14 =
 {
+"structneml2_1_1NonlinearSystem_1_1Sol.html":[8,1,0,97,2],
+"structneml2_1_1NonlinearSystem_1_1Sol.html#a0a435011c7ed9a54457d0b4eae876f2a":[8,1,0,97,2,0],
 "structneml2_1_1NonlinearSystem_1_1Sol.html#a0a435011c7ed9a54457d0b4eae876f2a":[8,0,0,99,2,0],
 "structneml2_1_1NonlinearSystem_1_1Sol.html#a1279c2aeead8c494632a1012eb4d2382":[8,0,0,99,2,1],
 "structneml2_1_1NonlinearSystem_1_1Sol.html#a1279c2aeead8c494632a1012eb4d2382":[8,1,0,97,2,1],
