@@ -159,6 +159,10 @@ public:
   Derived batch_index(indexing::TensorIndicesRef indices) const;
   /// Get a tensor by slicing on the base dimensions
   neml2::Tensor base_index(indexing::TensorIndicesRef indices) const;
+  /// Get a tensor by slicing along a batch dimension
+  Derived batch_slice(Size dim, const indexing::Slice & index) const;
+  /// Get a tensor by slicing along a base dimension
+  neml2::Tensor base_slice(Size dim, const indexing::Slice & index) const;
   ///@{
   /// Set values by slicing on the batch dimensions
   void batch_index_put_(indexing::TensorIndicesRef indices, const torch::Tensor & other);

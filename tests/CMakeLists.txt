@@ -18,3 +18,6 @@ add_subdirectory(regression)
 
 # Verification tests
 add_subdirectory(verification)
+
+# Work dispatcher tests
+add_subdirectory(dispatcher)
