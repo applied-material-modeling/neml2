@@ -78,21 +78,21 @@ SlopeSaturationVoceIsotropicHardening::set_value(bool out, bool dout_din, bool d
       "SlopeSaturationVoceIsotropicHardening model doesn't implement second derivatives.");
 
   if (out)
-    _h_dot = _theta0 * (1.0 - _h / _R) * _gamma_dot;
+    _h_dot = math::sign(_R) * _theta0 * (1.0 - _h / _R) * _gamma_dot;
 
   if (dout_din)
   {
     if (_gamma_dot.is_dependent())
-      _h_dot.d(_gamma_dot) = _theta0 * (1.0 - _h / _R);
+      _h_dot.d(_gamma_dot) = math::sign(_R) * _theta0 * (1.0 - _h / _R);
 
     if (_h.is_dependent())
-      _h_dot.d(_h) = -_theta0 / _R * _gamma_dot;
+      _h_dot.d(_h) = -math::sign(_R) * _theta0 / _R * _gamma_dot;
 
     if (const auto * const R = nl_param("R"))
-      _h_dot.d(*R) = _gamma_dot * _h * _theta0 / (_R * _R);
+      _h_dot.d(*R) = _gamma_dot * _h * math::sign(_R) * _theta0 / (_R * _R);
 
     if (const auto * const theta0 = nl_param("theta0"))
-      _h_dot.d(*theta0) = (1.0 - _h / _R) * _gamma_dot;
+      _h_dot.d(*theta0) = math::sign(_R) * (1.0 - _h / _R) * _gamma_dot;
   }
 }
 } // namespace neml2
