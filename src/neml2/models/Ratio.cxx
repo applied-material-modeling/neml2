@@ -22,48 +22,52 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-
-#include "neml2/solvers/Newton.h"
-#include "neml2/tensors/Scalar.h"
+#include "neml2/models/Ratio.h"
+#include "neml2/misc/math.h"
 
 namespace neml2
 {
-/**
- * @copydoc neml2::Newton
- *
- * Armijo line search strategy is used to search along the direction of the full Newton step for a
- * decreasing residual norm.
- */
-class NewtonWithLineSearch : public Newton
+register_NEML2_object(Ratio);
+OptionSet
+Ratio::expected_options()
 {
-public:
-  static OptionSet expected_options();
+  OptionSet options = Model::expected_options();
+  options.doc() = "Define the ratio between two variables";
 
-  NewtonWithLineSearch(const OptionSet & options);
+  options.set_input("numerator") = VariableName("state", "numerator");
+  options.set("numerator").doc() = "Numerator variable";
 
-protected:
-  /// Update trial solution
-  void update(NonlinearSystem & system,
-              NonlinearSystem::Sol<true> & x,
-              const NonlinearSystem::Res<true> & r,
-              const NonlinearSystem::Jac<true> & J) override;
+  options.set_input("denominator") = VariableName("state", "denominator");
+  options.set("denominator").doc() = "Denominator variable";
 
-  /// Perform Armijo linesearch
-  virtual Scalar linesearch(NonlinearSystem & system,
-                            const NonlinearSystem::Sol<true> & x,
-                            const NonlinearSystem::Sol<true> & dx,
-                            const NonlinearSystem::Res<true> & R0) const;
+  options.set_output("out") = VariableName("state", "out");
+  options.set("out").doc() = "Ratio out.";
 
-  /// Linesearch maximum iterations
-  unsigned int _linesearch_miter;
+  return options;
+}
 
-  /// Decrease factor for linesearch
-  Real _linesearch_sigma;
+Ratio::Ratio(const OptionSet & options)
+  : Model(options),
+    _a(declare_input_variable<Scalar>("numerator")),
+    _b(declare_input_variable<Scalar>("denominator")),
+    _aob(declare_output_variable<Scalar>("out"))
+{
+}
 
-  /// Stopping criteria for linesearch
-  Real _linesearch_c;
+void
+Ratio::set_value(bool out, bool dout_din, bool d2out_din2)
+{
+  neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
 
-  EnumSelection _type;
-};
-} // namespace neml2
+  if (out)
+  {
+    _aob = _a / _b;
+  }
+
+  if (dout_din)
+  {
+    _aob.d(_a) = 1 / _b;
+    _aob.d(_b) = -1 * _a / (_b * _b);
+  }
+}
+}

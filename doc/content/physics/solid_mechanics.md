@@ -2,7 +2,7 @@
 
 [TOC]
 
-The solid mechanics physics module is a collection objects serving as building blocks for composing material models for solids. Each category of the material model is explained below, with both the mathematical formulations and example input files.
+The solid mechanics physics module is a collection of objects serving as building blocks for composing material models for solids. Each category of the material model is explained below, with both the mathematical formulations and example input files.
 
 ## Elasticity
 

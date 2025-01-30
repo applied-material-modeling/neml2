@@ -22,48 +22,52 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-
-#include "neml2/solvers/Newton.h"
-#include "neml2/tensors/Scalar.h"
+#include "neml2/models/Product.h"
+#include "neml2/misc/math.h"
 
 namespace neml2
 {
-/**
- * @copydoc neml2::Newton
- *
- * Armijo line search strategy is used to search along the direction of the full Newton step for a
- * decreasing residual norm.
- */
-class NewtonWithLineSearch : public Newton
+register_NEML2_object(Product);
+OptionSet
+Product::expected_options()
 {
-public:
-  static OptionSet expected_options();
+  OptionSet options = Model::expected_options();
+  options.doc() = "Define the product between two variables";
 
-  NewtonWithLineSearch(const OptionSet & options);
+  options.set_input("variable_a") = VariableName("state", "variable_a");
+  options.set("variable_a").doc() = "variable a";
 
-protected:
-  /// Update trial solution
-  void update(NonlinearSystem & system,
-              NonlinearSystem::Sol<true> & x,
-              const NonlinearSystem::Res<true> & r,
-              const NonlinearSystem::Jac<true> & J) override;
+  options.set_input("variable_b") = VariableName("state", "variable_b");
+  options.set("variable_b").doc() = "variable b";
 
-  /// Perform Armijo linesearch
-  virtual Scalar linesearch(NonlinearSystem & system,
-                            const NonlinearSystem::Sol<true> & x,
-                            const NonlinearSystem::Sol<true> & dx,
-                            const NonlinearSystem::Res<true> & R0) const;
+  options.set_output("out") = VariableName("state", "out");
+  options.set("out").doc() = "Product out.";
 
-  /// Linesearch maximum iterations
-  unsigned int _linesearch_miter;
+  return options;
+}
 
-  /// Decrease factor for linesearch
-  Real _linesearch_sigma;
+Product::Product(const OptionSet & options)
+  : Model(options),
+    _a(declare_input_variable<Scalar>("variable_a")),
+    _b(declare_input_variable<Scalar>("variable_b")),
+    _ab(declare_output_variable<Scalar>("out"))
+{
+}
 
-  /// Stopping criteria for linesearch
-  Real _linesearch_c;
+void
+Product::set_value(bool out, bool dout_din, bool d2out_din2)
+{
+  neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
 
-  EnumSelection _type;
-};
-} // namespace neml2
+  if (out)
+  {
+    _ab = _a * _b;
+  }
+
+  if (dout_din)
+  {
+    _ab.d(_a) = _b;
+    _ab.d(_b) = _a;
+  }
+}
+}

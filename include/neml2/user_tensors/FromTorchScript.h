@@ -24,46 +24,22 @@
 
 #pragma once
 
-#include "neml2/solvers/Newton.h"
-#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/user_tensors/UserTensorBase.h"
 
 namespace neml2
 {
 /**
- * @copydoc neml2::Newton
- *
- * Armijo line search strategy is used to search along the direction of the full Newton step for a
- * decreasing residual norm.
+ * @brief Read the tensors provided by a torch script file
  */
-class NewtonWithLineSearch : public Newton
+class FromTorchScript : public UserTensorBase
 {
 public:
   static OptionSet expected_options();
 
-  NewtonWithLineSearch(const OptionSet & options);
+  FromTorchScript(const OptionSet & options);
 
 protected:
-  /// Update trial solution
-  void update(NonlinearSystem & system,
-              NonlinearSystem::Sol<true> & x,
-              const NonlinearSystem::Res<true> & r,
-              const NonlinearSystem::Jac<true> & J) override;
-
-  /// Perform Armijo linesearch
-  virtual Scalar linesearch(NonlinearSystem & system,
-                            const NonlinearSystem::Sol<true> & x,
-                            const NonlinearSystem::Sol<true> & dx,
-                            const NonlinearSystem::Res<true> & R0) const;
-
-  /// Linesearch maximum iterations
-  unsigned int _linesearch_miter;
-
-  /// Decrease factor for linesearch
-  Real _linesearch_sigma;
-
-  /// Stopping criteria for linesearch
-  Real _linesearch_c;
-
-  EnumSelection _type;
+  /// Helper to make the tensor given user input options
+  torch::Tensor load_torch_tensor(const OptionSet & options) const;
 };
 } // namespace neml2
