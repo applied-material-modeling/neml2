@@ -24,46 +24,30 @@
 
 #pragma once
 
-#include "neml2/solvers/Newton.h"
-#include "neml2/tensors/Scalar.h"
+#include "neml2/models/Model.h"
 
 namespace neml2
 {
-/**
- * @copydoc neml2::Newton
- *
- * Armijo line search strategy is used to search along the direction of the full Newton step for a
- * decreasing residual norm.
- */
-class NewtonWithLineSearch : public Newton
+class ProductGeometry : public Model
 {
 public:
   static OptionSet expected_options();
 
-  NewtonWithLineSearch(const OptionSet & options);
+  ProductGeometry(const OptionSet & options);
 
 protected:
-  /// Update trial solution
-  void update(NonlinearSystem & system,
-              NonlinearSystem::Sol<true> & x,
-              const NonlinearSystem::Res<true> & r,
-              const NonlinearSystem::Jac<true> & J) override;
+  void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  /// Perform Armijo linesearch
-  virtual Scalar linesearch(NonlinearSystem & system,
-                            const NonlinearSystem::Sol<true> & x,
-                            const NonlinearSystem::Sol<true> & dx,
-                            const NonlinearSystem::Res<true> & R0) const;
+  /// Volume fraction of the solid phase
+  const Variable<Scalar> & _phi_s;
 
-  /// Linesearch maximum iterations
-  unsigned int _linesearch_miter;
+  /// Volume fraction of the product phase
+  const Variable<Scalar> & _phi_p;
 
-  /// Decrease factor for linesearch
-  Real _linesearch_sigma;
+  /// Dimensionless inner radius of the product phase
+  Variable<Scalar> & _ri;
 
-  /// Stopping criteria for linesearch
-  Real _linesearch_c;
-
-  EnumSelection _type;
+  /// Dimensionless outer radius of the product phase
+  Variable<Scalar> & _ro;
 };
 } // namespace neml2

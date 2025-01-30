@@ -63,6 +63,7 @@
     </tab>
     <tab type="usergroup" title="Physics Documentation">
       <tab type="user" url="@ref solid-mechanics" title="Solid Mechanics"/>
+      <tab type="user" url="@ref reactive-infiltration" title="Reactive Infiltration"/>
     </tab>
     <tab type="topics" title="Aditional Documentation"/>
     <tab type="usergroup" title="C++ API Reference">

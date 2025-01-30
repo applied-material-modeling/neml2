@@ -24,46 +24,35 @@
 
 #pragma once
 
-#include "neml2/solvers/Newton.h"
-#include "neml2/tensors/Scalar.h"
+#include "neml2/drivers/TransientDriver.h"
 
 namespace neml2
 {
 /**
- * @copydoc neml2::Newton
+ * @brief The transient driver specialized for pyrolysis problems.
  *
- * Armijo line search strategy is used to search along the direction of the full Newton step for a
- * decreasing residual norm.
  */
-class NewtonWithLineSearch : public Newton
+class PyrolysisDriver : public TransientDriver
 {
 public:
   static OptionSet expected_options();
 
-  NewtonWithLineSearch(const OptionSet & options);
+  /**
+   * @brief Construct a new PyrolysisDriver object
+   *
+   * @param options The options extracted from the input file
+   */
+  PyrolysisDriver(const OptionSet & options);
+
+  // void setup() override;
+
+  void diagnose(std::vector<Diagnosis> &) const override;
 
 protected:
-  /// Update trial solution
-  void update(NonlinearSystem & system,
-              NonlinearSystem::Sol<true> & x,
-              const NonlinearSystem::Res<true> & r,
-              const NonlinearSystem::Jac<true> & J) override;
+  void update_forces() override;
 
-  /// Perform Armijo linesearch
-  virtual Scalar linesearch(NonlinearSystem & system,
-                            const NonlinearSystem::Sol<true> & x,
-                            const NonlinearSystem::Sol<true> & dx,
-                            const NonlinearSystem::Res<true> & R0) const;
-
-  /// Linesearch maximum iterations
-  unsigned int _linesearch_miter;
-
-  /// Decrease factor for linesearch
-  Real _linesearch_sigma;
-
-  /// Stopping criteria for linesearch
-  Real _linesearch_c;
-
-  EnumSelection _type;
+  Scalar _temperature;
+  // VariableName _temperature_name;
+  const VariableName _temperature_name;
 };
-} // namespace neml2
+}

@@ -24,46 +24,28 @@
 
 #pragma once
 
-#include "neml2/solvers/Newton.h"
-#include "neml2/tensors/Scalar.h"
+#include "neml2/models/Model.h"
 
 namespace neml2
 {
 /**
- * @copydoc neml2::Newton
- *
- * Armijo line search strategy is used to search along the direction of the full Newton step for a
- * decreasing residual norm.
+ * @brief Define the ratio between two state variables.
  */
-class NewtonWithLineSearch : public Newton
+class Product : public Model
 {
 public:
   static OptionSet expected_options();
 
-  NewtonWithLineSearch(const OptionSet & options);
+  Product(const OptionSet & options);
 
 protected:
-  /// Update trial solution
-  void update(NonlinearSystem & system,
-              NonlinearSystem::Sol<true> & x,
-              const NonlinearSystem::Res<true> & r,
-              const NonlinearSystem::Jac<true> & J) override;
+  void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  /// Perform Armijo linesearch
-  virtual Scalar linesearch(NonlinearSystem & system,
-                            const NonlinearSystem::Sol<true> & x,
-                            const NonlinearSystem::Sol<true> & dx,
-                            const NonlinearSystem::Res<true> & R0) const;
+  // State Variables
+  const Variable<Scalar> & _a;
+  const Variable<Scalar> & _b;
 
-  /// Linesearch maximum iterations
-  unsigned int _linesearch_miter;
-
-  /// Decrease factor for linesearch
-  Real _linesearch_sigma;
-
-  /// Stopping criteria for linesearch
-  Real _linesearch_c;
-
-  EnumSelection _type;
+  // Residual Variables
+  Variable<Scalar> & _ab;
 };
-} // namespace neml2
+}
