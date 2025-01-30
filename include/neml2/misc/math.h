@@ -354,6 +354,13 @@ where(const torch::Tensor & condition, const T & a, const T & b)
   return T(torch::where(condition, a, b), broadcast_batch_dim(a, b));
 }
 
+template <class T, typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<T>, T>>>
+T
+clamp(const T & x, Real lb, Real ub)
+{
+  return T(torch::clamp(x, lb, ub), x.batch_sizes());
+}
+
 /**
  * This is (almost) equivalent to Torch's heaviside, except that the Torch's version is not
  * differentiable (back-propagatable). I said "almost" because torch::heaviside allows you to set
