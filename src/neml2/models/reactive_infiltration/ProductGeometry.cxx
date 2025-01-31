@@ -62,7 +62,8 @@ ProductGeometry::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   neml_assert_dbg(!d2out_din2, "Second derivatives not implemented");
 
-  const auto ri = math::sqrt(1 - _phi_s - _phi_p);
+  const auto cap = 1 - _phi_s - _phi_p;
+  const auto ri = math::sqrt(math::clamp(cap, machine_precision(), 1.0));
   const auto ro = math::sqrt(1 - _phi_s);
 
   if (out)
@@ -73,8 +74,8 @@ ProductGeometry::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (dout_din)
   {
-    _ri.d(_phi_s) = -0.5 / ri;
-    _ri.d(_phi_p) = -0.5 / ri;
+    _ri.d(_phi_s) = math::where(cap <= machine_precision(), Scalar::zeros_like(ri), -0.5 / ri);
+    _ri.d(_phi_p) = math::where(cap <= machine_precision(), Scalar::zeros_like(ri), -0.5 / ri);
     _ro.d(_phi_s) = -0.5 / ro;
   }
 }
