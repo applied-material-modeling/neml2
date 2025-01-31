@@ -51,22 +51,13 @@ protected:
   const Variable<Scalar> & _R_l;
   const Variable<Scalar> & _R_s;
 
-  /// Void fraction rate of the product phase
-  Variable<Scalar> & _phi_p_dot;
-
-  /// Void fraction rate of the solid phase
-  Variable<Scalar> & _phi_s_dot;
+  /// Reaction rate
+  Variable<Scalar> & _rate;
 
   /// Characteristic diffusion coefficient
   const Scalar & _D;
 
-  /// Molar volume of the liquid species
-  const Real _omega_l;
-
-  /// Molar volume of the solid species
-  const Real _omega_s;
-
-  /// Molar volume of the product
-  const Real _omega_p;
+  /// Molar volume of the rate-limiting species
+  const Real _omega;
 };
 } // namespace neml2

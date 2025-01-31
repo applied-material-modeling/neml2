@@ -45,21 +45,15 @@ DiffusionLimitedReaction::expected_options()
   options.set_input("solid_reactivity") = VariableName{"state", "R_s"};
   options.set("solid_reactivity").doc() = "Reactivity of the solid phase";
 
-  options.set_output("product_fraction_rate") = VariableName{"state", "phi_p_rate"};
-  options.set("product_fraction_rate").doc() = "Product phase void fraction rate of change";
-  options.set_output("solid_fraction_rate") = VariableName{"state", "phi_s_rate"};
-  options.set("solid_fraction_rate").doc() = "Solid phase void fraction rate of change";
+  options.set_output("reaction_rate") = VariableName{"state", "alpha_rate"};
+  options.set("reaction_rate").doc() = "Product phase void fraction rate of change";
 
   options.set_parameter<CrossRef<Scalar>>("diffusion_coefficient");
   options.set("diffusion_coefficient").doc() =
       "Diffusion coefficient of the rate-limiting species in the product phase";
 
-  options.set<Real>("liquid_molar_volume");
-  options.set("liquid_molar_volume").doc() = "Molar volume of the species in the liquid phase";
-  options.set<Real>("solid_molar_volume");
-  options.set("solid_molar_volume").doc() = "Molar volume of the species in the solid phase";
-  options.set<Real>("product_molar_volume");
-  options.set("product_molar_volume").doc() = "Molar volume of the product in the product phase";
+  options.set<Real>("molar_volume");
+  options.set("molar_volume").doc() = "Molar volume of the rate-limiting species";
 
   return options;
 }
@@ -71,12 +65,9 @@ DiffusionLimitedReaction::DiffusionLimitedReaction(const OptionSet & options)
     _delta(options.get<Real>("product_dummy_thickness")),
     _R_l(declare_input_variable<Scalar>("liquid_reactivity")),
     _R_s(declare_input_variable<Scalar>("solid_reactivity")),
-    _phi_p_dot(declare_output_variable<Scalar>("product_fraction_rate")),
-    _phi_s_dot(declare_output_variable<Scalar>("solid_fraction_rate")),
+    _rate(declare_output_variable<Scalar>("reaction_rate")),
     _D(declare_parameter<Scalar>("D", "diffusion_coefficient")),
-    _omega_l(options.get<Real>("liquid_molar_volume")),
-    _omega_s(options.get<Real>("solid_molar_volume")),
-    _omega_p(options.get<Real>("product_molar_volume"))
+    _omega(options.get<Real>("molar_volume"))
 {
 }
 
@@ -85,29 +76,22 @@ DiffusionLimitedReaction::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   neml_assert_dbg(!d2out_din2, "Second derivatives not implemented");
 
-  const auto factor = 2 * _D * _R_l * _R_s / _omega_l;
+  const auto factor = 2 * _D * _R_l * _R_s / _omega;
   const auto ratio = (_ro + _ri) / (_ro - _ri + _delta);
 
   if (out)
   {
-    const auto rate = factor * ratio;
-    _phi_p_dot = rate * _omega_p;
-    _phi_s_dot = -rate * _omega_s;
+    _rate = factor * ratio;
   }
 
   if (dout_din)
   {
     const auto drate = factor / (_ro - _ri + _delta) / (_ro - _ri + _delta);
 
-    _phi_p_dot.d(_ri) = drate * (2 * _ro + _delta) * _omega_p;
-    _phi_p_dot.d(_ro) = drate * (-2 * _ri + _delta) * _omega_p;
-    _phi_p_dot.d(_R_l) = 2 * _D * _R_s / _omega_l * ratio * _omega_p;
-    _phi_p_dot.d(_R_s) = 2 * _D * _R_l / _omega_l * ratio * _omega_p;
-
-    _phi_s_dot.d(_ri) = -drate * (2 * _ro + _delta) * _omega_s;
-    _phi_s_dot.d(_ro) = -drate * (-2 * _ri + _delta) * _omega_s;
-    _phi_s_dot.d(_R_l) = -2 * _D * _R_s / _omega_l * ratio * _omega_s;
-    _phi_s_dot.d(_R_s) = -2 * _D * _R_l / _omega_l * ratio * _omega_s;
+    _rate.d(_ri) = drate * (2 * _ro + _delta);
+    _rate.d(_ro) = drate * (-2 * _ri + _delta);
+    _rate.d(_R_l) = 2 * _D * _R_s / _omega * ratio;
+    _rate.d(_R_s) = 2 * _D * _R_l / _omega * ratio;
   }
 }
 } // namespace neml2
