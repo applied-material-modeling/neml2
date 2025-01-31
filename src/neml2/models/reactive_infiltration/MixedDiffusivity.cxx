@@ -22,58 +22,63 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/reactive_infiltration/LiquidFraction.h"
+#include "neml2/models/reactive_infiltration/MixedDiffusivity.h"
 
 namespace neml2
 {
-register_NEML2_object(LiquidFraction);
+register_NEML2_object(MixedDiffusivity);
 
 OptionSet
-LiquidFraction::expected_options()
+MixedDiffusivity::expected_options()
 {
   OptionSet options = Model::expected_options();
   options.doc() = "Calculate the liquid phase volume fraction";
 
-  options.set_input("liquid_concentration") = VariableName{"forces", "alpha"};
-  options.set("liquid_concentration").doc() = "Total concentration of the liquid species";
+  options.set_input("liquid_fraction") = VariableName{"state", "phi_l"};
+  options.set("liquid_fraction").doc() = "Volume fraction of the liquid phase";
   options.set_input("product_fraction") = VariableName{"state", "phi_p"};
   options.set("product_fraction").doc() = "Volume fraction of the product phase";
 
-  options.set_output("liquid_fraction") = VariableName{"state", "phi_l"};
-  options.set("liquid_fraction").doc() = "Volume fraction of the liquid phase";
+  options.set_output("diffusivity") = VariableName{"state", "D"};
+  options.set("diffusivity").doc() = "Diffusivity";
 
-  options.set<Real>("liquid_molar_volume");
-  options.set("liquid_molar_volume").doc() = "Molar volume of the species in the liquid phase";
-  options.set<Real>("product_molar_volume");
-  options.set("product_molar_volume").doc() = "Molar volume of the product in the product phase";
+  options.set_parameter<CrossRef<Scalar>>("liquid_diffusivity");
+  options.set("liquid_diffusivity").doc() = "Diffusivity of the liquid species in the liquid phase";
+  options.set_parameter<CrossRef<Scalar>>("product_diffusivity");
+  options.set("product_diffusivity").doc() =
+      "Diffusivity of the liquid species in the product phase";
 
   return options;
 }
 
-LiquidFraction::LiquidFraction(const OptionSet & options)
+MixedDiffusivity::MixedDiffusivity(const OptionSet & options)
   : Model(options),
-    _alpha(declare_input_variable<Scalar>("liquid_concentration")),
+    _phi_l(declare_input_variable<Scalar>("liquid_fraction")),
     _phi_p(declare_input_variable<Scalar>("product_fraction")),
-    _phi_l(declare_output_variable<Scalar>("liquid_fraction")),
-    _omega_l(options.get<Real>("liquid_molar_volume")),
-    _omega_p(options.get<Real>("product_molar_volume"))
+    _D(declare_output_variable<Scalar>("diffusivity")),
+    _D_l(declare_parameter<Scalar>("D_l", "liquid_diffusivity")),
+    _D_p(declare_parameter<Scalar>("D_p", "product_diffusivity"))
 {
 }
 
 void
-LiquidFraction::set_value(bool out, bool dout_din, bool d2out_din2)
+MixedDiffusivity::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   neml_assert_dbg(!d2out_din2, "Second derivatives not implemented");
 
+  const auto f = _phi_p / (_phi_l + _phi_p + machine_precision());
+
   if (out)
   {
-    _phi_l = _alpha * _omega_l - _phi_p * _omega_l / _omega_p;
+    _D = _D_l + (_D_p - _D_l) * f;
   }
 
   if (dout_din)
   {
-    _phi_l.d(_alpha) = Scalar::full(_omega_l, _phi_l.options());
-    _phi_l.d(_phi_p) = Scalar::full(-_omega_l / _omega_p, _phi_l.options());
+    const auto denom2 =
+        (_phi_l + _phi_p + machine_precision()) * (_phi_l + _phi_p + machine_precision());
+    _D.d(_phi_l) = -(_D_p - _D_l) * _phi_p / denom2;
+    _D.d(_phi_p) = (_D_p - _D_l) * _phi_l / denom2;
   }
 }
 } // namespace neml2

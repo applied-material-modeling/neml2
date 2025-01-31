@@ -58,6 +58,8 @@ DiffusionLimitedReaction::expected_options()
   options.set("liquid_molar_volume").doc() = "Molar volume of the species in the liquid phase";
   options.set<Real>("solid_molar_volume");
   options.set("solid_molar_volume").doc() = "Molar volume of the species in the solid phase";
+  options.set<Real>("product_molar_volume");
+  options.set("product_molar_volume").doc() = "Molar volume of the product in the product phase";
 
   return options;
 }
@@ -73,7 +75,8 @@ DiffusionLimitedReaction::DiffusionLimitedReaction(const OptionSet & options)
     _phi_s_dot(declare_output_variable<Scalar>("solid_fraction_rate")),
     _D(declare_parameter<Scalar>("D", "diffusion_coefficient")),
     _omega_l(options.get<Real>("liquid_molar_volume")),
-    _omega_s(options.get<Real>("solid_molar_volume"))
+    _omega_s(options.get<Real>("solid_molar_volume")),
+    _omega_p(options.get<Real>("product_molar_volume"))
 {
 }
 
@@ -84,12 +87,11 @@ DiffusionLimitedReaction::set_value(bool out, bool dout_din, bool d2out_din2)
 
   const auto factor = 2 * _D * _R_l * _R_s / _omega_l;
   const auto ratio = (_ro + _ri) / (_ro - _ri + _delta);
-  const auto omega_p = _omega_l + _omega_s;
 
   if (out)
   {
     const auto rate = factor * ratio;
-    _phi_p_dot = rate * omega_p;
+    _phi_p_dot = rate * _omega_p;
     _phi_s_dot = -rate * _omega_s;
   }
 
@@ -97,10 +99,10 @@ DiffusionLimitedReaction::set_value(bool out, bool dout_din, bool d2out_din2)
   {
     const auto drate = factor / (_ro - _ri + _delta) / (_ro - _ri + _delta);
 
-    _phi_p_dot.d(_ri) = drate * (2 * _ro + _delta) * omega_p;
-    _phi_p_dot.d(_ro) = drate * (-2 * _ri + _delta) * omega_p;
-    _phi_p_dot.d(_R_l) = 2 * _D * _R_s / _omega_l * ratio * omega_p;
-    _phi_p_dot.d(_R_s) = 2 * _D * _R_l / _omega_l * ratio * omega_p;
+    _phi_p_dot.d(_ri) = drate * (2 * _ro + _delta) * _omega_p;
+    _phi_p_dot.d(_ro) = drate * (-2 * _ri + _delta) * _omega_p;
+    _phi_p_dot.d(_R_l) = 2 * _D * _R_s / _omega_l * ratio * _omega_p;
+    _phi_p_dot.d(_R_s) = 2 * _D * _R_l / _omega_l * ratio * _omega_p;
 
     _phi_s_dot.d(_ri) = -drate * (2 * _ro + _delta) * _omega_s;
     _phi_s_dot.d(_ro) = -drate * (-2 * _ri + _delta) * _omega_s;

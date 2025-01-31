@@ -15,5 +15,6 @@
     diffusion_coefficient = 1e-3
     liquid_molar_volume = 1
     solid_molar_volume = 2
+    product_molar_volume = 3
   []
 []

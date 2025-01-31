@@ -28,45 +28,29 @@
 
 namespace neml2
 {
-class DiffusionLimitedReaction : public Model
+class MixedDiffusivity : public Model
 {
 public:
   static OptionSet expected_options();
 
-  DiffusionLimitedReaction(const OptionSet & options);
+  MixedDiffusivity(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  /// Dimensionless inner radius of the product phase
-  const Variable<Scalar> & _ri;
+  /// Volume fraction of the liquid phase
+  const Variable<Scalar> & _phi_l;
 
-  /// Dimensionless outer radius of the product phase
-  const Variable<Scalar> & _ro;
+  /// Volume fraction of the product phase
+  const Variable<Scalar> & _phi_p;
 
-  /// Dummy thickness of the product phase to prevent singularity
-  const Real _delta;
+  /// Diffusivity
+  Variable<Scalar> & _D;
 
-  /// Reactivity
-  const Variable<Scalar> & _R_l;
-  const Variable<Scalar> & _R_s;
+  /// Diffusivity of the liquid species in the liquid phase
+  const Scalar & _D_l;
 
-  /// Void fraction rate of the product phase
-  Variable<Scalar> & _phi_p_dot;
-
-  /// Void fraction rate of the solid phase
-  Variable<Scalar> & _phi_s_dot;
-
-  /// Characteristic diffusion coefficient
-  const Scalar & _D;
-
-  /// Molar volume of the liquid species
-  const Real _omega_l;
-
-  /// Molar volume of the solid species
-  const Real _omega_s;
-
-  /// Molar volume of the product
-  const Real _omega_p;
+  /// Diffusivity of the liquid species in the product phase
+  const Scalar & _D_p;
 };
 } // namespace neml2

@@ -50,7 +50,7 @@ protected:
   /// Molar volume of the liquid species
   const Real _omega_l;
 
-  /// Molar volume of the solid species
-  const Real _omega_s;
+  /// Molar volume of the product
+  const Real _omega_p;
 };
 } // namespace neml2

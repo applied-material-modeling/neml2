@@ -2,6 +2,7 @@ ntime = 200
 D = 1e-6
 omega_Si = 12
 omega_C = 5.3
+omega_SiC = 12.5
 
 [Tensors]
   [times]
@@ -44,7 +45,7 @@ omega_C = 5.3
   [liquid_fraction]
     type = LiquidFraction
     liquid_molar_volume = ${omega_Si}
-    solid_molar_volume = ${omega_C}
+    product_molar_volume = ${omega_SiC}
   []
   [liquid_reactivity]
     type = HermiteSmoothStep
@@ -68,6 +69,7 @@ omega_C = 5.3
     diffusion_coefficient = ${D}
     liquid_molar_volume = ${omega_Si}
     solid_molar_volume = ${omega_C}
+    product_molar_volume = ${omega_SiC}
   []
   [integrate_phi_p]
     type = ScalarBackwardEulerTimeIntegration
