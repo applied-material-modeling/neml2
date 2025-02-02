@@ -27,7 +27,11 @@
 #include "neml2/tensors/tensors.h"
 
 #include <torch/autograd.h>
-#include <torch/linalg.h>
+#include <ATen/ops/linalg_vector_norm.h>
+#include <ATen/ops/linalg_inv.h>
+#include <ATen/ops/linalg_solve.h>
+#include <ATen/ops/linalg_lu_factor.h>
+#include <ATen/ops/linalg_lu_solve.h>
 
 namespace neml2::math
 {
@@ -389,7 +393,7 @@ vector_norm(const Tensor & v)
   if (v.base_dim() == 0)
     return math::abs(v);
 
-  return Tensor(torch::linalg::vector_norm(
+  return Tensor(torch::linalg_vector_norm(
                     v, /*order=*/2, /*dim=*/-1, /*keepdim=*/false, /*dtype=*/c10::nullopt),
                 v.batch_sizes());
 }
@@ -397,13 +401,13 @@ vector_norm(const Tensor & v)
 Tensor
 inv(const Tensor & m)
 {
-  return Tensor(torch::linalg::inv(m), m.batch_sizes());
+  return Tensor(torch::linalg_inv(m), m.batch_sizes());
 }
 
 Tensor
 solve(const Tensor & A, const Tensor & B)
 {
-  return Tensor(torch::linalg::solve(A, B, /*left=*/true), A.batch_sizes());
+  return Tensor(torch::linalg_solve(A, B, /*left=*/true), A.batch_sizes());
 }
 
 std::tuple<Tensor, Tensor>

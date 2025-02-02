@@ -27,6 +27,8 @@
 
 #include "SampleNonlinearSystems.h"
 
+#include <ATen/ops/linalg_cond.h>
+
 using namespace neml2;
 
 TEST_CASE("NonlinearSystem", "[solvers]")

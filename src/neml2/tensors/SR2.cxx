@@ -35,6 +35,8 @@
 #include "neml2/tensors/WR2.h"
 #include "neml2/tensors/R4.h"
 
+#include <ATen/ops/linalg_vecdot.h>
+
 namespace neml2
 {
 

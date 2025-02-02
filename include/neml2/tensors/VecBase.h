@@ -28,6 +28,9 @@
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/R2.h"
 
+#include <ATen/ops/linalg_vecdot.h>
+#include <ATen/ops/linalg_cross.h>
+
 namespace neml2
 {
 class Rot;
