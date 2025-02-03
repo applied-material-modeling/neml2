@@ -80,7 +80,11 @@ void
 NonlinearSystem::init_scaling(const NonlinearSystem::Sol<false> & x, const bool verbose)
 {
   if (!_autoscale)
+  {
+    // auto J = Jacobian(x);
+    // std::cout << J << std::endl;
     return;
+  }
 
   if (_scaling_matrices_initialized)
     return;
@@ -97,11 +101,16 @@ NonlinearSystem::init_scaling(const NonlinearSystem::Sol<false> & x, const bool 
     std::cout << "Before automatic scaling cond(J) = " << std::scientific
               << torch::max(torch::linalg_cond(Jp)).item<Real>() << std::endl;
 
+  // std::cout << Jp << std::endl;
+
   for (unsigned int itr = 0; itr < _autoscale_miter; itr++)
   {
     // check for convergence
-    auto rR = torch::max(torch::abs(1.0 - 1.0 / torch::sqrt(std::get<0>(Jp.max(-1))))).item<Real>();
-    auto rC = torch::max(torch::abs(1.0 - 1.0 / torch::sqrt(std::get<0>(Jp.max(-2))))).item<Real>();
+    auto rR = torch::max(torch::abs(1.0 - 1.0 / torch::sqrt(torch::abs(std::get<0>(Jp.max(-1))))))
+                  .item<Real>();
+    auto rC = torch::max(torch::abs(1.0 - 1.0 / torch::sqrt(torch::abs(std::get<0>(Jp.max(-2))))))
+                  .item<Real>();
+
     if (verbose)
       std::cout << "ITERATION " << itr << ", ROW ILLNESS = " << std::scientific << rR
                 << ", COL ILLNESS = " << std::scientific << rC << std::endl;
@@ -111,8 +120,8 @@ NonlinearSystem::init_scaling(const NonlinearSystem::Sol<false> & x, const bool 
     // scale rows and columns
     for (Size i = 0; i < x.base_size(-1); i++)
     {
-      auto ar = 1.0 / torch::sqrt(torch::max(Jp.base_index({i})));
-      auto ac = 1.0 / torch::sqrt(torch::max(Jp.base_index({indexing::Slice(), i})));
+      auto ar = 1.0 / torch::sqrt(torch::max(torch::abs(Jp.base_index({i}))));
+      auto ac = 1.0 / torch::sqrt(torch::max(torch::abs(Jp.base_index({indexing::Slice(), i}))));
       _row_scaling.base_index({i}) *= ar;
       _col_scaling.base_index({i}) *= ac;
       Jp.base_index({i}) *= ar;
