@@ -54,6 +54,7 @@ jobs:
           ../build/dev/tests/unit/unit_tests -r JUnit::out=unit_tests.xml -r console::out=-::colour-mode=ansi
           ../build/dev/tests/regression/regression_tests -r JUnit::out=regression_tests.xml -r console::out=-::colour-mode=ansi
           ../build/dev/tests/verification/verification_tests -r JUnit::out=verification_tests.xml -r console::out=-::colour-mode=ansi
+          ../build/dev/tests/dispatcher/dispatcher_tests -r JUnit::out=dispatcher_tests.xml -r console::out=-::colour-mode=ansi
       - name: Test results
         uses: EnricoMi/publish-unit-test-result-action/linux@v2
         if: always()

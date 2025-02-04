@@ -22,33 +22,28 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <catch2/catch_test_macros.hpp>
-#include <catch2/matchers/catch_matchers_all.hpp>
+#include "neml2/dispatcher/TensorLoader.h"
 
-#include "SampleNonlinearSystems.h"
-
-#include <ATen/ops/linalg_cond.h>
-
-using namespace neml2;
-
-TEST_CASE("NonlinearSystem", "[solvers]")
+namespace neml2
 {
-  // Initial guess
-  TensorShape batch_sz = {2};
-  Size nbase = 4;
-  auto x0 =
-      NonlinearSystem::Sol<false>(Tensor::full(batch_sz, nbase, 2.0, default_tensor_options()));
-
-  // Create the nonlinear system
-  auto options = PowerTestSystem::expected_options();
-  options.set<bool>("automatic_scaling") = true;
-  PowerTestSystem system(options);
-
-  SECTION("Automatic scaling can reduce condition number")
-  {
-    system.init_scaling(x0);
-    auto x0p = system.scale(x0);
-    REQUIRE(torch::max(torch::linalg_cond(system.Jacobian(x0p))).item<Real>() ==
-            Catch::Approx(1.0));
-  }
+TensorLoader::TensorLoader(const Tensor & tensor, Size batch_dim)
+  : _tensor(tensor),
+    _batch_dim(batch_dim),
+    _slice_gen(0, tensor.size(batch_dim))
+{
 }
+
+std::size_t
+TensorLoader::total() const
+{
+  return _slice_gen.total();
+}
+
+std::pair<std::size_t, Tensor>
+TensorLoader::generate(std::size_t n)
+{
+  auto && [m, slice] = _slice_gen.next(n);
+  auto work = _tensor.batch_slice(_batch_dim, slice);
+  return {m, std::move(work)};
+}
+} // namespace neml2

@@ -25,6 +25,8 @@
 #include "neml2/solvers/NonlinearSystem.h"
 #include "neml2/misc/math.h"
 
+#include <ATen/ops/linalg_cond.h>
+
 namespace neml2
 {
 OptionSet

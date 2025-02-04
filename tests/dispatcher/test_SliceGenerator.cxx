@@ -23,32 +23,54 @@
 // THE SOFTWARE.
 
 #include <catch2/catch_test_macros.hpp>
-#include <catch2/matchers/catch_matchers_all.hpp>
 
-#include "SampleNonlinearSystems.h"
-
-#include <ATen/ops/linalg_cond.h>
+#include "neml2/dispatcher/SliceGenerator.h"
 
 using namespace neml2;
 
-TEST_CASE("NonlinearSystem", "[solvers]")
+TEST_CASE("SliceGenerator", "[dispatcher]")
 {
-  // Initial guess
-  TensorShape batch_sz = {2};
-  Size nbase = 4;
-  auto x0 =
-      NonlinearSystem::Sol<false>(Tensor::full(batch_sz, nbase, 2.0, default_tensor_options()));
+  SliceGenerator generator(50, 2000);
+  REQUIRE(generator.total() == 1950);
+  REQUIRE(generator.offset() == 0);
 
-  // Create the nonlinear system
-  auto options = PowerTestSystem::expected_options();
-  options.set<bool>("automatic_scaling") = true;
-  PowerTestSystem system(options);
+  std::size_t n;
+  indexing::Slice work;
 
-  SECTION("Automatic scaling can reduce condition number")
-  {
-    system.init_scaling(x0);
-    auto x0p = system.scale(x0);
-    REQUIRE(torch::max(torch::linalg_cond(system.Jacobian(x0p))).item<Real>() ==
-            Catch::Approx(1.0));
-  }
+  REQUIRE(generator.has_more());
+  std::tie(n, work) = generator.next(1);
+  REQUIRE(generator.offset() == 1);
+  REQUIRE(n == 1);
+  REQUIRE(work.start() == 50);
+  REQUIRE(work.stop() == 51);
+
+  REQUIRE(generator.has_more());
+  std::tie(n, work) = generator.next(2);
+  REQUIRE(generator.offset() == 3);
+  REQUIRE(n == 2);
+  REQUIRE(work.start() == 51);
+  REQUIRE(work.stop() == 53);
+
+  REQUIRE(generator.has_more());
+  std::tie(n, work) = generator.next(1000);
+  REQUIRE(generator.offset() == 1003);
+  REQUIRE(n == 1000);
+  REQUIRE(work.start() == 53);
+  REQUIRE(work.stop() == 1053);
+
+  REQUIRE(generator.has_more());
+  std::tie(n, work) = generator.next(946);
+  REQUIRE(generator.offset() == 1949);
+  REQUIRE(n == 946);
+  REQUIRE(work.start() == 1053);
+  REQUIRE(work.stop() == 1999);
+
+  REQUIRE(generator.has_more());
+  std::tie(n, work) = generator.next(5);
+  REQUIRE(generator.offset() == 1950);
+  REQUIRE(n == 1);
+  REQUIRE(work.start() == 1999);
+  REQUIRE(work.stop() == 2000);
+
+  REQUIRE(!generator.has_more());
 }

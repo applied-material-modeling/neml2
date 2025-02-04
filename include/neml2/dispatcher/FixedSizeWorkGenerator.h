@@ -22,33 +22,25 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <catch2/catch_test_macros.hpp>
-#include <catch2/matchers/catch_matchers_all.hpp>
+#pragma once
 
-#include "SampleNonlinearSystems.h"
+#include "neml2/dispatcher/WorkGenerator.h"
 
-#include <ATen/ops/linalg_cond.h>
-
-using namespace neml2;
-
-TEST_CASE("NonlinearSystem", "[solvers]")
+namespace neml2
 {
-  // Initial guess
-  TensorShape batch_sz = {2};
-  Size nbase = 4;
-  auto x0 =
-      NonlinearSystem::Sol<false>(Tensor::full(batch_sz, nbase, 2.0, default_tensor_options()));
+/**
+ * @brief Interface for work generators that generate a fixed number of batches, i.e., the total
+ * amount of work is known at construction time
+ *
+ */
+template <typename T>
+class FixedSizeWorkGenerator : public WorkGenerator<T>
+{
+public:
+  /// @brief Whether the generator has more work to generate
+  bool has_more() const override { return WorkGenerator<T>::offset() < total(); }
 
-  // Create the nonlinear system
-  auto options = PowerTestSystem::expected_options();
-  options.set<bool>("automatic_scaling") = true;
-  PowerTestSystem system(options);
-
-  SECTION("Automatic scaling can reduce condition number")
-  {
-    system.init_scaling(x0);
-    auto x0p = system.scale(x0);
-    REQUIRE(torch::max(torch::linalg_cond(system.Jacobian(x0p))).item<Real>() ==
-            Catch::Approx(1.0));
-  }
-}
+  /// @brief Total (fixed) number of batches that will be generated
+  virtual std::size_t total() const = 0;
+};
+} // namespace neml2

@@ -22,33 +22,38 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <catch2/catch_test_macros.hpp>
-#include <catch2/matchers/catch_matchers_all.hpp>
+#pragma once
 
-#include "SampleNonlinearSystems.h"
+#include "neml2/misc/types.h"
 
-#include <ATen/ops/linalg_cond.h>
-
-using namespace neml2;
-
-TEST_CASE("NonlinearSystem", "[solvers]")
+namespace neml2
 {
-  // Initial guess
-  TensorShape batch_sz = {2};
-  Size nbase = 4;
-  auto x0 =
-      NonlinearSystem::Sol<false>(Tensor::full(batch_sz, nbase, 2.0, default_tensor_options()));
+/**
+ * @brief Scheduler for work dispatching
+ *
+ * The scheduler is responsible for determining
+ * 1. The amount (number of batches) of work to be dispatched next
+ * 2. Where (e.g., to which device) the next batch of work should be dispatched
+ *
+ * The scheduler is also responsible for updating its internal state when work is dispatched.
+ *
+ * @see WorkGenerator, WorkDispatcher
+ */
+class WorkScheduler
+{
+public:
+  /**
+   * @brief Determine the device and batch size for the next dispatch
+   *
+   * @return true If work has been scheduled, i.e., there is a worker available
+   * @return false If work cannot be scheduled, i.e., there is no worker available
+   */
+  virtual bool schedule_work(torch::Device &, std::size_t &) const = 0;
 
-  // Create the nonlinear system
-  auto options = PowerTestSystem::expected_options();
-  options.set<bool>("automatic_scaling") = true;
-  PowerTestSystem system(options);
+  /// Update the schedule with the dispatch of the last batch
+  virtual void dispatched_work(torch::Device, std::size_t) = 0;
 
-  SECTION("Automatic scaling can reduce condition number")
-  {
-    system.init_scaling(x0);
-    auto x0p = system.scale(x0);
-    REQUIRE(torch::max(torch::linalg_cond(system.Jacobian(x0p))).item<Real>() ==
-            Catch::Approx(1.0));
-  }
-}
+  /// Update the schedule with the completion of the last batch
+  virtual void completed_work(torch::Device, std::size_t) = 0;
+};
+} // namespace neml2

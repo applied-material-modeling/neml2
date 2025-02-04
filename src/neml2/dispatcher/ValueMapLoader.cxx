@@ -22,33 +22,53 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <catch2/catch_test_macros.hpp>
-#include <catch2/matchers/catch_matchers_all.hpp>
+#include "neml2/dispatcher/ValueMapLoader.h"
 
-#include "SampleNonlinearSystems.h"
-
-#include <ATen/ops/linalg_cond.h>
-
-using namespace neml2;
-
-TEST_CASE("NonlinearSystem", "[solvers]")
+namespace neml2
 {
-  // Initial guess
-  TensorShape batch_sz = {2};
-  Size nbase = 4;
-  auto x0 =
-      NonlinearSystem::Sol<false>(Tensor::full(batch_sz, nbase, 2.0, default_tensor_options()));
-
-  // Create the nonlinear system
-  auto options = PowerTestSystem::expected_options();
-  options.set<bool>("automatic_scaling") = true;
-  PowerTestSystem system(options);
-
-  SECTION("Automatic scaling can reduce condition number")
+std::size_t
+broadcast_batch_size(const ValueMap & value_map, Size batch_dim)
+{
+  Size size = 0;
+  for (auto && [key, tensor] : value_map)
+    size = std::max(size, tensor.batch_size(batch_dim).concrete());
+  for (auto && [key, tensor] : value_map)
   {
-    system.init_scaling(x0);
-    auto x0p = system.scale(x0);
-    REQUIRE(torch::max(torch::linalg_cond(system.Jacobian(x0p))).item<Real>() ==
-            Catch::Approx(1.0));
+    auto s = tensor.batch_size(batch_dim).concrete();
+    neml_assert(s == 1 || s == size,
+                "Batch sizes along batch dimension ",
+                batch_dim,
+                " are not compatible. Expected 1 or ",
+                size,
+                ", got ",
+                s,
+                ".");
   }
+  return size;
 }
+
+ValueMapLoader::ValueMapLoader(const ValueMap & value_map, Size batch_dim)
+  : _value_map(value_map),
+    _batch_dim(batch_dim),
+    _slice_gen(0, broadcast_batch_size(value_map, batch_dim))
+{
+}
+
+std::size_t
+ValueMapLoader::total() const
+{
+  return _slice_gen.total();
+}
+
+std::pair<std::size_t, ValueMap>
+ValueMapLoader::generate(std::size_t n)
+{
+  auto && [m, slice] = _slice_gen.next(n);
+
+  ValueMap work;
+  for (auto && [key, tensor] : _value_map)
+    work[key] = tensor.size(_batch_dim) == 1 ? tensor : tensor.batch_slice(_batch_dim, slice);
+
+  return {m, std::move(work)};
+}
+} // namespace neml2

@@ -2,7 +2,7 @@
 # Project metadata
 # ----------------------------------------------------------------------------
 cmake_minimum_required(VERSION 3.28)
-project(NEML2 VERSION 2.0.0 LANGUAGES CXX)
+project(NEML2 VERSION 2.0.0 LANGUAGES C CXX)
 
 # ----------------------------------------------------------------------------
 # Policy
@@ -29,6 +29,7 @@ list(APPEND CMAKE_MODULE_PATH ${NEML2_SOURCE_DIR}/cmake/Modules) # CMake modules
 set(CMAKE_CXX_FLAGS_COVERAGE "-O0 -fprofile-arcs -ftest-coverage" CACHE STRING "Flags used by C++ compiler during coverage builds." FORCE)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY ON)
 set(NEML2_TESTS ON CACHE BOOL "Build NEML2 tests")
 set(NEML2_RUNNER OFF CACHE BOOL "Build a simple runner for benchmarking, profiling, debugging, etc.")
 set(NEML2_PYBIND OFF CACHE BOOL "Build NEML2 Python bindings")
@@ -40,12 +41,14 @@ set(NEML2_DOC OFF CACHE BOOL "Build NEML2 documentation (html)")
 set(PYTORCH_VERSION "2.5.1")
 set(DOXYGEN_VERSION "1.10.0")
 set(DOXYGEN_AWESOME_VERSION "2.3.2")
-set(PYBIND11_VERSION "2.12.0")
+set(PYBIND11_VERSION "2.13.6")
 set(WASP_VERSION "c8c9ce4259115973f147e345608450d87dc390c4")
 set(HIT_VERSION "2b56209d3f1a1c5f0bede15a3e13981b599a5f91")
 set(CATCH2_VERSION "3.5.4")
 set(GPERFTOOLS_VERSION "2.15")
 set(ARGPARSE_VERSION "3.0")
+set(TIMPI_VERSION "1.8.5_bootstrapped")
+set(HWLOC_VERSION "2.11.2")
 include(NEML2Dependencies)
 
 # ----------------------------------------------------------------------------

@@ -23,32 +23,49 @@
 // THE SOFTWARE.
 
 #include <catch2/catch_test_macros.hpp>
-#include <catch2/matchers/catch_matchers_all.hpp>
 
-#include "SampleNonlinearSystems.h"
-
-#include <ATen/ops/linalg_cond.h>
+#include "neml2/dispatcher/TensorLoader.h"
 
 using namespace neml2;
 
-TEST_CASE("NonlinearSystem", "[solvers]")
+TEST_CASE("TensorLoader", "[dispatcher]")
 {
-  // Initial guess
-  TensorShape batch_sz = {2};
-  Size nbase = 4;
-  auto x0 =
-      NonlinearSystem::Sol<false>(Tensor::full(batch_sz, nbase, 2.0, default_tensor_options()));
+  auto start = Tensor::zeros({5, 5}, {2, 3});
+  auto end = Tensor::full({5, 5}, {2, 3}, 100.0);
+  auto ten = Tensor::linspace(start, end, 100, 1);
+  REQUIRE(ten.batch_sizes() == TensorShape{5, 100, 5});
+  REQUIRE(ten.base_sizes() == TensorShape{2, 3});
 
-  // Create the nonlinear system
-  auto options = PowerTestSystem::expected_options();
-  options.set<bool>("automatic_scaling") = true;
-  PowerTestSystem system(options);
+  TensorLoader loader(ten, 1);
+  REQUIRE(loader.total() == 100);
+  REQUIRE(loader.offset() == 0);
 
-  SECTION("Automatic scaling can reduce condition number")
-  {
-    system.init_scaling(x0);
-    auto x0p = system.scale(x0);
-    REQUIRE(torch::max(torch::linalg_cond(system.Jacobian(x0p))).item<Real>() ==
-            Catch::Approx(1.0));
-  }
+  std::size_t n;
+  Tensor work;
+
+  REQUIRE(loader.has_more());
+  std::tie(n, work) = loader.next(1);
+  REQUIRE(loader.offset() == 1);
+  REQUIRE(n == 1);
+  REQUIRE(work.batch_sizes() == TensorShape{5, 1, 5});
+  REQUIRE(work.base_sizes() == TensorShape{2, 3});
+  REQUIRE(torch::allclose(work, ten.slice(1, 0, 1)));
+
+  REQUIRE(loader.has_more());
+  std::tie(n, work) = loader.next(2);
+  REQUIRE(loader.offset() == 3);
+  REQUIRE(n == 2);
+  REQUIRE(work.batch_sizes() == TensorShape{5, 2, 5});
+  REQUIRE(work.base_sizes() == TensorShape{2, 3});
+  REQUIRE(torch::allclose(work, ten.slice(1, 1, 3)));
+
+  REQUIRE(loader.has_more());
+  std::tie(n, work) = loader.next(1000);
+  REQUIRE(loader.offset() == 100);
+  REQUIRE(n == 97);
+  REQUIRE(work.batch_sizes() == TensorShape{5, 97, 5});
+  REQUIRE(work.base_sizes() == TensorShape{2, 3});
+  REQUIRE(torch::allclose(work, ten.slice(1, 3)));
+
+  REQUIRE(!loader.has_more());
 }
