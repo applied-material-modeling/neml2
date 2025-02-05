@@ -425,6 +425,13 @@ log(const T & a)
   return T(torch::log(a), a.batch_sizes());
 }
 
+template <class T, typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<T>, T>>>
+T
+log10(const T & a)
+{
+  return T(torch::log10(a), a.batch_sizes());
+}
+
 namespace linalg
 {
 /// Vector norm of a vector. Falls back to math::abs is \p v is a Scalar.

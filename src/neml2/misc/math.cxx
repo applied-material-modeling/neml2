@@ -407,7 +407,7 @@ inv(const Tensor & m)
 Tensor
 solve(const Tensor & A, const Tensor & B)
 {
-  return Tensor(torch::linalg_solve(A, B, /*left=*/true), A.batch_sizes());
+  return Tensor(torch::linalg_solve(A.batch_expand_as(B), B, /*left=*/true), B.batch_sizes());
 }
 
 std::tuple<Tensor, Tensor>
