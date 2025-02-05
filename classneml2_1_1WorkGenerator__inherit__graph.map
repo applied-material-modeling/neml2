@@ -1,0 +1,17 @@
+<map id="WorkGenerator&lt; T &gt;" name="WorkGenerator&lt; T &gt;">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,109,164,134"/>
+<area shape="rect" id="Node000002" href="$classneml2_1_1FixedSizeWorkGenerator.html" title=" " alt="" coords="231,5,412,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="119,100,211,55,245,43,246,48,213,60,121,104"/>
+<area shape="rect" id="Node000004" href="$classneml2_1_1FixedSizeWorkGenerator.html" title=" " alt="" coords="231,69,412,109"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="178,106,230,99,231,104,179,111"/>
+<area shape="rect" id="Node000006" href="$classneml2_1_1FixedSizeWorkGenerator.html" title=" " alt="" coords="231,133,412,173"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="179,131,231,138,230,144,178,137"/>
+<area shape="rect" id="Node000008" href="$classneml2_1_1FixedSizeWorkGenerator.html" title="Interface for work generators that generate a fixed number of batches, i.e., the total amount of work..." alt="" coords="212,198,431,223"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="120,138,164,161,213,183,255,195,253,200,211,188,161,166,118,143"/>
+<area shape="rect" id="Node000003" href="$classneml2_1_1SliceGenerator.html" title=" " alt="" coords="485,13,603,38"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="426,23,484,23,484,28,426,28"/>
+<area shape="rect" id="Node000005" href="$classneml2_1_1TensorLoader.html" title=" " alt="" coords="490,77,598,102"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="426,87,490,87,490,92,426,92"/>
+<area shape="rect" id="Node000007" href="$classneml2_1_1ValueMapLoader.html" title=" " alt="" coords="479,141,609,166"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="426,151,478,151,478,156,426,156"/>
+</map>
