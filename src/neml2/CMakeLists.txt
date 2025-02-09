@@ -39,6 +39,7 @@ execute_process(
   ERROR_FILE ${wasp_BUILD_DIR}/configure.err
   COMMAND_ERROR_IS_FATAL ANY
 )
+message(STATUS "Installing WASP")
 execute_process(
   COMMAND ${CMAKE_COMMAND} --build ${wasp_BUILD_DIR}
   OUTPUT_QUIET
@@ -56,30 +57,55 @@ install(DIRECTORY
 # ----------------------------------------------------------------------------
 # HIT
 # ----------------------------------------------------------------------------
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  set(hit_BUILD_TYPE "Debug")
+else()
+  set(hit_BUILD_TYPE "RelWithDebInfo")
+endif()
+
 message(STATUS "Configuring HIT")
-FetchContent_MakeAvailable(hit)
-
-add_library(hit SHARED
-  ${hit_SOURCE_DIR}/src/hit/parse.cc
-  ${hit_SOURCE_DIR}/src/hit/lex.cc
-  ${hit_SOURCE_DIR}/src/hit/braceexpr.cc
+set(hit_BUILD_DIR ${NEML2_BINARY_DIR}/hit/build)
+set(hit_INSTALL_DIR ${NEML2_BINARY_DIR}/hit/install)
+execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${hit_BUILD_DIR})
+execute_process(
+  COMMAND ${CMAKE_COMMAND} \\
+  -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} \\
+  -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} \\
+  -DVERSION=${HIT_VERSION} \\
+  -Dwasp_INSTALL_DIR=${wasp_INSTALL_DIR} \\
+  -DPREFIX=${FETCHCONTENT_BASE_DIR} \\
+  -DBUILD_TYPE=${hit_BUILD_TYPE} \\
+  -DGLIBCXX_USE_CXX11_ABI=${GLIBCXX_USE_CXX11_ABI} \\
+  -G${CMAKE_GENERATOR} \\
+  ${NEML2_SOURCE_DIR}/cmake/hit
+  WORKING_DIRECTORY ${hit_BUILD_DIR}
+  OUTPUT_QUIET
+  OUTPUT_FILE ${hit_BUILD_DIR}/configure.log
+  ERROR_QUIET
+  ERROR_FILE ${hit_BUILD_DIR}/configure.err
+  COMMAND_ERROR_IS_FATAL ANY
 )
-
-set_target_properties(hit PROPERTIES UNITY_BUILD OFF)
-target_include_directories(hit SYSTEM PUBLIC ${hit_SOURCE_DIR}/include ${wasp_INSTALL_DIR}/include)
-target_link_libraries(hit PRIVATE waspcore wasphit)
-target_link_directories(hit PRIVATE ${wasp_INSTALL_DIR}/lib)
-target_sources(hit
-  PUBLIC
-  FILE_SET HEADERS
-  BASE_DIRS ${hit_SOURCE_DIR}/include
-  FILES
-  ${hit_SOURCE_DIR}/include/hit/braceexpr.h
-  ${hit_SOURCE_DIR}/include/hit/hit.h
-  ${hit_SOURCE_DIR}/include/hit/lex.h
-  ${hit_SOURCE_DIR}/include/hit/parse.h
+message(STATUS "Installing HIT")
+execute_process(
+  COMMAND ${CMAKE_COMMAND} --build ${hit_BUILD_DIR}
+  OUTPUT_QUIET
+  OUTPUT_FILE ${hit_BUILD_DIR}/build.log
+  ERROR_QUIET
+  ERROR_FILE ${hit_BUILD_DIR}/build.err
+  COMMAND_ERROR_IS_FATAL ANY
 )
-install(TARGETS hit COMPONENT Development FILE_SET HEADERS)
+execute_process(
+  COMMAND ${CMAKE_COMMAND} --install ${hit_BUILD_DIR} --prefix ${hit_INSTALL_DIR}
+  OUTPUT_QUIET
+  OUTPUT_FILE ${hit_INSTALL_DIR}/install.log
+  ERROR_QUIET
+  ERROR_FILE ${hit_INSTALL_DIR}/install.err
+  COMMAND_ERROR_IS_FATAL ANY
+)
+install(DIRECTORY
+  ${hit_INSTALL_DIR}/include/hit
+  TYPE INCLUDE
+)
 
 # ----------------------------------------------------------------------------
 # Prepare for work dispatcher
@@ -195,8 +221,10 @@ target_precompile_headers(neml2_tensor PRIVATE
 
 # libneml2_base
 neml2_add_submodule(neml2_base SHARED base)
-target_link_libraries(neml2_base PUBLIC hit)
 target_link_libraries(neml2_base PUBLIC neml2_tensor)
+target_include_directories(neml2_base SYSTEM PUBLIC ${hit_INSTALL_DIR}/include ${wasp_INSTALL_DIR}/include)
+target_link_directories(neml2_base PRIVATE ${hit_INSTALL_DIR}/lib ${wasp_INSTALL_DIR}/lib)
+target_link_libraries(neml2_base PRIVATE hit waspcore wasphit)
 
 # libneml2_user_tensor
 neml2_add_submodule(neml2_user_tensor SHARED user_tensors)

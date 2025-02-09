@@ -38,13 +38,6 @@ FetchContent_Declare(
   GIT_TAG v${PYBIND11_VERSION}
 )
 
-# HIT for parsing input files
-FetchContent_Declare(
-  hit
-  GIT_REPOSITORY https://github.com/idaholab/hit.git
-  GIT_TAG ${HIT_VERSION}
-)
-
 # Catch2 for testing
 FetchContent_Declare(
   Catch2
