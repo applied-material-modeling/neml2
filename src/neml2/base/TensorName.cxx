@@ -29,13 +29,12 @@
 
 namespace neml2
 {
-template <>
 TensorName::operator ATensor() const
 {
   try
   {
     // If it is just a number, we can still create a tensor out of it
-    return at::scalar_tensor(utils::parse<Real>(_raw_str), default_tensor_options());
+    return Scalar::create(utils::parse<Real>(_raw_str));
   }
   catch (const ParserException & e)
   {
@@ -44,13 +43,12 @@ TensorName::operator ATensor() const
   }
 }
 
-template <>
 TensorName::operator Tensor() const
 {
   try
   {
     // If it is just a number, we can still create a Scalar out of it
-    return Tensor::full({}, {}, utils::parse<Real>(_raw_str), default_tensor_options());
+    return Tensor::full({}, {}, utils::parse<Real>(_raw_str));
   }
   catch (const ParserException & e)
   {
@@ -59,13 +57,12 @@ TensorName::operator Tensor() const
   }
 }
 
-#define INSTANTIATE_TENSORNAME_IMPLICIT_CONVERSION(T)                                              \
-  template <>                                                                                      \
+#define SPECIALIZE_CONVERSION(T)                                                                   \
   TensorName::operator T() const                                                                   \
   {                                                                                                \
     try                                                                                            \
     {                                                                                              \
-      return T::full(utils::parse<Real>(_raw_str), default_tensor_options());                      \
+      return T::full(utils::parse<Real>(_raw_str));                                                \
     }                                                                                              \
     catch (const ParserException & e)                                                              \
     {                                                                                              \
@@ -73,7 +70,7 @@ TensorName::operator Tensor() const
     }                                                                                              \
   }                                                                                                \
   static_assert(true)
-FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_TENSORNAME_IMPLICIT_CONVERSION);
+FOR_ALL_PRIMITIVETENSOR(SPECIALIZE_CONVERSION);
 
 TensorName &
 TensorName::operator=(const std::string & other)

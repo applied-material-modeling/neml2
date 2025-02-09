@@ -52,7 +52,7 @@ neml2::PrimitiveTensor is the parent class for all tensor types with a *fixed* b
 | [Quaternion](@ref neml2::Quaternion)   | \f$(4)\f$         | Quaternion                                                       |
 | [MillerIndex](@ref neml2::MillerIndex) | \f$(3)\f$         | Crystal direction or lattice plane represented as Miller indices |
 
-Furthermore, all primitive tensor types can be "registered" as variables on a `LabeledAxis`, which will be discussed in the following section on [labeled view](@ref tensor-labeling).
+Furthermore, all primitive tensor types can be "registered" as variables on a `LabeledAxis`.
 
 ## Working with tensors {#working-with-tensors}
 

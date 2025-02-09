@@ -24,9 +24,8 @@
 
 #pragma once
 
-#include <iosfwd>
-#include <string>
-#include <utility>
+#include "neml2/misc/types.h"
+#include "neml2/tensors/tensors_fwd.h"
 
 namespace neml2
 {
@@ -60,8 +59,13 @@ public:
    * The underlying string is parsed and used to resolve the cross-reference. It is assumed that the
    * cross-referenced tensor object has already been manufactured at this point.
    */
-  template <typename T>
-  explicit operator T() const;
+  ///@{
+  explicit operator ATensor() const;
+  explicit operator Tensor() const;
+#define DECL_CONVERSION(T) explicit operator T() const
+  FOR_ALL_PRIMITIVETENSOR(DECL_CONVERSION);
+#undef DECL_CONVERSION
+  ///@}
 
   /// Test equality
   bool operator==(const TensorName & other) const { return _raw_str == other.raw(); }
@@ -85,12 +89,4 @@ std::stringstream & operator>>(std::stringstream &, TensorName &);
 
 /// Stream out a TensorName (used for printing OptionSet)
 std::ostream & operator<<(std::ostream & os, const TensorName &);
-} // namespace neml2
-
-///////////////////////////////////////////////////////////////////////////////
-// Implementations
-///////////////////////////////////////////////////////////////////////////////
-
-namespace neml2
-{
 } // namespace neml2

@@ -18,7 +18,7 @@ The following input file defines a linear isotropic elasticity material model:
 []
 ```
 
-The input file defines two parameters: Young's modulus of 100 and Poisson's ratio of 0.3. While optional, the input file also sets the variable names of strain and stress to be "forces/E" and "state/S", respectively (refer to the documentation on [tensor labeling](@ref tensor-labeling) for variable naming conventions).
+The input file defines two parameters: Young's modulus of 100 and Poisson's ratio of 0.3. While optional, the input file also sets the variable names of strain and stress to be "forces/E" and "state/S", respectively (refer to the [documentation](@ref naming-conventions)).
 
 Assuming the above input file is named "input_file.i", the C++ code snippet below parses the input file and loads the material model (into the heap).
 
