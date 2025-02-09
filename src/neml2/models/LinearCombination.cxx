@@ -31,14 +31,6 @@
 
 namespace neml2
 {
-#define REGISTER(T)                                                                                \
-  using T##LinearCombination = LinearCombination<T>;                                               \
-  register_NEML2_object(T##LinearCombination);                                                     \
-  template class LinearCombination<T>
-REGISTER(Scalar);
-REGISTER(Vec);
-REGISTER(SR2);
-
 template <typename T>
 OptionSet
 LinearCombination<T>::expected_options()
@@ -146,4 +138,12 @@ LinearCombination<T>::set_value(bool out, bool dout_din, bool d2out_din2)
     // zero
   }
 }
+
+#define REGISTER(T)                                                                                \
+  using T##LinearCombination = LinearCombination<T>;                                               \
+  register_NEML2_object(T##LinearCombination);                                                     \
+  template class LinearCombination<T>
+REGISTER(Scalar);
+REGISTER(Vec);
+REGISTER(SR2);
 } // namespace neml2

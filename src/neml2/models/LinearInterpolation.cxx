@@ -30,14 +30,6 @@
 
 namespace neml2
 {
-#define REGISTER(T)                                                                                \
-  using T##LinearInterpolation = LinearInterpolation<T>;                                           \
-  register_NEML2_object(T##LinearInterpolation);                                                   \
-  template class LinearInterpolation<T>
-REGISTER(Scalar);
-REGISTER(Vec);
-REGISTER(SR2);
-
 template <typename T>
 OptionSet
 LinearInterpolation<T>::expected_options()
@@ -88,4 +80,12 @@ LinearInterpolation<T>::set_value(bool out, bool dout_din, bool d2out_din2)
     // zero
   }
 }
+
+#define REGISTER(T)                                                                                \
+  using T##LinearInterpolation = LinearInterpolation<T>;                                           \
+  register_NEML2_object(T##LinearInterpolation);                                                   \
+  template class LinearInterpolation<T>
+REGISTER(Scalar);
+REGISTER(Vec);
+REGISTER(SR2);
 } // namespace neml2

@@ -102,7 +102,11 @@ BackwardEulerTimeIntegration<T>::set_value(bool out, bool dout_din, bool /*d2out
   }
 }
 
-template class BackwardEulerTimeIntegration<Scalar>;
-template class BackwardEulerTimeIntegration<Vec>;
-template class BackwardEulerTimeIntegration<SR2>;
+#define REGISTER(T)                                                                                \
+  using T##BackwardEulerTimeIntegration = BackwardEulerTimeIntegration<T>;                         \
+  register_NEML2_object(T##BackwardEulerTimeIntegration);                                          \
+  template class BackwardEulerTimeIntegration<T>
+REGISTER(Scalar);
+REGISTER(Vec);
+REGISTER(SR2);
 } // namespace neml2

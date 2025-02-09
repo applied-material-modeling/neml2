@@ -30,14 +30,6 @@
 
 namespace neml2
 {
-#define REGISTER(T)                                                                                \
-  using T##ForwardEulerTimeIntegration = ForwardEulerTimeIntegration<T>;                           \
-  register_NEML2_object(T##ForwardEulerTimeIntegration);                                           \
-  template class ForwardEulerTimeIntegration<T>
-REGISTER(Scalar);
-REGISTER(Vec);
-REGISTER(SR2);
-
 template <typename T>
 OptionSet
 ForwardEulerTimeIntegration<T>::expected_options()
@@ -105,4 +97,12 @@ ForwardEulerTimeIntegration<T>::set_value(bool out, bool dout_din, bool /*d2out_
     _s.d(_tn) = -_ds_dt;
   }
 }
+
+#define REGISTER(T)                                                                                \
+  using T##ForwardEulerTimeIntegration = ForwardEulerTimeIntegration<T>;                           \
+  register_NEML2_object(T##ForwardEulerTimeIntegration);                                           \
+  template class ForwardEulerTimeIntegration<T>
+REGISTER(Scalar);
+REGISTER(Vec);
+REGISTER(SR2);
 } // namespace neml2

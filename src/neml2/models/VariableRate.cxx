@@ -30,14 +30,6 @@
 
 namespace neml2
 {
-#define REGISTER(T)                                                                                \
-  using T##VariableRate = VariableRate<T>;                                                         \
-  register_NEML2_object(T##VariableRate);                                                          \
-  template class VariableRate<T>
-REGISTER(Scalar);
-REGISTER(Vec);
-REGISTER(SR2);
-
 template <typename T>
 OptionSet
 VariableRate<T>::expected_options()
@@ -107,4 +99,12 @@ VariableRate<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
     _dv_dt.d(_tn) = dv / dt / dt;
   }
 }
+
+#define REGISTER(T)                                                                                \
+  using T##VariableRate = VariableRate<T>;                                                         \
+  register_NEML2_object(T##VariableRate);                                                          \
+  template class VariableRate<T>
+REGISTER(Scalar);
+REGISTER(Vec);
+REGISTER(SR2);
 } // namespace neml2

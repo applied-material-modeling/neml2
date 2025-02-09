@@ -32,15 +32,6 @@
 
 namespace neml2
 {
-#define REGISTER(T)                                                                                \
-  using T##IncrementToRate = IncrementToRate<T>;                                                   \
-  register_NEML2_object(T##IncrementToRate);                                                       \
-  template class IncrementToRate<T>
-REGISTER(Scalar);
-REGISTER(Vec);
-REGISTER(SR2);
-REGISTER(R2);
-
 template <typename T>
 OptionSet
 IncrementToRate<T>::expected_options()
@@ -94,4 +85,13 @@ IncrementToRate<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
       _dv_dt.d(_tn) = _dv / dt / dt;
   }
 }
+
+#define REGISTER(T)                                                                                \
+  using T##IncrementToRate = IncrementToRate<T>;                                                   \
+  register_NEML2_object(T##IncrementToRate);                                                       \
+  template class IncrementToRate<T>
+REGISTER(Scalar);
+REGISTER(Vec);
+REGISTER(SR2);
+REGISTER(R2);
 } // namespace neml2

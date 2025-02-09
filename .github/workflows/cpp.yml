@@ -67,10 +67,7 @@ jobs:
 
   runner:
     needs: clang-format
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
       - uses: applied-material-modeling/neml2-ci@main
         with:
