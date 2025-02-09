@@ -26,10 +26,6 @@
 
 namespace neml2
 {
-register_NEML2_object(ScalarBackwardEulerTimeIntegration);
-register_NEML2_object(VecBackwardEulerTimeIntegration);
-register_NEML2_object(SR2BackwardEulerTimeIntegration);
-
 template <typename T>
 OptionSet
 BackwardEulerTimeIntegration<T>::expected_options()

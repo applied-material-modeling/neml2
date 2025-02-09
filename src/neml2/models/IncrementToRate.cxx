@@ -38,7 +38,7 @@ IncrementToRate<T>::expected_options()
 {
   OptionSet options = Model::expected_options();
   options.doc() = "Calculate the first order discrete time derivative of a variable as \\f$ "
-                  "\\dot{f} = \\frac{\\Delta f}{t-t_n} \\f$, where \\f$ \\Deltaf \\f$ is the "
+                  "\\dot{f} = \\frac{\\Delta f}{t-t_n} \\f$, where \\f$ \\Delta f \\f$ is the "
                   "variable with the increment, "
                   "and \\f$ t \\f$ is time.";
 

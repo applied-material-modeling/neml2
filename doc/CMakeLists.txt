@@ -31,12 +31,13 @@ endmacro()
 # ----------------------------------------------------------------------------
 # Extract all input file syntax
 # ----------------------------------------------------------------------------
-add_executable(syntax-cpp-exe syntax.cxx)
-target_link_libraries(syntax-cpp-exe PRIVATE neml2)
-add_custom_target(syntax-cpp
-  DEPENDS syntax-cpp-exe
+add_executable(syntax syntax.cxx)
+target_link_libraries(syntax PRIVATE ${NEML2_LIBS})
+set_target_properties(syntax PROPERTIES LINK_WHAT_YOU_USE TRUE)
+add_custom_target(syntax_cpp
+  DEPENDS syntax
   WORKING_DIRECTORY ${NEML2_BINARY_DIR}/doc
-  COMMAND ${NEML2_BINARY_DIR}/doc/syntax-cpp-exe
+  COMMAND ${NEML2_BINARY_DIR}/doc/syntax
   COMMAND ${Python_EXECUTABLE} ${NEML2_SOURCE_DIR}/scripts/syntax_to_md.py syntax.yml content/syntax syntax_error.log
   VERBATIM
 )
@@ -44,7 +45,7 @@ add_custom_target(syntax-cpp
 # ----------------------------------------------------------------------------
 # Extract all Python API
 # ----------------------------------------------------------------------------
-add_custom_target(syntax-python
+add_custom_target(syntax_python
   DEPENDS ${NEML2_PYTHON_MODULES}
   WORKING_DIRECTORY ${NEML2_BINARY_DIR}/python
   COMMAND ${CMAKE_COMMAND} -E make_directory ${NEML2_BINARY_DIR}/doc/content/python
@@ -59,7 +60,7 @@ add_custom_target(syntax-python
 generate_doxyfile(${NEML2_BINARY_DIR}/doc/DoxyfileHTML "config/Doxyfile.in;config/HTML.in")
 generate_doxyfile(${NEML2_BINARY_DIR}/doc/DoxyfilePython "config/Doxyfile.in;config/HTML.in;config/Python.in")
 add_custom_target(html ALL
-  DEPENDS syntax-cpp syntax-python
+  DEPENDS syntax_cpp syntax_python
   WORKING_DIRECTORY ${NEML2_BINARY_DIR}/doc
   COMMAND ${DOXYGEN_EXECUTABLE} -q DoxyfileHTML.sh
   COMMAND ${DOXYGEN_EXECUTABLE} -q DoxyfilePython.sh

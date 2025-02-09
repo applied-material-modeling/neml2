@@ -22,9 +22,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <fstream>
+
 #include "neml2/base/Registry.h"
 #include "neml2/base/Settings.h"
-#include <fstream>
+#include "neml2/base/OptionSet.h"
 
 int
 main()
