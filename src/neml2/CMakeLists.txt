@@ -94,6 +94,7 @@ execute_process(
   ERROR_FILE ${hit_BUILD_DIR}/build.err
   COMMAND_ERROR_IS_FATAL ANY
 )
+execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${hit_INSTALL_DIR})
 execute_process(
   COMMAND ${CMAKE_COMMAND} --install ${hit_BUILD_DIR} --prefix ${hit_INSTALL_DIR}
   OUTPUT_QUIET
