@@ -1,0 +1,7 @@
+<map id="WorkScheduler" name="WorkScheduler">
+<area shape="rect" id="Node000001" title="Scheduler for work dispatching." alt="" coords="98,5,217,31"/>
+<area shape="rect" id="Node000002" href="$classneml2_1_1SimpleScheduler.html" title="A very simple scheduler." alt="" coords="5,79,136,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="135,41,87,81,83,76,131,37"/>
+<area shape="rect" id="Node000003" href="$classneml2_1_1StaticHybridScheduler.html" title="A scheduler for multiple devices with static priority management." alt="" coords="161,79,327,104"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="183,37,232,76,228,81,180,41"/>
+</map>
