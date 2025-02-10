@@ -115,6 +115,10 @@ install(DIRECTORY
 if(NEML2_WORK_DISPATCHER)
   find_package(MPI REQUIRED)
 
+  if(NOT MPI_C_FOUND)
+    message(FATAL_ERROR "MPI C compiler (required for work dispatcher) not found")
+  endif()
+
   if(NOT MPI_CXX_FOUND)
     message(FATAL_ERROR "MPI C++ compiler (required for work dispatcher) not found")
   endif()
