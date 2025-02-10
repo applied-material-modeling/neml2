@@ -88,10 +88,11 @@ execute_process(
 message(STATUS "Installing HIT")
 execute_process(
   COMMAND ${CMAKE_COMMAND} --build ${hit_BUILD_DIR}
-  OUTPUT_QUIET
-  OUTPUT_FILE ${hit_BUILD_DIR}/build.log
-  ERROR_QUIET
-  ERROR_FILE ${hit_BUILD_DIR}/build.err
+
+  # OUTPUT_QUIET
+  # OUTPUT_FILE ${hit_BUILD_DIR}/build.log
+  # ERROR_QUIET
+  # ERROR_FILE ${hit_BUILD_DIR}/build.err
   COMMAND_ERROR_IS_FATAL ANY
 )
 execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${hit_INSTALL_DIR})
