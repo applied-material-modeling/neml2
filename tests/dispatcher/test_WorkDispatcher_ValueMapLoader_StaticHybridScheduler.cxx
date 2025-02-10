@@ -61,7 +61,7 @@ TEST_CASE("WorkDispatcher ValueMapLoader StaticHybridScheduler", "[dispatcher]")
     const auto & temperature = x[temperature_name];
     return ValueMap{{stress_name, strain * Scalar(temperature)}};
   };
-  auto red = [&stress_name, batch_dim](std::vector<ValueMap> && results) -> ValueMap
+  auto red = [](std::vector<ValueMap> && results) -> ValueMap
   {
     // Re-bin the results
     std::map<VariableName, std::vector<Tensor>> vars;
