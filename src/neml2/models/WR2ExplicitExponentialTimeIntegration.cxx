@@ -23,7 +23,10 @@
 // THE SOFTWARE.
 
 #include "neml2/models/WR2ExplicitExponentialTimeIntegration.h"
-#include "neml2/tensors/tensors.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/Rot.h"
+#include "neml2/tensors/WR2.h"
+#include "neml2/tensors/Vec.h"
 
 namespace neml2
 {
@@ -63,19 +66,17 @@ WR2ExplicitExponentialTimeIntegration::WR2ExplicitExponentialTimeIntegration(
 }
 
 void
-WR2ExplicitExponentialTimeIntegration::diagnose(std::vector<Diagnosis> & diagnoses) const
+WR2ExplicitExponentialTimeIntegration::diagnose() const
 {
-  Model::diagnose(diagnoses);
-  diagnostic_assert_state(diagnoses, _s);
-  diagnostic_assert_state(diagnoses, _s_dot);
-  diagnostic_assert_force(diagnoses, _t);
+  Model::diagnose();
+  diagnostic_assert_state(_s);
+  diagnostic_assert_state(_s_dot);
+  diagnostic_assert_force(_t);
 }
 
 void
-WR2ExplicitExponentialTimeIntegration::set_value(bool out, bool dout_din, bool d2out_din2)
+WR2ExplicitExponentialTimeIntegration::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
-
   const auto dt = _t - _tn;
 
   // Incremental rotation

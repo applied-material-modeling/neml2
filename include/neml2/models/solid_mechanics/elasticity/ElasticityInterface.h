@@ -26,6 +26,7 @@
 
 #include "neml2/models/solid_mechanics/elasticity/ElasticityConverter.h"
 #include "neml2/base/MultiEnumSelection.h"
+#include "neml2/tensors/Scalar.h"
 
 namespace neml2
 {
@@ -57,7 +58,7 @@ protected:
 
 private:
   /// Input coefficients (without reordering)
-  const std::vector<CrossRef<Scalar>> _coefs;
+  const std::vector<TensorName> _coefs;
 
   /// Input coefficient types (without reordering)
   const std::vector<ElasticConstant> _coef_types;
@@ -102,7 +103,7 @@ ElasticityInterface<Derived, N>::expected_options()
   options.set("coefficient_types").doc() =
       "Types for each parameter, options are: " + type_selection.candidates_str();
 
-  options.set_parameter<std::vector<CrossRef<Scalar>>>("coefficients");
+  options.set_parameter<std::vector<TensorName>>("coefficients");
   options.set("coefficients").doc() = "Coefficients used to define the elasticity tensor";
 
   options.set<std::vector<bool>>("coefficient_as_parameter") = {true};
@@ -116,23 +117,20 @@ ElasticityInterface<Derived, N>::expected_options()
 template <class Derived, std::size_t N>
 ElasticityInterface<Derived, N>::ElasticityInterface(const OptionSet & options)
   : Derived(options),
-    _coefs(options.get<std::vector<CrossRef<Scalar>>>("coefficients")),
+    _coefs(options.get<std::vector<TensorName>>("coefficients")),
     _coef_types(options.get<MultiEnumSelection>("coefficient_types").as<ElasticConstant>()),
     _coef_as_param(options.get<std::vector<bool>>("coefficient_as_parameter"))
 {
-  neml_assert(_coefs.size() == N, "Expected ", N, " coefficients, got ", _coefs.size(), ".");
-  neml_assert(_coef_types.size() == N,
-              "Expected ",
-              N,
-              " entries in coefficient_types, got ",
-              _coef_types.size(),
-              ".");
-  neml_assert(_coef_as_param.size() == 1 || _coef_as_param.size() == N,
-              "Expected 1 or ",
-              N,
-              " entrie(s) in coefficient_as_parameter, got ",
-              _coef_as_param.size(),
-              ".");
+  if (_coefs.size() != N)
+    throw NEMLException("Expected " + std::to_string(N) + " coefficients, got " +
+                        std::to_string(_coefs.size()) + ".");
+  if (_coef_types.size() != N)
+    throw NEMLException("Expected " + std::to_string(N) + " coefficient types, got " +
+                        std::to_string(_coef_types.size()) + ".");
+  if (_coef_as_param.size() != 1 && _coef_as_param.size() != N)
+    throw NEMLException("Expected 1 or " + std::to_string(N) +
+                        " entries in coefficient_as_parameter, got " +
+                        std::to_string(_coef_as_param.size()) + ".");
 
   if (_coef_as_param.size() == 1)
     _coef_as_param.resize(N, _coef_as_param[0]);
@@ -157,27 +155,26 @@ ElasticityInterface<Derived, N>::declare_elastic_constant(ElasticConstant ptype)
 {
   for (std::size_t i = 0; i < _coefs.size(); i++)
   {
-    neml_assert(_coef_types[i] != ElasticConstant::INVALID,
-                "Invalid coefficient type provided for coefficient ",
-                i,
-                ".");
+    if (_coef_types[i] == ElasticConstant::INVALID)
+      throw NEMLException("Invalid coefficient type provided for coefficient " + std::to_string(i) +
+                          ".");
 
     if (_coef_types[i] != ptype)
       continue;
 
-    neml_assert(std::find(_constant_types.begin(),
-                          std::next(_constant_types.begin(), _counter),
-                          ptype) == std::next(_constant_types.begin(), _counter),
-                "Duplicate coefficient type provided for coefficient ",
-                i,
-                ".");
+    if (std::find(_constant_types.begin(), std::next(_constant_types.begin(), _counter), ptype) !=
+        std::next(_constant_types.begin(), _counter))
+      throw NEMLException("Duplicate coefficient type provided for coefficient " +
+                          std::to_string(i) + ".");
 
     const auto pname = neml2::name(ptype);
-    const auto * pval =
-        _coef_as_param[i] ? &Derived::declare_parameter(pname, _coefs[i], /*allow_nonlinear*/ true)
-                          : &Derived::declare_buffer(pname, _coefs[i]);
+    const auto * pval = _coef_as_param[i]
+                            ? &Derived::template declare_parameter<Scalar>(
+                                  pname, _coefs[i], /*allow_nonlinear*/ true)
+                            : &Derived::template declare_buffer<Scalar>(pname, _coefs[i]);
 
-    neml_assert(_counter < N, "Too many coefficients provided.");
+    if (_counter >= N)
+      throw NEMLException("Too many coefficients provided.");
     _constant_types[_counter] = ptype;
     _constants[_counter] = pval;
     _counter++;

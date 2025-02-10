@@ -26,8 +26,6 @@
 #include "neml2/base/Registry.h"
 #include "neml2/base/HITParser.h"
 #include "neml2/base/Settings.h"
-#include "neml2/models/Model.h"
-#include "neml2/drivers/Driver.h"
 
 namespace neml2
 {
@@ -53,33 +51,6 @@ reload_input(const std::filesystem::path & path, const std::string & additional_
 {
   Factory::clear();
   load_input(path, additional_input);
-}
-
-Model &
-get_model(const std::string & mname, bool force_create)
-{
-  OptionSet extra_opts;
-  return Factory::get_object<Model>("Models", mname, extra_opts, force_create);
-}
-
-Model &
-load_model(const std::filesystem::path & path, const std::string & mname)
-{
-  load_input(path);
-  return get_model(mname);
-}
-
-Model &
-reload_model(const std::filesystem::path & path, const std::string & mname)
-{
-  Factory::clear();
-  return load_model(path, mname);
-}
-
-Driver &
-get_driver(const std::string & dname)
-{
-  return Factory::get_object<Driver>("Drivers", dname);
 }
 
 Factory &

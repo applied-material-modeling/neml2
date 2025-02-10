@@ -25,9 +25,12 @@
 #include "neml2/models/solid_mechanics/crystal_plasticity/PlasticVorticity.h"
 #include "neml2/models/crystallography/CrystalGeometry.h"
 
-#include "neml2/tensors/tensors.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/R2.h"
+#include "neml2/tensors/WR2.h"
+#include "neml2/tensors/R3.h"
 #include "neml2/tensors/list_tensors.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/functions/sum.h"
 
 namespace neml2
 {
@@ -71,11 +74,9 @@ PlasticVorticity::PlasticVorticity(const OptionSet & options)
 }
 
 void
-PlasticVorticity::set_value(bool out, bool dout_din, bool d2out_din2)
+PlasticVorticity::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
-
-  const auto Wp_crystal = math::batch_sum(_gamma_dot * _crystal_geometry.W(), -1);
+  const auto Wp_crystal = batch_sum(_gamma_dot * _crystal_geometry.W(), -1);
 
   if (out)
     _Wp = Wp_crystal.rotate(_R);

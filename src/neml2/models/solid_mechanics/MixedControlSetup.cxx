@@ -23,7 +23,9 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/MixedControlSetup.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/SR2.h"
+#include "neml2/tensors/SSR4.h"
+#include "neml2/tensors/functions/diag_embed.h"
 
 namespace neml2
 {
@@ -43,7 +45,7 @@ MixedControlSetup::expected_options()
       "The name of the control signal.  Values less than the threshold are "
       "strain control, greater are stress control";
 
-  options.set<CrossRef<Tensor>>("threshold") = "0.5";
+  options.set<TensorName>("threshold") = "0.5";
   options.set("threshold").doc() = "The threshold to switch between strain and stress control";
 
   options.set_input("mixed_state") = VariableName(STATE, "mixed_state");
@@ -65,7 +67,7 @@ MixedControlSetup::expected_options()
 
 MixedControlSetup::MixedControlSetup(const OptionSet & options)
   : Model(options),
-    _threshold(options.get<CrossRef<Tensor>>("threshold")),
+    _threshold(options.get<TensorName>("threshold")),
     _control(declare_input_variable<SR2>("control")),
     _fixed_values(declare_input_variable<SR2>("fixed_values")),
     _mixed_state(declare_input_variable<SR2>("mixed_state")),
@@ -115,8 +117,8 @@ MixedControlSetup::make_operators(const SR2 & control) const
   auto ones_stress = Tensor(strain_select.to(control.options()), control.batch_sizes());
   auto ones_strain = Tensor::ones_like(control) - ones_stress;
 
-  auto dstrain = math::base_diag_embed(ones_stress);
-  auto dstress = math::base_diag_embed(ones_strain);
+  auto dstrain = base_diag_embed(ones_stress);
+  auto dstress = base_diag_embed(ones_strain);
 
   return {dstrain, dstress};
 }

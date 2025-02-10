@@ -23,7 +23,10 @@
 // THE SOFTWARE.
 
 #include "SampleRateModel.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {
@@ -51,10 +54,8 @@ SampleRateModelTmpl<AD>::SampleRateModelTmpl(const OptionSet & options)
 
 template <>
 void
-SampleRateModelTmpl<false>::set_value(bool out, bool dout_din, bool d2out_din2)
+SampleRateModelTmpl<false>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
-
   if (out)
   {
     foo_dot = (foo * foo + bar) * T + SR2(baz).tr();

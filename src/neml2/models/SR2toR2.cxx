@@ -23,8 +23,10 @@
 // THE SOFTWARE.
 
 #include "neml2/models/SR2toR2.h"
-
-#include "neml2/misc/math.h"
+#include "neml2/tensors/mandel_notation.h"
+#include "neml2/tensors/SR2.h"
+#include "neml2/tensors/R2.h"
+#include "neml2/tensors/SSR4.h"
 
 namespace neml2
 {
@@ -35,6 +37,8 @@ SR2toR2::expected_options()
 {
   OptionSet options = Model::expected_options();
   options.doc() = "Convert a symmetric rank two tensor to a full tensor";
+
+  options.set<bool>("define_second_derivatives") = true;
 
   options.set_input("input");
   options.set("input").doc() = "Symmetric tensor to convert";
@@ -61,7 +65,7 @@ SR2toR2::set_value(bool out, bool dout_din, bool d2out_din2)
     _output = R2(A);
 
   if (dout_din)
-    _output.d(_input) = math::mandel_to_full(SSR4::identity_sym(A.options()), 0);
+    _output.d(_input) = mandel_to_full(SSR4::identity_sym(A.options()), 0);
 
   // Second derivative is zero
   (void)d2out_din2;

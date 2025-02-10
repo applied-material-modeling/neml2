@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/Eigenstrain.h"
+#include "neml2/tensors/SR2.h"
 
 namespace neml2
 {

@@ -47,10 +47,10 @@ TEST_CASE("Vec", "[tensors]")
       auto vb = v.batch_expand(B);
       auto vpb = vp.batch_expand(B);
 
-      REQUIRE(torch::allclose(v.rotate(r), vp));
-      REQUIRE(torch::allclose(vb.rotate(rb), vpb));
-      REQUIRE(torch::allclose(v.rotate(rb), vpb));
-      REQUIRE(torch::allclose(vb.rotate(r), vpb));
+      REQUIRE(at::allclose(v.rotate(r), vp));
+      REQUIRE(at::allclose(vb.rotate(rb), vpb));
+      REQUIRE(at::allclose(v.rotate(rb), vpb));
+      REQUIRE(at::allclose(vb.rotate(r), vpb));
     }
 
     SECTION("drotate")
@@ -67,10 +67,10 @@ TEST_CASE("Vec", "[tensors]")
       auto dvp_dr = finite_differencing_derivative(apply, r);
       auto dvp_drb = dvp_dr.batch_expand(B);
 
-      REQUIRE(torch::allclose(v.drotate(r), dvp_dr, 1e-4));
-      REQUIRE(torch::allclose(vb.drotate(rb), dvp_drb, 1e-4));
-      REQUIRE(torch::allclose(v.drotate(rb), dvp_drb, 1e-4));
-      REQUIRE(torch::allclose(vb.drotate(r), dvp_drb, 1e-4));
+      REQUIRE(at::allclose(v.drotate(r), dvp_dr, 1e-4));
+      REQUIRE(at::allclose(vb.drotate(rb), dvp_drb, 1e-4));
+      REQUIRE(at::allclose(v.drotate(rb), dvp_drb, 1e-4));
+      REQUIRE(at::allclose(vb.drotate(r), dvp_drb, 1e-4));
     }
   }
 }

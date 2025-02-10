@@ -51,7 +51,7 @@ The ordering of objects, i.e., the sequence objects appear in the input file, do
 \note
 On the other hand, other commonly used boolean flags such as "on"/"off", "1"/"0", "True"/"False", etc., cannot be parsed into boolean values.
 
-**Variable name**: NEML2 material models work with named variables to assign physical meanings to different slices of a tensor (see e.g. [Tensor Labeling](@ref tensor-labeling)). A fully qualified variable name can be parsed from a string, and the delimiter "/" signifies nested sub-axes. For example, the string "forces/t" can be parsed into a variable named "t" defined on the sub-axis named "forces".
+**Variable name**: NEML2 material models work with named variables to assign physical meanings to different slices of a tensor. A fully qualified variable name can be parsed from a string, and the delimiter "/" signifies nested sub-axes. For example, the string "forces/t" can be parsed into a variable named "t" defined on the sub-axis named "forces".
 
 **Tensor shape**: Shape of a tensor can also be parsed from a string. The string must start with "(" and end with ")". An array of comma-separated integers must be enclosed by the parentheses. For example, the string "(5,6,7)" can be parsed into a shape tuple of value `(5, 6, 7)`. Note that white spaces are not allowed between the parentheses and could lead to undefined behavior. An empty array, i.e. "()", however, is allowed and fully supported.
 
@@ -76,7 +76,7 @@ The cross-referencing mechanism allows object options in the input file to _refe
 ```
 In the above example, the object of type `ImplicitUpdate` references an implicit model named "implicit_rate" and a solver named "newton".
 
-In addition to directly referencing objects by their names, a few special types support more flexible referencing mechanisms. `torch::Tensor`, `Tensor`, and all primitive tensor types with fixed base shapes such as `Scalar`, `SR2`, etc, can be referenced either by value or by name.
+In addition to directly referencing objects by their names, a few special types support more flexible referencing mechanisms. `ATensor`, `Tensor`, and all primitive tensor types with fixed base shapes such as `Scalar`, `SR2`, etc, can be referenced either by value or by name.
 
 When a tensor is referenced by value, the parser will parse the input option value as a numeric literal and return a tensor filled with the specified value; when a tensor is referenced by name, the parser will look for and return the object under the `[Tensors]` section with the given name.
 

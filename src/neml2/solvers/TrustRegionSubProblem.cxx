@@ -23,7 +23,12 @@
 // THE SOFTWARE.
 
 #include "neml2/solvers/TrustRegionSubProblem.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/functions/bmm.h"
+#include "neml2/tensors/functions/bmv.h"
+#include "neml2/tensors/functions/bvv.h"
+#include "neml2/tensors/functions/sqrt.h"
+#include "neml2/tensors/functions/pow.h"
+#include "neml2/tensors/functions/linalg/solve.h"
 
 namespace neml2
 {
@@ -38,8 +43,8 @@ TrustRegionSubProblem::reinit(const NonlinearSystem::Res<true> & r,
                               const Scalar & delta)
 {
   _delta = delta;
-  _JJ = math::bmm(J.base_transpose(0, 1), J);
-  _Jr = math::bmv(J.base_transpose(0, 1), r);
+  _JJ = bmm(J.base_transpose(0, 1), J);
+  _Jr = bmv(J.base_transpose(0, 1), r);
 }
 
 void
@@ -53,20 +58,20 @@ TrustRegionSubProblem::assemble(NonlinearSystem::Res<false> * residual,
                                 NonlinearSystem::Jac<false> * Jacobian)
 {
   auto p = -preconditioned_direction(_s);
-  auto np = math::sqrt(math::bvv(p, p));
+  auto np = sqrt(bvv(p, p));
 
   if (residual)
-    *residual = NonlinearSystem::Res<false>(1.0 / np - 1.0 / math::sqrt(2.0 * _delta));
+    *residual = NonlinearSystem::Res<false>(1.0 / np - 1.0 / sqrt(2.0 * _delta));
 
   if (Jacobian)
-    *Jacobian = NonlinearSystem::Jac<false>(1.0 / math::pow(np, 3.0) *
-                                            math::bvv(p, preconditioned_solve(_s, p)));
+    *Jacobian =
+        NonlinearSystem::Jac<false>(1.0 / pow(np, 3.0) * bvv(p, preconditioned_solve(_s, p)));
 }
 
 Tensor
 TrustRegionSubProblem::preconditioned_solve(const Scalar & s, const Tensor & v) const
 {
-  return math::linalg::solve(_JJ + s * Tensor::identity(v.base_sizes()[0], v.options()), v);
+  return linalg::solve(_JJ + s * Tensor::identity(v.base_sizes()[0], v.options()), v);
 }
 
 Tensor

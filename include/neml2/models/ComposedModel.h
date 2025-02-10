@@ -25,9 +25,7 @@
 #pragma once
 
 #include "neml2/models/Model.h"
-#include "neml2/base/DependencyResolver.h"
-
-#include <future>
+#include "neml2/models/DependencyResolver.h"
 
 namespace neml2
 {
@@ -43,6 +41,10 @@ public:
 
   std::map<std::string, Model *>
   named_nonlinear_parameter_models(bool recursive = false) const override;
+
+  bool defines_values() const override { return _defines_value; }
+  bool defines_derivatives() const override { return _defines_dvalue; }
+  bool defines_second_derivatives() const override { return _defines_d2value; }
 
   bool is_jit_enabled() const override { return _jit; }
 
@@ -63,5 +65,12 @@ private:
 
   /// Whether JIT is enabled
   bool _jit;
+
+  ///@{
+  /// Whether this model defines the value, first derivative, and second derivative
+  bool _defines_value;
+  bool _defines_dvalue;
+  bool _defines_d2value;
+  ///@}
 };
 } // namespace neml2

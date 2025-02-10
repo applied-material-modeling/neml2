@@ -45,7 +45,7 @@ public:
 
   void setup() override;
 
-  void diagnose(std::vector<Diagnosis> &) const override;
+  void diagnose() const override;
 
 protected:
   void update_forces() override;

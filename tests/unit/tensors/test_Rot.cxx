@@ -40,18 +40,18 @@ TEST_CASE("Rot", "[tensors]")
     SECTION("identity")
     {
       auto a = Rot::identity(DTO);
-      auto b = Vec(torch::rand(utils::add_shapes(B, 3), DTO));
+      auto b = Vec(at::rand(utils::add_shapes(B, 3), DTO));
       // Rotate by an identity rotation should be a no-op
-      REQUIRE(torch::allclose(b.rotate(a), b));
+      REQUIRE(at::allclose(b.rotate(a), b));
     }
 
     SECTION("inverse")
     {
       auto a = Rot::fill(1.2, 3.1, -2.1, DTO);
       auto ab = a.batch_expand(B);
-      auto b = Vec(torch::rand(utils::add_shapes(B, 3), DTO));
-      REQUIRE(torch::allclose(b.rotate(a).rotate(a.inverse()), b));
-      REQUIRE(torch::allclose(b.rotate(ab).rotate(ab.inverse()), b.batch_expand(B)));
+      auto b = Vec(at::rand(utils::add_shapes(B, 3), DTO));
+      REQUIRE(at::allclose(b.rotate(a).rotate(a.inverse()), b));
+      REQUIRE(at::allclose(b.rotate(ab).rotate(ab.inverse()), b.batch_expand(B)));
     }
 
     SECTION("euler_rodrigues")
@@ -67,8 +67,8 @@ TEST_CASE("Rot", "[tensors]")
                         0.4330127,
                         0.8660254,
                         DTO);
-      REQUIRE(torch::allclose(a.euler_rodrigues(), A));
-      REQUIRE(torch::allclose(a.batch_expand(B).euler_rodrigues(), A.batch_expand(B)));
+      REQUIRE(at::allclose(a.euler_rodrigues(), A));
+      REQUIRE(at::allclose(a.batch_expand(B).euler_rodrigues(), A.batch_expand(B)));
     }
 
     SECTION("deuler_rodrigues")
@@ -77,8 +77,8 @@ TEST_CASE("Rot", "[tensors]")
       auto apply = [](const Tensor & x) { return Rot(x).euler_rodrigues(); };
       auto dA_da = finite_differencing_derivative(apply, a);
 
-      REQUIRE(torch::allclose(a.deuler_rodrigues(), dA_da, 1.0e-4));
-      REQUIRE(torch::allclose(a.batch_expand(B).deuler_rodrigues(), dA_da.batch_expand(B), 1.0e-4));
+      REQUIRE(at::allclose(a.deuler_rodrigues(), dA_da, 1.0e-4));
+      REQUIRE(at::allclose(a.batch_expand(B).deuler_rodrigues(), dA_da.batch_expand(B), 1.0e-4));
     }
 
     SECTION("shadow")
@@ -89,15 +89,15 @@ TEST_CASE("Rot", "[tensors]")
 
       SECTION("defintion")
       {
-        REQUIRE(torch::allclose(a.shadow(), b));
-        REQUIRE(torch::allclose(ab.shadow(), b));
+        REQUIRE(at::allclose(a.shadow(), b));
+        REQUIRE(at::allclose(ab.shadow(), b));
       }
-      SECTION("concept") { REQUIRE(torch::allclose(a.euler_rodrigues(), b.euler_rodrigues())); }
+      SECTION("concept") { REQUIRE(at::allclose(a.euler_rodrigues(), b.euler_rodrigues())); }
       SECTION("derivative")
       {
         auto apply = [](const Tensor & x) { return Rot(x).shadow(); };
         auto dA = finite_differencing_derivative(apply, a);
-        REQUIRE(torch::allclose(a.dshadow(), dA, 1.0e-4));
+        REQUIRE(at::allclose(a.dshadow(), dA, 1.0e-4));
       }
     }
 
@@ -111,10 +111,10 @@ TEST_CASE("Rot", "[tensors]")
       auto vb = v.batch_expand(B);
       auto vpb = vp.batch_expand(B);
 
-      REQUIRE(torch::allclose(v.rotate(r), vp));
-      REQUIRE(torch::allclose(vb.rotate(rb), vpb));
-      REQUIRE(torch::allclose(v.rotate(rb), vpb));
-      REQUIRE(torch::allclose(vb.rotate(r), vpb));
+      REQUIRE(at::allclose(v.rotate(r), vp));
+      REQUIRE(at::allclose(vb.rotate(rb), vpb));
+      REQUIRE(at::allclose(v.rotate(rb), vpb));
+      REQUIRE(at::allclose(vb.rotate(r), vpb));
     }
 
     SECTION("drotate")
@@ -129,10 +129,10 @@ TEST_CASE("Rot", "[tensors]")
       auto dvp_dr = finite_differencing_derivative(apply, r);
       auto dvp_drb = dvp_dr.batch_expand(B);
 
-      REQUIRE(torch::allclose(v.drotate(r), dvp_dr, 1e-4));
-      REQUIRE(torch::allclose(vb.drotate(rb), dvp_drb, 1e-4));
-      REQUIRE(torch::allclose(v.drotate(rb), dvp_drb, 1e-4));
-      REQUIRE(torch::allclose(vb.drotate(r), dvp_drb, 1e-4));
+      REQUIRE(at::allclose(v.drotate(r), dvp_dr, 1e-4));
+      REQUIRE(at::allclose(vb.drotate(rb), dvp_drb, 1e-4));
+      REQUIRE(at::allclose(v.drotate(rb), dvp_drb, 1e-4));
+      REQUIRE(at::allclose(vb.drotate(r), dvp_drb, 1e-4));
     }
 
     SECTION("drotate_self")
@@ -143,7 +143,7 @@ TEST_CASE("Rot", "[tensors]")
       auto apply = [r](const Rot & x) { return x.rotate(r); };
       auto dvp_dr = finite_differencing_derivative(apply, v);
 
-      REQUIRE(torch::allclose(v.drotate_self(r), dvp_dr, 1e-4));
+      REQUIRE(at::allclose(v.drotate_self(r), dvp_dr, 1e-4));
     }
   }
 
@@ -152,9 +152,9 @@ TEST_CASE("Rot", "[tensors]")
     auto a = Rot::fill(0.13991834, 0.18234513, 0.85043991, DTO);
     auto b = Rot::fill(-0.32366123, -0.15961206, 0.86937009, DTO);
     auto c = Rot::fill(1.48720771, -2.26086024, 1.02025338, DTO);
-    REQUIRE(torch::allclose(a * b, c));
-    REQUIRE(torch::allclose(a.batch_expand(B) * b, c.batch_expand(B)));
-    REQUIRE(torch::allclose(a * b.batch_expand(B), c.batch_expand(B)));
-    REQUIRE(torch::allclose(a.batch_expand(B) * b.batch_expand(B), c.batch_expand(B)));
+    REQUIRE(at::allclose(a * b, c));
+    REQUIRE(at::allclose(a.batch_expand(B) * b, c.batch_expand(B)));
+    REQUIRE(at::allclose(a * b.batch_expand(B), c.batch_expand(B)));
+    REQUIRE(at::allclose(a.batch_expand(B) * b.batch_expand(B), c.batch_expand(B)));
   }
 }

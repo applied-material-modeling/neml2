@@ -31,7 +31,7 @@ using namespace neml2;
 
 TEST_CASE("R3", "[tensors]")
 {
-  torch::manual_seed(42);
+  at::manual_seed(42);
   const auto & DTO = default_tensor_options();
 
   TensorShape B = {5, 3, 1, 2}; // batch shape
@@ -53,42 +53,40 @@ TEST_CASE("R3", "[tensors]")
               v = 1.0;
             else if (std::find(n.begin(), n.end(), TensorShape{i, j, k}) != n.end())
               v = -1.0;
-            REQUIRE(torch::allclose(lc(i, j, k), Scalar(v, DTO)));
+            REQUIRE(at::allclose(lc(i, j, k), Scalar(v, DTO)));
           }
     }
 
     SECTION("operator()")
     {
-      auto a = R3(torch::rand(utils::add_shapes(B, 3, 3, 3), DTO));
+      auto a = R3(at::rand(utils::add_shapes(B, 3, 3, 3), DTO));
       for (Size i = 0; i < 3; i++)
         for (Size j = 0; j < 3; j++)
           for (Size k = 0; k < 3; k++)
-            REQUIRE(torch::allclose(a(i, j, k), a.index({indexing::Ellipsis, i, j, k})));
+            REQUIRE(at::allclose(a(i, j, k), a.index({indexing::Ellipsis, i, j, k})));
     }
 
     SECTION("contract_k")
     {
-      auto T = R3(torch::tensor({{{0.2051969, 0.01953205, 0.46272625},
-                                  {0.76724114, 0.12504687, 0.66948082},
-                                  {0.13071273, 0.46393329, 0.36774737}},
-                                 {{0.37293691, 0.4930683, 0.14386892},
-                                  {0.75014405, 0.07264975, 0.36369278},
-                                  {0.22465346, 0.08398304, 0.75035687}},
-                                 {{0.34658198, 0.69665782, 0.38999866},
-                                  {0.18213956, 0.48116027, 0.9926462},
-                                  {0.4324153, 0.40872475, 0.93650606}}},
-                                DTO),
-                  0);
+      auto T = R3::create({{{0.2051969, 0.01953205, 0.46272625},
+                            {0.76724114, 0.12504687, 0.66948082},
+                            {0.13071273, 0.46393329, 0.36774737}},
+                           {{0.37293691, 0.4930683, 0.14386892},
+                            {0.75014405, 0.07264975, 0.36369278},
+                            {0.22465346, 0.08398304, 0.75035687}},
+                           {{0.34658198, 0.69665782, 0.38999866},
+                            {0.18213956, 0.48116027, 0.9926462},
+                            {0.4324153, 0.40872475, 0.93650606}}},
+                          DTO);
       auto v = Vec::fill(0.81256887, 0.31300369, 0.01151858, DTO);
-      auto res = R2(torch::tensor({{0.17818016, 0.67028787, 0.25566185},
-                                   {0.45902629, 0.63647256, 0.21747645},
-                                   {0.50417043, 0.31003975, 0.49008678}},
-                                  DTO));
-      REQUIRE(torch::allclose(T.contract_k(v), res));
-      REQUIRE(torch::allclose(T.contract_k(v.batch_expand(B)), res.batch_expand(B)));
-      REQUIRE(torch::allclose(T.batch_expand(B).contract_k(v), res.batch_expand(B)));
-      REQUIRE(
-          torch::allclose(T.batch_expand(B).contract_k(v.batch_expand(B)), res.batch_expand(B)));
+      auto res = R2::create({{0.17818016, 0.67028787, 0.25566185},
+                             {0.45902629, 0.63647256, 0.21747645},
+                             {0.50417043, 0.31003975, 0.49008678}},
+                            DTO);
+      REQUIRE(at::allclose(T.contract_k(v), res));
+      REQUIRE(at::allclose(T.contract_k(v.batch_expand(B)), res.batch_expand(B)));
+      REQUIRE(at::allclose(T.batch_expand(B).contract_k(v), res.batch_expand(B)));
+      REQUIRE(at::allclose(T.batch_expand(B).contract_k(v.batch_expand(B)), res.batch_expand(B)));
     }
   }
 }

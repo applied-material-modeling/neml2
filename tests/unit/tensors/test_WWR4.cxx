@@ -31,7 +31,7 @@ using namespace neml2;
 
 TEST_CASE("WWR4", "[tensors]")
 {
-  torch::manual_seed(42);
+  at::manual_seed(42);
   const auto & DTO = default_tensor_options();
 
   TensorShape B = {5, 3, 1, 2}; // batch shape
@@ -42,19 +42,19 @@ TEST_CASE("WWR4", "[tensors]")
     {
       SECTION("from R4")
       {
-        auto u = R4(torch::rand(utils::add_shapes(B, 3, 3, 3, 3), DTO));
+        auto u = R4(at::rand(utils::add_shapes(B, 3, 3, 3, 3), DTO));
         // Symmetrize it
         auto s = (u - u.transpose(0, 1) - u.transpose(2, 3) + u.transpose_minor()) / 4.0;
 
         // Converting to WWR4 should be equivalent to symmetrization
-        REQUIRE(torch::allclose(WWR4(s), WWR4(u)));
+        REQUIRE(at::allclose(WWR4(s), WWR4(u)));
       }
     }
 
     SECTION("identity")
     {
       auto a = WWR4::identity(DTO);
-      REQUIRE(torch::allclose(a, torch::eye(3, DTO)));
+      REQUIRE(at::allclose(a, at::eye(3, DTO)));
     }
   }
 }

@@ -59,15 +59,6 @@ def_VecBase(py::class_<Derived> & c)
       .def("rotate", py::overload_cast<const Rot &>(&Derived::rotate, py::const_))
       .def("drotate", py::overload_cast<const Rot &>(&Derived::drotate, py::const_));
 
-  // Templated methods
-  // These methods are special because the argument could be anything derived from VecBase, so we
-  // need to bind every possible instantiation.
-#define VECBASE_DEF_VECBASE(T)                                                                     \
-  c.def("dot", [](const Derived * self, const T & other) { return self->dot(other); })             \
-      .def("cross", [](const Derived * self, const T & other) { return self->cross(other); })      \
-      .def("outer", [](const Derived * self, const T & other) { return self->outer(other); })
-  FOR_ALL_VECBASE(VECBASE_DEF_VECBASE);
-
   // Static methods
   c.def_static(
        "fill",

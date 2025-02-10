@@ -24,8 +24,8 @@
 
 #include "neml2/models/solid_mechanics/crystal_plasticity/FixOrientation.h"
 
-#include "neml2/tensors/tensors.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/Rot.h"
+#include "neml2/tensors/functions/where.h"
 
 namespace neml2
 {
@@ -63,22 +63,19 @@ FixOrientation::FixOrientation(const OptionSet & options)
 }
 
 void
-FixOrientation::set_value(bool out, bool dout_din, bool d2out_din2)
+FixOrientation::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
-
   if (out)
-    _output = math::where(
+    _output = where(
         (Rot(_input).norm_sq() < _threshold).unsqueeze(-1), Rot(_input), Rot(_input).shadow());
 
   if (dout_din)
     if (_input.is_dependent())
     {
       const auto I = R2::identity(_input.options());
-      _output.d(_input) =
-          math::where((Rot(_input).norm_sq() < _threshold).unsqueeze(-1).unsqueeze(-1),
-                      I,
-                      Rot(_input).dshadow());
+      _output.d(_input) = where((Rot(_input).norm_sq() < _threshold).unsqueeze(-1).unsqueeze(-1),
+                                I,
+                                Rot(_input).dshadow());
     }
 }
 } // namespace neml2

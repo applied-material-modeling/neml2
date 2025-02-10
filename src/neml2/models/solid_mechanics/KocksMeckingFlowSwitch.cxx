@@ -23,7 +23,10 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/KocksMeckingFlowSwitch.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/functions/pow.h"
+#include "neml2/tensors/functions/tanh.h"
+#include "neml2/tensors/functions/cosh.h"
 
 namespace neml2
 {
@@ -39,7 +42,7 @@ KocksMeckingFlowSwitch::expected_options()
                   "greater than the threshold use the rate dependent flow rule.  This version uses "
                   "a soft switch between the models, based on a tanh sigmoid function.";
 
-  options.set_parameter<CrossRef<Scalar>>("g0");
+  options.set_parameter<TensorName>("g0");
   options.set("g0").doc() = "Critical value of activation energy";
 
   options.set_input("activation_energy") = VariableName(FORCES, "g");
@@ -71,11 +74,9 @@ KocksMeckingFlowSwitch::KocksMeckingFlowSwitch(const OptionSet & options)
 }
 
 void
-KocksMeckingFlowSwitch::set_value(bool out, bool dout_din, bool d2out_din2)
+KocksMeckingFlowSwitch::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert(!d2out_din2, "Second derivatives not implemented");
-
-  auto sig = (math::tanh(_sharp * (_g - _g0)) + 1.0) / 2.0;
+  auto sig = (tanh(_sharp * (_g - _g0)) + 1.0) / 2.0;
 
   if (out)
     _gamma_dot = sig * _rd_flow + (1.0 - sig) * _ri_flow;
@@ -85,7 +86,7 @@ KocksMeckingFlowSwitch::set_value(bool out, bool dout_din, bool d2out_din2)
     _gamma_dot.d(_rd_flow) = sig;
     _gamma_dot.d(_ri_flow) = 1.0 - sig;
 
-    auto partial = 0.5 * _sharp * math::pow(1.0 / math::cosh(_sharp * (_g - _g0)), 2.0);
+    auto partial = 0.5 * _sharp * pow(1.0 / cosh(_sharp * (_g - _g0)), 2.0);
     auto deriv = partial * (_rd_flow - _ri_flow);
 
     if (_g.is_dependent())

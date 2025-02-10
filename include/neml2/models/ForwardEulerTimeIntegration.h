@@ -28,6 +28,8 @@
 
 namespace neml2
 {
+class Scalar;
+
 template <typename T>
 class ForwardEulerTimeIntegration : public Model
 {
@@ -36,7 +38,7 @@ public:
 
   ForwardEulerTimeIntegration(const OptionSet & options);
 
-  void diagnose(std::vector<Diagnosis> & diagnoses) const override;
+  void diagnose() const override;
 
 private:
   const VariableName _var_name;
@@ -60,8 +62,4 @@ protected:
   /// Old time
   const Variable<Scalar> & _tn;
 };
-
-typedef ForwardEulerTimeIntegration<Scalar> ScalarForwardEulerTimeIntegration;
-typedef ForwardEulerTimeIntegration<Vec> VecForwardEulerTimeIntegration;
-typedef ForwardEulerTimeIntegration<SR2> SR2ForwardEulerTimeIntegration;
 } // namespace neml2

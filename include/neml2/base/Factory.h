@@ -21,19 +21,20 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+
 #pragma once
 
 #include <filesystem>
+#include <iostream>
+
+#include "neml2/misc/errors.h"
+#include "neml2/base/Settings.h"
 #include "neml2/base/NEML2Object.h"
-#include "neml2/misc/error.h"
 #include "neml2/base/OptionCollection.h"
-#include "neml2/base/DiagnosticsInterface.h"
 
 namespace neml2
 {
 // Forward decl
-class Model;
-class Driver;
 class Settings;
 
 /**
@@ -56,42 +57,6 @@ void load_input(const std::filesystem::path & path, const std::string & addition
  * @param additional_input Additional cliargs to pass to the parser
  */
 void reload_input(const std::filesystem::path & path, const std::string & additional_input = "");
-
-/**
- * @brief A convenient function to manufacture a neml2::Model
- *
- * The input file must have already been parsed and loaded.
- *
- * @param mname Name of the model
- * @param force_create Whether to force create the model even if one has already been manufactured
- */
-Model & get_model(const std::string & mname, bool force_create = true);
-
-/**
- * @brief A convenient function to load an input file and get a model
- *
- * @param path Path to the input file to be parsed
- * @param mname Name of the model
- */
-Model & load_model(const std::filesystem::path & path, const std::string & mname);
-
-/**
- * @brief Similar to neml2::load_model, but additionally clear the Factory before loading the model,
- * therefore all previously loaded models become dangling.
- *
- * @param path Path to the input file to be parsed
- * @param mname Name of the model
- */
-Model & reload_model(const std::filesystem::path & path, const std::string & mname);
-
-/**
- * @brief A convenient function to manufacture a neml2::Driver
- *
- * The input file must have already been parsed and loaded.
- *
- * @param dname Name of the driver
- */
-Driver & get_driver(const std::string & dname);
 
 /**
  * The factory is responsible for:
@@ -212,12 +177,10 @@ Factory::get_object_ptr(const std::string & section,
 
         // Check for object type
         auto obj = std::dynamic_pointer_cast<T>(neml2_obj);
-        neml_assert(obj != nullptr,
-                    "Found object named ",
-                    name,
-                    " under section ",
-                    section,
-                    ". But dynamic cast failed. Did you specify the correct object type?");
+        if (!obj)
+          throw NEMLException(
+              "Found object named " + name + " under section " + section +
+              ". But dynamic cast failed. Did you specify the correct object type?");
 
         return obj;
       }
@@ -232,14 +195,14 @@ Factory::get_object_ptr(const std::string & section,
       break;
     }
 
-  neml_assert(factory._objects.count(section) && factory._objects.at(section).count(name),
-              "Failed to get object named ",
-              name,
-              " under section ",
-              section);
+  if (!factory._objects.count(section) || !factory._objects.at(section).count(name))
+    throw NEMLException("Failed to get object named " + name + " under section " + section);
 
   auto obj = std::dynamic_pointer_cast<T>(factory._objects[section][name].back());
-  neml_assert(obj != nullptr, "Internal error: Factory failed to create object ", name);
+
+  if (!obj)
+    throw NEMLException("Internal error: Factory failed to create object " + name);
+
   return obj;
 }
 

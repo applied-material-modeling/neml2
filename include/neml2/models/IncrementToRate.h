@@ -26,10 +26,13 @@
 
 #include "neml2/models/Model.h"
 
-#include "neml2/tensors/R2.h"
-
 namespace neml2
 {
+class Scalar;
+class Vec;
+class SR2;
+class R2;
+
 template <typename T>
 class IncrementToRate : public Model
 {
@@ -53,9 +56,4 @@ protected:
   /// Variable rate
   Variable<T> & _dv_dt;
 };
-
-typedef IncrementToRate<R2> R2IncrementToRate;
-typedef IncrementToRate<Scalar> ScalarIncrementToRate;
-typedef IncrementToRate<SR2> SR2IncrementToRate;
-typedef IncrementToRate<Vec> VecIncrementToRate;
 } // namespace neml2

@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "SpatialVelocityDriver.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {
@@ -39,7 +40,7 @@ SpatialVelocityDriver::expected_options()
   options.set<VariableName>("spatial_velocity_gradient") =
       VariableName(FORCES, "spatial_velocity_gradient");
   options.set("spatial_velocity_gradient").doc() = "Spatial velocity gradient";
-  options.set<CrossRef<torch::Tensor>>("prescribed_spatial_velocity_gradient");
+  options.set<TensorName>("prescribed_spatial_velocity_gradient");
   options.set("prescribed_spatial_velocity_gradient").doc() =
       "Prescribed spatial velocity gradient";
 
@@ -49,23 +50,21 @@ SpatialVelocityDriver::expected_options()
 SpatialVelocityDriver::SpatialVelocityDriver(const OptionSet & options)
   : TransientDriver(options),
     _driving_force_name(options.get<VariableName>("spatial_velocity_gradient")),
-    _driving_force(R2(options.get<CrossRef<torch::Tensor>>("prescribed_spatial_velocity_gradient")))
+    _driving_force(R2(options.get<TensorName>("prescribed_spatial_velocity_gradient")))
 {
 }
 
 void
-SpatialVelocityDriver::diagnose(std::vector<Diagnosis> & diagnoses) const
+SpatialVelocityDriver::diagnose() const
 {
-  TransientDriver::diagnose(diagnoses);
+  TransientDriver::diagnose();
 
-  diagnostic_assert(diagnoses,
-                    _driving_force.batch_dim() >= 1,
+  diagnostic_assert(_driving_force.batch_dim() >= 1,
                     "Input spatial velocity gradient should have at "
                     "least one batch dimension for time steps but instead has batch dimension ",
                     _driving_force.batch_dim());
 
-  diagnostic_assert(diagnoses,
-                    _time.batch_size(0) == _driving_force.batch_size(0),
+  diagnostic_assert(_time.batch_size(0) == _driving_force.batch_size(0),
                     "Input spatial velocity gradient and time should "
                     "have the same number of time steps. The input time has ",
                     _time.batch_size(0),

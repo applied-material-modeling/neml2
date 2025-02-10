@@ -22,9 +22,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "VTestParser.h"
-
 #include <fstream>
+
+#include "neml2/misc/defaults.h"
+#include "neml2/misc/assertions.h"
+#include "VTestParser.h"
 
 using namespace neml2;
 
@@ -41,7 +43,7 @@ VTestParser::parse()
   neml_assert(file.is_open(), "Unable to open file ", _name);
 
   std::string buffer;
-  std::vector<std::vector<double>> scalar_buffers;
+  std::vector<std::vector<Real>> scalar_buffers;
 
   // Simple state machine to figure out where we are in the file
   int state = 0;
@@ -81,5 +83,5 @@ VTestParser::parse()
 
   // Convert buffers to tensors
   for (size_t i = 0; i < _headers.size(); i++)
-    _data[_headers[i]] = torch::tensor(scalar_buffers[i], default_tensor_options());
+    _data[_headers[i]] = Tensor::create(scalar_buffers[i], 1, default_tensor_options());
 }

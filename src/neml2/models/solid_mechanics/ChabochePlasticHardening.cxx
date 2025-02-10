@@ -23,8 +23,11 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/ChabochePlasticHardening.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/functions/pow.h"
+#include "neml2/tensors/functions/log.h"
 
 namespace neml2
 {
@@ -40,10 +43,10 @@ ChabochePlasticHardening::expected_options()
       "recovery, and static recovery.  \\f$ A \\f$ and \\f$ a \\f$ are additional material "
       "parameters.";
 
-  options.set_parameter<CrossRef<Scalar>>("A");
+  options.set_parameter<TensorName>("A");
   options.set("A").doc() = "Static recovery prefactor";
 
-  options.set_parameter<CrossRef<Scalar>>("a");
+  options.set_parameter<TensorName>("a");
   options.set("a").doc() = "Static recovery exponent";
 
   return options;
@@ -57,17 +60,14 @@ ChabochePlasticHardening::ChabochePlasticHardening(const OptionSet & options)
 }
 
 void
-ChabochePlasticHardening::set_value(bool out, bool dout_din, bool d2out_din2)
+ChabochePlasticHardening::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2,
-                  "ChabochePlasticHardening model doesn't implement second derivatives.");
-
   // The effective stress
   auto s = SR2(_X).norm(machine_precision());
   // The part that's proportional to the plastic strain rate
   auto g_term = 2.0 / 3.0 * _C * _NM - _g * _X;
   // The static recovery term
-  auto s_term = -_A * math::pow(s, _a - 1) * _X;
+  auto s_term = -_A * pow(s, _a - 1) * _X;
 
   if (out)
     _X_dot = g_term * _gamma_dot + s_term;
@@ -84,7 +84,7 @@ ChabochePlasticHardening::set_value(bool out, bool dout_din, bool d2out_din2)
 
     if (_X.is_dependent())
       _X_dot.d(_X) = -_g * _gamma_dot * I -
-                     _A * math::pow(s, _a - 3) * ((_a - 1) * SR2(_X).outer(SR2(_X)) + s * s * I);
+                     _A * pow(s, _a - 3) * ((_a - 1) * SR2(_X).outer(SR2(_X)) + s * s * I);
 
     if (const auto * const C = nl_param("C"))
       _X_dot.d(*C) = 2.0 / 3.0 * _NM * _gamma_dot;
@@ -93,10 +93,10 @@ ChabochePlasticHardening::set_value(bool out, bool dout_din, bool d2out_din2)
       _X_dot.d(*g) = -_X * _gamma_dot;
 
     if (const auto * const A = nl_param("A"))
-      _X_dot.d(*A) = -math::pow(s, _a - 1) * _X;
+      _X_dot.d(*A) = -pow(s, _a - 1) * _X;
 
     if (const auto * const a = nl_param("a"))
-      _X_dot.d(*a) = -_A * _X * math::pow(s, _a - 1) * math::log(s);
+      _X_dot.d(*a) = -_A * _X * pow(s, _a - 1) * log(s);
   }
 }
 

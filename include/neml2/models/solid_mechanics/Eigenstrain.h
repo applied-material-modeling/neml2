@@ -25,10 +25,11 @@
 #pragma once
 
 #include "neml2/models/Model.h"
-#include "neml2/tensors/SR2.h"
 
 namespace neml2
 {
+class SR2;
+
 class Eigenstrain : public Model
 {
 public:

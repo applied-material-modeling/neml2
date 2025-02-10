@@ -24,24 +24,24 @@
 
 #include "neml2/tensors/R2.h"
 
-#include "neml2/misc/math.h"
-
 #include "neml2/tensors/Rot.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/WR2.h"
 #include "neml2/tensors/R4.h"
 #include "neml2/tensors/SSR4.h"
 
+#include "neml2/tensors/mandel_notation.h"
+
 namespace neml2
 {
 
 R2::R2(const SR2 & S)
-  : R2(math::mandel_to_full(S))
+  : R2(mandel_to_full(S))
 {
 }
 
 R2::R2(const WR2 & W)
-  : R2(math::skew_to_full(W))
+  : R2(skew_to_full(W))
 {
 }
 
@@ -51,8 +51,8 @@ R2::R2(const Rot & r)
 }
 
 R4
-R2::identity_map(const torch::TensorOptions & options)
+R2::identity_map(const TensorOptions & options)
 {
-  return torch::eye(9, options).view({3, 3, 3, 3});
+  return R4(at::eye(9, options).view({3, 3, 3, 3}));
 }
 } // namespace neml2

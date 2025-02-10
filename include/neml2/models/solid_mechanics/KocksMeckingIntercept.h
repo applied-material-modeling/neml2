@@ -28,6 +28,8 @@
 
 namespace neml2
 {
+class Scalar;
+
 /**
  * @brief A scalar-valued parameter defined by (C-B) / A
  */

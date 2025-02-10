@@ -25,7 +25,6 @@
 #pragma once
 
 #include "neml2/base/OptionSet.h"
-#include "neml2/base/Settings.h"
 
 namespace neml2
 {
@@ -38,6 +37,8 @@ namespace neml2
 class OptionCollection
 {
 public:
+  OptionCollection();
+
   /// Get global settings
   OptionSet & settings() { return _settings; }
 
@@ -58,7 +59,7 @@ public:
 
 private:
   /// Global settings under the [Settings] section
-  OptionSet _settings = Settings::expected_options();
+  OptionSet _settings;
 
   /// Collection of options for all manufacturable objects
   std::map<std::string, std::map<std::string, OptionSet>> _data;

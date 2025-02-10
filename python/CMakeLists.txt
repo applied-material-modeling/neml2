@@ -6,27 +6,32 @@ if(NOT Torch_PYTHON_BINDING)
 endif()
 
 # Macro for defining a submodule with given source files
-macro(add_submodule mname msrcs)
+macro(add_submodule mname msrcs neml2libs)
   pybind11_add_module(${mname} MODULE ${msrcs})
   set_target_properties(${mname} PROPERTIES LIBRARY_OUTPUT_DIRECTORY neml2)
   set_target_properties(${mname} PROPERTIES INSTALL_RPATH "${EXEC_DIR}/lib;${Torch_LINK_DIRECTORIES}")
   target_include_directories(${mname} PUBLIC ${NEML2_SOURCE_DIR})
   target_link_libraries(${mname} PRIVATE pybind11::headers)
-  target_link_libraries(${mname} PUBLIC neml2 ${Torch_PYTHON_BINDING})
+  target_link_libraries(${mname} PUBLIC ${neml2libs} ${Torch_PYTHON_BINDING})
   install(TARGETS ${mname} LIBRARY DESTINATION .)
 endmacro()
 
 # Actually define the submodules
-add_submodule(core neml2/core.cxx)
-add_submodule(reserved neml2/reserved.cxx)
-add_submodule(math neml2/math.cxx)
-add_submodule(crystallography neml2/crystallography.cxx)
+add_submodule(core neml2/core.cxx "neml2_runtime")
+set_target_properties(core PROPERTIES LINK_WHAT_YOU_USE TRUE)
+add_submodule(reserved neml2/reserved.cxx "neml2_base")
+add_submodule(math neml2/math.cxx "neml2_tensor")
+add_submodule(crystallography neml2/crystallography.cxx "neml2_model")
 file(GLOB_RECURSE tensors_srcs neml2/tensors/*.cxx)
-add_submodule(tensors "${tensors_srcs}")
+add_submodule(tensors "${tensors_srcs}" "neml2_tensor")
+
+# Maintain a list of all the submodules
+set(NEML2_PYTHON_MODULES core reserved math tensors crystallography)
+set(NEML2_PYTHON_MODULES ${NEML2_PYTHON_MODULES} PARENT_SCOPE)
 
 # Extract stub
 add_custom_target(python-stub ALL
-  DEPENDS core reserved math tensors crystallography
+  DEPENDS ${NEML2_PYTHON_MODULES}
   WORKING_DIRECTORY ${NEML2_BINARY_DIR}/python
   COMMAND PYTHONPATH=. pybind11-stubgen -o . neml2
   VERBATIM

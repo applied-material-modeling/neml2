@@ -24,7 +24,8 @@
 
 #include "ModelUnitTest.h"
 #include "utils.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/functions/jacrev.h"
+#include "neml2/misc/assertions.h"
 
 #include <torch/cuda.h>
 
@@ -38,7 +39,7 @@ set_variable(ValueMap & storage,
              const std::string & option_vals)
 {
   const auto vars = options.get<std::vector<VariableName>>(option_vars);
-  const auto vals = options.get<std::vector<CrossRef<T>>>(option_vals);
+  const auto vals = options.get<std::vector<TensorName>>(option_vals);
   neml_assert(vars.size() == vals.size(),
               "Trying to assign ",
               vals.size(),
@@ -74,9 +75,9 @@ ModelUnitTest::expected_options()
 
 #define OPTION_SET_(T)                                                                             \
   options.set<std::vector<VariableName>>("input_" #T "_names");                                    \
-  options.set<std::vector<CrossRef<T>>>("input_" #T "_values");                                    \
+  options.set<std::vector<TensorName>>("input_" #T "_values");                                     \
   options.set<std::vector<VariableName>>("output_" #T "_names");                                   \
-  options.set<std::vector<CrossRef<T>>>("output_" #T "_values")
+  options.set<std::vector<TensorName>>("output_" #T "_values")
   FOR_ALL_TENSORBASE(OPTION_SET_);
 
   return options;
@@ -113,9 +114,9 @@ ModelUnitTest::run()
 
   if (_check_cuda && torch::cuda::is_available())
   {
-    _model.to(torch::kCUDA);
+    _model.to(kCUDA);
     for (auto && [name, tensor] : _in)
-      _in[name] = tensor.to(torch::kCUDA);
+      _in[name] = tensor.to(kCUDA);
 
     check_all();
   }
@@ -156,7 +157,7 @@ ModelUnitTest::check_value()
   {
     neml_assert(
         out.find(name) != out.end(), "The model is missing the expected output '", name, "'.");
-    neml_assert(torch::allclose(out.at(name).to(torch::kCPU), expected_value, _val_rtol, _val_atol),
+    neml_assert(at::allclose(out.at(name).to(kCPU), expected_value, _val_rtol, _val_atol),
                 "The model gives values that are different from expected for output '",
                 name,
                 "'. The expected values are:\n",
@@ -188,18 +189,17 @@ ModelUnitTest::check_dvalue()
 
       // If the derivative does not exist, the numerical derivative should be zero
       if (!exact.count(yname) || !exact.at(yname).count(xname))
-        neml_assert(
-            torch::allclose(numerical, torch::zeros_like(numerical), _deriv_rtol, _deriv_atol),
-            "The model gives zero derivatives for the output '",
-            yname,
-            "' with respect to '",
-            xname,
-            "', but finite differencing gives:\n",
-            numerical);
+        neml_assert(at::allclose(numerical, at::zeros_like(numerical), _deriv_rtol, _deriv_atol),
+                    "The model gives zero derivatives for the output '",
+                    yname,
+                    "' with respect to '",
+                    xname,
+                    "', but finite differencing gives:\n",
+                    numerical);
       // Otherwise, the numerical derivative should be close to the exact derivative
       else
         neml_assert(
-            torch::allclose(exact.at(yname).at(xname), numerical, _deriv_rtol, _deriv_atol),
+            at::allclose(exact.at(yname).at(xname), numerical, _deriv_rtol, _deriv_atol),
             "The model gives derivatives that are different from finite differencing for output '",
             yname,
             "' with respect to '",
@@ -236,20 +236,20 @@ ModelUnitTest::check_d2value()
         // If the derivative does not exist, the numerical derivative should be zero
         if (!exact.count(yname) || !exact.at(yname).count(x1name) ||
             !exact.at(yname).at(x1name).count(x2name))
-          neml_assert(torch::allclose(
-                          numerical, torch::zeros_like(numerical), _secderiv_rtol, _secderiv_atol),
-                      "The model gives zero second derivatives for the output '",
-                      yname,
-                      "' with respect to '",
-                      x1name,
-                      "' and '",
-                      x2name,
-                      "', but finite differencing gives:\n",
-                      numerical);
+          neml_assert(
+              at::allclose(numerical, at::zeros_like(numerical), _secderiv_rtol, _secderiv_atol),
+              "The model gives zero second derivatives for the output '",
+              yname,
+              "' with respect to '",
+              x1name,
+              "' and '",
+              x2name,
+              "', but finite differencing gives:\n",
+              numerical);
         // Otherwise, the numerical derivative should be close to the exact derivative
         else
           neml_assert(
-              torch::allclose(
+              at::allclose(
                   exact.at(yname).at(x1name).at(x2name), numerical, _secderiv_rtol, _secderiv_atol),
               "The model gives second derivatives that are different from finite "
               "differencing for output "
@@ -271,7 +271,7 @@ ModelUnitTest::check_AD_parameter_derivatives()
 {
   // Turn on AD for parameters
   for (auto && [name, param] : _model.named_parameters())
-    param.requires_grad_(true);
+    param->requires_grad_(true);
 
   // Evaluate the model
   auto out = _model.value(_in);
@@ -281,8 +281,11 @@ ModelUnitTest::check_AD_parameter_derivatives()
   for (const auto & yname : _model.output_axis().variable_names())
     for (auto && [pname, param] : _model.named_parameters())
     {
-      auto deriv = math::jacrev(
-          out[yname], param, /*retain_graph=*/true, /*create_graph=*/false, /*allow_unused=*/true);
+      auto deriv = jacrev(out[yname],
+                          Tensor(*param),
+                          /*retain_graph=*/true,
+                          /*create_graph=*/false,
+                          /*allow_unused=*/true);
       if (deriv.defined())
         exact[yname][pname] = deriv;
     }
@@ -292,17 +295,17 @@ ModelUnitTest::check_AD_parameter_derivatives()
     for (auto && [pname, param] : _model.named_parameters())
     {
       auto numerical = finite_differencing_derivative(
-          [&, &pname = pname](const Tensor & x)
+          [&, &pname = pname, &param = param](const Tensor & x)
           {
-            auto p0 = Tensor(_model.get_parameter(pname)).clone();
+            auto p0 = Tensor(*param).clone();
             _model.set_parameter(pname, x);
             auto out = _model.value(_in)[yname];
             _model.set_parameter(pname, p0);
             return out;
           },
-          param);
+          Tensor(*param));
       if (exact.count(yname) && exact[yname].count(pname))
-        neml_assert(torch::allclose(exact[yname][pname], numerical, _param_rtol, _param_atol),
+        neml_assert(at::allclose(exact[yname][pname], numerical, _param_rtol, _param_atol),
                     "The model gives derivative of output variable '",
                     yname,
                     "' w.r.t. parameter '",
@@ -312,14 +315,13 @@ ModelUnitTest::check_AD_parameter_derivatives()
                     "\nFinite differencing gives:\n",
                     numerical);
       else
-        neml_assert(
-            torch::allclose(numerical, torch::zeros_like(numerical), _param_rtol, _param_atol),
-            "The model gives zero derivative of output variable '",
-            yname,
-            "' w.r.t. parameter '",
-            pname,
-            "', but finite differencing gives:\n",
-            numerical);
+        neml_assert(at::allclose(numerical, at::zeros_like(numerical), _param_rtol, _param_atol),
+                    "The model gives zero derivative of output variable '",
+                    yname,
+                    "' w.r.t. parameter '",
+                    pname,
+                    "', but finite differencing gives:\n",
+                    numerical);
     }
 }
 

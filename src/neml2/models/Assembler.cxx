@@ -23,7 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/models/Assembler.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/functions/cat.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {
@@ -33,7 +34,7 @@ VectorAssembler::assemble_by_variable(const ValueMap & vals_dict) const
   const auto vars = _axis.variable_names();
 
   // We need to know the dtype and device so that undefined tensors can be filled with zeros
-  auto options = torch::TensorOptions();
+  auto options = TensorOptions();
   bool options_defined = false;
 
   // Look up variable values from the given dictionary.
@@ -71,7 +72,7 @@ VectorAssembler::assemble_by_variable(const ValueMap & vals_dict) const
     else
       vals[i] = Tensor::zeros(batch_sizes, _axis.variable_sizes()[i], options);
 
-  return math::base_cat(vals, -1);
+  return base_cat(vals, -1);
 }
 
 ValueMap
@@ -109,7 +110,7 @@ MatrixAssembler::assemble_by_variable(const DerivMap & vals_dict) const
   const auto xvars = _xaxis.variable_names();
 
   // We need to know the dtype and device so that undefined tensors can be filled with zeros
-  auto options = torch::TensorOptions();
+  auto options = TensorOptions();
   bool options_defined = false;
 
   // Assemble columns of each row
@@ -167,7 +168,7 @@ MatrixAssembler::assemble_by_variable(const DerivMap & vals_dict) const
         vals[j] = Tensor::zeros(
             batch_sizes, {_yaxis.variable_sizes()[i], _xaxis.variable_sizes()[j]}, options);
 
-    rows[i] = math::base_cat(vals, -1);
+    rows[i] = base_cat(vals, -1);
   }
 
   // Expand defined tensors with the broadcast batch shape and fill undefined tensors with zeros.
@@ -178,7 +179,7 @@ MatrixAssembler::assemble_by_variable(const DerivMap & vals_dict) const
     else
       rows[i] = Tensor::zeros(batch_sizes, {_yaxis.variable_sizes()[i], _xaxis.size()}, options);
 
-  return math::base_cat(rows, -2);
+  return base_cat(rows, -2);
 }
 
 DerivMap

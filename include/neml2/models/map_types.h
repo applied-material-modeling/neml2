@@ -24,14 +24,6 @@
 
 #pragma once
 
-#include "neml2/models/LabeledAxisAccessor.h"
+#include "neml2/models/map_types_fwd.h"
+#include "neml2/base/LabeledAxisAccessor.h"
 #include "neml2/tensors/Tensor.h"
-
-#include <map>
-
-namespace neml2
-{
-using ValueMap = std::map<LabeledAxisAccessor, Tensor>;
-using DerivMap = std::map<LabeledAxisAccessor, ValueMap>;
-using SecDerivMap = std::map<LabeledAxisAccessor, DerivMap>;
-} // namespace neml2

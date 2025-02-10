@@ -30,6 +30,8 @@
 
 namespace neml2
 {
+class SSR4;
+
 /**
  * @brief Define an isotropoic elasticity tensor in various ways
  */

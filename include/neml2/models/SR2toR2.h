@@ -28,6 +28,9 @@
 
 namespace neml2
 {
+class SR2;
+class R2;
+
 /// Convert symmetric rank two tensor to full
 class SR2toR2 : public Model
 {

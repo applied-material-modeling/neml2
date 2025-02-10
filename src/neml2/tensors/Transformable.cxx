@@ -36,7 +36,7 @@ transform_from_quaternion(const Quaternion & q)
 }
 
 R2
-identity_transform(const torch::TensorOptions & options)
+identity_transform(const TensorOptions & options)
 {
   return R2::identity(options);
 }
@@ -61,7 +61,7 @@ reflection_transform(const Vec & v)
 }
 
 R2
-inversion_transform(const torch::TensorOptions & option)
+inversion_transform(const TensorOptions & option)
 {
   return R2::fill(-1.0, option);
 }

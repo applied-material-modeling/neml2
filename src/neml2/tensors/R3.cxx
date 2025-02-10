@@ -26,18 +26,18 @@
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/Vec.h"
 #include "neml2/tensors/R2.h"
+#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
 
 R3
-R3::levi_civita(const torch::TensorOptions & options)
+R3::levi_civita(const TensorOptions & options)
 {
-  return R3(torch::tensor({{{0, 0, 0}, {0, 0, 1}, {0, -1, 0}},
-                           {{0, 0, -1}, {0, 0, 0}, {1, 0, 0}},
-                           {{0, 1, 0}, {-1, 0, 0}, {0, 0, 0}}},
-                          options),
-            0);
+  return R3::create({{{0, 0, 0}, {0, 0, 1}, {0, -1, 0}},
+                     {{0, 0, -1}, {0, 0, 0}, {1, 0, 0}},
+                     {{0, 1, 0}, {-1, 0, 0}, {0, 0, 0}}},
+                    options);
 }
 
 Scalar
@@ -50,6 +50,6 @@ R2
 R3::contract_k(const Vec & v) const
 {
   neml_assert_batch_broadcastable_dbg(*this, v);
-  return R2(torch::einsum("...ijk,...k", {*this, v}), broadcast_batch_dim(*this, v));
+  return R2(at::einsum("...ijk,...k", {*this, v}), utils::broadcast_batch_dim(*this, v));
 }
 } // namespace neml2

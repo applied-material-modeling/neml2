@@ -24,8 +24,10 @@
 
 #include "neml2/models/ImplicitUpdate.h"
 #include "neml2/models/Assembler.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/functions/linalg/lu_factor.h"
+#include "neml2/tensors/functions/linalg/lu_solve.h"
 #include "neml2/base/guards.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {
@@ -54,8 +56,8 @@ ImplicitUpdate::expected_options()
 
 ImplicitUpdate::ImplicitUpdate(const OptionSet & options)
   : Model(options),
-    _model(register_model<Model>(options.get<std::string>("implicit_model"),
-                                 /*nonlinear=*/true)),
+    _model(register_model(options.get<std::string>("implicit_model"),
+                          /*nonlinear=*/true)),
     _solver(Factory::get_object<NonlinearSolver>("Solvers", options.get<std::string>("solver")))
 {
   neml_assert(_model.output_axis().has_residual(),
@@ -70,27 +72,23 @@ ImplicitUpdate::ImplicitUpdate(const OptionSet & options)
   //   2. Output variables of the "implicit_model" on the "residual" subaxis should be *provided* by
   //      *this* model.
   for (auto && [name, var] : _model.output_variables())
-    clone_output_variable(var, name.remount(STATE));
+    clone_output_variable(*var, name.remount(STATE));
 }
 
 void
-ImplicitUpdate::diagnose(std::vector<Diagnosis> & diagnoses) const
+ImplicitUpdate::diagnose() const
 {
-  Model::diagnose(diagnoses);
-  diagnostic_assert(diagnoses,
-                    _model.output_axis().nsubaxis() == 1,
+  Model::diagnose();
+  diagnostic_assert(_model.output_axis().nsubaxis() == 1,
                     "The implicit model's output contains non-residual subaxis:\n",
                     _model.output_axis());
-  diagnostic_assert(diagnoses,
-                    _model.input_axis().has_state(),
+  diagnostic_assert(_model.input_axis().has_state(),
                     "The implicit model's input does not have a state subaxis:\n",
                     _model.input_axis());
-  diagnostic_assert(diagnoses,
-                    !_model.input_axis().has_residual(),
+  diagnostic_assert(!_model.input_axis().has_residual(),
                     "The implicit model's input cannot have a residual subaxis:\n",
                     _model.input_axis());
   diagnostic_assert(
-      diagnoses,
       _model.input_axis().subaxis(STATE) == _model.output_axis().subaxis(RESIDUAL),
       "The implicit model should have conformal trial state and residual. The input state "
       "subaxis is\n",
@@ -104,14 +102,12 @@ ImplicitUpdate::link_output_variables()
 {
   Model::link_output_variables();
   for (auto && [name, var] : output_variables())
-    var.ref(input_variable(name), /*ref_is_mutable=*/true);
+    var->ref(input_variable(name), /*ref_is_mutable=*/true);
 }
 
 void
-ImplicitUpdate::set_value(bool out, bool dout_din, bool d2out_din2)
+ImplicitUpdate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "This model does not define the second derivatives.");
-
   // The trial state is used as the initial guess
   const auto sol_assember = VectorAssembler(_model.input_axis().subaxis(STATE));
   auto x0 = NonlinearSystem::Sol<false>(sol_assember.assemble_by_variable(_model.collect_input()));
@@ -156,7 +152,7 @@ ImplicitUpdate::set_value(bool out, bool dout_din, bool d2out_din2)
     const auto dr_ds = derivs.at(STATE);
 
     // Factorize the Jacobian once and for all
-    const auto [LU, pivot] = math::linalg::lu_factor(dr_ds);
+    const auto [LU, pivot] = linalg::lu_factor(dr_ds);
 
     // The actual IFT:
     for (const auto & [subaxis, deriv] : derivs)
@@ -166,7 +162,7 @@ ImplicitUpdate::set_value(bool out, bool dout_din, bool d2out_din2)
       const auto ift_assembler =
           MatrixAssembler(output_axis(), _model.input_axis().subaxis(subaxis));
       assign_output_derivatives(
-          ift_assembler.split_by_variable(-math::linalg::lu_solve(LU, pivot, deriv)));
+          ift_assembler.split_by_variable(-linalg::lu_solve(LU, pivot, deriv)));
     }
   }
 }

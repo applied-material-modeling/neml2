@@ -23,8 +23,11 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/PowerLawKinematicHardeningStaticRecovery.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/functions/pow.h"
+#include "neml2/tensors/functions/log.h"
 
 namespace neml2
 {
@@ -41,10 +44,10 @@ PowerLawKinematicHardeningStaticRecovery::expected_options()
       "where \\f$ n \\f$ is the power law recovery exponent and \\f$\\tau\\f$ is the recovery "
       "rate.";
 
-  options.set_parameter<CrossRef<Scalar>>("tau");
+  options.set_parameter<TensorName>("tau");
   options.set("tau").doc() = "Static recovery rate";
 
-  options.set_parameter<CrossRef<Scalar>>("n");
+  options.set_parameter<TensorName>("n");
   options.set("n").doc() = "Static recovery exponent";
 
   return options;
@@ -59,32 +62,27 @@ PowerLawKinematicHardeningStaticRecovery::PowerLawKinematicHardeningStaticRecove
 }
 
 void
-PowerLawKinematicHardeningStaticRecovery::set_value(bool out, bool dout_din, bool d2out_din2)
+PowerLawKinematicHardeningStaticRecovery::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(
-      !d2out_din2,
-      "PowerLawKinematicHardeningStaticRecovery model doesn't implement second derivatives.");
-
   // The effective stress
   auto s = SR2(_X).norm(machine_precision());
 
   if (out)
-    _X_dot = -math::pow(s / _tau, _n - 1) * _X / _tau;
+    _X_dot = -pow(s / _tau, _n - 1) * _X / _tau;
 
   if (dout_din)
   {
     auto I = SR2::identity_map(_X.options());
 
     if (_X.is_dependent())
-      _X_dot.d(_X) = -math::pow(s, _n - 3) * ((_n - 1) * SR2(_X).outer(SR2(_X)) + s * s * I) /
-                     math::pow(_tau, _n);
+      _X_dot.d(_X) =
+          -pow(s, _n - 3) * ((_n - 1) * SR2(_X).outer(SR2(_X)) + s * s * I) / pow(_tau, _n);
 
     if (const auto * const tau = nl_param("tau"))
-      _X_dot.d(*tau) = _n * math::pow(s / _tau, _n - 1) * _X / (_tau * _tau);
+      _X_dot.d(*tau) = _n * pow(s / _tau, _n - 1) * _X / (_tau * _tau);
 
     if (const auto * const n = nl_param("n"))
-      _X_dot.d(*n) =
-          -_X / s * math::pow(s / _tau, _n) * math::log((s + machine_precision()) / _tau);
+      _X_dot.d(*n) = -_X / s * pow(s / _tau, _n) * log((s + machine_precision()) / _tau);
   }
 }
 

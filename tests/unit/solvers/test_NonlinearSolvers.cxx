@@ -60,7 +60,7 @@ TEMPLATE_LIST_TEST_CASE("NonlinearSolvers", "[solvers]", solver_types)
       auto res = solver.solve(system, x);
 
       REQUIRE(res.ret == NonlinearSolver::RetCode::SUCCESS);
-      REQUIRE(torch::allclose(res.solution, system.exact_solution(x)));
+      REQUIRE(at::allclose(res.solution, system.exact_solution(x)));
     }
 
     SECTION("Rosenbrock")
@@ -76,7 +76,7 @@ TEMPLATE_LIST_TEST_CASE("NonlinearSolvers", "[solvers]", solver_types)
       auto res = solver.solve(system, x);
 
       REQUIRE(res.ret == NonlinearSolver::RetCode::SUCCESS);
-      REQUIRE(torch::allclose(res.solution, system.exact_solution(x)));
+      REQUIRE(at::allclose(res.solution, system.exact_solution(x)));
     }
   }
 
@@ -95,6 +95,6 @@ TEMPLATE_LIST_TEST_CASE("NonlinearSolvers", "[solvers]", solver_types)
     auto res = solver.solve(system, x);
 
     REQUIRE(res.ret == NonlinearSolver::RetCode::SUCCESS);
-    REQUIRE(torch::allclose(res.solution, system.exact_solution(x)));
+    REQUIRE(at::allclose(res.solution, system.exact_solution(x)));
   }
 }

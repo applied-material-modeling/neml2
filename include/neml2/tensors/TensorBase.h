@@ -24,7 +24,10 @@
 
 #pragma once
 
-#include "neml2/misc/utils.h"
+#include <ATen/core/Tensor.h>
+#include "neml2/jit/TraceableTensorShape.h"
+#include "neml2/tensors/shape_utils.h"
+#include "neml2/tensors/functions/operators.h"
 
 namespace neml2
 {
@@ -37,26 +40,25 @@ class Tensor;
 /**
  * @brief NEML2's enhanced tensor type.
  *
- * neml2::TensorBase derives from torch::Tensor and clearly distinguishes between "batched"
+ * neml2::TensorBase derives from ATensor and clearly distinguishes between "batched"
  * dimensions from other dimensions. The shape of the "batched" dimensions is called the batch size,
  * and the shape of the rest dimensions is called the base size.
  */
 template <class Derived>
-class TensorBase : public torch::Tensor
+class TensorBase : public ATensor
 {
 public:
-  /// Default constructor
+  /// Special member functions
   TensorBase() = default;
 
-  /// Construct from another torch::Tensor with given batch dimension
-  TensorBase(const torch::Tensor & tensor, Size batch_dim);
+  /// Construct from another ATensor with given batch dimension
+  TensorBase(const ATensor & tensor, Size batch_dim);
 
-  /// Construct from another torch::Tensor with given batch shape
-  TensorBase(const torch::Tensor & tensor, const TraceableTensorShape & batch_shape);
+  /// Construct from another ATensor with given batch shape
+  TensorBase(const ATensor & tensor, const TraceableTensorShape & batch_shape);
 
   /// Copy constructor
-  template <class Derived2>
-  TensorBase(const TensorBase<Derived2> & tensor);
+  TensorBase(const neml2::Tensor & tensor);
 
   TensorBase(Real) = delete;
 
@@ -99,21 +101,21 @@ public:
   /// @name Meta operations
   ///@{
   /// Clone (take ownership)
-  Derived clone(torch::MemoryFormat memory_format = torch::MemoryFormat::Contiguous) const;
+  Derived clone() const;
   /// Discard function graph
   Derived detach() const;
   /// Detach from gradient graphs in place
-  using torch::Tensor::detach_;
+  using ATensor::detach_;
   /// Change tensor options
-  Derived to(const torch::TensorOptions & options) const;
+  Derived to(const TensorOptions & options) const;
   /// Copy another tensor
-  using torch::Tensor::copy_;
+  using ATensor::copy_;
   /// Set all entries to zero
-  using torch::Tensor::zero_;
+  using ATensor::zero_;
   /// Get the requires_grad property
-  using torch::Tensor::requires_grad;
+  using ATensor::requires_grad;
   /// Set the requires_grad property
-  using torch::Tensor::requires_grad_;
+  using ATensor::requires_grad_;
   /// Negation
   Derived operator-() const;
   ///@}
@@ -121,17 +123,17 @@ public:
   /// @name Tensor information
   ///@{
   /// Tensor options
-  using torch::Tensor::options;
+  using ATensor::options;
   /// Scalar type
-  using torch::Tensor::scalar_type;
+  using ATensor::scalar_type;
   /// Device
-  using torch::Tensor::device;
+  using ATensor::device;
   /// Number of tensor dimensions
-  using torch::Tensor::dim;
+  using ATensor::dim;
   /// Tensor shape
-  using torch::Tensor::sizes;
+  using ATensor::sizes;
   /// Size of a dimension
-  using torch::Tensor::size;
+  using ATensor::size;
   /// Whether the tensor is batched
   bool batched() const;
   /// Return the number of batch dimensions
@@ -153,8 +155,8 @@ public:
   /// @name Getter and setter
   ///@{
   /// Regular tensor indexing
-  using torch::Tensor::index;
-  using torch::Tensor::index_put_;
+  using ATensor::index;
+  using ATensor::index_put_;
   /// Get a tensor by slicing on the batch dimensions
   Derived batch_index(indexing::TensorIndicesRef indices) const;
   /// Get a tensor by slicing on the base dimensions
@@ -165,12 +167,12 @@ public:
   neml2::Tensor base_slice(Size dim, const indexing::Slice & index) const;
   ///@{
   /// Set values by slicing on the batch dimensions
-  void batch_index_put_(indexing::TensorIndicesRef indices, const torch::Tensor & other);
+  void batch_index_put_(indexing::TensorIndicesRef indices, const ATensor & other);
   void batch_index_put_(indexing::TensorIndicesRef indices, Real v);
   ///@}
   ///@{
   /// Set values by slicing on the base dimensions
-  void base_index_put_(indexing::TensorIndicesRef indices, const torch::Tensor & other);
+  void base_index_put_(indexing::TensorIndicesRef indices, const ATensor & other);
   void base_index_put_(indexing::TensorIndicesRef indices, Real v);
   ///@}
   /// Variable data without function graph
@@ -188,11 +190,9 @@ public:
   /// Return a new view of the tensor with values broadcast along a given base dimension.
   neml2::Tensor base_expand(Size base_size, Size dim) const;
   /// Expand the batch to have the same shape as another tensor
-  template <class Derived2>
-  Derived batch_expand_as(const Derived2 & other) const;
+  Derived batch_expand_as(const neml2::Tensor & other) const;
   /// Expand the base to have the same shape as another tensor
-  template <class Derived2>
-  Derived2 base_expand_as(const Derived2 & other) const;
+  neml2::Tensor base_expand_as(const neml2::Tensor & other) const;
   /// Return a new tensor with values broadcast along the batch dimensions.
   Derived batch_expand_copy(const TraceableTensorShape & batch_shape) const;
   /// Return a new tensor with values broadcast along the base dimensions.
@@ -220,120 +220,4 @@ private:
   /// Traceable batch sizes
   TraceableTensorShape _batch_sizes;
 };
-
-template <class Derived>
-template <class Derived2>
-TensorBase<Derived>::TensorBase(const TensorBase<Derived2> & tensor)
-  : _batch_dim(tensor.batch_dim()),
-    _batch_sizes(tensor.batch_sizes())
-{
-  torch::Tensor::operator=(tensor);
-}
-
-template <class Derived>
-template <class Derived2>
-Derived
-TensorBase<Derived>::batch_expand_as(const Derived2 & other) const
-{
-  return batch_expand(other.batch_sizes());
-}
-
-template <class Derived>
-template <class Derived2>
-Derived2
-TensorBase<Derived>::base_expand_as(const Derived2 & other) const
-{
-  return base_expand(other.base_sizes());
-}
-
-template <class Derived,
-          typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<Derived>, Derived>>>
-Derived
-operator+(const Derived & a, const Real & b)
-{
-  return Derived(torch::operator+(a, b), a.batch_sizes());
-}
-
-template <class Derived,
-          typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<Derived>, Derived>>>
-Derived
-operator+(const Real & a, const Derived & b)
-{
-  return b + a;
-}
-
-template <class Derived,
-          typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<Derived>, Derived>>>
-Derived
-operator+(const Derived & a, const Derived & b)
-{
-  neml_assert_broadcastable_dbg(a, b);
-  return Derived(torch::operator+(a, b), broadcast_batch_dim(a, b));
-}
-
-template <class Derived,
-          typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<Derived>, Derived>>>
-Derived
-operator-(const Derived & a, const Real & b)
-{
-  return Derived(torch::operator-(a, b), a.batch_sizes());
-}
-
-template <class Derived,
-          typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<Derived>, Derived>>>
-Derived
-operator-(const Real & a, const Derived & b)
-{
-  return -b + a;
-}
-
-template <class Derived,
-          typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<Derived>, Derived>>>
-Derived
-operator-(const Derived & a, const Derived & b)
-{
-  neml_assert_broadcastable_dbg(a, b);
-  return Derived(torch::operator-(a, b), broadcast_batch_dim(a, b));
-}
-
-template <class Derived,
-          typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<Derived>, Derived>>>
-Derived
-operator*(const Derived & a, const Real & b)
-{
-  return Derived(torch::operator*(a, b), a.batch_sizes());
-}
-
-template <class Derived,
-          typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<Derived>, Derived>>>
-Derived
-operator*(const Real & a, const Derived & b)
-{
-  return b * a;
-}
-
-template <class Derived,
-          typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<Derived>, Derived>>>
-Derived
-operator/(const Derived & a, const Real & b)
-{
-  return Derived(torch::operator/(a, b), a.batch_sizes());
-}
-
-template <class Derived,
-          typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<Derived>, Derived>>>
-Derived
-operator/(const Real & a, const Derived & b)
-{
-  return Derived(torch::operator/(a, b), b.batch_sizes());
-}
-
-template <class Derived,
-          typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<Derived>, Derived>>>
-Derived
-operator/(const Derived & a, const Derived & b)
-{
-  neml_assert_broadcastable_dbg(a, b);
-  return Derived(torch::operator/(a, b), broadcast_batch_dim(a, b));
-}
 } // namespace neml2

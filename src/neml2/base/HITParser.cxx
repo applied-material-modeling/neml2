@@ -25,13 +25,13 @@
 #include "neml2/base/HITParser.h"
 #include "neml2/base/Registry.h"
 #include "neml2/base/Factory.h"
-#include "neml2/base/CrossRef.h"
+#include "neml2/base/TensorName.h"
 #include "neml2/base/Settings.h"
 #include "neml2/base/EnumSelection.h"
 #include "neml2/base/MultiEnumSelection.h"
-#include "neml2/models/LabeledAxis.h"
+#include "neml2/base/LabeledAxisAccessor.h"
 #include "neml2/tensors/tensors.h"
-#include <memory>
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {
@@ -123,14 +123,12 @@ HITParser::extract_option(hit::Node * n, OptionSet & options) const
 {
 #define extract_option_base(ptype, method)                                                         \
   else if (option->type() == utils::demangle(typeid(ptype).name()))                                \
-      method(dynamic_cast<OptionSet::Option<ptype> *>(option.get())->set(), n->strVal())
+      method(dynamic_cast<Option<ptype> *>(option.get())->set(), n->strVal())
 
 #define extract_option_t(ptype)                                                                    \
   extract_option_base(ptype, utils::parse_<ptype>);                                                \
   extract_option_base(std::vector<ptype>, utils::parse_vector_<ptype>);                            \
   extract_option_base(std::vector<std::vector<ptype>>, utils::parse_vector_vector_<ptype>)
-
-#define extract_option_t_cr(ptype) extract_option_t(CrossRef<ptype>)
 
   if (n->type() == hit::NodeType::Field)
   {
@@ -157,8 +155,7 @@ HITParser::extract_option(hit::Node * n, OptionSet & options) const
         extract_option_t(VariableName);
         extract_option_t(EnumSelection);
         extract_option_t(MultiEnumSelection);
-        extract_option_t(CrossRef<torch::Tensor>);
-        FOR_ALL_TENSORBASE(extract_option_t_cr);
+        extract_option_t(TensorName);
         // LCOV_EXCL_START
         else neml_assert(false, "Unsupported option type for option ", n->fullpath());
         // LCOV_EXCL_STOP

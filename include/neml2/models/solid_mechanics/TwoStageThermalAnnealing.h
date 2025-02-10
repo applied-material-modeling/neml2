@@ -28,6 +28,8 @@
 
 namespace neml2
 {
+class Scalar;
+
 template <typename T>
 class TwoStageThermalAnnealing : public Model
 {
@@ -60,7 +62,4 @@ protected:
   /// Second stage annealing rate
   const Scalar & _tau;
 };
-
-typedef TwoStageThermalAnnealing<Scalar> ScalarTwoStageThermalAnnealing;
-typedef TwoStageThermalAnnealing<SR2> SR2TwoStageThermalAnnealing;
 } // namespace neml2

@@ -22,10 +22,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <ATen/Parallel.h>
+
+#include "neml2/misc/defaults.h"
 #include "neml2/base/Settings.h"
 #include "neml2/base/EnumSelection.h"
-
-#include <ATen/Parallel.h>
+#include "neml2/base/OptionSet.h"
 
 namespace neml2
 {
@@ -38,20 +40,19 @@ Settings::expected_options()
 
   options.set<std::string>("type") = "Settings";
 
-  EnumSelection dtype_selection({"Float16", "Float32", "Float64"},
-                                {static_cast<int>(torch::kFloat16),
-                                 static_cast<int>(torch::kFloat32),
-                                 static_cast<int>(torch::kFloat64)},
-                                "Float64");
+  EnumSelection dtype_selection(
+      {"Float16", "Float32", "Float64"},
+      {static_cast<int>(kFloat16), static_cast<int>(kFloat32), static_cast<int>(kFloat64)},
+      "Float64");
   options.set<EnumSelection>("default_floating_point_type") = dtype_selection;
   options.set("default_floating_point_type").doc() =
       "Default floating point type for tensors. Options are " + dtype_selection.candidates_str();
 
   EnumSelection int_dtype_selection({"Int8", "Int16", "Int32", "Int64"},
-                                    {static_cast<int>(torch::kInt8),
-                                     static_cast<int>(torch::kInt16),
-                                     static_cast<int>(torch::kInt32),
-                                     static_cast<int>(torch::kInt64)},
+                                    {static_cast<int>(kInt8),
+                                     static_cast<int>(kInt16),
+                                     static_cast<int>(kInt32),
+                                     static_cast<int>(kInt64)},
                                     "Int64");
   options.set<EnumSelection>("default_integer_type") = int_dtype_selection;
   options.set("default_integer_type").doc() =
@@ -99,14 +100,14 @@ Settings::expected_options()
 Settings::Settings(const OptionSet & options)
 {
   // Default floating point dtype
-  default_dtype() = options.get<EnumSelection>("default_floating_point_type").as<torch::Dtype>();
-  torch::set_default_dtype(scalarTypeToTypeMeta(default_dtype()));
+  default_dtype() = options.get<EnumSelection>("default_floating_point_type").as<Dtype>();
+  c10::set_default_dtype(scalarTypeToTypeMeta(default_dtype()));
 
   // Default integral dtype
-  default_integer_dtype() = options.get<EnumSelection>("default_integer_type").as<torch::Dtype>();
+  default_integer_dtype() = options.get<EnumSelection>("default_integer_type").as<Dtype>();
 
   // Default device
-  default_device() = torch::Device(options.get<std::string>("default_device"));
+  default_device() = Device(options.get<std::string>("default_device"));
 
   // Machine precision
   machine_precision() = options.get<Real>("machine_precision");
@@ -128,8 +129,5 @@ Settings::Settings(const OptionSet & options)
   // Buffer/parameter name separator
   buffer_name_separator() = options.get<std::string>("buffer_name_separator");
   parameter_name_separator() = options.get<std::string>("parameter_name_separator");
-
-  // Not solving anything right now
-  currently_solving_nonlinear_system() = false;
 }
 } // namespace neml2

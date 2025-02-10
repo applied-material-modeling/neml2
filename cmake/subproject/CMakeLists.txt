@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.28)
+project(FOO)
+add_subdirectory(neml2)
+add_executable(foo main.cxx)
+add_compile_definitions(_GLIBCXX_USE_CXX11_ABI=0)
+target_link_libraries(foo ${NEML2_LIBS})
+set_target_properties(foo PROPERTIES LINK_WHAT_YOU_USE TRUE)

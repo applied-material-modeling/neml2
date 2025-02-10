@@ -26,12 +26,13 @@
 
 #include "utils.h"
 #include "neml2/tensors/tensors.h"
+#include "neml2/tensors/functions/pow.h"
 
 using namespace neml2;
 
 TEST_CASE("Scalar", "[tensors]")
 {
-  torch::manual_seed(42);
+  at::manual_seed(42);
   const auto & DTO = default_tensor_options();
 
   TensorShape B = {5, 3, 1, 2}; // batch shape
@@ -42,18 +43,18 @@ TEST_CASE("Scalar", "[tensors]")
     {
       Scalar a(3.3, DTO);
       auto b = Scalar::full(3.3, DTO);
-      REQUIRE(torch::allclose(a, b));
+      REQUIRE(at::allclose(a, b));
     }
 
     SECTION("identity_map")
     {
       auto I = Scalar::identity_map(DTO);
-      auto a = Scalar(torch::rand(B, DTO));
+      auto a = Scalar(at::rand(B, DTO));
 
       auto apply = [](const Tensor & x) { return x; };
       auto da_da = finite_differencing_derivative(apply, a);
 
-      REQUIRE(torch::allclose(I, da_da));
+      REQUIRE(at::allclose(I, da_da));
     }
   }
 
@@ -63,15 +64,15 @@ TEST_CASE("Scalar", "[tensors]")
     auto b = Tensor::full({3, 2, 1}, -5.2, DTO);
     auto c = Tensor::full({3, 2, 1}, -1.9, DTO);
 
-    REQUIRE(torch::allclose(a + b, c));
-    REQUIRE(torch::allclose(a.batch_expand(B) + b, c.batch_expand(B)));
-    REQUIRE(torch::allclose(a + b.batch_expand(B), c.batch_expand(B)));
-    REQUIRE(torch::allclose(a.batch_expand(B) + b.batch_expand(B), c.batch_expand(B)));
+    REQUIRE(at::allclose(a + b, c));
+    REQUIRE(at::allclose(a.batch_expand(B) + b, c.batch_expand(B)));
+    REQUIRE(at::allclose(a + b.batch_expand(B), c.batch_expand(B)));
+    REQUIRE(at::allclose(a.batch_expand(B) + b.batch_expand(B), c.batch_expand(B)));
 
-    REQUIRE(torch::allclose(b + a, c));
-    REQUIRE(torch::allclose(b.batch_expand(B) + a, c.batch_expand(B)));
-    REQUIRE(torch::allclose(b + a.batch_expand(B), c.batch_expand(B)));
-    REQUIRE(torch::allclose(b.batch_expand(B) + a.batch_expand(B), c.batch_expand(B)));
+    REQUIRE(at::allclose(b + a, c));
+    REQUIRE(at::allclose(b.batch_expand(B) + a, c.batch_expand(B)));
+    REQUIRE(at::allclose(b + a.batch_expand(B), c.batch_expand(B)));
+    REQUIRE(at::allclose(b.batch_expand(B) + a.batch_expand(B), c.batch_expand(B)));
   }
 
   SECTION("operator-")
@@ -80,15 +81,15 @@ TEST_CASE("Scalar", "[tensors]")
     auto b = Tensor::full({3, 2, 1}, -5.2, DTO);
     auto c = Tensor::full({3, 2, 1}, 8.5, DTO);
 
-    REQUIRE(torch::allclose(a - b, c));
-    REQUIRE(torch::allclose(a.batch_expand(B) - b, c.batch_expand(B)));
-    REQUIRE(torch::allclose(a - b.batch_expand(B), c.batch_expand(B)));
-    REQUIRE(torch::allclose(a.batch_expand(B) - b.batch_expand(B), c.batch_expand(B)));
+    REQUIRE(at::allclose(a - b, c));
+    REQUIRE(at::allclose(a.batch_expand(B) - b, c.batch_expand(B)));
+    REQUIRE(at::allclose(a - b.batch_expand(B), c.batch_expand(B)));
+    REQUIRE(at::allclose(a.batch_expand(B) - b.batch_expand(B), c.batch_expand(B)));
 
-    REQUIRE(torch::allclose(b - a, -c));
-    REQUIRE(torch::allclose(b.batch_expand(B) - a, -c.batch_expand(B)));
-    REQUIRE(torch::allclose(b - a.batch_expand(B), -c.batch_expand(B)));
-    REQUIRE(torch::allclose(b.batch_expand(B) - a.batch_expand(B), -c.batch_expand(B)));
+    REQUIRE(at::allclose(b - a, -c));
+    REQUIRE(at::allclose(b.batch_expand(B) - a, -c.batch_expand(B)));
+    REQUIRE(at::allclose(b - a.batch_expand(B), -c.batch_expand(B)));
+    REQUIRE(at::allclose(b.batch_expand(B) - a.batch_expand(B), -c.batch_expand(B)));
   }
 
   SECTION("operator*")
@@ -97,15 +98,15 @@ TEST_CASE("Scalar", "[tensors]")
     auto b = Tensor::full({3, 2, 1}, -5.2, DTO);
     auto c = Tensor::full({3, 2, 1}, -17.16, DTO);
 
-    REQUIRE(torch::allclose(a * b, c));
-    REQUIRE(torch::allclose(a.batch_expand(B) * b, c.batch_expand(B)));
-    REQUIRE(torch::allclose(a * b.batch_expand(B), c.batch_expand(B)));
-    REQUIRE(torch::allclose(a.batch_expand(B) * b.batch_expand(B), c.batch_expand(B)));
+    REQUIRE(at::allclose(a * b, c));
+    REQUIRE(at::allclose(a.batch_expand(B) * b, c.batch_expand(B)));
+    REQUIRE(at::allclose(a * b.batch_expand(B), c.batch_expand(B)));
+    REQUIRE(at::allclose(a.batch_expand(B) * b.batch_expand(B), c.batch_expand(B)));
 
-    REQUIRE(torch::allclose(b * a, c));
-    REQUIRE(torch::allclose(b.batch_expand(B) * a, c.batch_expand(B)));
-    REQUIRE(torch::allclose(b * a.batch_expand(B), c.batch_expand(B)));
-    REQUIRE(torch::allclose(b.batch_expand(B) * a.batch_expand(B), c.batch_expand(B)));
+    REQUIRE(at::allclose(b * a, c));
+    REQUIRE(at::allclose(b.batch_expand(B) * a, c.batch_expand(B)));
+    REQUIRE(at::allclose(b * a.batch_expand(B), c.batch_expand(B)));
+    REQUIRE(at::allclose(b.batch_expand(B) * a.batch_expand(B), c.batch_expand(B)));
   }
 
   SECTION("operator/")
@@ -114,15 +115,15 @@ TEST_CASE("Scalar", "[tensors]")
     auto b = Tensor::full({3, 2, 1}, -5.2, DTO);
     auto c = Tensor::full({3, 2, 1}, -0.6346153846153846, DTO);
 
-    REQUIRE(torch::allclose(a / b, c));
-    REQUIRE(torch::allclose(a.batch_expand(B) / b, c.batch_expand(B)));
-    REQUIRE(torch::allclose(a / b.batch_expand(B), c.batch_expand(B)));
-    REQUIRE(torch::allclose(a.batch_expand(B) / b.batch_expand(B), c.batch_expand(B)));
+    REQUIRE(at::allclose(a / b, c));
+    REQUIRE(at::allclose(a.batch_expand(B) / b, c.batch_expand(B)));
+    REQUIRE(at::allclose(a / b.batch_expand(B), c.batch_expand(B)));
+    REQUIRE(at::allclose(a.batch_expand(B) / b.batch_expand(B), c.batch_expand(B)));
 
-    REQUIRE(torch::allclose(b / a, 1.0 / c));
-    REQUIRE(torch::allclose(b.batch_expand(B) / a, 1.0 / c.batch_expand(B)));
-    REQUIRE(torch::allclose(b / a.batch_expand(B), 1.0 / c.batch_expand(B)));
-    REQUIRE(torch::allclose(b.batch_expand(B) / a.batch_expand(B), 1.0 / c.batch_expand(B)));
+    REQUIRE(at::allclose(b / a, 1.0 / c));
+    REQUIRE(at::allclose(b.batch_expand(B) / a, 1.0 / c.batch_expand(B)));
+    REQUIRE(at::allclose(b / a.batch_expand(B), 1.0 / c.batch_expand(B)));
+    REQUIRE(at::allclose(b.batch_expand(B) / a.batch_expand(B), 1.0 / c.batch_expand(B)));
   }
 
   SECTION("pow")
@@ -130,9 +131,9 @@ TEST_CASE("Scalar", "[tensors]")
     Scalar a(3.3, DTO);
     auto b = Tensor::full({2, 2}, 2.0, DTO);
     auto c = Tensor::full({2, 2}, 9.849155306759329, DTO);
-    REQUIRE(torch::allclose(math::pow(b, a), c));
-    REQUIRE(torch::allclose(math::pow(b.batch_expand(B), a), c.batch_expand(B)));
-    REQUIRE(torch::allclose(math::pow(b, a.batch_expand(B)), c.batch_expand(B)));
-    REQUIRE(torch::allclose(math::pow(b.batch_expand(B), a.batch_expand(B)), c.batch_expand(B)));
+    REQUIRE(at::allclose(neml2::pow(b, a), c));
+    REQUIRE(at::allclose(neml2::pow(b.batch_expand(B), a), c.batch_expand(B)));
+    REQUIRE(at::allclose(neml2::pow(b, a.batch_expand(B)), c.batch_expand(B)));
+    REQUIRE(at::allclose(neml2::pow(b.batch_expand(B), a.batch_expand(B)), c.batch_expand(B)));
   }
 }

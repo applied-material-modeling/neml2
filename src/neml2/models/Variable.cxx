@@ -24,7 +24,13 @@
 
 #include "neml2/models/Variable.h"
 #include "neml2/models/Model.h"
+#include "neml2/models/DependencyResolver.h"
+#include "neml2/models/map_types.h"
 #include "neml2/tensors/tensors.h"
+#include "neml2/tensors/assertions.h"
+#include "neml2/tensors/functions/bmm.h"
+#include "neml2/jit/utils.h"
+#include "neml2/jit/TraceableTensorShape.h"
 
 namespace neml2
 {
@@ -95,6 +101,114 @@ bool
 VariableBase::is_dependent() const
 {
   return !currently_solving_nonlinear_system() || is_solve_dependent();
+}
+
+TensorOptions
+VariableBase::options() const
+{
+  return tensor().options();
+}
+
+Dtype
+VariableBase::scalar_type() const
+{
+  return tensor().scalar_type();
+}
+
+Device
+VariableBase::device() const
+{
+  return tensor().device();
+}
+
+Size
+VariableBase::dim() const
+{
+  return tensor().dim();
+}
+
+TensorShapeRef
+VariableBase::sizes() const
+{
+  return tensor().sizes();
+}
+
+Size
+VariableBase::size(Size dim) const
+{
+  return tensor().size(dim);
+}
+
+bool
+VariableBase::batched() const
+{
+  return tensor().batched();
+}
+
+Size
+VariableBase::batch_dim() const
+{
+  return tensor().batch_dim();
+}
+
+Size
+VariableBase::list_dim() const
+{
+  return Size(list_sizes().size());
+}
+
+Size
+VariableBase::base_dim() const
+{
+  return Size(base_sizes().size());
+}
+
+TraceableTensorShape
+VariableBase::batch_sizes() const
+{
+  return tensor().batch_sizes();
+}
+
+TensorShapeRef
+VariableBase::list_sizes() const
+{
+  return _list_sizes;
+}
+
+TraceableSize
+VariableBase::batch_size(Size dim) const
+{
+  return tensor().batch_size(dim);
+}
+
+Size
+VariableBase::base_size(Size dim) const
+{
+  return base_sizes()[dim];
+}
+
+Size
+VariableBase::list_size(Size dim) const
+{
+  return list_sizes()[dim];
+}
+
+Size
+VariableBase::base_storage() const
+{
+  return utils::storage_size(base_sizes());
+}
+
+Size
+VariableBase::assembly_storage() const
+{
+  return utils::storage_size(list_sizes()) * utils::storage_size(base_sizes());
+}
+
+bool
+VariableBase::requires_grad() const
+{
+  return tensor().requires_grad();
 }
 
 Derivative
@@ -212,7 +326,7 @@ VariableBase::total_derivatives(const DependencyResolver<Model, VariableName> & 
     else
       for (const auto & depu : dep.item_providers().at({model, uvar}))
         for (const auto & [xvar, du_dx] : total_derivatives(dep, depu.parent, uvar))
-          assign_or_add(derivs[xvar], math::bmm(dy_du, du_dx));
+          assign_or_add(derivs[xvar], bmm(dy_du, du_dx));
   }
 
   return derivs;
@@ -234,14 +348,14 @@ VariableBase::total_second_derivatives(const DependencyResolver<Model, VariableN
         for (const auto & depu2 : dep.item_providers().at({model, u2var}))
           for (const auto & [x2var, du2_dxk] : total_derivatives(dep, depu2.parent, u2var))
             assign_or_add(sec_derivs[u1var][x2var],
-                          Tensor(torch::einsum("...ijq,...qk", {d2y_du1u2, du2_dxk}),
-                                 broadcast_batch_dim(d2y_du1u2, du2_dxk)));
+                          Tensor(at::einsum("...ijq,...qk", {d2y_du1u2, du2_dxk}),
+                                 utils::broadcast_batch_dim(d2y_du1u2, du2_dxk)));
       else if (dep.inbound_items().count({model, u2var}))
         for (const auto & depu1 : dep.item_providers().at({model, u1var}))
           for (const auto & [x1var, du1_dxj] : total_derivatives(dep, depu1.parent, u1var))
             assign_or_add(sec_derivs[x1var][u2var],
-                          Tensor(torch::einsum("...ipk,...pj", {d2y_du1u2, du1_dxj}),
-                                 broadcast_batch_dim(d2y_du1u2, du1_dxj)));
+                          Tensor(at::einsum("...ipk,...pj", {d2y_du1u2, du1_dxj}),
+                                 utils::broadcast_batch_dim(d2y_du1u2, du1_dxj)));
       else
         for (const auto & depu1 : dep.item_providers().at({model, u1var}))
           for (const auto & [x1var, du1_dxj] : total_derivatives(dep, depu1.parent, u1var))
@@ -249,8 +363,8 @@ VariableBase::total_second_derivatives(const DependencyResolver<Model, VariableN
               for (const auto & [x2var, du2_dxk] : total_derivatives(dep, depu2.parent, u2var))
                 assign_or_add(
                     sec_derivs[x1var][x2var],
-                    Tensor(torch::einsum("...ipq,...pj,...qk", {d2y_du1u2, du1_dxj, du2_dxk}),
-                           broadcast_batch_dim(d2y_du1u2, du1_dxj, du2_dxk)));
+                    Tensor(at::einsum("...ipq,...pj,...qk", {d2y_du1u2, du1_dxj, du2_dxk}),
+                           utils::broadcast_batch_dim(d2y_du1u2, du1_dxj, du2_dxk)));
     }
 
   for (const auto & [uvar, dy_du] : model->output_variable(yvar).derivatives())
@@ -259,8 +373,8 @@ VariableBase::total_second_derivatives(const DependencyResolver<Model, VariableN
         for (const auto & [x1var, d2u_dx1] : total_second_derivatives(dep, depu.parent, uvar))
           for (const auto & [x2var, d2u_dx1x2] : d2u_dx1)
             assign_or_add(sec_derivs[x1var][x2var],
-                          Tensor(torch::einsum("...ip,...pjk", {dy_du, d2u_dx1x2}),
-                                 broadcast_batch_dim(dy_du, d2u_dx1x2)));
+                          Tensor(at::einsum("...ip,...pjk", {dy_du, d2u_dx1x2}),
+                                 utils::broadcast_batch_dim(dy_du, d2u_dx1x2)));
 
   return sec_derivs;
 }
@@ -318,7 +432,7 @@ Variable<T>::ref(const VariableBase & var, bool ref_is_mutable)
 
 template <typename T>
 void
-Variable<T>::zero(const torch::TensorOptions & options)
+Variable<T>::zero(const TensorOptions & options)
 {
   if (owning())
   {
@@ -366,7 +480,7 @@ Variable<T>::set(const Tensor & val)
 
 template <typename T>
 void
-Variable<T>::set(const torch::Tensor & val, bool force)
+Variable<T>::set(const ATensor & val, bool force)
 {
   if (owning())
   {
@@ -388,6 +502,13 @@ Variable<T>::set(const torch::Tensor & val, bool force)
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     const_cast<VariableBase *>(ref())->set(val);
   }
+}
+
+template <typename T>
+Tensor
+Variable<T>::get() const
+{
+  return tensor().base_flatten();
 }
 
 template <typename T>
@@ -461,11 +582,12 @@ Variable<T>::clear()
 }
 
 #define INSTANTIATE_VARIABLE(T) template class Variable<T>
-FOR_ALL_TENSORBASE(INSTANTIATE_VARIABLE);
+FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_VARIABLE);
 
-void
+Derivative &
 Derivative::operator=(const Tensor & val)
 {
   *_deriv = val.base_reshape(_base_sizes);
+  return *this;
 }
 }

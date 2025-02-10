@@ -23,8 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/KinematicHardeningStaticRecovery.h"
+#include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
-#include "neml2/misc/math.h"
 
 namespace neml2
 {
