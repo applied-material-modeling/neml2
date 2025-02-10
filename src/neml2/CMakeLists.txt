@@ -67,6 +67,7 @@ message(STATUS "Configuring HIT")
 set(hit_BUILD_DIR ${NEML2_BINARY_DIR}/hit/build)
 set(hit_INSTALL_DIR ${NEML2_BINARY_DIR}/hit/install)
 execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${hit_BUILD_DIR})
+execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${hit_INSTALL_DIR})
 execute_process(
   COMMAND ${CMAKE_COMMAND} \\
   -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} \\
@@ -95,7 +96,6 @@ execute_process(
   # ERROR_FILE ${hit_BUILD_DIR}/build.err
   COMMAND_ERROR_IS_FATAL ANY
 )
-execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${hit_INSTALL_DIR})
 execute_process(
   COMMAND ${CMAKE_COMMAND} --install ${hit_BUILD_DIR} --prefix ${hit_INSTALL_DIR}
   OUTPUT_QUIET

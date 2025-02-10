@@ -1,13 +1,10 @@
 cmake_minimum_required(VERSION 3.28)
 set(CMAKE_C_COMPILER_WORKS TRUE)
 set(CMAKE_CXX_COMPILER_WORKS TRUE)
-project(hit_ext LANGUAGES CXX)
+project(hit_ext)
 include(FetchContent)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(FETCHCONTENT_BASE_DIR ${PREFIX})
-
 FetchContent_Declare(
   hit
   GIT_REPOSITORY https://github.com/idaholab/hit.git
