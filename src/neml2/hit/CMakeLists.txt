@@ -1,10 +1,8 @@
 cmake_minimum_required(VERSION 3.28)
-set(CMAKE_C_COMPILER_WORKS TRUE)
-set(CMAKE_CXX_COMPILER_WORKS TRUE)
-project(hit_ext)
+project(hit_ext LANGUAGES C CXX)
 include(FetchContent)
 
-set(FETCHCONTENT_BASE_DIR ${PREFIX})
+set(FETCHCONTENT_BASE_DIR ${BASE_DIR})
 FetchContent_Declare(
   hit
   GIT_REPOSITORY https://github.com/idaholab/hit.git
@@ -12,6 +10,8 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(hit)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_BUILD_TYPE ${BUILD_TYPE})
 
 add_library(hit STATIC
@@ -20,12 +20,15 @@ add_library(hit STATIC
   ${hit_SOURCE_DIR}/src/hit/braceexpr.cc
 )
 
-set_target_properties(hit PROPERTIES UNITY_BUILD OFF)
-target_compile_options(hit PRIVATE -fPIC) # Setting POSITION_INDEPENDENT_CODE has no effect -- I believe this is a CMake bug.
+message(STATUS "WASP_INCLUDE_DIRS: ${WASP_INCLUDE_DIRS}")
+message(STATUS "WASP_LIBRARIES: ${WASP_LIBRARIES}")
+message(STATUS "WASP_LINK_DIRS: ${WASP_LINK_DIRS}")
+
+set_target_properties(hit PROPERTIES UNITY_BUILD OFF POSITION_INDEPENDENT_CODE ON EXPORT_COMPILE_COMMANDS ON)
 target_compile_definitions(hit PRIVATE _GLIBCXX_USE_CXX11_ABI=${GLIBCXX_USE_CXX11_ABI})
-target_include_directories(hit SYSTEM PUBLIC ${hit_SOURCE_DIR}/include ${wasp_INSTALL_DIR}/include)
-target_link_libraries(hit PRIVATE waspcore wasphit)
-target_link_directories(hit PRIVATE ${wasp_INSTALL_DIR}/lib)
+target_include_directories(hit SYSTEM PUBLIC ${hit_SOURCE_DIR}/include ${WASP_INCLUDE_DIRS})
+target_link_libraries(hit PRIVATE ${WASP_LIBRARIES})
+target_link_directories(hit PRIVATE ${WASP_LINK_DIRS})
 
 target_sources(hit
   PUBLIC
