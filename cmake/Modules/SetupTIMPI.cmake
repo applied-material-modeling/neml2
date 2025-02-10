@@ -85,7 +85,7 @@ if(NOT TIMPI_FOUND)
   # Export variables
   set(TIMPI_FOUND TRUE)
   set(TIMPI_INCLUDE_DIRS ${TIMPI_INSTALL_DIR}/include)
-  set(TIMPI_LIBRARIES TIMPI_${TIMPI_BUILD_TYPE})
+  set(TIMPI_LIBRARIES timpi_${TIMPI_BUILD_TYPE})
   set(TIMPI_LINK_DIRS ${TIMPI_INSTALL_DIR}/lib)
 
   # Export interface

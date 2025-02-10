@@ -59,7 +59,7 @@ add_custom_target(syntax_python
 # ----------------------------------------------------------------------------
 generate_doxyfile(${NEML2_BINARY_DIR}/doc/DoxyfileHTML "config/Doxyfile.in;config/HTML.in")
 generate_doxyfile(${NEML2_BINARY_DIR}/doc/DoxyfilePython "config/Doxyfile.in;config/HTML.in;config/Python.in")
-add_custom_target(html ALL
+add_custom_target(html
   DEPENDS syntax_cpp syntax_python
   WORKING_DIRECTORY ${NEML2_BINARY_DIR}/doc
   COMMAND ${DOXYGEN_EXECUTABLE} -q DoxyfileHTML.sh
