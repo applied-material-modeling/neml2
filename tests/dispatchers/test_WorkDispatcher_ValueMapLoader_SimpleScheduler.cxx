@@ -27,6 +27,7 @@
 #include <torch/cuda.h>
 
 #include "neml2/dispatchers/ValueMapLoader.h"
+#include "neml2/dispatchers/valuemap_helpers.h"
 #include "neml2/dispatchers/SimpleScheduler.h"
 #include "neml2/dispatchers/WorkDispatcher.h"
 #include "neml2/models/Model.h"
@@ -61,36 +62,19 @@ TEST_CASE("WorkDispatcher ValueMapLoader SimpleScheduler", "[dispatchers]")
     return ValueMap{{stress_name, strain * Scalar(temperature)}};
   };
   auto red = [](std::vector<ValueMap> && results) -> ValueMap
-  {
-    // Re-bin the results
-    std::map<VariableName, std::vector<Tensor>> vars;
-    for (auto && result : results)
-      for (auto && [name, value] : result)
-        vars[name].emplace_back(std::move(value));
-
-    // Concatenate the tensors
-    ValueMap ret;
-    for (auto && [name, values] : vars)
-      ret[name] = batch_cat(values, batch_dim);
-
-    return ret;
-  };
-  auto pre = [](ValueMap && x, Device device) -> ValueMap
-  {
-    // Move the tensors to the device
-    for (auto && [name, value] : x)
-      x[name] = value.to(device);
-    return x;
-  };
-  auto post = [](ValueMap && x) -> ValueMap { return std::move(x); };
+  { return valuemap_cat_reduce(std::move(results), batch_dim); };
 
   ValueMapLoader loader(x, batch_dim);
   WorkDispatcher</*I=*/ValueMap, /*O=*/ValueMap, /*Of=*/ValueMap, /*Ip=*/ValueMap, /*Op=*/ValueMap>
-      dispatcher(func, red, pre, post);
+      dispatcher(func, red, &valuemap_move_device, &valuemap_no_operation);
 
   SECTION("cpu")
   {
-    SimpleScheduler scheduler(kCPU, 23, 55);
+    OptionSet options = SimpleScheduler::expected_options();
+    options.set<std::string>("device") = "cpu";
+    options.set<size_t>("batch_size") = 23;
+    options.set<size_t>("capacity") = 55;
+    SimpleScheduler scheduler(options);
 
     SECTION("run")
     {
@@ -111,7 +95,11 @@ TEST_CASE("WorkDispatcher ValueMapLoader SimpleScheduler", "[dispatchers]")
       SKIP("cuda not available");
 
     auto device = Device("cuda:0");
-    SimpleScheduler scheduler(device, 23, 55);
+    OptionSet options = SimpleScheduler::expected_options();
+    options.set<std::string>("device") = "cuda:0";
+    options.set<size_t>("batch_size") = 23;
+    options.set<size_t>("capacity") = 55;
+    SimpleScheduler scheduler(options);
 
     SECTION("run")
     {

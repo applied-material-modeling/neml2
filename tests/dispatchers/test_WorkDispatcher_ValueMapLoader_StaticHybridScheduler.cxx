@@ -27,6 +27,7 @@
 #include <torch/cuda.h>
 
 #include "neml2/dispatchers/ValueMapLoader.h"
+#include "neml2/dispatchers/valuemap_helpers.h"
 #include "neml2/dispatchers/StaticHybridScheduler.h"
 #include "neml2/dispatchers/WorkDispatcher.h"
 #include "neml2/models/Model.h"
@@ -64,44 +65,23 @@ TEST_CASE("WorkDispatcher ValueMapLoader StaticHybridScheduler", "[dispatchers]"
     return ValueMap{{stress_name, strain * Scalar(temperature)}};
   };
   auto red = [](std::vector<ValueMap> && results) -> ValueMap
-  {
-    // Re-bin the results
-    std::map<VariableName, std::vector<Tensor>> vars;
-    for (auto && result : results)
-      for (auto && [name, value] : result)
-        vars[name].emplace_back(std::move(value));
+  { return valuemap_cat_reduce(std::move(results), batch_dim); };
 
-    // Concatenate the tensors
-    ValueMap ret;
-    for (auto && [name, values] : vars)
-      ret[name] = batch_cat(values, batch_dim);
-
-    return ret;
-  };
-  auto pre = [](ValueMap && x, Device device) -> ValueMap
-  {
-    // Move the tensors to the device
-    for (auto && [name, value] : x)
-      x[name] = value.to(device);
-    return x;
-  };
-  auto post = [](ValueMap && y) -> ValueMap
-  {
-    // Move the tensors back to cpu
-    for (auto && [name, value] : y)
-      y[name] = value.to(kCPU);
-    return y;
-  };
+  auto post = [](ValueMap && x) -> ValueMap
+  { return valuemap_move_device(std::move(x), Device("cpu")); };
 
   ValueMapLoader loader(x, batch_dim);
   WorkDispatcher</*I=*/ValueMap, /*O=*/ValueMap, /*Of=*/ValueMap, /*Ip=*/ValueMap, /*Op=*/ValueMap>
-      dispatcher(func, red, pre, post);
+      dispatcher(func, red, &valuemap_move_device, post);
 
-  StaticHybridScheduler scheduler(
-      /*device_list=*/{Device("cuda:0"), Device("cpu")},
-      /*batch_sizes=*/{23, 17},
-      /*capacities=*/{55, 18},
-      /*priorities=*/{1, 2});
+  OptionSet options = StaticHybridScheduler::expected_options();
+  options.set<std::vector<Device>>("devices") = {Device("cuda:0"), Device("cpu")};
+  options.set<std::vector<std::size_t>>("batch_sizes") = {23, 17};
+  options.set<std::vector<std::size_t>>("capacities") = {55, 18};
+  options.set<std::vector<double>>("priorities") = {1, 2};
+
+  StaticHybridScheduler scheduler(options);
+  scheduler.setup();
 
   SECTION("run")
   {

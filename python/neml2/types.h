@@ -33,14 +33,14 @@
 #include "neml2/base/LabeledAxisAccessor.h"
 
 #define NEML2_TENSOR_OPTIONS_VARGS                                                                 \
-  const torch::Dtype &dtype, const torch::Device &device, bool requires_grad
+  const torch::Dtype &dtype, const Device &device, bool requires_grad
 
 #define NEML2_TENSOR_OPTIONS                                                                       \
   torch::TensorOptions().dtype(dtype).device(device).requires_grad(requires_grad)
 
 #define PY_ARG_TENSOR_OPTIONS                                                                      \
   pybind11::arg("dtype") = torch::Dtype(torch::kFloat64),                                          \
-  pybind11::arg("device") = torch::Device(torch::kCPU), pybind11::arg("requires_grad") = false
+  pybind11::arg("device") = Device(torch::kCPU), pybind11::arg("requires_grad") = false
 
 namespace pybind11
 {

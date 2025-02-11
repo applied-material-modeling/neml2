@@ -22,55 +22,42 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-
-#include "neml2/dispatchers/WorkScheduler.h"
-#include "neml2/base/Registry.h"
-#include "neml2/base/NEML2Object.h"
-#include "neml2/base/Factory.h"
+#include "neml2/dispatchers/valuemap_helpers.h"
+#include "neml2/tensors/functions/cat.h"
 
 namespace neml2
 {
-/**
- * @brief A very simple scheduler
- *
- * This schedule is simple in the sense that
- * - It dispatches to a single device
- * - It dispatches a fixed batch size
- * - It does not perform parallel communication with other ranks (if any) to determine the
- *   availability of the device
- */
-class SimpleScheduler : public WorkScheduler
+
+ValueMap
+valuemap_cat_reduce(std::vector<ValueMap> && results, Size batch_dim)
 {
-public:
-  /// Options for the scheduler
-  static OptionSet expected_options();
+  // Re-bin the results
+  std::map<VariableName, std::vector<Tensor>> vars;
+  for (auto && result : results)
+    for (auto && [name, value] : result)
+      vars[name].emplace_back(std::move(value));
 
-  /**
-   * @brief Construct a new WorkScheduler object
-   *
-   * @param options Options for the scheduler
-   */
-  SimpleScheduler(const OptionSet & options);
+  // Concatenate the tensors
+  ValueMap ret;
+  for (auto && [name, values] : vars)
+    ret[name] = batch_cat(values, batch_dim);
 
-  bool schedule_work(Device &, std::size_t &) const override;
+  return ret;
+}
 
-  void dispatched_work(Device, std::size_t) override;
+ValueMap
+valuemap_move_device(ValueMap && x, Device device)
+{
+  // Move the tensors to the device
+  for (auto && [name, value] : x)
+    x[name] = value.to(device);
+  return x;
+}
 
-  void completed_work(Device, std::size_t) override;
+ValueMap
+valuemap_no_operation(ValueMap && x)
+{
+  return std::move(x);
+}
 
-private:
-  /// The device to dispatch to
-  Device _device;
-
-  /// The batch size to dispatch
-  std::size_t _batch_size;
-
-  /// The capacity of the device
-  std::size_t _capacity;
-
-  /// Current load on the device
-  std::size_t _load = 0;
-};
-
-} // namespace neml2
+}

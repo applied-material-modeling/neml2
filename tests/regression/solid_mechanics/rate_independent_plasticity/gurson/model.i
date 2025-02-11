@@ -54,6 +54,7 @@
   [f0]
     type = Scalar
     values = '0.01'
+    batch_shape = '(20)'
   []
 []
 

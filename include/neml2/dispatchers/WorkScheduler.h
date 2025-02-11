@@ -24,8 +24,7 @@
 
 #pragma once
 
-#include <optional>
-
+#include "neml2/base/NEML2Object.h"
 #include "neml2/misc/types.h"
 
 namespace neml2
@@ -41,9 +40,19 @@ namespace neml2
  *
  * @see WorkGenerator, WorkDispatcher
  */
-class WorkScheduler
+class WorkScheduler : public NEML2Object
 {
 public:
+  /// Options for the scheduler
+  static OptionSet expected_options();
+
+  /**
+   * @brief Construct a new WorkScheduler object
+   *
+   * @param options Options for the scheduler
+   */
+  WorkScheduler(const OptionSet & options);
+
   /**
    * @brief Determine the device and batch size for the next dispatch
    *

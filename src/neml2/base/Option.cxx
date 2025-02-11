@@ -42,6 +42,14 @@ Option<T>::Option(const std::string & name)
   _metadata.type = utils::demangle(typeid(T).name());
 }
 
+template <>
+Option<Device>::Option(const std::string & name)
+  : _value(default_device())
+{
+  _metadata.name = name;
+  _metadata.type = "Device";
+}
+
 template <typename T>
 bool
 Option<T>::operator==(const OptionBase & other) const
@@ -91,6 +99,10 @@ template class Option<unsigned int>;
 template class Option<std::vector<unsigned int>>;
 template class Option<std::vector<std::vector<unsigned int>>>;
 
+template class Option<std::size_t>;
+template class Option<std::vector<std::size_t>>;
+template class Option<std::vector<std::vector<std::size_t>>>;
+
 template class Option<Size>;
 template class Option<std::vector<Size>>;
 template class Option<std::vector<std::vector<Size>>>;
@@ -114,6 +126,10 @@ template class Option<std::vector<std::vector<TensorShape>>>;
 template class Option<TensorName>;
 template class Option<std::vector<TensorName>>;
 template class Option<std::vector<std::vector<TensorName>>>;
+
+template class Option<Device>;
+template class Option<std::vector<Device>>;
+template class Option<std::vector<std::vector<Device>>>;
 
 // Special instantiations
 template class Option<EnumSelection>;

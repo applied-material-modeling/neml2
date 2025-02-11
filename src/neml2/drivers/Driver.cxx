@@ -42,13 +42,20 @@ Driver::expected_options()
   options.set<bool>("verbose") = false;
   options.set("verbose").doc() = "Whether to output additional logging information";
 
+  options.set<std::string>("scheduler");
+  options.set("scheduler").doc() = "The work scheduler to use";
+
   return options;
 }
 
 Driver::Driver(const OptionSet & options)
   : NEML2Object(options),
     DiagnosticsInterface(this),
-    _verbose(options.get<bool>("verbose"))
+    _verbose(options.get<bool>("verbose")),
+    _scheduler(options.get("scheduler").user_specified()
+                   ? Factory::get_object_ptr<WorkScheduler>("Schedulers",
+                                                            options.get<std::string>("scheduler"))
+                   : nullptr)
 {
 }
 } // namespace neml2

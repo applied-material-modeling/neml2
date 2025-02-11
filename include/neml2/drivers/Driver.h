@@ -29,6 +29,7 @@
 #include "neml2/base/Factory.h"
 #include "neml2/base/DiagnosticsInterface.h"
 #include "neml2/models/Model.h"
+#include "neml2/dispatchers/WorkScheduler.h"
 #include <filesystem>
 
 // The following are not directly used by Solver itself.
@@ -73,5 +74,6 @@ public:
 protected:
   /// Whether to print out additional (debugging) information during the execution.
   bool _verbose;
+  std::shared_ptr<WorkScheduler> _scheduler;
 };
 } // namespace neml2

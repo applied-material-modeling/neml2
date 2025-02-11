@@ -136,5 +136,7 @@ template <>
 void parse_<TensorShape>(TensorShape &, const std::string & raw_str);
 template <>
 void parse_<VariableName>(VariableName &, const std::string & raw_str);
+template <>
+void parse_<Device>(Device &, const std::string & raw_str);
 } // namespace utils
 } // namespace neml2

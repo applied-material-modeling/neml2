@@ -22,55 +22,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-
 #include "neml2/dispatchers/WorkScheduler.h"
-#include "neml2/base/Registry.h"
-#include "neml2/base/NEML2Object.h"
-#include "neml2/base/Factory.h"
 
 namespace neml2
 {
-/**
- * @brief A very simple scheduler
- *
- * This schedule is simple in the sense that
- * - It dispatches to a single device
- * - It dispatches a fixed batch size
- * - It does not perform parallel communication with other ranks (if any) to determine the
- *   availability of the device
- */
-class SimpleScheduler : public WorkScheduler
+
+OptionSet
+WorkScheduler::expected_options()
 {
-public:
-  /// Options for the scheduler
-  static OptionSet expected_options();
+  OptionSet options = NEML2Object::expected_options();
+  options.doc() = "Schedules work to different devices.";
 
-  /**
-   * @brief Construct a new WorkScheduler object
-   *
-   * @param options Options for the scheduler
-   */
-  SimpleScheduler(const OptionSet & options);
+  return options;
+}
 
-  bool schedule_work(Device &, std::size_t &) const override;
+WorkScheduler::WorkScheduler(const OptionSet & options)
+  : NEML2Object(options)
+{
+}
 
-  void dispatched_work(Device, std::size_t) override;
-
-  void completed_work(Device, std::size_t) override;
-
-private:
-  /// The device to dispatch to
-  Device _device;
-
-  /// The batch size to dispatch
-  std::size_t _batch_size;
-
-  /// The capacity of the device
-  std::size_t _capacity;
-
-  /// Current load on the device
-  std::size_t _load = 0;
-};
-
-} // namespace neml2
+}
