@@ -37,8 +37,8 @@ jobs:
           python-version: 3.9
           cmake-version: 3.28
           torch-version: 2.5.1
-      - name: Configure
-        run: pip install -v .
+      - name: Install
+        run: CMAKE_GENERATOR=Ninja pip install -v .
       - name: Run tests
         run: pytest -vv --junitxml=pytest.xml python/tests
       - name: Test results
