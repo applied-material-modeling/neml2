@@ -32,17 +32,16 @@ cd neml2
 cmake --preset release -S .
 cmake --build --preset release
 ```
-The `--preset` option specifies predefined configuration used by CMake. Available presets and their usage scenario are discussed in the [development guide](@ref dev-env).
+The `--preset` option specifies a predefined configuration to be read by CMake. Build customization, available presets, and their usage scenario are discussed in [build customization](@ref build-customization).
 
 Optionally, NEML2 can be installed as a system library.
-
 ```
 cmake --install build/release --component libneml2 --prefix /usr/local
 ```
-The `--prefix` option specifies the path where NEML2 will be installed. Write permission is needed for the installation path. The `--component libneml2` option tells CMake to only install the libraries and runtime artifacts. Refer to [components] for all installable components.
-
-Refer to the [cmake manual](https://cmake.org/cmake/help/latest/manual/cmake.1.html) for more command line options. For more fine-grained control over the configure, build, and install commands, please refer to the [CMake User Interaction Guide](https://cmake.org/cmake/help/latest/guide/user-interaction/index.html).
-
+The `--prefix` option specifies the path where NEML2 will be installed. Write permission is needed for the installation path. The `--component libneml2` option tells CMake to only install the libraries and runtime artifacts. NEML2 has three installable components:
+- `libneml2`: core libraries, tests, and the Runner
+- `libneml2-dev`: headers and other development dependencies
+- `libneml2-python`: Python bindings, submodules, and tests
 
 ### Python package
 

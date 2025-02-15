@@ -4,9 +4,7 @@
 
 It is of paramount importance to ensure the correctness of the implementation. NEML2 comes with extensive testing for both its C++ backend and the Python package.
 
-## C++ backend
-
-### Setup {#testing-cpp}
+## C++ backend {#testing-cpp}
 
 By default when `NEML2_TESTS` is set to `ON`, three test suites are built under the specified build directory:
 
@@ -14,12 +12,11 @@ By default when `NEML2_TESTS` is set to `ON`, three test suites are built under 
 - `tests/regression/regression_tests`: Collection of tests to avoid regression.
 - `tests/verification/verification_tests`: Collection of verification problems.
 
-The tests assume the working directory to be the `tests` directory relative to the repository root. For Visual Studio Code users, the [C++ TestMate](https://github.com/matepek/vscode-catch2-test-adapter) extension can be used to automatically discover and run tests. In the extension settings, the "Working Directory" variable should be set to `${workspaceFolder}/tests`. The `settings.json` file shall contain the following entry:
-```json
-{
-  "testMate.cpp.test.workingDirectory": "${workspaceFolder}/tests",
-}
-```
+For Visual Studio Code users, the [C++ TestMate](https://github.com/matepek/vscode-catch2-test-adapter) extension can be used to automatically discover and run tests.
+
+When `NEML2_WORK_DISPATCHER` is set to `ON`, an additional test suite is built:
+
+- `test/dispatchers/dispatcher_tests`: Collection of unit tests for the work dispatcher.
 
 ### Catch tests {#testing-catch-tests}
 

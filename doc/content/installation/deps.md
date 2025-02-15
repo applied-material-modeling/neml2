@@ -36,18 +36,13 @@ The following table summarizes the names of the packages required by each config
 - [Catch2](https://github.com/catchorg/Catch2) for unit and regression testing.
 - [gperftools](https://github.com/gperftools/gperftools) for profiling.
 
-Recent PyTorch releases within a few minor versions are likely to be compatible. In the PyTorch official download page, several download options are provided: conda, pip, libTorch, and source distribution.
-- **Recommended**: If you choose to download PyTorch using conda or pip, the NEML2 CMake script can automatically detect and use the PyTorch installation.
-- If you choose to download libTorch or build PyTorch from source, you will need to set `LIBTORCH_DIR` to be the location of libTorch when using CMake to configure NEML2.
+In addition to standard system library locations, the CMake configure script also searches for an installed torch Python package. Recent PyTorch releases within a few minor versions are likely to be compatible.
 
-\note
-The libTorch distributions from the official website come with two flavors: "Pre-cxx11 ABI" and "cxx11 ABI". Both variants are supported by NEML2. If you are unsure, we recommend the one with "cxx11 ABI".
-
-If no PyTorch installation can be detected and `LIBTORCH_DIR` is not set at configure time, the NEML2 CMake script will automatically download and use the libTorch obtained from the official website. Note, however, that this method only works on Linux and Mac systems.
+\warning
+If no PyTorch is found after searching, a CPU-only libtorch binary is downloaded from the official website. Such libtorch is not able to use the CUDA co-processor, even if there is one. If using CUDA is desired, please install the torch Python package or a CUDA-enabled libtorch before configuring NEML2.
 
 \note
 We strive to keep up with the rapid development of PyTorch. The NEML2 PyTorch dependency is updated on a quarterly basis. If there is a particular version of PyTorch you'd like to use which is found to be incompatible with NEML2, please feel free to [create an issue](https://github.com/applied-material-modeling/neml2/issues).
-
 
 ### Python package dependencies
 

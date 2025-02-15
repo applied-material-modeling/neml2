@@ -44,7 +44,7 @@ main(int argc, char * argv[])
 
   // Optional arguments
   program.add_argument("-d", "--diagnose")
-      .help("run diagnostics on common problems and exit (without further execution)")
+      .help("run diagnostics on common problems and exit if any issue is identified")
       .flag();
   program.add_argument("-t", "--time")
       .help("output the elapsed wall time during model evaluation")

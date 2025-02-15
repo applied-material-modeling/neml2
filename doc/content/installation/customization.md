@@ -1,8 +1,11 @@
-# Development Environment {#dev-env}
+# Build Customization {#build-customization}
 
 [TOC]
 
-## Build customization {#dev-env-build}
+\note
+Refer to the [cmake manual](https://cmake.org/cmake/help/latest/manual/cmake.1.html) for more CMake command line options. For more fine-grained control over the configure, build, and install commands, please refer to the [CMake User Interaction Guide](https://cmake.org/cmake/help/latest/guide/user-interaction/index.html).
+
+## Configure options
 
 The configuration of NEML2 can be customized via a variety of high-level configure options. Commonly used configuration options are summarized below. Default options are <u>underlined</u>.
 
@@ -62,35 +65,3 @@ NEML2 offers a number of build presets:
 - release: C++ backend and Python bindings for release
 
 To use a build preset, use the `--preset` option on the command line.
-
-## Testing
-
-See [Testing/C++ backend/Setup](@ref testing-cpp) for how to run tests for the C++ backend.
-
-See [Testing/Python package/Setup](@ref testing-python) for how to run tests for the Python package.
-
-## Writing documentation
-
-It is of paramount importance to write documentation as the library is being developed. While NEML2 supports both Doxygen-style in-code documentation mechanisms and [run-time syntax documentation mechanisms](@ref custom-model-in-code-documentation), it is still necessary to write standalone, self-contained documentation.
-
-To this end, the "dev" configure preset and the "dev-doc" build preset can be used to generate and render the documentation locally:
-```
-cmake --preset dev -S .
-cmake --build --preset dev-doc
-```
-Once the documentation is built, the site can be previewed locally in any browser that supports static HTML, i.e.
-```
-firefox build/dev/doc/build/html/index.html
-```
-
-## Code formatting and linting
-
-The C++ source code is formatted using `clang-format`. A `.clang-format` file is provided at the repository root specifying the formatting requirements. When using an IDE providing plugins or extensions to formatting C++ source code, it is important to
-1. Point the plugin/extension to use the `.clang-format` file located at NEML2's repository root.
-2. Associate file extensions `.h` and `.cxx` with C++.
-
-The Python scripts shall be formatted using `black`. Formatting requirements are specified under the `[black]` section in `pyproject.toml`.
-
-All pull requests will be run through `clang-format` and `black` to ensure formatting consistency.
-
-For linting, a `.clang-tidy` file is provided at the repository root to specify expected checks.

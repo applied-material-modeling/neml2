@@ -2,16 +2,20 @@
   <!-- Navigation index tabs for HTML output -->
   <navindex>
     <tab type="mainpage" visible="yes"/>
-    <tab type="user" url="../install.html" title="Installation Guide"/>
-    <tab type="usergroup" title="User Guide">
+    <tab type="usergroup" title="Installation Guide">
+      <tab type="user" url="../install.html" title="Installation"/>
+      <tab type="user" url="../build-customization.html" title="Build Customization"/>
       <tab type="user" url="../dependency-management.html" title="Dependency Management"/>
-      <tab type="user" url="../cmake-integration.html" title="CMake Integration"/>
+      <tab type="user" url="../external-project-integration.html" title="External Project Integration"/>
+    </tab>
+    <tab type="usergroup" title="User Guide">
+      <tab type="user" url="../user-getting-started.html" title="Getting Started"/>
       <tab type="user" url="../input-file.html" title="Input File"/>
       <tab type="user" url="../cpp-backend.html" title="C++ Backend"/>
       <tab type="user" url="../python-package.html" title="Python Package"/>
     </tab>
     <tab type="usergroup" title="Developer Guide">
-      <tab type="user" url="../dev-env.html" title="Development Environment"/>
+      <tab type="user" url="../dev-getting-started.html" title="Getting Started"/>
       <tab type="user" url="../naming-conventions.html" title="Naming Conventions"/>
       <tab type="user" url="../custom-model.html" title="Custom Model"/>
       <tab type="user" url="../testing.html" title="Testing"/>
@@ -36,7 +40,6 @@
     <tab type="usergroup" title="Physics Documentation">
       <tab type="user" url="../solid-mechanics.html" title="Solid Mechanics"/>
     </tab>
-    <tab type="user" url="../faq.html" title="Frequently Asked Questions"/>
     <tab type="usergroup" title="C++ API Reference">
       <tab type="user" url="../namespaces.html" title="Namespaces"/>
       <tab type="user" url="../annotated.html" title="Classes"/>
