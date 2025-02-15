@@ -67,7 +67,6 @@ endmacro()
 # ----------------------------------------------------------------------------
 add_executable(syntax syntax.cxx)
 target_link_libraries(syntax PRIVATE neml2)
-set_target_properties(syntax PROPERTIES LINK_WHAT_YOU_USE TRUE)
 add_custom_target(syntax_cpp
   DEPENDS syntax
   WORKING_DIRECTORY ${NEML2_BINARY_DIR}/doc

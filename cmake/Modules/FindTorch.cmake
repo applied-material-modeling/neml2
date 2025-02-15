@@ -87,6 +87,7 @@ if(Torch_FOUND)
 
   if(NOT TARGET Torch::Torch)
     add_library(Torch::Torch INTERFACE IMPORTED GLOBAL)
+    set_target_properties(Torch::Torch PROPERTIES INTERFACE_LINK_OPTIONS ${CMAKE_CXX_LINK_WHAT_YOU_USE_FLAG})
     target_include_directories(Torch::Torch INTERFACE ${Torch_INCLUDE_DIR} ${Torch_CSRC_INCLUDE_DIR})
     target_link_directories(Torch::Torch INTERFACE ${Torch_LINK_DIR})
 

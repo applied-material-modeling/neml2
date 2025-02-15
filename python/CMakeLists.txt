@@ -49,24 +49,24 @@ add_library(pyneml2 INTERFACE)
 
 add_submodule(reserved neml2/reserved.cxx)
 target_link_libraries(reserved PRIVATE neml2_base Torch::PythonBinding)
-set_target_properties(reserved PROPERTIES LINK_WHAT_YOU_USE TRUE INSTALL_RPATH_USE_LINK_PATH ON)
+set_target_properties(reserved PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
 
 add_submodule(core neml2/core.cxx)
 target_link_libraries(core PRIVATE neml2 Torch::PythonBinding)
-set_target_properties(core PROPERTIES LINK_WHAT_YOU_USE TRUE INSTALL_RPATH_USE_LINK_PATH ON)
+set_target_properties(core PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
 
 file(GLOB_RECURSE tensors_srcs neml2/tensors/*.cxx)
 add_submodule(tensors "${tensors_srcs}")
 target_link_libraries(tensors PRIVATE neml2_tensor Torch::PythonBinding)
-set_target_properties(tensors PROPERTIES LINK_WHAT_YOU_USE TRUE INSTALL_RPATH_USE_LINK_PATH ON)
+set_target_properties(tensors PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
 
 add_submodule(math neml2/math.cxx)
 target_link_libraries(math PRIVATE neml2_tensor Torch::PythonBinding)
-set_target_properties(math PROPERTIES LINK_WHAT_YOU_USE TRUE INSTALL_RPATH_USE_LINK_PATH ON)
+set_target_properties(math PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
 
 add_submodule(crystallography neml2/crystallography.cxx)
-target_link_libraries(crystallography PRIVATE neml2_model Torch::PythonBinding)
-set_target_properties(crystallography PROPERTIES LINK_WHAT_YOU_USE TRUE INSTALL_RPATH_USE_LINK_PATH ON)
+target_link_libraries(crystallography PRIVATE neml2_tensor Torch::PythonBinding)
+set_target_properties(crystallography PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
 
 # ----------------------------------------------------------------------------
 # Artifacts

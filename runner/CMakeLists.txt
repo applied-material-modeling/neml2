@@ -12,7 +12,7 @@ add_executable(runner ${srcs})
 
 target_compile_options(runner PRIVATE -Wall -Wextra -pedantic)
 target_link_libraries(runner PRIVATE neml2 argparse)
-set_target_properties(runner PROPERTIES LINK_WHAT_YOU_USE ON INSTALL_RPATH_USE_LINK_PATH ON)
+set_target_properties(runner PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
 
 install(TARGETS runner COMPONENT libneml2)
 install(DIRECTORY benchmark
