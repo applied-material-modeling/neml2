@@ -34,9 +34,9 @@ class Tensor;
  * @brief Use automatic differentiation (AD) to calculate the derivatives of a Tensor w.r.t. another
  * Tensor
  *
- * @warning Torch (and hence NEML2) AD wasn't designed to compute the full Jacobian from the very
- * beginning. Using this method to calculate the full Jacobian is inefficient and is subjected to
- * some restrictions on batch shapes.
+ * Torch (and hence NEML2) AD wasn't designed to compute the full Jacobian from the very beginning.
+ * Using this method to calculate the full Jacobian is inefficient and is subjected to some
+ * restrictions on batch shapes.
  *
  * @param y The `Tensor` to to be differentiated
  * @param xs The arguments to take derivatives with respect to

@@ -20,6 +20,6 @@ Optional arguments:
   -n, --num-runs   number of times to run the driver [nargs=0..1] [default: 1]
   --warmup         number of warmup runs before actually measuring the model evaluation time [nargs=0..1] [default: 0]
 ```
-2. The NEML2 Pyton package: As mentioned in the [installation guide](@ref install), NEML2 also provides an _experimental_ Python package which provides bindings for the primitive tensors and parsers for deserializing and running material models. Once the NEML2 Python package is successfully installed, one can follow the [user guide for NEML2 Python package](@ref python-package) to evaluate material models with given inputs.
+2. The NEML2 Pyton package: As mentioned in the [installation guide](@ref install), NEML2 also provides an _experimental_ Python package which provides bindings for the primitive tensors and parsers for deserializing and running material models. Once the NEML2 Python package is successfully installed, you can follow the [user guide for NEML2 Python package](@ref python-package) to evaluate material models with given inputs.
 
-In addition to the above options, one can always write a simple C++ program and link against NEML2. Boilerplate for the C++ program can be found in the [user guide](@ref cpp-backend), and CMake integration is documented in the [installation guide](@ref install-cmake-integration).
+In addition to the above options, you can always write a simple C++ program and link against NEML2. Boilerplate for the C++ program can be found in the [user guide](@ref cpp-backend), and CMake integration is documented in the [installation guide](@ref cmake-integration).
