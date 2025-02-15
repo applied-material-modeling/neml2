@@ -69,7 +69,7 @@ PYBIND11_MODULE(tensors, m)
   FOR_ALL_TENSORBASE(TENSORBASE_DEF);
 
   // Common methods decorated by PrimitiveTensor
-#define PRIMITIVETENSOR_DEF(T) def_PRIMITIVETENSOR<T>(c_##T)
+#define PRIMITIVETENSOR_DEF(T) def_PrimitiveTensor<T>(c_##T)
   FOR_ALL_PRIMITIVETENSOR(PRIMITIVETENSOR_DEF);
 
   // Common methods decorated by VecBase

@@ -46,6 +46,7 @@
       "inherits": "default",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
+        "NEML2_TESTS": "OFF",
         "NEML2_RUNNER": "ON",
         "NEML2_CPU_PROFILER": "ON"
       }
@@ -66,6 +67,7 @@
       "inherits": "default",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "NEML2_TESTS": "OFF",
         "NEML2_RUNNER": "ON",
         "NEML2_PYBIND": "ON"
       }
@@ -129,10 +131,6 @@
       "description": "C++ backend and Python bindings for release",
       "configurePreset": "release",
       "targets": [
-        "unit_tests",
-        "regression_tests",
-        "verification_tests",
-        "dispatcher_tests",
         "runner",
         "python_stub"
       ]

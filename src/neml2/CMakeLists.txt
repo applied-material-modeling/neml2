@@ -13,7 +13,7 @@ add_compile_definitions(_GLIBCXX_USE_CXX11_ABI=${GLIBCXX_USE_CXX11_ABI})
 cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${Torch_LINK_DIR} Torch_DOWNLOADED)
 
 if(Torch_DOWNLOADED)
-  install(DIRECTORY ${Torch_INCLUDE_DIR} TYPE INCLUDE COMPONENT libneml2-dev)
+  install(DIRECTORY ${Torch_INCLUDE_DIR} TYPE INCLUDE COMPONENT libneml2)
   install(DIRECTORY ${Torch_LINK_DIR} DESTINATION . COMPONENT libneml2)
 endif()
 
@@ -32,21 +32,20 @@ if(NOT HIT_FOUND)
     find_package(WASP REQUIRED)
   endif()
 
-  cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${WASP_LINK_DIR} WASP_DOWNLOADED)
-
-  if(WASP_DOWNLOADED)
-    install(DIRECTORY ${WASP_INCLUDE_DIR}/waspcore ${WASP_INCLUDE_DIR}/wasphit TYPE INCLUDE COMPONENT libneml2-dev)
-  endif()
-
   include(DownloadHIT)
   set(HIT_ROOT ${HIT_INSTALL_DIR} CACHE PATH "HIT root directory" FORCE)
   find_package(HIT REQUIRED)
 endif()
 
+cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${WASP_LINK_DIR} WASP_DOWNLOADED)
 cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${HIT_LINK_DIR} HIT_DOWNLOADED)
 
+if(WASP_DOWNLOADED)
+  install(DIRECTORY ${WASP_INCLUDE_DIR}/waspcore ${WASP_INCLUDE_DIR}/wasphit TYPE INCLUDE COMPONENT libneml2)
+endif()
+
 if(HIT_DOWNLOADED)
-  install(DIRECTORY ${HIT_INCLUDE_DIR}/hit TYPE INCLUDE COMPONENT libneml2-dev)
+  install(DIRECTORY ${HIT_INCLUDE_DIR}/hit TYPE INCLUDE COMPONENT libneml2)
 endif()
 
 # ----------------------------------------------------------------------------
@@ -64,7 +63,7 @@ if(NEML2_WORK_DISPATCHER)
   cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${TIMPI_LINK_DIR} TIMPI_DOWNLOADED)
 
   if(TIMPI_DOWNLOADED)
-    install(DIRECTORY ${TIMPI_INCLUDE_DIR}/timpi TYPE INCLUDE COMPONENT libneml2-dev)
+    install(DIRECTORY ${TIMPI_INCLUDE_DIR}/timpi TYPE INCLUDE COMPONENT libneml2)
   endif()
 endif()
 
@@ -83,7 +82,7 @@ if(NEML2_CPU_PROFILER)
   cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${Gperftools_LINK_DIR} Gperftools_DOWNLOADED)
 
   if(Gperftools_DOWNLOADED)
-    # libneml2-dev does not need gperftools headers
+    # libneml2 does not need gperftools headers
   endif()
 endif()
 
@@ -112,7 +111,7 @@ function(neml2_add_submodule mname TYPE mdir)
     target_link_libraries(${mname} PRIVATE Gperftools::profiler)
   endif()
 
-  install(TARGETS ${mname} FILE_SET HEADERS COMPONENT libneml2-dev)
+  install(TARGETS ${mname} FILE_SET HEADERS COMPONENT libneml2)
   install(TARGETS ${mname} LIBRARY COMPONENT libneml2)
 endfunction()
 

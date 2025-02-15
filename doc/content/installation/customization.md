@@ -32,12 +32,15 @@ NEML2 predefines four configure presets, serving different development purposes:
 
 The configure presets and their corresponding configure options are summarized below.
 
-| configure preset | CMAKE_BUILD_TYPE | NEML2_TESTS | NEML2_RUNNER | NEML2_PYBIND | NEML2_DOC | NEML2_CPU_PROFILER | NEML2_WORK_DISPATCHER |
-| :--------------- | :--------------- | ----------- | ------------ | ------------ | --------- | ------------------ | --------------------- |
-| dev              | Debug            | ON          |              | ON           | ON        |                    | ON                    |
-| coverage         | Coverage         | ON          |              |              |           |                    | ON                    |
-| runner           | Release          | ON          | ON           |              |           | ON                 | ON                    |
-| release          | RelWithDebInfo   | ON          | ON           | ON           |           |                    | ON                    |
+| preset                | dev   | coverage | runner  | release        |
+| :-------------------- | :---- | :------- | :------ | :------------- |
+| CMAKE_BUILD_TYPE      | Debug | Coverage | Release | RelWithDebInfo |
+| NEML2_TESTS           | ON    | ON       |         |                |
+| NEML2_RUNNER          |       |          | ON      | ON             |
+| NEML2_PYBIND          | ON    |          |         | ON             |
+| NEML2_DOC             | ON    |          |         |                |
+| NEML2_CPU_PROFILER    |       |          | ON      |                |
+| NEML2_WORK_DISPATCHER | ON    | ON       | ON      | ON             |
 
 To select a specific configure preset, use the `--preset` option on the command line.
 

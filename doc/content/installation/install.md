@@ -1,4 +1,4 @@
-# Installation Guide {#install}
+# Installation {#install}
 
 [TOC]
 
@@ -39,9 +39,9 @@ Optionally, NEML2 can be installed as a system library.
 cmake --install build/release --component libneml2 --prefix /usr/local
 ```
 The `--prefix` option specifies the path where NEML2 will be installed. Write permission is needed for the installation path. The `--component libneml2` option tells CMake to only install the libraries and runtime artifacts. NEML2 has three installable components:
-- `libneml2`: core libraries, tests, and the Runner
-- `libneml2-dev`: headers and other development dependencies
-- `libneml2-python`: Python bindings, submodules, and tests
+- `libneml2`: core libraries and public headers
+- `libneml2-bin`: executables and utilities such as the runner
+- `libneml2-python`: Python bindings, submodules, and scripts
 
 ### Python package
 

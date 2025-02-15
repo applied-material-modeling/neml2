@@ -14,10 +14,10 @@ target_compile_options(runner PRIVATE -Wall -Wextra -pedantic)
 target_link_libraries(runner PRIVATE neml2 argparse)
 set_target_properties(runner PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
 
-install(TARGETS runner COMPONENT libneml2)
+install(TARGETS runner COMPONENT libneml2-bin)
 install(DIRECTORY benchmark
-  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/neml2/benchmark
-  COMPONENT libneml2
+  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/neml2
+  COMPONENT libneml2-bin
   FILES_MATCHING
   PATTERN "*.i"
   PATTERN "*.pt"
