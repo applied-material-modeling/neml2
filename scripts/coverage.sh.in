@@ -35,6 +35,7 @@ mkdir -p $COVERAGE_DIR
 lcov --gcov-tool $TOOL --capture --initial --directory $OBJ_DIR --output-file $COVERAGE_DIR/initialize.info
 cd ${NEML2_SOURCE_DIR}/tests
 ${NEML2_BINARY_DIR}/tests/unit/unit_tests || true
+${NEML2_BINARY_DIR}/tests/unit/dispatcher_tests || true
 lcov --gcov-tool $TOOL --capture --ignore-errors gcov,source --directory $OBJ_DIR --output-file $COVERAGE_DIR/covered.info
 lcov --gcov-tool $TOOL --add-tracefile $COVERAGE_DIR/initialize.info --add-tracefile $COVERAGE_DIR/covered.info --output-file $COVERAGE_DIR/final.info
 lcov --gcov-tool $TOOL --extract $COVERAGE_DIR/final.info \*$SRC_DIR/\* --output-file $COVERAGE_DIR/coverage.info
