@@ -167,17 +167,17 @@ endif()
 # libneml2_user_tensor
 neml2_add_submodule(neml2_user_tensor SHARED user_tensors)
 target_link_libraries(neml2_user_tensor PUBLIC neml2_tensor neml2_base)
-set_target_properties(neml2_user_tensor PROPERTIES INTERFACE_LINK_OPTIONS ${CMAKE_CXX_LINK_WHAT_YOU_USE_FLAG})
+target_link_options(neml2_user_tensor INTERFACE ${CMAKE_CXX_LINK_WHAT_YOU_USE_FLAG})
 
 # libneml2_solver
 neml2_add_submodule(neml2_solver SHARED solvers)
 target_link_libraries(neml2_solver PUBLIC neml2_tensor neml2_base)
-set_target_properties(neml2_solver PROPERTIES INTERFACE_LINK_OPTIONS ${CMAKE_CXX_LINK_WHAT_YOU_USE_FLAG})
+target_link_options(neml2_solver INTERFACE ${CMAKE_CXX_LINK_WHAT_YOU_USE_FLAG})
 
 # libneml2_model
 neml2_add_submodule(neml2_model SHARED models)
 target_link_libraries(neml2_model PUBLIC neml2_solver neml2_tensor neml2_base)
-set_target_properties(neml2_model PROPERTIES INTERFACE_LINK_OPTIONS ${CMAKE_CXX_LINK_WHAT_YOU_USE_FLAG})
+target_link_options(neml2_model INTERFACE ${CMAKE_CXX_LINK_WHAT_YOU_USE_FLAG})
 
 if(NEML2_PCH)
   target_precompile_headers(neml2_model PUBLIC
@@ -188,7 +188,7 @@ endif()
 # libneml2_driver
 neml2_add_submodule(neml2_driver SHARED drivers)
 target_link_libraries(neml2_driver PUBLIC neml2_model neml2_tensor neml2_base)
-set_target_properties(neml2_driver PROPERTIES INTERFACE_LINK_OPTIONS ${CMAKE_CXX_LINK_WHAT_YOU_USE_FLAG})
+target_link_options(neml2_driver INTERFACE ${CMAKE_CXX_LINK_WHAT_YOU_USE_FLAG})
 
 # libneml2
 #
