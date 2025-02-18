@@ -5,14 +5,19 @@ GENERATE_HTML          = YES
 DISABLE_INDEX          = NO
 FULL_SIDEBAR           = NO
 HTML_OUTPUT            = html
-HTML_EXTRA_STYLESHEET  = ${doxygen-awesome-css_SOURCE_DIR}/doxygen-awesome.css\
+HTML_HEADER            = ${NEML2_SOURCE_DIR}/doc/config/header.html
+HTML_EXTRA_FILES       = ${doxygen-awesome-css_SOURCE_DIR}/doxygen-awesome-darkmode-toggle.js \
+                         ${doxygen-awesome-css_SOURCE_DIR}/doxygen-awesome-paragraph-link.js
+HTML_EXTRA_STYLESHEET  = ${doxygen-awesome-css_SOURCE_DIR}/doxygen-awesome.css \
                          ${doxygen-awesome-css_SOURCE_DIR}/doxygen-awesome-sidebar-only.css \
-                         ${NEML2_SOURCE_DIR}/doc/custom.css
+                         ${doxygen-awesome-css_SOURCE_DIR}/doxygen-awesome-sidebar-only-darkmode-toggle.css \
+                         ${doxygen-awesome-css_SOURCE_DIR}/doxygen-awesome-tabs.js \
+                         ${NEML2_SOURCE_DIR}/doc/config/custom.css
 HTML_COLORSTYLE        = LIGHT
 GENERATE_TREEVIEW      = YES
 USE_MATHJAX            = YES
 MATHJAX_VERSION        = MathJax_3
 MATHJAX_FORMAT         = HTML-CSS
 MATHJAX_RELPATH        = https://cdn.jsdelivr.net/npm/mathjax@3
-MATHJAX_EXTENSIONS     = ams physics boldsymbol
+MATHJAX_CODEFILE       = ${NEML2_SOURCE_DIR}/doc/config/mathjax.js
 WARN_LOGFILE           = ${NEML2_BINARY_DIR}/doc/doxygen.html.log

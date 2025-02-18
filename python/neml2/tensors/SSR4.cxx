@@ -54,4 +54,32 @@ def_SSR4(py::class_<SSR4> & c)
       [](NEML2_TENSOR_OPTIONS_VARGS) { return SSR4::identity_dev(NEML2_TENSOR_OPTIONS); },
       py::kw_only(),
       PY_ARG_TENSOR_OPTIONS);
+  c.def_static(
+      "identity_C1",
+      [](NEML2_TENSOR_OPTIONS_VARGS) { return SSR4::identity_C1(NEML2_TENSOR_OPTIONS); },
+      py::kw_only(),
+      PY_ARG_TENSOR_OPTIONS);
+  c.def_static(
+      "identity_C2",
+      [](NEML2_TENSOR_OPTIONS_VARGS) { return SSR4::identity_C2(NEML2_TENSOR_OPTIONS); },
+      py::kw_only(),
+      PY_ARG_TENSOR_OPTIONS);
+  c.def_static(
+      "identity_C3",
+      [](NEML2_TENSOR_OPTIONS_VARGS) { return SSR4::identity_C3(NEML2_TENSOR_OPTIONS); },
+      py::kw_only(),
+      PY_ARG_TENSOR_OPTIONS);
+  c.def_static("isotropic_E_nu",
+               py::overload_cast<const Scalar &, const Scalar &>(&SSR4::isotropic_E_nu));
+  c.def_static(
+      "isotropic_E_nu",
+      [](const Real & E, const Real & nu, NEML2_TENSOR_OPTIONS_VARGS)
+      { return SSR4::isotropic_E_nu(E, nu, NEML2_TENSOR_OPTIONS); },
+      py::arg("E"),
+      py::arg("nu"),
+      py::kw_only(),
+      PY_ARG_TENSOR_OPTIONS);
+
+  // Operators
+  c.def(SR2() * py::self).def(py::self * SR2()).def(py::self * py::self);
 }

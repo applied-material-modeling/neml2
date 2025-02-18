@@ -38,6 +38,8 @@ namespace fs = std::filesystem;
 
 namespace neml2
 {
+register_NEML2_object(TransientDriver);
+
 template <typename T>
 void
 set_ic(ValueMap & storage,
@@ -71,6 +73,7 @@ OptionSet
 TransientDriver::expected_options()
 {
   OptionSet options = ModelDriver::expected_options();
+  options.doc() = "Driver for simulating the transient response of an autonomous system.";
 
   options.set<VariableName>("time") = VariableName(FORCES, "t");
   options.set("time").doc() = "Time";

@@ -27,8 +27,32 @@
 namespace neml2
 {
 const IsotropicElasticityConverter::ConversionTableType IsotropicElasticityConverter::table = {
+    {{ElasticConstant::BULK_MODULUS, ElasticConstant::SHEAR_MODULUS},
+     {&IsotropicElasticityConverter::K_G_to_K, &IsotropicElasticityConverter::K_G_to_G}},
     {{ElasticConstant::YOUNGS_MODULUS, ElasticConstant::POISSONS_RATIO},
      {&IsotropicElasticityConverter::E_nu_to_K, &IsotropicElasticityConverter::E_nu_to_G}}};
+
+IsotropicElasticityConverter::ConversionType
+IsotropicElasticityConverter::K_G_to_K(const InputType & input, const DerivativeFlagType & deriv)
+{
+  const auto & K = input[0];
+
+  const auto dK_dK = deriv[0] ? Scalar::identity_map(K.options()) : Scalar();
+  const auto dK_dG = deriv[1] ? Scalar::zeros(K.options()) : Scalar();
+
+  return {K, {dK_dK, dK_dG}};
+}
+
+IsotropicElasticityConverter::ConversionType
+IsotropicElasticityConverter::K_G_to_G(const InputType & input, const DerivativeFlagType & deriv)
+{
+  const auto & G = input[1];
+
+  const auto dG_dK = deriv[0] ? Scalar::zeros(G.options()) : Scalar();
+  const auto dG_dG = deriv[1] ? Scalar::identity_map(G.options()) : Scalar();
+
+  return {G, {dG_dK, dG_dG}};
+}
 
 IsotropicElasticityConverter::ConversionType
 IsotropicElasticityConverter::E_nu_to_K(const InputType & input, const DerivativeFlagType & deriv)

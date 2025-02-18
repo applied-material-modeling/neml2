@@ -51,6 +51,9 @@ TraceableTensorShape extract_batch_sizes(const ATensor & tensor, Size batch_dim)
 template <typename... S>
 TraceableTensorShape add_traceable_shapes(const S &... shape);
 
+/// Print last evaluated optimized graph
+std::shared_ptr<jit::Graph> last_executed_optimized_graph();
+
 namespace details
 {
 template <typename... S>
