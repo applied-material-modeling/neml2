@@ -71,19 +71,7 @@ guess_test_dir(const std::string & stem, std::string & hint, const std::string &
     return 0;
   }
 
-  // Try alternative hints
-  if (try_hint(stem, hint) == 0)
-    return 0;
-
-  hint = exec_prefix;
-  if (try_hint(stem, hint) == 0)
-    return 0;
-
-  hint = exec_prefix + "/..";
-  if (try_hint(stem, hint) == 0)
-    return 0;
-
-  hint = exec_prefix + "/../..";
+  hint = exec_prefix + "/../../../..";
   if (try_hint(stem, hint) == 0)
     return 0;
 
@@ -91,7 +79,15 @@ guess_test_dir(const std::string & stem, std::string & hint, const std::string &
   if (try_hint(stem, hint) == 0)
     return 0;
 
-  hint = exec_prefix + "/../../../..";
+  hint = exec_prefix + "/../..";
+  if (try_hint(stem, hint) == 0)
+    return 0;
+
+  hint = exec_prefix + "/..";
+  if (try_hint(stem, hint) == 0)
+    return 0;
+
+  hint = exec_prefix;
   if (try_hint(stem, hint) == 0)
     return 0;
 

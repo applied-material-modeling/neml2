@@ -35,19 +35,15 @@
  * heuristics.
  *
  * Given the stem of the test directory \p stem, the \p hint is considered valid if it exists and
- * ends with \p stem. If the hint is not valid, we search for the test directory at a few places in
- * the following order:
- * 1. {hint}/stem
- * 2. {hint}/tests/stem
- * 3. {hint}/share/neml2/stem
+ * ends with \p stem.
  *
- * If the test directory is still not found, we traverse up to 4 levels from the executable path as
+ * If the hint is not valid, we traverse up to 4 levels from the executable path as
  * alternative hints, i.e.,
- * 1. hint = {exec_prefix}
- * 2. hint = {exec_prefix}/..
+ * 1. hint = {exec_prefix}/../../../..
+ * 2. hint = {exec_prefix}/../../..
  * 3. hint = {exec_prefix}/../..
- * 4. hint = {exec_prefix}/../../..
- * 5. hint = {exec_prefix}/../../../..
+ * 4. hint = {exec_prefix}/..
+ * 5. hint = {exec_prefix}
  * where {exec_prefix} is the directory where the executable is located.
  *
  * A nonzero return code is returned if the test directory is not found.
