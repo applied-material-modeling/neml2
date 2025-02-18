@@ -28,6 +28,8 @@
 
 namespace neml2
 {
+class Scalar;
+
 /**
  * @brief A scalar-valued parameter defined by (mu0 - D/(exp(T0/T)-1)) * exp(_C)
  */

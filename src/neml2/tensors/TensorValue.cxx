@@ -29,7 +29,7 @@ namespace neml2
 {
 template <typename T>
 void
-TensorValue<T>::to_(const torch::TensorOptions & options)
+TensorValue<T>::to_(const TensorOptions & options)
 {
   _value = _value.to(options);
 }

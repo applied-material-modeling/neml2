@@ -25,6 +25,10 @@
 
 #include "neml2/base/OptionSet.h"
 
+// Registry.h is included here because it is needed for the factory pattern, i.e., for the
+// register_NEML2_object macros
+#include "neml2/base/Registry.h"
+
 namespace neml2
 {
 /**
@@ -42,8 +46,8 @@ public:
   NEML2Object() = delete;
   NEML2Object(NEML2Object &&) = delete;
   NEML2Object(const NEML2Object &) = delete;
-  NEML2Object & operator=(const NEML2Object &) = delete;
   NEML2Object & operator=(NEML2Object &&) = delete;
+  NEML2Object & operator=(const NEML2Object &) = delete;
   virtual ~NEML2Object() = default;
 
   /**
@@ -104,7 +108,8 @@ T *
 NEML2Object::host()
 {
   auto host_ptr = dynamic_cast<T *>(_host ? _host : this);
-  neml_assert(host_ptr, "Internal error: Failed to retrieve host of object ", name());
+  if (!host_ptr)
+    throw NEMLException("Internal error: Failed to retrieve host of object " + name());
   return host_ptr;
 }
 } // namespace neml2

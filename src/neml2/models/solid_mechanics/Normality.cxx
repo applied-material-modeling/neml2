@@ -24,6 +24,7 @@
 
 #include "neml2/models/solid_mechanics/Normality.h"
 #include "neml2/base/guards.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {
@@ -53,7 +54,7 @@ Normality::expected_options()
 
 Normality::Normality(const OptionSet & options)
   : Model(options),
-    _model(register_model<Model>(options.get<std::string>("model"))),
+    _model(register_model(options.get<std::string>("model"))),
     _f(options.get<VariableName>("function"))
 {
   // Set up the conjugate pairs
@@ -72,10 +73,8 @@ Normality::Normality(const OptionSet & options)
 }
 
 void
-Normality::set_value(bool out, bool dout_din, bool d2out_din2)
+Normality::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "Normality doesn't implement second derivatives.");
-
   {
     SolvingNonlinearSystem guard(false);
     // Since normality maps the derivatives to the output variables, we need to evaluate the
@@ -98,9 +97,9 @@ Normality::set_value(bool out, bool dout_din, bool d2out_din2)
 
     if (dout_din)
       for (auto && [jname, jvar] : _model.input_variables())
-        if (jvar.is_dependent() && fvar.second_derivatives().count(iname) &&
+        if (jvar->is_dependent() && fvar.second_derivatives().count(iname) &&
             fvar.second_derivatives().at(iname).count(jname))
-          ivar->d(jvar) = fvar.second_derivatives().at(iname).at(jname);
+          ivar->d(*jvar) = fvar.second_derivatives().at(iname).at(jname);
   }
 }
 } // namespace neml2

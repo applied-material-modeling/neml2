@@ -22,9 +22,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/solvers/Newton.h"
+#include <iostream>
 #include <iomanip>
-#include "neml2/misc/math.h"
+
+#include "neml2/solvers/Newton.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/functions/linalg/vector_norm.h"
+#include "neml2/tensors/functions/linalg/solve.h"
 
 namespace neml2
 {
@@ -52,7 +56,7 @@ Newton::solve(NonlinearSystem & system, const NonlinearSystem::Sol<false> & x0)
 
   // The initial residual for relative convergence check
   auto R = system.residual(x);
-  auto nR = math::linalg::vector_norm(R);
+  auto nR = linalg::vector_norm(R);
   auto nR0 = nR.clone();
 
   // Check for initial convergence
@@ -77,7 +81,7 @@ Newton::solve(NonlinearSystem & system, const NonlinearSystem::Sol<false> & x0)
     auto J = system.Jacobian<true>();
     update(system, x, R, J);
     R = system.residual(x);
-    nR = math::linalg::vector_norm(R);
+    nR = linalg::vector_norm(R);
 
     // Check for convergence
     if (converged(i, nR, nR0))
@@ -94,16 +98,16 @@ Newton::solve(NonlinearSystem & system, const NonlinearSystem::Sol<false> & x0)
 }
 
 bool
-Newton::converged(size_t itr, const torch::Tensor & nR, const torch::Tensor & nR0) const
+Newton::converged(size_t itr, const ATensor & nR, const ATensor & nR0) const
 {
   // LCOV_EXCL_START
   if (verbose)
     std::cout << "ITERATION " << std::setw(3) << itr << ", |R| = " << std::scientific
-              << torch::max(nR).item<Real>() << ", |R0| = " << std::scientific
-              << torch::max(nR0).item<Real>() << std::endl;
+              << at::max(nR).item<Real>() << ", |R0| = " << std::scientific
+              << at::max(nR0).item<Real>() << std::endl;
   // LCOV_EXCL_STOP
 
-  return torch::all(torch::logical_or(nR < atol, nR / nR0 < rtol)).item<bool>();
+  return at::all(at::logical_or(nR < atol, nR / nR0 < rtol)).item<bool>();
 }
 
 void
@@ -130,7 +134,7 @@ Newton::solve_direction(const NonlinearSystem::Res<true> & r, const NonlinearSys
   if (r.base_dim() == 0 && J.base_dim() == 0)
     return NonlinearSystem::Sol<true>(-Tensor(r) / Tensor(J));
 
-  return NonlinearSystem::Sol<true>(-math::linalg::solve(J, r));
+  return NonlinearSystem::Sol<true>(-linalg::solve(J, r));
 }
 
 } // namespace neml2

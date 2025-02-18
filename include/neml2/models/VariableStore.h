@@ -24,19 +24,20 @@
 
 #pragma once
 
-#include <ATen/core/stack.h>
+#include <memory>
 
-#include "neml2/base/NEML2Object.h"
-#include "neml2/base/Storage.h"
-#include "neml2/models/LabeledAxis.h"
-#include "neml2/models/Variable.h"
-#include "neml2/models/map_types.h"
-#include "neml2/tensors/tensors.h"
+#include "neml2/models/map_types_fwd.h"
+#include "neml2/base/LabeledAxisAccessor.h"
+#include "neml2/jit/types.h"
 
 namespace neml2
 {
-// Foward decl
+// Foward declarations
 class Model;
+class LabeledAxis;
+class VariableBase;
+template <typename T>
+class Variable;
 
 class VariableStore
 {
@@ -66,12 +67,14 @@ public:
   const LabeledAxis & output_axis() const { return _output_axis; }
   ///@}
 
+  using VariableStorage = std::map<VariableName, std::unique_ptr<VariableBase>>;
+
   ///@{
   /// Variables
-  Storage<VariableName, VariableBase> & input_variables() { return _input_variables; }
-  const Storage<VariableName, VariableBase> & input_variables() const { return _input_variables; }
-  Storage<VariableName, VariableBase> & output_variables() { return _output_variables; }
-  const Storage<VariableName, VariableBase> & output_variables() const { return _output_variables; }
+  VariableStorage & input_variables() { return _input_variables; }
+  const VariableStorage & input_variables() const { return _input_variables; }
+  VariableStorage & output_variables() { return _output_variables; }
+  const VariableStorage & output_variables() const { return _output_variables; }
   ///@}
 
   ///@{
@@ -83,7 +86,7 @@ public:
   ///@}
 
   /// Current tensor options
-  const torch::TensorOptions & tensor_options() const { return _tensor_options; }
+  const TensorOptions & tensor_options() const { return _tensor_options; }
 
   ///@{
   /// Release allocated tensor
@@ -123,132 +126,51 @@ protected:
    *
    * @param options The target options
    */
-  virtual void send_variables_to(const torch::TensorOptions & options);
+  virtual void send_variables_to(const TensorOptions & options);
 
   /// Declare an input variable
-  template <typename T, typename S>
-  const Variable<T> &
-  declare_input_variable(S && name, TensorShapeRef list_shape = {}, TensorShapeRef base_shape = {})
-  {
-    if constexpr (!std::is_same_v<T, Tensor>)
-      neml_assert(base_shape.empty(),
-                  "Creating a Variable of primitive tensor type does not require a base shape.");
+  template <typename T>
+  const Variable<T> & declare_input_variable(const char * name, TensorShapeRef list_shape = {});
 
-    const auto var_name = variable_name(std::forward<S>(name));
-    const auto list_sz = utils::storage_size(list_shape);
-    const auto base_sz =
-        std::is_same_v<T, Tensor> ? utils::storage_size(base_shape) : T::const_base_storage;
-    const auto sz = list_sz * base_sz;
-
-    _input_axis.add_variable(var_name, sz);
-    return *create_variable<T>(_input_variables, var_name, list_shape, base_shape);
-  }
+  /// Declare an input variable
+  template <typename T>
+  const Variable<T> & declare_input_variable(const VariableName & name,
+                                             TensorShapeRef list_shape = {});
 
   /// Declare an output variable
-  template <typename T, typename S>
-  Variable<T> &
-  declare_output_variable(S && name, TensorShapeRef list_shape = {}, TensorShapeRef base_shape = {})
-  {
-    if constexpr (!std::is_same_v<T, Tensor>)
-      neml_assert(base_shape.empty(),
-                  "Creating a Variable of primitive tensor type does not require a base shape.");
+  template <typename T>
+  Variable<T> & declare_output_variable(const char * name, TensorShapeRef list_shape = {});
 
-    const auto var_name = variable_name(std::forward<S>(name));
-    const auto list_sz = utils::storage_size(list_shape);
-    const auto base_sz =
-        std::is_same_v<T, Tensor> ? utils::storage_size(base_shape) : T::const_base_storage;
-    const auto sz = list_sz * base_sz;
-
-    _output_axis.add_variable(var_name, sz);
-    return *create_variable<T>(_output_variables, var_name, list_shape, base_shape);
-  }
+  /// Declare an output variable
+  template <typename T>
+  Variable<T> & declare_output_variable(const VariableName & name, TensorShapeRef list_shape = {});
 
   /// Clone a variable and put it on the input axis
   const VariableBase * clone_input_variable(const VariableBase & var,
-                                            const VariableName & new_name = {})
-  {
-    neml_assert(&var.owner() != _object, "Trying to clone a variable from the same model.");
-
-    const auto var_name = new_name.empty() ? var.name() : new_name;
-    neml_assert(
-        !_input_variables.query_value(var_name), "Input variable ", var_name, " already exists.");
-    auto var_clone = var.clone(var_name, _object);
-
-    _input_axis.add_variable(var_name, var_clone->assembly_storage());
-    return _input_variables.set_pointer(var_name, std::move(var_clone));
-  }
+                                            const VariableName & new_name = {});
 
   /// Clone a variable and put it on the output axis
-  VariableBase * clone_output_variable(const VariableBase & var, const VariableName & new_name = {})
-  {
-    neml_assert(&var.owner() != _object, "Trying to clone a variable from the same model.");
-
-    const auto var_name = new_name.empty() ? var.name() : new_name;
-    neml_assert(
-        !_output_variables.query_value(var_name), "Output variable ", var_name, " already exists.");
-    auto var_clone = var.clone(var_name, _object);
-
-    _output_axis.add_variable(var_name, var_clone->assembly_storage());
-    return _output_variables.set_pointer(var_name, std::move(var_clone));
-  }
+  VariableBase * clone_output_variable(const VariableBase & var,
+                                       const VariableName & new_name = {});
 
   /// Assign stack to input variables
-  void assign_input_stack(torch::jit::Stack & stack);
+  void assign_input_stack(jit::Stack & stack);
 
   /// Assign stack to output variables and derivatives
-  void assign_output_stack(torch::jit::Stack & stack, bool out, bool dout, bool d2out);
+  void assign_output_stack(jit::Stack & stack, bool out, bool dout, bool d2out);
 
   /// Collect stack from input variables
-  torch::jit::Stack collect_input_stack() const;
+  jit::Stack collect_input_stack() const;
 
   /// Collect stack from output variables and derivatives
-  torch::jit::Stack collect_output_stack(bool out, bool dout, bool d2out) const;
+  jit::Stack collect_output_stack(bool out, bool dout, bool d2out) const;
 
 private:
-  // Helper method to construct variable name
-  template <typename S>
-  VariableName variable_name(S && name) const
-  {
-    if constexpr (std::is_convertible_v<S, std::string>)
-      if (_object_options.contains<VariableName>(name))
-        return _object_options.get<VariableName>(name);
-
-    return name;
-  }
-
   // Create a variable
   template <typename T>
-  Variable<T> * create_variable(Storage<VariableName, VariableBase> & variables,
+  Variable<T> * create_variable(VariableStorage & variables,
                                 const VariableName & name,
-                                TensorShapeRef list_shape,
-                                TensorShapeRef base_shape)
-  {
-    // Make sure we don't duplicate variables
-    VariableBase * var_base_ptr = variables.query_value(name);
-    neml_assert(!var_base_ptr,
-                "Trying to create variable ",
-                name,
-                ", but a variable with the same name already exists.");
-
-    // Allocate
-    if constexpr (std::is_same_v<T, Tensor>)
-    {
-      auto var = std::make_unique<Variable<Tensor>>(name, _object, list_shape, base_shape);
-      var_base_ptr = variables.set_pointer(name, std::move(var));
-    }
-    else
-    {
-      auto var = std::make_unique<Variable<T>>(name, _object, list_shape);
-      var_base_ptr = variables.set_pointer(name, std::move(var));
-    }
-
-    // Cast it to the concrete type
-    auto var_ptr = dynamic_cast<Variable<T> *>(var_base_ptr);
-    neml_assert(
-        var_ptr, "Internal error: Failed to cast variable ", name, " to its concrete type.");
-
-    return var_ptr;
-  }
+                                TensorShapeRef list_shape);
 
   /// Model using this interface
   Model * _object;
@@ -262,7 +184,7 @@ private:
   const OptionSet _object_options;
 
   /// All the declared axes
-  Storage<std::string, LabeledAxis> _axes;
+  std::map<std::string, std::unique_ptr<LabeledAxis>> _axes;
 
   /// The input axis
   LabeledAxis & _input_axis;
@@ -271,12 +193,12 @@ private:
   LabeledAxis & _output_axis;
 
   /// Input variables
-  Storage<VariableName, VariableBase> _input_variables;
+  VariableStorage _input_variables;
 
   /// Output variables
-  Storage<VariableName, VariableBase> _output_variables;
+  VariableStorage _output_variables;
 
   /// Current tensor options for padding variables
-  torch::TensorOptions _tensor_options;
+  TensorOptions _tensor_options;
 };
 } // namespace neml2

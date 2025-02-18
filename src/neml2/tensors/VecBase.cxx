@@ -24,7 +24,8 @@
 
 #include "neml2/tensors/VecBase.h"
 #include "neml2/tensors/tensors.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/functions/sqrt.h"
+#include "neml2/tensors/functions/linalg/vecdot.h"
 
 namespace neml2
 {
@@ -33,7 +34,7 @@ Derived
 VecBase<Derived>::fill(const Real & v1,
                        const Real & v2,
                        const Real & v3,
-                       const torch::TensorOptions & options)
+                       const TensorOptions & options)
 {
   return VecBase<Derived>::fill(Scalar(v1, options), Scalar(v2, options), Scalar(v3, options));
 }
@@ -42,12 +43,12 @@ template <class Derived>
 Derived
 VecBase<Derived>::fill(const Scalar & v1, const Scalar & v2, const Scalar & v3)
 {
-  return Derived(torch::stack({v1, v2, v3}, -1), v1.batch_sizes());
+  return Derived(at::stack({v1, v2, v3}, -1), v1.batch_sizes());
 }
 
 template <class Derived>
 R2
-VecBase<Derived>::identity_map(const torch::TensorOptions & options)
+VecBase<Derived>::identity_map(const TensorOptions & options)
 {
   return R2::identity(options);
 }
@@ -56,21 +57,21 @@ template <class Derived>
 Scalar
 VecBase<Derived>::operator()(Size i) const
 {
-  return this->base_index({i});
+  return Scalar(this->base_index({i}), this->batch_sizes());
 }
 
 template <class Derived>
 Scalar
 VecBase<Derived>::norm_sq() const
 {
-  return dot(*this);
+  return linalg::vecdot(*this, *this);
 }
 
 template <class Derived>
 Scalar
 VecBase<Derived>::norm() const
 {
-  return math::sqrt(dot(*this));
+  return sqrt(norm_sq());
 }
 
 template <class Derived>
@@ -84,14 +85,14 @@ template <class Derived>
 Derived
 VecBase<Derived>::rotate(const R2 & R) const
 {
-  return R * Vec(*this);
+  return Derived(R * Vec(*this));
 }
 
 template <class Derived>
 R2
 VecBase<Derived>::drotate(const Rot & r) const
 {
-  return torch::einsum("...ijk,...j", {r.deuler_rodrigues(), *this});
+  return R2(at::einsum("...ijk,...j", {r.deuler_rodrigues(), *this}));
 }
 
 template <class Derived>
@@ -99,7 +100,7 @@ R3
 VecBase<Derived>::drotate(const R2 & R) const
 {
   auto I = R2::identity(R.options());
-  return torch::einsum("...ij,...k", {I, *this});
+  return R3(at::einsum("...ij,...k", {I, *this}));
 }
 
 #define VECBASE_INSTANTIATE(T) template class VecBase<T>

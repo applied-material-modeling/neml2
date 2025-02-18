@@ -2,14 +2,20 @@
   <!-- Navigation index tabs for HTML output -->
   <navindex>
     <tab type="mainpage" visible="yes"/>
-    <tab type="user" url="@ref install" title="Installation Guide"/>
+    <tab type="usergroup" title="Installation Guide">
+      <tab type="user" url="@ref install" title="Installation"/>
+      <tab type="user" url="@ref dependency-management" title="Dependency Management"/>
+      <tab type="user" url="@ref build-customization" title="Build Customization"/>
+      <tab type="user" url="@ref external-project-integration" title="External Project Integration"/>
+    </tab>
     <tab type="usergroup" title="User Guide">
+      <tab type="user" url="@ref user-getting-started" title="Getting Started"/>
       <tab type="user" url="@ref input-file" title="Input File"/>
       <tab type="user" url="@ref cpp-backend" title="C++ Backend"/>
       <tab type="user" url="@ref python-package" title="Python Package"/>
     </tab>
     <tab type="usergroup" title="Developer Guide">
-      <tab type="user" url="@ref dev-env" title="Development Environment"/>
+      <tab type="user" url="@ref dev-getting-started" title="Getting Started"/>
       <tab type="user" url="@ref naming-conventions" title="Naming Conventions"/>
       <tab type="user" url="@ref custom-model" title="Custom Model"/>
       <tab type="user" url="@ref testing" title="Testing"/>
@@ -34,7 +40,6 @@
     <tab type="usergroup" title="Physics Documentation">
       <tab type="user" url="@ref solid-mechanics" title="Solid Mechanics"/>
     </tab>
-    <tab type="user" url="@ref faq" title="Frequently Asked Questions"/>
     <tab type="usergroup" title="C++ API Reference">
       <tab type="namespacelist" visible="yes" title="Namespaces" intro=""/>
       <tab type="classlist" visible="yes" title="Classes" intro=""/>

@@ -25,7 +25,6 @@
 #pragma once
 
 #include "neml2/solvers/NonlinearSolver.h"
-#include "neml2/misc/math.h"
 
 namespace neml2
 {
@@ -61,7 +60,7 @@ protected:
    * @return true Converged
    * @return false Not converged
    */
-  virtual bool converged(size_t itr, const torch::Tensor & nR, const torch::Tensor & nR0) const;
+  virtual bool converged(size_t itr, const ATensor & nR, const ATensor & nR0) const;
 
   /// Update trial solution
   virtual void update(NonlinearSystem & system,

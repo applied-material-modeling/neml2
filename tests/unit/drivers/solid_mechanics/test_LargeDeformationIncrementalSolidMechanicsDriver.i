@@ -114,7 +114,7 @@
     predictor = 'PREVIOUS_STATE'
     cp_warmup = true
     cp_warmup_elastic_scale = 0.1
-    save_as = 'unit/drivers/solid_mechanics/test_LargeDeformationIncrementalSolidMechanicsDriver.pt'
+    save_as = 'drivers/solid_mechanics/test_LargeDeformationIncrementalSolidMechanicsDriver.pt'
   []
 []
 

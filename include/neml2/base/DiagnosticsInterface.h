@@ -24,23 +24,56 @@
 
 #pragma once
 
-#include "neml2/base/NEML2Object.h"
+#include "neml2/misc/errors.h"
+#include "neml2/misc/string_utils.h"
 
 namespace neml2
 {
 // Forward decl
 class DiagnosticsInterface;
 class VariableBase;
+class NEML2Object;
 
-/// Exception type reserved for diagnostics, so as to not conceptually clash with other exceptions
-class Diagnosis : public NEMLException
+struct DiagnosticState
 {
-public:
-  using NEMLException::NEMLException;
+  bool ongoing = false;
+  std::string patient_name = "";
+  std::string patient_type = "";
+
+  void reset()
+  {
+    ongoing = false;
+    patient_name.clear();
+    patient_type.clear();
+  }
 };
 
-/// Raise diagnostics as exception, if any
-void diagnose(const DiagnosticsInterface &);
+// Guard a region when diagnostics are being performed
+struct Diagnosing
+{
+  Diagnosing(bool ongoing = true);
+
+  Diagnosing(const Diagnosing &) = delete;
+  Diagnosing(Diagnosing &&) = delete;
+  Diagnosing & operator=(const Diagnosing &) = delete;
+  Diagnosing & operator=(Diagnosing &&) = delete;
+  ~Diagnosing();
+
+  const DiagnosticState prev_state;
+};
+
+/// Get the current diagnostic state
+DiagnosticState & current_diagnostic_state();
+
+/// Get the current diagnoses
+std::vector<Diagnosis> & current_diagnoses();
+
+/// A helper function to diagnose common setup errors
+std::vector<Diagnosis> diagnose(const DiagnosticsInterface &);
+
+/// Helper assertion function for diagnostics
+template <typename... Args>
+void diagnostic_assert(bool, Args &&...);
 
 /// Interface for object making diagnostics about common setup errors
 class DiagnosticsInterface
@@ -67,47 +100,45 @@ public:
    *
    * Note, however, if an error could interfere with other objects' creation, it should be raised
    * right away inside the constructor, instead of inside this method.
-   *
-   * @param diagnoses A vector of exceptions of type Diagnosis for each of the detected problem.
    */
-  virtual void diagnose(std::vector<Diagnosis> & diagnoses) const = 0;
+  virtual void diagnose() const = 0;
 
-  template <typename... Args>
-  void diagnostic_assert(std::vector<Diagnosis> & diagnoses, bool assertion, Args &&... args) const;
-
-  void diagnostic_assert_state(std::vector<Diagnosis> & diagnoses, const VariableBase & v) const;
-  void diagnostic_assert_old_state(std::vector<Diagnosis> & diagnoses,
-                                   const VariableBase & v) const;
-  void diagnostic_assert_force(std::vector<Diagnosis> & diagnoses, const VariableBase & v) const;
-  void diagnostic_assert_old_force(std::vector<Diagnosis> & diagnoses,
-                                   const VariableBase & v) const;
-  void diagnostic_assert_residual(std::vector<Diagnosis> & diagnoses, const VariableBase & v) const;
-  void diagnostic_check_input_variable(std::vector<Diagnosis> & diagnoses,
-                                       const VariableBase & v) const;
-  void diagnostic_check_output_variable(std::vector<Diagnosis> & diagnoses,
-                                        const VariableBase & v) const;
+  /// Get the object
+  const NEML2Object & object() const { return *_object; }
 
 private:
   NEML2Object * _object;
 };
+} // namespace neml2
 
+///////////////////////////////////////////////////////////////////////////////
+// Implementation
+///////////////////////////////////////////////////////////////////////////////
+
+namespace neml2
+{
 template <typename... Args>
 void
-DiagnosticsInterface::diagnostic_assert(std::vector<Diagnosis> & diagnoses,
-                                        bool assertion,
-                                        Args &&... args) const
+diagnostic_assert(bool assertion, Args &&... args)
 {
   if (assertion)
     return;
 
+  auto & state = current_diagnostic_state();
+
+  if (!state.ongoing)
+    throw NEMLException("Diagnostics are not currently being run. diagnostic_assert should only be "
+                        "called inside a DiagnosticsInterface::diagnose method.");
+
   std::ostringstream oss;
-  internal::stream_all(oss,
-                       "In object '",
-                       _object->name(),
-                       "' of type ",
-                       _object->type(),
-                       ": ",
-                       std::forward<Args>(args)...);
-  diagnoses.emplace_back(Diagnosis(oss.str()));
+  utils::stream_all(oss,
+                    "In object '",
+                    state.patient_name,
+                    "' of type ",
+                    state.patient_type,
+                    ": ",
+                    std::forward<Args>(args)...);
+
+  current_diagnoses().emplace_back(oss.str());
 }
-}
+} // namespace neml2

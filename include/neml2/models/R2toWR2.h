@@ -28,6 +28,9 @@
 
 namespace neml2
 {
+class R2;
+class WR2;
+
 /// Get the skew symmetric part of a full rank two tensor
 class R2toWR2 : public Model
 {

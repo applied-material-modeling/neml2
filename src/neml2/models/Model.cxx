@@ -22,16 +22,41 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <torch/csrc/jit/frontend/tracer.h>
+#include <c10/core/InferenceMode.h>
 
 #include "neml2/models/Model.h"
 #include "neml2/models/Assembler.h"
 #include "neml2/base/guards.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/functions/jacrev.h"
 #include "neml2/jit/utils.h"
+#include "neml2/misc/assertions.h"
+#include "neml2/tensors/tensors.h"
+#include "neml2/tensors/TensorValue.h"
+#include "neml2/base/Factory.h"
 
 namespace neml2
 {
+Model &
+get_model(const std::string & mname, bool force_create)
+{
+  OptionSet extra_opts;
+  return Factory::get_object<Model>("Models", mname, extra_opts, force_create);
+}
+
+Model &
+load_model(const std::filesystem::path & path, const std::string & mname)
+{
+  load_input(path);
+  return get_model(mname);
+}
+
+Model &
+reload_model(const std::filesystem::path & path, const std::string & mname)
+{
+  Factory::clear();
+  return load_model(path, mname);
+}
+
 bool
 Model::TraceSchema::operator==(const TraceSchema & other) const
 {
@@ -55,6 +80,20 @@ Model::expected_options()
 
   options.section() = "Models";
 
+  // Model defaults to defining value and dvalue, but not d2value
+  options.set<bool>("define_values") = true;
+  options.set<bool>("define_derivatives") = true;
+  options.set<bool>("define_second_derivatives") = false;
+  options.set("define_values").suppressed() = true;
+  options.set("define_derivatives").suppressed() = true;
+  options.set("define_second_derivatives").suppressed() = true;
+
+  // Model defaults to _not_ being part of a nonlinear system
+  // Model::get_model will set this to true if the model is expected to be part of a nonlinear
+  // system, and additional diagnostics will be performed
+  options.set<bool>("_nonlinear_system") = false;
+  options.set("_nonlinear_system").suppressed() = true;
+
   options.set<bool>("jit") = true;
   options.set("jit").doc() = "Use JIT compilation for the forward operator";
 
@@ -63,9 +102,6 @@ Model::expected_options()
       "Production mode. This option is used to disable features like function graph tracking and "
       "tensor version tracking which are useful for training (i.e., calibrating model parameters) "
       "but are not necessary in production runs.";
-
-  options.set<bool>("_nonlinear_system") = false;
-  options.set("_nonlinear_system").suppressed() = true;
 
   return options;
 }
@@ -76,6 +112,9 @@ Model::Model(const OptionSet & options)
     VariableStore(options, this),
     NonlinearSystem(options),
     DiagnosticsInterface(this),
+    _defines_value(options.get<bool>("define_values")),
+    _defines_dvalue(options.get<bool>("define_derivatives")),
+    _defines_d2value(options.get<bool>("define_second_derivatives")),
     _nonlinear_system(options.get<bool>("_nonlinear_system")),
     _jit(options.get<bool>("jit")),
     _production(options.get<bool>("production"))
@@ -83,7 +122,7 @@ Model::Model(const OptionSet & options)
 }
 
 void
-Model::to(const torch::TensorOptions & options)
+Model::to(const TensorOptions & options)
 {
   send_buffers_to(options);
   send_parameters_to(options);
@@ -91,47 +130,9 @@ Model::to(const torch::TensorOptions & options)
 
   for (auto * submodel : registered_models())
     submodel->to(options);
-}
 
-void
-Model::diagnose(std::vector<Diagnosis> & diagnoses) const
-{
-  for (auto * submodel : registered_models())
-    submodel->diagnose(diagnoses);
-
-  // Make sure variables are defined on the reserved subaxes
-  for (auto && [name, var] : input_variables())
-    diagnostic_check_input_variable(diagnoses, var);
-  for (auto && [name, var] : output_variables())
-    diagnostic_check_output_variable(diagnoses, var);
-
-  if (is_nonlinear_system())
-    diagnose_nl_sys(diagnoses);
-}
-
-void
-Model::diagnose_nl_sys(std::vector<Diagnosis> & diagnoses) const
-{
-  for (auto * submodel : registered_models())
-    submodel->diagnose_nl_sys(diagnoses);
-
-  // Check if any input variable is solve-dependent
-  bool input_solve_dep = false;
-  for (auto && [name, var] : input_variables())
-    if (var.is_solve_dependent())
-      input_solve_dep = true;
-
-  // If any input variable is solve-dependent, ALL output variables must be solve-dependent!
-  if (input_solve_dep)
-    for (auto && [name, var] : output_variables())
-      diagnostic_assert(
-          diagnoses,
-          var.is_solve_dependent(),
-          "This model is part of a nonlinear system. At least one of the input variables is "
-          "solve-dependent, so all output variables MUST be solve-dependent, i.e., they must be "
-          "on one of the following sub-axes: state, residual, parameters. However, got output "
-          "variable ",
-          name);
+  for (auto & [name, submodel] : named_nonlinear_parameter_models())
+    submodel->to(options);
 }
 
 void
@@ -149,6 +150,118 @@ Model::setup()
 }
 
 void
+Model::diagnose() const
+{
+  for (auto * submodel : registered_models())
+    neml2::diagnose(*submodel);
+
+  // Make sure variables are defined on the reserved subaxes
+  for (auto && [name, var] : input_variables())
+    diagnostic_check_input_variable(*var);
+  for (auto && [name, var] : output_variables())
+    diagnostic_check_output_variable(*var);
+
+  if (is_nonlinear_system())
+    diagnose_nl_sys();
+}
+
+void
+Model::diagnose_nl_sys() const
+{
+  for (auto * submodel : registered_models())
+    submodel->diagnose_nl_sys();
+
+  // Check if any input variable is solve-dependent
+  bool input_solve_dep = false;
+  for (auto && [name, var] : input_variables())
+    if (var->is_solve_dependent())
+      input_solve_dep = true;
+
+  // If any input variable is solve-dependent, ALL output variables must be solve-dependent!
+  if (input_solve_dep)
+    for (auto && [name, var] : output_variables())
+      diagnostic_assert(
+          var->is_solve_dependent(),
+          "This model is part of a nonlinear system. At least one of the input variables is "
+          "solve-dependent, so all output variables MUST be solve-dependent, i.e., they must be "
+          "on one of the following sub-axes: state, residual, parameters. However, got output "
+          "variable ",
+          name);
+}
+
+void
+Model::diagnostic_assert_state(const VariableBase & v) const
+{
+  diagnostic_assert(v.is_state(), "Variable ", v.name(), " must be on the ", STATE, " sub-axis.");
+}
+
+void
+Model::diagnostic_assert_old_state(const VariableBase & v) const
+{
+  diagnostic_assert(
+      v.is_old_state(), "Variable ", v.name(), " must be on the ", OLD_STATE, " sub-axis.");
+}
+
+void
+Model::diagnostic_assert_force(const VariableBase & v) const
+{
+  diagnostic_assert(v.is_force(), "Variable ", v.name(), " must be on the ", FORCES, " sub-axis.");
+}
+
+void
+Model::diagnostic_assert_old_force(const VariableBase & v) const
+{
+  diagnostic_assert(
+      v.is_old_force(), "Variable ", v.name(), " must be on the ", OLD_FORCES, " sub-axis.");
+}
+
+void
+Model::diagnostic_assert_residual(const VariableBase & v) const
+{
+  diagnostic_assert(
+      v.is_residual(), "Variable ", v.name(), " must be on the ", RESIDUAL, " sub-axis.");
+}
+
+void
+Model::diagnostic_check_input_variable(const VariableBase & v) const
+{
+  diagnostic_assert(v.is_state() || v.is_old_state() || v.is_force() || v.is_old_force() ||
+                        v.is_residual() || v.is_parameter(),
+                    "Input variable ",
+                    v.name(),
+                    " must be on one of the following sub-axes: ",
+                    STATE,
+                    ", ",
+                    OLD_STATE,
+                    ", ",
+                    FORCES,
+                    ", ",
+                    OLD_FORCES,
+                    ", ",
+                    RESIDUAL,
+                    ", ",
+                    PARAMETERS,
+                    ".");
+}
+
+void
+Model::diagnostic_check_output_variable(const VariableBase & v) const
+{
+  diagnostic_assert(v.is_state() || v.is_force() || v.is_residual() || v.is_parameter(),
+                    "Output variable ",
+                    v.name(),
+                    " must be on one of the following sub-axes: ",
+                    STATE,
+                    ", ",
+                    FORCES,
+                    ", ",
+                    RESIDUAL,
+                    ", ",
+                    PARAMETERS,
+                    ".");
+}
+
+void
 Model::link_input_variables()
 {
   for (auto * submodel : _registered_models)
@@ -162,7 +275,7 @@ void
 Model::link_input_variables(Model * submodel)
 {
   for (auto && [name, var] : submodel->input_variables())
-    var.ref(input_variable(name), submodel->is_nonlinear_system());
+    var->ref(input_variable(name), submodel->is_nonlinear_system());
 }
 
 void
@@ -183,6 +296,12 @@ Model::link_output_variables(Model * /*submodel*/)
 void
 Model::request_AD(VariableBase & y, const VariableBase & u)
 {
+  neml_assert(_defines_value,
+              "Model of type '",
+              type(),
+              "' is requesting automatic differentiation of first derivatives, but it does not "
+              "define output values.");
+  _defines_dvalue = true;
   _ad_derivs[&y].insert(&u);
   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
   _ad_args.insert(const_cast<VariableBase *>(&u));
@@ -191,6 +310,12 @@ Model::request_AD(VariableBase & y, const VariableBase & u)
 void
 Model::request_AD(VariableBase & y, const VariableBase & u1, const VariableBase & u2)
 {
+  neml_assert(_defines_dvalue,
+              "Model of type '",
+              type(),
+              "' is requesting automatic differentiation of second derivatives, but it does not "
+              "define first derivatives.");
+  _defines_d2value = true;
   _ad_secderivs[&y][&u1].insert(&u2);
   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
   _ad_args.insert(const_cast<VariableBase *>(&u2));
@@ -233,9 +358,9 @@ Model::compute_trace_schema() const
 {
   std::vector<Size> batch_dims;
   for (auto && [name, var] : input_variables())
-    batch_dims.push_back(var.batch_dim());
+    batch_dims.push_back(var->batch_dim());
   for (auto && [name, param] : host<ParameterStore>()->named_parameters())
-    batch_dims.push_back(Tensor(param).batch_dim());
+    batch_dims.push_back(Tensor(*param).batch_dim());
 
   const auto dispatch_key = tensor_options().computeDispatchKey();
 
@@ -251,7 +376,20 @@ Model::forward_operator_index(bool out, bool dout, bool d2out) const
 void
 Model::forward(bool out, bool dout, bool d2out)
 {
-  torch::InferenceMode mode_guard(_production && !torch::jit::tracer::isTracing());
+  neml_assert_dbg(defines_values() || (defines_values() == out),
+                  "Model of type '",
+                  type(),
+                  "' is requested to compute output values, but it does not define them.");
+  neml_assert_dbg(defines_derivatives() || (defines_derivatives() == dout),
+                  "Model of type '",
+                  type(),
+                  "' is requested to compute first derivatives, but it does not define them.");
+  neml_assert_dbg(defines_second_derivatives() || (defines_second_derivatives() == d2out),
+                  "Model of type '",
+                  type(),
+                  "' is requested to compute second derivatives, but it does not define them.");
+
+  c10::InferenceMode mode_guard(_production && !jit::tracer::isTracing());
 
   if (dout || d2out)
     enable_AD();
@@ -267,7 +405,7 @@ Model::forward(bool out, bool dout, bool d2out)
 void
 Model::forward_maybe_jit(bool out, bool dout, bool d2out)
 {
-  if (!is_jit_enabled() || torch::jit::tracer::isTracing())
+  if (!is_jit_enabled() || jit::tracer::isTracing())
   {
     forward(out, dout, d2out);
     return;
@@ -283,30 +421,29 @@ Model::forward_maybe_jit(bool out, bool dout, bool d2out)
   if (traced_schema_and_function != traced_functions[forward_op_idx].end())
   {
     auto & [trace_schema, traced_function] = *traced_schema_and_function;
-    torch::InferenceMode mode_guard(_production);
+    c10::InferenceMode mode_guard(_production);
     auto stack = collect_input_stack();
     traced_function->run(stack);
     assign_output_stack(stack, out, dout, d2out);
   }
   else
   {
-    auto forward_wrap = [&](torch::jit::Stack inputs) -> torch::jit::Stack
+    auto forward_wrap = [&](jit::Stack inputs) -> jit::Stack
     {
       assign_input_stack(inputs);
       forward(out, dout, d2out);
       return collect_output_stack(out, dout, d2out);
     };
-    auto trace = std::get<0>(torch::jit::tracer::trace(
+    auto trace = std::get<0>(jit::tracer::trace(
         collect_input_stack(),
         forward_wrap,
-        [this](const torch::Tensor & var) { return variable_name_lookup(var); },
+        [this](const ATensor & var) { return variable_name_lookup(var); },
         /*strict=*/false,
         /*force_outplace=*/false));
-    auto new_function =
-        std::make_unique<torch::jit::GraphFunction>(name() + ".forward",
-                                                    trace->graph,
-                                                    /*function_creator=*/nullptr,
-                                                    torch::jit::ExecutorExecutionMode::PROFILING);
+    auto new_function = std::make_unique<jit::GraphFunction>(name() + ".forward",
+                                                             trace->graph,
+                                                             /*function_creator=*/nullptr,
+                                                             jit::ExecutorExecutionMode::PROFILING);
     traced_functions[forward_op_idx].emplace(new_schema, std::move(new_function));
 
     // Rerun this method -- this time using the jitted graph (without tracing)
@@ -315,22 +452,22 @@ Model::forward_maybe_jit(bool out, bool dout, bool d2out)
 }
 
 std::string
-Model::variable_name_lookup(const torch::Tensor & var)
+Model::variable_name_lookup(const ATensor & var)
 {
   // Look for the variable in the input and output variables
   for (auto && [ivar, val] : input_variables())
-    if (val.tensor().data_ptr() == var.data_ptr())
+    if (val->tensor().data_ptr() == var.data_ptr())
       return name() + "::" + utils::stringify(ivar);
   for (auto && [ovar, val] : output_variables())
-    if (val.tensor().data_ptr() == var.data_ptr())
+    if (val->tensor().data_ptr() == var.data_ptr())
       return name() + "::" + utils::stringify(ovar);
 
   // Look for the variable in the parameter and buffer store
   for (auto && [pname, pval] : host<ParameterStore>()->named_parameters())
-    if (Tensor(pval).data_ptr() == var.data_ptr())
+    if (Tensor(*pval).data_ptr() == var.data_ptr())
       return name() + "::" + utils::stringify(pname);
   for (auto && [bname, bval] : host<BufferStore>()->named_buffers())
-    if (Tensor(bval).data_ptr() == var.data_ptr())
+    if (Tensor(*bval).data_ptr() == var.data_ptr())
       return name() + "::" + utils::stringify(bname);
 
   // Look for the variable in the registered models
@@ -458,7 +595,7 @@ Model::provided_items() const
 }
 
 void
-Model::assign_input_stack(torch::jit::Stack & stack)
+Model::assign_input_stack(jit::Stack & stack)
 {
 #ifndef NDEBUG
   const auto nstack = input_axis().nvariable() + host<ParameterStore>()->named_parameters().size();
@@ -475,7 +612,7 @@ Model::assign_input_stack(torch::jit::Stack & stack)
   VariableStore::assign_input_stack(stack);
 }
 
-torch::jit::Stack
+jit::Stack
 Model::collect_input_stack() const
 {
   auto stack = VariableStore::collect_input_stack();
@@ -561,11 +698,11 @@ Model::extract_AD_derivatives(bool dout, bool d2out)
           if (_ad_secderivs.at(y).count(u))
             create_graph = true;
 
-    const auto dy_dus = math::jacrev(y->tensor(),
-                                     uts,
-                                     /*retain_graph=*/true,
-                                     /*create_graph=*/create_graph,
-                                     /*allow_unused=*/true);
+    const auto dy_dus = jacrev(y->tensor(),
+                               uts,
+                               /*retain_graph=*/true,
+                               /*create_graph=*/create_graph,
+                               /*allow_unused=*/true);
 
     std::size_t i = 0;
     for (const auto * u : us)
@@ -595,11 +732,11 @@ Model::extract_AD_derivatives(bool dout, bool d2out)
           if (u2->is_dependent())
             u2ts.push_back(u2->tensor());
 
-        const auto d2y_du1u2s = math::jacrev(dy_du1,
-                                             u2ts,
-                                             /*retain_graph=*/true,
-                                             /*create_graph=*/false,
-                                             /*allow_unused=*/true);
+        const auto d2y_du1u2s = jacrev(dy_du1,
+                                       u2ts,
+                                       /*retain_graph=*/true,
+                                       /*create_graph=*/false,
+                                       /*allow_unused=*/true);
 
         std::size_t i = 0;
         for (const auto * u2 : u2s)
@@ -631,7 +768,7 @@ operator<<(std::ostream & os, const Model & model)
     for (auto && [name, var] : model.input_variables())
     {
       os << (first ? "" : tab);
-      os << name << " [" << var.type() << "]\n";
+      os << name << " [" << var->type() << "]\n";
       first = false;
     }
   }
@@ -643,7 +780,7 @@ operator<<(std::ostream & os, const Model & model)
     for (auto && [name, var] : model.output_variables())
     {
       os << (first ? "" : tab);
-      os << name << " [" << var.type() << "]\n";
+      os << name << " [" << var->type() << "]\n";
       first = false;
     }
   }
@@ -655,7 +792,7 @@ operator<<(std::ostream & os, const Model & model)
     for (auto && [name, param] : model.named_parameters())
     {
       os << (first ? "" : tab);
-      os << name << " [" << param.type() << "]\n";
+      os << name << " [" << param->type() << "]\n";
       first = false;
     }
   }
@@ -667,7 +804,7 @@ operator<<(std::ostream & os, const Model & model)
     for (auto && [name, buffer] : model.named_buffers())
     {
       os << (first ? "" : tab);
-      os << name << " [" << buffer.type() << "]\n";
+      os << name << " [" << buffer->type() << "]\n";
       first = false;
     }
   }

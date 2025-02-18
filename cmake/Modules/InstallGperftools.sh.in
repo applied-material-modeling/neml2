@@ -1,0 +1,9 @@
+./autogen.sh
+export CXXFLAGS="-D_GLIBCXX_USE_CXX11_ABI=${GLIBCXX_USE_CXX11_ABI}"
+./configure \
+  --prefix=${GPERFTOOLS_INSTALL_DIR} \
+  --disable-heap-profiler \
+  --disable-debugalloc \
+  --enable-shared=no
+make -j ${NPROCS}
+make install

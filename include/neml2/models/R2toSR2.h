@@ -28,6 +28,9 @@
 
 namespace neml2
 {
+class R2;
+class SR2;
+
 /// Get the symmetric part of a full rank two tensor
 class R2toSR2 : public Model
 {

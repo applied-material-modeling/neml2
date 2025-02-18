@@ -51,36 +51,52 @@ class CMakeBuild(build_ext):
         ext_fullpath = Path.cwd() / self.get_ext_fullpath(ext.name)
         extdir = ext_fullpath.parent.resolve() / "neml2"
 
+        # Influential env vars
+        generator = os.environ.get("CMAKE_GENERATOR", None)
+        njob = os.environ.get("CMAKE_BUILD_JOBS", None)
+
         # Configure arguments
-        cmake_args = [
-            "-DCMAKE_INSTALL_PREFIX={}".format(extdir),
+        configure_args = [
             "-DCMAKE_BUILD_TYPE=RelWithDebInfo",
-            "-DCMAKE_UNITY_BUILD=ON",
             "-DNEML2_PYBIND=ON",
             "-DNEML2_TESTS=OFF",
             "-DNEML2_RUNNER=OFF",
             "-DNEML2_DOC=OFF",
+            "-S{}".format(ext.sourcedir),
         ]
+        if generator:
+            configure_args += ["-G", generator]
 
         # Build arguments
-        build_args = ["-j{}".format(os.environ.get("BUILD_JOBS", "1"))]
+        build_args = ["--build", ".", "--target", "python_stub"]
+        if njob:
+            build_args += ["-j", njob]
 
         # Install arguments
-        install_args = []
+        install_args = ["--install", ".", "--prefix", extdir]
 
         if sys.platform.startswith("darwin"):
             # Cross-compile support for macOS - respect ARCHFLAGS if set
             archs = re.findall(r"-arch (\S+)", os.environ.get("ARCHFLAGS", ""))
             if archs:
-                cmake_args += ["-DCMAKE_OSX_ARCHITECTURES={}".format(";".join(archs))]
+                configure_args += ["-DCMAKE_OSX_ARCHITECTURES={}".format(";".join(archs))]
 
         build_temp = Path(self.build_temp)
         if not build_temp.exists():
             build_temp.mkdir(parents=True)
 
-        subprocess.run(["cmake", ext.sourcedir, *cmake_args], cwd=build_temp, check=True)
-        subprocess.run(["cmake", "--build", ".", *build_args], cwd=build_temp, check=True)
-        subprocess.run(["cmake", "--install", ".", *install_args], cwd=build_temp, check=True)
+        subprocess.run(["cmake", *configure_args], cwd=build_temp, check=True)
+        subprocess.run(["cmake", *build_args], cwd=build_temp, check=True)
+        subprocess.run(
+            ["cmake", *install_args, "--component", "libneml2"],
+            cwd=build_temp,
+            check=True,
+        )
+        subprocess.run(
+            ["cmake", *install_args, "--component", "libneml2-python"],
+            cwd=build_temp,
+            check=True,
+        )
 
 
 setup(

@@ -25,8 +25,8 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_all.hpp>
 
-#include "neml2/misc/utils.h"
-#include "neml2/models/LabeledAxisAccessor.h"
+#include "neml2/misc/string_utils.h"
+#include "neml2/base/LabeledAxisAccessor.h"
 
 using namespace neml2;
 
@@ -42,7 +42,7 @@ TEST_CASE("LabeledAxisAccessor", "[models]")
                           Catch::Matchers::ContainsSubstring("Invalid item name"));
     }
 
-    SECTION("vec") { REQUIRE(a.vec() == c10::SmallVector<std::string>{"a", "b", "c"}); }
+    SECTION("vec") { REQUIRE(a.vec() == std::vector<std::string>{"a", "b", "c"}); }
 
     SECTION("empty")
     {
@@ -57,26 +57,26 @@ TEST_CASE("LabeledAxisAccessor", "[models]")
 
     SECTION("with_suffix")
     {
-      REQUIRE(a.with_suffix("s").vec() == c10::SmallVector<std::string>{"a", "b", "cs"});
+      REQUIRE(a.with_suffix("s").vec() == std::vector<std::string>{"a", "b", "cs"});
     }
 
     SECTION("append")
     {
-      REQUIRE(a.append("d").vec() == c10::SmallVector<std::string>{"a", "b", "c", "d"});
+      REQUIRE(a.append("d").vec() == std::vector<std::string>{"a", "b", "c", "d"});
     }
 
     SECTION("on")
     {
-      REQUIRE(a.prepend("x").vec() == c10::SmallVector<std::string>{"x", "a", "b", "c"});
+      REQUIRE(a.prepend("x").vec() == std::vector<std::string>{"x", "a", "b", "c"});
       LabeledAxisAccessor b("d", "e", "f");
-      REQUIRE(a.prepend(b).vec() == c10::SmallVector<std::string>{"d", "e", "f", "a", "b", "c"});
+      REQUIRE(a.prepend(b).vec() == std::vector<std::string>{"d", "e", "f", "a", "b", "c"});
     }
 
     SECTION("slice")
     {
-      REQUIRE(a.slice(1).vec() == c10::SmallVector<std::string>{"b", "c"});
-      REQUIRE(a.slice(1, 3).vec() == c10::SmallVector<std::string>{"b", "c"});
-      REQUIRE(a.slice(0, 2).vec() == c10::SmallVector<std::string>{"a", "b"});
+      REQUIRE(a.slice(1).vec() == std::vector<std::string>{"b", "c"});
+      REQUIRE(a.slice(1, 3).vec() == std::vector<std::string>{"b", "c"});
+      REQUIRE(a.slice(0, 2).vec() == std::vector<std::string>{"a", "b"});
     }
   }
 

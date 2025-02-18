@@ -25,20 +25,22 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_all.hpp>
 
+#include "neml2/misc/defaults.h"
 #include "neml2/base/Settings.h"
 #include "neml2/base/HITParser.h"
+#include "neml2/base/OptionCollection.h"
 
 using namespace neml2;
 
 TEST_CASE("Settings", "[Settings]")
 {
   HITParser parser;
-  auto all_options = parser.parse("unit/base/test_HITParser1.i");
+  auto all_options = parser.parse("base/test_HITParser1.i");
 
   // Before applying the global settings
-  REQUIRE(default_dtype() == torch::kFloat64);
-  REQUIRE(default_integer_dtype() == torch::kInt64);
-  REQUIRE(default_device() == torch::kCPU);
+  REQUIRE(default_dtype() == kFloat64);
+  REQUIRE(default_integer_dtype() == kInt64);
+  REQUIRE(default_device() == kCPU);
   REQUIRE(machine_precision() == Catch::Approx(1e-15));
   REQUIRE(tolerance() == Catch::Approx(1e-6));
   REQUIRE(tighter_tolerance() == Catch::Approx(1e-12));
@@ -49,9 +51,9 @@ TEST_CASE("Settings", "[Settings]")
   Settings(all_options.settings());
 
   // After applying the global settings
-  REQUIRE(default_dtype() == torch::kFloat16);
-  REQUIRE(default_integer_dtype() == torch::kInt32);
-  REQUIRE(default_device() == torch::Device("cuda:1"));
+  REQUIRE(default_dtype() == kFloat16);
+  REQUIRE(default_integer_dtype() == kInt32);
+  REQUIRE(default_device() == Device("cuda:1"));
   REQUIRE(machine_precision() == Catch::Approx(0.5));
   REQUIRE(tolerance() == Catch::Approx(0.1));
   REQUIRE(tighter_tolerance() == Catch::Approx(0.01));

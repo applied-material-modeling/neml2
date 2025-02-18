@@ -1,8 +1,13 @@
 # ----------------------------------------------------------------------------
-# Dependencies and 3rd party packages
+# Catch2
 # ----------------------------------------------------------------------------
-message(STATUS "Configuring Catch2")
-FetchContent_MakeAvailable(Catch2)
+find_package(Catch2)
+
+if(NOT Catch2_FOUND)
+  include(DownloadCatch2)
+  set(Catch2_ROOT ${CATCH2_INSTALL_DIR} CACHE PATH "Catch2 root directory" FORCE)
+  find_package(Catch2 REQUIRED)
+endif()
 
 # ----------------------------------------------------------------------------
 # Subdirectories
@@ -20,4 +25,6 @@ add_subdirectory(regression)
 add_subdirectory(verification)
 
 # Work dispatcher tests
-add_subdirectory(dispatcher)
+if(NEML2_WORK_DISPATCHER)
+  add_subdirectory(dispatchers)
+endif()

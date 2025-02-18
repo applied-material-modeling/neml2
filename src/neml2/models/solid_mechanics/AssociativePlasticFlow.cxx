@@ -23,6 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/AssociativePlasticFlow.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
 
 namespace neml2
@@ -57,10 +59,8 @@ AssociativePlasticFlow::AssociativePlasticFlow(const OptionSet & options)
 }
 
 void
-AssociativePlasticFlow::set_value(bool out, bool dout_din, bool d2out_din2)
+AssociativePlasticFlow::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "AssociativePlasticFlow doesn't implement second derivatives.");
-
   // For associative flow,
   // Ep_dot = gamma_dot * NM
   //     NM = df/dM

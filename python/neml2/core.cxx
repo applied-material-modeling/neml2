@@ -30,10 +30,10 @@
 #include "python/neml2/types.h"
 
 #include "neml2/base/Factory.h"
+#include "neml2/base/Parser.h"
 #include "neml2/models/Model.h"
 #include "neml2/models/Assembler.h"
-#include "neml2/misc/utils.h"
-#include "neml2/misc/parser_utils.h"
+#include "neml2/misc/string_utils.h"
 
 namespace py = pybind11;
 using namespace neml2;
@@ -177,7 +177,14 @@ where it is desirable to deallocate models on-the-fly.
 )");
   m.def(
       "diagnose",
-      [](const Model & m) { diagnose(m); },
+      [](const Model & m)
+      {
+        auto diagnoses = diagnose(m);
+        std::vector<std::string> issues;
+        for (const auto & diagnosis : diagnoses)
+          issues.push_back(diagnosis.what());
+        return issues;
+      },
       py::arg("model"),
       R"(
 Diagnose common issues in model setup. Raises a runtime error including all identified issues, if any.
@@ -226,8 +233,23 @@ Diagnose common issues in model setup. Raises a runtime error including all iden
       .def("has_variable", &LabeledAxis::has_variable, py::arg("name"))
       .def("variable_id", &LabeledAxis::variable_id, py::arg("name"))
       .def("variable_names", &LabeledAxis::variable_names)
-      .def("variable_slices", &LabeledAxis::variable_slices)
-      .def("variable_slice", &LabeledAxis::variable_slice, py::arg("name"))
+      .def("variable_slices",
+           [](const LabeledAxis & self)
+           {
+             const auto & slices = self.variable_slices();
+             std::vector<py::slice> py_slices;
+             for (const auto & slice : slices)
+               py_slices.emplace_back(slice.first, slice.second, 1);
+             return py_slices;
+           })
+      .def(
+          "variable_slice",
+          [](const LabeledAxis & self, const VariableName & name)
+          {
+            const auto & slice = self.variable_slice(name);
+            return py::slice(slice.first, slice.second, 1);
+          },
+          py::arg("name"))
       .def("variable_sizes", &LabeledAxis::variable_sizes)
       .def("variable_size", &LabeledAxis::variable_size, py::arg("name"))
       .def("nsubaxis", &LabeledAxis::nsubaxis)
@@ -239,8 +261,23 @@ Diagnose common issues in model setup. Raises a runtime error including all iden
            py::arg("name"),
            py::return_value_policy::reference)
       .def("subaxis_names", &LabeledAxis::subaxis_names)
-      .def("subaxis_slices", &LabeledAxis::subaxis_slices)
-      .def("subaxis_slice", &LabeledAxis::subaxis_slice, py::arg("name"))
+      .def("subaxis_slices",
+           [](const LabeledAxis & self)
+           {
+             const auto & slices = self.subaxis_slices();
+             std::vector<py::slice> py_slices;
+             for (const auto & slice : slices)
+               py_slices.emplace_back(slice.first, slice.second, 1);
+             return py_slices;
+           })
+      .def(
+          "subaxis_slice",
+          [](const LabeledAxis & self, const SubaxisName & name)
+          {
+            const auto & slice = self.subaxis_slice(name);
+            return py::slice(slice.first, slice.second, 1);
+          },
+          py::arg("name"))
       .def("subaxis_sizes", &LabeledAxis::subaxis_sizes)
       .def("subaxis_size", &LabeledAxis::subaxis_size, py::arg("name"))
       .def("__repr__", [](const LabeledAxis & self) { return utils::stringify(self); })
@@ -315,7 +352,7 @@ Diagnose common issues in model setup. Raises a runtime error including all iden
           {
             std::map<std::string, TensorValueBase *> params;
             for (auto && [pname, pval] : self.named_parameters())
-              params[pname] = &pval;
+              params[pname] = pval.get();
             return params;
           },
           py::return_value_policy::reference,
@@ -327,7 +364,7 @@ Diagnose common issues in model setup. Raises a runtime error including all iden
           {
             std::map<std::string, TensorValueBase *> buffers;
             for (auto && [bname, bval] : self.named_buffers())
-              buffers[bname] = &bval;
+              buffers[bname] = bval.get();
             return buffers;
           },
           py::return_value_policy::reference,
@@ -378,8 +415,8 @@ Diagnose common issues in model setup. Raises a runtime error including all iden
           {
             std::map<std::string, const Model *> deps;
             for (auto && [name, var] : self.input_variables())
-              if (var.ref() != &var)
-                deps[utils::stringify(name)] = &var.ref()->owner();
+              if (var->ref() != var.get())
+                deps[utils::stringify(name)] = &var->ref()->owner();
             return deps;
           },
           py::return_value_policy::reference,

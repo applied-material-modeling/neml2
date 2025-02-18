@@ -24,24 +24,22 @@
 
 #pragma once
 
-#include <ATen/core/stack.h>
+#include <memory>
 
-#include "neml2/base/NEML2Object.h"
 #include "neml2/base/OptionSet.h"
-#include "neml2/base/Storage.h"
-#include "neml2/tensors/TensorValue.h"
-
-// The following are not directly used by ParameterStore itself.
-// We put them here so that derived classes can add expected options of these types.
-#include "neml2/base/CrossRef.h"
-#include "neml2/base/EnumSelection.h"
-#include "neml2/tensors/tensors.h"
+#include "neml2/jit/types.h"
 
 namespace neml2
 {
 // Forward decl
+class NEML2Object;
 class VariableBase;
 class Model;
+struct TensorName;
+class TensorValueBase;
+template <typename T>
+class TensorBase;
+class Tensor;
 
 /// Interface for object which can store parameters
 class ParameterStore
@@ -57,25 +55,27 @@ public:
 
   ///@{
   /// @returns the buffer storage
-  const Storage<std::string, TensorValueBase> & named_parameters() const
+  const std::map<std::string, std::unique_ptr<TensorValueBase>> & named_parameters() const
   {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     return const_cast<ParameterStore *>(this)->named_parameters();
   }
-  Storage<std::string, TensorValueBase> & named_parameters();
+  std::map<std::string, std::unique_ptr<TensorValueBase>> & named_parameters();
   ///}@
 
-  /// Set the value for a parameter
-  void set_parameter(const std::string &, const Tensor &);
-
-  /// Set values for parameters
-  void set_parameters(const std::map<std::string, Tensor> &);
-
+  /// Get a read-only reference of a parameter
+  const TensorValueBase & get_parameter(const std::string & name) const
+  {
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+    return const_cast<ParameterStore *>(this)->get_parameter(name);
+  }
   /// Get a writable reference of a parameter
   TensorValueBase & get_parameter(const std::string & name);
 
-  /// Get a read-only reference of a parameter
-  const TensorValueBase & get_parameter(const std::string & name) const;
+  /// Set the value for a parameter
+  void set_parameter(const std::string &, const Tensor &);
+  /// Set values for parameters
+  void set_parameters(const std::map<std::string, Tensor> &);
 
   /// Whether this parameter store has any nonlinear parameter
   bool has_nl_param() const { return !_nl_params.empty(); }
@@ -102,7 +102,7 @@ protected:
    *
    * @param options The target options
    */
-  virtual void send_parameters_to(const torch::TensorOptions & options);
+  virtual void send_parameters_to(const TensorOptions & options);
 
   /**
    * @brief Declare a parameter.
@@ -125,19 +125,19 @@ protected:
    *
    * Similar to the previous method, but additionally handles the resolution of cross-referenced
    * parameters. Two attempts are made sequentially: first, the method tries to resolve
-   * `CrossRef<T>` into `T` directly; if that fails, the method tries to resolve `CrossRef<T>` into
+   * `TensorName` into `T` directly; if that fails, the method tries to resolve `TensorName` into
    * a nonlinear parameter where the raw string stored in the cross-ref is treated as the name of
    * the model that defines the nonlinear parameter.
    *
    * @tparam T Parameter type. See @ref statically-shaped-tensor for supported types.
    * @param name Name of the model parameter.
-   * @param crossref The cross-ref'ed "string" that defines the value of the model parameter.
+   * @param tensorname The cross-ref'ed "string" that defines the value of the model parameter.
    * @param allow_nonlinear Whether allows coupling with a nonlinear parameter
    * @return T The value of the registered model parameter.
    */
   template <typename T, typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<T>, T>>>
   const T &
-  declare_parameter(const std::string & name, const CrossRef<T> & crossref, bool allow_nonlinear);
+  declare_parameter(const std::string & name, const TensorName & tensorname, bool allow_nonlinear);
 
   /**
    * @brief Declare a parameter.
@@ -158,10 +158,10 @@ protected:
                               bool allow_nonlinear = false);
 
   /// Assign stack to parameters
-  void assign_parameter_stack(torch::jit::Stack & stack);
+  void assign_parameter_stack(jit::Stack & stack);
 
   /// Collect stack from parameters
-  torch::jit::Stack collect_parameter_stack() const;
+  jit::Stack collect_parameter_stack() const;
 
   /// Map from nonlinear parameter names to their corresponding variable views
   std::map<std::string, const VariableBase *> _nl_params;
@@ -181,7 +181,7 @@ private:
   const OptionSet _object_options;
 
   /// The actual storage for all the parameters
-  Storage<std::string, TensorValueBase> _param_values;
+  std::map<std::string, std::unique_ptr<TensorValueBase>> _param_values;
 };
 
 } // namespace neml2

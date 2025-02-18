@@ -24,26 +24,30 @@
 
 #include "neml2/tensors/WR2.h"
 #include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/Vec.h"
 #include "neml2/tensors/R2.h"
 #include "neml2/tensors/Rot.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/WSR4.h"
 #include "neml2/tensors/R4.h"
 
-#include "neml2/misc/math.h"
+#include "neml2/tensors/mandel_notation.h"
+#include "neml2/tensors/functions/tan.h"
+#include "neml2/tensors/functions/cos.h"
+#include "neml2/tensors/functions/pow.h"
 
 namespace neml2
 {
 WR2::WR2(const R2 & T)
-  : WR2(math::full_to_skew((T - T.transpose()) / 2.0))
+  : WR2(full_to_skew((T - T.transpose()) / 2.0))
 {
 }
 
 Scalar
 WR2::operator()(Size i, Size j) const
 {
-  Size a = math::skew_reverse_index[i][j];
-  return base_index({a}) * math::skew_factor[i][j];
+  Size a = skew_reverse_index[i][j];
+  return base_index({a}) * skew_factor[i][j];
 }
 
 Rot
@@ -57,41 +61,39 @@ WR2::exp() const
   // The other singularity is essentially unavoidable
 
   // This is what determines which region to sit in
-  auto norm2 = this->norm_sq();
+  auto norm2 = norm_sq();
 
   // So we want the result to be as accurate as machine precision
-  auto thresh = std::pow(math::eps, 1.0 / 3.0);
+  auto thresh = std::pow(eps, 1.0 / 3.0);
 
   // Taylor series
-  Rot res_taylor = (*this) * (0.25 + 5.0 * norm2 * norm2 / 96.0);
+  auto res_taylor = Rot(*this) * (0.25 + 5.0 * norm2 * norm2 / 96.0);
 
   // Actual definition
-  Rot res_actual = (*this) * Scalar(torch::tan(norm2 / 2.0) /
-                                    (2.0 * torch::Tensor(norm2) * torch::cos(norm2 / 2)));
+  auto res_actual = Rot(*this) * neml2::tan(norm2 / 2.0) / (2.0 * norm2 * neml2::cos(norm2 / 2));
 
-  return torch::where((norm2 > thresh).unsqueeze(-1), res_actual, res_taylor);
+  return Rot(at::where((norm2 > thresh).unsqueeze(-1), res_actual, res_taylor));
 }
 
 R2
 WR2::dexp() const
 {
   // Same singularities as WR2::exp()
-  auto norm2 = this->norm_sq();
-  auto thresh = std::pow(math::eps, 1.0 / 3.0);
+  auto norm2 = norm_sq();
+  auto thresh = std::pow(eps, 1.0 / 3.0);
 
-  R2 res_taylor = 5.0 * norm2 / 24.0 * this->outer(*this) +
-                  (0.25 + 5.0 * norm2 * norm2 / 96.0) * R2::identity(options());
+  auto res_taylor = 5.0 * norm2 / 24.0 * Vec(*this).outer(Vec(*this)) +
+                    (0.25 + 5.0 * norm2 * norm2 / 96.0) * R2::identity(options());
 
-  auto f1 = Scalar(torch::tan(norm2 / 2.0) / (2.0 * torch::Tensor(norm2) * torch::cos(norm2 / 2)));
-  auto f2 =
-      Scalar(torch::Tensor(norm2) * torch::pow(1.0 / torch::cos(norm2 / 2), 3.0) +
-             torch::tan(norm2 / 2.0) * (torch::Tensor(norm2) * torch::tan(norm2 / 2.0) - 2.0) *
-                 (1.0 / torch::cos(norm2 / 2.0))) /
-      Scalar(2 * torch::pow(norm2, 2.0));
+  auto f1 = neml2::tan(norm2 / 2.0) / (2.0 * norm2 * neml2::cos(norm2 / 2));
+  auto f2 = (norm2 * neml2::pow(1.0 / neml2::cos(norm2 / 2), 3.0) +
+             neml2::tan(norm2 / 2.0) * (norm2 * neml2::tan(norm2 / 2.0) - 2.0) *
+                 (1.0 / neml2::cos(norm2 / 2.0))) /
+            (2 * norm2 * norm2);
 
-  R2 res_actual = f1 * R2::identity(options()) + f2 * this->outer(*this);
+  auto res_actual = f1 * R2::identity(options()) + f2 * Vec(*this).outer(Vec(*this));
 
-  return torch::where((norm2 > thresh).unsqueeze(-1).unsqueeze(-1), res_actual, res_taylor);
+  return R2(at::where((norm2 > thresh).unsqueeze(-1).unsqueeze(-1), res_actual, res_taylor));
 }
 
 } // namespace neml2

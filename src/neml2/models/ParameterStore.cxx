@@ -25,6 +25,11 @@
 #include "neml2/models/ParameterStore.h"
 #include "neml2/models/NonlinearParameter.h"
 #include "neml2/models/Variable.h"
+#include "neml2/misc/assertions.h"
+#include "neml2/base/TensorName.h"
+#include "neml2/tensors/tensors.h"
+#include "neml2/base/NEML2Object.h"
+#include "neml2/tensors/TensorValue.h"
 
 namespace neml2
 {
@@ -35,19 +40,26 @@ ParameterStore::ParameterStore(OptionSet options, NEML2Object * object)
 }
 
 void
-ParameterStore::send_parameters_to(const torch::TensorOptions & options)
+ParameterStore::send_parameters_to(const TensorOptions & options)
 {
   for (auto && [name, param] : _param_values)
-    param.to_(options);
+    param->to_(options);
 }
 
 void
 ParameterStore::set_parameter(const std::string & name, const Tensor & value)
 {
   neml_assert(_object->host() == _object, "This method should only be called on the host model.");
+  neml_assert(named_parameters().count(name), "There is no parameter named ", name);
+  *named_parameters()[name] = value;
+}
 
-  neml_assert(named_parameters().has_key(name), "There is no parameter named ", name);
-  named_parameters()[name] = value;
+TensorValueBase &
+ParameterStore::get_parameter(const std::string & name)
+{
+  neml_assert(_object->host() == _object, "This method should only be called on the host model.");
+  neml_assert(_param_values.count(name), "Parameter named ", name, " does not exist.");
+  return *_param_values[name];
 }
 
 void
@@ -57,31 +69,13 @@ ParameterStore::set_parameters(const std::map<std::string, Tensor> & param_value
     set_parameter(name, value);
 }
 
-TensorValueBase &
-ParameterStore::get_parameter(const std::string & name)
-{
-  neml_assert(_object->host() == _object, "This method should only be called on the host model.");
-  auto * base_ptr = _param_values.query_value(name);
-  neml_assert(base_ptr, "Parameter named ", name, " does not exist.");
-  return *base_ptr;
-}
-
-const TensorValueBase &
-ParameterStore::get_parameter(const std::string & name) const
-{
-  neml_assert(_object->host() == _object, "This method should only be called on the host model.");
-  const auto * base_ptr = _param_values.query_value(name);
-  neml_assert(base_ptr, "Parameter named ", name, " does not exist.");
-  return *base_ptr;
-}
-
 const VariableBase *
 ParameterStore::nl_param(const std::string & name) const
 {
   return _nl_params.count(name) ? _nl_params.at(name) : nullptr;
 }
 
-Storage<std::string, TensorValueBase> &
+std::map<std::string, std::unique_ptr<TensorValueBase>> &
 ParameterStore::named_parameters()
 {
   neml_assert(_object->host() == _object,
@@ -146,13 +140,14 @@ ParameterStore::declare_parameter(const std::string & name, const T & rawval)
   TensorValueBase * base_ptr = nullptr;
 
   // If the parameter already exists, get it
-  if (_param_values.has_key(name))
+  if (_param_values.count(name))
     base_ptr = &get_parameter(name);
   // If the parameter doesn't exist, create it
   else
   {
     auto val = std::make_unique<TensorValue<T>>(rawval);
-    base_ptr = _param_values.set_pointer(name, std::move(val));
+    auto [it, success] = _param_values.emplace(name, std::move(val));
+    base_ptr = it->second.get();
   }
 
   auto ptr = dynamic_cast<TensorValue<T> *>(base_ptr);
@@ -163,12 +158,12 @@ ParameterStore::declare_parameter(const std::string & name, const T & rawval)
 template <typename T, typename>
 const T &
 ParameterStore::declare_parameter(const std::string & name,
-                                  const CrossRef<T> & crossref,
+                                  const TensorName & tensorname,
                                   bool allow_nonlinear)
 {
   try
   {
-    return declare_parameter(name, T(crossref));
+    return declare_parameter(name, T(tensorname));
   }
   catch (const NEMLException & e1)
   {
@@ -202,7 +197,7 @@ ParameterStore::declare_parameter(const std::string & name,
 
       OptionSet extra_opts;
       extra_opts.set<NEML2Object *>("_host") = model->host();
-      const auto & pname = crossref.raw();
+      const auto & pname = tensorname.raw();
       auto & nl_param = Factory::get_object<NonlinearParameter<T>>(
           "Models", pname, extra_opts, /*force_create=*/false);
       model->template declare_input_variable<T>(VariableName(pname).prepend(PARAMETERS));
@@ -232,9 +227,9 @@ ParameterStore::declare_parameter(const std::string & name,
   if (_object_options.contains<T>(input_option_name))
     return declare_parameter(name, _object_options.get<T>(input_option_name));
 
-  if (_object_options.contains<CrossRef<T>>(input_option_name))
-    return declare_parameter(
-        name, _object_options.get<CrossRef<T>>(input_option_name), allow_nonlinear);
+  if (_object_options.contains<TensorName>(input_option_name))
+    return declare_parameter<T>(
+        name, _object_options.get<TensorName>(input_option_name), allow_nonlinear);
 
   throw NEMLException("Trying to register parameter named " + name + " from input option named " +
                       input_option_name + " of type " + utils::demangle(typeid(T).name()) +
@@ -249,13 +244,13 @@ FOR_ALL_TENSORBASE(PARAMETERSTORE_INTANTIATE_TENSORBASE);
 
 #define PARAMETERSTORE_INTANTIATE_PRIMITIVETENSOR(T)                                               \
   template const T & ParameterStore::declare_parameter<T>(                                         \
-      const std::string &, const CrossRef<T> &, bool);                                             \
+      const std::string &, const TensorName &, bool);                                              \
   template const T & ParameterStore::declare_parameter<T>(                                         \
       const std::string &, const std::string &, bool)
 FOR_ALL_PRIMITIVETENSOR(PARAMETERSTORE_INTANTIATE_PRIMITIVETENSOR);
 
 void
-ParameterStore::assign_parameter_stack(torch::jit::Stack & stack)
+ParameterStore::assign_parameter_stack(jit::Stack & stack)
 {
   const auto & params = _object->host<ParameterStore>()->named_parameters();
 
@@ -271,21 +266,21 @@ ParameterStore::assign_parameter_stack(torch::jit::Stack & stack)
   for (auto && [name, param] : params)
   {
     const auto tensor = stack[i++].toTensor();
-    param = Tensor(tensor, tensor.dim() - Tensor(param).base_dim());
+    *param = Tensor(tensor, tensor.dim() - Tensor(*param).base_dim());
   }
 
   // Drop the input variables from the stack
-  torch::jit::drop(stack, params.size());
+  jit::drop(stack, params.size());
 }
 
-torch::jit::Stack
+jit::Stack
 ParameterStore::collect_parameter_stack() const
 {
   const auto & params = _object->host<ParameterStore>()->named_parameters();
-  torch::jit::Stack stack;
+  jit::Stack stack;
   stack.reserve(params.size());
   for (auto && [name, param] : params)
-    stack.push_back(Tensor(param));
+    stack.push_back(Tensor(*param));
   return stack;
 }
 } // namespace neml2

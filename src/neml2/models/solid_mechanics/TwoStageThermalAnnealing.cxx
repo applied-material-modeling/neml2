@@ -23,12 +23,20 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/TwoStageThermalAnnealing.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/SR2.h"
+#include "neml2/tensors/SSR4.h"
+#include "neml2/misc/string_utils.h"
+#include "neml2/tensors/functions/where.h"
 
 namespace neml2
 {
-register_NEML2_object(ScalarTwoStageThermalAnnealing);
-register_NEML2_object(SR2TwoStageThermalAnnealing);
+#define REGISTER(T)                                                                                \
+  using T##TwoStageThermalAnnealing = TwoStageThermalAnnealing<T>;                                 \
+  register_NEML2_object(T##TwoStageThermalAnnealing);                                              \
+  template class TwoStageThermalAnnealing<T>
+REGISTER(Scalar);
+REGISTER(SR2);
 
 template <typename T>
 OptionSet
@@ -60,13 +68,13 @@ TwoStageThermalAnnealing<T>::expected_options()
   options.set_input("temperature") = VariableName(FORCES, "T");
   options.set("temperature").doc() = "Temperature";
 
-  options.set_parameter<CrossRef<Scalar>>("T1");
+  options.set_parameter<TensorName>("T1");
   options.set("T1").doc() = "First stage annealing temperature";
 
-  options.set_parameter<CrossRef<Scalar>>("T2");
+  options.set_parameter<TensorName>("T2");
   options.set("T2").doc() = "Second stage annealing temperature";
 
-  options.set_parameter<CrossRef<Scalar>>("tau");
+  options.set_parameter<TensorName>("tau");
   options.set("tau").doc() = "Recovery rate for second stage annealing.";
 
   return options;
@@ -87,15 +95,12 @@ TwoStageThermalAnnealing<T>::TwoStageThermalAnnealing(const OptionSet & options)
 
 template <typename T>
 void
-TwoStageThermalAnnealing<T>::set_value(bool out, bool dout_din, bool d2out_din2)
+TwoStageThermalAnnealing<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2,
-                  "TwoStageThermalAnnealing model doesn't implement second derivatives.");
-
   auto one = Scalar::ones_like(_T);
   auto zero = Scalar::zeros_like(_T);
-  auto base_region = math::where(_T < _T1, one, zero);
-  auto recover_region = math::where(_T >= _T2, one, zero);
+  auto base_region = where(_T < _T1, one, zero);
+  auto recover_region = where(_T >= _T2, one, zero);
 
   if (out)
     _modified_rate = base_region * _base_rate + recover_region * -_base_h / _tau;
@@ -111,7 +116,4 @@ TwoStageThermalAnnealing<T>::set_value(bool out, bool dout_din, bool d2out_din2)
       _modified_rate.d(_base_h) = -recover_region * I / _tau;
   }
 }
-
-template class TwoStageThermalAnnealing<Scalar>;
-template class TwoStageThermalAnnealing<SR2>;
 } // namespace neml2

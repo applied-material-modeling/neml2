@@ -45,9 +45,4 @@ protected:
   /// The constant value
   const T & _value;
 };
-
-#define CONSTANTPARAMETER_TYPEDEF_PRIMITIVETENSOR(T)                                               \
-  typedef ConstantParameter<T> T##ConstantParameter
-FOR_ALL_PRIMITIVETENSOR(CONSTANTPARAMETER_TYPEDEF_PRIMITIVETENSOR);
-
 } // namespace neml2

@@ -30,7 +30,6 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-        btype: [Release, Debug]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: applied-material-modeling/neml2-ci@main
@@ -38,12 +37,10 @@ jobs:
           python-version: 3.9
           cmake-version: 3.28
           torch-version: 2.5.1
-      - name: Configure
-        run: cmake --preset dev -GNinja -DCMAKE_BUILD_TYPE=${{ matrix.btype }} -S .
-      - name: Build
-        run: cmake --build --preset dev-python
+      - name: Install
+        run: CMAKE_GENERATOR=Ninja pip install -v .
       - name: Run tests
-        run: PYTHONPATH=build/dev/python pytest -vv --junitxml=pytest.xml python/tests
+        run: pytest -vv --junitxml=pytest.xml python/tests
       - name: Test results
         uses: EnricoMi/publish-unit-test-result-action/linux@v2
         if: always()

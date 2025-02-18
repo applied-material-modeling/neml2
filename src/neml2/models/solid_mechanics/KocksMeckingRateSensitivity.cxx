@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/KocksMeckingRateSensitivity.h"
+#include "neml2/tensors/Scalar.h"
 
 namespace neml2
 {
@@ -38,9 +39,11 @@ KocksMeckingRateSensitivity::expected_options()
       "\\f$ the shear modulus, \\f$ b \\f$ the Burgers vector, \\f$  k\\f$ the Boltzmann constant, "
       "\\f$ T \\f$ absolute temperature, and \\f$ A \\f$ the Kocks-Mecking slope parameter.";
 
-  options.set_parameter<CrossRef<Scalar>>("A");
+  options.set<bool>("define_second_derivatives") = true;
+
+  options.set_parameter<TensorName>("A");
   options.set("A").doc() = "The Kocks-Mecking slope parameter";
-  options.set_parameter<CrossRef<Scalar>>("shear_modulus");
+  options.set_parameter<TensorName>("shear_modulus");
   options.set("shear_modulus").doc() = "The shear modulus";
 
   options.set<Real>("k");

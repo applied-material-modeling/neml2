@@ -28,6 +28,9 @@
 
 namespace neml2
 {
+class SR2;
+class SSR4;
+
 class MixedControlSetup : public Model
 {
 public:

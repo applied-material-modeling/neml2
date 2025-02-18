@@ -22,11 +22,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <iomanip>
+
 #include "TransientRegression.h"
 #include "neml2/drivers/TransientDriver.h"
-#include "neml2/misc/parser_utils.h"
-#include <iomanip>
-#include <torch/script.h>
+#include "neml2/misc/string_utils.h"
+#include "neml2/misc/assertions.h"
 
 namespace fs = std::filesystem;
 
@@ -55,17 +56,13 @@ TransientRegression::TransientRegression(const OptionSet & options)
 }
 
 void
-TransientRegression::diagnose(std::vector<Diagnosis> & diagnoses) const
+TransientRegression::diagnose() const
 {
-  Driver::diagnose(diagnoses);
-  _driver.diagnose(diagnoses);
-  diagnostic_assert(diagnoses,
-                    fs::exists(_reference),
-                    "Reference file '",
-                    _reference.string(),
-                    "' does not exist.");
-  diagnostic_assert(diagnoses,
-                    !_driver.save_as_path().empty(),
+  Driver::diagnose();
+  neml2::diagnose(_driver);
+  diagnostic_assert(
+      fs::exists(_reference), "Reference file '", _reference.string(), "' does not exist.");
+  diagnostic_assert(!_driver.save_as_path().empty(),
                     "The driver does not save any results. Use the save_as option to specify the "
                     "destination file/path.");
 }
@@ -76,8 +73,8 @@ TransientRegression::run()
   _driver.run();
 
   // Verify the result
-  auto res = torch::jit::load(_driver.save_as_path());
-  auto res_ref = torch::jit::load(_reference);
+  auto res = jit::load(_driver.save_as_path());
+  auto res_ref = jit::load(_reference);
   auto err_msg = diff(res.named_buffers(), res_ref.named_buffers(), _rtol, _atol);
 
   neml_assert(err_msg.empty(), err_msg);
@@ -86,16 +83,13 @@ TransientRegression::run()
 }
 
 std::string
-diff(const torch::jit::named_buffer_list & res,
-     const torch::jit::named_buffer_list & ref,
-     Real rtol,
-     Real atol)
+diff(const jit::named_buffer_list & res, const jit::named_buffer_list & ref, Real rtol, Real atol)
 {
-  std::map<std::string, torch::Tensor> res_map;
+  std::map<std::string, ATensor> res_map;
   for (auto item : res)
     res_map.emplace(item.name, item.value);
 
-  std::map<std::string, torch::Tensor> ref_map;
+  std::map<std::string, ATensor> ref_map;
   for (auto item : ref)
     ref_map.emplace(item.name, item.value);
 
@@ -113,9 +107,9 @@ diff(const torch::jit::named_buffer_list & res,
       continue;
     }
 
-    if (!torch::allclose(res_map[key], value, rtol, atol))
+    if (!at::allclose(res_map[key], value, rtol, atol))
     {
-      auto diff = torch::abs(res_map[key] - value) - rtol * torch::abs(value);
+      auto diff = at::abs(res_map[key] - value) - rtol * at::abs(value);
       err_msg << "Result has wrong value for variable " << key
               << ". Maximum mixed difference = " << std::scientific << diff.max().item<Real>()
               << " > atol = " << std::scientific << atol << "\n";

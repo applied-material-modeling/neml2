@@ -22,13 +22,33 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/solvers/NonlinearSystem.h"
-#include "neml2/misc/math.h"
+#include <iostream>
 
-#include <ATen/ops/linalg_cond.h>
+#include "neml2/solvers/NonlinearSystem.h"
+#include "neml2/misc/assertions.h"
+#include "neml2/tensors/functions/bmm.h"
+#include "neml2/tensors/functions/diag_embed.h"
 
 namespace neml2
 {
+bool &
+currently_solving_nonlinear_system()
+{
+  static bool _solving_nl_sys = false;
+  return _solving_nl_sys;
+}
+
+SolvingNonlinearSystem::SolvingNonlinearSystem(bool solving)
+  : prev_bool(currently_solving_nonlinear_system())
+{
+  currently_solving_nonlinear_system() = solving;
+}
+
+SolvingNonlinearSystem::~SolvingNonlinearSystem()
+{
+  currently_solving_nonlinear_system() = prev_bool;
+}
+
 OptionSet
 NonlinearSystem::expected_options()
 {
@@ -95,13 +115,13 @@ NonlinearSystem::init_scaling(const NonlinearSystem::Sol<false> & x, const bool 
 
   if (verbose)
     std::cout << "Before automatic scaling cond(J) = " << std::scientific
-              << torch::max(torch::linalg_cond(Jp)).item<Real>() << std::endl;
+              << at::max(at::linalg_cond(Jp)).item<Real>() << std::endl;
 
   for (unsigned int itr = 0; itr < _autoscale_miter; itr++)
   {
     // check for convergence
-    auto rR = torch::max(torch::abs(1.0 - 1.0 / torch::sqrt(std::get<0>(Jp.max(-1))))).item<Real>();
-    auto rC = torch::max(torch::abs(1.0 - 1.0 / torch::sqrt(std::get<0>(Jp.max(-2))))).item<Real>();
+    auto rR = at::max(at::abs(1.0 - 1.0 / at::sqrt(std::get<0>(Jp.max(-1))))).item<Real>();
+    auto rC = at::max(at::abs(1.0 - 1.0 / at::sqrt(std::get<0>(Jp.max(-2))))).item<Real>();
     if (verbose)
       std::cout << "ITERATION " << itr << ", ROW ILLNESS = " << std::scientific << rR
                 << ", COL ILLNESS = " << std::scientific << rC << std::endl;
@@ -111,8 +131,8 @@ NonlinearSystem::init_scaling(const NonlinearSystem::Sol<false> & x, const bool 
     // scale rows and columns
     for (Size i = 0; i < x.base_size(-1); i++)
     {
-      auto ar = 1.0 / torch::sqrt(torch::max(Jp.base_index({i})));
-      auto ac = 1.0 / torch::sqrt(torch::max(Jp.base_index({indexing::Slice(), i})));
+      auto ar = 1.0 / at::sqrt(at::max(Jp.base_index({i})));
+      auto ac = 1.0 / at::sqrt(at::max(Jp.base_index({indexing::Slice(), i})));
       _row_scaling.base_index({i}) *= ar;
       _col_scaling.base_index({i}) *= ac;
       Jp.base_index({i}) *= ar;
@@ -124,7 +144,7 @@ NonlinearSystem::init_scaling(const NonlinearSystem::Sol<false> & x, const bool 
 
   if (verbose)
     std::cout << " After automatic scaling cond(J) = " << std::scientific
-              << torch::max(torch::linalg_cond(Jp)).item<Real>() << std::endl;
+              << at::max(at::linalg_cond(Jp)).item<Real>() << std::endl;
 }
 
 void
@@ -163,8 +183,7 @@ NonlinearSystem::scale(const NonlinearSystem::Jac<false> & J) const
     return Jac<true>(J);
 
   ensure_scaling_matrices_initialized_dbg();
-  return Jac<true>(math::bmm(math::bmm(math::base_diag_embed(_row_scaling), J),
-                             math::base_diag_embed(_col_scaling)));
+  return Jac<true>(bmm(bmm(base_diag_embed(_row_scaling), J), base_diag_embed(_col_scaling)));
 }
 
 NonlinearSystem::Jac<false>
@@ -174,8 +193,8 @@ NonlinearSystem::unscale(const NonlinearSystem::Jac<true> & J) const
     return Jac<false>(J);
 
   ensure_scaling_matrices_initialized_dbg();
-  return Jac<false>(math::bmm(math::bmm(math::base_diag_embed(1.0 / _row_scaling), J),
-                              math::base_diag_embed(1.0 / _col_scaling)));
+  return Jac<false>(
+      bmm(bmm(base_diag_embed(1.0 / _row_scaling), J), base_diag_embed(1.0 / _col_scaling)));
 }
 
 NonlinearSystem::Sol<true>

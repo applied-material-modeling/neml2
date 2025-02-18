@@ -31,7 +31,7 @@ using namespace neml2;
 
 TEST_CASE("Quaternion", "[tensors]")
 {
-  torch::manual_seed(42);
+  at::manual_seed(42);
   const auto & DTO = default_tensor_options();
 
   TensorShape B = {5, 3, 1, 2}; // batch shape
@@ -51,7 +51,7 @@ TEST_CASE("Quaternion", "[tensors]")
                        0.50867052,
                        -0.71098266,
                        DTO);
-    REQUIRE(torch::allclose(q.to_R2(), R2));
-    REQUIRE(torch::allclose(qb.to_R2(), R2.batch_expand(B)));
+    REQUIRE(at::allclose(q.to_R2(), R2));
+    REQUIRE(at::allclose(qb.to_R2(), R2.batch_expand(B)));
   }
 }

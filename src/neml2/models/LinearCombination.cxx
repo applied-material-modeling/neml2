@@ -23,15 +23,14 @@
 // THE SOFTWARE.
 
 #include "neml2/models/LinearCombination.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/Vec.h"
+#include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
-#include "neml2/misc/math.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {
-register_NEML2_object(ScalarLinearCombination);
-register_NEML2_object(VecLinearCombination);
-register_NEML2_object(SR2LinearCombination);
-
 template <typename T>
 OptionSet
 LinearCombination<T>::expected_options()
@@ -45,13 +44,15 @@ LinearCombination<T>::expected_options()
                   " tensors as \\f$ u = c_i v_i \\f$ (Einstein summation assumed), where \\f$ c_i "
                   "\\f$ are the coefficients, and \\f$ v_i \\f$ are the variables to be summed.";
 
+  options.set<bool>("define_second_derivatives") = true;
+
   options.set<std::vector<VariableName>>("from_var");
   options.set("from_var").doc() = tensor_type + " tensors to be summed";
 
   options.set_output("to_var");
   options.set("to_var").doc() = "The sum";
 
-  options.set_parameter<std::vector<CrossRef<Scalar>>>("coefficients") = {CrossRef<Scalar>("1")};
+  options.set_parameter<std::vector<TensorName>>("coefficients") = {TensorName("1")};
   options.set("coefficients").doc() =
       "Weights associated with each variable. This option takes a list of weights, one for each "
       "coefficient. When the length of this list is 1, the same weight applies to all "
@@ -86,7 +87,7 @@ LinearCombination<T>::LinearCombination(const OptionSet & options)
   if (coef_as_param.size() == 1)
     coef_as_param = std::vector<bool>(_from.size(), coef_as_param[0]);
 
-  const auto coef_refs = options.get<std::vector<CrossRef<Scalar>>>("coefficients");
+  const auto coef_refs = options.get<std::vector<TensorName>>("coefficients");
   neml_assert(coef_refs.size() == 1 || coef_refs.size() == _from.size(),
               "Expected 1 or ",
               _from.size(),
@@ -138,7 +139,11 @@ LinearCombination<T>::set_value(bool out, bool dout_din, bool d2out_din2)
   }
 }
 
-template class LinearCombination<Scalar>;
-template class LinearCombination<Vec>;
-template class LinearCombination<SR2>;
+#define REGISTER(T)                                                                                \
+  using T##LinearCombination = LinearCombination<T>;                                               \
+  register_NEML2_object(T##LinearCombination);                                                     \
+  template class LinearCombination<T>
+REGISTER(Scalar);
+REGISTER(Vec);
+REGISTER(SR2);
 } // namespace neml2

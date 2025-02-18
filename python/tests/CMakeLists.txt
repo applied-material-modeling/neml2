@@ -11,8 +11,11 @@ execute_process(
 # Install test resources
 # ----------------------------------------------------------------------------
 install(DIRECTORY .
-  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/python
-  COMPONENT Development
+  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/neml2/python
+  COMPONENT libneml2-python
   FILES_MATCHING
   PATTERN "*.py"
+  PATTERN "*.i"
+  PATTERN "*.pt"
+  PATTERN "__pycache__" EXCLUDE
 )

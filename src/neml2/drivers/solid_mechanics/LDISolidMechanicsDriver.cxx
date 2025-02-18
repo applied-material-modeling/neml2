@@ -23,6 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/drivers/solid_mechanics/LDISolidMechanicsDriver.h"
+#include "neml2/misc/assertions.h"
+#include "neml2/base/LabeledAxis.h"
 
 namespace neml2
 {
@@ -37,19 +39,19 @@ LDISolidMechanicsDriver::expected_options()
 
   options.set<VariableName>("deformation_rate") = VariableName(FORCES, "deformation_rate");
   options.set("deformation_rate").doc() = "Deformation rate";
-  options.set<CrossRef<torch::Tensor>>("prescribed_deformation_rate");
+  options.set<TensorName>("prescribed_deformation_rate");
   options.set("prescribed_deformation_rate").doc() =
       "Prescribed deformation rate (when control = STRAIN)";
 
   options.set<VariableName>("cauchy_stress_rate") = VariableName(FORCES, "cauchy_stress_rate");
   options.set("cauchy_stress_rate").doc() = "Cauchy stress rate";
-  options.set<CrossRef<torch::Tensor>>("prescribed_cauchy_stress_rate");
+  options.set<TensorName>("prescribed_cauchy_stress_rate");
   options.set("prescribed_cauchy_stress_rate").doc() =
       "Prescribed cauchy stress rate (when control = STRESS)";
 
   options.set<VariableName>("vorticity") = VariableName(FORCES, "vorticity");
   options.set("vorticity").doc() = "Vorticity";
-  options.set<CrossRef<torch::Tensor>>("prescribed_vorticity");
+  options.set<TensorName>("prescribed_vorticity");
   options.set("prescribed_vorticity").doc() = "Prescribed vorticity";
 
   options.set<bool>("cp_warmup") = false;
@@ -86,7 +88,7 @@ void
 LDISolidMechanicsDriver::init_strain_control(const OptionSet & options)
 {
   _driving_force_name = options.get<VariableName>("deformation_rate");
-  _driving_force = SR2(options.get<CrossRef<torch::Tensor>>("prescribed_deformation_rate"));
+  _driving_force = SR2(options.get<TensorName>("prescribed_deformation_rate"));
   _driving_force = _driving_force.to(_device);
 }
 
@@ -94,7 +96,7 @@ void
 LDISolidMechanicsDriver::init_stress_control(const OptionSet & options)
 {
   _driving_force_name = options.get<VariableName>("cauchy_stress_rate");
-  _driving_force = SR2(options.get<CrossRef<torch::Tensor>>("prescribed_cauchy_stress_rate"));
+  _driving_force = SR2(options.get<TensorName>("prescribed_cauchy_stress_rate"));
   _driving_force = _driving_force.to(_device);
 }
 
@@ -102,24 +104,23 @@ void
 LDISolidMechanicsDriver::init_vorticity_control(const OptionSet & options)
 {
   _vorticity_name = options.get<VariableName>("vorticity");
-  _vorticity = WR2(options.get<CrossRef<torch::Tensor>>("prescribed_vorticity"));
+  _vorticity = WR2(options.get<TensorName>("prescribed_vorticity"));
   _vorticity = _vorticity.to(_device);
 }
 
 void
-LDISolidMechanicsDriver::diagnose(std::vector<Diagnosis> & diagnoses) const
+LDISolidMechanicsDriver::diagnose() const
 {
-  SolidMechanicsDriver::diagnose(diagnoses);
+  SolidMechanicsDriver::diagnose();
 
   if (_vorticity_prescribed)
   {
-    diagnostic_assert(diagnoses,
-                      _vorticity.batch_dim() >= 1,
+    diagnostic_assert(_vorticity.batch_dim() >= 1,
                       "Input vorticity should have at least one batch dimension but instead "
                       "has batch dimension ",
                       _vorticity.batch_dim());
     diagnostic_assert(
-        diagnoses,
+
         _vorticity.batch_size(0) == _time.batch_size(0),
         "Input vorticity should have the same number of steps steps as time, but instead has ",
         _vorticity.batch_size(0),
@@ -128,10 +129,8 @@ LDISolidMechanicsDriver::diagnose(std::vector<Diagnosis> & diagnoses) const
 
   if (_cp_warmup)
   {
-    diagnostic_assert(
-        diagnoses, _control == "STRAIN", "CP warm-up step is only supported for STRAIN control");
-    diagnostic_assert(diagnoses,
-                      _model.input_axis().has_variable(_cp_warmup_elastic_strain),
+    diagnostic_assert(_control == "STRAIN", "CP warm-up step is only supported for STRAIN control");
+    diagnostic_assert(_model.input_axis().has_variable(_cp_warmup_elastic_strain),
                       "Model's input axis should have variable ",
                       _cp_warmup_elastic_strain,
                       " for the CP warm-up step but it does not");

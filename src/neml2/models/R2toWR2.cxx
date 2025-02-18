@@ -23,8 +23,9 @@
 // THE SOFTWARE.
 
 #include "neml2/models/R2toWR2.h"
-
-#include "neml2/misc/math.h"
+#include "neml2/tensors/mandel_notation.h"
+#include "neml2/tensors/R2.h"
+#include "neml2/tensors/WR2.h"
 
 namespace neml2
 {
@@ -35,6 +36,8 @@ R2toWR2::expected_options()
 {
   OptionSet options = Model::expected_options();
   options.doc() = "Extract the skew symmetric part of a R2 tensor";
+
+  options.set<bool>("define_second_derivatives") = true;
 
   options.set_input("input");
   options.set("input").doc() = "Rank two tensor to split";
@@ -62,7 +65,7 @@ R2toWR2::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (dout_din)
   {
-    _output.d(_input) = 0.5 * math::skew_to_full(R2::identity(A.options()), 1);
+    _output.d(_input) = 0.5 * skew_to_full(R2::identity(A.options()), 1);
   }
 
   // Second derivative is zero

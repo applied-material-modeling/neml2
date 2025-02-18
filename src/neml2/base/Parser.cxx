@@ -23,11 +23,61 @@
 // THE SOFTWARE.
 
 #include "neml2/base/Parser.h"
-#include "neml2/base/Factory.h"
-#include "neml2/base/HITParser.h"
+#include "neml2/base/OptionCollection.h"
+#include "neml2/models/Variable.h"
 
 namespace neml2
 {
 const std::vector<std::string> Parser::sections = {
     "Tensors", "Solvers", "Data", "Models", "Drivers"};
+
+namespace utils
+{
+template <>
+void
+parse_(bool & val, const std::string & raw_str)
+{
+  std::string str_val = parse<std::string>(raw_str);
+  if (str_val == "true")
+    val = true;
+  else if (str_val == "false")
+    val = false;
+  else
+    throw ParserException("Failed to parse boolean value. Only 'true' and 'false' are recognized.");
+}
+
+template <>
+void
+parse_vector_(std::vector<bool> & vals, const std::string & raw_str)
+{
+  auto tokens = split(raw_str, " \t\n\v\f\r");
+  vals.resize(tokens.size());
+  for (size_t i = 0; i < tokens.size(); i++)
+    vals[i] = parse<bool>(tokens[i]);
+}
+
+template <>
+void
+parse_(VariableName & val, const std::string & raw_str)
+{
+  auto tokens = split(raw_str, "/ \t\n\v\f\r");
+  val = VariableName(tokens);
+}
+
+template <>
+void
+parse_(TensorShape & val, const std::string & raw_str)
+{
+  if (!start_with(raw_str, "(") || !end_with(raw_str, ")"))
+    throw ParserException("Trying to parse " + raw_str +
+                          " as a shape, but a shape must start with '(' and end with ')'");
+
+  auto inner = trim(raw_str, "() \t\n\v\f\r");
+  auto tokens = split(inner, ", \t\n\v\f\r");
+
+  val.clear();
+  for (auto & token : tokens)
+    val.push_back(parse<Size>(token));
+}
+} // namespace utils
 } // namespace neml2

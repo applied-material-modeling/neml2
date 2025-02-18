@@ -23,7 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/elasticity/GeneralElasticity.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/SSFR5.h"
 #include "neml2/tensors/SSSSR8.h"
 
 namespace neml2
@@ -37,7 +37,7 @@ GeneralElasticity::expected_options()
   options.doc() += " This verion implements a general relation using the elasticity tensor, "
                    "expressed as an SSR4 object";
 
-  options.set_parameter<CrossRef<SSR4>>("elastic_stiffness_tensor");
+  options.set_parameter<TensorName>("elastic_stiffness_tensor");
   options.set("elastic_stiffness_tensor").doc() = "Elastic stiffness tensor";
 
   return options;
@@ -50,10 +50,8 @@ GeneralElasticity::GeneralElasticity(const OptionSet & options)
 }
 
 void
-GeneralElasticity::set_value(bool out, bool dout_din, bool d2out_din2)
+GeneralElasticity::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "GeneralElasticity doesn't implement second derivatives.");
-
   const auto A = _T.rotate(_R);
   const auto Ainv = _compliance ? A.inverse() : SSR4();
 
@@ -69,20 +67,20 @@ GeneralElasticity::set_value(bool out, bool dout_din, bool d2out_din2)
     {
       const auto dA_dR = _T.drotate(_R);
       if (_compliance)
-        _to.d(_R) = Tensor(torch::einsum("...ijkl,...klm,...j", {A.dinverse(), dA_dR, _from}),
+        _to.d(_R) = Tensor(at::einsum("...ijkl,...klm,...j", {A.dinverse(), dA_dR, _from}),
                            A.batch_sizes());
       else
-        _to.d(_R) = Tensor(torch::einsum("...ijk,...j", {dA_dR, _from}), A.batch_sizes());
+        _to.d(_R) = Tensor(at::einsum("...ijk,...j", {dA_dR, _from}), A.batch_sizes());
     }
 
     if (const auto * const T = nl_param("T"))
     {
       const auto dA_dT = _T.drotate_self(_R);
       if (_compliance)
-        _to.d(*T) = Tensor(torch::einsum("...ijkl,...klmn,...j", {A.dinverse(), dA_dT, _from}),
+        _to.d(*T) = Tensor(at::einsum("...ijkl,...klmn,...j", {A.dinverse(), dA_dT, _from}),
                            A.batch_sizes());
       else
-        _to.d(*T) = Tensor(torch::einsum("...ijkl,...j", {dA_dT, _from}), A.batch_sizes());
+        _to.d(*T) = Tensor(at::einsum("...ijkl,...j", {dA_dT, _from}), A.batch_sizes());
     }
   }
 }

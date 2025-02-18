@@ -44,13 +44,13 @@
 #include "neml2/tensors/SWR4.h"
 #include "neml2/tensors/WSR4.h"
 #include "neml2/tensors/WWR4.h"
-#include "neml2/models/crystallography/MillerIndex.h"
+#include "neml2/tensors/MillerIndex.h"
 #include "neml2/tensors/SSSSR8.h"
 #include "neml2/tensors/R8.h"
 
 #include "neml2/tensors/macros.h"
 
-#include <iostream>
+#include <iosfwd>
 
 namespace neml2
 {
@@ -69,14 +69,13 @@ struct TensorTypeEnum
   static constexpr TensorType value = TensorType::kUknown;
 };
 
-// Specialize TensorEnum for all tensor types
-#define _tensor_type_enum_specialize(T)                                                            \
+#define SPECIALIZE_TENSORTYPEENUM(T)                                                               \
   template <>                                                                                      \
   struct TensorTypeEnum<T>                                                                         \
   {                                                                                                \
     static constexpr TensorType value = TensorType::k##T;                                          \
   }
-FOR_ALL_TENSORBASE(_tensor_type_enum_specialize);
+FOR_ALL_TENSORBASE(SPECIALIZE_TENSORTYPEENUM);
 
 // Stringify the tensor type enum
 std::ostream & operator<<(std::ostream & os, const TensorType & t);

@@ -36,7 +36,7 @@ public:
 
   ImplicitUpdate(const OptionSet & options);
 
-  void diagnose(std::vector<Diagnosis> & diagnoses) const override;
+  void diagnose() const override;
 
   void link_output_variables() override;
 

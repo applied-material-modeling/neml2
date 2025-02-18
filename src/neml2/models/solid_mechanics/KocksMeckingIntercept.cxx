@@ -23,8 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/KocksMeckingIntercept.h"
-
-#include "neml2/misc/math.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/functions/pow.h"
 
 namespace neml2
 {
@@ -34,17 +34,18 @@ OptionSet
 KocksMeckingIntercept::expected_options()
 {
   OptionSet options = NonlinearParameter<Scalar>::expected_options();
-
   options.doc() = "The critical value of the normalized activation energy given by \\f$ g_0 "
                   "\\frac{C-B}{A} \\f$";
 
-  options.set_parameter<CrossRef<Scalar>>("A");
+  options.set<bool>("define_second_derivatives") = true;
+
+  options.set_parameter<TensorName>("A");
   options.set("A").doc() = "The Kocks-Mecking slope";
 
-  options.set_parameter<CrossRef<Scalar>>("B");
+  options.set_parameter<TensorName>("B");
   options.set("B").doc() = "The Kocks-Mecking intercept";
 
-  options.set_parameter<CrossRef<Scalar>>("C");
+  options.set_parameter<TensorName>("C");
   options.set("C").doc() = "The Kocks-Mecking horizontal value";
 
   return options;
@@ -67,7 +68,7 @@ KocksMeckingIntercept::set_value(bool out, bool dout_din, bool d2out_din2)
   if (dout_din)
   {
     if (const auto * const A = nl_param("A"))
-      _p.d(*A) = -(_C - _B) / math::pow(_A, 2.0);
+      _p.d(*A) = -(_C - _B) / pow(_A, 2.0);
 
     if (const auto * const B = nl_param("B"))
       _p.d(*B) = -1.0 / _A;
@@ -80,20 +81,20 @@ KocksMeckingIntercept::set_value(bool out, bool dout_din, bool d2out_din2)
   {
     if (const auto * const A = nl_param("A"))
     {
-      _p.d(*A, *A) = 2.0 * (_C - _B) / math::pow(_A, 3.0);
+      _p.d(*A, *A) = 2.0 * (_C - _B) / pow(_A, 3.0);
       if (const auto * const B = nl_param("B"))
-        _p.d(*A, *B) = 1.0 / math::pow(_A, 2.0);
+        _p.d(*A, *B) = 1.0 / pow(_A, 2.0);
       if (const auto * const C = nl_param("C"))
-        _p.d(*A, *C) = -1.0 / math::pow(_A, 2.0);
+        _p.d(*A, *C) = -1.0 / pow(_A, 2.0);
     }
 
     if (const auto * const B = nl_param("B"))
       if (const auto * const A = nl_param("A"))
-        _p.d(*B, *A) = 1.0 / math::pow(_A, 2.0);
+        _p.d(*B, *A) = 1.0 / pow(_A, 2.0);
 
     if (const auto * const C = nl_param("C"))
       if (const auto * const A = nl_param("A"))
-        _p.d(*C, *A) = -1.0 / math::pow(_A, 2.0);
+        _p.d(*C, *A) = -1.0 / pow(_A, 2.0);
   }
 }
 } // namespace neml2

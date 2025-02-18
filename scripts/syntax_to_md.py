@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 
 # Copyright 2024, UChicago Argonne, LLC
 # All Rights Reserved
@@ -31,7 +31,7 @@ from pathlib import Path
 
 
 def demangle(type):
-    type = type.replace("c10::SmallVector<long, 6u>", "tensor shape")
+    type = type.replace("SmallVector<long, 6u>", "tensor shape")
     type = type.replace(
         "std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >",
         "std::string",
@@ -40,7 +40,6 @@ def demangle(type):
     type = type.replace("neml2::", "")
     type = type.replace("std::", "")
     type = type.replace("at::", "")
-    type = re.sub("CrossRef<(.+)>", r"\1 🔗", type)
     type = type.replace("LabeledAxisAccessor", "variable name")
     type = re.sub("vector<(.+)>", r"list of \1", type)
     # Call all integral/floating point types "number", as this syntax documentation faces the general audience potentially without computer science background

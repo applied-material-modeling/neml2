@@ -23,7 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/IsotropicHardeningStaticRecovery.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/Scalar.h"
 
 namespace neml2
 {

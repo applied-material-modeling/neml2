@@ -28,13 +28,15 @@
 #include "neml2/base/Factory.h"
 #include "neml2/models/Model.h"
 #include "neml2/models/Assembler.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/SR2.h"
+#include "neml2/tensors/functions/cat.h"
 
 using namespace neml2;
 
 TEST_CASE("VectorAssembler", "[models]")
 {
-  auto & model = reload_model("unit/models/SampleRateModel.i", "model");
+  auto & model = reload_model("models/SampleRateModel.i", "model");
 
   const auto & axis = model.input_axis();
   const auto assembler = VectorAssembler(axis);
@@ -54,10 +56,10 @@ TEST_CASE("VectorAssembler", "[models]")
     const auto v = assembler.assemble_by_variable({{T_name, T}, {bar_name, bar}, {baz_name, baz}});
     REQUIRE(v.batch_sizes().concrete() == TensorShape{5, 2, 5});
     REQUIRE(v.base_sizes() == TensorShapeRef{9});
-    REQUIRE(torch::allclose(v.base_index({axis.slice(T_name)}), T.base_flatten()));
-    REQUIRE(torch::allclose(v.base_index({axis.slice(foo_name)}), foo.base_flatten()));
-    REQUIRE(torch::allclose(v.base_index({axis.slice(bar_name)}), bar.base_flatten()));
-    REQUIRE(torch::allclose(v.base_index({axis.slice(baz_name)}), baz.base_flatten()));
+    REQUIRE(at::allclose(v.base_index({axis.slice(T_name)}), T.base_flatten()));
+    REQUIRE(at::allclose(v.base_index({axis.slice(foo_name)}), foo.base_flatten()));
+    REQUIRE(at::allclose(v.base_index({axis.slice(bar_name)}), bar.base_flatten()));
+    REQUIRE(at::allclose(v.base_index({axis.slice(baz_name)}), baz.base_flatten()));
   }
 
   SECTION("split_by_variable")
@@ -65,10 +67,10 @@ TEST_CASE("VectorAssembler", "[models]")
     const auto v = assembler.assemble_by_variable({{T_name, T}, {bar_name, bar}, {baz_name, baz}});
     const auto vars = assembler.split_by_variable(v);
     REQUIRE(vars.size() == 4);
-    REQUIRE(torch::allclose(vars.at(T_name), T.base_flatten()));
-    REQUIRE(torch::allclose(vars.at(foo_name), foo.base_flatten()));
-    REQUIRE(torch::allclose(vars.at(bar_name), bar.base_flatten()));
-    REQUIRE(torch::allclose(vars.at(baz_name), baz.base_flatten()));
+    REQUIRE(at::allclose(vars.at(T_name), T.base_flatten()));
+    REQUIRE(at::allclose(vars.at(foo_name), foo.base_flatten()));
+    REQUIRE(at::allclose(vars.at(bar_name), bar.base_flatten()));
+    REQUIRE(at::allclose(vars.at(baz_name), baz.base_flatten()));
   }
 
   SECTION("split_by_subaxis")
@@ -76,10 +78,10 @@ TEST_CASE("VectorAssembler", "[models]")
     const auto v = assembler.assemble_by_variable({{T_name, T}, {bar_name, bar}, {baz_name, baz}});
     const auto vs = assembler.split_by_subaxis(v);
     REQUIRE(vs.size() == 2);
-    REQUIRE(torch::allclose(vs.at(FORCES), T.base_flatten()));
-    REQUIRE(torch::allclose(vs.at(STATE),
-                            math::base_cat({bar.base_flatten().batch_expand({5, 2, 5}),
-                                            baz.base_flatten().batch_expand({5, 2, 5}),
-                                            foo.base_flatten().batch_expand({5, 2, 5})})));
+    REQUIRE(at::allclose(vs.at(FORCES), T.base_flatten()));
+    REQUIRE(at::allclose(vs.at(STATE),
+                         base_cat({bar.base_flatten().batch_expand({5, 2, 5}),
+                                   baz.base_flatten().batch_expand({5, 2, 5}),
+                                   foo.base_flatten().batch_expand({5, 2, 5})})));
   }
 }

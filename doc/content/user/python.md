@@ -1,5 +1,7 @@
 # Python Package {#python-package}
 
+[TOC]
+
 \note
 The NEML2 Python package is experimental. APIs are expected to change.
 

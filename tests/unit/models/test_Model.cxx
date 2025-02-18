@@ -27,6 +27,8 @@
 
 #include "utils.h"
 #include "neml2/models/Model.h"
+#include "neml2/models/Variable.h"
+#include "neml2/tensors/tensors.h"
 
 using namespace neml2;
 
@@ -34,7 +36,7 @@ TEST_CASE("Model", "[models]")
 {
   SECTION("variable type")
   {
-    auto & model = reload_model("unit/models/ComposedModel3.i", "model");
+    auto & model = reload_model("models/ComposedModel3.i", "model");
 
     REQUIRE(model.input_variable({FORCES, "t"}).type() == TensorType::kScalar);
     REQUIRE(model.input_variable({FORCES, "temperature"}).type() == TensorType::kScalar);
@@ -63,27 +65,38 @@ TEST_CASE("Model", "[models]")
   {
     SECTION("input variables")
     {
-      auto & model = reload_model("unit/models/test_Model_diagnose1.i", "model");
-      REQUIRE_THROWS_WITH(
-          diagnose(model),
+      auto & model = reload_model("models/test_Model_diagnose1.i", "model");
+      auto diagnoses = diagnose(model);
+
+      REQUIRE(diagnoses.size() == 2);
+      REQUIRE_THAT(
+          diagnoses[0].what(),
           Catch::Matchers::ContainsSubstring(
               "Input variable whatever/foo_rate must be on one of the following sub-axes"));
+      REQUIRE_THAT(diagnoses[1].what(),
+                   Catch::Matchers::ContainsSubstring(
+                       "Variable whatever/foo_rate must be on the state sub-axis"));
     }
 
     SECTION("output variables")
     {
-      auto & model = reload_model("unit/models/test_Model_diagnose2.i", "model");
-      REQUIRE_THROWS_WITH(
-          diagnose(model),
-          Catch::Matchers::ContainsSubstring(
-              "Output variable whatever/foo must be on one of the following sub-axes"));
+      auto & model = reload_model("models/test_Model_diagnose2.i", "model");
+      auto diagnoses = diagnose(model);
+
+      REQUIRE(diagnoses.size() == 1);
+      REQUIRE_THAT(diagnoses[0].what(),
+                   Catch::Matchers::ContainsSubstring(
+                       "Output variable whatever/foo must be on one of the following sub-axes"));
     }
 
     SECTION("nonlinear system")
     {
-      auto & model = reload_model("unit/models/test_Model_diagnose3.i", "model");
-      REQUIRE_THROWS_WITH(
-          diagnose(model),
+      auto & model = reload_model("models/test_Model_diagnose3.i", "model");
+      auto diagnoses = diagnose(model);
+
+      REQUIRE(diagnoses.size() == 1);
+      REQUIRE_THAT(
+          diagnoses[0].what(),
           Catch::Matchers::ContainsSubstring(
               "This model is part of a nonlinear system. At least one of the input variables is "
               "solve-dependent, so all output variables MUST be solve-dependent"));

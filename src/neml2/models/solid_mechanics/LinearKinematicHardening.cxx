@@ -23,6 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/LinearKinematicHardening.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
 
 namespace neml2
@@ -36,7 +38,9 @@ LinearKinematicHardening::expected_options()
   options.doc() += " following a linear relationship, i.e., \\f$ \\boldsymbol{X} = H "
                    "\\boldsymbol{K}_p \\f$ where \\f$ H \\f$ is the hardening modulus.";
 
-  options.set_parameter<CrossRef<Scalar>>("hardening_modulus");
+  options.set<bool>("define_second_derivatives") = true;
+
+  options.set_parameter<TensorName>("hardening_modulus");
   options.set("hardening_modulus").doc() = "Hardening modulus";
 
   return options;

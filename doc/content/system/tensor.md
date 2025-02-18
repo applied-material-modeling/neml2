@@ -6,7 +6,7 @@ Refer to [Syntax Documentation](@ref syntax-tensors) for the list of available o
 
 ## Tensor types {#tensor-types}
 
-Currently, PyTorch is the only supported tensor backend in NEML2. Therefore, all tensor types in NEML2 directly inherit from `torch::Tensor`. In the future, support for other tensor backends may be added, but the public-facing interfaces will remain largely the same.
+Currently, PyTorch is the only supported tensor backend in NEML2. Therefore, all tensor types in NEML2 directly inherit from `ATensor`. In the future, support for other tensor backends may be added, but the public-facing interfaces will remain largely the same.
 
 ### Dynamically shaped tensor {#dynamically-shaped-tensor}
 
@@ -14,9 +14,9 @@ neml2::Tensor is a general-purpose *dynamically shaped* tensor type for batched 
 
 > Unlike PyTorch, NEML2 explicitly distinguishes between batch dimensions and base dimensions.
 
-A `Tensor` can be created from a `torch::Tensor` and a batch dimension:
+A `Tensor` can be created from a `ATensor` and a batch dimension:
 ```cpp
-Tensor A(torch::rand({1, 1, 5, 2}), 2);
+Tensor A(at::rand({1, 1, 5, 2}), 2);
 ```
 The batch sizes of `A` is `(1, 1)`:
 ```cpp
@@ -52,7 +52,7 @@ neml2::PrimitiveTensor is the parent class for all tensor types with a *fixed* b
 | [Quaternion](@ref neml2::Quaternion)   | \f$(4)\f$         | Quaternion                                                       |
 | [MillerIndex](@ref neml2::MillerIndex) | \f$(3)\f$         | Crystal direction or lattice plane represented as Miller indices |
 
-Furthermore, all primitive tensor types can be "registered" as variables on a `LabeledAxis`, which will be discussed in the following section on [labeled view](@ref tensor-labeling).
+Furthermore, all primitive tensor types can be "registered" as variables on a `LabeledAxis`.
 
 ## Working with tensors {#working-with-tensors}
 
@@ -60,21 +60,19 @@ Furthermore, all primitive tensor types can be "registered" as variables on a `L
 
 A factory tensor creation function produces a new tensor. All factory functions adhere to the same schema:
 ```cpp
-<TensorType>::<function_name>(<function-specific-options>, const torch::TensorOptions & options);
+<TensorType>::<function_name>(<function-specific-options>, const TensorOptions & options);
 ```
-where `<TensorType>` is the class name of the primitive tensor type listed above, and `<function-name>` is the name of the factory function which produces the new tensor. `<function-specific-options>` are any required or optional arguments a particular factory function accepts. Refer to each tensor type's class documentation for the concrete signature. The last argument `const torch::TensorOptions & options` configures the data type, device, layout and other "meta" properties of the produced tensor. The commonly used meta properties are
-- `dtype`: the data type of the elements stored in the tensor. Available options are `kUInt8`, `kInt8`, `kInt16`, `kInt32`, `kInt64`, `kFloat32`, and `kFloat64`.
-- `layout`: the striding of the tensor. Available options are `kStrided` (dense) and `kSparse`.
+where `<TensorType>` is the class name of the primitive tensor type listed above, and `<function-name>` is the name of the factory function which produces the new tensor. `<function-specific-options>` are any required or optional arguments a particular factory function accepts. Refer to each tensor type's class documentation for the concrete signature. The last argument `const TensorOptions & options` configures the data type, device, layout and other "meta" properties of the produced tensor. The commonly used meta properties are
+- `dtype`: the data type of the elements stored in the tensor. Available options are `kInt8`, `kInt16`, `kInt32`, `kInt64`, `kFloat32`, and `kFloat64`.
 - `device`: the compute device where the tensor will be allocated. Available options are `kCPU` and `kCUDA`.
 - `requires_grad`: whether the tensor is part of a function graph used by automatic differentiation to track functional relationship. Available options are `true` and `false`.
 
 For example, the following code
 ```cpp
 auto a = SR2::zeros({5, 3},
-                    torch::TensorOptions()
-                      .device(torch::kCPU)
-                      .layout(torch::kStrided)
-                      .dtype(torch::kFloat32));
+                    TensorOptions()
+                      .device(kCPU)
+                      .dtype(kFloat32));
 ```
 creates a statically (base) shaped, dense, single precision tensor of type `SR2` filled with zeros, with batch shape \f$(5, 3)\f$, allocated on the CPU.
 
@@ -105,7 +103,7 @@ To address this challenge, NEML2 creates *views*, instead of copies, of tensors 
 
 In NEML2, use neml2::TensorBase::base_index for indexing the base dimensions and neml2::TensorBase::batch_index for indexing the batch dimensions:
 ```cpp
-Tensor A(torch::tensor({{2, 3, 4}, {-1, -2, 3}, {6, 9, 7}}), 1);
+Tensor A::create({{2, 3, 4}, {-1, -2, 3}, {6, 9, 7}}, 1);
 // A = [[  2  3  4]
 //      [ -1 -2  3]
 //      [  6  9  7]]
@@ -119,11 +117,11 @@ Tensor C = A.base_index({indexing::Slice(1, 3)});
 ```
 To modify the content of a tensor, use neml2::TensorBase::base_index_put_ or neml2::TensorBase::batch_index_put_:
 ```cpp
-A.base_index_put_({Slice(1, 3)}, torch::ones({3, 2}));
+A.base_index_put_({Slice(1, 3)}, at::ones({3, 2}));
 // A = [[  2  1  1]
 //      [ -1  1  1]
 //      [  6  1  1]]
-A.batch_index_put_({Slice(0, 2)}, torch::zeros({2, 3}));
+A.batch_index_put_({Slice(0, 2)}, at::zeros({2, 3}));
 // A = [[  0  0  0]
 //      [  0  0  0]
 //      [  6  1  1]]

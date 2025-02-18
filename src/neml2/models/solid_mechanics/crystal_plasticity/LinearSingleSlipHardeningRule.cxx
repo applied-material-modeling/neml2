@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/crystal_plasticity/LinearSingleSlipHardeningRule.h"
+#include "neml2/tensors/Scalar.h"
 
 namespace neml2
 {
@@ -37,7 +38,7 @@ LinearSingleSlipHardeningRule::expected_options()
                   "\\sum_{i=1}^{n_{slip}} \\left| \\dot{\\gamma}_i \\right| \\f$ where \\f$ "
                   "\\theta \\f$ is the hardening slope.";
 
-  options.set_parameter<CrossRef<Scalar>>("hardening_slope");
+  options.set_parameter<TensorName>("hardening_slope");
   options.set("hardening_slope").doc() = "Hardening rate";
 
   return options;
@@ -50,10 +51,8 @@ LinearSingleSlipHardeningRule::LinearSingleSlipHardeningRule(const OptionSet & o
 }
 
 void
-LinearSingleSlipHardeningRule::set_value(bool out, bool dout_din, bool d2out_din2)
+LinearSingleSlipHardeningRule::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
-
   if (out)
     _tau_dot = _theta * _gamma_dot_sum;
 

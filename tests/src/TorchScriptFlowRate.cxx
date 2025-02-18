@@ -23,7 +23,8 @@
 // THE SOFTWARE.
 
 #include "TorchScriptFlowRate.h"
-#include "neml2/misc/math.h"
+#include "neml2/misc/assertions.h"
+#include "neml2/tensors/Scalar.h"
 
 using namespace neml2;
 
@@ -51,8 +52,8 @@ TorchScriptFlowRate::TorchScriptFlowRate(const OptionSet & options)
     _s(declare_input_variable<Scalar>("von_mises_stress")),
     _T(declare_input_variable<Scalar>("temperature")),
     _ep_dot(declare_output_variable<Scalar>("equivalent_plastic_strain_rate")),
-    _surrogate(std::make_unique<torch::jit::script::Module>(
-        torch::jit::load(options.get<std::string>("torch_script"))))
+    _surrogate(
+        std::make_unique<jit::script::Module>(jit::load(options.get<std::string>("torch_script"))))
 {
 }
 
@@ -64,11 +65,8 @@ TorchScriptFlowRate::request_AD()
 }
 
 void
-TorchScriptFlowRate::set_value(bool out, bool dout_din, bool d2out_din2)
+TorchScriptFlowRate::set_value(bool out, bool /*dout_din*/, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!dout_din || !d2out_din2,
-                  "Only AD derivatives are currently supported for this model");
-
   if (out)
   {
     // This example model has 4 input variables:
@@ -80,7 +78,7 @@ TorchScriptFlowRate::set_value(bool out, bool dout_din, bool d2out_din2)
     //
     const auto G = Scalar::full(0.1, _s.options());
     const auto C = Scalar::full(0.2, _s.options());
-    const torch::jit::Stack x = {_s.value(), _T.value(), G, C};
+    const jit::Stack x = {_s.value(), _T.value(), G, C};
 
     // Send it through the surrogate model loaded from torch script
     const auto y = _surrogate->forward(x).toTensor();

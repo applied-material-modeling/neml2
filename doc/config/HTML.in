@@ -6,7 +6,8 @@ DISABLE_INDEX          = NO
 FULL_SIDEBAR           = NO
 HTML_OUTPUT            = html
 HTML_EXTRA_STYLESHEET  = ${doxygen-awesome-css_SOURCE_DIR}/doxygen-awesome.css\
-                         ${doxygen-awesome-css_SOURCE_DIR}/doxygen-awesome-sidebar-only.css
+                         ${doxygen-awesome-css_SOURCE_DIR}/doxygen-awesome-sidebar-only.css \
+                         ${NEML2_SOURCE_DIR}/doc/custom.css
 HTML_COLORSTYLE        = LIGHT
 GENERATE_TREEVIEW      = YES
 USE_MATHJAX            = YES

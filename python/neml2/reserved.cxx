@@ -24,7 +24,7 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include "neml2/models/LabeledAxisAccessor.h"
+#include "neml2/base/LabeledAxisAccessor.h"
 
 namespace py = pybind11;
 

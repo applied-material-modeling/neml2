@@ -2,64 +2,74 @@
   "version": 8,
   "configurePresets": [
     {
-      "name": "dev",
-      "displayName": "Development",
-      "description": "C++ backend, Python binding, tests, and documentation",
+      "name": "default",
+      "hidden": true,
       "binaryDir": "${sourceDir}/build/${presetName}",
       "installDir": "${sourceDir}/install/${presetName}",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "OFF",
+        "NEML2_PCH": "ON",
         "NEML2_TESTS": "ON",
         "NEML2_RUNNER": "OFF",
+        "NEML2_PYBIND": "OFF",
+        "NEML2_DOC": "OFF",
         "NEML2_CPU_PROFILER": "OFF",
-        "NEML2_PYBIND": "ON",
-        "NEML2_DOC": "ON",
         "NEML2_WORK_DISPATCHER": "ON"
       }
     },
     {
-      "name": "benchmark",
-      "displayName": "Benchmark",
+      "name": "compile-commands",
+      "displayName": "Compile commands",
+      "description": "Export compile commands of the C++ backend",
+      "inherits": "default",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "NEML2_PCH": "OFF"
+      }
+    },
+    {
+      "name": "dev",
+      "displayName": "Development",
+      "description": "C++ backend, Python binding, tests, and documentation",
+      "inherits": "default",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "NEML2_PYBIND": "ON",
+        "NEML2_DOC": "ON"
+      }
+    },
+    {
+      "name": "runner",
+      "displayName": "Runner",
       "description": "Runner for benchmarking and profiling",
-      "binaryDir": "${sourceDir}/build/${presetName}",
+      "inherits": "default",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "NEML2_TESTS": "ON",
+        "NEML2_TESTS": "OFF",
         "NEML2_RUNNER": "ON",
-        "NEML2_CPU_PROFILER": "ON",
-        "NEML2_PYBIND": "OFF",
-        "NEML2_DOC": "OFF",
-        "NEML2_WORK_DISPATCHER": "ON"
+        "NEML2_CPU_PROFILER": "ON"
       }
     },
     {
       "name": "coverage",
       "displayName": "Coverage",
       "description": "Generate coverage report from unit tests",
-      "binaryDir": "${sourceDir}/build/${presetName}",
+      "inherits": "default",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Coverage",
-        "NEML2_TESTS": "ON",
-        "NEML2_RUNNER": "OFF",
-        "NEML2_CPU_PROFILER": "OFF",
-        "NEML2_PYBIND": "OFF",
-        "NEML2_DOC": "OFF",
-        "NEML2_WORK_DISPATCHER": "OFF"
+        "CMAKE_BUILD_TYPE": "Coverage"
       }
     },
     {
       "name": "release",
       "displayName": "Release",
       "description": "Production build for C++ backend and Python bindings",
-      "binaryDir": "${sourceDir}/build/${presetName}",
+      "inherits": "default",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
         "NEML2_TESTS": "OFF",
-        "NEML2_RUNNER": "OFF",
-        "NEML2_CPU_PROFILER": "OFF",
-        "NEML2_PYBIND": "ON",
-        "NEML2_DOC": "OFF",
-        "NEML2_WORK_DISPATCHER": "ON"
+        "NEML2_RUNNER": "ON",
+        "NEML2_PYBIND": "ON"
       }
     }
   ],
@@ -82,7 +92,7 @@
       "description": "Python bindings with tests",
       "configurePreset": "dev",
       "targets": [
-        "python-stub"
+        "python_stub"
       ]
     },
     {
@@ -95,37 +105,43 @@
       ]
     },
     {
-      "name": "benchmark",
-      "displayName": "Benchmarking and profiling",
-      "description": "Runner and tests linked against gperftools CPU profiler",
-      "configurePreset": "benchmark"
-    },
-    {
       "name": "coverage",
-      "displayName": "C++ Backend",
-      "description": "C++ backend with tests",
+      "displayName": "Coverage",
+      "description": "C++ backend compiled with coverage flags",
       "configurePreset": "coverage",
       "targets": [
-        "unit_tests"
+        "unit_tests",
+        "regression_tests",
+        "verification_tests",
+        "dispatcher_tests"
       ]
     },
     {
-      "name": "release-cpp",
-      "displayName": "C++ Backend",
-      "description": "C++ Library",
-      "configurePreset": "release",
+      "name": "runner",
+      "displayName": "Runner",
+      "description": "Runner linked against gperftools CPU profiler",
+      "configurePreset": "runner",
       "targets": [
-        "neml2"
+        "runner"
       ]
     },
     {
-      "name": "release-python",
-      "displayName": "Python Bindings",
-      "description": "Python bindings",
+      "name": "release",
+      "displayName": "Release",
+      "description": "C++ backend and Python bindings for release",
       "configurePreset": "release",
       "targets": [
-        "python-stub"
+        "runner",
+        "python_stub"
       ]
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "runner",
+      "displayName": "Benchmark tests",
+      "description": "Run benchmark tests using the Runner (note that this only checks if the tests run without error)",
+      "configurePreset": "runner"
     }
   ]
 }

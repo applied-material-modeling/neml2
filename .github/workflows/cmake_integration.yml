@@ -22,23 +22,9 @@ jobs:
           cmake-version: 3.28
           torch-version: 2.5.1
       - name: Create a source file for testing purposes
-        run: |
-          echo -e "\
-            #include \"neml2/base/Registry.h\"\n\
-            int main() {\n\
-              return 0;\n\
-            }\
-            " > main.cxx
+        run: cp neml2/cmake/subproject/main.cxx .
       - name: Create a CMakeLists.txt file for testing purposes
-        run: |
-          echo -e "\
-            cmake_minimum_required(VERSION 3.28)
-            project(FOO)\n\
-            add_subdirectory(neml2)\n\
-            add_executable(foo main.cxx)\n\
-            add_compile_definitions(_GLIBCXX_USE_CXX11_ABI=0)\n\
-            target_link_libraries(foo neml2)\n\
-            " > CMakeLists.txt
+        run: cp neml2/cmake/subproject/CMakeLists.txt .
       - name: Configure with CMake
         run: cmake -DNEML2_TESTS=OFF -GNinja -B build .
       - name: Compile

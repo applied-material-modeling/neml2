@@ -48,10 +48,8 @@ LinearIsotropicElasticity::LinearIsotropicElasticity(const OptionSet & options)
 }
 
 void
-LinearIsotropicElasticity::set_value(bool out, bool dout_din, bool d2out_din2)
+LinearIsotropicElasticity::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "LinearIsotropicElasticity doesn't implement second derivatives.");
-
   const auto [K_and_dK, G_and_dG] = _converter.convert(_constants);
   const auto & [K, dK] = K_and_dK;
   const auto & [G, dG] = G_and_dG;

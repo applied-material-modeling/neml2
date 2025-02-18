@@ -24,8 +24,6 @@
 
 #pragma once
 
-#include "neml2/misc/error.h"
-
 #include <string>
 #include <vector>
 #include <unordered_map>

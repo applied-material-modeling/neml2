@@ -22,7 +22,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/misc/math.h"
 #include "neml2/tensors/SSR4.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/SR2.h"
@@ -32,84 +31,84 @@
 #include "neml2/tensors/Rot.h"
 #include "neml2/tensors/SSSSR8.h"
 #include "neml2/tensors/R8.h"
+#include "neml2/tensors/assertions.h"
+#include "neml2/tensors/mandel_notation.h"
+#include "neml2/tensors/functions/bmv.h"
+#include "neml2/tensors/functions/linalg/inv.h"
 
 namespace neml2
 {
 
 SSR4::SSR4(const R4 & T)
-  : SSR4(math::full_to_mandel(
-        math::full_to_mandel(
-            (T + T.transpose_minor() + R4(T.transpose(0, 1)) + R4(T.transpose(2, 3))) / 4.0),
+  : SSR4(full_to_mandel(
+        full_to_mandel((T + T.transpose_minor() + R4(T.transpose(0, 1)) + R4(T.transpose(2, 3))) /
+                       4.0),
         1))
 {
 }
 
 SSR4
-SSR4::identity(const torch::TensorOptions & options)
+SSR4::identity(const TensorOptions & options)
 {
-  return SSR4(torch::tensor({{1, 1, 1, 0, 0, 0},
-                             {1, 1, 1, 0, 0, 0},
-                             {1, 1, 1, 0, 0, 0},
-                             {0, 0, 0, 0, 0, 0},
-                             {0, 0, 0, 0, 0, 0},
-                             {0, 0, 0, 0, 0, 0}},
-                            options),
-              0);
+  return SSR4::create({{1, 1, 1, 0, 0, 0},
+                       {1, 1, 1, 0, 0, 0},
+                       {1, 1, 1, 0, 0, 0},
+                       {0, 0, 0, 0, 0, 0},
+                       {0, 0, 0, 0, 0, 0},
+                       {0, 0, 0, 0, 0, 0}},
+                      options);
 }
 
 SSR4
-SSR4::identity_C1(const torch::TensorOptions & options)
+SSR4::identity_C1(const TensorOptions & options)
 {
-  return SSR4(torch::tensor({{1, 0, 0, 0, 0, 0},
-                             {0, 1, 0, 0, 0, 0},
-                             {0, 0, 1, 0, 0, 0},
-                             {0, 0, 0, 0, 0, 0},
-                             {0, 0, 0, 0, 0, 0},
-                             {0, 0, 0, 0, 0, 0}},
-                            options),
-              0);
+  return SSR4::create({{1, 0, 0, 0, 0, 0},
+                       {0, 1, 0, 0, 0, 0},
+                       {0, 0, 1, 0, 0, 0},
+                       {0, 0, 0, 0, 0, 0},
+                       {0, 0, 0, 0, 0, 0},
+                       {0, 0, 0, 0, 0, 0}},
+                      options);
 }
 
 SSR4
-SSR4::identity_C2(const torch::TensorOptions & options)
+SSR4::identity_C2(const TensorOptions & options)
 {
-  return SSR4(torch::tensor({{0, 1, 1, 0, 0, 0},
-                             {1, 0, 1, 0, 0, 0},
-                             {1, 1, 0, 0, 0, 0},
-                             {0, 0, 0, 0, 0, 0},
-                             {0, 0, 0, 0, 0, 0},
-                             {0, 0, 0, 0, 0, 0}},
-                            options),
-              0);
+  return SSR4::create({{0, 1, 1, 0, 0, 0},
+                       {1, 0, 1, 0, 0, 0},
+                       {1, 1, 0, 0, 0, 0},
+                       {0, 0, 0, 0, 0, 0},
+                       {0, 0, 0, 0, 0, 0},
+                       {0, 0, 0, 0, 0, 0}},
+                      options);
 }
 
 SSR4
-SSR4::identity_C3(const torch::TensorOptions & options)
+SSR4::identity_C3(const TensorOptions & options)
 {
-  return SSR4(torch::tensor({{0, 0, 0, 0, 0, 0},
-                             {0, 0, 0, 0, 0, 0},
-                             {0, 0, 0, 0, 0, 0},
-                             {0, 0, 0, 1, 0, 0},
-                             {0, 0, 0, 0, 1, 0},
-                             {0, 0, 0, 0, 0, 1}},
-                            options),
-              0);
+  return SSR4::create({{0, 0, 0, 0, 0, 0},
+                       {0, 0, 0, 0, 0, 0},
+                       {0, 0, 0, 0, 0, 0},
+                       {0, 0, 0, 1, 0, 0},
+                       {0, 0, 0, 0, 1, 0},
+                       {0, 0, 0, 0, 0, 1}},
+                      options);
 }
 
 SSR4
-SSR4::identity_sym(const torch::TensorOptions & options)
+SSR4::identity_sym(const TensorOptions & options)
 {
-  return SSR4(torch::eye(6, options), 0);
+  return SSR4(at::eye(6, options), 0);
 }
 
 SSR4
-SSR4::identity_vol(const torch::TensorOptions & options)
+SSR4::identity_vol(const TensorOptions & options)
 {
   return SSR4::identity(options) / 3;
 }
 
 SSR4
-SSR4::identity_dev(const torch::TensorOptions & options)
+SSR4::identity_dev(const TensorOptions & options)
 {
   return SSR4::identity_sym(options) - SSR4::identity(options) / 3;
 }
@@ -129,7 +128,7 @@ SSR4::isotropic_E_nu(const Scalar & E, const Scalar & nu)
 }
 
 SSR4
-SSR4::isotropic_E_nu(const Real & E, const Real & nu, const torch::TensorOptions & options)
+SSR4::isotropic_E_nu(const Real & E, const Real & nu, const TensorOptions & options)
 {
   return SSR4::isotropic_E_nu(Scalar(E, options), Scalar(nu, options));
 }
@@ -147,16 +146,16 @@ SSR4
 SSR4::fill_C1_C2_C3(const Real & C1,
                     const Real & C2,
                     const Real & C3,
-                    const torch::TensorOptions & options)
+                    const TensorOptions & options)
 {
   return SSR4::fill_C1_C2_C3(Scalar(C1, options), Scalar(C2, options), Scalar(C3, options));
 }
 
 SSSSR8
-SSR4::identity_map(const torch::TensorOptions & options)
+SSR4::identity_map(const TensorOptions & options)
 {
-  auto I = torch::eye(6, options);
-  return torch::einsum("ik,jl", {I, I});
+  auto I = at::eye(6, options);
+  return SSSSR8(at::einsum("ik,jl", {I, I}));
 }
 
 SSR4
@@ -169,42 +168,40 @@ SSFR5
 SSR4::drotate(const Rot & r) const
 {
   auto dR = R4(*this).drotate(r);
-  return math::full_to_mandel(math::full_to_mandel(dR), 1);
+  return full_to_mandel(full_to_mandel(dR), 1);
 }
 
 SSSSR8
 SSR4::drotate_self(const Rot & r) const
 {
   auto R = r.euler_rodrigues();
-  auto Tsym = 0.25 * (torch::einsum("...ma,...nb,...oc,...pd->...mnopabcd", {R, R, R, R}) +
-                      torch::einsum("...mb,...na,...od,...pc->...mnopabcd", {R, R, R, R}) +
-                      torch::einsum("...mb,...na,...oc,...pd->...mnopabcd", {R, R, R, R}) +
-                      torch::einsum("...ma,...nb,...od,...pc->...mnopabcd", {R, R, R, R}));
-  return SSSSR8(math::full_to_mandel(
-      math::full_to_mandel(
-          math::full_to_mandel(math::full_to_mandel(R8(Tsym, R.batch_dim()), 0), 1), 2),
-      3));
+  auto Tsym = 0.25 * (at::einsum("...ma,...nb,...oc,...pd->...mnopabcd", {R, R, R, R}) +
+                      at::einsum("...mb,...na,...od,...pc->...mnopabcd", {R, R, R, R}) +
+                      at::einsum("...mb,...na,...oc,...pd->...mnopabcd", {R, R, R, R}) +
+                      at::einsum("...ma,...nb,...od,...pc->...mnopabcd", {R, R, R, R}));
+  return SSSSR8(full_to_mandel(
+      full_to_mandel(full_to_mandel(full_to_mandel(R8(Tsym, R.batch_dim()), 0), 1), 2), 3));
 }
 
 Scalar
 SSR4::operator()(Size i, Size j, Size k, Size l) const
 {
-  const auto a = math::mandel_reverse_index[i][j];
-  const auto b = math::mandel_reverse_index[k][l];
-  return base_index({a, b}) / (math::mandel_factor(a) * math::mandel_factor(b));
+  const auto a = mandel_reverse_index[i][j];
+  const auto b = mandel_reverse_index[k][l];
+  return base_index({a, b}) / (mandel_factor(a) * mandel_factor(b));
 }
 
 SSR4
 SSR4::inverse() const
 {
-  return math::linalg::inv(*this);
+  return linalg::inv(*this);
 }
 
 SSSSR8
 SSR4::dinverse() const
 {
   auto SI = this->inverse();
-  return -torch::einsum("...ik,...lj->...ijkl", {SI, SI});
+  return SSSSR8(-at::einsum("...ik,...lj->...ijkl", {SI, SI}));
 }
 
 SSR4
@@ -222,21 +219,18 @@ SSR4::transpose_major() const
 SR2
 operator*(const SSR4 & a, const SR2 & b)
 {
-  neml_assert_batch_broadcastable_dbg(a, b);
-  return SR2(torch::matmul(a, b.unsqueeze(-1)).squeeze(-1), broadcast_batch_dim(a, b));
+  return SR2(bmv(a, b));
 }
 
 SR2
 operator*(const SR2 & a, const SSR4 & b)
 {
-  neml_assert_batch_broadcastable_dbg(a, b);
-  return SR2(torch::matmul(a.unsqueeze(-2), b).squeeze(-2), broadcast_batch_dim(a, b));
+  return SR2(bmv(b.transpose_major(), a));
 }
 
 SSR4
 operator*(const SSR4 & a, const SSR4 & b)
 {
-  neml_assert_broadcastable_dbg(a, b);
-  return SSR4(torch::matmul(a, b), broadcast_batch_dim(a, b));
+  return SSR4(at::matmul(a, b));
 }
 } // namespace neml2

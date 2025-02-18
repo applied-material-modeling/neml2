@@ -82,9 +82,10 @@ public:
   {
     assert_ascending(output_parameterization);
     assert_ascending(input_parameterization);
-    neml_assert(table.count(input_parameterization),
-                "Parameterization not found in the conversion table. This typically means that the "
-                "given combination of Lame parameters is not yet supported.");
+    if (!table.count(input_parameterization))
+      throw NEMLException(
+          "Parameterization not found in the conversion table. This typically means that the "
+          "given combination of Lame parameters is not yet supported.");
     _converters = table.at(input_parameterization);
   }
 
@@ -126,18 +127,20 @@ private:
   void assert_ascending(const ConverterKey & ps) const
   {
     for (std::size_t i = 1; i < N; ++i)
-      neml_assert(static_cast<std::uint8_t>(ps[i]) > static_cast<std::uint8_t>(ps[i - 1]),
-                  "Internal error: ElasticityConverters only accept Lame parameters sorted in the "
-                  "following order: LAME_LAMBDA, BULK_MODULUS, SHEAR_MODULUS, YOUNGS_MODULUS, "
-                  "POISSONS_RATIO, P_WAVE_MODULUS.");
+      if (static_cast<std::uint8_t>(ps[i]) <= static_cast<std::uint8_t>(ps[i - 1]))
+        throw NEMLException(
+            "Internal error: ElasticityConverters only accept Lame parameters sorted in the "
+            "following order: LAME_LAMBDA, BULK_MODULUS, SHEAR_MODULUS, YOUNGS_MODULUS, "
+            "POISSONS_RATIO, P_WAVE_MODULUS.");
   }
 
   /// Find the index of a Lame parameter in the output parameterization
   std::size_t find_index(ElasticConstant p) const
   {
     auto it = std::find(_output_parameterization.begin(), _output_parameterization.end(), p);
-    neml_assert(it != _output_parameterization.end(),
-                "Internal error: Lame parameter not found in the output parameterization.");
+    if (it == _output_parameterization.end())
+      throw NEMLException(
+          "Internal error: Lame parameter not found in the output parameterization.");
     return std::distance(_output_parameterization.begin(), it);
   }
 

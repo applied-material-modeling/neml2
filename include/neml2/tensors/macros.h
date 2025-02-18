@@ -26,14 +26,16 @@
 
 /// @name Macros for all tensor types with semicolon as the separator
 ///@{
-#define FOR_ALL_TENSORBASE(f)                                                                      \
-  FOR_ALL_PRIMITIVETENSOR(f);                                                                      \
-  f(Tensor)
+#define FOR_ALL_VECBASE(f)                                                                         \
+  f(Vec);                                                                                          \
+  f(Rot);                                                                                          \
+  f(WR2)
 
-#define FOR_ALL_PRIMITIVETENSOR(f)                                                                 \
+#define FOR_ALL_R2BASE(f) f(R2)
+
+#define FOR_ALL_NONSCALAR_PRIMITIVETENSOR(f)                                                       \
   FOR_ALL_VECBASE(f);                                                                              \
   FOR_ALL_R2BASE(f);                                                                               \
-  f(Scalar);                                                                                       \
   f(SR2);                                                                                          \
   f(R3);                                                                                           \
   f(SFR3);                                                                                         \
@@ -52,12 +54,21 @@
   f(SSSSR8);                                                                                       \
   f(R8)
 
-#define FOR_ALL_VECBASE(f)                                                                         \
-  f(Vec);                                                                                          \
-  f(Rot);                                                                                          \
-  f(WR2)
+#define FOR_ALL_NONSCALAR_TENSORBASE(f)                                                            \
+  FOR_ALL_NONSCALAR_PRIMITIVETENSOR(f);                                                            \
+  f(Tensor)
 
-#define FOR_ALL_R2BASE(f) f(R2)
+#define FOR_ALL_PRIMITIVETENSOR(f)                                                                 \
+  FOR_ALL_NONSCALAR_PRIMITIVETENSOR(f);                                                            \
+  f(Scalar)
+
+#define FOR_ALL_TENSORBASE(f)                                                                      \
+  FOR_ALL_NONSCALAR_TENSORBASE(f);                                                                 \
+  f(Scalar)
+
+#define FOR_SCALAR_AND_TENSOR(f)                                                                   \
+  f(Scalar);                                                                                       \
+  f(Tensor)
 ///@}
 
 /// @name Macros for all tensor types with comma as the separator

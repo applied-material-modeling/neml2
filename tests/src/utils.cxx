@@ -22,4 +22,74 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <sstream>
+#include <filesystem>
 #include "utils.h"
+
+int
+try_hint(const std::string & stem, std::string & hint)
+{
+  namespace fs = std::filesystem;
+
+  const auto hint_path = fs::path(hint);
+  fs::path candidate;
+
+  candidate = hint_path / stem;
+  if (fs::is_directory(candidate))
+  {
+    hint = std::string(fs::absolute(candidate));
+    return 0;
+  }
+
+  candidate = hint_path / "tests" / stem;
+  if (fs::is_directory(candidate))
+  {
+    hint = std::string(fs::absolute(candidate));
+    return 0;
+  }
+
+  candidate = hint_path / "share" / "neml2" / stem;
+  if (fs::is_directory(candidate))
+  {
+    hint = std::string(fs::absolute(candidate));
+    return 0;
+  }
+
+  return 1;
+}
+
+int
+guess_test_dir(const std::string & stem, std::string & hint, const std::string & exec_prefix)
+{
+  namespace fs = std::filesystem;
+
+  // Check if hint is an exact match
+  const auto hint_path = fs::path(hint);
+  if (fs::is_directory(hint_path) && hint_path.stem() == stem)
+  {
+    hint = std::string(fs::absolute(hint_path));
+    return 0;
+  }
+
+  hint = exec_prefix + "/../../../..";
+  if (try_hint(stem, hint) == 0)
+    return 0;
+
+  hint = exec_prefix + "/../../..";
+  if (try_hint(stem, hint) == 0)
+    return 0;
+
+  hint = exec_prefix + "/../..";
+  if (try_hint(stem, hint) == 0)
+    return 0;
+
+  hint = exec_prefix + "/..";
+  if (try_hint(stem, hint) == 0)
+    return 0;
+
+  hint = exec_prefix;
+  if (try_hint(stem, hint) == 0)
+    return 0;
+
+  return 1;
+}

@@ -57,7 +57,7 @@
     prescribed_time = 'times'
     prescribed_strain = 'strains'
     prescribed_temperature = 'temperatures'
-    save_as = 'unit/drivers/solid_mechanics/test_SolidMechanicsDriver_temperature.pt'
+    save_as = 'drivers/solid_mechanics/test_SolidMechanicsDriver_temperature.pt'
   []
 []
 

@@ -45,7 +45,7 @@
     prescribed_time = 'times'
     prescribed_stress = 'stresses'
     control = 'STRESS'
-    save_as = 'unit/drivers/solid_mechanics/test_SolidMechanicsDriver_stress.pt'
+    save_as = 'drivers/solid_mechanics/test_SolidMechanicsDriver_stress.pt'
   []
 []
 

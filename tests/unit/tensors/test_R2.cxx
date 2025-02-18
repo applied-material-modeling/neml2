@@ -31,7 +31,7 @@ using namespace neml2;
 
 TEST_CASE("R2", "[tensors]")
 {
-  torch::manual_seed(42);
+  at::manual_seed(42);
   const auto & DTO = default_tensor_options();
 
   TensorShape B = {5, 3, 1, 2}; // batch shape
@@ -44,18 +44,18 @@ TEST_CASE("R2", "[tensors]")
       {
         auto S = R2::fill(1.1, 1.2, 1.3, 1.2, 2.2, 2.3, 1.3, 2.3, 3.3);
         auto s = SR2::fill(1.1, 2.2, 3.3, 2.3, 1.3, 1.2);
-        REQUIRE(torch::allclose(R2(s), S));
+        REQUIRE(at::allclose(R2(s), S));
       }
       SECTION("from WR2")
       {
         auto W = R2::fill(0, -1.2, 0.8, 1.2, 0, -0.5, -0.8, 0.5, 0);
         auto w = WR2::fill(0.5, 0.8, 1.2);
-        REQUIRE(torch::allclose(R2(w), W));
+        REQUIRE(at::allclose(R2(w), W));
       }
       SECTION("from Rot")
       {
-        auto r = Rot(torch::rand(utils::add_shapes(B, 3), DTO));
-        REQUIRE(torch::allclose(R2(r), r.euler_rodrigues()));
+        auto r = Rot(at::rand(utils::add_shapes(B, 3), DTO));
+        REQUIRE(at::allclose(R2(r), r.euler_rodrigues()));
       }
     }
 
@@ -66,10 +66,10 @@ TEST_CASE("R2", "[tensors]")
         auto a1 = R2::fill(1.1, DTO);
         auto a2 = R2::fill(Scalar(1.1, DTO));
         auto a3 = R2::fill(Scalar::full(B, 1.1, DTO));
-        auto b = R2(torch::tensor({{1.1, 0.0, 0.0}, {0.0, 1.1, 0.0}, {0.0, 0.0, 1.1}}, DTO));
-        REQUIRE(torch::allclose(a1, b));
-        REQUIRE(torch::allclose(a2, b));
-        REQUIRE(torch::allclose(a3, b.batch_expand(B)));
+        auto b = R2::create({{1.1, 0.0, 0.0}, {0.0, 1.1, 0.0}, {0.0, 0.0, 1.1}}, DTO);
+        REQUIRE(at::allclose(a1, b));
+        REQUIRE(at::allclose(a2, b));
+        REQUIRE(at::allclose(a3, b.batch_expand(B)));
       }
       SECTION("fill from 3 values")
       {
@@ -77,10 +77,10 @@ TEST_CASE("R2", "[tensors]")
         auto a2 = R2::fill(Scalar(1.1, DTO), Scalar(2.2, DTO), Scalar(3.3, DTO));
         auto a3 = R2::fill(
             Scalar::full(B, 1.1, DTO), Scalar::full(B, 2.2, DTO), Scalar::full(B, 3.3, DTO));
-        auto b = R2(torch::tensor({{1.1, 0.0, 0.0}, {0.0, 2.2, 0.0}, {0.0, 0.0, 3.3}}, DTO));
-        REQUIRE(torch::allclose(a1, b));
-        REQUIRE(torch::allclose(a2, b));
-        REQUIRE(torch::allclose(a3, b.batch_expand(B)));
+        auto b = R2::create({{1.1, 0.0, 0.0}, {0.0, 2.2, 0.0}, {0.0, 0.0, 3.3}}, DTO);
+        REQUIRE(at::allclose(a1, b));
+        REQUIRE(at::allclose(a2, b));
+        REQUIRE(at::allclose(a3, b.batch_expand(B)));
       }
       SECTION("fill from 6 values")
       {
@@ -97,10 +97,10 @@ TEST_CASE("R2", "[tensors]")
                            Scalar::full(B, 2.3, DTO),
                            Scalar::full(B, 1.3, DTO),
                            Scalar::full(B, 1.2, DTO));
-        auto b = R2(torch::tensor({{1.1, 1.2, 1.3}, {1.2, 2.2, 2.3}, {1.3, 2.3, 3.3}}, DTO));
-        REQUIRE(torch::allclose(a1, b));
-        REQUIRE(torch::allclose(a2, b));
-        REQUIRE(torch::allclose(a3, b.batch_expand(B)));
+        auto b = R2::create({{1.1, 1.2, 1.3}, {1.2, 2.2, 2.3}, {1.3, 2.3, 3.3}}, DTO);
+        REQUIRE(at::allclose(a1, b));
+        REQUIRE(at::allclose(a2, b));
+        REQUIRE(at::allclose(a3, b.batch_expand(B)));
       }
       SECTION("fill from 9 values")
       {
@@ -123,10 +123,10 @@ TEST_CASE("R2", "[tensors]")
                            Scalar::full(B, 3.1, DTO),
                            Scalar::full(B, 3.2, DTO),
                            Scalar::full(B, 3.3, DTO));
-        auto b = R2(torch::tensor({{1.1, 1.2, 1.3}, {2.1, 2.2, 2.3}, {3.1, 3.2, 3.3}}, DTO));
-        REQUIRE(torch::allclose(a1, b));
-        REQUIRE(torch::allclose(a2, b));
-        REQUIRE(torch::allclose(a3, b.batch_expand(B)));
+        auto b = R2::create({{1.1, 1.2, 1.3}, {2.1, 2.2, 2.3}, {3.1, 3.2, 3.3}}, DTO);
+        REQUIRE(at::allclose(a1, b));
+        REQUIRE(at::allclose(a2, b));
+        REQUIRE(at::allclose(a3, b.batch_expand(B)));
       }
     }
 
@@ -135,15 +135,15 @@ TEST_CASE("R2", "[tensors]")
       auto a = Vec::fill(1.2, 2.1, -1.5, DTO);
       auto b = R2::skew(a);
       auto c = R2::skew(a.batch_expand(B));
-      REQUIRE(torch::allclose(b.transpose(), -b));
-      REQUIRE(torch::allclose(c.transpose(), -c));
+      REQUIRE(at::allclose(b.transpose(), -b));
+      REQUIRE(at::allclose(c.transpose(), -c));
     }
 
     SECTION("identity")
     {
       auto a = R2::identity(DTO);
-      auto b = torch::eye(3, DTO);
-      REQUIRE(torch::allclose(a, b));
+      auto b = at::eye(3, DTO);
+      REQUIRE(at::allclose(a, b));
     }
 
     SECTION("rotate")
@@ -164,10 +164,10 @@ TEST_CASE("R2", "[tensors]")
       auto Tb = T.batch_expand(B);
       auto Tpb = Tp.batch_expand(B);
 
-      REQUIRE(torch::allclose(T.rotate(r), Tp));
-      REQUIRE(torch::allclose(Tb.rotate(rb), Tpb));
-      REQUIRE(torch::allclose(T.rotate(rb), Tpb));
-      REQUIRE(torch::allclose(Tb.rotate(r), Tpb));
+      REQUIRE(at::allclose(T.rotate(r), Tp));
+      REQUIRE(at::allclose(Tb.rotate(rb), Tpb));
+      REQUIRE(at::allclose(T.rotate(rb), Tpb));
+      REQUIRE(at::allclose(Tb.rotate(r), Tpb));
     }
 
     SECTION("drotate")
@@ -192,66 +192,66 @@ TEST_CASE("R2", "[tensors]")
       auto dTp_dr = finite_differencing_derivative(apply, r);
       auto dTp_drb = dTp_dr.batch_expand(B);
 
-      REQUIRE(torch::allclose(T.drotate(r), dTp_dr));
-      REQUIRE(torch::allclose(Tb.drotate(rb), dTp_drb));
-      REQUIRE(torch::allclose(T.drotate(rb), dTp_drb));
-      REQUIRE(torch::allclose(Tb.drotate(r), dTp_drb));
+      REQUIRE(at::allclose(T.drotate(r), dTp_dr));
+      REQUIRE(at::allclose(Tb.drotate(rb), dTp_drb));
+      REQUIRE(at::allclose(T.drotate(rb), dTp_drb));
+      REQUIRE(at::allclose(Tb.drotate(r), dTp_drb));
     }
 
     SECTION("operator()")
     {
-      auto a = R2(torch::rand(utils::add_shapes(B, 3, 3), DTO));
+      auto a = R2(at::rand(utils::add_shapes(B, 3, 3), DTO));
       for (Size i = 0; i < 3; i++)
         for (Size j = 0; j < 3; j++)
-          REQUIRE(torch::allclose(a(i, j), a.index({indexing::Ellipsis, i, j})));
+          REQUIRE(at::allclose(a(i, j), a.index({indexing::Ellipsis, i, j})));
     }
 
     SECTION("inverse")
     {
-      auto a = R2(torch::rand({3, 3}, DTO));
-      auto ai = R2(torch::Tensor(a).inverse());
-      REQUIRE(torch::allclose(a.inverse(), ai));
-      REQUIRE(torch::allclose(a.batch_expand(B).inverse(), ai.batch_expand(B)));
+      auto a = R2(at::rand({3, 3}, DTO));
+      auto ai = R2(ATensor(a).inverse());
+      REQUIRE(at::allclose(a.inverse(), ai));
+      REQUIRE(at::allclose(a.batch_expand(B).inverse(), ai.batch_expand(B)));
     }
 
     SECTION("transpose")
     {
       auto a = R2::fill(1.1, 1.2, 1.3, 2.1, 2.2, 2.3, 3.1, 3.2, 3.3, DTO);
       auto at = R2::fill(1.1, 2.1, 3.1, 1.2, 2.2, 3.2, 1.3, 2.3, 3.3, DTO);
-      REQUIRE(torch::allclose(a.transpose(), at));
-      REQUIRE(torch::allclose(a.batch_expand(B).transpose(), at.batch_expand(B)));
+      REQUIRE(at::allclose(a.transpose(), at));
+      REQUIRE(at::allclose(a.batch_expand(B).transpose(), at.batch_expand(B)));
     }
   }
 
   SECTION("operator*")
   {
-    auto a = R2(torch::tensor({{0.89072077, 0.82632195, 0.04234413},
-                               {0.85614465, 0.9737414, 0.9491076},
-                               {0.07230831, 0.49570559, 0.42566357}},
-                              DTO));
+    auto a = R2::create({{0.89072077, 0.82632195, 0.04234413},
+                         {0.85614465, 0.9737414, 0.9491076},
+                         {0.07230831, 0.49570559, 0.42566357}},
+                        DTO);
     SECTION("R2 * R2")
     {
-      auto b = R2(torch::tensor({{0.94487948, 0.15144116, 0.03378262},
-                                 {0.51449125, 0.56508379, 0.06392479},
-                                 {0.46572483, 0.00443049, 0.42061576}},
-                                DTO));
-      auto c = R2(torch::tensor({{1.28647989, 0.60202053, 0.10072394},
-                                 {1.75195791, 0.68410603, 0.49037864},
-                                 {0.52160092, 0.29295155, 0.21317145}},
-                                DTO));
-      REQUIRE(torch::allclose(a * b, c));
-      REQUIRE(torch::allclose(a.batch_expand(B) * b, c.batch_expand(B)));
-      REQUIRE(torch::allclose(a * b.batch_expand(B), c.batch_expand(B)));
-      REQUIRE(torch::allclose(a.batch_expand(B) * b.batch_expand(B), c.batch_expand(B)));
+      auto b = R2::create({{0.94487948, 0.15144116, 0.03378262},
+                           {0.51449125, 0.56508379, 0.06392479},
+                           {0.46572483, 0.00443049, 0.42061576}},
+                          DTO);
+      auto c = R2::create({{1.28647989, 0.60202053, 0.10072394},
+                           {1.75195791, 0.68410603, 0.49037864},
+                           {0.52160092, 0.29295155, 0.21317145}},
+                          DTO);
+      REQUIRE(at::allclose(a * b, c));
+      REQUIRE(at::allclose(a.batch_expand(B) * b, c.batch_expand(B)));
+      REQUIRE(at::allclose(a * b.batch_expand(B), c.batch_expand(B)));
+      REQUIRE(at::allclose(a.batch_expand(B) * b.batch_expand(B), c.batch_expand(B)));
     }
     SECTION("R2 * Vec")
     {
       auto b = Vec::fill(0.05425937, 0.55065082, 0.24673347);
       auto c = Vec::fill(0.51379251, 0.81682197, 0.38190954);
-      REQUIRE(torch::allclose(a * b, c));
-      REQUIRE(torch::allclose(a.batch_expand(B) * b, c.batch_expand(B)));
-      REQUIRE(torch::allclose(a * b.batch_expand(B), c.batch_expand(B)));
-      REQUIRE(torch::allclose(a.batch_expand(B) * b.batch_expand(B), c.batch_expand(B)));
+      REQUIRE(at::allclose(a * b, c));
+      REQUIRE(at::allclose(a.batch_expand(B) * b, c.batch_expand(B)));
+      REQUIRE(at::allclose(a * b.batch_expand(B), c.batch_expand(B)));
+      REQUIRE(at::allclose(a.batch_expand(B) * b.batch_expand(B), c.batch_expand(B)));
     }
   }
 }

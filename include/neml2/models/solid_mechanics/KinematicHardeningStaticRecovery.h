@@ -28,6 +28,8 @@
 
 namespace neml2
 {
+class SR2;
+
 class KinematicHardeningStaticRecovery : public Model
 {
 public:
