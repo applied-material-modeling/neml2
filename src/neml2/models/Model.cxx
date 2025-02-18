@@ -130,6 +130,9 @@ Model::to(const TensorOptions & options)
 
   for (auto * submodel : registered_models())
     submodel->to(options);
+
+  for (auto & [name, submodel] : named_nonlinear_parameter_models())
+    submodel->to(options);
 }
 
 void

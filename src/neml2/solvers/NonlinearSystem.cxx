@@ -22,6 +22,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <iostream>
+
 #include "neml2/solvers/NonlinearSystem.h"
 #include "neml2/misc/assertions.h"
 #include "neml2/tensors/functions/bmm.h"
