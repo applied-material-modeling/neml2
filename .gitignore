@@ -38,6 +38,7 @@ install
 conftest.py
 .env
 *.pdf
+.DS_Store
 
 # For MOOSE in-source build
 .libs
