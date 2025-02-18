@@ -313,9 +313,8 @@ VariableStore::assign_output_stack(jit::Stack & stack, bool out, bool dout, bool
                   at::sum(sparsity_tensor).item<Size>(),
                   " expected ",
                   Size(stacklist.size()) - 1);
-  const std::vector<std::uint8_t> sparsity(sparsity_tensor.data_ptr<std::uint8_t>(),
-                                           sparsity_tensor.data_ptr<std::uint8_t>() +
-                                               sparsity_tensor.size(0));
+  const std::vector<Size> sparsity(sparsity_tensor.data_ptr<Size>(),
+                                   sparsity_tensor.data_ptr<Size>() + sparsity_tensor.size(0));
 
   const auto & yvars = output_axis().variable_names();
   const auto & xvars = input_axis().variable_names();
@@ -443,7 +442,7 @@ VariableStore::collect_output_stack(bool out, bool dout, bool d2out) const
   const auto & xvars = input_axis().variable_names();
 
   std::vector<ATensor> stacklist;
-  std::vector<std::uint8_t> sparsity;
+  std::vector<Size> sparsity;
 
   if (out)
   {
