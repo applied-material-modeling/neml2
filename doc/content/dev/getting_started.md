@@ -14,7 +14,7 @@ See [Testing/Python package/Setup](@ref testing-python) for how to run tests for
 
 ## Documentation
 
-It is of paramount importance to write documentation as the library is being developed. While NEML2 supports both Doxygen-style in-code documentation mechanisms and [run-time syntax documentation mechanisms](@ref custom-model-in-code-documentation), it is still sometimes necessary to write standalone, self-contained documentation.
+It is of paramount importance to write documentation as the library is being developed. While NEML2 supports both Doxygen-style in-code documentation mechanisms and [runtime syntax documentation mechanisms](@ref custom-model-in-code-documentation), it is still sometimes necessary to write standalone, self-contained documentation.
 
 To this end, the "dev" configure preset and the "dev-doc" build preset (see [build customization](@ref build-customization)) can be used to generate and render the documentation locally:
 ```

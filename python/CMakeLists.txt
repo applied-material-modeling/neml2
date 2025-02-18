@@ -37,6 +37,7 @@ endmacro()
 # Extract stub
 # ----------------------------------------------------------------------------
 add_custom_target(python_stub
+  COMMENT "Generating neml2 type hints"
   WORKING_DIRECTORY ${NEML2_BINARY_DIR}/python
   COMMAND PYTHONPATH=. pybind11-stubgen -o . neml2
   VERBATIM
@@ -55,7 +56,7 @@ add_submodule(core neml2/core.cxx)
 target_link_libraries(core PRIVATE neml2 Torch::PythonBinding)
 set_target_properties(core PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
 
-file(GLOB_RECURSE tensors_srcs neml2/tensors/*.cxx)
+file(GLOB_RECURSE tensors_srcs CONFIGURE_DEPENDS neml2/tensors/*.cxx)
 list(APPEND tensors_srcs neml2/tensors.cxx)
 add_submodule(tensors "${tensors_srcs}")
 target_link_libraries(tensors PRIVATE neml2_tensor Torch::PythonBinding)

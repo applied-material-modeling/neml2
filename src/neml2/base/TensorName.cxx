@@ -29,7 +29,6 @@
 
 namespace neml2
 {
-
 template <typename T>
 const T &
 TensorName<T>::resolve() const

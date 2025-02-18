@@ -28,6 +28,7 @@
 
 #include "neml2/misc/types.h"
 #include "neml2/tensors/macros.h"
+#include "neml2/tensors/tensors_fwd.h"
 
 namespace neml2
 {
@@ -41,6 +42,7 @@ FOR_ALL_TENSORBASE(FORWARD_DECLARATION);
 #define DECLARE_BINARY_OP_SYM(op, T1, T2, TR)                                                      \
   DECLARE_BINARY_OP(op, T1, T2, TR);                                                               \
   DECLARE_BINARY_OP(op, T2, T1, TR)
+#define DECLARE_BINARY_OP_NONCONST(op, T1, T2, TR) TR op(T1 & a, const T2 & b)
 
 ///////////////////////////////////////////////////////////////////////////////
 // Addition
@@ -135,6 +137,66 @@ DECLARE_DIV_SYM_REAL(Scalar);
 #undef DECLARE_DIV_SELF
 #undef DECLARE_DIV_SYM_SCALAR
 #undef DECLARE_DIV_SYM_REAL
+
+///////////////////////////////////////////////////////////////////////////////
+// In-place addition
+///////////////////////////////////////////////////////////////////////////////
+//      operator+= |  non-scalar-prim tensor scalar real
+// ----------------------------------------------------------
+// non-scalar-prim |                                 yes
+//          tensor |                                 yes
+//          scalar |                                 yes
+//            real |
+#define DECLARE_ADD_EQ(T) DECLARE_BINARY_OP_NONCONST(operator+=, T, Real, T &)
+FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DECLARE_ADD_EQ);
+DECLARE_ADD_EQ(Tensor);
+DECLARE_ADD_EQ(Scalar);
+#undef DECLARE_ADD_EQ
+
+///////////////////////////////////////////////////////////////////////////////
+// In-place subtraction
+///////////////////////////////////////////////////////////////////////////////
+//      operator-= |  non-scalar-prim tensor scalar real
+// ----------------------------------------------------------
+// non-scalar-prim |                                 yes
+//          tensor |                                 yes
+//          scalar |                                 yes
+//            real |
+#define DECLARE_SUB_EQ(T) DECLARE_BINARY_OP_NONCONST(operator-=, T, Real, T &)
+FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DECLARE_SUB_EQ);
+DECLARE_SUB_EQ(Tensor);
+DECLARE_SUB_EQ(Scalar);
+#undef DECLARE_SUB_EQ
+
+///////////////////////////////////////////////////////////////////////////////
+// In-place multiplication
+///////////////////////////////////////////////////////////////////////////////
+//      operator*= |  non-scalar-prim tensor scalar real
+// ----------------------------------------------------------
+// non-scalar-prim |                                 yes
+//          tensor |                                 yes
+//          scalar |                                 yes
+//            real |
+#define DECLARE_MUL_EQ(T) DECLARE_BINARY_OP_NONCONST(operator*=, T, Real, T &)
+FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DECLARE_MUL_EQ);
+DECLARE_MUL_EQ(Tensor);
+DECLARE_MUL_EQ(Scalar);
+#undef DECLARE_MUL_EQ
+
+///////////////////////////////////////////////////////////////////////////////
+// In-place division
+///////////////////////////////////////////////////////////////////////////////
+//      operator/= |  non-scalar-prim tensor scalar real
+// ----------------------------------------------------------
+// non-scalar-prim |                                 yes
+//          tensor |                                 yes
+//          scalar |                                 yes
+//            real |
+#define DECLARE_DIV_EQ(T) DECLARE_BINARY_OP_NONCONST(operator/=, T, Real, T &)
+FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DECLARE_DIV_EQ);
+DECLARE_DIV_EQ(Tensor);
+DECLARE_DIV_EQ(Scalar);
+#undef DECLARE_DIV_EQ
 
 // Undefine macros
 #undef DECLARE_BINARY_OP

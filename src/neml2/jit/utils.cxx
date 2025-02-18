@@ -73,5 +73,11 @@ extract_batch_sizes(const ATensor & tensor, Size batch_dim)
 
   return tensor.sizes().slice(0, batch_dim);
 }
+
+std::shared_ptr<jit::Graph>
+last_executed_optimized_graph()
+{
+  return jit::lastExecutedOptimizedGraph();
+}
 } // namespace utils
 } // namespace neml2

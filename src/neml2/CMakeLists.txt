@@ -90,8 +90,8 @@ endif()
 # Helper function to add a submodule
 # ----------------------------------------------------------------------------
 function(neml2_add_submodule mname TYPE mdir)
-  file(GLOB_RECURSE msrcs ${mdir}/*.cxx)
-  file(GLOB_RECURSE mheaders ${NEML2_SOURCE_DIR}/include/neml2/${mdir}/*.h)
+  file(GLOB_RECURSE msrcs CONFIGURE_DEPENDS ${mdir}/*.cxx)
+  file(GLOB_RECURSE mheaders CONFIGURE_DEPENDS ${NEML2_SOURCE_DIR}/include/neml2/${mdir}/*.h)
   add_library(${mname} ${TYPE} ${msrcs})
   target_sources(${mname}
     PUBLIC

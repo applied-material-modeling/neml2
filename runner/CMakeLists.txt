@@ -7,7 +7,7 @@ add_dependencies(deps argparse)
 # ------------------------------------------------------------------------------
 # runner
 # ------------------------------------------------------------------------------
-file(GLOB_RECURSE srcs src/*.cxx)
+file(GLOB_RECURSE srcs CONFIGURE_DEPENDS src/*.cxx)
 add_executable(runner ${srcs})
 
 target_compile_options(runner PRIVATE -Wall -Wextra -pedantic)

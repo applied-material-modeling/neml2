@@ -36,6 +36,8 @@ class IsotropicElasticityConverter : public ElasticityConverter<2>
 public:
   ///@{
   /// @name Conversion functions from various parameterizations to K and mu
+  static ConversionType K_G_to_K(const InputType &, const DerivativeFlagType &);
+  static ConversionType K_G_to_G(const InputType &, const DerivativeFlagType &);
   static ConversionType E_nu_to_K(const InputType &, const DerivativeFlagType &);
   static ConversionType E_nu_to_G(const InputType &, const DerivativeFlagType &);
   ///@}
