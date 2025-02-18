@@ -82,7 +82,7 @@ if(UNIX AND APPLE)
 elseif(UNIX AND NOT APPLE)
       set(EXEC_DIR "$ORIGIN")
 else()
-      install(CODE "message(WARNING \"The NEML2 installation may not be relocatable, and LD_LIBRARY_PATH shall be used to dynamically load libraries\")")
+      install(CODE "message(WARNING \"The NEML2 installation may not be relocatable, and LD_LIBRARY_PATH should be used to dynamically load libraries\")")
 endif()
 
 if(DEFINED EXEC_DIR)

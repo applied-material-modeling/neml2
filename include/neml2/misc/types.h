@@ -57,21 +57,6 @@ constexpr auto kFloat64 = c10::kDouble;
 // Device types (mirroring the definition in <c10/core/DeviceType.h>)
 constexpr auto kCPU = c10::DeviceType::CPU;
 constexpr auto kCUDA = c10::DeviceType::CUDA;
-constexpr auto kHIP = c10::DeviceType::HIP;
-constexpr auto kFPGA = c10::DeviceType::FPGA;
-constexpr auto kMAIA = c10::DeviceType::MAIA;
-constexpr auto kXLA = c10::DeviceType::XLA;
-constexpr auto kMPS = c10::DeviceType::MPS;
-constexpr auto kMeta = c10::DeviceType::Meta;
-constexpr auto kVulkan = c10::DeviceType::Vulkan;
-constexpr auto kMetal = c10::DeviceType::Metal;
-constexpr auto kXPU = c10::DeviceType::XPU;
-constexpr auto kHPU = c10::DeviceType::HPU;
-constexpr auto kVE = c10::DeviceType::VE;
-constexpr auto kLazy = c10::DeviceType::Lazy;
-constexpr auto kIPU = c10::DeviceType::IPU;
-constexpr auto kMTIA = c10::DeviceType::MTIA;
-constexpr auto kPrivateUse1 = c10::DeviceType::PrivateUse1;
 
 template <typename T, unsigned N>
 using SmallVector = c10::SmallVector<T, N>;

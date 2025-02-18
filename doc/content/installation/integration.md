@@ -15,7 +15,7 @@ Once NEML2 is installed, external C++ projects can use NEML2 by including the de
 - `neml2_tensor`
 - `neml2_user_tensor`
 
-The names of the libraries are self-explanatory. As a general rule of thumb, the library names collide with the header hierarchy. That is, if your code includes `#include "neml2/tensors/SR2.h"`, then your program shall be linked against the corresponding tensor library using `-lneml2_tensor`, etc.
+The names of the libraries are self-explanatory. As a general rule of thumb, the library names collide with the header hierarchy. That is, if your code includes `#include "neml2/tensors/SR2.h"`, then your program should be linked against the corresponding tensor library using `-lneml2_tensor`, etc.
 
 ## CMake integration
 
