@@ -34,7 +34,7 @@ OptionSet
 SimpleScheduler::expected_options()
 {
   OptionSet options = WorkScheduler::expected_options();
-  options.doc() = "Dispatch work to a single device in given batch std::size_ts.";
+  options.doc() = "Dispatch work to a single device in given batch sizes.";
 
   options.set<std::string>("device");
   options.set("device").doc() = "Torch device to run on";
@@ -68,13 +68,13 @@ SimpleScheduler::schedule_work(Device & device, std::size_t & batch_size) const
 }
 
 void
-SimpleScheduler::dispatched_work(Device, size_t n)
+SimpleScheduler::dispatched_work(Device, std::size_t n)
 {
   _load += n;
 }
 
 void
-SimpleScheduler::completed_work(Device, size_t n)
+SimpleScheduler::completed_work(Device, std::size_t n)
 {
   neml_assert(_load >= n, "Load underflow");
   _load -= n;

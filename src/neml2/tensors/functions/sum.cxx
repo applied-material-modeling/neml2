@@ -33,7 +33,7 @@ namespace neml2
   {                                                                                                \
     neml_assert_dbg(a.batched(), "Must have a batch dimension to sum along");                      \
     auto d2 = d >= 0 ? d : d - a.base_dim();                                                       \
-    return T(at::sum(a, d2), a.batch_sizes().slice(0, -1));                                        \
+    return T(at::sum(a, d2), a.batch_dim() - 1);                                                   \
   }                                                                                                \
   static_assert(true)
 FOR_ALL_TENSORBASE(DEFINE_BATCH_SUM);

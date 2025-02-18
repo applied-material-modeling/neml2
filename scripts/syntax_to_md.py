@@ -114,6 +114,13 @@ if __name__ == "__main__":
         log.write("### Syntax check\n\n")
         sections = get_sections(syntax)
         for section in sections:
+            if not section:
+                missing += 1
+                log.write(
+                    "Section is not defined for one of the objects, did you forget to "
+                    "set options.section() in one of its base classes?"
+                )
+                continue
             with open((outdir / section.lower()).with_suffix(".md"), "w") as stream:
                 stream.write("# [{}] {{#{}}}\n\n".format(section, "syntax-" + section.lower()))
                 stream.write("[TOC]\n\n")

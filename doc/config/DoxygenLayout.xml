@@ -28,6 +28,7 @@
       <tab type="user" url="@ref syntax-solvers" title="[Solvers]"/>
       <tab type="user" url="@ref syntax-data" title="[Data]"/>
       <tab type="user" url="@ref syntax-drivers" title="[Drivers]"/>
+      <tab type="user" url="@ref syntax-schedulers" title="[Schedulers]"/>
     </tab>
     <tab type="usergroup" title="System Documentation">
       <tab type="user" url="@ref system-settings" title="Settings"/>
@@ -36,6 +37,7 @@
       <tab type="user" url="@ref system-solvers" title="Solver"/>
       <tab type="user" url="@ref system-data" title="Data"/>
       <tab type="user" url="@ref system-drivers" title="Driver"/>
+      <tab type="user" url="@ref system-schedulers" title="Scheduler"/>
     </tab>
     <tab type="usergroup" title="Physics Documentation">
       <tab type="user" url="@ref solid-mechanics" title="Solid Mechanics"/>

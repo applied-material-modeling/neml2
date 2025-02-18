@@ -30,44 +30,47 @@ namespace neml2
 Tensor
 full_to_reduced(const Tensor & full, const ATensor & rmap, const ATensor & rfactors, Size dim)
 {
+  const auto & batch_shape = full.batch_sizes();
   auto batch_dim = full.batch_dim();
-  auto starting_dim = batch_dim + dim;
-  auto trailing_dim = full.dim() - starting_dim - 2; // 2 comes from the reduced axes (3,3)
-  auto starting_shape = full.sizes().slice(0, starting_dim);
-  auto trailing_shape = full.sizes().slice(starting_dim + 2);
+  auto trailing_dim = full.base_dim() - dim - 2; // 2 comes from the reduced axes (3,3)
+  auto starting_shape = full.base_sizes().slice(0, dim);
+  auto trailing_shape = full.base_sizes().slice(dim + 2);
 
-  indexing::TensorIndices net(starting_dim, indexing::None);
+  indexing::TensorIndices net(dim, indexing::None);
   net.push_back(indexing::Ellipsis);
   net.insert(net.end(), trailing_dim, indexing::None);
-  auto map =
-      rmap.index(net).expand(utils::add_shapes(starting_shape, rmap.sizes()[0], trailing_shape));
+  auto map_shape = utils::add_shapes(starting_shape, rmap.size(0), trailing_shape);
+  auto map = rmap.index(net).expand(map_shape);
   auto factor = rfactors.to(full).index(net);
 
-  return Tensor(factor *
-                    at::gather(full.reshape(utils::add_shapes(starting_shape, 9, trailing_shape)),
-                               starting_dim,
-                               map),
-                full.batch_sizes());
+  auto batched_map = Tensor(map, 0).batch_expand_as(full);
+  auto reduced = at::gather(full.base_reshape(utils::add_shapes(starting_shape, 9, trailing_shape)),
+                            batch_dim + dim,
+                            batched_map);
+
+  return Tensor(factor, 0) * Tensor(reduced, batch_shape);
 }
 
 Tensor
 reduced_to_full(const Tensor & reduced, const ATensor & rmap, const ATensor & rfactors, Size dim)
 {
+  const auto & batch_shape = reduced.batch_sizes();
   auto batch_dim = reduced.batch_dim();
-  auto starting_dim = batch_dim + dim;
-  auto trailing_dim = reduced.dim() - starting_dim - 1; // There's only 1 axis to unsqueeze
-  auto starting_shape = reduced.sizes().slice(0, starting_dim);
-  auto trailing_shape = reduced.sizes().slice(starting_dim + 1);
+  auto trailing_dim = reduced.base_dim() - dim - 1; // There's only 1 axis to unsqueeze
+  auto starting_shape = reduced.base_sizes().slice(0, dim);
+  auto trailing_shape = reduced.base_sizes().slice(dim + 1);
 
-  indexing::TensorIndices net(starting_dim, indexing::None);
+  indexing::TensorIndices net(dim, indexing::None);
   net.push_back(indexing::Ellipsis);
   net.insert(net.end(), trailing_dim, indexing::None);
-  auto map = rmap.index(net).expand(utils::add_shapes(starting_shape, 9, trailing_shape));
+  auto map_shape = utils::add_shapes(starting_shape, rmap.size(0), trailing_shape);
+  auto map = rmap.index(net).expand(map_shape);
   auto factor = rfactors.to(reduced).index(net);
 
-  return Tensor((factor * at::gather(reduced, starting_dim, map))
-                    .reshape(utils::add_shapes(starting_shape, 3, 3, trailing_shape)),
-                reduced.batch_sizes());
+  auto batched_map = Tensor(map, 0).batch_expand_as(reduced);
+  auto full = Tensor(factor * at::gather(reduced, batch_dim + dim, batched_map), batch_shape);
+
+  return full.base_reshape(utils::add_shapes(starting_shape, 3, 3, trailing_shape));
 }
 
 Tensor

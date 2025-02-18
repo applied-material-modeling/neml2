@@ -31,7 +31,7 @@ OptionSet
 WorkScheduler::expected_options()
 {
   OptionSet options = NEML2Object::expected_options();
-  options.doc() = "Schedules work to different devices.";
+  options.section() = "Schedulers";
 
   return options;
 }

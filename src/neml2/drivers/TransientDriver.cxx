@@ -29,10 +29,12 @@
 #include "neml2/drivers/TransientDriver.h"
 #include "neml2/misc/assertions.h"
 
+#ifdef NEML2_HAS_DISPATCHER
 #include "neml2/dispatchers/ValueMapLoader.h"
 #include "neml2/dispatchers/valuemap_helpers.h"
 #include "neml2/dispatchers/SimpleScheduler.h"
 #include "neml2/dispatchers/WorkDispatcher.h"
+#endif
 
 namespace fs = std::filesystem;
 
@@ -313,7 +315,8 @@ TransientDriver::apply_predictor()
 void
 TransientDriver::solve_step()
 {
-  if (_scheduler != nullptr)
+#ifdef NEML2_HAS_DISPATCHER
+  if (_scheduler)
   {
     auto red = [](std::vector<ValueMap> && results) -> ValueMap
     { return valuemap_cat_reduce(std::move(results), 0); };
@@ -333,9 +336,11 @@ TransientDriver::solve_step()
         post);
 
     _result_out[_step_count] = dispatcher.run(loader, *_scheduler);
+    return;
   }
-  else
-    _result_out[_step_count] = _model.value(_in);
+#endif
+
+  _result_out[_step_count] = _model.value(_in);
 }
 
 void

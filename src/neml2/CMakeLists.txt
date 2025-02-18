@@ -118,10 +118,20 @@ endfunction()
 # ----------------------------------------------------------------------------
 # Submodules
 # ----------------------------------------------------------------------------
+# libneml2
+#
+# This library is a wrapper of all neml2 library components.
+#
+# Since neml2 relies on dynamic loading of object symbols, targets who link
+# against neml2 should preferrably use LINK_WHAT_YOU_USE. Otherwise, dlopen-like
+# utilities shall be used to load the runtime objects.
+add_library(neml2 INTERFACE)
+
 # libneml2_misc
 neml2_add_submodule(neml2_misc SHARED misc)
 target_link_libraries(neml2_misc PUBLIC Torch::Torch)
 set_target_properties(neml2_misc PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
+target_link_libraries(neml2 INTERFACE neml2_misc)
 
 if(NEML2_PCH)
   target_precompile_headers(neml2_misc PUBLIC
@@ -133,6 +143,7 @@ endif()
 # libneml2_jit
 neml2_add_submodule(neml2_jit SHARED jit)
 target_link_libraries(neml2_jit PUBLIC neml2_misc)
+target_link_libraries(neml2 INTERFACE neml2_jit)
 
 if(NEML2_PCH)
   target_precompile_headers(neml2_jit PUBLIC ${NEML2_SOURCE_DIR}/include/neml2/jit/types.h)
@@ -141,6 +152,7 @@ endif()
 # libneml2_tensor
 neml2_add_submodule(neml2_tensor SHARED tensors)
 target_link_libraries(neml2_tensor PUBLIC neml2_jit)
+target_link_libraries(neml2 INTERFACE neml2_tensor)
 
 if(NEML2_PCH)
   target_precompile_headers(neml2_tensor PUBLIC
@@ -156,6 +168,7 @@ endif()
 neml2_add_submodule(neml2_base SHARED base)
 target_link_libraries(neml2_base PUBLIC neml2_tensor HIT)
 set_target_properties(neml2_base PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
+target_link_libraries(neml2 INTERFACE neml2_base)
 
 if(NEML2_PCH)
   target_precompile_headers(neml2_base PUBLIC
@@ -167,16 +180,19 @@ endif()
 neml2_add_submodule(neml2_user_tensor SHARED user_tensors)
 target_link_libraries(neml2_user_tensor PUBLIC neml2_tensor neml2_base)
 target_link_options(neml2_user_tensor INTERFACE ${CMAKE_CXX_LINK_WHAT_YOU_USE_FLAG})
+target_link_libraries(neml2 INTERFACE neml2_user_tensor)
 
 # libneml2_solver
 neml2_add_submodule(neml2_solver SHARED solvers)
 target_link_libraries(neml2_solver PUBLIC neml2_tensor neml2_base)
 target_link_options(neml2_solver INTERFACE ${CMAKE_CXX_LINK_WHAT_YOU_USE_FLAG})
+target_link_libraries(neml2 INTERFACE neml2_solver)
 
 # libneml2_model
 neml2_add_submodule(neml2_model SHARED models)
 target_link_libraries(neml2_model PUBLIC neml2_solver neml2_tensor neml2_base)
 target_link_options(neml2_model INTERFACE ${CMAKE_CXX_LINK_WHAT_YOU_USE_FLAG})
+target_link_libraries(neml2 INTERFACE neml2_model)
 
 if(NEML2_PCH)
   target_precompile_headers(neml2_model PUBLIC
@@ -188,25 +204,15 @@ endif()
 neml2_add_submodule(neml2_driver SHARED drivers)
 target_link_libraries(neml2_driver PUBLIC neml2_model neml2_tensor neml2_base)
 target_link_options(neml2_driver INTERFACE ${CMAKE_CXX_LINK_WHAT_YOU_USE_FLAG})
+target_link_libraries(neml2 INTERFACE neml2_driver)
 
-# libneml2
-#
-# This library is a wrapper of all neml2 library components.
-#
-# Since neml2 relies on dynamic loading of object symbols, targets who link
-# against neml2 should preferrably use LINK_WHAT_YOU_USE. Otherwise, dlopen-like
-# utilities shall be used to load the runtime objects.
-add_library(neml2 INTERFACE)
-target_link_libraries(neml2 INTERFACE neml2_driver neml2_solver neml2_model neml2_user_tensor neml2_base)
-
-# ----------------------------------------------------------------------------
-# Optional submodules
-# ----------------------------------------------------------------------------
 # libneml2_dispatcher
 if(NEML2_WORK_DISPATCHER)
   neml2_add_submodule(neml2_dispatcher SHARED dispatchers)
   target_link_libraries(neml2_dispatcher PUBLIC neml2_tensor neml2_model)
   target_link_libraries(neml2_dispatcher PUBLIC TIMPI)
+  target_compile_definitions(neml2_dispatcher PUBLIC NEML2_HAS_DISPATCHER)
   set_target_properties(neml2_dispatcher PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
+  target_link_libraries(neml2_driver PUBLIC neml2_dispatcher)
   target_link_libraries(neml2 INTERFACE neml2_dispatcher)
 endif()
