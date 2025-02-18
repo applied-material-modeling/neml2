@@ -42,14 +42,12 @@ namespace neml2
 using ATensor = at::Tensor;
 
 /// Fixed width dtypes (mirroring the definition in <torch/csrc/api/include/torch/types.h>)
-constexpr auto kUInt8 = c10::kByte;
+// torch also provide unsigned integer types after version 2.2.1, but for backward compatibility
+// reasons we don't include them here
 constexpr auto kInt8 = c10::kChar;
 constexpr auto kInt16 = c10::kShort;
 constexpr auto kInt32 = c10::kInt;
 constexpr auto kInt64 = c10::kLong;
-constexpr auto kUInt16 = c10::kUInt16;
-constexpr auto kUInt32 = c10::kUInt32;
-constexpr auto kUInt64 = c10::kUInt64;
 constexpr auto kFloat16 = c10::kHalf;
 constexpr auto kFloat32 = c10::kFloat;
 constexpr auto kFloat64 = c10::kDouble;

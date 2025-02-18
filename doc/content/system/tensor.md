@@ -63,7 +63,7 @@ A factory tensor creation function produces a new tensor. All factory functions 
 <TensorType>::<function_name>(<function-specific-options>, const TensorOptions & options);
 ```
 where `<TensorType>` is the class name of the primitive tensor type listed above, and `<function-name>` is the name of the factory function which produces the new tensor. `<function-specific-options>` are any required or optional arguments a particular factory function accepts. Refer to each tensor type's class documentation for the concrete signature. The last argument `const TensorOptions & options` configures the data type, device, layout and other "meta" properties of the produced tensor. The commonly used meta properties are
-- `dtype`: the data type of the elements stored in the tensor. Available options are `kUInt8`, `kInt8`, `kInt16`, `kInt32`, `kInt64`, `kFloat32`, and `kFloat64`.
+- `dtype`: the data type of the elements stored in the tensor. Available options are `kInt8`, `kInt16`, `kInt32`, `kInt64`, `kFloat32`, and `kFloat64`.
 - `device`: the compute device where the tensor will be allocated. Available options are `kCPU` and `kCUDA`.
 - `requires_grad`: whether the tensor is part of a function graph used by automatic differentiation to track functional relationship. Available options are `true` and `false`.
 

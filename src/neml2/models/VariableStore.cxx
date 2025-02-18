@@ -491,7 +491,7 @@ VariableStore::collect_output_stack(bool out, bool dout, bool d2out) const
     }
   }
 
-  const auto sparsity_tensor = Tensor::create(sparsity, kUInt8);
+  const auto sparsity_tensor = Tensor::create(sparsity, kInt64);
   const auto nnz = base_sum(sparsity_tensor).item<Size>();
   neml_assert_dbg(nnz == Size(stacklist.size()),
                   "Corrupted sparsity tensor. Got ",
