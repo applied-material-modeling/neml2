@@ -68,6 +68,7 @@ endmacro()
 add_executable(syntax syntax.cxx)
 target_link_libraries(syntax PRIVATE neml2)
 add_custom_target(syntax_cpp
+  COMMENT "Generating libneml2 syntax"
   DEPENDS syntax
   WORKING_DIRECTORY ${NEML2_BINARY_DIR}/doc
   COMMAND ${NEML2_BINARY_DIR}/doc/syntax
@@ -79,6 +80,7 @@ add_custom_target(syntax_cpp
 # Extract all Python API
 # ----------------------------------------------------------------------------
 add_custom_target(syntax_python
+  COMMENT "Rescoping type hints namespace"
   WORKING_DIRECTORY ${NEML2_BINARY_DIR}/python
   COMMAND ${CMAKE_COMMAND} -E make_directory ${NEML2_BINARY_DIR}/doc/content/python
   COMMAND PYTHONPATH=. pybind11-stubgen -o ${NEML2_BINARY_DIR}/doc/content/python neml2
@@ -93,6 +95,7 @@ add_dependencies(syntax_python python_stub)
 generate_doxyfile(${NEML2_BINARY_DIR}/doc/DoxyfileHTML "config/Doxyfile.in;config/HTML.in")
 generate_doxyfile(${NEML2_BINARY_DIR}/doc/DoxyfilePython "config/Doxyfile.in;config/HTML.in;config/Python.in")
 add_custom_target(html
+  COMMENT "Generating HTML documentation"
   DEPENDS syntax_cpp syntax_python
   WORKING_DIRECTORY ${NEML2_BINARY_DIR}/doc
   COMMAND ${DOXYGEN_EXECUTABLE} -q DoxyfileHTML.sh

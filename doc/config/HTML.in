@@ -5,9 +5,11 @@ GENERATE_HTML          = YES
 DISABLE_INDEX          = NO
 FULL_SIDEBAR           = NO
 HTML_OUTPUT            = html
-HTML_EXTRA_STYLESHEET  = ${doxygen-awesome-css_SOURCE_DIR}/doxygen-awesome.css\
+HTML_HEADER            = ${NEML2_SOURCE_DIR}/doc/config/header.html
+HTML_EXTRA_STYLESHEET  = ${doxygen-awesome-css_SOURCE_DIR}/doxygen-awesome.css \
                          ${doxygen-awesome-css_SOURCE_DIR}/doxygen-awesome-sidebar-only.css \
-                         ${NEML2_SOURCE_DIR}/doc/custom.css
+                         ${doxygen-awesome-css_SOURCE_DIR}/doxygen-awesome-tabs.js \
+                         ${NEML2_SOURCE_DIR}/doc/config/custom.css
 HTML_COLORSTYLE        = LIGHT
 GENERATE_TREEVIEW      = YES
 USE_MATHJAX            = YES

@@ -37,6 +37,7 @@ endmacro()
 # Extract stub
 # ----------------------------------------------------------------------------
 add_custom_target(python_stub
+  COMMENT "Generating neml2 type hints"
   WORKING_DIRECTORY ${NEML2_BINARY_DIR}/python
   COMMAND PYTHONPATH=. pybind11-stubgen -o . neml2
   VERBATIM

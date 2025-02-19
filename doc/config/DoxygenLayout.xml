@@ -21,6 +21,12 @@
       <tab type="user" url="@ref testing" title="Testing"/>
       <tab type="user" url="@ref model-visualization" title="Model Visualization"/>
     </tab>
+    <tab type="usergroup" url="@ref tutorials" title="Tutorials">
+      <tab type="usergroup" url="@ref tutorials-input" title="Working with input files">
+        <tab type="user" url="@ref tutorials-input-01" title="Tutorial 1: Writing your first input file"/>
+        <tab type="user" url="@ref tutorials-input-02" title="Tutorial 2: Running the input file"/>
+      </tab>
+    </tab>
     <tab type="usergroup" title="Syntax Documentation">
       <tab type="user" url="@ref syntax-settings" title="[Settings]"/>
       <tab type="user" url="@ref syntax-tensors" title="[Tensors]"/>
