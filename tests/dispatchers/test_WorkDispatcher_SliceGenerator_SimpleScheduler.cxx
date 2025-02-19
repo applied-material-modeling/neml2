@@ -34,7 +34,13 @@ using namespace neml2;
 TEST_CASE("WorkDispatcher SliceGenerator SimpleScheduler", "[dispatchers]")
 {
   SliceGenerator generator(50, 2000);
-  SimpleScheduler scheduler(kCPU, /*batch_size=*/345, /*capacity=*/800);
+
+  OptionSet options = SimpleScheduler::expected_options();
+  options.set<std::string>("device") = "cpu";
+  options.set<size_t>("batch_size") = 345;
+  options.set<size_t>("capacity") = 800;
+
+  SimpleScheduler scheduler(options);
 
   SECTION("no reduction, no preprocessing, no postprocessing")
   {

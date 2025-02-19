@@ -24,53 +24,22 @@
 
 #pragma once
 
-#include "neml2/dispatchers/WorkScheduler.h"
-#include "neml2/base/Registry.h"
-#include "neml2/base/NEML2Object.h"
-#include "neml2/base/Factory.h"
+#include "neml2/models/map_types.h"
 
 namespace neml2
 {
-/**
- * @brief A very simple scheduler
- *
- * This schedule is simple in the sense that
- * - It dispatches to a single device
- * - It dispatches a fixed batch size
- * - It does not perform parallel communication with other ranks (if any) to determine the
- *   availability of the device
- */
-class SimpleScheduler : public WorkScheduler
-{
-public:
-  /// Options for the scheduler
-  static OptionSet expected_options();
+/// @brief  Concatenate the tensors in the ValueMap along the batch dimension
+/// @param results The results to concatenate
+/// @param batch_dim The batch dimension along which to concatenate
+/// @return ValueMap with the tensors concatenated along the batch dimension
+ValueMap valuemap_cat_reduce(std::vector<ValueMap> && results, Size batch_dim);
 
-  /**
-   * @brief Construct a new WorkScheduler object
-   *
-   * @param options Options for the scheduler
-   */
-  SimpleScheduler(const OptionSet & options);
+/// @brief Move all tensors in a ValueMap to a device
+/// @param x input ValueMap
+/// @param device target device
+/// @return ValueMap with all tensors moved
+ValueMap valuemap_move_device(ValueMap && x, Device device);
 
-  bool schedule_work(Device &, std::size_t &) const override;
-
-  void dispatched_work(Device, std::size_t) override;
-
-  void completed_work(Device, std::size_t) override;
-
-private:
-  /// The device to dispatch to
-  Device _device;
-
-  /// The batch size to dispatch
-  std::size_t _batch_size;
-
-  /// The capacity of the device
-  std::size_t _capacity;
-
-  /// Current load on the device
-  std::size_t _load = 0;
-};
-
-} // namespace neml2
+/// @brief No operation
+ValueMap valuemap_no_operation(ValueMap && x);
+}

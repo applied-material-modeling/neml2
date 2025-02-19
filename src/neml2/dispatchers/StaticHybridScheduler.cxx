@@ -26,14 +26,48 @@
 
 #include "neml2/dispatchers/StaticHybridScheduler.h"
 #include "neml2/misc/assertions.h"
+#include "neml2/base/Registry.h"
 
 namespace neml2
 {
-StaticHybridScheduler::StaticHybridScheduler(const std::vector<Device> & device_list,
-                                             const std::vector<std::size_t> & batch_sizes,
-                                             const std::vector<std::size_t> & capacities,
-                                             const std::vector<double> & priorities)
+register_NEML2_object(StaticHybridScheduler);
+
+OptionSet
+StaticHybridScheduler::expected_options()
 {
+  OptionSet options = WorkScheduler::expected_options();
+  options.doc() = "Dispatch work to multiple devices based on provided batch sizes and priorities.";
+
+  options.set<std::vector<Device>>("devices");
+  options.set("devices").doc() = "List of devices to dispatch work to";
+
+  options.set<std::vector<std::size_t>>("batch_sizes");
+  options.set("batch_sizes").doc() = "List of batch sizes for each device";
+
+  options.set<std::vector<std::size_t>>("capacities") = {};
+  options.set("capacities").doc() = "List of capacities for each device";
+
+  options.set<std::vector<double>>("priorities") = {};
+  options.set("priorities").doc() = "List of priorities for each device";
+
+  return options;
+}
+
+StaticHybridScheduler::StaticHybridScheduler(const OptionSet & options)
+  : WorkScheduler(options)
+{
+}
+
+void
+StaticHybridScheduler::setup()
+{
+  WorkScheduler::setup();
+
+  const auto & device_list = input_options().get<std::vector<Device>>("devices");
+  const auto & batch_sizes = input_options().get<std::vector<std::size_t>>("batch_sizes");
+  const auto & capacities = input_options().get<std::vector<std::size_t>>("capacities");
+  const auto & priorities = input_options().get<std::vector<double>>("priorities");
+
   // First pass:
   // - Check if any CPU device is present
   // - Check if any CUDA device is present

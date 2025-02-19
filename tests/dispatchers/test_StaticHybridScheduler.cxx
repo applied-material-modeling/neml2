@@ -33,11 +33,14 @@ TEST_CASE("StaticHybridScheduler", "[dispatchers]")
 {
   SECTION("single device")
   {
-    StaticHybridScheduler scheduler(
-        /*device_list=*/{Device("cpu")},
-        /*batch_sizes=*/{2},
-        /*capacities=*/{3},
-        /*priorities=*/{1});
+    OptionSet options = StaticHybridScheduler::expected_options();
+    options.set<std::vector<Device>>("devices") = {Device("cpu")};
+    options.set<std::vector<std::size_t>>("batch_sizes") = {2};
+    options.set<std::vector<std::size_t>>("capacities") = {3};
+    options.set<std::vector<double>>("priorities") = {1};
+
+    StaticHybridScheduler scheduler(options);
+    scheduler.setup();
     const auto & status = scheduler.status();
     REQUIRE(status.size() == 1);
     REQUIRE(status[0].device == Device("cpu"));
@@ -58,12 +61,16 @@ TEST_CASE("StaticHybridScheduler", "[dispatchers]")
 
   SECTION("multiple devices")
   {
-    StaticHybridScheduler scheduler(
-        /*device_list=*/{Device("cpu"), Device("cuda:0"), Device("cuda:1")},
-        /*batch_sizes=*/{2, 3, 4},
-        /*capacities=*/{3, 4, 5},
-        /*priorities=*/{3, 2, 1});
+    OptionSet options = StaticHybridScheduler::expected_options();
+    options.set<std::vector<Device>>("devices") = {
+        Device("cpu"), Device("cuda:0"), Device("cuda:1")};
+    options.set<std::vector<std::size_t>>("batch_sizes") = {2, 3, 4};
+    options.set<std::vector<std::size_t>>("capacities") = {3, 4, 5};
+    options.set<std::vector<double>>("priorities") = {3, 2, 1};
+    StaticHybridScheduler scheduler(options);
+
     const auto & status = scheduler.status();
+    scheduler.setup();
     REQUIRE(status.size() == 3);
 
     REQUIRE(status[0].device == Device("cpu"));

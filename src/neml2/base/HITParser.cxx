@@ -149,6 +149,7 @@ HITParser::extract_option(hit::Node * n, OptionSet & options) const
         extract_option_t(bool);
         extract_option_t(int);
         extract_option_t(unsigned int);
+        extract_option_t(std::size_t);
         extract_option_t(Size);
         extract_option_t(Real);
         extract_option_t(std::string);

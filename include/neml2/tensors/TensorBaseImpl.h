@@ -316,16 +316,13 @@ template <class Derived>
 Derived
 TensorBase<Derived>::batch_expand(const TraceableSize & batch_size, Size dim) const
 {
-  // We don't want to touch other batch dimensions and the base dimensions, so put -1 for them.
-  auto net = std::vector<Size>(this->dim(), -1);
   auto i = dim >= 0 ? dim : this->dim() + dim - base_dim();
-  net[i] = batch_size.concrete();
+  auto batch_shape = batch_sizes();
+  if (batch_shape[i] == batch_size)
+    return Derived(*this);
 
-  // Record the batch sizes in the traced graph if we are tracing
-  if (const auto * const s = batch_size.traceable())
-    jit::tracer::ArgumentStash::stashIntArrayRefElem("size", this->dim(), i, *s);
-
-  return Derived(expand(net), batch_dim());
+  batch_shape[i] = batch_size;
+  return batch_expand(batch_shape);
 }
 
 template <class Derived>

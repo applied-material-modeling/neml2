@@ -29,6 +29,13 @@
 #include "neml2/drivers/TransientDriver.h"
 #include "neml2/misc/assertions.h"
 
+#ifdef NEML2_HAS_DISPATCHER
+#include "neml2/dispatchers/ValueMapLoader.h"
+#include "neml2/dispatchers/valuemap_helpers.h"
+#include "neml2/dispatchers/SimpleScheduler.h"
+#include "neml2/dispatchers/WorkDispatcher.h"
+#endif
+
 namespace fs = std::filesystem;
 
 namespace neml2
@@ -244,11 +251,29 @@ TransientDriver::apply_ic()
   set_ic<T>(_result_out[0], input_options(), "ic_" #T "_names", "ic_" #T "_values", _device)
   FOR_ALL_TENSORBASE(SET_IC_);
 
+  // Figure out what the batch size for our default zero ICs should be
+  std::vector<Tensor> defined;
+  for (const auto & var : _model.output_axis().variable_names())
+    if (_result_out[0].count(var))
+      defined.push_back(_result_out[0][var]);
+  for (const auto & [key, value] : _in)
+    defined.push_back(value);
+  const auto batch_shape = utils::broadcast_batch_sizes(defined);
+
   // Variables without a user-defined IC are initialized to zeros
   for (auto && [name, var] : _model.output_variables())
     if (!_result_out[0].count(name))
-      _result_out[0][name] =
-          Tensor::zeros(utils::add_shapes(var->list_sizes(), var->base_sizes())).to(_device);
+    {
+      if (batch_shape.size() > 0)
+        _result_out[0][name] =
+            Tensor::zeros(utils::add_shapes(var->list_sizes(), var->base_sizes()))
+                .to(_device)
+                .batch_unsqueeze(0)
+                .batch_expand(batch_shape);
+      else
+        _result_out[0][name] =
+            Tensor::zeros(utils::add_shapes(var->list_sizes(), var->base_sizes())).to(_device);
+    }
 }
 
 void
@@ -290,6 +315,31 @@ TransientDriver::apply_predictor()
 void
 TransientDriver::solve_step()
 {
+#ifdef NEML2_HAS_DISPATCHER
+  if (_scheduler)
+  {
+    auto red = [](std::vector<ValueMap> && results) -> ValueMap
+    { return valuemap_cat_reduce(std::move(results), 0); };
+
+    auto post = [this](ValueMap && x) -> ValueMap
+    { return valuemap_move_device(std::move(x), _device); };
+
+    ValueMapLoader loader(_in, 0);
+    WorkDispatcher<ValueMap, ValueMap, ValueMap, ValueMap, ValueMap> dispatcher(
+        [&model = _model](ValueMap && x, Device device) -> ValueMap
+        {
+          model.to(device);
+          return model.value(std::move(x));
+        },
+        red,
+        &valuemap_move_device,
+        post);
+
+    _result_out[_step_count] = dispatcher.run(loader, *_scheduler);
+    return;
+  }
+#endif
+
   _result_out[_step_count] = _model.value(_in);
 }
 

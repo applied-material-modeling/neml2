@@ -55,9 +55,16 @@ public:
     std::size_t load;
   };
 
+  /// Options for the scheduler
+  static OptionSet expected_options();
+
+  /// @brief  Construct from options
+  /// @param options
+  StaticHybridScheduler(const OptionSet & options);
+
   /**
-   * The constructor takes a device list, along with the batch sizes, capacities, and priorities for
-   * each device.
+   * The setup method retrieves from input options a device list, along with the batch sizes,
+   * capacities, and priorities for each device.
    *
    * The device list should be unique and non-empty. kCPU can appear at most once. When
    * multiple cuda devices are present, each of them must correspond to a specific device ID.
@@ -87,10 +94,7 @@ public:
    *    represents a specific, concrete device,
    * 2. When the device type is CPU, the device index must be zero.
    */
-  StaticHybridScheduler(const std::vector<Device> & device_list,
-                        const std::vector<std::size_t> & batch_sizes,
-                        const std::vector<std::size_t> & capacities = {},
-                        const std::vector<double> & priorities = {});
+  void setup() override;
 
   /**
    * @brief Pick the next device to dispatch work to

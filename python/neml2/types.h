@@ -32,15 +32,14 @@
 #include "neml2/misc/types.h"
 #include "neml2/base/LabeledAxisAccessor.h"
 
-#define NEML2_TENSOR_OPTIONS_VARGS                                                                 \
-  const torch::Dtype &dtype, const torch::Device &device, bool requires_grad
+#define NEML2_TENSOR_OPTIONS_VARGS const Dtype &dtype, const Device &device, bool requires_grad
 
 #define NEML2_TENSOR_OPTIONS                                                                       \
   torch::TensorOptions().dtype(dtype).device(device).requires_grad(requires_grad)
 
 #define PY_ARG_TENSOR_OPTIONS                                                                      \
-  pybind11::arg("dtype") = torch::Dtype(torch::kFloat64),                                          \
-  pybind11::arg("device") = torch::Device(torch::kCPU), pybind11::arg("requires_grad") = false
+  pybind11::arg("dtype") = Dtype(torch::kFloat64), pybind11::arg("device") = Device(torch::kCPU),  \
+  pybind11::arg("requires_grad") = false
 
 namespace pybind11
 {
@@ -48,13 +47,13 @@ namespace detail
 {
 #if TORCH_VERSION_MAJOR < 2 || (TORCH_VERSION_MAJOR == 2 && TORCH_VERSION_MINOR < 4)
 /**
- * @brief This specialization enables type conversion between Python object <--> torch::Dtype
+ * @brief This specialization enables type conversion between Python object <--> Dtype
  */
 template <>
-struct type_caster<torch::Dtype>
+struct type_caster<Dtype>
 {
 public:
-  PYBIND11_TYPE_CASTER(torch::Dtype, _("torch.dtype"));
+  PYBIND11_TYPE_CASTER(Dtype, _("torch.dtype"));
 
   /**
    * PYBIND11_TYPE_CASTER defines a member field called value. Since at::Dtype cannot be
@@ -77,8 +76,7 @@ public:
     return false;
   }
 
-  static handle
-  cast(const torch::Dtype & src, return_value_policy /* policy */, handle /* parent */)
+  static handle cast(const Dtype & src, return_value_policy /* policy */, handle /* parent */)
   {
     return handle(reinterpret_cast<PyObject *>(torch::getTHPDtype(src)));
   }

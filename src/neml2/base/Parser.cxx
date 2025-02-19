@@ -29,7 +29,7 @@
 namespace neml2
 {
 const std::vector<std::string> Parser::sections = {
-    "Tensors", "Solvers", "Data", "Models", "Drivers"};
+    "Tensors", "Solvers", "Data", "Models", "Drivers", "Schedulers"};
 
 namespace utils
 {
@@ -37,7 +37,7 @@ template <>
 void
 parse_(bool & val, const std::string & raw_str)
 {
-  std::string str_val = parse<std::string>(raw_str);
+  const auto str_val = parse<std::string>(raw_str);
   if (str_val == "true")
     val = true;
   else if (str_val == "false")
@@ -78,6 +78,14 @@ parse_(TensorShape & val, const std::string & raw_str)
   val.clear();
   for (auto & token : tokens)
     val.push_back(parse<Size>(token));
+}
+
+template <>
+void
+parse_(Device & val, const std::string & raw_str)
+{
+  const auto str_val = parse<std::string>(raw_str);
+  val = Device(str_val);
 }
 } // namespace utils
 } // namespace neml2

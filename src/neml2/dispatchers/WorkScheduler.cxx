@@ -22,62 +22,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/dispatchers/SimpleScheduler.h"
-#include "neml2/misc/assertions.h"
+#include "neml2/dispatchers/WorkScheduler.h"
 
 namespace neml2
 {
 
-register_NEML2_object(SimpleScheduler);
-
 OptionSet
-SimpleScheduler::expected_options()
+WorkScheduler::expected_options()
 {
-  OptionSet options = WorkScheduler::expected_options();
-  options.doc() = "Dispatch work to a single device in given batch sizes.";
-
-  options.set<std::string>("device");
-  options.set("device").doc() = "Torch device to run on";
-
-  options.set<std::size_t>("batch_size");
-  options.set("batch_size").doc() = "Batch size";
-
-  options.set<std::size_t>("capacity") = std::numeric_limits<std::size_t>::max();
-  options.set("capacity").doc() = "Maximum number of work items that can be dispatched";
+  OptionSet options = NEML2Object::expected_options();
+  options.section() = "Schedulers";
 
   return options;
 }
 
-SimpleScheduler::SimpleScheduler(const OptionSet & options)
-  : WorkScheduler(options),
-    _device(Device(options.get<std::string>("device"))),
-    _batch_size(options.get<std::size_t>("batch_size")),
-    _capacity(options.get<std::size_t>("capacity"))
+WorkScheduler::WorkScheduler(const OptionSet & options)
+  : NEML2Object(options)
 {
 }
 
-bool
-SimpleScheduler::schedule_work(Device & device, std::size_t & batch_size) const
-{
-  if (_load + _batch_size > _capacity)
-    return false;
-
-  device = _device;
-  batch_size = _batch_size;
-  return true;
 }
-
-void
-SimpleScheduler::dispatched_work(Device, std::size_t n)
-{
-  _load += n;
-}
-
-void
-SimpleScheduler::completed_work(Device, std::size_t n)
-{
-  neml_assert(_load >= n, "Load underflow");
-  _load -= n;
-}
-
-} // namespace neml2
