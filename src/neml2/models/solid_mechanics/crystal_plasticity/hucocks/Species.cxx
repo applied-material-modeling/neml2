@@ -22,36 +22,46 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-
-#include "neml2/base/Registry.h"
 #include "neml2/models/solid_mechanics/crystal_plasticity/hucocks/Species.h"
 
 namespace neml2
 {
 
-/// @brief Defines the matrix chemistry
-/// This includes both the initial and equilibrium concentrations of the species
-class MatrixChemistry : public Species
+OptionSet
+Species::expected_options()
 {
-public:
-  /// Input options
-  static OptionSet expected_options();
+  OptionSet options = Data::expected_options();
 
-  /// Setup from parameter set
-  MatrixChemistry(const OptionSet & options);
+  options.doc() =
+      "A generic type for storing information on one of the species participating in a reaction.";
 
-  /// Get initial concentrations of some species
-  Scalar initial_concentrations(const std::vector<std::string> & species) const;
+  options.set<std::vector<std::string>>("species");
+  options.set("species").doc() = "The participating chemical species";
 
-  /// Get equilibrium concentrations of some species
-  Scalar equilibrium_concentrations(const std::vector<std::string> & species) const;
+  return options;
+}
 
-private:
-  /// Initial concentrations of the species
-  std::map<std::string, Real> _initial_concentrations;
-  /// Equilibrium concentrations of the species
-  std::map<std::string, Real> _equilibrium_concentrations;
-};
+Species::Species(const OptionSet & options)
+  : Data(options),
+    _species(options.get<std::vector<std::string>>("species"))
+{
+}
+
+Scalar
+Species::make_concentrations(const std::map<std::string, Real> & concentrations,
+                             const std::vector<std::string> & species) const
+{
+  std::vector<Real> result(species.size(), 0.0);
+  for (size_t i = 0; i < species.size(); i++)
+  {
+    auto s = species[i];
+    auto it = concentrations.find(s);
+    if (it == concentrations.end())
+      result[i] = 0.0;
+    else
+      result[i] = it->second;
+  }
+  return Scalar::create(result);
+}
 
 } // namespace neml2

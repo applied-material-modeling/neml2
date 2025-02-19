@@ -60,6 +60,27 @@ protected:
     return *(std::dynamic_pointer_cast<T>(data));
   }
 
+  /**
+   * Register a list of data objects and return their pointers
+   */
+  template <typename T, typename = typename std::enable_if_t<std::is_base_of_v<Data, T>>>
+  std::vector<const T *> register_data(const std::vector<std::string> & name)
+  {
+    OptionSet extra_opts;
+    extra_opts.set<NEML2Object *>("_host") = host();
+
+    std::vector<const T *> data_list;
+
+    for (const auto & n : name)
+    {
+      auto data = Factory::get_object_ptr<Data>("Data", n, extra_opts);
+      _registered_data.push_back(data.get());
+      data_list.push_back(std::dynamic_pointer_cast<T>(data).get());
+    }
+
+    return data_list;
+  }
+
   /// Registered Data objects
   std::vector<Data *> _registered_data;
 };

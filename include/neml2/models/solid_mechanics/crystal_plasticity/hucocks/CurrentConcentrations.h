@@ -24,34 +24,36 @@
 
 #pragma once
 
-#include "neml2/base/Registry.h"
-#include "neml2/models/solid_mechanics/crystal_plasticity/hucocks/Species.h"
+#include "neml2/models/Model.h"
 
 namespace neml2
 {
+// Forward declarations
+class MatrixChemistry;
+class Precipitate;
 
-/// @brief Defines the matrix chemistry
-/// This includes both the initial and equilibrium concentrations of the species
-class MatrixChemistry : public Species
+/// Calculate the current matrix concentrations
+class CurrentConcentrations : public Model
 {
 public:
-  /// Input options
   static OptionSet expected_options();
 
-  /// Setup from parameter set
-  MatrixChemistry(const OptionSet & options);
+  CurrentConcentrations(const OptionSet & options);
 
-  /// Get initial concentrations of some species
-  Scalar initial_concentrations(const std::vector<std::string> & species) const;
+protected:
+  /// Set the plastic vorticity and derivatives
+  void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  /// Get equilibrium concentrations of some species
-  Scalar equilibrium_concentrations(const std::vector<std::string> & species) const;
+  /// Reference to matrix chemistry
+  const MatrixChemistry & _matrix_chemistry;
 
-private:
-  /// Initial concentrations of the species
-  std::map<std::string, Real> _initial_concentrations;
-  /// Equilibrium concentrations of the species
-  std::map<std::string, Real> _equilibrium_concentrations;
+  /// Vector of participating precipitates
+  const std::vector<const Precipitate *> _precipitates;
+
+  /// Output: current concentrations
+  Variable<Scalar> & _c;
+
+  /// Input: current volume fractions
+  const Variable<Scalar> & _f;
 };
-
 } // namespace neml2

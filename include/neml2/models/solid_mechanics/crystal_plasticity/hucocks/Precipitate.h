@@ -30,28 +30,26 @@
 namespace neml2
 {
 
-/// @brief Defines the matrix chemistry
-/// This includes both the initial and equilibrium concentrations of the species
-class MatrixChemistry : public Species
+/// @brief Data defining a precipitate
+/// Basic chemistry data defining a precipitate
+class Precipitate : public Species
 {
 public:
   /// Input options
   static OptionSet expected_options();
 
   /// Setup from parameter set
-  MatrixChemistry(const OptionSet & options);
-
-  /// Get initial concentrations of some species
-  Scalar initial_concentrations(const std::vector<std::string> & species) const;
+  Precipitate(const OptionSet & options);
 
   /// Get equilibrium concentrations of some species
-  Scalar equilibrium_concentrations(const std::vector<std::string> & species) const;
+  Scalar concentrations(const std::vector<std::string> & species) const;
+
+  /// Get all the concentrations
+  Scalar all_concentrations() const { return make_concentrations(_concentrations, _species); }
 
 private:
-  /// Initial concentrations of the species
-  std::map<std::string, Real> _initial_concentrations;
-  /// Equilibrium concentrations of the species
-  std::map<std::string, Real> _equilibrium_concentrations;
+  /// Composition of the precipitate
+  std::map<std::string, Real> _concentrations;
 };
 
 } // namespace neml2

@@ -29,58 +29,50 @@
 
 #include "utils.h"
 #include "neml2/base/Factory.h"
-#include "neml2/models/solid_mechanics/crystal_plasticity/hucocks/MatrixChemistry.h"
+#include "neml2/models/solid_mechanics/crystal_plasticity/hucocks/Precipitate.h"
 #include "neml2/tensors/tensors.h"
 
 using namespace neml2;
 namespace fs = std::filesystem;
 
-TEST_CASE("MatrixChemistry", "[models/solid_mechanics/crystal_plasticity/hucocks]")
+TEST_CASE("Precipitate", "[models/solid_mechanics/crystal_plasticity/hucocks]")
 {
   at::manual_seed(42);
   const auto & DTO = default_tensor_options();
 
   // Load all the models in
   reload_input(
-      fs::absolute("models/solid_mechanics/crystal_plasticity/hucocks/test_MatrixChemistry.i"));
+      fs::absolute("models/solid_mechanics/crystal_plasticity/hucocks/test_Precipitate.i"));
 
   SECTION("Arbitrary example")
   {
-    auto & model = Factory::get_object<MatrixChemistry>("Data", "example");
+    auto & model = Factory::get_object<Precipitate>("Data", "example");
 
     REQUIRE(model.species() == std::vector<std::string>({"Cr", "Ni", "Fe"}));
 
     SECTION("Full list in order")
     {
-      auto initial_concentrations = model.initial_concentrations({"Cr", "Ni", "Fe"});
-      auto equilibrium_concentrations = model.equilibrium_concentrations({"Cr", "Ni", "Fe"});
+      auto concentrations = model.concentrations({"Cr", "Ni", "Fe"});
 
-      REQUIRE(at::allclose(initial_concentrations, Scalar::create({0.5, 0.3, 0.2}, DTO)));
-      REQUIRE(at::allclose(equilibrium_concentrations, Scalar::create({0.4, 0.5, 0.7}, DTO)));
+      REQUIRE(at::allclose(concentrations, Scalar::create({0.5, 0.3, 0.2}, DTO)));
+      REQUIRE(at::allclose(model.all_concentrations(), Scalar::create({0.5, 0.3, 0.2}, DTO)));
     }
     SECTION("Full list out of order")
     {
-      auto initial_concentrations = model.initial_concentrations({"Fe", "Ni", "Cr"});
-      auto equilibrium_concentrations = model.equilibrium_concentrations({"Fe", "Ni", "Cr"});
+      auto concentrations = model.concentrations({"Fe", "Ni", "Cr"});
 
-      REQUIRE(at::allclose(initial_concentrations, Scalar::create({0.2, 0.3, 0.5}, DTO)));
-      REQUIRE(at::allclose(equilibrium_concentrations, Scalar::create({0.7, 0.5, 0.4}, DTO)));
+      REQUIRE(at::allclose(concentrations, Scalar::create({0.2, 0.3, 0.5}, DTO)));
     }
     SECTION("Subset")
     {
-      auto initial_concentrations = model.initial_concentrations({"Fe", "Cr"});
-      auto equilibrium_concentrations = model.equilibrium_concentrations({"Fe", "Cr"});
+      auto concentrations = model.concentrations({"Fe", "Cr"});
 
-      REQUIRE(at::allclose(initial_concentrations, Scalar::create({0.2, 0.5}, DTO)));
-      REQUIRE(at::allclose(equilibrium_concentrations, Scalar::create({0.7, 0.4}, DTO)));
+      REQUIRE(at::allclose(concentrations, Scalar::create({0.2, 0.5}, DTO)));
     }
     SECTION("Invalid species")
     {
-      auto initial_concentrations = model.initial_concentrations({"Fe", "Cr", "Cu"});
-      auto equilibrium_concentrations = model.equilibrium_concentrations({"Fe", "Cr", "Cu"});
-
-      REQUIRE(at::allclose(initial_concentrations, Scalar::create({0.2, 0.5, 0.0}, DTO)));
-      REQUIRE(at::allclose(equilibrium_concentrations, Scalar::create({0.7, 0.4, 0.0}, DTO)));
+      auto concentrations = model.concentrations({"Fe", "Cr", "Cu"});
+      REQUIRE(at::allclose(concentrations, Scalar::create({0.2, 0.5, 0.0}, DTO)));
     }
   }
 }

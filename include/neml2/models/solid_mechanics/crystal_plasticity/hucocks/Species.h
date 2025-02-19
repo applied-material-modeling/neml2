@@ -25,33 +25,38 @@
 #pragma once
 
 #include "neml2/base/Registry.h"
-#include "neml2/models/solid_mechanics/crystal_plasticity/hucocks/Species.h"
+#include "neml2/models/Data.h"
 
 namespace neml2
 {
 
-/// @brief Defines the matrix chemistry
-/// This includes both the initial and equilibrium concentrations of the species
-class MatrixChemistry : public Species
+/// @brief Defines the geometry of a crystal system
+/// This includes a basic definition of the crystal lattice,
+/// via Bravais vectors and a CrystalClass object defining the
+/// crystal symmetry as well as the definition of the geometry
+/// of each slip system.
+class Species : public Data
 {
 public:
   /// Input options
   static OptionSet expected_options();
 
   /// Setup from parameter set
-  MatrixChemistry(const OptionSet & options);
+  Species(const OptionSet & options);
 
-  /// Get initial concentrations of some species
-  Scalar initial_concentrations(const std::vector<std::string> & species) const;
+  /// The list of chemical species
+  const std::vector<std::string> & species() const { return _species; }
 
-  /// Get equilibrium concentrations of some species
-  Scalar equilibrium_concentrations(const std::vector<std::string> & species) const;
+  /// The number of species
+  size_t nspecies() const { return _species.size(); }
 
-private:
-  /// Initial concentrations of the species
-  std::map<std::string, Real> _initial_concentrations;
-  /// Equilibrium concentrations of the species
-  std::map<std::string, Real> _equilibrium_concentrations;
+protected:
+  /// @brief List of partipcipating species
+  std::vector<std::string> _species;
+
+  /// Make a scalar with the appropriate concentrations
+  Scalar make_concentrations(const std::map<std::string, Real> & concentrations,
+                             const std::vector<std::string> & species) const;
 };
 
 } // namespace neml2

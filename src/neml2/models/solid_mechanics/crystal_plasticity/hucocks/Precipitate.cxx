@@ -22,36 +22,40 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-
-#include "neml2/base/Registry.h"
-#include "neml2/models/solid_mechanics/crystal_plasticity/hucocks/Species.h"
+#include "neml2/models/solid_mechanics/crystal_plasticity/hucocks/Precipitate.h"
 
 namespace neml2
 {
 
-/// @brief Defines the matrix chemistry
-/// This includes both the initial and equilibrium concentrations of the species
-class MatrixChemistry : public Species
+register_NEML2_object(Precipitate);
+
+OptionSet
+Precipitate::expected_options()
 {
-public:
-  /// Input options
-  static OptionSet expected_options();
+  OptionSet options = Species::expected_options();
 
-  /// Setup from parameter set
-  MatrixChemistry(const OptionSet & options);
+  options.doc() = "A Data object storing the composition of a precipitate.";
 
-  /// Get initial concentrations of some species
-  Scalar initial_concentrations(const std::vector<std::string> & species) const;
+  options.set<std::vector<Real>>("concentrations");
+  options.set("concentrations").doc() =
+      "The chemical composition of the precipitate.  Must be the same size as species";
 
-  /// Get equilibrium concentrations of some species
-  Scalar equilibrium_concentrations(const std::vector<std::string> & species) const;
+  return options;
+}
 
-private:
-  /// Initial concentrations of the species
-  std::map<std::string, Real> _initial_concentrations;
-  /// Equilibrium concentrations of the species
-  std::map<std::string, Real> _equilibrium_concentrations;
-};
+Precipitate::Precipitate(const OptionSet & options)
+  : Species(options)
+{
+  auto concentrations = options.get<std::vector<Real>>("concentrations");
+  neml_assert(concentrations.size() == _species.size(),
+              "Concentrations must be the same size as species");
+  for (size_t i = 0; i < _species.size(); i++)
+    _concentrations[_species[i]] = concentrations[i];
+}
 
+Scalar
+Precipitate::concentrations(const std::vector<std::string> & species) const
+{
+  return make_concentrations(_concentrations, species);
+}
 } // namespace neml2

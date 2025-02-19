@@ -32,14 +32,11 @@ register_NEML2_object(MatrixChemistry);
 OptionSet
 MatrixChemistry::expected_options()
 {
-  OptionSet options = Data::expected_options();
+  OptionSet options = Species::expected_options();
 
   options.doc() =
       "A Data object storing the composition of the matrix phase.  This includes the available "
       "species, their initial conceentrations, and their equilibrium concentrations.";
-
-  options.set<std::vector<std::string>>("species");
-  options.set("species").doc() = "The participating chemical species";
 
   options.set<std::vector<Real>>("initial_concentrations");
   options.set("initial_concentrations").doc() =
@@ -53,8 +50,7 @@ MatrixChemistry::expected_options()
 }
 
 MatrixChemistry::MatrixChemistry(const OptionSet & options)
-  : Data(options),
-    _species(options.get<std::vector<std::string>>("species"))
+  : Species(options)
 {
   auto initial_concentrations = options.get<std::vector<Real>>("initial_concentrations");
   auto equilibrium_concentrations = options.get<std::vector<Real>>("equilibrium_concentrations");
@@ -70,30 +66,15 @@ MatrixChemistry::MatrixChemistry(const OptionSet & options)
 }
 
 Scalar
-MatrixChemistry::initial_concentrations(std::vector<std::string> species) const
+MatrixChemistry::initial_concentrations(const std::vector<std::string> & species) const
 {
   return make_concentrations(_initial_concentrations, species);
 }
 
 Scalar
-MatrixChemistry::equilibrium_concentrations(std::vector<std::string> species) const
+MatrixChemistry::equilibrium_concentrations(const std::vector<std::string> & species) const
 {
   return make_concentrations(_equilibrium_concentrations, species);
-}
-
-Scalar
-MatrixChemistry::make_concentrations(const std::map<std::string, Real> & concentrations,
-                                     const std::vector<std::string> & species) const
-{
-  std::vector<Real> result(species.size(), 0.0);
-  for (size_t i = 0; i < species.size(); i++)
-  {
-    auto s = species[i];
-    auto it = concentrations.find(s);
-    neml_assert(it != concentrations.end(), "Species " + s + " not found in concentrations");
-    result[i] = it->second;
-  }
-  return Scalar::create(result);
 }
 
 } // namespace neml2
