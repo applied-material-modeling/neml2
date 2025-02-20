@@ -102,7 +102,7 @@ execute_process(
 # ----------------------------------------------------------------------------
 # Build and run C++ tutorials
 # ----------------------------------------------------------------------------
-file(GLOB_RECURSE TUTORIAL_SOURCES ${NEML2_BINARY_DIR}/doc/content/tutorials/*.cxx)
+file(GLOB_RECURSE TUTORIAL_SOURCES CONFIGURE_DEPENDS ${NEML2_BINARY_DIR}/doc/content/tutorials/*.cxx)
 
 foreach(TUTORIAL_SOURCE ${TUTORIAL_SOURCES})
   get_filename_component(TUTORIAL_SOURCE_DIR ${TUTORIAL_SOURCE} DIRECTORY)
@@ -130,7 +130,7 @@ endforeach()
 # ----------------------------------------------------------------------------
 # Run Python tutorials
 # ----------------------------------------------------------------------------
-file(GLOB_RECURSE TUTORIAL_SOURCES ${NEML2_BINARY_DIR}/doc/content/tutorials/*.py)
+file(GLOB_RECURSE TUTORIAL_SOURCES CONFIGURE_DEPENDS ${NEML2_BINARY_DIR}/doc/content/tutorials/*.py)
 
 foreach(TUTORIAL_SOURCE ${TUTORIAL_SOURCES})
   get_filename_component(TUTORIAL_SOURCE_DIR ${TUTORIAL_SOURCE} DIRECTORY)

@@ -1,4 +1,4 @@
-# Tutorial 1: Writing your first input file {#tutorials-input-01}
+# Tutorial 1: Writing and running your first input file {#tutorials-input-01}
 
 [TOC]
 
@@ -36,6 +36,69 @@ Using these information, the input file for constructing this model can be compo
   []
 []
 ```
+
+## Choosing the frontend
+
+There are three common ways of interacting with NEML2 input files:
+- Calling the appropriate APIs in a C++ program
+- Calling the appropriate APIs in a Python script
+- Using the NEML2 Runner
+
+These methods are discussed in the [user guide](#user-getting-started). In this set of tutorials, the C++ example code and the Python script example code are shown side-by-side with tabs, and in most cases the C++ APIs and the Python APIs have a nice one-to-one correspondance.
+
+
+## Loading a model from the input file
+
+The following code parses the given input file named "input.i" and retrieves a Model named "my_model". Once retrieved, we can print out a summary of the model by streaming it to the console:
+
+<div class="tabbed">
+
+- <b class="tab-title">C++</b>
+  @source:src1
+  ```cpp
+  #include "neml2/models/Model.h"
+
+  int
+  main()
+  {
+    auto & model = neml2::load_model("input.i", "my_model");
+    std::cout << model << std::endl;
+  }
+  ```
+  @endsource
+
+  Output:
+  ```
+  @attach_output:src1
+  ```
+- <b class="tab-title">Python</b>
+  @source:src2
+  ```python
+  import neml2
+
+  model = neml2.load_model("input.i", "my_model")
+  print(model)
+  ```
+  @endsource
+
+  Output:
+  ```
+  @attach_output:src2
+  ```
+
+</div>
+
+The summary includes information about the model's name, primary floating point numeric type (denoted as "Dtype"), current device, input variables, output variables, parameters, and buffers (if any). Note that the variables and parameters are additionally marked with tensor types surrounded by square brackets, i.e., `[SR2]` and `[Scalar]`. These are NEML2's primitive tensor types which will be extensively discussed in another set of [tutorials](#tutorials-tensor).
+
+## Model structure
+
+Before going over model evaluation, let us zoom out from this particular example and briefly discuss the structure of NEML2 models.
+
+All NEML2 models, including this simple elasticity model under consideration, take the following general form
+\f[
+  y = f(x; p, b)
+\f]
+
 
 <div class="section_buttons">
 

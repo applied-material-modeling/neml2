@@ -27,6 +27,27 @@
 from pathlib import Path
 import sys
 
+
+def get_src(lines):
+    tokens = lines[0].strip().split(":")
+    name = tokens[1]
+    if not lines[1].strip().startswith("```") or not lines[-1].strip().startswith("```"):
+        print("Error: @source and @endsource must enclose a code block.")
+        sys.exit(1)
+    type = lines[1].strip()[3:]
+    if type == "cpp":
+        name += ".cxx"
+    elif type == "python":
+        name += ".py"
+    else:
+        print("Error: unknown source type {}.".format(type))
+        sys.exit(1)
+    leading_space = len(lines[2]) - len(lines[2].lstrip())
+    new_lines = [line[leading_space:] for line in lines[2:-1]]
+    src = "".join(new_lines)
+    return name, src
+
+
 if __name__ == "__main__":
     if len(sys.argv) != 3:
         print("Usage: extract_tutorial_sources.py tutorials_dir build_dir")
@@ -46,40 +67,30 @@ if __name__ == "__main__":
 
         with md.open("r") as f:
             lines = f.readlines()
-            srcs = []
+            src_blks = []
 
-            suffix = None
-            line_begin = None
-            line_end = None
-            leading_space = None
+            src_begin = None
 
             for i, line in enumerate(lines):
-                if line_begin:
-                    if line.strip().startswith("```"):
-                        line_end = i
-                        srcs.append((suffix, line_begin, line_end, leading_space))
-                        line_begin = None
-                        line_end = None
-                        suffix = None
-                        leading_space = None
+                if src_begin:
+                    if line.strip() == "@endsource":
+                        src_blks.append((src_begin, i))
+                        src_begin = None
                 else:
-                    if line.strip().startswith("```cpp"):
-                        line_begin = i
-                        suffix = ".cxx"
-                        leading_space = line.find("```cpp")
-                    elif line.strip().startswith("```python"):
-                        line_begin = i
-                        suffix = ".py"
-                        leading_space = line.find("```python")
+                    if line.strip().startswith("@source:"):
+                        src_begin = i
 
-            if suffix or line_begin or line_end or leading_space:
+            if src_begin:
                 print("Error: unmatched code block.")
                 sys.exit(1)
 
-            count = 0
-            for suffix, line_begin, line_end, leading_space in srcs:
-                src = current_build_dir / "src_{}{}".format(count, suffix)
-                with src.open("w") as f:
-                    for line in lines[line_begin + 1 : line_end]:
-                        f.write(line[leading_space:])
-                count += 1
+            srcs = {}
+            for src_begin, src_end in src_blks:
+                name, new_src = get_src(lines[src_begin:src_end])
+                src = srcs.setdefault(name, "")
+                srcs[name] = src + new_src
+
+            for name, src in srcs.items():
+                src_file = current_build_dir / name
+                with src_file.open("w") as f:
+                    f.write(src)

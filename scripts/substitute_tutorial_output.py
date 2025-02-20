@@ -50,17 +50,21 @@ if __name__ == "__main__":
             count = 0
             leading_space = 0
             for i, line in enumerate(lines):
-                if line.strip().startswith("```cpp") or line.strip().startswith("```python"):
-                    count += 1
-                    leading_space = line.find("```")
-                if line.strip().startswith("@attach_output@"):
-                    src_out = current_build_dir / "src_{}.out".format(count - 1)
+                if line.strip().startswith("@attach_output:"):
+                    leading_space = len(line) - len(line.lstrip())
+                    tokens = line.strip().split(":")
+                    name = tokens[1]
+                    src_out = current_build_dir / "{}.out".format(name)
                     if not src_out.exists():
-                        print("Output file not found: {}".format(src_out))
+                        print("Expected output file not found: {}".format(src_out))
                         sys.exit(1)
                     with open(src_out, "r") as g:
                         for newline in g.readlines():
                             newlines.append(" " * leading_space + newline)
+                elif line.strip().startswith("@source:"):
+                    continue
+                elif line.strip() == "@endsource":
+                    continue
                 else:
                     newlines.append(line)
         with open(current_build_dir / md.name, "w") as f:
