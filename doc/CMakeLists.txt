@@ -90,13 +90,82 @@ add_custom_target(syntax_python
 add_dependencies(syntax_python python_stub)
 
 # ----------------------------------------------------------------------------
+# Extract tutorial sources
+# ----------------------------------------------------------------------------
+message(STATUS "Extracting tutorial sources")
+add_custom_target(tutorials)
+execute_process(
+  COMMAND ${Python_EXECUTABLE} ${NEML2_SOURCE_DIR}/scripts/extract_tutorial_sources.py ${NEML2_SOURCE_DIR}/doc/tutorials ${NEML2_BINARY_DIR}/doc/content/tutorials
+  COMMAND_ERROR_IS_FATAL ANY
+)
+
+# ----------------------------------------------------------------------------
+# Build and run C++ tutorials
+# ----------------------------------------------------------------------------
+file(GLOB_RECURSE TUTORIAL_SOURCES ${NEML2_BINARY_DIR}/doc/content/tutorials/*.cxx)
+
+foreach(TUTORIAL_SOURCE ${TUTORIAL_SOURCES})
+  get_filename_component(TUTORIAL_SOURCE_DIR ${TUTORIAL_SOURCE} DIRECTORY)
+  get_filename_component(TUTORIAL_NAME ${TUTORIAL_SOURCE} NAME_WE)
+  cmake_path(RELATIVE_PATH TUTORIAL_SOURCE BASE_DIRECTORY ${NEML2_BINARY_DIR}/doc/content OUTPUT_VARIABLE TUTORIAL_SOURCE_RELPATH)
+  string(REPLACE "/" "_" TUTORIAL_SOURCE_TARGET ${TUTORIAL_SOURCE_RELPATH})
+  string(APPEND TUTORIAL_SOURCE_TARGET "_cpp")
+  add_executable(${TUTORIAL_SOURCE_TARGET} ${TUTORIAL_SOURCE})
+  target_link_libraries(${TUTORIAL_SOURCE_TARGET} PRIVATE neml2)
+  set_target_properties(${TUTORIAL_SOURCE_TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${TUTORIAL_SOURCE_DIR})
+  set_target_properties(${TUTORIAL_SOURCE_TARGET} PROPERTIES OUTPUT_NAME ${TUTORIAL_NAME})
+  add_dependencies(tutorials ${TUTORIAL_SOURCE_TARGET})
+
+  # Capture the output of the tutorial
+  get_filename_component(TUTORIAL_WORKING_DIR ${NEML2_SOURCE_DIR}/doc/${TUTORIAL_SOURCE_RELPATH} DIRECTORY)
+  add_custom_command(
+    COMMENT "Running tutorial ${TUTORIAL_SOURCE_TARGET}"
+    TARGET ${TUTORIAL_SOURCE_TARGET} POST_BUILD
+    COMMAND ${TUTORIAL_SOURCE_DIR}/${TUTORIAL_NAME} > ${TUTORIAL_SOURCE_DIR}/${TUTORIAL_NAME}.out
+    WORKING_DIRECTORY ${TUTORIAL_WORKING_DIR}
+    VERBATIM
+  )
+endforeach()
+
+# ----------------------------------------------------------------------------
+# Run Python tutorials
+# ----------------------------------------------------------------------------
+file(GLOB_RECURSE TUTORIAL_SOURCES ${NEML2_BINARY_DIR}/doc/content/tutorials/*.py)
+
+foreach(TUTORIAL_SOURCE ${TUTORIAL_SOURCES})
+  get_filename_component(TUTORIAL_SOURCE_DIR ${TUTORIAL_SOURCE} DIRECTORY)
+  get_filename_component(TUTORIAL_NAME ${TUTORIAL_SOURCE} NAME_WE)
+  cmake_path(RELATIVE_PATH TUTORIAL_SOURCE BASE_DIRECTORY ${NEML2_BINARY_DIR}/doc/content OUTPUT_VARIABLE TUTORIAL_SOURCE_RELPATH)
+  string(REPLACE "/" "_" TUTORIAL_SOURCE_TARGET ${TUTORIAL_SOURCE_RELPATH})
+  string(APPEND TUTORIAL_SOURCE_TARGET "_python")
+  get_filename_component(TUTORIAL_WORKING_DIR ${NEML2_SOURCE_DIR}/doc/${TUTORIAL_SOURCE_RELPATH} DIRECTORY)
+  add_custom_target(${TUTORIAL_SOURCE_TARGET}
+    DEPENDS syntax_python
+    COMMENT "Running tutorial ${TUTORIAL_SOURCE_TARGET}"
+    COMMAND PYTHONPATH=${NEML2_BINARY_DIR}/python ${Python_EXECUTABLE} ${TUTORIAL_SOURCE} > ${TUTORIAL_SOURCE_DIR}/${TUTORIAL_NAME}.out
+    WORKING_DIRECTORY ${TUTORIAL_WORKING_DIR}
+    VERBATIM
+  )
+  add_dependencies(tutorials ${TUTORIAL_SOURCE_TARGET})
+endforeach()
+
+# ----------------------------------------------------------------------------
+# Substitute tutorial output in markdown
+# ----------------------------------------------------------------------------
+add_custom_target(tutorials_md
+  COMMENT "Substituting tutorial output in markdown"
+  DEPENDS tutorials
+  COMMAND ${Python_EXECUTABLE} ${NEML2_SOURCE_DIR}/scripts/substitute_tutorial_output.py ${NEML2_SOURCE_DIR}/doc/tutorials ${NEML2_BINARY_DIR}/doc/content/tutorials
+)
+
+# ----------------------------------------------------------------------------
 # HTML
 # ----------------------------------------------------------------------------
 generate_doxyfile(${NEML2_BINARY_DIR}/doc/DoxyfileHTML "config/Doxyfile.in;config/HTML.in")
 generate_doxyfile(${NEML2_BINARY_DIR}/doc/DoxyfilePython "config/Doxyfile.in;config/HTML.in;config/Python.in")
 add_custom_target(html
   COMMENT "Generating HTML documentation"
-  DEPENDS syntax_cpp syntax_python
+  DEPENDS syntax_cpp syntax_python tutorials_md
   WORKING_DIRECTORY ${NEML2_BINARY_DIR}/doc
   COMMAND ${DOXYGEN_EXECUTABLE} -q DoxyfileHTML.sh
   COMMAND ${DOXYGEN_EXECUTABLE} -q DoxyfilePython.sh

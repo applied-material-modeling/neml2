@@ -1,4 +1,4 @@
-# Running the input file {#tutorials-input-02}
+# Loading the input file {#tutorials-input-02}
 
 [TOC]
 
@@ -14,7 +14,7 @@ These methods are discussed in the [user guide](#user-getting-started). In the f
 ## The input file
 
 Suppose the input file we created from the previous tutorial is stored in the working directory with name "input.i". Recall that the input file has the following content:
-```python
+```
 [Models]
   [my_model]
     type = LinearIsotropicElasticity
@@ -50,6 +50,44 @@ The following code parses the given input file named "input.i" and retrieves a M
   ```
 
 </div>
+
+## Inspecting the model
+
+Once retrieved, we can print out a summary of the model using the following code:
+
+<div class="tabbed">
+
+- <b class="tab-title">C++</b>
+  ```cpp
+  #include "neml2/models/Model.h"
+
+  int
+  main()
+  {
+    auto & model = neml2::load_model("input.i", "my_model");
+    std::cout << model << std::endl;
+  }
+  ```
+
+  Output:
+  ```
+  @attach_output@
+  ```
+- <b class="tab-title">Python</b>
+  ```python
+  import neml2
+
+  model = neml2.load_model("input.i", "my_model")
+  print(model)
+  ```
+
+  Output:
+  ```
+  @attach_output@
+  ```
+</div>
+
+The summary includes information about the model's name, primary floating point numeric type (denoted as "Dtype"), current device, input variables, output variables, parameters, and buffers (if any). Note that the variables and parameters are additionally marked with tensor types surrounded by square brackets, i.e., `[SR2]` and `[Scalar]`. These are NEML2's primitive tensor types which will be extensively discussed in another set of [tutorials](#tutorials-tensor).
 
 
 <div class="section_buttons">

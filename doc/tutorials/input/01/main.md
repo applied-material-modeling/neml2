@@ -25,7 +25,7 @@ Related readings:
 - [Naming conventions](#naming-conventions)
 
 Using these information, the input file for constructing this model can be composed as:
-```python
+```
 [Models]
   [my_model]
     type = LinearIsotropicElasticity
