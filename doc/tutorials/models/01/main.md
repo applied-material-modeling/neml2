@@ -1,4 +1,4 @@
-# Tutorial 1: Writing and running your first input file {#tutorials-input-01}
+# Tutorial 1: Running your first model {#tutorials-models-01}
 
 [TOC]
 
@@ -6,7 +6,7 @@
 
 Let us start with the simplest example for solid mechanics. Consider a solid material whose elastic behavior (mapping from strain \f$ \boldsymbol{\varepsilon} \f$ to stress \f$ \boldsymbol{\sigma} \f$, or vice versa) can be described as
 \f[
-  \boldsymbol{\sigma} = 3 K \operatorname{vol} \boldsymbol{\varepsilon} + 2 G \operatorname{dev} \boldsymbol{\varepsilon}
+  \boldsymbol{\sigma} = 3 K \operatorname{vol} \boldsymbol{\varepsilon} + 2 G \operatorname{dev} \boldsymbol{\varepsilon},
 \f]
 where \f$ K \f$ is the bulk modulus, and \f$ G \f$ is the shear modulus.
 
@@ -90,20 +90,104 @@ The following code parses the given input file named "input.i" and retrieves a M
 
 The summary includes information about the model's name, primary floating point numeric type (denoted as "Dtype"), current device, input variables, output variables, parameters, and buffers (if any). Note that the variables and parameters are additionally marked with tensor types surrounded by square brackets, i.e., `[SR2]` and `[Scalar]`. These are NEML2's primitive tensor types which will be extensively discussed in another set of [tutorials](#tutorials-tensor).
 
-## Model structure
+## Model structure and forward operators
 
 Before going over model evaluation, let us zoom out from this particular example and briefly discuss the structure of NEML2 models.
 
 All NEML2 models, including this simple elasticity model under consideration, take the following general form
 \f[
-  y = f(x; p, b)
+  y = f(x; p, b),
 \f]
+where \f$ x \f$ and \f$ y \f$ are respectively sets of input and output variables, \f$ p \f$ is the set of parameters, and \f$ b \f$ is the set of buffers. The utilities of parameters and buffers will be discussed in another [tutorial](#tutorials-models-xx). The forward operator \f$ f \f$ is responsible for mapping from input variables \f$ x \f$ to \f$ y \f$. NEML2 provides three forward operators for all models:
+- neml2::Model::value calculates the output variables, i.e., \f$ y = f(x; p, b) \f$.
+- neml2::Model::dvalue calculates the derivatives of the output variables with respect to the input variables, i.e., \f$ \pdv{y}{x} = \pdv{f(x; p, b)}{x} \f$.
+- neml2::Model::value_and_dvalue calculates both the output variables and their derivatives.
 
+All three forward operators take a dictionary of variable values as input and return the requested output variables and/or their derivatives.
+
+In addition to these standard forward operators, some models in NEML2 also support calculating second derivatives. Three additional forward operators are provided to request second derivatives:
+- neml2::Model::d2value
+- neml2::Model::dvalue_and_d2value
+- neml2::Model::value_and_dvalue_and_d2value
+
+## Evaluating the model
+
+Model evaluation consists of two simple steps:
+1. Specify the input variable values
+2. Call the appropriate forward operator
+
+In this example, the elasticity model can be evaluated using the following code:
+
+
+<div class="tabbed">
+
+- <b class="tab-title">C++</b>
+  @source:src3
+  ```cpp
+  #include "neml2/models/Model.h"
+  #include "neml2/tensors/SR2.h"
+
+  int
+  main()
+  {
+    auto & model = neml2::load_model("input.i", "my_model");
+
+    // Create the strain
+    auto strain_name = neml2::VariableName("forces", "E");
+    auto strain = neml2::SR2::fill(0.1, 0.05, -0.03, 0.02, 0.06, 0.03);
+
+    // Evaluate the model
+    auto output = model.value({{strain_name, strain}});
+
+    // Get the stress
+    auto stress_name = neml2::VariableName("state", "S");
+    auto & stress = output[stress_name];
+
+    std::cout << "strain: \n" << strain << std::endl;
+    std::cout << "stress: \n" << stress << std::endl;
+  }
+  ```
+  @endsource
+
+  Output:
+  ```
+  @attach_output:src3
+  ```
+- <b class="tab-title">Python</b>
+  @source:src4
+  ```python
+  import neml2
+  from neml2.tensors import SR2
+
+  model = neml2.load_model("input.i", "my_model")
+
+  # Create the strain
+  strain = SR2.fill(0.1, 0.05, -0.03, 0.02, 0.06, 0.03)
+
+  # Evaluate the model
+  output = model.value({"forces/E": strain})
+
+  # Get the stress
+  stress = output["state/S"]
+
+  print("strain:")
+  print(strain)
+  print("stress:")
+  print(stress)
+  ```
+  @endsource
+
+  Output:
+  ```
+  @attach_output:src4
+  ```
+
+</div>
 
 <div class="section_buttons">
 
-| Previous                                     |                              Next |
-| :------------------------------------------- | --------------------------------: |
-| [Working with input files](#tutorials-input) | [Tutorial 2](#tutorials-input-02) |
+| Previous                                 |                               Next |
+| :--------------------------------------- | ---------------------------------: |
+| [Working with models](#tutorials-models) | [Tutorial 2](#tutorials-models-02) |
 
 </div>

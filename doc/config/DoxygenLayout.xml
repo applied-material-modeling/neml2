@@ -22,9 +22,13 @@
       <tab type="user" url="@ref model-visualization" title="Model Visualization"/>
     </tab>
     <tab type="usergroup" url="@ref tutorials" title="Tutorials">
-      <tab type="usergroup" url="@ref tutorials-input" title="Working with input files">
-        <tab type="user" url="@ref tutorials-input-01" title="Tutorial 1"/>
-        <tab type="user" url="@ref tutorials-input-02" title="Tutorial 2"/>
+      <tab type="usergroup" url="@ref tutorials-models" title="Models">
+        <tab type="user" url="@ref tutorials-models-01" title="Running your first model"/>
+        <tab type="user" url="@ref tutorials-models-02" title="Model parameters"/>
+        <tab type="user" url="@ref tutorials-models-03" title="Evaluation device"/>
+        <tab type="user" url="@ref tutorials-models-04" title="Vectorization"/>
+      </tab>
+      <tab type="usergroup" url="@ref tutorials-tensors" title="Tensors">
       </tab>
     </tab>
     <tab type="usergroup" title="Syntax Documentation">
