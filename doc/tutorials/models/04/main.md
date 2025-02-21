@@ -152,8 +152,8 @@ For a fair comparison, the input variables are allocated prior to model evaluati
 While there are many other factors contributing to the performance difference between the for loop approach and the vectorization approach, we hope this simple experiment can serve as a gentle introduction to the benefit of vectorization.
 
 It is worth noting that, in the above code snippets,
-- The pre-allocated strain tensor has a shape of `(100; 6)`. The leading dimension with size 100 is referred to as a *batch dimension* in NEML2.
-- The strain tensor with shape `(100; 6)` can operate with scalar-valued model parameters \f$ K \f$ and \f$ G \f$. This behavior relies on the concept of *broadcasting*.
+- The pre-allocated strain tensor has a shape of `(N; 6)`. The leading dimension with size N is referred to as a *batch dimension* in NEML2.
+- The strain tensor with shape `(N; 6)` can operate with scalar-valued model parameters \f$ K \f$ and \f$ G \f$. This behavior relies on the concept of *broadcasting*.
 
 *Batching* and *broadcasting* are the fundamental mechanisms that allow NEML2 to efficiently vectorize model evaluation while providing users with a unified API for both CPU and CUDA. More details on these mechanisms are discussed in the [tutorials](#tutorials-tensors) on NEML2 tensors.
 
