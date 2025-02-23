@@ -27,6 +27,7 @@
         <tab type="user" url="@ref tutorials-models-02" title="Model parameters"/>
         <tab type="user" url="@ref tutorials-models-03" title="Evaluation device"/>
         <tab type="user" url="@ref tutorials-models-04" title="Vectorization"/>
+        <tab type="user" url="@ref tutorials-models-05" title="Model composition"/>
       </tab>
       <tab type="usergroup" url="@ref tutorials-tensors" title="Tensors">
       </tab>

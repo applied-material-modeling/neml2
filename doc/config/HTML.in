@@ -19,5 +19,5 @@ USE_MATHJAX            = YES
 MATHJAX_VERSION        = MathJax_3
 MATHJAX_FORMAT         = HTML-CSS
 MATHJAX_RELPATH        = https://cdn.jsdelivr.net/npm/mathjax@3
-MATHJAX_EXTENSIONS     = ams physics boldsymbol
+MATHJAX_CODEFILE       = ${NEML2_SOURCE_DIR}/doc/config/mathjax.js
 WARN_LOGFILE           = ${NEML2_BINARY_DIR}/doc/doxygen.html.log
