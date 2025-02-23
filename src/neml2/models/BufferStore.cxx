@@ -31,9 +31,8 @@
 
 namespace neml2
 {
-BufferStore::BufferStore(OptionSet options, NEML2Object * object)
-  : _object(object),
-    _object_options(std::move(options))
+BufferStore::BufferStore(NEML2Object * object)
+  : _object(object)
 {
 }
 
@@ -87,20 +86,20 @@ BufferStore::declare_buffer(const std::string & name, const T & rawval)
 
 template <typename T, typename>
 const T &
-BufferStore::declare_buffer(const std::string & name, const TensorName & tensorname)
+BufferStore::declare_buffer(const std::string & name, const TensorName<T> & tensorname)
 {
-  return declare_buffer(name, T(tensorname));
+  return declare_buffer(name, tensorname.resolve());
 }
 
 template <typename T, typename>
 const T &
 BufferStore::declare_buffer(const std::string & name, const std::string & input_option_name)
 {
-  if (_object_options.contains<T>(input_option_name))
-    return declare_buffer(name, _object_options.get<T>(input_option_name));
+  if (_object->input_options().contains<T>(input_option_name))
+    return declare_buffer(name, _object->input_options().get<T>(input_option_name));
 
-  if (_object_options.contains<TensorName>(input_option_name))
-    return declare_buffer(name, T(_object_options.get<TensorName>(input_option_name)));
+  if (_object->input_options().contains<TensorName<T>>(input_option_name))
+    return declare_buffer<T>(name, _object->input_options().get<TensorName<T>>(input_option_name));
 
   throw NEMLException(
       "Trying to register buffer named " + name + " from input option named " + input_option_name +
@@ -111,7 +110,7 @@ BufferStore::declare_buffer(const std::string & name, const std::string & input_
 
 #define BUFFERSTORE_INTANTIATE_TENSORBASE(T)                                                       \
   template const T & BufferStore::declare_buffer<T>(const std::string &, const T &);               \
-  template const T & BufferStore::declare_buffer<T>(const std::string &, const TensorName &);      \
+  template const T & BufferStore::declare_buffer<T>(const std::string &, const TensorName<T> &);   \
   template const T & BufferStore::declare_buffer<T>(const std::string &, const std::string &)
 FOR_ALL_TENSORBASE(BUFFERSTORE_INTANTIATE_TENSORBASE);
 

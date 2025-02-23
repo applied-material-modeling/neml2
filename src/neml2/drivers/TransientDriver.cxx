@@ -46,7 +46,7 @@ set_ic(ValueMap & storage,
        const Device & device)
 {
   const auto names = options.get<std::vector<VariableName>>(name_opt);
-  const auto vals = options.get<std::vector<TensorName>>(value_opt);
+  const auto vals = options.get<std::vector<TensorName<T>>>(value_opt);
   neml_assert(names.size() == vals.size(),
               "Number of initial condition names ",
               name_opt,
@@ -62,7 +62,7 @@ set_ic(ValueMap & storage,
     neml_assert(names[i].is_state(),
                 "Initial condition names should start with 'state' but instead got ",
                 names[i]);
-    storage[names[i]] = T(vals[i]).to(device);
+    storage[names[i]] = vals[i].resolve().to(device);
   }
 }
 
@@ -73,7 +73,7 @@ TransientDriver::expected_options()
 
   options.set<VariableName>("time") = VariableName(FORCES, "t");
   options.set("time").doc() = "Time";
-  options.set<TensorName>("prescribed_time");
+  options.set<TensorName<Scalar>>("prescribed_time");
   options.set("prescribed_time").doc() =
       "Time steps to perform the material update. The times tensor must "
       "have at least one batch dimension representing time steps";
@@ -87,7 +87,7 @@ TransientDriver::expected_options()
 #define OPTION_IC_(T)                                                                              \
   options.set<std::vector<VariableName>>("ic_" #T "_names");                                       \
   options.set("ic_" #T "_names").doc() = "Apply initial conditions to these " #T " variables";     \
-  options.set<std::vector<TensorName>>("ic_" #T "_values");                                        \
+  options.set<std::vector<TensorName<T>>>("ic_" #T "_values");                                     \
   options.set("ic_" #T "_values").doc() = "Initial condition values for the " #T " variables"
   FOR_ALL_TENSORBASE(OPTION_IC_);
 
@@ -101,7 +101,7 @@ TransientDriver::expected_options()
 TransientDriver::TransientDriver(const OptionSet & options)
   : ModelDriver(options),
     _time_name(options.get<VariableName>("time")),
-    _time(options.get<TensorName>("prescribed_time")),
+    _time(options.get<TensorName<Scalar>>("prescribed_time").resolve()),
     _step_count(0),
     _nsteps(_time.batch_size(0).concrete()),
     _predictor(options.get<EnumSelection>("predictor")),

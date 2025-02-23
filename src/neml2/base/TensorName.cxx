@@ -25,71 +25,53 @@
 #include "neml2/base/TensorName.h"
 #include "neml2/base/Factory.h"
 #include "neml2/base/Parser.h"
-#include "neml2/tensors/tensors.h"
+#include "neml2/base/LabeledAxisAccessor.h"
 
 namespace neml2
 {
-TensorName::operator ATensor() const
+
+template <typename T>
+const T &
+TensorName<T>::resolve() const
 {
+  // Try to parse as a number
+  if (_value.defined())
+    return _value;
+  Real val;
+  auto success = utils::parse_(val, _raw_str);
+  if (success)
+    return _value = resolve_number(val);
+
+  // Try to parse as a tensor object
+  if (_tensor)
+    return *_tensor;
   try
   {
-    // If it is just a number, we can still create a tensor out of it
-    return Scalar::create(utils::parse<Real>(_raw_str));
+    _tensor = &Factory::get_object<T>("Tensors", _raw_str);
+    return *_tensor;
   }
-  catch (const ParserException & e)
+  catch (const FactoryException & err_tensor)
   {
-    // Conversion to a number failed, so it might be the name of another tensor
-    return Factory::get_object<ATensor>("Tensors", _raw_str);
+    throw ParserException(
+        "Failed to resolve tensor name '" + _raw_str + "'. Two attempts were made:" +
+        "\n  1. Parsing it as a plain numeric literal failed with error message: " +
+        utils::parse_failure_message<Real>(_raw_str) +
+        "\n  2. Parsing it as a tensor object failed with error message: " + err_tensor.what());
   }
 }
 
-TensorName::operator Tensor() const
+template <typename T>
+T
+TensorName<T>::resolve_number(Real val) const
 {
-  try
-  {
-    // If it is just a number, we can still create a Scalar out of it
-    return Tensor::full({}, {}, utils::parse<Real>(_raw_str));
-  }
-  catch (const ParserException & e)
-  {
-    // Conversion to a number failed, so it might be the name of another Tensor
-    return Factory::get_object<Tensor>("Tensors", _raw_str);
-  }
+  if constexpr (std::is_same_v<T, Tensor> || std::is_same_v<T, ATensor>)
+    return Scalar::create(val);
+  else
+    return T::full(val);
 }
 
-#define SPECIALIZE_CONVERSION(T)                                                                   \
-  TensorName::operator T() const                                                                   \
-  {                                                                                                \
-    try                                                                                            \
-    {                                                                                              \
-      return T::full(utils::parse<Real>(_raw_str));                                                \
-    }                                                                                              \
-    catch (const ParserException & e)                                                              \
-    {                                                                                              \
-      return Factory::get_object<T>("Tensors", _raw_str);                                          \
-    }                                                                                              \
-  }                                                                                                \
-  static_assert(true)
-FOR_ALL_PRIMITIVETENSOR(SPECIALIZE_CONVERSION);
-
-TensorName &
-TensorName::operator=(const std::string & other)
-{
-  _raw_str = other;
-  return *this;
-}
-
-std::ostream &
-operator<<(std::ostream & os, const TensorName & cr)
-{
-  os << cr.raw();
-  return os;
-}
-
-std::stringstream &
-operator>>(std::stringstream & ss, TensorName & cr)
-{
-  ss >> cr._raw_str;
-  return ss;
-}
+// Explicit instantiations
+template struct TensorName<ATensor>;
+#define INSTANTIATE(T) template struct TensorName<T>;
+FOR_ALL_TENSORBASE(INSTANTIATE);
 } // namesace neml2

@@ -40,7 +40,7 @@ LinearKinematicHardening::expected_options()
 
   options.set<bool>("define_second_derivatives") = true;
 
-  options.set_parameter<TensorName>("hardening_modulus");
+  options.set_parameter<TensorName<Scalar>>("hardening_modulus");
   options.set("hardening_modulus").doc() = "Hardening modulus";
 
   return options;

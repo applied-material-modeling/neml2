@@ -34,50 +34,73 @@ const std::vector<std::string> Parser::sections = {
 namespace utils
 {
 template <>
-void
+bool
 parse_(bool & val, const std::string & raw_str)
 {
-  const auto str_val = parse<std::string>(raw_str);
+  std::string str_val;
+  auto success = parse_<std::string>(str_val, raw_str);
+  if (!success)
+    return false;
+
   if (str_val == "true")
+  {
     val = true;
-  else if (str_val == "false")
+    return true;
+  }
+
+  if (str_val == "false")
+  {
     val = false;
-  else
-    throw ParserException("Failed to parse boolean value. Only 'true' and 'false' are recognized.");
+    return true;
+  }
+
+  return false;
 }
 
 template <>
-void
+bool
 parse_vector_(std::vector<bool> & vals, const std::string & raw_str)
 {
   auto tokens = split(raw_str, " \t\n\v\f\r");
   vals.resize(tokens.size());
-  for (size_t i = 0; i < tokens.size(); i++)
-    vals[i] = parse<bool>(tokens[i]);
+  for (std::size_t i = 0; i < tokens.size(); i++)
+  {
+    bool val;
+    auto success = parse_<bool>(val, tokens[i]);
+    if (!success)
+      return false;
+    vals[i] = val;
+  }
+  return true;
 }
 
 template <>
-void
+bool
 parse_(VariableName & val, const std::string & raw_str)
 {
   auto tokens = split(raw_str, "/ \t\n\v\f\r");
   val = VariableName(tokens);
+  return true;
 }
 
 template <>
-void
+bool
 parse_(TensorShape & val, const std::string & raw_str)
 {
   if (!start_with(raw_str, "(") || !end_with(raw_str, ")"))
-    throw ParserException("Trying to parse " + raw_str +
-                          " as a shape, but a shape must start with '(' and end with ')'");
+    return false;
 
   auto inner = trim(raw_str, "() \t\n\v\f\r");
   auto tokens = split(inner, ", \t\n\v\f\r");
 
-  val.clear();
-  for (auto & token : tokens)
-    val.push_back(parse<Size>(token));
+  val.resize(tokens.size());
+  for (std::size_t i = 0; i < tokens.size(); i++)
+  {
+    auto success = parse_<Size>(val[i], tokens[i]);
+    if (!success)
+      return false;
+  }
+  return true;
 }
 
 template <>
@@ -88,11 +111,12 @@ parse(const std::string & raw_str)
 }
 
 template <>
-void
+bool
 parse_(Device & val, const std::string & raw_str)
 {
   const auto str_val = parse<std::string>(raw_str);
   val = Device(str_val);
+  return true;
 }
 } // namespace utils
 } // namespace neml2

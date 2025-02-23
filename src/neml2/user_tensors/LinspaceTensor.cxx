@@ -35,10 +35,10 @@ LinspaceTensor::expected_options()
   options.doc() = "Construct a Tensor linearly spaced on the batch dimensions. See "
                   "neml2::TensorBase::linspace for a detailed explanation.";
 
-  options.set<TensorName>("start");
+  options.set<TensorName<Tensor>>("start");
   options.set("start").doc() = "The starting tensor";
 
-  options.set<TensorName>("end");
+  options.set<TensorName<Tensor>>("end");
   options.set("end").doc() = "The ending tensor";
 
   options.set<Size>("nstep");
@@ -66,8 +66,8 @@ LinspaceTensor::LinspaceTensor(const OptionSet & options)
 Tensor
 LinspaceTensor::make(const OptionSet & options) const
 {
-  auto t = Tensor::linspace(Tensor(options.get<TensorName>("start")),
-                            Tensor(options.get<TensorName>("end")),
+  auto t = Tensor::linspace(options.get<TensorName<Tensor>>("start").resolve(),
+                            options.get<TensorName<Tensor>>("end").resolve(),
                             options.get<Size>("nstep"),
                             options.get<Size>("dim"));
 

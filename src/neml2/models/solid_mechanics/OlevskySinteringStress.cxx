@@ -47,10 +47,10 @@ OlevskySinteringStress::expected_options()
   options.set_input("void_fraction") = VariableName(STATE, "internal", "f");
   options.set("void_fraction").doc() = "Void fraction";
 
-  options.set_parameter<TensorName>("surface_tension");
+  options.set_parameter<TensorName<Scalar>>("surface_tension");
   options.set("surface_tension").doc() = "Surface tension";
 
-  options.set_parameter<TensorName>("particle_radius");
+  options.set_parameter<TensorName<Scalar>>("particle_radius");
   options.set("particle_radius").doc() = "Particle radius";
 
   return options;

@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include "neml2/models/NonlinearParameter.h"
+#include "neml2/models/Model.h"
 
 namespace neml2
 {
@@ -32,7 +32,7 @@ namespace neml2
  * @brief A parameter that is defined by an input variable
  */
 template <typename T>
-class InputParameter : public NonlinearParameter<T>
+class InputParameter : public Model
 {
 public:
   static OptionSet expected_options();
@@ -43,5 +43,7 @@ protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
   const Variable<T> & _input_var;
+
+  Variable<T> & _p;
 };
 } // namespace neml2

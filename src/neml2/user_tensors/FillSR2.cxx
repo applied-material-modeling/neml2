@@ -40,32 +40,32 @@ FillSR2::expected_options()
                   "entries; when vector length is 6, the Scalar values are used to fill the tensor "
                   "following the Voigt notation.";
 
-  options.set<std::vector<TensorName>>("values");
+  options.set<std::vector<TensorName<Scalar>>>("values");
   options.set("values").doc() = "Scalars used to fill the R2";
 
   return options;
 }
 
 FillSR2::FillSR2(const OptionSet & options)
-  : SR2(fill(options.get<std::vector<TensorName>>("values"))),
+  : SR2(fill(options.get<std::vector<TensorName<Scalar>>>("values"))),
     UserTensorBase(options)
 {
 }
 
 SR2
-FillSR2::fill(const std::vector<TensorName> & values) const
+FillSR2::fill(const std::vector<TensorName<Scalar>> & values) const
 {
   if (values.size() == 1)
-    return SR2::fill(Scalar(values[0]));
+    return SR2::fill(values[0].resolve());
   if (values.size() == 3)
-    return SR2::fill(Scalar(values[0]), Scalar(values[1]), Scalar(values[2]));
+    return SR2::fill(values[0].resolve(), values[1].resolve(), values[2].resolve());
   if (values.size() == 6)
-    return SR2::fill(Scalar(values[0]),
-                     Scalar(values[1]),
-                     Scalar(values[2]),
-                     Scalar(values[3]),
-                     Scalar(values[4]),
-                     Scalar(values[5]));
+    return SR2::fill(values[0].resolve(),
+                     values[1].resolve(),
+                     values[2].resolve(),
+                     values[3].resolve(),
+                     values[4].resolve(),
+                     values[5].resolve());
 
   throw NEMLException("Number of values must be 1, 3, or 6, but " + std::to_string(values.size()) +
                       " values are provided.");

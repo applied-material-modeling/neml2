@@ -47,6 +47,6 @@ public:
 
 private:
   /// A helper method to dispatch to the correct fill method based on the number of values.
-  WR2 fill(const std::vector<TensorName> & values) const;
+  WR2 fill(const std::vector<TensorName<Scalar>> & values) const;
 };
 } // namespace neml2

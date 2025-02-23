@@ -81,8 +81,10 @@ ComposedModel::ComposedModel(const OptionSet & options)
   auto submodels = registered_models();
   if (_auto_nl_param)
     for (auto * submodel : submodels)
-      for (auto && [pname, pmodel] : submodel->named_nonlinear_parameter_models(/*recursive=*/true))
-        _registered_models.push_back(pmodel);
+      for (auto && [pname, param] : submodel->named_nonlinear_parameters(/*recursive=*/true))
+        if (std::find(_registered_models.begin(), _registered_models.end(), param.provider) ==
+            _registered_models.end())
+          _registered_models.push_back(param.provider);
 
   // Add registered models as nodes in the dependency resolver
   for (auto * submodel : registered_models())
@@ -115,14 +117,9 @@ ComposedModel::ComposedModel(const OptionSet & options)
 
   // Declare nonlinear parameters
   for (auto * submodel : submodels)
-  {
     for (auto && [pname, param] : submodel->named_nonlinear_parameters(/*recursive=*/true))
-      if (input_axis().has_variable(param->name()))
-        _nl_params[pname] = param;
-    for (auto && [pname, pmodel] : submodel->named_nonlinear_parameter_models(/*recursive=*/true))
-      if (_nl_params.count(pname))
-        _nl_param_models[pname] = pmodel;
-  }
+      if (input_axis().has_variable(param.provider_var))
+        register_nonlinear_parameter(pname, param);
 
   // Check if this composed model defines values
   _defines_value = true;
@@ -173,16 +170,10 @@ ComposedModel::ComposedModel(const OptionSet & options)
       }
 }
 
-std::map<std::string, const VariableBase *>
+std::map<std::string, NonlinearParameter>
 ComposedModel::named_nonlinear_parameters(bool /*recursive*/) const
 {
   return _nl_params;
-}
-
-std::map<std::string, Model *>
-ComposedModel::named_nonlinear_parameter_models(bool /*recursive*/) const
-{
-  return _nl_param_models;
 }
 
 void

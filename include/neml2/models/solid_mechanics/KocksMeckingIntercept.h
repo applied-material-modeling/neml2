@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include "neml2/models/NonlinearParameter.h"
+#include "neml2/models/Model.h"
 
 namespace neml2
 {
@@ -33,7 +33,7 @@ class Scalar;
 /**
  * @brief A scalar-valued parameter defined by (C-B) / A
  */
-class KocksMeckingIntercept : public NonlinearParameter<Scalar>
+class KocksMeckingIntercept : public Model
 {
 public:
   static OptionSet expected_options();
@@ -51,5 +51,8 @@ protected:
 
   /// KM C
   const Scalar & _C;
+
+  /// The intercept
+  Variable<Scalar> & _b;
 };
 }

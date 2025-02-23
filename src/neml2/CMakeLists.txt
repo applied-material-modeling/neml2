@@ -173,6 +173,7 @@ target_link_libraries(neml2 INTERFACE neml2_base)
 if(NEML2_PCH)
   target_precompile_headers(neml2_base PUBLIC
     ${NEML2_SOURCE_DIR}/include/neml2/base/Option.h
+    ${NEML2_SOURCE_DIR}/include/neml2/base/TensorName.h
   )
 endif()
 

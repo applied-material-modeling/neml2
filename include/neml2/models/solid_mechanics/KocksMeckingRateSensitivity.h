@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include "neml2/models/NonlinearParameter.h"
+#include "neml2/models/Model.h"
 
 namespace neml2
 {
@@ -33,7 +33,7 @@ class Scalar;
 /**
  * @brief A scalar-valued parameter defined by (mu0 - D/(exp(T0/T)-1)) * exp(_C)
  */
-class KocksMeckingRateSensitivity : public NonlinearParameter<Scalar>
+class KocksMeckingRateSensitivity : public Model
 {
 public:
   static OptionSet expected_options();
@@ -57,5 +57,8 @@ protected:
 
   /// The temperature
   const Variable<Scalar> & _T;
+
+  /// The rate sensitivity
+  Variable<Scalar> & _m;
 };
 }

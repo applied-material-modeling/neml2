@@ -42,7 +42,7 @@ class Variable;
 class VariableStore
 {
 public:
-  VariableStore(OptionSet options, Model * object);
+  VariableStore(Model * object);
 
   VariableStore(const VariableStore &) = delete;
   VariableStore(VariableStore &&) = delete;
@@ -165,6 +165,10 @@ protected:
   /// Collect stack from output variables and derivatives
   jit::Stack collect_output_stack(bool out, bool dout, bool d2out) const;
 
+  // TensorName resolution may require declare_input_variable
+  template <typename T>
+  friend const T & resolve_tensor_name(const TensorName<T> &, Model *, const std::string &);
+
 private:
   // Create a variable
   template <typename T>
@@ -174,14 +178,6 @@ private:
 
   /// Model using this interface
   Model * _object;
-
-  /**
-   * @brief Parsed input file options for this object.
-
-   * These options are useful for example when we declare a variable using an input option name.
-   *
-   */
-  const OptionSet _object_options;
 
   /// All the declared axes
   std::map<std::string, std::unique_ptr<LabeledAxis>> _axes;

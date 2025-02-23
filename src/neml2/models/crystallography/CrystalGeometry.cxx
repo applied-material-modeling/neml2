@@ -46,43 +46,69 @@ CrystalGeometry::expected_options()
   options.doc() =
       "A Data object storing basic crystallographic information for a given crystal system.";
 
-  options.set<TensorName>("crystal_class");
+  options.set_buffer<TensorName<R2>>("crystal_class");
   options.set("crystal_class").doc() = "The set of symmetry operations defining the crystal class.";
 
-  options.set<TensorName>("lattice_vectors");
+  options.set_buffer<TensorName<Vec>>("lattice_vectors");
   options.set("lattice_vectors").doc() =
       "The three lattice vectors defining the crystal translational symmetry";
 
-  options.set<TensorName>("slip_directions");
+  options.set_buffer<TensorName<MillerIndex>>("slip_directions");
   options.set("slip_directions").doc() = "A list of Miller indices defining the slip directions";
 
-  options.set<TensorName>("slip_planes");
+  options.set_buffer<TensorName<MillerIndex>>("slip_planes");
   options.set("slip_planes").doc() = "A list of Miller indices defining the slip planes";
 
   return options;
 }
 
 CrystalGeometry::CrystalGeometry(const OptionSet & options)
-  : CrystalGeometry(options,
-                    R2(options.get<TensorName>("crystal_class")),
-                    Vec(options.get<TensorName>("lattice_vectors")),
-                    setup_schmid_tensors(Vec(options.get<TensorName>("lattice_vectors")),
-                                         R2(options.get<TensorName>("crystal_class")),
-                                         MillerIndex(options.get<TensorName>("slip_directions")),
-                                         MillerIndex(options.get<TensorName>("slip_planes"))))
+  : CrystalGeometry(
+        options,
+        options.get<TensorName<R2>>("crystal_class").resolve(),
+        options.get<TensorName<Vec>>("lattice_vectors").resolve(),
+        setup_schmid_tensors(options.get<TensorName<Vec>>("lattice_vectors").resolve(),
+                             options.get<TensorName<R2>>("crystal_class").resolve(),
+                             options.get<TensorName<MillerIndex>>("slip_directions").resolve(),
+                             options.get<TensorName<MillerIndex>>("slip_planes").resolve()))
 {
 }
 
 CrystalGeometry::CrystalGeometry(const OptionSet & options,
                                  const R2 & cclass,
                                  const Vec & lattice_vectors)
-  : CrystalGeometry(options,
-                    cclass,
-                    lattice_vectors,
-                    setup_schmid_tensors(lattice_vectors,
-                                         cclass,
-                                         MillerIndex(options.get<TensorName>("slip_directions")),
-                                         MillerIndex(options.get<TensorName>("slip_planes"))))
+  : CrystalGeometry(
+        options,
+        cclass,
+        lattice_vectors,
+        setup_schmid_tensors(lattice_vectors,
+                             cclass,
+                             options.get<TensorName<MillerIndex>>("slip_directions").resolve(),
+                             options.get<TensorName<MillerIndex>>("slip_planes").resolve()))
+{
+}
+
+CrystalGeometry::CrystalGeometry(const OptionSet & options,
+                                 const R2 & cclass,
+                                 const Vec & lattice_vectors,
+                                 std::tuple<Vec, Vec, Scalar, std::vector<Size>> slip_data)
+  : Data(options),
+    _sym_ops(cclass),
+    _lattice_vectors(declare_buffer<Vec>("lattice_vectors", lattice_vectors)),
+    _reciprocal_lattice_vectors(declare_buffer<Vec>("reciprocal_lattice_vectors",
+                                                    make_reciprocal_lattice(_lattice_vectors))),
+    _slip_directions(declare_buffer<MillerIndex>("slip_directions", "slip_directions")),
+    _slip_planes(declare_buffer<MillerIndex>("slip_planes", "slip_planes")),
+    _cartesian_slip_directions(
+        declare_buffer<Vec>("cartesian_slip_directions", std::get<0>(slip_data))),
+    _cartesian_slip_planes(declare_buffer<Vec>("cartesian_slip_planes", std::get<1>(slip_data))),
+    _burgers(declare_buffer<Scalar>("burgers", std::get<2>(slip_data))),
+    _slip_offsets(std::get<3>(slip_data)),
+    _A(declare_buffer<R2>("schmid_tensors",
+                          (_cartesian_slip_directions / _cartesian_slip_directions.norm())
+                              .outer(_cartesian_slip_planes / _cartesian_slip_planes.norm()))),
+    _M(declare_buffer<SR2>("symmetric_schmid_tensors", SR2(_A))),
+    _W(declare_buffer<WR2>("skew_symmetric_schmid_tensors", WR2(_A)))
 {
 }
 
@@ -140,30 +166,6 @@ CrystalGeometry::nslip_in_group(Size i) const
 {
   neml_assert_dbg(i < nslip_groups());
   return _slip_offsets[i + 1] - _slip_offsets[i];
-}
-
-CrystalGeometry::CrystalGeometry(const OptionSet & options,
-                                 const R2 & cclass,
-                                 const Vec & lattice_vectors,
-                                 std::tuple<Vec, Vec, Scalar, std::vector<Size>> slip_data)
-  : Data(options),
-    _sym_ops(cclass),
-    _lattice_vectors(declare_buffer<Vec>("lattice_vectors", lattice_vectors)),
-    _reciprocal_lattice_vectors(declare_buffer<Vec>("reciprocal_lattice_vectors",
-                                                    make_reciprocal_lattice(_lattice_vectors))),
-    _slip_directions(declare_buffer<MillerIndex>("slip_directions", "slip_directions")),
-    _slip_planes(declare_buffer<MillerIndex>("slip_planes", "slip_planes")),
-    _cartesian_slip_directions(
-        declare_buffer<Vec>("cartesian_slip_directions", std::get<0>(slip_data))),
-    _cartesian_slip_planes(declare_buffer<Vec>("cartesian_slip_planes", std::get<1>(slip_data))),
-    _burgers(declare_buffer<Scalar>("burgers", std::get<2>(slip_data))),
-    _slip_offsets(std::get<3>(slip_data)),
-    _A(declare_buffer<R2>("schmid_tensors",
-                          (_cartesian_slip_directions / _cartesian_slip_directions.norm())
-                              .outer(_cartesian_slip_planes / _cartesian_slip_planes.norm()))),
-    _M(declare_buffer<SR2>("symmetric_schmid_tensors", SR2(_A))),
-    _W(declare_buffer<WR2>("skew_symmetric_schmid_tensors", WR2(_A)))
-{
 }
 
 Vec

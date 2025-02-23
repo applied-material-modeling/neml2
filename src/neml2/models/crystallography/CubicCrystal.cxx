@@ -42,16 +42,17 @@ CubicCrystal::expected_options()
   options.set("crystal_class").suppressed() = true;
   options.set("lattice_vectors").suppressed() = true;
 
-  options.set<TensorName>("lattice_parameter");
+  options.set<TensorName<Scalar>>("lattice_parameter");
   options.set("lattice_parameter").doc() = "The lattice parameter";
 
   return options;
 }
 
 CubicCrystal::CubicCrystal(const OptionSet & options)
-  : CrystalGeometry(options,
-                    symmetry_operations_from_orbifold("432"),
-                    Vec(ATensor(R2::fill(Scalar(options.get<TensorName>("lattice_parameter"))))))
+  : CrystalGeometry(
+        options,
+        symmetry_operations_from_orbifold("432"),
+        Vec(ATensor(R2::fill(options.get<TensorName<Scalar>>("lattice_parameter").resolve()))))
 {
 }
 

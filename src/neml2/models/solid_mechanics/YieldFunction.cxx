@@ -40,7 +40,7 @@ YieldFunction::expected_options()
 
   options.set<bool>("define_second_derivatives") = true;
 
-  options.set_parameter<TensorName>("yield_stress");
+  options.set_parameter<TensorName<Scalar>>("yield_stress");
   options.set("yield_stress").doc() = "Yield stress";
 
   options.set_input("effective_stress") = VariableName(STATE, "internal", "s");

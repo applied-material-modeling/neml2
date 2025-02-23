@@ -48,7 +48,7 @@ TEST_CASE("HITParser", "[base]")
       REQUIRE(utils::parse<TensorShape>("()") == TensorShape{});
       REQUIRE_THROWS_WITH(
           utils::parse<TensorShape>("1"),
-          Catch::Matchers::ContainsSubstring("a shape must start with '(' and end with ')'"));
+          Catch::Matchers::ContainsSubstring("must begin with '(' and end with ')'"));
     }
 
     SECTION("bool")
@@ -56,7 +56,7 @@ TEST_CASE("HITParser", "[base]")
       REQUIRE(utils::parse<bool>("true"));
       REQUIRE(!utils::parse<bool>("false"));
       REQUIRE_THROWS_WITH(utils::parse<bool>("off"),
-                          Catch::Matchers::ContainsSubstring("Failed to parse boolean value"));
+                          Catch::Matchers::ContainsSubstring("Failed to parse 'off' as a boolean"));
     }
   }
 

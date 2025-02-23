@@ -17,7 +17,7 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'params/c_A params/c_B'
+    input_Scalar_names = 'state/c_A state/c_B'
     input_Scalar_values = '1.0 -2.0'
     input_SR2_names = 'state/A state/substate/B'
     input_SR2_values = 'foo bar'
@@ -27,19 +27,11 @@
 []
 
 [Models]
-  [c_A]
-    type = ScalarInputParameter
-    from = 'params/c_A'
-  []
-  [c_B]
-    type = ScalarInputParameter
-    from = 'params/c_B'
-  []
   [model0]
     type = SR2LinearCombination
     from_var = 'state/A state/substate/B'
     to_var = 'state/outsub/C'
-    coefficients = 'c_A c_B'
+    coefficients = 'state/c_A state/c_B'
     coefficient_as_parameter = 'true true'
   []
   [model]

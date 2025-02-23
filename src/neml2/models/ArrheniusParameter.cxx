@@ -33,18 +33,18 @@ register_NEML2_object(ArrheniusParameter);
 OptionSet
 ArrheniusParameter::expected_options()
 {
-  OptionSet options = NonlinearParameter<Scalar>::expected_options();
-  options.doc() = "Define the nonlinear parameter as a function of temperature according to the "
-                  "Arrhenius law \\f$ p = p_0 \\exp \\left( -\\frac{Q}{RT} \\right) \\f$, where "
-                  "\\f$ p_0 \\f$ is the reference value, \\f$ Q \\f$ is the activation energy, "
-                  "\\f$ R \\f$ is the ideal gas constant, and \\f$ T \\f$ is the temperature.";
+  OptionSet options = Model::expected_options();
+  options.doc() = "Define the variable as a function of temperature according to the Arrhenius law "
+                  "\\f$ p = p_0 \\exp \\left( -\\frac{Q}{RT} \\right) \\f$, where \\f$ p_0 \\f$ is "
+                  "the reference value, \\f$ Q \\f$ is the activation energy, \\f$ R \\f$ is the "
+                  "ideal gas constant, and \\f$ T \\f$ is the temperature.";
 
   options.set<bool>("define_second_derivatives") = true;
 
-  options.set_parameter<TensorName>("reference_value");
+  options.set_parameter<TensorName<Scalar>>("reference_value");
   options.set("reference_value").doc() = "Reference value";
 
-  options.set_parameter<TensorName>("activation_energy");
+  options.set_parameter<TensorName<Scalar>>("activation_energy");
   options.set("activation_energy").doc() = "Activation energy";
 
   options.set<Real>("ideal_gas_constant");
@@ -53,15 +53,19 @@ ArrheniusParameter::expected_options()
   options.set_input("temperature") = VariableName(FORCES, "T");
   options.set("temperature").doc() = "Temperature";
 
+  options.set_output("parameter") = VariableName(PARAMETERS, "p");
+  options.set("parameter").doc() = "The output parameter";
+
   return options;
 }
 
 ArrheniusParameter::ArrheniusParameter(const OptionSet & options)
-  : NonlinearParameter<Scalar>(options),
+  : Model(options),
     _p0(declare_parameter<Scalar>("p0", "reference_value")),
     _Q(declare_parameter<Scalar>("Q", "activation_energy")),
     _R(options.get<Real>("ideal_gas_constant")),
-    _T(declare_input_variable<Scalar>("temperature"))
+    _T(declare_input_variable<Scalar>("temperature")),
+    _p(declare_output_variable<Scalar>("parameter"))
 {
 }
 

@@ -58,7 +58,7 @@ protected:
 
 private:
   /// Input coefficients (without reordering)
-  const std::vector<TensorName> _coefs;
+  std::vector<TensorName<Scalar>> _coefs;
 
   /// Input coefficient types (without reordering)
   const std::vector<ElasticConstant> _coef_types;
@@ -103,7 +103,7 @@ ElasticityInterface<Derived, N>::expected_options()
   options.set("coefficient_types").doc() =
       "Types for each parameter, options are: " + type_selection.candidates_str();
 
-  options.set_parameter<std::vector<TensorName>>("coefficients");
+  options.set_parameter<std::vector<TensorName<Scalar>>>("coefficients");
   options.set("coefficients").doc() = "Coefficients used to define the elasticity tensor";
 
   options.set<std::vector<bool>>("coefficient_as_parameter") = {true};
@@ -117,7 +117,7 @@ ElasticityInterface<Derived, N>::expected_options()
 template <class Derived, std::size_t N>
 ElasticityInterface<Derived, N>::ElasticityInterface(const OptionSet & options)
   : Derived(options),
-    _coefs(options.get<std::vector<TensorName>>("coefficients")),
+    _coefs(options.get<std::vector<TensorName<Scalar>>>("coefficients")),
     _coef_types(options.get<MultiEnumSelection>("coefficient_types").as<ElasticConstant>()),
     _coef_as_param(options.get<std::vector<bool>>("coefficient_as_parameter"))
 {

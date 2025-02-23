@@ -40,10 +40,10 @@ LinspacePrimitiveTensor<T>::expected_options()
                   " linearly spaced on the batch dimensions. See neml2::TensorBase::linspace "
                   "for a detailed explanation.";
 
-  options.set<TensorName>("start");
+  options.set<TensorName<T>>("start");
   options.set("start").doc() = "The starting tensor";
 
-  options.set<TensorName>("end");
+  options.set<TensorName<T>>("end");
   options.set("end").doc() = "The ending tensor";
 
   options.set<Size>("nstep");
@@ -70,8 +70,8 @@ template <typename T>
 T
 LinspacePrimitiveTensor<T>::make(const OptionSet & options) const
 {
-  auto t = T::linspace(T(options.get<TensorName>("start")),
-                       T(options.get<TensorName>("end")),
+  auto t = T::linspace(options.get<TensorName<T>>("start").resolve(),
+                       options.get<TensorName<T>>("end").resolve(),
                        options.get<Size>("nstep"),
                        options.get<Size>("dim"));
 

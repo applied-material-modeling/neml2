@@ -35,26 +35,26 @@ FillWR2::expected_options()
   OptionSet options = UserTensorBase::expected_options();
   options.doc() = "Construct a Rot from a vector of Scalars.";
 
-  options.set<std::vector<TensorName>>("values");
+  options.set<std::vector<TensorName<Scalar>>>("values");
   options.set("values").doc() = "Scalars used to fill the WR2";
 
   return options;
 }
 
 FillWR2::FillWR2(const OptionSet & options)
-  : WR2(fill(options.get<std::vector<TensorName>>("values"))),
+  : WR2(fill(options.get<std::vector<TensorName<Scalar>>>("values"))),
     UserTensorBase(options)
 {
 }
 
 WR2
-FillWR2::fill(const std::vector<TensorName> & values) const
+FillWR2::fill(const std::vector<TensorName<Scalar>> & values) const
 {
   neml_assert(values.size() == 3,
               "Number of values must be 3, but ",
               values.size(),
               " values are provided.");
 
-  return WR2::fill(Scalar(values[0]), Scalar(values[1]), Scalar(values[2]));
+  return WR2::fill(values[0].resolve(), values[1].resolve(), values[2].resolve());
 }
 } // namespace neml2

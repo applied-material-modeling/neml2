@@ -108,8 +108,8 @@ Model::expected_options()
 
 Model::Model(const OptionSet & options)
   : Data(options),
-    ParameterStore(options, this),
-    VariableStore(options, this),
+    ParameterStore(this),
+    VariableStore(this),
     NonlinearSystem(options),
     DiagnosticsInterface(this),
     _defines_value(options.get<bool>("define_values")),
@@ -131,8 +131,8 @@ Model::to(const TensorOptions & options)
   for (auto * submodel : registered_models())
     submodel->to(options);
 
-  for (auto & [name, submodel] : named_nonlinear_parameter_models())
-    submodel->to(options);
+  for (auto & [name, param] : named_nonlinear_parameters())
+    param.provider->to(options);
 }
 
 void
@@ -584,6 +584,54 @@ Model::registered_model(const std::string & name) const
 
   throw NEMLException("There is no registered model named '" + name + "' in '" + this->name() +
                       "'");
+}
+
+void
+Model::register_nonlinear_parameter(const std::string & pname, const NonlinearParameter & param)
+{
+  neml_assert(_nl_params.count(pname) == 0,
+              "Nonlinear parameter named '",
+              pname,
+              "' has already been registered.");
+  _nl_params[pname] = param;
+}
+
+bool
+Model::has_nl_param(bool recursive) const
+{
+  if (!recursive)
+    return !_nl_params.empty();
+
+  for (auto * submodel : registered_models())
+    if (submodel->has_nl_param(true))
+      return true;
+
+  return false;
+}
+
+const VariableBase *
+Model::nl_param(const std::string & name) const
+{
+  return _nl_params.count(name) ? _nl_params.at(name).value : nullptr;
+}
+
+std::map<std::string, NonlinearParameter>
+Model::named_nonlinear_parameters(bool recursive) const
+{
+  if (!recursive)
+    return _nl_params;
+
+  auto all_nl_params = _nl_params;
+
+  for (const auto & [pname, param] : _nl_params)
+    for (auto && [pname, nl_param] : param.provider->named_nonlinear_parameters(true))
+      all_nl_params[param.provider->name() + parameter_name_separator() + pname] = nl_param;
+
+  for (auto * submodel : registered_models())
+    for (auto && [pname, nl_param] : submodel->named_nonlinear_parameters(true))
+      all_nl_params[submodel->name() + parameter_name_separator() + pname] = nl_param;
+
+  return all_nl_params;
 }
 
 std::set<VariableName>

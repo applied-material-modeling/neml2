@@ -123,9 +123,15 @@ template class Option<TensorShape>;
 template class Option<std::vector<TensorShape>>;
 template class Option<std::vector<std::vector<TensorShape>>>;
 
-template class Option<TensorName>;
-template class Option<std::vector<TensorName>>;
-template class Option<std::vector<std::vector<TensorName>>>;
+template class Option<TensorName<ATensor>>;
+template class Option<std::vector<TensorName<ATensor>>>;
+template class Option<std::vector<std::vector<TensorName<ATensor>>>>;
+
+#define INSTANTIATE_TENSORNAME(T)                                                                  \
+  template class Option<TensorName<T>>;                                                            \
+  template class Option<std::vector<TensorName<T>>>;                                               \
+  template class Option<std::vector<std::vector<TensorName<T>>>>
+FOR_ALL_TENSORBASE(INSTANTIATE_TENSORNAME);
 
 template class Option<Device>;
 template class Option<std::vector<Device>>;

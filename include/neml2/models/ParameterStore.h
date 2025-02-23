@@ -26,7 +26,6 @@
 
 #include <memory>
 
-#include "neml2/base/OptionSet.h"
 #include "neml2/jit/types.h"
 
 namespace neml2
@@ -35,6 +34,7 @@ namespace neml2
 class NEML2Object;
 class VariableBase;
 class Model;
+template <typename T>
 struct TensorName;
 class TensorValueBase;
 template <typename T>
@@ -45,7 +45,7 @@ class Tensor;
 class ParameterStore
 {
 public:
-  ParameterStore(OptionSet options, NEML2Object * object);
+  ParameterStore(Model * object);
 
   ParameterStore(const ParameterStore &) = delete;
   ParameterStore(ParameterStore &&) = delete;
@@ -77,25 +77,6 @@ public:
   /// Set values for parameters
   void set_parameters(const std::map<std::string, Tensor> &);
 
-  /// Whether this parameter store has any nonlinear parameter
-  bool has_nl_param() const { return !_nl_params.empty(); }
-
-  /**
-   * @brief Query the existence of a nonlinear parameter
-   *
-   * @return const VariableBase* Pointer to the VariableBase if the parameter associated with the
-   * given parameter name is nonlinear. Returns nullptr otherwise.
-   */
-  const VariableBase * nl_param(const std::string &) const;
-
-  /// Get all nonlinear parameters
-  virtual std::map<std::string, const VariableBase *>
-  named_nonlinear_parameters(bool recursive = false) const;
-
-  /// Get all nonlinear parameters' models
-  virtual std::map<std::string, Model *>
-  named_nonlinear_parameter_models(bool recursive = false) const;
-
 protected:
   /**
    * @brief Send parameters to options
@@ -124,20 +105,18 @@ protected:
    * @brief Declare a parameter.
    *
    * Similar to the previous method, but additionally handles the resolution of cross-referenced
-   * parameters. Two attempts are made sequentially: first, the method tries to resolve
-   * `TensorName` into `T` directly; if that fails, the method tries to resolve `TensorName` into
-   * a nonlinear parameter where the raw string stored in the cross-ref is treated as the name of
-   * the model that defines the nonlinear parameter.
+   * tensor name.
    *
    * @tparam T Parameter type. See @ref statically-shaped-tensor for supported types.
    * @param name Name of the model parameter.
    * @param tensorname The cross-ref'ed "string" that defines the value of the model parameter.
-   * @param allow_nonlinear Whether allows coupling with a nonlinear parameter
+   * @param allow_nonlinear Whether allows variable coupling
    * @return T The value of the registered model parameter.
    */
   template <typename T, typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<T>, T>>>
-  const T &
-  declare_parameter(const std::string & name, const TensorName & tensorname, bool allow_nonlinear);
+  const T & declare_parameter(const std::string & name,
+                              const TensorName<T> & tensorname,
+                              bool allow_nonlinear);
 
   /**
    * @brief Declare a parameter.
@@ -149,7 +128,7 @@ protected:
    * @param name Name of the model parameter.
    * @param input_option_name Name of the input option that defines the value of the model
    * parameter.
-   * @param allow_nonlinear Whether allows coupling with a nonlinear parameter
+   * @param allow_nonlinear Whether allows variable coupling
    * @return T The value of the registered model parameter.
    */
   template <typename T, typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<T>, T>>>
@@ -163,22 +142,8 @@ protected:
   /// Collect stack from parameters
   jit::Stack collect_parameter_stack() const;
 
-  /// Map from nonlinear parameter names to their corresponding variable views
-  std::map<std::string, const VariableBase *> _nl_params;
-
-  /// Map from nonlinear parameter names to models which evaluate them
-  std::map<std::string, Model *> _nl_param_models;
-
 private:
-  NEML2Object * _object;
-
-  /**
-   * @brief Parsed input file options for this object.
-   *
-   * These options could be convenient when we look up a cross-referenced tensor value by its name.
-   *
-   */
-  const OptionSet _object_options;
+  Model * _object;
 
   /// The actual storage for all the parameters
   std::map<std::string, std::unique_ptr<TensorValueBase>> _param_values;

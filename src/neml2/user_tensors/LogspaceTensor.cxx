@@ -35,10 +35,10 @@ LogspaceTensor::expected_options()
   options.doc() = "Construct a Tensor with exponents linearly spaced on the batch dimensions. "
                   "See neml2::TensorBase::logspace for a detailed explanation.";
 
-  options.set<TensorName>("start");
+  options.set<TensorName<Tensor>>("start");
   options.set("start").doc() = "The starting tensor";
 
-  options.set<TensorName>("end");
+  options.set<TensorName<Tensor>>("end");
   options.set("end").doc() = "The ending tensor";
 
   options.set<Size>("nstep");
@@ -69,8 +69,8 @@ LogspaceTensor::LogspaceTensor(const OptionSet & options)
 Tensor
 LogspaceTensor::make(const OptionSet & options) const
 {
-  auto t = Tensor::logspace(Tensor(options.get<TensorName>("start")),
-                            Tensor(options.get<TensorName>("end")),
+  auto t = Tensor::logspace(options.get<TensorName<Tensor>>("start").resolve(),
+                            options.get<TensorName<Tensor>>("end").resolve(),
                             options.get<Size>("nstep"),
                             options.get<Size>("dim"));
 

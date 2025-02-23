@@ -30,6 +30,7 @@
 #include "neml2/models/Data.h"
 #include "neml2/models/ParameterStore.h"
 #include "neml2/models/VariableStore.h"
+#include "neml2/models/NonlinearParameter.h"
 #include "neml2/solvers/NonlinearSystem.h"
 
 // These headers are not directly used by Model, but are included here so that derived classes do
@@ -134,6 +135,24 @@ public:
   const std::vector<Model *> & registered_models() const { return _registered_models; }
   /// Get a registered model by its name
   Model * registered_model(const std::string & name) const;
+
+  /// Register a nonlinear parameter
+  void register_nonlinear_parameter(const std::string & pname, const NonlinearParameter & param);
+
+  /// Whether this parameter store has any nonlinear parameter
+  bool has_nl_param(bool recursive = false) const;
+
+  /**
+   * @brief Query the existence of a nonlinear parameter
+   *
+   * @return const VariableBase* Pointer to the VariableBase if the parameter associated with the
+   * given parameter name is nonlinear. Returns nullptr otherwise.
+   */
+  const VariableBase * nl_param(const std::string &) const;
+
+  /// Get all nonlinear parameters
+  virtual std::map<std::string, NonlinearParameter>
+  named_nonlinear_parameters(bool recursive = false) const;
 
   /// The variables that this model depends on
   std::set<VariableName> consumed_items() const override;
@@ -243,14 +262,17 @@ protected:
   T & register_model(const std::string & name, bool nonlinear = false, bool merge_input = true)
   {
     if (name == this->name())
-      throw NEMLException("Model named '" + this->name() +
-                          "' is trying to register itself as a sub-model. This is not allowed.");
+      throw SetupException("Model named '" + this->name() +
+                           "' is trying to register itself as a sub-model. This is not allowed.");
 
     OptionSet extra_opts;
     extra_opts.set<NEML2Object *>("_host") = host();
     extra_opts.set<bool>("_nonlinear_system") = nonlinear;
 
     auto model = Factory::get_object_ptr<T>("Models", name, extra_opts);
+    if (std::find(_registered_models.begin(), _registered_models.end(), model.get()) !=
+        _registered_models.end())
+      throw SetupException("Model named '" + name + "' has already been registered.");
 
     if (merge_input)
       for (auto && [name, var] : model->input_variables())
@@ -297,6 +319,9 @@ private:
 
   /// Whether this is a nonlinear system
   bool _nonlinear_system;
+
+  /// Parameters whose values are provided by another model
+  std::map<std::string, NonlinearParameter> _nl_params;
 
   ///@{
   /// The variables that are requested to be differentiated

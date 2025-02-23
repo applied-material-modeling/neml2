@@ -68,13 +68,13 @@ TwoStageThermalAnnealing<T>::expected_options()
   options.set_input("temperature") = VariableName(FORCES, "T");
   options.set("temperature").doc() = "Temperature";
 
-  options.set_parameter<TensorName>("T1");
+  options.set_parameter<TensorName<Scalar>>("T1");
   options.set("T1").doc() = "First stage annealing temperature";
 
-  options.set_parameter<TensorName>("T2");
+  options.set_parameter<TensorName<Scalar>>("T2");
   options.set("T2").doc() = "Second stage annealing temperature";
 
-  options.set_parameter<TensorName>("tau");
+  options.set_parameter<TensorName<Scalar>>("tau");
   options.set("tau").doc() = "Recovery rate for second stage annealing.";
 
   return options;

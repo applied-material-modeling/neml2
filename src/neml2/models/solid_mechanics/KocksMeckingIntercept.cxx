@@ -33,29 +33,33 @@ register_NEML2_object(KocksMeckingIntercept);
 OptionSet
 KocksMeckingIntercept::expected_options()
 {
-  OptionSet options = NonlinearParameter<Scalar>::expected_options();
+  OptionSet options = Model::expected_options();
   options.doc() = "The critical value of the normalized activation energy given by \\f$ g_0 "
                   "\\frac{C-B}{A} \\f$";
 
   options.set<bool>("define_second_derivatives") = true;
 
-  options.set_parameter<TensorName>("A");
+  options.set_parameter<TensorName<Scalar>>("A");
   options.set("A").doc() = "The Kocks-Mecking slope";
 
-  options.set_parameter<TensorName>("B");
+  options.set_parameter<TensorName<Scalar>>("B");
   options.set("B").doc() = "The Kocks-Mecking intercept";
 
-  options.set_parameter<TensorName>("C");
+  options.set_parameter<TensorName<Scalar>>("C");
   options.set("C").doc() = "The Kocks-Mecking horizontal value";
+
+  options.set_output("intercept");
+  options.set("intercept").doc() = "The intercept";
 
   return options;
 }
 
 KocksMeckingIntercept::KocksMeckingIntercept(const OptionSet & options)
-  : NonlinearParameter<Scalar>(options),
+  : Model(options),
     _A(declare_parameter<Scalar>("A", "A", true)),
     _B(declare_parameter<Scalar>("B", "B", true)),
-    _C(declare_parameter<Scalar>("C", "C", true))
+    _C(declare_parameter<Scalar>("C", "C", true)),
+    _b(declare_output_variable<Scalar>(VariableName(PARAMETERS, name())))
 {
 }
 
@@ -63,38 +67,38 @@ void
 KocksMeckingIntercept::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   if (out)
-    _p = (_C - _B) / _A;
+    _b = (_C - _B) / _A;
 
   if (dout_din)
   {
     if (const auto * const A = nl_param("A"))
-      _p.d(*A) = -(_C - _B) / pow(_A, 2.0);
+      _b.d(*A) = -(_C - _B) / pow(_A, 2.0);
 
     if (const auto * const B = nl_param("B"))
-      _p.d(*B) = -1.0 / _A;
+      _b.d(*B) = -1.0 / _A;
 
     if (const auto * const C = nl_param("C"))
-      _p.d(*C) = 1.0 / _A;
+      _b.d(*C) = 1.0 / _A;
   }
 
   if (d2out_din2)
   {
     if (const auto * const A = nl_param("A"))
     {
-      _p.d(*A, *A) = 2.0 * (_C - _B) / pow(_A, 3.0);
+      _b.d(*A, *A) = 2.0 * (_C - _B) / pow(_A, 3.0);
       if (const auto * const B = nl_param("B"))
-        _p.d(*A, *B) = 1.0 / pow(_A, 2.0);
+        _b.d(*A, *B) = 1.0 / pow(_A, 2.0);
       if (const auto * const C = nl_param("C"))
-        _p.d(*A, *C) = -1.0 / pow(_A, 2.0);
+        _b.d(*A, *C) = -1.0 / pow(_A, 2.0);
     }
 
     if (const auto * const B = nl_param("B"))
       if (const auto * const A = nl_param("A"))
-        _p.d(*B, *A) = 1.0 / pow(_A, 2.0);
+        _b.d(*B, *A) = 1.0 / pow(_A, 2.0);
 
     if (const auto * const C = nl_param("C"))
       if (const auto * const A = nl_param("A"))
-        _p.d(*C, *A) = -1.0 / pow(_A, 2.0);
+        _b.d(*C, *A) = -1.0 / pow(_A, 2.0);
   }
 }
 } // namespace neml2

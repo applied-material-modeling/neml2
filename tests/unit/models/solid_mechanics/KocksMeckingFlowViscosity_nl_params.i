@@ -2,7 +2,7 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'forces/T params/A params/B params/mu'
+    input_Scalar_names = 'forces/T state/A state/B state/mu'
     input_Scalar_values = '1000 A_in B_in mu_in'
     output_Scalar_names = 'parameters/p'
     output_Scalar_values = 'p_correct'
@@ -13,23 +13,11 @@
 []
 
 [Models]
-  [mu]
-    type = ScalarInputParameter
-    from = 'params/mu'
-  []
-  [A]
-    type = ScalarInputParameter
-    from = 'params/A'
-  []
-  [B]
-    type = ScalarInputParameter
-    from = 'params/B'
-  []
   [p]
     type = KocksMeckingFlowViscosity
-    shear_modulus = 'mu'
-    A = 'A'
-    B = 'B'
+    shear_modulus = 'state/mu'
+    A = 'state/A'
+    B = 'state/B'
     eps0 = 1e10
     k = 1.38064e-20
     b = 2.019e-7

@@ -2,7 +2,7 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/internal/gamma_rate params/C params/g params/A params/a'
+    input_Scalar_names = 'state/internal/gamma_rate state/C state/g state/A state/a'
     input_Scalar_values = '0.01 1000.0 10.0 1.0e-6 2.1'
     input_SR2_names = 'state/internal/NM state/internal/X'
     input_SR2_values = 'NM X'
@@ -28,28 +28,12 @@
 []
 
 [Models]
-  [C]
-    type = ScalarInputParameter
-    from = 'params/C'
-  []
-  [g]
-    type = ScalarInputParameter
-    from = 'params/g'
-  []
-  [A]
-    type = ScalarInputParameter
-    from = 'params/A'
-  []
-  [a]
-    type = ScalarInputParameter
-    from = 'params/a'
-  []
   [model0]
     type = ChabochePlasticHardening
-    C = 'C'
-    g = 'g'
-    A = 'A'
-    a = 'a'
+    C = 'state/C'
+    g = 'state/g'
+    A = 'state/A'
+    a = 'state/a'
   []
   [model]
     type = ComposedModel

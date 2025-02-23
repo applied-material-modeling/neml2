@@ -36,11 +36,8 @@ public:
 
   ComposedModel(const OptionSet & options);
 
-  std::map<std::string, const VariableBase *>
+  std::map<std::string, NonlinearParameter>
   named_nonlinear_parameters(bool recursive = false) const override;
-
-  std::map<std::string, Model *>
-  named_nonlinear_parameter_models(bool recursive = false) const override;
 
   bool defines_values() const override { return _defines_value; }
   bool defines_derivatives() const override { return _defines_dvalue; }

@@ -85,6 +85,9 @@ public:
    */
   static void load_options(const OptionCollection & all_options);
 
+  /// Check if an object with the given name exists under the given section.
+  static bool has_object(const std::string & section, const std::string & name);
+
   /**
    * @brief Retrive an object pointer under the given section with the given object name.
    *
@@ -188,7 +191,7 @@ Factory::get_object_ptr(const std::string & section,
         // Check for object type
         auto obj = std::dynamic_pointer_cast<T>(neml2_obj);
         if (!obj)
-          throw NEMLException(
+          throw FactoryException(
               "Found object named " + name + " under section " + section +
               ". But dynamic cast failed. Did you specify the correct object type?");
 
@@ -206,12 +209,12 @@ Factory::get_object_ptr(const std::string & section,
     }
 
   if (!factory._objects.count(section) || !factory._objects.at(section).count(name))
-    throw NEMLException("Failed to get object named " + name + " under section " + section);
+    throw FactoryException("Failed to get object named " + name + " under section " + section);
 
   auto obj = std::dynamic_pointer_cast<T>(factory._objects[section][name].back());
 
   if (!obj)
-    throw NEMLException("Internal error: Factory failed to create object " + name);
+    throw FactoryException("Internal error: Factory failed to create object " + name);
 
   return obj;
 }

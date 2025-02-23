@@ -25,17 +25,23 @@
 #pragma once
 
 #include "neml2/misc/types.h"
-#include "neml2/tensors/tensors_fwd.h"
+#include "neml2/tensors/tensors.h"
 
 namespace neml2
 {
+class Model;
+
 /**
  * @brief The name of a tensor object that can be referenced in the input files.
  *
  * All tokens in the input files are essentially strings, and it is not always possible to represent
- * all quantities as strings. This enables cross-referencing tensor objects. The object _name_ is
- * used as the label, and the object value is not resolved at runtime.
+ * all quantities as strings. This class enables cross-referencing tensor or model output variable
+ * (by name) defined in the input file. The object _name_ is used as the label, and the object value
+ * is not resolved at parse time. The method TensorName::resolve() is used to explicitly resolve the
+ * name to a tensor object or a model's output variable. Note that the resolution takes place upon
+ * the first call to TensorName::resolve(), and subsequent calls simply return the cached value.
  */
+template <typename T>
 struct TensorName
 {
 public:
@@ -51,21 +57,20 @@ public:
    *
    * This simply assigns the string without parsing and resolving the cross-reference
    */
-  TensorName & operator=(const std::string & other);
+  TensorName & operator=(const std::string & other)
+  {
+    _raw_str = other;
+    return *this;
+  }
 
   /**
-   * @brief Explicit conversion operator.
+   * @brief Resolve the TensorName to a Tensor object
    *
    * The underlying string is parsed and used to resolve the cross-reference. It is assumed that the
    * cross-referenced tensor object has already been manufactured at this point.
    */
-  ///@{
-  explicit operator ATensor() const;
-  explicit operator Tensor() const;
-#define DECL_CONVERSION(T) explicit operator T() const
-  FOR_ALL_PRIMITIVETENSOR(DECL_CONVERSION);
-#undef DECL_CONVERSION
-  ///@}
+  const T & resolve() const;
+  const T & resolve(Model * caller, const std::string & pname) const;
 
   /// Test equality
   bool operator==(const TensorName & other) const { return _raw_str == other.raw(); }
@@ -75,18 +80,38 @@ public:
    *
    * @return const std::string& The raw string literal.
    */
+  std::string & raw() { return _raw_str; }
   const std::string & raw() const { return _raw_str; }
 
-  friend std::stringstream & operator>>(std::stringstream & in, TensorName &);
-
 private:
+  /// Resolve a plain numeric literal
+  T resolve_number(Real val) const;
+
   /// The raw string literal.
   std::string _raw_str;
+
+  /// The resolved tensor value
+  mutable T _value;
+
+  /// The tensor or variable referred to by the name
+  mutable const T * _tensor = nullptr;
 };
 
 /// Stream into a TensorName (used by Parsers to extract input options)
-std::stringstream & operator>>(std::stringstream &, TensorName &);
+template <typename T>
+std::stringstream &
+operator>>(std::stringstream & ss, TensorName<T> & t)
+{
+  ss >> t.raw();
+  return ss;
+}
 
 /// Stream out a TensorName (used for printing OptionSet)
-std::ostream & operator<<(std::ostream & os, const TensorName &);
+template <typename T>
+std::ostream &
+operator<<(std::ostream & os, const TensorName<T> & t)
+{
+  os << t.raw();
+  return os;
+}
 } // namespace neml2

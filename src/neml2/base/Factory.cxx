@@ -41,7 +41,7 @@ load_input(const std::filesystem::path & path, const std::string & additional_in
     oc = parser.parse(path, additional_input);
   }
   else
-    throw NEMLException("Unsupported parser type");
+    throw ParserException("Unsupported parser type");
 
   Factory::load_options(oc);
 }
@@ -95,6 +95,13 @@ Factory::settings()
   return settings_singleton;
 }
 
+bool
+Factory::has_object(const std::string & section, const std::string & name)
+{
+  auto & factory = get();
+  return factory._objects.count(section) && factory._objects.at(section).count(name);
+}
+
 void
 Factory::load_options(const OptionCollection & all_options)
 {
@@ -119,8 +126,8 @@ Factory::create_object(const std::string & section, const OptionSet & options)
   }
   catch (const std::exception & e)
   {
-    throw NEMLException("Failed to setup object '" + name + "' of type '" + type +
-                        "' in section '" + section + "':\n" + e.what());
+    throw FactoryException("Failed to setup object '" + name + "' of type '" + type +
+                           "' in section '" + section + "':\n" + e.what());
   }
 }
 

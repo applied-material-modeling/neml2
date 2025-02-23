@@ -37,12 +37,12 @@ SDTSolidMechanicsDriver::expected_options()
 
   options.set<VariableName>("strain") = VariableName(FORCES, "E");
   options.set("strain").doc() = "Name of the strain used to drive the update";
-  options.set<TensorName>("prescribed_strain");
+  options.set<TensorName<SR2>>("prescribed_strain");
   options.set("prescribed_strain").doc() = "Prescribed strain (when control = STRAIN)";
 
   options.set<VariableName>("stress") = VariableName(FORCES, "S");
   options.set("stress").doc() = "Name of the stress used to drive the update";
-  options.set<TensorName>("prescribed_stress");
+  options.set<TensorName<SR2>>("prescribed_stress");
   options.set("prescribed_stress").doc() = "Prescribed stress (when control = STRESS)";
 
   return options;
@@ -57,7 +57,7 @@ void
 SDTSolidMechanicsDriver::init_strain_control(const OptionSet & options)
 {
   _driving_force_name = options.get<VariableName>("strain");
-  _driving_force = SR2(options.get<TensorName>("prescribed_strain"));
+  _driving_force = options.get<TensorName<SR2>>("prescribed_strain").resolve();
   _driving_force = _driving_force.to(_device);
 }
 
@@ -65,7 +65,7 @@ void
 SDTSolidMechanicsDriver::init_stress_control(const OptionSet & options)
 {
   _driving_force_name = options.get<VariableName>("stress");
-  _driving_force = SR2(options.get<TensorName>("prescribed_stress"));
+  _driving_force = options.get<TensorName<SR2>>("prescribed_stress").resolve();
   _driving_force = _driving_force.to(_device);
 }
 } // namespace neml2

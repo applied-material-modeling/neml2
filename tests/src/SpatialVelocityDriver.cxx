@@ -40,7 +40,7 @@ SpatialVelocityDriver::expected_options()
   options.set<VariableName>("spatial_velocity_gradient") =
       VariableName(FORCES, "spatial_velocity_gradient");
   options.set("spatial_velocity_gradient").doc() = "Spatial velocity gradient";
-  options.set<TensorName>("prescribed_spatial_velocity_gradient");
+  options.set<TensorName<R2>>("prescribed_spatial_velocity_gradient");
   options.set("prescribed_spatial_velocity_gradient").doc() =
       "Prescribed spatial velocity gradient";
 
@@ -50,7 +50,7 @@ SpatialVelocityDriver::expected_options()
 SpatialVelocityDriver::SpatialVelocityDriver(const OptionSet & options)
   : TransientDriver(options),
     _driving_force_name(options.get<VariableName>("spatial_velocity_gradient")),
-    _driving_force(R2(options.get<TensorName>("prescribed_spatial_velocity_gradient")))
+    _driving_force(options.get<TensorName<R2>>("prescribed_spatial_velocity_gradient").resolve())
 {
 }
 

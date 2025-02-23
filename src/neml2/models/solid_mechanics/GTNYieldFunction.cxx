@@ -48,17 +48,17 @@ GTNYieldFunction::expected_options()
 
   options.set<bool>("define_second_derivatives") = true;
 
-  options.set_parameter<TensorName>("yield_stress");
+  options.set_parameter<TensorName<Scalar>>("yield_stress");
   options.set("yield_stress").doc() = "Yield stress";
 
-  options.set_parameter<TensorName>("q1");
+  options.set_parameter<TensorName<Scalar>>("q1");
   options.set("q1").doc() =
       "Parameter controlling the balance/competition between plastic flow and void evolution.";
 
-  options.set_parameter<TensorName>("q2");
+  options.set_parameter<TensorName<Scalar>>("q2");
   options.set("q2").doc() = "Void evolution rate";
 
-  options.set_parameter<TensorName>("q3");
+  options.set_parameter<TensorName<Scalar>>("q3");
   options.set("q3").doc() = "Pore pressure";
 
   options.set_input("flow_invariant") = VariableName(STATE, "internal", "se");
@@ -120,7 +120,7 @@ GTNYieldFunction::set_value(bool out, bool dout_din, bool d2out_din2)
       _f.d(*_h) = -2 * pow(Scalar(_se), 2.0) / pow(sf, 3.0) -
                   _q1 * _phi * _q2 * _sp / pow(sf, 2.0) * sinh(_q2 / 2.0 * _sp / sf);
 
-    // Handle the case of nonlinear parameters
+    // Handle the case of variable coupling
     if (const auto * const sy = nl_param("sy"))
       _f.d(*sy) = -2 * pow(Scalar(_se), 2.0) / pow(sf, 3.0) -
                   _q1 * _phi * _q2 * _sp / pow(sf, 2.0) * sinh(_q2 / 2.0 * _sp / sf);

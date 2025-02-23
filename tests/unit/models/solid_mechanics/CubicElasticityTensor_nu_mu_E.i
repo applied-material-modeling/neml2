@@ -2,7 +2,7 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'params/E params/nu params/mu'
+    input_Scalar_names = 'state/E state/nu state/mu'
     input_Scalar_values = '100000.0 0.3 60000.0'
     output_SSR4_names = 'parameters/p'
     output_SSR4_values = 'p_correct'
@@ -20,22 +20,10 @@
 []
 
 [Models]
-  [E]
-    type = ScalarInputParameter
-    from = 'params/E'
-  []
-  [nu]
-    type = ScalarInputParameter
-    from = 'params/nu'
-  []
-  [mu]
-    type = ScalarInputParameter
-    from = 'params/mu'
-  []
   [p]
     type = CubicElasticityTensor
     coefficient_types = 'POISSONS_RATIO SHEAR_MODULUS YOUNGS_MODULUS'
-    coefficients = 'nu mu E'
+    coefficients = 'state/nu state/mu state/E'
   []
   [model]
     type = ComposedModel

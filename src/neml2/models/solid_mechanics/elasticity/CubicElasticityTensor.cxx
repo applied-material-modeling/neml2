@@ -32,7 +32,7 @@ register_NEML2_object(CubicElasticityTensor);
 OptionSet
 CubicElasticityTensor::expected_options()
 {
-  OptionSet options = ElasticityInterface<NonlinearParameter<SSR4>, 3>::expected_options();
+  OptionSet options = ElasticityInterface<Model, 3>::expected_options();
   options.doc() = "This class defines a cubic anisotropic elasticity tensor using three parameters."
                   "  Various options are available for which three parameters to provide.";
 
@@ -40,8 +40,9 @@ CubicElasticityTensor::expected_options()
 }
 
 CubicElasticityTensor::CubicElasticityTensor(const OptionSet & options)
-  : ElasticityInterface<NonlinearParameter<SSR4>, 3>(options),
-    _converter(_constant_types, _need_derivs)
+  : ElasticityInterface<Model, 3>(options),
+    _converter(_constant_types, _need_derivs),
+    _C(declare_output_variable<SSR4>(VariableName(PARAMETERS, name())))
 {
 }
 
@@ -58,18 +59,18 @@ CubicElasticityTensor::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
   const auto I3 = SSR4::identity_C3(C3.options());
 
   if (out)
-    _p = C1 * I1 + C2 * I2 + C3 * I3;
+    _C = C1 * I1 + C2 * I2 + C3 * I3;
 
   if (dout_din)
   {
     if (const auto * const p1 = nl_param(neml2::name(_constant_types[0])))
-      _p.d(*p1) = dC1[0] * I1 + dC2[0] * I2 + dC3[0] * I3;
+      _C.d(*p1) = dC1[0] * I1 + dC2[0] * I2 + dC3[0] * I3;
 
     if (const auto * const p2 = nl_param(neml2::name(_constant_types[1])))
-      _p.d(*p2) = dC1[1] * I1 + dC2[1] * I2 + dC3[1] * I3;
+      _C.d(*p2) = dC1[1] * I1 + dC2[1] * I2 + dC3[1] * I3;
 
     if (const auto * const p3 = nl_param(neml2::name(_constant_types[2])))
-      _p.d(*p3) = dC1[2] * I1 + dC2[2] * I2 + dC3[2] * I3;
+      _C.d(*p3) = dC1[2] * I1 + dC2[2] * I2 + dC3[2] * I3;
   }
 }
 

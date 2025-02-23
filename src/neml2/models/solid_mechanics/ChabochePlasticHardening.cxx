@@ -43,10 +43,10 @@ ChabochePlasticHardening::expected_options()
       "recovery, and static recovery.  \\f$ A \\f$ and \\f$ a \\f$ are additional material "
       "parameters.";
 
-  options.set_parameter<TensorName>("A");
+  options.set_parameter<TensorName<Scalar>>("A");
   options.set("A").doc() = "Static recovery prefactor";
 
-  options.set_parameter<TensorName>("a");
+  options.set_parameter<TensorName<Scalar>>("a");
   options.set("a").doc() = "Static recovery exponent";
 
   return options;
