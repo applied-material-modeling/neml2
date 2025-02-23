@@ -34,6 +34,16 @@ using namespace neml2;
 
 TEST_CASE("Model", "[models]")
 {
+  SECTION("get_model")
+  {
+    reload_input("models/ComposedModel5.i");
+    auto & model1 = get_model("model");
+    auto & model2 = get_model("model");
+    auto & model3 = get_model("model");
+    REQUIRE(&model1 == &model2);
+    REQUIRE(&model2 == &model3);
+  }
+
   SECTION("variable type")
   {
     auto & model = reload_model("models/ComposedModel3.i", "model");

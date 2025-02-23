@@ -326,8 +326,11 @@ TransientDriver::solve_step()
 
     ValueMapLoader loader(_in, 0);
     WorkDispatcher<ValueMap, ValueMap, ValueMap, ValueMap, ValueMap> dispatcher(
-        [&model = _model](ValueMap && x, Device device) -> ValueMap
+        *_scheduler,
+        _async_dispatch,
+        [&](ValueMap && x, Device device) -> ValueMap
         {
+          auto & model = get_model(_model.name());
           model.to(device);
           return model.value(std::move(x));
         },
@@ -335,7 +338,7 @@ TransientDriver::solve_step()
         &valuemap_move_device,
         post);
 
-    _result_out[_step_count] = dispatcher.run(loader, *_scheduler);
+    _result_out[_step_count] = dispatcher.run(loader);
     return;
   }
 #endif

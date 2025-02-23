@@ -57,9 +57,9 @@ TEST_CASE("Factory", "[base]")
     REQUIRE(summodel.output_axis().subaxis(STATE).subaxis("outsub").has_variable("C"));
   }
 
-  SECTION("loaded_options")
+  SECTION("options")
   {
-    const auto & all_opts = Factory::loaded_options();
+    const auto & all_opts = Factory::options();
     const auto & opts = all_opts["Models"].at("example");
     REQUIRE(opts.contains("from_var"));
     REQUIRE(opts.contains("to_var"));

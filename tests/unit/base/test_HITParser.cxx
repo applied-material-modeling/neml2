@@ -154,6 +154,17 @@ TEST_CASE("HITParser", "[base]")
         REQUIRE(shape_vec_vec[1][1] == TensorShape{1});
         REQUIRE(shape_vec_vec[1][2] == TensorShape{22});
       }
+
+      SECTION("Devices")
+      {
+        REQUIRE(options.get<Device>("device") == Device("cpu"));
+        REQUIRE(options.get<std::vector<Device>>("device_vec") ==
+                std::vector<Device>{Device("cpu"), Device("cuda:0"), Device("cuda:1")});
+        REQUIRE(options.get<std::vector<std::vector<Device>>>("device_vec_vec") ==
+                std::vector<std::vector<Device>>{{Device("cpu"), Device("cuda:0")},
+                                                 {Device("cuda")},
+                                                 {Device("cuda:2"), Device("cpu")}});
+      }
     }
 
     SECTION("error")

@@ -47,7 +47,7 @@ Option<Device>::Option(const std::string & name)
   : _value(default_device())
 {
   _metadata.name = name;
-  _metadata.type = "Device";
+  _metadata.type = utils::demangle(typeid(Device).name());
 }
 
 template <typename T>

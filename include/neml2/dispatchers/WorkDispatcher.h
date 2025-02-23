@@ -26,6 +26,10 @@
 
 #include <functional>
 #include <future>
+#include <thread>
+#include <queue>
+#include <mutex>
+#include <condition_variable>
 
 #include "neml2/dispatchers/WorkGenerator.h"
 #include "neml2/dispatchers/WorkScheduler.h"
@@ -53,8 +57,7 @@ namespace neml2
  * general, each work dispatch involves four steps:
  * 1. Work generation: The work generator generates the next \p n batches of work.
  * 2. Preprocessing: The dispatcher preprocesses the work.
- * 3. Do work: The dispatcher dispatches the work to a worker, and the worker completes and returns
- *    the result.
+ * 3. Do work: The worker performs the work.
  * 4. Postprocessing: The dispatcher postprocesses the result.
  *
  * Once all the work has been completed and results have been collected, the dispatcher reduces the
@@ -74,41 +77,71 @@ template <typename I,
 class WorkDispatcher
 {
 public:
-  WorkDispatcher(std::function<O(I &&, Device)> && dispatch)
-    : _dispatch(std::move(dispatch))
+  WorkDispatcher(WorkScheduler & scheduler, bool async, std::function<O(I &&, Device)> && do_work)
+    : _scheduler(scheduler),
+      _async(async),
+      _do_work(std::move(do_work))
   {
+    init_thread_pool();
   }
 
-  WorkDispatcher(std::function<O(I &&, Device)> && dispatch,
+  WorkDispatcher(WorkScheduler & scheduler,
+                 bool async,
+                 std::function<O(I &&, Device)> && do_work,
                  std::function<O(std::vector<O> &&)> && reduce)
-    : _dispatch(std::move(dispatch)),
+    : _scheduler(scheduler),
+      _async(async),
+      _do_work(std::move(do_work)),
       _reduce(std::move(reduce))
   {
+    init_thread_pool();
   }
 
-  WorkDispatcher(std::function<O(I &&, Device)> && dispatch,
+  WorkDispatcher(WorkScheduler & scheduler,
+                 bool async,
+                 std::function<O(I &&, Device)> && do_work,
                  std::function<Of(std::vector<Op> &&)> && reduce,
                  std::function<I(Ip &&, Device)> && preprocess,
                  std::function<Op(O &&)> && postprocess)
-    : _dispatch(std::move(dispatch)),
+    : _scheduler(scheduler),
+      _async(async),
+      _do_work(std::move(do_work)),
       _reduce(std::move(reduce)),
       _preprocess(std::move(preprocess)),
       _postprocess(std::move(postprocess))
   {
+    init_thread_pool();
   }
 
-  /// Run the dispatching loop
-  Of run(WorkGenerator<Ip> &, WorkScheduler &) const;
+  ~WorkDispatcher() { stop_thread_pool(); }
 
-  /// Run the dispatching loop asynchronously
-  Of run_async(WorkGenerator<Ip> &, WorkScheduler &) const;
+  /// Run the dispatching loop (calls run_sync or run_async based on the async flag)
+  Of run(WorkGenerator<Ip> &);
 
 protected:
+  /// Initialize the thread pool
+  void init_thread_pool();
+
+  /// Stop the thread pool
+  void stop_thread_pool();
+
   /// Helper function to validate that the dispatcher is properly configured
   void validate() const;
 
-  /// Function to dispatch preprocessed work to the worker and retrieve the result
-  std::function<O(Ip &&, Device)> _dispatch;
+  /// Run the dispatching loop synchronously
+  Of run_sync(WorkGenerator<Ip> &);
+
+  /// Run the dispatching loop asynchronously
+  Of run_async(WorkGenerator<Ip> &);
+
+  /// Reference to the work scheduler
+  WorkScheduler & _scheduler;
+
+  /// Flag to enable asynchronous execution
+  const bool _async;
+
+  /// Function to perform the work and return the result
+  std::function<O(I &&, Device)> _do_work;
 
   /// Function to reduce the results
   std::function<Of(std::vector<Op> &&)> _reduce;
@@ -118,6 +151,28 @@ protected:
 
   /// Function to postprocess the result
   std::function<Op(O &&)> _postprocess;
+
+  /// Results to be reduced
+  std::vector<Op> _results;
+
+  ///@{
+  /// Mutex for the main thread
+  std::mutex _mutex;
+  /// Condition variable for waiting all tasks to complete
+  std::condition_variable _completion_condition;
+  /// Thread pool for asynchronous execution
+  /// TODO: We are currently assuming each thread is responsible for one device. This may not be
+  /// true/optimal in the future.
+  std::vector<std::thread> _thread_pool;
+  /// Tasks queue for the thread pool
+  std::queue<std::function<void()>> _tasks;
+  /// Mutex for the tasks queue
+  std::mutex _qmutex;
+  /// Condition variable for the tasks queue
+  std::condition_variable _thread_condition;
+  /// Flag to stop the thread pool
+  bool _stop = false;
+  ///@}
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -126,10 +181,63 @@ protected:
 
 template <typename I, typename O, typename Of, typename Ip, typename Op>
 void
+WorkDispatcher<I, O, Of, Ip, Op>::init_thread_pool()
+{
+  if (!_async)
+    return;
+
+  auto nthread = _scheduler.devices().size();
+  _thread_pool.reserve(nthread);
+  for (std::size_t i = 0; i < nthread; ++i)
+    _thread_pool.emplace_back(
+        [&]
+        {
+          while (true)
+          {
+            std::function<void()> task;
+            {
+              std::unique_lock<std::mutex> lock(_qmutex);
+              _thread_condition.wait(lock, [this] { return _stop || !_tasks.empty(); });
+              if (_stop && _tasks.empty())
+                break;
+              task = std::move(_tasks.front());
+              _tasks.pop();
+            }
+            task();
+          }
+        });
+}
+
+template <typename I, typename O, typename Of, typename Ip, typename Op>
+void
+WorkDispatcher<I, O, Of, Ip, Op>::stop_thread_pool()
+{
+  if (!_async)
+    return;
+  {
+    std::unique_lock<std::mutex> lock(_qmutex);
+    _stop = true;
+  }
+  _thread_condition.notify_all();
+  for (auto & thread : _thread_pool)
+    thread.join();
+}
+
+template <typename I, typename O, typename Of, typename Ip, typename Op>
+Of
+WorkDispatcher<I, O, Of, Ip, Op>::run(WorkGenerator<Ip> & generator)
+{
+  if (_async)
+    return run_async(generator);
+  return run_sync(generator);
+}
+
+template <typename I, typename O, typename Of, typename Ip, typename Op>
+void
 WorkDispatcher<I, O, Of, Ip, Op>::validate() const
 {
-  if (!_dispatch)
-    throw NEMLException("Dispatch function is not set");
+  if (!_do_work)
+    throw NEMLException("Do-work function is not set");
 
   if constexpr (!std::is_same_v<I, Ip>)
     if (!_preprocess)
@@ -146,122 +254,99 @@ WorkDispatcher<I, O, Of, Ip, Op>::validate() const
 
 template <typename I, typename O, typename Of, typename Ip, typename Op>
 Of
-WorkDispatcher<I, O, Of, Ip, Op>::run(WorkGenerator<Ip> & generator,
-                                      WorkScheduler & scheduler) const
+WorkDispatcher<I, O, Of, Ip, Op>::run_sync(WorkGenerator<Ip> & generator)
 {
   validate();
 
   Device device = kCPU;
   std::size_t n = 0;
-  std::vector<Op> results;
+  _results.clear();
   while (generator.has_more())
   {
-    // Wait until the worker is available
-    while (!scheduler.schedule_work(device, n))
-      // TODO: In theory this could hang if the worker pool is overloaded and no work is completed.
-      // We may want to add a timeout here.
-      continue;
-
+    _scheduler.schedule_work(device, n);
     if (n <= 0)
       throw NEMLException("Scheduler returned a batch size of " + std::to_string(n));
-
-    // Generate and preprocess work
+    // Generate work
     auto && [m, work] = generator.next(n);
+    // Preprocess
     if (_preprocess)
       work = _preprocess(std::move(work), device);
-
-    // Dispatch
-    auto result = _dispatch(std::move(work), device);
-
-    // Tell the scheduler that we have dispatched m batches. Since there is no asynchronous
-    // execution, we also immediately tell the scheduler that we have completed m batches
-    scheduler.dispatched_work(device, m);
-    scheduler.completed_work(device, m);
-
+    // Do work. Since there is no asynchronous execution, we do not notify the scheduler (this also
+    // avoids potential parallel communication inccured by the scheduler)
+    auto result = _do_work(std::move(work), device);
     // Postprocess
     if (_postprocess)
       result = _postprocess(std::move(result));
-
-    results.push_back(result);
+    _results.push_back(result);
   }
 
   if (_reduce)
-    return _reduce(std::move(results));
+    return _reduce(std::move(_results));
 
   if constexpr (std::is_same<Of, std::vector<Op>>::value)
-    return results;
+    return _results;
 
   throw NEMLException("Internal error: unreachable code");
 }
 
 template <typename I, typename O, typename Of, typename Ip, typename Op>
 Of
-WorkDispatcher<I, O, Of, Ip, Op>::run_async(WorkGenerator<Ip> & generator,
-                                            WorkScheduler & scheduler) const
+WorkDispatcher<I, O, Of, Ip, Op>::run_async(WorkGenerator<Ip> & generator)
 {
   validate();
 
   Device device = kCPU;
   std::size_t n = 0;
-  using FutureResult = std::tuple<std::size_t, Device, std::size_t, std::future<O>>;
-  std::vector<FutureResult> future_results;
-  std::vector<Op> results;
+  _results.clear();
+
+  // Keep asking the scheduler for an available device
+  // - If the generator has no more work, we break out of the loop
+  // - If the scheduler schedules work, we dispatch the work and continue with the dispatching loop
   while (generator.has_more())
   {
-    // Wait until the worker is available
-    while (!scheduler.schedule_work(device, n))
-    {
-      // Check if any of the dispatched work has completed
-      for (auto it = future_results.begin(); it != future_results.end();)
-      {
-        auto && [idx, device, m, future] = *it;
-        if (future.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
-        {
-          auto result = future.get();
-          if (_postprocess)
-            result = _postprocess(std::move(result));
-          results[idx] = result;
-          scheduler.completed_work(device, m);
-          it = future_results.erase(it);
-        }
-        else
-          ++it;
-      }
-    }
-
+    _scheduler.schedule_work(device, n);
     if (n <= 0)
       throw NEMLException("Scheduler returned a batch size of " + std::to_string(n));
-
-    // Generate and preprocess work
+    // Generate work
     auto && [m, work] = generator.next(n);
-    if (_preprocess)
-      work = _preprocess(std::move(work), device);
-
-    // Dispatch
-    auto result = std::async(std::launch::async, _dispatch, std::move(work), device);
-    future_results.emplace_back(results.size(), device, m, std::move(result));
-    results.resize(results.size() + 1); // Reserve space for the result
-
-    // Tell the scheduler that we have dispatched m batches.
-    scheduler.dispatched_work(device, m);
+    // Reserve space for the result
+    _results.resize(_results.size() + 1);
+    auto i = _results.size() - 1;
+    // Create the task
+    auto task = [this, work = std::move(work), device = device, m = m, i = i]() mutable
+    {
+      // Preprocess
+      if (_preprocess)
+        work = _preprocess(std::move(work), device);
+      // Do work
+      auto result = _do_work(std::move(work), device);
+      // Postprocess
+      if (_postprocess)
+        result = _postprocess(std::move(result));
+      // Collect result
+      _results[i] = std::move(result);
+      // Tell the scheduler that we have completed m batches
+      _scheduler.completed_work(device, m);
+    };
+    // Tell the scheduler that we have dispatched m batches
+    _scheduler.dispatched_work(device, m);
+    // Enqueue the task
+    {
+      std::unique_lock<std::mutex> lock(_qmutex);
+      _tasks.push(task);
+    }
+    // Notify the thread pool
+    _thread_condition.notify_one();
   }
 
-  // Wait for all the dispatched work to complete
-  for (auto && [idx, device, m, future] : future_results)
-  {
-    future.wait();
-    auto result = future.get();
-    if (_postprocess)
-      result = _postprocess(std::move(result));
-    results[idx] = result;
-    scheduler.completed_work(device, m);
-  }
+  // Wait for all tasks to complete
+  _scheduler.wait_for_completion();
 
   if (_reduce)
-    return _reduce(std::move(results));
+    return _reduce(std::move(_results));
 
   if constexpr (std::is_same<Of, std::vector<Op>>::value)
-    return results;
+    return _results;
 
   throw NEMLException("Internal error: unreachable code");
 }

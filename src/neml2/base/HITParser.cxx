@@ -32,6 +32,7 @@
 #include "neml2/base/LabeledAxisAccessor.h"
 #include "neml2/tensors/tensors.h"
 #include "neml2/misc/assertions.h"
+#include "neml2/misc/types.h"
 
 namespace neml2
 {
@@ -157,6 +158,7 @@ HITParser::extract_option(hit::Node * n, OptionSet & options) const
         extract_option_t(EnumSelection);
         extract_option_t(MultiEnumSelection);
         extract_option_t(TensorName);
+        extract_option_t(Device);
         // LCOV_EXCL_START
         else neml_assert(false, "Unsupported option type for option ", n->fullpath());
         // LCOV_EXCL_STOP

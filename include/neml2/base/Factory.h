@@ -26,6 +26,8 @@
 
 #include <filesystem>
 #include <iostream>
+#include <thread>
+#include <mutex>
 
 #include "neml2/misc/errors.h"
 #include "neml2/base/Settings.h"
@@ -66,8 +68,22 @@ void reload_input(const std::filesystem::path & path, const std::string & additi
 class Factory
 {
 public:
-  /// Get the global Factory singleton.
-  static Factory & get();
+  /// Get the Factory singleton for a given thread
+  static Factory & get(std::thread::id tid = std::this_thread::get_id());
+
+  /// Get the global options singleton
+  static OptionCollection & options();
+
+  /// Get the global settings singleton
+  static Settings & settings();
+
+  /**
+   * @brief Provide all objects' options to the factory. The factory is ready to manufacture
+   * objects after this call, e.g., through either manufacture, get_object, or get_object_ptr.
+   *
+   * @param all_options The collection of all the options of the objects to be manufactured.
+   */
+  static void load_options(const OptionCollection & all_options);
 
   /**
    * @brief Retrive an object pointer under the given section with the given object name.
@@ -113,18 +129,7 @@ public:
                         const OptionSet & additional_options = OptionSet(),
                         bool force_create = true);
 
-  /**
-   * @brief Provide all objects' options to the factory. The factory is ready to manufacture
-   * objects after this call, e.g., through either manufacture, get_object, or get_object_ptr.
-   *
-   * @param all_options The collection of all the options of the objects to be manufactured.
-   */
-  static void load_options(const OptionCollection & all_options);
-
-  /// Get the loaded options
-  static const OptionCollection & loaded_options();
-
-  /// @brief Destruct all the objects.
+  /// @brief Delete all factories and destruct all the objects.
   static void clear();
 
   /**
@@ -144,17 +149,17 @@ protected:
   void create_object(const std::string & section, const OptionSet & options);
 
 private:
-  /// The collection of all the options of the objects to be manufactured.
-  OptionCollection _all_options;
+  /// Get the Factory singletons for all threads
+  static std::map<std::thread::id, Factory> & get_all();
+
+  /// Get the mutex for the Factory
+  static std::mutex & get_mutex();
 
   /**
    * Manufactured objects. The key of the outer map is the section name, and the key of the inner
    * map is the object name.
    */
   std::map<std::string, std::map<std::string, std::vector<std::shared_ptr<NEML2Object>>>> _objects;
-
-  /// Global settings
-  Settings _settings;
 };
 
 template <class T>
@@ -186,7 +191,7 @@ Factory::get_object_ptr(const std::string & section,
       }
 
   // Otherwise try to create it
-  for (auto & options : factory._all_options[section])
+  for (auto & options : Factory::options()[section])
     if (options.first == name)
     {
       auto new_options = options.second;

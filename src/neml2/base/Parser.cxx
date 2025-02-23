@@ -81,6 +81,13 @@ parse_(TensorShape & val, const std::string & raw_str)
 }
 
 template <>
+Device
+parse(const std::string & raw_str)
+{
+  return Device(parse<std::string>(raw_str));
+}
+
+template <>
 void
 parse_(Device & val, const std::string & raw_str)
 {

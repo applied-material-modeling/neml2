@@ -30,7 +30,8 @@ namespace neml2
 Driver &
 get_driver(const std::string & dname)
 {
-  return Factory::get_object<Driver>("Drivers", dname);
+  OptionSet extra_opts;
+  return Factory::get_object<Driver>("Drivers", dname, extra_opts, /*force_create=*/false);
 }
 
 OptionSet
@@ -45,6 +46,8 @@ Driver::expected_options()
 #ifdef NEML2_HAS_DISPATCHER
   options.set<std::string>("scheduler");
   options.set("scheduler").doc() = "The work scheduler to use";
+  options.set<bool>("async_dispatch") = false;
+  options.set("async_dispatch").doc() = "Whether to dispatch work asynchronously";
 #endif
 
   return options;
@@ -59,7 +62,8 @@ Driver::Driver(const OptionSet & options)
     _scheduler(options.get("scheduler").user_specified()
                    ? Factory::get_object_ptr<WorkScheduler>("Schedulers",
                                                             options.get<std::string>("scheduler"))
-                   : nullptr)
+                   : nullptr),
+    _async_dispatch(options.get<bool>("async_dispatch"))
 #endif
 {
 }

@@ -134,14 +134,12 @@ where it is desirable to deallocate models on-the-fly.
   m.def("get_model",
         &get_model,
         py::arg("model"),
-        py::arg("force_create") = true,
         py::return_value_policy::reference,
         R"(
 Create a models.Model from given input options. The input file must have
 already been parsed and loaded.
 
 :param model:        Name of the model
-:param force_create: Whether to force create the model even if one has already been created
 )");
   m.def("load_model",
         &load_model,

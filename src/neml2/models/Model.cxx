@@ -37,10 +37,10 @@
 namespace neml2
 {
 Model &
-get_model(const std::string & mname, bool force_create)
+get_model(const std::string & mname)
 {
   OptionSet extra_opts;
-  return Factory::get_object<Model>("Models", mname, extra_opts, force_create);
+  return Factory::get_object<Model>("Models", mname, extra_opts, /*force_create=*/false);
 }
 
 Model &
@@ -53,8 +53,8 @@ load_model(const std::filesystem::path & path, const std::string & mname)
 Model &
 reload_model(const std::filesystem::path & path, const std::string & mname)
 {
-  Factory::clear();
-  return load_model(path, mname);
+  reload_input(path);
+  return get_model(mname);
 }
 
 bool

@@ -53,11 +53,13 @@ public:
    */
   SimpleScheduler(const OptionSet & options);
 
-  bool schedule_work(Device &, std::size_t &) const override;
+  virtual std::vector<Device> devices() const override { return {_device}; }
 
-  void dispatched_work(Device, std::size_t) override;
-
-  void completed_work(Device, std::size_t) override;
+protected:
+  bool schedule_work_impl(Device &, std::size_t &) const override;
+  void dispatched_work_impl(Device, std::size_t) override;
+  void completed_work_impl(Device, std::size_t) override;
+  bool all_work_completed() const override;
 
 private:
   /// The device to dispatch to

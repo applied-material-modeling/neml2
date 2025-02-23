@@ -47,8 +47,6 @@ TEST_CASE("WorkDispatcher SliceGenerator SimpleScheduler", "[dispatchers]")
     auto func = [](indexing::Slice && x, Device /*device*/) -> Size
     { return x.start().expect_int() * x.stop().expect_int() * x.step().expect_int(); };
 
-    WorkDispatcher<indexing::Slice, Size> dispatcher(func);
-
     // The generated slices and results should be
     //   (50, 395, 1) -> 19750
     //   (395, 740, 1) -> 292300
@@ -58,15 +56,17 @@ TEST_CASE("WorkDispatcher SliceGenerator SimpleScheduler", "[dispatchers]")
     //   (1775, 2000, 1) -> 3550000
     std::vector<Size> expected = {19750, 292300, 802900, 1551550, 2538250, 3550000};
 
-    SECTION("run")
+    SECTION("run_sync")
     {
-      auto result = dispatcher.run(generator, scheduler);
+      WorkDispatcher<indexing::Slice, Size> dispatcher(scheduler, false, func);
+      auto result = dispatcher.run(generator);
       REQUIRE(result == expected);
     }
 
     SECTION("run_async")
     {
-      auto result = dispatcher.run_async(generator, scheduler);
+      WorkDispatcher<indexing::Slice, Size> dispatcher(scheduler, true, func);
+      auto result = dispatcher.run(generator);
       REQUIRE(result == expected);
     }
   }
@@ -83,8 +83,6 @@ TEST_CASE("WorkDispatcher SliceGenerator SimpleScheduler", "[dispatchers]")
       return sum;
     };
 
-    WorkDispatcher<indexing::Slice, Size, Size> dispatcher(func, red);
-
     // The generated slices and results should be
     //   (50, 395, 1) -> 19750
     //   (395, 740, 1) -> 292300
@@ -94,15 +92,17 @@ TEST_CASE("WorkDispatcher SliceGenerator SimpleScheduler", "[dispatchers]")
     //   (1775, 2000, 1) -> 3550000
     // The expected result is the sum of the above results
 
-    SECTION("run")
+    SECTION("run_sync")
     {
-      auto result = dispatcher.run(generator, scheduler);
+      WorkDispatcher<indexing::Slice, Size, Size> dispatcher(scheduler, false, func, red);
+      auto result = dispatcher.run(generator);
       REQUIRE(result == 8754750);
     }
 
     SECTION("run_async")
     {
-      auto result = dispatcher.run_async(generator, scheduler);
+      WorkDispatcher<indexing::Slice, Size, Size> dispatcher(scheduler, true, func, red);
+      auto result = dispatcher.run(generator);
       REQUIRE(result == 8754750);
     }
   }
@@ -122,8 +122,6 @@ TEST_CASE("WorkDispatcher SliceGenerator SimpleScheduler", "[dispatchers]")
     { return indexing::Slice(x.start() + 1, x.stop() - 1, x.step()); };
     auto postprocess = [](Size result) -> Size { return result + 1; };
 
-    WorkDispatcher<indexing::Slice, Size, Size> dispatcher(func, red, preprocess, postprocess);
-
     // The generated slices and results should be
     //   (50, 395, 1) -> (51, 394, 1) -> 20094 -> 20095
     //   (395, 740, 1) -> (396, 739, 1) -> 292644 -> 292645
@@ -133,15 +131,19 @@ TEST_CASE("WorkDispatcher SliceGenerator SimpleScheduler", "[dispatchers]")
     //   (1775, 2000, 1) -> (1776, 1999, 1) -> 3550224 -> 3550225
     // The expected result is the sum of the above results
 
-    SECTION("run")
+    SECTION("run_sync")
     {
-      auto result = dispatcher.run(generator, scheduler);
+      WorkDispatcher<indexing::Slice, Size, Size> dispatcher(
+          scheduler, false, func, red, preprocess, postprocess);
+      auto result = dispatcher.run(generator);
       REQUIRE(result == 8756700);
     }
 
     SECTION("run_async")
     {
-      auto result = dispatcher.run(generator, scheduler);
+      WorkDispatcher<indexing::Slice, Size, Size> dispatcher(
+          scheduler, true, func, red, preprocess, postprocess);
+      auto result = dispatcher.run(generator);
       REQUIRE(result == 8756700);
     }
   }

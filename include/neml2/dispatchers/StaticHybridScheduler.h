@@ -74,9 +74,9 @@ public:
    * number of devices.
    *
    * Similarly, zero or more capacities should be provided. If the capacity list is empty, the
-   * default capacity is infinity (i.e., std::numeric_limits<std::size_t>::max()) for all devices;
-   * if the number of capacities is one, the same capacity is associated with all devices;
-   * otherwise, the number of capacities should match the number of devices.
+   * default capacities are the same as those used for batch sizes; if the number of capacities is
+   * one, the same capacity is associated with all devices; otherwise, the number of capacities
+   * should match the number of devices.
    *
    * An optional list of priorities can be provided. The number of priorities should match the
    * number of devices. If no priorities are provided, all devices have the same priority. Note that
@@ -96,6 +96,14 @@ public:
    */
   void setup() override;
 
+  /// Set a custom availability calculator
+  void set_availability_calculator(std::function<double(const DeviceStatus &)>);
+
+  const std::vector<DeviceStatus> & status() const { return _devices; }
+
+  virtual std::vector<Device> devices() const override { return _available_devices; }
+
+protected:
   /**
    * @brief Pick the next device to dispatch work to
    *
@@ -107,18 +115,15 @@ public:
    * By default, the availability is the device's priority, a custom function can be set using
    * set_availability_calculator().
    */
-  bool schedule_work(Device &, std::size_t &) const override;
-
-  /// Set a custom availability calculator
-  void set_availability_calculator(std::function<double(const DeviceStatus &)>);
-
-  void dispatched_work(Device, std::size_t) override;
-
-  void completed_work(Device, std::size_t) override;
-
-  const std::vector<DeviceStatus> & status() const { return _devices; }
+  bool schedule_work_impl(Device &, std::size_t &) const override;
+  void dispatched_work_impl(Device, std::size_t) override;
+  void completed_work_impl(Device, std::size_t) override;
+  bool all_work_completed() const override;
 
 private:
+  /// Available devices
+  std::vector<Device> _available_devices;
+
   /// Whether a CPU device is specified
   bool _cpu = false;
 

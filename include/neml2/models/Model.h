@@ -50,9 +50,8 @@ class Model;
  * The input file must have already been parsed and loaded.
  *
  * @param mname Name of the model
- * @param force_create Whether to force create the model even if one has already been manufactured
  */
-Model & get_model(const std::string & mname, bool force_create = true);
+Model & get_model(const std::string & mname);
 
 /**
  * @brief A convenient function to load an input file and get a model

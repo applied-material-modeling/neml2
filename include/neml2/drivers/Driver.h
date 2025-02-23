@@ -81,6 +81,7 @@ protected:
 
 #ifdef NEML2_HAS_DISPATCHER
   std::shared_ptr<WorkScheduler> _scheduler;
+  const bool _async_dispatch;
 #endif
 };
 } // namespace neml2
