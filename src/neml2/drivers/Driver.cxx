@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/drivers/Driver.h"
+#include "neml2/base/Registry.h"
 #include "neml2/base/Factory.h"
 
 namespace neml2

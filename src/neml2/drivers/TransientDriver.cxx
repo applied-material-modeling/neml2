@@ -31,7 +31,6 @@
 
 #ifdef NEML2_HAS_DISPATCHER
 #include "neml2/dispatchers/ValueMapLoader.h"
-#include "neml2/dispatchers/valuemap_helpers.h"
 #endif
 
 namespace fs = std::filesystem;
@@ -70,10 +69,7 @@ set_ic(ValueMap & storage,
 OptionSet
 TransientDriver::expected_options()
 {
-  OptionSet options = Driver::expected_options();
-
-  options.set<std::string>("model");
-  options.set("model").doc() = "The material model to be updated by the driver";
+  OptionSet options = ModelDriver::expected_options();
 
   options.set<VariableName>("time") = VariableName(FORCES, "t");
   options.set("time").doc() = "Time";
@@ -88,25 +84,6 @@ TransientDriver::expected_options()
       "Predictor used to set the initial guess for each time step. Options are " +
       predictor_selection.candidates_str();
 
-  options.set<std::string>("save_as");
-  options.set("save_as").doc() =
-      "File path (absolute or relative to the working directory) to store the results";
-
-  options.set<bool>("show_parameters") = false;
-  options.set("show_parameters").doc() = "Whether to show model parameters at the beginning";
-  options.set<bool>("show_input_axis") = false;
-  options.set("show_input_axis").doc() = "Whether to show model input axis at the beginning";
-  options.set<bool>("show_output_axis") = false;
-  options.set("show_output_axis").doc() = "Whether to show model output axis at the beginning";
-
-  options.set<std::string>("device") = "cpu";
-  options.set("device").doc() =
-      "Device on which to evaluate the material model. The string supplied must follow the "
-      "following schema: (cpu|cuda)[:<device-index>] where cpu or cuda specifies the device type, "
-      "and :<device-index> optionally specifies a device index. For example, device='cpu' sets the "
-      "target compute device to be CPU, and device='cuda:1' sets the target compute device to be "
-      "CUDA with device ID 1.";
-
 #define OPTION_IC_(T)                                                                              \
   options.set<std::vector<VariableName>>("ic_" #T "_names");                                       \
   options.set("ic_" #T "_names").doc() = "Apply initial conditions to these " #T " variables";     \
@@ -114,85 +91,31 @@ TransientDriver::expected_options()
   options.set("ic_" #T "_values").doc() = "Initial condition values for the " #T " variables"
   FOR_ALL_TENSORBASE(OPTION_IC_);
 
-#ifdef NEML2_HAS_DISPATCHER
-  options.set<std::string>("scheduler");
-  options.set("scheduler").doc() = "The work scheduler to use";
-  options.set<bool>("async_dispatch") = false;
-  options.set("async_dispatch").doc() = "Whether to dispatch work asynchronously";
-#endif
+  options.set<std::string>("save_as");
+  options.set("save_as").doc() =
+      "File path (absolute or relative to the working directory) to store the results";
 
   return options;
 }
 
 TransientDriver::TransientDriver(const OptionSet & options)
-  : Driver(options),
-    _model(get_model(options.get<std::string>("model"))),
-    _device(options.get<std::string>("device")),
+  : ModelDriver(options),
     _time_name(options.get<VariableName>("time")),
     _time(options.get<TensorName>("prescribed_time")),
     _step_count(0),
     _nsteps(_time.batch_size(0).concrete()),
     _predictor(options.get<EnumSelection>("predictor")),
-    _save_as(options.get<std::string>("save_as")),
-    _show_params(options.get<bool>("show_parameters")),
-    _show_input(options.get<bool>("show_input_axis")),
-    _show_output(options.get<bool>("show_output_axis")),
     _result_in(_nsteps),
-    _result_out(_nsteps)
-#ifdef NEML2_HAS_DISPATCHER
-    ,
-    _scheduler(options.get("scheduler").user_specified()
-                   ? Factory::get_object_ptr<WorkScheduler>("Schedulers",
-                                                            options.get<std::string>("scheduler"))
-                   : nullptr),
-    _async_dispatch(options.get<bool>("async_dispatch"))
-#endif
+    _result_out(_nsteps),
+    _save_as(options.get<std::string>("save_as"))
 {
   _time = _time.to(_device);
 }
 
 void
-TransientDriver::setup()
-{
-  Driver::setup();
-
-#ifdef NEML2_HAS_DISPATCHER
-  if (_scheduler)
-  {
-    auto red = [](std::vector<ValueMap> && results) -> ValueMap
-    { return valuemap_cat_reduce(std::move(results), 0); };
-
-    auto post = [this](ValueMap && x) -> ValueMap
-    { return valuemap_move_device(std::move(x), _device); };
-
-    auto thread_init = [this](std::thread::id tid, Device device) -> void
-    {
-      auto & model = get_model(_model.name(), tid);
-      model.to(device);
-    };
-
-    _dispatcher = std::make_unique<DispatcherType>(
-        *_scheduler,
-        _async_dispatch,
-        [&](ValueMap && x, Device device) -> ValueMap
-        {
-          auto & model = get_model(_model.name());
-          neml_assert_dbg(model.tensor_options().device() == device);
-          return model.value(std::move(x));
-        },
-        red,
-        &valuemap_move_device,
-        post,
-        _async_dispatch ? thread_init : std::function<void(std::thread::id, Device)>());
-  }
-#endif
-}
-
-void
 TransientDriver::diagnose() const
 {
-  Driver::diagnose();
-  neml2::diagnose(_model);
+  ModelDriver::diagnose();
 
   diagnostic_assert(
       _time.batch_dim() >= 1,
@@ -213,18 +136,6 @@ TransientDriver::diagnose() const
 bool
 TransientDriver::run()
 {
-  // LCOV_EXCL_START
-  if (_show_params)
-    for (auto && [pname, pval] : _model.named_parameters())
-      std::cout << pname << std::endl;
-
-  if (_show_input)
-    std::cout << _model.name() << "'s input axis:\n" << _model.input_axis() << std::endl;
-
-  if (_show_output)
-    std::cout << _model.name() << "'s output axis:\n" << _model.output_axis() << std::endl;
-  // LCOV_EXCL_STOP
-
   auto status = solve();
 
   if (!save_as_path().empty())
@@ -366,11 +277,15 @@ void
 TransientDriver::solve_step()
 {
 #ifdef NEML2_HAS_DISPATCHER
-  ValueMapLoader loader(_in, 0);
-  _result_out[_step_count] = _dispatcher->run(loader);
-#else
-  _result_out[_step_count] = _model.value(_in);
+  if (_dispatcher)
+  {
+    ValueMapLoader loader(_in, 0);
+    _result_out[_step_count] = _dispatcher->run(loader);
+    return;
+  }
 #endif
+
+  _result_out[_step_count] = _model.value(_in);
 }
 
 void

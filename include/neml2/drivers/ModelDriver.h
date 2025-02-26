@@ -24,50 +24,56 @@
 
 #pragma once
 
-#include "neml2/base/NEML2Object.h"
-#include "neml2/base/DiagnosticsInterface.h"
+#include "neml2/drivers/Driver.h"
+#include "neml2/models/map_types.h"
+#include "neml2/tensors/tensors.h"
 
-// The following are not directly used by Solver itself.
-// We put them here so that derived classes can add expected options of these types.
-#include "neml2/base/TensorName.h"
-#include "neml2/base/EnumSelection.h"
+#ifdef NEML2_HAS_DISPATCHER
+#include "neml2/dispatchers/WorkScheduler.h"
+#include "neml2/dispatchers/WorkDispatcher.h"
+#endif
 
 namespace neml2
 {
-class Driver;
-
 /**
- * @brief A convenient function to manufacture a neml2::Driver
+ * @brief A general-purpose driver that does *something* with a model
  *
- * The input file must have already been parsed and loaded.
- *
- * @param dname Name of the driver
+ * Derived classes define that "something".
  */
-Driver & get_driver(const std::string & dname);
-
-/**
- * @brief The Driver drives the execution of a NEML2 Model.
- *
- */
-class Driver : public NEML2Object, public DiagnosticsInterface
+class ModelDriver : public Driver
 {
 public:
   static OptionSet expected_options();
 
-  /**
-   * @brief Construct a new Driver object
-   *
-   * @param options The options extracted from the input file
-   */
-  Driver(const OptionSet & options);
+  ModelDriver(const OptionSet & options);
 
-  void diagnose() const override {}
+  void setup() override;
 
-  /// Let the driver run, return \p true upon successful completion, and return \p false otherwise.
-  virtual bool run() = 0;
+  void diagnose() const override;
+
+  const Model & model() const { return _model; }
 
 protected:
-  /// Whether to print out additional (debugging) information during the execution.
-  bool _verbose;
+  /// The model which the driver uses to perform constitutive updates.
+  Model & _model;
+  /// The device on which to evaluate the model
+  const Device _device;
+
+  /// Set to true to list all the model parameters at the beginning
+  const bool _show_params;
+  /// Set to true to show model's input axis at the beginning
+  const bool _show_input;
+  /// Set to true to show model's output axis at the beginning
+  const bool _show_output;
+
+#ifdef NEML2_HAS_DISPATCHER
+  /// The work scheduler to use
+  std::shared_ptr<WorkScheduler> _scheduler;
+  /// Work dispatcher
+  using DispatcherType = WorkDispatcher<ValueMap, ValueMap, ValueMap, ValueMap, ValueMap>;
+  std::unique_ptr<DispatcherType> _dispatcher;
+  /// Whether to dispatch work asynchronously
+  const bool _async_dispatch;
+#endif
 };
 } // namespace neml2
