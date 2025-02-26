@@ -124,7 +124,7 @@ public:
                  std::function<Of(std::vector<Op> &&)> && reduce,
                  std::function<I(Ip &&, Device)> && preprocess,
                  std::function<Op(O &&)> && postprocess,
-                 std::function<void(std::thread::id, Device)> && thread_init)
+                 std::function<void(Device)> && thread_init)
     : _scheduler(scheduler),
       _devices(scheduler.devices()),
       _async(async),
@@ -190,7 +190,7 @@ protected:
   std::function<Op(O &&)> _postprocess;
 
   /// Function to initialize the thread
-  std::function<void(std::thread::id, Device)> _thread_init;
+  std::function<void(Device)> _thread_init;
 
   /// Results to be reduced
   std::vector<Op> _results;
@@ -198,15 +198,13 @@ protected:
   ///@{
   /// Mutex for the main thread
   std::mutex _mutex;
-  /// Condition variable for waiting all tasks to complete
-  std::condition_variable _completion_condition;
   /// Thread pool for asynchronous execution
   /// TODO: We are currently assuming each thread is responsible for one device. This may not be
   /// true/optimal in the future.
   std::vector<std::thread> _thread_pool;
   /// Task queue for the thread pool
   std::unordered_map<Device, std::queue<std::function<void()>>> _tasks;
-  /// Mutex for the tasks queue
+  /// Mutex for the thread pool to pick up task from the task queue
   std::mutex _qmutex;
   /// Condition variable for the tasks queue
   std::condition_variable _thread_condition;
@@ -229,12 +227,31 @@ WorkDispatcher<I, O, Of, Ip, Op>::init_thread_pool()
   _thread_pool.reserve(nthread);
   for (std::size_t i = 0; i < nthread; ++i)
   {
-    _thread_pool.emplace_back([this, i] { thread_pool_main(_devices[i]); });
     // This is necessary to initialize the torch linear algebra library prior to threaded calls
     // See: https://github.com/pytorch/pytorch/issues/90613
     auto res = R2::identity().to(_devices[i]).inverse();
-    if (_thread_init)
-      _thread_init(_thread_pool.back().get_id(), _devices[i]);
+    _thread_pool.emplace_back([this, i] { thread_pool_main(_devices[i]); });
+  }
+
+  // Initialize the thread
+  if (_thread_init)
+  {
+    for (std::size_t i = 0; i < nthread; ++i)
+    {
+      auto device = _devices[i];
+      auto task = [this, device = device]() mutable
+      {
+        _thread_init(device);
+        _scheduler.completed_work(device, 1);
+      };
+      _scheduler.dispatched_work(device, 1);
+      {
+        std::lock_guard<std::mutex> lock(_qmutex);
+        _tasks[device].push(task);
+      }
+      _thread_condition.notify_all();
+    }
+    _scheduler.wait_for_completion();
   }
 }
 
@@ -381,7 +398,7 @@ WorkDispatcher<I, O, Of, Ip, Op>::run_async(WorkGenerator<Ip> & generator)
     _scheduler.dispatched_work(device, m);
     // Enqueue the task
     {
-      std::unique_lock<std::mutex> lock(_qmutex);
+      std::lock_guard<std::mutex> lock(_qmutex);
       _tasks[device].push(task);
     }
     // Notify the thread pool

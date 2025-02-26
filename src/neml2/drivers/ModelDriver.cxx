@@ -96,9 +96,9 @@ ModelDriver::setup()
     auto post = [this](ValueMap && x) -> ValueMap
     { return valuemap_move_device(std::move(x), _device); };
 
-    auto thread_init = [this](std::thread::id tid, Device device) -> void
+    auto thread_init = [this](Device device) -> void
     {
-      auto & model = get_model(_model.name(), tid);
+      auto & model = get_model(_model.name());
       model.to(device);
     };
 
@@ -114,7 +114,7 @@ ModelDriver::setup()
         red,
         &valuemap_move_device,
         post,
-        _async_dispatch ? thread_init : std::function<void(std::thread::id, Device)>());
+        _async_dispatch ? thread_init : std::function<void(Device)>());
   }
 #endif
 
