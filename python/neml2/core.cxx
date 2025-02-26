@@ -133,7 +133,7 @@ where it is desirable to deallocate models on-the-fly.
 )");
   m.def(
       "get_model",
-      [](const std::string & model) { return get_model(model); },
+      [](const std::string & model) { return &get_model(model); },
       py::arg("model"),
       py::return_value_policy::reference,
       R"(
