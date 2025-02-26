@@ -131,11 +131,12 @@ where it is desirable to deallocate models on-the-fly.
 :param path:     Path to the input file to be parsed
 :param cli_args: Additional command-line arguments to pass to the parser
 )");
-  m.def("get_model",
-        &get_model,
-        py::arg("model"),
-        py::return_value_policy::reference,
-        R"(
+  m.def(
+      "get_model",
+      [](const std::string & model) { return get_model(model); },
+      py::arg("model"),
+      py::return_value_policy::reference,
+      R"(
 Create a models.Model from given input options. The input file must have
 already been parsed and loaded.
 
