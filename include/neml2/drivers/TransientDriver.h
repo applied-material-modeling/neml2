@@ -30,6 +30,11 @@
 #include "neml2/tensors/tensors.h"
 #include "neml2/models/map_types.h"
 
+#ifdef NEML2_HAS_DISPATCHER
+#include "neml2/dispatchers/WorkScheduler.h"
+#include "neml2/dispatchers/WorkDispatcher.h"
+#endif
+
 namespace torch::nn
 {
 class ModuleDict;
@@ -52,6 +57,8 @@ public:
    * @param options The options extracted from the input file
    */
   TransientDriver(const OptionSet & options);
+
+  void setup() override;
 
   void diagnose() const override;
 
@@ -127,6 +134,16 @@ protected:
   std::vector<ValueMap> _result_in;
   /// Outputs from all time steps
   std::vector<ValueMap> _result_out;
+
+#ifdef NEML2_HAS_DISPATCHER
+  /// The work scheduler to use
+  std::shared_ptr<WorkScheduler> _scheduler;
+  /// Work dispatcher
+  using DispatcherType = WorkDispatcher<ValueMap, ValueMap, ValueMap, ValueMap, ValueMap>;
+  std::unique_ptr<DispatcherType> _dispatcher;
+  /// Whether to dispatch work asynchronously
+  const bool _async_dispatch;
+#endif
 
 private:
   void output_pt(const std::filesystem::path & out) const;

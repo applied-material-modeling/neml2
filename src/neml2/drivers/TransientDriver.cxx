@@ -32,8 +32,6 @@
 #ifdef NEML2_HAS_DISPATCHER
 #include "neml2/dispatchers/ValueMapLoader.h"
 #include "neml2/dispatchers/valuemap_helpers.h"
-#include "neml2/dispatchers/SimpleScheduler.h"
-#include "neml2/dispatchers/WorkDispatcher.h"
 #endif
 
 namespace fs = std::filesystem;
@@ -116,6 +114,13 @@ TransientDriver::expected_options()
   options.set("ic_" #T "_values").doc() = "Initial condition values for the " #T " variables"
   FOR_ALL_TENSORBASE(OPTION_IC_);
 
+#ifdef NEML2_HAS_DISPATCHER
+  options.set<std::string>("scheduler");
+  options.set("scheduler").doc() = "The work scheduler to use";
+  options.set<bool>("async_dispatch") = false;
+  options.set("async_dispatch").doc() = "Whether to dispatch work asynchronously";
+#endif
+
   return options;
 }
 
@@ -134,8 +139,53 @@ TransientDriver::TransientDriver(const OptionSet & options)
     _show_output(options.get<bool>("show_output_axis")),
     _result_in(_nsteps),
     _result_out(_nsteps)
+#ifdef NEML2_HAS_DISPATCHER
+    ,
+    _scheduler(options.get("scheduler").user_specified()
+                   ? Factory::get_object_ptr<WorkScheduler>("Schedulers",
+                                                            options.get<std::string>("scheduler"))
+                   : nullptr),
+    _async_dispatch(options.get<bool>("async_dispatch"))
+#endif
 {
   _time = _time.to(_device);
+}
+
+void
+TransientDriver::setup()
+{
+  Driver::setup();
+
+#ifdef NEML2_HAS_DISPATCHER
+  if (_scheduler)
+  {
+    auto red = [](std::vector<ValueMap> && results) -> ValueMap
+    { return valuemap_cat_reduce(std::move(results), 0); };
+
+    auto post = [this](ValueMap && x) -> ValueMap
+    { return valuemap_move_device(std::move(x), _device); };
+
+    auto thread_init = [this](std::thread::id tid, Device device) -> void
+    {
+      auto & model = get_model(_model.name(), tid);
+      model.to(device);
+    };
+
+    _dispatcher = std::make_unique<DispatcherType>(
+        *_scheduler,
+        _async_dispatch,
+        [&](ValueMap && x, Device device) -> ValueMap
+        {
+          auto & model = get_model(_model.name());
+          neml_assert_dbg(model.tensor_options().device() == device);
+          return model.value(std::move(x));
+        },
+        red,
+        &valuemap_move_device,
+        post,
+        _async_dispatch ? thread_init : std::function<void(std::thread::id, Device)>());
+  }
+#endif
 }
 
 void
@@ -316,41 +366,11 @@ void
 TransientDriver::solve_step()
 {
 #ifdef NEML2_HAS_DISPATCHER
-  if (_scheduler)
-  {
-    auto red = [](std::vector<ValueMap> && results) -> ValueMap
-    { return valuemap_cat_reduce(std::move(results), 0); };
-
-    auto post = [this](ValueMap && x) -> ValueMap
-    { return valuemap_move_device(std::move(x), _device); };
-
-    auto thread_init = [this](std::thread::id tid, Device device) -> void
-    {
-      auto & model = get_model(_model.name(), tid);
-      model.to(device);
-    };
-
-    ValueMapLoader loader(_in, 0);
-    WorkDispatcher<ValueMap, ValueMap, ValueMap, ValueMap, ValueMap> dispatcher(
-        *_scheduler,
-        _async_dispatch,
-        [&](ValueMap && x, Device device) -> ValueMap
-        {
-          auto & model = get_model(_model.name());
-          neml_assert_dbg(model.tensor_options().device() == device);
-          return model.value(std::move(x));
-        },
-        red,
-        &valuemap_move_device,
-        post,
-        _async_dispatch ? thread_init : std::function<void(std::thread::id, Device)>());
-
-    _result_out[_step_count] = dispatcher.run(loader);
-    return;
-  }
-#endif
-
+  ValueMapLoader loader(_in, 0);
+  _result_out[_step_count] = _dispatcher->run(loader);
+#else
   _result_out[_step_count] = _model.value(_in);
+#endif
 }
 
 void

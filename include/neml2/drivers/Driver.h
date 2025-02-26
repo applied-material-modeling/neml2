@@ -32,10 +32,6 @@
 #include "neml2/base/DiagnosticsInterface.h"
 #include "neml2/models/Model.h"
 
-#ifdef NEML2_HAS_DISPATCHER
-#include "neml2/dispatchers/WorkScheduler.h"
-#endif
-
 // The following are not directly used by Solver itself.
 // We put them here so that derived classes can add expected options of these types.
 #include "neml2/base/TensorName.h"
@@ -78,10 +74,5 @@ public:
 protected:
   /// Whether to print out additional (debugging) information during the execution.
   bool _verbose;
-
-#ifdef NEML2_HAS_DISPATCHER
-  std::shared_ptr<WorkScheduler> _scheduler;
-  const bool _async_dispatch;
-#endif
 };
 } // namespace neml2

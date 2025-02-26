@@ -43,13 +43,6 @@ Driver::expected_options()
   options.set<bool>("verbose") = false;
   options.set("verbose").doc() = "Whether to output additional logging information";
 
-#ifdef NEML2_HAS_DISPATCHER
-  options.set<std::string>("scheduler");
-  options.set("scheduler").doc() = "The work scheduler to use";
-  options.set<bool>("async_dispatch") = false;
-  options.set("async_dispatch").doc() = "Whether to dispatch work asynchronously";
-#endif
-
   return options;
 }
 
@@ -57,14 +50,6 @@ Driver::Driver(const OptionSet & options)
   : NEML2Object(options),
     DiagnosticsInterface(this),
     _verbose(options.get<bool>("verbose"))
-#ifdef NEML2_HAS_DISPATCHER
-    ,
-    _scheduler(options.get("scheduler").user_specified()
-                   ? Factory::get_object_ptr<WorkScheduler>("Schedulers",
-                                                            options.get<std::string>("scheduler"))
-                   : nullptr),
-    _async_dispatch(options.get<bool>("async_dispatch"))
-#endif
 {
 }
 } // namespace neml2
