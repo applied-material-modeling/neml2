@@ -37,10 +37,10 @@
 namespace neml2
 {
 Model &
-get_model(const std::string & mname)
+get_model(const std::string & mname, std::thread::id tid)
 {
   OptionSet extra_opts;
-  return Factory::get_object<Model>("Models", mname, extra_opts, /*force_create=*/false);
+  return Factory::get_object<Model>("Models", mname, extra_opts, /*force_create=*/false, tid);
 }
 
 Model &

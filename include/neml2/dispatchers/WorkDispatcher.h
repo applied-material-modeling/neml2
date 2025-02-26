@@ -79,6 +79,7 @@ class WorkDispatcher
 public:
   WorkDispatcher(WorkScheduler & scheduler, bool async, std::function<O(I &&, Device)> && do_work)
     : _scheduler(scheduler),
+      _devices(scheduler.devices()),
       _async(async),
       _do_work(std::move(do_work))
   {
@@ -90,6 +91,7 @@ public:
                  std::function<O(I &&, Device)> && do_work,
                  std::function<O(std::vector<O> &&)> && reduce)
     : _scheduler(scheduler),
+      _devices(scheduler.devices()),
       _async(async),
       _do_work(std::move(do_work)),
       _reduce(std::move(reduce))
@@ -104,12 +106,36 @@ public:
                  std::function<I(Ip &&, Device)> && preprocess,
                  std::function<Op(O &&)> && postprocess)
     : _scheduler(scheduler),
+      _devices(scheduler.devices()),
       _async(async),
       _do_work(std::move(do_work)),
       _reduce(std::move(reduce)),
       _preprocess(std::move(preprocess)),
       _postprocess(std::move(postprocess))
   {
+    init_thread_pool();
+  }
+
+  WorkDispatcher(WorkScheduler & scheduler,
+                 bool async,
+                 std::function<O(I &&, Device)> && do_work,
+                 std::function<Of(std::vector<Op> &&)> && reduce,
+                 std::function<I(Ip &&, Device)> && preprocess,
+                 std::function<Op(O &&)> && postprocess,
+                 std::function<void(std::thread::id, Device)> && thread_init)
+    : _scheduler(scheduler),
+      _devices(scheduler.devices()),
+      _async(async),
+      _do_work(std::move(do_work)),
+      _reduce(std::move(reduce)),
+      _preprocess(std::move(preprocess)),
+      _postprocess(std::move(postprocess)),
+      _thread_init(std::move(thread_init))
+  {
+    if (_thread_init)
+      neml_assert_dbg(
+          _async, "Custom thread initialization functor is only supported in asynchronous mode");
+
     init_thread_pool();
   }
 
@@ -121,6 +147,12 @@ public:
 protected:
   /// Initialize the thread pool
   void init_thread_pool();
+
+  /// Thread pool main function
+  void thread_pool_main(const Device &);
+
+  /// Should unlock thread
+  bool should_unlock_thread();
 
   /// Stop the thread pool
   void stop_thread_pool();
@@ -137,6 +169,9 @@ protected:
   /// Reference to the work scheduler
   WorkScheduler & _scheduler;
 
+  /// Device pool requested by the scheduler
+  const std::vector<Device> _devices;
+
   /// Flag to enable asynchronous execution
   const bool _async;
 
@@ -152,6 +187,9 @@ protected:
   /// Function to postprocess the result
   std::function<Op(O &&)> _postprocess;
 
+  /// Function to initialize the thread
+  std::function<void(std::thread::id, Device)> _thread_init;
+
   /// Results to be reduced
   std::vector<Op> _results;
 
@@ -164,8 +202,8 @@ protected:
   /// TODO: We are currently assuming each thread is responsible for one device. This may not be
   /// true/optimal in the future.
   std::vector<std::thread> _thread_pool;
-  /// Tasks queue for the thread pool
-  std::queue<std::function<void()>> _tasks;
+  /// Task queue for the thread pool
+  std::unordered_map<Device, std::queue<std::function<void()>>> _tasks;
   /// Mutex for the tasks queue
   std::mutex _qmutex;
   /// Condition variable for the tasks queue
@@ -178,7 +216,6 @@ protected:
 ////////////////////////////////////////////////////////////////////////////////
 // Implementation
 ////////////////////////////////////////////////////////////////////////////////
-
 template <typename I, typename O, typename Of, typename Ip, typename Op>
 void
 WorkDispatcher<I, O, Of, Ip, Op>::init_thread_pool()
@@ -186,26 +223,33 @@ WorkDispatcher<I, O, Of, Ip, Op>::init_thread_pool()
   if (!_async)
     return;
 
-  auto nthread = _scheduler.devices().size();
+  auto nthread = _devices.size();
   _thread_pool.reserve(nthread);
   for (std::size_t i = 0; i < nthread; ++i)
-    _thread_pool.emplace_back(
-        [&]
-        {
-          while (true)
-          {
-            std::function<void()> task;
-            {
-              std::unique_lock<std::mutex> lock(_qmutex);
-              _thread_condition.wait(lock, [this] { return _stop || !_tasks.empty(); });
-              if (_stop && _tasks.empty())
-                break;
-              task = std::move(_tasks.front());
-              _tasks.pop();
-            }
-            task();
-          }
-        });
+  {
+    _thread_pool.emplace_back([this, i] { thread_pool_main(_devices[i]); });
+    if (_thread_init)
+      _thread_init(_thread_pool.back().get_id(), _devices[i]);
+  }
+}
+
+template <typename I, typename O, typename Of, typename Ip, typename Op>
+void
+WorkDispatcher<I, O, Of, Ip, Op>::thread_pool_main(const Device & device)
+{
+  while (true)
+  {
+    std::function<void()> task;
+    {
+      std::unique_lock<std::mutex> lock(_qmutex);
+      _thread_condition.wait(lock, [this, &device] { return _stop || !_tasks[device].empty(); });
+      if (_stop && _tasks[device].empty())
+        break;
+      task = std::move(_tasks[device].front());
+      _tasks[device].pop();
+    }
+    task();
+  }
 }
 
 template <typename I, typename O, typename Of, typename Ip, typename Op>
@@ -333,10 +377,12 @@ WorkDispatcher<I, O, Of, Ip, Op>::run_async(WorkGenerator<Ip> & generator)
     // Enqueue the task
     {
       std::unique_lock<std::mutex> lock(_qmutex);
-      _tasks.push(task);
+      _tasks[device].push(task);
     }
     // Notify the thread pool
-    _thread_condition.notify_one();
+    // Note: We notify_all instead of notify_one because we want the thread that's bind to the
+    // target device to pick up the task
+    _thread_condition.notify_all();
   }
 
   // Wait for all tasks to complete

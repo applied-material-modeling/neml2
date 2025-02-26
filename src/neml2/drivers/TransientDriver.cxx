@@ -324,6 +324,12 @@ TransientDriver::solve_step()
     auto post = [this](ValueMap && x) -> ValueMap
     { return valuemap_move_device(std::move(x), _device); };
 
+    auto thread_init = [this](std::thread::id tid, Device device) -> void
+    {
+      auto & model = get_model(_model.name(), tid);
+      model.to(device);
+    };
+
     ValueMapLoader loader(_in, 0);
     WorkDispatcher<ValueMap, ValueMap, ValueMap, ValueMap, ValueMap> dispatcher(
         *_scheduler,
@@ -331,12 +337,13 @@ TransientDriver::solve_step()
         [&](ValueMap && x, Device device) -> ValueMap
         {
           auto & model = get_model(_model.name());
-          model.to(device);
+          neml_assert_dbg(model.tensor_options().device() == device);
           return model.value(std::move(x));
         },
         red,
         &valuemap_move_device,
-        post);
+        post,
+        _async_dispatch ? thread_init : std::function<void(std::thread::id, Device)>());
 
     _result_out[_step_count] = dispatcher.run(loader);
     return;
