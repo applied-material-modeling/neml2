@@ -333,6 +333,9 @@ private:
   /// Similar to _trace_functions, but for the forward operator of the nonlinear system
   std::array<std::map<TraceSchema, std::unique_ptr<jit::GraphFunction>>, 8>
       _traced_functions_nl_sys;
+
+  /// Mutex for locking tracing
+  std::mutex _trace_mutex;
 };
 
 std::ostream & operator<<(std::ostream & os, const Model & model);

@@ -428,6 +428,7 @@ Model::forward_maybe_jit(bool out, bool dout, bool d2out)
   }
   else
   {
+    _trace_mutex.lock();
     auto forward_wrap = [&](jit::Stack inputs) -> jit::Stack
     {
       assign_input_stack(inputs);
@@ -440,6 +441,8 @@ Model::forward_maybe_jit(bool out, bool dout, bool d2out)
         [this](const ATensor & var) { return variable_name_lookup(var); },
         /*strict=*/false,
         /*force_outplace=*/false));
+    _trace_mutex.unlock();
+
     auto new_function = std::make_unique<jit::GraphFunction>(name() + ".forward",
                                                              trace->graph,
                                                              /*function_creator=*/nullptr,
