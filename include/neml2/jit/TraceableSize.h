@@ -24,6 +24,7 @@
 
 #pragma once
 
+#include <variant>
 #include <ATen/core/Tensor.h>
 #include "neml2/misc/types.h"
 
