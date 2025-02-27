@@ -19,6 +19,10 @@ class ProjectileAcceleration : public Model
 public:
   static OptionSet expected_options();
   ProjectileAcceleration(const OptionSet & options);
+
+protected:
+  // Model forward operator to be defined in the following tutorials
+  void set_value(bool, bool, bool) override {}
 };
 }
 ```
@@ -84,8 +88,10 @@ The registration is accomplished by the static method neml2::Registry::add templ
 An example usage of the macro is
 @source:src1
 ```cpp
-```cpp
+namespace neml2
+{
 register_NEML2_object(ProjectileAcceleration);
+}
 ```
 @endsource
 Note that a dummy static variable (unique to the class typename) is created to prevent duplicate registration.
@@ -97,10 +103,13 @@ The NEML2 factory is another RAII-style singleton object which handles the runti
 In our example, the parser will first extract input file options from the input file and use them to fill out the expected options (defined by the `ProjectileAcceleration::expected_options()` method). The factory then pass the collected options to the constructor to create this object. The constructor should accept an neml2::OptionSet and define how the collected options are used.
 @source:src1
 ```cpp
+namespace neml2
+{
 ProjectileAcceleration::ProjectileAcceleration(const OptionSet & options)
   : Model(options)
-    // To be added in following tutorials
+    // Variable and parameter declarations are to be added in the following tutorials
 {
+}
 }
 ```
 @endsource
@@ -112,10 +121,10 @@ Suppose an input file named "inpu.i" has the following content
 [Models]
   [accel]
     type = ProjectileAcceleration
-    velocity = 'state/foo'
-    acceleration = 'state/bar'
-    gravitational_acceleration = '0'
-    dynamic_viscosity = '0.1'
+    velocity = 'state/v'
+    acceleration = 'state/a'
+    gravitational_acceleration = 'g'
+    dynamic_viscosity = 'mu'
   []
 []
 ```
@@ -123,7 +132,25 @@ To verify that our custom model is correctly accepting these input file options,
 
 @source:src1
 ```cpp
+int
+main()
+{
+  auto & model = neml2::load_model("input.i", "accel");
+
+  // Print out each option parsed from the input file
+  const auto & options = model.input_options();
+
+  std::cout << "                  velocity: " << options.get("velocity") << std::endl;
+  std::cout << "              acceleration: " << options.get("acceleration") << std::endl;
+  std::cout << "gravitational_acceleration: " << options.get("gravitational_acceleration") << std::endl;
+  std::cout << "         dynamic_viscosity: " << options.get("dynamic_viscosity") << std::endl;
+}
 ```
 @endsource
+
+Output:
+```
+  @attach_output:src1
+```
 
 @insert-page-navigation

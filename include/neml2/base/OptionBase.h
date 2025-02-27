@@ -32,6 +32,11 @@
 
 namespace neml2
 {
+class OptionBase;
+
+// Streaming operators
+std::ostream & operator<<(std::ostream &, const OptionBase &);
+
 /**
  * Abstract definition of an option.
  */
