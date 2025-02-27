@@ -28,6 +28,8 @@
 #include "neml2/models/BufferStore.h"
 #include "neml2/base/Factory.h"
 
+#include "neml2/tensors/TensorValue.h"
+
 namespace neml2
 {
 class Data : public NEML2Object, public BufferStore

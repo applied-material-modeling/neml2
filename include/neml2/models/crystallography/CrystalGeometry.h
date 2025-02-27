@@ -27,6 +27,8 @@
 #include "neml2/base/Registry.h"
 #include "neml2/models/Data.h"
 
+#include "neml2/base/TensorName.h"
+
 namespace neml2
 {
 class Scalar;
