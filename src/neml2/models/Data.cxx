@@ -36,7 +36,7 @@ Data::expected_options()
 
 Data::Data(const OptionSet & options)
   : NEML2Object(options),
-    BufferStore(options, this)
+    BufferStore(this)
 {
 }
 }

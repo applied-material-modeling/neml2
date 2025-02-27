@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include "neml2/models/NonlinearParameter.h"
+#include "neml2/models/Model.h"
 
 namespace neml2
 {
@@ -32,7 +32,7 @@ namespace neml2
  * @brief A parameter that is actually just a constant
  */
 template <typename T>
-class ConstantParameter : public NonlinearParameter<T>
+class ConstantParameter : public Model
 {
 public:
   static OptionSet expected_options();
@@ -44,5 +44,8 @@ protected:
 
   /// The constant value
   const T & _value;
+
+  /// The parameter
+  Variable<T> & _p;
 };
 } // namespace neml2

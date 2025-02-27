@@ -2,7 +2,7 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'params/tau params/n'
+    input_Scalar_names = 'state/tau state/n'
     input_Scalar_values = '120.0 2.0'
     input_SR2_names = 'state/internal/X'
     input_SR2_values = 'X'
@@ -24,18 +24,10 @@
 []
 
 [Models]
-  [tau]
-    type = ScalarInputParameter
-    from = 'params/tau'
-  []
-  [n]
-    type = ScalarInputParameter
-    from = 'params/n'
-  []
   [model0]
     type = PowerLawKinematicHardeningStaticRecovery
-    tau = 'tau'
-    n = 'n'
+    tau = 'state/tau'
+    n = 'state/n'
   []
   [model]
     type = ComposedModel

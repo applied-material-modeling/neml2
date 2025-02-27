@@ -2,7 +2,7 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/internal/gamma_rate params/C params/g'
+    input_Scalar_names = 'state/internal/gamma_rate state/C state/g'
     input_Scalar_values = '0.01 1000.0 10.0'
     input_SR2_names = 'state/internal/NM state/internal/X'
     input_SR2_values = 'NM X'
@@ -28,18 +28,10 @@
 []
 
 [Models]
-  [C]
-    type = ScalarInputParameter
-    from = 'params/C'
-  []
-  [g]
-    type = ScalarInputParameter
-    from = 'params/g'
-  []
   [model0]
     type = FredrickArmstrongPlasticHardening
-    C = 'C'
-    g = 'g'
+    C = 'state/C'
+    g = 'state/g'
   []
   [model]
     type = ComposedModel

@@ -33,7 +33,7 @@ register_NEML2_object(KocksMeckingYieldStress);
 OptionSet
 KocksMeckingYieldStress::expected_options()
 {
-  OptionSet options = NonlinearParameter<Scalar>::expected_options();
+  OptionSet options = Model::expected_options();
 
   options.doc() = "The yield stress given by the Kocks-Mecking model.  \\f$ \\sigma_y = \\exp{C} "
                   "\\mu \\f$ with \\f$ \\mu \\f$ the shear modulus and \\f$ C \\f$ the horizontal "
@@ -41,18 +41,19 @@ KocksMeckingYieldStress::expected_options()
 
   options.set<bool>("define_second_derivatives") = true;
 
-  options.set_parameter<TensorName>("C");
+  options.set_parameter<TensorName<Scalar>>("C");
   options.set("C").doc() = "The Kocks-Mecking horizontal intercept";
-  options.set_parameter<TensorName>("shear_modulus");
+  options.set_parameter<TensorName<Scalar>>("shear_modulus");
   options.set("shear_modulus").doc() = "The shear modulus";
 
   return options;
 }
 
 KocksMeckingYieldStress::KocksMeckingYieldStress(const OptionSet & options)
-  : NonlinearParameter<Scalar>(options),
+  : Model(options),
     _C(declare_parameter<Scalar>("C", "C", /*allow_nonlinear=*/true)),
-    _mu(declare_parameter<Scalar>("mu", "shear_modulus", /*allow_nonlinear=*/true))
+    _mu(declare_parameter<Scalar>("mu", "shear_modulus", /*allow_nonlinear=*/true)),
+    _tau(declare_output_variable<Scalar>(VariableName(PARAMETERS, name())))
 {
 }
 
@@ -60,27 +61,27 @@ void
 KocksMeckingYieldStress::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   if (out)
-    _p = _mu * exp(_C);
+    _tau = _mu * exp(_C);
 
   if (dout_din)
   {
     if (const auto * const mu = nl_param("mu"))
-      _p.d(*mu) = exp(_C);
+      _tau.d(*mu) = exp(_C);
 
     if (const auto * const C = nl_param("C"))
-      _p.d(*C) = _mu * exp(_C);
+      _tau.d(*C) = _mu * exp(_C);
   }
 
   if (d2out_din2)
   {
     if (const auto * const C = nl_param("C"))
     {
-      _p.d(*C, *C) = _mu * exp(_C);
+      _tau.d(*C, *C) = _mu * exp(_C);
 
       if (const auto * const mu = nl_param("mu"))
       {
-        _p.d(*C, *mu) = exp(_C);
-        _p.d(*mu, *C) = exp(_C);
+        _tau.d(*C, *mu) = exp(_C);
+        _tau.d(*mu, *C) = exp(_C);
       }
     }
   }

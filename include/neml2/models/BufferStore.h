@@ -26,12 +26,12 @@
 
 #include <memory>
 
-#include "neml2/base/OptionSet.h"
 #include "neml2/jit/types.h"
 
 namespace neml2
 {
 class NEML2Object;
+template <typename T>
 struct TensorName;
 class TensorValueBase;
 template <typename T>
@@ -41,7 +41,7 @@ class TensorBase;
 class BufferStore
 {
 public:
-  BufferStore(OptionSet options, NEML2Object * object);
+  BufferStore(NEML2Object * object);
 
   BufferStore(const BufferStore &) = delete;
   BufferStore(BufferStore &&) = delete;
@@ -104,7 +104,7 @@ protected:
    * @return T The value of the registered buffer.
    */
   template <typename T, typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<T>, T>>>
-  const T & declare_buffer(const std::string & name, const TensorName & tensorname);
+  const T & declare_buffer(const std::string & name, const TensorName<T> & tensorname);
 
   /**
    * @brief Declare a buffer.
@@ -129,14 +129,6 @@ protected:
 
 private:
   NEML2Object * _object;
-
-  /**
-   * @brief Parsed input file options for this object.
-
-   * These options are useful for example when we declare a variable using an input option name.
-   *
-   */
-  const OptionSet _object_options;
 
   /// The actual storage for all the buffers
   std::map<std::string, std::unique_ptr<TensorValueBase>> _buffer_values;

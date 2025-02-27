@@ -28,8 +28,13 @@
 
 namespace neml2
 {
+class Model;
+class LabeledAxisAccessor;
+using VariableName = LabeledAxisAccessor;
+class VariableBase;
+
 /**
- * @brief The base class for *nonlinear* parameters
+ * @brief Nonlinear parameter
  *
  * The word "nonlinear" refers to the fact that the parameter can change as a function of state or
  * forces. In other words, in the context of updating an implicit model, the value of the parameter
@@ -41,22 +46,14 @@ namespace neml2
  * nonlinear parameter itself is oftentimes parameterized on a set of parameters (in the canonical
  * definition). Those parameters can be calibrated or optimized.
  *
- * @tparam T The class is templated on the output tensor type which can be any NEML2 primitive
- * tensor type.
  */
-template <typename T>
-class NonlinearParameter : public Model
+struct NonlinearParameter
 {
-public:
-  static OptionSet expected_options();
-
-  NonlinearParameter(const OptionSet & options);
-
-  /// Get the nonlinear parameter
-  const Variable<T> & param() const { return _p; }
-
-protected:
-  /// The nonlinear parameter
-  Variable<T> & _p;
+  /// The model that defines this parameter
+  Model * provider;
+  /// The variable name of the model that defines this parameter
+  VariableName provider_var;
+  /// The actual parameter value
+  const VariableBase * value;
 };
 } // namespace neml2

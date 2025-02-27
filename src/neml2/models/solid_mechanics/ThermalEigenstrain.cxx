@@ -43,10 +43,10 @@ ThermalEigenstrain::expected_options()
   options.set_input("temperature") = VariableName(FORCES, "T");
   options.set("temperature").doc() = "Temperature";
 
-  options.set_buffer<TensorName>("reference_temperature");
+  options.set_buffer<TensorName<Scalar>>("reference_temperature");
   options.set("reference_temperature").doc() = "Reference (stress-free) temperature";
 
-  options.set_parameter<TensorName>("CTE");
+  options.set_parameter<TensorName<Scalar>>("CTE");
   options.set("CTE").doc() = "Coefficient of thermal expansion";
 
   return options;

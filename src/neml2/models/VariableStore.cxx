@@ -33,9 +33,8 @@
 
 namespace neml2
 {
-VariableStore::VariableStore(OptionSet options, Model * object)
+VariableStore::VariableStore(Model * object)
   : _object(object),
-    _object_options(std::move(options)),
     _input_axis(declare_axis("input")),
     _output_axis(declare_axis("output")),
     _tensor_options(default_tensor_options())
@@ -66,8 +65,8 @@ template <typename T>
 const Variable<T> &
 VariableStore::declare_input_variable(const char * name, TensorShapeRef list_shape)
 {
-  if (_object_options.contains<VariableName>(name))
-    return declare_input_variable<T>(_object_options.get<VariableName>(name), list_shape);
+  if (_object->input_options().contains<VariableName>(name))
+    return declare_input_variable<T>(_object->input_options().get<VariableName>(name), list_shape);
 
   return declare_input_variable<T>(VariableName(name), list_shape);
 }
@@ -94,8 +93,8 @@ template <typename T>
 Variable<T> &
 VariableStore::declare_output_variable(const char * name, TensorShapeRef list_shape)
 {
-  if (_object_options.contains<VariableName>(name))
-    return declare_output_variable<T>(_object_options.get<VariableName>(name), list_shape);
+  if (_object->input_options().contains<VariableName>(name))
+    return declare_output_variable<T>(_object->input_options().get<VariableName>(name), list_shape);
 
   return declare_output_variable<T>(VariableName(name), list_shape);
 }

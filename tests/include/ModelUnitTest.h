@@ -64,5 +64,9 @@ private:
   Real _secderiv_atol;
   Real _param_rtol;
   Real _param_atol;
+
+  const bool _show_params;
+  const bool _show_input;
+  const bool _show_output;
 };
 } // namespace neml2

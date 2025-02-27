@@ -52,7 +52,8 @@ LinearCombination<T>::expected_options()
   options.set_output("to_var");
   options.set("to_var").doc() = "The sum";
 
-  options.set_parameter<std::vector<TensorName>>("coefficients") = {TensorName("1")};
+  options.set_parameter<std::vector<TensorName<Scalar>>>("coefficients") = {
+      TensorName<Scalar>("1")};
   options.set("coefficients").doc() =
       "Weights associated with each variable. This option takes a list of weights, one for each "
       "coefficient. When the length of this list is 1, the same weight applies to all "
@@ -87,7 +88,7 @@ LinearCombination<T>::LinearCombination(const OptionSet & options)
   if (coef_as_param.size() == 1)
     coef_as_param = std::vector<bool>(_from.size(), coef_as_param[0]);
 
-  const auto coef_refs = options.get<std::vector<TensorName>>("coefficients");
+  const auto coef_refs = options.get<std::vector<TensorName<Scalar>>>("coefficients");
   neml_assert(coef_refs.size() == 1 || coef_refs.size() == _from.size(),
               "Expected 1 or ",
               _from.size(),

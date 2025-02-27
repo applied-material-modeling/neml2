@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include "neml2/models/NonlinearParameter.h"
+#include "neml2/models/Model.h"
 #include "neml2/models/solid_mechanics/elasticity/ElasticityInterface.h"
 #include "neml2/models/solid_mechanics/elasticity/CubicElasticityConverter.h"
 
@@ -35,7 +35,7 @@ class SSR4;
 /**
  * @brief Define an cubic symmetry elasticity tensor in various ways
  */
-class CubicElasticityTensor : public ElasticityInterface<NonlinearParameter<SSR4>, 3>
+class CubicElasticityTensor : public ElasticityInterface<Model, 3>
 {
 public:
   static OptionSet expected_options();
@@ -46,5 +46,7 @@ protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
   const CubicElasticityConverter _converter;
+
+  Variable<SSR4> & _C;
 };
 } // namespace neml2

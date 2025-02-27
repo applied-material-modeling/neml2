@@ -23,19 +23,18 @@
 // THE SOFTWARE.
 
 #include "neml2/models/ParameterStore.h"
-#include "neml2/models/NonlinearParameter.h"
-#include "neml2/models/Variable.h"
+#include "neml2/models/Model.h"
+#include "neml2/models/InputParameter.h"
 #include "neml2/misc/assertions.h"
 #include "neml2/base/TensorName.h"
+#include "neml2/base/Parser.h"
 #include "neml2/tensors/tensors.h"
-#include "neml2/base/NEML2Object.h"
 #include "neml2/tensors/TensorValue.h"
 
 namespace neml2
 {
-ParameterStore::ParameterStore(OptionSet options, NEML2Object * object)
-  : _object(object),
-    _object_options(std::move(options))
+ParameterStore::ParameterStore(Model * object)
+  : _object(object)
 {
 }
 
@@ -69,64 +68,12 @@ ParameterStore::set_parameters(const std::map<std::string, Tensor> & param_value
     set_parameter(name, value);
 }
 
-const VariableBase *
-ParameterStore::nl_param(const std::string & name) const
-{
-  return _nl_params.count(name) ? _nl_params.at(name) : nullptr;
-}
-
 std::map<std::string, std::unique_ptr<TensorValueBase>> &
 ParameterStore::named_parameters()
 {
   neml_assert(_object->host() == _object,
               "named_parameters() should only be called on the host model.");
   return _param_values;
-}
-
-std::map<std::string, const VariableBase *>
-ParameterStore::named_nonlinear_parameters(bool recursive) const
-{
-  if (!recursive)
-    return _nl_params;
-
-  const auto * model = dynamic_cast<const Model *>(this);
-  neml_assert(model, "Only models support recursive nonlinear parameter declaration");
-
-  auto all_nl_params = _nl_params;
-  for (auto * submodel : model->registered_models())
-  {
-    auto sub_nl_params = submodel->named_nonlinear_parameters(true);
-    all_nl_params.insert(sub_nl_params.begin(), sub_nl_params.end());
-  }
-  for (auto && [pname, pmodel] : _nl_param_models)
-  {
-    auto sub_nl_params = pmodel->named_nonlinear_parameters(true);
-    all_nl_params.insert(sub_nl_params.begin(), sub_nl_params.end());
-  }
-  return all_nl_params;
-}
-
-std::map<std::string, Model *>
-ParameterStore::named_nonlinear_parameter_models(bool recursive) const
-{
-  if (!recursive)
-    return _nl_param_models;
-
-  const auto * model = dynamic_cast<const Model *>(this);
-  neml_assert(model, "Only models support recursive nonlinear parameter declaration");
-
-  auto all_nl_param_models = _nl_param_models;
-  for (auto * submodel : model->registered_models())
-  {
-    auto sub_nl_param_models = submodel->named_nonlinear_parameter_models(true);
-    all_nl_param_models.insert(sub_nl_param_models.begin(), sub_nl_param_models.end());
-  }
-  for (auto && [pname, pmodel] : _nl_param_models)
-  {
-    auto sub_nl_param_models = pmodel->named_nonlinear_parameter_models(true);
-    all_nl_param_models.insert(sub_nl_param_models.begin(), sub_nl_param_models.end());
-  }
-  return all_nl_param_models;
 }
 
 template <typename T, typename>
@@ -155,66 +102,186 @@ ParameterStore::declare_parameter(const std::string & name, const T & rawval)
   return ptr->value();
 }
 
+template <typename T>
+const T &
+resolve_tensor_name(const TensorName<T> & tn, Model * caller, const std::string & pname)
+{
+  if (!caller)
+    throw ParserException("A non-nullptr caller must be provided to resolve a tensor name");
+
+  if constexpr (std::is_same_v<T, ATensor> || std::is_same_v<T, Tensor>)
+  {
+    throw ParserException("ATensr and Tensor cannot be resolved to a model output variable");
+  }
+  else
+  {
+    // When we retrieve a model, we want it to register its own parameters and buffers in the
+    // host of the caller.
+    OptionSet extra_opts;
+    extra_opts.set<NEML2Object *>("_host") = caller->host();
+
+    // The raw string is interpreted as a _variable specifier_ which takes three possible forms
+    // 1. "model_name.variable_name"
+    // 2. "model_name"
+    // 3. "variable_name"
+    Model * provider = nullptr;
+    VariableName var_name;
+
+    // Split the raw string into tokens with the delimiter '.'
+    // There must be either one or two tokens
+    auto tokens = utils::split(tn.raw(), ".");
+    if (tokens.size() != 1 && tokens.size() != 2)
+      throw ParserException("Invalid variable specifier '" + tn.raw() +
+                            "'. It should take the form 'model_name', 'variable_name', or "
+                            "'model_name.variable_name'");
+
+    // When there is only one token, it must be a model name, and the model must have one and only
+    // one output variable.
+    if (tokens.size() == 1)
+    {
+      // Try to parse it as a model name
+      const auto & mname = tokens[0];
+      try
+      {
+        // Get the model
+        provider = &Factory::get_object<Model>("Models", mname, extra_opts, /*force_create=*/false);
+
+        // Apparently, the model must have one and only one output variable.
+        const auto nvar = provider->output_axis().nvariable();
+        if (nvar == 0)
+          throw ParserException(
+              "Invalid variable specifier '" + tn.raw() +
+              "' (interpreted as model name). The model does not define any output variable.");
+        if (nvar > 1)
+          throw ParserException(
+              "Invalid variable specifier '" + tn.raw() +
+              "' (interpreted as model name). The model must have one and only one output "
+              "variable. However, it has " +
+              utils::stringify(nvar) +
+              " output variables. To disambiguite, please specify the variable name using "
+              "format 'model_name.variable_name'. The model's output axis is:\n" +
+              utils::stringify(provider->output_axis()));
+
+        // Retrieve the output variable
+        var_name = provider->output_axis().variable_names()[0];
+      }
+      // Try to parse it as a variable name
+      catch (const FactoryException & err_model)
+      {
+        auto success = utils::parse_<VariableName>(var_name, tokens[0]);
+        if (!success)
+          throw ParserException(
+              "Invalid variable specifier '" + tn.raw() +
+              "'. It should take the form 'model_name', 'variable_name', or "
+              "'model_name.variable_name'. Since there is no '.' delimiter, it can either be a "
+              "model name or a variable name. Interpreting it as a model name failed with error "
+              "message: " +
+              err_model.what() + ". It also cannot be parsed as a valid variable name.");
+
+        // Create a dummy model that defines this parameter
+        const auto obj_name = "__parameter_" + var_name.str() + "__";
+        const auto obj_type = utils::demangle(typeid(T).name()).substr(7) + "InputParameter";
+        auto options = InputParameter<T>::expected_options();
+        options.template set<std::string>("name") = obj_name;
+        options.template set<std::string>("type") = obj_type;
+        options.template set<VariableName>("from") = var_name;
+        options.template set<VariableName>("to") = var_name.with_suffix("_autogenerated");
+        options.set("to").user_specified() = true;
+        options.name() = obj_name;
+        options.type() = obj_type;
+        if (Factory::options()["Models"].count(obj_name))
+        {
+          const auto & existing_options = Factory::options()["Models"][obj_name];
+          if (!options_compatible(existing_options, options))
+            throw ParserException(
+                "Option clash when declaring an input parameter. Existing options:\n" +
+                utils::stringify(existing_options) + ". New options:\n" +
+                utils::stringify(options));
+        }
+        else
+          Factory::options()["Models"][obj_name] = std::move(options);
+
+        // Get the model
+        provider =
+            &Factory::get_object<Model>("Models", obj_name, extra_opts, /*force_create=*/false);
+
+        // Retrieve the output variable
+        var_name = provider->output_axis().variable_names()[0];
+      }
+    }
+    else
+    {
+      // The first token is the model name
+      const auto & mname = tokens[0];
+
+      // Get the model
+      provider = &Factory::get_object<Model>("Models", mname, extra_opts, /*force_create=*/false);
+
+      // The second token is the variable name
+      auto success = utils::parse_<VariableName>(var_name, tokens[1]);
+      if (!success)
+        throw ParserException("Invalid variable specifier '" + tn.raw() + "'. '" + tokens[1] +
+                              "' cannot be parsed as a valid variable name.");
+      if (!provider->output_axis().has_variable(var_name))
+        throw ParserException("Invalid variable specifier '" + tn.raw() + "'. Model '" + mname +
+                              "' does not have an output variable named '" +
+                              utils::stringify(var_name) + "'");
+    }
+
+    // Declare the input variable
+    caller->declare_input_variable<T>(var_name);
+
+    // Get the variable
+    const auto * var = &provider->output_variable(var_name);
+    const auto * var_ptr = dynamic_cast<const Variable<T> *>(var);
+    if (!var_ptr)
+      throw ParserException("The variable specifier '" + tn.raw() +
+                            "' is valid, but the variable cannot be cast to type " +
+                            utils::demangle(typeid(T).name()));
+
+    // For bookkeeping, the caller shall record the model that provides this variable
+    // This is needed for two reasons:
+    //   1. When the caller is composed with others, we need this information to automatically
+    //      bring in the provider.
+    //   2. When the caller is sent to a different device/dtype, the caller needs to forward the
+    //      call to the provider.
+    caller->register_nonlinear_parameter(pname, NonlinearParameter{provider, var_name, var_ptr});
+
+    // Done!
+    return var_ptr->value();
+  }
+}
+
 template <typename T, typename>
 const T &
 ParameterStore::declare_parameter(const std::string & name,
-                                  const TensorName & tensorname,
+                                  const TensorName<T> & tensorname,
                                   bool allow_nonlinear)
 {
   try
   {
-    return declare_parameter(name, T(tensorname));
+    return declare_parameter(name, tensorname.resolve());
   }
-  catch (const NEMLException & e1)
+  catch (const SetupException & err_tensor)
   {
-    try
-    {
-      // Handle the case of *nonlinear* parameter.
-      // Note that nonlinear parameter should only exist inside a Model.
-      auto * model = dynamic_cast<Model *>(this);
-      neml_assert(model,
-                  "Object '",
-                  _object->name(),
-                  "' of type ",
-                  model->type(),
-                  "' is trying to declare a parameter named ",
-                  name,
-                  ". It is not a plain tensor value nor a cross-referenced parameter value. Hence "
-                  "I am guessing you are declaring a *nonlinear* parameter. However, nonlinear "
-                  "parameter should only be declared by a model, and this object does not appear "
-                  "to be a model.");
-
-      neml_assert(allow_nonlinear,
-                  "Model '",
-                  _object->name(),
-                  "' of type ",
-                  model->type(),
-                  "' is trying to declare a nonlinear parameter named ",
-                  name,
-                  "'. However, nonlinear coupling has not been implemented for this parameter. If "
-                  "this is intended, please consider opening an issue on GitHub including this "
-                  "error message.");
-
-      OptionSet extra_opts;
-      extra_opts.set<NEML2Object *>("_host") = model->host();
-      const auto & pname = tensorname.raw();
-      auto & nl_param = Factory::get_object<NonlinearParameter<T>>(
-          "Models", pname, extra_opts, /*force_create=*/false);
-      model->template declare_input_variable<T>(VariableName(pname).prepend(PARAMETERS));
-      _nl_params[name] = &nl_param.param();
-      _nl_param_models[name] = &nl_param;
-      return nl_param.param().value();
-    }
-    catch (const NEMLException & e2)
-    {
-      throw NEMLException(
-          "Object '" + _object->name() + "' of type " + _object->type() +
-          " is trying to register a parameter named '" + name +
-          "'.\n\nParsing it as a plain tensor type failed with message:\n" + e1.what() +
-          "\n\nParsing it as a nonlinear parameter failed with message:\n" + e2.what() +
-          "\n\nIn addition to the above error messages, make sure you provided the correct "
-          "parameter name, option name, and parameter type.");
-    }
+    if (allow_nonlinear)
+      try
+      {
+        return resolve_tensor_name(tensorname, _object, name);
+      }
+      catch (const SetupException & err_var)
+      {
+        throw ParserException(std::string(err_tensor.what()) +
+                              "\nAn additional attempt was made to interpret the tensor name as a "
+                              "variable specifier, but it failed with error message:" +
+                              err_var.what());
+      }
+    else
+      throw ParserException(
+          std::string(err_tensor.what()) +
+          "\nThe tensor name cannot be interpreted as a variable specifier because variable "
+          "coupling has not been implemented for this parameter. If this is intended, please "
+          "consider opening an issue on the NEML2 GitHub repository.");
   }
 }
 
@@ -224,12 +291,12 @@ ParameterStore::declare_parameter(const std::string & name,
                                   const std::string & input_option_name,
                                   bool allow_nonlinear)
 {
-  if (_object_options.contains<T>(input_option_name))
-    return declare_parameter(name, _object_options.get<T>(input_option_name));
+  if (_object->input_options().contains<T>(input_option_name))
+    return declare_parameter(name, _object->input_options().get<T>(input_option_name));
 
-  if (_object_options.contains<TensorName>(input_option_name))
+  if (_object->input_options().contains<TensorName<T>>(input_option_name))
     return declare_parameter<T>(
-        name, _object_options.get<TensorName>(input_option_name), allow_nonlinear);
+        name, _object->input_options().get<TensorName<T>>(input_option_name), allow_nonlinear);
 
   throw NEMLException("Trying to register parameter named " + name + " from input option named " +
                       input_option_name + " of type " + utils::demangle(typeid(T).name()) +
@@ -244,7 +311,7 @@ FOR_ALL_TENSORBASE(PARAMETERSTORE_INTANTIATE_TENSORBASE);
 
 #define PARAMETERSTORE_INTANTIATE_PRIMITIVETENSOR(T)                                               \
   template const T & ParameterStore::declare_parameter<T>(                                         \
-      const std::string &, const TensorName &, bool);                                              \
+      const std::string &, const TensorName<T> &, bool);                                           \
   template const T & ParameterStore::declare_parameter<T>(                                         \
       const std::string &, const std::string &, bool)
 FOR_ALL_PRIMITIVETENSOR(PARAMETERSTORE_INTANTIATE_PRIMITIVETENSOR);

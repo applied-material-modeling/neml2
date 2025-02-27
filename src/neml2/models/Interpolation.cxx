@@ -36,7 +36,7 @@ Interpolation<T>::expected_options()
   // Trim 6 chars to remove 'neml2::'
   auto tensor_type = utils::demangle(typeid(T).name()).substr(7);
 
-  OptionSet options = NonlinearParameter<T>::expected_options();
+  OptionSet options = Model::expected_options();
   options.doc() = "Interpolate a " + tensor_type +
                   " as a function of the given argument. See neml2::Interpolation for rules on "
                   "shapes of the interpolant and the argument.";
@@ -44,10 +44,10 @@ Interpolation<T>::expected_options()
   options.set_input("argument");
   options.set("argument").doc() = "Argument used to query the interpolant";
 
-  options.set<TensorName>("abscissa");
+  options.set<TensorName<Scalar>>("abscissa");
   options.set("abscissa").doc() = "Scalar defining the abscissa values of the interpolant";
 
-  options.set<TensorName>("ordinate");
+  options.set<TensorName<T>>("ordinate");
   options.set("ordinate").doc() = tensor_type + " defining the ordinate values of the interpolant";
 
   return options;
@@ -55,10 +55,11 @@ Interpolation<T>::expected_options()
 
 template <typename T>
 Interpolation<T>::Interpolation(const OptionSet & options)
-  : NonlinearParameter<T>(options),
+  : Model(options),
     _X(this->template declare_parameter<Scalar>("X", "abscissa")),
     _Y(this->template declare_parameter<T>("Y", "ordinate")),
-    _x(this->template declare_input_variable<Scalar>("argument"))
+    _x(this->template declare_input_variable<Scalar>("argument")),
+    _p(this->template declare_output_variable<T>(VariableName(PARAMETERS, name())))
 {
 }
 

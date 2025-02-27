@@ -43,7 +43,7 @@ SingleSlipStrengthMap::expected_options()
   options.set_input("slip_hardening") = VariableName(STATE, "internal", "slip_hardening");
   options.set("slip_hardening").doc() = "The name of the evovling, scalar strength";
 
-  options.set_parameter<TensorName>("constant_strength");
+  options.set_parameter<TensorName<Scalar>>("constant_strength");
   options.set("constant_strength").doc() = "The constant slip system strength";
 
   return options;

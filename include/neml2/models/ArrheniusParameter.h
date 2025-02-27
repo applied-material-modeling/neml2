@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include "neml2/models/NonlinearParameter.h"
+#include "neml2/models/Model.h"
 
 namespace neml2
 {
@@ -33,7 +33,7 @@ class Scalar;
 /**
  * @brief A scalar-valued parameter following an Arrhenius type relation
  */
-class ArrheniusParameter : public NonlinearParameter<Scalar>
+class ArrheniusParameter : public Model
 {
 public:
   static OptionSet expected_options();
@@ -54,5 +54,8 @@ protected:
 
   /// Temperature
   const Variable<Scalar> & _T;
+
+  /// parameter
+  Variable<Scalar> & _p;
 };
 } // namespace neml2

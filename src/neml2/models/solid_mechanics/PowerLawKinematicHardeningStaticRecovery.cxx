@@ -44,10 +44,10 @@ PowerLawKinematicHardeningStaticRecovery::expected_options()
       "where \\f$ n \\f$ is the power law recovery exponent and \\f$\\tau\\f$ is the recovery "
       "rate.";
 
-  options.set_parameter<TensorName>("tau");
+  options.set_parameter<TensorName<Scalar>>("tau");
   options.set("tau").doc() = "Static recovery rate";
 
-  options.set_parameter<TensorName>("n");
+  options.set_parameter<TensorName<Scalar>>("n");
   options.set("n").doc() = "Static recovery exponent";
 
   return options;

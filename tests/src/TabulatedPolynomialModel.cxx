@@ -45,13 +45,13 @@ TabulatedPolynomialModel::expected_options()
   options.set<VariableName>("internal_state_1_rate") = VariableName(STATE, "s1_rate");
   options.set<VariableName>("internal_state_2_rate") = VariableName(STATE, "s2_rate");
   // Model constants
-  options.set<TensorName>("A0");
-  options.set<TensorName>("A1");
-  options.set<TensorName>("A2");
-  options.set<TensorName>("stress_tile_lower_bounds");
-  options.set<TensorName>("stress_tile_upper_bounds");
-  options.set<TensorName>("temperature_tile_lower_bounds");
-  options.set<TensorName>("temperature_tile_upper_bounds");
+  options.set<TensorName<Tensor>>("A0");
+  options.set<TensorName<Tensor>>("A1");
+  options.set<TensorName<Tensor>>("A2");
+  options.set<TensorName<Tensor>>("stress_tile_lower_bounds");
+  options.set<TensorName<Tensor>>("stress_tile_upper_bounds");
+  options.set<TensorName<Tensor>>("temperature_tile_lower_bounds");
+  options.set<TensorName<Tensor>>("temperature_tile_upper_bounds");
   options.set<Real>("index_sharpness") = 1.0;
   return options;
 }

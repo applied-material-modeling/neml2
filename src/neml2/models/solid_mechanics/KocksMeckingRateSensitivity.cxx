@@ -32,7 +32,7 @@ register_NEML2_object(KocksMeckingRateSensitivity);
 OptionSet
 KocksMeckingRateSensitivity::expected_options()
 {
-  OptionSet options = NonlinearParameter<Scalar>::expected_options();
+  OptionSet options = Model::expected_options();
   options.doc() =
       "Calculates the temperature-dependent rate sensitivity for a Perzyna-type model using the "
       "Kocks-Mecking model.  The value is \\f$ n = \\frac{\\mu b^3}{k T A} \\f$ with \\f$ \\mu "
@@ -41,9 +41,9 @@ KocksMeckingRateSensitivity::expected_options()
 
   options.set<bool>("define_second_derivatives") = true;
 
-  options.set_parameter<TensorName>("A");
+  options.set_parameter<TensorName<Scalar>>("A");
   options.set("A").doc() = "The Kocks-Mecking slope parameter";
-  options.set_parameter<TensorName>("shear_modulus");
+  options.set_parameter<TensorName<Scalar>>("shear_modulus");
   options.set("shear_modulus").doc() = "The shear modulus";
 
   options.set<Real>("k");
@@ -53,16 +53,18 @@ KocksMeckingRateSensitivity::expected_options()
 
   options.set_input("temperature") = VariableName(FORCES, "T");
   options.set("temperature").doc() = "Absolute temperature";
+
   return options;
 }
 
 KocksMeckingRateSensitivity::KocksMeckingRateSensitivity(const OptionSet & options)
-  : NonlinearParameter<Scalar>(options),
+  : Model(options),
     _A(declare_parameter<Scalar>("A", "A", /*allow_nonlinear=*/true)),
     _mu(declare_parameter<Scalar>("mu", "shear_modulus", /*allow_nonlinear=*/true)),
     _k(options.get<Real>("k")),
     _b3(options.get<Real>("b") * options.get<Real>("b") * options.get<Real>("b")),
-    _T(declare_input_variable<Scalar>("temperature"))
+    _T(declare_input_variable<Scalar>("temperature")),
+    _m(declare_output_variable<Scalar>(VariableName(PARAMETERS, name())))
 {
 }
 
@@ -70,34 +72,34 @@ void
 KocksMeckingRateSensitivity::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   if (out)
-    _p = -_mu * _b3 / (_k * _T * _A);
+    _m = -_mu * _b3 / (_k * _T * _A);
 
   if (dout_din)
   {
     if (_T.is_dependent())
-      _p.d(_T) = _b3 * _mu / (_A * _k * _T * _T);
+      _m.d(_T) = _b3 * _mu / (_A * _k * _T * _T);
     if (const auto * const mu = nl_param("mu"))
-      _p.d(*mu) = -_b3 / (_A * _k * _T);
+      _m.d(*mu) = -_b3 / (_A * _k * _T);
     if (const auto * const A = nl_param("A"))
-      _p.d(*A) = _b3 * _mu / (_A * _A * _k * _T);
+      _m.d(*A) = _b3 * _mu / (_A * _A * _k * _T);
   }
 
   if (d2out_din2)
   {
     // T, T
     if (_T.is_dependent())
-      _p.d(_T, _T) = -2.0 * _b3 * _mu / (_A * _k * _T * _T * _T);
+      _m.d(_T, _T) = -2.0 * _b3 * _mu / (_A * _k * _T * _T * _T);
 
     if (const auto * const A = nl_param("A"))
     {
       // A, A
-      _p.d(*A, *A) = -2.0 * _b3 * _mu / (_A * _A * _A * _k * _T);
+      _m.d(*A, *A) = -2.0 * _b3 * _mu / (_A * _A * _A * _k * _T);
       // A, T and T, A
       if (_T.is_dependent())
       {
         auto AT = -_b3 * _mu / (_A * _A * _k * _T * _T);
-        _p.d(*A, _T) = AT;
-        _p.d(_T, *A) = AT;
+        _m.d(*A, _T) = AT;
+        _m.d(_T, *A) = AT;
       }
     }
 
@@ -107,16 +109,16 @@ KocksMeckingRateSensitivity::set_value(bool out, bool dout_din, bool d2out_din2)
       if (_T.is_dependent())
       {
         auto MT = _b3 / (_A * _k * _T * _T);
-        _p.d(*mu, _T) = MT;
-        _p.d(_T, *mu) = MT;
+        _m.d(*mu, _T) = MT;
+        _m.d(_T, *mu) = MT;
       }
 
       if (const auto * const A = nl_param("A"))
       {
         // mu, A and A, mu
         auto MA = _b3 / (_A * _A * _k * _T);
-        _p.d(*mu, *A) = MA;
-        _p.d(*A, *mu) = MA;
+        _m.d(*mu, *A) = MA;
+        _m.d(*A, *mu) = MA;
       }
     }
   }

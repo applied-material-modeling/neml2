@@ -53,10 +53,10 @@ FredrickArmstrongPlasticHardening::expected_options()
   options.set_input("flow_direction") = VariableName(STATE, "internal", "NM");
   options.set("flow_direction").doc() = "Flow direction";
 
-  options.set_parameter<TensorName>("C");
+  options.set_parameter<TensorName<Scalar>>("C");
   options.set("C").doc() = "Kinematic hardening coefficient";
 
-  options.set_parameter<TensorName>("g");
+  options.set_parameter<TensorName<Scalar>>("g");
   options.set("g").doc() = "Dynamic recovery coefficient";
 
   return options;

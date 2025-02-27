@@ -32,27 +32,30 @@ template <typename T>
 OptionSet
 InputParameter<T>::expected_options()
 {
-  OptionSet options = NonlinearParameter<T>::expected_options();
-  options.doc() = "A parameter that is defined through an input variable. This essentially "
-                  "converts a nonlinear parameter to an input variable";
+  OptionSet options = Model::expected_options();
+  options.doc() =
+      "A parameter that is defined through an input variable. This object is not intended "
+      "to be used directly in the input file.";
 
   options.set<bool>("define_second_derivatives") = true;
 
   options.set_input("from");
-  options.set("from").doc() = "The input variable that defines this nonlinear parameter";
+  options.set("from").doc() = "The input variable that defines this parameter";
+
+  options.set_output("to");
+  options.set("to").doc() = "The name of the parameter, default to parameters/<name>";
+
   return options;
 }
 
 template <typename T>
 InputParameter<T>::InputParameter(const OptionSet & options)
-  : NonlinearParameter<T>(options),
-    _input_var(this->template declare_input_variable<T>("from"))
+  : Model(options),
+    _input_var(this->template declare_input_variable<T>("from")),
+    _p(options.get("to").user_specified()
+           ? this->template declare_output_variable<T>("to")
+           : this->template declare_output_variable<T>(VariableName(PARAMETERS, this->name())))
 {
-  neml_assert(_input_var.name().str() != this->name(),
-              "InputParameter must use an input variable name different from the parameter name. "
-              "They both has name '",
-              this->name(),
-              "'.");
 }
 
 template <typename T>

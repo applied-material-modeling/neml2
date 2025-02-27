@@ -2,7 +2,7 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'forces/T forces/effective_strain_rate params/mu'
+    input_Scalar_names = 'forces/T forces/effective_strain_rate state/mu'
     input_Scalar_values = 'T 1.1 75000'
     output_Scalar_names = 'forces/g'
     output_Scalar_values = 'g_correct'
@@ -10,16 +10,12 @@
 []
 
 [Models]
-  [mu]
-    type = ScalarInputParameter
-    from = 'params/mu'
-  []
   [model0]
     type = KocksMeckingActivationEnergy
     eps0 = 1e10
     k = 1.38064e-20
     b = 2.019e-7
-    shear_modulus = 'mu'
+    shear_modulus = 'state/mu'
   []
   [model]
     type = ComposedModel

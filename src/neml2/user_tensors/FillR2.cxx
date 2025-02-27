@@ -41,42 +41,42 @@ FillR2::expected_options()
                   "the tensor following the Voigt notation; when vector length is 9, the Scalar "
                   "values are used to fill the tensor in the row-major fashion.";
 
-  options.set<std::vector<TensorName>>("values");
+  options.set<std::vector<TensorName<Scalar>>>("values");
   options.set("values").doc() = "Scalars used to fill the R2";
 
   return options;
 }
 
 FillR2::FillR2(const OptionSet & options)
-  : R2(fill(options.get<std::vector<TensorName>>("values"))),
+  : R2(fill(options.get<std::vector<TensorName<Scalar>>>("values"))),
     UserTensorBase(options)
 {
 }
 
 R2
-FillR2::fill(const std::vector<TensorName> & values) const
+FillR2::fill(const std::vector<TensorName<Scalar>> & values) const
 {
   if (values.size() == 1)
-    return R2::fill(Scalar(values[0]));
+    return R2::fill(values[0].resolve());
   if (values.size() == 3)
-    return R2::fill(Scalar(values[0]), Scalar(values[1]), Scalar(values[2]));
+    return R2::fill(values[0].resolve(), values[1].resolve(), values[2].resolve());
   if (values.size() == 6)
-    return R2::fill(Scalar(values[0]),
-                    Scalar(values[1]),
-                    Scalar(values[2]),
-                    Scalar(values[3]),
-                    Scalar(values[4]),
-                    Scalar(values[5]));
+    return R2::fill(values[0].resolve(),
+                    values[1].resolve(),
+                    values[2].resolve(),
+                    values[3].resolve(),
+                    values[4].resolve(),
+                    values[5].resolve());
   if (values.size() == 9)
-    return R2::fill(Scalar(values[0]),
-                    Scalar(values[1]),
-                    Scalar(values[2]),
-                    Scalar(values[3]),
-                    Scalar(values[4]),
-                    Scalar(values[5]),
-                    Scalar(values[6]),
-                    Scalar(values[7]),
-                    Scalar(values[8]));
+    return R2::fill(values[0].resolve(),
+                    values[1].resolve(),
+                    values[2].resolve(),
+                    values[3].resolve(),
+                    values[4].resolve(),
+                    values[5].resolve(),
+                    values[6].resolve(),
+                    values[7].resolve(),
+                    values[8].resolve());
 
   neml_assert(false,
               "Number of values must be 1, 3, 6, or 9, but ",

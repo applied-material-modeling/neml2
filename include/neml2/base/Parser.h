@@ -69,14 +69,29 @@ public:
 namespace utils
 {
 template <typename T>
-void
+std::string
+parse_failure_message(const std::string & raw_str)
+{
+  if constexpr (std::is_same_v<T, bool>)
+    return "Failed to parse '" + raw_str +
+           "' as a boolean. Only 'true' and 'false' (case-sensitive) are recognized.";
+
+  if constexpr (std::is_same_v<T, TensorShape>)
+    return "Failed to parse '" + raw_str +
+           "' as a tensor shape. Tensor shapes must be of the form "
+           "'(d1,d2,...,dn)': It must begin with '(' and end with ')', d1, d2, "
+           "... must be integers, and there must be no white spaces.";
+
+  return "Failed to parse '" + raw_str + "' as a " + utils::demangle(typeid(T).name());
+}
+
+template <typename T>
+bool
 parse_(T & val, const std::string & raw_str)
 {
   std::stringstream ss(trim(raw_str));
   ss >> val;
-  if (ss.fail())
-    throw ParserException("Failed to parse '" + raw_str + "' as a " +
-                          utils::demangle(typeid(T).name()));
+  return !ss.fail();
 }
 
 template <typename T>
@@ -84,12 +99,14 @@ T
 parse(const std::string & raw_str)
 {
   T val;
-  parse_(val, raw_str);
+  auto success = parse_(val, raw_str);
+  if (!success)
+    throw ParserException(parse_failure_message<T>(raw_str));
   return val;
 }
 
 template <typename T>
-void
+bool
 parse_vector_(std::vector<T> & vals, const std::string & raw_str)
 {
   auto tokens = split(raw_str, " \t\n\v\f\r");
@@ -98,7 +115,12 @@ parse_vector_(std::vector<T> & vals, const std::string & raw_str)
   else
     vals.resize(tokens.size());
   for (size_t i = 0; i < tokens.size(); i++)
-    parse_<T>(vals[i], tokens[i]);
+  {
+    auto success = parse_<T>(vals[i], tokens[i]);
+    if (!success)
+      return false;
+  }
+  return true;
 }
 
 template <typename T>
@@ -106,18 +128,26 @@ std::vector<T>
 parse_vector(const std::string & raw_str)
 {
   std::vector<T> vals;
-  parse_vector_(vals, raw_str);
+  auto success = parse_vector_(vals, raw_str);
+  if (!success)
+    throw ParserException("Failed to parse '" + raw_str + "' as a vector of " +
+                          utils::demangle(typeid(T).name()));
   return vals;
 }
 
 template <typename T>
-void
+bool
 parse_vector_vector_(std::vector<std::vector<T>> & vals, const std::string & raw_str)
 {
   auto token_vecs = split(raw_str, ";");
   vals.resize(token_vecs.size());
   for (size_t i = 0; i < token_vecs.size(); i++)
-    parse_vector_<T>(vals[i], token_vecs[i]);
+  {
+    auto success = parse_vector_<T>(vals[i], token_vecs[i]);
+    if (!success)
+      return false;
+  }
+  return true;
 }
 
 template <typename T>
@@ -125,23 +155,26 @@ std::vector<std::vector<T>>
 parse_vector_vector(const std::string & raw_str)
 {
   std::vector<std::vector<T>> vals;
-  parse_vector_vector_(vals, raw_str);
+  auto success = parse_vector_vector_(vals, raw_str);
+  if (!success)
+    throw ParserException("Failed to parse '" + raw_str + "' as a vector of vector of " +
+                          utils::demangle(typeid(T).name()));
   return vals;
 }
 
 // template specializations for special option types
 template <>
-void parse_<bool>(bool &, const std::string & raw_str);
+bool parse_<bool>(bool &, const std::string & raw_str);
 /// This special one is for the evil std::vector<bool>!
 template <>
-void parse_vector_<bool>(std::vector<bool> &, const std::string & raw_str);
+bool parse_vector_<bool>(std::vector<bool> &, const std::string & raw_str);
 template <>
-void parse_<TensorShape>(TensorShape &, const std::string & raw_str);
+bool parse_<TensorShape>(TensorShape &, const std::string & raw_str);
 template <>
-void parse_<VariableName>(VariableName &, const std::string & raw_str);
+bool parse_<VariableName>(VariableName &, const std::string & raw_str);
 template <>
 Device parse<Device>(const std::string & raw_str);
 template <>
-void parse_<Device>(Device &, const std::string & raw_str);
+bool parse_<Device>(Device &, const std::string & raw_str);
 } // namespace utils
 } // namespace neml2

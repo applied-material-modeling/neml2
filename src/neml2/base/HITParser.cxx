@@ -124,12 +124,15 @@ HITParser::extract_option(hit::Node * n, OptionSet & options) const
 {
 #define extract_option_base(ptype, method)                                                         \
   else if (option->type() == utils::demangle(typeid(ptype).name()))                                \
-      method(dynamic_cast<Option<ptype> *>(option.get())->set(), n->strVal())
+      neml_assert(method(dynamic_cast<Option<ptype> *>(option.get())->set(), n->strVal()),         \
+                  utils::parse_failure_message<ptype>(n->strVal()))
 
 #define extract_option_t(ptype)                                                                    \
   extract_option_base(ptype, utils::parse_<ptype>);                                                \
   extract_option_base(std::vector<ptype>, utils::parse_vector_<ptype>);                            \
   extract_option_base(std::vector<std::vector<ptype>>, utils::parse_vector_vector_<ptype>)
+
+#define extract_option_tensor_t(ptype) extract_option_t(TensorName<ptype>)
 
   if (n->type() == hit::NodeType::Field)
   {
@@ -157,7 +160,8 @@ HITParser::extract_option(hit::Node * n, OptionSet & options) const
         extract_option_t(VariableName);
         extract_option_t(EnumSelection);
         extract_option_t(MultiEnumSelection);
-        extract_option_t(TensorName);
+        FOR_ALL_TENSORBASE(extract_option_tensor_t);
+        extract_option_tensor_t(ATensor);
         extract_option_t(Device);
         // LCOV_EXCL_START
         else neml_assert(false, "Unsupported option type for option ", n->fullpath());

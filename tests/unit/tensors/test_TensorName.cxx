@@ -50,9 +50,9 @@ TEST_CASE("TensorName", "[base]")
 
   SECTION("Scalar operator=")
   {
-    TensorName a;
+    TensorName<Scalar> a;
     a = "3";
-    REQUIRE(at::allclose(Scalar(a), Scalar::create(3.0)));
+    REQUIRE(at::allclose(a.resolve(), Scalar::create(3.0)));
   }
 
   SECTION("empty scalar")
@@ -63,16 +63,16 @@ TEST_CASE("TensorName", "[base]")
 
   SECTION("SR2 operator=")
   {
-    TensorName a;
+    TensorName<SR2> a;
     a = "3";
-    REQUIRE(at::allclose(SR2(a), SR2::full(3)));
+    REQUIRE(at::allclose(a.resolve(), SR2::full(3)));
   }
 
-  SECTION("Tensor operator=")
+  SECTION("ATensor operator=")
   {
-    TensorName a;
+    TensorName<ATensor> a;
     a = "3";
-    REQUIRE(at::allclose(ATensor(a), Scalar::create(3.0)));
+    REQUIRE(at::allclose(a.resolve(), Scalar::create(3.0)));
   }
 
   SECTION("empty tensor")

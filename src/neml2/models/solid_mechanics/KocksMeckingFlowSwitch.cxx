@@ -42,7 +42,7 @@ KocksMeckingFlowSwitch::expected_options()
                   "greater than the threshold use the rate dependent flow rule.  This version uses "
                   "a soft switch between the models, based on a tanh sigmoid function.";
 
-  options.set_parameter<TensorName>("g0");
+  options.set_parameter<TensorName<Scalar>>("g0");
   options.set("g0").doc() = "Critical value of activation energy";
 
   options.set_input("activation_energy") = VariableName(FORCES, "g");

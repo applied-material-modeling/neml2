@@ -50,9 +50,9 @@ SlopeSaturationVoceIsotropicHardening::expected_options()
   options.set("isotropic_hardening_rate").doc() =
       "Rate of isotropic hardening, defaults to isotropic_hardening + _rate";
 
-  options.set_parameter<TensorName>("saturated_hardening");
+  options.set_parameter<TensorName<Scalar>>("saturated_hardening");
   options.set("saturated_hardening").doc() = "Saturated isotropic hardening";
-  options.set_parameter<TensorName>("initial_hardening_rate");
+  options.set_parameter<TensorName<Scalar>>("initial_hardening_rate");
   options.set("initial_hardening_rate").doc() = "Initial hardening rate";
 
   return options;

@@ -32,7 +32,7 @@ register_NEML2_object(IsotropicElasticityTensor);
 OptionSet
 IsotropicElasticityTensor::expected_options()
 {
-  OptionSet options = ElasticityInterface<NonlinearParameter<SSR4>, 2>::expected_options();
+  OptionSet options = ElasticityInterface<Model, 2>::expected_options();
   options.doc() = "This class defines an isotropic elasticity tensor using two parameters."
                   "  Various options are available for which two parameters to provide.";
 
@@ -40,8 +40,9 @@ IsotropicElasticityTensor::expected_options()
 }
 
 IsotropicElasticityTensor::IsotropicElasticityTensor(const OptionSet & options)
-  : ElasticityInterface<NonlinearParameter<SSR4>, 2>(options),
-    _converter(_constant_types, _need_derivs)
+  : ElasticityInterface<Model, 2>(options),
+    _converter(_constant_types, _need_derivs),
+    _C(declare_output_variable<SSR4>(VariableName(PARAMETERS, name())))
 {
 }
 
@@ -56,15 +57,15 @@ IsotropicElasticityTensor::set_value(bool out, bool dout_din, bool /*d2out_din2*
   const auto Id = SSR4::identity_dev(G.options());
 
   if (out)
-    _p = 3.0 * K * Iv + 2.0 * G * Id;
+    _C = 3.0 * K * Iv + 2.0 * G * Id;
 
   if (dout_din)
   {
     if (const auto * const p1 = nl_param(neml2::name(_constant_types[0])))
-      _p.d(*p1) = 3.0 * dK[0] * Iv + 2.0 * dG[0] * Id;
+      _C.d(*p1) = 3.0 * dK[0] * Iv + 2.0 * dG[0] * Id;
 
     if (const auto * const p2 = nl_param(neml2::name(_constant_types[1])))
-      _p.d(*p2) = 3.0 * dK[1] * Iv + 2.0 * dG[1] * Id;
+      _C.d(*p2) = 3.0 * dK[1] * Iv + 2.0 * dG[1] * Id;
   }
 }
 

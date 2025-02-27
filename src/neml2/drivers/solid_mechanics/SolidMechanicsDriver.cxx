@@ -40,13 +40,13 @@ SolidMechanicsDriver::expected_options()
 
   options.set<VariableName>("temperature") = VariableName(FORCES, "T");
   options.set("temperature").doc() = "Name of temperature";
-  options.set<TensorName>("prescribed_temperature");
+  options.set<TensorName<Scalar>>("prescribed_temperature");
   options.set("prescribed_temperature").doc() =
       "Actual prescibed temperature values, when providing temperatures to the model";
 
   options.set<VariableName>("mixed_driving_force") = VariableName(FORCES, "fixed_values");
   options.set("mixed_driving_force").doc() = "Name of mixed driving force when using mixed control";
-  options.set<TensorName>("prescribed_mixed_driving_force");
+  options.set<TensorName<SR2>>("prescribed_mixed_driving_force");
   options.set("prescribed_mixed_driving_force").doc() =
       "The fixed, controlled values provided as user input for the mixed control case.  Where the "
       "control signal is 0 these are strain/deformation values, where it is 1 these are stress "
@@ -55,7 +55,7 @@ SolidMechanicsDriver::expected_options()
   options.set<VariableName>("mixed_control_signal") = VariableName(FORCES, "control");
   options.set("mixed_control_signal").doc() =
       "The name of the control signal for mixed control on the input axis";
-  options.set<TensorName>("prescribed_mixed_control_signal");
+  options.set<TensorName<SR2>>("prescribed_mixed_control_signal");
   options.set("prescribed_mixed_control_signal").doc() =
       "The actual values of the control signal for mixed control. 0 implies strain/deformation "
       "control, 1 implies stress control";
@@ -94,11 +94,11 @@ void
 SolidMechanicsDriver::init_mixed_control(const OptionSet & options)
 {
   _driving_force_name = options.get<VariableName>("mixed_driving_force");
-  _driving_force = SR2(options.get<TensorName>("prescribed_mixed_driving_force"));
+  _driving_force = options.get<TensorName<SR2>>("prescribed_mixed_driving_force").resolve();
   _driving_force = _driving_force.to(_device);
 
   _mixed_control_name = options.get<VariableName>("mixed_control_signal");
-  _mixed_control = SR2(options.get<TensorName>("prescribed_mixed_control_signal"));
+  _mixed_control = options.get<TensorName<SR2>>("prescribed_mixed_control_signal").resolve();
   _mixed_control = _mixed_control.to(_device);
 }
 
@@ -106,7 +106,7 @@ void
 SolidMechanicsDriver::init_temperature_control(const OptionSet & options)
 {
   _temperature_name = options.get<VariableName>("temperature");
-  _temperature = Scalar(options.get<TensorName>("prescribed_temperature"));
+  _temperature = options.get<TensorName<Scalar>>("prescribed_temperature").resolve();
   _temperature = _temperature.to(_device);
 }
 

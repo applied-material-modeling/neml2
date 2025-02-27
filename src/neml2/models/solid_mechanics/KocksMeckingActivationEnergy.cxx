@@ -41,7 +41,7 @@ KocksMeckingActivationEnergy::expected_options()
       "temperature, \\f$ b \\f$ the Burgers vector length, \\f$ \\dot{\\varepsilon}_0 \\f$ a "
       "reference strain rate, and \\f$ \\dot{\\varepsilon} \\f$ the current strain rate.";
 
-  options.set_parameter<TensorName>("shear_modulus");
+  options.set_parameter<TensorName<Scalar>>("shear_modulus");
   options.set("shear_modulus").doc() = "The shear modulus";
 
   options.set<Real>("eps0");

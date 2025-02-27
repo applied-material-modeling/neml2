@@ -55,6 +55,11 @@ protected:
     OptionSet extra_opts;
     extra_opts.set<NEML2Object *>("_host") = host();
     auto data = Factory::get_object_ptr<T>("Data", name, extra_opts, /*force_create=*/false);
+
+    if (std::find(_registered_data.begin(), _registered_data.end(), data.get()) !=
+        _registered_data.end())
+      throw SetupException("Data named '" + name + "' has already been registered.");
+
     _registered_data.push_back(data.get());
     return *data;
   }

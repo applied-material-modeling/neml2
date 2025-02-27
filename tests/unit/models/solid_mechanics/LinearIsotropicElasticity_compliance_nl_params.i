@@ -2,7 +2,7 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'params/E params/nu'
+    input_Scalar_names = 'state/E state/nu'
     input_Scalar_values = '100 0.3'
     input_SR2_names = 'state/S'
     input_SR2_values = 'S'
@@ -23,17 +23,9 @@
 []
 
 [Models]
-  [E]
-    type = ScalarInputParameter
-    from = 'params/E'
-  []
-  [nu]
-    type = ScalarInputParameter
-    from = 'params/nu'
-  []
   [model0]
     type = LinearIsotropicElasticity
-    coefficients = 'E nu'
+    coefficients = 'state/E state/nu'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
     compliance = true
   []

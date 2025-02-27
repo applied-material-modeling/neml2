@@ -37,7 +37,7 @@ GeneralElasticity::expected_options()
   options.doc() += " This verion implements a general relation using the elasticity tensor, "
                    "expressed as an SSR4 object";
 
-  options.set_parameter<TensorName>("elastic_stiffness_tensor");
+  options.set_parameter<TensorName<SSR4>>("elastic_stiffness_tensor");
   options.set("elastic_stiffness_tensor").doc() = "Elastic stiffness tensor";
 
   return options;

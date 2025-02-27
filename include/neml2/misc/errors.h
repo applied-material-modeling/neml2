@@ -45,10 +45,10 @@ protected:
   std::string _msg;
 };
 
-class ParserException : public std::exception
+class SetupException : public std::exception
 {
 public:
-  ParserException(std::string msg)
+  SetupException(std::string msg)
     : _msg(std::move(msg))
   {
   }
@@ -57,6 +57,24 @@ public:
 
 private:
   std::string _msg;
+};
+
+class ParserException : public SetupException
+{
+public:
+  ParserException(std::string msg)
+    : SetupException(std::move(msg))
+  {
+  }
+};
+
+class FactoryException : public SetupException
+{
+public:
+  FactoryException(std::string msg)
+    : SetupException(std::move(msg))
+  {
+  }
 };
 
 /// Exception type reserved for diagnostics, so as to not conceptually clash with other exceptions

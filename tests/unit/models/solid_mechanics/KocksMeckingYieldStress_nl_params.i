@@ -2,7 +2,7 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'params/mu params/C'
+    input_Scalar_names = 'state/mu state/C'
     input_Scalar_values = 'mu_in C_in'
     output_Scalar_names = 'parameters/p'
     output_Scalar_values = 'p_correct'
@@ -11,18 +11,10 @@
 []
 
 [Models]
-  [mu]
-    type = ScalarInputParameter
-    from = 'params/mu'
-  []
-  [C]
-    type = ScalarInputParameter
-    from = 'params/C'
-  []
   [p]
     type = KocksMeckingYieldStress
-    C = 'C'
-    shear_modulus = 'mu'
+    C = 'state/C'
+    shear_modulus = 'state/mu'
   []
   [model]
     type = ComposedModel

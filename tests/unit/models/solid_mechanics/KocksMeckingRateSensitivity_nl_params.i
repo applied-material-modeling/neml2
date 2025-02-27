@@ -2,7 +2,7 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'forces/T params/mu params/A'
+    input_Scalar_names = 'forces/T state/mu state/A'
     input_Scalar_values = '1000 mu_in A_in'
     output_Scalar_names = 'parameters/p'
     output_Scalar_values = 'p_correct'
@@ -11,18 +11,10 @@
 []
 
 [Models]
-  [mu]
-    type = ScalarInputParameter
-    from = 'params/mu'
-  []
-  [A]
-    type = ScalarInputParameter
-    from = 'params/A'
-  []
   [p]
     type = KocksMeckingRateSensitivity
-    shear_modulus = 'mu'
-    A = 'A'
+    shear_modulus = 'state/mu'
+    A = 'state/A'
     k = 1.38064e-20
     b = 2.019e-7
     temperature = 'forces/T'

@@ -2,7 +2,7 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'params/sy'
+    input_Scalar_names = 'state/sy'
     input_Scalar_values = '50'
     input_SR2_names = 'state/internal/M'
     input_SR2_values = 'M'
@@ -21,10 +21,6 @@
 []
 
 [Models]
-  [sy]
-    type = ScalarInputParameter
-    from = 'params/sy'
-  []
   [vonmises]
     type = SR2Invariant
     invariant_type = 'VONMISES'
@@ -33,7 +29,7 @@
   []
   [yield]
     type = YieldFunction
-    yield_stress = 'sy'
+    yield_stress = 'state/sy'
   []
   [model]
     type = ComposedModel

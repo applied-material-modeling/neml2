@@ -24,14 +24,14 @@
 
 #pragma once
 
-#include "neml2/models/NonlinearParameter.h"
+#include "neml2/models/Model.h"
 
 namespace neml2
 {
 class Scalar;
 
 /**
- * @brief The base class for interpolated nonlinear parameter
+ * @brief The base class for interpolated variable
  *
  * This model requires two parameters, namely the "abscissa" and the "ordinate". The ordinate is
  * interpolated using an input (specified by the "argument" option) along the axis of abscissa.
@@ -47,7 +47,7 @@ class Scalar;
  * 5. Broadcasting the input with the interpolant should not alter its batch shape.
  */
 template <typename T>
-class Interpolation : public NonlinearParameter<T>
+class Interpolation : public Model
 {
 public:
   static OptionSet expected_options();
@@ -63,5 +63,8 @@ protected:
 
   /// Argument of interpolation
   const Variable<Scalar> & _x;
+
+  /// The interpolated value
+  Variable<T> & _p;
 };
 } // namespace neml2

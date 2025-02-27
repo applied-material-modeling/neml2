@@ -31,19 +31,20 @@ template <typename T>
 OptionSet
 ConstantParameter<T>::expected_options()
 {
-  OptionSet options = NonlinearParameter<T>::expected_options();
+  OptionSet options = Model::expected_options();
   options.doc() = "A parameter that is just a constant value, generally used to refer to a "
                   "parameter in more than one downstream object.";
 
-  options.set_parameter<TensorName>("value");
+  options.set_parameter<TensorName<T>>("value");
   options.set("value").doc() = "The constant value of the parameter";
   return options;
 }
 
 template <typename T>
 ConstantParameter<T>::ConstantParameter(const OptionSet & options)
-  : NonlinearParameter<T>(options),
-    _value(this->template declare_parameter<T>("value", "value", /*allow_nonlinear=*/true))
+  : Model(options),
+    _value(this->template declare_parameter<T>("value", "value", /*allow_nonlinear=*/true)),
+    _p(this->template declare_output_variable<T>(VariableName(PARAMETERS, name())))
 {
 }
 

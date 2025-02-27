@@ -39,19 +39,19 @@ LDISolidMechanicsDriver::expected_options()
 
   options.set<VariableName>("deformation_rate") = VariableName(FORCES, "deformation_rate");
   options.set("deformation_rate").doc() = "Deformation rate";
-  options.set<TensorName>("prescribed_deformation_rate");
+  options.set<TensorName<SR2>>("prescribed_deformation_rate");
   options.set("prescribed_deformation_rate").doc() =
       "Prescribed deformation rate (when control = STRAIN)";
 
   options.set<VariableName>("cauchy_stress_rate") = VariableName(FORCES, "cauchy_stress_rate");
   options.set("cauchy_stress_rate").doc() = "Cauchy stress rate";
-  options.set<TensorName>("prescribed_cauchy_stress_rate");
+  options.set<TensorName<SR2>>("prescribed_cauchy_stress_rate");
   options.set("prescribed_cauchy_stress_rate").doc() =
       "Prescribed cauchy stress rate (when control = STRESS)";
 
   options.set<VariableName>("vorticity") = VariableName(FORCES, "vorticity");
   options.set("vorticity").doc() = "Vorticity";
-  options.set<TensorName>("prescribed_vorticity");
+  options.set<TensorName<WR2>>("prescribed_vorticity");
   options.set("prescribed_vorticity").doc() = "Prescribed vorticity";
 
   options.set<bool>("cp_warmup") = false;
@@ -88,7 +88,7 @@ void
 LDISolidMechanicsDriver::init_strain_control(const OptionSet & options)
 {
   _driving_force_name = options.get<VariableName>("deformation_rate");
-  _driving_force = SR2(options.get<TensorName>("prescribed_deformation_rate"));
+  _driving_force = options.get<TensorName<SR2>>("prescribed_deformation_rate").resolve();
   _driving_force = _driving_force.to(_device);
 }
 
@@ -96,7 +96,7 @@ void
 LDISolidMechanicsDriver::init_stress_control(const OptionSet & options)
 {
   _driving_force_name = options.get<VariableName>("cauchy_stress_rate");
-  _driving_force = SR2(options.get<TensorName>("prescribed_cauchy_stress_rate"));
+  _driving_force = options.get<TensorName<SR2>>("prescribed_cauchy_stress_rate").resolve();
   _driving_force = _driving_force.to(_device);
 }
 
@@ -104,7 +104,7 @@ void
 LDISolidMechanicsDriver::init_vorticity_control(const OptionSet & options)
 {
   _vorticity_name = options.get<VariableName>("vorticity");
-  _vorticity = WR2(options.get<TensorName>("prescribed_vorticity"));
+  _vorticity = options.get<TensorName<WR2>>("prescribed_vorticity").resolve();
   _vorticity = _vorticity.to(_device);
 }
 

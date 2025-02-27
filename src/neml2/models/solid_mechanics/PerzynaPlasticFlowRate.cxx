@@ -43,10 +43,10 @@ PerzynaPlasticFlowRate::expected_options()
       "where \\f$ f \\f$ is the yield function, \\f$ \\eta \\f$ is the reference stress, and \\f$ "
       "n \\f$ is the power-law exponent.";
 
-  options.set_parameter<TensorName>("reference_stress");
+  options.set_parameter<TensorName<Scalar>>("reference_stress");
   options.set("reference_stress").doc() = "Reference stress";
 
-  options.set_parameter<TensorName>("exponent");
+  options.set_parameter<TensorName<Scalar>>("exponent");
   options.set("exponent").doc() = "Power-law exponent";
 
   return options;
