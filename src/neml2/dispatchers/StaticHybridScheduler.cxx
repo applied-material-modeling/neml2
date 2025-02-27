@@ -45,7 +45,7 @@ StaticHybridScheduler::expected_options()
   options.set("batch_sizes").doc() = "List of batch sizes for each device";
 
   options.set<std::vector<std::size_t>>("capacities") = {};
-  options.set("capacities").doc() = "List of capacities for each device";
+  options.set("capacities").doc() = "List of capacities for each device, default to batch_sizes";
 
   options.set<std::vector<double>>("priorities") = {};
   options.set("priorities").doc() = "List of priorities for each device";
@@ -54,7 +54,8 @@ StaticHybridScheduler::expected_options()
 }
 
 StaticHybridScheduler::StaticHybridScheduler(const OptionSet & options)
-  : WorkScheduler(options)
+  : WorkScheduler(options),
+    _available_devices(options.get<std::vector<Device>>("devices"))
 {
 }
 
@@ -114,7 +115,7 @@ StaticHybridScheduler::setup()
   // Expand capacity if necessary
   auto capacities_expand = capacities;
   if (capacities.empty())
-    capacities_expand.resize(device_list.size(), std::numeric_limits<std::size_t>::max());
+    capacities_expand = batch_sizes_expand;
   else if (capacities.size() == 1)
     capacities_expand.resize(device_list.size(), capacities[0]);
   else
@@ -135,8 +136,14 @@ StaticHybridScheduler::setup()
         device_list[i], batch_sizes_expand[i], capacities_expand[i], priorities_expand[i]);
 }
 
+void
+StaticHybridScheduler::set_availability_calculator(std::function<double(const DeviceStatus &)> f)
+{
+  _custom_availability_calculator = std::move(f);
+}
+
 bool
-StaticHybridScheduler::schedule_work(Device & device, std::size_t & n) const
+StaticHybridScheduler::schedule_work_impl(Device & device, std::size_t & n) const
 {
   bool available = false;
   double max_availability = std::numeric_limits<double>::lowest();
@@ -158,13 +165,7 @@ StaticHybridScheduler::schedule_work(Device & device, std::size_t & n) const
 }
 
 void
-StaticHybridScheduler::set_availability_calculator(std::function<double(const DeviceStatus &)> f)
-{
-  _custom_availability_calculator = std::move(f);
-}
-
-void
-StaticHybridScheduler::dispatched_work(Device device, std::size_t n)
+StaticHybridScheduler::dispatched_work_impl(Device device, std::size_t n)
 {
   for (auto & i : _devices)
     if (i.device == device)
@@ -179,7 +180,7 @@ StaticHybridScheduler::dispatched_work(Device device, std::size_t n)
 }
 
 void
-StaticHybridScheduler::completed_work(Device device, std::size_t n)
+StaticHybridScheduler::completed_work_impl(Device device, std::size_t n)
 {
   for (auto & i : _devices)
     if (i.device == device)
@@ -190,5 +191,14 @@ StaticHybridScheduler::completed_work(Device device, std::size_t n)
     }
 
   neml_assert(false, "Device not found: ", device);
+}
+
+bool
+StaticHybridScheduler::all_work_completed() const
+{
+  for (const auto & i : _devices)
+    if (i.load > 0)
+      return false;
+  return true;
 }
 } // namespace neml2

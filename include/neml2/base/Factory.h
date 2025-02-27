@@ -26,6 +26,8 @@
 
 #include <filesystem>
 #include <iostream>
+#include <thread>
+#include <mutex>
 
 #include "neml2/misc/errors.h"
 #include "neml2/base/Settings.h"
@@ -66,8 +68,22 @@ void reload_input(const std::filesystem::path & path, const std::string & additi
 class Factory
 {
 public:
-  /// Get the global Factory singleton.
-  static Factory & get();
+  /// Get the Factory singleton for a given thread
+  static Factory & get(std::thread::id tid = std::this_thread::get_id());
+
+  /// Get the global options singleton
+  static OptionCollection & options();
+
+  /// Get the global settings singleton
+  static Settings & settings();
+
+  /**
+   * @brief Provide all objects' options to the factory. The factory is ready to manufacture
+   * objects after this call, e.g., through either manufacture, get_object, or get_object_ptr.
+   *
+   * @param all_options The collection of all the options of the objects to be manufactured.
+   */
+  static void load_options(const OptionCollection & all_options);
 
   /**
    * @brief Retrive an object pointer under the given section with the given object name.
@@ -83,13 +99,15 @@ public:
    * @param additional_options Additional input options to pass to the object constructor
    * @param force_create (Optional) Force the factory to create a new object even if the object has
    * already been created.
+   * @param tid (Optional) The thread id of the object to be retrieved.
    * @return std::shared_ptr<T> The object pointer.
    */
   template <class T>
   static std::shared_ptr<T> get_object_ptr(const std::string & section,
                                            const std::string & name,
                                            const OptionSet & additional_options = OptionSet(),
-                                           bool force_create = true);
+                                           bool force_create = true,
+                                           std::thread::id tid = std::this_thread::get_id());
 
   /**
    * @brief Retrive an object reference under the given section with the given object name.
@@ -105,26 +123,17 @@ public:
    * @param additional_options Additional input options to pass to the object constructor
    * @param force_create (Optional) Force the factory to create a new object even if the object has
    * already been created.
+   * @param tid (Optional) The thread id of the object to be retrieved.
    * @return T & The object reference.
    */
   template <class T>
   static T & get_object(const std::string & section,
                         const std::string & name,
                         const OptionSet & additional_options = OptionSet(),
-                        bool force_create = true);
+                        bool force_create = true,
+                        std::thread::id tid = std::this_thread::get_id());
 
-  /**
-   * @brief Provide all objects' options to the factory. The factory is ready to manufacture
-   * objects after this call, e.g., through either manufacture, get_object, or get_object_ptr.
-   *
-   * @param all_options The collection of all the options of the objects to be manufactured.
-   */
-  static void load_options(const OptionCollection & all_options);
-
-  /// Get the loaded options
-  static const OptionCollection & loaded_options();
-
-  /// @brief Destruct all the objects.
+  /// @brief Delete all factories and destruct all the objects.
   static void clear();
 
   /**
@@ -144,17 +153,17 @@ protected:
   void create_object(const std::string & section, const OptionSet & options);
 
 private:
-  /// The collection of all the options of the objects to be manufactured.
-  OptionCollection _all_options;
+  /// Get the Factory singletons for all threads
+  static std::map<std::thread::id, Factory> & get_all();
+
+  /// Get the mutex for the Factory
+  static std::mutex & get_mutex();
 
   /**
    * Manufactured objects. The key of the outer map is the section name, and the key of the inner
    * map is the object name.
    */
   std::map<std::string, std::map<std::string, std::vector<std::shared_ptr<NEML2Object>>>> _objects;
-
-  /// Global settings
-  Settings _settings;
 };
 
 template <class T>
@@ -162,9 +171,10 @@ inline std::shared_ptr<T>
 Factory::get_object_ptr(const std::string & section,
                         const std::string & name,
                         const OptionSet & additional_options,
-                        bool force_create)
+                        bool force_create,
+                        std::thread::id tid)
 {
-  auto & factory = Factory::get();
+  auto & factory = Factory::get(tid);
 
   // Easy if it already exists
   if (!force_create)
@@ -186,7 +196,7 @@ Factory::get_object_ptr(const std::string & section,
       }
 
   // Otherwise try to create it
-  for (auto & options : factory._all_options[section])
+  for (auto & options : Factory::options()[section])
     if (options.first == name)
     {
       auto new_options = options.second;
@@ -211,8 +221,9 @@ inline T &
 Factory::get_object(const std::string & section,
                     const std::string & name,
                     const OptionSet & additional_options,
-                    bool force_create)
+                    bool force_create,
+                    std::thread::id tid)
 {
-  return *Factory::get_object_ptr<T>(section, name, additional_options, force_create);
+  return *Factory::get_object_ptr<T>(section, name, additional_options, force_create, tid);
 }
 } // namespace neml2

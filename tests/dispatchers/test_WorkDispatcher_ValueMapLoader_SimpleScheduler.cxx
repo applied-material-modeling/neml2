@@ -65,8 +65,6 @@ TEST_CASE("WorkDispatcher ValueMapLoader SimpleScheduler", "[dispatchers]")
   { return valuemap_cat_reduce(std::move(results), batch_dim); };
 
   ValueMapLoader loader(x, batch_dim);
-  WorkDispatcher</*I=*/ValueMap, /*O=*/ValueMap, /*Of=*/ValueMap, /*Ip=*/ValueMap, /*Op=*/ValueMap>
-      dispatcher(func, red, &valuemap_move_device, &valuemap_no_operation);
 
   SECTION("cpu")
   {
@@ -76,15 +74,29 @@ TEST_CASE("WorkDispatcher ValueMapLoader SimpleScheduler", "[dispatchers]")
     options.set<size_t>("capacity") = 55;
     SimpleScheduler scheduler(options);
 
-    SECTION("run")
+    SECTION("device") { REQUIRE(scheduler.devices() == std::vector<Device>{Device("cpu")}); }
+
+    SECTION("run_sync")
     {
-      auto y = dispatcher.run(loader, scheduler);
+      WorkDispatcher</*I=*/ValueMap,
+                     /*O=*/ValueMap,
+                     /*Of=*/ValueMap,
+                     /*Ip=*/ValueMap,
+                     /*Op=*/ValueMap>
+          dispatcher(scheduler, false, func, red, &valuemap_move_device, &valuemap_no_operation);
+      auto y = dispatcher.run(loader);
       REQUIRE(at::allclose(y[stress_name], stress));
     }
 
     SECTION("run_async")
     {
-      auto y = dispatcher.run_async(loader, scheduler);
+      WorkDispatcher</*I=*/ValueMap,
+                     /*O=*/ValueMap,
+                     /*Of=*/ValueMap,
+                     /*Ip=*/ValueMap,
+                     /*Op=*/ValueMap>
+          dispatcher(scheduler, true, func, red, &valuemap_move_device, &valuemap_no_operation);
+      auto y = dispatcher.run(loader);
       REQUIRE(at::allclose(y[stress_name], stress));
     }
   }
@@ -101,16 +113,30 @@ TEST_CASE("WorkDispatcher ValueMapLoader SimpleScheduler", "[dispatchers]")
     options.set<size_t>("capacity") = 55;
     SimpleScheduler scheduler(options);
 
+    SECTION("device") { REQUIRE(scheduler.devices() == std::vector<Device>{Device("cuda:0")}); }
+
     SECTION("run")
     {
-      auto y = dispatcher.run(loader, scheduler);
+      WorkDispatcher</*I=*/ValueMap,
+                     /*O=*/ValueMap,
+                     /*Of=*/ValueMap,
+                     /*Ip=*/ValueMap,
+                     /*Op=*/ValueMap>
+          dispatcher(scheduler, false, func, red, &valuemap_move_device, &valuemap_no_operation);
+      auto y = dispatcher.run(loader);
       REQUIRE(y[stress_name].device() == device);
       REQUIRE(at::allclose(y[stress_name].to(kCPU), stress));
     }
 
     SECTION("run_async")
     {
-      auto y = dispatcher.run_async(loader, scheduler);
+      WorkDispatcher</*I=*/ValueMap,
+                     /*O=*/ValueMap,
+                     /*Of=*/ValueMap,
+                     /*Ip=*/ValueMap,
+                     /*Op=*/ValueMap>
+          dispatcher(scheduler, true, func, red, &valuemap_move_device, &valuemap_no_operation);
+      auto y = dispatcher.run(loader);
       REQUIRE(y[stress_name].device() == device);
       REQUIRE(at::allclose(y[stress_name].to(kCPU), stress));
     }

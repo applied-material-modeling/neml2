@@ -37,10 +37,10 @@
 namespace neml2
 {
 Model &
-get_model(const std::string & mname, bool force_create)
+get_model(const std::string & mname, std::thread::id tid)
 {
   OptionSet extra_opts;
-  return Factory::get_object<Model>("Models", mname, extra_opts, force_create);
+  return Factory::get_object<Model>("Models", mname, extra_opts, /*force_create=*/false, tid);
 }
 
 Model &
@@ -53,8 +53,8 @@ load_model(const std::filesystem::path & path, const std::string & mname)
 Model &
 reload_model(const std::filesystem::path & path, const std::string & mname)
 {
-  Factory::clear();
-  return load_model(path, mname);
+  reload_input(path);
+  return get_model(mname);
 }
 
 bool
@@ -428,6 +428,10 @@ Model::forward_maybe_jit(bool out, bool dout, bool d2out)
   }
   else
   {
+    // All other models in the world should wait for this model to finish tracing
+    // This is not our fault, torch jit tracing is not thread-safe
+    static std::mutex trace_mutex;
+    trace_mutex.lock();
     auto forward_wrap = [&](jit::Stack inputs) -> jit::Stack
     {
       assign_input_stack(inputs);
@@ -440,6 +444,8 @@ Model::forward_maybe_jit(bool out, bool dout, bool d2out)
         [this](const ATensor & var) { return variable_name_lookup(var); },
         /*strict=*/false,
         /*force_outplace=*/false));
+    trace_mutex.unlock();
+
     auto new_function = std::make_unique<jit::GraphFunction>(name() + ".forward",
                                                              trace->graph,
                                                              /*function_creator=*/nullptr,

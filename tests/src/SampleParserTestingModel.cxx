@@ -66,6 +66,10 @@ SampleParserTestingModel::expected_options()
   options.set<std::vector<TensorShape>>("shape_vec");
   options.set<std::vector<std::vector<TensorShape>>>("shape_vec_vec");
 
+  options.set<Device>("device");
+  options.set<std::vector<Device>>("device_vec");
+  options.set<std::vector<std::vector<Device>>>("device_vec_vec");
+
   options.set<std::string>("suppressed_option") = "suppress me";
   options.set("suppressed_option").suppressed() = true;
 

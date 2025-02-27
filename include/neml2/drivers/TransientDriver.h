@@ -26,9 +26,7 @@
 
 #include <filesystem>
 
-#include "neml2/drivers/Driver.h"
-#include "neml2/tensors/tensors.h"
-#include "neml2/models/map_types.h"
+#include "neml2/drivers/ModelDriver.h"
 
 namespace torch::nn
 {
@@ -41,37 +39,16 @@ namespace neml2
  * @brief The driver for a transient initial-value problem.
  *
  */
-class TransientDriver : public Driver
+class TransientDriver : public ModelDriver
 {
 public:
   static OptionSet expected_options();
 
-  /**
-   * @brief Construct a new TransientDriver object
-   *
-   * @param options The options extracted from the input file
-   */
   TransientDriver(const OptionSet & options);
 
   void diagnose() const override;
 
   bool run() override;
-
-  const Model & model() const { return _model; }
-
-  /// The destination file/path to save the results.
-  virtual std::string save_as_path() const;
-
-  /**
-   * @brief The results (input and output) from all time steps.
-   *
-   * @return torch::nn::ModuleDict The results (input and output) from all time steps. The keys of
-   * the dict are "input" and "output". The values are torch::nn::ModuleList with length equal to
-   * the number of time steps. Each ModuleList contains the input/output variables at each time step
-   * in the form of torch::nn::ModuleDict whose keys are variable names and values are variable
-   * values.
-   */
-  virtual torch::nn::ModuleDict result() const;
 
 protected:
   /// Solve the initial value problem
@@ -92,14 +69,6 @@ protected:
   virtual void store_input();
   // @}
 
-  /// Save the results into the destination file/path.
-  virtual void output() const;
-
-  /// The model which the driver uses to perform constitutive updates.
-  Model & _model;
-  /// The device on which to evaluate the model
-  const Device _device;
-
   /// VariableName for the time
   const VariableName _time_name;
   /// The current time
@@ -114,21 +83,37 @@ protected:
   /// The predictor used to set the initial guess
   const EnumSelection _predictor;
 
-  /// The destination file name or file path
-  std::string _save_as;
-  /// Set to true to list all the model parameters at the beginning
-  const bool _show_params;
-  /// Set to true to show model's input axis at the beginning
-  const bool _show_input;
-  /// Set to true to show model's output axis at the beginning
-  const bool _show_output;
-
   /// Inputs from all time steps
   std::vector<ValueMap> _result_in;
   /// Outputs from all time steps
   std::vector<ValueMap> _result_out;
 
+  /// Outputting
+  ///@{
+public:
+  /**
+   * @brief The results (input and output) from all time steps.
+   *
+   * @return torch::nn::ModuleDict The results (input and output) from all time steps. The keys of
+   * the dict are "input" and "output". The values are torch::nn::ModuleList with length equal to
+   * the number of time steps. Each ModuleList contains the input/output variables at each time step
+   * in the form of torch::nn::ModuleDict whose keys are variable names and values are variable
+   * values.
+   */
+  virtual torch::nn::ModuleDict result() const;
+  /// The destination file/path to save the results.
+  virtual std::string save_as_path() const;
+
+protected:
+  /// Save the results into the destination file/path.
+  virtual void output() const;
+
+  /// The destination file name or file path
+  std::string _save_as;
+
 private:
+  /// Output in torchscript format
   void output_pt(const std::filesystem::path & out) const;
+  ///@}
 };
 } // namespace neml2

@@ -42,8 +42,9 @@ SimpleScheduler::expected_options()
   options.set<std::size_t>("batch_size");
   options.set("batch_size").doc() = "Batch size";
 
-  options.set<std::size_t>("capacity") = std::numeric_limits<std::size_t>::max();
-  options.set("capacity").doc() = "Maximum number of work items that can be dispatched";
+  options.set<std::size_t>("capacity");
+  options.set("capacity").doc() =
+      "Maximum number of work items that can be dispatched, default to batch_size";
 
   return options;
 }
@@ -52,12 +53,13 @@ SimpleScheduler::SimpleScheduler(const OptionSet & options)
   : WorkScheduler(options),
     _device(Device(options.get<std::string>("device"))),
     _batch_size(options.get<std::size_t>("batch_size")),
-    _capacity(options.get<std::size_t>("capacity"))
+    _capacity(options.get("capacity").user_specified() ? options.get<std::size_t>("capacity")
+                                                       : _batch_size)
 {
 }
 
 bool
-SimpleScheduler::schedule_work(Device & device, std::size_t & batch_size) const
+SimpleScheduler::schedule_work_impl(Device & device, std::size_t & batch_size) const
 {
   if (_load + _batch_size > _capacity)
     return false;
@@ -68,16 +70,22 @@ SimpleScheduler::schedule_work(Device & device, std::size_t & batch_size) const
 }
 
 void
-SimpleScheduler::dispatched_work(Device, std::size_t n)
+SimpleScheduler::dispatched_work_impl(Device, std::size_t n)
 {
   _load += n;
 }
 
 void
-SimpleScheduler::completed_work(Device, std::size_t n)
+SimpleScheduler::completed_work_impl(Device, std::size_t n)
 {
   neml_assert(_load >= n, "Load underflow");
   _load -= n;
+}
+
+bool
+SimpleScheduler::all_work_completed() const
+{
+  return _load == 0;
 }
 
 } // namespace neml2

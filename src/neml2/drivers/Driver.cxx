@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/drivers/Driver.h"
+#include "neml2/base/Registry.h"
 #include "neml2/base/Factory.h"
 
 namespace neml2
@@ -30,7 +31,8 @@ namespace neml2
 Driver &
 get_driver(const std::string & dname)
 {
-  return Factory::get_object<Driver>("Drivers", dname);
+  OptionSet extra_opts;
+  return Factory::get_object<Driver>("Drivers", dname, extra_opts, /*force_create=*/false);
 }
 
 OptionSet
@@ -42,11 +44,6 @@ Driver::expected_options()
   options.set<bool>("verbose") = false;
   options.set("verbose").doc() = "Whether to output additional logging information";
 
-#ifdef NEML2_HAS_DISPATCHER
-  options.set<std::string>("scheduler");
-  options.set("scheduler").doc() = "The work scheduler to use";
-#endif
-
   return options;
 }
 
@@ -54,13 +51,6 @@ Driver::Driver(const OptionSet & options)
   : NEML2Object(options),
     DiagnosticsInterface(this),
     _verbose(options.get<bool>("verbose"))
-#ifdef NEML2_HAS_DISPATCHER
-    ,
-    _scheduler(options.get("scheduler").user_specified()
-                   ? Factory::get_object_ptr<WorkScheduler>("Schedulers",
-                                                            options.get<std::string>("scheduler"))
-                   : nullptr)
-#endif
 {
 }
 } // namespace neml2

@@ -34,5 +34,8 @@ day = 'day'
     shape = '(1,2,3,5)'
     shape_vec = '(1,2,3) (2,3) (5)'
     shape_vec_vec = '(2,5) () (3,3); (2,2) (1) (22)'
+    device = 'cpu'
+    device_vec = 'cpu cuda:0 cuda:1'
+    device_vec_vec = 'cpu cuda:0; cuda; cuda:2 cpu'
   []
 []

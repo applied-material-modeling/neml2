@@ -24,17 +24,8 @@
 
 #pragma once
 
-#include <filesystem>
-
-#include "neml2/base/Registry.h"
 #include "neml2/base/NEML2Object.h"
-#include "neml2/base/Factory.h"
 #include "neml2/base/DiagnosticsInterface.h"
-#include "neml2/models/Model.h"
-
-#ifdef NEML2_HAS_DISPATCHER
-#include "neml2/dispatchers/WorkScheduler.h"
-#endif
 
 // The following are not directly used by Solver itself.
 // We put them here so that derived classes can add expected options of these types.
@@ -78,9 +69,5 @@ public:
 protected:
   /// Whether to print out additional (debugging) information during the execution.
   bool _verbose;
-
-#ifdef NEML2_HAS_DISPATCHER
-  std::shared_ptr<WorkScheduler> _scheduler;
-#endif
 };
 } // namespace neml2

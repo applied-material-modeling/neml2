@@ -24,6 +24,9 @@
 
 #pragma once
 
+#include <mutex>
+#include <condition_variable>
+
 #include "neml2/base/NEML2Object.h"
 #include "neml2/misc/types.h"
 
@@ -56,15 +59,43 @@ public:
   /**
    * @brief Determine the device and batch size for the next dispatch
    *
+   * This is blocking until work can be scheduled.
+   *
    * @return true If work has been scheduled, i.e., there is a worker available
    * @return false If work cannot be scheduled, i.e., there is no worker available
    */
-  virtual bool schedule_work(Device &, std::size_t &) const = 0;
+  void schedule_work(Device &, std::size_t &);
 
-  /// Update the schedule with the dispatch of the last batch
-  virtual void dispatched_work(Device, std::size_t) = 0;
+  /// Update the scheduler with the dispatch of the last batch
+  void dispatched_work(Device, std::size_t);
 
-  /// Update the schedule with the completion of the last batch
-  virtual void completed_work(Device, std::size_t) = 0;
+  /// Update the scheduler with the completion of the last batch
+  void completed_work(Device, std::size_t);
+
+  /// Wait for all work to complete
+  void wait_for_completion();
+
+  /// Device options
+  virtual std::vector<Device> devices() const { return std::vector<Device>(); }
+
+protected:
+  /// Implementation of the work scheduling
+  virtual bool schedule_work_impl(Device &, std::size_t &) const = 0;
+
+  /// Update the scheduler with the dispatch of the last batch
+  virtual void dispatched_work_impl(Device, std::size_t) = 0;
+
+  /// Update the scheduler with the completion of the last batch
+  virtual void completed_work_impl(Device, std::size_t) = 0;
+
+  /// Check if all work has been completed
+  virtual bool all_work_completed() const = 0;
+
+  /// Condition variable for the scheduling thread
+  std::condition_variable _condition;
+
+private:
+  /// Mutex for this scheduler
+  std::mutex _mutex;
 };
 } // namespace neml2

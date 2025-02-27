@@ -54,10 +54,9 @@ protected:
   {
     OptionSet extra_opts;
     extra_opts.set<NEML2Object *>("_host") = host();
-
-    auto data = Factory::get_object_ptr<Data>("Data", name, extra_opts);
+    auto data = Factory::get_object_ptr<T>("Data", name, extra_opts, /*force_create=*/false);
     _registered_data.push_back(data.get());
-    return *(std::dynamic_pointer_cast<T>(data));
+    return *data;
   }
 
   /// Registered Data objects

@@ -41,4 +41,37 @@ WorkScheduler::WorkScheduler(const OptionSet & options)
 {
 }
 
+void
+WorkScheduler::schedule_work(Device & device, std::size_t & batch_size)
+{
+  std::unique_lock<std::mutex> lock(_mutex);
+  if (schedule_work_impl(device, batch_size))
+    return;
+  _condition.wait(lock,
+                  [this, &device, &batch_size] { return schedule_work_impl(device, batch_size); });
+}
+
+void
+WorkScheduler::dispatched_work(Device device, std::size_t m)
+{
+  std::lock_guard<std::mutex> lock(_mutex);
+  dispatched_work_impl(device, m);
+}
+
+void
+WorkScheduler::completed_work(Device device, std::size_t m)
+{
+  std::lock_guard<std::mutex> lock(_mutex);
+  completed_work_impl(device, m);
+  _condition.notify_all();
+}
+
+void
+WorkScheduler::wait_for_completion()
+{
+  std::unique_lock<std::mutex> lock(_mutex);
+  if (all_work_completed())
+    return;
+  _condition.wait(lock, [this] { return all_work_completed(); });
+}
 }

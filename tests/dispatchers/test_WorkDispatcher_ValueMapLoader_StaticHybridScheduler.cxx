@@ -71,8 +71,6 @@ TEST_CASE("WorkDispatcher ValueMapLoader StaticHybridScheduler", "[dispatchers]"
   { return valuemap_move_device(std::move(x), Device("cpu")); };
 
   ValueMapLoader loader(x, batch_dim);
-  WorkDispatcher</*I=*/ValueMap, /*O=*/ValueMap, /*Of=*/ValueMap, /*Ip=*/ValueMap, /*Op=*/ValueMap>
-      dispatcher(func, red, &valuemap_move_device, post);
 
   OptionSet options = StaticHybridScheduler::expected_options();
   options.set<std::vector<Device>>("devices") = {Device("cuda:0"), Device("cpu")};
@@ -83,15 +81,27 @@ TEST_CASE("WorkDispatcher ValueMapLoader StaticHybridScheduler", "[dispatchers]"
   StaticHybridScheduler scheduler(options);
   scheduler.setup();
 
-  SECTION("run")
+  SECTION("run_sync")
   {
-    auto y = dispatcher.run(loader, scheduler);
+    WorkDispatcher</*I=*/ValueMap,
+                   /*O=*/ValueMap,
+                   /*Of=*/ValueMap,
+                   /*Ip=*/ValueMap,
+                   /*Op=*/ValueMap>
+        dispatcher(scheduler, false, func, red, &valuemap_move_device, post);
+    auto y = dispatcher.run(loader);
     REQUIRE(at::allclose(y[stress_name], stress));
   }
 
   SECTION("run_async")
   {
-    auto y = dispatcher.run_async(loader, scheduler);
+    WorkDispatcher</*I=*/ValueMap,
+                   /*O=*/ValueMap,
+                   /*Of=*/ValueMap,
+                   /*Ip=*/ValueMap,
+                   /*Op=*/ValueMap>
+        dispatcher(scheduler, true, func, red, &valuemap_move_device, post);
+    auto y = dispatcher.run(loader);
     REQUIRE(at::allclose(y[stress_name], stress));
   }
 }

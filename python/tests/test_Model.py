@@ -39,7 +39,7 @@ def test_get_model():
 
 def test_diagnose():
     pwd = Path(__file__).parent
-    model = neml2.load_model(pwd / "test_Model_diagnose.i", "model")
+    model = neml2.reload_model(pwd / "test_Model_diagnose.i", "model")
     expected_error = "This model is part of a nonlinear system. At least one of the input variables is solve-dependent, so all output variables MUST be solve-dependent"
     issues = neml2.diagnose(model)
     assert len(issues) == 1
@@ -48,7 +48,7 @@ def test_diagnose():
 
 def test_input_type():
     pwd = Path(__file__).parent
-    model = neml2.load_model(pwd / "test_Model.i", "model")
+    model = neml2.reload_model(pwd / "test_Model.i", "model")
     assert model.input_type("forces/t") == TensorType.Scalar
     assert model.input_type("old_forces/t") == TensorType.Scalar
     assert model.input_type("state/foo_rate") == TensorType.Scalar
@@ -61,7 +61,7 @@ def test_input_type():
 
 def test_output_type():
     pwd = Path(__file__).parent
-    model = neml2.load_model(pwd / "test_Model.i", "model")
+    model = neml2.reload_model(pwd / "test_Model.i", "model")
     assert model.output_type("residual/foo_bar") == TensorType.Scalar
 
 
