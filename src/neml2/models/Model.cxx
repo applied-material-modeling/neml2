@@ -428,7 +428,10 @@ Model::forward_maybe_jit(bool out, bool dout, bool d2out)
   }
   else
   {
-    _trace_mutex.lock();
+    // All other models in the world should wait for this model to finish tracing
+    // This is not our fault, torch jit tracing is not thread-safe
+    static std::mutex trace_mutex;
+    trace_mutex.lock();
     auto forward_wrap = [&](jit::Stack inputs) -> jit::Stack
     {
       assign_input_stack(inputs);
@@ -441,7 +444,7 @@ Model::forward_maybe_jit(bool out, bool dout, bool d2out)
         [this](const ATensor & var) { return variable_name_lookup(var); },
         /*strict=*/false,
         /*force_outplace=*/false));
-    _trace_mutex.unlock();
+    trace_mutex.unlock();
 
     auto new_function = std::make_unique<jit::GraphFunction>(name() + ".forward",
                                                              trace->graph,
