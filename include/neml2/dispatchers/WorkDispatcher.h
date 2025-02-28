@@ -33,7 +33,7 @@
 
 #include "neml2/dispatchers/WorkGenerator.h"
 #include "neml2/dispatchers/WorkScheduler.h"
-#include "neml2/misc/errors.h"
+#include "neml2/misc/assertions.h"
 #include "neml2/misc/types.h"
 
 #include "neml2/tensors/R2.h"

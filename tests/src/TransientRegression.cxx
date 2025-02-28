@@ -25,6 +25,7 @@
 #include <iomanip>
 
 #include "TransientRegression.h"
+#include "neml2/base/Factory.h"
 #include "neml2/drivers/TransientDriver.h"
 #include "neml2/misc/string_utils.h"
 #include "neml2/misc/assertions.h"

@@ -38,6 +38,8 @@ class LabeledAxis;
 class VariableBase;
 template <typename T>
 class Variable;
+template <typename T>
+struct TensorName;
 
 class VariableStore
 {

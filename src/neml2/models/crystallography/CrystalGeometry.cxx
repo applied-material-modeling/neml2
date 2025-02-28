@@ -24,6 +24,7 @@
 
 #include "neml2/models/crystallography/CrystalGeometry.h"
 
+#include "neml2/base/TensorName.h"
 #include "neml2/tensors/crystallography.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/Vec.h"
@@ -31,6 +32,7 @@
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/WR2.h"
 #include "neml2/tensors/MillerIndex.h"
+#include "neml2/tensors/TensorValue.h"
 #include "neml2/misc/assertions.h"
 
 namespace neml2::crystallography

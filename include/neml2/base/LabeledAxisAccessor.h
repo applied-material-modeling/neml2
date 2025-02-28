@@ -26,6 +26,7 @@
 
 #include <vector>
 #include <iosfwd>
+#include <string>
 
 namespace neml2
 {

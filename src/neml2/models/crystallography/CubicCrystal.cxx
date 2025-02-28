@@ -25,7 +25,8 @@
 #include "neml2/models/crystallography/CubicCrystal.h"
 
 #include "neml2/tensors/crystallography.h"
-#include "neml2/tensors/tensors.h"
+#include "neml2/base/TensorName.h"
+#include "neml2/tensors/TensorValue.h"
 
 namespace neml2::crystallography
 {

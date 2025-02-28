@@ -35,6 +35,8 @@
 
 namespace neml2
 {
+class Model;
+
 /**
  * @brief A general-purpose driver that does *something* with a model
  *

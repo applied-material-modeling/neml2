@@ -68,6 +68,20 @@ jobs:
           action_fail: true
           comment_mode: off
 
+  no-pch:
+    needs: clang-format
+    runs-on: macos-latest
+    steps:
+      - uses: applied-material-modeling/neml2-ci@main
+        with:
+          python-version: 3.9
+          cmake-version: 3.28
+          torch-version: 2.5.1
+      - name: Configure
+        run: cmake --preset dev -GNinja -DNEML2_PCH=OFF -S .
+      - name: Build
+        run: cmake --build --preset dev-cpp
+
   runner:
     needs: clang-format
     strategy:

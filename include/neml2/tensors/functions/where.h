@@ -33,6 +33,8 @@ class Tensor;
 
 namespace neml2
 {
+using ATensor = at::Tensor;
+
 #define DECLARE_WHERE(T) T where(const ATensor & condition, const T & a, const T & b)
 FOR_ALL_TENSORBASE(DECLARE_WHERE);
 #undef DECLARE_WHERE

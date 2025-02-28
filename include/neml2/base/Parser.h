@@ -26,6 +26,7 @@
 #include <filesystem>
 
 #include "neml2/misc/string_utils.h"
+#include "neml2/misc/defaults.h"
 
 namespace neml2
 {

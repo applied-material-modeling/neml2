@@ -25,6 +25,7 @@
 #include "neml2/drivers/solid_mechanics/LDISolidMechanicsDriver.h"
 #include "neml2/misc/assertions.h"
 #include "neml2/base/LabeledAxis.h"
+#include "neml2/models/Model.h"
 
 namespace neml2
 {

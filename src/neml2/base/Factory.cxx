@@ -27,6 +27,8 @@
 #include "neml2/base/HITParser.h"
 #include "neml2/base/Settings.h"
 
+#include "neml2/misc/assertions.h"
+
 namespace neml2
 {
 void
