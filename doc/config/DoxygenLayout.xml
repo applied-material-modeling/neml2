@@ -41,8 +41,7 @@
       </tab>
       <tab type="usergroup" url="@ref tutorials-extension" title="Extension">
         <tab type="user" url="@ref tutorials-extension-connection-to-input-file" title="Connection to input file"/>
-        <tab type="user" url="@ref tutorials-extension-variable-declaration" title="Variable declaration"/>
-        <tab type="user" url="@ref tutorials-extension-parameter-declaration" title="Parameter declaration"/>
+        <tab type="user" url="@ref tutorials-extension-argument-declaration" title="Argument declaration"/>
         <tab type="user" url="@ref tutorials-extension-the-forward-operator" title="The forward operator"/>
         <tab type="user" url="@ref tutorials-extension-syntax-documentation" title="Syntax documentation"/>
         <tab type="user" url="@ref tutorials-extension-unit-testing" title="Unit testing"/>

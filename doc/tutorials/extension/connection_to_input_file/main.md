@@ -4,7 +4,7 @@
 
 NEML2 utilizes the well-established [registry-factory pattern](https://en.wikipedia.org/wiki/Factory_method_pattern) to allow for runtime object creation and distributed class registration. In NEML2, neml2::Parser, neml2::Registry, and neml2::Factory work together to create objects defined in the input file.
 
-## The parser
+## Parser
 
 A class is said to be runtime-manufacturable if it's constructor can be retrieved at runtime using a string identification of its symbol. To allow for a unified object creation signature, runtime-manufacturable objects (e.g., models) are required to derive from neml2::NEML2Object and provide a constructor and a static method with the following signatures
 
@@ -79,7 +79,7 @@ ProjectileAcceleration::expected_options()
 ```
 @endsource
 
-## The registry
+## Registry
 
 The registry is a RAII-style singleton responsible for storing the mapping from the string identification of each runtime-manufacturable object to the constructor pointer along with the expected input file options.
 
@@ -96,7 +96,7 @@ register_NEML2_object(ProjectileAcceleration);
 @endsource
 Note that a dummy static variable (unique to the class typename) is created to prevent duplicate registration.
 
-## The factory
+## Factory
 
 The NEML2 factory is another RAII-style singleton object which handles the runtime creation of objects. The generic API for object creation and retrieval is neml2::Factory::get_object_ptr.
 
