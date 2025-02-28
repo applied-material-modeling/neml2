@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/Data.h"
+#include "neml2/tensors/TensorValue.h"
 
 namespace neml2
 {

@@ -25,7 +25,6 @@
 #pragma once
 
 #include "neml2/drivers/Driver.h"
-#include "neml2/models/Model.h"
 #include "neml2/models/map_types.h"
 #include "neml2/tensors/tensors.h"
 
@@ -36,6 +35,8 @@
 
 namespace neml2
 {
+class Model;
+
 /**
  * @brief A general-purpose driver that does *something* with a model
  *

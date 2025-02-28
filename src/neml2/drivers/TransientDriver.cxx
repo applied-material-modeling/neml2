@@ -28,6 +28,7 @@
 
 #include "neml2/drivers/TransientDriver.h"
 #include "neml2/misc/assertions.h"
+#include "neml2/models/Model.h"
 
 #ifdef NEML2_HAS_DISPATCHER
 #include "neml2/dispatchers/ValueMapLoader.h"

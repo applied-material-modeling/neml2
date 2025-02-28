@@ -26,8 +26,7 @@
 
 #include "neml2/base/Registry.h"
 #include "neml2/models/Data.h"
-
-#include "neml2/base/TensorName.h"
+#include "neml2/tensors/indexing.h"
 
 namespace neml2
 {

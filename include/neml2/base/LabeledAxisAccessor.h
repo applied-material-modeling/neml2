@@ -28,8 +28,6 @@
 #include <iosfwd>
 #include <string>
 
-#include "neml2/base/TensorName.h"
-
 namespace neml2
 {
 // Reserved subaxis names

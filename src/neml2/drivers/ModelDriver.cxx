@@ -24,6 +24,7 @@
 
 #include "neml2/drivers/ModelDriver.h"
 #include "neml2/misc/assertions.h"
+#include "neml2/models/Model.h"
 
 #ifdef NEML2_HAS_DISPATCHER
 #include "neml2/dispatchers/valuemap_helpers.h"
