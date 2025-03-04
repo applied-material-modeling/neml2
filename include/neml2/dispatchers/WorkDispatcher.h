@@ -222,20 +222,20 @@ protected:
   std::vector<Op> _results;
 
   ///@{
-  /// Mutex for the main thread
-  std::mutex _mutex;
-  /// Thread pool for asynchronous execution
-  /// TODO: We are currently assuming each thread is responsible for one device. This may not be
-  /// true/optimal in the future.
-  std::vector<std::thread> _thread_pool;
-  /// Task queue for the thread pool
-  std::unordered_map<Device, std::queue<std::function<void()>>> _tasks;
   /// Mutex for the thread pool to pick up task from the task queue
   std::mutex _qmutex;
   /// Condition variable for the tasks queue
   std::condition_variable _thread_condition;
   /// Flag to stop the thread pool
   bool _stop = false;
+  /// Thread pool for asynchronous execution
+  /// TODO: We are currently assuming each thread is responsible for one device. This may not be
+  /// true/optimal in the future.
+  // As it turns out it's undefined behavior to initialize this before the mutex and condition
+  // variable
+  std::vector<std::thread> _thread_pool;
+  /// Task queue for the thread pool
+  std::unordered_map<Device, std::queue<std::function<void()>>> _tasks;
   ///@}
 };
 
