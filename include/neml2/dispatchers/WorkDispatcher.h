@@ -222,20 +222,20 @@ protected:
   std::vector<Op> _results;
 
   ///@{
-  /// Mutex for the main thread
-  std::mutex _mutex;
-  /// Thread pool for asynchronous execution
-  /// TODO: We are currently assuming each thread is responsible for one device. This may not be
-  /// true/optimal in the future.
-  std::vector<std::thread> _thread_pool;
-  /// Task queue for the thread pool
-  std::unordered_map<Device, std::queue<std::function<void()>>> _tasks;
   /// Mutex for the thread pool to pick up task from the task queue
   std::mutex _qmutex;
   /// Condition variable for the tasks queue
   std::condition_variable _thread_condition;
   /// Flag to stop the thread pool
   bool _stop = false;
+  /// Thread pool for asynchronous execution
+  /// TODO: We are currently assuming each thread is responsible for one device. This may not be
+  /// true/optimal in the future.
+  // As it turns out it's undefined behavior to initialize this before the mutex and condition
+  // variable
+  std::vector<std::thread> _thread_pool;
+  /// Task queue for the thread pool
+  std::unordered_map<Device, std::queue<std::function<void()>>> _tasks;
   ///@}
 };
 
@@ -248,6 +248,10 @@ WorkDispatcher<I, O, Of, Ip, Op>::init_thread_pool()
 {
   if (!_async)
     return;
+
+  // Setup the task queue
+  for (const auto & device : _devices)
+    _tasks[device] = std::queue<std::function<void()>>();
 
   auto nthread = _devices.size();
   _thread_pool.reserve(nthread);
@@ -273,7 +277,7 @@ WorkDispatcher<I, O, Of, Ip, Op>::init_thread_pool()
       _scheduler.dispatched_work(device, 1);
       {
         std::lock_guard<std::mutex> lock(_qmutex);
-        _tasks[device].push(task);
+        _tasks.at(device).push(task);
       }
       _thread_condition.notify_all();
     }
@@ -290,11 +294,11 @@ WorkDispatcher<I, O, Of, Ip, Op>::thread_pool_main(const Device & device)
     std::function<void()> task;
     {
       std::unique_lock<std::mutex> lock(_qmutex);
-      _thread_condition.wait(lock, [this, &device] { return _stop || !_tasks[device].empty(); });
-      if (_stop && _tasks[device].empty())
+      _thread_condition.wait(lock, [this, &device] { return _stop || !_tasks.at(device).empty(); });
+      if (_stop && _tasks.at(device).empty())
         break;
-      task = std::move(_tasks[device].front());
-      _tasks[device].pop();
+      task = std::move(_tasks.at(device).front());
+      _tasks.at(device).pop();
     }
     task();
   }
@@ -425,7 +429,7 @@ WorkDispatcher<I, O, Of, Ip, Op>::run_async(WorkGenerator<Ip> & generator)
     // Enqueue the task
     {
       std::lock_guard<std::mutex> lock(_qmutex);
-      _tasks[device].push(task);
+      _tasks.at(device).push(task);
     }
     // Notify the thread pool
     // Note: We notify_all instead of notify_one because we want the thread that's bind to the
