@@ -25,7 +25,7 @@ jobs:
           cmake-version: 3.28
           torch-version: 2.5.1
       - name: Configure
-        run: cmake --preset dev -GNinja -S .
+        run: cmake --preset dev -GNinja -DNEML2_PCH=OFF -S .
       - name: Build
         run: cmake --build --preset dev-doc
 
