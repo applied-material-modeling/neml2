@@ -204,7 +204,7 @@ Using NEML2's model composition capability can address these issues without sacr
 ```
 
 \note
-The names of the other two models are used to specify the coefficients of \f$ \eqref{3} \f$, i.e. `coefficients = 'eq2 eq1'`. This syntax is different from what was covered in the [previous tutorial](#tutorials-models-02) on model parameters and will be explained in more details in the [next tutorial](#tutorials-models-06).
+The names of the other two models are used to specify the coefficients of \f$ \eqref{3} \f$, i.e. `coefficients = 'eq2 eq1'`. This syntax is different from what was covered in the [previous tutorial](#tutorials-models-model-parameters) on model parameters and will be explained in more details in the [next tutorial](#tutorials-models-model-parameters-revisited).
 
 Let us first inspect the composed model and compare it against the three sub-models:
 

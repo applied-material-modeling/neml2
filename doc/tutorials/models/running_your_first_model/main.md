@@ -90,7 +90,7 @@ The following code parses the given input file named "input.i" and retrieves a M
 
 </div>
 
-The summary includes information about the model's name, primary floating point numeric type (denoted as "Dtype"), current device, input variables, output variables, parameters, and buffers (if any). Note that the variables and parameters are additionally marked with tensor types surrounded by square brackets, i.e., `[SR2]` and `[Scalar]`. These are NEML2's primitive tensor types which will be extensively discussed in another set of [tutorials](#tutorials-tensor).
+The summary includes information about the model's name, primary floating point numeric type (denoted as "Dtype"), current device, input variables, output variables, parameters, and buffers (if any). Note that the variables and parameters are additionally marked with tensor types surrounded by square brackets, i.e., `[SR2]` and `[Scalar]`. These are NEML2's primitive tensor types which will be extensively discussed in another set of [tutorials](#tutorials-tensors).
 
 ## Model structure and forward operators
 
@@ -100,7 +100,7 @@ All NEML2 models, including this simple elasticity model under consideration, ta
 \f[
   y = f(x; p, b),
 \f]
-where \f$ x \f$ and \f$ y \f$ are respectively sets of input and output variables, \f$ p \f$ is the set of parameters, and \f$ b \f$ is the set of buffers. The utilities of parameters and buffers will be discussed in another [tutorial](#tutorials-models-xx). The forward operator \f$ f \f$ is responsible for mapping from input variables \f$ x \f$ to \f$ y \f$. NEML2 provides three forward operators for all models:
+where \f$ x \f$ and \f$ y \f$ are respectively sets of input and output variables, \f$ p \f$ is the set of parameters, and \f$ b \f$ is the set of buffers. The utilities of parameters and buffers will be discussed in another [tutorial](#tutorials-models-model-parameters). The forward operator \f$ f \f$ is responsible for mapping from input variables \f$ x \f$ to \f$ y \f$. NEML2 provides three forward operators for all models:
 - neml2::Model::value calculates the output variables, i.e., \f$ y = f(x; p, b) \f$.
 - neml2::Model::dvalue calculates the derivatives of the output variables with respect to the input variables, i.e., \f$ \pdv{y}{x} = \pdv{f(x; p, b)}{x} \f$.
 - neml2::Model::value_and_dvalue calculates both the output variables and their derivatives.

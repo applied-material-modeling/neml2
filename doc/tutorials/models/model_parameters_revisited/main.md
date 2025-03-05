@@ -4,7 +4,7 @@
 
 ## Problem description
 
-In a [previous tutorial](#tutorials-models-02), we briefly explained the usage of model parameters and their retrieval and update. In this tutorial, we will introduce other ways of specifying model parameters in the input file and how they facilitate model composition.
+In a [previous tutorial](#tutorials-models-model-parameters), we briefly explained the usage of model parameters and their retrieval and update. In this tutorial, we will introduce other ways of specifying model parameters in the input file and how they facilitate model composition.
 
 Consider the following equations describing the stress-strain relation accounting for a thermal eigenstrain:
 \f{align}
