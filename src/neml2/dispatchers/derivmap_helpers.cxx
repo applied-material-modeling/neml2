@@ -52,7 +52,7 @@ derivmap_move_device(DerivMap && x, Device device)
 {
   // Move the tensors to the device
   for (auto && [name, vmap] : x)
-    for (auto && [name2, value]: vmap)
+    for (auto && [name2, value] : vmap)
       x[name][name2] = value.to(device);
   return x;
 }
