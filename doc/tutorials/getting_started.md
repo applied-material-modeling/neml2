@@ -1,4 +1,4 @@
-# Getting Started {#user-getting-started}
+@insert-title:tutorials-getting-started
 
 [TOC]
 
@@ -8,11 +8,7 @@ Once the NEML2 library is built following the [installation guide](@ref install)
 
 ## Downstream C++ project
 
-NEML2 core capabilities are implemented as a _library_, not a _program_. As a library, it shall be used in another C++ program to parse and evaluate a material model defined in an [input file](@ref input-file). Boilerplate for the C++ program can be found [here](@ref cpp-backend), and external project integration is documented in the [installation guide](@ref external-project-integration).
-
-Related readings:
-- [Input file](@ref input-file) explains how NEML2 interacts with text-based input files to construct material models.
-- [C++ backend user guide](@ref cpp-backend) provides a basic example of using NEML2 in a C++ project.
+NEML2 core capabilities are implemented as a _library_, not a _program_. As a library, it shall be used in another C++ program to parse and evaluate a material model defined in an [input file](@ref tutorials-models-input-file). Boilerplate for the C++ program can be found in this [set of tutorials](#tutorials-models), and external project integration is documented in the [installation guide](@ref external-project-integration).
 
 ## The Runner
 
@@ -42,13 +38,6 @@ Optional arguments:
   --warmup         number of warmup runs before actually measuring the model evaluation time [nargs=0..1] [default: 0]
 ```
 
-Related readings:
-- [Input file](@ref input-file) explains how NEML2 interacts with text-based input files to construct material models.
-
 ## Python script
 
-The other option to evaluate NEML2 material models is to use the [NEML2 Pyton package](@ref python-package). As mentioned in the [installation guide](@ref install), NEML2 also provides an _experimental_ Python package which provides bindings for the primitive tensors and parsers for deserializing and running material models.
-
-Related readings:
-- [Input file](@ref input-file) explains how NEML2 interacts with text-based input files to construct material models.
-- [Python package user guide](@ref python-package) provides a basic example of using neml2 in a Python script.
+The other option to evaluate NEML2 material models is to use the NEML2 Pyton package. As mentioned in the [installation guide](@ref install), NEML2 also provides an _experimental_ Python package which provides bindings for the primitive tensors and parsers for deserializing and running material models. This [set of tutorials](#tutorials-models) describe the usage of the package.

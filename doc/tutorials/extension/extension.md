@@ -2,12 +2,10 @@
 
 [TOC]
 
-NEML2 models can be easily extended or adapted to model the material behavior of your interest.
+\note
+Before diving into the following tutorials, it is optional but recommended to read the [Contributing](#tutorials-contributing) guide.
 
-Before diving into the following tutorials, it is optional but recommended to read the following articles from the developer guide:
-- @ref dev-getting-started
-- @ref naming-conventions
-- @ref model-visualization
+NEML2 models can be easily extended or adapted to model the material behavior of your interest.
 
 ## Problem description
 

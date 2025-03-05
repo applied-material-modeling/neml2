@@ -20,10 +20,6 @@ There is an existing model that solves this exact problem: [LinearIsotropicElast
 
 As explained in the syntax documentation for [LinearIsotropicElasticity](#linearisotropicelasticity), the option "strain" is used to specify the name of the variable for the elastic strain, and the option "stress" is used to specify the name of the variable for the stress. The options "coefficients" and "coefficient_types" are used to specify the values of the parameters, in this case \f$ K \f$ and \f$ G \f$.
 
-Related readings:
-- [Input file syntax](#input-file)
-- [Naming conventions](#naming-conventions)
-
 Using these information, the input file for constructing this model can be composed as:
 ```
 [Models]
@@ -44,7 +40,7 @@ There are three common ways of interacting with NEML2 input files:
 - Calling the appropriate APIs in a Python script
 - Using the NEML2 Runner
 
-These methods are discussed in the [user guide](#user-getting-started). In this set of tutorials, the C++ example code and the Python script example code are shown side-by-side with tabs, and in most cases the C++ APIs and the Python APIs have a nice one-to-one correspondance.
+These methods are discussed in the [getting started guide](#tutorials-getting-started). In this set of tutorials, the C++ example code and the Python script example code are shown side-by-side with tabs, and in most cases the C++ APIs and the Python APIs have a nice one-to-one correspondance.
 
 
 ## Loading a model from the input file

@@ -1,4 +1,8 @@
-# Model visualization {#model-visualization}
+@insert-title:tutorials-extension-model-visualization
+
+[TOC]
+
+## Motivation
 
 During the process of model development, it is of general interest (and is also very much encouraged) to reuse existing models. This is particularly useful and effective owing to the extreme modular design of NEML2, i.e., model composition.
 
@@ -232,3 +236,5 @@ render(model, outfile="graph.svg")
 The font names, arrow head style, and node fill colors are modified from their default values. The generated graph is shown below.
 
 ![Graph of a composed model with custom style](asset/graph_custom.svg){html: width=85%}
+
+@insert-page-navigation

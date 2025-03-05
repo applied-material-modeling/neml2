@@ -1,4 +1,30 @@
-# Tutorials {#tutorials}
+@insert-title:tutorials
+
+## Guides
+
+@htmlonly
+
+<div class="cards">
+  <div class="card">
+    <a href="tutorials-getting-started.html">
+    <div class="card_container">
+      <h2>Getting Started</h2>
+      <p>Get started as a user of NEML2: Choose the appropriate frontend that best suites your needs.</p>
+    </div>
+    </a>
+  </div>
+
+  <div class="card">
+    <a href="tutorials-contributing.html">
+    <div class="card_container">
+      <h2>Contributing</h2>
+      <p>Get started as an advanced user or developer of NEML2. This is a prerequisite if you plan to contribute back to NEML2.</p>
+    </div>
+    </a>
+  </div>
+</div>
+
+@endhtmlonly
 
 ## Basic tutorials
 

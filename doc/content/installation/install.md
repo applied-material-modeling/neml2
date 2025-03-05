@@ -1,4 +1,4 @@
-# Installation {#install}
+# Basic Installation {#install}
 
 [TOC]
 
