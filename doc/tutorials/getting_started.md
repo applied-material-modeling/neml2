@@ -8,7 +8,7 @@ Once the NEML2 library is built following the [installation guide](@ref install)
 
 ## Downstream C++ project
 
-NEML2 core capabilities are implemented as a _library_, not a _program_. As a library, it shall be used in another C++ program to parse and evaluate a material model defined in an [input file](@ref tutorials-models-input-file). Boilerplate for the C++ program can be found in this [set of tutorials](#tutorials-models), and external project integration is documented in the [installation guide](@ref external-project-integration).
+NEML2 core capabilities are implemented as a _library_, not a _program_. As a library, it will be used by another C++ program to parse and evaluate a material model defined in an [input file](@ref tutorials-models-input-file). Boilerplate for the C++ program can be found in this [set of tutorials](#tutorials-models), and external project integration is documented in the [installation guide](@ref external-project-integration).
 
 ## The Runner
 
@@ -40,4 +40,4 @@ Optional arguments:
 
 ## Python script
 
-The other option to evaluate NEML2 material models is to use the NEML2 Pyton package. As mentioned in the [installation guide](@ref install), NEML2 also provides an _experimental_ Python package which provides bindings for the primitive tensors and parsers for deserializing and running material models. This [set of tutorials](#tutorials-models) describe the usage of the package.
+The other option to evaluate NEML2 material models is to use the NEML2 Python package. As mentioned in the [installation guide](@ref install), NEML2 also provides an _experimental_ Python package which provides bindings for the primitive tensors and parsers for deserializing and running material models. This [set of tutorials](#tutorials-models) describes the usage of the package.

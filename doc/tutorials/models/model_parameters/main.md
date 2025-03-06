@@ -19,13 +19,13 @@ Pattern matching suggests the following set definitions:
   x = \left\{ \boldsymbol{\varepsilon} \right\}, \quad y = \left\{ \boldsymbol{\sigma} \right\}, \quad p = \left\{ K, G \right\}, \quad b = \varnothing.
 \f]
 
-## Parameter v.s. buffer
+## Parameter vs buffer
 
 Both \f$ K \f$ and \f$ G \f$ are here categorized as model parameters. The major differences between parameters and buffers are
-- Parameters are "trainable", whereas buffers are not. NEML2 can use automatic differentiation to calculate the derivative of output variables w.r.t. the model parameters.
+- Parameters are "trainable", whereas buffers are not. NEML2 can use automatic differentiation to calculate the derivative of output variables with respect to the model parameters, but not for the model buffers.
 - Parameters can be (recursively) defined by other models, whereas buffers cannot.
 
-In summary, parameter is a more powerful superset of buffer.
+In summary, a parameter is a more powerful superset of a buffer.  However, there is overhead cost associated with maintaining a parameter that buffers avoid.
 
 \note
 Some models allow users to choose whether to declare data as parameters or buffers.
@@ -137,7 +137,7 @@ neml2::Model::get_parameter can be used to retrieve a specific parameter given i
 
 ## Updating the parameter value
 
-Model parameters can always be changed by changing the input file. However, in certain cases (e.g., training and optimization), the parameter values should preferrably be updated at runtime (e.g., after each Epoch or optimization iteration).
+Model parameters can always be changed by changing the input file. However, in certain cases (e.g., training and optimization), the parameter values should preferrably be updated at runtime (e.g., after each epoch or optimization iteration).
 
 The neml2::Model::set_parameter and neml2::Model::set_parameters methods can be used for that purpose:
 

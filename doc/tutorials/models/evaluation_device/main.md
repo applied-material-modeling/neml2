@@ -4,7 +4,7 @@
 
 ## Device
 
-NEML2 inherits the definition of *device* from PyTorch. It is an abstraction representing the physical device where data is allocated and operated. NEML2 primarily concerns with two types of devices: CPU and CUDA.
+NEML2 inherits the definition of *device* from PyTorch. It is an abstraction representing the physical device where data is stored and models executed. NEML2 is primarily concerned with two types of devices: CPU and CUDA.
 - **CPU** stands for Central Processing Unit, and it tranditionally handles a wide range of scientific computing tasks.
 - **CUDA** functions as a programming platform that allows a GPU (Graphics Processing Unit) to act as a coprocessor to the CPU to handle specific computing tasks with massive parallelization.
 
@@ -12,13 +12,13 @@ NEML2 offers several high-level mechanisms for users to strategically interact w
 
 ## Specifying a device
 
-A device is uniquely identified by a type, which specifies the type of machine it is (e.g. CPU or CUDA GPU), and a device index or ordinal, which identifies the specific compute device when there is more than one of a certain type. The device index is optional, and in its defaulted state represents (abstractly) "the current device". Further, there are two constraints on the value of the device index, if one is explicitly specified:
+A device is uniquely identified by a type, which specifies the type of machine it is (e.g. CPU or CUDA GPU), and a device index or ordinal, which identifies the specific compute device when there is more than one of a certain type. The device index is optional, and in its default state represents (abstractly) "the current device". Further, there are two constraints on the value of the device index, if one is explicitly specified:
 - A negative index represents the current device, a non-negative index represents a specific, concrete device.
 - When the device type is CPU, the device index must be zero.
 
 In NEML2, the device can be specified using either a string or or a predefined device type.
 
-The string shall follow the schema `(cpu|cuda)[:<device-index>]`, where `cpu` or `cuda` specifies the device type, and `:<device-index>` optionally specifies a device index. For example, "cpu" represents the CPU and "cuda:1" specifies CUDA with device ID 1.
+The string follows the schema `(cpu|cuda)[:<device-index>]`, where `cpu` or `cuda` specifies the device type, and `:<device-index>` optionally specifies a device index. For example, "cpu" represents the CPU and "cuda:1" specifies CUDA with device ID 1.
 
 Two predefined device types are supported:
 - `neml2::kCPU` which is equivalent to the string "cpu"

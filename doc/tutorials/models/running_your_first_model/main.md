@@ -101,7 +101,7 @@ where \f$ x \f$ and \f$ y \f$ are respectively sets of input and output variable
 - neml2::Model::dvalue calculates the derivatives of the output variables with respect to the input variables, i.e., \f$ \pdv{y}{x} = \pdv{f(x; p, b)}{x} \f$.
 - neml2::Model::value_and_dvalue calculates both the output variables and their derivatives.
 
-All three forward operators take a dictionary of variable values as input and return the requested output variables and/or their derivatives.
+All three forward operators take a map/dictionary of variable values as input and return the requested output variables and/or their derivatives.
 
 In addition to these standard forward operators, some models in NEML2 also support calculating second derivatives. Three additional forward operators are provided to request second derivatives:
 - neml2::Model::d2value

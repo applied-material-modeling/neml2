@@ -4,7 +4,7 @@
 
 ## Problem description
 
-One of the most notable differences between constitutive models and feed-forward neural networks is that implicitly updating certain stiff systems is much more computationally efficient than explicit algorithms.
+One of the most notable differences between constitutive models and feed-forward neural networks is that updating certain stiff systems with implicit methods is often more computationally efficient compared to explicit algorithms.
 
 A generally nonlinear, recursive, implicit system of equations take the following form
 \f{align*}
@@ -150,8 +150,8 @@ Once the system of equations are properly defined, we can use the [ImplicitUpdat
 - Invoke a *solver* to solve the system of equations.
 - Apply the implicit function theorem to calculate exact derivatives (up to machine precision).
 
-At the time of writing, NEML2 offers three fully vectorized Newton solvers to be used in conjunction with [ImplicitUpdate](#implicitupdate):
-- [Newton](#newton), the vanilla version of the Newton-Raphson algorithm which always takes the "full" step.
+NEML2 offers three fully vectorized Newton solvers to be used in conjunction with [ImplicitUpdate](#implicitupdate):
+- [Newton](#newton), the (vectorized) vanilla version of the Newton-Raphson algorithm which always takes the "full" step.
 - [NewtonWithLineSearch](#newtonwithlinesearch), similar to Newton but offers several commonly used (again fully vectorized) line search strategies.
 - [NewtonWithTrustRegion](#newtonwithtrustregion), the trust-region variant of the Newton-Raphson algorithm, where a scalar-valued, fully vectorized quadratic sub-problem is solved to identify the search direction in each update.
 
@@ -257,8 +257,8 @@ Unlike other regular models, declaring variables on the *correct* sub-axes is im
 - To determine whether the variable value and derivatives should be calculated during the assembly of residual and Jacobian. For example, the derivatives with respect to all variables on the `forces` sub-axis are skipped because they are not required in the assembly of the linear system.
 - To efficiently reuse the factorization of the system Jacobian when applying the implicit function theorem.
 
-As long as models are defined using the *correct* sub-axis definitions and satisfy some mild continuity requirements, **NEML2 guarantees the correctness of the outcoming variable derivatives** after one or more implicit updates, up to machine precision. The same guarantee also applies to user-defined custom models.
+As long as models are defined using the *correct* sub-axis definitions and satisfy some mild continuity requirements, **NEML2 guarantees the correctness of the variable derivatives** after one or more implicit updates, up to machine precision. The same guarantee also applies to user-defined custom models.
 
-This is a significant advantage compared to some of the alternative constitutive model libraries, especially in the context of coupling with external PDE solvers. For example, in the context of finite element method, thermodynamic forces (e.g. strain) are calculated at each quadrature point, and the constitutive library (e.g. NEML2) is responsible for updating the thermodynamic state variables (e.g. stress, plastic strain, etc.), which are then used in the residual definition of the discretized PDE. Therefore, the exact derivatives of the state variables w.r.t. the forces are the key to the assembly of the exact Jacobian of the descretized PDE, which is in turn the fundamental requirement for optimal convergence for many nonlinear solvers.
+This is a significant advantage compared to some of the alternative constitutive model libraries, especially in the context of coupling with external PDE solvers. For example, in the context of finite element method, thermodynamic forces (e.g. strain) are calculated at each quadrature point, and the constitutive library (e.g. NEML2) is responsible for updating the thermodynamic state variables (e.g. stress, plastic strain, etc.), which are then used in the residual definition of the discretized PDE. Therefore, the exact derivatives of the state variables with respect to the forces are the key to the assembly of the exact Jacobian of the descretized PDE, which is in turn the fundamental requirement for optimal convergence for many nonlinear solvers.
 
 @insert-page-navigation

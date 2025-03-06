@@ -4,7 +4,7 @@
 
 ## Problem description
 
-We have been working with the linear, isotropic elasticity model in the previosu tutorials. We started with that example because it is arguably the simplest possible material model in the context of solid mechanics. It is simple not just because of the simplicity in the description of the material behavior, but also due to the fact that its mathematical formulation only involves one equation.
+We have been working with the linear, isotropic elasticity model in the previous tutorials. We started with that example because it is arguably the simplest possible material model in the context of solid mechanics. It is simple not just because of the simplicity in the description of the material behavior, but also due to the fact that its mathematical formulation only involves one linear equation.
 
 Using a Perzyna-type viscoplasticity model as an example, it can be formulated as
 \f{align*}
@@ -169,10 +169,10 @@ We were able to successfully calculate \f$ \dot{\boldsymbol{b}} \f$ by
 4. calculating \f$ \dot{\boldsymbol{b}} \f$ by evaluating \f$ \eqref{3} \f$.
 
 However, that is not ideal because we had to
-- manually evaluate the equations and figuring out the evaluation order, and
-- manually set the parameters in \f$ \eqref{3} \f$ as outputs from \f$ \eqref{1}\&\eqref{2} \f$.
+- Manually evaluate the equations and figure out the evaluation order, and
+- Manually set the parameters in \f$ \eqref{3} \f$ as outputs from \f$ \eqref{1}\&\eqref{2} \f$.
 
-Moreover, such method is not scalable when the number of equations, variables, and parameters increase.
+This manual method is not scalable when the number of equations, variables, and parameters increase.
 
 Using NEML2's model composition capability can address these issues without sacrificing modularity. [ComposedModel](#composedmodel) allows us to compose a new model from the three existing models:
 ```
@@ -268,11 +268,11 @@ Let us first inspect the composed model and compare it against the three sub-mod
 
 </div>
 
-Note that the composed model "eq" automatically
-- identified the input variables \f$ \boldsymbol{a} \f$ and \f$ \boldsymbol{b} \f$,
-- identified the output variable \f$ \dot{\boldsymbol{b}} \f$,
-- registered parameters of \f$ \eqref{3} \f$ as input variables, and
-- sorted out the evaluation order.
+Note that the composed model "eq" automatically:
+- Identified the input variables \f$ \boldsymbol{a} \f$ and \f$ \boldsymbol{b} \f$,
+- Identified the output variable \f$ \dot{\boldsymbol{b}} \f$,
+- Registered the parameters of \f$ \eqref{3} \f$ as input variables, and
+- Sorted out the evaluation order.
 
 The composed model can be evaluated in the same way as regular models:
 

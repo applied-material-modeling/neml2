@@ -4,7 +4,7 @@
 
 ## Model development
 
-Although NEML2 comes with a large collection modular building blocks for composing material models, it is sometimes necessary to write your own material models (and integrate them with existing NEML2 models). The [extension](#tutorials-extension) tutorial set demonstrates how a custom model can be implemented within the NEML2 framework and provides in-depth explanation for every step throughout the development process.
+Although NEML2 comes with a large collection modular building blocks for composing material models, it is sometimes necessary to write your own material models (and integrate them with existing NEML2 models). The [extension](#tutorials-extension) tutorial set demonstrates how a custom model can be implemented within the NEML2 framework and provides an in-depth explanation for each step in the development process.
 
 ## C++ backend {#testing-cpp}
 
@@ -126,7 +126,7 @@ The C++ source code is formatted using `clang-format`. A `.clang-format` file is
 1. Point the plugin/extension to use the `.clang-format` file located at NEML2's repository root.
 2. Associate file extensions `.h` and `.cxx` with C++.
 
-The Python scripts shall be formatted using `black`. Formatting requirements are specified under the `[black]` section in `pyproject.toml`.
+The Python scripts must be formatted using `black`. Formatting requirements are specified under the `[black]` section in `pyproject.toml`.
 
 All pull requests will be run through `clang-format` and `black` to ensure formatting consistency.
 
@@ -136,7 +136,7 @@ For C++ linting, a `.clang-tidy` file is provided at the repository root to spec
 
 ### Reserved axis names
 
-Recall that NEML2 models operates on _labeled tensors_, and that the collection of labels (with their corresponding layout) is called an labeled axis ([LabeledAxis](@ref neml2::LabeledAxis)). NEML2 predefines 6 sub-axes to categorize all the input, output and intermediate variables:
+Recall that NEML2 models operates on _labeled tensors_, and that the collection of labels (with their corresponding layout) is called a labeled axis ([LabeledAxis](@ref neml2::LabeledAxis)). NEML2 predefines six sub-axes to categorize all the input, output and intermediate variables:
 - State \f$\mathcal{S}\f$ (axis name `state`): Variables collectively characterizing the current _state_ of the material subject to given external forces. The state variables are usually the output of a physically meaningful material model.
 - Forces \f$\mathcal{F}\f$ (axis name `forces`): Variables defining the _external_ forces that drive the response of the material.
 - Old state \f$\mathcal{S}_n\f$ (axis name `old_state`): The state variables _prior to_ the current material update. In the time-discrete setting, these are the state variables from the previous time step.
@@ -145,7 +145,7 @@ Recall that NEML2 models operates on _labeled tensors_, and that the collection 
 - Parameters \f$\mathcal{P}\f$ (axis name `parameters`): The (nonlinear) parameters.
 
 \note
-When authoring C++ source code, it is recommended to avoid hard-coding reserved axis names as pure strings. Instead, inlined `const` string names (defined in `neml2/models/LabeledAxisAccessor.h`) shall be used wherever possible, they are `STATE`, `OLD_STATE`, `FORCES`, `OLD_FORCES`, `RESIDUAL`, and `PARAMETERS` whose names are self-explanatory.
+When authoring C++ source code, it is recommended to avoid hard-coding reserved axis names as pure strings. Instead, inlined `const` string names (defined in `neml2/models/LabeledAxisAccessor.h`) should be used wherever possible, they are `STATE`, `OLD_STATE`, `FORCES`, `OLD_FORCES`, `RESIDUAL`, and `PARAMETERS` whose names are self-explanatory.
 
 ### Variable naming conventions
 
@@ -161,8 +161,8 @@ In the input file, the separator `/` is used to denote nested variable names. Fo
 ### Source code naming conventions
 
 In NEML2 source code, the following naming conventions are recommended:
-- User-facing variables and option names should be _as descriptive as possible_. For example, the equivalent plastic strain is named "equivalent_plastic_strain". Note that white spaces, quotes, and left slashes are not allowed in the names. Underscores are recommended as an replacement for white spaces.
+- User-facing variables and option names should be _as descriptive as possible_. For example, the equivalent plastic strain is named "equivalent_plastic_strain". Note that white spaces, quotes, and left slashes are not allowed in the names. Underscores are recommended as a replacement for white spaces.
 - Developer-facing variables and option names should use simple alphanumeric symbols. For example, the equivalent plastic strain is named "ep" in consistency with most of the existing literature.
-- Developner-facing member variables and option names should use the same alphanumeric symbols. For example, the member variable for the equivalent plastic strain is named `ep`. However, if the member variable is protected or private, it is recommended to prefix it with an underscore, i.e. `_ep`.
+- Developer-facing member variables and option names should use the same alphanumeric symbols. For example, the member variable for the equivalent plastic strain is named `ep`. However, if the member variable is protected or private, it is recommended to prefix it with an underscore, i.e. `_ep`.
 - Struct names and class names should use `PascalCase`.
 - Function names should use `snake_case`.

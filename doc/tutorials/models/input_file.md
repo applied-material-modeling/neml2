@@ -53,6 +53,6 @@ On the other hand, other commonly used boolean flags such as "on"/"off", "1"/"0"
 
 **Variable name**: NEML2 material models work with named variables to assign physical meanings to different slices of a tensor. A fully qualified variable name can be parsed from a string, and the delimiter "/" signifies nested sub-axes. For example, the string "forces/t" can be parsed into a variable named "t" defined on the sub-axis named "forces".
 
-**Tensor shape**: Shape of a tensor can also be parsed from a string. The string must start with "(" and end with ")". An array of comma-separated integers must be enclosed by the parentheses. For example, the string "(5,6,7)" can be parsed into a shape tuple of value `(5, 6, 7)`. Note that white spaces are not allowed between the parentheses and could lead to undefined behavior. An empty array, i.e. "()", however, is allowed and fully supported.
+**Tensor shape**: The shape of a tensor can also be parsed from a string. The string must start with "(" and end with ")". An array of comma-separated integers must be enclosed by the parentheses. For example, the string "(5,6,7)" can be parsed into a shape tuple of value `(5, 6, 7)`. Note that white spaces are not allowed between the parentheses and could lead to undefined behavior. An empty array, i.e. "()", however, is allowed and fully supported.
 
 @insert-page-navigation

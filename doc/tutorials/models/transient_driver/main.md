@@ -4,7 +4,7 @@
 
 ## Problem description
 
-In the previous tutorial, we have demonstrated the use of [ImplicitUpdate](#implicitupdate) to perform constitutive update by solving an implicit system of equations. In particular, we have addressed the constitutive update in the following form
+In the previous tutorial, we demonstrated the use of [ImplicitUpdate](#implicitupdate) to perform constitutive update by solving an implicit system of equations. In particular, we have addressed the constitutive update in the following form
 \f{align}
   \mathbf{s}_{n+1} = f(\mathbf{f}_{n+1}, \mathbf{s}_n, \mathbf{f}_n; \mathbf{p}). \label{form1}
 \f}
@@ -12,13 +12,15 @@ In other words, the constitutive update takes a recursive form: Given the state 
 
 This form of constitutive update is oftentimes sufficient when coupling with external PDE solvers: The PDE solver calculates the external driving force \f$\mathbf{f}_{n+1}\f$ and asks NEML2 to advance the state of system \f$\mathbf{s}_{n+1}\f$.
 
-However, in many other applications such as parameter calibration, it is favorable to let NEML2 drive the constitutive update (recursively) to effectively simulate the transient response of the material. The corresponding initial-value problem can be formally written as: Given initial conditions \f$\mathbf{s}_0\f$ and \f$\mathbf{f}_0\f$, find, \f$\forall n \in [0, N-1]\f$,
+However, in many other applications such as parameter calibration, it is favorable to let NEML2 drive the constitutive update (recursively) to effectively simulate the transient response of the material. The corresponding initial-value problem can be formally written as: 
+
+Given initial conditions \f$\mathbf{s}_0\f$ and \f$\mathbf{f}_0\f$, find, \f$\forall n \in [0, N-1]\f$,
 \f{align}
   \mathbf{s}_{n+1} = f(\mathbf{f}_{n+1}, \mathbf{s}_n, \mathbf{f}_n; \mathbf{p}), \label{form2}
 \f}
 where \f$N\f$ is the total number of steps used to discretize the "transient".
 
-NEML2 models, including those composed from others, can only be used to describe the first form of constitutive \f$\eqref{form1}\f$, i.e., a single step constitutive update. In order to simulate the initial-value problem defined in \f$\eqref{form2}\f$, a neml2::TransientDriver can be used to perform the recursive constitutive update to obtain the transient.
+NEML2 models, including those composed from submodels, can only be used to describe the first form of constitutive \f$\eqref{form1}\f$, i.e., a single step constitutive update. In order to simulate the initial-value problem defined in \f$\eqref{form2}\f$, a neml2::TransientDriver can be used to perform the recursive constitutive update to obtain the transient response.
 
 ## Simulating the stress-strain curve
 
@@ -93,7 +95,7 @@ main()
 @endsource
 
 \note
-The Python binding for neml2::Driver does not yet exist. Instead, a separate Python package named pyzag can be used in conjunction with NEML2 to perform recursive constitutive update, in a much more efficient manner.
+The Python binding for neml2::Driver does not yet exist. Instead, a separate Python package named pyzag can be used in conjunction with NEML2 to perform recursive constitutive updates in a much more efficient manner compared to the NEML2 drivers, which loop over each point in the requested time series sequentially.
 
 The results saved in "result.pt" can be used as a regular pickled [TorchScript](https://pytorch.org/docs/stable/jit.html), which can be loaded using `torch.jit.load`. For example, the following Python script retrieves and plots the strain and stress values.
 @source:src2

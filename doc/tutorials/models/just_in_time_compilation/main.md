@@ -5,10 +5,10 @@
 ## Problem description
 
 In NEML2, all tensor operations are traceable. The trace of an operation records the operator type, a stack of arguments and outputs, together with additional context. Multiple operations performed in sequence can be traced together into a *graph* representing the flow of data through operators. Such graph representation is primarily used for two purposes:
-- just-in-time (JIT) compilation and optimization of the operations
-- backward automatic-differentiation (AD)
+- Just-in-time (JIT) compilation and optimization of the operations
+- Backward automatic-differentiation (AD)
 
-This tutorial illustrates the utility of JIT compilation of NEML2 models, and the a [later tutorial](#tutorials-optimization-automatic-differentiation) demonstrates the use of backward AD to calculate parameter derivatives.
+This tutorial illustrates the utility of JIT compilation of NEML2 models, and a [later tutorial](#tutorials-optimization-automatic-differentiation) demonstrates the use of backward AD to calculate parameter derivatives.
 
 In this tutorial, let us consider the following problem
 \f{align}
@@ -301,9 +301,9 @@ Note how the optimized graph successfully identifies the common subexpression \f
 
 ## Limitations
 
-JIT optimization and compilation isn't the holy grail for improving performance of all models. For tensor operations that branch based on variable data, the traced graph cannot capture such data dependency and would potentially produce wrong results. For models defining the derivatives relying on backward automatic differentiation, NEML2 is not able to generate efficient traced graphs.
+JIT optimization and compilation isn't the holy grail for improving performance of all models. For tensor operations that branch based on variable data, the traced graph cannot capture such data dependency and would potentially produce wrong results. NEML2 is unable to generate traced graphs for models that include derivatives of other models in the forward evaluation when those derivatives are defined with automatic differentiation.
 
-Due to these limitations, certain models disable the use of JIT compilation. The most notable case is [ImplicitUpdate](#implicitupdate) due to its use of Newton-Raphson solvers which are in general data dependent.
+Due to these limitations, certain models disable the use of JIT compilation. The most notable case is [ImplicitUpdate](#implicitupdate) due to its use of Newton-Raphson solvers which are in general data dependent.  However, the portions of the complete model defining the implicit function to solve can often benefit from JIT compilation.
 
 When multiple models are composed together, a single function graph is by default traced through all sub-models. However, if one of the sub-model does not allow JIT, e.g., is of type `ImplicitUpdate`, then the composed model falls back to trace each individual sub-model except for those explicit disabling JIT. Therefore, it is generally recommended to compose JIT-enabled sub-models separate from those JIT-disabled ones, allowing for more optimization opportunities.
 

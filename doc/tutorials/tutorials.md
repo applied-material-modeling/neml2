@@ -9,7 +9,7 @@
     <a href="tutorials-getting-started.html">
     <div class="card_container">
       <h2>Getting Started</h2>
-      <p>Get started as a user of NEML2: Choose the appropriate frontend that best suites your needs.</p>
+      <p>Get started as a user of NEML2.  Choose the appropriate frontend that best suites your needs.</p>
     </div>
     </a>
   </div>
