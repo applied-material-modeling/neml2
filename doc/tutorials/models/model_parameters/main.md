@@ -57,7 +57,7 @@ All model parameters are associated with a unique name, either predefined by the
 
   Output:
   ```
-  @attach_output:src1
+  @attach-output:src1
   ```
 - <b class="tab-title">Python</b>
   @source:src2
@@ -74,7 +74,7 @@ All model parameters are associated with a unique name, either predefined by the
 
   Output:
   ```
-  @attach_output:src2
+  @attach-output:src2
   ```
 
 </div>
@@ -107,7 +107,7 @@ neml2::Model::get_parameter can be used to retrieve a specific parameter given i
 
   Output:
   ```
-  @attach_output:src3
+  @attach-output:src3
   ```
 - <b class="tab-title">Python</b>
   In Python, model parameters can be more conveniently retrieved as attributes, i.e.
@@ -130,7 +130,7 @@ neml2::Model::get_parameter can be used to retrieve a specific parameter given i
 
   Output:
   ```
-  @attach_output:src4
+  @attach-output:src4
   ```
 
 </div>
@@ -171,7 +171,7 @@ The neml2::Model::set_parameter and neml2::Model::set_parameters methods can be 
 
   Output:
   ```
-  @attach_output:src5
+  @attach-output:src5
   ```
 - <b class="tab-title">Python</b>
   @source:src6
@@ -194,7 +194,7 @@ The neml2::Model::set_parameter and neml2::Model::set_parameters methods can be 
 
   Output:
   ```
-  @attach_output:src6
+  @attach-output:src6
   ```
 
 </div>

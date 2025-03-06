@@ -63,7 +63,7 @@ And the composed model correctly defines \f$ a \f$, \f$ a_n \f$, \f$ b \f$, \f$ 
 
   Output:
   ```
-  @attach_output:src1
+  @attach-output:src1
   ```
 - <b class="tab-title">Python</b>
   @source:src2
@@ -77,7 +77,7 @@ And the composed model correctly defines \f$ a \f$, \f$ a_n \f$, \f$ b \f$, \f$ 
 
   Output:
   ```
-  @attach_output:src2
+  @attach-output:src2
   ```
 
 </div>
@@ -130,7 +130,7 @@ NEML2 enables tracing of tensor operations lazily. No tracing is performed when 
 
   Output:
   ```
-  @attach_output:src3
+  @attach-output:src3
   ```
 - <b class="tab-title">Python</b>
   @source:src4
@@ -168,7 +168,7 @@ NEML2 enables tracing of tensor operations lazily. No tracing is performed when 
 
   Output:
   ```
-  @attach_output:src4
+  @attach-output:src4
   ```
 
 </div>
@@ -252,7 +252,7 @@ The code below shows that, after a few forward evaluations, the traced graph can
 
   Output:
   ```
-  @attach_output:src5
+  @attach-output:src5
   ```
 - <b class="tab-title">Python</b>
   @source:src6
@@ -292,7 +292,7 @@ The code below shows that, after a few forward evaluations, the traced graph can
 
   Output:
   ```
-  @attach_output:src6
+  @attach-output:src6
   ```
 
 </div>

@@ -66,7 +66,7 @@ Suppose we are given two samples made of different materials, and for each sampl
 
   Output:
   ```
-  @attach_output:src1
+  @attach-output:src1
   ```
 - <b class="tab-title">Python</b>
   @source:src2
@@ -99,7 +99,7 @@ Suppose we are given two samples made of different materials, and for each sampl
 
   Output:
   ```
-  @attach_output:src2
+  @attach-output:src2
   ```
 
 </div>

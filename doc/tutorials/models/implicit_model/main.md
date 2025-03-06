@@ -122,7 +122,7 @@ The structure of the system of equations can be summarized using the code below.
 
   Output:
   ```
-  @attach_output:src1
+  @attach-output:src1
   ```
 - <b class="tab-title">Python</b>
   @source:src2
@@ -136,7 +136,7 @@ The structure of the system of equations can be summarized using the code below.
 
   Output:
   ```
-  @attach_output:src2
+  @attach-output:src2
   ```
 
 </div>
@@ -220,7 +220,7 @@ The [ImplicitUpdate](#implicitupdate) model can then be invoked in the same way 
 
   Output:
   ```
-  @attach_output:src3
+  @attach-output:src3
   ```
 - <b class="tab-title">Python</b>
   @source:src4
@@ -246,7 +246,7 @@ The [ImplicitUpdate](#implicitupdate) model can then be invoked in the same way 
 
   Output:
   ```
-  @attach_output:src4
+  @attach-output:src4
   ```
 
 </div>

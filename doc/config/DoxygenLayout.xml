@@ -39,6 +39,7 @@
       </tab>
       <tab type="usergroup" url="@ref tutorials-optimization" title="Optimization">
         <tab type="user" url="@ref tutorials-optimization-automatic-differentiation" title="Automatic differentiation"/>
+        <tab type="user" url="@ref tutorials-optimization-parameter-calibration" title="Parameter calibration"/>
       </tab>
     </tab>
     <tab type="usergroup" title="Syntax Documentation">

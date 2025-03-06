@@ -147,7 +147,7 @@ main()
 
 Output
 ```
-@attach_output:src1
+@attach-output:src1
 ```
 
 The following Python script plots the trajectories loaded from "result.pt" written by the driver.

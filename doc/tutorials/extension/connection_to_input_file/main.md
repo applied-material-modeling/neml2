@@ -161,7 +161,7 @@ main()
 
 Output:
 ```
-@attach_output:src1
+@attach-output:src1
 ```
 
 @insert-page-navigation

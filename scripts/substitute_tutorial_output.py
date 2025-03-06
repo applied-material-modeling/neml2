@@ -46,7 +46,7 @@ if __name__ == "__main__":
             count = 0
             leading_space = 0
             for i, line in enumerate(lines):
-                if line.strip().startswith("@attach_output:"):
+                if line.strip().startswith("@attach-output:"):
                     leading_space = len(line) - len(line.lstrip())
                     tokens = line.strip().split(":")
                     name = tokens[1]

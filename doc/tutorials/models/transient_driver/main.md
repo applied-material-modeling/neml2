@@ -77,6 +77,7 @@ The optional option "save_as" tells the driver to write the results into a file 
 The following C++ code retrieves and executes the driver to obtain the stress-strain curve.
 @source:src1
 ```cpp
+#include "neml2/base/Factory.h"
 #include "neml2/drivers/Driver.h"
 
 using namespace neml2;

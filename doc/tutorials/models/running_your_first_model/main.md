@@ -67,7 +67,7 @@ The following code parses the given input file named "input.i" and retrieves a M
 
   Output:
   ```
-  @attach_output:src1
+  @attach-output:src1
   ```
 - <b class="tab-title">Python</b>
   @source:src2
@@ -81,7 +81,7 @@ The following code parses the given input file named "input.i" and retrieves a M
 
   Output:
   ```
-  @attach_output:src2
+  @attach-output:src2
   ```
 
 </div>
@@ -151,7 +151,7 @@ In this example, the elasticity model can be evaluated using the following code:
 
   Output:
   ```
-  @attach_output:src3
+  @attach-output:src3
   ```
 - <b class="tab-title">Python</b>
   @source:src4
@@ -179,7 +179,7 @@ In this example, the elasticity model can be evaluated using the following code:
 
   Output:
   ```
-  @attach_output:src4
+  @attach-output:src4
   ```
 
 </div>

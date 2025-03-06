@@ -74,7 +74,7 @@ As usual, we can inspect the structure of the composed model using the following
 
   Output:
   ```
-  @attach_output:src1
+  @attach-output:src1
   ```
 - <b class="tab-title">Python</b>
   @source:src2
@@ -88,7 +88,7 @@ As usual, we can inspect the structure of the composed model using the following
 
   Output:
   ```
-  @attach_output:src2
+  @attach-output:src2
   ```
 
 </div>
@@ -165,7 +165,7 @@ In this input file, a tensor named "alpha" with batch shape `(2, 2)` is created 
 
   Output:
   ```
-  @attach_output:src3
+  @attach-output:src3
   ```
 - <b class="tab-title">Python</b>
   @source:src4
@@ -181,7 +181,7 @@ In this input file, a tensor named "alpha" with batch shape `(2, 2)` is created 
 
   Output:
   ```
-  @attach_output:src4
+  @attach-output:src4
   ```
 
 </div>
@@ -274,7 +274,7 @@ The composed model automatically reflects such restructuring:
 
   Output:
   ```
-  @attach_output:src5
+  @attach-output:src5
   ```
 - <b class="tab-title">Python</b>
   @source:src6
@@ -288,7 +288,7 @@ The composed model automatically reflects such restructuring:
 
   Output:
   ```
-  @attach_output:src6
+  @attach-output:src6
   ```
 
 </div>
@@ -402,7 +402,7 @@ Again, NEML2 automatically reflects such change in model structure:
 
   Output:
   ```
-  @attach_output:src7
+  @attach-output:src7
   ```
 - <b class="tab-title">Python</b>
   @source:src8
@@ -416,7 +416,7 @@ Again, NEML2 automatically reflects such change in model structure:
 
   Output:
   ```
-  @attach_output:src8
+  @attach-output:src8
   ```
 
 </div>

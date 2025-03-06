@@ -42,7 +42,7 @@ Single element indexing works exactly like that for indexing flat containers suc
 
   Output:
   ```
-  @attach_output:src1
+  @attach-output:src1
   ```
 - <b class="tab-title">Python</b>
   @source:src2
@@ -67,7 +67,7 @@ Single element indexing works exactly like that for indexing flat containers suc
 
   Output:
   ```
-  @attach_output:src2
+  @attach-output:src2
   ```
 
 </div>
@@ -102,7 +102,7 @@ Single element indexing can be used to index multidimensional tensors, in which 
 
   Output:
   ```
-  @attach_output:src3
+  @attach-output:src3
   ```
 - <b class="tab-title">Python</b>
   @source:src4
@@ -130,7 +130,7 @@ Single element indexing can be used to index multidimensional tensors, in which 
 
   Output:
   ```
-  @attach_output:src4
+  @attach-output:src4
   ```
 
 </div>
@@ -190,7 +190,7 @@ It is best to learn slicing from examples. Below are equivalent C++ and Python c
 
   Output:
   ```
-  @attach_output:src5
+  @attach-output:src5
   ```
 - <b class="tab-title">Python</b>
   @source:src6
@@ -236,7 +236,7 @@ It is best to learn slicing from examples. Below are equivalent C++ and Python c
 
   Output:
   ```
-  @attach_output:src6
+  @attach-output:src6
   ```
 
 </div>
@@ -268,7 +268,7 @@ Similar to single element indexing, slicing can also be used to index multidimen
 
   Output:
   ```
-  @attach_output:src7
+  @attach-output:src7
   ```
 - <b class="tab-title">Python</b>
   @source:src8
@@ -287,7 +287,7 @@ Similar to single element indexing, slicing can also be used to index multidimen
 
   Output:
   ```
-  @attach_output:src8
+  @attach-output:src8
   ```
 
 </div>
@@ -336,7 +336,7 @@ Again, the use of these special symbols are best illustrated by examples.
 
   Output:
   ```
-  @attach_output:src9
+  @attach-output:src9
   ```
 - <b class="tab-title">Python</b>
   @source:src10
@@ -363,7 +363,7 @@ Again, the use of these special symbols are best illustrated by examples.
 
   Output:
   ```
-  @attach_output:src10
+  @attach-output:src10
   ```
 
 </div>

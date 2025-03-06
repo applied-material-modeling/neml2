@@ -120,7 +120,7 @@ Now that all three models are defined in the input file, we can load and evaluat
 
   Output:
   ```
-  @attach_output:src1
+  @attach-output:src1
   ```
 - <b class="tab-title">Python</b>
   @source:src2
@@ -155,7 +155,7 @@ Now that all three models are defined in the input file, we can load and evaluat
 
   Output:
   ```
-  @attach_output:src2
+  @attach-output:src2
   ```
 
 </div>
@@ -236,7 +236,7 @@ Let us first inspect the composed model and compare it against the three sub-mod
 
   Output:
   ```
-  @attach_output:src3
+  @attach-output:src3
   ```
 - <b class="tab-title">Python</b>
   @source:src4
@@ -263,7 +263,7 @@ Let us first inspect the composed model and compare it against the three sub-mod
 
   Output:
   ```
-  @attach_output:src4
+  @attach-output:src4
   ```
 
 </div>
@@ -308,7 +308,7 @@ The composed model can be evaluated in the same way as regular models:
 
   Output:
   ```
-  @attach_output:src5
+  @attach-output:src5
   ```
 - <b class="tab-title">Python</b>
   @source:src6
@@ -332,7 +332,7 @@ The composed model can be evaluated in the same way as regular models:
 
   Output:
   ```
-  @attach_output:src6
+  @attach-output:src6
   ```
 
 </div>

@@ -58,7 +58,7 @@ The following example demonstrates the two bullet points, i.e., "change in origi
 
   Output:
   ```
-  @attach_output:src1
+  @attach-output:src1
   ```
 - <b class="tab-title">Python</b>
   @source:src2
@@ -95,7 +95,7 @@ The following example demonstrates the two bullet points, i.e., "change in origi
 
   Output:
   ```
-  @attach_output:src2
+  @attach-output:src2
   ```
 
 </div>
