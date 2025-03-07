@@ -3,7 +3,7 @@
 [TOC]
 
 \note
-Before diving into the following tutorials, it is optional but recommended to read the [Contributing](#tutorials-contributing) guide.
+Before diving into the following tutorials we recommend reading the [Contributing](#tutorials-contributing) guide.
 
 NEML2 models can be easily extended or adapted to model the material behavior of your interest.
 
@@ -14,7 +14,7 @@ This set of tutorials define a custom equation to model the conventional *projec
   \dot{\boldsymbol{x}} & = \boldsymbol{v}, \label{1} \\
   \dot{\boldsymbol{v}} & = \boldsymbol{a} = \boldsymbol{g} - \mu \boldsymbol{v}, \label{2}
 \f}
-where \f$\boldsymbol{x}\f$ and \f$\boldsymbol{v}\f$ are the position and velocity of the cannonball, respectively. \f$\boldsymbol{g}\f$ is the gravitational acceleration, and \f$\mu\f$ is the dynamic viscosity. The projectile's trajectory can be numerically integrated using the backward-Euler method:
+where \f$\boldsymbol{x}\f$ and \f$\boldsymbol{v}\f$ are the position and velocity of the projectile, respectively. \f$\boldsymbol{g}\f$ is the gravitational acceleration, and \f$\mu\f$ is the dynamic viscosity. The projectile's trajectory can be numerically integrated using the backward-Euler method:
 \f{align}
   \mathbf{r} = \begin{Bmatrix}
     r_x \\
@@ -34,7 +34,7 @@ subject to appropriate initial conditions \f$\boldsymbol{x}_0\f$ and \f$\boldsym
 
 Among these equations:
 - \f$\eqref{1}\f$ and \f$\eqref{3}\f$ can be defined using [VecBackwardEulerTimeIntegration](#vecbackwardeulertimeintegration).
-- \f$\eqref{2}\f$ is not available in NEML2, and is the focus of this set of tutorials. We will name it as `ProjectileAcceleration`.
+- \f$\eqref{2}\f$ is not available in NEML2, and is the focus of this set of tutorials. We will name it  `ProjectileAcceleration`.
 - \f$\eqref{4}\f$ is the [ImplicitUpdate](#implicitupdate).
 
 ## Outline

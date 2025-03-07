@@ -4,7 +4,7 @@
 
 ## Motivation
 
-During the process of model development, it is of general interest (and is also very much encouraged) to reuse existing models. This is particularly useful and effective owing to the extreme modular design of NEML2, i.e., model composition.
+Users should reuse existing NEML2 models as much as possible. This is particularly effective owing to the extremely modular design of NEML2, i.e., model composition.
 
 However, from times to times, the composed model may become overwhelmingly complicated even for an experienced developer. For example, given a single-crystal crystal plasticity model with decoupled time integration defined in an input file `input.i` with the following content
 ```python

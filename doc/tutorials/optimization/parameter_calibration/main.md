@@ -4,7 +4,7 @@
 
 ## Problem definition
 
-Suppose we are given the experimental data of one pair of strain \f$\boldsymbol{\varepsilon}^*\f$ and stress \f$\boldsymbol{\sigma}^*\f$ measurement of a specimen, and we are tasked to infer the bulk \f$K\f$ and shear \f$G\f$ modulus of the material (assuming it's homogeneous, isotropic, purely elastic, and small strain assumptions hold).
+Suppose we are given the experimental data of one pair of strain \f$\boldsymbol{\varepsilon}^*\f$ and stress \f$\boldsymbol{\sigma}^*\f$ measurement of a specimen, and we are tasked to infer the bulk \f$K\f$ and shear \f$G\f$ modulus of the material.
 
 Let us define the loss function as the *distance* between the stress prediction and the stress measurement, i.e.
 \f[

@@ -3,7 +3,7 @@
 [TOC]
 
 NEML2 tensors are extremely similar to the tensor type provided by its default backend ATen. In fact, all NEML2 tensors inherit from `at::Tensor`, *the* tensor type from ATen. What's different from ATen is that the NEML2 tensor library provides the following enhancements:
-- Explicit distinction between *batch* and base dimensions
+- Explicit distinction between *batch* and *base* dimensions
 - **Primitive** tensor types commonly used in traditional scientific computing
 - Commonly used math operators and functions for primitive tensor types
 
@@ -36,11 +36,11 @@ Similarly, if the batch dimension is 0 or 5, the resulting shape would become
   (; 3, 100, 5, 13, 2), \\
   (3, 100, 5, 13, 2;).
 \f}
-It is valid for the \f$;\f$ delimiter to appear at the beginning or the end of the shape tuple.
+It is valid for the \f$;\f$ delimiter to appear at the beginning or the end of the shape tuple.  If it appears at the beginning it means that tensor has no batch dimensions.  If it appears at the end it means the tensor is a batched scalar.
 
 ## Why batching?
 
-The definition of batching is fairly straightforward yet arbitrary. A fair question to ask is "why another layer of abstraction on top of the regular tensor shape definition"? While it is difficult to give a thorough list of technical reasons at this point of the tutorial, let us briefly cover the high-level motivation behind this design choice.
+The definition of batching is fairly straightforward. However, fair question to ask is "why another layer of abstraction on top of the regular tensor shape definition"? Let's briefly consider the high-level motivation behind this design choice.
 
 **Shape ambiguity**: Consider a tensor of shape \f$ (55, 100, 3, 3, 3, 3) \f$, it can be interpreted as
 - a scalar with batch shape \f$ (55, 100, 3, 3, 3, 3) \f$,
@@ -57,7 +57,7 @@ Such ambiguity can be avoided if the user consistently keeps track of batching t
 - Trace the graph with example input variables having the same shape as real input variables to be used later on.
 - Re-trace the graph whenever any input variable has a different shape.
 
-The first option implies a potential memory bound at the stage of JIT compilation, and is difficult to guarantee in practice. The second option imposes a significant runtime overhead whenever re-tracing is deemed necessary.
+The first option implies a potential memory bound at the stage of JIT compilation, and is difficult to guarantee in practice. The second option imposes a significant runtime overhead whenever re-tracing is necessary.
 
 With explicit batching, NEML2 is able to generate *batch-generalizable* graphs. As long as the batch dimensions of the input variables remain unchanged, the same traced graph can be reused without re-tracing.
 
@@ -92,6 +92,6 @@ In addition, NEML2 offers a rich collection of primitive tensor types whose base
 | [Quaternion](#neml2::Quaternion)   | \f$(4)\f$               | Quaternion                                                       |
 | [MillerIndex](#neml2::MillerIndex) | \f$(3)\f$               | Crystal direction or lattice plane represented as Miller indices |
 
-Furthermore, all primitive tensor types can be declared as variables, parameters, and buffers in a model.
+All primitive tensor types can be declared as variables, parameters, and buffers in a model.
 
 @insert-page-navigation

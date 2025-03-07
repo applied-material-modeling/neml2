@@ -4,7 +4,7 @@
 
 ## Model definition
 
-For demonstration purposes, let us go back to our example -- the linear isotropic elasticity model:
+For demonstration purposes, let us go back to an earlier example model -- linear isotropic elasticity:
 ```
 [Models]
   [model]

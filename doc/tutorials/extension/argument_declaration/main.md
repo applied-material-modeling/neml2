@@ -2,7 +2,7 @@
 
 [TOC]
 
-Recall that all NEML2 models can be written in the following form
+All NEML2 models can be written in the following form
 \f[
   y = f(x; p, b).
 \f]

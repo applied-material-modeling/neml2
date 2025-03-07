@@ -6,7 +6,7 @@ NEML2 utilizes the well-established [registry-factory pattern](https://en.wikipe
 
 ## Parser
 
-A class is said to be runtime-manufacturable if it's constructor can be retrieved at runtime using a string identification of its symbol. To allow for a unified object creation signature, runtime-manufacturable objects (e.g., models) are required to derive from neml2::NEML2Object and provide a constructor and a static method with the following signatures
+A class is said to be runtime-manufacturable if its constructor can be retrieved at runtime using a string identification of its symbol. To allow for a unified object creation signature, runtime-manufacturable objects (e.g., models) are required to derive from neml2::NEML2Object and provide a constructor and a static method with the following signatures
 
 @source:src1
 ```cpp
@@ -39,11 +39,11 @@ The following steps take place for each object during input file parsing:
 
 At the end of this process, a set of input options are gathered for the subsequent object creation.
 
-All of the gathered options are stored in the NEML2 factory so that objects can be created at runtime per user's request.
+All of the gathered options are stored in the NEML2 factory so that objects can be created at runtime per the user's request.
 
 ## Input file
 
-Before defining the input file options for our custom model, it is always a good idea to first design the syntax. For example, in this equation we are mapping from the projectile's current velocity to its acceleration, therefore we'd like to allow user to specify the variable names corresponding to the velocity and acceleration. In addition, since the equation is parametrized by the gravitational acceleration \f$\boldsymbol{g}\f$ and the dynamic viscosity \f$\nu\f$, we should allow user to set their values directly inside the input file (without modifying the source code).
+Before defining the input file options for our custom model, it is a good idea to first design the syntax. For example, in this equation we are mapping from the projectile's current velocity to its acceleration, therefore we'd like to allow user to specify the variable names corresponding to the velocity and acceleration. In addition, since the equation is parametrized by the gravitational acceleration \f$\boldsymbol{g}\f$ and the dynamic viscosity \f$\nu\f$, we should allow user to set their values directly inside the input file (without modifying the source code).
 
 Therefore, the input file syntax should look something like
 ```
@@ -81,7 +81,7 @@ ProjectileAcceleration::expected_options()
 
 ## Registry
 
-The registry is a RAII-style singleton responsible for storing the mapping from the string identification of each runtime-manufacturable object to the constructor pointer along with the expected input file options.
+The registry is a [RAII-style](https://en.wikipedia.org/wiki/Resource_acquisition_is_initialization) singleton responsible for storing the mapping from the string identification of each runtime-manufacturable object to the constructor pointer along with the expected input file options.
 
 The registration is accomplished by the static method neml2::Registry::add templated on the class type. The static registration method combined with the singleton enables distributed class registration in each translation unit. The convenience macro register_NEML2_object and its variants wrap around neml2::Registry::add to provide syntatic simplification of the registration call.
 
@@ -116,7 +116,7 @@ ProjectileAcceleration::ProjectileAcceleration(const OptionSet & options)
 
 The following tutorials will explain how to declare variables and parameters in the constructor.
 
-Suppose an input file named "inpu.i" has the following content
+Suppose an input file named "input.i" has the following content
 ```
 [Tensors]
   [g]

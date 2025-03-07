@@ -9,11 +9,11 @@ Related reading: NumPy manual on [Broadcasting](https://numpy.org/doc/stable/use
 NEML's broadcasting rules are built on top of NumPy's general broadcasting rules.
 
 When operating on two tensors, NEML2 compares each dimension's size pair one-by-one, from right to left. Before the comparison, the shapes of two tensors are aligned at the final batch dimension. The comparison starts with the trailing (i.e., rightmost) batch dimension and works its way left. Two batch dimensions are compatible (broadcastable) when
-- their sizes are equal,
-- one of them has size one, or
-- one of them does not exist.
+- Their sizes are equal,
+- One of them has size one, or
+- One of them does not exist.
 
-If all dimensions are compatible, the two tensors are *batch-broadcastable*. Many operations in NEML2 require operands to be batch-broadcastable, and if not, an exception will be thrown (most of them only throw the exception in Debug mode).
+If all dimensions are compatible, the two tensors are *batch-broadcastable*. Many operations in NEML2 require operands to be batch-broadcastable, and if not, an exception will be thrown (typically only in Debug mode).
 
 The operands do not need to have the same batch dimension (per the third rule) in order to be batch-broadcastable. After broadcasting, each dimension of the operands are effectively expanded to have the same size as larger size of the two.
 

@@ -2,11 +2,11 @@
 
 [TOC]
 
-Related readings:
+Related reading:
 - NumPy manual [Indexing on ndarrays](https://numpy.org/doc/2.2/user/basics.indexing.html)
 - PyTorch documentation [Tensor Indexing API](https://pytorch.org/cppdocs/notes/tensor_indexing.html)
 
-## Batch v.s. base indexing
+## Batch versus base indexing
 
 NEML2 tensor indexing works much in the same way as in NumPy and PyTorch. We also offer a simple one-to-one translation between C++ and Python tensor indexing API. The major difference between indexing (batched) NEML2 tensor and indexing tensors in PyTorch or N-D arrays in NumPy is that **most indexing APIs have two variants -- one for indexing batch dimensions and the other for indexing base dimensions**.
 

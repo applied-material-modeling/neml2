@@ -12,6 +12,6 @@ Another interesting use of NEML2 constitutive models is *parameter calibration*:
 \f]
 where \f$l\f$ is oftentimes referred to as the loss (or objective) function defining optimality.
 
-This set of tutorials demonstrate the use of PyTorch [Autograd](https://pytorch.org/tutorials/beginner/blitz/autograd_tutorial.html) to calculate parameter derivatives (\f$\pdv{l}{p}\f$) which is a necessary ingredient in all gradient-based optimizers.
+This set of tutorials demonstrate the use of PyTorch [Autograd](https://pytorch.org/tutorials/beginner/blitz/autograd_tutorial.html) to calculate parameter derivatives (\f$\pdv{l}{p}\f$), which is a necessary ingredient in all gradient-based optimizers.
 
 @insert-subsection-list

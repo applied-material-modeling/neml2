@@ -112,6 +112,6 @@ For example, the following code creates a statically (base) shaped, dense, singl
 </div>
 
 \note
-All factory methods are listed [here](@ref tensor_creation).
+All the factory methods are listed [here](@ref tensor_creation).
 
 @insert-page-navigation

@@ -28,7 +28,7 @@ This tutorial demonstrates that our custom model `ProjectileAcceleration` can be
 
 ## Input file
 
-Our custom model `ProjectileAcceleration` can be composed with other existing, predefined NEML2 models. The following input file composes the constitutive model for a single-step update for 5 projectiles each with a different dynamic viscosity, i.e., the shape of "mu" is \f$(5;)\f$.
+The following input file composes the constitutive model for a single-step update for 5 projectiles each with a different dynamic viscosity, i.e., the shape of "mu" is \f$(5;)\f$.
 
 ```
 [Tensors]
