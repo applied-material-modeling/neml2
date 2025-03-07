@@ -1,4 +1,4 @@
-@insert-title:tutorials-extension-connection-to-input-file
+@insert-title:tutorials-extension-connection-to-input-files
 
 [TOC]
 

@@ -1,6 +1,6 @@
 @insert-title:tutorials-optimization
 
-The previous tutorials have illustrated the use of NEML2 constitutive models in the "feed-forward" setting, i.e., the model maps from input variables to output variables with a given parametrization, i.e.
+The previous tutorials illustrated the use of NEML2 constitutive models in the "feed-forward" setting, i.e., the model maps from input variables to output variables with a given parametrization, i.e.
 \f[
   y = f(x; p, b).
 \f]

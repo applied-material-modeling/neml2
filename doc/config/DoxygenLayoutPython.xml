@@ -31,7 +31,7 @@
         <tab type="user" url="../tutorials-tensors-broadcasting" title="Broadcasting"/>
       </tab>
       <tab type="usergroup" url="../tutorials-extension" title="Extension">
-        <tab type="user" url="../tutorials-extension-connection-to-input-file" title="Connection to input file"/>
+        <tab type="user" url="../tutorials-extension-connection-to-input-files" title="Connection to input files"/>
         <tab type="user" url="../tutorials-extension-argument-declaration" title="Argument declaration"/>
         <tab type="user" url="../tutorials-extension-the-forward-operator" title="The forward operator"/>
         <tab type="user" url="../tutorials-extension-model-composition" title="Model composition"/>

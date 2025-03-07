@@ -7,4 +7,3 @@ Once NEML2 is [installed](@ref install), there is no need to write additional C+
 This set of tutorials walk through typical use cases for interacting with existing NEML2 material models.
 
 @insert-subsection-list
-

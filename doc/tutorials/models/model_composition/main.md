@@ -6,6 +6,8 @@
 
 We have been working with the linear, isotropic elasticity model in the previous tutorials. We started with that example because it is arguably the simplest possible material model in the context of solid mechanics. It is simple not just because of the simplicity in the description of the material behavior, but also due to the fact that its mathematical formulation only involves one linear equation.
 
+Much more complicated, nonlinear models can be created using NEML2.
+
 Using a Perzyna-type viscoplasticity model as an example, it can be formulated as
 \f{align*}
   \boldsymbol{\varepsilon}^e & = \boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}^p, \\
