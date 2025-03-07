@@ -41,6 +41,7 @@
         <tab type="user" url="@ref tutorials-optimization-automatic-differentiation" title="Automatic differentiation"/>
         <tab type="user" url="@ref tutorials-optimization-parameter-calibration" title="Parameter calibration"/>
       </tab>
+      <tab type="user" url="@ref tutorials-next-steps" title="Next steps"/>
     </tab>
     <tab type="usergroup" title="Syntax Documentation">
       <tab type="user" url="@ref syntax-settings" title="[Settings]"/>
