@@ -27,7 +27,7 @@ before-all = ""
 before-build = "python -m pip install -r requirements.txt cmake ninja torch"
 
 test-requires = "pytest"
-test-command = "pytest -v python/tests"
+test-command = "pytest -v {project}/python/tests"
 
 [tool.cibuildwheel.linux]
 repair-wheel-command = ""
