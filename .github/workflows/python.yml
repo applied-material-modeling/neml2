@@ -40,7 +40,7 @@ jobs:
       - name: Install
         run: CMAKE_GENERATOR=Ninja pip install -v .
       - name: Run tests
-        run: pytest -vv --junitxml=pytest.xml python/tests
+        run: pytest -v --junitxml=pytest.xml python/tests
       - name: Test results
         uses: EnricoMi/publish-unit-test-result-action/linux@v2
         if: always()
@@ -50,6 +50,26 @@ jobs:
           check_run: false
           action_fail: true
           comment_mode: off
+
+  # TODO: Re-enable the wheels job when we get the enterprise runners with larger disk space
+
+  # wheels:
+  #   needs: black
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       os: [ubuntu-latest, macos-latest]
+  #   runs-on: ${{ matrix.os }}
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Install cibuildwheel
+  #       run: pip install cibuildwheel
+  #     - name: Build wheels
+  #       run: cibuildwheel --output-dir wheelhouse
+  #     - uses: actions/upload-artifact@v4
+  #       with:
+  #         path: wheelhouse/*.whl
+  #         name: packages-${{matrix.os}}
 
   sdist:
     runs-on: ubuntu-latest

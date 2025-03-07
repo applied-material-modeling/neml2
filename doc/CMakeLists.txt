@@ -40,10 +40,10 @@ FetchContent_MakeAvailable(doxygen-awesome-css)
 # ----------------------------------------------------------------------------
 # Python
 # ----------------------------------------------------------------------------
-find_package(Python REQUIRED COMPONENTS Interpreter)
+find_package(Python3 REQUIRED)
 execute_process(
   COMMAND_ERROR_IS_FATAL ANY
-  COMMAND ${Python_EXECUTABLE} ${NEML2_SOURCE_DIR}/scripts/check_python_dep.py ${CMAKE_CURRENT_SOURCE_DIR}/requirements.txt
+  COMMAND ${Python3_EXECUTABLE} ${NEML2_SOURCE_DIR}/scripts/check_python_dep.py ${CMAKE_CURRENT_SOURCE_DIR}/requirements.txt
 )
 
 # ----------------------------------------------------------------------------
@@ -72,7 +72,7 @@ add_custom_target(syntax_cpp
   DEPENDS syntax
   WORKING_DIRECTORY ${NEML2_BINARY_DIR}/doc
   COMMAND ${NEML2_BINARY_DIR}/doc/syntax
-  COMMAND ${Python_EXECUTABLE} ${NEML2_SOURCE_DIR}/scripts/syntax_to_md.py syntax.yml content/syntax syntax_error.log
+  COMMAND ${Python3_EXECUTABLE} ${NEML2_SOURCE_DIR}/scripts/syntax_to_md.py syntax.yml content/syntax syntax_error.log
   VERBATIM
 )
 
@@ -84,7 +84,7 @@ add_custom_target(syntax_python
   WORKING_DIRECTORY ${NEML2_BINARY_DIR}/python
   COMMAND ${CMAKE_COMMAND} -E make_directory ${NEML2_BINARY_DIR}/doc/content/python
   COMMAND PYTHONPATH=. pybind11-stubgen -o ${NEML2_BINARY_DIR}/doc/content/python neml2
-  COMMAND ${Python_EXECUTABLE} ${NEML2_SOURCE_DIR}/scripts/fixup_pystub.py ${NEML2_BINARY_DIR}/doc/content/python/neml2
+  COMMAND ${Python3_EXECUTABLE} ${NEML2_SOURCE_DIR}/scripts/fixup_pystub.py ${NEML2_BINARY_DIR}/doc/content/python/neml2
   VERBATIM
 )
 add_dependencies(syntax_python python_stub)
@@ -97,7 +97,7 @@ add_custom_target(tutorials)
 file(REMOVE_RECURSE ${NEML2_BINARY_DIR}/doc/content/tutorials)
 file(COPY tutorials DESTINATION ${NEML2_BINARY_DIR}/doc/content)
 execute_process(
-  COMMAND ${Python_EXECUTABLE} ${NEML2_SOURCE_DIR}/scripts/extract_tutorial_sources.py ${NEML2_BINARY_DIR}/doc/content/tutorials
+  COMMAND ${Python3_EXECUTABLE} ${NEML2_SOURCE_DIR}/scripts/extract_tutorial_sources.py ${NEML2_BINARY_DIR}/doc/content/tutorials
   COMMAND_ERROR_IS_FATAL ANY
 )
 
@@ -142,7 +142,7 @@ foreach(TUTORIAL_SOURCE ${TUTORIAL_SOURCES})
   add_custom_target(${TUTORIAL_SOURCE_TARGET}
     DEPENDS syntax_python
     COMMENT "Running tutorial ${TUTORIAL_SOURCE_TARGET}"
-    COMMAND PYTHONPATH=${NEML2_BINARY_DIR}/python ${Python_EXECUTABLE} ${TUTORIAL_SOURCE} > ${TUTORIAL_SOURCE_DIR}/${TUTORIAL_NAME}.out
+    COMMAND PYTHONPATH=${NEML2_BINARY_DIR}/python ${Python3_EXECUTABLE} ${TUTORIAL_SOURCE} > ${TUTORIAL_SOURCE_DIR}/${TUTORIAL_NAME}.out
     WORKING_DIRECTORY ${TUTORIAL_SOURCE_DIR}
     VERBATIM
   )
@@ -155,8 +155,8 @@ endforeach()
 add_custom_target(tutorials_md
   COMMENT "Postprocessing tutorial markdown"
   DEPENDS tutorials
-  COMMAND ${Python_EXECUTABLE} ${NEML2_SOURCE_DIR}/scripts/substitute_tutorial_output.py ${NEML2_BINARY_DIR}/doc/content/tutorials
-  COMMAND ${Python_EXECUTABLE} ${NEML2_SOURCE_DIR}/scripts/apply_layout.py ${NEML2_SOURCE_DIR}/doc/config/DoxygenLayout.xml ${NEML2_BINARY_DIR}/doc/content/tutorials
+  COMMAND ${Python3_EXECUTABLE} ${NEML2_SOURCE_DIR}/scripts/substitute_tutorial_output.py ${NEML2_BINARY_DIR}/doc/content/tutorials
+  COMMAND ${Python3_EXECUTABLE} ${NEML2_SOURCE_DIR}/scripts/apply_layout.py ${NEML2_SOURCE_DIR}/doc/config/DoxygenLayout.xml ${NEML2_BINARY_DIR}/doc/content/tutorials
 )
 
 # ----------------------------------------------------------------------------
