@@ -51,6 +51,25 @@ jobs:
           action_fail: true
           comment_mode: off
 
+  wheels:
+    needs: black
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@vv
+      - name: Install cibuildwheel
+        run: pip install cibuildwheel
+      - name: Build wheels
+        run: cibuildwheel --output-dir wheelhouse
+      - uses: actions/upload-artifact@v4
+        with:
+          path: wheelhouse/*.whl
+          name: packages-${{matrix.os}}
+
   sdist:
     runs-on: ubuntu-latest
     steps:
