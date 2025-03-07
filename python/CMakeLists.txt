@@ -81,22 +81,18 @@ configure_file(neml2/postprocessing/__init__.py ${NEML2_BINARY_DIR}/python/neml2
 configure_file(neml2/postprocessing/polefigure.py ${NEML2_BINARY_DIR}/python/neml2/postprocessing/polefigure.py COPYONLY)
 configure_file(neml2/postprocessing/odf.py ${NEML2_BINARY_DIR}/python/neml2/postprocessing/odf.py COPYONLY)
 
-install(FILES
-  neml2/__init__.py
-  neml2/visualization.py
-  neml2/pyzag/__init__.py
-  neml2/pyzag/interface.py
-  neml2/postprocessing/__init__.py
-  neml2/postprocessing/polefigure.py
-  neml2/postprocessing/odf.py
-  ${NEML2_BINARY_DIR}/python/neml2/__init__.pyi
-  ${NEML2_BINARY_DIR}/python/neml2/core.pyi
-  ${NEML2_BINARY_DIR}/python/neml2/reserved.pyi
-  ${NEML2_BINARY_DIR}/python/neml2/math.pyi
-  ${NEML2_BINARY_DIR}/python/neml2/crystallography.pyi
-  ${NEML2_BINARY_DIR}/python/neml2/tensors.pyi
+install(DIRECTORY
+  neml2/
   DESTINATION .
   COMPONENT libneml2-python
+  FILES_MATCHING PATTERN "*.py"
+)
+
+install(DIRECTORY
+  ${NEML2_BINARY_DIR}/python/neml2/
+  DESTINATION .
+  COMPONENT libneml2-python
+  FILES_MATCHING PATTERN "*.pyi"
 )
 
 # ----------------------------------------------------------------------------
