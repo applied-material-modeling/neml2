@@ -76,18 +76,23 @@
   </div>
 </div>
 
-@endhtmlonly
-
-## External tutorials
-
-@htmlonly
-
 <div class="cards">
   <div class="card">
     <a href="https://mooseframework.inl.gov/modules/solid_mechanics/NEML2.html">
     <div class="card_container">
       <h2>MOOSE</h2>
       <p>Use NEML2 to perform constitutive update in the MOOSE framework to solve PDEs.</p>
+    </div>
+    </a>
+  </div>
+</div>
+
+<div class="cards">
+  <div class="card">
+    <a href="tutorials-next-steps.html">
+    <div class="card_container">
+      <h2>Next steps</h2>
+      <p>Additional resources on using and developing NEML2 for your own purposes.</p>
     </div>
     </a>
   </div>
