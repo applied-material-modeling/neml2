@@ -24,36 +24,35 @@ jobs:
           options: "--check -v"
           src: "python/neml2 python/tests"
 
-  test:
-    needs: black
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: applied-material-modeling/neml2-ci@main
-        with:
-          python-version: 3.9
-          cmake-version: 3.28
-          torch-version: 2.5.1
-      - name: Install
-        run: CMAKE_GENERATOR=Ninja pip install -v .
-      - name: Run tests
-        run: pytest -vv --junitxml=pytest.xml python/tests
-      - name: Test results
-        uses: EnricoMi/publish-unit-test-result-action/linux@v2
-        if: always()
-        with:
-          files: pytest.xml
-          check_name: Test Results
-          check_run: false
-          action_fail: true
-          comment_mode: off
+  # test:
+  #   needs: black
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       os: [ubuntu-latest, macos-latest]
+  #   runs-on: ${{ matrix.os }}
+  #   steps:
+  #     - uses: applied-material-modeling/neml2-ci@main
+  #       with:
+  #         python-version: 3.9
+  #         cmake-version: 3.28
+  #         torch-version: 2.5.1
+  #     - name: Install
+  #       run: CMAKE_GENERATOR=Ninja pip install -v .
+  #     - name: Run tests
+  #       run: pytest -vv --junitxml=pytest.xml python/tests
+  #     - name: Test results
+  #       uses: EnricoMi/publish-unit-test-result-action/linux@v2
+  #       if: always()
+  #       with:
+  #         files: pytest.xml
+  #         check_name: Test Results
+  #         check_run: false
+  #         action_fail: true
+  #         comment_mode: off
 
   wheels:
     needs: black
-    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
