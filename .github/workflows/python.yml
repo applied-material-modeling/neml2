@@ -59,7 +59,7 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@vv
+      - uses: actions/checkout@v4
       - name: Install cibuildwheel
         run: pip install cibuildwheel
       - name: Build wheels
