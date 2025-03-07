@@ -43,7 +43,7 @@ InputParameter<T>::expected_options()
   options.set("from").doc() = "The input variable that defines this parameter";
 
   options.set_output("to");
-  options.set("to").doc() = "The name of the parameter, default to parameters/<name>";
+  options.set("to").doc() = "The name of the parameter, default to 'parameters/object_name'";
 
   return options;
 }

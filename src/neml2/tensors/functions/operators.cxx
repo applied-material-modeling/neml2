@@ -175,4 +175,65 @@ DEFINE_DIV_SYM_SCALAR(Tensor);
 DEFINE_DIV_SYM_REAL(Tensor);
 DEFINE_DIV_SELF(Scalar);
 DEFINE_DIV_SYM_REAL(Scalar);
+
+///////////////////////////////////////////////////////////////////////////////
+// In-place addition
+///////////////////////////////////////////////////////////////////////////////
+#define DEFINE_ADD_EQ(T)                                                                           \
+  T & operator+=(T & a, const Real & b)                                                            \
+  {                                                                                                \
+    at::Tensor(a) += b;                                                                            \
+    return a;                                                                                      \
+  }                                                                                                \
+  static_assert(true)
+
+FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DEFINE_ADD_EQ);
+DEFINE_ADD_EQ(Tensor);
+DEFINE_ADD_EQ(Scalar);
+
+///////////////////////////////////////////////////////////////////////////////
+// In-place subtraction
+///////////////////////////////////////////////////////////////////////////////
+#define DEFINE_SUB_EQ(T)                                                                           \
+  T & operator-=(T & a, const Real & b)                                                            \
+  {                                                                                                \
+    at::Tensor(a) -= b;                                                                            \
+    return a;                                                                                      \
+  }                                                                                                \
+  static_assert(true)
+
+FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DEFINE_SUB_EQ);
+DEFINE_SUB_EQ(Tensor);
+DEFINE_SUB_EQ(Scalar);
+
+///////////////////////////////////////////////////////////////////////////////
+// In-place multiplication
+///////////////////////////////////////////////////////////////////////////////
+#define DEFINE_MUL_EQ(T)                                                                           \
+  T & operator*=(T & a, const Real & b)                                                            \
+  {                                                                                                \
+    at::Tensor(a) *= b;                                                                            \
+    return a;                                                                                      \
+  }                                                                                                \
+  static_assert(true)
+
+FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DEFINE_MUL_EQ);
+DEFINE_MUL_EQ(Tensor);
+DEFINE_MUL_EQ(Scalar);
+
+///////////////////////////////////////////////////////////////////////////////
+// In-place division
+///////////////////////////////////////////////////////////////////////////////
+#define DEFINE_DIV_EQ(T)                                                                           \
+  T & operator/=(T & a, const Real & b)                                                            \
+  {                                                                                                \
+    at::Tensor(a) /= b;                                                                            \
+    return a;                                                                                      \
+  }                                                                                                \
+  static_assert(true)
+
+FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DEFINE_DIV_EQ);
+DEFINE_DIV_EQ(Tensor);
+DEFINE_DIV_EQ(Scalar);
+
 } // namespace neml2

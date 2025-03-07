@@ -231,7 +231,8 @@ def_TensorBase(py::class_<Derived> & c)
       .def_property_readonly("device", &Derived::device)
       .def("requires_grad_", &Derived::requires_grad_)
       .def_property_readonly("requires_grad", &Derived::requires_grad)
-      .def_property_readonly("grad", &Derived::grad);
+      .def_property_readonly("grad", &Derived::grad)
+      .def("item", [](const Derived & self) { return self.item(); });
 
   // Binary, unary operators
   c.def(float() + py::self)
@@ -249,6 +250,10 @@ def_TensorBase(py::class_<Derived> & c)
       .def(py::self / float())
       .def(py::self / Scalar())
       .def(py::self / py::self)
+      .def(py::self += float())
+      .def(py::self -= float())
+      .def(py::self *= float())
+      .def(py::self /= float())
       .def(-py::self)
       .def("__pow__", [](const Derived & a, float b) { return neml2::pow(a, b); })
       .def("__pow__", [](const Derived & a, const Scalar & b) { return neml2::pow(a, b); })

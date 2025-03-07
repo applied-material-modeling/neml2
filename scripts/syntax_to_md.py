@@ -82,7 +82,7 @@ Clicking on the option with a triangle bullet ▸ next to it will expand/collaps
 Type name written in PascalCase typically refer to a NEML2 object type, oftentimes a primitive tensor type.
 
 \\note
-The 🔗 symbol denotes that the option can [cross-reference](@ref cross-referencing) another object.
+The 🔗 symbol denotes that the option can cross-reference another object.
 
 \\note
 You can always use `Ctrl`+`F` or `Cmd`+`F` to search the entire page.

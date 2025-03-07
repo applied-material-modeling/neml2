@@ -42,6 +42,9 @@ PYBIND11_MODULE(tensors, m)
 {
   m.doc() = "NEML2 primitive tensor types";
 
+  // Export the Number type
+  m.attr("Number") = py::module_::import("torch.types").attr("Number");
+
   // Export enums
   auto tensor_type_enum = py::enum_<TensorType>(m, "TensorType");
 #define TENSORTYPE_ENUM_ENTRY(T) tensor_type_enum.value(#T, TensorType::k##T)
