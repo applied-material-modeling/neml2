@@ -23,7 +23,7 @@ skip = "*win* *manylinux_i686 *manylinux_aarch64 *manylinux_ppc64le *manylinux_s
 config-settings = { CMAKE_GENERATOR = "Ninja" }
 build-verbosity = 3
 
-before-all = "sudo apt install mpich"
+before-all = ""
 before-build = "python -m pip install -r requirements.txt cmake ninja torch"
 
 test-requires = "pytest"
