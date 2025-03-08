@@ -73,30 +73,15 @@ set_target_properties(crystallography PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
 # ----------------------------------------------------------------------------
 # Artifacts
 # ----------------------------------------------------------------------------
-configure_file(neml2/__init__.py ${NEML2_BINARY_DIR}/python/neml2/__init__.py COPYONLY)
-configure_file(neml2/visualization.py ${NEML2_BINARY_DIR}/python/neml2/visualization.py COPYONLY)
-configure_file(neml2/pyzag/__init__.py ${NEML2_BINARY_DIR}/python/neml2/pyzag/__init__.py COPYONLY)
-configure_file(neml2/pyzag/interface.py ${NEML2_BINARY_DIR}/python/neml2/pyzag/interface.py COPYONLY)
-configure_file(neml2/postprocessing/__init__.py ${NEML2_BINARY_DIR}/python/neml2/postprocessing/__init__.py COPYONLY)
-configure_file(neml2/postprocessing/polefigure.py ${NEML2_BINARY_DIR}/python/neml2/postprocessing/polefigure.py COPYONLY)
-configure_file(neml2/postprocessing/odf.py ${NEML2_BINARY_DIR}/python/neml2/postprocessing/odf.py COPYONLY)
+file(COPY neml2/ DESTINATION ${NEML2_BINARY_DIR}/python/neml2 FILES_MATCHING PATTERN "*.py")
 
-install(FILES
-  neml2/__init__.py
-  neml2/visualization.py
-  neml2/pyzag/__init__.py
-  neml2/pyzag/interface.py
-  neml2/postprocessing/__init__.py
-  neml2/postprocessing/polefigure.py
-  neml2/postprocessing/odf.py
-  ${NEML2_BINARY_DIR}/python/neml2/__init__.pyi
-  ${NEML2_BINARY_DIR}/python/neml2/core.pyi
-  ${NEML2_BINARY_DIR}/python/neml2/reserved.pyi
-  ${NEML2_BINARY_DIR}/python/neml2/math.pyi
-  ${NEML2_BINARY_DIR}/python/neml2/crystallography.pyi
-  ${NEML2_BINARY_DIR}/python/neml2/tensors.pyi
+install(DIRECTORY
+  ${NEML2_BINARY_DIR}/python/neml2/
   DESTINATION .
   COMPONENT libneml2-python
+  FILES_MATCHING
+  PATTERN "*.py"
+  PATTERN "*.pyi"
 )
 
 # ----------------------------------------------------------------------------
