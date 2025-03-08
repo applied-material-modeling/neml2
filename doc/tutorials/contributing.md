@@ -104,8 +104,6 @@ PYTHONPATH=build/dev/python pytest "python/tests/test_Model.py::test_forward"
 ```
 which runs the function named `test_forward` defined in the `python/tests/test_Model.py` file.
 
-@insert-page-navigation
-
 ## Documentation
 
 It is of paramount importance to write documentation as the library is being developed. While NEML2 supports both Doxygen-style in-code documentation mechanisms and runtime syntax documentation mechanisms, it is still sometimes necessary to write standalone, self-contained documentation.
