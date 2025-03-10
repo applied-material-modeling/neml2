@@ -48,8 +48,8 @@ derivmap_cat_reduce(std::vector<DerivMap> && results, Size batch_dim)
 #ifndef NDEBUG
         for (auto && value : values)
           if (value.batch_dim() != values.front().batch_dim())
-            throw neml2::NEMLException("Some Jacobian entries for " + name1 + " and " + name2 +
-                                       " have different batch dimensions");
+            throw neml2::NEMLException("Some Jacobian entries for " + name1.str() + " and " +
+                                       name2.str() + " have different batch dimensions");
 #endif
         ret[name1][name2] = values.front();
       }
