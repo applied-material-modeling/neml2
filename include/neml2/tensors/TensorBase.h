@@ -62,6 +62,8 @@ public:
 
   TensorBase(Real) = delete;
 
+  /// \addtogroup tensor_creation Tensor creation API
+  ///@{
   /// Empty tensor like another, i.e. same batch and base shapes, same tensor options, etc.
   [[nodiscard]] static Derived empty_like(const Derived & other);
   /// Zero tensor like another, i.e. same batch and base shapes, same tensor options, etc.
@@ -71,7 +73,6 @@ public:
   /// Full tensor like another, i.e. same batch and base shapes, same tensor options, etc.,
   /// but filled with a different value
   [[nodiscard]] static Derived full_like(const Derived & other, Real init);
-
   /**
    * @brief Create a new tensor by adding a new batch dimension with linear spacing between \p
    * start and \p end.
@@ -97,6 +98,7 @@ public:
   /// log-space equivalent of the linspace named constructor
   [[nodiscard]] static Derived
   logspace(const Derived & start, const Derived & end, Size nstep, Size dim = 0, Real base = 10);
+  ///@}
 
   /// @name Meta operations
   ///@{

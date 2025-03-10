@@ -128,7 +128,7 @@ if __name__ == "__main__":
     extensions = {".h": "//", ".cxx": "//", ".py": "#", ".sh": "#"}
     additional_files = {}
 
-    exclude_dirs = ["cmake"]
+    exclude_dirs = ["cmake", "doc"]
     exclude_files = []
 
     rootdir = Path(".")

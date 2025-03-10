@@ -37,6 +37,7 @@ endmacro()
 # Extract stub
 # ----------------------------------------------------------------------------
 add_custom_target(python_stub
+  COMMENT "Generating neml2 type hints"
   WORKING_DIRECTORY ${NEML2_BINARY_DIR}/python
   COMMAND PYTHONPATH=. pybind11-stubgen -o . neml2
   VERBATIM
@@ -55,7 +56,7 @@ add_submodule(core neml2/core.cxx)
 target_link_libraries(core PRIVATE neml2 Torch::PythonBinding)
 set_target_properties(core PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
 
-file(GLOB_RECURSE tensors_srcs neml2/tensors/*.cxx)
+file(GLOB_RECURSE tensors_srcs CONFIGURE_DEPENDS neml2/tensors/*.cxx)
 list(APPEND tensors_srcs neml2/tensors.cxx)
 add_submodule(tensors "${tensors_srcs}")
 target_link_libraries(tensors PRIVATE neml2_tensor Torch::PythonBinding)
@@ -72,30 +73,15 @@ set_target_properties(crystallography PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
 # ----------------------------------------------------------------------------
 # Artifacts
 # ----------------------------------------------------------------------------
-configure_file(neml2/__init__.py ${NEML2_BINARY_DIR}/python/neml2/__init__.py COPYONLY)
-configure_file(neml2/visualization.py ${NEML2_BINARY_DIR}/python/neml2/visualization.py COPYONLY)
-configure_file(neml2/pyzag/__init__.py ${NEML2_BINARY_DIR}/python/neml2/pyzag/__init__.py COPYONLY)
-configure_file(neml2/pyzag/interface.py ${NEML2_BINARY_DIR}/python/neml2/pyzag/interface.py COPYONLY)
-configure_file(neml2/postprocessing/__init__.py ${NEML2_BINARY_DIR}/python/neml2/postprocessing/__init__.py COPYONLY)
-configure_file(neml2/postprocessing/polefigure.py ${NEML2_BINARY_DIR}/python/neml2/postprocessing/polefigure.py COPYONLY)
-configure_file(neml2/postprocessing/odf.py ${NEML2_BINARY_DIR}/python/neml2/postprocessing/odf.py COPYONLY)
+file(COPY neml2/ DESTINATION ${NEML2_BINARY_DIR}/python/neml2 FILES_MATCHING PATTERN "*.py")
 
-install(FILES
-  neml2/__init__.py
-  neml2/visualization.py
-  neml2/pyzag/__init__.py
-  neml2/pyzag/interface.py
-  neml2/postprocessing/__init__.py
-  neml2/postprocessing/polefigure.py
-  neml2/postprocessing/odf.py
-  ${NEML2_BINARY_DIR}/python/neml2/__init__.pyi
-  ${NEML2_BINARY_DIR}/python/neml2/core.pyi
-  ${NEML2_BINARY_DIR}/python/neml2/reserved.pyi
-  ${NEML2_BINARY_DIR}/python/neml2/math.pyi
-  ${NEML2_BINARY_DIR}/python/neml2/crystallography.pyi
-  ${NEML2_BINARY_DIR}/python/neml2/tensors.pyi
+install(DIRECTORY
+  ${NEML2_BINARY_DIR}/python/neml2/
   DESTINATION .
   COMPONENT libneml2-python
+  FILES_MATCHING
+  PATTERN "*.py"
+  PATTERN "*.pyi"
 )
 
 # ----------------------------------------------------------------------------

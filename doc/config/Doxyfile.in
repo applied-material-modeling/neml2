@@ -36,8 +36,9 @@ INPUT                  = ${NEML2_SOURCE_DIR}/README.md \
 FILE_PATTERNS          = *.cxx \
                          *.h \
                          *.md
+IMAGE_PATH             = ${NEML2_SOURCE_DIR}/doc/content \
+                         ${NEML2_BINARY_DIR}/doc/content
 RECURSIVE              = YES
-IMAGE_PATH             = ${NEML2_SOURCE_DIR}/doc/content/asset
 EXCLUDE_SYMBOLS        = neml2::*internal neml2::*details
 USE_MDFILE_AS_MAINPAGE = ${NEML2_SOURCE_DIR}/README.md
 

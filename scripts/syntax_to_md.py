@@ -30,6 +30,17 @@ import re
 from pathlib import Path
 
 
+def remove_namespace(type):
+    type = type.replace("std::", "")
+    type = type.replace("torch::", "")
+    type = type.replace("c10::", "")
+    type = type.replace("at::", "")
+    type = type.replace("neml2::", "")
+    type = type.replace("utils::", "")
+    type = type.replace("jit::", "")
+    return type
+
+
 def demangle(type):
     type = type.replace("SmallVector<long, 6u>", "tensor shape")
     type = type.replace(
@@ -37,12 +48,12 @@ def demangle(type):
         "std::string",
     )
     type = re.sub(", std::allocator<.+> ", "", type)
-    type = type.replace("neml2::", "")
-    type = type.replace("std::", "")
-    type = type.replace("at::", "")
+    type = remove_namespace(type)
     type = type.replace("LabeledAxisAccessor", "variable name")
+    type = re.sub("TensorName<(.+)>", r"\1 🔗", type)
     type = re.sub("vector<(.+)>", r"list of \1", type)
     # Call all integral/floating point types "number", as this syntax documentation faces the general audience potentially without computer science background
+    type = type.replace("unsigned int", "number")
     type = type.replace("int", "number")
     type = type.replace("long", "number")
     type = type.replace("double", "number")
@@ -82,7 +93,7 @@ Clicking on the option with a triangle bullet ▸ next to it will expand/collaps
 Type name written in PascalCase typically refer to a NEML2 object type, oftentimes a primitive tensor type.
 
 \\note
-The 🔗 symbol denotes that the option can [cross-reference](@ref cross-referencing) another object.
+The 🔗 symbol means that the tensor value can be cross-reference another object. See @ref tutorials-models-model-parameters-revisited for details.
 
 \\note
 You can always use `Ctrl`+`F` or `Cmd`+`F` to search the entire page.
@@ -135,7 +146,7 @@ if __name__ == "__main__":
                 for type, params in syntax.items():
                     if params["section"] != section:
                         continue
-                    input_type = demangle(params["type"]["value"])
+                    input_type = remove_namespace(params["type"]["value"])
                     stream.write("### {} {{#{}}}\n\n".format(input_type, input_type.lower()))
                     if params["doc"]:
                         stream.write("{}\n".format(params["doc"]))

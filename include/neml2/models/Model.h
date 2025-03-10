@@ -52,7 +52,7 @@ class Model;
  *
  * @param mname Name of the model
  */
-Model & get_model(const std::string & mname, std::thread::id tid = std::this_thread::get_id());
+Model & get_model(const std::string & mname);
 
 /**
  * @brief A convenient function to load an input file and get a model

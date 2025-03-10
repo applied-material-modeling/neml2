@@ -60,9 +60,6 @@ public:
    * @brief Determine the device and batch size for the next dispatch
    *
    * This is blocking until work can be scheduled.
-   *
-   * @return true If work has been scheduled, i.e., there is a worker available
-   * @return false If work cannot be scheduled, i.e., there is no worker available
    */
   void schedule_work(Device &, std::size_t &);
 
