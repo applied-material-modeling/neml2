@@ -35,11 +35,12 @@ Suppose we are given two samples made of different materials, and for each sampl
   #include "neml2/tensors/SR2.h"
   #include "neml2/tensors/Scalar.h"
 
-  using namespace neml2;
-
   int
   main()
   {
+    using namespace neml2;
+    set_default_dtype(kFloat64);
+
     // Number of samples
     Size ns = 2;
     // Number of strain measurements

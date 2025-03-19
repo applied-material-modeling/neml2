@@ -28,6 +28,18 @@
 
 namespace neml2
 {
+void
+set_default_dtype(Dtype dtype)
+{
+  c10::set_default_dtype(scalarTypeToTypeMeta(dtype));
+}
+
+Dtype
+get_default_dtype()
+{
+  return c10::get_default_dtype_as_scalartype();
+}
+
 TensorOptions
 default_tensor_options()
 {

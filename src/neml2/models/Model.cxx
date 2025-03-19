@@ -496,8 +496,8 @@ check_precision()
         "By default, NEML2 requires double precision for all computations. Please set the default "
         "dtype to Float64. In Python, this can be done by calling "
         "`torch.set_default_dtype(torch.double)`. In C++, this can be done by calling "
-        "`torch::set_default_dtype(scalarTypeToTypeMeta(kFloat64))`. If other precisions are truly "
-        "needed, you can disable this error check with Settings/require_double_precision=false.");
+        "`neml2::set_default_dtype(neml2::kFloat64)`. If other precisions are truly needed, you "
+        "can disable this error check with Settings/require_double_precision=false.");
 }
 
 ValueMap

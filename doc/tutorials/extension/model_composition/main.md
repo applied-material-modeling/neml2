@@ -133,11 +133,11 @@ The five projectiles are launched from the same position (the origin) but with t
 ```cpp
 #include "neml2/drivers/Driver.h"
 
-using namespace neml2;
-
 int
 main()
 {
+  using namespace neml2;
+  set_default_dtype(kFloat64);
   load_input("input.i");
   auto & driver = get_driver("driver");
   driver.run();

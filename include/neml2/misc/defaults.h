@@ -51,6 +51,10 @@ namespace neml2
  * for more details.
  */
 ///@{
+/// Set default dtype
+void set_default_dtype(Dtype dtype);
+/// Get default dtype
+Dtype get_default_dtype();
 /// Default floating point tensor options
 TensorOptions default_tensor_options();
 /// Default integral tensor options

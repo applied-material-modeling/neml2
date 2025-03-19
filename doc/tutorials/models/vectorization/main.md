@@ -31,11 +31,12 @@ The following code snippet shows how to use a for loop to perform the \f$ N \f$ 
   #include "neml2/models/Model.h"
   #include "neml2/tensors/SR2.h"
 
-  using namespace neml2;
-
   int
   main()
   {
+    using namespace neml2;
+    set_default_dtype(kFloat64);
+
     // Preparation
     Size N = 10;
     auto device = kCPU;
@@ -60,6 +61,8 @@ The following code snippet shows how to use a for loop to perform the \f$ N \f$ 
   import torch
   import neml2
   from neml2.tensors import SR2
+
+  torch.set_default_dtype(torch.double)
 
   # Preparation
   N = 10
@@ -93,11 +96,12 @@ The following code snippet shows how to rely on NEML2 internal vectorization to 
   #include "neml2/models/Model.h"
   #include "neml2/tensors/SR2.h"
 
-  using namespace neml2;
-
   int
   main()
   {
+    using namespace neml2;
+    set_default_dtype(kFloat64);
+
     // Preparation
     Size N = 10;
     auto device = kCPU;
@@ -121,6 +125,8 @@ The following code snippet shows how to rely on NEML2 internal vectorization to 
   import torch
   import neml2
   from neml2.tensors import SR2
+
+  torch.set_default_dtype(torch.double)
 
   # Preparation
   N = 10
