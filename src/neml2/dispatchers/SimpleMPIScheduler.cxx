@@ -55,7 +55,8 @@ SimpleMPIScheduler::SimpleMPIScheduler(const OptionSet & options)
     _available_devices(options.get<std::vector<Device>>("devices")),
     _batch_size(options.get<std::size_t>("batch_size")),
     _capacity(options.get("capacity").user_specified() ? options.get<std::size_t>("capacity")
-                                                       : _batch_size)
+                                                       : _batch_size),
+    _comm(TIMPI::Communicator(MPI_COMM_WORLD))
 {
 }
 

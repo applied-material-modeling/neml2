@@ -88,11 +88,11 @@ private:
   /// The capacity of the device
   std::size_t _capacity;
 
-  /// This rank's device
-  size_t _device_index;
-
   /// Global communicator to use to split
   TIMPI::Communicator _comm;
+
+  /// This rank's device
+  size_t _device_index;
 
   /// Current load on the device
   std::size_t _load = 0;
