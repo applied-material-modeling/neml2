@@ -112,7 +112,7 @@ parse_vector_(std::vector<T> & vals, const std::string & raw_str)
 {
   auto tokens = split(raw_str, " \t\n\v\f\r");
   if constexpr (std::is_same_v<T, Device>)
-    vals.resize(tokens.size(), default_device());
+    vals.resize(tokens.size(), kCPU);
   else
     vals.resize(tokens.size());
   for (size_t i = 0; i < tokens.size(); i++)

@@ -51,5 +51,8 @@ main(int argc, char * argv[])
   std::cout << "Working directory: " << working_dir << std::endl;
   std::filesystem::current_path(working_dir);
 
+  // Set default tensor options
+  c10::set_default_dtype(scalarTypeToTypeMeta(neml2::kFloat64));
+
   return session.run();
 }

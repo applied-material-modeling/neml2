@@ -3,14 +3,13 @@ pi = 3.14159
 day = 'day'
 
 [Settings]
-  default_floating_point_type = 'Float16'
   default_integer_type = 'Int32'
-  default_device = 'cuda:1'
   machine_precision = 0.5
   tolerance = 0.1
   tighter_tolerance = 0.01
   buffer_name_separator = '::'
   parameter_name_separator = '::'
+  require_double_precision = false
 []
 
 [Models]

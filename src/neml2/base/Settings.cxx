@@ -40,14 +40,6 @@ Settings::expected_options()
 
   options.set<std::string>("type") = "Settings";
 
-  EnumSelection dtype_selection(
-      {"Float16", "Float32", "Float64"},
-      {static_cast<int>(kFloat16), static_cast<int>(kFloat32), static_cast<int>(kFloat64)},
-      NEML2_DEFAULT_DTYPE_STR);
-  options.set<EnumSelection>("default_floating_point_type") = dtype_selection;
-  options.set("default_floating_point_type").doc() =
-      "Default floating point type for tensors. Options are " + dtype_selection.candidates_str();
-
   EnumSelection int_dtype_selection({"Int8", "Int16", "Int32", "Int64"},
                                     {static_cast<int>(kInt8),
                                      static_cast<int>(kInt16),
@@ -57,14 +49,6 @@ Settings::expected_options()
   options.set<EnumSelection>("default_integer_type") = int_dtype_selection;
   options.set("default_integer_type").doc() =
       "Default integer type for tensors. Options are " + int_dtype_selection.candidates_str();
-
-  options.set<std::string>("default_device") = NEML2_DEFAULT_DEVICE_STR;
-  options.set("default_device").doc() =
-      "Default device on which tensors are created and models are evaluated. The string supplied "
-      "must follow the following schema: (cpu|cuda)[:<device-index>] where cpu or cuda specifies "
-      "the device type, and :<device-index> optionally specifies a device index. For example, "
-      "device='cpu' sets the target compute device to be CPU, and device='cuda:1' sets the target "
-      "compute device to be CUDA with device ID 1.";
 
   options.set<Real>("machine_precision") = NEML2_DEFAULT_MACHINE_PRECISION;
   options.set("machine_precision").doc() =
@@ -86,21 +70,20 @@ Settings::expected_options()
       "Parameter name separator. The default is '_'. For example, a sub-model 'foo' which declares "
       "a parameter 'bar' will have a parameter named 'foo_bar'.";
 
+  options.set<bool>("require_double_precision") = true;
+  options.set("require_double_precision").doc() =
+      "Require double precision for all computations. An error will be thrown when Model forward "
+      "operators are called if the default dtype is not Float64. Set this option to false to allow "
+      "other precisions.";
+
   return options;
 }
 
 void
 Settings::apply(const OptionSet & options)
 {
-  // Default floating point dtype
-  default_dtype() = options.get<EnumSelection>("default_floating_point_type").as<Dtype>();
-  c10::set_default_dtype(scalarTypeToTypeMeta(default_dtype()));
-
   // Default integral dtype
   default_integer_dtype() = options.get<EnumSelection>("default_integer_type").as<Dtype>();
-
-  // Default device
-  default_device() = Device(options.get<std::string>("default_device"));
 
   // Machine precision
   machine_precision() = options.get<Real>("machine_precision");
@@ -112,5 +95,8 @@ Settings::apply(const OptionSet & options)
   // Buffer/parameter name separator
   buffer_name_separator() = options.get<std::string>("buffer_name_separator");
   parameter_name_separator() = options.get<std::string>("parameter_name_separator");
+
+  // Require double precision
+  require_double_precision() = options.get<bool>("require_double_precision");
 }
 } // namespace neml2

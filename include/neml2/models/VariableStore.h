@@ -87,8 +87,8 @@ public:
   const VariableBase & output_variable(const VariableName &) const;
   ///@}
 
-  /// Current tensor options
-  const TensorOptions & tensor_options() const { return _tensor_options; }
+  /// Current tensor options for variables
+  const TensorOptions & variable_options() const { return _options; }
 
   ///@{
   /// Release allocated tensor
@@ -197,6 +197,6 @@ private:
   VariableStorage _output_variables;
 
   /// Current tensor options for padding variables
-  TensorOptions _tensor_options;
+  TensorOptions _options;
 };
 } // namespace neml2

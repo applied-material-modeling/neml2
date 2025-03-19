@@ -33,6 +33,9 @@
 int
 main(int argc, char * argv[])
 {
+  // Set default tensor options
+  c10::set_default_dtype(scalarTypeToTypeMeta(neml2::kFloat64));
+
   argparse::ArgumentParser program("runner");
 
   // Positional arguments
