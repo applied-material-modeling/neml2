@@ -161,7 +161,9 @@ Note that `set_default_dtype(kFloat64)` is used to change the default precision 
   ```python
   import neml2
   from neml2.tensors import SR2
+  import torch
 
+  torch.set_default_dtype(torch.double)
   model = neml2.load_model("input.i", "my_model")
 
   # Create the strain

@@ -22,7 +22,7 @@ The following Python script uses the simple gradient descent algorithm to find \
   K_{i+1} = K_i - \gamma \pdv{l}{K_i},
   G_{i+1} = G_i - \gamma \pdv{l}{G_i},
 \f}
-which iterates until the loss function \f$l\f$ is sufficiently small. A constant learning rate \f$\gamma = 1e-3\f$ is chosen in this example.
+which iterates until the loss function \f$l\f$ is sufficiently small. A constant learning rate \f$\gamma = 1\f$ is chosen in this example.
 
 @source:src1
 ```python
@@ -31,6 +31,7 @@ from neml2.tensors import SR2
 import torch
 from matplotlib import pyplot as plt
 
+torch.set_default_dtype(torch.double)
 model = neml2.load_model("input.i", "model")
 
 # Experimental data

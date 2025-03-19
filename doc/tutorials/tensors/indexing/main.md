@@ -206,6 +206,7 @@ It is best to learn slicing from examples. Below are equivalent C++ and Python c
   @source:src6
   ```python
   from neml2.tensors import Scalar
+  import torch
 
   torch.set_default_dtype(torch.double)
 

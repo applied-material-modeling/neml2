@@ -845,8 +845,7 @@ operator<<(std::ostream & os, const Model & model)
     for (auto && [name, var] : model.input_variables())
     {
       os << (first ? "" : tab);
-      os << name << " [" << var->type() << "][" << var->scalar_type() << "][" << var->device()
-         << "]\n";
+      os << name << " [" << var->type() << "]\n";
       first = false;
     }
   }
@@ -858,8 +857,7 @@ operator<<(std::ostream & os, const Model & model)
     for (auto && [name, var] : model.output_variables())
     {
       os << (first ? "" : tab);
-      os << name << " [" << var->type() << "][" << var->scalar_type() << "][" << var->device()
-         << "]\n";
+      os << name << " [" << var->type() << "]\n";
       first = false;
     }
   }
