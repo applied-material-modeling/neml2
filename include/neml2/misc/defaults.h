@@ -26,6 +26,17 @@
 
 #include "neml2/misc/types.h"
 
+#define NEML2_TORCH_ENUM(type) k##type
+#define NEML2_STRINGIFY(x) #x
+#define NEML2_DEFAULT_INTEGER_DTYPE Int64
+#define NEML2_DEFAULT_INTEGER_DTYPE_STR NEML2_STRINGIFY(Int64)
+#define NEML2_DEFAULT_INTEGER_DTYPE_ENUM NEML2_TORCH_ENUM(Int64)
+#define NEML2_DEFAULT_MACHINE_PRECISION 1e-15
+#define NEML2_DEFAULT_TOLERANCE 1e-6
+#define NEML2_DEFAULT_TIGHTER_TOLERANCE 1e-12
+#define NEML2_DEFAULT_BUFFER_NAME_SEPARATOR "_"
+#define NEML2_DEFAULT_PARAMETER_NAME_SEPARATOR "_"
+
 namespace neml2
 {
 /**
@@ -40,16 +51,16 @@ namespace neml2
  * for more details.
  */
 ///@{
+/// Set default dtype
+void set_default_dtype(Dtype dtype);
+/// Get default dtype
+Dtype get_default_dtype();
 /// Default floating point tensor options
-TensorOptions & default_tensor_options();
+TensorOptions default_tensor_options();
 /// Default integral tensor options
-TensorOptions & default_integer_tensor_options();
-/// Default floating point type
-Dtype & default_dtype();
+TensorOptions default_integer_tensor_options();
 /// Default integral type
 Dtype & default_integer_dtype();
-/// Default device
-Device & default_device();
 ///@}
 
 /// @name Default tolerances
@@ -62,8 +73,14 @@ Real & tolerance();
 Real & tighter_tolerance();
 ///@}
 
+/// @name Default name separators
+///@{
 /// Default nested buffer name separator
 std::string & buffer_name_separator();
 /// Default nested parameter name separator
 std::string & parameter_name_separator();
+///@}
+
+/// Require double precision for all computations
+bool & require_double_precision();
 } // namespace neml2

@@ -28,75 +28,76 @@
 
 namespace neml2
 {
-TensorOptions &
+void
+set_default_dtype(Dtype dtype)
+{
+  c10::set_default_dtype(scalarTypeToTypeMeta(dtype));
+}
+
+Dtype
+get_default_dtype()
+{
+  return c10::get_default_dtype_as_scalartype();
+}
+
+TensorOptions
 default_tensor_options()
 {
-  static TensorOptions _default_tensor_options =
-      TensorOptions().dtype(default_dtype()).device(default_device());
-  return _default_tensor_options;
+  return TensorOptions().dtype(c10::get_default_dtype());
 }
 
-TensorOptions &
+TensorOptions
 default_integer_tensor_options()
 {
-  static TensorOptions _default_integer_tensor_options =
-      TensorOptions().dtype(default_integer_dtype()).device(default_device());
-  return _default_integer_tensor_options;
-}
-
-Dtype &
-default_dtype()
-{
-  static Dtype _default_dtype = kFloat64;
-  return _default_dtype;
+  return TensorOptions().dtype(default_integer_dtype());
 }
 
 Dtype &
 default_integer_dtype()
 {
-  static Dtype _default_integer_dtype = kInt64;
+  static Dtype _default_integer_dtype = NEML2_DEFAULT_INTEGER_DTYPE_ENUM;
   return _default_integer_dtype;
-}
-
-Device &
-default_device()
-{
-  static Device _default_device = kCPU;
-  return _default_device;
 }
 
 Real &
 machine_precision()
 {
-  static Real _machine_precision = 1E-15;
+  static Real _machine_precision = NEML2_DEFAULT_MACHINE_PRECISION;
   return _machine_precision;
 }
 
 Real &
 tolerance()
 {
-  static Real _tolerance = 1E-6;
+  static Real _tolerance = NEML2_DEFAULT_TOLERANCE;
   return _tolerance;
 }
 
 Real &
 tighter_tolerance()
 {
-  static Real _tighter_tolerance = 1E-12;
+  static Real _tighter_tolerance = NEML2_DEFAULT_TIGHTER_TOLERANCE;
   return _tighter_tolerance;
 }
 
 std::string &
 buffer_name_separator()
 {
-  static std::string _buffer_sep = "_";
+  static std::string _buffer_sep = NEML2_DEFAULT_BUFFER_NAME_SEPARATOR;
   return _buffer_sep;
 }
 
 std::string &
 parameter_name_separator()
 {
-  static std::string _param_sep = "_";
+  static std::string _param_sep = NEML2_DEFAULT_PARAMETER_NAME_SEPARATOR;
   return _param_sep;
+}
+
+bool &
+require_double_precision()
+{
+  static bool _req_double = true;
+  return _req_double;
 }
 } // namespace neml2

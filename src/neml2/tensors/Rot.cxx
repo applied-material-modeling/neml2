@@ -22,8 +22,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <ATen/Context.h>
-
 #include "neml2/tensors/Rot.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/Vec.h"
@@ -138,10 +136,8 @@ Rot::fill_rodrigues(const Scalar & rx, const Scalar & ry, const Scalar & rz)
 }
 
 Rot
-Rot::fill_random(unsigned int n, Size random_seed)
+Rot::fill_random(unsigned int n)
 {
-  if (random_seed >= 0)
-    at::manual_seed(random_seed);
   auto u0 = Scalar(at::rand({n}, default_tensor_options()));
   auto u1 = Scalar(at::rand({n}, default_tensor_options()));
   auto u2 = Scalar(at::rand({n}, default_tensor_options()));

@@ -22,44 +22,22 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-
-#include "neml2/tensors/Tensor.h"
+#include "neml2/tensors/TensorCache.h"
 
 namespace neml2
 {
-/**
- * @brief A helper class to hold static data of type ATensor
- *
- * This class exists because ATensor cannot be declared as constexpr nor as static data in the
- * global scope. The former is obvious. The latter is because at the time static variables are
- * initialized, some torch data structures have not been properly initialized yet.
- *
- */
-struct ConstantTensors
+TensorCache::TensorCache(std::function<Tensor(const TensorOptions &)> && creator)
+  : _creator(creator)
 {
-  ConstantTensors();
+}
 
-  // Get the global constants
-  static ConstantTensors & get();
-
-  static const Tensor & full_to_mandel_map();
-  static const Tensor & mandel_to_full_map();
-  static const Tensor & full_to_mandel_factor();
-  static const Tensor & mandel_to_full_factor();
-  static const Tensor & full_to_skew_map();
-  static const Tensor & skew_to_full_map();
-  static const Tensor & full_to_skew_factor();
-  static const Tensor & skew_to_full_factor();
-
-private:
-  Tensor _full_to_mandel_map;
-  Tensor _mandel_to_full_map;
-  Tensor _full_to_mandel_factor;
-  Tensor _mandel_to_full_factor;
-  Tensor _full_to_skew_map;
-  Tensor _skew_to_full_map;
-  Tensor _full_to_skew_factor;
-  Tensor _skew_to_full_factor;
-};
+const Tensor &
+TensorCache::operator()(const TensorOptions & opt)
+{
+  const auto key = opt.computeDispatchKey();
+  const auto ti = _cached_tensors.find(key);
+  if (ti == _cached_tensors.end())
+    return _cached_tensors[key] = _creator(opt);
+  return ti->second;
+}
 }

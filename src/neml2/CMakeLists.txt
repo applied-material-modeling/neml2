@@ -111,6 +111,11 @@ function(neml2_add_submodule mname TYPE mdir)
     target_link_libraries(${mname} PRIVATE Gperftools::profiler)
   endif()
 
+  if(NEML2_THREAD_SANITIZER)
+    target_compile_options(${mname} PUBLIC ${CMAKE_CXX_FLAGS_THREAD_SANITIZER})
+    target_link_options(${mname} PUBLIC ${CMAKE_CXX_FLAGS_THREAD_SANITIZER})
+  endif()
+
   install(TARGETS ${mname} FILE_SET HEADERS COMPONENT libneml2)
   install(TARGETS ${mname} LIBRARY COMPONENT libneml2)
 endfunction()

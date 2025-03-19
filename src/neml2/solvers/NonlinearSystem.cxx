@@ -34,7 +34,7 @@ namespace neml2
 bool &
 currently_solving_nonlinear_system()
 {
-  thread_local static bool _solving_nl_sys = false;
+  thread_local bool _solving_nl_sys = false;
   return _solving_nl_sys;
 }
 

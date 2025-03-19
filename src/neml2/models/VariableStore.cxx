@@ -37,7 +37,7 @@ VariableStore::VariableStore(Model * object)
   : _object(object),
     _input_axis(declare_axis("input")),
     _output_axis(declare_axis("output")),
-    _tensor_options(default_tensor_options())
+    _options(default_tensor_options())
 {
 }
 
@@ -216,7 +216,7 @@ VariableStore::output_variable(const VariableName & name) const
 void
 VariableStore::send_variables_to(const TensorOptions & options)
 {
-  _tensor_options = options;
+  _options = options;
 }
 
 void
@@ -240,7 +240,7 @@ VariableStore::zero_input()
 {
   for (auto && [name, var] : input_variables())
     if (var->owning())
-      var->zero(_tensor_options);
+      var->zero(_options);
 }
 
 void
@@ -248,7 +248,7 @@ VariableStore::zero_output()
 {
   for (auto && [name, var] : output_variables())
     if (var->owning())
-      var->zero(_tensor_options);
+      var->zero(_options);
 }
 
 void

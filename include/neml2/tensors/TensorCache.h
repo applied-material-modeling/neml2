@@ -22,42 +22,31 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <ATen/Context.h>
+#pragma once
 
-#include "neml2/drivers/Driver.h"
-#include "neml2/base/Registry.h"
-#include "neml2/base/Factory.h"
+#include "neml2/tensors/Tensor.h"
 
 namespace neml2
 {
-Driver &
-get_driver(const std::string & dname)
+struct TensorCache
 {
-  OptionSet extra_opts;
-  return Factory::get_object<Driver>("Drivers", dname, extra_opts, /*force_create=*/false);
-}
+public:
+  /**
+   * @brief Construct a new Tensor Cache object
+   *
+   * The constructor takes a lambda that creates a tensor given a set of tensor options. The lambda
+   * is invoked upon a cache miss.
+   */
+  TensorCache(std::function<Tensor(const TensorOptions &)> &&);
 
-OptionSet
-Driver::expected_options()
-{
-  OptionSet options = NEML2Object::expected_options();
-  options.section() = "Drivers";
+  /// Get the tensor with the given tensor options. If the tensor does not exist in the cache, it is created.
+  const Tensor & operator()(const TensorOptions &);
 
-  options.set<bool>("verbose") = false;
-  options.set("verbose").doc() = "Whether to output additional logging information";
+private:
+  /// Lambda that creates a tensor given a set of tensor options
+  std::function<Tensor(const TensorOptions &)> _creator;
 
-  options.set<Size>("random_seed") = -1;
-  options.set("random_seed").doc() = "Random seed for any random number generation";
-
-  return options;
-}
-
-Driver::Driver(const OptionSet & options)
-  : NEML2Object(options),
-    DiagnosticsInterface(this),
-    _verbose(options.get<bool>("verbose"))
-{
-  if (options.get<Size>("random_seed") >= 0)
-    at::manual_seed(options.get<Size>("random_seed"));
-}
+  /// Cache of already created tensors for each dispatch key
+  std::unordered_map<at::DispatchKey, Tensor> _cached_tensors;
+};
 } // namespace neml2

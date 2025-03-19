@@ -38,25 +38,23 @@ TEST_CASE("Settings", "[Settings]")
   auto all_options = parser.parse("base/test_HITParser1.i");
 
   // Before applying the global settings
-  REQUIRE(default_dtype() == kFloat64);
   REQUIRE(default_integer_dtype() == kInt64);
-  REQUIRE(default_device() == kCPU);
   REQUIRE(machine_precision() == Catch::Approx(1e-15));
   REQUIRE(tolerance() == Catch::Approx(1e-6));
   REQUIRE(tighter_tolerance() == Catch::Approx(1e-12));
   REQUIRE(buffer_name_separator() == "_");
   REQUIRE(parameter_name_separator() == "_");
+  REQUIRE(require_double_precision());
 
   // Apply the global settings
-  Settings(all_options.settings());
+  Settings::apply(all_options.settings());
 
   // After applying the global settings
-  REQUIRE(default_dtype() == kFloat16);
   REQUIRE(default_integer_dtype() == kInt32);
-  REQUIRE(default_device() == Device("cuda:1"));
   REQUIRE(machine_precision() == Catch::Approx(0.5));
   REQUIRE(tolerance() == Catch::Approx(0.1));
   REQUIRE(tighter_tolerance() == Catch::Approx(0.01));
   REQUIRE(buffer_name_separator() == "::");
   REQUIRE(parameter_name_separator() == "::");
+  REQUIRE(!require_double_precision());
 }
