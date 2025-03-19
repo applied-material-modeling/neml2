@@ -14,10 +14,10 @@
 # -----------------------------------------------------------------------------
 # Hints to the find_path and find_library commands
 # -----------------------------------------------------------------------------
-find_package(Python)
+find_package(Python3)
 
-if(Python_FOUND)
-  set(Torch_PYTHON_PACKAGE ${Python_SITEARCH}/torch)
+if(Python3_FOUND)
+  set(Torch_PYTHON_PACKAGE ${Python3_SITEARCH}/torch)
   list(APPEND Torch_INCLUDE_DIR_HINTS ${Torch_PYTHON_PACKAGE}/include)
   list(APPEND Torch_LINK_DIR_HINTS ${Torch_PYTHON_PACKAGE}/lib)
 endif()

@@ -12,7 +12,9 @@ endif()
 # ----------------------------------------------------------------------------
 # pybind11
 # ----------------------------------------------------------------------------
-include(DownloadPybind11)
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module)
+set(pybind11_ROOT ${Python3_SITEARCH}/pybind11)
+find_package(pybind11 CONFIG REQUIRED)
 
 # ----------------------------------------------------------------------------
 # Macro for defining a submodule
