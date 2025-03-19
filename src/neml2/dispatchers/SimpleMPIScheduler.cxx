@@ -25,6 +25,10 @@
 #include "neml2/dispatchers/SimpleMPIScheduler.h"
 #include "neml2/misc/assertions.h"
 
+#include <string>
+#include <functional>
+#include <hwloc.h>
+
 namespace neml2
 {
 
@@ -106,9 +110,22 @@ SimpleMPIScheduler::setup()
 void
 SimpleMPIScheduler::determine_my_device()
 {
+  // Get the hostname via hwloc and hash it into an MPI_INT
+  hwloc_topology_t topology;
+  hwloc_obj_t machine;
+  
+  hwloc_topology_init(&topology);  // initialization
+  hwloc_topology_load(topology);   // actual detection
+  machine = hwloc_get_root_obj(topology);
+  std::hash<std::string> hasher;
+  std::string hostname(hwloc_obj_get_info_by_name(machine, "HostName"));
+  int id = static_cast<int>(hasher(hostname) % std::numeric_limits<int>::max());
+  hwloc_topology_destroy(topology);
+
+  // Make a new communicator based on this hashed hostname
   TIMPI::Communicator new_comm;
-  TIMPI::info i = 0;
-  _comm.split_by_type(OMPI_COMM_TYPE_HOST, _comm.rank(), i, new_comm);
+  _comm.split(id, _comm.rank(), new_comm);
+  // Assign our device index based on the new communicator
   _device_index = new_comm.rank();
   neml_assert(_device_index < _available_devices.size(),
               "MPI split by host would require too many devices");
