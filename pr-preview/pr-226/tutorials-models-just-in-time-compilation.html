@@ -187,19 +187,16 @@ Model structure</h1>
 <div class="tabbed"></div><div class="tabbed"><ul>
 <li><p class="startli"><b class="tab-title">C++</b> </p><div class="fragment"><div class="line"><span class="preprocessor">#include &quot;neml2/models/Model.h&quot;</span></div>
 <div class="line"> </div>
-<div class="line"><span class="keyword">using namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a>;</div>
-<div class="line"> </div>
 <div class="line"><span class="keywordtype">int</span></div>
 <div class="line">main()</div>
 <div class="line">{</div>
+<div class="line">  <span class="keyword">using namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a>;</div>
 <div class="line">  <span class="keyword">auto</span> &amp; model = <a class="code hl_function" href="namespaceneml2.html#a1e499dee97d6a66663f60dd4a65b9f1a">load_model</a>(<span class="stringliteral">&quot;input.i&quot;</span>, <span class="stringliteral">&quot;eq&quot;</span>);</div>
 <div class="line">  std::cout &lt;&lt; model &lt;&lt; std::endl;</div>
 <div class="line">}</div>
 <div class="ttc" id="anamespaceneml2_html"><div class="ttname"><a href="namespaceneml2.html">neml2</a></div><div class="ttdef"><b>Definition</b> DiagnosticsInterface.cxx:30</div></div>
 <div class="ttc" id="anamespaceneml2_html_a1e499dee97d6a66663f60dd4a65b9f1a"><div class="ttname"><a href="namespaceneml2.html#a1e499dee97d6a66663f60dd4a65b9f1a">neml2::load_model</a></div><div class="ttdeci">Model &amp; load_model(const std::filesystem::path &amp;path, const std::string &amp;mname)</div><div class="ttdoc">A convenient function to load an input file and get a model.</div><div class="ttdef"><b>Definition</b> Model.cxx:47</div></div>
 </div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">Name:       eq</div>
-<div class="line">Dtype:      double</div>
-<div class="line">Device:     cpu</div>
 <div class="line">Input:      forces/t [Scalar]</div>
 <div class="line">            old_forces/t [Scalar]</div>
 <div class="line">            old_state/a [Scalar]</div>
@@ -217,8 +214,6 @@ Model structure</h1>
 <div class="line">model = <a class="code hl_function" href="namespaceneml2.html#a1e499dee97d6a66663f60dd4a65b9f1a">neml2.load_model</a>(<span class="stringliteral">&quot;input.i&quot;</span>, <span class="stringliteral">&quot;eq&quot;</span>)</div>
 <div class="line">print(model)</div>
 </div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">Name:       eq</div>
-<div class="line">Dtype:      double</div>
-<div class="line">Device:     cpu</div>
 <div class="line">Input:      forces/t [Scalar]</div>
 <div class="line">            old_forces/t [Scalar]</div>
 <div class="line">            old_state/a [Scalar]</div>
@@ -240,11 +235,11 @@ Tracing</h1>
 <div class="line"><span class="preprocessor">#include &quot;neml2/tensors/Scalar.h&quot;</span></div>
 <div class="line"><span class="preprocessor">#include &quot;neml2/jit/utils.h&quot;</span></div>
 <div class="line"> </div>
-<div class="line"><span class="keyword">using namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a>;</div>
-<div class="line"> </div>
 <div class="line"><span class="keywordtype">int</span></div>
 <div class="line">main()</div>
 <div class="line">{</div>
+<div class="line">  <span class="keyword">using namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a>;</div>
+<div class="line">  <a class="code hl_function" href="namespaceneml2.html#a3c266b437e28eb7adec97c12b9a7e7d2">set_default_dtype</a>(<a class="code hl_variable" href="namespaceneml2.html#a16c96ec35672a72196d72131d3f5f8c3">kFloat64</a>);</div>
 <div class="line">  <span class="keyword">auto</span> &amp; model = <a class="code hl_function" href="namespaceneml2.html#a1e499dee97d6a66663f60dd4a65b9f1a">load_model</a>(<span class="stringliteral">&quot;input.i&quot;</span>, <span class="stringliteral">&quot;eq&quot;</span>);</div>
 <div class="line"> </div>
 <div class="line">  <span class="comment">// Create example input variables for tracing</span></div>
@@ -272,6 +267,8 @@ Tracing</h1>
 <div class="line">}</div>
 <div class="ttc" id="aclassneml2_1_1PrimitiveTensor_html_ab49f3fdd246f714b967d992668425ac2"><div class="ttname"><a href="classneml2_1_1PrimitiveTensor.html#ab49f3fdd246f714b967d992668425ac2">neml2::PrimitiveTensor&lt; Scalar &gt;::full</a></div><div class="ttdeci">static Scalar full(Real init, const TensorOptions &amp;options=default_tensor_options())</div><div class="ttdef"><b>Definition</b> PrimitiveTensor.h:211</div></div>
 <div class="ttc" id="anamespaceneml2_1_1utils_html_ae79086faa3db17f6d9f27ef215808b0e"><div class="ttname"><a href="namespaceneml2_1_1utils.html#ae79086faa3db17f6d9f27ef215808b0e">neml2::utils::last_executed_optimized_graph</a></div><div class="ttdeci">std::shared_ptr&lt; jit::Graph &gt; last_executed_optimized_graph()</div><div class="ttdoc">Print last evaluated optimized graph.</div><div class="ttdef"><b>Definition</b> utils.cxx:78</div></div>
+<div class="ttc" id="anamespaceneml2_html_a16c96ec35672a72196d72131d3f5f8c3"><div class="ttname"><a href="namespaceneml2.html#a16c96ec35672a72196d72131d3f5f8c3">neml2::kFloat64</a></div><div class="ttdeci">constexpr auto kFloat64</div><div class="ttdef"><b>Definition</b> types.h:53</div></div>
+<div class="ttc" id="anamespaceneml2_html_a3c266b437e28eb7adec97c12b9a7e7d2"><div class="ttname"><a href="namespaceneml2.html#a3c266b437e28eb7adec97c12b9a7e7d2">neml2::set_default_dtype</a></div><div class="ttdeci">void set_default_dtype(Dtype dtype)</div><div class="ttdef"><b>Definition</b> defaults.cxx:32</div></div>
 <div class="ttc" id="anamespaceneml2_html_a9e1488821b46ffc106c90ab80036b7aa"><div class="ttname"><a href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">neml2::VariableName</a></div><div class="ttdeci">LabeledAxisAccessor VariableName</div><div class="ttdef"><b>Definition</b> LabeledAxisAccessor.h:185</div></div>
 </div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">graph(%eq::forces/t : Tensor,</div>
 <div class="line">      %eq::old_forces/t : Tensor,</div>
@@ -316,6 +313,7 @@ Tracing</h1>
 <div class="line"><span class="keyword">from</span> neml2.tensors <span class="keyword">import</span> Scalar</div>
 <div class="line"><span class="keyword">import</span> torch</div>
 <div class="line"> </div>
+<div class="line">torch.set_default_dtype(torch.double)</div>
 <div class="line">model = <a class="code hl_function" href="namespaceneml2.html#a1e499dee97d6a66663f60dd4a65b9f1a">neml2.load_model</a>(<span class="stringliteral">&quot;input.i&quot;</span>, <span class="stringliteral">&quot;eq&quot;</span>)</div>
 <div class="line"> </div>
 <div class="line"><span class="comment"># Create example input variables for tracing</span></div>
@@ -348,29 +346,29 @@ Tracing</h1>
 <div class="line">      %eq::state/a : Tensor,</div>
 <div class="line">      %eq::state/b : Tensor,</div>
 <div class="line">      %eq::state/c : Tensor):</div>
-<div class="line">  %8 : int = prim::Constant[value=1]() # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src4.py:16:0</div>
-<div class="line">  %9 : Tensor = prim::Constant[value= 1  1  1 [ CPULongType{3} ]]() # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src4.py:16:0</div>
+<div class="line">  %8 : int = prim::Constant[value=1]() # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src4.py:17:0</div>
+<div class="line">  %9 : Tensor = prim::Constant[value= 1  1  1 [ CPULongType{3} ]]() # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src4.py:17:0</div>
 <div class="line">  %18 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::state/a)</div>
 <div class="line">  %19 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::old_state/a)</div>
-<div class="line">  %10 : Tensor = aten::sub(%18, %19, %8) # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src4.py:16:0</div>
+<div class="line">  %10 : Tensor = aten::sub(%18, %19, %8) # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src4.py:17:0</div>
 <div class="line">  %20 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::forces/t)</div>
 <div class="line">  %21 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::old_forces/t)</div>
-<div class="line">  %11 : Tensor = aten::sub(%20, %21, %8) # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src4.py:16:0</div>
+<div class="line">  %11 : Tensor = aten::sub(%20, %21, %8) # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src4.py:17:0</div>
 <div class="line">  %22 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%10)</div>
 <div class="line">  %23 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%11)</div>
-<div class="line">  %12 : Tensor = aten::div(%22, %23) # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src4.py:16:0</div>
+<div class="line">  %12 : Tensor = aten::div(%22, %23) # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src4.py:17:0</div>
 <div class="line">  %24 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::state/b)</div>
 <div class="line">  %25 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::old_state/b)</div>
-<div class="line">  %13 : Tensor = aten::sub(%24, %25, %8) # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src4.py:16:0</div>
+<div class="line">  %13 : Tensor = aten::sub(%24, %25, %8) # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src4.py:17:0</div>
 <div class="line">  %26 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%13)</div>
 <div class="line">  %27 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%11)</div>
-<div class="line">  %14 : Tensor = aten::div(%26, %27) # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src4.py:16:0</div>
+<div class="line">  %14 : Tensor = aten::div(%26, %27) # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src4.py:17:0</div>
 <div class="line">  %28 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::state/c)</div>
 <div class="line">  %29 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::old_state/c)</div>
-<div class="line">  %15 : Tensor = aten::sub(%28, %29, %8) # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src4.py:16:0</div>
+<div class="line">  %15 : Tensor = aten::sub(%28, %29, %8) # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src4.py:17:0</div>
 <div class="line">  %30 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%15)</div>
 <div class="line">  %31 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%11)</div>
-<div class="line">  %16 : Tensor = aten::div(%30, %31) # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src4.py:16:0</div>
+<div class="line">  %16 : Tensor = aten::div(%30, %31) # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src4.py:17:0</div>
 <div class="line">  %32 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%12)</div>
 <div class="line">  %33 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%14)</div>
 <div class="line">  %34 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%16)</div>
@@ -412,11 +410,11 @@ JIT optimization</h1>
 <div class="line"><span class="preprocessor">#include &quot;neml2/tensors/Scalar.h&quot;</span></div>
 <div class="line"><span class="preprocessor">#include &quot;neml2/jit/utils.h&quot;</span></div>
 <div class="line"> </div>
-<div class="line"><span class="keyword">using namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a>;</div>
-<div class="line"> </div>
 <div class="line"><span class="keywordtype">int</span></div>
 <div class="line">main()</div>
 <div class="line">{</div>
+<div class="line">  <span class="keyword">using namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a>;</div>
+<div class="line">  <a class="code hl_function" href="namespaceneml2.html#a3c266b437e28eb7adec97c12b9a7e7d2">set_default_dtype</a>(<a class="code hl_variable" href="namespaceneml2.html#a16c96ec35672a72196d72131d3f5f8c3">kFloat64</a>);</div>
 <div class="line">  <span class="keyword">auto</span> &amp; model = <a class="code hl_function" href="namespaceneml2.html#a1e499dee97d6a66663f60dd4a65b9f1a">load_model</a>(<span class="stringliteral">&quot;input.i&quot;</span>, <span class="stringliteral">&quot;eq&quot;</span>);</div>
 <div class="line"> </div>
 <div class="line">  <span class="comment">// Create example input variables for tracing</span></div>
@@ -468,6 +466,7 @@ JIT optimization</h1>
 <div class="line"><span class="keyword">from</span> neml2.tensors <span class="keyword">import</span> Scalar</div>
 <div class="line"><span class="keyword">import</span> torch</div>
 <div class="line"> </div>
+<div class="line">torch.set_default_dtype(torch.double)</div>
 <div class="line">model = <a class="code hl_function" href="namespaceneml2.html#a1e499dee97d6a66663f60dd4a65b9f1a">neml2.load_model</a>(<span class="stringliteral">&quot;input.i&quot;</span>, <span class="stringliteral">&quot;eq&quot;</span>)</div>
 <div class="line"> </div>
 <div class="line"><span class="comment"># Create example input variables for tracing</span></div>
@@ -502,15 +501,15 @@ JIT optimization</h1>
 <div class="line">      %eq::state/a : Tensor,</div>
 <div class="line">      %eq::state/b : Tensor,</div>
 <div class="line">      %eq::state/c : Tensor):</div>
-<div class="line">  %9 : Long(3, strides=[1], requires_grad=0, device=cpu) = prim::Constant[value= 1  1  1 [ CPULongType{3} ]]() # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src6.py:25:0</div>
-<div class="line">  %8 : int = prim::Constant[value=1]() # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src6.py:25:0</div>
-<div class="line">  %12 : Tensor = aten::sub(%eq::state/a, %eq::old_state/a, %8) # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src6.py:25:0</div>
-<div class="line">  %15 : Tensor = aten::sub(%eq::forces/t, %eq::old_forces/t, %8) # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src6.py:25:0</div>
-<div class="line">  %18 : Tensor = aten::div(%12, %15) # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src6.py:25:0</div>
-<div class="line">  %21 : Tensor = aten::sub(%eq::state/b, %eq::old_state/b, %8) # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src6.py:25:0</div>
-<div class="line">  %24 : Tensor = aten::div(%21, %15) # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src6.py:25:0</div>
-<div class="line">  %27 : Tensor = aten::sub(%eq::state/c, %eq::old_state/c, %8) # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src6.py:25:0</div>
-<div class="line">  %30 : Tensor = aten::div(%27, %15) # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src6.py:25:0</div>
+<div class="line">  %9 : Long(3, strides=[1], requires_grad=0, device=cpu) = prim::Constant[value= 1  1  1 [ CPULongType{3} ]]() # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src6.py:26:0</div>
+<div class="line">  %8 : int = prim::Constant[value=1]() # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src6.py:26:0</div>
+<div class="line">  %12 : Tensor = aten::sub(%eq::state/a, %eq::old_state/a, %8) # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src6.py:26:0</div>
+<div class="line">  %15 : Tensor = aten::sub(%eq::forces/t, %eq::old_forces/t, %8) # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src6.py:26:0</div>
+<div class="line">  %18 : Tensor = aten::div(%12, %15) # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src6.py:26:0</div>
+<div class="line">  %21 : Tensor = aten::sub(%eq::state/b, %eq::old_state/b, %8) # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src6.py:26:0</div>
+<div class="line">  %24 : Tensor = aten::div(%21, %15) # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src6.py:26:0</div>
+<div class="line">  %27 : Tensor = aten::sub(%eq::state/c, %eq::old_state/c, %8) # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src6.py:26:0</div>
+<div class="line">  %30 : Tensor = aten::div(%27, %15) # /home/runner/work/neml2/neml2/build/dev/doc/content/tutorials/models/just_in_time_compilation/src6.py:26:0</div>
 <div class="line">  %35 : Tensor[] = prim::ListConstruct(%18, %24, %30, %9)</div>
 <div class="line">  return (%35)</div>
 </div><!-- fragment --></li>

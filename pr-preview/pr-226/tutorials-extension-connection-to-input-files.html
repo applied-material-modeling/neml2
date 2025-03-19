@@ -255,6 +255,8 @@ Factory</h1>
 <div class="fragment"><div class="line"><span class="keywordtype">int</span></div>
 <div class="line">main()</div>
 <div class="line">{</div>
+<div class="line">  <span class="keyword">using namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a>;</div>
+<div class="line">  <a class="code hl_function" href="namespaceneml2.html#a3c266b437e28eb7adec97c12b9a7e7d2">set_default_dtype</a>(<a class="code hl_variable" href="namespaceneml2.html#a16c96ec35672a72196d72131d3f5f8c3">kFloat64</a>);</div>
 <div class="line">  <span class="keyword">auto</span> &amp; model = <a class="code hl_function" href="namespaceneml2.html#a1e499dee97d6a66663f60dd4a65b9f1a">neml2::load_model</a>(<span class="stringliteral">&quot;input.i&quot;</span>, <span class="stringliteral">&quot;accel&quot;</span>);</div>
 <div class="line"> </div>
 <div class="line">  <span class="comment">// Print out each option parsed from the input file</span></div>
@@ -265,7 +267,9 @@ Factory</h1>
 <div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;gravitational_acceleration: &quot;</span> &lt;&lt; options.get(<span class="stringliteral">&quot;gravitational_acceleration&quot;</span>) &lt;&lt; std::endl;</div>
 <div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;         dynamic_viscosity: &quot;</span> &lt;&lt; options.get(<span class="stringliteral">&quot;dynamic_viscosity&quot;</span>) &lt;&lt; std::endl;</div>
 <div class="line">}</div>
+<div class="ttc" id="anamespaceneml2_html_a16c96ec35672a72196d72131d3f5f8c3"><div class="ttname"><a href="namespaceneml2.html#a16c96ec35672a72196d72131d3f5f8c3">neml2::kFloat64</a></div><div class="ttdeci">constexpr auto kFloat64</div><div class="ttdef"><b>Definition</b> types.h:53</div></div>
 <div class="ttc" id="anamespaceneml2_html_a1e499dee97d6a66663f60dd4a65b9f1a"><div class="ttname"><a href="namespaceneml2.html#a1e499dee97d6a66663f60dd4a65b9f1a">neml2::load_model</a></div><div class="ttdeci">Model &amp; load_model(const std::filesystem::path &amp;path, const std::string &amp;mname)</div><div class="ttdoc">A convenient function to load an input file and get a model.</div><div class="ttdef"><b>Definition</b> Model.cxx:47</div></div>
+<div class="ttc" id="anamespaceneml2_html_a3c266b437e28eb7adec97c12b9a7e7d2"><div class="ttname"><a href="namespaceneml2.html#a3c266b437e28eb7adec97c12b9a7e7d2">neml2::set_default_dtype</a></div><div class="ttdeci">void set_default_dtype(Dtype dtype)</div><div class="ttdef"><b>Definition</b> defaults.cxx:32</div></div>
 </div><!-- fragment --><p>Output: </p><div class="fragment"><div class="line">                  velocity: state/v</div>
 <div class="line">              acceleration: state/a</div>
 <div class="line">gravitational_acceleration: g</div>

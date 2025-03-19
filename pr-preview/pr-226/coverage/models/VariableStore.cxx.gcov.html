@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-03-19 02:39:32</td>
+            <td class="headerValue">2025-03-19 23:21:59</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryMed">43.0&nbsp;%</td>
@@ -99,7 +99,7 @@
 <span id="L37"><span class="lineNum">      37</span> <span class="tlaGNC">         381 :   : _object(object),</span></span>
 <span id="L38"><span class="lineNum">      38</span> <span class="tlaGNC">         762 :     _input_axis(declare_axis(&quot;input&quot;)),</span></span>
 <span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">         381 :     _output_axis(declare_axis(&quot;output&quot;)),</span></span>
-<span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC">         762 :     _tensor_options(default_tensor_options())</span></span>
+<span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC">         762 :     _options(default_tensor_options())</span></span>
 <span id="L41"><span class="lineNum">      41</span>              : {</span>
 <span id="L42"><span class="lineNum">      42</span> <span class="tlaGNC">         381 : }</span></span>
 <span id="L43"><span class="lineNum">      43</span>              : </span>
@@ -278,7 +278,7 @@
 <span id="L216"><span class="lineNum">     216</span>              : void</span>
 <span id="L217"><span class="lineNum">     217</span> <span class="tlaUNC tlaBgUNC">           0 : VariableStore::send_variables_to(const TensorOptions &amp; options)</span></span>
 <span id="L218"><span class="lineNum">     218</span>              : {</span>
-<span id="L219"><span class="lineNum">     219</span> <span class="tlaUNC">           0 :   _tensor_options = options;</span></span>
+<span id="L219"><span class="lineNum">     219</span> <span class="tlaUNC">           0 :   _options = options;</span></span>
 <span id="L220"><span class="lineNum">     220</span> <span class="tlaUNC">           0 : }</span></span>
 <span id="L221"><span class="lineNum">     221</span>              : </span>
 <span id="L222"><span class="lineNum">     222</span>              : void</span>
@@ -302,7 +302,7 @@
 <span id="L240"><span class="lineNum">     240</span>              : {</span>
 <span id="L241"><span class="lineNum">     241</span> <span class="tlaGNC">       30285 :   for (auto &amp;&amp; [name, var] : input_variables())</span></span>
 <span id="L242"><span class="lineNum">     242</span> <span class="tlaGNC">       22631 :     if (var-&gt;owning())</span></span>
-<span id="L243"><span class="lineNum">     243</span> <span class="tlaGNC">        8877 :       var-&gt;zero(_tensor_options);</span></span>
+<span id="L243"><span class="lineNum">     243</span> <span class="tlaGNC">        8877 :       var-&gt;zero(_options);</span></span>
 <span id="L244"><span class="lineNum">     244</span> <span class="tlaGNC">        7654 : }</span></span>
 <span id="L245"><span class="lineNum">     245</span>              : </span>
 <span id="L246"><span class="lineNum">     246</span>              : void</span>
@@ -310,7 +310,7 @@
 <span id="L248"><span class="lineNum">     248</span>              : {</span>
 <span id="L249"><span class="lineNum">     249</span> <span class="tlaGNC">       16748 :   for (auto &amp;&amp; [name, var] : output_variables())</span></span>
 <span id="L250"><span class="lineNum">     250</span> <span class="tlaGNC">        9094 :     if (var-&gt;owning())</span></span>
-<span id="L251"><span class="lineNum">     251</span> <span class="tlaGNC">        6803 :       var-&gt;zero(_tensor_options);</span></span>
+<span id="L251"><span class="lineNum">     251</span> <span class="tlaGNC">        6803 :       var-&gt;zero(_options);</span></span>
 <span id="L252"><span class="lineNum">     252</span> <span class="tlaGNC">        7654 : }</span></span>
 <span id="L253"><span class="lineNum">     253</span>              : </span>
 <span id="L254"><span class="lineNum">     254</span>              : void</span>

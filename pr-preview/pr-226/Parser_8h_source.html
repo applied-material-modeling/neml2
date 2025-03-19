@@ -238,7 +238,7 @@ $(function(){initNavTree('Parser_8h_source.html',''); initResizable(true); });
 <div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>{</div>
 <div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>  <span class="keyword">auto</span> tokens = <a class="code hl_function" href="namespaceneml2_1_1utils.html#abf55fb05e178e999cef5352ab7ebfcd4">split</a>(raw_str, <span class="stringliteral">&quot; \t\n\v\f\r&quot;</span>);</div>
 <div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>  <span class="keywordflow">if</span> <span class="keyword">constexpr</span> (std::is_same_v&lt;T, Device&gt;)</div>
-<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>    vals.resize(tokens.size(), <a class="code hl_function" href="namespaceneml2.html#ae8e963e9338abbb26cf1d3a57630411d">default_device</a>());</div>
+<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>    vals.resize(tokens.size(), <a class="code hl_variable" href="namespaceneml2.html#af1bcf14cba8c3bce7445b5661fffd658">kCPU</a>);</div>
 <div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>  <span class="keywordflow">else</span></div>
 <div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>    vals.resize(tokens.size());</div>
 <div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span>  <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; tokens.size(); i++)</div>
@@ -337,7 +337,7 @@ $(function(){initNavTree('Parser_8h_source.html',''); initResizable(true); });
 <div class="ttc" id="anamespaceneml2_html_a1456b5c3b8814c9aa2e7269af73c059d"><div class="ttname"><a href="namespaceneml2.html#a1456b5c3b8814c9aa2e7269af73c059d">neml2::TensorShape</a></div><div class="ttdeci">c10::SmallVector&lt; Size, 8 &gt; TensorShape</div><div class="ttdef"><b>Definition</b> types.h:71</div></div>
 <div class="ttc" id="anamespaceneml2_html_a5424759a4a25bd0e2f60628d260abb81"><div class="ttname"><a href="namespaceneml2.html#a5424759a4a25bd0e2f60628d260abb81">neml2::name</a></div><div class="ttdeci">std::string name(ElasticConstant p)</div><div class="ttdef"><b>Definition</b> ElasticityConverter.cxx:30</div></div>
 <div class="ttc" id="anamespaceneml2_html_a9e1488821b46ffc106c90ab80036b7aa"><div class="ttname"><a href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">neml2::VariableName</a></div><div class="ttdeci">LabeledAxisAccessor VariableName</div><div class="ttdef"><b>Definition</b> LabeledAxisAccessor.h:185</div></div>
-<div class="ttc" id="anamespaceneml2_html_ae8e963e9338abbb26cf1d3a57630411d"><div class="ttname"><a href="namespaceneml2.html#ae8e963e9338abbb26cf1d3a57630411d">neml2::default_device</a></div><div class="ttdeci">Device &amp; default_device()</div><div class="ttdoc">Default device.</div><div class="ttdef"><b>Definition</b> defaults.cxx:62</div></div>
+<div class="ttc" id="anamespaceneml2_html_af1bcf14cba8c3bce7445b5661fffd658"><div class="ttname"><a href="namespaceneml2.html#af1bcf14cba8c3bce7445b5661fffd658">neml2::kCPU</a></div><div class="ttdeci">constexpr auto kCPU</div><div class="ttdef"><b>Definition</b> types.h:56</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

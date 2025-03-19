@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-03-19 02:39:32</td>
+            <td class="headerValue">2025-03-19 23:21:59</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">94.1&nbsp;%</td>
@@ -106,9 +106,9 @@
 <span id="L44"><span class="lineNum">      44</span>              : }</span>
 <span id="L45"><span class="lineNum">      45</span>              : </span>
 <span id="L46"><span class="lineNum">      46</span>              : bool</span>
-<span id="L47"><span class="lineNum">      47</span> <span class="tlaGNC">       15153 : OptionSet::contains(const std::string &amp; name) const</span></span>
+<span id="L47"><span class="lineNum">      47</span> <span class="tlaGNC">       14231 : OptionSet::contains(const std::string &amp; name) const</span></span>
 <span id="L48"><span class="lineNum">      48</span>              : {</span>
-<span id="L49"><span class="lineNum">      49</span> <span class="tlaGNC">       15153 :   return _values.find(name) != _values.end();</span></span>
+<span id="L49"><span class="lineNum">      49</span> <span class="tlaGNC">       14231 :   return _values.find(name) != _values.end();</span></span>
 <span id="L50"><span class="lineNum">      50</span>              : }</span>
 <span id="L51"><span class="lineNum">      51</span>              : </span>
 <span id="L52"><span class="lineNum">      52</span>              : const OptionBase &amp;</span>
@@ -124,15 +124,15 @@
 <span id="L62"><span class="lineNum">      62</span>              : }</span>
 <span id="L63"><span class="lineNum">      63</span>              : </span>
 <span id="L64"><span class="lineNum">      64</span>              : OptionBase &amp;</span>
-<span id="L65"><span class="lineNum">      65</span> <span class="tlaGNC">       15050 : OptionSet::set(const std::string &amp; name)</span></span>
+<span id="L65"><span class="lineNum">      65</span> <span class="tlaGNC">       14128 : OptionSet::set(const std::string &amp; name)</span></span>
 <span id="L66"><span class="lineNum">      66</span>              : {</span>
-<span id="L67"><span class="lineNum">      67</span> <span class="tlaGNC">       15050 :   neml_assert(this-&gt;contains(name),</span></span>
+<span id="L67"><span class="lineNum">      67</span> <span class="tlaGNC">       14128 :   neml_assert(this-&gt;contains(name),</span></span>
 <span id="L68"><span class="lineNum">      68</span>              :               &quot;ERROR: no option named \&quot;&quot;,</span>
 <span id="L69"><span class="lineNum">      69</span>              :               name,</span>
 <span id="L70"><span class="lineNum">      70</span>              :               &quot;\&quot; found.\n\nKnown options:\n&quot;,</span>
 <span id="L71"><span class="lineNum">      71</span>              :               *this);</span>
 <span id="L72"><span class="lineNum">      72</span>              : </span>
-<span id="L73"><span class="lineNum">      73</span> <span class="tlaGNC">       15050 :   return *_values[name];</span></span>
+<span id="L73"><span class="lineNum">      73</span> <span class="tlaGNC">       14128 :   return *_values[name];</span></span>
 <span id="L74"><span class="lineNum">      74</span>              : }</span>
 <span id="L75"><span class="lineNum">      75</span>              : </span>
 <span id="L76"><span class="lineNum">      76</span>              : LabeledAxisAccessor &amp;</span>
@@ -178,8 +178,8 @@
 <span id="L116"><span class="lineNum">     116</span>              : void</span>
 <span id="L117"><span class="lineNum">     117</span> <span class="tlaGNC">       14953 : OptionSet::operator+=(const OptionSet &amp; source)</span></span>
 <span id="L118"><span class="lineNum">     118</span>              : {</span>
-<span id="L119"><span class="lineNum">     119</span> <span class="tlaGNC">      157986 :   for (const auto &amp; [key, value] : source._values)</span></span>
-<span id="L120"><span class="lineNum">     120</span> <span class="tlaGNC">      143033 :     _values[key] = value-&gt;clone();</span></span>
+<span id="L119"><span class="lineNum">     119</span> <span class="tlaGNC">      157080 :   for (const auto &amp; [key, value] : source._values)</span></span>
+<span id="L120"><span class="lineNum">     120</span> <span class="tlaGNC">      142127 :     _values[key] = value-&gt;clone();</span></span>
 <span id="L121"><span class="lineNum">     121</span> <span class="tlaGNC">       14953 : }</span></span>
 <span id="L122"><span class="lineNum">     122</span>              : </span>
 <span id="L123"><span class="lineNum">     123</span>              : void</span>
@@ -237,9 +237,9 @@
 <span id="L175"><span class="lineNum">     175</span>              : // LCOV_EXCL_STOP</span>
 <span id="L176"><span class="lineNum">     176</span>              : </span>
 <span id="L177"><span class="lineNum">     177</span>              : OptionSet::iterator</span>
-<span id="L178"><span class="lineNum">     178</span> <span class="tlaGNC">        6818 : OptionSet::begin()</span></span>
+<span id="L178"><span class="lineNum">     178</span> <span class="tlaGNC">        6808 : OptionSet::begin()</span></span>
 <span id="L179"><span class="lineNum">     179</span>              : {</span>
-<span id="L180"><span class="lineNum">     180</span> <span class="tlaGNC">        6818 :   return _values.begin();</span></span>
+<span id="L180"><span class="lineNum">     180</span> <span class="tlaGNC">        6808 :   return _values.begin();</span></span>
 <span id="L181"><span class="lineNum">     181</span>              : }</span>
 <span id="L182"><span class="lineNum">     182</span>              : </span>
 <span id="L183"><span class="lineNum">     183</span>              : OptionSet::const_iterator</span>
@@ -249,9 +249,9 @@
 <span id="L187"><span class="lineNum">     187</span>              : }</span>
 <span id="L188"><span class="lineNum">     188</span>              : </span>
 <span id="L189"><span class="lineNum">     189</span>              : OptionSet::iterator</span>
-<span id="L190"><span class="lineNum">     190</span> <span class="tlaGNC">        6818 : OptionSet::end()</span></span>
+<span id="L190"><span class="lineNum">     190</span> <span class="tlaGNC">        6808 : OptionSet::end()</span></span>
 <span id="L191"><span class="lineNum">     191</span>              : {</span>
-<span id="L192"><span class="lineNum">     192</span> <span class="tlaGNC">        6818 :   return _values.end();</span></span>
+<span id="L192"><span class="lineNum">     192</span> <span class="tlaGNC">        6808 :   return _values.end();</span></span>
 <span id="L193"><span class="lineNum">     193</span>              : }</span>
 <span id="L194"><span class="lineNum">     194</span>              : </span>
 <span id="L195"><span class="lineNum">     195</span>              : OptionSet::const_iterator</span>

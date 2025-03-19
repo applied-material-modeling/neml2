@@ -117,11 +117,11 @@ var NAVTREEINDEX =
 "classneml2_1_1SR2.html#a3ad9dd7df338ec8cf86da3f7e5da2ed6",
 "classneml2_1_1Tensor.html#a7d1093df07e340822f5fcd13ad89a8e7",
 "classneml2_1_1UserTensor.html",
-"classneml2_1_1VariableStore.html#a77f563fcf19c9453e4803f5c03c745dc",
+"classneml2_1_1VariableStore.html#a8361dbee7e8e502219ba4bdbb32165d8",
 "classneml2_1_1WorkScheduler.html#acb5d9b56c644b203bf2c14b56e1b06ee",
-"namespaceneml2.html#a53ee4115f1b78444d1af96d87dd863d3",
-"namespaceneml2.html#adf547343b026249ea90c785d3bfc7b59",
-"structneml2_1_1OptionBase_1_1Metadata.html#ad0dad440c5621dbbf1afb3db44f478fe"
+"namespaceneml2.html#a526f0f0ea514ad9df0b7fbd75335b826",
+"namespaceneml2.html#adaf729acffee13165dd8eb67cc6b2687",
+"structneml2_1_1OptionBase_1_1Metadata.html#a9b45b3e13bd9167aab02e17e08916231"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronization';

@@ -158,12 +158,13 @@ Calibration</h1>
   G_{i+1} = G_i - \gamma \pdv{l}{G_i},
 \end{align*}
 </p>
-<p> which iterates until the loss function \(l\) is sufficiently small. A constant learning rate \(\gamma = 1e-3\) is chosen in this example.</p>
+<p> which iterates until the loss function \(l\) is sufficiently small. A constant learning rate \(\gamma = 1\) is chosen in this example.</p>
 <div class="fragment"><div class="line"><span class="keyword">import</span> neml2</div>
 <div class="line"><span class="keyword">from</span> neml2.tensors <span class="keyword">import</span> SR2</div>
 <div class="line"><span class="keyword">import</span> torch</div>
 <div class="line"><span class="keyword">from</span> matplotlib <span class="keyword">import</span> pyplot <span class="keyword">as</span> plt</div>
 <div class="line"> </div>
+<div class="line">torch.set_default_dtype(torch.double)</div>
 <div class="line">model = <a class="code hl_function" href="namespaceneml2.html#a1e499dee97d6a66663f60dd4a65b9f1a">neml2.load_model</a>(<span class="stringliteral">&quot;input.i&quot;</span>, <span class="stringliteral">&quot;model&quot;</span>)</div>
 <div class="line"> </div>
 <div class="line"><span class="comment"># Experimental data</span></div>

@@ -262,16 +262,18 @@ Lauching the projectiles</h1>
 </div><!-- fragment --><p> The five projectiles are launched from the same position (the origin) but with two different lauching velocities. Note how broadcasting is used to simultaneously simulate the trajectories of all 10 combinations.</p>
 <div class="fragment"><div class="line"><span class="preprocessor">#include &quot;neml2/drivers/Driver.h&quot;</span></div>
 <div class="line"> </div>
-<div class="line"><span class="keyword">using namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a>;</div>
-<div class="line"> </div>
 <div class="line"><span class="keywordtype">int</span></div>
 <div class="line">main()</div>
 <div class="line">{</div>
+<div class="line">  <span class="keyword">using namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a>;</div>
+<div class="line">  <a class="code hl_function" href="namespaceneml2.html#a3c266b437e28eb7adec97c12b9a7e7d2">set_default_dtype</a>(<a class="code hl_variable" href="namespaceneml2.html#a16c96ec35672a72196d72131d3f5f8c3">kFloat64</a>);</div>
 <div class="line">  <a class="code hl_function" href="namespaceneml2.html#ae26cd3cedac7d43bddad9f8502bbe6bf">load_input</a>(<span class="stringliteral">&quot;input.i&quot;</span>);</div>
 <div class="line">  <span class="keyword">auto</span> &amp; driver = <a class="code hl_function" href="namespaceneml2.html#acfd0f6bc05c40545cdb14eb1b47881f1">get_driver</a>(<span class="stringliteral">&quot;driver&quot;</span>);</div>
 <div class="line">  driver.run();</div>
 <div class="line">}</div>
 <div class="ttc" id="anamespaceneml2_html"><div class="ttname"><a href="namespaceneml2.html">neml2</a></div><div class="ttdef"><b>Definition</b> DiagnosticsInterface.cxx:30</div></div>
+<div class="ttc" id="anamespaceneml2_html_a16c96ec35672a72196d72131d3f5f8c3"><div class="ttname"><a href="namespaceneml2.html#a16c96ec35672a72196d72131d3f5f8c3">neml2::kFloat64</a></div><div class="ttdeci">constexpr auto kFloat64</div><div class="ttdef"><b>Definition</b> types.h:53</div></div>
+<div class="ttc" id="anamespaceneml2_html_a3c266b437e28eb7adec97c12b9a7e7d2"><div class="ttname"><a href="namespaceneml2.html#a3c266b437e28eb7adec97c12b9a7e7d2">neml2::set_default_dtype</a></div><div class="ttdeci">void set_default_dtype(Dtype dtype)</div><div class="ttdef"><b>Definition</b> defaults.cxx:32</div></div>
 <div class="ttc" id="anamespaceneml2_html_acfd0f6bc05c40545cdb14eb1b47881f1"><div class="ttname"><a href="namespaceneml2.html#acfd0f6bc05c40545cdb14eb1b47881f1">neml2::get_driver</a></div><div class="ttdeci">Driver &amp; get_driver(const std::string &amp;dname)</div><div class="ttdoc">A convenient function to manufacture a neml2::Driver.</div><div class="ttdef"><b>Definition</b> Driver.cxx:34</div></div>
 <div class="ttc" id="anamespaceneml2_html_ae26cd3cedac7d43bddad9f8502bbe6bf"><div class="ttname"><a href="namespaceneml2.html#ae26cd3cedac7d43bddad9f8502bbe6bf">neml2::load_input</a></div><div class="ttdeci">void load_input(const std::filesystem::path &amp;path, const std::string &amp;additional_input)</div><div class="ttdoc">A convenient function to parse all options from an input file.</div><div class="ttdef"><b>Definition</b> Factory.cxx:35</div></div>
 </div><!-- fragment --><p>Output </p><div class="fragment"><div class="line">eq4&#39;s input axis:</div>

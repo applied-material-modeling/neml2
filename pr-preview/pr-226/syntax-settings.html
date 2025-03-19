@@ -165,24 +165,6 @@ Settings</h2>
 </details>
 <details >
 <summary >
-<code>default_device</code> Default device on which tensors are created and models are evaluated. The string supplied must follow the following schema: (cpu|cuda)[:&lt;device-index&gt;] where cpu or cuda specifies the device type, and :&lt;device-index&gt; optionally specifies a device index. For example, device='cpu' sets the target compute device to be CPU, and device='cuda:1' sets the target compute device to be CUDA with device ID 1.</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: string</li>
-<li><u>Default</u>: cpu </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>default_floating_point_type</code> Default floating point type for tensors. Options are Float64 Float32 Float16 </summary>
-<p></p>
-<ul>
-<li><u>Type</u>: EnumSelection</li>
-<li><u>Default</u>: Float64 </li>
-</ul>
-</details>
-<details >
-<summary >
 <code>default_integer_type</code> Default integer type for tensors. Options are Int64 Int32 Int16 Int8 </summary>
 <p></p>
 <ul>
@@ -206,6 +188,15 @@ Settings</h2>
 <ul>
 <li><u>Type</u>: string</li>
 <li><u>Default</u>: _ </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>require_double_precision</code> Require double precision for all computations. An error will be thrown when Model forward operators are called if the default dtype is not Float64. Set this option to false to allow other precisions.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
 </ul>
 </details>
 <details >

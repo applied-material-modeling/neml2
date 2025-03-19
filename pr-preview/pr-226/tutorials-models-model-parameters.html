@@ -176,11 +176,11 @@ Retrieving the parameter value</h1>
 <li><p class="startli"><b class="tab-title">C++</b> </p><div class="fragment"><div class="line"><span class="preprocessor">#include &quot;neml2/models/Model.h&quot;</span></div>
 <div class="line"><span class="preprocessor">#include &quot;neml2/tensors/Tensor.h&quot;</span></div>
 <div class="line"> </div>
-<div class="line"><span class="keyword">using namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a>;</div>
-<div class="line"> </div>
 <div class="line"><span class="keywordtype">int</span></div>
 <div class="line">main()</div>
 <div class="line">{</div>
+<div class="line">  <span class="keyword">using namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a>;</div>
+<div class="line"> </div>
 <div class="line">  <span class="keyword">auto</span> &amp; model = <a class="code hl_function" href="namespaceneml2.html#a1e499dee97d6a66663f60dd4a65b9f1a">load_model</a>(<span class="stringliteral">&quot;input.i&quot;</span>, <span class="stringliteral">&quot;my_model&quot;</span>);</div>
 <div class="line"> </div>
 <div class="line">  <span class="keywordflow">for</span> (<span class="keyword">auto</span> &amp;&amp; [pname, pval] : model.named_parameters())</div>
@@ -191,10 +191,10 @@ Retrieving the parameter value</h1>
 <div class="ttc" id="anamespaceneml2_html_a1e499dee97d6a66663f60dd4a65b9f1a"><div class="ttname"><a href="namespaceneml2.html#a1e499dee97d6a66663f60dd4a65b9f1a">neml2::load_model</a></div><div class="ttdeci">Model &amp; load_model(const std::filesystem::path &amp;path, const std::string &amp;mname)</div><div class="ttdoc">A convenient function to load an input file and get a model.</div><div class="ttdef"><b>Definition</b> Model.cxx:47</div></div>
 </div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">G:</div>
 <div class="line">78000</div>
-<div class="line">[ CPUDoubleType{} ]</div>
+<div class="line">[ CPUFloatType{} ]</div>
 <div class="line">K:</div>
 <div class="line">140000</div>
-<div class="line">[ CPUDoubleType{} ]</div>
+<div class="line">[ CPUFloatType{} ]</div>
 </div><!-- fragment --></li>
 <li><p class="startli"><b class="tab-title">Python</b> </p><div class="fragment"><div class="line"><span class="keyword">import</span> neml2</div>
 <div class="line"> </div>
@@ -205,11 +205,11 @@ Retrieving the parameter value</h1>
 <div class="line">  print(pval.tensor())</div>
 </div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">G:</div>
 <div class="line">78000</div>
-<div class="line">[ CPUDoubleType{} ]</div>
+<div class="line">[ CPUFloatType{} ]</div>
 <div class="line">&lt;Tensor of shape [][]&gt;</div>
 <div class="line">K:</div>
 <div class="line">140000</div>
-<div class="line">[ CPUDoubleType{} ]</div>
+<div class="line">[ CPUFloatType{} ]</div>
 <div class="line">&lt;Tensor of shape [][]&gt;</div>
 </div><!-- fragment --></li>
 </ul>
@@ -218,11 +218,11 @@ Retrieving the parameter value</h1>
 <li><p class="startli"><b class="tab-title">C++</b> </p><div class="fragment"><div class="line"><span class="preprocessor">#include &quot;neml2/models/Model.h&quot;</span></div>
 <div class="line"><span class="preprocessor">#include &quot;neml2/tensors/Tensor.h&quot;</span></div>
 <div class="line"> </div>
-<div class="line"><span class="keyword">using namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a>;</div>
-<div class="line"> </div>
 <div class="line"><span class="keywordtype">int</span></div>
 <div class="line">main()</div>
 <div class="line">{</div>
+<div class="line">  <span class="keyword">using namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a>;</div>
+<div class="line"> </div>
 <div class="line">  <span class="keyword">auto</span> &amp; model = <a class="code hl_function" href="namespaceneml2.html#a1e499dee97d6a66663f60dd4a65b9f1a">load_model</a>(<span class="stringliteral">&quot;input.i&quot;</span>, <span class="stringliteral">&quot;my_model&quot;</span>);</div>
 <div class="line"> </div>
 <div class="line">  <span class="keyword">auto</span> &amp; G = model.get_parameter(<span class="stringliteral">&quot;G&quot;</span>);</div>
@@ -233,10 +233,10 @@ Retrieving the parameter value</h1>
 <div class="line">}</div>
 </div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">G:</div>
 <div class="line">78000</div>
-<div class="line">[ CPUDoubleType{} ]</div>
+<div class="line">[ CPUFloatType{} ]</div>
 <div class="line">K:</div>
 <div class="line">140000</div>
-<div class="line">[ CPUDoubleType{} ]</div>
+<div class="line">[ CPUFloatType{} ]</div>
 </div><!-- fragment --></li>
 <li><p class="startli"><b class="tab-title">Python</b> In Python, model parameters can be more conveniently retrieved as attributes, i.e.</p>
 <div class="fragment"><div class="line"><span class="keyword">import</span> neml2</div>
@@ -252,11 +252,11 @@ Retrieving the parameter value</h1>
 <div class="line">print(K.tensor())</div>
 </div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">G:</div>
 <div class="line">78000</div>
-<div class="line">[ CPUDoubleType{} ]</div>
+<div class="line">[ CPUFloatType{} ]</div>
 <div class="line">&lt;Tensor of shape [][]&gt;</div>
 <div class="line">K:</div>
 <div class="line">140000</div>
-<div class="line">[ CPUDoubleType{} ]</div>
+<div class="line">[ CPUFloatType{} ]</div>
 <div class="line">&lt;Tensor of shape [][]&gt;</div>
 </div><!-- fragment --></li>
 </ul>
@@ -269,11 +269,11 @@ Updating the parameter value</h1>
 <div class="line"><span class="preprocessor">#include &quot;neml2/tensors/Tensor.h&quot;</span></div>
 <div class="line"><span class="preprocessor">#include &quot;neml2/tensors/Scalar.h&quot;</span></div>
 <div class="line"> </div>
-<div class="line"><span class="keyword">using namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a>;</div>
-<div class="line"> </div>
 <div class="line"><span class="keywordtype">int</span></div>
 <div class="line">main()</div>
 <div class="line">{</div>
+<div class="line">  <span class="keyword">using namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a>;</div>
+<div class="line"> </div>
 <div class="line">  <span class="keyword">auto</span> &amp; model = <a class="code hl_function" href="namespaceneml2.html#a1e499dee97d6a66663f60dd4a65b9f1a">load_model</a>(<span class="stringliteral">&quot;input.i&quot;</span>, <span class="stringliteral">&quot;my_model&quot;</span>);</div>
 <div class="line"> </div>
 <div class="line">  <span class="comment">// Before modification</span></div>
@@ -287,10 +287,10 @@ Updating the parameter value</h1>
 <div class="ttc" id="aclassneml2_1_1PrimitiveTensor_html_ab49f3fdd246f714b967d992668425ac2"><div class="ttname"><a href="classneml2_1_1PrimitiveTensor.html#ab49f3fdd246f714b967d992668425ac2">neml2::PrimitiveTensor&lt; Scalar &gt;::full</a></div><div class="ttdeci">static Scalar full(Real init, const TensorOptions &amp;options=default_tensor_options())</div><div class="ttdef"><b>Definition</b> PrimitiveTensor.h:211</div></div>
 </div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">G (before modification):</div>
 <div class="line">78000</div>
-<div class="line">[ CPUDoubleType{} ]</div>
+<div class="line">[ CPUFloatType{} ]</div>
 <div class="line">G (after modification):</div>
 <div class="line">59000</div>
-<div class="line">[ CPUDoubleType{} ]</div>
+<div class="line">[ CPUFloatType{} ]</div>
 </div><!-- fragment --></li>
 <li><p class="startli"><b class="tab-title">Python</b> </p><div class="fragment"><div class="line"><span class="keyword">import</span> neml2</div>
 <div class="line"><span class="keyword">from</span> neml2.tensors <span class="keyword">import</span> Scalar</div>
@@ -307,7 +307,7 @@ Updating the parameter value</h1>
 <div class="line">print(model.G.tensor())</div>
 </div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">G (before modification):</div>
 <div class="line">78000</div>
-<div class="line">[ CPUDoubleType{} ]</div>
+<div class="line">[ CPUFloatType{} ]</div>
 <div class="line">&lt;Tensor of shape [][]&gt;</div>
 <div class="line">G (after modification):</div>
 <div class="line">59000</div>

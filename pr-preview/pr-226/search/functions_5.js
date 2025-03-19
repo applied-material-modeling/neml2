@@ -28,12 +28,12 @@ var searchData=
   ['full_25',['full',['../classneml2_1_1PrimitiveTensor.html#ab49f3fdd246f714b967d992668425ac2',1,'neml2::PrimitiveTensor::full(Real init, const TensorOptions &amp;options=default_tensor_options())'],['../classneml2_1_1PrimitiveTensor.html#a081d75ee4aa7f032ecd5aac58b5ad1fa',1,'neml2::PrimitiveTensor::full(const TraceableTensorShape &amp;batch_shape, Real init, const TensorOptions &amp;options=default_tensor_options())'],['../classneml2_1_1Tensor.html#a4bf7edd5bf43b06badd4bfdde6849317',1,'neml2::Tensor::full(TensorShapeRef base_shape, Real init, const TensorOptions &amp;options=default_tensor_options())'],['../classneml2_1_1Tensor.html#a2d540ad7b171fb497127bcba42483131',1,'neml2::Tensor::full(const TraceableTensorShape &amp;batch_shape, TensorShapeRef base_shape, Real init, const TensorOptions &amp;options=default_tensor_options())']]],
   ['full_5flike_26',['full_like',['../group__tensor__creation.html#gabe1ac05204d27731c28308c6eacad45a',1,'neml2::TensorBase']]],
   ['full_5fto_5fmandel_27',['full_to_mandel',['../namespaceneml2.html#add19d5b97171a5609d7f235e846d1bd7',1,'neml2']]],
-  ['full_5fto_5fmandel_5ffactor_28',['full_to_mandel_factor',['../structneml2_1_1ConstantTensors.html#aceb606d6add741a55bfdd2ee22723212',1,'neml2::ConstantTensors']]],
-  ['full_5fto_5fmandel_5fmap_29',['full_to_mandel_map',['../structneml2_1_1ConstantTensors.html#a78578a16ca13d62de3a9f208f48c5d96',1,'neml2::ConstantTensors']]],
-  ['full_5fto_5freduced_30',['full_to_reduced',['../namespaceneml2.html#a473407f1d6cc85960aeb717c44d2a639',1,'neml2']]],
+  ['full_5fto_5fmandel_5ffactor_28',['full_to_mandel_factor',['../namespaceneml2.html#ab36f78e4fa34f2d74372de044c6c63e1',1,'neml2']]],
+  ['full_5fto_5fmandel_5fmap_29',['full_to_mandel_map',['../namespaceneml2.html#a617d1cd2c9084013b1688b4b3357b1f6',1,'neml2']]],
+  ['full_5fto_5freduced_30',['full_to_reduced',['../namespaceneml2.html#a06faadd102cfb5243fa28cc20c1bfff8',1,'neml2']]],
   ['full_5fto_5fskew_31',['full_to_skew',['../namespaceneml2.html#a379f782f6c4b0908470898f84d6223e5',1,'neml2']]],
-  ['full_5fto_5fskew_5ffactor_32',['full_to_skew_factor',['../structneml2_1_1ConstantTensors.html#ac2f77dfdf2161c1174b239ea3d0c2527',1,'neml2::ConstantTensors']]],
-  ['full_5fto_5fskew_5fmap_33',['full_to_skew_map',['../structneml2_1_1ConstantTensors.html#a947e8b1c9d0e268ef8df4642045041c2',1,'neml2::ConstantTensors']]],
+  ['full_5fto_5fskew_5ffactor_32',['full_to_skew_factor',['../namespaceneml2.html#ac4f40ef4288895163fb20b4b6852fc27',1,'neml2']]],
+  ['full_5fto_5fskew_5fmap_33',['full_to_skew_map',['../namespaceneml2.html#ac3cc48d2b25cdd53b8aa5b639197782d',1,'neml2']]],
   ['fullprimitivetensor_34',['FullPrimitiveTensor',['../classneml2_1_1FullPrimitiveTensor.html#a62e4137b1492b8b19a94cd30edc4a864',1,'neml2::FullPrimitiveTensor']]],
   ['fulltensor_35',['FullTensor',['../classneml2_1_1FullTensor.html#a954aa5df9dcd01905b718ce98dca217a',1,'neml2::FullTensor']]]
 ];

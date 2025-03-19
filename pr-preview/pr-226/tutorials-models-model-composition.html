@@ -214,11 +214,11 @@ Running the models: the hard way</h1>
 <li><p class="startli"><b class="tab-title">C++</b> </p><div class="fragment"><div class="line"><span class="preprocessor">#include &quot;neml2/models/Model.h&quot;</span></div>
 <div class="line"><span class="preprocessor">#include &quot;neml2/tensors/SR2.h&quot;</span></div>
 <div class="line"> </div>
-<div class="line"><span class="keyword">using namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a>;</div>
-<div class="line"> </div>
 <div class="line"><span class="keywordtype">int</span></div>
 <div class="line">main()</div>
 <div class="line">{</div>
+<div class="line">  <span class="keyword">using namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a>;</div>
+<div class="line">  <a class="code hl_function" href="namespaceneml2.html#a3c266b437e28eb7adec97c12b9a7e7d2">set_default_dtype</a>(<a class="code hl_variable" href="namespaceneml2.html#a16c96ec35672a72196d72131d3f5f8c3">kFloat64</a>);</div>
 <div class="line">  <a class="code hl_function" href="namespaceneml2.html#ae26cd3cedac7d43bddad9f8502bbe6bf">load_input</a>(<span class="stringliteral">&quot;input.i&quot;</span>);</div>
 <div class="line">  <span class="keyword">auto</span> &amp; eq1 = <a class="code hl_function" href="namespaceneml2.html#a24366916c1001b7e830ae858a57c7e94">get_model</a>(<span class="stringliteral">&quot;eq1&quot;</span>);</div>
 <div class="line">  <span class="keyword">auto</span> &amp; eq2 = <a class="code hl_function" href="namespaceneml2.html#a24366916c1001b7e830ae858a57c7e94">get_model</a>(<span class="stringliteral">&quot;eq2&quot;</span>);</div>
@@ -250,7 +250,9 @@ Running the models: the hard way</h1>
 <div class="ttc" id="anamespaceneml2_1_1crystallography_1_1crystal__symmetry__operators_html_a395e2cc5edd48653ef7fcd5c455ee6ab"><div class="ttname"><a href="namespaceneml2_1_1crystallography_1_1crystal__symmetry__operators.html#a395e2cc5edd48653ef7fcd5c455ee6ab">neml2::crystallography::crystal_symmetry_operators::a</a></div><div class="ttdeci">constexpr Real a</div><div class="ttdef"><b>Definition</b> crystallography.h:36</div></div>
 <div class="ttc" id="anamespaceneml2_1_1crystallography_1_1crystal__symmetry__operators_html_a80d125ed558bdb7fe69c75ac9a674a54"><div class="ttname"><a href="namespaceneml2_1_1crystallography_1_1crystal__symmetry__operators.html#a80d125ed558bdb7fe69c75ac9a674a54">neml2::crystallography::crystal_symmetry_operators::b</a></div><div class="ttdeci">constexpr Real b</div><div class="ttdef"><b>Definition</b> crystallography.h:37</div></div>
 <div class="ttc" id="anamespaceneml2_html"><div class="ttname"><a href="namespaceneml2.html">neml2</a></div><div class="ttdef"><b>Definition</b> DiagnosticsInterface.cxx:30</div></div>
+<div class="ttc" id="anamespaceneml2_html_a16c96ec35672a72196d72131d3f5f8c3"><div class="ttname"><a href="namespaceneml2.html#a16c96ec35672a72196d72131d3f5f8c3">neml2::kFloat64</a></div><div class="ttdeci">constexpr auto kFloat64</div><div class="ttdef"><b>Definition</b> types.h:53</div></div>
 <div class="ttc" id="anamespaceneml2_html_a24366916c1001b7e830ae858a57c7e94"><div class="ttname"><a href="namespaceneml2.html#a24366916c1001b7e830ae858a57c7e94">neml2::get_model</a></div><div class="ttdeci">Model &amp; get_model(const std::string &amp;mname)</div><div class="ttdoc">A convenient function to manufacture a neml2::Model.</div><div class="ttdef"><b>Definition</b> Model.cxx:40</div></div>
+<div class="ttc" id="anamespaceneml2_html_a3c266b437e28eb7adec97c12b9a7e7d2"><div class="ttname"><a href="namespaceneml2.html#a3c266b437e28eb7adec97c12b9a7e7d2">neml2::set_default_dtype</a></div><div class="ttdeci">void set_default_dtype(Dtype dtype)</div><div class="ttdef"><b>Definition</b> defaults.cxx:32</div></div>
 <div class="ttc" id="anamespaceneml2_html_a9e1488821b46ffc106c90ab80036b7aa"><div class="ttname"><a href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">neml2::VariableName</a></div><div class="ttdeci">LabeledAxisAccessor VariableName</div><div class="ttdef"><b>Definition</b> LabeledAxisAccessor.h:185</div></div>
 <div class="ttc" id="anamespaceneml2_html_ae26cd3cedac7d43bddad9f8502bbe6bf"><div class="ttname"><a href="namespaceneml2.html#ae26cd3cedac7d43bddad9f8502bbe6bf">neml2::load_input</a></div><div class="ttdeci">void load_input(const std::filesystem::path &amp;path, const std::string &amp;additional_input)</div><div class="ttdoc">A convenient function to parse all options from an input file.</div><div class="ttdef"><b>Definition</b> Factory.cxx:35</div></div>
 </div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">b_rate: </div>
@@ -264,7 +266,9 @@ Running the models: the hard way</h1>
 </div><!-- fragment --></li>
 <li><p class="startli"><b class="tab-title">Python</b> </p><div class="fragment"><div class="line"><span class="keyword">import</span> neml2</div>
 <div class="line"><span class="keyword">from</span> neml2.tensors <span class="keyword">import</span> SR2</div>
+<div class="line"><span class="keyword">import</span> torch</div>
 <div class="line"> </div>
+<div class="line">torch.set_default_dtype(torch.double)</div>
 <div class="line"><a class="code hl_function" href="namespaceneml2.html#ae26cd3cedac7d43bddad9f8502bbe6bf">neml2.load_input</a>(<span class="stringliteral">&quot;input.i&quot;</span>)</div>
 <div class="line">eq1 = <a class="code hl_function" href="namespaceneml2.html#a24366916c1001b7e830ae858a57c7e94">neml2.get_model</a>(<span class="stringliteral">&quot;eq1&quot;</span>)</div>
 <div class="line">eq2 = <a class="code hl_function" href="namespaceneml2.html#a24366916c1001b7e830ae858a57c7e94">neml2.get_model</a>(<span class="stringliteral">&quot;eq2&quot;</span>)</div>
@@ -341,11 +345,11 @@ Running the models: the easy way</h1>
 <div class="tabbed"></div><div class="tabbed"><ul>
 <li><p class="startli"><b class="tab-title">C++</b> </p><div class="fragment"><div class="line"><span class="preprocessor">#include &quot;neml2/models/Model.h&quot;</span></div>
 <div class="line"> </div>
-<div class="line"><span class="keyword">using namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a>;</div>
-<div class="line"> </div>
 <div class="line"><span class="keywordtype">int</span></div>
 <div class="line">main()</div>
 <div class="line">{</div>
+<div class="line">  <span class="keyword">using namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a>;</div>
+<div class="line"> </div>
 <div class="line">  <a class="code hl_function" href="namespaceneml2.html#ae26cd3cedac7d43bddad9f8502bbe6bf">load_input</a>(<span class="stringliteral">&quot;input_composed.i&quot;</span>);</div>
 <div class="line">  <span class="keyword">auto</span> &amp; eq1 = <a class="code hl_function" href="namespaceneml2.html#a24366916c1001b7e830ae858a57c7e94">get_model</a>(<span class="stringliteral">&quot;eq1&quot;</span>);</div>
 <div class="line">  <span class="keyword">auto</span> &amp; eq2 = <a class="code hl_function" href="namespaceneml2.html#a24366916c1001b7e830ae858a57c7e94">get_model</a>(<span class="stringliteral">&quot;eq2&quot;</span>);</div>
@@ -359,24 +363,18 @@ Running the models: the easy way</h1>
 <div class="line">}</div>
 </div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">eq1:</div>
 <div class="line">Name:       eq1</div>
-<div class="line">Dtype:      double</div>
-<div class="line">Device:     cpu</div>
 <div class="line">Input:      forces/a [SR2]</div>
 <div class="line">Output:     state/a_bar [Scalar]</div>
 <div class="line"> </div>
 <div class="line"> </div>
 <div class="line">eq2:</div>
 <div class="line">Name:       eq2</div>
-<div class="line">Dtype:      double</div>
-<div class="line">Device:     cpu</div>
 <div class="line">Input:      state/b [SR2]</div>
 <div class="line">Output:     state/b_bar [Scalar]</div>
 <div class="line"> </div>
 <div class="line"> </div>
 <div class="line">eq3:</div>
 <div class="line">Name:       eq3</div>
-<div class="line">Dtype:      double</div>
-<div class="line">Device:     cpu</div>
 <div class="line">Input:      forces/a [SR2]</div>
 <div class="line">            state/a_bar [Scalar]</div>
 <div class="line">            state/b [SR2]</div>
@@ -386,8 +384,6 @@ Running the models: the easy way</h1>
 <div class="line"> </div>
 <div class="line">eq:</div>
 <div class="line">Name:       eq</div>
-<div class="line">Dtype:      double</div>
-<div class="line">Device:     cpu</div>
 <div class="line">Input:      forces/a [SR2]</div>
 <div class="line">            state/b [SR2]</div>
 <div class="line">Output:     state/b_rate [SR2]</div>
@@ -411,24 +407,18 @@ Running the models: the easy way</h1>
 <div class="line">print(eq, <span class="stringliteral">&quot;\n&quot;</span>)</div>
 </div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">eq1:</div>
 <div class="line">Name:       eq1</div>
-<div class="line">Dtype:      double</div>
-<div class="line">Device:     cpu</div>
 <div class="line">Input:      forces/a [SR2]</div>
 <div class="line">Output:     state/a_bar [Scalar]</div>
 <div class="line"> </div>
 <div class="line"> </div>
 <div class="line">eq2:</div>
 <div class="line">Name:       eq2</div>
-<div class="line">Dtype:      double</div>
-<div class="line">Device:     cpu</div>
 <div class="line">Input:      state/b [SR2]</div>
 <div class="line">Output:     state/b_bar [Scalar]</div>
 <div class="line"> </div>
 <div class="line"> </div>
 <div class="line">eq3:</div>
 <div class="line">Name:       eq3</div>
-<div class="line">Dtype:      double</div>
-<div class="line">Device:     cpu</div>
 <div class="line">Input:      forces/a [SR2]</div>
 <div class="line">            state/a_bar [Scalar]</div>
 <div class="line">            state/b [SR2]</div>
@@ -438,8 +428,6 @@ Running the models: the easy way</h1>
 <div class="line"> </div>
 <div class="line">eq:</div>
 <div class="line">Name:       eq</div>
-<div class="line">Dtype:      double</div>
-<div class="line">Device:     cpu</div>
 <div class="line">Input:      forces/a [SR2]</div>
 <div class="line">            state/b [SR2]</div>
 <div class="line">Output:     state/b_rate [SR2]</div>
@@ -456,11 +444,11 @@ Running the models: the easy way</h1>
 <li><p class="startli"><b class="tab-title">C++</b> </p><div class="fragment"><div class="line"><span class="preprocessor">#include &quot;neml2/models/Model.h&quot;</span></div>
 <div class="line"><span class="preprocessor">#include &quot;neml2/tensors/SR2.h&quot;</span></div>
 <div class="line"> </div>
-<div class="line"><span class="keyword">using namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a>;</div>
-<div class="line"> </div>
 <div class="line"><span class="keywordtype">int</span></div>
 <div class="line">main()</div>
 <div class="line">{</div>
+<div class="line">  <span class="keyword">using namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a>;</div>
+<div class="line">  <a class="code hl_function" href="namespaceneml2.html#a3c266b437e28eb7adec97c12b9a7e7d2">set_default_dtype</a>(<a class="code hl_variable" href="namespaceneml2.html#a16c96ec35672a72196d72131d3f5f8c3">kFloat64</a>);</div>
 <div class="line">  <span class="keyword">auto</span> &amp; eq = <a class="code hl_function" href="namespaceneml2.html#a1e499dee97d6a66663f60dd4a65b9f1a">load_model</a>(<span class="stringliteral">&quot;input_composed.i&quot;</span>, <span class="stringliteral">&quot;eq&quot;</span>);</div>
 <div class="line"> </div>
 <div class="line">  <span class="comment">// Create the input variables</span></div>
@@ -487,7 +475,9 @@ Running the models: the easy way</h1>
 </div><!-- fragment --></li>
 <li><p class="startli"><b class="tab-title">Python</b> </p><div class="fragment"><div class="line"><span class="keyword">import</span> neml2</div>
 <div class="line"><span class="keyword">from</span> neml2.tensors <span class="keyword">import</span> SR2</div>
+<div class="line"><span class="keyword">import</span> torch</div>
 <div class="line"> </div>
+<div class="line">torch.set_default_dtype(torch.double)</div>
 <div class="line">eq = <a class="code hl_function" href="namespaceneml2.html#a1e499dee97d6a66663f60dd4a65b9f1a">neml2.load_model</a>(<span class="stringliteral">&quot;input_composed.i&quot;</span>, <span class="stringliteral">&quot;eq&quot;</span>)</div>
 <div class="line"> </div>
 <div class="line"><span class="comment"># Create the input variables</span></div>

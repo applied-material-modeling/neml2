@@ -171,11 +171,12 @@ For loop</h2>
 <div class="line"><span class="preprocessor">#include &quot;neml2/models/Model.h&quot;</span></div>
 <div class="line"><span class="preprocessor">#include &quot;neml2/tensors/SR2.h&quot;</span></div>
 <div class="line"> </div>
-<div class="line"><span class="keyword">using namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a>;</div>
-<div class="line"> </div>
 <div class="line"><span class="keywordtype">int</span></div>
 <div class="line">main()</div>
 <div class="line">{</div>
+<div class="line">  <span class="keyword">using namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a>;</div>
+<div class="line">  <a class="code hl_function" href="namespaceneml2.html#a3c266b437e28eb7adec97c12b9a7e7d2">set_default_dtype</a>(<a class="code hl_variable" href="namespaceneml2.html#a16c96ec35672a72196d72131d3f5f8c3">kFloat64</a>);</div>
+<div class="line"> </div>
 <div class="line">  <span class="comment">// Preparation</span></div>
 <div class="line">  <a class="code hl_typedef" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> N = 10;</div>
 <div class="line">  <span class="keyword">auto</span> device = <a class="code hl_variable" href="namespaceneml2.html#af1bcf14cba8c3bce7445b5661fffd658">kCPU</a>;</div>
@@ -195,7 +196,9 @@ For loop</h2>
 <div class="ttc" id="aclassneml2_1_1SR2_html_afeaa38df3cc24a16ef450732eddae0d7"><div class="ttname"><a href="classneml2_1_1SR2.html#afeaa38df3cc24a16ef450732eddae0d7">neml2::SR2::fill</a></div><div class="ttdeci">static SR2 fill(const Real &amp;a, const TensorOptions &amp;options=default_tensor_options())</div><div class="ttdoc">Fill the diagonals with a11 = a22 = a33 = a.</div><div class="ttdef"><b>Definition</b> SR2.cxx:53</div></div>
 <div class="ttc" id="agroup__tensor__creation_html_gab9805449dc0970401c00fd71495c1b5d"><div class="ttname"><a href="group__tensor__creation.html#gab9805449dc0970401c00fd71495c1b5d">neml2::TensorBase&lt; SR2 &gt;::linspace</a></div><div class="ttdeci">static SR2 linspace(const SR2 &amp;start, const SR2 &amp;end, Size nstep, Size dim=0)</div><div class="ttdef"><b>Definition</b> TensorBaseImpl.h:102</div></div>
 <div class="ttc" id="anamespaceneml2_html"><div class="ttname"><a href="namespaceneml2.html">neml2</a></div><div class="ttdef"><b>Definition</b> DiagnosticsInterface.cxx:30</div></div>
+<div class="ttc" id="anamespaceneml2_html_a16c96ec35672a72196d72131d3f5f8c3"><div class="ttname"><a href="namespaceneml2.html#a16c96ec35672a72196d72131d3f5f8c3">neml2::kFloat64</a></div><div class="ttdeci">constexpr auto kFloat64</div><div class="ttdef"><b>Definition</b> types.h:53</div></div>
 <div class="ttc" id="anamespaceneml2_html_a1e499dee97d6a66663f60dd4a65b9f1a"><div class="ttname"><a href="namespaceneml2.html#a1e499dee97d6a66663f60dd4a65b9f1a">neml2::load_model</a></div><div class="ttdeci">Model &amp; load_model(const std::filesystem::path &amp;path, const std::string &amp;mname)</div><div class="ttdoc">A convenient function to load an input file and get a model.</div><div class="ttdef"><b>Definition</b> Model.cxx:47</div></div>
+<div class="ttc" id="anamespaceneml2_html_a3c266b437e28eb7adec97c12b9a7e7d2"><div class="ttname"><a href="namespaceneml2.html#a3c266b437e28eb7adec97c12b9a7e7d2">neml2::set_default_dtype</a></div><div class="ttdeci">void set_default_dtype(Dtype dtype)</div><div class="ttdef"><b>Definition</b> defaults.cxx:32</div></div>
 <div class="ttc" id="anamespaceneml2_html_a90023c4b9c19cd471d4603a07a52954e"><div class="ttname"><a href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">neml2::Size</a></div><div class="ttdeci">int64_t Size</div><div class="ttdef"><b>Definition</b> types.h:69</div></div>
 <div class="ttc" id="anamespaceneml2_html_a9e1488821b46ffc106c90ab80036b7aa"><div class="ttname"><a href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">neml2::VariableName</a></div><div class="ttdeci">LabeledAxisAccessor VariableName</div><div class="ttdef"><b>Definition</b> LabeledAxisAccessor.h:185</div></div>
 <div class="ttc" id="anamespaceneml2_html_af1bcf14cba8c3bce7445b5661fffd658"><div class="ttname"><a href="namespaceneml2.html#af1bcf14cba8c3bce7445b5661fffd658">neml2::kCPU</a></div><div class="ttdeci">constexpr auto kCPU</div><div class="ttdef"><b>Definition</b> types.h:56</div></div>
@@ -203,6 +206,8 @@ For loop</h2>
 <li><b class="tab-title">Python</b> <div class="fragment"><div class="line"><span class="keyword">import</span> torch</div>
 <div class="line"><span class="keyword">import</span> neml2</div>
 <div class="line"><span class="keyword">from</span> neml2.tensors <span class="keyword">import</span> SR2</div>
+<div class="line"> </div>
+<div class="line">torch.set_default_dtype(torch.double)</div>
 <div class="line"> </div>
 <div class="line"><span class="comment"># Preparation</span></div>
 <div class="line">N = 10</div>
@@ -228,11 +233,12 @@ Vectorization</h2>
 <div class="line"><span class="preprocessor">#include &quot;neml2/models/Model.h&quot;</span></div>
 <div class="line"><span class="preprocessor">#include &quot;neml2/tensors/SR2.h&quot;</span></div>
 <div class="line"> </div>
-<div class="line"><span class="keyword">using namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a>;</div>
-<div class="line"> </div>
 <div class="line"><span class="keywordtype">int</span></div>
 <div class="line">main()</div>
 <div class="line">{</div>
+<div class="line">  <span class="keyword">using namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a>;</div>
+<div class="line">  <a class="code hl_function" href="namespaceneml2.html#a3c266b437e28eb7adec97c12b9a7e7d2">set_default_dtype</a>(<a class="code hl_variable" href="namespaceneml2.html#a16c96ec35672a72196d72131d3f5f8c3">kFloat64</a>);</div>
+<div class="line"> </div>
 <div class="line">  <span class="comment">// Preparation</span></div>
 <div class="line">  <a class="code hl_typedef" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> N = 10;</div>
 <div class="line">  <span class="keyword">auto</span> device = <a class="code hl_variable" href="namespaceneml2.html#af1bcf14cba8c3bce7445b5661fffd658">kCPU</a>;</div>
@@ -252,6 +258,8 @@ Vectorization</h2>
 <li><b class="tab-title">Python</b> <div class="fragment"><div class="line"><span class="keyword">import</span> torch</div>
 <div class="line"><span class="keyword">import</span> neml2</div>
 <div class="line"><span class="keyword">from</span> neml2.tensors <span class="keyword">import</span> SR2</div>
+<div class="line"> </div>
+<div class="line">torch.set_default_dtype(torch.double)</div>
 <div class="line"> </div>
 <div class="line"><span class="comment"># Preparation</span></div>
 <div class="line">N = 10</div>

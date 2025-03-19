@@ -178,9 +178,6 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneml2_1_1ConstantParameter.html">ConstantParameter</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A parameter that is actually just a constant.  <a href="classneml2_1_1ConstantParameter.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structneml2_1_1ConstantTensors.html">ConstantTensors</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A helper class to hold static data of type <a class="el" href="#a4a57eb2eaae4b2acfea6495c348f1142">ATensor</a>.  <a href="structneml2_1_1ConstantTensors.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneml2_1_1CopyVariable.html">CopyVariable</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy the value of a variable into another variable.  <a href="classneml2_1_1CopyVariable.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -587,6 +584,8 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneml2_1_1TensorBase.html">TensorBase</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">NEML2's enhanced tensor type.  <a href="classneml2_1_1TensorBase.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structneml2_1_1TensorCache.html">TensorCache</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneml2_1_1TensorLoader.html">TensorLoader</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structneml2_1_1TensorName.html">TensorName</a></td></tr>
@@ -924,6 +923,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a1c0bfd4c90f24e008be4aff67fb65dfe" id="r_a1c0bfd4c90f24e008be4aff67fb65dfe"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1c0bfd4c90f24e008be4aff67fb65dfe">neml_assert_not_tracing_dbg</a> ()</td></tr>
 <tr class="memdesc:a1c0bfd4c90f24e008be4aff67fb65dfe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assert that we are currently NOT tracing (only effective in debug mode)  <br /></td></tr>
 <tr class="separator:a1c0bfd4c90f24e008be4aff67fb65dfe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6d1f6a0ccf6de674463c7f961c9a6fed" id="r_a6d1f6a0ccf6de674463c7f961c9a6fed"><td class="memItemLeft" align="right" valign="top">bool &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6d1f6a0ccf6de674463c7f961c9a6fed">require_double_precision</a> ()</td></tr>
+<tr class="memdesc:a6d1f6a0ccf6de674463c7f961c9a6fed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Require double precision for all computations.  <br /></td></tr>
+<tr class="separator:a6d1f6a0ccf6de674463c7f961c9a6fed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a25f7f2bc05964f1f9766fee8c9751e93" id="r_a25f7f2bc05964f1f9766fee8c9751e93"><td class="memItemLeft" align="right" valign="top">std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a25f7f2bc05964f1f9766fee8c9751e93">operator&lt;&lt;</a> (std::ostream &amp;os, <a class="el" href="#ab600865ffa5d3681d723ef019d109535">FType</a> f)</td></tr>
 <tr class="separator:a25f7f2bc05964f1f9766fee8c9751e93"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa5f9f3b60d3062c65722a7cab317e0ca" id="r_aa5f9f3b60d3062c65722a7cab317e0ca"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa5f9f3b60d3062c65722a7cab317e0ca">register_NEML2_object</a> (<a class="el" href="classneml2_1_1ArrheniusParameter.html">ArrheniusParameter</a>)</td></tr>
@@ -983,6 +985,8 @@ Functions</h2></td></tr>
 <tr class="memitem:ab39b1e05156e698cf6b1d777a4512ff0" id="r_ab39b1e05156e698cf6b1d777a4512ff0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1Model.html">Model</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab39b1e05156e698cf6b1d777a4512ff0">reload_model</a> (const std::filesystem::path &amp;path, const std::string &amp;mname)</td></tr>
 <tr class="memdesc:ab39b1e05156e698cf6b1d777a4512ff0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Similar to <a class="el" href="#a1e499dee97d6a66663f60dd4a65b9f1a" title="A convenient function to load an input file and get a model.">neml2::load_model</a>, but additionally clear the <a class="el" href="classneml2_1_1Factory.html">Factory</a> before loading the model, therefore all previously loaded models become dangling.  <br /></td></tr>
 <tr class="separator:ab39b1e05156e698cf6b1d777a4512ff0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae617e5cd0e61617f08adf13da5ff3516" id="r_ae617e5cd0e61617f08adf13da5ff3516"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae617e5cd0e61617f08adf13da5ff3516">check_precision</a> ()</td></tr>
+<tr class="separator:ae617e5cd0e61617f08adf13da5ff3516"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adaf729acffee13165dd8eb67cc6b2687" id="r_adaf729acffee13165dd8eb67cc6b2687"><td class="memItemLeft" align="right" valign="top">std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adaf729acffee13165dd8eb67cc6b2687">operator&lt;&lt;</a> (std::ostream &amp;os, const <a class="el" href="classneml2_1_1Model.html">Model</a> &amp;model)</td></tr>
 <tr class="separator:adaf729acffee13165dd8eb67cc6b2687"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a094044d18ca027327ae9687ecbe8dbcd" id="r_a094044d18ca027327ae9687ecbe8dbcd"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
@@ -1343,12 +1347,28 @@ Functions</h2></td></tr>
 <tr class="separator:a2c3cdf8af7d2791ab1e859f74572f8b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5717c55aa3f50470e307bdae82598024" id="r_a5717c55aa3f50470e307bdae82598024"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5717c55aa3f50470e307bdae82598024">FOR_ALL_TENSORBASE</a> (DEFINE_WHERE)</td></tr>
 <tr class="separator:a5717c55aa3f50470e307bdae82598024"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a473407f1d6cc85960aeb717c44d2a639" id="r_a473407f1d6cc85960aeb717c44d2a639"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1Tensor.html">Tensor</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a473407f1d6cc85960aeb717c44d2a639">full_to_reduced</a> (const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp;full, const <a class="el" href="#a4a57eb2eaae4b2acfea6495c348f1142">ATensor</a> &amp;rmap, const <a class="el" href="#a4a57eb2eaae4b2acfea6495c348f1142">ATensor</a> &amp;rfactors, <a class="el" href="#a90023c4b9c19cd471d4603a07a52954e">Size</a> dim=0)</td></tr>
-<tr class="memdesc:a473407f1d6cc85960aeb717c44d2a639"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generic function to reduce two axes to one with some map.  <br /></td></tr>
-<tr class="separator:a473407f1d6cc85960aeb717c44d2a639"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3c52a35eb9b262e2c379ce9a2b57831e" id="r_a3c52a35eb9b262e2c379ce9a2b57831e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1Tensor.html">Tensor</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3c52a35eb9b262e2c379ce9a2b57831e">reduced_to_full</a> (const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp;reduced, const <a class="el" href="#a4a57eb2eaae4b2acfea6495c348f1142">ATensor</a> &amp;rmap, const <a class="el" href="#a4a57eb2eaae4b2acfea6495c348f1142">ATensor</a> &amp;rfactors, <a class="el" href="#a90023c4b9c19cd471d4603a07a52954e">Size</a> dim=0)</td></tr>
-<tr class="memdesc:a3c52a35eb9b262e2c379ce9a2b57831e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert a <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> from reduced notation to full notation.  <br /></td></tr>
-<tr class="separator:a3c52a35eb9b262e2c379ce9a2b57831e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a617d1cd2c9084013b1688b4b3357b1f6" id="r_a617d1cd2c9084013b1688b4b3357b1f6"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a617d1cd2c9084013b1688b4b3357b1f6">full_to_mandel_map</a> (const <a class="el" href="#ab6773d3e782bd312d4cd7b30b39ca203">TensorOptions</a> &amp;opt)</td></tr>
+<tr class="separator:a617d1cd2c9084013b1688b4b3357b1f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adc630e1407474dfb6ae1320520eb81c2" id="r_adc630e1407474dfb6ae1320520eb81c2"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adc630e1407474dfb6ae1320520eb81c2">mandel_to_full_map</a> (const <a class="el" href="#ab6773d3e782bd312d4cd7b30b39ca203">TensorOptions</a> &amp;opt)</td></tr>
+<tr class="separator:adc630e1407474dfb6ae1320520eb81c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab36f78e4fa34f2d74372de044c6c63e1" id="r_ab36f78e4fa34f2d74372de044c6c63e1"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab36f78e4fa34f2d74372de044c6c63e1">full_to_mandel_factor</a> (const <a class="el" href="#ab6773d3e782bd312d4cd7b30b39ca203">TensorOptions</a> &amp;opt)</td></tr>
+<tr class="separator:ab36f78e4fa34f2d74372de044c6c63e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aac15d42a38c5aa898cc3e387d8a38c71" id="r_aac15d42a38c5aa898cc3e387d8a38c71"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aac15d42a38c5aa898cc3e387d8a38c71">mandel_to_full_factor</a> (const <a class="el" href="#ab6773d3e782bd312d4cd7b30b39ca203">TensorOptions</a> &amp;opt)</td></tr>
+<tr class="separator:aac15d42a38c5aa898cc3e387d8a38c71"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac3cc48d2b25cdd53b8aa5b639197782d" id="r_ac3cc48d2b25cdd53b8aa5b639197782d"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac3cc48d2b25cdd53b8aa5b639197782d">full_to_skew_map</a> (const <a class="el" href="#ab6773d3e782bd312d4cd7b30b39ca203">TensorOptions</a> &amp;opt)</td></tr>
+<tr class="separator:ac3cc48d2b25cdd53b8aa5b639197782d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0efb856e7699b515da5b717422eda3a4" id="r_a0efb856e7699b515da5b717422eda3a4"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0efb856e7699b515da5b717422eda3a4">skew_to_full_map</a> (const <a class="el" href="#ab6773d3e782bd312d4cd7b30b39ca203">TensorOptions</a> &amp;opt)</td></tr>
+<tr class="separator:a0efb856e7699b515da5b717422eda3a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac4f40ef4288895163fb20b4b6852fc27" id="r_ac4f40ef4288895163fb20b4b6852fc27"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac4f40ef4288895163fb20b4b6852fc27">full_to_skew_factor</a> (const <a class="el" href="#ab6773d3e782bd312d4cd7b30b39ca203">TensorOptions</a> &amp;opt)</td></tr>
+<tr class="separator:ac4f40ef4288895163fb20b4b6852fc27"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a35af9a1f8b461d29f0eb8752e346a169" id="r_a35af9a1f8b461d29f0eb8752e346a169"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a35af9a1f8b461d29f0eb8752e346a169">skew_to_full_factor</a> (const <a class="el" href="#ab6773d3e782bd312d4cd7b30b39ca203">TensorOptions</a> &amp;opt)</td></tr>
+<tr class="separator:a35af9a1f8b461d29f0eb8752e346a169"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a06faadd102cfb5243fa28cc20c1bfff8" id="r_a06faadd102cfb5243fa28cc20c1bfff8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1Tensor.html">Tensor</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a06faadd102cfb5243fa28cc20c1bfff8">full_to_reduced</a> (const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp;full, const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp;rmap, const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp;rfactors, <a class="el" href="#a90023c4b9c19cd471d4603a07a52954e">Size</a> dim=0)</td></tr>
+<tr class="memdesc:a06faadd102cfb5243fa28cc20c1bfff8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generic function to reduce two axes to one with some map.  <br /></td></tr>
+<tr class="separator:a06faadd102cfb5243fa28cc20c1bfff8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a85fb56806d1027d5aa8a0a951ddf1281" id="r_a85fb56806d1027d5aa8a0a951ddf1281"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1Tensor.html">Tensor</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a85fb56806d1027d5aa8a0a951ddf1281">reduced_to_full</a> (const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp;reduced, const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp;rmap, const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp;rfactors, <a class="el" href="#a90023c4b9c19cd471d4603a07a52954e">Size</a> dim=0)</td></tr>
+<tr class="memdesc:a85fb56806d1027d5aa8a0a951ddf1281"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert a <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> from reduced notation to full notation.  <br /></td></tr>
+<tr class="separator:a85fb56806d1027d5aa8a0a951ddf1281"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:add19d5b97171a5609d7f235e846d1bd7" id="r_add19d5b97171a5609d7f235e846d1bd7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1Tensor.html">Tensor</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#add19d5b97171a5609d7f235e846d1bd7">full_to_mandel</a> (const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp;full, <a class="el" href="#a90023c4b9c19cd471d4603a07a52954e">Size</a> dim=0)</td></tr>
 <tr class="memdesc:add19d5b97171a5609d7f235e846d1bd7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert a <code><a class="el" href="classneml2_1_1Tensor.html">Tensor</a></code> from full notation to Mandel notation.  <br /></td></tr>
 <tr class="separator:add19d5b97171a5609d7f235e846d1bd7"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1391,7 +1411,7 @@ Functions</h2></td></tr>
 <tr class="memitem:a57190bd61c16db4f83948821a43969b5" id="r_a57190bd61c16db4f83948821a43969b5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1R2.html">R2</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a57190bd61c16db4f83948821a43969b5">transform_from_quaternion</a> (const <a class="el" href="classneml2_1_1Quaternion.html">Quaternion</a> &amp;q)</td></tr>
 <tr class="memdesc:a57190bd61c16db4f83948821a43969b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct from quaternions, useful for comparison to old NEML.  <br /></td></tr>
 <tr class="separator:a57190bd61c16db4f83948821a43969b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7b38d0ab880c8e28b5fbdce35e32af3d" id="r_a7b38d0ab880c8e28b5fbdce35e32af3d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1R2.html">R2</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7b38d0ab880c8e28b5fbdce35e32af3d">identity_transform</a> (const <a class="el" href="#ab6773d3e782bd312d4cd7b30b39ca203">TensorOptions</a> &amp;options=<a class="el" href="#a2211ac24c340171289871d76b214706f">default_tensor_options</a>())</td></tr>
+<tr class="memitem:a7b38d0ab880c8e28b5fbdce35e32af3d" id="r_a7b38d0ab880c8e28b5fbdce35e32af3d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1R2.html">R2</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7b38d0ab880c8e28b5fbdce35e32af3d">identity_transform</a> (const <a class="el" href="#ab6773d3e782bd312d4cd7b30b39ca203">TensorOptions</a> &amp;options=<a class="el" href="#a26868c5c62c4d204486adb5ef3a034e0">default_tensor_options</a>())</td></tr>
 <tr class="memdesc:a7b38d0ab880c8e28b5fbdce35e32af3d"><td class="mdescLeft">&#160;</td><td class="mdescRight">The identity transformation, i.e.e the Rank2 identity tensor.  <br /></td></tr>
 <tr class="separator:a7b38d0ab880c8e28b5fbdce35e32af3d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af3be63f57cace189eee9ea8e3eaa79f1" id="r_af3be63f57cace189eee9ea8e3eaa79f1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1R2.html">R2</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af3be63f57cace189eee9ea8e3eaa79f1">proper_rotation_transform</a> (const <a class="el" href="classneml2_1_1Rot.html">Rot</a> &amp;rot)</td></tr>
@@ -1403,7 +1423,7 @@ Functions</h2></td></tr>
 <tr class="memitem:ac6658560edc4999fcfd71143762b28fd" id="r_ac6658560edc4999fcfd71143762b28fd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1R2.html">R2</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac6658560edc4999fcfd71143762b28fd">reflection_transform</a> (const <a class="el" href="classneml2_1_1Vec.html">Vec</a> &amp;v)</td></tr>
 <tr class="memdesc:ac6658560edc4999fcfd71143762b28fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">A reflection, defined by the reflection plane.  <br /></td></tr>
 <tr class="separator:ac6658560edc4999fcfd71143762b28fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a66167463180c5bc211eb98e505451db7" id="r_a66167463180c5bc211eb98e505451db7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1R2.html">R2</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a66167463180c5bc211eb98e505451db7">inversion_transform</a> (const <a class="el" href="#ab6773d3e782bd312d4cd7b30b39ca203">TensorOptions</a> &amp;options=<a class="el" href="#a2211ac24c340171289871d76b214706f">default_tensor_options</a>())</td></tr>
+<tr class="memitem:a66167463180c5bc211eb98e505451db7" id="r_a66167463180c5bc211eb98e505451db7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1R2.html">R2</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a66167463180c5bc211eb98e505451db7">inversion_transform</a> (const <a class="el" href="#ab6773d3e782bd312d4cd7b30b39ca203">TensorOptions</a> &amp;options=<a class="el" href="#a26868c5c62c4d204486adb5ef3a034e0">default_tensor_options</a>())</td></tr>
 <tr class="memdesc:a66167463180c5bc211eb98e505451db7"><td class="mdescLeft">&#160;</td><td class="mdescRight">An inversion center.  <br /></td></tr>
 <tr class="separator:a66167463180c5bc211eb98e505451db7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a629d7010913d0d1ad629a2ca197f47ca" id="r_a629d7010913d0d1ad629a2ca197f47ca"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a629d7010913d0d1ad629a2ca197f47ca">FOR_ALL_VECBASE</a> (VECBASE_INSTANTIATE)</td></tr>
@@ -1651,20 +1671,20 @@ Functions</h2></td></tr>
 <tr><td colspan="2"><div class="groupText"><p>The factory methods like <code>at::arange</code>, <code>at::ones</code>, <code>at::zeros</code>, <code>at::rand</code> etc. accept a common argument to configure the properties of the tensor being created. We predefine a default tensor configuration in NEML2. This default configuration is consistently used throughout NEML2.</p>
 <p>See <a href="https://pytorch.org/cppdocs/notes/tensor_creation.html#configuring-properties-of-the-tensor">https://pytorch.org/cppdocs/notes/tensor_creation.html#configuring-properties-of-the-tensor</a> for more details. </p>
 </div></td></tr>
-<tr class="memitem:a2211ac24c340171289871d76b214706f" id="r_a2211ac24c340171289871d76b214706f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="#ab6773d3e782bd312d4cd7b30b39ca203">TensorOptions</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2211ac24c340171289871d76b214706f">default_tensor_options</a> ()</td></tr>
-<tr class="separator:a2211ac24c340171289871d76b214706f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac2b1172e522b4219f71a3676dbb76c74" id="r_ac2b1172e522b4219f71a3676dbb76c74"><td class="memItemLeft" align="right" valign="top"><a class="el" href="#ab6773d3e782bd312d4cd7b30b39ca203">TensorOptions</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac2b1172e522b4219f71a3676dbb76c74">default_integer_tensor_options</a> ()</td></tr>
-<tr class="memdesc:ac2b1172e522b4219f71a3676dbb76c74"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default integral tensor options.  <br /></td></tr>
-<tr class="separator:ac2b1172e522b4219f71a3676dbb76c74"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac70caa940815275bb9655691f1423029" id="r_ac70caa940815275bb9655691f1423029"><td class="memItemLeft" align="right" valign="top"><a class="el" href="#afaf4a374e1e2277f2100772818bce14d">Dtype</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac70caa940815275bb9655691f1423029">default_dtype</a> ()</td></tr>
-<tr class="memdesc:ac70caa940815275bb9655691f1423029"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default floating point type.  <br /></td></tr>
-<tr class="separator:ac70caa940815275bb9655691f1423029"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3c266b437e28eb7adec97c12b9a7e7d2" id="r_a3c266b437e28eb7adec97c12b9a7e7d2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3c266b437e28eb7adec97c12b9a7e7d2">set_default_dtype</a> (<a class="el" href="#afaf4a374e1e2277f2100772818bce14d">Dtype</a> dtype)</td></tr>
+<tr class="separator:a3c266b437e28eb7adec97c12b9a7e7d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a77beb6566e6a77f69d65b706d420937e" id="r_a77beb6566e6a77f69d65b706d420937e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="#afaf4a374e1e2277f2100772818bce14d">Dtype</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a77beb6566e6a77f69d65b706d420937e">get_default_dtype</a> ()</td></tr>
+<tr class="memdesc:a77beb6566e6a77f69d65b706d420937e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get default dtype.  <br /></td></tr>
+<tr class="separator:a77beb6566e6a77f69d65b706d420937e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26868c5c62c4d204486adb5ef3a034e0" id="r_a26868c5c62c4d204486adb5ef3a034e0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="#ab6773d3e782bd312d4cd7b30b39ca203">TensorOptions</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a26868c5c62c4d204486adb5ef3a034e0">default_tensor_options</a> ()</td></tr>
+<tr class="memdesc:a26868c5c62c4d204486adb5ef3a034e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default floating point tensor options.  <br /></td></tr>
+<tr class="separator:a26868c5c62c4d204486adb5ef3a034e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a97f9b5d456f35181fc27b1d583240ac8" id="r_a97f9b5d456f35181fc27b1d583240ac8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="#ab6773d3e782bd312d4cd7b30b39ca203">TensorOptions</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a97f9b5d456f35181fc27b1d583240ac8">default_integer_tensor_options</a> ()</td></tr>
+<tr class="memdesc:a97f9b5d456f35181fc27b1d583240ac8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default integral tensor options.  <br /></td></tr>
+<tr class="separator:a97f9b5d456f35181fc27b1d583240ac8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a94c214b6f228cda7dd9e56cb3029b5f8" id="r_a94c214b6f228cda7dd9e56cb3029b5f8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="#afaf4a374e1e2277f2100772818bce14d">Dtype</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a94c214b6f228cda7dd9e56cb3029b5f8">default_integer_dtype</a> ()</td></tr>
 <tr class="memdesc:a94c214b6f228cda7dd9e56cb3029b5f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default integral type.  <br /></td></tr>
 <tr class="separator:a94c214b6f228cda7dd9e56cb3029b5f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae8e963e9338abbb26cf1d3a57630411d" id="r_ae8e963e9338abbb26cf1d3a57630411d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="#a09235c8815e870c0e839816a881ce30a">Device</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae8e963e9338abbb26cf1d3a57630411d">default_device</a> ()</td></tr>
-<tr class="memdesc:ae8e963e9338abbb26cf1d3a57630411d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default device.  <br /></td></tr>
-<tr class="separator:ae8e963e9338abbb26cf1d3a57630411d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">Default tolerances</div></td></tr>
 <tr class="memitem:a7ed9e5d4e37beced5aab31ecc7c9938c" id="r_a7ed9e5d4e37beced5aab31ecc7c9938c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="#a4b04262b81aa7d31eb5d2f607e2a35de">Real</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7ed9e5d4e37beced5aab31ecc7c9938c">machine_precision</a> ()</td></tr>
 <tr class="separator:a7ed9e5d4e37beced5aab31ecc7c9938c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -2653,6 +2673,23 @@ template&lt;typename T, unsigned N&gt; </div>
 
 </div>
 </div>
+<a id="ae617e5cd0e61617f08adf13da5ff3516" name="ae617e5cd0e61617f08adf13da5ff3516"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae617e5cd0e61617f08adf13da5ff3516">&#9670;&#160;</a></span>check_precision()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void check_precision </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="ad80e6dbe2c05be10c9459b4bd0b371ec" name="ad80e6dbe2c05be10c9459b4bd0b371ec"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad80e6dbe2c05be10c9459b4bd0b371ec">&#9670;&#160;</a></span>current_diagnoses()</h2>
 
@@ -2777,44 +2814,6 @@ template&lt;typename T, unsigned N&gt; </div>
 
 </div>
 </div>
-<a id="ae8e963e9338abbb26cf1d3a57630411d" name="ae8e963e9338abbb26cf1d3a57630411d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae8e963e9338abbb26cf1d3a57630411d">&#9670;&#160;</a></span>default_device()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="#a09235c8815e870c0e839816a881ce30a">Device</a> &amp; default_device </td>
-          <td>(</td>
-          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Default device. </p>
-
-</div>
-</div>
-<a id="ac70caa940815275bb9655691f1423029" name="ac70caa940815275bb9655691f1423029"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac70caa940815275bb9655691f1423029">&#9670;&#160;</a></span>default_dtype()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="#afaf4a374e1e2277f2100772818bce14d">Dtype</a> &amp; default_dtype </td>
-          <td>(</td>
-          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Default floating point type. </p>
-
-</div>
-</div>
 <a id="a94c214b6f228cda7dd9e56cb3029b5f8" name="a94c214b6f228cda7dd9e56cb3029b5f8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a94c214b6f228cda7dd9e56cb3029b5f8">&#9670;&#160;</a></span>default_integer_dtype()</h2>
 
@@ -2834,14 +2833,14 @@ template&lt;typename T, unsigned N&gt; </div>
 
 </div>
 </div>
-<a id="ac2b1172e522b4219f71a3676dbb76c74" name="ac2b1172e522b4219f71a3676dbb76c74"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac2b1172e522b4219f71a3676dbb76c74">&#9670;&#160;</a></span>default_integer_tensor_options()</h2>
+<a id="a97f9b5d456f35181fc27b1d583240ac8" name="a97f9b5d456f35181fc27b1d583240ac8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a97f9b5d456f35181fc27b1d583240ac8">&#9670;&#160;</a></span>default_integer_tensor_options()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="#ab6773d3e782bd312d4cd7b30b39ca203">TensorOptions</a> &amp; default_integer_tensor_options </td>
+          <td class="memname"><a class="el" href="#ab6773d3e782bd312d4cd7b30b39ca203">TensorOptions</a> default_integer_tensor_options </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td></td>
@@ -2853,21 +2852,22 @@ template&lt;typename T, unsigned N&gt; </div>
 
 </div>
 </div>
-<a id="a2211ac24c340171289871d76b214706f" name="a2211ac24c340171289871d76b214706f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2211ac24c340171289871d76b214706f">&#9670;&#160;</a></span>default_tensor_options()</h2>
+<a id="a26868c5c62c4d204486adb5ef3a034e0" name="a26868c5c62c4d204486adb5ef3a034e0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a26868c5c62c4d204486adb5ef3a034e0">&#9670;&#160;</a></span>default_tensor_options()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="#ab6773d3e782bd312d4cd7b30b39ca203">TensorOptions</a> &amp; default_tensor_options </td>
+          <td class="memname"><a class="el" href="#ab6773d3e782bd312d4cd7b30b39ca203">TensorOptions</a> default_tensor_options </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Default floating point tensor options </p>
+
+<p>Default floating point tensor options. </p>
 
 </div>
 </div>
@@ -5007,8 +5007,42 @@ template&lt;typename... Args&gt; </div>
 
 </div>
 </div>
-<a id="a473407f1d6cc85960aeb717c44d2a639" name="a473407f1d6cc85960aeb717c44d2a639"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a473407f1d6cc85960aeb717c44d2a639">&#9670;&#160;</a></span>full_to_reduced()</h2>
+<a id="ab36f78e4fa34f2d74372de044c6c63e1" name="ab36f78e4fa34f2d74372de044c6c63e1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab36f78e4fa34f2d74372de044c6c63e1">&#9670;&#160;</a></span>full_to_mandel_factor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp; full_to_mandel_factor </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="#ab6773d3e782bd312d4cd7b30b39ca203">TensorOptions</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>opt</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a617d1cd2c9084013b1688b4b3357b1f6" name="a617d1cd2c9084013b1688b4b3357b1f6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a617d1cd2c9084013b1688b4b3357b1f6">&#9670;&#160;</a></span>full_to_mandel_map()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp; full_to_mandel_map </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="#ab6773d3e782bd312d4cd7b30b39ca203">TensorOptions</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>opt</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a06faadd102cfb5243fa28cc20c1bfff8" name="a06faadd102cfb5243fa28cc20c1bfff8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a06faadd102cfb5243fa28cc20c1bfff8">&#9670;&#160;</a></span>full_to_reduced()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -5021,12 +5055,12 @@ template&lt;typename... Args&gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="#a4a57eb2eaae4b2acfea6495c348f1142">ATensor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>rmap</em></span>, </td>
+          <td class="paramtype">const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>rmap</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="#a4a57eb2eaae4b2acfea6495c348f1142">ATensor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>rfactors</em></span>, </td>
+          <td class="paramtype">const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>rfactors</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -5083,6 +5117,59 @@ template&lt;typename... Args&gt; </div>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd><a class="el" href="classneml2_1_1Tensor.html">Tensor</a> The resulting tensor using skew notation to represent the skew-symmetric axes. </dd></dl>
+
+</div>
+</div>
+<a id="ac4f40ef4288895163fb20b4b6852fc27" name="ac4f40ef4288895163fb20b4b6852fc27"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac4f40ef4288895163fb20b4b6852fc27">&#9670;&#160;</a></span>full_to_skew_factor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp; full_to_skew_factor </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="#ab6773d3e782bd312d4cd7b30b39ca203">TensorOptions</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>opt</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ac3cc48d2b25cdd53b8aa5b639197782d" name="ac3cc48d2b25cdd53b8aa5b639197782d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac3cc48d2b25cdd53b8aa5b639197782d">&#9670;&#160;</a></span>full_to_skew_map()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp; full_to_skew_map </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="#ab6773d3e782bd312d4cd7b30b39ca203">TensorOptions</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>opt</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a77beb6566e6a77f69d65b706d420937e" name="a77beb6566e6a77f69d65b706d420937e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a77beb6566e6a77f69d65b706d420937e">&#9670;&#160;</a></span>get_default_dtype()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="#afaf4a374e1e2277f2100772818bce14d">Dtype</a> get_default_dtype </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get default dtype. </p>
 
 </div>
 </div>
@@ -5523,6 +5610,40 @@ template&lt;typename F, typename T1, typename T2&gt; </div>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd><a class="el" href="classneml2_1_1Tensor.html">Tensor</a> The resulting tensor in full notation. </dd></dl>
+
+</div>
+</div>
+<a id="aac15d42a38c5aa898cc3e387d8a38c71" name="aac15d42a38c5aa898cc3e387d8a38c71"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aac15d42a38c5aa898cc3e387d8a38c71">&#9670;&#160;</a></span>mandel_to_full_factor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp; mandel_to_full_factor </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="#ab6773d3e782bd312d4cd7b30b39ca203">TensorOptions</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>opt</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="adc630e1407474dfb6ae1320520eb81c2" name="adc630e1407474dfb6ae1320520eb81c2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adc630e1407474dfb6ae1320520eb81c2">&#9670;&#160;</a></span>mandel_to_full_map()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp; mandel_to_full_map </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="#ab6773d3e782bd312d4cd7b30b39ca203">TensorOptions</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>opt</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>
@@ -7734,8 +7855,8 @@ template&lt;typename T&gt; </div>
 
 </div>
 </div>
-<a id="a3c52a35eb9b262e2c379ce9a2b57831e" name="a3c52a35eb9b262e2c379ce9a2b57831e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3c52a35eb9b262e2c379ce9a2b57831e">&#9670;&#160;</a></span>reduced_to_full()</h2>
+<a id="a85fb56806d1027d5aa8a0a951ddf1281" name="a85fb56806d1027d5aa8a0a951ddf1281"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a85fb56806d1027d5aa8a0a951ddf1281">&#9670;&#160;</a></span>reduced_to_full()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -7748,12 +7869,12 @@ template&lt;typename T&gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="#a4a57eb2eaae4b2acfea6495c348f1142">ATensor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>rmap</em></span>, </td>
+          <td class="paramtype">const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>rmap</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="#a4a57eb2eaae4b2acfea6495c348f1142">ATensor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>rfactors</em></span>, </td>
+          <td class="paramtype">const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>rfactors</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -7764,7 +7885,7 @@ template&lt;typename T&gt; </div>
 </div><div class="memdoc">
 
 <p>Convert a <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> from reduced notation to full notation. </p>
-<p>See <a class="el" href="#a473407f1d6cc85960aeb717c44d2a639">full_to_reduced</a> for a detailed explanation.</p>
+<p>See <a class="el" href="#a06faadd102cfb5243fa28cc20c1bfff8">full_to_reduced</a> for a detailed explanation.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">reduced</td><td>The input tensor in reduced notation </td></tr>
@@ -9562,6 +9683,25 @@ template&lt;typename T&gt; </div>
 
 </div>
 </div>
+<a id="a6d1f6a0ccf6de674463c7f961c9a6fed" name="a6d1f6a0ccf6de674463c7f961c9a6fed"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6d1f6a0ccf6de674463c7f961c9a6fed">&#9670;&#160;</a></span>require_double_precision()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool &amp; require_double_precision </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Require double precision for all computations. </p>
+
+</div>
+</div>
 <a id="ac8fc28d40967ea4e28d1fd66dd5df0e7" name="ac8fc28d40967ea4e28d1fd66dd5df0e7"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac8fc28d40967ea4e28d1fd66dd5df0e7">&#9670;&#160;</a></span>reserved_subaxis_names()</h2>
 
@@ -9604,6 +9744,24 @@ template&lt;typename T&gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a3c266b437e28eb7adec97c12b9a7e7d2" name="a3c266b437e28eb7adec97c12b9a7e7d2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3c266b437e28eb7adec97c12b9a7e7d2">&#9670;&#160;</a></span>set_default_dtype()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void set_default_dtype </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="#afaf4a374e1e2277f2100772818bce14d">Dtype</a></td>          <td class="paramname"><span class="paramname"><em>dtype</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Set default dtype </p>
 
 </div>
 </div>
@@ -9695,6 +9853,40 @@ template&lt;typename T&gt; </div>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd><a class="el" href="classneml2_1_1Tensor.html">Tensor</a> The resulting tensor in full notation. </dd></dl>
+
+</div>
+</div>
+<a id="a35af9a1f8b461d29f0eb8752e346a169" name="a35af9a1f8b461d29f0eb8752e346a169"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a35af9a1f8b461d29f0eb8752e346a169">&#9670;&#160;</a></span>skew_to_full_factor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp; skew_to_full_factor </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="#ab6773d3e782bd312d4cd7b30b39ca203">TensorOptions</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>opt</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a0efb856e7699b515da5b717422eda3a4" name="a0efb856e7699b515da5b717422eda3a4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0efb856e7699b515da5b717422eda3a4">&#9670;&#160;</a></span>skew_to_full_map()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp; skew_to_full_map </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="#ab6773d3e782bd312d4cd7b30b39ca203">TensorOptions</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>opt</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>

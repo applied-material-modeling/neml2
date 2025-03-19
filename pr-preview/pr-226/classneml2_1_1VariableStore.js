@@ -41,7 +41,7 @@ var classneml2_1_1VariableStore =
     [ "output_variables", "classneml2_1_1VariableStore.html#abdb804291187ec48dbeebabe0eaa1e18", null ],
     [ "send_variables_to", "classneml2_1_1VariableStore.html#a41bd7dba2c3b34f56ac9eb3f3c21d51f", null ],
     [ "setup_layout", "classneml2_1_1VariableStore.html#aacd1f1cb625061037d2564e63fdd8bd6", null ],
-    [ "tensor_options", "classneml2_1_1VariableStore.html#a77f563fcf19c9453e4803f5c03c745dc", null ],
+    [ "variable_options", "classneml2_1_1VariableStore.html#ae24dca50a026a7fc09b02004fa940f5e", null ],
     [ "zero_input", "classneml2_1_1VariableStore.html#a20bfd80ed3ac8652e2c12a69b0695343", null ],
     [ "zero_output", "classneml2_1_1VariableStore.html#a8998c069d2cfc50b07011bbcad9c5b75", null ],
     [ "resolve_tensor_name", "classneml2_1_1VariableStore.html#a094044d18ca027327ae9687ecbe8dbcd", null ]
