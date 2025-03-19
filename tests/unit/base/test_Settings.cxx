@@ -48,7 +48,7 @@ TEST_CASE("Settings", "[Settings]")
   REQUIRE(parameter_name_separator() == "_");
 
   // Apply the global settings
-  Settings(all_options.settings());
+  Settings::apply(all_options.settings());
 
   // After applying the global settings
   REQUIRE(default_dtype() == kFloat16);

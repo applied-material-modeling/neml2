@@ -70,10 +70,7 @@ Factory::get(std::thread::id tid)
                   "Please load options first.");
 
   std::lock_guard<std::mutex> lock(get_mutex());
-  auto & fs = get_all();
-  if (fs.count(tid))
-    return fs[tid];
-  return fs[tid] = Factory();
+  return get_all()[tid];
 }
 
 std::map<std::thread::id, Factory> &
@@ -90,13 +87,6 @@ Factory::options()
   return options_singleton;
 }
 
-Settings &
-Factory::settings()
-{
-  static Settings settings_singleton;
-  return settings_singleton;
-}
-
 bool
 Factory::has_object(const std::string & section, const std::string & name)
 {
@@ -109,7 +99,7 @@ Factory::load_options(const OptionCollection & all_options)
 {
   std::lock_guard<std::mutex> lock(get_mutex());
   options() = all_options;
-  settings() = Settings(all_options.settings());
+  Settings::apply(options().settings());
 }
 
 void
@@ -151,7 +141,7 @@ void
 Factory::clear()
 {
   std::lock_guard<std::mutex> lock(get_mutex());
-  auto & fs = get_all();
-  fs.clear();
+  get_all().clear();
+  options() = OptionCollection();
 }
 } // namespace neml2

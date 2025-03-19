@@ -77,7 +77,6 @@
     type = Orientation
     input_type = 'random'
     quantity = ${nbatch}
-    random_seed = 25
     normalize = true
   []
 []
@@ -95,6 +94,7 @@
     cp_warmup = true
     cp_warmup_elastic_scale = 0.05
     device = ${device}
+    random_seed = 25
   []
 []
 

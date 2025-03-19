@@ -26,6 +26,21 @@
 
 #include "neml2/misc/types.h"
 
+#define NEML2_TORCH_ENUM(type) k##type
+#define NEML2_STRINGIFY(x) #x
+#define NEML2_DEFAULT_DTYPE Float64
+#define NEML2_DEFAULT_DTYPE_STR NEML2_STRINGIFY(Float64)
+#define NEML2_DEFAULT_DTYPE_ENUM NEML2_TORCH_ENUM(Float64)
+#define NEML2_DEFAULT_INTEGER_DTYPE Int64
+#define NEML2_DEFAULT_INTEGER_DTYPE_STR NEML2_STRINGIFY(Int64)
+#define NEML2_DEFAULT_INTEGER_DTYPE_ENUM NEML2_TORCH_ENUM(Int64)
+#define NEML2_DEFAULT_DEVICE_STR "cpu"
+#define NEML2_DEFAULT_MACHINE_PRECISION 1e-15
+#define NEML2_DEFAULT_TOLERANCE 1e-6
+#define NEML2_DEFAULT_TIGHTER_TOLERANCE 1e-12
+#define NEML2_DEFAULT_BUFFER_NAME_SEPARATOR "_"
+#define NEML2_DEFAULT_PARAMETER_NAME_SEPARATOR "_"
+
 namespace neml2
 {
 /**
@@ -62,8 +77,11 @@ Real & tolerance();
 Real & tighter_tolerance();
 ///@}
 
+/// @name Default name separators
+///@{
 /// Default nested buffer name separator
 std::string & buffer_name_separator();
 /// Default nested parameter name separator
 std::string & parameter_name_separator();
+///@}
 } // namespace neml2

@@ -43,7 +43,7 @@ Settings::expected_options()
   EnumSelection dtype_selection(
       {"Float16", "Float32", "Float64"},
       {static_cast<int>(kFloat16), static_cast<int>(kFloat32), static_cast<int>(kFloat64)},
-      "Float64");
+      NEML2_DEFAULT_DTYPE_STR);
   options.set<EnumSelection>("default_floating_point_type") = dtype_selection;
   options.set("default_floating_point_type").doc() =
       "Default floating point type for tensors. Options are " + dtype_selection.candidates_str();
@@ -53,12 +53,12 @@ Settings::expected_options()
                                      static_cast<int>(kInt16),
                                      static_cast<int>(kInt32),
                                      static_cast<int>(kInt64)},
-                                    "Int64");
+                                    NEML2_DEFAULT_INTEGER_DTYPE_STR);
   options.set<EnumSelection>("default_integer_type") = int_dtype_selection;
   options.set("default_integer_type").doc() =
       "Default integer type for tensors. Options are " + int_dtype_selection.candidates_str();
 
-  options.set<std::string>("default_device") = "cpu";
+  options.set<std::string>("default_device") = NEML2_DEFAULT_DEVICE_STR;
   options.set("default_device").doc() =
       "Default device on which tensors are created and models are evaluated. The string supplied "
       "must follow the following schema: (cpu|cuda)[:<device-index>] where cpu or cuda specifies "
@@ -66,30 +66,22 @@ Settings::expected_options()
       "device='cpu' sets the target compute device to be CPU, and device='cuda:1' sets the target "
       "compute device to be CUDA with device ID 1.";
 
-  options.set<Real>("machine_precision") = 1E-15;
+  options.set<Real>("machine_precision") = NEML2_DEFAULT_MACHINE_PRECISION;
   options.set("machine_precision").doc() =
       "Machine precision used at various places to workaround singularities like division-by-zero.";
 
-  options.set<Real>("tolerance") = 1E-6;
+  options.set<Real>("tolerance") = NEML2_DEFAULT_TOLERANCE;
   options.set("tolerance").doc() = "Tolerance used in various algorithms.";
 
-  options.set<Real>("tighter_tolerance") = 1E-12;
+  options.set<Real>("tighter_tolerance") = NEML2_DEFAULT_TIGHTER_TOLERANCE;
   options.set("tighter_tolerance").doc() = "A tighter tolerance used in various algorithms.";
 
-  options.set<int>("interop_threads") = 0;
-  options.set("interop_threads").doc() = "Number threads used for inter-ops parallelism. If set to "
-                                         "0, defaults to number of CPU cores.";
-
-  options.set<int>("intraop_threads") = 0;
-  options.set("intraop_threads").doc() = "Number threads used for intra-ops parallelism. If set to "
-                                         "0, defaults to number of CPU cores.";
-
-  options.set<std::string>("buffer_name_separator") = "_";
+  options.set<std::string>("buffer_name_separator") = NEML2_DEFAULT_BUFFER_NAME_SEPARATOR;
   options.set("buffer_name_separator").doc() = "Nested buffer name separator. The default is '_'. "
                                                "For example, a sub-model 'foo' which declares "
                                                "a buffer 'bar' will have a buffer named 'foo_bar'.";
 
-  options.set<std::string>("parameter_name_separator") = "_";
+  options.set<std::string>("parameter_name_separator") = NEML2_DEFAULT_PARAMETER_NAME_SEPARATOR;
   options.set("parameter_name_separator").doc() =
       "Parameter name separator. The default is '_'. For example, a sub-model 'foo' which declares "
       "a parameter 'bar' will have a parameter named 'foo_bar'.";
@@ -97,7 +89,8 @@ Settings::expected_options()
   return options;
 }
 
-Settings::Settings(const OptionSet & options)
+void
+Settings::apply(const OptionSet & options)
 {
   // Default floating point dtype
   default_dtype() = options.get<EnumSelection>("default_floating_point_type").as<Dtype>();
@@ -115,16 +108,6 @@ Settings::Settings(const OptionSet & options)
   // Tolerances
   tolerance() = options.get<Real>("tolerance");
   tighter_tolerance() = options.get<Real>("tighter_tolerance");
-
-  // Inter-ops threading
-  auto num_interop_threads = options.get<int>("interop_threads");
-  if (num_interop_threads > 0)
-    at::set_num_interop_threads(num_interop_threads);
-
-  // Intra-ops threading
-  auto num_intraop_threads = options.get<int>("intraop_threads");
-  if (num_intraop_threads > 0)
-    at::set_num_threads(num_intraop_threads);
 
   // Buffer/parameter name separator
   buffer_name_separator() = options.get<std::string>("buffer_name_separator");

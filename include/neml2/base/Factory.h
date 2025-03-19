@@ -74,9 +74,6 @@ public:
   /// Get the global options singleton
   static OptionCollection & options();
 
-  /// Get the global settings singleton
-  static Settings & settings();
-
   /**
    * @brief Provide all objects' options to the factory. The factory is ready to manufacture
    * objects after this call, e.g., through either manufacture, get_object, or get_object_ptr.
