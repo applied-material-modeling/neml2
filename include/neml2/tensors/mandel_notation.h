@@ -27,6 +27,7 @@
 #include <array>
 
 #include "neml2/misc/types.h"
+#include "neml2/misc/defaults.h"
 
 namespace neml2
 {
