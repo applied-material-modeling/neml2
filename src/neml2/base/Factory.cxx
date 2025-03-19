@@ -55,29 +55,11 @@ reload_input(const std::filesystem::path & path, const std::string & additional_
   load_input(path, additional_input);
 }
 
-std::mutex &
-Factory::get_mutex()
-{
-  static std::mutex factory_mtx;
-  return factory_mtx;
-}
-
 Factory &
-Factory::get(std::thread::id tid)
+Factory::get()
 {
-  neml_assert_dbg(!Factory::options().data().empty(),
-                  "It appears that you are trying to get the factory without loading any options. "
-                  "Please load options first.");
-
-  std::lock_guard<std::mutex> lock(get_mutex());
-  return get_all()[tid];
-}
-
-std::map<std::thread::id, Factory> &
-Factory::get_all()
-{
-  static std::map<std::thread::id, Factory> factory_singletons;
-  return factory_singletons;
+  thread_local Factory factory_singleton;
+  return factory_singleton;
 }
 
 OptionCollection &
@@ -97,7 +79,6 @@ Factory::has_object(const std::string & section, const std::string & name)
 void
 Factory::load_options(const OptionCollection & all_options)
 {
-  std::lock_guard<std::mutex> lock(get_mutex());
   options() = all_options;
   Settings::apply(options().settings());
 }
@@ -140,8 +121,6 @@ Factory::print(std::ostream & os)
 void
 Factory::clear()
 {
-  std::lock_guard<std::mutex> lock(get_mutex());
-  get_all().clear();
-  options() = OptionCollection();
+  get()._objects.clear();
 }
 } // namespace neml2
