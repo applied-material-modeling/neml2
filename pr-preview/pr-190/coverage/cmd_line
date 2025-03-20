@@ -1,1 +1,0 @@
-genhtml /home/runner/work/neml2/neml2/build/coverage/coverage/coverage.info --output-directory /home/runner/work/neml2/neml2/build/coverage/coverage
