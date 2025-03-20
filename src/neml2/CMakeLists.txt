@@ -71,12 +71,12 @@ endif()
 # hwloc
 # ----------------------------------------------------------------------------
 if(NEML2_WORK_DISPATCHER)
-  find_package(HWLOC)
+  find_package(Hwloc)
 
   if(NOT HWLOC_FOUND)
-    include(DownloadHWLOC)
+    include(DownloadHwloc)
     set(HWLOC_ROOT ${HWLOC_INSTALL_DIR} CACHE PATH "HWLOC root directory" FORCE)
-    find_package(HWLOC REQUIRED)
+    find_package(Hwloc REQUIRED)
   endif()
 
   cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${HWLOC_LINK_DIR} HWLOC_DOWNLOADED)

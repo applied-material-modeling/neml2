@@ -14,14 +14,14 @@ find_path(HWLOC_INCLUDE_DIR hwloc NO_CACHE)
 # -----------------------------------------------------------------------------
 # libraries
 # -----------------------------------------------------------------------------
-find_library(HWLOC_LIBRARY NAMES libhwloc NO_CACHE)
+find_library(HWLOC_LIBRARY NAMES hwloc NO_CACHE)
 
 # -----------------------------------------------------------------------------
 # Check if we found everything
 # -----------------------------------------------------------------------------
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
-  HWLOC
+  Hwloc
   REQUIRED_VARS
   HWLOC_INCLUDE_DIR
   HWLOC_LIBRARY

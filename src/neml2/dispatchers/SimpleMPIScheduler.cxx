@@ -25,9 +25,10 @@
 #include "neml2/dispatchers/SimpleMPIScheduler.h"
 #include "neml2/misc/assertions.h"
 
+#include "hwloc.h"
+
 #include <string>
 #include <functional>
-#include <hwloc.h>
 
 namespace neml2
 {
