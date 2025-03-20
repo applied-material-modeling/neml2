@@ -45,12 +45,11 @@ SimpleMPIScheduler::expected_options()
   options.set<std::vector<Device>>("devices");
   options.set("devices").doc() = "List of devices to dispatch work to";
 
-  options.set<std::size_t>("batch_size");
-  options.set("batch_size").doc() = "Batch size";
+  options.set<std::vector<std::size_t>>("batch_sizes");
+  options.set("batch_sizes").doc() = "List of batch sizes for each device";
 
-  options.set<std::size_t>("capacity");
-  options.set("capacity").doc() =
-      "Maximum number of work items that can be dispatched, default to batch_size";
+  options.set<std::vector<std::size_t>>("capacities") = {};
+  options.set("capacities").doc() = "List of capacities for each device, default to batch_sizes";
 
   return options;
 }
@@ -58,11 +57,17 @@ SimpleMPIScheduler::expected_options()
 SimpleMPIScheduler::SimpleMPIScheduler(const OptionSet & options)
   : WorkScheduler(options),
     _available_devices(options.get<std::vector<Device>>("devices")),
-    _batch_size(options.get<std::size_t>("batch_size")),
-    _capacity(options.get("capacity").user_specified() ? options.get<std::size_t>("capacity")
-                                                       : _batch_size),
+    _batch_sizes(options.get<std::vector<std::size_t>>("batch_sizes")),
+    _capacities(options.get("capacities").user_specified()
+                    ? options.get<std::vector<std::size_t>>("capacities")
+                    : _batch_sizes),
     _comm(TIMPI::Communicator(MPI_COMM_WORLD))
 {
+  neml_assert(_available_devices.size() == _batch_sizes.size(),
+              "Number of batch sizes must match the number of devices.");
+  neml_assert(
+      _available_devices.size() == _capacities.size(),
+      "Number of capacities must match the number of devices and the number of batch sizes.");
 }
 
 void
@@ -70,13 +75,11 @@ SimpleMPIScheduler::setup()
 {
   WorkScheduler::setup();
 
-  const auto & device_list = input_options().get<std::vector<Device>>("devices");
-
   // First pass:
   // - Prohibit any CPU
   // - Check if any CUDA device is present
   bool cuda = false;
-  for (const auto & device : device_list)
+  for (const auto & device : _available_devices)
   {
     neml_assert(!device.is_cpu(), "CPU device is not allowed in SimpleMPIScheduler");
     if (device.is_cuda())
@@ -88,14 +91,12 @@ SimpleMPIScheduler::setup()
   // Second pass:
   // - If multiple CUDA devices are present, make sure each CUDA device has a concrete
   //   (nonnegative), unique device ID
-  bool has_multiple_cuda_devices = device_list.size() > 1 && cuda;
+  bool has_multiple_cuda_devices = _available_devices.size() > 1 && cuda;
   if (has_multiple_cuda_devices)
   {
     std::set<DeviceIndex> cuda_device_ids;
-    for (const auto & device : device_list)
+    for (const auto & device : _available_devices)
     {
-      if (device.is_cpu())
-        continue;
       auto device_id = device.index();
       neml_assert(device_id >= 0, "Device ID must be nonnegative");
       neml_assert(cuda_device_ids.find(device_id) == cuda_device_ids.end(),
@@ -128,18 +129,18 @@ SimpleMPIScheduler::determine_my_device()
   _comm.split(id, _comm.rank(), new_comm);
   // Assign our device index based on the new communicator
   _device_index = new_comm.rank();
-  neml_assert(_device_index < _available_devices.size(),
+  neml_assert(new_comm.size() <= _available_devices.size(),
               "MPI split by host would require too many devices");
 }
 
 bool
 SimpleMPIScheduler::schedule_work_impl(Device & device, std::size_t & batch_size) const
 {
-  if (_load + _batch_size > _capacity)
+  if (_load + _batch_sizes[_device_index] > _capacities[_device_index])
     return false;
 
   device = _available_devices[_device_index];
-  batch_size = _batch_size;
+  batch_size = _batch_sizes[_device_index];
   return true;
 }
 
