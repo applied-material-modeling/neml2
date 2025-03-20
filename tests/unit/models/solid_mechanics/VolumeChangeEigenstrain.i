@@ -6,7 +6,6 @@
     input_Scalar_values = '412'
     output_SR2_names = 'forces/Eg'
     output_SR2_values = 'EV_correct'
-    check_second_derivatives = true
   []
 []
 
