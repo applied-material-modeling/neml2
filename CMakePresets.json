@@ -15,7 +15,8 @@
         "NEML2_PYBIND": "OFF",
         "NEML2_DOC": "OFF",
         "NEML2_CPU_PROFILER": "OFF",
-        "NEML2_WORK_DISPATCHER": "ON"
+        "NEML2_WORK_DISPATCHER": "ON",
+        "NEML2_THREAD_SANITIZER": "OFF"
       }
     },
     {
@@ -37,6 +38,18 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "NEML2_PYBIND": "ON",
         "NEML2_DOC": "ON"
+      }
+    },
+    {
+      "name": "tsan",
+      "displayName": "ThreadSanitizer",
+      "description": "Compile and link against Clang ThreadSanitizer",
+      "inherits": "default",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "NEML2_TESTS": "OFF",
+        "NEML2_RUNNER": "ON",
+        "NEML2_THREAD_SANITIZER": "ON"
       }
     },
     {
@@ -105,6 +118,15 @@
       ]
     },
     {
+      "name": "tsan",
+      "displayName": "ThreadSanitizer",
+      "description": "Runner compiled and linked against ThreadSanitizer",
+      "configurePreset": "tsan",
+      "targets": [
+        "runner"
+      ]
+    },
+    {
       "name": "coverage",
       "displayName": "Coverage",
       "description": "C++ backend compiled with coverage flags",
@@ -142,6 +164,12 @@
       "displayName": "Benchmark tests",
       "description": "Run benchmark tests using the Runner (note that this only checks if the tests run without error)",
       "configurePreset": "runner"
+    },
+    {
+      "name": "tsan",
+      "displayName": "Benchmark tests with ThreadSanitizer",
+      "description": "Run benchmark tests using the Runner with ThreadSanitizer",
+      "configurePreset": "tsan"
     }
   ]
 }

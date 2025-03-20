@@ -100,3 +100,22 @@ jobs:
         run: cmake --build --preset runner
       - name: Run tests
         run: ctest --preset runner --output-on-failure
+
+  thread-sanitizer:
+    needs: clang-format
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: applied-material-modeling/neml2-ci@main
+        with:
+          python-version: 3.9
+          cmake-version: 3.28
+          torch-version: 2.5.1
+      - name: Configure
+        run: cmake --preset tsan -GNinja -S .
+      - name: Build
+        run: cmake --build --preset tsan
+      - name: Run tests
+        run: ctest --preset tsan --output-on-failure
