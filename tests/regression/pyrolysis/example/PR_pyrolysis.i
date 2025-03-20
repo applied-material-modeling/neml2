@@ -91,7 +91,7 @@ alpha0 = 3.333333 # 1/(1-Y)
 []
 
 [Drivers]
-    [regression]
+    [driver]
         type = PyrolysisDriver
         model = 'model'
         prescribed_time = 'times'
@@ -109,6 +109,11 @@ alpha0 = 3.333333 # 1/(1-Y)
         save_as = 'test.pt'
 
         verbose = true
+    []
+    [regression]
+        type = TransientRegression
+        driver = 'driver'
+        reference = 'gold/result.pt'
     []
 []
 

@@ -3,7 +3,7 @@ D = 1e-6
 omega_Si = 12
 omega_C = 5.3
 omega_SiC = 12.5
-omega_r = 0.424 # omega_Si/Omega_SiC
+omega_r = 0.96 # omega_Si/Omega_SiC
 
 [Tensors]
   [times]
