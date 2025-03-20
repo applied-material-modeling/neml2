@@ -161,37 +161,41 @@ Configure options</h1>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyLeft">NEML2_CPU_PROFILER   </td><td class="markdownTableBodyLeft">ON, <u>OFF</u>   </td><td class="markdownTableBodyLeft">Linking against gperftools libprofiler to enable CPU profiling    </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyLeft">NEML2_WORK_DISPATCHER   </td><td class="markdownTableBodyLeft">ON, <u>OFF</u>   </td><td class="markdownTableBodyLeft">Enable work dispatcher   </td></tr>
+<td class="markdownTableBodyLeft">NEML2_WORK_DISPATCHER   </td><td class="markdownTableBodyLeft">ON, <u>OFF</u>   </td><td class="markdownTableBodyLeft">Enable work dispatcher    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft">NEML2_THREAD_SANITIZER   </td><td class="markdownTableBodyLeft">ON, <u>OFF</u>   </td><td class="markdownTableBodyLeft">Enable thread sanitizer   </td></tr>
 </table>
 <p>Additional configuration options can be passed via command line using the <code>-DOPTION</code> or <code>-DOPTION=ON</code> format (see e.g., <a href="https://cmake.org/cmake/help/latest/manual/cmake.1.html">cmake manual</a>).</p>
 <h1><a class="anchor" id="autotoc_md6"></a>
 Configure presets</h1>
 <p>Since many configure options are available for customizing the build, it is sometimes challenging to keep track of them during the development workflow. CMake introduces the concept of <a href="https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html">preset</a> to help manage common configurations.</p>
-<p>NEML2 predefines four configure presets, serving different development purposes:</p><ul>
+<p>NEML2 predefines five configure presets, serving different development purposes:</p><ul>
 <li>dev: This preset is best suited for developing the C++ backend and Python bindings. Compiler optimization is turned off, and debug symbols are enabled. In addition, targets for locally generating the documentation (this website) are enabled.</li>
 <li>coverage: Unit tests are built with coverage flags enabled. <code>gcov</code> or similar tools can be used to record code coverage data.</li>
 <li>runner: The NEML2 Runner is built with the highest level of compiler optimization. The Runner is an executable that can be used to parse, evaluate, diagnose NEML2 input files. The Runner is also linked against gperftools' CPU profiler for profiling purposes.</li>
+<li>tsan: Build the NEML2 Runner with thread sanitizer flags. The Runner can then be used to detect races.</li>
 <li>release: Build both the C++ backend and the Python package for production runs.</li>
 </ul>
 <p>The configure presets and their corresponding configure options are summarized below.</p>
 <table class="markdownTable">
 <tr class="markdownTableHead">
-<th class="markdownTableHeadLeft">preset   </th><th class="markdownTableHeadLeft">dev   </th><th class="markdownTableHeadLeft">coverage   </th><th class="markdownTableHeadLeft">runner   </th><th class="markdownTableHeadLeft">release    </th></tr>
+<th class="markdownTableHeadLeft">preset   </th><th class="markdownTableHeadLeft">dev   </th><th class="markdownTableHeadLeft">coverage   </th><th class="markdownTableHeadLeft">runner   </th><th class="markdownTableHeadLeft">tsan   </th><th class="markdownTableHeadLeft">release    </th></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyLeft">CMAKE_BUILD_TYPE   </td><td class="markdownTableBodyLeft">Debug   </td><td class="markdownTableBodyLeft">Coverage   </td><td class="markdownTableBodyLeft">Release   </td><td class="markdownTableBodyLeft">RelWithDebInfo    </td></tr>
+<td class="markdownTableBodyLeft">CMAKE_BUILD_TYPE   </td><td class="markdownTableBodyLeft">Debug   </td><td class="markdownTableBodyLeft">Coverage   </td><td class="markdownTableBodyLeft">Release   </td><td class="markdownTableBodyLeft">RelWithDebInfo   </td><td class="markdownTableBodyLeft">RelWithDebInfo    </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyLeft">NEML2_TESTS   </td><td class="markdownTableBodyLeft">ON   </td><td class="markdownTableBodyLeft">ON   </td><td class="markdownTableBodyLeft"></td><td class="markdownTableBodyLeft"></td></tr>
+<td class="markdownTableBodyLeft">NEML2_TESTS   </td><td class="markdownTableBodyLeft">ON   </td><td class="markdownTableBodyLeft">ON   </td><td class="markdownTableBodyLeft"></td><td class="markdownTableBodyLeft"></td><td class="markdownTableBodyLeft"></td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyLeft">NEML2_RUNNER   </td><td class="markdownTableBodyLeft"></td><td class="markdownTableBodyLeft"></td><td class="markdownTableBodyLeft">ON   </td><td class="markdownTableBodyLeft">ON    </td></tr>
+<td class="markdownTableBodyLeft">NEML2_RUNNER   </td><td class="markdownTableBodyLeft"></td><td class="markdownTableBodyLeft"></td><td class="markdownTableBodyLeft">ON   </td><td class="markdownTableBodyLeft">ON   </td><td class="markdownTableBodyLeft">ON    </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyLeft">NEML2_PYBIND   </td><td class="markdownTableBodyLeft">ON   </td><td class="markdownTableBodyLeft"></td><td class="markdownTableBodyLeft"></td><td class="markdownTableBodyLeft">ON    </td></tr>
+<td class="markdownTableBodyLeft">NEML2_PYBIND   </td><td class="markdownTableBodyLeft">ON   </td><td class="markdownTableBodyLeft"></td><td class="markdownTableBodyLeft"></td><td class="markdownTableBodyLeft"></td><td class="markdownTableBodyLeft">ON    </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyLeft">NEML2_DOC   </td><td class="markdownTableBodyLeft">ON   </td><td class="markdownTableBodyLeft"></td><td class="markdownTableBodyLeft"></td><td class="markdownTableBodyLeft"></td></tr>
+<td class="markdownTableBodyLeft">NEML2_DOC   </td><td class="markdownTableBodyLeft">ON   </td><td class="markdownTableBodyLeft"></td><td class="markdownTableBodyLeft"></td><td class="markdownTableBodyLeft"></td><td class="markdownTableBodyLeft"></td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyLeft">NEML2_CPU_PROFILER   </td><td class="markdownTableBodyLeft"></td><td class="markdownTableBodyLeft"></td><td class="markdownTableBodyLeft">ON   </td><td class="markdownTableBodyLeft"></td></tr>
+<td class="markdownTableBodyLeft">NEML2_CPU_PROFILER   </td><td class="markdownTableBodyLeft"></td><td class="markdownTableBodyLeft"></td><td class="markdownTableBodyLeft">ON   </td><td class="markdownTableBodyLeft"></td><td class="markdownTableBodyLeft"></td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyLeft">NEML2_WORK_DISPATCHER   </td><td class="markdownTableBodyLeft">ON   </td><td class="markdownTableBodyLeft">ON   </td><td class="markdownTableBodyLeft">ON   </td><td class="markdownTableBodyLeft">ON   </td></tr>
+<td class="markdownTableBodyLeft">NEML2_WORK_DISPATCHER   </td><td class="markdownTableBodyLeft">ON   </td><td class="markdownTableBodyLeft">ON   </td><td class="markdownTableBodyLeft">ON   </td><td class="markdownTableBodyLeft">ON   </td><td class="markdownTableBodyLeft">ON   </td></tr>
 </table>
+<p>| NEML2_THREAD_SANITIZER | | | | ON |</p>
 <p>To select a specific configure preset, use the <code>--preset</code> option on the command line.</p>
 <p>While the default presets should cover most of the development stages, it is sometimes necessary to override certain options. In general, there are three ways of overriding the preset:</p><ul>
 <li>Command line options</li>
