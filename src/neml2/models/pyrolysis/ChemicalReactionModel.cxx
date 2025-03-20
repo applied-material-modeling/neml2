@@ -24,6 +24,7 @@
 
 #include "neml2/models/pyrolysis/ChemicalReactionModel.h"
 #include "neml2/tensors/functions/pow.h"
+#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {

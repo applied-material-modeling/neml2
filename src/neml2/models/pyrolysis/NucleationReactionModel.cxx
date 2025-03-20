@@ -25,6 +25,7 @@
 #include "neml2/models/pyrolysis/NucleationReactionModel.h"
 #include "neml2/tensors/functions/pow.h"
 #include "neml2/tensors/functions/log.h"
+#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {

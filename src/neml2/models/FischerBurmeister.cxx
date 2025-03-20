@@ -24,6 +24,7 @@
 
 #include "neml2/models/FischerBurmeister.h"
 #include "neml2/tensors/functions/sqrt.h"
+#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
