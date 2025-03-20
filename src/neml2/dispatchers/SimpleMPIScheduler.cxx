@@ -114,9 +114,9 @@ SimpleMPIScheduler::determine_my_device()
   // Get the hostname via hwloc and hash it into an MPI_INT
   hwloc_topology_t topology;
   hwloc_obj_t machine;
-  
-  hwloc_topology_init(&topology);  // initialization
-  hwloc_topology_load(topology);   // actual detection
+
+  hwloc_topology_init(&topology); // initialization
+  hwloc_topology_load(topology);  // actual detection
   machine = hwloc_get_root_obj(topology);
   std::hash<std::string> hasher;
   std::string hostname(hwloc_obj_get_info_by_name(machine, "HostName"));
