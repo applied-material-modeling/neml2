@@ -24,6 +24,7 @@
 
 #pragma once
 
+#include "neml2/misc/types.h"
 #include "neml2/tensors/tensors_fwd.h"
 
 namespace neml2
