@@ -23,7 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/pyrolysis/ChemicalReactionModel.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/functions/pow.h"
 
 namespace neml2
 {
@@ -37,10 +37,10 @@ ChemicalReactionModel::expected_options()
       "\\f$ k \\f$ is the scaling constant, \\f$ n \\f$ is the reaction order, and "
       "\\f$ a \\f$ is the reaction amount";
 
-  options.set_parameter<CrossRef<Scalar>>("scaling_constant");
+  options.set_parameter<TensorName<Scalar>>("scaling_constant");
   options.set("scaling_constant").doc() = "Scaling constant, k";
 
-  options.set_parameter<CrossRef<Scalar>>("reaction_order");
+  options.set_parameter<TensorName<Scalar>>("reaction_order");
   options.set("reaction_order").doc() = "Reaction order, n";
 
   options.set_input("reaction_amount") = VariableName("state", "reaction_amount");
@@ -68,12 +68,12 @@ ChemicalReactionModel::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (out)
   {
-    _f = _k * math::pow(1.0 - _a, _n);
+    _f = _k * pow(1.0 - _a, _n);
   }
 
   if (dout_din)
   {
-    _f.d(_a) = -1.0 * _k * _n * math::pow(1.0 - _a, _n - 1);
+    _f.d(_a) = -1.0 * _k * _n * pow(1.0 - _a, _n - 1);
   }
 }
 }

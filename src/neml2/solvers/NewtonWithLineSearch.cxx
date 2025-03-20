@@ -88,7 +88,7 @@ NewtonWithLineSearch::linesearch(NonlinearSystem & system,
                                  const NonlinearSystem::Res<true> & R0) const
 {
   auto alpha = Scalar::ones(x.batch_sizes(), x.options());
-  const auto nR02 = math::bvv(R0, R0);
+  const auto nR02 = bvv(R0, R0);
   bool check = false;
   bool flag = false;
   auto crit = nR02;
@@ -97,10 +97,10 @@ NewtonWithLineSearch::linesearch(NonlinearSystem & system,
   {
     NonlinearSystem::Sol<true> xp(Tensor(x) + alpha * Tensor(dx));
     auto R = system.residual(xp);
-    auto nR2 = math::bvv(R, R);
+    auto nR2 = bvv(R, R);
 
     if (_type == "BACKTRACKING")
-      crit = nR02 + 2.0 * _linesearch_c * alpha * math::bvv(R0, dx);
+      crit = nR02 + 2.0 * _linesearch_c * alpha * bvv(R0, dx);
     else if (_type == "STRONG_WOLFE")
       crit = (1.0 - _linesearch_c * alpha) * nR02;
 
@@ -109,7 +109,7 @@ NewtonWithLineSearch::linesearch(NonlinearSystem & system,
     // std::cout << "R: \n" << R << std::endl;
     // std::cout << "nR2: " << nR2.item<Real>() << std::endl;
 
-    if (std::isnan(torch::max(nR2).item<Real>()))
+    if (std::isnan(at::max(nR2).item<Real>()))
       neml_assert(false, "One of the residual componenet is NAN");
 
     if (verbose)
@@ -118,20 +118,20 @@ NewtonWithLineSearch::linesearch(NonlinearSystem & system,
                 << at::max(sqrt(nR2)).item<Real>() << ", min(||Rc||) = " << std::scientific
                 << at::min(sqrt(crit)).item<Real>() << std::endl;
 
-    auto stop = Scalar(torch::logical_or(nR2 <= crit, nR2 <= std::pow(atol, 2)));
+    auto stop = at::logical_or(nR2 <= crit, nR2 <= std::pow(atol, 2));
 
-    if (torch::max(crit).item<Real>() < 0)
+    if (at::max(crit).item<Real>() < 0)
       flag = true;
 
-    if (torch::all(stop).item<bool>())
+    if (at::all(stop).item<bool>())
     {
       check = true;
       break;
     }
 
-    alpha = alpha.batch_expand_as(stop).clone();
-    alpha.batch_index_put_({torch::logical_not(stop)},
-                           alpha.batch_index({torch::logical_not(stop)}) / _linesearch_sigma);
+    // alpha = alpha.batch_expand_as(stop).clone();
+    alpha.batch_index_put_({at::logical_not(stop)},
+                           alpha.batch_index({at::logical_not(stop)}) / _linesearch_sigma);
   }
 
   if (flag)

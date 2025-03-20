@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/tensors/user_tensors/TensorFromTorchScript.h"
+#include "neml2/user_tensors/TensorFromTorchScript.h"
 
 namespace neml2
 {

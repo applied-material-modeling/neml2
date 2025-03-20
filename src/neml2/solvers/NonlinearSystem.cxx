@@ -126,11 +126,11 @@ NonlinearSystem::init_scaling(const NonlinearSystem::Sol<false> & x, const bool 
   for (unsigned int itr = 0; itr < _autoscale_miter; itr++)
   {
     // check for convergence
-    auto rR = torch::max(torch::abs(1.0 - 1.0 / (torch::sqrt(torch::abs(std::get<0>(Jp.max(-1)))) +
-                                                 machine_precision())))
+    auto rR = at::max(at::abs(1.0 - 1.0 / (at::sqrt(at::abs(std::get<0>(Jp.max(-1)))) +
+                                           machine_precision())))
                   .item<Real>();
-    auto rC = torch::max(torch::abs(1.0 - 1.0 / (torch::sqrt(torch::abs(std::get<0>(Jp.max(-2)))) +
-                                                 machine_precision())))
+    auto rC = at::max(at::abs(1.0 - 1.0 / (at::sqrt(at::abs(std::get<0>(Jp.max(-2)))) +
+                                           machine_precision())))
                   .item<Real>();
 
     if (verbose)
@@ -142,9 +142,8 @@ NonlinearSystem::init_scaling(const NonlinearSystem::Sol<false> & x, const bool 
     // scale rows and columns
     for (Size i = 0; i < x.base_size(-1); i++)
     {
-      auto ar =
-          1.0 / (torch::sqrt(torch::max(torch::abs(Jp.base_index({i})))) + machine_precision());
-      auto ac = 1.0 / (torch::sqrt(torch::max(torch::abs(Jp.base_index({indexing::Slice(), i})))) +
+      auto ar = 1.0 / (at::sqrt(at::max(at::abs(Jp.base_index({i})))) + machine_precision());
+      auto ac = 1.0 / (at::sqrt(at::max(at::abs(Jp.base_index({indexing::Slice(), i})))) +
                        machine_precision());
       _row_scaling.base_index({i}) *= ar;
       _col_scaling.base_index({i}) *= ac;

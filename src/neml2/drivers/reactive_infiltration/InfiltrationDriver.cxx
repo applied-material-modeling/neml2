@@ -34,7 +34,7 @@ InfiltrationDriver::expected_options()
   OptionSet options = TransientDriver::expected_options();
   options.doc() = "Driver for the liquid infiltration process";
 
-  options.set<CrossRef<Scalar>>("prescribed_liquid_species_concentration");
+  options.set<TensorName<Scalar>>("prescribed_liquid_species_concentration");
   options.set("prescribed_liquid_species_concentration").doc() =
       "Concentration of the liquid species.";
 
@@ -47,23 +47,21 @@ InfiltrationDriver::expected_options()
 
 InfiltrationDriver::InfiltrationDriver(const OptionSet & options)
   : TransientDriver(options),
-    _alpha(options.get<CrossRef<Scalar>>("prescribed_liquid_species_concentration")),
+    _alpha(options.get<TensorName<Scalar>>("prescribed_liquid_species_concentration").resolve()),
     _alpha_name(options.get<VariableName>("liquid_species_concentration"))
 {
   _alpha = _alpha.to(_device);
 }
 
 void
-InfiltrationDriver::diagnose(std::vector<Diagnosis> & diagnoses) const
+InfiltrationDriver::diagnose() const
 {
-  TransientDriver::diagnose(diagnoses);
-  diagnostic_assert(diagnoses,
-                    _alpha.batch_dim() >= 1,
+  TransientDriver::diagnose();
+  diagnostic_assert(_alpha.batch_dim() >= 1,
                     "prescribed_liquid_species_concentration should have at least one batch "
                     "dimension but instead has batch dimension ",
                     _alpha.batch_dim());
-  diagnostic_assert(diagnoses,
-                    _alpha.batch_size(0) == _time.batch_size(0),
+  diagnostic_assert(_alpha.batch_size(0) == _time.batch_size(0),
                     "prescribed_liquid_species_concentration should have the same number of steps "
                     "as time, but instead has ",
                     _alpha.batch_size(0),

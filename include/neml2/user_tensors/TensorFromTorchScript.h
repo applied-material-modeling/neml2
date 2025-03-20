@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include "neml2/tensors/user_tensors/FromTorchScript.h"
+#include "neml2/user_tensors/FromTorchScript.h"
 #include "neml2/tensors/Tensor.h"
 
 namespace neml2

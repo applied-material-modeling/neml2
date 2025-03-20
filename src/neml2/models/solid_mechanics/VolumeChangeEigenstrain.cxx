@@ -23,7 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/VolumeChangeEigenstrain.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/functions/pow.h"
 
 namespace neml2
 {
@@ -43,7 +43,7 @@ VolumeChangeEigenstrain::expected_options()
   options.set_input("volume") = VariableName(STATE, "V");
   options.set("volume").doc() = "Volume";
 
-  options.set_buffer<CrossRef<Scalar>>("reference_volume");
+  options.set_buffer<TensorName<Scalar>>("reference_volume");
   options.set("reference_volume").doc() = "Reference (initial) volume";
 
   return options;
@@ -60,19 +60,19 @@ void
 VolumeChangeEigenstrain::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   if (out)
-    _eg = (math::pow(_V / _V0, (1.0 / 3.0)) - 1.0) * SR2::identity(_V.options());
+    _eg = (pow(_V / _V0, (1.0 / 3.0)) - 1.0) * SR2::identity(_V.options());
 
   if (dout_din)
   {
     if (_V.is_dependent())
-      _eg.d(_V) = 1.0 / (3 * _V0) * math::pow(_V / _V0, (-2.0 / 3.0)) * SR2::identity(_V.options());
+      _eg.d(_V) = 1.0 / (3 * _V0) * pow(_V / _V0, (-2.0 / 3.0)) * SR2::identity(_V.options());
   }
 
   if (d2out_din2)
   {
     if (_V.is_dependent())
-      _eg.d(_V, _V) = -2.0 / (9.0 * _V0 * _V0) * math::pow(_V / _V0, (-5.0 / 3.0)) *
-                      SR2::identity(_V.options());
+      _eg.d(_V, _V) =
+          -2.0 / (9.0 * _V0 * _V0) * pow(_V / _V0, (-5.0 / 3.0)) * SR2::identity(_V.options());
   }
 }
 }

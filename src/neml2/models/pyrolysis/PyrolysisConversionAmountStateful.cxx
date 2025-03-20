@@ -23,7 +23,6 @@
 // THE SOFTWARE.
 
 #include "neml2/models/pyrolysis/PyrolysisConversionAmountStateful.h"
-#include "neml2/misc/math.h"
 
 namespace neml2
 {
@@ -42,7 +41,7 @@ PyrolysisConversionAmountStateful::expected_options()
   options.set_input("initial_mass_binder") = VariableName("state", "initial_mass_binder");
   options.set("initial_mass_binder").doc() = "The binder's initial mas before the pyrolysis";
 
-  options.set_parameter<CrossRef<Scalar>>("reaction_yield");
+  options.set_parameter<TensorName<Scalar>>("reaction_yield");
   options.set("reaction_yield").doc() =
       "The final reaction yield from the pyrolysis process (between 0 and 1)";
 

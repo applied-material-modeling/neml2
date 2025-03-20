@@ -23,7 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/HermiteSmoothStep.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/functions/clamp.h"
 
 namespace neml2
 {
@@ -41,10 +41,10 @@ HermiteSmoothStep::expected_options()
   options.set_output("value");
   options.set("value").doc() = "Value of the smooth step function";
 
-  options.set_buffer<CrossRef<Scalar>>("lower_bound");
+  options.set_buffer<TensorName<Scalar>>("lower_bound");
   options.set("lower_bound").doc() = "Lower bound of the argument";
 
-  options.set_buffer<CrossRef<Scalar>>("upper_bound");
+  options.set_buffer<TensorName<Scalar>>("upper_bound");
   options.set("upper_bound").doc() = "Upper bound of the argument";
 
   options.set<bool>("complement_condition") = false;
@@ -68,7 +68,7 @@ HermiteSmoothStep::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   neml_assert_dbg(!d2out_din2, "Second derivatives not implemented");
 
-  const auto x = math::clamp((_x - _x0) / (_x1 - _x0), 0.0, 1.0);
+  const auto x = clamp((_x - _x0) / (_x1 - _x0), 0.0, 1.0);
 
   if (out)
   {

@@ -23,7 +23,6 @@
 // THE SOFTWARE.
 
 #include "neml2/models/pyrolysis/PyrolysisConversionAmount.h"
-#include "neml2/misc/math.h"
 
 namespace neml2
 {
@@ -36,13 +35,13 @@ PyrolysisConversionAmount::expected_options()
       "Calculate the conversion amount from the pyrolysis process, defined by the ratio between "
       "the mass loss and the total possible mass loss from the pyrolysis.";
 
-  options.set_parameter<CrossRef<Scalar>>("initial_mass_solid");
+  options.set_parameter<TensorName<Scalar>>("initial_mass_solid");
   options.set("initial_mass_solid").doc() = "The solid's initial mass before the pyrolysis";
 
-  options.set_parameter<CrossRef<Scalar>>("initial_mass_binder");
+  options.set_parameter<TensorName<Scalar>>("initial_mass_binder");
   options.set("initial_mass_binder").doc() = "The binder's initial mas before the pyrolysis";
 
-  options.set_parameter<CrossRef<Scalar>>("reaction_yield");
+  options.set_parameter<TensorName<Scalar>>("reaction_yield");
   options.set("reaction_yield").doc() =
       "The final reaction yield from the pyrolysis process (between 0 and 1)";
 
