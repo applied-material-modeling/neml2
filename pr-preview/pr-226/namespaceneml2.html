@@ -5498,6 +5498,7 @@ template&lt;typename F, typename T1, typename T2&gt; </div>
 
 <p>A convenient function to parse all options from an input file. </p>
 <p>Previously loaded input options will be discarded!</p>
+<dl class="section warning"><dt>Warning</dt><dd>All threads share the same input options, so in principle this function is not intended to be called inside a threaded region.</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">path</td><td>Path to the input file to be parsed </td></tr>
@@ -5528,6 +5529,7 @@ template&lt;typename F, typename T1, typename T2&gt; </div>
 </div><div class="memdoc">
 
 <p>A convenient function to load an input file and get a model. </p>
+<dl class="section warning"><dt>Warning</dt><dd>All threads share the same input options, so in principle this function is not intended to be called inside a threaded region.</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">path</td><td>Path to the input file to be parsed </td></tr>
@@ -9643,6 +9645,7 @@ template&lt;typename T&gt; </div>
 
 <p>Similar to <a class="el" href="#ae26cd3cedac7d43bddad9f8502bbe6bf" title="A convenient function to parse all options from an input file.">neml2::load_input</a>, but additionally clear the <a class="el" href="classneml2_1_1Factory.html">Factory</a> before loading the options, therefore all previously loaded models become dangling. </p>
 <p>Previously loaded input options will be discarded!</p>
+<dl class="section warning"><dt>Warning</dt><dd>All threads share the same input options, so in principle this function is not intended to be called inside a threaded region.</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">path</td><td>Path to the input file to be parsed </td></tr>
@@ -9673,6 +9676,7 @@ template&lt;typename T&gt; </div>
 </div><div class="memdoc">
 
 <p>Similar to <a class="el" href="#a1e499dee97d6a66663f60dd4a65b9f1a" title="A convenient function to load an input file and get a model.">neml2::load_model</a>, but additionally clear the <a class="el" href="classneml2_1_1Factory.html">Factory</a> before loading the model, therefore all previously loaded models become dangling. </p>
+<dl class="section warning"><dt>Warning</dt><dd>All threads share the same input options, so in principle this function is not intended to be called inside a threaded region.</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">path</td><td>Path to the input file to be parsed </td></tr>

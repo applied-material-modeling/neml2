@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-03-19 23:21:59</td>
+            <td class="headerValue">2025-03-20 00:04:12</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryLo">17.5&nbsp;%</td>
@@ -131,11 +131,11 @@
 <span id="L69"><span class="lineNum">      69</span> <span class="tlaUNC">           0 : }</span></span>
 <span id="L70"><span class="lineNum">      70</span>              : </span>
 <span id="L71"><span class="lineNum">      71</span>              : std::map&lt;std::string, std::unique_ptr&lt;TensorValueBase&gt;&gt; &amp;</span>
-<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC tlaBgGNC">      153009 : ParameterStore::named_parameters()</span></span>
+<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC tlaBgGNC">      153066 : ParameterStore::named_parameters()</span></span>
 <span id="L73"><span class="lineNum">      73</span>              : {</span>
-<span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">      153009 :   neml_assert(_object-&gt;host() == _object,</span></span>
+<span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">      153066 :   neml_assert(_object-&gt;host() == _object,</span></span>
 <span id="L75"><span class="lineNum">      75</span>              :               &quot;named_parameters() should only be called on the host model.&quot;);</span>
-<span id="L76"><span class="lineNum">      76</span> <span class="tlaGNC">      153009 :   return _param_values;</span></span>
+<span id="L76"><span class="lineNum">      76</span> <span class="tlaGNC">      153066 :   return _param_values;</span></span>
 <span id="L77"><span class="lineNum">      77</span>              : }</span>
 <span id="L78"><span class="lineNum">      78</span>              : </span>
 <span id="L79"><span class="lineNum">      79</span>              : template &lt;typename T, typename&gt;</span>
@@ -206,7 +206,7 @@
 <span id="L144"><span class="lineNum">     144</span>              :       try</span>
 <span id="L145"><span class="lineNum">     145</span>              :       {</span>
 <span id="L146"><span class="lineNum">     146</span>              :         // Get the model</span>
-<span id="L147"><span class="lineNum">     147</span> <span class="tlaGNC">         182 :         provider = &amp;Factory::get_object&lt;Model&gt;(&quot;Models&quot;, mname, extra_opts, /*force_create=*/false);</span></span>
+<span id="L147"><span class="lineNum">     147</span> <span class="tlaGNC">         118 :         provider = &amp;Factory::get_object&lt;Model&gt;(&quot;Models&quot;, mname, extra_opts, /*force_create=*/false);</span></span>
 <span id="L148"><span class="lineNum">     148</span>              : </span>
 <span id="L149"><span class="lineNum">     149</span>              :         // Apparently, the model must have one and only one output variable.</span>
 <span id="L150"><span class="lineNum">     150</span> <span class="tlaGNC">          10 :         const auto nvar = provider-&gt;output_axis().nvariable();</span></span>
@@ -265,7 +265,7 @@
 <span id="L203"><span class="lineNum">     203</span>              : </span>
 <span id="L204"><span class="lineNum">     204</span>              :         // Get the model</span>
 <span id="L205"><span class="lineNum">     205</span>              :         provider =</span>
-<span id="L206"><span class="lineNum">     206</span> <span class="tlaGNC">         108 :             &amp;Factory::get_object&lt;Model&gt;(&quot;Models&quot;, obj_name, extra_opts, /*force_create=*/false);</span></span>
+<span id="L206"><span class="lineNum">     206</span> <span class="tlaGNC">          54 :             &amp;Factory::get_object&lt;Model&gt;(&quot;Models&quot;, obj_name, extra_opts, /*force_create=*/false);</span></span>
 <span id="L207"><span class="lineNum">     207</span>              : </span>
 <span id="L208"><span class="lineNum">     208</span>              :         // Retrieve the output variable</span>
 <span id="L209"><span class="lineNum">     209</span> <span class="tlaGNC">          54 :         var_name = provider-&gt;output_axis().variable_names()[0];</span></span>

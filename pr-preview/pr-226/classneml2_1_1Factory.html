@@ -143,9 +143,9 @@ $(function(){initNavTree('classneml2_1_1Factory.html',''); initResizable(true); 
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:aed8c379cea7f582b6b4d99a064b40eeb" id="r_aed8c379cea7f582b6b4d99a064b40eeb"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classneml2_1_1Factory.html">Factory</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aed8c379cea7f582b6b4d99a064b40eeb">get</a> (std::thread::id tid=std::this_thread::get_id())</td></tr>
-<tr class="memdesc:aed8c379cea7f582b6b4d99a064b40eeb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the <a class="el" href="classneml2_1_1Factory.html">Factory</a> singleton for a given thread.  <br /></td></tr>
-<tr class="separator:aed8c379cea7f582b6b4d99a064b40eeb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad5eadf90f55c3baf52ef413b2479b6ee" id="r_ad5eadf90f55c3baf52ef413b2479b6ee"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classneml2_1_1Factory.html">Factory</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad5eadf90f55c3baf52ef413b2479b6ee">get</a> ()</td></tr>
+<tr class="memdesc:ad5eadf90f55c3baf52ef413b2479b6ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the <a class="el" href="classneml2_1_1Factory.html">Factory</a> singleton.  <br /></td></tr>
+<tr class="separator:ad5eadf90f55c3baf52ef413b2479b6ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2f9713c6c4d7ca9bff8662fc2bf96040" id="r_a2f9713c6c4d7ca9bff8662fc2bf96040"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classneml2_1_1OptionCollection.html">OptionCollection</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2f9713c6c4d7ca9bff8662fc2bf96040">options</a> ()</td></tr>
 <tr class="memdesc:a2f9713c6c4d7ca9bff8662fc2bf96040"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the global options singleton.  <br /></td></tr>
 <tr class="separator:a2f9713c6c4d7ca9bff8662fc2bf96040"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -155,14 +155,14 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:ac2bbbcb328398bcd30bb9d5b452ba91d" id="r_ac2bbbcb328398bcd30bb9d5b452ba91d"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac2bbbcb328398bcd30bb9d5b452ba91d">has_object</a> (const std::string &amp;section, const std::string &amp;<a class="el" href="namespaceneml2.html#a5424759a4a25bd0e2f60628d260abb81">name</a>)</td></tr>
 <tr class="memdesc:ac2bbbcb328398bcd30bb9d5b452ba91d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if an object with the given name exists under the given section.  <br /></td></tr>
 <tr class="separator:ac2bbbcb328398bcd30bb9d5b452ba91d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6a00666485007905a3fd1a7913a78758" id="r_a6a00666485007905a3fd1a7913a78758"><td class="memTemplParams" colspan="2">template&lt;class T&gt; </td></tr>
-<tr class="memitem:a6a00666485007905a3fd1a7913a78758"><td class="memTemplItemLeft" align="right" valign="top">static std::shared_ptr&lt; T &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a6a00666485007905a3fd1a7913a78758">get_object_ptr</a> (const std::string &amp;section, const std::string &amp;<a class="el" href="namespaceneml2.html#a5424759a4a25bd0e2f60628d260abb81">name</a>, const <a class="el" href="classneml2_1_1OptionSet.html">OptionSet</a> &amp;additional_options=<a class="el" href="classneml2_1_1OptionSet.html">OptionSet</a>(), bool force_create=true, std::thread::id tid=std::this_thread::get_id())</td></tr>
-<tr class="memdesc:a6a00666485007905a3fd1a7913a78758"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrive an object pointer under the given section with the given object name.  <br /></td></tr>
-<tr class="separator:a6a00666485007905a3fd1a7913a78758"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6dbdba3750cee46412764f32bbd923db" id="r_a6dbdba3750cee46412764f32bbd923db"><td class="memTemplParams" colspan="2">template&lt;class T&gt; </td></tr>
-<tr class="memitem:a6dbdba3750cee46412764f32bbd923db"><td class="memTemplItemLeft" align="right" valign="top">static T &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a6dbdba3750cee46412764f32bbd923db">get_object</a> (const std::string &amp;section, const std::string &amp;<a class="el" href="namespaceneml2.html#a5424759a4a25bd0e2f60628d260abb81">name</a>, const <a class="el" href="classneml2_1_1OptionSet.html">OptionSet</a> &amp;additional_options=<a class="el" href="classneml2_1_1OptionSet.html">OptionSet</a>(), bool force_create=true, std::thread::id tid=std::this_thread::get_id())</td></tr>
-<tr class="memdesc:a6dbdba3750cee46412764f32bbd923db"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrive an object reference under the given section with the given object name.  <br /></td></tr>
-<tr class="separator:a6dbdba3750cee46412764f32bbd923db"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a95c47d292bea9037c83f2320ec3582db" id="r_a95c47d292bea9037c83f2320ec3582db"><td class="memTemplParams" colspan="2">template&lt;class T&gt; </td></tr>
+<tr class="memitem:a95c47d292bea9037c83f2320ec3582db"><td class="memTemplItemLeft" align="right" valign="top">static std::shared_ptr&lt; T &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a95c47d292bea9037c83f2320ec3582db">get_object_ptr</a> (const std::string &amp;section, const std::string &amp;<a class="el" href="namespaceneml2.html#a5424759a4a25bd0e2f60628d260abb81">name</a>, const <a class="el" href="classneml2_1_1OptionSet.html">OptionSet</a> &amp;additional_options=<a class="el" href="classneml2_1_1OptionSet.html">OptionSet</a>(), bool force_create=true)</td></tr>
+<tr class="memdesc:a95c47d292bea9037c83f2320ec3582db"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrive an object pointer under the given section with the given object name.  <br /></td></tr>
+<tr class="separator:a95c47d292bea9037c83f2320ec3582db"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a74bb9b4d395d11402735117f5aef4d7b" id="r_a74bb9b4d395d11402735117f5aef4d7b"><td class="memTemplParams" colspan="2">template&lt;class T&gt; </td></tr>
+<tr class="memitem:a74bb9b4d395d11402735117f5aef4d7b"><td class="memTemplItemLeft" align="right" valign="top">static T &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a74bb9b4d395d11402735117f5aef4d7b">get_object</a> (const std::string &amp;section, const std::string &amp;<a class="el" href="namespaceneml2.html#a5424759a4a25bd0e2f60628d260abb81">name</a>, const <a class="el" href="classneml2_1_1OptionSet.html">OptionSet</a> &amp;additional_options=<a class="el" href="classneml2_1_1OptionSet.html">OptionSet</a>(), bool force_create=true)</td></tr>
+<tr class="memdesc:a74bb9b4d395d11402735117f5aef4d7b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrive an object reference under the given section with the given object name.  <br /></td></tr>
+<tr class="separator:a74bb9b4d395d11402735117f5aef4d7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac8bb3912a3ce86b15842e79d0b421204" id="r_ac8bb3912a3ce86b15842e79d0b421204"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac8bb3912a3ce86b15842e79d0b421204">clear</a> ()</td></tr>
 <tr class="memdesc:ac8bb3912a3ce86b15842e79d0b421204"><td class="mdescLeft">&#160;</td><td class="mdescRight">Delete all factories and destruct all the objects.  <br /></td></tr>
 <tr class="separator:ac8bb3912a3ce86b15842e79d0b421204"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -242,8 +242,8 @@ Protected Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="aed8c379cea7f582b6b4d99a064b40eeb" name="aed8c379cea7f582b6b4d99a064b40eeb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aed8c379cea7f582b6b4d99a064b40eeb">&#9670;&#160;</a></span>get()</h2>
+<a id="ad5eadf90f55c3baf52ef413b2479b6ee" name="ad5eadf90f55c3baf52ef413b2479b6ee"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad5eadf90f55c3baf52ef413b2479b6ee">&#9670;&#160;</a></span>get()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -254,7 +254,7 @@ Protected Member Functions</h2></td></tr>
         <tr>
           <td class="memname"><a class="el" href="classneml2_1_1Factory.html">Factory</a> &amp; get </td>
           <td>(</td>
-          <td class="paramtype">std::thread::id</td>          <td class="paramname"><span class="paramname"><em>tid</em></span><span class="paramdefsep"> = </span><span class="paramdefval">std::this_thread::get_id()</span></td><td>)</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -265,12 +265,12 @@ Protected Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Get the <a class="el" href="classneml2_1_1Factory.html">Factory</a> singleton for a given thread. </p>
+<p>Get the <a class="el" href="classneml2_1_1Factory.html">Factory</a> singleton. </p>
 
 </div>
 </div>
-<a id="a6dbdba3750cee46412764f32bbd923db" name="a6dbdba3750cee46412764f32bbd923db"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6dbdba3750cee46412764f32bbd923db">&#9670;&#160;</a></span>get_object()</h2>
+<a id="a74bb9b4d395d11402735117f5aef4d7b" name="a74bb9b4d395d11402735117f5aef4d7b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a74bb9b4d395d11402735117f5aef4d7b">&#9670;&#160;</a></span>get_object()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -298,12 +298,7 @@ template&lt;class T&gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>force_create</em></span><span class="paramdefsep"> = </span><span class="paramdefval">true</span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::thread::id</td>          <td class="paramname"><span class="paramname"><em>tid</em></span><span class="paramdefsep"> = </span><span class="paramdefval">std::this_thread::get_id()</span>&#160;)</td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>force_create</em></span><span class="paramdefsep"> = </span><span class="paramdefval">true</span>&#160;)</td>
         </tr>
       </table>
   </td>
@@ -330,7 +325,6 @@ template&lt;class T&gt; </div>
     <tr><td class="paramname">name</td><td>The name of the object to retrieve. </td></tr>
     <tr><td class="paramname">additional_options</td><td>Additional input options to pass to the object constructor </td></tr>
     <tr><td class="paramname">force_create</td><td>(Optional) Force the factory to create a new object even if the object has already been created. </td></tr>
-    <tr><td class="paramname">tid</td><td>(Optional) The thread id of the object to be retrieved. </td></tr>
   </table>
   </dd>
 </dl>
@@ -338,8 +332,8 @@ template&lt;class T&gt; </div>
 
 </div>
 </div>
-<a id="a6a00666485007905a3fd1a7913a78758" name="a6a00666485007905a3fd1a7913a78758"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6a00666485007905a3fd1a7913a78758">&#9670;&#160;</a></span>get_object_ptr()</h2>
+<a id="a95c47d292bea9037c83f2320ec3582db" name="a95c47d292bea9037c83f2320ec3582db"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a95c47d292bea9037c83f2320ec3582db">&#9670;&#160;</a></span>get_object_ptr()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -367,12 +361,7 @@ template&lt;class T&gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>force_create</em></span><span class="paramdefsep"> = </span><span class="paramdefval">true</span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::thread::id</td>          <td class="paramname"><span class="paramname"><em>tid</em></span><span class="paramdefsep"> = </span><span class="paramdefval">std::this_thread::get_id()</span>&#160;)</td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>force_create</em></span><span class="paramdefsep"> = </span><span class="paramdefval">true</span>&#160;)</td>
         </tr>
       </table>
   </td>
@@ -399,7 +388,6 @@ template&lt;class T&gt; </div>
     <tr><td class="paramname">name</td><td>The name of the object to retrieve. </td></tr>
     <tr><td class="paramname">additional_options</td><td>Additional input options to pass to the object constructor </td></tr>
     <tr><td class="paramname">force_create</td><td>(Optional) Force the factory to create a new object even if the object has already been created. </td></tr>
-    <tr><td class="paramname">tid</td><td>(Optional) The thread id of the object to be retrieved. </td></tr>
   </table>
   </dd>
 </dl>
