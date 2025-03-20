@@ -40,6 +40,7 @@ DiffusionLimitedReaction::expected_options()
   options.set_input("solid_inner_radius") = VariableName{"state", "ro"};
   options.set("solid_inner_radius").doc() = "Inner raidus of the solid phase";
   options.set<Real>("product_dummy_thickness") = 0.01;
+  options.set("product_dummy_thickness").doc() = "Minimum product thickness to avoid division by 0";
 
   options.set_input("liquid_reactivity") = VariableName{"state", "R_l"};
   options.set("liquid_reactivity").doc() = "Reactivity of the liquid phase, between 0 and 1";
