@@ -28,6 +28,7 @@
 #include "neml2/solvers/NewtonWithLineSearch.h"
 #include "neml2/tensors/functions/bvv.h"
 #include "neml2/tensors/functions/sqrt.h"
+#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
