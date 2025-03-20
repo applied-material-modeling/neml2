@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/user_tensors/FromTorchScript.h"
+#include "neml2/tensors/assertions.h"
 
 #include <torch/script.h>
 #include <torch/serialize.h>
