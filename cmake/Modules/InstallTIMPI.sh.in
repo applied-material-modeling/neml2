@@ -4,9 +4,7 @@ export CXXFLAGS="-D_GLIBCXX_USE_CXX11_ABI=${GLIBCXX_USE_CXX11_ABI}"
 export METHODS=${TIMPI_BUILD_TYPE}
 
 ${timpi_SOURCE_DIR}/configure \
-  --prefix=${TIMPI_INSTALL_DIR} \
-  --enable-shared=yes \
-  --enable-static=no
+  --prefix=${TIMPI_INSTALL_DIR}
 
 make -j ${NPROCS}
 make install
