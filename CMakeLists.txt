@@ -51,6 +51,7 @@ set(CATCH2_VERSION "3.5.4" CACHE STRING "Default Catch2 version to download (if 
 set(GPERFTOOLS_VERSION "2.15" CACHE STRING "Default gperftools version to download")
 set(ARGPARSE_VERSION "3.0" CACHE STRING "Default argparse version to download")
 set(TIMPI_VERSION "1.8.5_bootstrapped" CACHE STRING "Default TIMPI version to download")
+set(HWLOC_VERSION "2.12" CACHE STRING "Default HWLOC version to download")
 
 # ----------------------------------------------------------------------------
 # Build types

@@ -68,6 +68,25 @@ if(NEML2_WORK_DISPATCHER)
 endif()
 
 # ----------------------------------------------------------------------------
+# hwloc
+# ----------------------------------------------------------------------------
+if(NEML2_WORK_DISPATCHER)
+  find_package(HWLOC)
+
+  if(NOT HWLOC_FOUND)
+    include(DownloadHWLOC)
+    set(HWLOC_ROOT ${HWLOC_INSTALL_DIR} CACHE PATH "HWLOC root directory" FORCE)
+    find_package(HWLOC REQUIRED)
+  endif()
+
+  cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${HWLOC_LINK_DIR} HWLOC_DOWNLOADED)
+
+  if(TIMPI_DOWNLOADED)
+    install(DIRECTORY ${HWLOC_INCLUDE_DIR}/hwloc TYPE INCLUDE COMPONENT libneml2)
+  endif()
+endif()
+
+# ----------------------------------------------------------------------------
 # CPU Profiler
 # ----------------------------------------------------------------------------
 if(NEML2_CPU_PROFILER)
