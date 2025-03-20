@@ -28,7 +28,7 @@ omega_r = 0.96 # omega_Si/Omega_SiC
     ic_Scalar_names = 'state/phi_p state/phi_s'
     ic_Scalar_values = '0 0.3'
     save_as = 'result.pt'
-    verbose = true
+    verbose = false
     show_input_axis = true
     show_output_axis = true
   []
@@ -42,7 +42,7 @@ omega_r = 0.96 # omega_Si/Omega_SiC
 [Solvers]
   [newton]
     type = Newton
-    verbose = true
+    verbose = false
   []
 []
 

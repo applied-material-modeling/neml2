@@ -220,8 +220,7 @@ alpha0 = 3.333333 # 1/(1-Y)
     [model_residual]
         type = ComposedModel
         models = 'rmp rms rmb rmg'
-        #models = 'rms'
-        automatic_scaling = true
+        automatic_scaling = false
     []
     [model_update]
         type = ImplicitUpdate
