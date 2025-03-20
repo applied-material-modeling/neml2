@@ -5,8 +5,8 @@ export METHODS=${TIMPI_BUILD_TYPE}
 
 ${timpi_SOURCE_DIR}/configure \
   --prefix=${TIMPI_INSTALL_DIR} \
-  --enable-shared=no \
-  --enable-static=yes
+  --enable-shared=yes \
+  --enable-static=no
 
 make -j ${NPROCS}
 make install
