@@ -50,33 +50,4 @@ private:
   const std::string _section;
   const std::chrono::time_point<std::chrono::high_resolution_clock> _t0;
 };
-
-// Set number of interop threads for a local region
-struct InterOpThread
-{
-  InterOpThread(int num);
-
-  InterOpThread(const InterOpThread &) = delete;
-  InterOpThread(InterOpThread &&) = delete;
-  InterOpThread & operator=(const InterOpThread &) = delete;
-  InterOpThread & operator=(InterOpThread &&) = delete;
-  ~InterOpThread();
-
-  int prev_num;
-};
-
-// Set number of intraop threads for a local region
-struct IntraOpThread
-{
-  IntraOpThread(int num);
-
-  IntraOpThread(const IntraOpThread &) = delete;
-  IntraOpThread(IntraOpThread &&) = delete;
-  IntraOpThread & operator=(const IntraOpThread &) = delete;
-  IntraOpThread & operator=(IntraOpThread &&) = delete;
-  ~IntraOpThread();
-
-  int prev_num;
-};
-
 }

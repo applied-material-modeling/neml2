@@ -85,7 +85,9 @@ Once all arguments are successfully declared, the *structure* of the model is de
 int
 main()
 {
-  auto & model = neml2::load_model("input.i", "accel");
+  using namespace neml2;
+  set_default_dtype(kFloat64);
+  auto & model = load_model("input.i", "accel");
   std::cout << model << std::endl;
 }
 ```

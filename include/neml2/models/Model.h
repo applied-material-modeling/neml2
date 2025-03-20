@@ -57,6 +57,9 @@ Model & get_model(const std::string & mname);
 /**
  * @brief A convenient function to load an input file and get a model
  *
+ * @warning All threads share the same input options, so in principle this function is not intended
+ * to be called inside a threaded region.
+ *
  * @param path Path to the input file to be parsed
  * @param mname Name of the model
  */
@@ -65,6 +68,9 @@ Model & load_model(const std::filesystem::path & path, const std::string & mname
 /**
  * @brief Similar to neml2::load_model, but additionally clear the Factory before loading the model,
  * therefore all previously loaded models become dangling.
+ *
+ * @warning All threads share the same input options, so in principle this function is not intended
+ * to be called inside a threaded region.
  *
  * @param path Path to the input file to be parsed
  * @param mname Name of the model

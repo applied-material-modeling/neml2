@@ -20,11 +20,13 @@ Single element indexing works exactly like that for indexing flat containers suc
   @source:src1
   ```cpp
   #include "neml2/tensors/Tensor.h"
-  using namespace neml2;
 
   int
   main()
   {
+    using namespace neml2;
+    set_default_dtype(kFloat64);
+
     // Create a tensor with shape (; 5)
     auto a = Tensor::create({3, 4, 5, 6, 7}, 0);
     std::cout << "a.base[2] = " << a.base_index({2}).item<Real>() << std::endl;
@@ -49,6 +51,8 @@ Single element indexing works exactly like that for indexing flat containers suc
   ```python
   import torch
   from neml2.tensors import Tensor
+
+  torch.set_default_dtype(torch.double)
 
   # Create a tensor with shape (; 5)
   a = Tensor(torch.tensor([3, 4, 5, 6, 7]), 0)
@@ -80,11 +84,13 @@ Single element indexing can be used to index multidimensional tensors, in which 
   @source:src3
   ```cpp
   #include "neml2/tensors/Tensor.h"
-  using namespace neml2;
 
   int
   main()
   {
+    using namespace neml2;
+    set_default_dtype(kFloat64);
+
     // Create a tensor with shape (2, 2 ; 3, 1)
     auto a = Tensor::create({{{{1}, {2}, {3}}, {{4}, {5}, {6}}},
                              {{{-1}, {-2}, {-3}}, {{-4}, {-5}, {-6}}}}, 2);
@@ -109,6 +115,8 @@ Single element indexing can be used to index multidimensional tensors, in which 
   ```python
   import torch
   from neml2.tensors import Tensor
+
+  torch.set_default_dtype(torch.double)
 
   # Create a tensor with shape (2, 2 ; 3, 1)
   a = Tensor(torch.tensor([[[[1], [2], [3]], [[4], [5], [6]]],
@@ -152,12 +160,14 @@ It is best to learn slicing from examples. Below are equivalent C++ and Python c
   ```cpp
   #include "neml2/tensors/Scalar.h"
 
-  using namespace neml2;
-  using namespace indexing;
 
   int
   main()
   {
+    using namespace neml2;
+    using namespace indexing;
+    set_default_dtype(kFloat64);
+
     // Create a tensor with shape (20;)
     auto a0 = Scalar::full(0.0);
     auto a1 = Scalar::full(19.0);
@@ -196,6 +206,9 @@ It is best to learn slicing from examples. Below are equivalent C++ and Python c
   @source:src6
   ```python
   from neml2.tensors import Scalar
+  import torch
+
+  torch.set_default_dtype(torch.double)
 
   # Create a tensor with shape (20;)
   a0 = Scalar.full(0.0)
@@ -250,12 +263,13 @@ Similar to single element indexing, slicing can also be used to index multidimen
   ```cpp
   #include "neml2/tensors/Tensor.h"
 
-  using namespace neml2;
-  using namespace indexing;
-
   int
   main()
   {
+    using namespace neml2;
+    using namespace indexing;
+    set_default_dtype(kFloat64);
+
     // Create a tensor with shape (3, 4; 2)
     auto a0 = Tensor::create({{0, 1}, {2, 3}, {4, 5}}, 1);
     auto a1 = Tensor::create({{3, 4}, {5, 6}, {7, 8}}, 1);
@@ -275,6 +289,8 @@ Similar to single element indexing, slicing can also be used to index multidimen
   ```python
   import torch
   from neml2.tensors import Tensor
+
+  torch.set_default_dtype(torch.double)
 
   a0 = Tensor(torch.tensor([[0, 1], [2, 3], [4, 5]]), 1)
   a1 = Tensor(torch.tensor([[3, 4], [5, 6], [7, 8]]), 1)
@@ -310,12 +326,13 @@ Again, the use of these special symbols are best illustrated by examples.
   #include <torch/torch.h>
   #include "neml2/tensors/Tensor.h"
 
-  using namespace neml2;
-  using namespace indexing;
-
   int
   main()
   {
+    using namespace neml2;
+    using namespace indexing;
+    set_default_dtype(kFloat64);
+
     // Create a tensor with shape (5, 3, 1, 3; 1, 7, 8)
     auto a = Tensor(torch::rand({5, 3, 1, 3, 1, 7, 8}), 4);
 
@@ -343,6 +360,8 @@ Again, the use of these special symbols are best illustrated by examples.
   ```python
   import torch
   from neml2.tensors import Tensor
+
+  torch.set_default_dtype(torch.double)
 
   # Create a tensor with shape (5, 3, 1, 3; 1, 7, 8)
   a = Tensor(torch.rand(5, 3, 1, 3, 1, 7, 8), 4)

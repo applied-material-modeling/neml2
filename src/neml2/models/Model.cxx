@@ -362,7 +362,7 @@ Model::compute_trace_schema() const
   for (auto && [name, param] : host<ParameterStore>()->named_parameters())
     batch_dims.push_back(Tensor(*param).batch_dim());
 
-  const auto dispatch_key = tensor_options().computeDispatchKey();
+  const auto dispatch_key = variable_options().computeDispatchKey();
 
   return TraceSchema{batch_dims, dispatch_key};
 }
@@ -487,9 +487,24 @@ Model::variable_name_lookup(const ATensor & var)
   return "";
 }
 
+void
+check_precision()
+{
+  if (require_double_precision())
+    neml_assert(
+        default_tensor_options().dtype() == kFloat64,
+        "By default, NEML2 requires double precision for all computations. Please set the default "
+        "dtype to Float64. In Python, this can be done by calling "
+        "`torch.set_default_dtype(torch.double)`. In C++, this can be done by calling "
+        "`neml2::set_default_dtype(neml2::kFloat64)`. If other precisions are truly needed, you "
+        "can disable this error check with Settings/require_double_precision=false.");
+}
+
 ValueMap
 Model::value(const ValueMap & in)
 {
+  check_precision();
+
   zero_input();
   assign_input(in);
   zero_output();
@@ -504,6 +519,8 @@ Model::value(const ValueMap & in)
 std::tuple<ValueMap, DerivMap>
 Model::value_and_dvalue(const ValueMap & in)
 {
+  check_precision();
+
   zero_input();
   assign_input(in);
   zero_output();
@@ -519,6 +536,8 @@ Model::value_and_dvalue(const ValueMap & in)
 DerivMap
 Model::dvalue(const ValueMap & in)
 {
+  check_precision();
+
   zero_input();
   assign_input(in);
   zero_output();
@@ -533,6 +552,8 @@ Model::dvalue(const ValueMap & in)
 std::tuple<ValueMap, DerivMap, SecDerivMap>
 Model::value_and_dvalue_and_d2value(const ValueMap & in)
 {
+  check_precision();
+
   zero_input();
   assign_input(in);
   zero_output();
@@ -549,6 +570,8 @@ Model::value_and_dvalue_and_d2value(const ValueMap & in)
 std::tuple<DerivMap, SecDerivMap>
 Model::dvalue_and_d2value(const ValueMap & in)
 {
+  check_precision();
+
   zero_input();
   assign_input(in);
   zero_output();
@@ -564,6 +587,8 @@ Model::dvalue_and_d2value(const ValueMap & in)
 SecDerivMap
 Model::d2value(const ValueMap & in)
 {
+  check_precision();
+
   zero_input();
   assign_input(in);
   zero_output();
@@ -812,8 +837,6 @@ operator<<(std::ostream & os, const Model & model)
   const std::string tab = "            ";
 
   os << "Name:       " << model.name() << '\n';
-  os << "Dtype:      " << model.tensor_options().dtype() << '\n';
-  os << "Device:     " << model.tensor_options().device() << '\n';
 
   if (!model.input_variables().empty())
   {
@@ -846,7 +869,8 @@ operator<<(std::ostream & os, const Model & model)
     for (auto && [name, param] : model.named_parameters())
     {
       os << (first ? "" : tab);
-      os << name << " [" << param->type() << "]\n";
+      os << name << " [" << param->type() << "][" << Tensor(*param).scalar_type() << "]["
+         << Tensor(*param).device() << "]\n";
       first = false;
     }
   }
@@ -858,7 +882,8 @@ operator<<(std::ostream & os, const Model & model)
     for (auto && [name, buffer] : model.named_buffers())
     {
       os << (first ? "" : tab);
-      os << name << " [" << buffer->type() << "]\n";
+      os << name << " [" << buffer->type() << "][" << Tensor(*buffer).scalar_type() << "]["
+         << Tensor(*buffer).device() << "]\n";
       first = false;
     }
   }

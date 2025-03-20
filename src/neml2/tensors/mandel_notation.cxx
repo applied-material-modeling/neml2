@@ -23,12 +23,86 @@
 // THE SOFTWARE.
 
 #include "neml2/tensors/mandel_notation.h"
-#include "neml2/tensors/ConstantTensors.h"
+#include "neml2/tensors/TensorCache.h"
 
 namespace neml2
 {
+const Tensor &
+full_to_mandel_map(const TensorOptions & opt)
+{
+  auto maker = [](const TensorOptions & opt) -> Tensor
+  { return Tensor::create({0, 4, 8, 5, 2, 1}, opt); };
+  thread_local TensorCache _ftmm(maker);
+  return _ftmm(opt);
+}
+
+const Tensor &
+mandel_to_full_map(const TensorOptions & opt)
+{
+  auto maker = [](const TensorOptions & opt) -> Tensor
+  { return Tensor::create({0, 5, 4, 5, 1, 3, 4, 3, 2}, opt); };
+  thread_local TensorCache _mtfm(maker);
+  return _mtfm(opt);
+}
+
+const Tensor &
+full_to_mandel_factor(const TensorOptions & opt)
+{
+  auto maker = [](const TensorOptions & opt) -> Tensor
+  { return Tensor::create({1.0, 1.0, 1.0, sqrt2, sqrt2, sqrt2}, opt); };
+  thread_local TensorCache _ftmf(maker);
+  return _ftmf(opt);
+}
+
+const Tensor &
+mandel_to_full_factor(const TensorOptions & opt)
+{
+  auto maker = [](const TensorOptions & opt) -> Tensor
+  {
+    return Tensor::create(
+        {1.0, invsqrt2, invsqrt2, invsqrt2, 1.0, invsqrt2, invsqrt2, invsqrt2, 1.0}, opt);
+  };
+  thread_local TensorCache _mtff(maker);
+  return _mtff(opt);
+}
+
+const Tensor &
+full_to_skew_map(const TensorOptions & opt)
+{
+  auto maker = [](const TensorOptions & opt) -> Tensor { return Tensor::create({7, 2, 3}, opt); };
+  thread_local TensorCache _ftsm(maker);
+  return _ftsm(opt);
+}
+
+const Tensor &
+skew_to_full_map(const TensorOptions & opt)
+{
+  auto maker = [](const TensorOptions & opt) -> Tensor
+  { return Tensor::create({0, 2, 1, 2, 0, 0, 1, 0, 0}, opt); };
+  thread_local TensorCache _stfm(maker);
+  return _stfm(opt);
+}
+
+const Tensor &
+full_to_skew_factor(const TensorOptions & opt)
+{
+  auto maker = [](const TensorOptions & opt) -> Tensor
+  { return Tensor::create({1.0, 1.0, 1.0}, opt); };
+  thread_local TensorCache _ftsf(maker);
+  return _ftsf(opt);
+}
+
+const Tensor &
+skew_to_full_factor(const TensorOptions & opt)
+{
+  auto maker = [](const TensorOptions & opt) -> Tensor
+  { return Tensor::create({0.0, -1.0, 1.0, 1.0, 0.0, -1.0, -1.0, 1.0, 0.0}, opt); };
+  thread_local TensorCache _stff(maker);
+  return _stff(opt);
+}
+
 Tensor
-full_to_reduced(const Tensor & full, const ATensor & rmap, const ATensor & rfactors, Size dim)
+full_to_reduced(const Tensor & full, const Tensor & rmap, const Tensor & rfactors, Size dim)
 {
   const auto & batch_shape = full.batch_sizes();
   auto batch_dim = full.batch_dim();
@@ -41,7 +115,7 @@ full_to_reduced(const Tensor & full, const ATensor & rmap, const ATensor & rfact
   net.insert(net.end(), trailing_dim, indexing::None);
   auto map_shape = utils::add_shapes(starting_shape, rmap.size(0), trailing_shape);
   auto map = rmap.index(net).expand(map_shape);
-  auto factor = rfactors.to(full).index(net);
+  auto factor = rfactors.index(net);
 
   auto batched_map = Tensor(map, 0).batch_expand_as(full);
   auto reduced = at::gather(full.base_reshape(utils::add_shapes(starting_shape, 9, trailing_shape)),
@@ -52,7 +126,7 @@ full_to_reduced(const Tensor & full, const ATensor & rmap, const ATensor & rfact
 }
 
 Tensor
-reduced_to_full(const Tensor & reduced, const ATensor & rmap, const ATensor & rfactors, Size dim)
+reduced_to_full(const Tensor & reduced, const Tensor & rmap, const Tensor & rfactors, Size dim)
 {
   const auto & batch_shape = reduced.batch_sizes();
   auto batch_dim = reduced.batch_dim();
@@ -65,7 +139,7 @@ reduced_to_full(const Tensor & reduced, const ATensor & rmap, const ATensor & rf
   net.insert(net.end(), trailing_dim, indexing::None);
   auto map_shape = utils::add_shapes(starting_shape, rmap.size(0), trailing_shape);
   auto map = rmap.index(net).expand(map_shape);
-  auto factor = rfactors.to(reduced).index(net);
+  auto factor = rfactors.index(net);
 
   auto batched_map = Tensor(map, 0).batch_expand_as(reduced);
   auto full = Tensor(factor * at::gather(reduced, batch_dim + dim, batched_map), batch_shape);
@@ -76,40 +150,36 @@ reduced_to_full(const Tensor & reduced, const ATensor & rmap, const ATensor & rf
 Tensor
 full_to_mandel(const Tensor & full, Size dim)
 {
-  return full_to_reduced(
-      full,
-      ConstantTensors::full_to_mandel_map().to(full.options().dtype(default_integer_dtype())),
-      ConstantTensors::full_to_mandel_factor().to(full.options()),
-      dim);
+  return full_to_reduced(full,
+                         full_to_mandel_map(full.options().dtype(default_integer_dtype())),
+                         full_to_mandel_factor(full.options()),
+                         dim);
 }
 
 Tensor
 mandel_to_full(const Tensor & mandel, Size dim)
 {
-  return reduced_to_full(
-      mandel,
-      ConstantTensors::mandel_to_full_map().to(mandel.options().dtype(default_integer_dtype())),
-      ConstantTensors::mandel_to_full_factor().to(mandel.options()),
-      dim);
+  return reduced_to_full(mandel,
+                         mandel_to_full_map(mandel.options().dtype(default_integer_dtype())),
+                         mandel_to_full_factor(mandel.options()),
+                         dim);
 }
 
 Tensor
 full_to_skew(const Tensor & full, Size dim)
 {
-  return full_to_reduced(
-      full,
-      ConstantTensors::full_to_skew_map().to(full.options().dtype(default_integer_dtype())),
-      ConstantTensors::full_to_skew_factor().to(full.options()),
-      dim);
+  return full_to_reduced(full,
+                         full_to_skew_map(full.options().dtype(default_integer_dtype())),
+                         full_to_skew_factor(full.options()),
+                         dim);
 }
 
 Tensor
 skew_to_full(const Tensor & skew, Size dim)
 {
-  return reduced_to_full(
-      skew,
-      ConstantTensors::skew_to_full_map().to(skew.options().dtype(default_integer_dtype())),
-      ConstantTensors::skew_to_full_factor().to(skew.options()),
-      dim);
+  return reduced_to_full(skew,
+                         skew_to_full_map(skew.options().dtype(default_integer_dtype())),
+                         skew_to_full_factor(skew.options()),
+                         dim);
 }
 } // namespace neml2

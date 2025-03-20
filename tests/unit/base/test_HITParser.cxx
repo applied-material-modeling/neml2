@@ -79,14 +79,13 @@ TEST_CASE("HITParser", "[base]")
       SECTION("global settings")
       {
         auto & settings = all_options.settings();
-        REQUIRE(settings.get<EnumSelection>("default_floating_point_type").as<Dtype>() == kFloat16);
         REQUIRE(settings.get<EnumSelection>("default_integer_type").as<Dtype>() == kInt32);
-        REQUIRE(settings.get<std::string>("default_device") == "cuda:1");
         REQUIRE(settings.get<Real>("machine_precision") == Catch::Approx(0.5));
         REQUIRE(settings.get<Real>("tolerance") == Catch::Approx(0.1));
         REQUIRE(settings.get<Real>("tighter_tolerance") == Catch::Approx(0.01));
         REQUIRE(settings.get<std::string>("buffer_name_separator") == "::");
         REQUIRE(settings.get<std::string>("parameter_name_separator") == "::");
+        REQUIRE(!settings.get<bool>("require_double_precision"));
       }
 
       SECTION("booleans")

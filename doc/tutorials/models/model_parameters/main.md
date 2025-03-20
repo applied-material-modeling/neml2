@@ -42,11 +42,11 @@ All model parameters are associated with a unique name, either predefined by the
   #include "neml2/models/Model.h"
   #include "neml2/tensors/Tensor.h"
 
-  using namespace neml2;
-
   int
   main()
   {
+    using namespace neml2;
+
     auto & model = load_model("input.i", "my_model");
 
     for (auto && [pname, pval] : model.named_parameters())
@@ -89,11 +89,11 @@ neml2::Model::get_parameter can be used to retrieve a specific parameter given i
   #include "neml2/models/Model.h"
   #include "neml2/tensors/Tensor.h"
 
-  using namespace neml2;
-
   int
   main()
   {
+    using namespace neml2;
+
     auto & model = load_model("input.i", "my_model");
 
     auto & G = model.get_parameter("G");
@@ -151,11 +151,11 @@ The neml2::Model::set_parameter and neml2::Model::set_parameters methods can be 
   #include "neml2/tensors/Tensor.h"
   #include "neml2/tensors/Scalar.h"
 
-  using namespace neml2;
-
   int
   main()
   {
+    using namespace neml2;
+
     auto & model = load_model("input.i", "my_model");
 
     // Before modification

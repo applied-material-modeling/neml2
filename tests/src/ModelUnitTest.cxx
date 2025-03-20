@@ -203,7 +203,7 @@ ModelUnitTest::check_dvalue()
     {
       const auto x0 = _in.count(xname) ? _in.at(xname).base_flatten()
                                        : Tensor::zeros(_model.input_axis().variable_size(xname),
-                                                       _model.tensor_options());
+                                                       _model.variable_options());
       auto numerical = finite_differencing_derivative(
           [this, &yname, &xname](const Tensor & x)
           {
@@ -246,10 +246,10 @@ ModelUnitTest::check_d2value()
     for (const auto & x1name : _model.input_axis().variable_names())
       for (const auto & x2name : _model.input_axis().variable_names())
       {
-        const auto x20 =
-            _in.count(x2name)
-                ? _in.at(x2name).base_flatten()
-                : Tensor::zeros(_model.input_axis().variable_size(x2name), _model.tensor_options());
+        const auto x20 = _in.count(x2name)
+                             ? _in.at(x2name).base_flatten()
+                             : Tensor::zeros(_model.input_axis().variable_size(x2name),
+                                             _model.variable_options());
         auto numerical = finite_differencing_derivative(
             [this, &yname, &x1name, &x2name](const Tensor & x)
             {

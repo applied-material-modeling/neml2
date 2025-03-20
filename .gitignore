@@ -1,50 +1,45 @@
+# CMake
+*.cmake
+!cmake/Modules/*
 CMakeCache.txt
 CMakeFiles
 CMakeUserPresets.json
 CMakeDoxyfile.in
-detect_cuda*
-*.swp
-Makefile
-*.a
-src/test
-DartConfiguration.tcl
-Testing
-*.cmake
-tests/*tests
-.cache
 compile_commands.json
-coverage
-doc/class-doc
-*.html
-.vscode
-doc/doctrees
-doc/html
-!cmake/Modules/*
-*.log
-*.so
-*.dylib
-*.pt
-!**/gold/*.pt
-**/syntax.yml
+detect_cuda*
+Makefile
 build
 _deps
+install
+
+# Editor cache
+*.swp
+DartConfiguration.tcl
+.cache
+.vscode
+*.log
+.env
+
+# Python
 __pycache__
-conftest.py
 *.pyi
 neml2.egg-info
-.pytest_cache
-src/neml2/base/config.h
-install
-conftest.py
-.env
-*.pdf
 
-# For MOOSE in-source build
+# Tests
+Testing
+*.pt
+!**/gold/*.pt
+.pytest_cache
+
+# Objects and libraries
+*.a
 .libs
 *.la
 *.so*
 *.lo
 *.lo.d
+*.dylib
 
-# graphviz
+# Miscellaneous
+*.pdf
 *.gv

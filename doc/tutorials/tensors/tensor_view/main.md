@@ -27,6 +27,7 @@ The following example demonstrates the two bullet points, i.e., "change in origi
   @source:src1
   ```cpp
   #include "neml2/tensors/Tensor.h"
+
   using namespace neml2;
   using namespace indexing;
 

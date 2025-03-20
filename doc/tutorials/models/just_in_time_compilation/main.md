@@ -50,11 +50,10 @@ And the composed model correctly defines \f$ a \f$, \f$ a_n \f$, \f$ b \f$, \f$ 
   ```cpp
   #include "neml2/models/Model.h"
 
-  using namespace neml2;
-
   int
   main()
   {
+    using namespace neml2;
     auto & model = load_model("input.i", "eq");
     std::cout << model << std::endl;
   }
@@ -95,11 +94,11 @@ NEML2 enables tracing of tensor operations lazily. No tracing is performed when 
   #include "neml2/tensors/Scalar.h"
   #include "neml2/jit/utils.h"
 
-  using namespace neml2;
-
   int
   main()
   {
+    using namespace neml2;
+    set_default_dtype(kFloat64);
     auto & model = load_model("input.i", "eq");
 
     // Create example input variables for tracing
@@ -139,6 +138,7 @@ NEML2 enables tracing of tensor operations lazily. No tracing is performed when 
   from neml2.tensors import Scalar
   import torch
 
+  torch.set_default_dtype(torch.double)
   model = neml2.load_model("input.i", "eq")
 
   # Create example input variables for tracing
@@ -216,11 +216,11 @@ The code below shows that, after a few forward evaluations, the traced graph can
   #include "neml2/tensors/Scalar.h"
   #include "neml2/jit/utils.h"
 
-  using namespace neml2;
-
   int
   main()
   {
+    using namespace neml2;
+    set_default_dtype(kFloat64);
     auto & model = load_model("input.i", "eq");
 
     // Create example input variables for tracing
@@ -261,6 +261,7 @@ The code below shows that, after a few forward evaluations, the traced graph can
   from neml2.tensors import Scalar
   import torch
 
+  torch.set_default_dtype(torch.double)
   model = neml2.load_model("input.i", "eq")
 
   # Create example input variables for tracing

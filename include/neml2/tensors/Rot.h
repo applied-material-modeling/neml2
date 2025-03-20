@@ -64,7 +64,7 @@ public:
   static Rot fill_matrix(const R2 & M);
 
   /// Fill some number of random orientations
-  static Rot fill_random(unsigned int n, Size random_seed);
+  static Rot fill_random(unsigned int n);
 
   /// Fill from standard Rodrigues parameters
   static Rot fill_rodrigues(const Scalar & rx, const Scalar & ry, const Scalar & rz);

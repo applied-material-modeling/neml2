@@ -11,6 +11,7 @@
 
 if(UNIX AND NOT APPLE)
   string(REPLACE "." "_" DOXYGEN_RELEASE ${DOXYGEN_VERSION})
+  include(FetchContent)
   FetchContent_Declare(
     doxygen
     URL https://github.com/doxygen/doxygen/releases/download/Release_${DOXYGEN_RELEASE}/doxygen-${DOXYGEN_VERSION}.linux.bin.tar.gz
