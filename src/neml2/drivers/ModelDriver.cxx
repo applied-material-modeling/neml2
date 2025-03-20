@@ -109,6 +109,12 @@ ModelDriver::setup()
         [&](ValueMap && x, Device device) -> ValueMap
         {
           auto & model = get_model(_model.name());
+
+          // If this is not an async dispatch, we need to move the model to the target device
+          // _every_ time before evaluation
+          if (!_async_dispatch)
+            model.to(device);
+
           neml_assert_dbg(model.tensor_options().device() == device);
           return model.value(std::move(x));
         },
