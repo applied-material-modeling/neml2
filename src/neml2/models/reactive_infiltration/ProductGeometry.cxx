@@ -26,6 +26,7 @@
 #include "neml2/tensors/functions/sqrt.h"
 #include "neml2/tensors/functions/clamp.h"
 #include "neml2/tensors/functions/where.h"
+#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {

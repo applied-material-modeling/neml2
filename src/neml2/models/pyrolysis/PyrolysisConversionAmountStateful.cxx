@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/pyrolysis/PyrolysisConversionAmountStateful.h"
+#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {

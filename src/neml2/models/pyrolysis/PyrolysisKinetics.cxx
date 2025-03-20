@@ -24,6 +24,7 @@
 
 #include "neml2/models/pyrolysis/PyrolysisKinetics.h"
 #include "neml2/tensors/functions/exp.h"
+#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
