@@ -23,7 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/models/pyrolysis/NucleationReactionModel.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/functions/pow.h"
+#include "neml2/tensors/functions/log.h"
 
 namespace neml2
 {
@@ -37,10 +38,10 @@ NucleationReactionModel::expected_options()
                   "\\f$ k \\f$ is the scaling constant, \\f$ n \\f$ is the reaction order, and "
                   "\\f$ a \\f$ is the reaction amount";
 
-  options.set_parameter<CrossRef<Scalar>>("scaling_constant");
+  options.set_parameter<TensorName<Scalar>>("scaling_constant");
   options.set("scaling_constant").doc() = "Scaling constant, k";
 
-  options.set_parameter<CrossRef<Scalar>>("reaction_order");
+  options.set_parameter<TensorName<Scalar>>("reaction_order");
   options.set("reaction_order").doc() = "Reaction order, n";
 
   options.set_input("reaction_amount") = VariableName("state", "reaction_amount");
@@ -68,13 +69,12 @@ NucleationReactionModel::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (out)
   {
-    _f = _k * (1.0 - _a) * math::pow(-1.0 * math::log(1.0 - _a), _n);
+    _f = _k * (1.0 - _a) * pow(-1.0 * log(1.0 - _a), _n);
   }
 
   if (dout_din)
   {
-    _f.d(_a) =
-        _k * _n * math::pow(-math::log(1 - _a), _n - 1) - _k * math::pow(-math::log(1 - _a), _n);
+    _f.d(_a) = _k * _n * pow(-log(1 - _a), _n - 1) - _k * pow(-log(1 - _a), _n);
   }
 }
 }

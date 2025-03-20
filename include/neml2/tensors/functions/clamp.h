@@ -22,51 +22,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/Product.h"
+#pragma once
+
+#include "neml2/tensors/tensors_fwd.h"
 
 namespace neml2
 {
-register_NEML2_object(Product);
-OptionSet
-Product::expected_options()
-{
-  OptionSet options = Model::expected_options();
-  options.doc() = "Define the product between two variables";
-
-  options.set_input("variable_a") = VariableName("state", "variable_a");
-  options.set("variable_a").doc() = "variable a";
-
-  options.set_input("variable_b") = VariableName("state", "variable_b");
-  options.set("variable_b").doc() = "variable b";
-
-  options.set_output("out") = VariableName("state", "out");
-  options.set("out").doc() = "Product out.";
-
-  return options;
-}
-
-Product::Product(const OptionSet & options)
-  : Model(options),
-    _a(declare_input_variable<Scalar>("variable_a")),
-    _b(declare_input_variable<Scalar>("variable_b")),
-    _ab(declare_output_variable<Scalar>("out"))
-{
-}
-
-void
-Product::set_value(bool out, bool dout_din, bool d2out_din2)
-{
-  neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
-
-  if (out)
-  {
-    _ab = _a * _b;
-  }
-
-  if (dout_din)
-  {
-    _ab.d(_a) = _b;
-    _ab.d(_b) = _a;
-  }
-}
-}
+#define DECLARE_CLAMP(T) T clamp(const T & a, Real lb, Real ub)
+FOR_ALL_TENSORBASE(DECLARE_CLAMP);
+#undef DECLARE_CLAMP
+} // namespace neml2

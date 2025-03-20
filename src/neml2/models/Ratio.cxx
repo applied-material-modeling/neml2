@@ -23,7 +23,6 @@
 // THE SOFTWARE.
 
 #include "neml2/models/Ratio.h"
-#include "neml2/misc/math.h"
 
 namespace neml2
 {

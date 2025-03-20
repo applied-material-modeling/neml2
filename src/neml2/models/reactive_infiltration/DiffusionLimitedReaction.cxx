@@ -48,7 +48,7 @@ DiffusionLimitedReaction::expected_options()
   options.set_output("reaction_rate") = VariableName{"state", "alpha_rate"};
   options.set("reaction_rate").doc() = "Product phase substance (mol/V) rate of change";
 
-  options.set_parameter<CrossRef<Scalar>>("diffusion_coefficient");
+  options.set_parameter<TensorName<Scalar>>("diffusion_coefficient");
   options.set("diffusion_coefficient").doc() =
       "Diffusion coefficient of the rate-limiting species in the product phase";
 

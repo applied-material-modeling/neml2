@@ -23,7 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/pyrolysis/PyrolysisKinetics.h"
-#include "neml2/misc/math.h"
+#include "neml2/tensors/functions/exp.h"
 
 namespace neml2
 {
@@ -38,13 +38,13 @@ PyrolysisKinetics::expected_options()
                   "\\f$ R \\f$ is the ideal gas constant, \\f$ T \\f$ is the temperature, and \\f$ "
                   "f \\f$ is the reaction models";
 
-  options.set_parameter<CrossRef<Scalar>>("kinetic_constant");
+  options.set_parameter<TensorName<Scalar>>("kinetic_constant");
   options.set("kinetic_constant").doc() = "Kinetic constant, A";
 
-  options.set_parameter<CrossRef<Scalar>>("activation_energy");
+  options.set_parameter<TensorName<Scalar>>("activation_energy");
   options.set("activation_energy").doc() = "Activation energy, Ea";
 
-  options.set_parameter<CrossRef<Scalar>>("ideal_gas_constant");
+  options.set_parameter<TensorName<Scalar>>("ideal_gas_constant");
   options.set("ideal_gas_constant").doc() = "Ideal gas constant, R";
 
   options.set_input("temperature") = VariableName(FORCES, "temperature");
@@ -77,13 +77,13 @@ PyrolysisKinetics::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (out)
   {
-    _x = _A * math::exp(-_Ea / (_R * _T)) * _f;
+    _x = _A * exp(-_Ea / (_R * _T)) * _f;
   }
 
   if (dout_din)
   {
-    _x.d(_T) = _A * math::exp(-_Ea / (_R * _T)) * _f * (_Ea / (_R * _T * _T));
-    _x.d(_f) = _A * math::exp(-_Ea / (_R * _T));
+    _x.d(_T) = _A * exp(-_Ea / (_R * _T)) * _f * (_Ea / (_R * _T * _T));
+    _x.d(_f) = _A * exp(-_Ea / (_R * _T));
   }
 }
 }

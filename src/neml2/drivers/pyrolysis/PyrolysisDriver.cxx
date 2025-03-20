@@ -34,8 +34,9 @@ PyrolysisDriver::expected_options()
   OptionSet options = TransientDriver::expected_options();
   options.doc() = "Driver for the pyrolysis process";
 
-  options.set<CrossRef<Scalar>>("prescribed_temperature");
-  options.set("prescribed_temperature").doc() = "Temperature";
+  options.set<TensorName<Scalar>>("prescribed_temperature");
+  options.set("prescribed_temperature").doc() =
+      "Actual prescibed temperature values, when providing temperatures to the model";
 
   options.set<VariableName>("temperature") = VariableName("forces", "T");
   options.set("temperature").doc() = "Name of the variable for temperature.";
@@ -45,23 +46,21 @@ PyrolysisDriver::expected_options()
 
 PyrolysisDriver::PyrolysisDriver(const OptionSet & options)
   : TransientDriver(options),
-    _temperature(options.get<CrossRef<Scalar>>("prescribed_temperature")),
+    _temperature(options.get<TensorName<Scalar>>("prescribed_temperature").resolve()),
     _temperature_name(options.get<VariableName>("temperature"))
 {
   _temperature = _temperature.to(_device);
 }
 
 void
-PyrolysisDriver::diagnose(std::vector<Diagnosis> & diagnoses) const
+PyrolysisDriver::diagnose() const
 {
-  TransientDriver::diagnose(diagnoses);
-  diagnostic_assert(diagnoses,
-                    _temperature.batch_dim() >= 1,
+  TransientDriver::diagnose();
+  diagnostic_assert(_temperature.batch_dim() >= 1,
                     "prescribed_temperature should have at least one batch dimension but instead "
                     "has batch dimension ",
                     _temperature.batch_dim());
   diagnostic_assert(
-      diagnoses,
       _temperature.batch_size(0) == _time.batch_size(0),
       "prescribed_temperature should have the same number of steps as time, but instead has ",
       _temperature.batch_size(0),

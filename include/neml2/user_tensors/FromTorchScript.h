@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include "neml2/tensors/user_tensors/UserTensorBase.h"
+#include "neml2/user_tensors/UserTensorBase.h"
 
 namespace neml2
 {
@@ -40,6 +40,6 @@ public:
 
 protected:
   /// Helper to make the tensor given user input options
-  torch::Tensor load_torch_tensor(const OptionSet & options) const;
+  at::Tensor load_torch_tensor(const OptionSet & options) const;
 };
 } // namespace neml2
