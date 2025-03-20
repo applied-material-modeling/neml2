@@ -41,8 +41,9 @@ namespace neml2
  * It dispataches a fixed batch size, up to (optionally) the provided capacity.  The default
  * capacity is the batch size.
  *
- * The number of devices in the list must equal the local communicator size.  The list must not
- * include the cpu.
+ * The number of devices in the list must be greater than or equal to local communicator size.
+ *
+ * The list must not include the cpu.
  */
 class SimpleMPIScheduler : public WorkScheduler
 {
@@ -83,10 +84,10 @@ private:
   std::vector<Device> _available_devices;
 
   /// The batch size to dispatch
-  std::size_t _batch_size;
+  std::vector<std::size_t> _batch_sizes;
 
   /// The capacity of the device
-  std::size_t _capacity;
+  std::vector<std::size_t> _capacities;
 
   /// Global communicator to use to split
   TIMPI::Communicator _comm;
