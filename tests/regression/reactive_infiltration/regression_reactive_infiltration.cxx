@@ -34,7 +34,7 @@ namespace fs = std::filesystem;
 TEST_CASE("reactive infiltration")
 {
   const auto pwd = fs::current_path();
-  const auto search_path = pwd / "regression" / "reactive_infiltration";
+  const auto search_path = pwd / "reactive_infiltration";
 
   // Find all regression tests
   std::vector<fs::path> tests;
