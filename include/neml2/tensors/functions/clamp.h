@@ -28,7 +28,7 @@
 
 namespace neml2
 {
-#define DECLARE_CLAMP(T) T clamp(const T & a, Real lb, Real ub)
+#define DECLARE_CLAMP(T) T clamp(const T & a, const Real & lb, const Real & ub)
 FOR_ALL_TENSORBASE(DECLARE_CLAMP);
 #undef DECLARE_CLAMP
 } // namespace neml2

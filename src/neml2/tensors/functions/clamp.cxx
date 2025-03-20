@@ -28,7 +28,10 @@
 namespace neml2
 {
 #define DEFINE_CLAMP(T)                                                                            \
-  T clamp(const T & a, Real lb, Real ub) { return T(at::clamp(a, lb, ub), a.batch_sizes()); }      \
+  T clamp(const T & a, const Real & lb, const Real & ub)                                           \
+  {                                                                                                \
+    return T(at::clamp(a, lb, ub), a.batch_sizes());                                               \
+  }                                                                                                \
   static_assert(true)
 FOR_ALL_TENSORBASE(DEFINE_CLAMP);
 } // namespace neml2
