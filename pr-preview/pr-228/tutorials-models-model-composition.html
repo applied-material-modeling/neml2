@@ -132,21 +132,21 @@ $(function(){initNavTree('tutorials-models-model-composition.html',''); initResi
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md89">Problem description</a>
+    <a href="#autotoc_md95">Problem description</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md90">Writing the input file</a>
+    <a href="#autotoc_md96">Writing the input file</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md91">Running the models: the hard way</a>
+    <a href="#autotoc_md97">Running the models: the hard way</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md92">Running the models: the easy way</a>
+    <a href="#autotoc_md98">Running the models: the easy way</a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_content_2tutorials_2models_2model__composition_2main"></a></p>
-<h1><a class="anchor" id="autotoc_md89"></a>
+<h1><a class="anchor" id="autotoc_md95"></a>
 Problem description</h1>
 <p>We have been working with the linear, isotropic elasticity model in the previous tutorials. We started with that example because it is arguably the simplest possible material model in the context of solid mechanics. It is simple not just because of the simplicity in the description of the material behavior, but also due to the fact that its mathematical formulation only involves one linear equation.</p>
 <p>Much more complicated, nonlinear models can be created using NEML2.</p>
@@ -180,7 +180,7 @@ Problem description</h1>
 \end{align}
 </p>
 <p> where \( \boldsymbol{a} \) and \( \boldsymbol{b} \) are symmetric second order tensors.</p>
-<h1><a class="anchor" id="autotoc_md90"></a>
+<h1><a class="anchor" id="autotoc_md96"></a>
 Writing the input file</h1>
 <p>Let us first search for available models describing this set of equations:</p><ul>
 <li>\( \eqref{1} \&amp; \eqref{2} \) correspond to <a class="el" href="syntax-models.html#sr2invariant">SR2Invariant</a>;</li>
@@ -207,7 +207,7 @@ Writing the input file</h1>
 <div class="line">    coefficient_as_parameter = true</div>
 <div class="line">  []</div>
 <div class="line">[]</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md91"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md97"></a>
 Running the models: the hard way</h1>
 <p>Now that all three models are defined in the input file, we can load and evaluate them in sequence, with a bit of effort:</p>
 <div class="tabbed"></div><div class="tabbed"><ul>
@@ -298,7 +298,7 @@ Running the models: the hard way</h1>
 <div class="line">&lt;Tensor of shape [][6]&gt;</div>
 </div><!-- fragment --></li>
 </ul>
-</div><div class="tabbed"></div><h1><a class="anchor" id="autotoc_md92"></a>
+</div><div class="tabbed"></div><h1><a class="anchor" id="autotoc_md98"></a>
 Running the models: the easy way</h1>
 <p>We were able to successfully calculate \( \dot{\boldsymbol{b}} \) by</p><ol type="1">
 <li>calculating \( \bar{a} \) by evaluating \( \eqref{1} \),</li>

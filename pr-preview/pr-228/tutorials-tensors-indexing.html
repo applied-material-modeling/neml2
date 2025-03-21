@@ -132,16 +132,16 @@ $(function(){initNavTree('tutorials-tensors-indexing.html',''); initResizable(tr
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md122">Batch versus base indexing</a>
+    <a href="#autotoc_md128">Batch versus base indexing</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md123">Single element indexing</a>
+    <a href="#autotoc_md129">Single element indexing</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md124">Slicing</a>
+    <a href="#autotoc_md130">Slicing</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md125">Dimensional indexing tools</a>
+    <a href="#autotoc_md131">Dimensional indexing tools</a>
   </li>
 </ul>
 </div>
@@ -150,10 +150,10 @@ $(function(){initNavTree('tutorials-tensors-indexing.html',''); initResizable(tr
 <li>NumPy manual <a href="https://numpy.org/doc/2.2/user/basics.indexing.html">Indexing on ndarrays</a></li>
 <li>PyTorch documentation <a href="https://pytorch.org/cppdocs/notes/tensor_indexing.html">Tensor Indexing API</a></li>
 </ul>
-<h1><a class="anchor" id="autotoc_md122"></a>
+<h1><a class="anchor" id="autotoc_md128"></a>
 Batch versus base indexing</h1>
 <p>NEML2 tensor indexing works much in the same way as in NumPy and PyTorch. We also offer a simple one-to-one translation between C++ and Python tensor indexing API. The major difference between indexing (batched) NEML2 tensor and indexing tensors in PyTorch or N-D arrays in NumPy is that <b>most indexing APIs have two variants &ndash; one for indexing batch dimensions and the other for indexing base dimensions</b>.</p>
-<h1><a class="anchor" id="autotoc_md123"></a>
+<h1><a class="anchor" id="autotoc_md129"></a>
 Single element indexing</h1>
 <p>Single element indexing works exactly like that for indexing flat containers such as vectors, arrays, lists, etc. The indexing is 0-based and accepts negative integers (for reverse indexing).</p>
 <div class="tabbed"></div><div class="tabbed"><ul>
@@ -320,7 +320,7 @@ Single element indexing</h1>
 <div class="line">&lt;Tensor of shape [2, 2][1]&gt;</div>
 </div><!-- fragment --></li>
 </ul>
-</div><div class="tabbed"></div><h1><a class="anchor" id="autotoc_md124"></a>
+</div><div class="tabbed"></div><h1><a class="anchor" id="autotoc_md130"></a>
 Slicing</h1>
 <p>NEML2 supports the same slicing rules as in NumPy and PyTorch. A slice takes the form of </p><div class="fragment"><div class="line">start:stop:step</div>
 </div><!-- fragment --><p> where <code>start</code>, <code>stop</code>, and <code>step</code> are integers representing the starting index, ending index, and the striding of the sliced tensor view. All of these integers are optional when constructing a slice: <code>start</code> default to 0, <code>stop</code> default to \(\infty\) (i.e., <code>std::numeric_limits&lt;Size&gt;::max()</code>), and <code>step</code> default to 1. Note that <code>step</code> must be positive.</p>
@@ -628,7 +628,7 @@ Slicing</h1>
 <div class="line">&lt;Tensor of shape [2, 3][2]&gt;</div>
 </div><!-- fragment --></li>
 </ul>
-</div><div class="tabbed"></div><h1><a class="anchor" id="autotoc_md125"></a>
+</div><div class="tabbed"></div><h1><a class="anchor" id="autotoc_md131"></a>
 Dimensional indexing tools</h1>
 <p>When indexing multidimensional tensors, having to specify the element index or slicing for each dimension would be cumbersome. To simplify multidimensional indexing, some special syntax and notations are reserved for inferring tensor shapes.</p>
 <p>NEML2 currently supports two special symbols:</p><ul>

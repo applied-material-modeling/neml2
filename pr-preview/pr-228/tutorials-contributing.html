@@ -132,7 +132,7 @@ $(function(){initNavTree('tutorials-contributing.html',''); initResizable(true);
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md45">Model development</a>
+    <a href="#autotoc_md51">Model development</a>
   </li>
   <li class="level1">
     <a href="#testing-cpp">C++ backend</a>
@@ -152,7 +152,7 @@ $(function(){initNavTree('tutorials-contributing.html',''); initResizable(true);
     </ul>
   </li>
   <li class="level1">
-    <a href="#autotoc_md46">Python package</a>
+    <a href="#autotoc_md52">Python package</a>
     <ul>
       <li class="level2">
         <a href="#testing-python">Setup</a>
@@ -163,29 +163,29 @@ $(function(){initNavTree('tutorials-contributing.html',''); initResizable(true);
     </ul>
   </li>
   <li class="level1">
-    <a href="#autotoc_md47">Documentation</a>
+    <a href="#autotoc_md53">Documentation</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md48">Code formatting and linting</a>
+    <a href="#autotoc_md54">Code formatting and linting</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md49">Naming conventions</a>
+    <a href="#autotoc_md55">Naming conventions</a>
     <ul>
       <li class="level2">
-        <a href="#autotoc_md50">Reserved axis names</a>
+        <a href="#autotoc_md56">Reserved axis names</a>
       </li>
       <li class="level2">
-        <a href="#autotoc_md51">Variable naming conventions</a>
+        <a href="#autotoc_md57">Variable naming conventions</a>
       </li>
       <li class="level2">
-        <a href="#autotoc_md52">Source code naming conventions</a>
+        <a href="#autotoc_md58">Source code naming conventions</a>
       </li>
     </ul>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_content_2tutorials_2contributing"></a></p>
-<h1><a class="anchor" id="autotoc_md45"></a>
+<h1><a class="anchor" id="autotoc_md51"></a>
 Model development</h1>
 <p>Although NEML2 comes with a large collection modular building blocks for composing material models, it is sometimes necessary to write your own material models (and integrate them with existing NEML2 models). The <a class="el" href="tutorials-extension.html">extension</a> tutorial set demonstrates how a custom model can be implemented within the NEML2 framework and provides an in-depth explanation for each step in the development process.</p>
 <h1><a class="anchor" id="testing-cpp"></a>
@@ -227,7 +227,7 @@ Verification tests</h2>
 </div><!-- fragment --><p>To run a specific model verification test, use the <code>-c</code> command line option followed by the relative location of the input file, i.e. </p><div class="fragment"><div class="line">cd tests</div>
 <div class="line">../build/dev/verification/verification_tests &quot;solid mechanics&quot; -c chaboche/chaboche.i</div>
 </div><!-- fragment --><p> The regression test compares variables (specified using the <code>variables</code> option) against reference values (specified using the <code>references</code> option). The reference variables can be read using input objects with type <code>VTestTimeSeries</code>.</p>
-<h1><a class="anchor" id="autotoc_md46"></a>
+<h1><a class="anchor" id="autotoc_md52"></a>
 Python package</h1>
 <h2><a class="anchor" id="testing-python"></a>
 Setup</h2>
@@ -245,13 +245,13 @@ pytest</h2>
 </div><!-- fragment --><p>To run a specific test case, use</p>
 <div class="fragment"><div class="line">PYTHONPATH=build/dev/python pytest &quot;python/tests/test_Model.py::test_forward&quot;</div>
 </div><!-- fragment --><p> which runs the function named <code>test_forward</code> defined in the <code>python/tests/test_Model.py</code> file.</p>
-<h1><a class="anchor" id="autotoc_md47"></a>
+<h1><a class="anchor" id="autotoc_md53"></a>
 Documentation</h1>
 <p>It is of paramount importance to write documentation as the library is being developed. While NEML2 supports both Doxygen-style in-code documentation mechanisms and runtime syntax documentation mechanisms, it is still sometimes necessary to write standalone, self-contained documentation.</p>
 <p>To this end, the "dev" configure preset and the "dev-doc" build preset (see <a class="el" href="build-customization.html">build customization</a>) can be used to generate and render the documentation locally: </p><div class="fragment"><div class="line">cmake --preset dev -S .</div>
 <div class="line">cmake --build --preset dev-doc</div>
 </div><!-- fragment --><p> Once the documentation is built, the site can be previewed locally in any browser that supports static HTML, i.e. </p><div class="fragment"><div class="line">firefox build/dev/doc/build/html/index.html</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md48"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md54"></a>
 Code formatting and linting</h1>
 <p>The C++ source code is formatted using <code>clang-format</code>. A <code>.clang-format</code> file is provided at the repository root specifying the formatting requirements. When using an IDE providing plugins or extensions to format C++ source code, it is important to</p><ol type="1">
 <li>Point the plugin/extension to use the <code>.clang-format</code> file located at NEML2's repository root.</li>
@@ -260,9 +260,9 @@ Code formatting and linting</h1>
 <p>The Python scripts must be formatted using <code>black</code>. Formatting requirements are specified under the <code>[black]</code> section in <code>pyproject.toml</code>.</p>
 <p>All pull requests will be run through <code>clang-format</code> and <code>black</code> to ensure formatting consistency.</p>
 <p>For C++ linting, a <code>.clang-tidy</code> file is provided at the repository root to specify expected checks. Python linting is not currently enforced.</p>
-<h1><a class="anchor" id="autotoc_md49"></a>
+<h1><a class="anchor" id="autotoc_md55"></a>
 Naming conventions</h1>
-<h2><a class="anchor" id="autotoc_md50"></a>
+<h2><a class="anchor" id="autotoc_md56"></a>
 Reserved axis names</h2>
 <p>Recall that NEML2 models operates on <em>labeled tensors</em>, and that the collection of labels (with their corresponding layout) is called a labeled axis (<a class="el" href="classneml2_1_1LabeledAxis.html">LabeledAxis</a>). NEML2 predefines six sub-axes to categorize all the input, output and intermediate variables:</p><ul>
 <li>State \(\mathcal{S}\) (axis name <code>state</code>): Variables collectively characterizing the current <em>state</em> of the material subject to given external forces. The state variables are usually the output of a physically meaningful material model.</li>
@@ -273,7 +273,7 @@ Reserved axis names</h2>
 <li>Parameters \(\mathcal{P}\) (axis name <code>parameters</code>): The (nonlinear) parameters.</li>
 </ul>
 <dl class="section note"><dt>Note</dt><dd>When authoring C++ source code, it is recommended to avoid hard-coding reserved axis names as pure strings. Instead, inlined <code>const</code> string names (defined in <code>neml2/models/LabeledAxisAccessor.h</code>) should be used wherever possible, they are <code>STATE</code>, <code>OLD_STATE</code>, <code>FORCES</code>, <code>OLD_FORCES</code>, <code>RESIDUAL</code>, and <code>PARAMETERS</code> whose names are self-explanatory.</dd></dl>
-<h2><a class="anchor" id="autotoc_md51"></a>
+<h2><a class="anchor" id="autotoc_md57"></a>
 Variable naming conventions</h2>
 <p>Variable names are used to <em>access</em> slices of the storage tensor. Variable names have the type <a class="el" href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">neml2::VariableName</a> which is an alias to <a class="el" href="classneml2_1_1LabeledAxisAccessor.html" title="The accessor containing all the information needed to access an item in a LabeledAxis.">neml2::LabeledAxisAccessor</a>. The following characters are not allowed in variable names:</p><ul>
 <li>whitespace characters: input file parsing ambiguity</li>
@@ -283,7 +283,7 @@ Variable naming conventions</h2>
 <li><code>/</code>: separator reserved for nested variable name</li>
 </ul>
 <p>In the input file, the separator <code>/</code> is used to denote nested variable names. For example, <code>A/B/foo</code> specifies a variable named "foo" defined on the sub-axis named "B" which is a nested sub-axis of "A".</p>
-<h2><a class="anchor" id="autotoc_md52"></a>
+<h2><a class="anchor" id="autotoc_md58"></a>
 Source code naming conventions</h2>
 <p>In NEML2 source code, the following naming conventions are recommended:</p><ul>
 <li>User-facing variables and option names should be <em>as descriptive as possible</em>. For example, the equivalent plastic strain is named "equivalent_plastic_strain". Note that white spaces, quotes, and left slashes are not allowed in the names. Underscores are recommended as a replacement for white spaces.</li>

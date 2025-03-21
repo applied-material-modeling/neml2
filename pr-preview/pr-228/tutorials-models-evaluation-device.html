@@ -132,25 +132,25 @@ $(function(){initNavTree('tutorials-models-evaluation-device.html',''); initResi
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md76">Device</a>
+    <a href="#autotoc_md82">Device</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md77">Specifying a device</a>
+    <a href="#autotoc_md83">Specifying a device</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md78">Evaluating the model on a different device</a>
+    <a href="#autotoc_md84">Evaluating the model on a different device</a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_content_2tutorials_2models_2evaluation__device_2main"></a></p>
-<h1><a class="anchor" id="autotoc_md76"></a>
+<h1><a class="anchor" id="autotoc_md82"></a>
 Device</h1>
 <p>NEML2 inherits the definition of <em>device</em> from PyTorch. It is an abstraction representing the physical device where data is stored and models executed. NEML2 is primarily concerned with two types of devices: CPU and CUDA.</p><ul>
 <li><b>CPU</b> stands for Central Processing Unit, and it tranditionally handles a wide range of scientific computing tasks.</li>
 <li><b>CUDA</b> functions as a programming platform that allows a GPU (Graphics Processing Unit) to act as a coprocessor to the CPU to handle specific computing tasks with massive parallelization.</li>
 </ul>
 <p>NEML2 offers several high-level mechanisms for users to strategically interact with CPU and CUDA.</p>
-<h1><a class="anchor" id="autotoc_md77"></a>
+<h1><a class="anchor" id="autotoc_md83"></a>
 Specifying a device</h1>
 <p>A device is uniquely identified by a type, which specifies the type of machine it is (e.g. CPU or CUDA GPU), and a device index or ordinal, which identifies the specific compute device when there is more than one of a certain type. The device index is optional, and in its default state represents (abstractly) "the current device". Further, there are two constraints on the value of the device index, if one is explicitly specified:</p><ul>
 <li>A negative index represents the current device, a non-negative index represents a specific, concrete device.</li>
@@ -163,7 +163,7 @@ Specifying a device</h1>
 <li><code><a class="el" href="namespaceneml2.html#affa60144211a6ab97dca25dabe6b4fd8">neml2::kCUDA</a></code> which is equivalent to the string "cuda" (without device ID specification)</li>
 </ul>
 <dl class="section remark"><dt>Remarks</dt><dd>In general, the string representation is more flexible and is universally accepted in the input file whenever a device specification is required. Parsing the string, however, inposes a small runtime overhead, and therefore it should be replaced with the corresponding device type (if applicable) in performance-critical regions of your code.</dd></dl>
-<h1><a class="anchor" id="autotoc_md78"></a>
+<h1><a class="anchor" id="autotoc_md84"></a>
 Evaluating the model on a different device</h1>
 <p>Recall that all models take the general form of \( y = f(x; p, b) \). To invoke the forward operator \( f \) on a different device, the three ingredients \( x \), \( p \), and \( b \) must be allocated on the target device.</p>
 <p>In our elasticity example, this breaks down to two tasks:</p><ul>

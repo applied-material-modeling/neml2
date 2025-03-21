@@ -132,22 +132,22 @@ $(function(){initNavTree('tutorials-extension-connection-to-input-files.html',''
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md56">Parser</a>
+    <a href="#autotoc_md62">Parser</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md57">Input file</a>
+    <a href="#autotoc_md63">Input file</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md58">Registry</a>
+    <a href="#autotoc_md64">Registry</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md59">Factory</a>
+    <a href="#autotoc_md65">Factory</a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_content_2tutorials_2extension_2connection__to__input__files_2main"></a></p>
 <p>NEML2 utilizes the well-established <a href="https://en.wikipedia.org/wiki/Factory_method_pattern">registry-factory pattern</a> to allow for runtime object creation and distributed class registration. In NEML2, <a class="el" href="classneml2_1_1Parser.html" title="A parser is responsible for parsing an input file into a collection of options which can be used by t...">neml2::Parser</a>, <a class="el" href="classneml2_1_1Registry.html">neml2::Registry</a>, and <a class="el" href="classneml2_1_1Factory.html">neml2::Factory</a> work together to create objects defined in the input file.</p>
-<h1><a class="anchor" id="autotoc_md56"></a>
+<h1><a class="anchor" id="autotoc_md62"></a>
 Parser</h1>
 <p>A class is said to be runtime-manufacturable if its constructor can be retrieved at runtime using a string identification of its symbol. To allow for a unified object creation signature, runtime-manufacturable objects (e.g., models) are required to derive from <a class="el" href="classneml2_1_1NEML2Object.html" title="The base class of all &quot;manufacturable&quot; objects in the NEML2 library.">neml2::NEML2Object</a> and provide a constructor and a static method with the following signatures</p>
 <div class="fragment"><div class="line"><span class="preprocessor">#include &quot;neml2/models/Model.h&quot;</span></div>
@@ -181,7 +181,7 @@ Parser</h1>
 </ol>
 <p>At the end of this process, a set of input options are gathered for the subsequent object creation.</p>
 <p>All of the gathered options are stored in the NEML2 factory so that objects can be created at runtime per the user's request.</p>
-<h1><a class="anchor" id="autotoc_md57"></a>
+<h1><a class="anchor" id="autotoc_md63"></a>
 Input file</h1>
 <p>Before defining the input file options for our custom model, it is a good idea to first design the syntax. For example, in this equation we are mapping from the projectile's current velocity to its acceleration, therefore we'd like to allow user to specify the variable names corresponding to the velocity and acceleration. In addition, since the equation is parametrized by the gravitational acceleration \(\boldsymbol{g}\) and the dynamic viscosity \(\nu\), we should allow user to set their values directly inside the input file (without modifying the source code).</p>
 <p>Therefore, the input file syntax should look something like </p><div class="fragment"><div class="line">[Models]</div>
@@ -210,7 +210,7 @@ Input file</h1>
 <div class="line">}</div>
 <div class="ttc" id="aclassneml2_1_1Model_html_acec712ff48d4c0884a1362c116f3257a"><div class="ttname"><a href="classneml2_1_1Model.html#acec712ff48d4c0884a1362c116f3257a">neml2::Model::expected_options</a></div><div class="ttdeci">static OptionSet expected_options()</div><div class="ttdef"><b>Definition</b> Model.cxx:75</div></div>
 <div class="ttc" id="anamespaceneml2_html_a9e1488821b46ffc106c90ab80036b7aa"><div class="ttname"><a href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">neml2::VariableName</a></div><div class="ttdeci">LabeledAxisAccessor VariableName</div><div class="ttdef"><b>Definition</b> LabeledAxisAccessor.h:185</div></div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md58"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md64"></a>
 Registry</h1>
 <p>The registry is a <a href="https://en.wikipedia.org/wiki/Resource_acquisition_is_initialization">RAII-style</a> singleton responsible for storing the mapping from the string identification of each runtime-manufacturable object to the constructor pointer along with the expected input file options.</p>
 <p>The registration is accomplished by the static method <a class="el" href="classneml2_1_1Registry.html#adadcce9759678b439278443b8caea939" title="Add information on a NEML2Object to the registry.">neml2::Registry::add</a> templated on the class type. The static registration method combined with the singleton enables distributed class registration in each translation unit. The convenience macro register_NEML2_object and its variants wrap around <a class="el" href="classneml2_1_1Registry.html#adadcce9759678b439278443b8caea939" title="Add information on a NEML2Object to the registry.">neml2::Registry::add</a> to provide syntatic simplification of the registration call.</p>
@@ -219,7 +219,7 @@ Registry</h1>
 <div class="line">register_NEML2_object(ProjectileAcceleration);</div>
 <div class="line">}</div>
 </div><!-- fragment --><p> Note that a dummy static variable (unique to the class typename) is created to prevent duplicate registration.</p>
-<h1><a class="anchor" id="autotoc_md59"></a>
+<h1><a class="anchor" id="autotoc_md65"></a>
 Factory</h1>
 <p>The NEML2 factory is another RAII-style singleton object which handles the runtime creation of objects. The generic API for object creation and retrieval is <a class="el" href="classneml2_1_1Factory.html#a6a00666485007905a3fd1a7913a78758" title="Retrive an object pointer under the given section with the given object name.">neml2::Factory::get_object_ptr</a>.</p>
 <p>In our example, the parser will first extract input file options from the input file and use them to fill out the expected options (defined by the <code>ProjectileAcceleration::expected_options()</code> method). The factory then pass the collected options to the constructor to create this object. The constructor should accept an <a class="el" href="classneml2_1_1OptionSet.html" title="A custom map-like data structure. The keys are strings, and the values can be nonhomogeneously typed.">neml2::OptionSet</a> and define how the collected options are used. </p><div class="fragment"><div class="line"><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a></div>

@@ -132,21 +132,21 @@ $(function(){initNavTree('tutorials-models-model-parameters.html',''); initResiz
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md93">Problem description</a>
+    <a href="#autotoc_md99">Problem description</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md94">Parameter vs buffer</a>
+    <a href="#autotoc_md100">Parameter vs buffer</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md95">Retrieving the parameter value</a>
+    <a href="#autotoc_md101">Retrieving the parameter value</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md96">Updating the parameter value</a>
+    <a href="#autotoc_md102">Updating the parameter value</a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_content_2tutorials_2models_2model__parameters_2main"></a></p>
-<h1><a class="anchor" id="autotoc_md93"></a>
+<h1><a class="anchor" id="autotoc_md99"></a>
 Problem description</h1>
 <p>In this tutorial, we will revisit the problem defined in the previous tutorial and demonstrate how to work with model parameters.</p>
 <p>Recall that the linear elasticity material model can be mathematically written as   </p><p class="formulaDsp">
@@ -161,7 +161,7 @@ Problem description</h1>
 \[  x = \left\{ \boldsymbol{\varepsilon} \right\}, \quad y = \left\{ \boldsymbol{\sigma} \right\}, \quad p = \left\{ K, G \right\}, \quad b = \varnothing.
 \]
 </p>
-<h1><a class="anchor" id="autotoc_md94"></a>
+<h1><a class="anchor" id="autotoc_md100"></a>
 Parameter vs buffer</h1>
 <p>Both \( K \) and \( G \) are here categorized as model parameters. The major differences between parameters and buffers are</p><ul>
 <li>Parameters are "trainable", whereas buffers are not. NEML2 can use automatic differentiation to calculate the derivative of output variables with respect to the model parameters, but not for the model buffers.</li>
@@ -169,7 +169,7 @@ Parameter vs buffer</h1>
 </ul>
 <p>In summary, a parameter is a more powerful superset of a buffer. However, there is overhead cost associated with maintaining a parameter that buffers avoid.</p>
 <dl class="section note"><dt>Note</dt><dd>Some models allow users to choose whether to declare data as parameters or buffers.</dd></dl>
-<h1><a class="anchor" id="autotoc_md95"></a>
+<h1><a class="anchor" id="autotoc_md101"></a>
 Retrieving the parameter value</h1>
 <p>All model parameters are associated with a unique name, either predefined by the model itself or chosen by the user. The following code iterates through all parameters in the model and print out their values:</p>
 <div class="tabbed"></div><div class="tabbed"><ul>
@@ -260,7 +260,7 @@ Retrieving the parameter value</h1>
 <div class="line">&lt;Tensor of shape [][]&gt;</div>
 </div><!-- fragment --></li>
 </ul>
-</div><div class="tabbed"></div><h1><a class="anchor" id="autotoc_md96"></a>
+</div><div class="tabbed"></div><h1><a class="anchor" id="autotoc_md102"></a>
 Updating the parameter value</h1>
 <p>Model parameters can always be changed by changing the input file. However, in certain cases (e.g., training and optimization), the parameter values should preferrably be updated at runtime (e.g., after each epoch or optimization iteration).</p>
 <p>The <a class="el" href="classneml2_1_1ParameterStore.html#a1fdcb02ea1c3d6e1828424ccd400fa36" title="Set the value for a parameter.">neml2::Model::set_parameter</a> and <a class="el" href="classneml2_1_1ParameterStore.html#a2d96d9f92a985de65651abf452cb49a2" title="Set values for parameters.">neml2::Model::set_parameters</a> methods can be used for that purpose:</p>

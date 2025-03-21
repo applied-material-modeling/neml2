@@ -132,13 +132,13 @@ $(function(){initNavTree('tutorials-extension-argument-declaration.html',''); in
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md53">Variable declaration</a>
+    <a href="#autotoc_md59">Variable declaration</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md54">Parameter declaration</a>
+    <a href="#autotoc_md60">Parameter declaration</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md55">Model inspection</a>
+    <a href="#autotoc_md61">Model inspection</a>
   </li>
 </ul>
 </div>
@@ -154,7 +154,7 @@ $(function(){initNavTree('tutorials-extension-argument-declaration.html',''); in
 <li>defining the forward operator \(f\).</li>
 </ol>
 <p>The first three are introduced in this tutorial.</p>
-<h1><a class="anchor" id="autotoc_md53"></a>
+<h1><a class="anchor" id="autotoc_md59"></a>
 Variable declaration</h1>
 <p>The API <a class="el" href="classneml2_1_1VariableStore.html#ab53c76b74e26de84675a77067243c871" title="Declare an input variable.">neml2::Model::declare_input_variable</a> can be used to declare input variables. This method should be called in the constructor of the model. It allocate storage for the underlying tensor and returns a const-reference i.e., <code>const Variable&lt;T&gt; &amp;</code>, to the variable, where <code>T</code> is the variable tensor type. Similarly, the method <a class="el" href="classneml2_1_1VariableStore.html#a3586f9e5861f613dbfe349c7cda999e9" title="Declare an output variable.">neml2::Model::declare_output_variable</a> is for declaring output variables which returns a non-const-reference i.e., <code>Variable&lt;T&gt; &amp;</code>, to the variable.</p>
 <p>In our example, the only input variable is \(\boldsymbol{v}\), and the only output variable is \(\boldsymbol{a}\). To declare them, first create the corresponding members in the class like </p><div class="fragment"><div class="line"><span class="comment">// Velocity of the projectile (input variable)</span></div>
@@ -174,7 +174,7 @@ Variable declaration</h1>
 <div class="ttc" id="aclassneml2_1_1ProjectileAcceleration_html_a83543b502da8255ced01db85b58bde37"><div class="ttname"><a href="classneml2_1_1ProjectileAcceleration.html#a83543b502da8255ced01db85b58bde37">neml2::ProjectileAcceleration::ProjectileAcceleration</a></div><div class="ttdeci">ProjectileAcceleration(const OptionSet &amp;options)</div><div class="ttdef"><b>Definition</b> src1.cxx:46</div></div>
 <div class="ttc" id="anamespaceneml2_html"><div class="ttname"><a href="namespaceneml2.html">neml2</a></div><div class="ttdef"><b>Definition</b> DiagnosticsInterface.cxx:30</div></div>
 </div><!-- fragment --><p> NEML2 will look for an input option named "velocity" and declare a vector-valued input variable with the user-specified variable name. Similarly, another input option named "acceleration" will be used to declare a vector-valued output variable.</p>
-<h1><a class="anchor" id="autotoc_md54"></a>
+<h1><a class="anchor" id="autotoc_md60"></a>
 Parameter declaration</h1>
 <p>Parameter (and buffer) declaration is semantically similarly to variable declaration.</p><ul>
 <li><a class="el" href="classneml2_1_1ParameterStore.html#ac44196489c29d0a5f8e1c6d6399d6b4e" title="Declare a parameter.">neml2::Model::declare_parameter</a> is used to declare parameters, and</li>
@@ -199,7 +199,7 @@ Parameter declaration</h1>
 <div class="line">}</div>
 </div><!-- fragment --><p> The first argument of the parameter/buffer declaration method takes a string specifying the name of the parameter/buffer used internally. These names will then become the "handles" for retrieving and updating parameter/buffer values.</p>
 <p>NEML2 will look for input options named "gravitational_acceleration" and "dynamic_viscosity" and declare the corresponding parameter and buffer.</p>
-<h1><a class="anchor" id="autotoc_md55"></a>
+<h1><a class="anchor" id="autotoc_md61"></a>
 Model inspection</h1>
 <p>Once all arguments are successfully declared, the <em>structure</em> of the model is determined. NEML2 handles the allocation and arrangement of variables, parameters, buffers, and their underlying tensors. The structure of the model can be inspected by printing out the summary: </p><div class="fragment"><div class="line"><span class="keywordtype">int</span></div>
 <div class="line">main()</div>

@@ -132,18 +132,18 @@ $(function(){initNavTree('tutorials-extension-model-composition.html',''); initR
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md63">Problem definition</a>
+    <a href="#autotoc_md69">Problem definition</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md64">Input file</a>
+    <a href="#autotoc_md70">Input file</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md65">Lauching the projectiles</a>
+    <a href="#autotoc_md71">Lauching the projectiles</a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_content_2tutorials_2extension_2model__composition_2main"></a></p>
-<h1><a class="anchor" id="autotoc_md63"></a>
+<h1><a class="anchor" id="autotoc_md69"></a>
 Problem definition</h1>
 <p>Recall that the complete model for simulating the projectile trajectory is            </p><p class="formulaDsp">
 \begin{align}  \dot{\boldsymbol{x}} &amp; = \boldsymbol{v}, \label{1} \\
@@ -165,7 +165,7 @@ Problem definition</h1>
 <li>\(\eqref{4}\) is the <a class="el" href="syntax-models.html#implicitupdate">ImplicitUpdate</a>.</li>
 </ul>
 <p>This tutorial demonstrates that our custom model <code>ProjectileAcceleration</code> can be composed with other existing, predefined NEML2 models.</p>
-<h1><a class="anchor" id="autotoc_md64"></a>
+<h1><a class="anchor" id="autotoc_md70"></a>
 Input file</h1>
 <p>The following input file composes the constitutive model for a single-step update for 5 projectiles each with a different dynamic viscosity, i.e., the shape of "mu" is \((5;)\).</p>
 <div class="fragment"><div class="line">[Tensors]</div>
@@ -221,7 +221,7 @@ Input file</h1>
 <div class="line">    max_its = 50</div>
 <div class="line">  []</div>
 <div class="line">[]</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md65"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md71"></a>
 Lauching the projectiles</h1>
 <p>To obtain the entire trajectory, the constitutive model need to be recursively integrated. As discussed in a previous <a class="el" href="tutorials-models-transient-driver.html">tutorial</a>, a transient driver should be used to perform the recursive constitutive update. Conveniently, in this example, since we are dealing with an autonomous system (i.e., no external "forces" are needed to drive the constitutive update), the vanilla <a class="el" href="syntax-drivers.html#transientdriver">TransientDriver</a> can be used: </p><div class="fragment"><div class="line">[Drivers]</div>
 <div class="line">  [driver]</div>

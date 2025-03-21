@@ -132,24 +132,24 @@ $(function(){initNavTree('tutorials-models-just-in-time-compilation.html',''); i
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md84">Problem description</a>
+    <a href="#autotoc_md90">Problem description</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md85">Model structure</a>
+    <a href="#autotoc_md91">Model structure</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md86">Tracing</a>
+    <a href="#autotoc_md92">Tracing</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md87">JIT optimization</a>
+    <a href="#autotoc_md93">JIT optimization</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md88">Limitations</a>
+    <a href="#autotoc_md94">Limitations</a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_content_2tutorials_2models_2just__in__time__compilation_2main"></a></p>
-<h1><a class="anchor" id="autotoc_md84"></a>
+<h1><a class="anchor" id="autotoc_md90"></a>
 Problem description</h1>
 <p>In NEML2, all tensor operations are traceable. The trace of an operation records the operator type, a stack of arguments and outputs, together with additional context. Multiple operations performed in sequence can be traced together into a <em>graph</em> representing the flow of data through operators. Such graph representation is primarily used for two purposes:</p><ul>
 <li>Just-in-time (JIT) compilation and optimization of the operations</li>
@@ -163,7 +163,7 @@ Problem description</h1>
 \end{align}
 </p>
 <p> where the subscript \( n \) represents the variable value from the previous time step.</p>
-<h1><a class="anchor" id="autotoc_md85"></a>
+<h1><a class="anchor" id="autotoc_md91"></a>
 Model structure</h1>
 <p>All three equations can be translated to <a class="el" href="syntax-models.html#scalarvariablerate">ScalarVariableValue</a>. The input file looks like </p><div class="fragment"><div class="line">[Models]</div>
 <div class="line">  [eq1]</div>
@@ -232,7 +232,7 @@ Model structure</h1>
 <div class="line">            state/c_rate [Scalar]</div>
 </div><!-- fragment --></li>
 </ul>
-</div><div class="tabbed"></div><h1><a class="anchor" id="autotoc_md86"></a>
+</div><div class="tabbed"></div><h1><a class="anchor" id="autotoc_md92"></a>
 Tracing</h1>
 <p>NEML2 enables tracing of tensor operations lazily. No tracing is performed when the model is first loaded from the input file. Tracing takes place when the model is being evaluated for the first time. The following code can be used to view the traced graph in text format.</p>
 <div class="tabbed"></div><div class="tabbed"><ul>
@@ -391,7 +391,7 @@ Tracing</h1>
 <div class="line">%23 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%11)</div>
 <div class="line">%12 : Tensor = aten::div(%22, %23)</div>
 </div><!-- fragment --><p> cover three tensor operations: two <code>aten::sub</code>s and one <code>aten::div</code>, which correspond to \( \eqref{1} \). Note that each variable is wrapped inside a profiling node denoted as <code>prim::profile</code>. These wrappers allow the graph executor to record and analyze the runtime statistics of tensor operations, in order to identify hot spots to optimize.</p>
-<h1><a class="anchor" id="autotoc_md87"></a>
+<h1><a class="anchor" id="autotoc_md93"></a>
 JIT optimization</h1>
 <p>With the profiling graph, further execution of the same traced graph automatically identifies opportunities for optimization. In summary, the following types of optimizations are enabled in NEML2 by default:</p><ul>
 <li>Inlining</li>
@@ -516,7 +516,7 @@ JIT optimization</h1>
 </div><!-- fragment --></li>
 </ul>
 </div><div class="tabbed"></div><p>Note how the optimized graph successfully identifies the common subexpression \( t - t_n \) and reuses it in all three equations.</p>
-<h1><a class="anchor" id="autotoc_md88"></a>
+<h1><a class="anchor" id="autotoc_md94"></a>
 Limitations</h1>
 <p>JIT optimization and compilation isn't the holy grail for improving performance of all models. For tensor operations that branch based on variable data, the traced graph cannot capture such data dependency and would potentially produce wrong results. NEML2 is unable to generate traced graphs for models that include derivatives of other models in the forward evaluation when those derivatives are defined with automatic differentiation.</p>
 <p>Due to these limitations, certain models disable the use of JIT compilation. The most notable case is <a class="el" href="syntax-models.html#implicitupdate">ImplicitUpdate</a> due to its use of Newton-Raphson solvers which are in general data dependent. However, the portions of the complete model defining the implicit function to solve can often benefit from JIT compilation.</p>

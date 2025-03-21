@@ -132,23 +132,23 @@ $(function(){initNavTree('tutorials-extension-the-forward-operator.html',''); in
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md70">Method signature</a>
+    <a href="#autotoc_md76">Method signature</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md71">Implementation</a>
+    <a href="#autotoc_md77">Implementation</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md72">Evaluation</a>
+    <a href="#autotoc_md78">Evaluation</a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_content_2tutorials_2extension_2the__forward__operator_2main"></a></p>
-<h1><a class="anchor" id="autotoc_md70"></a>
+<h1><a class="anchor" id="autotoc_md76"></a>
 Method signature</h1>
 <p>The base class <a class="el" href="classneml2_1_1Model.html" title="The base class for all constitutive models.">neml2::Model</a> declares a pure virtual method <a class="el" href="classneml2_1_1Model.html#a6a028925dc10166ea6426fc4d7635ad2" title="The map between input -&gt; output, and optionally its derivatives.">neml2::Model::set_value</a> for derived classes to define the forward operator. The forward operator is responsible for calculating output variables given input variables, parameters, and buffers. Optionally, the <a class="el" href="classneml2_1_1Model.html#a6a028925dc10166ea6426fc4d7635ad2" title="The map between input -&gt; output, and optionally its derivatives.">neml2::Model::set_value</a> method can define derivatives and second derivatives, if requested.</p>
 <p>The signature of the method is </p><div class="fragment"><div class="line"><span class="keyword">virtual</span> <span class="keywordtype">void</span> set_value(<span class="keywordtype">bool</span>, <span class="keywordtype">bool</span>, <span class="keywordtype">bool</span>) = 0;</div>
 </div><!-- fragment --><p> The three boolean arguments denote whether the caller is requesting output variable values, their derivatives, or their second derivatives. Derived classes should therefore override this method, i.e. </p><div class="fragment"><div class="line"><span class="keywordtype">void</span> set_value(<span class="keywordtype">bool</span>, <span class="keywordtype">bool</span>, <span class="keywordtype">bool</span>) <span class="keyword">override</span>;</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md71"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md77"></a>
 Implementation</h1>
 <p>By default, the model forward operator is responsible for calculating the output variable values and their first derivatives. Definition of second order derivatives is not required. Such default behavior can be changed by modifying the corresponding input file option in <a class="el" href="classneml2_1_1Model.html#acec712ff48d4c0884a1362c116f3257a">neml2::Model::expected_options</a>, i.e. </p><div class="fragment"><div class="line">options.set&lt;<span class="keywordtype">bool</span>&gt;(<span class="stringliteral">&quot;define_values&quot;</span>) = <span class="keyword">true</span>;</div>
 <div class="line">options.set&lt;<span class="keywordtype">bool</span>&gt;(<span class="stringliteral">&quot;define_derivatives&quot;</span>) = <span class="keyword">true</span>;</div>
@@ -177,7 +177,7 @@ Implementation</h1>
 <div class="ttc" id="aclassneml2_1_1ProjectileAcceleration_html_ae6396730f8e20adc1c9d3875c473acdd"><div class="ttname"><a href="classneml2_1_1ProjectileAcceleration.html#ae6396730f8e20adc1c9d3875c473acdd">neml2::ProjectileAcceleration::set_value</a></div><div class="ttdeci">void set_value(bool, bool, bool) override</div><div class="ttdoc">The map between input -&gt; output, and optionally its derivatives.</div><div class="ttdef"><b>Definition</b> src1.cxx:13</div></div>
 <div class="ttc" id="aclassneml2_1_1Vec_html_ae8ea0aeeeb359cde236d6f350a18783a"><div class="ttname"><a href="classneml2_1_1Vec.html#ae8ea0aeeeb359cde236d6f350a18783a">neml2::Vec::identity_map</a></div><div class="ttdeci">static R2 identity_map(const TensorOptions &amp;options=default_tensor_options())</div><div class="ttdoc">The derivative of a Vec with respect to itself.</div><div class="ttdef"><b>Definition</b> Vec.cxx:42</div></div>
 <div class="ttc" id="anamespaceneml2_html"><div class="ttname"><a href="namespaceneml2.html">neml2</a></div><div class="ttdef"><b>Definition</b> DiagnosticsInterface.cxx:30</div></div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md72"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md78"></a>
 Evaluation</h1>
 <p>The model definition is said to be <em>complete</em> once all components are properly defined. Custom models can be evaluated in the same way as existing models that come with NEML2.</p>
 <div class="fragment"><div class="line"><span class="keywordtype">int</span></div>

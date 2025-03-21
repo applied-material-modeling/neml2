@@ -132,16 +132,16 @@ $(function(){initNavTree('tutorials-tensors-broadcasting.html',''); initResizabl
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md120">NEML2&#39;s broadcasting rules</a>
+    <a href="#autotoc_md126">NEML2&#39;s broadcasting rules</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md121">Example</a>
+    <a href="#autotoc_md127">Example</a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_content_2tutorials_2tensors_2broadcasting_2main"></a></p>
 <p>Related reading: NumPy manual on <a href="https://numpy.org/doc/stable/user/basics.broadcasting.html">Broadcasting</a></p>
-<h1><a class="anchor" id="autotoc_md120"></a>
+<h1><a class="anchor" id="autotoc_md126"></a>
 NEML2's broadcasting rules</h1>
 <p>NEML's broadcasting rules are built on top of NumPy's general broadcasting rules.</p>
 <p>When operating on two tensors, NEML2 compares each dimension's size pair one-by-one, from right to left. Before the comparison, the shapes of two tensors are aligned at the final batch dimension. The comparison starts with the trailing (i.e., rightmost) batch dimension and works its way left. Two batch dimensions are compatible (broadcastable) when</p><ul>
@@ -152,7 +152,7 @@ NEML2's broadcasting rules</h1>
 <p>If all dimensions are compatible, the two tensors are <em>batch-broadcastable</em>. Many operations in NEML2 require operands to be batch-broadcastable, and if not, an exception will be thrown (typically only in Debug mode).</p>
 <p>The operands do not need to have the same batch dimension (per the third rule) in order to be batch-broadcastable. After broadcasting, each dimension of the operands are effectively expanded to have the same size as larger size of the two.</p>
 <p>Note that we have not yet mentioned anything about the broadcasting rules for base dimensions, because the requirement for operands' base shapes largely depend on the operation itself. And for all primitive tensor types, since the base shapes are determined statically, no shape check is needed at runtime.</p>
-<h1><a class="anchor" id="autotoc_md121"></a>
+<h1><a class="anchor" id="autotoc_md127"></a>
 Example</h1>
 <p>The utility of broadcasting is best demonstrated with practical examples.</p>
 <p>Suppose we are given two samples made of different materials, and for each sample, we are given a number of strain measurements at different locations. Assuming both materials are homogeneous, we could utilize NEML2's broadcasting rules to perform the constitutive update extremely efficiently.</p>

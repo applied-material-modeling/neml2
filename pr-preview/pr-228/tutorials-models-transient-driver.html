@@ -132,15 +132,15 @@ $(function(){initNavTree('tutorials-models-transient-driver.html',''); initResiz
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md109">Problem description</a>
+    <a href="#autotoc_md115">Problem description</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md110">Simulating the stress-strain curve</a>
+    <a href="#autotoc_md116">Simulating the stress-strain curve</a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_content_2tutorials_2models_2transient__driver_2main"></a></p>
-<h1><a class="anchor" id="autotoc_md109"></a>
+<h1><a class="anchor" id="autotoc_md115"></a>
 Problem description</h1>
 <p>In the previous tutorial, we demonstrated the use of <a class="el" href="syntax-models.html#implicitupdate">ImplicitUpdate</a> to perform constitutive update by solving an implicit system of equations. In particular, we have addressed the constitutive update in the following form   </p><p class="formulaDsp">
 \begin{align}  \mathbf{s}_{n+1} = f(\mathbf{f}_{n+1}, \mathbf{s}_n, \mathbf{f}_n; \mathbf{p}). \label{form1}
@@ -155,7 +155,7 @@ Problem description</h1>
 </p>
 <p> where \(N\) is the total number of steps used to discretize the "transient".</p>
 <p>NEML2 models, including those composed from submodels, can only be used to describe the first form of constitutive \(\eqref{form1}\), i.e., a single step constitutive update. In order to simulate the initial-value problem defined in \(\eqref{form2}\), a <a class="el" href="classneml2_1_1TransientDriver.html" title="The driver for a transient initial-value problem.">neml2::TransientDriver</a> can be used to perform the recursive constitutive update to obtain the transient response.</p>
-<h1><a class="anchor" id="autotoc_md110"></a>
+<h1><a class="anchor" id="autotoc_md116"></a>
 Simulating the stress-strain curve</h1>
 <p>Reusing the viscoplasticity model defined in the previous tutorial, along with the Newton-Raphson solver, a predefined driver <a class="el" href="syntax-drivers.html#sdtsolidmechanicsdriver">SDTSolidMechanicsDriver</a> can be used to obtain the stress-strain curve.</p>
 <div class="fragment"><div class="line">[Drivers]</div>

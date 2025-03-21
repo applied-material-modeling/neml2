@@ -132,15 +132,15 @@ $(function(){initNavTree('tutorials-optimization-automatic-differentiation.html'
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md116">Model definition</a>
+    <a href="#autotoc_md122">Model definition</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md117">Automatic differentiation</a>
+    <a href="#autotoc_md123">Automatic differentiation</a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_content_2tutorials_2optimization_2automatic__differentiation_2main"></a></p>
-<h1><a class="anchor" id="autotoc_md116"></a>
+<h1><a class="anchor" id="autotoc_md122"></a>
 Model definition</h1>
 <p>For demonstration purposes, let us go back to an earlier example model &ndash; linear isotropic elasticity: </p><div class="fragment"><div class="line">[Models]</div>
 <div class="line">  [model]</div>
@@ -163,7 +163,7 @@ Model definition</h1>
 <div class="line">Output:     state/S [SR2]</div>
 <div class="line">Parameters: G [Scalar]</div>
 <div class="line">            K [Scalar]</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md117"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md123"></a>
 Automatic differentiation</h1>
 <p>NEML2 tensors can be used interchangeably with PyTorch tensors in a seamless fashion. Function graph traced through NEML2 tensor operations can be back-propagated using PyTorch's autograd engine.</p>
 <p>For example, the following Python script demonstrates the calculation of \(\pdv{l}{p}\) using an arbitrary, scalar-valued loss function \(l\) obtained by a combination of NEML2 operations and PyTorch operations.</p>

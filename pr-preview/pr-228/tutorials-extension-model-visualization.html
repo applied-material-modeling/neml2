@@ -132,21 +132,21 @@ $(function(){initNavTree('tutorials-extension-model-visualization.html',''); ini
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md66">Motivation</a>
+    <a href="#autotoc_md72">Motivation</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md67">Rendering non-composed model</a>
+    <a href="#autotoc_md73">Rendering non-composed model</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md68">Rendering composed model</a>
+    <a href="#autotoc_md74">Rendering composed model</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md69">Customizing graph style</a>
+    <a href="#autotoc_md75">Customizing graph style</a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_content_2tutorials_2extension_2model__visualization_2main"></a></p>
-<h1><a class="anchor" id="autotoc_md66"></a>
+<h1><a class="anchor" id="autotoc_md72"></a>
 Motivation</h1>
 <p>Users should reuse existing NEML2 models as much as possible. This is particularly effective owing to the extremely modular design of NEML2, i.e., model composition.</p>
 <p>However, from times to times, the composed model may become overwhelmingly complicated even for an experienced developer. For example, given a single-crystal crystal plasticity model with decoupled time integration defined in an input file <code>input.i</code> with the following content </p><div class="fragment"><div class="line">[Tensors]</div>
@@ -306,7 +306,7 @@ Motivation</h1>
 <div class="line">  []</div>
 <div class="line">[]</div>
 </div><!-- fragment --><p> It is undoubtedly difficult to understanding the model composition just by reading the input file. To address such challenge, the <code>visualization</code> module is provided as part of the NEML2 Python package to help extract, plot, and customize the dependency graph of a composed model. The generated dependency graph provides a visual understanding of the model composition, helps identify otherwise-difficult-to-find issues, and opens up opportunities for optimizing of the composition.</p>
-<h1><a class="anchor" id="autotoc_md67"></a>
+<h1><a class="anchor" id="autotoc_md73"></a>
 Rendering non-composed model</h1>
 <p>NEML2 relies on the Python interface of <a href="https://graphviz.readthedocs.io/en/stable/index.html">Graphviz</a> to render the dependency graph. To visualize a basic non-composed model, simply load the model from the input file and pass it to the <code>neml2.visualization.render</code> function. </p><div class="fragment"><div class="line"><span class="keyword">import</span> neml2</div>
 <div class="line"><span class="keyword">from</span> neml2.visualization <span class="keyword">import</span> render</div>
@@ -325,7 +325,7 @@ Graph of a basic model</div></div>
 <li>The output variable represented as a green rectangular node</li>
 </ul>
 <p>Additional information are also labeled on each node enclosed within square brackets, such as the variable type (e.g. <code>[Rot]</code>, <code>[R2]</code>) and the model type (e.g. <code>[RotationMatrix]</code>). Note that the rounded dashed border around the variables denote sub-axes, and the sub-axis name is also labeled. Edges (arrows) in this directed graph represent information flow, i.e., the input variable is passed into the model, the model performs a set of operations and produces the output variable.</p>
-<h1><a class="anchor" id="autotoc_md68"></a>
+<h1><a class="anchor" id="autotoc_md74"></a>
 Rendering composed model</h1>
 <p>The dependency graph of a composed model can also be visualized using a similar routine, </p><div class="fragment"><div class="line"><span class="keyword">import</span> neml2</div>
 <div class="line"><span class="keyword">from</span> neml2.visualization <span class="keyword">import</span> render</div>
@@ -344,7 +344,7 @@ Graph of a composed model</div></div>
 <object type="image/svg+xml" data="graph_highlight.svg" width="85%" style="pointer-events: none;"></object>
 <div class="caption">
 Graph of a composed model with upstream highlighting</div></div>
-    <h1><a class="anchor" id="autotoc_md69"></a>
+    <h1><a class="anchor" id="autotoc_md75"></a>
 Customizing graph style</h1>
 <p>The generated graph is highly customizable. All controllable attributes are available in the data class <code>Configuration</code>. The configuration can be modified with an instance of the data class, i.e. </p><div class="fragment"><div class="line"><span class="keyword">import</span> neml2</div>
 <div class="line"><span class="keyword">from</span> neml2.visualization <span class="keyword">import</span> render, Configuration</div>
