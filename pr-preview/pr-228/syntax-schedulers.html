@@ -162,18 +162,18 @@ Available objects and their input file syntax</h1>
 SimpleMPIScheduler</h2>
 <p>Dispatch work to a single device selected based on processor ID in given batch sizes. </p><details >
 <summary >
-<code>batch_size</code> Batch size</summary>
+<code>batch_sizes</code> List of batch sizes for each device</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: unsigned number </li>
+<li><u>Type</u>: list of unsigned number </li>
 </ul>
 </details>
 <details >
 <summary >
-<code>capacity</code> Maximum number of work items that can be dispatched, default to batch_size</summary>
+<code>capacities</code> List of capacities for each device, default to batch_sizes</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: unsigned number </li>
+<li><u>Type</u>: list of unsigned number </li>
 </ul>
 </details>
 <details >

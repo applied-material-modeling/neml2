@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-03-20 19:25:37</td>
+            <td class="headerValue">2025-03-21 01:28:18</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -125,15 +125,15 @@
 <span id="L63"><span class="lineNum">      63</span> <span class="tlaGNC">        6667 : }</span></span>
 <span id="L64"><span class="lineNum">      64</span>              : } // namespace utils</span>
 <span id="L65"><span class="lineNum">      65</span>              : </span>
-<span id="L66"><span class="lineNum">      66</span> <span class="tlaGNC">       26978 : Tensor::Tensor(const ATensor &amp; tensor, Size batch_dim)</span></span>
-<span id="L67"><span class="lineNum">      67</span> <span class="tlaGNC">       26978 :   : TensorBase(tensor, batch_dim)</span></span>
+<span id="L66"><span class="lineNum">      66</span> <span class="tlaGNC">       26987 : Tensor::Tensor(const ATensor &amp; tensor, Size batch_dim)</span></span>
+<span id="L67"><span class="lineNum">      67</span> <span class="tlaGNC">       26987 :   : TensorBase(tensor, batch_dim)</span></span>
 <span id="L68"><span class="lineNum">      68</span>              : {</span>
-<span id="L69"><span class="lineNum">      69</span> <span class="tlaGNC">       26978 : }</span></span>
+<span id="L69"><span class="lineNum">      69</span> <span class="tlaGNC">       26987 : }</span></span>
 <span id="L70"><span class="lineNum">      70</span>              : </span>
-<span id="L71"><span class="lineNum">      71</span> <span class="tlaGNC">     2374032 : Tensor::Tensor(const ATensor &amp; tensor, const TraceableTensorShape &amp; batch_shape)</span></span>
-<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC">     2374032 :   : TensorBase(tensor, batch_shape)</span></span>
+<span id="L71"><span class="lineNum">      71</span> <span class="tlaGNC">     2374286 : Tensor::Tensor(const ATensor &amp; tensor, const TraceableTensorShape &amp; batch_shape)</span></span>
+<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC">     2374286 :   : TensorBase(tensor, batch_shape)</span></span>
 <span id="L73"><span class="lineNum">      73</span>              : {</span>
-<span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">     2374032 : }</span></span>
+<span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">     2374286 : }</span></span>
 <span id="L75"><span class="lineNum">      75</span>              : </span>
 <span id="L76"><span class="lineNum">      76</span>              : Tensor</span>
 <span id="L77"><span class="lineNum">      77</span> <span class="tlaGNC">         639 : Tensor::create(TensorDataContainer data, const TensorOptions &amp; options)</span></span>
@@ -213,9 +213,9 @@
 <span id="L151"><span class="lineNum">     151</span>              : }</span>
 <span id="L152"><span class="lineNum">     152</span>              : </span>
 <span id="L153"><span class="lineNum">     153</span>              : Tensor</span>
-<span id="L154"><span class="lineNum">     154</span> <span class="tlaGNC">        1275 : Tensor::full(TensorShapeRef base_shape, Real init, const TensorOptions &amp; options)</span></span>
+<span id="L154"><span class="lineNum">     154</span> <span class="tlaGNC">        1281 : Tensor::full(TensorShapeRef base_shape, Real init, const TensorOptions &amp; options)</span></span>
 <span id="L155"><span class="lineNum">     155</span>              : {</span>
-<span id="L156"><span class="lineNum">     156</span> <span class="tlaGNC">        1275 :   return Tensor(at::full(base_shape, init, options), 0);</span></span>
+<span id="L156"><span class="lineNum">     156</span> <span class="tlaGNC">        1281 :   return Tensor(at::full(base_shape, init, options), 0);</span></span>
 <span id="L157"><span class="lineNum">     157</span>              : }</span>
 <span id="L158"><span class="lineNum">     158</span>              : </span>
 <span id="L159"><span class="lineNum">     159</span>              : Tensor</span>

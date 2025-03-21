@@ -141,7 +141,8 @@ $(function(){initNavTree('classneml2_1_1SimpleMPIScheduler.html',''); initResiza
 <div class="textblock"><p>A simple MPI scheduler. </p>
 <p>Each rank dispatches to a single device, selected based on its processor ID.</p>
 <p>It dispataches a fixed batch size, up to (optionally) the provided capacity. The default capacity is the batch size.</p>
-<p>The number of devices in the list must equal the local communicator size. The list must not include the cpu. </p>
+<p>The number of devices in the list must be greater than or equal to local communicator size.</p>
+<p>The list must not include the cpu. </p>
 </div>
 <p><code>#include &lt;<a class="el" href="SimpleMPIScheduler_8h_source.html">SimpleMPIScheduler.h</a>&gt;</code></p>
 <div class="dynheader">

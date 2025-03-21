@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-03-20 19:25:37</td>
+            <td class="headerValue">2025-03-21 01:28:18</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -125,17 +125,17 @@
 <span id="L63"><span class="lineNum">      63</span> <span class="tlaGNC">         222 : }</span></span>
 <span id="L64"><span class="lineNum">      64</span>              : </span>
 <span id="L65"><span class="lineNum">      65</span>              : SR2</span>
-<span id="L66"><span class="lineNum">      66</span> <span class="tlaGNC">          14 : SR2::fill(const Real &amp; a11, const Real &amp; a22, const Real &amp; a33, const TensorOptions &amp; options)</span></span>
+<span id="L66"><span class="lineNum">      66</span> <span class="tlaGNC">          18 : SR2::fill(const Real &amp; a11, const Real &amp; a22, const Real &amp; a33, const TensorOptions &amp; options)</span></span>
 <span id="L67"><span class="lineNum">      67</span>              : {</span>
-<span id="L68"><span class="lineNum">      68</span> <span class="tlaGNC">          14 :   return SR2::fill(Scalar(a11, options), Scalar(a22, options), Scalar(a33, options));</span></span>
+<span id="L68"><span class="lineNum">      68</span> <span class="tlaGNC">          18 :   return SR2::fill(Scalar(a11, options), Scalar(a22, options), Scalar(a33, options));</span></span>
 <span id="L69"><span class="lineNum">      69</span>              : }</span>
 <span id="L70"><span class="lineNum">      70</span>              : </span>
 <span id="L71"><span class="lineNum">      71</span>              : SR2</span>
-<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC">          45 : SR2::fill(const Scalar &amp; a11, const Scalar &amp; a22, const Scalar &amp; a33)</span></span>
+<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC">          49 : SR2::fill(const Scalar &amp; a11, const Scalar &amp; a22, const Scalar &amp; a33)</span></span>
 <span id="L73"><span class="lineNum">      73</span>              : {</span>
-<span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">          45 :   auto zero = Scalar::zeros_like(a11);</span></span>
-<span id="L75"><span class="lineNum">      75</span> <span class="tlaGNC">         405 :   return SR2(base_stack({a11, a22, a33, zero, zero, zero}, -1));</span></span>
-<span id="L76"><span class="lineNum">      76</span> <span class="tlaGNC">          90 : }</span></span>
+<span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">          49 :   auto zero = Scalar::zeros_like(a11);</span></span>
+<span id="L75"><span class="lineNum">      75</span> <span class="tlaGNC">         441 :   return SR2(base_stack({a11, a22, a33, zero, zero, zero}, -1));</span></span>
+<span id="L76"><span class="lineNum">      76</span> <span class="tlaGNC">          98 : }</span></span>
 <span id="L77"><span class="lineNum">      77</span>              : </span>
 <span id="L78"><span class="lineNum">      78</span>              : SR2</span>
 <span id="L79"><span class="lineNum">      79</span> <span class="tlaGNC">          23 : SR2::fill(const Real &amp; a11,</span></span>

@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-03-20 19:25:37</td>
+            <td class="headerValue">2025-03-21 01:28:18</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">80.0&nbsp;%</td>
@@ -91,17 +91,17 @@
 <span id="L29"><span class="lineNum">      29</span>              : </span>
 <span id="L30"><span class="lineNum">      30</span>              : namespace neml2</span>
 <span id="L31"><span class="lineNum">      31</span>              : {</span>
-<span id="L32"><span class="lineNum">      32</span> <span class="tlaGNC tlaBgGNC">       89740 : TraceableTensorShape::TraceableTensorShape(const TensorShape &amp; shape)</span></span>
+<span id="L32"><span class="lineNum">      32</span> <span class="tlaGNC tlaBgGNC">       89788 : TraceableTensorShape::TraceableTensorShape(const TensorShape &amp; shape)</span></span>
 <span id="L33"><span class="lineNum">      33</span>              : {</span>
-<span id="L34"><span class="lineNum">      34</span> <span class="tlaGNC">      137217 :   for (const auto &amp; size : shape)</span></span>
-<span id="L35"><span class="lineNum">      35</span> <span class="tlaGNC">       47477 :     emplace_back(size);</span></span>
-<span id="L36"><span class="lineNum">      36</span> <span class="tlaGNC">       89740 : }</span></span>
+<span id="L34"><span class="lineNum">      34</span> <span class="tlaGNC">      137283 :   for (const auto &amp; size : shape)</span></span>
+<span id="L35"><span class="lineNum">      35</span> <span class="tlaGNC">       47495 :     emplace_back(size);</span></span>
+<span id="L36"><span class="lineNum">      36</span> <span class="tlaGNC">       89788 : }</span></span>
 <span id="L37"><span class="lineNum">      37</span>              : </span>
-<span id="L38"><span class="lineNum">      38</span> <span class="tlaGNC">      168541 : TraceableTensorShape::TraceableTensorShape(TensorShapeRef shape)</span></span>
+<span id="L38"><span class="lineNum">      38</span> <span class="tlaGNC">      168622 : TraceableTensorShape::TraceableTensorShape(TensorShapeRef shape)</span></span>
 <span id="L39"><span class="lineNum">      39</span>              : {</span>
-<span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC">      231900 :   for (const auto &amp; size : shape)</span></span>
-<span id="L41"><span class="lineNum">      41</span> <span class="tlaGNC">       63359 :     emplace_back(size);</span></span>
-<span id="L42"><span class="lineNum">      42</span> <span class="tlaGNC">      168541 : }</span></span>
+<span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC">      232028 :   for (const auto &amp; size : shape)</span></span>
+<span id="L41"><span class="lineNum">      41</span> <span class="tlaGNC">       63406 :     emplace_back(size);</span></span>
+<span id="L42"><span class="lineNum">      42</span> <span class="tlaGNC">      168622 : }</span></span>
 <span id="L43"><span class="lineNum">      43</span>              : </span>
 <span id="L44"><span class="lineNum">      44</span> <span class="tlaUNC tlaBgUNC">           0 : TraceableTensorShape::TraceableTensorShape(Size shape)</span></span>
 <span id="L45"><span class="lineNum">      45</span> <span class="tlaUNC">           0 :   : TraceableTensorShape(TensorShapeRef({shape}))</span></span>
@@ -118,14 +118,14 @@
 <span id="L56"><span class="lineNum">      56</span> <span class="tlaGNC">        1279 : }</span></span>
 <span id="L57"><span class="lineNum">      57</span>              : </span>
 <span id="L58"><span class="lineNum">      58</span>              : TraceableTensorShape</span>
-<span id="L59"><span class="lineNum">      59</span> <span class="tlaGNC">      618553 : TraceableTensorShape::slice(Size start, Size end) const</span></span>
+<span id="L59"><span class="lineNum">      59</span> <span class="tlaGNC">      618590 : TraceableTensorShape::slice(Size start, Size end) const</span></span>
 <span id="L60"><span class="lineNum">      60</span>              : {</span>
-<span id="L61"><span class="lineNum">      61</span> <span class="tlaGNC">      618553 :   if (start &lt; 0)</span></span>
+<span id="L61"><span class="lineNum">      61</span> <span class="tlaGNC">      618590 :   if (start &lt; 0)</span></span>
 <span id="L62"><span class="lineNum">      62</span> <span class="tlaUNC tlaBgUNC">           0 :     start += Size(size());</span></span>
-<span id="L63"><span class="lineNum">      63</span> <span class="tlaGNC tlaBgGNC">      618553 :   if (end &lt; 0)</span></span>
+<span id="L63"><span class="lineNum">      63</span> <span class="tlaGNC tlaBgGNC">      618590 :   if (end &lt; 0)</span></span>
 <span id="L64"><span class="lineNum">      64</span> <span class="tlaGNC">          59 :     end += Size(size());</span></span>
 <span id="L65"><span class="lineNum">      65</span>              : </span>
-<span id="L66"><span class="lineNum">      66</span> <span class="tlaGNC">      618553 :   return TraceableTensorShape(begin() + start, begin() + end);</span></span>
+<span id="L66"><span class="lineNum">      66</span> <span class="tlaGNC">      618590 :   return TraceableTensorShape(begin() + start, begin() + end);</span></span>
 <span id="L67"><span class="lineNum">      67</span>              : }</span>
 <span id="L68"><span class="lineNum">      68</span>              : </span>
 <span id="L69"><span class="lineNum">      69</span>              : TraceableTensorShape</span>
@@ -137,12 +137,12 @@
 <span id="L75"><span class="lineNum">      75</span>              : }</span>
 <span id="L76"><span class="lineNum">      76</span>              : </span>
 <span id="L77"><span class="lineNum">      77</span>              : TensorShape</span>
-<span id="L78"><span class="lineNum">      78</span> <span class="tlaGNC tlaBgGNC">     5154912 : TraceableTensorShape::concrete() const</span></span>
+<span id="L78"><span class="lineNum">      78</span> <span class="tlaGNC tlaBgGNC">     5155590 : TraceableTensorShape::concrete() const</span></span>
 <span id="L79"><span class="lineNum">      79</span>              : {</span>
-<span id="L80"><span class="lineNum">      80</span> <span class="tlaGNC">     5154912 :   TensorShape s;</span></span>
-<span id="L81"><span class="lineNum">      81</span> <span class="tlaGNC">     6943694 :   for (const auto &amp; size : *this)</span></span>
-<span id="L82"><span class="lineNum">      82</span> <span class="tlaGNC">     1788782 :     s.push_back(size.concrete());</span></span>
-<span id="L83"><span class="lineNum">      83</span> <span class="tlaGNC">     5154912 :   return s;</span></span>
+<span id="L80"><span class="lineNum">      80</span> <span class="tlaGNC">     5155590 :   TensorShape s;</span></span>
+<span id="L81"><span class="lineNum">      81</span> <span class="tlaGNC">     6942166 :   for (const auto &amp; size : *this)</span></span>
+<span id="L82"><span class="lineNum">      82</span> <span class="tlaGNC">     1786576 :     s.push_back(size.concrete());</span></span>
+<span id="L83"><span class="lineNum">      83</span> <span class="tlaGNC">     5155590 :   return s;</span></span>
 <span id="L84"><span class="lineNum">      84</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
 <span id="L85"><span class="lineNum">      85</span>              : </span>
 <span id="L86"><span class="lineNum">      86</span>              : ATensor</span>
@@ -158,15 +158,15 @@
 <span id="L96"><span class="lineNum">      96</span> <span class="tlaGNC">        3777 : }</span></span>
 <span id="L97"><span class="lineNum">      97</span>              : </span>
 <span id="L98"><span class="lineNum">      98</span>              : bool</span>
-<span id="L99"><span class="lineNum">      99</span> <span class="tlaGNC">     2524327 : operator==(const TraceableTensorShape &amp; lhs, const TraceableTensorShape &amp; rhs)</span></span>
+<span id="L99"><span class="lineNum">      99</span> <span class="tlaGNC">     2524653 : operator==(const TraceableTensorShape &amp; lhs, const TraceableTensorShape &amp; rhs)</span></span>
 <span id="L100"><span class="lineNum">     100</span>              : {</span>
-<span id="L101"><span class="lineNum">     101</span> <span class="tlaGNC">     2524327 :   return lhs.concrete() == rhs.concrete();</span></span>
+<span id="L101"><span class="lineNum">     101</span> <span class="tlaGNC">     2524653 :   return lhs.concrete() == rhs.concrete();</span></span>
 <span id="L102"><span class="lineNum">     102</span>              : }</span>
 <span id="L103"><span class="lineNum">     103</span>              : </span>
 <span id="L104"><span class="lineNum">     104</span>              : bool</span>
-<span id="L105"><span class="lineNum">     105</span> <span class="tlaGNC">       88715 : operator!=(const TraceableTensorShape &amp; lhs, const TraceableTensorShape &amp; rhs)</span></span>
+<span id="L105"><span class="lineNum">     105</span> <span class="tlaGNC">       88763 : operator!=(const TraceableTensorShape &amp; lhs, const TraceableTensorShape &amp; rhs)</span></span>
 <span id="L106"><span class="lineNum">     106</span>              : {</span>
-<span id="L107"><span class="lineNum">     107</span> <span class="tlaGNC">       88715 :   return !(lhs == rhs);</span></span>
+<span id="L107"><span class="lineNum">     107</span> <span class="tlaGNC">       88763 :   return !(lhs == rhs);</span></span>
 <span id="L108"><span class="lineNum">     108</span>              : }</span>
 <span id="L109"><span class="lineNum">     109</span>              : } // namespace neml2</span>
         </pre>
