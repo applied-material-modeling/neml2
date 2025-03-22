@@ -41,7 +41,17 @@ The [SimpleScheduler](#simplescheduler) is the simplest option.  It dispatches w
 3. Optionally, a device capacity.  The dispatcher will continue to send subbatches to the device until it is at capacity, then wait for it to complete some work before sending additional subbatches.  The default capacity is the subbatch size, meaning the dispatcher will send a single subbatch and wait for the device to finish before sending another.
 
 The animation below illustrates how the simple scheduler sends work to a device.
-![simple scheduler animation](animation.gif "Animation of the simple scheduler")
+
+@htmlonly
+
+<div class="simple-scheduler-demo" style="width:95%"></div>
+<div class="simple-scheduler-controls" style="text-align:center">
+  <button class="play btn">Play</button>
+  <button class="pause btn">Pause</button>
+  <button class="restart btn">Restart</button>
+</div>
+
+@endhtmlonly
 
 This animation shows the dispatcher sending subbatches to the device until it reaches capacity.  The dispatcher then blocks until the device completes a subbatch, at which it sends another subbatch to fill the device back to capacity.  This pattern of work continues until the scheduler and dispatcher complete the entire, original batch of work.
 
@@ -64,5 +74,18 @@ This scheduler is useful for larger parallel jobs, but may limit the overall per
 The [StaticHybridScheduler](#statichybridscheduler) allows a single instance of NEML2 to distribute work to many compute devices at once.  The user provides a list of devices, subbatch sizes, capacities, and (optionally) priorities.  The scheduler will greedily assign work to fill up each device, using the priority if provided to determine in which order to dole out work.  The work dispatcher will then run this work in parallel on all devices via the thread pool discussed above.
 
 This scheduler currently provides the best throughput for cases where a single NEML2 instance has access to multiple devices.  Unlike the simple schedulers, the device list can include the CPU itself so that the CPU thread running NEML2 can do work at the same time the accelerators are working on their subbatches.  We suggest the user determine the optimal subbatch size for each device, for example using the [SimpleScheduler](#simplescheduler), prior to running large jobs with this scheduling algorithm.
+
+The animation below illustrates how the static hybrid scheduler sends work to multiple devices.
+
+@htmlonly
+
+<div class="static-hybrid-scheduler-demo" style="width:95%"></div>
+<div class="static-hybrid-scheduler-controls" style="text-align:center">
+  <button class="play btn">Play</button>
+  <button class="pause btn">Pause</button>
+  <button class="restart btn">Restart</button>
+</div>
+
+@endhtmlonly
 
 The downside to this scheduler is that it does not handle MPI parallelism.  Distributed parallel programs invoking NEML2 can only use this scheduler if each MPI rank has exclusive access to all accelerators on a compute node, i.e. running one MPI rank per physical node.

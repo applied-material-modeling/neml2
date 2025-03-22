@@ -125,10 +125,10 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    extensions = {".h": "//", ".cxx": "//", ".py": "#", ".sh": "#"}
+    extensions = {".h": "//", ".cxx": "//", ".py": "#", ".sh": "#", ".js": "//"}
     additional_files = {}
 
-    exclude_dirs = ["cmake", "doc"]
+    exclude_dirs = ["cmake", "doc/content", "doc/tutorials", "doc/config"]
     exclude_files = []
 
     rootdir = Path(".")

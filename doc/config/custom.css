@@ -72,3 +72,7 @@ div.card p {
   line-height: 160%;
   margin: 1em 0 0 0;
 }
+
+svg text {
+  fill: var(--page-foreground-color);
+}

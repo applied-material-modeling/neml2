@@ -7,7 +7,12 @@ FULL_SIDEBAR           = NO
 HTML_OUTPUT            = html
 HTML_HEADER            = ${NEML2_SOURCE_DIR}/doc/config/header.html
 HTML_EXTRA_FILES       = ${doxygen-awesome-css_SOURCE_DIR}/doxygen-awesome-darkmode-toggle.js \
-                         ${doxygen-awesome-css_SOURCE_DIR}/doxygen-awesome-paragraph-link.js
+                         ${doxygen-awesome-css_SOURCE_DIR}/doxygen-awesome-paragraph-link.js \
+                         ${NEML2_SOURCE_DIR}/doc/js/components/work-dispatcher.js \
+                         ${NEML2_SOURCE_DIR}/doc/js/components/static-hybrid-scheduler.js \
+                         ${NEML2_SOURCE_DIR}/doc/js/components/simple-scheduler-demo.js \
+                         ${NEML2_SOURCE_DIR}/doc/js/components/static-hybrid-scheduler-demo.js \
+                         ${NEML2_SOURCE_DIR}/doc/js/node_modules/animejs/lib/anime.min.js
 HTML_EXTRA_STYLESHEET  = ${doxygen-awesome-css_SOURCE_DIR}/doxygen-awesome.css \
                          ${doxygen-awesome-css_SOURCE_DIR}/doxygen-awesome-sidebar-only.css \
                          ${doxygen-awesome-css_SOURCE_DIR}/doxygen-awesome-sidebar-only-darkmode-toggle.css \
