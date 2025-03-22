@@ -1,0 +1,195 @@
+<html>
+
+<head>
+  <script src="../../node_modules/animejs/lib/anime.min.js"></script>
+  <script type="text/javascript">
+    // Size and spacing
+    let work_width = 80;
+    let work_height = 35;
+    let num_work = 6;
+    let total_work_width = work_width * num_work;
+    let verticle_spacing = 25;
+    let text_width = 200;
+    let text_horizontal_margin = 15;
+    let text_vertical_margin = 5;
+
+    // Device "bandwidth"
+    let device_width = 240;
+
+    // Rows
+    let rows = ["Work", "Device", "Completed"];
+    let row_width = [total_work_width, device_width, total_work_width];
+    let font_size = 24;
+    let font_family = "sans-serif";
+
+    // Canvas
+    let canvas_padding = 20;
+    let viewbox_xmin = -canvas_padding;
+    let viewbox_ymin = -canvas_padding;
+    let viewbox_xmax = text_width + total_work_width + canvas_padding;
+    let viewbox_ymax = (work_height + verticle_spacing) * rows.length + canvas_padding;
+
+    // Transition speed (duration in ms)
+    var speed = {
+      fast: 750,
+      normal: 1500
+    };
+
+    // Opacity
+    let opacity = {
+      normal: 0.5,
+      selected: 1
+    };
+
+    // Color
+    let color = {
+      work: "rgb(235,189,52)",
+      device: "rgb(235,189,52)",
+      completed: "rgb(21,181,0)"
+    }
+
+    // Animation timeline
+    var tl = anime.timeline({
+      easing: 'easeOutQuart'
+    });
+
+    window.onload = function () {
+      // Queue of work items
+      var works = [];
+      var device = []
+      var completed = [];
+
+      // Draw the SVG elements
+      var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute('viewbox', `${viewbox_xmin} ${viewbox_ymin} ${viewbox_xmax} ${viewbox_ymax}`);
+      svg.setAttribute('width', '800');
+      svg.setAttribute('height', '600');
+
+      for (let i = 0; i < rows.length; i++) {
+        var text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        text.setAttribute('text-anchor', 'end');
+        text.setAttribute('x', `${text_width - text_horizontal_margin}`);
+        text.setAttribute('y', `${(work_height + verticle_spacing) * (i + 1) - text_vertical_margin}`);
+        text.setAttribute('font-size', `${font_size}`);
+        text.setAttribute('font-family', font_family);
+        text.textContent = rows[i];
+        svg.appendChild(text);
+
+        var border = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        var y = work_height * i + verticle_spacing * (i + 1);
+        border.setAttribute('d', `M${text_width} ${y} H ${text_width + row_width[i]} V ${y + work_height} H ${text_width} Z`);
+        border.setAttribute('fill', 'transparent');
+        border.setAttribute('stroke', 'black');
+        border.setAttribute('stroke-dasharray', '4 1');
+        border.setAttribute('stroke-width', '2');
+        svg.appendChild(border);
+      }
+
+      for (let i = 0; i < num_work; i++) {
+        var rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        rect.setAttribute('class', `work${i + 1}`);
+        rect.setAttribute('x', `${text_width + i * work_width}`);
+        rect.setAttribute('y', `${verticle_spacing}`);
+        rect.setAttribute('width', `${work_width}`);
+        rect.setAttribute('height', `${work_height}`);
+        rect.setAttribute('fill', `${color.work}`);
+        svg.appendChild(rect);
+        works.push(rect); // Add to the queue of work items
+      }
+
+      document.body.appendChild(svg);
+
+      // Animate opacity change
+      function change_opacity(targets, opacity, speed, offset = null) {
+        params = {
+          targets: targets,
+          duration: speed,
+          opacity: opacity,
+          easing: 'linear'
+        };
+        if (offset)
+          tl.add(params, offset);
+        else
+          tl.add(params);
+      }
+
+      // Animate color change
+      function change_color(targets, color, speed, offset = null) {
+        params = {
+          targets: targets,
+          duration: speed,
+          fill: color
+        };
+        if (offset)
+          tl.add(params, offset);
+        else
+          tl.add(params);
+      }
+
+      // Animate movement
+      function move(targets, translateX, translateY, speed, offset = null) {
+        var params = {
+          targets: targets,
+          duration: speed
+        };
+        if (translateX != null) params.translateX = translateX;
+        if (translateY != null) params.translateY = translateY;
+        if (offset)
+          tl.add(params, offset);
+        else
+          tl.add(params);
+      }
+
+      // Select and deselect work items
+      function select(targets, speed, offset = null) {
+        change_opacity(targets, [opacity.normal, opacity.selected], speed, offset);
+      }
+
+      function deselect(targets, speed, offset = null) {
+        change_opacity(targets, [opacity.selected, opacity.normal], speed, offset);
+      }
+
+      // Dispatch an work item
+      function dispatch_one() {
+        work = works.shift();
+        device.push(work);
+        select(work, speed.fast);
+        move(work, -completed.length * work_width, work_height + verticle_spacing, speed.normal);
+        deselect(work, speed.fast, `-=${speed.fast}`);
+      }
+
+      // Complete an work item
+      function complete_one() {
+        work = device.shift();
+        completed.push(work);
+        change_color(work, `${color.completed}`, speed.fast);
+        select(work, speed.fast, `-=${speed.fast}`);
+        move(work, 0, (work_height + verticle_spacing) * 2, speed.normal);
+        move(device, -completed.length * work_width, null, speed.normal, `-=${speed.normal}`);
+        deselect(work, speed.fast, `-=${speed.fast}`);
+      }
+
+      dispatch_one();
+      dispatch_one();
+      dispatch_one();
+
+      complete_one();
+      dispatch_one();
+
+      complete_one();
+      dispatch_one();
+
+      complete_one();
+      dispatch_one();
+
+      complete_one();
+      complete_one();
+      complete_one();
+    };
+  </script>
+</head>
+
+<body>
+</body>
+
+</html>
