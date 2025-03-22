@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-03-22 05:20:35</td>
+            <td class="headerValue">2025-03-22 13:05:17</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">92.3&nbsp;%</td>
@@ -243,15 +243,15 @@
 <span id="L181"><span class="lineNum">     181</span>              : }</span>
 <span id="L182"><span class="lineNum">     182</span>              : </span>
 <span id="L183"><span class="lineNum">     183</span>              : void</span>
-<span id="L184"><span class="lineNum">     184</span> <span class="tlaGNC tlaBgGNC">       85637 : LabeledAxisAccessor::validate_item_name(const std::string &amp; name) const</span></span>
+<span id="L184"><span class="lineNum">     184</span> <span class="tlaGNC tlaBgGNC">       85635 : LabeledAxisAccessor::validate_item_name(const std::string &amp; name) const</span></span>
 <span id="L185"><span class="lineNum">     185</span>              : {</span>
-<span id="L186"><span class="lineNum">     186</span> <span class="tlaGNC">       85637 :   neml_assert(!name.empty(), &quot;Empty item variable name&quot;);</span></span>
-<span id="L187"><span class="lineNum">     187</span> <span class="tlaGNC">       85637 :   const auto x = name.find_first_of(&quot; .,;/\t\n\v\f\r&quot;);</span></span>
-<span id="L188"><span class="lineNum">     188</span> <span class="tlaGNC">       85637 :   neml_assert(x == std::string::npos,</span></span>
+<span id="L186"><span class="lineNum">     186</span> <span class="tlaGNC">       85635 :   neml_assert(!name.empty(), &quot;Empty item variable name&quot;);</span></span>
+<span id="L187"><span class="lineNum">     187</span> <span class="tlaGNC">       85635 :   const auto x = name.find_first_of(&quot; .,;/\t\n\v\f\r&quot;);</span></span>
+<span id="L188"><span class="lineNum">     188</span> <span class="tlaGNC">       85635 :   neml_assert(x == std::string::npos,</span></span>
 <span id="L189"><span class="lineNum">     189</span>              :               &quot;Invalid item name: &quot;,</span>
 <span id="L190"><span class="lineNum">     190</span>              :               name,</span>
 <span id="L191"><span class="lineNum">     191</span>              :               &quot;. The item names cannot contain whitespace, '.', ',', ';', or '/'.&quot;);</span>
-<span id="L192"><span class="lineNum">     192</span> <span class="tlaGNC">       85636 : }</span></span>
+<span id="L192"><span class="lineNum">     192</span> <span class="tlaGNC">       85634 : }</span></span>
 <span id="L193"><span class="lineNum">     193</span>              : </span>
 <span id="L194"><span class="lineNum">     194</span>              : bool</span>
 <span id="L195"><span class="lineNum">     195</span> <span class="tlaGNC">        7337 : operator!=(const LabeledAxisAccessor &amp; a, const LabeledAxisAccessor &amp; b)</span></span>
@@ -266,9 +266,9 @@
 <span id="L204"><span class="lineNum">     204</span>              : }</span>
 <span id="L205"><span class="lineNum">     205</span>              : </span>
 <span id="L206"><span class="lineNum">     206</span>              : bool</span>
-<span id="L207"><span class="lineNum">     207</span> <span class="tlaGNC">      462117 : operator&lt;(const LabeledAxisAccessor &amp; a, const LabeledAxisAccessor &amp; b)</span></span>
+<span id="L207"><span class="lineNum">     207</span> <span class="tlaGNC">      465222 : operator&lt;(const LabeledAxisAccessor &amp; a, const LabeledAxisAccessor &amp; b)</span></span>
 <span id="L208"><span class="lineNum">     208</span>              : {</span>
-<span id="L209"><span class="lineNum">     209</span> <span class="tlaGNC">      462117 :   return a.vec() &lt; b.vec();</span></span>
+<span id="L209"><span class="lineNum">     209</span> <span class="tlaGNC">      465222 :   return a.vec() &lt; b.vec();</span></span>
 <span id="L210"><span class="lineNum">     210</span>              : }</span>
 <span id="L211"><span class="lineNum">     211</span>              : </span>
 <span id="L212"><span class="lineNum">     212</span>              : std::ostream &amp;</span>
