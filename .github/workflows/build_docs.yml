@@ -24,6 +24,11 @@ jobs:
           python-version: 3.9
           cmake-version: 3.28
           torch-version: 2.5.1
+      - uses: actions/setup-node@v4
+      - name: Install Node.js dependencies
+        run: |
+          cd doc/js
+          npm install
       - name: Configure
         run: cmake --preset dev -GNinja -DNEML2_PCH=OFF -S .
       - name: Build
