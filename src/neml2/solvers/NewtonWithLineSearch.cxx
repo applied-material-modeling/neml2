@@ -59,6 +59,10 @@ NewtonWithLineSearch::expected_options()
   options.set("linesearch_stopping_criteria").doc() =
       "The lineseach tolerance slightly relaxing the definition of residual decrease";
 
+  options.set<bool>("check_negative_critertia_value") = false;
+  options.set("check_negative_critertia_value").doc() =
+      "Whether to check if the convergence criteria for line search becomes negative";
+
   return options;
 }
 
@@ -67,7 +71,8 @@ NewtonWithLineSearch::NewtonWithLineSearch(const OptionSet & options)
     _linesearch_miter(options.get<unsigned int>("max_linesearch_iterations")),
     _linesearch_sigma(options.get<Real>("linesearch_cutback")),
     _linesearch_c(options.get<Real>("linesearch_stopping_criteria")),
-    _type(options.get<EnumSelection>("linesearch_type"))
+    _type(options.get<EnumSelection>("linesearch_type")),
+    _check_crit(options.get<bool>("check_negative_critertia_value"))
 {
 }
 
@@ -90,8 +95,7 @@ NewtonWithLineSearch::linesearch(NonlinearSystem & system,
 {
   auto alpha = Scalar::ones(x.batch_sizes(), x.options());
   const auto nR02 = bvv(R0, R0);
-  bool check = false;
-  bool flag = false;
+  bool neg_crit = false;
   auto crit = nR02;
 
   for (std::size_t i = 1; i < _linesearch_miter; i++)
@@ -105,14 +109,6 @@ NewtonWithLineSearch::linesearch(NonlinearSystem & system,
     else if (_type == "STRONG_WOLFE")
       crit = (1.0 - _linesearch_c * alpha) * nR02;
 
-    // std::cout << "nR02: " << nR02.item<Real>() << std::endl;
-    // std::cout << "math::bvv(R0, dx): " << math::bvv(R0, dx).item<Real>() << std::endl;
-    // std::cout << "R: \n" << R << std::endl;
-    // std::cout << "nR2: " << nR2.item<Real>() << std::endl;
-
-    if (std::isnan(at::max(nR2).item<Real>()))
-      neml_assert(false, "One of the residual componenet is NAN");
-
     if (verbose)
       std::cout << "     LS ITERATION " << std::setw(3) << i << ", min(alpha) = " << std::scientific
                 << at::min(alpha).item<Real>() << ", max(||R||) = " << std::scientific
@@ -121,26 +117,22 @@ NewtonWithLineSearch::linesearch(NonlinearSystem & system,
 
     auto stop = at::logical_or(nR2 <= crit, nR2 <= std::pow(atol, 2));
 
-    if (at::max(crit).item<Real>() < 0)
-      flag = true;
-
     if (at::all(stop).item<bool>())
-    {
-      check = true;
       break;
-    }
 
-    // alpha = alpha.batch_expand_as(stop).clone();
     alpha.batch_index_put_({at::logical_not(stop)},
                            alpha.batch_index({at::logical_not(stop)}) / _linesearch_sigma);
   }
 
-  if (flag)
-    neml_assert(check,
-                "Nonlinear Solver failed to converge: Line Search produces negative stopping "
-                "criteria, try with other "
-                "linesearch_type, increase linesearch_cutback "
-                "or reduce linesearch_stopping_criteria");
+  if (at::max(crit).item<Real>() < 0)
+    neg_crit = true;
+
+  if (neg_crit && _check_crit)
+    std::cerr << "WARNING: Line Search produces negative stopping "
+                 "criteria, this could lead to convergence issue. Try with other "
+                 "linesearch_type, increase linesearch_cutback "
+                 "or reduce linesearch_stopping_criteria"
+              << std::endl;
 
   return alpha;
 }

@@ -46,6 +46,8 @@ public:
 
   TransientDriver(const OptionSet & options);
 
+  void setup() override;
+
   void diagnose() const override;
 
   bool run() override;
@@ -87,6 +89,10 @@ protected:
   std::vector<ValueMap> _result_in;
   /// Outputs from all time steps
   std::vector<ValueMap> _result_out;
+
+  /// Driving forces (other than time)
+  std::vector<VariableName> _driving_force_names;
+  std::vector<Tensor> _driving_forces;
 
   /// Outputting
   ///@{

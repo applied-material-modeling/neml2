@@ -69,6 +69,37 @@ set_ic(ValueMap & storage,
   }
 }
 
+template <typename T>
+void
+get_force(std::vector<VariableName> & names,
+          std::vector<Tensor> & values,
+          const OptionSet & options,
+          const std::string & name_opt,
+          const std::string & value_opt,
+          const Device & device)
+{
+  const auto force_names = options.get<std::vector<VariableName>>(name_opt);
+  const auto vals = options.get<std::vector<TensorName<T>>>(value_opt);
+  neml_assert(force_names.size() == vals.size(),
+              "Number of driving force names ",
+              name_opt,
+              " and number of driving force values ",
+              value_opt,
+              " should be the same but instead have ",
+              force_names.size(),
+              " and ",
+              vals.size(),
+              " respectively.");
+  for (std::size_t i = 0; i < force_names.size(); i++)
+  {
+    neml_assert(force_names[i].is_force(),
+                "Driving force names should start with 'forces' but instead got ",
+                force_names[i]);
+    names.push_back(force_names[i]);
+    values.push_back(vals[i].resolve().to(device));
+  }
+}
+
 OptionSet
 TransientDriver::expected_options()
 {
@@ -95,6 +126,13 @@ TransientDriver::expected_options()
   options.set("ic_" #T "_values").doc() = "Initial condition values for the " #T " variables"
   FOR_ALL_TENSORBASE(OPTION_IC_);
 
+#define OPTION_FORCE_(T)                                                                           \
+  options.set<std::vector<VariableName>>("force_" #T "_names");                                    \
+  options.set("force_" #T "_names").doc() = "Prescribed driving force of tensor type " #T;         \
+  options.set<std::vector<TensorName<T>>>("force_" #T "_values");                                  \
+  options.set("force_" #T "_values").doc() = "Prescribed driving force values of tensor type " #T
+  FOR_ALL_TENSORBASE(OPTION_FORCE_);
+
   options.set<std::string>("save_as");
   options.set("save_as").doc() =
       "File path (absolute or relative to the working directory) to store the results";
@@ -117,6 +155,21 @@ TransientDriver::TransientDriver(const OptionSet & options)
 }
 
 void
+TransientDriver::setup()
+{
+  ModelDriver::setup();
+
+#define GET_FORCE_(T)                                                                              \
+  get_force<T>(_driving_force_names,                                                               \
+               _driving_forces,                                                                    \
+               input_options(),                                                                    \
+               "force_" #T "_names",                                                               \
+               "force_" #T "_values",                                                              \
+               _device)
+  FOR_ALL_TENSORBASE(GET_FORCE_);
+}
+
+void
 TransientDriver::diagnose() const
 {
   ModelDriver::diagnose();
@@ -125,6 +178,22 @@ TransientDriver::diagnose() const
       _time.batch_dim() >= 1,
       "Input time should have at least one batch dimension but instead has batch dimension ",
       _time.batch_dim());
+
+  for (std::size_t i = 0; i < _driving_forces.size(); i++)
+  {
+    diagnostic_assert(_driving_forces[i].batch_dim() >= 1,
+                      "Input driving force ",
+                      _driving_force_names[i],
+                      " should have at least one batch dimension but instead has batch dimension ",
+                      _driving_forces[i].batch_dim());
+    diagnostic_assert(_driving_forces[i].batch_size(0) == _time.batch_size(0),
+                      "Prescribed driving force ",
+                      _driving_force_names[i],
+                      " should have the same number of steps "
+                      "as time, but instead has ",
+                      _driving_forces[i].batch_size(0),
+                      " steps");
+  }
 
   // Check for statefulness
   const auto & input_old_state = _model.input_axis().subaxis(OLD_STATE);
@@ -207,6 +276,9 @@ TransientDriver::update_forces()
 {
   if (_model.input_axis().has_variable(_time_name))
     _in[_time_name] = _time.batch_index({_step_count});
+
+  for (std::size_t i = 0; i < _driving_force_names.size(); i++)
+    _in[_driving_force_names[i]] = _driving_forces[i].batch_index({_step_count});
 }
 
 void

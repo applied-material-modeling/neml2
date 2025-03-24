@@ -22,52 +22,51 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/Ratio.h"
+#include "neml2/models/pyrolysis/ChemicalReactionMechanism.h"
+#include "neml2/tensors/functions/pow.h"
 #include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
-register_NEML2_object(Ratio);
+register_NEML2_object(ChemicalReactionMechanism);
 OptionSet
-Ratio::expected_options()
+ChemicalReactionMechanism::expected_options()
 {
-  OptionSet options = Model::expected_options();
-  options.doc() = "Define the ratio between two variables";
+  OptionSet options = ReactionMechanism::expected_options();
+  options.doc() =
+      "Define the chemical reaction model, takes the form of \\f$ f = k(1-a)^n \\f$, where "
+      "\\f$ k \\f$ is the scaling constant, \\f$ n \\f$ is the reaction order, and "
+      "\\f$ a \\f$ is the reaction amount";
 
-  options.set_input("numerator") = VariableName("state", "numerator");
-  options.set("numerator").doc() = "Numerator variable";
+  options.set_parameter<TensorName<Scalar>>("scaling_constant");
+  options.set("scaling_constant").doc() = "Scaling constant, k";
 
-  options.set_input("denominator") = VariableName("state", "denominator");
-  options.set("denominator").doc() = "Denominator variable";
-
-  options.set_output("out") = VariableName("state", "out");
-  options.set("out").doc() = "Ratio out.";
+  options.set_parameter<TensorName<Scalar>>("reaction_order");
+  options.set("reaction_order").doc() = "Reaction order, n";
 
   return options;
 }
 
-Ratio::Ratio(const OptionSet & options)
-  : Model(options),
-    _a(declare_input_variable<Scalar>("numerator")),
-    _b(declare_input_variable<Scalar>("denominator")),
-    _aob(declare_output_variable<Scalar>("out"))
+ChemicalReactionMechanism::ChemicalReactionMechanism(const OptionSet & options)
+  : ReactionMechanism(options),
+    _k(declare_parameter<Scalar>("k", "scaling_constant")),
+    _n(declare_parameter<Scalar>("n", "reaction_order"))
 {
 }
 
 void
-Ratio::set_value(bool out, bool dout_din, bool d2out_din2)
+ChemicalReactionMechanism::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
 
   if (out)
   {
-    _aob = _a / _b;
+    _f = _k * pow(1.0 - _a, _n);
   }
 
   if (dout_din)
   {
-    _aob.d(_a) = 1 / _b;
-    _aob.d(_b) = -1 * _a / (_b * _b);
+    _f.d(_a) = -1.0 * _k * _n * pow(1.0 - _a, _n - 1);
   }
 }
 }

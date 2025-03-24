@@ -25,7 +25,7 @@
 
 [Models]
     [model]
-        type = ChemicalReactionModel
+        type = ChemicalReactionMechanism
         scaling_constant = 0.7
         reaction_order = 2.75
         reaction_amount = 'state/alpha'

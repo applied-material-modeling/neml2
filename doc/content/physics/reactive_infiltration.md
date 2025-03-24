@@ -2,7 +2,7 @@
 
 [TOC]
 
-The reactive infiltration physics module is a collection of objects serving as building blocks for composing model's describing reactive infiltration kinects as a solid \f$(S)\f$ material is infiltrated by a liquid \f$(L)\f$ to create a product \f$(P)\f$. The framework and usage of the model is explained below, with both mathematical formulations and example input files.
+The reactive infiltration physics module is a collection of objects serving as building blocks for composing model's describing reactive infiltration kinetics as a solid \f$(S)\f$ material is infiltrated by a liquid \f$(L)\f$ to create a product \f$(P)\f$. The framework and usage of the model is explained below, with both mathematical formulations and example input files.
 
 ## Framework
 
@@ -17,7 +17,7 @@ As the liquid enters the cylinder, it reacts with a solid to form a product with
 ![The (a) top and (b) cross-section view of the Representative Volume Element (RVE) of a given state of the reactive infiltration process, depicting the outer solid walls, the infiltrated liquid and the product from the chemical reaction ][rve]{html: width=80%}
 [rve]: asset/lsi_rve_simplify.svg
 
-Throughout this process, the solid radius, \f$r_o\f$, decreases while the product thickness, \f$\delta_P\f$, increases. Let \f$r_i\f$ denotes the innter radius of the product. In addition, define \f$\alpha_i\f$ (units of molar per volume) as the amount of substance in the RVE, and \f$\Omega_i = \dfrac{M_i}{\rho_i}\f$ as the molar volume of a material with molar mass \f$M_i\f$ (amu) and density \f$\rho_i\f$ (mass per volume), with subscripts taking \f$L\f$, \f$S\f$, and \f$P\f$, respectively.
+Throughout this process, the solid radius, \f$r_o\f$, decreases while the product thickness, \f$\delta_P\f$, increases. Let \f$r_i\f$ denote the inner radius of the product. In addition, define \f$\alpha_i\f$ (in units of mole per volume) as the amount of substance in the RVE, and \f$\Omega_i = \dfrac{M_i}{\rho_i}\f$ as the molar volume of a material with molar mass \f$M_i\f$ (in units of amu, or gram per mole) and density \f$\rho_i\f$ (mass per volume), with subscripts taking \f$L\f$, \f$S\f$, and \f$P\f$, respectively.
 
 The volume fraction, \f$\varphi_i\f$  of each material is then
 \f[
@@ -71,31 +71,30 @@ Here \f$R_L(\varphi_L), R_S(\varphi_S) \in [0, 1]\f$ are the reactivity of liqui
 
 ### Implementation Details
 
-The above governing equations are fairly general for a wide range of reactive infiltraion systems within this framework as long as the chemical reactions kinetics with the appropriate reaction coefficient (\f$k_i\f$), and the correct corresponding molar volume, \f$\Omega_i\f$, of the involving materials.
+The above governing equations are fairly general for a wide range of reactive infiltration systems within this framework given the chemical reaction kinetics with appropriate reaction coefficient (\f$k_i\f$) and the corresponding molar volume \f$\Omega_i\f$ of the materials.
 
-<span style="color:red">Example</span> for determining \f$k_i\f$ and \f$\Omega_i\f$:
-- Considered a reactive infiltraion process of liquid (chemical formula \f$L_x\f$) and solid (\f$S_y\f$), with the molar mass \f$M_L\f$ and \f$M_S\f$.
-- The chemical reactions create a product with chemical formula \f$L_m S_n\f$, with a reaction coefficient \f$k_S, k_P\f$.
+Example for determining \f$k_i\f$ and \f$\Omega_i\f$:
+Consider a reactive infiltration process of liquid (chemical formula \f$L_x\f$) and solid (\f$S_y\f$), with the molar mass \f$M_L\f$ and \f$M_S\f$. The chemical reaction creates a product with chemical formula \f$L_m S_n\f$, with reaction coefficients \f$k_S\f$ and \f$k_P\f$.
 \f[
     L_x + k_S S_y \rightarrow k_P L_mS_n 
 \f]
-For chemical balance, the reaction coefficient is:
+For stoichiometric balance, the reaction coefficients are:
 \f{align*}
-    &\ k_S = \dfrac{xn}{ym} \quad k_P = \dfrac{x}{m} 
+    k_S = \dfrac{xn}{ym}, \quad k_P = \dfrac{x}{m} 
 \f} 
-- The material density of the liquid, solid, product is \f$\rho_L, \rho_S, \rho_P\f$.
+The densities of the liquid, solid, and product are respectively \f$\rho_L, \rho_S, \rho_P\f$.
     
-    Then, the molar volume is:
-\f{align*}
-    &\ \Omega_L = \dfrac{x M_L}{\rho_L} \quad \Omega_S = \dfrac{y M_S}{\rho_S} \quad \Omega_P = \dfrac{mn M_LM_S}{\rho_P}
-\f}
-
-
-The chemical equation also implies that
+Then, the molar volume is:
 \f[
-    \dot{\alpha}_S = \dfrac{k_P}{k_S} \dot{\alpha}_P 
+    \Omega_L = \dfrac{x M_L}{\rho_L}. \quad \Omega_S = \dfrac{y M_S}{\rho_S}, \quad \Omega_P = \dfrac{mM_L+nM_S}{\rho_P}.
 \f]
-> Since this consitutive model considered \f$\alpha_L\f$ as the forcing function for the IVP problem. \f$\dot{\alpha}_L \ne k_P \dot{\alpha}_P\f$.
+
+
+The instantaneous balance also implies that
+\f[
+    \dot{\alpha}_S = \dfrac{k_P}{k_S} \dot{\alpha}_P, 
+\f]
+Since this constitutive model considers \f$\alpha_L\f$ as the forcing function for the IVP problem, \f$\dot{\alpha}_L \ne k_P \dot{\alpha}_P\f$.
 
 The following tables summarize the relationship between the mathematical expressions and NEML2 models.
 
@@ -114,7 +113,7 @@ The following tables summarize the relationship between the mathematical express
 
 ## Model Building Blocks
 
-The RVE keeps track of the volume fraction of the liquid, solid and product, \f$\varphi_L, \varphi_S, \varphi_P\f$. \f$\varphi_L\f$ directly corresponds to the prescribed liquid substance \f$\alpha_L\f$ where \f$\varphi_S, \varphi_P\f$ is obtained from solving the IVP problem with [Implicit Update](#implicitupdate) syntax model.
+The RVE keeps track of the volume fraction of the liquid, solid and product, \f$\varphi_L, \varphi_S, \varphi_P\f$. \f$\varphi_L\f$ directly corresponds to the prescribed liquid substance \f$\alpha_L\f$ where \f$\varphi_S and \varphi_P\f$ are obtained from solving the IVP problem with [ImplicitUpdate](#implicitupdate).
 
 ### Product and solid's inner radius {#ProductGeometry}
 Model object [ProductGeometry](#productgeometry)
@@ -177,12 +176,15 @@ Example input file that defines the product reaction rate
 ### Hermite Smooth Step Function {#HermiteSmoothStep}
 Model object [HermiteSmoothStep](#hermitesmoothstep)
 
-A cubic Hermite interpolation after clambing is used as a smooth step function:
-\f{align*}
-    &0 & x_r \le 0 \\
-    R(x) = & 3x_r^2 - 2x_r^3 & 0 \ge x_r \le 1 \\
-    &0 & x_r \ge 1
-\f}
+A cubic Hermite interpolation after clamping is used as a smooth step function:
+\f[
+    R(x_r) = 
+    \begin{cases}
+      0, & x_r < 0 \\
+      3x_r^2 - 2x_r^3, & 0 \le x_r \le 1 \\
+      1, & x_r > 1
+    \end{cases}
+\f]
 where
 \f[
     x_r = \dfrac{x-x_l}{x_u-x_l}
@@ -206,7 +208,7 @@ Example input file that use the smooth step function
 ```
 
 ## Complete Input File
-A complete example input file for the reactive infiltration is shown below with the appropriate model composition. The parameters are chosen to reflect a liquid silicon infiltration (LSI) on carbon foam.
+A complete example input file for the reactive infiltration is shown below with the appropriate model composition.
 
 ```
 ntime = 200

@@ -29,23 +29,29 @@
 namespace neml2
 {
 /**
- * @brief Define the ratio between two state variables.
+ * @brief Define the multiplication between arbitrary number of state variables.
  */
-class Ratio : public Model
+
+class ScalarVariableMultiplication : public Model
 {
 public:
   static OptionSet expected_options();
 
-  Ratio(const OptionSet & options);
+  ScalarVariableMultiplication(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  // State Variables
-  const Variable<Scalar> & _a;
-  const Variable<Scalar> & _b;
+  /// Multiplication of all the input variables
+  Variable<Scalar> & _to;
 
-  // Residual Variables
-  Variable<Scalar> & _aob;
+  /// The input variables (to be multiply)
+  std::vector<const Variable<Scalar> *> _from;
+
+  /// Constant scaling coefficient
+  const Scalar & _A;
+
+  /// Inverse conditions
+  std::vector<bool> _inv;
 };
-}
+} // namespace neml2

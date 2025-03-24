@@ -101,8 +101,6 @@ NonlinearSystem::init_scaling(const NonlinearSystem::Sol<false> & x, const bool 
 {
   if (!_autoscale)
   {
-    // auto J = Jacobian(x);
-    // std::cout << J << std::endl;
     return;
   }
 
@@ -120,8 +118,6 @@ NonlinearSystem::init_scaling(const NonlinearSystem::Sol<false> & x, const bool 
   if (verbose)
     std::cout << "Before automatic scaling cond(J) = " << std::scientific
               << at::max(at::linalg_cond(Jp)).item<Real>() << std::endl;
-
-  // std::cout << Jp << std::endl;
 
   for (unsigned int itr = 0; itr < _autoscale_miter; itr++)
   {

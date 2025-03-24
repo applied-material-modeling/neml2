@@ -25,8 +25,6 @@
 #pragma once
 
 #include "neml2/models/Model.h"
-// #include "include/neml2/models"
-// #include "src/neml2/models"
 
 namespace neml2
 {

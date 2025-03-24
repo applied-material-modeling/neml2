@@ -23,31 +23,24 @@
 // THE SOFTWARE.
 
 #pragma once
-
-#include "neml2/models/Model.h"
+#include "neml2/models/pyrolysis/ReactionMechanism.h"
 
 namespace neml2
 {
 /**
  * @brief Define the chemical reaction model.
  */
-class NucleationReactionModel : public Model
+class AvramiErofeevNucleation : public ReactionMechanism
 {
 public:
   static OptionSet expected_options();
 
-  NucleationReactionModel(const OptionSet & options);
+  AvramiErofeevNucleation(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
   const Scalar & _k;
   const Scalar & _n;
-
-  // State Variables
-  const Variable<Scalar> & _a;
-
-  // Residual Variables
-  Variable<Scalar> & _f;
 };
 }

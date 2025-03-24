@@ -22,37 +22,30 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-
-#include "neml2/drivers/TransientDriver.h"
+#include "neml2/models/pyrolysis/ReactionMechanism.h"
 
 namespace neml2
 {
-/**
- * @brief The transient driver specialized for pyrolysis problems.
- *
- */
-class PyrolysisDriver : public TransientDriver
+OptionSet
+ReactionMechanism::expected_options()
 {
-public:
-  static OptionSet expected_options();
+  OptionSet options = Model::expected_options();
+  options.doc() = "Relate the reaction amount to the mechanisms reaction output";
 
-  /**
-   * @brief Construct a new PyrolysisDriver object
-   *
-   * @param options The options extracted from the input file
-   */
-  PyrolysisDriver(const OptionSet & options);
+  options.set_input("reaction_amount") = VariableName("state", "reaction_amount");
+  options.set("reaction_amount").doc() = "Variable involes in the reaction, a";
 
-  // void setup() override;
+  options.set_output("reaction_out") = VariableName("state", "out");
+  options.set("reaction_out").doc() = "Mechanism reaction output, f.";
 
-  void diagnose() const override;
-
-protected:
-  void update_forces() override;
-
-  Scalar _temperature;
-  // VariableName _temperature_name;
-  const VariableName _temperature_name;
-};
+  return options;
 }
+
+ReactionMechanism::ReactionMechanism(const OptionSet & options)
+  : Model(options),
+    _a(declare_input_variable<Scalar>("reaction_amount")),
+    _f(declare_output_variable<Scalar>("reaction_out"))
+{
+}
+
+} // namespace neml2

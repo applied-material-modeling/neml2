@@ -24,28 +24,25 @@
 
 #pragma once
 
-#include "neml2/models/solid_mechanics/Eigenstrain.h"
+#include "neml2/models/Model.h"
 
 namespace neml2
 {
 /**
- * @brief Define the volume change eigenstrain with the reference as state variable instead of a
- * parameter.
+ * @brief Define the mechanism reaction function.
  */
-class VolumeChangeEigenstrainStateful : public Eigenstrain
+class ReactionMechanism : public Model
 {
 public:
   static OptionSet expected_options();
 
-  VolumeChangeEigenstrainStateful(const OptionSet & options);
+  ReactionMechanism(const OptionSet & options);
 
 protected:
-  void set_value(bool, bool, bool) override;
+  // State Variables
+  const Variable<Scalar> & _a;
 
-  /// Parameters
-  const Variable<Scalar> & _V0;
-
-  /// State Variables
-  const Variable<Scalar> & _V;
+  // Residual Variables
+  Variable<Scalar> & _f;
 };
-} // namespace neml2
+}

@@ -92,23 +92,23 @@ alpha0 = 3.333333 # 1/(1-Y)
 
 [Drivers]
     [driver]
-        type = PyrolysisDriver
+        type = TransientDriver
         model = 'model'
         prescribed_time = 'times'
         time = 'forces/tt'
 
-        prescribed_temperature = 'T'
-        temperature = 'forces/T'
+        force_Scalar_names = 'forces/T'
+        force_Scalar_values = 'T'
         
-        show_input_axis = true
-        show_output_axis = true
-        show_parameters = true
+        show_input_axis = false
+        show_output_axis = false
+        show_parameters = false
         
         ic_Scalar_names = 'state/mp state/mb state/mg state/ms state/alpha'
         ic_Scalar_values = '${mp0} ${mb0} ${mg0} ${ms0} ${alpha0}'
         save_as = 'test.pt'
 
-        verbose = true
+        verbose = false
     []
     [regression]
         type = TransientRegression
@@ -118,16 +118,12 @@ alpha0 = 3.333333 # 1/(1-Y)
 []
 
 [Solvers]
-    [newton]
-        #type = NewtonWithLineSearch
-        #linesearch_type = STRONG_WOLFE
-        #linesearch_cutback = 1.55
-        
+    [newton]        
         type = Newton
         rel_tol = 1e-8
         abs_tol = 1e-10
         max_its = 100
-        verbose = true
+        verbose = false
     []
 []
 
@@ -142,7 +138,7 @@ alpha0 = 3.333333 # 1/(1-Y)
         reaction_amount = 'state/alpha'
     []
     [reaction]
-        type = ChemicalReactionModel
+        type = ChemicalReactionMechanism
         scaling_constant = 'k'
         reaction_order = 'order'
         reaction_amount = 'state/alpha'
@@ -251,28 +247,28 @@ alpha0 = 3.333333 # 1/(1-Y)
         to_var = 'state/M'
     []
     [wb]
-        type = Ratio
-        numerator = 'state/mb'
-        denominator = 'state/M'
-        out = 'state/wb'
+        type = ScalarVariableMultiplication
+        from_var = 'state/mb state/M'
+        to_var = 'state/wb'
+        inverse_condition = 'false true'
     []
     [wp]
-        type = Ratio
-        numerator = 'state/mp'
-        denominator = 'state/M'
-        out = 'state/wp'
+        type = ScalarVariableMultiplication
+        from_var = 'state/mp state/M'
+        to_var = 'state/wp'
+        inverse_condition = 'false true'
     []
     [ws]
-        type = Ratio
-        numerator = 'state/ms'
-        denominator = 'state/M'
-        out = 'state/ws'
+        type = ScalarVariableMultiplication
+        from_var = 'state/ms state/M'
+        to_var = 'state/ws'
+        inverse_condition = 'false true'
     []
     [wg]
-        type = Ratio
-        numerator = 'state/mg'
-        denominator = 'state/M'
-        out = 'state/wg'
+        type = ScalarVariableMultiplication
+        from_var = 'state/mg state/M'
+        to_var = 'state/wg'
+        inverse_condition = 'false true'
     []
     [wout]
         type = ComposedModel
@@ -311,28 +307,28 @@ alpha0 = 3.333333 # 1/(1-Y)
         to_var = 'state/V'
     []
     [vb]
-        type = Ratio
-        numerator = 'state/Vb'
-        denominator = 'state/V'
-        out = 'state/vb' 
+        type = ScalarVariableMultiplication
+        from_var = 'state/Vb state/V'
+        to_var = 'state/vb'
+        inverse_condition = 'false true'
     []
     [vp]
-        type = Ratio
-        numerator = 'state/Vp'
-        denominator = 'state/V'
-        out = 'state/vp' 
+        type = ScalarVariableMultiplication
+        from_var = 'state/Vp state/V'
+        to_var = 'state/vp'
+        inverse_condition = 'false true'
     []
     [vg]
-        type = Ratio
-        numerator = 'state/Vg'
-        denominator = 'state/V'
-        out = 'state/vg' 
+        type = ScalarVariableMultiplication
+        from_var = 'state/Vg state/V'
+        to_var = 'state/vg'
+        inverse_condition = 'false true'
     []
     [vs]
-        type = Ratio
-        numerator = 'state/Vs'
-        denominator = 'state/V'
-        out = 'state/vs' 
+        type = ScalarVariableMultiplication
+        from_var = 'state/Vs state/V'
+        to_var = 'state/vs'
+        inverse_condition = 'false true'
     []
     [vout]
         type = ComposedModel

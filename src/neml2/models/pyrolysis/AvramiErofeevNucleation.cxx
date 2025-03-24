@@ -22,52 +22,52 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/Product.h"
+#include "neml2/models/pyrolysis/AvramiErofeevNucleation.h"
+#include "neml2/tensors/functions/pow.h"
+#include "neml2/tensors/functions/log.h"
 #include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
-register_NEML2_object(Product);
+register_NEML2_object(AvramiErofeevNucleation);
 OptionSet
-Product::expected_options()
+AvramiErofeevNucleation::expected_options()
 {
-  OptionSet options = Model::expected_options();
-  options.doc() = "Define the product between two variables";
+  OptionSet options = ReactionMechanism::expected_options();
+  options.doc() = "Define the nucleation reaction model, takes the form of \\f$ f = "
+                  "k(1-a)(-ln(1-a))^n \\f$, where "
+                  "\\f$ k \\f$ is the scaling constant, \\f$ n \\f$ is the reaction order, and "
+                  "\\f$ a \\f$ is the reaction amount";
 
-  options.set_input("variable_a") = VariableName("state", "variable_a");
-  options.set("variable_a").doc() = "variable a";
+  options.set_parameter<TensorName<Scalar>>("scaling_constant");
+  options.set("scaling_constant").doc() = "Scaling constant, k";
 
-  options.set_input("variable_b") = VariableName("state", "variable_b");
-  options.set("variable_b").doc() = "variable b";
-
-  options.set_output("out") = VariableName("state", "out");
-  options.set("out").doc() = "Product out.";
+  options.set_parameter<TensorName<Scalar>>("reaction_order");
+  options.set("reaction_order").doc() = "Reaction order, n";
 
   return options;
 }
 
-Product::Product(const OptionSet & options)
-  : Model(options),
-    _a(declare_input_variable<Scalar>("variable_a")),
-    _b(declare_input_variable<Scalar>("variable_b")),
-    _ab(declare_output_variable<Scalar>("out"))
+AvramiErofeevNucleation::AvramiErofeevNucleation(const OptionSet & options)
+  : ReactionMechanism(options),
+    _k(declare_parameter<Scalar>("k", "scaling_constant")),
+    _n(declare_parameter<Scalar>("n", "reaction_order"))
 {
 }
 
 void
-Product::set_value(bool out, bool dout_din, bool d2out_din2)
+AvramiErofeevNucleation::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
 
   if (out)
   {
-    _ab = _a * _b;
+    _f = _k * (1.0 - _a) * pow(-1.0 * log(1.0 - _a), _n);
   }
 
   if (dout_din)
   {
-    _ab.d(_a) = _b;
-    _ab.d(_b) = _a;
+    _f.d(_a) = _k * _n * pow(-log(1 - _a), _n - 1) - _k * pow(-log(1 - _a), _n);
   }
 }
 }

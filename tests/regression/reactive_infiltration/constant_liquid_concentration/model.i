@@ -24,18 +24,18 @@ oSiCm1 = 0.08 # 1/Omega_SiC
 
 [Drivers]
   [driver]
-    type = InfiltrationDriver
+    type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
     time = 'forces/t'
-    prescribed_liquid_species_concentration = 'alpha'
-    liquid_species_concentration = 'forces/alpha'
+    force_Scalar_names = 'forces/alpha'
+    force_Scalar_values = 'alpha'
     ic_Scalar_names = 'state/phi_P state/phi_S state/alpha_P state/alpha_S'
     ic_Scalar_values = '0 0.3 0 0.05660377358'
     save_as = 'result.pt'
     verbose = false
-    show_input_axis = true
-    show_output_axis = true
+    show_input_axis = false
+    show_output_axis = false
   []
   [regression]
     type = TransientRegression
