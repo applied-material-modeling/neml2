@@ -24,49 +24,33 @@
 
 #pragma once
 
-#include "neml2/solvers/Newton.h"
-#include "neml2/tensors/Scalar.h"
+#include "neml2/models/Model.h"
+#include "neml2/base/EnumSelection.h"
 
 namespace neml2
 {
 /**
- * @copydoc neml2::Newton
- *
- * Armijo line search strategy is used to search along the direction of the full Newton step for a
- * decreasing residual norm.
+ * @brief Define the Fischer Burmeister Complementary Conditions.
  */
-class NewtonWithLineSearch : public Newton
+class FischerBurmeister : public Model
 {
 public:
   static OptionSet expected_options();
 
-  NewtonWithLineSearch(const OptionSet & options);
+  FischerBurmeister(const OptionSet & options);
 
 protected:
-  /// Update trial solution
-  void update(NonlinearSystem & system,
-              NonlinearSystem::Sol<true> & x,
-              const NonlinearSystem::Res<true> & r,
-              const NonlinearSystem::Jac<true> & J) override;
+  void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  /// Perform Armijo linesearch
-  virtual Scalar linesearch(NonlinearSystem & system,
-                            const NonlinearSystem::Sol<true> & x,
-                            const NonlinearSystem::Sol<true> & dx,
-                            const NonlinearSystem::Res<true> & R0) const;
+  // variables
+  const Variable<Scalar> & _a;
+  const Variable<Scalar> & _b;
 
-  /// Linesearch maximum iterations
-  unsigned int _linesearch_miter;
+  /// Seclect inequality type
+  EnumSelection _conda;
+  EnumSelection _condb;
 
-  /// Decrease factor for linesearch
-  Real _linesearch_sigma;
-
-  /// Stopping criteria for linesearch
-  Real _linesearch_c;
-
-  /// Seclect the type of line search
-  EnumSelection _type;
-
-  bool _check_crit;
+  // Residual Variables
+  Variable<Scalar> & _fb;
 };
-} // namespace neml2
+}

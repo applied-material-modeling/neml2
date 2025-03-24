@@ -24,49 +24,33 @@
 
 #pragma once
 
-#include "neml2/solvers/Newton.h"
-#include "neml2/tensors/Scalar.h"
+#include "neml2/models/Model.h"
 
 namespace neml2
 {
-/**
- * @copydoc neml2::Newton
- *
- * Armijo line search strategy is used to search along the direction of the full Newton step for a
- * decreasing residual norm.
- */
-class NewtonWithLineSearch : public Newton
+class HermiteSmoothStep : public Model
 {
 public:
   static OptionSet expected_options();
 
-  NewtonWithLineSearch(const OptionSet & options);
+  HermiteSmoothStep(const OptionSet & options);
 
 protected:
-  /// Update trial solution
-  void update(NonlinearSystem & system,
-              NonlinearSystem::Sol<true> & x,
-              const NonlinearSystem::Res<true> & r,
-              const NonlinearSystem::Jac<true> & J) override;
+  void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  /// Perform Armijo linesearch
-  virtual Scalar linesearch(NonlinearSystem & system,
-                            const NonlinearSystem::Sol<true> & x,
-                            const NonlinearSystem::Sol<true> & dx,
-                            const NonlinearSystem::Res<true> & R0) const;
+  /// Argument of the smooth step function
+  const Variable<Scalar> & _x;
 
-  /// Linesearch maximum iterations
-  unsigned int _linesearch_miter;
+  /// Value of the smooth step function
+  Variable<Scalar> & _y;
 
-  /// Decrease factor for linesearch
-  Real _linesearch_sigma;
+  /// Lower bound of the argument
+  const Scalar & _x0;
 
-  /// Stopping criteria for linesearch
-  Real _linesearch_c;
+  /// Upper bound of the argument
+  const Scalar & _x1;
 
-  /// Seclect the type of line search
-  EnumSelection _type;
-
-  bool _check_crit;
+  /// Complementary condition
+  const bool _comp_cond;
 };
 } // namespace neml2

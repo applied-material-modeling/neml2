@@ -24,49 +24,12 @@
 
 #pragma once
 
-#include "neml2/solvers/Newton.h"
-#include "neml2/tensors/Scalar.h"
+#include "neml2/misc/types.h"
+#include "neml2/tensors/tensors_fwd.h"
 
 namespace neml2
 {
-/**
- * @copydoc neml2::Newton
- *
- * Armijo line search strategy is used to search along the direction of the full Newton step for a
- * decreasing residual norm.
- */
-class NewtonWithLineSearch : public Newton
-{
-public:
-  static OptionSet expected_options();
-
-  NewtonWithLineSearch(const OptionSet & options);
-
-protected:
-  /// Update trial solution
-  void update(NonlinearSystem & system,
-              NonlinearSystem::Sol<true> & x,
-              const NonlinearSystem::Res<true> & r,
-              const NonlinearSystem::Jac<true> & J) override;
-
-  /// Perform Armijo linesearch
-  virtual Scalar linesearch(NonlinearSystem & system,
-                            const NonlinearSystem::Sol<true> & x,
-                            const NonlinearSystem::Sol<true> & dx,
-                            const NonlinearSystem::Res<true> & R0) const;
-
-  /// Linesearch maximum iterations
-  unsigned int _linesearch_miter;
-
-  /// Decrease factor for linesearch
-  Real _linesearch_sigma;
-
-  /// Stopping criteria for linesearch
-  Real _linesearch_c;
-
-  /// Seclect the type of line search
-  EnumSelection _type;
-
-  bool _check_crit;
-};
+#define DECLARE_CLAMP(T) T clamp(const T & a, const Real & lb, const Real & ub)
+FOR_ALL_TENSORBASE(DECLARE_CLAMP);
+#undef DECLARE_CLAMP
 } // namespace neml2

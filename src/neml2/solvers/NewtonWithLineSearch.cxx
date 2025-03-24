@@ -28,6 +28,7 @@
 #include "neml2/solvers/NewtonWithLineSearch.h"
 #include "neml2/tensors/functions/bvv.h"
 #include "neml2/tensors/functions/sqrt.h"
+#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
@@ -38,6 +39,12 @@ NewtonWithLineSearch::expected_options()
 {
   OptionSet options = Newton::expected_options();
   options.doc() = "The Newton-Raphson solver with line search.";
+
+  EnumSelection linesearch_type({"BACKTRACKING", "STRONG_WOLFE"}, "BACKTRACKING");
+  options.set<EnumSelection>("linesearch_type") = linesearch_type;
+  options.set("linesearch_type").doc() = "The type of linesearch used."
+                                         "Default: BACKTRACKING. Options are " +
+                                         linesearch_type.candidates_str();
 
   options.set<unsigned int>("max_linesearch_iterations") = 10;
   options.set("max_linesearch_iterations").doc() =
@@ -52,6 +59,10 @@ NewtonWithLineSearch::expected_options()
   options.set("linesearch_stopping_criteria").doc() =
       "The lineseach tolerance slightly relaxing the definition of residual decrease";
 
+  options.set<bool>("check_negative_critertia_value") = false;
+  options.set("check_negative_critertia_value").doc() =
+      "Whether to check if the convergence criteria for line search becomes negative";
+
   return options;
 }
 
@@ -59,7 +70,9 @@ NewtonWithLineSearch::NewtonWithLineSearch(const OptionSet & options)
   : Newton(options),
     _linesearch_miter(options.get<unsigned int>("max_linesearch_iterations")),
     _linesearch_sigma(options.get<Real>("linesearch_cutback")),
-    _linesearch_c(options.get<Real>("linesearch_stopping_criteria"))
+    _linesearch_c(options.get<Real>("linesearch_stopping_criteria")),
+    _type(options.get<EnumSelection>("linesearch_type")),
+    _check_crit(options.get<bool>("check_negative_critertia_value"))
 {
 }
 
@@ -82,13 +95,19 @@ NewtonWithLineSearch::linesearch(NonlinearSystem & system,
 {
   auto alpha = Scalar::ones(x.batch_sizes(), x.options());
   const auto nR02 = bvv(R0, R0);
+  auto crit = nR02;
 
   for (std::size_t i = 1; i < _linesearch_miter; i++)
   {
     NonlinearSystem::Sol<true> xp(Tensor(x) + alpha * Tensor(dx));
     auto R = system.residual(xp);
     auto nR2 = bvv(R, R);
-    auto crit = nR02 + 2.0 * _linesearch_c * alpha * bvv(R0, dx);
+
+    if (_type == "BACKTRACKING")
+      crit = nR02 + 2.0 * _linesearch_c * alpha * bvv(R0, dx);
+    else if (_type == "STRONG_WOLFE")
+      crit = (1.0 - _linesearch_c * alpha) * nR02;
+
     if (verbose)
       std::cout << "     LS ITERATION " << std::setw(3) << i << ", min(alpha) = " << std::scientific
                 << at::min(alpha).item<Real>() << ", max(||R||) = " << std::scientific
@@ -103,6 +122,14 @@ NewtonWithLineSearch::linesearch(NonlinearSystem & system,
     alpha.batch_index_put_({at::logical_not(stop)},
                            alpha.batch_index({at::logical_not(stop)}) / _linesearch_sigma);
   }
+
+  if (_check_crit)
+    if (at::max(crit).item<Real>() < 0)
+      std::cerr << "WARNING: Line Search produces negative stopping "
+                   "criteria, this could lead to convergence issue. Try with other "
+                   "linesearch_type, increase linesearch_cutback "
+                   "or reduce linesearch_stopping_criteria"
+                << std::endl;
 
   return alpha;
 }

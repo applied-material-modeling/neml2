@@ -24,49 +24,34 @@
 
 #pragma once
 
-#include "neml2/solvers/Newton.h"
-#include "neml2/tensors/Scalar.h"
+#include "neml2/models/Model.h"
 
 namespace neml2
 {
 /**
- * @copydoc neml2::Newton
- *
- * Armijo line search strategy is used to search along the direction of the full Newton step for a
- * decreasing residual norm.
+ * @brief Define the multiplication between arbitrary number of state variables.
  */
-class NewtonWithLineSearch : public Newton
+
+class ScalarVariableMultiplication : public Model
 {
 public:
   static OptionSet expected_options();
 
-  NewtonWithLineSearch(const OptionSet & options);
+  ScalarVariableMultiplication(const OptionSet & options);
 
 protected:
-  /// Update trial solution
-  void update(NonlinearSystem & system,
-              NonlinearSystem::Sol<true> & x,
-              const NonlinearSystem::Res<true> & r,
-              const NonlinearSystem::Jac<true> & J) override;
+  void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  /// Perform Armijo linesearch
-  virtual Scalar linesearch(NonlinearSystem & system,
-                            const NonlinearSystem::Sol<true> & x,
-                            const NonlinearSystem::Sol<true> & dx,
-                            const NonlinearSystem::Res<true> & R0) const;
+  /// Multiplication of all the input variables
+  Variable<Scalar> & _to;
 
-  /// Linesearch maximum iterations
-  unsigned int _linesearch_miter;
+  /// The input variables (to be multiply)
+  std::vector<const Variable<Scalar> *> _from;
 
-  /// Decrease factor for linesearch
-  Real _linesearch_sigma;
+  /// Constant scaling coefficient
+  const Scalar & _A;
 
-  /// Stopping criteria for linesearch
-  Real _linesearch_c;
-
-  /// Seclect the type of line search
-  EnumSelection _type;
-
-  bool _check_crit;
+  /// Inverse conditions
+  std::vector<bool> _inv;
 };
 } // namespace neml2

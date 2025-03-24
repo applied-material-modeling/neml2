@@ -22,51 +22,29 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-
-#include "neml2/solvers/Newton.h"
-#include "neml2/tensors/Scalar.h"
+#include "neml2/user_tensors/PrimitiveTensorFromTorchScript.h"
+#include "neml2/tensors/tensors.h"
 
 namespace neml2
 {
-/**
- * @copydoc neml2::Newton
- *
- * Armijo line search strategy is used to search along the direction of the full Newton step for a
- * decreasing residual norm.
- */
-class NewtonWithLineSearch : public Newton
+#define REGISTER_PRIMITIVETENSORFROMTORCHSCRIPT(T)                                                 \
+  using T##FromTorchScript = PrimitiveTensorFromTorchScript<T>;                                    \
+  register_NEML2_object(T##FromTorchScript)
+FOR_ALL_PRIMITIVETENSOR(REGISTER_PRIMITIVETENSORFROMTORCHSCRIPT);
+#undef REGISTER_PRIMITIVETENSORFROMTORCHSCRIPT
+
+template <typename T>
+OptionSet
+PrimitiveTensorFromTorchScript<T>::expected_options()
 {
-public:
-  static OptionSet expected_options();
+  OptionSet options = FromTorchScript::expected_options();
+  return options;
+}
 
-  NewtonWithLineSearch(const OptionSet & options);
-
-protected:
-  /// Update trial solution
-  void update(NonlinearSystem & system,
-              NonlinearSystem::Sol<true> & x,
-              const NonlinearSystem::Res<true> & r,
-              const NonlinearSystem::Jac<true> & J) override;
-
-  /// Perform Armijo linesearch
-  virtual Scalar linesearch(NonlinearSystem & system,
-                            const NonlinearSystem::Sol<true> & x,
-                            const NonlinearSystem::Sol<true> & dx,
-                            const NonlinearSystem::Res<true> & R0) const;
-
-  /// Linesearch maximum iterations
-  unsigned int _linesearch_miter;
-
-  /// Decrease factor for linesearch
-  Real _linesearch_sigma;
-
-  /// Stopping criteria for linesearch
-  Real _linesearch_c;
-
-  /// Seclect the type of line search
-  EnumSelection _type;
-
-  bool _check_crit;
-};
+template <typename T>
+PrimitiveTensorFromTorchScript<T>::PrimitiveTensorFromTorchScript(const OptionSet & options)
+  : FromTorchScript(options),
+    T(load_torch_tensor(options))
+{
+}
 } // namespace neml2

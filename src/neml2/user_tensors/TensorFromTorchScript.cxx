@@ -22,51 +22,26 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-
-#include "neml2/solvers/Newton.h"
-#include "neml2/tensors/Scalar.h"
+#include "neml2/user_tensors/TensorFromTorchScript.h"
 
 namespace neml2
 {
-/**
- * @copydoc neml2::Newton
- *
- * Armijo line search strategy is used to search along the direction of the full Newton step for a
- * decreasing residual norm.
- */
-class NewtonWithLineSearch : public Newton
+register_NEML2_object(TensorFromTorchScript);
+
+OptionSet
+TensorFromTorchScript::expected_options()
 {
-public:
-  static OptionSet expected_options();
+  OptionSet options = FromTorchScript::expected_options();
 
-  NewtonWithLineSearch(const OptionSet & options);
+  options.set<Size>("batch_dim") = -1;
+  options.set("batch_dim").doc() = "Batch dimension of the output";
 
-protected:
-  /// Update trial solution
-  void update(NonlinearSystem & system,
-              NonlinearSystem::Sol<true> & x,
-              const NonlinearSystem::Res<true> & r,
-              const NonlinearSystem::Jac<true> & J) override;
+  return options;
+}
 
-  /// Perform Armijo linesearch
-  virtual Scalar linesearch(NonlinearSystem & system,
-                            const NonlinearSystem::Sol<true> & x,
-                            const NonlinearSystem::Sol<true> & dx,
-                            const NonlinearSystem::Res<true> & R0) const;
-
-  /// Linesearch maximum iterations
-  unsigned int _linesearch_miter;
-
-  /// Decrease factor for linesearch
-  Real _linesearch_sigma;
-
-  /// Stopping criteria for linesearch
-  Real _linesearch_c;
-
-  /// Seclect the type of line search
-  EnumSelection _type;
-
-  bool _check_crit;
-};
+TensorFromTorchScript::TensorFromTorchScript(const OptionSet & options)
+  : FromTorchScript(options),
+    Tensor(load_torch_tensor(options), options.get<Size>("batch_dim"))
+{
+}
 } // namespace neml2

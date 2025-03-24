@@ -22,51 +22,30 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-
-#include "neml2/solvers/Newton.h"
-#include "neml2/tensors/Scalar.h"
+#include "neml2/models/pyrolysis/ReactionMechanism.h"
 
 namespace neml2
 {
-/**
- * @copydoc neml2::Newton
- *
- * Armijo line search strategy is used to search along the direction of the full Newton step for a
- * decreasing residual norm.
- */
-class NewtonWithLineSearch : public Newton
+OptionSet
+ReactionMechanism::expected_options()
 {
-public:
-  static OptionSet expected_options();
+  OptionSet options = Model::expected_options();
+  options.doc() = "Relate the reaction amount to the mechanisms reaction output";
 
-  NewtonWithLineSearch(const OptionSet & options);
+  options.set_input("reaction_amount") = VariableName("state", "reaction_amount");
+  options.set("reaction_amount").doc() = "Variable involes in the reaction, a";
 
-protected:
-  /// Update trial solution
-  void update(NonlinearSystem & system,
-              NonlinearSystem::Sol<true> & x,
-              const NonlinearSystem::Res<true> & r,
-              const NonlinearSystem::Jac<true> & J) override;
+  options.set_output("reaction_out") = VariableName("state", "out");
+  options.set("reaction_out").doc() = "Mechanism reaction output, f.";
 
-  /// Perform Armijo linesearch
-  virtual Scalar linesearch(NonlinearSystem & system,
-                            const NonlinearSystem::Sol<true> & x,
-                            const NonlinearSystem::Sol<true> & dx,
-                            const NonlinearSystem::Res<true> & R0) const;
+  return options;
+}
 
-  /// Linesearch maximum iterations
-  unsigned int _linesearch_miter;
+ReactionMechanism::ReactionMechanism(const OptionSet & options)
+  : Model(options),
+    _a(declare_input_variable<Scalar>("reaction_amount")),
+    _f(declare_output_variable<Scalar>("reaction_out"))
+{
+}
 
-  /// Decrease factor for linesearch
-  Real _linesearch_sigma;
-
-  /// Stopping criteria for linesearch
-  Real _linesearch_c;
-
-  /// Seclect the type of line search
-  EnumSelection _type;
-
-  bool _check_crit;
-};
 } // namespace neml2

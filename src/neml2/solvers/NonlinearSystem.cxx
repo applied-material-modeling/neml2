@@ -120,8 +120,13 @@ NonlinearSystem::init_scaling(const NonlinearSystem::Sol<false> & x, const bool 
   for (unsigned int itr = 0; itr < _autoscale_miter; itr++)
   {
     // check for convergence
-    auto rR = at::max(at::abs(1.0 - 1.0 / at::sqrt(std::get<0>(Jp.max(-1))))).item<Real>();
-    auto rC = at::max(at::abs(1.0 - 1.0 / at::sqrt(std::get<0>(Jp.max(-2))))).item<Real>();
+    auto rR = at::max(at::abs(1.0 - 1.0 / (at::sqrt(at::abs(std::get<0>(Jp.max(-1)))) +
+                                           machine_precision())))
+                  .item<Real>();
+    auto rC = at::max(at::abs(1.0 - 1.0 / (at::sqrt(at::abs(std::get<0>(Jp.max(-2)))) +
+                                           machine_precision())))
+                  .item<Real>();
+
     if (verbose)
       std::cout << "ITERATION " << itr << ", ROW ILLNESS = " << std::scientific << rR
                 << ", COL ILLNESS = " << std::scientific << rC << std::endl;
@@ -131,8 +136,9 @@ NonlinearSystem::init_scaling(const NonlinearSystem::Sol<false> & x, const bool 
     // scale rows and columns
     for (Size i = 0; i < x.base_size(-1); i++)
     {
-      auto ar = 1.0 / at::sqrt(at::max(Jp.base_index({i})));
-      auto ac = 1.0 / at::sqrt(at::max(Jp.base_index({indexing::Slice(), i})));
+      auto ar = 1.0 / (at::sqrt(at::max(at::abs(Jp.base_index({i})))) + machine_precision());
+      auto ac = 1.0 / (at::sqrt(at::max(at::abs(Jp.base_index({indexing::Slice(), i})))) +
+                       machine_precision());
       _row_scaling.base_index({i}) *= ar;
       _col_scaling.base_index({i}) *= ac;
       Jp.base_index({i}) *= ar;

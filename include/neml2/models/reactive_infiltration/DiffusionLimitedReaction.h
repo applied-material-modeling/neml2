@@ -24,49 +24,40 @@
 
 #pragma once
 
-#include "neml2/solvers/Newton.h"
-#include "neml2/tensors/Scalar.h"
+#include "neml2/models/Model.h"
 
 namespace neml2
 {
-/**
- * @copydoc neml2::Newton
- *
- * Armijo line search strategy is used to search along the direction of the full Newton step for a
- * decreasing residual norm.
- */
-class NewtonWithLineSearch : public Newton
+class DiffusionLimitedReaction : public Model
 {
 public:
   static OptionSet expected_options();
 
-  NewtonWithLineSearch(const OptionSet & options);
+  DiffusionLimitedReaction(const OptionSet & options);
 
 protected:
-  /// Update trial solution
-  void update(NonlinearSystem & system,
-              NonlinearSystem::Sol<true> & x,
-              const NonlinearSystem::Res<true> & r,
-              const NonlinearSystem::Jac<true> & J) override;
+  void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  /// Perform Armijo linesearch
-  virtual Scalar linesearch(NonlinearSystem & system,
-                            const NonlinearSystem::Sol<true> & x,
-                            const NonlinearSystem::Sol<true> & dx,
-                            const NonlinearSystem::Res<true> & R0) const;
+  /// Dimensionless inner radius of the product phase
+  const Variable<Scalar> & _ri;
 
-  /// Linesearch maximum iterations
-  unsigned int _linesearch_miter;
+  /// Dimensionless outer radius of the product phase
+  const Variable<Scalar> & _ro;
 
-  /// Decrease factor for linesearch
-  Real _linesearch_sigma;
+  /// Dummy thickness of the product phase to prevent singularity
+  const Real _delta;
 
-  /// Stopping criteria for linesearch
-  Real _linesearch_c;
+  /// Reactivity
+  const Variable<Scalar> & _R_l;
+  const Variable<Scalar> & _R_s;
 
-  /// Seclect the type of line search
-  EnumSelection _type;
+  /// Reaction rate
+  Variable<Scalar> & _rate;
 
-  bool _check_crit;
+  /// Characteristic diffusion coefficient
+  const Scalar & _D;
+
+  /// Molar volume of the rate-limiting species
+  const Real _omega;
 };
 } // namespace neml2
