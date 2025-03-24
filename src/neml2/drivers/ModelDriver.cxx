@@ -58,7 +58,7 @@ ModelDriver::expected_options()
 #ifdef NEML2_HAS_DISPATCHER
   options.set<std::string>("scheduler");
   options.set("scheduler").doc() = "The work scheduler to use";
-  options.set<bool>("async_dispatch") = false;
+  options.set<bool>("async_dispatch") = true;
   options.set("async_dispatch").doc() = "Whether to dispatch work asynchronously";
 #endif
 

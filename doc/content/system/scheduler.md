@@ -13,13 +13,13 @@ NEML2 manages work scheduling, dispatch, and joining with two types of objects: 
 
 ## Work dispatchers
 
-NEML2 currently only has a single type of work dispatcher with behavior controlled by the `run_async` parameter.
+NEML2 currently only has a single type of work dispatcher with two general types of behavior.  The calling program (for example in NEML2 itself the driver routine) selects which behavior it wants by invoking the dispatcher with either the `run_async` or `run_sync` methods.  The NEML2 driver routines can use either method, controlled by the `async_dispatch` option to the driver.
 
-When `run_async = true` the dispatcher maintains a main thread which schedules and distributes work according the algorithm provided by the selected work scheduler.  
+When calling `run_async` the dispatcher maintains a main thread which schedules and distributes work according the algorithm provided by the selected work scheduler.  
 The main thread dispatches the work to a thread pool that maintains a specific thread for each device.  
 The thread picks up the task (representing a batch of work), sends the work to the device, and returns the work, once completed, to the main thread.
 
-With `run_async = false` the dispatcher schedules work per the scheduler but only runs work sequentially with the single, main NEML2 thread.  This model does not provide parallel execution on multiple devices but it's useful for debugging schedulers and functions adequately for schedulers only sending work to a single device.
+With `run_sync` the dispatcher schedules work per the scheduler but only runs work sequentially with the single, main NEML2 thread.  This model does not provide parallel execution on multiple devices but it's useful for debugging schedulers and functions adequately for schedulers only sending work to a single device.
 
 Setting up the work dispatcher requires providing it with lambda functions describing how to:
 1. Actually run a sub-batch of work on a device

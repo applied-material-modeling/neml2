@@ -11,5 +11,6 @@
 [Drivers]
   [driver]
     scheduler = scheduler
+    async_dispatch = false
   []
 []
