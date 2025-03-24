@@ -1,9 +1,0 @@
-export CXXFLAGS="-D_GLIBCXX_USE_CXX11_ABI=${GLIBCXX_USE_CXX11_ABI}"
-
-${hwloc_SOURCE_DIR}/autogen.sh
-
-${hwloc_SOURCE_DIR}/configure \
-  --prefix=${HWLOC_INSTALL_DIR}
-
-make -j ${NPROCS}
-make install

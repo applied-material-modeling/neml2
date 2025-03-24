@@ -25,8 +25,6 @@
 #include "neml2/dispatchers/SimpleMPIScheduler.h"
 #include "neml2/misc/assertions.h"
 
-#include "hwloc.h"
-
 #include <string>
 #include <functional>
 
@@ -112,17 +110,13 @@ SimpleMPIScheduler::setup()
 void
 SimpleMPIScheduler::determine_my_device()
 {
-  // Get the hostname via hwloc and hash it into an MPI_INT
-  hwloc_topology_t topology;
-  hwloc_obj_t machine;
+  char c_str_hostname[MPI_MAX_PROCESSOR_NAME];
+  int name_len;
+  timpi_call_mpi(MPI_Get_processor_name(c_str_hostname, &name_len));
+  std::string hostname = std::string(c_str_hostname);
 
-  hwloc_topology_init(&topology); // initialization
-  hwloc_topology_load(topology);  // actual detection
-  machine = hwloc_get_root_obj(topology);
   std::hash<std::string> hasher;
-  std::string hostname(hwloc_obj_get_info_by_name(machine, "HostName"));
   int id = static_cast<int>(hasher(hostname) % std::numeric_limits<int>::max());
-  hwloc_topology_destroy(topology);
 
   // Make a new communicator based on this hashed hostname
   TIMPI::Communicator new_comm;

@@ -68,26 +68,6 @@ if(NEML2_WORK_DISPATCHER)
 endif()
 
 # ----------------------------------------------------------------------------
-# hwloc
-# ----------------------------------------------------------------------------
-if(NEML2_WORK_DISPATCHER)
-  find_package(Hwloc)
-
-  if(NOT HWLOC_FOUND)
-    include(DownloadHwloc)
-    set(HWLOC_ROOT ${HWLOC_INSTALL_DIR} CACHE PATH "HWLOC root directory" FORCE)
-    find_package(Hwloc REQUIRED)
-  endif()
-
-  cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${HWLOC_LINK_DIR} HWLOC_DOWNLOADED)
-
-  if(HWLOC_DOWNLOADED)
-    install(DIRECTORY ${HWLOC_INCLUDE_DIR}/hwloc TYPE INCLUDE COMPONENT libneml2)
-    install(DIRECTORY ${HWLOC_LINK_DIR} DESTINATION . COMPONENT libneml2)
-  endif()
-endif()
-
-# ----------------------------------------------------------------------------
 # CPU Profiler
 # ----------------------------------------------------------------------------
 if(NEML2_CPU_PROFILER)
@@ -232,7 +212,6 @@ if(NEML2_WORK_DISPATCHER)
   neml2_add_submodule(neml2_dispatcher SHARED dispatchers)
   target_link_libraries(neml2_dispatcher PUBLIC neml2_tensor neml2_model)
   target_link_libraries(neml2_dispatcher PUBLIC TIMPI)
-  target_link_libraries(neml2_dispatcher PUBLIC HWLOC)
   target_compile_definitions(neml2_dispatcher PUBLIC NEML2_HAS_DISPATCHER)
   set_target_properties(neml2_dispatcher PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
   target_link_libraries(neml2_driver PUBLIC neml2_dispatcher)
