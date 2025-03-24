@@ -58,7 +58,7 @@ ModelDriver::expected_options()
 #ifdef NEML2_HAS_DISPATCHER
   options.set<std::string>("scheduler");
   options.set("scheduler").doc() = "The work scheduler to use";
-  options.set<bool>("async_dispatch") = false;
+  options.set<bool>("async_dispatch") = true;
   options.set("async_dispatch").doc() = "Whether to dispatch work asynchronously";
 #endif
 
@@ -109,6 +109,12 @@ ModelDriver::setup()
         [&](ValueMap && x, Device device) -> ValueMap
         {
           auto & model = get_model(_model.name());
+
+          // If this is not an async dispatch, we need to move the model to the target device
+          // _every_ time before evaluation
+          if (!_async_dispatch)
+            model.to(device);
+
           neml_assert_dbg(model.tensor_options().device() == device);
           return model.value(std::move(x));
         },
