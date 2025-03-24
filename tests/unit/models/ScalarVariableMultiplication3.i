@@ -15,6 +15,6 @@
       from_var = 'state/A state/B state/C state/D'
       to_var = 'state/E'
       constant_coefficient = 1.5
-      inverse_condition = 'true'
+      reciprocal = 'true'
     []
   []

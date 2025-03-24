@@ -25,6 +25,7 @@
 #pragma once
 
 #include "neml2/models/Model.h"
+#include "neml2/base/EnumSelection.h"
 
 namespace neml2
 {
@@ -41,9 +42,13 @@ public:
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  // Parameter
+  // variables
   const Variable<Scalar> & _a;
   const Variable<Scalar> & _b;
+
+  /// Seclect inequality type
+  EnumSelection _conda;
+  EnumSelection _condb;
 
   // Residual Variables
   Variable<Scalar> & _fb;

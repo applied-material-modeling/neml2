@@ -34,9 +34,9 @@ ScalarVariableMultiplication::expected_options()
 {
 
   OptionSet options = Model::expected_options();
-  options.doc() =
-      "Calculate the multiplication (product) of multiple Scalar variable with a "
-      "constant coefficient. Using inverse_condition, one can have the variable 'a' to be '1/a'";
+  options.doc() = "Calculate the multiplication (product) of multiple Scalar variable with a "
+                  "constant coefficient. Using reciprocal, one can have the reciprocity of "
+                  "variable 'a', aka. '1/a'";
 
   options.set<std::vector<VariableName>>("from_var");
   options.set("from_var").doc() = "Scalar variables to be multiplied";
@@ -48,8 +48,11 @@ ScalarVariableMultiplication::expected_options()
   options.set("constant_coefficient").doc() =
       "The constant coefficient multiply to the final product";
 
-  options.set<std::vector<bool>>("inverse_condition") = {false};
-  options.set("inverse_condition").doc() = "Whether to inverse the corresponding variable";
+  options.set<std::vector<bool>>("reciprocal") = {false};
+  options.set("reciprocal").doc() =
+      "List of boolens, one for each variable, in which the reciprocity of a the corresponding "
+      "variable is taken. When the length of this list is 1, the same reciprocal condition applies "
+      "to all variables.";
 
   return options;
 }
@@ -62,11 +65,11 @@ ScalarVariableMultiplication::ScalarVariableMultiplication(const OptionSet & opt
   for (const auto & fv : options.get<std::vector<VariableName>>("from_var"))
     _from.push_back(&declare_input_variable<Scalar>(fv));
 
-  _inv = options.get<std::vector<bool>>("inverse_condition");
+  _inv = options.get<std::vector<bool>>("reciprocal");
   neml_assert(_inv.size() == 1 || _inv.size() == _from.size(),
               "Expected 1 or ",
               _from.size(),
-              " entries in inverse_condition, got ",
+              " entries in reciprocal, got ",
               _inv.size(),
               ".");
 

@@ -250,25 +250,25 @@ alpha0 = 3.333333 # 1/(1-Y)
         type = ScalarVariableMultiplication
         from_var = 'state/mb state/M'
         to_var = 'state/wb'
-        inverse_condition = 'false true'
+        reciprocal = 'false true'
     []
     [wp]
         type = ScalarVariableMultiplication
         from_var = 'state/mp state/M'
         to_var = 'state/wp'
-        inverse_condition = 'false true'
+        reciprocal = 'false true'
     []
     [ws]
         type = ScalarVariableMultiplication
         from_var = 'state/ms state/M'
         to_var = 'state/ws'
-        inverse_condition = 'false true'
+        reciprocal = 'false true'
     []
     [wg]
         type = ScalarVariableMultiplication
         from_var = 'state/mg state/M'
         to_var = 'state/wg'
-        inverse_condition = 'false true'
+        reciprocal = 'false true'
     []
     [wout]
         type = ComposedModel
@@ -310,25 +310,25 @@ alpha0 = 3.333333 # 1/(1-Y)
         type = ScalarVariableMultiplication
         from_var = 'state/Vb state/V'
         to_var = 'state/vb'
-        inverse_condition = 'false true'
+        reciprocal = 'false true'
     []
     [vp]
         type = ScalarVariableMultiplication
         from_var = 'state/Vp state/V'
         to_var = 'state/vp'
-        inverse_condition = 'false true'
+        reciprocal = 'false true'
     []
     [vg]
         type = ScalarVariableMultiplication
         from_var = 'state/Vg state/V'
         to_var = 'state/vg'
-        inverse_condition = 'false true'
+        reciprocal = 'false true'
     []
     [vs]
         type = ScalarVariableMultiplication
         from_var = 'state/Vs state/V'
         to_var = 'state/vs'
-        inverse_condition = 'false true'
+        reciprocal = 'false true'
     []
     [vout]
         type = ComposedModel

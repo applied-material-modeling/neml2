@@ -95,7 +95,6 @@ NewtonWithLineSearch::linesearch(NonlinearSystem & system,
 {
   auto alpha = Scalar::ones(x.batch_sizes(), x.options());
   const auto nR02 = bvv(R0, R0);
-  bool neg_crit = false;
   auto crit = nR02;
 
   for (std::size_t i = 1; i < _linesearch_miter; i++)
@@ -124,15 +123,13 @@ NewtonWithLineSearch::linesearch(NonlinearSystem & system,
                            alpha.batch_index({at::logical_not(stop)}) / _linesearch_sigma);
   }
 
-  if (at::max(crit).item<Real>() < 0)
-    neg_crit = true;
-
-  if (neg_crit && _check_crit)
-    std::cerr << "WARNING: Line Search produces negative stopping "
-                 "criteria, this could lead to convergence issue. Try with other "
-                 "linesearch_type, increase linesearch_cutback "
-                 "or reduce linesearch_stopping_criteria"
-              << std::endl;
+  if (_check_crit)
+    if (at::max(crit).item<Real>() < 0)
+      std::cerr << "WARNING: Line Search produces negative stopping "
+                   "criteria, this could lead to convergence issue. Try with other "
+                   "linesearch_type, increase linesearch_cutback "
+                   "or reduce linesearch_stopping_criteria"
+                << std::endl;
 
   return alpha;
 }

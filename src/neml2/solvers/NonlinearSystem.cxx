@@ -100,9 +100,7 @@ void
 NonlinearSystem::init_scaling(const NonlinearSystem::Sol<false> & x, const bool verbose)
 {
   if (!_autoscale)
-  {
     return;
-  }
 
   if (_scaling_matrices_initialized)
     return;
