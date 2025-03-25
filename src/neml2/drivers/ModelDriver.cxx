@@ -115,7 +115,7 @@ ModelDriver::setup()
           if (!_async_dispatch)
             model.to(device);
 
-          neml_assert_dbg(model.tensor_options().device() == device);
+          neml_assert_dbg(model.variable_options().device() == device);
           return model.value(std::move(x));
         },
         red,

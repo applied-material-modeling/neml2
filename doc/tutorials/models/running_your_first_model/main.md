@@ -54,11 +54,11 @@ The following code parses the given input file named "input.i" and retrieves a M
   ```cpp
   #include "neml2/models/Model.h"
 
-  using namespace neml2;
-
   int
   main()
   {
+    using namespace neml2;
+
     auto & model = load_model("input.i", "my_model");
     std::cout << model << std::endl;
   }
@@ -116,6 +116,8 @@ Model evaluation consists of two simple steps:
 
 In this example, the elasticity model can be evaluated using the following code:
 
+\note
+Note that `set_default_dtype(kFloat64)` is used to change the default precision to double precision.
 
 <div class="tabbed">
 
@@ -125,11 +127,12 @@ In this example, the elasticity model can be evaluated using the following code:
   #include "neml2/models/Model.h"
   #include "neml2/tensors/SR2.h"
 
-  using namespace neml2;
-
   int
   main()
   {
+    using namespace neml2;
+
+    set_default_dtype(kFloat64);
     auto & model = load_model("input.i", "my_model");
 
     // Create the strain
@@ -158,7 +161,9 @@ In this example, the elasticity model can be evaluated using the following code:
   ```python
   import neml2
   from neml2.tensors import SR2
+  import torch
 
+  torch.set_default_dtype(torch.double)
   model = neml2.load_model("input.i", "my_model")
 
   # Create the strain

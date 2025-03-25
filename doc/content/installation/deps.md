@@ -16,15 +16,16 @@ Please refer to the [CMake documentation](https://cmake.org/cmake/help/latest/co
 
 The following table summarizes the names of the packages required by each configure options. The first row lists the packages required by the base library.
 
-| Option                | Required package(s) |
-| :-------------------- | :------------------ |
-|                       | Torch, WASP, HIT    |
-| NEML2_TESTS           | Catch2              |
-| NEML2_RUNNER          |                     |
-| NEML2_PYBIND          | Python              |
-| NEML2_DOC             | Doxygen             |
-| NEML2_CPU_PROFILER    | Gperftools          |
-| NEML2_WORK_DISPATCHER | MPI                 |
+| Option                 | Required package(s) |
+| :--------------------- | :------------------ |
+|                        | Torch, WASP, HIT    |
+| NEML2_TESTS            | Catch2              |
+| NEML2_RUNNER           |                     |
+| NEML2_PYBIND           | Python              |
+| NEML2_DOC              | Doxygen             |
+| NEML2_CPU_PROFILER     | Gperftools          |
+| NEML2_WORK_DISPATCHER  | MPI                 |
+| NEML2_THREAD_SANITIZER |                     |
 
 ## List of dependencies
 

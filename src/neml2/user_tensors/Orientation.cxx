@@ -62,9 +62,6 @@ Orientation::expected_options()
       "If true do a shadow parameter replacement of the underlying MRP representation to move the "
       "inputs farther away from the singularity";
 
-  options.set<Size>("random_seed") = -1;
-  options.set("random_seed").doc() = "Random seed for random angle generation";
-
   options.set<unsigned int>("quantity") = 1;
   options.set("quantity").doc() = "Number (batch size) of random orientations";
 
@@ -95,7 +92,7 @@ Orientation::fill(const OptionSet & options) const
   }
   else if (input_type == "random")
   {
-    R = Rot::fill_random(options.get<unsigned int>("quantity"), options.get<Size>("random_seed"));
+    R = Rot::fill_random(options.get<unsigned int>("quantity"));
   }
   else
     throw NEMLException("Unknown Orientation input_type " + input_type);

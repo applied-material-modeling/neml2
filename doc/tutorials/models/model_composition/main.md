@@ -85,11 +85,11 @@ Now that all three models are defined in the input file, we can load and evaluat
   #include "neml2/models/Model.h"
   #include "neml2/tensors/SR2.h"
 
-  using namespace neml2;
-
   int
   main()
   {
+    using namespace neml2;
+    set_default_dtype(kFloat64);
     load_input("input.i");
     auto & eq1 = get_model("eq1");
     auto & eq2 = get_model("eq2");
@@ -129,7 +129,9 @@ Now that all three models are defined in the input file, we can load and evaluat
   ```python
   import neml2
   from neml2.tensors import SR2
+  import torch
 
+  torch.set_default_dtype(torch.double)
   neml2.load_input("input.i")
   eq1 = neml2.get_model("eq1")
   eq2 = neml2.get_model("eq2")
@@ -217,11 +219,11 @@ Let us first inspect the composed model and compare it against the three sub-mod
   ```cpp
   #include "neml2/models/Model.h"
 
-  using namespace neml2;
-
   int
   main()
   {
+    using namespace neml2;
+
     load_input("input_composed.i");
     auto & eq1 = get_model("eq1");
     auto & eq2 = get_model("eq2");
@@ -286,11 +288,11 @@ The composed model can be evaluated in the same way as regular models:
   #include "neml2/models/Model.h"
   #include "neml2/tensors/SR2.h"
 
-  using namespace neml2;
-
   int
   main()
   {
+    using namespace neml2;
+    set_default_dtype(kFloat64);
     auto & eq = load_model("input_composed.i", "eq");
 
     // Create the input variables
@@ -317,7 +319,9 @@ The composed model can be evaluated in the same way as regular models:
   ```python
   import neml2
   from neml2.tensors import SR2
+  import torch
 
+  torch.set_default_dtype(torch.double)
   eq = neml2.load_model("input_composed.i", "eq")
 
   # Create the input variables

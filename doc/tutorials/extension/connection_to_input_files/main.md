@@ -146,6 +146,8 @@ To verify that our custom model is correctly accepting these input file options,
 int
 main()
 {
+  using namespace neml2;
+  set_default_dtype(kFloat64);
   auto & model = neml2::load_model("input.i", "accel");
 
   // Print out each option parsed from the input file

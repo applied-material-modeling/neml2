@@ -22,37 +22,31 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <catch2/catch_session.hpp>
+#pragma once
 
-#include <filesystem>
-#include "utils.h"
+#include "neml2/tensors/Tensor.h"
 
-int
-main(int argc, char * argv[])
+namespace neml2
 {
-  Catch::Session session;
+struct TensorCache
+{
+public:
+  /**
+   * @brief Construct a new Tensor Cache object
+   *
+   * The constructor takes a lambda that creates a tensor given a set of tensor options. The lambda
+   * is invoked upon a cache miss.
+   */
+  TensorCache(std::function<Tensor(const TensorOptions &)> &&);
 
-  // Add path cli arg
-  using namespace Catch::Clara;
-  std::string working_dir;
-  auto cli = session.cli() | Opt(working_dir, ".")["-p"]["--path"]("path to the test input files");
-  session.cli(cli);
+  /// Get the tensor with the given tensor options. If the tensor does not exist in the cache, it is created.
+  const Tensor & operator()(const TensorOptions &);
 
-  // Let Catch2 parse the command line
-  auto err = session.applyCommandLine(argc, argv);
-  if (err)
-    return err;
+private:
+  /// Lambda that creates a tensor given a set of tensor options
+  std::function<Tensor(const TensorOptions &)> _creator;
 
-  // Set the working directory
-  auto exec_prefix = std::filesystem::path(argv[0]).parent_path();
-  err = guess_test_dir("verification", working_dir, exec_prefix);
-  if (err)
-    return err;
-  std::cout << "Working directory: " << working_dir << std::endl;
-  std::filesystem::current_path(working_dir);
-
-  // Set default tensor options
-  neml2::set_default_dtype(neml2::kFloat64);
-
-  return session.run();
-}
+  /// Cache of already created tensors for each dispatch key
+  std::unordered_map<at::DispatchKey, Tensor> _cached_tensors;
+};
+} // namespace neml2

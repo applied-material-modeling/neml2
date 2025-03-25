@@ -12,7 +12,7 @@ In other words, the constitutive update takes a recursive form: Given the state 
 
 This form of constitutive update is oftentimes sufficient when coupling with external PDE solvers: The PDE solver calculates the external driving force \f$\mathbf{f}_{n+1}\f$ and asks NEML2 to advance the state of system \f$\mathbf{s}_{n+1}\f$.
 
-However, in many other applications such as parameter calibration, it is favorable to let NEML2 drive the constitutive update (recursively) to effectively simulate the transient response of the material. The corresponding initial-value problem can be formally written as: 
+However, in many other applications such as parameter calibration, it is favorable to let NEML2 drive the constitutive update (recursively) to effectively simulate the transient response of the material. The corresponding initial-value problem can be formally written as:
 
 Given initial conditions \f$\mathbf{s}_0\f$ and \f$\mathbf{f}_0\f$, find, \f$\forall n \in [0, N-1]\f$,
 \f{align}
@@ -82,11 +82,11 @@ The following C++ code retrieves and executes the driver to obtain the stress-st
 #include "neml2/base/Factory.h"
 #include "neml2/drivers/Driver.h"
 
-using namespace neml2;
-
 int
 main()
 {
+  using namespace neml2;
+  set_default_dtype(kFloat64);
   load_input("input.i");
   auto & driver = get_driver("driver");
   driver.run();

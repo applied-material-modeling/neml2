@@ -45,7 +45,7 @@ Option<T>::Option(const std::string & name)
 
 template <>
 Option<Device>::Option(const std::string & name)
-  : _value(default_device())
+  : _value(kCPU)
 {
   _metadata.name = name;
   _metadata.type = utils::demangle(typeid(Device).name());

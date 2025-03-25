@@ -27,6 +27,7 @@
 #include <array>
 
 #include "neml2/misc/types.h"
+#include "neml2/misc/defaults.h"
 
 namespace neml2
 {
@@ -53,6 +54,15 @@ mandel_factor(Size i)
   return i < 3 ? 1.0 : sqrt2;
 }
 
+const Tensor & full_to_mandel_map(const TensorOptions & opt = default_integer_tensor_options());
+const Tensor & mandel_to_full_map(const TensorOptions & opt = default_integer_tensor_options());
+const Tensor & full_to_mandel_factor(const TensorOptions & opt = default_tensor_options());
+const Tensor & mandel_to_full_factor(const TensorOptions & opt = default_tensor_options());
+const Tensor & full_to_skew_map(const TensorOptions & opt = default_integer_tensor_options());
+const Tensor & skew_to_full_map(const TensorOptions & opt = default_integer_tensor_options());
+const Tensor & full_to_skew_factor(const TensorOptions & opt = default_tensor_options());
+const Tensor & skew_to_full_factor(const TensorOptions & opt = default_tensor_options());
+
 /**
  * @brief Generic function to reduce two axes to one with some map
  *
@@ -75,7 +85,7 @@ mandel_factor(Size i)
  * @return Tensor The reduced tensor
  */
 Tensor
-full_to_reduced(const Tensor & full, const ATensor & rmap, const ATensor & rfactors, Size dim = 0);
+full_to_reduced(const Tensor & full, const Tensor & rmap, const Tensor & rfactors, Size dim = 0);
 
 /**
  * @brief Convert a Tensor from reduced notation to full notation.
@@ -88,10 +98,8 @@ full_to_reduced(const Tensor & full, const ATensor & rmap, const ATensor & rfact
  * @param dim The base dimension where the reduced axes start
  * @return Tensor The resulting tensor in full notation.
  */
-Tensor reduced_to_full(const Tensor & reduced,
-                       const ATensor & rmap,
-                       const ATensor & rfactors,
-                       Size dim = 0);
+Tensor
+reduced_to_full(const Tensor & reduced, const Tensor & rmap, const Tensor & rfactors, Size dim = 0);
 
 /**
  * @brief Convert a `Tensor` from full notation to Mandel notation.

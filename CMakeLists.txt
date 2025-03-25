@@ -29,6 +29,7 @@ list(APPEND CMAKE_MODULE_PATH ${NEML2_SOURCE_DIR}/cmake/Modules)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS_COVERAGE "-O0 -fprofile-arcs -ftest-coverage" CACHE STRING "Flags used by C++ compiler during coverage builds." FORCE)
+set(CMAKE_CXX_FLAGS_THREAD_SANITIZER "-fsanitize=thread" CACHE STRING "Flags used by ThreadSanitizer" FORCE)
 set(NEML2_PCH ON CACHE BOOL "Use precompiled headers")
 set(NEML2_TESTS ON CACHE BOOL "Build NEML2 tests")
 set(NEML2_RUNNER OFF CACHE BOOL "Build a simple runner for benchmarking, profiling, debugging, etc.")
@@ -36,6 +37,7 @@ set(NEML2_PYBIND OFF CACHE BOOL "Build NEML2 Python bindings")
 set(NEML2_DOC OFF CACHE BOOL "Build NEML2 documentation (html)")
 set(NEML2_CPU_PROFILER OFF CACHE BOOL "Link against gperftools profiler to enable CPU profiling")
 set(NEML2_WORK_DISPATCHER OFF CACHE BOOL "Enable NEML2 work dispatcher")
+set(NEML2_THREAD_SANITIZER OFF CACHE BOOL "Enable ThreadSanitizer")
 
 # ----------------------------------------------------------------------------
 # Dependencies and 3rd party packages

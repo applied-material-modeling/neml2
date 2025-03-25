@@ -22,6 +22,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <ATen/Context.h>
+
 #include "neml2/drivers/Driver.h"
 #include "neml2/base/Registry.h"
 #include "neml2/base/Factory.h"
@@ -44,6 +46,9 @@ Driver::expected_options()
   options.set<bool>("verbose") = false;
   options.set("verbose").doc() = "Whether to output additional logging information";
 
+  options.set<Size>("random_seed");
+  options.set("random_seed").doc() = "Random seed for any random number generation";
+
   return options;
 }
 
@@ -52,5 +57,7 @@ Driver::Driver(const OptionSet & options)
     DiagnosticsInterface(this),
     _verbose(options.get<bool>("verbose"))
 {
+  if (options.get("random_seed").user_specified())
+    at::manual_seed(options.get<Size>("random_seed"));
 }
 } // namespace neml2

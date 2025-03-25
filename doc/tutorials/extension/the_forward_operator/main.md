@@ -57,6 +57,7 @@ int
 main()
 {
   using namespace neml2;
+  set_default_dtype(kFloat64);
   auto & model = load_model("input.i", "accel");
 
   // Input velocity

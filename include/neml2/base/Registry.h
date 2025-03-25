@@ -49,7 +49,7 @@ using BuildPtr = std::shared_ptr<NEML2Object> (*)(const OptionSet & options);
 
 /**
  * The Registry is used as a global singleton to collect information on all available NEML2Object
- * that can manufactured from the input file.
+ * that can be manufactured from the input file.
  *
  * To register a concrete class to the registry, use the macro register_NEML2_object or
  * register_NEML2_object_alias. Each object/class should only be registered once.

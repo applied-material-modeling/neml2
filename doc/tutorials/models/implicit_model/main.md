@@ -109,11 +109,11 @@ The structure of the system of equations can be summarized using the code below.
   ```cpp
   #include "neml2/models/Model.h"
 
-  using namespace neml2;
-
   int
   main()
   {
+    using namespace neml2;
+    set_default_dtype(kFloat64);
     auto & system = load_model("input1.i", "system");
     std::cout << system << std::endl;
   }
@@ -128,7 +128,9 @@ The structure of the system of equations can be summarized using the code below.
   @source:src2
   ```python
   import neml2
+  import torch
 
+  torch.set_default_dtype(torch.double)
   system = neml2.load_model("input1.i", "system")
   print(system)
   ```
@@ -196,11 +198,11 @@ The [ImplicitUpdate](#implicitupdate) model can then be invoked in the same way 
   #include "neml2/tensors/Scalar.h"
   #include "neml2/tensors/SR2.h"
 
-  using namespace neml2;
-
   int
   main()
   {
+    using namespace neml2;
+    set_default_dtype(kFloat64);
     auto & model = load_model("input2.i", "model");
 
     // Create input variables
@@ -227,7 +229,9 @@ The [ImplicitUpdate](#implicitupdate) model can then be invoked in the same way 
   ```python
   import neml2
   from neml2.tensors import Scalar, SR2
+  import torch
 
+  torch.set_default_dtype(torch.double)
   model = neml2.load_model("input2.i", "model")
 
   # Create input variables

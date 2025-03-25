@@ -33,8 +33,6 @@ class Settings
 public:
   static OptionSet expected_options();
 
-  Settings() = default;
-
-  Settings(const OptionSet & options);
+  static void apply(const OptionSet & options);
 };
 } // namespace neml2

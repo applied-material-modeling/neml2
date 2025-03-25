@@ -56,23 +56,5 @@ TimedSection::~TimedSection()
     timed_sections()[_section][_name] += dt;
   }
 }
-
-InterOpThread::InterOpThread(int num)
-  : prev_num(at::get_num_interop_threads())
-{
-  if (num > 0)
-    at::set_num_interop_threads(num);
-}
-
-InterOpThread::~InterOpThread() { at::set_num_interop_threads(prev_num); }
-
-IntraOpThread::IntraOpThread(int num)
-  : prev_num(at::get_num_threads())
-{
-  if (num > 0)
-    at::set_num_threads(num);
-}
-
-IntraOpThread::~IntraOpThread() { at::set_num_threads(prev_num); }
 // LCOV_EXCL_STOP
 }
