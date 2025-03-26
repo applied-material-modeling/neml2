@@ -125,15 +125,18 @@ ModelDriver::setup()
 #endif
 
   // LCOV_EXCL_START
-  if (_show_params)
-    for (auto && [pname, pval] : _model->named_parameters())
-      std::cout << pname << std::endl;
-
   if (_show_input)
     std::cout << _model->name() << "'s input axis:\n" << _model->input_axis() << std::endl;
 
   if (_show_output)
     std::cout << _model->name() << "'s output axis:\n" << _model->output_axis() << std::endl;
+
+  if (_show_params)
+  {
+    std::cout << _model->name() << "'s parameters:" << std::endl;
+    for (auto && [pname, pval] : _model->named_parameters())
+      std::cout << "  " << pname << std::endl;
+  }
   // LCOV_EXCL_STOP
 }
 
