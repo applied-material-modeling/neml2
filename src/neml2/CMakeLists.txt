@@ -75,7 +75,7 @@ if(NEML2_CPU_PROFILER)
 
   if(NOT Gperftools_FOUND)
     include(DownloadGperftools)
-    set(GPERFTOOLS_ROOT ${GPERFTOOLS_INSTALL_DIR} CACHE PATH "gperftools root directory" FORCE)
+    set(Gperftools_ROOT ${GPERFTOOLS_INSTALL_DIR} CACHE PATH "gperftools root directory" FORCE)
     find_package(Gperftools REQUIRED)
   endif()
 
