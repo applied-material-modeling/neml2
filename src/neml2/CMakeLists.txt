@@ -75,7 +75,7 @@ if(NEML2_CPU_PROFILER)
 
   if(NOT Gperftools_FOUND)
     include(DownloadGperftools)
-    set(GPERFTOOLS_ROOT ${GPERFTOOLS_INSTALL_DIR} CACHE PATH "gperftools root directory" FORCE)
+    set(Gperftools_ROOT ${GPERFTOOLS_INSTALL_DIR} CACHE PATH "gperftools root directory" FORCE)
     find_package(Gperftools REQUIRED)
   endif()
 
@@ -225,4 +225,34 @@ if(NEML2_WORK_DISPATCHER)
   set_target_properties(neml2_dispatcher PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
   target_link_libraries(neml2_driver PUBLIC neml2_dispatcher)
   target_link_libraries(neml2 INTERFACE neml2_dispatcher)
+endif()
+
+# ###############################################################################
+# Version number and hash
+# ###############################################################################
+find_package(Git)
+
+if(Git_FOUND)
+  execute_process(
+    COMMAND ${GIT_EXECUTABLE} describe --abbrev=0
+    WORKING_DIRECTORY ${NEML2_SOURCE_DIR}
+    OUTPUT_VARIABLE NEML2_VERSION
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+  file(WRITE ${NEML2_BINARY_DIR}/version ${NEML2_VERSION})
+
+  execute_process(
+    COMMAND ${GIT_EXECUTABLE} rev-parse HEAD
+    WORKING_DIRECTORY ${NEML2_SOURCE_DIR}
+    OUTPUT_VARIABLE NEML2_HASH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+  file(WRITE ${NEML2_BINARY_DIR}/hash ${NEML2_HASH})
+
+  install(FILES
+    ${NEML2_BINARY_DIR}/version
+    ${NEML2_BINARY_DIR}/hash
+    DESTINATION .
+    COMPONENT libneml2
+  )
 endif()

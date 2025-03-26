@@ -19,7 +19,7 @@ jobs:
         with:
           path: neml2
           python-version: 3.9
-          cmake-version: 3.28
+          cmake-version: 3.26
           torch-version: 2.5.1
       - name: Create a source file for testing purposes
         run: cp neml2/cmake/subproject/main.cxx .

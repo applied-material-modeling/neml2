@@ -11,6 +11,7 @@ Makefile
 build
 _deps
 install
+installed
 
 # Editor cache
 *.swp

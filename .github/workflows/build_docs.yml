@@ -22,7 +22,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
           python-version: 3.9
-          cmake-version: 3.28
+          cmake-version: 3.26
           torch-version: 2.5.1
       - uses: actions/setup-node@v4
       - name: Install Node.js dependencies
@@ -62,7 +62,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
           python-version: 3.9
-          cmake-version: 3.28
+          cmake-version: 3.26
           torch-version: 2.5.1
       - name: Configure
         run: cmake --preset coverage -GNinja -S .
