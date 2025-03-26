@@ -93,6 +93,7 @@ function(neml2_add_submodule mname TYPE mdir)
   file(GLOB_RECURSE msrcs CONFIGURE_DEPENDS ${mdir}/*.cxx)
   file(GLOB_RECURSE mheaders CONFIGURE_DEPENDS ${NEML2_SOURCE_DIR}/include/neml2/${mdir}/*.h)
   add_library(${mname} ${TYPE} ${msrcs})
+
   target_sources(${mname}
     PUBLIC
     FILE_SET HEADERS
@@ -100,6 +101,9 @@ function(neml2_add_submodule mname TYPE mdir)
     FILES
     ${mheaders}
   )
+
+  # Append suffix to the output name (only if the build type is not Release)
+  set_target_properties(${mname} PROPERTIES OUTPUT_NAME "${mname}$<IF:$<CONFIG:Release>,,_$<CONFIG>>")
 
   target_compile_options(${mname} PRIVATE -Wall -Wextra -pedantic)
 
