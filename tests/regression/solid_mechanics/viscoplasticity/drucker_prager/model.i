@@ -81,7 +81,7 @@
     type = ScalarLinearCombination
     from_var = 'state/svm state/i1'
     to_var = 'state/s'
-    coefficients = '1 0.5' # coefficients for Drucker-Prager, note that von Mises stress is sqrt(3 J2)
+    coefficients = '1 -0.5' # coefficients for Drucker-Prager, note that von Mises stress is sqrt(3 J2)
   []
   [isoharden]
     type = LinearIsotropicHardening
