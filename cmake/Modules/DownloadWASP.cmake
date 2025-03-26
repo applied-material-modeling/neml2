@@ -2,7 +2,6 @@
 #
 # Influential variables:
 # - WASP_VERSION
-# - CMAKE_BUILD_TYPE
 # - CMAKE_BINARY_DIR
 # - COMPILE_DEFINITIONS
 #
@@ -29,13 +28,6 @@ FetchContent_Populate(
   BINARY_DIR ${WASP_WORKING_DIR}
   SUBBUILD_DIR ${WASP_SUBBUILD_DIR}
 )
-
-# build type
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-  set(WASP_BUILD_TYPE "Debug")
-else()
-  set(WASP_BUILD_TYPE "RelWithDebInfo")
-endif()
 
 # cxx11 abi
 if(NOT DEFINED GLIBCXX_USE_CXX11_ABI)
