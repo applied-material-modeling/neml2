@@ -1,5 +1,5 @@
 file(GLOB_RECURSE srcs CONFIGURE_DEPENDS *.cxx)
 add_executable(regression_tests ${srcs})
-target_link_libraries(regression_tests PRIVATE testutils Catch2::Catch2)
+target_link_libraries(regression_tests PRIVATE testutils)
 target_compile_options(regression_tests PRIVATE -Wall -Wextra -pedantic)
 set_target_properties(regression_tests PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)

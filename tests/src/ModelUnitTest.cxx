@@ -27,8 +27,6 @@
 #include "neml2/tensors/functions/jacrev.h"
 #include "neml2/misc/assertions.h"
 
-#include <torch/cuda.h>
-
 namespace neml2
 {
 template <typename T>
@@ -62,7 +60,6 @@ ModelUnitTest::expected_options()
   options.set<bool>("check_derivatives") = true;
   options.set<bool>("check_second_derivatives") = false;
   options.set<bool>("check_AD_parameter_derivatives") = true;
-  options.set<bool>("check_cuda") = true;
 
   options.set<Real>("value_rel_tol") = 1e-5;
   options.set<Real>("value_abs_tol") = 1e-8;
@@ -97,7 +94,6 @@ ModelUnitTest::ModelUnitTest(const OptionSet & options)
     _check_derivs(options.get<bool>("check_derivatives")),
     _check_secderivs(options.get<bool>("check_second_derivatives")),
     _check_AD_param_derivs(options.get<bool>("check_AD_parameter_derivatives")),
-    _check_cuda(options.get<bool>("check_cuda")),
 
     _val_rtol(options.get<Real>("value_rel_tol")),
     _val_atol(options.get<Real>("value_abs_tol")),
@@ -138,11 +134,11 @@ ModelUnitTest::run()
 
   check_all();
 
-  if (_check_cuda && torch::cuda::is_available())
+  for (const auto & device : get_test_suite_additional_devices())
   {
-    _model.to(kCUDA);
+    _model.to(device);
     for (auto && [name, tensor] : _in)
-      _in[name] = tensor.to(kCUDA);
+      _in[name] = tensor.to(device);
 
     check_all();
   }
