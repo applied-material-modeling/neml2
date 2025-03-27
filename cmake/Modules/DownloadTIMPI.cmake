@@ -26,8 +26,10 @@ FetchContent_MakeAvailable(timpi)
 # build type
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   set(TIMPI_BUILD_TYPE "dbg")
-else()
+elseif(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
   set(TIMPI_BUILD_TYPE "devel")
+else()
+  set(TIMPI_BUILD_TYPE "opt")
 endif()
 
 # cxx11 abi
