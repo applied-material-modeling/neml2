@@ -17,7 +17,15 @@ find_path(TIMPI_INCLUDE_DIR timpi NO_CACHE)
 # -----------------------------------------------------------------------------
 # libraries
 # -----------------------------------------------------------------------------
-find_library(TIMPI_LIBRARY NAMES timpi_dbg timpi_devel timpi_opt NO_CACHE)
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  set(TIMPI_BUILD_TYPE dbg)
+elseif(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+  set(TIMPI_BUILD_TYPE devel)
+else()
+  set(TIMPI_BUILD_TYPE opt)
+endif()
+
+find_library(TIMPI_LIBRARY NAMES timpi_${TIMPI_BUILD_TYPE} NO_CACHE)
 
 # -----------------------------------------------------------------------------
 # Check if we found everything
