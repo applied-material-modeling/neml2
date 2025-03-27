@@ -107,10 +107,6 @@ function(neml2_add_submodule mname TYPE mdir)
 
   target_compile_options(${mname} PRIVATE -Wall -Wextra -pedantic)
 
-  if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_compile_options(${mname} PRIVATE -Werror)
-  endif()
-
   if(NEML2_CPU_PROFILER)
     target_link_libraries(${mname} PRIVATE Gperftools::profiler)
   endif()

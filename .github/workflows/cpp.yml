@@ -36,7 +36,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-        btype: [Release, Debug]
+        btype: [Debug, Release]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: applied-material-modeling/neml2-ci@main
@@ -45,7 +45,11 @@ jobs:
           cmake-version: 3.26
           torch-version: 2.5.1
       - name: Configure
-        run: cmake --preset dev -GNinja -DCMAKE_BUILD_TYPE=${{ matrix.btype }} -S .
+        if: matrix.btype == 'Release'
+        run: cmake --preset dev -GNinja -DCMAKE_BUILD_TYPE=Release -S .
+      - name: Configure (Werror)
+        if: matrix.btype != 'Release'
+        run: cmake --preset dev -GNinja -DCMAKE_BUILD_TYPE=${{ matrix.btype }} -DCMAKE_CXX_FLAGS="-Werror" -S .
       - name: Build
         run: cmake --build --preset dev-cpp
       - name: Run tests
