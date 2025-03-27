@@ -1,5 +1,5 @@
 file(GLOB_RECURSE srcs CONFIGURE_DEPENDS *.cxx)
 add_library(testutils OBJECT ${srcs})
 target_include_directories(testutils PUBLIC ${NEML2_SOURCE_DIR}/tests/include)
-target_link_libraries(testutils PUBLIC neml2)
+target_link_libraries(testutils PUBLIC neml2 Catch2::Catch2)
 target_compile_options(testutils PRIVATE -Wall -Wextra -pedantic)

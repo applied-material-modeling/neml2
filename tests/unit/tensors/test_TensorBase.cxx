@@ -25,6 +25,8 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_all.hpp>
 
+#include "utils.h"
+
 #include "neml2/tensors/Tensor.h"
 #include "neml2/tensors/functions/pow.h"
 #include "neml2/tensors/functions/sign.h"
@@ -69,6 +71,17 @@ TEST_CASE("TensorBase", "[tensors]")
         REQUIRE(a.batch_sizes() == B);
         REQUIRE(a.base_sizes() == D);
         REQUIRE(a.base_storage() == L);
+      }
+
+      SECTION("to")
+      {
+        for (const auto & dev : get_test_suite_additional_devices())
+        {
+          auto a = Tensor(at::zeros(BD, dev), B.size());
+          // Let b make a round trip from default device to dev and back to default device
+          auto b = a.to(dev).to(DTO);
+          REQUIRE(at::allclose(a, b));
+        }
       }
 
       SECTION("copy")

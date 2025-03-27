@@ -22,37 +22,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <catch2/catch_session.hpp>
-
-#include <filesystem>
 #include "utils.h"
 
 int
 main(int argc, char * argv[])
 {
-  Catch::Session session;
-
-  // Add path cli arg
-  using namespace Catch::Clara;
-  std::string working_dir;
-  auto cli = session.cli() | Opt(working_dir, ".")["-p"]["--path"]("path to the test input files");
-  session.cli(cli);
-
-  // Let Catch2 parse the command line
-  auto err = session.applyCommandLine(argc, argv);
-  if (err)
-    return err;
-
-  // Set the working directory
-  auto exec_prefix = std::filesystem::path(argv[0]).parent_path();
-  err = guess_test_dir("regression", working_dir, exec_prefix);
-  if (err)
-    return err;
-  std::cout << "Working directory: " << working_dir << std::endl;
-  std::filesystem::current_path(working_dir);
-
-  // Set default tensor options
-  neml2::set_default_dtype(neml2::kFloat64);
-
-  return session.run();
+  return test_main(argc, argv, "regression");
 }
