@@ -33,7 +33,7 @@
 namespace neml2
 {
 // Forward declaration
-#define FORWARD_DECLARATION(T) class T;
+#define FORWARD_DECLARATION(T) class T
 FOR_ALL_TENSORBASE(FORWARD_DECLARATION);
 
 // Define macros (let's be responsible and undefine them afterwards)

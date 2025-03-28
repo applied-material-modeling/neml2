@@ -30,7 +30,7 @@
 namespace neml2
 {
 // Explicitly instantiate TensorBase
-#define INSTANTIATE_TENSORBASE(T) template class TensorBase<T>;
+#define INSTANTIATE_TENSORBASE(T) template class TensorBase<T>
 FOR_ALL_TENSORBASE(INSTANTIATE_TENSORBASE);
 
 std::ostream &
