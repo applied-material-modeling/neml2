@@ -28,7 +28,7 @@
 
 namespace neml2
 {
-#define DECLARE_TENSOR(T) class T;
+#define DECLARE_TENSOR(T) class T
 FOR_ALL_TENSORBASE(DECLARE_TENSOR);
 #undef DECLARE_TENSOR
 } // namespace neml2

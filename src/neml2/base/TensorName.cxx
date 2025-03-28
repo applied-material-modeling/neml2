@@ -71,6 +71,6 @@ TensorName<T>::resolve_number(Real val) const
 
 // Explicit instantiations
 template struct TensorName<ATensor>;
-#define INSTANTIATE(T) template struct TensorName<T>;
+#define INSTANTIATE(T) template struct TensorName<T>
 FOR_ALL_TENSORBASE(INSTANTIATE);
 } // namesace neml2

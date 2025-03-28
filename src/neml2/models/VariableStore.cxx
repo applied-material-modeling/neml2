@@ -174,7 +174,7 @@ VariableStore::create_variable(VariableStorage & variables,
 }
 #define INSTANTIATE_CREATE_VARIABLE(T)                                                             \
   template Variable<T> * VariableStore::create_variable<T>(                                        \
-      VariableStorage &, const VariableName &, TensorShapeRef);
+      VariableStorage &, const VariableName &, TensorShapeRef)
 FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_CREATE_VARIABLE);
 
 VariableBase &
