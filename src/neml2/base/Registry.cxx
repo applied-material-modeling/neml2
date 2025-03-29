@@ -36,40 +36,21 @@ Registry::get()
   return registry_singleton;
 }
 
-std::map<std::string, OptionSet>
-Registry::expected_options()
+const std::map<std::string, NEML2ObjectInfo> &
+Registry::info()
 {
-  auto & reg = get();
-  return reg._expected_options;
+  return get()._info;
 }
 
-OptionSet
-Registry::expected_options(const std::string & name)
+const NEML2ObjectInfo &
+Registry::info(const std::string & name)
 {
-  auto & reg = get();
+  const auto & reg = get();
   neml_assert(
-      reg._expected_options.count(name) > 0,
+      reg._info.count(name) > 0,
       name,
       " is not a registered object. Did you forget to register it with register_NEML2_object?");
-  return reg._expected_options.at(name);
-}
-
-std::string
-Registry::syntax_type(const std::string & type)
-{
-  auto & reg = get();
-  return reg._syntax_type[type];
-}
-
-BuildPtr
-Registry::builder(const std::string & name)
-{
-  auto & reg = get();
-  neml_assert(
-      reg._objects.count(name) > 0,
-      name,
-      " is not a registered object. Did you forget to register it with register_NEML2_object?");
-  return reg._objects.at(name);
+  return reg._info.at(name);
 }
 
 void
@@ -79,13 +60,10 @@ Registry::add_inner(const std::string & name,
                     BuildPtr build_ptr)
 {
   auto & reg = get();
-  neml_assert(reg._expected_options.count(name) == 0 && reg._objects.count(name) == 0,
-              "Duplicate registration found. Object named ",
+  neml_assert(reg._info.count(name) == 0,
+              "Duplicate registration found. Object of type ",
               name,
               " is being registered multiple times.");
-
-  reg._expected_options[name] = options;
-  reg._objects[name] = build_ptr;
-  reg._syntax_type[name] = type;
+  reg._info[name] = NEML2ObjectInfo{type, options, build_ptr};
 }
 } // namespace neml2

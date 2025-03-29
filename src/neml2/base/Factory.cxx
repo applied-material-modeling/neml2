@@ -89,8 +89,8 @@ Factory::create_object(const std::string & section, const OptionSet & options)
   const std::string & name = options.name();
   const std::string & type = options.type();
 
-  auto builder = Registry::builder(type);
-  auto object = (*builder)(options);
+  auto build = Registry::info(type).build;
+  auto object = (*build)(options);
   _objects[section][name].push_back(object);
 
   try
