@@ -22,6 +22,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <dlfcn.h>
+#include <fstream>
+
 #include "neml2/base/Registry.h"
 #include "neml2/base/OptionSet.h"
 #include "neml2/base/NEML2Object.h"
@@ -36,40 +39,48 @@ Registry::get()
   return registry_singleton;
 }
 
-std::map<std::string, OptionSet>
-Registry::expected_options()
+void
+Registry::load(const std::filesystem::path & lib)
 {
-  auto & reg = get();
-  return reg._expected_options;
+  namespace fs = std::filesystem;
+
+  // Check that the library exists
+  neml_assert(fs::exists(lib), "Runtime library file " + lib.string() + " does not exist.");
+
+  // Check that the library file is readable
+  std::ifstream try_open(lib.string().c_str(), std::ifstream::in);
+  neml_assert(
+      !try_open.fail(),
+      "Runtime library file " + lib.string() +
+          " exists but could not be opened. Check to make sure that you have read permission.");
+  try_open.close();
+
+  // Load the library
+  void * const lib_handle = dlopen(fs::absolute(lib).c_str(), RTLD_LAZY);
+  neml_assert(lib_handle != nullptr,
+              "Runtime library file ",
+              lib.string(),
+              " exists and can be opened, but cannot by dynamically loaded. This generally means "
+              "that the loader was unable to load one or more of the dependencies (see otool or "
+              "ldd). Error: \n",
+              dlerror());
 }
 
-OptionSet
-Registry::expected_options(const std::string & name)
+const std::map<std::string, NEML2ObjectInfo> &
+Registry::info()
 {
-  auto & reg = get();
+  return get()._info;
+}
+
+const NEML2ObjectInfo &
+Registry::info(const std::string & name)
+{
+  const auto & reg = get();
   neml_assert(
-      reg._expected_options.count(name) > 0,
+      reg._info.count(name) > 0,
       name,
       " is not a registered object. Did you forget to register it with register_NEML2_object?");
-  return reg._expected_options.at(name);
-}
-
-std::string
-Registry::syntax_type(const std::string & type)
-{
-  auto & reg = get();
-  return reg._syntax_type[type];
-}
-
-BuildPtr
-Registry::builder(const std::string & name)
-{
-  auto & reg = get();
-  neml_assert(
-      reg._objects.count(name) > 0,
-      name,
-      " is not a registered object. Did you forget to register it with register_NEML2_object?");
-  return reg._objects.at(name);
+  return reg._info.at(name);
 }
 
 void
@@ -79,13 +90,10 @@ Registry::add_inner(const std::string & name,
                     BuildPtr build_ptr)
 {
   auto & reg = get();
-  neml_assert(reg._expected_options.count(name) == 0 && reg._objects.count(name) == 0,
-              "Duplicate registration found. Object named ",
+  neml_assert(reg._info.count(name) == 0,
+              "Duplicate registration found. Object of type ",
               name,
               " is being registered multiple times.");
-
-  reg._expected_options[name] = options;
-  reg._objects[name] = build_ptr;
-  reg._syntax_type[name] = type;
+  reg._info[name] = NEML2ObjectInfo{type, options, build_ptr};
 }
 } // namespace neml2
