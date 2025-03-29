@@ -22,12 +22,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <c10/util/Exception.h>
+#include <c10/core/Device.h>
 
 int
 main()
 {
-  // This is the simplest method that differs before and after the CXX11 ABI change
-  throw c10::Error("", "");
+  c10::Device device("cpu");
   return 0;
 }

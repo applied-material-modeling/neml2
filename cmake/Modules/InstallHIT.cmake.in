@@ -22,7 +22,6 @@ target_sources(hit
 target_include_directories(hit PUBLIC ${WASP_INCLUDE_DIR})
 target_link_directories(hit PUBLIC ${WASP_LINK_DIR})
 target_link_libraries(hit PUBLIC waspcore wasphit)
-target_compile_definitions(hit PUBLIC _GLIBCXX_USE_CXX11_ABI=${GLIBCXX_USE_CXX11_ABI})
 set_target_properties(hit PROPERTIES UNITY_BUILD OFF POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS hit LIBRARY)

@@ -19,18 +19,12 @@ FetchContent_Declare(
 message(STATUS "Downloading/updating HIT")
 FetchContent_MakeAvailable(hit)
 
-# cxx11 abi
-if(NOT DEFINED GLIBCXX_USE_CXX11_ABI)
-  message(WARNING "GLIBCXX_USE_CXX11_ABI not defined, assuming 1")
-  set(GLIBCXX_USE_CXX11_ABI 1)
-endif()
-
 # install
-configure_file(${CMAKE_CURRENT_LIST_DIR}/InstallHIT.cmake.in ${hit_SOURCE_DIR}/CMakeLists.txt)
 set(HIT_INSTALL_DIR ${CMAKE_BINARY_DIR}/_deps/hit CACHE PATH "HIT installation directory" FORCE)
+configure_file(${CMAKE_CURRENT_LIST_DIR}/InstallHIT.cmake.in ${hit_SOURCE_DIR}/CMakeLists.txt)
 message(STATUS "Installing HIT")
 execute_process(
-  COMMAND ${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE=Release -G${CMAKE_GENERATOR} -B${hit_BINARY_DIR} -S.
+  COMMAND ${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=${WASP_CXX_FLAGS} -G${CMAKE_GENERATOR} -B${hit_BINARY_DIR} -S.
   WORKING_DIRECTORY ${hit_SOURCE_DIR}
   OUTPUT_QUIET OUTPUT_FILE configure.log
   ERROR_QUIET ERROR_FILE configure.err
