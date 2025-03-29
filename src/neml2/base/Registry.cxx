@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include <dlfcn.h>
+#include <fstream>
 
 #include "neml2/base/Registry.h"
 #include "neml2/base/OptionSet.h"
