@@ -23,36 +23,46 @@
 // THE SOFTWARE.
 
 #include <catch2/catch_test_macros.hpp>
-#include <catch2/matchers/catch_matchers_all.hpp>
 
-#include "neml2/misc/defaults.h"
-#include "neml2/base/Settings.h"
-#include "neml2/base/HITParser.h"
-#include "neml2/base/OptionCollection.h"
+#include "neml2/base/Registry.h"
+#include "neml2/models/Model.h"
+#include "neml2/tensors/Scalar.h"
 
-using namespace neml2;
-
-TEST_CASE("Settings", "[Settings]")
+TEST_CASE("Registry", "[base]")
 {
-  // Before applying the global settings
-  REQUIRE(default_integer_dtype() == kInt64);
-  REQUIRE(machine_precision() == Catch::Approx(1e-15));
-  REQUIRE(tolerance() == Catch::Approx(1e-6));
-  REQUIRE(tighter_tolerance() == Catch::Approx(1e-12));
-  REQUIRE(buffer_name_separator() == "_");
-  REQUIRE(parameter_name_separator() == "_");
-  REQUIRE(require_double_precision());
+  SECTION("load")
+  {
+    const auto & reg = neml2::Registry::get();
+    REQUIRE(reg.info().count("FooModel") == 0);
 
-  // Apply the global settings (settings are applied right after parsing)
-  HITParser parser;
-  auto all_options = parser.parse("base/test_HITParser1.i");
+    // Find the dynamic library
+    namespace fs = std::filesystem;
+    auto pwd = fs::current_path();
+    auto lib_dir = pwd / ".." / "extension";
+    REQUIRE(fs::exists(lib_dir));
+    REQUIRE(fs::is_directory(lib_dir));
+    auto lib_so = lib_dir / "libextension.so";
+    auto lib_dylib = lib_dir / "libextension.dylib";
+    REQUIRE(fs::exists(lib_so) != fs::exists(lib_dylib));
 
-  // After applying the global settings
-  REQUIRE(default_integer_dtype() == kInt32);
-  REQUIRE(machine_precision() == Catch::Approx(0.5));
-  REQUIRE(tolerance() == Catch::Approx(0.1));
-  REQUIRE(tighter_tolerance() == Catch::Approx(0.01));
-  REQUIRE(buffer_name_separator() == "::");
-  REQUIRE(parameter_name_separator() == "::");
-  REQUIRE(!require_double_precision());
+    // Load the library
+    if (fs::exists(lib_so))
+      neml2::Registry::load(lib_so);
+    else
+      neml2::Registry::load(lib_dylib);
+    REQUIRE(reg.info().count("FooModel") == 1);
+  }
+
+  SECTION("load from input")
+  {
+    namespace fs = std::filesystem;
+    auto pwd = fs::current_path();
+    auto lib_dir = pwd / ".." / "extension";
+    auto & model = neml2::load_model(lib_dir / "FooModel.i", "foo");
+
+    const auto x = neml2::Scalar::full(5);
+    const auto out = model.value({{neml2::VariableName("forces", "x"), x}});
+    const auto & y = out.at(neml2::VariableName("state", "y"));
+    REQUIRE(at::allclose(y, neml2::Scalar::full(5.6)));
+  }
 }
