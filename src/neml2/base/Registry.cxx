@@ -22,6 +22,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <dlfcn.h>
+
 #include "neml2/base/Registry.h"
 #include "neml2/base/OptionSet.h"
 #include "neml2/base/NEML2Object.h"
@@ -34,6 +36,33 @@ Registry::get()
 {
   static Registry registry_singleton;
   return registry_singleton;
+}
+
+void
+Registry::load(const std::filesystem::path & lib)
+{
+  namespace fs = std::filesystem;
+
+  // Check that the library exists
+  neml_assert(fs::exists(lib), "Runtime library file " + lib.string() + " does not exist.");
+
+  // Check that the library file is readable
+  std::ifstream try_open(lib.string().c_str(), std::ifstream::in);
+  neml_assert(
+      !try_open.fail(),
+      "Runtime library file " + lib.string() +
+          " exists but could not be opened. Check to make sure that you have read permission.");
+  try_open.close();
+
+  // Load the library
+  void * const lib_handle = dlopen(fs::absolute(lib).c_str(), RTLD_LAZY);
+  neml_assert(lib_handle != nullptr,
+              "Runtime library file ",
+              lib.string(),
+              " exists and can be opened, but cannot by dynamically loaded. This generally means "
+              "that the loader was unable to load one or more of the dependencies (see otool or "
+              "ldd). Error: \n",
+              dlerror());
 }
 
 const std::map<std::string, NEML2ObjectInfo> &

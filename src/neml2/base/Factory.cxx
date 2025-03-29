@@ -25,7 +25,6 @@
 #include "neml2/base/Factory.h"
 #include "neml2/base/Registry.h"
 #include "neml2/base/HITParser.h"
-#include "neml2/base/Settings.h"
 
 #include "neml2/misc/assertions.h"
 
@@ -80,7 +79,6 @@ void
 Factory::load_options(const OptionCollection & all_options)
 {
   options() = all_options;
-  Settings::apply(options().settings());
 }
 
 void

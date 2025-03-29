@@ -26,6 +26,7 @@
 
 #include <memory>
 #include <map>
+#include <filesystem>
 
 #include "neml2/misc/string_utils.h"
 #include "neml2/base/OptionSet.h"
@@ -78,6 +79,9 @@ public:
     add_inner(name, utils::demangle(typeid(T).name()), T::expected_options(), &build<T>);
     return 0;
   }
+
+  /// Load registry from a dynamic library
+  static void load(const std::filesystem::path &);
 
   /// Get information of all registered objects.
   static const std::map<std::string, NEML2ObjectInfo> & info();

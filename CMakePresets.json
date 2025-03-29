@@ -96,6 +96,7 @@
       "description": "C++ backend with tests",
       "configurePreset": "dev",
       "targets": [
+        "extension",
         "unit_tests",
         "regression_tests",
         "verification_tests",
@@ -135,6 +136,7 @@
       "description": "C++ backend compiled with coverage flags",
       "configurePreset": "coverage",
       "targets": [
+        "extension",
         "unit_tests",
         "regression_tests",
         "verification_tests",
