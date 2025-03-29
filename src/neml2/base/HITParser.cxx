@@ -99,7 +99,7 @@ HITParser::extract_object_options(hit::Node * object, hit::Node * section) const
   // There is a special field reserved for object type
   std::string type = object->param<std::string>("type");
   // Extract the options
-  auto options = Registry::expected_options(type);
+  auto options = Registry::info(type).expected_options;
   extract_options(object, options);
 
   // Also fill in the metadata
