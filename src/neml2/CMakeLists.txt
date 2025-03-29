@@ -9,13 +9,14 @@ if(NOT Torch_FOUND)
   find_package(Torch REQUIRED)
 endif()
 
-if(${GLIBCXX_USE_CXX11_ABI} STREQUAL "0")
-  message(STATUS "Using pre C++11 ABI")
-else()
-  message(STATUS "Using C++11 ABI")
+if(HAS_GLIBC)
+  if(${GLIBCXX_USE_CXX11_ABI} STREQUAL "0")
+    message(STATUS "Using pre C++11 ABI")
+  else()
+    message(STATUS "Using C++11 ABI")
+  endif()
 endif()
 
-add_compile_definitions(_GLIBCXX_USE_CXX11_ABI=${GLIBCXX_USE_CXX11_ABI})
 cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${Torch_LINK_DIR} Torch_DOWNLOADED)
 
 if(Torch_DOWNLOADED)
@@ -112,6 +113,10 @@ function(neml2_add_submodule mname TYPE mdir)
   set_target_properties(${mname} PROPERTIES OUTPUT_NAME "${mname}$<IF:$<CONFIG:Release>,,_$<CONFIG>>")
 
   target_compile_options(${mname} PRIVATE -Wall -Wextra -pedantic)
+
+  if(HAS_GLIBC)
+    target_compile_options(${mname} PUBLIC -D_GLIBCXX_USE_CXX11_ABI=${GLIBCXX_USE_CXX11_ABI})
+  endif()
 
   if(NEML2_CPU_PROFILER)
     target_link_libraries(${mname} PRIVATE Gperftools::profiler)

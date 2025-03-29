@@ -24,16 +24,27 @@ FetchContent_Populate(
   SUBBUILD_DIR ${CATCH2_SUBBUILD_DIR}
 )
 
+# Check if the system is using glibc
+if(NOT DEFINED HAS_GLIBC)
+  include(CheckSymbolExists)
+  check_symbol_exists(__GLIBC__ "features.h" HAS_GLIBC)
+  set(HAS_GLIBC ${HAS_GLIBC} CACHE INTERNAL "System has glibc" FORCE)
+endif()
+
 # cxx11 abi
-if(NOT DEFINED GLIBCXX_USE_CXX11_ABI)
-  message(WARNING "GLIBCXX_USE_CXX11_ABI not defined, assuming 1")
-  set(GLIBCXX_USE_CXX11_ABI 1)
+if(HAS_GLIBC)
+  if(NOT DEFINED GLIBCXX_USE_CXX11_ABI)
+    message(WARNING "GLIBCXX_USE_CXX11_ABI not defined, assuming 1")
+    set(GLIBCXX_USE_CXX11_ABI 1)
+  endif()
+
+  set(CATCH2_CXX_FLAGS "-D_GLIBCXX_USE_CXX11_ABI=${GLIBCXX_USE_CXX11_ABI}")
 endif()
 
 # install
 message(STATUS "Installing Catch2")
 execute_process(
-  COMMAND ${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DCMAKE_CXX_FLAGS=-D_GLIBCXX_USE_CXX11_ABI=${GLIBCXX_USE_CXX11_ABI} -G${CMAKE_GENERATOR} -B${catch2_BINARY_DIR} -S.
+  COMMAND ${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DCMAKE_CXX_FLAGS=${CATCH2_CXX_FLAGS} -G${CMAKE_GENERATOR} -B${catch2_BINARY_DIR} -S.
   WORKING_DIRECTORY ${catch2_SOURCE_DIR}
   OUTPUT_QUIET OUTPUT_FILE configure.log
   ERROR_QUIET ERROR_FILE configure.err

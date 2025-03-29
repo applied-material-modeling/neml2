@@ -57,7 +57,7 @@ set(TIMPI_VERSION "1.8.5_bootstrapped" CACHE STRING "Default TIMPI version to do
 # ----------------------------------------------------------------------------
 # Build types
 # ----------------------------------------------------------------------------
-if(NOT CMAKE_BUILD_TYPE)
+if(NOT DEFINED CMAKE_BUILD_TYPE)
       set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the type of build." FORCE)
 endif()
 
@@ -74,6 +74,13 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
 
       set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE ON)
       configure_file(scripts/coverage.sh.in ${NEML2_BINARY_DIR}/scripts/coverage.sh)
+endif()
+
+# ----------------------------------------------------------------------------
+# Install message
+# ----------------------------------------------------------------------------
+if(NOT DEFINED CMAKE_INSTALL_MESSAGE)
+      set(CMAKE_INSTALL_MESSAGE LAZY)
 endif()
 
 # ----------------------------------------------------------------------------
@@ -100,14 +107,6 @@ include(CTest)
 
 # Add the base library and its dependencies
 add_subdirectory(src/neml2)
-
-# Note that torch is one of the dependencies of neml2. Annoyingly torch is
-# shipped with both flavors of the C++ ABI. The base library and all dependencies
-# are built with the same ABI.
-#
-# Here we add the consistent compile definition so that later dependencies can
-# be built with the same ABI.
-add_compile_definitions(_GLIBCXX_USE_CXX11_ABI=${GLIBCXX_USE_CXX11_ABI})
 
 # ----------------------------------------------------------------------------
 # tests

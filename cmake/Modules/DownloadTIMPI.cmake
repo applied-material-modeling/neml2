@@ -32,10 +32,21 @@ else()
   set(TIMPI_BUILD_TYPE "opt")
 endif()
 
+# Check if the system is using glibc
+if(NOT DEFINED HAS_GLIBC)
+  include(CheckSymbolExists)
+  check_symbol_exists(__GLIBC__ "features.h" HAS_GLIBC)
+  set(HAS_GLIBC ${HAS_GLIBC} CACHE INTERNAL "System has glibc" FORCE)
+endif()
+
 # cxx11 abi
-if(NOT DEFINED GLIBCXX_USE_CXX11_ABI)
-  message(WARNING "GLIBCXX_USE_CXX11_ABI not defined, assuming 1")
-  set(GLIBCXX_USE_CXX11_ABI 1)
+if(HAS_GLIBC)
+  if(NOT DEFINED GLIBCXX_USE_CXX11_ABI)
+    message(WARNING "GLIBCXX_USE_CXX11_ABI not defined, assuming 1")
+    set(GLIBCXX_USE_CXX11_ABI 1)
+  endif()
+
+  set(TIMPI_CXX_FLAGS "-D_GLIBCXX_USE_CXX11_ABI=${GLIBCXX_USE_CXX11_ABI}")
 endif()
 
 # install

@@ -1,5 +1,5 @@
 ./autogen.sh
-export CXXFLAGS="-D_GLIBCXX_USE_CXX11_ABI=${GLIBCXX_USE_CXX11_ABI}"
+export CXXFLAGS="${GPERFTOOLS_CXX_FLAGS}"
 ./configure \
   --prefix=${GPERFTOOLS_INSTALL_DIR} \
   --disable-heap-profiler \
