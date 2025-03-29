@@ -9,6 +9,12 @@ if(NOT Torch_FOUND)
   find_package(Torch REQUIRED)
 endif()
 
+if(${GLIBCXX_USE_CXX11_ABI} STREQUAL "0")
+  message(STATUS "Using pre C++11 ABI")
+else()
+  message(STATUS "Using C++11 ABI")
+endif()
+
 add_compile_definitions(_GLIBCXX_USE_CXX11_ABI=${GLIBCXX_USE_CXX11_ABI})
 cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${Torch_LINK_DIR} Torch_DOWNLOADED)
 

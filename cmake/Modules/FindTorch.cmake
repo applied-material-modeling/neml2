@@ -66,23 +66,46 @@ if(Torch_FOUND)
   # Check if torch is a python package
   cmake_path(COMPARE ${Torch_PYTHON_PACKAGE}/lib EQUAL ${Torch_LINK_DIR} Torch_IS_PYTHON_PACKAGE)
 
-  # libTorch comes with two flavors: one with cxx11 abi, one without.
-  # We cache the compile definition so that we can use it in other targets.
-  set(GLIBCXX_USE_CXX11_ABI 1 CACHE INTERNAL "CXX11 ABI")
-  try_compile(
-    Torch_GLIBCXX_USE_CXX11_ABI
-    SOURCES
-    ${CMAKE_CURRENT_LIST_DIR}/DetectTorchCXXABI.cxx
-    CMAKE_FLAGS -DINCLUDE_DIRECTORIES=${Torch_INCLUDE_DIR}
-    COMPILE_DEFINITIONS -D_GLIBCXX_USE_CXX11_ABI=${GLIBCXX_USE_CXX11_ABI}
-    LINK_OPTIONS -L${Torch_LINK_DIR}
-    LINK_LIBRARIES ${C10_LIBRARY}
-    CXX_STANDARD ${CMAKE_CXX_STANDARD}
-    CXX_STANDARD_REQUIRED ${CMAKE_CXX_STANDARD_REQUIRED}
-  )
+  # Detect the C++ ABI if not specified
+  # This is important because the torch library may be built with either the
+  # pre C++11 ABI or the C++11 ABI. We need to be consistent with the same ABI.
+  if(DEFINED FORCE_GLIBCXX_USE_CXX11_ABI)
+    set(GLIBCXX_USE_CXX11_ABI ${FORCE_GLIBCXX_USE_CXX11_ABI} CACHE INTERNAL "CXX11 ABI" FORCE)
+  else()
+    try_compile(
+      Torch_GLIBCXX_USE_CXX11_ABI
+      SOURCES
+      ${CMAKE_CURRENT_LIST_DIR}/DetectTorchCXXABI.cxx
+      CMAKE_FLAGS -DINCLUDE_DIRECTORIES=${Torch_INCLUDE_DIR}
+      COMPILE_DEFINITIONS -D_GLIBCXX_USE_CXX11_ABI=1
+      LINK_OPTIONS -L${Torch_LINK_DIR}
+      LINK_LIBRARIES ${C10_LIBRARY}
+      CXX_STANDARD ${CMAKE_CXX_STANDARD}
+      CXX_STANDARD_REQUIRED ${CMAKE_CXX_STANDARD_REQUIRED}
+    )
+    try_compile(
+      Torch_GLIBCXX_USE_PRE_CXX11_ABI
+      SOURCES
+      ${CMAKE_CURRENT_LIST_DIR}/DetectTorchCXXABI.cxx
+      CMAKE_FLAGS -DINCLUDE_DIRECTORIES=${Torch_INCLUDE_DIR}
+      COMPILE_DEFINITIONS -D_GLIBCXX_USE_CXX11_ABI=0
+      LINK_OPTIONS -L${Torch_LINK_DIR}
+      LINK_LIBRARIES ${C10_LIBRARY}
+      CXX_STANDARD ${CMAKE_CXX_STANDARD}
+      CXX_STANDARD_REQUIRED ${CMAKE_CXX_STANDARD_REQUIRED}
+    )
 
-  if(NOT Torch_GLIBCXX_USE_CXX11_ABI)
-    set(GLIBCXX_USE_CXX11_ABI 0 CACHE INTERNAL "" FORCE)
+    # One and only one of the two should succeed
+    if(Torch_GLIBCXX_USE_CXX11_ABI STREQUAL Torch_GLIBCXX_USE_PRE_CXX11_ABI)
+      message(FATAL_ERROR "Failed to detect the C++ ABI of torch. Please specify the CXX11 ABI manually using FORCE_GLIBCXX_USE_CXX11_ABI=(0|1). Please also consider creating a bug report at https://github.com/applied-material-modeling/neml2/issues.")
+    endif()
+
+    # Set the CXX11 ABI flag based on the detection
+    if(Torch_GLIBCXX_USE_PRE_CXX11_ABI)
+      set(GLIBCXX_USE_CXX11_ABI 0 CACHE INTERNAL "CXX11 ABI" FORCE)
+    elseif(Torch_GLIBCXX_USE_CXX11_ABI)
+      set(GLIBCXX_USE_CXX11_ABI 1 CACHE INTERNAL "CXX11 ABI" FORCE)
+    endif()
   endif()
 
   if(NOT TARGET Torch::Torch)
