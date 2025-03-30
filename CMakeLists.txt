@@ -135,3 +135,10 @@ endif()
 if(NEML2_DOC)
       add_subdirectory(doc)
 endif()
+
+# ----------------------------------------------------------------------------
+# compile_commands.json
+# ----------------------------------------------------------------------------
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+      file(CREATE_LINK ${NEML2_BINARY_DIR}/compile_commands.json ${NEML2_SOURCE_DIR}/compile_commands.json SYMBOLIC)
+endif()

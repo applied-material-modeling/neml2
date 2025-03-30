@@ -118,11 +118,13 @@ Once the documentation is built, the site can be previewed locally in any browse
 firefox build/dev/doc/build/html/index.html
 ```
 
-## Code formatting and linting
+## Code formatting and static analysis
 
 The C++ source code is formatted using `clang-format`. A `.clang-format` file is provided at the repository root specifying the formatting requirements. When using an IDE providing plugins or extensions to format C++ source code, it is important to
 1. Point the plugin/extension to use the `.clang-format` file located at NEML2's repository root.
 2. Associate file extensions `.h` and `.cxx` with C++.
+
+If the project is configured using the "dev" preset (or equivalently if `CMAKE_EXPORT_COMPILE_COMMANDS` is used in a "Debug" build type), a symbolic link to `compile_commands.json` will be created at the project root. This allows IDE plugins or extensions to perform static analysis.
 
 The Python scripts must be formatted using `black`. Formatting requirements are specified under the `[black]` section in `pyproject.toml`.
 
