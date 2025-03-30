@@ -28,8 +28,6 @@ jobs:
           clang-format-version: "19"
           check-path: ${{ matrix.path }}
 
-  # TODO: Re-enable the linting checks
-
   test:
     needs: clang-format
     strategy:

@@ -76,8 +76,50 @@ jobs:
           name: coverage
           path: build/coverage/coverage
 
+  clang-tidy:
+    if: github.event_name == 'pull_request_target'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: applied-material-modeling/neml2-ci@main
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          python-version: 3.9
+          cmake-version: 3.26
+          torch-version: 2.5.1
+      - name: Install clang-tidy
+        run: sudo apt-get install -y clang-tidy
+      - name: Install CodeChecker
+        run: pip install codechecker
+      - name: Configure
+        run: cmake --preset cc -GNinja -S .
+      - name: Filter files
+        run: |
+          git fetch --depth=1 origin main
+          ./scripts/filter_cc.py -c build/cc/compile_commands.json \
+                                 -o compile_commands_filtered.json \
+                                 -d HEAD origin/main
+      - name: Analyze
+        run: |
+          CodeChecker analyze \
+                      --analyzers clang-tidy \
+                      --analyzer-config 'clang-tidy:take-config-from-directory=true' \
+                      --clean \
+                      --quiet \
+                      --skip .codechecker \
+                      --output reports \
+                      --jobs 4 \
+                      compile_commands_filtered.json
+      - name: Generate report
+        run: CodeChecker parse reports -e html -i .codechecker -o reports/html
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: clang-tidy
+          path: reports/html
+
   deploy:
-    needs: [documentation, coverage]
+    needs: [documentation, coverage, clang-tidy]
     permissions:
       contents: write
       pull-requests: write
@@ -92,6 +134,11 @@ jobs:
         with:
           name: coverage
           path: site/html/coverage
+      - uses: actions/download-artifact@v4
+        if: github.event_name == 'pull_request_target'
+        with:
+          name: clang-tidy
+          path: site/html/clang-tidy
 
       # PR preview
       - name: Deploy preview to GitHub Pages
@@ -109,6 +156,7 @@ jobs:
           message: |
             Documentation preview: <https://applied-material-modeling.github.io/neml2/pr-preview/pr-${{ github.event.number }}>
             Code coverage: <https://applied-material-modeling.github.io/neml2/pr-preview/pr-${{ github.event.number }}/coverage>
+            Static analysis: <https://applied-material-modeling.github.io/neml2/pr-preview/pr-${{ github.event.number }}/clang-tidy>
 
       # Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
