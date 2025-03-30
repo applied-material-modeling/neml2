@@ -74,13 +74,13 @@ Tensor::Tensor(const ATensor & tensor, const TraceableTensorShape & batch_shape)
 }
 
 Tensor
-Tensor::create(TensorDataContainer data, const TensorOptions & options)
+Tensor::create(const TensorDataContainer & data, const TensorOptions & options)
 {
   return create(data, 0, options);
 }
 
 Tensor
-Tensor::create(TensorDataContainer data, Size batch_dim, const TensorOptions & options)
+Tensor::create(const TensorDataContainer & data, Size batch_dim, const TensorOptions & options)
 {
   return Tensor(torch::autograd::make_variable(data.convert_to_tensor(options.requires_grad(false)),
                                                options.requires_grad()),

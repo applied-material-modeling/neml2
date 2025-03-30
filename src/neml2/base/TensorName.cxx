@@ -22,6 +22,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <cmath>
+
 #include "neml2/base/TensorName.h"
 #include "neml2/base/Factory.h"
 #include "neml2/base/Parser.h"
@@ -36,7 +38,7 @@ TensorName<T>::resolve() const
   // Try to parse as a number
   if (_value.defined())
     return _value;
-  Real val;
+  Real val = NAN;
   auto success = utils::parse_(val, _raw_str);
   if (success)
     return _value = resolve_number(val);

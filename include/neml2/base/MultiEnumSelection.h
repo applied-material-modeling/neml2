@@ -72,6 +72,7 @@ public:
   std::vector<T> as() const
   {
     std::vector<T> ret;
+    ret.reserve(_values.size());
     for (const auto & v : _values)
       ret.push_back(static_cast<T>(v));
     return ret;

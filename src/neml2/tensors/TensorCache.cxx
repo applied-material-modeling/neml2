@@ -27,7 +27,7 @@
 namespace neml2
 {
 TensorCache::TensorCache(std::function<Tensor(const TensorOptions &)> && creator)
-  : _creator(creator)
+  : _creator(std::move(creator))
 {
 }
 

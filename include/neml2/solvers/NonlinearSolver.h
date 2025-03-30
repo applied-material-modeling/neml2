@@ -36,7 +36,7 @@ namespace neml2
 class NonlinearSolver : public Solver
 {
 public:
-  enum class RetCode
+  enum class RetCode : std::uint8_t
   {
     /// Solver converged successfully
     SUCCESS = 0,

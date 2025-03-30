@@ -145,7 +145,7 @@ BufferStore::collect_buffer_stack() const
   jit::Stack stack;
   stack.reserve(buffers.size());
   for (auto && [name, buffer] : buffers)
-    stack.push_back(Tensor(*buffer));
+    stack.emplace_back(Tensor(*buffer));
   return stack;
 }
 } // namespace neml2

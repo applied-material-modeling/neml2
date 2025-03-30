@@ -192,6 +192,7 @@ VariableStore::input_variable(const VariableName & name)
 const VariableBase &
 VariableStore::input_variable(const VariableName & name) const
 {
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
   return const_cast<VariableStore *>(this)->input_variable(name);
 }
 
@@ -210,6 +211,7 @@ VariableStore::output_variable(const VariableName & name)
 const VariableBase &
 VariableStore::output_variable(const VariableName & name) const
 {
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
   return const_cast<VariableStore *>(this)->output_variable(name);
 }
 
@@ -255,6 +257,14 @@ void
 VariableStore::assign_input(const ValueMap & vals)
 {
   for (const auto & [name, val] : vals)
+    if (input_axis().has_variable(name))
+      input_variable(name).set(val.clone());
+}
+
+void
+VariableStore::assign_input(ValueMap && vals)
+{
+  for (const auto & [name, val] : std::move(vals))
     if (input_axis().has_variable(name))
       input_variable(name).set(val.clone());
 }
@@ -323,32 +333,32 @@ VariableStore::assign_output_stack(jit::Stack & stack, bool out, bool dout, bool
 
   if (out)
   {
-    for (std::size_t i = 0; i < yvars.size(); i++)
+    for (const auto & yvar : yvars)
     {
       neml_assert(sparsity[spi++], "Corrupted sparsity tensor.");
-      output_variable(yvars[i]).set(stacklist[sti++], /*force=*/true);
+      output_variable(yvar).set(stacklist[sti++], /*force=*/true);
     }
   }
 
   if (dout)
   {
-    for (std::size_t i = 0; i < yvars.size(); i++)
+    for (const auto & yvar : yvars)
     {
-      auto & derivs = output_variable(yvars[i]).derivatives();
-      for (std::size_t j = 0; j < xvars.size(); j++)
+      auto & derivs = output_variable(yvar).derivatives();
+      for (const auto & xvar : xvars)
       {
         if (sparsity[spi++])
         {
           const auto & val = stacklist[sti++];
           neml_assert_dbg(val.dim() >= 2,
                           "Derivative tensor d(",
-                          yvars[i],
+                          yvar,
                           ")/d(",
-                          xvars[j],
+                          xvar,
                           ") must have at least 2 dimensions. Got ",
                           val.dim(),
                           ".");
-          derivs[xvars[j]] = Tensor(val, val.dim() - 2);
+          derivs[xvar] = Tensor(val, val.dim() - 2);
         }
       }
     }
@@ -356,26 +366,26 @@ VariableStore::assign_output_stack(jit::Stack & stack, bool out, bool dout, bool
 
   if (d2out)
   {
-    for (std::size_t i = 0; i < yvars.size(); i++)
+    for (const auto & yvar : yvars)
     {
-      auto & derivs = output_variable(yvars[i]).second_derivatives();
-      for (std::size_t j = 0; j < xvars.size(); j++)
-        for (std::size_t k = 0; k < xvars.size(); k++)
+      auto & derivs = output_variable(yvar).second_derivatives();
+      for (const auto & x1var : xvars)
+        for (const auto & x2var : xvars)
         {
           if (sparsity[spi++])
           {
             const auto & val = stacklist[sti++];
             neml_assert_dbg(val.dim() >= 3,
                             "Second derivative tensor d2(",
-                            yvars[i],
+                            yvar,
                             ")/d(",
-                            xvars[j],
+                            x1var,
                             ")d(",
-                            xvars[k],
+                            x2var,
                             ") must have at least 3 dimensions. Got ",
                             val.dim(),
                             ".");
-            derivs[xvars[j]][xvars[k]] = Tensor(val, val.dim() - 3);
+            derivs[x1var][x2var] = Tensor(val, val.dim() - 3);
           }
         }
     }
@@ -427,7 +437,7 @@ VariableStore::collect_input_stack() const
   const auto & vars = input_axis().variable_names();
   stack.reserve(vars.size());
   for (const auto & name : vars)
-    stack.push_back(input_variable(name).tensor());
+    stack.emplace_back(input_variable(name).tensor());
   return stack;
 }
 

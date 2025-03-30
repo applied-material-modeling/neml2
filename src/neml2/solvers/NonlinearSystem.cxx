@@ -91,8 +91,7 @@ NonlinearSystem::enable_automatic_scaling(OptionSet & options)
 NonlinearSystem::NonlinearSystem(const OptionSet & options)
   : _autoscale(options.get<bool>("automatic_scaling")),
     _autoscale_tol(options.get<Real>("automatic_scaling_tol")),
-    _autoscale_miter(options.get<unsigned int>("automatic_scaling_miter")),
-    _scaling_matrices_initialized(false)
+    _autoscale_miter(options.get<unsigned int>("automatic_scaling_miter"))
 {
 }
 

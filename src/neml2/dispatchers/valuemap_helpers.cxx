@@ -33,7 +33,7 @@ valuemap_cat_reduce(std::vector<ValueMap> && results, Size batch_dim)
 {
   // Re-bin the results
   std::map<VariableName, std::vector<Tensor>> vars;
-  for (auto && result : results)
+  for (auto && result : std::move(results))
     for (auto && [name, value] : result)
       vars[name].emplace_back(std::move(value));
 
@@ -49,7 +49,7 @@ ValueMap
 valuemap_move_device(ValueMap && x, Device device)
 {
   // Move the tensors to the device
-  for (auto && [name, value] : x)
+  for (auto && [name, value] : std::move(x))
     x[name] = value.to(device);
   return x;
 }

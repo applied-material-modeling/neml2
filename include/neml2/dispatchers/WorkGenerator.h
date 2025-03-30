@@ -33,6 +33,14 @@ template <typename T>
 class WorkGenerator
 {
 public:
+  WorkGenerator() = default;
+  WorkGenerator(WorkGenerator &&) noexcept = default;
+  WorkGenerator(const WorkGenerator &) = default;
+  WorkGenerator & operator=(WorkGenerator &&) noexcept = default;
+  WorkGenerator & operator=(const WorkGenerator &) = default;
+
+  virtual ~WorkGenerator() = default;
+
   /**
    * @brief Generate the next \p n batches of work
    *

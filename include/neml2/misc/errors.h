@@ -26,6 +26,7 @@
 
 #include <exception>
 #include <string>
+#include <utility>
 
 namespace neml2
 {
@@ -34,8 +35,8 @@ class NEMLException : public std::exception
 public:
   NEMLException() = default;
 
-  NEMLException(const std::string & msg)
-    : _msg(msg)
+  NEMLException(std::string msg)
+    : _msg(std::move(msg))
   {
   }
 

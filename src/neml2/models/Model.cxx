@@ -24,15 +24,16 @@
 
 #include <c10/core/InferenceMode.h>
 
-#include "neml2/models/Model.h"
-#include "neml2/models/Assembler.h"
-#include "neml2/base/guards.h"
-#include "neml2/tensors/functions/jacrev.h"
-#include "neml2/jit/utils.h"
 #include "neml2/misc/assertions.h"
+#include "neml2/base/guards.h"
+#include "neml2/base/Factory.h"
+#include "neml2/jit/utils.h"
+#include "neml2/tensors/functions/jacrev.h"
 #include "neml2/tensors/tensors.h"
 #include "neml2/tensors/TensorValue.h"
-#include "neml2/base/Factory.h"
+#include "neml2/models/Model.h"
+#include "neml2/models/Assembler.h"
+#include "neml2/models/map_types_fwd.h"
 
 namespace neml2
 {
@@ -479,7 +480,7 @@ Model::variable_name_lookup(const ATensor & var)
   // Look for the variable in the registered models
   for (auto * submodel : registered_models())
   {
-    const auto name = submodel->variable_name_lookup(var);
+    auto name = submodel->variable_name_lookup(var);
     if (!name.empty())
       return name;
   }
@@ -503,14 +504,20 @@ check_precision()
 ValueMap
 Model::value(const ValueMap & in)
 {
-  check_precision();
+  forward_helper(in, true, false, false);
 
-  zero_input();
-  assign_input(in);
-  zero_output();
-  forward_maybe_jit(true, false, false);
+  auto values = collect_output();
+  clear_input();
+  clear_output();
+  return values;
+}
 
-  const auto values = collect_output();
+ValueMap
+Model::value(ValueMap && in)
+{
+  forward_helper(std::move(in), true, false, false);
+
+  auto values = collect_output();
   clear_input();
   clear_output();
   return values;
@@ -519,12 +526,19 @@ Model::value(const ValueMap & in)
 std::tuple<ValueMap, DerivMap>
 Model::value_and_dvalue(const ValueMap & in)
 {
-  check_precision();
+  forward_helper(in, true, true, false);
 
-  zero_input();
-  assign_input(in);
-  zero_output();
-  forward_maybe_jit(true, true, false);
+  const auto values = collect_output();
+  const auto derivs = collect_output_derivatives();
+  clear_input();
+  clear_output();
+  return {values, derivs};
+}
+
+std::tuple<ValueMap, DerivMap>
+Model::value_and_dvalue(ValueMap && in)
+{
+  forward_helper(std::move(in), true, true, false);
 
   const auto values = collect_output();
   const auto derivs = collect_output_derivatives();
@@ -536,14 +550,20 @@ Model::value_and_dvalue(const ValueMap & in)
 DerivMap
 Model::dvalue(const ValueMap & in)
 {
-  check_precision();
+  forward_helper(in, false, true, false);
 
-  zero_input();
-  assign_input(in);
-  zero_output();
-  forward_maybe_jit(false, true, false);
+  auto derivs = collect_output_derivatives();
+  clear_input();
+  clear_output();
+  return derivs;
+}
 
-  const auto derivs = collect_output_derivatives();
+DerivMap
+Model::dvalue(ValueMap && in)
+{
+  forward_helper(std::move(in), false, true, false);
+
+  auto derivs = collect_output_derivatives();
   clear_input();
   clear_output();
   return derivs;
@@ -552,12 +572,20 @@ Model::dvalue(const ValueMap & in)
 std::tuple<ValueMap, DerivMap, SecDerivMap>
 Model::value_and_dvalue_and_d2value(const ValueMap & in)
 {
-  check_precision();
+  forward_helper(in, true, true, true);
 
-  zero_input();
-  assign_input(in);
-  zero_output();
-  forward_maybe_jit(true, true, true);
+  const auto values = collect_output();
+  const auto derivs = collect_output_derivatives();
+  const auto secderivs = collect_output_second_derivatives();
+  clear_input();
+  clear_output();
+  return {values, derivs, secderivs};
+}
+
+std::tuple<ValueMap, DerivMap, SecDerivMap>
+Model::value_and_dvalue_and_d2value(ValueMap && in)
+{
+  forward_helper(std::move(in), true, true, true);
 
   const auto values = collect_output();
   const auto derivs = collect_output_derivatives();
@@ -570,12 +598,19 @@ Model::value_and_dvalue_and_d2value(const ValueMap & in)
 std::tuple<DerivMap, SecDerivMap>
 Model::dvalue_and_d2value(const ValueMap & in)
 {
-  check_precision();
+  forward_helper(in, false, true, true);
 
-  zero_input();
-  assign_input(in);
-  zero_output();
-  forward_maybe_jit(false, true, true);
+  const auto derivs = collect_output_derivatives();
+  const auto secderivs = collect_output_second_derivatives();
+  clear_input();
+  clear_output();
+  return {derivs, secderivs};
+}
+
+std::tuple<DerivMap, SecDerivMap>
+Model::dvalue_and_d2value(ValueMap && in)
+{
+  forward_helper(std::move(in), false, true, true);
 
   const auto derivs = collect_output_derivatives();
   const auto secderivs = collect_output_second_derivatives();
@@ -587,14 +622,20 @@ Model::dvalue_and_d2value(const ValueMap & in)
 SecDerivMap
 Model::d2value(const ValueMap & in)
 {
-  check_precision();
+  forward_helper(in, false, false, true);
 
-  zero_input();
-  assign_input(in);
-  zero_output();
-  forward_maybe_jit(false, false, true);
+  auto secderivs = collect_output_second_derivatives();
+  clear_input();
+  clear_output();
+  return secderivs;
+}
 
-  const auto secderivs = collect_output_second_derivatives();
+SecDerivMap
+Model::d2value(ValueMap && in)
+{
+  forward_helper(std::move(in), false, false, true);
+
+  auto secderivs = collect_output_second_derivatives();
   clear_input();
   clear_output();
   return secderivs;

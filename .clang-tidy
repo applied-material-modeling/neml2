@@ -12,6 +12,7 @@ Checks: >
   clang-diagnostic-missing-prototypes,
   cppcoreguidelines-*,
   -cppcoreguidelines-avoid-c-arrays,
+  -cppcoreguidelines-avoid-const-or-ref-data-members,
   -cppcoreguidelines-avoid-do-while,
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-avoid-non-const-global-variables,
@@ -49,6 +50,8 @@ Checks: >
   -modernize-use-trailing-return-type,
   -modernize-use-nodiscard,
   performance-*,
+  -performance-inefficient-string-concatenation,
+  -performance-avoid-endl,
   readability-duplicate-include
   readability-misplaced-array-index,
   readability-redundant-smartptr-get,

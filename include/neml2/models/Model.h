@@ -30,8 +30,8 @@
 #include "neml2/models/Data.h"
 #include "neml2/models/ParameterStore.h"
 #include "neml2/models/VariableStore.h"
-#include "neml2/models/NonlinearParameter.h"
 #include "neml2/solvers/NonlinearSystem.h"
+#include "neml2/models/NonlinearParameter.h"
 
 // These headers are not directly used by Model, but are included here so that derived classes do
 // not have to include them separately. This is a convenience for the user, and is a reasonable
@@ -76,6 +76,9 @@ Model & load_model(const std::filesystem::path & path, const std::string & mname
  * @param mname Name of the model
  */
 Model & reload_model(const std::filesystem::path & path, const std::string & mname);
+
+/// Check the current default precision and warn if it's not double precision
+void check_precision();
 
 /**
  * @brief The base class for all constitutive models.
@@ -189,22 +192,28 @@ public:
 
   /// Convenient shortcut to construct and return the model value
   virtual ValueMap value(const ValueMap & in);
+  virtual ValueMap value(ValueMap && in);
 
   /// Convenient shortcut to construct and return the model value and its derivative
   virtual std::tuple<ValueMap, DerivMap> value_and_dvalue(const ValueMap & in);
+  virtual std::tuple<ValueMap, DerivMap> value_and_dvalue(ValueMap && in);
 
   /// Convenient shortcut to construct and return the derivative
   virtual DerivMap dvalue(const ValueMap & in);
+  virtual DerivMap dvalue(ValueMap && in);
 
   /// Convenient shortcut to construct and return the model's value, first and second derivative
   virtual std::tuple<ValueMap, DerivMap, SecDerivMap>
   value_and_dvalue_and_d2value(const ValueMap & in);
+  virtual std::tuple<ValueMap, DerivMap, SecDerivMap> value_and_dvalue_and_d2value(ValueMap && in);
 
   /// Convenient shortcut to construct and return the model's second derivative
   virtual SecDerivMap d2value(const ValueMap & in);
+  virtual SecDerivMap d2value(ValueMap && in);
 
   /// Convenient shortcut to construct and return the model's first and second derivative
   virtual std::tuple<DerivMap, SecDerivMap> dvalue_and_d2value(const ValueMap & in);
+  virtual std::tuple<DerivMap, SecDerivMap> dvalue_and_d2value(ValueMap && in);
 
   /// Declaration of nonlinear parameters may require manipulation of input
   friend class ParameterStore;
@@ -300,6 +309,16 @@ protected:
   std::vector<Model *> _registered_models;
 
 private:
+  template <typename T>
+  void forward_helper(T && in, bool out, bool dout, bool d2out)
+  {
+    check_precision();
+    zero_input();
+    assign_input(std::forward<T>(in));
+    zero_output();
+    forward_maybe_jit(out, dout, d2out);
+  }
+
   /// Given the requested AD derivatives, should the forward operator
   /// neml2::Model::set_value compute the output variable?
   bool AD_need_value(bool dout, bool d2out) const;
