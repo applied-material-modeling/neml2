@@ -53,7 +53,7 @@ public:
    */
   SimpleScheduler(const OptionSet & options);
 
-  virtual std::vector<Device> devices() const override { return {_device}; }
+  std::vector<Device> devices() const override { return {_device}; }
 
 protected:
   bool schedule_work_impl(Device &, std::size_t &) const override;

@@ -76,7 +76,7 @@ protected:
   /// The current time
   Scalar _time;
   /// The current step count
-  Size _step_count;
+  Size _step_count = 0;
   /// Total number of steps
   const Size _nsteps;
   /// The input to the constitutive model

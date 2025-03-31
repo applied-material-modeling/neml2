@@ -223,7 +223,7 @@ protected:
   const unsigned int _autoscale_miter;
 
   /// Flag to indicate whether scaling matrices have been computed
-  bool _scaling_matrices_initialized;
+  bool _scaling_matrices_initialized = false;
 
   /// Row scaling "matrix" -- since it's a batched diagonal matrix, we are only storing its diagonals
   Tensor _row_scaling;

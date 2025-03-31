@@ -123,7 +123,7 @@ OptionSet::operator+=(const OptionSet & source)
 void
 OptionSet::operator+=(OptionSet && source)
 {
-  for (auto && [key, value] : source._values)
+  for (auto && [key, value] : std::move(source)._values)
     _values[key] = value->clone();
 }
 

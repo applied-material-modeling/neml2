@@ -61,20 +61,20 @@ public:
   LabeledAxisAccessor(const char * name, S &&... names)
   {
     validate_item_name(name);
-    _item_names.push_back(name);
+    _item_names.emplace_back(name);
 
     (validate_item_name(names), ...);
-    (_item_names.push_back(names), ...);
+    (_item_names.emplace_back(std::forward<S>(names)), ...);
   }
 
   template <typename... S>
   LabeledAxisAccessor(const std::string & name, S &&... names)
   {
     validate_item_name(name);
-    _item_names.push_back(name);
+    _item_names.emplace_back(name);
 
     (validate_item_name(names), ...);
-    (_item_names.push_back(names), ...);
+    (_item_names.emplace_back(std::forward<S>(names)), ...);
   }
 
   template <typename Container,

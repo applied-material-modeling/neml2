@@ -33,7 +33,7 @@ derivmap_cat_reduce(std::vector<DerivMap> && results, Size batch_dim)
 {
   // Re-bin the results
   std::map<VariableName, std::map<VariableName, std::vector<Tensor>>> vars;
-  for (auto && result : results)
+  for (auto && result : std::move(results))
     for (auto && [name1, vmap] : result)
       for (auto && [name2, value] : vmap)
         vars[name1][name2].emplace_back(std::move(value));
@@ -64,7 +64,7 @@ DerivMap
 derivmap_move_device(DerivMap && x, Device device)
 {
   // Move the tensors to the device
-  for (auto && [name, vmap] : x)
+  for (auto && [name, vmap] : std::move(x))
     for (auto && [name2, value] : vmap)
       x[name][name2] = value.to(device);
   return x;

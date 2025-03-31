@@ -25,6 +25,7 @@
 #pragma once
 
 #include "neml2/models/Model.h"
+#include <cstdint>
 
 namespace neml2
 {
@@ -34,7 +35,7 @@ class SR2;
 class SR2Invariant : public Model
 {
 public:
-  enum class IType
+  enum class IType : std::uint8_t
   {
     I1,
     I2,

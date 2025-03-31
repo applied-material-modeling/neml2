@@ -154,7 +154,7 @@ template <class... T>
 bool
 sizes_same(T &&... shapes)
 {
-  auto all_shapes = std::vector<TensorShapeRef>{shapes...};
+  auto all_shapes = std::vector<TensorShapeRef>{std::forward<T>(shapes)...};
   for (size_t i = 0; i < all_shapes.size() - 1; i++)
     if (all_shapes[i] != all_shapes[i + 1])
       return false;

@@ -70,7 +70,7 @@ public:
   operator Tensor() const;
 
   /// Arbitrary tensor from a nested container with inferred batch dimension
-  [[nodiscard]] static Derived create(TensorDataContainer data,
+  [[nodiscard]] static Derived create(const TensorDataContainer & data,
                                       const TensorOptions & options = default_tensor_options());
   /// Unbatched empty tensor
   [[nodiscard]] static Derived empty(const TensorOptions & options = default_tensor_options());
@@ -155,7 +155,8 @@ PrimitiveTensor<Derived, S...>::operator Tensor() const
 
 template <class Derived, Size... S>
 Derived
-PrimitiveTensor<Derived, S...>::create(TensorDataContainer data, const TensorOptions & options)
+PrimitiveTensor<Derived, S...>::create(const TensorDataContainer & data,
+                                       const TensorOptions & options)
 {
   return Derived(torch::autograd::make_variable(
       data.convert_to_tensor(options.requires_grad(false)), options.requires_grad()));

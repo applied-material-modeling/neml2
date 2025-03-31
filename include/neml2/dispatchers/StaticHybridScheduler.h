@@ -43,8 +43,7 @@ public:
       : device(device),
         batch_size(batch_size),
         capacity(capacity),
-        priority(priority),
-        load(0)
+        priority(priority)
     {
     }
 
@@ -52,7 +51,7 @@ public:
     std::size_t batch_size;
     std::size_t capacity;
     double priority;
-    std::size_t load;
+    std::size_t load = 0;
   };
 
   /// Options for the scheduler
@@ -101,7 +100,7 @@ public:
 
   const std::vector<DeviceStatus> & status() const { return _devices; }
 
-  virtual std::vector<Device> devices() const override { return _available_devices; }
+  std::vector<Device> devices() const override { return _available_devices; }
 
 protected:
   /**

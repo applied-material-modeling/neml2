@@ -48,8 +48,8 @@ set_ic(ValueMap & storage,
        const std::string & value_opt,
        const Device & device)
 {
-  const auto names = options.get<std::vector<VariableName>>(name_opt);
-  const auto vals = options.get<std::vector<TensorName<T>>>(value_opt);
+  const auto & names = options.get<std::vector<VariableName>>(name_opt);
+  const auto & vals = options.get<std::vector<TensorName<T>>>(value_opt);
   neml_assert(names.size() == vals.size(),
               "Number of initial condition names ",
               name_opt,
@@ -78,8 +78,8 @@ get_force(std::vector<VariableName> & names,
           const std::string & value_opt,
           const Device & device)
 {
-  const auto force_names = options.get<std::vector<VariableName>>(name_opt);
-  const auto vals = options.get<std::vector<TensorName<T>>>(value_opt);
+  const auto & force_names = options.get<std::vector<VariableName>>(name_opt);
+  const auto & vals = options.get<std::vector<TensorName<T>>>(value_opt);
   neml_assert(force_names.size() == vals.size(),
               "Number of driving force names ",
               name_opt,
@@ -144,7 +144,6 @@ TransientDriver::TransientDriver(const OptionSet & options)
   : ModelDriver(options),
     _time_name(options.get<VariableName>("time")),
     _time(options.get<TensorName<Scalar>>("prescribed_time").resolve()),
-    _step_count(0),
     _nsteps(_time.batch_size(0).concrete()),
     _predictor(options.get<EnumSelection>("predictor")),
     _result_in(_nsteps),
@@ -361,7 +360,7 @@ TransientDriver::solve_step()
   }
 #endif
 
-  _result_out[_step_count] = _model.value(_in);
+  _result_out[_step_count] = _model.value((_in));
 }
 
 void

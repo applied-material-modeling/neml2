@@ -26,7 +26,7 @@
 
 #include "neml2/misc/types.h"
 #include "neml2/misc/errors.h"
-#include "neml2/jit/TraceableTensorShape.h"
+#include "neml2/jit/types.h"
 
 namespace neml2
 {

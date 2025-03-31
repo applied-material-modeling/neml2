@@ -110,8 +110,9 @@ SimpleMPIScheduler::setup()
 void
 SimpleMPIScheduler::determine_my_device()
 {
+  // NOLINTBEGIN(modernize-avoid-c-arrays)
   char c_str_hostname[MPI_MAX_PROCESSOR_NAME];
-  int name_len;
+  int name_len = 0;
   timpi_call_mpi(MPI_Get_processor_name(c_str_hostname, &name_len));
   std::string hostname = std::string(c_str_hostname);
 
@@ -120,11 +121,12 @@ SimpleMPIScheduler::determine_my_device()
 
   // Make a new communicator based on this hashed hostname
   TIMPI::Communicator new_comm;
-  _comm.split(id, _comm.rank(), new_comm);
+  _comm.split(id, int(_comm.rank()), new_comm);
   // Assign our device index based on the new communicator
   _device_index = new_comm.rank();
   neml_assert(new_comm.size() <= _available_devices.size(),
               "MPI split by host would require too many devices");
+  // NOLINTEND(modernize-avoid-c-arrays)
 }
 
 bool

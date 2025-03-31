@@ -62,10 +62,10 @@ public:
   }
 
   /// Arbitrary (unbatched) tensor from a nested container
-  [[nodiscard]] static Tensor create(TensorDataContainer data,
+  [[nodiscard]] static Tensor create(const TensorDataContainer & data,
                                      const TensorOptions & options = default_tensor_options());
   /// Arbitrary tensor from a nested container
-  [[nodiscard]] static Tensor create(TensorDataContainer data,
+  [[nodiscard]] static Tensor create(const TensorDataContainer & data,
                                      Size batch_dim,
                                      const TensorOptions & options = default_tensor_options());
   /// Unbatched empty tensor given base shape

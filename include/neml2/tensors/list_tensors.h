@@ -33,7 +33,7 @@ template <typename F, typename T1, typename T2>
 Tensor
 list_derivative_outer_product_a(F && f, const T1 & a, const T2 & b)
 {
-  return Tensor(f(a, b.batch_unsqueeze(-1)), b.batch_sizes());
+  return Tensor(std::forward<F>(f)(a, b.batch_unsqueeze(-1)), b.batch_sizes());
 }
 
 /// @brief outer product on lists, where the second input is a list tensor
@@ -41,7 +41,8 @@ template <typename F, typename T1, typename T2>
 Tensor
 list_derivative_outer_product_b(F && f, const T1 & a, const T2 & b)
 {
-  return Tensor(f(a.batch_unsqueeze(-1), b), a.batch_sizes()).base_transpose(0, a.base_dim());
+  return Tensor(std::forward<F>(f)(a.batch_unsqueeze(-1), b), a.batch_sizes())
+      .base_transpose(0, a.base_dim());
 }
 
 /// @brief outer product on lists where both inputs are list tensors
@@ -49,7 +50,7 @@ template <typename F, typename T1, typename T2>
 Tensor
 list_derivative_outer_product_ab(F && f, const T1 & a, const T2 & b)
 {
-  return Tensor(f(a.batch_unsqueeze(-1), b.batch_unsqueeze(-2)), a.batch_dim() - 1)
+  return Tensor(std::forward<F>(f)(a.batch_unsqueeze(-1), b.batch_unsqueeze(-2)), a.batch_dim() - 1)
       .base_transpose(1, 1 + a.base_dim());
 }
 

@@ -65,7 +65,7 @@ parse_vector_(std::vector<bool> & vals, const std::string & raw_str)
   vals.resize(tokens.size());
   for (std::size_t i = 0; i < tokens.size(); i++)
   {
-    bool val;
+    bool val = false;
     auto success = parse_<bool>(val, tokens[i]);
     if (!success)
       return false;

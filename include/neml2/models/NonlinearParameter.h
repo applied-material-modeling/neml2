@@ -24,13 +24,11 @@
 
 #pragma once
 
-#include "neml2/models/Model.h"
+#include "neml2/base/LabeledAxisAccessor.h"
 
 namespace neml2
 {
 class Model;
-class LabeledAxisAccessor;
-using VariableName = LabeledAxisAccessor;
 class VariableBase;
 
 /**
@@ -50,10 +48,10 @@ class VariableBase;
 struct NonlinearParameter
 {
   /// The model that defines this parameter
-  Model * provider;
+  Model * provider = nullptr;
   /// The variable name of the model that defines this parameter
   VariableName provider_var;
   /// The actual parameter value
-  const VariableBase * value;
+  const VariableBase * value = nullptr;
 };
 } // namespace neml2

@@ -61,10 +61,7 @@ public:
   /// @brief  Check the device list and coordinate this rank's device
   void setup() override;
 
-  virtual std::vector<Device> devices() const override
-  {
-    return {_available_devices[_device_index]};
-  }
+  std::vector<Device> devices() const override { return {_available_devices[_device_index]}; }
 
   virtual TIMPI::Communicator & comm() { return _comm; }
 
@@ -93,7 +90,7 @@ private:
   TIMPI::Communicator _comm;
 
   /// This rank's device
-  size_t _device_index;
+  std::size_t _device_index = 0;
 
   /// Current load on the device
   std::size_t _load = 0;
