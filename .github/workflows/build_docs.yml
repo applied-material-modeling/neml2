@@ -120,6 +120,7 @@ jobs:
 
   deploy:
     needs: [documentation, coverage, clang-tidy]
+    if: always()
     permissions:
       contents: write
       pull-requests: write
