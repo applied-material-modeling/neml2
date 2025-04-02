@@ -178,7 +178,7 @@ public:
   WorkDispatcher(const WorkDispatcher &) = delete;
   WorkDispatcher & operator=(WorkDispatcher &&) = delete;
   WorkDispatcher & operator=(const WorkDispatcher &) = delete;
-  ~WorkDispatcher() { stop_thread_pool(); }
+  ~WorkDispatcher() override { stop_thread_pool(); }
 
   /// Run the dispatching loop (calls run_sync or run_async based on the async flag)
   Of run(WorkGenerator<Ip> &);

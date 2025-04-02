@@ -107,7 +107,7 @@ public:
 
   TracingInterface(std::string);
   TracingInterface(const OptionSet &);
-  virtual ~TracingInterface() {}
+  virtual ~TracingInterface() = default;
 
   TracingInterface(const TracingInterface &) = default;
   TracingInterface(TracingInterface &&) = default;
