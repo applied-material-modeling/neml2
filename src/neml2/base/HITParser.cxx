@@ -75,6 +75,12 @@ HITParser::parse(const std::filesystem::path & filename, const std::string & add
   if (settings_node)
     extract_options(settings_node, all_options.settings());
 
+  // Apply global settings
+  // Note that we purposefully apply the settings __before__ parsing the objects.
+  // This is because the global settings may contain additional dynamic libraries we should load to
+  // enrich our registry.
+  Settings::apply(all_options.settings());
+
   // Loop over each known section and extract options for each object
   for (const auto & section : Parser::sections)
   {
@@ -99,7 +105,7 @@ HITParser::extract_object_options(hit::Node * object, hit::Node * section) const
   // There is a special field reserved for object type
   std::string type = object->param<std::string>("type");
   // Extract the options
-  auto options = Registry::expected_options(type);
+  auto options = Registry::info(type).expected_options;
   extract_options(object, options);
 
   // Also fill in the metadata

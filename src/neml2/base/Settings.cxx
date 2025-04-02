@@ -28,6 +28,7 @@
 #include "neml2/base/Settings.h"
 #include "neml2/base/EnumSelection.h"
 #include "neml2/base/OptionSet.h"
+#include "neml2/base/Registry.h"
 
 namespace neml2
 {
@@ -76,6 +77,13 @@ Settings::expected_options()
       "operators are called if the default dtype is not Float64. Set this option to false to allow "
       "other precisions.";
 
+  options.set<std::vector<std::string>>("additional_libraries");
+  options.set("additional_libraries").doc() =
+      "Additional dynamic libraries to load at runtime. The Registry from these libraries are "
+      "merged into the current Registry singleton. This is required for using custom models "
+      "defined in dynamic libraries not directly linked to libneml2. The paths are either absolute "
+      "or relative to the current working directory.";
+
   return options;
 }
 
@@ -98,5 +106,9 @@ Settings::apply(const OptionSet & options)
 
   // Require double precision
   require_double_precision() = options.get<bool>("require_double_precision");
+
+  // Additional libraries
+  for (const auto & lib : options.get<std::vector<std::string>>("additional_libraries"))
+    Registry::load(lib);
 }
 } // namespace neml2

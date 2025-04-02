@@ -26,8 +26,10 @@
 
 #include <memory>
 #include <map>
+#include <filesystem>
 
 #include "neml2/misc/string_utils.h"
+#include "neml2/base/OptionSet.h"
 
 namespace neml2
 {
@@ -42,10 +44,20 @@ namespace neml2
   static const char dummyvar_for_registering_obj_##classname =                                     \
       Registry::add<classname>(registryname)
 
-class OptionSet;
 class NEML2Object;
 
 using BuildPtr = std::shared_ptr<NEML2Object> (*)(const OptionSet & options);
+
+/// Information on a NEML2Object that is registered in the Registry.
+struct NEML2ObjectInfo
+{
+  /// The object type demangled from the C++ typeid
+  std::string type_name;
+  /// Expected options for this object
+  OptionSet expected_options;
+  /// Build method pointer
+  BuildPtr build = nullptr;
+};
 
 /**
  * The Registry is used as a global singleton to collect information on all available NEML2Object
@@ -68,17 +80,14 @@ public:
     return 0;
   }
 
-  /// Return the expected options of all registered classs
-  static std::map<std::string, OptionSet> expected_options();
+  /// Load registry from a dynamic library
+  static void load(const std::filesystem::path &);
 
-  /// Return the expected options of a specific registered class
-  static OptionSet expected_options(const std::string & name);
+  /// Get information of all registered objects.
+  static const std::map<std::string, NEML2ObjectInfo> & info();
 
-  /// Return the syntax type (what appears in the input file) given a registered object's type
-  static std::string syntax_type(const std::string & type);
-
-  /// Return the build method pointer of a specific registered class
-  static BuildPtr builder(const std::string & name);
+  /// Get the information of an object given its syntax type
+  static const NEML2ObjectInfo & info(const std::string &);
 
 private:
   Registry() = default;
@@ -91,10 +100,12 @@ private:
     return std::make_shared<T>(options);
   }
 
-  std::map<std::string, OptionSet> _expected_options;
-
-  std::map<std::string, BuildPtr> _objects;
-
-  std::map<std::string, std::string> _syntax_type;
+  /**
+   * @brief Information of all registered objects
+   *
+   * The key is the name of the object as it appears in the input file, i.e. the right hand side of
+   * "type = xxx".
+   */
+  std::map<std::string, NEML2ObjectInfo> _info;
 };
 } // namespace neml2

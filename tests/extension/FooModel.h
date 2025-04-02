@@ -22,37 +22,22 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <catch2/catch_test_macros.hpp>
-#include <catch2/matchers/catch_matchers_all.hpp>
+#include "neml2/models/Model.h"
 
-#include "neml2/misc/defaults.h"
-#include "neml2/base/Settings.h"
-#include "neml2/base/HITParser.h"
-#include "neml2/base/OptionCollection.h"
-
-using namespace neml2;
-
-TEST_CASE("Settings", "[Settings]")
+namespace foo
 {
-  // Before applying the global settings
-  REQUIRE(default_integer_dtype() == kInt64);
-  REQUIRE(machine_precision() == Catch::Approx(1e-15));
-  REQUIRE(tolerance() == Catch::Approx(1e-6));
-  REQUIRE(tighter_tolerance() == Catch::Approx(1e-12));
-  REQUIRE(buffer_name_separator() == "_");
-  REQUIRE(parameter_name_separator() == "_");
-  REQUIRE(require_double_precision());
+class FooModel : public neml2::Model
+{
+public:
+  static neml2::OptionSet expected_options();
 
-  // Apply the global settings (settings are applied right after parsing)
-  HITParser parser;
-  auto all_options = parser.parse("base/test_HITParser1.i");
+  FooModel(const neml2::OptionSet & options);
 
-  // After applying the global settings
-  REQUIRE(default_integer_dtype() == kInt32);
-  REQUIRE(machine_precision() == Catch::Approx(0.5));
-  REQUIRE(tolerance() == Catch::Approx(0.1));
-  REQUIRE(tighter_tolerance() == Catch::Approx(0.01));
-  REQUIRE(buffer_name_separator() == "::");
-  REQUIRE(parameter_name_separator() == "::");
-  REQUIRE(!require_double_precision());
+protected:
+  void set_value(bool, bool, bool) override;
+
+  const neml2::Variable<neml2::Scalar> & _x;
+  neml2::Variable<neml2::Scalar> & _y;
+  const neml2::Real _c;
+};
 }

@@ -22,37 +22,40 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <catch2/catch_test_macros.hpp>
-#include <catch2/matchers/catch_matchers_all.hpp>
+#include "FooModel.h"
 
-#include "neml2/misc/defaults.h"
-#include "neml2/base/Settings.h"
-#include "neml2/base/HITParser.h"
-#include "neml2/base/OptionCollection.h"
-
-using namespace neml2;
-
-TEST_CASE("Settings", "[Settings]")
+namespace foo
 {
-  // Before applying the global settings
-  REQUIRE(default_integer_dtype() == kInt64);
-  REQUIRE(machine_precision() == Catch::Approx(1e-15));
-  REQUIRE(tolerance() == Catch::Approx(1e-6));
-  REQUIRE(tighter_tolerance() == Catch::Approx(1e-12));
-  REQUIRE(buffer_name_separator() == "_");
-  REQUIRE(parameter_name_separator() == "_");
-  REQUIRE(require_double_precision());
+// Since the neml2 registration macro directly registers to "Registry",
+// we need to first bring it into the same scope.
+using Registry = neml2::Registry;
+register_NEML2_object(FooModel);
 
-  // Apply the global settings (settings are applied right after parsing)
-  HITParser parser;
-  auto all_options = parser.parse("base/test_HITParser1.i");
-
-  // After applying the global settings
-  REQUIRE(default_integer_dtype() == kInt32);
-  REQUIRE(machine_precision() == Catch::Approx(0.5));
-  REQUIRE(tolerance() == Catch::Approx(0.1));
-  REQUIRE(tighter_tolerance() == Catch::Approx(0.01));
-  REQUIRE(buffer_name_separator() == "::");
-  REQUIRE(parameter_name_separator() == "::");
-  REQUIRE(!require_double_precision());
+neml2::OptionSet
+FooModel::expected_options()
+{
+  auto options = neml2::Model::expected_options();
+  options.set_input("x");
+  options.set_output("y");
+  options.set<neml2::Real>("c");
+  return options;
 }
+
+FooModel::FooModel(const neml2::OptionSet & options)
+  : neml2::Model(options),
+    _x(declare_input_variable<neml2::Scalar>("x")),
+    _y(declare_output_variable<neml2::Scalar>("y")),
+    _c(options.get<neml2::Real>("c"))
+{
+}
+
+void
+FooModel::set_value(bool out, bool dout, bool)
+{
+  if (out)
+    _y = _c * _x + _c - 1.0;
+
+  if (dout)
+    _y.d(_x) = _c * neml2::Scalar::identity_map(_x.options());
+}
+};
