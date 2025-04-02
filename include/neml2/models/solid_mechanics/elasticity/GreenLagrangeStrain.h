@@ -28,30 +28,20 @@
 
 namespace neml2
 {
-/**
- * @brief Define the multiplication between arbitrary number of state variables.
- */
-
-class ScalarVariableMultiplication : public Model
+class GreenLagrangeStrain : public Model
 {
 public:
   static OptionSet expected_options();
 
-  ScalarVariableMultiplication(const OptionSet & options);
+  GreenLagrangeStrain(const OptionSet & options);
 
 protected:
-  void set_value(bool out, bool dout_din, bool d2out_din2) override;
+  void set_value(bool, bool, bool) override;
 
-  /// Multiplication of all the input variables
-  Variable<Scalar> & _to;
+  /// Green-Lagrange strain
+  Variable<SR2> & _E;
 
-  /// The input variables (to be multiply)
-  std::vector<const Variable<Scalar> *> _from;
-
-  /// Constant scaling coefficient
-  const Scalar & _A;
-
-  /// Inverse conditions
-  std::vector<bool> _inv;
+  /// Deformation gradient
+  const Variable<R2> & _F;
 };
 } // namespace neml2

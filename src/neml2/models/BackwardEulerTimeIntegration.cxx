@@ -105,4 +105,5 @@ BackwardEulerTimeIntegration<T>::set_value(bool out, bool dout_din, bool /*d2out
 REGISTER(Scalar);
 REGISTER(Vec);
 REGISTER(SR2);
+REGISTER(R2);
 } // namespace neml2

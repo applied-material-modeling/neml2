@@ -22,15 +22,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/ScalarVariableMultiplication.h"
+#include "neml2/models/ScalarMultiplication.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/misc/assertions.h"
 
 namespace neml2
 {
-register_NEML2_object(ScalarVariableMultiplication);
+register_NEML2_object(ScalarMultiplication);
 OptionSet
-ScalarVariableMultiplication::expected_options()
+ScalarMultiplication::expected_options()
 {
 
   OptionSet options = Model::expected_options();
@@ -44,23 +44,22 @@ ScalarVariableMultiplication::expected_options()
   options.set_output("to_var");
   options.set("to_var").doc() = "The multiplicative product";
 
-  options.set_parameter<TensorName<Scalar>>("constant_coefficient") = {TensorName<Scalar>("1")};
-  options.set("constant_coefficient").doc() =
-      "The constant coefficient multiply to the final product";
+  options.set_parameter<TensorName<Scalar>>("coefficient") = {TensorName<Scalar>("1")};
+  options.set("coefficient").doc() = "The coefficient multiply to the final product";
 
   options.set<std::vector<bool>>("reciprocal") = {false};
   options.set("reciprocal").doc() =
-      "List of boolens, one for each variable, in which the reciprocity of a the corresponding "
+      "List of boolens, one for each variable, in which the reciprocity of the corresponding "
       "variable is taken. When the length of this list is 1, the same reciprocal condition applies "
       "to all variables.";
 
   return options;
 }
 
-ScalarVariableMultiplication::ScalarVariableMultiplication(const OptionSet & options)
+ScalarMultiplication::ScalarMultiplication(const OptionSet & options)
   : Model(options),
     _to(declare_output_variable<Scalar>("to_var")),
-    _A(declare_parameter<Scalar>("A", "constant_coefficient"))
+    _A(declare_parameter<Scalar>("A", "coefficient"))
 {
   for (const auto & fv : options.get<std::vector<VariableName>>("from_var"))
     _from.push_back(&declare_input_variable<Scalar>(fv));
@@ -79,42 +78,19 @@ ScalarVariableMultiplication::ScalarVariableMultiplication(const OptionSet & opt
 }
 
 void
-ScalarVariableMultiplication::set_value(bool out, bool dout_din, bool d2out_din2)
+ScalarMultiplication::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
-
-  auto value = _A * (*_from[0]);
-  if (_inv[0])
-    value = _A / (*_from[0]);
+  auto value = _inv[0] ? _A / (*_from[0]) : _A * (*_from[0]);
   for (std::size_t i = 1; i < _from.size(); i++)
-  {
-    if (_inv[i])
-      value = value / (*_from[i]);
-    else
-      value = value * (*_from[i]);
-  }
+    value = value * (_inv[i] ? (*_from[i]) : (*_from[i]));
+
   if (out)
-  {
     _to = value;
-  }
 
   if (dout_din)
-  {
     for (std::size_t i = 0; i < _from.size(); i++)
-    {
       if (_from[i]->is_dependent())
-      {
-        if (_inv[i])
-          _to.d(*_from[i]) = -1.0 * value / (*_from[i]);
-        else
-          _to.d(*_from[i]) = value / (*_from[i]);
-      }
-    }
-  }
-
-  if (d2out_din2)
-  {
-  }
+        _to.d(*_from[i]) = (_inv[i] ? -1.0 : 1.0) * value / (*_from[i]);
 }
 
 } // namespace neml2
