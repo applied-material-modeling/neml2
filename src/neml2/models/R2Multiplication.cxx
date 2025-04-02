@@ -33,20 +33,20 @@ OptionSet
 R2Multiplication::expected_options()
 {
   OptionSet options = Model::expected_options();
-  options.doc() = "Multiplication of form \\f$ A B \\f$, where \\f$ A \ff$ and \\f$ B \ff$ are "
+  options.doc() = "Multiplication of form \\f$ A B \\f$, where \\f$ A \\f$ and \\f$ B \\f$ are "
                   "second order tensors.";
 
   options.set<VariableName>("A");
-  options.set("A").doc() = "Variable \\f$ A \\f$";
+  options.set("A").doc() = "Variable A";
 
   options.set<bool>("invert_A") = false;
-  options.set("invert_A").doc() = "Whether to invert \\f$ A \\f$";
+  options.set("invert_A").doc() = "Whether to invert A";
 
   options.set<VariableName>("B");
-  options.set("B").doc() = "Variable \\f$ B \\f$";
+  options.set("B").doc() = "Variable B";
 
   options.set<bool>("invert_B") = false;
-  options.set("invert_B").doc() = "Whether to invert \\f$ B \\f$";
+  options.set("invert_B").doc() = "Whether to invert B";
 
   options.set_output("to");
   options.set("to").doc() = "The result of the multiplication";
