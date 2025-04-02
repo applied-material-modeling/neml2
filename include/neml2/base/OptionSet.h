@@ -26,7 +26,6 @@
 
 #include <map>
 #include <string>
-#include <vector>
 #include <memory>
 
 #include "neml2/base/Option.h"

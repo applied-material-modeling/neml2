@@ -15,8 +15,8 @@ NEML2 manages work scheduling, dispatch, and joining with two types of objects: 
 
 NEML2 currently only has a single type of work dispatcher with two general types of behavior.  The calling program (for example in NEML2 itself the driver routine) selects which behavior it wants by invoking the dispatcher with either the `run_async` or `run_sync` methods.  The NEML2 driver routines can use either method, controlled by the `async_dispatch` option to the driver.
 
-When calling `run_async` the dispatcher maintains a main thread which schedules and distributes work according the algorithm provided by the selected work scheduler.  
-The main thread dispatches the work to a thread pool that maintains a specific thread for each device.  
+When calling `run_async` the dispatcher maintains a main thread which schedules and distributes work according the algorithm provided by the selected work scheduler.
+The main thread dispatches the work to a thread pool that maintains a specific thread for each device.
 The thread picks up the task (representing a batch of work), sends the work to the device, and returns the work, once completed, to the main thread.
 
 With `run_sync` the dispatcher schedules work per the scheduler but only runs work sequentially with the single, main NEML2 thread.  This model does not provide parallel execution on multiple devices but it's useful for debugging schedulers and functions adequately for schedulers only sending work to a single device.
@@ -96,3 +96,18 @@ The animation below illustrates how the static hybrid scheduler sends work to mu
 @endhtmlonly
 
 The downside to this scheduler is that it does not handle MPI parallelism.  Distributed parallel programs invoking NEML2 can only use this scheduler if each MPI rank has exclusive access to all accelerators on a compute node, i.e. running one MPI rank per physical node.
+
+## Event tracing
+
+Work scheduling and dispatching can get complicated quickly as more sophisticated scheduling strategies are used, and asynchronous dispatching further builds upon such complexity. Benchmarking and profiling can give us a rough idea on whether the scheduler and dispatcher are coordinating as expected, by examining the wall time against theoretical bounds. However, such approach is less ideal especially in hybrid computing environments.
+
+In addition to benchmarking and profiling, NEML2 offers the capability of logging events related to scheduling and dispatching. The events are logged into a *trace* file in the [Chrome trace format](https://www.chromium.org/developers/how-tos/trace-event-profiling-tool). The trace file is essentially a JSON array of events.
+
+To enable event tracing, inside the input file, set `Schedulers/*/trace_file` to the path of the output trace file, i.e. `path/to/trace.json`. While the work dispatcher and scheduler are coordinating the tasks, key events are continuously written to the trace file. After all calculations are complete, the trace file can be visualized using many third-party tools:
+- [Chrome trace viewer](chrome://tracing/), the canonical Chrome trace file viewer.
+- [Perfetto](https://ui.perfetto.dev/), the successor of Chrome trace viewer.
+- [Speedscope](https://www.speedscope.app/) with unique features such as "left heavy" and "sandwich" modes.
+
+Below is an example screenshot from the Chrome trace viewer:
+
+![Perfetto trace viewer example](asset/perfetto.png){html: width=85%}
