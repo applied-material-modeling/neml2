@@ -35,6 +35,9 @@ OptionSet
 GreenLagrangeStrain::expected_options()
 {
   OptionSet options = Model::expected_options();
+  options.doc() =
+      "Green-Lagrange strain, \\f$ E = \\frac{1}{2} (C - I) \\f$, where \\f$ C = F^T F \\f$ "
+      "is the right Cauchy-Green tensor and \\f$ I \\f$ is the identity tensor.";
 
   options.set_output("deformation_gradient") = VariableName(FORCES, "F");
   options.set("deformation_gradient").doc() = "The deformation gradient";
