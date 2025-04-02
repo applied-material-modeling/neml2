@@ -109,8 +109,7 @@ jobs:
                       --output reports \
                       --jobs 4 \
                       compile_commands_filtered.json
-      - name: Generate report
-        run: CodeChecker parse reports -e html -i .codechecker -o reports/html
+          CodeChecker parse reports -e html -i .codechecker -o reports/html
       - name: Upload report
         if: always()
         uses: actions/upload-artifact@v4
