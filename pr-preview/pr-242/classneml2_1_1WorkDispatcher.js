@@ -7,7 +7,7 @@ var classneml2_1_1WorkDispatcher =
     [ "WorkDispatcher", "classneml2_1_1WorkDispatcher.html#ad3f9fdb587f99cba965f43bed8f77ff0", null ],
     [ "WorkDispatcher", "classneml2_1_1WorkDispatcher.html#ac1f7e9ee1e6490803b17f0065165d6c7", null ],
     [ "WorkDispatcher", "classneml2_1_1WorkDispatcher.html#a5048656ba7bab44f6f0e8f5f8e771aef", null ],
-    [ "~WorkDispatcher", "classneml2_1_1WorkDispatcher.html#a28053310aa44646397ce0bcfbd4d8443", null ],
+    [ "~WorkDispatcher", "classneml2_1_1WorkDispatcher.html#a642cb1181c7b2eaa5de38aab62fdb7a1", null ],
     [ "init_thread_pool", "classneml2_1_1WorkDispatcher.html#a273768174833995d8ad2eb25994d3530", null ],
     [ "operator=", "classneml2_1_1WorkDispatcher.html#a2c8d21f3e65a7cc845d5592df6127daf", null ],
     [ "operator=", "classneml2_1_1WorkDispatcher.html#a918153d66f4c8d36de2ad2752317f80d", null ],

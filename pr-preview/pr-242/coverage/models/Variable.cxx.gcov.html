@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-04-02 02:30:30</td>
+            <td class="headerValue">2025-04-02 13:22:01</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryMed">31.7&nbsp;%</td>
@@ -214,9 +214,9 @@
 <span id="L152"><span class="lineNum">     152</span>              : }</span>
 <span id="L153"><span class="lineNum">     153</span>              : </span>
 <span id="L154"><span class="lineNum">     154</span>              : Size</span>
-<span id="L155"><span class="lineNum">     155</span> <span class="tlaGNC">      610471 : VariableBase::list_dim() const</span></span>
+<span id="L155"><span class="lineNum">     155</span> <span class="tlaGNC">      610339 : VariableBase::list_dim() const</span></span>
 <span id="L156"><span class="lineNum">     156</span>              : {</span>
-<span id="L157"><span class="lineNum">     157</span> <span class="tlaGNC">      610471 :   return Size(list_sizes().size());</span></span>
+<span id="L157"><span class="lineNum">     157</span> <span class="tlaGNC">      610339 :   return Size(list_sizes().size());</span></span>
 <span id="L158"><span class="lineNum">     158</span>              : }</span>
 <span id="L159"><span class="lineNum">     159</span>              : </span>
 <span id="L160"><span class="lineNum">     160</span>              : Size</span>
@@ -232,9 +232,9 @@
 <span id="L170"><span class="lineNum">     170</span>              : }</span>
 <span id="L171"><span class="lineNum">     171</span>              : </span>
 <span id="L172"><span class="lineNum">     172</span>              : TensorShapeRef</span>
-<span id="L173"><span class="lineNum">     173</span> <span class="tlaGNC">      656208 : VariableBase::list_sizes() const</span></span>
+<span id="L173"><span class="lineNum">     173</span> <span class="tlaGNC">      656076 : VariableBase::list_sizes() const</span></span>
 <span id="L174"><span class="lineNum">     174</span>              : {</span>
-<span id="L175"><span class="lineNum">     175</span> <span class="tlaGNC">      656208 :   return _list_sizes;</span></span>
+<span id="L175"><span class="lineNum">     175</span> <span class="tlaGNC">      656076 :   return _list_sizes;</span></span>
 <span id="L176"><span class="lineNum">     176</span>              : }</span>
 <span id="L177"><span class="lineNum">     177</span>              : </span>
 <span id="L178"><span class="lineNum">     178</span>              : TraceableSize</span>
@@ -575,16 +575,16 @@
 <span id="L513"><span class="lineNum">     513</span>              : </span>
 <span id="L514"><span class="lineNum">     514</span>              : template &lt;typename T&gt;</span>
 <span id="L515"><span class="lineNum">     515</span>              : Tensor</span>
-<span id="L516"><span class="lineNum">     516</span> <span class="tlaGNC tlaBgGNC">     1019788 : Variable&lt;T&gt;::tensor() const</span></span>
+<span id="L516"><span class="lineNum">     516</span> <span class="tlaGNC tlaBgGNC">     1019553 : Variable&lt;T&gt;::tensor() const</span></span>
 <span id="L517"><span class="lineNum">     517</span>              : {</span>
-<span id="L518"><span class="lineNum">     518</span> <span class="tlaGNC">     1019788 :   if (owning())</span></span>
+<span id="L518"><span class="lineNum">     518</span> <span class="tlaGNC">     1019553 :   if (owning())</span></span>
 <span id="L519"><span class="lineNum">     519</span>              :   {</span>
-<span id="L520"><span class="lineNum">     520</span> <span class="tlaGNC">      610471 :     neml_assert_dbg(_value.defined(), &quot;Variable '&quot;, name(), &quot;' has undefined value.&quot;);</span></span>
-<span id="L521"><span class="lineNum">     521</span> <span class="tlaGNC">      610471 :     auto batch_sizes = _value.batch_sizes().slice(0, _value.batch_dim() - list_dim());</span></span>
-<span id="L522"><span class="lineNum">     522</span> <span class="tlaGNC">      610471 :     return Tensor(_value, batch_sizes);</span></span>
-<span id="L523"><span class="lineNum">     523</span> <span class="tlaGNC">      610471 :   }</span></span>
+<span id="L520"><span class="lineNum">     520</span> <span class="tlaGNC">      610339 :     neml_assert_dbg(_value.defined(), &quot;Variable '&quot;, name(), &quot;' has undefined value.&quot;);</span></span>
+<span id="L521"><span class="lineNum">     521</span> <span class="tlaGNC">      610339 :     auto batch_sizes = _value.batch_sizes().slice(0, _value.batch_dim() - list_dim());</span></span>
+<span id="L522"><span class="lineNum">     522</span> <span class="tlaGNC">      610339 :     return Tensor(_value, batch_sizes);</span></span>
+<span id="L523"><span class="lineNum">     523</span> <span class="tlaGNC">      610339 :   }</span></span>
 <span id="L524"><span class="lineNum">     524</span>              : </span>
-<span id="L525"><span class="lineNum">     525</span> <span class="tlaGNC">      409317 :   return ref()-&gt;tensor();</span></span>
+<span id="L525"><span class="lineNum">     525</span> <span class="tlaGNC">      409214 :   return ref()-&gt;tensor();</span></span>
 <span id="L526"><span class="lineNum">     526</span>              : }</span>
 <span id="L527"><span class="lineNum">     527</span>              : </span>
 <span id="L528"><span class="lineNum">     528</span>              : template &lt;typename T&gt;</span>

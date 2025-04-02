@@ -15,10 +15,10 @@ var searchData=
   ['_7etensorvaluebase_12',['~TensorValueBase',['../classneml2_1_1TensorValueBase.html#a7e08960d46282e5832e73c36ac71d207',1,'neml2::TensorValueBase']]],
   ['_7etimedsection_13',['~TimedSection',['../structneml2_1_1TimedSection.html#a35796cd4996644b125d719ed976e3cdc',1,'neml2::TimedSection']]],
   ['_7etracewriter_14',['~TraceWriter',['../structneml2_1_1TraceWriter.html#a4659edae7ea41a9ba191fd1c0309faa0',1,'neml2::TraceWriter']]],
-  ['_7etracinginterface_15',['~TracingInterface',['../classneml2_1_1TracingInterface.html#ae6948884d339036aa8d400b622a59e4c',1,'neml2::TracingInterface']]],
+  ['_7etracinginterface_15',['~TracingInterface',['../classneml2_1_1TracingInterface.html#a0938f54c230e1f6e91b5f26d7627aa1d',1,'neml2::TracingInterface']]],
   ['_7etransformable_16',['~Transformable',['../classneml2_1_1Transformable.html#a2015a73dabd206a9a68a209bceaae958',1,'neml2::Transformable']]],
   ['_7evariablebase_17',['~VariableBase',['../classneml2_1_1VariableBase.html#a11c5fe28b4558368c4e40dd53523aadb',1,'neml2::VariableBase']]],
   ['_7evariablestore_18',['~VariableStore',['../classneml2_1_1VariableStore.html#a3b95f80628615e9fd70b3b8da7dc656f',1,'neml2::VariableStore']]],
-  ['_7eworkdispatcher_19',['~WorkDispatcher',['../classneml2_1_1WorkDispatcher.html#a28053310aa44646397ce0bcfbd4d8443',1,'neml2::WorkDispatcher']]],
+  ['_7eworkdispatcher_19',['~WorkDispatcher',['../classneml2_1_1WorkDispatcher.html#a642cb1181c7b2eaa5de38aab62fdb7a1',1,'neml2::WorkDispatcher']]],
   ['_7eworkgenerator_20',['~WorkGenerator',['../classneml2_1_1WorkGenerator.html#adb517005f724bd6a29bbc3c5b53d9cde',1,'neml2::WorkGenerator']]]
 ];
