@@ -20,6 +20,7 @@ DartConfiguration.tcl
 .vscode
 *.log
 .env
+.clangd
 
 # Python
 __pycache__
@@ -44,3 +45,4 @@ Testing
 # Miscellaneous
 *.pdf
 *.gv
+*.json

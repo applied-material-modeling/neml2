@@ -94,6 +94,21 @@ if(NEML2_CPU_PROFILER)
 endif()
 
 # ----------------------------------------------------------------------------
+# nlohmann json
+# ----------------------------------------------------------------------------
+set(JSON_MultipleHeaders OFF)
+find_package(nlohmann_json QUIET)
+
+if(NOT TARGET nlohmann_json::nlohmann_json)
+  include(FetchContent)
+  FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v${NLOHMANN_JSON_VERSION}/json.tar.xz)
+  message(STATUS "Downloading/updating nlohmann/json")
+  set(JSON_Install ON)
+  set(JSON_SystemInclude ON)
+  FetchContent_MakeAvailable(json)
+endif()
+
+# ----------------------------------------------------------------------------
 # Helper function to add a submodule
 # ----------------------------------------------------------------------------
 function(neml2_add_submodule mname TYPE mdir)
@@ -145,7 +160,7 @@ add_library(neml2 INTERFACE)
 
 # libneml2_misc
 neml2_add_submodule(neml2_misc SHARED misc)
-target_link_libraries(neml2_misc PUBLIC Torch::Torch)
+target_link_libraries(neml2_misc PUBLIC Torch::Torch nlohmann_json::nlohmann_json)
 set_target_properties(neml2_misc PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
 target_link_libraries(neml2 INTERFACE neml2_misc)
 

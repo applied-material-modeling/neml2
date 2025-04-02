@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/dispatchers/WorkScheduler.h"
+#include "neml2/misc/TracingInterface.h"
 
 namespace neml2
 {
@@ -31,36 +32,68 @@ OptionSet
 WorkScheduler::expected_options()
 {
   OptionSet options = NEML2Object::expected_options();
+  options += TracingInterface::expected_options();
   options.section() = "Schedulers";
 
   return options;
 }
 
 WorkScheduler::WorkScheduler(const OptionSet & options)
-  : NEML2Object(options)
+  : NEML2Object(options),
+    TracingInterface(options)
 {
+}
+
+static json
+to_json(const Device & device, const std::size_t & batch_size)
+{
+  json j;
+  j["device"] = utils::stringify(device);
+  j["batch size"] = batch_size;
+  return j;
 }
 
 void
 WorkScheduler::schedule_work(Device & device, std::size_t & batch_size)
 {
   std::unique_lock<std::mutex> lock(_mutex);
+
+  if (event_tracing_enabled())
+    event_trace_writer().trace_duration_begin("schedule work", "WorkScheduler");
+
   if (schedule_work_impl(device, batch_size))
+  {
+    if (event_tracing_enabled())
+      event_trace_writer().trace_duration_end(
+          "schedule work", "WorkScheduler", to_json(device, batch_size), 0);
     return;
+  }
   _condition.wait(lock,
                   [this, &device, &batch_size] { return schedule_work_impl(device, batch_size); });
+
+  if (event_tracing_enabled())
+    event_trace_writer().trace_duration_end(
+        "schedule work", "WorkScheduler", to_json(device, batch_size), 0);
 }
 
 void
 WorkScheduler::dispatched_work(Device device, std::size_t m)
 {
+  if (event_tracing_enabled())
+    event_trace_writer().trace_duration_begin("dispatch work", "WorkScheduler");
+
   std::lock_guard<std::mutex> lock(_mutex);
   dispatched_work_impl(device, m);
+
+  if (event_tracing_enabled())
+    event_trace_writer().trace_duration_end("dispatch work", "WorkScheduler", to_json(device, m));
 }
 
 void
 WorkScheduler::completed_work(Device device, std::size_t m)
 {
+  if (event_tracing_enabled())
+    event_trace_writer().trace_instant("completed work", "WorkScheduler", to_json(device, m));
   std::lock_guard<std::mutex> lock(_mutex);
   completed_work_impl(device, m);
   _condition.notify_all();
@@ -71,7 +104,14 @@ WorkScheduler::wait_for_completion()
 {
   std::unique_lock<std::mutex> lock(_mutex);
   if (all_work_completed())
+  {
+    if (event_tracing_enabled())
+      event_trace_writer().trace_instant("all work completed", "WorkScheduler");
     return;
+  }
   _condition.wait(lock, [this] { return all_work_completed(); });
+
+  if (event_tracing_enabled())
+    event_trace_writer().trace_instant("all work completed", "WorkScheduler");
 }
 }
