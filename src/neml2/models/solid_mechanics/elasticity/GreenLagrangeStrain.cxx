@@ -22,51 +22,52 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-
-#include "neml2/tensors/tensors.h"
-#include "neml2/models/Model.h"
+#include "neml2/models/solid_mechanics/elasticity/GreenLagrangeStrain.h"
+#include "neml2/tensors/SR2.h"
+#include "neml2/tensors/R2.h"
+#include "neml2/tensors/mandel_notation.h"
 
 namespace neml2
 {
-template <typename T>
-class BackwardEulerTimeIntegration : public Model
+register_NEML2_object(GreenLagrangeStrain);
+
+OptionSet
+GreenLagrangeStrain::expected_options()
 {
-public:
-  static OptionSet expected_options();
+  OptionSet options = Model::expected_options();
 
-  BackwardEulerTimeIntegration(const OptionSet & options);
+  options.set_output("deformation_gradient") = VariableName(FORCES, "F");
+  options.set("deformation_gradient").doc() = "The deformation gradient";
 
-  void diagnose() const override;
+  options.set_output("strain") = VariableName(STATE, "E");
+  options.set("strain").doc() = "The Green-Lagrange strain";
 
-private:
-  const VariableName _var_name;
-  const VariableName _var_rate_name;
+  return options;
+}
 
-protected:
-  void set_value(bool out, bool dout_din, bool d2out_din2) override;
+GreenLagrangeStrain::GreenLagrangeStrain(const OptionSet & options)
+  : Model(options),
+    _E(declare_output_variable<SR2>("strain")),
+    _F(declare_input_variable<R2>("deformation_gradient"))
+{
+}
 
-  /// Current variable value
-  const Variable<T> & _s;
+void
+GreenLagrangeStrain::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
+{
+  if (out)
+  {
+    const auto C = R2(_F).transpose() * _F;
+    _E = 0.5 * (SR2(C) - SR2::identity(_F.options()));
+  }
 
-  /// Old variable value
-  const Variable<T> & _sn;
+  if (dout_din)
+  {
+    const auto I = R2::identity(_F.options());
+    const auto dC_dF = R4(at::einsum("...jm,...ni,...jk", {I, I, _F})) +
+                       R4(at::einsum("...jm,...nk,...ji", {I, I, _F}));
+    _E.d(_F) = 0.5 * full_to_mandel(dC_dF);
+  }
+}
 
-  /// Variable rate
-  const Variable<T> & _ds_dt;
-
-  /// Current time
-  const Variable<Scalar> & _t;
-
-  /// Old time
-  const Variable<Scalar> & _tn;
-
-  /// Residual
-  Variable<T> & _r;
-};
-
-typedef BackwardEulerTimeIntegration<Scalar> ScalarBackwardEulerTimeIntegration;
-typedef BackwardEulerTimeIntegration<Vec> VecBackwardEulerTimeIntegration;
-typedef BackwardEulerTimeIntegration<SR2> SR2BackwardEulerTimeIntegration;
-typedef BackwardEulerTimeIntegration<R2> R2BackwardEulerTimeIntegration;
 } // namespace neml2

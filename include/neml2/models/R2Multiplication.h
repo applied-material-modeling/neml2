@@ -24,49 +24,33 @@
 
 #pragma once
 
-#include "neml2/tensors/tensors.h"
 #include "neml2/models/Model.h"
+#include "neml2/tensors/R2.h"
 
 namespace neml2
 {
-template <typename T>
-class BackwardEulerTimeIntegration : public Model
+/// Multiplication of two R2 variables
+class R2Multiplication : public Model
 {
 public:
   static OptionSet expected_options();
 
-  BackwardEulerTimeIntegration(const OptionSet & options);
-
-  void diagnose() const override;
-
-private:
-  const VariableName _var_name;
-  const VariableName _var_rate_name;
+  R2Multiplication(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  /// Current variable value
-  const Variable<T> & _s;
+  /// A * B
+  Variable<R2> & _to;
 
-  /// Old variable value
-  const Variable<T> & _sn;
+  /// The input variables
+  const Variable<R2> & _A;
+  const Variable<R2> & _B;
 
-  /// Variable rate
-  const Variable<T> & _ds_dt;
+  /// Should I invert A?
+  const bool _invA;
 
-  /// Current time
-  const Variable<Scalar> & _t;
-
-  /// Old time
-  const Variable<Scalar> & _tn;
-
-  /// Residual
-  Variable<T> & _r;
+  /// Should I invert B?
+  const bool _invB;
 };
-
-typedef BackwardEulerTimeIntegration<Scalar> ScalarBackwardEulerTimeIntegration;
-typedef BackwardEulerTimeIntegration<Vec> VecBackwardEulerTimeIntegration;
-typedef BackwardEulerTimeIntegration<SR2> SR2BackwardEulerTimeIntegration;
-typedef BackwardEulerTimeIntegration<R2> R2BackwardEulerTimeIntegration;
 } // namespace neml2
