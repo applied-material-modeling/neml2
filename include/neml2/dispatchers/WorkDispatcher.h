@@ -36,7 +36,7 @@
 #include "neml2/dispatchers/WorkScheduler.h"
 #include "neml2/misc/assertions.h"
 #include "neml2/misc/types.h"
-#include "neml2/misc/TracingInterface.h"
+#include "neml2/base/TracingInterface.h"
 
 #include "neml2/tensors/R2.h"
 

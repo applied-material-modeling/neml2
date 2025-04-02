@@ -30,13 +30,13 @@
 
 using namespace neml2;
 
-TEST_CASE("TracingInterface", "[misc]")
+TEST_CASE("TracingInterface", "[base]")
 {
   SECTION("single writer")
   {
     event_trace_writers().clear();
     auto tracer = std::make_unique<SampleEventTracer>(
-        "misc/test_tracer.json", "duration_event", "instant_event");
+        "base/test_tracer.json", "duration_event", "instant_event");
     tracer->dump();
     tracer.reset();
     event_trace_writers().clear();
@@ -47,7 +47,7 @@ TEST_CASE("TracingInterface", "[misc]")
     // 2: i, instant_event
     // 3: E, duration_event
     // 4: E, trace writer
-    std::ifstream f("misc/test_tracer.json");
+    std::ifstream f("base/test_tracer.json");
     auto data = json::parse(f);
     f.close();
     REQUIRE(data.size() == 5);
@@ -68,11 +68,11 @@ TEST_CASE("TracingInterface", "[misc]")
     event_trace_writers().clear();
     std::vector<std::unique_ptr<SampleEventTracer>> tracers;
     tracers.emplace_back(
-        std::make_unique<SampleEventTracer>("misc/test_tracer_1.json", "d1", "i1"));
+        std::make_unique<SampleEventTracer>("base/test_tracer_1.json", "d1", "i1"));
     tracers.emplace_back(
-        std::make_unique<SampleEventTracer>("misc/test_tracer_2.json", "d2", "i2"));
+        std::make_unique<SampleEventTracer>("base/test_tracer_2.json", "d2", "i2"));
     tracers.emplace_back(
-        std::make_unique<SampleEventTracer>("misc/test_tracer_1.json", "d3", "i3"));
+        std::make_unique<SampleEventTracer>("base/test_tracer_1.json", "d3", "i3"));
     tracers[0]->dump();
     tracers[1]->dump();
     tracers[2]->dump();
@@ -91,7 +91,7 @@ TEST_CASE("TracingInterface", "[misc]")
     // 5: i, i3
     // 6: E, d3
     // 7: E, trace writer
-    std::ifstream f1("misc/test_tracer_1.json");
+    std::ifstream f1("base/test_tracer_1.json");
     auto data1 = json::parse(f1);
     f1.close();
     REQUIRE(data1.size() == 8);
@@ -118,7 +118,7 @@ TEST_CASE("TracingInterface", "[misc]")
     // 2: i, i2
     // 3: E, d2
     // 4: E, trace writer
-    std::ifstream f2("misc/test_tracer_2.json");
+    std::ifstream f2("base/test_tracer_2.json");
     auto data2 = json::parse(f2);
     f2.close();
     REQUIRE(data2.size() == 5);

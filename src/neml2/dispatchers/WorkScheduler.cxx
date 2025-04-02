@@ -23,7 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/dispatchers/WorkScheduler.h"
-#include "neml2/misc/TracingInterface.h"
+#include "neml2/base/TracingInterface.h"
 
 namespace neml2
 {

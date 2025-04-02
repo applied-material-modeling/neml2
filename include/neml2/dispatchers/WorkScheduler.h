@@ -29,7 +29,7 @@
 
 #include "neml2/base/NEML2Object.h"
 #include "neml2/misc/types.h"
-#include "neml2/misc/TracingInterface.h"
+#include "neml2/base/TracingInterface.h"
 
 namespace neml2
 {
