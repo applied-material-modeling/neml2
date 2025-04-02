@@ -30,6 +30,9 @@
 #include "neml2/tensors/functions/abs.h"
 #include "neml2/tensors/functions/stack.h"
 
+/// Generic main function for the test suite of name \p name.
+int test_main(int argc, char * argv[], const std::string & name);
+
 /**
  * @brief A utility function to guess the path to the test directory based on a hint and some
  * heuristics.
@@ -55,6 +58,20 @@
  */
 int
 guess_test_dir(const std::string & stem, std::string & hint, const std::string & exec_prefix = "");
+
+/// Get test suite additional devices
+const std::unordered_set<neml2::Device> & get_test_suite_additional_devices();
+
+/**
+ * @brief Parse the cliarg (a comma-separated list of device specs) into a set of devices
+ *
+ * @return int Error code:
+ * 0: success
+ * 1: invalid device spec
+ * 2: invalid device type (e.g., contains CPU)
+ * 3: duplicate device spec
+ */
+int init_test_devices(const std::string & additional_devs);
 
 /**
  * @brief A simple finite-differencing helper to numerically approximate the derivative of the

@@ -26,18 +26,16 @@ A Catch test refers to a test directly written in C++ source code within the Cat
 
 ### Unit tests {#testing-unit-tests}
 
-A model unit test examines the outputs of a `Model` given a predefined set of inputs. Model unit tests can be directly designed using the input file syntax with the `ModelUnitTest` type. A variety of checks can be turned on and off based on input file options. To list a few: `check_first_derivatives` compares the implemented first order derivatives of the model against finite-differencing results, and the test is marked as passing only if the two derivatives are within tolerances specified with `derivative_abs_tol` and `derivative_rel_tol`; if `check_cuda` is set to `true`, all checks are repeated a second time on GPU (if available).
+A model unit test examines the outputs of a `Model` given a predefined set of inputs. Model unit tests can be directly designed using the input file syntax with the `ModelUnitTest` type. A variety of checks can be turned on and off based on input file options. To list a few: `check_first_derivatives` compares the implemented first order derivatives of the model against finite-differencing results, and the test is marked as passing only if the two derivatives are within tolerances specified with `derivative_abs_tol` and `derivative_rel_tol`.
 
 All input files for model unit tests should be stored inside `tests/unit/models`. Every input file with the `.i` extension will be automatically discovered and executed. To run all the model unit tests, use the following commands
 ```
-cd tests
-../build/dev/unit/unit_tests models
+./build/dev/unit/unit_tests models
 ```
 
 To run a specific model unit test, use the `-c` command line option followed by the relative location of the input file, i.e.
 ```
-cd tests
-../build/dev/unit/unit_tests models -c solid_mechanics/LinearIsotropicElasticity.i
+./build/dev/unit/unit_tests models -c solid_mechanics/LinearIsotropicElasticity.i
 ```
 
 ### Regression tests {#testing-regression-tests}
@@ -46,13 +44,11 @@ A model regression test runs a `Model` using a user specified driver. The result
 
 Each input file for model regression tests should be stored inside a separate folder inside `tests/regression`. Every input file with the `.i` extension will be automatically discovered and executed. To run all the model regression tests, use the `regression_tests` executable followed by the physics module, i.e.
 ```
-cd tests
-../build/dev/regression/regression_tests "solid mechanics"
+./build/dev/regression/regression_tests "solid mechanics"
 ```
 To run a specific model regression test, use the `-c` command line option followed by the relative location of the input file, i.e.
 ```
-cd tests
-../build/dev/regression/regression_tests "solid mechanics" -c viscoplasticity/chaboche/model.i
+./build/dev/regression/regression_tests "solid mechanics" -c viscoplasticity/chaboche/model.i
 ```
 Note that the regression test expects an option `reference` which specifies the relative location to the reference solution.
 
@@ -62,16 +58,20 @@ The model verification test is similar to the model regression test in terms of 
 
 Each input file for model verification tests should be stored inside a separate folder inside `tests/verification`. Every input file with the `.i` extension will be automatically discovered and executed. To run all the model verification tests, use the `verification_tests` executable followed by the physics module, i.e.
 ```
-cd tests
 ../build/dev/verification/verification_tests "solid mechanics"
 ```
 
 To run a specific model verification test, use the `-c` command line option followed by the relative location of the input file, i.e.
 ```
-cd tests
-../build/dev/verification/verification_tests "solid mechanics" -c chaboche/chaboche.i
+./build/dev/verification/verification_tests "solid mechanics" -c chaboche/chaboche.i
 ```
 The regression test compares variables (specified using the `variables` option) against reference values (specified using the `references` option). The reference variables can be read using input objects with type `VTestTimeSeries`.
+
+### Command-line arguments
+
+The above test suites, including unit tests, regression tests, verification tests, and dispatcher tests, support a variety of configuration options that can be controlled from the command line. See [Catch2 command line](https://github.com/catchorg/Catch2/blob/devel/docs/command-line.md) documentation for a list of useful command-line options. In addition, NEML2 test suites additionally support the following options:
+- `-p`, `--path`: working directory. This argument is optional and is only needed when the default guessing mechanism fails to locate the test input files.
+- `-d`, `--devices`: list of additional (non-CPU) devices to test.
 
 ## Python package
 
