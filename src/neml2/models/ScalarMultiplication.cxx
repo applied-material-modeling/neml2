@@ -82,7 +82,7 @@ ScalarMultiplication::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   auto value = _inv[0] ? _A / (*_from[0]) : _A * (*_from[0]);
   for (std::size_t i = 1; i < _from.size(); i++)
-    value = value * (_inv[i] ? (*_from[i]) : (*_from[i]));
+    value = value * (_inv[i] ? 1. / (*_from[i]) : (*_from[i]));
 
   if (out)
     _to = value;
