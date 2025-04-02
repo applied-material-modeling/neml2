@@ -28,6 +28,7 @@
 #include <thread>
 
 #include "neml2/misc/TracingInterface.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {
