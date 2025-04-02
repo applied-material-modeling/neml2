@@ -56,7 +56,7 @@ struct NEML2ObjectInfo
   /// Expected options for this object
   OptionSet expected_options;
   /// Build method pointer
-  BuildPtr build;
+  BuildPtr build = nullptr;
 };
 
 /**
