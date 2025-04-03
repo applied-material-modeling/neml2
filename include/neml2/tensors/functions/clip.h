@@ -22,41 +22,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "python/neml2/tensors/VecBase.h"
+#pragma once
 
-namespace py = pybind11;
-using namespace neml2;
+#include "neml2/tensors/tensors_fwd.h"
 
-void
-def_Rot(py::class_<Rot> & c)
+namespace neml2
 {
-  // Ctors, conversions, accessors etc.
-  c.def(py::init<const Vec &>());
-
-  // Methods
-  c.def("inverse", &Rot::inverse)
-      .def("euler_rodrigues", &Rot::euler_rodrigues)
-      .def("deuler_rodrigues", &Rot::deuler_rodrigues)
-      .def("rotate", &Rot::rotate)
-      .def("drotate", &Rot::drotate)
-      .def("shadow", &Rot::shadow)
-      .def("dist", &Rot::dist)
-      .def("dV", &Rot::dV);
-
-  // Operators
-  c.def(py::self * py::self);
-
-  // Static methods
-  c.def_static(
-      "identity",
-      [](NEML2_TENSOR_OPTIONS_VARGS) { return Rot::identity(NEML2_TENSOR_OPTIONS); },
-      py::kw_only(),
-      PY_ARG_TENSOR_OPTIONS);
-  c.def_static("fill_euler_angles", &Rot::fill_euler_angles);
-  c.def_static("fill_matrix", &Rot::fill_matrix);
-  c.def_static("fill_random", &Rot::fill_random);
-  c.def_static("fill_rodrigues", &Rot::fill_rodrigues);
-  c.def_static("fill_rotate_between", &Rot::fill_rotate_between);
-  c.def_static("fill_axis_angle", &Rot::fill_axis_angle);
-  c.def_static("fill_axis_angle_standard", &Rot::fill_axis_angle_standard);
-}
+#define DECLARE_CLIP(T) T clip(const T & a, const T & lb, const T & ub)
+FOR_ALL_TENSORBASE(DECLARE_CLIP);
+#undef DECLARE_CLIP
+} // namespace neml2

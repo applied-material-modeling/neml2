@@ -45,6 +45,7 @@
 #include "neml2/tensors/functions/fmod.h"
 #include "neml2/tensors/functions/stack.h"
 #include "neml2/tensors/functions/diag_embed.h"
+#include "neml2/tensors/functions/clip.h"
 
 namespace neml2
 {
@@ -153,6 +154,36 @@ Rot::fill_random(unsigned int n)
 }
 
 Rot
+Rot::fill_rotate_between(const Vec & v1, const Vec & v2)
+{
+  auto n = v1.cross(v2);
+  auto c = v1.dot(v2);
+
+  auto srp = n / (1.0 + c);
+  auto nsrp = srp.norm_sq();
+
+  return srp / (neml2::sqrt(1.0 + nsrp) + 1.0);
+}
+
+Rot
+Rot::fill_axis_angle(const Vec & n, const Scalar & theta)
+{
+  auto nn = n / n.norm();
+  auto t = neml2::tan(theta / 4.0);
+
+  return nn * t;
+}
+
+Rot
+Rot::fill_axis_angle_standard(const Vec & n, const Scalar & theta)
+{
+  auto nn = n / n.norm();
+  auto t = neml2::tan(theta / 2.0);
+  auto vn = nn * t;
+  return vn / (neml2::sqrt(1.0 + vn.norm_sq()) + 1.0);
+}
+
+Rot
 Rot::inverse() const
 {
   return -(*this);
@@ -251,8 +282,10 @@ Rot::dist(const Rot & r2) const
 Scalar
 Rot::gdist(const Rot & r) const
 {
-  return 4.0 *
-         neml2::asin((*this - r).norm() / neml2::sqrt((1.0 + norm_sq()) * (1.0 + r.norm_sq())));
+  return 4.0 * neml2::asin(neml2::clip((*this - r).norm() /
+                                           neml2::sqrt((1.0 + norm_sq()) * (1.0 + r.norm_sq())),
+                                       -Scalar(1.0, r.options()),
+                                       Scalar(1.0, r.options())));
 }
 
 Scalar

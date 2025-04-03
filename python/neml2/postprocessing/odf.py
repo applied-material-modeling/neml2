@@ -175,7 +175,7 @@ class KDEODF(ODF):
 
         Keyword Args:
             miter (int): optimization iterations
-            verbose (bool): if true print convergene progress
+            verbose (bool): if true print convergence progress
             lr (float): learning rate
             sf (float): fraction of data split out for validation
         """
