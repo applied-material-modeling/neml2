@@ -47,6 +47,7 @@
 #include "neml2/tensors/functions/exp.h"
 #include "neml2/tensors/functions/abs.h"
 #include "neml2/tensors/functions/log.h"
+#include "neml2/tensors/functions/clip.h"
 
 #include "neml2/tensors/mandel_notation.h"
 
@@ -103,7 +104,8 @@ PYBIND11_MODULE(math, m)
       .def("sqrt", py::overload_cast<const T &>(&neml2::sqrt))                                     \
       .def("exp", py::overload_cast<const T &>(&neml2::exp))                                       \
       .def("abs", py::overload_cast<const T &>(&neml2::abs))                                       \
-      .def("log", py::overload_cast<const T &>(&neml2::log))
+      .def("log", py::overload_cast<const T &>(&neml2::log))                                       \
+      .def("clip", py::overload_cast<const T &, const T &, const T &>(&neml2::clip))
 
   FOR_ALL_TENSORBASE(MATH_DEF_TENSORBASE);
 }

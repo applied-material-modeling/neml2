@@ -69,6 +69,12 @@ public:
   /// Fill from standard Rodrigues parameters
   static Rot fill_rodrigues(const Scalar & rx, const Scalar & ry, const Scalar & rz);
 
+  /// Fill by forming the rotation between two vectors
+  static Rot fill_rotate_between(const Vec & v1, const Vec & v2);
+
+  /// Fill with axis/angle pairs
+  static Rot fill_axis_angle(const Vec & n, const Scalar & theta);
+
   /// Inversion
   Rot inverse() const;
 
