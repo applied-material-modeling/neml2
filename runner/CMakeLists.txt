@@ -2,13 +2,11 @@
 # argparse
 # ------------------------------------------------------------------------------
 include(DownloadArgparse)
-add_dependencies(deps argparse)
 
 # ------------------------------------------------------------------------------
 # runner
 # ------------------------------------------------------------------------------
-file(GLOB_RECURSE srcs CONFIGURE_DEPENDS src/*.cxx)
-add_executable(runner ${srcs})
+add_executable(runner src/main.cxx)
 
 target_compile_options(runner PRIVATE -Wall -Wextra -pedantic)
 target_link_libraries(runner PRIVATE neml2 argparse)
