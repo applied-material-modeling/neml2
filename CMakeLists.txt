@@ -38,6 +38,7 @@ set(NEML2_DOC OFF CACHE BOOL "Build NEML2 documentation (html)")
 set(NEML2_CPU_PROFILER OFF CACHE BOOL "Link against gperftools profiler to enable CPU profiling")
 set(NEML2_WORK_DISPATCHER OFF CACHE BOOL "Enable NEML2 work dispatcher")
 set(NEML2_THREAD_SANITIZER OFF CACHE BOOL "Enable ThreadSanitizer")
+set(NEML2_LANGUAGE_SERVER ON CACHE BOOL "Enable language server support")
 
 # ----------------------------------------------------------------------------
 # Dependencies and 3rd party packages
@@ -114,6 +115,13 @@ add_subdirectory(src/neml2)
 # ----------------------------------------------------------------------------
 if(NEML2_TESTS)
       add_subdirectory(tests)
+endif()
+
+# ----------------------------------------------------------------------------
+# language server
+# ----------------------------------------------------------------------------
+if(NEML2_LANGUAGE_SERVER)
+      add_subdirectory(server)
 endif()
 
 # ----------------------------------------------------------------------------
