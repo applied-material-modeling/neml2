@@ -32,8 +32,37 @@ torch.set_default_dtype(torch.float64)
 
 import matplotlib.pyplot as plt
 
+import scipy.spatial as ss
+
 from neml2 import crystallography
 from neml2 import tensors
+
+
+def arbitrary_hemispherical_quadrature(points):
+    """Calculate the weights for a spherical quadrature rule on the upper hemisphere
+
+    Args:
+        points (torch.tensor): tensor of shape (..., 3) of cartesian points on the upper hemisphere
+
+    Returns:
+        torch.tensor: tensor of shape (...) giving the weights
+    """
+    orig_shape = points.shape[:-1]
+    points = points.flatten(end_dim=-2)
+    on_equator = torch.isclose(points[:, 2], torch.tensor(0.0, device=points.device))
+    not_equator = torch.logical_not(on_equator)
+
+    hemi_points = points[not_equator]
+    hemi_points[..., 2] *= -1
+
+    augmented_points = torch.cat([points, hemi_points], dim=0)
+
+    triangulation = ss.SphericalVoronoi(augmented_points.cpu().numpy())
+    areas = torch.tensor(triangulation.calculate_areas(), device=points.device)
+    areas = areas[: len(points)]
+    areas[on_equator] *= 0.5
+
+    return areas.reshape(orig_shape)
 
 
 class StereographicProjection:
@@ -134,6 +163,7 @@ def pole_figure_odf(
     ntheta=40,
     nquad=50,
     nchunk=1000,
+    offset_fraction=1e-2,
 ):
     """Project an ODF onto a pole figure
 
@@ -148,6 +178,7 @@ def pole_figure_odf(
         ntheta (int): number of angular points to use
         nquad (int): number of points to integrate the pole figure
         nchunk (int): subbatch size to use in evaluating odf
+        offset_fraction (float): fraction of the radial range to offset the pole figure to avoid singularities
     Returns:
         (values, mesh): tuple of the projected values and the (theta, R) mesh points used to make a contour plot
     """
@@ -158,8 +189,11 @@ def pole_figure_odf(
     projection = available_projections[projection]
 
     # Make the grid
-    r = torch.linspace(0, projection.limit, nradial, device=pole.device)
-    theta = torch.linspace(0, 2 * torch.pi, ntheta, device=pole.device)
+    r = torch.linspace(
+        projection.limit / nradial * offset_fraction, projection.limit, nradial, device=pole.device
+    )
+    theta_total = torch.linspace(0, 2 * torch.pi, ntheta + 1, device=pole.device)
+    theta = theta_total[:-1]
     R, T = torch.meshgrid(r, theta, indexing="ij")
 
     # Get points on plane
@@ -203,7 +237,20 @@ def pole_figure_odf(
     # Calculate the actual pole values
     vals = torch.mean(torch.sum(A * dl, dim=0), dim=0) / (2 * torch.pi)
 
-    return vals, (T, R)
+    # Calculate the normalization to get MRD
+    weights = arbitrary_hemispherical_quadrature(sample_poles.torch())
+    nf = torch.sum(weights * vals) / (2 * torch.pi)
+    vals = vals / nf
+
+    # Make the mesh that matplotlib wants
+    r[0] = 0.0
+    TR, TT = torch.meshgrid(r, theta_total, indexing="ij")
+
+    Tvals = torch.zeros_like(TR)
+    Tvals[..., :-1] = vals
+    Tvals[..., -1] = vals[..., 0]
+
+    return Tvals, (TT, TR)
 
 
 def pretty_plot_pole_figure_odf(
