@@ -2,8 +2,8 @@
     [unit]
       type = ModelUnitTest
       model = 'model'
-      input_Scalar_names = 'state/ms'
-      input_Scalar_values = 'ms'
+      input_Scalar_names = 'state/ws'
+      input_Scalar_values = 'ws'
       output_Scalar_names = 'state/alpha'
       output_Scalar_values = 'alpha'
       check_AD_parameter_derivatives = false
@@ -11,7 +11,7 @@
 []
 
 [Tensors]
-    [ms]
+    [ws]
         type = Scalar
         values = "0.03 0.75 0.22"
         batch_shape = '(3)'
@@ -26,11 +26,11 @@
 [Models]
     [model]
         type = PyrolysisConversionAmount
-        initial_mass_solid = 0.2
-        initial_mass_binder = 0.4
+        initial_solid_mass_fraction = 0.2
+        initial_binder_mass_fraction = 0.4
         reaction_yield = 0.7
 
-        mass_solid = 'state/ms'
+        solid_mass_fraction = 'state/ws'
         reaction_amount = 'state/alpha'
     []
 []

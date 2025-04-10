@@ -29,26 +29,20 @@
 namespace neml2
 {
 /**
- * @brief Calculate the pyrolysis conversion amount.
+ * @brief Define the porous flow capillary pressure function.
  */
-class PyrolysisConversionAmount : public Model
+class PorousFlowCapillaryPressure : public Model
 {
 public:
   static OptionSet expected_options();
 
-  PyrolysisConversionAmount(const OptionSet & options);
+  PorousFlowCapillaryPressure(const OptionSet & options);
 
 protected:
-  void set_value(bool out, bool dout_din, bool d2out_din2) override;
-
-  const Scalar & _ws0;
-  const Scalar & _wb0;
-  const Scalar & _Y;
-
   // State Variables
-  const Variable<Scalar> & _ws;
+  const Variable<Scalar> & _S;
 
   // Residual Variables
-  Variable<Scalar> & _a;
+  Variable<Scalar> & _Pc;
 };
 }

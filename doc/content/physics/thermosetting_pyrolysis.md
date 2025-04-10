@@ -245,11 +245,11 @@ alpha0 = 3.333333 # 1/(1-Y)
 [Models]
     [amount]
         type = PyrolysisConversionAmount
-        initial_mass_solid = '${ms0}'
-        initial_mass_binder = '${mb0}'
+        initial_solid_mass_fraction = '${ms0}'
+        initial_binder_mass_fraction = '${mb0}'
         reaction_yield = '${Y}'
 
-        mass_solid = 'state/ms'
+        solid_mass_fraction = 'state/ms'
         reaction_amount = 'state/alpha'
     []
     [reaction]
@@ -340,11 +340,11 @@ alpha0 = 3.333333 # 1/(1-Y)
     []
     [amount_new]
         type = PyrolysisConversionAmount
-        initial_mass_solid = '${ms0}'
-        initial_mass_binder = '${mb0}'
+        initial_solid_mass_fraction = '${ms0}'
+        initial_binder_mass_fraction = '${mb0}'
         reaction_yield = '${Y}'
 
-        mass_solid = 'state/ms'
+        solid_mass_fraction = 'state/ms'
         reaction_amount = 'state/alpha'
     []
     [model_solver]
