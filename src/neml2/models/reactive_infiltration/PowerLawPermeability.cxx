@@ -22,33 +22,48 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-
-#include "neml2/models/Model.h"
+#include "neml2/models/reactive_infiltration/PowerLawPermeability.h"
+#include "neml2/tensors/functions/pow.h"
+#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
-/**
- * @brief Calculate the pyrolysis conversion amount.
- */
-class PyrolysisConversionAmount : public Model
+register_NEML2_object(PowerLawPermeability);
+OptionSet
+PowerLawPermeability::expected_options()
 {
-public:
-  static OptionSet expected_options();
+  OptionSet options = PorosityPermeabilityRelation::expected_options();
+  options.doc() =
+      "Define the power law porosity-permeability relation, takes the form of "
+      "\\f$ K_o (\\frac{\\varphi}{\\varphi_o})^p \\f$ where \\f$ p "
+      "\\f$ is the fitting parameter. \\f$ varphi_o, K_o \\f$ are the reference porosity and "
+      "permeability respectively.";
 
-  PyrolysisConversionAmount(const OptionSet & options);
+  options.set_parameter<TensorName<Scalar>>("power");
+  options.set("power").doc() = "power in the power law";
 
-protected:
-  void set_value(bool out, bool dout_din, bool d2out_din2) override;
+  return options;
+}
 
-  const Scalar & _ws0;
-  const Scalar & _wb0;
-  const Scalar & _Y;
+PowerLawPermeability::PowerLawPermeability(const OptionSet & options)
+  : PorosityPermeabilityRelation(options),
+    _p(declare_parameter<Scalar>("p", "power"))
+{
+}
 
-  // State Variables
-  const Variable<Scalar> & _ws;
+void
+PowerLawPermeability::set_value(bool out, bool dout_din, bool d2out_din2)
+{
+  neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
 
-  // Residual Variables
-  Variable<Scalar> & _a;
-};
+  if (out)
+  {
+    _K = _Ko * pow(_phi, _p) / pow(_phio, _p);
+  }
+
+  if (dout_din)
+  {
+    _K.d(_phi) = _Ko * 1 / pow(_phio, _p) * _p * pow(_phi, _p - 1);
+  }
+}
 }

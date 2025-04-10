@@ -29,26 +29,22 @@
 namespace neml2
 {
 /**
- * @brief Calculate the pyrolysis conversion amount.
+ * @brief Define the porosity - permeability relation.
  */
-class PyrolysisConversionAmount : public Model
+class PorosityPermeabilityRelation : public Model
 {
 public:
   static OptionSet expected_options();
 
-  PyrolysisConversionAmount(const OptionSet & options);
+  PorosityPermeabilityRelation(const OptionSet & options);
 
 protected:
-  void set_value(bool out, bool dout_din, bool d2out_din2) override;
-
-  const Scalar & _ws0;
-  const Scalar & _wb0;
-  const Scalar & _Y;
+  // parameter
+  const Scalar & _Ko;
+  const Scalar & _phio;
 
   // State Variables
-  const Variable<Scalar> & _ws;
-
-  // Residual Variables
-  Variable<Scalar> & _a;
+  const Variable<Scalar> & _phi;
+  Variable<Scalar> & _K;
 };
 }
