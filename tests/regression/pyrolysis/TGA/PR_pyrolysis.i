@@ -14,7 +14,6 @@ k = 1.0
 ws0 = 0.02 
 wb0 = 0.5
 wp0 = 0.3
-wgcp = 0 
 
 alpha0 = 3.333333 # 1/(1-Y)
 
@@ -53,16 +52,6 @@ alpha0 = 3.333333 # 1/(1-Y)
         values = '${A}'
         batch_shape = '${nbatch}'
     []
-    [R]
-        type = Scalar
-        values = '${R}'
-        batch_shape = '${nbatch}'
-    []
-    [Y]
-        type = Scalar
-        values = '${Y}'
-        batch_shape = '${nbatch}'
-    []
     [order]
         type = Scalar
         values = '${order}'
@@ -71,16 +60,6 @@ alpha0 = 3.333333 # 1/(1-Y)
     [k]
         type = Scalar
         values = '${k}'
-        batch_shape = '${nbatch}'
-    []
-    [ws0]
-        type = Scalar
-        values = '${ws0}'
-        batch_shape = '${nbatch}'
-    []
-    [wb0]
-        type = Scalar
-        values = '${wb0}'
         batch_shape = '${nbatch}'
     []
 []
@@ -99,8 +78,8 @@ alpha0 = 3.333333 # 1/(1-Y)
         show_output_axis = true
         show_parameters = true
         
-        ic_Scalar_names = 'state/wp state/wb state/wg state/ws state/alpha'
-        ic_Scalar_values = '${wp0} ${wb0} ${wg0} ${ws0} ${alpha0}'
+        ic_Scalar_names = 'state/wp state/wb state/ws state/alpha'
+        ic_Scalar_values = '${wp0} ${wb0} ${ws0} ${alpha0}'
         save_as = 'test.pt'
 
         verbose = false
@@ -115,9 +94,6 @@ alpha0 = 3.333333 # 1/(1-Y)
 [Solvers]
     [newton]        
         type = Newton
-        rel_tol = 1e-8
-        abs_tol = 1e-10
-        max_its = 100
         verbose = false
     []
 []
@@ -125,9 +101,9 @@ alpha0 = 3.333333 # 1/(1-Y)
 [Models]
     [amount]
         type = PyrolysisConversionAmount
-        initial_solid_mass_fraction = 'ws0'
-        initial_binder_mass_fraction = 'wb0'
-        reaction_yield = 'Y'
+        initial_solid_mass_fraction = '${ws0}'
+        initial_binder_mass_fraction = '${wb0}'
+        reaction_yield = '${Y}'
 
         solid_mass_fraction = 'state/ws'
         reaction_amount = 'state/alpha'
@@ -143,7 +119,7 @@ alpha0 = 3.333333 # 1/(1-Y)
         type = PyrolysisKinetics
         kinetic_constant = 'A'
         activation_energy = 'Ea'
-        ideal_gas_constant = 'R'
+        ideal_gas_constant = '${R}'
         temperature = 'forces/T'
         reaction = 'state/f'
         out = 'state/pyro'
@@ -178,7 +154,7 @@ alpha0 = 3.333333 # 1/(1-Y)
     []
     [residual_binder]
         type = ScalarLinearCombination
-        coefficients = "0.7 1.0"
+        coefficients = "${Y} 1.0"
         from_var = 'state/wb_dot state/ws_dot'
         to_var = 'residual/wb'
     []
@@ -204,9 +180,9 @@ alpha0 = 3.333333 # 1/(1-Y)
     []
     [amount_new]
         type = PyrolysisConversionAmount
-        initial_solid_mass_fraction = 'ws0'
-        initial_binder_mass_fraction = 'wb0'
-        reaction_yield = 'Y'
+        initial_solid_mass_fraction = '${ws0}'
+        initial_binder_mass_fraction = '${wb0}'
+        reaction_yield = '${Y}'
 
         solid_mass_fraction = 'state/ws'
         reaction_amount = 'state/alpha'
