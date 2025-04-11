@@ -31,7 +31,6 @@
 #include "neml2/base/MultiEnumSelection.h"
 #include "neml2/base/TensorName.h"
 #include "neml2/base/NEML2Object.h"
-#include "neml2/tensors/tensors.h"
 
 namespace neml2
 {
