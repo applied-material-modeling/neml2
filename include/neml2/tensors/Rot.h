@@ -69,6 +69,17 @@ public:
   /// Fill from standard Rodrigues parameters
   static Rot fill_rodrigues(const Scalar & rx, const Scalar & ry, const Scalar & rz);
 
+  /// Fill by forming the rotation between two vectors
+  static Rot fill_rotate_between(const Vec & v1, const Vec & v2);
+
+  /// Fill with axis/angle pairs
+  static Rot fill_axis_angle(const Vec & n, const Scalar & theta);
+
+  /// Fill with axis/angle pairs as a standard Rodrigues parameter, then convert to MRP
+  // This has a specialized use in integrating through ODFs, helping me avoid the need to calculate
+  // the arc length scaling term for our space
+  static Rot fill_axis_angle_standard(const Vec & n, const Scalar & theta);
+
   /// Inversion
   Rot inverse() const;
 
