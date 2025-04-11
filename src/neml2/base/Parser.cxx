@@ -115,8 +115,17 @@ bool
 parse_(Device & val, const std::string & raw_str)
 {
   const auto str_val = parse<std::string>(raw_str);
-  val = Device(str_val);
-  return true;
+  try
+  {
+    val = Device(str_val);
+    return true;
+  }
+  catch (const std::exception & e)
+  {
+    std::cerr << "Failed to parse '" << raw_str << "' as a device. Error message:\n"
+              << e.what() << std::endl;
+    return false;
+  }
 }
 } // namespace utils
 } // namespace neml2

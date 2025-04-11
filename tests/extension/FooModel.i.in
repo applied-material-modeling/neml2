@@ -1,0 +1,12 @@
+[Settings]
+  additional_libraries = '${EXTENSION_LIB}'
+[]
+
+[Models]
+  [foo]
+    type = FooModel
+    x = 'forces/x'
+    y = 'state/y'
+    c = 1.1
+  []
+[]

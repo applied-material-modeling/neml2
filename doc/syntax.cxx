@@ -38,10 +38,12 @@ main()
   syntax_file << "neml2::Settings:\n";
   syntax_file << settings << '\n';
 
-  for (auto && [type, options] : neml2::Registry::expected_options())
+  for (const auto & [type, info] : neml2::Registry::info())
   {
+    syntax_file << info.type_name << ":\n";
+
+    auto options = info.expected_options;
     options.set<std::string>("type") = type;
-    syntax_file << neml2::Registry::syntax_type(type) << ":\n";
     syntax_file << options << '\n';
   }
 
