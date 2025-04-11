@@ -155,18 +155,15 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:adadcce9759678b439278443b8caea939"><td class="memTemplItemLeft" align="right" valign="top">static char&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#adadcce9759678b439278443b8caea939">add</a> (const std::string &amp;<a class="el" href="namespaceneml2.html#a5424759a4a25bd0e2f60628d260abb81">name</a>)</td></tr>
 <tr class="memdesc:adadcce9759678b439278443b8caea939"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add information on a <a class="el" href="classneml2_1_1NEML2Object.html" title="The base class of all &quot;manufacturable&quot; objects in the NEML2 library.">NEML2Object</a> to the registry.  <br /></td></tr>
 <tr class="separator:adadcce9759678b439278443b8caea939"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0c4adbba5e4c4612e106ecd2416b7ab5" id="r_a0c4adbba5e4c4612e106ecd2416b7ab5"><td class="memItemLeft" align="right" valign="top">static std::map&lt; std::string, <a class="el" href="classneml2_1_1OptionSet.html">OptionSet</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0c4adbba5e4c4612e106ecd2416b7ab5">expected_options</a> ()</td></tr>
-<tr class="memdesc:a0c4adbba5e4c4612e106ecd2416b7ab5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the expected options of all registered classs.  <br /></td></tr>
-<tr class="separator:a0c4adbba5e4c4612e106ecd2416b7ab5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa653d24080fe276df4ed4b4bbed0cb60" id="r_aa653d24080fe276df4ed4b4bbed0cb60"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classneml2_1_1OptionSet.html">OptionSet</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa653d24080fe276df4ed4b4bbed0cb60">expected_options</a> (const std::string &amp;<a class="el" href="namespaceneml2.html#a5424759a4a25bd0e2f60628d260abb81">name</a>)</td></tr>
-<tr class="memdesc:aa653d24080fe276df4ed4b4bbed0cb60"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the expected options of a specific registered class.  <br /></td></tr>
-<tr class="separator:aa653d24080fe276df4ed4b4bbed0cb60"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afce8ac0080e96cd94019e72a402cb466" id="r_afce8ac0080e96cd94019e72a402cb466"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afce8ac0080e96cd94019e72a402cb466">syntax_type</a> (const std::string &amp;type)</td></tr>
-<tr class="memdesc:afce8ac0080e96cd94019e72a402cb466"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the syntax type (what appears in the input file) given a registered object's type.  <br /></td></tr>
-<tr class="separator:afce8ac0080e96cd94019e72a402cb466"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5e569192804822d0600e223341202e0a" id="r_a5e569192804822d0600e223341202e0a"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="namespaceneml2.html#af62feabaf2151de89d0a76a2995f8b4d">BuildPtr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5e569192804822d0600e223341202e0a">builder</a> (const std::string &amp;<a class="el" href="namespaceneml2.html#a5424759a4a25bd0e2f60628d260abb81">name</a>)</td></tr>
-<tr class="memdesc:a5e569192804822d0600e223341202e0a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the build method pointer of a specific registered class.  <br /></td></tr>
-<tr class="separator:a5e569192804822d0600e223341202e0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a66ec466d3314b4f351d0ff0b08d5e52b" id="r_a66ec466d3314b4f351d0ff0b08d5e52b"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a66ec466d3314b4f351d0ff0b08d5e52b">load</a> (const std::filesystem::path &amp;)</td></tr>
+<tr class="memdesc:a66ec466d3314b4f351d0ff0b08d5e52b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load registry from a dynamic library.  <br /></td></tr>
+<tr class="separator:a66ec466d3314b4f351d0ff0b08d5e52b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a04683eaa4eed1f5ab6f814f7ed99ec25" id="r_a04683eaa4eed1f5ab6f814f7ed99ec25"><td class="memItemLeft" align="right" valign="top">static const std::map&lt; std::string, <a class="el" href="structneml2_1_1NEML2ObjectInfo.html">NEML2ObjectInfo</a> &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a04683eaa4eed1f5ab6f814f7ed99ec25">info</a> ()</td></tr>
+<tr class="memdesc:a04683eaa4eed1f5ab6f814f7ed99ec25"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get information of all registered objects.  <br /></td></tr>
+<tr class="separator:a04683eaa4eed1f5ab6f814f7ed99ec25"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8cf0974d4785e24eef54f7512275484f" id="r_a8cf0974d4785e24eef54f7512275484f"><td class="memItemLeft" align="right" valign="top">static const <a class="el" href="structneml2_1_1NEML2ObjectInfo.html">NEML2ObjectInfo</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8cf0974d4785e24eef54f7512275484f">info</a> (const std::string &amp;)</td></tr>
+<tr class="memdesc:a8cf0974d4785e24eef54f7512275484f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the information of an object given its syntax type.  <br /></td></tr>
+<tr class="separator:a8cf0974d4785e24eef54f7512275484f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a id="adadcce9759678b439278443b8caea939" name="adadcce9759678b439278443b8caea939"></a>
@@ -198,87 +195,6 @@ template&lt;typename T&gt; </div>
 
 </div>
 </div>
-<a id="a5e569192804822d0600e223341202e0a" name="a5e569192804822d0600e223341202e0a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5e569192804822d0600e223341202e0a">&#9670;&#160;</a></span>builder()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="namespaceneml2.html#af62feabaf2151de89d0a76a2995f8b4d">BuildPtr</a> builder </td>
-          <td>(</td>
-          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>name</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Return the build method pointer of a specific registered class. </p>
-
-</div>
-</div>
-<a id="a0c4adbba5e4c4612e106ecd2416b7ab5" name="a0c4adbba5e4c4612e106ecd2416b7ab5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0c4adbba5e4c4612e106ecd2416b7ab5">&#9670;&#160;</a></span>expected_options() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::map&lt; std::string, <a class="el" href="classneml2_1_1OptionSet.html">OptionSet</a> &gt; expected_options </td>
-          <td>(</td>
-          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Return the expected options of all registered classs. </p>
-
-</div>
-</div>
-<a id="aa653d24080fe276df4ed4b4bbed0cb60" name="aa653d24080fe276df4ed4b4bbed0cb60"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa653d24080fe276df4ed4b4bbed0cb60">&#9670;&#160;</a></span>expected_options() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classneml2_1_1OptionSet.html">OptionSet</a> expected_options </td>
-          <td>(</td>
-          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>name</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Return the expected options of a specific registered class. </p>
-
-</div>
-</div>
 <a id="a4e3d771caac9043ea566ade2ae0d9cea" name="a4e3d771caac9043ea566ade2ae0d9cea"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a4e3d771caac9043ea566ade2ae0d9cea">&#9670;&#160;</a></span>get()</h2>
 
@@ -306,8 +222,8 @@ template&lt;typename T&gt; </div>
 
 </div>
 </div>
-<a id="afce8ac0080e96cd94019e72a402cb466" name="afce8ac0080e96cd94019e72a402cb466"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afce8ac0080e96cd94019e72a402cb466">&#9670;&#160;</a></span>syntax_type()</h2>
+<a id="a04683eaa4eed1f5ab6f814f7ed99ec25" name="a04683eaa4eed1f5ab6f814f7ed99ec25"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a04683eaa4eed1f5ab6f814f7ed99ec25">&#9670;&#160;</a></span>info() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -316,9 +232,9 @@ template&lt;typename T&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::string syntax_type </td>
+          <td class="memname">const std::map&lt; std::string, <a class="el" href="structneml2_1_1NEML2ObjectInfo.html">NEML2ObjectInfo</a> &gt; &amp; info </td>
           <td>(</td>
-          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>type</em></span></td><td>)</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -329,7 +245,61 @@ template&lt;typename T&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Return the syntax type (what appears in the input file) given a registered object's type. </p>
+<p>Get information of all registered objects. </p>
+
+</div>
+</div>
+<a id="a8cf0974d4785e24eef54f7512275484f" name="a8cf0974d4785e24eef54f7512275484f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8cf0974d4785e24eef54f7512275484f">&#9670;&#160;</a></span>info() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="structneml2_1_1NEML2ObjectInfo.html">NEML2ObjectInfo</a> &amp; info </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>name</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get the information of an object given its syntax type. </p>
+
+</div>
+</div>
+<a id="a66ec466d3314b4f351d0ff0b08d5e52b" name="a66ec466d3314b4f351d0ff0b08d5e52b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a66ec466d3314b4f351d0ff0b08d5e52b">&#9670;&#160;</a></span>load()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void load </td>
+          <td>(</td>
+          <td class="paramtype">const std::filesystem::path &amp;</td>          <td class="paramname"><span class="paramname"><em>lib</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Load registry from a dynamic library. </p>
 
 </div>
 </div>

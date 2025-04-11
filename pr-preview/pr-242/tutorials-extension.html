@@ -140,20 +140,20 @@ $(function(){initNavTree('tutorials-extension.html',''); initResizable(true); })
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md73">Problem description</a>
+    <a href="#autotoc_md74">Problem description</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md74">Seaching for available models</a>
+    <a href="#autotoc_md75">Seaching for available models</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md75">Outline</a>
+    <a href="#autotoc_md76">Outline</a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_content_2tutorials_2extension_2extension"></a></p>
 <dl class="section note"><dt>Note</dt><dd>Before diving into the following tutorials we recommend reading the <a class="el" href="tutorials-contributing.html">Contributing</a> guide.</dd></dl>
 <p>NEML2 models can be easily extended or adapted to model the material behavior of your interest.</p>
-<h1><a class="anchor" id="autotoc_md73"></a>
+<h1><a class="anchor" id="autotoc_md74"></a>
 Problem description</h1>
 <p>This set of tutorials define a custom equation to model the conventional <em>projectile motion</em> problem:    </p><p class="formulaDsp">
 \begin{align}  \dot{\boldsymbol{x}} &amp; = \boldsymbol{v}, \label{1} \\
@@ -175,14 +175,14 @@ Problem description</h1>
 \end{align}
 </p>
 <p> subject to appropriate initial conditions \(\boldsymbol{x}_0\) and \(\boldsymbol{v}_0\)</p>
-<h1><a class="anchor" id="autotoc_md74"></a>
+<h1><a class="anchor" id="autotoc_md75"></a>
 Seaching for available models</h1>
 <p>Among these equations:</p><ul>
 <li>\(\eqref{1}\) and \(\eqref{3}\) can be defined using <a class="el" href="syntax-models.html#vecbackwardeulertimeintegration">VecBackwardEulerTimeIntegration</a>.</li>
 <li>\(\eqref{2}\) is not available in NEML2, and is the focus of this set of tutorials. We will name it <code>ProjectileAcceleration</code>.</li>
 <li>\(\eqref{4}\) is the <a class="el" href="syntax-models.html#implicitupdate">ImplicitUpdate</a>.</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md75"></a>
+<h1><a class="anchor" id="autotoc_md76"></a>
 Outline</h1>
 <p>Each tutorial builds on top of the previous tutorials, introduces and explains one small piece in model development. It is therefore recommended to follow these tutorials in order.</p>
 <ul>

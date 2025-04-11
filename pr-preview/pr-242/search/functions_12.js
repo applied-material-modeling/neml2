@@ -91,6 +91,5 @@ var searchData=
   ['swr4_88',['SWR4',['../classneml2_1_1SWR4.html#af405f7606d7f5340b96633c3338fca9c',1,'neml2::SWR4']]],
   ['symmetry_5foperations_5ffrom_5forbifold_89',['symmetry_operations_from_orbifold',['../namespaceneml2_1_1crystallography.html#ad0c33437b02e01cbd71800fd7b9c05ed',1,'neml2::crystallography']]],
   ['symmetry_5foperators_90',['symmetry_operators',['../classneml2_1_1crystallography_1_1CrystalGeometry.html#a27ddce5eba41756e60524054f224bdc3',1,'neml2::crystallography::CrystalGeometry']]],
-  ['symmetryfromorbifold_91',['SymmetryFromOrbifold',['../classneml2_1_1SymmetryFromOrbifold.html#a0e4da24515aef9f2e79bf3cefbf68aa7',1,'neml2::SymmetryFromOrbifold']]],
-  ['syntax_5ftype_92',['syntax_type',['../classneml2_1_1Registry.html#afce8ac0080e96cd94019e72a402cb466',1,'neml2::Registry']]]
+  ['symmetryfromorbifold_91',['SymmetryFromOrbifold',['../classneml2_1_1SymmetryFromOrbifold.html#a0e4da24515aef9f2e79bf3cefbf68aa7',1,'neml2::SymmetryFromOrbifold']]]
 ];

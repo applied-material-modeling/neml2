@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-04-02 13:22:01</td>
+            <td class="headerValue">2025-04-11 20:00:25</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryLo">16.7&nbsp;%</td>
@@ -121,19 +121,19 @@
 <span id="L59"><span class="lineNum">      59</span>              : namespace utils</span>
 <span id="L60"><span class="lineNum">      60</span>              : {</span>
 <span id="L61"><span class="lineNum">      61</span>              : TraceableTensorShape</span>
-<span id="L62"><span class="lineNum">      62</span> <span class="tlaGNC tlaBgGNC">       58641 : extract_batch_sizes(const ATensor &amp; tensor, Size batch_dim)</span></span>
+<span id="L62"><span class="lineNum">      62</span> <span class="tlaGNC tlaBgGNC">       58646 : extract_batch_sizes(const ATensor &amp; tensor, Size batch_dim)</span></span>
 <span id="L63"><span class="lineNum">      63</span>              : {</span>
 <span id="L64"><span class="lineNum">      64</span>              :   // Put the batch sizes into the traced graph if we are tracing</span>
 <span id="L65"><span class="lineNum">      65</span>              :   // TODO: This could be optimized</span>
-<span id="L66"><span class="lineNum">      66</span> <span class="tlaGNC">       58641 :   if (jit::tracer::isTracing())</span></span>
+<span id="L66"><span class="lineNum">      66</span> <span class="tlaGNC">       58646 :   if (jit::tracer::isTracing())</span></span>
 <span id="L67"><span class="lineNum">      67</span>              :   {</span>
-<span id="L68"><span class="lineNum">      68</span> <span class="tlaGNC">        7207 :     TraceableTensorShape sizes;</span></span>
-<span id="L69"><span class="lineNum">      69</span> <span class="tlaGNC">        9486 :     for (Size i = 0; i &lt; batch_dim; ++i)</span></span>
+<span id="L68"><span class="lineNum">      68</span> <span class="tlaGNC">        7209 :     TraceableTensorShape sizes;</span></span>
+<span id="L69"><span class="lineNum">      69</span> <span class="tlaGNC">        9488 :     for (Size i = 0; i &lt; batch_dim; ++i)</span></span>
 <span id="L70"><span class="lineNum">      70</span> <span class="tlaGNC">        2279 :       sizes.emplace_back(jit::tracer::getSizeOf(tensor, i));</span></span>
-<span id="L71"><span class="lineNum">      71</span> <span class="tlaGNC">        7207 :     return sizes;</span></span>
-<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC">        7207 :   }</span></span>
+<span id="L71"><span class="lineNum">      71</span> <span class="tlaGNC">        7209 :     return sizes;</span></span>
+<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC">        7209 :   }</span></span>
 <span id="L73"><span class="lineNum">      73</span>              : </span>
-<span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">       51434 :   return tensor.sizes().slice(0, batch_dim);</span></span>
+<span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">       51437 :   return tensor.sizes().slice(0, batch_dim);</span></span>
 <span id="L75"><span class="lineNum">      75</span>              : }</span>
 <span id="L76"><span class="lineNum">      76</span>              : </span>
 <span id="L77"><span class="lineNum">      77</span>              : std::shared_ptr&lt;jit::Graph&gt;</span>

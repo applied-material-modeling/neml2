@@ -140,38 +140,38 @@ $(function(){initNavTree('tutorials-models-vectorization.html',''); initResizabl
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md124">What is vectorization?</a>
+    <a href="#autotoc_md125">What is vectorization?</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md125">For loop versus vectorization: A numerical experiment</a>
+    <a href="#autotoc_md126">For loop versus vectorization: A numerical experiment</a>
     <ul>
       <li class="level2">
-        <a href="#autotoc_md126">For loop</a>
+        <a href="#autotoc_md127">For loop</a>
       </li>
       <li class="level2">
-        <a href="#autotoc_md127">Vectorization</a>
+        <a href="#autotoc_md128">Vectorization</a>
       </li>
     </ul>
   </li>
   <li class="level1">
-    <a href="#autotoc_md128">Remarks</a>
+    <a href="#autotoc_md129">Remarks</a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_content_2tutorials_2models_2vectorization_2main"></a></p>
-<h1><a class="anchor" id="autotoc_md124"></a>
+<h1><a class="anchor" id="autotoc_md125"></a>
 What is vectorization?</h1>
 <p>Vectorization refers to <em>array programming</em>. Both SIMD (single instruction, multiple data) operation and SIMT (single instruction, multiple threads) operation are implementations of array programming. These terms all refer to the methods that apply operations to an entire set of values at once.</p>
 <p>While the benefit of vectorization depends on the instruction support, instruction throughput, and register size, among other factors, it is generally expected that vectorization can provide a considerable amount of speedup to many operations. For example, given a device's instruction set with 1024-bit registers. These can be used to operate on 16 operands of 64-bits apiece. More specifically, if we are dealing with double-precision floating point numbers, a single instruction can do 16 operations at once. In other words, ideally, \( N \) operations can be completed using \( N/16 \) instructions. And again, ideally, this leads to 16 times faster execution than operations without vectorization.</p>
 <p>Although the implementation varies, both CPU and CUDA supports vectorization. NEML2 supports vectorization of model evaluation on both CPU and CUDA. All NEML2 models ensure that the data being processed, e.g., variables, parameters, buffers, are contiguously allocated, and that the same set of operations are applied to those contiguous chunks of data.</p>
-<h1><a class="anchor" id="autotoc_md125"></a>
+<h1><a class="anchor" id="autotoc_md126"></a>
 For loop versus vectorization: A numerical experiment</h1>
 <p>Given the material model we have been working with in the previous tutorials, how much (wall) time would it take to perform 100,000 forward evaluations?</p>
 <p>There are two ways of completing this task:</p><ul>
 <li>using a for loop, or</li>
 <li>using vectorization</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md126"></a>
+<h2><a class="anchor" id="autotoc_md127"></a>
 For loop</h2>
 <p>The following code snippet shows how to use a for loop to perform the \( N \) evaluations. For convenience, the \( N \) strains are evenly spaced.</p>
 <div class="tabbed"></div><div class="tabbed"><ul>
@@ -233,7 +233,7 @@ For loop</h2>
 <div class="line">  output = model.value({<span class="stringliteral">&quot;forces/E&quot;</span>: strain.batch[i]})</div>
 </div><!-- fragment --></li>
 </ul>
-</div><div class="tabbed"></div><h2><a class="anchor" id="autotoc_md127"></a>
+</div><div class="tabbed"></div><h2><a class="anchor" id="autotoc_md128"></a>
 Vectorization</h2>
 <p>The following code snippet shows how to rely on NEML2 internal vectorization to perform the \( N \) evaluations.</p>
 <div class="tabbed"></div><div class="tabbed"><ul>
@@ -301,7 +301,7 @@ Vectorization</h2>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyLeft"></td><td class="markdownTableBodyLeft">100000   </td><td class="markdownTableBodyLeft">26.176   </td><td class="markdownTableBodyLeft">0.005   </td></tr>
 </table>
-<h1><a class="anchor" id="autotoc_md128"></a>
+<h1><a class="anchor" id="autotoc_md129"></a>
 Remarks</h1>
 <p>While there are many other factors contributing to the performance difference between the for loop approach and the vectorization approach, we hope this simple experiment serves as a reasonable introduction to the benefit of vectorization.</p>
 <p>It is worth noting that, in the above code snippets,</p><ul>

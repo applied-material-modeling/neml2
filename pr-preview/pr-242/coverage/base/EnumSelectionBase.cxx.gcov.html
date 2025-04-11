@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-04-02 13:22:01</td>
+            <td class="headerValue">2025-04-11 20:00:25</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -101,31 +101,31 @@
 <span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">          64 :     _candidate_map.emplace(candidate, count++);</span></span>
 <span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC">          29 : }</span></span>
 <span id="L41"><span class="lineNum">      41</span>              : </span>
-<span id="L42"><span class="lineNum">      42</span> <span class="tlaGNC">         683 : EnumSelectionBase::EnumSelectionBase(const std::vector&lt;std::string&gt; &amp; candidates,</span></span>
-<span id="L43"><span class="lineNum">      43</span> <span class="tlaGNC">         683 :                                      const std::vector&lt;int&gt; &amp; values)</span></span>
+<span id="L42"><span class="lineNum">      42</span> <span class="tlaGNC">         685 : EnumSelectionBase::EnumSelectionBase(const std::vector&lt;std::string&gt; &amp; candidates,</span></span>
+<span id="L43"><span class="lineNum">      43</span> <span class="tlaGNC">         685 :                                      const std::vector&lt;int&gt; &amp; values)</span></span>
 <span id="L44"><span class="lineNum">      44</span>              : {</span>
-<span id="L45"><span class="lineNum">      45</span> <span class="tlaGNC">         683 :   neml_assert(candidates.size() == values.size(),</span></span>
+<span id="L45"><span class="lineNum">      45</span> <span class="tlaGNC">         685 :   neml_assert(candidates.size() == values.size(),</span></span>
 <span id="L46"><span class="lineNum">      46</span>              :               &quot;In (Multi)EnumSelection, number of candidates must match the number of values.&quot;);</span>
 <span id="L47"><span class="lineNum">      47</span>              : </span>
-<span id="L48"><span class="lineNum">      48</span> <span class="tlaGNC">         682 :   std::set&lt;std::string&gt; candidates_set(candidates.begin(), candidates.end());</span></span>
-<span id="L49"><span class="lineNum">      49</span> <span class="tlaGNC">         682 :   neml_assert(candidates_set.size() == candidates.size(),</span></span>
+<span id="L48"><span class="lineNum">      48</span> <span class="tlaGNC">         684 :   std::set&lt;std::string&gt; candidates_set(candidates.begin(), candidates.end());</span></span>
+<span id="L49"><span class="lineNum">      49</span> <span class="tlaGNC">         684 :   neml_assert(candidates_set.size() == candidates.size(),</span></span>
 <span id="L50"><span class="lineNum">      50</span>              :               &quot;Candidates of (Multi)EnumSelection must be unique.&quot;);</span>
 <span id="L51"><span class="lineNum">      51</span>              : </span>
-<span id="L52"><span class="lineNum">      52</span> <span class="tlaGNC">         682 :   std::set&lt;int&gt; values_set(values.begin(), values.end());</span></span>
-<span id="L53"><span class="lineNum">      53</span> <span class="tlaGNC">         682 :   neml_assert(values_set.size() == values.size(), &quot;Values of (Multi)EnumSelection must be unique.&quot;);</span></span>
+<span id="L52"><span class="lineNum">      52</span> <span class="tlaGNC">         684 :   std::set&lt;int&gt; values_set(values.begin(), values.end());</span></span>
+<span id="L53"><span class="lineNum">      53</span> <span class="tlaGNC">         684 :   neml_assert(values_set.size() == values.size(), &quot;Values of (Multi)EnumSelection must be unique.&quot;);</span></span>
 <span id="L54"><span class="lineNum">      54</span>              : </span>
-<span id="L55"><span class="lineNum">      55</span> <span class="tlaGNC">        3410 :   for (size_t i = 0; i &lt; candidates.size(); i++)</span></span>
-<span id="L56"><span class="lineNum">      56</span> <span class="tlaGNC">        2729 :     _candidate_map.emplace(candidates[i], values[i]);</span></span>
-<span id="L57"><span class="lineNum">      57</span> <span class="tlaGNC">         685 : }</span></span>
+<span id="L55"><span class="lineNum">      55</span> <span class="tlaGNC">        3420 :   for (size_t i = 0; i &lt; candidates.size(); i++)</span></span>
+<span id="L56"><span class="lineNum">      56</span> <span class="tlaGNC">        2737 :     _candidate_map.emplace(candidates[i], values[i]);</span></span>
+<span id="L57"><span class="lineNum">      57</span> <span class="tlaGNC">         687 : }</span></span>
 <span id="L58"><span class="lineNum">      58</span>              : </span>
 <span id="L59"><span class="lineNum">      59</span>              : std::string</span>
-<span id="L60"><span class="lineNum">      60</span> <span class="tlaGNC">        1486 : EnumSelectionBase::candidates_str() const</span></span>
+<span id="L60"><span class="lineNum">      60</span> <span class="tlaGNC">        1490 : EnumSelectionBase::candidates_str() const</span></span>
 <span id="L61"><span class="lineNum">      61</span>              : {</span>
-<span id="L62"><span class="lineNum">      62</span> <span class="tlaGNC">        1486 :   std::stringstream ss;</span></span>
-<span id="L63"><span class="lineNum">      63</span> <span class="tlaGNC">        7523 :   for (const auto &amp; [e, v] : _candidate_map)</span></span>
-<span id="L64"><span class="lineNum">      64</span> <span class="tlaGNC">        6037 :     ss &lt;&lt; e &lt;&lt; &quot; &quot;;</span></span>
-<span id="L65"><span class="lineNum">      65</span> <span class="tlaGNC">        2972 :   return ss.str();</span></span>
-<span id="L66"><span class="lineNum">      66</span> <span class="tlaGNC">        1486 : }</span></span>
+<span id="L62"><span class="lineNum">      62</span> <span class="tlaGNC">        1490 :   std::stringstream ss;</span></span>
+<span id="L63"><span class="lineNum">      63</span> <span class="tlaGNC">        7543 :   for (const auto &amp; [e, v] : _candidate_map)</span></span>
+<span id="L64"><span class="lineNum">      64</span> <span class="tlaGNC">        6053 :     ss &lt;&lt; e &lt;&lt; &quot; &quot;;</span></span>
+<span id="L65"><span class="lineNum">      65</span> <span class="tlaGNC">        2980 :   return ss.str();</span></span>
+<span id="L66"><span class="lineNum">      66</span> <span class="tlaGNC">        1490 : }</span></span>
 <span id="L67"><span class="lineNum">      67</span>              : } // namesace neml2</span>
         </pre>
               </td>

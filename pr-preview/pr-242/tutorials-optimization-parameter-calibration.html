@@ -140,15 +140,15 @@ $(function(){initNavTree('tutorials-optimization-parameter-calibration.html','')
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md131">Problem definition</a>
+    <a href="#autotoc_md132">Problem definition</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md132">Calibration</a>
+    <a href="#autotoc_md133">Calibration</a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_content_2tutorials_2optimization_2parameter__calibration_2main"></a></p>
-<h1><a class="anchor" id="autotoc_md131"></a>
+<h1><a class="anchor" id="autotoc_md132"></a>
 Problem definition</h1>
 <p>Suppose we are given the experimental data of one pair of strain \(\boldsymbol{\varepsilon}^*\) and stress \(\boldsymbol{\sigma}^*\) measurement of a specimen, and we are tasked to infer the bulk \(K\) and shear \(G\) modulus of the material.</p>
 <p>Let us define the loss function as the <em>distance</em> between the stress prediction and the stress measurement, i.e.   </p><p class="formulaDsp">
@@ -159,7 +159,7 @@ Problem definition</h1>
 \[  \left( K^*, G^* \right) = \mathop{\mathrm{argmin}}\limits_{K, G} l.
 \]
 </p>
-<h1><a class="anchor" id="autotoc_md132"></a>
+<h1><a class="anchor" id="autotoc_md133"></a>
 Calibration</h1>
 <p>The following Python script uses the simple gradient descent algorithm to find \(K^*\) and \(G^*\):    </p><p class="formulaDsp">
 \begin{align*}  K_{i+1} = K_i - \gamma \pdv{l}{K_i},

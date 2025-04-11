@@ -164,6 +164,14 @@ Available objects and their input file syntax</h1>
 Settings</h2>
 <p>Global settings for tensors, models, etc. </p><details >
 <summary >
+<code>additional_libraries</code> Additional dynamic libraries to load at runtime. The Registry from these libraries are merged into the current Registry singleton. This is required for using custom models defined in dynamic libraries not directly linked to libneml2. The paths are either absolute or relative to the current working directory.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: list of string </li>
+</ul>
+</details>
+<details >
+<summary >
 <code>buffer_name_separator</code> Nested buffer name separator. The default is '_'. For example, a sub-model 'foo' which declares a buffer 'bar' will have a buffer named 'foo_bar'.</summary>
 <p></p>
 <ul>

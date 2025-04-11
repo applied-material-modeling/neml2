@@ -49,7 +49,6 @@ var searchData=
   ['broadcastable_46',['broadcastable',['../namespaceneml2_1_1utils.html#ae974edcdb50646897b23d5ed5f43ed7f',1,'neml2::utils']]],
   ['buffer_5fname_5fseparator_47',['buffer_name_separator',['../namespaceneml2.html#a4cc04b41a4a39d17f26099be93ef949f',1,'neml2']]],
   ['bufferstore_48',['BufferStore',['../classneml2_1_1BufferStore.html#afe703ebc6b9e7ea9d8633ae108052079',1,'neml2::BufferStore::BufferStore(NEML2Object *object)'],['../classneml2_1_1BufferStore.html#a3ade3cdf681ff0df2c151fbeb3ad7643',1,'neml2::BufferStore::BufferStore(const BufferStore &amp;)=delete'],['../classneml2_1_1BufferStore.html#aea4d0eda61bc986e02d1071be7912a6d',1,'neml2::BufferStore::BufferStore(BufferStore &amp;&amp;)=delete']]],
-  ['builder_49',['builder',['../classneml2_1_1Registry.html#a5e569192804822d0600e223341202e0a',1,'neml2::Registry']]],
-  ['burgers_50',['burgers',['../classneml2_1_1crystallography_1_1CrystalGeometry.html#a6e6ca00752e0b1f1e377b78c81df8d1c',1,'neml2::crystallography::CrystalGeometry']]],
-  ['bvv_51',['bvv',['../namespaceneml2.html#a846994817e68e76cd4ffce68969d299a',1,'neml2']]]
+  ['burgers_49',['burgers',['../classneml2_1_1crystallography_1_1CrystalGeometry.html#a6e6ca00752e0b1f1e377b78c81df8d1c',1,'neml2::crystallography::CrystalGeometry']]],
+  ['bvv_50',['bvv',['../namespaceneml2.html#a846994817e68e76cd4ffce68969d299a',1,'neml2']]]
 ];

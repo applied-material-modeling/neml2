@@ -143,7 +143,7 @@ $(function(){initNavTree('tutorials-models-input-file.html',''); initResizable(t
     <a href="#input-file-syntax">Syntax</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md96">Special syntax</a>
+    <a href="#autotoc_md97">Special syntax</a>
   </li>
 </ul>
 </div>
@@ -178,7 +178,7 @@ Syntax</h1>
 <div class="line">[]</div>
 </div><!-- fragment --><p> defines a tensor named "E" under the <code>[Tensors]</code> block and a model named "elasticity" under the <code>[Models]</code> block. Notice that an object (in this case the tensor named "E" under the <code>[Tensors]</code> section) can be referenced by an input option (in this case "coefficients") by its name, and this mechanism is referred to as cross-referencing. The <a class="el" href="syntax-tensors.html">Syntax Documentation</a> provides a complete list of objects that can be defined by an input file. The <a class="el" href="system-tensors.html">System Documentation</a> provides detailed explanation of each system.</p>
 <dl class="section note"><dt>Note</dt><dd>The ordering of objects, i.e., the sequence objects appear in the input file, does not change their behavior.</dd></dl>
-<h1><a class="anchor" id="autotoc_md96"></a>
+<h1><a class="anchor" id="autotoc_md97"></a>
 Special syntax</h1>
 <p><b>Boolean</b>: Oftentimes the behavior of the object is preferrably controlled by a boolean flag. However, since the HIT format only allows (array of) integer, floating-point number, and string, a special syntax shall be reserved for boolean values. In NEML2 input files, a string with value "true" can be parsed into a boolean <code>true</code>, and a string with value "false" can be parsed into a boolean <code>false</code>.</p>
 <dl class="section note"><dt>Note</dt><dd>On the other hand, other commonly used boolean flags such as "on"/"off", "1"/"0", "True"/"False", etc., cannot be parsed into boolean values.</dd></dl>

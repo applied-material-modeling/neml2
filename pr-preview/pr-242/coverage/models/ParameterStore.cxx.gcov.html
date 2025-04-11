@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-04-02 13:22:01</td>
+            <td class="headerValue">2025-04-11 20:00:25</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryLo">17.5&nbsp;%</td>
@@ -95,10 +95,10 @@
 <span id="L33"><span class="lineNum">      33</span>              : </span>
 <span id="L34"><span class="lineNum">      34</span>              : namespace neml2</span>
 <span id="L35"><span class="lineNum">      35</span>              : {</span>
-<span id="L36"><span class="lineNum">      36</span> <span class="tlaGNC tlaBgGNC">         397 : ParameterStore::ParameterStore(Model * object)</span></span>
-<span id="L37"><span class="lineNum">      37</span> <span class="tlaGNC">         397 :   : _object(object)</span></span>
+<span id="L36"><span class="lineNum">      36</span> <span class="tlaGNC tlaBgGNC">         398 : ParameterStore::ParameterStore(Model * object)</span></span>
+<span id="L37"><span class="lineNum">      37</span> <span class="tlaGNC">         398 :   : _object(object)</span></span>
 <span id="L38"><span class="lineNum">      38</span>              : {</span>
-<span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">         397 : }</span></span>
+<span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">         398 : }</span></span>
 <span id="L40"><span class="lineNum">      40</span>              : </span>
 <span id="L41"><span class="lineNum">      41</span>              : void</span>
 <span id="L42"><span class="lineNum">      42</span> <span class="tlaUNC tlaBgUNC">           0 : ParameterStore::send_parameters_to(const TensorOptions &amp; options)</span></span>
@@ -131,11 +131,11 @@
 <span id="L69"><span class="lineNum">      69</span> <span class="tlaUNC">           0 : }</span></span>
 <span id="L70"><span class="lineNum">      70</span>              : </span>
 <span id="L71"><span class="lineNum">      71</span>              : std::map&lt;std::string, std::unique_ptr&lt;TensorValueBase&gt;&gt; &amp;</span>
-<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC tlaBgGNC">      154056 : ParameterStore::named_parameters()</span></span>
+<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC tlaBgGNC">      154106 : ParameterStore::named_parameters()</span></span>
 <span id="L73"><span class="lineNum">      73</span>              : {</span>
-<span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">      154056 :   neml_assert(_object-&gt;host() == _object,</span></span>
+<span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">      154106 :   neml_assert(_object-&gt;host() == _object,</span></span>
 <span id="L75"><span class="lineNum">      75</span>              :               &quot;named_parameters() should only be called on the host model.&quot;);</span>
-<span id="L76"><span class="lineNum">      76</span> <span class="tlaGNC">      154056 :   return _param_values;</span></span>
+<span id="L76"><span class="lineNum">      76</span> <span class="tlaGNC">      154106 :   return _param_values;</span></span>
 <span id="L77"><span class="lineNum">      77</span>              : }</span>
 <span id="L78"><span class="lineNum">      78</span>              : </span>
 <span id="L79"><span class="lineNum">      79</span>              : template &lt;typename T, typename&gt;</span>
@@ -379,38 +379,38 @@
 <span id="L317"><span class="lineNum">     317</span>              : FOR_ALL_PRIMITIVETENSOR(PARAMETERSTORE_INTANTIATE_PRIMITIVETENSOR);</span>
 <span id="L318"><span class="lineNum">     318</span>              : </span>
 <span id="L319"><span class="lineNum">     319</span>              : void</span>
-<span id="L320"><span class="lineNum">     320</span> <span class="tlaGNC tlaBgGNC">         324 : ParameterStore::assign_parameter_stack(jit::Stack &amp; stack)</span></span>
+<span id="L320"><span class="lineNum">     320</span> <span class="tlaGNC tlaBgGNC">         325 : ParameterStore::assign_parameter_stack(jit::Stack &amp; stack)</span></span>
 <span id="L321"><span class="lineNum">     321</span>              : {</span>
-<span id="L322"><span class="lineNum">     322</span> <span class="tlaGNC">         324 :   const auto &amp; params = _object-&gt;host&lt;ParameterStore&gt;()-&gt;named_parameters();</span></span>
+<span id="L322"><span class="lineNum">     322</span> <span class="tlaGNC">         325 :   const auto &amp; params = _object-&gt;host&lt;ParameterStore&gt;()-&gt;named_parameters();</span></span>
 <span id="L323"><span class="lineNum">     323</span>              : </span>
-<span id="L324"><span class="lineNum">     324</span> <span class="tlaGNC">         324 :   neml_assert_dbg(stack.size() &gt;= params.size(),</span></span>
+<span id="L324"><span class="lineNum">     324</span> <span class="tlaGNC">         325 :   neml_assert_dbg(stack.size() &gt;= params.size(),</span></span>
 <span id="L325"><span class="lineNum">     325</span>              :                   &quot;Stack size (&quot;,</span>
-<span id="L326"><span class="lineNum">     326</span> <span class="tlaGNC">         324 :                   stack.size(),</span></span>
+<span id="L326"><span class="lineNum">     326</span> <span class="tlaGNC">         325 :                   stack.size(),</span></span>
 <span id="L327"><span class="lineNum">     327</span>              :                   &quot;) is smaller than the number of parameters in the model (&quot;,</span>
-<span id="L328"><span class="lineNum">     328</span> <span class="tlaGNC">         324 :                   params.size(),</span></span>
+<span id="L328"><span class="lineNum">     328</span> <span class="tlaGNC">         325 :                   params.size(),</span></span>
 <span id="L329"><span class="lineNum">     329</span>              :                   &quot;).&quot;);</span>
 <span id="L330"><span class="lineNum">     330</span>              : </span>
 <span id="L331"><span class="lineNum">     331</span>              :   // Last n tensors in the stack are the parameters</span>
-<span id="L332"><span class="lineNum">     332</span> <span class="tlaGNC">         324 :   std::size_t i = stack.size() - params.size();</span></span>
-<span id="L333"><span class="lineNum">     333</span> <span class="tlaGNC">         719 :   for (auto &amp;&amp; [name, param] : params)</span></span>
+<span id="L332"><span class="lineNum">     332</span> <span class="tlaGNC">         325 :   std::size_t i = stack.size() - params.size();</span></span>
+<span id="L333"><span class="lineNum">     333</span> <span class="tlaGNC">         720 :   for (auto &amp;&amp; [name, param] : params)</span></span>
 <span id="L334"><span class="lineNum">     334</span>              :   {</span>
 <span id="L335"><span class="lineNum">     335</span> <span class="tlaGNC">         395 :     const auto tensor = stack[i++].toTensor();</span></span>
 <span id="L336"><span class="lineNum">     336</span> <span class="tlaGNC">         395 :     *param = Tensor(tensor, tensor.dim() - Tensor(*param).base_dim());</span></span>
 <span id="L337"><span class="lineNum">     337</span> <span class="tlaGNC">         395 :   }</span></span>
 <span id="L338"><span class="lineNum">     338</span>              : </span>
 <span id="L339"><span class="lineNum">     339</span>              :   // Drop the input variables from the stack</span>
-<span id="L340"><span class="lineNum">     340</span> <span class="tlaGNC">         324 :   jit::drop(stack, params.size());</span></span>
-<span id="L341"><span class="lineNum">     341</span> <span class="tlaGNC">         324 : }</span></span>
+<span id="L340"><span class="lineNum">     340</span> <span class="tlaGNC">         325 :   jit::drop(stack, params.size());</span></span>
+<span id="L341"><span class="lineNum">     341</span> <span class="tlaGNC">         325 : }</span></span>
 <span id="L342"><span class="lineNum">     342</span>              : </span>
 <span id="L343"><span class="lineNum">     343</span>              : jit::Stack</span>
-<span id="L344"><span class="lineNum">     344</span> <span class="tlaGNC">        5732 : ParameterStore::collect_parameter_stack() const</span></span>
+<span id="L344"><span class="lineNum">     344</span> <span class="tlaGNC">        5734 : ParameterStore::collect_parameter_stack() const</span></span>
 <span id="L345"><span class="lineNum">     345</span>              : {</span>
-<span id="L346"><span class="lineNum">     346</span> <span class="tlaGNC">        5732 :   const auto &amp; params = _object-&gt;host&lt;ParameterStore&gt;()-&gt;named_parameters();</span></span>
-<span id="L347"><span class="lineNum">     347</span> <span class="tlaGNC">        5732 :   jit::Stack stack;</span></span>
-<span id="L348"><span class="lineNum">     348</span> <span class="tlaGNC">        5732 :   stack.reserve(params.size());</span></span>
-<span id="L349"><span class="lineNum">     349</span> <span class="tlaGNC">       20692 :   for (auto &amp;&amp; [name, param] : params)</span></span>
+<span id="L346"><span class="lineNum">     346</span> <span class="tlaGNC">        5734 :   const auto &amp; params = _object-&gt;host&lt;ParameterStore&gt;()-&gt;named_parameters();</span></span>
+<span id="L347"><span class="lineNum">     347</span> <span class="tlaGNC">        5734 :   jit::Stack stack;</span></span>
+<span id="L348"><span class="lineNum">     348</span> <span class="tlaGNC">        5734 :   stack.reserve(params.size());</span></span>
+<span id="L349"><span class="lineNum">     349</span> <span class="tlaGNC">       20694 :   for (auto &amp;&amp; [name, param] : params)</span></span>
 <span id="L350"><span class="lineNum">     350</span> <span class="tlaGNC">       14960 :     stack.emplace_back(Tensor(*param));</span></span>
-<span id="L351"><span class="lineNum">     351</span> <span class="tlaGNC">        5732 :   return stack;</span></span>
+<span id="L351"><span class="lineNum">     351</span> <span class="tlaGNC">        5734 :   return stack;</span></span>
 <span id="L352"><span class="lineNum">     352</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
 <span id="L353"><span class="lineNum">     353</span>              : } // namespace neml2</span>
         </pre>

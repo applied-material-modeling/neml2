@@ -140,21 +140,21 @@ $(function(){initNavTree('tutorials-models-model-composition.html',''); initResi
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md102">Problem description</a>
+    <a href="#autotoc_md103">Problem description</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md103">Writing the input file</a>
+    <a href="#autotoc_md104">Writing the input file</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md104">Running the models: the hard way</a>
+    <a href="#autotoc_md105">Running the models: the hard way</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md105">Running the models: the easy way</a>
+    <a href="#autotoc_md106">Running the models: the easy way</a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_content_2tutorials_2models_2model__composition_2main"></a></p>
-<h1><a class="anchor" id="autotoc_md102"></a>
+<h1><a class="anchor" id="autotoc_md103"></a>
 Problem description</h1>
 <p>We have been working with the linear, isotropic elasticity model in the previous tutorials. We started with that example because it is arguably the simplest possible material model in the context of solid mechanics. It is simple not just because of the simplicity in the description of the material behavior, but also due to the fact that its mathematical formulation only involves one linear equation.</p>
 <p>Much more complicated, nonlinear models can be created using NEML2.</p>
@@ -188,7 +188,7 @@ Problem description</h1>
 \end{align}
 </p>
 <p> where \( \boldsymbol{a} \) and \( \boldsymbol{b} \) are symmetric second order tensors.</p>
-<h1><a class="anchor" id="autotoc_md103"></a>
+<h1><a class="anchor" id="autotoc_md104"></a>
 Writing the input file</h1>
 <p>Let us first search for available models describing this set of equations:</p><ul>
 <li>\( \eqref{1} \&amp; \eqref{2} \) correspond to <a class="el" href="syntax-models.html#sr2invariant">SR2Invariant</a>;</li>
@@ -215,7 +215,7 @@ Writing the input file</h1>
 <div class="line">    coefficient_as_parameter = true</div>
 <div class="line">  []</div>
 <div class="line">[]</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md104"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md105"></a>
 Running the models: the hard way</h1>
 <p>Now that all three models are defined in the input file, we can load and evaluate them in sequence, with a bit of effort:</p>
 <div class="tabbed"></div><div class="tabbed"><ul>
@@ -262,7 +262,7 @@ Running the models: the hard way</h1>
 <div class="ttc" id="anamespaceneml2_html_a24366916c1001b7e830ae858a57c7e94"><div class="ttname"><a href="namespaceneml2.html#a24366916c1001b7e830ae858a57c7e94">neml2::get_model</a></div><div class="ttdeci">Model &amp; get_model(const std::string &amp;mname)</div><div class="ttdoc">A convenient function to manufacture a neml2::Model.</div><div class="ttdef"><b>Definition</b> Model.cxx:41</div></div>
 <div class="ttc" id="anamespaceneml2_html_a3c266b437e28eb7adec97c12b9a7e7d2"><div class="ttname"><a href="namespaceneml2.html#a3c266b437e28eb7adec97c12b9a7e7d2">neml2::set_default_dtype</a></div><div class="ttdeci">void set_default_dtype(Dtype dtype)</div><div class="ttdef"><b>Definition</b> defaults.cxx:31</div></div>
 <div class="ttc" id="anamespaceneml2_html_a9e1488821b46ffc106c90ab80036b7aa"><div class="ttname"><a href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">neml2::VariableName</a></div><div class="ttdeci">LabeledAxisAccessor VariableName</div><div class="ttdef"><b>Definition</b> LabeledAxisAccessor.h:185</div></div>
-<div class="ttc" id="anamespaceneml2_html_ae26cd3cedac7d43bddad9f8502bbe6bf"><div class="ttname"><a href="namespaceneml2.html#ae26cd3cedac7d43bddad9f8502bbe6bf">neml2::load_input</a></div><div class="ttdeci">void load_input(const std::filesystem::path &amp;path, const std::string &amp;additional_input)</div><div class="ttdoc">A convenient function to parse all options from an input file.</div><div class="ttdef"><b>Definition</b> Factory.cxx:35</div></div>
+<div class="ttc" id="anamespaceneml2_html_ae26cd3cedac7d43bddad9f8502bbe6bf"><div class="ttname"><a href="namespaceneml2.html#ae26cd3cedac7d43bddad9f8502bbe6bf">neml2::load_input</a></div><div class="ttdeci">void load_input(const std::filesystem::path &amp;path, const std::string &amp;additional_input)</div><div class="ttdoc">A convenient function to parse all options from an input file.</div><div class="ttdef"><b>Definition</b> Factory.cxx:34</div></div>
 </div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">b_rate: </div>
 <div class="line"> 22.6184</div>
 <div class="line">  7.7092</div>
@@ -310,7 +310,7 @@ Running the models: the hard way</h1>
 <div class="line">&lt;Tensor of shape [][6]&gt;</div>
 </div><!-- fragment --></li>
 </ul>
-</div><div class="tabbed"></div><h1><a class="anchor" id="autotoc_md105"></a>
+</div><div class="tabbed"></div><h1><a class="anchor" id="autotoc_md106"></a>
 Running the models: the easy way</h1>
 <p>We were able to successfully calculate \( \dot{\boldsymbol{b}} \) by</p><ol type="1">
 <li>calculating \( \bar{a} \) by evaluating \( \eqref{1} \),</li>

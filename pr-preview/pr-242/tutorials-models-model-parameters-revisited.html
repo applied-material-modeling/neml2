@@ -140,26 +140,26 @@ $(function(){initNavTree('tutorials-models-model-parameters-revisited.html','');
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md110">Problem description</a>
+    <a href="#autotoc_md111">Problem description</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md111">Parameter specification</a>
+    <a href="#autotoc_md112">Parameter specification</a>
     <ul>
       <li class="level2">
-        <a href="#autotoc_md112">Plain numeric literal</a>
+        <a href="#autotoc_md113">Plain numeric literal</a>
       </li>
       <li class="level2">
-        <a href="#autotoc_md113">Tensor name</a>
+        <a href="#autotoc_md114">Tensor name</a>
       </li>
       <li class="level2">
-        <a href="#autotoc_md114">Variable specifier</a>
+        <a href="#autotoc_md115">Variable specifier</a>
       </li>
     </ul>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_content_2tutorials_2models_2model__parameters__revisited_2main"></a></p>
-<h1><a class="anchor" id="autotoc_md110"></a>
+<h1><a class="anchor" id="autotoc_md111"></a>
 Problem description</h1>
 <p>In a <a class="el" href="tutorials-models-model-parameters.html">previous tutorial</a>, we briefly explained the usage of model parameters and their retrieval and update. In this tutorial, we will introduce other ways of specifying model parameters in the input file and how they facilitate model composition.</p>
 <p>Consider the following equations describing the stress-strain relation accounting for a thermal eigenstrain:     </p><p class="formulaDsp">
@@ -169,14 +169,14 @@ Problem description</h1>
 \end{align}
 </p>
 <p> where \( \alpha \) is the coefficient of thermal expansion, and \( T_0 \) is the reference temperature at which the thermal eigenstrain is zero.</p>
-<h1><a class="anchor" id="autotoc_md111"></a>
+<h1><a class="anchor" id="autotoc_md112"></a>
 Parameter specification</h1>
 <p>In NEML2 input files, model parameters can be specified in one of three ways:</p><ol type="1">
 <li>As plain numeric literals</li>
 <li>Using the name of a tensor</li>
 <li>Using a <em>variable specifier</em></li>
 </ol>
-<h2><a class="anchor" id="autotoc_md112"></a>
+<h2><a class="anchor" id="autotoc_md113"></a>
 Plain numeric literal</h2>
 <p>In this mode, parameter values are directly specified by plain numbers. The corresponding input file looks like </p><div class="fragment"><div class="line">[Models]</div>
 <div class="line">  [eq1]</div>
@@ -250,7 +250,7 @@ Plain numeric literal</h2>
 <li><code>eq3_K</code>: Bulk modulus defined in <code>eq3</code>.</li>
 </ul>
 <p>Note that the parameters of the composed model is defined by the <em>union</em> of the sub-model parameters, and that their names are prefixed by the name of the sub-model.</p>
-<h2><a class="anchor" id="autotoc_md113"></a>
+<h2><a class="anchor" id="autotoc_md114"></a>
 Tensor name</h2>
 <p>While specifying parameter values as plain numeric literals is convenient and expressive, it is however not always possible to do so. For example, when the parameter value is <em>batched</em>, it is not possible to fully define it using one number. In such scenario, a tensor can be created under the <code>[Tensors]</code> section, and the name of that tensor can be used in place of the parameter value.</p>
 <p>The following example input file shows how to specify the coefficient of thermal expansion as a batched scalar: </p><div class="fragment"><div class="line">[Tensors]</div>
@@ -345,7 +345,7 @@ Tensor name</h2>
 <div class="line">&lt;Tensor of shape [2, 2][]&gt;</div>
 </div><!-- fragment --></li>
 </ul>
-</div><div class="tabbed"></div><h2><a class="anchor" id="autotoc_md114"></a>
+</div><div class="tabbed"></div><h2><a class="anchor" id="autotoc_md115"></a>
 Variable specifier</h2>
 <p>While specifying parameters using tensor names is significantly more flexible than using plain numeric literals, the parameter values still remain "static", i.e., the parameter values remain the same during model evaluation unless explicitly updated by the user. In practice, especially when dealing with multiple physics phenomena such as thermal-mechanical coupling, this limitation makes it difficult to specify temperature-dependent parameters.</p>
 <p>To remove this limitation, NEML2 allows the use of <em>variable specifiers</em> to define model parameters. Suppose the original problem is modified to account for temperature-dependent parameters, e.g.,     </p><p class="formulaDsp">

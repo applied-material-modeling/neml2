@@ -140,15 +140,15 @@ $(function(){initNavTree('tutorials-models-transient-driver.html',''); initResiz
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md122">Problem description</a>
+    <a href="#autotoc_md123">Problem description</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md123">Simulating the stress-strain curve</a>
+    <a href="#autotoc_md124">Simulating the stress-strain curve</a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_content_2tutorials_2models_2transient__driver_2main"></a></p>
-<h1><a class="anchor" id="autotoc_md122"></a>
+<h1><a class="anchor" id="autotoc_md123"></a>
 Problem description</h1>
 <p>In the previous tutorial, we demonstrated the use of <a class="el" href="syntax-models.html#implicitupdate">ImplicitUpdate</a> to perform constitutive update by solving an implicit system of equations. In particular, we have addressed the constitutive update in the following form   </p><p class="formulaDsp">
 \begin{align}  \mathbf{s}_{n+1} = f(\mathbf{f}_{n+1}, \mathbf{s}_n, \mathbf{f}_n; \mathbf{p}). \label{form1}
@@ -163,7 +163,7 @@ Problem description</h1>
 </p>
 <p> where \(N\) is the total number of steps used to discretize the "transient".</p>
 <p>NEML2 models, including those composed from submodels, can only be used to describe the first form of constitutive \(\eqref{form1}\), i.e., a single step constitutive update. In order to simulate the initial-value problem defined in \(\eqref{form2}\), a <a class="el" href="classneml2_1_1TransientDriver.html" title="The driver for a transient initial-value problem.">neml2::TransientDriver</a> can be used to perform the recursive constitutive update to obtain the transient response.</p>
-<h1><a class="anchor" id="autotoc_md123"></a>
+<h1><a class="anchor" id="autotoc_md124"></a>
 Simulating the stress-strain curve</h1>
 <p>Reusing the viscoplasticity model defined in the previous tutorial, along with the Newton-Raphson solver, a predefined driver <a class="el" href="syntax-drivers.html#sdtsolidmechanicsdriver">SDTSolidMechanicsDriver</a> can be used to obtain the stress-strain curve.</p>
 <div class="fragment"><div class="line">[Drivers]</div>
@@ -228,7 +228,7 @@ Simulating the stress-strain curve</h1>
 <div class="ttc" id="anamespaceneml2_html_a16c96ec35672a72196d72131d3f5f8c3"><div class="ttname"><a href="namespaceneml2.html#a16c96ec35672a72196d72131d3f5f8c3">neml2::kFloat64</a></div><div class="ttdeci">constexpr auto kFloat64</div><div class="ttdef"><b>Definition</b> types.h:53</div></div>
 <div class="ttc" id="anamespaceneml2_html_a3c266b437e28eb7adec97c12b9a7e7d2"><div class="ttname"><a href="namespaceneml2.html#a3c266b437e28eb7adec97c12b9a7e7d2">neml2::set_default_dtype</a></div><div class="ttdeci">void set_default_dtype(Dtype dtype)</div><div class="ttdef"><b>Definition</b> defaults.cxx:31</div></div>
 <div class="ttc" id="anamespaceneml2_html_acfd0f6bc05c40545cdb14eb1b47881f1"><div class="ttname"><a href="namespaceneml2.html#acfd0f6bc05c40545cdb14eb1b47881f1">neml2::get_driver</a></div><div class="ttdeci">Driver &amp; get_driver(const std::string &amp;dname)</div><div class="ttdoc">A convenient function to manufacture a neml2::Driver.</div><div class="ttdef"><b>Definition</b> Driver.cxx:34</div></div>
-<div class="ttc" id="anamespaceneml2_html_ae26cd3cedac7d43bddad9f8502bbe6bf"><div class="ttname"><a href="namespaceneml2.html#ae26cd3cedac7d43bddad9f8502bbe6bf">neml2::load_input</a></div><div class="ttdeci">void load_input(const std::filesystem::path &amp;path, const std::string &amp;additional_input)</div><div class="ttdoc">A convenient function to parse all options from an input file.</div><div class="ttdef"><b>Definition</b> Factory.cxx:35</div></div>
+<div class="ttc" id="anamespaceneml2_html_ae26cd3cedac7d43bddad9f8502bbe6bf"><div class="ttname"><a href="namespaceneml2.html#ae26cd3cedac7d43bddad9f8502bbe6bf">neml2::load_input</a></div><div class="ttdeci">void load_input(const std::filesystem::path &amp;path, const std::string &amp;additional_input)</div><div class="ttdoc">A convenient function to parse all options from an input file.</div><div class="ttdef"><b>Definition</b> Factory.cxx:34</div></div>
 </div><!-- fragment --><dl class="section note"><dt>Note</dt><dd>The Python binding for <a class="el" href="classneml2_1_1Driver.html" title="The Driver drives the execution of a NEML2 Model.">neml2::Driver</a> does not yet exist. Instead, a separate Python package named pyzag can be used in conjunction with NEML2 to perform recursive constitutive updates in a much more efficient manner compared to the NEML2 drivers, which loop over each point in the requested time series sequentially.</dd></dl>
 <p>The results saved in "result.pt" can be used as a regular pickled <a href="https://pytorch.org/docs/stable/jit.html">TorchScript</a>, which can be loaded using <code>torch.jit.load</code>. For example, the following Python script retrieves and plots the strain and stress values. </p><div class="fragment"><div class="line"><span class="keyword">import</span> torch</div>
 <div class="line"><span class="keyword">from</span> matplotlib <span class="keyword">import</span> pyplot <span class="keyword">as</span> plt</div>

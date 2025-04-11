@@ -140,21 +140,21 @@ $(function(){initNavTree('tutorials-models-implicit-model.html',''); initResizab
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md92">Problem description</a>
+    <a href="#autotoc_md93">Problem description</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md93">Defining the system of equations</a>
+    <a href="#autotoc_md94">Defining the system of equations</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md94">Solving the system of equations</a>
+    <a href="#autotoc_md95">Solving the system of equations</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md95">Remarks on the implicit function theorem</a>
+    <a href="#autotoc_md96">Remarks on the implicit function theorem</a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_content_2tutorials_2models_2implicit__model_2main"></a></p>
-<h1><a class="anchor" id="autotoc_md92"></a>
+<h1><a class="anchor" id="autotoc_md93"></a>
 Problem description</h1>
 <p>One of the most notable differences between constitutive models and feed-forward neural networks is that updating certain stiff systems with implicit methods is often more computationally efficient compared to explicit algorithms.</p>
 <p>A generally nonlinear, recursive, implicit system of equations take the following form    </p><p class="formulaDsp">
@@ -183,7 +183,7 @@ Problem description</h1>
 </p>
 <p> the solution procedure of which is often referred to as the <em>return-mapping algorithm</em> in the solid mechanics community.</p>
 <p>This tutorial illustrates the use of <a class="el" href="syntax-models.html#implicitupdate">ImplicitUpdate</a> in conjunction with a Newton-Raphson solver to perform the implicit update.</p>
-<h1><a class="anchor" id="autotoc_md93"></a>
+<h1><a class="anchor" id="autotoc_md94"></a>
 Defining the system of equations</h1>
 <p>After searching among existing models provided by NEML2, we are able to translate each of these equations into a NEML2 model. The input file looks like </p><div class="fragment"><div class="line">[Models]</div>
 <div class="line">  [eq1]</div>
@@ -298,7 +298,7 @@ Defining the system of equations</h1>
 <div class="line">            eq1_c_1 [Scalar][Double][cpu]</div>
 </div><!-- fragment --></li>
 </ul>
-</div><div class="tabbed"></div><h1><a class="anchor" id="autotoc_md94"></a>
+</div><div class="tabbed"></div><h1><a class="anchor" id="autotoc_md95"></a>
 Solving the system of equations</h1>
 <p>Once the system of equations are properly defined, we can use the <a class="el" href="syntax-models.html#implicitupdate">ImplicitUpdate</a> to solve the system of equations. The <a class="el" href="syntax-models.html#implicitupdate">ImplicitUpdate</a> is responsible for the following:</p><ul>
 <li>(Re)declare the solution to the system of equations as output variables.</li>
@@ -427,7 +427,7 @@ Solving the system of equations</h1>
 <div class="line">&lt;Tensor of shape [][6]&gt;</div>
 </div><!-- fragment --></li>
 </ul>
-</div><div class="tabbed"></div><h1><a class="anchor" id="autotoc_md95"></a>
+</div><div class="tabbed"></div><h1><a class="anchor" id="autotoc_md96"></a>
 Remarks on the implicit function theorem</h1>
 <p>Unlike other regular models, declaring variables on the <em>correct</em> sub-axes is important because NEML2 relies on the reserved sub-axes (<code>state</code>, <code>forces</code>, etc.)</p><ul>
 <li>To determine whether the variable value and derivatives should be calculated during the assembly of residual and Jacobian. For example, the derivatives with respect to all variables on the <code>forces</code> sub-axis are skipped because they are not required in the assembly of the linear system.</li>

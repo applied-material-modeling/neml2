@@ -123,7 +123,7 @@ var NAVTREEINDEX =
 "classneml2_1_1WorkScheduler.html",
 "namespaceneml2.html#a47537a81108fa8a58099f523a03d47a5",
 "namespaceneml2.html#ac6a5344a080b8aa46e9bb4723839d100",
-"structneml2_1_1NonlinearSystem_1_1Jac.html"
+"structneml2_1_1NonlinearSolver_1_1Result.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronization';

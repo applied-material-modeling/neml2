@@ -160,6 +160,7 @@ var namespaceneml2 =
     [ "ModelDriver", "classneml2_1_1ModelDriver.html", "classneml2_1_1ModelDriver" ],
     [ "MultiEnumSelection", "classneml2_1_1MultiEnumSelection.html", "classneml2_1_1MultiEnumSelection" ],
     [ "NEML2Object", "classneml2_1_1NEML2Object.html", "classneml2_1_1NEML2Object" ],
+    [ "NEML2ObjectInfo", "structneml2_1_1NEML2ObjectInfo.html", "structneml2_1_1NEML2ObjectInfo" ],
     [ "NEMLException", "classneml2_1_1NEMLException.html", "classneml2_1_1NEMLException" ],
     [ "Newton", "classneml2_1_1Newton.html", "classneml2_1_1Newton" ],
     [ "NewtonWithLineSearch", "classneml2_1_1NewtonWithLineSearch.html", "classneml2_1_1NewtonWithLineSearch" ],

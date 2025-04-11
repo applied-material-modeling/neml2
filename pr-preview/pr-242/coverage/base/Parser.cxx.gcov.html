@@ -31,13 +31,13 @@
             <td class="headerValue">coverage.info</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntryHi">89.6&nbsp;%</td>
-            <td class="headerCovTableEntry">48</td>
+            <td class="headerCovTableEntryHi">82.7&nbsp;%</td>
+            <td class="headerCovTableEntry">52</td>
             <td class="headerCovTableEntry">43</td>
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-04-02 13:22:01</td>
+            <td class="headerValue">2025-04-11 20:00:25</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">83.3&nbsp;%</td>
@@ -138,12 +138,12 @@
 <span id="L76"><span class="lineNum">      76</span>              : </span>
 <span id="L77"><span class="lineNum">      77</span>              : template &lt;&gt;</span>
 <span id="L78"><span class="lineNum">      78</span>              : bool</span>
-<span id="L79"><span class="lineNum">      79</span> <span class="tlaGNC">         868 : parse_(VariableName &amp; val, const std::string &amp; raw_str)</span></span>
+<span id="L79"><span class="lineNum">      79</span> <span class="tlaGNC">         870 : parse_(VariableName &amp; val, const std::string &amp; raw_str)</span></span>
 <span id="L80"><span class="lineNum">      80</span>              : {</span>
-<span id="L81"><span class="lineNum">      81</span> <span class="tlaGNC">         868 :   auto tokens = split(raw_str, &quot;/ \t\n\v\f\r&quot;);</span></span>
-<span id="L82"><span class="lineNum">      82</span> <span class="tlaGNC">         868 :   val = VariableName(tokens);</span></span>
-<span id="L83"><span class="lineNum">      83</span> <span class="tlaGNC">         868 :   return true;</span></span>
-<span id="L84"><span class="lineNum">      84</span> <span class="tlaGNC">         868 : }</span></span>
+<span id="L81"><span class="lineNum">      81</span> <span class="tlaGNC">         870 :   auto tokens = split(raw_str, &quot;/ \t\n\v\f\r&quot;);</span></span>
+<span id="L82"><span class="lineNum">      82</span> <span class="tlaGNC">         870 :   val = VariableName(tokens);</span></span>
+<span id="L83"><span class="lineNum">      83</span> <span class="tlaGNC">         870 :   return true;</span></span>
+<span id="L84"><span class="lineNum">      84</span> <span class="tlaGNC">         870 : }</span></span>
 <span id="L85"><span class="lineNum">      85</span>              : </span>
 <span id="L86"><span class="lineNum">      86</span>              : template &lt;&gt;</span>
 <span id="L87"><span class="lineNum">      87</span>              : bool</span>
@@ -177,11 +177,20 @@
 <span id="L115"><span class="lineNum">     115</span> <span class="tlaGNC tlaBgGNC">          90 : parse_(Device &amp; val, const std::string &amp; raw_str)</span></span>
 <span id="L116"><span class="lineNum">     116</span>              : {</span>
 <span id="L117"><span class="lineNum">     117</span> <span class="tlaGNC">          90 :   const auto str_val = parse&lt;std::string&gt;(raw_str);</span></span>
-<span id="L118"><span class="lineNum">     118</span> <span class="tlaGNC">          90 :   val = Device(str_val);</span></span>
-<span id="L119"><span class="lineNum">     119</span> <span class="tlaGNC">          90 :   return true;</span></span>
-<span id="L120"><span class="lineNum">     120</span> <span class="tlaGNC">          90 : }</span></span>
-<span id="L121"><span class="lineNum">     121</span>              : } // namespace utils</span>
-<span id="L122"><span class="lineNum">     122</span>              : } // namespace neml2</span>
+<span id="L118"><span class="lineNum">     118</span>              :   try</span>
+<span id="L119"><span class="lineNum">     119</span>              :   {</span>
+<span id="L120"><span class="lineNum">     120</span> <span class="tlaGNC">          90 :     val = Device(str_val);</span></span>
+<span id="L121"><span class="lineNum">     121</span> <span class="tlaGNC">          90 :     return true;</span></span>
+<span id="L122"><span class="lineNum">     122</span>              :   }</span>
+<span id="L123"><span class="lineNum">     123</span> <span class="tlaUNC tlaBgUNC">           0 :   catch (const std::exception &amp; e)</span></span>
+<span id="L124"><span class="lineNum">     124</span>              :   {</span>
+<span id="L125"><span class="lineNum">     125</span>              :     std::cerr &lt;&lt; &quot;Failed to parse '&quot; &lt;&lt; raw_str &lt;&lt; &quot;' as a device. Error message:\n&quot;</span>
+<span id="L126"><span class="lineNum">     126</span> <span class="tlaUNC">           0 :               &lt;&lt; e.what() &lt;&lt; std::endl;</span></span>
+<span id="L127"><span class="lineNum">     127</span> <span class="tlaUNC">           0 :     return false;</span></span>
+<span id="L128"><span class="lineNum">     128</span> <span class="tlaUNC">           0 :   }</span></span>
+<span id="L129"><span class="lineNum">     129</span> <span class="tlaGNC tlaBgGNC">          90 : }</span></span>
+<span id="L130"><span class="lineNum">     130</span>              : } // namespace utils</span>
+<span id="L131"><span class="lineNum">     131</span>              : } // namespace neml2</span>
         </pre>
               </td>
             </tr>

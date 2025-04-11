@@ -25,13 +25,14 @@ var searchData=
   ['list_5fdim_22',['list_dim',['../classneml2_1_1VariableBase.html#a6ad51e2ea5ef6bd45d67bb64539f2dc2',1,'neml2::VariableBase']]],
   ['list_5fsize_23',['list_size',['../classneml2_1_1VariableBase.html#ac7139edfe64e4c5f32cfb183789c8ce1',1,'neml2::VariableBase']]],
   ['list_5fsizes_24',['list_sizes',['../classneml2_1_1VariableBase.html#a66947fba1e6639d066f234107a3b3e68',1,'neml2::VariableBase']]],
-  ['load_5finput_25',['load_input',['../namespaceneml2.html#ae26cd3cedac7d43bddad9f8502bbe6bf',1,'neml2']]],
-  ['load_5fmodel_26',['load_model',['../namespaceneml2.html#a1e499dee97d6a66663f60dd4a65b9f1a',1,'neml2']]],
-  ['load_5foptions_27',['load_options',['../classneml2_1_1Factory.html#ac15b1f4db97b6302883e1e055ad39894',1,'neml2::Factory']]],
-  ['load_5ftorch_5ftensor_28',['load_torch_tensor',['../classneml2_1_1FromTorchScript.html#adcabd78ba40582aa7262903dcc11f9f7',1,'neml2::FromTorchScript']]],
-  ['logspace_29',['logspace',['../group__tensor__creation.html#ga06fcc12048cfe9c39723c37999f0a2e4',1,'neml2::TensorBase']]],
-  ['logspaceprimitivetensor_30',['LogspacePrimitiveTensor',['../classneml2_1_1LogspacePrimitiveTensor.html#a99955c15054eef498a60a32e3bc94173',1,'neml2::LogspacePrimitiveTensor']]],
-  ['logspacetensor_31',['LogspaceTensor',['../classneml2_1_1LogspaceTensor.html#a2d644bc9b408dac8fe8e7657f90f376e',1,'neml2::LogspaceTensor']]],
-  ['lu_5ffactor_32',['lu_factor',['../namespaceneml2_1_1linalg.html#afd13db89ffc0ecc54cdd5db9a3b12852',1,'neml2::linalg']]],
-  ['lu_5fsolve_33',['lu_solve',['../namespaceneml2_1_1linalg.html#a7fe76b6d65cdbae3f875f54bbc1d61d6',1,'neml2::linalg']]]
+  ['load_25',['load',['../classneml2_1_1Registry.html#a66ec466d3314b4f351d0ff0b08d5e52b',1,'neml2::Registry']]],
+  ['load_5finput_26',['load_input',['../namespaceneml2.html#ae26cd3cedac7d43bddad9f8502bbe6bf',1,'neml2']]],
+  ['load_5fmodel_27',['load_model',['../namespaceneml2.html#a1e499dee97d6a66663f60dd4a65b9f1a',1,'neml2']]],
+  ['load_5foptions_28',['load_options',['../classneml2_1_1Factory.html#ac15b1f4db97b6302883e1e055ad39894',1,'neml2::Factory']]],
+  ['load_5ftorch_5ftensor_29',['load_torch_tensor',['../classneml2_1_1FromTorchScript.html#adcabd78ba40582aa7262903dcc11f9f7',1,'neml2::FromTorchScript']]],
+  ['logspace_30',['logspace',['../group__tensor__creation.html#ga06fcc12048cfe9c39723c37999f0a2e4',1,'neml2::TensorBase']]],
+  ['logspaceprimitivetensor_31',['LogspacePrimitiveTensor',['../classneml2_1_1LogspacePrimitiveTensor.html#a99955c15054eef498a60a32e3bc94173',1,'neml2::LogspacePrimitiveTensor']]],
+  ['logspacetensor_32',['LogspaceTensor',['../classneml2_1_1LogspaceTensor.html#a2d644bc9b408dac8fe8e7657f90f376e',1,'neml2::LogspaceTensor']]],
+  ['lu_5ffactor_33',['lu_factor',['../namespaceneml2_1_1linalg.html#afd13db89ffc0ecc54cdd5db9a3b12852',1,'neml2::linalg']]],
+  ['lu_5fsolve_34',['lu_solve',['../namespaceneml2_1_1linalg.html#a7fe76b6d65cdbae3f875f54bbc1d61d6',1,'neml2::linalg']]]
 ];
