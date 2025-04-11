@@ -22,33 +22,25 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-
-#include "neml2/models/Model.h"
+#include "neml2/models/solid_mechanics/EigenstrainRate.h"
+#include "neml2/tensors/SR2.h"
 
 namespace neml2
 {
-/**
- * @brief Calculate the pyrolysis conversion amount.
- */
-class PyrolysisConversionAmount : public Model
+OptionSet
+EigenstrainRate::expected_options()
 {
-public:
-  static OptionSet expected_options();
+  OptionSet options = Model::expected_options();
 
-  PyrolysisConversionAmount(const OptionSet & options);
+  options.set_output("eigenstrain_rate") = VariableName(STATE, "Eg_dot");
+  options.set("eigenstrain_rate").doc() = "Time rate of change of the igenstrain";
 
-protected:
-  void set_value(bool out, bool dout_din, bool d2out_din2) override;
-
-  const Scalar & _ws0;
-  const Scalar & _wb0;
-  const Scalar & _Y;
-
-  // State Variables
-  const Variable<Scalar> & _ws;
-
-  // Residual Variables
-  Variable<Scalar> & _a;
-};
+  return options;
 }
+
+EigenstrainRate::EigenstrainRate(const OptionSet & options)
+  : Model(options),
+    _egdot(declare_output_variable<SR2>("eigenstrain_rate"))
+{
+}
+} // namespace neml2

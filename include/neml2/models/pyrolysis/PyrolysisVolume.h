@@ -29,26 +29,32 @@
 namespace neml2
 {
 /**
- * @brief Calculate the pyrolysis conversion amount.
+ * @brief Define the volume of pyrolysis kinetics models.
  */
-class PyrolysisConversionAmount : public Model
+class PyrolysisVolume : public Model
 {
 public:
   static OptionSet expected_options();
 
-  PyrolysisConversionAmount(const OptionSet & options);
+  PyrolysisVolume(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  const Scalar & _ws0;
-  const Scalar & _wb0;
-  const Scalar & _Y;
+  const Scalar & _rhob;
+  const Scalar & _rhos;
+  const Scalar & _rhop;
+  const Scalar & _rhog;
+  const Scalar & _M;
 
   // State Variables
+  const Variable<Scalar> & _wb;
   const Variable<Scalar> & _ws;
+  const Variable<Scalar> & _wp;
+  const Variable<Scalar> & _wg;
+  const Variable<Scalar> & _phiop;
 
   // Residual Variables
-  Variable<Scalar> & _a;
+  Variable<Scalar> & _V;
 };
 }

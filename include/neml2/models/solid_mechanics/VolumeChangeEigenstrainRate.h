@@ -24,31 +24,27 @@
 
 #pragma once
 
-#include "neml2/models/Model.h"
+#include "neml2/models/solid_mechanics/EigenstrainRate.h"
 
 namespace neml2
 {
 /**
- * @brief Calculate the pyrolysis conversion amount.
+ * @brief Define the volume change eigenstrain rate.
  */
-class PyrolysisConversionAmount : public Model
+class VolumeChangeEigenstrainRate : public EigenstrainRate
 {
 public:
   static OptionSet expected_options();
 
-  PyrolysisConversionAmount(const OptionSet & options);
+  VolumeChangeEigenstrainRate(const OptionSet & options);
 
 protected:
-  void set_value(bool out, bool dout_din, bool d2out_din2) override;
+  void set_value(bool, bool, bool) override;
 
-  const Scalar & _ws0;
-  const Scalar & _wb0;
-  const Scalar & _Y;
+  /// State Variables
+  const Variable<Scalar> & _V;
+  const Variable<Scalar> & _Vdot;
 
-  // State Variables
-  const Variable<Scalar> & _ws;
-
-  // Residual Variables
-  Variable<Scalar> & _a;
+  const Variable<SR2> & _eg;
 };
-}
+} // namespace neml2

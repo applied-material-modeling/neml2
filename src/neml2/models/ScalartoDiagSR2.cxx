@@ -22,33 +22,49 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-
-#include "neml2/models/Model.h"
+#include "neml2/models/ScalartoDiagSR2.h"
+#include "neml2/tensors/SR2.h"
 
 namespace neml2
 {
-/**
- * @brief Calculate the pyrolysis conversion amount.
- */
-class PyrolysisConversionAmount : public Model
+register_NEML2_object(ScalartoDiagSR2);
+
+OptionSet
+ScalartoDiagSR2::expected_options()
 {
-public:
-  static OptionSet expected_options();
+  OptionSet options = Model::expected_options();
+  options.doc() = "Project the scalar to the components of a Diagonal Symmetric Rank 2 tensor";
 
-  PyrolysisConversionAmount(const OptionSet & options);
+  options.set<bool>("define_second_derivatives") = true;
 
-protected:
-  void set_value(bool out, bool dout_din, bool d2out_din2) override;
+  options.set_input("input");
+  options.set("input").doc() = "Symmetric tensor to convert";
 
-  const Scalar & _ws0;
-  const Scalar & _wb0;
-  const Scalar & _Y;
+  options.set_output("output");
+  options.set("output").doc() = "Output full rank two tensor";
 
-  // State Variables
-  const Variable<Scalar> & _ws;
-
-  // Residual Variables
-  Variable<Scalar> & _a;
-};
+  return options;
 }
+
+ScalartoDiagSR2::ScalartoDiagSR2(const OptionSet & options)
+  : Model(options),
+    _input(declare_input_variable<Scalar>("input")),
+    _output(declare_output_variable<SR2>("output"))
+{
+}
+
+void
+ScalartoDiagSR2::set_value(bool out, bool dout_din, bool d2out_din2)
+{
+  auto I = SR2::identity(_input.options());
+
+  if (out)
+    _output = _input * I;
+
+  if (dout_din)
+    _output.d(_input) = I;
+
+  // Second derivative is zero
+  (void)d2out_din2;
+}
+} // namespace neml2
