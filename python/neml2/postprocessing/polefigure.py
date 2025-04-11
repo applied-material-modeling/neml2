@@ -262,6 +262,8 @@ def pretty_plot_pole_figure_odf(
     ntheta=40,
     nquad=50,
     nchunk=1000,
+    limits=None,
+    ncontour=20,
 ):
     """Project an ODF onto a pole figure
 
@@ -276,6 +278,8 @@ def pretty_plot_pole_figure_odf(
         ntheta (int): number of angular points to use
         nquad (int): number of points to integrate the pole figure
         nchunk (int): subbatch size to use in evaluating odf
+        limits ((float,float)): (vmin, vmax) to pass to contourf
+        ncontour (int): number of contours to use, only used if limits is provided
     """
     vals, mesh = pole_figure_odf(
         odf, pole, projection, crystal_symmetry, nradial, ntheta, nquad, nchunk
@@ -285,7 +289,17 @@ def pretty_plot_pole_figure_odf(
     # Plot
     plt.figure()
     ax = plt.subplot(111, projection="polar")
-    CS = ax.contourf(mesh[0], mesh[1], vals.detach(), cmap="Greys")
+    if limits is not None:
+        CS = ax.contourf(
+            mesh[0],
+            mesh[1],
+            vals.detach(),
+            cmap="Greys",
+            levels=torch.linspace(limits[0], limits[1], ncontour),
+            extend="both",
+        )
+    else:
+        CS = ax.contourf(mesh[0], mesh[1], vals.detach(), cmap="Greys")
 
     # Make the graph nice
     plt.ylim([0, projection.limit])

@@ -24,6 +24,7 @@
 
 #include "neml2/tensors/functions/clip.h"
 #include "neml2/tensors/tensors.h"
+#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
