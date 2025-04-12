@@ -22,81 +22,28 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/misc/types.h"
-#include "neml2/misc/defaults.h"
+#include "SampleEventTracer.h"
 
 namespace neml2
 {
+SampleEventTracer::SampleEventTracer(std::string filename,
+                                     std::string duration_event,
+                                     std::string instant_event)
+  : TracingInterface(std::move(filename)),
+    _duration_event(std::move(duration_event)),
+    _instant_event(std::move(instant_event))
+{
+}
+
 void
-set_default_dtype(Dtype dtype)
+SampleEventTracer::dump()
 {
-  c10::set_default_dtype(scalarTypeToTypeMeta(dtype));
-}
-
-Dtype
-get_default_dtype()
-{
-  return c10::get_default_dtype_as_scalartype();
-}
-
-TensorOptions
-default_tensor_options()
-{
-  return TensorOptions().dtype(c10::get_default_dtype());
-}
-
-TensorOptions
-default_integer_tensor_options()
-{
-  return TensorOptions().dtype(default_integer_dtype());
-}
-
-Dtype &
-default_integer_dtype()
-{
-  static Dtype _default_integer_dtype = NEML2_DEFAULT_INTEGER_DTYPE_ENUM;
-  return _default_integer_dtype;
-}
-
-Real &
-machine_precision()
-{
-  static Real _machine_precision = NEML2_DEFAULT_MACHINE_PRECISION;
-  return _machine_precision;
-}
-
-Real &
-tolerance()
-{
-  static Real _tolerance = NEML2_DEFAULT_TOLERANCE;
-  return _tolerance;
-}
-
-Real &
-tighter_tolerance()
-{
-  static Real _tighter_tolerance = NEML2_DEFAULT_TIGHTER_TOLERANCE;
-  return _tighter_tolerance;
-}
-
-std::string &
-buffer_name_separator()
-{
-  static std::string _buffer_sep = NEML2_DEFAULT_BUFFER_NAME_SEPARATOR;
-  return _buffer_sep;
-}
-
-std::string &
-parameter_name_separator()
-{
-  static std::string _param_sep = NEML2_DEFAULT_PARAMETER_NAME_SEPARATOR;
-  return _param_sep;
-}
-
-bool &
-require_double_precision()
-{
-  static bool _req_double = true;
-  return _req_double;
+  if (event_tracing_enabled())
+  {
+    auto & writer = event_trace_writer();
+    writer.trace_duration_begin(_duration_event, "SampleEventTracer");
+    writer.trace_instant(_instant_event, "SampleEventTracer");
+    writer.trace_duration_end(_duration_event, "SampleEventTracer");
+  }
 }
 } // namespace neml2

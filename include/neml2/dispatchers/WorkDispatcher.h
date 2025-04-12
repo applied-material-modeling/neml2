@@ -25,16 +25,18 @@
 #pragma once
 
 #include <functional>
-#include <future>
 #include <thread>
 #include <queue>
 #include <mutex>
 #include <condition_variable>
 
+#include <ATen/Parallel.h>
+
 #include "neml2/dispatchers/WorkGenerator.h"
 #include "neml2/dispatchers/WorkScheduler.h"
 #include "neml2/misc/assertions.h"
 #include "neml2/misc/types.h"
+#include "neml2/base/TracingInterface.h"
 
 #include "neml2/tensors/R2.h"
 
@@ -102,11 +104,12 @@ template <typename I,
           typename Of = typename std::vector<O>,
           typename Ip = typename type_identity<I>::type,
           typename Op = typename type_identity<O>::type>
-class WorkDispatcher
+class WorkDispatcher : public TracingInterface
 {
 public:
   WorkDispatcher(WorkScheduler & scheduler, bool async, std::function<O(I &&, Device)> && do_work)
-    : _scheduler(scheduler),
+    : TracingInterface(scheduler),
+      _scheduler(scheduler),
       _devices(scheduler.devices()),
       _async(async),
       _do_work(std::move(do_work))
@@ -118,7 +121,8 @@ public:
                  bool async,
                  std::function<O(I &&, Device)> && do_work,
                  std::function<O(std::vector<O> &&)> && reduce)
-    : _scheduler(scheduler),
+    : TracingInterface(scheduler),
+      _scheduler(scheduler),
       _devices(scheduler.devices()),
       _async(async),
       _do_work(std::move(do_work)),
@@ -133,7 +137,8 @@ public:
                  std::function<Of(std::vector<Op> &&)> && reduce,
                  std::function<I(Ip &&, Device)> && preprocess,
                  std::function<Op(O &&)> && postprocess)
-    : _scheduler(scheduler),
+    : TracingInterface(scheduler),
+      _scheduler(scheduler),
       _devices(scheduler.devices()),
       _async(async),
       _do_work(std::move(do_work)),
@@ -151,7 +156,8 @@ public:
                  std::function<I(Ip &&, Device)> && preprocess,
                  std::function<Op(O &&)> && postprocess,
                  std::function<void(Device)> && thread_init)
-    : _scheduler(scheduler),
+    : TracingInterface(scheduler),
+      _scheduler(scheduler),
       _devices(scheduler.devices()),
       _async(async),
       _do_work(std::move(do_work)),
@@ -172,7 +178,7 @@ public:
   WorkDispatcher(const WorkDispatcher &) = delete;
   WorkDispatcher & operator=(WorkDispatcher &&) = delete;
   WorkDispatcher & operator=(const WorkDispatcher &) = delete;
-  ~WorkDispatcher() { stop_thread_pool(); }
+  ~WorkDispatcher() override { stop_thread_pool(); }
 
   /// Run the dispatching loop (calls run_sync or run_async based on the async flag)
   Of run(WorkGenerator<Ip> &);
@@ -254,6 +260,9 @@ WorkDispatcher<I, O, Of, Ip, Op>::init_thread_pool()
   if (!_async)
     return;
 
+  if (event_tracing_enabled())
+    event_trace_writer().trace_duration_begin("thread pool", "WorkDispatcher");
+
   // Setup the task queue
   for (const auto & device : _devices)
     _tasks[device] = std::queue<std::function<void()>>();
@@ -276,8 +285,13 @@ WorkDispatcher<I, O, Of, Ip, Op>::init_thread_pool()
       auto device = _devices[i];
       auto task = [this, device = device]() mutable
       {
+        if (event_tracing_enabled())
+          event_trace_writer().trace_duration_begin(
+              "thread init", "WorkDispatcher", {{"device", utils::stringify(device)}});
         _thread_init(device);
         _scheduler.completed_work(device, 1);
+        if (event_tracing_enabled())
+          event_trace_writer().trace_duration_end("thread init", "WorkDispatcher");
       };
       _scheduler.dispatched_work(device, 1);
       {
@@ -294,6 +308,9 @@ template <typename I, typename O, typename Of, typename Ip, typename Op>
 void
 WorkDispatcher<I, O, Of, Ip, Op>::thread_pool_main(const Device & device)
 {
+  if (event_tracing_enabled())
+    event_trace_writer().trace_duration_begin(
+        "thread main", "WorkDispatcher", {{"device", utils::stringify(device)}});
   while (true)
   {
     std::function<void()> task;
@@ -307,6 +324,8 @@ WorkDispatcher<I, O, Of, Ip, Op>::thread_pool_main(const Device & device)
     }
     task();
   }
+  if (event_tracing_enabled())
+    event_trace_writer().trace_duration_end("thread main", "WorkDispatcher");
 }
 
 template <typename I, typename O, typename Of, typename Ip, typename Op>
@@ -322,15 +341,30 @@ WorkDispatcher<I, O, Of, Ip, Op>::stop_thread_pool()
   _thread_condition.notify_all();
   for (auto & thread : _thread_pool)
     thread.join();
+
+  if (event_tracing_enabled())
+    event_trace_writer().trace_duration_end("thread pool", "WorkDispatcher");
 }
 
 template <typename I, typename O, typename Of, typename Ip, typename Op>
 Of
 WorkDispatcher<I, O, Of, Ip, Op>::run(WorkGenerator<Ip> & generator)
 {
+  if (event_tracing_enabled())
+    event_trace_writer().trace_duration_begin("run", "WorkDispatcher");
+
   if (_async)
-    return run_async(generator);
-  return run_sync(generator);
+  {
+    auto result = run_async(generator);
+    if (event_tracing_enabled())
+      event_trace_writer().trace_duration_end("run", "WorkDispatcher");
+    return std::move(result);
+  }
+
+  auto result = run_sync(generator);
+  if (event_tracing_enabled())
+    event_trace_writer().trace_duration_end("run", "WorkDispatcher");
+  return std::move(result);
 }
 
 template <typename I, typename O, typename Of, typename Ip, typename Op>
@@ -416,6 +450,9 @@ WorkDispatcher<I, O, Of, Ip, Op>::run_async(WorkGenerator<Ip> & generator)
     // Create the task
     auto task = [this, work = std::move(work), device = device, m = m, i = i]() mutable
     {
+      if (event_tracing_enabled())
+        event_trace_writer().trace_duration_begin(
+            "task", "WorkDispatcher", {{"device", utils::stringify(device)}, {"batch size", m}});
       // Preprocess
       if (_preprocess)
         work = _preprocess(std::move(work), device);
@@ -428,6 +465,8 @@ WorkDispatcher<I, O, Of, Ip, Op>::run_async(WorkGenerator<Ip> & generator)
       _results[i] = std::move(result);
       // Tell the scheduler that we have completed m batches
       _scheduler.completed_work(device, m);
+      if (event_tracing_enabled())
+        event_trace_writer().trace_duration_end("task", "WorkDispatcher");
     };
     // Tell the scheduler that we have dispatched m batches
     _scheduler.dispatched_work(device, m);

@@ -29,6 +29,7 @@
 
 #include "neml2/base/NEML2Object.h"
 #include "neml2/misc/types.h"
+#include "neml2/base/TracingInterface.h"
 
 namespace neml2
 {
@@ -43,7 +44,7 @@ namespace neml2
  *
  * @see WorkGenerator, WorkDispatcher
  */
-class WorkScheduler : public NEML2Object
+class WorkScheduler : public NEML2Object, public TracingInterface
 {
 public:
   /// Options for the scheduler
