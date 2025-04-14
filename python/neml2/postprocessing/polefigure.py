@@ -38,18 +38,24 @@ from neml2 import crystallography
 from neml2 import tensors
 
 
-def arbitrary_hemispherical_quadrature(points):
+def arbitrary_hemispherical_quadrature(points, rtol=1e-5, atol=1e-8):
     """Calculate the weights for a spherical quadrature rule on the upper hemisphere
 
     Args:
         points (torch.tensor): tensor of shape (..., 3) of cartesian points on the upper hemisphere
+
+    Keyword Args:
+        rtol (float): relative tolerance for determining if points are on the equator
+        atol (float): absolute tolerance for determining if points are on the equator
 
     Returns:
         torch.tensor: tensor of shape (...) giving the weights
     """
     orig_shape = points.shape[:-1]
     points = points.flatten(end_dim=-2)
-    on_equator = torch.isclose(points[:, 2], torch.tensor(0.0, device=points.device))
+    on_equator = torch.isclose(
+        points[:, 2], torch.tensor(0.0, device=points.device), rtol=rtol, atol=atol
+    )
     not_equator = torch.logical_not(on_equator)
 
     hemi_points = points[not_equator]
@@ -209,7 +215,7 @@ def pole_figure_odf(
     crystal_poles = crystal_poles.batch.unsqueeze(1).batch.unsqueeze(1)
 
     # Calculate the static rotation from crystal to sample poles
-    r1 = tensors.Rot.fill_rotate_between(crystal_poles, sample_poles)
+    r1 = tensors.Rot.rotation_from_to(crystal_poles, sample_poles)
 
     # Calculate the rotations about the sample poles
     # Note my diabolical cleverness -- we know the arc length metric is constant in
@@ -219,7 +225,7 @@ def pole_figure_odf(
     angle_values = torch.linspace(0, 2 * torch.pi, nquad + 1, device=pole.device)
     dphi = torch.diff(angle_values)
     phi = tensors.Scalar(angle_values[:-1]).batch.unsqueeze(1).batch.unsqueeze(1)
-    r2 = tensors.Rot.fill_axis_angle_standard(sample_poles, phi)
+    r2 = tensors.Rot.from_axis_angle_standard(sample_poles, phi)
 
     # Compose
     rm = r1.rotate(r2.batch.unsqueeze(1))

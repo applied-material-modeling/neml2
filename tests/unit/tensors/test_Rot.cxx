@@ -51,13 +51,13 @@ TEST_CASE("Rot", "[tensors]")
       va /= va.norm();
       auto vb = Vec::fill(4.0, 5.0, 6.0, DTO);
       vb /= vb.norm();
-      auto r = Rot::fill_rotate_between(va, vb);
+      auto r = Rot::rotation_from_to(va, vb);
       REQUIRE(at::allclose(va.rotate(r), vb));
     }
 
     SECTION("axis_angle")
     {
-      auto rot = Rot::fill_axis_angle(Vec::fill(0.0, 0.0, 1.0, DTO), Scalar(M_PI / 2.0, DTO));
+      auto rot = Rot::from_axis_angle(Vec::fill(0.0, 0.0, 1.0, DTO), Scalar(M_PI / 2.0, DTO));
       auto v1 = Vec::fill(0.0, 1.0, 0.0, DTO);
       auto rv = v1.rotate(rot);
       auto v2 = Vec::fill(-1.0, 0.0, 0.0, DTO);
@@ -66,9 +66,9 @@ TEST_CASE("Rot", "[tensors]")
 
     SECTION("axis_angle_standard")
     {
-      auto r1 = Rot::fill_axis_angle(Vec::fill(2.0, -1.0, 1.0, DTO), Scalar(M_PI / 3.0, DTO));
+      auto r1 = Rot::from_axis_angle(Vec::fill(2.0, -1.0, 1.0, DTO), Scalar(M_PI / 3.0, DTO));
       auto r2 =
-          Rot::fill_axis_angle_standard(Vec::fill(2.0, -1.0, 1.0, DTO), Scalar(M_PI / 3.0, DTO));
+          Rot::from_axis_angle_standard(Vec::fill(2.0, -1.0, 1.0, DTO), Scalar(M_PI / 3.0, DTO));
       REQUIRE(at::allclose(r1, r2));
     }
 

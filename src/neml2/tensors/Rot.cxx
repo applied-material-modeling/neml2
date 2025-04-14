@@ -154,7 +154,7 @@ Rot::fill_random(unsigned int n)
 }
 
 Rot
-Rot::fill_rotate_between(const Vec & v1, const Vec & v2)
+Rot::rotation_from_to(const Vec & v1, const Vec & v2)
 {
   auto n = v1.cross(v2);
   auto c = v1.dot(v2);
@@ -166,7 +166,7 @@ Rot::fill_rotate_between(const Vec & v1, const Vec & v2)
 }
 
 Rot
-Rot::fill_axis_angle(const Vec & n, const Scalar & theta)
+Rot::from_axis_angle(const Vec & n, const Scalar & theta)
 {
   auto nn = n / n.norm();
   auto t = neml2::tan(theta / 4.0);
@@ -175,11 +175,9 @@ Rot::fill_axis_angle(const Vec & n, const Scalar & theta)
 }
 
 Rot
-Rot::fill_axis_angle_standard(const Vec & n, const Scalar & theta)
+Rot::from_axis_angle_standard(const Vec & n, const Scalar & theta)
 {
-  auto nn = n / n.norm();
-  auto t = neml2::tan(theta / 2.0);
-  auto vn = nn * t;
+  auto vn = from_axis_angle(n, theta * 2);
   return vn / (neml2::sqrt(1.0 + vn.norm_sq()) + 1.0);
 }
 

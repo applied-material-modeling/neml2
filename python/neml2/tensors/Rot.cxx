@@ -56,7 +56,7 @@ def_Rot(py::class_<Rot> & c)
   c.def_static("fill_matrix", &Rot::fill_matrix);
   c.def_static("fill_random", &Rot::fill_random);
   c.def_static("fill_rodrigues", &Rot::fill_rodrigues);
-  c.def_static("fill_rotate_between", &Rot::fill_rotate_between);
-  c.def_static("fill_axis_angle", &Rot::fill_axis_angle);
-  c.def_static("fill_axis_angle_standard", &Rot::fill_axis_angle_standard);
+  c.def_static("rotation_from_to", &Rot::rotation_from_to);
+  c.def_static("from_axis_angle", &Rot::from_axis_angle);
+  c.def_static("from_axis_angle_standard", &Rot::from_axis_angle_standard);
 }

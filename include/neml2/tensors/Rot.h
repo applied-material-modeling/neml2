@@ -56,29 +56,29 @@ public:
   [[nodiscard]] static Rot identity(const TensorOptions & options = default_tensor_options());
 
   /// Fill from an array of Euler angles
-  static Rot fill_euler_angles(const Vec & v,
-                               const std::string & angle_convention,
-                               const std::string & angle_type);
+  [[nodiscard]] static Rot fill_euler_angles(const Vec & v,
+                                             const std::string & angle_convention,
+                                             const std::string & angle_type);
 
   /// Fill from rotation matrices
-  static Rot fill_matrix(const R2 & M);
+  [[nodiscard]] static Rot fill_matrix(const R2 & M);
 
   /// Fill some number of random orientations
-  static Rot fill_random(unsigned int n);
+  [[nodiscard]] static Rot fill_random(unsigned int n);
 
   /// Fill from standard Rodrigues parameters
-  static Rot fill_rodrigues(const Scalar & rx, const Scalar & ry, const Scalar & rz);
+  [[nodiscard]] static Rot fill_rodrigues(const Scalar & rx, const Scalar & ry, const Scalar & rz);
 
   /// Fill by forming the rotation between two vectors
-  static Rot fill_rotate_between(const Vec & v1, const Vec & v2);
+  [[nodiscard]] static Rot rotation_from_to(const Vec & v1, const Vec & v2);
 
   /// Fill with axis/angle pairs
-  static Rot fill_axis_angle(const Vec & n, const Scalar & theta);
+  [[nodiscard]] static Rot from_axis_angle(const Vec & n, const Scalar & theta);
 
   /// Fill with axis/angle pairs as a standard Rodrigues parameter, then convert to MRP
   // This has a specialized use in integrating through ODFs, helping me avoid the need to calculate
   // the arc length scaling term for our space
-  static Rot fill_axis_angle_standard(const Vec & n, const Scalar & theta);
+  [[nodiscard]] static Rot from_axis_angle_standard(const Vec & n, const Scalar & theta);
 
   /// Inversion
   Rot inverse() const;
