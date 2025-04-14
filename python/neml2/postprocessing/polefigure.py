@@ -32,8 +32,43 @@ torch.set_default_dtype(torch.float64)
 
 import matplotlib.pyplot as plt
 
+import scipy.spatial as ss
+
 from neml2 import crystallography
 from neml2 import tensors
+
+
+def arbitrary_hemispherical_quadrature(points, rtol=1e-5, atol=1e-8):
+    """Calculate the weights for a spherical quadrature rule on the upper hemisphere
+
+    Args:
+        points (torch.tensor): tensor of shape (..., 3) of cartesian points on the upper hemisphere
+
+    Keyword Args:
+        rtol (float): relative tolerance for determining if points are on the equator
+        atol (float): absolute tolerance for determining if points are on the equator
+
+    Returns:
+        torch.tensor: tensor of shape (...) giving the weights
+    """
+    orig_shape = points.shape[:-1]
+    points = points.flatten(end_dim=-2)
+    on_equator = torch.isclose(
+        points[:, 2], torch.tensor(0.0, device=points.device), rtol=rtol, atol=atol
+    )
+    not_equator = torch.logical_not(on_equator)
+
+    hemi_points = points[not_equator]
+    hemi_points[..., 2] *= -1
+
+    augmented_points = torch.cat([points, hemi_points], dim=0)
+
+    triangulation = ss.SphericalVoronoi(augmented_points.cpu().numpy())
+    areas = torch.tensor(triangulation.calculate_areas(), device=points.device)
+    areas = areas[: len(points)]
+    areas[on_equator] *= 0.5
+
+    return areas.reshape(orig_shape)
 
 
 class StereographicProjection:
@@ -49,6 +84,24 @@ class StereographicProjection:
             v (torch.tensor): tensor of shape (..., 3)
         """
         return torch.stack([v[..., 0] / (1.0 + v[..., 2]), v[..., 1] / (1.0 + v[..., 2])], dim=-1)
+
+    def inverse(self, v):
+        """Inverse of the stereographic projection
+
+        Args:
+            v (torch.tensor): tensor of shape (..., 2)
+        """
+        X = v[..., 0]
+        Y = v[..., 1]
+        bot = 1.0 + X**2 + Y**2
+        return torch.stack(
+            [
+                2.0 * X / bot,
+                2.0 * Y / bot,
+                (X**2 + Y**2 - 1.0) / bot,
+            ],
+            dim=-1,
+        )
 
 
 class LambertProjection:
@@ -71,6 +124,23 @@ class LambertProjection:
             dim=-1,
         )
 
+    def inverse(self, v):
+        """Inverse of the Lambert projection
+        Args:
+            v (torch.tensor): tensor of shape (..., 2)
+        """
+        X = v[..., 0]
+        Y = v[..., 1]
+        f = torch.sqrt(1.0 - (X**2 + Y**2) / 4.0)
+        return torch.stack(
+            [
+                f * X,
+                f * Y,
+                -1.0 + (X**2 + Y**2) / 2.0,
+            ],
+            dim=-1,
+        )
+
 
 available_projections = {
     "stereographic": StereographicProjection(),
@@ -88,6 +158,162 @@ def symmetry_operators_as_R2(orbifold, device=torch.device("cpu")):
         device (torch.device): which device to place the tensors
     """
     return crystallography.symmetry_operations_from_orbifold(orbifold, device=device)
+
+
+def pole_figure_odf(
+    odf,
+    pole,
+    projection="stereographic",
+    crystal_symmetry="1",
+    nradial=20,
+    ntheta=40,
+    nquad=50,
+    nchunk=1000,
+    offset_fraction=1e-2,
+):
+    """Project an ODF onto a pole figure
+
+    Args:
+        odf (neml2.odf.ODF): ODF to project
+        pole (torch.tensor or neml2.tensors.Vec): pole to project
+
+    Keyword Args:
+        projection (str): which polar projection to use, options are "stereographic" and "lambert"
+        crystal_symmetry (str): string giving the orbifold notation for the crystal symmetry to apply to the base orientations, default "1"
+        nradial (int): number of radial points to use
+        ntheta (int): number of angular points to use
+        nquad (int): number of points to integrate the pole figure
+        nchunk (int): subbatch size to use in evaluating odf
+        offset_fraction (float): fraction of the radial range to offset the pole figure to avoid singularities
+    Returns:
+        (values, mesh): tuple of the projected values and the (theta, R) mesh points used to make a contour plot
+    """
+    # Do some setup
+    if not isinstance(pole, tensors.Vec):
+        pole = tensors.Vec(pole)
+    pole = pole / pole.norm()
+    projection = available_projections[projection]
+
+    # Make the grid
+    r = torch.linspace(
+        projection.limit / nradial * offset_fraction, projection.limit, nradial, device=pole.device
+    )
+    theta_total = torch.linspace(0, 2 * torch.pi, ntheta + 1, device=pole.device)
+    theta = theta_total[:-1]
+    R, T = torch.meshgrid(r, theta, indexing="ij")
+
+    # Get points on plane
+    X = R * torch.cos(T)
+    Y = R * torch.sin(T)
+
+    # Project back to sphere
+    sample_poles = tensors.Vec(projection.inverse(torch.stack([X, Y], dim=-1)))
+
+    # Get all the equivalent poles
+    crystal_symmetry_operators = symmetry_operators_as_R2(crystal_symmetry, device=pole.device)
+    crystal_poles = crystal_symmetry_operators * pole
+    crystal_poles = crystal_poles.batch.unsqueeze(1).batch.unsqueeze(1)
+
+    # Calculate the static rotation from crystal to sample poles
+    r1 = tensors.Rot.rotation_from_to(crystal_poles, sample_poles)
+
+    # Calculate the rotations about the sample poles
+    # Note my diabolical cleverness -- we know the arc length metric is constant in
+    # the standard Rodrigues space, so we can use a special function to that gets
+    # standard rodrigues parameters for the rotation about the pole and convert to MRP
+    # and then drop the metric term.
+    angle_values = torch.linspace(0, 2 * torch.pi, nquad + 1, device=pole.device)
+    dphi = torch.diff(angle_values)
+    phi = tensors.Scalar(angle_values[:-1]).batch.unsqueeze(1).batch.unsqueeze(1)
+    r2 = tensors.Rot.from_axis_angle_standard(sample_poles, phi)
+
+    # Compose
+    rm = r1.rotate(r2.batch.unsqueeze(1))
+
+    # Calculate the ODF values
+    original_shape = rm.batch.shape
+    rm = rm.batch.reshape((-1,)).torch()
+    A = torch.stack(
+        [odf(tensors.Rot(rm[i : i + nchunk])) for i in range(0, rm.shape[0], nchunk)], dim=0
+    ).reshape(original_shape)
+
+    # Incremental rotation
+    dl = (dphi).unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
+
+    # Calculate the actual pole values
+    vals = torch.mean(torch.sum(A * dl, dim=0), dim=0) / (2 * torch.pi)
+
+    # Calculate the normalization to get MRD
+    weights = arbitrary_hemispherical_quadrature(sample_poles.torch())
+    nf = torch.sum(weights * vals) / (2 * torch.pi)
+    vals = vals / nf
+
+    # Make the mesh that matplotlib wants
+    r[0] = 0.0
+    TR, TT = torch.meshgrid(r, theta_total, indexing="ij")
+
+    Tvals = torch.zeros_like(TR)
+    Tvals[..., :-1] = vals
+    Tvals[..., -1] = vals[..., 0]
+
+    return Tvals, (TT, TR)
+
+
+def pretty_plot_pole_figure_odf(
+    odf,
+    pole,
+    projection="stereographic",
+    crystal_symmetry="1",
+    nradial=20,
+    ntheta=40,
+    nquad=50,
+    nchunk=1000,
+    limits=None,
+    ncontour=20,
+):
+    """Project an ODF onto a pole figure
+
+    Args:
+        odf (neml2.odf.ODF): ODF to project
+        pole (torch.tensor or neml2.tensors.Vec): pole to project
+
+    Keyword Args:
+        projection (str): which polar projection to use, options are "stereographic" and "lambert"
+        crystal_symmetry (str): string giving the orbifold notation for the crystal symmetry to apply to the base orientations, default "1"
+        nradial (int): number of radial points to use
+        ntheta (int): number of angular points to use
+        nquad (int): number of points to integrate the pole figure
+        nchunk (int): subbatch size to use in evaluating odf
+        limits ((float,float)): (vmin, vmax) to pass to contourf
+        ncontour (int): number of contours to use, only used if limits is provided
+    """
+    vals, mesh = pole_figure_odf(
+        odf, pole, projection, crystal_symmetry, nradial, ntheta, nquad, nchunk
+    )
+    projection = available_projections[projection]
+
+    # Plot
+    plt.figure()
+    ax = plt.subplot(111, projection="polar")
+    if limits is not None:
+        CS = ax.contourf(
+            mesh[0],
+            mesh[1],
+            vals.detach(),
+            cmap="Greys",
+            levels=torch.linspace(limits[0], limits[1], ncontour),
+            extend="both",
+        )
+    else:
+        CS = ax.contourf(mesh[0], mesh[1], vals.detach(), cmap="Greys")
+
+    # Make the graph nice
+    plt.ylim([0, projection.limit])
+    ax.grid(False)
+    ax.get_yaxis().set_visible(False)
+    ax.get_xaxis().set_visible(False)
+    ax.xaxis.set_minor_locator(plt.NullLocator())
+    plt.colorbar(CS, label="MRD")
 
 
 def pole_figure_points(
@@ -153,7 +379,7 @@ def cart2polar(v):
     return torch.stack([torch.atan2(v[..., 1], v[..., 0]), torch.norm(v, dim=-1)], dim=-1)
 
 
-def pretty_plot_pole_figure(
+def pretty_plot_pole_figure_points(
     orientations,
     pole,
     projection="stereographic",
@@ -161,7 +387,7 @@ def pretty_plot_pole_figure(
     sample_symmetry="1",
     point_size=10.0,
 ):
-    """Project and then make a pretty plot for a pole figure
+    """Project and then make a pretty plot for a pole figure given points as input
 
     Args:
         orientations (torch.tensor or neml2.tensors.Rot): tensor of orientations as *modified* Rodrigues

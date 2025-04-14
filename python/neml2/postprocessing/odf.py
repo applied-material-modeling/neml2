@@ -76,8 +76,6 @@ def spherical_quadrature(deg, device=torch.device("cpu")):
         * torch.sin(pts[:, 1])
     )
 
-    print(owts)
-
     return pts, wts
 
 
@@ -137,25 +135,24 @@ class ODF(torch.nn.Module):
         """
         Rpoints, Rweights = rotation_quadrature(deg, device=self.X.device)
 
-        vals = (self.forward(Rpoints) / np.pi) ** 2.0
+        vals = (self.forward(Rpoints) / torch.pi) ** 2.0
 
         return torch.sum(vals * Rweights.torch())
 
 
-def split(X, sf):
+def split(X, i):
     """Helper routine to split a batch of orientations into test/validation sets
 
     Args:
         X (indexable in first dimension): reference set
-        sf (float): split fraction
+        i (int): index to separate
     """
     l = X.batch.shape[0]
-    nv = int(sf * l)
-    inds = torch.randperm(l)
-    vset = inds[:nv]
-    tset = inds[nv:]
 
-    return neml2.tensors.Rot(X.torch()[vset].clone()), neml2.tensors.Rot(X.torch()[tset].clone())
+    keep = torch.arange(l, device=X.device, dtype=torch.long)
+    keep = keep[keep != i]
+
+    return neml2.tensors.Rot(X.torch()[keep].clone()), neml2.tensors.Rot(X.torch()[i].clone())
 
 
 class KDEODF(ODF):
@@ -170,18 +167,18 @@ class KDEODF(ODF):
         super().__init__(X)
         self.kernel = kernel
 
-    def optimize_kernel(self, miter=250, verbose=False, lr=1.0e-2, sf=0.2):
-        """Optimize the kernel half width by maximizing the KL likelihood
+    def optimize_kernel(self, miter=50, verbose=False, lr=1.0e-2):
+        """Optimize the kernel half width by cross-validation
 
         Keyword Args:
             miter (int): optimization iterations
-            verbose (bool): if true print convergene progress
+            verbose (bool): if true print convergence progress
             lr (float): learning rate
             sf (float): fraction of data split out for validation
         """
         if verbose:
             it = tqdm(range(miter))
-            it.set_description("KL: ")
+            it.set_description("loss: ")
         else:
             it = range(miter)
 
@@ -191,20 +188,35 @@ class KDEODF(ODF):
         # Setup optimizer
         optim = torch.optim.Adam(self.parameters(), lr=lr)
 
+        for _ in it:
+            optim.zero_grad()
+            loss = (
+                self.texture_index() - 2.0 * sum(self.leave_out(i) for i in range(self.n)) / self.n
+            )
+            if verbose:
+                it.set_description("loss: %6.5e" % loss.detach().cpu())
+            loss.backward()
+            optim.step()
+
+    def leave_out(self, i):
+        """Calculate the second term of the cross-validation loss, leaving out the ith point
+
+        Args:
+            i (int): index of the point to leave out
+        """
         # Split the data
         X_orig = self.X.clone()
 
-        self.X, val = split(X_orig, sf)
+        # Leave out the ith point
+        self.X, X_test = split(X_orig, i)
 
-        for _ in it:
-            optim.zero_grad()
-            KL = -torch.mean(torch.log(self.forward(val) / math.pi))
-            if verbose:
-                it.set_description("KL: %6.5e" % KL.detach().cpu())
-            KL.backward()
-            optim.step()
+        # Calculate the loss
+        loss = self.forward(X_test)
 
+        # Restore the original data
         self.X = X_orig
+
+        return loss / torch.pi
 
     def forward(self, Y):
         """Calculate the probability density at each point in Y
