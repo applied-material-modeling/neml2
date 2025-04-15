@@ -42,5 +42,8 @@ protected:
 
   const Scalar & _a;
   const Scalar & _m;
+
+  bool _log_extension;
+  Real _Sp; // transistion saturation
 };
 } // namespace neml2

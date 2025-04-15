@@ -25,6 +25,8 @@
 #include "neml2/models/reactive_infiltration/VanGenuchtenPressure.h"
 #include "neml2/tensors/functions/heaviside.h"
 #include "neml2/tensors/functions/pow.h"
+#include "neml2/tensors/functions/log10.h"
+#include "neml2/tensors/functions/where.h"
 #include "neml2/tensors/assertions.h"
 
 namespace neml2
@@ -40,36 +42,85 @@ VanGenuchtenPressure::expected_options()
                   "and 0 everywhere else. Here \\f$ S_e \\f$ is the effective saturation,\\f$ a, m "
                   "\\f$ is the fitting parameter";
 
+  options.set<bool>("define_second_derivatives") = true;
+
   options.set_parameter<TensorName<Scalar>>("scaling_constant");
   options.set("scaling_constant").doc() = "scaling reciprocal constant, a";
 
   options.set_parameter<TensorName<Scalar>>("power");
   options.set("power").doc() = "power, m";
-#include "neml2/tensors/functions/heaviside.h"
+
+  options.set<bool>("apply_log_extension") = false;
+  options.set("apply_log_extension").doc() = "Whether to apply_log_extension";
+
+  options.set<Real>("transistion_saturation") = 0.1;
+  options.set("transistion_saturation").doc() = "The transistion value of the effective saturation";
+
   return options;
 }
 
 VanGenuchtenPressure::VanGenuchtenPressure(const OptionSet & options)
   : PorousFlowCapillaryPressure(options),
     _a(declare_parameter<Scalar>("a", "scaling_constant")),
-    _m(declare_parameter<Scalar>("m", "power"))
+    _m(declare_parameter<Scalar>("m", "power")),
+    _log_extension(options.get<bool>("apply_log_extension")),
+    _Sp(options.get<Real>("transistion_saturation"))
 {
 }
 
 void
 VanGenuchtenPressure::set_value(bool out, bool dout_din, bool d2out_din2)
 {
-  neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
+  neml_assert(_Sp < 1.0, "transistion_saturation cannot be larger or equal to 1");
+
+  Real ln10 = 2.302585093;
+
+  // required information for any model
+  auto f_s = 1 / _a * pow((pow(_S, -1.0 / _m) - 1.0), 1 - _m) * (1 - heaviside(_S - 1.0));
+  auto f_sp = 1 / _a * pow((pow(_Sp, -1.0 / _m) - 1.0), 1 - _m);
+
+  auto dfds_s = -1 / (_a * _m) * (1 - _m) * pow(pow(_S, -1 / _m) - 1, -_m) * pow(_S, -1 / _m - 1) *
+                (1 - heaviside(_S - 1.0));
+  auto dfds_sp =
+      -1 / (_a * _m) * (1 - _m) * pow(pow(_Sp, -1 / _m) - 1, -_m) * pow(_Sp, -1 / _m - 1);
+
+  auto d2fds2_s = -((_m - 1) * (_m * pow(_S, (1 / _m)) + pow(_S, (1 / _m)) - 1)) /
+                  (_a * _m * _m * pow(_S, (1 / _m + 2)) * pow((1 / pow(_S, (1 / _m)) - 1), _m) *
+                   (pow(_S, (1 / _m)) - 1)) *
+                  (1 - heaviside(_S - 1.0));
+
+  // general for any given model
+  auto log10f_s = log10(f_s);
+  auto log10f_sp = log10(f_sp);
+
+  auto dlog10fds_sp = 1 / (ln10 * f_sp) * dfds_sp;
+
+  auto slope = dlog10fds_sp;
+  auto yintercept = log10f_sp - slope * _Sp;
 
   if (out)
   {
-    _Pc = 1 / _a * pow((pow(_S, -1.0 / _m) - 1.0), 1 - _m) * (1 - heaviside(_S - 1.0));
+    if (_log_extension)
+      _Pc = where(_S < _Sp, pow(10, slope * _S + yintercept), f_s);
+    else
+      _Pc = f_s;
   }
 
   if (dout_din)
   {
-    _Pc.d(_S) = -1 / (_a * _m) * (1 - _m) * pow(pow(_S, -1 / _m) - 1, -_m) * pow(_S, -1 / _m - 1) *
-                (1 - heaviside(_S - 1.0));
+    if (_log_extension)
+      _Pc.d(_S) = where(_S < _Sp, (ln10 * slope) * pow(10, slope * _S + yintercept), dfds_s);
+    else
+      _Pc.d(_S) = dfds_s;
+  }
+
+  if (d2out_din2)
+  {
+    if (_log_extension)
+      _Pc.d(_S, _S) =
+          where(_S < _Sp, pow((ln10 * slope), 2) * pow(10, slope * _S + yintercept), d2fds2_s);
+    else
+      _Pc.d(_S, _S) = d2fds2_s;
   }
 }
 }

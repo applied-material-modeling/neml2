@@ -42,10 +42,10 @@ protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
   const Scalar & _Sr;
-  const Scalar & _omega;
 
   // State Variables
-  const Variable<Scalar> & _alpha;
+  const Variable<Scalar> & _phi;
+  const Variable<Scalar> & _phimax;
 
   // Residual Variables
   Variable<Scalar> & _S;

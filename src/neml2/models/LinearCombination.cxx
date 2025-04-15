@@ -40,9 +40,10 @@ LinearCombination<T>::expected_options()
   auto tensor_type = utils::demangle(typeid(T).name()).substr(7);
 
   OptionSet options = Model::expected_options();
-  options.doc() = "Calculate linear combination of multiple " + tensor_type +
-                  " tensors as \\f$ u = c_i v_i \\f$ (Einstein summation assumed), where \\f$ c_i "
-                  "\\f$ are the coefficients, and \\f$ v_i \\f$ are the variables to be summed.";
+  options.doc() =
+      "Calculate linear combination of multiple " + tensor_type +
+      " tensors as \\f$ u = c_i v_i + c_o \\f$ (Einstein summation assumed), where \\f$ c_i "
+      "\\f$ are the coefficients, and \\f$ v_i \\f$ are the variables to be summed.";
 
   options.set<bool>("define_second_derivatives") = true;
 
@@ -59,6 +60,10 @@ LinearCombination<T>::expected_options()
       "coefficient. When the length of this list is 1, the same weight applies to all "
       "coefficients.";
 
+  options.set_parameter<TensorName<Scalar>>("constant_coefficient") = {TensorName<Scalar>("0")};
+  options.set("constant_coefficient").doc() =
+      "The constant coefficient c0 added to the final summation";
+
   options.set<std::vector<bool>>("coefficient_as_parameter") = {false};
   options.set("coefficient_as_parameter").doc() =
       "By default, the coefficients are declared as buffers. Set this option to true to declare "
@@ -71,7 +76,8 @@ LinearCombination<T>::expected_options()
 template <typename T>
 LinearCombination<T>::LinearCombination(const OptionSet & options)
   : Model(options),
-    _to(declare_output_variable<T>("to_var"))
+    _to(declare_output_variable<T>("to_var")),
+    _co(declare_parameter<Scalar>("co", "constant_coefficient"))
 {
   for (const auto & fv : options.get<std::vector<VariableName>>("from_var"))
     _from.push_back(&declare_input_variable<T>(fv));
@@ -115,7 +121,7 @@ LinearCombination<T>::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   if (out)
   {
-    auto value = (*_coefs[0]) * (*_from[0]);
+    auto value = _co + (*_coefs[0]) * (*_from[0]);
     for (std::size_t i = 1; i < _from.size(); i++)
       value = value + (*_coefs[i]) * (*_from[i]);
     _to = value;

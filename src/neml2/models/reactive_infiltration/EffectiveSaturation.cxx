@@ -33,19 +33,22 @@ EffectiveSaturation::expected_options()
   OptionSet options = Model::expected_options();
   options.doc() =
       "Calculate the effective saturation (volume fraction), takes the form of \\f$ S = "
-      "\\frac{\\alpha \\Omega - S_r}{1-S_r} where "
-      "\\f$ alpha \\f$ is the saturation (units of mol per volume), \\f$ Omega "
-      "is the molar volume (units of mol per volume), and \\f$ "
+      "\\frac{\\phi^* - S_r}{1-S_r} where "
+      "\\f$ \\phi \\f$ is the flow species volume fraction,\\f$ \\phi_{max} \\f$ is the maximum "
+      "allowable flow species volume fraction and \\f$ "
       "S_r \\f$ is the residual liquid volume fraction";
 
-  options.set_parameter<TensorName<Scalar>>("residual_saturation") = {TensorName<Scalar>("0")};
-  options.set("residual_saturation").doc() = "Liquid's residual saturation";
+  options.set<bool>("define_second_derivatives") = true;
 
-  options.set_parameter<TensorName<Scalar>>("molar_volume");
-  options.set("molar_volume").doc() = "Molar volume";
+  options.set_parameter<TensorName<Scalar>>("residual_volume_fraction") = {TensorName<Scalar>("0")};
+  options.set("residual_volume_fraction").doc() = "Liquid's residual volume fraction";
 
-  options.set_input("saturation") = VariableName(FORCES, "saturation");
-  options.set("saturation").doc() = "Flow species saturation";
+  options.set_input("flow_fraction") = VariableName(FORCES, "flow_fraction");
+  options.set("flow_fraction").doc() = "Volume fraction of the flow (liquid or gas) phase";
+
+  options.set_input("max_fraction") = VariableName(STATE, "max_fraction");
+  options.set("max_fraction").doc() =
+      "Maximum allowable volume fraction of the flow (liquid or gas) phase";
 
   options.set_output("effective_saturation") = VariableName(STATE, "effective_saturation");
   options.set("effective_saturation").doc() = "Effective saturation";
@@ -55,9 +58,9 @@ EffectiveSaturation::expected_options()
 
 EffectiveSaturation::EffectiveSaturation(const OptionSet & options)
   : Model(options),
-    _Sr(declare_parameter<Scalar>("Sr", "residual_saturation")),
-    _omega(declare_parameter<Scalar>("Omega", "molar_volume")),
-    _alpha(declare_input_variable<Scalar>("saturation")),
+    _Sr(declare_parameter<Scalar>("Sr", "residual_volume_fraction")),
+    _phi(declare_input_variable<Scalar>("flow_fraction")),
+    _phimax(declare_input_variable<Scalar>("max_fraction")),
     _S(declare_output_variable<Scalar>("effective_saturation"))
 {
 }
@@ -65,16 +68,23 @@ EffectiveSaturation::EffectiveSaturation(const OptionSet & options)
 void
 EffectiveSaturation::set_value(bool out, bool dout_din, bool d2out_din2)
 {
-  neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
-
   if (out)
   {
-    _S = (_alpha * _omega - _Sr) / (1 - _Sr);
+    _S = (_phi / _phimax - _Sr) / (1.0 - _Sr);
   }
 
   if (dout_din)
   {
-    _S.d(_alpha) = _omega / (1 - _Sr);
+    _S.d(_phi) = 1.0 / (_phimax * (1 - _Sr));
+    _S.d(_phimax) = -_phi / (_phimax * _phimax * (1 - _Sr));
+  }
+
+  if (d2out_din2)
+  {
+    _S.d(_phi, _phimax) = -1.0 / ((1 - _Sr) * _phimax * _phimax);
+    _S.d(_phimax, _phi) = -1.0 / (_phimax * _phimax * (1 - _Sr));
+    _S.d(_phimax, _phimax) = 2.0 * _phi / (_phimax * _phimax * _phimax * (1 - _Sr));
+    // 0 otherwise
   }
 }
 }

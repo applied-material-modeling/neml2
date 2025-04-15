@@ -44,6 +44,9 @@ protected:
   /// Sum of all the input variables
   Variable<T> & _to;
 
+  /// Constant scaling coefficient
+  const Scalar & _co;
+
   /// The input variables (to be summed)
   std::vector<const Variable<T> *> _from;
 
