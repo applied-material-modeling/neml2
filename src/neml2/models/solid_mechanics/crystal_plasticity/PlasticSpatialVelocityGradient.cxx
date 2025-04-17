@@ -41,15 +41,17 @@ PlasticSpatialVelocityGradient::expected_options()
 {
   OptionSet options = Model::expected_options();
 
-  options.doc() = "Caclulates the plastic spatial velocity gradient as \\f$ l^p = \\sum_{i=1}^{n_{slip}} "
-                  "\\dot{\\gamma}_i Q \\left(d_i \\otimes n_i \\right) Q^T "
-                  "\\f$ with \\f$ l^p \\f$ the plastic spatial velocity gradient, \\f$ \\dot{\\gamma}_i "
-                  "\\f$ the slip rate on the ith slip system, \\f$Q \\f$ the orientation, \\f$ d_i "
-                  "\\f$ the slip system direction, and \\f$ n_i \\f$ the slip system normal.";
+  options.doc() =
+      "Caclulates the plastic spatial velocity gradient as \\f$ l^p = \\sum_{i=1}^{n_{slip}} "
+      "\\dot{\\gamma}_i Q \\left(d_i \\otimes n_i \\right) Q^T "
+      "\\f$ with \\f$ l^p \\f$ the plastic spatial velocity gradient, \\f$ \\dot{\\gamma}_i "
+      "\\f$ the slip rate on the ith slip system, \\f$Q \\f$ the orientation, \\f$ d_i "
+      "\\f$ the slip system direction, and \\f$ n_i \\f$ the slip system normal.";
 
   options.set_output("plastic_spatial_velocity_gradient") =
       VariableName(STATE, "internal", "plastic_spatial_velocity_gradient");
-  options.set("plastic_spatial_velocity_gradient").doc() = "The name of the plastic spatial velocity gradient";
+  options.set("plastic_spatial_velocity_gradient").doc() =
+      "The name of the plastic spatial velocity gradient";
 
   options.set_input("orientation") = VariableName(STATE, "orientation_matrix");
   options.set("orientation").doc() = "The name of the orientation matrix tensor";
@@ -87,7 +89,7 @@ PlasticSpatialVelocityGradient::set_value(bool out, bool dout_din, bool /*d2out_
     if (_g.is_dependent())
     {
       const auto dlp_dg = _crystal_geometry.A().rotate(R2(_R).batch_unsqueeze(-1));
-      _lp.d(_g) = Tensor(dlp_dg, dlp_dg.batch_sizes().slice(0, -1));
+      _lp.d(_g) = Tensor(dlp_dg.movedim(-3, -1), dlp_dg.batch_sizes().slice(0, -1));
     }
 
     if (_R.is_dependent())
