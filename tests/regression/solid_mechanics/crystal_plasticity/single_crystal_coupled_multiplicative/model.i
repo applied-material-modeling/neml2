@@ -1,9 +1,11 @@
+nbatch = 20
+
 [Tensors]
   [end_time]
     type = LinspaceScalar
     start = 1
     end = 10
-    nstep = 20
+    nstep = ${nbatch}
   []
   [times]
     type = LinspaceScalar
@@ -27,7 +29,7 @@
     type = LinspaceR2
     start = F_end_min
     end = F_end_max
-    nstep = 20
+    nstep = ${nbatch}
   []
   [F]
     type = LinspaceR2
@@ -57,19 +59,19 @@
     type = LinspaceScalar
     start = 0
     end = 0.75
-    nstep = 20
+    nstep = ${nbatch}
   []
   [R2]
     type = LinspaceScalar
     start = 0
     end = -0.25
-    nstep = 20
+    nstep = ${nbatch}
   []
   [R3]
     type = LinspaceScalar
     start = -0.1
     end = 0.1
-    nstep = 20
+    nstep = ${nbatch}
   []
 
   [initial_orientation]
@@ -166,12 +168,47 @@
   [elasticity]
     type = ComposedModel
     models = 'mult_decomp gl_strain svk'
+    additional_outputs = 'state/Fe'
+  []
+  # From PK2 to Mandel
+  [full_pk2]
+    type = SR2toR2
+    input = 'state/S'
+    output = 'state/S_full'
+  []
+  [pk2_to_pk1]
+    type = R2Multiplication
+    A = 'forces/F'
+    B = 'state/S_full'
+    to = 'state/P'
+  []
+  [pk1_to_intermediate]
+    type = R2Multiplication
+    A = 'state/Fe'
+    B = 'state/P'
+    to = 'state/Pe'
+  []
+  [intermediate_to_mandel]
+    type = R2Multiplication
+    A = 'state/Pe'
+    B = 'state/Fp'
+    to = 'state/M_full'
+    transpose_B = true
+  []
+  [mandel_sym]
+    type = R2toSR2
+    input = 'state/M_full'
+    output = 'state/M'
+  []
+  [intermediate]
+    type = ComposedModel
+    models = 'full_pk2 pk2_to_pk1 pk1_to_intermediate intermediate_to_mandel mandel_sym'
   []
   # CP flow rule
   [resolved_shear]
     type = ResolvedShear
     resolved_shears = 'state/tau_i'
-    stress = 'state/S'
+    stress = 'state/M'
     orientation = 'forces/R'
   []
   [slip_rule]
@@ -233,7 +270,7 @@
   [implicit_rate]
     type = ComposedModel
     models = "euler_rodrigues slip_strength voce_hardening
-              mult_decomp gl_strain svk
+              elasticity intermediate
               resolved_shear slip_rule sum_slip_rates
               plastic_velgrad_sum plastic_velgrad_vol plastic_velgrad_sym plastic_velgrad plastic_defgrad_rate
               integrate_slip_hardening integrate_plastic_defgrad isochoricity"

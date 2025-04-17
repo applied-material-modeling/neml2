@@ -52,5 +52,11 @@ protected:
 
   /// Should I invert B?
   const bool _invB;
+
+  /// Should I transpose A?
+  const bool _transA;
+
+  /// Should I transpose B?
+  const bool _transB;
 };
 } // namespace neml2
