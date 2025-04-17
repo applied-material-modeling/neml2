@@ -42,11 +42,17 @@ R2Multiplication::expected_options()
   options.set<bool>("invert_A") = false;
   options.set("invert_A").doc() = "Whether to invert A";
 
+  options.set<bool>("transpose_A") = false;
+  options.set("transpose_A").doc() = "Whether to transpose A";
+
   options.set<VariableName>("B");
   options.set("B").doc() = "Variable B";
 
   options.set<bool>("invert_B") = false;
   options.set("invert_B").doc() = "Whether to invert B";
+
+  options.set<bool>("transpose_B") = false;
+  options.set("transpose_B").doc() = "Whether to transpose B";
 
   options.set_output("to");
   options.set("to").doc() = "The result of the multiplication";
@@ -60,15 +66,22 @@ R2Multiplication::R2Multiplication(const OptionSet & options)
     _A(declare_input_variable<R2>("A")),
     _B(declare_input_variable<R2>("B")),
     _invA(options.get<bool>("invert_A")),
-    _invB(options.get<bool>("invert_B"))
+    _invB(options.get<bool>("invert_B")),
+    _transA(options.get<bool>("transpose_A")),
+    _transB(options.get<bool>("transpose_B"))
 {
 }
 
 void
 R2Multiplication::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  const auto A = _invA ? R2(_A).inverse() : _A;
-  const auto B = _invB ? R2(_B).inverse() : _B;
+  auto A = _invA ? R2(_A).inverse() : _A;
+  if (_transA)
+    A = A.transpose();
+
+  auto B = _invB ? R2(_B).inverse() : _B;
+  if (_transB)
+    B = B.transpose();
 
   if (out)
     _to = A * B;
@@ -78,14 +91,34 @@ R2Multiplication::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
     const auto I = R2::identity(_A.options());
 
     if (_invA)
-      _to.d(_A) = -R4(at::einsum("...ip,...qj", {A, A * B}));
+    {
+      if (_transA)
+        _to.d(_A) = -R4(at::einsum("...ip,...qj", {A, A * B}));
+      else
+        _to.d(_A) = -R4(at::einsum("...iq,...pj", {A, A * B}));
+    }
     else
-      _to.d(_A) = R4(at::einsum("...im,...nj", {I, B}));
+    {
+      if (_transA)
+        _to.d(_A) = R4(at::einsum("...in,...mj", {I, B}));
+      else
+        _to.d(_A) = R4(at::einsum("...im,...nj", {I, B}));
+    }
 
     if (_invB)
-      _to.d(_B) = -R4(at::einsum("...ip,...qj", {A * B, B}));
+    {
+      if (_transB)
+        _to.d(_B) = -R4(at::einsum("...iq,...pj", {A * B, B}));
+      else
+        _to.d(_B) = -R4(at::einsum("...ip,...qj", {A * B, B}));
+    }
     else
-      _to.d(_B) = R4(at::einsum("...im,...nj", {A, I}));
+    {
+      if (_transB)
+        _to.d(_B) = R4(at::einsum("...in,...mj", {A, I}));
+      else
+        _to.d(_B) = R4(at::einsum("...im,...nj", {A, I}));
+    }
   }
 }
 } // namespace neml2
