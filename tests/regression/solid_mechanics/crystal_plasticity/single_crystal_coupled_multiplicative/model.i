@@ -168,47 +168,12 @@ nbatch = 20
   [elasticity]
     type = ComposedModel
     models = 'mult_decomp gl_strain svk'
-    additional_outputs = 'state/Fe'
-  []
-  # From PK2 to Mandel
-  [full_pk2]
-    type = SR2toR2
-    input = 'state/S'
-    output = 'state/S_full'
-  []
-  [pk2_to_pk1]
-    type = R2Multiplication
-    A = 'forces/F'
-    B = 'state/S_full'
-    to = 'state/P'
-  []
-  [pk1_to_intermediate]
-    type = R2Multiplication
-    A = 'state/Fe'
-    B = 'state/P'
-    to = 'state/Pe'
-  []
-  [intermediate_to_mandel]
-    type = R2Multiplication
-    A = 'state/Pe'
-    B = 'state/Fp'
-    to = 'state/M_full'
-    transpose_B = true
-  []
-  [mandel_sym]
-    type = R2toSR2
-    input = 'state/M_full'
-    output = 'state/M'
-  []
-  [intermediate]
-    type = ComposedModel
-    models = 'full_pk2 pk2_to_pk1 pk1_to_intermediate intermediate_to_mandel mandel_sym'
   []
   # CP flow rule
   [resolved_shear]
     type = ResolvedShear
     resolved_shears = 'state/tau_i'
-    stress = 'state/M'
+    stress = 'state/S'
     orientation = 'forces/R'
   []
   [slip_rule]
@@ -224,26 +189,11 @@ nbatch = 20
     slip_rates = 'state/gamma_rate_i'
     sum_slip_rates = 'state/gamma_rate'
   []
-  [plastic_velgrad_sum]
-    type = PlasticDeformationRate
-    plastic_deformation_rate = 'state/Lp_sum'
+  [plastic_velgrad]
+    type = PlasticSpatialVelocityGradient
+    plastic_spatial_velocity_gradient = 'state/Lp'
     slip_rates = 'state/gamma_rate_i'
     orientation = 'forces/R'
-  []
-  [plastic_velgrad_vol] # volumetric correction of the plastic velocity gradient
-    type = IsotropicSR2
-    factor = 'state/bp'
-    output = 'state/Lp_vol'
-  []
-  [plastic_velgrad_sym]
-    type = SR2LinearCombination
-    from_var = 'state/Lp_sum state/Lp_vol'
-    to_var = 'state/Lp_sym'
-  []
-  [plastic_velgrad]
-    type = SR2toR2
-    input = 'state/Lp_sym'
-    output = 'state/Lp'
   []
   [plastic_defgrad_rate]
     type = R2Multiplication
@@ -260,20 +210,13 @@ nbatch = 20
     type = R2BackwardEulerTimeIntegration
     variable = 'state/Fp'
   []
-  [isochoricity]
-    type = SR2Invariant
-    tensor = 'state/Lp_sym'
-    invariant = 'residual/bp'
-    invariant_type = 'I1'
-  []
   # The implicit model that we solve for
   [implicit_rate]
     type = ComposedModel
     models = "euler_rodrigues slip_strength voce_hardening
-              elasticity intermediate
-              resolved_shear slip_rule sum_slip_rates
-              plastic_velgrad_sum plastic_velgrad_vol plastic_velgrad_sym plastic_velgrad plastic_defgrad_rate
-              integrate_slip_hardening integrate_plastic_defgrad isochoricity"
+              elasticity resolved_shear slip_rule sum_slip_rates
+              plastic_velgrad plastic_defgrad_rate
+              integrate_slip_hardening integrate_plastic_defgrad"
   []
   [model]
     type = ImplicitUpdate

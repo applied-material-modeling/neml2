@@ -69,10 +69,6 @@
     stress = 'state/S'
     orientation = 'forces/r'
   []
-  [elasticity]
-    type = ComposedModel
-    models = 'mult_decomp gl_strain svk elastic_tensor'
-  []
   # CP flow rule
   [resolved_shear]
     type = ResolvedShear
@@ -93,26 +89,11 @@
     slip_rates = 'state/gamma_rate_i'
     sum_slip_rates = 'state/gamma_rate'
   []
-  [plastic_velgrad_sum]
-    type = PlasticDeformationRate
-    plastic_deformation_rate = 'state/Lp_sum'
+  [plastic_velgrad]
+    type = PlasticSpatialVelocityGradient
+    plastic_spatial_velocity_gradient = 'state/Lp'
     slip_rates = 'state/gamma_rate_i'
     orientation = 'forces/R'
-  []
-  [plastic_velgrad_vol] # volumetric correction of the plastic velocity gradient
-    type = IsotropicSR2
-    factor = 'state/bp'
-    output = 'state/Lp_vol'
-  []
-  [plastic_velgrad_sym]
-    type = SR2LinearCombination
-    from_var = 'state/Lp_sum state/Lp_vol'
-    to_var = 'state/Lp_sym'
-  []
-  [plastic_velgrad]
-    type = SR2toR2
-    input = 'state/Lp_sym'
-    output = 'state/Lp'
   []
   [plastic_defgrad_rate]
     type = R2Multiplication
@@ -129,19 +110,13 @@
     type = R2BackwardEulerTimeIntegration
     variable = 'state/Fp'
   []
-  [isochoricity]
-    type = SR2Invariant
-    tensor = 'state/Lp_sym'
-    invariant = 'residual/bp'
-    invariant_type = 'I1'
-  []
   # The implicit model that we solve for
   [implicit_rate]
     type = ComposedModel
     models = "euler_rodrigues slip_strength voce_hardening
               mult_decomp gl_strain svk
               resolved_shear slip_rule sum_slip_rates
-              plastic_velgrad_sum plastic_velgrad_vol plastic_velgrad_sym plastic_velgrad plastic_defgrad_rate
-              integrate_slip_hardening integrate_plastic_defgrad isochoricity"
+              plastic_velgrad plastic_defgrad_rate
+              integrate_slip_hardening integrate_plastic_defgrad"
   []
 []
