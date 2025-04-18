@@ -99,9 +99,6 @@ public:
   /// Deviatoric part of the tensor
   SR2 dev() const;
 
-  /// Determinant
-  Scalar det() const;
-
   /// Double contraction ij,ij
   Scalar inner(const SR2 & other) const;
 
@@ -113,6 +110,9 @@ public:
 
   /// Outer product ij,kl -> ijkl
   SSR4 outer(const SR2 & other) const;
+
+  /// Determinant
+  Scalar det() const;
 
   /// Inversion
   SR2 inverse() const;

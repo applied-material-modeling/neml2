@@ -38,8 +38,9 @@ nbatch = 20
     nstep = 100
   []
   [Fp0]
-    type = FillR2
-    values = '1 1 1'
+    type = R2
+    values = '1 0 0 0 1 0 0 0 1'
+    batch_shape = (${nbatch})
   []
 
   [a]

@@ -23,7 +23,6 @@
 // THE SOFTWARE.
 
 #include "neml2/models/R2Multiplication.h"
-#include "neml2/tensors/R4.h"
 
 namespace neml2
 {
@@ -34,7 +33,7 @@ R2Multiplication::expected_options()
 {
   OptionSet options = Model::expected_options();
   options.doc() = "Multiplication of form \\f$ A B \\f$, where \\f$ A \\f$ and \\f$ B \\f$ are "
-                  "second order tensors.";
+                  "second order tensors. A and B can be inverted and/or transposed per request.";
 
   options.set<VariableName>("A");
   options.set("A").doc() = "Variable A";
@@ -83,8 +82,10 @@ R2Multiplication::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
   if (_transB)
     B = B.transpose();
 
+  const auto AB = A * B;
+
   if (out)
-    _to = A * B;
+    _to = AB;
 
   if (dout_din)
   {
@@ -93,31 +94,39 @@ R2Multiplication::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
     if (_invA)
     {
       if (_transA)
-        _to.d(_A) = -R4(at::einsum("...ip,...qj", {A, A * B}));
+        _to.d(_A) = -A.base_unsqueeze(-2).base_unsqueeze(-3) *
+                    AB.transpose().base_unsqueeze(-3).base_unsqueeze(-1);
       else
-        _to.d(_A) = -R4(at::einsum("...iq,...pj", {A, A * B}));
+        _to.d(_A) = -A.base_unsqueeze(-2).base_unsqueeze(-1) *
+                    AB.transpose().base_unsqueeze(-3).base_unsqueeze(-2);
     }
     else
     {
       if (_transA)
-        _to.d(_A) = R4(at::einsum("...in,...mj", {I, B}));
+        _to.d(_A) = I.base_unsqueeze(-2).base_unsqueeze(-3) *
+                    B.transpose().base_unsqueeze(-3).base_unsqueeze(-1);
       else
-        _to.d(_A) = R4(at::einsum("...im,...nj", {I, B}));
+        _to.d(_A) = I.base_unsqueeze(-2).base_unsqueeze(-1) *
+                    B.transpose().base_unsqueeze(-3).base_unsqueeze(-2);
     }
 
     if (_invB)
     {
       if (_transB)
-        _to.d(_B) = -R4(at::einsum("...iq,...pj", {A * B, B}));
+        _to.d(_B) = -AB.base_unsqueeze(-2).base_unsqueeze(-3) *
+                    B.transpose().base_unsqueeze(-3).base_unsqueeze(-1);
       else
-        _to.d(_B) = -R4(at::einsum("...ip,...qj", {A * B, B}));
+        _to.d(_B) = -AB.base_unsqueeze(-2).base_unsqueeze(-1) *
+                    B.transpose().base_unsqueeze(-3).base_unsqueeze(-2);
     }
     else
     {
       if (_transB)
-        _to.d(_B) = R4(at::einsum("...in,...mj", {A, I}));
+        _to.d(_B) = A.base_unsqueeze(-2).base_unsqueeze(-3) *
+                    I.transpose().base_unsqueeze(-3).base_unsqueeze(-1);
       else
-        _to.d(_B) = R4(at::einsum("...im,...nj", {A, I}));
+        _to.d(_B) = A.base_unsqueeze(-2).base_unsqueeze(-1) *
+                    I.transpose().base_unsqueeze(-3).base_unsqueeze(-2);
     }
   }
 }

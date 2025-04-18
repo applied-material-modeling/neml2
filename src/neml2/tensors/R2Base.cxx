@@ -210,10 +210,53 @@ R2Base<Derived>::operator()(Size i, Size j) const
 }
 
 template <class Derived>
+Scalar
+R2Base<Derived>::det() const
+{
+  const auto comps = at::split(this->base_flatten(), 1, -1);
+  const auto & a = comps[0];
+  const auto & b = comps[1];
+  const auto & c = comps[2];
+  const auto & d = comps[3];
+  const auto & e = comps[4];
+  const auto & f = comps[5];
+  const auto & g = comps[6];
+  const auto & h = comps[7];
+  const auto & i = comps[8];
+  const auto det = a * (e * i - h * f) - b * (d * i - g * f) + c * (d * h - e * g);
+  return Scalar(det.reshape(this->batch_sizes().concrete()), this->batch_sizes());
+}
+
+template <class Derived>
 Derived
 R2Base<Derived>::inverse() const
 {
-  return Derived(ATensor::inverse());
+  const auto comps = at::split(this->base_flatten(), 1, -1);
+  const auto & a = comps[0];
+  const auto & b = comps[1];
+  const auto & c = comps[2];
+  const auto & d = comps[3];
+  const auto & e = comps[4];
+  const auto & f = comps[5];
+  const auto & g = comps[6];
+  const auto & h = comps[7];
+  const auto & i = comps[8];
+  const auto det = a * (e * i - h * f) - b * (d * i - g * f) + c * (d * h - e * g);
+  const auto cof00 = e * i - h * f;
+  const auto cof01 = -(d * i - g * f);
+  const auto cof02 = d * h - g * e;
+  const auto cof10 = -(b * i - h * c);
+  const auto cof11 = a * i - g * c;
+  const auto cof12 = -(a * h - g * b);
+  const auto cof20 = b * f - e * c;
+  const auto cof21 = -(a * f - d * c);
+  const auto cof22 = a * e - d * b;
+  const auto coft0 = at::cat({cof00, cof10, cof20}, -1);
+  const auto coft1 = at::cat({cof01, cof11, cof21}, -1);
+  const auto coft2 = at::cat({cof02, cof12, cof22}, -1);
+  const auto coft = at::stack({coft0, coft1, coft2}, -2);
+  const auto inv = coft / det.unsqueeze(-1);
+  return Derived(inv, this->batch_sizes());
 }
 
 template <class Derived>
