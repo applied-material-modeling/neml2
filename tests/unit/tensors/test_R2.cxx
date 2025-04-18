@@ -206,6 +206,14 @@ TEST_CASE("R2", "[tensors]")
           REQUIRE(at::allclose(a(i, j), a.index({indexing::Ellipsis, i, j})));
     }
 
+    SECTION("det")
+    {
+      auto a = R2(at::rand({3, 3}, DTO));
+      auto d = Scalar(ATensor(a).det());
+      REQUIRE(at::allclose(a.det(), d));
+      REQUIRE(at::allclose(a.batch_expand(B).det(), d.batch_expand(B)));
+    }
+
     SECTION("inverse")
     {
       auto a = R2(at::rand({3, 3}, DTO));

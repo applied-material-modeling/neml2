@@ -168,19 +168,6 @@ SR2::dev() const
 }
 
 Scalar
-SR2::det() const
-{
-  auto a00 = (*this)(0, 0);
-  auto a11 = (*this)(1, 1);
-  auto a22 = (*this)(2, 2);
-  auto a12 = (*this)(1, 2);
-  auto a02 = (*this)(0, 2);
-  auto a01 = (*this)(0, 1);
-  return a00 * (a11 * a22 - a12 * a12) + a01 * (a12 * a02 - a01 * a22) +
-         a02 * (a01 * a12 - a11 * a02);
-}
-
-Scalar
 SR2::inner(const SR2 & other) const
 {
   return linalg::vecdot(*this, other);
@@ -205,16 +192,52 @@ SR2::outer(const SR2 & other) const
   return SSR4(at::einsum("...i,...j", {*this, other}), utils::broadcast_batch_dim(*this, other));
 }
 
+Scalar
+SR2::det() const
+{
+  const auto comps = at::split(*this, 1, -1);
+  const auto & a = comps[0];
+  const auto & e = comps[1];
+  const auto & i = comps[2];
+  const auto f = comps[3] / mandel_factor(3);
+  const auto c = comps[4] / mandel_factor(4);
+  const auto b = comps[5] / mandel_factor(5);
+  const auto det = a * (e * i - f * f) - b * (b * i - c * f) + c * (b * f - e * c);
+  return Scalar(det.reshape(batch_sizes().concrete()), batch_sizes());
+}
+
 SR2
 SR2::inverse() const
 {
-  return R2(*this).inverse();
+  const auto comps = at::split(*this, 1, -1);
+  const auto & a = comps[0];
+  const auto & e = comps[1];
+  const auto & i = comps[2];
+  const auto f = comps[3] / mandel_factor(3);
+  const auto c = comps[4] / mandel_factor(4);
+  const auto b = comps[5] / mandel_factor(5);
+  const auto det = a * (e * i - f * f) - b * (b * i - c * f) + c * (b * f - e * c);
+  const auto cof00 = e * i - f * f;
+  const auto cof01 = -(b * i - c * f);
+  const auto cof02 = b * f - c * e;
+  const auto cof11 = a * i - c * c;
+  const auto cof12 = -(a * f - c * b);
+  const auto cof22 = a * e - b * b;
+  const auto cof = at::cat({cof00,
+                            cof11,
+                            cof22,
+                            mandel_factor(3) * cof12,
+                            mandel_factor(4) * cof02,
+                            mandel_factor(5) * cof01},
+                           -1);
+  const auto inv = cof / det;
+  return SR2(inv, batch_sizes());
 }
 
 SR2
 SR2::transpose() const
 {
-  return *this;
+  return SR2(*this, batch_sizes());
 }
 
 } // namespace neml2

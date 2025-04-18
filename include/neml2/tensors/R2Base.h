@@ -118,6 +118,9 @@ public:
   /// Accessor
   Scalar operator()(Size i, Size j) const;
 
+  /// Determinant
+  Scalar det() const;
+
   /// Inversion
   Derived inverse() const;
 

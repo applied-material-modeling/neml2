@@ -297,9 +297,9 @@ def pretty_plot_pole_figure_odf(
     ax = plt.subplot(111, projection="polar")
     if limits is not None:
         CS = ax.contourf(
-            mesh[0],
-            mesh[1],
-            vals.detach(),
+            mesh[0].cpu(),
+            mesh[1].cpu(),
+            vals.detach().cpu(),
             cmap="Greys",
             levels=torch.linspace(limits[0], limits[1], ncontour),
             extend="both",

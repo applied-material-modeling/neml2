@@ -24,49 +24,40 @@
 
 #pragma once
 
-#include "neml2/tensors/tensors.h"
 #include "neml2/models/Model.h"
 
 namespace neml2
 {
-template <typename T>
-class BackwardEulerTimeIntegration : public Model
+class Scalar;
+class R2;
+class SR2;
+namespace crystallography
+{
+class CrystalGeometry;
+}
+
+/// Plastic spatial velocity gradient with the default kinetics
+class PlasticSpatialVelocityGradient : public Model
 {
 public:
   static OptionSet expected_options();
 
-  BackwardEulerTimeIntegration(const OptionSet & options);
-
-  void diagnose() const override;
-
-private:
-  const VariableName _var_name;
-  const VariableName _var_rate_name;
+  PlasticSpatialVelocityGradient(const OptionSet & options);
 
 protected:
+  /// Set the plastic deformation rate and derivatives
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  /// Current variable value
-  const Variable<T> & _s;
+  /// Crystal geometry class with slip geometry
+  const crystallography::CrystalGeometry & _crystal_geometry;
 
-  /// Old variable value
-  const Variable<T> & _sn;
+  /// Plastic spatial velocity gradient
+  Variable<R2> & _lp;
 
-  /// Variable rate
-  const Variable<T> & _ds_dt;
+  /// Current orientation
+  const Variable<R2> & _R;
 
-  /// Current time
-  const Variable<Scalar> & _t;
-
-  /// Old time
-  const Variable<Scalar> & _tn;
-
-  /// Residual
-  Variable<T> & _r;
+  /// Slip rates
+  const Variable<Scalar> & _g;
 };
-
-typedef BackwardEulerTimeIntegration<Scalar> ScalarBackwardEulerTimeIntegration;
-typedef BackwardEulerTimeIntegration<Vec> VecBackwardEulerTimeIntegration;
-typedef BackwardEulerTimeIntegration<SR2> SR2BackwardEulerTimeIntegration;
-typedef BackwardEulerTimeIntegration<R2> R2BackwardEulerTimeIntegration;
 } // namespace neml2

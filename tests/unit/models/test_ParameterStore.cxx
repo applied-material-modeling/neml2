@@ -34,7 +34,8 @@ using namespace neml2;
 
 TEST_CASE("ParameterStore", "[models]")
 {
-  auto & model = reload_model("models/solid_mechanics/LinearIsotropicElasticity.i", "model");
+  auto & model =
+      reload_model("models/solid_mechanics/elasticity/LinearIsotropicElasticity.i", "model");
   auto batch_shape = TensorShape{5, 2};
 
   SECTION("class ParameterStore")

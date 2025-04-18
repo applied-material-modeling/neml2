@@ -33,7 +33,7 @@ build-verbosity = 1
 before-all = ""
 before-build = "python -m pip install -r requirements.txt cmake ninja torch"
 
-test-requires = "pytest torch pyzag==1.0.0 graphviz"
+test-requires = "pytest torch pyzag==1.1.1 graphviz"
 test-command = "pytest -v {project}/python/tests"
 
 [tool.cibuildwheel.linux]
