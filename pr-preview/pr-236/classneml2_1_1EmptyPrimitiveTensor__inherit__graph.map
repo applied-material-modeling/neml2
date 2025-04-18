@@ -1,0 +1,9 @@
+<map id="EmptyPrimitiveTensor&lt; T &gt;" name="EmptyPrimitiveTensor&lt; T &gt;">
+<area shape="rect" id="Node000001" title="Create an empty PrimitiveTensor of type T from the input file." alt="" coords="5,152,208,177"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="34,79,73,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="72,113,100,150,96,153,68,117"/>
+<area shape="rect" id="Node000003" href="$classneml2_1_1UserTensorBase.html" title=" " alt="" coords="97,79,223,104"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="145,117,117,153,113,150,141,113"/>
+<area shape="rect" id="Node000004" href="$classneml2_1_1NEML2Object.html" title="The base class of all &quot;manufacturable&quot; objects in the NEML2 library." alt="" coords="105,5,215,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="163,44,163,79,157,79,157,44"/>
+</map>

@@ -1,0 +1,1 @@
+genhtml /home/runner/work/neml2/neml2/build/coverage/coverage/coverage.info --output-directory /home/runner/work/neml2/neml2/build/coverage/coverage --rc genhtml_med_limit=25 --rc genhtml_hi_limit=75
