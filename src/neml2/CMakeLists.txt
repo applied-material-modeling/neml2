@@ -7,6 +7,8 @@ if(NOT Torch_FOUND)
   include(DownloadTorch)
   set(Torch_ROOT ${torch_SOURCE_DIR} CACHE PATH "Torch root directory" FORCE)
   find_package(Torch REQUIRED)
+  install(DIRECTORY ${Torch_INCLUDE_DIR} TYPE INCLUDE COMPONENT libneml2)
+  install(DIRECTORY ${Torch_LINK_DIR} DESTINATION . COMPONENT libneml2)
 endif()
 
 if(HAS_GLIBC)
@@ -15,13 +17,6 @@ if(HAS_GLIBC)
   else()
     message(STATUS "Using C++11 ABI")
   endif()
-endif()
-
-cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${Torch_LINK_DIR} Torch_DOWNLOADED)
-
-if(Torch_DOWNLOADED)
-  install(DIRECTORY ${Torch_INCLUDE_DIR} TYPE INCLUDE COMPONENT libneml2)
-  install(DIRECTORY ${Torch_LINK_DIR} DESTINATION . COMPONENT libneml2)
 endif()
 
 # ----------------------------------------------------------------------------
@@ -37,21 +32,12 @@ if(NOT HIT_FOUND)
     include(DownloadWASP)
     set(WASP_ROOT ${WASP_INSTALL_DIR} CACHE PATH "WASP root directory" FORCE)
     find_package(WASP REQUIRED)
+    install(DIRECTORY ${WASP_INCLUDE_DIR}/ TYPE INCLUDE COMPONENT libneml2)
   endif()
 
   include(DownloadHIT)
   set(HIT_ROOT ${HIT_INSTALL_DIR} CACHE PATH "HIT root directory" FORCE)
   find_package(HIT REQUIRED)
-endif()
-
-cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${WASP_LINK_DIR} WASP_DOWNLOADED)
-cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${HIT_LINK_DIR} HIT_DOWNLOADED)
-
-if(WASP_DOWNLOADED)
-  install(DIRECTORY ${WASP_INCLUDE_DIR}/waspcore ${WASP_INCLUDE_DIR}/wasphit TYPE INCLUDE COMPONENT libneml2)
-endif()
-
-if(HIT_DOWNLOADED)
   install(DIRECTORY ${HIT_INCLUDE_DIR}/hit TYPE INCLUDE COMPONENT libneml2)
 endif()
 
@@ -65,11 +51,6 @@ if(NEML2_WORK_DISPATCHER)
     include(DownloadTIMPI)
     set(TIMPI_ROOT ${TIMPI_INSTALL_DIR} CACHE PATH "TIMPI root directory" FORCE)
     find_package(TIMPI REQUIRED)
-  endif()
-
-  cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${TIMPI_LINK_DIR} TIMPI_DOWNLOADED)
-
-  if(TIMPI_DOWNLOADED)
     install(DIRECTORY ${TIMPI_INCLUDE_DIR}/timpi TYPE INCLUDE COMPONENT libneml2)
   endif()
 endif()
@@ -84,12 +65,6 @@ if(NEML2_CPU_PROFILER)
     include(DownloadGperftools)
     set(Gperftools_ROOT ${GPERFTOOLS_INSTALL_DIR} CACHE PATH "gperftools root directory" FORCE)
     find_package(Gperftools REQUIRED)
-  endif()
-
-  cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${Gperftools_LINK_DIR} Gperftools_DOWNLOADED)
-
-  if(Gperftools_DOWNLOADED)
-    # libneml2 does not need gperftools headers
   endif()
 endif()
 
@@ -197,7 +172,9 @@ endif()
 
 # libneml2_base
 neml2_add_submodule(neml2_base SHARED base)
-target_link_libraries(neml2_base PUBLIC neml2_tensor HIT)
+target_link_libraries(neml2_base PUBLIC neml2_tensor)
+target_include_directories(neml2_base PUBLIC $<TARGET_PROPERTY:HIT,INTERFACE_INCLUDE_DIRECTORIES> $<TARGET_PROPERTY:WASP,INTERFACE_INCLUDE_DIRECTORIES>)
+target_link_libraries(neml2_base PRIVATE HIT)
 set_target_properties(neml2_base PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
 target_link_libraries(neml2 INTERFACE neml2_base)
 
@@ -249,9 +226,9 @@ if(NEML2_WORK_DISPATCHER)
   target_link_libraries(neml2 INTERFACE neml2_dispatcher)
 endif()
 
-# ###############################################################################
+# ----------------------------------------------------------------------------
 # Version number and hash
-# ###############################################################################
+# ----------------------------------------------------------------------------
 find_package(Git)
 
 if(Git_FOUND)
