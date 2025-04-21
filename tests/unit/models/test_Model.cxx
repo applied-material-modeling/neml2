@@ -36,7 +36,7 @@ TEST_CASE("Model", "[models]")
 {
   SECTION("get_model")
   {
-    reload_input("models/ComposedModel5.i");
+    load_input("models/ComposedModel5.i");
     auto & model1 = get_model("model");
     auto & model2 = get_model("model");
     auto & model3 = get_model("model");

@@ -114,7 +114,7 @@ TEST_CASE("SymmetryFromOrbifold", "[user_tensors]")
   };
 
   // Load input file
-  reload_input(fs::absolute("user_tensors/test_SymmetryFromOrbifold.i"));
+  load_input(fs::absolute("user_tensors/test_SymmetryFromOrbifold.i"));
 
   auto fmt_name = [](std::string cls) { return "class_" + cls; };
 

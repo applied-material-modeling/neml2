@@ -31,7 +31,7 @@ using namespace neml2;
 
 TEST_CASE("FillMillerIndex", "[user_tensors]")
 {
-  reload_input("user_tensors/test_FillMillerIndex.i");
+  load_input("user_tensors/test_FillMillerIndex.i");
 
   const auto valid_1 = Factory::get_object_ptr<MillerIndex>("Tensors", "v1");
   const auto correct_1 = MillerIndex::fill(1, 2, 3);

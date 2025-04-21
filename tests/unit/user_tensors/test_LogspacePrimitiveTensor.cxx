@@ -48,7 +48,7 @@ using namespace neml2;
 
 TEST_CASE("LogspacePrimitiveTensor", "[user_tensors]")
 {
-  reload_input("user_tensors/test_LogspacePrimitiveTensor.i");
+  load_input("user_tensors/test_LogspacePrimitiveTensor.i");
 
   TensorShape B{100, 2, 1};
   Size nstep = 100;

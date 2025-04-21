@@ -57,7 +57,7 @@ TEST_CASE("models")
       try
       {
         // Load and run the model
-        reload_input(test.filename());
+        load_input(test.filename());
         auto & driver = get_driver("unit");
         diagnose(driver);
         REQUIRE(driver.run());

@@ -54,7 +54,7 @@ load_model(const std::filesystem::path & path, const std::string & mname)
 Model &
 reload_model(const std::filesystem::path & path, const std::string & mname)
 {
-  reload_input(path);
+  load_input(path);
   return get_model(mname);
 }
 

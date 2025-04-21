@@ -41,7 +41,7 @@ TEST_CASE("CubicCrystal", "[models/crystallography]")
   const auto & DTO = default_tensor_options();
 
   // Load all the models in
-  reload_input(fs::absolute("models/crystallography/test_CubicCrystal.i"));
+  load_input(fs::absolute("models/crystallography/test_CubicCrystal.i"));
 
   SECTION("Simple FCC cubic model, defined with the simple specialized CubicCrystal class")
   {

@@ -31,7 +31,7 @@ using namespace neml2;
 
 TEST_CASE("LogspaceTensor", "[user_tensors]")
 {
-  reload_input("user_tensors/test_LogspaceTensor.i");
+  load_input("user_tensors/test_LogspaceTensor.i");
 
   SECTION("LogspaceTensor")
   {

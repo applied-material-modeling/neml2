@@ -31,7 +31,7 @@ from neml2.tensors import Scalar, TensorType
 
 def test_get_model():
     pwd = Path(__file__).parent
-    neml2.reload_input(pwd / "test_Model.i")
+    neml2.load_input(pwd / "test_Model.i")
 
     model = neml2.get_model("model")
     assert model

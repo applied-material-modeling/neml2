@@ -26,11 +26,10 @@
 #include <filesystem>
 
 #include "neml2/misc/string_utils.h"
-#include "neml2/misc/defaults.h"
+#include "neml2/base/OptionCollection.h"
 
 namespace neml2
 {
-class OptionCollection;
 class LabeledAxisAccessor;
 using VariableName = LabeledAxisAccessor;
 class EnumSelection;

@@ -31,39 +31,10 @@ namespace neml2
 /**
  * @brief A data structure that holds options of multiple objects.
  *
- * The OptionCollection is a two layer map, where the first layer key is the section name, e.g.
- * Models, Tensors, Drivers, etc., and the second layer key is the object name.
+ * This is a two layer map, where the outer layer key is the section name, e.g.
+ * Models, Tensors, Drivers, etc., and the inner layer key is the object name.
  */
-class OptionCollection
-{
-public:
-  OptionCollection();
-
-  /// Get global settings
-  OptionSet & settings() { return _settings; }
-
-  /// Get global settings
-  const OptionSet & settings() const { return _settings; }
-
-  /// Implicit conversion to an STL map.
-  operator std::map<std::string, std::map<std::string, OptionSet>>() const { return _data; }
-
-  /// Get all the object options under a specific section.
-  std::map<std::string, OptionSet> & operator[](const std::string & section);
-
-  /// Get all the object options under a specific section.
-  const std::map<std::string, OptionSet> & operator[](const std::string & section) const;
-
-  /// Get a read-only reference to the underlying data structure.
-  const std::map<std::string, std::map<std::string, OptionSet>> & data() const { return _data; }
-
-private:
-  /// Global settings under the [Settings] section
-  OptionSet _settings;
-
-  /// Collection of options for all manufacturable objects
-  std::map<std::string, std::map<std::string, OptionSet>> _data;
-};
+using OptionCollection = std::map<std::string, std::map<std::string, OptionSet>>;
 
 std::ostream & operator<<(std::ostream & os, const OptionCollection & p);
 } // namespace neml2

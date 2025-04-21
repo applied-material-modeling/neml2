@@ -31,7 +31,7 @@ using namespace neml2;
 
 TEST_CASE("FillSR2", "[user_tensors]")
 {
-  reload_input("user_tensors/test_FillSR2.i");
+  load_input("user_tensors/test_FillSR2.i");
 
   const auto auto_1 = Factory::get_object_ptr<SR2>("Tensors", "1");
   const auto auto_1_correct = SR2::fill(1);

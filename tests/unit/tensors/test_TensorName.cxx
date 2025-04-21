@@ -36,7 +36,7 @@ TEST_CASE("TensorName", "[base]")
 {
   SECTION("Scalar cross-reference")
   {
-    reload_input("tensors/test_TensorName_Scalar.i");
+    load_input("tensors/test_TensorName_Scalar.i");
 
     const auto auto_3 = Factory::get_object_ptr<SR2>("Tensors", "auto_3_crossref");
 
@@ -57,7 +57,7 @@ TEST_CASE("TensorName", "[base]")
 
   SECTION("empty scalar")
   {
-    REQUIRE_THROWS_WITH(reload_input("tensors/test_TensorName_empty_Scalar.i"),
+    REQUIRE_THROWS_WITH(load_input("tensors/test_TensorName_empty_Scalar.i"),
                         Catch::Matchers::ContainsSubstring("Failed to parse '' as a"));
   }
 
@@ -77,7 +77,7 @@ TEST_CASE("TensorName", "[base]")
 
   SECTION("empty tensor")
   {
-    REQUIRE_THROWS_WITH(reload_input("tensors/test_TensorName_empty_Tensor.i"),
+    REQUIRE_THROWS_WITH(load_input("tensors/test_TensorName_empty_Tensor.i"),
                         Catch::Matchers::ContainsSubstring("Failed to parse '' as a"));
   }
 }

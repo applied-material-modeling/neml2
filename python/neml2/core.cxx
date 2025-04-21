@@ -121,16 +121,6 @@ will be discarded.
 :param path:     Path to the input file to be parsed
 :parma cli_args: Additional command-line arguments to pass to the parser
 )");
-  m.def("reload_input", &reload_input, py::arg("path"), py::arg("cli_args") = "", R"(
-Similar to core.load_input, except that this function additionally clears the
-factory so that previously retrieved models are deleted.
-
-This function is only needed if you load and evaluate models inside a for-loop,
-where it is desirable to deallocate models on-the-fly.
-
-:param path:     Path to the input file to be parsed
-:param cli_args: Additional command-line arguments to pass to the parser
-)");
   m.def(
       "get_model",
       [](const std::string & model) { return &get_model(model); },

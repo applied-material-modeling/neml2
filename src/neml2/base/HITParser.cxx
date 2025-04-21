@@ -22,15 +22,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include "hit/braceexpr.h"
+
 #include "neml2/base/HITParser.h"
 #include "neml2/base/Registry.h"
-#include "neml2/base/Factory.h"
 #include "neml2/base/TensorName.h"
 #include "neml2/base/Settings.h"
 #include "neml2/base/EnumSelection.h"
 #include "neml2/base/MultiEnumSelection.h"
 #include "neml2/base/LabeledAxisAccessor.h"
-#include "neml2/tensors/tensors.h"
 #include "neml2/misc/assertions.h"
 #include "neml2/misc/types.h"
 
@@ -68,20 +68,20 @@ HITParser::parse(const std::filesystem::path & filename, const std::string & add
   expander.registerEvaler("raw", raw);
   root->walk(&expander);
 
-  OptionCollection all_options;
-
   // Extract global settings
+  OptionSet settings;
   auto * settings_node = root->find("Settings");
   if (settings_node)
-    extract_options(settings_node, all_options.settings());
+    extract_options(settings_node, settings);
 
   // Apply global settings
   // Note that we purposefully apply the settings __before__ parsing the objects.
   // This is because the global settings may contain additional dynamic libraries we should load to
   // enrich our registry.
-  Settings::apply(all_options.settings());
+  Settings::apply(settings);
 
   // Loop over each known section and extract options for each object
+  OptionCollection all_options;
   for (const auto & section : Parser::sections)
   {
     auto * section_node = root->find(section);

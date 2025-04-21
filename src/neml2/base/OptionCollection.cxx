@@ -25,27 +25,9 @@
 #include <iostream>
 
 #include "neml2/base/OptionCollection.h"
-#include "neml2/base/Settings.h"
 
 namespace neml2
 {
-OptionCollection::OptionCollection()
-  : _settings(Settings::expected_options())
-{
-}
-
-std::map<std::string, OptionSet> &
-OptionCollection::operator[](const std::string & section)
-{
-  return _data[section];
-}
-
-const std::map<std::string, OptionSet> &
-OptionCollection::operator[](const std::string & section) const
-{
-  return _data.at(section);
-}
-
 // LCOV_EXCL_START
 std::ostream &
 operator<<(std::ostream & os, const OptionCollection & p)
@@ -54,7 +36,7 @@ operator<<(std::ostream & os, const OptionCollection & p)
   auto toprule = std::string(width, '=');
   auto midrule = std::string(width, '-');
 
-  for (auto && [section, obj_options] : p.data())
+  for (auto && [section, obj_options] : p)
   {
     os << toprule << std::endl;
     os << section << std::endl;

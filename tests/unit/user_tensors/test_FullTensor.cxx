@@ -31,7 +31,7 @@ using namespace neml2;
 
 TEST_CASE("FullTensor", "[user_tensors]")
 {
-  reload_input("user_tensors/test_FullTensor.i");
+  load_input("user_tensors/test_FullTensor.i");
 
   SECTION("FullTensor")
   {

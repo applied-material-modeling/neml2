@@ -31,7 +31,7 @@ using namespace neml2;
 
 TEST_CASE("ZerosTensor", "[user_tensors]")
 {
-  reload_input("user_tensors/test_ZerosTensor.i");
+  load_input("user_tensors/test_ZerosTensor.i");
 
   SECTION("ZerosTensor")
   {

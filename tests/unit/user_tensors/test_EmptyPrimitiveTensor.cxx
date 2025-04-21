@@ -41,7 +41,7 @@ using namespace neml2;
 
 TEST_CASE("EmptyPrimitiveTensor", "[user_tensors]")
 {
-  reload_input("user_tensors/test_EmptyPrimitiveTensor.i");
+  load_input("user_tensors/test_EmptyPrimitiveTensor.i");
 
   TensorShape B{2, 1};
 

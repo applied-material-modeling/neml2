@@ -47,13 +47,6 @@ load_input(const std::filesystem::path & path, const std::string & additional_in
   Factory::load_options(oc);
 }
 
-void
-reload_input(const std::filesystem::path & path, const std::string & additional_input)
-{
-  Factory::clear();
-  load_input(path, additional_input);
-}
-
 Factory &
 Factory::get()
 {

@@ -31,7 +31,7 @@ using namespace neml2;
 
 TEST_CASE("Orientation", "[user_tensors]")
 {
-  reload_input("user_tensors/test_Orientation.i");
+  load_input("user_tensors/test_Orientation.i");
 
   SECTION("Kocks, radians")
   {

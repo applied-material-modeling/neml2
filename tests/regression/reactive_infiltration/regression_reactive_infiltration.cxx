@@ -56,7 +56,7 @@ TEST_CASE("reactive infiltration")
       try
       {
         // Load and run the model
-        reload_input(test.filename());
+        load_input(test.filename());
         auto & driver = get_driver("regression");
         diagnose(driver);
         REQUIRE(driver.run());

@@ -23,8 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/base/Parser.h"
-#include "neml2/base/OptionCollection.h"
-#include "neml2/models/Variable.h"
+#include "neml2/base/LabeledAxisAccessor.h"
 
 namespace neml2
 {
