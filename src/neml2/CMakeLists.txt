@@ -24,6 +24,8 @@ if(Torch_DOWNLOADED)
   install(DIRECTORY ${Torch_LINK_DIR} DESTINATION . COMPONENT libneml2)
 endif()
 
+find_library(IPEX_LIB intel-ext-pt-gpu PATHS ${INTEL_EXTENSION_FOR_PYTORCH_PATH}/lib NO_DEFAULT_PATH REQUIRED)
+
 # ----------------------------------------------------------------------------
 # HIT
 # ----------------------------------------------------------------------------
@@ -160,7 +162,7 @@ add_library(neml2 INTERFACE)
 
 # libneml2_misc
 neml2_add_submodule(neml2_misc SHARED misc)
-target_link_libraries(neml2_misc PUBLIC Torch::Torch nlohmann_json::nlohmann_json)
+target_link_libraries(neml2_misc PUBLIC Torch::Torch nlohmann_json::nlohmann_json ${IPEX_LIB})
 set_target_properties(neml2_misc PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
 target_link_libraries(neml2 INTERFACE neml2_misc)
 
