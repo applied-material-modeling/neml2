@@ -27,6 +27,8 @@
 #include "neml2/base/Parser.h"
 #include "neml2/base/LabeledAxisAccessor.h"
 
+#include <iostream>
+
 namespace neml2
 {
 const std::vector<std::string> Parser::sections = {
