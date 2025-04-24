@@ -26,6 +26,8 @@
 #include "neml2/base/OptionCollection.h"
 #include "neml2/models/Variable.h"
 
+#include <iostream>
+
 namespace neml2
 {
 const std::vector<std::string> Parser::sections = {
