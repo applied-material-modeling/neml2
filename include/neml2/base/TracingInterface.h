@@ -28,7 +28,7 @@
 #include <memory>
 #include <mutex>
 
-#include <nlohmann/json.hpp>
+#include "nlohmann/json.hpp"
 #include <unordered_map>
 
 #include "neml2/base/OptionSet.h"

@@ -87,6 +87,7 @@ void
 ModelDriver::setup()
 {
   Driver::setup();
+  _model.to(_device);
 
 #ifdef NEML2_HAS_DISPATCHER
   if (_scheduler)
