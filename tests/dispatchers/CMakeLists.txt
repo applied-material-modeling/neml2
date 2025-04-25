@@ -1,5 +1,6 @@
 file(GLOB_RECURSE srcs CONFIGURE_DEPENDS *.cxx)
 add_executable(dispatcher_tests ${srcs})
-target_link_libraries(dispatcher_tests PRIVATE testutils)
+find_package(Threads REQUIRED)
+target_link_libraries(dispatcher_tests PRIVATE testutils Threads::Threads)
 target_compile_options(dispatcher_tests PRIVATE -Wall -Wextra -pedantic)
 set_target_properties(dispatcher_tests PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
