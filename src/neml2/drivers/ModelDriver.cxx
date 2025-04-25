@@ -86,6 +86,9 @@ ModelDriver::setup()
   Driver::setup();
   _model.to(_device);
 
+  // Send model parameters and buffers to device
+  _model.to(_device);
+
 #ifdef NEML2_HAS_DISPATCHER
   if (_scheduler)
   {
@@ -147,4 +150,12 @@ ModelDriver::diagnose() const
   Driver::diagnose();
   neml2::diagnose(*_model);
 }
+
+void
+ModelDriver::to(Device dev)
+{
+  _device = dev;
+  setup();
+}
+
 } // namespace neml2
