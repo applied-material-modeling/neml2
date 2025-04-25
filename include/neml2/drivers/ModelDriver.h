@@ -25,6 +25,7 @@
 #pragma once
 
 #include "neml2/drivers/Driver.h"
+#include "neml2/misc/types.h"
 #include "neml2/models/map_types.h"
 #include "neml2/tensors/tensors.h"
 
@@ -53,13 +54,15 @@ public:
 
   void diagnose() const override;
 
+  virtual void to(Device dev);
+
   const Model & model() const { return _model; }
 
 protected:
   /// The model which the driver uses to perform constitutive updates.
   Model & _model;
   /// The device on which to evaluate the model
-  const Device _device;
+  Device _device;
 
   /// Set to true to list all the model parameters at the beginning
   const bool _show_params;

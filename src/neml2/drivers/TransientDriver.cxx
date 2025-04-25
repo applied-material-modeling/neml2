@@ -150,13 +150,22 @@ TransientDriver::TransientDriver(const OptionSet & options)
     _result_out(_nsteps),
     _save_as(options.get<std::string>("save_as"))
 {
-  _time = _time.to(_device);
 }
 
 void
 TransientDriver::setup()
 {
   ModelDriver::setup();
+
+  _result_in.clear();
+  _result_out.clear();
+  _result_in.resize(_nsteps);
+  _result_out.resize(_nsteps);
+  _driving_force_names.clear();
+  _driving_forces.clear();
+  _in.clear();
+
+  _time = _time.to(_device);
 
 #define GET_FORCE_(T)                                                                              \
   get_force<T>(_driving_force_names,                                                               \

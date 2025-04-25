@@ -27,6 +27,7 @@
 
 #include "utils.h"
 #include "neml2/drivers/Driver.h"
+#include "TransientRegression.h"
 
 using namespace neml2;
 namespace fs = std::filesystem;
@@ -60,6 +61,14 @@ TEST_CASE("pyrolysis")
         auto & driver = get_driver("regression");
         diagnose(driver);
         REQUIRE(driver.run());
+
+        auto model_driver = dynamic_cast<TransientRegression *>(&driver);
+        if (model_driver)
+          for (const auto & device : get_test_suite_additional_devices())
+          {
+            model_driver->to(device);
+            REQUIRE(model_driver->run());
+          }
       }
       catch (...)
       {

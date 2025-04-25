@@ -68,6 +68,12 @@ TransientRegression::diagnose() const
                     "destination file/path.");
 }
 
+void
+TransientRegression::to(Device dev)
+{
+  _driver.to(dev);
+}
+
 bool
 TransientRegression::run()
 {
@@ -88,7 +94,7 @@ diff(const jit::named_buffer_list & res, const jit::named_buffer_list & ref, Rea
 {
   std::map<std::string, ATensor> res_map;
   for (auto item : res)
-    res_map.emplace(item.name, item.value);
+    res_map.emplace(item.name, item.value.to(kCPU));
 
   std::map<std::string, ATensor> ref_map;
   for (auto item : ref)
