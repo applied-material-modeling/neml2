@@ -105,5 +105,8 @@ public:
   [[nodiscard]] static Tensor identity(const TraceableTensorShape & batch_shape,
                                        Size n,
                                        const TensorOptions & options = default_tensor_options());
+
+  /// Expand base dimension to a given size
+  Tensor base_unsqueeze_to(Size n) const;
 };
 } // namespace neml2
