@@ -185,4 +185,18 @@ Tensor::identity(const TraceableTensorShape & batch_shape, Size n, const TensorO
 {
   return identity(n, options).batch_expand_copy(batch_shape);
 }
+
+Tensor
+Tensor::base_unsqueeze_to(Size n) const
+{
+  neml_assert_dbg(n >= base_dim(),
+                  "base_unsqueeze_to: n (",
+                  n,
+                  ") must be greater than or equal to base_dim (",
+                  base_dim(),
+                  ").");
+  indexing::TensorIndices net{indexing::Ellipsis};
+  net.insert(net.end(), n - base_dim(), indexing::None);
+  return Tensor(index(net), batch_sizes());
+}
 } // end namespace neml2
