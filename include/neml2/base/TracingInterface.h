@@ -27,10 +27,9 @@
 #include <fstream>
 #include <memory>
 #include <mutex>
-
-#include <nlohmann/json.hpp>
 #include <unordered_map>
 
+#include "nlohmann/json.hpp"
 #include "neml2/base/OptionSet.h"
 
 namespace neml2
