@@ -51,7 +51,7 @@ valuemap_move_device(ValueMap && x, Device device)
   // Move the tensors to the device
   for (auto && [name, value] : std::move(x))
     x[name] = value.to(device);
-  return x;
+  return std::move(x);
 }
 
 ValueMap

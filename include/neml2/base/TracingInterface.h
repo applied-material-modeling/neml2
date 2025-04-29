@@ -88,7 +88,7 @@ private:
 };
 
 /// All trace writers
-std::unordered_map<std::filesystem::path, std::unique_ptr<TraceWriter>> & event_trace_writers();
+std::unordered_map<std::string, std::unique_ptr<TraceWriter>> & event_trace_writers();
 
 /**
  * Interface for classes that support event tracing

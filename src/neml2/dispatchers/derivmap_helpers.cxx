@@ -67,7 +67,7 @@ derivmap_move_device(DerivMap && x, Device device)
   for (auto && [name, vmap] : std::move(x))
     for (auto && [name2, value] : vmap)
       x[name][name2] = value.to(device);
-  return x;
+  return std::move(x);
 }
 
 DerivMap
