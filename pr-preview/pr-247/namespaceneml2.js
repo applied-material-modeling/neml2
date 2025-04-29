@@ -381,7 +381,7 @@ var namespaceneml2 =
     [ "diagnose", "namespaceneml2.html#a1519dd6fe6d00c665fb8d1e7df0574ef", null ],
     [ "diagnostic_assert", "namespaceneml2.html#a61fa00fa55539c1b21711a633bda2ed0", null ],
     [ "diagnostic_assert", "namespaceneml2.html#a95bcbb262635ce935f280d866d8963a2", null ],
-    [ "event_trace_writers", "namespaceneml2.html#acfa224ad10475ce05178ffb615b450e1", null ],
+    [ "event_trace_writers", "namespaceneml2.html#a29c168a16560ce905a92a30e698456ea", null ],
     [ "fem_assemble", "namespaceneml2.html#ad94ed53ba661baad23198c914d7d52fa", null ],
     [ "fem_interpolate", "namespaceneml2.html#a111c22317081ba6d7d8efb42f54e7af5", null ],
     [ "fem_scatter", "namespaceneml2.html#a8bd70c985d6cfadb1542e84d281a716d", null ],

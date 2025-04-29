@@ -62,7 +62,7 @@ var searchData=
   ['evaluation_20device_59',['Evaluation device',['../tutorials-models-evaluation-device.html',1,'']]],
   ['event_20tracing_60',['Event tracing',['../system-schedulers.html#autotoc_md47',1,'']]],
   ['event_5ftrace_5fwriter_61',['event_trace_writer',['../classneml2_1_1TracingInterface.html#aa13c33836083ea495f2dc2e0017b6c9f',1,'neml2::TracingInterface']]],
-  ['event_5ftrace_5fwriters_62',['event_trace_writers',['../namespaceneml2.html#acfa224ad10475ce05178ffb615b450e1',1,'neml2']]],
+  ['event_5ftrace_5fwriters_62',['event_trace_writers',['../namespaceneml2.html#a29c168a16560ce905a92a30e698456ea',1,'neml2']]],
   ['event_5ftracing_5fenabled_63',['event_tracing_enabled',['../classneml2_1_1TracingInterface.html#ac4df180cf7a33800d82b839ebc0a3d23',1,'neml2::TracingInterface']]],
   ['example_64',['Example',['../tutorials-tensors-broadcasting.html#autotoc_md135',1,'']]],
   ['example_65',['A symbolic example',['../system-models.html#a-symbolic-example',1,'']]],

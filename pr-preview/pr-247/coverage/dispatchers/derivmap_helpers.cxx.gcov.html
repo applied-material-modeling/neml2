@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-04-27 14:03:23</td>
+            <td class="headerValue">2025-04-29 19:26:50</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryMed">66.7&nbsp;%</td>
@@ -129,7 +129,7 @@
 <span id="L67"><span class="lineNum">      67</span> <span class="tlaUNC">           0 :   for (auto &amp;&amp; [name, vmap] : std::move(x))</span></span>
 <span id="L68"><span class="lineNum">      68</span> <span class="tlaUNC">           0 :     for (auto &amp;&amp; [name2, value] : vmap)</span></span>
 <span id="L69"><span class="lineNum">      69</span> <span class="tlaUNC">           0 :       x[name][name2] = value.to(device);</span></span>
-<span id="L70"><span class="lineNum">      70</span> <span class="tlaUNC">           0 :   return x;</span></span>
+<span id="L70"><span class="lineNum">      70</span> <span class="tlaUNC">           0 :   return std::move(x);</span></span>
 <span id="L71"><span class="lineNum">      71</span>              : }</span>
 <span id="L72"><span class="lineNum">      72</span>              : </span>
 <span id="L73"><span class="lineNum">      73</span>              : DerivMap</span>

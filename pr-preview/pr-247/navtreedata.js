@@ -121,8 +121,8 @@ var NAVTREEINDEX =
 "classneml2_1_1TrustRegionSubProblem.html#af9adb2dca0abb1216b9815a3441d597a",
 "classneml2_1_1VariableStore.html#a2647f65e963a43929ba79bb6bb7dd7ac",
 "classneml2_1_1WorkDispatcher.html#a94ad3091d7c628adf71fe4667627ecdd",
-"namespaceneml2.html#a341ec45d106079ad26352fd5912d5dd8a18ba88b152f31aeb6d96aa88396e5418",
-"namespaceneml2.html#aad053b5649bb32aeb0289afd0f77ab98",
+"namespaceneml2.html#a341ec45d106079ad26352fd5912d5dd8",
+"namespaceneml2.html#aac6906c03ca3b8ce9943e2281d0a2c6a",
 "structneml2_1_1DependencyResolver_1_1Item.html#a7e61afd96533038fd66c6857c8473a76",
 "syntax-tensors.html"
 ];

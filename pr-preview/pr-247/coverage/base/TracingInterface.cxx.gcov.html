@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-04-27 14:03:23</td>
+            <td class="headerValue">2025-04-29 19:26:50</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -96,10 +96,10 @@
 <span id="L34"><span class="lineNum">      34</span>              : {</span>
 <span id="L35"><span class="lineNum">      35</span>              : namespace fs = std::filesystem;</span>
 <span id="L36"><span class="lineNum">      36</span>              : </span>
-<span id="L37"><span class="lineNum">      37</span>              : std::unordered_map&lt;fs::path, std::unique_ptr&lt;TraceWriter&gt;&gt; &amp;</span>
+<span id="L37"><span class="lineNum">      37</span>              : std::unordered_map&lt;std::string, std::unique_ptr&lt;TraceWriter&gt;&gt; &amp;</span>
 <span id="L38"><span class="lineNum">      38</span> <span class="tlaGNC tlaBgGNC">           8 : event_trace_writers()</span></span>
 <span id="L39"><span class="lineNum">      39</span>              : {</span>
-<span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC">           8 :   static std::unordered_map&lt;fs::path, std::unique_ptr&lt;TraceWriter&gt;&gt; trace_writers;</span></span>
+<span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC">           8 :   static std::unordered_map&lt;std::string, std::unique_ptr&lt;TraceWriter&gt;&gt; trace_writers;</span></span>
 <span id="L41"><span class="lineNum">      41</span> <span class="tlaGNC">           8 :   return trace_writers;</span></span>
 <span id="L42"><span class="lineNum">      42</span>              : }</span>
 <span id="L43"><span class="lineNum">      43</span>              : </span>
@@ -231,7 +231,7 @@
 <span id="L169"><span class="lineNum">     169</span>              : </span>
 <span id="L170"><span class="lineNum">     170</span>              :   // Create a new TraceWriter</span>
 <span id="L171"><span class="lineNum">     171</span> <span class="tlaGNC">           3 :   auto writer = std::make_unique&lt;TraceWriter&gt;(file);</span></span>
-<span id="L172"><span class="lineNum">     172</span> <span class="tlaGNC">           3 :   auto [it2, success] = trace_writers.emplace(file, std::move(writer));</span></span>
+<span id="L172"><span class="lineNum">     172</span> <span class="tlaGNC">           3 :   auto [it2, success] = trace_writers.emplace(std::string(file), std::move(writer));</span></span>
 <span id="L173"><span class="lineNum">     173</span> <span class="tlaGNC">           3 :   neml_assert(success, &quot;Internal error: Trace writer already exists: &quot;, file.string());</span></span>
 <span id="L174"><span class="lineNum">     174</span> <span class="tlaGNC">           3 :   return *it2-&gt;second;</span></span>
 <span id="L175"><span class="lineNum">     175</span> <span class="tlaGNC">           4 : }</span></span>
