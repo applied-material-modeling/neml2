@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/reactive_infiltration/VanGenuchtenPressure.h"
+#include "neml2/models/reactive_infiltration/BrooksCoreyPressure.h"
 #include "neml2/tensors/functions/clamp.h"
 #include "neml2/tensors/functions/pow.h"
 #include "neml2/tensors/functions/log10.h"
@@ -31,24 +31,24 @@
 
 namespace neml2
 {
-register_NEML2_object(VanGenuchtenPressure);
+register_NEML2_object(BrooksCoreyPressure);
 OptionSet
-VanGenuchtenPressure::expected_options()
+BrooksCoreyPressure::expected_options()
 {
   OptionSet options = PorousFlowCapillaryPressure::expected_options();
-  options.doc() = "Define the van Genuchten porous flow capillary pressure, takes the form of \\f$ "
-                  "\\frac{1}{a} "
-                  "\\frac{S_e^{-\\frac{1}{m}} - 1}{1-m} \\f$ for \\f$ S_e < 1 \\f$ "
-                  "and 0 everywhere else. Here \\f$ S_e \\f$ is the effective saturation,\\f$ a, m "
-                  "\\f$ is the fitting parameter";
+  options.doc() =
+      "Define the Brooks Corey porous flow capillary pressure, takes the form of \\f$ "
+      "P_c = P_t S_e^{-\\frac{1}{p}} \\f$ "
+      "and 0 everywhere else. Here \\f$ S_e \\f$ is the effective saturation,\\f$ Pt, p "
+      "\\f$ are the threshold pressure at zero saturation and the fitting parameter";
 
   options.set<bool>("define_second_derivatives") = true;
 
-  options.set_parameter<TensorName<Scalar>>("scaling_constant");
-  options.set("scaling_constant").doc() = "scaling reciprocal constant, a";
+  options.set_parameter<TensorName<Scalar>>("threshold_pressure");
+  options.set("threshold_pressure").doc() = "threshold entry pressure";
 
   options.set_parameter<TensorName<Scalar>>("power");
-  options.set("power").doc() = "power, m";
+  options.set("power").doc() = "power, p";
 
   options.set<bool>("apply_log_extension") = false;
   options.set("apply_log_extension").doc() = "Whether to apply_log_extension";
@@ -59,36 +59,30 @@ VanGenuchtenPressure::expected_options()
   return options;
 }
 
-VanGenuchtenPressure::VanGenuchtenPressure(const OptionSet & options)
+BrooksCoreyPressure::BrooksCoreyPressure(const OptionSet & options)
   : PorousFlowCapillaryPressure(options),
-    _a(declare_parameter<Scalar>("a", "scaling_constant")),
-    _m(declare_parameter<Scalar>("m", "power")),
+    _Pt(declare_parameter<Scalar>("threshold", "threshold_pressure")),
+    _p(declare_parameter<Scalar>("p", "power")),
     _log_extension(options.get<bool>("apply_log_extension")),
     _Sp(options.get<Real>("transistion_saturation"))
 {
 }
 
 void
-VanGenuchtenPressure::set_value(bool out, bool dout_din, bool d2out_din2)
+BrooksCoreyPressure::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   neml_assert(_Sp < 1.0, "transistion_saturation cannot be larger or equal to 1");
 
   Real ln10 = 2.302585093;
 
-  auto _Sclamp = clamp(_S, 0.0, 1.0 - machine_precision());
-
   // required information for any model
-  auto f_s = 1 / _a * pow((pow(_Sclamp, -1.0 / _m) - 1.0), 1 - _m);
-  auto f_sp = 1 / _a * pow((pow(_Sp, -1.0 / _m) - 1.0), 1 - _m);
+  auto f_s = _Pt * pow(_S, -1.0 / _p);
+  auto f_sp = _Pt * pow(_Sp, -1.0 / _p);
 
-  auto dfds_s =
-      -1 / (_a * _m) * (1 - _m) * pow(pow(_Sclamp, -1 / _m) - 1, -_m) * pow(_Sclamp, -1 / _m - 1);
-  auto dfds_sp =
-      -1 / (_a * _m) * (1 - _m) * pow(pow(_Sp, -1 / _m) - 1, -_m) * pow(_Sp, -1 / _m - 1);
+  auto dfds_s = -_Pt / _p * pow(_S, -1.0 / _p - 1.0);
+  auto dfds_sp = -_Pt / _p * pow(_Sp, -1.0 / _p - 1.0);
 
-  auto d2fds2_s = -((_m - 1) * (_m * pow(_Sclamp, (1 / _m)) + pow(_Sclamp, (1 / _m)) - 1)) /
-                  (_a * _m * _m * pow(_Sclamp, (1 / _m + 2)) *
-                   pow((1 / pow(_Sclamp, (1 / _m)) - 1), _m) * (pow(_Sclamp, (1 / _m)) - 1));
+  auto d2fds2_s = -_Pt / _p * (-1.0 / _p - 1.0) * pow(_S, -1.0 / _p - 2.0);
 
   // general for any given model
   auto log10f_s = log10(f_s);
@@ -102,7 +96,7 @@ VanGenuchtenPressure::set_value(bool out, bool dout_din, bool d2out_din2)
   if (out)
   {
     if (_log_extension)
-      _Pc = where(_S < _Sp, pow(10, slope * _Sclamp + yintercept), f_s);
+      _Pc = where(_S < _Sp, pow(10, slope * _S + yintercept), f_s);
     else
       _Pc = f_s;
   }
@@ -110,7 +104,7 @@ VanGenuchtenPressure::set_value(bool out, bool dout_din, bool d2out_din2)
   if (dout_din)
   {
     if (_log_extension)
-      _Pc.d(_S) = where(_S < _Sp, (ln10 * slope) * pow(10, slope * _Sclamp + yintercept), dfds_s);
+      _Pc.d(_S) = where(_S < _Sp, (ln10 * slope) * pow(10, slope * _S + yintercept), dfds_s);
     else
       _Pc.d(_S) = dfds_s;
   }
@@ -119,7 +113,7 @@ VanGenuchtenPressure::set_value(bool out, bool dout_din, bool d2out_din2)
   {
     if (_log_extension)
       _Pc.d(_S, _S) =
-          where(_S < _Sp, pow((ln10 * slope), 2) * pow(10, slope * _Sclamp + yintercept), d2fds2_s);
+          where(_S < _Sp, pow((ln10 * slope), 2) * pow(10, slope * _S + yintercept), d2fds2_s);
     else
       _Pc.d(_S, _S) = d2fds2_s;
   }
