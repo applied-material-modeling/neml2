@@ -1,0 +1,580 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - models/VariableStore.cxx</title>
+  <link rel="stylesheet" type="text/css" href="../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../index.html">top level</a> - <a href="index.html">models</a> - VariableStore.cxx<span style="font-size: 80%;"> (source / <a href="VariableStore.cxx.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryHi">95.4&nbsp;%</td>
+            <td class="headerCovTableEntry">241</td>
+            <td class="headerCovTableEntry">230</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2025-03-28 22:23:12</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryMed">43.0&nbsp;%</td>
+            <td class="headerCovTableEntry">135</td>
+            <td class="headerCovTableEntry">58</td>
+          </tr>
+                  <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">            Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>              : // Copyright 2024, UChicago Argonne, LLC</span>
+<span id="L2"><span class="lineNum">       2</span>              : // All Rights Reserved</span>
+<span id="L3"><span class="lineNum">       3</span>              : // Software Name: NEML2 -- the New Engineering material Model Library, version 2</span>
+<span id="L4"><span class="lineNum">       4</span>              : // By: Argonne National Laboratory</span>
+<span id="L5"><span class="lineNum">       5</span>              : // OPEN SOURCE LICENSE (MIT)</span>
+<span id="L6"><span class="lineNum">       6</span>              : //</span>
+<span id="L7"><span class="lineNum">       7</span>              : // Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span id="L8"><span class="lineNum">       8</span>              : // of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span id="L9"><span class="lineNum">       9</span>              : // in the Software without restriction, including without limitation the rights</span>
+<span id="L10"><span class="lineNum">      10</span>              : // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span id="L11"><span class="lineNum">      11</span>              : // copies of the Software, and to permit persons to whom the Software is</span>
+<span id="L12"><span class="lineNum">      12</span>              : // furnished to do so, subject to the following conditions:</span>
+<span id="L13"><span class="lineNum">      13</span>              : //</span>
+<span id="L14"><span class="lineNum">      14</span>              : // The above copyright notice and this permission notice shall be included in</span>
+<span id="L15"><span class="lineNum">      15</span>              : // all copies or substantial portions of the Software.</span>
+<span id="L16"><span class="lineNum">      16</span>              : //</span>
+<span id="L17"><span class="lineNum">      17</span>              : // THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span id="L18"><span class="lineNum">      18</span>              : // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span id="L19"><span class="lineNum">      19</span>              : // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span id="L20"><span class="lineNum">      20</span>              : // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span id="L21"><span class="lineNum">      21</span>              : // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span id="L22"><span class="lineNum">      22</span>              : // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
+<span id="L23"><span class="lineNum">      23</span>              : // THE SOFTWARE.</span>
+<span id="L24"><span class="lineNum">      24</span>              : </span>
+<span id="L25"><span class="lineNum">      25</span>              : #include &quot;neml2/models/VariableStore.h&quot;</span>
+<span id="L26"><span class="lineNum">      26</span>              : #include &quot;neml2/models/Model.h&quot;</span>
+<span id="L27"><span class="lineNum">      27</span>              : #include &quot;neml2/misc/assertions.h&quot;</span>
+<span id="L28"><span class="lineNum">      28</span>              : #include &quot;neml2/models/map_types.h&quot;</span>
+<span id="L29"><span class="lineNum">      29</span>              : #include &quot;neml2/models/Variable.h&quot;</span>
+<span id="L30"><span class="lineNum">      30</span>              : #include &quot;neml2/base/LabeledAxis.h&quot;</span>
+<span id="L31"><span class="lineNum">      31</span>              : #include &quot;neml2/tensors/tensors.h&quot;</span>
+<span id="L32"><span class="lineNum">      32</span>              : #include &quot;neml2/tensors/functions/sum.h&quot;</span>
+<span id="L33"><span class="lineNum">      33</span>              : </span>
+<span id="L34"><span class="lineNum">      34</span>              : namespace neml2</span>
+<span id="L35"><span class="lineNum">      35</span>              : {</span>
+<span id="L36"><span class="lineNum">      36</span> <span class="tlaGNC tlaBgGNC">         397 : VariableStore::VariableStore(Model * object)</span></span>
+<span id="L37"><span class="lineNum">      37</span> <span class="tlaGNC">         397 :   : _object(object),</span></span>
+<span id="L38"><span class="lineNum">      38</span> <span class="tlaGNC">         794 :     _input_axis(declare_axis(&quot;input&quot;)),</span></span>
+<span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">         397 :     _output_axis(declare_axis(&quot;output&quot;)),</span></span>
+<span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC">         794 :     _options(default_tensor_options())</span></span>
+<span id="L41"><span class="lineNum">      41</span>              : {</span>
+<span id="L42"><span class="lineNum">      42</span> <span class="tlaGNC">         397 : }</span></span>
+<span id="L43"><span class="lineNum">      43</span>              : </span>
+<span id="L44"><span class="lineNum">      44</span>              : LabeledAxis &amp;</span>
+<span id="L45"><span class="lineNum">      45</span> <span class="tlaGNC">         794 : VariableStore::declare_axis(const std::string &amp; name)</span></span>
+<span id="L46"><span class="lineNum">      46</span>              : {</span>
+<span id="L47"><span class="lineNum">      47</span> <span class="tlaGNC">         794 :   neml_assert(!_axes.count(name),</span></span>
+<span id="L48"><span class="lineNum">      48</span>              :               &quot;Trying to declare an axis named &quot;,</span>
+<span id="L49"><span class="lineNum">      49</span>              :               name,</span>
+<span id="L50"><span class="lineNum">      50</span>              :               &quot;, but an axis with the same name already exists.&quot;);</span>
+<span id="L51"><span class="lineNum">      51</span>              : </span>
+<span id="L52"><span class="lineNum">      52</span> <span class="tlaGNC">         794 :   auto axis = std::make_unique&lt;LabeledAxis&gt;();</span></span>
+<span id="L53"><span class="lineNum">      53</span> <span class="tlaGNC">         794 :   auto [it, success] = _axes.emplace(name, std::move(axis));</span></span>
+<span id="L54"><span class="lineNum">      54</span> <span class="tlaGNC">        1588 :   return *it-&gt;second;</span></span>
+<span id="L55"><span class="lineNum">      55</span> <span class="tlaGNC">         794 : }</span></span>
+<span id="L56"><span class="lineNum">      56</span>              : </span>
+<span id="L57"><span class="lineNum">      57</span>              : void</span>
+<span id="L58"><span class="lineNum">      58</span> <span class="tlaGNC">         397 : VariableStore::setup_layout()</span></span>
+<span id="L59"><span class="lineNum">      59</span>              : {</span>
+<span id="L60"><span class="lineNum">      60</span> <span class="tlaGNC">         397 :   input_axis().setup_layout();</span></span>
+<span id="L61"><span class="lineNum">      61</span> <span class="tlaGNC">         397 :   output_axis().setup_layout();</span></span>
+<span id="L62"><span class="lineNum">      62</span> <span class="tlaGNC">         397 : }</span></span>
+<span id="L63"><span class="lineNum">      63</span>              : </span>
+<span id="L64"><span class="lineNum">      64</span>              : template &lt;typename T&gt;</span>
+<span id="L65"><span class="lineNum">      65</span>              : const Variable&lt;T&gt; &amp;</span>
+<span id="L66"><span class="lineNum">      66</span> <span class="tlaGNC">         384 : VariableStore::declare_input_variable(const char * name, TensorShapeRef list_shape)</span></span>
+<span id="L67"><span class="lineNum">      67</span>              : {</span>
+<span id="L68"><span class="lineNum">      68</span> <span class="tlaGNC">        1152 :   if (_object-&gt;input_options().contains&lt;VariableName&gt;(name))</span></span>
+<span id="L69"><span class="lineNum">      69</span> <span class="tlaGNC">        1152 :     return declare_input_variable&lt;T&gt;(_object-&gt;input_options().get&lt;VariableName&gt;(name), list_shape);</span></span>
+<span id="L70"><span class="lineNum">      70</span>              : </span>
+<span id="L71"><span class="lineNum">      71</span> <span class="tlaUNC tlaBgUNC">           0 :   return declare_input_variable&lt;T&gt;(VariableName(name), list_shape);</span></span>
+<span id="L72"><span class="lineNum">      72</span>              : }</span>
+<span id="L73"><span class="lineNum">      73</span>              : </span>
+<span id="L74"><span class="lineNum">      74</span>              : template &lt;typename T&gt;</span>
+<span id="L75"><span class="lineNum">      75</span>              : const Variable&lt;T&gt; &amp;</span>
+<span id="L76"><span class="lineNum">      76</span> <span class="tlaGNC tlaBgGNC">         677 : VariableStore::declare_input_variable(const VariableName &amp; name, TensorShapeRef list_shape)</span></span>
+<span id="L77"><span class="lineNum">      77</span>              : {</span>
+<span id="L78"><span class="lineNum">      78</span> <span class="tlaGNC">         677 :   const auto list_sz = utils::storage_size(list_shape);</span></span>
+<span id="L79"><span class="lineNum">      79</span> <span class="tlaGNC">         677 :   const auto base_sz = T::const_base_storage;</span></span>
+<span id="L80"><span class="lineNum">      80</span> <span class="tlaGNC">         677 :   const auto sz = list_sz * base_sz;</span></span>
+<span id="L81"><span class="lineNum">      81</span>              : </span>
+<span id="L82"><span class="lineNum">      82</span> <span class="tlaGNC">         677 :   _input_axis.add_variable(name, sz);</span></span>
+<span id="L83"><span class="lineNum">      83</span> <span class="tlaGNC">         677 :   return *create_variable&lt;T&gt;(_input_variables, name, list_shape);</span></span>
+<span id="L84"><span class="lineNum">      84</span>              : }</span>
+<span id="L85"><span class="lineNum">      85</span>              : #define INSTANTIATE_DECLARE_INPUT_VARIABLE(T)                                                      \</span>
+<span id="L86"><span class="lineNum">      86</span>              :   template const Variable&lt;T&gt; &amp; VariableStore::declare_input_variable&lt;T&gt;(const char *,              \</span>
+<span id="L87"><span class="lineNum">      87</span>              :                                                                         TensorShapeRef);           \</span>
+<span id="L88"><span class="lineNum">      88</span>              :   template const Variable&lt;T&gt; &amp; VariableStore::declare_input_variable&lt;T&gt;(const VariableName &amp;,      \</span>
+<span id="L89"><span class="lineNum">      89</span>              :                                                                         TensorShapeRef)</span>
+<span id="L90"><span class="lineNum">      90</span>              : FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_DECLARE_INPUT_VARIABLE);</span>
+<span id="L91"><span class="lineNum">      91</span>              : </span>
+<span id="L92"><span class="lineNum">      92</span>              : template &lt;typename T&gt;</span>
+<span id="L93"><span class="lineNum">      93</span>              : Variable&lt;T&gt; &amp;</span>
+<span id="L94"><span class="lineNum">      94</span> <span class="tlaGNC">         220 : VariableStore::declare_output_variable(const char * name, TensorShapeRef list_shape)</span></span>
+<span id="L95"><span class="lineNum">      95</span>              : {</span>
+<span id="L96"><span class="lineNum">      96</span> <span class="tlaGNC">         660 :   if (_object-&gt;input_options().contains&lt;VariableName&gt;(name))</span></span>
+<span id="L97"><span class="lineNum">      97</span> <span class="tlaGNC">         660 :     return declare_output_variable&lt;T&gt;(_object-&gt;input_options().get&lt;VariableName&gt;(name), list_shape);</span></span>
+<span id="L98"><span class="lineNum">      98</span>              : </span>
+<span id="L99"><span class="lineNum">      99</span> <span class="tlaUNC tlaBgUNC">           0 :   return declare_output_variable&lt;T&gt;(VariableName(name), list_shape);</span></span>
+<span id="L100"><span class="lineNum">     100</span>              : }</span>
+<span id="L101"><span class="lineNum">     101</span>              : </span>
+<span id="L102"><span class="lineNum">     102</span>              : template &lt;typename T&gt;</span>
+<span id="L103"><span class="lineNum">     103</span>              : Variable&lt;T&gt; &amp;</span>
+<span id="L104"><span class="lineNum">     104</span> <span class="tlaGNC tlaBgGNC">         340 : VariableStore::declare_output_variable(const VariableName &amp; name, TensorShapeRef list_shape)</span></span>
+<span id="L105"><span class="lineNum">     105</span>              : {</span>
+<span id="L106"><span class="lineNum">     106</span> <span class="tlaGNC">         340 :   const auto list_sz = utils::storage_size(list_shape);</span></span>
+<span id="L107"><span class="lineNum">     107</span> <span class="tlaGNC">         340 :   const auto base_sz = T::const_base_storage;</span></span>
+<span id="L108"><span class="lineNum">     108</span> <span class="tlaGNC">         340 :   const auto sz = list_sz * base_sz;</span></span>
+<span id="L109"><span class="lineNum">     109</span>              : </span>
+<span id="L110"><span class="lineNum">     110</span> <span class="tlaGNC">         340 :   _output_axis.add_variable(name, sz);</span></span>
+<span id="L111"><span class="lineNum">     111</span> <span class="tlaGNC">         340 :   return *create_variable&lt;T&gt;(_output_variables, name, list_shape);</span></span>
+<span id="L112"><span class="lineNum">     112</span>              : }</span>
+<span id="L113"><span class="lineNum">     113</span>              : #define INSTANTIATE_DECLARE_OUTPUT_VARIABLE(T)                                                     \</span>
+<span id="L114"><span class="lineNum">     114</span>              :   template Variable&lt;T&gt; &amp; VariableStore::declare_output_variable&lt;T&gt;(const char *, TensorShapeRef);  \</span>
+<span id="L115"><span class="lineNum">     115</span>              :   template Variable&lt;T&gt; &amp; VariableStore::declare_output_variable&lt;T&gt;(const VariableName &amp;,           \</span>
+<span id="L116"><span class="lineNum">     116</span>              :                                                                    TensorShapeRef)</span>
+<span id="L117"><span class="lineNum">     117</span>              : FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_DECLARE_OUTPUT_VARIABLE);</span>
+<span id="L118"><span class="lineNum">     118</span>              : </span>
+<span id="L119"><span class="lineNum">     119</span>              : const VariableBase *</span>
+<span id="L120"><span class="lineNum">     120</span> <span class="tlaGNC">         355 : VariableStore::clone_input_variable(const VariableBase &amp; var, const VariableName &amp; new_name)</span></span>
+<span id="L121"><span class="lineNum">     121</span>              : {</span>
+<span id="L122"><span class="lineNum">     122</span> <span class="tlaGNC">         355 :   neml_assert(&amp;var.owner() != _object, &quot;Trying to clone a variable from the same model.&quot;);</span></span>
+<span id="L123"><span class="lineNum">     123</span>              : </span>
+<span id="L124"><span class="lineNum">     124</span> <span class="tlaGNC">         355 :   const auto var_name = new_name.empty() ? var.name() : new_name;</span></span>
+<span id="L125"><span class="lineNum">     125</span> <span class="tlaGNC">         355 :   neml_assert(</span></span>
+<span id="L126"><span class="lineNum">     126</span> <span class="tlaGNC">         355 :       !_input_variables.count(var_name), &quot;Input variable '&quot;, var_name.str(), &quot;' already exists.&quot;);</span></span>
+<span id="L127"><span class="lineNum">     127</span> <span class="tlaGNC">         355 :   auto var_clone = var.clone(var_name, _object);</span></span>
+<span id="L128"><span class="lineNum">     128</span>              : </span>
+<span id="L129"><span class="lineNum">     129</span> <span class="tlaGNC">         355 :   _input_axis.add_variable(var_name, var_clone-&gt;assembly_storage());</span></span>
+<span id="L130"><span class="lineNum">     130</span> <span class="tlaGNC">         355 :   auto [it, success] = _input_variables.emplace(var_name, std::move(var_clone));</span></span>
+<span id="L131"><span class="lineNum">     131</span> <span class="tlaGNC">         710 :   return it-&gt;second.get();</span></span>
+<span id="L132"><span class="lineNum">     132</span> <span class="tlaGNC">         355 : }</span></span>
+<span id="L133"><span class="lineNum">     133</span>              : </span>
+<span id="L134"><span class="lineNum">     134</span>              : VariableBase *</span>
+<span id="L135"><span class="lineNum">     135</span> <span class="tlaGNC">         115 : VariableStore::clone_output_variable(const VariableBase &amp; var, const VariableName &amp; new_name)</span></span>
+<span id="L136"><span class="lineNum">     136</span>              : {</span>
+<span id="L137"><span class="lineNum">     137</span> <span class="tlaGNC">         115 :   neml_assert(&amp;var.owner() != _object, &quot;Trying to clone a variable from the same model.&quot;);</span></span>
+<span id="L138"><span class="lineNum">     138</span>              : </span>
+<span id="L139"><span class="lineNum">     139</span> <span class="tlaGNC">         115 :   const auto var_name = new_name.empty() ? var.name() : new_name;</span></span>
+<span id="L140"><span class="lineNum">     140</span> <span class="tlaGNC">         115 :   neml_assert(</span></span>
+<span id="L141"><span class="lineNum">     141</span> <span class="tlaGNC">         115 :       !_output_variables.count(var_name), &quot;Output variable '&quot;, var_name, &quot;' already exists.&quot;);</span></span>
+<span id="L142"><span class="lineNum">     142</span> <span class="tlaGNC">         115 :   auto var_clone = var.clone(var_name, _object);</span></span>
+<span id="L143"><span class="lineNum">     143</span>              : </span>
+<span id="L144"><span class="lineNum">     144</span> <span class="tlaGNC">         115 :   _output_axis.add_variable(var_name, var_clone-&gt;assembly_storage());</span></span>
+<span id="L145"><span class="lineNum">     145</span> <span class="tlaGNC">         115 :   auto [it, success] = _output_variables.emplace(var_name, std::move(var_clone));</span></span>
+<span id="L146"><span class="lineNum">     146</span> <span class="tlaGNC">         230 :   return it-&gt;second.get();</span></span>
+<span id="L147"><span class="lineNum">     147</span> <span class="tlaGNC">         115 : }</span></span>
+<span id="L148"><span class="lineNum">     148</span>              : </span>
+<span id="L149"><span class="lineNum">     149</span>              : template &lt;typename T&gt;</span>
+<span id="L150"><span class="lineNum">     150</span>              : Variable&lt;T&gt; *</span>
+<span id="L151"><span class="lineNum">     151</span> <span class="tlaGNC">        1017 : VariableStore::create_variable(VariableStorage &amp; variables,</span></span>
+<span id="L152"><span class="lineNum">     152</span>              :                                const VariableName &amp; name,</span>
+<span id="L153"><span class="lineNum">     153</span>              :                                TensorShapeRef list_shape)</span>
+<span id="L154"><span class="lineNum">     154</span>              : {</span>
+<span id="L155"><span class="lineNum">     155</span>              :   // Make sure we don't duplicate variables</span>
+<span id="L156"><span class="lineNum">     156</span> <span class="tlaGNC">        1017 :   neml_assert(!variables.count(name),</span></span>
+<span id="L157"><span class="lineNum">     157</span>              :               &quot;Trying to create variable '&quot;,</span>
+<span id="L158"><span class="lineNum">     158</span>              :               name,</span>
+<span id="L159"><span class="lineNum">     159</span>              :               &quot;', but a variable with the same name already exists.&quot;);</span>
+<span id="L160"><span class="lineNum">     160</span>              : </span>
+<span id="L161"><span class="lineNum">     161</span>              :   // Allocate</span>
+<span id="L162"><span class="lineNum">     162</span> <span class="tlaGNC">        1017 :   std::unique_ptr&lt;VariableBase&gt; var;</span></span>
+<span id="L163"><span class="lineNum">     163</span> <span class="tlaGNC">        1017 :   var = std::make_unique&lt;Variable&lt;T&gt;&gt;(name, _object, list_shape);</span></span>
+<span id="L164"><span class="lineNum">     164</span> <span class="tlaGNC">        1017 :   auto [it, success] = variables.emplace(name, std::move(var));</span></span>
+<span id="L165"><span class="lineNum">     165</span> <span class="tlaGNC">        1017 :   auto * var_base_ptr = it-&gt;second.get();</span></span>
+<span id="L166"><span class="lineNum">     166</span>              : </span>
+<span id="L167"><span class="lineNum">     167</span>              :   // Cast it to the concrete type</span>
+<span id="L168"><span class="lineNum">     168</span> <span class="tlaGNC">        1017 :   auto var_ptr = dynamic_cast&lt;Variable&lt;T&gt; *&gt;(var_base_ptr);</span></span>
+<span id="L169"><span class="lineNum">     169</span> <span class="tlaGNC">        1017 :   if (!var_ptr)</span></span>
+<span id="L170"><span class="lineNum">     170</span> <span class="tlaUNC tlaBgUNC">           0 :     throw NEMLException(&quot;Internal error: Failed to cast variable '&quot; + name.str() +</span></span>
+<span id="L171"><span class="lineNum">     171</span>              :                         &quot;' to its concrete type.&quot;);</span>
+<span id="L172"><span class="lineNum">     172</span>              : </span>
+<span id="L173"><span class="lineNum">     173</span> <span class="tlaGNC tlaBgGNC">        1017 :   return var_ptr;</span></span>
+<span id="L174"><span class="lineNum">     174</span> <span class="tlaGNC">        1017 : }</span></span>
+<span id="L175"><span class="lineNum">     175</span>              : #define INSTANTIATE_CREATE_VARIABLE(T)                                                             \</span>
+<span id="L176"><span class="lineNum">     176</span>              :   template Variable&lt;T&gt; * VariableStore::create_variable&lt;T&gt;(                                        \</span>
+<span id="L177"><span class="lineNum">     177</span>              :       VariableStorage &amp;, const VariableName &amp;, TensorShapeRef)</span>
+<span id="L178"><span class="lineNum">     178</span>              : FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_CREATE_VARIABLE);</span>
+<span id="L179"><span class="lineNum">     179</span>              : </span>
+<span id="L180"><span class="lineNum">     180</span>              : VariableBase &amp;</span>
+<span id="L181"><span class="lineNum">     181</span> <span class="tlaGNC">       50308 : VariableStore::input_variable(const VariableName &amp; name)</span></span>
+<span id="L182"><span class="lineNum">     182</span>              : {</span>
+<span id="L183"><span class="lineNum">     183</span> <span class="tlaGNC">       50308 :   auto it = _input_variables.find(name);</span></span>
+<span id="L184"><span class="lineNum">     184</span> <span class="tlaGNC">       50308 :   neml_assert(it != _input_variables.end(),</span></span>
+<span id="L185"><span class="lineNum">     185</span>              :               &quot;Input variable &quot;,</span>
+<span id="L186"><span class="lineNum">     186</span>              :               name,</span>
+<span id="L187"><span class="lineNum">     187</span>              :               &quot; does not exist in model &quot;,</span>
+<span id="L188"><span class="lineNum">     188</span> <span class="tlaGNC">       50308 :               _object-&gt;name());</span></span>
+<span id="L189"><span class="lineNum">     189</span> <span class="tlaGNC">      100616 :   return *it-&gt;second;</span></span>
+<span id="L190"><span class="lineNum">     190</span>              : }</span>
+<span id="L191"><span class="lineNum">     191</span>              : </span>
+<span id="L192"><span class="lineNum">     192</span>              : const VariableBase &amp;</span>
+<span id="L193"><span class="lineNum">     193</span> <span class="tlaGNC">       34794 : VariableStore::input_variable(const VariableName &amp; name) const</span></span>
+<span id="L194"><span class="lineNum">     194</span>              : {</span>
+<span id="L195"><span class="lineNum">     195</span> <span class="tlaGNC">       34794 :   return const_cast&lt;VariableStore *&gt;(this)-&gt;input_variable(name);</span></span>
+<span id="L196"><span class="lineNum">     196</span>              : }</span>
+<span id="L197"><span class="lineNum">     197</span>              : </span>
+<span id="L198"><span class="lineNum">     198</span>              : VariableBase &amp;</span>
+<span id="L199"><span class="lineNum">     199</span> <span class="tlaGNC">       12702 : VariableStore::output_variable(const VariableName &amp; name)</span></span>
+<span id="L200"><span class="lineNum">     200</span>              : {</span>
+<span id="L201"><span class="lineNum">     201</span> <span class="tlaGNC">       12702 :   auto it = _output_variables.find(name);</span></span>
+<span id="L202"><span class="lineNum">     202</span> <span class="tlaGNC">       12702 :   neml_assert(it != _output_variables.end(),</span></span>
+<span id="L203"><span class="lineNum">     203</span>              :               &quot;Output variable &quot;,</span>
+<span id="L204"><span class="lineNum">     204</span>              :               name,</span>
+<span id="L205"><span class="lineNum">     205</span>              :               &quot; does not exist in model &quot;,</span>
+<span id="L206"><span class="lineNum">     206</span> <span class="tlaGNC">       12702 :               _object-&gt;name());</span></span>
+<span id="L207"><span class="lineNum">     207</span> <span class="tlaGNC">       25404 :   return *it-&gt;second;</span></span>
+<span id="L208"><span class="lineNum">     208</span>              : }</span>
+<span id="L209"><span class="lineNum">     209</span>              : </span>
+<span id="L210"><span class="lineNum">     210</span>              : const VariableBase &amp;</span>
+<span id="L211"><span class="lineNum">     211</span> <span class="tlaGNC">         365 : VariableStore::output_variable(const VariableName &amp; name) const</span></span>
+<span id="L212"><span class="lineNum">     212</span>              : {</span>
+<span id="L213"><span class="lineNum">     213</span> <span class="tlaGNC">         365 :   return const_cast&lt;VariableStore *&gt;(this)-&gt;output_variable(name);</span></span>
+<span id="L214"><span class="lineNum">     214</span>              : }</span>
+<span id="L215"><span class="lineNum">     215</span>              : </span>
+<span id="L216"><span class="lineNum">     216</span>              : void</span>
+<span id="L217"><span class="lineNum">     217</span> <span class="tlaUNC tlaBgUNC">           0 : VariableStore::send_variables_to(const TensorOptions &amp; options)</span></span>
+<span id="L218"><span class="lineNum">     218</span>              : {</span>
+<span id="L219"><span class="lineNum">     219</span> <span class="tlaUNC">           0 :   _options = options;</span></span>
+<span id="L220"><span class="lineNum">     220</span> <span class="tlaUNC">           0 : }</span></span>
+<span id="L221"><span class="lineNum">     221</span>              : </span>
+<span id="L222"><span class="lineNum">     222</span>              : void</span>
+<span id="L223"><span class="lineNum">     223</span> <span class="tlaGNC tlaBgGNC">        7778 : VariableStore::clear_input()</span></span>
+<span id="L224"><span class="lineNum">     224</span>              : {</span>
+<span id="L225"><span class="lineNum">     225</span> <span class="tlaGNC">       30734 :   for (auto &amp;&amp; [name, var] : input_variables())</span></span>
+<span id="L226"><span class="lineNum">     226</span> <span class="tlaGNC">       22956 :     if (var-&gt;owning())</span></span>
+<span id="L227"><span class="lineNum">     227</span> <span class="tlaGNC">        9202 :       var-&gt;clear();</span></span>
+<span id="L228"><span class="lineNum">     228</span> <span class="tlaGNC">        7778 : }</span></span>
+<span id="L229"><span class="lineNum">     229</span>              : </span>
+<span id="L230"><span class="lineNum">     230</span>              : void</span>
+<span id="L231"><span class="lineNum">     231</span> <span class="tlaGNC">        7778 : VariableStore::clear_output()</span></span>
+<span id="L232"><span class="lineNum">     232</span>              : {</span>
+<span id="L233"><span class="lineNum">     233</span> <span class="tlaGNC">       17007 :   for (auto &amp;&amp; [name, var] : output_variables())</span></span>
+<span id="L234"><span class="lineNum">     234</span> <span class="tlaGNC">        9229 :     if (var-&gt;owning())</span></span>
+<span id="L235"><span class="lineNum">     235</span> <span class="tlaGNC">        6938 :       var-&gt;clear();</span></span>
+<span id="L236"><span class="lineNum">     236</span> <span class="tlaGNC">        7778 : }</span></span>
+<span id="L237"><span class="lineNum">     237</span>              : </span>
+<span id="L238"><span class="lineNum">     238</span>              : void</span>
+<span id="L239"><span class="lineNum">     239</span> <span class="tlaGNC">        7778 : VariableStore::zero_input()</span></span>
+<span id="L240"><span class="lineNum">     240</span>              : {</span>
+<span id="L241"><span class="lineNum">     241</span> <span class="tlaGNC">       30734 :   for (auto &amp;&amp; [name, var] : input_variables())</span></span>
+<span id="L242"><span class="lineNum">     242</span> <span class="tlaGNC">       22956 :     if (var-&gt;owning())</span></span>
+<span id="L243"><span class="lineNum">     243</span> <span class="tlaGNC">        9202 :       var-&gt;zero(_options);</span></span>
+<span id="L244"><span class="lineNum">     244</span> <span class="tlaGNC">        7778 : }</span></span>
+<span id="L245"><span class="lineNum">     245</span>              : </span>
+<span id="L246"><span class="lineNum">     246</span>              : void</span>
+<span id="L247"><span class="lineNum">     247</span> <span class="tlaGNC">        7778 : VariableStore::zero_output()</span></span>
+<span id="L248"><span class="lineNum">     248</span>              : {</span>
+<span id="L249"><span class="lineNum">     249</span> <span class="tlaGNC">       17007 :   for (auto &amp;&amp; [name, var] : output_variables())</span></span>
+<span id="L250"><span class="lineNum">     250</span> <span class="tlaGNC">        9229 :     if (var-&gt;owning())</span></span>
+<span id="L251"><span class="lineNum">     251</span> <span class="tlaGNC">        6938 :       var-&gt;zero(_options);</span></span>
+<span id="L252"><span class="lineNum">     252</span> <span class="tlaGNC">        7778 : }</span></span>
+<span id="L253"><span class="lineNum">     253</span>              : </span>
+<span id="L254"><span class="lineNum">     254</span>              : void</span>
+<span id="L255"><span class="lineNum">     255</span> <span class="tlaGNC">        4265 : VariableStore::assign_input(const ValueMap &amp; vals)</span></span>
+<span id="L256"><span class="lineNum">     256</span>              : {</span>
+<span id="L257"><span class="lineNum">     257</span> <span class="tlaGNC">       17644 :   for (const auto &amp; [name, val] : vals)</span></span>
+<span id="L258"><span class="lineNum">     258</span> <span class="tlaGNC">       13379 :     if (input_axis().has_variable(name))</span></span>
+<span id="L259"><span class="lineNum">     259</span> <span class="tlaGNC">       13379 :       input_variable(name).set(val.clone());</span></span>
+<span id="L260"><span class="lineNum">     260</span> <span class="tlaGNC">        4265 : }</span></span>
+<span id="L261"><span class="lineNum">     261</span>              : </span>
+<span id="L262"><span class="lineNum">     262</span>              : void</span>
+<span id="L263"><span class="lineNum">     263</span> <span class="tlaGNC">          26 : VariableStore::assign_output(const ValueMap &amp; vals)</span></span>
+<span id="L264"><span class="lineNum">     264</span>              : {</span>
+<span id="L265"><span class="lineNum">     265</span> <span class="tlaGNC">         104 :   for (const auto &amp; [name, val] : vals)</span></span>
+<span id="L266"><span class="lineNum">     266</span> <span class="tlaGNC">          78 :     output_variable(name).set(val.clone());</span></span>
+<span id="L267"><span class="lineNum">     267</span> <span class="tlaGNC">          26 : }</span></span>
+<span id="L268"><span class="lineNum">     268</span>              : </span>
+<span id="L269"><span class="lineNum">     269</span>              : void</span>
+<span id="L270"><span class="lineNum">     270</span> <span class="tlaGNC">           9 : VariableStore::assign_output_derivatives(const DerivMap &amp; derivs)</span></span>
+<span id="L271"><span class="lineNum">     271</span>              : {</span>
+<span id="L272"><span class="lineNum">     272</span> <span class="tlaGNC">          30 :   for (const auto &amp; [yvar, deriv] : derivs)</span></span>
+<span id="L273"><span class="lineNum">     273</span>              :   {</span>
+<span id="L274"><span class="lineNum">     274</span> <span class="tlaGNC">          21 :     auto &amp; y = output_variable(yvar);</span></span>
+<span id="L275"><span class="lineNum">     275</span> <span class="tlaGNC">          60 :     for (const auto &amp; [xvar, val] : deriv)</span></span>
+<span id="L276"><span class="lineNum">     276</span> <span class="tlaGNC">          39 :       y.derivatives().insert_or_assign(xvar, val.clone());</span></span>
+<span id="L277"><span class="lineNum">     277</span>              :   }</span>
+<span id="L278"><span class="lineNum">     278</span> <span class="tlaGNC">           9 : }</span></span>
+<span id="L279"><span class="lineNum">     279</span>              : </span>
+<span id="L280"><span class="lineNum">     280</span>              : void</span>
+<span id="L281"><span class="lineNum">     281</span> <span class="tlaGNC">         324 : VariableStore::assign_input_stack(jit::Stack &amp; stack)</span></span>
+<span id="L282"><span class="lineNum">     282</span>              : {</span>
+<span id="L283"><span class="lineNum">     283</span> <span class="tlaGNC">         324 :   const auto &amp; vars = input_axis().variable_names();</span></span>
+<span id="L284"><span class="lineNum">     284</span> <span class="tlaGNC">         324 :   neml_assert_dbg(stack.size() &gt;= vars.size(),</span></span>
+<span id="L285"><span class="lineNum">     285</span>              :                   &quot;Number of input variables in the stack (&quot;,</span>
+<span id="L286"><span class="lineNum">     286</span> <span class="tlaGNC">         324 :                   stack.size(),</span></span>
+<span id="L287"><span class="lineNum">     287</span>              :                   &quot;) is smaller than the number of input variables in the model (&quot;,</span>
+<span id="L288"><span class="lineNum">     288</span> <span class="tlaGNC">         324 :                   vars.size(),</span></span>
+<span id="L289"><span class="lineNum">     289</span>              :                   &quot;).&quot;);</span>
+<span id="L290"><span class="lineNum">     290</span>              : </span>
+<span id="L291"><span class="lineNum">     291</span>              :   // Last n tensors in the stack are the input variables</span>
+<span id="L292"><span class="lineNum">     292</span> <span class="tlaGNC">        1179 :   for (std::size_t i = 0; i &lt; vars.size(); i++)</span></span>
+<span id="L293"><span class="lineNum">     293</span> <span class="tlaGNC">         855 :     input_variable(vars[i]).set(stack[stack.size() - vars.size() + i].toTensor(), /*force=*/true);</span></span>
+<span id="L294"><span class="lineNum">     294</span>              : </span>
+<span id="L295"><span class="lineNum">     295</span>              :   // Drop the input variables from the stack</span>
+<span id="L296"><span class="lineNum">     296</span> <span class="tlaGNC">         324 :   jit::drop(stack, vars.size());</span></span>
+<span id="L297"><span class="lineNum">     297</span> <span class="tlaGNC">         324 : }</span></span>
+<span id="L298"><span class="lineNum">     298</span>              : </span>
+<span id="L299"><span class="lineNum">     299</span>              : void</span>
+<span id="L300"><span class="lineNum">     300</span> <span class="tlaGNC">        5408 : VariableStore::assign_output_stack(jit::Stack &amp; stack, bool out, bool dout, bool d2out)</span></span>
+<span id="L301"><span class="lineNum">     301</span>              : {</span>
+<span id="L302"><span class="lineNum">     302</span> <span class="tlaGNC">        5408 :   neml_assert_dbg(out || dout || d2out,</span></span>
+<span id="L303"><span class="lineNum">     303</span>              :                   &quot;At least one of the output/derivative flags must be true.&quot;);</span>
+<span id="L304"><span class="lineNum">     304</span>              : </span>
+<span id="L305"><span class="lineNum">     305</span> <span class="tlaGNC">        5408 :   neml_assert_dbg(!stack.empty(), &quot;Empty output stack.&quot;);</span></span>
+<span id="L306"><span class="lineNum">     306</span> <span class="tlaGNC">        5408 :   const auto stacklist = stack.back().toTensorVector();</span></span>
+<span id="L307"><span class="lineNum">     307</span>              : </span>
+<span id="L308"><span class="lineNum">     308</span>              :   // With our protocol, the last tensor in the list is the sparsity tensor</span>
+<span id="L309"><span class="lineNum">     309</span> <span class="tlaGNC">        5408 :   const auto sparsity_tensor = stacklist.back().contiguous();</span></span>
+<span id="L310"><span class="lineNum">     310</span> <span class="tlaGNC">        5408 :   neml_assert_dbg(at::sum(sparsity_tensor).item&lt;Size&gt;() == Size(stacklist.size()) - 1,</span></span>
+<span id="L311"><span class="lineNum">     311</span>              :                   &quot;Sparsity tensor has incorrect size. Got &quot;,</span>
+<span id="L312"><span class="lineNum">     312</span> <span class="tlaGNC">       10816 :                   at::sum(sparsity_tensor).item&lt;Size&gt;(),</span></span>
+<span id="L313"><span class="lineNum">     313</span>              :                   &quot; expected &quot;,</span>
+<span id="L314"><span class="lineNum">     314</span> <span class="tlaGNC">       10816 :                   Size(stacklist.size()) - 1);</span></span>
+<span id="L315"><span class="lineNum">     315</span>              :   const std::vector&lt;Size&gt; sparsity(sparsity_tensor.data_ptr&lt;Size&gt;(),</span>
+<span id="L316"><span class="lineNum">     316</span> <span class="tlaGNC">        5408 :                                    sparsity_tensor.data_ptr&lt;Size&gt;() + sparsity_tensor.size(0));</span></span>
+<span id="L317"><span class="lineNum">     317</span>              : </span>
+<span id="L318"><span class="lineNum">     318</span> <span class="tlaGNC">        5408 :   const auto &amp; yvars = output_axis().variable_names();</span></span>
+<span id="L319"><span class="lineNum">     319</span> <span class="tlaGNC">        5408 :   const auto &amp; xvars = input_axis().variable_names();</span></span>
+<span id="L320"><span class="lineNum">     320</span>              : </span>
+<span id="L321"><span class="lineNum">     321</span> <span class="tlaGNC">        5408 :   std::size_t sti = 0; // stack counter</span></span>
+<span id="L322"><span class="lineNum">     322</span> <span class="tlaGNC">        5408 :   std::size_t spi = 0; // sparsity counter</span></span>
+<span id="L323"><span class="lineNum">     323</span>              : </span>
+<span id="L324"><span class="lineNum">     324</span> <span class="tlaGNC">        5408 :   if (out)</span></span>
+<span id="L325"><span class="lineNum">     325</span>              :   {</span>
+<span id="L326"><span class="lineNum">     326</span> <span class="tlaGNC">       10423 :     for (std::size_t i = 0; i &lt; yvars.size(); i++)</span></span>
+<span id="L327"><span class="lineNum">     327</span>              :     {</span>
+<span id="L328"><span class="lineNum">     328</span> <span class="tlaGNC">        6915 :       neml_assert(sparsity[spi++], &quot;Corrupted sparsity tensor.&quot;);</span></span>
+<span id="L329"><span class="lineNum">     329</span> <span class="tlaGNC">        6915 :       output_variable(yvars[i]).set(stacklist[sti++], /*force=*/true);</span></span>
+<span id="L330"><span class="lineNum">     330</span>              :     }</span>
+<span id="L331"><span class="lineNum">     331</span>              :   }</span>
+<span id="L332"><span class="lineNum">     332</span>              : </span>
+<span id="L333"><span class="lineNum">     333</span> <span class="tlaGNC">        5408 :   if (dout)</span></span>
+<span id="L334"><span class="lineNum">     334</span>              :   {</span>
+<span id="L335"><span class="lineNum">     335</span> <span class="tlaGNC">        6155 :     for (std::size_t i = 0; i &lt; yvars.size(); i++)</span></span>
+<span id="L336"><span class="lineNum">     336</span>              :     {</span>
+<span id="L337"><span class="lineNum">     337</span> <span class="tlaGNC">        4287 :       auto &amp; derivs = output_variable(yvars[i]).derivatives();</span></span>
+<span id="L338"><span class="lineNum">     338</span> <span class="tlaGNC">       40667 :       for (std::size_t j = 0; j &lt; xvars.size(); j++)</span></span>
+<span id="L339"><span class="lineNum">     339</span>              :       {</span>
+<span id="L340"><span class="lineNum">     340</span> <span class="tlaGNC">       36380 :         if (sparsity[spi++])</span></span>
+<span id="L341"><span class="lineNum">     341</span>              :         {</span>
+<span id="L342"><span class="lineNum">     342</span> <span class="tlaGNC">       13396 :           const auto &amp; val = stacklist[sti++];</span></span>
+<span id="L343"><span class="lineNum">     343</span> <span class="tlaGNC">       13396 :           neml_assert_dbg(val.dim() &gt;= 2,</span></span>
+<span id="L344"><span class="lineNum">     344</span>              :                           &quot;Derivative tensor d(&quot;,</span>
+<span id="L345"><span class="lineNum">     345</span> <span class="tlaGNC">       13396 :                           yvars[i],</span></span>
+<span id="L346"><span class="lineNum">     346</span>              :                           &quot;)/d(&quot;,</span>
+<span id="L347"><span class="lineNum">     347</span> <span class="tlaGNC">       13396 :                           xvars[j],</span></span>
+<span id="L348"><span class="lineNum">     348</span>              :                           &quot;) must have at least 2 dimensions. Got &quot;,</span>
+<span id="L349"><span class="lineNum">     349</span> <span class="tlaGNC">       13396 :                           val.dim(),</span></span>
+<span id="L350"><span class="lineNum">     350</span>              :                           &quot;.&quot;);</span>
+<span id="L351"><span class="lineNum">     351</span> <span class="tlaGNC">       13396 :           derivs[xvars[j]] = Tensor(val, val.dim() - 2);</span></span>
+<span id="L352"><span class="lineNum">     352</span>              :         }</span>
+<span id="L353"><span class="lineNum">     353</span>              :       }</span>
+<span id="L354"><span class="lineNum">     354</span>              :     }</span>
+<span id="L355"><span class="lineNum">     355</span>              :   }</span>
+<span id="L356"><span class="lineNum">     356</span>              : </span>
+<span id="L357"><span class="lineNum">     357</span> <span class="tlaGNC">        5408 :   if (d2out)</span></span>
+<span id="L358"><span class="lineNum">     358</span>              :   {</span>
+<span id="L359"><span class="lineNum">     359</span> <span class="tlaGNC">          68 :     for (std::size_t i = 0; i &lt; yvars.size(); i++)</span></span>
+<span id="L360"><span class="lineNum">     360</span>              :     {</span>
+<span id="L361"><span class="lineNum">     361</span> <span class="tlaGNC">          34 :       auto &amp; derivs = output_variable(yvars[i]).second_derivatives();</span></span>
+<span id="L362"><span class="lineNum">     362</span> <span class="tlaGNC">          93 :       for (std::size_t j = 0; j &lt; xvars.size(); j++)</span></span>
+<span id="L363"><span class="lineNum">     363</span> <span class="tlaGNC">         232 :         for (std::size_t k = 0; k &lt; xvars.size(); k++)</span></span>
+<span id="L364"><span class="lineNum">     364</span>              :         {</span>
+<span id="L365"><span class="lineNum">     365</span> <span class="tlaGNC">         173 :           if (sparsity[spi++])</span></span>
+<span id="L366"><span class="lineNum">     366</span>              :           {</span>
+<span id="L367"><span class="lineNum">     367</span> <span class="tlaGNC">         114 :             const auto &amp; val = stacklist[sti++];</span></span>
+<span id="L368"><span class="lineNum">     368</span> <span class="tlaGNC">         114 :             neml_assert_dbg(val.dim() &gt;= 3,</span></span>
+<span id="L369"><span class="lineNum">     369</span>              :                             &quot;Second derivative tensor d2(&quot;,</span>
+<span id="L370"><span class="lineNum">     370</span> <span class="tlaGNC">         114 :                             yvars[i],</span></span>
+<span id="L371"><span class="lineNum">     371</span>              :                             &quot;)/d(&quot;,</span>
+<span id="L372"><span class="lineNum">     372</span> <span class="tlaGNC">         114 :                             xvars[j],</span></span>
+<span id="L373"><span class="lineNum">     373</span>              :                             &quot;)d(&quot;,</span>
+<span id="L374"><span class="lineNum">     374</span> <span class="tlaGNC">         114 :                             xvars[k],</span></span>
+<span id="L375"><span class="lineNum">     375</span>              :                             &quot;) must have at least 3 dimensions. Got &quot;,</span>
+<span id="L376"><span class="lineNum">     376</span> <span class="tlaGNC">         114 :                             val.dim(),</span></span>
+<span id="L377"><span class="lineNum">     377</span>              :                             &quot;.&quot;);</span>
+<span id="L378"><span class="lineNum">     378</span> <span class="tlaGNC">         114 :             derivs[xvars[j]][xvars[k]] = Tensor(val, val.dim() - 3);</span></span>
+<span id="L379"><span class="lineNum">     379</span>              :           }</span>
+<span id="L380"><span class="lineNum">     380</span>              :         }</span>
+<span id="L381"><span class="lineNum">     381</span>              :     }</span>
+<span id="L382"><span class="lineNum">     382</span>              :   }</span>
+<span id="L383"><span class="lineNum">     383</span>              : </span>
+<span id="L384"><span class="lineNum">     384</span> <span class="tlaGNC">        5408 :   jit::drop(stack, 1);</span></span>
+<span id="L385"><span class="lineNum">     385</span> <span class="tlaGNC">        5408 : }</span></span>
+<span id="L386"><span class="lineNum">     386</span>              : </span>
+<span id="L387"><span class="lineNum">     387</span>              : ValueMap</span>
+<span id="L388"><span class="lineNum">     388</span> <span class="tlaGNC">         189 : VariableStore::collect_input() const</span></span>
+<span id="L389"><span class="lineNum">     389</span>              : {</span>
+<span id="L390"><span class="lineNum">     390</span> <span class="tlaGNC">         189 :   ValueMap vals;</span></span>
+<span id="L391"><span class="lineNum">     391</span> <span class="tlaGNC">        1826 :   for (auto &amp;&amp; [name, var] : input_variables())</span></span>
+<span id="L392"><span class="lineNum">     392</span> <span class="tlaGNC">        1637 :     vals[name] = var-&gt;tensor();</span></span>
+<span id="L393"><span class="lineNum">     393</span> <span class="tlaGNC">         189 :   return vals;</span></span>
+<span id="L394"><span class="lineNum">     394</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
+<span id="L395"><span class="lineNum">     395</span>              : </span>
+<span id="L396"><span class="lineNum">     396</span>              : ValueMap</span>
+<span id="L397"><span class="lineNum">     397</span> <span class="tlaGNC tlaBgGNC">        3608 : VariableStore::collect_output() const</span></span>
+<span id="L398"><span class="lineNum">     398</span>              : {</span>
+<span id="L399"><span class="lineNum">     399</span> <span class="tlaGNC">        3608 :   ValueMap vals;</span></span>
+<span id="L400"><span class="lineNum">     400</span> <span class="tlaGNC">       10894 :   for (auto &amp;&amp; [name, var] : output_variables())</span></span>
+<span id="L401"><span class="lineNum">     401</span> <span class="tlaGNC">        7286 :     vals[name] = var-&gt;tensor();</span></span>
+<span id="L402"><span class="lineNum">     402</span> <span class="tlaGNC">        3608 :   return vals;</span></span>
+<span id="L403"><span class="lineNum">     403</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
+<span id="L404"><span class="lineNum">     404</span>              : </span>
+<span id="L405"><span class="lineNum">     405</span>              : DerivMap</span>
+<span id="L406"><span class="lineNum">     406</span> <span class="tlaGNC tlaBgGNC">        1870 : VariableStore::collect_output_derivatives() const</span></span>
+<span id="L407"><span class="lineNum">     407</span>              : {</span>
+<span id="L408"><span class="lineNum">     408</span> <span class="tlaGNC">        1870 :   DerivMap derivs;</span></span>
+<span id="L409"><span class="lineNum">     409</span> <span class="tlaGNC">        6161 :   for (auto &amp;&amp; [name, var] : output_variables())</span></span>
+<span id="L410"><span class="lineNum">     410</span> <span class="tlaGNC">        4291 :     derivs[name] = var-&gt;derivatives();</span></span>
+<span id="L411"><span class="lineNum">     411</span> <span class="tlaGNC">        1870 :   return derivs;</span></span>
+<span id="L412"><span class="lineNum">     412</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
+<span id="L413"><span class="lineNum">     413</span>              : </span>
+<span id="L414"><span class="lineNum">     414</span>              : SecDerivMap</span>
+<span id="L415"><span class="lineNum">     415</span> <span class="tlaGNC tlaBgGNC">          34 : VariableStore::collect_output_second_derivatives() const</span></span>
+<span id="L416"><span class="lineNum">     416</span>              : {</span>
+<span id="L417"><span class="lineNum">     417</span> <span class="tlaGNC">          34 :   SecDerivMap sec_derivs;</span></span>
+<span id="L418"><span class="lineNum">     418</span> <span class="tlaGNC">          68 :   for (auto &amp;&amp; [name, var] : output_variables())</span></span>
+<span id="L419"><span class="lineNum">     419</span> <span class="tlaGNC">          34 :     sec_derivs[name] = var-&gt;second_derivatives();</span></span>
+<span id="L420"><span class="lineNum">     420</span> <span class="tlaGNC">          34 :   return sec_derivs;</span></span>
+<span id="L421"><span class="lineNum">     421</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
+<span id="L422"><span class="lineNum">     422</span>              : </span>
+<span id="L423"><span class="lineNum">     423</span>              : jit::Stack</span>
+<span id="L424"><span class="lineNum">     424</span> <span class="tlaGNC tlaBgGNC">        5732 : VariableStore::collect_input_stack() const</span></span>
+<span id="L425"><span class="lineNum">     425</span>              : {</span>
+<span id="L426"><span class="lineNum">     426</span> <span class="tlaGNC">        5732 :   jit::Stack stack;</span></span>
+<span id="L427"><span class="lineNum">     427</span> <span class="tlaGNC">        5732 :   const auto &amp; vars = input_axis().variable_names();</span></span>
+<span id="L428"><span class="lineNum">     428</span> <span class="tlaGNC">        5732 :   stack.reserve(vars.size());</span></span>
+<span id="L429"><span class="lineNum">     429</span> <span class="tlaGNC">       39941 :   for (const auto &amp; name : vars)</span></span>
+<span id="L430"><span class="lineNum">     430</span> <span class="tlaGNC">       34209 :     stack.push_back(input_variable(name).tensor());</span></span>
+<span id="L431"><span class="lineNum">     431</span> <span class="tlaGNC">        5732 :   return stack;</span></span>
+<span id="L432"><span class="lineNum">     432</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
+<span id="L433"><span class="lineNum">     433</span>              : </span>
+<span id="L434"><span class="lineNum">     434</span>              : jit::Stack</span>
+<span id="L435"><span class="lineNum">     435</span> <span class="tlaGNC tlaBgGNC">         324 : VariableStore::collect_output_stack(bool out, bool dout, bool d2out) const</span></span>
+<span id="L436"><span class="lineNum">     436</span>              : {</span>
+<span id="L437"><span class="lineNum">     437</span> <span class="tlaGNC">         324 :   neml_assert_dbg(out || dout || d2out,</span></span>
+<span id="L438"><span class="lineNum">     438</span>              :                   &quot;At least one of the output/derivative flags must be true.&quot;);</span>
+<span id="L439"><span class="lineNum">     439</span>              : </span>
+<span id="L440"><span class="lineNum">     440</span> <span class="tlaGNC">         324 :   const auto &amp; yvars = output_axis().variable_names();</span></span>
+<span id="L441"><span class="lineNum">     441</span> <span class="tlaGNC">         324 :   const auto &amp; xvars = input_axis().variable_names();</span></span>
+<span id="L442"><span class="lineNum">     442</span>              : </span>
+<span id="L443"><span class="lineNum">     443</span> <span class="tlaGNC">         324 :   std::vector&lt;ATensor&gt; stacklist;</span></span>
+<span id="L444"><span class="lineNum">     444</span> <span class="tlaGNC">         324 :   std::vector&lt;Size&gt; sparsity;</span></span>
+<span id="L445"><span class="lineNum">     445</span>              : </span>
+<span id="L446"><span class="lineNum">     446</span> <span class="tlaGNC">         324 :   if (out)</span></span>
+<span id="L447"><span class="lineNum">     447</span>              :   {</span>
+<span id="L448"><span class="lineNum">     448</span> <span class="tlaGNC">         148 :     sparsity.insert(sparsity.end(), yvars.size(), 1);</span></span>
+<span id="L449"><span class="lineNum">     449</span> <span class="tlaGNC">         314 :     for (const auto &amp; yvar : yvars)</span></span>
+<span id="L450"><span class="lineNum">     450</span> <span class="tlaGNC">         166 :       stacklist.push_back(output_variable(yvar).tensor());</span></span>
+<span id="L451"><span class="lineNum">     451</span>              :   }</span>
+<span id="L452"><span class="lineNum">     452</span>              : </span>
+<span id="L453"><span class="lineNum">     453</span> <span class="tlaGNC">         324 :   if (dout)</span></span>
+<span id="L454"><span class="lineNum">     454</span>              :   {</span>
+<span id="L455"><span class="lineNum">     455</span> <span class="tlaGNC">         309 :     for (const auto &amp; yvar : yvars)</span></span>
+<span id="L456"><span class="lineNum">     456</span>              :     {</span>
+<span id="L457"><span class="lineNum">     457</span> <span class="tlaGNC">         165 :       const auto &amp; derivs = output_variable(yvar).derivatives();</span></span>
+<span id="L458"><span class="lineNum">     458</span> <span class="tlaGNC">         722 :       for (const auto &amp; xvar : xvars)</span></span>
+<span id="L459"><span class="lineNum">     459</span>              :       {</span>
+<span id="L460"><span class="lineNum">     460</span> <span class="tlaGNC">         557 :         const auto &amp; deriv = derivs.find(xvar);</span></span>
+<span id="L461"><span class="lineNum">     461</span> <span class="tlaGNC">         557 :         sparsity.push_back(deriv == derivs.end() || !input_variable(xvar).is_dependent() ? 0 : 1);</span></span>
+<span id="L462"><span class="lineNum">     462</span> <span class="tlaGNC">         557 :         if (sparsity.back())</span></span>
+<span id="L463"><span class="lineNum">     463</span> <span class="tlaGNC">         428 :           stacklist.push_back(deriv-&gt;second);</span></span>
+<span id="L464"><span class="lineNum">     464</span>              :       }</span>
+<span id="L465"><span class="lineNum">     465</span>              :     }</span>
+<span id="L466"><span class="lineNum">     466</span>              :   }</span>
+<span id="L467"><span class="lineNum">     467</span>              : </span>
+<span id="L468"><span class="lineNum">     468</span> <span class="tlaGNC">         324 :   if (d2out)</span></span>
+<span id="L469"><span class="lineNum">     469</span>              :   {</span>
+<span id="L470"><span class="lineNum">     470</span> <span class="tlaGNC">          68 :     for (const auto &amp; yvar : yvars)</span></span>
+<span id="L471"><span class="lineNum">     471</span>              :     {</span>
+<span id="L472"><span class="lineNum">     472</span> <span class="tlaGNC">          34 :       const auto &amp; derivs = output_variable(yvar).second_derivatives();</span></span>
+<span id="L473"><span class="lineNum">     473</span> <span class="tlaGNC">          93 :       for (const auto &amp; x1var : xvars)</span></span>
+<span id="L474"><span class="lineNum">     474</span>              :       {</span>
+<span id="L475"><span class="lineNum">     475</span> <span class="tlaGNC">          59 :         const auto &amp; x1derivs = derivs.find(x1var);</span></span>
+<span id="L476"><span class="lineNum">     476</span> <span class="tlaGNC">          59 :         if (x1derivs != derivs.end() &amp;&amp; input_variable(x1var).is_dependent())</span></span>
+<span id="L477"><span class="lineNum">     477</span> <span class="tlaGNC">         195 :           for (const auto &amp; x2var : xvars)</span></span>
+<span id="L478"><span class="lineNum">     478</span>              :           {</span>
+<span id="L479"><span class="lineNum">     479</span> <span class="tlaGNC">         152 :             const auto &amp; x1x2deriv = x1derivs-&gt;second.find(x2var);</span></span>
+<span id="L480"><span class="lineNum">     480</span> <span class="tlaGNC">         152 :             sparsity.push_back(</span></span>
+<span id="L481"><span class="lineNum">     481</span> <span class="tlaGNC">         152 :                 x1x2deriv == x1derivs-&gt;second.end() || !input_variable(x2var).is_dependent() ? 0</span></span>
+<span id="L482"><span class="lineNum">     482</span>              :                                                                                              : 1);</span>
+<span id="L483"><span class="lineNum">     483</span> <span class="tlaGNC">         152 :             if (sparsity.back())</span></span>
+<span id="L484"><span class="lineNum">     484</span> <span class="tlaGNC">         114 :               stacklist.push_back(x1x2deriv-&gt;second);</span></span>
+<span id="L485"><span class="lineNum">     485</span>              :           }</span>
+<span id="L486"><span class="lineNum">     486</span>              :         else</span>
+<span id="L487"><span class="lineNum">     487</span> <span class="tlaGNC">          16 :           sparsity.insert(sparsity.end(), xvars.size(), 0);</span></span>
+<span id="L488"><span class="lineNum">     488</span>              :       }</span>
+<span id="L489"><span class="lineNum">     489</span>              :     }</span>
+<span id="L490"><span class="lineNum">     490</span>              :   }</span>
+<span id="L491"><span class="lineNum">     491</span>              : </span>
+<span id="L492"><span class="lineNum">     492</span> <span class="tlaGNC">         324 :   const auto sparsity_tensor = Tensor::create(sparsity, kInt64);</span></span>
+<span id="L493"><span class="lineNum">     493</span> <span class="tlaGNC">         324 :   const auto nnz = base_sum(sparsity_tensor).item&lt;Size&gt;();</span></span>
+<span id="L494"><span class="lineNum">     494</span> <span class="tlaGNC">         324 :   neml_assert_dbg(nnz == Size(stacklist.size()),</span></span>
+<span id="L495"><span class="lineNum">     495</span>              :                   &quot;Corrupted sparsity tensor. Got &quot;,</span>
+<span id="L496"><span class="lineNum">     496</span>              :                   nnz,</span>
+<span id="L497"><span class="lineNum">     497</span>              :                   &quot; non-zero entries, expected &quot;,</span>
+<span id="L498"><span class="lineNum">     498</span> <span class="tlaGNC">         324 :                   Size(stacklist.size()));</span></span>
+<span id="L499"><span class="lineNum">     499</span> <span class="tlaGNC">         324 :   stacklist.push_back(sparsity_tensor);</span></span>
+<span id="L500"><span class="lineNum">     500</span>              : </span>
+<span id="L501"><span class="lineNum">     501</span> <span class="tlaGNC">        1296 :   return {stacklist};</span></span>
+<span id="L502"><span class="lineNum">     502</span> <span class="tlaGNC">         648 : }</span></span>
+<span id="L503"><span class="lineNum">     503</span>              : </span>
+<span id="L504"><span class="lineNum">     504</span>              : } // namespace neml2</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>
