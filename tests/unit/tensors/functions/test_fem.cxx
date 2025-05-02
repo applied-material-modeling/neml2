@@ -260,8 +260,7 @@ TEST_CASE("fem", "[tensors][functions]")
   // Final step, assemble the element residual into the global residual vector
   // The global residual vector has shape (18)
   auto r = fem_assemble(re, dof_map, ndof);
-  REQUIRE(!r.batched());
-  REQUIRE(r.base_sizes() == TensorShape{ndof});
+  REQUIRE(r.sizes() == TensorShape{ndof});
   auto r_correct = Tensor::create({-19.230769,
                                    -76.923077,
                                    -57.692308,

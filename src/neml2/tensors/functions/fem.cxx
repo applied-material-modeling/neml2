@@ -29,16 +29,8 @@
 namespace neml2
 {
 Tensor
-fem_scatter(const Tensor & v, const Tensor & dof_map)
+fem_scatter(const ATensor & v, const Tensor & dof_map)
 {
-  neml_assert_dbg(!v.batched(), "fem_scatter: v must be unbatched.");
-  neml_assert_dbg(dof_map.batch_dim() == 1,
-                  "fem_scatter: batch dimension of dof_map must be 1, got ",
-                  dof_map.batch_dim());
-  neml_assert_dbg(dof_map.base_dim() == 2,
-                  "fem_scatter: base dimension of dof_map must be 2, got ",
-                  dof_map.base_dim());
-
   auto vals = v.index({at::Tensor(dof_map)});
   return Tensor(vals, dof_map.batch_sizes());
 }
@@ -46,36 +38,36 @@ fem_scatter(const Tensor & v, const Tensor & dof_map)
 Tensor
 fem_interpolate(const Tensor & elem_dofs, const Tensor & basis)
 {
-  neml_assert_dbg(elem_dofs.batch_dim() == 1,
-                  "fem_interpolate: batch dimension of elem_dofs must be 1, got ",
-                  elem_dofs.batch_dim());
-  neml_assert_dbg(elem_dofs.base_dim() == 2,
-                  "fem_interpolate: base dimension of elem_dofs must be 2, got ",
-                  elem_dofs.base_dim());
-  neml_assert_dbg(
-      basis.base_dim() >= 1,
-      "fem_interpolate: base dimension of basis must be greater than or equal to 1, got ",
-      basis.base_dim());
-  neml_assert_dbg(elem_dofs.base_size(0) == basis.base_size(0),
-                  "fem_interpolate: sizes of the first base dimension of elem_dofs and basis must "
-                  "be equal, got ",
-                  elem_dofs.base_size(0),
-                  " and ",
-                  basis.base_size(0));
+  neml_assert(elem_dofs.batch_dim() >= 2,
+              "fem_interpolate: batch dimension of elem_dofs must at least 2, got ",
+              elem_dofs.batch_dim());
+  neml_assert(basis.batch_dim() >= 3,
+              "fem_interpolate: base dimension of basis must be at least 3, got ",
+              basis.batch_dim());
+  neml_assert(elem_dofs.batch_size(-2) == basis.batch_size(-3),
+              "fem_interpolate: elem_dofs implies Nelem = ",
+              elem_dofs.batch_size(-2),
+              ", but basis implies Nelem = ",
+              basis.batch_size(-3));
+  neml_assert(elem_dofs.batch_size(-1) == basis.batch_size(-2),
+              "fem_interpolate: elem_dofs implies Ndofe = ",
+              elem_dofs.batch_size(-1),
+              ", but basis implies Ndofe = ",
+              basis.batch_size(-2));
 
-  return base_sum(elem_dofs.base_unsqueeze_to(basis.base_dim() + 1) * basis.base_unsqueeze(1), 0);
+  return batch_sum(elem_dofs.batch_unsqueeze(-1).base_unsqueeze_to(basis.base_dim()) * basis, -2);
 }
 
-Tensor
+ATensor
 fem_assemble(const ATensor & v_scattered, const ATensor & dof_map, Size ndof)
 {
-  neml_assert_dbg(v_scattered.sizes() == dof_map.sizes(),
-                  "fem_assemble: v_scattered and dof_map must have the same sizes, got ",
-                  v_scattered.sizes(),
-                  " and ",
-                  dof_map.sizes());
-  auto r = Tensor::zeros(ndof, v_scattered.options());
+  neml_assert(v_scattered.sizes() == dof_map.sizes(),
+              "fem_assemble: v_scattered and dof_map must have the same sizes, got ",
+              v_scattered.sizes(),
+              " and ",
+              dof_map.sizes());
+  auto r = at::zeros(ndof, v_scattered.options());
   r.scatter_add_(0, dof_map.flatten(), v_scattered.flatten());
-  return Tensor(r, 0);
+  return r;
 }
 } // namespace neml2
