@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-04-29 19:26:50</td>
+            <td class="headerValue">2025-05-02 13:42:22</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">75.8&nbsp;%</td>
@@ -100,11 +100,11 @@
 <span id="L38"><span class="lineNum">      38</span>              : namespace neml2</span>
 <span id="L39"><span class="lineNum">      39</span>              : {</span>
 <span id="L40"><span class="lineNum">      40</span>              : Model &amp;</span>
-<span id="L41"><span class="lineNum">      41</span> <span class="tlaGNC tlaBgGNC">         164 : get_model(const std::string &amp; mname)</span></span>
+<span id="L41"><span class="lineNum">      41</span> <span class="tlaGNC tlaBgGNC">         163 : get_model(const std::string &amp; mname)</span></span>
 <span id="L42"><span class="lineNum">      42</span>              : {</span>
-<span id="L43"><span class="lineNum">      43</span> <span class="tlaGNC">         164 :   OptionSet extra_opts;</span></span>
-<span id="L44"><span class="lineNum">      44</span> <span class="tlaGNC">         328 :   return Factory::get_object&lt;Model&gt;(&quot;Models&quot;, mname, extra_opts, /*force_create=*/false);</span></span>
-<span id="L45"><span class="lineNum">      45</span> <span class="tlaGNC">         164 : }</span></span>
+<span id="L43"><span class="lineNum">      43</span> <span class="tlaGNC">         163 :   OptionSet extra_opts;</span></span>
+<span id="L44"><span class="lineNum">      44</span> <span class="tlaGNC">         326 :   return Factory::get_object&lt;Model&gt;(&quot;Models&quot;, mname, extra_opts, /*force_create=*/false);</span></span>
+<span id="L45"><span class="lineNum">      45</span> <span class="tlaGNC">         163 : }</span></span>
 <span id="L46"><span class="lineNum">      46</span>              : </span>
 <span id="L47"><span class="lineNum">      47</span>              : Model &amp;</span>
 <span id="L48"><span class="lineNum">      48</span> <span class="tlaGNC">           1 : load_model(const std::filesystem::path &amp; path, const std::string &amp; mname)</span></span>
@@ -114,10 +114,10 @@
 <span id="L52"><span class="lineNum">      52</span>              : }</span>
 <span id="L53"><span class="lineNum">      53</span>              : </span>
 <span id="L54"><span class="lineNum">      54</span>              : Model &amp;</span>
-<span id="L55"><span class="lineNum">      55</span> <span class="tlaGNC">          11 : reload_model(const std::filesystem::path &amp; path, const std::string &amp; mname)</span></span>
+<span id="L55"><span class="lineNum">      55</span> <span class="tlaGNC">          10 : reload_model(const std::filesystem::path &amp; path, const std::string &amp; mname)</span></span>
 <span id="L56"><span class="lineNum">      56</span>              : {</span>
-<span id="L57"><span class="lineNum">      57</span> <span class="tlaGNC">          11 :   reload_input(path);</span></span>
-<span id="L58"><span class="lineNum">      58</span> <span class="tlaGNC">          11 :   return get_model(mname);</span></span>
+<span id="L57"><span class="lineNum">      57</span> <span class="tlaGNC">          10 :   reload_input(path);</span></span>
+<span id="L58"><span class="lineNum">      58</span> <span class="tlaGNC">          10 :   return get_model(mname);</span></span>
 <span id="L59"><span class="lineNum">      59</span>              : }</span>
 <span id="L60"><span class="lineNum">      60</span>              : </span>
 <span id="L61"><span class="lineNum">      61</span>              : bool</span>
@@ -127,11 +127,11 @@
 <span id="L65"><span class="lineNum">      65</span>              : }</span>
 <span id="L66"><span class="lineNum">      66</span>              : </span>
 <span id="L67"><span class="lineNum">      67</span>              : bool</span>
-<span id="L68"><span class="lineNum">      68</span> <span class="tlaGNC tlaBgGNC">       11070 : Model::TraceSchema::operator&lt;(const TraceSchema &amp; other) const</span></span>
+<span id="L68"><span class="lineNum">      68</span> <span class="tlaGNC tlaBgGNC">       11068 : Model::TraceSchema::operator&lt;(const TraceSchema &amp; other) const</span></span>
 <span id="L69"><span class="lineNum">      69</span>              : {</span>
-<span id="L70"><span class="lineNum">      70</span> <span class="tlaGNC">       11070 :   if (dispatch_key != other.dispatch_key)</span></span>
+<span id="L70"><span class="lineNum">      70</span> <span class="tlaGNC">       11068 :   if (dispatch_key != other.dispatch_key)</span></span>
 <span id="L71"><span class="lineNum">      71</span> <span class="tlaUNC tlaBgUNC">           0 :     return dispatch_key &lt; other.dispatch_key;</span></span>
-<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC tlaBgGNC">       11070 :   return batch_dims &lt; other.batch_dims;</span></span>
+<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC tlaBgGNC">       11068 :   return batch_dims &lt; other.batch_dims;</span></span>
 <span id="L73"><span class="lineNum">      73</span>              : }</span>
 <span id="L74"><span class="lineNum">      74</span>              : </span>
 <span id="L75"><span class="lineNum">      75</span>              : OptionSet</span>
@@ -169,20 +169,20 @@
 <span id="L107"><span class="lineNum">     107</span> <span class="tlaGNC">         381 :   return options;</span></span>
 <span id="L108"><span class="lineNum">     108</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
 <span id="L109"><span class="lineNum">     109</span>              : </span>
-<span id="L110"><span class="lineNum">     110</span> <span class="tlaGNC tlaBgGNC">         407 : Model::Model(const OptionSet &amp; options)</span></span>
+<span id="L110"><span class="lineNum">     110</span> <span class="tlaGNC tlaBgGNC">         406 : Model::Model(const OptionSet &amp; options)</span></span>
 <span id="L111"><span class="lineNum">     111</span>              :   : Data(options),</span>
 <span id="L112"><span class="lineNum">     112</span>              :     ParameterStore(this),</span>
 <span id="L113"><span class="lineNum">     113</span>              :     VariableStore(this),</span>
 <span id="L114"><span class="lineNum">     114</span>              :     NonlinearSystem(options),</span>
 <span id="L115"><span class="lineNum">     115</span>              :     DiagnosticsInterface(this),</span>
-<span id="L116"><span class="lineNum">     116</span> <span class="tlaGNC">         814 :     _defines_value(options.get&lt;bool&gt;(&quot;define_values&quot;)),</span></span>
-<span id="L117"><span class="lineNum">     117</span> <span class="tlaGNC">         814 :     _defines_dvalue(options.get&lt;bool&gt;(&quot;define_derivatives&quot;)),</span></span>
-<span id="L118"><span class="lineNum">     118</span> <span class="tlaGNC">         814 :     _defines_d2value(options.get&lt;bool&gt;(&quot;define_second_derivatives&quot;)),</span></span>
-<span id="L119"><span class="lineNum">     119</span> <span class="tlaGNC">         407 :     _nonlinear_system(options.get&lt;bool&gt;(&quot;_nonlinear_system&quot;)),</span></span>
-<span id="L120"><span class="lineNum">     120</span> <span class="tlaGNC">         814 :     _jit(options.get&lt;bool&gt;(&quot;jit&quot;)),</span></span>
-<span id="L121"><span class="lineNum">     121</span> <span class="tlaGNC">        1628 :     _production(options.get&lt;bool&gt;(&quot;production&quot;))</span></span>
+<span id="L116"><span class="lineNum">     116</span> <span class="tlaGNC">         812 :     _defines_value(options.get&lt;bool&gt;(&quot;define_values&quot;)),</span></span>
+<span id="L117"><span class="lineNum">     117</span> <span class="tlaGNC">         812 :     _defines_dvalue(options.get&lt;bool&gt;(&quot;define_derivatives&quot;)),</span></span>
+<span id="L118"><span class="lineNum">     118</span> <span class="tlaGNC">         812 :     _defines_d2value(options.get&lt;bool&gt;(&quot;define_second_derivatives&quot;)),</span></span>
+<span id="L119"><span class="lineNum">     119</span> <span class="tlaGNC">         406 :     _nonlinear_system(options.get&lt;bool&gt;(&quot;_nonlinear_system&quot;)),</span></span>
+<span id="L120"><span class="lineNum">     120</span> <span class="tlaGNC">         812 :     _jit(options.get&lt;bool&gt;(&quot;jit&quot;)),</span></span>
+<span id="L121"><span class="lineNum">     121</span> <span class="tlaGNC">        1624 :     _production(options.get&lt;bool&gt;(&quot;production&quot;))</span></span>
 <span id="L122"><span class="lineNum">     122</span>              : {</span>
-<span id="L123"><span class="lineNum">     123</span> <span class="tlaGNC">         407 : }</span></span>
+<span id="L123"><span class="lineNum">     123</span> <span class="tlaGNC">         406 : }</span></span>
 <span id="L124"><span class="lineNum">     124</span>              : </span>
 <span id="L125"><span class="lineNum">     125</span>              : void</span>
 <span id="L126"><span class="lineNum">     126</span> <span class="tlaUNC tlaBgUNC">           0 : Model::to(const TensorOptions &amp; options)</span></span>
@@ -199,18 +199,18 @@
 <span id="L137"><span class="lineNum">     137</span> <span class="tlaUNC">           0 : }</span></span>
 <span id="L138"><span class="lineNum">     138</span>              : </span>
 <span id="L139"><span class="lineNum">     139</span>              : void</span>
-<span id="L140"><span class="lineNum">     140</span> <span class="tlaGNC tlaBgGNC">         407 : Model::setup()</span></span>
+<span id="L140"><span class="lineNum">     140</span> <span class="tlaGNC tlaBgGNC">         406 : Model::setup()</span></span>
 <span id="L141"><span class="lineNum">     141</span>              : {</span>
-<span id="L142"><span class="lineNum">     142</span> <span class="tlaGNC">         407 :   setup_layout();</span></span>
+<span id="L142"><span class="lineNum">     142</span> <span class="tlaGNC">         406 :   setup_layout();</span></span>
 <span id="L143"><span class="lineNum">     143</span>              : </span>
-<span id="L144"><span class="lineNum">     144</span> <span class="tlaGNC">         407 :   if (host() == this)</span></span>
+<span id="L144"><span class="lineNum">     144</span> <span class="tlaGNC">         406 :   if (host() == this)</span></span>
 <span id="L145"><span class="lineNum">     145</span>              :   {</span>
-<span id="L146"><span class="lineNum">     146</span> <span class="tlaGNC">         163 :     link_output_variables();</span></span>
-<span id="L147"><span class="lineNum">     147</span> <span class="tlaGNC">         163 :     link_input_variables();</span></span>
+<span id="L146"><span class="lineNum">     146</span> <span class="tlaGNC">         162 :     link_output_variables();</span></span>
+<span id="L147"><span class="lineNum">     147</span> <span class="tlaGNC">         162 :     link_input_variables();</span></span>
 <span id="L148"><span class="lineNum">     148</span>              :   }</span>
 <span id="L149"><span class="lineNum">     149</span>              : </span>
-<span id="L150"><span class="lineNum">     150</span> <span class="tlaGNC">         407 :   request_AD();</span></span>
-<span id="L151"><span class="lineNum">     151</span> <span class="tlaGNC">         407 : }</span></span>
+<span id="L150"><span class="lineNum">     150</span> <span class="tlaGNC">         406 :   request_AD();</span></span>
+<span id="L151"><span class="lineNum">     151</span> <span class="tlaGNC">         406 : }</span></span>
 <span id="L152"><span class="lineNum">     152</span>              : </span>
 <span id="L153"><span class="lineNum">     153</span>              : void</span>
 <span id="L154"><span class="lineNum">     154</span> <span class="tlaGNC">          96 : Model::diagnose() const</span></span>
@@ -325,14 +325,14 @@
 <span id="L263"><span class="lineNum">     263</span> <span class="tlaGNC">         117 : }</span></span>
 <span id="L264"><span class="lineNum">     264</span>              : </span>
 <span id="L265"><span class="lineNum">     265</span>              : void</span>
-<span id="L266"><span class="lineNum">     266</span> <span class="tlaGNC">         408 : Model::link_input_variables()</span></span>
+<span id="L266"><span class="lineNum">     266</span> <span class="tlaGNC">         407 : Model::link_input_variables()</span></span>
 <span id="L267"><span class="lineNum">     267</span>              : {</span>
-<span id="L268"><span class="lineNum">     268</span> <span class="tlaGNC">         653 :   for (auto * submodel : _registered_models)</span></span>
+<span id="L268"><span class="lineNum">     268</span> <span class="tlaGNC">         652 :   for (auto * submodel : _registered_models)</span></span>
 <span id="L269"><span class="lineNum">     269</span>              :   {</span>
 <span id="L270"><span class="lineNum">     270</span> <span class="tlaGNC">         245 :     link_input_variables(submodel);</span></span>
 <span id="L271"><span class="lineNum">     271</span> <span class="tlaGNC">         245 :     submodel-&gt;link_input_variables();</span></span>
 <span id="L272"><span class="lineNum">     272</span>              :   }</span>
-<span id="L273"><span class="lineNum">     273</span> <span class="tlaGNC">         408 : }</span></span>
+<span id="L273"><span class="lineNum">     273</span> <span class="tlaGNC">         407 : }</span></span>
 <span id="L274"><span class="lineNum">     274</span>              : </span>
 <span id="L275"><span class="lineNum">     275</span>              : void</span>
 <span id="L276"><span class="lineNum">     276</span> <span class="tlaGNC">          13 : Model::link_input_variables(Model * submodel)</span></span>
@@ -342,14 +342,14 @@
 <span id="L280"><span class="lineNum">     280</span> <span class="tlaGNC">          13 : }</span></span>
 <span id="L281"><span class="lineNum">     281</span>              : </span>
 <span id="L282"><span class="lineNum">     282</span>              : void</span>
-<span id="L283"><span class="lineNum">     283</span> <span class="tlaGNC">         408 : Model::link_output_variables()</span></span>
+<span id="L283"><span class="lineNum">     283</span> <span class="tlaGNC">         407 : Model::link_output_variables()</span></span>
 <span id="L284"><span class="lineNum">     284</span>              : {</span>
-<span id="L285"><span class="lineNum">     285</span> <span class="tlaGNC">         653 :   for (auto * submodel : _registered_models)</span></span>
+<span id="L285"><span class="lineNum">     285</span> <span class="tlaGNC">         652 :   for (auto * submodel : _registered_models)</span></span>
 <span id="L286"><span class="lineNum">     286</span>              :   {</span>
 <span id="L287"><span class="lineNum">     287</span> <span class="tlaGNC">         245 :     link_output_variables(submodel);</span></span>
 <span id="L288"><span class="lineNum">     288</span> <span class="tlaGNC">         245 :     submodel-&gt;link_output_variables();</span></span>
 <span id="L289"><span class="lineNum">     289</span>              :   }</span>
-<span id="L290"><span class="lineNum">     290</span> <span class="tlaGNC">         408 : }</span></span>
+<span id="L290"><span class="lineNum">     290</span> <span class="tlaGNC">         407 : }</span></span>
 <span id="L291"><span class="lineNum">     291</span>              : </span>
 <span id="L292"><span class="lineNum">     292</span>              : void</span>
 <span id="L293"><span class="lineNum">     293</span> <span class="tlaGNC">          13 : Model::link_output_variables(Model * /*submodel*/)</span></span>
@@ -385,183 +385,183 @@
 <span id="L323"><span class="lineNum">     323</span> <span class="tlaGNC">          48 : }</span></span>
 <span id="L324"><span class="lineNum">     324</span>              : </span>
 <span id="L325"><span class="lineNum">     325</span>              : void</span>
-<span id="L326"><span class="lineNum">     326</span> <span class="tlaGNC">        7945 : Model::clear_input()</span></span>
+<span id="L326"><span class="lineNum">     326</span> <span class="tlaGNC">        7944 : Model::clear_input()</span></span>
 <span id="L327"><span class="lineNum">     327</span>              : {</span>
-<span id="L328"><span class="lineNum">     328</span> <span class="tlaGNC">        7945 :   VariableStore::clear_input();</span></span>
-<span id="L329"><span class="lineNum">     329</span> <span class="tlaGNC">       13061 :   for (auto * submodel : _registered_models)</span></span>
+<span id="L328"><span class="lineNum">     328</span> <span class="tlaGNC">        7944 :   VariableStore::clear_input();</span></span>
+<span id="L329"><span class="lineNum">     329</span> <span class="tlaGNC">       13060 :   for (auto * submodel : _registered_models)</span></span>
 <span id="L330"><span class="lineNum">     330</span> <span class="tlaGNC">        5116 :     submodel-&gt;clear_input();</span></span>
-<span id="L331"><span class="lineNum">     331</span> <span class="tlaGNC">        7945 : }</span></span>
+<span id="L331"><span class="lineNum">     331</span> <span class="tlaGNC">        7944 : }</span></span>
 <span id="L332"><span class="lineNum">     332</span>              : </span>
 <span id="L333"><span class="lineNum">     333</span>              : void</span>
-<span id="L334"><span class="lineNum">     334</span> <span class="tlaGNC">        7945 : Model::clear_output()</span></span>
+<span id="L334"><span class="lineNum">     334</span> <span class="tlaGNC">        7944 : Model::clear_output()</span></span>
 <span id="L335"><span class="lineNum">     335</span>              : {</span>
-<span id="L336"><span class="lineNum">     336</span> <span class="tlaGNC">        7945 :   VariableStore::clear_output();</span></span>
-<span id="L337"><span class="lineNum">     337</span> <span class="tlaGNC">       13061 :   for (auto * submodel : _registered_models)</span></span>
+<span id="L336"><span class="lineNum">     336</span> <span class="tlaGNC">        7944 :   VariableStore::clear_output();</span></span>
+<span id="L337"><span class="lineNum">     337</span> <span class="tlaGNC">       13060 :   for (auto * submodel : _registered_models)</span></span>
 <span id="L338"><span class="lineNum">     338</span> <span class="tlaGNC">        5116 :     submodel-&gt;clear_output();</span></span>
-<span id="L339"><span class="lineNum">     339</span> <span class="tlaGNC">        7945 : }</span></span>
+<span id="L339"><span class="lineNum">     339</span> <span class="tlaGNC">        7944 : }</span></span>
 <span id="L340"><span class="lineNum">     340</span>              : </span>
 <span id="L341"><span class="lineNum">     341</span>              : void</span>
-<span id="L342"><span class="lineNum">     342</span> <span class="tlaGNC">        7945 : Model::zero_input()</span></span>
+<span id="L342"><span class="lineNum">     342</span> <span class="tlaGNC">        7944 : Model::zero_input()</span></span>
 <span id="L343"><span class="lineNum">     343</span>              : {</span>
-<span id="L344"><span class="lineNum">     344</span> <span class="tlaGNC">        7945 :   VariableStore::zero_input();</span></span>
-<span id="L345"><span class="lineNum">     345</span> <span class="tlaGNC">       13061 :   for (auto * submodel : _registered_models)</span></span>
+<span id="L344"><span class="lineNum">     344</span> <span class="tlaGNC">        7944 :   VariableStore::zero_input();</span></span>
+<span id="L345"><span class="lineNum">     345</span> <span class="tlaGNC">       13060 :   for (auto * submodel : _registered_models)</span></span>
 <span id="L346"><span class="lineNum">     346</span> <span class="tlaGNC">        5116 :     submodel-&gt;zero_input();</span></span>
-<span id="L347"><span class="lineNum">     347</span> <span class="tlaGNC">        7945 : }</span></span>
+<span id="L347"><span class="lineNum">     347</span> <span class="tlaGNC">        7944 : }</span></span>
 <span id="L348"><span class="lineNum">     348</span>              : </span>
 <span id="L349"><span class="lineNum">     349</span>              : void</span>
-<span id="L350"><span class="lineNum">     350</span> <span class="tlaGNC">        7945 : Model::zero_output()</span></span>
+<span id="L350"><span class="lineNum">     350</span> <span class="tlaGNC">        7944 : Model::zero_output()</span></span>
 <span id="L351"><span class="lineNum">     351</span>              : {</span>
-<span id="L352"><span class="lineNum">     352</span> <span class="tlaGNC">        7945 :   VariableStore::zero_output();</span></span>
-<span id="L353"><span class="lineNum">     353</span> <span class="tlaGNC">       13061 :   for (auto * submodel : _registered_models)</span></span>
+<span id="L352"><span class="lineNum">     352</span> <span class="tlaGNC">        7944 :   VariableStore::zero_output();</span></span>
+<span id="L353"><span class="lineNum">     353</span> <span class="tlaGNC">       13060 :   for (auto * submodel : _registered_models)</span></span>
 <span id="L354"><span class="lineNum">     354</span> <span class="tlaGNC">        5116 :     submodel-&gt;zero_output();</span></span>
-<span id="L355"><span class="lineNum">     355</span> <span class="tlaGNC">        7945 : }</span></span>
+<span id="L355"><span class="lineNum">     355</span> <span class="tlaGNC">        7944 : }</span></span>
 <span id="L356"><span class="lineNum">     356</span>              : </span>
 <span id="L357"><span class="lineNum">     357</span>              : Model::TraceSchema</span>
-<span id="L358"><span class="lineNum">     358</span> <span class="tlaGNC">        5873 : Model::compute_trace_schema() const</span></span>
+<span id="L358"><span class="lineNum">     358</span> <span class="tlaGNC">        5871 : Model::compute_trace_schema() const</span></span>
 <span id="L359"><span class="lineNum">     359</span>              : {</span>
-<span id="L360"><span class="lineNum">     360</span> <span class="tlaGNC">        5873 :   std::vector&lt;Size&gt; batch_dims;</span></span>
-<span id="L361"><span class="lineNum">     361</span> <span class="tlaGNC">       40345 :   for (auto &amp;&amp; [name, var] : input_variables())</span></span>
-<span id="L362"><span class="lineNum">     362</span> <span class="tlaGNC">       34472 :     batch_dims.push_back(var-&gt;batch_dim());</span></span>
-<span id="L363"><span class="lineNum">     363</span> <span class="tlaGNC">       20837 :   for (auto &amp;&amp; [name, param] : host&lt;ParameterStore&gt;()-&gt;named_parameters())</span></span>
-<span id="L364"><span class="lineNum">     364</span> <span class="tlaGNC">       14964 :     batch_dims.push_back(Tensor(*param).batch_dim());</span></span>
+<span id="L360"><span class="lineNum">     360</span> <span class="tlaGNC">        5871 :   std::vector&lt;Size&gt; batch_dims;</span></span>
+<span id="L361"><span class="lineNum">     361</span> <span class="tlaGNC">       40341 :   for (auto &amp;&amp; [name, var] : input_variables())</span></span>
+<span id="L362"><span class="lineNum">     362</span> <span class="tlaGNC">       34470 :     batch_dims.push_back(var-&gt;batch_dim());</span></span>
+<span id="L363"><span class="lineNum">     363</span> <span class="tlaGNC">       20831 :   for (auto &amp;&amp; [name, param] : host&lt;ParameterStore&gt;()-&gt;named_parameters())</span></span>
+<span id="L364"><span class="lineNum">     364</span> <span class="tlaGNC">       14960 :     batch_dims.push_back(Tensor(*param).batch_dim());</span></span>
 <span id="L365"><span class="lineNum">     365</span>              : </span>
-<span id="L366"><span class="lineNum">     366</span> <span class="tlaGNC">        5873 :   const auto dispatch_key = variable_options().computeDispatchKey();</span></span>
+<span id="L366"><span class="lineNum">     366</span> <span class="tlaGNC">        5871 :   const auto dispatch_key = variable_options().computeDispatchKey();</span></span>
 <span id="L367"><span class="lineNum">     367</span>              : </span>
-<span id="L368"><span class="lineNum">     368</span> <span class="tlaGNC">       11746 :   return TraceSchema{batch_dims, dispatch_key};</span></span>
-<span id="L369"><span class="lineNum">     369</span> <span class="tlaGNC">        5873 : }</span></span>
+<span id="L368"><span class="lineNum">     368</span> <span class="tlaGNC">       11742 :   return TraceSchema{batch_dims, dispatch_key};</span></span>
+<span id="L369"><span class="lineNum">     369</span> <span class="tlaGNC">        5871 : }</span></span>
 <span id="L370"><span class="lineNum">     370</span>              : </span>
 <span id="L371"><span class="lineNum">     371</span>              : std::size_t</span>
-<span id="L372"><span class="lineNum">     372</span> <span class="tlaGNC">        5873 : Model::forward_operator_index(bool out, bool dout, bool d2out) const</span></span>
+<span id="L372"><span class="lineNum">     372</span> <span class="tlaGNC">        5871 : Model::forward_operator_index(bool out, bool dout, bool d2out) const</span></span>
 <span id="L373"><span class="lineNum">     373</span>              : {</span>
-<span id="L374"><span class="lineNum">     374</span> <span class="tlaGNC">        5873 :   return (out ? 4 : 0) + (dout ? 2 : 0) + (d2out ? 1 : 0);</span></span>
+<span id="L374"><span class="lineNum">     374</span> <span class="tlaGNC">        5871 :   return (out ? 4 : 0) + (dout ? 2 : 0) + (d2out ? 1 : 0);</span></span>
 <span id="L375"><span class="lineNum">     375</span>              : }</span>
 <span id="L376"><span class="lineNum">     376</span>              : </span>
 <span id="L377"><span class="lineNum">     377</span>              : void</span>
-<span id="L378"><span class="lineNum">     378</span> <span class="tlaGNC">        1043 : Model::forward(bool out, bool dout, bool d2out)</span></span>
+<span id="L378"><span class="lineNum">     378</span> <span class="tlaGNC">        1042 : Model::forward(bool out, bool dout, bool d2out)</span></span>
 <span id="L379"><span class="lineNum">     379</span>              : {</span>
-<span id="L380"><span class="lineNum">     380</span> <span class="tlaGNC">        1043 :   neml_assert_dbg(defines_values() || (defines_values() == out),</span></span>
+<span id="L380"><span class="lineNum">     380</span> <span class="tlaGNC">        1042 :   neml_assert_dbg(defines_values() || (defines_values() == out),</span></span>
 <span id="L381"><span class="lineNum">     381</span>              :                   &quot;Model of type '&quot;,</span>
-<span id="L382"><span class="lineNum">     382</span> <span class="tlaGNC">        1043 :                   type(),</span></span>
+<span id="L382"><span class="lineNum">     382</span> <span class="tlaGNC">        1042 :                   type(),</span></span>
 <span id="L383"><span class="lineNum">     383</span>              :                   &quot;' is requested to compute output values, but it does not define them.&quot;);</span>
-<span id="L384"><span class="lineNum">     384</span> <span class="tlaGNC">        1043 :   neml_assert_dbg(defines_derivatives() || (defines_derivatives() == dout),</span></span>
+<span id="L384"><span class="lineNum">     384</span> <span class="tlaGNC">        1042 :   neml_assert_dbg(defines_derivatives() || (defines_derivatives() == dout),</span></span>
 <span id="L385"><span class="lineNum">     385</span>              :                   &quot;Model of type '&quot;,</span>
-<span id="L386"><span class="lineNum">     386</span> <span class="tlaGNC">        1043 :                   type(),</span></span>
+<span id="L386"><span class="lineNum">     386</span> <span class="tlaGNC">        1042 :                   type(),</span></span>
 <span id="L387"><span class="lineNum">     387</span>              :                   &quot;' is requested to compute first derivatives, but it does not define them.&quot;);</span>
-<span id="L388"><span class="lineNum">     388</span> <span class="tlaGNC">        1043 :   neml_assert_dbg(defines_second_derivatives() || (defines_second_derivatives() == d2out),</span></span>
+<span id="L388"><span class="lineNum">     388</span> <span class="tlaGNC">        1042 :   neml_assert_dbg(defines_second_derivatives() || (defines_second_derivatives() == d2out),</span></span>
 <span id="L389"><span class="lineNum">     389</span>              :                   &quot;Model of type '&quot;,</span>
-<span id="L390"><span class="lineNum">     390</span> <span class="tlaGNC">        1043 :                   type(),</span></span>
+<span id="L390"><span class="lineNum">     390</span> <span class="tlaGNC">        1042 :                   type(),</span></span>
 <span id="L391"><span class="lineNum">     391</span>              :                   &quot;' is requested to compute second derivatives, but it does not define them.&quot;);</span>
 <span id="L392"><span class="lineNum">     392</span>              : </span>
-<span id="L393"><span class="lineNum">     393</span> <span class="tlaGNC">        1043 :   c10::InferenceMode mode_guard(_production &amp;&amp; !jit::tracer::isTracing());</span></span>
+<span id="L393"><span class="lineNum">     393</span> <span class="tlaGNC">        1042 :   c10::InferenceMode mode_guard(_production &amp;&amp; !jit::tracer::isTracing());</span></span>
 <span id="L394"><span class="lineNum">     394</span>              : </span>
-<span id="L395"><span class="lineNum">     395</span> <span class="tlaGNC">        1043 :   if (dout || d2out)</span></span>
+<span id="L395"><span class="lineNum">     395</span> <span class="tlaGNC">        1042 :   if (dout || d2out)</span></span>
 <span id="L396"><span class="lineNum">     396</span> <span class="tlaGNC">         449 :     enable_AD();</span></span>
 <span id="L397"><span class="lineNum">     397</span>              : </span>
-<span id="L398"><span class="lineNum">     398</span> <span class="tlaGNC">        1043 :   set_value(out || AD_need_value(dout, d2out), dout, d2out);</span></span>
+<span id="L398"><span class="lineNum">     398</span> <span class="tlaGNC">        1042 :   set_value(out || AD_need_value(dout, d2out), dout, d2out);</span></span>
 <span id="L399"><span class="lineNum">     399</span>              : </span>
-<span id="L400"><span class="lineNum">     400</span> <span class="tlaGNC">        1043 :   if (dout || d2out)</span></span>
+<span id="L400"><span class="lineNum">     400</span> <span class="tlaGNC">        1042 :   if (dout || d2out)</span></span>
 <span id="L401"><span class="lineNum">     401</span> <span class="tlaGNC">         449 :     extract_AD_derivatives(dout, d2out);</span></span>
 <span id="L402"><span class="lineNum">     402</span>              : </span>
-<span id="L403"><span class="lineNum">     403</span> <span class="tlaGNC">        2086 :   return;</span></span>
-<span id="L404"><span class="lineNum">     404</span> <span class="tlaGNC">        1043 : }</span></span>
+<span id="L403"><span class="lineNum">     403</span> <span class="tlaGNC">        2084 :   return;</span></span>
+<span id="L404"><span class="lineNum">     404</span> <span class="tlaGNC">        1042 : }</span></span>
 <span id="L405"><span class="lineNum">     405</span>              : </span>
 <span id="L406"><span class="lineNum">     406</span>              : void</span>
-<span id="L407"><span class="lineNum">     407</span> <span class="tlaGNC">        6578 : Model::forward_maybe_jit(bool out, bool dout, bool d2out)</span></span>
+<span id="L407"><span class="lineNum">     407</span> <span class="tlaGNC">        6576 : Model::forward_maybe_jit(bool out, bool dout, bool d2out)</span></span>
 <span id="L408"><span class="lineNum">     408</span>              : {</span>
-<span id="L409"><span class="lineNum">     409</span> <span class="tlaGNC">        6578 :   if (!is_jit_enabled() || jit::tracer::isTracing())</span></span>
+<span id="L409"><span class="lineNum">     409</span> <span class="tlaGNC">        6576 :   if (!is_jit_enabled() || jit::tracer::isTracing())</span></span>
 <span id="L410"><span class="lineNum">     410</span>              :   {</span>
 <span id="L411"><span class="lineNum">     411</span> <span class="tlaGNC">         705 :     forward(out, dout, d2out);</span></span>
 <span id="L412"><span class="lineNum">     412</span> <span class="tlaGNC">         705 :     return;</span></span>
 <span id="L413"><span class="lineNum">     413</span>              :   }</span>
 <span id="L414"><span class="lineNum">     414</span>              : </span>
 <span id="L415"><span class="lineNum">     415</span>              :   auto &amp; traced_functions =</span>
-<span id="L416"><span class="lineNum">     416</span> <span class="tlaGNC">        5873 :       currently_solving_nonlinear_system() ? _traced_functions_nl_sys : _traced_functions;</span></span>
+<span id="L416"><span class="lineNum">     416</span> <span class="tlaGNC">        5871 :       currently_solving_nonlinear_system() ? _traced_functions_nl_sys : _traced_functions;</span></span>
 <span id="L417"><span class="lineNum">     417</span>              : </span>
-<span id="L418"><span class="lineNum">     418</span> <span class="tlaGNC">        5873 :   const auto forward_op_idx = forward_operator_index(out, dout, d2out);</span></span>
-<span id="L419"><span class="lineNum">     419</span> <span class="tlaGNC">        5873 :   const auto new_schema = compute_trace_schema();</span></span>
-<span id="L420"><span class="lineNum">     420</span> <span class="tlaGNC">        5873 :   auto traced_schema_and_function = traced_functions[forward_op_idx].find(new_schema);</span></span>
+<span id="L418"><span class="lineNum">     418</span> <span class="tlaGNC">        5871 :   const auto forward_op_idx = forward_operator_index(out, dout, d2out);</span></span>
+<span id="L419"><span class="lineNum">     419</span> <span class="tlaGNC">        5871 :   const auto new_schema = compute_trace_schema();</span></span>
+<span id="L420"><span class="lineNum">     420</span> <span class="tlaGNC">        5871 :   auto traced_schema_and_function = traced_functions[forward_op_idx].find(new_schema);</span></span>
 <span id="L421"><span class="lineNum">     421</span>              : </span>
-<span id="L422"><span class="lineNum">     422</span> <span class="tlaGNC">        5873 :   if (traced_schema_and_function != traced_functions[forward_op_idx].end())</span></span>
+<span id="L422"><span class="lineNum">     422</span> <span class="tlaGNC">        5871 :   if (traced_schema_and_function != traced_functions[forward_op_idx].end())</span></span>
 <span id="L423"><span class="lineNum">     423</span>              :   {</span>
-<span id="L424"><span class="lineNum">     424</span> <span class="tlaGNC">        5535 :     auto &amp; [trace_schema, traced_function] = *traced_schema_and_function;</span></span>
-<span id="L425"><span class="lineNum">     425</span> <span class="tlaGNC">        5535 :     c10::InferenceMode mode_guard(_production);</span></span>
-<span id="L426"><span class="lineNum">     426</span> <span class="tlaGNC">        5535 :     auto stack = collect_input_stack();</span></span>
-<span id="L427"><span class="lineNum">     427</span> <span class="tlaGNC">        5535 :     traced_function-&gt;run(stack);</span></span>
-<span id="L428"><span class="lineNum">     428</span> <span class="tlaGNC">        5535 :     assign_output_stack(stack, out, dout, d2out);</span></span>
-<span id="L429"><span class="lineNum">     429</span> <span class="tlaGNC">        5535 :   }</span></span>
+<span id="L424"><span class="lineNum">     424</span> <span class="tlaGNC">        5534 :     auto &amp; [trace_schema, traced_function] = *traced_schema_and_function;</span></span>
+<span id="L425"><span class="lineNum">     425</span> <span class="tlaGNC">        5534 :     c10::InferenceMode mode_guard(_production);</span></span>
+<span id="L426"><span class="lineNum">     426</span> <span class="tlaGNC">        5534 :     auto stack = collect_input_stack();</span></span>
+<span id="L427"><span class="lineNum">     427</span> <span class="tlaGNC">        5534 :     traced_function-&gt;run(stack);</span></span>
+<span id="L428"><span class="lineNum">     428</span> <span class="tlaGNC">        5534 :     assign_output_stack(stack, out, dout, d2out);</span></span>
+<span id="L429"><span class="lineNum">     429</span> <span class="tlaGNC">        5534 :   }</span></span>
 <span id="L430"><span class="lineNum">     430</span>              :   else</span>
 <span id="L431"><span class="lineNum">     431</span>              :   {</span>
 <span id="L432"><span class="lineNum">     432</span>              :     // All other models in the world should wait for this model to finish tracing</span>
 <span id="L433"><span class="lineNum">     433</span>              :     // This is not our fault, torch jit tracing is not thread-safe</span>
 <span id="L434"><span class="lineNum">     434</span>              :     static std::mutex trace_mutex;</span>
-<span id="L435"><span class="lineNum">     435</span> <span class="tlaGNC">         338 :     trace_mutex.lock();</span></span>
-<span id="L436"><span class="lineNum">     436</span> <span class="tlaGNC">         338 :     auto forward_wrap = [&amp;](jit::Stack inputs) -&gt; jit::Stack</span></span>
+<span id="L435"><span class="lineNum">     435</span> <span class="tlaGNC">         337 :     trace_mutex.lock();</span></span>
+<span id="L436"><span class="lineNum">     436</span> <span class="tlaGNC">         337 :     auto forward_wrap = [&amp;](jit::Stack inputs) -&gt; jit::Stack</span></span>
 <span id="L437"><span class="lineNum">     437</span>              :     {</span>
-<span id="L438"><span class="lineNum">     438</span> <span class="tlaGNC">         338 :       assign_input_stack(inputs);</span></span>
-<span id="L439"><span class="lineNum">     439</span> <span class="tlaGNC">         338 :       forward(out, dout, d2out);</span></span>
-<span id="L440"><span class="lineNum">     440</span> <span class="tlaGNC">         338 :       return collect_output_stack(out, dout, d2out);</span></span>
-<span id="L441"><span class="lineNum">     441</span> <span class="tlaGNC">         338 :     };</span></span>
-<span id="L442"><span class="lineNum">     442</span> <span class="tlaGNC">        1690 :     auto trace = std::get&lt;0&gt;(jit::tracer::trace(</span></span>
-<span id="L443"><span class="lineNum">     443</span> <span class="tlaGNC">         676 :         collect_input_stack(),</span></span>
+<span id="L438"><span class="lineNum">     438</span> <span class="tlaGNC">         337 :       assign_input_stack(inputs);</span></span>
+<span id="L439"><span class="lineNum">     439</span> <span class="tlaGNC">         337 :       forward(out, dout, d2out);</span></span>
+<span id="L440"><span class="lineNum">     440</span> <span class="tlaGNC">         337 :       return collect_output_stack(out, dout, d2out);</span></span>
+<span id="L441"><span class="lineNum">     441</span> <span class="tlaGNC">         337 :     };</span></span>
+<span id="L442"><span class="lineNum">     442</span> <span class="tlaGNC">        1685 :     auto trace = std::get&lt;0&gt;(jit::tracer::trace(</span></span>
+<span id="L443"><span class="lineNum">     443</span> <span class="tlaGNC">         674 :         collect_input_stack(),</span></span>
 <span id="L444"><span class="lineNum">     444</span>              :         forward_wrap,</span>
-<span id="L445"><span class="lineNum">     445</span> <span class="tlaGNC">       27908 :         [this](const ATensor &amp; var) { return variable_name_lookup(var); },</span></span>
+<span id="L445"><span class="lineNum">     445</span> <span class="tlaGNC">       27853 :         [this](const ATensor &amp; var) { return variable_name_lookup(var); },</span></span>
 <span id="L446"><span class="lineNum">     446</span>              :         /*strict=*/false,</span>
-<span id="L447"><span class="lineNum">     447</span> <span class="tlaGNC">         338 :         /*force_outplace=*/false));</span></span>
-<span id="L448"><span class="lineNum">     448</span> <span class="tlaGNC">         338 :     trace_mutex.unlock();</span></span>
+<span id="L447"><span class="lineNum">     447</span> <span class="tlaGNC">         337 :         /*force_outplace=*/false));</span></span>
+<span id="L448"><span class="lineNum">     448</span> <span class="tlaGNC">         337 :     trace_mutex.unlock();</span></span>
 <span id="L449"><span class="lineNum">     449</span>              : </span>
-<span id="L450"><span class="lineNum">     450</span> <span class="tlaGNC">         676 :     auto new_function = std::make_unique&lt;jit::GraphFunction&gt;(name() + &quot;.forward&quot;,</span></span>
-<span id="L451"><span class="lineNum">     451</span> <span class="tlaGNC">         338 :                                                              trace-&gt;graph,</span></span>
+<span id="L450"><span class="lineNum">     450</span> <span class="tlaGNC">         674 :     auto new_function = std::make_unique&lt;jit::GraphFunction&gt;(name() + &quot;.forward&quot;,</span></span>
+<span id="L451"><span class="lineNum">     451</span> <span class="tlaGNC">         337 :                                                              trace-&gt;graph,</span></span>
 <span id="L452"><span class="lineNum">     452</span> <span class="tlaUNC tlaBgUNC">           0 :                                                              /*function_creator=*/nullptr,</span></span>
-<span id="L453"><span class="lineNum">     453</span> <span class="tlaGNC tlaBgGNC">         676 :                                                              jit::ExecutorExecutionMode::PROFILING);</span></span>
-<span id="L454"><span class="lineNum">     454</span> <span class="tlaGNC">         338 :     traced_functions[forward_op_idx].emplace(new_schema, std::move(new_function));</span></span>
+<span id="L453"><span class="lineNum">     453</span> <span class="tlaGNC tlaBgGNC">         674 :                                                              jit::ExecutorExecutionMode::PROFILING);</span></span>
+<span id="L454"><span class="lineNum">     454</span> <span class="tlaGNC">         337 :     traced_functions[forward_op_idx].emplace(new_schema, std::move(new_function));</span></span>
 <span id="L455"><span class="lineNum">     455</span>              : </span>
 <span id="L456"><span class="lineNum">     456</span>              :     // Rerun this method -- this time using the jitted graph (without tracing)</span>
-<span id="L457"><span class="lineNum">     457</span> <span class="tlaGNC">         338 :     forward_maybe_jit(out, dout, d2out);</span></span>
-<span id="L458"><span class="lineNum">     458</span> <span class="tlaGNC">         338 :   }</span></span>
-<span id="L459"><span class="lineNum">     459</span> <span class="tlaGNC">        5873 : }</span></span>
+<span id="L457"><span class="lineNum">     457</span> <span class="tlaGNC">         337 :     forward_maybe_jit(out, dout, d2out);</span></span>
+<span id="L458"><span class="lineNum">     458</span> <span class="tlaGNC">         337 :   }</span></span>
+<span id="L459"><span class="lineNum">     459</span> <span class="tlaGNC">        5871 : }</span></span>
 <span id="L460"><span class="lineNum">     460</span>              : </span>
 <span id="L461"><span class="lineNum">     461</span>              : std::string</span>
-<span id="L462"><span class="lineNum">     462</span> <span class="tlaGNC">      144214 : Model::variable_name_lookup(const ATensor &amp; var)</span></span>
+<span id="L462"><span class="lineNum">     462</span> <span class="tlaGNC">      144203 : Model::variable_name_lookup(const ATensor &amp; var)</span></span>
 <span id="L463"><span class="lineNum">     463</span>              : {</span>
 <span id="L464"><span class="lineNum">     464</span>              :   // Look for the variable in the input and output variables</span>
-<span id="L465"><span class="lineNum">     465</span> <span class="tlaGNC">      523711 :   for (auto &amp;&amp; [ivar, val] : input_variables())</span></span>
-<span id="L466"><span class="lineNum">     466</span> <span class="tlaGNC">      380782 :     if (val-&gt;tensor().data_ptr() == var.data_ptr())</span></span>
-<span id="L467"><span class="lineNum">     467</span> <span class="tlaGNC">        1285 :       return name() + &quot;::&quot; + utils::stringify(ivar);</span></span>
-<span id="L468"><span class="lineNum">     468</span> <span class="tlaGNC">      300723 :   for (auto &amp;&amp; [ovar, val] : output_variables())</span></span>
-<span id="L469"><span class="lineNum">     469</span> <span class="tlaGNC">      158128 :     if (val-&gt;tensor().data_ptr() == var.data_ptr())</span></span>
+<span id="L465"><span class="lineNum">     465</span> <span class="tlaGNC">      523849 :   for (auto &amp;&amp; [ivar, val] : input_variables())</span></span>
+<span id="L466"><span class="lineNum">     466</span> <span class="tlaGNC">      380924 :     if (val-&gt;tensor().data_ptr() == var.data_ptr())</span></span>
+<span id="L467"><span class="lineNum">     467</span> <span class="tlaGNC">        1278 :       return name() + &quot;::&quot; + utils::stringify(ivar);</span></span>
+<span id="L468"><span class="lineNum">     468</span> <span class="tlaGNC">      300738 :   for (auto &amp;&amp; [ovar, val] : output_variables())</span></span>
+<span id="L469"><span class="lineNum">     469</span> <span class="tlaGNC">      158147 :     if (val-&gt;tensor().data_ptr() == var.data_ptr())</span></span>
 <span id="L470"><span class="lineNum">     470</span> <span class="tlaGNC">         334 :       return name() + &quot;::&quot; + utils::stringify(ovar);</span></span>
 <span id="L471"><span class="lineNum">     471</span>              : </span>
 <span id="L472"><span class="lineNum">     472</span>              :   // Look for the variable in the parameter and buffer store</span>
-<span id="L473"><span class="lineNum">     473</span> <span class="tlaGNC">     1054740 :   for (auto &amp;&amp; [pname, pval] : host&lt;ParameterStore&gt;()-&gt;named_parameters())</span></span>
-<span id="L474"><span class="lineNum">     474</span> <span class="tlaGNC">      912668 :     if (Tensor(*pval).data_ptr() == var.data_ptr())</span></span>
-<span id="L475"><span class="lineNum">     475</span> <span class="tlaGNC">         523 :       return name() + &quot;::&quot; + utils::stringify(pname);</span></span>
-<span id="L476"><span class="lineNum">     476</span> <span class="tlaGNC">      798380 :   for (auto &amp;&amp; [bname, bval] : host&lt;BufferStore&gt;()-&gt;named_buffers())</span></span>
-<span id="L477"><span class="lineNum">     477</span> <span class="tlaGNC">      656451 :     if (Tensor(*bval).data_ptr() == var.data_ptr())</span></span>
+<span id="L473"><span class="lineNum">     473</span> <span class="tlaGNC">     1055465 :   for (auto &amp;&amp; [pname, pval] : host&lt;ParameterStore&gt;()-&gt;named_parameters())</span></span>
+<span id="L474"><span class="lineNum">     474</span> <span class="tlaGNC">      913395 :     if (Tensor(*pval).data_ptr() == var.data_ptr())</span></span>
+<span id="L475"><span class="lineNum">     475</span> <span class="tlaGNC">         521 :       return name() + &quot;::&quot; + utils::stringify(pname);</span></span>
+<span id="L476"><span class="lineNum">     476</span> <span class="tlaGNC">      798630 :   for (auto &amp;&amp; [bname, bval] : host&lt;BufferStore&gt;()-&gt;named_buffers())</span></span>
+<span id="L477"><span class="lineNum">     477</span> <span class="tlaGNC">      656703 :     if (Tensor(*bval).data_ptr() == var.data_ptr())</span></span>
 <span id="L478"><span class="lineNum">     478</span> <span class="tlaGNC">         143 :       return name() + &quot;::&quot; + utils::stringify(bname);</span></span>
 <span id="L479"><span class="lineNum">     479</span>              : </span>
 <span id="L480"><span class="lineNum">     480</span>              :   // Look for the variable in the registered models</span>
-<span id="L481"><span class="lineNum">     481</span> <span class="tlaGNC">      258521 :   for (auto * submodel : registered_models())</span></span>
+<span id="L481"><span class="lineNum">     481</span> <span class="tlaGNC">      258561 :   for (auto * submodel : registered_models())</span></span>
 <span id="L482"><span class="lineNum">     482</span>              :   {</span>
-<span id="L483"><span class="lineNum">     483</span> <span class="tlaGNC">      116982 :     auto name = submodel-&gt;variable_name_lookup(var);</span></span>
-<span id="L484"><span class="lineNum">     484</span> <span class="tlaGNC">      116982 :     if (!name.empty())</span></span>
+<span id="L483"><span class="lineNum">     483</span> <span class="tlaGNC">      117024 :     auto name = submodel-&gt;variable_name_lookup(var);</span></span>
+<span id="L484"><span class="lineNum">     484</span> <span class="tlaGNC">      117024 :     if (!name.empty())</span></span>
 <span id="L485"><span class="lineNum">     485</span> <span class="tlaGNC">         390 :       return name;</span></span>
-<span id="L486"><span class="lineNum">     486</span> <span class="tlaGNC">      116982 :   }</span></span>
+<span id="L486"><span class="lineNum">     486</span> <span class="tlaGNC">      117024 :   }</span></span>
 <span id="L487"><span class="lineNum">     487</span>              : </span>
-<span id="L488"><span class="lineNum">     488</span> <span class="tlaGNC">      283078 :   return &quot;&quot;;</span></span>
+<span id="L488"><span class="lineNum">     488</span> <span class="tlaGNC">      283074 :   return &quot;&quot;;</span></span>
 <span id="L489"><span class="lineNum">     489</span>              : }</span>
 <span id="L490"><span class="lineNum">     490</span>              : </span>
 <span id="L491"><span class="lineNum">     491</span>              : void</span>
-<span id="L492"><span class="lineNum">     492</span> <span class="tlaGNC">        2829 : check_precision()</span></span>
+<span id="L492"><span class="lineNum">     492</span> <span class="tlaGNC">        2828 : check_precision()</span></span>
 <span id="L493"><span class="lineNum">     493</span>              : {</span>
-<span id="L494"><span class="lineNum">     494</span> <span class="tlaGNC">        2829 :   if (require_double_precision())</span></span>
-<span id="L495"><span class="lineNum">     495</span> <span class="tlaGNC">        2829 :     neml_assert(</span></span>
-<span id="L496"><span class="lineNum">     496</span> <span class="tlaGNC">        5658 :         default_tensor_options().dtype() == kFloat64,</span></span>
+<span id="L494"><span class="lineNum">     494</span> <span class="tlaGNC">        2828 :   if (require_double_precision())</span></span>
+<span id="L495"><span class="lineNum">     495</span> <span class="tlaGNC">        2828 :     neml_assert(</span></span>
+<span id="L496"><span class="lineNum">     496</span> <span class="tlaGNC">        5656 :         default_tensor_options().dtype() == kFloat64,</span></span>
 <span id="L497"><span class="lineNum">     497</span>              :         &quot;By default, NEML2 requires double precision for all computations. Please set the default &quot;</span>
 <span id="L498"><span class="lineNum">     498</span>              :         &quot;dtype to Float64. In Python, this can be done by calling &quot;</span>
 <span id="L499"><span class="lineNum">     499</span>              :         &quot;`torch.set_default_dtype(torch.double)`. In C++, this can be done by calling &quot;</span>
 <span id="L500"><span class="lineNum">     500</span>              :         &quot;`neml2::set_default_dtype(neml2::kFloat64)`. If other precisions are truly needed, you &quot;</span>
 <span id="L501"><span class="lineNum">     501</span>              :         &quot;can disable this error check with Settings/require_double_precision=false.&quot;);</span>
-<span id="L502"><span class="lineNum">     502</span> <span class="tlaGNC">        2829 : }</span></span>
+<span id="L502"><span class="lineNum">     502</span> <span class="tlaGNC">        2828 : }</span></span>
 <span id="L503"><span class="lineNum">     503</span>              : </span>
 <span id="L504"><span class="lineNum">     504</span>              : ValueMap</span>
 <span id="L505"><span class="lineNum">     505</span> <span class="tlaGNC">        2164 : Model::value(const ValueMap &amp; in)</span></span>
@@ -575,14 +575,14 @@
 <span id="L513"><span class="lineNum">     513</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
 <span id="L514"><span class="lineNum">     514</span>              : </span>
 <span id="L515"><span class="lineNum">     515</span>              : ValueMap</span>
-<span id="L516"><span class="lineNum">     516</span> <span class="tlaGNC tlaBgGNC">           2 : Model::value(ValueMap &amp;&amp; in)</span></span>
+<span id="L516"><span class="lineNum">     516</span> <span class="tlaGNC tlaBgGNC">           1 : Model::value(ValueMap &amp;&amp; in)</span></span>
 <span id="L517"><span class="lineNum">     517</span>              : {</span>
-<span id="L518"><span class="lineNum">     518</span> <span class="tlaGNC">           2 :   forward_helper(std::move(in), true, false, false);</span></span>
+<span id="L518"><span class="lineNum">     518</span> <span class="tlaGNC">           1 :   forward_helper(std::move(in), true, false, false);</span></span>
 <span id="L519"><span class="lineNum">     519</span>              : </span>
-<span id="L520"><span class="lineNum">     520</span> <span class="tlaGNC">           2 :   auto values = collect_output();</span></span>
-<span id="L521"><span class="lineNum">     521</span> <span class="tlaGNC">           2 :   clear_input();</span></span>
-<span id="L522"><span class="lineNum">     522</span> <span class="tlaGNC">           2 :   clear_output();</span></span>
-<span id="L523"><span class="lineNum">     523</span> <span class="tlaGNC">           2 :   return values;</span></span>
+<span id="L520"><span class="lineNum">     520</span> <span class="tlaGNC">           1 :   auto values = collect_output();</span></span>
+<span id="L521"><span class="lineNum">     521</span> <span class="tlaGNC">           1 :   clear_input();</span></span>
+<span id="L522"><span class="lineNum">     522</span> <span class="tlaGNC">           1 :   clear_output();</span></span>
+<span id="L523"><span class="lineNum">     523</span> <span class="tlaGNC">           1 :   return values;</span></span>
 <span id="L524"><span class="lineNum">     524</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
 <span id="L525"><span class="lineNum">     525</span>              : </span>
 <span id="L526"><span class="lineNum">     526</span>              : std::tuple&lt;ValueMap, DerivMap&gt;</span>
@@ -738,9 +738,9 @@
 <span id="L676"><span class="lineNum">     676</span>              : }</span>
 <span id="L677"><span class="lineNum">     677</span>              : </span>
 <span id="L678"><span class="lineNum">     678</span>              : const VariableBase *</span>
-<span id="L679"><span class="lineNum">     679</span> <span class="tlaGNC tlaBgGNC">         312 : Model::nl_param(const std::string &amp; name) const</span></span>
+<span id="L679"><span class="lineNum">     679</span> <span class="tlaGNC tlaBgGNC">         310 : Model::nl_param(const std::string &amp; name) const</span></span>
 <span id="L680"><span class="lineNum">     680</span>              : {</span>
-<span id="L681"><span class="lineNum">     681</span> <span class="tlaGNC">         312 :   return _nl_params.count(name) ? _nl_params.at(name).value : nullptr;</span></span>
+<span id="L681"><span class="lineNum">     681</span> <span class="tlaGNC">         310 :   return _nl_params.count(name) ? _nl_params.at(name).value : nullptr;</span></span>
 <span id="L682"><span class="lineNum">     682</span>              : }</span>
 <span id="L683"><span class="lineNum">     683</span>              : </span>
 <span id="L684"><span class="lineNum">     684</span>              : std::map&lt;std::string, NonlinearParameter&gt;</span>
@@ -777,35 +777,35 @@
 <span id="L715"><span class="lineNum">     715</span> <span class="tlaGNC">         232 : }</span></span>
 <span id="L716"><span class="lineNum">     716</span>              : </span>
 <span id="L717"><span class="lineNum">     717</span>              : void</span>
-<span id="L718"><span class="lineNum">     718</span> <span class="tlaGNC">         338 : Model::assign_input_stack(jit::Stack &amp; stack)</span></span>
+<span id="L718"><span class="lineNum">     718</span> <span class="tlaGNC">         337 : Model::assign_input_stack(jit::Stack &amp; stack)</span></span>
 <span id="L719"><span class="lineNum">     719</span>              : {</span>
 <span id="L720"><span class="lineNum">     720</span>              : #ifndef NDEBUG</span>
-<span id="L721"><span class="lineNum">     721</span> <span class="tlaGNC">         338 :   const auto nstack = input_axis().nvariable() + host&lt;ParameterStore&gt;()-&gt;named_parameters().size();</span></span>
-<span id="L722"><span class="lineNum">     722</span> <span class="tlaGNC">         338 :   neml_assert_dbg(</span></span>
-<span id="L723"><span class="lineNum">     723</span> <span class="tlaGNC">         338 :       stack.size() == nstack,</span></span>
+<span id="L721"><span class="lineNum">     721</span> <span class="tlaGNC">         337 :   const auto nstack = input_axis().nvariable() + host&lt;ParameterStore&gt;()-&gt;named_parameters().size();</span></span>
+<span id="L722"><span class="lineNum">     722</span> <span class="tlaGNC">         337 :   neml_assert_dbg(</span></span>
+<span id="L723"><span class="lineNum">     723</span> <span class="tlaGNC">         337 :       stack.size() == nstack,</span></span>
 <span id="L724"><span class="lineNum">     724</span>              :       &quot;Stack size (&quot;,</span>
-<span id="L725"><span class="lineNum">     725</span> <span class="tlaGNC">         338 :       stack.size(),</span></span>
+<span id="L725"><span class="lineNum">     725</span> <span class="tlaGNC">         337 :       stack.size(),</span></span>
 <span id="L726"><span class="lineNum">     726</span>              :       &quot;) must equal to the number of input variables, parameters, and buffers in the model (&quot;,</span>
 <span id="L727"><span class="lineNum">     727</span>              :       nstack,</span>
 <span id="L728"><span class="lineNum">     728</span>              :       &quot;).&quot;);</span>
 <span id="L729"><span class="lineNum">     729</span>              : #endif</span>
 <span id="L730"><span class="lineNum">     730</span>              : </span>
-<span id="L731"><span class="lineNum">     731</span> <span class="tlaGNC">         338 :   assign_parameter_stack(stack);</span></span>
-<span id="L732"><span class="lineNum">     732</span> <span class="tlaGNC">         338 :   VariableStore::assign_input_stack(stack);</span></span>
-<span id="L733"><span class="lineNum">     733</span> <span class="tlaGNC">         338 : }</span></span>
+<span id="L731"><span class="lineNum">     731</span> <span class="tlaGNC">         337 :   assign_parameter_stack(stack);</span></span>
+<span id="L732"><span class="lineNum">     732</span> <span class="tlaGNC">         337 :   VariableStore::assign_input_stack(stack);</span></span>
+<span id="L733"><span class="lineNum">     733</span> <span class="tlaGNC">         337 : }</span></span>
 <span id="L734"><span class="lineNum">     734</span>              : </span>
 <span id="L735"><span class="lineNum">     735</span>              : jit::Stack</span>
-<span id="L736"><span class="lineNum">     736</span> <span class="tlaGNC">        5873 : Model::collect_input_stack() const</span></span>
+<span id="L736"><span class="lineNum">     736</span> <span class="tlaGNC">        5871 : Model::collect_input_stack() const</span></span>
 <span id="L737"><span class="lineNum">     737</span>              : {</span>
-<span id="L738"><span class="lineNum">     738</span> <span class="tlaGNC">        5873 :   auto stack = VariableStore::collect_input_stack();</span></span>
-<span id="L739"><span class="lineNum">     739</span> <span class="tlaGNC">        5873 :   const auto param_stack = collect_parameter_stack();</span></span>
+<span id="L738"><span class="lineNum">     738</span> <span class="tlaGNC">        5871 :   auto stack = VariableStore::collect_input_stack();</span></span>
+<span id="L739"><span class="lineNum">     739</span> <span class="tlaGNC">        5871 :   const auto param_stack = collect_parameter_stack();</span></span>
 <span id="L740"><span class="lineNum">     740</span>              : </span>
 <span id="L741"><span class="lineNum">     741</span>              :   // Recall stack is first in last out.</span>
 <span id="L742"><span class="lineNum">     742</span>              :   // Parameter stack go after (on top of) input variables. This means that in assign_input_stack</span>
 <span id="L743"><span class="lineNum">     743</span>              :   // we need to pop parameters first, then input variables.</span>
-<span id="L744"><span class="lineNum">     744</span> <span class="tlaGNC">        5873 :   stack.insert(stack.end(), param_stack.begin(), param_stack.end());</span></span>
-<span id="L745"><span class="lineNum">     745</span> <span class="tlaGNC">       11746 :   return stack;</span></span>
-<span id="L746"><span class="lineNum">     746</span> <span class="tlaGNC">        5873 : }</span></span>
+<span id="L744"><span class="lineNum">     744</span> <span class="tlaGNC">        5871 :   stack.insert(stack.end(), param_stack.begin(), param_stack.end());</span></span>
+<span id="L745"><span class="lineNum">     745</span> <span class="tlaGNC">       11742 :   return stack;</span></span>
+<span id="L746"><span class="lineNum">     746</span> <span class="tlaGNC">        5871 : }</span></span>
 <span id="L747"><span class="lineNum">     747</span>              : </span>
 <span id="L748"><span class="lineNum">     748</span>              : void</span>
 <span id="L749"><span class="lineNum">     749</span> <span class="tlaGNC">        1563 : Model::set_guess(const Sol&lt;false&gt; &amp; x)</span></span>

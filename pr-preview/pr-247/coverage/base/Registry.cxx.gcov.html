@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-04-29 19:26:50</td>
+            <td class="headerValue">2025-05-02 13:42:22</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -95,10 +95,10 @@
 <span id="L33"><span class="lineNum">      33</span>              : namespace neml2</span>
 <span id="L34"><span class="lineNum">      34</span>              : {</span>
 <span id="L35"><span class="lineNum">      35</span>              : Registry &amp;</span>
-<span id="L36"><span class="lineNum">      36</span> <span class="tlaGNC tlaBgGNC">        5380 : Registry::get()</span></span>
+<span id="L36"><span class="lineNum">      36</span> <span class="tlaGNC tlaBgGNC">        5375 : Registry::get()</span></span>
 <span id="L37"><span class="lineNum">      37</span>              : {</span>
-<span id="L38"><span class="lineNum">      38</span> <span class="tlaGNC">        5380 :   static Registry registry_singleton;</span></span>
-<span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">        5380 :   return registry_singleton;</span></span>
+<span id="L38"><span class="lineNum">      38</span> <span class="tlaGNC">        5375 :   static Registry registry_singleton;</span></span>
+<span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">        5375 :   return registry_singleton;</span></span>
 <span id="L40"><span class="lineNum">      40</span>              : }</span>
 <span id="L41"><span class="lineNum">      41</span>              : </span>
 <span id="L42"><span class="lineNum">      42</span>              : void</span>
@@ -135,14 +135,14 @@
 <span id="L73"><span class="lineNum">      73</span>              : }</span>
 <span id="L74"><span class="lineNum">      74</span>              : </span>
 <span id="L75"><span class="lineNum">      75</span>              : const NEML2ObjectInfo &amp;</span>
-<span id="L76"><span class="lineNum">      76</span> <span class="tlaGNC">        4594 : Registry::info(const std::string &amp; name)</span></span>
+<span id="L76"><span class="lineNum">      76</span> <span class="tlaGNC">        4589 : Registry::info(const std::string &amp; name)</span></span>
 <span id="L77"><span class="lineNum">      77</span>              : {</span>
-<span id="L78"><span class="lineNum">      78</span> <span class="tlaGNC">        4594 :   const auto &amp; reg = get();</span></span>
-<span id="L79"><span class="lineNum">      79</span> <span class="tlaGNC">        4594 :   neml_assert(</span></span>
-<span id="L80"><span class="lineNum">      80</span> <span class="tlaGNC">        4594 :       reg._info.count(name) &gt; 0,</span></span>
+<span id="L78"><span class="lineNum">      78</span> <span class="tlaGNC">        4589 :   const auto &amp; reg = get();</span></span>
+<span id="L79"><span class="lineNum">      79</span> <span class="tlaGNC">        4589 :   neml_assert(</span></span>
+<span id="L80"><span class="lineNum">      80</span> <span class="tlaGNC">        4589 :       reg._info.count(name) &gt; 0,</span></span>
 <span id="L81"><span class="lineNum">      81</span>              :       name,</span>
 <span id="L82"><span class="lineNum">      82</span>              :       &quot; is not a registered object. Did you forget to register it with register_NEML2_object?&quot;);</span>
-<span id="L83"><span class="lineNum">      83</span> <span class="tlaGNC">        4594 :   return reg._info.at(name);</span></span>
+<span id="L83"><span class="lineNum">      83</span> <span class="tlaGNC">        4589 :   return reg._info.at(name);</span></span>
 <span id="L84"><span class="lineNum">      84</span>              : }</span>
 <span id="L85"><span class="lineNum">      85</span>              : </span>
 <span id="L86"><span class="lineNum">      86</span>              : void</span>

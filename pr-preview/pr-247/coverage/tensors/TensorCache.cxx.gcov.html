@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-04-29 19:26:50</td>
+            <td class="headerValue">2025-05-02 13:42:22</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -94,13 +94,13 @@
 <span id="L32"><span class="lineNum">      32</span> <span class="tlaGNC">           8 : }</span></span>
 <span id="L33"><span class="lineNum">      33</span>              : </span>
 <span id="L34"><span class="lineNum">      34</span>              : const Tensor &amp;</span>
-<span id="L35"><span class="lineNum">      35</span> <span class="tlaGNC">        1122 : TensorCache::operator()(const TensorOptions &amp; opt)</span></span>
+<span id="L35"><span class="lineNum">      35</span> <span class="tlaGNC">        1118 : TensorCache::operator()(const TensorOptions &amp; opt)</span></span>
 <span id="L36"><span class="lineNum">      36</span>              : {</span>
-<span id="L37"><span class="lineNum">      37</span> <span class="tlaGNC">        1122 :   const auto key = opt.computeDispatchKey();</span></span>
-<span id="L38"><span class="lineNum">      38</span> <span class="tlaGNC">        1122 :   const auto ti = _cached_tensors.find(key);</span></span>
-<span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">        1122 :   if (ti == _cached_tensors.end())</span></span>
+<span id="L37"><span class="lineNum">      37</span> <span class="tlaGNC">        1118 :   const auto key = opt.computeDispatchKey();</span></span>
+<span id="L38"><span class="lineNum">      38</span> <span class="tlaGNC">        1118 :   const auto ti = _cached_tensors.find(key);</span></span>
+<span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">        1118 :   if (ti == _cached_tensors.end())</span></span>
 <span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC">           8 :     return _cached_tensors[key] = _creator(opt);</span></span>
-<span id="L41"><span class="lineNum">      41</span> <span class="tlaGNC">        1114 :   return ti-&gt;second;</span></span>
+<span id="L41"><span class="lineNum">      41</span> <span class="tlaGNC">        1110 :   return ti-&gt;second;</span></span>
 <span id="L42"><span class="lineNum">      42</span>              : }</span>
 <span id="L43"><span class="lineNum">      43</span>              : }</span>
         </pre>

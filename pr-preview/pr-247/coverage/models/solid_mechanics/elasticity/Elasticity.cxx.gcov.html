@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-04-29 19:26:50</td>
+            <td class="headerValue">2025-05-02 13:42:22</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -113,16 +113,16 @@
 <span id="L51"><span class="lineNum">      51</span> <span class="tlaGNC">           4 :   return options;</span></span>
 <span id="L52"><span class="lineNum">      52</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
 <span id="L53"><span class="lineNum">      53</span>              : </span>
-<span id="L54"><span class="lineNum">      54</span> <span class="tlaGNC tlaBgGNC">          26 : Elasticity::Elasticity(const OptionSet &amp; options)</span></span>
+<span id="L54"><span class="lineNum">      54</span> <span class="tlaGNC tlaBgGNC">          25 : Elasticity::Elasticity(const OptionSet &amp; options)</span></span>
 <span id="L55"><span class="lineNum">      55</span>              :   : Model(options),</span>
-<span id="L56"><span class="lineNum">      56</span> <span class="tlaGNC">          52 :     _compliance(options.get&lt;bool&gt;(&quot;compliance&quot;)),</span></span>
-<span id="L57"><span class="lineNum">      57</span> <span class="tlaGNC">          52 :     _rate_form(options.get&lt;bool&gt;(&quot;rate_form&quot;)),</span></span>
-<span id="L58"><span class="lineNum">      58</span> <span class="tlaGNC">         104 :     _strain(options.get&lt;VariableName&gt;(&quot;strain&quot;).with_suffix(_rate_form ? &quot;_rate&quot; : &quot;&quot;)),</span></span>
-<span id="L59"><span class="lineNum">      59</span> <span class="tlaGNC">          78 :     _stress(options.get&lt;VariableName&gt;(&quot;stress&quot;).with_suffix(_rate_form ? &quot;_rate&quot; : &quot;&quot;)),</span></span>
-<span id="L60"><span class="lineNum">      60</span> <span class="tlaGNC">          26 :     _from(declare_input_variable&lt;SR2&gt;(_compliance ? _stress : _strain)),</span></span>
-<span id="L61"><span class="lineNum">      61</span> <span class="tlaGNC">          52 :     _to(declare_output_variable&lt;SR2&gt;(_compliance ? _strain : _stress))</span></span>
+<span id="L56"><span class="lineNum">      56</span> <span class="tlaGNC">          50 :     _compliance(options.get&lt;bool&gt;(&quot;compliance&quot;)),</span></span>
+<span id="L57"><span class="lineNum">      57</span> <span class="tlaGNC">          50 :     _rate_form(options.get&lt;bool&gt;(&quot;rate_form&quot;)),</span></span>
+<span id="L58"><span class="lineNum">      58</span> <span class="tlaGNC">         100 :     _strain(options.get&lt;VariableName&gt;(&quot;strain&quot;).with_suffix(_rate_form ? &quot;_rate&quot; : &quot;&quot;)),</span></span>
+<span id="L59"><span class="lineNum">      59</span> <span class="tlaGNC">          75 :     _stress(options.get&lt;VariableName&gt;(&quot;stress&quot;).with_suffix(_rate_form ? &quot;_rate&quot; : &quot;&quot;)),</span></span>
+<span id="L60"><span class="lineNum">      60</span> <span class="tlaGNC">          25 :     _from(declare_input_variable&lt;SR2&gt;(_compliance ? _stress : _strain)),</span></span>
+<span id="L61"><span class="lineNum">      61</span> <span class="tlaGNC">          50 :     _to(declare_output_variable&lt;SR2&gt;(_compliance ? _strain : _stress))</span></span>
 <span id="L62"><span class="lineNum">      62</span>              : {</span>
-<span id="L63"><span class="lineNum">      63</span> <span class="tlaGNC">          26 : }</span></span>
+<span id="L63"><span class="lineNum">      63</span> <span class="tlaGNC">          25 : }</span></span>
 <span id="L64"><span class="lineNum">      64</span>              : } // namespace neml2</span>
         </pre>
               </td>
