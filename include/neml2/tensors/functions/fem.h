@@ -35,27 +35,22 @@ namespace neml2
  * \p dof_map must be of integer type, and its values represent the DOF indices to which the values
  * of \p v should be scattered.
  *
- * The input vector \p v should be a "vector" of shape (; Ndof) where Ndof is the number of
- * degrees of freedom. The shape of \p dof_map is (Nelem; Ndofe, Nvar) representing
- * the scattering pattern, where Nelem is the number of elements in the mesh, Ndofe is the number of
- * DOF objects (i.e., nodes for Lagrange polynomial basis) per element, and Nvar is the number of
- * variables/functions associated with each DOF object.
+ * The input vector \p v should be a "vector" of shape (Ndof) where Ndof is the number of
+ * degrees of freedom.
  *
- * @returns a tensor with shape (Nelem; Ndofe, Nvar).
+ * @returns a tensor with the same shape as dof_map.
  */
-Tensor fem_scatter(const Tensor & v, const Tensor & dof_map);
+Tensor fem_scatter(const ATensor & v, const Tensor & dof_map);
 
 /**
  * @brief Interpolate a tensor of values given evaluated basis functions.
  *
- * The input tensor \p elem_dofs must be of shape (Nelem; Ndofe, Nvar) where Nelem is the
- * number of elements in the mesh, Ndofe is the number of DOF objects (i.e., nodes) per element, and
- * Nvar is the number of variables/functions to be interpolated. The \p basis should have zero or
- * one batch dimension and at least one base dimension, i.e. of shape (?; Ndofe, ...), and should be
- * batch-broadcastable to \p elem_dofs. The first base dimension should have size Ndofe. The
- * remaining base shape (...) represents the points of interpolation.
+ * The input tensor \p elem_dofs must be of shape (..., Nelem, Ndofe;) where Nelem is the
+ * number of elements in the mesh, and Ndofe is the number of DOF objects (i.e., nodes) per element.
+ * The \p basis should have shape (..., Nelem, Ndofe, Nqp; ...). The remaining base shape (...)
+ * represents the points of interpolation.
  *
- * @returns a tensor with shape (Nelem; Nvar, ...).
+ * @returns a tensor with shape (Nelem, Nqp; ...).
  */
 Tensor fem_interpolate(const Tensor & elem_dofs, const Tensor & basis);
 
@@ -63,7 +58,7 @@ Tensor fem_interpolate(const Tensor & elem_dofs, const Tensor & basis);
  * @brief This is the inverse operation of fem_scatter. It assembles a scattered vector into a
  * tensor given a DOF map.
  *
- * @returns a tensor with shape (; Ndof)
+ * @returns a torch tensor with shape (Ndof)
  */
-Tensor fem_assemble(const ATensor & v_scattered, const ATensor & dof_map, Size ndof);
+ATensor fem_assemble(const ATensor & v_scattered, const ATensor & dof_map, Size ndof);
 } // namespace neml2
