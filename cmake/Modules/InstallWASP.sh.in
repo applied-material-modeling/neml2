@@ -8,6 +8,8 @@ ${CMAKE_COMMAND} \
   -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
   -Dwasp_ENABLE_ALL_PACKAGES=OFF \
   -Dwasp_ENABLE_wasphit=ON \
+  -Dwasp_ENABLE_wasplsp=ON \
+  -Dwasp_ENABLE_waspsiren=ON \
   -Dwasp_ENABLE_testframework=OFF \
   -Dwasp_ENABLE_TESTS=OFF \
   -DBUILD_SHARED_LIBS=OFF \

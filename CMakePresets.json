@@ -16,7 +16,8 @@
         "NEML2_DOC": "OFF",
         "NEML2_CPU_PROFILER": "OFF",
         "NEML2_WORK_DISPATCHER": "ON",
-        "NEML2_THREAD_SANITIZER": "OFF"
+        "NEML2_THREAD_SANITIZER": "OFF",
+        "NEML2_LANGUAGE_SERVER": "ON"
       }
     },
     {
@@ -96,6 +97,7 @@
       "description": "C++ backend with tests",
       "configurePreset": "dev",
       "targets": [
+        "langserv",
         "extension",
         "unit_tests",
         "regression_tests",
@@ -109,6 +111,7 @@
       "description": "Python bindings with tests",
       "configurePreset": "dev",
       "targets": [
+        "langserv",
         "python_stub"
       ]
     },
@@ -118,6 +121,7 @@
       "description": "HTML documentation",
       "configurePreset": "dev",
       "targets": [
+        "langserv",
         "html"
       ]
     },
@@ -127,6 +131,7 @@
       "description": "Runner compiled and linked against ThreadSanitizer",
       "configurePreset": "tsan",
       "targets": [
+        "langserv",
         "runner"
       ]
     },
@@ -149,6 +154,7 @@
       "description": "Runner linked against gperftools CPU profiler",
       "configurePreset": "runner",
       "targets": [
+        "langserv",
         "runner"
       ]
     },
@@ -158,6 +164,7 @@
       "description": "C++ backend and Python bindings for release",
       "configurePreset": "release",
       "targets": [
+        "langserv",
         "runner",
         "python_stub"
       ]
