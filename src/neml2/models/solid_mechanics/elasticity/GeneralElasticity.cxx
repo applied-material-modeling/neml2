@@ -25,6 +25,7 @@
 #include "neml2/models/solid_mechanics/elasticity/GeneralElasticity.h"
 #include "neml2/tensors/SSFR5.h"
 #include "neml2/tensors/SSSSR8.h"
+#include "neml2/tensors/Tensor.h"
 
 namespace neml2
 {
@@ -66,21 +67,23 @@ GeneralElasticity::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
     if (_R.is_dependent())
     {
       const auto dA_dR = _T.drotate(_R);
+      const auto batch_sizes = utils::broadcast_batch_sizes({dA_dR, _from.value()});
       if (_compliance)
-        _to.d(_R) = Tensor(at::einsum("...ijkl,...klm,...j", {A.dinverse(), dA_dR, _from}),
-                           A.batch_sizes());
+        _to.d(_R) =
+            Tensor(at::einsum("...ijkl,...klm,...j", {A.dinverse(), dA_dR, _from}), batch_sizes);
       else
-        _to.d(_R) = Tensor(at::einsum("...ijk,...j", {dA_dR, _from}), A.batch_sizes());
+        _to.d(_R) = Tensor(at::einsum("...ijk,...j", {dA_dR, _from}), batch_sizes);
     }
 
     if (const auto * const T = nl_param("T"))
     {
       const auto dA_dT = _T.drotate_self(_R);
+      const auto batch_sizes = utils::broadcast_batch_sizes({dA_dT, _from.value()});
       if (_compliance)
-        _to.d(*T) = Tensor(at::einsum("...ijkl,...klmn,...j", {A.dinverse(), dA_dT, _from}),
-                           A.batch_sizes());
+        _to.d(*T) =
+            Tensor(at::einsum("...ijkl,...klmn,...j", {A.dinverse(), dA_dT, _from}), batch_sizes);
       else
-        _to.d(*T) = Tensor(at::einsum("...ijkl,...j", {dA_dT, _from}), A.batch_sizes());
+        _to.d(*T) = Tensor(at::einsum("...ijkl,...j", {dA_dT, _from}), batch_sizes);
     }
   }
 }
