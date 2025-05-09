@@ -74,8 +74,6 @@ ResolvedShear::ResolvedShear(const OptionSet & options)
 void
 ResolvedShear::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  const auto D = utils::broadcast_batch_dim(_S, _R);
-
   // Unsqueeze a batch dimension for slip systems
   const auto S = SR2(_S).batch_unsqueeze(-1);
   const auto R = R2(_R).batch_unsqueeze(-1);
@@ -86,10 +84,16 @@ ResolvedShear::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
   if (dout_din)
   {
     if (_S.is_dependent())
-      _rss.d(_S) = Tensor(_crystal_geometry.M().rotate(R), D);
+    {
+      const auto drss_dS = _crystal_geometry.M().rotate(R);
+      _rss.d(_S) = Tensor(drss_dS, drss_dS.batch_dim() - 1);
+    }
 
     if (_R.is_dependent())
+    {
+      const auto D = utils::broadcast_batch_dim(_S, _R);
       _rss.d(_R) = Tensor(at::einsum("...ijk,...i", {_crystal_geometry.M().drotate(R), S}), D);
+    }
   }
 }
 
