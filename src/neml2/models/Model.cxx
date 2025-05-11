@@ -362,6 +362,21 @@ Model::forward_operator_index(bool out, bool dout, bool d2out) const
 }
 
 void
+Model::register_callback(ModelCallback callback)
+{
+  _callbacks.push_back(callback);
+}
+
+void
+Model::register_callback_recursive(ModelCallback callback)
+{
+  register_callback(callback);
+
+  for (auto * submodel : registered_models())
+    submodel->register_callback_recursive(callback);
+}
+
+void
 Model::forward(bool out, bool dout, bool d2out)
 {
   neml_assert_dbg(defines_values() || (defines_values() == out),
@@ -386,6 +401,10 @@ Model::forward(bool out, bool dout, bool d2out)
 
   if (dout || d2out)
     extract_AD_derivatives(dout, d2out);
+
+  // Call the callbacks
+  for (auto callback : _callbacks)
+    callback(*this, input_variables(), output_variables());
 
   return;
 }
