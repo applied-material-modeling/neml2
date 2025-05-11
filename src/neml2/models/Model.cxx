@@ -403,8 +403,7 @@ Model::forward(bool out, bool dout, bool d2out)
     extract_AD_derivatives(dout, d2out);
 
   // Call the callbacks
-  for (auto callback : _callbacks)
-    callback(*this, input_variables(), output_variables());
+  call_callbacks();
 
   return;
 }
@@ -462,6 +461,10 @@ Model::forward_maybe_jit(bool out, bool dout, bool d2out)
     // Rerun this method -- this time using the jitted graph (without tracing)
     forward_maybe_jit(out, dout, d2out);
   }
+
+  // This should be a safe time to call the callbacks, as we should only get here if we successfully
+  // got the results
+  call_callbacks();
 }
 
 std::string
@@ -938,5 +941,13 @@ operator<<(std::ostream & os, const Model & model)
 
   return os;
 }
+
+void
+Model::call_callbacks() const
+{
+  for (auto callback : _callbacks)
+    callback(*this, input_variables(), output_variables());
+}
+
 // LCOV_EXCL_STOP
 } // namespace neml2

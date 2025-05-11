@@ -303,6 +303,9 @@ protected:
   std::vector<std::shared_ptr<Model>> _registered_models;
 
 private:
+  /// Call the callbacks...
+  void call_callbacks() const;
+
   template <typename T>
   void forward_helper(T && in, bool out, bool dout, bool d2out)
   {
