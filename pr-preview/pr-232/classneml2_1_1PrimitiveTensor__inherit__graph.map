@@ -1,0 +1,7 @@
+<map id="PrimitiveTensor&lt; Derived, S &gt;" name="PrimitiveTensor&lt; Derived, S &gt;">
+<area shape="rect" id="Node000001" title="PrimitiveTensor inherits from TensorBase and additionally templates on the base shape." alt="" coords="5,152,225,177"/>
+<area shape="rect" id="Node000002" href="$classneml2_1_1TensorBase.html" title="NEML2&#39;s enhanced tensor type." alt="" coords="27,79,204,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="118,118,118,152,113,152,113,118"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="79,5,151,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="118,44,118,79,113,79,113,44"/>
+</map>
