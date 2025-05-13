@@ -66,7 +66,7 @@ After searching among existing models provided by NEML2, we are able to translat
   []
   [surface]
     type = ComposedModel
-    models = 'vonmises yield'
+    models = 'eq3 eq4'
   []
   [eq5]
     type = Normality

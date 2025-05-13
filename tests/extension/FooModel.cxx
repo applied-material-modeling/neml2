@@ -58,4 +58,4 @@ FooModel::set_value(bool out, bool dout, bool)
   if (dout)
     _y.d(_x) = _c * neml2::Scalar::identity_map(_x.options());
 }
-};
+}

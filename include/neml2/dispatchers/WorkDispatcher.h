@@ -358,13 +358,13 @@ WorkDispatcher<I, O, Of, Ip, Op>::run(WorkGenerator<Ip> & generator)
     auto result = run_async(generator);
     if (event_tracing_enabled())
       event_trace_writer().trace_duration_end("run", "WorkDispatcher");
-    return std::move(result);
+    return result;
   }
 
   auto result = run_sync(generator);
   if (event_tracing_enabled())
     event_trace_writer().trace_duration_end("run", "WorkDispatcher");
-  return std::move(result);
+  return result;
 }
 
 template <typename I, typename O, typename Of, typename Ip, typename Op>

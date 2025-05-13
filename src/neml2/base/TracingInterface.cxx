@@ -34,10 +34,10 @@ namespace neml2
 {
 namespace fs = std::filesystem;
 
-std::unordered_map<fs::path, std::unique_ptr<TraceWriter>> &
+std::unordered_map<std::string, std::unique_ptr<TraceWriter>> &
 event_trace_writers()
 {
-  static std::unordered_map<fs::path, std::unique_ptr<TraceWriter>> trace_writers;
+  static std::unordered_map<std::string, std::unique_ptr<TraceWriter>> trace_writers;
   return trace_writers;
 }
 
@@ -169,7 +169,7 @@ TracingInterface::init_writer(std::string filename)
 
   // Create a new TraceWriter
   auto writer = std::make_unique<TraceWriter>(file);
-  auto [it2, success] = trace_writers.emplace(file, std::move(writer));
+  auto [it2, success] = trace_writers.emplace(std::string(file), std::move(writer));
   neml_assert(success, "Internal error: Trace writer already exists: ", file.string());
   return *it2->second;
 }
