@@ -474,10 +474,6 @@ Model::forward_maybe_jit(bool out, bool dout, bool d2out)
     // Rerun this method -- this time using the jitted graph (without tracing)
     forward_maybe_jit(out, dout, d2out);
   }
-
-  // This should be a safe time to call the callbacks, as we should only get here if we successfully
-  // got the results
-  call_callbacks();
 }
 
 std::string

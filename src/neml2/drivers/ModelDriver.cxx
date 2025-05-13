@@ -115,7 +115,6 @@ ModelDriver::setup()
 
   if (_log_details)
   {
-    std::cout << "Registered" << std::endl;
     auto & model = get_model(_model.name());
     model.register_callback_recursive(details_callback);
   }
