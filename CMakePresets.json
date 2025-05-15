@@ -88,13 +88,7 @@
         "NEML2_RUNNER": "ON",
         "NEML2_PYBIND": "ON"
       }
-    },
-    {
-      "name": "dev-ninja",
-      "inherits": "dev",
-      "generator": "Ninja"
     }
-
   ],
   "buildPresets": [
     {
