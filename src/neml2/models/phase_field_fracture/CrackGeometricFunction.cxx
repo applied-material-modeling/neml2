@@ -29,14 +29,12 @@
 
 namespace neml2
 {
-register_NEML2_object(CrackGeometricFunction);
-
 OptionSet
 CrackGeometricFunction::expected_options()
 {
   OptionSet options = Model::expected_options();
   options.doc() =
-      "Crack geometric function to determine the distribution of the dasmage field";
+      "Base class for crack geometric function to determine the distribution of the dasmage field";
 
   options.set_input("damage") = VariableName(STATE, "d");
   options.set_output("crack") = VariableName(STATE, "alpha");
@@ -50,24 +48,4 @@ CrackGeometricFunction::CrackGeometricFunction(const OptionSet & options)
     _alpha(declare_output_variable<Scalar>("crack"))
 {
 }
-
-void
-CrackGeometricFunction::set_value(bool out, bool dout_din, bool d2out_din2)
-{
-  if (out)
-  {
-    _alpha = _d * _d;
-    
-  }
-
-  if (dout_din)
-  {
-    _alpha.d(_d) = 2.0 * _d;
-  }
-
-  if (d2out_din2)
-  {
-    _alpha.d(_d, _d) = Scalar::create(2.0);
-  }
 }
-} // namespace neml2

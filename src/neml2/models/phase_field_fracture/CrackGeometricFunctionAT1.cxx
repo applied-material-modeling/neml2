@@ -22,54 +22,47 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/phase_field_fracture/PowerDegradationFunction.h"
+#include "neml2/models/phase_field_fracture/CrackGeometricFunctionAT1.h"
 #include "neml2/tensors/functions/pow.h"
 #include "neml2/tensors/Scalar.h"
 
 
 namespace neml2
 {
-register_NEML2_object(PowerDegradationFunction);
+register_NEML2_object(CrackGeometricFunctionAT1);
 
 OptionSet
-PowerDegradationFunction::expected_options()
+CrackGeometricFunctionAT1::expected_options()
 {
-  OptionSet options = Model::expected_options();
+  OptionSet options = CrackGeometricFunction::expected_options();
   options.doc() =
-      "Power degradation function to degrade the elastic strain energy density";
-
-  options.set_input("damage") = VariableName(STATE, "d");
-  options.set<TensorName<Scalar>>("power");
-  options.set_output("degradation") = VariableName(STATE, "g");
+      "Crack geometric function to determine the distribution of the dasmage field using AT1";
 
   return options;
 }
 
-PowerDegradationFunction::PowerDegradationFunction(const OptionSet & options)
-  : Model(options),
-    _d(declare_input_variable<Scalar>("damage")),
-    _p(declare_parameter<Scalar>("p", "power")),
-    _g(declare_output_variable<Scalar>("degradation"))
+CrackGeometricFunctionAT1::CrackGeometricFunctionAT1(const OptionSet & options)
+  : CrackGeometricFunction(options)
 {
 }
 
 void
-PowerDegradationFunction::set_value(bool out, bool dout_din, bool d2out_din2)
+CrackGeometricFunctionAT1::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   if (out)
   {
-    _g = pow((1 - _d), _p);
+    _alpha = 1.0 * _d;
     
   }
 
   if (dout_din)
   {
-    _g.d(_d) = _p * pow((1 - _d), (_p - 1)) * (- _d);
+    _alpha.d(_d) = Scalar::create(1.0, _d.options());
   }
 
   if (d2out_din2)
   {
-    _g.d(_d, _d) = (_p * _p) * pow((1 - _d), (_p - 2)) * (- _d) * (- _d) + _p * pow((1 - _d), (_p - 1)) * (- 1);
+    _alpha.d(_d, _d) = Scalar::create(0.0, _d.options());
   }
 }
 } // namespace neml2

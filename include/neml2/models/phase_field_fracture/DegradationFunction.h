@@ -24,27 +24,25 @@
 
 #pragma once
 
-#include "neml2/models/phase_field_fracture/StrainEnergy.h"
-#include "neml2/models/solid_mechanics/elasticity/ElasticityInterface.h"
-#include "neml2/models/solid_mechanics/elasticity/IsotropicElasticityConverter.h"
+#include "neml2/models/Model.h"
 
 namespace neml2
 {
 class Scalar;
 
-class ElasticStrainEnergyDensity : public ElasticityInterface<StrainEnergy, 2>
+class DegradationFunction : public Model
 {
 public:
   static OptionSet expected_options();
 
-  ElasticStrainEnergyDensity(const OptionSet & options);
+  DegradationFunction(const OptionSet & options);
 
 protected:
-  void set_value(bool out, bool dout_din, bool d2out_din2) override;
+  /// damage variable
+  const Variable<Scalar> & _d;
 
-  const IsotropicElasticityConverter _converter;
+  /// degradation
+  Variable<Scalar> & _g;
 
-  /// elastic strain energy density
-  // Variable<Scalar> & _psie;
 };
 } // namespace neml2

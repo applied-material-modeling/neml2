@@ -22,29 +22,31 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-
 #include "neml2/models/phase_field_fracture/StrainEnergy.h"
-#include "neml2/models/solid_mechanics/elasticity/ElasticityInterface.h"
-#include "neml2/models/solid_mechanics/elasticity/IsotropicElasticityConverter.h"
 
 namespace neml2
 {
-class Scalar;
-
-class ElasticStrainEnergyDensity : public ElasticityInterface<StrainEnergy, 2>
+OptionSet
+StrainEnergy::expected_options()
 {
-public:
-  static OptionSet expected_options();
+  OptionSet options = Model::expected_options();
+  options.doc() = "Relate elastic strain to stress";
 
-  ElasticStrainEnergyDensity(const OptionSet & options);
+  options.set_input("strain") = VariableName(STATE, "internal", "Ee");
+  options.set("strain").doc() = "Elastic strain";
 
-protected:
-  void set_value(bool out, bool dout_din, bool d2out_din2) override;
+  options.set_output("elastic_strain_energy") = VariableName(STATE, "psie");
+  options.set("elastic_strain_energy").doc() = "Elastic strain energy density";
 
-  const IsotropicElasticityConverter _converter;
 
-  /// elastic strain energy density
-  // Variable<Scalar> & _psie;
-};
+  return options;
+}
+
+StrainEnergy::StrainEnergy(const OptionSet & options)
+  : Model(options),
+    _strain(options.get<VariableName>("strain")),
+    _from(declare_input_variable<SR2>( _strain)),
+    _psie(declare_output_variable<Scalar>("elastic_strain_energy"))
+{
+}
 } // namespace neml2
