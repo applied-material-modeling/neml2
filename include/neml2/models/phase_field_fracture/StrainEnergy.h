@@ -24,27 +24,46 @@
 
 #pragma once
 
-#include "neml2/models/phase_field_fracture/StrainEnergy.h"
-#include "neml2/models/solid_mechanics/elasticity/ElasticityInterface.h"
-#include "neml2/models/solid_mechanics/elasticity/IsotropicElasticityConverter.h"
+#include "neml2/models/Model.h"
+#include "neml2/tensors/SR2.h"
 
 namespace neml2
 {
-class Scalar;
-
-class ElasticStrainEnergyDensity : public ElasticityInterface<StrainEnergy, 2>
+class StrainEnergy : public Model
 {
 public:
   static OptionSet expected_options();
 
-  ElasticStrainEnergyDensity(const OptionSet & options);
+  StrainEnergy(const OptionSet & options);
 
 protected:
-  void set_value(bool out, bool dout_din, bool d2out_din2) override;
+  /**
+   * Whether this model describes compliance. When set to true, we compute stress (rate) from strain
+   * (rate). When set to false, we compute strain (rate) from stress (rate).
+   */
+  // const bool _compliance;
 
-  const IsotropicElasticityConverter _converter;
+  /// Whether this model is in rate form. If true, a "_rate" suffix is appended to the variables.
+  // const bool _rate_form;
 
+  /// The strain (rate) variable accessor
+  const VariableName _strain;
+
+  /// The stress (rate) variable accessor
+  // const VariableName _stress;
+
+  /**
+   * The variable accessor for the input. If _compliance == true, this is the stress (rate).
+   * Otherwise this is the strain (rate).
+   */
+  const Variable<SR2> & _from;
+
+  /**
+   * The variable accessor for the output. If _compliance == true, this is the strain (rate).
+   * Otherwise this is the stress (rate).
+   */
+  // Variable<SR2> & _to;
   /// elastic strain energy density
-  // Variable<Scalar> & _psie;
+  Variable<Scalar> & _psie;
 };
 } // namespace neml2

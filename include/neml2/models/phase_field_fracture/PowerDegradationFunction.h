@@ -25,12 +25,13 @@
 #pragma once
 
 #include "neml2/models/Model.h"
+#include "neml2/models/phase_field_fracture/DegradationFunction.h"
 
 namespace neml2
 {
 class Scalar;
 
-class PowerDegradationFunction : public Model
+class PowerDegradationFunction : public DegradationFunction
 {
 public:
   static OptionSet expected_options();
@@ -41,14 +42,8 @@ protected:
   /// The value of the Power degradation function
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  /// damage variable
-  const Variable<Scalar> & _d;
-
   /// power of the function
   const Scalar & _p;
-
-  /// degradation
-  Variable<Scalar> & _g;
-
+  
 };
 } // namespace neml2
