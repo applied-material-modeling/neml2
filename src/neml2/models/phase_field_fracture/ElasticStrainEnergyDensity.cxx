@@ -36,14 +36,14 @@ ElasticStrainEnergyDensity::expected_options()
   OptionSet options = ElasticityInterface<StrainEnergy, 2>::expected_options();
   options.doc() =
       "Calculates elastic strain energy density based on linear elastic isotropic response";
-  // options.set_output("elastic_strain_energy") = VariableName(STATE, "psie");
+  options.set<bool>("define_second_derivatives") = true;
+
   return options;
 }
 
 ElasticStrainEnergyDensity::ElasticStrainEnergyDensity(const OptionSet & options)
   : ElasticityInterface<StrainEnergy, 2>(options),
   _converter(_constant_types, _need_derivs)
-  // _psie(declare_output_variable<Scalar>("elastic_strain_energy"))
 
 {
 }
