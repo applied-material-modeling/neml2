@@ -38,6 +38,7 @@ SampleEventTracer::SampleEventTracer(std::string filename,
 void
 SampleEventTracer::dump()
 {
+#ifdef NEML2_HAS_JSON
   if (event_tracing_enabled())
   {
     auto & writer = event_trace_writer();
@@ -45,5 +46,6 @@ SampleEventTracer::dump()
     writer.trace_instant(_instant_event, "SampleEventTracer");
     writer.trace_duration_end(_duration_event, "SampleEventTracer");
   }
+#endif
 }
 } // namespace neml2
