@@ -38,6 +38,7 @@ CrackGeometricFunctionAT2::expected_options()
   options.doc() =
       "Crack geometric function to determine the distribution of the dasmage field using AT2";
 
+  options.set<bool>("define_second_derivatives") = true;
   return options;
 }
 
