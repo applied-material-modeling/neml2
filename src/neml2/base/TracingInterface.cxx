@@ -45,6 +45,7 @@ TraceWriter::TraceWriter(const fs::path & file)
   : filename(file.string()),
     _epoch(std::chrono::high_resolution_clock::now())
 {
+#ifdef NEML2_HAS_JSON
   {
     std::lock_guard<std::mutex> lock(_mtx);
     out.open(file);
@@ -57,18 +58,22 @@ TraceWriter::TraceWriter(const fs::path & file)
   }
 
   trace_duration_begin("trace writer", "TraceWriter", {{"file", file.string()}});
+#endif
 }
 
 TraceWriter::~TraceWriter()
 {
+#ifdef NEML2_HAS_JSON
   json event;
   write_event_common(event, "trace writer", "TraceWriter", {{"file", filename}}, "E", 0);
   dump_event(event, true);
   std::lock_guard<std::mutex> lock(_mtx);
   out << "]\n";
   out.close();
+#endif
 }
 
+#ifdef NEML2_HAS_JSON
 void
 TraceWriter::write_event_common(json & event,
                                 const std::string & name,
@@ -133,6 +138,7 @@ TraceWriter::trace_instant(const std::string & name,
   event["s"] = scope;
   dump_event(event);
 }
+#endif
 
 OptionSet
 TracingInterface::expected_options()
@@ -158,6 +164,10 @@ TracingInterface::TracingInterface(const OptionSet & options)
 TraceWriter &
 TracingInterface::init_writer(std::string filename)
 {
+#ifndef NEML2_HAS_JSON
+  throw NEMLException("TracingInterface: JSON support is required for event tracing.");
+#endif
+
   static std::mutex trace_writer_mutex;
   std::lock_guard<std::mutex> lock(trace_writer_mutex);
 
