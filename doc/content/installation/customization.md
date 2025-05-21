@@ -9,15 +9,15 @@ Refer to the [cmake manual](https://cmake.org/cmake/help/latest/manual/cmake.1.h
 
 The configuration of NEML2 can be customized via a variety of high-level configure options. Commonly used configuration options are summarized below. Default options are <u>underlined</u>.
 
-| Option                 | Values (<u>default</u>) | Description                                                    |
-| :--------------------- | :---------------------- | :------------------------------------------------------------- |
-| NEML2_TESTS            | <u>ON</u>, OFF          | Master knob for including/excluding all tests                  |
-| NEML2_RUNNER           | ON, <u>OFF</u>          | Create a simple runner                                         |
-| NEML2_PYBIND           | ON, <u>OFF</u>          | Create the Python bindings target                              |
-| NEML2_DOC              | ON, <u>OFF</u>          | Create the documentation target                                |
-| NEML2_CPU_PROFILER     | ON, <u>OFF</u>          | Linking against gperftools libprofiler to enable CPU profiling |
-| NEML2_WORK_DISPATCHER  | ON, <u>OFF</u>          | Enable work dispatcher                                         |
-| NEML2_THREAD_SANITIZER | ON, <u>OFF</u>          | Enable thread sanitizer                                        |
+| Option                | Values (<u>default</u>) | Description                                       |
+| :-------------------- | :---------------------- | :------------------------------------------------ |
+| NEML2_PCH             | <u>ON</u>, OFF          | Use precompiled headers to accelerate compilation |
+| NEML2_TESTS           | <u>ON</u>, OFF          | Master knob for including/excluding all tests     |
+| NEML2_RUNNER          | ON, <u>OFF</u>          | Create a simple runner                            |
+| NEML2_PYBIND          | ON, <u>OFF</u>          | Create the Python bindings target                 |
+| NEML2_DOC             | ON, <u>OFF</u>          | Create the documentation target                   |
+| NEML2_WORK_DISPATCHER | ON, <u>OFF</u>          | Enable work dispatcher                            |
+| NEML2_JSON            | ON, <u>OFF</u>          | Enable JSON support                               |
 
 Additional configuration options can be passed via command line using the `-DOPTION` or `-DOPTION=ON` format (see e.g., [cmake manual](https://cmake.org/cmake/help/latest/manual/cmake.1.html)).
 
@@ -34,16 +34,16 @@ NEML2 predefines five configure presets, serving different development purposes:
 
 The configure presets and their corresponding configure options are summarized below.
 
-| preset                 | dev   | coverage | runner  | tsan           | release        |
-| :--------------------- | :---- | :------- | :------ | :------------- | :------------- |
-| CMAKE_BUILD_TYPE       | Debug | Coverage | Release | RelWithDebInfo | RelWithDebInfo |
-| NEML2_TESTS            | ON    | ON       |         |                |                |
-| NEML2_RUNNER           |       |          | ON      | ON             | ON             |
-| NEML2_PYBIND           | ON    |          |         |                | ON             |
-| NEML2_DOC              | ON    |          |         |                |                |
-| NEML2_CPU_PROFILER     |       |          | ON      |                |                |
-| NEML2_WORK_DISPATCHER  | ON    | ON       | ON      | ON             | ON             |
-| NEML2_THREAD_SANITIZER |       |          |         | ON             |
+| preset                | dev   | coverage | runner  | tsan            | release        |
+| :-------------------- | :---- | :------- | :------ | :-------------- | :------------- |
+| CMAKE_BUILD_TYPE      | Debug | Coverage | Release | ThreadSanitizer | RelWithDebInfo |
+| NEML2_PCH             | ON    | ON       | ON      | ON              | ON             |
+| NEML2_TESTS           | ON    | ON       |         |                 |                |
+| NEML2_RUNNER          |       |          | ON      | ON              | ON             |
+| NEML2_PYBIND          | ON    |          |         |                 | ON             |
+| NEML2_DOC             | ON    |          |         |                 |                |
+| NEML2_WORK_DISPATCHER | ON    | ON       | ON      | ON              | ON             |
+| NEML2_JSON            | ON    | ON       | ON      | ON              | ON             |
 
 To select a specific configure preset, use the `--preset` option on the command line.
 

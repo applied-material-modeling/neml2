@@ -75,25 +75,6 @@ if(NEML2_WORK_DISPATCHER)
 endif()
 
 # ----------------------------------------------------------------------------
-# CPU Profiler
-# ----------------------------------------------------------------------------
-if(NEML2_CPU_PROFILER)
-  find_package(Gperftools)
-
-  if(NOT Gperftools_FOUND)
-    include(DownloadGperftools)
-    set(Gperftools_ROOT ${GPERFTOOLS_INSTALL_DIR} CACHE PATH "gperftools root directory" FORCE)
-    find_package(Gperftools REQUIRED)
-  endif()
-
-  cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${Gperftools_LINK_DIR} Gperftools_DOWNLOADED)
-
-  if(Gperftools_DOWNLOADED)
-    # libneml2 does not need gperftools headers
-  endif()
-endif()
-
-# ----------------------------------------------------------------------------
 # nlohmann json
 # ----------------------------------------------------------------------------
 if(NEML2_JSON)
@@ -133,15 +114,6 @@ function(neml2_add_submodule mname TYPE mdir)
 
   if(HAS_GLIBC)
     target_compile_options(${mname} PUBLIC -D_GLIBCXX_USE_CXX11_ABI=${GLIBCXX_USE_CXX11_ABI})
-  endif()
-
-  if(NEML2_CPU_PROFILER)
-    target_link_libraries(${mname} PRIVATE Gperftools::profiler)
-  endif()
-
-  if(NEML2_THREAD_SANITIZER)
-    target_compile_options(${mname} PUBLIC ${CMAKE_CXX_FLAGS_THREAD_SANITIZER})
-    target_link_options(${mname} PUBLIC ${CMAKE_CXX_FLAGS_THREAD_SANITIZER})
   endif()
 
   install(TARGETS ${mname} FILE_SET HEADERS COMPONENT libneml2)

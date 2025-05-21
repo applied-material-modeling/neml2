@@ -14,10 +14,8 @@
         "NEML2_RUNNER": "OFF",
         "NEML2_PYBIND": "OFF",
         "NEML2_DOC": "OFF",
-        "NEML2_CPU_PROFILER": "OFF",
         "NEML2_WORK_DISPATCHER": "ON",
-        "NEML2_JSON": "ON",
-        "NEML2_THREAD_SANITIZER": "OFF"
+        "NEML2_JSON": "ON"
       }
     },
     {
@@ -47,25 +45,34 @@
     {
       "name": "tsan",
       "displayName": "ThreadSanitizer",
-      "description": "Compile and link against Clang ThreadSanitizer",
+      "description": "Clang ThreadSanitizer",
       "inherits": "default",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_BUILD_TYPE": "ThreadSanitizer",
         "NEML2_TESTS": "OFF",
-        "NEML2_RUNNER": "ON",
-        "NEML2_THREAD_SANITIZER": "ON"
+        "NEML2_RUNNER": "ON"
       }
     },
     {
       "name": "runner",
       "displayName": "Runner",
-      "description": "Runner for benchmarking and profiling",
+      "description": "Runner for benchmarking and diagnostics",
       "inherits": "default",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "NEML2_TESTS": "OFF",
-        "NEML2_RUNNER": "ON",
-        "NEML2_CPU_PROFILER": "ON"
+        "NEML2_RUNNER": "ON"
+      }
+    },
+    {
+      "name": "profiling",
+      "displayName": "Profiling",
+      "description": "Runner for profiling",
+      "inherits": "default",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Profiling",
+        "NEML2_TESTS": "OFF",
+        "NEML2_RUNNER": "ON"
       }
     },
     {
@@ -147,8 +154,17 @@
     {
       "name": "runner",
       "displayName": "Runner",
-      "description": "Runner linked against gperftools CPU profiler",
+      "description": "Runner for benchmarking and diagnostics",
       "configurePreset": "runner",
+      "targets": [
+        "runner"
+      ]
+    },
+    {
+      "name": "profiling",
+      "displayName": "Runner",
+      "description": "Runner for profiling",
+      "configurePreset": "profiling",
       "targets": [
         "runner"
       ]
@@ -174,7 +190,7 @@
     {
       "name": "tsan",
       "displayName": "Benchmark tests with ThreadSanitizer",
-      "description": "Run benchmark tests using the Runner with ThreadSanitizer",
+      "description": "Run benchmark tests using the Runner with Clang ThreadSanitizer",
       "configurePreset": "tsan"
     }
   ]

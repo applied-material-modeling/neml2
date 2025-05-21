@@ -16,16 +16,13 @@ Please refer to the [CMake documentation](https://cmake.org/cmake/help/latest/co
 
 The following table summarizes the names of the packages required by each configure options. The first row lists the packages required by the base library.
 
-| Option                 | Required package(s) |
-| :--------------------- | :------------------ |
-|                        | Torch, WASP, HIT    |
-| NEML2_TESTS            | Catch2              |
-| NEML2_RUNNER           |                     |
-| NEML2_PYBIND           | Python              |
-| NEML2_DOC              | Doxygen             |
-| NEML2_CPU_PROFILER     | Gperftools          |
-| NEML2_WORK_DISPATCHER  | MPI                 |
-| NEML2_THREAD_SANITIZER |                     |
+| Option                | Required package(s) |
+| :-------------------- | :------------------ |
+|                       | Torch, WASP, HIT    |
+| NEML2_TESTS           | Catch2              |
+| NEML2_PYBIND          | Python              |
+| NEML2_DOC             | Doxygen             |
+| NEML2_WORK_DISPATCHER | MPI, TIMPI          |
 
 ## List of dependencies
 
@@ -35,7 +32,6 @@ The following table summarizes the names of the packages required by each config
 - [HIT](https://github.com/idaholab/moose/tree/master/framework/contrib/hit) for input file parsing.
 - [WASP](https://code.ornl.gov/neams-workbench/wasp) as the lexing and parsing backend for HIT.
 - [Catch2](https://github.com/catchorg/Catch2) for unit and regression testing.
-- [gperftools](https://github.com/gperftools/gperftools) for profiling.
 
 In addition to standard system library locations, the CMake configure script also searches for an installed torch Python package. Recent PyTorch releases within a few minor versions are likely to be compatible.
 
