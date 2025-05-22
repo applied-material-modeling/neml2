@@ -22,31 +22,25 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/phase_field_fracture/StrainEnergy.h"
+#pragma once
+
+#include "neml2/models/Model.h"
+#include "neml2/tensors/SR2.h"
 
 namespace neml2
 {
-OptionSet
-StrainEnergy::expected_options()
+class StrainEnergyDensity : public Model
 {
-  OptionSet options = Model::expected_options();
-  options.doc() = "Relate elastic strain to stress";
+public:
+  static OptionSet expected_options();
 
-  options.set_input("strain") = VariableName(STATE, "internal", "Ee");
-  options.set("strain").doc() = "Elastic strain";
+  StrainEnergyDensity(const OptionSet & options);
 
-  options.set_output("elastic_strain_energy") = VariableName(STATE, "psie");
-  options.set("elastic_strain_energy").doc() = "Elastic strain energy density";
+protected:
+  /// The strain variable
+  const Variable<SR2> & _strain;
 
-
-  return options;
-}
-
-StrainEnergy::StrainEnergy(const OptionSet & options)
-  : Model(options),
-    _strain(options.get<VariableName>("strain")),
-    _from(declare_input_variable<SR2>( _strain)),
-    _psie(declare_output_variable<Scalar>("elastic_strain_energy"))
-{
-}
+  /// elastic strain energy density
+  Variable<Scalar> & _psie;
+};
 } // namespace neml2

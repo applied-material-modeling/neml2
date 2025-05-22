@@ -39,7 +39,7 @@ public:
   CrackGeometricFunctionAT1(const OptionSet & options);
 
 protected:
-  /// The value of the Power degradation function
+
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
 };
