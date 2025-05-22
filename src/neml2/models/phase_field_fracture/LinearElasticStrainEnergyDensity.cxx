@@ -60,17 +60,14 @@ LinearElasticStrainEnergyDensity::set_value(bool out, bool dout_din, bool d2out_
   const auto s = vf * SR2(_strain).vol() + df * SR2(_strain).dev();
 
   if (out)
-
     _psie = 0.5 * SR2(s).inner(_strain);
 
   if (dout_din)
   {
-
     _psie.d(_strain) = s;
   }
   if (d2out_din2)
   {
-
     const auto I = SSR4::identity_vol(_strain.options());
     const auto J = SSR4::identity_dev(_strain.options());
 

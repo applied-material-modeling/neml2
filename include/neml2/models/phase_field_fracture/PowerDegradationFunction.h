@@ -24,7 +24,6 @@
 
 #pragma once
 
-#include "neml2/models/Model.h"
 #include "neml2/models/phase_field_fracture/DegradationFunction.h"
 
 namespace neml2
@@ -43,6 +42,6 @@ protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
   /// power of the function
-  const Scalar & _p;
+  const Real _p;
 };
 } // namespace neml2

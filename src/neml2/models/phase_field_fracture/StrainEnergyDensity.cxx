@@ -30,13 +30,12 @@ OptionSet
 StrainEnergyDensity::expected_options()
 {
   OptionSet options = Model::expected_options();
-  options.doc() = "Relate elastic strain to stress";
 
   options.set_input("strain") = VariableName(STATE, "internal", "Ee");
   options.set("strain").doc() = "Elastic strain";
 
-  options.set_output("elastic_strain_energy") = VariableName(STATE, "psie");
-  options.set("elastic_strain_energy").doc() = "Elastic strain energy density";
+  options.set_output("strain_energy_density") = VariableName(STATE, "psie");
+  options.set("strain_energy_density").doc() = "Strain energy density";
 
   return options;
 }
@@ -44,7 +43,7 @@ StrainEnergyDensity::expected_options()
 StrainEnergyDensity::StrainEnergyDensity(const OptionSet & options)
   : Model(options),
     _strain(declare_input_variable<SR2>("strain")),
-    _psie(declare_output_variable<Scalar>("elastic_strain_energy"))
+    _psie(declare_output_variable<Scalar>("strain_energy_density"))
 {
 }
 } // namespace neml2
