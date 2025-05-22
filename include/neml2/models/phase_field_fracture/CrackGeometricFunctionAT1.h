@@ -24,7 +24,6 @@
 
 #pragma once
 
-#include "neml2/models/Model.h"
 #include "neml2/models/phase_field_fracture/CrackGeometricFunction.h"
 
 namespace neml2
