@@ -32,7 +32,7 @@ namespace neml2
 {
 class Scalar;
 
-class LinearElasticStrainEnergyDensity : public ElasticityInterface<StrainEnergyDensity, 2>
+class LinearIsotropicStrainEnergyDensity : public ElasticityInterface<StrainEnergyDensity, 2>
 {
 public:
   static OptionSet expected_options();

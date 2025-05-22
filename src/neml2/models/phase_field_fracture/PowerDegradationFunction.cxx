@@ -60,12 +60,12 @@ PowerDegradationFunction::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (dout_din)
   {
-    _g.d(_d) = _p * pow((1 - _d), (_p - 1)) * (-1);
+    _g.d(_d) = -_p * pow((1 - _d), (_p - 1));
   }
 
   if (d2out_din2)
   {
-    _g.d(_d, _d) = (_p * (_p - 1)) * pow((1 - _d), (_p - 2)) * (-1) * (-1);
+    _g.d(_d, _d) = (_p * (_p - 1)) * pow((1 - _d), (_p - 2));
   }
 }
 } // namespace neml2
