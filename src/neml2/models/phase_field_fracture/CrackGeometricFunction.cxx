@@ -43,7 +43,7 @@ CrackGeometricFunction::expected_options()
 
 CrackGeometricFunction::CrackGeometricFunction(const OptionSet & options)
   : Model(options),
-    _d(declare_input_variable<Scalar>("damage")),
+    _d(declare_input_variable<Scalar>("phase")),
     _alpha(declare_output_variable<Scalar>("crack"))
 {
 }
