@@ -26,7 +26,6 @@
 #include "neml2/tensors/functions/pow.h"
 #include "neml2/tensors/Scalar.h"
 
-
 namespace neml2
 {
 register_NEML2_object(PowerDegradationFunction);
@@ -35,11 +34,10 @@ OptionSet
 PowerDegradationFunction::expected_options()
 {
   OptionSet options = DegradationFunction::expected_options();
-  options.doc() =
-      "Power degradation function to degrade the elastic strain energy density";
+  options.doc() = "Power degradation function to degrade the elastic strain energy density";
   options.set<TensorName<Scalar>>("power");
   options.set("power").doc() = "Power of the degradation function";
-  
+
   options.set<bool>("define_second_derivatives") = true;
 
   return options;
@@ -48,7 +46,7 @@ PowerDegradationFunction::expected_options()
 PowerDegradationFunction::PowerDegradationFunction(const OptionSet & options)
   : DegradationFunction(options),
     _p(declare_parameter<Scalar>("p", "power"))
-   
+
 {
 }
 
@@ -58,17 +56,16 @@ PowerDegradationFunction::set_value(bool out, bool dout_din, bool d2out_din2)
   if (out)
   {
     _g = pow((1 - _d), _p);
-    
   }
 
   if (dout_din)
   {
-    _g.d(_d) = _p * pow((1 - _d), (_p - 1)) * (- 1);
+    _g.d(_d) = _p * pow((1 - _d), (_p - 1)) * (-1);
   }
 
   if (d2out_din2)
   {
-    _g.d(_d, _d) = (_p * (_p - 1)) * pow((1 - _d), (_p - 2)) * (- 1) * (- 1);
+    _g.d(_d, _d) = (_p * (_p - 1)) * pow((1 - _d), (_p - 2)) * (-1) * (-1);
   }
 }
 } // namespace neml2

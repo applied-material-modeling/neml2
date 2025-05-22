@@ -38,7 +38,6 @@ StrainEnergyDensity::expected_options()
   options.set_output("elastic_strain_energy") = VariableName(STATE, "psie");
   options.set("elastic_strain_energy").doc() = "Elastic strain energy density";
 
-
   return options;
 }
 

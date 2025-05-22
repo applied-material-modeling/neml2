@@ -43,6 +43,5 @@ protected:
 
   /// degradation
   Variable<Scalar> & _g;
-
 };
 } // namespace neml2

@@ -38,12 +38,10 @@ public:
   CrackGeometricFunction(const OptionSet & options);
 
 protected:
-  
   /// damage variable
   const Variable<Scalar> & _d;
 
   /// crack geometric function
   Variable<Scalar> & _alpha;
-
 };
 } // namespace neml2

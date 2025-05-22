@@ -26,7 +26,6 @@
 #include "neml2/tensors/functions/pow.h"
 #include "neml2/tensors/Scalar.h"
 
-
 namespace neml2
 {
 register_NEML2_object(CrackGeometricFunctionAT1);
@@ -38,7 +37,7 @@ CrackGeometricFunctionAT1::expected_options()
   options.doc() =
       "Crack geometric function to determine the distribution of the dasmage field using AT1";
   options.set<bool>("define_second_derivatives") = true;
-  
+
   return options;
 }
 
@@ -53,7 +52,6 @@ CrackGeometricFunctionAT1::set_value(bool out, bool dout_din, bool d2out_din2)
   if (out)
   {
     _alpha = 1.0 * _d;
-    
   }
 
   if (dout_din)

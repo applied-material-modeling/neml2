@@ -26,7 +26,6 @@
 #include "neml2/tensors/functions/pow.h"
 #include "neml2/tensors/Scalar.h"
 
-
 namespace neml2
 {
 register_NEML2_object(CrackGeometricFunctionAT2);
@@ -53,7 +52,6 @@ CrackGeometricFunctionAT2::set_value(bool out, bool dout_din, bool d2out_din2)
   if (out)
   {
     _alpha = _d * _d;
-    
   }
 
   if (dout_din)
