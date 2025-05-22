@@ -51,7 +51,7 @@ CrackGeometricFunctionAT1::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   if (out)
   {
-    _alpha = 1.0 * _d;
+    _alpha = _d;
   }
 
   if (dout_din)
