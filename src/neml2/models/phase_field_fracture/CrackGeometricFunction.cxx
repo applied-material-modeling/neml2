@@ -32,8 +32,8 @@ CrackGeometricFunction::expected_options()
 {
   OptionSet options = Model::expected_options();
 
-  options.set_input("damage") = VariableName(STATE, "d");
-  options.set("damage").doc() = "Damage/Phase-field variable";
+  options.set_input("phase") = VariableName(STATE, "d");
+  options.set("phase").doc() = "Phase-field variable";
 
   options.set_output("crack") = VariableName(STATE, "alpha");
   options.set("crack").doc() = "Value of the geometric crack function";
