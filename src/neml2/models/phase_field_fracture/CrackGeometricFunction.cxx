@@ -36,7 +36,7 @@ CrackGeometricFunction::expected_options()
   options.set("phase").doc() = "Phase-field variable";
 
   options.set_output("crack") = VariableName(STATE, "alpha");
-  options.set("crack").doc() = "Value of the geometric crack function";
+  options.set("crack").doc() = "Value of the crack geometric function";
 
   return options;
 }
