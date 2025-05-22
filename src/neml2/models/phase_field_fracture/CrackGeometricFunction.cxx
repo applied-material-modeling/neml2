@@ -32,8 +32,6 @@ OptionSet
 CrackGeometricFunction::expected_options()
 {
   OptionSet options = Model::expected_options();
-  options.doc() =
-      "Base class for crack geometric function to determine the distribution of the dasmage field";
 
   options.set_input("damage") = VariableName(STATE, "d");
   options.set("damage").doc() = "Damage/Phase-field variable";
