@@ -59,9 +59,5 @@ CrackGeometricFunctionAT1::set_value(bool out, bool dout_din, bool d2out_din2)
     _alpha.d(_d) = Scalar::create(1.0, _d.options());
   }
 
-  if (d2out_din2)
-  {
-    _alpha.d(_d, _d) = Scalar::create(0.0, _d.options());
-  }
 }
 } // namespace neml2
