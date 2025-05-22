@@ -28,7 +28,6 @@
 
 namespace neml2
 {
-class Scalar;
 
 class CrackGeometricFunctionAT1 : public CrackGeometricFunction
 {
