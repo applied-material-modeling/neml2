@@ -216,6 +216,8 @@ if(NEML2_PCH)
   )
 endif()
 
+message(STATUS "CMAKE_CXX_LINK_WHAT_YOU_USE_FLAG = ${CMAKE_CXX_LINK_WHAT_YOU_USE_FLAG}")
+
 # libneml2_user_tensor
 neml2_add_submodule(neml2_user_tensor SHARED user_tensors)
 target_link_libraries(neml2_user_tensor PUBLIC neml2_tensor neml2_base)

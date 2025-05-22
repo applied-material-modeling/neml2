@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include "neml2/models/phase_field_fracture/StrainEnergy.h"
+#include "neml2/models/phase_field_fracture/StrainEnergyDensity.h"
 #include "neml2/models/solid_mechanics/elasticity/ElasticityInterface.h"
 #include "neml2/models/solid_mechanics/elasticity/IsotropicElasticityConverter.h"
 
@@ -32,19 +32,16 @@ namespace neml2
 {
 class Scalar;
 
-class ElasticStrainEnergyDensity : public ElasticityInterface<StrainEnergy, 2>
+class LinearElasticStrainEnergyDensity : public ElasticityInterface<StrainEnergyDensity, 2>
 {
 public:
   static OptionSet expected_options();
 
-  ElasticStrainEnergyDensity(const OptionSet & options);
+  LinearElasticStrainEnergyDensity(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
   const IsotropicElasticityConverter _converter;
-
-  /// elastic strain energy density
-  // Variable<Scalar> & _psie;
 };
 } // namespace neml2

@@ -22,33 +22,61 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/phase_field_fracture/CrackGeometricFunction.h"
-#include "neml2/tensors/functions/pow.h"
+#include "neml2/models/phase_field_fracture/LinearElasticStrainEnergyDensity.h"
+#include "neml2/tensors/SSR4.h"
 #include "neml2/tensors/Scalar.h"
-
 
 namespace neml2
 {
+register_NEML2_object(LinearElasticStrainEnergyDensity);
+
 OptionSet
-CrackGeometricFunction::expected_options()
+LinearElasticStrainEnergyDensity::expected_options()
 {
-  OptionSet options = Model::expected_options();
+  OptionSet options = ElasticityInterface<StrainEnergyDensity, 2>::expected_options();
   options.doc() =
-      "Base class for crack geometric function to determine the distribution of the dasmage field";
-
-  options.set_input("damage") = VariableName(STATE, "d");
-  options.set("damage").doc() = "Damage/Phase-field variable";
-
-  options.set_output("crack") = VariableName(STATE, "alpha");
-  options.set("crack").doc() = "Value of the geometric crack function";
+      "Calculates elastic strain energy density based on linear elastic isotropic response";
+  options.set<bool>("define_second_derivatives") = true;
 
   return options;
 }
 
-CrackGeometricFunction::CrackGeometricFunction(const OptionSet & options)
-  : Model(options),
-    _d(declare_input_variable<Scalar>("damage")),
-    _alpha(declare_output_variable<Scalar>("crack"))
+LinearElasticStrainEnergyDensity::LinearElasticStrainEnergyDensity(const OptionSet & options)
+  : ElasticityInterface<StrainEnergyDensity, 2>(options),
+  _converter(_constant_types, _need_derivs)
+
 {
 }
+
+void
+LinearElasticStrainEnergyDensity::set_value(bool out, bool dout_din, bool d2out_din2)
+{
+  const auto [K_and_dK, G_and_dG] = _converter.convert(_constants);
+  const auto & [K, dK] = K_and_dK;
+  const auto & [G, dG] = G_and_dG;
+  const auto vf =  3 * K;
+  const auto df =  2 * G;
+
+  const auto s = vf * SR2(_strain).vol() + df * SR2(_strain).dev();
+
+  if (out)
+    
+    _psie = 0.5 * SR2(s).inner(_strain);
+    
+  if (dout_din)
+  {
+    
+    _psie.d(_strain) = s;
+    
+  }
+  if (d2out_din2)
+  {
+
+    const auto I = SSR4::identity_vol(_strain.options());
+    const auto J = SSR4::identity_dev(_strain.options());
+
+    _psie.d(_strain, _strain) = vf * I + df * J;
+
+  }
 }
+} // namespace neml2

@@ -37,7 +37,11 @@ DegradationFunction::expected_options()
       "Base class for degradation function to degrade the elastic strain energy density";
 
   options.set_input("damage") = VariableName(STATE, "d");
+  options.set("damage").doc() = "Damage/Phase-field variable";
+
   options.set_output("degradation") = VariableName(STATE, "g");
+  options.set("degradation").doc() = "Value of the dedgradation function";
+  
 
   return options;
 }

@@ -38,6 +38,8 @@ PowerDegradationFunction::expected_options()
   options.doc() =
       "Power degradation function to degrade the elastic strain energy density";
   options.set<TensorName<Scalar>>("power");
+  options.set("power").doc() = "Power of the degradation function";
+  
   options.set<bool>("define_second_derivatives") = true;
 
   return options;

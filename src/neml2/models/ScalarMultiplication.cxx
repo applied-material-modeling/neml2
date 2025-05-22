@@ -53,6 +53,8 @@ ScalarMultiplication::expected_options()
       "variable is taken. When the length of this list is 1, the same reciprocal condition applies "
       "to all variables.";
 
+  options.set<bool>("define_second_derivatives") = true;
+
   return options;
 }
 
@@ -78,7 +80,7 @@ ScalarMultiplication::ScalarMultiplication(const OptionSet & options)
 }
 
 void
-ScalarMultiplication::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
+ScalarMultiplication::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   auto value = _inv[0] ? _A / (*_from[0]) : _A * (*_from[0]);
   for (std::size_t i = 1; i < _from.size(); i++)
@@ -91,6 +93,20 @@ ScalarMultiplication::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
     for (std::size_t i = 0; i < _from.size(); i++)
       if (_from[i]->is_dependent())
         _to.d(*_from[i]) = (_inv[i] ? -1.0 : 1.0) * value / (*_from[i]);
+
+  if (d2out_din2)
+    for (std::size_t i = 0; i < _from.size(); i++)
+      if (_from[i]->is_dependent())
+        for (std::size_t j = 0; j < _from.size(); j++)
+          if (_from[j]->is_dependent())
+            if (i != j)
+            {
+              auto r = _A;
+              for (std::size_t k = 0; k < _from.size(); k++)
+                if (k != i && k != j)
+                  r = r * (*_from[k]);
+              _to.d(*_from[i], *_from[j]) = r;
+            }
 }
 
 } // namespace neml2

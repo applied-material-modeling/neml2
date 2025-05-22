@@ -22,61 +22,30 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/phase_field_fracture/ElasticStrainEnergyDensity.h"
-#include "neml2/tensors/SSR4.h"
-#include "neml2/tensors/Scalar.h"
+#include "neml2/models/phase_field_fracture/StrainEnergyDensity.h"
 
 namespace neml2
 {
-register_NEML2_object(ElasticStrainEnergyDensity);
-
 OptionSet
-ElasticStrainEnergyDensity::expected_options()
+StrainEnergyDensity::expected_options()
 {
-  OptionSet options = ElasticityInterface<StrainEnergy, 2>::expected_options();
-  options.doc() =
-      "Calculates elastic strain energy density based on linear elastic isotropic response";
-  options.set<bool>("define_second_derivatives") = true;
+  OptionSet options = Model::expected_options();
+  options.doc() = "Relate elastic strain to stress";
+
+  options.set_input("strain") = VariableName(STATE, "internal", "Ee");
+  options.set("strain").doc() = "Elastic strain";
+
+  options.set_output("elastic_strain_energy") = VariableName(STATE, "psie");
+  options.set("elastic_strain_energy").doc() = "Elastic strain energy density";
+
 
   return options;
 }
 
-ElasticStrainEnergyDensity::ElasticStrainEnergyDensity(const OptionSet & options)
-  : ElasticityInterface<StrainEnergy, 2>(options),
-  _converter(_constant_types, _need_derivs)
-
+StrainEnergyDensity::StrainEnergyDensity(const OptionSet & options)
+  : Model(options),
+    _strain(declare_input_variable<SR2>("strain")),
+    _psie(declare_output_variable<Scalar>("elastic_strain_energy"))
 {
-}
-
-void
-ElasticStrainEnergyDensity::set_value(bool out, bool dout_din, bool d2out_din2)
-{
-  const auto [K_and_dK, G_and_dG] = _converter.convert(_constants);
-  const auto & [K, dK] = K_and_dK;
-  const auto & [G, dG] = G_and_dG;
-  const auto vf =  3 * K;
-  const auto df =  2 * G;
-
-  const SR2 _to = vf * SR2(_from).vol() + df * SR2(_from).dev();
-
-  if (out)
-    
-    _psie = 0.5 * SR2(_to).inner(_from);
-    
-  if (dout_din)
-  {
-    
-    _psie.d(_from) = _to;
-    
-  }
-  if (d2out_din2)
-  {
-
-    const auto I = SSR4::identity_vol(_from.options());
-    const auto J = SSR4::identity_dev(_from.options());
-
-    _psie.d(_from, _from) = vf * I + df * J;
-
-  }
 }
 } // namespace neml2

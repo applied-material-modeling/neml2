@@ -8,6 +8,7 @@
     output_Scalar_names = 'state/psie'
     output_Scalar_values = '2443.2'  
     derivative_abs_tol = 1e-01
+    derivative_rel_tol = 0
     check_second_derivatives = true
   []
 []
@@ -21,7 +22,7 @@
 
 [Models]
   [energy]
-    type = ElasticStrainEnergyDensity
+    type = LinearElasticStrainEnergyDensity
     strain = 'state/internal/Ee'
     elastic_strain_energy = 'state/psie'
     coefficient_types = 'BULK_MODULUS SHEAR_MODULUS'
