@@ -23,7 +23,6 @@
 // THE SOFTWARE.
 
 #include "neml2/models/phase_field_fracture/CrackGeometricFunction.h"
-#include "neml2/tensors/functions/pow.h"
 #include "neml2/tensors/Scalar.h"
 
 namespace neml2
