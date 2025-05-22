@@ -35,7 +35,7 @@ CrackGeometricFunctionAT1::expected_options()
 {
   OptionSet options = CrackGeometricFunction::expected_options();
   options.doc() =
-      "Crack geometric function to determine the distribution of the dasmage field using AT1";
+      "Crack geometric function associated with the AT-1 functional, $ \\alpha = d $";
   options.set<bool>("define_second_derivatives") = true;
 
   return options;
