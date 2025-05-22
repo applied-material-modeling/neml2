@@ -44,6 +44,5 @@ protected:
 
   /// power of the function
   const Scalar & _p;
-  
 };
 } // namespace neml2

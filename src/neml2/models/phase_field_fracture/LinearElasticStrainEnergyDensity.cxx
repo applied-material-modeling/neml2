@@ -43,7 +43,7 @@ LinearElasticStrainEnergyDensity::expected_options()
 
 LinearElasticStrainEnergyDensity::LinearElasticStrainEnergyDensity(const OptionSet & options)
   : ElasticityInterface<StrainEnergyDensity, 2>(options),
-  _converter(_constant_types, _need_derivs)
+    _converter(_constant_types, _need_derivs)
 
 {
 }
@@ -54,20 +54,19 @@ LinearElasticStrainEnergyDensity::set_value(bool out, bool dout_din, bool d2out_
   const auto [K_and_dK, G_and_dG] = _converter.convert(_constants);
   const auto & [K, dK] = K_and_dK;
   const auto & [G, dG] = G_and_dG;
-  const auto vf =  3 * K;
-  const auto df =  2 * G;
+  const auto vf = 3 * K;
+  const auto df = 2 * G;
 
   const auto s = vf * SR2(_strain).vol() + df * SR2(_strain).dev();
 
   if (out)
-    
+
     _psie = 0.5 * SR2(s).inner(_strain);
-    
+
   if (dout_din)
   {
-    
+
     _psie.d(_strain) = s;
-    
   }
   if (d2out_din2)
   {
@@ -76,7 +75,6 @@ LinearElasticStrainEnergyDensity::set_value(bool out, bool dout_din, bool d2out_
     const auto J = SSR4::identity_dev(_strain.options());
 
     _psie.d(_strain, _strain) = vf * I + df * J;
-
   }
 }
 } // namespace neml2

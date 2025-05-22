@@ -26,7 +26,6 @@
 #include "neml2/tensors/functions/pow.h"
 #include "neml2/tensors/Scalar.h"
 
-
 namespace neml2
 {
 OptionSet
