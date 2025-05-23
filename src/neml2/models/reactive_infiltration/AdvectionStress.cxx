@@ -40,7 +40,7 @@ AdvectionStress::expected_options()
       "stress and the defomration gradient. \\f$ c \\f$ is a expansion/contraction coefficient.";
 
   options.set_parameter<TensorName<Scalar>>("coefficient");
-  options.set("coefficient").doc() = "";
+  options.set("coefficient").doc() = "Coefficient c";
 
   options.set_input("jacobian") = VariableName(STATE, "J");
   options.set("jacobian").doc() = "The jacobian of the deformation gradient";

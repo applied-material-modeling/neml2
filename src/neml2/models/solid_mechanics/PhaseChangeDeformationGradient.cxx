@@ -54,7 +54,7 @@ PhaseChangeDeformationGradient::expected_options()
   options.set("CPE").doc() = "Coefficient of phase expansion";
 
   options.set_parameter<TensorName<Scalar>>("CPC") = {TensorName<Scalar>("0")};
-  options.set("CPE").doc() = "Coefficient of phase change";
+  options.set("CPC").doc() = "Coefficient of phase change";
 
   options.set<bool>("inverse_condition") = false;
   options.set("inverse_condition").doc() = "Whether to take the inverse operation.";

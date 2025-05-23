@@ -65,6 +65,12 @@ LinearCombination<T>::expected_options()
   options.set("constant_coefficient").doc() =
       "The constant coefficient c0 added to the final summation";
 
+  options.set<bool>("constant_coefficient_as_parameter") = false;
+  options.set("constant_coefficient_as_parameter").doc() =
+      "By default, the constant_coefficient are declared as buffers. Set this option to true to "
+      "declare "
+      "them as (trainable) parameters.";
+
   options.set<std::vector<bool>>("coefficient_as_parameter") = {false};
   options.set("coefficient_as_parameter").doc() =
       "By default, the coefficients are declared as buffers. Set this option to true to declare "
@@ -77,8 +83,7 @@ LinearCombination<T>::expected_options()
 template <typename T>
 LinearCombination<T>::LinearCombination(const OptionSet & options)
   : Model(options),
-    _to(declare_output_variable<T>("to_var")),
-    _co(declare_parameter<Scalar>("c0", "constant_coefficient"))
+    _to(declare_output_variable<T>("to_var"))
 {
   for (const auto & fv : options.get<std::vector<VariableName>>("from_var"))
     _from.push_back(&declare_input_variable<T>(fv));
@@ -114,6 +119,12 @@ LinearCombination<T>::LinearCombination(const OptionSet & options)
     else
       _coefs[i] = &declare_buffer<Scalar>("c_" + std::to_string(i), coef_ref);
   }
+
+  auto c0_as_param = options.get<bool>("constant_coefficient_as_parameter");
+  if (c0_as_param)
+    _c0 = &declare_parameter<Scalar>("c0", "constant_coefficient", /*allow_nonlinear=*/true);
+  else
+    _c0 = &declare_buffer<Scalar>("c0", "constant_coefficient");
 }
 
 template <typename T>
@@ -122,7 +133,7 @@ LinearCombination<T>::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   if (out)
   {
-    auto value = _co + (*_coefs[0]) * (*_from[0]);
+    auto value = (*_c0) + (*_coefs[0]) * (*_from[0]);
     for (std::size_t i = 1; i < _from.size(); i++)
       value = value + (*_coefs[i]) * (*_from[i]);
     _to = value;
@@ -139,6 +150,8 @@ LinearCombination<T>::set_value(bool out, bool dout_din, bool d2out_din2)
       if (const auto * const pi = nl_param("c_" + std::to_string(i)))
         _to.d(*pi) = (*_from[i]);
     }
+    if (const auto * const C = nl_param("c0"))
+      _to.d(*C) = neml2::Scalar::full(1.0);
   }
 
   if (d2out_din2)
