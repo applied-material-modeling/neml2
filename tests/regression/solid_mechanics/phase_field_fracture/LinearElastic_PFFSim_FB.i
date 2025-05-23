@@ -1,4 +1,8 @@
-## Applying the phase field driving force in the form of Allen-Cahn equation
+[Settings]
+  additional_libraries = '/Users/knasir/projects/neml2_local/neml2/build/dev/src/neml2/libneml2_user_tensor_Debug.dylib'
+[]
+
+## Applying KKT conditions with the help of Fisher-Burmeister complementary condition
 
 [Drivers]
   [driver]
@@ -8,7 +12,7 @@
     force_SR2_names = 'forces/E'
     force_SR2_values = 'strains'
     predictor = LINEAR_EXTRAPOLATION
-    save_as = 'pff_result.pt'
+    save_as = 'fb_pff_result.pt'
     show_input_axis = true
     show_output_axis = true
     verbose = true
@@ -65,7 +69,7 @@
   []
   [GcbylbyCo]
     type = Scalar
-    values = -0.0152 # Gc/l/Co with Gc = 95 N/m, l = 3.125 mm, Co = 2, -ve sign to match the AC eqn
+    values = 0.0152 # Gc/l/Co with Gc = 95 N/m, l = 3.125 mm, Co = 2
   []
 []
 
@@ -100,44 +104,57 @@
     type = ScalarLinearCombination
     from_var = 'state/alpha state/psie'
     to_var = 'state/psi'
-    coefficients = 'GcbylbyCo -1'  # -ve sign to match the AC eqn
+    coefficients = 'GcbylbyCo 1'
   []
   [energy] # this guy maps from (strain, d) -> energy
     type = ComposedModel
     models = 'degrade sed0 sed cracked sum'
   []
-  # phase rate, follows from variation of total energy w.r.t. phase field
-  [phase_rate]
+ # phase rate, follows from variation of total energy w.r.t. phase field
+  [dpsidd]
     type = Normality
     model = 'energy'
     function = 'state/psi'
     from = 'state/d'
-    to = 'state/d_rate'
+    to = 'state/dpsi_dd'
   []
-  # integrate d
-  [integrate_d]
-    type = ScalarBackwardEulerTimeIntegration
+  # obtain d_rate
+  [drate]
+    type = ScalarVariableRate
     variable = 'state/d'
+    rate = 'state/d_rate'
   []
-  # solve the equation
+  # define functional
+  [functional]
+    type = ScalarLinearCombination
+    from_var = 'state/dpsi_dd state/d_rate'
+    to_var = 'state/F'
+    coefficients = '1 1'
+  []
+  # Fisher Burmeister Complementary Condition
+  [Fish_Burm]
+    type = FischerBurmeister
+    first_var = 'state/F'
+    second_var = 'state/d_rate'
+    fischer_burmeister = 'residual/d'
+
+  []
+  # system of equations
   [eq]
     type = ComposedModel
-    models = 'phase_rate integrate_d'
+    models = 'Fish_Burm functional drate dpsidd'
   []
+  # solve for d
   [solve_d]
     type = ImplicitUpdate
     implicit_model = 'eq'
     solver = 'newton'
   []
-  # after the solve, re-evaluate the elastic strain energy, then take derivative w.r.t. strain to get stress
-  [evaluate_sed]
-    type = ComposedModel
-    models = 'degrade sed0 sed'
-  []
+  # after the solve take derivative of the total energy w.r.t. strain to get stress
   [stress]
     type = Normality
-    model = 'evaluate_sed'
-    function = 'state/psie'
+    model = 'energy'
+    function = 'state/psi'
     from = 'forces/E'
     to = 'state/S'
   []
