@@ -14,24 +14,42 @@ In case the package of interest has been installed at a non-conventional locatio
 
 Please refer to the [CMake documentation](https://cmake.org/cmake/help/latest/command/find_package.html#config-mode-search-procedure) for additional hints that can be used to facilitate the package search procedure.
 
-The following table summarizes the names of the packages required by each configure options. The first row lists the packages required by the base library.
-
-| Option                | Required package(s) |
-| :-------------------- | :------------------ |
-|                       | Torch, WASP, HIT    |
-| NEML2_TESTS           | Catch2              |
-| NEML2_PYBIND          | Python              |
-| NEML2_DOC             | Doxygen             |
-| NEML2_WORK_DISPATCHER | MPI, TIMPI          |
-
 ## List of dependencies
 
-### C++ backend dependencies
+C++ backend:
 
 - [PyTorch](https://pytorch.org/get-started/locally/), version 2.5.1.
-- [HIT](https://github.com/idaholab/moose/tree/master/framework/contrib/hit) for input file parsing.
 - [WASP](https://code.ornl.gov/neams-workbench/wasp) as the lexing and parsing backend for HIT.
-- [Catch2](https://github.com/catchorg/Catch2) for unit and regression testing.
+- [HIT](https://github.com/idaholab/moose/tree/master/framework/contrib/hit) for input file parsing.
+- Testing:
+  - [Catch2](https://github.com/catchorg/Catch2) for unit and regression testing.
+
+The Runner:
+
+- [argparse](https://github.com/p-ranav/argparse) for command-line argument parsing.
+- Profiling:
+  - [Gperftools](https://github.com/gperftools/gperftools) for profiling purposes.
+
+Python package:
+
+- [Python development libraries](https://docs.python.org/3/extending/extending.html) for python bindings.
+- [pybind11](https://github.com/pybind/pybind11) for building Python bindings.
+- [pybind11-stubgen](https://github.com/sizmailov/pybind11-stubgen) for extracting stubs from Python bindings.
+- [pyzag](https://github.com/applied-material-modeling/pyzag) for training material models.
+- Testing:
+  - [pytest](https://docs.pytest.org/en/stable/index.html) for testing Pythin bindings.
+
+Documentation:
+
+- [Doxygen](https://github.com/doxygen/doxygen) for building the documentation.
+- [Doxygen Awesome](https://github.com/jothepro/doxygen-awesome-css) the documentation theme.
+- [graphviz](https://github.com/xflr6/graphviz) for model visualization.
+- [PyYAML](https://pyyaml.org/) for extracting syntax documentation.
+
+Work dispatcher:
+
+- [TIMPI](https://github.com/libMesh/TIMPI) for coordinating parallel workers.
+- [json](https://github.com/nlohmann/json) for outputting event traces.
 
 In addition to standard system library locations, the CMake configure script also searches for an installed torch Python package. Recent PyTorch releases within a few minor versions are likely to be compatible.
 
@@ -41,18 +59,28 @@ If no PyTorch is found after searching, a CPU-only libtorch binary is downloaded
 \note
 We strive to keep up with the rapid development of PyTorch. The NEML2 PyTorch dependency is updated on a quarterly basis. If there is a particular version of PyTorch you'd like to use which is found to be incompatible with NEML2, please feel free to [create an issue](https://github.com/applied-material-modeling/neml2/issues).
 
-### Python package dependencies
+## Skipping dependencies
 
-- Python development libraries.
-- [pybind11](https://github.com/pybind/pybind11) for building Python bindings.
+In some cases, certain dependencies cannot be obtained or are incompatible with the build system, and it becomes desirable to keep using NEML2 with some capabilities disabled.
 
-### Other dependencies
+The following table summarizes the configure options that determine when a dependency is required, and hence how a dependency can be skipped.
 
-- [Doxygen](https://github.com/doxygen/doxygen) for building the documentation.
-- [Doxygen Awesome](https://github.com/jothepro/doxygen-awesome-css) the documentation theme.
-- [argparse](https://github.com/p-ranav/argparse) for command-line argument parsing.
-- Python packages
-  - [graphviz](https://github.com/xflr6/graphviz) for model visualization
-  - [pytest](https://docs.pytest.org/en/stable/index.html) for testing Pythin bindings
-  - [PyYAML](https://pyyaml.org/) for extracting syntax documentation
-  - [pybind11-stubgen](https://github.com/sizmailov/pybind11-stubgen) for extracting stubs from Python bindings
+| Option                       | Dependent configure option(s)                 |
+| :--------------------------- | :-------------------------------------------- |
+| Torch                        |                                               |
+| WASP                         |                                               |
+| HIT                          |                                               |
+| Catch2                       | NEML2_TESTS                                   |
+| argparse                     | NEML2_RUNNER                                  |
+| Gperftools                   | NEML2_RUNNER && CMAKE_BUILD_TYPE == Profiling |
+| Python development libraries | NEML2_PYBIND                                  |
+| pybind11                     | NEML2_PYBIND                                  |
+| pybind11-stubgen             | NEML2_PYBIND                                  |
+| pyzag                        | NEML2_PYBIND && NEML2_TESTS                   |
+| pytest                       | NEML2_PYBIND && NEML2_TESTS                   |
+| Doxygen                      | NEML2_DOC                                     |
+| Doxygen Awesome              | NEML2_DOC                                     |
+| graphviz                     | NEML2_PYBIND && NEML2_TESTS                   |
+| PyYAML                       | NEML2_DOC                                     |
+| MPI, TIMPI                   | NEML2_WORK_DISPATCHER                         |
+| json                         | NEML2_JSON                                    |

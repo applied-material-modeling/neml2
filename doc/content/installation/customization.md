@@ -25,25 +25,26 @@ Additional configuration options can be passed via command line using the `-DOPT
 
 Since many configure options are available for customizing the build, it is sometimes challenging to keep track of them during the development workflow. CMake introduces the concept of [preset](https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html) to help manage common configurations.
 
-NEML2 predefines five configure presets, serving different development purposes:
+NEML2 predefines six configure presets, serving different development purposes:
 - dev: This preset is best suited for developing the C++ backend and Python bindings. Compiler optimization is turned off, and debug symbols are enabled. In addition, targets for locally generating the documentation (this website) are enabled.
 - coverage: Unit tests are built with coverage flags enabled. `gcov` or similar tools can be used to record code coverage data.
-- runner: The NEML2 Runner is built with the highest level of compiler optimization. The Runner is an executable that can be used to parse, evaluate, diagnose NEML2 input files. The Runner is also linked against gperftools' CPU profiler for profiling purposes.
+- runner: The NEML2 Runner is built with the highest level of compiler optimization. The Runner is an executable that can be used to parse, evaluate, diagnose NEML2 input files.
 - tsan: Build the NEML2 Runner with thread sanitizer flags. The Runner can then be used to detect races.
 - release: Build both the C++ backend and the Python package for production runs.
+- profiling: Similar to runner, but additionally links the Runner against gperftools' CPU profiler for profiling purposes.
 
 The configure presets and their corresponding configure options are summarized below.
 
-| preset                | dev   | coverage | runner  | tsan            | release        |
-| :-------------------- | :---- | :------- | :------ | :-------------- | :------------- |
-| CMAKE_BUILD_TYPE      | Debug | Coverage | Release | ThreadSanitizer | RelWithDebInfo |
-| NEML2_PCH             | ON    | ON       | ON      | ON              | ON             |
-| NEML2_TESTS           | ON    | ON       |         |                 |                |
-| NEML2_RUNNER          |       |          | ON      | ON              | ON             |
-| NEML2_PYBIND          | ON    |          |         |                 | ON             |
-| NEML2_DOC             | ON    |          |         |                 |                |
-| NEML2_WORK_DISPATCHER | ON    | ON       | ON      | ON              | ON             |
-| NEML2_JSON            | ON    | ON       | ON      | ON              | ON             |
+| preset                | dev   | coverage | runner  | tsan            | release        | profiling |
+| :-------------------- | :---- | :------- | :------ | :-------------- | :------------- | :-------- |
+| CMAKE_BUILD_TYPE      | Debug | Coverage | Release | ThreadSanitizer | RelWithDebInfo | Profiling |
+| NEML2_PCH             | ON    | ON       | ON      | ON              | ON             | ON        |
+| NEML2_TESTS           | ON    | ON       |         |                 |                |           |
+| NEML2_RUNNER          |       |          | ON      | ON              | ON             | ON        |
+| NEML2_PYBIND          | ON    |          |         |                 | ON             |           |
+| NEML2_DOC             | ON    |          |         |                 |                |           |
+| NEML2_WORK_DISPATCHER | ON    | ON       | ON      | ON              | ON             | ON        |
+| NEML2_JSON            | ON    | ON       | ON      | ON              | ON             | ON        |
 
 To select a specific configure preset, use the `--preset` option on the command line.
 
@@ -67,7 +68,8 @@ NEML2 offers a number of build presets:
 - dev-python: Python bindings with tests
 - dev-doc: HTML documentation
 - coverage: C++ backend compiled with coverage flags
-- runner: Runner linked against gperftools CPU profiler
+- runner: Runner
 - release: C++ backend and Python bindings for release
+- profiling: Runner with debug symbols linked against profiler
 
 To use a build preset, use the `--preset` option on the command line.

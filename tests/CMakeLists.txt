@@ -1,15 +1,4 @@
 # ----------------------------------------------------------------------------
-# Catch2
-# ----------------------------------------------------------------------------
-find_package(Catch2)
-
-if(NOT Catch2_FOUND)
-  include(DownloadCatch2)
-  set(Catch2_ROOT ${CATCH2_INSTALL_DIR} CACHE PATH "Catch2 root directory" FORCE)
-  find_package(Catch2 REQUIRED)
-endif()
-
-# ----------------------------------------------------------------------------
 # Subdirectories
 # ----------------------------------------------------------------------------
 # Test utilities

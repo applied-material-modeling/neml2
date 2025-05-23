@@ -72,7 +72,7 @@ set(TORCH_VERSION "2.5.1" CACHE STRING "Default libTorch/PyTorch version to down
 set(DOXYGEN_VERSION "1.13.2" CACHE STRING "Default doxygen version to download")
 set(DOXYGEN_AWESOME_VERSION "2.3.4" CACHE STRING "Default doxygen-awesome version to download")
 set(PYBIND11_VERSION "2.13.6" CACHE STRING "Default pybind11 version to download")
-set(WASP_VERSION "c8c9ce4259115973f147e345608450d87dc390c4" CACHE STRING "Default WASP version to download (if not found)")
+set(WASP_VERSION "cf46fbd0d224cc2a70edbc668d3e65d45bec9e16" CACHE STRING "Default WASP version to download (if not found)")
 set(HIT_VERSION "2b56209d3f1a1c5f0bede15a3e13981b599a5f91" CACHE STRING "Default HIT version to download")
 set(CATCH2_VERSION "3.5.4" CACHE STRING "Default Catch2 version to download (if not found)")
 set(GPERFTOOLS_VERSION "2.15" CACHE STRING "Default gperftools version to download")
@@ -102,6 +102,164 @@ if(DEFINED EXEC_DIR)
       include(GNUInstallDirs)
       file(RELATIVE_PATH LIB_REL_PATH ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR} ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR})
       set(CMAKE_INSTALL_RPATH "${EXEC_DIR};${EXEC_DIR}/${LIB_REL_PATH};${EXEC_DIR}/${CMAKE_INSTALL_LIBDIR}" CACHE STRING "Install RPATH")
+endif()
+
+# ----------------------------------------------------------------------------
+# Torch
+# ----------------------------------------------------------------------------
+find_package(Torch)
+
+if(NOT Torch_FOUND)
+      include(DownloadTorch)
+      set(Torch_ROOT ${torch_SOURCE_DIR} CACHE PATH "Torch root directory" FORCE)
+      find_package(Torch REQUIRED)
+endif()
+
+if(HAS_GLIBC)
+      if(${GLIBCXX_USE_CXX11_ABI} STREQUAL "0")
+            message(STATUS "Using pre C++11 ABI")
+      else()
+            message(STATUS "Using C++11 ABI")
+      endif()
+endif()
+
+cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${Torch_LINK_DIR} Torch_DOWNLOADED)
+
+if(Torch_DOWNLOADED)
+      install(DIRECTORY ${Torch_INCLUDE_DIR} TYPE INCLUDE COMPONENT libneml2)
+      install(DIRECTORY ${Torch_LINK_DIR} DESTINATION . COMPONENT libneml2)
+endif()
+
+# ----------------------------------------------------------------------------
+# HIT
+# ----------------------------------------------------------------------------
+find_package(HIT)
+
+if(NOT HIT_FOUND)
+      # ----------------------------------------------------------------------------
+      # WASP
+      # ----------------------------------------------------------------------------
+      if(NOT WASP_FOUND)
+            include(DownloadWASP)
+            set(WASP_ROOT ${WASP_INSTALL_DIR} CACHE PATH "WASP root directory" FORCE)
+            find_package(WASP REQUIRED)
+      endif()
+
+      include(DownloadHIT)
+      set(HIT_ROOT ${HIT_INSTALL_DIR} CACHE PATH "HIT root directory" FORCE)
+      find_package(HIT REQUIRED)
+endif()
+
+cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${WASP_LINK_DIR} WASP_DOWNLOADED)
+cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${HIT_LINK_DIR} HIT_DOWNLOADED)
+
+if(WASP_DOWNLOADED)
+      install(DIRECTORY ${WASP_INCLUDE_DIR}/waspcore ${WASP_INCLUDE_DIR}/wasphit TYPE INCLUDE COMPONENT libneml2)
+endif()
+
+if(HIT_DOWNLOADED)
+      install(DIRECTORY ${HIT_INCLUDE_DIR}/hit TYPE INCLUDE COMPONENT libneml2)
+endif()
+
+# ----------------------------------------------------------------------------
+# TIMPI
+# ----------------------------------------------------------------------------
+if(NEML2_WORK_DISPATCHER)
+      find_package(TIMPI)
+
+      if(NOT TIMPI_FOUND)
+            include(DownloadTIMPI)
+            set(TIMPI_ROOT ${TIMPI_INSTALL_DIR} CACHE PATH "TIMPI root directory" FORCE)
+            find_package(TIMPI REQUIRED)
+      endif()
+
+      cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${TIMPI_LINK_DIR} TIMPI_DOWNLOADED)
+
+      if(TIMPI_DOWNLOADED)
+            install(DIRECTORY ${TIMPI_INCLUDE_DIR}/timpi TYPE INCLUDE COMPONENT libneml2)
+      endif()
+endif()
+
+# ----------------------------------------------------------------------------
+# nlohmann json
+# ----------------------------------------------------------------------------
+if(NEML2_JSON)
+      set(JSON_MultipleHeaders OFF)
+      find_package(nlohmann_json QUIET)
+
+      if(NOT TARGET nlohmann_json::nlohmann_json)
+            include(FetchContent)
+            FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v${NLOHMANN_JSON_VERSION}/json.tar.xz)
+            message(STATUS "Downloading/updating nlohmann/json")
+            set(JSON_Install ON)
+            set(JSON_SystemInclude ON)
+            FetchContent_MakeAvailable(json)
+      endif()
+endif()
+
+# ----------------------------------------------------------------------------
+# CPU Profiler
+# ----------------------------------------------------------------------------
+if(NEML2_TESTS OR NEML2_RUNNER)
+      if(CMAKE_BUILD_TYPE STREQUAL "Profiling")
+            find_package(Gperftools)
+
+            if(NOT Gperftools_FOUND)
+                  include(DownloadGperftools)
+                  set(Gperftools_ROOT ${GPERFTOOLS_INSTALL_DIR} CACHE PATH "gperftools root directory" FORCE)
+                  find_package(Gperftools REQUIRED)
+            endif()
+      endif()
+endif()
+
+# ----------------------------------------------------------------------------
+# Catch2
+# ----------------------------------------------------------------------------
+if(NEML2_TESTS)
+      find_package(Catch2)
+
+      if(NOT Catch2_FOUND)
+            include(DownloadCatch2)
+            set(Catch2_ROOT ${CATCH2_INSTALL_DIR} CACHE PATH "Catch2 root directory" FORCE)
+            find_package(Catch2 REQUIRED)
+      endif()
+endif()
+
+# ----------------------------------------------------------------------------
+# Doxygen
+# ----------------------------------------------------------------------------
+if(NEML2_DOC)
+      find_package(Doxygen COMPONENTS dot)
+
+      if(NOT DOXYGEN_FOUND)
+            include(DownloadDoxygen)
+
+            if(doxygen_POPULATED)
+                  set(Doxygen_ROOT ${doxygen_SOURCE_DIR} CACHE PATH "Path to Doxygen installation" FORCE)
+                  find_package(Doxygen COMPONENTS dot)
+            endif()
+      endif()
+
+      if(NOT DOXYGEN_FOUND)
+            message(WARNING "Documentation requires Doxygen, but one cannot be located, reverting NEML2_DOC to OFF")
+            set(NEML2_DOC OFF CACHE BOOL "Build NEML2 documentation (html)" FORCE)
+            return()
+      endif()
+
+      get_target_property(DOXYGEN_EXECUTABLE Doxygen::doxygen IMPORTED_LOCATION)
+endif()
+
+# ----------------------------------------------------------------------------
+# Doxygen html stylesheet
+# ----------------------------------------------------------------------------
+if(NEML2_DOC)
+      include(FetchContent)
+      FetchContent_Declare(
+            doxygen-awesome-css
+            GIT_REPOSITORY https://github.com/jothepro/doxygen-awesome-css.git
+            GIT_TAG v${DOXYGEN_AWESOME_VERSION}
+      )
+      FetchContent_MakeAvailable(doxygen-awesome-css)
 endif()
 
 # ----------------------------------------------------------------------------
@@ -143,6 +301,6 @@ endif()
 # ----------------------------------------------------------------------------
 # compile_commands.json
 # ----------------------------------------------------------------------------
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+if(CMAKE_EXPORT_COMPILE_COMMANDS)
       file(CREATE_LINK ${NEML2_BINARY_DIR}/compile_commands.json ${NEML2_SOURCE_DIR}/compile_commands.json SYMBOLIC)
 endif()

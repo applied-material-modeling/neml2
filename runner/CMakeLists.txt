@@ -2,26 +2,6 @@
 # argparse
 # ------------------------------------------------------------------------------
 include(DownloadArgparse)
-add_dependencies(deps argparse)
-
-# ----------------------------------------------------------------------------
-# CPU Profiler
-# ----------------------------------------------------------------------------
-if(CMAKE_BUILD_TYPE STREQUAL "Profiling")
-  find_package(Gperftools)
-
-  if(NOT Gperftools_FOUND)
-    include(DownloadGperftools)
-    set(Gperftools_ROOT ${GPERFTOOLS_INSTALL_DIR} CACHE PATH "gperftools root directory" FORCE)
-    find_package(Gperftools REQUIRED)
-  endif()
-
-  cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${Gperftools_LINK_DIR} Gperftools_DOWNLOADED)
-
-  if(Gperftools_DOWNLOADED)
-    # libneml2 does not need gperftools headers
-  endif()
-endif()
 
 # ------------------------------------------------------------------------------
 # runner
