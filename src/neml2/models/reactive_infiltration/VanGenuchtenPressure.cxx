@@ -94,9 +94,9 @@ VanGenuchtenPressure::set_value(bool out, bool dout_din, bool d2out_din2)
   auto log10f_s = log10(f_s);
   auto log10f_sp = log10(f_sp);
 
-  auto dlog10fds_sp = 1 / (ln10 * f_sp) * dfds_sp;
+  // auto dlog10fds_sp = 1 / (ln10 * f_sp) * dfds_sp;
 
-  auto slope = dlog10fds_sp;
+  auto slope = 1 / (ln10 * f_sp) * dfds_sp;
   auto yintercept = log10f_sp - slope * _Sp;
 
   if (out)
