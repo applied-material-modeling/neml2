@@ -1,7 +1,3 @@
-[Settings]
-  additional_libraries = '/Users/knasir/projects/neml2_local/neml2/build/dev/src/neml2/libneml2_user_tensor_Debug.dylib'
-[]
-
 ## Applying KKT conditions with the help of Fisher-Burmeister complementary condition
 
 [Drivers]
