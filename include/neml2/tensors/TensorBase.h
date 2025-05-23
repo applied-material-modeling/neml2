@@ -104,6 +104,10 @@ public:
   ///@{
   /// Clone (take ownership)
   Derived clone() const;
+  /// Copy to CPU
+  Derived cpu() const;
+  /// Ensure contiguous storage
+  Derived contiguous() const;
   /// Discard function graph
   Derived detach() const;
   /// Detach from gradient graphs in place

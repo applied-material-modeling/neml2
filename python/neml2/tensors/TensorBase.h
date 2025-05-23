@@ -214,6 +214,8 @@ def_TensorBase(py::class_<Derived> & c)
       .def_property_readonly("batch", [](Derived * self) { return new BatchView<Derived>(self); })
       .def_property_readonly("base", [](Derived * self) { return new BaseView<Derived>(self); })
       .def("clone", [](Derived * self) { return self->clone(); })
+      .def("cpu", [](Derived * self) { return self->cpu(); })
+      .def("contiguous", [](Derived * self) { return self->contiguous(); })
       .def("detach", &Derived::detach)
       .def("detach_", &Derived::detach_)
       .def(
