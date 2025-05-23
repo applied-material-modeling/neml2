@@ -41,12 +41,12 @@ public:
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  const Scalar & _ms0;
-  const Scalar & _mb0;
+  const Scalar & _ws0;
+  const Scalar & _wb0;
   const Scalar & _Y;
 
   // State Variables
-  const Variable<Scalar> & _ms;
+  const Variable<Scalar> & _ws;
 
   // Residual Variables
   Variable<Scalar> & _a;
