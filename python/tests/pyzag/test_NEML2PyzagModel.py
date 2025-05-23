@@ -38,7 +38,6 @@ def test_definition():
     pmodel = neml2.pyzag.NEML2PyzagModel(nmodel, exclude_parameters=["elasticity_nu"])
 
     assert set(dict(pmodel.named_parameters()).keys()) == {
-        "Eerate_c0",
         "elasticity_E",
         "flow_rate_eta",
         "flow_rate_n",
