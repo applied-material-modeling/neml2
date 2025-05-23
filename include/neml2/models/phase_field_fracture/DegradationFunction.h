@@ -38,7 +38,7 @@ public:
   DegradationFunction(const OptionSet & options);
 
 protected:
-  /// damage variable
+  /// phase variable
   const Variable<Scalar> & _d;
 
   /// degradation

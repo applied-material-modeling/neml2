@@ -16,7 +16,7 @@
 [Models]
   [cracked]
     type = CrackGeometricFunctionAT2
-    damage = 'state/d'
+    phase = 'state/d'
     crack = 'state/alpha'
   []
 []

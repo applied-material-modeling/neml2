@@ -25,6 +25,7 @@
 #include "neml2/models/ScalarMultiplication.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/misc/assertions.h"
+#include "neml2/tensors/functions/pow.h"
 
 namespace neml2
 {
@@ -95,18 +96,37 @@ ScalarMultiplication::set_value(bool out, bool dout_din, bool d2out_din2)
         _to.d(*_from[i]) = (_inv[i] ? -1.0 : 1.0) * value / (*_from[i]);
 
   if (d2out_din2)
+  {
     for (std::size_t i = 0; i < _from.size(); i++)
+    {
       if (_from[i]->is_dependent())
+      {
+        auto p = (_inv[i] ? -1.0 : 1.0);
         for (std::size_t j = 0; j < _from.size(); j++)
+        {
           if (_from[j]->is_dependent())
+          {
+            auto q = (_inv[j] ? -1.0 : 1.0);
             if (i != j)
             {
-              auto r = _A;
+              auto r = _A * p * pow(*_from[i], (p - 1)) * q * pow(*_from[j], (q - 1));
               for (std::size_t k = 0; k < _from.size(); k++)
                 if (k != i && k != j)
-                  r = r * (*_from[k]);
+                  r = r * (_inv[k] ? 1. / (*_from[k]) : (*_from[k]));
               _to.d(*_from[i], *_from[j]) = r;
             }
+            else
+            {
+              auto r = _A * p * (p - 1) * pow(*_from[i], (p - 2));
+              for (std::size_t k = 0; k < _from.size(); k++)
+                if (k != i)
+                  r = r * (_inv[k] ? 1. / (*_from[k]) : (*_from[k]));
+              _to.d(*_from[i], *_from[j]) = r;
+            }
+          }
+        }
+      }
+    }
+  }
 }
-
 } // namespace neml2

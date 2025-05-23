@@ -22,7 +22,7 @@
 [Models]
   [degrade]
     type = PowerDegradationFunction
-    damage = 'state/d'
+    phase = 'state/d'
     degradation = 'state/g'
     power = 'p'
   []

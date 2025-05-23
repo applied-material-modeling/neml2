@@ -31,11 +31,8 @@ OptionSet
 DegradationFunction::expected_options()
 {
   OptionSet options = Model::expected_options();
-  options.doc() =
-      "Base class for degradation function to degrade the elastic strain energy density";
-
-  options.set_input("damage") = VariableName(STATE, "d");
-  options.set("damage").doc() = "Damage/Phase-field variable";
+  options.set_input("phase") = VariableName(STATE, "d");
+  options.set("phase").doc() = "Phase-field variable";
 
   options.set_output("degradation") = VariableName(STATE, "g");
   options.set("degradation").doc() = "Value of the dedgradation function";
@@ -45,7 +42,7 @@ DegradationFunction::expected_options()
 
 DegradationFunction::DegradationFunction(const OptionSet & options)
   : Model(options),
-    _d(declare_input_variable<Scalar>("damage")),
+    _d(declare_input_variable<Scalar>("phase")),
     _g(declare_output_variable<Scalar>("degradation"))
 {
 }

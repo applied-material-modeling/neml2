@@ -33,8 +33,7 @@ OptionSet
 CrackGeometricFunctionAT1::expected_options()
 {
   OptionSet options = CrackGeometricFunction::expected_options();
-  options.doc() =
-      "Crack geometric function associated with the AT-1 functional, $ \\alpha = d $";
+  options.doc() = "Crack geometric function associated with the AT-1 functional, $ \\alpha = d $";
   options.set<bool>("define_second_derivatives") = true;
 
   return options;
@@ -50,13 +49,12 @@ CrackGeometricFunctionAT1::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   if (out)
   {
-    _alpha = _d;
+    _alpha = Scalar(_d);
   }
 
   if (dout_din)
   {
     _alpha.d(_d) = Scalar::create(1.0, _d.options());
   }
-
 }
 } // namespace neml2
