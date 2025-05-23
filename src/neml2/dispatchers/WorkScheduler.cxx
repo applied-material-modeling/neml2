@@ -44,6 +44,7 @@ WorkScheduler::WorkScheduler(const OptionSet & options)
 {
 }
 
+#ifdef NEML2_HAS_JSON
 static json
 to_json(const Device & device, const std::size_t & batch_size)
 {
@@ -52,48 +53,61 @@ to_json(const Device & device, const std::size_t & batch_size)
   j["batch size"] = batch_size;
   return j;
 }
+#endif
 
 void
 WorkScheduler::schedule_work(Device & device, std::size_t & batch_size)
 {
   std::unique_lock<std::mutex> lock(_mutex);
 
+#ifdef NEML2_HAS_JSON
   if (event_tracing_enabled())
     event_trace_writer().trace_duration_begin("schedule work", "WorkScheduler");
+#endif
 
   if (schedule_work_impl(device, batch_size))
   {
+#ifdef NEML2_HAS_JSON
     if (event_tracing_enabled())
       event_trace_writer().trace_duration_end(
           "schedule work", "WorkScheduler", to_json(device, batch_size), 0);
+#endif
     return;
   }
   _condition.wait(lock,
                   [this, &device, &batch_size] { return schedule_work_impl(device, batch_size); });
 
+#ifdef NEML2_HAS_JSON
   if (event_tracing_enabled())
     event_trace_writer().trace_duration_end(
         "schedule work", "WorkScheduler", to_json(device, batch_size), 0);
+#endif
 }
 
 void
 WorkScheduler::dispatched_work(Device device, std::size_t m)
 {
+#ifdef NEML2_HAS_JSON
   if (event_tracing_enabled())
     event_trace_writer().trace_duration_begin("dispatch work", "WorkScheduler");
+#endif
 
   std::lock_guard<std::mutex> lock(_mutex);
   dispatched_work_impl(device, m);
 
+#ifdef NEML2_HAS_JSON
   if (event_tracing_enabled())
     event_trace_writer().trace_duration_end("dispatch work", "WorkScheduler", to_json(device, m));
+#endif
 }
 
 void
 WorkScheduler::completed_work(Device device, std::size_t m)
 {
+#ifdef NEML2_HAS_JSON
   if (event_tracing_enabled())
     event_trace_writer().trace_instant("completed work", "WorkScheduler", to_json(device, m));
+#endif
   std::lock_guard<std::mutex> lock(_mutex);
   completed_work_impl(device, m);
   _condition.notify_all();
@@ -105,13 +119,17 @@ WorkScheduler::wait_for_completion()
   std::unique_lock<std::mutex> lock(_mutex);
   if (all_work_completed())
   {
+#ifdef NEML2_HAS_JSON
     if (event_tracing_enabled())
       event_trace_writer().trace_instant("all work completed", "WorkScheduler");
+#endif
     return;
   }
   _condition.wait(lock, [this] { return all_work_completed(); });
 
+#ifdef NEML2_HAS_JSON
   if (event_tracing_enabled())
     event_trace_writer().trace_instant("all work completed", "WorkScheduler");
+#endif
 }
 }

@@ -260,8 +260,10 @@ WorkDispatcher<I, O, Of, Ip, Op>::init_thread_pool()
   if (!_async)
     return;
 
+#ifdef NEML2_HAS_JSON
   if (event_tracing_enabled())
     event_trace_writer().trace_duration_begin("thread pool", "WorkDispatcher");
+#endif
 
   // Setup the task queue
   for (const auto & device : _devices)
@@ -285,13 +287,19 @@ WorkDispatcher<I, O, Of, Ip, Op>::init_thread_pool()
       auto device = _devices[i];
       auto task = [this, device = device]() mutable
       {
+#ifdef NEML2_HAS_JSON
         if (event_tracing_enabled())
           event_trace_writer().trace_duration_begin(
               "thread init", "WorkDispatcher", {{"device", utils::stringify(device)}});
+#endif
+
         _thread_init(device);
         _scheduler.completed_work(device, 1);
+
+#ifdef NEML2_HAS_JSON
         if (event_tracing_enabled())
           event_trace_writer().trace_duration_end("thread init", "WorkDispatcher");
+#endif
       };
       _scheduler.dispatched_work(device, 1);
       {
@@ -308,9 +316,12 @@ template <typename I, typename O, typename Of, typename Ip, typename Op>
 void
 WorkDispatcher<I, O, Of, Ip, Op>::thread_pool_main(const Device & device)
 {
+#ifdef NEML2_HAS_JSON
   if (event_tracing_enabled())
     event_trace_writer().trace_duration_begin(
         "thread main", "WorkDispatcher", {{"device", utils::stringify(device)}});
+#endif
+
   while (true)
   {
     std::function<void()> task;
@@ -324,8 +335,11 @@ WorkDispatcher<I, O, Of, Ip, Op>::thread_pool_main(const Device & device)
     }
     task();
   }
+
+#ifdef NEML2_HAS_JSON
   if (event_tracing_enabled())
     event_trace_writer().trace_duration_end("thread main", "WorkDispatcher");
+#endif
 }
 
 template <typename I, typename O, typename Of, typename Ip, typename Op>
@@ -342,28 +356,40 @@ WorkDispatcher<I, O, Of, Ip, Op>::stop_thread_pool()
   for (auto & thread : _thread_pool)
     thread.join();
 
+#ifdef NEML2_HAS_JSON
   if (event_tracing_enabled())
     event_trace_writer().trace_duration_end("thread pool", "WorkDispatcher");
+#endif
 }
 
 template <typename I, typename O, typename Of, typename Ip, typename Op>
 Of
 WorkDispatcher<I, O, Of, Ip, Op>::run(WorkGenerator<Ip> & generator)
 {
+#ifdef NEML2_HAS_JSON
   if (event_tracing_enabled())
     event_trace_writer().trace_duration_begin("run", "WorkDispatcher");
+#endif
 
   if (_async)
   {
     auto result = run_async(generator);
+
+#ifdef NEML2_HAS_JSON
     if (event_tracing_enabled())
       event_trace_writer().trace_duration_end("run", "WorkDispatcher");
+#endif
+
     return result;
   }
 
   auto result = run_sync(generator);
+
+#ifdef NEML2_HAS_JSON
   if (event_tracing_enabled())
     event_trace_writer().trace_duration_end("run", "WorkDispatcher");
+#endif
+
   return result;
 }
 
@@ -450,9 +476,11 @@ WorkDispatcher<I, O, Of, Ip, Op>::run_async(WorkGenerator<Ip> & generator)
     // Create the task
     auto task = [this, work = std::move(work), device = device, m = m, i = i]() mutable
     {
+#ifdef NEML2_HAS_JSON
       if (event_tracing_enabled())
         event_trace_writer().trace_duration_begin(
             "task", "WorkDispatcher", {{"device", utils::stringify(device)}, {"batch size", m}});
+#endif
       // Preprocess
       if (_preprocess)
         work = _preprocess(std::move(work), device);
@@ -465,8 +493,11 @@ WorkDispatcher<I, O, Of, Ip, Op>::run_async(WorkGenerator<Ip> & generator)
       _results[i] = std::move(result);
       // Tell the scheduler that we have completed m batches
       _scheduler.completed_work(device, m);
+
+#ifdef NEML2_HAS_JSON
       if (event_tracing_enabled())
         event_trace_writer().trace_duration_end("task", "WorkDispatcher");
+#endif
     };
     // Tell the scheduler that we have dispatched m batches
     _scheduler.dispatched_work(device, m);

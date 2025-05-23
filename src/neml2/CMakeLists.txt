@@ -96,16 +96,18 @@ endif()
 # ----------------------------------------------------------------------------
 # nlohmann json
 # ----------------------------------------------------------------------------
-set(JSON_MultipleHeaders OFF)
-find_package(nlohmann_json QUIET)
+if(NEML2_JSON)
+  set(JSON_MultipleHeaders OFF)
+  find_package(nlohmann_json QUIET)
 
-if(NOT TARGET nlohmann_json::nlohmann_json)
-  include(FetchContent)
-  FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v${NLOHMANN_JSON_VERSION}/json.tar.xz)
-  message(STATUS "Downloading/updating nlohmann/json")
-  set(JSON_Install ON)
-  set(JSON_SystemInclude ON)
-  FetchContent_MakeAvailable(json)
+  if(NOT TARGET nlohmann_json::nlohmann_json)
+    include(FetchContent)
+    FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v${NLOHMANN_JSON_VERSION}/json.tar.xz)
+    message(STATUS "Downloading/updating nlohmann/json")
+    set(JSON_Install ON)
+    set(JSON_SystemInclude ON)
+    FetchContent_MakeAvailable(json)
+  endif()
 endif()
 
 # ----------------------------------------------------------------------------
@@ -160,8 +162,14 @@ add_library(neml2 INTERFACE)
 
 # libneml2_misc
 neml2_add_submodule(neml2_misc SHARED misc)
-target_link_libraries(neml2_misc PUBLIC Torch::Torch nlohmann_json::nlohmann_json)
+target_link_libraries(neml2_misc PUBLIC Torch::Torch)
 set_target_properties(neml2_misc PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
+
+if(NEML2_JSON)
+  target_compile_definitions(neml2_misc PUBLIC NEML2_HAS_JSON)
+  target_link_libraries(neml2_misc PUBLIC nlohmann_json::nlohmann_json)
+endif()
+
 target_link_libraries(neml2 INTERFACE neml2_misc)
 
 if(NEML2_PCH)

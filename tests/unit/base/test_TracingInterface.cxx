@@ -30,6 +30,7 @@
 
 using namespace neml2;
 
+#ifdef NEML2_HAS_JSON
 TEST_CASE("TracingInterface", "[base]")
 {
   SECTION("single writer")
@@ -134,3 +135,4 @@ TEST_CASE("TracingInterface", "[base]")
     REQUIRE(data2[4]["ph"] == "E");
   }
 }
+#endif

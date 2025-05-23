@@ -84,6 +84,20 @@ jobs:
       - name: Build
         run: cmake --build --preset dev-cpp
 
+  no-json:
+    needs: clang-format
+    runs-on: macos-latest
+    steps:
+      - uses: applied-material-modeling/neml2-ci@main
+        with:
+          python-version: 3.9
+          cmake-version: 3.26
+          torch-version: 2.5.1
+      - name: Configure
+        run: cmake --preset dev -GNinja -DNEML2_JSON=OFF -S .
+      - name: Build
+        run: cmake --build --preset dev-cpp
+
   runner:
     needs: clang-format
     strategy:
