@@ -37,7 +37,7 @@ class LinearIsotropicStrainEnergyDensity : public ElasticityInterface<StrainEner
 public:
   static OptionSet expected_options();
 
-  LinearElasticStrainEnergyDensity(const OptionSet & options);
+  LinearIsotropicStrainEnergyDensity(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;

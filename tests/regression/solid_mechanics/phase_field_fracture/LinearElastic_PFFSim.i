@@ -1,7 +1,3 @@
-[Settings]
-  additional_libraries = '/Users/knasir/projects/neml2_local/neml2/build/dev/src/neml2/libneml2_user_tensor_Debug.dylib'
-[]
-
 ## Applying the phase field driving force in the form of Allen-Cahn equation
 
 [Drivers]
@@ -77,14 +73,14 @@
   # strain energy density: g * psie0
   [degrade]
     type = PowerDegradationFunction
-    damage = 'state/d'
+    phase = 'state/d'
     degradation = 'state/g'
     power = 'p'
   []
   [sed0]
-    type = LinearElasticStrainEnergyDensity
+    type = LinearIsotropicStrainEnergyDensity
     strain = 'forces/E'
-    elastic_strain_energy = 'state/psie0'
+    strain_energy_density = 'state/psie0'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
     coefficients = '25.84e3 0.18'
   []
@@ -96,7 +92,7 @@
   # crack geometric function: alpha
   [cracked]
     type = CrackGeometricFunctionAT2
-    damage = 'state/d'
+    phase = 'state/d'
     crack = 'state/alpha'
   []
   # total energy

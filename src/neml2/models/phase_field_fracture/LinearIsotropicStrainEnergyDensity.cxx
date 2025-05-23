@@ -22,16 +22,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/phase_field_fracture/LinearElasticStrainEnergyDensity.h"
+#include "neml2/models/phase_field_fracture/LinearIsotropicStrainEnergyDensity.h"
 #include "neml2/tensors/SSR4.h"
 #include "neml2/tensors/Scalar.h"
 
 namespace neml2
 {
-register_NEML2_object(LinearElasticStrainEnergyDensity);
+register_NEML2_object(LinearIsotropicStrainEnergyDensity);
 
 OptionSet
-LinearElasticStrainEnergyDensity::expected_options()
+LinearIsotropicStrainEnergyDensity::expected_options()
 {
   OptionSet options = ElasticityInterface<StrainEnergyDensity, 2>::expected_options();
   options.doc() =
@@ -41,7 +41,7 @@ LinearElasticStrainEnergyDensity::expected_options()
   return options;
 }
 
-LinearElasticStrainEnergyDensity::LinearElasticStrainEnergyDensity(const OptionSet & options)
+LinearIsotropicStrainEnergyDensity::LinearIsotropicStrainEnergyDensity(const OptionSet & options)
   : ElasticityInterface<StrainEnergyDensity, 2>(options),
     _converter(_constant_types, _need_derivs)
 
@@ -49,7 +49,7 @@ LinearElasticStrainEnergyDensity::LinearElasticStrainEnergyDensity(const OptionS
 }
 
 void
-LinearElasticStrainEnergyDensity::set_value(bool out, bool dout_din, bool d2out_din2)
+LinearIsotropicStrainEnergyDensity::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   const auto [K_and_dK, G_and_dG] = _converter.convert(_constants);
   const auto & [K, dK] = K_and_dK;
