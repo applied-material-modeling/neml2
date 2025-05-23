@@ -5,7 +5,7 @@
       input_Scalar_names = 'state/phi state/phimax'
       input_Scalar_values = '0.553456 0.374'
       output_Scalar_names = 'state/out'
-      output_Scalar_values = '1.0'
+      output_Scalar_values = '1.479828877'
       check_second_derivatives = true
     []
   []
@@ -19,4 +19,3 @@
       effective_saturation = 'state/out'
     []
   []
-  

@@ -93,7 +93,8 @@ SymmetricHermiteInterpolation::set_value(bool out, bool dout_din, bool d2out_din
     auto df2_xl = 6 - 24 * x;
     auto df2_xh = 6 - 24 * (1 - x);
 
-    const auto zeromask = Scalar(at::logical_and(at::lt(x, 1.0), at::gt(x, 0.0)));
+    const auto zeromask = Scalar(at::logical_and(at::lt(x, 1.0 - machine_precision()),
+                                                 at::gt(x, 0.0 + machine_precision())));
     _y.d(_x, _x) = zeromask * where(x < 0.5, df2_xl, df2_xh);
   }
 }
