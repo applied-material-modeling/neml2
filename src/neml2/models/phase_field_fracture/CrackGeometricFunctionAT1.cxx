@@ -33,7 +33,8 @@ OptionSet
 CrackGeometricFunctionAT1::expected_options()
 {
   OptionSet options = CrackGeometricFunction::expected_options();
-  options.doc() = "Crack geometric function associated with the AT-1 functional, $ \\alpha = d $";
+  options.doc() =
+      "Crack geometric function associated with the AT-1 functional, \\f$ \\alpha = d \\f$";
   options.set<bool>("define_second_derivatives") = true;
 
   return options;
