@@ -37,6 +37,6 @@ public:
   CrackGeometricFunctionAT1(const OptionSet & options);
 
 protected:
-  void set_value(bool out, bool dout_din, bool d2out_din2) override;
+  void set_value(bool out, bool dout_din, bool /*d2out_din2*/) override;
 };
 } // namespace neml2

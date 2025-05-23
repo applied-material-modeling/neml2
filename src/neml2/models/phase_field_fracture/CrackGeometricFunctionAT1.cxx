@@ -45,7 +45,7 @@ CrackGeometricFunctionAT1::CrackGeometricFunctionAT1(const OptionSet & options)
 }
 
 void
-CrackGeometricFunctionAT1::set_value(bool out, bool dout_din, bool d2out_din2)
+CrackGeometricFunctionAT1::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   if (out)
   {
