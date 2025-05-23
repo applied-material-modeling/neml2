@@ -28,26 +28,23 @@
 
 namespace neml2
 {
-class SymmetricHermiteInterpolation : public Model
+class SR2;
+
+/// The plastic flow direction assuming an associative J2 flow.
+class DeformationGradientJacobian : public Model
 {
 public:
   static OptionSet expected_options();
 
-  SymmetricHermiteInterpolation(const OptionSet & options);
+  DeformationGradientJacobian(const OptionSet & options);
 
 protected:
-  void set_value(bool out, bool dout_din, bool d2out_din2) override;
+  void set_value(bool, bool, bool) override;
 
-  /// Argument of the smooth step function
-  const Variable<Scalar> & _x;
+  /// deformation gradient tensor, F
+  const Variable<R2> & _F;
 
-  /// Value of the smooth step function
-  Variable<Scalar> & _y;
-
-  /// Lower bound of the argument
-  const Scalar & _x0;
-
-  /// Upper bound of the argument
-  const Scalar & _x1;
+  /// Jacobian
+  Variable<Scalar> & _J;
 };
 } // namespace neml2

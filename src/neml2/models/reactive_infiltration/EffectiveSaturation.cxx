@@ -23,6 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/models/reactive_infiltration/EffectiveSaturation.h"
+#include "neml2/tensors/functions/clamp.h"
+#include "neml2/tensors/functions/where.h"
 
 namespace neml2
 {
@@ -68,23 +70,34 @@ EffectiveSaturation::EffectiveSaturation(const OptionSet & options)
 void
 EffectiveSaturation::set_value(bool out, bool dout_din, bool d2out_din2)
 {
+  auto val = (_phi / _phimax - _Sr) / (1.0 - _Sr);
+
   if (out)
   {
-    _S = (_phi / _phimax - _Sr) / (1.0 - _Sr);
+    _S = val;
+    // where(val >= 1, Scalar::ones_like(_phi), val); // clamp(val, 0.0, 1.0);
   }
 
   if (dout_din)
   {
+    // _S.d(_phi) = where(
+    //     at::logical_or(val >= 1, val <= 0), Scalar::zeros_like(_phi), 1.0 / (_phimax * (1 -
+    //     _Sr)));
     _S.d(_phi) = 1.0 / (_phimax * (1 - _Sr));
+    // where(val >= 1, Scalar::zeros_like(_phi), 1.0 / (_phimax * (1 - _Sr)));
     _S.d(_phimax) = -_phi / (_phimax * _phimax * (1 - _Sr));
+    // where(val >= 1, Scalar::zeros_like(_phi), -_phi / (_phimax * _phimax * (1 - _Sr)));
   }
 
   if (d2out_din2)
   {
     _S.d(_phi, _phimax) = -1.0 / ((1 - _Sr) * _phimax * _phimax);
+    // where(val >= 1, Scalar::zeros_like(_phi), -1.0 / ((1 - _Sr) * _phimax * _phimax));
     _S.d(_phimax, _phi) = -1.0 / (_phimax * _phimax * (1 - _Sr));
+    //  where(val >= 1, Scalar::zeros_like(_phi), -1.0 / (_phimax * _phimax * (1 - _Sr)));
     _S.d(_phimax, _phimax) = 2.0 * _phi / (_phimax * _phimax * _phimax * (1 - _Sr));
-    // 0 otherwise
+    // where(val >= 1, Scalar::zeros_like(_phi), 2.0 * _phi / (_phimax * _phimax * _phimax * (1 -
+    // _Sr))); 0 otherwise
   }
 }
 }

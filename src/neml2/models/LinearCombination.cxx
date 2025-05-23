@@ -25,6 +25,7 @@
 #include "neml2/models/LinearCombination.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/Vec.h"
+#include "neml2/tensors/R2.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
 #include "neml2/misc/assertions.h"
@@ -153,4 +154,5 @@ LinearCombination<T>::set_value(bool out, bool dout_din, bool d2out_din2)
 REGISTER(Scalar);
 REGISTER(Vec);
 REGISTER(SR2);
+REGISTER(R2);
 } // namespace neml2

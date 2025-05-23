@@ -28,26 +28,31 @@
 
 namespace neml2
 {
-class SymmetricHermiteInterpolation : public Model
+/**
+ * @brief Define the stress associated with advection.
+ */
+class AdvectionStress : public Model
 {
 public:
   static OptionSet expected_options();
 
-  SymmetricHermiteInterpolation(const OptionSet & options);
+  AdvectionStress(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  /// Argument of the smooth step function
-  const Variable<Scalar> & _x;
+  const Scalar & _coeff;
 
-  /// Value of the smooth step function
-  Variable<Scalar> & _y;
+  // Jacobian
+  const Variable<Scalar> & _J;
 
-  /// Lower bound of the argument
-  const Scalar & _x0;
+  // First Piola-Kirchoff Stress
+  const Variable<R2> & _P;
 
-  /// Upper bound of the argument
-  const Scalar & _x1;
+  // Deformation Gradient
+  const Variable<R2> & _F;
+
+  // output stress
+  Variable<Scalar> & _ps;
 };
-} // namespace neml2
+}

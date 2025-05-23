@@ -28,26 +28,32 @@
 
 namespace neml2
 {
-class SymmetricHermiteInterpolation : public Model
+class PhaseChangeDeformationGradient : public Model
 {
 public:
   static OptionSet expected_options();
 
-  SymmetricHermiteInterpolation(const OptionSet & options);
+  PhaseChangeDeformationGradient(const OptionSet & options);
 
 protected:
-  void set_value(bool out, bool dout_din, bool d2out_din2) override;
+  void set_value(bool, bool, bool) override;
 
-  /// Argument of the smooth step function
-  const Variable<Scalar> & _x;
+  /// fluid fraction
+  const Variable<Scalar> & _vf;
 
-  /// Value of the smooth step function
-  Variable<Scalar> & _y;
+  /// phase fraction
+  const Variable<Scalar> & _c;
 
-  /// Lower bound of the argument
-  const Scalar & _x0;
+  /// Coefficient of phase expansion
+  const Scalar & _alpha;
 
-  /// Upper bound of the argument
-  const Scalar & _x1;
+  /// Coefficient of phase change
+  const Scalar & _dOmega;
+
+  /// specify whether to transpose+inverse
+  const bool _inverse;
+
+  /// deformation gradient tensor, F
+  Variable<R2> & _F;
 };
 } // namespace neml2

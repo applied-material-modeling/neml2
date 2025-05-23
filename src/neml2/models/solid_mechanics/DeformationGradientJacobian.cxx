@@ -22,32 +22,49 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-
-#include "neml2/models/Model.h"
+#include "neml2/models/solid_mechanics/DeformationGradientJacobian.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/R2.h"
 
 namespace neml2
 {
-class SymmetricHermiteInterpolation : public Model
+register_NEML2_object(DeformationGradientJacobian);
+
+OptionSet
+DeformationGradientJacobian::expected_options()
 {
-public:
-  static OptionSet expected_options();
+  auto options = Model::expected_options();
+  options.doc() = "Calculate the Jacobian of the deformation gradient tensor \\f$ F \\f$, aka \\f$ "
+                  "J = det(F) \\f$.";
 
-  SymmetricHermiteInterpolation(const OptionSet & options);
+  options.set<VariableName>("deformation_gradient") = VariableName(STATE, "F");
+  options.set("deformation_gradient").doc() = "Deformation gradient tensor";
 
-protected:
-  void set_value(bool out, bool dout_din, bool d2out_din2) override;
+  options.set<VariableName>("jacobian") = VariableName(STATE, "J");
+  options.set("jacobian").doc() = "The jacobian";
 
-  /// Argument of the smooth step function
-  const Variable<Scalar> & _x;
+  return options;
+}
 
-  /// Value of the smooth step function
-  Variable<Scalar> & _y;
+DeformationGradientJacobian::DeformationGradientJacobian(const OptionSet & options)
+  : Model(options),
+    _F(declare_input_variable<R2>("deformation_gradient")),
+    _J(declare_output_variable<Scalar>("jacobian"))
+{
+}
 
-  /// Lower bound of the argument
-  const Scalar & _x0;
+void
+DeformationGradientJacobian::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
+{
+  if (out)
+  {
+    _J = R2(_F).det();
+  }
 
-  /// Upper bound of the argument
-  const Scalar & _x1;
-};
+  if (dout_din)
+    if (_F.is_dependent())
+    {
+      _J.d(_F) = R2(_F).det() * R2(_F).inverse().transpose();
+    }
+}
 } // namespace neml2

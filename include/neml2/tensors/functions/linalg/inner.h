@@ -24,30 +24,19 @@
 
 #pragma once
 
-#include "neml2/models/Model.h"
-
 namespace neml2
 {
-class SymmetricHermiteInterpolation : public Model
+class Tensor;
+class Scalar;
+
+/**
+ * @brief Batched inner product
+ *
+ * The input matrices \p a and \p b must have exactly 2 base dimensions. The batch shapes must
+ * broadcast.
+ */
+namespace linalg
 {
-public:
-  static OptionSet expected_options();
-
-  SymmetricHermiteInterpolation(const OptionSet & options);
-
-protected:
-  void set_value(bool out, bool dout_din, bool d2out_din2) override;
-
-  /// Argument of the smooth step function
-  const Variable<Scalar> & _x;
-
-  /// Value of the smooth step function
-  Variable<Scalar> & _y;
-
-  /// Lower bound of the argument
-  const Scalar & _x0;
-
-  /// Upper bound of the argument
-  const Scalar & _x1;
-};
+Scalar inner(const Tensor & a, const Tensor & b);
+} // namespace linalg
 } // namespace neml2

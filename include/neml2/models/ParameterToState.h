@@ -28,26 +28,22 @@
 
 namespace neml2
 {
-class SymmetricHermiteInterpolation : public Model
+/**
+ * @brief Convert a parameter to a state variables
+ */
+template <typename T>
+class ParameterToState : public Model
 {
 public:
   static OptionSet expected_options();
 
-  SymmetricHermiteInterpolation(const OptionSet & options);
+  ParameterToState(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  /// Argument of the smooth step function
-  const Variable<Scalar> & _x;
+  const T & _input_param;
 
-  /// Value of the smooth step function
-  Variable<Scalar> & _y;
-
-  /// Lower bound of the argument
-  const Scalar & _x0;
-
-  /// Upper bound of the argument
-  const Scalar & _x1;
+  Variable<T> & _state;
 };
 } // namespace neml2

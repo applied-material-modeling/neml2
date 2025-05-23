@@ -35,7 +35,11 @@ OptionSet
 SymmetricHermiteInterpolation::expected_options()
 {
   OptionSet options = Model::expected_options();
-  options.doc() = "Defined the symmetric Hermite interpolation function";
+  options.doc() =
+      "Defined the symmetric Hermite interpolation function, takes the form of \\f$ (3c^2-4c^3) "
+      "for 0 le c le 0.5, 3(1-c)^2 - 4(1-c)^3 for 0.5 le c le 1, and 0.0 otherwise \\f$. Here, "
+      "\\f$ c = \\frac{x-x_l}{x_h-x_l} \\f$ where \\f$x_l, x_h\\f$ are the lower and upper bound "
+      "respectively";
 
   options.set_input("argument");
   options.set("argument").doc() = "Argument of the smooth step function";
@@ -51,9 +55,6 @@ SymmetricHermiteInterpolation::expected_options()
   options.set_buffer<TensorName<Scalar>>("upper_bound");
   options.set("upper_bound").doc() = "Upper bound of the argument";
 
-  options.set<bool>("complement_condition") = false;
-  options.set("complement_condition").doc() = "Whether takes 1 to subtract the function.";
-
   return options;
 }
 
@@ -62,23 +63,21 @@ SymmetricHermiteInterpolation::SymmetricHermiteInterpolation(const OptionSet & o
     _x(declare_input_variable<Scalar>("argument")),
     _y(declare_output_variable<Scalar>("value")),
     _x0(declare_buffer<Scalar>("lb", "lower_bound")),
-    _x1(declare_buffer<Scalar>("ub", "upper_bound")),
-    _comp_cond(options.get<bool>("complement_condition"))
+    _x1(declare_buffer<Scalar>("ub", "upper_bound"))
 {
 }
 
 void
 SymmetricHermiteInterpolation::set_value(bool out, bool dout_din, bool d2out_din2)
 {
-  const auto x = clamp((_x - _x0) / (_x1 - _x0), 0.0, 1.0);
+  const auto x =
+      clamp((_x - _x0) / (_x1 - _x0), 0.0 + machine_precision(), 1.0 - machine_precision());
 
   if (out)
   {
     auto f_xl = 3 * x * x - 4 * x * x * x;
     auto f_xh = 3 * (1 - x) * (1 - x) - 4 * (1 - x) * (1 - x) * (1 - x);
     _y = where(x < 0.5, f_xl, f_xh);
-    if (_comp_cond)
-      _y = 1.0 - where(x < 0.5, f_xl, f_xh);
   }
 
   if (dout_din)
@@ -87,8 +86,6 @@ SymmetricHermiteInterpolation::set_value(bool out, bool dout_din, bool d2out_din
     auto df_xh = -6 * (1 - x) + 12 * (1 - x) * (1 - x);
 
     _y.d(_x) = where(x < 0.5, df_xl, df_xh);
-    if (_comp_cond)
-      _y.d(_x) = -(where(x < 0.5, df_xl, df_xh));
   }
 
   if (d2out_din2)
@@ -97,10 +94,7 @@ SymmetricHermiteInterpolation::set_value(bool out, bool dout_din, bool d2out_din
     auto df2_xh = 6 - 24 * (1 - x);
 
     const auto zeromask = Scalar(at::logical_and(at::lt(x, 1.0), at::gt(x, 0.0)));
-
     _y.d(_x, _x) = zeromask * where(x < 0.5, df2_xl, df2_xh);
-    if (_comp_cond)
-      _y.d(_x, _x) = -(zeromask * where(x < 0.5, df2_xl, df2_xh));
   }
 }
 } // namespace neml2

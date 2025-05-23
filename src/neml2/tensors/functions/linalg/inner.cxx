@@ -22,32 +22,31 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
+#include "neml2/tensors/functions/linalg/inner.h"
+#include "neml2/tensors/Tensor.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/assertions.h"
 
-#include "neml2/models/Model.h"
-
-namespace neml2
+namespace neml2::linalg
 {
-class SymmetricHermiteInterpolation : public Model
+Scalar
+inner(const Tensor & a, const Tensor & b)
 {
-public:
-  static OptionSet expected_options();
-
-  SymmetricHermiteInterpolation(const OptionSet & options);
-
-protected:
-  void set_value(bool out, bool dout_din, bool d2out_din2) override;
-
-  /// Argument of the smooth step function
-  const Variable<Scalar> & _x;
-
-  /// Value of the smooth step function
-  Variable<Scalar> & _y;
-
-  /// Lower bound of the argument
-  const Scalar & _x0;
-
-  /// Upper bound of the argument
-  const Scalar & _x1;
-};
+  neml_assert_batch_broadcastable_dbg(a, b);
+  neml_assert_dbg(a.base_dim() == 2,
+                  "The first tensor in inner has base dimension ",
+                  a.base_dim(),
+                  " instead of 2.");
+  neml_assert_dbg(b.base_dim() == 2,
+                  "The second tensor in inner has base dimension ",
+                  b.base_dim(),
+                  " instead of 2.");
+  neml_assert_dbg(a.base_size(0) == b.base_size(0),
+                  "The two tensors in inner have different base sizes: ",
+                  a.base_size(0),
+                  " and ",
+                  b.base_size(0),
+                  ".");
+  return Scalar(at::tensordot(a, b, {-2, 1}, {-2, 1}));
+}
 } // namespace neml2

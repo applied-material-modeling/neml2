@@ -22,55 +22,53 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/solid_mechanics/elasticity/GreenLagrangeStrain.h"
-#include "neml2/tensors/SR2.h"
-#include "neml2/tensors/R2.h"
-#include "neml2/tensors/mandel_notation.h"
+#include "neml2/models/ParameterToState.h"
+#include "neml2/misc/assertions.h"
+#include "neml2/tensors/tensors.h"
 
 namespace neml2
 {
-register_NEML2_object(GreenLagrangeStrain);
-
+template <typename T>
 OptionSet
-GreenLagrangeStrain::expected_options()
+ParameterToState<T>::expected_options()
 {
   OptionSet options = Model::expected_options();
-  options.doc() =
-      "Green-Lagrange strain, \\f$ E = \\frac{1}{2} (C - I) \\f$, where \\f$ C = F^T F \\f$ "
-      "is the right Cauchy-Green tensor and \\f$ I \\f$ is the identity tensor.";
+  options.doc() = "Convert the parameter to state variable.";
 
-  options.set_input("deformation_gradient") = VariableName(FORCES, "F");
-  options.set("deformation_gradient").doc() = "The deformation gradient";
+  options.set<bool>("define_second_derivatives") = true;
 
-  options.set_output("strain") = VariableName(STATE, "E");
-  options.set("strain").doc() = "The Green-Lagrange strain";
+  options.set_parameter<TensorName<T>>("from");
+  options.set("from").doc() = "The input parameter";
+
+  options.set_output("to");
+  options.set("to").doc() = "The name of the variables, default to 'state/object_name'";
 
   return options;
 }
 
-GreenLagrangeStrain::GreenLagrangeStrain(const OptionSet & options)
+template <typename T>
+ParameterToState<T>::ParameterToState(const OptionSet & options)
   : Model(options),
-    _E(declare_output_variable<SR2>("strain")),
-    _F(declare_input_variable<R2>("deformation_gradient"))
+    _input_param(this->template declare_parameter<T>("param", "from")),
+    _state(options.get("to").user_specified()
+               ? this->template declare_output_variable<T>("to")
+               : this->template declare_output_variable<T>(VariableName(STATE, this->name())))
 {
 }
 
+template <typename T>
 void
-GreenLagrangeStrain::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
+ParameterToState<T>::set_value(bool out, bool /*dout_din*/, bool /*d2out_din2*/)
 {
   if (out)
   {
-    const auto C = R2(_F).transpose() * _F;
-    _E = 0.5 * (SR2(C) - SR2::identity(_F.options()));
-  }
-
-  if (dout_din)
-  {
-    const auto I = R2::identity(_F.options());
-    const auto dC_dF = R4(at::einsum("...jm,...ni,...jk", {I, I, _F})) +
-                       R4(at::einsum("...jm,...nk,...ji", {I, I, _F}));
-    _E.d(_F) = 0.5 * full_to_mandel(dC_dF);
+    this->_state = _input_param;
   }
 }
 
+#define REGISTER(T)                                                                                \
+  using T##ParameterToState = ParameterToState<T>;                                                 \
+  register_NEML2_object(T##ParameterToState);                                                      \
+  template class ParameterToState<T>
+FOR_ALL_PRIMITIVETENSOR(REGISTER);
 } // namespace neml2

@@ -28,26 +28,29 @@
 
 namespace neml2
 {
-class SymmetricHermiteInterpolation : public Model
+class ThermalDeformationGradient : public Model
 {
 public:
   static OptionSet expected_options();
 
-  SymmetricHermiteInterpolation(const OptionSet & options);
+  ThermalDeformationGradient(const OptionSet & options);
 
 protected:
-  void set_value(bool out, bool dout_din, bool d2out_din2) override;
+  void set_value(bool, bool, bool) override;
 
-  /// Argument of the smooth step function
-  const Variable<Scalar> & _x;
+  /// Eigen strain
+  const Variable<Scalar> & _T;
 
-  /// Value of the smooth step function
-  Variable<Scalar> & _y;
+  /// The reference (stress free) temperature
+  const Scalar & _T0;
 
-  /// Lower bound of the argument
-  const Scalar & _x0;
+  /// Coefficient of thermal expansion
+  const Scalar & _alpha;
 
-  /// Upper bound of the argument
-  const Scalar & _x1;
+  /// specify whether to transpose+inverse
+  const bool _inverse;
+
+  /// deformation gradient tensor, F
+  Variable<R2> & _F;
 };
 } // namespace neml2
