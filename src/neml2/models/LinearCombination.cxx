@@ -78,7 +78,7 @@ template <typename T>
 LinearCombination<T>::LinearCombination(const OptionSet & options)
   : Model(options),
     _to(declare_output_variable<T>("to_var")),
-    _co(declare_parameter<Scalar>("co", "constant_coefficient"))
+    _co(declare_parameter<Scalar>("c0", "constant_coefficient"))
 {
   for (const auto & fv : options.get<std::vector<VariableName>>("from_var"))
     _from.push_back(&declare_input_variable<T>(fv));
