@@ -36,7 +36,7 @@ ExponentialLawPermeability::expected_options()
   options.doc() =
       "Define the exponential porosity-permeability relation, takes the form of "
       "\\f$ K_o \\exp(a(\\varphi_o-\\varphi))} \\f$ where \\f$ a "
-      "\\f$ is the fitting parameter. \\f$ varphi_o, K_o \\f$ are the reference porosity and "
+      "\\f$ is the fitting parameter. \\f$ \\varphi_o, K_o \\f$ are the reference porosity and "
       "permeability respectively.";
 
   options.set_parameter<TensorName<Scalar>>("exponential_scale");

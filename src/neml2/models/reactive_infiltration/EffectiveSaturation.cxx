@@ -35,7 +35,7 @@ EffectiveSaturation::expected_options()
   OptionSet options = Model::expected_options();
   options.doc() =
       "Calculate the effective saturation (volume fraction), takes the form of \\f$ S = "
-      "\\frac{\\phi^* - S_r}{1-S_r} where "
+      "\\frac{\\phi^* - S_r}{1-S_r} \\f$ where "
       "\\f$ \\phi \\f$ is the flow species volume fraction,\\f$ \\phi_{max} \\f$ is the maximum "
       "allowable flow species volume fraction and \\f$ "
       "S_r \\f$ is the residual liquid volume fraction";
