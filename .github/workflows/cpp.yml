@@ -98,23 +98,6 @@ jobs:
       - name: Build
         run: cmake --build --preset dev-cpp
 
-  profiling:
-    needs: clang-format
-    runs-on: macos-latest
-    steps:
-      - uses: applied-material-modeling/neml2-ci@main
-        with:
-          python-version: 3.9
-          cmake-version: 3.26
-          torch-version: 2.5.1
-      - name: Configure
-        run: cmake --preset profiling -GNinja -S .
-      - name: Build
-        run: cmake --build --preset profiling
-      - name: Check profile generation
-        run: |
-          CPUPROFILE=prof.out ./build/profiling/runner/runner runner/benchmark/elasticity/model.i driver nbatch=1 device=cpu
-          [[ -f prof.out ]]
 
   runner:
     needs: clang-format
@@ -134,6 +117,29 @@ jobs:
         run: cmake --build --preset runner
       - name: Run tests
         run: ctest --preset runner --output-on-failure
+
+  profiling:
+    needs: clang-format
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: applied-material-modeling/neml2-ci@main
+        with:
+          python-version: 3.9
+          cmake-version: 3.26
+          torch-version: 2.5.1
+      - name: Configure
+        run: cmake --preset profiling -GNinja -S .
+      - if: matrix.os == 'macos-latest'
+        run: ls -lh /Users/runner/work/neml2/neml2/build/profiling/_deps/gperftools/lib
+      - name: Build
+        run: cmake --build --preset profiling
+      - name: Check profile generation
+        run: |
+          CPUPROFILE=prof.out ./build/profiling/runner/runner runner/benchmark/elasticity/model.i driver nbatch=1 device=cpu
+          [[ -f prof.out ]]
 
   thread-sanitizer:
     needs: clang-format
