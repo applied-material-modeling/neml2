@@ -245,13 +245,12 @@ if(NEML2_DOC)
             endif()
       endif()
 
-      if(NOT DOXYGEN_FOUND)
+      if(DOXYGEN_FOUND)
+            get_target_property(DOXYGEN_EXECUTABLE Doxygen::doxygen IMPORTED_LOCATION)
+      else()
             message(WARNING "Documentation requires Doxygen, but one cannot be located, reverting NEML2_DOC to OFF")
             set(NEML2_DOC OFF CACHE BOOL "Build NEML2 documentation (html)" FORCE)
-            return()
       endif()
-
-      get_target_property(DOXYGEN_EXECUTABLE Doxygen::doxygen IMPORTED_LOCATION)
 endif()
 
 # ----------------------------------------------------------------------------
