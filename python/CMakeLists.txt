@@ -1,8 +1,6 @@
 # ----------------------------------------------------------------------------
 # Torch
 # ----------------------------------------------------------------------------
-find_package(Torch)
-
 if(NOT Torch_IS_PYTHON_PACKAGE)
   message(WARNING "Python bindings can only be built against a Torch python package. Although a Torch is found, it does not appear to come from Python site packages. Reverting NEML2_PYBIND to OFF.")
   set(NEML2_PYBIND OFF CACHE BOOL "Build Python bindings" FORCE)
@@ -13,6 +11,10 @@ endif()
 # pybind11
 # ----------------------------------------------------------------------------
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module)
+execute_process(
+  COMMAND_ERROR_IS_FATAL ANY
+  COMMAND ${Python3_EXECUTABLE} ${NEML2_SOURCE_DIR}/scripts/check_python_dep.py ${CMAKE_CURRENT_SOURCE_DIR}/neml2/requirements.txt
+)
 set(pybind11_ROOT ${Python3_SITEARCH}/pybind11)
 find_package(pybind11 CONFIG REQUIRED)
 
@@ -98,5 +100,9 @@ install(DIRECTORY neml2/pyzag DESTINATION . COMPONENT libneml2-python)
 # Tests
 # ----------------------------------------------------------------------------
 if(NEML2_TESTS)
+  execute_process(
+    COMMAND_ERROR_IS_FATAL ANY
+    COMMAND ${Python3_EXECUTABLE} ${NEML2_SOURCE_DIR}/scripts/check_python_dep.py ${CMAKE_CURRENT_SOURCE_DIR}/tests/requirements.txt
+  )
   add_subdirectory(tests)
 endif()

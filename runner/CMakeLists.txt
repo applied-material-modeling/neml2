@@ -2,7 +2,6 @@
 # argparse
 # ------------------------------------------------------------------------------
 include(DownloadArgparse)
-add_dependencies(deps argparse)
 
 # ------------------------------------------------------------------------------
 # runner
@@ -12,6 +11,11 @@ add_executable(runner ${srcs})
 
 target_compile_options(runner PRIVATE -Wall -Wextra -pedantic)
 target_link_libraries(runner PRIVATE neml2 argparse)
+
+if(CMAKE_BUILD_TYPE STREQUAL "Profiling")
+  target_link_libraries(runner PRIVATE Gperftools::profiler)
+endif()
+
 set_target_properties(runner PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
 
 install(TARGETS runner COMPONENT libneml2-bin)

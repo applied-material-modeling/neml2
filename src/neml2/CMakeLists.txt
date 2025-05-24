@@ -1,116 +1,4 @@
 # ----------------------------------------------------------------------------
-# Torch
-# ----------------------------------------------------------------------------
-find_package(Torch)
-
-if(NOT Torch_FOUND)
-  include(DownloadTorch)
-  set(Torch_ROOT ${torch_SOURCE_DIR} CACHE PATH "Torch root directory" FORCE)
-  find_package(Torch REQUIRED)
-endif()
-
-if(HAS_GLIBC)
-  if(${GLIBCXX_USE_CXX11_ABI} STREQUAL "0")
-    message(STATUS "Using pre C++11 ABI")
-  else()
-    message(STATUS "Using C++11 ABI")
-  endif()
-endif()
-
-cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${Torch_LINK_DIR} Torch_DOWNLOADED)
-
-if(Torch_DOWNLOADED)
-  install(DIRECTORY ${Torch_INCLUDE_DIR} TYPE INCLUDE COMPONENT libneml2)
-  install(DIRECTORY ${Torch_LINK_DIR} DESTINATION . COMPONENT libneml2)
-endif()
-
-# ----------------------------------------------------------------------------
-# HIT
-# ----------------------------------------------------------------------------
-find_package(HIT)
-
-if(NOT HIT_FOUND)
-  # ----------------------------------------------------------------------------
-  # WASP
-  # ----------------------------------------------------------------------------
-  if(NOT WASP_FOUND)
-    include(DownloadWASP)
-    set(WASP_ROOT ${WASP_INSTALL_DIR} CACHE PATH "WASP root directory" FORCE)
-    find_package(WASP REQUIRED)
-  endif()
-
-  include(DownloadHIT)
-  set(HIT_ROOT ${HIT_INSTALL_DIR} CACHE PATH "HIT root directory" FORCE)
-  find_package(HIT REQUIRED)
-endif()
-
-cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${WASP_LINK_DIR} WASP_DOWNLOADED)
-cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${HIT_LINK_DIR} HIT_DOWNLOADED)
-
-if(WASP_DOWNLOADED)
-  install(DIRECTORY ${WASP_INCLUDE_DIR}/waspcore ${WASP_INCLUDE_DIR}/wasphit TYPE INCLUDE COMPONENT libneml2)
-endif()
-
-if(HIT_DOWNLOADED)
-  install(DIRECTORY ${HIT_INCLUDE_DIR}/hit TYPE INCLUDE COMPONENT libneml2)
-endif()
-
-# ----------------------------------------------------------------------------
-# TIMPI
-# ----------------------------------------------------------------------------
-if(NEML2_WORK_DISPATCHER)
-  find_package(TIMPI)
-
-  if(NOT TIMPI_FOUND)
-    include(DownloadTIMPI)
-    set(TIMPI_ROOT ${TIMPI_INSTALL_DIR} CACHE PATH "TIMPI root directory" FORCE)
-    find_package(TIMPI REQUIRED)
-  endif()
-
-  cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${TIMPI_LINK_DIR} TIMPI_DOWNLOADED)
-
-  if(TIMPI_DOWNLOADED)
-    install(DIRECTORY ${TIMPI_INCLUDE_DIR}/timpi TYPE INCLUDE COMPONENT libneml2)
-  endif()
-endif()
-
-# ----------------------------------------------------------------------------
-# CPU Profiler
-# ----------------------------------------------------------------------------
-if(NEML2_CPU_PROFILER)
-  find_package(Gperftools)
-
-  if(NOT Gperftools_FOUND)
-    include(DownloadGperftools)
-    set(Gperftools_ROOT ${GPERFTOOLS_INSTALL_DIR} CACHE PATH "gperftools root directory" FORCE)
-    find_package(Gperftools REQUIRED)
-  endif()
-
-  cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${Gperftools_LINK_DIR} Gperftools_DOWNLOADED)
-
-  if(Gperftools_DOWNLOADED)
-    # libneml2 does not need gperftools headers
-  endif()
-endif()
-
-# ----------------------------------------------------------------------------
-# nlohmann json
-# ----------------------------------------------------------------------------
-if(NEML2_JSON)
-  set(JSON_MultipleHeaders OFF)
-  find_package(nlohmann_json QUIET)
-
-  if(NOT TARGET nlohmann_json::nlohmann_json)
-    include(FetchContent)
-    FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v${NLOHMANN_JSON_VERSION}/json.tar.xz)
-    message(STATUS "Downloading/updating nlohmann/json")
-    set(JSON_Install ON)
-    set(JSON_SystemInclude ON)
-    FetchContent_MakeAvailable(json)
-  endif()
-endif()
-
-# ----------------------------------------------------------------------------
 # Helper function to add a submodule
 # ----------------------------------------------------------------------------
 function(neml2_add_submodule mname TYPE mdir)
@@ -133,15 +21,6 @@ function(neml2_add_submodule mname TYPE mdir)
 
   if(HAS_GLIBC)
     target_compile_options(${mname} PUBLIC -D_GLIBCXX_USE_CXX11_ABI=${GLIBCXX_USE_CXX11_ABI})
-  endif()
-
-  if(NEML2_CPU_PROFILER)
-    target_link_libraries(${mname} PRIVATE Gperftools::profiler)
-  endif()
-
-  if(NEML2_THREAD_SANITIZER)
-    target_compile_options(${mname} PUBLIC ${CMAKE_CXX_FLAGS_THREAD_SANITIZER})
-    target_link_options(${mname} PUBLIC ${CMAKE_CXX_FLAGS_THREAD_SANITIZER})
   endif()
 
   install(TARGETS ${mname} FILE_SET HEADERS COMPONENT libneml2)
@@ -257,9 +136,9 @@ if(NEML2_WORK_DISPATCHER)
   target_link_libraries(neml2 INTERFACE neml2_dispatcher)
 endif()
 
-# ###############################################################################
+# ----------------------------------------------------------------------------
 # Version number and hash
-# ###############################################################################
+# ----------------------------------------------------------------------------
 find_package(Git)
 
 if(Git_FOUND)
