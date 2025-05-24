@@ -6,6 +6,8 @@
     input_Scalar_values = '3.1 2.5 4.6 7.8'
     output_Scalar_names = 'state/E'
     output_Scalar_values = '2.051192146'
+    check_second_derivatives = true
+    second_derivative_abs_tol = 2e-8
   []
 []
 

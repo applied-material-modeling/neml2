@@ -49,6 +49,7 @@ Checks: >
   -modernize-use-using,
   -modernize-use-trailing-return-type,
   -modernize-use-nodiscard,
+  -modernize-raw-string-literal,
   performance-*,
   -performance-inefficient-string-concatenation,
   -performance-avoid-endl,

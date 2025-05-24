@@ -46,3 +46,6 @@ Testing
 *.pdf
 *.gv
 *.json
+
+# Mac
+.DS_Store
