@@ -140,6 +140,20 @@ TensorBase<Derived>::clone() const
 
 template <class Derived>
 Derived
+TensorBase<Derived>::cpu() const
+{
+  return Derived(ATensor::cpu(), batch_sizes());
+}
+
+template <class Derived>
+Derived
+TensorBase<Derived>::contiguous() const
+{
+  return Derived(ATensor::contiguous(), batch_sizes());
+}
+
+template <class Derived>
+Derived
 TensorBase<Derived>::detach() const
 {
   return Derived(ATensor::detach(), batch_sizes());
