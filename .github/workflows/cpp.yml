@@ -113,7 +113,7 @@ jobs:
         run: cmake --build --preset profiling
       - name: Check profile generation
         run: |
-          CPUPROFILE=prof.out ./build/profiling/runner/runner runner/benchmark/elasticity/model.i nbatch=1 device=cpu
+          CPUPROFILE=prof.out ./build/profiling/runner/runner runner/benchmark/elasticity/model.i driver nbatch=1 device=cpu
           [[ -f prof.out ]]
 
   runner:
