@@ -24,8 +24,7 @@
 
 #pragma once
 
-#include <vector>
-#include "neml2/tensors/indexing.h"
+#include "neml2/misc/types.h"
 #include "neml2/misc/errors.h"
 
 namespace neml2::utils

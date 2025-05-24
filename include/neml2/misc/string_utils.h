@@ -28,9 +28,6 @@
 #include <vector>
 #include <sstream>
 
-#include "neml2/misc/errors.h"
-#include "neml2/misc/types.h"
-
 namespace neml2::utils
 {
 template <typename T, typename... Args>

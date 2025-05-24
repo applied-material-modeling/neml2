@@ -24,12 +24,13 @@
 
 #include <pybind11/pybind11.h>
 
-#include "neml2/tensors/macros.h"
+#include "neml2/tensors/tensors.h"
 
 #include "python/neml2/tensors/TensorBase.h"
 #include "python/neml2/tensors/PrimitiveTensor.h"
 #include "python/neml2/tensors/VecBase.h"
 #include "python/neml2/tensors/R2Base.h"
+#include "python/neml2/indexing.h"
 
 namespace py = pybind11;
 using namespace neml2;

@@ -27,6 +27,7 @@
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/Vec.h"
 #include "neml2/tensors/SR2.h"
+#include "neml2/tensors/indexing.h"
 
 namespace neml2
 {

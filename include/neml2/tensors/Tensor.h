@@ -26,9 +26,9 @@
 
 #include <torch/csrc/api/include/torch/detail/TensorDataContainer.h>
 
+#include "neml2/misc/types.h"
 #include "neml2/tensors/TensorBase.h"
 #include "neml2/misc/defaults.h"
-#include "neml2/jit/types.h"
 
 namespace neml2
 {
