@@ -4,6 +4,6 @@ export CXXFLAGS="${GPERFTOOLS_CXX_FLAGS}"
   --prefix=${GPERFTOOLS_INSTALL_DIR} \
   --disable-heap-profiler \
   --disable-debugalloc \
-  --enable-shared=no
+  --enable-shared=yes
 make -j ${NPROCS}
 make install

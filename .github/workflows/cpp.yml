@@ -132,8 +132,6 @@ jobs:
           torch-version: 2.5.1
       - name: Configure
         run: cmake --preset profiling -GNinja -S .
-      - if: matrix.os == 'macos-latest'
-        run: ls -lh /Users/runner/work/neml2/neml2/build/profiling/_deps/gperftools/lib
       - name: Build
         run: cmake --build --preset profiling
       - name: Check profile generation

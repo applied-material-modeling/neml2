@@ -177,6 +177,7 @@ if(NEML2_WORK_DISPATCHER)
 
       if(TIMPI_DOWNLOADED)
             install(DIRECTORY ${TIMPI_INCLUDE_DIR}/timpi TYPE INCLUDE COMPONENT libneml2)
+            install(DIRECTORY ${TIMPI_LINK_DIR} DESTINATION . COMPONENT libneml2)
       endif()
 endif()
 
@@ -208,6 +209,12 @@ if(NEML2_TESTS OR NEML2_RUNNER)
                   include(DownloadGperftools)
                   set(Gperftools_ROOT ${GPERFTOOLS_INSTALL_DIR} CACHE PATH "gperftools root directory" FORCE)
                   find_package(Gperftools REQUIRED)
+            endif()
+
+            cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${Gperftools_LINK_DIR} Gperftools_DOWNLOADED)
+
+            if(Gperftools_DOWNLOADED)
+                  install(DIRECTORY ${Gperftools_LINK_DIR} DESTINATION . COMPONENT libneml2)
             endif()
       endif()
 endif()
