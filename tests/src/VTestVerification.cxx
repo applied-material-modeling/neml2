@@ -32,6 +32,11 @@
 
 namespace neml2
 {
+static std::string diff(const torch::jit::named_buffer_list & res,
+                        const std::map<std::string, ATensor> & ref_map,
+                        Real rtol,
+                        Real atol);
+
 register_NEML2_object(VTestVerification);
 
 OptionSet
@@ -80,7 +85,7 @@ VTestVerification::run()
 {
   _driver.run();
 
-  auto res = jit::load(_driver.save_as_path());
+  auto res = torch::jit::load(_driver.save_as_path());
   auto err_msg = diff(res.named_buffers(), _ref, _rtol, _atol);
 
   neml_assert(err_msg.empty(), err_msg);
@@ -89,7 +94,7 @@ VTestVerification::run()
 }
 
 std::string
-diff(const jit::named_buffer_list & res,
+diff(const torch::jit::named_buffer_list & res,
      const std::map<std::string, ATensor> & ref_map,
      Real rtol,
      Real atol)

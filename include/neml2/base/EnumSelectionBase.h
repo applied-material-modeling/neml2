@@ -27,7 +27,6 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include <set>
 
 namespace neml2
 {

@@ -25,8 +25,13 @@
 #pragma once
 
 #include "neml2/misc/types.h"
-#include "neml2/misc/errors.h"
-#include "neml2/jit/types.h"
+#include "neml2/jit/TraceableTensorShape.h"
+#include <torch/csrc/jit/api/function_impl.h>
+
+namespace neml2::jit
+{
+using namespace torch::jit;
+}
 
 namespace neml2
 {

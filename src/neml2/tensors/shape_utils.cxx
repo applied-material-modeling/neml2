@@ -22,6 +22,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <numeric>
+
 #include "neml2/tensors/shape_utils.h"
 
 namespace neml2::utils

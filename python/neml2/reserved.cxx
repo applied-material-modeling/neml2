@@ -26,8 +26,6 @@
 #include <pybind11/stl.h>
 #include "neml2/base/LabeledAxisAccessor.h"
 
-namespace py = pybind11;
-
 PYBIND11_MODULE(reserved, m)
 {
   m.doc() = "Reserved subaxis names";

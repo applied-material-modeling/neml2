@@ -26,20 +26,20 @@
 #include <pybind11/stl.h>
 #include <pybind11/stl/filesystem.h>
 
-#include "python/neml2/indexing.h"
-#include "python/neml2/types.h"
-
 #include "neml2/base/Factory.h"
 #include "neml2/base/Parser.h"
 #include "neml2/models/Model.h"
 #include "neml2/models/Assembler.h"
 #include "neml2/misc/string_utils.h"
 
+#include "python/neml2/types.h"
+#include "python/neml2/indexing.h"
+
 namespace py = pybind11;
 using namespace neml2;
 
 ValueMap
-unpack_tensor_map(py::dict pyinputs, const Model * model = nullptr)
+unpack_tensor_map(const py::dict & pyinputs, const Model * model = nullptr)
 {
   std::vector<VariableName> input_names;
   std::vector<Tensor> input_values;
@@ -180,8 +180,9 @@ where it is desirable to deallocate models on-the-fly.
       {
         auto diagnoses = diagnose(m);
         std::vector<std::string> issues;
+        issues.reserve(diagnoses.size());
         for (const auto & diagnosis : diagnoses)
-          issues.push_back(diagnosis.what());
+          issues.emplace_back(diagnosis.what());
         return issues;
       },
       py::arg("model"),
@@ -237,6 +238,7 @@ Diagnose common issues in model setup. Raises a runtime error including all iden
            {
              const auto & slices = self.variable_slices();
              std::vector<py::slice> py_slices;
+             py_slices.reserve(slices.size());
              for (const auto & slice : slices)
                py_slices.emplace_back(slice.first, slice.second, 1);
              return py_slices;
@@ -265,6 +267,7 @@ Diagnose common issues in model setup. Raises a runtime error including all iden
            {
              const auto & slices = self.subaxis_slices();
              std::vector<py::slice> py_slices;
+             py_slices.reserve(slices.size());
              for (const auto & slice : slices)
                py_slices.emplace_back(slice.first, slice.second, 1);
              return py_slices;
@@ -391,22 +394,22 @@ Diagnose common issues in model setup. Raises a runtime error including all iden
       .def("set_parameter", &Model::set_parameter, "Set the value for a model parameter")
       .def("set_parameters", &Model::set_parameters, "Set the values for multiple model parameters")
       .def("value",
-           [](Model & self, py::dict pyinputs)
+           [](Model & self, const py::dict & pyinputs)
            { return self.value(unpack_tensor_map(pyinputs, &self)); })
       .def("dvalue",
-           [](Model & self, py::dict pyinputs)
+           [](Model & self, const py::dict & pyinputs)
            { return self.dvalue(unpack_tensor_map(pyinputs, &self)); })
       .def("d2value",
-           [](Model & self, py::dict pyinputs)
+           [](Model & self, const py::dict & pyinputs)
            { return self.d2value(unpack_tensor_map(pyinputs, &self)); })
       .def("value_and_dvalue",
-           [](Model & self, py::dict pyinputs)
+           [](Model & self, const py::dict & pyinputs)
            { return self.value_and_dvalue(unpack_tensor_map(pyinputs, &self)); })
       .def("dvalue_and_d2value",
-           [](Model & self, py::dict pyinputs)
+           [](Model & self, const py::dict & pyinputs)
            { return self.dvalue_and_d2value(unpack_tensor_map(pyinputs, &self)); })
       .def("value_and_dvalue_and_d2value",
-           [](Model & self, py::dict pyinputs)
+           [](Model & self, const py::dict & pyinputs)
            { return self.value_and_dvalue_and_d2value(unpack_tensor_map(pyinputs, &self)); })
       .def(
           "dependency",
@@ -425,7 +428,7 @@ Diagnose common issues in model setup. Raises a runtime error including all iden
   py::class_<VectorAssembler>(m, "VectorAssembler")
       .def(py::init<const LabeledAxis &>())
       .def("assemble_by_variable",
-           [](const VectorAssembler & self, py::dict py_vals_dict)
+           [](const VectorAssembler & self, const py::dict & py_vals_dict)
            { return self.assemble_by_variable(unpack_tensor_map(py_vals_dict)); })
       .def("split_by_variable", &VectorAssembler::split_by_variable)
       .def("split_by_subaxis", &VectorAssembler::split_by_subaxis);
@@ -434,7 +437,7 @@ Diagnose common issues in model setup. Raises a runtime error including all iden
   py::class_<MatrixAssembler>(m, "MatrixAssembler")
       .def(py::init<const LabeledAxis &, const LabeledAxis &>())
       .def("assemble_by_variable",
-           [](const MatrixAssembler & self, py::dict py_vals_dict)
+           [](const MatrixAssembler & self, const py::dict & py_vals_dict)
            {
              DerivMap vals_dict;
              for (auto && [key, val] : py_vals_dict)

@@ -29,11 +29,17 @@
 
 #pragma once
 
+#include <torch/csrc/jit/frontend/tracer.h>
+
 #include "neml2/tensors/TensorBase.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/assertions.h"
-#include "neml2/jit/types.h"
 #include "neml2/jit/utils.h"
+
+namespace neml2::jit
+{
+using namespace torch::jit;
+}
 
 namespace neml2
 {
@@ -56,7 +62,7 @@ TensorBase<Derived>::TensorBase(const ATensor & tensor, const TraceableTensorSha
     _batch_dim(Size(batch_shape.size())),
     _batch_sizes(batch_shape)
 {
-  neml_assert_dbg(batch_sizes() == batch_shape,
+  neml_assert_dbg(batch_sizes() == tensor.sizes().slice(0, batch_dim()),
                   "Tensor of shape ",
                   sizes(),
                   " cannot be constructed with batch shape ",

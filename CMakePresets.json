@@ -27,7 +27,8 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "NEML2_PCH": "OFF",
-        "NEML2_TESTS": "OFF"
+        "NEML2_RUNNER": "ON",
+        "NEML2_PYBIND": "ON"
       }
     },
     {
@@ -37,7 +38,6 @@
       "inherits": "default",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "NEML2_PYBIND": "ON",
         "NEML2_DOC": "ON"
       }

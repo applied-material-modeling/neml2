@@ -39,7 +39,7 @@ PYBIND11_MODULE(crystallography, m)
 
   m.def(
       "symmetry_operations_from_orbifold",
-      [](std::string orbifold, NEML2_TENSOR_OPTIONS_VARGS)
+      [](const std::string & orbifold, NEML2_TENSOR_OPTIONS_VARGS)
       {
         return crystallography::symmetry_operations_from_orbifold(orbifold, NEML2_TENSOR_OPTIONS);
       },

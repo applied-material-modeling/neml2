@@ -26,10 +26,8 @@
 
 #include <pybind11/operators.h>
 
-#include "python/neml2/indexing.h"
 #include "python/neml2/types.h"
-#include "neml2/tensors/tensors.h"
-#include "neml2/tensors/macros.h"
+#include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/functions/pow.h"
 #include "neml2/misc/string_utils.h"
 

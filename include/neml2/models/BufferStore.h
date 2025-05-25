@@ -24,9 +24,11 @@
 
 #pragma once
 
-#include <memory>
+#include <map>
 
-#include "neml2/jit/types.h"
+#include <torch/csrc/jit/frontend/tracer.h>
+
+#include "neml2/misc/types.h"
 
 namespace neml2
 {
@@ -36,6 +38,11 @@ struct TensorName;
 class TensorValueBase;
 template <typename T>
 class TensorBase;
+
+namespace jit
+{
+using namespace torch::jit;
+}
 
 /// Interface for object which can store buffers
 class BufferStore

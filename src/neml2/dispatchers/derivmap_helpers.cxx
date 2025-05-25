@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/dispatchers/derivmap_helpers.h"
+#include "neml2/misc/errors.h"
 #include "neml2/tensors/functions/cat.h"
 
 namespace neml2

@@ -26,7 +26,10 @@
 
 #include <pybind11/operators.h>
 
-#include "python/neml2/tensors/PrimitiveTensor.h"
+#include "neml2/misc/types.h"
+#include "neml2/tensors/Rot.h"
+
+#include "python/neml2/types.h"
 
 namespace py = pybind11;
 

@@ -28,7 +28,7 @@
 namespace neml2
 {
 #define DEFINE_DIFF(T)                                                                             \
-  T diff(const T & a, Size n, Size dim) { return T(at::diff(a, n, dim), a.batch_sizes()); }        \
+  T diff(const T & a, Size n, Size dim) { return T(at::diff(a, n, dim), a.batch_dim()); }          \
   static_assert(true)
 FOR_ALL_TENSORBASE(DEFINE_DIFF);
 } // namespace neml2

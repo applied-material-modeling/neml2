@@ -23,10 +23,13 @@ find_package(pybind11 CONFIG REQUIRED)
 # ----------------------------------------------------------------------------
 macro(add_submodule mname msrcs)
   pybind11_add_module(${mname} MODULE ${msrcs})
-  set_target_properties(${mname} PROPERTIES LIBRARY_OUTPUT_DIRECTORY neml2)
+  set_target_properties(${mname} PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY neml2
+    INSTALL_RPATH_USE_LINK_PATH ON
+  )
 
   target_include_directories(${mname} PUBLIC ${NEML2_SOURCE_DIR})
-  target_link_libraries(${mname} PRIVATE pybind11::headers)
+  target_link_libraries(${mname} PRIVATE pybind11::headers Torch::PythonBinding)
 
   install(TARGETS ${mname} LIBRARY DESTINATION . COMPONENT libneml2-python)
 
@@ -35,6 +38,14 @@ macro(add_submodule mname msrcs)
 
   # add to the stub generation
   add_dependencies(python_stub ${mname})
+
+  # pch
+  if(NEML2_PCH)
+    target_precompile_headers(${mname} PUBLIC
+      ${pybind11_INCLUDE_DIR}/pybind11/pybind11.h
+      ${pybind11_INCLUDE_DIR}/pybind11/operators.h
+    )
+  endif()
 endmacro()
 
 # ----------------------------------------------------------------------------
@@ -53,26 +64,21 @@ add_custom_target(python_stub
 add_library(pyneml2 INTERFACE)
 
 add_submodule(reserved neml2/reserved.cxx)
-target_link_libraries(reserved PRIVATE neml2_base Torch::PythonBinding)
-set_target_properties(reserved PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
+target_link_libraries(reserved PRIVATE neml2_base)
 
 add_submodule(core neml2/core.cxx)
-target_link_libraries(core PRIVATE neml2 Torch::PythonBinding)
-set_target_properties(core PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
+target_link_libraries(core PRIVATE neml2)
 
 file(GLOB_RECURSE tensors_srcs CONFIGURE_DEPENDS neml2/tensors/*.cxx)
 list(APPEND tensors_srcs neml2/tensors.cxx)
 add_submodule(tensors "${tensors_srcs}")
-target_link_libraries(tensors PRIVATE neml2_tensor Torch::PythonBinding)
-set_target_properties(tensors PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
+target_link_libraries(tensors PRIVATE neml2_tensor)
 
 add_submodule(math neml2/math.cxx)
-target_link_libraries(math PRIVATE neml2_tensor Torch::PythonBinding)
-set_target_properties(math PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
+target_link_libraries(math PRIVATE neml2_tensor)
 
 add_submodule(crystallography neml2/crystallography.cxx)
-target_link_libraries(crystallography PRIVATE neml2_tensor Torch::PythonBinding)
-set_target_properties(crystallography PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
+target_link_libraries(crystallography PRIVATE neml2_tensor)
 
 # ----------------------------------------------------------------------------
 # Artifacts

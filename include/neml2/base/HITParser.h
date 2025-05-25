@@ -23,7 +23,7 @@
 // THE SOFTWARE.
 #pragma once
 
-#include "hit/hit.h"
+#include "hit/parse.h"
 #include "neml2/base/Parser.h"
 
 namespace neml2

@@ -24,6 +24,7 @@
 
 #include "neml2/tensors/mandel_notation.h"
 #include "neml2/tensors/TensorCache.h"
+#include "neml2/tensors/shape_utils.h"
 
 namespace neml2
 {
