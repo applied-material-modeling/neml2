@@ -26,6 +26,7 @@
 
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/R2.h"
+#include "neml2/tensors/Scalar.h"
 
 #include "python/neml2/types.h"
 
