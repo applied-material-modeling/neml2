@@ -28,6 +28,7 @@
 
 #include "neml2/misc/types.h"
 #include "neml2/base/LabeledAxisAccessor.h"
+#include "neml2/tensors/indexing.h"
 
 namespace neml2
 {

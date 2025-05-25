@@ -64,9 +64,4 @@ private:
   Real _rtol;
   Real _atol;
 };
-
-std::string diff(const jit::named_buffer_list & res,
-                 const std::map<std::string, ATensor> & ref_map,
-                 Real rtol,
-                 Real atol);
 } // namespace neml2
