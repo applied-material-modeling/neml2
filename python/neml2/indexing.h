@@ -27,9 +27,7 @@
 #include <torch/python.h>
 #include <torch/csrc/autograd/python_variable_indexing.h>
 
-namespace pybind11
-{
-namespace detail
+namespace pybind11::detail
 {
 /**
  * @brief Type conversion between Python object <--> at::indexing::Slice
@@ -142,5 +140,4 @@ public:
     return {};
   }
 };
-}
 }

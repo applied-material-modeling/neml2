@@ -29,8 +29,7 @@
 #include <torch/csrc/utils/tensor_dtypes.h>
 #include <torch/csrc/DynamicTypes.h>
 
-#include "neml2/misc/types.h"
-#include "neml2/base/LabeledAxisAccessor.h"
+#include "neml2/tensors/indexing.h"
 
 #define NEML2_TENSOR_OPTIONS_VARGS const Dtype &dtype, const Device &device, bool requires_grad
 
@@ -41,9 +40,7 @@
   pybind11::arg("dtype") = Dtype(torch::kFloat64), pybind11::arg("device") = Device(torch::kCPU),  \
   pybind11::arg("requires_grad") = false
 
-namespace pybind11
-{
-namespace detail
+namespace pybind11::detail
 {
 #if TORCH_VERSION_MAJOR < 2 || (TORCH_VERSION_MAJOR == 2 && TORCH_VERSION_MINOR < 4)
 /**
@@ -116,5 +113,4 @@ public:
     return l;
   }
 };
-}
-}
+} // namespace pybind11::detail

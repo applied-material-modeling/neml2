@@ -25,9 +25,10 @@
 #pragma once
 
 #include <ATen/core/Tensor.h>
+
 #include "neml2/jit/TraceableTensorShape.h"
-#include "neml2/tensors/shape_utils.h"
 #include "neml2/tensors/functions/operators.h"
+#include "neml2/tensors/indexing.h"
 
 namespace neml2
 {
@@ -215,7 +216,7 @@ public:
   neml2::Tensor base_flatten() const;
   ///@}
 
-private:
+protected:
   /// Number of batch dimensions. The first `_batch_dim` dimensions are considered batch dimensions.
   Size _batch_dim = {};
 

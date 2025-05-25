@@ -24,7 +24,9 @@
 
 #include <torch/csrc/autograd/variable.h>
 #include "neml2/tensors/Tensor.h"
-#include "neml2/tensors/assertions.h"
+#include "neml2/tensors/shape_utils.h"
+#include "neml2/misc/assertions.h"
+#include "neml2/jit/types.h"
 
 namespace neml2
 {

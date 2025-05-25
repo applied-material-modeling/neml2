@@ -28,8 +28,6 @@
 #include <map>
 #include <chrono>
 
-#include "neml2/misc/types.h"
-
 namespace neml2
 {
 // Timed section

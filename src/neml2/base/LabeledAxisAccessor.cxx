@@ -109,7 +109,7 @@ LabeledAxisAccessor::slice(int64_t n1, int64_t n2) const
 }
 
 LabeledAxisAccessor
-LabeledAxisAccessor::remount(const LabeledAxisAccessor & axis, Size n) const
+LabeledAxisAccessor::remount(const LabeledAxisAccessor & axis, int64_t n) const
 {
   return slice(n).prepend(axis);
 }

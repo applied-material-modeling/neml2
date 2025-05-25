@@ -36,8 +36,8 @@ set_variable(ValueMap & storage,
              const std::string & option_vars,
              const std::string & option_vals)
 {
-  const auto vars = options.get<std::vector<VariableName>>(option_vars);
-  const auto vals = options.get<std::vector<TensorName<T>>>(option_vals);
+  const auto & vars = options.get<std::vector<VariableName>>(option_vars);
+  const auto & vals = options.get<std::vector<TensorName<T>>>(option_vals);
   neml_assert(vars.size() == vals.size(),
               "Trying to assign ",
               vals.size(),

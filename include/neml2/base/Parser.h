@@ -26,7 +26,8 @@
 #include <filesystem>
 
 #include "neml2/misc/string_utils.h"
-#include "neml2/misc/defaults.h"
+#include "neml2/misc/errors.h"
+#include "neml2/misc/types.h"
 
 namespace neml2
 {

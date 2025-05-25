@@ -30,11 +30,6 @@
 namespace at
 {
 class Tensor;
-namespace indexing
-{
-struct Slice;
-struct TensorIndex;
-}
 } // namespace at
 
 namespace neml2
@@ -70,13 +65,6 @@ using Size = int64_t;
 using Integer = int64_t;
 using TensorShape = c10::SmallVector<Size, 8>;
 using TensorShapeRef = c10::ArrayRef<Size>;
-
-namespace indexing
-{
-using namespace at::indexing;
-using TensorIndices = c10::SmallVector<TensorIndex, 8>;
-using TensorIndicesRef = c10::ArrayRef<TensorIndex>;
-} // namespace indexing
 
 /**
  * @brief Role in a function definition

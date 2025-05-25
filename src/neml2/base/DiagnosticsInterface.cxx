@@ -24,7 +24,6 @@
 
 #include "neml2/base/DiagnosticsInterface.h"
 #include "neml2/base/NEML2Object.h"
-#include "neml2/misc/assertions.h"
 
 namespace neml2
 {

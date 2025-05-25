@@ -40,6 +40,7 @@ class WWR4 : public PrimitiveTensor<WWR4, 3, 3>
 {
 public:
   using PrimitiveTensor<WWR4, 3, 3>::PrimitiveTensor;
+
   WWR4(const R4 & F);
 
   /// Create the identity tensor \f$\delta_{ij}\delta_{kl}\f$

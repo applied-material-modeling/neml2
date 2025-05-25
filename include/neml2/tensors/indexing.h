@@ -25,4 +25,16 @@
 #pragma once
 
 #include <ATen/TensorIndexing.h>
-#include "neml2/misc/types.h"
+
+namespace at::indexing
+{
+struct Slice;
+struct TensorIndex;
+} // namespace at::indexing
+
+namespace neml2::indexing
+{
+using namespace at::indexing;
+using TensorIndices = c10::SmallVector<TensorIndex, 8>;
+using TensorIndicesRef = c10::ArrayRef<TensorIndex>;
+} // namespace neml2::indexing

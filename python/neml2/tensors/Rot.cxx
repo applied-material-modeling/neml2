@@ -22,7 +22,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "python/neml2/tensors/VecBase.h"
+#include <pybind11/pybind11.h>
+#include <pybind11/operators.h>
+
+#include "neml2/tensors/Rot.h"
+#include "neml2/tensors/Vec.h"
+#include "neml2/tensors/R3.h"
+
+#include "python/neml2/types.h"
 
 namespace py = pybind11;
 using namespace neml2;

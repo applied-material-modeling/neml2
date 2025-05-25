@@ -24,7 +24,9 @@
 
 #pragma once
 
-#include "python/neml2/tensors/PrimitiveTensor.h"
+#include <pybind11/pybind11.h>
+
+#include "neml2/tensors/Rot.h"
 
 namespace py = pybind11;
 

@@ -22,7 +22,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "python/neml2/tensors/PrimitiveTensor.h"
+#include <pybind11/pybind11.h>
+
+#include "neml2/tensors/WSR4.h"
 
 namespace py = pybind11;
 using namespace neml2;

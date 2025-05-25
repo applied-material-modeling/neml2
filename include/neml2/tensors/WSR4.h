@@ -40,6 +40,7 @@ class WSR4 : public PrimitiveTensor<WSR4, 3, 6>
 {
 public:
   using PrimitiveTensor<WSR4, 3, 6>::PrimitiveTensor;
+
   WSR4(const R4 & F);
 };
 

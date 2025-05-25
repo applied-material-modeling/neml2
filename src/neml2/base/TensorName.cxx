@@ -27,7 +27,6 @@
 #include "neml2/base/TensorName.h"
 #include "neml2/base/Factory.h"
 #include "neml2/base/Parser.h"
-#include "neml2/base/LabeledAxisAccessor.h"
 
 namespace neml2
 {

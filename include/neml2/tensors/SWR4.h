@@ -40,6 +40,7 @@ class SWR4 : public PrimitiveTensor<SWR4, 6, 3>
 {
 public:
   using PrimitiveTensor<SWR4, 6, 3>::PrimitiveTensor;
+
   SWR4(const R4 & F);
 };
 

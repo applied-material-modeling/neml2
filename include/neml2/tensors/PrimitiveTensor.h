@@ -27,7 +27,9 @@
 #include <torch/csrc/autograd/variable.h>
 #include <torch/csrc/api/include/torch/detail/TensorDataContainer.h>
 
+#include "neml2/misc/errors.h"
 #include "neml2/tensors/Tensor.h"
+#include "neml2/tensors/shape_utils.h"
 
 namespace neml2
 {
@@ -55,10 +57,10 @@ public:
   PrimitiveTensor() = default;
 
   /// Construct from another ATensor given batch dimension
-  explicit PrimitiveTensor(const ATensor & tensor, Size batch_dim);
+  PrimitiveTensor(const ATensor & tensor, Size batch_dim);
 
   /// Construct from another ATensor given batch shape
-  explicit PrimitiveTensor(const ATensor & tensor, const TraceableTensorShape & batch_shape);
+  PrimitiveTensor(const ATensor & tensor, const TraceableTensorShape & batch_shape);
 
   /// Copy constructor
   PrimitiveTensor(const Tensor & tensor);

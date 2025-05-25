@@ -27,7 +27,6 @@
 #include <torch/csrc/jit/frontend/tracer.h>
 #include <torch/csrc/jit/api/function_impl.h>
 #include <torch/csrc/jit/serialization/import.h>
-#include "neml2/jit/TraceableTensorShape.h"
 
 namespace neml2::jit
 {

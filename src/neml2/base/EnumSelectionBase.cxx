@@ -22,8 +22,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/base/EnumSelection.h"
-#include "neml2/misc/string_utils.h"
+#include <set>
+
+#include "neml2/base/EnumSelectionBase.h"
 #include "neml2/misc/assertions.h"
 
 namespace neml2
