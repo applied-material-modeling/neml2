@@ -217,9 +217,6 @@ public:
   ///@}
 
 protected:
-  /// Number of batch dimensions. The first `_batch_dim` dimensions are considered batch dimensions.
-  Size _batch_dim = {};
-
   /// Traceable batch sizes
   TraceableTensorShape _batch_sizes;
 };
