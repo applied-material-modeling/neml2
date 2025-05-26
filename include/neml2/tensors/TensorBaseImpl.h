@@ -46,20 +46,18 @@ namespace neml2
 template <class Derived>
 TensorBase<Derived>::TensorBase(const ATensor & tensor, Size batch_dim)
   : ATensor(tensor),
-    _batch_dim(batch_dim),
     _batch_sizes(utils::extract_batch_sizes(tensor, batch_dim))
 {
-  neml_assert_dbg((Size)sizes().size() >= _batch_dim,
+  neml_assert_dbg((Size)sizes().size() >= batch_dim,
                   "Tensor dimension ",
                   sizes().size(),
                   " is smaller than the requested number of batch dimensions ",
-                  _batch_dim);
+                  batch_dim);
 }
 
 template <class Derived>
 TensorBase<Derived>::TensorBase(const ATensor & tensor, const TraceableTensorShape & batch_shape)
   : ATensor(tensor),
-    _batch_dim(Size(batch_shape.size())),
     _batch_sizes(batch_shape)
 {
   neml_assert_dbg(batch_sizes() == tensor.sizes().slice(0, batch_dim()),
@@ -162,14 +160,14 @@ template <class Derived>
 bool
 TensorBase<Derived>::batched() const
 {
-  return _batch_dim;
+  return batch_dim() > 0;
 }
 
 template <class Derived>
 Size
 TensorBase<Derived>::batch_dim() const
 {
-  return _batch_dim;
+  return static_cast<Size>(_batch_sizes.size());
 }
 
 template <class Derived>
@@ -203,7 +201,7 @@ template <class Derived>
 TensorShapeRef
 TensorBase<Derived>::base_sizes() const
 {
-  return sizes().slice(_batch_dim);
+  return sizes().slice(batch_dim());
 }
 
 template <class Derived>
@@ -420,7 +418,7 @@ Derived
 TensorBase<Derived>::batch_unsqueeze(Size d) const
 {
   auto d2 = d >= 0 ? d : d - base_dim();
-  return Derived(unsqueeze(d2), _batch_dim + 1);
+  return Derived(unsqueeze(d2), batch_dim() + 1);
 }
 
 template <class Derived>
@@ -436,7 +434,7 @@ Derived
 TensorBase<Derived>::batch_transpose(Size d1, Size d2) const
 {
   return Derived(ATensor::transpose(d1 < 0 ? d1 - base_dim() : d1, d2 < 0 ? d2 - base_dim() : d2),
-                 _batch_dim);
+                 batch_dim());
 }
 
 template <class Derived>
@@ -444,7 +442,7 @@ neml2::Tensor
 TensorBase<Derived>::base_transpose(Size d1, Size d2) const
 {
   return neml2::Tensor(
-      ATensor::transpose(d1 < 0 ? d1 : _batch_dim + d1, d2 < 0 ? d2 : _batch_dim + d2),
+      ATensor::transpose(d1 < 0 ? d1 : batch_dim() + d1, d2 < 0 ? d2 : batch_dim() + d2),
       batch_sizes());
 }
 
