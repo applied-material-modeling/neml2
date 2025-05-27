@@ -18,6 +18,7 @@ Please refer to the [CMake documentation](https://cmake.org/cmake/help/latest/co
 
 C++ backend:
 
+<!-- dependencies: torch.version -->
 - [PyTorch](https://pytorch.org/get-started/locally/), version 2.5.1.
 - [WASP](https://code.ornl.gov/neams-workbench/wasp) as the lexing and parsing backend for HIT.
 - Testing:

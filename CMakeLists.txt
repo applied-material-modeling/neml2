@@ -1,6 +1,7 @@
 # ----------------------------------------------------------------------------
 # Project metadata
 # ----------------------------------------------------------------------------
+# dependencies: cmake.version_min
 cmake_minimum_required(VERSION 3.26)
 project(NEML2 VERSION 2.0.0 LANGUAGES C CXX)
 
@@ -29,7 +30,7 @@ if(NOT DEFINED CMAKE_BUILD_TYPE)
       set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the type of build." FORCE)
 endif()
 
-set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo" "Coverage" "ThreadSanitizer" "Profiling")
+set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "RelWithDebInfo" "Coverage" "ThreadSanitizer" "Profiling")
 
 # ----------------------------------------------------------------------------
 # Enable gcov wrapper for clang

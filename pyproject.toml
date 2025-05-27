@@ -1,6 +1,7 @@
 [build-system]
 requires = [
   "setuptools>=42",
+  # dependencies: cmake.version_min
   "cmake>=3.26",
   "ninja",
   "pybind11",
@@ -18,6 +19,7 @@ authors = [
 ]
 description = "GPU-enabled vectorized material modeling library"
 readme = "README.md"
+# dependencies: python.version_min
 requires-python = ">=3.9"
 dependencies = ["torch"]
 

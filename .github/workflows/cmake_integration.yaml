@@ -18,8 +18,11 @@ jobs:
       - uses: applied-material-modeling/neml2-ci@main
         with:
           path: neml2
+          # dependencies: python.version
           python-version: 3.9
+          # dependencies: cmake.version
           cmake-version: 3.26
+          # dependencies: torch.version
           torch-version: 2.5.1
       - name: Create an example CMake project
         run: |

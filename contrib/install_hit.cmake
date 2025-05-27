@@ -1,3 +1,4 @@
+# dependencies: cmake.version_min
 cmake_minimum_required(VERSION 3.26)
 project(hit LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)

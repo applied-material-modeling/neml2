@@ -1,3 +1,4 @@
+# dependencies: cmake.version_min
 cmake_minimum_required(VERSION 3.26)
 project(FOO)
 add_subdirectory(neml2)

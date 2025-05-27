@@ -1,0 +1,86 @@
+python:
+  version: 3.9
+  version_min: 3.9
+  files:
+    - pyproject.toml
+    - .github/workflows/copyright.yaml
+    - .github/workflows/cpp.yaml
+    - .github/workflows/python.yaml
+    - .github/workflows/build_docs.yaml
+    - .github/workflows/cmake_integration.yaml
+
+cmake:
+  version: 3.26
+  version_min: 3.26
+  files:
+    - CMakeLists.txt
+    - pyproject.toml
+    - cmake/Modules/InstallHIT.cmake.in
+    - cmake/subproject/CMakeLists.txt
+    - doc/content/installation/install.md
+    - .github/workflows/cpp.yaml
+    - .github/workflows/python.yaml
+    - .github/workflows/build_docs.yaml
+    - .github/workflows/cmake_integration.yaml
+
+torch:
+  version: 2.5.1
+  files:
+    - CMakeLists.txt
+    - doc/content/installation/deps.md
+    - .github/workflows/cpp.yaml
+    - .github/workflows/python.yaml
+    - .github/workflows/build_docs.yaml
+    - .github/workflows/cmake_integration.yaml
+
+doxygen:
+  version: 1.13.2
+  files:
+    - CMakeLists.txt
+
+doxygen_awesome:
+  version: v2.3.4
+  files:
+    - CMakeLists.txt
+
+wasp:
+  version: cf46fbd0d224cc2a70edbc668d3e65d45bec9e16
+  files:
+    - CMakeLists.txt
+
+hit:
+  version: 2b56209d3f1a1c5f0bede15a3e13981b599a5f91
+  files:
+    - CMakeLists.txt
+
+catch2:
+  version: v3.5.4
+  files:
+    - CMakeLists.txt
+
+gperftools:
+  version: gperftools-2.15
+  files:
+    - CMakeLists.txt
+
+argparse:
+  version: v3.0
+  files:
+    - CMakeLists.txt
+
+timpi:
+  version: v1.8.5_bootstrapped
+  files:
+    - CMakeLists.txt
+
+nlohmann_json:
+  version: 3.11.3
+  files:
+    - CMakeLists.txt
+
+pyzag:
+  version: 1.1.1
+  version_min: 1.1.1
+  files:
+    - pyproject.toml
+    - python/tests/requirements.txt

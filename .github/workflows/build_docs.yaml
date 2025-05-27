@@ -21,8 +21,11 @@ jobs:
       - uses: applied-material-modeling/neml2-ci@main
         with:
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
+          # dependencies: python.version
           python-version: 3.9
+          # dependencies: cmake.version
           cmake-version: 3.26
+          # dependencies: torch.version
           torch-version: 2.5.1
       - uses: actions/setup-node@v4
       - name: Install Node.js dependencies
@@ -61,8 +64,11 @@ jobs:
       - uses: applied-material-modeling/neml2-ci@main
         with:
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
+          # dependencies: python.version
           python-version: 3.9
+          # dependencies: cmake.version
           cmake-version: 3.26
+          # dependencies: torch.version
           torch-version: 2.5.1
       - name: Configure
         run: cmake --preset coverage -GNinja -S .
@@ -83,8 +89,11 @@ jobs:
       - uses: applied-material-modeling/neml2-ci@main
         with:
           ref: ${{ github.event.pull_request.head.sha }}
+          # dependencies: python.version
           python-version: 3.9
+          # dependencies: cmake.version
           cmake-version: 3.26
+          # dependencies: torch.version
           torch-version: 2.5.1
       - name: Install clang-tidy
         run: sudo apt-get install -y clang-tidy
