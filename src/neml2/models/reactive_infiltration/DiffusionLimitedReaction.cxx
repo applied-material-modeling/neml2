@@ -79,7 +79,7 @@ DiffusionLimitedReaction::set_value(bool out, bool dout_din, bool d2out_din2)
   neml_assert_dbg(!d2out_din2, "Second derivatives not implemented");
 
   const auto factor = 2 * _D * _R_l * _R_s / _omega;
-  const auto ratio = (_ro + _ri) / (_ro - _ri + _delta);
+  const auto ratio = _ro / (_ro - _ri + _delta);
 
   if (out)
   {
@@ -90,8 +90,8 @@ DiffusionLimitedReaction::set_value(bool out, bool dout_din, bool d2out_din2)
   {
     const auto drate = factor / (_ro - _ri + _delta) / (_ro - _ri + _delta);
 
-    _rate.d(_ri) = drate * (2 * _ro + _delta);
-    _rate.d(_ro) = drate * (-2 * _ri + _delta);
+    _rate.d(_ri) = drate * _ro;
+    _rate.d(_ro) = drate * (-_ri + _delta);
     _rate.d(_R_l) = 2 * _D * _R_s / _omega * ratio;
     _rate.d(_R_s) = 2 * _D * _R_l / _omega * ratio;
   }
