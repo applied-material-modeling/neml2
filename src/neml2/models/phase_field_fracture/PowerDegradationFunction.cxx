@@ -56,7 +56,7 @@ PowerDegradationFunction::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   if (out)
   {
-    _g = pow((1 - _d), _p);
+    _g = pow((1 - _d), _p) + 1e-8;
   }
 
   if (dout_din)

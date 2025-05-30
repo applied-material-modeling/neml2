@@ -88,12 +88,20 @@ ScalarMultiplication::set_value(bool out, bool dout_din, bool d2out_din2)
     value = value * (_inv[i] ? 1. / (*_from[i]) : (*_from[i]));
 
   if (out)
+  {
     _to = value;
+  }
 
   if (dout_din)
     for (std::size_t i = 0; i < _from.size(); i++)
       if (_from[i]->is_dependent())
-        _to.d(*_from[i]) = (_inv[i] ? -1.0 : 1.0) * value / (*_from[i]);
+      {
+        auto r = _A * (_inv[i] ? -1.0 / (*_from[i]) / (*_from[i]) : Scalar::ones_like(*_from[i]));
+        for (std::size_t j = 0; j < _from.size(); j++)
+          if (i != j)
+            r = r * (_inv[j] ? 1. / (*_from[j]) : (*_from[j]));
+        _to.d(*_from[i]) = r;
+      }
 
   if (d2out_din2)
   {
@@ -117,7 +125,9 @@ ScalarMultiplication::set_value(bool out, bool dout_din, bool d2out_din2)
             }
             else
             {
-              auto r = _A * p * (p - 1) * pow(*_from[i], (p - 2));
+              auto r = Scalar::create(0.0);
+              if ((p - 1) != 0)
+                r = _A * p * (p - 1) * pow(*_from[i], (p - 2));
               for (std::size_t k = 0; k < _from.size(); k++)
                 if (k != i)
                   r = r * (_inv[k] ? 1. / (*_from[k]) : (*_from[k]));
