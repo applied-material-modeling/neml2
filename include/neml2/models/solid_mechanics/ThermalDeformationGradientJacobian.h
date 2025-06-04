@@ -24,19 +24,30 @@
 
 #pragma once
 
+#include "neml2/models/Model.h"
+
 namespace neml2
 {
-class Tensor;
-class Scalar;
-
-/**
- * @brief Batched inner product
- *
- * The input matrices \p a and \p b must have exactly 2 base dimensions. The batch shapes must
- * broadcast.
- */
-namespace linalg
+class ThermalDeformationGradientJacobian : public Model
 {
-Scalar inner(const Tensor & a, const Tensor & b);
-} // namespace linalg
+public:
+  static OptionSet expected_options();
+
+  ThermalDeformationGradientJacobian(const OptionSet & options);
+
+protected:
+  void set_value(bool, bool, bool) override;
+
+  /// Eigen strain
+  const Variable<Scalar> & _T;
+
+  /// The reference (stress free) temperature
+  const Scalar & _T0;
+
+  /// Coefficient of thermal expansion
+  const Scalar & _alpha;
+
+  /// deformation gradient tensor, F
+  Variable<Scalar> & _J;
+};
 } // namespace neml2

@@ -4,28 +4,19 @@
     model = 'model'
     input_Scalar_names = 'state/vf state/c'
     input_Scalar_values = '0.9 0.3'
-    output_R2_names = 'state/F'
-    output_R2_values = 'Ft'
+    output_Scalar_names = 'state/J'
+    output_Scalar_values = 1.0153
     parameter_derivative_rel_tol = 1e-04
-  []
-[]
-
-[Tensors]
-  [Ft]
-    type = FillR2
-    values = '1.005074209 0.0   0.0
-              0.0   1.005074209 0.0
-              0.0   0.0   1.005074209'
   []
 []
 
 [Models]
   [model]
-    type = PhaseChangeDeformationGradient
+    type = PhaseChangeDeformationGradientJacobian
     phase_fraction = 'state/c'
     CPE = 1e-2
     CPC = 0.02
-    deformation_gradient = 'state/F'
+    jacobian = 'state/J'
     fluid_fraction = 'state/vf'
   []
 []

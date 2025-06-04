@@ -71,16 +71,16 @@ alpha0 = 3.333333 # 1/(1-Y)
     prescribed_time = 'times'
     time = 'forces/tt'
 
-        force_Scalar_names = 'forces/T'
-        force_Scalar_values = 'T'
-        
-        show_input_axis = false
-        show_output_axis = false
-        show_parameters = false
-        
-        ic_Scalar_names = 'state/wp state/wb state/ws state/alpha'
-        ic_Scalar_values = '${wp0} ${wb0} ${ws0} ${alpha0}'
-        save_as = 'test.pt'
+    force_Scalar_names = 'forces/T'
+    force_Scalar_values = 'T'
+    
+    show_input_axis = false
+    show_output_axis = false
+    show_parameters = false
+    
+    ic_Scalar_names = 'state/wp state/wb state/ws state/alpha'
+    ic_Scalar_values = '${wp0} ${wb0} ${ws0} ${alpha0}'
+    save_as = 'test.pt'
 
     verbose = false
   []

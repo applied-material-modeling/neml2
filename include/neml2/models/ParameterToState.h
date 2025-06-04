@@ -29,7 +29,7 @@
 namespace neml2
 {
 /**
- * @brief Convert a parameter to a state variables
+ * @brief Convert a parameter to a state variable
  */
 template <typename T>
 class ParameterToState : public Model

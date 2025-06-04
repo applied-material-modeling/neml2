@@ -34,7 +34,6 @@
 #include "neml2/tensors/assertions.h"
 #include "neml2/tensors/functions/stack.h"
 #include "neml2/tensors/functions/sum.h"
-#include "neml2/tensors/functions/linalg/inner.h"
 
 namespace neml2
 {
@@ -234,7 +233,6 @@ Scalar
 R2Base<Derived>::inner(const R2 & other) const
 {
   return base_sum(this->base_flatten() * other.base_flatten());
-  // return linalg::inner(*this, other);
 }
 
 template <class Derived>

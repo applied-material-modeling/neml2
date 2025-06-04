@@ -28,29 +28,22 @@
 
 namespace neml2
 {
-class ThermalDeformationGradient : public Model
+class SR2;
+
+/// Calculate the volume-adjusted deformation gradient
+class VolumeAdjustDeformationGradient : public Model
 {
 public:
   static OptionSet expected_options();
 
-  ThermalDeformationGradient(const OptionSet & options);
+  VolumeAdjustDeformationGradient(const OptionSet & options);
 
 protected:
-  void set_value(bool, bool, bool) override;
+  void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  /// Eigen strain
-  const Variable<Scalar> & _T;
+  const Variable<R2> & _F;
+  const Variable<Scalar> & _J;
 
-  /// The reference (stress free) temperature
-  const Scalar & _T0;
-
-  /// Coefficient of thermal expansion
-  const Scalar & _alpha;
-
-  /// specify whether to transpose+inverse
-  const bool _inverse;
-
-  /// deformation gradient tensor, F
-  Variable<R2> & _F;
+  Variable<R2> & _Fe;
 };
 } // namespace neml2

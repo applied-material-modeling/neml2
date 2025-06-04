@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/solid_mechanics/PhaseChangeDeformationGradient.h"
+#include "neml2/models/solid_mechanics/PhaseChangeDeformationGradientJacobian.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/functions/pow.h"
 #include "neml2/tensors/R2.h"
@@ -30,15 +30,15 @@
 
 namespace neml2
 {
-register_NEML2_object(PhaseChangeDeformationGradient);
+register_NEML2_object(PhaseChangeDeformationGradientJacobian);
 
 OptionSet
-PhaseChangeDeformationGradient::expected_options()
+PhaseChangeDeformationGradientJacobian::expected_options()
 {
   OptionSet options = Model::expected_options();
-  options.doc() = "Define the linear isotropic phase change deformation gradient, "
-                  "i.e. \\f$ \\boldsymbol{F}_T = (1+ \\alpha c \\phi^f + (1-c) \\phi^f "
-                  "d\\Omega)^{1/3} \\f$, where \\f$ "
+  options.doc() = "Define the linear isotropic phase change deformation gradient jacobian, "
+                  "i.e. \\f$ J = (1+ \\alpha c \\phi^f + (1-c) \\phi^f "
+                  "d\\Omega) \\f$, where \\f$ "
                   "\\alpha, d\\Omega \\f$ is the coefficient of phase expansion (CPE) and phase "
                   "change (CPC), \\f$ \\phi^f \\f$ is the fluid "
                   "fraction, "
@@ -56,58 +56,43 @@ PhaseChangeDeformationGradient::expected_options()
   options.set_parameter<TensorName<Scalar>>("CPC") = {TensorName<Scalar>("0")};
   options.set("CPC").doc() = "Coefficient of phase change";
 
-  options.set<bool>("inverse_condition") = false;
-  options.set("inverse_condition").doc() = "Whether to take the inverse operation.";
-
-  options.set<VariableName>("deformation_gradient") = VariableName(STATE, "F");
-  options.set("deformation_gradient").doc() = "Phase change deformation gradient tensor";
+  options.set<VariableName>("jacobian") = VariableName(STATE, "J");
+  options.set("jacobian").doc() = "Phase change deformation gradient jacobian";
 
   return options;
 }
 
-PhaseChangeDeformationGradient::PhaseChangeDeformationGradient(const OptionSet & options)
+PhaseChangeDeformationGradientJacobian::PhaseChangeDeformationGradientJacobian(
+    const OptionSet & options)
   : Model(options),
     _vf(declare_input_variable<Scalar>("fluid_fraction")),
     _c(declare_input_variable<Scalar>("phase_fraction")),
     _alpha(declare_parameter<Scalar>("alpha", "CPE")),
     _dOmega(declare_parameter<Scalar>("dOmega", "CPC")),
-    _inverse(options.get<bool>("inverse_condition")),
-    _F(declare_output_variable<R2>("deformation_gradient"))
+    _J(declare_output_variable<Scalar>("jacobian"))
 {
 }
 
 void
-PhaseChangeDeformationGradient::set_value(bool out, bool dout_din, bool d2out_din2)
+PhaseChangeDeformationGradientJacobian::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
 
-  auto term = (1.0 + _alpha * _c * _vf + (1 - _c) * _vf * _dOmega);
-
   if (out)
   {
-    _F = pow(term, 1.0 / 3.0) * R2::identity(_vf.options());
-    if (_inverse)
-      _F = pow(term, -1.0 / 3.0) * R2::identity(_vf.options());
+    _J = (1.0 + _alpha * _c * _vf + (1 - _c) * _vf * _dOmega);
   }
 
   if (dout_din)
   {
     if (_vf.is_dependent())
     {
-      _F.d(_vf) = 1.0 / 3.0 * pow(term, -2.0 / 3.0) * (_alpha * _c + (1 - _c) * _dOmega) *
-                  R2::identity(_vf.options());
-      if (_inverse)
-        _F.d(_vf) = -1.0 / 3.0 * pow(term, -4.0 / 3.0) * (_alpha * _c + (1 - _c) * _dOmega) *
-                    R2::identity(_vf.options());
+      _J.d(_vf) = (_alpha * _c + (1 - _c) * _dOmega);
     }
 
     if (_c.is_dependent())
     {
-      _F.d(_c) = 1.0 / 3.0 * pow(term, -2.0 / 3.0) * (_alpha * _vf - _vf * _dOmega) *
-                 R2::identity(_vf.options());
-      if (_inverse)
-        _F.d(_c) = -1.0 / 3.0 * pow(term, -4.0 / 3.0) * (_alpha * _vf - _vf * _dOmega) *
-                   R2::identity(_vf.options());
+      _J.d(_c) = (_alpha * _vf - _vf * _dOmega);
     }
   }
 }

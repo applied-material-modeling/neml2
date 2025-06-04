@@ -22,23 +22,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/solid_mechanics/ThermalDeformationGradient.h"
+#include "neml2/models/solid_mechanics/ThermalDeformationGradientJacobian.h"
 #include "neml2/tensors/Scalar.h"
-#include "neml2/tensors/functions/pow.h"
-#include "neml2/tensors/R2.h"
 #include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
-register_NEML2_object(ThermalDeformationGradient);
+register_NEML2_object(ThermalDeformationGradientJacobian);
 
 OptionSet
-ThermalDeformationGradient::expected_options()
+ThermalDeformationGradientJacobian::expected_options()
 {
   OptionSet options = Model::expected_options();
   options.doc() =
-      "Define the  linear isotropic thermal deformation gradient, "
-      "i.e. \\f$ \\boldsymbol{F}_T = (1+ \\alpha (T - T_0))^{1/3} \\boldsymbol{I} \\f$, where \\f$ "
+      "Define the  linear isotropic thermal deformation gradient jacobian, "
+      "i.e. \\f$ J = (1+ \\alpha (T - T_0))\\f$, where \\f$ "
       "\\alpha \\f$ is the coefficient of thermal expansion (CTE), \\f$ T \\f$ is the temperature, "
       "and \\f$ T_0 \\f$ is the reference (stress-free) temperature.";
 
@@ -51,52 +49,41 @@ ThermalDeformationGradient::expected_options()
   options.set_parameter<TensorName<Scalar>>("CTE");
   options.set("CTE").doc() = "Coefficient of thermal expansion";
 
-  options.set<bool>("inverse_condition") = false;
-  options.set("inverse_condition").doc() = "Whether to take the inverse operation.";
-
-  options.set<VariableName>("deformation_gradient") = VariableName(STATE, "F");
-  options.set("deformation_gradient").doc() = "Tempearture deformation gradient tensor";
+  options.set<VariableName>("jacobian") = VariableName(STATE, "J");
+  options.set("jacobian").doc() = "Tempearture deformation gradient jacobian";
 
   return options;
 }
 
-ThermalDeformationGradient::ThermalDeformationGradient(const OptionSet & options)
+ThermalDeformationGradientJacobian::ThermalDeformationGradientJacobian(const OptionSet & options)
   : Model(options),
     _T(declare_input_variable<Scalar>("temperature")),
     _T0(declare_buffer<Scalar>("T0", "reference_temperature")),
     _alpha(declare_parameter<Scalar>("alpha", "CTE", true)),
-    _inverse(options.get<bool>("inverse_condition")),
-    _F(declare_output_variable<R2>("deformation_gradient"))
+    _J(declare_output_variable<Scalar>("jacobian"))
 {
 }
 
 void
-ThermalDeformationGradient::set_value(bool out, bool dout_din, bool d2out_din2)
+ThermalDeformationGradientJacobian::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
 
-  auto term = (1.0 + _alpha * (_T - _T0));
   if (out)
   {
-    _F = pow(term, 1.0 / 3.0) * R2::identity(_T.options());
-    if (_inverse)
-      _F = pow(term, -1.0 / 3.0) * R2::identity(_T.options());
+    _J = 1.0 + _alpha * (_T - _T0);
   }
 
   if (dout_din)
   {
     if (_T.is_dependent())
     {
-      _F.d(_T) = 1.0 / 3.0 * pow(term, -2.0 / 3.0) * _alpha * R2::identity(_T.options());
-      if (_inverse)
-        _F.d(_T) = -1.0 / 3.0 * pow(term, -4.0 / 3.0) * _alpha * R2::identity(_T.options());
+      _J.d(_T) = _alpha;
     }
 
     if (const auto * const alpha = nl_param("alpha"))
     {
-      _F.d(*alpha) = 1.0 / 3.0 * pow(term, -2.0 / 3.0) * (_T - _T0) * R2::identity(_T.options());
-      if (_inverse)
-        _F.d(*alpha) = -1.0 / 3.0 * pow(term, -4.0 / 3.0) * (_T - _T0) * R2::identity(_T.options());
+      _J.d(*alpha) = (_T - _T0);
     }
   }
 }

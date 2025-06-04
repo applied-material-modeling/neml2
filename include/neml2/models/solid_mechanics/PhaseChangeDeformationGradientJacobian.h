@@ -22,31 +22,37 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/tensors/functions/linalg/inner.h"
-#include "neml2/tensors/Tensor.h"
-#include "neml2/tensors/Scalar.h"
-#include "neml2/tensors/assertions.h"
+#pragma once
 
-namespace neml2::linalg
+#include "neml2/models/Model.h"
+
+namespace neml2
 {
-Scalar
-inner(const Tensor & a, const Tensor & b)
+class PhaseChangeDeformationGradientJacobian : public Model
 {
-  neml_assert_batch_broadcastable_dbg(a, b);
-  neml_assert_dbg(a.base_dim() == 2,
-                  "The first tensor in inner has base dimension ",
-                  a.base_dim(),
-                  " instead of 2.");
-  neml_assert_dbg(b.base_dim() == 2,
-                  "The second tensor in inner has base dimension ",
-                  b.base_dim(),
-                  " instead of 2.");
-  neml_assert_dbg(a.base_size(0) == b.base_size(0),
-                  "The two tensors in inner have different base sizes: ",
-                  a.base_size(0),
-                  " and ",
-                  b.base_size(0),
-                  ".");
-  return Scalar(at::tensordot(a, b, {-2, 1}, {-2, 1}));
-}
+public:
+  static OptionSet expected_options();
+
+  PhaseChangeDeformationGradientJacobian(const OptionSet & options);
+
+protected:
+  void set_value(bool, bool, bool) override;
+
+  /// fluid fraction
+  const Variable<Scalar> & _vf;
+
+  /// phase fraction
+  const Variable<Scalar> & _c;
+
+  /// Coefficient of phase expansion
+  const Scalar & _alpha;
+
+  /// Coefficient of phase change
+  const Scalar & _dOmega;
+
+  /// deformation gradient tensor, F
+  Variable<Scalar> & _J;
+
+  /// jacobian
+};
 } // namespace neml2
