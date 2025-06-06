@@ -117,8 +117,8 @@ if __name__ == "__main__":
     diff_files = subprocess.run(
         ["git", "diff", "--name-only", sha1, sha2], capture_output=True, text=True, check=True
     ).stdout.splitlines()
-    headers = [f for f in diff_files if f.endswith(".h")]
-    srcs = [f for f in diff_files if f.endswith(".cxx")]
+    headers = [str((root / f).resolve()) for f in diff_files if f.endswith(".h")]
+    srcs = [str((root / f).resolve()) for f in diff_files if f.endswith(".cxx")]
     print("Modified headers:")
     print("\n".join(headers), "\n")
     print("Modified sources:")
