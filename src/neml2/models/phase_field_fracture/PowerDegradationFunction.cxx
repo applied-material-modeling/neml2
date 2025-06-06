@@ -35,9 +35,11 @@ PowerDegradationFunction::expected_options()
 {
   OptionSet options = DegradationFunction::expected_options();
   options.doc() = "Power degradation function to degrade the elastic strain energy density, \\f$ g "
-                  "= \\left( 1-d \\right)^2 \\f$";
+                  "= \\left( 1-d \\right)^2 (1-\\eta) + \\eta \\f$";
   options.set<TensorName<Scalar>>("power");
   options.set("power").doc() = "Power of the degradation function";
+  options.set<Real>("eta") = 0;
+  options.set("eta").doc() = "Residual degradation when d = 1";
 
   options.set<bool>("define_second_derivatives") = true;
 
@@ -46,8 +48,8 @@ PowerDegradationFunction::expected_options()
 
 PowerDegradationFunction::PowerDegradationFunction(const OptionSet & options)
   : DegradationFunction(options),
-    _p(declare_parameter<Scalar>("p", "power"))
-
+    _p(declare_parameter<Scalar>("p", "power")),
+    _eta(options.get<Real>("eta"))
 {
 }
 
@@ -56,17 +58,17 @@ PowerDegradationFunction::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   if (out)
   {
-    _g = pow((1 - _d), _p);
+    _g = pow((1 - _d), _p) * (1 - _eta) + _eta;
   }
 
   if (dout_din)
   {
-    _g.d(_d) = -_p * pow((1 - _d), (_p - 1));
+    _g.d(_d) = -_p * pow((1 - _d), (_p - 1)) * (1 - _eta);
   }
 
   if (d2out_din2)
   {
-    _g.d(_d, _d) = (_p * (_p - 1)) * pow((1 - _d), (_p - 2));
+    _g.d(_d, _d) = (_p * (_p - 1)) * pow((1 - _d), (_p - 2)) * (1 - _eta);
   }
 }
 } // namespace neml2

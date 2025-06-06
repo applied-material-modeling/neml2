@@ -83,22 +83,40 @@ ScalarMultiplication::ScalarMultiplication(const OptionSet & options)
 void
 ScalarMultiplication::set_value(bool out, bool dout_din, bool d2out_din2)
 {
-  auto value = _inv[0] ? _A / (*_from[0]) : _A * (*_from[0]);
-  for (std::size_t i = 1; i < _from.size(); i++)
-    value = value * (_inv[i] ? 1. / (*_from[i]) : (*_from[i]));
-
   if (out)
-    _to = value;
+  {
+    auto r = _inv[0] ? _A / (*_from[0]) : _A * (*_from[0]);
+    for (std::size_t i = 1; i < _from.size(); i++)
+    {
+      if (_inv[i])
+        r = r / (*_from[i]);
+      else
+        r = r * (*_from[i]);
+    }
+    _to = r;
+  }
 
   if (dout_din)
+  {
     for (std::size_t i = 0; i < _from.size(); i++)
       if (_from[i]->is_dependent())
-        _to.d(*_from[i]) = (_inv[i] ? -1.0 : 1.0) * value / (*_from[i]);
+      {
+        auto r = _inv[i] ? -_A / (*_from[i]) / (*_from[i]) : _A;
+        for (std::size_t j = 0; j < _from.size(); j++)
+          if (i != j)
+          {
+            if (_inv[j])
+              r = r / (*_from[j]);
+            else
+              r = r * (*_from[j]);
+          }
+        _to.d(*_from[i]) = r;
+      }
+  }
 
   if (d2out_din2)
   {
     for (std::size_t i = 0; i < _from.size(); i++)
-    {
       if (_from[i]->is_dependent())
       {
         auto p = (_inv[i] ? -1.0 : 1.0);
@@ -115,7 +133,7 @@ ScalarMultiplication::set_value(bool out, bool dout_din, bool d2out_din2)
                   r = r * (_inv[k] ? 1. / (*_from[k]) : (*_from[k]));
               _to.d(*_from[i], *_from[j]) = r;
             }
-            else
+            else if (_inv[i])
             {
               auto r = _A * p * (p - 1) * pow(*_from[i], (p - 2));
               for (std::size_t k = 0; k < _from.size(); k++)
@@ -126,7 +144,6 @@ ScalarMultiplication::set_value(bool out, bool dout_din, bool d2out_din2)
           }
         }
       }
-    }
   }
 }
 } // namespace neml2
