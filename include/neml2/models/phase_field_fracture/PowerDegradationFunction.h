@@ -43,5 +43,8 @@ protected:
 
   /// power of the function
   const Scalar & _p;
+
+  /// residual degradation when d = 1
+  const Real _eta;
 };
 } // namespace neml2
