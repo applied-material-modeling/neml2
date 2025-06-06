@@ -21,6 +21,7 @@ DartConfiguration.tcl
 *.log
 .env
 .clangd
+.DS_Store
 
 # Python
 __pycache__
@@ -46,6 +47,3 @@ Testing
 *.pdf
 *.gv
 *.json
-
-# Mac
-.DS_Store
