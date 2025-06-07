@@ -26,39 +26,17 @@
 
 #include "neml2/tensors/Tensor.h"
 
-namespace neml2
+namespace neml2::discretization
 {
-/**
- * @brief Scatter a vector associated with all degrees of freedom to a tensor specified by a DOF
- * map.
- *
- * \p dof_map must be of integer type, and its values represent the DOF indices to which the values
- * of \p v should be scattered.
- *
- * The input vector \p v should be a "vector" of shape (Ndof) where Ndof is the number of
- * degrees of freedom.
- *
- * @returns a tensor with the same shape as dof_map.
- */
-Tensor fem_scatter(const ATensor & v, const Tensor & dof_map);
-
 /**
  * @brief Interpolate a tensor of values given evaluated basis functions.
  *
  * The input tensor \p elem_dofs must be of shape (..., Nelem, Ndofe;) where Nelem is the
- * number of elements in the mesh, and Ndofe is the number of DOF objects (i.e., nodes) per element.
- * The \p basis should have shape (..., Nelem, Ndofe, Nqp; ...). The remaining base shape (...)
+ * number of elements in the mesh, and Ndofe is the number of DOFs per element.
+ * The \p basis should have shape (..., Nelem, Ndofe, Nqp; ...). The trailing base shape (...)
  * represents the points of interpolation.
  *
- * @returns a tensor with shape (Nelem, Nqp; ...).
+ * @returns a tensor with shape (Nelem, Nqp; ...) with trailing base shape matching the basis.
  */
-Tensor fem_interpolate(const Tensor & elem_dofs, const Tensor & basis);
-
-/**
- * @brief This is the inverse operation of fem_scatter. It assembles a scattered vector into a
- * tensor given a DOF map.
- *
- * @returns a torch tensor with shape (Ndof)
- */
-ATensor fem_assemble(const ATensor & v_scattered, const ATensor & dof_map, Size ndof);
-} // namespace neml2
+Tensor interpolate(const Tensor & elem_dofs, const Tensor & basis);
+} // namespace neml2::discretization

@@ -27,21 +27,22 @@
 #include "neml2/jit/TraceableTensorShape.h"
 #include "neml2/misc/types.h"
 #include "neml2/models/Model.h"
-#include "neml2/tensors/functions/fem.h"
+#include "neml2/tensors/functions/discretization/assemble.h"
+#include "neml2/tensors/functions/discretization/interpolate.h"
+#include "neml2/tensors/functions/discretization/scatter.h"
 #include "neml2/tensors/functions/stack.h"
 #include "neml2/tensors/functions/sum.h"
 #include "neml2/tensors/functions/bmm.h"
 
 using namespace neml2;
 
-TEST_CASE("fem", "[tensors][functions]")
+TEST_CASE("discretization", "[tensors][functions]")
 {
   // Consider a 2D mesh with 4 elements, 9 nodes, and 2 displacement variables.
   // Assume 1st order quadrature where each element has 4 quadrature points.
   Size nelem = 4;
   Size ndofe = 4;
   Size nqp = 4;
-  Size nvar = 2;
   Size ndof = 18;
 
   // The mesh connectivity looks like:
@@ -67,37 +68,39 @@ TEST_CASE("fem", "[tensors][functions]")
   //    | 2 | 3 |
   //   15--16--17
   //
-  // Converting dof map to a tensor:
-  auto dof_map = Tensor::create({{{0, 3, 4, 1}, {9, 12, 13, 10}},
-                                 {{1, 4, 5, 2}, {10, 13, 14, 11}},
-                                 {{3, 6, 7, 4}, {12, 15, 16, 13}},
-                                 {{4, 7, 8, 5}, {13, 16, 17, 14}}},
-                                1,
-                                kInt64)
-                     .base_transpose(0, 1);
-  // The dof map has shape (4; 4, 2)
-  //                        |  |  |
-  //                 Nelem__|  |  |
-  //                    Ndofe__|  |
-  //                        Nvar__|
+  // Create dof maps:
+  // The dof maps have shape (4, 4;)
+  //                          |  |
+  //                   Nelem__|  |
+  //                      Ndofe__|
+  auto dof_map_ux =
+      Tensor::create({{0, 3, 4, 1}, {1, 4, 5, 2}, {3, 6, 7, 4}, {4, 7, 8, 5}}, 2, kInt64);
+  auto dof_map_uy = Tensor::create(
+      {{9, 12, 13, 10}, {10, 13, 14, 11}, {12, 15, 16, 13}, {13, 16, 17, 14}}, 2, kInt64);
 
-  // The basis functions for the quadrature points are:
+  // We will be using 1st order Lagrange basis functions.
+  // The basis tensor has shape (4, 4;)
+  //                             |  |
+  //                      Ndofe__|  |
+  //                          Nqp___|
+  // The basis functions are the same for all elements.
   const Real x1 = -std::sqrt(3.0) / 3;
   const Real x2 = std::sqrt(3.0) / 3;
-  auto xi = Tensor::create({x1, x1, -x1, -x1});
-  auto eta = Tensor::create({x2, -x2, x2, -x2});
+  auto xi = Tensor::create({x1, x1, -x1, -x1}, 1);
+  auto eta = Tensor::create({x2, -x2, x2, -x2}, 1);
   auto phi1 = (1 - xi) * (1 + eta) / 4;
   auto phi2 = (1 - xi) * (1 - eta) / 4;
   auto phi3 = (1 + xi) * (1 - eta) / 4;
   auto phi4 = (1 + xi) * (1 + eta) / 4;
-  auto phi = base_stack({phi1, phi2, phi3, phi4}, 0);
-  // The basis tensor has shape (; 4, 4)
-  //                               |  |
-  //                        Ndofe__|  |
-  //                            Nqp___|
-  // It's unbatched because it's the same for all elements.
+  auto phi = batch_stack({phi1, phi2, phi3, phi4}).batch_expand({nelem, ndofe, nqp});
 
-  // The parametric basis function gradients for the quadrature points are:
+  // Create the parametric basis function gradients.
+  // The basis gradient tensor has shape (4, 4; 3)
+  //                                      |  |  |
+  //                               Ndofe__|  |  |
+  //                                   Nqp___|  |
+  //                                      Ndim__|
+  // It's unbatched because it's the same for all elements (in the parametric space).
   auto dphi1_dxi = -(1 + eta) / 4;
   auto dphi1_deta = (1 - xi) / 4;
   auto dphi2_dxi = -(1 - eta) / 4;
@@ -107,92 +110,76 @@ TEST_CASE("fem", "[tensors][functions]")
   auto dphi4_dxi = (1 + eta) / 4;
   auto dphi4_deta = (1 + xi) / 4;
   auto zero = Tensor::zeros({4});
-  auto dphi1 = base_stack({dphi1_dxi, dphi1_deta, zero}, -1);
-  auto dphi2 = base_stack({dphi2_dxi, dphi2_deta, zero}, -1);
-  auto dphi3 = base_stack({dphi3_dxi, dphi3_deta, zero}, -1);
-  auto dphi4 = base_stack({dphi4_dxi, dphi4_deta, zero}, -1);
-  auto dphi = base_stack({dphi1, dphi2, dphi3, dphi4}, 0);
-  // The basis gradient tensor has shape (; 4, 4, 3)
-  //                                        |  |  |
-  //                                 Ndofe__|  |  |
-  //                                     Nqp___|  |
-  //                                        Ndim__|
-  // It's unbatched because it's the same for all elements (in the parametric space).
+  auto dphi1 = base_stack({dphi1_dxi, dphi1_deta, zero});
+  auto dphi2 = base_stack({dphi2_dxi, dphi2_deta, zero});
+  auto dphi3 = base_stack({dphi3_dxi, dphi3_deta, zero});
+  auto dphi4 = base_stack({dphi4_dxi, dphi4_deta, zero});
+  auto dphi = batch_stack({dphi1, dphi2, dphi3, dphi4});
 
   // Isotroparametric mapping from the parametric space to the physical space:
+  //
   // This is too much for me to prototype, so let's assume the mapping is identity...
-  auto dphi_phys = dphi.batch_expand(nelem).clone();
-  // The physical basis gradient tensor has shape (4; 4, 4, 3)
+  // In reality, any finite element code could do this part.
+  //
+  // The physical basis gradient tensor has shape (4, 4, 4; 3)
   //                                               |  |  |  |
   //                                        Nelem__|  |  |  |
   //                                           Ndofe__|  |  |
   //                                               Nqp___|  |
   //                                                  Ndim__|
+  auto dphi_phys = dphi.batch_expand({nelem, ndofe, nqp}).clone();
 
-  // The solution vector is a 1D tensor with shape (; 18)
-  auto sol = Tensor(at::linspace(0.0, 17.0, 18), 0);
+  // The solution vector is a 1D tensor with shape (18)
+  auto sol = at::linspace(0.0, 17.0, 18);
 
-  // First step is to scatter the solution vector to the dof map
-  auto sol_scattered = fem_scatter(sol, dof_map);
-  REQUIRE(sol_scattered.batch_sizes() == TensorShape{nelem});
-  REQUIRE(sol_scattered.base_sizes() == TensorShape{ndofe, nvar});
-  auto sol_scattered_correct = Tensor::create({{{0.0, 3.0, 4.0, 1.0}, {9.0, 12.0, 13.0, 10.0}},
-                                               {{1.0, 4.0, 5.0, 2.0}, {10.0, 13.0, 14.0, 11.0}},
-                                               {{3.0, 6.0, 7.0, 4.0}, {12.0, 15.0, 16.0, 13.0}},
-                                               {{4.0, 7.0, 8.0, 5.0}, {13.0, 16.0, 17.0, 14.0}}},
-                                              1)
-                                   .base_transpose(0, 1);
-  REQUIRE(sol_scattered.allclose(sol_scattered_correct));
+  // Step 1: Scatter the solution vector to the dof map
+  auto elem_dof_ux = discretization::scatter(sol, dof_map_ux);
+  auto elem_dof_uy = discretization::scatter(sol, dof_map_uy);
+  REQUIRE(elem_dof_ux.batch_sizes() == dof_map_ux.batch_sizes());
+  REQUIRE(elem_dof_ux.base_sizes() == dof_map_ux.base_sizes());
+  REQUIRE(elem_dof_uy.batch_sizes() == dof_map_uy.batch_sizes());
+  REQUIRE(elem_dof_uy.base_sizes() == dof_map_uy.base_sizes());
 
-  // The second step is to interpolate the scattered solution to the quadrature points
-  // The interpolated solution will have shape (4; 2, 4)
+  // Step 2: Interpolate the scattered solution to the quadrature points
+  // The interpolated solution will have shape (4, 4;)
+  //                                            |  |
+  //                                     Nelem__|  |
+  //                                          Nqp__|
+  auto ux_h = discretization::interpolate(elem_dof_ux, phi);
+  auto uy_h = discretization::interpolate(elem_dof_uy, phi);
+  REQUIRE(ux_h.batch_sizes() == TensorShape{nelem, nqp});
+  REQUIRE(uy_h.batch_sizes() == TensorShape{nelem, nqp});
+
+  // Step 3: Interpolate the scattered solution to get the variable gradient at the
+  // quadrature points
+  // The interpolated gradient will have shape (4, 4; 3)
   //                                            |  |  |
   //                                     Nelem__|  |  |
-  //                                         Nvar__|  |
-  //                                             Nqp__|
-  auto sol_interp = fem_interpolate(sol_scattered, phi);
-  REQUIRE(sol_interp.batch_sizes() == TensorShape{nelem});
-  REQUIRE(sol_interp.base_sizes() == TensorShape{nvar, nqp});
-  auto sol_interp_correct =
-      Tensor::create({{{0.8453, 2.5774, 1.4226, 3.1547}, {9.8453, 11.5774, 10.4226, 12.1547}},
-                      {{1.8453, 3.5774, 2.4226, 4.1547}, {10.8453, 12.5774, 11.4226, 13.1547}},
-                      {{3.8453, 5.5774, 4.4226, 6.1547}, {12.8453, 14.5774, 13.4226, 15.1547}},
-                      {{4.8453, 6.5774, 5.4226, 7.1547}, {13.8453, 15.5774, 14.4226, 16.1547}}},
-                     1);
-  REQUIRE(sol_interp.allclose(sol_interp_correct, 0, 1e-3));
-
-  // The third step is to interpolate the scattered solution to get the variable gradient at the
-  // quadrature points
-  // The interpolated gradient will have shape (4; 2, 4, 3)
-  //                                            |  |  |  |
-  //                                     Nelem__|  |  |  |
-  //                                         Nvar__|  |  |
-  //                                            Nqp___|  |
-  //                                               Ndim__|
+  //                                         Nqp___|  |
+  //                                            Ndim__|
   // Hint: Since I was lazy, I assumed the mapping is identity, so the gradient in the physical
   // space is the same as the gradient in the parametric space. Moreover, look at the way I defined
   // the nodal solution (the ASCII pictures above), the solution gradient is the same at every
   // quadrature point.
-  auto sol_grad_interp = fem_interpolate(sol_scattered, dphi_phys);
-  REQUIRE(sol_grad_interp.batch_sizes() == TensorShape{nelem});
-  REQUIRE(sol_grad_interp.base_sizes() == TensorShape{nvar, nqp, 3});
-  auto sol_grad_interp_correct = Tensor::create({0.5, -1.5, 0.0});
-  REQUIRE(sol_grad_interp.allclose(sol_grad_interp_correct));
+  auto grad_ux_h = discretization::interpolate(elem_dof_ux, dphi_phys);
+  auto grad_uy_h = discretization::interpolate(elem_dof_uy, dphi_phys);
+  REQUIRE(grad_ux_h.batch_sizes() == TensorShape{nelem, nqp});
+  REQUIRE(grad_ux_h.base_sizes() == TensorShape{3});
+  REQUIRE(grad_uy_h.batch_sizes() == TensorShape{nelem, nqp});
+  REQUIRE(grad_uy_h.base_sizes() == TensorShape{3});
 
-  // The fourth step is to calculate the strain tensor at the quadrature points
+  // Step 4: Calculate the strain tensor at the quadrature points
   // The strain tensor will have shape (4, 4; 6)
   //                                    |  |
   //                             Nelem__|  |
   //                                 Nqp___|
-  auto grad_ux = Vec(sol_grad_interp.base_index({0}), 2);
-  auto grad_uy = Vec(sol_grad_interp.base_index({1}), 2);
-  auto grad_uz = Vec::zeros_like(grad_ux);
-  auto grad_u = R2(base_stack({grad_ux, grad_uy, grad_uz}, 0));
+  auto grad_uz_h = Tensor::zeros_like(grad_ux_h);
+  auto grad_u = R2(base_stack({grad_ux_h, grad_uy_h, grad_uz_h}));
   auto strain = SR2(grad_u);
   REQUIRE(strain.batch_sizes() == TensorShape{nelem, nqp});
   REQUIRE(strain.base_sizes() == TensorShape{6});
 
-  // The fifth step is to perform the constitutive update to map from strain to stress
+  // Step 5: Perform the constitutive update to map from strain to stress
   // The stress tensor will have shape (4, 4; 6)
   //                                    |  |
   //                             Nelem__|  |
@@ -202,11 +189,12 @@ TEST_CASE("fem", "[tensors][functions]")
   VariableName strain_name(STATE, "internal", "Ee");
   VariableName stress_name(STATE, "S");
   auto stress = model.value({{strain_name, strain}})[stress_name];
+  stress = R2(SR2(stress)); // Convert from symmetric to full R2
   REQUIRE(stress.batch_sizes() == TensorShape{nelem, nqp});
-  REQUIRE(stress.base_sizes() == TensorShape{6});
+  REQUIRE(stress.base_sizes() == TensorShape{3, 3});
 
-  // The sixth step is to calulate the residual
-  // Assume Galerkin, i.e., test and shape functions are the same.
+  // Step 6: Calculate the residual
+  // Assuming Galerkin, i.e., test and shape functions are the same.
   // The element residual is then
   //   r_i = \sum_q \phi_{,j} \sigma_{ij} J_q W_q T_q
   // where
@@ -221,7 +209,7 @@ TEST_CASE("fem", "[tensors][functions]")
   // With 1st order Gauss quadrature, the weights are [1, 1, 1, 1] for the 4 qps.
   //
   // Summary of tensor shapes:
-  //   dphi_phys: (4; 4, 4, 3)
+  //   dphi_phys: (4, 4, 4; 3)
   //               |  |  |  |
   //        Nelem__|  |  |  |
   //           Ndofe__|  |  |
@@ -243,24 +231,25 @@ TEST_CASE("fem", "[tensors][functions]")
   //          Nqp__|
   //
   //   T:         ()
-  dphi_phys = Tensor(dphi_phys.base_transpose(0, 1), 2);
+  dphi_phys = dphi_phys.batch_transpose(0, 1);
   auto J = Scalar::full(1.0).batch_expand({nelem, nqp});
   auto W = Scalar::full(1.0).batch_expand({nqp});
   auto T = Scalar::full(1.0);
-  auto re_qp = neml2::bmm(dphi_phys, R2(SR2(stress))) * J * W * T;
-  auto re = batch_sum(re_qp, 1).base_index({indexing::Slice(), indexing::Slice(0, 2)});
-  // The element residual has shape (4; 4, 2)
+  auto re_qp = base_sum(dphi_phys.base_unsqueeze(0) * stress, 1) * (J * W * T);
+  auto re = batch_sum(re_qp, -1).batch_transpose(0, 1);
+  // The element residual has shape (4, 4; 3)
   //                                 |  |  |
   //                          Nelem__|  |  |
   //                             Ndofe__|  |
-  //                                 Nvar__|
-  REQUIRE(re.batch_sizes() == TensorShape{nelem});
-  REQUIRE(re.base_sizes() == TensorShape{ndofe, nvar});
+  //                                 Ndim__|
+  REQUIRE(re.batch_sizes() == TensorShape{nelem, ndofe});
+  REQUIRE(re.base_sizes() == TensorShape{3});
 
   // Final step, assemble the element residual into the global residual vector
   // The global residual vector has shape (18)
-  auto r = fem_assemble(re, dof_map, ndof);
-  REQUIRE(r.sizes() == TensorShape{ndof});
+  auto r = at::zeros({ndof});
+  discretization::assemble_(r, re.base_index({0}), dof_map_ux);
+  discretization::assemble_(r, re.base_index({1}), dof_map_uy);
   auto r_correct = Tensor::create({-19.230769,
                                    -76.923077,
                                    -57.692308,

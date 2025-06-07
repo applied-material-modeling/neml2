@@ -22,52 +22,32 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/tensors/functions/fem.h"
+#include "neml2/tensors/functions/discretization/interpolate.h"
 #include "neml2/tensors/functions/sum.h"
 #include "neml2/misc/assertions.h"
 
-namespace neml2
+namespace neml2::discretization
 {
 Tensor
-fem_scatter(const ATensor & v, const Tensor & dof_map)
-{
-  auto vals = v.index({at::Tensor(dof_map)});
-  return Tensor(vals, dof_map.batch_sizes());
-}
-
-Tensor
-fem_interpolate(const Tensor & elem_dofs, const Tensor & basis)
+interpolate(const Tensor & elem_dofs, const Tensor & basis)
 {
   neml_assert(elem_dofs.batch_dim() >= 2,
               "fem_interpolate: batch dimension of elem_dofs must at least 2, got ",
               elem_dofs.batch_dim());
   neml_assert(basis.batch_dim() >= 3,
-              "fem_interpolate: base dimension of basis must be at least 3, got ",
+              "interpolate: base dimension of basis must be at least 3, got ",
               basis.batch_dim());
   neml_assert(elem_dofs.batch_size(-2) == basis.batch_size(-3),
-              "fem_interpolate: elem_dofs implies Nelem = ",
+              "interpolate: elem_dofs implies Nelem = ",
               elem_dofs.batch_size(-2),
               ", but basis implies Nelem = ",
               basis.batch_size(-3));
   neml_assert(elem_dofs.batch_size(-1) == basis.batch_size(-2),
-              "fem_interpolate: elem_dofs implies Ndofe = ",
+              "interpolate: elem_dofs implies Ndofe = ",
               elem_dofs.batch_size(-1),
               ", but basis implies Ndofe = ",
               basis.batch_size(-2));
 
   return batch_sum(elem_dofs.batch_unsqueeze(-1).base_unsqueeze_to(basis.base_dim()) * basis, -2);
 }
-
-ATensor
-fem_assemble(const ATensor & v_scattered, const ATensor & dof_map, Size ndof)
-{
-  neml_assert(v_scattered.sizes() == dof_map.sizes(),
-              "fem_assemble: v_scattered and dof_map must have the same sizes, got ",
-              v_scattered.sizes(),
-              " and ",
-              dof_map.sizes());
-  auto r = at::zeros(ndof, v_scattered.options());
-  r.scatter_add_(0, dof_map.flatten(), v_scattered.flatten());
-  return r;
-}
-} // namespace neml2
+} // namespace neml2::discretization
