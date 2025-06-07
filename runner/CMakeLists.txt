@@ -38,7 +38,7 @@ list(APPEND BENCHMARK_ARGS "nbatch=1")
 list(APPEND BENCHMARK_ARGS "device=cpu")
 
 macro(add_benchmark name)
-  add_test(NAME ${name} COMMAND runner ${BENCHMARK_DIR}/${name}/model.i ${BENCHMARK_ARGS})
+  add_test(NAME ${name} COMMAND runner run ${BENCHMARK_DIR}/${name}/model.i ${BENCHMARK_ARGS})
 endmacro()
 
 add_benchmark(elasticity)

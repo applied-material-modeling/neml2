@@ -22,21 +22,19 @@ cmake --build --preset runner
 
 Once the runner is built (and/or installed), an executable named `runner` will be placed under the build directory (or the installation directory). Invoking the executable without any additional argument or with the `-h` or `--help` argument will print out the usage message:
 ```
-Usage: runner [--help] [--version] [--diagnose] [--time] [--num-runs VAR] [--warmup VAR] input driver additional_args
-
-Positional arguments:
-  input            path to the input file
-  driver           name of the driver in the input file
-  additional_args  additional command-line arguments to pass to the input file parser [nargs: 0 or more]
+Usage: runner [--help] [--version] {diagnose,inspect,run,time}
 
 Optional arguments:
-  -h, --help       shows help message and exits
-  -v, --version    prints version information and exits
-  -d, --diagnose   run diagnostics on common problems and exit if any issue is identified
-  -t, --time       output the elapsed wall time during model evaluation
-  -n, --num-runs   number of times to run the driver [nargs=0..1] [default: 1]
-  --warmup         number of warmup runs before actually measuring the model evaluation time [nargs=0..1] [default: 0]
+  -h, --help     shows help message and exits
+  -v, --version  prints version information and exits
+
+Subcommands:
+  diagnose      Run diagnostics on a driver or a model from an input file.
+  inspect       Summarize the structure of a model.
+  run           Run a driver from an input file.
+  time          Time the execution of a driver from an input file.
 ```
+See the subcommand help messages for further details.
 
 ## Python script
 

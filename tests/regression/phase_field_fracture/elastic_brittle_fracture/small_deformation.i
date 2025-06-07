@@ -9,9 +9,6 @@
     force_SR2_values = 'strains'
     predictor = LINEAR_EXTRAPOLATION
     save_as = 'fb_pff_result.pt'
-    show_input_axis = true
-    show_output_axis = true
-    verbose = true
   []
   [regression]
     type = TransientRegression
@@ -26,7 +23,6 @@
     rel_tol = 1e-08
     abs_tol = 1e-10
     max_its = 50
-    verbose = true
   []
 []
 
@@ -106,7 +102,7 @@
     type = ComposedModel
     models = 'degrade sed0 sed cracked sum'
   []
- # phase rate, follows from variation of total energy w.r.t. phase field
+  # phase rate, follows from variation of total energy w.r.t. phase field
   [dpsidd]
     type = Normality
     model = 'energy'
