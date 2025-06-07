@@ -94,7 +94,7 @@ if __name__ == "__main__":
             total_time = 0
             command = [
                 str(runner),
-                "--time",
+                "time",
                 str(input),
                 "driver",
                 "device={}".format(device),

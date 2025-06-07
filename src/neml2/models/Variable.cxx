@@ -406,10 +406,19 @@ template <typename T>
 void
 Variable<T>::ref(const VariableBase & var, bool ref_is_mutable)
 {
-  neml_assert(!_ref,
+  neml_assert(!_ref || ref() == var.ref(),
               "Variable '",
               name(),
-              "' cannot reference another variable after it has been assigned a reference.");
+              "' cannot reference another variable '",
+              var.name(),
+              "' after it has been assigned a reference. \nThe "
+              "existing reference '",
+              ref()->name(),
+              "' was declared by model '",
+              ref()->owner().name(),
+              "'. \nThe new reference is declared by model '",
+              var.owner().name(),
+              "'.");
   neml_assert(&var != this, "Variable '", name(), "' cannot reference itself.");
   neml_assert(var.ref() != this,
               "Variable '",
@@ -427,7 +436,7 @@ Variable<T>::ref(const VariableBase & var, bool ref_is_mutable)
               var.type(),
               ": Dynamic cast failure.");
   _ref = var_ptr;
-  _ref_is_mutable = ref_is_mutable;
+  _ref_is_mutable |= ref_is_mutable;
 }
 
 template <typename T>
