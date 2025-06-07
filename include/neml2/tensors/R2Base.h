@@ -121,6 +121,9 @@ public:
   /// Determinant
   Scalar det() const;
 
+  /// Double contraction ij,ij
+  Scalar inner(const R2 & other) const;
+
   /// Inversion
   Derived inverse() const;
 
