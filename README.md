@@ -35,7 +35,7 @@ The table below compares three approaches for solving the same problem: a crysta
 | NEML  | CPU    | 42,500        | Intel Xeon Gold 6346 CPU with 32 threads |
 | NEML2 | CPU    | 15,000        | Intel Xeon Gold 6346 CPU with 32 threads |
 | NEML2 | GPU    | 68            | 1 NVIDIA RTX A5000 GPUs                  |
-| NEML2 | GPU    | 34            | 2 NVIDIA RTX A5000 GPUs                  |
+|       |        | 34            | 2 NVIDIA RTX A5000 GPUs                  |
 
 NEML2 is more than 2x faster than NEML on CPU, owing to more comprehensive threading and vectorization as well as Just-In-Time compilation. In this case, GPUs further speed up the calculation by more than 400 times.
 
