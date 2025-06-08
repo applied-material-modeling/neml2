@@ -25,12 +25,12 @@
 
 [Models]
   [model]
-    type = PyrolysisConversionAmount
+    type = ThermalDecomposition
     initial_solid_mass_fraction = 0.2
     initial_binder_mass_fraction = 0.4
     reaction_yield = 0.7
 
     solid_mass_fraction = 'state/ws'
-    reaction_amount = 'state/alpha'
+    conversion_degree = 'state/alpha'
   []
 []

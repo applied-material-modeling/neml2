@@ -29,7 +29,7 @@
     type = AvramiErofeevNucleation
     reaction_coef = 0.7
     reaction_order = 2.75
-    degree_of_conversion = 'state/alpha'
+    conversion_degree = 'state/alpha'
     reaction_rate = 'state/out'
   []
 []

@@ -104,19 +104,19 @@ alpha0 = 3.333333 # 1/(1-Y)
 
 [Models]
   [amount]
-    type = PyrolysisConversionAmount
+    type = ThermalDecomposition
     initial_solid_mass_fraction = '${ws0}'
     initial_binder_mass_fraction = '${wb0}'
     reaction_yield = '${Y}'
 
     solid_mass_fraction = 'state/ws'
-    reaction_amount = 'state/alpha'
+    conversion_degree = 'state/alpha'
   []
   [reaction]
     type = ContractingGeometry
     reaction_coef = 'k'
     reaction_order = 'order'
-    degree_of_conversion = 'state/alpha'
+    conversion_degree = 'state/alpha'
     reaction_rate = 'state/f'
   []
   [kinetic_coef]
@@ -140,7 +140,7 @@ alpha0 = 3.333333 # 1/(1-Y)
   []
   [residual_ms]
     type = ScalarLinearCombination
-    coefficients = "1.0 -1.0"
+    coefficients = '1.0 -1.0'
     from_var = 'state/alpha_dot state/pyro'
     to_var = 'residual/ws'
   []
@@ -162,7 +162,7 @@ alpha0 = 3.333333 # 1/(1-Y)
   []
   [residual_binder]
     type = ScalarLinearCombination
-    coefficients = "${Y} 1.0"
+    coefficients = '${Y} 1.0'
     from_var = 'state/wb_dot state/ws_dot'
     to_var = 'residual/wb'
   []
@@ -172,7 +172,7 @@ alpha0 = 3.333333 # 1/(1-Y)
   []
   [rmp]
     type = ScalarLinearCombination
-    coefficients = "1.0 -1.0"
+    coefficients = '1.0 -1.0'
     from_var = 'state/wp old_state/wp'
     to_var = 'residual/wp'
   []
@@ -187,13 +187,13 @@ alpha0 = 3.333333 # 1/(1-Y)
     solver = 'newton'
   []
   [amount_new]
-    type = PyrolysisConversionAmount
+    type = ThermalDecomposition
     initial_solid_mass_fraction = '${ws0}'
     initial_binder_mass_fraction = '${wb0}'
     reaction_yield = '${Y}'
 
     solid_mass_fraction = 'state/ws'
-    reaction_amount = 'state/alpha'
+    conversion_degree = 'state/alpha'
   []
   [model]
     type = ComposedModel

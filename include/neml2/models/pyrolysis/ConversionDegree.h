@@ -22,29 +22,22 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/pyrolysis/ReactionMechanism.h"
+#pragma once
+
+#include "neml2/models/Model.h"
 
 namespace neml2
 {
-OptionSet
-ReactionMechanism::expected_options()
+/// Degree of conversion during a chemical reaction
+class ConversionDegree : public Model
 {
-  OptionSet options = Model::expected_options();
+public:
+  static OptionSet expected_options();
 
-  options.set_input("conversion_degree") = VariableName("state", "a");
-  options.set("conversion_degree").doc() = "Degree of conversion";
+  ConversionDegree(const OptionSet & options);
 
-  options.set_output("reaction_rate") = VariableName("state", "f");
-  options.set("reaction_rate").doc() = "Reaction rate";
-
-  return options;
+protected:
+  /// Degree of conversion
+  Variable<Scalar> & _a;
+};
 }
-
-ReactionMechanism::ReactionMechanism(const OptionSet & options)
-  : Model(options),
-    _a(declare_input_variable<Scalar>("conversion_degree")),
-    _f(declare_output_variable<Scalar>("reaction_rate"))
-{
-}
-
-} // namespace neml2

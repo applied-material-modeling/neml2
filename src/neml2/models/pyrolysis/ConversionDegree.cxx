@@ -22,33 +22,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-
-#include "neml2/models/Model.h"
+#include "neml2/models/pyrolysis/ConversionDegree.h"
 
 namespace neml2
 {
-/**
- * @brief Calculate the pyrolysis conversion amount.
- */
-class PyrolysisConversionAmount : public Model
+OptionSet
+ConversionDegree::expected_options()
 {
-public:
-  static OptionSet expected_options();
+  OptionSet options = Model::expected_options();
 
-  PyrolysisConversionAmount(const OptionSet & options);
+  options.set_output("conversion_degree") = VariableName("state", "a");
+  options.set("conversion_degree").doc() = "Degree of conversion.";
 
-protected:
-  void set_value(bool out, bool dout_din, bool d2out_din2) override;
+  return options;
+}
 
-  const Scalar & _ws0;
-  const Scalar & _wb0;
-  const Scalar & _Y;
-
-  // State Variables
-  const Variable<Scalar> & _ws;
-
-  // Residual Variables
-  Variable<Scalar> & _a;
-};
+ConversionDegree::ConversionDegree(const OptionSet & options)
+  : Model(options),
+    _a(declare_output_variable<Scalar>("conversion_degree"))
+{
+}
 }

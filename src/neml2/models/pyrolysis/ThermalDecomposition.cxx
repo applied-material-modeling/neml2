@@ -22,16 +22,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/pyrolysis/PyrolysisConversionAmount.h"
-#include "neml2/tensors/assertions.h"
+#include "neml2/models/pyrolysis/ThermalDecomposition.h"
 
 namespace neml2
 {
-register_NEML2_object(PyrolysisConversionAmount);
+register_NEML2_object(ThermalDecomposition);
+
 OptionSet
-PyrolysisConversionAmount::expected_options()
+ThermalDecomposition::expected_options()
 {
-  OptionSet options = Model::expected_options();
+  OptionSet options = ConversionDegree::expected_options();
   options.doc() =
       "Calculate the conversion amount from the pyrolysis process, defined by the ratio between "
       "the mass loss and the total possible mass loss from the pyrolysis.";
@@ -45,33 +45,29 @@ PyrolysisConversionAmount::expected_options()
       "The binder's initial mass fraction before the pyrolysis";
 
   options.set_parameter<TensorName<Scalar>>("reaction_yield");
-  options.set("reaction_yield").doc() =
-      "The final reaction yield from the pyrolysis process (between 0 and 1)";
+  options.set("reaction_yield").doc() = "The final reaction yield (between 0 and 1)";
 
   options.set_input("solid_mass_fraction") = VariableName("state", "solid_mass_fraction");
   options.set("solid_mass_fraction").doc() = "The solid's mass fraction.";
 
-  options.set_output("reaction_amount") = VariableName("state", "reaction_amount");
-  options.set("reaction_amount").doc() = "The amount of converted mass from the pyrolysis.";
+  options.set_output("conversion_degree") = VariableName("state", "conversion_degree");
+  options.set("conversion_degree").doc() = "The amount of converted mass from the pyrolysis.";
 
   return options;
 }
 
-PyrolysisConversionAmount::PyrolysisConversionAmount(const OptionSet & options)
-  : Model(options),
+ThermalDecomposition::ThermalDecomposition(const OptionSet & options)
+  : ConversionDegree(options),
     _ws0(declare_parameter<Scalar>("ws0", "initial_solid_mass_fraction")),
     _wb0(declare_parameter<Scalar>("wb0", "initial_binder_mass_fraction")),
     _Y(declare_parameter<Scalar>("Y", "reaction_yield")),
-    _ws(declare_input_variable<Scalar>("solid_mass_fraction")),
-    _a(declare_output_variable<Scalar>("reaction_amount"))
+    _ws(declare_input_variable<Scalar>("solid_mass_fraction"))
 {
 }
 
 void
-PyrolysisConversionAmount::set_value(bool out, bool dout_din, bool d2out_din2)
+ThermalDecomposition::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
-
   auto mass_ini = 1 + _ws0 / _wb0;
 
   if (out)
