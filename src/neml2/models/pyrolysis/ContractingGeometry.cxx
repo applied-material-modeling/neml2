@@ -22,24 +22,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/pyrolysis/ChemicalReactionMechanism.h"
+#include "neml2/models/pyrolysis/ContractingGeometry.h"
 #include "neml2/tensors/functions/pow.h"
-#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
-register_NEML2_object(ChemicalReactionMechanism);
+register_NEML2_object(ContractingGeometry);
 OptionSet
-ChemicalReactionMechanism::expected_options()
+ContractingGeometry::expected_options()
 {
   OptionSet options = ReactionMechanism::expected_options();
   options.doc() =
-      "Define the chemical reaction model, takes the form of \\f$ f = k(1-a)^n \\f$, where "
-      "\\f$ k \\f$ is the scaling constant, \\f$ n \\f$ is the reaction order, and "
-      "\\f$ a \\f$ is the reaction amount";
+      "The contracting geometry model, often encountered in non-isothermal decomposition or "
+      "solid-gas reactions, takes the form of \\f$ f = k(1-a)^n \\f$, where \\f$ k \\f$ is the "
+      "reaction constant (often temperature-dependent), \\f$ n \\f$ is the "
+      "reaction order, and \\f$ a \\f$ is the degree of conversion.";
 
-  options.set_parameter<TensorName<Scalar>>("scaling_constant");
-  options.set("scaling_constant").doc() = "Scaling constant, k";
+  options.set_parameter<TensorName<Scalar>>("reaction_constant");
+  options.set("reaction_constant").doc() = "Reaction constant, k";
 
   options.set_parameter<TensorName<Scalar>>("reaction_order");
   options.set("reaction_order").doc() = "Reaction order, n";
@@ -47,26 +47,20 @@ ChemicalReactionMechanism::expected_options()
   return options;
 }
 
-ChemicalReactionMechanism::ChemicalReactionMechanism(const OptionSet & options)
+ContractingGeometry::ContractingGeometry(const OptionSet & options)
   : ReactionMechanism(options),
-    _k(declare_parameter<Scalar>("k", "scaling_constant")),
+    _k(declare_parameter<Scalar>("k", "reaction_constant")),
     _n(declare_parameter<Scalar>("n", "reaction_order"))
 {
 }
 
 void
-ChemicalReactionMechanism::set_value(bool out, bool dout_din, bool d2out_din2)
+ContractingGeometry::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
-
   if (out)
-  {
     _f = _k * pow(1.0 - _a, _n);
-  }
 
   if (dout_din)
-  {
     _f.d(_a) = -1.0 * _k * _n * pow(1.0 - _a, _n - 1);
-  }
 }
 }

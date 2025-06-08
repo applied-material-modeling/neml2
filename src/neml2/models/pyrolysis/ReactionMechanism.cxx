@@ -30,21 +30,20 @@ OptionSet
 ReactionMechanism::expected_options()
 {
   OptionSet options = Model::expected_options();
-  options.doc() = "Relate the reaction amount to the mechanisms reaction output";
 
-  options.set_input("reaction_amount") = VariableName("state", "reaction_amount");
-  options.set("reaction_amount").doc() = "Variable involes in the reaction, a";
+  options.set_input("degree_of_conversion") = VariableName("state", "alpha");
+  options.set("degree_of_conversion").doc() = "Degree of conversion";
 
-  options.set_output("reaction_out") = VariableName("state", "out");
-  options.set("reaction_out").doc() = "Mechanism reaction output, f.";
+  options.set_output("reaction_rate") = VariableName("state", "f");
+  options.set("reaction_rate").doc() = "Reaction rate";
 
   return options;
 }
 
 ReactionMechanism::ReactionMechanism(const OptionSet & options)
   : Model(options),
-    _a(declare_input_variable<Scalar>("reaction_amount")),
-    _f(declare_output_variable<Scalar>("reaction_out"))
+    _a(declare_input_variable<Scalar>("degree_of_conversion")),
+    _f(declare_output_variable<Scalar>("reaction_rate"))
 {
 }
 

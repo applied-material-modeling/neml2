@@ -39,10 +39,10 @@ public:
   ReactionMechanism(const OptionSet & options);
 
 protected:
-  // State Variables
+  // Degree of conversion
   const Variable<Scalar> & _a;
 
-  // Residual Variables
+  // Reaction rate
   Variable<Scalar> & _f;
 };
 }

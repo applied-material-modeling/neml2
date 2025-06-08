@@ -27,20 +27,21 @@
 
 namespace neml2
 {
-/**
- * @brief Define the chemical reaction model.
- */
-class ChemicalReactionMechanism : public ReactionMechanism
+/// Contracting geometry model in the context of solid-state reaction kinetics
+class ContractingGeometry : public ReactionMechanism
 {
 public:
   static OptionSet expected_options();
 
-  ChemicalReactionMechanism(const OptionSet & options);
+  ContractingGeometry(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
+  /// Rate coefficient
   const Scalar & _k;
+
+  /// Reaction order
   const Scalar & _n;
 };
 } // namespace neml2

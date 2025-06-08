@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #pragma once
+
 #include "neml2/models/pyrolysis/ReactionMechanism.h"
 
 namespace neml2

@@ -13,11 +13,11 @@ The thermosetting pyroslysis processs of a binder-particle composite is shown sc
 
 Let \f$m_i\f$ with \f$i=p,b,g,s\f$ denotes the current state masss of the particle, binder, gas and solid respectively. In addition, let \f$m_i^j\f$ with superscript \f$j = o,f\f$ represents the initial and final mass. By the end of the pyrolysis process, all of the binder got convert to solid with final yield
 \f[
-  Y = \dfrac{m_s^f-m_s^o}{m_b^o}  
+  Y = \dfrac{m_s^f-m_s^o}{m_b^o}
 \f]
 A value \f$Y=0.5\f$ means the mass of NEWLY produced solid by the end of the pyrolysis process is 50% the mass of the initial binder.
 
-> Note: \f$Y\f$ is a binder material specific properties, which mainly applicable for thermosetting plastic such as phenolic resin 
+> Note: \f$Y\f$ is a binder material specific properties, which mainly applicable for thermosetting plastic such as phenolic resin
 
 ### Pyrolysis Kinetics Model {#pyromodel}
 The pyrolysis kinetics material model calculates the solid conversion amount \f$\alpha\f$, following the modified Arrhenius Reaction:
@@ -32,7 +32,7 @@ Here,
 \f]
 
 ### Representative Volume Element
-To use for macroscopic finite element (FE) model, we consider a Representative Volume Element shown in [figure below](@ref rve), 
+To use for macroscopic finite element (FE) model, we consider a Representative Volume Element shown in [figure below](@ref rve),
 
 ![Schematics of the Representative Volume Element (RVE) (solid line) of a given state of the pyrolysis process, depicting the non-reactive particles, the binder, solid, close pores, and open pore (with no gas). Dash-line depicts the control mass of the whole pyrolysis system.][rve]{html: width=50%}
 [rve]: asset/pyrolysis_rve.svg
@@ -41,7 +41,7 @@ Within the RVE, we track five state variables:
 \f[
     \omega_b, \omega_p, \omega_s, \omega_g^{cp}, \varphi_{op}
 \f]
-where \f$\omega_i\f$ for \f$i=b,p,s,g\f$ is the mass fraction of the binder, particle, solid, and gas with respect to the control mass boundary of mass \f$M_{ref}\f$. 
+where \f$\omega_i\f$ for \f$i=b,p,s,g\f$ is the mass fraction of the binder, particle, solid, and gas with respect to the control mass boundary of mass \f$M_{ref}\f$.
 \f{align*}
     \omega_i &= \dfrac{m_i}{M_{ref}} \\
     M_{ref} &= m_b + m_p + m_s + m_g
@@ -50,7 +50,7 @@ Meanwhile, \f$\varphi_{op}\f$ is the volume fraction of the open pores and \f$\o
 
 > Caution: \f$\omega_i\f$ depicts the mass fraction relative to the control mass, and not the RVE itself.
 
-Thus, the volume of the RVE can be obtained from the state variables as 
+Thus, the volume of the RVE can be obtained from the state variables as
 \f[
     V_{RVE} = \dfrac{M_{ref}\left( \dfrac{\omega_b}{\rho_b} + \dfrac{\omega_p}{\rho_p} + \dfrac{\omega_s}{\rho_s} + \dfrac{\omega_g^{cp}}{\rho_g} \right)}{1 - \varphi_{op}}
 \f]
@@ -74,7 +74,7 @@ We also define \f$\mu\f$ as the instatantaneous ratio between the amount of gas 
 \f[
     \omega_g^{cp} = \mu \omega_g, \quad 0 \le \mu \le 1
 \f]
-with \f$ \omega_g = 1 - \omega_b - \omega_p - \omega_s\f$ from conservation of mass. Then, 
+with \f$ \omega_g = 1 - \omega_b - \omega_p - \omega_s\f$ from conservation of mass. Then,
 \f[
     \dot{\omega}_g^{cp} = \dot{\mu} \omega_g - \mu \dot{\omega}_g
 \f]
@@ -85,7 +85,7 @@ Finally, \f$\Phi_{op}\f$ denotes the rate at which the open pores are being prod
 \f]
 
 ### Governing Equations
-The initial-value problem (IVP) corresponding to the consitutive model is 
+The initial-value problem (IVP) corresponding to the consitutive model is
 \f[
     \mathbf{r} = \begin{Bmatrix}
         r_{w_s} \\
@@ -140,13 +140,13 @@ To calibrate the pyrolysis kinetics parameters with thermogravimetric analysis (
 If closed pore and open pore are quantities of interest, \f$\mu\f$ and \f$\Phi\f$ must be provided. Currently, there are no dedicated models for \f$\mu\f$ and \f$\Phi\f$.
 
 The following tables summarize the relationship between the mathematical expressions and NEML2 models.
-| Expression                                                                 | Syntax            |
-| :------------------------------------------------------------------------- | :---------------- |
-| \f$\alpha = \dfrac{1 + m_s^o/m_b^o - m_s / m_b^o}{1 - \Phi}\f$ | [PyrolysisConversionAmount](#pyrolysisconversionamount) |
-| \f$A \exp{\dfrac{-E_A}{RT}} f \f$ | [PyrolysisKinetics](#pyrolysiskinetics) |
-| \f$f = k(1-\alpha)^n\f$ | [ChemicalReactionMechanism](#chemicalreactionmechanism) |
-| \f$f = k(1-\alpha)(-\ln(1-\alpha))^n\f$ | [AvramiErofeevNucleation](#avramierofeevnucleation) |
- \f$V_{RVE} = \dfrac{M_{ref}\left( \dfrac{\omega_b}{\rho_b} + \dfrac{\omega_p}{\rho_p} + \dfrac{\omega_s}{\rho_s} + \dfrac{\omega_g^{cp}}{\rho_g} \right)}{1 - \varphi_{op}} \f$| [PyrolysisVolume](#pyrolysisvolume) |
+| Expression                                                                                                                                                                      | Syntax                                                  |
+| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------ |
+| \f$\alpha = \dfrac{1 + m_s^o/m_b^o - m_s / m_b^o}{1 - \Phi}\f$                                                                                                                  | [PyrolysisConversionAmount](#pyrolysisconversionamount) |
+| \f$A \exp{\dfrac{-E_A}{RT}} f \f$                                                                                                                                               | [PyrolysisKinetics](#pyrolysiskinetics)                 |
+| \f$f = k(1-\alpha)^n\f$                                                                                                                                                         | [ContractingGeometry](#ContractingGeometry)             |
+| \f$f = k(1-\alpha)(-\ln(1-\alpha))^n\f$                                                                                                                                         | [AvramiErofeevNucleation](#avramierofeevnucleation)     |
+| \f$V_{RVE} = \dfrac{M_{ref}\left( \dfrac{\omega_b}{\rho_b} + \dfrac{\omega_p}{\rho_p} + \dfrac{\omega_s}{\rho_s} + \dfrac{\omega_g^{cp}}{\rho_g} \right)}{1 - \varphi_{op}} \f$ | [PyrolysisVolume](#pyrolysisvolume)                     |
 
 The residual expressions can be obtained through a combinations of [Linear Combination](#scalarlinearcombination) and [Variable Rate](#scalarvariablerate)
 
@@ -168,14 +168,14 @@ order = 1.0
 k = 1.0
 
 # initial mass fraction
-ws0 = 0.02 
+ws0 = 0.02
 wb0 = 0.5
 wp0 = 0.3
 
 alpha0 = 3.333333 # 1/(1-Y)
 
 [Tensors]
-    ############### Run condition ############### 
+    ############### Run condition ###############
     [endtime]
         type = Scalar
         values = '100'
@@ -198,7 +198,7 @@ alpha0 = 3.333333 # 1/(1-Y)
         end = endT
         nstep = '${nstep}'
     []
-    ############### Simulation parameters ############### 
+    ############### Simulation parameters ###############
     [Ea]
         type = Scalar
         values = '${Ea}'
@@ -230,11 +230,11 @@ alpha0 = 3.333333 # 1/(1-Y)
 
     force_Scalar_names = 'forces/T'
     force_Scalar_values = 'T'
-    
+
     show_input_axis = false
     show_output_axis = false
     show_parameters = false
-    
+
     ic_Scalar_names = 'state/wp state/wb state/ws state/alpha'
     ic_Scalar_values = '${wp0} ${wb0} ${ws0} ${alpha0}'
     save_as = 'test.pt'
@@ -249,7 +249,7 @@ alpha0 = 3.333333 # 1/(1-Y)
 []
 
 [Solvers]
-    [newton]        
+    [newton]
         type = Newton
         verbose = false
     []
@@ -266,7 +266,7 @@ alpha0 = 3.333333 # 1/(1-Y)
         reaction_amount = 'state/alpha'
     []
     [reaction]
-        type = ChemicalReactionMechanism
+        type = ContractingGeometry
         scaling_constant = 'k'
         reaction_order = 'order'
         reaction_amount = 'state/alpha'
@@ -291,7 +291,7 @@ alpha0 = 3.333333 # 1/(1-Y)
         type = ScalarLinearCombination
         coefficients = "1.0 -1.0"
         from_var = 'state/alpha_dot state/pyro'
-        to_var = 'residual/ws'   
+        to_var = 'residual/ws'
     []
     [rms]
         type = ComposedModel
