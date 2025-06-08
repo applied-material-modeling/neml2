@@ -25,49 +25,43 @@
 #include "neml2/models/pyrolysis/AvramiErofeevNucleation.h"
 #include "neml2/tensors/functions/pow.h"
 #include "neml2/tensors/functions/log.h"
-#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
 register_NEML2_object(AvramiErofeevNucleation);
+
 OptionSet
 AvramiErofeevNucleation::expected_options()
 {
   OptionSet options = ReactionMechanism::expected_options();
-  options.doc() = "Define the nucleation reaction model, takes the form of \\f$ f = "
-                  "k(1-a)(-ln(1-a))^n \\f$, where "
-                  "\\f$ k \\f$ is the scaling constant, \\f$ n \\f$ is the reaction order, and "
-                  "\\f$ a \\f$ is the reaction amount";
+  options.doc() =
+      "Avrami-Erofeev nucleation model, takes the form of \\f$ f = k(1-a)(-ln(1-a))^n \\f$, where "
+      "\\f$ k \\f$ is the reaction coefficient, \\f$ n \\f$ is the reaction order, and "
+      "\\f$ a \\f$ is the degree of conversion";
 
-  options.set_parameter<TensorName<Scalar>>("scaling_constant");
-  options.set("scaling_constant").doc() = "Scaling constant, k";
+  options.set_parameter<TensorName<Scalar>>("reaction_coef");
+  options.set("reaction_coef").doc() = "Reaction coefficient";
 
   options.set_parameter<TensorName<Scalar>>("reaction_order");
-  options.set("reaction_order").doc() = "Reaction order, n";
+  options.set("reaction_order").doc() = "Reaction order";
 
   return options;
 }
 
 AvramiErofeevNucleation::AvramiErofeevNucleation(const OptionSet & options)
   : ReactionMechanism(options),
-    _k(declare_parameter<Scalar>("k", "scaling_constant")),
+    _k(declare_parameter<Scalar>("k", "reaction_coef")),
     _n(declare_parameter<Scalar>("n", "reaction_order"))
 {
 }
 
 void
-AvramiErofeevNucleation::set_value(bool out, bool dout_din, bool d2out_din2)
+AvramiErofeevNucleation::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
-
   if (out)
-  {
     _f = _k * (1.0 - _a) * pow(-1.0 * log(1.0 - _a), _n);
-  }
 
   if (dout_din)
-  {
     _f.d(_a) = _k * _n * pow(-log(1 - _a), _n - 1) - _k * pow(-log(1 - _a), _n);
-  }
 }
 }

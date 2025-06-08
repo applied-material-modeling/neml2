@@ -27,9 +27,9 @@
 [Models]
   [model]
     type = AvramiErofeevNucleation
-    scaling_constant = 0.7
+    reaction_coef = 0.7
     reaction_order = 2.75
-    reaction_amount = 'state/alpha'
-    reaction_out = 'state/out'
+    degree_of_conversion = 'state/alpha'
+    reaction_rate = 'state/out'
   []
 []

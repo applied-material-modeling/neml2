@@ -28,9 +28,7 @@
 
 namespace neml2
 {
-/**
- * @brief Define the chemical reaction model.
- */
+/// Avrami-Erofeev nucleation model
 class AvramiErofeevNucleation : public ReactionMechanism
 {
 public:

@@ -35,11 +35,11 @@ ContractingGeometry::expected_options()
   options.doc() =
       "The contracting geometry model, often encountered in non-isothermal decomposition or "
       "solid-gas reactions, takes the form of \\f$ f = k(1-a)^n \\f$, where \\f$ k \\f$ is the "
-      "reaction constant (often temperature-dependent), \\f$ n \\f$ is the "
-      "reaction order, and \\f$ a \\f$ is the degree of conversion.";
+      "reaction coefficient (often temperature-dependent), \\f$ n \\f$ is the reaction order, and "
+      "\\f$ a \\f$ is the degree of conversion.";
 
-  options.set_parameter<TensorName<Scalar>>("reaction_constant");
-  options.set("reaction_constant").doc() = "Reaction constant, k";
+  options.set_parameter<TensorName<Scalar>>("reaction_coef");
+  options.set("reaction_coef").doc() = "Reaction coefficient, k";
 
   options.set_parameter<TensorName<Scalar>>("reaction_order");
   options.set("reaction_order").doc() = "Reaction order, n";
@@ -49,7 +49,7 @@ ContractingGeometry::expected_options()
 
 ContractingGeometry::ContractingGeometry(const OptionSet & options)
   : ReactionMechanism(options),
-    _k(declare_parameter<Scalar>("k", "reaction_constant")),
+    _k(declare_parameter<Scalar>("k", "reaction_coef")),
     _n(declare_parameter<Scalar>("n", "reaction_order"))
 {
 }

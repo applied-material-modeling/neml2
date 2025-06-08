@@ -114,7 +114,7 @@ alpha0 = 3.333333 # 1/(1-Y)
   []
   [reaction]
     type = ContractingGeometry
-    reaction_constant = 'k'
+    reaction_coef = 'k'
     reaction_order = 'order'
     degree_of_conversion = 'state/alpha'
     reaction_rate = 'state/f'
