@@ -29,21 +29,23 @@
 namespace neml2
 {
 /// Degree of conversion of a solid-gas reaction
-class ThermalDecomposition : public ConversionDegree
+class ThermalDecompositionConversionDegreeConversionDegree : public ConversionDegree
 {
 public:
   static OptionSet expected_options();
 
-  ThermalDecomposition(const OptionSet & options);
+  ThermalDecompositionConversionDegreeConversionDegree(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  const Scalar & _ws0;
-  const Scalar & _wb0;
+  /// Initial precursor mass fraction
+  const Scalar & _wp0;
+
+  /// Reaction yield (between 0 and 1)
   const Scalar & _Y;
 
-  // State Variables
-  const Variable<Scalar> & _ws;
+  /// Precursor mass fraction
+  const Variable<Scalar> & _wp;
 };
 }

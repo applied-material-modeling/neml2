@@ -104,7 +104,7 @@ alpha0 = 3.333333 # 1/(1-Y)
 
 [Models]
   [amount]
-    type = ThermalDecomposition
+    type = ThermalDecompositionConversionDegree
     initial_solid_mass_fraction = '${ws0}'
     initial_binder_mass_fraction = '${wb0}'
     reaction_yield = '${Y}'
@@ -187,7 +187,7 @@ alpha0 = 3.333333 # 1/(1-Y)
     solver = 'newton'
   []
   [amount_new]
-    type = ThermalDecomposition
+    type = ThermalDecompositionConversionDegree
     initial_solid_mass_fraction = '${ws0}'
     initial_binder_mass_fraction = '${wb0}'
     reaction_yield = '${Y}'

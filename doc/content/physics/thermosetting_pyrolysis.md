@@ -140,13 +140,13 @@ To calibrate the pyrolysis kinetics parameters with thermogravimetric analysis (
 If closed pore and open pore are quantities of interest, \f$\mu\f$ and \f$\Phi\f$ must be provided. Currently, there are no dedicated models for \f$\mu\f$ and \f$\Phi\f$.
 
 The following tables summarize the relationship between the mathematical expressions and NEML2 models.
-| Expression                                                                                                                                                                      | Syntax                                              |
-| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :-------------------------------------------------- |
-| \f$\alpha = \dfrac{1 + m_s^o/m_b^o - m_s / m_b^o}{1 - \Phi}\f$                                                                                                                  | [ThermalDecomposition](#ThermalDecomposition)       |
-| \f$A \exp{\dfrac{-E_A}{RT}} f \f$                                                                                                                                               | [PyrolysisKinetics](#pyrolysiskinetics)             |
-| \f$f = k(1-\alpha)^n\f$                                                                                                                                                         | [ContractingGeometry](#ContractingGeometry)         |
-| \f$f = k(1-\alpha)(-\ln(1-\alpha))^n\f$                                                                                                                                         | [AvramiErofeevNucleation](#avramierofeevnucleation) |
-| \f$V_{RVE} = \dfrac{M_{ref}\left( \dfrac{\omega_b}{\rho_b} + \dfrac{\omega_p}{\rho_p} + \dfrac{\omega_s}{\rho_s} + \dfrac{\omega_g^{cp}}{\rho_g} \right)}{1 - \varphi_{op}} \f$ | [PyrolysisVolume](#pyrolysisvolume)                 |
+| Expression                                                                                                                                                                      | Syntax                                                                        |
+| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :---------------------------------------------------------------------------- |
+| \f$\alpha = \dfrac{1 + m_s^o/m_b^o - m_s / m_b^o}{1 - \Phi}\f$                                                                                                                  | [ThermalDecompositionConversionDegree](#ThermalDecompositionConversionDegree) |
+| \f$A \exp{\dfrac{-E_A}{RT}} f \f$                                                                                                                                               | [PyrolysisKinetics](#pyrolysiskinetics)                                       |
+| \f$f = k(1-\alpha)^n\f$                                                                                                                                                         | [ContractingGeometry](#ContractingGeometry)                                   |
+| \f$f = k(1-\alpha)(-\ln(1-\alpha))^n\f$                                                                                                                                         | [AvramiErofeevNucleation](#avramierofeevnucleation)                           |
+| \f$V_{RVE} = \dfrac{M_{ref}\left( \dfrac{\omega_b}{\rho_b} + \dfrac{\omega_p}{\rho_p} + \dfrac{\omega_s}{\rho_s} + \dfrac{\omega_g^{cp}}{\rho_g} \right)}{1 - \varphi_{op}} \f$ | [PyrolysisVolume](#pyrolysisvolume)                                           |
 
 The residual expressions can be obtained through a combinations of [Linear Combination](#scalarlinearcombination) and [Variable Rate](#scalarvariablerate)
 
@@ -257,7 +257,7 @@ alpha0 = 3.333333 # 1/(1-Y)
 
 [Models]
     [amount]
-        type = ThermalDecomposition
+        type = ThermalDecompositionConversionDegree
         initial_solid_mass_fraction = '${ws0}'
         initial_binder_mass_fraction = '${wb0}'
         reaction_yield = '${Y}'
@@ -336,7 +336,7 @@ alpha0 = 3.333333 # 1/(1-Y)
         solver = 'newton'
     []
     [amount_new]
-        type = ThermalDecomposition
+        type = ThermalDecompositionConversionDegree
         initial_solid_mass_fraction = '${ws0}'
         initial_binder_mass_fraction = '${wb0}'
         reaction_yield = '${Y}'

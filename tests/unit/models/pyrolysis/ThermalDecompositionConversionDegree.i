@@ -13,24 +13,23 @@
 [Tensors]
   [ws]
     type = Scalar
-    values = "0.03 0.75 0.22"
+    values = '0.03 0.75 0.22'
     batch_shape = '(3)'
   []
   [alpha]
     type = Scalar
-    values = "4.75 -1.25 3.166666"
+    values = '1.175 5.375 2.28333333'
     batch_shape = '(3)'
   []
 []
 
 [Models]
   [model]
-    type = ThermalDecomposition
-    initial_solid_mass_fraction = 0.2
-    initial_binder_mass_fraction = 0.4
+    type = ThermalDecompositionConversionDegree
+    initial_precursor_mass_fraction = 0.4
     reaction_yield = 0.7
 
-    solid_mass_fraction = 'state/ws'
+    precursor_mass_fraction = 'state/ws'
     conversion_degree = 'state/alpha'
   []
 []
