@@ -24,20 +24,22 @@
 
 #pragma once
 
-#include "neml2/models/Model.h"
+#include "neml2/models/chemical_reactions/ReactionMechanism.h"
 
 namespace neml2
 {
-/// Degree of conversion during a chemical reaction
-class ConversionDegree : public Model
+/// Avrami-Erofeev nucleation model
+class AvramiErofeevNucleation : public ReactionMechanism
 {
 public:
   static OptionSet expected_options();
 
-  ConversionDegree(const OptionSet & options);
+  AvramiErofeevNucleation(const OptionSet & options);
 
 protected:
-  /// Degree of conversion
-  Variable<Scalar> & _a;
+  void set_value(bool out, bool dout_din, bool d2out_din2) override;
+
+  const Scalar & _k;
+  const Scalar & _n;
 };
 }

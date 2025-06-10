@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/pyrolysis/ContractingGeometry.h"
+#include "neml2/models/chemical_reactions/ContractingGeometry.h"
 #include "neml2/tensors/functions/pow.h"
 
 namespace neml2
@@ -49,7 +49,7 @@ ContractingGeometry::expected_options()
 
 ContractingGeometry::ContractingGeometry(const OptionSet & options)
   : ReactionMechanism(options),
-    _k(declare_parameter<Scalar>("k", "reaction_coef")),
+    _k(declare_parameter<Scalar>("k", "reaction_coef", /*allow_nonlinear=*/true)),
     _n(declare_parameter<Scalar>("n", "reaction_order"))
 {
 }
@@ -61,6 +61,12 @@ ContractingGeometry::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
     _f = _k * pow(1.0 - _a, _n);
 
   if (dout_din)
-    _f.d(_a) = -1.0 * _k * _n * pow(1.0 - _a, _n - 1);
+  {
+    if (_a.is_dependent())
+      _f.d(_a) = -1.0 * _k * _n * pow(1.0 - _a, _n - 1);
+
+    if (const auto * const k = nl_param("k"))
+      _f.d(*k) = pow(1.0 - _a, _n);
+  }
 }
 }

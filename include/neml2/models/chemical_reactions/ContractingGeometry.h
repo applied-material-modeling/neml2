@@ -22,29 +22,26 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/pyrolysis/ReactionMechanism.h"
+#pragma once
+#include "neml2/models/chemical_reactions/ReactionMechanism.h"
 
 namespace neml2
 {
-OptionSet
-ReactionMechanism::expected_options()
+/// Contracting geometry model in the context of solid-state reaction kinetics
+class ContractingGeometry : public ReactionMechanism
 {
-  OptionSet options = Model::expected_options();
+public:
+  static OptionSet expected_options();
 
-  options.set_input("conversion_degree") = VariableName("state", "a");
-  options.set("conversion_degree").doc() = "Degree of conversion";
+  ContractingGeometry(const OptionSet & options);
 
-  options.set_output("reaction_rate") = VariableName("state", "f");
-  options.set("reaction_rate").doc() = "Reaction rate";
+protected:
+  void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  return options;
-}
+  /// Rate coefficient
+  const Scalar & _k;
 
-ReactionMechanism::ReactionMechanism(const OptionSet & options)
-  : Model(options),
-    _a(declare_input_variable<Scalar>("conversion_degree")),
-    _f(declare_output_variable<Scalar>("reaction_rate"))
-{
-}
-
+  /// Reaction order
+  const Scalar & _n;
+};
 } // namespace neml2

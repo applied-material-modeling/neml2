@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/pyrolysis/PyrolysisVolume.h"
+#include "neml2/models/chemical_reactions/PyrolysisVolume.h"
 #include "neml2/tensors/assertions.h"
 
 namespace neml2

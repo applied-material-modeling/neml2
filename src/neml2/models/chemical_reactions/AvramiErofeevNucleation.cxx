@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/pyrolysis/AvramiErofeevNucleation.h"
+#include "neml2/models/chemical_reactions/AvramiErofeevNucleation.h"
 #include "neml2/tensors/functions/pow.h"
 #include "neml2/tensors/functions/log.h"
 

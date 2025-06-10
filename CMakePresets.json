@@ -11,7 +11,7 @@
         "CMAKE_EXPORT_COMPILE_COMMANDS": "OFF",
         "NEML2_PCH": "ON",
         "NEML2_TESTS": "ON",
-        "NEML2_RUNNER": "OFF",
+        "NEML2_RUNNER": "ON",
         "NEML2_PYBIND": "OFF",
         "NEML2_DOC": "OFF",
         "NEML2_WORK_DISPATCHER": "ON",
@@ -27,7 +27,6 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "NEML2_PCH": "OFF",
-        "NEML2_RUNNER": "ON",
         "NEML2_PYBIND": "ON"
       }
     },
@@ -60,8 +59,7 @@
       "inherits": "default",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "NEML2_TESTS": "OFF",
-        "NEML2_RUNNER": "ON"
+        "NEML2_TESTS": "OFF"
       }
     },
     {
@@ -71,8 +69,7 @@
       "inherits": "default",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Profiling",
-        "NEML2_TESTS": "OFF",
-        "NEML2_RUNNER": "ON"
+        "NEML2_TESTS": "OFF"
       }
     },
     {
@@ -81,7 +78,8 @@
       "description": "Generate coverage report from unit tests",
       "inherits": "default",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Coverage"
+        "CMAKE_BUILD_TYPE": "Coverage",
+        "NEML2_RUNNER": "OFF"
       }
     },
     {
@@ -92,7 +90,6 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
         "NEML2_TESTS": "OFF",
-        "NEML2_RUNNER": "ON",
         "NEML2_PYBIND": "ON"
       }
     }
@@ -108,7 +105,8 @@
         "unit_tests",
         "regression_tests",
         "verification_tests",
-        "dispatcher_tests"
+        "dispatcher_tests",
+        "runner"
       ]
     },
     {

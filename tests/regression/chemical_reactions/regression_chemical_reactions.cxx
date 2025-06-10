@@ -31,10 +31,10 @@
 using namespace neml2;
 namespace fs = std::filesystem;
 
-TEST_CASE("pyrolysis")
+TEST_CASE("chemical reactions")
 {
   const auto pwd = fs::current_path();
-  const auto search_path = pwd / "pyrolysis";
+  const auto search_path = pwd / "chemical_reactions";
 
   // Find all regression tests
   std::vector<fs::path> tests;
