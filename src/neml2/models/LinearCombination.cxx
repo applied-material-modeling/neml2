@@ -25,6 +25,7 @@
 #include "neml2/models/LinearCombination.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/Vec.h"
+#include "neml2/tensors/R2.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
 #include "neml2/misc/assertions.h"
@@ -40,9 +41,10 @@ LinearCombination<T>::expected_options()
   auto tensor_type = utils::demangle(typeid(T).name()).substr(7);
 
   OptionSet options = Model::expected_options();
-  options.doc() = "Calculate linear combination of multiple " + tensor_type +
-                  " tensors as \\f$ u = c_i v_i \\f$ (Einstein summation assumed), where \\f$ c_i "
-                  "\\f$ are the coefficients, and \\f$ v_i \\f$ are the variables to be summed.";
+  options.doc() =
+      "Calculate linear combination of multiple " + tensor_type +
+      " tensors as \\f$ u = c_i v_i + c_o \\f$ (Einstein summation assumed), where \\f$ c_i "
+      "\\f$ are the coefficients, and \\f$ v_i \\f$ are the variables to be summed.";
 
   options.set<bool>("define_second_derivatives") = true;
 
@@ -58,6 +60,16 @@ LinearCombination<T>::expected_options()
       "Weights associated with each variable. This option takes a list of weights, one for each "
       "coefficient. When the length of this list is 1, the same weight applies to all "
       "coefficients.";
+
+  options.set_parameter<TensorName<Scalar>>("constant_coefficient") = {TensorName<Scalar>("0")};
+  options.set("constant_coefficient").doc() =
+      "The constant coefficient c0 added to the final summation";
+
+  options.set<bool>("constant_coefficient_as_parameter") = false;
+  options.set("constant_coefficient_as_parameter").doc() =
+      "By default, the constant_coefficient are declared as buffers. Set this option to true to "
+      "declare "
+      "them as (trainable) parameters.";
 
   options.set<std::vector<bool>>("coefficient_as_parameter") = {false};
   options.set("coefficient_as_parameter").doc() =
@@ -107,6 +119,12 @@ LinearCombination<T>::LinearCombination(const OptionSet & options)
     else
       _coefs[i] = &declare_buffer<Scalar>("c_" + std::to_string(i), coef_ref);
   }
+
+  auto c0_as_param = options.get<bool>("constant_coefficient_as_parameter");
+  if (c0_as_param)
+    _c0 = &declare_parameter<Scalar>("c0", "constant_coefficient", /*allow_nonlinear=*/true);
+  else
+    _c0 = &declare_buffer<Scalar>("c0", "constant_coefficient");
 }
 
 template <typename T>
@@ -115,7 +133,7 @@ LinearCombination<T>::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   if (out)
   {
-    auto value = (*_coefs[0]) * (*_from[0]);
+    auto value = (*_c0) + (*_coefs[0]) * (*_from[0]);
     for (std::size_t i = 1; i < _from.size(); i++)
       value = value + (*_coefs[i]) * (*_from[i]);
     _to = value;
@@ -132,6 +150,8 @@ LinearCombination<T>::set_value(bool out, bool dout_din, bool d2out_din2)
       if (const auto * const pi = nl_param("c_" + std::to_string(i)))
         _to.d(*pi) = (*_from[i]);
     }
+    if (const auto * const C = nl_param("c0"))
+      _to.d(*C) = neml2::Scalar::full(1.0);
   }
 
   if (d2out_din2)
@@ -147,4 +167,5 @@ LinearCombination<T>::set_value(bool out, bool dout_din, bool d2out_din2)
 REGISTER(Scalar);
 REGISTER(Vec);
 REGISTER(SR2);
+REGISTER(R2);
 } // namespace neml2

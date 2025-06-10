@@ -33,6 +33,7 @@
 #include "neml2/tensors/WR2.h"
 #include "neml2/tensors/assertions.h"
 #include "neml2/tensors/functions/stack.h"
+#include "neml2/tensors/functions/sum.h"
 
 namespace neml2
 {
@@ -225,6 +226,13 @@ R2Base<Derived>::det() const
   const auto & i = comps[8];
   const auto det = a * (e * i - h * f) - b * (d * i - g * f) + c * (d * h - e * g);
   return Scalar(det.reshape(this->batch_sizes().concrete()), this->batch_sizes());
+}
+
+template <class Derived>
+Scalar
+R2Base<Derived>::inner(const R2 & other) const
+{
+  return base_sum(this->base_flatten() * other.base_flatten());
 }
 
 template <class Derived>
