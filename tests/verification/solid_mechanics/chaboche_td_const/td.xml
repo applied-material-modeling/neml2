@@ -1,0 +1,74 @@
+<materials>
+	<model type="SmallStrainRateIndependentPlasticity">
+		<elastic type="IsotropicLinearElasticModel">
+			<m1 type="PiecewiseLinearInterpolate">
+				<points>293.15 373.15 473.15 573.15 673.15 773.15 873.15 973.15 1073.15 1173.15 1273.15 1373.15 1473.15 1573.15 5000</points>
+				<values>195600 191200 185700 179600 172600 164500 155000 144100 131400 116800 100000 80000 57000 30000 30000</values>
+			</m1>
+			<m1_type>youngs</m1_type>
+			<m2 type="ConstantInterpolate">
+				<v>0.29</v>
+			</m2>
+			<m2_type>poissons</m2_type>
+		</elastic>
+		<flow type="RateIndependentNonAssociativeHardening">
+			<surface type="IsoKinJ2"/>
+			<hardening type="Chaboche">
+				<iso type="VoceIsotropicHardeningRule">
+					<s0 type="PiecewiseLinearInterpolate">
+						<points>293.15 548.15 823.15 1023.15 1173.15 1273.15 1373.15 1673.15 5000 </points>
+						<values>125.6 97.6 90.9 71.4 66.2 31.82 19.73 2.1 2.1 </values>
+					</s0>
+					<R type="PiecewiseLinearInterpolate">
+						<points>293.15 548.15 823.15 1023.15 1173.15 1273.15 1373.15 1673.15 5000 </points>
+						<values>153.4 154.7 150.6 57.9 0.0 0.0 0.0 0.0 0.0 </values>
+					</R>
+					<d type="ConstantInterpolate">
+						<v>6.9</v>
+					</d>
+				</iso>
+				<C>
+					<C0 type="PiecewiseLinearInterpolate">
+						<points>293.15 548.15 823.15 1023.15 1173.15 1273.15 1373.15 1673.15 5000 </points>
+						<values>156435 100631 64341 56232 0.05 0.0 0.0 0.0 0.0</values>
+					</C0>
+					<C1 type="PiecewiseLinearInterpolate">
+						<points>293.15 548.15 823.15 1023.15 1173.15 1273.15 1373.15 1673.15 5000 </points>
+						<values>6134 5568 5227 4108 292 0.0 0.0 0.0 0.0 </values>
+					</C1>
+				</C>
+				<gmodels>
+					<gmodels0 type="ConstantGamma">
+						<g type="ConstantInterpolate">
+							<v>1410.85</v>
+						</g>
+					</gmodels0>
+					<gmodels1 type="ConstantGamma">
+						<g type="ConstantInterpolate">
+							<v>47.19</v>
+						</g>
+					</gmodels1>
+				</gmodels>
+				<A>
+					<A0 type="ConstantInterpolate">
+						<v>0</v>
+					</A0>
+					<A1 type="ConstantInterpolate">
+						<v>0</v>
+					</A1>
+				</A>
+				<a>
+					<a0 type="ConstantInterpolate">
+						<v>2</v>
+					</a0>
+					<a1 type="ConstantInterpolate">
+						<v>2</v>
+					</a1>
+				</a>
+				<noniso>false</noniso>
+			</hardening>
+		</flow>
+		<truesdell>false</truesdell>
+	</model>
+</materials>
+
