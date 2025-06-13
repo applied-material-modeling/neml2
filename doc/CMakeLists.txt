@@ -1,3 +1,9 @@
+if(NOT NEML2_PYBIND)
+  message(WARNING "Documentation generation requires Python bindings to be built. Reverting NEML2_DOC to OFF.")
+  set(NEML2_DOC OFF CACHE BOOL "Build NEML2 documentation (html)" FORCE)
+  return()
+endif()
+
 # ----------------------------------------------------------------------------
 # Python
 # ----------------------------------------------------------------------------

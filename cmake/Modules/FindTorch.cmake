@@ -21,7 +21,7 @@
 #
 # This module defines the following imported targets:
 # - Torch::Torch, the C++ backend of pytorch
-# - Torch::PythonBinding, the python binding of pytorch
+# - Torch::TorchWithPybind, the python binding of pytorch
 
 # -----------------------------------------------------------------------------
 # Hints to the find_path and find_library commands
@@ -56,6 +56,21 @@ find_library(Torch_CUDA_LIBRARY NAMES torch_cuda PATHS ${Torch_LINK_DIR} NO_CACH
 find_library(Torch_CUDA_LINALG_LIBRARY NAMES torch_cuda_linalg PATHS ${Torch_LINK_DIR} NO_CACHE)
 
 # -----------------------------------------------------------------------------
+# optional components
+# -----------------------------------------------------------------------------
+if(Torch_FIND_COMPONENTS)
+  foreach(component IN LISTS Torch_FIND_COMPONENTS)
+    if(component STREQUAL "PythonBinding")
+      find_library(Torch_PYTHON_LIBRARY NAMES torch_python HINTS ${Torch_LINK_DIR_HINTS} NO_CACHE)
+
+      if(Torch_PYTHON_LIBRARY)
+        set(Torch_PythonBinding_FOUND TRUE)
+      endif()
+    endif()
+  endforeach()
+endif()
+
+# -----------------------------------------------------------------------------
 # Check if we found everything
 # -----------------------------------------------------------------------------
 include(FindPackageHandleStandardArgs)
@@ -67,7 +82,7 @@ find_package_handle_standard_args(
   C10_LIBRARY
   Torch_LIBRARY
   Torch_CPU_LIBRARY
-  Torch_PYTHON_LIBRARY
+  HANDLE_COMPONENTS
 )
 
 if(Torch_FOUND)
@@ -152,8 +167,10 @@ if(Torch_FOUND)
     target_link_libraries(Torch::Torch INTERFACE ${Torch_LIBRARIES})
   endif()
 
-  if(NOT TARGET Torch::PythonBinding)
-    add_library(Torch::PythonBinding INTERFACE IMPORTED)
-    target_link_libraries(Torch::PythonBinding INTERFACE Torch::Torch ${Torch_PYTHON_LIBRARY})
+  if(Torch_PythonBinding_FOUND)
+    if(NOT TARGET Torch::TorchWithPybind)
+      add_library(Torch::TorchWithPybind INTERFACE IMPORTED)
+      target_link_libraries(Torch::TorchWithPybind INTERFACE Torch::Torch ${Torch_PYTHON_LIBRARY})
+    endif()
   endif()
 endif()

@@ -7,6 +7,14 @@ if(NOT Torch_IS_PYTHON_PACKAGE)
   return()
 endif()
 
+find_package(Torch OPTIONAL_COMPONENTS PythonBinding)
+
+if(NOT Torch_PythonBinding_FOUND)
+  message(WARNING "Torch Python bindings not found. If you built torch from source, you need to build it with the Python bindings enabled. Reverting NEML2_PYBIND to OFF.")
+  set(NEML2_PYBIND OFF CACHE BOOL "Build Python bindings" FORCE)
+  return()
+endif()
+
 # ----------------------------------------------------------------------------
 # pybind11
 # ----------------------------------------------------------------------------
@@ -29,7 +37,7 @@ macro(add_submodule mname msrcs)
   )
 
   target_include_directories(${mname} PUBLIC ${NEML2_SOURCE_DIR})
-  target_link_libraries(${mname} PRIVATE pybind11::headers Torch::PythonBinding)
+  target_link_libraries(${mname} PRIVATE pybind11::headers Torch::TorchWithPybind)
 
   install(TARGETS ${mname} LIBRARY DESTINATION . COMPONENT libneml2-python)
 
