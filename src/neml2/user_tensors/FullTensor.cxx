@@ -41,7 +41,7 @@ FullTensor::expected_options()
   options.set<TensorShape>("base_shape") = {};
   options.set("base_shape").doc() = "Base shape";
 
-  options.set<Real>("value");
+  options.set<double>("value");
   options.set("value").doc() = "Value used to fill the tensor";
 
   return options;
@@ -50,7 +50,7 @@ FullTensor::expected_options()
 FullTensor::FullTensor(const OptionSet & options)
   : Tensor(Tensor::full(options.get<TensorShape>("batch_shape"),
                         options.get<TensorShape>("base_shape"),
-                        options.get<Real>("value"),
+                        options.get<double>("value"),
                         default_tensor_options())),
     UserTensorBase(options)
 {

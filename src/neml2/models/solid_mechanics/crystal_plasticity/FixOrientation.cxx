@@ -48,7 +48,7 @@ FixOrientation::expected_options()
   options.set_output("output_orientation") = VariableName(STATE, "orientation");
   options.set("output_orientation").doc() = "Name of output tensor";
 
-  options.set<Real>("threshold") = 1.0;
+  options.set<double>("threshold") = 1.0;
   options.set("threshold").doc() = "Threshold value for translating to the shadow parameters";
 
   return options;
@@ -58,7 +58,7 @@ FixOrientation::FixOrientation(const OptionSet & options)
   : Model(options),
     _output(declare_output_variable<Rot>("output_orientation")),
     _input(declare_input_variable<Rot>("input_orientation")),
-    _threshold(options.get<Real>("threshold"))
+    _threshold(options.get<double>("threshold"))
 {
 }
 

@@ -36,9 +36,9 @@ using namespace neml2;
 
 TEST_CASE("VectorAssembler", "[models]")
 {
-  auto & model = reload_model("models/SampleRateModel.i", "model");
+  auto model = load_model("models/SampleRateModel.i", "model");
 
-  const auto & axis = model.input_axis();
+  const auto & axis = model->input_axis();
   const auto assembler = VectorAssembler(axis);
 
   const auto T_name = VariableName(FORCES, "temperature");

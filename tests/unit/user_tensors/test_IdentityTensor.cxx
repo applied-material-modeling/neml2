@@ -24,18 +24,18 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include "utils.h"
-#include "neml2/user_tensors/IdentityTensor.h"
+#include "neml2/base/Factory.h"
+#include "neml2/tensors/Tensor.h"
 
 using namespace neml2;
 
 TEST_CASE("IdentityTensor", "[user_tensors]")
 {
-  reload_input("user_tensors/test_IdentityTensor.i");
+  auto factory = load_input("user_tensors/test_IdentityTensor.i");
 
   SECTION("IdentityTensor")
   {
-    const auto a = Factory::get_object_ptr<Tensor>("Tensors", "a");
+    const auto a = factory.get_object<Tensor>("Tensors", "a");
     REQUIRE(a->batch_sizes() == TensorShape{2, 1});
     REQUIRE(a->base_sizes() == TensorShape{12, 12});
     REQUIRE(at::allclose(*a, Tensor::identity({2, 1}, 12, default_tensor_options())));

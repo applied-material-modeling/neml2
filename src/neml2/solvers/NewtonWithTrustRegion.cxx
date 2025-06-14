@@ -46,34 +46,34 @@ NewtonWithTrustRegion::expected_options()
       "solver parameters are chosen based on a limited set of problems we tested on and are "
       "expected to be tuned.";
 
-  options.set<Real>("delta_0") = 1.0;
+  options.set<double>("delta_0") = 1.0;
   options.set("delta_0").doc() = "Initial trust region radius";
 
-  options.set<Real>("delta_max") = 10.0;
+  options.set<double>("delta_max") = 10.0;
   options.set("delta_max").doc() = "Maximum trust region radius";
 
-  options.set<Real>("reduce_criteria") = 0.25;
+  options.set<double>("reduce_criteria") = 0.25;
   options.set("reduce_criteria").doc() = "The trust region radius is reduced when the merit "
                                          "function reduction is below this threshold";
 
-  options.set<Real>("expand_criteria") = 0.75;
+  options.set<double>("expand_criteria") = 0.75;
   options.set("expand_criteria").doc() = "The trust region radius is increased when the merit "
                                          "function reduction is above this threshold";
 
-  options.set<Real>("reduce_factor") = 0.25;
+  options.set<double>("reduce_factor") = 0.25;
   options.set("reduce_factor").doc() = "Factor to apply when reducing the trust region radius";
 
-  options.set<Real>("expand_factor") = 2.0;
+  options.set<double>("expand_factor") = 2.0;
   options.set("expand_factor").doc() = "Factor to apply when increasing the trust region radius";
 
-  options.set<Real>("accept_criteria") = 0.1;
+  options.set<double>("accept_criteria") = 0.1;
   options.set("accept_criteria").doc() =
       "Reject the current step when the merit function reduction is below this threshold";
 
-  options.set<Real>("subproblem_rel_tol") = 1e-6;
+  options.set<double>("subproblem_rel_tol") = 1e-6;
   options.set("subproblem_rel_tol").doc() = "Relative tolerance used for the quadratic sub-problem";
 
-  options.set<Real>("subproblem_abs_tol") = 1e-8;
+  options.set<double>("subproblem_abs_tol") = 1e-8;
   options.set("subproblem_abs_tol").doc() = "Absolute tolerance used for the quadratic sub-problem";
 
   options.set<unsigned int>("subproblem_max_its") = 10;
@@ -87,13 +87,13 @@ NewtonWithTrustRegion::NewtonWithTrustRegion(const OptionSet & options)
   : Newton(options),
     _subproblem(subproblem_options(options)),
     _subproblem_solver(subproblem_solver_options(options)),
-    _delta_0(options.get<Real>("delta_0")),
-    _delta_max(options.get<Real>("delta_max")),
-    _reduce_criteria(options.get<Real>("reduce_criteria")),
-    _expand_criteria(options.get<Real>("expand_criteria")),
-    _reduce_factor(options.get<Real>("reduce_factor")),
-    _expand_factor(options.get<Real>("expand_factor")),
-    _accept_criteria(options.get<Real>("accept_criteria"))
+    _delta_0(options.get<double>("delta_0")),
+    _delta_max(options.get<double>("delta_max")),
+    _reduce_criteria(options.get<double>("reduce_criteria")),
+    _expand_criteria(options.get<double>("expand_criteria")),
+    _reduce_factor(options.get<double>("reduce_factor")),
+    _expand_factor(options.get<double>("expand_factor")),
+    _accept_criteria(options.get<double>("accept_criteria"))
 {
 }
 
@@ -108,8 +108,8 @@ OptionSet
 NewtonWithTrustRegion::subproblem_solver_options(const OptionSet & options) const
 {
   auto solver_options = Newton::expected_options();
-  solver_options.set<Real>("abs_tol") = options.get<Real>("subproblem_abs_tol");
-  solver_options.set<Real>("rel_tol") = options.get<Real>("subproblem_rel_tol");
+  solver_options.set<double>("abs_tol") = options.get<double>("subproblem_abs_tol");
+  solver_options.set<double>("rel_tol") = options.get<double>("subproblem_rel_tol");
   solver_options.set<unsigned int>("max_its") = options.get<unsigned int>("subproblem_max_its");
   return solver_options;
 }
@@ -156,12 +156,13 @@ NewtonWithTrustRegion::update(NonlinearSystem & system,
   // Do some printing if verbose
   if (verbose)
   {
-    std::cout << "     RHO MIN/MAX            : " << std::scientific << at::min(rho).item<Real>()
-              << "/" << std::scientific << at::max(rho).item<Real>() << std::endl;
+    std::cout << "     RHO MIN/MAX            : " << std::scientific << at::min(rho).item<double>()
+              << "/" << std::scientific << at::max(rho).item<double>() << std::endl;
     std::cout << "     ACCEPTANCE RATE        : " << at::sum(accept).item<Size>() << "/"
               << utils::storage_size(_delta.batch_sizes().concrete()) << std::endl;
-    std::cout << "     ADJUSTED DELTA MIN/MAX : " << std::scientific << at::min(_delta).item<Real>()
-              << "/" << std::scientific << at::max(_delta).item<Real>() << std::endl;
+    std::cout << "     ADJUSTED DELTA MIN/MAX : " << std::scientific
+              << at::min(_delta).item<double>() << "/" << std::scientific
+              << at::max(_delta).item<double>() << std::endl;
   }
 
   x = NonlinearSystem::Sol<true>(neml2::where(accept, Tensor(xp), x.variable_data()));

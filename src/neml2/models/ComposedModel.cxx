@@ -80,15 +80,15 @@ ComposedModel::ComposedModel(const OptionSet & options)
   // evaluate the nonlinar parameter over and over again!
   auto submodels = registered_models();
   if (_auto_nl_param)
-    for (auto * submodel : submodels)
+    for (auto & submodel : submodels)
       for (auto && [pname, param] : submodel->named_nonlinear_parameters(/*recursive=*/true))
         if (std::find(_registered_models.begin(), _registered_models.end(), param.provider) ==
             _registered_models.end())
           _registered_models.push_back(param.provider);
 
   // Add registered models as nodes in the dependency resolver
-  for (auto * submodel : registered_models())
-    _dependency.add_node(submodel);
+  for (auto & submodel : registered_models())
+    _dependency.add_node(submodel.get());
   for (const auto & var : _additional_outputs)
     _dependency.add_additional_outbound_item(var);
 
@@ -96,15 +96,19 @@ ComposedModel::ComposedModel(const OptionSet & options)
   auto priority_order = options.get<std::vector<std::string>>("priority");
   size_t priority = priority_order.empty() ? 0 : priority_order.size() - 1;
   for (const auto & model_name : priority_order)
-    _dependency.set_priority(registered_model(model_name), priority--);
+    _dependency.set_priority(registered_model(model_name).get(), priority--);
 
   // Resolve the dependency
   _dependency.unique_item_provider() = true;
   _dependency.unique_item_consumer() = false;
   _dependency.resolve();
+  const auto & resolution = _dependency.resolution();
 
   // Sort the registered models by dependency resolution
-  _registered_models = _dependency.resolution();
+  std::vector<std::shared_ptr<Model>> sorted_models(resolution.size());
+  for (std::size_t i = 0; i < resolution.size(); ++i)
+    sorted_models[i] = registered_model(resolution[i]->name());
+  _registered_models = std::move(sorted_models);
 
   // Register input variables
   for (const auto & item : _dependency.inbound_items())
@@ -116,14 +120,14 @@ ComposedModel::ComposedModel(const OptionSet & options)
     clone_output_variable(item.parent->output_variable(item.value));
 
   // Declare nonlinear parameters
-  for (auto * submodel : submodels)
+  for (auto & submodel : submodels)
     for (auto && [pname, param] : submodel->named_nonlinear_parameters(/*recursive=*/true))
       if (input_axis().has_variable(param.provider_var))
         register_nonlinear_parameter(pname, param);
 
   // Check if this composed model defines values
   _defines_value = true;
-  for (const auto * submodel : registered_models())
+  for (const auto & submodel : registered_models())
     if (!submodel->defines_values())
     {
       _defines_value = false;
@@ -136,7 +140,7 @@ ComposedModel::ComposedModel(const OptionSet & options)
   if (_defines_value)
   {
     _defines_dvalue = true;
-    for (const auto * submodel : registered_models())
+    for (const auto & submodel : registered_models())
       if (!submodel->defines_derivatives())
       {
         _defines_dvalue = false;
@@ -149,7 +153,7 @@ ComposedModel::ComposedModel(const OptionSet & options)
   if (_defines_dvalue)
   {
     _defines_d2value = true;
-    for (const auto * submodel : registered_models())
+    for (const auto & submodel : registered_models())
       if (!submodel->defines_second_derivatives())
       {
         _defines_d2value = false;
@@ -162,7 +166,7 @@ ComposedModel::ComposedModel(const OptionSet & options)
 
   // If any submodel does not support JIT, disable JIT
   if (_jit)
-    for (const auto * submodel : registered_models())
+    for (const auto & submodel : registered_models())
       if (!submodel->is_jit_enabled())
       {
         _jit = false;
@@ -202,7 +206,7 @@ ComposedModel::link_output_variables(Model * submodel)
 void
 ComposedModel::set_value(bool out, bool dout_din, bool d2out_din2)
 {
-  for (auto * i : registered_models())
+  for (const auto & i : registered_models())
   {
     if (out && !dout_din && !d2out_din2)
       i->forward_maybe_jit(true, false, false);

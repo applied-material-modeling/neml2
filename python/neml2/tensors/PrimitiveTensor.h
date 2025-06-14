@@ -99,14 +99,14 @@ def_PrimitiveTensor(py::class_<Derived> & c)
           PY_ARG_TENSOR_OPTIONS)
       .def_static(
           "full",
-          [](Real init, NEML2_TENSOR_OPTIONS_VARGS)
+          [](double init, NEML2_TENSOR_OPTIONS_VARGS)
           { return Derived::full(init, NEML2_TENSOR_OPTIONS); },
           py::arg("fill_value"),
           py::kw_only(),
           PY_ARG_TENSOR_OPTIONS)
       .def_static(
           "full",
-          [](TensorShapeRef batch_shape, Real init, NEML2_TENSOR_OPTIONS_VARGS)
+          [](TensorShapeRef batch_shape, double init, NEML2_TENSOR_OPTIONS_VARGS)
           { return Derived::full(batch_shape, init, NEML2_TENSOR_OPTIONS); },
           py::arg("batch_shape"),
           py::arg("fill_value"),

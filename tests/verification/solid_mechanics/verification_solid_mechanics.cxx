@@ -56,10 +56,10 @@ TEST_CASE("solid mechanics")
       try
       {
         // Load and run the model
-        reload_input(test.filename());
-        auto & driver = get_driver("verification");
-        diagnose(driver);
-        REQUIRE(driver.run());
+        auto factory = load_input(test.filename());
+        auto driver = factory.get_object<Driver>("Drivers", "verification");
+        diagnose(*driver);
+        REQUIRE(driver->run());
       }
       catch (...)
       {

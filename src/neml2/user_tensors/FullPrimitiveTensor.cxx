@@ -42,7 +42,7 @@ FullPrimitiveTensor<T>::expected_options()
   options.set<TensorShape>("batch_shape") = {};
   options.set("batch_shape").doc() = "Batch shape";
 
-  options.set<Real>("value");
+  options.set<double>("value");
   options.set("value").doc() = "Value used to fill the tensor";
 
   return options;
@@ -51,7 +51,7 @@ FullPrimitiveTensor<T>::expected_options()
 template <typename T>
 FullPrimitiveTensor<T>::FullPrimitiveTensor(const OptionSet & options)
   : T(T::full(options.get<TensorShape>("batch_shape"),
-              options.get<Real>("value"),
+              options.get<double>("value"),
               default_tensor_options())),
     UserTensorBase(options)
 {

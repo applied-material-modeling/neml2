@@ -38,7 +38,7 @@
 
 namespace neml2
 {
-OptionCollection
+InputFile
 HITParser::parse(const std::filesystem::path & filename, const std::string & additional_input) const
 {
   // Open and read the file
@@ -70,20 +70,13 @@ HITParser::parse(const std::filesystem::path & filename, const std::string & add
   expander.registerEvaler("raw", raw);
   root->walk(&expander);
 
-  OptionCollection all_options;
-
   // Extract global settings
-  auto * settings_node = root->find("Settings");
-  if (settings_node)
-    extract_options(settings_node, all_options.settings());
-
-  // Apply global settings
-  // Note that we purposefully apply the settings __before__ parsing the objects.
-  // This is because the global settings may contain additional dynamic libraries we should load to
-  // enrich our registry.
-  Settings::apply(all_options.settings());
+  OptionSet settings = Settings::expected_options();
+  if (auto * const node = root->find("Settings"))
+    extract_options(node, settings);
 
   // Loop over each known section and extract options for each object
+  InputFile all_options(settings);
   for (const auto & section : Parser::sections)
   {
     auto * section_node = root->find(section);
@@ -163,7 +156,7 @@ HITParser::extract_option(hit::Node * n, OptionSet & options) const
         extract_option_t(unsigned int);
         extract_option_t(std::size_t);
         extract_option_t(Size);
-        extract_option_t(Real);
+        extract_option_t(double);
         extract_option_t(std::string);
         extract_option_t(VariableName);
         extract_option_t(EnumSelection);

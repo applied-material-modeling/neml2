@@ -65,7 +65,7 @@ template <typename T>
 const Variable<T> &
 VariableStore::declare_input_variable(const char * name, TensorShapeRef list_shape)
 {
-  if (_object->input_options().contains<VariableName>(name))
+  if (_object->input_options().contains(name))
     return declare_input_variable<T>(_object->input_options().get<VariableName>(name), list_shape);
 
   return declare_input_variable<T>(VariableName(name), list_shape);
@@ -93,7 +93,7 @@ template <typename T>
 Variable<T> &
 VariableStore::declare_output_variable(const char * name, TensorShapeRef list_shape)
 {
-  if (_object->input_options().contains<VariableName>(name))
+  if (_object->input_options().contains(name))
     return declare_output_variable<T>(_object->input_options().get<VariableName>(name), list_shape);
 
   return declare_output_variable<T>(VariableName(name), list_shape);

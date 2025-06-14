@@ -25,7 +25,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 
-#include "utils.h"
+#include "neml2/base/Factory.h"
 #include "neml2/drivers/Driver.h"
 
 using namespace neml2;
@@ -43,7 +43,7 @@ TEST_CASE("solid mechanics")
     if (entry.path().extension() == ".i")
       tests.push_back(entry.path().lexically_relative(pwd));
 
-  for (auto test : tests)
+  for (const auto & test : tests)
   {
     // Change current working directory to the parent directory of the input file
     fs::current_path(test.parent_path());
@@ -56,10 +56,10 @@ TEST_CASE("solid mechanics")
       try
       {
         // Load and run the model
-        reload_input(test.filename());
-        auto & driver = get_driver("regression");
-        diagnose(driver);
-        REQUIRE(driver.run());
+        auto factory = load_input(test.filename());
+        auto driver = factory.get_object<Driver>("Drivers", "regression");
+        diagnose(*driver);
+        REQUIRE(driver->run());
       }
       catch (...)
       {

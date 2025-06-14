@@ -91,12 +91,12 @@ public:
                                    const TensorOptions & options = default_tensor_options());
   /// Unbatched tensor filled with a given value given base shape
   [[nodiscard]] static Tensor full(TensorShapeRef base_shape,
-                                   Real init,
+                                   const CScalar & init,
                                    const TensorOptions & options = default_tensor_options());
   /// Full tensor given batch and base shapes
   [[nodiscard]] static Tensor full(const TraceableTensorShape & batch_shape,
                                    TensorShapeRef base_shape,
-                                   Real init,
+                                   const CScalar & init,
                                    const TensorOptions & options = default_tensor_options());
   /// Unbatched identity tensor
   [[nodiscard]] static Tensor identity(Size n,

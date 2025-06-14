@@ -38,7 +38,7 @@ namespace neml2
 {
 template <class Derived>
 Derived
-R2Base<Derived>::fill(const Real & a, const TensorOptions & options)
+R2Base<Derived>::fill(const CScalar & a, const TensorOptions & options)
 {
   return R2Base<Derived>::fill(Scalar(a, options));
 }
@@ -56,9 +56,9 @@ R2Base<Derived>::fill(const Scalar & a)
 
 template <class Derived>
 Derived
-R2Base<Derived>::fill(const Real & a11,
-                      const Real & a22,
-                      const Real & a33,
+R2Base<Derived>::fill(const CScalar & a11,
+                      const CScalar & a22,
+                      const CScalar & a33,
                       const TensorOptions & options)
 {
   return R2Base<Derived>::fill(Scalar(a11, options), Scalar(a22, options), Scalar(a33, options));
@@ -77,12 +77,12 @@ R2Base<Derived>::fill(const Scalar & a11, const Scalar & a22, const Scalar & a33
 
 template <class Derived>
 Derived
-R2Base<Derived>::fill(const Real & a11,
-                      const Real & a22,
-                      const Real & a33,
-                      const Real & a23,
-                      const Real & a13,
-                      const Real & a12,
+R2Base<Derived>::fill(const CScalar & a11,
+                      const CScalar & a22,
+                      const CScalar & a33,
+                      const CScalar & a23,
+                      const CScalar & a13,
+                      const CScalar & a12,
                       const TensorOptions & options)
 {
   return R2Base<Derived>::fill(Scalar(a11, options),
@@ -110,15 +110,15 @@ R2Base<Derived>::fill(const Scalar & a11,
 
 template <class Derived>
 Derived
-R2Base<Derived>::fill(const Real & a11,
-                      const Real & a12,
-                      const Real & a13,
-                      const Real & a21,
-                      const Real & a22,
-                      const Real & a23,
-                      const Real & a31,
-                      const Real & a32,
-                      const Real & a33,
+R2Base<Derived>::fill(const CScalar & a11,
+                      const CScalar & a12,
+                      const CScalar & a13,
+                      const CScalar & a21,
+                      const CScalar & a22,
+                      const CScalar & a23,
+                      const CScalar & a31,
+                      const CScalar & a32,
+                      const CScalar & a33,
                       const TensorOptions & options)
 {
   return R2Base<Derived>::fill(Scalar(a11, options),

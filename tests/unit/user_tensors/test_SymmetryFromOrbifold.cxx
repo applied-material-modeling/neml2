@@ -27,10 +27,9 @@
 
 #include <filesystem>
 
-#include "utils.h"
 #include "neml2/base/Factory.h"
-#include "neml2/user_tensors/SymmetryFromOrbifold.h"
-#include "neml2/tensors/tensors.h"
+#include "neml2/tensors/R2.h"
+#include "neml2/tensors/Tensor.h"
 
 using namespace neml2;
 namespace fs = std::filesystem;
@@ -39,8 +38,8 @@ TEST_CASE("SymmetryFromOrbifold", "[user_tensors]")
 {
   at::manual_seed(42);
 
-  Real a = std::sqrt(3.0) / 2.0;
-  Real h = 0.5;
+  double a = std::sqrt(3.0) / 2.0;
+  double h = 0.5;
 
   // All the correct matrices from Kocks, Tome, and Wenk
   // (well after you fix the typos in my edition)
@@ -107,45 +106,45 @@ TEST_CASE("SymmetryFromOrbifold", "[user_tensors]")
                            12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23}}}};
 
   // A fun lambda that provides the R2 version of the correct symmetry operations
-  auto matrix_operations = [ops](std::string a)
+  auto matrix_operations = [ops](const std::string & a)
   {
     return std::get<0>(ops.at(a)).index(
         {Tensor::create(std::get<1>(ops.at(a)), default_integer_tensor_options())});
   };
 
   // Load input file
-  reload_input(fs::absolute("user_tensors/test_SymmetryFromOrbifold.i"));
+  auto factory = load_input(fs::absolute("user_tensors/test_SymmetryFromOrbifold.i"));
 
-  auto fmt_name = [](std::string cls) { return "class_" + cls; };
+  auto fmt_name = [](const std::string & cls) { return "class_" + cls; };
 
   SECTION("check matrix operations")
   {
     auto cls = GENERATE("1", "2", "222", "42", "4", "3", "6", "32", "622", "23", "432");
-    auto & grp = Factory::get_object<R2>("Tensors", fmt_name(cls));
+    auto grp = factory.get_object<R2>("Tensors", fmt_name(cls));
 
-    REQUIRE(at::allclose(grp, matrix_operations(cls)));
+    REQUIRE(at::allclose(*grp, matrix_operations(cls)));
   }
 
   SECTION("check the group includes the identity")
   {
     auto cls = GENERATE("1", "2", "222", "42", "4", "3", "6", "32", "622", "23", "432");
-    auto & grp = Factory::get_object<R2>("Tensors", fmt_name(cls));
-    REQUIRE(at::any(at::all(at::isclose(grp, R2::identity()).flatten(1), 1)).item().toBool());
+    auto grp = factory.get_object<R2>("Tensors", fmt_name(cls));
+    REQUIRE(at::any(at::all(at::isclose(*grp, R2::identity()).flatten(1), 1)).item().toBool());
   }
 
   SECTION("check the group is closed")
   {
     auto cls = GENERATE("1", "2", "222", "42", "4", "3", "6", "32", "622", "23", "432");
-    auto & grp = Factory::get_object<R2>("Tensors", fmt_name(cls));
+    auto grp = factory.get_object<R2>("Tensors", fmt_name(cls));
     // A loop is forgivable here I hope...
-    for (Size i = 0; i < grp.batch_size(0).concrete(); i++)
+    for (Size i = 0; i < grp->batch_size(0).concrete(); i++)
     {
-      R2 op_i = grp.batch_index({i});
-      for (Size j = 0; j < grp.batch_size(0).concrete(); j++)
+      R2 op_i = grp->batch_index({i});
+      for (Size j = 0; j < grp->batch_size(0).concrete(); j++)
       {
-        R2 op_j = grp.batch_index({j});
+        R2 op_j = grp->batch_index({j});
         R2 prod = op_i * op_j;
-        REQUIRE(at::any(at::all(at::isclose(grp, prod).flatten(1), 1)).item().toBool());
+        REQUIRE(at::any(at::all(at::isclose(*grp, prod).flatten(1), 1)).item().toBool());
       }
     }
   }
@@ -153,12 +152,12 @@ TEST_CASE("SymmetryFromOrbifold", "[user_tensors]")
   SECTION("check the group has each inverse operation")
   {
     auto cls = GENERATE("1", "2", "222", "42", "4", "3", "6", "32", "622", "23", "432");
-    auto & grp = Factory::get_object<R2>("Tensors", fmt_name(cls));
+    auto grp = factory.get_object<R2>("Tensors", fmt_name(cls));
     // A loop is forgivable here I hope...
-    for (Size i = 0; i < grp.batch_size(0).concrete(); i++)
+    for (Size i = 0; i < grp->batch_size(0).concrete(); i++)
     {
-      R2 inv = grp.batch_index({i}).inverse();
-      REQUIRE(at::any(at::all(at::isclose(grp, inv).flatten(1), 1)).item().toBool());
+      R2 inv = grp->batch_index({i}).inverse();
+      REQUIRE(at::any(at::all(at::isclose(*grp, inv).flatten(1), 1)).item().toBool());
     }
   }
 }

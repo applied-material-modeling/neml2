@@ -32,8 +32,6 @@
 
 std::string get_additional_cliargs(const argparse::ArgumentParser & program);
 
-void try_load_input(const std::string & input, const std::string & additional_cliargs = "");
-
 int
 main(int argc, char * argv[])
 {
@@ -104,10 +102,10 @@ main(int argc, char * argv[])
     {
       const auto input = run_command.get<std::string>("input");
       const auto additional_cliargs = get_additional_cliargs(run_command);
-      try_load_input(input, additional_cliargs);
+      auto factory = neml2::load_input(input, additional_cliargs);
       const auto drivername = run_command.get<std::string>("driver");
-      auto & driver = neml2::Factory::get_object<neml2::Driver>("Drivers", drivername);
-      driver.run();
+      auto driver = factory.get_object<neml2::Driver>("Drivers", drivername);
+      driver->run();
     }
 
     // sub-command: diagnose
@@ -115,23 +113,23 @@ main(int argc, char * argv[])
     {
       const auto input = diagnose_command.get<std::string>("input");
       const auto additional_cliargs = get_additional_cliargs(diagnose_command);
-      try_load_input(input, additional_cliargs);
+      auto factory = neml2::load_input(input, additional_cliargs);
 
       std::vector<neml2::Diagnosis> diagnoses;
 
       if (diagnose_command.is_used("--driver"))
       {
         auto drivername = diagnose_command.get<std::string>("--driver");
-        auto & driver = neml2::Factory::get_object<neml2::Driver>("Drivers", drivername);
+        auto driver = factory.get_object<neml2::Driver>("Drivers", drivername);
         std::cout << "Diagnosing driver '" << drivername << "'...\n";
-        diagnoses = neml2::diagnose(driver);
+        diagnoses = neml2::diagnose(*driver);
       }
       else if (diagnose_command.is_used("--model"))
       {
         auto modelname = diagnose_command.get<std::string>("--model");
-        auto & model = neml2::Factory::get_object<neml2::Model>("Models", modelname);
+        auto model = factory.get_object<neml2::Model>("Models", modelname);
         std::cout << "Diagnosing model '" << modelname << "'...\n";
-        diagnoses = neml2::diagnose(model);
+        diagnoses = neml2::diagnose(*model);
       }
       else
       {
@@ -155,10 +153,10 @@ main(int argc, char * argv[])
     {
       const auto input = inspect_command.get<std::string>("input");
       const auto additional_cliargs = get_additional_cliargs(inspect_command);
-      try_load_input(input, additional_cliargs);
+      auto factory = neml2::load_input(input, additional_cliargs);
       const auto modelname = inspect_command.get<std::string>("model");
-      auto & model = neml2::Factory::get_object<neml2::Model>("Models", modelname);
-      std::cout << model << std::endl;
+      auto model = factory.get_object<neml2::Model>("Models", modelname);
+      std::cout << *model << std::endl;
     }
 
     // sub-command: time
@@ -166,19 +164,19 @@ main(int argc, char * argv[])
     {
       const auto input = time_command.get<std::string>("input");
       const auto additional_cliargs = get_additional_cliargs(time_command);
-      try_load_input(input, additional_cliargs);
+      auto factory = neml2::load_input(input, additional_cliargs);
       const auto drivername = time_command.get<std::string>("driver");
-      auto & driver = neml2::Factory::get_object<neml2::Driver>("Drivers", drivername);
+      auto driver = factory.get_object<neml2::Driver>("Drivers", drivername);
 
       if (time_command.get<int>("--warmup") > 0)
         std::cout << "Warming up...\n";
       for (int i = 0; i < time_command.get<int>("--warmup"); i++)
-        driver.run();
+        driver->run();
 
       for (int i = 0; i < time_command.get<int>("--num-runs"); i++)
       {
         neml2::TimedSection ts(drivername, "Driver::run");
-        driver.run();
+        driver->run();
       }
 
       std::cout << "Elapsed wall time\n";
@@ -215,19 +213,4 @@ get_additional_cliargs(const argparse::ArgumentParser & program)
   std::ostringstream args_stream;
   std::copy(args.begin(), args.end(), std::ostream_iterator<std::string>(args_stream, " "));
   return args_stream.str();
-}
-
-void
-try_load_input(const std::string & input, const std::string & additional_cliargs)
-{
-  try
-  {
-    neml2::load_input(input, additional_cliargs);
-  }
-  catch (const std::exception & err)
-  {
-    std::cerr << "An error occurred while loading the input file '" << input << "':\n";
-    std::cerr << err.what() << std::endl;
-    std::exit(1);
-  }
 }

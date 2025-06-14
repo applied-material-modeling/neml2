@@ -67,7 +67,7 @@ ModelDriver::expected_options()
 
 ModelDriver::ModelDriver(const OptionSet & options)
   : Driver(options),
-    _model(get_model(options.get<std::string>("model"))),
+    _model(factory()->get_object<Model>("Models", options.get<std::string>("model"))),
     _device(options.get<std::string>("device")),
     _show_params(options.get<bool>("show_parameters")),
     _show_input(options.get<bool>("show_input_axis")),
@@ -75,8 +75,8 @@ ModelDriver::ModelDriver(const OptionSet & options)
 #ifdef NEML2_HAS_DISPATCHER
     ,
     _scheduler(options.get("scheduler").user_specified()
-                   ? Factory::get_object_ptr<WorkScheduler>("Schedulers",
-                                                            options.get<std::string>("scheduler"))
+                   ? factory()->get_object<WorkScheduler>("Schedulers",
+                                                          options.get<std::string>("scheduler"))
                    : nullptr),
     _async_dispatch(options.get<bool>("async_dispatch"))
 #endif
@@ -99,8 +99,9 @@ ModelDriver::setup()
 
     auto thread_init = [this](Device device) -> void
     {
-      auto & model = get_model(_model.name());
-      model.to(device);
+      auto model_clone = _model->clone();
+      model_clone->to(device);
+      _models[std::this_thread::get_id()] = std::move(model_clone);
     };
 
     _dispatcher = std::make_unique<DispatcherType>(
@@ -108,15 +109,15 @@ ModelDriver::setup()
         _async_dispatch,
         [&](ValueMap && x, Device device) -> ValueMap
         {
-          auto & model = get_model(_model.name());
+          auto & model = _models[std::this_thread::get_id()];
 
           // If this is not an async dispatch, we need to move the model to the target device
           // _every_ time before evaluation
           if (!_async_dispatch)
-            model.to(device);
+            model->to(device);
 
-          neml_assert_dbg(model.variable_options().device() == device);
-          return model.value(std::move(x));
+          neml_assert_dbg(model->variable_options().device() == device);
+          return model->value(std::move(x));
         },
         red,
         &valuemap_move_device,
@@ -127,14 +128,14 @@ ModelDriver::setup()
 
   // LCOV_EXCL_START
   if (_show_params)
-    for (auto && [pname, pval] : _model.named_parameters())
+    for (auto && [pname, pval] : _model->named_parameters())
       std::cout << pname << std::endl;
 
   if (_show_input)
-    std::cout << _model.name() << "'s input axis:\n" << _model.input_axis() << std::endl;
+    std::cout << _model->name() << "'s input axis:\n" << _model->input_axis() << std::endl;
 
   if (_show_output)
-    std::cout << _model.name() << "'s output axis:\n" << _model.output_axis() << std::endl;
+    std::cout << _model->name() << "'s output axis:\n" << _model->output_axis() << std::endl;
   // LCOV_EXCL_STOP
 }
 
@@ -142,6 +143,6 @@ void
 ModelDriver::diagnose() const
 {
   Driver::diagnose();
-  neml2::diagnose(_model);
+  neml2::diagnose(*_model);
 }
 } // namespace neml2

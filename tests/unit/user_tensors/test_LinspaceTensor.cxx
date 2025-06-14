@@ -24,23 +24,23 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include "utils.h"
-#include "neml2/user_tensors/LinspaceTensor.h"
+#include "neml2/base/Factory.h"
+#include "neml2/tensors/Tensor.h"
 
 using namespace neml2;
 
 TEST_CASE("LinspaceTensor", "[user_tensors]")
 {
-  reload_input("user_tensors/test_LinspaceTensor.i");
+  auto factory = load_input("user_tensors/test_LinspaceTensor.i");
 
   SECTION("LinspaceTensor")
   {
-    const auto a = Factory::get_object_ptr<Tensor>("Tensors", "a");
+    const auto a = factory.get_object<Tensor>("Tensors", "a");
     REQUIRE(a->batch_sizes() == TensorShape{100, 2, 1});
     REQUIRE(a->base_sizes() == TensorShape{2, 3});
 
-    const auto a0 = Factory::get_object_ptr<Tensor>("Tensors", "a0");
-    const auto a1 = Factory::get_object_ptr<Tensor>("Tensors", "a1");
+    const auto a0 = factory.get_object<Tensor>("Tensors", "a0");
+    const auto a1 = factory.get_object<Tensor>("Tensors", "a1");
     Size nstep = 100;
     Size dim = 0;
     REQUIRE(at::allclose(*a, Tensor::linspace(*a0, *a1, nstep, dim)));

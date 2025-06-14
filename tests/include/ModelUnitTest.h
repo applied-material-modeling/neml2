@@ -46,7 +46,7 @@ private:
   void check_d2value();
   void check_AD_parameter_derivatives();
 
-  Model & _model;
+  const std::shared_ptr<Model> _model;
   const bool _check_values;
   const bool _check_derivs;
   const bool _check_secderivs;
@@ -55,14 +55,14 @@ private:
   ValueMap _in;
   ValueMap _out;
 
-  Real _val_rtol;
-  Real _val_atol;
-  Real _deriv_rtol;
-  Real _deriv_atol;
-  Real _secderiv_rtol;
-  Real _secderiv_atol;
-  Real _param_rtol;
-  Real _param_atol;
+  double _val_rtol;
+  double _val_atol;
+  double _deriv_rtol;
+  double _deriv_atol;
+  double _secderiv_rtol;
+  double _secderiv_atol;
+  double _param_rtol;
+  double _param_atol;
 
   const bool _show_params;
   const bool _show_input;

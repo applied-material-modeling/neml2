@@ -50,10 +50,10 @@ CubicCrystal::expected_options()
 }
 
 CubicCrystal::CubicCrystal(const OptionSet & options)
-  : CrystalGeometry(
-        options,
-        symmetry_operations_from_orbifold("432"),
-        Vec(ATensor(R2::fill(options.get<TensorName<Scalar>>("lattice_parameter").resolve()))))
+  : CrystalGeometry(options,
+                    symmetry_operations_from_orbifold("432"),
+                    Vec(ATensor(R2::fill(
+                        options.get<TensorName<Scalar>>("lattice_parameter").resolve(factory())))))
 {
 }
 

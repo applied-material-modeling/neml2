@@ -30,12 +30,13 @@
 #include "neml2/misc/errors.h"
 #include "neml2/base/Settings.h"
 #include "neml2/base/NEML2Object.h"
-#include "neml2/base/OptionCollection.h"
+#include "neml2/base/InputFile.h"
 
 namespace neml2
 {
 // Forward decl
 class Settings;
+class Factory;
 
 /**
  * @brief A convenient function to parse all options from an input file
@@ -48,21 +49,7 @@ class Settings;
  * @param path Path to the input file to be parsed
  * @param additional_input Additional cliargs to pass to the parser
  */
-void load_input(const std::filesystem::path & path, const std::string & additional_input = "");
-
-/**
- * @brief Similar to neml2::load_input, but additionally clear the Factory before loading the
- * options, therefore all previously loaded models become dangling.
- *
- * Previously loaded input options will be discarded!
- *
- * @warning All threads share the same input options, so in principle this function is not intended
- * to be called inside a threaded region.
- *
- * @param path Path to the input file to be parsed
- * @param additional_input Additional cliargs to pass to the parser
- */
-void reload_input(const std::filesystem::path & path, const std::string & additional_input = "");
+Factory load_input(const std::filesystem::path & path, const std::string & additional_input = "");
 
 /**
  * The factory is responsible for:
@@ -72,22 +59,19 @@ void reload_input(const std::filesystem::path & path, const std::string & additi
 class Factory
 {
 public:
-  /// Get the Factory singleton
-  static Factory & get();
+  Factory(const InputFile &);
 
-  /// Get the global options singleton
-  static OptionCollection & options();
+  /// Get the input file
+  InputFile & input_file() { return _input_file; }
 
-  /**
-   * @brief Provide all objects' options to the factory. The factory is ready to manufacture
-   * objects after this call, e.g., through either manufacture, get_object, or get_object_ptr.
-   *
-   * @param all_options The collection of all the options of the objects to be manufactured.
-   */
-  static void load_options(const OptionCollection & all_options);
+  /// Get the input file
+  const InputFile & input_file() const { return _input_file; }
+
+  /// Global settings
+  const std::shared_ptr<Settings> & settings() const { return _input_file.settings(); }
 
   /// Check if an object with the given name exists under the given section.
-  static bool has_object(const std::string & section, const std::string & name);
+  bool has_object(const std::string & section, const std::string & name);
 
   /**
    * @brief Retrive an object pointer under the given section with the given object name.
@@ -106,42 +90,20 @@ public:
    * @return std::shared_ptr<T> The object pointer.
    */
   template <class T>
-  static std::shared_ptr<T> get_object_ptr(const std::string & section,
-                                           const std::string & name,
-                                           const OptionSet & additional_options = OptionSet(),
-                                           bool force_create = true);
-
-  /**
-   * @brief Retrive an object reference under the given section with the given object name.
-   *
-   * An exception is thrown if
-   * - the object with the given name does not exist, or
-   * - the object with the given name exists but does not have the correct type (e.g., dynamic case
-   * fails).
-   *
-   * @tparam T The type of the NEML2Object
-   * @param section The section name under which the search happens.
-   * @param name The name of the object to retrieve.
-   * @param additional_options Additional input options to pass to the object constructor
-   * @param force_create (Optional) Force the factory to create a new object even if the object has
-   * already been created.
-   * @return T & The object reference.
-   */
-  template <class T>
-  static T & get_object(const std::string & section,
-                        const std::string & name,
-                        const OptionSet & additional_options = OptionSet(),
-                        bool force_create = true);
+  std::shared_ptr<T> get_object(const std::string & section,
+                                const std::string & name,
+                                const OptionSet & additional_options = OptionSet(),
+                                bool force_create = true);
 
   /// @brief Delete all factories and destruct all the objects.
-  static void clear();
+  void clear();
 
   /**
    * @brief List all the manufactured objects.
    *
    * @param os The stream to write to.
    */
-  static void print(std::ostream & os = std::cout);
+  void print(std::ostream & os = std::cout);
 
 protected:
   /**
@@ -153,6 +115,9 @@ protected:
   void create_object(const std::string & section, const OptionSet & options);
 
 private:
+  /// The input file
+  InputFile _input_file;
+
   /**
    * Manufactured objects. The key of the outer map is the section name, and the key of the inner
    * map is the object name.
@@ -162,21 +127,19 @@ private:
 
 template <class T>
 inline std::shared_ptr<T>
-Factory::get_object_ptr(const std::string & section,
-                        const std::string & name,
-                        const OptionSet & additional_options,
-                        bool force_create)
+Factory::get_object(const std::string & section,
+                    const std::string & name,
+                    const OptionSet & additional_options,
+                    bool force_create)
 {
-  auto & factory = Factory::get();
-
-  if (Factory::options().data().empty())
+  if (input_file().data().empty())
     throw FactoryException("It appears that you are trying to get an object without loading any "
                            "options. Please load options first.");
 
   // Easy if it already exists
   if (!force_create)
-    if (factory._objects.count(section) && factory._objects.at(section).count(name))
-      for (const auto & neml2_obj : factory._objects[section][name])
+    if (_objects.count(section) && _objects.at(section).count(name))
+      for (const auto & neml2_obj : _objects[section][name])
       {
         // Check for option clash
         if (!options_compatible(neml2_obj->input_options(), additional_options))
@@ -193,33 +156,24 @@ Factory::get_object_ptr(const std::string & section,
       }
 
   // Otherwise try to create it
-  for (auto & options : Factory::options()[section])
+  for (const auto & options : _input_file[section])
     if (options.first == name)
     {
       auto new_options = options.second;
+      new_options.set<std::shared_ptr<Settings>>("_settings") = settings();
       new_options += additional_options;
-      factory.create_object(section, new_options);
+      create_object(section, new_options);
       break;
     }
 
-  if (!factory._objects.count(section) || !factory._objects.at(section).count(name))
+  if (!_objects.count(section) || !_objects.at(section).count(name))
     throw FactoryException("Failed to get object named " + name + " under section " + section);
 
-  auto obj = std::dynamic_pointer_cast<T>(factory._objects[section][name].back());
+  auto obj = std::dynamic_pointer_cast<T>(_objects[section][name].back());
 
   if (!obj)
     throw FactoryException("Internal error: Factory failed to create object " + name);
 
   return obj;
-}
-
-template <class T>
-inline T &
-Factory::get_object(const std::string & section,
-                    const std::string & name,
-                    const OptionSet & additional_options,
-                    bool force_create)
-{
-  return *Factory::get_object_ptr<T>(section, name, additional_options, force_create);
 }
 } // namespace neml2

@@ -43,7 +43,7 @@ VTestParser::parse()
   neml_assert(file.is_open(), "Unable to open file ", _name);
 
   std::string buffer;
-  std::vector<std::vector<Real>> scalar_buffers;
+  std::vector<std::vector<double>> scalar_buffers;
 
   // Simple state machine to figure out where we are in the file
   int state = 0;

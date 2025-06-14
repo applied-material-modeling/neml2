@@ -58,7 +58,7 @@ ImplicitUpdate::ImplicitUpdate(const OptionSet & options)
   : Model(options),
     _model(register_model(options.get<std::string>("implicit_model"),
                           /*nonlinear=*/true)),
-    _solver(Factory::get_object<NonlinearSolver>("Solvers", options.get<std::string>("solver")))
+    _solver(factory()->get_object<NonlinearSolver>("Solvers", options.get<std::string>("solver")))
 {
   neml_assert(_model.output_axis().has_residual(),
               "The implicit model'",
@@ -115,13 +115,13 @@ ImplicitUpdate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
   // Perform automatic scaling (using the trial state)
   // TODO: Add an interface to allow user to specify where (and when) to evaluate the Jacobian for
   // automatic scaling.
-  _model.init_scaling(x0, _solver.verbose);
+  _model.init_scaling(x0, _solver->verbose);
 
   // Solve for the next state
   NonlinearSolver::Result res;
   {
     SolvingNonlinearSystem solving;
-    res = _solver.solve(_model, x0);
+    res = _solver->solve(_model, x0);
     neml_assert(res.ret == NonlinearSolver::RetCode::SUCCESS, "Nonlinear solve failed.");
   }
 

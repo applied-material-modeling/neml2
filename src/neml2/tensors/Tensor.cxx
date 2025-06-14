@@ -153,7 +153,7 @@ Tensor::ones(const TraceableTensorShape & batch_shape,
 }
 
 Tensor
-Tensor::full(TensorShapeRef base_shape, Real init, const TensorOptions & options)
+Tensor::full(TensorShapeRef base_shape, const CScalar & init, const TensorOptions & options)
 {
   return Tensor(at::full(base_shape, init, options), 0);
 }
@@ -161,7 +161,7 @@ Tensor::full(TensorShapeRef base_shape, Real init, const TensorOptions & options
 Tensor
 Tensor::full(const TraceableTensorShape & batch_shape,
              TensorShapeRef base_shape,
-             Real init,
+             const CScalar & init,
              const TensorOptions & options)
 {
   // Record batch shape

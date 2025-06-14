@@ -52,10 +52,10 @@ public:
   static Quaternion fill(const Scalar & s, const Scalar & q1, const Scalar & q2, const Scalar & q3);
 
   /// fill with four reals
-  static Quaternion fill(const Real & s,
-                         const Real & q1,
-                         const Real & q2,
-                         const Real & q3,
+  static Quaternion fill(const CScalar & s,
+                         const CScalar & q1,
+                         const CScalar & q2,
+                         const CScalar & q3,
                          const TensorOptions & options = default_tensor_options());
 
   /// Accessor

@@ -42,8 +42,8 @@ FillWR2::expected_options()
 }
 
 FillWR2::FillWR2(const OptionSet & options)
-  : WR2(fill(options.get<std::vector<TensorName<Scalar>>>("values"))),
-    UserTensorBase(options)
+  : UserTensorBase(options),
+    WR2(fill(options.get<std::vector<TensorName<Scalar>>>("values")))
 {
 }
 
@@ -55,6 +55,7 @@ FillWR2::fill(const std::vector<TensorName<Scalar>> & values) const
               values.size(),
               " values are provided.");
 
-  return WR2::fill(values[0].resolve(), values[1].resolve(), values[2].resolve());
+  return WR2::fill(
+      values[0].resolve(factory()), values[1].resolve(factory()), values[2].resolve(factory()));
 }
 } // namespace neml2

@@ -90,8 +90,8 @@ template <typename F>
 [[nodiscard]] neml2::Tensor
 finite_differencing_derivative(F && f,
                                const neml2::Tensor & x,
-                               neml2::Real eps = 1e-6,
-                               neml2::Real aeps = 1e-6)
+                               double eps = 1e-6,
+                               double aeps = 1e-6)
 {
   using namespace neml2;
 

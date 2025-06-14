@@ -46,6 +46,6 @@ TEST_CASE("NonlinearSystem", "[solvers]")
   {
     system.init_scaling(x0);
     auto x0p = system.scale(x0);
-    REQUIRE(at::max(at::linalg_cond(system.Jacobian(x0p))).item<Real>() == Catch::Approx(1.0));
+    REQUIRE(at::max(at::linalg_cond(system.Jacobian(x0p))).item<double>() == Catch::Approx(1.0));
   }
 }

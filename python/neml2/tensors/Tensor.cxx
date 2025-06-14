@@ -88,7 +88,7 @@ def_Tensor(py::class_<Tensor> & c)
           PY_ARG_TENSOR_OPTIONS)
       .def_static(
           "full",
-          [](TensorShapeRef base_shape, Real init, NEML2_TENSOR_OPTIONS_VARGS)
+          [](TensorShapeRef base_shape, double init, NEML2_TENSOR_OPTIONS_VARGS)
           { return Tensor::full(base_shape, init, NEML2_TENSOR_OPTIONS); },
           py::arg("base_shape"),
           py::arg("fill_value"),
@@ -98,7 +98,7 @@ def_Tensor(py::class_<Tensor> & c)
           "full",
           [](TensorShapeRef batch_shape,
              TensorShapeRef base_shape,
-             Real init,
+             double init,
              NEML2_TENSOR_OPTIONS_VARGS)
           { return Tensor::full(batch_shape, base_shape, init, NEML2_TENSOR_OPTIONS); },
           py::arg("batch_shape"),

@@ -65,7 +65,7 @@ BufferStore::declare_buffer(const std::string & name, const T & rawval)
 {
   if (_object->host() != _object)
     return _object->host<BufferStore>()->declare_buffer(
-        _object->name() + buffer_name_separator() + name, rawval);
+        _object->name() + _object->settings().buffer_name_separator() + name, rawval);
 
   TensorValueBase * base_ptr = nullptr;
 
@@ -88,24 +88,22 @@ template <typename T, typename>
 const T &
 BufferStore::declare_buffer(const std::string & name, const TensorName<T> & tensorname)
 {
-  return declare_buffer(name, tensorname.resolve());
+  auto * factory = _object->factory();
+  neml_assert(factory, "Internal error: factory != nullptr");
+  return declare_buffer(name, tensorname.resolve(factory));
 }
 
 template <typename T, typename>
 const T &
 BufferStore::declare_buffer(const std::string & name, const std::string & input_option_name)
 {
-  if (_object->input_options().contains<T>(input_option_name))
-    return declare_buffer(name, _object->input_options().get<T>(input_option_name));
-
-  if (_object->input_options().contains<TensorName<T>>(input_option_name))
+  if (_object->input_options().contains(input_option_name))
     return declare_buffer<T>(name, _object->input_options().get<TensorName<T>>(input_option_name));
 
   throw NEMLException(
       "Trying to register buffer named " + name + " from input option named " + input_option_name +
       " of type " + utils::demangle(typeid(T).name()) +
-      ". Make sure you provided the correct buffer name, option name, and buffer type. Note that "
-      "the buffer type can either be a plain type or a cross-reference.");
+      ". Make sure you provided the correct buffer name, option name, and buffer type.");
 }
 
 #define BUFFERSTORE_INTANTIATE_TENSORBASE(T)                                                       \

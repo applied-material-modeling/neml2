@@ -64,8 +64,9 @@ PowerLawKinematicHardeningStaticRecovery::PowerLawKinematicHardeningStaticRecove
 void
 PowerLawKinematicHardeningStaticRecovery::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
+  auto eps = machine_precision(_X.scalar_type());
   // The effective stress
-  auto s = SR2(_X).norm(machine_precision());
+  auto s = SR2(_X).norm(eps);
 
   if (out)
     _X_dot = -pow(s / _tau, _n - 1) * _X / _tau;
@@ -82,7 +83,7 @@ PowerLawKinematicHardeningStaticRecovery::set_value(bool out, bool dout_din, boo
       _X_dot.d(*tau) = _n * pow(s / _tau, _n - 1) * _X / (_tau * _tau);
 
     if (const auto * const n = nl_param("n"))
-      _X_dot.d(*n) = -_X / s * pow(s / _tau, _n) * log((s + machine_precision()) / _tau);
+      _X_dot.d(*n) = -_X / s * pow(s / _tau, _n) * log(s / _tau);
   }
 }
 

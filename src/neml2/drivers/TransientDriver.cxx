@@ -60,12 +60,14 @@ set_ic(ValueMap & storage,
               " and ",
               vals.size(),
               " respectively.");
+  auto * factory = options.get<Factory *>("factory");
+  neml_assert(factory, "Internal error: factory != nullptr");
   for (std::size_t i = 0; i < names.size(); i++)
   {
     neml_assert(names[i].is_state(),
                 "Initial condition names should start with 'state' but instead got ",
                 names[i]);
-    storage[names[i]] = vals[i].resolve().to(device);
+    storage[names[i]] = vals[i].resolve(factory).to(device);
   }
 }
 
@@ -90,13 +92,15 @@ get_force(std::vector<VariableName> & names,
               " and ",
               vals.size(),
               " respectively.");
+  auto * factory = options.get<Factory *>("factory");
+  neml_assert(factory, "Internal error: factory != nullptr");
   for (std::size_t i = 0; i < force_names.size(); i++)
   {
     neml_assert(force_names[i].is_force(),
                 "Driving force names should start with 'forces' but instead got ",
                 force_names[i]);
     names.push_back(force_names[i]);
-    values.push_back(vals[i].resolve().to(device));
+    values.push_back(vals[i].resolve(factory).to(device));
   }
 }
 
@@ -143,7 +147,7 @@ TransientDriver::expected_options()
 TransientDriver::TransientDriver(const OptionSet & options)
   : ModelDriver(options),
     _time_name(options.get<VariableName>("time")),
-    _time(options.get<TensorName<Scalar>>("prescribed_time").resolve()),
+    _time(options.get<TensorName<Scalar>>("prescribed_time").resolve(factory())),
     _nsteps(_time.batch_size(0).concrete()),
     _predictor(options.get<EnumSelection>("predictor")),
     _result_in(_nsteps),
@@ -151,21 +155,24 @@ TransientDriver::TransientDriver(const OptionSet & options)
     _save_as(options.get<std::string>("save_as"))
 {
   _time = _time.to(_device);
+
+#define SET_IC_(T) set_ic<T>(_ics, options, "ic_" #T "_names", "ic_" #T "_values", _device)
+  FOR_ALL_TENSORBASE(SET_IC_);
+
+#define GET_FORCE_(T)                                                                              \
+  get_force<T>(_driving_force_names,                                                               \
+               _driving_forces,                                                                    \
+               options,                                                                            \
+               "force_" #T "_names",                                                               \
+               "force_" #T "_values",                                                              \
+               _device)
+  FOR_ALL_TENSORBASE(GET_FORCE_);
 }
 
 void
 TransientDriver::setup()
 {
   ModelDriver::setup();
-
-#define GET_FORCE_(T)                                                                              \
-  get_force<T>(_driving_force_names,                                                               \
-               _driving_forces,                                                                    \
-               input_options(),                                                                    \
-               "force_" #T "_names",                                                               \
-               "force_" #T "_values",                                                              \
-               _device)
-  FOR_ALL_TENSORBASE(GET_FORCE_);
 }
 
 void
@@ -195,9 +202,9 @@ TransientDriver::diagnose() const
   }
 
   // Check for statefulness
-  const auto & input_old_state = _model.input_axis().subaxis(OLD_STATE);
-  const auto & output_state = _model.output_axis().subaxis(STATE);
-  if (_model.input_axis().has_old_state())
+  const auto & input_old_state = _model->input_axis().subaxis(OLD_STATE);
+  const auto & output_state = _model->output_axis().subaxis(STATE);
+  if (_model->input_axis().has_old_state())
     for (const auto & var : input_old_state.variable_names())
       diagnostic_assert(output_state.has_variable(var),
                         "Input axis has old state variable ",
@@ -254,17 +261,17 @@ void
 TransientDriver::advance_step()
 {
   // State from the previous time step becomes the old state in the current time step
-  if (_model.input_axis().has_old_state())
+  if (_model->input_axis().has_old_state())
   {
-    const auto input_old_state = _model.input_axis().subaxis(OLD_STATE);
+    const auto input_old_state = _model->input_axis().subaxis(OLD_STATE);
     for (const auto & var : input_old_state.variable_names())
       _in[var.prepend(OLD_STATE)] = _result_out[_step_count - 1][var.prepend(STATE)];
   }
 
   // Forces from the previous time step become the old forces in the current time step
-  if (_model.input_axis().has_old_forces())
+  if (_model->input_axis().has_old_forces())
   {
-    const auto input_old_forces = _model.input_axis().subaxis(OLD_FORCES);
+    const auto input_old_forces = _model->input_axis().subaxis(OLD_FORCES);
     for (const auto & var : input_old_forces.variable_names())
       _in[var.prepend(OLD_FORCES)] = _result_in[_step_count - 1][var.prepend(FORCES)];
   }
@@ -273,7 +280,7 @@ TransientDriver::advance_step()
 void
 TransientDriver::update_forces()
 {
-  if (_model.input_axis().has_variable(_time_name))
+  if (_model->input_axis().has_variable(_time_name))
     _in[_time_name] = _time.batch_index({_step_count});
 
   for (std::size_t i = 0; i < _driving_force_names.size(); i++)
@@ -283,13 +290,11 @@ TransientDriver::update_forces()
 void
 TransientDriver::apply_ic()
 {
-#define SET_IC_(T)                                                                                 \
-  set_ic<T>(_result_out[0], input_options(), "ic_" #T "_names", "ic_" #T "_values", _device)
-  FOR_ALL_TENSORBASE(SET_IC_);
+  _result_out[0] = _ics;
 
   // Figure out what the batch size for our default zero ICs should be
   std::vector<Tensor> defined;
-  for (const auto & var : _model.output_axis().variable_names())
+  for (const auto & var : _model->output_axis().variable_names())
     if (_result_out[0].count(var))
       defined.push_back(_result_out[0][var]);
   for (const auto & [key, value] : _in)
@@ -297,7 +302,7 @@ TransientDriver::apply_ic()
   const auto batch_shape = utils::broadcast_batch_sizes(defined);
 
   // Variables without a user-defined IC are initialized to zeros
-  for (auto && [name, var] : _model.output_variables())
+  for (auto && [name, var] : _model->output_variables())
     if (!_result_out[0].count(name))
     {
       if (batch_shape.size() > 0)
@@ -315,12 +320,12 @@ TransientDriver::apply_ic()
 void
 TransientDriver::apply_predictor()
 {
-  if (!_model.input_axis().has_state())
+  if (!_model->input_axis().has_state())
     return;
 
-  const auto input_state = _model.input_axis().subaxis(STATE);
+  const auto input_state = _model->input_axis().subaxis(STATE);
   for (const auto & var : input_state.variable_names())
-    if (_model.output_axis().has_variable(var.prepend(STATE)))
+    if (_model->output_axis().has_variable(var.prepend(STATE)))
     {
       if (_predictor == "PREVIOUS_STATE")
         _in[var.prepend(STATE)] = _result_out[_step_count - 1][var.prepend(STATE)];
@@ -360,7 +365,7 @@ TransientDriver::solve_step()
   }
 #endif
 
-  _result_out[_step_count] = _model.value((_in));
+  _result_out[_step_count] = _model->value((_in));
 }
 
 void

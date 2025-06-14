@@ -58,10 +58,10 @@ TEST_CASE("Registry", "[base]")
     namespace fs = std::filesystem;
     auto pwd = fs::current_path();
     auto lib_dir = pwd / ".." / "extension";
-    auto & model = neml2::load_model(lib_dir / "FooModel.i", "foo");
+    auto model = neml2::load_model(lib_dir / "FooModel.i", "foo");
 
     const auto x = neml2::Scalar::full(5);
-    const auto out = model.value({{neml2::VariableName("forces", "x"), x}});
+    const auto out = model->value({{neml2::VariableName("forces", "x"), x}});
     const auto & y = out.at(neml2::VariableName("state", "y"));
     REQUIRE(at::allclose(y, neml2::Scalar::full(5.6)));
   }

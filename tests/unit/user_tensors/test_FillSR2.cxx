@@ -24,24 +24,23 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include "utils.h"
-#include "neml2/user_tensors/FillSR2.h"
+#include "neml2/tensors/SR2.h"
 
 using namespace neml2;
 
 TEST_CASE("FillSR2", "[user_tensors]")
 {
-  reload_input("user_tensors/test_FillSR2.i");
+  auto factory = load_input("user_tensors/test_FillSR2.i");
 
-  const auto auto_1 = Factory::get_object_ptr<SR2>("Tensors", "1");
+  const auto auto_1 = factory.get_object<SR2>("Tensors", "1");
   const auto auto_1_correct = SR2::fill(1);
   REQUIRE(at::allclose(*auto_1, auto_1_correct));
 
-  const auto auto_3 = Factory::get_object_ptr<SR2>("Tensors", "3");
+  const auto auto_3 = factory.get_object<SR2>("Tensors", "3");
   const auto auto_3_correct = SR2::fill(1, 2, 3);
   REQUIRE(at::allclose(*auto_3, auto_3_correct));
 
-  const auto auto_6 = Factory::get_object_ptr<SR2>("Tensors", "6");
+  const auto auto_6 = factory.get_object<SR2>("Tensors", "6");
   const auto auto_6_correct = SR2::fill(1, 2, 3, 4, 5, 6);
   REQUIRE(at::allclose(*auto_6, auto_6_correct));
 }

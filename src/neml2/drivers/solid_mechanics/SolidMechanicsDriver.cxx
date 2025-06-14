@@ -94,11 +94,13 @@ void
 SolidMechanicsDriver::init_mixed_control(const OptionSet & options)
 {
   _driving_force_name = options.get<VariableName>("mixed_driving_force");
-  _driving_force = options.get<TensorName<SR2>>("prescribed_mixed_driving_force").resolve();
+  _driving_force =
+      options.get<TensorName<SR2>>("prescribed_mixed_driving_force").resolve(factory());
   _driving_force = _driving_force.to(_device);
 
   _mixed_control_name = options.get<VariableName>("mixed_control_signal");
-  _mixed_control = options.get<TensorName<SR2>>("prescribed_mixed_control_signal").resolve();
+  _mixed_control =
+      options.get<TensorName<SR2>>("prescribed_mixed_control_signal").resolve(factory());
   _mixed_control = _mixed_control.to(_device);
 }
 
@@ -106,7 +108,7 @@ void
 SolidMechanicsDriver::init_temperature_control(const OptionSet & options)
 {
   _temperature_name = options.get<VariableName>("temperature");
-  _temperature = options.get<TensorName<Scalar>>("prescribed_temperature").resolve();
+  _temperature = options.get<TensorName<Scalar>>("prescribed_temperature").resolve(factory());
   _temperature = _temperature.to(_device);
 }
 

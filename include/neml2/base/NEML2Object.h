@@ -31,6 +31,9 @@
 
 namespace neml2
 {
+class Factory;
+class Settings;
+
 /**
  * @brief The base class of all "manufacturable" objects in the NEML2 library.
  *
@@ -62,7 +65,7 @@ public:
   /**
    * @brief Setup this object.
    *
-   * This method is called automatically if you use the Factory method get_object or get_object_ptr,
+   * This method is called automatically if you use the Factory method get_object or get_object,
    * right after construction. This serves as the entry point for things that are not
    * convenient/possible to do at construction time, but are necessary before this object can be
    * used (by others).
@@ -79,6 +82,12 @@ public:
   /// A readonly reference to the object's docstring
   const std::string & doc() const { return _input_options.doc(); }
 
+  /// Get the factory that created this object
+  Factory * factory() const { return _factory; }
+
+  /// Settings
+  const Settings & settings() const { return *_settings; }
+
   /// Get a readonly pointer to the host
   template <typename T = NEML2Object>
   const T * host() const;
@@ -89,6 +98,17 @@ public:
 
 private:
   const OptionSet _input_options;
+
+  /**
+   * @brief The factory that created this object
+   *
+   * @warning This is a pointer to the factory that created this object. Its lifetime is not tied
+   * to this object. No guarantees are made that the factory will outlive this object.
+   */
+  Factory * _factory;
+
+  /// Global settings
+  const std::shared_ptr<Settings> _settings;
 
   /// The publicly exposed NEML2Object
   NEML2Object * _host;

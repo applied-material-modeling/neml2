@@ -46,9 +46,10 @@ FillRot::expected_options()
 }
 
 FillRot::FillRot(const OptionSet & options)
-  : Rot(fill(options.get<std::vector<TensorName<Scalar>>>("values"),
-             options.get<std::string>("method"))),
-    UserTensorBase(options)
+  : UserTensorBase(options),
+    Rot(fill(options.get<std::vector<TensorName<Scalar>>>("values"),
+             options.get<std::string>("method")))
+
 {
 }
 
@@ -61,7 +62,8 @@ FillRot::fill(const std::vector<TensorName<Scalar>> & values, const std::string 
                 "Number of values must be 3, but ",
                 values.size(),
                 " values are provided.");
-    return Rot::fill(values[0].resolve(), values[1].resolve(), values[2].resolve());
+    return Rot::fill(
+        values[0].resolve(factory()), values[1].resolve(factory()), values[2].resolve(factory()));
   }
 
   if (method == "standard")
@@ -70,10 +72,13 @@ FillRot::fill(const std::vector<TensorName<Scalar>> & values, const std::string 
                 "Number of values must be 3, but ",
                 values.size(),
                 " values are provided.");
-    auto ns = values[0].resolve() * values[0].resolve() +
-              values[1].resolve() * values[1].resolve() + values[2].resolve() * values[2].resolve();
+    auto ns = values[0].resolve(factory()) * values[0].resolve(factory()) +
+              values[1].resolve(factory()) * values[1].resolve(factory()) +
+              values[2].resolve(factory()) * values[2].resolve(factory());
     auto f = neml2::sqrt(ns + 1.0) + 1.0;
-    return Rot::fill(values[0].resolve() / f, values[1].resolve() / f, values[2].resolve() / f);
+    return Rot::fill(values[0].resolve(factory()) / f,
+                     values[1].resolve(factory()) / f,
+                     values[2].resolve(factory()) / f);
   }
 
   throw NEMLException("Unknown Rot fill type " + method);

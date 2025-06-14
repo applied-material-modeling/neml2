@@ -56,8 +56,9 @@ AssociativeJ2FlowDirection::AssociativeJ2FlowDirection(const OptionSet & options
 void
 AssociativeJ2FlowDirection::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
+  auto eps = machine_precision(_M.scalar_type());
   auto S = SR2(_M).dev();
-  auto vm = std::sqrt(3.0 / 2.0) * S.norm(machine_precision());
+  auto vm = std::sqrt(3.0 / 2.0) * S.norm(eps);
   auto dvm_dM = 3.0 / 2.0 * S / vm;
 
   if (out)

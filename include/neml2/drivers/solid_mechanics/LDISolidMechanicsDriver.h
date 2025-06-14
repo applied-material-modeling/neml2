@@ -64,7 +64,7 @@ protected:
   /// Whether to perform the CP warmup
   const bool _cp_warmup;
   /// Scale value for initial cp warmup
-  const Real _cp_warmup_elastic_scale;
+  const double _cp_warmup_elastic_scale;
   /// Name of the elastic strain variable for the CP warmup
   const VariableName _cp_warmup_elastic_strain;
   ///@}

@@ -24,6 +24,9 @@
 
 #pragma once
 
+#include <string>
+#include <vector>
+
 namespace neml2
 {
 class OptionSet;
@@ -33,6 +36,27 @@ class Settings
 public:
   static OptionSet expected_options();
 
-  static void apply(const OptionSet & options);
+  Settings(const OptionSet & options);
+
+  ///@{
+  /// Getters for the settings
+  const std::string & buffer_name_separator() const { return _buffer_name_separator; }
+  const std::string & parameter_name_separator() const { return _parameter_name_separator; }
+  bool require_double_precision() const { return _require_double_precision; }
+  const std::vector<std::string> & additional_libraries() const { return _additional_libraries; }
+  ///@}
+
+private:
+  /// Separator for buffer names
+  const std::string _buffer_name_separator;
+
+  /// Separator for parameter names
+  const std::string _parameter_name_separator;
+
+  /// Whether to enforce the use of double precision for floating point tensors
+  const bool _require_double_precision;
+
+  /// Additional dynamic libraries to load at runtime
+  const std::vector<std::string> _additional_libraries;
 };
 } // namespace neml2

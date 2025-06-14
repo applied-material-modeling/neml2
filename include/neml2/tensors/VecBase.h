@@ -45,9 +45,9 @@ class VecBase : public PrimitiveTensor<Derived, 3>
 public:
   using PrimitiveTensor<Derived, 3>::PrimitiveTensor;
 
-  [[nodiscard]] static Derived fill(const Real & v1,
-                                    const Real & v2,
-                                    const Real & v3,
+  [[nodiscard]] static Derived fill(const CScalar & v1,
+                                    const CScalar & v2,
+                                    const CScalar & v3,
                                     const TensorOptions & options = default_tensor_options());
 
   [[nodiscard]] static Derived fill(const Scalar & v1, const Scalar & v2, const Scalar & v3);

@@ -24,8 +24,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include "utils.h"
-#include "neml2/user_tensors/LogspacePrimitiveTensor.h"
+#include "neml2/base/Factory.h"
 #include "neml2/tensors/tensors.h"
 
 using namespace neml2;
@@ -33,11 +32,9 @@ using namespace neml2;
 #define test_LogspacePrimitiveTensor(tensor_type, tensor_name, batch_shape, nstep, dim, base)      \
   SECTION("Logspace" #tensor_type)                                                                 \
   {                                                                                                \
-    const auto tensor_name = Factory::get_object_ptr<tensor_type>("Tensors", #tensor_name);        \
-    const auto tensor_name##_start =                                                               \
-        Factory::get_object_ptr<tensor_type>("Tensors", #tensor_name "0");                         \
-    const auto tensor_name##_end =                                                                 \
-        Factory::get_object_ptr<tensor_type>("Tensors", #tensor_name "1");                         \
+    const auto tensor_name = factory.get_object<tensor_type>("Tensors", #tensor_name);             \
+    const auto tensor_name##_start = factory.get_object<tensor_type>("Tensors", #tensor_name "0"); \
+    const auto tensor_name##_end = factory.get_object<tensor_type>("Tensors", #tensor_name "1");   \
     const auto tensor_name##_correct =                                                             \
         tensor_type::logspace(*tensor_name##_start, *tensor_name##_end, nstep, dim, base);         \
     REQUIRE(tensor_name->batch_sizes() == batch_shape);                                            \
@@ -48,12 +45,12 @@ using namespace neml2;
 
 TEST_CASE("LogspacePrimitiveTensor", "[user_tensors]")
 {
-  reload_input("user_tensors/test_LogspacePrimitiveTensor.i");
+  auto factory = load_input("user_tensors/test_LogspacePrimitiveTensor.i");
 
   TensorShape B{100, 2, 1};
   Size nstep = 100;
   Size dim = 0;
-  Real base = 10;
+  double base = 10;
 
   test_LogspacePrimitiveTensor(Scalar, a, B, nstep, dim, base);
   test_LogspacePrimitiveTensor(Vec, b, B, nstep, dim, base);

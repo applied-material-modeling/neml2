@@ -59,7 +59,7 @@ NonlinearSystem::expected_options()
       "Whether to perform automatic scaling. See neml2::NonlinearSystem::init_scaling for "
       "implementation details.";
 
-  options.set<Real>("automatic_scaling_tol") = 0.01;
+  options.set<double>("automatic_scaling_tol") = 0.01;
   options.set("automatic_scaling_tol").doc() =
       "Tolerance used in iteratively updating the scaling matrices.";
 
@@ -90,7 +90,7 @@ NonlinearSystem::enable_automatic_scaling(OptionSet & options)
 
 NonlinearSystem::NonlinearSystem(const OptionSet & options)
   : _autoscale(options.get<bool>("automatic_scaling")),
-    _autoscale_tol(options.get<Real>("automatic_scaling_tol")),
+    _autoscale_tol(options.get<double>("automatic_scaling_tol")),
     _autoscale_miter(options.get<unsigned int>("automatic_scaling_miter"))
 {
 }
@@ -114,17 +114,17 @@ NonlinearSystem::init_scaling(const NonlinearSystem::Sol<false> & x, const bool 
 
   if (verbose)
     std::cout << "Before automatic scaling cond(J) = " << std::scientific
-              << at::max(at::linalg_cond(Jp)).item<Real>() << std::endl;
+              << at::max(at::linalg_cond(Jp)).item<double>() << std::endl;
+
+  const auto eps = machine_precision(x.scalar_type());
 
   for (unsigned int itr = 0; itr < _autoscale_miter; itr++)
   {
     // check for convergence
-    auto rR = at::max(at::abs(1.0 - 1.0 / (at::sqrt(at::abs(std::get<0>(Jp.max(-1)))) +
-                                           machine_precision())))
-                  .item<Real>();
-    auto rC = at::max(at::abs(1.0 - 1.0 / (at::sqrt(at::abs(std::get<0>(Jp.max(-2)))) +
-                                           machine_precision())))
-                  .item<Real>();
+    auto rR = at::max(at::abs(1.0 - 1.0 / (at::sqrt(at::abs(std::get<0>(Jp.max(-1)))) + eps)))
+                  .item<double>();
+    auto rC = at::max(at::abs(1.0 - 1.0 / (at::sqrt(at::abs(std::get<0>(Jp.max(-2)))) + eps)))
+                  .item<double>();
 
     if (verbose)
       std::cout << "ITERATION " << itr << ", ROW ILLNESS = " << std::scientific << rR
@@ -135,9 +135,8 @@ NonlinearSystem::init_scaling(const NonlinearSystem::Sol<false> & x, const bool 
     // scale rows and columns
     for (Size i = 0; i < x.base_size(-1); i++)
     {
-      auto ar = 1.0 / (at::sqrt(at::max(at::abs(Jp.base_index({i})))) + machine_precision());
-      auto ac = 1.0 / (at::sqrt(at::max(at::abs(Jp.base_index({indexing::Slice(), i})))) +
-                       machine_precision());
+      auto ar = 1.0 / (at::sqrt(at::max(at::abs(Jp.base_index({i})))) + eps);
+      auto ac = 1.0 / (at::sqrt(at::max(at::abs(Jp.base_index({indexing::Slice(), i})))) + eps);
       _row_scaling.base_index({i}) *= ar;
       _col_scaling.base_index({i}) *= ac;
       Jp.base_index({i}) *= ar;
@@ -149,7 +148,7 @@ NonlinearSystem::init_scaling(const NonlinearSystem::Sol<false> & x, const bool 
 
   if (verbose)
     std::cout << " After automatic scaling cond(J) = " << std::scientific
-              << at::max(at::linalg_cond(Jp)).item<Real>() << std::endl;
+              << at::max(at::linalg_cond(Jp)).item<double>() << std::endl;
 }
 
 void

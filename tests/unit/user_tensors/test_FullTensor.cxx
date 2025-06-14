@@ -24,18 +24,17 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include "utils.h"
-#include "neml2/user_tensors/FullTensor.h"
+#include "neml2/tensors/Tensor.h"
 
 using namespace neml2;
 
 TEST_CASE("FullTensor", "[user_tensors]")
 {
-  reload_input("user_tensors/test_FullTensor.i");
+  auto factory = load_input("user_tensors/test_FullTensor.i");
 
   SECTION("FullTensor")
   {
-    const auto a = Factory::get_object_ptr<Tensor>("Tensors", "a");
+    const auto a = factory.get_object<Tensor>("Tensors", "a");
     REQUIRE(a->batch_sizes() == TensorShape{2, 1});
     REQUIRE(a->base_sizes() == TensorShape{2, 3});
     REQUIRE(at::allclose(*a, Tensor::full({2, 1}, {2, 3}, 3.9, default_tensor_options())));

@@ -24,23 +24,22 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include "utils.h"
-#include "neml2/user_tensors/FillMillerIndex.h"
+#include "neml2/tensors/MillerIndex.h"
 
 using namespace neml2;
 
 TEST_CASE("FillMillerIndex", "[user_tensors]")
 {
-  reload_input("user_tensors/test_FillMillerIndex.i");
+  auto factory = load_input("user_tensors/test_FillMillerIndex.i");
 
-  const auto valid_1 = Factory::get_object_ptr<MillerIndex>("Tensors", "v1");
+  const auto valid_1 = factory.get_object<MillerIndex>("Tensors", "v1");
   const auto correct_1 = MillerIndex::fill(1, 2, 3);
   REQUIRE(at::allclose(*valid_1, correct_1));
 
-  const auto valid_4 = Factory::get_object_ptr<MillerIndex>("Tensors", "v4");
+  const auto valid_4 = factory.get_object<MillerIndex>("Tensors", "v4");
   const auto correct_4 = MillerIndex::create({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}, {10, 11, 12}},
                                              default_integer_tensor_options());
   REQUIRE(at::allclose(*valid_4, correct_4));
 
-  REQUIRE_THROWS(Factory::get_object<MillerIndex>("Tensors", "invalid"));
+  REQUIRE_THROWS(factory.get_object<MillerIndex>("Tensors", "invalid"));
 }

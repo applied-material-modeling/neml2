@@ -24,8 +24,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include "utils.h"
-#include "neml2/user_tensors/ZerosPrimitiveTensor.h"
+#include "neml2/base/Factory.h"
 #include "neml2/tensors/tensors.h"
 
 using namespace neml2;
@@ -33,7 +32,7 @@ using namespace neml2;
 #define test_ZerosPrimitiveTensor(tensor_type, tensor_name, batch_shape)                           \
   SECTION("Zeros" #tensor_type)                                                                    \
   {                                                                                                \
-    const auto tensor_name = Factory::get_object_ptr<tensor_type>("Tensors", #tensor_name);        \
+    const auto tensor_name = factory.get_object<tensor_type>("Tensors", #tensor_name);             \
     REQUIRE(tensor_name->batch_sizes() == batch_shape);                                            \
     REQUIRE(tensor_name->base_sizes() == tensor_type::const_base_sizes);                           \
     REQUIRE(                                                                                       \
@@ -43,7 +42,7 @@ using namespace neml2;
 
 TEST_CASE("ZerosPrimitiveTensor", "[user_tensors]")
 {
-  reload_input("user_tensors/test_ZerosPrimitiveTensor.i");
+  auto factory = load_input("user_tensors/test_ZerosPrimitiveTensor.i");
 
   TensorShape B{2, 1};
 

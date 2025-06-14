@@ -25,28 +25,22 @@
 #pragma once
 
 #include "neml2/base/OptionSet.h"
+#include "neml2/base/Settings.h"
 
 namespace neml2
 {
+class Settings;
+
 /**
  * @brief A data structure that holds options of multiple objects.
- *
- * The OptionCollection is a two layer map, where the first layer key is the section name, e.g.
- * Models, Tensors, Drivers, etc., and the second layer key is the object name.
  */
-class OptionCollection
+class InputFile
 {
 public:
-  OptionCollection();
+  InputFile(const OptionSet & settings);
 
   /// Get global settings
-  OptionSet & settings() { return _settings; }
-
-  /// Get global settings
-  const OptionSet & settings() const { return _settings; }
-
-  /// Implicit conversion to an STL map.
-  operator std::map<std::string, std::map<std::string, OptionSet>>() const { return _data; }
+  const std::shared_ptr<Settings> & settings() const { return _settings; }
 
   /// Get all the object options under a specific section.
   std::map<std::string, OptionSet> & operator[](const std::string & section);
@@ -54,16 +48,19 @@ public:
   /// Get all the object options under a specific section.
   const std::map<std::string, OptionSet> & operator[](const std::string & section) const;
 
-  /// Get a read-only reference to the underlying data structure.
+  /**
+   * A two layer map, where the first layer key is the section name, e.g.Models, Tensors, Drivers,
+   * etc., and the second layer key is the object name.
+   */
   const std::map<std::string, std::map<std::string, OptionSet>> & data() const { return _data; }
 
 private:
-  /// Global settings under the [Settings] section
-  OptionSet _settings;
+  /// Global settings specified under the [Settings] section
+  const std::shared_ptr<Settings> _settings;
 
   /// Collection of options for all manufacturable objects
   std::map<std::string, std::map<std::string, OptionSet>> _data;
 };
 
-std::ostream & operator<<(std::ostream & os, const OptionCollection & p);
+std::ostream & operator<<(std::ostream & os, const InputFile & p);
 } // namespace neml2

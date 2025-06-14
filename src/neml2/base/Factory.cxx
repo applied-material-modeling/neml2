@@ -26,59 +26,32 @@
 #include "neml2/base/Registry.h"
 #include "neml2/base/HITParser.h"
 
-#include "neml2/misc/assertions.h"
-
 namespace neml2
 {
-void
+Factory
 load_input(const std::filesystem::path & path, const std::string & additional_input)
 {
-  OptionCollection oc;
-
   // For now we only support HIT
   if (utils::end_with(path.string(), ".i"))
   {
     HITParser parser;
-    oc = parser.parse(path, additional_input);
+    auto inp = parser.parse(path, additional_input);
+    return Factory(inp);
   }
   else
     throw ParserException("Unsupported parser type");
-
-  Factory::load_options(oc);
 }
 
-void
-reload_input(const std::filesystem::path & path, const std::string & additional_input)
+Factory::Factory(const InputFile & inp)
+  : _input_file(inp),
+    _objects()
 {
-  Factory::clear();
-  load_input(path, additional_input);
-}
-
-Factory &
-Factory::get()
-{
-  thread_local Factory factory_singleton;
-  return factory_singleton;
-}
-
-OptionCollection &
-Factory::options()
-{
-  static OptionCollection options_singleton;
-  return options_singleton;
 }
 
 bool
 Factory::has_object(const std::string & section, const std::string & name)
 {
-  auto & factory = get();
-  return factory._objects.count(section) && factory._objects.at(section).count(name);
-}
-
-void
-Factory::load_options(const OptionCollection & all_options)
-{
-  options() = all_options;
+  return _objects.count(section) && _objects.at(section).count(name);
 }
 
 void
@@ -106,7 +79,7 @@ Factory::create_object(const std::string & section, const OptionSet & options)
 void
 Factory::print(std::ostream & os)
 {
-  const auto & all_objects = get()._objects;
+  const auto & all_objects = _objects;
   for (const auto & [section, objects] : all_objects)
   {
     os << "- " << section << ":" << std::endl;
@@ -119,6 +92,6 @@ Factory::print(std::ostream & os)
 void
 Factory::clear()
 {
-  get()._objects.clear();
+  _objects.clear();
 }
 } // namespace neml2

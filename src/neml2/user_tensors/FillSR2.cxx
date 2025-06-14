@@ -47,8 +47,8 @@ FillSR2::expected_options()
 }
 
 FillSR2::FillSR2(const OptionSet & options)
-  : SR2(fill(options.get<std::vector<TensorName<Scalar>>>("values"))),
-    UserTensorBase(options)
+  : UserTensorBase(options),
+    SR2(fill(options.get<std::vector<TensorName<Scalar>>>("values")))
 {
 }
 
@@ -56,16 +56,17 @@ SR2
 FillSR2::fill(const std::vector<TensorName<Scalar>> & values) const
 {
   if (values.size() == 1)
-    return SR2::fill(values[0].resolve());
+    return SR2::fill(values[0].resolve(factory()));
   if (values.size() == 3)
-    return SR2::fill(values[0].resolve(), values[1].resolve(), values[2].resolve());
+    return SR2::fill(
+        values[0].resolve(factory()), values[1].resolve(factory()), values[2].resolve(factory()));
   if (values.size() == 6)
-    return SR2::fill(values[0].resolve(),
-                     values[1].resolve(),
-                     values[2].resolve(),
-                     values[3].resolve(),
-                     values[4].resolve(),
-                     values[5].resolve());
+    return SR2::fill(values[0].resolve(factory()),
+                     values[1].resolve(factory()),
+                     values[2].resolve(factory()),
+                     values[3].resolve(factory()),
+                     values[4].resolve(factory()),
+                     values[5].resolve(factory()));
 
   throw NEMLException("Number of values must be 1, 3, or 6, but " + std::to_string(values.size()) +
                       " values are provided.");

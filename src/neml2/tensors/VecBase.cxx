@@ -31,9 +31,9 @@ namespace neml2
 {
 template <class Derived>
 Derived
-VecBase<Derived>::fill(const Real & v1,
-                       const Real & v2,
-                       const Real & v3,
+VecBase<Derived>::fill(const CScalar & v1,
+                       const CScalar & v2,
+                       const CScalar & v3,
                        const TensorOptions & options)
 {
   return VecBase<Derived>::fill(Scalar(v1, options), Scalar(v2, options), Scalar(v3, options));

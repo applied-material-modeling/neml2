@@ -65,28 +65,28 @@ CrystalGeometry::expected_options()
 }
 
 CrystalGeometry::CrystalGeometry(const OptionSet & options)
-  : CrystalGeometry(
-        options,
-        options.get<TensorName<R2>>("crystal_class").resolve(),
-        options.get<TensorName<Vec>>("lattice_vectors").resolve(),
-        setup_schmid_tensors(options.get<TensorName<Vec>>("lattice_vectors").resolve(),
-                             options.get<TensorName<R2>>("crystal_class").resolve(),
-                             options.get<TensorName<MillerIndex>>("slip_directions").resolve(),
-                             options.get<TensorName<MillerIndex>>("slip_planes").resolve()))
+  : CrystalGeometry(options,
+                    options.get<TensorName<R2>>("crystal_class").resolve(factory()),
+                    options.get<TensorName<Vec>>("lattice_vectors").resolve(factory()),
+                    setup_schmid_tensors(
+                        options.get<TensorName<Vec>>("lattice_vectors").resolve(factory()),
+                        options.get<TensorName<R2>>("crystal_class").resolve(factory()),
+                        options.get<TensorName<MillerIndex>>("slip_directions").resolve(factory()),
+                        options.get<TensorName<MillerIndex>>("slip_planes").resolve(factory())))
 {
 }
 
 CrystalGeometry::CrystalGeometry(const OptionSet & options,
                                  const R2 & cclass,
                                  const Vec & lattice_vectors)
-  : CrystalGeometry(
-        options,
-        cclass,
-        lattice_vectors,
-        setup_schmid_tensors(lattice_vectors,
-                             cclass,
-                             options.get<TensorName<MillerIndex>>("slip_directions").resolve(),
-                             options.get<TensorName<MillerIndex>>("slip_planes").resolve()))
+  : CrystalGeometry(options,
+                    cclass,
+                    lattice_vectors,
+                    setup_schmid_tensors(
+                        lattice_vectors,
+                        cclass,
+                        options.get<TensorName<MillerIndex>>("slip_directions").resolve(factory()),
+                        options.get<TensorName<MillerIndex>>("slip_planes").resolve(factory())))
 {
 }
 

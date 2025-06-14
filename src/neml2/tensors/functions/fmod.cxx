@@ -29,7 +29,7 @@ namespace neml2
 {
 #define DEFINE_FMOD(T)                                                                             \
   T fmod(const T & a, const T & b) { return T(at::fmod(a, b), utils::broadcast_batch_dim(a, b)); } \
-  T fmod(const T & a, const Real & b) { return T(at::fmod(a, b), a.batch_sizes()); }               \
+  T fmod(const T & a, const CScalar & b) { return T(at::fmod(a, b), a.batch_sizes()); }            \
   static_assert(true)
 FOR_ALL_TENSORBASE(DEFINE_FMOD);
 } // namespace neml2

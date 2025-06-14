@@ -31,11 +31,6 @@
 #define NEML2_DEFAULT_INTEGER_DTYPE Int64
 #define NEML2_DEFAULT_INTEGER_DTYPE_STR NEML2_STRINGIFY(Int64)
 #define NEML2_DEFAULT_INTEGER_DTYPE_ENUM NEML2_TORCH_ENUM(Int64)
-#define NEML2_DEFAULT_MACHINE_PRECISION 1e-15
-#define NEML2_DEFAULT_TOLERANCE 1e-6
-#define NEML2_DEFAULT_TIGHTER_TOLERANCE 1e-12
-#define NEML2_DEFAULT_BUFFER_NAME_SEPARATOR "_"
-#define NEML2_DEFAULT_PARAMETER_NAME_SEPARATOR "_"
 
 namespace neml2
 {
@@ -57,30 +52,17 @@ void set_default_dtype(Dtype dtype);
 Dtype get_default_dtype();
 /// Default floating point tensor options
 TensorOptions default_tensor_options();
+/// Set default integer dtype
+void set_default_integer_dtype(Dtype dtype);
+/// Get default integer dtype
+Dtype get_default_integer_dtype();
 /// Default integral tensor options
 TensorOptions default_integer_tensor_options();
+///@}
+
+namespace details
+{
 /// Default integral type
 Dtype & default_integer_dtype();
-///@}
-
-/// @name Default tolerances
-///@{
-/// Machine precision
-Real & machine_precision();
-/// The tolerance used in various algorithms
-Real & tolerance();
-/// A tighter tolerance used in various algorithms
-Real & tighter_tolerance();
-///@}
-
-/// @name Default name separators
-///@{
-/// Default nested buffer name separator
-std::string & buffer_name_separator();
-/// Default nested parameter name separator
-std::string & parameter_name_separator();
-///@}
-
-/// Require double precision for all computations
-bool & require_double_precision();
+}
 } // namespace neml2

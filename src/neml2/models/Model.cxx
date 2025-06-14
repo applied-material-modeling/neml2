@@ -37,25 +37,11 @@
 
 namespace neml2
 {
-Model &
-get_model(const std::string & mname)
-{
-  OptionSet extra_opts;
-  return Factory::get_object<Model>("Models", mname, extra_opts, /*force_create=*/false);
-}
-
-Model &
+std::shared_ptr<Model>
 load_model(const std::filesystem::path & path, const std::string & mname)
 {
-  load_input(path);
-  return get_model(mname);
-}
-
-Model &
-reload_model(const std::filesystem::path & path, const std::string & mname)
-{
-  reload_input(path);
-  return get_model(mname);
+  auto factory = load_input(path);
+  return factory.get_object<Model>("Models", mname);
 }
 
 bool
@@ -129,7 +115,7 @@ Model::to(const TensorOptions & options)
   send_parameters_to(options);
   send_variables_to(options);
 
-  for (auto * submodel : registered_models())
+  for (auto & submodel : registered_models())
     submodel->to(options);
 
   for (auto & [name, param] : named_nonlinear_parameters())
@@ -153,7 +139,7 @@ Model::setup()
 void
 Model::diagnose() const
 {
-  for (auto * submodel : registered_models())
+  for (auto & submodel : registered_models())
     neml2::diagnose(*submodel);
 
   // Make sure variables are defined on the reserved subaxes
@@ -169,7 +155,7 @@ Model::diagnose() const
 void
 Model::diagnose_nl_sys() const
 {
-  for (auto * submodel : registered_models())
+  for (auto & submodel : registered_models())
     submodel->diagnose_nl_sys();
 
   // Check if any input variable is solve-dependent
@@ -265,9 +251,9 @@ Model::diagnostic_check_output_variable(const VariableBase & v) const
 void
 Model::link_input_variables()
 {
-  for (auto * submodel : _registered_models)
+  for (auto & submodel : _registered_models)
   {
-    link_input_variables(submodel);
+    link_input_variables(submodel.get());
     submodel->link_input_variables();
   }
 }
@@ -282,9 +268,9 @@ Model::link_input_variables(Model * submodel)
 void
 Model::link_output_variables()
 {
-  for (auto * submodel : _registered_models)
+  for (auto & submodel : _registered_models)
   {
-    link_output_variables(submodel);
+    link_output_variables(submodel.get());
     submodel->link_output_variables();
   }
 }
@@ -326,7 +312,7 @@ void
 Model::clear_input()
 {
   VariableStore::clear_input();
-  for (auto * submodel : _registered_models)
+  for (auto & submodel : _registered_models)
     submodel->clear_input();
 }
 
@@ -334,7 +320,7 @@ void
 Model::clear_output()
 {
   VariableStore::clear_output();
-  for (auto * submodel : _registered_models)
+  for (auto & submodel : _registered_models)
     submodel->clear_output();
 }
 
@@ -342,7 +328,7 @@ void
 Model::zero_input()
 {
   VariableStore::zero_input();
-  for (auto * submodel : _registered_models)
+  for (auto & submodel : _registered_models)
     submodel->zero_input();
 }
 
@@ -350,7 +336,7 @@ void
 Model::zero_output()
 {
   VariableStore::zero_output();
-  for (auto * submodel : _registered_models)
+  for (auto & submodel : _registered_models)
     submodel->zero_output();
 }
 
@@ -478,7 +464,7 @@ Model::variable_name_lookup(const ATensor & var)
       return name() + "::" + utils::stringify(bname);
 
   // Look for the variable in the registered models
-  for (auto * submodel : registered_models())
+  for (auto & submodel : registered_models())
   {
     auto name = submodel->variable_name_lookup(var);
     if (!name.empty())
@@ -489,9 +475,9 @@ Model::variable_name_lookup(const ATensor & var)
 }
 
 void
-check_precision()
+Model::check_precision() const
 {
-  if (require_double_precision())
+  if (settings().require_double_precision())
     neml_assert(
         default_tensor_options().dtype() == kFloat64,
         "By default, NEML2 requires double precision for all computations. Please set the default "
@@ -641,10 +627,10 @@ Model::d2value(ValueMap && in)
   return secderivs;
 }
 
-Model *
+std::shared_ptr<Model>
 Model::registered_model(const std::string & name) const
 {
-  for (auto * submodel : _registered_models)
+  for (auto & submodel : _registered_models)
     if (submodel->name() == name)
       return submodel;
 
@@ -668,7 +654,7 @@ Model::has_nl_param(bool recursive) const
   if (!recursive)
     return !_nl_params.empty();
 
-  for (auto * submodel : registered_models())
+  for (auto & submodel : registered_models())
     if (submodel->has_nl_param(true))
       return true;
 
@@ -691,11 +677,12 @@ Model::named_nonlinear_parameters(bool recursive) const
 
   for (const auto & [pname, param] : _nl_params)
     for (auto && [pname, nl_param] : param.provider->named_nonlinear_parameters(true))
-      all_nl_params[param.provider->name() + parameter_name_separator() + pname] = nl_param;
+      all_nl_params[param.provider->name() + settings().parameter_name_separator() + pname] =
+          nl_param;
 
-  for (auto * submodel : registered_models())
+  for (auto & submodel : registered_models())
     for (auto && [pname, nl_param] : submodel->named_nonlinear_parameters(true))
-      all_nl_params[submodel->name() + parameter_name_separator() + pname] = nl_param;
+      all_nl_params[submodel->name() + settings().parameter_name_separator() + pname] = nl_param;
 
   return all_nl_params;
 }

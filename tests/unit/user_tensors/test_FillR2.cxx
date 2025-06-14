@@ -24,28 +24,27 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include "utils.h"
-#include "neml2/user_tensors/FillR2.h"
+#include "neml2/tensors/R2.h"
 
 using namespace neml2;
 
 TEST_CASE("FillR2", "[user_tensors]")
 {
-  reload_input("user_tensors/test_FillR2.i");
+  auto factory = load_input("user_tensors/test_FillR2.i");
 
-  const auto auto_1 = Factory::get_object_ptr<R2>("Tensors", "1");
+  const auto auto_1 = factory.get_object<R2>("Tensors", "1");
   const auto auto_1_correct = R2::fill(1);
   REQUIRE(at::allclose(*auto_1, auto_1_correct));
 
-  const auto auto_3 = Factory::get_object_ptr<R2>("Tensors", "3");
+  const auto auto_3 = factory.get_object<R2>("Tensors", "3");
   const auto auto_3_correct = R2::fill(1, 2, 3);
   REQUIRE(at::allclose(*auto_3, auto_3_correct));
 
-  const auto auto_6 = Factory::get_object_ptr<R2>("Tensors", "6");
+  const auto auto_6 = factory.get_object<R2>("Tensors", "6");
   const auto auto_6_correct = R2::fill(1, 2, 3, 4, 5, 6);
   REQUIRE(at::allclose(*auto_6, auto_6_correct));
 
-  const auto auto_9 = Factory::get_object_ptr<R2>("Tensors", "9");
+  const auto auto_9 = factory.get_object<R2>("Tensors", "9");
   const auto auto_9_correct = R2::fill(1, 2, 3, 4, 5, 6, 7, 8, 9);
   REQUIRE(at::allclose(*auto_9, auto_9_correct));
 }
