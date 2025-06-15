@@ -99,9 +99,10 @@ ModelDriver::setup()
 
     auto thread_init = [this](Device device) -> void
     {
-      auto model_clone = _model->clone();
-      model_clone->to(device);
-      _models[std::this_thread::get_id()] = std::move(model_clone);
+      auto new_factory = Factory(_model->factory()->input_file());
+      auto new_model = new_factory.get_object<Model>("Models", _model->name());
+      new_model->to(device);
+      _models[std::this_thread::get_id()] = std::move(new_model);
     };
 
     _dispatcher = std::make_unique<DispatcherType>(
@@ -109,7 +110,7 @@ ModelDriver::setup()
         _async_dispatch,
         [&](ValueMap && x, Device device) -> ValueMap
         {
-          auto & model = _models[std::this_thread::get_id()];
+          auto & model = _async_dispatch ? _models[std::this_thread::get_id()] : _model;
 
           // If this is not an async dispatch, we need to move the model to the target device
           // _every_ time before evaluation

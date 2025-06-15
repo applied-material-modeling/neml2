@@ -113,9 +113,6 @@ public:
   /// Whether JIT is enabled
   virtual bool is_jit_enabled() const { return _jit; }
 
-  /// Clone the model
-  virtual std::shared_ptr<Model> clone() const { return nullptr; }
-
   /// Send model to a different device or dtype
   virtual void to(const TensorOptions & options);
 
