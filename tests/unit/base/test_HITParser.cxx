@@ -26,10 +26,8 @@
 #include <catch2/matchers/catch_matchers_all.hpp>
 
 #include "neml2/base/HITParser.h"
-#include "neml2/base/TensorName.h"
-#include "neml2/base/EnumSelection.h"
-
-#include "SampleParserTestingModel.h"
+#include "neml2/base/Settings.h"
+#include "neml2/base/InputFile.h"
 
 using namespace neml2;
 

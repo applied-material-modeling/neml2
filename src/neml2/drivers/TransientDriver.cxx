@@ -147,7 +147,7 @@ TransientDriver::expected_options()
 TransientDriver::TransientDriver(const OptionSet & options)
   : ModelDriver(options),
     _time_name(options.get<VariableName>("time")),
-    _time(options.get<TensorName<Scalar>>("prescribed_time").resolve(factory())),
+    _time(resolve_tensor<Scalar>("prescribed_time")),
     _nsteps(_time.batch_size(0).concrete()),
     _predictor(options.get<EnumSelection>("predictor")),
     _result_in(_nsteps),

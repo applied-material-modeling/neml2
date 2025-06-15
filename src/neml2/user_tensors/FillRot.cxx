@@ -56,14 +56,16 @@ FillRot::FillRot(const OptionSet & options)
 Rot
 FillRot::fill(const std::vector<TensorName<Scalar>> & values, const std::string & method) const
 {
+  auto * f = factory();
+  neml_assert(f, "Internal error: factory != nullptr");
+
   if (method == "modified")
   {
     neml_assert(values.size() == 3,
                 "Number of values must be 3, but ",
                 values.size(),
                 " values are provided.");
-    return Rot::fill(
-        values[0].resolve(factory()), values[1].resolve(factory()), values[2].resolve(factory()));
+    return Rot::fill(values[0].resolve(f), values[1].resolve(f), values[2].resolve(f));
   }
 
   if (method == "standard")
@@ -72,13 +74,11 @@ FillRot::fill(const std::vector<TensorName<Scalar>> & values, const std::string 
                 "Number of values must be 3, but ",
                 values.size(),
                 " values are provided.");
-    auto ns = values[0].resolve(factory()) * values[0].resolve(factory()) +
-              values[1].resolve(factory()) * values[1].resolve(factory()) +
-              values[2].resolve(factory()) * values[2].resolve(factory());
-    auto f = neml2::sqrt(ns + 1.0) + 1.0;
-    return Rot::fill(values[0].resolve(factory()) / f,
-                     values[1].resolve(factory()) / f,
-                     values[2].resolve(factory()) / f);
+    auto ns = values[0].resolve(f) * values[0].resolve(f) +
+              values[1].resolve(f) * values[1].resolve(f) +
+              values[2].resolve(f) * values[2].resolve(f);
+    auto v = neml2::sqrt(ns + 1.0) + 1.0;
+    return Rot::fill(values[0].resolve(f) / v, values[1].resolve(f) / v, values[2].resolve(f) / v);
   }
 
   throw NEMLException("Unknown Rot fill type " + method);

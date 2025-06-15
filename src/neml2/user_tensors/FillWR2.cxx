@@ -50,12 +50,13 @@ FillWR2::FillWR2(const OptionSet & options)
 WR2
 FillWR2::fill(const std::vector<TensorName<Scalar>> & values) const
 {
+  auto * f = factory();
+  neml_assert(f, "Internal error: factory != nullptr");
   neml_assert(values.size() == 3,
               "Number of values must be 3, but ",
               values.size(),
               " values are provided.");
 
-  return WR2::fill(
-      values[0].resolve(factory()), values[1].resolve(factory()), values[2].resolve(factory()));
+  return WR2::fill(values[0].resolve(f), values[1].resolve(f), values[2].resolve(f));
 }
 } // namespace neml2

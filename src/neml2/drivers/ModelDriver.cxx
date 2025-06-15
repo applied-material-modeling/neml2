@@ -67,17 +67,14 @@ ModelDriver::expected_options()
 
 ModelDriver::ModelDriver(const OptionSet & options)
   : Driver(options),
-    _model(factory()->get_object<Model>("Models", options.get<std::string>("model"))),
+    _model(get_model("model")),
     _device(options.get<std::string>("device")),
     _show_params(options.get<bool>("show_parameters")),
     _show_input(options.get<bool>("show_input_axis")),
     _show_output(options.get<bool>("show_output_axis"))
 #ifdef NEML2_HAS_DISPATCHER
     ,
-    _scheduler(options.get("scheduler").user_specified()
-                   ? factory()->get_object<WorkScheduler>("Schedulers",
-                                                          options.get<std::string>("scheduler"))
-                   : nullptr),
+    _scheduler(options.get("scheduler").user_specified() ? get_scheduler("scheduler") : nullptr),
     _async_dispatch(options.get<bool>("async_dispatch"))
 #endif
 {

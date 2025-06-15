@@ -28,8 +28,6 @@
 #include <iostream>
 
 #include "neml2/misc/errors.h"
-#include "neml2/base/Settings.h"
-#include "neml2/base/NEML2Object.h"
 #include "neml2/base/InputFile.h"
 
 namespace neml2
@@ -37,6 +35,7 @@ namespace neml2
 // Forward decl
 class Settings;
 class Factory;
+class NEML2Object;
 
 /**
  * @brief A convenient function to parse all options from an input file
@@ -59,7 +58,7 @@ Factory load_input(const std::filesystem::path & path, const std::string & addit
 class Factory
 {
 public:
-  Factory(const InputFile &);
+  Factory(InputFile);
 
   /// Get the input file
   InputFile & input_file() { return _input_file; }
@@ -115,6 +114,9 @@ protected:
   void create_object(const std::string & section, const OptionSet & options);
 
 private:
+  /// Check if the options are compatible with the object
+  bool options_compatible(const std::shared_ptr<NEML2Object> & obj, const OptionSet & opts) const;
+
   /// The input file
   InputFile _input_file;
 
@@ -141,7 +143,7 @@ Factory::get_object(const std::string & section,
       for (const auto & neml2_obj : _objects[section][name])
       {
         // Check for option clash
-        if (!options_compatible(neml2_obj->input_options(), additional_options))
+        if (!options_compatible(neml2_obj, additional_options))
           continue;
 
         // Check for object type

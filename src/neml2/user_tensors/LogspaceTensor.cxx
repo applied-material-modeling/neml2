@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/user_tensors/LogspaceTensor.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {
@@ -69,8 +70,11 @@ LogspaceTensor::LogspaceTensor(const OptionSet & options)
 Tensor
 LogspaceTensor::make(const OptionSet & options) const
 {
-  auto t = Tensor::logspace(options.get<TensorName<Tensor>>("start").resolve(factory()),
-                            options.get<TensorName<Tensor>>("end").resolve(factory()),
+  auto * f = this->factory();
+  neml_assert(f, "Internal error: factory != nullptr");
+
+  auto t = Tensor::logspace(options.get<TensorName<Tensor>>("start").resolve(f),
+                            options.get<TensorName<Tensor>>("end").resolve(f),
                             options.get<Size>("nstep"),
                             options.get<Size>("dim"));
 

@@ -26,6 +26,7 @@
 #include "neml2/misc/assertions.h"
 #include "neml2/base/NEML2Object.h"
 #include "neml2/base/TensorName.h"
+#include "neml2/base/Settings.h"
 #include "neml2/tensors/tensors.h"
 #include "neml2/tensors/TensorValue.h"
 

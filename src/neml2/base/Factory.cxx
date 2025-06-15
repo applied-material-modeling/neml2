@@ -23,6 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/base/Factory.h"
+#include "neml2/base/OptionSet.h"
+#include "neml2/base/NEML2Object.h"
 #include "neml2/base/Registry.h"
 #include "neml2/base/HITParser.h"
 
@@ -42,8 +44,8 @@ load_input(const std::filesystem::path & path, const std::string & additional_in
     throw ParserException("Unsupported parser type");
 }
 
-Factory::Factory(const InputFile & inp)
-  : _input_file(inp),
+Factory::Factory(InputFile inp)
+  : _input_file(std::move(inp)),
     _objects()
 {
 }
@@ -73,6 +75,12 @@ Factory::create_object(const std::string & section, const OptionSet & options)
     throw FactoryException("Failed to setup object '" + name + "' of type '" + type +
                            "' in section '" + section + "':\n" + e.what());
   }
+}
+
+bool
+Factory::options_compatible(const std::shared_ptr<NEML2Object> & obj, const OptionSet & opts) const
+{
+  return neml2::options_compatible(obj->input_options(), opts);
 }
 
 // LCOV_EXCL_START

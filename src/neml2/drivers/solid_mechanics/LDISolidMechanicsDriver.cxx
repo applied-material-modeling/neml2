@@ -89,7 +89,7 @@ void
 LDISolidMechanicsDriver::init_strain_control(const OptionSet & options)
 {
   _driving_force_name = options.get<VariableName>("deformation_rate");
-  _driving_force = options.get<TensorName<SR2>>("prescribed_deformation_rate").resolve(factory());
+  _driving_force = resolve_tensor<SR2>("prescribed_deformation_rate");
   _driving_force = _driving_force.to(_device);
 }
 
@@ -97,7 +97,7 @@ void
 LDISolidMechanicsDriver::init_stress_control(const OptionSet & options)
 {
   _driving_force_name = options.get<VariableName>("cauchy_stress_rate");
-  _driving_force = options.get<TensorName<SR2>>("prescribed_cauchy_stress_rate").resolve(factory());
+  _driving_force = resolve_tensor<SR2>("prescribed_cauchy_stress_rate");
   _driving_force = _driving_force.to(_device);
 }
 
@@ -105,7 +105,7 @@ void
 LDISolidMechanicsDriver::init_vorticity_control(const OptionSet & options)
 {
   _vorticity_name = options.get<VariableName>("vorticity");
-  _vorticity = options.get<TensorName<WR2>>("prescribed_vorticity").resolve(factory());
+  _vorticity = resolve_tensor<WR2>("prescribed_vorticity");
   _vorticity = _vorticity.to(_device);
 }
 

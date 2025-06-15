@@ -56,28 +56,30 @@ FillR2::FillR2(const OptionSet & options)
 R2
 FillR2::fill(const std::vector<TensorName<Scalar>> & values) const
 {
+  auto * f = factory();
+  neml_assert(f, "Internal error: factory != nullptr");
+
   if (values.size() == 1)
-    return R2::fill(values[0].resolve(factory()));
+    return R2::fill(values[0].resolve(f));
   if (values.size() == 3)
-    return R2::fill(
-        values[0].resolve(factory()), values[1].resolve(factory()), values[2].resolve(factory()));
+    return R2::fill(values[0].resolve(f), values[1].resolve(f), values[2].resolve(f));
   if (values.size() == 6)
-    return R2::fill(values[0].resolve(factory()),
-                    values[1].resolve(factory()),
-                    values[2].resolve(factory()),
-                    values[3].resolve(factory()),
-                    values[4].resolve(factory()),
-                    values[5].resolve(factory()));
+    return R2::fill(values[0].resolve(f),
+                    values[1].resolve(f),
+                    values[2].resolve(f),
+                    values[3].resolve(f),
+                    values[4].resolve(f),
+                    values[5].resolve(f));
   if (values.size() == 9)
-    return R2::fill(values[0].resolve(factory()),
-                    values[1].resolve(factory()),
-                    values[2].resolve(factory()),
-                    values[3].resolve(factory()),
-                    values[4].resolve(factory()),
-                    values[5].resolve(factory()),
-                    values[6].resolve(factory()),
-                    values[7].resolve(factory()),
-                    values[8].resolve(factory()));
+    return R2::fill(values[0].resolve(f),
+                    values[1].resolve(f),
+                    values[2].resolve(f),
+                    values[3].resolve(f),
+                    values[4].resolve(f),
+                    values[5].resolve(f),
+                    values[6].resolve(f),
+                    values[7].resolve(f),
+                    values[8].resolve(f));
 
   neml_assert(false,
               "Number of values must be 1, 3, 6, or 9, but ",

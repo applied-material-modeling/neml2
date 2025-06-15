@@ -49,8 +49,7 @@ SpatialVelocityDriver::expected_options()
 SpatialVelocityDriver::SpatialVelocityDriver(const OptionSet & options)
   : TransientDriver(options),
     _driving_force_name(options.get<VariableName>("spatial_velocity_gradient")),
-    _driving_force(
-        options.get<TensorName<R2>>("prescribed_spatial_velocity_gradient").resolve(factory()))
+    _driving_force(resolve_tensor<R2>("prescribed_spatial_velocity_gradient"))
 {
 }
 

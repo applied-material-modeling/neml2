@@ -53,7 +53,7 @@ VTestVerification::expected_options()
 
 VTestVerification::VTestVerification(const OptionSet & options)
   : Driver(options),
-    _driver(factory()->get_object<TransientDriver>("Drivers", options.get<std::string>("driver"))),
+    _driver(get_driver<TransientDriver>("driver")),
     _rtol(options.get<double>("rtol")),
     _atol(options.get<double>("atol"))
 {

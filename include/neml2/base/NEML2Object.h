@@ -21,9 +21,11 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+
 #pragma once
 
 #include "neml2/base/OptionSet.h"
+#include "neml2/base/Factory.h"
 
 // Registry.h is included here because it is needed for the factory pattern, i.e., for the
 // register_NEML2_object macros
@@ -31,8 +33,12 @@
 
 namespace neml2
 {
-class Factory;
 class Settings;
+class NonlinearSolver;
+class Data;
+class Model;
+class Driver;
+class WorkScheduler;
 
 /**
  * @brief The base class of all "manufacturable" objects in the NEML2 library.
@@ -96,6 +102,31 @@ public:
   template <typename T = NEML2Object>
   T * host();
 
+  /// Resolve a TensorName to a Tensor
+  template <typename T>
+  const T & resolve_tensor(const std::string & name);
+
+  ///@{
+  /// Get an object from the factory
+  template <class T>
+  std::shared_ptr<T> get_object(const std::string & section, const std::string & name);
+  /// Get a solver from the factory
+  template <class T = NonlinearSolver>
+  std::shared_ptr<T> get_nl_solver(const std::string & name);
+  /// Get a data from the factory
+  template <class T = Data>
+  std::shared_ptr<T> get_data(const std::string & name);
+  /// Get a model from the factory
+  template <class T = Model>
+  std::shared_ptr<T> get_model(const std::string & name);
+  /// Get a driver from the factory
+  template <class T = Driver>
+  std::shared_ptr<T> get_driver(const std::string & name);
+  /// Get a model from the factory
+  template <class T = WorkScheduler>
+  std::shared_ptr<T> get_scheduler(const std::string & name);
+  ///@}
+
 private:
   const OptionSet _input_options;
 
@@ -119,7 +150,8 @@ const T *
 NEML2Object::host() const
 {
   auto host_ptr = dynamic_cast<const T *>(_host ? _host : this);
-  neml_assert(host_ptr, "Internal error: Failed to retrieve host of object ", name());
+  if (!host_ptr)
+    throw NEMLException("Internal error: Failed to retrieve host of object " + name());
   return host_ptr;
 }
 
@@ -131,5 +163,50 @@ NEML2Object::host()
   if (!host_ptr)
     throw NEMLException("Internal error: Failed to retrieve host of object " + name());
   return host_ptr;
+}
+
+template <class T>
+std::shared_ptr<T>
+NEML2Object::get_object(const std::string & section, const std::string & name)
+{
+  auto obj_name = _input_options.contains(name) ? _input_options.get<std::string>(name) : name;
+  if (!_factory)
+    throw NEMLException("Internal error: factory is nullptr for object " + this->name());
+  return _factory->get_object<T>(section, obj_name);
+}
+
+template <class T>
+std::shared_ptr<T>
+NEML2Object::get_nl_solver(const std::string & name)
+{
+  return get_object<T>("Solvers", name);
+}
+
+template <class T>
+std::shared_ptr<T>
+NEML2Object::get_data(const std::string & name)
+{
+  return get_object<T>("Data", name);
+}
+
+template <class T>
+std::shared_ptr<T>
+NEML2Object::get_model(const std::string & name)
+{
+  return get_object<T>("Models", name);
+}
+
+template <class T>
+std::shared_ptr<T>
+NEML2Object::get_driver(const std::string & name)
+{
+  return get_object<T>("Drivers", name);
+}
+
+template <class T>
+std::shared_ptr<T>
+NEML2Object::get_scheduler(const std::string & name)
+{
+  return get_object<T>("Schedulers", name);
 }
 } // namespace neml2

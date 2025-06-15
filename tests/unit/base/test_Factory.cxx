@@ -24,6 +24,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
+#include "neml2/base/Settings.h"
 #include "neml2/models/LinearCombination.h"
 
 using namespace neml2;

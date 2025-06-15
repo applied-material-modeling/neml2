@@ -258,7 +258,9 @@ protected:
   template <typename T = Model, typename = typename std::enable_if_t<std::is_base_of_v<Model, T>>>
   T & register_model(const std::string & name, bool nonlinear = false, bool merge_input = true)
   {
-    if (name == this->name())
+    auto model_name =
+        input_options().contains(name) ? input_options().get<std::string>(name) : name;
+    if (model_name == this->name())
       throw SetupException("Model named '" + this->name() +
                            "' is trying to register itself as a sub-model. This is not allowed.");
 
@@ -269,10 +271,10 @@ protected:
     if (!host()->factory())
       throw SetupException("Internal error: Host object '" + host()->name() +
                            "' does not have a factory set.");
-    auto model = host()->factory()->get_object<T>("Models", name, extra_opts);
+    auto model = host()->factory()->get_object<T>("Models", model_name, extra_opts);
     if (std::find(_registered_models.begin(), _registered_models.end(), model) !=
         _registered_models.end())
-      throw SetupException("Model named '" + name + "' has already been registered.");
+      throw SetupException("Model named '" + model_name + "' has already been registered.");
 
     if (merge_input)
       for (auto && [name, var] : model->input_variables())

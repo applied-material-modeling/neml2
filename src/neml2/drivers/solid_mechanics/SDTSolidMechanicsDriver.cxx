@@ -57,7 +57,7 @@ void
 SDTSolidMechanicsDriver::init_strain_control(const OptionSet & options)
 {
   _driving_force_name = options.get<VariableName>("strain");
-  _driving_force = options.get<TensorName<SR2>>("prescribed_strain").resolve(factory());
+  _driving_force = resolve_tensor<SR2>("prescribed_strain");
   _driving_force = _driving_force.to(_device);
 }
 
@@ -65,7 +65,7 @@ void
 SDTSolidMechanicsDriver::init_stress_control(const OptionSet & options)
 {
   _driving_force_name = options.get<VariableName>("stress");
-  _driving_force = options.get<TensorName<SR2>>("prescribed_stress").resolve(factory());
+  _driving_force = resolve_tensor<SR2>("prescribed_stress");
   _driving_force = _driving_force.to(_device);
 }
 } // namespace neml2

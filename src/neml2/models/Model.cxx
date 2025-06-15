@@ -27,6 +27,7 @@
 #include "neml2/misc/assertions.h"
 #include "neml2/base/guards.h"
 #include "neml2/base/Factory.h"
+#include "neml2/base/Settings.h"
 #include "neml2/jit/utils.h"
 #include "neml2/tensors/functions/jacrev.h"
 #include "neml2/tensors/tensors.h"

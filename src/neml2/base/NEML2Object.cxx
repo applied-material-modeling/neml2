@@ -25,6 +25,7 @@
 #include "neml2/base/NEML2Object.h"
 #include "neml2/base/Factory.h"
 #include "neml2/base/Settings.h"
+#include "neml2/base/TensorName.h"
 
 namespace neml2
 {
@@ -52,4 +53,18 @@ NEML2Object::NEML2Object(const OptionSet & options)
     _host(options.get<NEML2Object *>("_host"))
 {
 }
+
+template <typename T>
+const T &
+NEML2Object::resolve_tensor(const std::string & name)
+{
+  if (!_input_options.contains(name))
+    throw NEMLException("Tensor name '" + name + "' not found in input options of object " +
+                        this->name());
+  return _input_options.get<TensorName<T>>(name).resolve(_factory);
+}
+
+#define NEML2OBJECT_INSTANTIATE(T)                                                                 \
+  template const T & NEML2Object::resolve_tensor<T>(const std::string &)
+FOR_ALL_TENSORBASE(NEML2OBJECT_INSTANTIATE);
 } // namespace neml2

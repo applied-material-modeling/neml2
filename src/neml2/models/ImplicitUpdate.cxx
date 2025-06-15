@@ -56,9 +56,8 @@ ImplicitUpdate::expected_options()
 
 ImplicitUpdate::ImplicitUpdate(const OptionSet & options)
   : Model(options),
-    _model(register_model(options.get<std::string>("implicit_model"),
-                          /*nonlinear=*/true)),
-    _solver(factory()->get_object<NonlinearSolver>("Solvers", options.get<std::string>("solver")))
+    _model(register_model("implicit_model", /*nonlinear=*/true)),
+    _solver(get_nl_solver("solver"))
 {
   neml_assert(_model.output_axis().has_residual(),
               "The implicit model'",
