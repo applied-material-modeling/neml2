@@ -24,7 +24,6 @@
 
 #pragma once
 
-#include "neml2/base/Registry.h"
 #include "neml2/models/Data.h"
 #include "neml2/tensors/indexing.h"
 
@@ -55,7 +54,11 @@ public:
   CrystalGeometry(const OptionSet & options);
 
   /// Alternate constructor not relying on options
-  CrystalGeometry(const OptionSet & options, const R2 & cclass, const Vec & lattice_vectors);
+  CrystalGeometry(const OptionSet & options,
+                  const R2 & cclass,
+                  const Vec & lattice_vectors,
+                  const MillerIndex & slip_directions,
+                  const MillerIndex & slip_planes);
 
   /// accessor for the first lattice vector
   Vec a1() const;
@@ -102,6 +105,9 @@ public:
   Derived slip_slice(const Derived & tensor, Size grp) const;
 
 private:
+  /// Delegated constructor to pass factory
+  CrystalGeometry(const OptionSet & options, Factory * factory);
+
   /// Delegated constructor to setup schmid tensors and slice indices at once
   CrystalGeometry(const OptionSet & options,
                   const R2 & cclass,

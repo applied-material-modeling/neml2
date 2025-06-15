@@ -25,7 +25,6 @@
 #pragma once
 
 #include "neml2/base/OptionSet.h"
-#include "neml2/base/Settings.h"
 
 namespace neml2
 {

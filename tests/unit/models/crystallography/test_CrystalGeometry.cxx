@@ -26,7 +26,6 @@
 
 #include <filesystem>
 
-#include "utils.h"
 #include "neml2/base/Factory.h"
 #include "neml2/models/crystallography/CrystalGeometry.h"
 #include "neml2/tensors/tensors.h"

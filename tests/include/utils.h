@@ -24,8 +24,6 @@
 
 #pragma once
 
-#include "neml2/base/Parser.h"
-#include "neml2/base/Factory.h"
 #include "neml2/tensors/indexing.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/functions/abs.h"

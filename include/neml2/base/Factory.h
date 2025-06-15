@@ -133,8 +133,7 @@ Factory::get_object(const std::string & section,
                     bool force_create)
 {
   if (input_file().data().empty())
-    throw FactoryException("It appears that you are trying to get an object without loading any "
-                           "options. Please load options first.");
+    throw FactoryException("The input file is empty.");
 
   // Easy if it already exists
   if (!force_create)
@@ -160,6 +159,7 @@ Factory::get_object(const std::string & section,
     if (options.first == name)
     {
       auto new_options = options.second;
+      new_options.set<Factory *>("_factory") = this;
       new_options.set<std::shared_ptr<Settings>>("_settings") = settings();
       new_options += additional_options;
       create_object(section, new_options);
@@ -167,7 +167,8 @@ Factory::get_object(const std::string & section,
     }
 
   if (!_objects.count(section) || !_objects.at(section).count(name))
-    throw FactoryException("Failed to get object named " + name + " under section " + section);
+    throw FactoryException("Failed to get object named " + name + " under section " + section +
+                           ". Check to make sure the object is defined in the input file.");
 
   auto obj = std::dynamic_pointer_cast<T>(_objects[section][name].back());
 

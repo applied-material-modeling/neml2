@@ -25,6 +25,7 @@
 #include <iostream>
 
 #include "neml2/base/InputFile.h"
+#include "neml2/base/Settings.h"
 
 namespace neml2
 {
