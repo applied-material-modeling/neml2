@@ -57,7 +57,7 @@ TEST_CASE("pyrolysis")
       {
         // Load and run the model
         auto factory = load_input(test.filename());
-        auto driver = factory.get_object<Driver>("Drivers", "regression");
+        auto driver = factory.get_driver("regression");
         diagnose(*driver);
         REQUIRE(driver->run());
       }

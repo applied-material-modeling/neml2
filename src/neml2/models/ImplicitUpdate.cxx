@@ -24,6 +24,7 @@
 
 #include "neml2/models/ImplicitUpdate.h"
 #include "neml2/models/Assembler.h"
+#include "neml2/solvers/NonlinearSolver.h"
 #include "neml2/tensors/functions/linalg/lu_factor.h"
 #include "neml2/tensors/functions/linalg/lu_solve.h"
 #include "neml2/base/guards.h"
@@ -57,7 +58,7 @@ ImplicitUpdate::expected_options()
 ImplicitUpdate::ImplicitUpdate(const OptionSet & options)
   : Model(options),
     _model(register_model("implicit_model", /*nonlinear=*/true)),
-    _solver(get_nl_solver("solver"))
+    _solver(get_solver<NonlinearSolver>("solver"))
 {
   neml_assert(_model.output_axis().has_residual(),
               "The implicit model'",

@@ -48,9 +48,6 @@ class Model;
 /**
  * @brief A convenient function to load an input file and get a model
  *
- * @warning All threads share the same input options, so in principle this function is not intended
- * to be called inside a threaded region.
- *
  * @param path Path to the input file to be parsed
  * @param mname Name of the model
  */

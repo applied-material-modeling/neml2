@@ -34,7 +34,7 @@
 namespace neml2
 {
 class Settings;
-class NonlinearSolver;
+class Solver;
 class Data;
 class Model;
 class Driver;
@@ -111,8 +111,8 @@ public:
   template <class T>
   std::shared_ptr<T> get_object(const std::string & section, const std::string & name);
   /// Get a solver from the factory
-  template <class T = NonlinearSolver>
-  std::shared_ptr<T> get_nl_solver(const std::string & name);
+  template <class T = Solver>
+  std::shared_ptr<T> get_solver(const std::string & name);
   /// Get a data from the factory
   template <class T = Data>
   std::shared_ptr<T> get_data(const std::string & name);
@@ -122,7 +122,7 @@ public:
   /// Get a driver from the factory
   template <class T = Driver>
   std::shared_ptr<T> get_driver(const std::string & name);
-  /// Get a model from the factory
+  /// Get a scheduler from the factory
   template <class T = WorkScheduler>
   std::shared_ptr<T> get_scheduler(const std::string & name);
   ///@}
@@ -177,7 +177,7 @@ NEML2Object::get_object(const std::string & section, const std::string & name)
 
 template <class T>
 std::shared_ptr<T>
-NEML2Object::get_nl_solver(const std::string & name)
+NEML2Object::get_solver(const std::string & name)
 {
   return get_object<T>("Solvers", name);
 }

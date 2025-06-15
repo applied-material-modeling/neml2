@@ -45,7 +45,7 @@ TEST_CASE("Factory", "[base]")
 
   SECTION("get_object")
   {
-    auto summodel = factory.get_object<ScalarLinearCombination>("Models", "example");
+    auto summodel = factory.get_model("example");
 
     REQUIRE(summodel->input_axis().has_subaxis(STATE));
     REQUIRE(summodel->input_axis().subaxis(STATE).has_subaxis("substate"));

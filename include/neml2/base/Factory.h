@@ -36,6 +36,11 @@ namespace neml2
 class Settings;
 class Factory;
 class NEML2Object;
+class Solver;
+class Data;
+class Model;
+class Driver;
+class WorkScheduler;
 
 /**
  * @brief A convenient function to parse all options from an input file
@@ -93,6 +98,22 @@ public:
                                 const std::string & name,
                                 const OptionSet & additional_options = OptionSet(),
                                 bool force_create = true);
+
+  /// Get a solver by its name
+  template <class T = Solver>
+  std::shared_ptr<T> get_solver(const std::string & name);
+  /// Get a data by its name
+  template <class T = Data>
+  std::shared_ptr<T> get_data(const std::string & name);
+  /// Get a model by its name
+  template <class T = Model>
+  std::shared_ptr<T> get_model(const std::string & name);
+  /// Get a driver by its name
+  template <class T = Driver>
+  std::shared_ptr<T> get_driver(const std::string & name);
+  /// Get a scheduler by its name
+  template <class T = WorkScheduler>
+  std::shared_ptr<T> get_scheduler(const std::string & name);
 
   /// @brief Delete all factories and destruct all the objects.
   void clear();
@@ -178,5 +199,40 @@ Factory::get_object(const std::string & section,
     throw FactoryException("Internal error: Factory failed to create object " + name);
 
   return obj;
+}
+
+template <class T>
+std::shared_ptr<T>
+Factory::get_solver(const std::string & name)
+{
+  return get_object<T>("Solvers", name);
+}
+
+template <class T>
+std::shared_ptr<T>
+Factory::get_data(const std::string & name)
+{
+  return get_object<T>("Data", name);
+}
+
+template <class T>
+std::shared_ptr<T>
+Factory::get_model(const std::string & name)
+{
+  return get_object<T>("Models", name);
+}
+
+template <class T>
+std::shared_ptr<T>
+Factory::get_driver(const std::string & name)
+{
+  return get_object<T>("Drivers", name);
+}
+
+template <class T>
+std::shared_ptr<T>
+Factory::get_scheduler(const std::string & name)
+{
+  return get_object<T>("Schedulers", name);
 }
 } // namespace neml2

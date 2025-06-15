@@ -97,7 +97,7 @@ ModelDriver::setup()
     auto thread_init = [this](Device device) -> void
     {
       auto new_factory = Factory(_model->factory()->input_file());
-      auto new_model = new_factory.get_object<Model>("Models", _model->name());
+      auto new_model = new_factory.get_model(_model->name());
       new_model->to(device);
       _models[std::this_thread::get_id()] = std::move(new_model);
     };
