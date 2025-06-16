@@ -233,47 +233,53 @@ def_TensorBase(py::class_<Derived> & c)
       .def("item", [](const Derived & self) { return self.item(); });
 
   // Binary, unary operators
-  c.def(float() + py::self)
-      .def(py::self + float())
+  c.def(double() + py::self)
+      .def(py::self + double())
       .def(py::self + Scalar())
       .def(py::self + py::self)
-      .def(float() - py::self)
-      .def(py::self - float())
+      .def(double() - py::self)
+      .def(py::self - double())
       .def(py::self - Scalar())
       .def(py::self - py::self)
-      .def(float() * py::self)
-      .def(py::self * float())
+      .def(double() * py::self)
+      .def(py::self * double())
       .def(py::self * Scalar())
-      .def(float() / py::self)
-      .def(py::self / float())
+      .def(double() / py::self)
+      .def(py::self / double())
       .def(py::self / Scalar())
       .def(py::self / py::self)
-      .def(py::self += float())
-      .def(py::self -= float())
-      .def(py::self *= float())
-      .def(py::self /= float())
+      .def(py::self += double())
+      .def(py::self -= double())
+      .def(py::self *= double())
+      .def(py::self /= double())
       .def(-py::self)
-      .def("__pow__", [](const Derived & a, float b) { return neml2::pow(a, b); })
+      .def("__pow__", [](const Derived & a, const double & b) { return neml2::pow(a, b); })
       .def("__pow__", [](const Derived & a, const Scalar & b) { return neml2::pow(a, b); })
-      .def("__rpow__", [](const Derived & a, float b) { return neml2::pow(b, a); });
+      .def("__rpow__", [](const Derived & a, const double & b) { return neml2::pow(b, a); });
 
   // Static methods
   c.def_static("empty_like", &Derived::empty_like)
       .def_static("zeros_like", &Derived::zeros_like)
       .def_static("ones_like", &Derived::ones_like)
-      .def_static("full_like", &Derived::full_like)
+      .def_static(
+          "full_like",
+          [](const Derived & other, double init) { return Derived::full_like(other, init); },
+          py::arg("other"),
+          py::arg("fill_value"))
       .def_static("linspace",
                   &Derived::linspace,
                   py::arg("start"),
                   py::arg("end"),
                   py::arg("nstep"),
                   py::arg("dim") = 0)
-      .def_static("logspace",
-                  &Derived::logspace,
-                  py::arg("start"),
-                  py::arg("end"),
-                  py::arg("nstep"),
-                  py::arg("dim") = 0,
-                  py::arg("base") = 10.0);
+      .def_static(
+          "logspace",
+          [](const Derived & start, const Derived & end, Size nstep, Size dim, double base)
+          { return Derived::logspace(start, end, nstep, dim, base); },
+          py::arg("start"),
+          py::arg("end"),
+          py::arg("nstep"),
+          py::arg("dim") = 0,
+          py::arg("base") = 10.0);
 }
 } // namespace neml2

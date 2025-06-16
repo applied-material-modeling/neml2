@@ -96,7 +96,7 @@ TensorBase<Derived>::ones_like(const Derived & other)
 
 template <class Derived>
 Derived
-TensorBase<Derived>::full_like(const Derived & other, Real init)
+TensorBase<Derived>::full_like(const Derived & other, const CScalar & init)
 {
   return Derived(at::full_like(other, init), other.batch_sizes());
 }
@@ -129,7 +129,7 @@ TensorBase<Derived>::linspace(const Derived & start, const Derived & end, Size n
 template <class Derived>
 Derived
 TensorBase<Derived>::logspace(
-    const Derived & start, const Derived & end, Size nstep, Size dim, Real base)
+    const Derived & start, const Derived & end, Size nstep, Size dim, const CScalar & base)
 {
   auto exponent = neml2::Tensor::linspace(start, end, nstep, dim);
   return Derived(at::pow(base, exponent), exponent.batch_sizes());
@@ -268,7 +268,7 @@ TensorBase<Derived>::batch_index_put_(indexing::TensorIndicesRef indices, const 
 
 template <class Derived>
 void
-TensorBase<Derived>::batch_index_put_(indexing::TensorIndicesRef indices, Real v)
+TensorBase<Derived>::batch_index_put_(indexing::TensorIndicesRef indices, const CScalar & v)
 {
   indexing::TensorIndices indices_vec(indices);
   indices_vec.insert(indices_vec.end(), base_dim(), indexing::Slice());
@@ -286,7 +286,7 @@ TensorBase<Derived>::base_index_put_(indexing::TensorIndicesRef indices, const A
 
 template <class Derived>
 void
-TensorBase<Derived>::base_index_put_(indexing::TensorIndicesRef indices, Real v)
+TensorBase<Derived>::base_index_put_(indexing::TensorIndicesRef indices, const CScalar & v)
 {
   indexing::TensorIndices indices2(batch_dim(), indexing::Slice());
   indices2.insert(indices2.end(), indices.begin(), indices.end());

@@ -49,6 +49,17 @@ OptionSet::contains(const std::string & name) const
   return _values.find(name) != _values.end();
 }
 
+bool
+OptionSet::user_specified(const std::string & name) const
+{
+  neml_assert(this->contains(name),
+              "ERROR: no option named '",
+              name,
+              "' found.\n\nKnown options:\n",
+              *this);
+  return _values.at(name)->user_specified();
+}
+
 const OptionBase &
 OptionSet::get(const std::string & name) const
 {

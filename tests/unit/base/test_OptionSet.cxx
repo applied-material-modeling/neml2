@@ -73,23 +73,20 @@ TEST_CASE("OptionSet", "[base]")
     SECTION("copy")
     {
       OptionSet options2(options);
-      REQUIRE(options.get<double>("p1") == Catch::Approx(1.5));
-      REQUIRE(options.get<std::string>("p2") == "foo");
-      REQUIRE(options.get<unsigned int>("p3") == 3);
-      REQUIRE_THAT(options.get<std::vector<std::string>>("p4"),
+      REQUIRE(options2.get<double>("p1") == Catch::Approx(1.5));
+      REQUIRE(options2.get<std::string>("p2") == "foo");
+      REQUIRE(options2.get<unsigned int>("p3") == 3);
+      REQUIRE_THAT(options2.get<std::vector<std::string>>("p4"),
                    Catch::Matchers::Equals(std::vector<std::string>{"a", "b", "c", "d", "e"}));
-      REQUIRE_THAT(options.get<std::vector<double>>("p5"),
+      REQUIRE_THAT(options2.get<std::vector<double>>("p5"),
                    Catch::Matchers::Approx(std::vector<double>{1.2, -1.1, 100, 5.3}));
     }
 
     SECTION("contains")
     {
-      REQUIRE(options.contains<double>("p1"));
-      REQUIRE(!options.contains<double>("p2"));
-      REQUIRE(options.contains<std::string>("p2"));
-      REQUIRE(!options.contains<std::string>("p1"));
       REQUIRE(options.contains("p1"));
       REQUIRE(options.contains("p2"));
+      REQUIRE(!options.contains("p6"));
     }
   }
 }

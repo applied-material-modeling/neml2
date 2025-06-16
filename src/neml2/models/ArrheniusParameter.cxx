@@ -47,7 +47,7 @@ ArrheniusParameter::expected_options()
   options.set_parameter<TensorName<Scalar>>("activation_energy");
   options.set("activation_energy").doc() = "Activation energy";
 
-  options.set<Real>("ideal_gas_constant");
+  options.set<double>("ideal_gas_constant");
   options.set("ideal_gas_constant").doc() = "The ideal gas constant";
 
   options.set_input("temperature") = VariableName(FORCES, "T");
@@ -63,7 +63,7 @@ ArrheniusParameter::ArrheniusParameter(const OptionSet & options)
   : Model(options),
     _p0(declare_parameter<Scalar>("p0", "reference_value")),
     _Q(declare_parameter<Scalar>("Q", "activation_energy")),
-    _R(options.get<Real>("ideal_gas_constant")),
+    _R(options.get<double>("ideal_gas_constant")),
     _T(declare_input_variable<Scalar>("temperature")),
     _p(declare_output_variable<Scalar>("parameter"))
 {

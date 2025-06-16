@@ -128,7 +128,7 @@ SSR4::isotropic_E_nu(const Scalar & E, const Scalar & nu)
 }
 
 SSR4
-SSR4::isotropic_E_nu(const Real & E, const Real & nu, const TensorOptions & options)
+SSR4::isotropic_E_nu(const double & E, const double & nu, const TensorOptions & options)
 {
   return SSR4::isotropic_E_nu(Scalar(E, options), Scalar(nu, options));
 }
@@ -143,9 +143,9 @@ SSR4::fill_C1_C2_C3(const Scalar & C1, const Scalar & C2, const Scalar & C3)
 }
 
 SSR4
-SSR4::fill_C1_C2_C3(const Real & C1,
-                    const Real & C2,
-                    const Real & C3,
+SSR4::fill_C1_C2_C3(const double & C1,
+                    const double & C2,
+                    const double & C3,
                     const TensorOptions & options)
 {
   return SSR4::fill_C1_C2_C3(Scalar(C1, options), Scalar(C2, options), Scalar(C3, options));

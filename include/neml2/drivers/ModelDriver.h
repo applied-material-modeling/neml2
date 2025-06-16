@@ -53,11 +53,11 @@ public:
 
   void diagnose() const override;
 
-  const Model & model() const { return _model; }
+  const Model & model() const { return *_model; }
 
 protected:
   /// The model which the driver uses to perform constitutive updates.
-  Model & _model;
+  const std::shared_ptr<Model> _model;
   /// The device on which to evaluate the model
   const Device _device;
 
@@ -76,6 +76,8 @@ protected:
   std::unique_ptr<DispatcherType> _dispatcher;
   /// Whether to dispatch work asynchronously
   const bool _async_dispatch;
+  /// Cloned models for each thread
+  std::unordered_map<std::thread::id, std::shared_ptr<Model>> _models;
 #endif
 };
 } // namespace neml2

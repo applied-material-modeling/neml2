@@ -76,9 +76,9 @@ public:
   virtual Result solve(NonlinearSystem & system, const NonlinearSystem::Sol<false> & x0) = 0;
 
   /// Absolute tolerance
-  Real atol;
+  double atol;
   /// Relative tolerance
-  Real rtol;
+  double rtol;
   /// Maximum number of iterations
   unsigned int miters;
 };

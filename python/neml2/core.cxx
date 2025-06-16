@@ -110,69 +110,47 @@ PYBIND11_MODULE(core, m)
                                   "TensorValue",
                                   "The interface for working with tensor values (parameters, "
                                   "buffers, etc.) managed by models.");
+  auto factory_cls =
+      py::class_<Factory>(m, "Factory", "Factory for creating objects defined in the input file");
   auto model_cls =
       py::class_<Model, std::shared_ptr<Model>>(m, "Model", "A thin wrapper around neml2::Model");
 
   // Factory methods
-  m.def("load_input", &load_input, py::arg("path"), py::arg("cli_args") = "", R"(
+  m.def("load_input",
+        &load_input,
+        py::arg("path"),
+        py::arg("cli_args") = "",
+        R"(
 Parse all options from an input file. Note that Previously loaded input options
 will be discarded.
 
 :param path:     Path to the input file to be parsed
-:parma cli_args: Additional command-line arguments to pass to the parser
-)");
-  m.def("reload_input", &reload_input, py::arg("path"), py::arg("cli_args") = "", R"(
-Similar to core.load_input, except that this function additionally clears the
-factory so that previously retrieved models are deleted.
-
-This function is only needed if you load and evaluate models inside a for-loop,
-where it is desirable to deallocate models on-the-fly.
-
-:param path:     Path to the input file to be parsed
 :param cli_args: Additional command-line arguments to pass to the parser
 )");
-  m.def(
+  factory_cls.def(
       "get_model",
-      [](const std::string & model) { return &get_model(model); },
-      py::arg("model"),
-      py::return_value_policy::reference,
+      [](Factory * self, const std::string & name) { return self->get_model(name); },
+      py::arg("name"),
       R"(
-Create a models.Model from given input options. The input file must have
-already been parsed and loaded.
+Create a core.Model.
 
-:param model:        Name of the model
+:param name:        Name of the model
 )");
   m.def("load_model",
         &load_model,
         py::arg("path"),
-        py::arg("model"),
-        py::return_value_policy::reference,
+        py::arg("name"),
         R"(
 A convenient function to load an input file and get a model.
 
 This function is equivalent to calling core.load_input followed by
-core.get_model. Note that this convenient function does not support passing
+Factory.get_model. Note that this convenient function does not support passing
 additional command-line arguments and will force the creation of a new
-models.Model even if one has already been created. Use core.load_input and
-core.get_model if you need finer control over the model creation behavior.
+core.Model even if one has already been created. Use core.load_input and
+Factory.get_model if you need finer control over the model creation behavior.
 
 :param path:      Path to the input file to be parsed
-:param model:     Name of the model
-)");
-  m.def("reload_model",
-        &reload_model,
-        py::arg("path"),
-        py::arg("model"),
-        py::return_value_policy::reference,
-        R"(
-Similar to core.load_model, except that this function additionally clears the
-factory so that previously retrieved models are deleted.
-
-This function is only needed if you load and evaluate models inside a for-loop,
-where it is desirable to deallocate models on-the-fly.
-
-:param path:      Path to the input file to be parsed
-:param model:     Name of the model
+:param name:      Name of the model
 )");
   m.def(
       "diagnose",
@@ -376,8 +354,8 @@ Diagnose common issues in model setup. Raises a runtime error including all iden
           [](const Model & self)
           {
             std::map<std::string, Model *> submodels;
-            for (auto submodel : self.registered_models())
-              submodels[submodel->name()] = submodel;
+            for (const auto & submodel : self.registered_models())
+              submodels[submodel->name()] = submodel.get();
             return submodels;
           },
           py::return_value_policy::reference,

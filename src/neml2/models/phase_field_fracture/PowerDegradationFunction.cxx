@@ -38,7 +38,7 @@ PowerDegradationFunction::expected_options()
                   "= \\left( 1-d \\right)^2 (1-\\eta) + \\eta \\f$";
   options.set<TensorName<Scalar>>("power");
   options.set("power").doc() = "Power of the degradation function";
-  options.set<Real>("eta") = 0;
+  options.set<double>("eta") = 0;
   options.set("eta").doc() = "Residual degradation when d = 1";
 
   options.set<bool>("define_second_derivatives") = true;
@@ -49,7 +49,7 @@ PowerDegradationFunction::expected_options()
 PowerDegradationFunction::PowerDegradationFunction(const OptionSet & options)
   : DegradationFunction(options),
     _p(declare_parameter<Scalar>("p", "power")),
-    _eta(options.get<Real>("eta"))
+    _eta(options.get<double>("eta"))
 {
 }
 

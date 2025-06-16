@@ -34,8 +34,8 @@ namespace neml2
 {
 static std::string diff(const torch::jit::named_buffer_list & res,
                         const std::map<std::string, ATensor> & ref_map,
-                        Real rtol,
-                        Real atol);
+                        double rtol,
+                        double atol);
 
 register_NEML2_object(VTestVerification);
 
@@ -46,16 +46,16 @@ VTestVerification::expected_options()
   options.set<std::string>("driver");
   options.set<std::vector<std::string>>("variables");
   options.set<std::vector<TensorName<ATensor>>>("references");
-  options.set<Real>("rtol") = 1e-5;
-  options.set<Real>("atol") = 1e-8;
+  options.set<double>("rtol") = 1e-5;
+  options.set<double>("atol") = 1e-8;
   return options;
 }
 
 VTestVerification::VTestVerification(const OptionSet & options)
   : Driver(options),
-    _driver(Factory::get_object<TransientDriver>("Drivers", options.get<std::string>("driver"))),
-    _rtol(options.get<Real>("rtol")),
-    _atol(options.get<Real>("atol"))
+    _driver(get_driver<TransientDriver>("driver")),
+    _rtol(options.get<double>("rtol")),
+    _atol(options.get<double>("atol"))
 {
   const auto vars = options.get<std::vector<std::string>>("variables");
   const auto vals = options.get<std::vector<TensorName<ATensor>>>("references");
@@ -66,16 +66,16 @@ VTestVerification::VTestVerification(const OptionSet & options)
               vals.size(),
               " references provided.");
   for (std::size_t i = 0; i < vars.size(); i++)
-    _ref[vars[i]] = vals[i].resolve();
+    _ref[vars[i]] = vals[i].resolve(factory());
 }
 
 void
 VTestVerification::diagnose() const
 {
   Driver::diagnose();
-  neml2::diagnose(_driver);
+  neml2::diagnose(*_driver);
 
-  diagnostic_assert(!_driver.save_as_path().empty(),
+  diagnostic_assert(!_driver->save_as_path().empty(),
                     "The driver does not save any results. Use the save_as option to specify the "
                     "destination file/path.");
 }
@@ -83,9 +83,9 @@ VTestVerification::diagnose() const
 bool
 VTestVerification::run()
 {
-  _driver.run();
+  _driver->run();
 
-  auto res = torch::jit::load(_driver.save_as_path());
+  auto res = torch::jit::load(_driver->save_as_path());
   auto err_msg = diff(res.named_buffers(), _ref, _rtol, _atol);
 
   neml_assert(err_msg.empty(), err_msg);
@@ -96,8 +96,8 @@ VTestVerification::run()
 std::string
 diff(const torch::jit::named_buffer_list & res,
      const std::map<std::string, ATensor> & ref_map,
-     Real rtol,
-     Real atol)
+     double rtol,
+     double atol)
 {
   std::map<std::string, ATensor> res_map;
   for (auto item : res)
@@ -130,7 +130,7 @@ diff(const torch::jit::named_buffer_list & res,
       {
         const auto diff = at::abs(resi - refi) - rtol * at::abs(refi);
         err_msg << "Result has wrong value for variable " << resname
-                << ". Maximum mixed difference = " << std::scientific << diff.max().item<Real>()
+                << ". Maximum mixed difference = " << std::scientific << diff.max().item<double>()
                 << " > atol = " << std::scientific << atol << "\n";
         err_msg << "Reference: " << refi << "\n";
         err_msg << "Result: " << resi << "\n";

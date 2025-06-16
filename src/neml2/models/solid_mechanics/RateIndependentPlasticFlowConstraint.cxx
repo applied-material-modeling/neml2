@@ -67,13 +67,13 @@ RateIndependentPlasticFlowConstraint::set_value(bool out, bool dout_din, bool /*
   if (dout_din)
   {
     const auto I = Scalar::identity_map(_gamma_dot.options());
+    const auto eps = machine_precision(_gamma_dot.scalar_type());
 
     if (_gamma_dot.is_dependent())
-      _r.d(_gamma_dot) =
-          I - _gamma_dot / sqrt(_gamma_dot * _gamma_dot + _fp * _fp + machine_precision());
+      _r.d(_gamma_dot) = I - _gamma_dot / sqrt(_gamma_dot * _gamma_dot + _fp * _fp + eps);
 
     if (_fp.is_dependent())
-      _r.d(_fp) = -I - _fp / sqrt(_gamma_dot * _gamma_dot + _fp * _fp + machine_precision());
+      _r.d(_fp) = -I - _fp / sqrt(_gamma_dot * _gamma_dot + _fp * _fp + eps);
   }
 }
 

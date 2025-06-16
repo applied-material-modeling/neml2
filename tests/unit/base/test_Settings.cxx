@@ -25,34 +25,21 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_all.hpp>
 
-#include "neml2/misc/defaults.h"
 #include "neml2/base/Settings.h"
 #include "neml2/base/HITParser.h"
-#include "neml2/base/OptionCollection.h"
+#include "neml2/base/InputFile.h"
 
 using namespace neml2;
 
 TEST_CASE("Settings", "[Settings]")
 {
-  // Before applying the global settings
-  REQUIRE(default_integer_dtype() == kInt64);
-  REQUIRE(machine_precision() == Catch::Approx(1e-15));
-  REQUIRE(tolerance() == Catch::Approx(1e-6));
-  REQUIRE(tighter_tolerance() == Catch::Approx(1e-12));
-  REQUIRE(buffer_name_separator() == "_");
-  REQUIRE(parameter_name_separator() == "_");
-  REQUIRE(require_double_precision());
-
-  // Apply the global settings (settings are applied right after parsing)
+  // Parse input file
   HITParser parser;
-  auto all_options = parser.parse("base/test_HITParser1.i");
+  auto input = parser.parse("base/test_HITParser1.i");
 
   // After applying the global settings
-  REQUIRE(default_integer_dtype() == kInt32);
-  REQUIRE(machine_precision() == Catch::Approx(0.5));
-  REQUIRE(tolerance() == Catch::Approx(0.1));
-  REQUIRE(tighter_tolerance() == Catch::Approx(0.01));
-  REQUIRE(buffer_name_separator() == "::");
-  REQUIRE(parameter_name_separator() == "::");
-  REQUIRE(!require_double_precision());
+  const auto settings = *input.settings();
+  REQUIRE(settings.buffer_name_separator() == "::");
+  REQUIRE(settings.parameter_name_separator() == "::");
+  REQUIRE(!settings.require_double_precision());
 }

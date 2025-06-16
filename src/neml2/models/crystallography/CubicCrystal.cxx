@@ -24,9 +24,9 @@
 
 #include "neml2/models/crystallography/CubicCrystal.h"
 
+#include "neml2/base/Factory.h"
 #include "neml2/tensors/crystallography.h"
 #include "neml2/base/TensorName.h"
-#include "neml2/tensors/TensorValue.h"
 
 namespace neml2::crystallography
 {
@@ -50,10 +50,17 @@ CubicCrystal::expected_options()
 }
 
 CubicCrystal::CubicCrystal(const OptionSet & options)
-  : CrystalGeometry(
-        options,
-        symmetry_operations_from_orbifold("432"),
-        Vec(ATensor(R2::fill(options.get<TensorName<Scalar>>("lattice_parameter").resolve()))))
+  : CubicCrystal(options, options.get<Factory *>("_factory"))
+{
+}
+
+CubicCrystal::CubicCrystal(const OptionSet & options, Factory * factory)
+  : CrystalGeometry(options,
+                    symmetry_operations_from_orbifold("432"),
+                    Vec(ATensor(R2::fill(
+                        options.get<TensorName<Scalar>>("lattice_parameter").resolve(factory)))),
+                    options.get<TensorName<MillerIndex>>("slip_directions").resolve(factory),
+                    options.get<TensorName<MillerIndex>>("slip_planes").resolve(factory))
 {
 }
 

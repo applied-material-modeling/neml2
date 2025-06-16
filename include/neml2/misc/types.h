@@ -26,6 +26,7 @@
 
 #include <c10/util/ArrayRef.h>
 #include <c10/core/TensorOptions.h>
+#include <c10/core/Scalar.h>
 
 namespace at
 {
@@ -35,6 +36,7 @@ class Tensor;
 namespace neml2
 {
 using ATensor = at::Tensor;
+using CScalar = c10::Scalar;
 
 /// Fixed width dtypes (mirroring the definition in <torch/csrc/api/include/torch/types.h>)
 // torch also provide unsigned integer types after version 2.2.1, but for backward compatibility
@@ -60,11 +62,12 @@ using Dtype = c10::ScalarType;
 using DeviceIndex = c10::DeviceIndex;
 using Device = c10::Device;
 
-using Real = double;
 using Size = int64_t;
-using Integer = int64_t;
 using TensorShape = c10::SmallVector<Size, 8>;
 using TensorShapeRef = c10::ArrayRef<Size>;
+
+// Machine precision depending on the dtype
+CScalar machine_precision(Dtype);
 
 /**
  * @brief Role in a function definition
@@ -86,8 +89,8 @@ enum class FType : int8_t
 std::ostream & operator<<(std::ostream & os, FType f);
 
 ///@{ Constants
-constexpr auto eps = std::numeric_limits<Real>::epsilon();
-constexpr Real sqrt2 = 1.4142135623730951;
-constexpr Real invsqrt2 = 0.7071067811865475;
+constexpr auto eps = std::numeric_limits<double>::epsilon();
+constexpr double sqrt2 = 1.4142135623730951;
+constexpr double invsqrt2 = 0.7071067811865475;
 ///@}
 } // namespace neml2

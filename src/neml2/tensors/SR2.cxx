@@ -50,7 +50,7 @@ SR2::SR2(const R2 & T)
 }
 
 SR2
-SR2::fill(const Real & a, const TensorOptions & options)
+SR2::fill(const CScalar & a, const TensorOptions & options)
 {
   return SR2::fill(Scalar(a, options));
 }
@@ -63,7 +63,10 @@ SR2::fill(const Scalar & a)
 }
 
 SR2
-SR2::fill(const Real & a11, const Real & a22, const Real & a33, const TensorOptions & options)
+SR2::fill(const CScalar & a11,
+          const CScalar & a22,
+          const CScalar & a33,
+          const TensorOptions & options)
 {
   return SR2::fill(Scalar(a11, options), Scalar(a22, options), Scalar(a33, options));
 }
@@ -76,12 +79,12 @@ SR2::fill(const Scalar & a11, const Scalar & a22, const Scalar & a33)
 }
 
 SR2
-SR2::fill(const Real & a11,
-          const Real & a22,
-          const Real & a33,
-          const Real & a23,
-          const Real & a13,
-          const Real & a12,
+SR2::fill(const CScalar & a11,
+          const CScalar & a22,
+          const CScalar & a33,
+          const CScalar & a23,
+          const CScalar & a13,
+          const CScalar & a12,
           const TensorOptions & options)
 {
   return SR2::fill(Scalar(a11, options),
@@ -180,7 +183,7 @@ SR2::norm_sq() const
 }
 
 Scalar
-SR2::norm(Real eps) const
+SR2::norm(const CScalar & eps) const
 {
   return neml2::sqrt(norm_sq() + eps);
 }

@@ -49,10 +49,10 @@ Quaternion::Quaternion(const Rot & r)
 }
 
 Quaternion
-Quaternion::fill(const Real & s,
-                 const Real & q1,
-                 const Real & q2,
-                 const Real & q3,
+Quaternion::fill(const CScalar & s,
+                 const CScalar & q1,
+                 const CScalar & q2,
+                 const CScalar & q3,
                  const TensorOptions & options)
 {
   return Quaternion::fill(

@@ -31,7 +31,7 @@ import torch
 
 def test_assemble_by_variable():
     pwd = Path(__file__).parent
-    model = neml2.reload_model(pwd / "test_LabeledAxis.i", "model")
+    model = neml2.load_model(pwd / "test_LabeledAxis.i", "model")
     axis = model.input_axis()
     assembler = neml2.VectorAssembler(axis)
     v = assembler.assemble_by_variable(
@@ -50,7 +50,7 @@ def test_assemble_by_variable():
 
 def test_split_by_variable():
     pwd = Path(__file__).parent
-    model = neml2.reload_model(pwd / "test_LabeledAxis.i", "model")
+    model = neml2.load_model(pwd / "test_LabeledAxis.i", "model")
     axis = model.input_axis()
     assembler = neml2.VectorAssembler(axis)
     v = Tensor(torch.linspace(0, 1, 8), 0)
@@ -67,7 +67,7 @@ def test_split_by_variable():
 
 def test_split_by_subaxis():
     pwd = Path(__file__).parent
-    model = neml2.reload_model(pwd / "test_LabeledAxis.i", "model")
+    model = neml2.load_model(pwd / "test_LabeledAxis.i", "model")
     axis = model.input_axis()
     assembler = neml2.VectorAssembler(axis)
     v = Tensor(torch.linspace(0, 1, 8), 0)

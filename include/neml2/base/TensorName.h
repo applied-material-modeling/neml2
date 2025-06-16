@@ -30,6 +30,7 @@
 namespace neml2
 {
 class Model;
+class Factory;
 
 /**
  * @brief The name of a tensor object that can be referenced in the input files.
@@ -69,7 +70,7 @@ public:
    * The underlying string is parsed and used to resolve the cross-reference. It is assumed that the
    * cross-referenced tensor object has already been manufactured at this point.
    */
-  const T & resolve() const;
+  const T & resolve(Factory * factory = nullptr) const;
   const T & resolve(Model * caller, const std::string & pname) const;
 
   /// Test equality
@@ -85,7 +86,7 @@ public:
 
 private:
   /// Resolve a plain numeric literal
-  T resolve_number(Real val) const;
+  T resolve_number(double val) const;
 
   /// The raw string literal.
   std::string _raw_str;
@@ -94,7 +95,7 @@ private:
   mutable T _value;
 
   /// The tensor or variable referred to by the name
-  mutable const T * _tensor = nullptr;
+  mutable std::shared_ptr<T> _tensor = nullptr;
 };
 
 /// Stream into a TensorName (used by Parsers to extract input options)

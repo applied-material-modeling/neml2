@@ -30,7 +30,7 @@ import neml2
 
 def test_named_parameters():
     pwd = Path(__file__).parent
-    model = neml2.reload_model(pwd / "test_ParameterStore.i", "model")
+    model = neml2.load_model(pwd / "test_ParameterStore.i", "model")
 
     # This model has two parameters
     E = model.named_parameters()["E"]
@@ -43,7 +43,7 @@ def test_named_parameters():
 
 def test_get_parameter():
     pwd = Path(__file__).parent
-    model = neml2.reload_model(pwd / "test_ParameterStore.i", "model")
+    model = neml2.load_model(pwd / "test_ParameterStore.i", "model")
 
     # Parameters should have the correct value
     assert torch.allclose(model.E.torch(), torch.tensor(100.0, dtype=torch.float64))
@@ -52,7 +52,7 @@ def test_get_parameter():
 
 def test_set_parameter():
     pwd = Path(__file__).parent
-    model = neml2.reload_model(pwd / "test_ParameterStore.i", "model")
+    model = neml2.load_model(pwd / "test_ParameterStore.i", "model")
 
     # This model has two parameters
     model.E = neml2.Scalar.full(200.0)
@@ -65,7 +65,7 @@ def test_set_parameter():
 
 def test_set_parameters():
     pwd = Path(__file__).parent
-    model = neml2.reload_model(pwd / "test_ParameterStore.i", "model")
+    model = neml2.load_model(pwd / "test_ParameterStore.i", "model")
 
     # This model has two parameters
     model.set_parameters(

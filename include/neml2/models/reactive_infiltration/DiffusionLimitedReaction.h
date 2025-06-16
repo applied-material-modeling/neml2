@@ -45,7 +45,7 @@ protected:
   const Variable<Scalar> & _ro;
 
   /// Dummy thickness of the product phase to prevent singularity
-  const Real _delta;
+  const double _delta;
 
   /// Reactivity
   const Variable<Scalar> & _R_l;
@@ -58,6 +58,6 @@ protected:
   const Scalar & _D;
 
   /// Molar volume of the rate-limiting species
-  const Real _omega;
+  const double _omega;
 };
 } // namespace neml2

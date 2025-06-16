@@ -24,18 +24,19 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include "utils.h"
-#include "neml2/user_tensors/EmptyTensor.h"
+#include "neml2/base/Factory.h"
+#include "neml2/base/NEML2Object.h"
+#include "neml2/tensors/Tensor.h"
 
 using namespace neml2;
 
 TEST_CASE("EmptyTensor", "[user_tensors]")
 {
-  reload_input("user_tensors/test_EmptyTensor.i");
+  auto factory = load_input("user_tensors/test_EmptyTensor.i");
 
   SECTION("EmptyTensor")
   {
-    const auto a = Factory::get_object_ptr<Tensor>("Tensors", "a");
+    const auto a = factory->get_object<Tensor>("Tensors", "a");
     REQUIRE(a->batch_sizes() == TensorShape{2, 1});
     REQUIRE(a->base_sizes() == TensorShape{2, 3});
   }

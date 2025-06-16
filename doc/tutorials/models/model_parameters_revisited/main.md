@@ -66,8 +66,8 @@ As usual, we can inspect the structure of the composed model using the following
   {
     using namespace neml2;
 
-    auto & model = load_model("input1.i", "eq");
-    std::cout << model << std::endl;
+    auto model = load_model("input1.i", "eq");
+    std::cout << *model << std::endl;
   }
   ```
   @endsource
@@ -156,9 +156,9 @@ In this input file, a tensor named "alpha" with batch shape `(2, 2)` is created 
   {
     using namespace neml2;
 
-    auto & model = load_model("input2.i", "eq");
-    std::cout << model << std::endl << std::endl;
-    std::cout << "eq1_alpha:\n" << Tensor(model.get_parameter("eq1_alpha")) << std::endl;
+    auto model = load_model("input2.i", "eq");
+    std::cout << *model << std::endl << std::endl;
+    std::cout << "eq1_alpha:\n" << Tensor(model->get_parameter("eq1_alpha")) << std::endl;
   }
   ```
   @endsource
@@ -266,8 +266,8 @@ The composed model automatically reflects such restructuring:
   {
     using namespace neml2;
 
-    auto & model = load_model("input3.i", "eq");
-    std::cout << model << std::endl;
+    auto model = load_model("input3.i", "eq");
+    std::cout << *model << std::endl;
   }
   ```
   @endsource
@@ -394,8 +394,8 @@ Again, NEML2 automatically reflects such change in model structure:
   {
     using namespace neml2;
 
-    auto & model = load_model("input4.i", "eq");
-    std::cout << model << std::endl;
+    auto model = load_model("input4.i", "eq");
+    std::cout << *model << std::endl;
   }
   ```
   @endsource

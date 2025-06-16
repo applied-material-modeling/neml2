@@ -67,7 +67,7 @@ MixedControlSetup::expected_options()
 
 MixedControlSetup::MixedControlSetup(const OptionSet & options)
   : Model(options),
-    _threshold(options.get<TensorName<Tensor>>("threshold").resolve()),
+    _threshold(declare_buffer<Tensor>("c", "threshold")),
     _control(declare_input_variable<SR2>("control")),
     _fixed_values(declare_input_variable<SR2>("fixed_values")),
     _mixed_state(declare_input_variable<SR2>("mixed_state")),

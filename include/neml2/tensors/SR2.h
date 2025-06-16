@@ -51,22 +51,22 @@ public:
   SR2(const R2 & T);
 
   /// Fill the diagonals with a11 = a22 = a33 = a
-  [[nodiscard]] static SR2 fill(const Real & a,
+  [[nodiscard]] static SR2 fill(const CScalar & a,
                                 const TensorOptions & options = default_tensor_options());
   [[nodiscard]] static SR2 fill(const Scalar & a);
   /// Fill the diagonals with a11, a22, a33
-  [[nodiscard]] static SR2 fill(const Real & a11,
-                                const Real & a22,
-                                const Real & a33,
+  [[nodiscard]] static SR2 fill(const CScalar & a11,
+                                const CScalar & a22,
+                                const CScalar & a33,
                                 const TensorOptions & options = default_tensor_options());
   [[nodiscard]] static SR2 fill(const Scalar & a11, const Scalar & a22, const Scalar & a33);
   /// Fill all entries
-  [[nodiscard]] static SR2 fill(const Real & a11,
-                                const Real & a22,
-                                const Real & a33,
-                                const Real & a23,
-                                const Real & a13,
-                                const Real & a12,
+  [[nodiscard]] static SR2 fill(const CScalar & a11,
+                                const CScalar & a22,
+                                const CScalar & a33,
+                                const CScalar & a23,
+                                const CScalar & a13,
+                                const CScalar & a12,
                                 const TensorOptions & options = default_tensor_options());
   [[nodiscard]] static SR2 fill(const Scalar & a11,
                                 const Scalar & a22,
@@ -106,7 +106,7 @@ public:
   Scalar norm_sq() const;
 
   /// Norm
-  Scalar norm(Real eps = 0) const;
+  Scalar norm(const CScalar & eps = 0) const;
 
   /// Outer product ij,kl -> ijkl
   SSR4 outer(const SR2 & other) const;

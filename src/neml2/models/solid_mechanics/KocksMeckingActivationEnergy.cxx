@@ -44,12 +44,12 @@ KocksMeckingActivationEnergy::expected_options()
   options.set_parameter<TensorName<Scalar>>("shear_modulus");
   options.set("shear_modulus").doc() = "The shear modulus";
 
-  options.set<Real>("eps0");
+  options.set<double>("eps0");
   options.set("eps0").doc() = "Reference strain rate";
 
-  options.set<Real>("k");
+  options.set<double>("k");
   options.set("k").doc() = "The Boltzmann constant";
-  options.set<Real>("b");
+  options.set<double>("b");
   options.set("b").doc() = "Magnitude of the Burgers vector";
 
   options.set_input("temperature") = VariableName(FORCES, "T");
@@ -66,9 +66,9 @@ KocksMeckingActivationEnergy::expected_options()
 KocksMeckingActivationEnergy::KocksMeckingActivationEnergy(const OptionSet & options)
   : Model(options),
     _mu(declare_parameter<Scalar>("mu", "shear_modulus", /*allow_nonlinear=*/true)),
-    _eps0(options.get<Real>("eps0")),
-    _k(options.get<Real>("k")),
-    _b3(options.get<Real>("b") * options.get<Real>("b") * options.get<Real>("b")),
+    _eps0(options.get<double>("eps0")),
+    _k(options.get<double>("k")),
+    _b3(options.get<double>("b") * options.get<double>("b") * options.get<double>("b")),
     _T(declare_input_variable<Scalar>("temperature")),
     _eps_dot(declare_input_variable<Scalar>("strain_rate")),
     _g(declare_output_variable<Scalar>("activation_energy"))

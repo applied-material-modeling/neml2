@@ -64,9 +64,12 @@ void
 ProductGeometry::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   neml_assert_dbg(!d2out_din2, "Second derivatives not implemented");
+  neml_assert_dbg(_phi_s.scalar_type() == _phi_p.scalar_type(),
+                  "Solid and product fractions must have the same scalar type");
 
+  const auto eps = machine_precision(_phi_s.scalar_type());
   const auto cap = 1 - _phi_s - _phi_p;
-  const auto ri = sqrt(clamp(cap, machine_precision(), 1.0));
+  const auto ri = sqrt(clamp(cap, eps, 1.0));
   const auto ro = sqrt(1 - _phi_s);
 
   if (out)
@@ -77,8 +80,8 @@ ProductGeometry::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (dout_din)
   {
-    _ri.d(_phi_s) = where(cap <= machine_precision(), Scalar::zeros_like(ri), -0.5 / ri);
-    _ri.d(_phi_p) = where(cap <= machine_precision(), Scalar::zeros_like(ri), -0.5 / ri);
+    _ri.d(_phi_s) = where(cap <= eps, Scalar::zeros_like(ri), -0.5 / ri);
+    _ri.d(_phi_p) = where(cap <= eps, Scalar::zeros_like(ri), -0.5 / ri);
     _ro.d(_phi_s) = -0.5 / ro;
   }
 }

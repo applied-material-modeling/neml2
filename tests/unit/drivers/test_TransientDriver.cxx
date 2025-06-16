@@ -24,8 +24,8 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include "utils.h"
-#include "neml2/drivers/TransientDriver.h"
+#include "neml2/base/Factory.h"
+#include "neml2/drivers/Driver.h"
 
 using namespace neml2;
 
@@ -33,17 +33,18 @@ TEST_CASE("TransientDriver", "[TransientDriver]")
 {
   SECTION("predictor = PREVIOUS_STATE")
   {
-    reload_input("drivers/test_TransientDriver.i");
-    auto & driver = get_driver("driver");
-    diagnose(driver);
-    REQUIRE(driver.run());
+    auto factory = load_input("drivers/test_TransientDriver.i");
+    auto driver = factory->get_driver("driver");
+    diagnose(*driver);
+    REQUIRE(driver->run());
   }
 
   SECTION("predictor = LINEAR_EXTRAPOLATION")
   {
-    reload_input("drivers/test_TransientDriver.i", "Drivers/driver/predictor=LINEAR_EXTRAPOLATION");
-    auto & driver = get_driver("driver");
-    diagnose(driver);
-    REQUIRE(driver.run());
+    auto factory = load_input("drivers/test_TransientDriver.i",
+                              "Drivers/driver/predictor=LINEAR_EXTRAPOLATION");
+    auto driver = factory->get_driver("driver");
+    diagnose(*driver);
+    REQUIRE(driver->run());
   }
 }

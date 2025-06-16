@@ -46,17 +46,17 @@ public:
 
 private:
   /// The driver that will run the NEML2 model
-  TransientDriver & _driver;
+  const std::shared_ptr<TransientDriver> _driver;
 
   /// The reference file to be diff'ed against
   std::filesystem::path _reference;
 
-  Real _rtol;
-  Real _atol;
+  double _rtol;
+  double _atol;
 };
 
 std::string diff(const jit::named_buffer_list & res,
                  const jit::named_buffer_list & ref,
-                 Real rtol = 1e-5,
-                 Real atol = 1e-8);
+                 double rtol = 1e-5,
+                 double atol = 1e-8);
 } // namespace neml2

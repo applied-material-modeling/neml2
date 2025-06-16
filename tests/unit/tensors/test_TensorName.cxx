@@ -25,7 +25,8 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_all.hpp>
 
-#include "utils.h"
+#include "neml2/base/Factory.h"
+#include "neml2/base/NEML2Object.h"
 #include "neml2/base/TensorName.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/Scalar.h"
@@ -36,9 +37,9 @@ TEST_CASE("TensorName", "[base]")
 {
   SECTION("Scalar cross-reference")
   {
-    reload_input("tensors/test_TensorName_Scalar.i");
+    auto factory = load_input("tensors/test_TensorName_Scalar.i");
 
-    const auto auto_3 = Factory::get_object_ptr<SR2>("Tensors", "auto_3_crossref");
+    const auto auto_3 = factory->get_object<SR2>("Tensors", "auto_3_crossref");
 
     const auto scalar1 = Scalar::create({1, 2, 3, 4, 5}, default_tensor_options());
     const auto scalar2 = Scalar::create({5, 6, 7, 8, 9}, default_tensor_options());
@@ -57,7 +58,7 @@ TEST_CASE("TensorName", "[base]")
 
   SECTION("empty scalar")
   {
-    REQUIRE_THROWS_WITH(reload_input("tensors/test_TensorName_empty_Scalar.i"),
+    REQUIRE_THROWS_WITH(load_input("tensors/test_TensorName_empty_Scalar.i"),
                         Catch::Matchers::ContainsSubstring("Failed to parse '' as a"));
   }
 
@@ -77,7 +78,7 @@ TEST_CASE("TensorName", "[base]")
 
   SECTION("empty tensor")
   {
-    REQUIRE_THROWS_WITH(reload_input("tensors/test_TensorName_empty_Tensor.i"),
+    REQUIRE_THROWS_WITH(load_input("tensors/test_TensorName_empty_Tensor.i"),
                         Catch::Matchers::ContainsSubstring("Failed to parse '' as a"));
   }
 }

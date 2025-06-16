@@ -62,8 +62,9 @@ ChabochePlasticHardening::ChabochePlasticHardening(const OptionSet & options)
 void
 ChabochePlasticHardening::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
+  auto eps = machine_precision(_X.scalar_type());
   // The effective stress
-  auto s = SR2(_X).norm(machine_precision());
+  auto s = SR2(_X).norm(eps);
   // The part that's proportional to the plastic strain rate
   auto g_term = 2.0 / 3.0 * _C * _NM - _g * _X;
   // The static recovery term

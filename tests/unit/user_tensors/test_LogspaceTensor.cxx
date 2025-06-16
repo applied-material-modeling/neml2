@@ -24,26 +24,27 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include "utils.h"
-#include "neml2/user_tensors/LogspaceTensor.h"
+#include "neml2/base/Factory.h"
+#include "neml2/base/NEML2Object.h"
+#include "neml2/tensors/Tensor.h"
 
 using namespace neml2;
 
 TEST_CASE("LogspaceTensor", "[user_tensors]")
 {
-  reload_input("user_tensors/test_LogspaceTensor.i");
+  auto factory = load_input("user_tensors/test_LogspaceTensor.i");
 
   SECTION("LogspaceTensor")
   {
-    const auto a = Factory::get_object_ptr<Tensor>("Tensors", "a");
+    const auto a = factory->get_object<Tensor>("Tensors", "a");
     REQUIRE(a->batch_sizes() == TensorShape{100, 2, 1});
     REQUIRE(a->base_sizes() == TensorShape{2, 3});
 
-    const auto a0 = Factory::get_object_ptr<Tensor>("Tensors", "a0");
-    const auto a1 = Factory::get_object_ptr<Tensor>("Tensors", "a1");
+    const auto a0 = factory->get_object<Tensor>("Tensors", "a0");
+    const auto a1 = factory->get_object<Tensor>("Tensors", "a1");
     Size nstep = 100;
     Size dim = 0;
-    Real base = 10;
+    double base = 10;
     REQUIRE(at::allclose(*a, Tensor::logspace(*a0, *a1, nstep, dim, base)));
   }
 }

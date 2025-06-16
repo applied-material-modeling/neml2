@@ -28,6 +28,12 @@
 #include "neml2/models/BufferStore.h"
 #include "neml2/base/Factory.h"
 
+// These headers are not directly used by Data, but are included here so that derived classes do
+// not have to include them separately. This is a convenience for the user, and is a reasonable
+// choice since these headers are light and bring in little dependency.
+#include "neml2/base/TensorName.h"
+#include "neml2/tensors/TensorValue.h"
+
 namespace neml2
 {
 class Data : public NEML2Object, public BufferStore
@@ -43,7 +49,7 @@ public:
   Data(const OptionSet & options);
 
   /// All the registered data objects
-  const std::vector<Data *> & registered_data() const { return _registered_data; }
+  const std::vector<std::shared_ptr<Data>> & registered_data() const { return _registered_data; }
 
 protected:
   /**
@@ -54,17 +60,19 @@ protected:
   {
     OptionSet extra_opts;
     extra_opts.set<NEML2Object *>("_host") = host();
-    auto data = Factory::get_object_ptr<T>("Data", name, extra_opts, /*force_create=*/false);
+    if (!host()->factory())
+      throw SetupException("Internal error: Host object '" + host()->name() +
+                           "' does not have a factory set.");
+    auto data = host()->factory()->get_object<T>("Data", name, extra_opts, /*force_create=*/false);
 
-    if (std::find(_registered_data.begin(), _registered_data.end(), data.get()) !=
-        _registered_data.end())
+    if (std::find(_registered_data.begin(), _registered_data.end(), data) != _registered_data.end())
       throw SetupException("Data named '" + name + "' has already been registered.");
 
-    _registered_data.push_back(data.get());
+    _registered_data.push_back(data);
     return *data;
   }
 
   /// Registered Data objects
-  std::vector<Data *> _registered_data;
+  std::vector<std::shared_ptr<Data>> _registered_data;
 };
 } // namespace neml2

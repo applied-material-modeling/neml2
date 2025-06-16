@@ -30,16 +30,16 @@
 namespace neml2
 {
 #define DECLARE_POW(T)                                                                             \
-  T pow(const T & a, const Real & n);                                                              \
+  T pow(const T & a, const CScalar & n);                                                           \
   T pow(const T & a, const Scalar & n)
 FOR_ALL_TENSORBASE(DECLARE_POW);
 #undef DECLARE_POW
 
-Scalar pow(const Real & a, const Scalar & n);
+Scalar pow(const CScalar & a, const Scalar & n);
 
 /// Element-wise pow
 Tensor pow(const Tensor & a, const Tensor & n);
 
 /// Element-wise pow
-Tensor pow(const Real & a, const Tensor & n);
+Tensor pow(const CScalar & a, const Tensor & n);
 } // namespace neml2

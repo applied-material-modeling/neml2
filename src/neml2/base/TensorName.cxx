@@ -26,18 +26,19 @@
 
 #include "neml2/base/TensorName.h"
 #include "neml2/base/Factory.h"
+#include "neml2/base/NEML2Object.h"
 #include "neml2/base/Parser.h"
 
 namespace neml2
 {
 template <typename T>
 const T &
-TensorName<T>::resolve() const
+TensorName<T>::resolve(Factory * factory) const
 {
   // Try to parse as a number
   if (_value.defined())
     return _value;
-  Real val = NAN;
+  double val = NAN;
   auto success = utils::parse_(val, _raw_str);
   if (success)
     return _value = resolve_number(val);
@@ -45,9 +46,15 @@ TensorName<T>::resolve() const
   // Try to parse as a tensor object
   if (_tensor)
     return *_tensor;
+
+  if (!factory)
+    throw ParserException("Failed to resolve tensor name '" + _raw_str + "':" +
+                          "\n  Parsing it as a plain numeric literal failed with error message: " +
+                          utils::parse_failure_message<double>(_raw_str));
+
   try
   {
-    _tensor = &Factory::get_object<T>("Tensors", _raw_str);
+    _tensor = factory->get_object<T>("Tensors", _raw_str);
     return *_tensor;
   }
   catch (const FactoryException & err_tensor)
@@ -55,14 +62,14 @@ TensorName<T>::resolve() const
     throw ParserException(
         "Failed to resolve tensor name '" + _raw_str + "'. Two attempts were made:" +
         "\n  1. Parsing it as a plain numeric literal failed with error message: " +
-        utils::parse_failure_message<Real>(_raw_str) +
+        utils::parse_failure_message<double>(_raw_str) +
         "\n  2. Parsing it as a tensor object failed with error message: " + err_tensor.what());
   }
 }
 
 template <typename T>
 T
-TensorName<T>::resolve_number(Real val) const
+TensorName<T>::resolve_number(double val) const
 {
   if constexpr (std::is_same_v<T, Tensor> || std::is_same_v<T, ATensor>)
     return Scalar::create(val);

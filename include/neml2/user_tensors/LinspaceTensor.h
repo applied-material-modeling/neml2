@@ -33,7 +33,7 @@ namespace neml2
 /**
  * @brief Create a linspace Tensor from the input file.
  */
-class LinspaceTensor : public Tensor, public UserTensorBase
+class LinspaceTensor : public UserTensorBase, public Tensor
 {
 public:
   static OptionSet expected_options();

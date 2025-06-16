@@ -82,24 +82,24 @@ protected:
   Scalar _delta;
 
   /// Initial size of the trust region
-  Real _delta_0;
+  double _delta_0;
 
   /// Maximum size of the trust region
-  Real _delta_max;
+  double _delta_max;
 
   /// Criteria for reducing the trust region
-  Real _reduce_criteria;
+  double _reduce_criteria;
 
   /// Criteria for expanding the trust region
-  Real _expand_criteria;
+  double _expand_criteria;
 
   /// Cutback factor if we do reduce the trust region
-  Real _reduce_factor;
+  double _reduce_factor;
 
   /// Expansion factor if we do increase the trust region
-  Real _expand_factor;
+  double _expand_factor;
 
   /// Acceptance criteria for a step
-  Real _accept_criteria;
+  double _accept_criteria;
 };
 } // namespace neml2

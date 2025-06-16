@@ -98,9 +98,9 @@ Note that a dummy static variable (unique to the class typename) is created to p
 
 ## Factory
 
-The NEML2 factory is another RAII-style singleton object which handles the runtime creation of objects. The generic API for object creation and retrieval is neml2::Factory::get_object_ptr.
+The NEML2 factory handles the creation of objects at runtime. The generic API for object creation and retrieval is neml2::Factory::get_object.
 
-In our example, the parser will first extract input file options from the input file and use them to fill out the expected options (defined by the `ProjectileAcceleration::expected_options()` method). The factory then pass the collected options to the constructor to create this object. The constructor should accept an neml2::OptionSet and define how the collected options are used.
+In our example, the parser will first extract input file options from the input file and use them to fill out the expected options (defined by the `ProjectileAcceleration::expected_options()` method). The factory then passes the collected options to the constructor to create this object. The constructor should accept an neml2::OptionSet and define how the collected options are used.
 @source:src1
 ```cpp
 namespace neml2
@@ -148,10 +148,10 @@ main()
 {
   using namespace neml2;
   set_default_dtype(kFloat64);
-  auto & model = neml2::load_model("input.i", "accel");
+  auto model = neml2::load_model("input.i", "accel");
 
   // Print out each option parsed from the input file
-  const auto & options = model.input_options();
+  const auto & options = model->input_options();
 
   std::cout << "                  velocity: " << options.get("velocity") << std::endl;
   std::cout << "              acceleration: " << options.get("acceleration") << std::endl;

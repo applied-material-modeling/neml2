@@ -217,7 +217,7 @@ protected:
   const bool _autoscale;
 
   /// Tolerance for convergence check of the iterative automatic scaling algorithm
-  const Real _autoscale_tol;
+  const double _autoscale_tol;
 
   /// Maximum number of iterations allowed for the iterative automatic scaling algorithm
   const unsigned int _autoscale_miter;

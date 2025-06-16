@@ -90,11 +90,11 @@ public:
   [[nodiscard]] static Derived ones(const TraceableTensorShape & batch_shape,
                                     const TensorOptions & options = default_tensor_options());
   /// Unbatched tensor filled with a given value given base shape
-  [[nodiscard]] static Derived full(Real init,
+  [[nodiscard]] static Derived full(const CScalar & init,
                                     const TensorOptions & options = default_tensor_options());
   /// Full tensor given batch shape
   [[nodiscard]] static Derived full(const TraceableTensorShape & batch_shape,
-                                    Real init,
+                                    const CScalar & init,
                                     const TensorOptions & options = default_tensor_options());
 
   /// Derived tensor classes should define identity_map where appropriate
@@ -211,7 +211,7 @@ PrimitiveTensor<Derived, S...>::ones(const TraceableTensorShape & batch_shape,
 
 template <class Derived, Size... S>
 Derived
-PrimitiveTensor<Derived, S...>::full(Real init, const TensorOptions & options)
+PrimitiveTensor<Derived, S...>::full(const CScalar & init, const TensorOptions & options)
 {
   return Tensor::full(const_base_sizes, init, options);
 }
@@ -219,7 +219,7 @@ PrimitiveTensor<Derived, S...>::full(Real init, const TensorOptions & options)
 template <class Derived, Size... S>
 Derived
 PrimitiveTensor<Derived, S...>::full(const TraceableTensorShape & batch_shape,
-                                     Real init,
+                                     const CScalar & init,
                                      const TensorOptions & options)
 {
   return Tensor::full(batch_shape, const_base_sizes, init, options);

@@ -28,6 +28,7 @@
 #include "neml2/misc/assertions.h"
 #include "neml2/base/TensorName.h"
 #include "neml2/base/Parser.h"
+#include "neml2/base/Settings.h"
 #include "neml2/tensors/tensors.h"
 #include "neml2/tensors/TensorValue.h"
 
@@ -82,7 +83,7 @@ ParameterStore::declare_parameter(const std::string & name, const T & rawval)
 {
   if (_object->host() != _object)
     return _object->host<ParameterStore>()->declare_parameter(
-        _object->name() + parameter_name_separator() + name, rawval);
+        _object->name() + _object->settings().parameter_name_separator() + name, rawval);
 
   TensorValueBase * base_ptr = nullptr;
 
@@ -124,7 +125,7 @@ resolve_tensor_name(const TensorName<T> & tn, Model * caller, const std::string 
     // 1. "model_name.variable_name"
     // 2. "model_name"
     // 3. "variable_name"
-    Model * provider = nullptr;
+    std::shared_ptr<Model> provider = nullptr;
     VariableName var_name;
 
     // Split the raw string into tokens with the delimiter '.'
@@ -144,7 +145,8 @@ resolve_tensor_name(const TensorName<T> & tn, Model * caller, const std::string 
       try
       {
         // Get the model
-        provider = &Factory::get_object<Model>("Models", mname, extra_opts, /*force_create=*/false);
+        provider = caller->factory()->get_object<Model>(
+            "Models", mname, extra_opts, /*force_create=*/false);
 
         // Apparently, the model must have one and only one output variable.
         const auto nvar = provider->output_axis().nvariable();
@@ -189,9 +191,9 @@ resolve_tensor_name(const TensorName<T> & tn, Model * caller, const std::string 
         options.set("to").user_specified() = true;
         options.name() = obj_name;
         options.type() = obj_type;
-        if (Factory::options()["Models"].count(obj_name))
+        if (caller->factory()->input_file()["Models"].count(obj_name))
         {
-          const auto & existing_options = Factory::options()["Models"][obj_name];
+          const auto & existing_options = caller->factory()->input_file()["Models"][obj_name];
           if (!options_compatible(existing_options, options))
             throw ParserException(
                 "Option clash when declaring an input parameter. Existing options:\n" +
@@ -199,11 +201,11 @@ resolve_tensor_name(const TensorName<T> & tn, Model * caller, const std::string 
                 utils::stringify(options));
         }
         else
-          Factory::options()["Models"][obj_name] = std::move(options);
+          caller->factory()->input_file()["Models"][obj_name] = std::move(options);
 
         // Get the model
-        provider =
-            &Factory::get_object<Model>("Models", obj_name, extra_opts, /*force_create=*/false);
+        provider = caller->factory()->get_object<Model>(
+            "Models", obj_name, extra_opts, /*force_create=*/false);
 
         // Retrieve the output variable
         var_name = provider->output_axis().variable_names()[0];
@@ -215,7 +217,8 @@ resolve_tensor_name(const TensorName<T> & tn, Model * caller, const std::string 
       const auto & mname = tokens[0];
 
       // Get the model
-      provider = &Factory::get_object<Model>("Models", mname, extra_opts, /*force_create=*/false);
+      provider =
+          caller->factory()->get_object<Model>("Models", mname, extra_opts, /*force_create=*/false);
 
       // The second token is the variable name
       auto success = utils::parse_<VariableName>(var_name, tokens[1]);
@@ -258,9 +261,12 @@ ParameterStore::declare_parameter(const std::string & name,
                                   const TensorName<T> & tensorname,
                                   bool allow_nonlinear)
 {
+  auto * factory = _object->factory();
+  neml_assert(factory, "Internal error: factory != nullptr");
+
   try
   {
-    return declare_parameter(name, tensorname.resolve());
+    return declare_parameter(name, tensorname.resolve(factory));
   }
   catch (const SetupException & err_tensor)
   {
@@ -291,18 +297,14 @@ ParameterStore::declare_parameter(const std::string & name,
                                   const std::string & input_option_name,
                                   bool allow_nonlinear)
 {
-  if (_object->input_options().contains<T>(input_option_name))
-    return declare_parameter(name, _object->input_options().get<T>(input_option_name));
-
-  if (_object->input_options().contains<TensorName<T>>(input_option_name))
+  if (_object->input_options().contains(input_option_name))
     return declare_parameter<T>(
         name, _object->input_options().get<TensorName<T>>(input_option_name), allow_nonlinear);
 
   throw NEMLException("Trying to register parameter named " + name + " from input option named " +
                       input_option_name + " of type " + utils::demangle(typeid(T).name()) +
                       ". Make sure you provided the correct parameter name, option name, and "
-                      "parameter type. Note that the parameter type can either be a plain type or "
-                      "a cross-reference.");
+                      "parameter type.");
 }
 
 #define PARAMETERSTORE_INTANTIATE_TENSORBASE(T)                                                    \

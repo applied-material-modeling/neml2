@@ -24,8 +24,8 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include "utils.h"
-#include "neml2/user_tensors/UserPrimitiveTensor.h"
+#include "neml2/base/Factory.h"
+#include "neml2/base/NEML2Object.h"
 #include "neml2/tensors/tensors.h"
 
 using namespace neml2;
@@ -34,45 +34,45 @@ TEST_CASE("UserPrimitiveTensor", "[user_tensors]")
 {
   SECTION("load and reshape correctly")
   {
-    reload_input("user_tensors/test_UserPrimitiveTensor.i");
+    auto factory = load_input("user_tensors/test_UserPrimitiveTensor.i");
 
-    const auto user_Scalar = Factory::get_object_ptr<Scalar>("Tensors", "Scalar");
+    const auto user_Scalar = factory->get_object<Scalar>("Tensors", "Scalar");
     REQUIRE(user_Scalar->batch_sizes() == TensorShape{3, 2});
 
-    const auto user_Vec = Factory::get_object_ptr<Vec>("Tensors", "Vec");
+    const auto user_Vec = factory->get_object<Vec>("Tensors", "Vec");
     REQUIRE(user_Vec->batch_sizes() == TensorShape{3, 2});
 
-    const auto user_Rot = Factory::get_object_ptr<Rot>("Tensors", "Rot");
+    const auto user_Rot = factory->get_object<Rot>("Tensors", "Rot");
     REQUIRE(user_Rot->batch_sizes() == TensorShape{3, 2});
 
-    const auto user_R2 = Factory::get_object_ptr<R2>("Tensors", "R2");
+    const auto user_R2 = factory->get_object<R2>("Tensors", "R2");
     REQUIRE(user_R2->batch_sizes() == TensorShape{3, 2});
 
-    const auto user_SR2 = Factory::get_object_ptr<SR2>("Tensors", "SR2");
+    const auto user_SR2 = factory->get_object<SR2>("Tensors", "SR2");
     REQUIRE(user_SR2->batch_sizes() == TensorShape{3, 2});
 
-    const auto user_R3 = Factory::get_object_ptr<R3>("Tensors", "R3");
+    const auto user_R3 = factory->get_object<R3>("Tensors", "R3");
     REQUIRE(user_R3->batch_sizes() == TensorShape{3, 2});
 
-    const auto user_SFR3 = Factory::get_object_ptr<SFR3>("Tensors", "SFR3");
+    const auto user_SFR3 = factory->get_object<SFR3>("Tensors", "SFR3");
     REQUIRE(user_SFR3->batch_sizes() == TensorShape{3, 2});
 
-    const auto user_R4 = Factory::get_object_ptr<R4>("Tensors", "R4");
+    const auto user_R4 = factory->get_object<R4>("Tensors", "R4");
     REQUIRE(user_R4->batch_sizes() == TensorShape{3, 2});
 
-    const auto user_SFR4 = Factory::get_object_ptr<SFR4>("Tensors", "SFR4");
+    const auto user_SFR4 = factory->get_object<SFR4>("Tensors", "SFR4");
     REQUIRE(user_SFR4->batch_sizes() == TensorShape{3, 2});
 
-    const auto user_WFR4 = Factory::get_object_ptr<WFR4>("Tensors", "WFR4");
+    const auto user_WFR4 = factory->get_object<WFR4>("Tensors", "WFR4");
     REQUIRE(user_WFR4->batch_sizes() == TensorShape{3, 2});
 
-    const auto user_SSR4 = Factory::get_object_ptr<SSR4>("Tensors", "SSR4");
+    const auto user_SSR4 = factory->get_object<SSR4>("Tensors", "SSR4");
     REQUIRE(user_SSR4->batch_sizes() == TensorShape{3, 2});
 
-    const auto user_R5 = Factory::get_object_ptr<R5>("Tensors", "R5");
+    const auto user_R5 = factory->get_object<R5>("Tensors", "R5");
     REQUIRE(user_R5->batch_sizes() == TensorShape{3, 2});
 
-    const auto user_SSFR5 = Factory::get_object_ptr<SSFR5>("Tensors", "SSFR5");
+    const auto user_SSFR5 = factory->get_object<SSFR5>("Tensors", "SSFR5");
     REQUIRE(user_SSFR5->batch_sizes() == TensorShape{3, 2});
   }
 }

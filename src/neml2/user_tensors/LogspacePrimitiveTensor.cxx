@@ -24,6 +24,7 @@
 
 #include "neml2/user_tensors/LogspacePrimitiveTensor.h"
 #include "neml2/tensors/tensors.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {
@@ -52,7 +53,7 @@ LogspacePrimitiveTensor<T>::expected_options()
   options.set<Size>("dim") = 0;
   options.set("dim").doc() = "Where to insert the new dimension";
 
-  options.set<Real>("base") = 10;
+  options.set<double>("base") = 10;
   options.set("base").doc() = "Exponent base";
 
   options.set<TensorShape>("batch_expand") = TensorShape();
@@ -64,8 +65,8 @@ LogspacePrimitiveTensor<T>::expected_options()
 
 template <typename T>
 LogspacePrimitiveTensor<T>::LogspacePrimitiveTensor(const OptionSet & options)
-  : T(make(options)),
-    UserTensorBase(options)
+  : UserTensorBase(options),
+    T(make(options))
 {
 }
 
@@ -73,11 +74,14 @@ template <typename T>
 T
 LogspacePrimitiveTensor<T>::make(const OptionSet & options) const
 {
-  auto t = T::logspace(options.get<TensorName<T>>("start").resolve(),
-                       options.get<TensorName<T>>("end").resolve(),
+  auto * f = this->factory();
+  neml_assert(f, "Internal error: factory != nullptr");
+
+  auto t = T::logspace(options.get<TensorName<T>>("start").resolve(f),
+                       options.get<TensorName<T>>("end").resolve(f),
                        options.get<Size>("nstep"),
                        options.get<Size>("dim"),
-                       options.get<Real>("base"));
+                       options.get<double>("base"));
 
   // Expand if requested
   auto S = options.get<TensorShape>("batch_expand");

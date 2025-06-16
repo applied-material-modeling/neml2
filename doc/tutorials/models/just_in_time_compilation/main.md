@@ -54,8 +54,8 @@ And the composed model correctly defines \f$ a \f$, \f$ a_n \f$, \f$ b \f$, \f$ 
   main()
   {
     using namespace neml2;
-    auto & model = load_model("input.i", "eq");
-    std::cout << model << std::endl;
+    auto model = load_model("input.i", "eq");
+    std::cout << *model << std::endl;
   }
   ```
   @endsource
@@ -99,7 +99,7 @@ NEML2 enables tracing of tensor operations lazily. No tracing is performed when 
   {
     using namespace neml2;
     set_default_dtype(kFloat64);
-    auto & model = load_model("input.i", "eq");
+    auto model = load_model("input.i", "eq");
 
     // Create example input variables for tracing
     auto a = Scalar::full(1.0);
@@ -113,14 +113,14 @@ NEML2 enables tracing of tensor operations lazily. No tracing is performed when 
 
     // Evaluate the model for the first time
     // This is when tracing takes place
-    model.value({{VariableName("state", "a"), a},
-                 {VariableName("state", "b"), b},
-                 {VariableName("state", "c"), c},
-                 {VariableName("forces", "t"), t},
-                 {VariableName("old_state", "a"), a_n},
-                 {VariableName("old_state", "b"), b_n},
-                 {VariableName("old_state", "c"), c_n},
-                 {VariableName("old_forces", "t"), t_n}});
+    model->value({{VariableName("state", "a"), a},
+                  {VariableName("state", "b"), b},
+                  {VariableName("state", "c"), c},
+                  {VariableName("forces", "t"), t},
+                  {VariableName("old_state", "a"), a_n},
+                  {VariableName("old_state", "b"), b_n},
+                  {VariableName("old_state", "c"), c_n},
+                  {VariableName("old_forces", "t"), t_n}});
 
     utils::last_executed_optimized_graph()->dump();
   }
@@ -221,7 +221,7 @@ The code below shows that, after a few forward evaluations, the traced graph can
   {
     using namespace neml2;
     set_default_dtype(kFloat64);
-    auto & model = load_model("input.i", "eq");
+    auto model = load_model("input.i", "eq");
 
     // Create example input variables for tracing
     auto a = Scalar::full(1.0);
@@ -243,7 +243,7 @@ The code below shows that, after a few forward evaluations, the traced graph can
                             {VariableName("old_state", "c"), c_n},
                             {VariableName("old_forces", "t"), t_n}});
     for (int i = 0; i < 10; i++)
-      model.value(inputs);
+      model->value(inputs);
 
     utils::last_executed_optimized_graph()->dump();
   }

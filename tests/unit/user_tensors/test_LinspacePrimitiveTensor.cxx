@@ -24,8 +24,8 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include "utils.h"
-#include "neml2/user_tensors/LinspacePrimitiveTensor.h"
+#include "neml2/base/Factory.h"
+#include "neml2/base/NEML2Object.h"
 #include "neml2/tensors/tensors.h"
 
 using namespace neml2;
@@ -33,11 +33,10 @@ using namespace neml2;
 #define test_LinspacePrimitiveTensor(tensor_type, tensor_name, batch_shape, nstep, dim)            \
   SECTION("Linspace" #tensor_type)                                                                 \
   {                                                                                                \
-    const auto tensor_name = Factory::get_object_ptr<tensor_type>("Tensors", #tensor_name);        \
+    const auto tensor_name = factory->get_object<tensor_type>("Tensors", #tensor_name);            \
     const auto tensor_name##_start =                                                               \
-        Factory::get_object_ptr<tensor_type>("Tensors", #tensor_name "0");                         \
-    const auto tensor_name##_end =                                                                 \
-        Factory::get_object_ptr<tensor_type>("Tensors", #tensor_name "1");                         \
+        factory->get_object<tensor_type>("Tensors", #tensor_name "0");                             \
+    const auto tensor_name##_end = factory->get_object<tensor_type>("Tensors", #tensor_name "1");  \
     const auto tensor_name##_correct =                                                             \
         tensor_type::linspace(*tensor_name##_start, *tensor_name##_end, nstep, dim);               \
     REQUIRE(tensor_name->batch_sizes() == batch_shape);                                            \
@@ -48,7 +47,7 @@ using namespace neml2;
 
 TEST_CASE("LinspacePrimitiveTensor", "[user_tensors]")
 {
-  reload_input("user_tensors/test_LinspacePrimitiveTensor.i");
+  auto factory = load_input("user_tensors/test_LinspacePrimitiveTensor.i");
 
   TensorShape B{100, 2, 1};
   Size nstep = 100;

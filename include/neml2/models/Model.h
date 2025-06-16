@@ -36,9 +36,7 @@
 // These headers are not directly used by Model, but are included here so that derived classes do
 // not have to include them separately. This is a convenience for the user, and is a reasonable
 // choice since these headers are light and bring in little dependency.
-#include "neml2/base/TensorName.h"
 #include "neml2/base/LabeledAxis.h"
-#include "neml2/tensors/TensorValue.h"
 #include "neml2/models/Variable.h"
 
 namespace neml2
@@ -46,39 +44,12 @@ namespace neml2
 class Model;
 
 /**
- * @brief A convenient function to manufacture a neml2::Model
- *
- * The input file must have already been parsed and loaded.
- *
- * @param mname Name of the model
- */
-Model & get_model(const std::string & mname);
-
-/**
  * @brief A convenient function to load an input file and get a model
  *
- * @warning All threads share the same input options, so in principle this function is not intended
- * to be called inside a threaded region.
- *
  * @param path Path to the input file to be parsed
  * @param mname Name of the model
  */
-Model & load_model(const std::filesystem::path & path, const std::string & mname);
-
-/**
- * @brief Similar to neml2::load_model, but additionally clear the Factory before loading the model,
- * therefore all previously loaded models become dangling.
- *
- * @warning All threads share the same input options, so in principle this function is not intended
- * to be called inside a threaded region.
- *
- * @param path Path to the input file to be parsed
- * @param mname Name of the model
- */
-Model & reload_model(const std::filesystem::path & path, const std::string & mname);
-
-/// Check the current default precision and warn if it's not double precision
-void check_precision();
+std::shared_ptr<Model> load_model(const std::filesystem::path & path, const std::string & mname);
 
 /**
  * @brief The base class for all constitutive models.
@@ -141,9 +112,12 @@ public:
   virtual void to(const TensorOptions & options);
 
   /// The models that may be used during the evaluation of this model
-  const std::vector<Model *> & registered_models() const { return _registered_models; }
+  const std::vector<std::shared_ptr<Model>> & registered_models() const
+  {
+    return _registered_models;
+  }
   /// Get a registered model by its name
-  Model * registered_model(const std::string & name) const;
+  std::shared_ptr<Model> registered_model(const std::string & name) const;
 
   /// Register a nonlinear parameter
   void register_nonlinear_parameter(const std::string & pname, const NonlinearParameter & param);
@@ -243,6 +217,9 @@ protected:
   void zero_input() override;
   void zero_output() override;
 
+  /// Check the current default precision and warn if it's not double precision
+  void check_precision() const;
+
   /**
    * Request the use of automatic differentiation to compute variable derivatives
    *
@@ -276,7 +253,9 @@ protected:
   template <typename T = Model, typename = typename std::enable_if_t<std::is_base_of_v<Model, T>>>
   T & register_model(const std::string & name, bool nonlinear = false, bool merge_input = true)
   {
-    if (name == this->name())
+    auto model_name =
+        input_options().contains(name) ? input_options().get<std::string>(name) : name;
+    if (model_name == this->name())
       throw SetupException("Model named '" + this->name() +
                            "' is trying to register itself as a sub-model. This is not allowed.");
 
@@ -284,16 +263,19 @@ protected:
     extra_opts.set<NEML2Object *>("_host") = host();
     extra_opts.set<bool>("_nonlinear_system") = nonlinear;
 
-    auto model = Factory::get_object_ptr<T>("Models", name, extra_opts);
-    if (std::find(_registered_models.begin(), _registered_models.end(), model.get()) !=
+    if (!host()->factory())
+      throw SetupException("Internal error: Host object '" + host()->name() +
+                           "' does not have a factory set.");
+    auto model = host()->factory()->get_object<T>("Models", model_name, extra_opts);
+    if (std::find(_registered_models.begin(), _registered_models.end(), model) !=
         _registered_models.end())
-      throw SetupException("Model named '" + name + "' has already been registered.");
+      throw SetupException("Model named '" + model_name + "' has already been registered.");
 
     if (merge_input)
       for (auto && [name, var] : model->input_variables())
         clone_input_variable(*var);
 
-    _registered_models.push_back(model.get());
+    _registered_models.push_back(model);
     return *model;
   }
 
@@ -306,7 +288,7 @@ protected:
   void assemble(Res<false> *, Jac<false> *) override;
 
   /// Models *this* model may use during its evaluation
-  std::vector<Model *> _registered_models;
+  std::vector<std::shared_ptr<Model>> _registered_models;
 
 private:
   template <typename T>

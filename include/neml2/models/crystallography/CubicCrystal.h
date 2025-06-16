@@ -37,5 +37,9 @@ public:
 
   /// Input options
   static OptionSet expected_options();
+
+private:
+  /// Delegated constructor to pass factory
+  CubicCrystal(const OptionSet & options, Factory * factory);
 };
 } // namespace neml2
