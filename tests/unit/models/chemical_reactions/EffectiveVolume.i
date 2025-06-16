@@ -4,7 +4,7 @@
     model = 'model'
     input_Scalar_names = 'state/wb state/ws state/wp state/wg state/phiop'
     input_Scalar_values = 'wb ws wp wg phiop'
-    output_Scalar_names = 'state/out'
+    output_Scalar_names = 'state/V'
     output_Scalar_values = 'Vref'
     check_AD_parameter_derivatives = false
   []
@@ -45,17 +45,11 @@
 
 [Models]
   [model]
-    type = PyrolysisVolume
-    density_binder = 1123
-    density_solid = 576
-    density_particle = 988
-    density_closed_pore_gas = 11
+    type = EffectiveVolume
     reference_mass = 4.1
-    binder_mass_fraction = 'state/wb'
-    solid_mass_fraction = 'state/ws'
-    particle_mass_fraction = 'state/wp'
-    close_pore_gas_mass_fraction = 'state/wg'
-    open_pore_volume_fraction = 'state/phiop'
-    pyrolysis_composite_volume = 'state/out'
+    open_volume_fraction = 'state/phiop'
+    mass_fractions = 'state/wb state/ws state/wp state/wg'
+    densities = '1123 576 988 11'
+    composite_volume = 'state/V'
   []
 []

@@ -53,7 +53,7 @@ BrooksCoreyPressure::expected_options()
   options.set<bool>("apply_log_extension") = false;
   options.set("apply_log_extension").doc() = "Whether to apply_log_extension";
 
-  options.set<Real>("transistion_saturation") = 0.1;
+  options.set<double>("transistion_saturation") = 0.1;
   options.set("transistion_saturation").doc() = "The transistion value of the effective saturation";
 
   return options;
@@ -64,7 +64,7 @@ BrooksCoreyPressure::BrooksCoreyPressure(const OptionSet & options)
     _Pt(declare_parameter<Scalar>("threshold", "threshold_pressure")),
     _p(declare_parameter<Scalar>("p", "power")),
     _log_extension(options.get<bool>("apply_log_extension")),
-    _Sp(options.get<Real>("transistion_saturation"))
+    _Sp(options.get<double>("transistion_saturation"))
 {
 }
 
@@ -73,7 +73,7 @@ BrooksCoreyPressure::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   neml_assert(_Sp < 1.0, "transistion_saturation cannot be larger or equal to 1");
 
-  Real ln10 = 2.302585093;
+  constexpr double ln10 = 2.302585092994;
 
   // required information for any model
   auto f_s = _Pt * pow(_S, -1.0 / _p);

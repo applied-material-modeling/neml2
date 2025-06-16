@@ -70,8 +70,8 @@ SymmetricHermiteInterpolation::SymmetricHermiteInterpolation(const OptionSet & o
 void
 SymmetricHermiteInterpolation::set_value(bool out, bool dout_din, bool d2out_din2)
 {
-  const auto x =
-      clamp((_x - _x0) / (_x1 - _x0), 0.0 + machine_precision(), 1.0 - machine_precision());
+  const auto eps = machine_precision(_x.scalar_type()).toDouble();
+  const auto x = clamp((_x - _x0) / (_x1 - _x0), eps, 1.0 - eps);
 
   if (out)
   {
@@ -93,8 +93,7 @@ SymmetricHermiteInterpolation::set_value(bool out, bool dout_din, bool d2out_din
     auto df2_xl = 6 - 24 * x;
     auto df2_xh = 6 - 24 * (1 - x);
 
-    const auto zeromask = Scalar(at::logical_and(at::lt(x, 1.0 - machine_precision()),
-                                                 at::gt(x, 0.0 + machine_precision())));
+    const auto zeromask = Scalar(at::logical_and(at::lt(x, 1.0 - eps), at::gt(x, eps)));
     _y.d(_x, _x) = zeromask * where(x < 0.5, df2_xl, df2_xh);
   }
 }

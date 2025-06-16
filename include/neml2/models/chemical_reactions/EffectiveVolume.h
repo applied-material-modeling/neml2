@@ -28,33 +28,30 @@
 
 namespace neml2
 {
-/**
- * @brief Define the volume of pyrolysis kinetics models.
- */
-class PyrolysisVolume : public Model
+/// Update the effective volume of a control mass composite during reaction
+class EffectiveVolume : public Model
 {
 public:
   static OptionSet expected_options();
 
-  PyrolysisVolume(const OptionSet & options);
+  EffectiveVolume(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  const Scalar & _rhob;
-  const Scalar & _rhos;
-  const Scalar & _rhop;
-  const Scalar & _rhog;
+  /// Reference mass of the composite
   const Scalar & _M;
 
-  // State Variables
-  const Variable<Scalar> & _wb;
-  const Variable<Scalar> & _ws;
-  const Variable<Scalar> & _wp;
-  const Variable<Scalar> & _wg;
-  const Variable<Scalar> & _phiop;
+  /// Open volume fraction accounting for leakage
+  const Variable<Scalar> * _phio;
 
-  // Residual Variables
+  /// Total volume of the composite
   Variable<Scalar> & _V;
+
+  /// Mass fractions of the components in the composite
+  std::vector<const Variable<Scalar> *> _ws;
+
+  /// Densities of the components in the composite
+  std::vector<const Scalar *> _rhos;
 };
 }

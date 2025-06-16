@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/HermiteSmoothStep.h"
+#include "neml2/misc/types.h"
 #include "neml2/tensors/functions/clamp.h"
 #include "neml2/tensors/assertions.h"
 
@@ -69,8 +70,8 @@ HermiteSmoothStep::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   neml_assert_dbg(!d2out_din2, "Second derivatives not implemented");
 
-  const auto x =
-      clamp((_x - _x0) / (_x1 - _x0), 0.0 + machine_precision(), 1.0 - machine_precision());
+  const auto eps = machine_precision(_x.scalar_type()).toDouble();
+  const auto x = clamp((_x - _x0) / (_x1 - _x0), eps, 1.0 - eps);
 
   if (out)
   {
