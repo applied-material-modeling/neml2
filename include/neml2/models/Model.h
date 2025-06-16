@@ -36,9 +36,7 @@
 // These headers are not directly used by Model, but are included here so that derived classes do
 // not have to include them separately. This is a convenience for the user, and is a reasonable
 // choice since these headers are light and bring in little dependency.
-#include "neml2/base/TensorName.h"
 #include "neml2/base/LabeledAxis.h"
-#include "neml2/tensors/TensorValue.h"
 #include "neml2/models/Variable.h"
 
 namespace neml2

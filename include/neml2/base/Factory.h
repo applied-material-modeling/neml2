@@ -150,7 +150,7 @@ private:
 };
 
 template <class T>
-inline std::shared_ptr<T>
+std::shared_ptr<T>
 Factory::get_object(const std::string & section,
                     const std::string & name,
                     const OptionSet & additional_options,

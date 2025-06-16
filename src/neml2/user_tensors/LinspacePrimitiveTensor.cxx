@@ -24,6 +24,7 @@
 
 #include "neml2/user_tensors/LinspacePrimitiveTensor.h"
 #include "neml2/tensors/tensors.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {

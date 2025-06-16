@@ -28,6 +28,12 @@
 #include "neml2/models/BufferStore.h"
 #include "neml2/base/Factory.h"
 
+// These headers are not directly used by Data, but are included here so that derived classes do
+// not have to include them separately. This is a convenience for the user, and is a reasonable
+// choice since these headers are light and bring in little dependency.
+#include "neml2/base/TensorName.h"
+#include "neml2/tensors/TensorValue.h"
+
 namespace neml2
 {
 class Data : public NEML2Object, public BufferStore
