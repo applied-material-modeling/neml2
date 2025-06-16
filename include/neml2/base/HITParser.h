@@ -46,8 +46,12 @@ public:
   HITParser & operator=(HITParser &&) noexcept = default;
   ~HITParser() override = default;
 
+  /// Parse a HIT input file from a filename.
   InputFile parse(const std::filesystem::path & filename,
                   const std::string & additional_input = "") const override;
+
+  /// Parse a HIT input file from a root node.
+  InputFile parse(hit::Node * root) const;
 
 private:
   /**

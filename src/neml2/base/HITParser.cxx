@@ -70,13 +70,19 @@ HITParser::parse(const std::filesystem::path & filename, const std::string & add
   expander.registerEvaler("raw", raw);
   root->walk(&expander);
 
+  return parse(root.get());
+}
+
+InputFile
+HITParser::parse(hit::Node * root) const
+{
   // Extract global settings
   OptionSet settings = Settings::expected_options();
   if (auto * const node = root->find("Settings"))
     extract_options(node, settings);
 
   // Loop over each known section and extract options for each object
-  InputFile all_options(settings);
+  InputFile inp(settings);
   for (const auto & section : Parser::sections)
   {
     auto * section_node = root->find(section);
@@ -86,12 +92,12 @@ HITParser::parse(const std::filesystem::path & filename, const std::string & add
       for (auto * object : objects)
       {
         auto options = extract_object_options(object, section_node);
-        all_options[section][options.name()] = options;
+        inp[section][options.name()] = options;
       }
     }
   }
 
-  return all_options;
+  return inp;
 }
 
 OptionSet
