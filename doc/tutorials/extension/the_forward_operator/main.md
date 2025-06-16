@@ -58,14 +58,14 @@ main()
 {
   using namespace neml2;
   set_default_dtype(kFloat64);
-  auto & model = load_model("input.i", "accel");
+  auto model = load_model("input.i", "accel");
 
   // Input velocity
   auto vel_name = VariableName("state", "v");
   auto vel = Vec::fill(10, 2, 0);
 
   // Evaluate the model
-  auto output = model.value({{vel_name, vel}});
+  auto output = model->value({{vel_name, vel}});
 
   // Output acceleration
   auto accel_name = VariableName("state", "a");

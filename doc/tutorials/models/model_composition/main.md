@@ -90,10 +90,10 @@ Now that all three models are defined in the input file, we can load and evaluat
   {
     using namespace neml2;
     set_default_dtype(kFloat64);
-    load_input("input.i");
-    auto & eq1 = get_model("eq1");
-    auto & eq2 = get_model("eq2");
-    auto & eq3 = get_model("eq3");
+    auto factory = load_input("input.i");
+    auto eq1 = factory->get_model("eq1");
+    auto eq2 = factory->get_model("eq2");
+    auto eq3 = factory->get_model("eq3");
 
     // Create the input variables
     auto a_name = VariableName("forces", "a");
@@ -103,17 +103,17 @@ Now that all three models are defined in the input file, we can load and evaluat
 
     // Evaluate the first model to get a_bar
     auto a_bar_name = VariableName("state", "a_bar");
-    auto a_bar = eq1.value({{a_name, a}})[a_bar_name];
+    auto a_bar = eq1->value({{a_name, a}})[a_bar_name];
 
     // Evaluate the second model to get b_bar
     auto b_bar_name = VariableName("state", "b_bar");
-    auto b_bar = eq2.value({{b_name, b}})[b_bar_name];
+    auto b_bar = eq2->value({{b_name, b}})[b_bar_name];
 
     // Evaluate the third model to get b_rate
-    eq3.set_parameter("c_0", b_bar);
-    eq3.set_parameter("c_1", a_bar);
+    eq3->set_parameter("c_0", b_bar);
+    eq3->set_parameter("c_1", a_bar);
     auto b_rate_name = VariableName("state", "b_rate");
-    auto b_rate = eq3.value({{a_name, a}, {b_name, b}})[b_rate_name];
+    auto b_rate = eq3->value({{a_name, a}, {b_name, b}})[b_rate_name];
 
     std::cout << "b_rate: \n" << b_rate << std::endl;
   }
@@ -132,10 +132,10 @@ Now that all three models are defined in the input file, we can load and evaluat
   import torch
 
   torch.set_default_dtype(torch.double)
-  neml2.load_input("input.i")
-  eq1 = neml2.get_model("eq1")
-  eq2 = neml2.get_model("eq2")
-  eq3 = neml2.get_model("eq3")
+  factory = neml2.load_input("input.i")
+  eq1 = factory.get_model("eq1")
+  eq2 = factory.get_model("eq2")
+  eq3 = factory.get_model("eq3")
 
   # Create the input variables
   a = SR2.fill(0.1, 0.05, -0.03, 0.02, 0.06, 0.03)
@@ -224,16 +224,16 @@ Let us first inspect the composed model and compare it against the three sub-mod
   {
     using namespace neml2;
 
-    load_input("input_composed.i");
-    auto & eq1 = get_model("eq1");
-    auto & eq2 = get_model("eq2");
-    auto & eq3 = get_model("eq3");
-    auto & eq = get_model("eq");
+    auto factory = load_input("input_composed.i");
+    auto eq1 = factory->get_model("eq1");
+    auto eq2 = factory->get_model("eq2");
+    auto eq3 = factory->get_model("eq3");
+    auto eq = factory->get_model("eq");
 
-    std::cout << "eq1:\n" << eq1 << std::endl << std::endl;
-    std::cout << "eq2:\n" << eq2 << std::endl << std::endl;
-    std::cout << "eq3:\n" << eq3 << std::endl << std::endl;
-    std::cout << "eq:\n" << eq << std::endl << std::endl;
+    std::cout << "eq1:\n" << *eq1 << std::endl << std::endl;
+    std::cout << "eq2:\n" << *eq2 << std::endl << std::endl;
+    std::cout << "eq3:\n" << *eq3 << std::endl << std::endl;
+    std::cout << "eq:\n" << *eq << std::endl << std::endl;
   }
   ```
   @endsource
@@ -248,11 +248,11 @@ Let us first inspect the composed model and compare it against the three sub-mod
   import neml2
   from neml2.tensors import SR2
 
-  neml2.load_input("input_composed.i")
-  eq1 = neml2.get_model("eq1")
-  eq2 = neml2.get_model("eq2")
-  eq3 = neml2.get_model("eq3")
-  eq = neml2.get_model("eq")
+  factory = neml2.load_input("input_composed.i")
+  eq1 = factory.get_model("eq1")
+  eq2 = factory.get_model("eq2")
+  eq3 = factory.get_model("eq3")
+  eq = factory.get_model("eq")
 
   print("eq1:")
   print(eq1, "\n")
@@ -293,7 +293,7 @@ The composed model can be evaluated in the same way as regular models:
   {
     using namespace neml2;
     set_default_dtype(kFloat64);
-    auto & eq = load_model("input_composed.i", "eq");
+    auto eq = load_model("input_composed.i", "eq");
 
     // Create the input variables
     auto a_name = VariableName("forces", "a");
@@ -303,7 +303,7 @@ The composed model can be evaluated in the same way as regular models:
 
     // Evaluate the composed model
     auto b_rate_name = VariableName("state", "b_rate");
-    auto b_rate = eq.value({{a_name, a}, {b_name, b}})[b_rate_name];
+    auto b_rate = eq->value({{a_name, a}, {b_name, b}})[b_rate_name];
 
     std::cout << "b_rate: \n" << b_rate << std::endl;
   }

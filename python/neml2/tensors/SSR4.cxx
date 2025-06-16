@@ -80,7 +80,7 @@ def_SSR4(py::class_<SSR4> & c)
                py::overload_cast<const Scalar &, const Scalar &>(&SSR4::isotropic_E_nu));
   c.def_static(
       "isotropic_E_nu",
-      [](const Real & E, const Real & nu, NEML2_TENSOR_OPTIONS_VARGS)
+      [](const double & E, const double & nu, NEML2_TENSOR_OPTIONS_VARGS)
       { return SSR4::isotropic_E_nu(E, nu, NEML2_TENSOR_OPTIONS); },
       py::arg("E"),
       py::arg("nu"),

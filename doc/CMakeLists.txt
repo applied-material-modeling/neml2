@@ -72,6 +72,8 @@ execute_process(
 # Build and run C++ tutorials
 # ----------------------------------------------------------------------------
 file(GLOB_RECURSE TUTORIAL_SOURCES CONFIGURE_DEPENDS ${NEML2_BINARY_DIR}/doc/content/tutorials/*.cxx)
+add_custom_target(tutorials_cpp)
+add_dependencies(tutorials tutorials_cpp)
 
 foreach(TUTORIAL_SOURCE ${TUTORIAL_SOURCES})
   get_filename_component(TUTORIAL_SOURCE_DIR ${TUTORIAL_SOURCE} DIRECTORY)
@@ -83,22 +85,24 @@ foreach(TUTORIAL_SOURCE ${TUTORIAL_SOURCES})
   target_link_libraries(${TUTORIAL_SOURCE_TARGET} PRIVATE neml2)
   set_target_properties(${TUTORIAL_SOURCE_TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${TUTORIAL_SOURCE_DIR})
   set_target_properties(${TUTORIAL_SOURCE_TARGET} PROPERTIES OUTPUT_NAME ${TUTORIAL_NAME})
-  add_dependencies(tutorials ${TUTORIAL_SOURCE_TARGET})
 
   # Capture the output of the tutorial
   add_custom_command(
-    COMMENT "Running tutorial ${TUTORIAL_SOURCE_TARGET}"
+    COMMENT "Running CXX tutorial ${TUTORIAL_SOURCE_TARGET}"
     TARGET ${TUTORIAL_SOURCE_TARGET} POST_BUILD
     COMMAND ${TUTORIAL_SOURCE_DIR}/${TUTORIAL_NAME} > ${TUTORIAL_SOURCE_DIR}/${TUTORIAL_NAME}.out
     WORKING_DIRECTORY ${TUTORIAL_SOURCE_DIR}
     VERBATIM
   )
+  add_dependencies(tutorials_cpp ${TUTORIAL_SOURCE_TARGET})
 endforeach()
 
 # ----------------------------------------------------------------------------
 # Run Python tutorials
 # ----------------------------------------------------------------------------
 file(GLOB_RECURSE TUTORIAL_SOURCES CONFIGURE_DEPENDS ${NEML2_BINARY_DIR}/doc/content/tutorials/*.py)
+add_custom_target(tutorials_python)
+add_dependencies(tutorials tutorials_python)
 
 foreach(TUTORIAL_SOURCE ${TUTORIAL_SOURCES})
   get_filename_component(TUTORIAL_SOURCE_DIR ${TUTORIAL_SOURCE} DIRECTORY)
@@ -106,14 +110,16 @@ foreach(TUTORIAL_SOURCE ${TUTORIAL_SOURCES})
   cmake_path(RELATIVE_PATH TUTORIAL_SOURCE BASE_DIRECTORY ${NEML2_BINARY_DIR}/doc/content OUTPUT_VARIABLE TUTORIAL_SOURCE_RELPATH)
   string(REPLACE "/" "_" TUTORIAL_SOURCE_TARGET ${TUTORIAL_SOURCE_RELPATH})
   string(APPEND TUTORIAL_SOURCE_TARGET "_python")
+
+  # Capture the output of the tutorial
   add_custom_target(${TUTORIAL_SOURCE_TARGET}
-    DEPENDS syntax_python
-    COMMENT "Running tutorial ${TUTORIAL_SOURCE_TARGET}"
+    COMMENT "Running Python tutorial ${TUTORIAL_SOURCE_TARGET}"
+    DEPENDS syntax_python tutorials_cpp
     COMMAND PYTHONPATH=${NEML2_BINARY_DIR}/python ${Python3_EXECUTABLE} ${TUTORIAL_SOURCE} > ${TUTORIAL_SOURCE_DIR}/${TUTORIAL_NAME}.out
     WORKING_DIRECTORY ${TUTORIAL_SOURCE_DIR}
     VERBATIM
   )
-  add_dependencies(tutorials ${TUTORIAL_SOURCE_TARGET})
+  add_dependencies(tutorials_python ${TUTORIAL_SOURCE_TARGET})
 endforeach()
 
 # ----------------------------------------------------------------------------

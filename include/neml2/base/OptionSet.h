@@ -91,21 +91,13 @@ public:
   /// A writable reference to the option set's section
   std::string & section() { return _metadata.section; }
 
-  /**
-   * \returns \p true if an option of type \p T
-   * with a specified name exists, \p false otherwise.
-   */
-  template <typename T>
+  /// @return \p true if an option with a specified name exists, \p false otherwise.
   bool contains(const std::string &) const;
 
-  /**
-   * \returns \p true if an option with a specified name exists, \p false otherwise.
-   *
-   * We return \p true if an option of specified name exists regardless of its type.
-   */
-  bool contains(const std::string &) const;
+  /// @return \p true if an option is specified by the user (i.e., from the input file), \p false otherwise.
+  bool user_specified(const std::string & name) const;
 
-  /// \returns The total number of options
+  /// @return The total number of options
   std::size_t size() const { return _values.size(); }
 
   /// Clear internal data structures & frees any allocated memory.
@@ -115,17 +107,18 @@ public:
   std::string to_str() const;
 
   /**
-   * \returns A constant reference to the specified option value.  Requires, of course, that the
+   * @return A copy of the specified option value.  Requires, of course, that the
    * option exists.
    */
   template <typename T>
-  const T & get(const std::string &) const;
+  T get(const std::string &) const;
 
+  /// @brief Get a const reference to the specified option value.
   const OptionBase & get(const std::string &) const;
 
   ///@{
   /**
-   * \returns A writable reference to the specified option value. This method will create the option
+   * @return A writable reference to the specified option value. This method will create the option
    * if it does not exist, so it can be used to define options which will later be accessed with the
    * \p get() member.
    */
@@ -245,21 +238,10 @@ protected:
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename T>
-bool
-OptionSet::contains(const std::string & name) const
-{
-  OptionSet::const_iterator it = _values.find(name);
-  if (it != _values.end())
-    if (dynamic_cast<const Option<T> *>(it->second.get()))
-      return true;
-  return false;
-}
-
-template <typename T>
-const T &
+T
 OptionSet::get(const std::string & name) const
 {
-  if (!this->contains<T>(name))
+  if (!this->contains(name))
     throw NEMLException("ERROR: no option named \"" + name + "\" found.\n\nKnown options:\n" +
                         to_str());
 
@@ -271,7 +253,7 @@ template <typename T, FType F>
 T &
 OptionSet::set(const std::string & name)
 {
-  if (!this->contains<T>(name))
+  if (!this->contains(name))
     _values[name] = std::make_unique<Option<T>>(name);
   auto ptr = dynamic_cast<Option<T> *>(_values[name].get());
   ptr->ftype() = F;

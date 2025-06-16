@@ -72,7 +72,7 @@ PowerLawIsotropicHardeningStaticRecovery::set_value(bool out, bool dout_din, boo
 
     if (const auto * const n = nl_param("n"))
       _h_dot.d(*n) = -_h * pow(_tau, -_n) * pow(abs(Scalar(_h)), _n - 1) *
-                     log(abs(Scalar(_h) + machine_precision()) / _tau);
+                     log(abs(Scalar(_h)) / _tau + machine_precision(_h.scalar_type()));
   }
 }
 } // namespace neml2

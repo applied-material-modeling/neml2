@@ -42,17 +42,17 @@ TransientRegression::expected_options()
   OptionSet options = Driver::expected_options();
   options.set<std::string>("driver");
   options.set<std::string>("reference");
-  options.set<Real>("rtol") = 1e-5;
-  options.set<Real>("atol") = 1e-8;
+  options.set<double>("rtol") = 1e-5;
+  options.set<double>("atol") = 1e-8;
   return options;
 }
 
 TransientRegression::TransientRegression(const OptionSet & options)
   : Driver(options),
-    _driver(Factory::get_object<TransientDriver>("Drivers", options.get<std::string>("driver"))),
+    _driver(get_driver<TransientDriver>("driver")),
     _reference(options.get<std::string>("reference")),
-    _rtol(options.get<Real>("rtol")),
-    _atol(options.get<Real>("atol"))
+    _rtol(options.get<double>("rtol")),
+    _atol(options.get<double>("atol"))
 {
 }
 
@@ -60,10 +60,10 @@ void
 TransientRegression::diagnose() const
 {
   Driver::diagnose();
-  neml2::diagnose(_driver);
+  neml2::diagnose(*_driver);
   diagnostic_assert(
       fs::exists(_reference), "Reference file '", _reference.string(), "' does not exist.");
-  diagnostic_assert(!_driver.save_as_path().empty(),
+  diagnostic_assert(!_driver->save_as_path().empty(),
                     "The driver does not save any results. Use the save_as option to specify the "
                     "destination file/path.");
 }
@@ -71,10 +71,10 @@ TransientRegression::diagnose() const
 bool
 TransientRegression::run()
 {
-  _driver.run();
+  _driver->run();
 
   // Verify the result
-  auto res = jit::load(_driver.save_as_path());
+  auto res = jit::load(_driver->save_as_path());
   auto res_ref = jit::load(_reference);
   auto err_msg = diff(res.named_buffers(), res_ref.named_buffers(), _rtol, _atol);
 
@@ -84,7 +84,10 @@ TransientRegression::run()
 }
 
 std::string
-diff(const jit::named_buffer_list & res, const jit::named_buffer_list & ref, Real rtol, Real atol)
+diff(const jit::named_buffer_list & res,
+     const jit::named_buffer_list & ref,
+     double rtol,
+     double atol)
 {
   std::map<std::string, ATensor> res_map;
   for (auto item : res)
@@ -112,7 +115,7 @@ diff(const jit::named_buffer_list & res, const jit::named_buffer_list & ref, Rea
     {
       auto diff = at::abs(res_map[key] - value) - rtol * at::abs(value);
       err_msg << "Result has wrong value for variable " << key
-              << ". Maximum mixed difference = " << std::scientific << diff.max().item<Real>()
+              << ". Maximum mixed difference = " << std::scientific << diff.max().item<double>()
               << " > atol = " << std::scientific << atol << "\n";
     }
   }

@@ -22,11 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <ATen/Parallel.h>
-
-#include "neml2/misc/defaults.h"
 #include "neml2/base/Settings.h"
-#include "neml2/base/EnumSelection.h"
 #include "neml2/base/OptionSet.h"
 #include "neml2/base/Registry.h"
 
@@ -41,32 +37,12 @@ Settings::expected_options()
 
   options.set<std::string>("type") = "Settings";
 
-  EnumSelection int_dtype_selection({"Int8", "Int16", "Int32", "Int64"},
-                                    {static_cast<int>(kInt8),
-                                     static_cast<int>(kInt16),
-                                     static_cast<int>(kInt32),
-                                     static_cast<int>(kInt64)},
-                                    NEML2_DEFAULT_INTEGER_DTYPE_STR);
-  options.set<EnumSelection>("default_integer_type") = int_dtype_selection;
-  options.set("default_integer_type").doc() =
-      "Default integer type for tensors. Options are " + int_dtype_selection.candidates_str();
-
-  options.set<Real>("machine_precision") = NEML2_DEFAULT_MACHINE_PRECISION;
-  options.set("machine_precision").doc() =
-      "Machine precision used at various places to workaround singularities like division-by-zero.";
-
-  options.set<Real>("tolerance") = NEML2_DEFAULT_TOLERANCE;
-  options.set("tolerance").doc() = "Tolerance used in various algorithms.";
-
-  options.set<Real>("tighter_tolerance") = NEML2_DEFAULT_TIGHTER_TOLERANCE;
-  options.set("tighter_tolerance").doc() = "A tighter tolerance used in various algorithms.";
-
-  options.set<std::string>("buffer_name_separator") = NEML2_DEFAULT_BUFFER_NAME_SEPARATOR;
+  options.set<std::string>("buffer_name_separator") = "_";
   options.set("buffer_name_separator").doc() = "Nested buffer name separator. The default is '_'. "
                                                "For example, a sub-model 'foo' which declares "
                                                "a buffer 'bar' will have a buffer named 'foo_bar'.";
 
-  options.set<std::string>("parameter_name_separator") = NEML2_DEFAULT_PARAMETER_NAME_SEPARATOR;
+  options.set<std::string>("parameter_name_separator") = "_";
   options.set("parameter_name_separator").doc() =
       "Parameter name separator. The default is '_'. For example, a sub-model 'foo' which declares "
       "a parameter 'bar' will have a parameter named 'foo_bar'.";
@@ -87,28 +63,14 @@ Settings::expected_options()
   return options;
 }
 
-void
-Settings::apply(const OptionSet & options)
+Settings::Settings(const OptionSet & options)
+  : _buffer_name_separator(options.get<std::string>("buffer_name_separator")),
+    _parameter_name_separator(options.get<std::string>("parameter_name_separator")),
+    _require_double_precision(options.get<bool>("require_double_precision")),
+    _additional_libraries(options.get<std::vector<std::string>>("additional_libraries"))
 {
-  // Default integral dtype
-  default_integer_dtype() = options.get<EnumSelection>("default_integer_type").as<Dtype>();
-
-  // Machine precision
-  machine_precision() = options.get<Real>("machine_precision");
-
-  // Tolerances
-  tolerance() = options.get<Real>("tolerance");
-  tighter_tolerance() = options.get<Real>("tighter_tolerance");
-
-  // Buffer/parameter name separator
-  buffer_name_separator() = options.get<std::string>("buffer_name_separator");
-  parameter_name_separator() = options.get<std::string>("parameter_name_separator");
-
-  // Require double precision
-  require_double_precision() = options.get<bool>("require_double_precision");
-
-  // Additional libraries
-  for (const auto & lib : options.get<std::vector<std::string>>("additional_libraries"))
+  // Load additional libraries which may contain custom objects
+  for (const auto & lib : _additional_libraries)
     Registry::load(lib);
 }
 } // namespace neml2

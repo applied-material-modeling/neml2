@@ -44,11 +44,11 @@ constexpr std::array<std::array<Size, 2>, 6> mandel_index{std::array<Size, 2>{0,
 
 constexpr std::array<std::array<Size, 3>, 3> skew_reverse_index{
     std::array<Size, 3>{0, 2, 1}, std::array<Size, 3>{2, 0, 0}, std::array<Size, 3>{1, 0, 0}};
-constexpr std::array<std::array<Real, 3>, 3> skew_factor{std::array<Real, 3>{0.0, -1.0, 1.0},
-                                                         std::array<Real, 3>{1.0, 0.0, -1.0},
-                                                         std::array<Real, 3>{-1.0, 1.0, 0.0}};
+constexpr std::array<std::array<double, 3>, 3> skew_factor{std::array<double, 3>{0.0, -1.0, 1.0},
+                                                           std::array<double, 3>{1.0, 0.0, -1.0},
+                                                           std::array<double, 3>{-1.0, 1.0, 0.0}};
 
-inline constexpr Real
+inline constexpr double
 mandel_factor(Size i)
 {
   return i < 3 ? 1.0 : sqrt2;

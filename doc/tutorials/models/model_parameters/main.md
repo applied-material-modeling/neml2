@@ -47,9 +47,9 @@ All model parameters are associated with a unique name, either predefined by the
   {
     using namespace neml2;
 
-    auto & model = load_model("input.i", "my_model");
+    auto model = load_model("input.i", "my_model");
 
-    for (auto && [pname, pval] : model.named_parameters())
+    for (auto && [pname, pval] : model->named_parameters())
       std::cout << pname << ":\n" << Tensor(*pval) << std::endl;
   }
   ```
@@ -94,10 +94,10 @@ neml2::Model::get_parameter can be used to retrieve a specific parameter given i
   {
     using namespace neml2;
 
-    auto & model = load_model("input.i", "my_model");
+    auto model = load_model("input.i", "my_model");
 
-    auto & G = model.get_parameter("G");
-    auto & K = model.get_parameter("K");
+    auto & G = model->get_parameter("G");
+    auto & K = model->get_parameter("K");
 
     std::cout << "G:\n" << Tensor(G) << std::endl;
     std::cout << "K:\n" << Tensor(K) << std::endl;
@@ -156,10 +156,10 @@ The neml2::Model::set_parameter and neml2::Model::set_parameters methods can be 
   {
     using namespace neml2;
 
-    auto & model = load_model("input.i", "my_model");
+    auto model = load_model("input.i", "my_model");
 
     // Before modification
-    auto & G = model.get_parameter("G");
+    auto & G = model->get_parameter("G");
     std::cout << "G (before modification):\n" << Tensor(G) << std::endl;
 
     // After modification

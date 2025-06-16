@@ -39,7 +39,7 @@ DiffusionLimitedReaction::expected_options()
   options.set("product_inner_radius").doc() = "Inner radius of the product phase";
   options.set_input("solid_inner_radius") = VariableName{"state", "ro"};
   options.set("solid_inner_radius").doc() = "Inner raidus of the solid phase";
-  options.set<Real>("product_dummy_thickness") = 0.01;
+  options.set<double>("product_dummy_thickness") = 0.01;
   options.set("product_dummy_thickness").doc() = "Minimum product thickness to avoid division by 0";
 
   options.set_input("liquid_reactivity") = VariableName{"state", "R_l"};
@@ -54,7 +54,7 @@ DiffusionLimitedReaction::expected_options()
   options.set("diffusion_coefficient").doc() =
       "Diffusion coefficient of the rate-limiting species in the product phase";
 
-  options.set<Real>("molar_volume");
+  options.set<double>("molar_volume");
   options.set("molar_volume").doc() = "Molar volume of the rate-limiting (liquid) species";
 
   return options;
@@ -64,12 +64,12 @@ DiffusionLimitedReaction::DiffusionLimitedReaction(const OptionSet & options)
   : Model(options),
     _ri(declare_input_variable<Scalar>("product_inner_radius")),
     _ro(declare_input_variable<Scalar>("solid_inner_radius")),
-    _delta(options.get<Real>("product_dummy_thickness")),
+    _delta(options.get<double>("product_dummy_thickness")),
     _R_l(declare_input_variable<Scalar>("liquid_reactivity")),
     _R_s(declare_input_variable<Scalar>("solid_reactivity")),
     _rate(declare_output_variable<Scalar>("reaction_rate")),
     _D(declare_parameter<Scalar>("D", "diffusion_coefficient")),
-    _omega(options.get<Real>("molar_volume"))
+    _omega(options.get<double>("molar_volume"))
 {
 }
 

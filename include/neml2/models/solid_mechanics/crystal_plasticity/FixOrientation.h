@@ -56,6 +56,6 @@ protected:
   const Variable<Rot> & _input;
 
   /// Threshold for making the swap
-  Real _threshold;
+  double _threshold;
 };
 } // namespace neml2

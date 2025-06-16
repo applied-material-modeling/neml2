@@ -207,7 +207,7 @@ TEST_CASE("PrimitiveTensor", "[tensors]")
     {
       SECTION("unbatched")
       {
-        Real init = 3.3;
+        double init = 3.3;
         auto a = R5::full(init, DTO);
         REQUIRE(!a.batched());
         REQUIRE(a.batch_dim() == 0);
@@ -220,7 +220,7 @@ TEST_CASE("PrimitiveTensor", "[tensors]")
 
       SECTION("batched")
       {
-        Real init = 2.22;
+        double init = 2.22;
         auto a = R5::full(B, init, DTO);
         REQUIRE(a.batched());
         REQUIRE(a.batch_dim() == Bn);

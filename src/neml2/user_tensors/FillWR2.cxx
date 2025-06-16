@@ -42,19 +42,21 @@ FillWR2::expected_options()
 }
 
 FillWR2::FillWR2(const OptionSet & options)
-  : WR2(fill(options.get<std::vector<TensorName<Scalar>>>("values"))),
-    UserTensorBase(options)
+  : UserTensorBase(options),
+    WR2(fill(options.get<std::vector<TensorName<Scalar>>>("values")))
 {
 }
 
 WR2
 FillWR2::fill(const std::vector<TensorName<Scalar>> & values) const
 {
+  auto * f = factory();
+  neml_assert(f, "Internal error: factory != nullptr");
   neml_assert(values.size() == 3,
               "Number of values must be 3, but ",
               values.size(),
               " values are provided.");
 
-  return WR2::fill(values[0].resolve(), values[1].resolve(), values[2].resolve());
+  return WR2::fill(values[0].resolve(f), values[1].resolve(f), values[2].resolve(f));
 }
 } // namespace neml2

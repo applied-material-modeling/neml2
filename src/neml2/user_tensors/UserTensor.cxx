@@ -36,7 +36,7 @@ UserTensor::expected_options()
   options.doc() = "Construct a Tensor from a vector of values. The vector will be reshaped "
                   "according to the specified batch and base shapes.";
 
-  options.set<std::vector<Real>>("values");
+  options.set<std::vector<double>>("values");
   options.set("values").doc() = "Values in this (flattened) tensor";
 
   options.set<TensorShape>("batch_shape") = {};
@@ -54,7 +54,7 @@ UserTensor::UserTensor(const OptionSet & options)
                          default_tensor_options())),
     UserTensorBase(options)
 {
-  auto vals = options.get<std::vector<Real>>("values");
+  auto vals = options.get<std::vector<double>>("values");
   auto flat = Tensor::create(vals, default_tensor_options());
   if (vals.size() == size_t(this->base_storage()))
     this->index_put_({indexing::Ellipsis}, flat.reshape(this->base_sizes()));

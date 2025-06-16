@@ -23,9 +23,10 @@
 // THE SOFTWARE.
 
 #include <catch2/catch_session.hpp>
-#include <sstream>
 #include <filesystem>
+
 #include "utils.h"
+#include "neml2/base/Parser.h"
 
 std::unordered_set<neml2::Device> &
 set_test_suite_additional_devices()

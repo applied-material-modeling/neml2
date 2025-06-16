@@ -48,7 +48,7 @@ KocksMeckingFlowSwitch::expected_options()
   options.set_input("activation_energy") = VariableName(FORCES, "g");
   options.set("activation_energy").doc() = "The input name of the activation energy";
 
-  options.set<Real>("sharpness") = 1.0;
+  options.set<double>("sharpness") = 1.0;
   options.set("sharpness").doc() = "A steepness parameter that controls the tanh mixing of the "
                                    "models.  Higher values gives a sharper transition.";
 
@@ -66,7 +66,7 @@ KocksMeckingFlowSwitch::KocksMeckingFlowSwitch(const OptionSet & options)
   : Model(options),
     _g0(declare_parameter<Scalar>("g0", "g0", /*allow_nonlinear=*/true)),
     _g(declare_input_variable<Scalar>("activation_energy")),
-    _sharp(options.get<Real>("sharpness")),
+    _sharp(options.get<double>("sharpness")),
     _ri_flow(declare_input_variable<Scalar>("rate_independent_flow_rate")),
     _rd_flow(declare_input_variable<Scalar>("rate_dependent_flow_rate")),
     _gamma_dot(declare_output_variable<Scalar>("flow_rate"))

@@ -38,13 +38,13 @@ TEST_CASE("training")
   // This regression test loads a NEML2 model as if it is being used as an external library/package.
   // A parameter gradient is requested before the model is called twice, after which backward() is
   // called on the objective function to propagate the gradient onto the parameter.
-  auto & model = reload_model("regression_training.i", "model");
+  auto model = load_model("regression_training.i", "model");
 
   // Batch shape
   Size nbatch = 2;
 
   // Request parameter gradient
-  auto & p = model.get_parameter("yield_sy");
+  auto & p = model->get_parameter("yield_sy");
   p = Scalar::create(5, default_tensor_options().requires_grad(true));
 
   // Variables
@@ -60,7 +60,7 @@ TEST_CASE("training")
   x1[time] = Scalar::full(1.0).batch_expand(nbatch);
   x1[stress] = SR2::fill(100.0, 100.0, 200.0, -50.0, -150.0, 50.0).batch_expand(nbatch);
   x1[ep] = Scalar::full(0.001).batch_expand(nbatch);
-  const auto r1 = model.value(x1);
+  const auto r1 = model->value(x1);
 
   // Evaluate the model for the second time
   ValueMap x2;
@@ -72,7 +72,7 @@ TEST_CASE("training")
   x2[time] = Scalar::full(5.0).batch_expand(nbatch);
   x2[stress] = SR2::fill(100.0, 100.0, 200.0, -50.0, -150.0, 50.0).batch_expand(nbatch);
   x2[ep] = Scalar::full(0.001).batch_expand(nbatch);
-  const auto r2 = model.value(x2);
+  const auto r2 = model->value(x2);
 
   // Evaluate the objective function
   const auto s2 = r2.at(stress.remount(RESIDUAL)) * 1e-2;
@@ -81,5 +81,5 @@ TEST_CASE("training")
 
   // Check the parameter gradient
   f.backward();
-  REQUIRE(Tensor(p).grad().item<Real>() == Catch::Approx(-172.543));
+  REQUIRE(Tensor(p).grad().item<double>() == Catch::Approx(-172.543));
 }

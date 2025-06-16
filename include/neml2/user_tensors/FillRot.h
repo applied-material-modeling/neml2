@@ -33,7 +33,7 @@ namespace neml2
 /**
  * @brief Create a filled R2 from the input file.
  */
-class FillRot : public Rot, public UserTensorBase
+class FillRot : public UserTensorBase, public Rot
 {
 public:
   static OptionSet expected_options();

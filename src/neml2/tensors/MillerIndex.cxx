@@ -36,7 +36,7 @@ MillerIndex::operator()(Size i) const
 }
 
 MillerIndex
-MillerIndex::fill(Integer a, Integer b, Integer c, const TensorOptions & options)
+MillerIndex::fill(int64_t a, int64_t b, int64_t c, const TensorOptions & options)
 {
   return MillerIndex::create({a, b, c}, options);
 }

@@ -59,7 +59,7 @@ LDISolidMechanicsDriver::expected_options()
   options.set("cp_warmup").doc() =
       "Whether to perform a warm-up step for crystal plasticity models. The warm-up step uses a "
       "relaxed/damped elastic predictor for the very first time step.";
-  options.set<Real>("cp_warmup_elastic_scale") = 1.0;
+  options.set<double>("cp_warmup_elastic_scale") = 1.0;
   options.set("cp_warmup_elastic_scale").doc() =
       "Elastic step scale factor used for the crystal plasticity warm-up step";
   options.set<VariableName>("cp_warmup_elastic_strain") = VariableName(STATE, "elastic_strain");
@@ -73,7 +73,7 @@ LDISolidMechanicsDriver::LDISolidMechanicsDriver(const OptionSet & options)
   : SolidMechanicsDriver(options),
     _vorticity_prescribed(options.get("prescribed_vorticity").user_specified()),
     _cp_warmup(options.get<bool>("cp_warmup")),
-    _cp_warmup_elastic_scale(options.get<Real>("cp_warmup_elastic_scale")),
+    _cp_warmup_elastic_scale(options.get<double>("cp_warmup_elastic_scale")),
     _cp_warmup_elastic_strain(options.get<VariableName>("cp_warmup_elastic_strain"))
 {
 }
@@ -89,7 +89,7 @@ void
 LDISolidMechanicsDriver::init_strain_control(const OptionSet & options)
 {
   _driving_force_name = options.get<VariableName>("deformation_rate");
-  _driving_force = options.get<TensorName<SR2>>("prescribed_deformation_rate").resolve();
+  _driving_force = resolve_tensor<SR2>("prescribed_deformation_rate");
   _driving_force = _driving_force.to(_device);
 }
 
@@ -97,7 +97,7 @@ void
 LDISolidMechanicsDriver::init_stress_control(const OptionSet & options)
 {
   _driving_force_name = options.get<VariableName>("cauchy_stress_rate");
-  _driving_force = options.get<TensorName<SR2>>("prescribed_cauchy_stress_rate").resolve();
+  _driving_force = resolve_tensor<SR2>("prescribed_cauchy_stress_rate");
   _driving_force = _driving_force.to(_device);
 }
 
@@ -105,7 +105,7 @@ void
 LDISolidMechanicsDriver::init_vorticity_control(const OptionSet & options)
 {
   _vorticity_name = options.get<VariableName>("vorticity");
-  _vorticity = options.get<TensorName<WR2>>("prescribed_vorticity").resolve();
+  _vorticity = resolve_tensor<WR2>("prescribed_vorticity");
   _vorticity = _vorticity.to(_device);
 }
 
@@ -131,7 +131,7 @@ LDISolidMechanicsDriver::diagnose() const
   if (_cp_warmup)
   {
     diagnostic_assert(_control == "STRAIN", "CP warm-up step is only supported for STRAIN control");
-    diagnostic_assert(_model.input_axis().has_variable(_cp_warmup_elastic_strain),
+    diagnostic_assert(_model->input_axis().has_variable(_cp_warmup_elastic_strain),
                       "Model's input axis should have variable ",
                       _cp_warmup_elastic_strain,
                       " for the CP warm-up step but it does not");

@@ -21,8 +21,10 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+
 #include <catch2/catch_test_macros.hpp>
 
+#include "neml2/base/Settings.h"
 #include "neml2/models/LinearCombination.h"
 
 using namespace neml2;
@@ -37,32 +39,21 @@ TEST_CASE("Factory", "[base]")
                                                         VariableName(STATE, "substate", "B")};
   options.set<VariableName>("to_var") = VariableName(STATE, "outsub", "C");
 
-  OptionCollection all_options;
-  all_options["Models"]["example"] = options;
-
-  Factory::clear();
-  Factory::load_options(all_options);
+  InputFile inp(Settings::expected_options());
+  inp["Models"]["example"] = options;
+  Factory factory(inp);
 
   SECTION("get_object")
   {
-    auto & summodel = Factory::get_object<ScalarLinearCombination>("Models", "example");
+    auto summodel = factory.get_model("example");
 
-    REQUIRE(summodel.input_axis().has_subaxis(STATE));
-    REQUIRE(summodel.input_axis().subaxis(STATE).has_subaxis("substate"));
-    REQUIRE(summodel.input_axis().subaxis(STATE).has_variable("A"));
-    REQUIRE(summodel.input_axis().subaxis(STATE).subaxis("substate").has_variable("B"));
+    REQUIRE(summodel->input_axis().has_subaxis(STATE));
+    REQUIRE(summodel->input_axis().subaxis(STATE).has_subaxis("substate"));
+    REQUIRE(summodel->input_axis().subaxis(STATE).has_variable("A"));
+    REQUIRE(summodel->input_axis().subaxis(STATE).subaxis("substate").has_variable("B"));
 
-    REQUIRE(summodel.output_axis().has_subaxis(STATE));
-    REQUIRE(summodel.output_axis().subaxis(STATE).has_subaxis("outsub"));
-    REQUIRE(summodel.output_axis().subaxis(STATE).subaxis("outsub").has_variable("C"));
-  }
-
-  SECTION("options")
-  {
-    const auto & all_opts = Factory::options();
-    const auto & opts = all_opts["Models"].at("example");
-    REQUIRE(opts.contains("from_var"));
-    REQUIRE(opts.contains("to_var"));
-    REQUIRE(!opts.contains("non_existent"));
+    REQUIRE(summodel->output_axis().has_subaxis(STATE));
+    REQUIRE(summodel->output_axis().subaxis(STATE).has_subaxis("outsub"));
+    REQUIRE(summodel->output_axis().subaxis(STATE).subaxis("outsub").has_variable("C"));
   }
 }

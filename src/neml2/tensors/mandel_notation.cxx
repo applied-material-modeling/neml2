@@ -152,7 +152,7 @@ Tensor
 full_to_mandel(const Tensor & full, Size dim)
 {
   return full_to_reduced(full,
-                         full_to_mandel_map(full.options().dtype(default_integer_dtype())),
+                         full_to_mandel_map(full.options().dtype(get_default_integer_dtype())),
                          full_to_mandel_factor(full.options()),
                          dim);
 }
@@ -161,7 +161,7 @@ Tensor
 mandel_to_full(const Tensor & mandel, Size dim)
 {
   return reduced_to_full(mandel,
-                         mandel_to_full_map(mandel.options().dtype(default_integer_dtype())),
+                         mandel_to_full_map(mandel.options().dtype(get_default_integer_dtype())),
                          mandel_to_full_factor(mandel.options()),
                          dim);
 }
@@ -170,7 +170,7 @@ Tensor
 full_to_skew(const Tensor & full, Size dim)
 {
   return full_to_reduced(full,
-                         full_to_skew_map(full.options().dtype(default_integer_dtype())),
+                         full_to_skew_map(full.options().dtype(get_default_integer_dtype())),
                          full_to_skew_factor(full.options()),
                          dim);
 }
@@ -179,7 +179,7 @@ Tensor
 skew_to_full(const Tensor & skew, Size dim)
 {
   return reduced_to_full(skew,
-                         skew_to_full_map(skew.options().dtype(default_integer_dtype())),
+                         skew_to_full_map(skew.options().dtype(get_default_integer_dtype())),
                          skew_to_full_factor(skew.options()),
                          dim);
 }

@@ -43,9 +43,9 @@ public:
   Scalar operator()(Size i) const;
 
   /// Most likely construction method -- make from three ints
-  static MillerIndex fill(Integer a,
-                          Integer b,
-                          Integer c,
+  static MillerIndex fill(int64_t a,
+                          int64_t b,
+                          int64_t c,
                           const TensorOptions & options = default_integer_tensor_options());
 
   /// Reduce to the greatest common demoninator

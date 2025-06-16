@@ -31,10 +31,10 @@ NonlinearSolver::expected_options()
 {
   OptionSet options = Solver::expected_options();
 
-  options.set<Real>("abs_tol") = 1e-10;
+  options.set<double>("abs_tol") = 1e-10;
   options.set("abs_tol").doc() = "Absolute tolerance in the convergence criteria";
 
-  options.set<Real>("rel_tol") = 1e-8;
+  options.set<double>("rel_tol") = 1e-8;
   options.set("rel_tol").doc() = "Relative tolerance in the convergence criteria";
 
   options.set<unsigned int>("max_its") = 100;
@@ -46,8 +46,8 @@ NonlinearSolver::expected_options()
 
 NonlinearSolver::NonlinearSolver(const OptionSet & options)
   : Solver(options),
-    atol(options.get<Real>("abs_tol")),
-    rtol(options.get<Real>("rel_tol")),
+    atol(options.get<double>("abs_tol")),
+    rtol(options.get<double>("rel_tol")),
     miters(options.get<unsigned int>("max_its"))
 {
 }

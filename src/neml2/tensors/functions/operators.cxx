@@ -50,8 +50,8 @@ namespace neml2
   static_assert(true)
 
 #define DEFINE_ADD_SYM_REAL(T)                                                                     \
-  T operator+(const T & a, const Real & b) { return T(at::operator+(a, b), a.batch_sizes()); }     \
-  T operator+(const Real & a, const T & b) { return b + a; }                                       \
+  T operator+(const T & a, const CScalar & b) { return T(at::operator+(a, b), a.batch_sizes()); }  \
+  T operator+(const CScalar & a, const T & b) { return b + a; }                                    \
   static_assert(true)
 
 FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DEFINE_ADD_SELF);
@@ -90,8 +90,8 @@ DEFINE_ADD_SYM_REAL(Scalar);
   static_assert(true)
 
 #define DEFINE_SUB_SYM_REAL(T)                                                                     \
-  T operator-(const T & a, const Real & b) { return T(at::operator-(a, b), a.batch_sizes()); }     \
-  T operator-(const Real & a, const T & b) { return T(at::operator-(a, b), b.batch_sizes()); }     \
+  T operator-(const T & a, const CScalar & b) { return T(at::operator-(a, b), a.batch_sizes()); }  \
+  T operator-(const CScalar & a, const T & b) { return T(at::operator-(a, b), b.batch_sizes()); }  \
   static_assert(true)
 
 FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DEFINE_SUB_SELF);
@@ -125,8 +125,8 @@ DEFINE_SUB_SYM_REAL(Scalar);
   static_assert(true)
 
 #define DEFINE_MUL_SYM_REAL(T)                                                                     \
-  T operator*(const T & a, const Real & b) { return T(at::operator*(a, b), a.batch_sizes()); }     \
-  T operator*(const Real & a, const T & b) { return b * a; }                                       \
+  T operator*(const T & a, const CScalar & b) { return T(at::operator*(a, b), a.batch_sizes()); }  \
+  T operator*(const CScalar & a, const T & b) { return b * a; }                                    \
   static_assert(true)
 
 FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DEFINE_MUL_SYM_SCALAR);
@@ -164,8 +164,8 @@ DEFINE_MUL_SYM_REAL(Scalar);
   static_assert(true)
 
 #define DEFINE_DIV_SYM_REAL(T)                                                                     \
-  T operator/(const T & a, const Real & b) { return T(at::operator/(a, b), a.batch_sizes()); }     \
-  T operator/(const Real & a, const T & b) { return T(at::operator/(a, b), b.batch_sizes()); }     \
+  T operator/(const T & a, const CScalar & b) { return T(at::operator/(a, b), a.batch_sizes()); }  \
+  T operator/(const CScalar & a, const T & b) { return T(at::operator/(a, b), b.batch_sizes()); }  \
   static_assert(true)
 
 FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DEFINE_DIV_SYM_SCALAR);
@@ -180,7 +180,7 @@ DEFINE_DIV_SYM_REAL(Scalar);
 // In-place addition
 ///////////////////////////////////////////////////////////////////////////////
 #define DEFINE_ADD_EQ(T)                                                                           \
-  T & operator+=(T & a, const Real & b)                                                            \
+  T & operator+=(T & a, const CScalar & b)                                                         \
   {                                                                                                \
     at::Tensor(a) += b;                                                                            \
     return a;                                                                                      \
@@ -195,7 +195,7 @@ DEFINE_ADD_EQ(Scalar);
 // In-place subtraction
 ///////////////////////////////////////////////////////////////////////////////
 #define DEFINE_SUB_EQ(T)                                                                           \
-  T & operator-=(T & a, const Real & b)                                                            \
+  T & operator-=(T & a, const CScalar & b)                                                         \
   {                                                                                                \
     at::Tensor(a) -= b;                                                                            \
     return a;                                                                                      \
@@ -210,7 +210,7 @@ DEFINE_SUB_EQ(Scalar);
 // In-place multiplication
 ///////////////////////////////////////////////////////////////////////////////
 #define DEFINE_MUL_EQ(T)                                                                           \
-  T & operator*=(T & a, const Real & b)                                                            \
+  T & operator*=(T & a, const CScalar & b)                                                         \
   {                                                                                                \
     at::Tensor(a) *= b;                                                                            \
     return a;                                                                                      \
@@ -225,7 +225,7 @@ DEFINE_MUL_EQ(Scalar);
 // In-place division
 ///////////////////////////////////////////////////////////////////////////////
 #define DEFINE_DIV_EQ(T)                                                                           \
-  T & operator/=(T & a, const Real & b)                                                            \
+  T & operator/=(T & a, const CScalar & b)                                                         \
   {                                                                                                \
     at::Tensor(a) /= b;                                                                            \
     return a;                                                                                      \

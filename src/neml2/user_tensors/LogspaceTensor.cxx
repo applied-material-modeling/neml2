@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/user_tensors/LogspaceTensor.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {
@@ -47,7 +48,7 @@ LogspaceTensor::expected_options()
   options.set<Size>("dim") = 0;
   options.set("dim").doc() = "Where to insert the new dimension";
 
-  options.set<Real>("base") = 10;
+  options.set<double>("base") = 10;
   options.set("base").doc() = "Exponent base";
 
   options.set<Size>("batch_dim") = -1;
@@ -61,16 +62,19 @@ LogspaceTensor::expected_options()
 }
 
 LogspaceTensor::LogspaceTensor(const OptionSet & options)
-  : Tensor(make(options)),
-    UserTensorBase(options)
+  : UserTensorBase(options),
+    Tensor(make(options))
 {
 }
 
 Tensor
 LogspaceTensor::make(const OptionSet & options) const
 {
-  auto t = Tensor::logspace(options.get<TensorName<Tensor>>("start").resolve(),
-                            options.get<TensorName<Tensor>>("end").resolve(),
+  auto * f = this->factory();
+  neml_assert(f, "Internal error: factory != nullptr");
+
+  auto t = Tensor::logspace(options.get<TensorName<Tensor>>("start").resolve(f),
+                            options.get<TensorName<Tensor>>("end").resolve(f),
                             options.get<Size>("nstep"),
                             options.get<Size>("dim"));
 

@@ -28,7 +28,7 @@
 namespace neml2
 {
 #define DEFINE_CLAMP(T)                                                                            \
-  T clamp(const T & a, const Real & lb, const Real & ub)                                           \
+  T clamp(const T & a, const CScalar & lb, const CScalar & ub)                                     \
   {                                                                                                \
     return T(at::clamp(a, lb, ub), a.batch_sizes());                                               \
   }                                                                                                \

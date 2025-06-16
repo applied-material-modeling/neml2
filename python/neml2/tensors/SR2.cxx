@@ -39,7 +39,7 @@ def_SR2(py::class_<SR2> & c)
   c.def(py::init<const R2 &>());
   c.def_static(
        "fill",
-       [](const Real & a, NEML2_TENSOR_OPTIONS_VARGS)
+       [](const double & a, NEML2_TENSOR_OPTIONS_VARGS)
        { return SR2::fill(a, NEML2_TENSOR_OPTIONS); },
        py::arg("value"),
        py::kw_only(),
@@ -47,7 +47,7 @@ def_SR2(py::class_<SR2> & c)
       .def_static("fill", py::overload_cast<const Scalar &>(&SR2::fill), py::arg("value"))
       .def_static(
           "fill",
-          [](const Real & a11, const Real & a22, const Real & a33, NEML2_TENSOR_OPTIONS_VARGS)
+          [](const double & a11, const double & a22, const double & a33, NEML2_TENSOR_OPTIONS_VARGS)
           { return SR2::fill(a11, a22, a33, NEML2_TENSOR_OPTIONS); },
           py::arg("value_00"),
           py::arg("value_11"),
@@ -61,12 +61,12 @@ def_SR2(py::class_<SR2> & c)
                   py::arg("value_22"))
       .def_static(
           "fill",
-          [](const Real & a11,
-             const Real & a22,
-             const Real & a33,
-             const Real & a23,
-             const Real & a13,
-             const Real & a12,
+          [](const double & a11,
+             const double & a22,
+             const double & a33,
+             const double & a23,
+             const double & a13,
+             const double & a12,
              NEML2_TENSOR_OPTIONS_VARGS)
           { return SR2::fill(a11, a22, a33, a23, a13, a12, NEML2_TENSOR_OPTIONS); },
           py::arg("value_00"),

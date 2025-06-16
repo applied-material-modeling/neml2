@@ -26,17 +26,9 @@
 
 #include "neml2/drivers/Driver.h"
 #include "neml2/base/Registry.h"
-#include "neml2/base/Factory.h"
 
 namespace neml2
 {
-Driver &
-get_driver(const std::string & dname)
-{
-  OptionSet extra_opts;
-  return Factory::get_object<Driver>("Drivers", dname, extra_opts, /*force_create=*/false);
-}
-
 OptionSet
 Driver::expected_options()
 {

@@ -61,7 +61,9 @@ public:
   /// Copy constructor
   TensorBase(const neml2::Tensor & tensor);
 
-  TensorBase(Real) = delete;
+  TensorBase(double) = delete;
+  TensorBase(float) = delete;
+  TensorBase(int) = delete;
 
   /// \addtogroup tensor_creation Tensor creation API
   ///@{
@@ -73,7 +75,7 @@ public:
   [[nodiscard]] static Derived ones_like(const Derived & other);
   /// Full tensor like another, i.e. same batch and base shapes, same tensor options, etc.,
   /// but filled with a different value
-  [[nodiscard]] static Derived full_like(const Derived & other, Real init);
+  [[nodiscard]] static Derived full_like(const Derived & other, const CScalar & init);
   /**
    * @brief Create a new tensor by adding a new batch dimension with linear spacing between \p
    * start and \p end.
@@ -97,8 +99,11 @@ public:
   [[nodiscard]] static Derived
   linspace(const Derived & start, const Derived & end, Size nstep, Size dim = 0);
   /// log-space equivalent of the linspace named constructor
-  [[nodiscard]] static Derived
-  logspace(const Derived & start, const Derived & end, Size nstep, Size dim = 0, Real base = 10);
+  [[nodiscard]] static Derived logspace(const Derived & start,
+                                        const Derived & end,
+                                        Size nstep,
+                                        Size dim = 0,
+                                        const CScalar & base = 10);
   ///@}
 
   /// @name Meta operations
@@ -171,12 +176,12 @@ public:
   ///@{
   /// Set values by slicing on the batch dimensions
   void batch_index_put_(indexing::TensorIndicesRef indices, const ATensor & other);
-  void batch_index_put_(indexing::TensorIndicesRef indices, Real v);
+  void batch_index_put_(indexing::TensorIndicesRef indices, const CScalar & v);
   ///@}
   ///@{
   /// Set values by slicing on the base dimensions
   void base_index_put_(indexing::TensorIndicesRef indices, const ATensor & other);
-  void base_index_put_(indexing::TensorIndicesRef indices, Real v);
+  void base_index_put_(indexing::TensorIndicesRef indices, const CScalar & v);
   ///@}
   /// Variable data without function graph
   Derived variable_data() const;

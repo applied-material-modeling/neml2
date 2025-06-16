@@ -84,8 +84,8 @@ TEST_CASE("discretization", "[tensors][functions]")
   //                      Ndofe__|  |
   //                          Nqp___|
   // The basis functions are the same for all elements.
-  const Real x1 = -std::sqrt(3.0) / 3;
-  const Real x2 = std::sqrt(3.0) / 3;
+  const double x1 = -std::sqrt(3.0) / 3;
+  const double x2 = std::sqrt(3.0) / 3;
   auto xi = Tensor::create({x1, x1, -x1, -x1}, 1);
   auto eta = Tensor::create({x2, -x2, x2, -x2}, 1);
   auto phi1 = (1 - xi) * (1 + eta) / 4;
@@ -184,11 +184,10 @@ TEST_CASE("discretization", "[tensors][functions]")
   //                                    |  |
   //                             Nelem__|  |
   //                                 Nqp___|
-  auto & model =
-      reload_model("models/solid_mechanics/elasticity/LinearIsotropicElasticity.i", "model");
+  auto model = load_model("models/solid_mechanics/elasticity/LinearIsotropicElasticity.i", "model");
   VariableName strain_name(STATE, "internal", "Ee");
   VariableName stress_name(STATE, "S");
-  auto stress = model.value({{strain_name, strain}})[stress_name];
+  auto stress = model->value({{strain_name, strain}})[stress_name];
   stress = R2(SR2(stress)); // Convert from symmetric to full R2
   REQUIRE(stress.batch_sizes() == TensorShape{nelem, nqp});
   REQUIRE(stress.base_sizes() == TensorShape{3, 3});

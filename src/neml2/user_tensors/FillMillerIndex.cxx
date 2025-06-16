@@ -36,19 +36,19 @@ FillMillerIndex::expected_options()
   options.doc() = "Fills a tensor of Miller indices from a list of integers. Use -1 instead of "
                   "\\f$ \\bar{1} \\f$.";
 
-  options.set<std::vector<Integer>>("values");
+  options.set<std::vector<int64_t>>("values");
   options.set("values").doc() = "List of integers defining a Miller index";
   return options;
 }
 
 FillMillerIndex::FillMillerIndex(const OptionSet & options)
-  : MillerIndex(fill(options.get<std::vector<Integer>>("values"))),
+  : MillerIndex(fill(options.get<std::vector<int64_t>>("values"))),
     UserTensorBase(options)
 {
 }
 
 MillerIndex
-FillMillerIndex::fill(const std::vector<Integer> & values) const
+FillMillerIndex::fill(const std::vector<int64_t> & values) const
 {
   if ((values.size() % 3) != 0)
     neml_assert(false, "Number of provided values must be a multiple of three!");

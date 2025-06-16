@@ -30,7 +30,7 @@ import neml2
 
 def test_axis_properties():
     pwd = Path(__file__).parent
-    model = neml2.reload_model(pwd / "test_LabeledAxis.i", "model")
+    model = neml2.load_model(pwd / "test_LabeledAxis.i", "model")
     input_axis = model.input_axis()
     output_axis = model.output_axis()
 
@@ -51,7 +51,7 @@ def test_axis_properties():
 
 def test_size():
     pwd = Path(__file__).parent
-    model = neml2.reload_model(pwd / "test_LabeledAxis.i", "model")
+    model = neml2.load_model(pwd / "test_LabeledAxis.i", "model")
     input_axis = model.input_axis()
     output_axis = model.output_axis()
 
@@ -75,7 +75,7 @@ def test_size():
 
 def test_slice():
     pwd = Path(__file__).parent
-    model = neml2.reload_model(pwd / "test_LabeledAxis.i", "model")
+    model = neml2.load_model(pwd / "test_LabeledAxis.i", "model")
     input_axis = model.input_axis()
     output_axis = model.output_axis()
 
@@ -97,7 +97,7 @@ def test_slice():
 
 def test_variable_accessors():
     pwd = Path(__file__).parent
-    model = neml2.reload_model(pwd / "test_LabeledAxis.i", "model")
+    model = neml2.load_model(pwd / "test_LabeledAxis.i", "model")
     axis = model.input_axis()
 
     assert axis.nvariable() == 8
@@ -152,7 +152,7 @@ def test_variable_accessors():
 
 def test_subaxis_accessors():
     pwd = Path(__file__).parent
-    model = neml2.reload_model(pwd / "test_LabeledAxis.i", "model")
+    model = neml2.load_model(pwd / "test_LabeledAxis.i", "model")
     axis = model.input_axis()
 
     assert axis.nsubaxis() == 4

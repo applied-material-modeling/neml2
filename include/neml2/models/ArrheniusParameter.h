@@ -50,7 +50,7 @@ protected:
   const Scalar & _Q;
 
   /// The ideal gas constant
-  const Real _R;
+  const double _R;
 
   /// Temperature
   const Variable<Scalar> & _T;

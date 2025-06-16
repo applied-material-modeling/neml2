@@ -3,10 +3,6 @@ pi = 3.14159
 day = 'day'
 
 [Settings]
-  default_integer_type = 'Int32'
-  machine_precision = 0.5
-  tolerance = 0.1
-  tighter_tolerance = 0.01
   buffer_name_separator = '::'
   parameter_name_separator = '::'
   require_double_precision = false
@@ -24,9 +20,9 @@ day = 'day'
     uint = 30
     uint_vec = '1 2 3'
     uint_vec_vec = '555; 123; 1 5 9'
-    Real = ${pi}
-    Real_vec = '-111 12 1.1'
-    Real_vec_vec = '1 3 5; 2 4 6; -3 -5 -7'
+    double = ${pi}
+    double_vec = '-111 12 1.1'
+    double_vec_vec = '1 3 5; 2 4 6; -3 -5 -7'
     string = 'today'
     string_vec = 'is a good ${day}'
     string_vec_vec = 'neml2 is very; useful'

@@ -27,12 +27,12 @@
 
 namespace neml2
 {
-Scalar::Scalar(Real init, const TensorOptions & options)
+Scalar::Scalar(const CScalar & init, const TensorOptions & options)
   : Scalar(at::scalar_tensor(init, options))
 {
   neml_assert_dbg(
       !options.requires_grad(),
-      "When creating a Scalar from a Real, requires_grad must be false. If you are "
+      "When creating a Scalar from a constant, requires_grad must be false. If you are "
       "trying to create a Scalar as a leaf variable, use Scalar::create or Scalar::full.");
 }
 

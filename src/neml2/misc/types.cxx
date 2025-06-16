@@ -22,12 +22,31 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <limits>
+#include <iostream>
+
 #include "neml2/misc/types.h"
 #include "neml2/misc/errors.h"
-#include <iostream>
 
 namespace neml2
 {
+CScalar
+machine_precision(Dtype dtype)
+{
+  switch (dtype)
+  {
+    case kFloat64:
+      return std::numeric_limits<double>::epsilon();
+    case kFloat32:
+      return std::numeric_limits<float>::epsilon();
+    case kFloat16:
+      // Note: C++ has no native float16 type prior to c++23; approximation needed
+      return 0.00097656f; // ~2^-10
+    default:
+      throw NEMLException("Unsupported dtype for machine precision");
+  }
+}
+
 std::ostream &
 operator<<(std::ostream & os, FType f)
 {

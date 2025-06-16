@@ -52,7 +52,7 @@ TabulatedPolynomialModel::expected_options()
   options.set<TensorName<Tensor>>("stress_tile_upper_bounds");
   options.set<TensorName<Tensor>>("temperature_tile_lower_bounds");
   options.set<TensorName<Tensor>>("temperature_tile_upper_bounds");
-  options.set<Real>("index_sharpness") = 1.0;
+  options.set<double>("index_sharpness") = 1.0;
   return options;
 }
 
@@ -72,7 +72,7 @@ TabulatedPolynomialModel::TabulatedPolynomialModel(const OptionSet & options)
     _ep_dot(declare_output_variable<Scalar>("equivalent_plastic_strain_rate")),
     _s1_dot(declare_output_variable<Scalar>("internal_state_1_rate")),
     _s2_dot(declare_output_variable<Scalar>("internal_state_2_rate")),
-    _k(options.get<Real>("index_sharpness"))
+    _k(options.get<double>("index_sharpness"))
 {
 }
 

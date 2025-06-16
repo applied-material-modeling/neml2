@@ -50,10 +50,10 @@ protected:
   const Scalar & _mu;
 
   /// The Boltzmann constant
-  const Real _k;
+  const double _k;
 
   /// Burgers vector cubed
-  const Real _b3;
+  const double _b3;
 
   /// The temperature
   const Variable<Scalar> & _T;

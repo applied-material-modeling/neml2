@@ -44,8 +44,10 @@ set_variable(ValueMap & storage,
               " values to ",
               vars.size(),
               " variables.");
+  auto * factory = options.get<Factory *>("_factory");
+  neml_assert(factory, "Internal error: factory != nullptr");
   for (size_t i = 0; i < vars.size(); i++)
-    storage[vars[i]] = vals[i].resolve();
+    storage[vars[i]] = vals[i].resolve(factory);
 }
 
 register_NEML2_object(ModelUnitTest);
@@ -61,14 +63,14 @@ ModelUnitTest::expected_options()
   options.set<bool>("check_second_derivatives") = false;
   options.set<bool>("check_AD_parameter_derivatives") = true;
 
-  options.set<Real>("value_rel_tol") = 1e-5;
-  options.set<Real>("value_abs_tol") = 1e-8;
-  options.set<Real>("derivative_rel_tol") = 1e-5;
-  options.set<Real>("derivative_abs_tol") = 1e-8;
-  options.set<Real>("second_derivative_rel_tol") = 1e-5;
-  options.set<Real>("second_derivative_abs_tol") = 1e-8;
-  options.set<Real>("parameter_derivative_rel_tol") = 1e-5;
-  options.set<Real>("parameter_derivative_abs_tol") = 1e-8;
+  options.set<double>("value_rel_tol") = 1e-5;
+  options.set<double>("value_abs_tol") = 1e-8;
+  options.set<double>("derivative_rel_tol") = 1e-5;
+  options.set<double>("derivative_abs_tol") = 1e-8;
+  options.set<double>("second_derivative_rel_tol") = 1e-5;
+  options.set<double>("second_derivative_abs_tol") = 1e-8;
+  options.set<double>("parameter_derivative_rel_tol") = 1e-5;
+  options.set<double>("parameter_derivative_abs_tol") = 1e-8;
 
 #define OPTION_SET_(T)                                                                             \
   options.set<std::vector<VariableName>>("input_" #T "_names");                                    \
@@ -89,28 +91,28 @@ ModelUnitTest::expected_options()
 
 ModelUnitTest::ModelUnitTest(const OptionSet & options)
   : Driver(options),
-    _model(get_model(options.get<std::string>("model"))),
+    _model(get_model("model")),
     _check_values(options.get<bool>("check_values")),
     _check_derivs(options.get<bool>("check_derivatives")),
     _check_secderivs(options.get<bool>("check_second_derivatives")),
     _check_AD_param_derivs(options.get<bool>("check_AD_parameter_derivatives")),
 
-    _val_rtol(options.get<Real>("value_rel_tol")),
-    _val_atol(options.get<Real>("value_abs_tol")),
-    _deriv_rtol(options.get<Real>("derivative_rel_tol")),
-    _deriv_atol(options.get<Real>("derivative_abs_tol")),
-    _secderiv_rtol(options.get<Real>("second_derivative_rel_tol")),
-    _secderiv_atol(options.get<Real>("second_derivative_abs_tol")),
-    _param_rtol(options.get<Real>("parameter_derivative_rel_tol")),
-    _param_atol(options.get<Real>("parameter_derivative_abs_tol")),
+    _val_rtol(options.get<double>("value_rel_tol")),
+    _val_atol(options.get<double>("value_abs_tol")),
+    _deriv_rtol(options.get<double>("derivative_rel_tol")),
+    _deriv_atol(options.get<double>("derivative_abs_tol")),
+    _secderiv_rtol(options.get<double>("second_derivative_rel_tol")),
+    _secderiv_atol(options.get<double>("second_derivative_abs_tol")),
+    _param_rtol(options.get<double>("parameter_derivative_rel_tol")),
+    _param_atol(options.get<double>("parameter_derivative_abs_tol")),
 
     _show_params(options.get<bool>("show_parameters")),
     _show_input(options.get<bool>("show_input_axis")),
     _show_output(options.get<bool>("show_output_axis"))
 {
 #define SET_VARIABLE_(T)                                                                           \
-  set_variable<T>(_in, input_options(), "input_" #T "_names", "input_" #T "_values");              \
-  set_variable<T>(_out, input_options(), "output_" #T "_names", "output_" #T "_values")
+  set_variable<T>(_in, options, "input_" #T "_names", "input_" #T "_values");                      \
+  set_variable<T>(_out, options, "output_" #T "_names", "output_" #T "_values")
   FOR_ALL_TENSORBASE(SET_VARIABLE_);
 }
 
@@ -120,23 +122,23 @@ ModelUnitTest::run()
   // LCOV_EXCL_START
   if (_show_params)
   {
-    std::cout << _model.name() << "'s parameters:\n";
-    for (auto && [pname, pval] : _model.named_parameters())
+    std::cout << _model->name() << "'s parameters:\n";
+    for (auto && [pname, pval] : _model->named_parameters())
       std::cout << "  " << pname << std::endl;
   }
 
   if (_show_input)
-    std::cout << _model.name() << "'s input axis:\n" << _model.input_axis() << std::endl;
+    std::cout << _model->name() << "'s input axis:\n" << _model->input_axis() << std::endl;
 
   if (_show_output)
-    std::cout << _model.name() << "'s output axis:\n" << _model.output_axis() << std::endl;
+    std::cout << _model->name() << "'s output axis:\n" << _model->output_axis() << std::endl;
   // LCOV_EXCL_STOP
 
   check_all();
 
   for (const auto & device : get_test_suite_additional_devices())
   {
-    _model.to(device);
+    _model->to(device);
     for (auto && [name, tensor] : _in)
       _in[name] = tensor.to(device);
 
@@ -165,7 +167,7 @@ ModelUnitTest::check_all()
 void
 ModelUnitTest::check_value()
 {
-  const auto out = _model.value(_in);
+  const auto out = _model->value(_in);
 
   neml_assert(out.size() == _out.size(),
               "The model gives a different number of outputs than "
@@ -192,20 +194,20 @@ ModelUnitTest::check_value()
 void
 ModelUnitTest::check_dvalue()
 {
-  const auto exact = _model.dvalue(_in);
+  const auto exact = _model->dvalue(_in);
 
-  for (const auto & yname : _model.output_axis().variable_names())
-    for (const auto & xname : _model.input_axis().variable_names())
+  for (const auto & yname : _model->output_axis().variable_names())
+    for (const auto & xname : _model->input_axis().variable_names())
     {
       const auto x0 = _in.count(xname) ? _in.at(xname).base_flatten()
-                                       : Tensor::zeros(_model.input_axis().variable_size(xname),
-                                                       _model.variable_options());
+                                       : Tensor::zeros(_model->input_axis().variable_size(xname),
+                                                       _model->variable_options());
       auto numerical = finite_differencing_derivative(
           [this, &yname, &xname](const Tensor & x)
           {
             auto in = _in;
             in[xname] = x;
-            return _model.value(in)[yname].base_flatten();
+            return _model->value(in)[yname].base_flatten();
           },
           x0);
 
@@ -236,22 +238,22 @@ ModelUnitTest::check_dvalue()
 void
 ModelUnitTest::check_d2value()
 {
-  const auto exact = _model.d2value(_in);
+  const auto exact = _model->d2value(_in);
 
-  for (const auto & yname : _model.output_axis().variable_names())
-    for (const auto & x1name : _model.input_axis().variable_names())
-      for (const auto & x2name : _model.input_axis().variable_names())
+  for (const auto & yname : _model->output_axis().variable_names())
+    for (const auto & x1name : _model->input_axis().variable_names())
+      for (const auto & x2name : _model->input_axis().variable_names())
       {
         const auto x20 = _in.count(x2name)
                              ? _in.at(x2name).base_flatten()
-                             : Tensor::zeros(_model.input_axis().variable_size(x2name),
-                                             _model.variable_options());
+                             : Tensor::zeros(_model->input_axis().variable_size(x2name),
+                                             _model->variable_options());
         auto numerical = finite_differencing_derivative(
             [this, &yname, &x1name, &x2name](const Tensor & x)
             {
               auto in = _in;
               in[x2name] = x;
-              return _model.dvalue(in)[yname][x1name];
+              return _model->dvalue(in)[yname][x1name];
             },
             x20);
 
@@ -292,16 +294,16 @@ void
 ModelUnitTest::check_AD_parameter_derivatives()
 {
   // Turn on AD for parameters
-  for (auto && [name, param] : _model.named_parameters())
+  for (auto && [name, param] : _model->named_parameters())
     param->requires_grad_(true);
 
   // Evaluate the model
-  auto out = _model.value(_in);
+  auto out = _model->value(_in);
 
   // Extract AD parameter derivatives
   std::map<VariableName, std::map<std::string, Tensor>> exact;
-  for (const auto & yname : _model.output_axis().variable_names())
-    for (auto && [pname, param] : _model.named_parameters())
+  for (const auto & yname : _model->output_axis().variable_names())
+    for (auto && [pname, param] : _model->named_parameters())
     {
       auto deriv = jacrev(out[yname],
                           Tensor(*param),
@@ -313,16 +315,16 @@ ModelUnitTest::check_AD_parameter_derivatives()
     }
 
   // Compare results against FD
-  for (const auto & yname : _model.output_axis().variable_names())
-    for (auto && [pname, param] : _model.named_parameters())
+  for (const auto & yname : _model->output_axis().variable_names())
+    for (auto && [pname, param] : _model->named_parameters())
     {
       auto numerical = finite_differencing_derivative(
           [&, &pname = pname, &param = param](const Tensor & x)
           {
             auto p0 = Tensor(*param).clone();
-            _model.set_parameter(pname, x);
-            auto out = _model.value(_in)[yname];
-            _model.set_parameter(pname, p0);
+            _model->set_parameter(pname, x);
+            auto out = _model->value(_in)[yname];
+            _model->set_parameter(pname, p0);
             return out;
           },
           Tensor(*param));

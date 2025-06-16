@@ -39,7 +39,7 @@ class Scalar : public PrimitiveTensor<Scalar>
 public:
   using PrimitiveTensor<Scalar>::PrimitiveTensor;
 
-  Scalar(Real init, const TensorOptions & options);
+  Scalar(const CScalar & init, const TensorOptions & options);
 
   /// The derivative of a Scalar with respect to itself
   [[nodiscard]] static Scalar

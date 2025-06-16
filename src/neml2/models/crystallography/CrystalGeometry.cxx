@@ -24,6 +24,7 @@
 
 #include "neml2/models/crystallography/CrystalGeometry.h"
 
+#include "neml2/base/Factory.h"
 #include "neml2/base/TensorName.h"
 #include "neml2/tensors/crystallography.h"
 #include "neml2/tensors/Scalar.h"
@@ -32,7 +33,6 @@
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/WR2.h"
 #include "neml2/tensors/MillerIndex.h"
-#include "neml2/tensors/TensorValue.h"
 #include "neml2/misc/assertions.h"
 
 namespace neml2::crystallography
@@ -65,28 +65,28 @@ CrystalGeometry::expected_options()
 }
 
 CrystalGeometry::CrystalGeometry(const OptionSet & options)
-  : CrystalGeometry(
-        options,
-        options.get<TensorName<R2>>("crystal_class").resolve(),
-        options.get<TensorName<Vec>>("lattice_vectors").resolve(),
-        setup_schmid_tensors(options.get<TensorName<Vec>>("lattice_vectors").resolve(),
-                             options.get<TensorName<R2>>("crystal_class").resolve(),
-                             options.get<TensorName<MillerIndex>>("slip_directions").resolve(),
-                             options.get<TensorName<MillerIndex>>("slip_planes").resolve()))
+  : CrystalGeometry(options, options.get<Factory *>("_factory"))
+{
+}
+
+CrystalGeometry::CrystalGeometry(const OptionSet & options, Factory * factory)
+  : CrystalGeometry(options,
+                    options.get<TensorName<R2>>("crystal_class").resolve(factory),
+                    options.get<TensorName<Vec>>("lattice_vectors").resolve(factory),
+                    options.get<TensorName<MillerIndex>>("slip_directions").resolve(factory),
+                    options.get<TensorName<MillerIndex>>("slip_planes").resolve(factory))
 {
 }
 
 CrystalGeometry::CrystalGeometry(const OptionSet & options,
                                  const R2 & cclass,
-                                 const Vec & lattice_vectors)
-  : CrystalGeometry(
-        options,
-        cclass,
-        lattice_vectors,
-        setup_schmid_tensors(lattice_vectors,
-                             cclass,
-                             options.get<TensorName<MillerIndex>>("slip_directions").resolve(),
-                             options.get<TensorName<MillerIndex>>("slip_planes").resolve()))
+                                 const Vec & lattice_vectors,
+                                 const MillerIndex & slip_directions,
+                                 const MillerIndex & slip_planes)
+  : CrystalGeometry(options,
+                    cclass,
+                    lattice_vectors,
+                    setup_schmid_tensors(lattice_vectors, cclass, slip_directions, slip_planes))
 {
 }
 

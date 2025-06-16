@@ -31,6 +31,8 @@
 #include "neml2/base/MultiEnumSelection.h"
 #include "neml2/base/TensorName.h"
 #include "neml2/base/NEML2Object.h"
+#include "neml2/base/Factory.h"
+#include "neml2/base/Settings.h"
 
 namespace neml2
 {
@@ -107,9 +109,9 @@ template class Option<Size>;
 template class Option<std::vector<Size>>;
 template class Option<std::vector<std::vector<Size>>>;
 
-template class Option<Real>;
-template class Option<std::vector<Real>>;
-template class Option<std::vector<std::vector<Real>>>;
+template class Option<double>;
+template class Option<std::vector<double>>;
+template class Option<std::vector<std::vector<double>>>;
 
 template class Option<std::string>;
 template class Option<std::vector<std::string>>;
@@ -140,6 +142,8 @@ template class Option<std::vector<std::vector<Device>>>;
 // Special instantiations
 template class Option<EnumSelection>;
 template class Option<MultiEnumSelection>;
+template class Option<Factory *>;
+template class Option<std::shared_ptr<Settings>>;
 template class Option<NEML2Object *>;
 
 namespace details

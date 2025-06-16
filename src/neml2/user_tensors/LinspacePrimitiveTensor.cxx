@@ -61,8 +61,8 @@ LinspacePrimitiveTensor<T>::expected_options()
 
 template <typename T>
 LinspacePrimitiveTensor<T>::LinspacePrimitiveTensor(const OptionSet & options)
-  : T(make(options)),
-    UserTensorBase(options)
+  : UserTensorBase(options),
+    T(make(options))
 {
 }
 
@@ -70,8 +70,11 @@ template <typename T>
 T
 LinspacePrimitiveTensor<T>::make(const OptionSet & options) const
 {
-  auto t = T::linspace(options.get<TensorName<T>>("start").resolve(),
-                       options.get<TensorName<T>>("end").resolve(),
+  auto * f = this->factory();
+  neml_assert(f, "Internal error: factory != nullptr");
+
+  auto t = T::linspace(options.get<TensorName<T>>("start").resolve(f),
+                       options.get<TensorName<T>>("end").resolve(f),
                        options.get<Size>("nstep"),
                        options.get<Size>("dim"));
 

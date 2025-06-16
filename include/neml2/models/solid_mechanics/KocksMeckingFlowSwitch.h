@@ -47,7 +47,7 @@ protected:
   const Variable<Scalar> & _g;
 
   /// The steepness parameter
-  const Real _sharp;
+  const double _sharp;
 
   /// The rate independent flow rate
   const Variable<Scalar> & _ri_flow;

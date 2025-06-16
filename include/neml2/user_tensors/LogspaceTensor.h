@@ -33,7 +33,7 @@ namespace neml2
 /**
  * @brief Create a logspace Tensor from the input file.
  */
-class LogspaceTensor : public Tensor, public UserTensorBase
+class LogspaceTensor : public UserTensorBase, public Tensor
 {
 public:
   static OptionSet expected_options();

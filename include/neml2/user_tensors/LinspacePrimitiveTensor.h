@@ -34,7 +34,7 @@ namespace neml2
  * @tparam T The concrete tensor derived from PrimitiveTensor
  */
 template <typename T>
-class LinspacePrimitiveTensor : public T, public UserTensorBase
+class LinspacePrimitiveTensor : public UserTensorBase, public T
 {
 public:
   static OptionSet expected_options();

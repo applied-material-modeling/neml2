@@ -33,7 +33,7 @@ namespace neml2
 /**
  * @brief Create a filled SR2 from the input file.
  */
-class FillSR2 : public SR2, public UserTensorBase
+class FillSR2 : public UserTensorBase, public SR2
 {
 public:
   static OptionSet expected_options();

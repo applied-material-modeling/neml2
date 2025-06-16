@@ -46,6 +46,6 @@ public:
 
 private:
   /// A helper method to dispatch to the correct fill method based on the number of values.
-  MillerIndex fill(const std::vector<Integer> & values) const;
+  MillerIndex fill(const std::vector<int64_t> & values) const;
 };
 } // namespace neml2

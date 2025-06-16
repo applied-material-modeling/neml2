@@ -59,8 +59,8 @@ The following code parses the given input file named "input.i" and retrieves a M
   {
     using namespace neml2;
 
-    auto & model = load_model("input.i", "my_model");
-    std::cout << model << std::endl;
+    auto model = load_model("input.i", "my_model");
+    std::cout << *model << std::endl;
   }
   ```
   @endsource
@@ -133,14 +133,14 @@ Note that `set_default_dtype(kFloat64)` is used to change the default precision 
     using namespace neml2;
 
     set_default_dtype(kFloat64);
-    auto & model = load_model("input.i", "my_model");
+    auto model = load_model("input.i", "my_model");
 
     // Create the strain
     auto strain_name = VariableName("forces", "E");
     auto strain = SR2::fill(0.1, 0.05, -0.03, 0.02, 0.06, 0.03);
 
     // Evaluate the model
-    auto output = model.value({{strain_name, strain}});
+    auto output = model->value({{strain_name, strain}});
 
     // Get the stress
     auto stress_name = VariableName("state", "S");

@@ -33,11 +33,11 @@ namespace crystallography
 {
 namespace crystal_symmetry_operators
 {
-constexpr Real a = 0.7071067811865476;
-constexpr Real b = 0.8660254037844386;
-constexpr Real h = 0.5;
-constexpr Real o = 1.0;
-constexpr Real z = 0.0;
+constexpr double a = 0.7071067811865476;
+constexpr double b = 0.8660254037844386;
+constexpr double h = 0.5;
+constexpr double o = 1.0;
+constexpr double z = 0.0;
 
 /// @brief  tetragonal symmetry operators
 Quaternion tetragonal(const TensorOptions & options = default_tensor_options());

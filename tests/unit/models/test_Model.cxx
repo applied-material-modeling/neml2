@@ -34,49 +34,39 @@ using namespace neml2;
 
 TEST_CASE("Model", "[models]")
 {
-  SECTION("get_model")
-  {
-    reload_input("models/ComposedModel5.i");
-    auto & model1 = get_model("model");
-    auto & model2 = get_model("model");
-    auto & model3 = get_model("model");
-    REQUIRE(&model1 == &model2);
-    REQUIRE(&model2 == &model3);
-  }
-
   SECTION("variable type")
   {
-    auto & model = reload_model("models/ComposedModel3.i", "model");
+    auto model = load_model("models/ComposedModel3.i", "model");
 
-    REQUIRE(model.input_variable({FORCES, "t"}).type() == TensorType::kScalar);
-    REQUIRE(model.input_variable({FORCES, "temperature"}).type() == TensorType::kScalar);
-    REQUIRE(model.input_variable({OLD_FORCES, "t"}).type() == TensorType::kScalar);
-    REQUIRE(model.input_variable({OLD_STATE, "bar"}).type() == TensorType::kScalar);
-    REQUIRE(model.input_variable({OLD_STATE, "baz"}).type() == TensorType::kSR2);
-    REQUIRE(model.input_variable({OLD_STATE, "foo"}).type() == TensorType::kScalar);
-    REQUIRE(model.input_variable({STATE, "bar"}).type() == TensorType::kScalar);
-    REQUIRE(model.input_variable({STATE, "baz"}).type() == TensorType::kSR2);
-    REQUIRE(model.input_variable({STATE, "foo"}).type() == TensorType::kScalar);
-    REQUIRE(model.output_variable({STATE, "sum"}).type() == TensorType::kScalar);
+    REQUIRE(model->input_variable({FORCES, "t"}).type() == TensorType::kScalar);
+    REQUIRE(model->input_variable({FORCES, "temperature"}).type() == TensorType::kScalar);
+    REQUIRE(model->input_variable({OLD_FORCES, "t"}).type() == TensorType::kScalar);
+    REQUIRE(model->input_variable({OLD_STATE, "bar"}).type() == TensorType::kScalar);
+    REQUIRE(model->input_variable({OLD_STATE, "baz"}).type() == TensorType::kSR2);
+    REQUIRE(model->input_variable({OLD_STATE, "foo"}).type() == TensorType::kScalar);
+    REQUIRE(model->input_variable({STATE, "bar"}).type() == TensorType::kScalar);
+    REQUIRE(model->input_variable({STATE, "baz"}).type() == TensorType::kSR2);
+    REQUIRE(model->input_variable({STATE, "foo"}).type() == TensorType::kScalar);
+    REQUIRE(model->output_variable({STATE, "sum"}).type() == TensorType::kScalar);
 
-    REQUIRE(utils::stringify(model.input_variable({FORCES, "t"}).type()) == "Scalar");
-    REQUIRE(utils::stringify(model.input_variable({FORCES, "temperature"}).type()) == "Scalar");
-    REQUIRE(utils::stringify(model.input_variable({OLD_FORCES, "t"}).type()) == "Scalar");
-    REQUIRE(utils::stringify(model.input_variable({OLD_STATE, "bar"}).type()) == "Scalar");
-    REQUIRE(utils::stringify(model.input_variable({OLD_STATE, "baz"}).type()) == "SR2");
-    REQUIRE(utils::stringify(model.input_variable({OLD_STATE, "foo"}).type()) == "Scalar");
-    REQUIRE(utils::stringify(model.input_variable({STATE, "bar"}).type()) == "Scalar");
-    REQUIRE(utils::stringify(model.input_variable({STATE, "baz"}).type()) == "SR2");
-    REQUIRE(utils::stringify(model.input_variable({STATE, "foo"}).type()) == "Scalar");
-    REQUIRE(utils::stringify(model.output_variable({STATE, "sum"}).type()) == "Scalar");
+    REQUIRE(utils::stringify(model->input_variable({FORCES, "t"}).type()) == "Scalar");
+    REQUIRE(utils::stringify(model->input_variable({FORCES, "temperature"}).type()) == "Scalar");
+    REQUIRE(utils::stringify(model->input_variable({OLD_FORCES, "t"}).type()) == "Scalar");
+    REQUIRE(utils::stringify(model->input_variable({OLD_STATE, "bar"}).type()) == "Scalar");
+    REQUIRE(utils::stringify(model->input_variable({OLD_STATE, "baz"}).type()) == "SR2");
+    REQUIRE(utils::stringify(model->input_variable({OLD_STATE, "foo"}).type()) == "Scalar");
+    REQUIRE(utils::stringify(model->input_variable({STATE, "bar"}).type()) == "Scalar");
+    REQUIRE(utils::stringify(model->input_variable({STATE, "baz"}).type()) == "SR2");
+    REQUIRE(utils::stringify(model->input_variable({STATE, "foo"}).type()) == "Scalar");
+    REQUIRE(utils::stringify(model->output_variable({STATE, "sum"}).type()) == "Scalar");
   }
 
   SECTION("diagnose")
   {
     SECTION("input variables")
     {
-      auto & model = reload_model("models/test_Model_diagnose1.i", "model");
-      auto diagnoses = diagnose(model);
+      auto model = load_model("models/test_Model_diagnose1.i", "model");
+      auto diagnoses = diagnose(*model);
 
       REQUIRE(diagnoses.size() == 2);
       REQUIRE_THAT(
@@ -90,8 +80,8 @@ TEST_CASE("Model", "[models]")
 
     SECTION("output variables")
     {
-      auto & model = reload_model("models/test_Model_diagnose2.i", "model");
-      auto diagnoses = diagnose(model);
+      auto model = load_model("models/test_Model_diagnose2.i", "model");
+      auto diagnoses = diagnose(*model);
 
       REQUIRE(diagnoses.size() == 1);
       REQUIRE_THAT(diagnoses[0].what(),
@@ -101,8 +91,8 @@ TEST_CASE("Model", "[models]")
 
     SECTION("nonlinear system")
     {
-      auto & model = reload_model("models/test_Model_diagnose3.i", "model");
-      auto diagnoses = diagnose(model);
+      auto model = load_model("models/test_Model_diagnose3.i", "model");
+      auto diagnoses = diagnose(*model);
 
       REQUIRE(diagnoses.size() == 1);
       REQUIRE_THAT(

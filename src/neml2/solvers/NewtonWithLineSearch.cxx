@@ -51,11 +51,11 @@ NewtonWithLineSearch::expected_options()
       "Maximum allowable linesearch iterations. No error is produced upon reaching the maximum "
       "number of iterations, and the scale factor in the last iteration is used to scale the step.";
 
-  options.set<Real>("linesearch_cutback") = 2.0;
+  options.set<double>("linesearch_cutback") = 2.0;
   options.set("linesearch_cutback").doc() = "Linesearch cut-back factor when the current scale "
                                             "factor cannot sufficiently reduce the residual.";
 
-  options.set<Real>("linesearch_stopping_criteria") = 1.0e-3;
+  options.set<double>("linesearch_stopping_criteria") = 1.0e-3;
   options.set("linesearch_stopping_criteria").doc() =
       "The lineseach tolerance slightly relaxing the definition of residual decrease";
 
@@ -69,8 +69,8 @@ NewtonWithLineSearch::expected_options()
 NewtonWithLineSearch::NewtonWithLineSearch(const OptionSet & options)
   : Newton(options),
     _linesearch_miter(options.get<unsigned int>("max_linesearch_iterations")),
-    _linesearch_sigma(options.get<Real>("linesearch_cutback")),
-    _linesearch_c(options.get<Real>("linesearch_stopping_criteria")),
+    _linesearch_sigma(options.get<double>("linesearch_cutback")),
+    _linesearch_c(options.get<double>("linesearch_stopping_criteria")),
     _type(options.get<EnumSelection>("linesearch_type")),
     _check_crit(options.get<bool>("check_negative_critertia_value"))
 {
@@ -110,9 +110,9 @@ NewtonWithLineSearch::linesearch(NonlinearSystem & system,
 
     if (verbose)
       std::cout << "     LS ITERATION " << std::setw(3) << i << ", min(alpha) = " << std::scientific
-                << at::min(alpha).item<Real>() << ", max(||R||) = " << std::scientific
-                << at::max(sqrt(nR2)).item<Real>() << ", min(||Rc||) = " << std::scientific
-                << at::min(sqrt(crit)).item<Real>() << std::endl;
+                << at::min(alpha).item<double>() << ", max(||R||) = " << std::scientific
+                << at::max(sqrt(nR2)).item<double>() << ", min(||Rc||) = " << std::scientific
+                << at::min(sqrt(crit)).item<double>() << std::endl;
 
     auto stop = at::logical_or(nR2 <= crit, nR2 <= std::pow(atol, 2));
 
@@ -124,7 +124,7 @@ NewtonWithLineSearch::linesearch(NonlinearSystem & system,
   }
 
   if (_check_crit)
-    if (at::max(crit).item<Real>() < 0)
+    if (at::max(crit).item<double>() < 0)
       std::cerr << "WARNING: Line Search produces negative stopping "
                    "criteria, this could lead to convergence issue. Try with other "
                    "linesearch_type, increase linesearch_cutback "

@@ -29,7 +29,7 @@
 namespace neml2
 {
 #define DEFINE_POW(T)                                                                              \
-  T pow(const T & a, const Real & n) { return T(at::pow(a, n), a.batch_sizes()); }                 \
+  T pow(const T & a, const CScalar & n) { return T(at::pow(a, n), a.batch_sizes()); }              \
   T pow(const T & a, const Scalar & n)                                                             \
   {                                                                                                \
     neml_assert_batch_broadcastable_dbg(a, n);                                                     \
@@ -39,7 +39,7 @@ namespace neml2
 FOR_ALL_NONSCALAR_TENSORBASE(DEFINE_POW);
 
 Scalar
-pow(const Scalar & a, const Real & n)
+pow(const Scalar & a, const CScalar & n)
 {
   return Scalar(at::pow(a, n), a.batch_sizes());
 }
@@ -52,7 +52,7 @@ pow(const Scalar & a, const Scalar & n)
 }
 
 Scalar
-pow(const Real & a, const Scalar & n)
+pow(const CScalar & a, const Scalar & n)
 {
   return Scalar(at::pow(a, n), n.batch_sizes());
 }
@@ -67,7 +67,7 @@ pow(const Tensor & a, const Tensor & n)
 }
 
 Tensor
-pow(const Real & a, const Tensor & n)
+pow(const CScalar & a, const Tensor & n)
 {
   return Tensor(at::pow(a, n), n.batch_sizes());
 }

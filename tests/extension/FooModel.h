@@ -38,6 +38,6 @@ protected:
 
   const neml2::Variable<neml2::Scalar> & _x;
   neml2::Variable<neml2::Scalar> & _y;
-  const neml2::Real _c;
+  const double _c;
 };
 }

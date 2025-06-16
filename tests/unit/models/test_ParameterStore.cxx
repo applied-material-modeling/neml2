@@ -34,15 +34,14 @@ using namespace neml2;
 
 TEST_CASE("ParameterStore", "[models]")
 {
-  auto & model =
-      reload_model("models/solid_mechanics/elasticity/LinearIsotropicElasticity.i", "model");
+  auto model = load_model("models/solid_mechanics/elasticity/LinearIsotropicElasticity.i", "model");
   auto batch_shape = TensorShape{5, 2};
 
   SECTION("class ParameterStore")
   {
     SECTION("named_parameters")
     {
-      auto & params = model.named_parameters();
+      auto & params = model->named_parameters();
 
       REQUIRE(params.size() == 2);
       REQUIRE(params.count("E"));
@@ -51,9 +50,9 @@ TEST_CASE("ParameterStore", "[models]")
 
     SECTION("get_parameter")
     {
-      auto & params = model.named_parameters();
-      auto & E = model.get_parameter("E");
-      auto & nu = model.get_parameter("nu");
+      auto & params = model->named_parameters();
+      auto & E = model->get_parameter("E");
+      auto & nu = model->get_parameter("nu");
 
       REQUIRE(Tensor(E).batch_sizes() == TensorShape());
       REQUIRE(Tensor(nu).batch_sizes() == TensorShape());
@@ -79,9 +78,9 @@ TEST_CASE("ParameterStore", "[models]")
 
 TEST_CASE("Nested parameter registration")
 {
-  auto & model = reload_model("models/test_ParameterStore.i", "model");
+  auto model = load_model("models/test_ParameterStore.i", "model");
 
-  const auto & params = model.named_parameters();
+  const auto & params = model->named_parameters();
   REQUIRE(params.count("E1::value"));
   REQUIRE(params.count("E2::value"));
   REQUIRE(params.count("E3::value"));

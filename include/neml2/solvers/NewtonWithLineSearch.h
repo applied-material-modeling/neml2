@@ -59,10 +59,10 @@ protected:
   unsigned int _linesearch_miter;
 
   /// Decrease factor for linesearch
-  Real _linesearch_sigma;
+  double _linesearch_sigma;
 
   /// Stopping criteria for linesearch
-  Real _linesearch_c;
+  double _linesearch_c;
 
   /// Seclect the type of line search
   EnumSelection _type;

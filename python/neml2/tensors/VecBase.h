@@ -65,7 +65,7 @@ def_VecBase(py::class_<Derived> & c)
   // Static methods
   c.def_static(
        "fill",
-       [](const Real & v1, const Real & v2, const Real & v3, NEML2_TENSOR_OPTIONS_VARGS)
+       [](const double & v1, const double & v2, const double & v3, NEML2_TENSOR_OPTIONS_VARGS)
        { return Derived::fill(v1, v2, v3, NEML2_TENSOR_OPTIONS); },
        py::arg("x"),
        py::arg("y"),

@@ -234,7 +234,7 @@ TEST_CASE("TensorBase", "[tensors]")
     {
       SECTION("unbatched")
       {
-        Real init = 4.3;
+        double init = 4.3;
         auto a = Tensor::full(D, init, DTO);
         REQUIRE(!a.batched());
         REQUIRE(a.dim() == Dn);
@@ -249,7 +249,7 @@ TEST_CASE("TensorBase", "[tensors]")
 
       SECTION("batched")
       {
-        Real init = 2999;
+        double init = 2999;
         auto a = Tensor::full(B, D, init, DTO);
         REQUIRE(a.batched());
         REQUIRE(a.dim() == n);
@@ -265,7 +265,7 @@ TEST_CASE("TensorBase", "[tensors]")
 
     SECTION("full_like")
     {
-      Real init = -3.2;
+      double init = -3.2;
       auto a = Tensor::empty(B, D, DTO);
       auto b = Tensor::full_like(a, init);
       REQUIRE(b.dim() == a.dim());
@@ -406,7 +406,7 @@ TEST_CASE("TensorBase", "[tensors]")
       auto b = a.batch_expand(s);
       REQUIRE(b.batch_sizes() == s);
       REQUIRE(b.base_sizes() == a.base_sizes());
-      REQUIRE(at::sum(a - b).item<Real>() == Catch::Approx(0));
+      REQUIRE(at::sum(a - b).item<double>() == Catch::Approx(0));
     }
 
     SECTION("base_expand")
@@ -421,7 +421,7 @@ TEST_CASE("TensorBase", "[tensors]")
       // tensors because they have different base shapes. However, they _should_ be broadcastable
       // based on libTorch's original broadcasting rules. So we need to interpret them as
       // ATensors first before we can compute a - b. This is the correct behavior.
-      REQUIRE(at::sum(ATensor(a) - ATensor(b)).item<Real>() == Catch::Approx(0));
+      REQUIRE(at::sum(ATensor(a) - ATensor(b)).item<double>() == Catch::Approx(0));
     }
 
     SECTION("batch_expand_as")
@@ -454,7 +454,7 @@ TEST_CASE("TensorBase", "[tensors]")
       auto b = a.batch_expand_copy(s);
       REQUIRE(b.batch_sizes() == s);
       REQUIRE(b.base_sizes() == a.base_sizes());
-      REQUIRE(at::sum(a - b).item<Real>() == Catch::Approx(0));
+      REQUIRE(at::sum(a - b).item<double>() == Catch::Approx(0));
     }
 
     SECTION("base_expand_copy")
@@ -469,7 +469,7 @@ TEST_CASE("TensorBase", "[tensors]")
       // tensors because they have different base shapes. However, they _should_ be broadcastable
       // based on libTorch's original broadcasting rules. So we need to interpret them as
       // ATensors first before we can compute a - b. This is the correct behavior.
-      REQUIRE(at::sum(ATensor(a) - ATensor(b)).item<Real>() == Catch::Approx(0));
+      REQUIRE(at::sum(ATensor(a) - ATensor(b)).item<double>() == Catch::Approx(0));
     }
 
     SECTION("batch_unsqueeze")

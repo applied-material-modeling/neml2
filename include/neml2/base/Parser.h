@@ -21,6 +21,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+
 #pragma once
 
 #include <filesystem>
@@ -31,7 +32,7 @@
 
 namespace neml2
 {
-class OptionCollection;
+class InputFile;
 class LabeledAxisAccessor;
 using VariableName = LabeledAxisAccessor;
 class EnumSelection;
@@ -62,10 +63,10 @@ public:
    * @param filename Name/path of the input file.
    * @param additional_input  Additional content of the input file not included in the input file
    * itself, e.g., from command line.
-   * @return OptionCollection The extracted object options.
+   * @return InputFile The extracted object options.
    */
-  virtual OptionCollection parse(const std::filesystem::path & filename,
-                                 const std::string & additional_input = "") const = 0;
+  virtual InputFile parse(const std::filesystem::path & filename,
+                          const std::string & additional_input = "") const = 0;
 };
 
 namespace utils

@@ -31,7 +31,7 @@ namespace neml2
 {
 #define DECLARE_FMOD(T)                                                                            \
   T fmod(const T & a, const T & b);                                                                \
-  T fmod(const T & a, const Real & b)
+  T fmod(const T & a, const CScalar & b)
 FOR_ALL_TENSORBASE(DECLARE_FMOD);
 #undef DECLARE_FMOD
 } // namespace neml2

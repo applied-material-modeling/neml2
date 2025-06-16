@@ -124,6 +124,6 @@ protected:
   // @}
 
   /// Parameter controlling the sharpness of the smooth indexing
-  const Real _k;
+  const double _k;
 };
 }

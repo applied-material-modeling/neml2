@@ -54,12 +54,12 @@ KocksMeckingFlowViscosity::expected_options()
   options.set_parameter<TensorName<Scalar>>("shear_modulus");
   options.set("shear_modulus").doc() = "The shear modulus";
 
-  options.set<Real>("eps0");
+  options.set<double>("eps0");
   options.set("eps0").doc() = "The reference strain rate";
 
-  options.set<Real>("k");
+  options.set<double>("k");
   options.set("k").doc() = "Boltzmann constant";
-  options.set<Real>("b");
+  options.set<double>("b");
   options.set("b").doc() = "The Burgers vector";
 
   options.set_input("temperature") = VariableName(FORCES, "T");
@@ -73,9 +73,9 @@ KocksMeckingFlowViscosity::KocksMeckingFlowViscosity(const OptionSet & options)
     _A(declare_parameter<Scalar>("A", "A", /*allow_nonlinear=*/true)),
     _B(declare_parameter<Scalar>("B", "B", /*allow_nonlinear=*/true)),
     _mu(declare_parameter<Scalar>("mu", "shear_modulus", /*allow_nonlinear=*/true)),
-    _eps0(options.get<Real>("eps0")),
-    _k(options.get<Real>("k")),
-    _b3(options.get<Real>("b") * options.get<Real>("b") * options.get<Real>("b")),
+    _eps0(options.get<double>("eps0")),
+    _k(options.get<double>("k")),
+    _b3(options.get<double>("b") * options.get<double>("b") * options.get<double>("b")),
     _T(declare_input_variable<Scalar>("temperature")),
     _eta(declare_output_variable<Scalar>(VariableName(PARAMETERS, name())))
 {

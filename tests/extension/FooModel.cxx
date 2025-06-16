@@ -37,7 +37,7 @@ FooModel::expected_options()
   auto options = neml2::Model::expected_options();
   options.set_input("x");
   options.set_output("y");
-  options.set<neml2::Real>("c");
+  options.set<double>("c");
   return options;
 }
 
@@ -45,7 +45,7 @@ FooModel::FooModel(const neml2::OptionSet & options)
   : neml2::Model(options),
     _x(declare_input_variable<neml2::Scalar>("x")),
     _y(declare_output_variable<neml2::Scalar>("y")),
-    _c(options.get<neml2::Real>("c"))
+    _c(options.get<double>("c"))
 {
 }
 

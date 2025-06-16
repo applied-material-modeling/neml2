@@ -48,7 +48,7 @@ TEST_CASE("R3", "[tensors]")
         for (Size j = 0; j < 3; j++)
           for (Size k = 0; k < 3; k++)
           {
-            Real v = 0.0;
+            double v = 0.0;
             if (std::find(p.begin(), p.end(), TensorShape{i, j, k}) != p.end())
               v = 1.0;
             else if (std::find(n.begin(), n.end(), TensorShape{i, j, k}) != n.end())

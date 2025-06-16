@@ -46,9 +46,9 @@ KocksMeckingRateSensitivity::expected_options()
   options.set_parameter<TensorName<Scalar>>("shear_modulus");
   options.set("shear_modulus").doc() = "The shear modulus";
 
-  options.set<Real>("k");
+  options.set<double>("k");
   options.set("k").doc() = "Boltzmann constant";
-  options.set<Real>("b");
+  options.set<double>("b");
   options.set("b").doc() = "The Burgers vector";
 
   options.set_input("temperature") = VariableName(FORCES, "T");
@@ -61,8 +61,8 @@ KocksMeckingRateSensitivity::KocksMeckingRateSensitivity(const OptionSet & optio
   : Model(options),
     _A(declare_parameter<Scalar>("A", "A", /*allow_nonlinear=*/true)),
     _mu(declare_parameter<Scalar>("mu", "shear_modulus", /*allow_nonlinear=*/true)),
-    _k(options.get<Real>("k")),
-    _b3(options.get<Real>("b") * options.get<Real>("b") * options.get<Real>("b")),
+    _k(options.get<double>("k")),
+    _b3(options.get<double>("b") * options.get<double>("b") * options.get<double>("b")),
     _T(declare_input_variable<Scalar>("temperature")),
     _m(declare_output_variable<Scalar>(VariableName(PARAMETERS, name())))
 {

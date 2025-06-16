@@ -56,12 +56,12 @@ public:
 
 private:
   /// The driver that will run the NEML2 model
-  TransientDriver & _driver;
+  const std::shared_ptr<TransientDriver> _driver;
 
   /// The variables with the correct values (from the vtest file)
   std::map<std::string, ATensor> _ref;
 
-  Real _rtol;
-  Real _atol;
+  double _rtol;
+  double _atol;
 };
 } // namespace neml2

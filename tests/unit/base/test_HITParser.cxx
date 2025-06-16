@@ -26,10 +26,8 @@
 #include <catch2/matchers/catch_matchers_all.hpp>
 
 #include "neml2/base/HITParser.h"
-#include "neml2/base/TensorName.h"
-#include "neml2/base/EnumSelection.h"
-
-#include "SampleParserTestingModel.h"
+#include "neml2/base/Settings.h"
+#include "neml2/base/InputFile.h"
 
 using namespace neml2;
 
@@ -65,8 +63,8 @@ TEST_CASE("HITParser", "[base]")
     HITParser parser;
     SECTION("parse")
     {
-      auto all_options = parser.parse("base/test_HITParser1.i");
-      OptionSet options = all_options["Models"]["foo"];
+      auto inp = parser.parse("base/test_HITParser1.i");
+      OptionSet options = inp["Models"]["foo"];
 
       SECTION("metadata")
       {
@@ -78,14 +76,10 @@ TEST_CASE("HITParser", "[base]")
 
       SECTION("global settings")
       {
-        auto & settings = all_options.settings();
-        REQUIRE(settings.get<EnumSelection>("default_integer_type").as<Dtype>() == kInt32);
-        REQUIRE(settings.get<Real>("machine_precision") == Catch::Approx(0.5));
-        REQUIRE(settings.get<Real>("tolerance") == Catch::Approx(0.1));
-        REQUIRE(settings.get<Real>("tighter_tolerance") == Catch::Approx(0.01));
-        REQUIRE(settings.get<std::string>("buffer_name_separator") == "::");
-        REQUIRE(settings.get<std::string>("parameter_name_separator") == "::");
-        REQUIRE(!settings.get<bool>("require_double_precision"));
+        auto & settings = inp.settings();
+        REQUIRE(settings->buffer_name_separator() == "::");
+        REQUIRE(settings->parameter_name_separator() == "::");
+        REQUIRE(!settings->require_double_precision());
       }
 
       SECTION("booleans")
@@ -115,17 +109,17 @@ TEST_CASE("HITParser", "[base]")
                 std::vector<std::vector<unsigned int>>{{555}, {123}, {1, 5, 9}});
       }
 
-      SECTION("Reals")
+      SECTION("doubles")
       {
-        REQUIRE(options.get<Real>("Real") == Catch::Approx(3.14159));
-        REQUIRE_THAT(options.get<std::vector<Real>>("Real_vec"),
-                     Catch::Matchers::Approx(std::vector<Real>{-111, 12, 1.1}));
-        REQUIRE_THAT(options.get<std::vector<std::vector<Real>>>("Real_vec_vec")[0],
-                     Catch::Matchers::Approx(std::vector<Real>{1, 3, 5}));
-        REQUIRE_THAT(options.get<std::vector<std::vector<Real>>>("Real_vec_vec")[1],
-                     Catch::Matchers::Approx(std::vector<Real>{2, 4, 6}));
-        REQUIRE_THAT(options.get<std::vector<std::vector<Real>>>("Real_vec_vec")[2],
-                     Catch::Matchers::Approx(std::vector<Real>{-3, -5, -7}));
+        REQUIRE(options.get<double>("double") == Catch::Approx(3.14159));
+        REQUIRE_THAT(options.get<std::vector<double>>("double_vec"),
+                     Catch::Matchers::Approx(std::vector<double>{-111, 12, 1.1}));
+        REQUIRE_THAT(options.get<std::vector<std::vector<double>>>("double_vec_vec")[0],
+                     Catch::Matchers::Approx(std::vector<double>{1, 3, 5}));
+        REQUIRE_THAT(options.get<std::vector<std::vector<double>>>("double_vec_vec")[1],
+                     Catch::Matchers::Approx(std::vector<double>{2, 4, 6}));
+        REQUIRE_THAT(options.get<std::vector<std::vector<double>>>("double_vec_vec")[2],
+                     Catch::Matchers::Approx(std::vector<double>{-3, -5, -7}));
       }
 
       SECTION("strings")

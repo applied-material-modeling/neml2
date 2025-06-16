@@ -103,8 +103,8 @@ Newton::converged(size_t itr, const ATensor & nR, const ATensor & nR0) const
   // LCOV_EXCL_START
   if (verbose)
     std::cout << "ITERATION " << std::setw(3) << itr << ", |R| = " << std::scientific
-              << at::max(nR).item<Real>() << ", |R0| = " << std::scientific
-              << at::max(nR0).item<Real>() << std::endl;
+              << at::max(nR).item<double>() << ", |R0| = " << std::scientific
+              << at::max(nR0).item<double>() << std::endl;
   // LCOV_EXCL_STOP
 
   return at::all(at::logical_or(nR < atol, nR / nR0 < rtol)).item<bool>();

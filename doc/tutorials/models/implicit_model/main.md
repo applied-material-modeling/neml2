@@ -114,8 +114,8 @@ The structure of the system of equations can be summarized using the code below.
   {
     using namespace neml2;
     set_default_dtype(kFloat64);
-    auto & system = load_model("input1.i", "system");
-    std::cout << system << std::endl;
+    auto system = load_model("input1.i", "system");
+    std::cout << *system << std::endl;
   }
   ```
   @endsource
@@ -203,7 +203,7 @@ The [ImplicitUpdate](#implicitupdate) model can then be invoked in the same way 
   {
     using namespace neml2;
     set_default_dtype(kFloat64);
-    auto & model = load_model("input2.i", "model");
+    auto model = load_model("input2.i", "model");
 
     // Create input variables
     // Unspecified variables are assumed to be zero
@@ -211,7 +211,7 @@ The [ImplicitUpdate](#implicitupdate) model can then be invoked in the same way 
     auto t = Scalar::full(1);
 
     // Solve the implicit model
-    auto outputs = model.value({{VariableName("forces", "E"), E},
+    auto outputs = model->value({{VariableName("forces", "E"), E},
                                 {VariableName("forces", "t"), t}});
 
     // Get the solution

@@ -54,7 +54,7 @@ Orientation::expected_options()
   options.set<std::string>("angle_type") = "degrees";
   options.set("angle_type").doc() = "Type of angles, either 'degrees' or 'radians'";
 
-  options.set<std::vector<Real>>("values") = {};
+  options.set<std::vector<double>>("values") = {};
   options.set("values").doc() = "Input Euler angles, as a flattened n-by-3 matrix";
 
   options.set<bool>("normalize") = false;
@@ -82,7 +82,7 @@ Orientation::fill(const OptionSet & options) const
   Rot R;
   if (input_type == "euler_angles")
   {
-    auto vals = options.get<std::vector<Real>>("values");
+    auto vals = options.get<std::vector<double>>("values");
     auto t = neml2::Tensor::create(vals);
     auto v = Vec(t.reshape({-1, 3}));
     R = expand_as_needed(Rot::fill_euler_angles(v,

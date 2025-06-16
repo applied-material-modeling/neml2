@@ -38,7 +38,7 @@ SampleParserTestingModel::expected_options()
   //   bool
   //   int
   //   unsigned int
-  //   Real
+  //   double
   //   string
   //
   // We also support vector of and vector of vector of each integral type.
@@ -54,9 +54,9 @@ SampleParserTestingModel::expected_options()
   options.set<std::vector<unsigned int>>("uint_vec");
   options.set<std::vector<std::vector<unsigned int>>>("uint_vec_vec");
 
-  options.set<Real>("Real");
-  options.set<std::vector<Real>>("Real_vec");
-  options.set<std::vector<std::vector<Real>>>("Real_vec_vec");
+  options.set<double>("double");
+  options.set<std::vector<double>>("double_vec");
+  options.set<std::vector<std::vector<double>>>("double_vec_vec");
 
   options.set<std::string>("string");
   options.set<std::vector<std::string>>("string_vec");
