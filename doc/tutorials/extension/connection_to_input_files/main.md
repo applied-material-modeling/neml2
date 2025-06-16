@@ -148,10 +148,10 @@ main()
 {
   using namespace neml2;
   set_default_dtype(kFloat64);
-  auto & model = neml2::load_model("input.i", "accel");
+  auto model = neml2::load_model("input.i", "accel");
 
   // Print out each option parsed from the input file
-  const auto & options = model.input_options();
+  const auto & options = model->input_options();
 
   std::cout << "                  velocity: " << options.get("velocity") << std::endl;
   std::cout << "              acceleration: " << options.get("acceleration") << std::endl;

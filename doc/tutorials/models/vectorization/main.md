@@ -40,8 +40,8 @@ The following code snippet shows how to use a for loop to perform the \f$ N \f$ 
     // Preparation
     Size N = 10;
     auto device = kCPU;
-    auto & model = load_model("input.i", "my_model");
-    model.to(device);
+    auto model = load_model("input.i", "my_model");
+    model->to(device);
 
     // Create the strain on the device
     auto strain_name = VariableName("forces", "E");
@@ -51,7 +51,7 @@ The following code snippet shows how to use a for loop to perform the \f$ N \f$ 
 
     // Evaluate the model N times
     for (Size i = 0; i < N; i++)
-      auto output = model.value({{strain_name, strain.batch_index({i})}});
+      auto output = model->value({{strain_name, strain.batch_index({i})}});
   }
   ```
   @endsource
@@ -105,8 +105,8 @@ The following code snippet shows how to rely on NEML2 internal vectorization to 
     // Preparation
     Size N = 10;
     auto device = kCPU;
-    auto & model = load_model("input.i", "my_model");
-    model.to(device);
+    auto model = load_model("input.i", "my_model");
+    model->to(device);
 
     // Create the strain on the device
     auto strain_name = VariableName("forces", "E");
@@ -115,7 +115,7 @@ The following code snippet shows how to rely on NEML2 internal vectorization to 
     auto strain = SR2::linspace(strain_min, strain_max, N);
 
     // Evaluate the model N times
-    auto output = model.value({{strain_name, strain}});
+    auto output = model->value({{strain_name, strain}});
   }
   ```
   @endsource

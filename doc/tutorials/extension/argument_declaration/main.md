@@ -87,8 +87,8 @@ main()
 {
   using namespace neml2;
   set_default_dtype(kFloat64);
-  auto & model = load_model("input.i", "accel");
-  std::cout << model << std::endl;
+  auto model = load_model("input.i", "accel");
+  std::cout << *model << std::endl;
 }
 ```
 @endsource

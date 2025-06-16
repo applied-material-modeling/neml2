@@ -140,7 +140,7 @@ main()
   set_default_dtype(kFloat64);
   auto factory = load_input("input.i");
   auto driver = factory->get_driver("driver");
-  driver.run();
+  driver->run();
 }
 ```
 @endsource
