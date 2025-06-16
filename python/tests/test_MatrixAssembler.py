@@ -31,7 +31,7 @@ import torch
 
 def test_assemble_by_variable():
     pwd = Path(__file__).parent
-    model = neml2.reload_model(pwd / "test_LabeledAxis.i", "model")
+    model = neml2.load_model(pwd / "test_LabeledAxis.i", "model")
     xaxis = model.input_axis()
     yaxis = model.output_axis()
     assembler = neml2.MatrixAssembler(yaxis, xaxis)
@@ -53,7 +53,7 @@ def test_assemble_by_variable():
 
 def test_split_by_variable():
     pwd = Path(__file__).parent
-    model = neml2.reload_model(pwd / "test_LabeledAxis.i", "model")
+    model = neml2.load_model(pwd / "test_LabeledAxis.i", "model")
     xaxis = model.input_axis()
     yaxis = model.output_axis()
     assembler = neml2.MatrixAssembler(yaxis, xaxis)
@@ -71,7 +71,7 @@ def test_split_by_variable():
 
 def test_split_by_subaxis():
     pwd = Path(__file__).parent
-    model = neml2.reload_model(pwd / "test_LabeledAxis.i", "model")
+    model = neml2.load_model(pwd / "test_LabeledAxis.i", "model")
     xaxis = model.input_axis()
     yaxis = model.output_axis()
     assembler = neml2.MatrixAssembler(yaxis, xaxis)

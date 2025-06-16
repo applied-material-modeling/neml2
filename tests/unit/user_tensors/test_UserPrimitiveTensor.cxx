@@ -35,43 +35,43 @@ TEST_CASE("UserPrimitiveTensor", "[user_tensors]")
   {
     auto factory = load_input("user_tensors/test_UserPrimitiveTensor.i");
 
-    const auto user_Scalar = factory.get_object<Scalar>("Tensors", "Scalar");
+    const auto user_Scalar = factory->get_object<Scalar>("Tensors", "Scalar");
     REQUIRE(user_Scalar->batch_sizes() == TensorShape{3, 2});
 
-    const auto user_Vec = factory.get_object<Vec>("Tensors", "Vec");
+    const auto user_Vec = factory->get_object<Vec>("Tensors", "Vec");
     REQUIRE(user_Vec->batch_sizes() == TensorShape{3, 2});
 
-    const auto user_Rot = factory.get_object<Rot>("Tensors", "Rot");
+    const auto user_Rot = factory->get_object<Rot>("Tensors", "Rot");
     REQUIRE(user_Rot->batch_sizes() == TensorShape{3, 2});
 
-    const auto user_R2 = factory.get_object<R2>("Tensors", "R2");
+    const auto user_R2 = factory->get_object<R2>("Tensors", "R2");
     REQUIRE(user_R2->batch_sizes() == TensorShape{3, 2});
 
-    const auto user_SR2 = factory.get_object<SR2>("Tensors", "SR2");
+    const auto user_SR2 = factory->get_object<SR2>("Tensors", "SR2");
     REQUIRE(user_SR2->batch_sizes() == TensorShape{3, 2});
 
-    const auto user_R3 = factory.get_object<R3>("Tensors", "R3");
+    const auto user_R3 = factory->get_object<R3>("Tensors", "R3");
     REQUIRE(user_R3->batch_sizes() == TensorShape{3, 2});
 
-    const auto user_SFR3 = factory.get_object<SFR3>("Tensors", "SFR3");
+    const auto user_SFR3 = factory->get_object<SFR3>("Tensors", "SFR3");
     REQUIRE(user_SFR3->batch_sizes() == TensorShape{3, 2});
 
-    const auto user_R4 = factory.get_object<R4>("Tensors", "R4");
+    const auto user_R4 = factory->get_object<R4>("Tensors", "R4");
     REQUIRE(user_R4->batch_sizes() == TensorShape{3, 2});
 
-    const auto user_SFR4 = factory.get_object<SFR4>("Tensors", "SFR4");
+    const auto user_SFR4 = factory->get_object<SFR4>("Tensors", "SFR4");
     REQUIRE(user_SFR4->batch_sizes() == TensorShape{3, 2});
 
-    const auto user_WFR4 = factory.get_object<WFR4>("Tensors", "WFR4");
+    const auto user_WFR4 = factory->get_object<WFR4>("Tensors", "WFR4");
     REQUIRE(user_WFR4->batch_sizes() == TensorShape{3, 2});
 
-    const auto user_SSR4 = factory.get_object<SSR4>("Tensors", "SSR4");
+    const auto user_SSR4 = factory->get_object<SSR4>("Tensors", "SSR4");
     REQUIRE(user_SSR4->batch_sizes() == TensorShape{3, 2});
 
-    const auto user_R5 = factory.get_object<R5>("Tensors", "R5");
+    const auto user_R5 = factory->get_object<R5>("Tensors", "R5");
     REQUIRE(user_R5->batch_sizes() == TensorShape{3, 2});
 
-    const auto user_SSFR5 = factory.get_object<SSFR5>("Tensors", "SSFR5");
+    const auto user_SSFR5 = factory->get_object<SSFR5>("Tensors", "SSFR5");
     REQUIRE(user_SSFR5->batch_sizes() == TensorShape{3, 2});
   }
 }

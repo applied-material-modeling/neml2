@@ -78,7 +78,7 @@ class TestElasticModel(DerivativeCheck):
     @pytest.fixture(autouse=True)
     def _setup(self):
         pwd = Path(__file__).parent
-        nmodel = neml2.reload_model(pwd / "models" / "elastic_model.i", "implicit_rate")
+        nmodel = neml2.load_model(pwd / "models" / "elastic_model.i", "implicit_rate")
         self.model = neml2.pyzag.NEML2PyzagModel(nmodel)
 
         # Test configuration
@@ -111,7 +111,7 @@ class TestViscoplasticModel(DerivativeCheck):
     @pytest.fixture(autouse=True)
     def _setup(self):
         pwd = Path(__file__).parent
-        nmodel = neml2.reload_model(pwd / "models" / "viscoplastic_model.i", "implicit_rate")
+        nmodel = neml2.load_model(pwd / "models" / "viscoplastic_model.i", "implicit_rate")
         self.model = neml2.pyzag.NEML2PyzagModel(nmodel)
 
         # Test configuration
@@ -144,7 +144,7 @@ class TestKocksMeckingMixedControlModel(DerivativeCheck):
     @pytest.fixture(autouse=True)
     def _setup(self):
         pwd = Path(__file__).parent
-        nmodel = neml2.reload_model(pwd / "models" / "km_mixed_model.i", "implicit_rate")
+        nmodel = neml2.load_model(pwd / "models" / "km_mixed_model.i", "implicit_rate")
         self.model = neml2.pyzag.NEML2PyzagModel(
             nmodel, exclude_parameters=["yield_zero_sy", "mu_X", "mu_Y"]
         )

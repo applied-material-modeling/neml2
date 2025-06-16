@@ -35,12 +35,12 @@ TEST_CASE("LogspaceTensor", "[user_tensors]")
 
   SECTION("LogspaceTensor")
   {
-    const auto a = factory.get_object<Tensor>("Tensors", "a");
+    const auto a = factory->get_object<Tensor>("Tensors", "a");
     REQUIRE(a->batch_sizes() == TensorShape{100, 2, 1});
     REQUIRE(a->base_sizes() == TensorShape{2, 3});
 
-    const auto a0 = factory.get_object<Tensor>("Tensors", "a0");
-    const auto a1 = factory.get_object<Tensor>("Tensors", "a1");
+    const auto a0 = factory->get_object<Tensor>("Tensors", "a0");
+    const auto a1 = factory->get_object<Tensor>("Tensors", "a1");
     Size nstep = 100;
     Size dim = 0;
     double base = 10;

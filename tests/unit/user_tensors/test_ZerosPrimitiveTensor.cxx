@@ -32,7 +32,7 @@ using namespace neml2;
 #define test_ZerosPrimitiveTensor(tensor_type, tensor_name, batch_shape)                           \
   SECTION("Zeros" #tensor_type)                                                                    \
   {                                                                                                \
-    const auto tensor_name = factory.get_object<tensor_type>("Tensors", #tensor_name);             \
+    const auto tensor_name = factory->get_object<tensor_type>("Tensors", #tensor_name);            \
     REQUIRE(tensor_name->batch_sizes() == batch_shape);                                            \
     REQUIRE(tensor_name->base_sizes() == tensor_type::const_base_sizes);                           \
     REQUIRE(                                                                                       \

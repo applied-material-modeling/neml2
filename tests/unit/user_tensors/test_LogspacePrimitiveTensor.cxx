@@ -32,9 +32,10 @@ using namespace neml2;
 #define test_LogspacePrimitiveTensor(tensor_type, tensor_name, batch_shape, nstep, dim, base)      \
   SECTION("Logspace" #tensor_type)                                                                 \
   {                                                                                                \
-    const auto tensor_name = factory.get_object<tensor_type>("Tensors", #tensor_name);             \
-    const auto tensor_name##_start = factory.get_object<tensor_type>("Tensors", #tensor_name "0"); \
-    const auto tensor_name##_end = factory.get_object<tensor_type>("Tensors", #tensor_name "1");   \
+    const auto tensor_name = factory->get_object<tensor_type>("Tensors", #tensor_name);            \
+    const auto tensor_name##_start =                                                               \
+        factory->get_object<tensor_type>("Tensors", #tensor_name "0");                             \
+    const auto tensor_name##_end = factory->get_object<tensor_type>("Tensors", #tensor_name "1");  \
     const auto tensor_name##_correct =                                                             \
         tensor_type::logspace(*tensor_name##_start, *tensor_name##_end, nstep, dim, base);         \
     REQUIRE(tensor_name->batch_sizes() == batch_shape);                                            \

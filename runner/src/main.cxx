@@ -104,7 +104,7 @@ main(int argc, char * argv[])
       const auto additional_cliargs = get_additional_cliargs(run_command);
       auto factory = neml2::load_input(input, additional_cliargs);
       const auto drivername = run_command.get<std::string>("driver");
-      auto driver = factory.get_driver(drivername);
+      auto driver = factory->get_driver(drivername);
       driver->run();
     }
 
@@ -120,14 +120,14 @@ main(int argc, char * argv[])
       if (diagnose_command.is_used("--driver"))
       {
         auto drivername = diagnose_command.get<std::string>("--driver");
-        auto driver = factory.get_driver(drivername);
+        auto driver = factory->get_driver(drivername);
         std::cout << "Diagnosing driver '" << drivername << "'...\n";
         diagnoses = neml2::diagnose(*driver);
       }
       else if (diagnose_command.is_used("--model"))
       {
         auto modelname = diagnose_command.get<std::string>("--model");
-        auto model = factory.get_model(modelname);
+        auto model = factory->get_model(modelname);
         std::cout << "Diagnosing model '" << modelname << "'...\n";
         diagnoses = neml2::diagnose(*model);
       }
@@ -155,7 +155,7 @@ main(int argc, char * argv[])
       const auto additional_cliargs = get_additional_cliargs(inspect_command);
       auto factory = neml2::load_input(input, additional_cliargs);
       const auto modelname = inspect_command.get<std::string>("model");
-      auto model = factory.get_model(modelname);
+      auto model = factory->get_model(modelname);
       std::cout << *model << std::endl;
     }
 
@@ -166,7 +166,7 @@ main(int argc, char * argv[])
       const auto additional_cliargs = get_additional_cliargs(time_command);
       auto factory = neml2::load_input(input, additional_cliargs);
       const auto drivername = time_command.get<std::string>("driver");
-      auto driver = factory.get_driver(drivername);
+      auto driver = factory->get_driver(drivername);
 
       if (time_command.get<int>("--warmup") > 0)
         std::cout << "Warming up...\n";

@@ -58,7 +58,7 @@ TEST_CASE("models")
       {
         // Load and run the model
         auto factory = load_input(test.filename());
-        auto driver = factory.get_driver("unit");
+        auto driver = factory->get_driver("unit");
         diagnose(*driver);
         REQUIRE(driver->run());
       }

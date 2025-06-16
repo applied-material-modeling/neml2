@@ -57,7 +57,7 @@ TEST_CASE("phase_field_fracture")
       {
         // Load and run the model
         auto factory = load_input(test.filename());
-        auto driver = factory.get_driver("regression");
+        auto driver = factory->get_driver("regression");
         diagnose(*driver);
         REQUIRE(driver->run());
       }

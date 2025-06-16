@@ -38,7 +38,7 @@ TEST_CASE("TensorName", "[base]")
   {
     auto factory = load_input("tensors/test_TensorName_Scalar.i");
 
-    const auto auto_3 = factory.get_object<SR2>("Tensors", "auto_3_crossref");
+    const auto auto_3 = factory->get_object<SR2>("Tensors", "auto_3_crossref");
 
     const auto scalar1 = Scalar::create({1, 2, 3, 4, 5}, default_tensor_options());
     const auto scalar2 = Scalar::create({5, 6, 7, 8, 9}, default_tensor_options());

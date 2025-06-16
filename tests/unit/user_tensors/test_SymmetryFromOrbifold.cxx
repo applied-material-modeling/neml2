@@ -120,7 +120,7 @@ TEST_CASE("SymmetryFromOrbifold", "[user_tensors]")
   SECTION("check matrix operations")
   {
     auto cls = GENERATE("1", "2", "222", "42", "4", "3", "6", "32", "622", "23", "432");
-    auto grp = factory.get_object<R2>("Tensors", fmt_name(cls));
+    auto grp = factory->get_object<R2>("Tensors", fmt_name(cls));
 
     REQUIRE(at::allclose(*grp, matrix_operations(cls)));
   }
@@ -128,14 +128,14 @@ TEST_CASE("SymmetryFromOrbifold", "[user_tensors]")
   SECTION("check the group includes the identity")
   {
     auto cls = GENERATE("1", "2", "222", "42", "4", "3", "6", "32", "622", "23", "432");
-    auto grp = factory.get_object<R2>("Tensors", fmt_name(cls));
+    auto grp = factory->get_object<R2>("Tensors", fmt_name(cls));
     REQUIRE(at::any(at::all(at::isclose(*grp, R2::identity()).flatten(1), 1)).item().toBool());
   }
 
   SECTION("check the group is closed")
   {
     auto cls = GENERATE("1", "2", "222", "42", "4", "3", "6", "32", "622", "23", "432");
-    auto grp = factory.get_object<R2>("Tensors", fmt_name(cls));
+    auto grp = factory->get_object<R2>("Tensors", fmt_name(cls));
     // A loop is forgivable here I hope...
     for (Size i = 0; i < grp->batch_size(0).concrete(); i++)
     {
@@ -152,7 +152,7 @@ TEST_CASE("SymmetryFromOrbifold", "[user_tensors]")
   SECTION("check the group has each inverse operation")
   {
     auto cls = GENERATE("1", "2", "222", "42", "4", "3", "6", "32", "622", "23", "432");
-    auto grp = factory.get_object<R2>("Tensors", fmt_name(cls));
+    auto grp = factory->get_object<R2>("Tensors", fmt_name(cls));
     // A loop is forgivable here I hope...
     for (Size i = 0; i < grp->batch_size(0).concrete(); i++)
     {

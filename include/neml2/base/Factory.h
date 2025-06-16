@@ -53,7 +53,8 @@ class WorkScheduler;
  * @param path Path to the input file to be parsed
  * @param additional_input Additional cliargs to pass to the parser
  */
-Factory load_input(const std::filesystem::path & path, const std::string & additional_input = "");
+std::unique_ptr<Factory> load_input(const std::filesystem::path & path,
+                                    const std::string & additional_input = "");
 
 /**
  * The factory is responsible for:

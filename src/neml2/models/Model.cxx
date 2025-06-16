@@ -42,7 +42,7 @@ std::shared_ptr<Model>
 load_model(const std::filesystem::path & path, const std::string & mname)
 {
   auto factory = load_input(path);
-  return factory.get_model(mname);
+  return factory->get_model(mname);
 }
 
 bool

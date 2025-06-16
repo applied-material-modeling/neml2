@@ -30,7 +30,7 @@ import neml2.visualization
 
 def test_compose():
     pwd = Path(__file__).parent
-    model = neml2.reload_model(pwd / "test_Model.i", "model")
+    model = neml2.load_model(pwd / "test_Model.i", "model")
     g = neml2.visualization.compose(model)
 
     # As long as the rendering didn't error, we call it good

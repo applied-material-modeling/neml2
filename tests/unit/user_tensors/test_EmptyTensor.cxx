@@ -35,7 +35,7 @@ TEST_CASE("EmptyTensor", "[user_tensors]")
 
   SECTION("EmptyTensor")
   {
-    const auto a = factory.get_object<Tensor>("Tensors", "a");
+    const auto a = factory->get_object<Tensor>("Tensors", "a");
     REQUIRE(a->batch_sizes() == TensorShape{2, 1});
     REQUIRE(a->base_sizes() == TensorShape{2, 3});
   }

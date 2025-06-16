@@ -34,7 +34,7 @@ TEST_CASE("FullTensor", "[user_tensors]")
 
   SECTION("FullTensor")
   {
-    const auto a = factory.get_object<Tensor>("Tensors", "a");
+    const auto a = factory->get_object<Tensor>("Tensors", "a");
     REQUIRE(a->batch_sizes() == TensorShape{2, 1});
     REQUIRE(a->base_sizes() == TensorShape{2, 3});
     REQUIRE(at::allclose(*a, Tensor::full({2, 1}, {2, 3}, 3.9, default_tensor_options())));

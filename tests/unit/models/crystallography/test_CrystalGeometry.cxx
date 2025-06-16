@@ -44,7 +44,7 @@ TEST_CASE("CrystalGeometry", "[models/crystallography]")
 
   SECTION("Simple FCC cubic model, but defined with the full input")
   {
-    auto model = factory.get_object<CrystalGeometry>("Data", "scgeom");
+    auto model = factory->get_object<CrystalGeometry>("Data", "scgeom");
 
     SECTION("Lattice vectors are okay")
     {

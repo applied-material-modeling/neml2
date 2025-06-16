@@ -35,7 +35,7 @@ TEST_CASE("Orientation", "[user_tensors]")
 
   SECTION("Kocks, radians")
   {
-    const auto auto_1 = factory.get_object<Rot>("Tensors", "kocks_rad");
+    const auto auto_1 = factory->get_object<Rot>("Tensors", "kocks_rad");
     auto correct_1 = Rot::create({{-0.08900237, -0.01804167, -0.90057498},
                                   {-0.06969849, -0.00174283, -0.9252516},
                                   {0.0, 0.0, 0.0}});
@@ -43,7 +43,7 @@ TEST_CASE("Orientation", "[user_tensors]")
   }
   SECTION("Kocks, degrees")
   {
-    const auto auto_1 = factory.get_object<Rot>("Tensors", "kocks_deg");
+    const auto auto_1 = factory->get_object<Rot>("Tensors", "kocks_deg");
     auto correct_1 = Rot::create({{-0.17445754, -0.30216947, -0.52337294},
                                   {-0.17386297, 0.01368329, -0.89308248},
                                   {0.000000, 0.000000, 0.00000}});
@@ -52,7 +52,7 @@ TEST_CASE("Orientation", "[user_tensors]")
 
   SECTION("Bunge, radians")
   {
-    const auto auto_1 = factory.get_object<Rot>("Tensors", "bunge_rad");
+    const auto auto_1 = factory->get_object<Rot>("Tensors", "bunge_rad");
     auto correct_1 = Rot::create({{-0.05029174, 0.00504576, -0.10008088},
                                   {-0.03741789, 0.0028116, -0.01248295},
                                   {-0.000000, 0.000000, 0.000000}});
@@ -60,7 +60,7 @@ TEST_CASE("Orientation", "[user_tensors]")
   }
   SECTION("Bunge, degrees")
   {
-    const auto auto_1 = factory.get_object<Rot>("Tensors", "bunge_deg");
+    const auto auto_1 = factory->get_object<Rot>("Tensors", "bunge_deg");
     auto correct_1 = Rot::create({{-0.30216947, 0.17445754, -0.52337294},
                                   {-0.09599247, 0.00924294, 0.03892541},
                                   {-0.000000, 0.000000, -0.000000}});
@@ -69,7 +69,7 @@ TEST_CASE("Orientation", "[user_tensors]")
 
   SECTION("Roe, radians")
   {
-    const auto auto_1 = factory.get_object<Rot>("Tensors", "roe_rad");
+    const auto auto_1 = factory->get_object<Rot>("Tensors", "roe_rad");
     auto correct_1 = Rot::create({{-0.00504576, -0.05029174, -0.10008088},
                                   {-0.0028116, -0.03741789, -0.01248295},
                                   {0.000000, 0.000000, 0.000000}});
@@ -77,7 +77,7 @@ TEST_CASE("Orientation", "[user_tensors]")
   }
   SECTION("Roe, degrees")
   {
-    const auto auto_1 = factory.get_object<Rot>("Tensors", "roe_deg");
+    const auto auto_1 = factory->get_object<Rot>("Tensors", "roe_deg");
     auto correct_1 = Rot::create({{-0.17445754, -0.30216947, -0.52337294},
                                   {-0.00924294, -0.09599247, 0.03892541},
                                   {0.000000, -0.000000, -0.000000}});
