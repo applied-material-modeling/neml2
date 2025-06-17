@@ -63,8 +63,10 @@
     </tab>
     <tab type="usergroup" title="Physics Documentation">
       <tab type="user" url="../solid-mechanics.html" title="Solid Mechanics"/>
-      <tab type="user" url="../reactive-infiltration.html" title="Reactive Infiltration"/>
-      <tab type="user" url="../pyrolysis.html" title="Thermosetting Pyrolysis"/>
+      <tab type="usergroup" url="../chemical-reactions.html" title="Chemical Reactions">
+        <tab type="user" url="../thermosetting-pyrolysis.html" title="Thermosetting Pyrolysis"/>
+        <tab type="user" url="../reactive-infiltration.html" title="Reactive Infiltration"/>
+      </tab>
     </tab>
     <tab type="topics" title="Aditional Documentation"/>
     <tab type="usergroup" title="C++ API Reference">

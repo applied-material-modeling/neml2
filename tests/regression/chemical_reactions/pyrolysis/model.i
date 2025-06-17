@@ -12,6 +12,10 @@ R = 8.31446261815324 # J/K/mol
 wc0 = 0 # char (residue)
 wb0 = 1 # binder (precursor)
 
+# control volume
+mu = 0.2
+zeta = 0.05
+
 [Tensors]
   [yield]
     type = Scalar
@@ -111,6 +115,18 @@ wb0 = 1 # binder (precursor)
     coefficients = '${Y}'
     to_var = 'state/wc_rate'
   []
+  [gas_rate]
+    type = ScalarLinearCombination
+    from_var = 'state/wb_rate state/wc_rate'
+    coefficients = '-${mu} -${mu}'
+    to_var = 'state/wg_rate'
+  []
+  [open_pore_rate]
+    type = ScalarLinearCombination
+    from_var = 'state/alpha_rate'
+    coefficients = '${zeta}'
+    to_var = 'state/phio_rate'
+  []
   [binder]
     type = ScalarForwardEulerTimeIntegration
     variable = 'state/wb'
@@ -119,9 +135,19 @@ wb0 = 1 # binder (precursor)
     type = ScalarForwardEulerTimeIntegration
     variable = 'state/wc'
   []
+  [gas]
+    type = ScalarForwardEulerTimeIntegration
+    variable = 'state/wg'
+  []
+  [open_pore]
+    type = ScalarForwardEulerTimeIntegration
+    variable = 'state/phio'
+  []
   [model]
     type = ComposedModel
-    models = 'solve_reaction reaction_rate binder_rate char_rate binder char'
+    models = "solve_reaction reaction_rate
+              binder_rate char_rate gas_rate open_pore_rate
+              binder char gas open_pore"
     additional_outputs = 'state/alpha'
   []
 []

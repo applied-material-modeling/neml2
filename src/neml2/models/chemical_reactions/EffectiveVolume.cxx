@@ -38,7 +38,7 @@ EffectiveVolume::expected_options()
       "\\dfrac{M}{1-\\phi_{o}} \\sum_i \\frac{\\omega_i}{\\rho_i} \\f$, where \\f$ \\omega_i "
       "\\f$ and \\f$ \\rho_i \\f$ are respectively the mass fraction and the density of each "
       "component; \\f$ \\phi_{o} \\f$ is the volume fraction accounting for leakage from the "
-      "control mass; \\f$ M \\f is the reference mass of the composite.";
+      "control mass; \\f$ M \\f$ is the reference mass of the composite.";
 
   options.set_parameter<TensorName<Scalar>>("reference_mass");
   options.set("reference_mass").doc() = "Reference mass of the composite";
