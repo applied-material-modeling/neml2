@@ -45,7 +45,7 @@ protected:
 
   // State Variables
   const Variable<Scalar> & _phi;
-  const Variable<Scalar> & _phimax;
+  const Scalar & _phimax;
 
   // Residual Variables
   Variable<Scalar> & _S;

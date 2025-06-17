@@ -23,8 +23,6 @@
 // THE SOFTWARE.
 
 #include "neml2/models/porous_flow/EffectiveSaturation.h"
-#include "neml2/tensors/functions/clamp.h"
-#include "neml2/tensors/functions/where.h"
 
 namespace neml2
 {
@@ -34,23 +32,19 @@ EffectiveSaturation::expected_options()
 {
   OptionSet options = Model::expected_options();
   options.doc() =
-      "Calculate the effective saturation (volume fraction), takes the form of \\f$ S = "
-      "\\frac{\\phi^* - S_r}{1-S_r} \\f$ where "
-      "\\f$ \\phi \\f$ is the flow species volume fraction,\\f$ \\phi_{max} \\f$ is the maximum "
-      "allowable flow species volume fraction and \\f$ "
-      "S_r \\f$ is the residual liquid volume fraction";
+      "Calculate the effective saturation, taking the form of \\f$ S = "
+      "\\frac{\\frac{\\phi}{\\phi_\\mathrm{max}} - S_r}{1-S_r} \\f$ where \\f$ \\phi \\f$ is the "
+      "volume fraction of the flowing fluid, \\f$ \\phi_\\mathrm{max} \\f$ is the maximum "
+      "allowable volume fraction and \\f$ S_r \\f$ is the residual saturation.";
 
-  options.set<bool>("define_second_derivatives") = true;
+  options.set_parameter<TensorName<Scalar>>("residual_saturation") = "0";
+  options.set("residual_saturation").doc() = "Liquid's residual volume fraction";
 
-  options.set_parameter<TensorName<Scalar>>("residual_volume_fraction") = {TensorName<Scalar>("0")};
-  options.set("residual_volume_fraction").doc() = "Liquid's residual volume fraction";
+  options.set_input("fluid_fraction") = VariableName(FORCES, "fluid_fraction");
+  options.set("fluid_fraction").doc() = "Volume fraction of the fluid";
 
-  options.set_input("flow_fraction") = VariableName(FORCES, "flow_fraction");
-  options.set("flow_fraction").doc() = "Volume fraction of the flow (liquid or gas) phase";
-
-  options.set_input("max_fraction") = VariableName(STATE, "max_fraction");
-  options.set("max_fraction").doc() =
-      "Maximum allowable volume fraction of the flow (liquid or gas) phase";
+  options.set_parameter<TensorName<Scalar>>("max_fraction") = "1";
+  options.set("max_fraction").doc() = "Maximum allowable volume fraction of the fluid";
 
   options.set_output("effective_saturation") = VariableName(STATE, "effective_saturation");
   options.set("effective_saturation").doc() = "Effective saturation";
@@ -60,44 +54,28 @@ EffectiveSaturation::expected_options()
 
 EffectiveSaturation::EffectiveSaturation(const OptionSet & options)
   : Model(options),
-    _Sr(declare_parameter<Scalar>("Sr", "residual_volume_fraction")),
-    _phi(declare_input_variable<Scalar>("flow_fraction")),
-    _phimax(declare_input_variable<Scalar>("max_fraction")),
+    _Sr(declare_parameter<Scalar>("Sr", "residual_saturation")),
+    _phi(declare_input_variable<Scalar>("fluid_fraction")),
+    _phimax(declare_parameter<Scalar>("phi_max", "max_fraction", /*allow_nonlinear=*/true)),
     _S(declare_output_variable<Scalar>("effective_saturation"))
 {
 }
 
 void
-EffectiveSaturation::set_value(bool out, bool dout_din, bool d2out_din2)
+EffectiveSaturation::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  auto val = (_phi / _phimax - _Sr) / (1.0 - _Sr);
-
   if (out)
   {
-    _S = val;
-    // where(val >= 1, Scalar::ones_like(_phi), val); // clamp(val, 0.0, 1.0);
+    _S = (_phi / _phimax - _Sr) / (1.0 - _Sr);
   }
 
   if (dout_din)
   {
-    // _S.d(_phi) = where(
-    //     at::logical_or(val >= 1, val <= 0), Scalar::zeros_like(_phi), 1.0 / (_phimax * (1 -
-    //     _Sr)));
-    _S.d(_phi) = 1.0 / (_phimax * (1 - _Sr));
-    // where(val >= 1, Scalar::zeros_like(_phi), 1.0 / (_phimax * (1 - _Sr)));
-    _S.d(_phimax) = -_phi / (_phimax * _phimax * (1 - _Sr));
-    // where(val >= 1, Scalar::zeros_like(_phi), -_phi / (_phimax * _phimax * (1 - _Sr)));
-  }
+    if (_phi.is_dependent())
+      _S.d(_phi) = 1.0 / (_phimax * (1 - _Sr));
 
-  if (d2out_din2)
-  {
-    _S.d(_phi, _phimax) = -1.0 / ((1 - _Sr) * _phimax * _phimax);
-    // where(val >= 1, Scalar::zeros_like(_phi), -1.0 / ((1 - _Sr) * _phimax * _phimax));
-    _S.d(_phimax, _phi) = -1.0 / (_phimax * _phimax * (1 - _Sr));
-    //  where(val >= 1, Scalar::zeros_like(_phi), -1.0 / (_phimax * _phimax * (1 - _Sr)));
-    _S.d(_phimax, _phimax) = 2.0 * _phi / (_phimax * _phimax * _phimax * (1 - _Sr));
-    // where(val >= 1, Scalar::zeros_like(_phi), 2.0 * _phi / (_phimax * _phimax * _phimax * (1 -
-    // _Sr))); 0 otherwise
+    if (const auto * const phimax = nl_param("phi_max"))
+      _S.d(*phimax) = -_phi / (_phimax * _phimax * (1 - _Sr));
   }
 }
 }
