@@ -29,11 +29,11 @@
 
 [Models]
   [model]
-    type = AdvectionStress
+    type = AdvectiveStress
     coefficient = 1.0
     jacobian = 'state/J'
     deformation_gradient = 'state/F'
     pk1_stress = 'state/P'
-    average_advection_stress = 'state/pc'
+    advective_stress = 'state/pc'
   []
 []

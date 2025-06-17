@@ -28,15 +28,13 @@
 
 namespace neml2
 {
-/**
- * @brief Define the stress associated with advection.
- */
-class AdvectionStress : public Model
+/// Variational advective stress associated with swelling induced volume change
+class AdvectiveStress : public Model
 {
 public:
   static OptionSet expected_options();
 
-  AdvectionStress(const OptionSet & options);
+  AdvectiveStress(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
