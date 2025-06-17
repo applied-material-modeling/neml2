@@ -63,7 +63,10 @@
     </tab>
     <tab type="usergroup" title="Physics Documentation">
       <tab type="user" url="@ref solid-mechanics" title="Solid Mechanics"/>
-      <tab type="user" url="@ref reactive-infiltration" title="Reactive Infiltration"/>
+      <tab type="usergroup" url="@ref chemical-reactions" title="Chemical Reactions">
+        <tab type="user" url="@ref thermosetting-pyrolysis" title="Thermosetting Pyrolysis"/>
+        <tab type="user" url="@ref reactive-infiltration" title="Reactive Infiltration"/>
+      </tab>
     </tab>
     <tab type="topics" title="Aditional Documentation"/>
     <tab type="usergroup" title="C++ API Reference">

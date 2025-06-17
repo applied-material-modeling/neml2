@@ -34,16 +34,9 @@ PhaseTransformationEigenstrain::expected_options()
   OptionSet options = Eigenstrain::expected_options();
   options.doc() =
       "Define the (cummulative, as opposed to instantaneous) linear isotropic phase transformation "
-      "(from phase A to phase B) "
-      "eigenstrain, "
-      "i.e. \\f$ \\boldsymbol{\\varepsilon}_{PT} = dv f \\boldsymbol{I} \\f$, "
-      "where "
-      " \\f$ dv \\f$ is the volume fraction change when going from phase A to B, "
-      " \\f$ f \\f$ is the phase fraction (0 to 1) where \\f f=0 represent fully phase A.";
-
-  // options.set_parameter<CrossRef<Scalar>>("volume_fraction_change");
-  // options.set("volume_fraction_change").doc() =
-  //     "Change in volume fraction going from phase A to phase B";
+      "(from phase A to phase B) eigenstrain, i.e. \\f$ \\boldsymbol{\\varepsilon}_\\mathrm{PT} = "
+      "\\Delta V f \\boldsymbol{I} \\f$, where \\f$ \\Delta V \\f$ is the volume fraction change "
+      "when going from phase A to B, \\f$ f \\f$ is the phase fraction (0 to 1, A to B).";
 
   options.set_input("volume_fraction_change") = VariableName(STATE, "dv");
   options.set("volume_fraction_change").doc() =

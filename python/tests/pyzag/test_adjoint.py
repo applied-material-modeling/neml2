@@ -57,7 +57,7 @@ class DerivativeCheck:
             val0 = torch.norm(nonlinear.solve(solver, self.initial_state, self.nstep, self.forces))
             for n, p in solver.named_parameters():
                 p0 = p.clone()
-                dx = torch.abs(p0) * eps
+                dx = torch.max(torch.abs(p0) * eps, torch.full_like(p0, eps))
                 p.data = p0 + dx
                 val1 = torch.norm(
                     nonlinear.solve(solver, self.initial_state, self.nstep, self.forces)

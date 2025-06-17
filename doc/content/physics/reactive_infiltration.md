@@ -2,20 +2,18 @@
 
 [TOC]
 
-The reactive infiltration physics module is a collection of objects serving as building blocks for composing model's describing reactive infiltration kinetics as a solid \f$(S)\f$ material is infiltrated by a liquid \f$(L)\f$ to create a product \f$(P)\f$. The framework and usage of the model is explained below, with both mathematical formulations and example input files.
+This example demonstrates the use of the chemical reactions physics module to compose models for reactive infiltration kinetics, as a solid \f$(S)\f$ material is infiltrated by a liquid \f$(L)\f$ to create a product \f$(P)\f$. The framework and usage of the model is explained below, with both mathematical formulations and example input files.
 
-## Framework
-
-### Representative Volume Element
+## Representative Volume Element
 
 The infiltration process for a material considers a cylindrical Representative Volume Element (RVE) with radius \f$R\f$ and span \f$H\f$, depicting a solid capillary of radius \f$r_o\f$, corresponding to the initial porosity of \f$\varphi_0\f$. The mathematical description of the model uses cylindrical coordinates and assumes axisymmetry around \f$r = 0\f$.
 
-As the liquid enters the cylinder, it reacts with a solid to form a product with thickness \f$\delta_P\f$, as shown schematically in the [figure below](@ref rve).
+As the liquid enters the cylinder, it reacts with a solid to form a product with thickness \f$\delta_P\f$, as shown schematically in the [figure below](@ref infiltration_rve).
 
-\anchor rve
+\anchor infiltration_rve
 
-![The (a) top and (b) cross-section view of the Representative Volume Element (RVE) of a given state of the reactive infiltration process, depicting the outer solid walls, the infiltrated liquid and the product from the chemical reaction ][rve]{html: width=80%}
-[rve]: asset/lsi_rve_simplify.svg
+![The (a) top and (b) cross-section view of the Representative Volume Element (RVE) of a given state of the reactive infiltration process, depicting the outer solid walls, the infiltrated liquid and the product from the chemical reaction ][infiltration_rve]{html: width=80%}
+[infiltration_rve]: asset/lsi_rve_simplify.svg
 
 Throughout this process, the solid radius, \f$r_o\f$, decreases while the product thickness, \f$\delta_P\f$, increases. Let \f$r_i\f$ denote the inner radius of the product. In addition, define \f$\alpha_i\f$ (in units of mole per volume) as the amount of substance in the RVE, and \f$\Omega_i = \dfrac{M_i}{\rho_i}\f$ as the molar volume of a material with molar mass \f$M_i\f$ (in units of amu, or gram per mole) and density \f$\rho_i\f$ (mass per volume), with subscripts taking \f$L\f$, \f$S\f$, and \f$P\f$, respectively.
 
@@ -30,7 +28,7 @@ and the RVE porosity (void) is
 
 \anchor assumptions
 
-<span style="color:red">Key assumptions</span> made throughout the derivation are:
+**Key assumptions** made throughout the derivation are:
 -  Liquid remains liquid over the entire course of reaction, i.e., no phase change.
 -  The reaction is irreversible.
 -  Formation of the initial product layer is immediate once liquid comes into contact with solid.
@@ -47,7 +45,7 @@ The complete state of the RVE is denoted by the tuple \f$\left( \varphi_L, \varp
 
 > Mathematically, it is possible that \f$ \varphi_L + \varphi_P + \varphi_S \ge 1 \f$. Physically, this implies "overflow", aka the prescribed \f$\alpha_L\f$ is larger than the available voids. Care must be taken at the macroscopic model to avoid or resolve this issue.
 
-### Governing Equations
+## Governing equations
 
 The initial-value problem (IVP) corresponding to the constitutive model is
 \f[
@@ -69,7 +67,7 @@ Here \f$R_L(\varphi_L), R_S(\varphi_S) \in [0, 1]\f$ are the reactivity of liqui
     r_{\varphi_S} = \dfrac{\alpha_{S, n+1} - \alpha_{S, n}}{t_{n+1}-t_n} + \dfrac{k_P}{k_S} \dfrac{\alpha_{P, n+1} - \alpha_{P, n}}{t_{n+1}-t_n}
 \f]
 
-### Implementation Details
+## Implementation details
 
 The above governing equations are fairly general for a wide range of reactive infiltration systems within this framework given the chemical reaction kinetics with appropriate reaction coefficient (\f$k_i\f$) and the corresponding molar volume \f$\Omega_i\f$ of the materials.
 
@@ -96,118 +94,18 @@ The instantaneous balance also implies that
 \f]
 Since this constitutive model considers \f$\alpha_L\f$ as the forcing function for the IVP problem, \f$\dot{\alpha}_L \ne k_P \dot{\alpha}_P\f$.
 
-The following tables summarize the relationship between the mathematical expressions and NEML2 models.
+The following table summarizes the relationship between the mathematical expressions and the NEML2 models.
 
-| Expression                                                                                         | Model building block                                 | Syntax                                                |
-| :------------------------------------------------------------------------------------------------- | :--------------------------------------------------- | :---------------------------------------------------- |
-| \f$ \bar{r}_i = \sqrt{1-\varphi_S-\varphi_P}; \quad \bar{r}_o = \sqrt{1-\varphi_S}\f$              | [Product and solid's inner radius](#ProductGeometry) | [ProductGeometry](#productgeometry)                   |
-| \f$ \dfrac{2}{\Omega_L}\dfrac{D}{l_c^2}\dfrac{\bar{r}_o+\bar{r}_i}{\bar{r}_o-\bar{r}_i} R_L R_S\f$ | [Product reaction rate](#DiffusionLimitedReaction)   | [DiffusionLimitedReaction](#diffusionlimitedreaction) |
-| \f$ R_L; \quad R_S \f$                                                                             | [Step Function](#HermiteSmoothStep)                  | [HermiteSmoothStep](#hermitesmoothstep)               |
-| \f$  \varphi_i = \alpha_i \Omega_i \f$                                                             | ---                                                  | [Linear Combination](#scalarlinearcombination)        |
-
-| Residual Expression                                                                                                                                                       | Syntax                                                                               |
+| Expression                                                                                                                                                                | Syntax                                                                               |
 | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------- |
+| \f$ \bar{r}_i = \sqrt{1-\varphi_S-\varphi_P}; \quad \bar{r}_o = \sqrt{1-\varphi_S}\f$                                                                                     | [CylindricalChannelGeometry](#cylindricalchannelgeometry)                            |
+| \f$ \dfrac{2}{\Omega_L}\dfrac{D}{l_c^2}\dfrac{\bar{r}_o+\bar{r}_i}{\bar{r}_o-\bar{r}_i} R_L R_S\f$                                                                        | [DiffusionLimitedReaction](#diffusionlimitedreaction)                                |
+| \f$ R_L; \quad R_S \f$                                                                                                                                                    | [HermiteSmoothStep](#hermitesmoothstep)                                              |
+| \f$  \varphi_i = \alpha_i \Omega_i \f$                                                                                                                                    | [Linear Combination](#scalarlinearcombination)                                       |
 | \f$ r_{\varphi_P} = \dfrac{\alpha_{P, n+1} - \alpha_{P, n}}{t_{n+1}-t_n} - \dfrac{2}{\Omega_L}\dfrac{D}{l_c^2}\dfrac{\bar{r}_o+\bar{r}_i}{\bar{r}_o-\bar{r}_i} R_L R_S\f$ | [Linear Combination](#scalarlinearcombination), [Variable Rate](#scalarvariablerate) |
 | \f$r_{\varphi_S} = \dfrac{\alpha_{S, n+1} - \alpha_{S, n}}{t_{n+1}-t_n} + \dfrac{k_P}{k_S} \dfrac{\alpha_{P, n+1} - \alpha_{P, n}}{t_{n+1}-t_n}\f$                        | [Linear Combination](#scalarlinearcombination), [Variable Rate](#scalarvariablerate) |
 
-
-## Model Building Blocks
-
-The RVE keeps track of the volume fraction of the liquid, solid and product, \f$\varphi_L, \varphi_S, \varphi_P\f$. \f$\varphi_L\f$ directly corresponds to the prescribed liquid substance \f$\alpha_L\f$ where \f$\varphi_S and \varphi_P\f$ are obtained from solving the IVP problem with [ImplicitUpdate](#implicitupdate).
-
-### Product and solid's inner radius {#ProductGeometry}
-Model object [ProductGeometry](#productgeometry)
-
-This modelcalculates the product and solid's inner radius, \f$r_i, r_o\f$. Note that, when there are presence of the product, the solid' inner radius is the outer radius of the product.
-\f[
-    \bar{r}_o = \sqrt{1-\varphi_S} \quad \bar{r}_i = \sqrt{1-\varphi_S-\varphi_P}
-\f]
-
-Example input file that defines the product and solid's inner radius
-```
-[Models]
-  [model]
-    type = ProductGeometry
-    solid_fraction = 'state/phi_s'
-    product_fraction = 'state/phi_p'
-    inner_radius = 'state/ri'
-    outer_radius = 'state/ro'
-  []
-[]
-```
-
-### Product reaction rate {#DiffusionLimitedReaction}
-Model object [DiffusionLimitedReaction](#diffusionlimitedreaction)
-
-The reaction rates dictates the creation of the product. Within our assumptions, the growth of the product is controlled by the diffusion of the liquid through the product to react with the solid at the product-solid interface. Considered the same RVE as in [figure above](@ref rve), with \f$c_P\f$ (units of moles) as the concentration of the product in the RVE. Diffusion equation yields
-\f[
-    \dot{c}_P = \nabla \cdot D\nabla c_P
-\f]
-\f$D\f$ is the diffusion coeficient (untis of area per time) of liquid through the product. Integrating through the product's volume and applying Green's theorem,
-\f[
-    \dot{C} = D \dfrac{C_{liquid-product} - C_{product-solid}}{\delta_P}A_{enclosed}
-\f]
-Here,
-\f{align*}
-     &\ \dot{C} = \dot{\alpha}_P V_{RVE} \quad  C_{product-solid} = 0 \quad C_{liquid-product} = \dfrac{\dot{\alpha}_L V_{RVE}}{\varphi_L V_{RVE}} = \dfrac{1}{\Omega_L} \\
-     &\ A_{enclosed} = 2\pi(r_o + r_i)H \quad \delta_P = r_o - r_i
-\f}
-The step function \f$R_L(\alpha_L)\f$, \f$R_S(\alpha_S)\f$ as reactivity is introduced to supressed the production rate when either the solid or the liquid is fully consumed. Finally, in normalized variables, and let the \f$R = l_c\f$ as the characterisitc length scales of the pores features. The product reaction rate is then,
-\f[
-    \dot{\alpha}_P = \dfrac{2}{\Omega_L}\dfrac{D}{l_c^2}\dfrac{\bar{r}_o+\bar{r}_i}{\bar{r}_o-\bar{r}_i} R_L R_S
-\f]
-
-Example input file that defines the product reaction rate
-```
-[Models]
-  [model]
-    type = DiffusionLimitedReaction
-    diffusion_coefficient = 1e-3
-    molar_volume = 1
-    product_inner_radius = 'state/ri'
-    solid_inner_radius = 'state/ro'
-    liquid_reactivity = 'state/R_l'
-    solid_reactivity = 'state/R_s'
-    reaction_rate = 'state/alpha_rate'
-  []
-[]
-```
-
-### Hermite Smooth Step Function {#HermiteSmoothStep}
-Model object [HermiteSmoothStep](#hermitesmoothstep)
-
-A cubic Hermite interpolation after clamping is used as a smooth step function:
-\f[
-    R(x_r) =
-    \begin{cases}
-      0, & x_r < 0 \\
-      3x_r^2 - 2x_r^3, & 0 \le x_r \le 1 \\
-      1, & x_r > 1
-    \end{cases}
-\f]
-where
-\f[
-    x_r = \dfrac{x-x_l}{x_u-x_l}
-\f]
-Here, \f$x_l,x_u\f$ denote the lower and upper bound of the smoothen transition regime.
-
-> The Hermite Function is used in the reactive infiltration for the liquid and solid reactivity \f$R_i\f$
-
-Example input file that use the smooth step function
-
-```
-[Models]
-  [model]
-    type = HermiteSmoothStep
-    argument = 'state/foo'
-    value = 'state/bar'
-    lower_bound = '0'
-    upper_bound = '0.05'
-  []
-[]
-```
-
-## Complete Input File
+## Complete input file
 A complete example input file for the reactive infiltration is shown below with the appropriate model composition.
 
 ```
@@ -268,7 +166,7 @@ oSiCm1 = 0.08 # 1/Omega_SiC
     coefficients = '${omega_Si}'
   []
   [outer_radius]
-    type = ProductGeometry
+    type = CylindricalChannelGeometry
     solid_fraction = 'state/phi_S'
     product_fraction = 'state/phi_P'
     inner_radius = 'state/ri'

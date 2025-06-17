@@ -32,8 +32,6 @@
 
 namespace neml2
 {
-namespace fs = std::filesystem;
-
 std::unordered_map<std::string, std::unique_ptr<TraceWriter>> &
 event_trace_writers()
 {
@@ -41,7 +39,7 @@ event_trace_writers()
   return trace_writers;
 }
 
-TraceWriter::TraceWriter(const fs::path & file)
+TraceWriter::TraceWriter(const std::filesystem::path & file)
   : filename(file.string()),
     _epoch(std::chrono::high_resolution_clock::now())
 {
@@ -171,7 +169,7 @@ TracingInterface::init_writer(std::string filename)
   static std::mutex trace_writer_mutex;
   std::lock_guard<std::mutex> lock(trace_writer_mutex);
 
-  auto file = fs::absolute(std::move(filename));
+  auto file = std::filesystem::absolute(std::move(filename));
   auto & trace_writers = event_trace_writers();
   auto it = trace_writers.find(file);
   if (it != trace_writers.end())
