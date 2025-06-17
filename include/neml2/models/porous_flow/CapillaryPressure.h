@@ -22,30 +22,40 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/porous_flow/PorousFlowCapillaryPressure.h"
+#pragma once
+
+#include "neml2/models/Model.h"
 
 namespace neml2
 {
-OptionSet
-PorousFlowCapillaryPressure::expected_options()
+/// Base class for capillary pressure models in porous flow.
+class CapillaryPressure : public Model
 {
-  OptionSet options = Model::expected_options();
-  options.doc() = "Relate the porous flow capillary pressure to the effective saturation";
+public:
+  static OptionSet expected_options();
 
-  options.set_input("effective_saturation") = VariableName(STATE, "effective_saturation");
-  options.set("effective_saturation").doc() = "The effective saturation";
+  CapillaryPressure(const OptionSet & options);
 
-  options.set_output("capillary_pressure") = VariableName(STATE, "capillary_pressure");
-  options.set("capillary_pressure").doc() = "Porous flow capillary pressure.";
+protected:
+  void set_value(bool out, bool dout_dS, bool d2out_dS2) override;
 
-  return options;
+  /// Calculate the capillary pressure without logarithmic extension.
+  virtual std::tuple<Scalar, Scalar, Scalar>
+  calculate_pressure(const Scalar & S, bool out, bool dout_dS, bool d2out_dS2) const = 0;
+
+  /// Effective saturation
+  const Variable<Scalar> & _S;
+
+  /// Capillary pressure
+  Variable<Scalar> & _Pc;
+
+  /// Whether to apply logarithmic extension
+  const bool _log_extension;
+
+  /// Whether the transition saturation is specified
+  const bool _Sp_specified;
+
+  /// Transistion saturation
+  const double _Sp;
+};
 }
-
-PorousFlowCapillaryPressure::PorousFlowCapillaryPressure(const OptionSet & options)
-  : Model(options),
-    _S(declare_input_variable<Scalar>("effective_saturation")),
-    _Pc(declare_output_variable<Scalar>("capillary_pressure"))
-{
-}
-
-} // namespace neml2

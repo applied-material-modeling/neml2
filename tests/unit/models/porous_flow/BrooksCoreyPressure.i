@@ -28,9 +28,10 @@
   [model]
     type = BrooksCoreyPressure
     threshold_pressure = 2.3
-    power = 0.7
+    exponent = 0.7
     effective_saturation = 'state/S'
     capillary_pressure = 'state/Pc'
-    apply_log_extension = true
+    log_extension = true
+    transition_saturation = 0.1
   []
 []

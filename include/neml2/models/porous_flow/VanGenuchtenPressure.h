@@ -23,14 +23,12 @@
 // THE SOFTWARE.
 
 #pragma once
-#include "neml2/models/porous_flow/PorousFlowCapillaryPressure.h"
+#include "neml2/models/porous_flow/CapillaryPressure.h"
 
 namespace neml2
 {
-/**
- * @brief Define the Van Genuchten porous flow capillary pressure.
- */
-class VanGenuchtenPressure : public PorousFlowCapillaryPressure
+/// van Genuchten correlation for capillary pressure
+class VanGenuchtenPressure : public CapillaryPressure
 {
 public:
   static OptionSet expected_options();
@@ -38,12 +36,10 @@ public:
   VanGenuchtenPressure(const OptionSet & options);
 
 protected:
-  void set_value(bool out, bool dout_din, bool d2out_din2) override;
+  std::tuple<Scalar, Scalar, Scalar>
+  calculate_pressure(const Scalar & S, bool out, bool dout_din, bool d2out_din2) const override;
 
   const Scalar & _a;
   const Scalar & _m;
-
-  bool _log_extension;
-  double _Sp; // transistion saturation
 };
 } // namespace neml2

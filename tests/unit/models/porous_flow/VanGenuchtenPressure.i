@@ -29,10 +29,11 @@
 [Models]
   [model]
     type = VanGenuchtenPressure
-    scaling_constant = 3
-    power = 0.7
+    a = 0.333333333333333
+    m = 0.7
     effective_saturation = 'state/S'
     capillary_pressure = 'state/Pc'
-    apply_log_extension = true
+    log_extension = true
+    transition_saturation = 0.1
   []
 []

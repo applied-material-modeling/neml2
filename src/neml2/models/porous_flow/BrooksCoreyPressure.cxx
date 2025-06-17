@@ -23,11 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/porous_flow/BrooksCoreyPressure.h"
-#include "neml2/tensors/functions/clamp.h"
 #include "neml2/tensors/functions/pow.h"
-#include "neml2/tensors/functions/log10.h"
-#include "neml2/tensors/functions/where.h"
-#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
@@ -35,87 +31,40 @@ register_NEML2_object(BrooksCoreyPressure);
 OptionSet
 BrooksCoreyPressure::expected_options()
 {
-  OptionSet options = PorousFlowCapillaryPressure::expected_options();
-  options.doc() =
-      "Define the Brooks Corey porous flow capillary pressure, takes the form of \\f$ "
-      "P_c = P_t S_e^{-\\frac{1}{p}} \\f$ "
-      "and 0 everywhere else. Here \\f$ S_e \\f$ is the effective saturation,\\f$ Pt, p "
-      "\\f$ are the threshold pressure at zero saturation and the fitting parameter";
+  OptionSet options = CapillaryPressure::expected_options();
+  options.doc() +=
+      " using the Brooks Corey correlation taking the form of \\f$ P_c = P_t S_e^{-\\frac{1}{p}} "
+      "\\f$. Here \\f$ S_e \\f$ is the effective saturation,\\f$ P_t \\f$ is the threshold "
+      "pressure at zero saturation, and \\f$ p \\f$ is the shape parameter";
 
   options.set<bool>("define_second_derivatives") = true;
 
   options.set_parameter<TensorName<Scalar>>("threshold_pressure");
-  options.set("threshold_pressure").doc() = "threshold entry pressure";
+  options.set("threshold_pressure").doc() = "The threshold entry pressure";
 
-  options.set_parameter<TensorName<Scalar>>("power");
-  options.set("power").doc() = "power, p";
-
-  options.set<bool>("apply_log_extension") = false;
-  options.set("apply_log_extension").doc() = "Whether to apply_log_extension";
-
-  options.set<double>("transistion_saturation") = 0.1;
-  options.set("transistion_saturation").doc() = "The transistion value of the effective saturation";
+  options.set_parameter<TensorName<Scalar>>("exponent");
+  options.set("exponent").doc() = "The shape parameter p";
 
   return options;
 }
 
 BrooksCoreyPressure::BrooksCoreyPressure(const OptionSet & options)
-  : PorousFlowCapillaryPressure(options),
+  : CapillaryPressure(options),
     _Pt(declare_parameter<Scalar>("threshold", "threshold_pressure")),
-    _p(declare_parameter<Scalar>("p", "power")),
-    _log_extension(options.get<bool>("apply_log_extension")),
-    _Sp(options.get<double>("transistion_saturation"))
+    _p(declare_parameter<Scalar>("p", "exponent"))
 {
 }
 
-void
-BrooksCoreyPressure::set_value(bool out, bool dout_din, bool d2out_din2)
+std::tuple<Scalar, Scalar, Scalar>
+BrooksCoreyPressure::calculate_pressure(const Scalar & S,
+                                        bool out,
+                                        bool dout_din,
+                                        bool d2out_din2) const
 {
-  neml_assert(_Sp < 1.0, "transistion_saturation cannot be larger or equal to 1");
+  auto Pc = out ? _Pt * pow(S, -1.0 / _p) : Scalar();
+  auto dPc_dS = dout_din ? -_Pt / _p * pow(S, -1.0 / _p - 1.0) : Scalar();
+  auto d2Pc_dS2 = d2out_din2 ? -_Pt / _p * (-1.0 / _p - 1.0) * pow(S, -1.0 / _p - 2.0) : Scalar();
 
-  constexpr double ln10 = 2.302585092994;
-
-  // required information for any model
-  auto f_s = _Pt * pow(_S, -1.0 / _p);
-  auto f_sp = _Pt * pow(_Sp, -1.0 / _p);
-
-  auto dfds_s = -_Pt / _p * pow(_S, -1.0 / _p - 1.0);
-  auto dfds_sp = -_Pt / _p * pow(_Sp, -1.0 / _p - 1.0);
-
-  auto d2fds2_s = -_Pt / _p * (-1.0 / _p - 1.0) * pow(_S, -1.0 / _p - 2.0);
-
-  // general for any given model
-  auto log10f_s = log10(f_s);
-  auto log10f_sp = log10(f_sp);
-
-  // auto dlog10fds_sp = 1 / (ln10 * f_sp) * dfds_sp; // clang tidy throw this error ...
-
-  auto slope = 1 / (ln10 * f_sp) * dfds_sp;
-  auto yintercept = log10f_sp - slope * _Sp;
-
-  if (out)
-  {
-    if (_log_extension)
-      _Pc = where(_S < _Sp, pow(10, slope * _S + yintercept), f_s);
-    else
-      _Pc = f_s;
-  }
-
-  if (dout_din)
-  {
-    if (_log_extension)
-      _Pc.d(_S) = where(_S < _Sp, (ln10 * slope) * pow(10, slope * _S + yintercept), dfds_s);
-    else
-      _Pc.d(_S) = dfds_s;
-  }
-
-  if (d2out_din2)
-  {
-    if (_log_extension)
-      _Pc.d(_S, _S) =
-          where(_S < _Sp, pow((ln10 * slope), 2) * pow(10, slope * _S + yintercept), d2fds2_s);
-    else
-      _Pc.d(_S, _S) = d2fds2_s;
-  }
+  return std::make_tuple(Pc, dPc_dS, d2Pc_dS2);
 }
 }

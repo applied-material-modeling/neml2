@@ -35,94 +35,46 @@ register_NEML2_object(VanGenuchtenPressure);
 OptionSet
 VanGenuchtenPressure::expected_options()
 {
-  OptionSet options = PorousFlowCapillaryPressure::expected_options();
-  options.doc() = "Define the van Genuchten porous flow capillary pressure, takes the form of \\f$ "
-                  "\\frac{1}{a} "
-                  "\\frac{S_e^{-\\frac{1}{m}} - 1}{1-m} \\f$ for \\f$ S_e < 1 \\f$ "
-                  "and 0 everywhere else. Here \\f$ S_e \\f$ is the effective saturation,\\f$ a, m "
-                  "\\f$ is the fitting parameter";
+  OptionSet options = CapillaryPressure::expected_options();
+  options.doc() +=
+      " using the van Genuchten correlation for capillary pressure, taking the form of \\f$ "
+      "a \\left( S_e^{-\\frac{1}{m}} - 1 \\right)^{1-m} \\f$. Here \\f$ S_e \\f$ is the "
+      "effective saturation,\\f$ a \\f$ and \\f$ m \\f$ are shape parameters";
 
   options.set<bool>("define_second_derivatives") = true;
 
-  options.set_parameter<TensorName<Scalar>>("scaling_constant");
-  options.set("scaling_constant").doc() = "scaling reciprocal constant, a";
+  options.set_parameter<TensorName<Scalar>>("a");
+  options.set("a").doc() = "Shape parameter a";
 
-  options.set_parameter<TensorName<Scalar>>("power");
-  options.set("power").doc() = "power, m";
-
-  options.set<bool>("apply_log_extension") = false;
-  options.set("apply_log_extension").doc() = "Whether to apply_log_extension";
-
-  options.set<double>("transistion_saturation") = 0.1;
-  options.set("transistion_saturation").doc() = "The transistion value of the effective saturation";
+  options.set_parameter<TensorName<Scalar>>("m");
+  options.set("m").doc() = "Shape parameter m";
 
   return options;
 }
 
 VanGenuchtenPressure::VanGenuchtenPressure(const OptionSet & options)
-  : PorousFlowCapillaryPressure(options),
-    _a(declare_parameter<Scalar>("a", "scaling_constant")),
-    _m(declare_parameter<Scalar>("m", "power")),
-    _log_extension(options.get<bool>("apply_log_extension")),
-    _Sp(options.get<double>("transistion_saturation"))
+  : CapillaryPressure(options),
+    _a(declare_parameter<Scalar>("a", "a")),
+    _m(declare_parameter<Scalar>("m", "m"))
 {
 }
 
-void
-VanGenuchtenPressure::set_value(bool out, bool dout_din, bool d2out_din2)
+std::tuple<Scalar, Scalar, Scalar>
+VanGenuchtenPressure::calculate_pressure(const Scalar & S,
+                                         bool out,
+                                         bool dout_din,
+                                         bool d2out_din2) const
 {
-  neml_assert(_Sp < 1.0, "transistion_saturation cannot be larger or equal to 1");
+  const auto eps = machine_precision(S.scalar_type()).toDouble();
+  auto Sc = where(S > (1.0 - eps), Scalar::ones_like(S) - eps, S);
 
-  constexpr double ln10 = 2.302585092994;
+  auto f_s = _a * pow((pow(Sc, -1.0 / _m) - 1.0), 1 - _m);
+  auto dfds_s = -_a / _m * (1 - _m) * pow(pow(Sc, -1 / _m) - 1, -_m) * pow(Sc, -1 / _m - 1);
+  auto d2fds2_s = -_a * ((_m - 1) * (_m * pow(Sc, (1 / _m)) + pow(Sc, (1 / _m)) - 1)) /
+                  (_m * _m * pow(Sc, (1 / _m + 2)) * pow((1 / pow(Sc, (1 / _m)) - 1), _m) *
+                   (pow(Sc, (1 / _m)) - 1));
 
-  const auto eps = machine_precision(_S.scalar_type()).toDouble();
-  auto _Sclamp = clamp(_S, 0.0, 1.0 - eps);
-
-  // required information for any model
-  auto f_s = 1 / _a * pow((pow(_Sclamp, -1.0 / _m) - 1.0), 1 - _m);
-  auto f_sp = 1 / _a * pow((pow(_Sp, -1.0 / _m) - 1.0), 1 - _m);
-
-  auto dfds_s =
-      -1 / (_a * _m) * (1 - _m) * pow(pow(_Sclamp, -1 / _m) - 1, -_m) * pow(_Sclamp, -1 / _m - 1);
-  auto dfds_sp =
-      -1 / (_a * _m) * (1 - _m) * pow(pow(_Sp, -1 / _m) - 1, -_m) * pow(_Sp, -1 / _m - 1);
-
-  auto d2fds2_s = -((_m - 1) * (_m * pow(_Sclamp, (1 / _m)) + pow(_Sclamp, (1 / _m)) - 1)) /
-                  (_a * _m * _m * pow(_Sclamp, (1 / _m + 2)) *
-                   pow((1 / pow(_Sclamp, (1 / _m)) - 1), _m) * (pow(_Sclamp, (1 / _m)) - 1));
-
-  // general for any given model
-  auto log10f_s = log10(f_s);
-  auto log10f_sp = log10(f_sp);
-
-  // auto dlog10fds_sp = 1 / (ln10 * f_sp) * dfds_sp;
-
-  auto slope = 1 / (ln10 * f_sp) * dfds_sp;
-  auto yintercept = log10f_sp - slope * _Sp;
-
-  if (out)
-  {
-    if (_log_extension)
-      _Pc = where(_S < _Sp, pow(10, slope * _Sclamp + yintercept), f_s);
-    else
-      _Pc = f_s;
-  }
-
-  if (dout_din)
-  {
-    if (_log_extension)
-      _Pc.d(_S) = where(_S < _Sp, (ln10 * slope) * pow(10, slope * _Sclamp + yintercept), dfds_s);
-    else
-      _Pc.d(_S) = dfds_s;
-  }
-
-  if (d2out_din2)
-  {
-    if (_log_extension)
-      _Pc.d(_S, _S) =
-          where(_S < _Sp, pow((ln10 * slope), 2) * pow(10, slope * _Sclamp + yintercept), d2fds2_s);
-    else
-      _Pc.d(_S, _S) = d2fds2_s;
-  }
+  return std::make_tuple(
+      out ? f_s : Scalar(), dout_din ? dfds_s : Scalar(), d2out_din2 ? d2fds2_s : Scalar());
 }
 }
