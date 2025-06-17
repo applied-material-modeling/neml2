@@ -22,55 +22,48 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/reactive_infiltration/KozenyCarmanPermeability.h"
-#include "neml2/tensors/functions/pow.h"
+#include "neml2/models/porous_flow/ExponentialLawPermeability.h"
+#include "neml2/tensors/functions/exp.h"
 #include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
-register_NEML2_object(KozenyCarmanPermeability);
+register_NEML2_object(ExponentialLawPermeability);
 OptionSet
-KozenyCarmanPermeability::expected_options()
+ExponentialLawPermeability::expected_options()
 {
   OptionSet options = PorosityPermeabilityRelation::expected_options();
   options.doc() =
-      "Define the porous Kozeny Carman porosity-permeability relation, takes the form of "
-      "\\f$ K_o \\frac{\\varphi^n(1-\\varphi_o^m)}{\\varphi_o^m(1-\\varphi)^n} \\f$ where \\f$ n, "
-      "m "
-      "\\f$ is the fitting parameter. \\f$ varphi_o, K_o \\f$ are the reference porosity and "
+      "Define the exponential porosity-permeability relation, takes the form of "
+      "\\f$ K_o \\exp(a(\\varphi_o-\\varphi))} \\f$ where \\f$ a "
+      "\\f$ is the fitting parameter. \\f$ \\varphi_o, K_o \\f$ are the reference porosity and "
       "permeability respectively.";
 
-  options.set_parameter<TensorName<Scalar>>("power");
-  options.set("power").doc() = "value of power constant n, associated with state variables";
-
-  options.set_parameter<TensorName<Scalar>>("reference_power");
-  options.set("reference_power").doc() =
-      "value of power constant m, associated with reference porosity";
+  options.set_parameter<TensorName<Scalar>>("exponential_scale");
+  options.set("exponential_scale").doc() = "value of the exponential constant scale";
 
   return options;
 }
 
-KozenyCarmanPermeability::KozenyCarmanPermeability(const OptionSet & options)
+ExponentialLawPermeability::ExponentialLawPermeability(const OptionSet & options)
   : PorosityPermeabilityRelation(options),
-    _n(declare_parameter<Scalar>("n", "power")),
-    _m(declare_parameter<Scalar>("m", "reference_power"))
+    _a(declare_parameter<Scalar>("a", "exponential_scale"))
 {
 }
 
 void
-KozenyCarmanPermeability::set_value(bool out, bool dout_din, bool d2out_din2)
+ExponentialLawPermeability::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
 
   if (out)
   {
-    _K = _Ko * (pow(_phi, _n) * pow(1 - _phio, _m)) / (pow(_phio, _m) * pow(1 - _phi, _n));
+    _K = _Ko * exp(_a * (_phio - _phi));
   }
 
   if (dout_din)
   {
-    _K.d(_phi) = _Ko * pow(1 - _phio, _m) / pow(_phio, _m) * (_n * pow((_phi) / (1 - _phi), _n)) /
-                 (_phi - _phi * _phi);
+    _K.d(_phi) = _Ko * exp(_a * (_phio - _phi)) * -_a;
   }
 }
 }

@@ -22,30 +22,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/reactive_infiltration/PorousFlowCapillaryPressure.h"
+#pragma once
+#include "neml2/models/porous_flow/PorosityPermeabilityRelation.h"
 
 namespace neml2
 {
-OptionSet
-PorousFlowCapillaryPressure::expected_options()
+/**
+ * @brief Define the exponential Porosity-Permeability relation.
+ */
+class ExponentialLawPermeability : public PorosityPermeabilityRelation
 {
-  OptionSet options = Model::expected_options();
-  options.doc() = "Relate the porous flow capillary pressure to the effective saturation";
+public:
+  static OptionSet expected_options();
 
-  options.set_input("effective_saturation") = VariableName(STATE, "effective_saturation");
-  options.set("effective_saturation").doc() = "The effective saturation";
+  ExponentialLawPermeability(const OptionSet & options);
 
-  options.set_output("capillary_pressure") = VariableName(STATE, "capillary_pressure");
-  options.set("capillary_pressure").doc() = "Porous flow capillary pressure.";
+protected:
+  void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  return options;
-}
-
-PorousFlowCapillaryPressure::PorousFlowCapillaryPressure(const OptionSet & options)
-  : Model(options),
-    _S(declare_input_variable<Scalar>("effective_saturation")),
-    _Pc(declare_output_variable<Scalar>("capillary_pressure"))
-{
-}
-
+  const Scalar & _a;
+};
 } // namespace neml2

@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/reactive_infiltration/VanGenuchtenPressure.h"
+#include "neml2/models/porous_flow/VanGenuchtenPressure.h"
 #include "neml2/tensors/functions/clamp.h"
 #include "neml2/tensors/functions/pow.h"
 #include "neml2/tensors/functions/log10.h"

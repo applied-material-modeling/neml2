@@ -22,28 +22,39 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-#include "neml2/models/reactive_infiltration/PorousFlowCapillaryPressure.h"
+#include "neml2/models/porous_flow/PorosityPermeabilityRelation.h"
 
 namespace neml2
 {
-/**
- * @brief Define the Brooks Corey porous flow capillary pressure.
- */
-class BrooksCoreyPressure : public PorousFlowCapillaryPressure
+OptionSet
+PorosityPermeabilityRelation::expected_options()
 {
-public:
-  static OptionSet expected_options();
+  OptionSet options = Model::expected_options();
+  options.doc() = "Relate the flow permeability to the porosity, with reference porosity \\f$ "
+                  "\\varphi_o \\f$ and reference permeability \\f$K_o\\f$";
 
-  BrooksCoreyPressure(const OptionSet & options);
+  options.set_parameter<TensorName<Scalar>>("reference_permeability") = {TensorName<Scalar>("1")};
+  options.set("reference_permeability").doc() = "the reference permeability";
 
-protected:
-  void set_value(bool out, bool dout_din, bool d2out_din2) override;
+  options.set_parameter<TensorName<Scalar>>("reference_porosity");
+  options.set("reference_porosity").doc() = "the reference porosity";
 
-  const Scalar & _Pt;
-  const Scalar & _p;
+  options.set_input("porosity") = VariableName(STATE, "porosity");
+  options.set("porosity").doc() = "porosity";
 
-  bool _log_extension;
-  double _Sp; // transistion saturation
-};
+  options.set_output("permeability") = VariableName(STATE, "permeability");
+  options.set("permeability").doc() = "Porous flow permeability";
+
+  return options;
+}
+
+PorosityPermeabilityRelation::PorosityPermeabilityRelation(const OptionSet & options)
+  : Model(options),
+    _Ko(declare_parameter<Scalar>("Ko", "reference_permeability")),
+    _phio(declare_parameter<Scalar>("phio", "reference_porosity")),
+    _phi(declare_input_variable<Scalar>("porosity")),
+    _K(declare_output_variable<Scalar>("permeability"))
+{
+}
+
 } // namespace neml2

@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/reactive_infiltration/AdvectionStress.h"
+#include "neml2/models/porous_flow/AdvectionStress.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/R2.h"
 

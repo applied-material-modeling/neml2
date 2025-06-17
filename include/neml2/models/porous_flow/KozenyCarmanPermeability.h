@@ -23,27 +23,24 @@
 // THE SOFTWARE.
 
 #pragma once
-#include "neml2/models/reactive_infiltration/PorousFlowCapillaryPressure.h"
+#include "neml2/models/porous_flow/PorosityPermeabilityRelation.h"
 
 namespace neml2
 {
 /**
- * @brief Define the Van Genuchten porous flow capillary pressure.
+ * @brief Define the Konezy Carman Porosity-Permeability relation.
  */
-class VanGenuchtenPressure : public PorousFlowCapillaryPressure
+class KozenyCarmanPermeability : public PorosityPermeabilityRelation
 {
 public:
   static OptionSet expected_options();
 
-  VanGenuchtenPressure(const OptionSet & options);
+  KozenyCarmanPermeability(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  const Scalar & _a;
+  const Scalar & _n;
   const Scalar & _m;
-
-  bool _log_extension;
-  double _Sp; // transistion saturation
 };
 } // namespace neml2

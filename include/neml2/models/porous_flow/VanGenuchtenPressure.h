@@ -22,48 +22,28 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/reactive_infiltration/ExponentialLawPermeability.h"
-#include "neml2/tensors/functions/exp.h"
-#include "neml2/tensors/assertions.h"
+#pragma once
+#include "neml2/models/porous_flow/PorousFlowCapillaryPressure.h"
 
 namespace neml2
 {
-register_NEML2_object(ExponentialLawPermeability);
-OptionSet
-ExponentialLawPermeability::expected_options()
+/**
+ * @brief Define the Van Genuchten porous flow capillary pressure.
+ */
+class VanGenuchtenPressure : public PorousFlowCapillaryPressure
 {
-  OptionSet options = PorosityPermeabilityRelation::expected_options();
-  options.doc() =
-      "Define the exponential porosity-permeability relation, takes the form of "
-      "\\f$ K_o \\exp(a(\\varphi_o-\\varphi))} \\f$ where \\f$ a "
-      "\\f$ is the fitting parameter. \\f$ \\varphi_o, K_o \\f$ are the reference porosity and "
-      "permeability respectively.";
+public:
+  static OptionSet expected_options();
 
-  options.set_parameter<TensorName<Scalar>>("exponential_scale");
-  options.set("exponential_scale").doc() = "value of the exponential constant scale";
+  VanGenuchtenPressure(const OptionSet & options);
 
-  return options;
-}
+protected:
+  void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-ExponentialLawPermeability::ExponentialLawPermeability(const OptionSet & options)
-  : PorosityPermeabilityRelation(options),
-    _a(declare_parameter<Scalar>("a", "exponential_scale"))
-{
-}
+  const Scalar & _a;
+  const Scalar & _m;
 
-void
-ExponentialLawPermeability::set_value(bool out, bool dout_din, bool d2out_din2)
-{
-  neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
-
-  if (out)
-  {
-    _K = _Ko * exp(_a * (_phio - _phi));
-  }
-
-  if (dout_din)
-  {
-    _K.d(_phi) = _Ko * exp(_a * (_phio - _phi)) * -_a;
-  }
-}
-}
+  bool _log_extension;
+  double _Sp; // transistion saturation
+};
+} // namespace neml2

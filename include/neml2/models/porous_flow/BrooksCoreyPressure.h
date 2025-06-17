@@ -23,23 +23,27 @@
 // THE SOFTWARE.
 
 #pragma once
-#include "neml2/models/reactive_infiltration/PorosityPermeabilityRelation.h"
+#include "neml2/models/porous_flow/PorousFlowCapillaryPressure.h"
 
 namespace neml2
 {
 /**
- * @brief Define the power law Porosity-Permeability relation.
+ * @brief Define the Brooks Corey porous flow capillary pressure.
  */
-class PowerLawPermeability : public PorosityPermeabilityRelation
+class BrooksCoreyPressure : public PorousFlowCapillaryPressure
 {
 public:
   static OptionSet expected_options();
 
-  PowerLawPermeability(const OptionSet & options);
+  BrooksCoreyPressure(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
+  const Scalar & _Pt;
   const Scalar & _p;
+
+  bool _log_extension;
+  double _Sp; // transistion saturation
 };
 } // namespace neml2
