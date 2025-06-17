@@ -24,7 +24,6 @@
 
 #include "neml2/models/porous_flow/KozenyCarmanPermeability.h"
 #include "neml2/tensors/functions/pow.h"
-#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
@@ -33,44 +32,44 @@ OptionSet
 KozenyCarmanPermeability::expected_options()
 {
   OptionSet options = PorosityPermeabilityRelation::expected_options();
-  options.doc() =
-      "Define the porous Kozeny Carman porosity-permeability relation, takes the form of "
-      "\\f$ K_o \\frac{\\varphi^n(1-\\varphi_o^m)}{\\varphi_o^m(1-\\varphi)^n} \\f$ where \\f$ n, "
-      "m "
-      "\\f$ is the fitting parameter. \\f$ varphi_o, K_o \\f$ are the reference porosity and "
-      "permeability respectively.";
+  options.doc() +=
+      " The Kozeny-Carman porosity-permeability relation takes the form of \\f$ K = K_0 "
+      "\\frac{\\varphi^n (1-\\varphi_0^m)}{\\varphi_0^m (1-\\varphi)^n} \\f$ where "
+      "\\f$ n \\f$ and \\f$ m \\f$ are shape parameters. \\f$ varphi_0 \\f$ and \\f$ "
+      "K_0 \\f$ are the reference porosity and permeability respectively.";
 
-  options.set_parameter<TensorName<Scalar>>("power");
-  options.set("power").doc() = "value of power constant n, associated with state variables";
+  options.set_parameter<TensorName<Scalar>>("reference_permeability");
+  options.set("reference_permeability").doc() = "the reference permeability";
 
-  options.set_parameter<TensorName<Scalar>>("reference_power");
-  options.set("reference_power").doc() =
-      "value of power constant m, associated with reference porosity";
+  options.set_parameter<TensorName<Scalar>>("reference_porosity");
+  options.set("reference_porosity").doc() = "the reference porosity";
+
+  options.set_parameter<TensorName<Scalar>>("n");
+  options.set("n").doc() = "Shape parameter n";
+
+  options.set_parameter<TensorName<Scalar>>("m");
+  options.set("m").doc() = "Shape parameter m";
 
   return options;
 }
 
 KozenyCarmanPermeability::KozenyCarmanPermeability(const OptionSet & options)
   : PorosityPermeabilityRelation(options),
-    _n(declare_parameter<Scalar>("n", "power")),
-    _m(declare_parameter<Scalar>("m", "reference_power"))
+    _K0(declare_parameter<Scalar>("K0", "reference_permeability")),
+    _phi0(declare_parameter<Scalar>("phi0", "reference_porosity")),
+    _n(declare_parameter<Scalar>("n", "n")),
+    _m(declare_parameter<Scalar>("m", "m"))
 {
 }
 
 void
-KozenyCarmanPermeability::set_value(bool out, bool dout_din, bool d2out_din2)
+KozenyCarmanPermeability::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
-
   if (out)
-  {
-    _K = _Ko * (pow(_phi, _n) * pow(1 - _phio, _m)) / (pow(_phio, _m) * pow(1 - _phi, _n));
-  }
+    _K = _K0 * pow(_phi / (1 - _phi), _n) / pow(_phi0 / (1 - _phi0), _m);
 
   if (dout_din)
-  {
-    _K.d(_phi) = _Ko * pow(1 - _phio, _m) / pow(_phio, _m) * (_n * pow((_phi) / (1 - _phi), _n)) /
-                 (_phi - _phi * _phi);
-  }
+    _K.d(_phi) = _K0 / pow(_phi0 / (1 - _phi0), _m) * (_n * pow(_phi / (1 - _phi), _n - 1)) /
+                 (1 - _phi) / (1 - _phi);
 }
 }

@@ -30,14 +30,7 @@ OptionSet
 PorosityPermeabilityRelation::expected_options()
 {
   OptionSet options = Model::expected_options();
-  options.doc() = "Relate the flow permeability to the porosity, with reference porosity \\f$ "
-                  "\\varphi_o \\f$ and reference permeability \\f$K_o\\f$";
-
-  options.set_parameter<TensorName<Scalar>>("reference_permeability") = {TensorName<Scalar>("1")};
-  options.set("reference_permeability").doc() = "the reference permeability";
-
-  options.set_parameter<TensorName<Scalar>>("reference_porosity");
-  options.set("reference_porosity").doc() = "the reference porosity";
+  options.doc() = "Define the relationship between non-dimensionalized porosity and permeability.";
 
   options.set_input("porosity") = VariableName(STATE, "porosity");
   options.set("porosity").doc() = "porosity";
@@ -50,11 +43,8 @@ PorosityPermeabilityRelation::expected_options()
 
 PorosityPermeabilityRelation::PorosityPermeabilityRelation(const OptionSet & options)
   : Model(options),
-    _Ko(declare_parameter<Scalar>("Ko", "reference_permeability")),
-    _phio(declare_parameter<Scalar>("phio", "reference_porosity")),
     _phi(declare_input_variable<Scalar>("porosity")),
     _K(declare_output_variable<Scalar>("permeability"))
 {
 }
-
 } // namespace neml2

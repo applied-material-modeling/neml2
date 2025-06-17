@@ -23,13 +23,12 @@
 // THE SOFTWARE.
 
 #pragma once
+
 #include "neml2/models/porous_flow/PorosityPermeabilityRelation.h"
 
 namespace neml2
 {
-/**
- * @brief Define the power law Porosity-Permeability relation.
- */
+/// power law porosity-permeability relation.
 class PowerLawPermeability : public PorosityPermeabilityRelation
 {
 public:
@@ -40,6 +39,13 @@ public:
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
+  /// Reference Permeability
+  const Scalar & _K0;
+
+  /// Reference Porosity
+  const Scalar & _phi0;
+
+  /// Power-law exponent
   const Scalar & _p;
 };
 } // namespace neml2

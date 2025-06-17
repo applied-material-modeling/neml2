@@ -41,13 +41,16 @@ public:
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
+  /// Residual saturation
   const Scalar & _Sr;
 
-  // State Variables
+  /// Fluid volume fraction
   const Variable<Scalar> & _phi;
+
+  /// Maximum allowable volume fraction
   const Scalar & _phimax;
 
-  // Residual Variables
+  /// Effective saturation
   Variable<Scalar> & _S;
 };
 }

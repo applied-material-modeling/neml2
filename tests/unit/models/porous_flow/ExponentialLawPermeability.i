@@ -17,7 +17,7 @@
     values = '0.01 0.65 0.98'
     batch_shape = '(3)'
   []
-  [phio]
+  [phi0]
     type = Scalar
     values = '0.71 0.35 1'
     batch_shape = '(3)'
@@ -38,8 +38,8 @@
   [model]
     type = ExponentialLawPermeability
     reference_permeability = 3
-    reference_porosity = 'phio'
-    exponential_scale = 'a'
+    reference_porosity = 'phi0'
+    scale = 'a'
     porosity = 'state/phi'
     permeability = 'state/K'
   []

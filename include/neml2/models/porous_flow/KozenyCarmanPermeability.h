@@ -27,9 +27,7 @@
 
 namespace neml2
 {
-/**
- * @brief Define the Konezy Carman Porosity-Permeability relation.
- */
+/// The Kozeny-Carman porosity-permeability relation.
 class KozenyCarmanPermeability : public PorosityPermeabilityRelation
 {
 public:
@@ -39,6 +37,12 @@ public:
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
+
+  /// Reference Permeability
+  const Scalar & _K0;
+
+  /// Reference Porosity
+  const Scalar & _phi0;
 
   const Scalar & _n;
   const Scalar & _m;

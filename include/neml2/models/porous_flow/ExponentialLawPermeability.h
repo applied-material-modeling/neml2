@@ -23,13 +23,11 @@
 // THE SOFTWARE.
 
 #pragma once
+
 #include "neml2/models/porous_flow/PorosityPermeabilityRelation.h"
 
 namespace neml2
 {
-/**
- * @brief Define the exponential Porosity-Permeability relation.
- */
 class ExponentialLawPermeability : public PorosityPermeabilityRelation
 {
 public:
@@ -40,6 +38,13 @@ public:
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
+  /// Reference Permeability
+  const Scalar & _K0;
+
+  /// Reference Porosity
+  const Scalar & _phi0;
+
+  /// Exponential scale factor
   const Scalar & _a;
 };
 } // namespace neml2

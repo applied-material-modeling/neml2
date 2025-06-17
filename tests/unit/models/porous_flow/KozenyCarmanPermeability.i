@@ -17,7 +17,7 @@
     values = '0.01 0.65 0.98'
     batch_shape = '(3)'
   []
-  [phio]
+  [phi0]
     type = Scalar
     values = '0 0.35 1'
     batch_shape = '(3)'
@@ -38,9 +38,9 @@
   [model]
     type = KozenyCarmanPermeability
     reference_permeability = 3
-    reference_porosity = 'phio'
-    reference_power = 'm'
-    power = 0.8
+    reference_porosity = 'phi0'
+    n = 0.8
+    m = 'm'
     porosity = 'state/phi'
     permeability = 'state/K'
   []

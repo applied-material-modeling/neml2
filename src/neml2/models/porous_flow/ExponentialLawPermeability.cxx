@@ -33,37 +33,38 @@ OptionSet
 ExponentialLawPermeability::expected_options()
 {
   OptionSet options = PorosityPermeabilityRelation::expected_options();
-  options.doc() =
-      "Define the exponential porosity-permeability relation, takes the form of "
-      "\\f$ K_o \\exp(a(\\varphi_o-\\varphi))} \\f$ where \\f$ a "
-      "\\f$ is the fitting parameter. \\f$ \\varphi_o, K_o \\f$ are the reference porosity and "
-      "permeability respectively.";
+  options.doc() +=
+      " The exponential porosity-permeability relation takes the form of \\f$ K_0 \\exp \\left[ "
+      "a(\\varphi_o-\\varphi) \\right] \\f$ where \\f$ a \\f$ is the scaling parameter; \\f$ "
+      "\\varphi_0 \\f$ and \\f$ K_0 \\f$ are the reference porosity and permeability respectively.";
 
-  options.set_parameter<TensorName<Scalar>>("exponential_scale");
-  options.set("exponential_scale").doc() = "value of the exponential constant scale";
+  options.set_parameter<TensorName<Scalar>>("reference_permeability");
+  options.set("reference_permeability").doc() = "the reference permeability";
+
+  options.set_parameter<TensorName<Scalar>>("reference_porosity");
+  options.set("reference_porosity").doc() = "the reference porosity";
+
+  options.set_parameter<TensorName<Scalar>>("scale");
+  options.set("scale").doc() = "Scaling constant in the exponential law";
 
   return options;
 }
 
 ExponentialLawPermeability::ExponentialLawPermeability(const OptionSet & options)
   : PorosityPermeabilityRelation(options),
-    _a(declare_parameter<Scalar>("a", "exponential_scale"))
+    _K0(declare_parameter<Scalar>("K0", "reference_permeability")),
+    _phi0(declare_parameter<Scalar>("phi0", "reference_porosity")),
+    _a(declare_parameter<Scalar>("a", "scale"))
 {
 }
 
 void
-ExponentialLawPermeability::set_value(bool out, bool dout_din, bool d2out_din2)
+ExponentialLawPermeability::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
-
   if (out)
-  {
-    _K = _Ko * exp(_a * (_phio - _phi));
-  }
+    _K = _K0 * exp(-_a * (_phi - _phi0));
 
   if (dout_din)
-  {
-    _K.d(_phi) = _Ko * exp(_a * (_phio - _phi)) * -_a;
-  }
+    _K.d(_phi) = _K0 * exp(-_a * (_phi - _phi0)) * -_a;
 }
 }

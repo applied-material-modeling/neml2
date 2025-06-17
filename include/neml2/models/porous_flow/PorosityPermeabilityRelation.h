@@ -28,9 +28,7 @@
 
 namespace neml2
 {
-/**
- * @brief Define the porosity - permeability relation.
- */
+/// Base class for the porosity - permeability relations
 class PorosityPermeabilityRelation : public Model
 {
 public:
@@ -39,12 +37,10 @@ public:
   PorosityPermeabilityRelation(const OptionSet & options);
 
 protected:
-  // parameter
-  const Scalar & _Ko;
-  const Scalar & _phio;
-
-  // State Variables
+  /// Input porosity
   const Variable<Scalar> & _phi;
+
+  /// Output permeability
   Variable<Scalar> & _K;
 };
 }

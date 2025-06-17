@@ -24,7 +24,6 @@
 
 #include "neml2/models/porous_flow/PowerLawPermeability.h"
 #include "neml2/tensors/functions/pow.h"
-#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
@@ -33,37 +32,37 @@ OptionSet
 PowerLawPermeability::expected_options()
 {
   OptionSet options = PorosityPermeabilityRelation::expected_options();
-  options.doc() =
-      "Define the power law porosity-permeability relation, takes the form of "
-      "\\f$ K_o (\\frac{\\varphi}{\\varphi_o})^p \\f$ where \\f$ p "
-      "\\f$ is the fitting parameter. \\f$ varphi_o, K_o \\f$ are the reference porosity and "
-      "permeability respectively.";
+  options.doc() += " The power law porosity-permeability relation takes the form of \\f$ K_0 "
+                   "\\left( \\frac{\\varphi}{\\varphi_0} \\right)^p \\f$. \\f$ varphi_0 \\f$ and "
+                   "\\f$ K_0 \\f$ are the reference porosity and permeability respectively.";
 
-  options.set_parameter<TensorName<Scalar>>("power");
-  options.set("power").doc() = "power in the power law";
+  options.set_parameter<TensorName<Scalar>>("reference_permeability");
+  options.set("reference_permeability").doc() = "the reference permeability";
+
+  options.set_parameter<TensorName<Scalar>>("reference_porosity");
+  options.set("reference_porosity").doc() = "the reference porosity";
+
+  options.set_parameter<TensorName<Scalar>>("exponent");
+  options.set("exponent").doc() = "Exponent in the power law";
 
   return options;
 }
 
 PowerLawPermeability::PowerLawPermeability(const OptionSet & options)
   : PorosityPermeabilityRelation(options),
-    _p(declare_parameter<Scalar>("p", "power"))
+    _K0(declare_parameter<Scalar>("K0", "reference_permeability")),
+    _phi0(declare_parameter<Scalar>("phi0", "reference_porosity")),
+    _p(declare_parameter<Scalar>("p", "exponent"))
 {
 }
 
 void
-PowerLawPermeability::set_value(bool out, bool dout_din, bool d2out_din2)
+PowerLawPermeability::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
-
   if (out)
-  {
-    _K = _Ko * pow(_phi, _p) / pow(_phio, _p);
-  }
+    _K = _K0 * pow(_phi / _phi0, _p);
 
   if (dout_din)
-  {
-    _K.d(_phi) = _Ko * 1 / pow(_phio, _p) * _p * pow(_phi, _p - 1);
-  }
+    _K.d(_phi) = _K0 * _p * pow(_phi / _phi0, _p - 1) / _phi0;
 }
 }
