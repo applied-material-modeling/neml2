@@ -22,78 +22,69 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/solid_mechanics/PhaseChangeDeformationGradientJacobian.h"
+#include "neml2/models/solid_mechanics/SwellingAndPhaseChangeDeformationJacobian.h"
 #include "neml2/tensors/Scalar.h"
-#include "neml2/tensors/functions/pow.h"
-#include "neml2/tensors/R2.h"
-#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
-register_NEML2_object(PhaseChangeDeformationGradientJacobian);
+register_NEML2_object(SwellingAndPhaseChangeDeformationJacobian);
 
 OptionSet
-PhaseChangeDeformationGradientJacobian::expected_options()
+SwellingAndPhaseChangeDeformationJacobian::expected_options()
 {
   OptionSet options = Model::expected_options();
-  options.doc() = "Define the linear isotropic phase change deformation gradient jacobian, "
-                  "i.e. \\f$ J = (1+ \\alpha c \\phi^f + (1-c) \\phi^f "
-                  "d\\Omega) \\f$, where \\f$ "
-                  "\\alpha, d\\Omega \\f$ is the coefficient of phase expansion (CPE) and phase "
-                  "change (CPC), \\f$ \\phi^f \\f$ is the fluid "
-                  "fraction, "
-                  "and \\f$ c \\f$ is the phase fraction.";
+  options.doc() =
+      "Define the linear isotropic phase change deformation Jacobian for a freezing liquid or a "
+      "melting solid, i.e. \\f$ J = \\left( 1 + \\alpha c \\phi^f + (1-c) \\phi^f \\Delta \\Omega "
+      "\\right) \\f$, where \\f$ \\alpha \\f$ is the coefficient of swelling, \\f$ \\Delta \\Omega "
+      "\\f$ is relative difference of the reference volume between the two phases, \\f$ \\phi^f "
+      "\\f$ "
+      "is the fluid fraction associated with swelling, and \\f$ c \\f$ is the phase fraction.";
 
   options.set_input("fluid_fraction") = VariableName(STATE, "phi_f");
   options.set("fluid_fraction").doc() = "Volume fraction of the fluid phase.";
 
-  options.set_input("phase_fraction") = VariableName(STATE, "c");
-  options.set("phase_fraction").doc() = "Phase fraction during the transformation.";
+  options.set_parameter<TensorName<Scalar>>("phase_fraction");
+  options.set("phase_fraction").doc() =
+      "Phase fraction during the phase change. 0 means all solid, 1 means all liquid.";
 
-  options.set_parameter<TensorName<Scalar>>("CPE");
-  options.set("CPE").doc() = "Coefficient of phase expansion";
+  options.set_parameter<TensorName<Scalar>>("swelling_coefficient");
+  options.set("swelling_coefficient").doc() = "Coefficient of phase expansion";
 
-  options.set_parameter<TensorName<Scalar>>("CPC") = {TensorName<Scalar>("0")};
-  options.set("CPC").doc() = "Coefficient of phase change";
+  options.set_parameter<TensorName<Scalar>>("reference_volume_difference");
+  options.set("reference_volume_difference").doc() =
+      "Relative difference between the reference volumes of the two phases.";
 
   options.set<VariableName>("jacobian") = VariableName(STATE, "J");
-  options.set("jacobian").doc() = "Phase change deformation gradient jacobian";
+  options.set("jacobian").doc() = "Phase change deformation Jacobian";
 
   return options;
 }
 
-PhaseChangeDeformationGradientJacobian::PhaseChangeDeformationGradientJacobian(
+SwellingAndPhaseChangeDeformationJacobian::SwellingAndPhaseChangeDeformationJacobian(
     const OptionSet & options)
   : Model(options),
     _vf(declare_input_variable<Scalar>("fluid_fraction")),
-    _c(declare_input_variable<Scalar>("phase_fraction")),
-    _alpha(declare_parameter<Scalar>("alpha", "CPE")),
-    _dOmega(declare_parameter<Scalar>("dOmega", "CPC")),
+    _c(declare_parameter<Scalar>("c", "phase_fraction", /*allow_nonlinear=*/true)),
+    _alpha(declare_parameter<Scalar>("alpha", "swelling_coefficient")),
+    _dOmega(declare_parameter<Scalar>("dOmega", "reference_volume_difference")),
     _J(declare_output_variable<Scalar>("jacobian"))
 {
 }
 
 void
-PhaseChangeDeformationGradientJacobian::set_value(bool out, bool dout_din, bool d2out_din2)
+SwellingAndPhaseChangeDeformationJacobian::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
-
   if (out)
-  {
     _J = (1.0 + _alpha * _c * _vf + (1 - _c) * _vf * _dOmega);
-  }
 
   if (dout_din)
   {
     if (_vf.is_dependent())
-    {
       _J.d(_vf) = (_alpha * _c + (1 - _c) * _dOmega);
-    }
 
-    if (_c.is_dependent())
-    {
-      _J.d(_c) = (_alpha * _vf - _vf * _dOmega);
-    }
+    if (const auto * const c = nl_param("c"))
+      _J.d(*c) = (_alpha * _vf - _vf * _dOmega);
   }
 }
 } // namespace neml2

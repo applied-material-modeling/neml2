@@ -43,7 +43,8 @@ AdvectiveStress::expected_options()
   options.set("coefficient").doc() = "Coefficient c";
 
   options.set_input("jacobian") = VariableName(STATE, "J");
-  options.set("jacobian").doc() = "The Jacobian of the deformation gradient";
+  options.set("jacobian").doc() =
+      "The Jacobian of the deformation gradient associated with the volume change";
 
   options.set_input("deformation_gradient") = VariableName(FORCES, "F");
   options.set("deformation_gradient").doc() = "The deformation gradient";

@@ -28,26 +28,29 @@
 
 namespace neml2
 {
-class ThermalDeformationGradientJacobian : public Model
+class SwellingAndPhaseChangeDeformationJacobian : public Model
 {
 public:
   static OptionSet expected_options();
 
-  ThermalDeformationGradientJacobian(const OptionSet & options);
+  SwellingAndPhaseChangeDeformationJacobian(const OptionSet & options);
 
 protected:
   void set_value(bool, bool, bool) override;
 
-  /// Eigen strain
-  const Variable<Scalar> & _T;
+  /// fluid fraction
+  const Variable<Scalar> & _vf;
 
-  /// The reference (stress free) temperature
-  const Scalar & _T0;
+  /// phase fraction
+  const Scalar & _c;
 
-  /// Coefficient of thermal expansion
+  /// coefficient of phase expansion
   const Scalar & _alpha;
 
-  /// deformation gradient tensor, F
+  /// relative difference between the molar volume of the fluid and solid phases
+  const Scalar & _dOmega;
+
+  /// deformation Jacobian associated with phase change
   Variable<Scalar> & _J;
 };
 } // namespace neml2

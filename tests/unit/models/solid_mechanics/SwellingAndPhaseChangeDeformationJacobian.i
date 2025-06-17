@@ -11,12 +11,16 @@
 []
 
 [Models]
-  [model]
-    type = PhaseChangeDeformationGradientJacobian
+  [J]
+    type = SwellingAndPhaseChangeDeformationJacobian
     phase_fraction = 'state/c'
-    CPE = 1e-2
-    CPC = 0.02
+    swelling_coefficient = 1e-2
+    reference_volume_difference = 0.02
     jacobian = 'state/J'
     fluid_fraction = 'state/vf'
+  []
+  [model]
+    type = ComposedModel
+    models = 'J'
   []
 []

@@ -12,7 +12,7 @@
 
 [Models]
   [model]
-    type = ThermalDeformationGradientJacobian
+    type = ThermalDeformationJacobian
     reference_temperature = 300
     CTE = 1e-5
     jacobian = 'state/J'
