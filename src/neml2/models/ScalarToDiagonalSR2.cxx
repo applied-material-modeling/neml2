@@ -22,29 +22,46 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-
-#include "neml2/models/Model.h"
+#include "neml2/models/ScalarToDiagonalSR2.h"
+#include "neml2/tensors/SR2.h"
 
 namespace neml2
 {
-class SR2;
+register_NEML2_object(ScalarToDiagonalSR2);
 
-/// Project scalar to symmetric rank 2 tensor
-class ScalartoDiagSR2 : public Model
+OptionSet
+ScalarToDiagonalSR2::expected_options()
 {
-public:
-  static OptionSet expected_options();
+  OptionSet options = Model::expected_options();
+  options.doc() = "Create a diagonal symmetric rank 2 tensor with values filled by a scalar";
 
-  ScalartoDiagSR2(const OptionSet & options);
+  options.set<bool>("define_second_derivatives") = true;
 
-protected:
-  void set_value(bool out, bool dout_din, bool d2out_din2) override;
+  options.set_input("input");
+  options.set("input").doc() = "Symmetric tensor to convert";
 
-  /// Input symmetric rank two tensor
-  const Variable<Scalar> & _input;
+  options.set_output("output");
+  options.set("output").doc() = "Output full rank two tensor";
 
-  /// Output full rank two tensor
-  Variable<SR2> & _output;
-};
+  return options;
+}
+
+ScalarToDiagonalSR2::ScalarToDiagonalSR2(const OptionSet & options)
+  : Model(options),
+    _input(declare_input_variable<Scalar>("input")),
+    _output(declare_output_variable<SR2>("output"))
+{
+}
+
+void
+ScalarToDiagonalSR2::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
+{
+  auto I = SR2::identity(_input.options());
+
+  if (out)
+    _output = _input * I;
+
+  if (dout_din)
+    _output.d(_input) = I;
+}
 } // namespace neml2
