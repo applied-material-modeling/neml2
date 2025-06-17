@@ -19,8 +19,8 @@
 
 [Models]
   [model]
-    type = DeformationGradientJacobian
-    deformation_gradient = 'state/F'
-    jacobian = 'state/J'
+    type = R2Determinant
+    input = 'state/F'
+    determinant = 'state/J'
   []
 []

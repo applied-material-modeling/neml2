@@ -22,29 +22,53 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-
-#include "neml2/models/Model.h"
+#include "neml2/models/Determinant.h"
+#include "neml2/tensors/SR2.h"
+#include "neml2/tensors/R2.h"
 
 namespace neml2
 {
-class SR2;
+using R2Determinant = Determinant<R2>;
+using SR2Determinant = Determinant<SR2>;
+register_NEML2_object(R2Determinant);
+register_NEML2_object(SR2Determinant);
 
-/// The plastic flow direction assuming an associative J2 flow.
-class DeformationGradientJacobian : public Model
+template <typename T>
+OptionSet
+Determinant<T>::expected_options()
 {
-public:
-  static OptionSet expected_options();
+  auto options = Model::expected_options();
+  options.doc() = "Calculate the Jacobian of a second order tensor.";
 
-  DeformationGradientJacobian(const OptionSet & options);
+  options.set_input("input") = VariableName(STATE, "F");
+  options.set("input").doc() = "The second order tensor to calculate the determinant of";
 
-protected:
-  void set_value(bool, bool, bool) override;
+  options.set_output("determinant") = VariableName(STATE, "J");
+  options.set("determinant").doc() = "The determinant of the input tensor";
 
-  /// deformation gradient tensor, F
-  const Variable<R2> & _F;
+  return options;
+}
 
-  /// Jacobian
-  Variable<Scalar> & _J;
-};
+template <typename T>
+Determinant<T>::Determinant(const OptionSet & options)
+  : Model(options),
+    _F(declare_input_variable<T>("input")),
+    _J(declare_output_variable<Scalar>("determinant"))
+{
+}
+
+template <typename T>
+void
+Determinant<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
+{
+  if (out)
+    _J = T(_F).det();
+
+  if (dout_din)
+    if (_F.is_dependent())
+      _J.d(_F) = T(_F).det() * T(_F).inverse().transpose();
+}
+
+template class Determinant<R2>;
+template class Determinant<SR2>;
 } // namespace neml2
