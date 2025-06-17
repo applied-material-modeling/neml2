@@ -22,18 +22,18 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/reactive_infiltration/ProductGeometry.h"
+#include "neml2/models/chemical_reactions/CylindricalChannelGeometry.h"
 #include "neml2/tensors/functions/sqrt.h"
 #include "neml2/tensors/functions/clamp.h"
 #include "neml2/tensors/functions/where.h"
-#include "neml2/tensors/assertions.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {
-register_NEML2_object(ProductGeometry);
+register_NEML2_object(CylindricalChannelGeometry);
 
 OptionSet
-ProductGeometry::expected_options()
+CylindricalChannelGeometry::expected_options()
 {
   OptionSet options = Model::expected_options();
   options.doc() = "Calculate the dimensionless inner and outer radii of the reaction product";
@@ -51,7 +51,7 @@ ProductGeometry::expected_options()
   return options;
 }
 
-ProductGeometry::ProductGeometry(const OptionSet & options)
+CylindricalChannelGeometry::CylindricalChannelGeometry(const OptionSet & options)
   : Model(options),
     _phi_s(declare_input_variable<Scalar>("solid_fraction")),
     _phi_p(declare_input_variable<Scalar>("product_fraction")),
@@ -61,15 +61,15 @@ ProductGeometry::ProductGeometry(const OptionSet & options)
 }
 
 void
-ProductGeometry::set_value(bool out, bool dout_din, bool d2out_din2)
+CylindricalChannelGeometry::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   neml_assert_dbg(!d2out_din2, "Second derivatives not implemented");
   neml_assert_dbg(_phi_s.scalar_type() == _phi_p.scalar_type(),
                   "Solid and product fractions must have the same scalar type");
 
-  const auto eps = machine_precision(_phi_s.scalar_type());
+  const auto eps = machine_precision(_phi_s.scalar_type()).toDouble();
   const auto cap = 1 - _phi_s - _phi_p;
-  const auto ri = sqrt(clamp(cap, eps, 1.0));
+  const auto ri = sqrt(clamp(cap, eps, 1.0 - eps));
   const auto ro = sqrt(1 - _phi_s);
 
   if (out)

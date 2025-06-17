@@ -59,7 +59,7 @@ oSiCm1 = 0.08 # 1/Omega_SiC
     coefficients = '${omega_Si}'
   []
   [outer_radius]
-    type = ProductGeometry
+    type = CylindricalChannelGeometry
     solid_fraction = 'state/phi_S'
     product_fraction = 'state/phi_P'
     inner_radius = 'state/ri'

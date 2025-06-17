@@ -22,8 +22,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/reactive_infiltration/DiffusionLimitedReaction.h"
-#include "neml2/tensors/assertions.h"
+#include "neml2/models/chemical_reactions/DiffusionLimitedReaction.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {

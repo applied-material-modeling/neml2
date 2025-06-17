@@ -11,7 +11,7 @@
 
 [Models]
   [model]
-    type = ProductGeometry
+    type = CylindricalChannelGeometry
     solid_fraction = 'state/phi_s'
     product_fraction = 'state/phi_p'
     inner_radius = 'state/ri'

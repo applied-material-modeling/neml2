@@ -28,12 +28,12 @@
 
 namespace neml2
 {
-class ProductGeometry : public Model
+class CylindricalChannelGeometry : public Model
 {
 public:
   static OptionSet expected_options();
 
-  ProductGeometry(const OptionSet & options);
+  CylindricalChannelGeometry(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;

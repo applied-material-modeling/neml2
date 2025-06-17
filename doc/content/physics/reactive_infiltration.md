@@ -98,12 +98,12 @@ Since this constitutive model considers \f$\alpha_L\f$ as the forcing function f
 
 The following tables summarize the relationship between the mathematical expressions and NEML2 models.
 
-| Expression                                                                                         | Model building block                                 | Syntax                                                |
-| :------------------------------------------------------------------------------------------------- | :--------------------------------------------------- | :---------------------------------------------------- |
-| \f$ \bar{r}_i = \sqrt{1-\varphi_S-\varphi_P}; \quad \bar{r}_o = \sqrt{1-\varphi_S}\f$              | [Product and solid's inner radius](#ProductGeometry) | [ProductGeometry](#productgeometry)                   |
-| \f$ \dfrac{2}{\Omega_L}\dfrac{D}{l_c^2}\dfrac{\bar{r}_o+\bar{r}_i}{\bar{r}_o-\bar{r}_i} R_L R_S\f$ | [Product reaction rate](#DiffusionLimitedReaction)   | [DiffusionLimitedReaction](#diffusionlimitedreaction) |
-| \f$ R_L; \quad R_S \f$                                                                             | [Step Function](#HermiteSmoothStep)                  | [HermiteSmoothStep](#hermitesmoothstep)               |
-| \f$  \varphi_i = \alpha_i \Omega_i \f$                                                             | ---                                                  | [Linear Combination](#scalarlinearcombination)        |
+| Expression                                                                                         | Model building block                                            | Syntax                                                    |
+| :------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------- | :-------------------------------------------------------- |
+| \f$ \bar{r}_i = \sqrt{1-\varphi_S-\varphi_P}; \quad \bar{r}_o = \sqrt{1-\varphi_S}\f$              | [Product and solid's inner radius](#CylindricalChannelGeometry) | [CylindricalChannelGeometry](#cylindricalchannelgeometry) |
+| \f$ \dfrac{2}{\Omega_L}\dfrac{D}{l_c^2}\dfrac{\bar{r}_o+\bar{r}_i}{\bar{r}_o-\bar{r}_i} R_L R_S\f$ | [Product reaction rate](#DiffusionLimitedReaction)              | [DiffusionLimitedReaction](#diffusionlimitedreaction)     |
+| \f$ R_L; \quad R_S \f$                                                                             | [Step Function](#HermiteSmoothStep)                             | [HermiteSmoothStep](#hermitesmoothstep)                   |
+| \f$  \varphi_i = \alpha_i \Omega_i \f$                                                             | ---                                                             | [Linear Combination](#scalarlinearcombination)            |
 
 | Residual Expression                                                                                                                                                       | Syntax                                                                               |
 | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------- |
@@ -115,8 +115,8 @@ The following tables summarize the relationship between the mathematical express
 
 The RVE keeps track of the volume fraction of the liquid, solid and product, \f$\varphi_L, \varphi_S, \varphi_P\f$. \f$\varphi_L\f$ directly corresponds to the prescribed liquid substance \f$\alpha_L\f$ where \f$\varphi_S and \varphi_P\f$ are obtained from solving the IVP problem with [ImplicitUpdate](#implicitupdate).
 
-### Product and solid's inner radius {#ProductGeometry}
-Model object [ProductGeometry](#productgeometry)
+### Product and solid's inner radius {#CylindricalChannelGeometry}
+Model object [CylindricalChannelGeometry](#cylindricalchannelgeometry)
 
 This modelcalculates the product and solid's inner radius, \f$r_i, r_o\f$. Note that, when there are presence of the product, the solid' inner radius is the outer radius of the product.
 \f[
@@ -127,7 +127,7 @@ Example input file that defines the product and solid's inner radius
 ```
 [Models]
   [model]
-    type = ProductGeometry
+    type = CylindricalChannelGeometry
     solid_fraction = 'state/phi_s'
     product_fraction = 'state/phi_p'
     inner_radius = 'state/ri'
@@ -268,7 +268,7 @@ oSiCm1 = 0.08 # 1/Omega_SiC
     coefficients = '${omega_Si}'
   []
   [outer_radius]
-    type = ProductGeometry
+    type = CylindricalChannelGeometry
     solid_fraction = 'state/phi_S'
     product_fraction = 'state/phi_P'
     inner_radius = 'state/ri'
