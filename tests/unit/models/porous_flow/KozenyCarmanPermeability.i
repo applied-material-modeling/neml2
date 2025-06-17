@@ -14,22 +14,22 @@
 [Tensors]
   [phi]
     type = Scalar
-    values = "0.01 0.65 0.98"
+    values = '0.01 0.65 0.98'
     batch_shape = '(3)'
   []
   [phio]
     type = Scalar
-    values = "0 0.35 1"
+    values = '0 0.35 1'
     batch_shape = '(3)'
   []
   [m]
     type = Scalar
-    values = "0 0.4 1.8"
+    values = '0 0.4 1.8'
     batch_shape = '(3)'
   []
   [K]
     type = Scalar
-    values = "0.07596492249 6.305733751 0.0"
+    values = '0.07596492249 6.305733751 0.0'
     batch_shape = '(3)'
   []
 []

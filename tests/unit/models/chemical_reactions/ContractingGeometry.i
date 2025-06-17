@@ -13,12 +13,12 @@
 [Tensors]
   [alpha]
     type = Scalar
-    values = "0.03 0.75 0.9"
+    values = '0.03 0.75 0.9'
     batch_shape = '(3)'
   []
   [out]
     type = Scalar
-    values = "0.6437545 0.01546796 1.244795587e-3"
+    values = '0.6437545 0.01546796 1.244795587e-3'
     batch_shape = '(3)'
   []
 []
