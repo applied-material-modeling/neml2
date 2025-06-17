@@ -36,10 +36,10 @@ SymmetricHermiteInterpolation::expected_options()
 {
   OptionSet options = Model::expected_options();
   options.doc() =
-      "Defined the symmetric Hermite interpolation function, takes the form of \\f$ (3c^2-4c^3) "
-      "for 0 le c le 0.5, 3(1-c)^2 - 4(1-c)^3 for 0.5 le c le 1, and 0.0 otherwise \\f$. Here, "
-      "\\f$ c = \\frac{x-x_l}{x_h-x_l} \\f$ where \\f$x_l, x_h\\f$ are the lower and upper bound "
-      "respectively";
+      "Define the symmetric Hermite interpolation function, taking the form of \\f$ (3c^2-4c^3) "
+      "\\f$ for \\f$ 0 le c le 0.5 \\f$; \\f$ 3(1-c)^2 - 4(1-c)^3 \\f$ for \\f$ 0.5 le c le 1 "
+      "\\f$, and 0.0 otherwise. Here, \\f$ c = \\frac{x-x_l}{x_h-x_l} \\f$ where \\f$x_l\\f$ and "
+      "\\f$x_h\\f$ are the lower and upper bound for rescaling the input argument.";
 
   options.set_input("argument");
   options.set("argument").doc() = "Argument of the smooth step function";
