@@ -59,15 +59,16 @@ CapillaryPressure::CapillaryPressure(const OptionSet & options)
     _Sp(options.get<double>("transition_saturation"))
 {
   if (_log_extension && !_Sp_specified)
-    throw NEMLException("BrooksCoreyPressure: log_extension is set to true, but "
+    throw NEMLException("BrooksCoreyCapillaryPressure: log_extension is set to true, but "
                         "transition_saturation is not specified.");
 
   if (!_log_extension && _Sp_specified)
-    throw NEMLException("BrooksCoreyPressure: transition_saturation is specified, but "
+    throw NEMLException("BrooksCoreyCapillaryPressure: transition_saturation is specified, but "
                         "log_extension is not set to true.");
 
   if (_Sp < 0.0 || _Sp > 1.0)
-    throw NEMLException("BrooksCoreyPressure: transition_saturation must be in the range [0, 1].");
+    throw NEMLException(
+        "BrooksCoreyCapillaryPressure: transition_saturation must be in the range [0, 1].");
 }
 
 void

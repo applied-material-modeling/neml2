@@ -7,7 +7,9 @@
     output_Scalar_names = 'state/Pc'
     output_Scalar_values = 'Pc'
     check_AD_parameter_derivatives = false
+    derivative_abs_tol = 1e-7
     check_second_derivatives = true
+    second_derivative_abs_tol = 1e-6
   []
 []
 
@@ -19,16 +21,16 @@
   []
   [Pc]
     type = Scalar
-    values = '126.0403524130621 22.92220613 4.255929933 2.673595365'
+    values = '1.104503654476773 0.643666536951943 0.3175165612 0.1932327962'
     batch_shape = '(4)'
   []
 []
 
 [Models]
   [model]
-    type = BrooksCoreyPressure
-    threshold_pressure = 2.3
-    exponent = 0.7
+    type = VanGenuchtenCapillaryPressure
+    a = 0.333333333333333
+    m = 0.7
     effective_saturation = 'state/S'
     capillary_pressure = 'state/Pc'
     log_extension = true

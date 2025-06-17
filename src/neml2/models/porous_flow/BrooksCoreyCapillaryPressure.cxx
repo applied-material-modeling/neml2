@@ -22,14 +22,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/porous_flow/BrooksCoreyPressure.h"
+#include "neml2/models/porous_flow/BrooksCoreyCapillaryPressure.h"
 #include "neml2/tensors/functions/pow.h"
 
 namespace neml2
 {
-register_NEML2_object(BrooksCoreyPressure);
+register_NEML2_object(BrooksCoreyCapillaryPressure);
 OptionSet
-BrooksCoreyPressure::expected_options()
+BrooksCoreyCapillaryPressure::expected_options()
 {
   OptionSet options = CapillaryPressure::expected_options();
   options.doc() +=
@@ -48,7 +48,7 @@ BrooksCoreyPressure::expected_options()
   return options;
 }
 
-BrooksCoreyPressure::BrooksCoreyPressure(const OptionSet & options)
+BrooksCoreyCapillaryPressure::BrooksCoreyCapillaryPressure(const OptionSet & options)
   : CapillaryPressure(options),
     _Pt(declare_parameter<Scalar>("threshold", "threshold_pressure")),
     _p(declare_parameter<Scalar>("p", "exponent"))
@@ -56,10 +56,10 @@ BrooksCoreyPressure::BrooksCoreyPressure(const OptionSet & options)
 }
 
 std::tuple<Scalar, Scalar, Scalar>
-BrooksCoreyPressure::calculate_pressure(const Scalar & S,
-                                        bool out,
-                                        bool dout_din,
-                                        bool d2out_din2) const
+BrooksCoreyCapillaryPressure::calculate_pressure(const Scalar & S,
+                                                 bool out,
+                                                 bool dout_din,
+                                                 bool d2out_din2) const
 {
   auto Pc = out ? _Pt * pow(S, -1.0 / _p) : Scalar();
   auto dPc_dS = dout_din ? -_Pt / _p * pow(S, -1.0 / _p - 1.0) : Scalar();

@@ -28,12 +28,12 @@
 namespace neml2
 {
 /// van Genuchten correlation for capillary pressure
-class VanGenuchtenPressure : public CapillaryPressure
+class VanGenuchtenCapillaryPressure : public CapillaryPressure
 {
 public:
   static OptionSet expected_options();
 
-  VanGenuchtenPressure(const OptionSet & options);
+  VanGenuchtenCapillaryPressure(const OptionSet & options);
 
 protected:
   std::tuple<Scalar, Scalar, Scalar>

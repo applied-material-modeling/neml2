@@ -29,12 +29,12 @@
 namespace neml2
 {
 /// Define the Brooks-Corey correlation for capillary pressure.
-class BrooksCoreyPressure : public CapillaryPressure
+class BrooksCoreyCapillaryPressure : public CapillaryPressure
 {
 public:
   static OptionSet expected_options();
 
-  BrooksCoreyPressure(const OptionSet & options);
+  BrooksCoreyCapillaryPressure(const OptionSet & options);
 
 protected:
   std::tuple<Scalar, Scalar, Scalar>

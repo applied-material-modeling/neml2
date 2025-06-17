@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/porous_flow/VanGenuchtenPressure.h"
+#include "neml2/models/porous_flow/VanGenuchtenCapillaryPressure.h"
 #include "neml2/tensors/functions/clamp.h"
 #include "neml2/tensors/functions/pow.h"
 #include "neml2/tensors/functions/log10.h"
@@ -31,9 +31,9 @@
 
 namespace neml2
 {
-register_NEML2_object(VanGenuchtenPressure);
+register_NEML2_object(VanGenuchtenCapillaryPressure);
 OptionSet
-VanGenuchtenPressure::expected_options()
+VanGenuchtenCapillaryPressure::expected_options()
 {
   OptionSet options = CapillaryPressure::expected_options();
   options.doc() +=
@@ -52,7 +52,7 @@ VanGenuchtenPressure::expected_options()
   return options;
 }
 
-VanGenuchtenPressure::VanGenuchtenPressure(const OptionSet & options)
+VanGenuchtenCapillaryPressure::VanGenuchtenCapillaryPressure(const OptionSet & options)
   : CapillaryPressure(options),
     _a(declare_parameter<Scalar>("a", "a")),
     _m(declare_parameter<Scalar>("m", "m"))
@@ -60,10 +60,10 @@ VanGenuchtenPressure::VanGenuchtenPressure(const OptionSet & options)
 }
 
 std::tuple<Scalar, Scalar, Scalar>
-VanGenuchtenPressure::calculate_pressure(const Scalar & S,
-                                         bool out,
-                                         bool dout_din,
-                                         bool d2out_din2) const
+VanGenuchtenCapillaryPressure::calculate_pressure(const Scalar & S,
+                                                  bool out,
+                                                  bool dout_din,
+                                                  bool d2out_din2) const
 {
   const auto eps = machine_precision(S.scalar_type()).toDouble();
   auto Sc = where(S > (1.0 - eps), Scalar::ones_like(S) - eps, S);
