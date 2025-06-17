@@ -26,7 +26,6 @@
 #include "neml2/tensors/R2.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/functions/pow.h"
-#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
@@ -38,8 +37,8 @@ VolumeAdjustDeformationGradient::expected_options()
   OptionSet options = Model::expected_options();
   options.doc() = "Calculate the volume-adjusted deformation gradient, i.e. \\f$ F_e = "
                   "J^{-\\frac{1}/{3}} F \\f$, where \\f$ F \\f$ is the pre-adjusted deformation "
-                  "gradient and \\f$ J \\f$ is the total jacobian. For insta,ce \\f$ J \\f$ can "
-                  "represents the jacobian of the thermal deformation gradient";
+                  "gradient and \\f$ J \\f$ is the total jacobian of the volumetric deformation "
+                  "gradients to be removed.";
 
   options.set_input("input");
   options.set("input").doc() = "Input deformation gradient";
@@ -63,12 +62,8 @@ VolumeAdjustDeformationGradient::VolumeAdjustDeformationGradient(const OptionSet
 }
 
 void
-VolumeAdjustDeformationGradient::set_value(bool out, bool dout_din, bool d2out_din2)
+VolumeAdjustDeformationGradient::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
-
-  auto I = R2::identity_map(_F.options());
-
   if (out)
     _Fe = _F * pow(_J, -1.0 / 3.0);
 
@@ -78,7 +73,10 @@ VolumeAdjustDeformationGradient::set_value(bool out, bool dout_din, bool d2out_d
       _Fe.d(_J) = _F * -1.0 / 3.0 * pow(_J, -4.0 / 3.0);
 
     if (_F.is_dependent())
+    {
+      auto I = R2::identity_map(_F.options());
       _Fe.d(_F) = pow(_J, -1.0 / 3.0) * I;
+    }
   }
 }
 } // namespace neml2

@@ -41,9 +41,13 @@ public:
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
+  /// The input deformation gradient
   const Variable<R2> & _F;
+
+  /// Total deformation Jacobian of the volumetric deformation gradients to be removed
   const Variable<Scalar> & _J;
 
+  /// The output volume-adjusted deformation gradient
   Variable<R2> & _Fe;
 };
 } // namespace neml2
