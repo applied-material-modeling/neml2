@@ -54,12 +54,8 @@ HITParser::parse(const std::filesystem::path & filename, const std::string & add
   std::unique_ptr<hit::Node> root(hit::parse(filename, input));
   neml_assert(root.get(), "HIT failed to lex the input file: ", filename);
 
-  // Explode the tree
-  hit::explode(root.get());
-
   // Handle additional input (they could be coming from cli args)
   std::unique_ptr<hit::Node> cli_root(hit::parse("cliargs", additional_input));
-  hit::explode(cli_root.get());
   hit::merge(cli_root.get(), root.get());
 
   // Preevaluate the input
