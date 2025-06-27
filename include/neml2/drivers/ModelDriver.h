@@ -61,6 +61,8 @@ public:
 
   const Model & model() const { return *_model; }
 
+  void to(Device dev);
+
 protected:
   /// The model which the driver uses to perform constitutive updates.
   const std::shared_ptr<Model> _model;

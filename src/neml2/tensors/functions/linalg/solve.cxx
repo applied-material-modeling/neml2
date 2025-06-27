@@ -31,7 +31,8 @@ Tensor
 solve(const Tensor & A, const Tensor & B)
 {
   auto [LU, pivots] = at::linalg_lu_factor(A.batch_expand_as(B), true);
-  auto x = Tensor(at::linalg_lu_solve(LU, pivots, B.unsqueeze(-1), true).squeeze(-1), B.batch_sizes());
+  auto x =
+      Tensor(at::linalg_lu_solve(LU, pivots, B.unsqueeze(-1), true).squeeze(-1), B.batch_sizes());
 
   return x;
 }

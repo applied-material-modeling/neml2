@@ -372,7 +372,7 @@ Model::register_callback_recursive(ModelCallback callback)
 {
   register_callback(callback);
 
-  for (auto * submodel : registered_models())
+  for (auto & submodel : registered_models())
     submodel->register_callback_recursive(callback);
 }
 

@@ -111,13 +111,10 @@ ModelDriver::setup()
   Driver::setup();
 
   // Send model parameters and buffers to device
-  _model.to(_device);
+  _model->to(_device);
 
   if (_log_details)
-  {
-    auto & model = get_model(_model.name());
-    model.register_callback_recursive(details_callback);
-  }
+    _model->register_callback_recursive(details_callback);
 
 #ifdef NEML2_HAS_DISPATCHER
   if (_scheduler)

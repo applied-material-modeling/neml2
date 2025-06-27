@@ -71,7 +71,7 @@ TransientRegression::diagnose() const
 void
 TransientRegression::to(Device dev)
 {
-  _driver.to(dev);
+  _driver->to(dev);
 }
 
 bool
