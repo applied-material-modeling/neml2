@@ -2,12 +2,12 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/J'
-    input_Scalar_values = 0.8
+    input_Scalar_names = 'state/Js state/Jt'
+    input_Scalar_values = '0.8 0.4'
     input_R2_names = 'state/F state/P'
     input_R2_values = 'F P'
     output_Scalar_names = 'state/pc'
-    output_Scalar_values = '46.83333333333333333'
+    output_Scalar_values = '-100.10484187836497'
     derivative_abs_tol = 1e-06
   []
 []
@@ -28,12 +28,17 @@
 []
 
 [Models]
-  [model]
+  [advstress]
     type = AdvectiveStress
     coefficient = 1.0
-    jacobian = 'state/J'
+    js = 'state/Js'
+    jt = 'state/Jt'
     deformation_gradient = 'state/F'
     pk1_stress = 'state/P'
     advective_stress = 'state/pc'
+  []
+  [model]
+    type = ComposedModel
+    models = 'advstress'
   []
 []

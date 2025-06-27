@@ -24,6 +24,7 @@
 
 #include "neml2/models/chemical_reactions/ContractingGeometry.h"
 #include "neml2/tensors/functions/pow.h"
+#include "neml2/tensors/functions/clamp.h"
 
 namespace neml2
 {
@@ -57,16 +58,18 @@ ContractingGeometry::ContractingGeometry(const OptionSet & options)
 void
 ContractingGeometry::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
+  const auto eps = machine_precision(_a.scalar_type()).toDouble();
+  const auto aclamp = clamp(1.0 - _a, 0.0 + eps, 1.0 - eps);
   if (out)
-    _f = _k * pow(1.0 - _a, _n);
+    _f = _k * pow(aclamp, _n);
 
   if (dout_din)
   {
     if (_a.is_dependent())
-      _f.d(_a) = -1.0 * _k * _n * pow(1.0 - _a, _n - 1);
+      _f.d(_a) = -1.0 * _k * _n * pow(aclamp, _n - 1);
 
     if (const auto * const k = nl_param("k"))
-      _f.d(*k) = pow(1.0 - _a, _n);
+      _f.d(*k) = pow(aclamp, _n);
   }
 }
 }
