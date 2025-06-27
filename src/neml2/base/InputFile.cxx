@@ -25,12 +25,11 @@
 #include <iostream>
 
 #include "neml2/base/InputFile.h"
-#include "neml2/base/Settings.h"
 
 namespace neml2
 {
-InputFile::InputFile(const OptionSet & settings)
-  : _settings(std::make_shared<Settings>(settings)),
+InputFile::InputFile(OptionSet settings)
+  : _settings(std::move(settings)),
     _data()
 {
 }

@@ -260,8 +260,8 @@ protected:
                            "' is trying to register itself as a sub-model. This is not allowed.");
 
     OptionSet extra_opts;
-    extra_opts.set<NEML2Object *>("_host") = host();
-    extra_opts.set<bool>("_nonlinear_system") = nonlinear;
+    extra_opts.set<NEML2Object *>("host") = host();
+    extra_opts.set<bool>("nonlinear_system") = nonlinear;
 
     if (!host()->factory())
       throw SetupException("Internal error: Host object '" + host()->name() +

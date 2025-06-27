@@ -44,7 +44,7 @@ set_variable(ValueMap & storage,
               " values to ",
               vars.size(),
               " variables.");
-  auto * factory = options.get<Factory *>("_factory");
+  auto * factory = options.get<Factory *>("factory");
   neml_assert(factory, "Internal error: factory != nullptr");
   for (size_t i = 0; i < vars.size(); i++)
     storage[vars[i]] = vals[i].resolve(factory);

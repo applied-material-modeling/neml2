@@ -60,7 +60,7 @@ set_ic(ValueMap & storage,
               " and ",
               vals.size(),
               " respectively.");
-  auto * factory = options.get<Factory *>("_factory");
+  auto * factory = options.get<Factory *>("factory");
   neml_assert(factory, "Internal error: factory != nullptr");
   for (std::size_t i = 0; i < names.size(); i++)
   {
@@ -92,7 +92,7 @@ get_force(std::vector<VariableName> & names,
               " and ",
               vals.size(),
               " respectively.");
-  auto * factory = options.get<Factory *>("_factory");
+  auto * factory = options.get<Factory *>("factory");
   neml_assert(factory, "Internal error: factory != nullptr");
   for (std::size_t i = 0; i < force_names.size(); i++)
   {

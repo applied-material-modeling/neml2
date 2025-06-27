@@ -32,6 +32,8 @@
 #include "neml2/base/EnumSelection.h"
 #include "neml2/base/MultiEnumSelection.h"
 #include "neml2/base/LabeledAxisAccessor.h"
+#include "neml2/misc/errors.h"
+#include "neml2/misc/string_utils.h"
 #include "neml2/tensors/tensors.h"
 #include "neml2/misc/assertions.h"
 #include "neml2/misc/types.h"
@@ -66,11 +68,11 @@ HITParser::parse(const std::filesystem::path & filename, const std::string & add
   expander.registerEvaler("raw", raw);
   root->walk(&expander);
 
-  return parse(root.get());
+  return parse_from_hit_node(root.get());
 }
 
 InputFile
-HITParser::parse(hit::Node * root) const
+HITParser::parse_from_hit_node(hit::Node * root) const
 {
   // Extract global settings
   OptionSet settings = Settings::expected_options();
@@ -178,4 +180,58 @@ HITParser::extract_option(hit::Node * n, OptionSet & options) const
   }
 }
 // NOLINTEND
+
+std::string
+HITParser::serialize(const InputFile & inp) const
+{
+  // The destructor will delete the children nodes, so it's generally safe to use raw pointers for
+  // children
+
+  // Create an empty HIT root node
+  // hit::Comment root("Generated NEML2 input file", false);
+  hit::Blank root;
+
+  // Serialize settings
+  auto * node = new hit::Section("Settings");
+  serialize_options(node, inp.settings());
+  root.addChild(node);
+
+  return node->render();
+}
+
+void
+HITParser::serialize_options(hit::Node * node, const OptionSet & options) const
+{
+  for (const auto & [key, val] : options)
+  {
+    if (val->suppressed())
+      continue;
+
+    auto * field = serialize_option(key, val.get());
+    node->addChild(field);
+  }
+}
+
+hit::Node *
+HITParser::serialize_option(const std::string & key, const OptionBase * val) const
+{
+  if (val->type() == utils::demangle(typeid(bool).name()))
+  {
+    const auto * val_ptr = dynamic_cast<const Option<bool> *>(val);
+    return new hit::Field(key, hit::Field::Kind::Bool, val_ptr->get() ? "true" : "false");
+  }
+  else if (val->type() == utils::demangle(typeid(std::string).name()))
+  {
+    const auto * val_ptr = dynamic_cast<const Option<std::string> *>(val);
+    return new hit::Field(key, hit::Field::Kind::String, val_ptr->get());
+  }
+  else if (val->type() == utils::demangle(typeid(std::vector<std::string>).name()))
+  {
+    const auto * val_ptr = dynamic_cast<const Option<std::vector<std::string>> *>(val);
+    return new hit::Field(key, hit::Field::Kind::String, val_ptr->get());
+  }
+  else
+    throw NEMLException("Unsupported option type for serialization: " + val->type());
+}
+
 } // namespace neml2

@@ -79,8 +79,8 @@ Model::expected_options()
   // Model defaults to _not_ being part of a nonlinear system
   // Model::get_model will set this to true if the model is expected to be part of a nonlinear
   // system, and additional diagnostics will be performed
-  options.set<bool>("_nonlinear_system") = false;
-  options.set("_nonlinear_system").suppressed() = true;
+  options.set<bool>("nonlinear_system") = false;
+  options.set("nonlinear_system").suppressed() = true;
 
   options.set<bool>("jit") = true;
   options.set("jit").doc() = "Use JIT compilation for the forward operator";
@@ -103,7 +103,7 @@ Model::Model(const OptionSet & options)
     _defines_value(options.get<bool>("define_values")),
     _defines_dvalue(options.get<bool>("define_derivatives")),
     _defines_d2value(options.get<bool>("define_second_derivatives")),
-    _nonlinear_system(options.get<bool>("_nonlinear_system")),
+    _nonlinear_system(options.get<bool>("nonlinear_system")),
     _jit(options.get<bool>("jit")),
     _production(options.get<bool>("production"))
 {

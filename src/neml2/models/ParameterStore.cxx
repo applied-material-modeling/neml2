@@ -119,7 +119,7 @@ resolve_tensor_name(const TensorName<T> & tn, Model * caller, const std::string 
     // When we retrieve a model, we want it to register its own parameters and buffers in the
     // host of the caller.
     OptionSet extra_opts;
-    extra_opts.set<NEML2Object *>("_host") = caller->host();
+    extra_opts.set<NEML2Object *>("host") = caller->host();
 
     // The raw string is interpreted as a _variable specifier_ which takes three possible forms
     // 1. "model_name.variable_name"
