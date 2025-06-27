@@ -109,7 +109,6 @@ void
 ModelDriver::setup()
 {
   Driver::setup();
-  _model.to(_device);
 
   // Send model parameters and buffers to device
   _model.to(_device);

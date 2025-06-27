@@ -27,7 +27,6 @@
 
 #include "neml2/base/Factory.h"
 #include "neml2/drivers/Driver.h"
-#include "TransientRegression.h"
 
 using namespace neml2;
 namespace fs = std::filesystem;

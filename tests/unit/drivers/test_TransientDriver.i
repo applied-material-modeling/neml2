@@ -44,14 +44,12 @@
     model = 'model'
     prescribed_time = 'times'
     prescribed_strain = 'strains'
-    device = 'xpu'
   []
 []
 
 [Solvers]
   [newton]
     type = Newton
-    verbose = true
   []
 []
 
