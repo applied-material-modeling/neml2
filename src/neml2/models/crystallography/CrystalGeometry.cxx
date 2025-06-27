@@ -65,7 +65,7 @@ CrystalGeometry::expected_options()
 }
 
 CrystalGeometry::CrystalGeometry(const OptionSet & options)
-  : CrystalGeometry(options, options.get<Factory *>("_factory"))
+  : CrystalGeometry(options, options.get<Factory *>("factory"))
 {
 }
 

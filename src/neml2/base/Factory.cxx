@@ -23,6 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/base/Factory.h"
+#include "neml2/base/InputFile.h"
+#include "neml2/base/Settings.h"
 #include "neml2/base/OptionSet.h"
 #include "neml2/base/NEML2Object.h"
 #include "neml2/base/Registry.h"
@@ -46,6 +48,7 @@ load_input(const std::filesystem::path & path, const std::string & additional_in
 
 Factory::Factory(InputFile inp)
   : _input_file(std::move(inp)),
+    _settings(std::make_shared<Settings>(_input_file.settings())),
     _objects()
 {
 }
@@ -75,6 +78,22 @@ Factory::create_object(const std::string & section, const OptionSet & options)
     throw FactoryException("Failed to setup object '" + name + "' of type '" + type +
                            "' in section '" + section + "':\n" + e.what());
   }
+
+  // Record the object options in the serialized file if we are serializing
+  if (_serializing)
+    (*_serialized_file)[section][name] = object->input_options();
+}
+
+std::unique_ptr<InputFile>
+Factory::serialize_object(const std::string & section,
+                          const std::string & name,
+                          const OptionSet & additional_options)
+{
+  _serialized_file = std::make_unique<InputFile>(_input_file.settings());
+  _serializing = true;
+  get_object<NEML2Object>(section, name, additional_options);
+  _serializing = false;
+  return std::move(_serialized_file);
 }
 
 bool

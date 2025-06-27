@@ -28,18 +28,16 @@
 
 namespace neml2
 {
-class Settings;
-
 /**
  * @brief A data structure that holds options of multiple objects.
  */
 class InputFile
 {
 public:
-  InputFile(const OptionSet & settings);
+  InputFile(OptionSet settings);
 
   /// Get global settings
-  const std::shared_ptr<Settings> & settings() const { return _settings; }
+  const OptionSet & settings() const { return _settings; }
 
   /// Get all the object options under a specific section.
   std::map<std::string, OptionSet> & operator[](const std::string & section);
@@ -55,7 +53,7 @@ public:
 
 private:
   /// Global settings specified under the [Settings] section
-  const std::shared_ptr<Settings> _settings;
+  const OptionSet _settings;
 
   /// Collection of options for all manufacturable objects
   std::map<std::string, std::map<std::string, OptionSet>> _data;

@@ -59,7 +59,7 @@ protected:
   T & register_data(const std::string & name)
   {
     OptionSet extra_opts;
-    extra_opts.set<NEML2Object *>("_host") = host();
+    extra_opts.set<NEML2Object *>("host") = host();
     if (!host()->factory())
       throw SetupException("Internal error: Host object '" + host()->name() +
                            "' does not have a factory set.");

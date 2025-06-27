@@ -67,6 +67,9 @@ public:
    */
   virtual InputFile parse(const std::filesystem::path & filename,
                           const std::string & additional_input = "") const = 0;
+
+  /// @brief Serialize an input file to a string
+  virtual std::string serialize(const InputFile & inp) const = 0;
 };
 
 namespace utils
