@@ -71,7 +71,6 @@ private:
   void extract_option(hit::Node * node, OptionSet & options) const;
 
   void serialize_options(hit::Node * node, const OptionSet & options) const;
-  hit::Node * serialize_option(const std::string & key, const OptionBase * val) const;
 };
 
 } // namespace neml2

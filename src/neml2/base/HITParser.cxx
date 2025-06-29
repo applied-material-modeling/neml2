@@ -37,6 +37,7 @@
 #include "neml2/tensors/tensors.h"
 #include "neml2/misc/assertions.h"
 #include "neml2/misc/types.h"
+#include <hit/parse.h>
 
 namespace neml2
 {
@@ -184,19 +185,35 @@ HITParser::extract_option(hit::Node * n, OptionSet & options) const
 std::string
 HITParser::serialize(const InputFile & inp) const
 {
-  // The destructor will delete the children nodes, so it's generally safe to use raw pointers for
-  // children
-
-  // Create an empty HIT root node
-  // hit::Comment root("Generated NEML2 input file", false);
-  hit::Blank root;
+  // Serialized input
+  std::string output;
 
   // Serialize settings
-  auto * node = new hit::Section("Settings");
-  serialize_options(node, inp.settings());
-  root.addChild(node);
+  auto node = std::make_unique<hit::Section>("Settings");
+  serialize_options(node.get(), inp.settings());
+  output += node->render();
 
-  return node->render();
+  // Serialize each section
+  for (const auto & [section_name, section] : inp.data())
+  {
+    output += "\n\n"; // Add a newline before each section for readability
+    auto section_node = std::make_unique<hit::Section>(section_name);
+    for (const auto & [object_name, options] : section)
+    {
+      // Create a section for the object
+      auto object_node = std::make_unique<hit::Section>(object_name);
+      // Add the special field "type". The destructor will delete the children nodes, so it's
+      // generally safe to use raw pointers for children
+      object_node->addChild(new hit::Field("type", hit::Field::Kind::String, options.type()));
+      // Serialize the options
+      serialize_options(object_node.get(), options);
+      // Add the object node to the section
+      section_node->addChild(object_node.release());
+    }
+    output += section_node->render();
+  }
+
+  return output;
 }
 
 void
@@ -204,34 +221,13 @@ HITParser::serialize_options(hit::Node * node, const OptionSet & options) const
 {
   for (const auto & [key, val] : options)
   {
-    if (val->suppressed())
+    if (val->suppressed() || !val->user_specified())
       continue;
 
-    auto * field = serialize_option(key, val.get());
+    // auto * field = serialize_option(key, val.get());
+    auto val_str = "'" + utils::stringify(*val) + "'"; // Wrap in single quotes
+    auto * field = new hit::Field(key, hit::Field::Kind::String, val_str);
     node->addChild(field);
   }
 }
-
-hit::Node *
-HITParser::serialize_option(const std::string & key, const OptionBase * val) const
-{
-  if (val->type() == utils::demangle(typeid(bool).name()))
-  {
-    const auto * val_ptr = dynamic_cast<const Option<bool> *>(val);
-    return new hit::Field(key, hit::Field::Kind::Bool, val_ptr->get() ? "true" : "false");
-  }
-  else if (val->type() == utils::demangle(typeid(std::string).name()))
-  {
-    const auto * val_ptr = dynamic_cast<const Option<std::string> *>(val);
-    return new hit::Field(key, hit::Field::Kind::String, val_ptr->get());
-  }
-  else if (val->type() == utils::demangle(typeid(std::vector<std::string>).name()))
-  {
-    const auto * val_ptr = dynamic_cast<const Option<std::vector<std::string>> *>(val);
-    return new hit::Field(key, hit::Field::Kind::String, val_ptr->get());
-  }
-  else
-    throw NEMLException("Unsupported option type for serialization: " + val->type());
-}
-
 } // namespace neml2
