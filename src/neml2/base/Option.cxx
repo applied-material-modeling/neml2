@@ -164,10 +164,35 @@ _print_helper(std::ostream & os, const unsigned char * option)
 
 template <>
 void
+_print_helper(std::ostream & os, const bool * option)
+{
+  os << (*option ? "true" : "false");
+}
+
+template <>
+void
 _print_helper(std::ostream & os, const std::vector<bool> * option)
 {
-  for (const auto p : *option)
-    os << static_cast<bool>(p) << " ";
+  for (std::size_t i = 0; i < option->size(); i++)
+  {
+    if (i > 0)
+      os << " ";
+    os << ((*option)[i] ? "true" : "false");
+  }
+}
+
+template <>
+void
+_print_helper(std::ostream & os, const TensorShape * option)
+{
+  os << "(";
+  for (std::size_t i = 0; i < option->size(); i++)
+  {
+    if (i > 0)
+      os << ",";
+    os << (*option)[i];
+  }
+  os << ")";
 }
 } // namespace details
 } // namespace neml2
