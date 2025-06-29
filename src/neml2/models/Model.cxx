@@ -25,7 +25,6 @@
 #include <c10/core/InferenceMode.h>
 
 #include "neml2/misc/assertions.h"
-#include "neml2/base/guards.h"
 #include "neml2/base/Factory.h"
 #include "neml2/base/Settings.h"
 #include "neml2/jit/utils.h"
@@ -362,13 +361,13 @@ Model::forward_operator_index(bool out, bool dout, bool d2out) const
 }
 
 void
-Model::register_callback(ModelCallback callback)
+Model::register_callback(const ModelCallback & callback)
 {
   _callbacks.push_back(callback);
 }
 
 void
-Model::register_callback_recursive(ModelCallback callback)
+Model::register_callback_recursive(const ModelCallback & callback)
 {
   register_callback(callback);
 
@@ -941,7 +940,7 @@ operator<<(std::ostream & os, const Model & model)
 void
 Model::call_callbacks() const
 {
-  for (auto callback : _callbacks)
+  for (const auto & callback : _callbacks)
     callback(*this, input_variables(), output_variables());
 }
 
