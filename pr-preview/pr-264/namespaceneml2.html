@@ -901,9 +901,9 @@ Typedefs</h2></td></tr>
 <tr class="separator:a4b2a77b1cf33476b3cf2c117975b82ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a83c026f166ceab8d0620d4ad49869d9f" id="r_a83c026f166ceab8d0620d4ad49869d9f"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a83c026f166ceab8d0620d4ad49869d9f">SecDerivMap</a> = std::map&lt;<a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a>, <a class="el" href="#a4b2a77b1cf33476b3cf2c117975b82ac">DerivMap</a>&gt;</td></tr>
 <tr class="separator:a83c026f166ceab8d0620d4ad49869d9f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aff47335f35c2bd38ab061567b74ba31a" id="r_aff47335f35c2bd38ab061567b74ba31a"><td class="memItemLeft" align="right" valign="top">typedef std::function&lt; void(const <a class="el" href="classneml2_1_1Model.html">Model</a> &amp;, const std::map&lt; <a class="el" href="#a9e1488821b46ffc106c90ab80036b7aa">VariableName</a>, std::unique_ptr&lt; <a class="el" href="classneml2_1_1VariableBase.html">VariableBase</a> &gt; &gt; &amp;, const std::map&lt; <a class="el" href="#a9e1488821b46ffc106c90ab80036b7aa">VariableName</a>, std::unique_ptr&lt; <a class="el" href="classneml2_1_1VariableBase.html">VariableBase</a> &gt; &gt; &amp;)&gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aff47335f35c2bd38ab061567b74ba31a">ModelCallback</a></td></tr>
-<tr class="memdesc:aff47335f35c2bd38ab061567b74ba31a"><td class="mdescLeft">&#160;</td><td class="mdescRight">typedef giving the call signature for a model callback  <br /></td></tr>
-<tr class="separator:aff47335f35c2bd38ab061567b74ba31a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad9a2eba1c1cac17c56a212645179b617" id="r_ad9a2eba1c1cac17c56a212645179b617"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad9a2eba1c1cac17c56a212645179b617">ModelCallback</a></td></tr>
+<tr class="memdesc:ad9a2eba1c1cac17c56a212645179b617"><td class="mdescLeft">&#160;</td><td class="mdescRight">typedef giving the call signature for a model callback  <br /></td></tr>
+<tr class="separator:ad9a2eba1c1cac17c56a212645179b617"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9e9e4648aec796882b3d9bdf25cb5bc8" id="r_a9e9e4648aec796882b3d9bdf25cb5bc8"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9e9e4648aec796882b3d9bdf25cb5bc8">TensorDataContainer</a> = torch::detail::TensorDataContainer</td></tr>
 <tr class="separator:a9e9e4648aec796882b3d9bdf25cb5bc8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -2062,18 +2062,24 @@ template&lt;typename T&gt; </div>
 
 </div>
 </div>
-<a id="aff47335f35c2bd38ab061567b74ba31a" name="aff47335f35c2bd38ab061567b74ba31a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aff47335f35c2bd38ab061567b74ba31a">&#9670;&#160;</a></span>ModelCallback</h2>
+<a id="ad9a2eba1c1cac17c56a212645179b617" name="ad9a2eba1c1cac17c56a212645179b617"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad9a2eba1c1cac17c56a212645179b617">&#9670;&#160;</a></span>ModelCallback</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">typedef std::function&lt;void(const <a class="el" href="classneml2_1_1Model.html">Model</a> &amp;, const std::map&lt;<a class="el" href="#a9e1488821b46ffc106c90ab80036b7aa">VariableName</a>, std::unique_ptr&lt;<a class="el" href="classneml2_1_1VariableBase.html">VariableBase</a>&gt;&gt; &amp;, const std::map&lt;<a class="el" href="#a9e1488821b46ffc106c90ab80036b7aa">VariableName</a>, std::unique_ptr&lt;<a class="el" href="classneml2_1_1VariableBase.html">VariableBase</a>&gt;&gt; &amp;)&gt; <a class="el" href="#aff47335f35c2bd38ab061567b74ba31a">ModelCallback</a></td>
+          <td class="memname">using <a class="el" href="#ad9a2eba1c1cac17c56a212645179b617">ModelCallback</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
-
+<b>Initial value:</b><div class="fragment"><div class="line"> </div>
+<div class="line">    std::function&lt;void(<span class="keyword">const</span> <a class="code hl_class" href="classneml2_1_1Model.html">Model</a> &amp;,</div>
+<div class="line">                       <span class="keyword">const</span> std::map&lt;<a class="code hl_typedef" href="#a9e1488821b46ffc106c90ab80036b7aa">VariableName</a>, std::unique_ptr&lt;VariableBase&gt;&gt; &amp;,</div>
+<div class="line">                       <span class="keyword">const</span> std::map&lt;<a class="code hl_typedef" href="#a9e1488821b46ffc106c90ab80036b7aa">VariableName</a>, std::unique_ptr&lt;VariableBase&gt;&gt; &amp;)&gt;</div>
+<div class="ttc" id="aclassneml2_1_1Model_html"><div class="ttname"><a href="classneml2_1_1Model.html">neml2::Model</a></div><div class="ttdoc">The base class for all constitutive models.</div><div class="ttdef"><b>Definition</b> Model.h:74</div></div>
+<div class="ttc" id="anamespaceneml2_html_a9e1488821b46ffc106c90ab80036b7aa"><div class="ttname"><a href="#a9e1488821b46ffc106c90ab80036b7aa">neml2::VariableName</a></div><div class="ttdeci">LabeledAxisAccessor VariableName</div><div class="ttdef"><b>Definition</b> LabeledAxisAccessor.h:185</div></div>
+</div><!-- fragment -->
 <p>typedef giving the call signature for a model callback </p>
 
 </div>

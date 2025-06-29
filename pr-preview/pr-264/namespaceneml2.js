@@ -323,7 +323,7 @@ var namespaceneml2 =
     [ "Device", "namespaceneml2.html#a09235c8815e870c0e839816a881ce30a", null ],
     [ "DeviceIndex", "namespaceneml2.html#afb85205a26db7032e4409357518664e4", null ],
     [ "Dtype", "namespaceneml2.html#afaf4a374e1e2277f2100772818bce14d", null ],
-    [ "ModelCallback", "namespaceneml2.html#aff47335f35c2bd38ab061567b74ba31a", null ],
+    [ "ModelCallback", "namespaceneml2.html#ad9a2eba1c1cac17c56a212645179b617", null ],
     [ "R2BackwardEulerTimeIntegration", "namespaceneml2.html#a982ea53efecd11e9e22b44e76d142bc8", null ],
     [ "R2Determinant", "namespaceneml2.html#a1a1e5e68917492c8eda9855ee3dd5e21", null ],
     [ "R2IncrementToRate", "namespaceneml2.html#a910a1045bc2a18cbbdfdebe3ba903270", null ],
