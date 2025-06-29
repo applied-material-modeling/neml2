@@ -44,6 +44,8 @@ public:
 
   bool run() override;
 
+  void to(Device dev);
+
 private:
   /// The driver that will run the NEML2 model
   const std::shared_ptr<TransientDriver> _driver;

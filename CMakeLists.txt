@@ -63,6 +63,7 @@ set(NEML2_PYBIND OFF CACHE BOOL "Build NEML2 Python bindings")
 set(NEML2_DOC OFF CACHE BOOL "Build NEML2 documentation (html)")
 set(NEML2_WORK_DISPATCHER OFF CACHE BOOL "Enable NEML2 work dispatcher")
 set(NEML2_JSON OFF CACHE BOOL "Enable JSON support")
+set(AURORA_BUILD OFF CACHE BOOL "Build on ALCF Aurora machine")
 
 # ----------------------------------------------------------------------------
 # Dependencies and 3rd party packages
@@ -128,6 +129,13 @@ cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${Torch_LINK_DIR} Torch_DOWNLOADED)
 if(Torch_DOWNLOADED)
       install(DIRECTORY ${Torch_INCLUDE_DIR} TYPE INCLUDE COMPONENT libneml2)
       install(DIRECTORY ${Torch_LINK_DIR} DESTINATION . COMPONENT libneml2)
+endif()
+
+# ----------------------------------------------------------------------------
+# Intel Extension for PyTorch
+# ----------------------------------------------------------------------------
+if (AURORA_BUILD)
+      find_library(IPEX_LIB intel-ext-pt-gpu PATHS ${INTEL_EXTENSION_FOR_PYTORCH_PATH}/lib NO_DEFAULT_PATH REQUIRED)
 endif()
 
 # ----------------------------------------------------------------------------

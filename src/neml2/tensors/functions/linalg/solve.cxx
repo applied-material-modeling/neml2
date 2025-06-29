@@ -30,6 +30,10 @@ namespace neml2::linalg
 Tensor
 solve(const Tensor & A, const Tensor & B)
 {
-  return Tensor(at::linalg_solve(A.batch_expand_as(B), B, /*left=*/true), B.batch_sizes());
+  auto [LU, pivots] = at::linalg_lu_factor(A.batch_expand_as(B), true);
+  auto x =
+      Tensor(at::linalg_lu_solve(LU, pivots, B.unsqueeze(-1), true).squeeze(-1), B.batch_sizes());
+
+  return x;
 }
 } // namespace neml2::linalg
