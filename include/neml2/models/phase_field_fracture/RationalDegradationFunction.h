@@ -45,7 +45,7 @@ protected:
   const Scalar & _p;
 
   /// residual degradation when d = 1
-  const Real _eta;
+  const double _eta;
 
   /// Material fitting parameter 1
   const Scalar & _b1;

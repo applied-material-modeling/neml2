@@ -39,7 +39,7 @@ RationalDegradationFunction::expected_options()
   options.set<TensorName<Scalar>>("power");
   options.set("power").doc() = "Power of the degradation function";
 
-  options.set<Real>("eta") = 0;
+  options.set<double>("eta") = 0;
   options.set("eta").doc() = "Residual degradation when d = 1";
 
   options.set<TensorName<Scalar>>("fitting_param_1");
@@ -59,7 +59,7 @@ RationalDegradationFunction::expected_options()
 RationalDegradationFunction::RationalDegradationFunction(const OptionSet & options)
   : DegradationFunction(options),
     _p(declare_parameter<Scalar>("p", "power")),
-    _eta(options.get<Real>("eta")),
+    _eta(options.get<double>("eta")),
     _b1(declare_parameter<Scalar>("b1", "fitting_param_1")),
     _b2(declare_parameter<Scalar>("b2", "fitting_param_2")),
     _b3(declare_parameter<Scalar>("b3", "fitting_param_3"))
