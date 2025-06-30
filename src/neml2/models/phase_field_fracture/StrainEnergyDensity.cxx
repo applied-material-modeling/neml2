@@ -23,6 +23,9 @@
 // THE SOFTWARE.
 
 #include "neml2/models/phase_field_fracture/StrainEnergyDensity.h"
+#include "neml2/base/EnumSelection.h"
+#include "neml2/tensors/Scalar.h"
+#include <string>
 
 namespace neml2
 {
@@ -34,16 +37,26 @@ StrainEnergyDensity::expected_options()
   options.set_input("strain") = VariableName(STATE, "internal", "Ee");
   options.set("strain").doc() = "Elastic strain";
 
-  options.set_output("strain_energy_density") = VariableName(STATE, "psie");
-  options.set("strain_energy_density").doc() = "Strain energy density";
+  options.set_output("strain_energy_density_active") = VariableName(STATE, "psie_active");
+  options.set("strain_energy_density_active").doc() = "Active part of the strain energy density";
 
+  options.set_output("strain_energy_density_inactive") = VariableName(STATE, "psie_inactive");
+  options.set("strain_energy_density_inactive").doc() =
+      "Inactive part of the strain energy density";
+
+  EnumSelection type_selection({"NONE", "SPECTRAL", "VOLDEV"}, "NONE");
+  options.set<EnumSelection>("decomposition") = type_selection;
+  options.set("decomposition").doc() =
+      "Strain energy density decomposition types, options are: " + type_selection.candidates_str();
   return options;
 }
 
 StrainEnergyDensity::StrainEnergyDensity(const OptionSet & options)
   : Model(options),
     _strain(declare_input_variable<SR2>("strain")),
-    _psie(declare_output_variable<Scalar>("strain_energy_density"))
+    _psie_active(declare_output_variable<Scalar>("strain_energy_density_active")),
+    _psie_inactive(declare_output_variable<Scalar>("strain_energy_density_inactive")),
+    _decomposition(options.get<EnumSelection>("decomposition").as<DecompositionType>())
 {
 }
 } // namespace neml2

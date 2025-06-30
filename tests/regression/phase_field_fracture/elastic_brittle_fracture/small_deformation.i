@@ -1,3 +1,6 @@
+[Settings]
+  additional_libraries = '/Users/knasir/projects/neml2_local/neml2/build/dev/src/neml2/libneml2_user_tensor_Debug.dylib'
+[]
 ## Applying KKT conditions with the help of Fisher-Burmeister complementary condition
 
 [Drivers]
@@ -76,14 +79,23 @@
   [sed0]
     type = LinearIsotropicStrainEnergyDensity
     strain = 'forces/E'
-    strain_energy_density = 'state/psie0'
+    strain_energy_density_active = 'state/psie_active'
+    strain_energy_density_inactive = 'state/psie_inactive'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
     coefficients = '25.84e3 0.18'
+    # decomposition = 'NONE'
+    decomposition = 'VOLDEV'
+  []
+  [sed1]
+    type = ScalarMultiplication
+    from_var = 'state/g state/psie_active'
+    to_var = 'state/psie_degraded'
   []
   [sed]
-    type = ScalarMultiplication
-    from_var = 'state/g state/psie0'
+    type = ScalarLinearCombination
+    from_var = 'state/psie_degraded state/psie_inactive'
     to_var = 'state/psie'
+    coefficients = '1 1'
   []
   # crack geometric function: alpha
   [cracked]
@@ -100,7 +112,7 @@
   []
   [energy] # this guy maps from (strain, d) -> energy
     type = ComposedModel
-    models = 'degrade sed0 sed cracked sum'
+    models = 'degrade sed0 sed1 sed cracked sum'
   []
   # phase rate, follows from variation of total energy w.r.t. phase field
   [dpsidd]

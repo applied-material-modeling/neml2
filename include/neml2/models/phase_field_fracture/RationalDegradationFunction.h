@@ -24,34 +24,36 @@
 
 #pragma once
 
-#include "neml2/models/Model.h"
-#include "neml2/tensors/SR2.h"
-#include "neml2/tensors/Scalar.h"
+#include "neml2/models/phase_field_fracture/DegradationFunction.h"
 
 namespace neml2
 {
-class StrainEnergyDensity : public Model
+class Scalar;
+
+class RationalDegradationFunction : public DegradationFunction
 {
 public:
   static OptionSet expected_options();
 
-  StrainEnergyDensity(const OptionSet & options);
+  RationalDegradationFunction(const OptionSet & options);
 
 protected:
-  /// The strain variable
-  const Variable<SR2> & _strain;
+  /// The value of the Power degradation function
+  void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  /// active part of the elastic strain energy density
-  Variable<Scalar> & _psie_active;
+  /// power of the function
+  const Scalar & _p;
 
-  /// inactive part of the elastic strain energy density
-  Variable<Scalar> & _psie_inactive;
+  /// residual degradation when d = 1
+  const Real _eta;
 
-  /// Strain energy density decomposition types
-  const enum class DecompositionType : char {
-    NONE = 0,     ///< No decomposition
-    SPECTRAL = 1, ///< Spectral decomposition
-    VOLDEV = 2    ///< Volume-deviatoric decomposition
-  } _decomposition;
+  /// Material fitting parameter 1
+  const Scalar & _b1;
+
+  /// Material fitting parameter 2
+  const Scalar & _b2;
+
+  /// Material fitting parameter 3
+  const Scalar & _b3;
 };
 } // namespace neml2
