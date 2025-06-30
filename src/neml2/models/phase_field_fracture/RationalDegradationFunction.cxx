@@ -34,8 +34,10 @@ OptionSet
 RationalDegradationFunction::expected_options()
 {
   OptionSet options = DegradationFunction::expected_options();
-  options.doc() = "Power degradation function to degrade the elastic strain energy density, \\f$ g "
-                  "= \\left( 1-d \\right)^2 \\f$";
+  options.doc() =
+      "Power degradation function to degrade the elastic strain energy density, \\f$ g "
+      "= \\frac{\\left( 1-d \\right)^p}{\\left( 1-d \\right)^p + Q\\left(d \\right)} \\f$ where, "
+      "\\f$ Q\\left(d \\right) = b_{1}d\\left( 1+b_{2}d+b_{2}b_{3}d^2 \\right)\\f$";
   options.set<TensorName<Scalar>>("power");
   options.set("power").doc() = "Power of the degradation function";
 
@@ -76,7 +78,6 @@ RationalDegradationFunction::set_value(bool out, bool dout_din, bool d2out_din2)
     _g = pow((1 - _d), _p) / (pow((1 - _d), _p) + Q) * (1 - _eta) + _eta;
   }
 
-  // auto Q_prime = _b1 * (1 + _b2 * _d + _b2 * _b3 * _d * _d) * (_b2 + 2 * _b2 * _b3 * _d);
   auto Q_prime = _b1 * (1 + 2 * _b2 * _d + 3 * _b2 * _b3 * _d * _d);
   auto u = _p * (pow((1 - _d), _p) + Q) * pow((1 - _d), (_p - 1)) * (-1.0) -
            pow((1 - _d), _p) * (_p * pow((1 - _d), (_p - 1)) * (-1.0) + Q_prime);
@@ -87,9 +88,6 @@ RationalDegradationFunction::set_value(bool out, bool dout_din, bool d2out_din2)
     _g.d(_d) = (u / v) * (1 - _eta);
   }
 
-  // auto Q_double_prime = _b1 * _b2 *
-  //                       (2 * _b3 * (1 + _b2 * _d + _b2 * _b3 * _d * _d) +
-  //                        _b2 * (1 + 2 * _b3 * _d) * (1 + 2 * _b3 * _d));
   auto Q_double_prime = _b1 * (2 * _b2 + 6 * _b2 * _b3 * _d);
   auto u_prime =
       _p * ((_p * pow((1 - _d), (_p - 1)) * (-1.0) + Q_prime) * pow((1 - _d), (_p - 1)) * (-1.0) +

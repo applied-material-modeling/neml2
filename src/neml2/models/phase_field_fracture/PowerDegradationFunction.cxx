@@ -35,7 +35,7 @@ PowerDegradationFunction::expected_options()
 {
   OptionSet options = DegradationFunction::expected_options();
   options.doc() = "Power degradation function to degrade the elastic strain energy density, \\f$ g "
-                  "= \\left( 1-d \\right)^2 (1-\\eta) + \\eta \\f$";
+                  "= \\left( 1-d \\right)^p (1-\\eta) + \\eta \\f$";
   options.set<TensorName<Scalar>>("power");
   options.set("power").doc() = "Power of the degradation function";
   options.set<double>("eta") = 0;
