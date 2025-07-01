@@ -23,17 +23,22 @@
 // THE SOFTWARE.
 
 #include <catch2/catch_test_macros.hpp>
+#include <filesystem>
 
-#include "neml2/models/ArchivedModel.h"
+#include "neml2/models/BundledModel.h"
 
 using namespace neml2;
 
-TEST_CASE("ArchivedModel", "[models]")
+TEST_CASE("BundledModel", "[models]")
 {
-#ifndef NEML2_HAS_ZLIB
+#if !defined(NEML2_HAS_ZLIB)
   SKIP("NEML2 was not compiled with zlib support, cannot package models.");
+#elif !defined(NEML2_HAS_JSON)
+  SKIP("NEML2 was not compiled with json support, cannot package models.");
 #else
-  pack_model("models/ComposedModel5.i", "model");
+  std::ifstream f("models/ComposedModel5.json");
+  auto config = nlohmann::json::parse(f);
+  bundle_model("models/ComposedModel5.i", "model", "", config, "models/ComposedModel5_model.gz");
   // assert file exists
   std::filesystem::path output_path = "models/ComposedModel5_model.gz";
   REQUIRE(std::filesystem::exists(output_path));

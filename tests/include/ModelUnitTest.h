@@ -64,8 +64,6 @@ private:
   double _param_rtol;
   double _param_atol;
 
-  const bool _show_params;
-  const bool _show_input;
-  const bool _show_output;
+  const bool _show_model;
 };
 } // namespace neml2

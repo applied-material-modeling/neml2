@@ -20,12 +20,13 @@
     output_Scalar_names = 'state/C'
     output_Scalar_values = '9.25'
     check_AD_parameter_derivatives = false
+    show_model = true
   []
 []
 
 [Models]
   [model]
-    type = ArchivedModel
+    type = BundledModel
     archive = 'ComposedModel5_model.gz'
   []
 []
