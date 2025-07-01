@@ -73,7 +73,7 @@ protected:
   void link_output_variables() override;
   void set_value(bool, bool, bool) override;
 
-  std::shared_ptr<Model> _archived_model;
+  std::shared_ptr<Model> _bundled_model;
 
   nlohmann::json _config;
 };

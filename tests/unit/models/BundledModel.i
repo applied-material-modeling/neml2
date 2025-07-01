@@ -27,6 +27,6 @@
 [Models]
   [model]
     type = BundledModel
-    archive = 'ComposedModel5_model.gz'
+    bundle = 'ComposedModel5_model.gz'
   []
 []
