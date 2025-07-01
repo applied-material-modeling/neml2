@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "hit/braceexpr.h"
+#include "hit/parse.h"
 
 #include "neml2/base/HITParser.h"
 #include "neml2/base/Registry.h"
@@ -37,25 +38,15 @@
 #include "neml2/tensors/tensors.h"
 #include "neml2/misc/assertions.h"
 #include "neml2/misc/types.h"
-#include <hit/parse.h>
 
 namespace neml2
 {
 InputFile
-HITParser::parse(const std::filesystem::path & filename, const std::string & additional_input) const
+HITParser::parse_from_string(const std::string & input, const std::string & additional_input) const
 {
-  // Open and read the file
-  std::ifstream file(filename);
-  neml_assert(file.is_open(), "Unable to open file ", filename);
-
-  // Read the file into a string
-  std::stringstream buffer;
-  buffer << file.rdbuf();
-  std::string input = buffer.str();
-
   // Let HIT lex the string
-  std::unique_ptr<hit::Node> root(hit::parse(filename, input));
-  neml_assert(root.get(), "HIT failed to lex the input file: ", filename);
+  std::unique_ptr<hit::Node> root(hit::parse("neml2 input file", input));
+  neml_assert(root.get(), "HIT failed to lex the input file.");
 
   // Handle additional input (they could be coming from cli args)
   std::unique_ptr<hit::Node> cli_root(hit::parse("cliargs", additional_input));

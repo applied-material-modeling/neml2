@@ -22,20 +22,32 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <catch2/catch_test_macros.hpp>
+#pragma once
 
-#include "neml2/models/PackagedModel.h"
+#include <filesystem>
+#include "neml2/models/Model.h"
 
-using namespace neml2;
-
-TEST_CASE("PackagedModel", "[models]")
+namespace neml2
 {
-#ifndef NEML2_HAS_ZLIB
-  SKIP("NEML2 was not compiled with zlib support, cannot package models.");
-#else
-  package_model("models/ComposedModel5.i", "model");
-  // assert file exists
-  std::filesystem::path output_path = "models/ComposedModel5_model.gz";
-  REQUIRE(std::filesystem::exists(output_path));
-#endif
-}
+void pack_model(const std::string & file,
+                const std::string & name,
+                std::filesystem::path output_path = std::filesystem::path(),
+                const std::string & cliargs = "");
+
+std::shared_ptr<Model> unpack_model(const std::filesystem::path & pkg,
+                                    NEML2Object * host = nullptr);
+
+class ArchivedModel : public Model
+{
+public:
+  static OptionSet expected_options();
+
+  ArchivedModel(const OptionSet & options);
+
+protected:
+  void link_output_variables() override;
+  void set_value(bool, bool, bool) override;
+
+  Model * _archived_model;
+};
+} // namespace neml2

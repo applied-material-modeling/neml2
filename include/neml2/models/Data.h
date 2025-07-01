@@ -60,10 +60,10 @@ protected:
   {
     OptionSet extra_opts;
     extra_opts.set<NEML2Object *>("host") = host();
-    if (!host()->factory())
-      throw SetupException("Internal error: Host object '" + host()->name() +
-                           "' does not have a factory set.");
-    auto data = host()->factory()->get_object<T>("Data", name, extra_opts, /*force_create=*/false);
+    if (!factory())
+      throw SetupException("Internal error: Object '" + this->name() +
+                           "' does not have a factory.");
+    auto data = factory()->get_object<T>("Data", name, extra_opts, /*force_create=*/false);
 
     if (std::find(_registered_data.begin(), _registered_data.end(), data) != _registered_data.end())
       throw SetupException("Data named '" + name + "' has already been registered.");

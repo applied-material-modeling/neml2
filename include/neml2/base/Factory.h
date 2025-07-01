@@ -42,6 +42,7 @@ class Data;
 class Model;
 class Driver;
 class WorkScheduler;
+class ArchivedModel;
 
 /**
  * @brief A convenient function to parse all options from an input file
@@ -150,6 +151,9 @@ protected:
 private:
   /// Check if the options are compatible with the object
   bool options_compatible(const std::shared_ptr<NEML2Object> & obj, const OptionSet & opts) const;
+
+  /// ArchivedModel will need to squeeze the unpacked model into the factory
+  friend class ArchivedModel;
 
   /// The input file
   InputFile _input_file;
