@@ -192,8 +192,9 @@ public:
   /// Declaration of nonlinear parameters may require manipulation of input
   friend class ParameterStore;
 
-  /// ComposedModel's set_value need to call submodel's set_value
+  /// ComposedModel::set_value and PackagedModel::set_value need to call submodel's set_value
   friend class ComposedModel;
+  friend class PackagedModel;
 
 protected:
   void diagnostic_assert_state(const VariableBase & v) const;
