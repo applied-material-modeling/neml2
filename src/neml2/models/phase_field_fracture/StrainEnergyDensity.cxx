@@ -25,7 +25,6 @@
 #include "neml2/models/phase_field_fracture/StrainEnergyDensity.h"
 #include "neml2/base/EnumSelection.h"
 #include "neml2/tensors/Scalar.h"
-#include <string>
 
 namespace neml2
 {
