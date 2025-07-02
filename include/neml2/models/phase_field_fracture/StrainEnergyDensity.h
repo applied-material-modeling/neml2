@@ -46,12 +46,5 @@ protected:
 
   /// inactive part of the elastic strain energy density
   Variable<Scalar> & _psie_inactive;
-
-  /// Strain energy density decomposition types
-  const enum class DecompositionType : char {
-    NONE = 0,     ///< No decomposition
-    SPECTRAL = 1, ///< Spectral decomposition
-    VOLDEV = 2    ///< Volume-deviatoric decomposition
-  } _decomposition;
 };
 } // namespace neml2

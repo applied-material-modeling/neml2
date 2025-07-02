@@ -29,6 +29,7 @@
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/functions/macaulay.h"
 #include "neml2/tensors/functions/where.h"
+#include "neml2/base/EnumSelection.h"
 
 namespace neml2
 {
@@ -42,12 +43,18 @@ LinearIsotropicStrainEnergyDensity::expected_options()
       "Calculates elastic strain energy density based on linear elastic isotropic response";
   options.set<bool>("define_second_derivatives") = true;
 
+  EnumSelection type_selection({"NONE", "SPECTRAL", "VOLDEV"}, "NONE");
+  options.set<EnumSelection>("decomposition") = type_selection;
+  options.set("decomposition").doc() =
+      "Strain energy density decomposition types, options are: " + type_selection.candidates_str();
+
   return options;
 }
 
 LinearIsotropicStrainEnergyDensity::LinearIsotropicStrainEnergyDensity(const OptionSet & options)
   : ElasticityInterface<StrainEnergyDensity, 2>(options),
-    _converter(_constant_types, _need_derivs)
+    _converter(_constant_types, _need_derivs),
+    _decomposition(options.get<EnumSelection>("decomposition").as<DecompositionType>())
 {
 }
 

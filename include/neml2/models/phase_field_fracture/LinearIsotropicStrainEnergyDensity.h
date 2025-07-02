@@ -43,5 +43,11 @@ protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
   const IsotropicElasticityConverter _converter;
+
+  const enum class DecompositionType : char {
+    NONE = 0,     ///< No decomposition
+    SPECTRAL = 1, ///< Spectral decomposition
+    VOLDEV = 2    ///< Volume-deviatoric decomposition
+  } _decomposition;
 };
 } // namespace neml2
