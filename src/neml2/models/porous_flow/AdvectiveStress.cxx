@@ -49,7 +49,7 @@ AdvectiveStress::expected_options()
 
   options.set_parameter<TensorName<Scalar>>("jt") = TensorName<Scalar>("1.0");
   options.set("jt").doc() =
-      "The Jacobian of the deformation gradient associated with the thermal expansion";
+      "The Jacobian of the deformation gradient associated with the thermal and volume expansion";
 
   options.set_input("deformation_gradient") = VariableName(FORCES, "F");
   options.set("deformation_gradient").doc() = "The deformation gradient";
