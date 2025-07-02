@@ -27,7 +27,7 @@ This module also offers definitions of the strain energy density to facilitate t
 
 ## Example
 
-In this section, we'll describe how everything discussed above fits together to compose a bigger model that can be used to simulate fracture evolution at material points. Consider the following governing equation for crack propagation 
+In this section, we'll describe how everything discussed above fits together to compose a bigger model that can be used to simulate fracture evolution at material points. Consider the following governing equation for crack propagation
 
 \f{align}
  f & = \eta \dot{\phi} + \frac{\partial}{\partial \phi} \left( \alpha \frac{G_c}{c_0 l} + g(\phi) \psi_\mathrm{active} \right) \ge 0, \quad \dot{\phi} \ge 0, \quad f \dot{\phi} = 0,
@@ -43,164 +43,164 @@ The complementarity condition can be implicitly solved for the phase field, \f$ 
 
 ```
 [Drivers]
- [driver]
- type = TransientDriver
- model = 'model'
- prescribed_time = 'times'
- force_SR2_names = 'forces/E'
- force_SR2_values = 'strains'
- predictor = LINEAR_EXTRAPOLATION
- save_as = 'fb_pff_result.pt'
- []
+  [driver]
+    type = TransientDriver
+    model = 'model'
+    prescribed_time = 'times'
+    force_SR2_names = 'forces/E'
+    force_SR2_values = 'strains'
+    predictor = LINEAR_EXTRAPOLATION
+    save_as = 'fb_pff_result.pt'
+  []
 []
 
 [Solvers]
- [newton]
- type = Newton
- rel_tol = 1e-08
- abs_tol = 1e-10
- max_its = 50
- []
+  [newton]
+    type = Newton
+    rel_tol = 1e-08
+    abs_tol = 1e-10
+    max_its = 50
+  []
 []
 
 [Tensors]
- [times]
- type = LinspaceScalar
- start = 0
- end = 3
- nstep = 1000
- []
- [exx]
- type = FullScalar
- value = 0.016
- []
- [eyy]
- type = FullScalar
- value = -0.008
- []
- [ezz]
- type = FullScalar
- value = -0.008
- []
- [max_strain]
- type = FillSR2
- values = 'exx eyy ezz'
- []
- [strains]
- type = LinspaceSR2
- start = 0
- end = max_strain
- nstep = 1000
- []
- [p]
- type = Scalar
- values = 2
- []
- [GcbylbyCo]
- type = Scalar
- values = 0.0152 # Gc/l/Co with Gc = 95 N/m, l = 3.125 mm, Co = 2
- []
+  [times]
+    type = LinspaceScalar
+    start = 0
+    end = 3
+    nstep = 1000
+  []
+  [exx]
+    type = FullScalar
+    value = 0.016
+  []
+  [eyy]
+    type = FullScalar
+    value = -0.008
+  []
+  [ezz]
+    type = FullScalar
+    value = -0.008
+  []
+  [max_strain]
+    type = FillSR2
+    values = 'exx eyy ezz'
+  []
+  [strains]
+    type = LinspaceSR2
+    start = 0
+    end = max_strain
+    nstep = 1000
+  []
+  [p]
+    type = Scalar
+    values = 2
+  []
+  [GcbylbyCo]
+    type = Scalar
+    values = 0.0152 # Gc/l/Co with Gc = 95 N/m, l = 3.125 mm, Co = 2
+  []
 []
 
 [Models]
- # strain energy density: g * psie0
- [degrade]
- type = PowerDegradationFunction
- phase = 'state/d'
- degradation = 'state/g'
- power = 'p'
- []
- [sed0]
- type = LinearIsotropicStrainEnergyDensity
- strain = 'forces/E'
- strain_energy_density_active = 'state/psie_active'
- strain_energy_density_inactive = 'state/psie_inactive'
- coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
- coefficients = '25.84e3 0.18'
- # decomposition = 'NONE'
- decomposition = 'VOLDEV'
- []
- [sed1]
- type = ScalarMultiplication
- from_var = 'state/g state/psie_active'
- to_var = 'state/psie_degraded'
- []
- [sed]
- type = ScalarLinearCombination
- from_var = 'state/psie_degraded state/psie_inactive'
- to_var = 'state/psie'
- coefficients = '1 1'
- []
- # crack geometric function: alpha
- [cracked]
- type = CrackGeometricFunctionAT2
- phase = 'state/d'
- crack = 'state/alpha'
- []
- # total energy
- [sum]
- type = ScalarLinearCombination
- from_var = 'state/alpha state/psie'
- to_var = 'state/psi'
- coefficients = 'GcbylbyCo 1'
- []
- [energy] # this guy maps from (strain, d) -> energy
- type = ComposedModel
- models = 'degrade sed0 sed1 sed cracked sum'
- []
- # phase rate, follows from the variation of total energy w.r.t. phase field
- [dpsidd]
- type = Normality
- model = 'energy'
- function = 'state/psi'
- from = 'state/d'
- to = 'state/dpsi_dd'
- []
- # obtain d_rate
- [drate]
- type = ScalarVariableRate
- variable = 'state/d'
- rate = 'state/d_rate'
- []
- # define functional
- [functional]
- type = ScalarLinearCombination
- from_var = 'state/dpsi_dd state/d_rate'
- to_var = 'state/F'
- coefficients = '1 1'
- []
- # Fischer Burmeister Complementary Condition
- [Fisch_Burm]
- type = FischerBurmeister
- first_var = 'state/F'
- second_var = 'state/d_rate'
- fischer_burmeister = 'residual/d'
+  # strain energy density: g * psie0
+  [degrade]
+    type = PowerDegradationFunction
+    phase = 'state/d'
+    degradation = 'state/g'
+    power = 'p'
+  []
+  [sed0]
+    type = LinearIsotropicStrainEnergyDensity
+    strain = 'forces/E'
+    strain_energy_density_active = 'state/psie_active'
+    strain_energy_density_inactive = 'state/psie_inactive'
+    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
+    coefficients = '25.84e3 0.18'
+    # decomposition = 'NONE'
+    decomposition = 'VOLDEV'
+  []
+  [sed1]
+    type = ScalarMultiplication
+    from_var = 'state/g state/psie_active'
+    to_var = 'state/psie_degraded'
+  []
+  [sed]
+    type = ScalarLinearCombination
+    from_var = 'state/psie_degraded state/psie_inactive'
+    to_var = 'state/psie'
+    coefficients = '1 1'
+  []
+  # crack geometric function: alpha
+  [cracked]
+    type = CrackGeometricFunctionAT2
+    phase = 'state/d'
+    crack = 'state/alpha'
+  []
+  # total energy
+  [sum]
+    type = ScalarLinearCombination
+    from_var = 'state/alpha state/psie'
+    to_var = 'state/psi'
+    coefficients = 'GcbylbyCo 1'
+  []
+  [energy] # this guy maps from (strain, d) -> energy
+    type = ComposedModel
+    models = 'degrade sed0 sed1 sed cracked sum'
+  []
+  # phase rate, follows from the variation of total energy w.r.t. phase field
+  [dpsidd]
+    type = Normality
+    model = 'energy'
+    function = 'state/psi'
+    from = 'state/d'
+    to = 'state/dpsi_dd'
+  []
+  # obtain d_rate
+  [drate]
+    type = ScalarVariableRate
+    variable = 'state/d'
+    rate = 'state/d_rate'
+  []
+  # define functional
+  [functional]
+    type = ScalarLinearCombination
+    from_var = 'state/dpsi_dd state/d_rate'
+    to_var = 'state/F'
+    coefficients = '1 1'
+  []
+  # Fischer Burmeister Complementary Condition
+  [Fisch_Burm]
+    type = FischerBurmeister
+    first_var = 'state/F'
+    second_var = 'state/d_rate'
+    fischer_burmeister = 'residual/d'
 
- []
- # system of equations
- [eq]
- type = ComposedModel
- models = 'Fisch_Burm functional drate dpsidd'
- []
- # solve for d
- [solve_d]
- type = ImplicitUpdate
- implicit_model = 'eq'
- solver = 'newton'
- []
- # After the solve take the derivative of the total energy w.r.t. strain to get stress
- [stress]
- type = Normality
- model = 'energy'
- function = 'state/psi'
- from = 'forces/E'
- to = 'state/S'
- []
- [model]
- type = ComposedModel
- models = 'solve_d stress'
- additional_outputs = 'state/d'
- []
+  []
+  # system of equations
+  [eq]
+    type = ComposedModel
+    models = 'Fisch_Burm functional drate dpsidd'
+  []
+  # solve for d
+  [solve_d]
+    type = ImplicitUpdate
+    implicit_model = 'eq'
+    solver = 'newton'
+  []
+  # After the solve take the derivative of the total energy w.r.t. strain to get stress
+  [stress]
+    type = Normality
+    model = 'energy'
+    function = 'state/psi'
+    from = 'forces/E'
+    to = 'state/S'
+  []
+  [model]
+    type = ComposedModel
+    models = 'solve_d stress'
+    additional_outputs = 'state/d'
+  []
 []
 ```
 
