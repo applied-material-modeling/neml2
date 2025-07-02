@@ -26,10 +26,13 @@
 
 #include "neml2/models/solid_mechanics/elasticity/ElasticityConverter.h"
 #include "neml2/base/MultiEnumSelection.h"
+#include "neml2/base/OptionSet.h"
+#include "neml2/base/TensorName.h"
 #include "neml2/tensors/Scalar.h"
 
 namespace neml2
 {
+
 /**
  * @brief Interface for objects defining elasticity tensors in terms of other parameters
  *
