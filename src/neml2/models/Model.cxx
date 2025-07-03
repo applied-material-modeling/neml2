@@ -395,6 +395,7 @@ Model::forward_maybe_jit(bool out, bool dout, bool d2out)
 {
   if (!is_jit_enabled() || jit::tracer::isTracing())
   {
+    zero_output();
     forward(out, dout, d2out);
     return;
   }
@@ -416,6 +417,7 @@ Model::forward_maybe_jit(bool out, bool dout, bool d2out)
   }
   else
   {
+    zero_output();
     // All other models in the world should wait for this model to finish tracing
     // This is not our fault, torch jit tracing is not thread-safe
     static std::mutex trace_mutex;

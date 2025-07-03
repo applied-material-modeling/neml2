@@ -75,16 +75,17 @@ HermiteSmoothStep::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (out)
   {
-
-    _y = 3 * x * x - 2 * x * x * x;
-    if (_comp_cond)
+    if (!_comp_cond)
+      _y = 3 * x * x - 2 * x * x * x;
+    else
       _y = 1 - (3 * x * x - 2 * x * x * x);
   }
 
   if (dout_din)
   {
-    _y.d(_x) = 6 * x * (1 - x) / (_x1 - _x0);
-    if (_comp_cond)
+    if (!_comp_cond)
+      _y.d(_x) = 6 * x * (1 - x) / (_x1 - _x0);
+    else
       _y.d(_x) = -(6 * x * (1 - x) / (_x1 - _x0));
   }
 }

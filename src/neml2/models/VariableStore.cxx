@@ -63,30 +63,36 @@ VariableStore::setup_layout()
 
 template <typename T>
 const Variable<T> &
-VariableStore::declare_input_variable(const char * name, TensorShapeRef list_shape)
+VariableStore::declare_input_variable(const char * name,
+                                      TensorShapeRef list_shape,
+                                      bool allow_duplicate)
 {
   if (_object->input_options().contains(name))
-    return declare_input_variable<T>(_object->input_options().get<VariableName>(name), list_shape);
+    return declare_input_variable<T>(
+        _object->input_options().get<VariableName>(name), list_shape, allow_duplicate);
 
-  return declare_input_variable<T>(VariableName(name), list_shape);
+  return declare_input_variable<T>(VariableName(name), list_shape, allow_duplicate);
 }
 
 template <typename T>
 const Variable<T> &
-VariableStore::declare_input_variable(const VariableName & name, TensorShapeRef list_shape)
+VariableStore::declare_input_variable(const VariableName & name,
+                                      TensorShapeRef list_shape,
+                                      bool allow_duplicate)
 {
   const auto list_sz = utils::storage_size(list_shape);
   const auto base_sz = T::const_base_storage;
   const auto sz = list_sz * base_sz;
 
-  _input_axis.add_variable(name, sz);
-  return *create_variable<T>(_input_variables, name, list_shape);
+  if (!allow_duplicate || (allow_duplicate && !_input_axis.has_variable(name)))
+    _input_axis.add_variable(name, sz);
+  return *create_variable<T>(_input_variables, name, list_shape, allow_duplicate);
 }
 #define INSTANTIATE_DECLARE_INPUT_VARIABLE(T)                                                      \
-  template const Variable<T> & VariableStore::declare_input_variable<T>(const char *,              \
-                                                                        TensorShapeRef);           \
-  template const Variable<T> & VariableStore::declare_input_variable<T>(const VariableName &,      \
-                                                                        TensorShapeRef)
+  template const Variable<T> & VariableStore::declare_input_variable<T>(                           \
+      const char *, TensorShapeRef, bool);                                                         \
+  template const Variable<T> & VariableStore::declare_input_variable<T>(                           \
+      const VariableName &, TensorShapeRef, bool)
 FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_DECLARE_INPUT_VARIABLE);
 
 template <typename T>
@@ -150,19 +156,28 @@ template <typename T>
 Variable<T> *
 VariableStore::create_variable(VariableStorage & variables,
                                const VariableName & name,
-                               TensorShapeRef list_shape)
+                               TensorShapeRef list_shape,
+                               bool allow_duplicate)
 {
   // Make sure we don't duplicate variables
-  neml_assert(!variables.count(name),
-              "Trying to create variable '",
-              name,
-              "', but a variable with the same name already exists.");
+  if (!allow_duplicate)
+    neml_assert(!variables.count(name),
+                "Trying to create variable '",
+                name,
+                "', but a variable with the same name already exists.");
 
-  // Allocate
-  std::unique_ptr<VariableBase> var;
-  var = std::make_unique<Variable<T>>(name, _object, list_shape);
-  auto [it, success] = variables.emplace(name, std::move(var));
-  auto * var_base_ptr = it->second.get();
+  VariableBase * var_base_ptr = nullptr;
+
+  if (allow_duplicate && variables.count(name))
+    var_base_ptr = variables[name].get();
+  else
+  {
+    // Allocate
+    std::unique_ptr<VariableBase> var;
+    var = std::make_unique<Variable<T>>(name, _object, list_shape);
+    auto [it, success] = variables.emplace(name, std::move(var));
+    var_base_ptr = it->second.get();
+  }
 
   // Cast it to the concrete type
   auto var_ptr = dynamic_cast<Variable<T> *>(var_base_ptr);
@@ -174,7 +189,7 @@ VariableStore::create_variable(VariableStorage & variables,
 }
 #define INSTANTIATE_CREATE_VARIABLE(T)                                                             \
   template Variable<T> * VariableStore::create_variable<T>(                                        \
-      VariableStorage &, const VariableName &, TensorShapeRef)
+      VariableStorage &, const VariableName &, TensorShapeRef, bool)
 FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_CREATE_VARIABLE);
 
 VariableBase &

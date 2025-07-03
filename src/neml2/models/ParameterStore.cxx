@@ -232,7 +232,7 @@ resolve_tensor_name(const TensorName<T> & tn, Model * caller, const std::string 
     }
 
     // Declare the input variable
-    caller->declare_input_variable<T>(var_name);
+    caller->declare_input_variable<T>(var_name, {}, /*allow_duplicate=*/true);
 
     // Get the variable
     const auto * var = &provider->output_variable(var_name);

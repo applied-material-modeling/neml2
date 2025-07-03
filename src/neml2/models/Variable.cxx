@@ -303,7 +303,7 @@ VariableBase::apply_second_order_chain_rule(const DependencyResolver<Model, Vari
     }
 }
 
-void
+static void
 assign_or_add(Tensor & dest, const Tensor & val)
 {
   if (dest.defined())
@@ -463,6 +463,9 @@ Variable<T>::zero(const TensorOptions & options)
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     const_cast<VariableBase *>(ref())->zero(options);
   }
+
+  // Also clear derivatives
+  VariableBase::clear();
 }
 
 template <typename T>
@@ -596,7 +599,10 @@ FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_VARIABLE);
 Derivative &
 Derivative::operator=(const Tensor & val)
 {
-  *_deriv = val.base_reshape(_base_sizes);
+  if (!_deriv->defined())
+    *_deriv = val.base_reshape(_base_sizes);
+  else
+    *_deriv = *_deriv + val.base_reshape(_base_sizes);
   return *this;
 }
 }
