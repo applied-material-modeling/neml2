@@ -297,6 +297,7 @@ private:
     check_precision();
     zero_input();
     assign_input(std::forward<T>(in));
+    zero_output();
     forward_maybe_jit(out, dout, d2out);
   }
 

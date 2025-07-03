@@ -27,7 +27,6 @@
 #include "neml2/solvers/NonlinearSolver.h"
 #include "neml2/tensors/functions/linalg/lu_factor.h"
 #include "neml2/tensors/functions/linalg/lu_solve.h"
-#include "neml2/base/guards.h"
 #include "neml2/misc/assertions.h"
 
 namespace neml2
@@ -122,6 +121,7 @@ ImplicitUpdate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
   {
     SolvingNonlinearSystem solving;
     res = _solver->solve(_model, x0);
+    _last_iterations = res.iterations;
     neml_assert(res.ret == NonlinearSolver::RetCode::SUCCESS, "Nonlinear solve failed.");
   }
 

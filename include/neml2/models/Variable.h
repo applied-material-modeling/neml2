@@ -196,6 +196,9 @@ public:
   /// Clear the variable value and derivatives
   virtual void clear();
 
+  /// Clear only the derivatives
+  void clear_derivatives();
+
   /// Apply first order chain rule
   void apply_chain_rule(const DependencyResolver<Model, VariableName> &);
 

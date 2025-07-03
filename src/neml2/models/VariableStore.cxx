@@ -253,6 +253,13 @@ VariableStore::clear_output()
 }
 
 void
+VariableStore::clear_derivatives()
+{
+  for (auto && [name, var] : output_variables())
+    var->clear_derivatives();
+}
+
+void
 VariableStore::zero_input()
 {
   for (auto && [name, var] : input_variables())

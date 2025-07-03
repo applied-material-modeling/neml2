@@ -95,6 +95,7 @@ public:
   /// Release allocated tensor
   virtual void clear_input();
   virtual void clear_output();
+  virtual void clear_derivatives();
   ///@}
 
   ///@{

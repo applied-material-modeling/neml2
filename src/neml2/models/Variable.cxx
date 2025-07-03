@@ -25,9 +25,8 @@
 #include "neml2/models/Variable.h"
 #include "neml2/models/Model.h"
 #include "neml2/models/DependencyResolver.h"
-#include "neml2/models/map_types.h"
 #include "neml2/tensors/tensors.h"
-#include "neml2/tensors/assertions.h"
+#include "neml2/misc/assertions.h"
 #include "neml2/tensors/functions/bmm.h"
 #include "neml2/jit/utils.h"
 #include "neml2/jit/TraceableTensorShape.h"
@@ -277,6 +276,12 @@ void
 VariableBase::clear()
 {
   neml_assert_dbg(owning(), "Cannot clear a referencing variable '", name(), "'.");
+  clear_derivatives();
+}
+
+void
+VariableBase::clear_derivatives()
+{
   _derivs.clear();
   _sec_derivs.clear();
 }
@@ -463,9 +468,6 @@ Variable<T>::zero(const TensorOptions & options)
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     const_cast<VariableBase *>(ref())->zero(options);
   }
-
-  // Also clear derivatives
-  VariableBase::clear();
 }
 
 template <typename T>
@@ -599,10 +601,8 @@ FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_VARIABLE);
 Derivative &
 Derivative::operator=(const Tensor & val)
 {
-  if (!_deriv->defined())
-    *_deriv = val.base_reshape(_base_sizes);
-  else
-    *_deriv = *_deriv + val.base_reshape(_base_sizes);
+  neml_assert(!_deriv->defined(), "Derivative must not be defined before assignment.");
+  *_deriv = val.base_reshape(_base_sizes);
   return *this;
 }
 }
