@@ -66,6 +66,13 @@ Registry::load(const std::filesystem::path & lib)
               dlerror());
 }
 
+bool
+Registry::is_registered(const std::string & name)
+{
+  const auto & reg = get();
+  return reg._info.count(name) > 0;
+}
+
 const std::map<std::string, NEML2ObjectInfo> &
 Registry::info()
 {

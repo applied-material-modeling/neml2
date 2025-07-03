@@ -83,6 +83,9 @@ public:
   /// Load registry from a dynamic library
   static void load(const std::filesystem::path &);
 
+  /// Check if an object is registered in the registry.
+  static bool is_registered(const std::string & name);
+
   /// Get information of all registered objects.
   static const std::map<std::string, NEML2ObjectInfo> & info();
 

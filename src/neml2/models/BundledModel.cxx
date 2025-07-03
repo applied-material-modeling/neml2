@@ -182,6 +182,9 @@ BundledModel::expected_options()
       "NEML2. The path can either be relative or absolute. If a relative path is provided, it will "
       "be resolved against the current working directory.";
 
+  options.set<bool>("jit") = false;
+  options.set("jit").suppressed() = true;
+
   return options;
 }
 

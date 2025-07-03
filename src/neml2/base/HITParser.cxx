@@ -96,8 +96,16 @@ HITParser::extract_object_options(hit::Node * object, hit::Node * section) const
   // There is a special field reserved for object type
   std::string type = object->param<std::string>("type");
   // Extract the options
-  auto options = Registry::info(type).expected_options;
-  extract_options(object, options);
+  OptionSet options;
+  if (Registry::is_registered(type))
+  {
+    options = Registry::info(type).expected_options;
+    extract_options(object, options);
+  }
+  else
+    std::cerr << "Warning: Object type '" << type
+              << "' is not registered in the NEML2 registry. "
+                 "This may lead to unexpected behavior or errors.\n";
 
   // Also fill in the metadata
   options.name() = object->path();
