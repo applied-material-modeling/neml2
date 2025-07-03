@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-07-03 12:54:33</td>
+            <td class="headerValue">2025-07-03 15:27:10</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -111,8 +111,8 @@
 <span id="L49"><span class="lineNum">      49</span> <span class="tlaGNC">           4 :   options.set_buffer&lt;TensorName&lt;Scalar&gt;&gt;(&quot;upper_bound&quot;);</span></span>
 <span id="L50"><span class="lineNum">      50</span> <span class="tlaGNC">           4 :   options.set(&quot;upper_bound&quot;).doc() = &quot;Upper bound of the argument&quot;;</span></span>
 <span id="L51"><span class="lineNum">      51</span>              : </span>
-<span id="L52"><span class="lineNum">      52</span> <span class="tlaGNC">           4 :   options.set&lt;bool&gt;(&quot;complement_condition&quot;) = false;</span></span>
-<span id="L53"><span class="lineNum">      53</span> <span class="tlaGNC">           2 :   options.set(&quot;complement_condition&quot;).doc() = &quot;Whether takes 1 to subtract the function.&quot;;</span></span>
+<span id="L52"><span class="lineNum">      52</span> <span class="tlaGNC">           4 :   options.set&lt;bool&gt;(&quot;complement&quot;) = false;</span></span>
+<span id="L53"><span class="lineNum">      53</span> <span class="tlaGNC">           2 :   options.set(&quot;complement&quot;).doc() = &quot;Whether takes 1 to subtract the function.&quot;;</span></span>
 <span id="L54"><span class="lineNum">      54</span>              : </span>
 <span id="L55"><span class="lineNum">      55</span> <span class="tlaGNC">           2 :   return options;</span></span>
 <span id="L56"><span class="lineNum">      56</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
@@ -123,7 +123,7 @@
 <span id="L61"><span class="lineNum">      61</span> <span class="tlaGNC">           2 :     _y(declare_output_variable&lt;Scalar&gt;(&quot;value&quot;)),</span></span>
 <span id="L62"><span class="lineNum">      62</span> <span class="tlaGNC">           8 :     _x0(declare_buffer&lt;Scalar&gt;(&quot;lb&quot;, &quot;lower_bound&quot;)),</span></span>
 <span id="L63"><span class="lineNum">      63</span> <span class="tlaGNC">          10 :     _x1(declare_buffer&lt;Scalar&gt;(&quot;ub&quot;, &quot;upper_bound&quot;)),</span></span>
-<span id="L64"><span class="lineNum">      64</span> <span class="tlaGNC">           4 :     _comp_cond(options.get&lt;bool&gt;(&quot;complement_condition&quot;))</span></span>
+<span id="L64"><span class="lineNum">      64</span> <span class="tlaGNC">           4 :     _comp_cond(options.get&lt;bool&gt;(&quot;complement&quot;))</span></span>
 <span id="L65"><span class="lineNum">      65</span>              : {</span>
 <span id="L66"><span class="lineNum">      66</span> <span class="tlaGNC">           2 : }</span></span>
 <span id="L67"><span class="lineNum">      67</span>              : </span>
