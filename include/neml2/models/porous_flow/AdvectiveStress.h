@@ -41,8 +41,11 @@ protected:
 
   const Scalar & _coeff;
 
-  // Jacobian
-  const Variable<Scalar> & _J;
+  // Swelling and phase change Jacobian
+  const Variable<Scalar> * _Js;
+
+  // Thermal expansion Jacobian
+  const Variable<Scalar> * _Jt;
 
   // First Piola-Kirchoff Stress
   const Variable<R2> & _P;

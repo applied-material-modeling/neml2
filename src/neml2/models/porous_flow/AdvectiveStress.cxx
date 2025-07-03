@@ -25,6 +25,7 @@
 #include "neml2/models/porous_flow/AdvectiveStress.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/R2.h"
+#include "neml2/tensors/functions/pow.h"
 
 namespace neml2
 {
@@ -42,9 +43,13 @@ AdvectiveStress::expected_options()
   options.set_parameter<TensorName<Scalar>>("coefficient");
   options.set("coefficient").doc() = "Coefficient c";
 
-  options.set_input("jacobian") = VariableName(STATE, "J");
-  options.set("jacobian").doc() =
-      "The Jacobian of the deformation gradient associated with the volume change";
+  options.set_input("js");
+  options.set("js").doc() =
+      "The Jacobian of the deformation gradient associated with the swelling and phase change";
+
+  options.set_input("jt");
+  options.set("jt").doc() =
+      "The Jacobian of the deformation gradient associated with the thermal and volume expansion";
 
   options.set_input("deformation_gradient") = VariableName(FORCES, "F");
   options.set("deformation_gradient").doc() = "The deformation gradient";
@@ -61,7 +66,8 @@ AdvectiveStress::expected_options()
 AdvectiveStress::AdvectiveStress(const OptionSet & options)
   : Model(options),
     _coeff(declare_parameter<Scalar>("coeff", "coefficient")),
-    _J(declare_input_variable<Scalar>("jacobian")),
+    _Js(options.get("js").user_specified() ? &declare_input_variable<Scalar>("js") : nullptr),
+    _Jt(options.get("jt").user_specified() ? &declare_input_variable<Scalar>("jt") : nullptr),
     _P(declare_input_variable<R2>("pk1_stress")),
     _F(declare_input_variable<R2>("deformation_gradient")),
     _ps(declare_output_variable<Scalar>("advective_stress"))
@@ -71,23 +77,31 @@ AdvectiveStress::AdvectiveStress(const OptionSet & options)
 void
 AdvectiveStress::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
+  Scalar Js = _Js ? _Js->value() : Scalar::full(1.0, _P.options());
+  Scalar Jt = _Jt ? _Jt->value() : Scalar::full(1.0, _P.options());
+
   if (out)
   {
-    _ps = _coeff / 3.0 / _J * R2(_P).inner(R2(_F));
+    _ps = -_coeff / 3.0 * pow(Js, -5.0 / 3.0) * pow(Jt, -2.0 / 3.0) * R2(_P).inner(R2(_F));
   }
 
   if (dout_din)
   {
-    const auto I = R2::identity(_J.options());
+    const auto I = R2::identity(_P.options());
 
-    if (_J.is_dependent())
-      _ps.d(_J) = -_coeff / 3.0 / (_J * _J) * R2(_P).inner(R2(_F));
+    if (_Js && _Js->is_dependent())
+      _ps.d(*_Js) = 5.0 / 3.0 * _coeff / 3.0 * pow(Js, -8.0 / 3.0) * pow(Jt, -2.0 / 3.0) *
+                    R2(_P).inner(R2(_F));
+
+    if (_Jt && _Jt->is_dependent())
+      _ps.d(*_Jt) = 2.0 / 3.0 * _coeff / 3.0 * pow(Js, -5.0 / 3.0) * pow(Jt, -5.0 / 3.0) *
+                    R2(_P).inner(R2(_F));
 
     if (_P.is_dependent())
-      _ps.d(_P) = _coeff / 3.0 / _J * _F;
+      _ps.d(_P) = -_coeff / 3.0 * pow(Js, -5.0 / 3.0) * pow(Jt, -2.0 / 3.0) * _F;
 
     if (_F.is_dependent())
-      _ps.d(_F) = _coeff / 3.0 / _J * _P;
+      _ps.d(_F) = -_coeff / 3.0 * pow(Js, -5.0 / 3.0) * pow(Jt, -2.0 / 3.0) * _P;
   }
 }
 } // namespace neml2
