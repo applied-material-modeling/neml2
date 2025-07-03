@@ -1,0 +1,646 @@
+<?xml version="1.0" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="2426pt" height="2276pt" viewBox="0.00 0.00 2426.00 2276.40">
+<g id="graph0" class="graph" transform="translate(4,2272.39990234375) scale(1)" data-name="parent">
+
+<polygon fill="white" stroke="none" points="-4,4 -4,-2272.4 2422,-2272.4 2422,4 -4,4" style=""/>
+<g id="clust1" class="cluster" data-name="cluster_implicit_rate_1_input">
+
+</g>
+<g id="clust2" class="cluster" data-name="cluster_implicit_rate_1_input_state">
+
+<path fill="none" stroke="rgb(229,229,229)" stroke-dasharray="5,2" d="M862,-2134C862,-2134 1437,-2134 1437,-2134 1443,-2134 1449,-2140 1449,-2146 1449,-2146 1449,-2240.4 1449,-2240.4 1449,-2246.4 1443,-2252.4 1437,-2252.4 1437,-2252.4 862,-2252.4 862,-2252.4 856,-2252.4 850,-2246.4 850,-2240.4 850,-2240.4 850,-2146 850,-2146 850,-2140 856,-2134 862,-2134" style=""/>
+<text text-anchor="middle" x="1149.5" y="-2226.8" font-family="Arial" font-size="24.00" style="">state</text>
+</g>
+<g id="clust3" class="cluster" data-name="cluster_implicit_rate_1_input_old_state">
+
+<path fill="none" stroke="rgb(229,229,229)" stroke-dasharray="5,2" d="M1469,-2134C1469,-2134 2044,-2134 2044,-2134 2050,-2134 2056,-2140 2056,-2146 2056,-2146 2056,-2240.4 2056,-2240.4 2056,-2246.4 2050,-2252.4 2044,-2252.4 2044,-2252.4 1469,-2252.4 1469,-2252.4 1463,-2252.4 1457,-2246.4 1457,-2240.4 1457,-2240.4 1457,-2146 1457,-2146 1457,-2140 1463,-2134 1469,-2134" style=""/>
+<text text-anchor="middle" x="1756.5" y="-2226.8" font-family="Arial" font-size="24.00" style="">old_state</text>
+</g>
+<g id="clust4" class="cluster" data-name="cluster_implicit_rate_1_input_forces">
+
+<path fill="none" stroke="rgb(229,229,229)" stroke-dasharray="5,2" d="M28,-2134C28,-2134 830,-2134 830,-2134 836,-2134 842,-2140 842,-2146 842,-2146 842,-2240.4 842,-2240.4 842,-2246.4 836,-2252.4 830,-2252.4 830,-2252.4 28,-2252.4 28,-2252.4 22,-2252.4 16,-2246.4 16,-2240.4 16,-2240.4 16,-2146 16,-2146 16,-2140 22,-2134 28,-2134" style=""/>
+<text text-anchor="middle" x="429" y="-2226.8" font-family="Arial" font-size="24.00" style="">forces</text>
+</g>
+<g id="clust5" class="cluster" data-name="cluster_implicit_rate_1_input_old_forces">
+
+<path fill="none" stroke="rgb(229,229,229)" stroke-dasharray="5,2" d="M2076,-2134C2076,-2134 2200,-2134 2200,-2134 2206,-2134 2212,-2140 2212,-2146 2212,-2146 2212,-2240.4 2212,-2240.4 2212,-2246.4 2206,-2252.4 2200,-2252.4 2200,-2252.4 2076,-2252.4 2076,-2252.4 2070,-2252.4 2064,-2246.4 2064,-2240.4 2064,-2240.4 2064,-2146 2064,-2146 2064,-2140 2070,-2134 2076,-2134" style=""/>
+<text text-anchor="middle" x="2138" y="-2226.8" font-family="Arial" font-size="24.00" style="">old_forces</text>
+</g>
+<g id="clust6" class="cluster" data-name="cluster_implicit_rate_1_output">
+
+</g>
+<g id="clust7" class="cluster" data-name="cluster_implicit_rate_1_output_residual">
+
+<path fill="none" stroke="rgb(229,229,229)" stroke-dasharray="5,2" d="M1372,-16C1372,-16 1947,-16 1947,-16 1953,-16 1959,-22 1959,-28 1959,-28 1959,-122.4 1959,-122.4 1959,-128.4 1953,-134.4 1947,-134.4 1947,-134.4 1372,-134.4 1372,-134.4 1366,-134.4 1360,-128.4 1360,-122.4 1360,-122.4 1360,-28 1360,-28 1360,-22 1366,-16 1372,-16" style=""/>
+<text text-anchor="middle" x="1659.5" y="-27.2" font-family="Arial" font-size="24.00" style="">residual</text>
+</g>
+<g id="clust8" class="cluster" data-name="cluster_elastic_stretch">
+
+<polygon fill="rgb(253,253,253)" stroke="none" points="216,-580.4 216,-874 658,-874 658,-580.4 216,-580.4" style=""/>
+</g>
+<g id="clust9" class="cluster" data-name="cluster_elastic_stretch_output">
+
+<polygon fill="rgb(253,253,253)" stroke="none" points="353,-588.4 353,-708.4 607,-708.4 607,-588.4 353,-588.4" style=""/>
+</g>
+<g id="clust10" class="cluster" data-name="cluster_elastic_stretch_output_state">
+
+<path fill="rgb(253,253,253)" stroke="rgb(229,229,229)" stroke-dasharray="5,2" d="M373,-596.4C373,-596.4 587,-596.4 587,-596.4 593,-596.4 599,-602.4 599,-608.4 599,-608.4 599,-688.4 599,-688.4 599,-694.4 593,-700.4 587,-700.4 587,-700.4 373,-700.4 373,-700.4 367,-700.4 361,-694.4 361,-688.4 361,-688.4 361,-608.4 361,-608.4 361,-602.4 367,-596.4 373,-596.4" style=""/>
+<text text-anchor="middle" x="480" y="-607.6" font-family="Arial" font-size="24.00" style="">state</text>
+</g>
+<g id="clust11" class="cluster" data-name="cluster_elasticity_1">
+
+<polygon fill="rgb(253,253,253)" stroke="none" points="738,-1711.4 738,-2005 1354,-2005 1354,-1711.4 738,-1711.4" style=""/>
+</g>
+<g id="clust12" class="cluster" data-name="cluster_elasticity_1_output">
+
+<polygon fill="rgb(253,253,253)" stroke="none" points="903,-1719.4 903,-1839.4 1189,-1839.4 1189,-1719.4 903,-1719.4" style=""/>
+</g>
+<g id="clust13" class="cluster" data-name="cluster_elasticity_1_output_state">
+
+<path fill="rgb(253,253,253)" stroke="rgb(229,229,229)" stroke-dasharray="5,2" d="M923,-1727.4C923,-1727.4 1169,-1727.4 1169,-1727.4 1175,-1727.4 1181,-1733.4 1181,-1739.4 1181,-1739.4 1181,-1819.4 1181,-1819.4 1181,-1825.4 1175,-1831.4 1169,-1831.4 1169,-1831.4 923,-1831.4 923,-1831.4 917,-1831.4 911,-1825.4 911,-1819.4 911,-1819.4 911,-1739.4 911,-1739.4 911,-1733.4 917,-1727.4 923,-1727.4" style=""/>
+<text text-anchor="middle" x="1046" y="-1738.6" font-family="Arial" font-size="24.00" style="">state</text>
+</g>
+<g id="clust14" class="cluster" data-name="cluster_euler_rodrigues_1">
+
+<polygon fill="rgb(253,253,253)" stroke="none" points="330,-1711.4 330,-2005 730,-2005 730,-1711.4 330,-1711.4" style=""/>
+</g>
+<g id="clust15" class="cluster" data-name="cluster_euler_rodrigues_1_output">
+
+<polygon fill="rgb(253,253,253)" stroke="none" points="446,-1719.4 446,-1839.4 688,-1839.4 688,-1719.4 446,-1719.4" style=""/>
+</g>
+<g id="clust16" class="cluster" data-name="cluster_euler_rodrigues_1_output_state">
+
+<path fill="rgb(253,253,253)" stroke="rgb(229,229,229)" stroke-dasharray="5,2" d="M466,-1727.4C466,-1727.4 668,-1727.4 668,-1727.4 674,-1727.4 680,-1733.4 680,-1739.4 680,-1739.4 680,-1819.4 680,-1819.4 680,-1825.4 674,-1831.4 668,-1831.4 668,-1831.4 466,-1831.4 466,-1831.4 460,-1831.4 454,-1825.4 454,-1819.4 454,-1819.4 454,-1739.4 454,-1739.4 454,-1733.4 460,-1727.4 466,-1727.4" style=""/>
+<text text-anchor="middle" x="567" y="-1738.6" font-family="Arial" font-size="24.00" style="">state</text>
+</g>
+<g id="clust17" class="cluster" data-name="cluster_integrate_elastic_strain">
+
+<polygon fill="rgb(253,253,253)" stroke="none" points="679,-210.6 679,-497 1423,-497 1423,-210.6 679,-210.6" style=""/>
+</g>
+<g id="clust18" class="cluster" data-name="cluster_integrate_elastic_strain_output">
+
+<polygon fill="rgb(253,253,253)" stroke="none" points="1054,-218.6 1054,-338.6 1254,-338.6 1254,-218.6 1054,-218.6" style=""/>
+</g>
+<g id="clust19" class="cluster" data-name="cluster_integrate_elastic_strain_output_residual">
+
+<path fill="rgb(253,253,253)" stroke="rgb(229,229,229)" stroke-dasharray="5,2" d="M1074,-226.6C1074,-226.6 1234,-226.6 1234,-226.6 1240,-226.6 1246,-232.6 1246,-238.6 1246,-238.6 1246,-318.6 1246,-318.6 1246,-324.6 1240,-330.6 1234,-330.6 1234,-330.6 1074,-330.6 1074,-330.6 1068,-330.6 1062,-324.6 1062,-318.6 1062,-318.6 1062,-238.6 1062,-238.6 1062,-232.6 1068,-226.6 1074,-226.6" style=""/>
+<text text-anchor="middle" x="1154" y="-237.8" font-family="Arial" font-size="24.00" style="">residual</text>
+</g>
+<g id="clust20" class="cluster" data-name="cluster_integrate_slip_hardening">
+
+<polygon fill="rgb(253,253,253)" stroke="none" points="1600,-210.6 1600,-497 2410,-497 2410,-210.6 1600,-210.6" style=""/>
+</g>
+<g id="clust21" class="cluster" data-name="cluster_integrate_slip_hardening_output">
+
+<polygon fill="rgb(253,253,253)" stroke="none" points="1732,-218.6 1732,-338.6 2028,-338.6 2028,-218.6 1732,-218.6" style=""/>
+</g>
+<g id="clust22" class="cluster" data-name="cluster_integrate_slip_hardening_output_residual">
+
+<path fill="rgb(253,253,253)" stroke="rgb(229,229,229)" stroke-dasharray="5,2" d="M1752,-226.6C1752,-226.6 2008,-226.6 2008,-226.6 2014,-226.6 2020,-232.6 2020,-238.6 2020,-238.6 2020,-318.6 2020,-318.6 2020,-324.6 2014,-330.6 2008,-330.6 2008,-330.6 1752,-330.6 1752,-330.6 1746,-330.6 1740,-324.6 1740,-318.6 1740,-318.6 1740,-238.6 1740,-238.6 1740,-232.6 1746,-226.6 1752,-226.6" style=""/>
+<text text-anchor="middle" x="1880" y="-237.8" font-family="Arial" font-size="24.00" style="">residual</text>
+</g>
+<g id="clust23" class="cluster" data-name="cluster_plastic_deformation_rate">
+
+<polygon fill="rgb(253,253,253)" stroke="none" points="292,-950.2 292,-1251 842,-1251 842,-950.2 292,-950.2" style=""/>
+</g>
+<g id="clust24" class="cluster" data-name="cluster_plastic_deformation_rate_output">
+
+<polygon fill="rgb(253,253,253)" stroke="none" points="302,-958.2 302,-1092.6 826,-1092.6 826,-958.2 302,-958.2" style=""/>
+</g>
+<g id="clust25" class="cluster" data-name="cluster_plastic_deformation_rate_output_state">
+
+<path fill="rgb(253,253,253)" stroke="rgb(229,229,229)" stroke-dasharray="5,2" d="M322,-966.2C322,-966.2 806,-966.2 806,-966.2 812,-966.2 818,-972.2 818,-978.2 818,-978.2 818,-1072.6 818,-1072.6 818,-1078.6 812,-1084.6 806,-1084.6 806,-1084.6 322,-1084.6 322,-1084.6 316,-1084.6 310,-1078.6 310,-1072.6 310,-1072.6 310,-978.2 310,-978.2 310,-972.2 316,-966.2 322,-966.2" style=""/>
+<text text-anchor="middle" x="564" y="-977.4" font-family="Arial" font-size="24.00" style="">state</text>
+</g>
+<g id="clust26" class="cluster" data-name="cluster_resolved_shear">
+
+<polygon fill="rgb(253,253,253)" stroke="none" points="868,-1334.4 868,-1628 1224,-1628 1224,-1334.4 868,-1334.4" style=""/>
+</g>
+<g id="clust27" class="cluster" data-name="cluster_resolved_shear_output">
+
+<polygon fill="rgb(253,253,253)" stroke="none" points="900,-1342.4 900,-1462.4 1208,-1462.4 1208,-1342.4 900,-1342.4" style=""/>
+</g>
+<g id="clust28" class="cluster" data-name="cluster_resolved_shear_output_state">
+
+<path fill="rgb(253,253,253)" stroke="rgb(229,229,229)" stroke-dasharray="5,2" d="M920,-1350.4C920,-1350.4 1188,-1350.4 1188,-1350.4 1194,-1350.4 1200,-1356.4 1200,-1362.4 1200,-1362.4 1200,-1442.4 1200,-1442.4 1200,-1448.4 1194,-1454.4 1188,-1454.4 1188,-1454.4 920,-1454.4 920,-1454.4 914,-1454.4 908,-1448.4 908,-1442.4 908,-1442.4 908,-1362.4 908,-1362.4 908,-1356.4 914,-1350.4 920,-1350.4" style=""/>
+<text text-anchor="middle" x="1054" y="-1361.6" font-family="Arial" font-size="24.00" style="">state</text>
+</g>
+<g id="clust29" class="cluster" data-name="cluster_slip_rule">
+
+<polygon fill="rgb(253,253,253)" stroke="none" points="1262,-1327.2 1262,-1628 1682,-1628 1682,-1327.2 1262,-1327.2" style=""/>
+</g>
+<g id="clust30" class="cluster" data-name="cluster_slip_rule_output">
+
+<polygon fill="rgb(253,253,253)" stroke="none" points="1311,-1335.2 1311,-1469.6 1633,-1469.6 1633,-1335.2 1311,-1335.2" style=""/>
+</g>
+<g id="clust31" class="cluster" data-name="cluster_slip_rule_output_state">
+
+<path fill="rgb(253,253,253)" stroke="rgb(229,229,229)" stroke-dasharray="5,2" d="M1331,-1343.2C1331,-1343.2 1613,-1343.2 1613,-1343.2 1619,-1343.2 1625,-1349.2 1625,-1355.2 1625,-1355.2 1625,-1449.6 1625,-1449.6 1625,-1455.6 1619,-1461.6 1613,-1461.6 1613,-1461.6 1331,-1461.6 1331,-1461.6 1325,-1461.6 1319,-1455.6 1319,-1449.6 1319,-1449.6 1319,-1355.2 1319,-1355.2 1319,-1349.2 1325,-1343.2 1331,-1343.2" style=""/>
+<text text-anchor="middle" x="1472" y="-1354.4" font-family="Arial" font-size="24.00" style="">state</text>
+</g>
+<g id="clust32" class="cluster" data-name="cluster_slip_strength">
+
+<polygon fill="rgb(253,253,253)" stroke="none" points="1362,-1704.2 1362,-2005 1890,-2005 1890,-1704.2 1362,-1704.2" style=""/>
+</g>
+<g id="clust33" class="cluster" data-name="cluster_slip_strength_output">
+
+<polygon fill="rgb(253,253,253)" stroke="none" points="1403,-1712.2 1403,-1846.6 1783,-1846.6 1783,-1712.2 1403,-1712.2" style=""/>
+</g>
+<g id="clust34" class="cluster" data-name="cluster_slip_strength_output_state">
+
+<path fill="rgb(253,253,253)" stroke="rgb(229,229,229)" stroke-dasharray="5,2" d="M1423,-1720.2C1423,-1720.2 1763,-1720.2 1763,-1720.2 1769,-1720.2 1775,-1726.2 1775,-1732.2 1775,-1732.2 1775,-1826.6 1775,-1826.6 1775,-1832.6 1769,-1838.6 1763,-1838.6 1763,-1838.6 1423,-1838.6 1423,-1838.6 1417,-1838.6 1411,-1832.6 1411,-1826.6 1411,-1826.6 1411,-1732.2 1411,-1732.2 1411,-1726.2 1417,-1720.2 1423,-1720.2" style=""/>
+<text text-anchor="middle" x="1593" y="-1731.4" font-family="Arial" font-size="24.00" style="">state</text>
+</g>
+<g id="clust35" class="cluster" data-name="cluster_sum_slip_rates">
+
+<polygon fill="rgb(253,253,253)" stroke="none" points="1452,-957.4 1452,-1251 1786,-1251 1786,-957.4 1452,-957.4" style=""/>
+</g>
+<g id="clust36" class="cluster" data-name="cluster_sum_slip_rates_output">
+
+<polygon fill="rgb(253,253,253)" stroke="none" points="1476,-965.4 1476,-1085.4 1772,-1085.4 1772,-965.4 1476,-965.4" style=""/>
+</g>
+<g id="clust37" class="cluster" data-name="cluster_sum_slip_rates_output_state">
+
+<path fill="rgb(253,253,253)" stroke="rgb(229,229,229)" stroke-dasharray="5,2" d="M1496,-973.4C1496,-973.4 1752,-973.4 1752,-973.4 1758,-973.4 1764,-979.4 1764,-985.4 1764,-985.4 1764,-1065.4 1764,-1065.4 1764,-1071.4 1758,-1077.4 1752,-1077.4 1752,-1077.4 1496,-1077.4 1496,-1077.4 1490,-1077.4 1484,-1071.4 1484,-1065.4 1484,-1065.4 1484,-985.4 1484,-985.4 1484,-979.4 1490,-973.4 1496,-973.4" style=""/>
+<text text-anchor="middle" x="1624" y="-984.6" font-family="Arial" font-size="24.00" style="">state</text>
+</g>
+<g id="clust38" class="cluster" data-name="cluster_voce_hardening">
+
+<polygon fill="rgb(253,253,253)" stroke="none" points="1308,-573.2 1308,-874 1966,-874 1966,-573.2 1308,-573.2" style=""/>
+</g>
+<g id="clust39" class="cluster" data-name="cluster_voce_hardening_output">
+
+<polygon fill="rgb(253,253,253)" stroke="none" points="1458,-581.2 1458,-715.6 1910,-715.6 1910,-581.2 1458,-581.2" style=""/>
+</g>
+<g id="clust40" class="cluster" data-name="cluster_voce_hardening_output_state">
+
+<path fill="rgb(253,253,253)" stroke="rgb(229,229,229)" stroke-dasharray="5,2" d="M1478,-589.2C1478,-589.2 1890,-589.2 1890,-589.2 1896,-589.2 1902,-595.2 1902,-601.2 1902,-601.2 1902,-695.6 1902,-695.6 1902,-701.6 1896,-707.6 1890,-707.6 1890,-707.6 1478,-707.6 1478,-707.6 1472,-707.6 1466,-701.6 1466,-695.6 1466,-695.6 1466,-601.2 1466,-601.2 1466,-595.2 1472,-589.2 1478,-589.2" style=""/>
+<text text-anchor="middle" x="1684" y="-600.4" font-family="Arial" font-size="24.00" style="">state</text>
+</g>
+<!-- implicit_rate_1_input_state/elastic_strain -->
+<g id="node1" class="node" pointer-events="visible" data-name="implicit_rate_1_input_state/elastic_strain">
+
+<polygon fill="#e5e5e5" stroke="#999999" points="1075.63,-2207.4 858.37,-2207.4 858.37,-2142.2 1075.63,-2142.2 1075.63,-2207.4" style=""/>
+<text text-anchor="middle" x="967" y="-2182" font-family="Courier New" font-size="24.00" style="">elastic_strain</text>
+<text text-anchor="middle" x="967" y="-2153.2" font-family="Courier New" font-size="24.00" style="">[SR2]</text>
+</g>
+<!-- elastic_stretch -->
+<g id="node12" class="node" pointer-events="visible" data-name="elastic_stretch">
+
+<polygon fill="rgb(229,235,249)" fill-opacity="0.207843" stroke="rgb(229,235,249)" stroke-width="2" points="650.47,-866.2 223.53,-866.2 223.53,-771.4 650.47,-771.4 650.47,-866.2" style=""/>
+<text text-anchor="middle" x="437" y="-829.6" font-family="Courier New" font-size="36.00" style="">elastic_stretch</text>
+<text text-anchor="middle" x="437" y="-786.4" font-family="Courier New" font-size="36.00" style="">[ElasticStrainRate]</text>
+</g>
+<!-- implicit_rate_1_input_state/elastic_strain&#45;&gt;elastic_stretch -->
+<g id="edge3" class="edge" data-name="implicit_rate_1_input_state/elastic_strain-&gt;elastic_stretch">
+
+<path fill="none" stroke="rgb(229,229,229)" d="M895.42,-2141.82C879.42,-2135.72 862.34,-2130 846,-2126 729.68,-2097.51 399.13,-2149.99 310,-2070 283.25,-2046 272,-1971.75 272,-1798.8 272,-1798.8 272,-1798.8 272,-1042.8 272,-979.03 316.14,-921.57 358.76,-880.95" style=""/>
+<polygon fill="rgb(229,229,229)" stroke="rgb(229,229,229)" points="363.44,-886.16 373.5,-867.52 354,-875.82 363.44,-886.16" style=""/>
+</g>
+<!-- elasticity_1 -->
+<g id="node15" class="node" pointer-events="visible" data-name="elasticity_1">
+
+<polygon fill="#003ec9" fill-opacity="0.207843" stroke="#003ec9" stroke-width="2" points="1345.79,-1997.2 746.21,-1997.2 746.21,-1902.4 1345.79,-1902.4 1345.79,-1997.2" style=""/>
+<text text-anchor="middle" x="1046" y="-1960.6" font-family="Courier New" font-size="36.00" style="">elasticity_1</text>
+<text text-anchor="middle" x="1046" y="-1917.4" font-family="Courier New" font-size="36.00" style="">[LinearIsotropicElasticity]</text>
+</g>
+<!-- implicit_rate_1_input_state/elastic_strain&#45;&gt;elasticity_1 -->
+<g id="edge6" class="edge" data-name="implicit_rate_1_input_state/elastic_strain-&gt;elasticity_1">
+
+<path fill="none" stroke="black" d="M978.32,-2141.85C989.75,-2109.57 1007.76,-2058.74 1022.33,-2017.62" style=""/>
+<polygon fill="black" stroke="black" points="1028.89,-2020.07 1028.97,-1998.88 1015.69,-2015.39 1028.89,-2020.07" style=""/>
+</g>
+<!-- integrate_elastic_strain -->
+<g id="node19" class="node" pointer-events="visible" data-name="integrate_elastic_strain">
+
+<polygon fill="rgb(229,235,249)" fill-opacity="0.207843" stroke="rgb(229,235,249)" stroke-width="2" points="1415.42,-489.2 686.58,-489.2 686.58,-394.4 1415.42,-394.4 1415.42,-489.2" style=""/>
+<text text-anchor="middle" x="1051" y="-452.6" font-family="Courier New" font-size="36.00" style="">integrate_elastic_strain</text>
+<text text-anchor="middle" x="1051" y="-409.4" font-family="Courier New" font-size="36.00" style="">[SR2BackwardEulerTimeIntegration]</text>
+</g>
+<!-- implicit_rate_1_input_state/elastic_strain&#45;&gt;integrate_elastic_strain -->
+<g id="edge13" class="edge" data-name="implicit_rate_1_input_state/elastic_strain-&gt;integrate_elastic_strain">
+
+<path fill="none" stroke="rgb(229,229,229)" d="M890.8,-2141.73C876.07,-2136.09 860.66,-2130.57 846,-2126 619.48,-2055.33 473.55,-2190.83 326,-2005 176.96,-1817.29 785.58,-1394.79 846,-1251 881.61,-1166.26 862,-1136.72 862,-1044.8 862,-1044.8 862,-1044.8 862,-665.8 862,-599.26 911.57,-542.39 959.94,-502.73" style=""/>
+<polygon fill="rgb(229,229,229)" stroke="rgb(229,229,229)" points="963.96,-508.47 975.38,-490.63 955.32,-497.46 963.96,-508.47" style=""/>
+</g>
+<!-- implicit_rate_1_input_state/internal/slip_hardening -->
+<g id="node2" class="node" pointer-events="visible" data-name="implicit_rate_1_input_state/internal/slip_hardening">
+
+<polygon fill="#e5e5e5" stroke="#999999" points="1440.75,-2207.4 1093.25,-2207.4 1093.25,-2142.2 1440.75,-2142.2 1440.75,-2207.4" style=""/>
+<text text-anchor="middle" x="1267" y="-2182" font-family="Courier New" font-size="24.00" style="">internal/slip_hardening</text>
+<text text-anchor="middle" x="1267" y="-2153.2" font-family="Courier New" font-size="24.00" style="">[Scalar]</text>
+</g>
+<!-- integrate_slip_hardening -->
+<g id="node21" class="node" pointer-events="visible" data-name="integrate_slip_hardening">
+
+<polygon fill="rgb(229,235,249)" fill-opacity="0.207843" stroke="rgb(229,235,249)" stroke-width="2" points="2401.73,-489.2 1608.27,-489.2 1608.27,-394.4 2401.73,-394.4 2401.73,-489.2" style=""/>
+<text text-anchor="middle" x="2005" y="-452.6" font-family="Courier New" font-size="36.00" style="">integrate_slip_hardening</text>
+<text text-anchor="middle" x="2005" y="-409.4" font-family="Courier New" font-size="36.00" style="">[ScalarBackwardEulerTimeIntegration]</text>
+</g>
+<!-- implicit_rate_1_input_state/internal/slip_hardening&#45;&gt;integrate_slip_hardening -->
+<g id="edge20" class="edge" data-name="implicit_rate_1_input_state/internal/slip_hardening-&gt;integrate_slip_hardening">
+
+<path fill="none" stroke="rgb(229,229,229)" d="M1381.55,-2141.75C1405.05,-2135.91 1429.72,-2130.31 1453,-2126 1698.18,-2080.56 1986,-2200.16 1986,-1950.8 1986,-1950.8 1986,-1950.8 1986,-1571.8 1986,-1404.28 2024,-1364.32 2024,-1196.8 2024,-1196.8 2024,-1196.8 2024,-665.8 2024,-613.73 2018.79,-555.07 2013.83,-510.99" style=""/>
+<polygon fill="rgb(229,229,229)" stroke="rgb(229,229,229)" points="2020.79,-510.23 2011.5,-491.19 2006.89,-511.87 2020.79,-510.23" style=""/>
+</g>
+<!-- slip_strength -->
+<g id="node30" class="node" pointer-events="visible" data-name="slip_strength">
+
+<polygon fill="#003ec9" fill-opacity="0.207843" stroke="#003ec9" stroke-width="2" points="1882.38,-1997.2 1369.62,-1997.2 1369.62,-1902.4 1882.38,-1902.4 1882.38,-1997.2" style=""/>
+<text text-anchor="middle" x="1626" y="-1960.6" font-family="Courier New" font-size="36.00" style="">slip_strength</text>
+<text text-anchor="middle" x="1626" y="-1917.4" font-family="Courier New" font-size="36.00" style="">[SingleSlipStrengthMap]</text>
+</g>
+<!-- implicit_rate_1_input_state/internal/slip_hardening&#45;&gt;slip_strength -->
+<g id="edge33" class="edge" data-name="implicit_rate_1_input_state/internal/slip_hardening-&gt;slip_strength">
+
+<path fill="none" stroke="black" d="M1318.44,-2141.85C1374.11,-2107.26 1464.09,-2051.37 1532.37,-2008.96" style=""/>
+<polygon fill="black" stroke="black" points="1535.98,-2014.96 1549.28,-1998.46 1528.6,-2003.06 1535.98,-2014.96" style=""/>
+</g>
+<!-- voce_hardening -->
+<g id="node33" class="node" pointer-events="visible" data-name="voce_hardening">
+
+<polygon fill="rgb(229,235,249)" fill-opacity="0.207843" stroke="rgb(229,235,249)" stroke-width="2" points="1958,-866.2 1316,-866.2 1316,-771.4 1958,-771.4 1958,-866.2" style=""/>
+<text text-anchor="middle" x="1637" y="-829.6" font-family="Courier New" font-size="36.00" style="">voce_hardening</text>
+<text text-anchor="middle" x="1637" y="-786.4" font-family="Courier New" font-size="36.00" style="">[VoceSingleSlipHardeningRule]</text>
+</g>
+<!-- implicit_rate_1_input_state/internal/slip_hardening&#45;&gt;voce_hardening -->
+<g id="edge37" class="edge" data-name="implicit_rate_1_input_state/internal/slip_hardening-&gt;voce_hardening">
+
+<path fill="none" stroke="rgb(229,229,229)" d="M1381.56,-2141.81C1405.06,-2135.97 1429.73,-2130.35 1453,-2126 1556.61,-2106.62 1846.54,-2141.48 1924,-2070 1963.72,-2033.35 1948,-2004.84 1948,-1950.8 1948,-1950.8 1948,-1950.8 1948,-1042.8 1948,-963.97 1881.2,-910.31 1809.51,-875.42" style=""/>
+<polygon fill="rgb(229,229,229)" stroke="rgb(229,229,229)" points="1812.69,-869.18 1791.6,-867.15 1806.82,-881.89 1812.69,-869.18" style=""/>
+</g>
+<!-- implicit_rate_1_input_old_state/elastic_strain -->
+<g id="node3" class="node" pointer-events="visible" data-name="implicit_rate_1_input_old_state/elastic_strain">
+
+<polygon fill="rgb(252,252,252)" stroke="rgb(244,244,244)" points="1682.63,-2207.4 1465.37,-2207.4 1465.37,-2142.2 1682.63,-2142.2 1682.63,-2207.4" style=""/>
+<text text-anchor="middle" x="1574" y="-2182" font-family="Courier New" font-size="24.00" style="">elastic_strain</text>
+<text text-anchor="middle" x="1574" y="-2153.2" font-family="Courier New" font-size="24.00" style="">[SR2]</text>
+</g>
+<!-- implicit_rate_1_input_old_state/elastic_strain&#45;&gt;integrate_elastic_strain -->
+<g id="edge12" class="edge" data-name="implicit_rate_1_input_old_state/elastic_strain-&gt;integrate_elastic_strain">
+
+<path fill="none" stroke="rgb(229,229,229)" d="M1645.56,-2141.82C1660.38,-2135.98 1676.04,-2130.36 1691,-2126 1825,-2086.95 1900.36,-2167.73 2000,-2070 2038.58,-2032.16 2024,-2004.84 2024,-1950.8 2024,-1950.8 2024,-1950.8 2024,-1571.8 2024,-1537.44 1990.58,-1544.69 1962,-1525.6 1818.74,-1429.92 1784.89,-1400.53 1629,-1327.2 1537.64,-1284.22 1489.23,-1319.44 1415,-1251 1188.01,-1041.71 1093.24,-664.06 1062.86,-510.49" style=""/>
+<polygon fill="rgb(229,229,229)" stroke="rgb(229,229,229)" points="1069.76,-509.32 1059.12,-490.99 1056.01,-511.95 1069.76,-509.32" style=""/>
+</g>
+<!-- implicit_rate_1_input_old_state/internal/slip_hardening -->
+<g id="node4" class="node" pointer-events="visible" data-name="implicit_rate_1_input_old_state/internal/slip_hardening">
+
+<polygon fill="rgb(252,252,252)" stroke="rgb(244,244,244)" points="2047.75,-2207.4 1700.25,-2207.4 1700.25,-2142.2 2047.75,-2142.2 2047.75,-2207.4" style=""/>
+<text text-anchor="middle" x="1874" y="-2182" font-family="Courier New" font-size="24.00" style="">internal/slip_hardening</text>
+<text text-anchor="middle" x="1874" y="-2153.2" font-family="Courier New" font-size="24.00" style="">[Scalar]</text>
+</g>
+<!-- implicit_rate_1_input_old_state/internal/slip_hardening&#45;&gt;integrate_slip_hardening -->
+<g id="edge19" class="edge" data-name="implicit_rate_1_input_old_state/internal/slip_hardening-&gt;integrate_slip_hardening">
+
+<path fill="none" stroke="rgb(229,229,229)" d="M1950.99,-2141.73C1982.55,-2124.85 2016.61,-2101.09 2038,-2070 2068.63,-2025.48 2062,-2004.84 2062,-1950.8 2062,-1950.8 2062,-1950.8 2062,-1571.8 2062,-1404.28 2100,-1364.32 2100,-1196.8 2100,-1196.8 2100,-1196.8 2100,-665.8 2100,-609.29 2073.86,-550.71 2049.01,-507.77" style=""/>
+<polygon fill="rgb(229,229,229)" stroke="rgb(229,229,229)" points="2055.08,-504.29 2038.74,-490.8 2043.1,-511.54 2055.08,-504.29" style=""/>
+</g>
+<!-- implicit_rate_1_input_forces/deformation_rate -->
+<g id="node5" class="node" pointer-events="visible" data-name="implicit_rate_1_input_forces/deformation_rate">
+
+<polygon fill="rgb(252,252,252)" stroke="rgb(244,244,244)" points="270.44,-2207.4 23.56,-2207.4 23.56,-2142.2 270.44,-2142.2 270.44,-2207.4" style=""/>
+<text text-anchor="middle" x="147" y="-2182" font-family="Courier New" font-size="24.00" style="">deformation_rate</text>
+<text text-anchor="middle" x="147" y="-2153.2" font-family="Courier New" font-size="24.00" style="">[SR2]</text>
+</g>
+<!-- implicit_rate_1_input_forces/deformation_rate&#45;&gt;elastic_stretch -->
+<g id="edge1" class="edge" data-name="implicit_rate_1_input_forces/deformation_rate-&gt;elastic_stretch">
+
+<path fill="none" stroke="rgb(229,229,229)" d="M143.95,-2141.71C140.11,-2098.41 134,-2018.86 134,-1950.8 134,-1950.8 134,-1950.8 134,-1042.8 134,-964.72 200.07,-910.94 270.5,-875.78" style=""/>
+<polygon fill="rgb(229,229,229)" stroke="rgb(229,229,229)" points="273.49,-882.11 288.57,-867.23 267.5,-869.46 273.49,-882.11" style=""/>
+</g>
+<!-- implicit_rate_1_input_forces/t -->
+<g id="node6" class="node" pointer-events="visible" data-name="implicit_rate_1_input_forces/t">
+
+<polygon fill="rgb(252,252,252)" stroke="rgb(244,244,244)" points="833.72,-2207.4 702.28,-2207.4 702.28,-2142.2 833.72,-2142.2 833.72,-2207.4" style=""/>
+<text text-anchor="middle" x="768" y="-2182" font-family="Courier New" font-size="24.00" style="">t</text>
+<text text-anchor="middle" x="768" y="-2153.2" font-family="Courier New" font-size="24.00" style="">[Scalar]</text>
+</g>
+<!-- implicit_rate_1_input_forces/t&#45;&gt;integrate_elastic_strain -->
+<g id="edge10" class="edge" data-name="implicit_rate_1_input_forces/t-&gt;integrate_elastic_strain">
+
+<path fill="none" stroke="rgb(229,229,229)" d="M724.42,-2141.7C714.5,-2135.65 703.71,-2129.98 693,-2126 530.08,-2065.5 456.97,-2156.09 306,-2070 246.91,-2036.3 210,-2018.82 210,-1950.8 210,-1950.8 210,-1950.8 210,-1194.8 210,-1028.02 196,-986.58 196,-819.8 196,-819.8 196,-819.8 196,-665.8 196,-561.25 438.4,-504.81 665.06,-474.9" style=""/>
+<polygon fill="rgb(229,229,229)" stroke="rgb(229,229,229)" points="665.79,-481.86 684.73,-472.36 664,-467.97 665.79,-481.86" style=""/>
+</g>
+<!-- implicit_rate_1_input_forces/t&#45;&gt;integrate_slip_hardening -->
+<g id="edge17" class="edge" data-name="implicit_rate_1_input_forces/t-&gt;integrate_slip_hardening">
+
+<path fill="none" stroke="rgb(229,229,229)" d="M812.95,-2141.73C823.38,-2135.6 834.74,-2129.89 846,-2126 1067.61,-2049.51 1714.59,-2155.91 1894,-2005 1913.22,-1988.83 1910,-1975.92 1910,-1950.8 1910,-1950.8 1910,-1950.8 1910,-1194.8 1910,-1024.74 1986,-989.86 1986,-819.8 1986,-819.8 1986,-819.8 1986,-665.8 1986,-613.73 1991.21,-555.07 1996.17,-510.99" style=""/>
+<polygon fill="rgb(229,229,229)" stroke="rgb(229,229,229)" points="2003.11,-511.87 1998.5,-491.19 1989.21,-510.23 2003.11,-511.87" style=""/>
+</g>
+<!-- implicit_rate_1_input_forces/vorticity -->
+<g id="node7" class="node" pointer-events="visible" data-name="implicit_rate_1_input_forces/vorticity">
+
+<polygon fill="rgb(252,252,252)" stroke="rgb(244,244,244)" points="433.62,-2207.4 288.38,-2207.4 288.38,-2142.2 433.62,-2142.2 433.62,-2207.4" style=""/>
+<text text-anchor="middle" x="361" y="-2182" font-family="Courier New" font-size="24.00" style="">vorticity</text>
+<text text-anchor="middle" x="361" y="-2153.2" font-family="Courier New" font-size="24.00" style="">[WR2]</text>
+</g>
+<!-- implicit_rate_1_input_forces/vorticity&#45;&gt;elastic_stretch -->
+<g id="edge2" class="edge" data-name="implicit_rate_1_input_forces/vorticity-&gt;elastic_stretch">
+
+<path fill="none" stroke="rgb(229,229,229)" d="M308.2,-2141.96C261.37,-2113.51 199.78,-2075.48 196,-2070 165.31,-2025.52 172,-2004.84 172,-1950.8 172,-1950.8 172,-1950.8 172,-1194.8 172,-1074.44 184.66,-1033.44 258,-938 275.8,-914.83 299.51,-894.76 323.82,-878.07" style=""/>
+<polygon fill="rgb(229,229,229)" stroke="rgb(229,229,229)" points="327.35,-884.12 340.29,-867.34 319.71,-872.39 327.35,-884.12" style=""/>
+</g>
+<!-- implicit_rate_1_input_forces/tmp/orientation -->
+<g id="node8" class="node" pointer-events="visible" data-name="implicit_rate_1_input_forces/tmp/orientation">
+
+<polygon fill="#e5e5e5" stroke="#999999" points="684.04,-2207.4 451.96,-2207.4 451.96,-2142.2 684.04,-2142.2 684.04,-2207.4" style=""/>
+<text text-anchor="middle" x="568" y="-2182" font-family="Courier New" font-size="24.00" style="">tmp/orientation</text>
+<text text-anchor="middle" x="568" y="-2153.2" font-family="Courier New" font-size="24.00" style="">[Rot]</text>
+</g>
+<!-- euler_rodrigues_1 -->
+<g id="node17" class="node" pointer-events="visible" data-name="euler_rodrigues_1">
+
+<polygon fill="#003ec9" fill-opacity="0.207843" stroke="#003ec9" stroke-width="2" points="721.76,-1997.2 338.24,-1997.2 338.24,-1902.4 721.76,-1902.4 721.76,-1997.2" style=""/>
+<text text-anchor="middle" x="530" y="-1960.6" font-family="Courier New" font-size="36.00" style="">euler_rodrigues_1</text>
+<text text-anchor="middle" x="530" y="-1917.4" font-family="Courier New" font-size="36.00" style="">[RotationMatrix]</text>
+</g>
+<!-- implicit_rate_1_input_forces/tmp/orientation&#45;&gt;euler_rodrigues_1 -->
+<g id="edge8" class="edge" data-name="implicit_rate_1_input_forces/tmp/orientation-&gt;euler_rodrigues_1">
+
+<path fill="none" stroke="black" d="M562.56,-2141.85C557.09,-2109.79 548.51,-2059.44 541.53,-2018.47" style=""/>
+<polygon fill="black" stroke="black" points="548.46,-2017.48 538.2,-1998.94 534.66,-2019.83 548.46,-2017.48" style=""/>
+</g>
+<!-- implicit_rate_1_input_old_forces/t -->
+<g id="node9" class="node" pointer-events="visible" data-name="implicit_rate_1_input_old_forces/t">
+
+<polygon fill="rgb(252,252,252)" stroke="rgb(244,244,244)" points="2203.72,-2207.4 2072.28,-2207.4 2072.28,-2142.2 2203.72,-2142.2 2203.72,-2207.4" style=""/>
+<text text-anchor="middle" x="2138" y="-2182" font-family="Courier New" font-size="24.00" style="">t</text>
+<text text-anchor="middle" x="2138" y="-2153.2" font-family="Courier New" font-size="24.00" style="">[Scalar]</text>
+</g>
+<!-- implicit_rate_1_input_old_forces/t&#45;&gt;integrate_elastic_strain -->
+<g id="edge11" class="edge" data-name="implicit_rate_1_input_old_forces/t-&gt;integrate_elastic_strain">
+
+<path fill="none" stroke="rgb(229,229,229)" d="M2129.09,-2141.96C2117.86,-2098.95 2100,-2019.72 2100,-1950.8 2100,-1950.8 2100,-1950.8 2100,-1571.8 2100,-1538.75 2256.95,-1553.81 1767,-1327.2 1634.7,-1266.01 1561.86,-1342.01 1448,-1251 1415.93,-1225.36 1169.08,-697.4 1081.61,-508.93" style=""/>
+<polygon fill="rgb(229,229,229)" stroke="rgb(229,229,229)" points="1087.98,-506.04 1073.22,-490.84 1075.28,-511.93 1087.98,-506.04" style=""/>
+</g>
+<!-- implicit_rate_1_input_old_forces/t&#45;&gt;integrate_slip_hardening -->
+<g id="edge18" class="edge" data-name="implicit_rate_1_input_old_forces/t-&gt;integrate_slip_hardening">
+
+<path fill="none" stroke="rgb(229,229,229)" d="M2138,-2142.04C2138,-2098.79 2138,-2018.94 2138,-1950.8 2138,-1950.8 2138,-1950.8 2138,-665.8 2138,-623.28 2133.44,-611.01 2114,-573.2 2101.66,-549.2 2084.22,-525.7 2066.9,-505.41" style=""/>
+<polygon fill="rgb(229,229,229)" stroke="rgb(229,229,229)" points="2072.33,-500.98 2053.83,-490.66 2061.86,-510.27 2072.33,-500.98" style=""/>
+</g>
+<!-- implicit_rate_1_output_residual/elastic_strain -->
+<g id="node10" class="node" pointer-events="visible" data-name="implicit_rate_1_output_residual/elastic_strain">
+
+<polygon fill="rgb(229,237,229)" fill-opacity="0.082353" stroke="rgb(229,237,229)" stroke-opacity="0.313725" points="1585.63,-126.2 1368.37,-126.2 1368.37,-61 1585.63,-61 1585.63,-126.2" style=""/>
+<text text-anchor="middle" x="1477" y="-100.8" font-family="Courier New" font-size="24.00" style="">elastic_strain</text>
+<text text-anchor="middle" x="1477" y="-72" font-family="Courier New" font-size="24.00" style="">[SR2]</text>
+</g>
+<!-- implicit_rate_1_output_residual/internal/slip_hardening -->
+<g id="node11" class="node" pointer-events="visible" data-name="implicit_rate_1_output_residual/internal/slip_hardening">
+
+<polygon fill="rgb(229,237,229)" fill-opacity="0.082353" stroke="rgb(229,237,229)" stroke-opacity="0.313725" points="1950.75,-126.2 1603.25,-126.2 1603.25,-61 1950.75,-61 1950.75,-126.2" style=""/>
+<text text-anchor="middle" x="1777" y="-100.8" font-family="Courier New" font-size="24.00" style="">internal/slip_hardening</text>
+<text text-anchor="middle" x="1777" y="-72" font-family="Courier New" font-size="24.00" style="">[Scalar]</text>
+</g>
+<!-- elastic_stretch_output_state/elastic_strain_rate -->
+<g id="node13" class="node" pointer-events="visible" data-name="elastic_stretch_output_state/elastic_strain_rate">
+
+<polygon fill="rgb(229,237,229)" fill-opacity="0.082353" stroke="rgb(229,237,229)" stroke-opacity="0.313725" points="590.73,-692.5 369.27,-692.5 369.27,-641.1 590.73,-641.1 590.73,-692.5" style=""/>
+<text text-anchor="middle" x="480" y="-672.2" font-family="Courier New" font-size="18.00" style="">elastic_strain_rate</text>
+<text text-anchor="middle" x="480" y="-650.6" font-family="Courier New" font-size="18.00" style="">[SR2]</text>
+</g>
+<!-- elastic_stretch&#45;&gt;elastic_stretch_output_state/elastic_strain_rate -->
+<g id="edge5" class="edge" data-name="elastic_stretch-&gt;elastic_stretch_output_state/elastic_strain_rate">
+
+<path fill="none" stroke="rgb(229,229,229)" d="M450.37,-771.16C455.66,-752.7 461.73,-731.54 466.99,-713.2" style=""/>
+<polygon fill="rgb(229,229,229)" stroke="rgb(229,229,229)" points="473.69,-715.2 472.48,-694.05 460.24,-711.34 473.69,-715.2" style=""/>
+</g>
+<!-- elastic_stretch_output_state/elastic_strain_rate&#45;&gt;integrate_elastic_strain -->
+<g id="edge14" class="edge" data-name="elastic_stretch_output_state/elastic_strain_rate-&gt;integrate_elastic_strain">
+
+<path fill="none" stroke="rgb(229,229,229)" d="M544.39,-640.65C632.83,-606.12 794.19,-543.1 911.09,-497.44" style=""/>
+<polygon fill="rgb(229,229,229)" stroke="rgb(229,229,229)" points="913.41,-504.05 929.5,-490.25 908.32,-491.01 913.41,-504.05" style=""/>
+</g>
+<!-- plastic_deformation_rate_output_state/internal/plastic_deformation_rate -->
+<g id="node14" class="node" pointer-events="visible" data-name="plastic_deformation_rate_output_state/internal/plastic_deformation_rate">
+
+<polygon fill="rgb(229,237,229)" fill-opacity="0.082353" stroke="rgb(229,237,229)" stroke-opacity="0.313725" points="809.78,-1076.4 318.22,-1076.4 318.22,-1011.2 809.78,-1011.2 809.78,-1076.4" style=""/>
+<text text-anchor="middle" x="564" y="-1051" font-family="Courier New" font-size="24.00" style="">internal/plastic_deformation_rate</text>
+<text text-anchor="middle" x="564" y="-1022.2" font-family="Courier New" font-size="24.00" style="">[SR2]</text>
+</g>
+<!-- plastic_deformation_rate_output_state/internal/plastic_deformation_rate&#45;&gt;elastic_stretch -->
+<g id="edge4" class="edge" data-name="plastic_deformation_rate_output_state/internal/plastic_deformation_rate-&gt;elastic_stretch">
+
+<path fill="none" stroke="rgb(229,229,229)" d="M545.8,-1010.85C527.17,-978.13 497.68,-926.34 474.09,-884.93" style=""/>
+<polygon fill="rgb(229,229,229)" stroke="rgb(229,229,229)" points="480.3,-881.68 464.32,-867.77 468.13,-888.61 480.3,-881.68" style=""/>
+</g>
+<!-- elasticity_1_output_state/internal/cauchy_stress -->
+<g id="node16" class="node" pointer-events="visible" data-name="elasticity_1_output_state/internal/cauchy_stress">
+
+<polygon fill="#005401" fill-opacity="0.082353" stroke="#005401" stroke-opacity="0.313725" points="1172.64,-1823.5 919.36,-1823.5 919.36,-1772.1 1172.64,-1772.1 1172.64,-1823.5" style=""/>
+<text text-anchor="middle" x="1046" y="-1803.2" font-family="Courier New" font-size="18.00" style="">internal/cauchy_stress</text>
+<text text-anchor="middle" x="1046" y="-1781.6" font-family="Courier New" font-size="18.00" style="">[SR2]</text>
+</g>
+<!-- elasticity_1&#45;&gt;elasticity_1_output_state/internal/cauchy_stress -->
+<g id="edge7" class="edge" data-name="elasticity_1-&gt;elasticity_1_output_state/internal/cauchy_stress">
+
+<path fill="none" stroke="black" d="M1046,-1902.16C1046,-1883.9 1046,-1863.01 1046,-1844.81" style=""/>
+<polygon fill="black" stroke="black" points="1053,-1845.11 1046,-1825.11 1039,-1845.11 1053,-1845.11" style=""/>
+</g>
+<!-- resolved_shear -->
+<g id="node26" class="node" pointer-events="visible" data-name="resolved_shear">
+
+<polygon fill="#003ec9" fill-opacity="0.207843" stroke="#003ec9" stroke-width="2" points="1216.05,-1620.2 875.95,-1620.2 875.95,-1525.4 1216.05,-1525.4 1216.05,-1620.2" style=""/>
+<text text-anchor="middle" x="1046" y="-1583.6" font-family="Courier New" font-size="36.00" style="">resolved_shear</text>
+<text text-anchor="middle" x="1046" y="-1540.4" font-family="Courier New" font-size="36.00" style="">[ResolvedShear]</text>
+</g>
+<!-- elasticity_1_output_state/internal/cauchy_stress&#45;&gt;resolved_shear -->
+<g id="edge28" class="edge" data-name="elasticity_1_output_state/internal/cauchy_stress-&gt;resolved_shear">
+
+<path fill="none" stroke="black" d="M1046,-1771.65C1046,-1740.44 1046,-1685.98 1046,-1642.09" style=""/>
+<polygon fill="black" stroke="black" points="1053,-1642.11 1046,-1622.11 1039,-1642.11 1053,-1642.11" style=""/>
+</g>
+<!-- euler_rodrigues_1_output_state/orientation_matrix -->
+<g id="node18" class="node" pointer-events="visible" data-name="euler_rodrigues_1_output_state/orientation_matrix">
+
+<polygon fill="#005401" fill-opacity="0.082353" stroke="#005401" stroke-opacity="0.313725" points="672.43,-1823.5 461.57,-1823.5 461.57,-1772.1 672.43,-1772.1 672.43,-1823.5" style=""/>
+<text text-anchor="middle" x="567" y="-1803.2" font-family="Courier New" font-size="18.00" style="">orientation_matrix</text>
+<text text-anchor="middle" x="567" y="-1781.6" font-family="Courier New" font-size="18.00" style="">[R2]</text>
+</g>
+<!-- euler_rodrigues_1&#45;&gt;euler_rodrigues_1_output_state/orientation_matrix -->
+<g id="edge9" class="edge" data-name="euler_rodrigues_1-&gt;euler_rodrigues_1_output_state/orientation_matrix">
+
+<path fill="none" stroke="black" d="M541.5,-1902.16C546.06,-1883.7 551.28,-1862.54 555.8,-1844.2" style=""/>
+<polygon fill="black" stroke="black" points="562.53,-1846.16 560.52,-1825.06 548.94,-1842.8 562.53,-1846.16" style=""/>
+</g>
+<!-- plastic_deformation_rate -->
+<g id="node24" class="node" pointer-events="visible" data-name="plastic_deformation_rate">
+
+<polygon fill="rgb(229,235,249)" fill-opacity="0.207843" stroke="rgb(229,235,249)" stroke-width="2" points="834.48,-1243.2 299.52,-1243.2 299.52,-1148.4 834.48,-1148.4 834.48,-1243.2" style=""/>
+<text text-anchor="middle" x="567" y="-1206.6" font-family="Courier New" font-size="36.00" style="">plastic_deformation_rate</text>
+<text text-anchor="middle" x="567" y="-1163.4" font-family="Courier New" font-size="36.00" style="">[PlasticDeformationRate]</text>
+</g>
+<!-- euler_rodrigues_1_output_state/orientation_matrix&#45;&gt;plastic_deformation_rate -->
+<g id="edge24" class="edge" data-name="euler_rodrigues_1_output_state/orientation_matrix-&gt;plastic_deformation_rate">
+
+<path fill="none" stroke="rgb(229,229,229)" d="M567,-1771.72C567,-1730.44 567,-1645.62 567,-1573.8 567,-1573.8 567,-1573.8 567,-1419.8 567,-1367.76 567,-1308.88 567,-1264.7" style=""/>
+<polygon fill="rgb(229,229,229)" stroke="rgb(229,229,229)" points="574,-1264.87 567,-1244.87 560,-1264.87 574,-1264.87" style=""/>
+</g>
+<!-- euler_rodrigues_1_output_state/orientation_matrix&#45;&gt;resolved_shear -->
+<g id="edge27" class="edge" data-name="euler_rodrigues_1_output_state/orientation_matrix-&gt;resolved_shear">
+
+<path fill="none" stroke="black" d="M621.02,-1771.65C694.57,-1737.41 828.26,-1675.17 926.11,-1629.61" style=""/>
+<polygon fill="black" stroke="black" points="928.94,-1636.02 944.12,-1621.23 923.03,-1623.33 928.94,-1636.02" style=""/>
+</g>
+<!-- integrate_elastic_strain_output_residual/elastic_strain -->
+<g id="node20" class="node" pointer-events="visible" data-name="integrate_elastic_strain_output_residual/elastic_strain">
+
+<polygon fill="rgb(229,237,229)" fill-opacity="0.082353" stroke="rgb(229,237,229)" stroke-opacity="0.313725" points="1237.72,-322.7 1070.28,-322.7 1070.28,-271.3 1237.72,-271.3 1237.72,-322.7" style=""/>
+<text text-anchor="middle" x="1154" y="-302.4" font-family="Courier New" font-size="18.00" style="">elastic_strain</text>
+<text text-anchor="middle" x="1154" y="-280.8" font-family="Courier New" font-size="18.00" style="">[SR2]</text>
+</g>
+<!-- integrate_elastic_strain&#45;&gt;integrate_elastic_strain_output_residual/elastic_strain -->
+<g id="edge15" class="edge" data-name="integrate_elastic_strain-&gt;integrate_elastic_strain_output_residual/elastic_strain">
+
+<path fill="none" stroke="rgb(229,229,229)" d="M1084.73,-394.04C1097.24,-376.69 1111.35,-357.13 1123.55,-340.21" style=""/>
+<polygon fill="rgb(229,229,229)" stroke="rgb(229,229,229)" points="1129.2,-344.35 1135.22,-324.03 1117.85,-336.16 1129.2,-344.35" style=""/>
+</g>
+<!-- integrate_elastic_strain_output_residual/elastic_strain&#45;&gt;implicit_rate_1_output_residual/elastic_strain -->
+<g id="edge16" class="edge" data-name="integrate_elastic_strain_output_residual/elastic_strain-&gt;implicit_rate_1_output_residual/elastic_strain">
+
+<path fill="none" stroke="rgb(229,229,229)" stroke-dasharray="5,2" d="M1194.26,-270.9C1247.63,-237.62 1342.63,-178.39 1407.66,-137.84" style=""/>
+<polygon fill="rgb(229,229,229)" stroke="rgb(229,229,229)" points="1411.01,-144 1424.28,-127.47 1403.6,-132.12 1411.01,-144" style=""/>
+</g>
+<!-- integrate_slip_hardening_output_residual/internal/slip_hardening -->
+<g id="node22" class="node" pointer-events="visible" data-name="integrate_slip_hardening_output_residual/internal/slip_hardening">
+
+<polygon fill="rgb(229,237,229)" fill-opacity="0.082353" stroke="rgb(229,237,229)" stroke-opacity="0.313725" points="2012.44,-322.7 1747.56,-322.7 1747.56,-271.3 2012.44,-271.3 2012.44,-322.7" style=""/>
+<text text-anchor="middle" x="1880" y="-302.4" font-family="Courier New" font-size="18.00" style="">internal/slip_hardening</text>
+<text text-anchor="middle" x="1880" y="-280.8" font-family="Courier New" font-size="18.00" style="">[Scalar]</text>
+</g>
+<!-- integrate_slip_hardening&#45;&gt;integrate_slip_hardening_output_residual/internal/slip_hardening -->
+<g id="edge22" class="edge" data-name="integrate_slip_hardening-&gt;integrate_slip_hardening_output_residual/internal/slip_hardening">
+
+<path fill="none" stroke="rgb(229,229,229)" d="M1964.07,-394.04C1948.48,-376.23 1930.84,-356.08 1915.77,-338.86" style=""/>
+<polygon fill="rgb(229,229,229)" stroke="rgb(229,229,229)" points="1921.15,-334.38 1902.71,-323.94 1910.61,-343.6 1921.15,-334.38" style=""/>
+</g>
+<!-- integrate_slip_hardening_output_residual/internal/slip_hardening&#45;&gt;implicit_rate_1_output_residual/internal/slip_hardening -->
+<g id="edge23" class="edge" data-name="integrate_slip_hardening_output_residual/internal/slip_hardening-&gt;implicit_rate_1_output_residual/internal/slip_hardening">
+
+<path fill="none" stroke="rgb(229,229,229)" stroke-dasharray="5,2" d="M1867.16,-270.9C1851.2,-239.69 1823.56,-185.64 1803.08,-145.6" style=""/>
+<polygon fill="rgb(229,229,229)" stroke="rgb(229,229,229)" points="1809.43,-142.64 1794.09,-128.02 1796.97,-149.02 1809.43,-142.64" style=""/>
+</g>
+<!-- voce_hardening_output_state/internal/slip_hardening_rate -->
+<g id="node23" class="node" pointer-events="visible" data-name="voce_hardening_output_state/internal/slip_hardening_rate">
+
+<polygon fill="rgb(229,237,229)" fill-opacity="0.082353" stroke="rgb(229,237,229)" stroke-opacity="0.313725" points="1893.77,-699.4 1474.23,-699.4 1474.23,-634.2 1893.77,-634.2 1893.77,-699.4" style=""/>
+<text text-anchor="middle" x="1684" y="-674" font-family="Courier New" font-size="24.00" style="">internal/slip_hardening_rate</text>
+<text text-anchor="middle" x="1684" y="-645.2" font-family="Courier New" font-size="24.00" style="">[Scalar]</text>
+</g>
+<!-- voce_hardening_output_state/internal/slip_hardening_rate&#45;&gt;integrate_slip_hardening -->
+<g id="edge21" class="edge" data-name="voce_hardening_output_state/internal/slip_hardening_rate-&gt;integrate_slip_hardening">
+
+<path fill="none" stroke="rgb(229,229,229)" d="M1729.99,-633.85C1779.46,-599.49 1859.2,-544.09 1920.11,-501.77" style=""/>
+<polygon fill="rgb(229,229,229)" stroke="rgb(229,229,229)" points="1923.88,-507.68 1936.31,-490.52 1915.89,-496.18 1923.88,-507.68" style=""/>
+</g>
+<!-- plastic_deformation_rate&#45;&gt;plastic_deformation_rate_output_state/internal/plastic_deformation_rate -->
+<g id="edge26" class="edge" data-name="plastic_deformation_rate-&gt;plastic_deformation_rate_output_state/internal/plastic_deformation_rate">
+
+<path fill="none" stroke="rgb(229,229,229)" d="M566.07,-1148.16C565.75,-1132.29 565.39,-1114.43 565.07,-1098.07" style=""/>
+<polygon fill="rgb(229,229,229)" stroke="rgb(229,229,229)" points="572.07,-1098.05 564.67,-1078.2 558.07,-1098.33 572.07,-1098.05" style=""/>
+</g>
+<!-- slip_rule_output_state/internal/slip_rates -->
+<g id="node25" class="node" pointer-events="visible" data-name="slip_rule_output_state/internal/slip_rates">
+
+<polygon fill="#005401" fill-opacity="0.082353" stroke="#005401" stroke-opacity="0.313725" points="1616.64,-1453.4 1327.36,-1453.4 1327.36,-1388.2 1616.64,-1388.2 1616.64,-1453.4" style=""/>
+<text text-anchor="middle" x="1472" y="-1428" font-family="Courier New" font-size="24.00" style="">internal/slip_rates</text>
+<text text-anchor="middle" x="1472" y="-1399.2" font-family="Courier New" font-size="24.00" style="">[Tensor]</text>
+</g>
+<!-- slip_rule_output_state/internal/slip_rates&#45;&gt;plastic_deformation_rate -->
+<g id="edge25" class="edge" data-name="slip_rule_output_state/internal/slip_rates-&gt;plastic_deformation_rate">
+
+<path fill="none" stroke="rgb(229,229,229)" d="M1388.39,-1387.75C1335.97,-1368.45 1266.67,-1344.36 1204,-1327.2 1091.23,-1296.32 965.44,-1269.08 855.63,-1247.59" style=""/>
+<polygon fill="rgb(229,229,229)" stroke="rgb(229,229,229)" points="857.05,-1240.74 836.09,-1243.8 854.39,-1254.48 857.05,-1240.74" style=""/>
+</g>
+<!-- sum_slip_rates -->
+<g id="node31" class="node" pointer-events="visible" data-name="sum_slip_rates">
+
+<polygon fill="#003ec9" fill-opacity="0.207843" stroke="#003ec9" stroke-width="2" points="1778.45,-1243.2 1459.55,-1243.2 1459.55,-1148.4 1778.45,-1148.4 1778.45,-1243.2" style=""/>
+<text text-anchor="middle" x="1619" y="-1206.6" font-family="Courier New" font-size="36.00" style="">sum_slip_rates</text>
+<text text-anchor="middle" x="1619" y="-1163.4" font-family="Courier New" font-size="36.00" style="">[SumSlipRates]</text>
+</g>
+<!-- slip_rule_output_state/internal/slip_rates&#45;&gt;sum_slip_rates -->
+<g id="edge35" class="edge" data-name="slip_rule_output_state/internal/slip_rates-&gt;sum_slip_rates">
+
+<path fill="none" stroke="black" d="M1493.06,-1387.85C1514.73,-1354.98 1549.08,-1302.87 1576.43,-1261.37" style=""/>
+<polygon fill="black" stroke="black" points="1582.25,-1265.27 1587.42,-1244.71 1570.56,-1257.56 1582.25,-1265.27" style=""/>
+</g>
+<!-- resolved_shear_output_state/internal/resolved_shears -->
+<g id="node27" class="node" pointer-events="visible" data-name="resolved_shear_output_state/internal/resolved_shears">
+
+<polygon fill="#005401" fill-opacity="0.082353" stroke="#005401" stroke-opacity="0.313725" points="1191.74,-1446.5 916.26,-1446.5 916.26,-1395.1 1191.74,-1395.1 1191.74,-1446.5" style=""/>
+<text text-anchor="middle" x="1054" y="-1426.2" font-family="Courier New" font-size="18.00" style="">internal/resolved_shears</text>
+<text text-anchor="middle" x="1054" y="-1404.6" font-family="Courier New" font-size="18.00" style="">[Tensor]</text>
+</g>
+<!-- resolved_shear&#45;&gt;resolved_shear_output_state/internal/resolved_shears -->
+<g id="edge29" class="edge" data-name="resolved_shear-&gt;resolved_shear_output_state/internal/resolved_shears">
+
+<path fill="none" stroke="black" d="M1048.49,-1525.16C1049.46,-1506.9 1050.58,-1486.01 1051.55,-1467.81" style=""/>
+<polygon fill="black" stroke="black" points="1058.52,-1468.45 1052.6,-1448.1 1044.54,-1467.7 1058.52,-1468.45" style=""/>
+</g>
+<!-- slip_rule -->
+<g id="node28" class="node" pointer-events="visible" data-name="slip_rule">
+
+<polygon fill="#003ec9" fill-opacity="0.207843" stroke="#003ec9" stroke-width="2" points="1674.36,-1620.2 1269.64,-1620.2 1269.64,-1525.4 1674.36,-1525.4 1674.36,-1620.2" style=""/>
+<text text-anchor="middle" x="1472" y="-1583.6" font-family="Courier New" font-size="36.00" style="">slip_rule</text>
+<text text-anchor="middle" x="1472" y="-1540.4" font-family="Courier New" font-size="36.00" style="">[PowerLawSlipRule]</text>
+</g>
+<!-- resolved_shear_output_state/internal/resolved_shears&#45;&gt;slip_rule -->
+<g id="edge30" class="edge" data-name="resolved_shear_output_state/internal/resolved_shears-&gt;slip_rule">
+
+<path fill="none" stroke="black" d="M1124.08,-1446.95C1177.83,-1466.23 1253.98,-1493.56 1321.34,-1517.73" style=""/>
+<polygon fill="black" stroke="black" points="1318.85,-1524.28 1340.04,-1524.44 1323.58,-1511.1 1318.85,-1524.28" style=""/>
+</g>
+<!-- slip_rule&#45;&gt;slip_rule_output_state/internal/slip_rates -->
+<g id="edge32" class="edge" data-name="slip_rule-&gt;slip_rule_output_state/internal/slip_rates">
+
+<path fill="none" stroke="black" d="M1472,-1525.16C1472,-1509.29 1472,-1491.43 1472,-1475.07" style=""/>
+<polygon fill="black" stroke="black" points="1479,-1475.2 1472,-1455.2 1465,-1475.2 1479,-1475.2" style=""/>
+</g>
+<!-- slip_strength_output_state/internal/slip_strengths -->
+<g id="node29" class="node" pointer-events="visible" data-name="slip_strength_output_state/internal/slip_strengths">
+
+<polygon fill="#005401" fill-opacity="0.082353" stroke="#005401" stroke-opacity="0.313725" points="1766.75,-1830.4 1419.25,-1830.4 1419.25,-1765.2 1766.75,-1765.2 1766.75,-1830.4" style=""/>
+<text text-anchor="middle" x="1593" y="-1805" font-family="Courier New" font-size="24.00" style="">internal/slip_strengths</text>
+<text text-anchor="middle" x="1593" y="-1776.2" font-family="Courier New" font-size="24.00" style="">[Tensor]</text>
+</g>
+<!-- slip_strength_output_state/internal/slip_strengths&#45;&gt;slip_rule -->
+<g id="edge31" class="edge" data-name="slip_strength_output_state/internal/slip_strengths-&gt;slip_rule">
+
+<path fill="none" stroke="black" d="M1575.66,-1764.85C1557.95,-1732.2 1529.94,-1680.57 1507.49,-1639.21" style=""/>
+<polygon fill="black" stroke="black" points="1513.73,-1636.02 1498.03,-1621.78 1501.42,-1642.7 1513.73,-1636.02" style=""/>
+</g>
+<!-- slip_strength&#45;&gt;slip_strength_output_state/internal/slip_strengths -->
+<g id="edge34" class="edge" data-name="slip_strength-&gt;slip_strength_output_state/internal/slip_strengths">
+
+<path fill="none" stroke="black" d="M1615.74,-1902.16C1612.21,-1886.11 1608.23,-1868.02 1604.6,-1851.51" style=""/>
+<polygon fill="black" stroke="black" points="1611.47,-1850.19 1600.34,-1832.16 1597.8,-1853.2 1611.47,-1850.19" style=""/>
+</g>
+<!-- sum_slip_rates_output_state/internal/sum_slip_rates -->
+<g id="node32" class="node" pointer-events="visible" data-name="sum_slip_rates_output_state/internal/sum_slip_rates">
+
+<polygon fill="#005401" fill-opacity="0.082353" stroke="#005401" stroke-opacity="0.313725" points="1756.44,-1069.5 1491.56,-1069.5 1491.56,-1018.1 1756.44,-1018.1 1756.44,-1069.5" style=""/>
+<text text-anchor="middle" x="1624" y="-1049.2" font-family="Courier New" font-size="18.00" style="">internal/sum_slip_rates</text>
+<text text-anchor="middle" x="1624" y="-1027.6" font-family="Courier New" font-size="18.00" style="">[Scalar]</text>
+</g>
+<!-- sum_slip_rates&#45;&gt;sum_slip_rates_output_state/internal/sum_slip_rates -->
+<g id="edge36" class="edge" data-name="sum_slip_rates-&gt;sum_slip_rates_output_state/internal/sum_slip_rates">
+
+<path fill="none" stroke="black" d="M1620.55,-1148.16C1621.16,-1129.9 1621.86,-1109.01 1622.47,-1090.81" style=""/>
+<polygon fill="black" stroke="black" points="1629.45,-1091.33 1623.12,-1071.11 1615.46,-1090.86 1629.45,-1091.33" style=""/>
+</g>
+<!-- sum_slip_rates_output_state/internal/sum_slip_rates&#45;&gt;voce_hardening -->
+<g id="edge38" class="edge" data-name="sum_slip_rates_output_state/internal/sum_slip_rates-&gt;voce_hardening">
+
+<path fill="none" stroke="rgb(229,229,229)" d="M1625.47,-1017.65C1627.29,-986.37 1630.47,-931.73 1633.04,-887.79" style=""/>
+<polygon fill="rgb(229,229,229)" stroke="rgb(229,229,229)" points="1640.01,-888.48 1634.18,-868.1 1626.03,-887.66 1640.01,-888.48" style=""/>
+</g>
+<!-- voce_hardening&#45;&gt;voce_hardening_output_state/internal/slip_hardening_rate -->
+<g id="edge39" class="edge" data-name="voce_hardening-&gt;voce_hardening_output_state/internal/slip_hardening_rate">
+
+<path fill="none" stroke="rgb(229,229,229)" d="M1651.61,-771.16C1656.7,-754.93 1662.44,-736.61 1667.66,-719.96" style=""/>
+<polygon fill="rgb(229,229,229)" stroke="rgb(229,229,229)" points="1674.26,-722.31 1673.56,-701.13 1660.9,-718.12 1674.26,-722.31" style=""/>
+</g>
+</g>
+</svg>
