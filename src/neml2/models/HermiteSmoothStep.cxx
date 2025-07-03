@@ -49,8 +49,8 @@ HermiteSmoothStep::expected_options()
   options.set_buffer<TensorName<Scalar>>("upper_bound");
   options.set("upper_bound").doc() = "Upper bound of the argument";
 
-  options.set<bool>("complement_condition") = false;
-  options.set("complement_condition").doc() = "Whether takes 1 to subtract the function.";
+  options.set<bool>("complement") = false;
+  options.set("complement").doc() = "Whether takes 1 to subtract the function.";
 
   return options;
 }
@@ -61,7 +61,7 @@ HermiteSmoothStep::HermiteSmoothStep(const OptionSet & options)
     _y(declare_output_variable<Scalar>("value")),
     _x0(declare_buffer<Scalar>("lb", "lower_bound")),
     _x1(declare_buffer<Scalar>("ub", "upper_bound")),
-    _comp_cond(options.get<bool>("complement_condition"))
+    _comp_cond(options.get<bool>("complement"))
 {
 }
 

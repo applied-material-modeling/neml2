@@ -443,6 +443,7 @@ Model::forward_maybe_jit(bool out, bool dout, bool d2out)
     traced_functions[forward_op_idx].emplace(new_schema, std::move(new_function));
 
     // Rerun this method -- this time using the jitted graph (without tracing)
+    zero_output();
     forward_maybe_jit(out, dout, d2out);
   }
 }

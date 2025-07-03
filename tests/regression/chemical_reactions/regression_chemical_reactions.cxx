@@ -47,7 +47,6 @@ TEST_CASE("chemical reactions")
   {
     // Change current working directory to the parent directory of the input file
     fs::current_path(test.parent_path());
-    const auto cwd = fs::current_path();
 
     auto section_name = (pwd / test).lexically_relative(search_path).string();
 
@@ -69,7 +68,7 @@ TEST_CASE("chemical reactions")
     }
 
     // Catch2 will split dynamic sections into different test cases, so we need to set the current
-    // path back to where we were. Otherwise the next test case will start from the
+    // path back to where we were. Otherwise the next test case will start from the wrong directory.
     fs::current_path(pwd);
   }
 }
