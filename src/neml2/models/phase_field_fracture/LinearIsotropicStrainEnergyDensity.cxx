@@ -23,8 +23,13 @@
 // THE SOFTWARE.
 
 #include "neml2/models/phase_field_fracture/LinearIsotropicStrainEnergyDensity.h"
+#include "neml2/misc/errors.h"
+#include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
 #include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/functions/macaulay.h"
+#include "neml2/tensors/functions/where.h"
+#include "neml2/base/EnumSelection.h"
 
 namespace neml2
 {
@@ -38,13 +43,18 @@ LinearIsotropicStrainEnergyDensity::expected_options()
       "Calculates elastic strain energy density based on linear elastic isotropic response";
   options.set<bool>("define_second_derivatives") = true;
 
+  EnumSelection type_selection({"NONE", "SPECTRAL", "VOLDEV"}, "NONE");
+  options.set<EnumSelection>("decomposition") = type_selection;
+  options.set("decomposition").doc() =
+      "Strain energy density decomposition types, options are: " + type_selection.candidates_str();
+
   return options;
 }
 
 LinearIsotropicStrainEnergyDensity::LinearIsotropicStrainEnergyDensity(const OptionSet & options)
   : ElasticityInterface<StrainEnergyDensity, 2>(options),
-    _converter(_constant_types, _need_derivs)
-
+    _converter(_constant_types, _need_derivs),
+    _decomposition(options.get<EnumSelection>("decomposition").as<DecompositionType>())
 {
 }
 
@@ -59,19 +69,64 @@ LinearIsotropicStrainEnergyDensity::set_value(bool out, bool dout_din, bool d2ou
 
   const auto s = vf * SR2(_strain).vol() + df * SR2(_strain).dev();
 
-  if (out)
-    _psie = 0.5 * SR2(s).inner(_strain);
-
-  if (dout_din)
+  if (_decomposition == DecompositionType::NONE)
   {
-    _psie.d(_strain) = s;
-  }
-  if (d2out_din2)
-  {
-    const auto I = SSR4::identity_vol(_strain.options());
-    const auto J = SSR4::identity_dev(_strain.options());
+    if (out)
+    {
+      _psie_active = 0.5 * SR2(s).inner(_strain);
+      _psie_inactive = Scalar::create(0.0, _strain.options());
+    }
+    if (dout_din)
+    {
+      _psie_active.d(_strain) = s;
+      _psie_inactive.d(_strain) = SR2::fill(0.0, s.options());
+    }
+    if (d2out_din2)
+    {
+      const auto I = SSR4::identity_vol(_strain.options());
+      const auto J = SSR4::identity_dev(_strain.options());
 
-    _psie.d(_strain, _strain) = vf * I + df * J;
+      _psie_active.d(_strain, _strain) = vf * I + df * J;
+      _psie_inactive.d(_strain, _strain) = 0.0 * I + 0.0 * J;
+    }
   }
+  else if (_decomposition == DecompositionType::VOLDEV)
+  {
+    const auto I2 = SR2::identity(_strain.options());
+    auto strain_trace = SR2(_strain).tr();
+    auto strain_trace_pos = macaulay(strain_trace);
+    auto strain_trace_neg = strain_trace - strain_trace_pos;
+    auto strain_dev = SR2(_strain).dev();
+
+    if (out)
+    {
+      auto psie_intact =
+          0.5 * K * strain_trace * strain_trace + G * SR2(strain_dev).inner(strain_dev);
+      _psie_inactive = 0.5 * K * strain_trace_neg * strain_trace_neg;
+      _psie_active = psie_intact - _psie_inactive;
+    }
+    if (dout_din)
+    {
+      auto s_intact = K * strain_trace * I2 + 2 * G * strain_dev;
+      _psie_inactive.d(_strain) = K * strain_trace_neg * I2;
+      _psie_active.d(_strain) = s_intact - K * strain_trace_neg * I2;
+    }
+    if (d2out_din2)
+    {
+      const auto I = SSR4::identity_vol(_strain.options());
+      const auto J = SSR4::identity_dev(_strain.options());
+      const auto elasticity_tensor = vf * I + df * J;
+
+      auto multiplier = where(strain_trace_neg < 0,
+                              Scalar::ones_like(strain_trace_neg),
+                              Scalar::zeros_like(strain_trace_neg));
+
+      auto dstressneg_dstrain = multiplier * (vf * I);
+      _psie_inactive.d(_strain, _strain) = dstressneg_dstrain;
+      _psie_active.d(_strain, _strain) = elasticity_tensor - dstressneg_dstrain;
+    }
+  }
+  else
+    throw NEMLException("LinearIsotropicStrainEnergyDensity: Unsupported decomposition type.");
 }
 } // namespace neml2

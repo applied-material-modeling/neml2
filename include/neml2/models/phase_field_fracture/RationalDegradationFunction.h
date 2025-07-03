@@ -22,34 +22,38 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/phase_field_fracture/StrainEnergyDensity.h"
-#include "neml2/tensors/Scalar.h"
+#pragma once
+
+#include "neml2/models/phase_field_fracture/DegradationFunction.h"
 
 namespace neml2
 {
-OptionSet
-StrainEnergyDensity::expected_options()
+class Scalar;
+
+class RationalDegradationFunction : public DegradationFunction
 {
-  OptionSet options = Model::expected_options();
+public:
+  static OptionSet expected_options();
 
-  options.set_input("strain") = VariableName(STATE, "internal", "Ee");
-  options.set("strain").doc() = "Elastic strain";
+  RationalDegradationFunction(const OptionSet & options);
 
-  options.set_output("strain_energy_density_active") = VariableName(STATE, "psie_active");
-  options.set("strain_energy_density_active").doc() = "Active part of the strain energy density";
+protected:
+  /// The value of the Power degradation function
+  void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  options.set_output("strain_energy_density_inactive") = VariableName(STATE, "psie_inactive");
-  options.set("strain_energy_density_inactive").doc() =
-      "Inactive part of the strain energy density";
+  /// power of the function
+  const Scalar & _p;
 
-  return options;
-}
+  /// residual degradation when d = 1
+  const double _eta;
 
-StrainEnergyDensity::StrainEnergyDensity(const OptionSet & options)
-  : Model(options),
-    _strain(declare_input_variable<SR2>("strain")),
-    _psie_active(declare_output_variable<Scalar>("strain_energy_density_active")),
-    _psie_inactive(declare_output_variable<Scalar>("strain_energy_density_inactive"))
-{
-}
+  /// Material fitting parameter 1
+  const Scalar & _b1;
+
+  /// Material fitting parameter 2
+  const Scalar & _b2;
+
+  /// Material fitting parameter 3
+  const Scalar & _b3;
+};
 } // namespace neml2

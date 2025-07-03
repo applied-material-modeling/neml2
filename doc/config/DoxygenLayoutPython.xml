@@ -67,6 +67,7 @@
         <tab type="user" url="../thermosetting-pyrolysis.html" title="Thermosetting Pyrolysis"/>
         <tab type="user" url="../reactive-infiltration.html" title="Reactive Infiltration"/>
       </tab>
+      <tab type="user" url="../phase-field-fracture.html" title="Phase-Field Fracture"/>
     </tab>
     <tab type="topics" title="Aditional Documentation"/>
     <tab type="usergroup" title="C++ API Reference">

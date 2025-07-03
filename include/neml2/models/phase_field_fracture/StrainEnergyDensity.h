@@ -26,6 +26,7 @@
 
 #include "neml2/models/Model.h"
 #include "neml2/tensors/SR2.h"
+#include "neml2/tensors/Scalar.h"
 
 namespace neml2
 {
@@ -40,7 +41,10 @@ protected:
   /// The strain variable
   const Variable<SR2> & _strain;
 
-  /// elastic strain energy density
-  Variable<Scalar> & _psie;
+  /// active part of the elastic strain energy density
+  Variable<Scalar> & _psie_active;
+
+  /// inactive part of the elastic strain energy density
+  Variable<Scalar> & _psie_inactive;
 };
 } // namespace neml2
