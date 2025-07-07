@@ -41,7 +41,11 @@ add_library(neml2 INTERFACE)
 
 # libneml2_misc
 neml2_add_submodule(neml2_misc SHARED misc)
-target_link_libraries(neml2_misc PUBLIC Torch::Torch)
+if (AURORA_BUILD)
+  target_link_libraries(neml2_misc PUBLIC Torch::Torch ${IPEX_LIB})
+else()
+  target_link_libraries(neml2_misc PUBLIC Torch::Torch)
+endif()
 set_target_properties(neml2_misc PROPERTIES INSTALL_RPATH_USE_LINK_PATH ON)
 
 if(NEML2_JSON)

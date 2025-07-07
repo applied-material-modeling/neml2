@@ -30,6 +30,7 @@
 #include "neml2/models/Data.h"
 #include "neml2/models/ParameterStore.h"
 #include "neml2/models/VariableStore.h"
+#include "neml2/models/Variable.h"
 #include "neml2/solvers/NonlinearSystem.h"
 #include "neml2/models/NonlinearParameter.h"
 
@@ -37,11 +38,16 @@
 // not have to include them separately. This is a convenience for the user, and is a reasonable
 // choice since these headers are light and bring in little dependency.
 #include "neml2/base/LabeledAxis.h"
-#include "neml2/models/Variable.h"
 
 namespace neml2
 {
 class Model;
+
+/// typedef giving the call signature for a model callback
+using ModelCallback =
+    std::function<void(const Model &,
+                       const std::map<VariableName, std::unique_ptr<VariableBase>> &,
+                       const std::map<VariableName, std::unique_ptr<VariableBase>> &)>;
 
 /**
  * @brief A convenient function to load an input file and get a model
@@ -147,6 +153,12 @@ public:
 
   /// Request to use AD to compute the second derivative of a variable
   void request_AD(VariableBase & y, const VariableBase & u1, const VariableBase & u2);
+
+  /// Register a callback to be called when the model is evaluated
+  void register_callback(const ModelCallback & callback);
+
+  /// Register a callback on this and all submodels
+  void register_callback_recursive(const ModelCallback & callback);
 
   /// Forward operator without jit
   void forward(bool out, bool dout, bool d2out);
@@ -291,6 +303,9 @@ protected:
   std::vector<std::shared_ptr<Model>> _registered_models;
 
 private:
+  /// Call the callbacks...
+  void call_callbacks() const;
+
   template <typename T>
   void forward_helper(T && in, bool out, bool dout, bool d2out)
   {
@@ -365,6 +380,9 @@ private:
   /// Similar to _trace_functions, but for the forward operator of the nonlinear system
   std::array<std::map<TraceSchema, std::unique_ptr<jit::GraphFunction>>, 8>
       _traced_functions_nl_sys;
+
+  /// List of callbacks
+  std::vector<ModelCallback> _callbacks;
 };
 
 std::ostream & operator<<(std::ostream & os, const Model & model);

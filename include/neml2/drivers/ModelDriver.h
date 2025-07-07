@@ -25,6 +25,7 @@
 #pragma once
 
 #include "neml2/drivers/Driver.h"
+#include "neml2/misc/types.h"
 #include "neml2/models/map_types.h"
 #include "neml2/tensors/tensors.h"
 
@@ -36,6 +37,11 @@
 namespace neml2
 {
 class Model;
+
+/// Callback to dump a ton of information on model exectuion
+void details_callback(const Model &,
+                      const std::map<VariableName, std::unique_ptr<VariableBase>> &,
+                      const std::map<VariableName, std::unique_ptr<VariableBase>> &);
 
 /**
  * @brief A general-purpose driver that does *something* with a model
@@ -55,11 +61,13 @@ public:
 
   const Model & model() const { return *_model; }
 
+  void to(Device dev);
+
 protected:
   /// The model which the driver uses to perform constitutive updates.
   const std::shared_ptr<Model> _model;
   /// The device on which to evaluate the model
-  const Device _device;
+  Device _device;
 
   /// Set to true to list all the model parameters at the beginning
   const bool _show_params;
@@ -67,6 +75,8 @@ protected:
   const bool _show_input;
   /// Set to true to show model's output axis at the beginning
   const bool _show_output;
+  /// Set to output a ton of information on the model execution
+  const bool _log_details;
 
 #ifdef NEML2_HAS_DISPATCHER
   /// The work scheduler to use
