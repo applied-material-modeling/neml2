@@ -50,8 +50,8 @@ VoceSingleSlipHardeningRule::expected_options()
 
 VoceSingleSlipHardeningRule::VoceSingleSlipHardeningRule(const OptionSet & options)
   : SingleSlipHardeningRule(options),
-    _theta_0(declare_parameter<Scalar>("initial_slope", "initial_slope")),
-    _tau_f(declare_parameter<Scalar>("saturated_hardening", "saturated_hardening"))
+    _theta_0(declare_parameter<Scalar>("initial_slope", "initial_slope", true)),
+    _tau_f(declare_parameter<Scalar>("saturated_hardening", "saturated_hardening", true))
 {
 }
 
@@ -68,6 +68,12 @@ VoceSingleSlipHardeningRule::set_value(bool out, bool dout_din, bool /*d2out_din
 
     if (_gamma_dot_sum.is_dependent())
       _tau_dot.d(_gamma_dot_sum) = _theta_0 * (1 - _tau / _tau_f);
+
+    if (const auto * const theta_0 = nl_param("initial_slope"))
+      _tau_dot.d(*theta_0) = (1 - _tau / _tau_f) * _gamma_dot_sum;
+
+    if (const auto * const tau_f = nl_param("saturated_hardening"))
+      _tau_dot.d(*tau_f) = _theta_0 * _tau / (_tau_f * _tau_f) * _gamma_dot_sum;
   }
 }
 } // namespace neml2
