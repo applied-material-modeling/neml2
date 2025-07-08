@@ -28,6 +28,8 @@
 #include "neml2/tensors/functions/pow.h"
 #include "neml2/tensors/functions/abs.h"
 #include "neml2/tensors/functions/diag_embed.h"
+#include "neml2/tensors/functions/log.h"
+#include "neml2/tensors/functions/abs.h"
 
 namespace neml2
 {
@@ -55,8 +57,8 @@ PowerLawSlipRule::expected_options()
 
 PowerLawSlipRule::PowerLawSlipRule(const OptionSet & options)
   : SlipRule(options),
-    _gamma0(declare_parameter<Scalar>("gamma0", "gamma0")),
-    _n(declare_parameter<Scalar>("n", "n"))
+    _gamma0(declare_parameter<Scalar>("gamma0", "gamma0", true)),
+    _n(declare_parameter<Scalar>("n", "n", true))
 {
 }
 
@@ -78,6 +80,12 @@ PowerLawSlipRule::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
       _g.d(_tau) = Tensor(batch_diag_embed(-_n * _gamma0 * _rss * pow(abs(_rss.value()), _n - 1.0) /
                                            pow(Scalar(_tau), _n + 1)),
                           D);
+
+    if (const auto * const gamma0 = nl_param("gamma0"))
+      _g.d(*gamma0) = pow(abs(_rss / _tau), _n - 1.0) * _rss / _tau;
+
+    if (const auto * const n = nl_param("n"))
+      _g.d(*n) = _gamma0 * log(abs(_rss / _tau)) * pow(abs(_rss / _tau), _n - 1.0) * _rss / _tau;
   }
 }
 } // namespace neml2
