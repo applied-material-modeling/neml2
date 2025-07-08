@@ -52,7 +52,7 @@ SingleSlipStrengthMap::expected_options()
 SingleSlipStrengthMap::SingleSlipStrengthMap(const OptionSet & options)
   : SlipStrengthMap(options),
     _tau_bar(declare_input_variable<Scalar>("slip_hardening")),
-    _tau_const(declare_parameter<Scalar>("constant_strength", "constant_strength"))
+    _tau_const(declare_parameter<Scalar>("constant_strength", "constant_strength", true))
 {
 }
 
@@ -63,7 +63,12 @@ SingleSlipStrengthMap::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
     _tau = (_tau_bar + _tau_const).batch_unsqueeze(-1).batch_expand(_crystal_geometry.nslip(), -1);
 
   if (dout_din)
+  {
     if (_tau_bar.is_dependent())
       _tau.d(_tau_bar) = Tensor::ones(_crystal_geometry.nslip(), _tau_bar.options());
+
+    if (const auto * const tau_const = nl_param("constant_strength"))
+      _tau.d(*tau_const) = Tensor::ones(_crystal_geometry.nslip(), _tau_const.options());
+  }
 }
 } // namespace neml2
