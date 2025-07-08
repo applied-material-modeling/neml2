@@ -82,10 +82,11 @@ PowerLawSlipRule::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
                           D);
 
     if (const auto * const gamma0 = nl_param("gamma0"))
-      _g.d(*gamma0) = pow(abs(_rss / _tau), _n - 1.0) * _rss / _tau;
+      _g.d(*gamma0) = Tensor(pow(abs(_rss / _tau), _n - 1.0) * _rss / _tau, D);
 
     if (const auto * const n = nl_param("n"))
-      _g.d(*n) = _gamma0 * log(abs(_rss / _tau)) * pow(abs(_rss / _tau), _n - 1.0) * _rss / _tau;
+      _g.d(*n) = Tensor(
+          _gamma0 * log(abs(_rss / _tau)) * pow(abs(_rss / _tau), _n - 1.0) * _rss / _tau, D);
   }
 }
 } // namespace neml2

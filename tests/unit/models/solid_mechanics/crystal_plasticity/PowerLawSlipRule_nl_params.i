@@ -64,9 +64,13 @@
 []
 
 [Models]
-  [model]
+  [model0]
     type = PowerLawSlipRule
     n = 'state/n'
     gamma0 = 'state/gamma0'
+  []
+  [model]
+    type = ComposedModel
+    models = 'model0'
   []
 []
