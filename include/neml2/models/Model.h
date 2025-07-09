@@ -192,7 +192,7 @@ public:
   /// Declaration of nonlinear parameters may require manipulation of input
   friend class ParameterStore;
 
-  /// ComposedModel's set_value need to call submodel's set_value
+  /// ComposedModel::set_value need to call submodel's set_value
   friend class ComposedModel;
 
 protected:
@@ -260,13 +260,13 @@ protected:
                            "' is trying to register itself as a sub-model. This is not allowed.");
 
     OptionSet extra_opts;
-    extra_opts.set<NEML2Object *>("_host") = host();
-    extra_opts.set<bool>("_nonlinear_system") = nonlinear;
+    extra_opts.set<NEML2Object *>("host") = host();
+    extra_opts.set<bool>("nonlinear_system") = nonlinear;
 
-    if (!host()->factory())
-      throw SetupException("Internal error: Host object '" + host()->name() +
-                           "' does not have a factory set.");
-    auto model = host()->factory()->get_object<T>("Models", model_name, extra_opts);
+    if (!factory())
+      throw SetupException("Internal error: Object '" + this->name() +
+                           "' does not have a factory.");
+    auto model = factory()->get_object<T>("Models", model_name, extra_opts);
     if (std::find(_registered_models.begin(), _registered_models.end(), model) !=
         _registered_models.end())
       throw SetupException("Model named '" + model_name + "' has already been registered.");

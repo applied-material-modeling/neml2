@@ -22,48 +22,25 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
+#include <catch2/catch_test_macros.hpp>
+#include <filesystem>
 
-#include "neml2/drivers/Driver.h"
-#include "neml2/models/Model.h"
-#include "neml2/tensors/tensors.h"
+#include "neml2/models/BundledModel.h"
 
-namespace neml2
+using namespace neml2;
+
+TEST_CASE("BundledModel", "[models]")
 {
-class ModelUnitTest : public Driver
-{
-public:
-  static OptionSet expected_options();
-
-  ModelUnitTest(const OptionSet & options);
-
-  bool run() override;
-
-private:
-  void check_all();
-  void check_value();
-  void check_dvalue();
-  void check_d2value();
-  void check_AD_parameter_derivatives();
-
-  const std::shared_ptr<Model> _model;
-  const bool _check_values;
-  const bool _check_derivs;
-  const bool _check_secderivs;
-  const bool _check_AD_param_derivs;
-
-  ValueMap _in;
-  ValueMap _out;
-
-  double _val_rtol;
-  double _val_atol;
-  double _deriv_rtol;
-  double _deriv_atol;
-  double _secderiv_rtol;
-  double _secderiv_atol;
-  double _param_rtol;
-  double _param_atol;
-
-  const bool _show_model;
-};
-} // namespace neml2
+#if !defined(NEML2_HAS_ZLIB)
+  SKIP("NEML2 was not compiled with zlib support, cannot package models.");
+#elif !defined(NEML2_HAS_JSON)
+  SKIP("NEML2 was not compiled with json support, cannot package models.");
+#else
+  std::ifstream f("models/ComposedModel5.json");
+  auto config = nlohmann::json::parse(f);
+  bundle_model("models/ComposedModel5.i", "model", "", config, "models/ComposedModel5_model.gz");
+  // assert file exists
+  std::filesystem::path output_path = "models/ComposedModel5_model.gz";
+  REQUIRE(std::filesystem::exists(output_path));
+#endif
+}

@@ -25,21 +25,19 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_all.hpp>
 
+#include "neml2/base/Factory.h"
 #include "neml2/base/Settings.h"
-#include "neml2/base/HITParser.h"
-#include "neml2/base/InputFile.h"
 
 using namespace neml2;
 
 TEST_CASE("Settings", "[Settings]")
 {
   // Parse input file
-  HITParser parser;
-  auto input = parser.parse("base/test_HITParser1.i");
+  auto factory = neml2::load_input("base/test_HITParser1.i");
 
   // After applying the global settings
-  const auto settings = *input.settings();
-  REQUIRE(settings.buffer_name_separator() == "::");
-  REQUIRE(settings.parameter_name_separator() == "::");
-  REQUIRE(!settings.require_double_precision());
+  const auto & settings = factory->settings();
+  REQUIRE(settings->buffer_name_separator() == "::");
+  REQUIRE(settings->parameter_name_separator() == "::");
+  REQUIRE(!settings->require_double_precision());
 }

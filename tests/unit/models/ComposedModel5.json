@@ -1,0 +1,35 @@
+{
+  "desc": "A composed model for testing",
+  "inputs": {
+    "forces/T": {
+      "desc": "Prescribed temperature used to interpolate the prefactor for the first input variable"
+    },
+    "state/A": {
+      "desc": "The first input variable"
+    },
+    "state/B": {
+      "desc": "The second input variable"
+    }
+  },
+  "outputs": {
+    "state/C": {
+      "desc": "The only output variable"
+    }
+  },
+  "parameters": {
+    "c_A_X": {
+      "desc": "Abscissa values of the linear interpolation"
+    },
+    "c_A_Y": {
+      "desc": "Ordinate values of the linear interpolation"
+    },
+    "model0_c_1": {
+      "desc": "Prefactor of the second input variable"
+    }
+  },
+  "buffers": {
+    "model0_c0": {
+      "desc": "Constant offset"
+    }
+  }
+}

@@ -26,6 +26,7 @@
 
 #include <filesystem>
 #include <iostream>
+#include <memory>
 
 #include "neml2/misc/errors.h"
 #include "neml2/base/InputFile.h"
@@ -41,6 +42,7 @@ class Data;
 class Model;
 class Driver;
 class WorkScheduler;
+class BundledModel;
 
 /**
  * @brief A convenient function to parse all options from an input file
@@ -73,7 +75,7 @@ public:
   const InputFile & input_file() const { return _input_file; }
 
   /// Global settings
-  const std::shared_ptr<Settings> & settings() const { return _input_file.settings(); }
+  const std::shared_ptr<Settings> & settings() const { return _settings; }
 
   /// Check if an object with the given name exists under the given section.
   bool has_object(const std::string & section, const std::string & name);
@@ -116,6 +118,17 @@ public:
   template <class T = WorkScheduler>
   std::shared_ptr<T> get_scheduler(const std::string & name);
 
+  /**
+   * @brief Serialize an object to an input file. The returned input file contains the exact
+   * information needed to reconstruct the object.
+   *
+   * @note Behind the scenes, this method calls the get_object method with \p force_create set to
+   * true, which has the side effect of creating the object if it does not already exist.
+   */
+  std::unique_ptr<InputFile> serialize_object(const std::string & section,
+                                              const std::string & name,
+                                              const OptionSet & additional_options = OptionSet());
+
   /// @brief Delete all factories and destruct all the objects.
   void clear();
 
@@ -139,14 +152,26 @@ private:
   /// Check if the options are compatible with the object
   bool options_compatible(const std::shared_ptr<NEML2Object> & obj, const OptionSet & opts) const;
 
+  /// BundledModel will need to squeeze the unpacked model into the factory
+  friend class BundledModel;
+
   /// The input file
   InputFile _input_file;
+
+  /// Global settings of the input file
+  const std::shared_ptr<Settings> _settings;
 
   /**
    * Manufactured objects. The key of the outer map is the section name, and the key of the inner
    * map is the object name.
    */
   std::map<std::string, std::map<std::string, std::vector<std::shared_ptr<NEML2Object>>>> _objects;
+
+  /// Whether the factory is currently serializing an object
+  bool _serializing = false;
+
+  /// The output serialized input file (used by the serialize_object method)
+  std::unique_ptr<InputFile> _serialized_file;
 };
 
 template <class T>
@@ -160,7 +185,7 @@ Factory::get_object(const std::string & section,
     throw FactoryException("The input file is empty.");
 
   // Easy if it already exists
-  if (!force_create)
+  if (!force_create && !_serializing)
     if (_objects.count(section) && _objects.at(section).count(name))
       for (const auto & neml2_obj : _objects[section][name])
       {
@@ -183,8 +208,8 @@ Factory::get_object(const std::string & section,
     if (options.first == name)
     {
       auto new_options = options.second;
-      new_options.set<Factory *>("_factory") = this;
-      new_options.set<std::shared_ptr<Settings>>("_settings") = settings();
+      new_options.set<Factory *>("factory") = this;
+      new_options.set<std::shared_ptr<Settings>>("settings") = settings();
       new_options += additional_options;
       create_object(section, new_options);
       break;

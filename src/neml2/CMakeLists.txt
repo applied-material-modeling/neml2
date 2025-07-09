@@ -121,6 +121,11 @@ if(NEML2_PCH)
   )
 endif()
 
+if(ZLIB_FOUND)
+  target_compile_definitions(neml2_model PUBLIC NEML2_HAS_ZLIB)
+  target_link_libraries(neml2_model PUBLIC ZLIB::ZLIB)
+endif()
+
 # libneml2_driver
 neml2_add_submodule(neml2_driver SHARED drivers)
 target_link_libraries(neml2_driver PUBLIC neml2_model neml2_tensor neml2_base)

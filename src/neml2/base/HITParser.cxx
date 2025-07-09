@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "hit/braceexpr.h"
+#include "hit/parse.h"
 
 #include "neml2/base/HITParser.h"
 #include "neml2/base/Registry.h"
@@ -32,6 +33,8 @@
 #include "neml2/base/EnumSelection.h"
 #include "neml2/base/MultiEnumSelection.h"
 #include "neml2/base/LabeledAxisAccessor.h"
+#include "neml2/misc/errors.h"
+#include "neml2/misc/string_utils.h"
 #include "neml2/tensors/tensors.h"
 #include "neml2/misc/assertions.h"
 #include "neml2/misc/types.h"
@@ -39,20 +42,11 @@
 namespace neml2
 {
 InputFile
-HITParser::parse(const std::filesystem::path & filename, const std::string & additional_input) const
+HITParser::parse_from_string(const std::string & input, const std::string & additional_input) const
 {
-  // Open and read the file
-  std::ifstream file(filename);
-  neml_assert(file.is_open(), "Unable to open file ", filename);
-
-  // Read the file into a string
-  std::stringstream buffer;
-  buffer << file.rdbuf();
-  std::string input = buffer.str();
-
   // Let HIT lex the string
-  std::unique_ptr<hit::Node> root(hit::parse(filename, input));
-  neml_assert(root.get(), "HIT failed to lex the input file: ", filename);
+  std::unique_ptr<hit::Node> root(hit::parse("neml2 input file", input));
+  neml_assert(root.get(), "HIT failed to lex the input file.");
 
   // Handle additional input (they could be coming from cli args)
   std::unique_ptr<hit::Node> cli_root(hit::parse("cliargs", additional_input));
@@ -66,11 +60,11 @@ HITParser::parse(const std::filesystem::path & filename, const std::string & add
   expander.registerEvaler("raw", raw);
   root->walk(&expander);
 
-  return parse(root.get());
+  return parse_from_hit_node(root.get());
 }
 
 InputFile
-HITParser::parse(hit::Node * root) const
+HITParser::parse_from_hit_node(hit::Node * root) const
 {
   // Extract global settings
   OptionSet settings = Settings::expected_options();
@@ -102,8 +96,16 @@ HITParser::extract_object_options(hit::Node * object, hit::Node * section) const
   // There is a special field reserved for object type
   std::string type = object->param<std::string>("type");
   // Extract the options
-  auto options = Registry::info(type).expected_options;
-  extract_options(object, options);
+  OptionSet options;
+  if (Registry::is_registered(type))
+  {
+    options = Registry::info(type).expected_options;
+    extract_options(object, options);
+  }
+  else
+    std::cerr << "Warning: Object type '" << type
+              << "' is not registered in the NEML2 registry. "
+                 "This may lead to unexpected behavior or errors.\n";
 
   // Also fill in the metadata
   options.name() = object->path();
@@ -178,4 +180,53 @@ HITParser::extract_option(hit::Node * n, OptionSet & options) const
   }
 }
 // NOLINTEND
+
+std::string
+HITParser::serialize(const InputFile & inp) const
+{
+  // Serialized input
+  std::string output;
+
+  // Serialize settings
+  auto node = std::make_unique<hit::Section>("Settings");
+  serialize_options(node.get(), inp.settings());
+  output += node->render();
+
+  // Serialize each section
+  for (const auto & [section_name, section] : inp.data())
+  {
+    output += "\n\n"; // Add a newline before each section for readability
+    auto section_node = std::make_unique<hit::Section>(section_name);
+    for (const auto & [object_name, options] : section)
+    {
+      // Create a section for the object
+      auto object_node = std::make_unique<hit::Section>(object_name);
+      // Add the special field "type". The destructor will delete the children nodes, so it's
+      // generally safe to use raw pointers for children
+      object_node->addChild(new hit::Field("type", hit::Field::Kind::String, options.type()));
+      // Serialize the options
+      serialize_options(object_node.get(), options);
+      // Add the object node to the section
+      section_node->addChild(object_node.release());
+    }
+    output += section_node->render();
+  }
+
+  return output;
+}
+
+void
+HITParser::serialize_options(hit::Node * node, const OptionSet & options) const
+{
+  for (const auto & [key, val] : options)
+  {
+    if (val->suppressed() || !val->user_specified())
+      continue;
+
+    // auto * field = serialize_option(key, val.get());
+    auto val_str = "'" + utils::stringify(*val) + "'"; // Wrap in single quotes
+    auto * field = new hit::Field(key, hit::Field::Kind::String, val_str);
+    node->addChild(field);
+  }
+}
 } // namespace neml2

@@ -26,9 +26,11 @@
 #include "neml2/base/guards.h"
 #include "neml2/drivers/Driver.h"
 #include "neml2/models/Model.h"
+#include "neml2/models/BundledModel.h"
 #include "neml2/misc/errors.h"
 
 #include <argparse/argparse.hpp>
+#include <stdexcept>
 
 std::string get_additional_cliargs(const argparse::ArgumentParser & program);
 
@@ -86,11 +88,34 @@ main(int argc, char * argv[])
       .remaining()
       .help("additional command-line arguments to pass to the input file parser");
 
+// sub-command: bundle
+#ifdef NEML2_CAN_BUNDLE_MODEL
+
+  argparse::ArgumentParser bundle_command("bundle");
+  bundle_command.add_description("Bundle a model into a single archive.");
+  bundle_command.add_argument("input").help("path to the input file");
+  bundle_command.add_argument("model").help("name of the model in the input file to bundle");
+  bundle_command.add_argument("additional_args")
+      .remaining()
+      .help("additional command-line arguments to pass to the input file parser");
+  bundle_command.add_argument("-c", "--config")
+      .default_value("")
+      .help("path to the bundling configuration file");
+  bundle_command.add_argument("-o", "--output")
+      .default_value("")
+      .help(
+          "path to the output file where the bundled model will be saved. If not provided, the "
+          "output file will be named <input>_<model>.gz in the same directory as the input file.");
+#endif
+
   // Add sub-commands to the main program
   program.add_subparser(run_command);
   program.add_subparser(diagnose_command);
   program.add_subparser(inspect_command);
   program.add_subparser(time_command);
+#ifdef NEML2_CAN_BUNDLE_MODEL
+  program.add_subparser(bundle_command);
+#endif
 
   try
   {
@@ -187,6 +212,27 @@ main(int argc, char * argv[])
           std::cout << "    " << object << ": " << time << " ms" << std::endl;
       }
     }
+
+    // sub-command: bundle
+#ifdef NEML2_CAN_BUNDLE_MODEL
+    if (program.is_subcommand_used("bundle"))
+    {
+      const auto input = bundle_command.get<std::string>("input");
+      const auto additional_cliargs = get_additional_cliargs(bundle_command);
+      const auto modelname = bundle_command.get<std::string>("model");
+      const auto outpath = bundle_command.get<std::string>("--output");
+      nlohmann::json config;
+      if (bundle_command.is_used("--config"))
+      {
+        const auto config_file = bundle_command.get<std::string>("--config");
+        std::ifstream f(config_file);
+        if (!f)
+          throw std::runtime_error("Could not open config file: " + config_file);
+        f >> config;
+      }
+      neml2::bundle_model(input, modelname, additional_cliargs, config, outpath);
+    }
+#endif
   }
   catch (const std::exception & err)
   {

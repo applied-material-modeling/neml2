@@ -24,6 +24,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <vector>
 
 #include "neml2/base/OptionBase.h"
@@ -49,6 +50,9 @@ template <typename P>
 void _print_helper(std::ostream & os, const std::vector<P> *);
 template <typename P>
 void _print_helper(std::ostream & os, const std::vector<std::vector<P>> *);
+/// bool
+template <>
+void _print_helper(std::ostream & os, const bool *);
 /// The evil vector of bool :/
 template <>
 void _print_helper(std::ostream & os, const std::vector<bool> *);
@@ -58,6 +62,9 @@ void _print_helper(std::ostream & os, const char *);
 /// Specialization so that we don't print out unprintable characters
 template <>
 void _print_helper(std::ostream & os, const unsigned char *);
+/// Specialization for tensor shape
+template <>
+void _print_helper(std::ostream & os, const TensorShape *);
 ///@}
 }
 
@@ -108,16 +115,24 @@ template <typename P>
 void
 _print_helper(std::ostream & os, const std::vector<P> * option)
 {
-  for (const auto & p : *option)
-    os << p << " ";
+  for (std::size_t i = 0; i < option->size(); i++)
+  {
+    if (i > 0)
+      os << " ";
+    _print_helper(os, &(*option)[i]);
+  }
 }
 
 template <typename P>
 void
 _print_helper(std::ostream & os, const std::vector<std::vector<P>> * option)
 {
-  for (const auto & pv : *option)
-    _print_helper(os, &pv);
+  for (std::size_t i = 0; i < option->size(); i++)
+  {
+    if (i > 0)
+      os << "; ";
+    _print_helper(os, &(*option)[i]);
+  }
 }
 } // namespace details
 // LCOV_EXCL_STOP

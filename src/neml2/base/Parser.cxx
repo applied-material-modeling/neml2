@@ -23,14 +23,32 @@
 // THE SOFTWARE.
 
 #include <iostream>
+#include <fstream>
 
 #include "neml2/base/Parser.h"
+#include "neml2/misc/assertions.h"
 #include "neml2/base/LabeledAxisAccessor.h"
+#include "neml2/base/InputFile.h"
 
 namespace neml2
 {
 const std::vector<std::string> Parser::sections = {
     "Tensors", "Solvers", "Data", "Models", "Drivers", "Schedulers"};
+
+InputFile
+Parser::parse(const std::filesystem::path & filename, const std::string & additional_input) const
+{
+  // Open and read the file
+  std::ifstream file(filename);
+  neml_assert(file.is_open(), "Unable to open file ", filename);
+
+  // Read the file into a string
+  std::stringstream buffer;
+  buffer << file.rdbuf();
+  std::string input = buffer.str();
+
+  return parse_from_string(input, additional_input);
+}
 
 namespace utils
 {

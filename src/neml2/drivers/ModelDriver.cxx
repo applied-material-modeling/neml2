@@ -48,12 +48,8 @@ ModelDriver::expected_options()
       "target compute device to be CPU, and device='cuda:1' sets the target compute device to be "
       "CUDA with device ID 1.";
 
-  options.set<bool>("show_parameters") = false;
-  options.set("show_parameters").doc() = "Whether to show model parameters at the beginning";
-  options.set<bool>("show_input_axis") = false;
-  options.set("show_input_axis").doc() = "Whether to show model input axis at the beginning";
-  options.set<bool>("show_output_axis") = false;
-  options.set("show_output_axis").doc() = "Whether to show model output axis at the beginning";
+  options.set<bool>("show_model") = false;
+  options.set("show_model").doc() = "Display a summary of the model being tested.";
 
 #ifdef NEML2_HAS_DISPATCHER
   options.set<std::string>("scheduler");
@@ -69,9 +65,7 @@ ModelDriver::ModelDriver(const OptionSet & options)
   : Driver(options),
     _model(get_model("model")),
     _device(options.get<std::string>("device")),
-    _show_params(options.get<bool>("show_parameters")),
-    _show_input(options.get<bool>("show_input_axis")),
-    _show_output(options.get<bool>("show_output_axis"))
+    _show_model(options.get<bool>("show_model"))
 #ifdef NEML2_HAS_DISPATCHER
     ,
     _scheduler(options.get("scheduler").user_specified() ? get_scheduler("scheduler") : nullptr),
@@ -125,18 +119,8 @@ ModelDriver::setup()
 #endif
 
   // LCOV_EXCL_START
-  if (_show_input)
-    std::cout << _model->name() << "'s input axis:\n" << _model->input_axis() << std::endl;
-
-  if (_show_output)
-    std::cout << _model->name() << "'s output axis:\n" << _model->output_axis() << std::endl;
-
-  if (_show_params)
-  {
-    std::cout << _model->name() << "'s parameters:" << std::endl;
-    for (auto && [pname, pval] : _model->named_parameters())
-      std::cout << "  " << pname << std::endl;
-  }
+  if (_show_model)
+    std::cout << *_model << std::endl;
   // LCOV_EXCL_STOP
 }
 

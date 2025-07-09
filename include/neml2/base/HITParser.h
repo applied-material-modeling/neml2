@@ -29,6 +29,7 @@
 namespace neml2
 {
 class OptionSet;
+class OptionBase;
 
 /**
  * @copydoc neml2::Parser
@@ -47,11 +48,14 @@ public:
   ~HITParser() override = default;
 
   /// Parse a HIT input file from a filename.
-  InputFile parse(const std::filesystem::path & filename,
-                  const std::string & additional_input = "") const override;
+  InputFile parse_from_string(const std::string & input,
+                              const std::string & additional_input = "") const override;
 
   /// Parse a HIT input file from a root node.
-  InputFile parse(hit::Node * root) const;
+  InputFile parse_from_hit_node(hit::Node * root) const;
+
+  /// Serialize an input file to a string.
+  std::string serialize(const InputFile & inp) const override;
 
 private:
   /**
@@ -61,10 +65,12 @@ private:
    * @param section The current section node.
    * @return OptionSet The options of the object.
    */
-  virtual OptionSet extract_object_options(hit::Node * object, hit::Node * section) const;
+  OptionSet extract_object_options(hit::Node * object, hit::Node * section) const;
 
   void extract_options(hit::Node * object, OptionSet & options) const;
   void extract_option(hit::Node * node, OptionSet & options) const;
+
+  void serialize_options(hit::Node * node, const OptionSet & options) const;
 };
 
 } // namespace neml2

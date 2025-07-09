@@ -50,7 +50,7 @@ CubicCrystal::expected_options()
 }
 
 CubicCrystal::CubicCrystal(const OptionSet & options)
-  : CubicCrystal(options, options.get<Factory *>("_factory"))
+  : CubicCrystal(options, options.get<Factory *>("factory"))
 {
 }
 

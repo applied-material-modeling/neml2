@@ -32,14 +32,12 @@ std::ostream &
 operator<<(std::ostream & os, const MultiEnumSelection & es)
 {
   auto selections = std::vector<std::string>(es);
-  os << '(';
   for (size_t i = 0; i < selections.size(); i++)
   {
     os << selections[i];
     if (i < selections.size() - 1)
-      os << ", ";
+      os << " ";
   }
-  os << ')';
   return os;
 }
 

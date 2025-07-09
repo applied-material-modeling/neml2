@@ -34,23 +34,23 @@ NEML2Object::expected_options()
 {
   auto options = OptionSet();
 
-  options.set<Factory *>("_factory") = nullptr;
-  options.set("_factory").suppressed() = true;
+  options.set<Factory *>("factory") = nullptr;
+  options.set("factory").suppressed() = true;
 
-  options.set<std::shared_ptr<Settings>>("_settings") = nullptr;
-  options.set("_settings").suppressed() = true;
+  options.set<std::shared_ptr<Settings>>("settings") = nullptr;
+  options.set("settings").suppressed() = true;
 
-  options.set<NEML2Object *>("_host") = nullptr;
-  options.set("_host").suppressed() = true;
+  options.set<NEML2Object *>("host") = nullptr;
+  options.set("host").suppressed() = true;
 
   return options;
 }
 
 NEML2Object::NEML2Object(const OptionSet & options)
   : _input_options(options),
-    _factory(options.get<Factory *>("_factory")),
-    _settings(options.get<std::shared_ptr<Settings>>("_settings")),
-    _host(options.get<NEML2Object *>("_host"))
+    _factory(options.get<Factory *>("factory")),
+    _settings(options.get<std::shared_ptr<Settings>>("settings")),
+    _host(options.get<NEML2Object *>("host"))
 {
 }
 

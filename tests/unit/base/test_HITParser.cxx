@@ -76,10 +76,10 @@ TEST_CASE("HITParser", "[base]")
 
       SECTION("global settings")
       {
-        auto & settings = inp.settings();
-        REQUIRE(settings->buffer_name_separator() == "::");
-        REQUIRE(settings->parameter_name_separator() == "::");
-        REQUIRE(!settings->require_double_precision());
+        const auto & settings = inp.settings();
+        REQUIRE(settings.get<std::string>("buffer_name_separator") == "::");
+        REQUIRE(settings.get<std::string>("parameter_name_separator") == "::");
+        REQUIRE(!settings.get<bool>("require_double_precision"));
       }
 
       SECTION("booleans")
@@ -158,6 +158,13 @@ TEST_CASE("HITParser", "[base]")
                                                  {Device("cuda")},
                                                  {Device("cuda:2"), Device("cpu")}});
       }
+    }
+
+    SECTION("serialize")
+    {
+      auto inp = parser.parse("base/test_HITParser1.i");
+      std::string out = parser.serialize(inp);
+      std::cout << out << std::endl;
     }
 
     SECTION("error")

@@ -35,6 +35,7 @@
 #include "neml2/models/Model.h"
 #include "neml2/models/Assembler.h"
 #include "neml2/models/map_types_fwd.h"
+#include "neml2/models/BundledModel.h"
 
 namespace neml2
 {
@@ -79,8 +80,8 @@ Model::expected_options()
   // Model defaults to _not_ being part of a nonlinear system
   // Model::get_model will set this to true if the model is expected to be part of a nonlinear
   // system, and additional diagnostics will be performed
-  options.set<bool>("_nonlinear_system") = false;
-  options.set("_nonlinear_system").suppressed() = true;
+  options.set<bool>("nonlinear_system") = false;
+  options.set("nonlinear_system").suppressed() = true;
 
   options.set<bool>("jit") = true;
   options.set("jit").doc() = "Use JIT compilation for the forward operator";
@@ -103,7 +104,7 @@ Model::Model(const OptionSet & options)
     _defines_value(options.get<bool>("define_values")),
     _defines_dvalue(options.get<bool>("define_derivatives")),
     _defines_d2value(options.get<bool>("define_second_derivatives")),
-    _nonlinear_system(options.get<bool>("_nonlinear_system")),
+    _nonlinear_system(options.get<bool>("nonlinear_system")),
     _jit(options.get<bool>("jit")),
     _production(options.get<bool>("production"))
 {
@@ -862,57 +863,72 @@ Model::extract_AD_derivatives(bool dout, bool d2out)
 std::ostream &
 operator<<(std::ostream & os, const Model & model)
 {
+  const auto * bundled_model = dynamic_cast<const BundledModel *>(&model);
   bool first = false;
-  const std::string tab = "            ";
+  const std::string tab = "             ";
 
-  os << "Name:       " << model.name() << '\n';
+  os << "Name:        " << model.name() << '\n';
+  if (bundled_model)
+    os << "Description: " << bundled_model->description() << '\n';
 
   if (!model.input_variables().empty())
   {
-    os << "Input:      ";
+    os << "Input:       ";
     first = true;
     for (auto && [name, var] : model.input_variables())
     {
       os << (first ? "" : tab);
-      os << name << " [" << var->type() << "]\n";
+      os << name << " [" << var->type() << "]";
+      if (bundled_model)
+        os << " (" << bundled_model->input_description(name) << ")";
+      os << '\n';
       first = false;
     }
   }
 
-  if (!model.input_variables().empty())
+  if (!model.output_variables().empty())
   {
-    os << "Output:     ";
+    os << "Output:      ";
     first = true;
     for (auto && [name, var] : model.output_variables())
     {
       os << (first ? "" : tab);
-      os << name << " [" << var->type() << "]\n";
+      os << name << " [" << var->type() << "]";
+      if (bundled_model)
+        os << " (" << bundled_model->output_description(name) << ")";
+      os << '\n';
       first = false;
     }
   }
 
   if (!model.named_parameters().empty())
   {
-    os << "Parameters: ";
+    os << "Parameters:  ";
     first = true;
     for (auto && [name, param] : model.named_parameters())
     {
       os << (first ? "" : tab);
       os << name << " [" << param->type() << "][" << Tensor(*param).scalar_type() << "]["
-         << Tensor(*param).device() << "]\n";
+         << Tensor(*param).device() << "]";
+      if (bundled_model)
+        os << " (" << bundled_model->param_description(name) << ")";
+      os << '\n';
       first = false;
     }
   }
 
   if (!model.named_buffers().empty())
   {
-    os << "Buffers:    ";
+    os << "Buffers:     ";
     first = true;
     for (auto && [name, buffer] : model.named_buffers())
     {
       os << (first ? "" : tab);
       os << name << " [" << buffer->type() << "][" << Tensor(*buffer).scalar_type() << "]["
-         << Tensor(*buffer).device() << "]\n";
+         << Tensor(*buffer).device() << "]";
+      if (bundled_model)
+        os << " (" << bundled_model->buffer_description(name) << ")";
+      os << '\n';
       first = false;
     }
   }

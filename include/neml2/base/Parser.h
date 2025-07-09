@@ -66,7 +66,13 @@ public:
    * @return InputFile The extracted object options.
    */
   virtual InputFile parse(const std::filesystem::path & filename,
-                          const std::string & additional_input = "") const = 0;
+                          const std::string & additional_input = "") const;
+
+  virtual InputFile parse_from_string(const std::string & input,
+                                      const std::string & additional_input = "") const = 0;
+
+  /// @brief Serialize an input file to a string
+  virtual std::string serialize(const InputFile & inp) const = 0;
 };
 
 namespace utils
@@ -117,7 +123,7 @@ parse_vector_(std::vector<T> & vals, const std::string & raw_str)
     vals.resize(tokens.size(), kCPU);
   else
     vals.resize(tokens.size());
-  for (size_t i = 0; i < tokens.size(); i++)
+  for (std::size_t i = 0; i < tokens.size(); i++)
   {
     auto success = parse_<T>(vals[i], tokens[i]);
     if (!success)
@@ -144,7 +150,7 @@ parse_vector_vector_(std::vector<std::vector<T>> & vals, const std::string & raw
 {
   auto token_vecs = split(raw_str, ";");
   vals.resize(token_vecs.size());
-  for (size_t i = 0; i < token_vecs.size(); i++)
+  for (std::size_t i = 0; i < token_vecs.size(); i++)
   {
     auto success = parse_vector_<T>(vals[i], token_vecs[i]);
     if (!success)
