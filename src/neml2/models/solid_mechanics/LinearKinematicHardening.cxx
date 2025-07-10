@@ -48,7 +48,7 @@ LinearKinematicHardening::expected_options()
 
 LinearKinematicHardening::LinearKinematicHardening(const OptionSet & options)
   : KinematicHardening(options),
-    _H(declare_parameter<Scalar>("H", "hardening_modulus"))
+    _H(declare_parameter<Scalar>("H", "hardening_modulus", true))
 {
 }
 
@@ -59,8 +59,13 @@ LinearKinematicHardening::set_value(bool out, bool dout_din, bool d2out_din2)
     _X = _H * _Kp;
 
   if (dout_din)
+  {
     if (_Kp.is_dependent())
       _X.d(_Kp) = _H * SR2::identity_map(_H.options());
+
+    if (const auto * const H = nl_param("H"))
+      _X.d(*H) = _Kp;
+  }
 
   if (d2out_din2)
   {
