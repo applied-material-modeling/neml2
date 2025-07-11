@@ -40,6 +40,8 @@ public:
 
   void link_output_variables() override;
 
+  std::size_t last_iterations() const { return _last_iterations; }
+
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
@@ -48,5 +50,8 @@ protected:
 
   /// The nonlinear solver used to solve the nonlinear system
   std::shared_ptr<NonlinearSolver> _solver;
+
+  /// Last solve result
+  std::size_t _last_iterations = 0;
 };
 } // namespace neml2

@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include <c10/core/InferenceMode.h>
+#include <torch/csrc/jit/frontend/tracer.h>
 
 #include "neml2/misc/assertions.h"
 #include "neml2/base/guards.h"
@@ -377,6 +378,9 @@ Model::forward(bool out, bool dout, bool d2out)
                   type(),
                   "' is requested to compute second derivatives, but it does not define them.");
 
+  if (dout || d2out)
+    clear_derivatives();
+
   c10::InferenceMode mode_guard(_production && !jit::tracer::isTracing());
 
   if (dout || d2out)
@@ -418,20 +422,29 @@ Model::forward_maybe_jit(bool out, bool dout, bool d2out)
   {
     // All other models in the world should wait for this model to finish tracing
     // This is not our fault, torch jit tracing is not thread-safe
+    std::shared_ptr<jit::tracer::TracingState> trace;
     static std::mutex trace_mutex;
     trace_mutex.lock();
-    auto forward_wrap = [&](jit::Stack inputs) -> jit::Stack
+    try
     {
-      assign_input_stack(inputs);
-      forward(out, dout, d2out);
-      return collect_output_stack(out, dout, d2out);
-    };
-    auto trace = std::get<0>(jit::tracer::trace(
-        collect_input_stack(),
-        forward_wrap,
-        [this](const ATensor & var) { return variable_name_lookup(var); },
-        /*strict=*/false,
-        /*force_outplace=*/false));
+      auto forward_wrap = [&](jit::Stack inputs) -> jit::Stack
+      {
+        assign_input_stack(inputs);
+        forward(out, dout, d2out);
+        return collect_output_stack(out, dout, d2out);
+      };
+      trace = std::get<0>(jit::tracer::trace(
+          collect_input_stack(),
+          forward_wrap,
+          [this](const ATensor & var) { return variable_name_lookup(var); },
+          /*strict=*/false,
+          /*force_outplace=*/false));
+    }
+    catch (const std::exception & e)
+    {
+      trace_mutex.unlock();
+      throw NEMLException("Failed to trace model '" + name() + "': " + e.what());
+    }
     trace_mutex.unlock();
 
     auto new_function = std::make_unique<jit::GraphFunction>(name() + ".forward",

@@ -23,52 +23,29 @@
 // THE SOFTWARE.
 
 #include <catch2/catch_test_macros.hpp>
-#include <filesystem>
+#include <catch2/matchers/catch_matchers_all.hpp>
 
-#include "neml2/base/Factory.h"
-#include "neml2/drivers/Driver.h"
+#include "neml2/models/Model.h"
+#include "neml2/models/ImplicitUpdate.h"
+#include "neml2/tensors/Scalar.h"
 
 using namespace neml2;
-namespace fs = std::filesystem;
 
-TEST_CASE("chemical reactions")
+TEST_CASE("ImplicitUpdate", "[models]")
 {
-  const auto pwd = fs::current_path();
-  const auto search_path = pwd / "chemical_reactions";
+  auto model0 = load_model("models/ImplicitUpdate.i", "model");
+  auto model = std::dynamic_pointer_cast<ImplicitUpdate>(model0);
+  ValueMap in = {{VariableName(OLD_STATE, "foo"), Scalar::full(0.0)},
+                 {VariableName(OLD_STATE, "bar"), Scalar::full(0.0)},
+                 {VariableName(FORCES, "temperature"), Scalar::full(15.0)},
+                 {VariableName(FORCES, "t"), Scalar::full(1.3)},
+                 {VariableName(OLD_FORCES, "t"), Scalar::full(1.1)}};
+  auto out = model->value(in);
+  REQUIRE(model->last_iterations() == 7);
 
-  // Find all regression tests
-  std::vector<fs::path> tests;
-  using rdi = fs::recursive_directory_iterator;
-  for (const auto & entry : rdi(search_path))
-    if (entry.path().extension() == ".i")
-      tests.push_back(entry.path().lexically_relative(pwd));
-
-  for (const auto & test : tests)
-  {
-    // Change current working directory to the parent directory of the input file
-    fs::current_path(test.parent_path());
-
-    auto section_name = (pwd / test).lexically_relative(search_path).string();
-
-    DYNAMIC_SECTION(section_name)
-    {
-      try
-      {
-        // Load and run the model
-        auto factory = load_input(test.filename());
-        auto driver = factory->get_driver("regression");
-        diagnose(*driver);
-        REQUIRE(driver->run());
-      }
-      catch (...)
-      {
-        fs::current_path(pwd);
-        throw;
-      }
-    }
-
-    // Catch2 will split dynamic sections into different test cases, so we need to set the current
-    // path back to where we were. Otherwise the next test case will start from the wrong directory.
-    fs::current_path(pwd);
-  }
+  // Re-run the update with the solution being the initial guess
+  for (auto && [vname, var] : out)
+    in[vname] = var;
+  model->value(in);
+  REQUIRE(model->last_iterations() == 0);
 }

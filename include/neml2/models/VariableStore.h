@@ -95,6 +95,7 @@ public:
   /// Release allocated tensor
   virtual void clear_input();
   virtual void clear_output();
+  virtual void clear_derivatives();
   ///@}
 
   ///@{
@@ -134,12 +135,15 @@ protected:
 
   /// Declare an input variable
   template <typename T>
-  const Variable<T> & declare_input_variable(const char * name, TensorShapeRef list_shape = {});
+  const Variable<T> & declare_input_variable(const char * name,
+                                             TensorShapeRef list_shape = {},
+                                             bool allow_duplicate = false);
 
   /// Declare an input variable
   template <typename T>
   const Variable<T> & declare_input_variable(const VariableName & name,
-                                             TensorShapeRef list_shape = {});
+                                             TensorShapeRef list_shape = {},
+                                             bool allow_duplicate = false);
 
   /// Declare an output variable
   template <typename T>
@@ -178,7 +182,8 @@ private:
   template <typename T>
   Variable<T> * create_variable(VariableStorage & variables,
                                 const VariableName & name,
-                                TensorShapeRef list_shape);
+                                TensorShapeRef list_shape,
+                                bool allow_duplicate = false);
 
   /// Model using this interface
   Model * _object;

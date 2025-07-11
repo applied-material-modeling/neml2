@@ -111,148 +111,143 @@ resolve_tensor_name(const TensorName<T> & tn, Model * caller, const std::string 
     throw ParserException("A non-nullptr caller must be provided to resolve a tensor name");
 
   if constexpr (std::is_same_v<T, ATensor> || std::is_same_v<T, Tensor>)
-  {
     throw ParserException("ATensr and Tensor cannot be resolved to a model output variable");
-  }
-  else
+
+  // When we retrieve a model, we want it to register its own parameters and buffers in the
+  // host of the caller.
+  OptionSet extra_opts;
+  extra_opts.set<NEML2Object *>("_host") = caller->host();
+
+  // The raw string is interpreted as a _variable specifier_ which takes three possible forms
+  // 1. "model_name.variable_name"
+  // 2. "model_name"
+  // 3. "variable_name"
+  std::shared_ptr<Model> provider = nullptr;
+  VariableName var_name;
+
+  // Split the raw string into tokens with the delimiter '.'
+  // There must be either one or two tokens
+  auto tokens = utils::split(tn.raw(), ".");
+  if (tokens.size() != 1 && tokens.size() != 2)
+    throw ParserException("Invalid variable specifier '" + tn.raw() +
+                          "'. It should take the form 'model_name', 'variable_name', or "
+                          "'model_name.variable_name'");
+
+  // When there is only one token, it must be a model name, and the model must have one and only
+  // one output variable.
+  if (tokens.size() == 1)
   {
-    // When we retrieve a model, we want it to register its own parameters and buffers in the
-    // host of the caller.
-    OptionSet extra_opts;
-    extra_opts.set<NEML2Object *>("_host") = caller->host();
-
-    // The raw string is interpreted as a _variable specifier_ which takes three possible forms
-    // 1. "model_name.variable_name"
-    // 2. "model_name"
-    // 3. "variable_name"
-    std::shared_ptr<Model> provider = nullptr;
-    VariableName var_name;
-
-    // Split the raw string into tokens with the delimiter '.'
-    // There must be either one or two tokens
-    auto tokens = utils::split(tn.raw(), ".");
-    if (tokens.size() != 1 && tokens.size() != 2)
-      throw ParserException("Invalid variable specifier '" + tn.raw() +
-                            "'. It should take the form 'model_name', 'variable_name', or "
-                            "'model_name.variable_name'");
-
-    // When there is only one token, it must be a model name, and the model must have one and only
-    // one output variable.
-    if (tokens.size() == 1)
+    // Try to parse it as a model name
+    const auto & mname = tokens[0];
+    try
     {
-      // Try to parse it as a model name
-      const auto & mname = tokens[0];
-      try
-      {
-        // Get the model
-        provider = caller->factory()->get_object<Model>(
-            "Models", mname, extra_opts, /*force_create=*/false);
-
-        // Apparently, the model must have one and only one output variable.
-        const auto nvar = provider->output_axis().nvariable();
-        if (nvar == 0)
-          throw ParserException(
-              "Invalid variable specifier '" + tn.raw() +
-              "' (interpreted as model name). The model does not define any output variable.");
-        if (nvar > 1)
-          throw ParserException(
-              "Invalid variable specifier '" + tn.raw() +
-              "' (interpreted as model name). The model must have one and only one output "
-              "variable. However, it has " +
-              utils::stringify(nvar) +
-              " output variables. To disambiguite, please specify the variable name using "
-              "format 'model_name.variable_name'. The model's output axis is:\n" +
-              utils::stringify(provider->output_axis()));
-
-        // Retrieve the output variable
-        var_name = provider->output_axis().variable_names()[0];
-      }
-      // Try to parse it as a variable name
-      catch (const FactoryException & err_model)
-      {
-        auto success = utils::parse_<VariableName>(var_name, tokens[0]);
-        if (!success)
-          throw ParserException(
-              "Invalid variable specifier '" + tn.raw() +
-              "'. It should take the form 'model_name', 'variable_name', or "
-              "'model_name.variable_name'. Since there is no '.' delimiter, it can either be a "
-              "model name or a variable name. Interpreting it as a model name failed with error "
-              "message: " +
-              err_model.what() + ". It also cannot be parsed as a valid variable name.");
-
-        // Create a dummy model that defines this parameter
-        const auto obj_name = "__parameter_" + var_name.str() + "__";
-        const auto obj_type = utils::demangle(typeid(T).name()).substr(7) + "InputParameter";
-        auto options = InputParameter<T>::expected_options();
-        options.template set<std::string>("name") = obj_name;
-        options.template set<std::string>("type") = obj_type;
-        options.template set<VariableName>("from") = var_name;
-        options.template set<VariableName>("to") = var_name.with_suffix("_autogenerated");
-        options.set("to").user_specified() = true;
-        options.name() = obj_name;
-        options.type() = obj_type;
-        if (caller->factory()->input_file()["Models"].count(obj_name))
-        {
-          const auto & existing_options = caller->factory()->input_file()["Models"][obj_name];
-          if (!options_compatible(existing_options, options))
-            throw ParserException(
-                "Option clash when declaring an input parameter. Existing options:\n" +
-                utils::stringify(existing_options) + ". New options:\n" +
-                utils::stringify(options));
-        }
-        else
-          caller->factory()->input_file()["Models"][obj_name] = std::move(options);
-
-        // Get the model
-        provider = caller->factory()->get_object<Model>(
-            "Models", obj_name, extra_opts, /*force_create=*/false);
-
-        // Retrieve the output variable
-        var_name = provider->output_axis().variable_names()[0];
-      }
-    }
-    else
-    {
-      // The first token is the model name
-      const auto & mname = tokens[0];
-
       // Get the model
       provider =
           caller->factory()->get_object<Model>("Models", mname, extra_opts, /*force_create=*/false);
 
-      // The second token is the variable name
-      auto success = utils::parse_<VariableName>(var_name, tokens[1]);
-      if (!success)
-        throw ParserException("Invalid variable specifier '" + tn.raw() + "'. '" + tokens[1] +
-                              "' cannot be parsed as a valid variable name.");
-      if (!provider->output_axis().has_variable(var_name))
-        throw ParserException("Invalid variable specifier '" + tn.raw() + "'. Model '" + mname +
-                              "' does not have an output variable named '" +
-                              utils::stringify(var_name) + "'");
+      // Apparently, the model must have one and only one output variable.
+      const auto nvar = provider->output_axis().nvariable();
+      if (nvar == 0)
+        throw ParserException(
+            "Invalid variable specifier '" + tn.raw() +
+            "' (interpreted as model name). The model does not define any output variable.");
+      if (nvar > 1)
+        throw ParserException(
+            "Invalid variable specifier '" + tn.raw() +
+            "' (interpreted as model name). The model must have one and only one output "
+            "variable. However, it has " +
+            utils::stringify(nvar) +
+            " output variables. To disambiguite, please specify the variable name using "
+            "format 'model_name.variable_name'. The model's output axis is:\n" +
+            utils::stringify(provider->output_axis()));
+
+      // Retrieve the output variable
+      var_name = provider->output_axis().variable_names()[0];
     }
+    // Try to parse it as a variable name
+    catch (const FactoryException & err_model)
+    {
+      auto success = utils::parse_<VariableName>(var_name, tokens[0]);
+      if (!success)
+        throw ParserException(
+            "Invalid variable specifier '" + tn.raw() +
+            "'. It should take the form 'model_name', 'variable_name', or "
+            "'model_name.variable_name'. Since there is no '.' delimiter, it can either be a "
+            "model name or a variable name. Interpreting it as a model name failed with error "
+            "message: " +
+            err_model.what() + ". It also cannot be parsed as a valid variable name.");
 
-    // Declare the input variable
-    caller->declare_input_variable<T>(var_name);
+      // Create a dummy model that defines this parameter
+      const auto obj_name = "__parameter_" + var_name.str() + "__";
+      const auto obj_type = utils::demangle(typeid(T).name()).substr(7) + "InputParameter";
+      auto options = InputParameter<T>::expected_options();
+      options.template set<std::string>("name") = obj_name;
+      options.template set<std::string>("type") = obj_type;
+      options.template set<VariableName>("from") = var_name;
+      options.template set<VariableName>("to") = var_name.with_suffix("_autogenerated");
+      options.set("to").user_specified() = true;
+      options.name() = obj_name;
+      options.type() = obj_type;
+      if (caller->factory()->input_file()["Models"].count(obj_name))
+      {
+        const auto & existing_options = caller->factory()->input_file()["Models"][obj_name];
+        if (!options_compatible(existing_options, options))
+          throw ParserException(
+              "Option clash when declaring an input parameter. Existing options:\n" +
+              utils::stringify(existing_options) + ". New options:\n" + utils::stringify(options));
+      }
+      else
+        caller->factory()->input_file()["Models"][obj_name] = std::move(options);
 
-    // Get the variable
-    const auto * var = &provider->output_variable(var_name);
-    const auto * var_ptr = dynamic_cast<const Variable<T> *>(var);
-    if (!var_ptr)
-      throw ParserException("The variable specifier '" + tn.raw() +
-                            "' is valid, but the variable cannot be cast to type " +
-                            utils::demangle(typeid(T).name()));
+      // Get the model
+      provider = caller->factory()->get_object<Model>(
+          "Models", obj_name, extra_opts, /*force_create=*/false);
 
-    // For bookkeeping, the caller shall record the model that provides this variable
-    // This is needed for two reasons:
-    //   1. When the caller is composed with others, we need this information to automatically
-    //      bring in the provider.
-    //   2. When the caller is sent to a different device/dtype, the caller needs to forward the
-    //      call to the provider.
-    caller->register_nonlinear_parameter(pname, NonlinearParameter{provider, var_name, var_ptr});
-
-    // Done!
-    return var_ptr->value();
+      // Retrieve the output variable
+      var_name = provider->output_axis().variable_names()[0];
+    }
   }
+  else
+  {
+    // The first token is the model name
+    const auto & mname = tokens[0];
+
+    // Get the model
+    provider =
+        caller->factory()->get_object<Model>("Models", mname, extra_opts, /*force_create=*/false);
+
+    // The second token is the variable name
+    auto success = utils::parse_<VariableName>(var_name, tokens[1]);
+    if (!success)
+      throw ParserException("Invalid variable specifier '" + tn.raw() + "'. '" + tokens[1] +
+                            "' cannot be parsed as a valid variable name.");
+    if (!provider->output_axis().has_variable(var_name))
+      throw ParserException("Invalid variable specifier '" + tn.raw() + "'. Model '" + mname +
+                            "' does not have an output variable named '" +
+                            utils::stringify(var_name) + "'");
+  }
+
+  // Declare the input variable
+  caller->declare_input_variable<T>(var_name, {}, /*allow_duplicate=*/true);
+
+  // Get the variable
+  const auto * var = &provider->output_variable(var_name);
+  const auto * var_ptr = dynamic_cast<const Variable<T> *>(var);
+  if (!var_ptr)
+    throw ParserException("The variable specifier '" + tn.raw() +
+                          "' is valid, but the variable cannot be cast to type " +
+                          utils::demangle(typeid(T).name()));
+
+  // For bookkeeping, the caller shall record the model that provides this variable
+  // This is needed for two reasons:
+  //   1. When the caller is composed with others, we need this information to automatically
+  //      bring in the provider.
+  //   2. When the caller is sent to a different device/dtype, the caller needs to forward the
+  //      call to the provider.
+  caller->register_nonlinear_parameter(pname, NonlinearParameter{provider, var_name, var_ptr});
+
+  // Done!
+  return var_ptr->value();
 }
 
 template <typename T, typename>

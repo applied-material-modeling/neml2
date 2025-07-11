@@ -25,9 +25,8 @@
 #include "neml2/models/Variable.h"
 #include "neml2/models/Model.h"
 #include "neml2/models/DependencyResolver.h"
-#include "neml2/models/map_types.h"
 #include "neml2/tensors/tensors.h"
-#include "neml2/tensors/assertions.h"
+#include "neml2/misc/assertions.h"
 #include "neml2/tensors/functions/bmm.h"
 #include "neml2/jit/utils.h"
 #include "neml2/jit/TraceableTensorShape.h"
@@ -277,6 +276,12 @@ void
 VariableBase::clear()
 {
   neml_assert_dbg(owning(), "Cannot clear a referencing variable '", name(), "'.");
+  clear_derivatives();
+}
+
+void
+VariableBase::clear_derivatives()
+{
   _derivs.clear();
   _sec_derivs.clear();
 }
@@ -303,7 +308,7 @@ VariableBase::apply_second_order_chain_rule(const DependencyResolver<Model, Vari
     }
 }
 
-void
+static void
 assign_or_add(Tensor & dest, const Tensor & val)
 {
   if (dest.defined())
@@ -596,7 +601,10 @@ FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_VARIABLE);
 Derivative &
 Derivative::operator=(const Tensor & val)
 {
-  *_deriv = val.base_reshape(_base_sizes);
+  if (!_deriv->defined())
+    *_deriv = val.base_reshape(_base_sizes);
+  else
+    *_deriv = *_deriv + val.base_reshape(_base_sizes);
   return *this;
 }
 }

@@ -30,7 +30,7 @@
 
 #include <argparse/argparse.hpp>
 
-std::string get_additional_cliargs(const argparse::ArgumentParser & program);
+static std::string get_additional_cliargs(const argparse::ArgumentParser & program);
 
 int
 main(int argc, char * argv[])

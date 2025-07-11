@@ -31,6 +31,6 @@
     value = 'state/bar'
     lower_bound = '0'
     upper_bound = '0.05'
-    complement_condition = true
+    complement = true
   []
 []

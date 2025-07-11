@@ -1,4 +1,3 @@
-
 ## Applying KKT conditions with the help of Fisher-Burmeister complementary condition
 
 [Drivers]
@@ -139,7 +138,6 @@
     first_var = 'state/F'
     second_var = 'state/d_rate'
     fischer_burmeister = 'residual/d'
-
   []
   # system of equations
   [eq]

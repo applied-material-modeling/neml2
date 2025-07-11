@@ -60,6 +60,7 @@ ContractingGeometry::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   const auto eps = machine_precision(_a.scalar_type()).toDouble();
   const auto aclamp = clamp(1.0 - _a, 0.0 + eps, 1.0 - eps);
+
   if (out)
     _f = _k * pow(aclamp, _n);
 

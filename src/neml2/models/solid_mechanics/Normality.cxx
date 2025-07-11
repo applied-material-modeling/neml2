@@ -86,7 +86,7 @@ Normality::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
   const auto & fvar = _model.output_variable(_f);
   for (auto && [iname, ivar] : _conjugate_pairs)
   {
-    if (!fvar.derivatives().count(iname))
+    if (out && !fvar.derivatives().count(iname))
     {
       (*ivar) = Tensor::zeros(ivar->base_sizes(), fvar.options());
       continue;
