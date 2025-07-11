@@ -601,8 +601,10 @@ FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_VARIABLE);
 Derivative &
 Derivative::operator=(const Tensor & val)
 {
-  neml_assert(!_deriv->defined(), "Derivative must not be defined before assignment.");
-  *_deriv = val.base_reshape(_base_sizes);
+  if (!_deriv->defined())
+    *_deriv = val.base_reshape(_base_sizes);
+  else
+    *_deriv = *_deriv + val.base_reshape(_base_sizes);
   return *this;
 }
 }
