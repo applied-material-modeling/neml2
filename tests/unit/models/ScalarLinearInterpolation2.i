@@ -4,7 +4,7 @@
     model = 'E'
     input_Scalar_names = 'forces/T'
     input_Scalar_values = '300'
-    output_Scalar_names = 'parameters/E'
+    output_Scalar_names = 'state/E'
     output_Scalar_values = '188911.6020499754'
     check_second_derivatives = true
     check_AD_parameter_derivatives = false
@@ -17,6 +17,7 @@
     argument = 'forces/T'
     abscissa = 'T'
     ordinate = 'E'
+    output = 'state/E'
   []
 []
 
