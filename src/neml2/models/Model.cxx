@@ -26,7 +26,6 @@
 #include <torch/csrc/jit/frontend/tracer.h>
 
 #include "neml2/misc/assertions.h"
-#include "neml2/base/guards.h"
 #include "neml2/base/Factory.h"
 #include "neml2/base/Settings.h"
 #include "neml2/jit/utils.h"
@@ -363,6 +362,21 @@ Model::forward_operator_index(bool out, bool dout, bool d2out) const
 }
 
 void
+Model::register_callback(const ModelCallback & callback)
+{
+  _callbacks.push_back(callback);
+}
+
+void
+Model::register_callback_recursive(const ModelCallback & callback)
+{
+  register_callback(callback);
+
+  for (auto & submodel : registered_models())
+    submodel->register_callback_recursive(callback);
+}
+
+void
 Model::forward(bool out, bool dout, bool d2out)
 {
   neml_assert_dbg(defines_values() || (defines_values() == out),
@@ -390,6 +404,9 @@ Model::forward(bool out, bool dout, bool d2out)
 
   if (dout || d2out)
     extract_AD_derivatives(dout, d2out);
+
+  // Call the callbacks
+  call_callbacks();
 
   return;
 }
@@ -932,5 +949,13 @@ operator<<(std::ostream & os, const Model & model)
 
   return os;
 }
+
+void
+Model::call_callbacks() const
+{
+  for (const auto & callback : _callbacks)
+    callback(*this, input_variables(), output_variables());
+}
+
 // LCOV_EXCL_STOP
 } // namespace neml2

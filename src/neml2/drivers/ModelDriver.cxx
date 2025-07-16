@@ -32,6 +32,26 @@
 
 namespace neml2
 {
+void
+details_callback(const Model & model,
+                 const std::map<VariableName, std::unique_ptr<VariableBase>> & input,
+                 const std::map<VariableName, std::unique_ptr<VariableBase>> & output)
+{
+  std::cout << model.name() << std::endl;
+  std::cout << "\tInput" << std::endl;
+  for (const auto & pair : input)
+  {
+    std::cout << "\t\t" << pair.first.str() << " (" << pair.second->sizes() << ") -> "
+              << at::norm(pair.second->tensor()).cpu().item<double>() << std::endl;
+  }
+  std::cout << "\tOutput" << std::endl;
+  for (const auto & pair : output)
+  {
+    std::cout << "\t\t" << pair.first.str() << " (" << pair.second->sizes() << ") -> "
+              << at::norm(pair.second->tensor()).cpu().item<double>() << std::endl;
+  }
+}
+
 OptionSet
 ModelDriver::expected_options()
 {
@@ -55,6 +75,10 @@ ModelDriver::expected_options()
   options.set<bool>("show_output_axis") = false;
   options.set("show_output_axis").doc() = "Whether to show model output axis at the beginning";
 
+  options.set<bool>("log_details") = false;
+  options.set("log_details").doc() =
+      "If true attach a callback which outputs lots of information on the model execution";
+
 #ifdef NEML2_HAS_DISPATCHER
   options.set<std::string>("scheduler");
   options.set("scheduler").doc() = "The work scheduler to use";
@@ -71,7 +95,8 @@ ModelDriver::ModelDriver(const OptionSet & options)
     _device(options.get<std::string>("device")),
     _show_params(options.get<bool>("show_parameters")),
     _show_input(options.get<bool>("show_input_axis")),
-    _show_output(options.get<bool>("show_output_axis"))
+    _show_output(options.get<bool>("show_output_axis")),
+    _log_details(options.get<bool>("log_details"))
 #ifdef NEML2_HAS_DISPATCHER
     ,
     _scheduler(options.get("scheduler").user_specified() ? get_scheduler("scheduler") : nullptr),
@@ -84,6 +109,12 @@ void
 ModelDriver::setup()
 {
   Driver::setup();
+
+  // Send model parameters and buffers to device
+  _model->to(_device);
+
+  if (_log_details)
+    _model->register_callback_recursive(details_callback);
 
 #ifdef NEML2_HAS_DISPATCHER
   if (_scheduler)
@@ -146,4 +177,12 @@ ModelDriver::diagnose() const
   Driver::diagnose();
   neml2::diagnose(*_model);
 }
+
+void
+ModelDriver::to(Device dev)
+{
+  _device = dev;
+  setup();
+}
+
 } // namespace neml2
