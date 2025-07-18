@@ -50,6 +50,9 @@ Interpolation<T>::expected_options()
   options.set<TensorName<T>>("ordinate");
   options.set("ordinate").doc() = tensor_type + " defining the ordinate values of the interpolant";
 
+  options.set_output("output");
+  options.set("output").doc() = tensor_type + " output of the interpolant";
+
   return options;
 }
 
@@ -59,7 +62,9 @@ Interpolation<T>::Interpolation(const OptionSet & options)
     _X(this->template declare_parameter<Scalar>("X", "abscissa")),
     _Y(this->template declare_parameter<T>("Y", "ordinate")),
     _x(this->template declare_input_variable<Scalar>("argument")),
-    _p(this->template declare_output_variable<T>(VariableName(PARAMETERS, name())))
+    _p(options.get("output").user_specified()
+           ? this->template declare_output_variable<T>("output")
+           : this->template declare_output_variable<T>(VariableName(PARAMETERS, name())))
 {
 }
 
