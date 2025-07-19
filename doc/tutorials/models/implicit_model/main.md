@@ -8,11 +8,11 @@ One of the most notable differences between constitutive models and feed-forward
 
 A generally nonlinear, recursive, implicit system of equations take the following form
 \f{align*}
-  \mathbf{r}(\mathbf{s}) & = f(\mathbf{s}, \mathbf{f}, \mathbf{s}_n, \mathbf{f}_n; \mathbf{p}), \\
-  \mathbf{s} &= \mathop{\mathrm{root}}\limits_{\mathbf{s}} (\mathbf{r}).
+  \mathbf{r}(\tilde{\mathbf{s}}) & = f(\tilde{\mathbf{s}}, \mathbf{f}, \mathbf{s}_n, \mathbf{f}_n; \mathbf{p}), \\
+  \mathbf{s} &= \mathop{\mathrm{root}}\limits_{\tilde{\mathbf{s}}} (\mathbf{r}).
 \f}
 Here \f$ \mathbf{r} \f$ represents the residual (for root-fiding) of the system of equations, and \f$ \mathbf{s} \f$, \f$ \mathbf{f} \f$, \f$ \mathbf{s}_n \f$, \f$ \mathbf{f}_n \f$ are defined by four reserved sub-axes in NEML2:
-- The `state` sub-axis hosts input variables in set \f$ \mathbf{s} \f$. The variables on this sub-axis are the primary unknowns to be solved for.
+- The `state` sub-axis hosts input variables in set \f$ \tilde{\mathbf{s}} \f$. The variables on this sub-axis are the primary unknowns to be solved for. After solving the system, the `state` sub-axis hosts output variables in set \f$ \mathbf{s} \f$.
 - The `forces` sub-axis hosts *prescribed* input variables in set \f$ \mathbf{f} \f$. These variables are prescribed and, by definition, do not change while the system is being solved.
 - The `old_state` and `old_forces` sub-axes respectively correspond to \f$ \mathbf{s}_n \f$ and \f$ \mathbf{f}_n \f$. These variables correspond to the *previous* solution to the system to facilitate the recursive definition of internal variables in history-dependent models. The equivalent plastic strain in plasticity models is a well-known example.
 

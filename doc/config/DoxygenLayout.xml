@@ -11,6 +11,7 @@
     <tab type="usergroup" url="@ref tutorials" title="Guides and Tutorials">
       <tab type="user" url="@ref tutorials-getting-started" title="Getting Started"/>
       <tab type="user" url="@ref tutorials-contributing" title="Contributing"/>
+      <tab type="user" url="@ref tutorials-naming-conventions" title="Naming Conventions"/>
       <tab type="usergroup" url="@ref tutorials-models" title="Models">
         <tab type="user" url="@ref tutorials-models-input-file" title="Input file"/>
         <tab type="user" url="@ref tutorials-models-running-your-first-model" title="Running your first model"/>
@@ -40,6 +41,7 @@
       <tab type="usergroup" url="@ref tutorials-optimization" title="Optimization">
         <tab type="user" url="@ref tutorials-optimization-automatic-differentiation" title="Automatic differentiation"/>
         <tab type="user" url="@ref tutorials-optimization-parameter-calibration" title="Parameter calibration"/>
+        <tab type="user" url="@ref tutorials-optimization-pyzag" title="pyzag"/>
       </tab>
       <tab type="user" url="@ref tutorials-next-steps" title="Next steps"/>
     </tab>

@@ -10,6 +10,9 @@ NEML2 inherits the definition of *device* from PyTorch. It is an abstraction rep
 
 NEML2 offers several high-level mechanisms for users to strategically interact with CPU and CUDA.
 
+\note
+Other evaluation devices that are supported by PyTorch, such as XPU, HIP, MPS, etc., are also generally compatible with NEML2. Currently, NEML2 models and tensor operations are not being continuously tested on these other devices, and the support for these devices remains to be community effort.
+
 ## Specifying a device
 
 A device is uniquely identified by a type, which specifies the type of machine it is (e.g. CPU or CUDA GPU), and a device index or ordinal, which identifies the specific compute device when there is more than one of a certain type. The device index is optional, and in its default state represents (abstractly) "the current device". Further, there are two constraints on the value of the device index, if one is explicitly specified:

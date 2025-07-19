@@ -23,9 +23,9 @@ Pattern matching suggests the following set definitions:
 
 Both \f$ K \f$ and \f$ G \f$ are here categorized as model parameters. The major differences between parameters and buffers are
 - Parameters are "trainable", whereas buffers are not. NEML2 can use automatic differentiation to calculate the derivative of output variables with respect to the model parameters, but not for the model buffers.
-- Parameters can be (recursively) defined by other models, whereas buffers cannot. This feature is discussed in a [later tutorial](#tutorials-models-model-parameters-revisited).
+- Parameters can be (recursively) defined by other models, whereas buffers cannot. This feature is discussed in a later tutorial (@ref tutorials-models-model-parameters-revisited).
 
-In summary, a parameter is a more powerful superset of a buffer.  However, there is overhead cost associated with maintaining a parameter that buffers avoid.
+In summary, parameter is a more powerful superset of buffer.  However, there is overhead cost associated with maintaining a parameter that buffers avoid.
 
 \note
 Some models allow users to choose whether to declare data as parameters or buffers.

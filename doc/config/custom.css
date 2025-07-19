@@ -9,9 +9,9 @@ html {
 html.dark-mode {
   --page-background-color: #16191f;
   --side-nav-background: #252628;
-  --card-background-color: #383a3d;
-  --box-shadow-color: 0px 2px 4px -1px rgba(0, 0, 0, 1), 0px 4px 5px 0px rgba(0, 0, 0, 0.94), 0px 1px 10px 0px rgba(0, 0, 0, 0.92);
-  --box-shadow-hover-color: 0px 5px 5px -3px rgba(0, 0, 0, 1), 0px 8px 10px 1px rgba(0, 0, 0, 0.94), 0px 3px 14px 2px rgba(0, 0, 0, 0.92);
+  --card-background-color: #1d2027;
+  --box-shadow-color: 0px 2px 4px -1px rgba(0, 0, 0, 0.4), 0px 4px 5px 0px rgba(0, 0, 0, 0.34), 0px 1px 10px 0px rgba(0, 0, 0, 0.32);
+  --box-shadow-hover-color: 0px 5px 5px -3px rgba(0, 0, 0, 0.4), 0px 8px 10px 1px rgba(0, 0, 0, 0.34), 0px 3px 14px 2px rgba(0, 0, 0, 0.32);
 }
 
 .cards {

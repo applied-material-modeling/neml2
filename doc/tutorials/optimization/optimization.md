@@ -8,7 +8,7 @@ Recall that \f$p\f$ and \f$b\f$ are respectively the parameters and the buffers 
 
 Another interesting use of NEML2 constitutive models is *parameter calibration*: With given input variables \f$x\f$, find the optimal parameter set \f$p^*\f$ such that
 \f[
-  p^* = \mathop{\mathrm{argmin}}\limits_{p} l(f(x; p, b)),
+  p^* = \mathop{\mathrm{argmin}}\limits_{p} \ l(y),
 \f]
 where \f$l\f$ is oftentimes referred to as the loss (or objective) function defining optimality.
 

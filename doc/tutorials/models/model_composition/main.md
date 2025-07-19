@@ -25,7 +25,7 @@ The above formulation makes a series of *constitutive choices*:
 - There is no isotropic hardening associated with plasticity.
 - There is no kinematic hardening associated with plasticity.
 - There is no back stress associated with plasticity.
-- The plastic flow associative.
+- The plastic flow is associative.
 - The plastic rate-sensitivity follows a power-law relation.
 
 Any change in one of the constitutive choices will result in a new material model. Suppose there are a total of \f$ N \f$ constitutive choices, each having \f$ k \f$ variants, the total number of possible material models would be \f$ k^N \f$.
@@ -73,7 +73,7 @@ The input file then looks like
 []
 ```
 
-## Running the models: the hard way
+## Evaluating the models: The hard way
 
 Now that all three models are defined in the input file, we can load and evaluate them in sequence, with a bit of effort:
 
@@ -164,7 +164,7 @@ Now that all three models are defined in the input file, we can load and evaluat
 
 </div>
 
-## Running the models: the easy way
+## Evaluating the models: The easy way
 
 We were able to successfully calculate \f$ \dot{\boldsymbol{b}} \f$ by
 1. calculating \f$ \bar{a} \f$ by evaluating \f$ \eqref{1} \f$,

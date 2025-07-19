@@ -293,7 +293,7 @@ The composed model automatically reflects such restructuring:
 
 </div>
 
-When the referenced model has more than one output variables, the variable specification becomes ambiguous. A more precise variable specifier in the form of `<model-name>.<variable-name>` can be used to remove such ambiguity. For example, although unncessary (as [ScalarLinearInterpolation](#scalarlinearinterpolation) defines one and only one output variable), the above example input is equivalent to
+When the referenced model has more than one output variable, the variable specification becomes ambiguous. A more precise variable specifier in the form of `<model-name>.<variable-name>` can be used to remove such ambiguity. For example, although unncessary (as [ScalarLinearInterpolation](#scalarlinearinterpolation) defines one and only one output variable), the above example input is equivalent to
 ```
 [Models]
   [alpha]

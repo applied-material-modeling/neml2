@@ -43,8 +43,9 @@ LinearCombination<T>::expected_options()
   OptionSet options = Model::expected_options();
   options.doc() =
       "Calculate linear combination of multiple " + tensor_type +
-      " tensors as \\f$ u = c_i v_i + c_o \\f$ (Einstein summation assumed), where \\f$ c_i "
-      "\\f$ are the coefficients, and \\f$ v_i \\f$ are the variables to be summed.";
+      " tensors as \\f$ u = c_i v_i + s \\f$ (Einstein summation assumed), where \\f$ c_i "
+      "\\f$ are the coefficients, and \\f$ v_i \\f$ are the variables to be summed. \\f$ s \\f$ is "
+      "a constant offset.";
 
   options.set<bool>("define_second_derivatives") = true;
 
@@ -63,7 +64,7 @@ LinearCombination<T>::expected_options()
 
   options.set_parameter<TensorName<Scalar>>("constant_coefficient") = {TensorName<Scalar>("0")};
   options.set("constant_coefficient").doc() =
-      "The constant coefficient c0 added to the final summation";
+      "The constant coefficient added to the final summation";
 
   options.set<bool>("constant_coefficient_as_parameter") = false;
   options.set("constant_coefficient_as_parameter").doc() =
@@ -120,11 +121,14 @@ LinearCombination<T>::LinearCombination(const OptionSet & options)
       _coefs[i] = &declare_buffer<Scalar>("c_" + std::to_string(i), coef_ref);
   }
 
-  auto c0_as_param = options.get<bool>("constant_coefficient_as_parameter");
-  if (c0_as_param)
-    _c0 = &declare_parameter<Scalar>("c0", "constant_coefficient", /*allow_nonlinear=*/true);
-  else
-    _c0 = &declare_buffer<Scalar>("c0", "constant_coefficient");
+  if (options.user_specified("constant_coefficient"))
+  {
+    auto s_as_param = options.get<bool>("constant_coefficient_as_parameter");
+    if (s_as_param)
+      _s = &declare_parameter<Scalar>("s", "constant_coefficient", /*allow_nonlinear=*/true);
+    else
+      _s = &declare_buffer<Scalar>("s", "constant_coefficient");
+  }
 }
 
 template <typename T>
@@ -133,7 +137,7 @@ LinearCombination<T>::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   if (out)
   {
-    auto value = (*_c0) + (*_coefs[0]) * (*_from[0]);
+    auto value = _s ? (*_s) + (*_coefs[0]) * (*_from[0]) : (*_coefs[0]) * (*_from[0]);
     for (std::size_t i = 1; i < _from.size(); i++)
       value = value + (*_coefs[i]) * (*_from[i]);
     _to = value;
@@ -150,8 +154,8 @@ LinearCombination<T>::set_value(bool out, bool dout_din, bool d2out_din2)
       if (const auto * const pi = nl_param("c_" + std::to_string(i)))
         _to.d(*pi) = (*_from[i]);
     }
-    if (const auto * const C = nl_param("c0"))
-      _to.d(*C) = neml2::Scalar::full(1.0);
+    if (const auto * const s = nl_param("s"))
+      _to.d(*s) = neml2::Scalar::full(1.0, _from[0]->options());
   }
 
   if (d2out_din2)

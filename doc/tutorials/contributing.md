@@ -4,7 +4,7 @@
 
 ## Model development
 
-Although NEML2 comes with a large collection modular building blocks for composing material models, it is sometimes necessary to write your own material models (and integrate them with existing NEML2 models). The [extension](#tutorials-extension) tutorial set demonstrates how a custom model can be implemented within the NEML2 framework and provides an in-depth explanation for each step in the development process.
+Although NEML2 comes with a large collection of modular building blocks for composing material models, it is sometimes necessary to write your own material models (and integrate them with existing NEML2 models). The [extension](#tutorials-extension) tutorial set demonstrates how a custom model can be implemented within the NEML2 framework and provides an in-depth explanation for each step in the development process.
 
 ## C++ backend {#testing-cpp}
 
@@ -124,45 +124,6 @@ The C++ source code is formatted using `clang-format`. A `.clang-format` file is
 1. Point the plugin/extension to use the `.clang-format` file located at NEML2's repository root.
 2. Associate file extensions `.h` and `.cxx` with C++.
 
-If the project is configured using the "dev" preset (or equivalently if `CMAKE_EXPORT_COMPILE_COMMANDS` is used in a "Debug" build type), a symbolic link to `compile_commands.json` will be created at the project root. This allows IDE plugins or extensions to perform static analysis.
+The Python scripts must be formatted using `black`. Formatting requirements are specified under the `[black]` section in `pyproject.toml`. All pull requests will be run through `clang-format` and `black` to ensure formatting consistency.
 
-The Python scripts must be formatted using `black`. Formatting requirements are specified under the `[black]` section in `pyproject.toml`.
-
-All pull requests will be run through `clang-format` and `black` to ensure formatting consistency.
-
-For C++ linting, a `.clang-tidy` file is provided at the repository root to specify expected checks. Python linting is not currently enforced.
-
-## Naming conventions
-
-### Reserved axis names
-
-Recall that NEML2 models operates on _labeled tensors_, and that the collection of labels (with their corresponding layout) is called a labeled axis ([LabeledAxis](@ref neml2::LabeledAxis)). NEML2 predefines six sub-axes to categorize all the input, output and intermediate variables:
-- State \f$\mathcal{S}\f$ (axis name `state`): Variables collectively characterizing the current _state_ of the material subject to given external forces. The state variables are usually the output of a physically meaningful material model.
-- Forces \f$\mathcal{F}\f$ (axis name `forces`): Variables defining the _external_ forces that drive the response of the material.
-- Old state \f$\mathcal{S}_n\f$ (axis name `old_state`): The state variables _prior to_ the current material update. In the time-discrete setting, these are the state variables from the previous time step.
-- Old forces \f$\mathcal{F}_n\f$ (axis name `old_forces`): The external forces _prior to_ the current material update. In the time-discrete setting, these are the forces from the previous time step.
-- Residual \f$\mathcal{R}\f$ (axis name `residual`): The residual defines an _implicit_ model/function. An implicit model is updated by solving for the state variables that result in zero residual.
-- Parameters \f$\mathcal{P}\f$ (axis name `parameters`): The (nonlinear) parameters.
-
-\note
-When authoring C++ source code, it is recommended to avoid hard-coding reserved axis names as pure strings. Instead, inlined `const` string names (defined in `neml2/models/LabeledAxisAccessor.h`) should be used wherever possible, they are `STATE`, `OLD_STATE`, `FORCES`, `OLD_FORCES`, `RESIDUAL`, and `PARAMETERS` whose names are self-explanatory.
-
-### Variable naming conventions
-
-Variable names are used to _access_ slices of the storage tensor. Variable names have the type neml2::VariableName which is an alias to neml2::LabeledAxisAccessor. The following characters are not allowed in variable names:
-- whitespace characters: input file parsing ambiguity
-- `,`: input file parsing ambiguity
-- `;`: input file parsing ambiguity
-- `.`: clash with PyTorch parameter/buffer naming convention
-- `/`: separator reserved for nested variable name
-
-In the input file, the separator `/` is used to denote nested variable names. For example, `A/B/foo` specifies a variable named "foo" defined on the sub-axis named "B" which is a nested sub-axis of "A".
-
-### Source code naming conventions
-
-In NEML2 source code, the following naming conventions are recommended:
-- User-facing variables and option names should be _as descriptive as possible_. For example, the equivalent plastic strain is named "equivalent_plastic_strain". Note that white spaces, quotes, and left slashes are not allowed in the names. Underscores are recommended as a replacement for white spaces.
-- Developer-facing variables and option names should use simple alphanumeric symbols. For example, the equivalent plastic strain is named "ep" in consistency with most of the existing literature.
-- Developer-facing member variables and option names should use the same alphanumeric symbols. For example, the member variable for the equivalent plastic strain is named `ep`. However, if the member variable is protected or private, it is recommended to prefix it with an underscore, i.e. `_ep`.
-- Struct names and class names should use `PascalCase`.
-- Function names should use `snake_case`.
+The "cc" preset (or the `CMAKE_EXPORT_COMPILE_COMMANDS` configure option) can be used to generate the compilation database `compile_commands.json`. A symbolic link to `compile_commands.json` will be created at the project root. The compilation database is needed by many static analysis tools. Visual Studio Code users are encouraged to use the [clangd](https://github.com/clangd/vscode-clangd) extension. For C++ linting, a `.clang-tidy` file is provided at the repository root to specify expected checks. Python linting is not currently enforced.

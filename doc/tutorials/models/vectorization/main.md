@@ -12,7 +12,7 @@ Although the implementation varies, both CPU and CUDA supports vectorization. NE
 
 ## For loop versus vectorization: A numerical experiment
 
-Given the material model we have been working with in the previous tutorials, how much (wall) time would it take to perform 100,000 forward evaluations?
+Given the material model we have been working with in the previous tutorials, how much (wall clock) time would it take to perform 100,000 forward evaluations?
 
 There are two ways of completing this task:
 - using a for loop, or

@@ -21,7 +21,7 @@ In NEML2, we explicitly introduce the concept of batching such that the shape of
   i = 0, 1, 2, ..., n_b-1, \\
   j = 0, 1, 2, ..., n-n_b-1,
 \f}
-where \f$n_b \in [0, n]\f$ is the number of batch dimensions, \f$c_i\f$ is the number of components along each batch dimension, and \f$d_j\f$ is the number of components along each base dimension. In NEML2's notation, a separator \f$;\f$ is used to delimit batch and base sizes. Every batched tensor must have one and only one \f$;\f$ delimiter.
+where \f$n_b \geq 0\f$ is the number of batch dimensions, \f$c_i\f$ is the number of components along each batch dimension, and \f$d_j\f$ is the number of components along each base dimension. In NEML2's notation, a separator \f$;\f$ is used to delimit batch and base sizes. Tensor shapes always have one and only one \f$;\f$ delimiter.
 
 For example, given a tensor of shape
 \f[
