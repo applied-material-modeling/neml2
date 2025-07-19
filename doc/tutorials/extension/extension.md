@@ -20,13 +20,13 @@ where \f$\boldsymbol{x}\f$ and \f$\boldsymbol{v}\f$ are the position and velocit
     r_x \\
     r_v
   \end{Bmatrix} & = \begin{Bmatrix}
-    \boldsymbol{x} - \boldsymbol{x}_n - \left(t - t_n\right) \dot{\boldsymbol{x}} \\
-    \boldsymbol{v} - \boldsymbol{v}_n - \left(t - t_n\right) \dot{\boldsymbol{v}} \\
+    \tilde{\boldsymbol{x}} - \boldsymbol{x}_n - \left(t - t_n\right) \dot{\boldsymbol{x}} \\
+    \tilde{\boldsymbol{v}} - \boldsymbol{v}_n - \left(t - t_n\right) \dot{\boldsymbol{v}} \\
   \end{Bmatrix}, \label{3} \\
   \begin{Bmatrix}
     \boldsymbol{x} \\
     \boldsymbol{v}
-  \end{Bmatrix} & = \mathop{\mathrm{root}}\limits_{\boldsymbol{x}, \boldsymbol{v}} \left( \mathbf{r} \right), \label{4}
+  \end{Bmatrix} & = \mathop{\mathrm{root}}\limits_{\tilde{\boldsymbol{x}}, \tilde{\boldsymbol{v}}} \left( \mathbf{r} \right), \label{4}
 \f}
 subject to appropriate initial conditions \f$\boldsymbol{x}_0\f$ and \f$\boldsymbol{v}_0\f$
 

@@ -20,7 +20,7 @@ where the subscript \f$ n \f$ represents the variable value from the previous ti
 
 ## Model structure
 
-All three equations can be translated to [ScalarVariableValue](#scalarvariablerate). The input file looks like
+All three equations can be translated to [ScalarVariableRate](#scalarvariablerate). The input file looks like
 ```
 [Models]
   [eq1]
@@ -306,6 +306,6 @@ JIT optimization and compilation isn't the holy grail for improving performance 
 
 Due to these limitations, certain models disable the use of JIT compilation. The most notable case is [ImplicitUpdate](#implicitupdate) due to its use of Newton-Raphson solvers which are in general data dependent.  However, the portions of the complete model defining the implicit function to solve can often benefit from JIT compilation.
 
-When multiple models are composed together, a single function graph is by default traced through all sub-models. However, if one of the sub-model does not allow JIT, e.g., is of type `ImplicitUpdate`, then the composed model falls back to trace each individual sub-model except for those explicit disabling JIT. Therefore, it is generally recommended to compose JIT-enabled sub-models separate from those JIT-disabled ones, allowing for more optimization opportunities.
+When multiple models are composed together, a single function graph is by default traced through all sub-models. However, if one of the sub-model does not allow JIT, e.g., is of type `ImplicitUpdate`, then the composed model falls back to trace each individual sub-model except for those explicitly disabling JIT. Therefore, it is generally recommended to compose JIT-enabled sub-models separate from those JIT-disabled ones, allowing for more optimization opportunities.
 
 @insert-page-navigation

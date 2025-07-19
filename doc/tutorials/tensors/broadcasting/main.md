@@ -6,7 +6,7 @@ Related reading: NumPy manual on [Broadcasting](https://numpy.org/doc/stable/use
 
 ## NEML2's broadcasting rules
 
-NEML's broadcasting rules are built on top of NumPy's general broadcasting rules.
+NEML2's broadcasting rules are built on top of NumPy's general broadcasting rules.
 
 When operating on two tensors, NEML2 compares each dimension's size pair one-by-one, from right to left. Before the comparison, the shapes of two tensors are aligned at the final batch dimension. The comparison starts with the trailing (i.e., rightmost) batch dimension and works its way left. Two batch dimensions are compatible (broadcastable) when
 - Their sizes are equal,

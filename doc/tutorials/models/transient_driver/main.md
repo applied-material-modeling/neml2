@@ -10,7 +10,7 @@ In the previous tutorial, we demonstrated the use of [ImplicitUpdate](#implicitu
 \f}
 In other words, the constitutive update takes a recursive form: Given the state and external force of the system (\f$\mathbf{s}_n\f$ and \f$\mathbf{f}_n\f$) at time step \f$n\f$, as well as the "forces" \f$\mathbf{f}_{n+1}\f$ driving the system to advance to the next step \f$n+1\f$, the model yields the state of the system for the next step \f$\mathbf{s}_{n+1}\f$.
 
-This form of constitutive update is oftentimes sufficient when coupling with external PDE solvers: The PDE solver calculates the external driving force \f$\mathbf{f}_{n+1}\f$ and asks NEML2 to advance the state of system \f$\mathbf{s}_{n+1}\f$.
+This form of constitutive update is oftentimes sufficient when coupling with external PDE solvers: The PDE solver calculates the external driving force \f$\mathbf{f}_{n+1}\f$ and asks NEML2 to advance the state of system to \f$\mathbf{s}_{n+1}\f$.
 
 However, in many other applications such as parameter calibration, it is favorable to let NEML2 drive the constitutive update (recursively) to effectively simulate the transient response of the material. The corresponding initial-value problem can be formally written as:
 
@@ -95,7 +95,7 @@ main()
 @endsource
 
 \note
-The Python binding for neml2::Driver does not yet exist. Instead, a separate Python package named pyzag can be used in conjunction with NEML2 to perform recursive constitutive updates in a much more efficient manner compared to the NEML2 drivers, which loop over each point in the requested time series sequentially.
+The Python binding for neml2::Driver does not yet exist. Instead, a separate Python package named [pyzag](https://github.com/applied-material-modeling/pyzag) can be used in conjunction with NEML2 to perform recursive constitutive updates in a much more efficient manner compared to the NEML2 drivers.
 
 The results saved in "result.pt" can be used as a regular pickled [TorchScript](https://pytorch.org/docs/stable/jit.html), which can be loaded using `torch.jit.load`. For example, the following Python script retrieves and plots the strain and stress values.
 @source:src2

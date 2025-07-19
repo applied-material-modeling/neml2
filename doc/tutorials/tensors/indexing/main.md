@@ -101,7 +101,7 @@ Single element indexing can be used to index multidimensional tensors, in which 
 
     // Single element indexing along base dimensions
     std::cout << "a.base[2, 0] = \n" << a.base_index({2, 0}) << '\n' << std::endl;
-    std::cout << "a.base[0] = \n" << a.base_index({1}) << std::endl;
+    std::cout << "a.base[1] = \n" << a.base_index({1}) << std::endl;
   }
   ```
   @endsource
@@ -180,7 +180,7 @@ It is best to learn slicing from examples. Below are equivalent C++ and Python c
     std::cout << "a.batch[-15:-3:2] =\n" << a.batch_index({Slice(-15, -3, 2)}) << '\n' << std::endl;
 
     std::cout << "start default to 0" << std::endl;
-    std::cout << "a.batch[:17:3] =\n" << a.batch_index({Slice(None, 17, 2)}) << '\n' << std::endl;
+    std::cout << "a.batch[:17:3] =\n" << a.batch_index({Slice(None, 17, 3)}) << '\n' << std::endl;
 
     std::cout << "stop default to 'consuming all remaining elements'" << std::endl;
     std::cout << "a.batch[12::2] =\n" << a.batch_index({Slice(12, None, 2)}) << '\n' << std::endl;

@@ -12,15 +12,15 @@ Let us define the loss function as the *distance* between the stress prediction 
 \f]
 The material parameters, \f$K^*\f$ and \f$G^*\f$, can then be "inferred" by minimizing the loss function
 \f[
-  \left( K^*, G^* \right) = \mathop{\mathrm{argmin}}\limits_{K, G} l.
+  \left( K^*, G^* \right) = \mathop{\mathrm{argmin}}\limits_{K, G} \ l.
 \f]
 
 ## Calibration
 
 The following Python script uses the simple gradient descent algorithm to find \f$K^*\f$ and \f$G^*\f$:
 \f{align*}
-  K_{i+1} = K_i - \gamma \pdv{l}{K_i},
-  G_{i+1} = G_i - \gamma \pdv{l}{G_i},
+  K_{i+1} &= K_i - \gamma \pdv{l}{K_i}, \\
+  G_{i+1} &= G_i - \gamma \pdv{l}{G_i},
 \f}
 which iterates until the loss function \f$l\f$ is sufficiently small. A constant learning rate \f$\gamma = 1\f$ is chosen in this example.
 
@@ -35,6 +35,7 @@ torch.set_default_dtype(torch.double)
 model = neml2.load_model("input.i", "model")
 
 # Experimental data
+# Spoiler: These data correspond to K = 14 and G = 7.8
 strain_exp = SR2.fill(0.1, 0.05, -0.03, 0.02, 0.06, 0.03)
 stress_exp = SR2.fill(2.616, 1.836, 0.588, 0.312, 0.9361, 0.468)
 
