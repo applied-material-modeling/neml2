@@ -313,5 +313,10 @@ endif()
 # compile_commands.json
 # ----------------------------------------------------------------------------
 if(CMAKE_EXPORT_COMPILE_COMMANDS)
-      file(CREATE_LINK ${NEML2_BINARY_DIR}/compile_commands.json ${NEML2_SOURCE_DIR}/compile_commands.json SYMBOLIC)
+      set(SYMLINK_NAME "${NEML2_SOURCE_DIR}/compile_commands.json")
+      set(FILE_ORIGINAL "${NEML2_BINARY_DIR}/compile_commands.json")
+
+      if(NOT ${SYMLINK_NAME} STREQUAL ${FILE_ORIGINAL})
+            file(CREATE_LINK ${NEML2_BINARY_DIR}/compile_commands.json ${NEML2_SOURCE_DIR}/compile_commands.json SYMBOLIC)
+      endif()
 endif()

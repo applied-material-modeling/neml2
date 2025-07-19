@@ -12,6 +12,8 @@ build
 _deps
 install
 installed
+hash
+version
 
 # Editor cache
 *.swp
