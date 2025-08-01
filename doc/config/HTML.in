@@ -8,6 +8,7 @@ HTML_OUTPUT            = html
 HTML_HEADER            = ${NEML2_SOURCE_DIR}/doc/config/header.html
 HTML_EXTRA_FILES       = ${doxygen-awesome-css_SOURCE_DIR}/doxygen-awesome-darkmode-toggle.js \
                          ${doxygen-awesome-css_SOURCE_DIR}/doxygen-awesome-paragraph-link.js \
+                         ${doxygen-awesome-css_SOURCE_DIR}/doxygen-awesome-interactive-toc.js \
                          ${NEML2_SOURCE_DIR}/doc/js/components/work-dispatcher.js \
                          ${NEML2_SOURCE_DIR}/doc/js/components/static-hybrid-scheduler.js \
                          ${NEML2_SOURCE_DIR}/doc/js/components/simple-scheduler-demo.js \

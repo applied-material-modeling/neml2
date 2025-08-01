@@ -1,7 +1,7 @@
 [build-system]
 requires = [
   "setuptools>=42",
-  "cmake>=3.26,<4.0",
+  "cmake>=3.26",
   "ninja",
   "pybind11",
   "pybind11-stubgen",
@@ -25,14 +25,14 @@ dependencies = ["torch"]
 line-length = 100
 
 [tool.cibuildwheel]
-build = "cp38-* cp39-* cp310-* cp311-* cp312-* cp313-*"
+build = "cp39-* cp310-* cp311-* cp312-* cp313-*"
 skip = "*win* *manylinux_i686 *manylinux_aarch64 *manylinux_ppc64le *manylinux_s390x *manylinux_armv7l *musllinux*"
 
 environment = { CMAKE_GENERATOR = "Ninja" }
 build-verbosity = 1
 
 before-all = ""
-before-build = "python -m pip install -r requirements.txt cmake ninja torch"
+before-build = "python -m pip install torch"
 
 test-requires = "pytest torch pyzag==1.1.1 graphviz"
 test-command = "pytest -v {project}/python/tests"

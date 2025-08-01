@@ -98,7 +98,6 @@ jobs:
       - name: Build
         run: cmake --build --preset dev-cpp
 
-
   runner:
     needs: clang-format
     strategy:

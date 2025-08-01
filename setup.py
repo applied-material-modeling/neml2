@@ -62,6 +62,7 @@ class CMakeBuild(build_ext):
             "-DNEML2_TESTS=OFF",
             "-DNEML2_RUNNER=OFF",
             "-DNEML2_DOC=OFF",
+            "-DNEML2_WHEEL=ON",
             "-S{}".format(ext.sourcedir),
         ]
         if generator:
@@ -87,16 +88,7 @@ class CMakeBuild(build_ext):
 
         subprocess.run(["cmake", *configure_args], cwd=build_temp, check=True)
         subprocess.run(["cmake", *build_args], cwd=build_temp, check=True)
-        subprocess.run(
-            ["cmake", *install_args, "--component", "libneml2"],
-            cwd=build_temp,
-            check=True,
-        )
-        subprocess.run(
-            ["cmake", *install_args, "--component", "libneml2-python"],
-            cwd=build_temp,
-            check=True,
-        )
+        subprocess.run(["cmake", *install_args], cwd=build_temp, check=True)
 
 
 setup(

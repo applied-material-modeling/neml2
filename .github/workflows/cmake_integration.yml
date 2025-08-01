@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
+  add_subdirectory:
     runs-on: ubuntu-latest
     steps:
       - uses: applied-material-modeling/neml2-ci@main
@@ -21,12 +21,36 @@ jobs:
           python-version: 3.9
           cmake-version: 3.26
           torch-version: 2.5.1
-      - name: Create a source file for testing purposes
-        run: cp neml2/cmake/subproject/main.cxx .
-      - name: Create a CMakeLists.txt file for testing purposes
-        run: cp neml2/cmake/subproject/CMakeLists.txt .
+      - name: Create an example CMake project
+        run: |
+          cp neml2/cmake/add_subdirectory/main.cxx .
+          cp neml2/cmake/add_subdirectory/CMakeLists.txt .
       - name: Configure with CMake
         run: cmake -DNEML2_TESTS=OFF -GNinja -B build .
       - name: Compile
         run: cmake --build build --target all
+      - run: ./build/foo
+
+  find_package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: applied-material-modeling/neml2-ci@main
+        with:
+          path: neml2-src
+          python-version: 3.9
+          cmake-version: 3.26
+          torch-version: 2.5.1
+      - name: Install neml2
+        run: |
+          cmake --preset release -GNinja -S neml2-src -B neml2-build
+          cmake --build neml2-build
+          cmake --install neml2-build --prefix neml2-install --component libneml2
+      - name: Create an example CMake project
+        run: |
+          cp neml2-src/cmake/find_package/main.cxx .
+          cp neml2-src/cmake/find_package/CMakeLists.txt .
+      - name: Configure with CMake
+        run: cmake -GNinja -Dneml2_ROOT=neml2-install -B build -S .
+      - name: Compile
+        run: cmake --build build
       - run: ./build/foo
