@@ -61,8 +61,8 @@ endif()
 
 if(NEML2_PCH)
   target_precompile_headers(misc PUBLIC
-    ${NEML2_SOURCE_DIR}/include/neml2/misc/types.h
-    ${NEML2_SOURCE_DIR}/include/neml2/misc/assertions.h
+    <neml2/misc/types.h>
+    <neml2/misc/assertions.h>
   )
 endif()
 
@@ -71,7 +71,7 @@ neml2_add_submodule(jit SHARED jit)
 target_link_libraries(jit PUBLIC misc)
 
 if(NEML2_PCH)
-  target_precompile_headers(jit PUBLIC ${NEML2_SOURCE_DIR}/include/neml2/jit/types.h)
+  target_precompile_headers(jit PUBLIC <neml2/jit/types.h>)
 endif()
 
 # libneml2_tensor
@@ -80,11 +80,11 @@ target_link_libraries(tensor PUBLIC jit)
 
 if(NEML2_PCH)
   target_precompile_headers(tensor PUBLIC
-    ${NEML2_SOURCE_DIR}/include/neml2/tensors/TensorBase.h
-    ${NEML2_SOURCE_DIR}/include/neml2/tensors/TensorBaseImpl.h
-    ${NEML2_SOURCE_DIR}/include/neml2/tensors/PrimitiveTensor.h
-    ${NEML2_SOURCE_DIR}/include/neml2/tensors/assertions.h
-    ${NEML2_SOURCE_DIR}/include/neml2/tensors/shape_utils.h
+    <neml2/tensors/TensorBase.h>
+    <neml2/tensors/TensorBaseImpl.h>
+    <neml2/tensors/PrimitiveTensor.h>
+    <neml2/tensors/assertions.h>
+    <neml2/tensors/shape_utils.h>
   )
 endif()
 
@@ -94,10 +94,10 @@ target_link_libraries(base PUBLIC tensor hit)
 
 if(NEML2_PCH)
   target_precompile_headers(base PUBLIC
-    ${NEML2_SOURCE_DIR}/include/neml2/base/Registry.h
-    ${NEML2_SOURCE_DIR}/include/neml2/base/Factory.h
-    ${NEML2_SOURCE_DIR}/include/neml2/base/Option.h
-    ${NEML2_SOURCE_DIR}/include/neml2/base/TensorName.h
+    <neml2/base/Registry.h>
+    <neml2/base/Factory.h>
+    <neml2/base/Option.h>
+    <neml2/base/TensorName.h>
   )
 endif()
 
@@ -118,7 +118,7 @@ target_link_options(model INTERFACE ${CMAKE_CXX_LINK_WHAT_YOU_USE_FLAG})
 
 if(NEML2_PCH)
   target_precompile_headers(model PUBLIC
-    ${NEML2_SOURCE_DIR}/include/neml2/models/Model.h
+    <neml2/models/Model.h>
   )
 endif()
 

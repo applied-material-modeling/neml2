@@ -13,7 +13,7 @@ endif()
 
 get_target_property(torch_LINK_DIR torch::python INTERFACE_LINK_DIRECTORIES)
 
-if(NOT ${torch_LINK_DIR} STREQUAL ${Python3_SITEARCH}/torch/lib)
+if(NOT ${torch_LINK_DIR} STREQUAL ${Python3_SITEARCH}/torch/lib AND NOT ${torch_LINK_DIR} STREQUAL ${Python3_USER_SITE}/torch/lib)
   message(WARNING "Python bindings can only be built against a Torch python package. Although a Torch is found, it does not appear to come from Python site packages. Reverting NEML2_PYBIND to OFF.")
   set(NEML2_PYBIND OFF CACHE BOOL "Build Python bindings" FORCE)
   return()
@@ -55,14 +55,6 @@ macro(add_submodule mname malias msrcs)
 
   # add to the stub generation
   add_dependencies(python_stub ${mname})
-
-  # pch
-  if(NEML2_PCH)
-    target_precompile_headers(${mname} PUBLIC
-      ${pybind11_INCLUDE_DIR}/pybind11/pybind11.h
-      ${pybind11_INCLUDE_DIR}/pybind11/operators.h
-    )
-  endif()
 endmacro()
 
 # ----------------------------------------------------------------------------

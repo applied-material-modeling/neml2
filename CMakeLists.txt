@@ -71,6 +71,7 @@ set(NEML2_WHEEL OFF CACHE INTERNAL "Build NEML2 as a Python wheel. This is suppo
 # Dependencies and 3rd party packages
 # ----------------------------------------------------------------------------
 set(torch_VERSION "2.5.1" CACHE STRING "Default libTorch/PyTorch version to download")
+set(torch_SEARCH_SITE_PACKAGES ON CACHE BOOL "Search for libTorch in Python site-packages")
 set(Doxygen_VERSION "1.12.0" CACHE STRING "Default doxygen version to download")
 set(doxygen_awesome_css_VERSION "v2.3.4" CACHE STRING "Default doxygen-awesome version to download")
 set(wasp_VERSION "cf46fbd0d224cc2a70edbc668d3e65d45bec9e16" CACHE STRING "Default WASP version to download (if not found)")
@@ -104,6 +105,14 @@ include(DepUtils)
 # Python3
 # ----------------------------------------------------------------------------
 find_package(Python3 COMPONENTS Interpreter OPTIONAL_COMPONENTS Development.Module)
+# If Python3 is found, let's also find the user site-packages (in case torch is installed there)
+if(Python3_EXECUTABLE)
+      execute_process(
+            COMMAND ${Python3_EXECUTABLE} -m site --user-site
+            OUTPUT_VARIABLE Python3_USER_SITE
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+      )
+endif()
 
 # ----------------------------------------------------------------------------
 # The following blocks are used to find and download 3rd party dependencies
@@ -135,7 +144,8 @@ if(NOT torch_FOUND)
 
       if(torch_URL)
             download_from_url(torch ${torch_URL} ${NEML2_CONTRIB_PREFIX})
-            find_package(torch REQUIRED OPTIONAL_COMPONENTS cuda python PATHS ${torch_SOURCE_DIR} NO_DEFAULT_PATH)
+            set(torch_ROOT ${NEML2_CONTRIB_PREFIX}/torch-src)
+            find_package(torch MODULE REQUIRED OPTIONAL_COMPONENTS cuda python)
       else()
             message(FATAL_ERROR "Torch not found and no download URL provided.")
       endif()
