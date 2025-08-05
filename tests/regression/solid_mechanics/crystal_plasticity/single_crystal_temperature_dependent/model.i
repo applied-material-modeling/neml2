@@ -158,11 +158,11 @@
     cp_warmup_elastic_scale = 0.1
     save_as = 'result.pt'
   []
-#  [regression]
-#    type = TransientRegression
-#    driver = 'driver'
-#    reference = 'gold/result.pt'
-#  []
+  [regression]
+    type = TransientRegression
+    driver = 'driver'
+    reference = 'gold/result.pt'
+  []
 []
 
 [Solvers]
