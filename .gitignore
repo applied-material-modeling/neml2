@@ -6,7 +6,7 @@ contrib/doxygen-awesome-css*
 contrib/hit*
 contrib/json*
 contrib/timpi*
-contrib/Torch*
+contrib/torch*
 contrib/wasp*
 contrib/gperftools*
 
