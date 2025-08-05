@@ -55,14 +55,6 @@ macro(add_submodule mname malias msrcs)
 
   # add to the stub generation
   add_dependencies(python_stub ${mname})
-
-  # pch
-  if(NEML2_PCH)
-    target_precompile_headers(${mname} PUBLIC
-      ${pybind11_INCLUDE_DIR}/pybind11/pybind11.h
-      ${pybind11_INCLUDE_DIR}/pybind11/operators.h
-    )
-  endif()
 endmacro()
 
 # ----------------------------------------------------------------------------
