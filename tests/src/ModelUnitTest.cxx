@@ -63,6 +63,8 @@ ModelUnitTest::expected_options()
   options.set<bool>("check_second_derivatives") = false;
   options.set<bool>("check_AD_parameter_derivatives") = true;
 
+  options.set<bool>("check_exact_shapes") = false;
+
   options.set<double>("value_rel_tol") = 1e-5;
   options.set<double>("value_abs_tol") = 1e-8;
   options.set<double>("derivative_rel_tol") = 1e-5;
@@ -96,6 +98,7 @@ ModelUnitTest::ModelUnitTest(const OptionSet & options)
     _check_derivs(options.get<bool>("check_derivatives")),
     _check_secderivs(options.get<bool>("check_second_derivatives")),
     _check_AD_param_derivs(options.get<bool>("check_AD_parameter_derivatives")),
+    _check_exact_shapes(options.get<bool>("check_exact_shapes")),
 
     _val_rtol(options.get<double>("value_rel_tol")),
     _val_atol(options.get<double>("value_abs_tol")),
@@ -188,6 +191,15 @@ ModelUnitTest::check_value()
                 expected_value,
                 "\nThe model gives the following values:\n",
                 out.at(name));
+    if (_check_exact_shapes)
+      neml_assert(out.at(name).sizes() == expected_value.sizes(),
+                  "The model gives output '",
+                  name,
+                  "' with a different shape than expected. The expected shape is ",
+                  expected_value.sizes(),
+                  " but the model gives ",
+                  out.at(name).sizes(),
+                  ".");
   }
 }
 
@@ -222,6 +234,7 @@ ModelUnitTest::check_dvalue()
                     numerical);
       // Otherwise, the numerical derivative should be close to the exact derivative
       else
+      {
         neml_assert(
             at::allclose(exact.at(yname).at(xname), numerical, _deriv_rtol, _deriv_atol),
             "The model gives derivatives that are different from finite differencing for output '",
@@ -232,6 +245,19 @@ ModelUnitTest::check_dvalue()
             exact.at(yname).at(xname),
             "\nFinite differencing gives:\n",
             numerical);
+
+        if (_check_exact_shapes)
+          neml_assert(exact.at(yname).at(xname).sizes() == numerical.sizes(),
+                      "The model gives derivative of output '",
+                      yname,
+                      "' with respect to '",
+                      xname,
+                      "' with a different shape than expected. The expected shape is ",
+                      numerical.sizes(),
+                      " but the model gives ",
+                      exact.at(yname).at(xname).sizes(),
+                      ".");
+      }
     }
 }
 
@@ -272,6 +298,7 @@ ModelUnitTest::check_d2value()
               numerical);
         // Otherwise, the numerical derivative should be close to the exact derivative
         else
+        {
           neml_assert(
               at::allclose(
                   exact.at(yname).at(x1name).at(x2name), numerical, _secderiv_rtol, _secderiv_atol),
@@ -287,6 +314,20 @@ ModelUnitTest::check_d2value()
               exact.at(yname).at(x1name).at(x2name),
               "\nFinite differencing gives:\n",
               numerical);
+          if (_check_exact_shapes)
+            neml_assert(exact.at(yname).at(x1name).at(x2name).sizes() == numerical.sizes(),
+                        "The model gives second derivative of output '",
+                        yname,
+                        "' with respect to '",
+                        x1name,
+                        "' and '",
+                        x2name,
+                        "' with a different shape than expected. The expected shape is ",
+                        numerical.sizes(),
+                        " but the model gives ",
+                        exact.at(yname).at(x1name).at(x2name).sizes(),
+                        ".");
+        }
       }
 }
 

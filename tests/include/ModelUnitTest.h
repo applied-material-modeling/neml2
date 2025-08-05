@@ -51,6 +51,7 @@ private:
   const bool _check_derivs;
   const bool _check_secderivs;
   const bool _check_AD_param_derivs;
+  const bool _check_exact_shapes;
 
   ValueMap _in;
   ValueMap _out;
