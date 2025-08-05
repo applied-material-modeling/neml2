@@ -30,87 +30,73 @@
 namespace neml2
 {
 /**
- * @brief Linearly interpolate the parameter along a single axis.
+ * @brief Linearly interpolate the parameter along on a 2D grid.
  *
- * Currently, this object is hard-coded to always interpolate along the last batch dimension.
+ * Currently, this object is hard-coded to always interpolate along the last two batch dimensions.
  * A few examples of tensor shapes are listed below to demonstrate how broadcasting is handled:
  *
  * Example 1: unbatched abscissa, unbatched ordinate (of type R2), unbatched input argument,
- * interpolant size 100
+ * interpolation grid 6x8
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * abscissa shape: (100;     )
- * ordinate shape: (100; 3, 3)
- *    input shape: (   ;     )
- *   output shape: (   ; 3, 3)
+ * abscissa 1 shape: (   6;     )
+ * abscissa 2 shape: (   8;     )
+ *   ordinate shape: (6, 8; 3, 3)
+ *    input 1 shape: (    ;     )
+ *    input 2 shape: (    ;     )
+ *     output shape: (    ; 3, 3)
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *
  * Example 2: unbatched abscissa, unbatched ordinate (of type R2), batched input argument (with
- * batch shape `(2, 3)`), interpolant size 100
+ * batch shape `(2, 3)`), interpolation grid 6x8
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * abscissa shape: (     100;     )
- * ordinate shape: (     100; 3, 3)
- *    input shape: (2, 3    ;     )
- *   output shape: (2, 3    ; 3, 3)
+ * abscissa 1 shape: (         6;     )
+ * abscissa 2 shape: (         8;     )
+ *   ordinate shape: (      6, 8; 3, 3)
+ *    input 1 shape: (2, 3      ;     )
+ *    input 2 shape: (2, 3      ;     )
+ *     output shape: (2, 3      ; 3, 3)
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *
  * Example 3: unbatched abscissa, batched ordinate (of type R2 and with batch shape `(5, 1)`),
- * batched input argument (with batch shape `(2, 5, 2)`), interpolant size 100
+ * batched input argument (with batch shape `(2, 5, 2)`), interpolation grid 6x8
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * abscissa shape: (         100;     )
- * ordinate shape: (   5, 1, 100; 3, 3)
- *    input shape: (2, 5, 2     ;     )
- *   output shape: (2, 5, 2     ; 3, 3)
+ * abscissa 1 shape: (            6;     )
+ * abscissa 2 shape: (            8;     )
+ *   ordinate shape: (   5, 1, 6, 8; 3, 3)
+ *    input 1 shape: (2, 5, 2      ;     )
+ *    input 2 shape: (2, 5, 2      ;     )
+ *     output shape: (2, 5, 2      ; 3, 3)
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *
  * Example 4: batched abscissa (with batch shape `(7, 8, 1)`), unbatched ordinate (of type R2),
- * batched input argument (with batch shape `(7, 8, 5)`), interpolant size 100
+ * batched input argument (with batch shape `(7, 1, 5)` and `(8, 1)`), interpolation grid 10x10
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * abscissa shape: (7, 8, 1, 100;     )
- * ordinate shape: (         100; 3, 3)
- *    input shape: (7, 8, 5     ;     )
- *   output shape: (7, 8, 5     ; 3, 3)
+ * abscissa 1 shape: (            6;     )
+ * abscissa 2 shape: (            8;     )
+ *   ordinate shape: (         6, 8; 3, 3)
+ *    input 1 shape: (7, 1, 5      ;     )
+ *    input 2 shape: (   8, 1      ;     )
+ *     output shape: (7, 8, 5      ; 3, 3)
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *
  */
 template <typename T>
-class LinearInterpolation : public Interpolation<T>
+class BilinearInterpolation : public Interpolation<T>
 {
 public:
   static OptionSet expected_options();
 
-  LinearInterpolation(const OptionSet & options);
-
-  /**
-   * @brief Apply the mask tensor \p m on the input \p in.
-   *
-   * This method additionally handles the necessary expanding and reshaping based on two
-   * assumptions:
-   * 1. The mask only selects 1 single batch along the interpolated dimension.
-   * 2. We are always interpolating along the last batch dimension.
-   *
-   * So if some day we relax the 2nd assumption, this method need to be adapted accordingly.
-   */
-  template <typename T2>
-  static T2 mask(const T2 & in, const Scalar & m);
+  BilinearInterpolation(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
   /// The abscissa values of the interpolant
-  const Scalar & _X;
+  const Scalar & _X1;
+  const Scalar & _X2;
 
   /// Argument of interpolation
-  const Variable<Scalar> & _x;
+  const Variable<Scalar> & _x1;
+  const Variable<Scalar> & _x2;
 };
-
-template <typename T>
-template <typename T2>
-T2
-LinearInterpolation<T>::mask(const T2 & in, const Scalar & m)
-{
-  // Resulting batch shape
-  const auto B = m.batch_sizes().slice(0, -1);
-  // Use advanced (boolean) indexing to select the correct interval
-  return T2(in.batch_expand_as(m).index({m})).batch_reshape(B);
-}
 } // namespace neml2

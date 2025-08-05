@@ -55,14 +55,8 @@ public:
   Interpolation(const OptionSet & options);
 
 protected:
-  /// The abscissa values of the interpolant
-  const Scalar & _X;
-
   /// The ordinate values of the interpolant
   const T & _Y;
-
-  /// Argument of interpolation
-  const Variable<Scalar> & _x;
 
   /// The interpolated value
   Variable<T> & _p;

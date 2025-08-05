@@ -37,13 +37,23 @@ LinearInterpolation<T>::expected_options()
 {
   OptionSet options = Interpolation<T>::expected_options();
   options.doc() += " This object performs a _linear interpolation_.";
+
   options.set<bool>("define_second_derivatives") = true;
+
+  options.set<TensorName<Scalar>>("abscissa");
+  options.set("abscissa").doc() = "Scalar defining the abscissa values of the interpolant";
+
+  options.set_input("argument");
+  options.set("argument").doc() = "Argument used to query the interpolant";
+
   return options;
 }
 
 template <typename T>
 LinearInterpolation<T>::LinearInterpolation(const OptionSet & options)
-  : Interpolation<T>(options)
+  : Interpolation<T>(options),
+    _X(this->template declare_parameter<Scalar>("X", "abscissa")),
+    _x(this->template declare_input_variable<Scalar>("argument"))
 {
 }
 
