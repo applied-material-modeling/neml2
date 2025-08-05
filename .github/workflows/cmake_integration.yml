@@ -42,7 +42,7 @@ jobs:
           torch-version: 2.5.1
       - name: Install neml2
         run: |
-          cmake --preset release -GNinja -S neml2-src -B neml2-build
+          cmake --preset release -GNinja -S neml2-src -B neml2-build -DNEML2_PYBIND=OFF
           cmake --build neml2-build
           cmake --install neml2-build --prefix neml2-install --component libneml2
       - name: Create an example CMake project
