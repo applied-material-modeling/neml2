@@ -40,11 +40,12 @@ def batch(alist, n=1):
         yield alist[ndx : min(ndx + n, l)]
 
 
-def filter_compile_commands(compile_commands, srcs, headers, include_dirs):
+def filter_compile_commands(compile_commands, srcs, headers, include_dirs, exclude_dirs):
     included = lambda f: any(f.startswith(d) for d in include_dirs)
+    excluded = lambda f: any(f.startswith(d) for d in exclude_dirs)
     filtered = []
     for cmd in compile_commands:
-        if not included(cmd["file"]):
+        if not included(cmd["file"]) or excluded(cmd["file"]):
             continue
         if cmd["file"] in srcs:
             filtered.append(cmd)
@@ -99,6 +100,13 @@ if __name__ == "__main__":
         default="src/neml2",
         help="A comma-separated list of directories. Only include compile commands for files in these directories. Specify these directories relative to the root of the repository.",
     )
+    parser.add_argument(
+        "-e",
+        "--exclude-dirs",
+        type=str,
+        default="",
+        help="A comma-separated list of directories. Exclude compile commands for files in these directories. Specify these directories relative to the root of the repository.",
+    )
 
     # parse cliargs
     args = parser.parse_args()
@@ -112,6 +120,8 @@ if __name__ == "__main__":
     root = Path(__file__).parent.parent
     include_dirs = args.include_dirs.split(",")
     include_dirs = [str((root / d).resolve()) for d in include_dirs]
+    exclude_dirs = args.exclude_dirs.split(",")
+    exclude_dirs = [str((root / d).resolve()) for d in exclude_dirs if d]
 
     # get list of files that are different between two SHAs
     diff_files = subprocess.run(
@@ -132,7 +142,7 @@ if __name__ == "__main__":
     print("Files to be included in compile_commands.json:")
     executor = concurrent.futures.ProcessPoolExecutor(multiprocessing.cpu_count())
     futures = [
-        executor.submit(filter_compile_commands, group, srcs, headers, include_dirs)
+        executor.submit(filter_compile_commands, group, srcs, headers, include_dirs, exclude_dirs)
         for group in batch(compile_commands, 10)
     ]
     concurrent.futures.wait(futures)

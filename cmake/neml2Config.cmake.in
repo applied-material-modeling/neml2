@@ -1,0 +1,40 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+include("${CMAKE_CURRENT_LIST_DIR}/neml2targets.cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/Modules")
+
+# torch
+set(torch_ROOT @torch_ROOT@)
+if(@torch_cuda_FOUND@)
+  find_dependency(torch MODULE REQUIRED COMPONENTS core cuda)
+else()
+  find_dependency(torch MODULE REQUIRED COMPONENTS core)
+endif()
+
+# wasp
+set(wasp_ROOT @wasp_ROOT@)
+find_dependency(wasp MODULE REQUIRED COMPONENTS core hit)
+
+# hit
+set(hit_ROOT @hit_ROOT@)
+find_dependency(hit MODULE REQUIRED)
+
+# timpi
+if(@timpi_FOUND@)
+  set(timpi_BUILD_TYPE @timpi_BUILD_TYPE@)
+  set(timpi_ROOT @timpi_ROOT@)
+  find_dependency(timpi MODULE REQUIRED)
+endif()
+
+# json
+if(@NEML2_JSON@)
+  find_dependency(nlohmann_json CONFIG REQUIRED PATHS @nlohmann_json_DIR@ NO_DEFAULT_PATH)
+endif()
+
+# gperftools
+if(@gperftools_FOUND@)
+  set(gperftools_ROOT @gperftools_ROOT@)
+  find_dependency(gperftools MODULE REQUIRED COMPONENTS profiler)
+endif()

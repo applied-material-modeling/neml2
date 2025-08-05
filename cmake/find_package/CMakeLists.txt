@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.26)
+project(FOO)
+find_package(neml2 CONFIG REQUIRED)
+add_executable(foo main.cxx)
+target_link_libraries(foo PRIVATE neml2::neml2)

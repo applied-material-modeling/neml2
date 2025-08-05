@@ -25,7 +25,6 @@ Integrating NEML2 into a project that already uses CMake is fairly straightforwa
 
 ```
 add_subdirectory(neml2)
-
 add_executable(foo main.cxx)
 target_link_libraries(foo neml2)
 ```
@@ -43,7 +42,18 @@ FetchContent_Declare(
   GIT_TAG v2.0.0
 )
 FetchContent_MakeAvailable(neml2)
-
 add_executable(foo main.cxx)
 target_link_libraries(foo neml2)
 ```
+
+### find_package
+
+NEML2 can also be discovered from its installation location relying on CMake's config mode `find_package` function
+
+```
+find_package(neml2 CONFIG)
+add_executable(foo main.cxx)
+target_link_libraries(foo neml2::neml2)
+```
+
+Note that the config mode search defines several imported targets under the `neml2::` namespace. For example, `neml2::misc` corresponds to the `misc` library of NEML2, etc. The `neml2::neml2` is an interface target that transitively links to all NEML2 libraries.

@@ -1,9 +1,0 @@
-./autogen.sh
-export CXXFLAGS="${GPERFTOOLS_CXX_FLAGS}"
-./configure \
-  --prefix=${GPERFTOOLS_INSTALL_DIR} \
-  --disable-heap-profiler \
-  --disable-debugalloc \
-  --enable-shared=yes
-make -j ${NPROCS}
-make install

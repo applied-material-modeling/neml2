@@ -1,3 +1,15 @@
+# 3rd-party libraries
+contrib/argparse*
+contrib/Catch2*
+contrib/Doxygen*
+contrib/doxygen-awesome-css*
+contrib/hit*
+contrib/json*
+contrib/timpi*
+contrib/Torch*
+contrib/wasp*
+contrib/gperftools*
+
 # CMake
 *.cmake
 !cmake/Modules/*

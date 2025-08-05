@@ -20,7 +20,6 @@ C++ backend:
 
 - [PyTorch](https://pytorch.org/get-started/locally/), version 2.5.1.
 - [WASP](https://code.ornl.gov/neams-workbench/wasp) as the lexing and parsing backend for HIT.
-- [HIT](https://github.com/idaholab/moose/tree/master/framework/contrib/hit) for input file parsing.
 - Testing:
   - [Catch2](https://github.com/catchorg/Catch2) for unit and regression testing.
 
@@ -65,11 +64,10 @@ In some cases, certain dependencies cannot be obtained or are incompatible with 
 
 The following table summarizes the configure options that determine when a dependency is required, and hence how a dependency can be skipped.
 
-| Option                       | Dependent configure option(s)                 |
+| Dependency                   | Dependent configure option(s)                 |
 | :--------------------------- | :-------------------------------------------- |
 | Torch                        |                                               |
 | WASP                         |                                               |
-| HIT                          |                                               |
 | Catch2                       | NEML2_TESTS                                   |
 | argparse                     | NEML2_RUNNER                                  |
 | Gperftools                   | NEML2_RUNNER && CMAKE_BUILD_TYPE == Profiling |

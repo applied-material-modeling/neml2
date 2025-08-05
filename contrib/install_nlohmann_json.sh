@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+${CMAKE_COMMAND} \
+  -DCMAKE_GENERATOR="${CMAKE_GENERATOR}" \
+  -DCMAKE_CXX_COMPILER="${CMAKE_CXX_COMPILER}" \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX="${INSTALL_PREFIX}" \
+  -DJSON_Install=ON \
+  -DJSON_MultipleHeaders=OFF \
+  -DJSON_BuildTests=OFF \
+  -B"${BINARY_DIR}" \
+  -S"${SOURCE_DIR}"
+
+${CMAKE_COMMAND} --build "${BINARY_DIR}"
+${CMAKE_COMMAND} --install "${BINARY_DIR}"

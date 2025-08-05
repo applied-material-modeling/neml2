@@ -4,7 +4,6 @@ target_link_libraries(extension PRIVATE neml2)
 target_compile_options(extension PRIVATE -Wall -Wextra -pedantic)
 set_target_properties(extension
   PROPERTIES
-  INSTALL_RPATH_USE_LINK_PATH ON
   LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
