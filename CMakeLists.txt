@@ -105,6 +105,14 @@ include(DepUtils)
 # Python3
 # ----------------------------------------------------------------------------
 find_package(Python3 COMPONENTS Interpreter OPTIONAL_COMPONENTS Development.Module)
+# If Python3 is found, let's also find the user site-packages (in case torch is installed there)
+if(Python3_EXECUTABLE)
+      execute_process(
+            COMMAND ${Python3_EXECUTABLE} -m site --user-site
+            OUTPUT_VARIABLE Python3_USER_SITE
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+      )
+endif()
 
 # ----------------------------------------------------------------------------
 # The following blocks are used to find and download 3rd party dependencies

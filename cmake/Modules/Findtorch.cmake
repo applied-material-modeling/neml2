@@ -37,6 +37,10 @@ if(NEML2_CONTRIB_PREFIX)
   list(APPEND _torch_search_paths ${NEML2_CONTRIB_PREFIX}/torch-src)
 endif()
 
+if(torch_SEARCH_SITE_PACKAGES AND Python3_USER_SITE)
+  list(APPEND _torch_search_paths ${Python3_USER_SITE}/torch)
+endif()
+
 if(torch_SEARCH_SITE_PACKAGES AND Python3_SITEARCH)
   list(APPEND _torch_search_paths ${Python3_SITEARCH}/torch)
 endif()
