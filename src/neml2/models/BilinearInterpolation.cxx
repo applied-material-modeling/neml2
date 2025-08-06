@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/BilinearInterpolation.h"
+#include "neml2/tensors/Tensor.h"
 #include "neml2/tensors/functions/diff.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/Vec.h"
@@ -84,6 +85,15 @@ parametric_coordinates(const Scalar & X, const Scalar & x)
 }
 
 template <typename T>
+static T
+apply_mask(const T & y, const Scalar & m)
+{
+  const auto B = utils::broadcast_batch_sizes({m, y});
+  const auto D = B.slice(0, -2); // excluding the interpolation grid
+  return T(y.batch_expand(B).index({m.batch_expand(B)})).batch_reshape(D);
+}
+
+template <typename T>
 void
 BilinearInterpolation<T>::set_value(bool out, bool dout_din, bool d2out_din2)
 {
@@ -93,7 +103,7 @@ BilinearInterpolation<T>::set_value(bool out, bool dout_din, bool d2out_din2)
   // Also transform x onto the parametric space [0, 1] x [0, 1]
   const auto [m1, xi, dxi_dx1] = parametric_coordinates(this->_X1, Scalar(this->_x1));
   const auto [m2, eta, deta_dx2] = parametric_coordinates(this->_X2, Scalar(this->_x2));
-  const auto m = Scalar(at::logical_and(m1.unsqueeze(-1), m2.unsqueeze(-2)));
+  auto m = Scalar(at::logical_and(m1.unsqueeze(-1), m2.unsqueeze(-2)));
 
   // Get the four corner values of the interpolating cell
   //
@@ -102,15 +112,14 @@ BilinearInterpolation<T>::set_value(bool out, bool dout_din, bool d2out_din2)
   //  |          |
   //  |          |
   // Y00 ------ Y10
-  const auto B = m.batch_sizes().slice(0, -2); // batch shape excluding the interpolation grid
   auto Y00 = this->_Y.batch_index({Ellipsis, Slice(None, -1), Slice(None, -1)});
   auto Y01 = this->_Y.batch_index({Ellipsis, Slice(None, -1), Slice(1)});
   auto Y10 = this->_Y.batch_index({Ellipsis, Slice(1), Slice(None, -1)});
   auto Y11 = this->_Y.batch_index({Ellipsis, Slice(1), Slice(1)});
-  Y00 = T(Y00.batch_expand_as(m).index({m}), B);
-  Y01 = T(Y01.batch_expand_as(m).index({m}), B);
-  Y10 = T(Y10.batch_expand_as(m).index({m}), B);
-  Y11 = T(Y11.batch_expand_as(m).index({m}), B);
+  Y00 = apply_mask(Y00, m);
+  Y01 = apply_mask(Y01, m);
+  Y10 = apply_mask(Y10, m);
+  Y11 = apply_mask(Y11, m);
 
   // The interpolation formula is:
   // p = Y00 + c1 * xi + c2 * eta + c3 * xi * eta
