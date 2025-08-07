@@ -241,7 +241,7 @@ VariableBase::d(const VariableBase & var)
                   "' with respect to '",
                   var.name(),
                   "'.");
-  return Derivative({assembly_storage(), var.assembly_storage()}, &_derivs[var.name()]);
+  return Derivative(*this, var, &_derivs[var.name()]);
 }
 
 Derivative
@@ -255,8 +255,7 @@ VariableBase::d(const VariableBase & var1, const VariableBase & var2)
                   "' and '",
                   var2.name(),
                   "'.");
-  return Derivative({assembly_storage(), var1.assembly_storage(), var2.assembly_storage()},
-                    &_sec_derivs[var1.name()][var2.name()]);
+  return Derivative(*this, var1, var2, &_sec_derivs[var1.name()][var2.name()]);
 }
 
 void
@@ -642,13 +641,73 @@ Variable<T>::clear()
 #define INSTANTIATE_VARIABLE(T) template class Variable<T>
 FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_VARIABLE);
 
+Derivative::Derivative(const VariableBase & var1, const VariableBase & var2, Tensor * deriv)
+  : _lbatch_sizes(utils::add_shapes(var1.lbatch_sizes(), var2.lbatch_sizes())),
+    _base_sizes(utils::add_shapes(var1.base_sizes(), var2.base_sizes())),
+    _assembly_sizes(utils::add_shapes(var1.assembly_storage(), var2.assembly_storage())),
+    _deriv(deriv)
+#ifndef NDEBUG
+    ,
+    _debug_name(std::string("d(") + var1.name().str() + ")/d(" + var2.name().str() + ")")
+#endif
+{
+}
+
+Derivative::Derivative(const VariableBase & var1,
+                       const VariableBase & var2,
+                       const VariableBase & var3,
+                       Tensor * deriv)
+  : _lbatch_sizes(utils::add_shapes(var1.lbatch_sizes(), var2.lbatch_sizes(), var3.lbatch_sizes())),
+    _base_sizes(utils::add_shapes(var1.base_sizes(), var2.base_sizes(), var3.base_sizes())),
+    _assembly_sizes(utils::add_shapes(
+        var1.assembly_storage(), var2.assembly_storage(), var3.assembly_storage())),
+    _deriv(deriv)
+#ifndef NDEBUG
+    ,
+    _debug_name(std::string("d2(") + var1.name().str() + ")/d(" + var2.name().str() + ")/d(" +
+                var3.name().str() + ")")
+#endif
+{
+}
+
 Derivative &
 Derivative::operator=(const Tensor & val)
 {
-  if (!_deriv->defined())
-    *_deriv = val.base_reshape(_base_sizes);
-  else
-    *_deriv = *_deriv + val.base_reshape(_base_sizes);
+  // check if the given derivative has the correct left-batch shape
+  neml_assert_dbg(val.batch_dim() >= Size(_lbatch_sizes.size()) &&
+                      val.batch_sizes().slice(0, Size(_lbatch_sizes.size())) == _lbatch_sizes,
+                  "The assigned derivative for ",
+                  _debug_name,
+                  " has incorrect batch shape ",
+                  val.batch_sizes(),
+                  " which is incompatible with the expected left-batch shape of ",
+                  _lbatch_sizes,
+                  ".");
+  // check if the given derivative has the correct base shape
+  neml_assert_dbg(val.base_dim() == Size(_base_sizes.size()) && val.base_sizes() == _base_sizes,
+                  "The assigned derivative for ",
+                  _debug_name,
+                  " has incorrect base shape ",
+                  val.base_sizes(),
+                  " which is incompatible with the expected base shape of ",
+                  _base_sizes,
+                  ".");
+
+  // shortcut when there's no left-batch dimension
+  if (_lbatch_sizes.empty())
+  {
+    assign_or_add(*_deriv, val);
+    return *this;
+  }
+
+  // current shape is (lbatch, batch; base)
+  // move lbatch to the front, i.e. (lbatch, batch; base)
+  TensorShape batch_indices(v.batch_dim()), permutation(v.base_dim());
+  std::iota(batch_indices.begin(), batch_indices.end(), 0);
+  std::iota(permutation.begin(), permutation.end(), v.batch_dim());
+  permutation.insert(
+      permutation.begin() + lbatch_dim(), batch_indices.begin(), batch_indices.end());
+  _value = T(at::permute(v, permutation), B);
   return *this;
 }
 }

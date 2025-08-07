@@ -317,32 +317,37 @@ protected:
 class Derivative
 {
 public:
-  Derivative()
-    : _base_sizes({}),
-      _deriv(nullptr)
-  {
-  }
+  Derivative() = default;
 
-  Derivative(TensorShapeRef base_sizes, Tensor * deriv)
-    : _base_sizes(base_sizes),
-      _deriv(deriv)
-  {
-  }
+  /// First order derivative dvar1/dvar2
+  Derivative(const VariableBase & var1, const VariableBase & var2, Tensor * deriv);
+
+  // Second order derivative d2var1/(dvar2 dvar3)
+  Derivative(const VariableBase & var1,
+             const VariableBase & var2,
+             const VariableBase & var3,
+             Tensor * deriv);
 
   Derivative & operator=(const Tensor & val);
-
-  template <typename T>
-  Derivative & operator=(const Variable<T> & var)
-  {
-    return operator=(var.value());
-  }
+  Derivative & operator=(const VariableBase & var);
 
 private:
+  /// Left-batch shape of the derivative
+  const std::vector<TensorShape> _lbatch_sizes = {};
+
   /// Base shape of the derivative
-  const TensorShape _base_sizes;
+  const std::vector<TensorShape> _base_sizes = {};
+
+  /// Assembly storage of the derivative
+  const TensorShape _assembly_sizes = {};
 
   /// Derivative to write to
-  Tensor * const _deriv;
+  Tensor * const _deriv = nullptr;
+
+/// Debug name
+#ifndef NDEBUG
+  const std::string _debug_name = "";
+#endif
 };
 
 // Everything below is just for convenience: We just forward operations to the the variable values
