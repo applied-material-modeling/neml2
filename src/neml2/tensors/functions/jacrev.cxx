@@ -25,9 +25,10 @@
 #include <torch/autograd.h>
 
 #include "neml2/tensors/functions/jacrev.h"
-#include "neml2/tensors/assertions.h"
+#include "neml2/misc/assertions.h"
 #include "neml2/tensors/Tensor.h"
 #include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/functions/from_assembly.h"
 
 namespace neml2
 {
@@ -46,27 +47,27 @@ jacrev(const Tensor & y,
 
   // Check batch shapes
   for (std::size_t i = 0; i < xs.size(); i++)
-    neml_assert_dbg(y.batch_sizes() == xs[i].batch_sizes(),
-                    "In jacrev, the output variable batch shape ",
-                    y.batch_sizes(),
-                    " is different from the batch shape of x[",
+    neml_assert_dbg(y.dynamic_sizes() == xs[i].dynamic_sizes(),
+                    "In jacrev, the output variable dynamic shape ",
+                    y.dynamic_sizes(),
+                    " is different from the dynamic shape of x[",
                     i,
                     "] ",
-                    xs[i].batch_sizes(),
+                    xs[i].dynamic_sizes(),
                     ".");
 
   const auto opt = y.options().requires_grad(false);
 
   // Flatten y to handle arbitrarily shaped output
-  const auto yf = y.base_flatten();
-  const auto G = Scalar::full(1.0, opt).batch_expand(yf.batch_sizes());
+  const auto yf = y.static_flatten();
+  const auto G = Scalar::full(1.0, opt).dynamic_expand(yf.batch_sizes());
 
   // Initialize derivatives to zero
   std::vector<ATensor> xts(xs.begin(), xs.end());
   std::vector<Tensor> dyf_dxs(xs.size());
   for (std::size_t i = 0; i < xs.size(); i++)
     dyf_dxs[i] = Tensor::zeros(
-        yf.batch_sizes(), utils::add_shapes(yf.base_size(0), xs[i].base_sizes()), opt);
+        yf.dynamic_sizes(), {}, utils::add_shapes(yf.base_size(0), xs[i].static_sizes()), opt);
 
   // Use autograd to calculate the derivatives
   for (Size i = 0; i < yf.base_size(0); i++)
@@ -90,7 +91,12 @@ jacrev(const Tensor & y,
 
   // Reshape the derivative back to the correct shape
   for (std::size_t i = 0; i < xs.size(); i++)
-    dy_dxs[i] = dyf_dxs[i].base_reshape(utils::add_shapes(y.base_sizes(), xs[i].base_sizes()));
+  {
+    dy_dxs[i] = dyf_dxs[i].base_reshape(
+        utils::add_shapes(utils::numel(y.static_sizes()), utils::numel(xs[i].static_sizes())));
+    dy_dxs[i] = from_assembly<2>(
+        dy_dxs[i], {y.intmd_sizes(), xs[i].intmd_sizes()}, {y.base_sizes(), xs[i].base_sizes()});
+  }
 
   return dy_dxs;
 }

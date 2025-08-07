@@ -30,6 +30,9 @@
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/functions/macaulay.h"
 #include "neml2/tensors/functions/heaviside.h"
+#include "neml2/tensors/functions/inner.h"
+#include "neml2/tensors/functions/tr.h"
+#include "neml2/tensors/functions/dev.h"
 #include "neml2/tensors/functions/linalg/eigh.h"
 #include "neml2/tensors/functions/linalg/ieigh.h"
 #include "neml2/tensors/functions/linalg/dsptrf.h"
@@ -50,7 +53,7 @@ LinearIsotropicStrainEnergyDensity::expected_options()
   EnumSelection type_selection({"NONE", "SPECTRAL", "VOLDEV"}, "NONE");
   options.set<EnumSelection>("decomposition") = type_selection;
   options.set("decomposition").doc() =
-      "Strain energy density decomposition types, options are: " + type_selection.candidates_str();
+      "Strain energy density decomposition types, options are: " + type_selection.join();
 
   return options;
 }
@@ -87,16 +90,16 @@ LinearIsotropicStrainEnergyDensity::no_decomposition(bool out, bool dout_din, bo
   const auto [K_and_dK, G_and_dG] = _converter.convert(_constants);
   const auto & [K, dK] = K_and_dK;
   const auto & [G, dG] = G_and_dG;
-  const auto etr = SR2(_strain).tr();
-  const auto edev = SR2(_strain).dev();
+  const auto etr = neml2::tr(_strain());
+  const auto edev = neml2::dev(_strain());
   const auto I2 = SR2::identity(_strain.options());
   const auto I4 = SSR4::identity(_strain.options());
   const auto J = SSR4::identity_dev(_strain.options());
 
   if (out)
   {
-    _psie_active = 0.5 * K * etr * etr + G * edev.inner(edev);
-    _psie_inactive = Scalar::zeros_like(_psie_active);
+    _psie_active = 0.5 * K * etr * etr + G * neml2::inner(edev, edev);
+    _psie_inactive = Scalar::zeros_like(_psie_active());
   }
   if (dout_din)
   {
@@ -114,8 +117,8 @@ LinearIsotropicStrainEnergyDensity::voldev_decomposition(bool out, bool dout_din
   const auto [K_and_dK, G_and_dG] = _converter.convert(_constants);
   const auto & [K, dK] = K_and_dK;
   const auto & [G, dG] = G_and_dG;
-  const auto etr = SR2(_strain).tr();
-  const auto edev = SR2(_strain).dev();
+  const auto etr = neml2::tr(_strain());
+  const auto edev = neml2::dev(_strain());
   const auto I2 = SR2::identity(_strain.options());
   const auto I4 = SSR4::identity(_strain.options());
   const auto J = SSR4::identity_dev(_strain.options());
@@ -126,7 +129,7 @@ LinearIsotropicStrainEnergyDensity::voldev_decomposition(bool out, bool dout_din
 
   if (out)
   {
-    _psie_active = 0.5 * K * etr_pos * etr_pos + G * edev.inner(edev);
+    _psie_active = 0.5 * K * etr_pos * etr_pos + G * neml2::inner(edev, edev);
     _psie_inactive = 0.5 * K * etr_neg * etr_neg;
   }
   if (dout_din)
@@ -147,23 +150,23 @@ LinearIsotropicStrainEnergyDensity::spectral_decomposition(bool out, bool dout_d
   const auto [lambda_and_dlambda, G_and_dG] = _converter.convert(_constants);
   const auto & [lambda, dlambda] = lambda_and_dlambda;
   const auto & [G, dG] = G_and_dG;
-  const auto etr = SR2(_strain).tr();
-  const auto edev = SR2(_strain).dev();
+  const auto etr = neml2::tr(_strain());
+  const auto edev = neml2::dev(_strain());
   const auto I2 = SR2::identity(_strain.options());
   const auto I4 = SSR4::identity(_strain.options());
 
   // Decompose based on the eigenvalues of strain
   const auto etr_pos = macaulay(etr);
   const auto etr_neg = etr - etr_pos;
-  const auto [evals, evecs] = linalg::eigh(_strain);
+  const auto [evals, evecs] = linalg::eigh(_strain());
   const auto evals_pos = macaulay(evals);
   const auto e_pos = linalg::ieigh(evals_pos, evecs);
   const auto e_neg = _strain - e_pos;
 
   if (out)
   {
-    _psie_active = 0.5 * lambda * etr_pos * etr_pos + G * e_pos.inner(e_pos);
-    _psie_inactive = 0.5 * lambda * etr_neg * etr_neg + G * e_neg.inner(e_neg);
+    _psie_active = 0.5 * lambda * etr_pos * etr_pos + G * neml2::inner(e_pos, e_pos);
+    _psie_inactive = 0.5 * lambda * etr_neg * etr_neg + G * neml2::inner(e_neg, e_neg);
   }
   if (dout_din)
   {

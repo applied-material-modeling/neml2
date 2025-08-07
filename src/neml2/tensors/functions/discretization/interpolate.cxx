@@ -31,23 +31,26 @@ namespace neml2::discretization
 Tensor
 interpolate(const Tensor & elem_dofs, const Tensor & basis)
 {
-  neml_assert(elem_dofs.batch_dim() >= 2,
-              "fem_interpolate: batch dimension of elem_dofs must at least 2, got ",
-              elem_dofs.batch_dim());
-  neml_assert(basis.batch_dim() >= 3,
+  neml_assert(elem_dofs.intmd_dim() == 0, "interpolate: elem_dofs must have intmd_dim = 0");
+  neml_assert(basis.intmd_dim() == 0, "interpolate: basis must have intmd_dim = 1");
+  neml_assert(elem_dofs.dynamic_dim() >= 2,
+              "fem_interpolate: dynamic dimension of elem_dofs must at least 2, got ",
+              elem_dofs.dynamic_dim());
+  neml_assert(basis.dynamic_dim() >= 3,
               "interpolate: base dimension of basis must be at least 3, got ",
-              basis.batch_dim());
-  neml_assert(elem_dofs.batch_size(-2) == basis.batch_size(-3),
+              basis.dynamic_dim());
+  neml_assert(elem_dofs.dynamic_size(-2) == basis.dynamic_size(-3),
               "interpolate: elem_dofs implies Nelem = ",
-              elem_dofs.batch_size(-2),
+              elem_dofs.dynamic_size(-2),
               ", but basis implies Nelem = ",
-              basis.batch_size(-3));
-  neml_assert(elem_dofs.batch_size(-1) == basis.batch_size(-2),
+              basis.dynamic_size(-3));
+  neml_assert(elem_dofs.dynamic_size(-1) == basis.dynamic_size(-2),
               "interpolate: elem_dofs implies Ndofe = ",
-              elem_dofs.batch_size(-1),
+              elem_dofs.dynamic_size(-1),
               ", but basis implies Ndofe = ",
-              basis.batch_size(-2));
+              basis.dynamic_size(-2));
 
-  return batch_sum(elem_dofs.batch_unsqueeze(-1).base_unsqueeze_to(basis.base_dim()) * basis, -2);
+  return dynamic_sum(
+      elem_dofs.dynamic_unsqueeze(-1).base_right_unsqueeze_n(basis.base_dim()) * basis, -2);
 }
 } // namespace neml2::discretization

@@ -40,6 +40,9 @@ ModelDriver::expected_options()
   options.set<std::string>("model");
   options.set("model").doc() = "The material model to be updated by the driver";
 
+  options.set<std::string>("postprocessor");
+  options.set("postprocessor").doc() = "The postprocessor model to be applied on the model output";
+
   options.set<std::string>("device") = "cpu";
   options.set("device").doc() =
       "Device on which to evaluate the material model. The string supplied must follow the "
@@ -68,6 +71,8 @@ ModelDriver::expected_options()
 ModelDriver::ModelDriver(const OptionSet & options)
   : Driver(options),
     _model(get_model("model")),
+    _postprocessor(options.get("postprocessor").user_specified() ? get_model("postprocessor")
+                                                                 : nullptr),
     _device(options.get<std::string>("device")),
     _show_params(options.get<bool>("show_parameters")),
     _show_input(options.get<bool>("show_input_axis")),
@@ -116,7 +121,7 @@ ModelDriver::setup()
             model->to(device);
 
           neml_assert_dbg(model->variable_options().device() == device);
-          return model->value(std::move(x));
+          return model->value(x);
         },
         red,
         &valuemap_move_device,
@@ -146,5 +151,7 @@ ModelDriver::diagnose() const
 {
   Driver::diagnose();
   neml2::diagnose(*_model);
+  if (_postprocessor)
+    neml2::diagnose(*_postprocessor);
 }
 } // namespace neml2

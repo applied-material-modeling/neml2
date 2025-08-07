@@ -36,7 +36,7 @@ SolidMechanicsDriver::expected_options()
   EnumSelection control_selection({"STRAIN", "STRESS", "MIXED"}, "STRAIN");
   options.set<EnumSelection>("control") = control_selection;
   options.set("control").doc() =
-      "External control of the material update. Options are " + control_selection.candidates_str();
+      "External control of the material update. Options are " + control_selection.join();
 
   options.set<VariableName>("temperature") = VariableName(FORCES, "T");
   options.set("temperature").doc() = "Name of temperature";
@@ -115,45 +115,45 @@ SolidMechanicsDriver::diagnose() const
 {
   TransientDriver::diagnose();
 
-  diagnostic_assert(_driving_force.batch_dim() >= 1,
+  diagnostic_assert(_driving_force.dynamic_dim() >= 1,
                     "Input driving force (strain, stress, or mixed conditions) should have at "
                     "least one batch dimension for time steps but instead has batch dimension ",
-                    _driving_force.batch_dim());
+                    _driving_force.dynamic_dim());
 
-  diagnostic_assert(_time.batch_size(0) == _driving_force.batch_size(0),
+  diagnostic_assert(_time.dynamic_size(0) == _driving_force.dynamic_size(0),
                     "Input driving force (strain, stress, or mixed conditions) and time should "
                     "have the same number of time steps. The input time has ",
-                    _time.batch_size(0),
+                    _time.dynamic_size(0),
                     " time steps, while the input driving force has ",
-                    _driving_force.batch_size(0),
+                    _driving_force.dynamic_size(0),
                     " time steps");
 
   if (_temperature_prescribed)
   {
-    diagnostic_assert(_temperature.batch_dim() >= 1,
+    diagnostic_assert(_temperature.dynamic_dim() >= 1,
                       "Input temperature should have at least one batch dimension for time steps "
                       "but instead has batch dimension ",
-                      _temperature.batch_dim());
+                      _temperature.dynamic_dim());
 
     diagnostic_assert(
-        _time.batch_size(0) == _temperature.batch_size(0),
+        _time.dynamic_size(0) == _temperature.dynamic_size(0),
         "Input temperature and time should have the same number of time steps. The input time has ",
-        _time.batch_size(0),
+        _time.dynamic_size(0),
         " time steps, while the input temperature has ",
-        _temperature.batch_size(0),
+        _temperature.dynamic_size(0),
         " time steps");
   }
 
   if (_control == "MIXED")
   {
-    diagnostic_assert(_mixed_control.batch_dim() >= 1,
+    diagnostic_assert(_mixed_control.dynamic_dim() >= 1,
                       "Input control signal should have at least one batch dimension but instead "
                       "has batch dimension ",
-                      _mixed_control.batch_dim());
+                      _mixed_control.dynamic_dim());
     diagnostic_assert(
-        _mixed_control.batch_size(0) == _time.batch_size(0),
+        _mixed_control.dynamic_size(0) == _time.dynamic_size(0),
         "Input control signal should have the same number of steps steps as time, but instead has ",
-        _mixed_control.batch_size(0),
+        _mixed_control.dynamic_size(0),
         " time steps");
   }
 }
@@ -163,12 +163,12 @@ SolidMechanicsDriver::update_forces()
 {
   TransientDriver::update_forces();
 
-  _in[_driving_force_name] = _driving_force.batch_index({_step_count});
+  _in[_driving_force_name] = _driving_force.dynamic_index({_step_count});
 
   if (_temperature_prescribed)
-    _in[_temperature_name] = _temperature.batch_index({_step_count});
+    _in[_temperature_name] = _temperature.dynamic_index({_step_count});
 
   if (_control == "MIXED")
-    _in[_mixed_control_name] = _mixed_control.batch_index({_step_count});
+    _in[_mixed_control_name] = _mixed_control.dynamic_index({_step_count});
 }
 }

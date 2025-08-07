@@ -23,7 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/R2toWR2.h"
-#include "neml2/tensors/mandel_notation.h"
+#include "neml2/tensors/functions/symmetrization.h"
 #include "neml2/tensors/R2.h"
 #include "neml2/tensors/WR2.h"
 
@@ -56,19 +56,14 @@ R2toWR2::R2toWR2(const OptionSet & options)
 }
 
 void
-R2toWR2::set_value(bool out, bool dout_din, bool d2out_din2)
+R2toWR2::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  auto A = R2(_input);
+  const auto & A = _input();
 
   if (out)
     _output = WR2(A);
 
   if (dout_din)
-  {
     _output.d(_input) = 0.5 * skew_to_full(R2::identity(A.options()), 1);
-  }
-
-  // Second derivative is zero
-  (void)d2out_din2;
 }
 } // namespace neml2

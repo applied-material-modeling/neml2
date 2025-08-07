@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/porous_flow/CapillaryPressure.h"
+#include "neml2/tensors/functions/pow.h"
 #include "neml2/tensors/functions/log10.h"
 #include "neml2/tensors/functions/where.h"
 
@@ -74,7 +75,7 @@ CapillaryPressure::CapillaryPressure(const OptionSet & options)
 void
 CapillaryPressure::set_value(bool out, bool dout, bool d2out)
 {
-  auto [Pc, dPc_dS, d2Pc_dS2] = calculate_pressure(_S, out, dout, d2out);
+  auto [Pc, dPc_dS, d2Pc_dS2] = calculate_pressure(_S(), out, dout, d2out);
 
   if (_log_extension)
   {
@@ -84,7 +85,7 @@ CapillaryPressure::set_value(bool out, bool dout, bool d2out)
         calculate_pressure(Scalar::full(_Sp, _S.options()), true, true, false);
     auto slope = 1.0 / (ln10 * Pcs) * dPcs_dS;
     auto yintercept = log10(Pcs) - slope * _Sp;
-    auto Pc_ext = Scalar(pow(10, slope * _S + yintercept));
+    auto Pc_ext = neml2::pow(10, slope * _S + yintercept);
 
     if (out)
       _Pc = where(_S < _Sp, Pc_ext, Pc);

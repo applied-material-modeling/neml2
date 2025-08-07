@@ -24,12 +24,19 @@
 
 #include "neml2/tensors/functions/linalg/lu_solve.h"
 #include "neml2/tensors/Tensor.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2::linalg
 {
 Tensor
 lu_solve(const Tensor & LU, const Tensor & pivots, const Tensor & B, bool left, bool adjoint)
 {
-  return Tensor(at::linalg_lu_solve(LU, pivots, B, left, adjoint), B.batch_sizes());
+  neml_assert_dbg(
+      LU.intmd_dim() == 0, "Intermediate dimension of LU must be 0, got", LU.intmd_dim());
+  neml_assert_dbg(pivots.intmd_dim() == 0,
+                  "Intermediate dimension of pivots must be 0, got",
+                  pivots.intmd_dim());
+  neml_assert_dbg(B.intmd_dim() == 0, "Intermediate dimension of B must be 0, got", B.intmd_dim());
+  return Tensor(at::linalg_lu_solve(LU, pivots, B, left, adjoint), B.dynamic_sizes(), 0);
 }
 } // namespace neml2::linalg

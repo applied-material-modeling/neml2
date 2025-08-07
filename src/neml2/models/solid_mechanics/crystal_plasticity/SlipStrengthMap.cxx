@@ -23,10 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/crystal_plasticity/SlipStrengthMap.h"
-#include "neml2/models/crystallography/CrystalGeometry.h"
 
 #include "neml2/tensors/Scalar.h"
-#include "neml2/tensors/list_tensors.h"
 
 namespace neml2
 {
@@ -39,18 +37,12 @@ SlipStrengthMap::expected_options()
   options.set_output("slip_strengths") = VariableName(STATE, "internal", "slip_strengths");
   options.set("slip_strengths").doc() = "Name of the slip system strengths";
 
-  options.set<std::string>("crystal_geometry_name") = "crystal_geometry";
-  options.set("crystal_geometry_name").doc() =
-      "Name of the Data object containing the crystallographic information";
-
   return options;
 }
 
 SlipStrengthMap::SlipStrengthMap(const OptionSet & options)
   : Model(options),
-    _crystal_geometry(register_data<crystallography::CrystalGeometry>(
-        options.get<std::string>("crystal_geometry_name"))),
-    _tau(declare_output_variable<Scalar>("slip_strengths", _crystal_geometry.nslip()))
+    _tau(declare_output_variable<Scalar>("slip_strengths"))
 {
 }
 } // namespace neml2

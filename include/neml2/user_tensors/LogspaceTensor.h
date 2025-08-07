@@ -26,27 +26,41 @@
 
 #include "neml2/user_tensors/UserTensorBase.h"
 
-#include "neml2/tensors/Tensor.h"
-
 namespace neml2
 {
 /**
- * @brief Create a logspace Tensor from the input file.
+ * @brief Create a logspace tensor of type T from the input file.
+ *
+ * @tparam T The concrete tensor derived from TensorBase
  */
-class LogspaceTensor : public UserTensorBase, public Tensor
+template <typename T>
+class LogspaceTensorTmpl : public UserTensorBase<T>
 {
 public:
   static OptionSet expected_options();
 
-  /**
-   * @brief Construct a new LogspaceTensor object
-   *
-   * @param options The options extracted from the input file.
-   */
-  LogspaceTensor(const OptionSet & options);
+  LogspaceTensorTmpl(const OptionSet & options);
+
+protected:
+  T make() const override;
 
 private:
-  /// Helper to make the tensor given user input options
-  Tensor make(const OptionSet & options) const;
+  /// The starting tensor
+  const TensorName<T> _start;
+
+  /// The ending tensor
+  const TensorName<T> _end;
+
+  /// The number of steps with even spacing along the new dimension
+  const Size _nstep;
+
+  /// Where to insert the new dimension
+  const Size _dim;
+
+  /// The base of the logarithm
+  const double _base;
+
+  /// Dimension group to apply the operation
+  const EnumSelection _group;
 };
 } // namespace neml2

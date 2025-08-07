@@ -28,7 +28,7 @@
 namespace neml2
 {
 #define DEFINE_SQRT(T)                                                                             \
-  T sqrt(const T & a) { return T(at::sqrt(a), a.batch_sizes()); }                                  \
+  T sqrt(const T & a) { return T(at::sqrt(a), a.dynamic_sizes(), a.intmd_dim()); }                 \
   static_assert(true)
 FOR_ALL_TENSORBASE(DEFINE_SQRT);
 } // namespace neml2

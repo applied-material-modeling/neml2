@@ -24,12 +24,22 @@
 
 #include "neml2/tensors/functions/fmod.h"
 #include "neml2/tensors/tensors.h"
+#include "neml2/tensors/functions/utils.h"
+#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
 #define DEFINE_FMOD(T)                                                                             \
-  T fmod(const T & a, const T & b) { return T(at::fmod(a, b), utils::broadcast_batch_dim(a, b)); } \
-  T fmod(const T & a, const CScalar & b) { return T(at::fmod(a, b), a.batch_sizes()); }            \
+  T fmod(const T & a, const T & b)                                                                 \
+  {                                                                                                \
+    neml_assert_broadcastable_dbg(a, b);                                                           \
+    const auto [aa, bb, i] = utils::align_intmd_dim(a, b);                                         \
+    return T(at::fmod(aa, bb), utils::broadcast_dynamic_dim(a, b), i);                             \
+  }                                                                                                \
+  T fmod(const T & a, const CScalar & b)                                                           \
+  {                                                                                                \
+    return T(at::fmod(a, b), a.dynamic_sizes(), a.intmd_dim());                                    \
+  }                                                                                                \
   static_assert(true)
 FOR_ALL_TENSORBASE(DEFINE_FMOD);
 } // namespace neml2

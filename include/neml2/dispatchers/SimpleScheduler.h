@@ -65,7 +65,7 @@ private:
   /// The device to dispatch to
   Device _device;
 
-  /// The batch size to dispatch
+  /// The number of batches to dispatch at once
   std::size_t _batch_size;
 
   /// The capacity of the device

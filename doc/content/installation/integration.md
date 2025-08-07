@@ -8,7 +8,6 @@ Once NEML2 is installed, external C++ projects can use NEML2 by including the de
 - `neml2_base`
 - `neml2_dispatcher`
 - `neml2_driver`
-- `neml2_jit`
 - `neml2_misc`
 - `neml2_model`
 - `neml2_solver`

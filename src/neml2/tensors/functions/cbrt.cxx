@@ -28,7 +28,7 @@
 namespace neml2
 {
 #define DEFINE_CBRT(T)                                                                             \
-  T cbrt(const T & a) { return T(at::pow(a, 1. / 3), a.batch_sizes()); }                           \
+  T cbrt(const T & a) { return T(at::pow(a, 1. / 3), a.dynamic_sizes(), a.intmd_dim()); }          \
   static_assert(true)
 FOR_ALL_TENSORBASE(DEFINE_CBRT);
 } // namespace neml2

@@ -33,8 +33,8 @@ register_NEML2_object(FillSR2);
 OptionSet
 FillSR2::expected_options()
 {
-  OptionSet options = UserTensorBase::expected_options();
-  options.doc() = "Construct a R2 with a vector of Scalars. The vector length must be 1, 3, or 6. "
+  OptionSet options = UserTensorBase<SR2>::expected_options();
+  options.doc() = "Construct a SR2 with a vector of Scalars. The vector length must be 1, 3, or 6. "
                   "See the full documentation on neml2::SR2 on the dispatch of fill method. When "
                   "vector length is 1, the Scalar value is used to fill the diagonals; when vector "
                   "length is 3, the Scalar values are used to fill the respective diagonal "
@@ -42,36 +42,36 @@ FillSR2::expected_options()
                   "following the Voigt notation.";
 
   options.set<std::vector<TensorName<Scalar>>>("values");
-  options.set("values").doc() = "Scalars used to fill the R2";
+  options.set("values").doc() = "Scalars used to fill the SR2";
 
   return options;
 }
 
 FillSR2::FillSR2(const OptionSet & options)
-  : UserTensorBase(options),
-    SR2(fill(options.get<std::vector<TensorName<Scalar>>>("values")))
+  : UserTensorBase<SR2>(options),
+    _values(options.get<std::vector<TensorName<Scalar>>>("values"))
 {
 }
 
 SR2
-FillSR2::fill(const std::vector<TensorName<Scalar>> & values) const
+FillSR2::make() const
 {
   auto * f = factory();
-  neml_assert(f, "Internal error: factory != nullptr");
+  neml_assert(f, "Internal error: factory == nullptr");
 
-  if (values.size() == 1)
-    return SR2::fill(values[0].resolve(f));
-  if (values.size() == 3)
-    return SR2::fill(values[0].resolve(f), values[1].resolve(f), values[2].resolve(f));
-  if (values.size() == 6)
-    return SR2::fill(values[0].resolve(f),
-                     values[1].resolve(f),
-                     values[2].resolve(f),
-                     values[3].resolve(f),
-                     values[4].resolve(f),
-                     values[5].resolve(f));
+  if (_values.size() == 1)
+    return SR2::fill(_values[0].resolve(f));
+  if (_values.size() == 3)
+    return SR2::fill(_values[0].resolve(f), _values[1].resolve(f), _values[2].resolve(f));
+  if (_values.size() == 6)
+    return SR2::fill(_values[0].resolve(f),
+                     _values[1].resolve(f),
+                     _values[2].resolve(f),
+                     _values[3].resolve(f),
+                     _values[4].resolve(f),
+                     _values[5].resolve(f));
 
-  throw NEMLException("Number of values must be 1, 3, or 6, but " + std::to_string(values.size()) +
+  throw NEMLException("Number of values must be 1, 3, or 6, but " + std::to_string(_values.size()) +
                       " values are provided.");
 }
 } // namespace neml2

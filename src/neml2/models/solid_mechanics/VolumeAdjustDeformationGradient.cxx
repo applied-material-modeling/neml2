@@ -26,6 +26,7 @@
 #include "neml2/tensors/R2.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/functions/pow.h"
+#include "neml2/tensors/functions/imap.h"
 
 namespace neml2
 {
@@ -65,17 +66,17 @@ void
 VolumeAdjustDeformationGradient::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   if (out)
-    _Fe = _F * pow(_J, -1.0 / 3.0);
+    _Fe = _F * pow(_J(), -1.0 / 3.0);
 
   if (dout_din)
   {
     if (_J.is_dependent())
-      _Fe.d(_J) = _F * -1.0 / 3.0 * pow(_J, -4.0 / 3.0);
+      _Fe.d(_J) = _F * -1.0 / 3.0 * pow(_J(), -4.0 / 3.0);
 
     if (_F.is_dependent())
     {
-      auto I = R2::identity_map(_F.options());
-      _Fe.d(_F) = pow(_J, -1.0 / 3.0) * I;
+      auto I = imap<R2>(_F.options()).as<R4>();
+      _Fe.d(_F) = pow(_J(), -1.0 / 3.0) * I;
     }
   }
 }

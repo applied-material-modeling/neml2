@@ -40,11 +40,11 @@ SimpleScheduler::expected_options()
   options.set("device").doc() = "Torch device to run on";
 
   options.set<std::size_t>("batch_size");
-  options.set("batch_size").doc() = "Batch size";
+  options.set("batch_size").doc() = "Number of batches to dispatch at once";
 
   options.set<std::size_t>("capacity");
   options.set("capacity").doc() =
-      "Maximum number of work items that can be dispatched, default to batch_size";
+      "Maximum number of batches that can be dispatched simultaneously, default to batch_size";
 
   return options;
 }

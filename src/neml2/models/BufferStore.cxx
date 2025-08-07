@@ -82,7 +82,7 @@ BufferStore::declare_buffer(const std::string & name, const T & rawval)
 
   auto ptr = dynamic_cast<TensorValue<T> *>(base_ptr);
   neml_assert(ptr, "Internal error: Failed to cast buffer to a concrete type.");
-  return ptr->value();
+  return (*ptr)();
 }
 
 template <typename T, typename>
@@ -130,7 +130,7 @@ BufferStore::assign_buffer_stack(jit::Stack & stack)
   for (auto && [name, buffer] : buffers)
   {
     const auto tensor = stack[i++].toTensor();
-    (*buffer) = Tensor(tensor, tensor.dim() - Tensor(*buffer).base_dim());
+    buffer->assign(tensor, TracerPrivilege{});
   }
 
   // Drop the input variables from the stack

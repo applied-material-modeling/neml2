@@ -32,16 +32,17 @@ namespace neml2
 /**
  * @brief Provide the correct symmetry operators for a given crystal class
  */
-class SymmetryFromOrbifold : public R2, public UserTensorBase
+class SymmetryFromOrbifold : public UserTensorBase<R2>
 {
 public:
   static OptionSet expected_options();
 
-  /**
-   * @brief Setup the symmetry operators
-   *
-   * @param options The options extracted from the input file.
-   */
   SymmetryFromOrbifold(const OptionSet & options);
+
+protected:
+  R2 make() const override;
+
+private:
+  const std::string _orbifold;
 };
 } // namespace neml2

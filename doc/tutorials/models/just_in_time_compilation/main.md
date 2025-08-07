@@ -92,7 +92,7 @@ NEML2 enables tracing of tensor operations lazily. No tracing is performed when 
   ```cpp
   #include "neml2/models/Model.h"
   #include "neml2/tensors/Scalar.h"
-  #include "neml2/jit/utils.h"
+  #include "neml2/tensors/jit.h"
 
   int
   main()
@@ -214,7 +214,7 @@ The code below shows that, after a few forward evaluations, the traced graph can
   ```cpp
   #include "neml2/models/Model.h"
   #include "neml2/tensors/Scalar.h"
-  #include "neml2/jit/utils.h"
+  #include "neml2/tensors/jit.h"
 
   int
   main()

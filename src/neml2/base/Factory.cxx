@@ -53,7 +53,7 @@ Factory::Factory(InputFile inp)
 bool
 Factory::has_object(const std::string & section, const std::string & name)
 {
-  return _objects.count(section) && _objects.at(section).count(name);
+  return _input_file.data().count(section) && _input_file.data().at(section).count(name);
 }
 
 void

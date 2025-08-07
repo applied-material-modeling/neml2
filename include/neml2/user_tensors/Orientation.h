@@ -33,22 +33,14 @@ namespace neml2
 /**
  * @brief Create batch of rotations, with various methods
  */
-class Orientation : public Rot, public UserTensorBase
+class Orientation : public UserTensorBase<Rot>
 {
 public:
   static OptionSet expected_options();
 
-  /**
-   * @brief Construct a new Orientation object
-   *
-   */
   Orientation(const OptionSet & options);
 
-private:
-  /// A helper method to dispatch to the correct fill method based on the selected options
-  Rot fill(const OptionSet & options) const;
-
-  /// Expand to fill a batch dimension if required
-  Rot expand_as_needed(const Rot & input, unsigned int inp_size) const;
+protected:
+  Rot make() const override;
 };
 } // namespace neml2

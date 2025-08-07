@@ -30,6 +30,6 @@ namespace neml2::linalg
 Tensor
 inv(const Tensor & m)
 {
-  return Tensor(at::linalg_inv(m), m.batch_sizes());
+  return Tensor(at::linalg_inv(m), m.dynamic_sizes(), m.intmd_dim());
 }
 } // namespace neml2::linalg

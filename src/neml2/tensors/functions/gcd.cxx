@@ -25,15 +25,16 @@
 #include "neml2/tensors/functions/gcd.h"
 #include "neml2/tensors/tensors.h"
 #include "neml2/tensors/assertions.h"
+#include "neml2/tensors/functions/utils.h"
 
 namespace neml2
 {
 #define DEFINE_GCD(T)                                                                              \
   T gcd(const T & a, const T & b)                                                                  \
   {                                                                                                \
-    neml_assert_batch_broadcastable_dbg(a, b);                                                     \
-    neml_assert_base_broadcastable_dbg(a, b);                                                      \
-    return Tensor(at::gcd(a, b), utils::broadcast_batch_dim(a, b));                                \
+    neml_assert_broadcastable_dbg(a, b);                                                           \
+    const auto [aa, bb, i] = utils::align_intmd_dim(a, b);                                         \
+    return Tensor(at::gcd(aa, bb), utils::broadcast_dynamic_dim(a, b), i);                         \
   }                                                                                                \
   static_assert(true)
 FOR_ALL_TENSORBASE(DEFINE_GCD);

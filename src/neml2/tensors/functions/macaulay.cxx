@@ -28,7 +28,10 @@
 namespace neml2
 {
 #define DEFINE_MACAULAY(T)                                                                         \
-  T macaulay(const T & a) { return T(a * (at::sign(a) + 1.0) / 2.0, a.batch_sizes()); }            \
+  T macaulay(const T & a)                                                                          \
+  {                                                                                                \
+    return T(a * (at::sign(a) + 1.0) / 2.0, a.dynamic_sizes(), a.intmd_dim());                     \
+  }                                                                                                \
   static_assert(true)
 FOR_ALL_TENSORBASE(DEFINE_MACAULAY);
 } // namespace neml2

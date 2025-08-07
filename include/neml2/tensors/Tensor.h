@@ -34,12 +34,13 @@ namespace neml2
 {
 class Tensor;
 using TensorDataContainer = torch::detail::TensorDataContainer;
+using TensorList = c10::ArrayRef<neml2::Tensor>;
 
 namespace utils
 {
-/// @brief Find the broadcast batch shape of all the tensors
-/// The returned batch shape will be _traceable_. @see neml2::TraceableTensorShape
-TraceableTensorShape broadcast_batch_sizes(const std::vector<Tensor> & tensors);
+/// @brief Find the broadcast dynamic shape of all the tensors
+/// The returned dynamic shape will be _traceable_. @see neml2::TraceableTensorShape
+TraceableTensorShape broadcast_dynamic_sizes(const std::vector<Tensor> & tensors);
 } // namespace utils
 
 class Tensor : public TensorBase<Tensor>
@@ -48,65 +49,83 @@ public:
   /// Special member functions
   Tensor() = default;
 
-  /// Construct from another ATensor
-  Tensor(const ATensor & tensor, Size batch_dim);
+  /// Construct from another ATensor with inferred dynamic shape
+  Tensor(const ATensor & tensor, Size dynamic_dim, Size intmd_dim = 0);
 
-  /// Construct from another ATensor with given batch shape
-  Tensor(const ATensor & tensor, const TraceableTensorShape & batch_shape);
+  /// Construct from another ATensor with given dynamic shape
+  Tensor(const ATensor & tensor, const TraceableTensorShape & dynamic_shape, Size intmd_dim = 0);
 
   /// Copy from TensorBase
   template <class Derived>
   Tensor(const TensorBase<Derived> & tensor)
-    : TensorBase(tensor, tensor.batch_sizes())
+    : TensorBase(tensor, tensor.dynamic_sizes(), tensor.intmd_dim())
   {
   }
 
   /// Arbitrary (unbatched) tensor from a nested container
   [[nodiscard]] static Tensor create(const TensorDataContainer & data,
                                      const TensorOptions & options = default_tensor_options());
+
   /// Arbitrary tensor from a nested container
   [[nodiscard]] static Tensor create(const TensorDataContainer & data,
-                                     Size batch_dim,
+                                     Size dynamic_dim,
+                                     Size intmd_dim = 0,
                                      const TensorOptions & options = default_tensor_options());
-  /// Unbatched empty tensor given base shape
+
+  /// Empty tensor filled with undefined values
+  ///@{
   [[nodiscard]] static Tensor empty(TensorShapeRef base_shape,
                                     const TensorOptions & options = default_tensor_options());
-  /// Empty tensor given batch and base shapes
-  [[nodiscard]] static Tensor empty(const TraceableTensorShape & batch_shape,
+  [[nodiscard]] static Tensor empty(const TraceableTensorShape & dynamic_shape,
+                                    TensorShapeRef intmd_shape,
                                     TensorShapeRef base_shape,
                                     const TensorOptions & options = default_tensor_options());
-  /// Unbatched tensor filled with zeros given base shape
+  ///@}
+
+  /// Tensor filled with zeros
+  ///@{
   [[nodiscard]] static Tensor zeros(TensorShapeRef base_shape,
                                     const TensorOptions & options = default_tensor_options());
-  /// Zero tensor given batch and base shapes
-  [[nodiscard]] static Tensor zeros(const TraceableTensorShape & batch_shape,
+  [[nodiscard]] static Tensor zeros(const TraceableTensorShape & dynamic_shape,
+                                    TensorShapeRef intmd_shape,
                                     TensorShapeRef base_shape,
                                     const TensorOptions & options = default_tensor_options());
-  /// Unbatched tensor filled with ones given base shape
+  ///@}
+
+  /// Tensor filled with ones
+  ///@{
   [[nodiscard]] static Tensor ones(TensorShapeRef base_shape,
                                    const TensorOptions & options = default_tensor_options());
-  /// Unit tensor given batch and base shapes
-  [[nodiscard]] static Tensor ones(const TraceableTensorShape & batch_shape,
+  [[nodiscard]] static Tensor ones(const TraceableTensorShape & dynamic_shape,
+                                   TensorShapeRef intmd_shape,
                                    TensorShapeRef base_shape,
                                    const TensorOptions & options = default_tensor_options());
-  /// Unbatched tensor filled with a given value given base shape
+  ///@}
+
+  /// Tensor filled with a given value
+  ///@{
   [[nodiscard]] static Tensor full(TensorShapeRef base_shape,
                                    const CScalar & init,
                                    const TensorOptions & options = default_tensor_options());
-  /// Full tensor given batch and base shapes
-  [[nodiscard]] static Tensor full(const TraceableTensorShape & batch_shape,
+  [[nodiscard]] static Tensor full(const TraceableTensorShape & dynamic_shape,
+                                   TensorShapeRef intmd_shape,
                                    TensorShapeRef base_shape,
                                    const CScalar & init,
                                    const TensorOptions & options = default_tensor_options());
-  /// Unbatched identity tensor
+  ///@}
+
+  /// Tensor filled with random values from a uniform distribution [0, 1)
+  ///@{
+  [[nodiscard]] static Tensor rand(TensorShapeRef base_shape,
+                                   const TensorOptions & options = default_tensor_options());
+  [[nodiscard]] static Tensor rand(const TraceableTensorShape & dynamic_shape,
+                                   TensorShapeRef intmd_shape,
+                                   TensorShapeRef base_shape,
+                                   const TensorOptions & options = default_tensor_options());
+  ///@}
+
+  /// Identity tensor
   [[nodiscard]] static Tensor identity(Size n,
                                        const TensorOptions & options = default_tensor_options());
-  /// Identity tensor given batch shape and base length
-  [[nodiscard]] static Tensor identity(const TraceableTensorShape & batch_shape,
-                                       Size n,
-                                       const TensorOptions & options = default_tensor_options());
-
-  /// Expand base dimension to a given size
-  Tensor base_unsqueeze_to(Size n) const;
 };
 } // namespace neml2

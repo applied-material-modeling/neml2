@@ -55,9 +55,13 @@ public:
 
   const Model & model() const { return *_model; }
 
+  const Model & postprocessor() const { return *_postprocessor; }
+
 protected:
   /// The model which the driver uses to perform constitutive updates.
   const std::shared_ptr<Model> _model;
+  /// Postprocessor model
+  const std::shared_ptr<Model> _postprocessor;
   /// The device on which to evaluate the model
   const Device _device;
 

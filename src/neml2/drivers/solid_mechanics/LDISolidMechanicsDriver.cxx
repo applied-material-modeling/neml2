@@ -116,15 +116,15 @@ LDISolidMechanicsDriver::diagnose() const
 
   if (_vorticity_prescribed)
   {
-    diagnostic_assert(_vorticity.batch_dim() >= 1,
+    diagnostic_assert(_vorticity.dynamic_dim() >= 1,
                       "Input vorticity should have at least one batch dimension but instead "
                       "has batch dimension ",
-                      _vorticity.batch_dim());
+                      _vorticity.dynamic_dim());
     diagnostic_assert(
 
-        _vorticity.batch_size(0) == _time.batch_size(0),
+        _vorticity.dynamic_size(0) == _time.dynamic_size(0),
         "Input vorticity should have the same number of steps steps as time, but instead has ",
-        _vorticity.batch_size(0),
+        _vorticity.dynamic_size(0),
         " time steps");
   }
 
@@ -142,7 +142,7 @@ void
 LDISolidMechanicsDriver::update_forces()
 {
   SolidMechanicsDriver::update_forces();
-  _in[_vorticity_name] = _vorticity.batch_index({_step_count});
+  _in[_vorticity_name] = _vorticity.dynamic_index({_step_count});
 }
 
 void

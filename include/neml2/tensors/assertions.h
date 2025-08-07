@@ -29,65 +29,53 @@
 
 namespace neml2
 {
-/**
- * @brief A helper function to assert that all tensors are broadcastable
- *
- * In most cases, this assertion is necessary as libTorch will raise runtime_errors if things go
- * wrong. Therefore, this function is just so that we can detect errors before libTorch does and
- * emit some more mearningful error messages within the NEML2 context.
- */
+/// Assert that all tensors are broadcastable
+///@{
 template <class... T>
 void neml_assert_broadcastable(const T &...);
-
-/**
- * @brief A helper function to assert (in Debug mode) that all tensors are broadcastable
- *
- * In most cases, this assertion is necessary as libTorch will raise runtime_errors if things go
- * wrong. Therefore, this function is just so that we can detect errors before libTorch does and
- * emit some more mearningful error messages within the NEML2 context.
- */
 template <class... T>
 void neml_assert_broadcastable_dbg(const T &...);
+///@}
 
-/**
- * @brief A helper function to assert that all tensors are batch-broadcastable
- *
- * In most cases, this assertion is necessary as libTorch will raise runtime_errors if things go
- * wrong. Therefore, this function is just so that we can detect errors before libTorch does and
- * emit some more mearningful error messages within the NEML2 context.
- */
+/// Assert that all tensors are dynamic-broadcastable
+///@{
+template <class... T>
+void neml_assert_dynamic_broadcastable(const T &...);
+template <class... T>
+void neml_assert_dynamic_broadcastable_dbg(const T &...);
+///@}
+
+/// Assert that all tensors are intermediate-broadcastable
+///@{
+template <class... T>
+void neml_assert_intmd_broadcastable(const T &...);
+template <class... T>
+void neml_assert_intmd_broadcastable_dbg(const T &...);
+///@}
+
+/// Assert that all tensors are batch-broadcastable
+///@{
 template <class... T>
 void neml_assert_batch_broadcastable(const T &...);
-
-/**
- * @brief A helper function to assert that (in Debug mode) all tensors are batch-broadcastable
- *
- * In most cases, this assertion is necessary as libTorch will raise runtime_errors if things go
- * wrong. Therefore, this function is just so that we can detect errors before libTorch does and
- * emit some more mearningful error messages within the NEML2 context.
- */
 template <class... T>
 void neml_assert_batch_broadcastable_dbg(const T &...);
+///@}
 
-/**
- * @brief A helper function to assert that all tensors are base-broadcastable
- *
- * In most cases, this assertion is necessary as libTorch will raise runtime_errors if things go
- * wrong. Therefore, this function is just so that we can detect errors before libTorch does and
- * emit some more mearningful error messages within the NEML2 context.
- */
+/// Assert that all tensors are base-broadcastable
+///@{
 template <class... T>
 void neml_assert_base_broadcastable(const T &...);
-
-/**
- * @brief A helper function to assert that (in Debug mode) all tensors are base-broadcastable
- *
- * In most cases, this assertion is necessary as libTorch will raise runtime_errors if things go
- * wrong. Therefore, this function is just so that we can detect errors before libTorch does and
- * emit some more mearningful error messages within the NEML2 context.
- */
 template <class... T>
 void neml_assert_base_broadcastable_dbg(const T &...);
+///@}
+
+/// Assert that all tensors are static-broadcastable
+///@{
+template <class... T>
+void neml_assert_static_broadcastable(const T &...);
+template <class... T>
+void neml_assert_static_broadcastable_dbg(const T &...);
+///@}
 } // namespace neml2
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -100,11 +88,13 @@ template <class... T>
 void
 neml_assert_broadcastable(const T &... tensors)
 {
-  neml_assert(broadcastable(tensors...),
+  neml_assert(utils::broadcastable(tensors...),
               "The ",
               sizeof...(tensors),
-              " operands are not broadcastable. The batch shapes are ",
-              tensors.batch_sizes()...,
+              " operands are not broadcastable. The dynamic shapes are ",
+              tensors.dynamic_sizes()...,
+              ", the intermediate shapes are ",
+              tensors.intmd_sizes()...,
               ", and the base shapes are ",
               tensors.base_sizes()...);
 }
@@ -113,35 +103,71 @@ template <class... T>
 void
 neml_assert_broadcastable_dbg([[maybe_unused]] const T &... tensors)
 {
-  neml_assert_dbg(utils::broadcastable(tensors...),
-                  "The ",
-                  sizeof...(tensors),
-                  " operands are not broadcastable. The batch shapes are ",
-                  tensors.batch_sizes()...,
-                  ", and the base shapes are ",
-                  tensors.base_sizes()...);
+#ifndef NDEBUG
+  neml_assert_broadcastable(tensors...);
+#endif
+}
+
+template <class... T>
+void
+neml_assert_dynamic_broadcastable(const T &... tensors)
+{
+  neml_assert(utils::dynamic_broadcastable(tensors...),
+              "The ",
+              sizeof...(tensors),
+              " operands are not dynamic-broadcastable. The dynamic shapes are ",
+              tensors.dynamic_sizes()...);
+}
+
+template <class... T>
+void
+neml_assert_dynamic_broadcastable_dbg([[maybe_unused]] const T &... tensors)
+{
+#ifndef NDEBUG
+  neml_assert_dynamic_broadcastable(tensors...);
+#endif
+}
+
+template <class... T>
+void
+neml_assert_intmd_broadcastable(const T &... tensors)
+{
+  neml_assert(utils::intmd_broadcastable(tensors...),
+              "The ",
+              sizeof...(tensors),
+              " operands are not intermediate-broadcastable. The intermediate shapes are ",
+              tensors.intmd_sizes()...);
+}
+
+template <class... T>
+void
+neml_assert_intmd_broadcastable_dbg([[maybe_unused]] const T &... tensors)
+{
+#ifndef NDEBUG
+  neml_assert_intmd_broadcastable(tensors...);
+#endif
 }
 
 template <class... T>
 void
 neml_assert_batch_broadcastable(const T &... tensors)
 {
-  neml_assert(utils::batch_broadcastable(tensors...),
+  neml_assert(utils::dynamic_broadcastable(tensors...) && utils::intmd_broadcastable(tensors...),
               "The ",
               sizeof...(tensors),
-              " operands are not batch-broadcastable. The batch shapes are ",
-              tensors.batch_sizes()...);
+              " operands are not batch-broadcastable. The dynamic shapes are ",
+              tensors.dynamic_sizes()...,
+              ", and the intermediate shapes are ",
+              tensors.intmd_sizes()...);
 }
 
 template <class... T>
 void
 neml_assert_batch_broadcastable_dbg([[maybe_unused]] const T &... tensors)
 {
-  neml_assert_dbg(utils::batch_broadcastable(tensors...),
-                  "The ",
-                  sizeof...(tensors),
-                  " operands are not batch-broadcastable. The batch shapes are ",
-                  tensors.batch_sizes()...);
+#ifndef NDEBUG
+  neml_assert_batch_broadcastable(tensors...);
+#endif
 }
 
 template <class... T>
@@ -159,10 +185,30 @@ template <class... T>
 void
 neml_assert_base_broadcastable_dbg([[maybe_unused]] const T &... tensors)
 {
-  neml_assert_dbg(utils::base_broadcastable(tensors...),
-                  "The ",
-                  sizeof...(tensors),
-                  " operands are not base-broadcastable. The base shapes are ",
-                  tensors.base_sizes()...);
+#ifndef NDEBUG
+  neml_assert_base_broadcastable(tensors...);
+#endif
+}
+
+template <class... T>
+void
+neml_assert_static_broadcastable(const T &... tensors)
+{
+  neml_assert(utils::intmd_broadcastable(tensors...) && utils::base_broadcastable(tensors...),
+              "The ",
+              sizeof...(tensors),
+              " operands are not static-broadcastable. The intermediate shapes are ",
+              tensors.intmd_sizes()...,
+              ", and the base shapes are ",
+              tensors.base_sizes()...);
+}
+
+template <class... T>
+void
+neml_assert_static_broadcastable_dbg([[maybe_unused]] const T &... tensors)
+{
+#ifndef NDEBUG
+  neml_assert_static_broadcastable(tensors...);
+#endif
 }
 } // namespace neml2

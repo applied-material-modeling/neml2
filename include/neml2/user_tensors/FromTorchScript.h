@@ -25,13 +25,15 @@
 #pragma once
 
 #include "neml2/user_tensors/UserTensorBase.h"
+#include <filesystem>
 
 namespace neml2
 {
 /**
  * @brief Read the tensors provided by a torch script file
  */
-class FromTorchScript : public UserTensorBase
+template <class T>
+class FromTorchScript : public UserTensorBase<T>
 {
 public:
   static OptionSet expected_options();
@@ -40,6 +42,22 @@ public:
 
 protected:
   /// Helper to make the tensor given user input options
-  at::Tensor load_torch_tensor(const OptionSet & options) const;
+  T make() const override;
+
+private:
+  /// Path to the torch script file
+  const std::filesystem::path _torch_script;
+
+  /// Name of the tensor to extract
+  const std::string _tensor_name;
+
+  /// Batch shape
+  const TensorShape _batch_sizes;
+
+  /// Base shape
+  const TensorShape _base_sizes;
+
+  /// Number of intermediate dimensions
+  const unsigned int _intmd_dim;
 };
 } // namespace neml2

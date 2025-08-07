@@ -28,7 +28,7 @@
 namespace neml2
 {
 #define DEFINE_SINH(T)                                                                             \
-  T sinh(const T & a) { return T(at::sinh(a), a.batch_sizes()); }                                  \
+  T sinh(const T & a) { return T(at::sinh(a), a.dynamic_sizes(), a.intmd_dim()); }                 \
   static_assert(true)
 FOR_ALL_TENSORBASE(DEFINE_SINH);
 } // namespace neml2

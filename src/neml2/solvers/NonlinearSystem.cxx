@@ -26,8 +26,8 @@
 
 #include "neml2/solvers/NonlinearSystem.h"
 #include "neml2/misc/assertions.h"
-#include "neml2/tensors/functions/bmm.h"
-#include "neml2/tensors/functions/diag_embed.h"
+#include "neml2/tensors/functions/mm.h"
+#include "neml2/tensors/functions/diagonalize.h"
 
 namespace neml2
 {
@@ -187,7 +187,7 @@ NonlinearSystem::scale(const NonlinearSystem::Jac<false> & J) const
     return Jac<true>(J);
 
   ensure_scaling_matrices_initialized_dbg();
-  return Jac<true>(bmm(bmm(base_diag_embed(_row_scaling), J), base_diag_embed(_col_scaling)));
+  return Jac<true>(mm(mm(base_diagonalize(_row_scaling), J), base_diagonalize(_col_scaling)));
 }
 
 NonlinearSystem::Jac<false>
@@ -198,7 +198,7 @@ NonlinearSystem::unscale(const NonlinearSystem::Jac<true> & J) const
 
   ensure_scaling_matrices_initialized_dbg();
   return Jac<false>(
-      bmm(bmm(base_diag_embed(1.0 / _row_scaling), J), base_diag_embed(1.0 / _col_scaling)));
+      mm(mm(base_diagonalize(1.0 / _row_scaling), J), base_diagonalize(1.0 / _col_scaling)));
 }
 
 NonlinearSystem::Sol<true>

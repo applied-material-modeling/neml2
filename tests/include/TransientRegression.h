@@ -27,7 +27,6 @@
 #include <filesystem>
 
 #include "neml2/drivers/Driver.h"
-#include "neml2/jit/types.h"
 
 namespace neml2
 {

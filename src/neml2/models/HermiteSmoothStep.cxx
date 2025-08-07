@@ -70,7 +70,7 @@ HermiteSmoothStep::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   neml_assert_dbg(!d2out_din2, "Second derivatives not implemented");
 
-  const auto eps = machine_precision(_x.scalar_type()).toDouble();
+  const auto eps = machine_precision(_x.scalar_type());
   const auto x = clamp((_x - _x0) / (_x1 - _x0), eps, 1.0 - eps);
 
   if (out)

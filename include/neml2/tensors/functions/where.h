@@ -26,16 +26,13 @@
 
 #include "neml2/tensors/tensors_fwd.h"
 
-namespace at
-{
-class Tensor;
-}
-
 namespace neml2
 {
-using ATensor = at::Tensor;
+class Tensor;
 
-#define DECLARE_WHERE(T) T where(const ATensor & condition, const T & a, const T & b)
+#define DECLARE_WHERE(T)                                                                           \
+  T where(const Tensor & c, const T & a, const T & b);                                             \
+  T where(const Scalar & c, const T & a, const T & b)
 FOR_ALL_TENSORBASE(DECLARE_WHERE);
 #undef DECLARE_WHERE
 } // namespace neml2

@@ -28,6 +28,9 @@
 #include "neml2/tensors/SSR4.h"
 #include "neml2/tensors/functions/pow.h"
 #include "neml2/tensors/functions/log.h"
+#include "neml2/tensors/functions/norm.h"
+#include "neml2/tensors/functions/outer.h"
+#include "neml2/tensors/functions/imap.h"
 
 namespace neml2
 {
@@ -66,18 +69,17 @@ PowerLawKinematicHardeningStaticRecovery::set_value(bool out, bool dout_din, boo
 {
   auto eps = machine_precision(_X.scalar_type());
   // The effective stress
-  auto s = SR2(_X).norm(eps);
+  auto s = neml2::norm(_X(), eps);
 
   if (out)
     _X_dot = -pow(s / _tau, _n - 1) * _X / _tau;
 
   if (dout_din)
   {
-    auto I = SR2::identity_map(_X.options());
+    auto I = imap<SR2>(_X.options()).as<SSR4>();
 
     if (_X.is_dependent())
-      _X_dot.d(_X) =
-          -pow(s, _n - 3) * ((_n - 1) * SR2(_X).outer(SR2(_X)) + s * s * I) / pow(_tau, _n);
+      _X_dot.d(_X) = -pow(s, _n - 3) * ((_n - 1) * neml2::outer(_X()) + s * s * I) / pow(_tau, _n);
 
     if (const auto * const tau = nl_param("tau"))
       _X_dot.d(*tau) = _n * pow(s / _tau, _n - 1) * _X / (_tau * _tau);

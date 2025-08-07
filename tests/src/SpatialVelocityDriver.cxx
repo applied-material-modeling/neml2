@@ -77,6 +77,6 @@ SpatialVelocityDriver::update_forces()
 {
   TransientDriver::update_forces();
 
-  _in[_driving_force_name] = _driving_force.batch_index({_step_count});
+  _in[_driving_force_name] = _driving_force.dynamic_index({_step_count});
 }
 }

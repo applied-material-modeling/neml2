@@ -36,7 +36,7 @@
     start = 'T0'
     end = 'T1'
     nstep = 100
-    dim = 3
+    group = 'intermediate'
   []
   [d0]
     type = FullScalar
@@ -59,7 +59,7 @@
     start = 'D0'
     end = 'D1'
     nstep = 100
-    dim = 0
+    group = 'intermediate'
   []
   [dT]
     type = FullScalar

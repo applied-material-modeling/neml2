@@ -35,7 +35,7 @@ register_NEML2_object(MultiColumnCSVScalar);
 OptionSet
 MultiColumnCSVScalar::expected_options()
 {
-  OptionSet options = UserTensorBase::expected_options();
+  OptionSet options = UserTensorBase<Scalar>::expected_options();
   options.doc() =
       "Construct a two-dimensional Scalar from a CSV file. A subset of columns can be selected "
       "using `column_indices` or `column_names`. By default, the CSV is interpreted as "
@@ -50,7 +50,7 @@ MultiColumnCSVScalar::expected_options()
   EnumSelection indexing_selection({"COLUMN_MAJOR", "ROW_MAJOR"}, "COLUMN_MAJOR");
   options.set<EnumSelection>("indexing") = indexing_selection;
   options.set("indexing").doc() =
-      "Indexing interpretation. Options are " + indexing_selection.candidates_str();
+      "Indexing interpretation. Options are " + indexing_selection.join();
 
   options.set<TensorShape>("batch_shape");
   options.set("batch_shape").doc() = "Batch shape";
@@ -65,7 +65,7 @@ MultiColumnCSVScalar::expected_options()
       {"COMMA", "SEMICOLON", "SPACE", "TAB"}, {',', ';', ' ', '\t'}, "COMMA");
   options.set<EnumSelection>("delimiter") = delimiter_selection;
   options.set("delimiter").doc() =
-      "Delimiter used to parse the CSV file. Options are " + delimiter_selection.candidates_str();
+      "Delimiter used to parse the CSV file. Options are " + delimiter_selection.join();
 
   options.set<bool>("no_header") = false;
   options.set("no_header").doc() = "Whether the CSV file has a header row.";
@@ -80,14 +80,15 @@ MultiColumnCSVScalar::expected_options()
 }
 
 MultiColumnCSVScalar::MultiColumnCSVScalar(const OptionSet & options)
-  : UserTensorBase(options),
-    Scalar(parse(options))
+  : UserTensorBase<Scalar>(options)
 {
 }
 
 Scalar
-MultiColumnCSVScalar::parse(const OptionSet & options) const
+MultiColumnCSVScalar::make() const
 {
+  const auto & options = input_options();
+
   // Parse CSV
   const auto fmt = parse_format();
   csv::CSVReader csv(options.get<std::string>("csv_file"), fmt);
@@ -103,21 +104,21 @@ MultiColumnCSVScalar::parse(const OptionSet & options) const
     read_by_indices(csv, indices, vals, nrow, ncol);
 
   // Convert to Scalar and reshape
-  auto scalar = Scalar::create(vals).batch_reshape({Size(nrow), Size(ncol)});
+  auto scalar = Scalar::create(vals).dynamic_reshape({Size(nrow), Size(ncol)});
   if (options.get<EnumSelection>("indexing") == "COLUMN_MAJOR")
-    scalar = scalar.batch_transpose(0, 1);
+    scalar = scalar.dynamic_transpose(0, 1);
 
   // Reshape if requested
   if (options.user_specified("batch_shape"))
   {
     const auto B = options.get<TensorShape>("batch_shape");
-    neml_assert(scalar.numel() == utils::storage_size(B),
+    neml_assert(scalar.numel() == utils::numel(B),
                 "The requested batch_shape ",
                 B,
                 " is incompatible with the number of values read from the CSV file (",
                 scalar.numel(),
                 ").");
-    scalar = scalar.batch_reshape(B);
+    scalar = scalar.dynamic_reshape(B);
   }
 
   return scalar;

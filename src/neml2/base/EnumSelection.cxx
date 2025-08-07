@@ -30,7 +30,7 @@ namespace neml2
 std::ostream &
 operator<<(std::ostream & os, const EnumSelection & es)
 {
-  os << std::string(es);
+  os << es.selection();
   return os;
 }
 
@@ -41,17 +41,17 @@ operator>>(std::stringstream & ss, EnumSelection & es)
   return ss;
 }
 
-EnumSelection::EnumSelection(const std::vector<std::string> & candidates,
+EnumSelection::EnumSelection(const std::vector<std::string> & choices,
                              const std::string & selection)
-  : EnumSelectionBase(candidates)
+  : EnumSelectionBase(choices)
 {
   select(selection);
 }
 
-EnumSelection::EnumSelection(const std::vector<std::string> & candidates,
+EnumSelection::EnumSelection(const std::vector<std::string> & choices,
                              const std::vector<int> & values,
                              const std::string & selection)
-  : EnumSelectionBase(candidates, values)
+  : EnumSelectionBase(choices, values)
 {
   select(selection);
 }
@@ -59,7 +59,7 @@ EnumSelection::EnumSelection(const std::vector<std::string> & candidates,
 bool
 EnumSelection::operator==(const EnumSelection & other) const
 {
-  return _candidate_map == other._candidate_map && _selection == other._selection &&
+  return _choice_map == other._choice_map && _selection == other._selection &&
          _value == other._value;
 }
 
@@ -84,10 +84,9 @@ EnumSelection::operator!=(const std::string & other) const
 void
 EnumSelection::select(const std::string & selection)
 {
-  neml_assert(_candidate_map.count(selection),
-              "Invalid selection for EnumSelection. Candidates are ",
-              candidates_str());
+  neml_assert(
+      _choice_map.count(selection), "Invalid selection for EnumSelection. Candidates are ", join());
   _selection = selection;
-  _value = _candidate_map[selection];
+  _value = _choice_map[selection];
 }
-} // namesace neml2
+} // namespace neml2

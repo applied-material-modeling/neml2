@@ -35,23 +35,23 @@ TEST_CASE("EnumSelection", "[base]")
   SECTION("Construct from candidate strings")
   {
     EnumSelection es1({"a", "b", "c"}, "b");
-    REQUIRE(std::string(es1) == "b");
-    REQUIRE(int(es1) == 1);
+    REQUIRE(es1.selection() == "b");
+    REQUIRE(es1.value() == 1);
 
     EnumSelection es2({"a", "bb", "cccc"}, "cccc");
-    REQUIRE(std::string(es2) == "cccc");
-    REQUIRE(int(es2) == 2);
+    REQUIRE(es2.selection() == "cccc");
+    REQUIRE(es2.value() == 2);
   }
 
   SECTION("Construct from candidate strings and values")
   {
     EnumSelection es1({"a", "b", "c"}, {5, 2, 1}, "b");
-    REQUIRE(std::string(es1) == "b");
-    REQUIRE(int(es1) == 2);
+    REQUIRE(es1.selection() == "b");
+    REQUIRE(es1.value() == 2);
 
     EnumSelection es2({"a", "bb", "cccc"}, {-1, -2, -5}, "cccc");
-    REQUIRE(std::string(es2) == "cccc");
-    REQUIRE(int(es2) == -5);
+    REQUIRE(es2.selection() == "cccc");
+    REQUIRE(es2.value() == -5);
 
     EnumSelection es3 = es2;
     REQUIRE(es3 == es2);
@@ -60,13 +60,13 @@ TEST_CASE("EnumSelection", "[base]")
   SECTION("Modify selection")
   {
     EnumSelection es({"a", "b", "c"}, {5, 2, 1}, "b");
-    REQUIRE(std::string(es) == "b");
-    REQUIRE(int(es) == 2);
+    REQUIRE(es.selection() == "b");
+    REQUIRE(es.value() == 2);
 
     std::stringstream ss("c");
     ss >> es;
-    REQUIRE(std::string(es) == "c");
-    REQUIRE(int(es) == 1);
+    REQUIRE(es.selection() == "c");
+    REQUIRE(es.value() == 1);
 
     std::stringstream ss2("d");
     REQUIRE_THROWS_WITH(ss2 >> es, Catch::Matchers::ContainsSubstring("Invalid selection"));
@@ -120,14 +120,14 @@ TEST_CASE("EnumSelection", "[base]")
   {
     REQUIRE_THROWS_WITH(
         EnumSelection({"a", "a", "b"}, "a"),
-        Catch::Matchers::ContainsSubstring("Candidates of (Multi)EnumSelection must be unique"));
+        Catch::Matchers::ContainsSubstring("Choices of (Multi)EnumSelection must be unique"));
     REQUIRE_THROWS_WITH(EnumSelection({"a", "b", "c"}, "d"),
                         Catch::Matchers::ContainsSubstring("Invalid selection for EnumSelection"));
     REQUIRE_THROWS_WITH(EnumSelection({"a", "b", "c"}, {1, 2, 3}, "d"),
                         Catch::Matchers::ContainsSubstring("Invalid selection for EnumSelection"));
     REQUIRE_THROWS_WITH(
         EnumSelection({"a", "b", "c"}, {2, 2}, "a"),
-        Catch::Matchers::ContainsSubstring("number of candidates must match the number of values"));
+        Catch::Matchers::ContainsSubstring("number of choices must match the number of values"));
     REQUIRE_THROWS_WITH(
         EnumSelection({"a", "b", "c"}, {2, 2, 3}, "a"),
         Catch::Matchers::ContainsSubstring("Values of (Multi)EnumSelection must be unique"));

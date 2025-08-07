@@ -28,6 +28,7 @@
 #include "neml2/tensors/Rot.h"
 #include "neml2/tensors/Vec.h"
 #include "neml2/tensors/functions/where.h"
+#include "neml2/tensors/functions/norm_sq.h"
 
 namespace neml2
 {
@@ -36,7 +37,7 @@ register_NEML2_object(Orientation);
 OptionSet
 Orientation::expected_options()
 {
-  OptionSet options = UserTensorBase::expected_options();
+  OptionSet options = UserTensorBase<Rot>::expected_options();
 
   options.doc() = "An orientation, internally defined as a set of Modified Rodrigues parameters "
                   "given by \\f$ r = n \\tan{\\frac{\\theta}{4}} \\f$ with \\f$ n \\f$ the axis of "
@@ -69,14 +70,23 @@ Orientation::expected_options()
 }
 
 Orientation::Orientation(const OptionSet & options)
-  : Rot(fill(options)),
-    UserTensorBase(options)
+  : UserTensorBase<Rot>(options)
 {
 }
 
-Rot
-Orientation::fill(const OptionSet & options) const
+static Rot
+expand_as_needed(const Rot & input, unsigned int inp_size)
 {
+  if (inp_size > 1)
+    return input.dynamic_expand({inp_size});
+
+  return input;
+}
+
+Rot
+Orientation::make() const
+{
+  const auto & options = this->input_options();
   std::string input_type = options.get<std::string>("input_type");
 
   Rot R;
@@ -84,7 +94,7 @@ Orientation::fill(const OptionSet & options) const
   {
     auto vals = options.get<std::vector<double>>("values");
     auto t = neml2::Tensor::create(vals);
-    auto v = Vec(t.reshape({-1, 3}));
+    auto v = Vec(t.reshape({-1, 3}), 0);
     R = expand_as_needed(Rot::fill_euler_angles(v,
                                                 options.get<std::string>("angle_convention"),
                                                 options.get<std::string>("angle_type")),
@@ -92,24 +102,15 @@ Orientation::fill(const OptionSet & options) const
   }
   else if (input_type == "random")
   {
-    R = Rot::fill_random(options.get<unsigned int>("quantity"));
+    R = Rot::rand({options.get<unsigned int>("quantity")}, {});
   }
   else
     throw NEMLException("Unknown Orientation input_type " + input_type);
 
   if (options.get<bool>("normalize"))
-    return neml2::where((R.norm_sq() < 1.0).unsqueeze(-1), R, R.shadow());
+    return neml2::where(norm_sq(R) < 1.0, R, R.shadow());
 
   return R;
-}
-
-Rot
-Orientation::expand_as_needed(const Rot & input, unsigned int inp_size) const
-{
-  if (inp_size > 1)
-    return input.batch_expand({inp_size});
-
-  return input;
 }
 
 } // namespace neml2

@@ -58,9 +58,6 @@ public:
   /// Derivative of the rotated tensor w.r.t. itself
   R8 drotate_self(const Rot & r) const;
 
-  /// Accessor
-  Scalar operator()(Size i, Size j, Size k, Size l) const;
-
   /// Arbitrary transpose two dimensions
   R4 transpose(Size d1, Size d2) const;
 

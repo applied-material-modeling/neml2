@@ -28,6 +28,9 @@
 #include "neml2/tensors/SSR4.h"
 #include "neml2/tensors/functions/pow.h"
 #include "neml2/tensors/functions/log.h"
+#include "neml2/tensors/functions/norm.h"
+#include "neml2/tensors/functions/outer.h"
+#include "neml2/tensors/functions/imap.h"
 
 namespace neml2
 {
@@ -64,7 +67,7 @@ ChabochePlasticHardening::set_value(bool out, bool dout_din, bool /*d2out_din2*/
 {
   auto eps = machine_precision(_X.scalar_type());
   // The effective stress
-  auto s = SR2(_X).norm(eps);
+  auto s = neml2::norm(_X(), eps);
   // The part that's proportional to the plastic strain rate
   auto g_term = 2.0 / 3.0 * _C * _NM - _g * _X;
   // The static recovery term
@@ -75,7 +78,7 @@ ChabochePlasticHardening::set_value(bool out, bool dout_din, bool /*d2out_din2*/
 
   if (dout_din)
   {
-    auto I = SR2::identity_map(_X.options());
+    auto I = imap<SR2>(_X.options()).as<SSR4>();
 
     if (_gamma_dot.is_dependent())
       _X_dot.d(_gamma_dot) = g_term;
@@ -84,8 +87,8 @@ ChabochePlasticHardening::set_value(bool out, bool dout_din, bool /*d2out_din2*/
       _X_dot.d(_NM) = 2.0 / 3.0 * _C * _gamma_dot * I;
 
     if (_X.is_dependent())
-      _X_dot.d(_X) = -_g * _gamma_dot * I -
-                     _A * pow(s, _a - 3) * ((_a - 1) * SR2(_X).outer(SR2(_X)) + s * s * I);
+      _X_dot.d(_X) =
+          -_g * _gamma_dot * I - _A * pow(s, _a - 3) * ((_a - 1) * neml2::outer(_X()) + s * s * I);
 
     if (const auto * const C = nl_param("C"))
       _X_dot.d(*C) = 2.0 / 3.0 * _NM * _gamma_dot;

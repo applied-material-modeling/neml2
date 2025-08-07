@@ -29,7 +29,7 @@ namespace neml2
 {
 
 ValueMap
-valuemap_cat_reduce(std::vector<ValueMap> && results, Size batch_dim)
+valuemap_cat_reduce(std::vector<ValueMap> && results, Size dynamic_dim)
 {
   // Re-bin the results
   std::map<VariableName, std::vector<Tensor>> vars;
@@ -40,7 +40,7 @@ valuemap_cat_reduce(std::vector<ValueMap> && results, Size batch_dim)
   // Concatenate the tensors
   ValueMap ret;
   for (auto && [name, values] : vars)
-    ret[name] = batch_cat(values, batch_dim);
+    ret[name] = dynamic_cat(values, dynamic_dim);
 
   return ret;
 }

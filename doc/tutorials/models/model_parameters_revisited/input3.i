@@ -3,31 +3,37 @@
     type = Scalar
     values = '300 400 500'
     batch_shape = '(3)'
+    intermediate_dimension = 1
   []
   [alpha_y]
     type = Scalar
     values = '1e-5 1.5e-5 1.8e-5'
     batch_shape = '(3)'
+    intermediate_dimension = 1
   []
   [K_x]
     type = Scalar
     values = '300 350 400 450'
     batch_shape = '(4)'
+    intermediate_dimension = 1
   []
   [K_y]
     type = Scalar
     values = '1.4e5 1.35e5 1.32e5 1.25e5'
     batch_shape = '(4)'
+    intermediate_dimension = 1
   []
   [G_x]
     type = Scalar
     values = '300 500'
     batch_shape = '(2)'
+    intermediate_dimension = 1
   []
   [G_y]
     type = Scalar
     values = '7.8e4 7e4'
     batch_shape = '(2)'
+    intermediate_dimension = 1
   []
 []
 

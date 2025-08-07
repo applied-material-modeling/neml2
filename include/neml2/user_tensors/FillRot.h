@@ -33,20 +33,18 @@ namespace neml2
 /**
  * @brief Create a filled R2 from the input file.
  */
-class FillRot : public UserTensorBase, public Rot
+class FillRot : public UserTensorBase<Rot>
 {
 public:
   static OptionSet expected_options();
 
-  /**
-   * @brief Construct a new FillR2 object
-   *
-   * @param options The options extracted from the input file.
-   */
   FillRot(const OptionSet & options);
 
+protected:
+  Rot make() const override;
+
 private:
-  /// A helper method to dispatch to the correct fill method based on the selected options
-  Rot fill(const std::vector<TensorName<Scalar>> & values, const std::string & method) const;
+  const std::vector<TensorName<Scalar>> _values;
+  const std::string _method;
 };
 } // namespace neml2

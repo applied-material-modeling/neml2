@@ -29,7 +29,11 @@
 
 namespace neml2
 {
-#define DECLARE_DIFF(T) T diff(const T & a, Size n = 1, Size dim = -1)
+#define DECLARE_DIFF(T)                                                                            \
+  T dynamic_diff(const T & a, Size n = 1, Size dim = -1);                                          \
+  T intmd_diff(const T & a, Size n = 1, Size dim = -1)
 FOR_ALL_TENSORBASE(DECLARE_DIFF);
 #undef DECLARE_DIFF
+
+neml2::Tensor base_diff(const Tensor & a, Size n = 1, Size dim = -1);
 } // namespace neml2

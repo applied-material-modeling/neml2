@@ -22,13 +22,110 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <ATen/ops/allclose.h>
 #include <catch2/catch_session.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 
 #include "utils.h"
 #include "neml2/base/Parser.h"
+#include "neml2/tensors/tensors.h"
 
-std::unordered_set<neml2::Device> &
+namespace test
+{
+template <typename T>
+TensorMatcher<T>::TensorMatcher(T expected, double rtol, double atol)
+  : _m_expected(std::move(expected)),
+    _rtol(rtol),
+    _atol(atol)
+{
+}
+
+template <typename T>
+bool
+TensorMatcher<T>::match(const T & m) const
+{
+  _m = m;
+
+  if constexpr (std::is_same_v<T, neml2::ATensor>)
+    _shapes_match = (_m.sizes() == _m_expected.sizes());
+  else
+    _shapes_match = (_m.dynamic_sizes() == _m_expected.dynamic_sizes()) &&
+                    (_m.intmd_sizes() == _m_expected.intmd_sizes()) &&
+                    (_m.base_sizes() == _m_expected.base_sizes());
+
+  _devices_match = (_m.device() == _m_expected.device());
+  _dtypes_match = (_m.dtype() == _m_expected.dtype());
+
+  if (_shapes_match && _devices_match && _dtypes_match)
+    _allclose = details::allclose(_m, _m_expected, _rtol, _atol);
+
+  return _shapes_match && _devices_match && _dtypes_match && _allclose;
+}
+
+template <typename T>
+std::string
+TensorMatcher<T>::describe() const
+{
+  std::ostringstream ss;
+  if (!_shapes_match)
+  {
+    if constexpr (std::is_same_v<T, neml2::ATensor>)
+      ss << "Shapes do not match: expected " << _m_expected.sizes() << ", got " << _m.sizes()
+         << "\n";
+    else
+      ss << "Shapes do not match: expected " << _m_expected.dynamic_sizes()
+         << _m_expected.intmd_sizes() << _m_expected.base_sizes() << ", got " << _m.dynamic_sizes()
+         << _m.intmd_sizes() << _m.base_sizes() << "\n";
+  }
+
+  if (!_devices_match)
+    ss << "Devices do not match: expected " << _m_expected.device() << ", got " << _m.device()
+       << "\n";
+
+  if (!_dtypes_match)
+    ss << "Dtypes do not match: expected " << _m_expected.dtype() << ", got " << _m.dtype() << "\n";
+
+  if (_shapes_match && _devices_match && _dtypes_match)
+    if (!_allclose)
+      ss << "Tensors are not allclose within rtol=" << _rtol << ", atol=" << _atol << "\n";
+
+  return ss.str();
+}
+
+template <typename T>
+TensorMatcher<T>
+allclose(const T & expected, double rtol, std::optional<double> atol)
+{
+  double atol_default = expected.is_floating_point()
+                            ? std::sqrt(neml2::machine_precision(expected.scalar_type()))
+                            : 0.0;
+  return TensorMatcher<T>(expected, rtol, atol ? *atol : atol_default);
+}
+
+namespace details
+{
+bool
+allclose(const neml2::ATensor & a, const neml2::ATensor & b, double rtol, double atol)
+{
+  if (a.is_floating_point())
+    return at::allclose(a, b, rtol, atol);
+  return at::all(a.eq(b)).item<bool>();
+}
+} // namespace details
+
+using namespace neml2;
+
+#define INSTANTIATE(T)                                                                             \
+  template class TensorMatcher<T>;                                                                 \
+  template TensorMatcher<T> allclose(const T &, double, std::optional<double>)
+FOR_ALL_TENSORBASE(INSTANTIATE);
+INSTANTIATE(ATensor);
+#undef INSTANTIATE
+
+} // namespace test
+
+static std::unordered_set<neml2::Device> &
 set_test_suite_additional_devices()
 {
   static std::unordered_set<neml2::Device> _test_suite_additional_devices;

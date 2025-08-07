@@ -28,7 +28,7 @@
 namespace neml2
 {
 #define DEFINE_TAN(T)                                                                              \
-  T tan(const T & a) { return T(at::tan(a), a.batch_sizes()); }                                    \
+  T tan(const T & a) { return T(at::tan(a), a.dynamic_sizes(), a.intmd_dim()); }                   \
   static_assert(true)
 FOR_ALL_TENSORBASE(DEFINE_TAN);
 } // namespace neml2

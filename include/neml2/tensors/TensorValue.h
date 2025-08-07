@@ -24,6 +24,7 @@
 #pragma once
 
 #include "neml2/tensors/Tensor.h"
+#include "neml2/models/utils.h"
 
 namespace neml2
 {
@@ -60,6 +61,13 @@ public:
 
   /// Tensor type
   virtual TensorType type() const = 0;
+
+  /// Secret assignment operator used by low-level operations such as jit tracing
+  virtual void assign(const ATensor & val, TracerPrivilege key) = 0;
+
+protected:
+  /// Cached intermediate dimension
+  Size _cached_intmd_dim = 0;
 };
 
 /// Concrete definition of tensor value
@@ -70,6 +78,7 @@ public:
   explicit TensorValue(T value)
     : _value(std::move(value))
   {
+    _cached_intmd_dim = _value.intmd_dim();
   }
 
   void to_(const TensorOptions & options) override;
@@ -77,7 +86,9 @@ public:
   operator Tensor() const override;
   void operator=(const Tensor & val) override;
   TensorType type() const override;
-  T & value() { return _value; }
+  const T & operator()() const { return _value; }
+
+  void assign(const ATensor & val, TracerPrivilege key) override;
 
 private:
   T _value;

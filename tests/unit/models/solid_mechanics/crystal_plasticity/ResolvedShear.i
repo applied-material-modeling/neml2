@@ -14,16 +14,12 @@
 []
 
 [Tensors]
-  [a]
-    type = Scalar
-    values = '1.2'
-  []
   [sdirs]
-    type = FillMillerIndex
+    type = MillerIndex
     values = '1 1 0'
   []
   [splanes]
-    type = FillMillerIndex
+    type = MillerIndex
     values = '1 1 1'
   []
   [shears]
@@ -44,7 +40,7 @@
 [Data]
   [crystal_geometry]
     type = CubicCrystal
-    lattice_parameter = 'a'
+    lattice_parameter = 1.2
     slip_directions = 'sdirs'
     slip_planes = 'splanes'
   []

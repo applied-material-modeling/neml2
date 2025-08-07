@@ -30,8 +30,8 @@ std::pair<Vec, R2>
 eigh(const SR2 & m)
 {
   auto result = at::linalg_eigh(R2(m));
-  auto evals = Vec(std::get<0>(result), m.batch_sizes());
-  auto evecs = R2(std::get<1>(result), m.batch_sizes());
+  auto evals = Vec(std::get<0>(result), m.dynamic_sizes(), m.intmd_dim());
+  auto evecs = R2(std::get<1>(result), m.dynamic_sizes(), m.intmd_dim());
   return std::make_pair(evals, evecs);
 }
 } // namespace neml2::linalg

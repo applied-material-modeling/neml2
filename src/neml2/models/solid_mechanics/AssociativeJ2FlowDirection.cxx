@@ -26,6 +26,9 @@
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
+#include "neml2/tensors/functions/norm.h"
+#include "neml2/tensors/functions/outer.h"
+#include "neml2/tensors/functions/dev.h"
 
 namespace neml2
 {
@@ -57,8 +60,8 @@ void
 AssociativeJ2FlowDirection::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   auto eps = machine_precision(_M.scalar_type());
-  auto S = SR2(_M).dev();
-  auto vm = std::sqrt(3.0 / 2.0) * S.norm(eps);
+  auto S = neml2::dev(_M());
+  auto vm = std::sqrt(3.0 / 2.0) * neml2::norm(S, eps);
   auto dvm_dM = 3.0 / 2.0 * S / vm;
 
   if (out)
@@ -72,7 +75,7 @@ AssociativeJ2FlowDirection::set_value(bool out, bool dout_din, bool /*d2out_din2
       auto I = SSR4::identity_sym(_M.options());
       auto J = SSR4::identity_dev(_M.options());
 
-      _N.d(_M) = 3.0 / 2.0 * (I - 2.0 / 3.0 * dvm_dM.outer(dvm_dM)) * J / vm;
+      _N.d(_M) = 3.0 / 2.0 * (I - 2.0 / 3.0 * neml2::outer(dvm_dM)) * J / vm;
     }
 }
 } // namespace neml2

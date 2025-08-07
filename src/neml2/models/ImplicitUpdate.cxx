@@ -109,7 +109,8 @@ ImplicitUpdate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   // The trial state is used as the initial guess
   const auto sol_assember = VectorAssembler(_model.input_axis().subaxis(STATE));
-  auto x0 = NonlinearSystem::Sol<false>(sol_assember.assemble_by_variable(_model.collect_input()));
+  auto x0 = NonlinearSystem::Sol<false>(
+      sol_assember.assemble_by_variable(_model.collect_input(/*assembly=*/true)));
 
   // Perform automatic scaling (using the trial state)
   // TODO: Add an interface to allow user to specify where (and when) to evaluate the Jacobian for
@@ -138,7 +139,7 @@ ImplicitUpdate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 
     // All that being said, if the result has AD graph, we need to propagate the graph to the output
     if (res.solution.requires_grad())
-      assign_output(sol_assember.split_by_variable(res.solution));
+      assign_output(sol_assember.split_by_variable(res.solution), /*assembly=*/true);
   }
 
   // Use the implicit function theorem (IFT) to calculate the other derivatives
@@ -147,7 +148,8 @@ ImplicitUpdate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
     // IFT requires the Jacobian evaluated at the solution:
     _model.forward_maybe_jit(false, true, false);
     const auto jac_assembler = MatrixAssembler(_model.output_axis(), _model.input_axis());
-    const auto J = jac_assembler.assemble_by_variable(_model.collect_output_derivatives());
+    const auto J =
+        jac_assembler.assemble_by_variable(_model.collect_output_derivatives(/*assembly=*/true));
     const auto derivs = jac_assembler.split_by_subaxis(J).at(RESIDUAL);
     const auto dr_ds = derivs.at(STATE);
 
@@ -162,7 +164,7 @@ ImplicitUpdate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
       const auto ift_assembler =
           MatrixAssembler(output_axis(), _model.input_axis().subaxis(subaxis));
       assign_output_derivatives(
-          ift_assembler.split_by_variable(-linalg::lu_solve(LU, pivot, deriv)));
+          ift_assembler.split_by_variable(-linalg::lu_solve(LU, pivot, deriv)), /*assembly=*/true);
     }
   }
 }

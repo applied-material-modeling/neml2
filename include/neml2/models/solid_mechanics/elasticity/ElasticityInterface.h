@@ -101,7 +101,7 @@ ElasticityInterface<Derived, N>::expected_options()
                                     {"INVALID"});
   options.set<MultiEnumSelection>("coefficient_types") = type_selection;
   options.set("coefficient_types").doc() =
-      "Types for each parameter, options are: " + type_selection.candidates_str();
+      "Types for each parameter, options are: " + type_selection.join();
 
   options.set_parameter<std::vector<TensorName<Scalar>>>("coefficients");
   options.set("coefficients").doc() = "Coefficients used to define the elasticity tensor";

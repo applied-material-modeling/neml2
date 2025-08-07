@@ -41,9 +41,9 @@ TEST_CASE("TensorName", "[base]")
 
     const auto auto_3 = factory->get_object<SR2>("Tensors", "auto_3_crossref");
 
-    const auto scalar1 = Scalar::create({1, 2, 3, 4, 5}, default_tensor_options());
-    const auto scalar2 = Scalar::create({5, 6, 7, 8, 9}, default_tensor_options());
-    const auto scalar3 = Scalar::create({-1, -2, -3, -4, -5}, default_tensor_options());
+    const auto scalar1 = Scalar::create({1, 2, 3, 4, 5}, 0, default_tensor_options());
+    const auto scalar2 = Scalar::create({5, 6, 7, 8, 9}, 0, default_tensor_options());
+    const auto scalar3 = Scalar::create({-1, -2, -3, -4, -5}, 0, default_tensor_options());
     const auto auto_3_correct = SR2::fill(scalar1, scalar2, scalar3);
 
     REQUIRE(at::allclose(*auto_3, auto_3_correct));

@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/tensors/TensorCache.h"
+#include <c10/core/ScalarTypeToTypeMeta.h>
 
 namespace neml2
 {
@@ -34,10 +35,20 @@ TensorCache::TensorCache(std::function<Tensor(const TensorOptions &)> && creator
 const Tensor &
 TensorCache::operator()(const TensorOptions & opt)
 {
-  const auto key = opt.computeDispatchKey();
-  const auto ti = _cached_tensors.find(key);
-  if (ti == _cached_tensors.end())
-    return _cached_tensors[key] = _creator(opt);
-  return ti->second;
+  const auto key = CacheKey{c10::typeMetaToScalarType(opt.dtype()), opt.device()};
+  const auto ti = std::find(_cached_keys.begin(), _cached_keys.end(), key);
+  if (ti == _cached_keys.end())
+  {
+    _cached_keys.push_back(key);
+    _cached_tensors.emplace_back(_creator(opt));
+    return _cached_tensors.back();
+  }
+  return _cached_tensors[ti - _cached_keys.begin()];
+}
+
+bool
+TensorCache::CacheKey::operator==(const CacheKey & other) const
+{
+  return dtype == other.dtype && device == other.device;
 }
 }

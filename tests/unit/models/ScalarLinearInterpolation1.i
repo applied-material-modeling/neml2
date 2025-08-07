@@ -27,6 +27,7 @@
     end = 2000
     nstep = 100
     dim = 0
+    group = 'intermediate'
   []
   [E]
     type = LinspaceScalar
@@ -34,5 +35,6 @@
     end = 1.2e5
     nstep = 100
     dim = 0
+    group = 'intermediate'
   []
 []

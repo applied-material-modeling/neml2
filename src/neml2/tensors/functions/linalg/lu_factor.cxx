@@ -24,13 +24,15 @@
 
 #include "neml2/tensors/functions/linalg/lu_factor.h"
 #include "neml2/tensors/Tensor.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2::linalg
 {
 std::tuple<Tensor, Tensor>
 lu_factor(const Tensor & A, bool pivot)
 {
+  neml_assert_dbg(A.intmd_dim() == 0, "Intermediate dimension of A must be 0, got", A.intmd_dim());
   auto [LU, pivots] = at::linalg_lu_factor(A, pivot);
-  return {Tensor(LU, A.batch_sizes()), Tensor(pivots, A.batch_sizes())};
+  return {Tensor(LU, A.dynamic_sizes(), 0), Tensor(pivots, A.dynamic_sizes(), 0)};
 }
 } // namespace neml2::linalg

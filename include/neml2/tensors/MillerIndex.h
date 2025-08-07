@@ -38,23 +38,5 @@ class MillerIndex : public PrimitiveTensor<MillerIndex, 3>
 {
 public:
   using PrimitiveTensor<MillerIndex, 3>::PrimitiveTensor;
-
-  /// Accessor
-  Scalar operator()(Size i) const;
-
-  /// Most likely construction method -- make from three ints
-  static MillerIndex fill(int64_t a,
-                          int64_t b,
-                          int64_t c,
-                          const TensorOptions & options = default_integer_tensor_options());
-
-  /// Reduce to the greatest common demoninator
-  MillerIndex reduce() const;
-
-  /// Convert back to a (real) Vec
-  Vec to_vec(const TensorOptions & options = default_tensor_options()) const;
-
-  /// Convert back to a normalized real Vec
-  Vec to_normalized_vec(const TensorOptions & options = default_tensor_options()) const;
 };
 } // namespace neml2

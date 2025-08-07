@@ -24,15 +24,16 @@
 
 #include <torch/csrc/autograd/variable.h>
 #include "neml2/tensors/Tensor.h"
+#include "neml2/misc/types.h"
 #include "neml2/tensors/shape_utils.h"
 #include "neml2/misc/assertions.h"
-#include "neml2/jit/types.h"
+#include "neml2/tensors/jit.h"
 
 namespace neml2
 {
 namespace utils
 {
-ATensor
+static ATensor
 pad_prepend(const ATensor & s, Size dim, Size pad)
 {
   neml_assert_dbg(s.defined(), "pad_prepend: shape must be defined");
@@ -42,15 +43,15 @@ pad_prepend(const ATensor & s, Size dim, Size pad)
 }
 
 TraceableTensorShape
-broadcast_batch_sizes(const std::vector<Tensor> & tensors)
+broadcast_dynamic_sizes(const std::vector<Tensor> & tensors)
 {
   Size dim = 0;
   auto shapes = std::vector<ATensor>{};
   for (const auto & t : tensors)
     if (t.defined())
     {
-      dim = t.batch_dim() > dim ? t.batch_dim() : dim;
-      const auto shape = t.batch_sizes().as_tensor();
+      dim = t.dynamic_dim() > dim ? t.dynamic_dim() : dim;
+      const auto shape = t.dynamic_sizes().as_tensor();
       if (shape.defined())
         shapes.push_back(shape);
     }
@@ -65,28 +66,32 @@ broadcast_batch_sizes(const std::vector<Tensor> & tensors)
 }
 } // namespace utils
 
-Tensor::Tensor(const ATensor & tensor, Size batch_dim)
-  : TensorBase(tensor, batch_dim)
+Tensor::Tensor(const ATensor & tensor, Size dynamic_dim, Size intmd_dim)
+  : TensorBase(tensor, dynamic_dim, intmd_dim)
 {
 }
 
-Tensor::Tensor(const ATensor & tensor, const TraceableTensorShape & batch_shape)
-  : TensorBase(tensor, batch_shape)
+Tensor::Tensor(const ATensor & tensor, const TraceableTensorShape & dynamic_shape, Size intmd_dim)
+  : TensorBase(tensor, dynamic_shape, intmd_dim)
 {
 }
 
 Tensor
 Tensor::create(const TensorDataContainer & data, const TensorOptions & options)
 {
-  return create(data, 0, options);
+  return create(data, 0, 0, options);
 }
 
 Tensor
-Tensor::create(const TensorDataContainer & data, Size batch_dim, const TensorOptions & options)
+Tensor::create(const TensorDataContainer & data,
+               Size dynamic_dim,
+               Size intmd_dim,
+               const TensorOptions & options)
 {
   return Tensor(torch::autograd::make_variable(data.convert_to_tensor(options.requires_grad(false)),
                                                options.requires_grad()),
-                batch_dim);
+                dynamic_dim,
+                intmd_dim);
 }
 
 Tensor
@@ -96,18 +101,22 @@ Tensor::empty(TensorShapeRef base_shape, const TensorOptions & options)
 }
 
 Tensor
-Tensor::empty(const TraceableTensorShape & batch_shape,
+Tensor::empty(const TraceableTensorShape & dynamic_shape,
+              TensorShapeRef intmd_shape,
               TensorShapeRef base_shape,
               const TensorOptions & options)
 {
-  // Record batch shape
-  for (Size i = 0; i < (Size)batch_shape.size(); ++i)
-    if (const auto * const si = batch_shape[i].traceable())
-      jit::tracer::ArgumentStash::stashIntArrayRefElem(
-          "size", batch_shape.size() + base_shape.size(), i, *si);
+  // Record dynamic shape
+  if (jit::tracer::isTracing())
+    for (Size i = 0; i < (Size)dynamic_shape.size(); ++i)
+      if (const auto * const si = dynamic_shape[i].traceable())
+        jit::tracer::ArgumentStash::stashIntArrayRefElem(
+            "size", dynamic_shape.size() + intmd_shape.size() + base_shape.size(), i, *si);
 
-  return Tensor(at::empty(utils::add_shapes(batch_shape.concrete(), base_shape), options),
-                batch_shape);
+  return Tensor(
+      at::empty(utils::add_shapes(dynamic_shape.concrete(), intmd_shape, base_shape), options),
+      dynamic_shape,
+      Size(intmd_shape.size()));
 }
 
 Tensor
@@ -117,18 +126,21 @@ Tensor::zeros(TensorShapeRef base_shape, const TensorOptions & options)
 }
 
 Tensor
-Tensor::zeros(const TraceableTensorShape & batch_shape,
+Tensor::zeros(const TraceableTensorShape & dynamic_shape,
+              TensorShapeRef intmd_shape,
               TensorShapeRef base_shape,
               const TensorOptions & options)
 {
-  // Record batch shape
-  for (Size i = 0; i < (Size)batch_shape.size(); ++i)
-    if (const auto * const si = batch_shape[i].traceable())
+  // Record dynamic shape
+  for (Size i = 0; i < (Size)dynamic_shape.size(); ++i)
+    if (const auto * const si = dynamic_shape[i].traceable())
       jit::tracer::ArgumentStash::stashIntArrayRefElem(
-          "size", batch_shape.size() + base_shape.size(), i, *si);
+          "size", dynamic_shape.size() + intmd_shape.size() + base_shape.size(), i, *si);
 
-  return Tensor(at::zeros(utils::add_shapes(batch_shape.concrete(), base_shape), options),
-                batch_shape);
+  return Tensor(
+      at::zeros(utils::add_shapes(dynamic_shape.concrete(), intmd_shape, base_shape), options),
+      dynamic_shape,
+      Size(intmd_shape.size()));
 }
 
 Tensor
@@ -138,65 +150,75 @@ Tensor::ones(TensorShapeRef base_shape, const TensorOptions & options)
 }
 
 Tensor
-Tensor::ones(const TraceableTensorShape & batch_shape,
+Tensor::ones(const TraceableTensorShape & dynamic_shape,
+             TensorShapeRef intmd_shape,
              TensorShapeRef base_shape,
              const TensorOptions & options)
 {
-  // Record batch shape
-  for (Size i = 0; i < (Size)batch_shape.size(); ++i)
-    if (const auto * const si = batch_shape[i].traceable())
+  // Record dynamic shape
+  for (Size i = 0; i < (Size)dynamic_shape.size(); ++i)
+    if (const auto * const si = dynamic_shape[i].traceable())
       jit::tracer::ArgumentStash::stashIntArrayRefElem(
-          "size", batch_shape.size() + base_shape.size(), i, *si);
+          "size", dynamic_shape.size() + intmd_shape.size() + base_shape.size(), i, *si);
 
-  return Tensor(at::ones(utils::add_shapes(batch_shape.concrete(), base_shape), options),
-                batch_shape);
+  return Tensor(
+      at::ones(utils::add_shapes(dynamic_shape.concrete(), intmd_shape, base_shape), options),
+      dynamic_shape,
+      Size(intmd_shape.size()));
 }
 
 Tensor
 Tensor::full(TensorShapeRef base_shape, const CScalar & init, const TensorOptions & options)
 {
-  return Tensor(at::full(base_shape, init, options), 0);
+  return Tensor(at::full(base_shape, init, options), 0, 0);
 }
 
 Tensor
-Tensor::full(const TraceableTensorShape & batch_shape,
+Tensor::full(const TraceableTensorShape & dynamic_shape,
+             TensorShapeRef intmd_shape,
              TensorShapeRef base_shape,
              const CScalar & init,
              const TensorOptions & options)
 {
-  // Record batch shape
-  for (Size i = 0; i < (Size)batch_shape.size(); ++i)
-    if (const auto * const si = batch_shape[i].traceable())
+  // Record dynamic shape
+  for (Size i = 0; i < (Size)dynamic_shape.size(); ++i)
+    if (const auto * const si = dynamic_shape[i].traceable())
       jit::tracer::ArgumentStash::stashIntArrayRefElem(
-          "size", batch_shape.size() + base_shape.size(), i, *si);
+          "size", dynamic_shape.size() + intmd_shape.size() + base_shape.size(), i, *si);
 
-  return Tensor(at::full(utils::add_shapes(batch_shape.concrete(), base_shape), init, options),
-                batch_shape);
+  return Tensor(
+      at::full(utils::add_shapes(dynamic_shape.concrete(), intmd_shape, base_shape), init, options),
+      dynamic_shape,
+      Size(intmd_shape.size()));
+}
+
+Tensor
+Tensor::rand(TensorShapeRef base_shape, const TensorOptions & options)
+{
+  return Tensor(at::rand(base_shape, options), 0);
+}
+
+Tensor
+Tensor::rand(const TraceableTensorShape & dynamic_shape,
+             TensorShapeRef intmd_shape,
+             TensorShapeRef base_shape,
+             const TensorOptions & options)
+{
+  // Record dynamic shape
+  for (Size i = 0; i < (Size)dynamic_shape.size(); ++i)
+    if (const auto * const si = dynamic_shape[i].traceable())
+      jit::tracer::ArgumentStash::stashIntArrayRefElem(
+          "size", dynamic_shape.size() + intmd_shape.size() + base_shape.size(), i, *si);
+
+  return Tensor(
+      at::rand(utils::add_shapes(dynamic_shape.concrete(), intmd_shape, base_shape), options),
+      dynamic_shape,
+      Size(intmd_shape.size()));
 }
 
 Tensor
 Tensor::identity(Size n, const TensorOptions & options)
 {
   return Tensor(at::eye(n, options), 0);
-}
-
-Tensor
-Tensor::identity(const TraceableTensorShape & batch_shape, Size n, const TensorOptions & options)
-{
-  return identity(n, options).batch_expand_copy(batch_shape);
-}
-
-Tensor
-Tensor::base_unsqueeze_to(Size n) const
-{
-  neml_assert_dbg(n >= base_dim(),
-                  "base_unsqueeze_to: n (",
-                  n,
-                  ") must be greater than or equal to base_dim (",
-                  base_dim(),
-                  ").");
-  indexing::TensorIndices net{indexing::Ellipsis};
-  net.insert(net.end(), n - base_dim(), indexing::None);
-  return Tensor(index(net), batch_sizes());
 }
 } // end namespace neml2

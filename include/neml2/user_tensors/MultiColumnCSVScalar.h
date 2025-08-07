@@ -32,16 +32,17 @@
 
 namespace neml2
 {
-class MultiColumnCSVScalar : public UserTensorBase, public Scalar
+class MultiColumnCSVScalar : public UserTensorBase<Scalar>
 {
 public:
   static OptionSet expected_options();
 
   MultiColumnCSVScalar(const OptionSet & options);
 
-private:
-  Scalar parse(const OptionSet & options) const;
+protected:
+  Scalar make() const override;
 
+private:
   /// Helper functions to parse CSV format
   csv::CSVFormat parse_format() const;
 

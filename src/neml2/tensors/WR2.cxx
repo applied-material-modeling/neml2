@@ -31,10 +31,12 @@
 #include "neml2/tensors/WSR4.h"
 #include "neml2/tensors/R4.h"
 
-#include "neml2/tensors/mandel_notation.h"
+#include "neml2/tensors/functions/symmetrization.h"
 #include "neml2/tensors/functions/tan.h"
 #include "neml2/tensors/functions/cos.h"
 #include "neml2/tensors/functions/pow.h"
+#include "neml2/tensors/functions/norm_sq.h"
+#include "neml2/tensors/functions/outer.h"
 
 namespace neml2
 {
@@ -51,7 +53,7 @@ WR2::operator()(Size i, Size j) const
 }
 
 Rot
-WR2::exp() const
+WR2::exp_map() const
 {
   // There are singularities at norm() = 0 and 2*pi
   // To the third order near zero this reduces to
@@ -61,7 +63,7 @@ WR2::exp() const
   // The other singularity is essentially unavoidable
 
   // This is what determines which region to sit in
-  auto norm2 = norm_sq();
+  auto norm2 = norm_sq(*this);
 
   // So we want the result to be as accurate as machine precision
   auto thresh = std::pow(eps, 1.0 / 3.0);
@@ -72,17 +74,17 @@ WR2::exp() const
   // Actual definition
   auto res_actual = Rot(*this) * neml2::tan(norm2 / 2.0) / (2.0 * norm2 * neml2::cos(norm2 / 2));
 
-  return Rot(at::where((norm2 > thresh).unsqueeze(-1), res_actual, res_taylor));
+  return Rot(at::where((norm2 > thresh).unsqueeze(-1), res_actual, res_taylor), intmd_dim());
 }
 
 R2
-WR2::dexp() const
+WR2::dexp_map() const
 {
   // Same singularities as WR2::exp()
-  auto norm2 = norm_sq();
+  auto norm2 = norm_sq(*this);
   auto thresh = std::pow(eps, 1.0 / 3.0);
 
-  auto res_taylor = 5.0 * norm2 / 24.0 * Vec(*this).outer(Vec(*this)) +
+  auto res_taylor = 5.0 * norm2 / 24.0 * neml2::outer(Vec(*this)) +
                     (0.25 + 5.0 * norm2 * norm2 / 96.0) * R2::identity(options());
 
   auto f1 = neml2::tan(norm2 / 2.0) / (2.0 * norm2 * neml2::cos(norm2 / 2));
@@ -91,9 +93,10 @@ WR2::dexp() const
                  (1.0 / neml2::cos(norm2 / 2.0))) /
             (2 * norm2 * norm2);
 
-  auto res_actual = f1 * R2::identity(options()) + f2 * Vec(*this).outer(Vec(*this));
+  auto res_actual = f1 * R2::identity(options()) + f2 * neml2::outer(Vec(*this));
 
-  return R2(at::where((norm2 > thresh).unsqueeze(-1).unsqueeze(-1), res_actual, res_taylor));
+  return R2(at::where((norm2 > thresh).unsqueeze(-1).unsqueeze(-1), res_actual, res_taylor),
+            intmd_dim());
 }
 
 } // namespace neml2

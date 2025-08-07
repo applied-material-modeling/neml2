@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/BackwardEulerTimeIntegration.h"
+#include "neml2/tensors/functions/imap.h"
 
 namespace neml2
 {
@@ -84,7 +85,7 @@ BackwardEulerTimeIntegration<T>::set_value(bool out, bool dout_din, bool /*d2out
 
   if (dout_din)
   {
-    auto I = T::identity_map(_s.options());
+    auto I = imap<T>(_s.options());
 
     _r.d(_s) = I;
     _r.d(_ds_dt) = -I * (_t - _tn);

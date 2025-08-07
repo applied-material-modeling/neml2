@@ -26,7 +26,8 @@
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
-#include "neml2/misc/assertions.h"
+#include "neml2/tensors/functions/tr.h"
+#include "neml2/tensors/functions/imap.h"
 
 namespace neml2
 {
@@ -58,8 +59,8 @@ SampleRateModelTmpl<false>::set_value(bool out, bool dout_din, bool /*d2out_din2
 {
   if (out)
   {
-    foo_dot = (foo * foo + bar) * T + SR2(baz).tr();
-    bar_dot = _a * bar + _b * foo + _c * T + SR2(baz).tr();
+    foo_dot = (foo * foo + bar) * T + neml2::tr(baz());
+    bar_dot = _a * bar + _b * foo + _c * T + neml2::tr(baz());
     baz_dot = (foo + bar) * baz * (T - 3);
   }
 
@@ -77,7 +78,7 @@ SampleRateModelTmpl<false>::set_value(bool out, bool dout_din, bool /*d2out_din2
 
     baz_dot.d(foo) = baz * (T - 3);
     baz_dot.d(bar) = baz * (T - 3);
-    baz_dot.d(baz) = (foo + bar) * (T - 3) * SR2::identity_map(foo.options());
+    baz_dot.d(baz) = (foo + bar) * (T - 3) * imap<SR2>(foo.options()).as<Tensor>();
 
     if (!currently_solving_nonlinear_system())
     {
@@ -94,8 +95,8 @@ SampleRateModelTmpl<true>::set_value(bool out, bool /*dout_din*/, bool /*d2out_d
 {
   if (out)
   {
-    foo_dot = (foo * foo + bar) * T + SR2(baz).tr();
-    bar_dot = _a * bar + _b * foo + _c * T + SR2(baz).tr();
+    foo_dot = (foo * foo + bar) * T + neml2::tr(baz());
+    bar_dot = _a * bar + _b * foo + _c * T + neml2::tr(baz());
     baz_dot = (foo + bar) * baz * (T - 3);
   }
 }

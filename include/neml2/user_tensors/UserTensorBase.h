@@ -24,6 +24,7 @@
 
 #pragma once
 
+#include "neml2/base/Factory.h"
 #include "neml2/base/Registry.h"
 #include "neml2/base/NEML2Object.h"
 
@@ -31,14 +32,33 @@
 // We put them here so that derived classes can add expected options of these types.
 #include "neml2/base/TensorName.h"
 #include "neml2/base/EnumSelection.h"
+#include "neml2/base/MultiEnumSelection.h"
 
 namespace neml2
 {
-class UserTensorBase : public NEML2Object
+template <class T>
+class UserTensorBase : public NEML2Object, public T
 {
 public:
   static OptionSet expected_options();
 
   UserTensorBase(const OptionSet & options);
+
+  void setup() override;
+
+protected:
+  /// Create the tensor given input options
+  virtual T make() const = 0;
+
+  /// A human-readable description of the tensor type
+  static std::string tensor_type();
+
+private:
+  /// Shape manipulation operations to apply to the created tensor
+  const MultiEnumSelection _manips;
+
+  /// Arguments corresponding to each shape manipulation operation
+  const std::vector<TensorShape> _manip_args;
 };
+
 } // namespace neml2

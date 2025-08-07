@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/LinearIsotropicElasticJ2TrialStressUpdate.h"
+#include "neml2/tensors/functions/imap.h"
 
 namespace neml2
 {
@@ -75,7 +76,7 @@ LinearIsotropicElasticJ2TrialStressUpdate::set_value(bool out, bool dout_din, bo
   {
     if (_elastic_trial_stress.is_dependent())
       _updated_trial_stress.d(_elastic_trial_stress) =
-          Scalar::identity_map(_elastic_trial_stress.options());
+          imap<Scalar>(_elastic_trial_stress.options()).as<Scalar>();
 
     if (_inelastic_strain.is_dependent())
       _updated_trial_stress.d(_inelastic_strain) = -three_shear;

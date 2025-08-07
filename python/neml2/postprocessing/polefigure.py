@@ -210,8 +210,8 @@ def pole_figure_odf(
     sample_poles = tensors.Vec(projection.inverse(torch.stack([X, Y], dim=-1)))
 
     # Get all the equivalent poles
-    crystal_symmetry_operators = symmetry_operators_as_R2(crystal_symmetry, device=pole.device)
-    crystal_poles = crystal_symmetry_operators * pole
+    symmetry_operators = symmetry_operators_as_R2(crystal_symmetry, device=pole.device)
+    crystal_poles = symmetry_operators * pole
     crystal_poles = crystal_poles.batch.unsqueeze(1).batch.unsqueeze(1)
 
     # Calculate the static rotation from crystal to sample poles
@@ -346,10 +346,8 @@ def pole_figure_points(
         orientations = tensors.Rot(orientations)
 
     # Get all the equivalent poles
-    crystal_symmetry_operators = symmetry_operators_as_R2(
-        crystal_symmetry, device=orientations.device
-    )
-    equivalent_poles = crystal_symmetry_operators * pole
+    symmetry_operators = symmetry_operators_as_R2(crystal_symmetry, device=orientations.device)
+    equivalent_poles = symmetry_operators * pole
 
     # Move from crystal to sample
     sample_poles = equivalent_poles.rotate(orientations.batch.unsqueeze(-1))
@@ -492,12 +490,8 @@ def inverse_pole_figure_points(
     )
     sample_directions = sample_symmetry_operators * direction
     crystal_directions = sample_directions.rotate(orientations.inverse().batch.unsqueeze(-1))
-    crystal_symmetry_operators = symmetry_operators_as_R2(
-        crystal_symmetry, device=orientations.device
-    )
-    equivalent_directions = (
-        crystal_symmetry_operators * crystal_directions.batch.unsqueeze(-1)
-    ).torch()
+    symmetry_operators = symmetry_operators_as_R2(crystal_symmetry, device=orientations.device)
+    equivalent_directions = (symmetry_operators * crystal_directions.batch.unsqueeze(-1)).torch()
 
     # Convention keeps the upper hemisphere
     directions = tensors.Vec(equivalent_directions[equivalent_directions[..., 2] > 0])

@@ -74,11 +74,11 @@
     values = '1.0'
   []
   [sdirs]
-    type = FillMillerIndex
+    type = MillerIndex
     values = '1 1 0'
   []
   [splanes]
-    type = FillMillerIndex
+    type = MillerIndex
     values = '1 1 1'
   []
 
@@ -162,8 +162,8 @@
     type = LinearIsotropicElasticity
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
     coefficients = '1e5 0.25'
-    strain = "state/elastic_strain"
-    stress = "state/internal/cauchy_stress"
+    strain = 'state/elastic_strain'
+    stress = 'state/internal/cauchy_stress'
   []
   [resolved_shear]
     type = ResolvedShear
@@ -212,7 +212,8 @@
 
   [implicit_rate]
     type = ComposedModel
-    models = "euler_rodrigues elasticity orientation_rate resolved_shear
+    models = "split_to_deformation_rate split_to_vorticity
+              euler_rodrigues elasticity orientation_rate resolved_shear
               elastic_stretch plastic_deformation_rate plastic_spin
               sum_slip_rates slip_rule slip_strength voce_hardening
               integrate_slip_hardening integrate_elastic_strain integrate_orientation"

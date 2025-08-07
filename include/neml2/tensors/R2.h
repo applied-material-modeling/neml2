@@ -24,24 +24,33 @@
 
 #pragma once
 
-#include "neml2/tensors/R2Base.h"
+#include "neml2/tensors/PrimitiveTensor.h"
 
 namespace neml2
 {
-class Rot;
+class Scalar;
+class Vec;
 class SR2;
-class WR2;
+class R2;
+class R3;
 class R4;
+class Rot;
+class WR2;
+
+template <class>
+class VecBase;
 
 /**
- * @brief Second order tensor without symmetry.
+ * @brief Base class for second order tensor.
  *
- * The storage space is (3,3).
+ * The storage space is (3, 3).
  */
-class R2 : public R2Base<R2>
+class R2 : public PrimitiveTensor<R2, 3, 3>
 {
 public:
-  using R2Base<R2>::R2Base;
+  using PrimitiveTensor<R2, 3, 3>::PrimitiveTensor;
+
+  using PrimitiveTensor<R2, 3, 3>::fill;
 
   /// @brief Form a full R2 from a symmetric tensor
   /// @param S Mandel-convention symmetric tensor
@@ -51,12 +60,61 @@ public:
   /// @param W skew-vector convention skew-symmetric tensor
   R2(const WR2 & W);
 
-  /// @brief Form rotation matrix from vector
-  /// @param r rotation vector
-  explicit R2(const Rot & r);
+  /// Fill the diagonals with a11 = a22 = a33 = a
+  [[nodiscard]] static R2 fill(const CScalar & a,
+                               const TensorOptions & options = default_tensor_options());
+  [[nodiscard]] static R2 fill(const Scalar & a);
+  /// Fill the diagonals with a11, a22, a33
+  [[nodiscard]] static R2 fill(const CScalar & a11,
+                               const CScalar & a22,
+                               const CScalar & a33,
+                               const TensorOptions & options = default_tensor_options());
+  [[nodiscard]] static R2 fill(const Scalar & a11, const Scalar & a22, const Scalar & a33);
+  /// Fill symmetric entries
+  [[nodiscard]] static R2 fill(const CScalar & a11,
+                               const CScalar & a22,
+                               const CScalar & a33,
+                               const CScalar & a23,
+                               const CScalar & a13,
+                               const CScalar & a12,
+                               const TensorOptions & options = default_tensor_options());
+  [[nodiscard]] static R2 fill(const Scalar & a11,
+                               const Scalar & a22,
+                               const Scalar & a33,
+                               const Scalar & a23,
+                               const Scalar & a13,
+                               const Scalar & a12);
 
-  /// The derivative of a R2 with respect to itself
-  [[nodiscard]] static R4 identity_map(const TensorOptions & options = default_tensor_options());
+  /// Skew matrix from Vec
+  [[nodiscard]] static R2 skew(const Vec & v);
+  /// Identity
+  [[nodiscard]] static R2 identity(const TensorOptions & options = default_tensor_options());
+
+  /// Rotate using a Rodrigues vector
+  R2 rotate(const Rot & r) const;
+
+  /// Rotate using a rotation matrix
+  R2 rotate(const R2 & R) const;
+
+  /// Derivative of the rotated tensor w.r.t. the Rodrigues vector
+  R3 drotate(const Rot & r) const;
+
+  /// Derivative of the rotated tensor w.r.t. the rotation matrix
+  R4 drotate(const R2 & R) const;
+
+  /// Row
+  Vec row(Size i) const;
+
+  /// Coluomn
+  Vec col(Size i) const;
+
+  /// transpose
+  R2 transpose() const;
 };
+
+/// matrix-matrix product
+R2 operator*(const R2 &, const R2 &);
+/// matrix-vector product
+Vec operator*(const R2 &, const Vec &);
 
 } // namespace neml2

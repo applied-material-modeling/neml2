@@ -1,4 +1,5 @@
 file(GLOB_RECURSE srcs CONFIGURE_DEPENDS *.cxx)
 add_executable(unit_tests ${srcs})
+target_include_directories(unit_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(unit_tests PRIVATE testutils)
 target_compile_options(unit_tests PRIVATE -Wall -Wextra -pedantic)

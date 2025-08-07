@@ -21,8 +21,8 @@ For convenience, I refer to those Catch2 *.cxx files as test files.
 4. Each test file can contain one and only one `TEST_CASE`. The test case should
    be named as the header file name.
 5. All test cases should be tagged by the residing folder relative to
-   `tests/unit`. For example, test cases under "tests/unit/foo/test_Bar.cxx"
-   should be tagged "[foo]".
+   `tests/unit`. For example, test cases under "tests/unit/foo/bar/test_Baz.cxx"
+   should be tagged "[foo/bar]".
 6. Each test case should contain test cases for
    1. functions in the header file
    2. methods and members of a class

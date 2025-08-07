@@ -26,6 +26,7 @@
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
+#include "neml2/tensors/functions/imap.h"
 
 namespace neml2
 {
@@ -72,7 +73,7 @@ AssociativeKinematicPlasticHardening::set_value(bool out, bool dout_din, bool /*
 
   if (dout_din)
   {
-    auto I = SR2::identity_map(_gamma_dot.options());
+    auto I = imap<SR2>(_gamma_dot.options()).template as<Tensor>();
 
     if (_gamma_dot.is_dependent())
       _Kp_dot.d(_gamma_dot) = -_NX;

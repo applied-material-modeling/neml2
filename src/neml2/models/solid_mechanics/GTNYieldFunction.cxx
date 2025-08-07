@@ -103,7 +103,7 @@ GTNYieldFunction::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (out)
     _f = pow(_se / sf, 2.0) + 2 * _q1 * _phi * cosh(_q2 / 2.0 * _sp / sf) -
-         (1.0 + _q3 * pow(Scalar(_phi), 2.0));
+         (1.0 + _q3 * pow(_phi(), 2.0));
 
   if (dout_din)
   {
@@ -117,12 +117,12 @@ GTNYieldFunction::set_value(bool out, bool dout_din, bool d2out_din2)
       _f.d(_phi) = 2.0 * _q1 * cosh(_q2 / 2.0 * _sp / sf) - 2.0 * _q3 * _phi;
 
     if (_h)
-      _f.d(*_h) = -2 * pow(Scalar(_se), 2.0) / pow(sf, 3.0) -
+      _f.d(*_h) = -2 * pow(_se(), 2.0) / pow(sf, 3.0) -
                   _q1 * _phi * _q2 * _sp / pow(sf, 2.0) * sinh(_q2 / 2.0 * _sp / sf);
 
     // Handle the case of variable coupling
     if (const auto * const sy = nl_param("sy"))
-      _f.d(*sy) = -2 * pow(Scalar(_se), 2.0) / pow(sf, 3.0) -
+      _f.d(*sy) = -2 * pow(_se(), 2.0) / pow(sf, 3.0) -
                   _q1 * _phi * _q2 * _sp / pow(sf, 2.0) * sinh(_q2 / 2.0 * _sp / sf);
 
     if (const auto * const q1 = nl_param("q1"))
@@ -132,7 +132,7 @@ GTNYieldFunction::set_value(bool out, bool dout_din, bool d2out_din2)
       _f.d(*q2) = _q1 * _phi * _sp / sf * sinh(_q2 / 2.0 * _sp / sf);
 
     if (const auto * const q3 = nl_param("q3"))
-      _f.d(*q3) = -pow(Scalar(_phi), 2.0);
+      _f.d(*q3) = -pow(_phi(), 2.0);
   }
 
   if (d2out_din2)
@@ -269,17 +269,16 @@ GTNYieldFunction::set_value(bool out, bool dout_din, bool d2out_din2)
       if (_phi.is_dependent())
         _f.d(*_h, _phi) = -_q1 * _q2 * _sp * sinh(_q2 / 2.0 * _sp / sf) / pow(sf, 2.0);
 
-      _f.d(*_h, *_h) = (12 * pow(Scalar(_se), 2.0) + _phi * _q1 * _q2 * _sp *
-                                                         (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) +
-                                                          4.0 * sf * sinh(_q2 / 2.0 * _sp / sf))) /
+      _f.d(*_h, *_h) = (12 * pow(_se(), 2.0) + _phi * _q1 * _q2 * _sp *
+                                                   (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) +
+                                                    4.0 * sf * sinh(_q2 / 2.0 * _sp / sf))) /
                        (2 * pow(sf, 4.0));
 
       if (sy)
-        _f.d(*_h, *sy) =
-            (12 * pow(Scalar(_se), 2.0) +
-             _phi * _q1 * _q2 * _sp *
-                 (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) + 4.0 * sf * sinh(_q2 / 2.0 * _sp / sf))) /
-            (2 * pow(sf, 4.0));
+        _f.d(*_h, *sy) = (12 * pow(_se(), 2.0) + _phi * _q1 * _q2 * _sp *
+                                                     (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) +
+                                                      4.0 * sf * sinh(_q2 / 2.0 * _sp / sf))) /
+                         (2 * pow(sf, 4.0));
 
       if (q1)
         _f.d(*_h, *q1) = -_phi * _q2 * _sp * sinh(_q2 / 2.0 * _sp / sf) / pow(sf, 2.0);
@@ -307,15 +306,14 @@ GTNYieldFunction::set_value(bool out, bool dout_din, bool d2out_din2)
         _f.d(*sy, _phi) = -_q1 * _q2 * _sp * sinh(_q2 / 2.0 * _sp / sf) / pow(sf, 2.0);
 
       if (_h)
-        _f.d(*sy, *_h) =
-            (12 * pow(Scalar(_se), 2.0) +
-             _phi * _q1 * _q2 * _sp *
-                 (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) + 4.0 * sf * sinh(_q2 / 2.0 * _sp / sf))) /
-            (2 * pow(sf, 4.0));
+        _f.d(*sy, *_h) = (12 * pow(_se(), 2.0) + _phi * _q1 * _q2 * _sp *
+                                                     (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) +
+                                                      4.0 * sf * sinh(_q2 / 2.0 * _sp / sf))) /
+                         (2 * pow(sf, 4.0));
 
-      _f.d(*sy, *sy) = (12 * pow(Scalar(_se), 2.0) + _phi * _q1 * _q2 * _sp *
-                                                         (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) +
-                                                          4.0 * sf * sinh(_q2 / 2.0 * _sp / sf))) /
+      _f.d(*sy, *sy) = (12 * pow(_se(), 2.0) + _phi * _q1 * _q2 * _sp *
+                                                   (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) +
+                                                    4.0 * sf * sinh(_q2 / 2.0 * _sp / sf))) /
                        (2 * pow(sf, 4.0));
 
       if (q1)
@@ -387,7 +385,7 @@ GTNYieldFunction::set_value(bool out, bool dout_din, bool d2out_din2)
         _f.d(*q2, *q1) = _phi * _sp * sinh(_q2 / 2.0 * _sp / sf) / sf;
 
       _f.d(*q2, *q2) =
-          _phi * _q1 * pow(Scalar(_sp), 2.0) * cosh(_q2 / 2.0 * _sp / sf) / (2 * pow(sf, 2.0));
+          _phi * _q1 * pow(_sp(), 2.0) * cosh(_q2 / 2.0 * _sp / sf) / (2 * pow(sf, 2.0));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

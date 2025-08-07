@@ -80,10 +80,6 @@ public:
                             const double & C3,
                             const TensorOptions & options = default_tensor_options());
 
-  /// The derivative of a SSR4 with respect to itself
-  [[nodiscard]] static SSSSR8
-  identity_map(const TensorOptions & options = default_tensor_options());
-
   /// Rotate
   SSR4 rotate(const Rot & r) const;
 
@@ -96,12 +92,6 @@ public:
   /// Accessor
   Scalar operator()(Size i, Size j, Size k, Size l) const;
 
-  /// Inversion
-  SSR4 inverse() const;
-
-  /// Derivative of inverse with respect to self
-  SSSSR8 dinverse() const;
-
   /// Transpose minor axes, no-op
   SSR4 transpose_minor() const;
 
@@ -109,7 +99,6 @@ public:
   SSR4 transpose_major() const;
 };
 
-SR2 operator*(const SSR4 & a, const SR2 & b);
-SR2 operator*(const SR2 & a, const SSR4 & b);
 SSR4 operator*(const SSR4 & a, const SSR4 & b);
+SR2 operator*(const SSR4 & a, const SR2 & b);
 } // namespace neml2

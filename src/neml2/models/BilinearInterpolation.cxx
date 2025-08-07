@@ -24,7 +24,6 @@
 
 #include "neml2/models/BilinearInterpolation.h"
 #include "neml2/tensors/Tensor.h"
-#include "neml2/tensors/functions/diff.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/Vec.h"
 #include "neml2/tensors/SR2.h"
@@ -57,6 +56,9 @@ BilinearInterpolation<T>::expected_options()
   options.set("argument2").doc() =
       "Second argument used to query the interpolant along the second axis";
 
+  options.set<Size>("dim") = 0;
+  options.set("dim").doc() = "Intermediate dimension along which to interpolate";
+
   return options;
 }
 
@@ -66,31 +68,9 @@ BilinearInterpolation<T>::BilinearInterpolation(const OptionSet & options)
     _X1(this->template declare_parameter<Scalar>("X1", "abscissa1")),
     _X2(this->template declare_parameter<Scalar>("X2", "abscissa2")),
     _x1(this->template declare_input_variable<Scalar>("argument1")),
-    _x2(this->template declare_input_variable<Scalar>("argument2"))
+    _x2(this->template declare_input_variable<Scalar>("argument2")),
+    _dim(options.get<Size>("dim"))
 {
-}
-
-static std::tuple<Scalar, Scalar, Scalar>
-parametric_coordinates(const Scalar & X, const Scalar & x)
-{
-  using namespace indexing;
-  const auto m =
-      at::logical_and(at::gt(x.batch_unsqueeze(-1), X.index({Ellipsis, Slice(None, -1)})),
-                      at::le(x.batch_unsqueeze(-1), X.index({Ellipsis, Slice(1)})));
-  const auto X_start = X.index({Ellipsis, Slice(None, -1)}).expand_as(m).index({m});
-  const auto X_end = X.index({Ellipsis, Slice(1)}).expand_as(m).index({m});
-  const auto xi = (x - X_start) / (X_end - X_start);
-  const auto dxi = 1.0 / (X_end - X_start);
-  return {Scalar(m), Scalar(xi), Scalar(dxi)};
-}
-
-template <typename T>
-static T
-apply_mask(const T & y, const Scalar & m)
-{
-  const auto B = utils::broadcast_batch_sizes({m, y});
-  const auto D = B.slice(0, -2); // excluding the interpolation grid
-  return T(y.batch_expand(B).index({m.batch_expand(B)})).batch_reshape(D);
 }
 
 template <typename T>
@@ -99,11 +79,42 @@ BilinearInterpolation<T>::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   using namespace indexing;
 
+  neml_assert_dbg(this->_X1.intmd_size(_dim) == this->_Y.intmd_size(_dim),
+                  "Abscissa 1 has size ",
+                  this->_X1.intmd_size(_dim),
+                  " along the interpolating dimension ",
+                  _dim,
+                  ", but the ordinate has size ",
+                  this->_Y.intmd_size(_dim),
+                  " along the interpolating dimension ",
+                  _dim,
+                  ".");
+
+  neml_assert_dbg(this->_X2.intmd_size(_dim) == this->_Y.intmd_size(_dim + 1),
+                  "Abscissa 2 has size ",
+                  this->_X2.intmd_size(_dim),
+                  " along the interpolating dimension ",
+                  _dim,
+                  ", but the ordinate has size ",
+                  this->_Y.intmd_size(_dim + 1),
+                  " along the interpolating dimension ",
+                  _dim + 1,
+                  ".");
+
+  // First move the interpolating dimension to the end
+  const auto X1 = this->_X1.intmd_movedim(_dim, -1);
+  const auto X2 = this->_X2.intmd_movedim(_dim, -1);
+  const auto Y = this->_Y.intmd_movedim(_dim, -1).intmd_movedim(_dim, -1);
+
+  // Unsqueeze one intermediate dimension in x to match X and Y
+  const auto x1 = this->_x1().intmd_unsqueeze(-1);
+  const auto x2 = this->_x2().intmd_unsqueeze(-1);
+
   // Get masks for the interpolating cell on the 2D grid
-  // Also transform x onto the parametric space [0, 1] x [0, 1]
-  const auto [m1, xi, dxi_dx1] = parametric_coordinates(this->_X1, Scalar(this->_x1));
-  const auto [m2, eta, deta_dx2] = parametric_coordinates(this->_X2, Scalar(this->_x2));
-  auto m = Scalar(at::logical_and(m1.unsqueeze(-1), m2.unsqueeze(-2)));
+  // Also transform x onto the parametric space (0, 1] x (0, 1]
+  const auto [m1, xi, dxi_dx1] = parametric_coordinates(X1, x1);
+  const auto [m2, eta, deta_dx2] = parametric_coordinates(X2, x2);
+  const auto m = m1.intmd_unsqueeze(-1) && m2.intmd_unsqueeze(-2);
 
   // Get the four corner values of the interpolating cell
   //
@@ -112,14 +123,14 @@ BilinearInterpolation<T>::set_value(bool out, bool dout_din, bool d2out_din2)
   //  |          |
   //  |          |
   // Y00 ------ Y10
-  auto Y00 = this->_Y.batch_index({Ellipsis, Slice(None, -1), Slice(None, -1)});
-  auto Y01 = this->_Y.batch_index({Ellipsis, Slice(None, -1), Slice(1)});
-  auto Y10 = this->_Y.batch_index({Ellipsis, Slice(1), Slice(None, -1)});
-  auto Y11 = this->_Y.batch_index({Ellipsis, Slice(1), Slice(1)});
-  Y00 = apply_mask(Y00, m);
-  Y01 = apply_mask(Y01, m);
-  Y10 = apply_mask(Y10, m);
-  Y11 = apply_mask(Y11, m);
+  auto Y00 = Y.intmd_index({Ellipsis, Slice(None, -1), Slice(None, -1)});
+  auto Y01 = Y.intmd_index({Ellipsis, Slice(None, -1), Slice(1)});
+  auto Y10 = Y.intmd_index({Ellipsis, Slice(1), Slice(None, -1)});
+  auto Y11 = Y.intmd_index({Ellipsis, Slice(1), Slice(1)});
+  Y00 = apply_mask(Y00, m, 2);
+  Y01 = apply_mask(Y01, m, 2);
+  Y10 = apply_mask(Y10, m, 2);
+  Y11 = apply_mask(Y11, m, 2);
 
   // The interpolation formula is:
   // p = Y00 + c1 * xi + c2 * eta + c3 * xi * eta

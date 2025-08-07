@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/elasticity/IsotropicElasticityConverter.h"
+#include "neml2/tensors/functions/imap.h"
 
 namespace neml2
 {
@@ -37,7 +38,7 @@ IsotropicElasticityConverter::K_G_to_K(const InputType & input, const Derivative
 {
   const auto & K = input[0];
 
-  const auto dK_dK = deriv[0] ? Scalar::identity_map(K.options()) : Scalar();
+  const auto dK_dK = deriv[0] ? imap<Scalar>(K.options()).as<Scalar>() : Scalar();
   const auto dK_dG = deriv[1] ? Scalar::zeros(K.options()) : Scalar();
 
   return {K, {dK_dK, dK_dG}};
@@ -49,7 +50,7 @@ IsotropicElasticityConverter::K_G_to_G(const InputType & input, const Derivative
   const auto & G = input[1];
 
   const auto dG_dK = deriv[0] ? Scalar::zeros(G.options()) : Scalar();
-  const auto dG_dG = deriv[1] ? Scalar::identity_map(G.options()) : Scalar();
+  const auto dG_dG = deriv[1] ? imap<Scalar>(G.options()).as<Scalar>() : Scalar();
 
   return {G, {dG_dK, dG_dG}};
 }

@@ -30,9 +30,9 @@ namespace neml2
 {
 /// @brief  Concatenate the tensors in the ValueMap along the batch dimension
 /// @param results The results to concatenate
-/// @param batch_dim The batch dimension along which to concatenate
-/// @return ValueMap with the tensors concatenated along the batch dimension
-ValueMap valuemap_cat_reduce(std::vector<ValueMap> && results, Size batch_dim);
+/// @param dynamic_dim The dynamic dimension along which to concatenate
+/// @return ValueMap with the tensors concatenated along the dynamic dimension
+ValueMap valuemap_cat_reduce(std::vector<ValueMap> && results, Size dynamic_dim);
 
 /// @brief Move all tensors in a ValueMap to a device
 /// @param x input ValueMap

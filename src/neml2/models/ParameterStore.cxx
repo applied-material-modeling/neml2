@@ -100,7 +100,7 @@ ParameterStore::declare_parameter(const std::string & name, const T & rawval)
 
   auto ptr = dynamic_cast<TensorValue<T> *>(base_ptr);
   neml_assert(ptr, "Internal error: Failed to cast parameter to a concrete type.");
-  return ptr->value();
+  return (*ptr)();
 }
 
 template <typename T>
@@ -133,49 +133,55 @@ resolve_tensor_name(const TensorName<T> & tn, Model * caller, const std::string 
                           "'. It should take the form 'model_name', 'variable_name', or "
                           "'model_name.variable_name'");
 
-  // When there is only one token, it must be a model name, and the model must have one and only
-  // one output variable.
+  // When there is only one token, it must either be a model name or a variable name
   if (tokens.size() == 1)
   {
     // Try to parse it as a model name
     const auto & mname = tokens[0];
-    try
+    if (caller->factory()->has_object("Models", mname))
     {
-      // Get the model
-      provider =
-          caller->factory()->get_object<Model>("Models", mname, extra_opts, /*force_create=*/false);
-
-      // Apparently, the model must have one and only one output variable.
-      const auto nvar = provider->output_axis().nvariable();
-      if (nvar == 0)
+      try
+      {
+        // Get the model
+        provider = caller->factory()->get_object<Model>(
+            "Models", mname, extra_opts, /*force_create=*/false);
+        // Apparently, the model must have one and only one output variable.
+        const auto nvar = provider->output_axis().nvariable();
+        if (nvar == 0)
+          throw ParserException(
+              "Invalid variable specifier '" + tn.raw() +
+              "' (interpreted as model name). The model does not define any output variable.");
+        if (nvar > 1)
+          throw ParserException(
+              "Invalid variable specifier '" + tn.raw() +
+              "' (interpreted as model name). The model must have one and only one output "
+              "variable. However, it has " +
+              utils::stringify(nvar) +
+              " output variables. To disambiguite, please specify the variable name using "
+              "format 'model_name.variable_name'. The model's output axis is:\n" +
+              utils::stringify(provider->output_axis()));
+      }
+      catch (const FactoryException & err_model)
+      {
         throw ParserException(
-            "Invalid variable specifier '" + tn.raw() +
-            "' (interpreted as model name). The model does not define any output variable.");
-      if (nvar > 1)
-        throw ParserException(
-            "Invalid variable specifier '" + tn.raw() +
-            "' (interpreted as model name). The model must have one and only one output "
-            "variable. However, it has " +
-            utils::stringify(nvar) +
-            " output variables. To disambiguite, please specify the variable name using "
-            "format 'model_name.variable_name'. The model's output axis is:\n" +
-            utils::stringify(provider->output_axis()));
-
+            "Trying to interpret variable specifier '" + tn.raw() +
+            "' as a model name. Retrieving the model with this name failed with error message: " +
+            err_model.what());
+      }
       // Retrieve the output variable
       var_name = provider->output_axis().variable_names()[0];
     }
     // Try to parse it as a variable name
-    catch (const FactoryException & err_model)
+    else
     {
       auto success = utils::parse_<VariableName>(var_name, tokens[0]);
       if (!success)
         throw ParserException(
             "Invalid variable specifier '" + tn.raw() +
             "'. It should take the form 'model_name', 'variable_name', or "
-            "'model_name.variable_name'. Since there is no '.' delimiter, it can either be a "
-            "model name or a variable name. Interpreting it as a model name failed with error "
-            "message: " +
-            err_model.what() + ". It also cannot be parsed as a valid variable name.");
+            "'model_name.variable_name'. Since there is no '.' delimiter, it can either be a model "
+            "name or a variable name. A model with this name does not exist. It also cannot be "
+            "parsed as a valid variable name.");
 
       // Create a dummy model that defines this parameter
       const auto obj_name = "__parameter_" + var_name.str() + "__";
@@ -207,28 +213,42 @@ resolve_tensor_name(const TensorName<T> & tn, Model * caller, const std::string 
       var_name = provider->output_axis().variable_names()[0];
     }
   }
+  // When there are two tokens, the format is "model_name.variable_name"
   else
   {
     // The first token is the model name
     const auto & mname = tokens[0];
 
-    // Get the model
-    provider =
-        caller->factory()->get_object<Model>("Models", mname, extra_opts, /*force_create=*/false);
+    // Check if the model exists
+    if (!caller->factory()->has_object("Models", mname))
+      throw ParserException("Invalid variable specifier '" + tn.raw() +
+                            "'. There is no model named '" + mname + "'.");
 
-    // The second token is the variable name
-    auto success = utils::parse_<VariableName>(var_name, tokens[1]);
-    if (!success)
-      throw ParserException("Invalid variable specifier '" + tn.raw() + "'. '" + tokens[1] +
-                            "' cannot be parsed as a valid variable name.");
-    if (!provider->output_axis().has_variable(var_name))
-      throw ParserException("Invalid variable specifier '" + tn.raw() + "'. Model '" + mname +
-                            "' does not have an output variable named '" +
-                            utils::stringify(var_name) + "'");
+    // Get the model
+    try
+    {
+      provider =
+          caller->factory()->get_object<Model>("Models", mname, extra_opts, /*force_create=*/false);
+      // The second token is the variable name
+      auto success = utils::parse_<VariableName>(var_name, tokens[1]);
+      if (!success)
+        throw ParserException("Invalid variable specifier '" + tn.raw() + "'. '" + tokens[1] +
+                              "' cannot be parsed as a valid variable name.");
+      if (!provider->output_axis().has_variable(var_name))
+        throw ParserException("Invalid variable specifier '" + tn.raw() + "'. Model '" + mname +
+                              "' does not have an output variable named '" +
+                              utils::stringify(var_name) + "'");
+    }
+    catch (const FactoryException & err_model)
+    {
+      throw ParserException("Trying to interpret variable specifier '" + tn.raw() +
+                            "' as 'model_name.variable_name'. Retrieving the model with name '" +
+                            mname + "' failed with error message: " + err_model.what());
+    }
   }
 
   // Declare the input variable
-  caller->declare_input_variable<T>(var_name, {}, /*allow_duplicate=*/true);
+  caller->declare_input_variable<T>(var_name, /*allow_duplicate=*/true);
 
   // Get the variable
   const auto * var = &provider->output_variable(var_name);
@@ -247,7 +267,7 @@ resolve_tensor_name(const TensorName<T> & tn, Model * caller, const std::string 
   caller->register_nonlinear_parameter(pname, NonlinearParameter{provider, var_name, var_ptr});
 
   // Done!
-  return var_ptr->value();
+  return (*var_ptr)();
 }
 
 template <typename T, typename>
@@ -330,7 +350,7 @@ ParameterStore::assign_parameter_stack(jit::Stack & stack)
   for (auto && [name, param] : params)
   {
     const auto tensor = stack[i++].toTensor();
-    *param = Tensor(tensor, tensor.dim() - Tensor(*param).base_dim());
+    param->assign(tensor, TracerPrivilege{});
   }
 
   // Drop the input variables from the stack

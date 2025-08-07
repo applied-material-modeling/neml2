@@ -27,31 +27,36 @@
 
 namespace neml2
 {
-std::size_t
-broadcast_batch_size(const ValueMap & value_map, Size batch_dim)
+static std::size_t
+broadcast_dynamic_size(const ValueMap & value_map, Size d)
 {
   Size size = 0;
+
   for (auto && [key, tensor] : value_map)
-    size = std::max(size, tensor.batch_size(batch_dim).concrete());
+    if (d >= -tensor.dynamic_dim() && d < tensor.dynamic_dim())
+      size = std::max(size, tensor.dynamic_size(d).concrete());
+
   for (auto && [key, tensor] : value_map)
-  {
-    auto s = tensor.batch_size(batch_dim).concrete();
-    neml_assert(s == 1 || s == size,
-                "Batch sizes along batch dimension ",
-                batch_dim,
-                " are not compatible. Expected 1 or ",
-                size,
-                ", got ",
-                s,
-                ".");
-  }
+    if (d >= -tensor.dynamic_dim() && d < tensor.dynamic_dim())
+    {
+      auto s = tensor.dynamic_size(d).concrete();
+      neml_assert(s == 1 || s == size,
+                  "Sizes along dynamic dimension ",
+                  d,
+                  " are not compatible. Expected 1 or ",
+                  size,
+                  ", got ",
+                  s,
+                  " for variable ",
+                  key);
+    }
   return size;
 }
 
-ValueMapLoader::ValueMapLoader(const ValueMap & value_map, Size batch_dim)
+ValueMapLoader::ValueMapLoader(const ValueMap & value_map, Size dynamic_dim)
   : _value_map(value_map),
-    _batch_dim(batch_dim),
-    _slice_gen(0, broadcast_batch_size(value_map, batch_dim))
+    _dynamic_dim(dynamic_dim),
+    _slice_gen(0, broadcast_dynamic_size(value_map, dynamic_dim))
 {
 }
 
@@ -68,7 +73,15 @@ ValueMapLoader::generate(std::size_t n)
 
   ValueMap work;
   for (auto && [key, tensor] : _value_map)
-    work[key] = tensor.size(_batch_dim) == 1 ? tensor : tensor.batch_slice(_batch_dim, slice);
+    if (_dynamic_dim >= -tensor.dynamic_dim() && _dynamic_dim < tensor.dynamic_dim())
+    {
+      if (tensor.dynamic_size(_dynamic_dim).concrete() != 1)
+        work[key] = tensor.dynamic_slice(_dynamic_dim, slice);
+      else
+        work[key] = tensor;
+    }
+    else
+      work[key] = tensor;
 
   return {m, std::move(work)};
 }

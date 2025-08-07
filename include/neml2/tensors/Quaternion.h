@@ -31,15 +31,11 @@ namespace neml2
 class R2;
 class Scalar;
 class Rot;
+
 /**
- * @brief A batched quaternion
+ * @brief Quaternion
  *
- * Our convention is s q1 q2 q3, i.e. the scalar part first
- *
- * The storage space is (4,).
- *
- * Currently we only use this for data storage, so the only
- * method needed is to convert it to an R2
+ * Our convention is (s, q1, q2, q3), i.e. the scalar part first
  */
 class Quaternion : public PrimitiveTensor<Quaternion, 4>
 {
@@ -48,24 +44,8 @@ public:
 
   Quaternion(const Rot & r);
 
-  /// fill with four scalars
-  static Quaternion fill(const Scalar & s, const Scalar & q1, const Scalar & q2, const Scalar & q3);
-
-  /// fill with four reals
-  static Quaternion fill(const CScalar & s,
-                         const CScalar & q1,
-                         const CScalar & q2,
-                         const CScalar & q3,
-                         const TensorOptions & options = default_tensor_options());
-
-  /// Accessor
-  Scalar operator()(Size i) const;
-
-  /// Convert to R2
-  R2 to_R2() const;
-
-  /// Dot product
-  Scalar dot(const Quaternion & other) const;
+  /// Convert to rotation matrix
+  R2 rotation_matrix() const;
 
   /// Distance measure between two quaternions
   Scalar dist(const Quaternion & other) const;

@@ -29,6 +29,7 @@
 #include "neml2/tensors/R2.h"
 #include "neml2/tensors/SSR4.h"
 #include "neml2/tensors/R4.h"
+#include "neml2/tensors/functions/imap.h"
 
 namespace neml2
 {
@@ -78,7 +79,7 @@ IncrementToRate<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
   if (dout_din)
   {
     if (_dv.is_dependent())
-      _dv_dt.d(_dv) = T::identity_map(_dv.options()) / dt;
+      _dv_dt.d(_dv) = imap<T>(_dv.options()).template as<Tensor>() / dt;
     if (_t.is_dependent())
       _dv_dt.d(_t) = -_dv / dt / dt;
     if (_tn.is_dependent())

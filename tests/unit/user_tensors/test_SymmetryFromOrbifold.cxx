@@ -31,6 +31,7 @@
 #include "neml2/base/NEML2Object.h"
 #include "neml2/tensors/R2.h"
 #include "neml2/tensors/Tensor.h"
+#include "neml2/tensors/functions/inv.h"
 
 using namespace neml2;
 namespace fs = std::filesystem;
@@ -51,7 +52,8 @@ TEST_CASE("SymmetryFromOrbifold", "[user_tensors]")
                                    {{0.0, 1.0, 0.0}, {-1.0, 0.0, 0.0}, {0.0, 0.0, 1.0}},
                                    {{0.0, -1.0, 0.0}, {1.0, 0.0, 0.0}, {0.0, 0.0, 1.0}},
                                    {{0.0, 1.0, 0.0}, {1.0, 0.0, 0.0}, {0.0, 0.0, -1.0}},
-                                   {{0.0, -1.0, 0.0}, {-1.0, 0.0, 0.0}, {0.0, 0.0, -1.0}}});
+                                   {{0.0, -1.0, 0.0}, {-1.0, 0.0, 0.0}, {0.0, 0.0, -1.0}}},
+                                  0);
 
   auto ktw_hexagonal = Tensor::create({{{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}},
                                        {{-h, a, 0.0}, {-a, -h, 0.0}, {0.0, 0.0, 1.0}},
@@ -64,7 +66,8 @@ TEST_CASE("SymmetryFromOrbifold", "[user_tensors]")
                                        {{-h, a, 0.0}, {a, h, 0.0}, {0.0, 0.0, -1.0}},
                                        {{h, a, 0.0}, {a, -h, 0.0}, {0.0, 0.0, -1.0}},
                                        {{-1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, -1.0}},
-                                       {{h, -a, 0.0}, {-a, -h, 0.0}, {0.0, 0.0, -1.0}}});
+                                       {{h, -a, 0.0}, {-a, -h, 0.0}, {0.0, 0.0, -1.0}}},
+                                      0);
 
   auto ktw_cubic = Tensor::create({{{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}},
                                    {{0.0, 0.0, 1.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}},
@@ -89,7 +92,8 @@ TEST_CASE("SymmetryFromOrbifold", "[user_tensors]")
                                    {{0.0, -1.0, 0.0}, {-1.0, 0.0, 0.0}, {0.0, 0.0, -1.0}},
                                    {{0.0, 1.0, 0.0}, {-1.0, 0.0, 0.0}, {0.0, 0.0, 1.0}},
                                    {{0.0, 1.0, 0.0}, {1.0, 0.0, 0.0}, {0.0, 0.0, -1.0}},
-                                   {{0.0, -1.0, 0.0}, {1.0, 0.0, 0.0}, {0.0, 0.0, 1.0}}});
+                                   {{0.0, -1.0, 0.0}, {1.0, 0.0, 0.0}, {0.0, 0.0, 1.0}}},
+                                  0);
 
   // Relates each crystal class to the relevant operators
   std::map<std::string, std::tuple<Tensor, std::vector<Size>>> ops{
@@ -138,12 +142,12 @@ TEST_CASE("SymmetryFromOrbifold", "[user_tensors]")
     auto cls = GENERATE("1", "2", "222", "42", "4", "3", "6", "32", "622", "23", "432");
     auto grp = factory->get_object<R2>("Tensors", fmt_name(cls));
     // A loop is forgivable here I hope...
-    for (Size i = 0; i < grp->batch_size(0).concrete(); i++)
+    for (Size i = 0; i < grp->intmd_size(0); i++)
     {
-      R2 op_i = grp->batch_index({i});
-      for (Size j = 0; j < grp->batch_size(0).concrete(); j++)
+      R2 op_i = grp->intmd_index({i});
+      for (Size j = 0; j < grp->intmd_size(0); j++)
       {
-        R2 op_j = grp->batch_index({j});
+        R2 op_j = grp->intmd_index({j});
         R2 prod = op_i * op_j;
         REQUIRE(at::any(at::all(at::isclose(*grp, prod).flatten(1), 1)).item().toBool());
       }
@@ -154,10 +158,9 @@ TEST_CASE("SymmetryFromOrbifold", "[user_tensors]")
   {
     auto cls = GENERATE("1", "2", "222", "42", "4", "3", "6", "32", "622", "23", "432");
     auto grp = factory->get_object<R2>("Tensors", fmt_name(cls));
-    // A loop is forgivable here I hope...
-    for (Size i = 0; i < grp->batch_size(0).concrete(); i++)
+    for (Size i = 0; i < grp->intmd_size(0); i++)
     {
-      R2 inv = grp->batch_index({i}).inverse();
+      R2 inv = neml2::inv(grp->intmd_index({i}));
       REQUIRE(at::any(at::all(at::isclose(*grp, inv).flatten(1), 1)).item().toBool());
     }
   }

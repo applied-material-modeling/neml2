@@ -50,21 +50,24 @@ class Rot : public VecBase<Rot>
 public:
   using VecBase<Rot>::VecBase;
 
-  Rot(const Vec & v);
+  ///@{
+  /// Fill random orientations following uniform distribution in SO(3)
+  [[nodiscard]] static Rot rand(const TensorOptions & options = default_tensor_options());
+  [[nodiscard]] static Rot rand(const TraceableTensorShape & dynamic_shape,
+                                TensorShapeRef intmd_shape,
+                                const TensorOptions & options = default_tensor_options());
+  ///@}
 
   /// The identity rotation, helpfully the zero vector
   [[nodiscard]] static Rot identity(const TensorOptions & options = default_tensor_options());
 
-  /// Fill from an array of Euler angles
+  /// Fill from Euler angle
   [[nodiscard]] static Rot fill_euler_angles(const Vec & v,
                                              const std::string & angle_convention,
                                              const std::string & angle_type);
 
-  /// Fill from rotation matrices
+  /// Fill from rotation matrix
   [[nodiscard]] static Rot fill_matrix(const R2 & M);
-
-  /// Fill some number of random orientations
-  [[nodiscard]] static Rot fill_random(unsigned int n);
 
   /// Fill from standard Rodrigues parameters
   [[nodiscard]] static Rot fill_rodrigues(const Scalar & rx, const Scalar & ry, const Scalar & rz);
@@ -73,15 +76,12 @@ public:
   [[nodiscard]] static Rot rotation_from_to(const Vec & v1, const Vec & v2);
 
   /// Fill with axis/angle pairs
-  [[nodiscard]] static Rot from_axis_angle(const Vec & n, const Scalar & theta);
+  [[nodiscard]] static Rot axis_angle(const Vec & n, const Scalar & theta);
 
   /// Fill with axis/angle pairs as a standard Rodrigues parameter, then convert to MRP
   // This has a specialized use in integrating through ODFs, helping me avoid the need to calculate
   // the arc length scaling term for our space
-  [[nodiscard]] static Rot from_axis_angle_standard(const Vec & n, const Scalar & theta);
-
-  /// Inversion
-  Rot inverse() const;
+  [[nodiscard]] static Rot axis_angle_standard(const Vec & n, const Scalar & theta);
 
   /// Generate a rotation matrix using the Euler-Rodrigues formula
   R2 euler_rodrigues() const;

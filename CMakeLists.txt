@@ -54,7 +54,8 @@ list(APPEND CMAKE_MODULE_PATH ${NEML2_SOURCE_DIR}/cmake/Modules)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS_COVERAGE "-O0 -fprofile-arcs -ftest-coverage" CACHE STRING "Flags used by C++ compiler during coverage builds" FORCE)
-set(CMAKE_CXX_FLAGS_THREADSANITIZER "-O0 -fsanitize=thread" CACHE STRING "Flags used by C++ compiler for build type ThreadSanitizer" FORCE)
+set(CMAKE_CXX_FLAGS_THREADSANITIZER "-O1 -g -fsanitize=thread" CACHE STRING "Flags used by C++ compiler for build type ThreadSanitizer" FORCE)
+set(CMAKE_CXX_FLAGS_ADDRESSSANITIZER "-O1 -g -fsanitize=address -fno-omit-frame-pointer" CACHE STRING "Flags used by C++ compiler for build type AddressSanitizer" FORCE)
 set(CMAKE_CXX_FLAGS_PROFILING "-O2 -g -fno-omit-frame-pointer" CACHE STRING "Flags used by C++ compiler for build type Profiling" FORCE)
 set(NEML2_PCH ON CACHE BOOL "Use precompiled headers")
 set(NEML2_TESTS ON CACHE BOOL "Build NEML2 tests")
@@ -82,7 +83,7 @@ set(gperftools_VERSION "gperftools-2.17" CACHE STRING "Default gperftools versio
 set(argparse_VERSION "v3.2" CACHE STRING "Default argparse version to download")
 set(timpi_VERSION "v1.9.0_bootstrapped" CACHE STRING "Default TIMPI version to download")
 set(nlohmann_json_VERSION "v3.11.3" CACHE STRING "Default nlohmann json version to download")
-set(csvparser_VERSION  "2.3.0" CACHE STRING "Default csv-parser version to download")
+set(csvparser_VERSION "2.3.0" CACHE STRING "Default csv-parser version to download")
 
 # ----------------------------------------------------------------------------
 # Install message

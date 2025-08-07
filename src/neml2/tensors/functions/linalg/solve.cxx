@@ -24,12 +24,15 @@
 
 #include "neml2/tensors/functions/linalg/solve.h"
 #include "neml2/tensors/Tensor.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2::linalg
 {
 Tensor
 solve(const Tensor & A, const Tensor & B)
 {
-  return Tensor(at::linalg_solve(A.batch_expand_as(B), B, /*left=*/true), B.batch_sizes());
+  neml_assert_dbg(A.intmd_dim() == 0, "Intermediate dimension of A must be 0, got", A.intmd_dim());
+  neml_assert_dbg(B.intmd_dim() == 0, "Intermediate dimension of B must be 0, got", B.intmd_dim());
+  return Tensor(at::linalg_solve(A.dynamic_expand_as(B), B, /*left=*/true), B.dynamic_sizes(), 0);
 }
 } // namespace neml2::linalg

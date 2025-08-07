@@ -23,36 +23,45 @@
 // THE SOFTWARE.
 
 #include "neml2/user_tensors/FullTensor.h"
+#include "neml2/misc/types.h"
+#include "neml2/tensors/tensors.h"
 
 namespace neml2
 {
-register_NEML2_object(FullTensor);
-
+template <class T>
 OptionSet
-FullTensor::expected_options()
+FullTensorTmpl<T>::expected_options()
 {
-  OptionSet options = UserTensorBase::expected_options();
-  options.doc() =
-      "Construct a full Tensor with given batch and base shapes filled with a given value.";
-
-  options.set<TensorShape>("batch_shape") = {};
-  options.set("batch_shape").doc() = "Batch shape";
-
-  options.set<TensorShape>("base_shape") = {};
-  options.set("base_shape").doc() = "Base shape";
-
+  OptionSet options = FactoryMethodBase<T>::expected_options();
+  options.doc() = "Construct a full " + FactoryMethodBase<T>::tensor_type() +
+                  " with given batch shape. Tensor values are set to the specified value.";
   options.set<double>("value");
-  options.set("value").doc() = "Value used to fill the tensor";
-
+  options.set("value").doc() = "Value to fill the tensor with";
   return options;
 }
 
-FullTensor::FullTensor(const OptionSet & options)
-  : Tensor(Tensor::full(options.get<TensorShape>("batch_shape"),
-                        options.get<TensorShape>("base_shape"),
-                        options.get<double>("value"),
-                        default_tensor_options())),
-    UserTensorBase(options)
+template <class T>
+FullTensorTmpl<T>::FullTensorTmpl(const OptionSet & options)
+  : FactoryMethodBase<T>(options),
+    _value(options.get<double>("value"))
 {
 }
+
+template <class T>
+T
+FullTensorTmpl<T>::make() const
+{
+  const auto batch_sizes = TensorShapeRef{this->_batch_sizes};
+  const auto dynamic_dim = batch_sizes.size() - this->_intmd_dim;
+  return Tensor::full(batch_sizes.slice(0, dynamic_dim),
+                      batch_sizes.slice(dynamic_dim),
+                      this->_base_sizes,
+                      _value,
+                      default_tensor_options());
+}
+
+#define FULLTENSOR_REGISTER(T)                                                                     \
+  using Full##T = FullTensorTmpl<T>;                                                               \
+  register_NEML2_object_alias(Full##T, "Full" #T)
+FOR_ALL_TENSORBASE(FULLTENSOR_REGISTER);
 } // namespace neml2

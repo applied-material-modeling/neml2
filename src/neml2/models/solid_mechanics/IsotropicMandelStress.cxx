@@ -25,6 +25,7 @@
 #include "neml2/models/solid_mechanics/IsotropicMandelStress.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
+#include "neml2/tensors/functions/imap.h"
 
 namespace neml2
 {
@@ -46,11 +47,11 @@ IsotropicMandelStress::set_value(bool out, bool dout_din, bool d2out_din2)
   // Isotropic mandel stress is just the Cauchy stress
 
   if (out)
-    _M = SR2(_S);
+    _M = _S();
 
   if (dout_din)
     if (_S.is_dependent())
-      _M.d(_S) = SR2::identity_map(_S.options());
+      _M.d(_S) = imap<SR2>(_S.options()).template as<Tensor>();
 
   if (d2out_din2)
   {

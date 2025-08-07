@@ -28,7 +28,24 @@
 namespace neml2
 {
 #define DEFINE_DIFF(T)                                                                             \
-  T diff(const T & a, Size n, Size dim) { return T(at::diff(a, n, dim), a.batch_dim()); }          \
+  T dynamic_diff(const T & a, Size n, Size dim)                                                    \
+  {                                                                                                \
+    dim = utils::normalize_dim(dim, 0, a.dynamic_dim());                                           \
+    return T(at::diff(a, n, dim), a.dynamic_dim(), a.intmd_dim());                                 \
+  }                                                                                                \
+  T intmd_diff(const T & a, Size n, Size dim)                                                      \
+  {                                                                                                \
+    dim = utils::normalize_dim(dim, a.dynamic_dim(), a.batch_dim());                               \
+    return T(at::diff(a, n, dim), a.dynamic_sizes(), a.intmd_dim());                               \
+  }                                                                                                \
   static_assert(true)
 FOR_ALL_TENSORBASE(DEFINE_DIFF);
+
+Tensor
+base_diff(const Tensor & a, Size n, Size dim)
+{
+  dim = utils::normalize_dim(dim, a.batch_dim(), a.dim());
+  return Tensor(at::diff(a, n, dim), a.dynamic_sizes(), a.intmd_dim());
+}
+
 } // namespace neml2

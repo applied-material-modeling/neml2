@@ -29,7 +29,9 @@
 
 namespace neml2
 {
-#define DECLARE_BATCH_MEAN(T) T batch_mean(const T & a, Size d = 0)
+#define DECLARE_BATCH_MEAN(T)                                                                      \
+  T dynamic_mean(const T & a, Size d = 0);                                                         \
+  T intmd_mean(const T & a, Size d = 0)
 FOR_ALL_TENSORBASE(DECLARE_BATCH_MEAN);
 #undef DECLARE_BATCH_MEAN
 

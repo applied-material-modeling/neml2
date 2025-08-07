@@ -29,7 +29,6 @@
 #include "neml2/models/map_types_fwd.h"
 #include "neml2/base/LabeledAxisAccessor.h"
 #include "neml2/misc/types.h"
-#include "neml2/jit/types.h"
 
 namespace neml2
 {
@@ -71,6 +70,9 @@ public:
   ///@}
 
   using VariableStorage = std::map<VariableName, std::unique_ptr<VariableBase>>;
+  using DerivSparsity = std::vector<std::pair<VariableBase *, const VariableBase *>>;
+  using SecDerivSparsity =
+      std::vector<std::tuple<VariableBase *, const VariableBase *, const VariableBase *>>;
 
   ///@{
   /// Variables
@@ -98,31 +100,45 @@ public:
   virtual void clear_derivatives();
   ///@}
 
+  /// Fill undefined input variables with zeros
+  virtual void zero_undefined_input();
+
   ///@{
-  /// Zero variable values
-  virtual void zero_input();
-  virtual void zero_output();
+  /// Cache sparsity of first derivatives
+  void cache_derivative_sparsity();
+  /// Cache sparsity of second derivatives
+  void cache_second_derivative_sparsity();
+  /// Derivative sparsity
+  const std::optional<DerivSparsity> & derivative_sparsity() const;
+  /// Second derivative sparsity
+  const std::optional<SecDerivSparsity> & second_derivative_sparsity() const;
   ///@}
 
   ///@{
   /// Assign input variable values
-  void assign_input(const ValueMap & vals);
-  /// Assign input variable values
-  void assign_input(ValueMap && vals);
+  /// @p assembly indicates if @p vals are in assembly format
+  void assign_input(const ValueMap & vals, bool assembly = false);
   /// Assign output variable values
-  void assign_output(const ValueMap & vals);
+  /// @p assembly indicates if @p vals are in assembly format
+  void assign_output(const ValueMap & vals, bool assembly = false);
   /// Assign variable derivatives
-  void assign_output_derivatives(const DerivMap & derivs);
+  /// @p assembly indicates if @p derivs are in assembly format
+  void assign_output_derivatives(const DerivMap & derivs, bool assembly = false);
   ///@}
 
   ///@{
-  /// Collect variable values
-  ValueMap collect_input() const;
-  ValueMap collect_output() const;
+  /// Collect input variable values
+  /// @p assembly indicates if the returned map should be in assembly format
+  ValueMap collect_input(bool assembly = false) const;
+  /// Collect output variable values
+  /// @p assembly indicates if the returned map should be in assembly format
+  ValueMap collect_output(bool assembly = false) const;
   /// Collect variable derivatives
-  DerivMap collect_output_derivatives() const;
+  /// @p assembly indicates if the returned map should be in assembly format
+  DerivMap collect_output_derivatives(bool assembly = false) const;
   /// Collect variable second derivatives
-  SecDerivMap collect_output_second_derivatives() const;
+  /// @p assembly indicates if the returned map should be in assembly format
+  SecDerivMap collect_output_second_derivatives(bool assembly = false) const;
   ///@}
 
 protected:
@@ -135,23 +151,20 @@ protected:
 
   /// Declare an input variable
   template <typename T>
-  const Variable<T> & declare_input_variable(const char * name,
-                                             TensorShapeRef list_shape = {},
-                                             bool allow_duplicate = false);
+  const Variable<T> & declare_input_variable(const char * name, bool allow_duplicate = false);
 
   /// Declare an input variable
   template <typename T>
   const Variable<T> & declare_input_variable(const VariableName & name,
-                                             TensorShapeRef list_shape = {},
                                              bool allow_duplicate = false);
 
   /// Declare an output variable
   template <typename T>
-  Variable<T> & declare_output_variable(const char * name, TensorShapeRef list_shape = {});
+  Variable<T> & declare_output_variable(const char * name);
 
   /// Declare an output variable
   template <typename T>
-  Variable<T> & declare_output_variable(const VariableName & name, TensorShapeRef list_shape = {});
+  Variable<T> & declare_output_variable(const VariableName & name);
 
   /// Clone a variable and put it on the input axis
   const VariableBase * clone_input_variable(const VariableBase & var,
@@ -182,7 +195,6 @@ private:
   template <typename T>
   Variable<T> * create_variable(VariableStorage & variables,
                                 const VariableName & name,
-                                TensorShapeRef list_shape,
                                 bool allow_duplicate = false);
 
   /// Model using this interface
@@ -205,5 +217,23 @@ private:
 
   /// Current tensor options for padding variables
   TensorOptions _options;
+
+  /// Cached intermediate dimensions of input variables
+  std::map<VariableName, Size> _input_intmd_dims;
+
+  /// Cached intermediate dimensions of output variables
+  std::map<VariableName, Size> _output_intmd_dims;
+
+  /// Derivative sparsity
+  std::optional<DerivSparsity> _deriv_sparsity = std::nullopt;
+
+  /// Second derivative sparsity
+  std::optional<SecDerivSparsity> _secderiv_sparsity = std::nullopt;
+
+  /// Derivative sparsity for the nonlinear system
+  std::optional<DerivSparsity> _deriv_sparsity_nl_sys = std::nullopt;
+
+  /// Second derivative sparsity for the nonlinear system
+  std::optional<SecDerivSparsity> _secderiv_sparsity_nl_sys = std::nullopt;
 };
 } // namespace neml2

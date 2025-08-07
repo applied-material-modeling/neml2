@@ -67,6 +67,8 @@ protected:
   virtual void apply_predictor();
   /// Perform the constitutive update for the current time step.
   virtual void solve_step();
+  /// Postprocess the output of the current time step.
+  virtual void postprocess();
   /// Save the input of the current time step.
   virtual void store_input();
   // @}

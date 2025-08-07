@@ -28,7 +28,7 @@
 namespace neml2
 {
 #define DEFINE_SIN(T)                                                                              \
-  T sin(const T & a) { return T(at::sin(a), a.batch_sizes()); }                                    \
+  T sin(const T & a) { return T(at::sin(a), a.dynamic_sizes(), a.intmd_dim()); }                   \
   static_assert(true)
 FOR_ALL_TENSORBASE(DEFINE_SIN);
 } // namespace neml2

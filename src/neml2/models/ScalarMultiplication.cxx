@@ -127,18 +127,19 @@ ScalarMultiplication::set_value(bool out, bool dout_din, bool d2out_din2)
             auto q = (_inv[j] ? -1.0 : 1.0);
             if (i != j)
             {
-              auto r = _A * p * pow(*_from[i], (p - 1)) * q * pow(*_from[j], (q - 1));
+              auto r = _A * p * neml2::pow((*_from[i])(), (p - 1)) * q *
+                       neml2::pow((*_from[j])(), (q - 1));
               for (std::size_t k = 0; k < _from.size(); k++)
                 if (k != i && k != j)
-                  r = r * (_inv[k] ? 1. / (*_from[k]) : (*_from[k]));
+                  r = r * (_inv[k] ? 1. / (*_from[k])() : (*_from[k])());
               _to.d(*_from[i], *_from[j]) = r;
             }
             else if (_inv[i])
             {
-              auto r = _A * p * (p - 1) * pow(*_from[i], (p - 2));
+              auto r = _A * p * (p - 1) * neml2::pow((*_from[i])(), (p - 2));
               for (std::size_t k = 0; k < _from.size(); k++)
                 if (k != i)
-                  r = r * (_inv[k] ? 1. / (*_from[k]) : (*_from[k]));
+                  r = r * (_inv[k] ? 1. / (*_from[k])() : (*_from[k])());
               _to.d(*_from[i], *_from[j]) = r;
             }
           }
