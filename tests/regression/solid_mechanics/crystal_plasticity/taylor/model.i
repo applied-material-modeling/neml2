@@ -1,7 +1,7 @@
 [Tensors]
   [end_time]
     type = FullScalar
-    batch_shape = '(5)'
+    batch_shape = '(3)'
     value = 5.0
   []
   [times]
@@ -12,17 +12,17 @@
   []
   [dxx]
     type = FullScalar
-    batch_shape = '(5)'
+    batch_shape = '(3)'
     value = 0.0001
   []
   [dyy]
     type = FullScalar
-    batch_shape = '(5)'
+    batch_shape = '(3)'
     value = -0.00005
   []
   [dzz]
     type = FullScalar
-    batch_shape = '(5)'
+    batch_shape = '(3)'
     value = -0.00005
   []
   [deformation_rate_single]
@@ -38,17 +38,17 @@
 
   [w1]
     type = FullScalar
-    batch_shape = '(5)'
+    batch_shape = '(3)'
     value = 0.0
   []
   [w2]
     type = FullScalar
-    batch_shape = '(5)'
+    batch_shape = '(3)'
     value = 0.0
   []
   [w3]
     type = FullScalar
-    batch_shape = '(5)'
+    batch_shape = '(3)'
     value = 0.0
   []
   [vorticity_single]
@@ -83,6 +83,7 @@
               10 5  60
               17 18 19
               30 60 90'
+    additional_batch_shape = '(3)'
   []
 []
 

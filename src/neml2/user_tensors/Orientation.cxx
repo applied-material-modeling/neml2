@@ -65,12 +65,18 @@ Orientation::expected_options()
   options.set<unsigned int>("quantity") = 1;
   options.set("quantity").doc() = "Number (batch size) of random orientations";
 
+  options.set<TensorShape>("additional_batch_shape") = {};
+  options.set("additional_batch_shape").doc() =
+      "Additional batch shape to be applied to the output orientation, expanding out from the "
+      "shape the user provides in the input.  This is useful for setting up Taylor simulations.";
+
   return options;
 }
 
 Orientation::Orientation(const OptionSet & options)
   : Rot(fill(options)),
-    UserTensorBase(options)
+    UserTensorBase(options),
+    _additional_batch_shape(options.get<TensorShape>("additional_batch_shape"))
 {
 }
 
@@ -99,6 +105,14 @@ Orientation::fill(const OptionSet & options) const
 
   if (options.get<bool>("normalize"))
     return neml2::where((R.norm_sq() < 1.0).unsqueeze(-1), R, R.shadow());
+
+  if (!_additional_batch_shape.empty())
+  {
+    for (size_t i = 0; i < _additional_batch_shape.size(); ++i)
+      R.batch_unsqueeze(0);
+
+    R = R.batch_expand(utils::add_shapes(_additional_batch_shape, neml2::TensorShape{-1}));
+  }
 
   return R;
 }

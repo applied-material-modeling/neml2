@@ -44,6 +44,9 @@ public:
    */
   Orientation(const OptionSet & options);
 
+protected:
+  TensorShape _additional_batch_shape;
+
 private:
   /// A helper method to dispatch to the correct fill method based on the selected options
   Rot fill(const OptionSet & options) const;
