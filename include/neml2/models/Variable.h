@@ -59,7 +59,7 @@ public:
   VariableBase & operator=(VariableBase &&) = delete;
   virtual ~VariableBase() = default;
 
-  VariableBase(VariableName name_in, Model * owner, TensorShapeRef list_shape);
+  VariableBase(VariableName name_in, Model * owner, TensorShapeRef lbatch_shape);
 
   /// Name of this variable
   const VariableName & name() const { return _name; }
@@ -104,24 +104,24 @@ public:
   Size size(Size dim) const;
   /// Whether the tensor is batched
   bool batched() const;
+  /// Return the number of left-batch dimensions
+  Size lbatch_dim() const;
   /// Return the number of batch dimensions
   Size batch_dim() const;
-  /// Return the number of list dimensions
-  Size list_dim() const;
   /// Return the number of base dimensions
   Size base_dim() const;
+  /// Return the left-batch shape
+  TensorShapeRef lbatch_sizes() const;
   /// Return the batch shape
   TraceableTensorShape batch_sizes() const;
-  /// Return the list shape
-  TensorShapeRef list_sizes() const;
   /// Return the base shape
   virtual TensorShapeRef base_sizes() const = 0;
+  /// Return the size of a left-batch axis
+  Size lbatch_size(Size dim) const;
   /// Return the size of a batch axis
   TraceableSize batch_size(Size dim) const;
   /// Return the size of a base axis
   Size base_size(Size dim) const;
-  /// Return the size of a list axis
-  Size list_size(Size dim) const;
   /// Base storage of the variable
   Size base_storage() const;
   /// Assembly storage of the variable
@@ -141,6 +141,9 @@ public:
   /// Check if this is an owning variable
   virtual bool owning() const = 0;
 
+  /// Make a zeros tensor
+  Tensor make_zeros(const TraceableTensorShape & batch_shape, const TensorOptions & options) const;
+
   /// Set the variable value to zero
   virtual void zero(const TensorOptions & options) = 0;
 
@@ -151,10 +154,10 @@ public:
   /// If force is true, the value is set even if the variable is a reference
   virtual void set(const ATensor & val, bool force = false) = 0;
 
-  /// Get the variable value (with flattened base dimensions, i.e., for assembly purposes)
+  /// Get the variable value for assembly purposes, i.e., with shape (batch; storage) where storage is the size of the flattened size of (lbatch, base)
   virtual Tensor get() const = 0;
 
-  /// Get the variable value
+  /// Get the variable value cast to Tensor
   virtual Tensor tensor() const = 0;
 
   /// Check if this variable is part of the AD function graph
@@ -220,8 +223,8 @@ private:
                                     Model * model,
                                     const VariableName & yvar) const;
 
-  /// List shape of the variable
-  const TensorShape _list_sizes = {};
+  /// Left-batch shape of the variable
+  const TensorShape _lbatch_sizes = {};
 
   /// Derivatives of this variable with respect to other variables
   ValueMap _derivs;
@@ -239,8 +242,8 @@ class Variable : public VariableBase
 {
 public:
   template <typename T2 = T, typename = typename std::enable_if_t<!std::is_same_v<Tensor, T2>>>
-  Variable(VariableName name_in, Model * owner, TensorShapeRef list_shape)
-    : VariableBase(std::move(name_in), owner, list_shape),
+  Variable(VariableName name_in, Model * owner, TensorShapeRef lbatch_shape)
+    : VariableBase(std::move(name_in), owner, lbatch_shape),
       _base_sizes(T::const_base_sizes),
       _ref(nullptr),
       _ref_is_mutable(false)
@@ -250,9 +253,9 @@ public:
   template <typename T2 = T, typename = typename std::enable_if_t<std::is_same_v<Tensor, T2>>>
   Variable(VariableName name_in,
            Model * owner,
-           TensorShapeRef list_shape,
+           TensorShapeRef lbatch_shape,
            TensorShapeRef base_shape)
-    : VariableBase(std::move(name_in), owner, list_shape),
+    : VariableBase(std::move(name_in), owner, lbatch_shape),
       _base_sizes(base_shape),
       _ref(nullptr),
       _ref_is_mutable(false)

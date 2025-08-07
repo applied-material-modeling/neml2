@@ -70,7 +70,7 @@ unpack_tensor_map(const py::dict & pyinputs, const Model * model = nullptr)
           if (model->input_axis().has_variable(input_names.back()))
           {
             const auto & xvar = model->input_variable(input_names.back());
-            const auto batch_dim = x.dim() - xvar.list_dim() - xvar.base_dim();
+            const auto batch_dim = x.dim() - xvar.lbatch_dim() - xvar.base_dim();
             input_values.push_back(Tensor(x, batch_dim));
           }
           // If the input variable does not exist, it doesn't matter what we do

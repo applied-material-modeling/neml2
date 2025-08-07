@@ -64,29 +64,29 @@ VariableStore::setup_layout()
 template <typename T>
 const Variable<T> &
 VariableStore::declare_input_variable(const char * name,
-                                      TensorShapeRef list_shape,
+                                      TensorShapeRef lbatch_shape,
                                       bool allow_duplicate)
 {
   if (_object->input_options().contains(name))
     return declare_input_variable<T>(
-        _object->input_options().get<VariableName>(name), list_shape, allow_duplicate);
+        _object->input_options().get<VariableName>(name), lbatch_shape, allow_duplicate);
 
-  return declare_input_variable<T>(VariableName(name), list_shape, allow_duplicate);
+  return declare_input_variable<T>(VariableName(name), lbatch_shape, allow_duplicate);
 }
 
 template <typename T>
 const Variable<T> &
 VariableStore::declare_input_variable(const VariableName & name,
-                                      TensorShapeRef list_shape,
+                                      TensorShapeRef lbatch_shape,
                                       bool allow_duplicate)
 {
-  const auto list_sz = utils::storage_size(list_shape);
+  const auto lbatch_sz = utils::storage_size(lbatch_shape);
   const auto base_sz = T::const_base_storage;
-  const auto sz = list_sz * base_sz;
+  const auto sz = lbatch_sz * base_sz;
 
   if (!allow_duplicate || (allow_duplicate && !_input_axis.has_variable(name)))
     _input_axis.add_variable(name, sz);
-  return *create_variable<T>(_input_variables, name, list_shape, allow_duplicate);
+  return *create_variable<T>(_input_variables, name, lbatch_shape, allow_duplicate);
 }
 #define INSTANTIATE_DECLARE_INPUT_VARIABLE(T)                                                      \
   template const Variable<T> & VariableStore::declare_input_variable<T>(                           \
@@ -97,24 +97,25 @@ FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_DECLARE_INPUT_VARIABLE);
 
 template <typename T>
 Variable<T> &
-VariableStore::declare_output_variable(const char * name, TensorShapeRef list_shape)
+VariableStore::declare_output_variable(const char * name, TensorShapeRef lbatch_shape)
 {
   if (_object->input_options().contains(name))
-    return declare_output_variable<T>(_object->input_options().get<VariableName>(name), list_shape);
+    return declare_output_variable<T>(_object->input_options().get<VariableName>(name),
+                                      lbatch_shape);
 
-  return declare_output_variable<T>(VariableName(name), list_shape);
+  return declare_output_variable<T>(VariableName(name), lbatch_shape);
 }
 
 template <typename T>
 Variable<T> &
-VariableStore::declare_output_variable(const VariableName & name, TensorShapeRef list_shape)
+VariableStore::declare_output_variable(const VariableName & name, TensorShapeRef lbatch_shape)
 {
-  const auto list_sz = utils::storage_size(list_shape);
+  const auto lbatch_sz = utils::storage_size(lbatch_shape);
   const auto base_sz = T::const_base_storage;
-  const auto sz = list_sz * base_sz;
+  const auto sz = lbatch_sz * base_sz;
 
   _output_axis.add_variable(name, sz);
-  return *create_variable<T>(_output_variables, name, list_shape);
+  return *create_variable<T>(_output_variables, name, lbatch_shape);
 }
 #define INSTANTIATE_DECLARE_OUTPUT_VARIABLE(T)                                                     \
   template Variable<T> & VariableStore::declare_output_variable<T>(const char *, TensorShapeRef);  \
@@ -156,7 +157,7 @@ template <typename T>
 Variable<T> *
 VariableStore::create_variable(VariableStorage & variables,
                                const VariableName & name,
-                               TensorShapeRef list_shape,
+                               TensorShapeRef lbatch_shape,
                                bool allow_duplicate)
 {
   // Make sure we don't duplicate variables
@@ -174,7 +175,7 @@ VariableStore::create_variable(VariableStorage & variables,
   {
     // Allocate
     std::unique_ptr<VariableBase> var;
-    var = std::make_unique<Variable<T>>(name, _object, list_shape);
+    var = std::make_unique<Variable<T>>(name, _object, lbatch_shape);
     auto [it, success] = variables.emplace(name, std::move(var));
     var_base_ptr = it->second.get();
   }

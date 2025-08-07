@@ -30,13 +30,15 @@
 #include "neml2/tensors/functions/bmm.h"
 #include "neml2/jit/utils.h"
 #include "neml2/jit/TraceableTensorShape.h"
+#include <ATen/core/interned_strings.h>
+#include <ATen/ops/permute.h>
 
 namespace neml2
 {
-VariableBase::VariableBase(VariableName name_in, Model * owner, TensorShapeRef list_shape)
+VariableBase::VariableBase(VariableName name_in, Model * owner, TensorShapeRef lbatch_shape)
   : _name(std::move(name_in)),
     _owner(owner),
-    _list_sizes(list_shape)
+    _lbatch_sizes(lbatch_shape)
 {
 }
 
@@ -145,15 +147,15 @@ VariableBase::batched() const
 }
 
 Size
-VariableBase::batch_dim() const
+VariableBase::lbatch_dim() const
 {
-  return tensor().batch_dim();
+  return Size(lbatch_sizes().size());
 }
 
 Size
-VariableBase::list_dim() const
+VariableBase::batch_dim() const
 {
-  return Size(list_sizes().size());
+  return tensor().batch_dim() - lbatch_dim();
 }
 
 Size
@@ -162,34 +164,37 @@ VariableBase::base_dim() const
   return Size(base_sizes().size());
 }
 
+TensorShapeRef
+VariableBase::lbatch_sizes() const
+{
+  return _lbatch_sizes;
+}
+
 TraceableTensorShape
 VariableBase::batch_sizes() const
 {
-  return tensor().batch_sizes();
+  return tensor().batch_sizes().slice(lbatch_dim());
 }
 
-TensorShapeRef
-VariableBase::list_sizes() const
+Size
+VariableBase::lbatch_size(Size dim) const
 {
-  return _list_sizes;
+  auto i = dim < 0 ? lbatch_dim() + dim : dim;
+  return lbatch_sizes()[i];
 }
 
 TraceableSize
 VariableBase::batch_size(Size dim) const
 {
-  return tensor().batch_size(dim);
+  auto i = dim < 0 ? batch_dim() + dim : dim;
+  return batch_sizes()[i];
 }
 
 Size
 VariableBase::base_size(Size dim) const
 {
-  return base_sizes()[dim];
-}
-
-Size
-VariableBase::list_size(Size dim) const
-{
-  return list_sizes()[dim];
+  auto i = dim < 0 ? base_dim() + dim : dim;
+  return base_sizes()[i];
 }
 
 Size
@@ -201,13 +206,30 @@ VariableBase::base_storage() const
 Size
 VariableBase::assembly_storage() const
 {
-  return utils::storage_size(list_sizes()) * utils::storage_size(base_sizes());
+  return utils::storage_size(lbatch_sizes()) * utils::storage_size(base_sizes());
 }
 
 bool
 VariableBase::requires_grad() const
 {
   return tensor().requires_grad();
+}
+
+Tensor
+VariableBase::make_zeros(const TraceableTensorShape & batch_shape,
+                         const TensorOptions & options) const
+{
+  // First create a dummy tensor with batch dimensions filled with ones
+  auto dummy_batch_sizes = TensorShape(batch_dim(), 1);
+  auto B = utils::add_shapes(lbatch_sizes(), dummy_batch_sizes);
+  auto tensor = Tensor::zeros(B, base_sizes(), options);
+  // Then expand it to the batch shape
+  if (!batch_shape.empty())
+  {
+    auto B = utils::add_traceable_shapes(lbatch_sizes(), batch_shape);
+    tensor = tensor.batch_expand(B);
+  }
+  return tensor;
 }
 
 Derivative
@@ -396,15 +418,11 @@ std::unique_ptr<VariableBase>
 Variable<T>::clone(const VariableName & name, Model * owner) const
 {
   if constexpr (std::is_same_v<T, Tensor>)
-  {
-    return std::move(std::make_unique<Variable<Tensor>>(
-        name.empty() ? this->name() : name, owner ? owner : _owner, list_sizes(), base_sizes()));
-  }
+    return std::make_unique<Variable<Tensor>>(
+        name.empty() ? this->name() : name, owner ? owner : _owner, lbatch_sizes(), base_sizes());
   else
-  {
-    return std::move(std::make_unique<Variable<T>>(
-        name.empty() ? this->name() : name, owner ? owner : _owner, list_sizes()));
-  }
+    return std::make_unique<Variable<T>>(
+        name.empty() ? this->name() : name, owner ? owner : _owner, lbatch_sizes());
 }
 
 template <typename T>
@@ -449,12 +467,7 @@ void
 Variable<T>::zero(const TensorOptions & options)
 {
   if (owning())
-  {
-    if constexpr (std::is_same_v<T, Tensor>)
-      _value = T::zeros(list_sizes(), base_sizes(), options);
-    else
-      _value = T::zeros(list_sizes(), options);
-  }
+    _value = T(make_zeros({}, options));
   else
   {
     neml_assert_dbg(_ref_is_mutable,
@@ -475,8 +488,28 @@ void
 Variable<T>::set(const Tensor & val)
 {
   if (owning())
-    _value = T(val.base_reshape(utils::add_shapes(list_sizes(), base_sizes())),
-               utils::add_traceable_shapes(val.batch_sizes(), list_sizes()));
+  {
+    // shortcut when there's no left-batch dimension
+    if (!lbatch_dim())
+    {
+      _value = T(val.base_reshape(base_sizes()));
+      return;
+    }
+
+    // left-batch shapes are special:
+    // it is a "base" shape at assembly time, and a "batch" shape at operation time
+    auto B = utils::add_traceable_shapes(lbatch_sizes(), val.batch_sizes());
+    auto D = utils::add_shapes(lbatch_sizes(), val.base_sizes());
+    // reshape to (batch; lbatch, base)
+    auto v = val.base_reshape(D);
+    // move lbatch to the front, i.e. (lbatch, batch; base)
+    TensorShape batch_indices(v.batch_dim()), permutation(v.base_dim());
+    std::iota(batch_indices.begin(), batch_indices.end(), 0);
+    std::iota(permutation.begin(), permutation.end(), v.batch_dim());
+    permutation.insert(
+        permutation.begin() + lbatch_dim(), batch_indices.begin(), batch_indices.end());
+    _value = T(at::permute(v, permutation), B);
+  }
   else
   {
     neml_assert_dbg(_ref_is_mutable,
@@ -522,7 +555,22 @@ template <typename T>
 Tensor
 Variable<T>::get() const
 {
-  return tensor().base_flatten();
+  neml_assert_dbg(_value.defined(), "Variable '", name(), "' has undefined value.");
+
+  // shortcut when there's no left-batch dimension
+  if (!lbatch_dim())
+    return _value.base_flatten();
+
+  // variable currently has shape (lbatch, batch; base)
+  // we need to permute it to (batch; lbatch, base)
+  TensorShape lbatch_indices(lbatch_dim()), permutation(_value.dim() - lbatch_dim());
+  std::iota(lbatch_indices.begin(), lbatch_indices.end(), 0);
+  std::iota(permutation.begin(), permutation.end(), lbatch_dim());
+  permutation.insert(permutation.begin() + (_value.batch_dim() - lbatch_dim()),
+                     lbatch_indices.begin(),
+                     lbatch_indices.end());
+  return Tensor(at::permute(_value, permutation), _value.batch_sizes().slice(lbatch_dim()))
+      .base_flatten();
 }
 
 template <typename T>
@@ -530,11 +578,7 @@ Tensor
 Variable<T>::tensor() const
 {
   if (owning())
-  {
-    neml_assert_dbg(_value.defined(), "Variable '", name(), "' has undefined value.");
-    auto batch_sizes = _value.batch_sizes().slice(0, _value.batch_dim() - list_dim());
-    return Tensor(_value, batch_sizes);
-  }
+    return _value;
 
   return ref()->tensor();
 }

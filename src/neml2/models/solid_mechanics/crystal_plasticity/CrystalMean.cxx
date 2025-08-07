@@ -76,7 +76,7 @@ CrystalMean<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
       const auto I = T::identity_map(_from.options())
                          .base_reshape({T::const_base_storage, T::const_base_storage})
                          .batch_expand_as(T(_from));
-      _to.d(_from) = Tensor(I / _from.list_size(0), _from.batch_sizes()).base_transpose(0, 1);
+      _to.d(_from) = Tensor(I / _from.lbatch_size(0), _from.batch_sizes()).base_transpose(0, 1);
     }
 }
 } // namespace neml2
