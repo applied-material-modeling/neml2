@@ -27,7 +27,6 @@
 #include "neml2/models/crystallography/CrystalGeometry.h"
 
 #include "neml2/tensors/Scalar.h"
-#include "neml2/tensors/list_tensors.h"
 #include "neml2/tensors/functions/abs.h"
 #include "neml2/tensors/functions/sum.h"
 #include "neml2/tensors/functions/sign.h"
@@ -47,7 +46,7 @@ SumSlipRates::expected_options()
   options.set("slip_rates").doc() = "The name of individual slip rates";
 
   options.set_output("sum_slip_rates") = VariableName(STATE, "internal", "sum_slip_rates");
-  options.set("sum_slip_rates").doc() = "The outut name for the scalar sum of the slip rates";
+  options.set("sum_slip_rates").doc() = "The output name for the scalar sum of the slip rates";
 
   options.set<std::string>("crystal_geometry_name") = "crystal_geometry";
   options.set("crystal_geometry_name").doc() =
@@ -69,7 +68,7 @@ void
 SumSlipRates::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   if (out)
-    _sg = batch_sum(abs(_g.value()), -1);
+    _sg = batch_sum(abs(_g.value()), 0);
 
   if (dout_din)
     if (_g.is_dependent())

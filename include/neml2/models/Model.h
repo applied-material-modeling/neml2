@@ -148,8 +148,9 @@ public:
   /// Request to use AD to compute the second derivative of a variable
   void request_AD(VariableBase & y, const VariableBase & u1, const VariableBase & u2);
 
-  /// Forward operator without jit
-  void forward(bool out, bool dout, bool d2out);
+  void clear_input() override;
+  void clear_output() override;
+  void zero_undefined_input() override;
 
   /**
    * @brief Forward operator with jit
@@ -162,32 +163,26 @@ public:
   void forward_maybe_jit(bool out, bool dout, bool d2out);
 
   /// Look up the name of a variable in the traced graph
-  std::string variable_name_lookup(const ATensor & var);
+  std::string variable_name_lookup(const ATensor & var) const;
 
   /// Convenient shortcut to construct and return the model value
   virtual ValueMap value(const ValueMap & in);
-  virtual ValueMap value(ValueMap && in);
 
   /// Convenient shortcut to construct and return the model value and its derivative
   virtual std::tuple<ValueMap, DerivMap> value_and_dvalue(const ValueMap & in);
-  virtual std::tuple<ValueMap, DerivMap> value_and_dvalue(ValueMap && in);
 
   /// Convenient shortcut to construct and return the derivative
   virtual DerivMap dvalue(const ValueMap & in);
-  virtual DerivMap dvalue(ValueMap && in);
 
   /// Convenient shortcut to construct and return the model's value, first and second derivative
   virtual std::tuple<ValueMap, DerivMap, SecDerivMap>
   value_and_dvalue_and_d2value(const ValueMap & in);
-  virtual std::tuple<ValueMap, DerivMap, SecDerivMap> value_and_dvalue_and_d2value(ValueMap && in);
 
   /// Convenient shortcut to construct and return the model's second derivative
   virtual SecDerivMap d2value(const ValueMap & in);
-  virtual SecDerivMap d2value(ValueMap && in);
 
   /// Convenient shortcut to construct and return the model's first and second derivative
   virtual std::tuple<DerivMap, SecDerivMap> dvalue_and_d2value(const ValueMap & in);
-  virtual std::tuple<DerivMap, SecDerivMap> dvalue_and_d2value(ValueMap && in);
 
   /// Declaration of nonlinear parameters may require manipulation of input
   friend class ParameterStore;
@@ -212,11 +207,6 @@ protected:
   virtual void link_output_variables();
   virtual void link_output_variables(Model * submodel);
 
-  void clear_input() override;
-  void clear_output() override;
-  void zero_input() override;
-  void zero_output() override;
-
   /// Check the current default precision and warn if it's not double precision
   void check_precision() const;
 
@@ -234,6 +224,9 @@ protected:
    * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    */
   virtual void request_AD() {}
+
+  /// Forward operator without jit
+  void forward(bool out, bool dout, bool d2out);
 
   /// The map between input -> output, and optionally its derivatives
   virtual void set_value(bool out, bool dout_din, bool d2out_din2) = 0;
@@ -295,9 +288,8 @@ private:
   void forward_helper(T && in, bool out, bool dout, bool d2out)
   {
     check_precision();
-    zero_input();
     assign_input(std::forward<T>(in));
-    zero_output();
+    zero_undefined_input();
     forward_maybe_jit(out, dout, d2out);
   }
 

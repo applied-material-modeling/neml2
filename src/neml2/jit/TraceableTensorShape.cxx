@@ -56,21 +56,14 @@ TraceableTensorShape::TraceableTensorShape(const ATensor & shape)
 }
 
 TraceableTensorShape
-TraceableTensorShape::slice(Size start, Size end) const
+TraceableTensorShape::slice(std::size_t N, std::size_t M) const
 {
-  if (start < 0)
-    start += Size(size());
-  if (end < 0)
-    end += Size(size());
-
-  return TraceableTensorShape(begin() + start, begin() + end);
+  return TraceableTensorShape(begin() + N, begin() + N + M);
 }
 
 TraceableTensorShape
-TraceableTensorShape::slice(Size N) const
+TraceableTensorShape::slice(std::size_t N) const
 {
-  if (N < 0)
-    N += Size(size());
   return TraceableTensorShape(begin() + N, end());
 }
 

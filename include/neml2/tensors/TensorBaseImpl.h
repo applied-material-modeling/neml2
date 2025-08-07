@@ -417,8 +417,16 @@ template <class Derived>
 Derived
 TensorBase<Derived>::batch_unsqueeze(Size d) const
 {
-  auto d2 = d >= 0 ? d : d - base_dim();
-  return Derived(unsqueeze(d2), batch_dim() + 1);
+  auto d2 = d >= 0 ? d : d + batch_dim() + 1;
+  neml_assert_dbg(d2 >= 0 && d2 <= batch_dim(),
+                  "The unsqueeze dimension ",
+                  d,
+                  " is out of range for a tensor with batch dimension ",
+                  batch_dim(),
+                  ".");
+  auto B = batch_sizes();
+  B.insert(B.begin() + d2, 1); // Insert a new batch dimension
+  return Derived(unsqueeze(d2), B);
 }
 
 template <class Derived>
@@ -427,6 +435,30 @@ TensorBase<Derived>::base_unsqueeze(Size d) const
 {
   auto d2 = d < 0 ? d : d + batch_dim();
   return neml2::Tensor(ATensor::unsqueeze(d2), batch_sizes());
+}
+
+template <class Derived>
+Derived
+TensorBase<Derived>::batch_left_unsqueeze_n(Size n) const
+{
+  at::Tensor t = *this;
+  for (Size i = 0; i < n; ++i)
+    t = t.unsqueeze(0);
+  auto B = batch_sizes();
+  B.insert(B.begin(), n, 1);
+  return Derived(t, B);
+}
+
+template <class Derived>
+Derived
+TensorBase<Derived>::batch_right_unsqueeze_n(Size n) const
+{
+  at::Tensor t = *this;
+  for (Size i = 0; i < n; ++i)
+    t = t.unsqueeze(batch_dim());
+  auto B = batch_sizes();
+  B.insert(B.end(), n, 1);
+  return Derived(t, B);
 }
 
 template <class Derived>

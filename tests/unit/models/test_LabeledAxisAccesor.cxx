@@ -75,7 +75,7 @@ TEST_CASE("LabeledAxisAccessor", "[models]")
     SECTION("slice")
     {
       REQUIRE(a.slice(1).vec() == std::vector<std::string>{"b", "c"});
-      REQUIRE(a.slice(1, 3).vec() == std::vector<std::string>{"b", "c"});
+      REQUIRE(a.slice(1, 2).vec() == std::vector<std::string>{"b", "c"});
       REQUIRE(a.slice(0, 2).vec() == std::vector<std::string>{"a", "b"});
     }
   }

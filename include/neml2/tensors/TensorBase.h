@@ -213,6 +213,10 @@ public:
   Derived batch_unsqueeze(Size d) const;
   /// Unsqueeze a base dimension
   neml2::Tensor base_unsqueeze(Size d) const;
+  /// Unsqueeze n batch dimensions to the left
+  Derived batch_left_unsqueeze_n(Size n) const;
+  /// Unsqueeze n batch dimensions to the right
+  Derived batch_right_unsqueeze_n(Size n) const;
   /// Transpose two batch dimensions
   Derived batch_transpose(Size d1, Size d2) const;
   /// Transpose two base dimensions

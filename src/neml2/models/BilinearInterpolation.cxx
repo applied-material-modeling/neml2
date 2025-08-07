@@ -89,7 +89,7 @@ static T
 apply_mask(const T & y, const Scalar & m)
 {
   const auto B = utils::broadcast_batch_sizes({m, y});
-  const auto D = B.slice(0, -2); // excluding the interpolation grid
+  const auto D = B.slice(0, B.size() - 2); // excluding the interpolation grid
   return T(y.batch_expand(B).index({m.batch_expand(B)})).batch_reshape(D);
 }
 

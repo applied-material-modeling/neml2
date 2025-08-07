@@ -304,17 +304,7 @@ TransientDriver::apply_ic()
   // Variables without a user-defined IC are initialized to zeros
   for (auto && [name, var] : _model->output_variables())
     if (!_result_out[0].count(name))
-    {
-      if (batch_shape.size() > 0)
-        _result_out[0][name] =
-            Tensor::zeros(utils::add_shapes(var->list_sizes(), var->base_sizes()))
-                .to(_device)
-                .batch_unsqueeze(0)
-                .batch_expand(batch_shape);
-      else
-        _result_out[0][name] =
-            Tensor::zeros(utils::add_shapes(var->list_sizes(), var->base_sizes())).to(_device);
-    }
+      _result_out[0][name] = var->make_zeros(batch_shape, _device);
 }
 
 void

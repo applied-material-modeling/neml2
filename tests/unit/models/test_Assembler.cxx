@@ -46,20 +46,20 @@ TEST_CASE("VectorAssembler", "[models]")
   const auto bar_name = VariableName(STATE, "bar");
   const auto baz_name = VariableName(STATE, "baz");
 
-  const auto T = Scalar::full({2, 5}, 120);
-  const auto foo = Scalar::zeros();
-  const auto bar = Scalar::full({2, 1}, -1.0);
-  const auto baz = SR2::full({5, 2, 5}, 0.1);
+  const auto T = Scalar::full({2, 5}, 120).base_flatten();
+  const auto foo = Scalar::zeros().base_flatten();
+  const auto bar = Scalar::full({2, 1}, -1.0).base_flatten();
+  const auto baz = SR2::full({5, 2, 5}, 0.1).base_flatten();
 
   SECTION("assemble_by_variable")
   {
     const auto v = assembler.assemble_by_variable({{T_name, T}, {bar_name, bar}, {baz_name, baz}});
     REQUIRE(v.batch_sizes().concrete() == TensorShape{5, 2, 5});
     REQUIRE(v.base_sizes() == TensorShapeRef{9});
-    REQUIRE(at::allclose(v.base_index({axis.slice(T_name)}), T.base_flatten()));
-    REQUIRE(at::allclose(v.base_index({axis.slice(foo_name)}), foo.base_flatten()));
-    REQUIRE(at::allclose(v.base_index({axis.slice(bar_name)}), bar.base_flatten()));
-    REQUIRE(at::allclose(v.base_index({axis.slice(baz_name)}), baz.base_flatten()));
+    REQUIRE(at::allclose(v.base_index({axis.slice(T_name)}), T));
+    REQUIRE(at::allclose(v.base_index({axis.slice(foo_name)}), foo));
+    REQUIRE(at::allclose(v.base_index({axis.slice(bar_name)}), bar));
+    REQUIRE(at::allclose(v.base_index({axis.slice(baz_name)}), baz));
   }
 
   SECTION("split_by_variable")
@@ -67,10 +67,10 @@ TEST_CASE("VectorAssembler", "[models]")
     const auto v = assembler.assemble_by_variable({{T_name, T}, {bar_name, bar}, {baz_name, baz}});
     const auto vars = assembler.split_by_variable(v);
     REQUIRE(vars.size() == 4);
-    REQUIRE(at::allclose(vars.at(T_name), T.base_flatten()));
-    REQUIRE(at::allclose(vars.at(foo_name), foo.base_flatten()));
-    REQUIRE(at::allclose(vars.at(bar_name), bar.base_flatten()));
-    REQUIRE(at::allclose(vars.at(baz_name), baz.base_flatten()));
+    REQUIRE(at::allclose(vars.at(T_name), T));
+    REQUIRE(at::allclose(vars.at(foo_name), foo));
+    REQUIRE(at::allclose(vars.at(bar_name), bar));
+    REQUIRE(at::allclose(vars.at(baz_name), baz));
   }
 
   SECTION("split_by_subaxis")
@@ -78,10 +78,10 @@ TEST_CASE("VectorAssembler", "[models]")
     const auto v = assembler.assemble_by_variable({{T_name, T}, {bar_name, bar}, {baz_name, baz}});
     const auto vs = assembler.split_by_subaxis(v);
     REQUIRE(vs.size() == 2);
-    REQUIRE(at::allclose(vs.at(FORCES), T.base_flatten()));
+    REQUIRE(at::allclose(vs.at(FORCES), T));
     REQUIRE(at::allclose(vs.at(STATE),
-                         base_cat({bar.base_flatten().batch_expand({5, 2, 5}),
-                                   baz.base_flatten().batch_expand({5, 2, 5}),
-                                   foo.base_flatten().batch_expand({5, 2, 5})})));
+                         base_cat({bar.batch_expand({5, 2, 5}),
+                                   baz.batch_expand({5, 2, 5}),
+                                   foo.batch_expand({5, 2, 5})})));
   }
 }

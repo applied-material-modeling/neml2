@@ -24,22 +24,23 @@
 
 #pragma once
 
-#include <memory>
-
 #include "neml2/models/map_types_fwd.h"
 #include "neml2/base/LabeledAxisAccessor.h"
 #include "neml2/misc/types.h"
+#include "neml2/tensors/Tensor.h"
 
 namespace neml2
 {
 // Forward declarations
 class Model;
+template <std::size_t N>
 class Derivative;
 enum class TensorType : int8_t;
 template <typename, typename>
 class DependencyResolver;
 struct TraceableSize;
 struct TraceableTensorShape;
+class VariableStore;
 
 /**
  * @brief Base class of variable
@@ -59,7 +60,7 @@ public:
   VariableBase & operator=(VariableBase &&) = delete;
   virtual ~VariableBase() = default;
 
-  VariableBase(VariableName name_in, Model * owner, TensorShapeRef list_shape);
+  VariableBase(VariableName name_in, Model * owner, TensorShapeRef lbatch_shape);
 
   /// Name of this variable
   const VariableName & name() const { return _name; }
@@ -90,6 +91,8 @@ public:
   /// @name Tensor information
   // These methods mirror TensorBase
   ///@{
+  /// Defined
+  bool defined() const;
   /// Tensor options
   TensorOptions options() const;
   /// Scalar type
@@ -104,24 +107,24 @@ public:
   Size size(Size dim) const;
   /// Whether the tensor is batched
   bool batched() const;
+  /// Return the number of left-batch dimensions
+  Size lbatch_dim() const;
   /// Return the number of batch dimensions
   Size batch_dim() const;
-  /// Return the number of list dimensions
-  Size list_dim() const;
   /// Return the number of base dimensions
   Size base_dim() const;
+  /// Return the left-batch shape
+  TensorShapeRef lbatch_sizes() const;
   /// Return the batch shape
   TraceableTensorShape batch_sizes() const;
-  /// Return the list shape
-  TensorShapeRef list_sizes() const;
   /// Return the base shape
   virtual TensorShapeRef base_sizes() const = 0;
+  /// Return the size of a left-batch axis
+  Size lbatch_size(Size dim) const;
   /// Return the size of a batch axis
   TraceableSize batch_size(Size dim) const;
   /// Return the size of a base axis
   Size base_size(Size dim) const;
-  /// Return the size of a list axis
-  Size list_size(Size dim) const;
   /// Base storage of the variable
   Size base_storage() const;
   /// Assembly storage of the variable
@@ -141,20 +144,30 @@ public:
   /// Check if this is an owning variable
   virtual bool owning() const = 0;
 
+  /// Make a zeros tensor
+  Tensor make_zeros(const TraceableTensorShape & batch_shape, const TensorOptions & options) const;
+
+  /// Make a zeros derivative
+  Tensor make_zeros(const VariableBase & xvar,
+                    const TraceableTensorShape & batch_shape,
+                    const TensorOptions & options) const;
+
+  /// Make a zeros second derivative
+  Tensor make_zeros(const VariableBase & x1var,
+                    const VariableBase & x2var,
+                    const TraceableTensorShape & batch_shape,
+                    const TensorOptions & options) const;
+
   /// Set the variable value to zero
   virtual void zero(const TensorOptions & options) = 0;
 
-  /// Set the variable value
+  /// Set the variable value from a Tensor in assembly format
   virtual void set(const Tensor & val) = 0;
 
-  /// Set the variable value from a ATensor (with inferred batch shape)
-  /// If force is true, the value is set even if the variable is a reference
-  virtual void set(const ATensor & val, bool force = false) = 0;
-
-  /// Get the variable value (with flattened base dimensions, i.e., for assembly purposes)
+  /// Get the variable value in assembly format
   virtual Tensor get() const = 0;
 
-  /// Get the variable value
+  /// Get the variable value cast to Tensor
   virtual Tensor tensor() const = 0;
 
   /// Check if this variable is part of the AD function graph
@@ -166,11 +179,39 @@ public:
   /// Assignment operator
   virtual void operator=(const Tensor & val) = 0;
 
+  /// Secret passkey to control access to the secret assignment method
+  struct RawAssignment
+  {
+    RawAssignment(const RawAssignment &) = default;
+    RawAssignment(RawAssignment &&) = default;
+    RawAssignment & operator=(const RawAssignment &) = delete;
+    RawAssignment & operator=(RawAssignment &&) = delete;
+    ~RawAssignment() = default;
+
+  private:
+    // only the following classes can construct this key
+    friend class VariableStore;
+
+    // private constructor so only trusted friends can construct this key
+    RawAssignment() = default;
+  };
+
+  /// Secret assignment operator used by low-level operations such as jit tracing
+  virtual void assign(const Tensor & val, RawAssignment key) = 0;
+
+  /// Whether the variable has non-zero derivative with respect to another variable
+  bool has_derivative(const VariableName & vname) const;
+
+  /// Whether the variable has non-zero second derivative with respect to another variable
+  bool has_derivative(const VariableName & v1name, const VariableName & v2name) const;
+
   /// Wrapper for assigning partial derivative
-  Derivative d(const VariableBase & var);
+  Derivative<1> & d(const VariableBase & var);
+  const Derivative<1> & d(const VariableBase & var) const;
 
   /// Wrapper for assigning second partial derivative
-  Derivative d(const VariableBase & var1, const VariableBase & var2);
+  Derivative<2> & d(const VariableBase & var1, const VariableBase & var2);
+  const Derivative<2> & d(const VariableBase & var1, const VariableBase & var2) const;
 
   ///@{
   /// Request to use AD to calculate the derivative of this variable with respect to another variable
@@ -186,12 +227,12 @@ public:
   ///@}
 
   /// Partial derivatives
-  const ValueMap & derivatives() const { return _derivs; }
-  ValueMap & derivatives() { return _derivs; }
+  const std::vector<Derivative<1>> & derivatives() const { return _derivs; }
+  std::vector<Derivative<1>> & derivatives() { return _derivs; }
 
   /// Partial second derivatives
-  const DerivMap & second_derivatives() const { return _sec_derivs; }
-  DerivMap & second_derivatives() { return _sec_derivs; }
+  const std::vector<Derivative<2>> & second_derivatives() const { return _sec_derivs; }
+  std::vector<Derivative<2>> & second_derivatives() { return _sec_derivs; }
 
   /// Clear the variable value and derivatives
   virtual void clear();
@@ -214,20 +255,20 @@ public:
 private:
   ValueMap total_derivatives(const DependencyResolver<Model, VariableName> & dep,
                              Model * model,
-                             const VariableName & yvar) const;
+                             const VariableBase & yvar) const;
 
   DerivMap total_second_derivatives(const DependencyResolver<Model, VariableName> & dep,
                                     Model * model,
-                                    const VariableName & yvar) const;
+                                    const VariableBase & yvar) const;
 
-  /// List shape of the variable
-  const TensorShape _list_sizes = {};
+  /// Left-batch shape of the variable
+  const TensorShape _lbatch_sizes = {};
 
   /// Derivatives of this variable with respect to other variables
-  ValueMap _derivs;
+  std::vector<Derivative<1>> _derivs;
 
   /// Second derivatives of this variable with respect to other variables
-  DerivMap _sec_derivs;
+  std::vector<Derivative<2>> _sec_derivs;
 };
 
 /**
@@ -239,8 +280,8 @@ class Variable : public VariableBase
 {
 public:
   template <typename T2 = T, typename = typename std::enable_if_t<!std::is_same_v<Tensor, T2>>>
-  Variable(VariableName name_in, Model * owner, TensorShapeRef list_shape)
-    : VariableBase(std::move(name_in), owner, list_shape),
+  Variable(VariableName name_in, Model * owner, TensorShapeRef lbatch_shape)
+    : VariableBase(std::move(name_in), owner, lbatch_shape),
       _base_sizes(T::const_base_sizes),
       _ref(nullptr),
       _ref_is_mutable(false)
@@ -250,9 +291,9 @@ public:
   template <typename T2 = T, typename = typename std::enable_if_t<std::is_same_v<Tensor, T2>>>
   Variable(VariableName name_in,
            Model * owner,
-           TensorShapeRef list_shape,
+           TensorShapeRef lbatch_shape,
            TensorShapeRef base_shape)
-    : VariableBase(std::move(name_in), owner, list_shape),
+    : VariableBase(std::move(name_in), owner, lbatch_shape),
       _base_sizes(base_shape),
       _ref(nullptr),
       _ref_is_mutable(false)
@@ -276,8 +317,6 @@ public:
 
   void set(const Tensor & val) override;
 
-  void set(const ATensor & val, bool force = false) override;
-
   Tensor get() const override;
 
   Tensor tensor() const override;
@@ -285,6 +324,8 @@ public:
   void requires_grad_(bool req = true) override;
 
   void operator=(const Tensor & val) override;
+
+  void assign(const Tensor & val, RawAssignment key) override;
 
   /// Variable value
   const T & value() const { return owning() ? _value : _ref->value(); }
@@ -311,35 +352,51 @@ protected:
   T _value;
 };
 
+/// Derivative wrapper
+template <std::size_t N>
 class Derivative
 {
 public:
-  Derivative()
-    : _base_sizes({}),
-      _deriv(nullptr)
-  {
-  }
+  Derivative() = default;
+  Derivative(const VariableBase * var, const std::array<const VariableBase *, N> & args);
 
-  Derivative(TensorShapeRef base_sizes, Tensor * deriv)
-    : _base_sizes(base_sizes),
-      _deriv(deriv)
-  {
-  }
-
+  /// Assignment operator
+  ///@{
   Derivative & operator=(const Tensor & val);
+  Derivative & operator=(const VariableBase & val);
+  ///@}
 
-  template <typename T>
-  Derivative & operator=(const Variable<T> & var)
-  {
-    return operator=(var.value());
-  }
+  /// Equality operator (for searching in a container)
+  bool operator==(const Derivative & other) const;
+
+  /// Get the derivative
+  const Tensor & tensor() const { return _deriv; }
+
+  /// Get the derivative in assembly format
+  const Tensor & get() const;
+
+  /// Set the derivative (given in assembly format)
+  void set(const Tensor & val);
+
+  /// Get the args
+  const std::array<const VariableBase *, N> & args() const { return _args; }
 
 private:
-  /// Base shape of the derivative
-  const TensorShape _base_sizes;
+  /// Variable to take derivative with
+  const VariableBase * _var = nullptr;
+
+  /// Arguments
+  std::array<const VariableBase *, N> _args;
 
   /// Derivative to write to
-  Tensor * const _deriv;
+  Tensor _deriv;
+
+  /// Derivative in assembly format
+  mutable Tensor _deriv_assembly;
+
+#ifndef NDEBUG
+  const std::string _debug_name = "";
+#endif
 };
 
 // Everything below is just for convenience: We just forward operations to the the variable values

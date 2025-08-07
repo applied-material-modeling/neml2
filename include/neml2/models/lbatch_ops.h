@@ -24,42 +24,11 @@
 
 #pragma once
 
-#include "neml2/jit/TraceableSize.h"
+#include "neml2/tensors/Tensor.h"
 
 namespace neml2
 {
-/**
- * @brief Traceable tensor shape
- *
- * A tensor shape can be either a concrete shape or a traceable tensor. This is useful when we need
- * to trace a function graph and let it generalize to other batch shapes.
- */
-struct TraceableTensorShape : public SmallVector<TraceableSize, 8>
-{
-  using SmallVector<TraceableSize, 8>::SmallVector;
-  using Size = int64_t;
+/// Given a tensor without left-batch dimensions, broadcast it to have the given left-batch shape
+Tensor lbatch_broadcast(const Tensor & t, TensorShapeRef lbatch_sizes);
 
-  TraceableTensorShape(const TensorShape & shape);
-  TraceableTensorShape(TensorShapeRef shape);
-  TraceableTensorShape(Size shape);
-  TraceableTensorShape(const ATensor & shape);
-
-  /// Slice the shape
-  TraceableTensorShape slice(std::size_t N, std::size_t M) const;
-
-  /// Chop-off the first N elements of the shape, semantically the same as ArrayRef::slice, but traceable.
-  TraceableTensorShape slice(std::size_t N) const;
-
-  /// @return the concrete shape (without any traceable information)
-  TensorShape concrete() const;
-
-  /// @return the shape represented as a scalar tensor (possibly traceable)
-  ATensor as_tensor() const;
-};
-
-/// Comparison operators
-///@{
-bool operator==(const TraceableTensorShape & lhs, const TraceableTensorShape & rhs);
-bool operator!=(const TraceableTensorShape & lhs, const TraceableTensorShape & rhs);
-///@}
 } // namespace neml2

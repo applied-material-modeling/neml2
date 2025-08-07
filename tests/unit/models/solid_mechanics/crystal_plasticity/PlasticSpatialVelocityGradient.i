@@ -6,8 +6,8 @@
     output_R2_values = 'lp'
     input_Rot_names = 'state/orientation'
     input_Rot_values = 'R'
-    input_Tensor_names = 'state/internal/slip_rates'
-    input_Tensor_values = 'gamma'
+    input_Scalar_names = 'state/internal/slip_rates'
+    input_Scalar_values = 'gamma'
     derivative_rel_tol = 0
     derivative_abs_tol = 1e-3
     second_derivative_rel_tol = 0
@@ -32,14 +32,21 @@
     type = FillRot
     values = '0 0 0'
   []
+  [gamma_a]
+    type = Scalar
+    values = '1'
+    batch_shape = (3)
+  []
+  [gamma_b]
+    type = Scalar
+    values = '1'
+    batch_shape = (3)
+  []
   [gamma]
-    type = LinspaceTensor
-    start = 1.0
-    end = 1.0
+    type = LinspaceScalar
+    start = 'gamma_a'
+    end = 'gamma_b'
     nstep = 12
-    dim = 0
-    batch_dim = 0
-    batch_expand = '(10 3)'
   []
   [lp]
     type = FillR2

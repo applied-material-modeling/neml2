@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "ModelUnitTest.h"
+#include "neml2/models/Assembler.h"
 #include "utils.h"
 #include "neml2/tensors/functions/jacrev.h"
 #include "neml2/misc/assertions.h"
@@ -196,20 +197,27 @@ ModelUnitTest::check_dvalue()
 {
   const auto exact = _model->dvalue(_in);
 
-  for (const auto & yname : _model->output_axis().variable_names())
-    for (const auto & xname : _model->input_axis().variable_names())
+  for (const auto & [yname, yvar] : _model->output_variables())
+    for (const auto & [xname, xvar] : _model->input_variables())
     {
-      const auto x0 = _in.count(xname) ? _in.at(xname).base_flatten()
-                                       : Tensor::zeros(_model->input_axis().variable_size(xname),
-                                                       _model->variable_options());
+      _model->clear_input();
+      _model->assign_input(_in);
+      _model->zero_undefined_input();
+
+      const auto & x0 = xvar->get();
       auto numerical = finite_differencing_derivative(
-          [this, &yname, &xname](const Tensor & x)
+          [this, &xvar = xvar, &yvar = yvar](const Tensor & x)
           {
-            auto in = _in;
-            in[xname] = x;
-            return _model->value(in)[yname].base_flatten();
+            xvar->set(x);
+            _model->forward_maybe_jit(true, false, false);
+            return yvar->get();
           },
           x0);
+
+      // Convert derivative to variable format
+      numerical = utils::from_assembly<2>(numerical,
+                                          {yvar->base_sizes(), xvar->base_sizes()},
+                                          {yvar->lbatch_sizes(), xvar->lbatch_sizes()});
 
       // If the derivative does not exist, the numerical derivative should be zero
       if (!exact.count(yname) || !exact.at(yname).count(xname))
@@ -240,27 +248,36 @@ ModelUnitTest::check_d2value()
 {
   const auto exact = _model->d2value(_in);
 
-  for (const auto & yname : _model->output_axis().variable_names())
-    for (const auto & x1name : _model->input_axis().variable_names())
-      for (const auto & x2name : _model->input_axis().variable_names())
+  for (const auto & [yname, yvar] : _model->output_variables())
+    for (const auto & [x1name, x1var] : _model->input_variables())
+      for (const auto & [x2name, x2var] : _model->input_variables())
       {
-        const auto x20 = _in.count(x2name)
-                             ? _in.at(x2name).base_flatten()
-                             : Tensor::zeros(_model->input_axis().variable_size(x2name),
-                                             _model->variable_options());
+        _model->clear_input();
+        _model->assign_input(_in);
+        _model->zero_undefined_input();
+
+        const auto & x20 = x2var->get();
         auto numerical = finite_differencing_derivative(
-            [this, &yname, &x1name, &x2name](const Tensor & x)
+            [this, &yvar = yvar, &x1var = x1var, &x2var = x2var](const Tensor & x)
             {
-              auto in = _in;
-              in[x2name] = x;
-              auto deriv = _model->dvalue(in)[yname][x1name];
-              if (!deriv.defined())
-                deriv = Tensor::zeros({_model->output_axis().variable_size(yname),
-                                       _model->input_axis().variable_size(x1name)},
-                                      _model->variable_options());
-              return deriv;
+              x2var->set(x);
+              _model->forward_maybe_jit(false, true, false);
+              if (!yvar->has_derivative(x1var->name()))
+              {
+                auto deriv = yvar->make_zeros(*x1var, {}, x.options());
+                return utils::to_assembly<2>(deriv,
+                                             {yvar->base_sizes(), x1var->base_sizes()},
+                                             {yvar->lbatch_sizes(), x1var->lbatch_sizes()});
+              }
+              return yvar->d(*x1var).get();
             },
             x20);
+
+        // Convert derivative to variable format
+        numerical = utils::from_assembly<3>(
+            numerical,
+            {yvar->base_sizes(), x1var->base_sizes(), x2var->base_sizes()},
+            {yvar->lbatch_sizes(), x1var->lbatch_sizes(), x2var->lbatch_sizes()});
 
         // If the derivative does not exist, the numerical derivative should be zero
         if (!exact.count(yname) || !exact.at(yname).count(x1name) ||
@@ -303,14 +320,20 @@ ModelUnitTest::check_AD_parameter_derivatives()
     param->requires_grad_(true);
 
   // Evaluate the model
-  auto out = _model->value(_in);
+  _model->clear_input();
+  _model->assign_input(_in);
+  _model->zero_undefined_input();
+  _model->forward_maybe_jit(true, false, false);
 
   // Extract AD parameter derivatives
   std::map<VariableName, std::map<std::string, Tensor>> exact;
-  for (const auto & yname : _model->output_axis().variable_names())
+  for (const auto & [yname, yvar] : _model->output_variables())
+  {
+    if (yvar->lbatch_dim())
+      continue;
     for (auto && [pname, param] : _model->named_parameters())
     {
-      auto deriv = jacrev(out[yname],
+      auto deriv = jacrev(yvar->tensor(),
                           Tensor(*param),
                           /*retain_graph=*/true,
                           /*create_graph=*/false,
@@ -318,19 +341,23 @@ ModelUnitTest::check_AD_parameter_derivatives()
       if (deriv.defined())
         exact[yname][pname] = deriv;
     }
+  }
 
   // Compare results against FD
-  for (const auto & yname : _model->output_axis().variable_names())
+  for (const auto & [yname, yvar] : _model->output_variables())
+  {
+    if (yvar->lbatch_dim())
+      continue;
     for (auto && [pname, param] : _model->named_parameters())
     {
       auto numerical = finite_differencing_derivative(
-          [&, &pname = pname, &param = param](const Tensor & x)
+          [&, &pname = pname, &param = param, &yvar = yvar](const Tensor & x)
           {
             auto p0 = Tensor(*param).clone();
             _model->set_parameter(pname, x);
-            auto out = _model->value(_in)[yname];
+            _model->forward_maybe_jit(true, false, false);
             _model->set_parameter(pname, p0);
-            return out;
+            return yvar->tensor();
           },
           Tensor(*param));
       if (exact.count(yname) && exact[yname].count(pname))
@@ -352,6 +379,7 @@ ModelUnitTest::check_AD_parameter_derivatives()
                     "', but finite differencing gives:\n",
                     numerical);
     }
+  }
 }
 
 } // namespace neml2

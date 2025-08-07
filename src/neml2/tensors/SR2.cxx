@@ -110,7 +110,7 @@ SR2::fill(const Scalar & a11,
 SR2
 SR2::identity(const TensorOptions & options)
 {
-  return SR2::create({1, 1, 1, 0, 0, 0}, options);
+  return SR2::create({1, 1, 1, 0, 0, 0}, options).clone();
 }
 
 SSR4

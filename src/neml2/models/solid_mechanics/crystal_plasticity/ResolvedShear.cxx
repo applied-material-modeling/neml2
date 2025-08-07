@@ -30,6 +30,7 @@
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SFFR4.h"
 #include "neml2/tensors/list_tensors.h"
+#include "neml2/tensors/shape_utils.h"
 
 namespace neml2
 {
@@ -74,26 +75,22 @@ ResolvedShear::ResolvedShear(const OptionSet & options)
 void
 ResolvedShear::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  // Unsqueeze a batch dimension for slip systems
-  const auto S = SR2(_S).batch_unsqueeze(-1);
-  const auto R = R2(_R).batch_unsqueeze(-1);
+  // batch dimension
+  const auto n = utils::broadcast_batch_dim(_S, _R);
+
+  // Schmid tensor
+  const auto M = _crystal_geometry.M().batch_right_unsqueeze_n(n);
 
   if (out)
-    _rss = _crystal_geometry.M().rotate(R).inner(S);
+    _rss = M.rotate(_R).inner(_S);
 
   if (dout_din)
   {
     if (_S.is_dependent())
-    {
-      const auto drss_dS = _crystal_geometry.M().rotate(R);
-      _rss.d(_S) = Tensor(drss_dS, drss_dS.batch_dim() - 1);
-    }
+      _rss.d(_S) = M.rotate(_R);
 
     if (_R.is_dependent())
-    {
-      const auto D = utils::broadcast_batch_dim(_S, _R);
-      _rss.d(_R) = Tensor(at::einsum("...ijk,...i", {_crystal_geometry.M().drotate(R), S}), D);
-    }
+      _rss.d(_R) = Tensor(at::einsum("...ijk,...i->...jk", {M.drotate(_R), _S}), M.batch_dim());
   }
 }
 

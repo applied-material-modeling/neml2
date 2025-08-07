@@ -58,7 +58,7 @@ CrystalMean<T>::CrystalMean(const OptionSet & options)
   : Model(options),
     _crystal_geometry(register_data<crystallography::CrystalGeometry>(
         options.get<std::string>("crystal_geometry_name"))),
-    _from(declare_input_variable<SR2>("from", _crystal_geometry.nslip())),
+    _from(declare_input_variable<T>("from", _crystal_geometry.nslip())),
     _to(declare_output_variable<T>("to"))
 {
 }
@@ -68,15 +68,16 @@ void
 CrystalMean<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   if (out)
-    _to = batch_mean(T(_from), -1);
+    _to = batch_mean(T(_from), 0);
 
   if (dout_din)
     if (_from.is_dependent())
     {
-      const auto I = T::identity_map(_from.options())
-                         .base_reshape({T::const_base_storage, T::const_base_storage})
-                         .batch_expand_as(T(_from));
-      _to.d(_from) = Tensor(I / _from.list_size(0), _from.batch_sizes()).base_transpose(0, 1);
+      const auto I = T::identity_map(_from.options()).batch_expand_as(T(_from));
+      // std::cout << "_from: " << _from.lbatch_sizes() << " " << _from.batch_sizes() << "; "
+      //           << _from.base_sizes() << std::endl;
+      // std::cout << "I: " << I.batch_sizes() << "; " << I.base_sizes() << std::endl;
+      _to.d(_from) = I / _from.lbatch_size(0);
     }
 }
 } // namespace neml2

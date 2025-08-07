@@ -79,7 +79,8 @@ PlasticSpatialVelocityGradient::PlasticSpatialVelocityGradient(const OptionSet &
 void
 PlasticSpatialVelocityGradient::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  const auto lp_crystal = batch_sum(_g * _crystal_geometry.A(), -1);
+  const auto A = _crystal_geometry.A().batch_right_unsqueeze_n(_g.batch_dim());
+  const auto lp_crystal = batch_sum(_g * A, 0);
 
   if (out)
     _lp = lp_crystal.rotate(_R);
@@ -87,10 +88,7 @@ PlasticSpatialVelocityGradient::set_value(bool out, bool dout_din, bool /*d2out_
   if (dout_din)
   {
     if (_g.is_dependent())
-    {
-      const auto dlp_dg = _crystal_geometry.A().rotate(R2(_R).batch_unsqueeze(-1));
-      _lp.d(_g) = Tensor(dlp_dg.movedim(-3, -1), dlp_dg.batch_sizes().slice(0, -1));
-    }
+      _lp.d(_g) = A.rotate(_R);
 
     if (_R.is_dependent())
       _lp.d(_R) = lp_crystal.drotate(_R);

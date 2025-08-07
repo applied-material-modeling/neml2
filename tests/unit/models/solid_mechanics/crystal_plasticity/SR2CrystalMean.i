@@ -2,8 +2,8 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Tensor_names = 'state/S'
-    input_Tensor_values = 'S'
+    input_SR2_names = 'state/S'
+    input_SR2_values = 'S'
     output_SR2_names = 'state/S_mean'
     output_SR2_values = 'S_mean'
   []
@@ -23,7 +23,7 @@
     values = '1 1 1'
   []
   [S]
-    type = Tensor
+    type = SR2
     values = "1 2 3 4 5 6
               2 3 4 4 5 6
               3 4 5 4 5 6
@@ -36,7 +36,7 @@
               -4 -5 -6 -4 -5 -6
               -5 -6 -7 -4 -5 -6
               -6 -7 -8 -4 -5 -6"
-    base_shape = '(12, 6)'
+    batch_shape = '(12)'
   []
   [S_mean]
     type = SR2

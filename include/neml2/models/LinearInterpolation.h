@@ -109,7 +109,7 @@ T2
 LinearInterpolation<T>::mask(const T2 & in, const Scalar & m)
 {
   // Resulting batch shape
-  const auto B = m.batch_sizes().slice(0, -1);
+  const auto B = m.batch_sizes().slice(0, m.batch_dim() - 1);
   // Use advanced (boolean) indexing to select the correct interval
   return T2(in.batch_expand_as(m).index({m})).batch_reshape(B);
 }

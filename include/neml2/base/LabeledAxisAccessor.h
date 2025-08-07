@@ -116,9 +116,9 @@ public:
 
   bool empty() const;
 
-  size_t size() const;
+  std::size_t size() const;
 
-  const std::string & operator[](size_t i) const;
+  const std::string & operator[](std::size_t i) const;
 
   /// Append a suffix to the final item name.
   LabeledAxisAccessor with_suffix(const std::string & suffix) const;
@@ -129,11 +129,11 @@ public:
   /// Prepend another accessor
   LabeledAxisAccessor prepend(const LabeledAxisAccessor & axis) const;
 
-  /// Remove the leading \p n items from the labels.
-  LabeledAxisAccessor slice(int64_t n) const;
+  /// Remove the leading @p N items from the labels.
+  LabeledAxisAccessor slice(std::size_t N) const;
 
-  /// Extract out the labels from \p n1 to \p n2
-  LabeledAxisAccessor slice(int64_t n1, int64_t n2) const;
+  /// Extract @p M labels staring at @p N
+  LabeledAxisAccessor slice(std::size_t N, std::size_t M) const;
 
   /// A combination of slice and prepend
   LabeledAxisAccessor remount(const LabeledAxisAccessor & axis, int64_t n = 1) const;

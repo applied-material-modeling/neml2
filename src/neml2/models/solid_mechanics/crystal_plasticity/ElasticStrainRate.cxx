@@ -74,7 +74,7 @@ ElasticStrainRate::ElasticStrainRate(const OptionSet & options)
 {
 }
 
-SR2
+static SR2
 skew_and_sym_to_sym(const SR2 & e, const WR2 & w)
 {
   // In NEML we used an unrolled form, I don't think I ever found
@@ -84,7 +84,7 @@ skew_and_sym_to_sym(const SR2 & e, const WR2 & w)
   return SR2(W * E - E * W);
 }
 
-SSR4
+static SSR4
 d_skew_and_sym_to_sym_d_sym(const WR2 & w)
 {
   auto I = R2::identity(w.options());
@@ -93,7 +93,7 @@ d_skew_and_sym_to_sym_d_sym(const WR2 & w)
       R4(at::einsum("...ia,...jb->...ijab", {W, I}) - at::einsum("...ia,...bj->...ijab", {I, W})));
 }
 
-SWR4
+static SWR4
 d_skew_and_sym_to_sym_d_skew(const SR2 & e)
 {
   auto I = R2::identity(e.options());

@@ -30,6 +30,21 @@
 
 namespace neml2
 {
+namespace utils
+{
+template <std::size_t N>
+Tensor to_assembly(const Tensor & from,
+                   const std::array<TensorShapeRef, N> & base_sizes,
+                   const std::array<TensorShapeRef, N> & lbatch_sizes,
+                   const std::string & debug_name = "<anonymous>");
+
+template <std::size_t N>
+Tensor from_assembly(const Tensor & from,
+                     const std::array<TensorShapeRef, N> & base_sizes,
+                     const std::array<TensorShapeRef, N> & lbatch_sizes,
+                     const std::string & debug_name = "<anonymous>");
+}
+
 /**
  * @brief Helper to assemble a vector of tensors into a single tensor and also to split
  * a tensor into a map of tensors.
