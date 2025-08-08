@@ -60,6 +60,13 @@ Settings::expected_options()
       "defined in dynamic libraries not directly linked to libneml2. The paths are either absolute "
       "or relative to the current working directory.";
 
+  options.set<bool>("disable_jit") = false;
+  options.set("disable_jit").doc() =
+      "Disable JIT compilation of models. This is useful for debugging or when the JIT compiler is "
+      "not available. When set to false, each individual model can still selectively "
+      "enable/disable JIT. When set to true, JIT is disabled globally, and it is an error to "
+      "explicitly set jit to true for any model.";
+
   return options;
 }
 
@@ -67,7 +74,8 @@ Settings::Settings(const OptionSet & options)
   : _buffer_name_separator(options.get<std::string>("buffer_name_separator")),
     _parameter_name_separator(options.get<std::string>("parameter_name_separator")),
     _require_double_precision(options.get<bool>("require_double_precision")),
-    _additional_libraries(options.get<std::vector<std::string>>("additional_libraries"))
+    _additional_libraries(options.get<std::vector<std::string>>("additional_libraries")),
+    _disable_jit(options.get<bool>("disable_jit"))
 {
   // Load additional libraries which may contain custom objects
   for (const auto & lib : _additional_libraries)

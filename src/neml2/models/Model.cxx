@@ -105,7 +105,7 @@ Model::Model(const OptionSet & options)
     _defines_dvalue(options.get<bool>("define_derivatives")),
     _defines_d2value(options.get<bool>("define_second_derivatives")),
     _nonlinear_system(options.get<bool>("_nonlinear_system")),
-    _jit(options.get<bool>("jit")),
+    _jit(settings().disable_jit() ? false : options.get<bool>("jit")),
     _production(options.get<bool>("production"))
 {
 }
@@ -152,6 +152,12 @@ Model::diagnose() const
 
   if (is_nonlinear_system())
     diagnose_nl_sys();
+
+  if (settings().disable_jit())
+    if (input_options().user_specified("jit"))
+      diagnostic_assert(!input_options().get<bool>("jit"),
+                        "JIT compilation is disabled globally by Settings/disable_jit=true, and it "
+                        "is an error to explicitly set jit to true for any model.");
 }
 
 void

@@ -71,6 +71,9 @@ std::vector<Diagnosis> & current_diagnoses();
 /// A helper function to diagnose common setup errors
 std::vector<Diagnosis> diagnose(const DiagnosticsInterface &);
 
+/// A helper function to diagnose common setup errors and throw an exception if any errors are found
+void diagnose_and_throw(const DiagnosticsInterface &);
+
 /// Helper assertion function for diagnostics
 template <typename... Args>
 void diagnostic_assert(bool, Args &&...);

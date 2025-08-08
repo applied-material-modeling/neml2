@@ -57,7 +57,7 @@ TEST_CASE("chemical reactions")
         // Load and run the model
         auto factory = load_input(test.filename());
         auto driver = factory->get_driver("regression");
-        diagnose(*driver);
+        diagnose_and_throw(*driver);
         REQUIRE(driver->run());
       }
       catch (...)

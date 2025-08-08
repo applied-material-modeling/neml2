@@ -23,23 +23,38 @@
 // THE SOFTWARE.
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers.hpp>
 #include <catch2/matchers/catch_matchers_all.hpp>
 
 #include "neml2/base/Settings.h"
 #include "neml2/base/HITParser.h"
 #include "neml2/base/InputFile.h"
+#include "neml2/models/Model.h"
 
 using namespace neml2;
 
 TEST_CASE("Settings", "[Settings]")
 {
-  // Parse input file
-  HITParser parser;
-  auto input = parser.parse("base/test_HITParser1.i");
+  SECTION("parsing")
+  {
+    // Parse input file
+    HITParser parser;
+    auto input = parser.parse("base/test_HITParser1.i");
 
-  // After applying the global settings
-  const auto settings = *input.settings();
-  REQUIRE(settings.buffer_name_separator() == "::");
-  REQUIRE(settings.parameter_name_separator() == "::");
-  REQUIRE(!settings.require_double_precision());
+    // After applying the global settings
+    const auto settings = *input.settings();
+    REQUIRE(settings.buffer_name_separator() == "::");
+    REQUIRE(settings.parameter_name_separator() == "::");
+    REQUIRE(!settings.require_double_precision());
+  }
+
+  SECTION("disable_jit")
+  {
+    auto model1 = load_model("base/test_disable_jit.i", "model");
+    REQUIRE(!model1->is_jit_enabled());
+
+    auto model2 = load_model("base/test_disable_jit_error.i", "model");
+    REQUIRE_THROWS_WITH(diagnose_and_throw(*model2),
+                        Catch::Matchers::ContainsSubstring("JIT compilation is disabled globally"));
+  }
 }

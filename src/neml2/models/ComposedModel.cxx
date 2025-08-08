@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/ComposedModel.h"
+#include "neml2/base/Settings.h"
 
 namespace neml2
 {
