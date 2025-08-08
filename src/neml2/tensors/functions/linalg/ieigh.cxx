@@ -22,57 +22,19 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include "neml2/tensors/functions/linalg/ieigh.h"
 #include "neml2/tensors/Vec.h"
-#include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/R2.h"
 #include "neml2/tensors/SR2.h"
-#include "neml2/tensors/Rot.h"
 
-#include "neml2/tensors/functions/linalg/vecdot.h"
-#include "neml2/tensors/functions/linalg/cross.h"
-#include "neml2/tensors/functions/linalg/outer.h"
-
-namespace neml2
+namespace neml2::linalg
 {
-Vec::Vec(const Rot & r)
-  : Vec(Tensor(r))
-{
-}
-
-R2
-Vec::identity_map(const TensorOptions & options)
-{
-  return R2::identity(options);
-}
-
-Scalar
-Vec::dot(const Vec & v) const
-{
-  return linalg::vecdot(*this, v);
-}
-
-Vec
-Vec::cross(const Vec & v) const
-{
-  return linalg::cross(*this, v);
-}
-
-R2
-Vec::outer(const Vec & v) const
-{
-  return linalg::outer(*this, v);
-}
-
 SR2
-Vec::self_outer() const
+ieigh(const Vec & eigvals, const R2 & eigvecs)
 {
-  return SR2(this->outer(*this));
+  auto M0 = eigvecs.col(0).self_outer();
+  auto M1 = eigvecs.col(1).self_outer();
+  auto M2 = eigvecs.col(2).self_outer();
+  return eigvals(0) * M0 + eigvals(1) * M1 + eigvals(2) * M2;
 }
-
-Vec
-Vec::transform(const R2 & op) const
-{
-  return op * (*this);
-}
-
-} // namespace neml2
+} // namespace neml2::linalg

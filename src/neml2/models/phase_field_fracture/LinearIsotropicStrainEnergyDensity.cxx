@@ -24,11 +24,15 @@
 
 #include "neml2/models/phase_field_fracture/LinearIsotropicStrainEnergyDensity.h"
 #include "neml2/misc/errors.h"
+#include "neml2/tensors/Vec.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/functions/macaulay.h"
 #include "neml2/tensors/functions/where.h"
+#include "neml2/tensors/functions/linalg/eigh.h"
+#include "neml2/tensors/functions/linalg/ieigh.h"
+#include "neml2/tensors/functions/linalg/dsptrf.h"
 #include "neml2/base/EnumSelection.h"
 
 namespace neml2
@@ -124,6 +128,61 @@ LinearIsotropicStrainEnergyDensity::set_value(bool out, bool dout_din, bool d2ou
       auto dstressneg_dstrain = multiplier * (vf * I);
       _psie_inactive.d(_strain, _strain) = dstressneg_dstrain;
       _psie_active.d(_strain, _strain) = elasticity_tensor - dstressneg_dstrain;
+    }
+  }
+  else if (_decomposition == DecompositionType::SPECTRAL)
+  {
+    const auto I2 = SR2::identity(_strain.options());
+    const auto [lambda_and_dlambda, G_and_dG] = _converter.convert(_constants);
+    const auto & [lambda, dlambda] = lambda_and_dlambda;
+    auto strain_trace = SR2(_strain).tr();
+    auto strain_dev = SR2(_strain).dev();
+    auto [evals, evecs] = linalg::eigh(_strain);
+    auto strain_trace_pos = macaulay(strain_trace);
+    auto evals_pos = macaulay(evals);
+    auto strain_pos = linalg::ieigh(evals_pos, evecs);
+
+    if (out)
+    {
+      auto psie_intact =
+          0.5 * lambda * strain_trace * strain_trace + G * SR2(_strain).inner(_strain);
+      _psie_active = 0.5 * lambda * strain_trace_pos * strain_trace_pos +
+                     G * SR2(strain_pos).inner(strain_pos);
+      _psie_inactive = psie_intact - _psie_active;
+    }
+    if (dout_din)
+    {
+      auto s_intact = lambda * strain_trace * I2 + 2 * G * _strain;
+      _psie_active.d(_strain) = lambda * strain_trace_pos * I2 + 2 * G * strain_pos;
+      _psie_inactive.d(_strain) = s_intact - (lambda * strain_trace_pos * I2 + 2 * G * strain_pos);
+    }
+    if (d2out_din2)
+    {
+      const auto I = SSR4::identity_vol(_strain.options());
+      const auto J = SSR4::identity_dev(_strain.options());
+
+      const auto elasticity_tensor =
+          lambda * I2.outer(I2) + 2 * G * SSR4::identity_sym(_strain.options());
+
+      auto vol_multiplier = where(strain_trace_pos > 0,
+                                  Scalar::ones_like(strain_trace_pos),
+                                  Scalar::zeros_like(strain_trace_pos));
+
+      auto de1 = where(Scalar(evals_pos.base_index({0})) > 0,
+                       Scalar::ones_like(Scalar(evals_pos.base_index({0}))),
+                       Scalar::zeros_like(Scalar(evals_pos.base_index({0}))));
+      auto de2 = where(Scalar(evals_pos.base_index({1})) > 0,
+                       Scalar::ones_like(Scalar(evals_pos.base_index({1}))),
+                       Scalar::zeros_like(Scalar(evals_pos.base_index({1}))));
+      auto de3 = where(Scalar(evals_pos.base_index({2})) > 0,
+                       Scalar::ones_like(Scalar(evals_pos.base_index({2}))),
+                       Scalar::zeros_like(Scalar(evals_pos.base_index({2}))));
+
+      auto dtrans = Vec::fill(de1, de2, de3);
+      auto rk4proj = linalg::dsptrf(evals, evecs, evals_pos, dtrans);
+      auto dstresspos_dstrain = vol_multiplier * (lambda * I2.outer(I2)) + 2 * G * (rk4proj);
+      _psie_active.d(_strain, _strain) = dstresspos_dstrain;
+      _psie_inactive.d(_strain, _strain) = elasticity_tensor - dstresspos_dstrain;
     }
   }
   else

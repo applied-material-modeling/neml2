@@ -22,57 +22,19 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/tensors/Vec.h"
-#include "neml2/tensors/Scalar.h"
-#include "neml2/tensors/R2.h"
-#include "neml2/tensors/SR2.h"
-#include "neml2/tensors/Rot.h"
+#pragma once
 
-#include "neml2/tensors/functions/linalg/vecdot.h"
-#include "neml2/tensors/functions/linalg/cross.h"
-#include "neml2/tensors/functions/linalg/outer.h"
+#include "neml2/tensors/SR2.h"
+#include "neml2/tensors/Vec.h"
+#include "neml2/tensors/R2.h"
 
 namespace neml2
 {
-Vec::Vec(const Rot & r)
-  : Vec(Tensor(r))
-{
-}
+class Tensor;
 
-R2
-Vec::identity_map(const TensorOptions & options)
+namespace linalg
 {
-  return R2::identity(options);
-}
-
-Scalar
-Vec::dot(const Vec & v) const
-{
-  return linalg::vecdot(*this, v);
-}
-
-Vec
-Vec::cross(const Vec & v) const
-{
-  return linalg::cross(*this, v);
-}
-
-R2
-Vec::outer(const Vec & v) const
-{
-  return linalg::outer(*this, v);
-}
-
-SR2
-Vec::self_outer() const
-{
-  return SR2(this->outer(*this));
-}
-
-Vec
-Vec::transform(const R2 & op) const
-{
-  return op * (*this);
-}
-
+/// Eigenvalues of a
+std::tuple<Vec, R2> eigh(const SR2 & m);
+} // namespace linalg
 } // namespace neml2

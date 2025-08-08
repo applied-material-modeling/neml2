@@ -22,57 +22,18 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#pragma once
 #include "neml2/tensors/Vec.h"
-#include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/R2.h"
-#include "neml2/tensors/SR2.h"
-#include "neml2/tensors/Rot.h"
-
-#include "neml2/tensors/functions/linalg/vecdot.h"
-#include "neml2/tensors/functions/linalg/cross.h"
-#include "neml2/tensors/functions/linalg/outer.h"
+#include "neml2/tensors/SSR4.h"
 
 namespace neml2
 {
-Vec::Vec(const Rot & r)
-  : Vec(Tensor(r))
-{
-}
+class Tensor;
 
-R2
-Vec::identity_map(const TensorOptions & options)
+namespace linalg
 {
-  return R2::identity(options);
-}
-
-Scalar
-Vec::dot(const Vec & v) const
-{
-  return linalg::vecdot(*this, v);
-}
-
-Vec
-Vec::cross(const Vec & v) const
-{
-  return linalg::cross(*this, v);
-}
-
-R2
-Vec::outer(const Vec & v) const
-{
-  return linalg::outer(*this, v);
-}
-
-SR2
-Vec::self_outer() const
-{
-  return SR2(this->outer(*this));
-}
-
-Vec
-Vec::transform(const R2 & op) const
-{
-  return op * (*this);
-}
-
+/// Derivative of Eigen value decomposition of a rank two tensor w.r.t. itself
+SSR4 dsptrf(const Vec & evals, const R2 & evecs, const Vec & transformed, const Vec & dtransformed);
+} // namespace linalg
 } // namespace neml2

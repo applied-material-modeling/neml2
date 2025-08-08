@@ -22,57 +22,39 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/tensors/Vec.h"
-#include "neml2/tensors/Scalar.h"
-#include "neml2/tensors/R2.h"
-#include "neml2/tensors/SR2.h"
-#include "neml2/tensors/Rot.h"
+#include <catch2/catch_test_macros.hpp>
 
-#include "neml2/tensors/functions/linalg/vecdot.h"
-#include "neml2/tensors/functions/linalg/cross.h"
-#include "neml2/tensors/functions/linalg/outer.h"
+#include "utils.h"
+#include "neml2/tensors/tensors.h"
+#include "neml2/tensors/functions/abs.h"
+#include "neml2/tensors/functions/linalg/eigh.h"
 
-namespace neml2
+using namespace neml2;
+using namespace indexing;
+
+TEST_CASE("eigh", "[linalg]")
 {
-Vec::Vec(const Rot & r)
-  : Vec(Tensor(r))
-{
+  SECTION("eigh function")
+  {
+    auto s = SR2::fill(-0.3482, 0.3482, 0, 0.087045, 0.087045, 0.78333);
+    auto ss = s.batch_expand({5, 4, 1, 2});
+    auto b = Vec::fill(-0.858002364, -0.0158323254, 0.8738346695);
+    auto v = R2::fill(0.83927690982819,
+                      -0.04919575527310,
+                      0.54147386550903,
+                      -0.54287183284760,
+                      -0.13090363144875,
+                      0.82955050468445,
+                      -0.03007052093744,
+                      0.99017369747162,
+                      0.13657139241695);
+    auto [eigvals, eigvecs] = linalg::eigh(s);
+    REQUIRE(at::allclose(eigvals, b));
+    for (Size i = 0; i < 3; i++)
+    {
+      auto v1 = eigvecs.base_index({Slice(), i});
+      auto v2 = v.base_index({Slice(), i});
+      REQUIRE((at::allclose(v1, v2) || at::allclose(v1, -v2)));
+    }
+  }
 }
-
-R2
-Vec::identity_map(const TensorOptions & options)
-{
-  return R2::identity(options);
-}
-
-Scalar
-Vec::dot(const Vec & v) const
-{
-  return linalg::vecdot(*this, v);
-}
-
-Vec
-Vec::cross(const Vec & v) const
-{
-  return linalg::cross(*this, v);
-}
-
-R2
-Vec::outer(const Vec & v) const
-{
-  return linalg::outer(*this, v);
-}
-
-SR2
-Vec::self_outer() const
-{
-  return SR2(this->outer(*this));
-}
-
-Vec
-Vec::transform(const R2 & op) const
-{
-  return op * (*this);
-}
-
-} // namespace neml2

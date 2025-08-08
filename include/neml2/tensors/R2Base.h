@@ -118,6 +118,12 @@ public:
   /// Accessor
   Scalar operator()(Size i, Size j) const;
 
+  /// Row
+  Vec row(Size i) const;
+
+  /// Coluomn
+  Vec col(Size i) const;
+
   /// Determinant
   Scalar det() const;
 

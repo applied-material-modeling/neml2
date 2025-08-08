@@ -25,6 +25,7 @@
 #pragma once
 
 #include "neml2/tensors/VecBase.h"
+#include "neml2/tensors/SR2.h"
 #include "neml2/tensors/Transformable.h"
 
 namespace neml2
@@ -56,6 +57,9 @@ public:
 
   /// outer product
   R2 outer(const Vec & v) const;
+
+  /// self outer product
+  SR2 self_outer() const;
 
   // Transform by a crystal symmetry operator
   Vec transform(const R2 & op) const override;

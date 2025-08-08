@@ -211,6 +211,22 @@ R2Base<Derived>::operator()(Size i, Size j) const
 }
 
 template <class Derived>
+Vec
+R2Base<Derived>::row(Size i) const
+{
+  return Vec(PrimitiveTensor<Derived, 3, 3>::base_index({i, indexing::Slice()}),
+             this->batch_sizes());
+}
+
+template <class Derived>
+Vec
+R2Base<Derived>::col(Size i) const
+{
+  return Vec(PrimitiveTensor<Derived, 3, 3>::base_index({indexing::Slice(), i}),
+             this->batch_sizes());
+}
+
+template <class Derived>
 Scalar
 R2Base<Derived>::det() const
 {
