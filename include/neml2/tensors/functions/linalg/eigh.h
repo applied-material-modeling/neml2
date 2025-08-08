@@ -28,13 +28,8 @@
 #include "neml2/tensors/Vec.h"
 #include "neml2/tensors/R2.h"
 
-namespace neml2
+namespace neml2::linalg
 {
-class Tensor;
-
-namespace linalg
-{
-/// Eigenvalues of a
-std::tuple<Vec, R2> eigh(const SR2 & m);
-} // namespace linalg
-} // namespace neml2
+/// Calculate the eigenvalues and eigenvectors of a symmetric second order tensor
+std::pair<Vec, R2> eigh(const SR2 & m);
+} // namespace neml2::linalg

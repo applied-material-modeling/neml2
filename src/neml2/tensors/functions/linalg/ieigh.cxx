@@ -23,9 +23,6 @@
 // THE SOFTWARE.
 
 #include "neml2/tensors/functions/linalg/ieigh.h"
-#include "neml2/tensors/Vec.h"
-#include "neml2/tensors/R2.h"
-#include "neml2/tensors/SR2.h"
 
 namespace neml2::linalg
 {

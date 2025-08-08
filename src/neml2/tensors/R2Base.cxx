@@ -207,23 +207,21 @@ template <class Derived>
 Scalar
 R2Base<Derived>::operator()(Size i, Size j) const
 {
-  return PrimitiveTensor<Derived, 3, 3>::base_index({i, j});
+  return this->base_index({i, j});
 }
 
 template <class Derived>
 Vec
 R2Base<Derived>::row(Size i) const
 {
-  return Vec(PrimitiveTensor<Derived, 3, 3>::base_index({i, indexing::Slice()}),
-             this->batch_sizes());
+  return Vec(this->base_index({i, indexing::Slice()}), this->batch_sizes());
 }
 
 template <class Derived>
 Vec
 R2Base<Derived>::col(Size i) const
 {
-  return Vec(PrimitiveTensor<Derived, 3, 3>::base_index({indexing::Slice(), i}),
-             this->batch_sizes());
+  return Vec(this->base_index({indexing::Slice(), i}), this->batch_sizes());
 }
 
 template <class Derived>

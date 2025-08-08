@@ -24,6 +24,7 @@
 
 #include "neml2/tensors/functions/linalg/dsptrf.h"
 #include "neml2/tensors/functions/where.h"
+
 #include "neml2/tensors/Vec.h"
 #include "neml2/tensors/R2.h"
 #include "neml2/tensors/SR2.h"
@@ -31,52 +32,42 @@
 
 namespace neml2::linalg
 {
-
 SSR4
-dsptrf(const Vec & evals, const R2 & evecs, const Vec & transformed, const Vec & dtransformed)
+dsptrf(const Vec & evals, const R2 & evecs, const Vec & f, const Vec & df)
 {
-  auto v1 = evecs.col(0);
-  auto v2 = evecs.col(1);
-  auto v3 = evecs.col(2);
+  // I'm not using `auto` here on purpose to make sure the tensor symmetries are correct.
 
-  auto M_11 = v1.self_outer();
-  auto M_22 = v2.self_outer();
-  auto M_33 = v3.self_outer();
-  auto M_12 = SR2(v1.outer(v2));
-  auto M_21 = SR2(v2.outer(v1));
-  auto M_13 = SR2(v1.outer(v3));
-  auto M_31 = SR2(v3.outer(v1));
-  auto M_23 = SR2(v2.outer(v3));
-  auto M_32 = SR2(v3.outer(v2));
+  // Helper lambda to handle the degenerate cases
+  auto theta = [&](Size i, Size j) -> Scalar
+  {
+    return where(
+        evals(i) != evals(j), 0.5 * (f(i) - f(j)) / (evals(i) - evals(j)), 0.25 * (df(i) + df(j)));
+  };
 
-  auto projection_tensor_1 = (Scalar(dtransformed.base_index({0})) * M_11.outer(M_11) +
-                              Scalar(dtransformed.base_index({1})) * M_22.outer(M_22) +
-                              Scalar(dtransformed.base_index({2})) * M_33.outer(M_33));
+  // Eigenvectors
+  const Vec v1 = evecs.col(0);
+  const Vec v2 = evecs.col(1);
+  const Vec v3 = evecs.col(2);
 
-  auto theta_12 =
-      where(Scalar(evals.base_index({0})) != Scalar(evals.base_index({1})),
-            Scalar(0.5 * (transformed.base_index({0}) - transformed.base_index({1})) /
-                   (evals.base_index({0}) - evals.base_index({1}))),
-            Scalar(0.25 * (dtransformed.base_index({0}) + dtransformed.base_index({1}))));
-  auto theta_23 =
-      where(Scalar(evals.base_index({1})) != Scalar(evals.base_index({2})),
-            Scalar(0.5 * (transformed.base_index({1}) - transformed.base_index({2})) /
-                   (evals.base_index({1}) - evals.base_index({2}))),
-            Scalar(0.25 * (dtransformed.base_index({1}) + dtransformed.base_index({2}))));
-  auto theta_13 =
-      where(evals.base_index({0}) != evals.base_index({2}),
-            Scalar(0.5 * (transformed.base_index({0}) - transformed.base_index({2})) /
-                   (evals.base_index({0}) - evals.base_index({2}))),
-            Scalar(0.25 * (dtransformed.base_index({0}) + dtransformed.base_index({2}))));
+  // Some useful tensor products
+  const SR2 M_11 = v1.self_outer();
+  const SR2 M_22 = v2.self_outer();
+  const SR2 M_33 = v3.self_outer();
+  const R2 M_12 = v1.outer(v2);
+  const R2 M_13 = v1.outer(v3);
+  const R2 M_23 = v2.outer(v3);
 
-  auto projection_tensor_2 =
-      Scalar(theta_12) *
-          (M_12.outer(M_12) + M_12.outer(M_21) + M_21.outer(M_21) + M_21.outer(M_12)) +
-      Scalar(theta_13) *
-          (M_13.outer(M_13) + M_13.outer(M_31) + M_31.outer(M_31) + M_31.outer(M_13)) +
-      Scalar(theta_23) *
-          (M_23.outer(M_23) + M_23.outer(M_32) + M_32.outer(M_32) + M_32.outer(M_23));
+  // Derivative contribution from eigenvalues
+  const SSR4 P_1 = (df(0) * M_11.outer(M_11) + df(1) * M_22.outer(M_22) + df(2) * M_33.outer(M_33));
 
-  return SSR4(projection_tensor_1 + projection_tensor_2);
+  // Derivative contribution from eigenvectors
+  // Note the symmetrization is handled by the constructor of SSR4(R4)
+  const Scalar theta_12 = theta(0, 1);
+  const Scalar theta_23 = theta(1, 2);
+  const Scalar theta_13 = theta(0, 2);
+  const SSR4 P_2 = theta_12 * SSR4(M_12.outer(M_12)) + theta_13 * SSR4(M_13.outer(M_13)) +
+                   theta_23 * SSR4(M_23.outer(M_23));
+
+  return P_1 + 4 * P_2;
 }
 } // namespace neml2::linalg

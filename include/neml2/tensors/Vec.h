@@ -25,13 +25,13 @@
 #pragma once
 
 #include "neml2/tensors/VecBase.h"
-#include "neml2/tensors/SR2.h"
 #include "neml2/tensors/Transformable.h"
 
 namespace neml2
 {
 class Scalar;
 class R2;
+class SR2;
 class Rot;
 
 /**

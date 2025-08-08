@@ -23,17 +23,13 @@
 // THE SOFTWARE.
 
 #pragma once
+
 #include "neml2/tensors/Vec.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/R2.h"
 
-namespace neml2
+namespace neml2::linalg
 {
-class Tensor;
-
-namespace linalg
-{
-/// Inverse function of eigen value decomposition
+/// Reconstruct the symmetric second order tensor from its eigenvalues and eigenvectors.
 SR2 ieigh(const Vec & eigvals, const R2 & eigvecs);
-} // namespace linalg
-} // namespace neml2
+} // namespace neml2::linalg

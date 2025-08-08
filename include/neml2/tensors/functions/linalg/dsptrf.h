@@ -23,17 +23,22 @@
 // THE SOFTWARE.
 
 #pragma once
+
 #include "neml2/tensors/Vec.h"
 #include "neml2/tensors/R2.h"
 #include "neml2/tensors/SSR4.h"
 
-namespace neml2
+namespace neml2::linalg
 {
-class Tensor;
-
-namespace linalg
-{
-/// Derivative of Eigen value decomposition of a rank two tensor w.r.t. itself
-SSR4 dsptrf(const Vec & evals, const R2 & evecs, const Vec & transformed, const Vec & dtransformed);
-} // namespace linalg
-} // namespace neml2
+/**
+ * @brief Derivative of a spectral transformation
+ *
+ * A spectral transformation \f$ f \f$ is defined as
+ * \f[
+ *   f(\mathbf{M}) = \sum_i f(\lambda_i) \mathbf{v}_i \otimes \mathbf{v}_i
+ * \f]
+ * where \f$ \lambda_i \f$ are the eigenvalues and \f$ \mathbf{v}_i \f$ are the eigenvectors of
+ * \f$ \mathbf{M} \f$.
+ */
+SSR4 dsptrf(const Vec & evals, const R2 & evecs, const Vec & f, const Vec & df);
+} // namespace neml2::linalg
