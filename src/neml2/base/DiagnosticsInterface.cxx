@@ -24,6 +24,7 @@
 
 #include "neml2/base/DiagnosticsInterface.h"
 #include "neml2/base/NEML2Object.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {
@@ -73,6 +74,23 @@ diagnose(const DiagnosticsInterface & patient)
   }
 
   return new_diagnoses;
+}
+
+void
+diagnose_and_throw(const DiagnosticsInterface & patient)
+{
+  neml_assert(
+      !current_diagnostic_state().ongoing,
+      "diagnose_and_throw cannot be called inside a DiagnosticsInterface::diagnose method.");
+  auto diagnoses = diagnose(patient);
+  if (!diagnoses.empty())
+  {
+    std::ostringstream oss;
+    oss << "Diagnostics for object '" << patient.object().name() << "':\n";
+    for (const auto & d : diagnoses)
+      oss << "  - " << d.what() << '\n';
+    throw Diagnosis(oss.str());
+  }
 }
 
 DiagnosticsInterface::DiagnosticsInterface(NEML2Object * object)

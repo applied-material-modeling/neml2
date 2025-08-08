@@ -44,6 +44,7 @@ public:
   const std::string & parameter_name_separator() const { return _parameter_name_separator; }
   bool require_double_precision() const { return _require_double_precision; }
   const std::vector<std::string> & additional_libraries() const { return _additional_libraries; }
+  bool disable_jit() const { return _disable_jit; }
   ///@}
 
 private:
@@ -58,5 +59,8 @@ private:
 
   /// Additional dynamic libraries to load at runtime
   const std::vector<std::string> _additional_libraries;
+
+  /// Disable JIT compilation
+  const bool _disable_jit;
 };
 } // namespace neml2

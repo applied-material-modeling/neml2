@@ -35,7 +35,7 @@ TEST_CASE("SolidMechanicsDriver", "[SolidMechanicsDriver]")
   {
     auto factory = load_input("drivers/solid_mechanics/test_SolidMechanicsDriver_strain.i");
     auto driver = factory->get_driver("driver");
-    diagnose(*driver);
+    diagnose_and_throw(*driver);
     REQUIRE(driver->run());
   }
 
@@ -43,7 +43,7 @@ TEST_CASE("SolidMechanicsDriver", "[SolidMechanicsDriver]")
   {
     auto factory = load_input("drivers/solid_mechanics/test_SolidMechanicsDriver_stress.i");
     auto driver = factory->get_driver("driver");
-    diagnose(*driver);
+    diagnose_and_throw(*driver);
     REQUIRE(driver->run());
   }
 
@@ -51,7 +51,7 @@ TEST_CASE("SolidMechanicsDriver", "[SolidMechanicsDriver]")
   {
     auto factory = load_input("drivers/solid_mechanics/test_SolidMechanicsDriver_mixed.i");
     auto driver = factory->get_driver("driver");
-    diagnose(*driver);
+    diagnose_and_throw(*driver);
     REQUIRE(driver->run());
   }
 
@@ -59,7 +59,7 @@ TEST_CASE("SolidMechanicsDriver", "[SolidMechanicsDriver]")
   {
     auto factory = load_input("drivers/solid_mechanics/test_SolidMechanicsDriver_temperature.i");
     auto driver = factory->get_driver("driver");
-    diagnose(*driver);
+    diagnose_and_throw(*driver);
     REQUIRE(driver->run());
   }
 
@@ -68,7 +68,7 @@ TEST_CASE("SolidMechanicsDriver", "[SolidMechanicsDriver]")
     auto factory = load_input(
         "drivers/solid_mechanics/test_LargeDeformationIncrementalSolidMechanicsDriver.i");
     auto driver = factory->get_driver("driver");
-    diagnose(*driver);
+    diagnose_and_throw(*driver);
     REQUIRE(driver->run());
   }
 }

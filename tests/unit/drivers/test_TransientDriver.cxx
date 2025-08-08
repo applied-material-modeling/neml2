@@ -35,7 +35,7 @@ TEST_CASE("TransientDriver", "[TransientDriver]")
   {
     auto factory = load_input("drivers/test_TransientDriver.i");
     auto driver = factory->get_driver("driver");
-    diagnose(*driver);
+    diagnose_and_throw(*driver);
     REQUIRE(driver->run());
   }
 
@@ -44,7 +44,7 @@ TEST_CASE("TransientDriver", "[TransientDriver]")
     auto factory = load_input("drivers/test_TransientDriver.i",
                               "Drivers/driver/predictor=LINEAR_EXTRAPOLATION");
     auto driver = factory->get_driver("driver");
-    diagnose(*driver);
+    diagnose_and_throw(*driver);
     REQUIRE(driver->run());
   }
 }

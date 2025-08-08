@@ -59,7 +59,7 @@ TEST_CASE("models")
         // Load and run the model
         auto factory = load_input(test.filename());
         auto driver = factory->get_driver("unit");
-        diagnose(*driver);
+        diagnose_and_throw(*driver);
         REQUIRE(driver->run());
       }
       catch (...)
