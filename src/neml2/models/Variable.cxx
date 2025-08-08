@@ -32,6 +32,7 @@
 #include "neml2/jit/TraceableTensorShape.h"
 #include <ATen/core/interned_strings.h>
 #include <ATen/ops/permute.h>
+#include <numeric>
 
 namespace neml2
 {
@@ -220,7 +221,7 @@ VariableBase::make_zeros(const TraceableTensorShape & batch_shape,
                          const TensorOptions & options) const
 {
   // First create a dummy tensor with batch dimensions filled with ones
-  auto dummy_batch_sizes = TensorShape(batch_dim(), 1);
+  auto dummy_batch_sizes = TensorShape(batch_shape.size(), 1);
   auto B = utils::add_shapes(lbatch_sizes(), dummy_batch_sizes);
   auto tensor = Tensor::zeros(B, base_sizes(), options);
   // Then expand it to the batch shape
@@ -230,6 +231,46 @@ VariableBase::make_zeros(const TraceableTensorShape & batch_shape,
     tensor = tensor.batch_expand(B);
   }
   return tensor;
+}
+
+Tensor
+VariableBase::from_assembly(const Tensor & val) const
+{
+  // shortcut when there's no left-batch dimension
+  if (!lbatch_dim())
+    return val.base_reshape(base_sizes());
+
+  // left-batch shapes are special:
+  // it is a "base" shape at assembly time, and a "batch" shape at operation time
+  const auto B = utils::add_traceable_shapes(lbatch_sizes(), val.batch_sizes());
+  const auto D = utils::add_shapes(lbatch_sizes(), base_sizes());
+  // reshape to (batch; lbatch, base)
+  auto v = val.base_reshape(D);
+  // move lbatch to the front, i.e. (lbatch, batch; base)
+  TensorShape permutation(v.dim());
+  std::iota(permutation.begin(), permutation.end(), 0);
+  auto begin = permutation.begin() + val.batch_dim();
+  auto end = begin + lbatch_dim();
+  std::rotate(begin, end, permutation.begin());
+  return Tensor(at::permute(v, permutation), B);
+}
+
+Tensor
+VariableBase::to_assembly(const Tensor & val) const
+{
+  // shortcut when there's no left-batch dimension
+  if (!lbatch_dim())
+    return val.base_flatten();
+
+  // variable format has shape (lbatch, batch; base)
+  // we need to permute it to (batch; lbatch, base)
+  TensorShape permutation(val.dim());
+  std::iota(permutation.begin(), permutation.end(), 0);
+  auto begin = permutation.begin();
+  auto end = begin + lbatch_dim();
+  std::rotate(begin, end, permutation.end() - base_dim());
+  return Tensor(at::permute(val, permutation), val.batch_sizes().slice(lbatch_dim()))
+      .base_flatten();
 }
 
 Derivative
@@ -487,28 +528,7 @@ void
 Variable<T>::set(const Tensor & val)
 {
   if (owning())
-  {
-    // shortcut when there's no left-batch dimension
-    if (!lbatch_dim())
-    {
-      _value = T(val.base_reshape(base_sizes()));
-      return;
-    }
-
-    // left-batch shapes are special:
-    // it is a "base" shape at assembly time, and a "batch" shape at operation time
-    auto B = utils::add_traceable_shapes(lbatch_sizes(), val.batch_sizes());
-    auto D = utils::add_shapes(lbatch_sizes(), val.base_sizes());
-    // reshape to (batch; lbatch, base)
-    auto v = val.base_reshape(D);
-    // move lbatch to the front, i.e. (lbatch, batch; base)
-    TensorShape batch_indices(v.batch_dim()), permutation(v.base_dim());
-    std::iota(batch_indices.begin(), batch_indices.end(), 0);
-    std::iota(permutation.begin(), permutation.end(), v.batch_dim());
-    permutation.insert(
-        permutation.begin() + lbatch_dim(), batch_indices.begin(), batch_indices.end());
-    _value = T(at::permute(v, permutation), B);
-  }
+    _value = from_assembly(val);
   else
   {
     neml_assert_dbg(_ref_is_mutable,
@@ -555,21 +575,7 @@ Tensor
 Variable<T>::get() const
 {
   neml_assert_dbg(_value.defined(), "Variable '", name(), "' has undefined value.");
-
-  // shortcut when there's no left-batch dimension
-  if (!lbatch_dim())
-    return _value.base_flatten();
-
-  // variable currently has shape (lbatch, batch; base)
-  // we need to permute it to (batch; lbatch, base)
-  TensorShape lbatch_indices(lbatch_dim()), permutation(_value.dim() - lbatch_dim());
-  std::iota(lbatch_indices.begin(), lbatch_indices.end(), 0);
-  std::iota(permutation.begin(), permutation.end(), lbatch_dim());
-  permutation.insert(permutation.begin() + (_value.batch_dim() - lbatch_dim()),
-                     lbatch_indices.begin(),
-                     lbatch_indices.end());
-  return Tensor(at::permute(_value, permutation), _value.batch_sizes().slice(lbatch_dim()))
-      .base_flatten();
+  return to_assembly(_value);
 }
 
 template <typename T>
@@ -642,9 +648,9 @@ Variable<T>::clear()
 FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_VARIABLE);
 
 Derivative::Derivative(const VariableBase & var1, const VariableBase & var2, Tensor * deriv)
-  : _lbatch_sizes(utils::add_shapes(var1.lbatch_sizes(), var2.lbatch_sizes())),
-    _base_sizes(utils::add_shapes(var1.base_sizes(), var2.base_sizes())),
-    _assembly_sizes(utils::add_shapes(var1.assembly_storage(), var2.assembly_storage())),
+  : _lbatch_sizes({var1.lbatch_sizes(), var2.lbatch_sizes()}),
+    _base_sizes({var1.base_sizes(), var2.base_sizes()}),
+    _assembly_sizes({var1.assembly_storage(), var2.assembly_storage()}),
     _deriv(deriv)
 #ifndef NDEBUG
     ,
@@ -657,10 +663,9 @@ Derivative::Derivative(const VariableBase & var1,
                        const VariableBase & var2,
                        const VariableBase & var3,
                        Tensor * deriv)
-  : _lbatch_sizes(utils::add_shapes(var1.lbatch_sizes(), var2.lbatch_sizes(), var3.lbatch_sizes())),
-    _base_sizes(utils::add_shapes(var1.base_sizes(), var2.base_sizes(), var3.base_sizes())),
-    _assembly_sizes(utils::add_shapes(
-        var1.assembly_storage(), var2.assembly_storage(), var3.assembly_storage())),
+  : _lbatch_sizes({var1.lbatch_sizes(), var2.lbatch_sizes(), var3.lbatch_sizes()}),
+    _base_sizes({var1.base_sizes(), var2.base_sizes(), var3.base_sizes()}),
+    _assembly_sizes({var1.assembly_storage(), var2.assembly_storage(), var3.assembly_storage()}),
     _deriv(deriv)
 #ifndef NDEBUG
     ,
@@ -673,41 +678,85 @@ Derivative::Derivative(const VariableBase & var1,
 Derivative &
 Derivative::operator=(const Tensor & val)
 {
+#ifndef NDEBUG
   // check if the given derivative has the correct left-batch shape
-  neml_assert_dbg(val.batch_dim() >= Size(_lbatch_sizes.size()) &&
-                      val.batch_sizes().slice(0, Size(_lbatch_sizes.size())) == _lbatch_sizes,
+  const auto lbatch_sizes =
+      _lbatch_sizes.size() == 2
+          ? utils::add_shapes(_lbatch_sizes[0], _lbatch_sizes[1])
+          : utils::add_shapes(_lbatch_sizes[0], _lbatch_sizes[1], _lbatch_sizes[2]);
+  neml_assert_dbg(val.batch_dim() >= Size(lbatch_sizes.size()) &&
+                      val.batch_sizes().slice(0, Size(lbatch_sizes.size())) == lbatch_sizes,
                   "The assigned derivative for ",
                   _debug_name,
                   " has incorrect batch shape ",
                   val.batch_sizes(),
                   " which is incompatible with the expected left-batch shape of ",
-                  _lbatch_sizes,
+                  lbatch_sizes,
                   ".");
   // check if the given derivative has the correct base shape
-  neml_assert_dbg(val.base_dim() == Size(_base_sizes.size()) && val.base_sizes() == _base_sizes,
+  const auto base_sizes = _base_sizes.size() == 2
+                              ? utils::add_shapes(_base_sizes[0], _base_sizes[1])
+                              : utils::add_shapes(_base_sizes[0], _base_sizes[1], _base_sizes[2]);
+  const auto base_dim = Size(base_sizes.size());
+  neml_assert_dbg(val.base_dim() == base_dim && val.base_sizes() == base_sizes,
                   "The assigned derivative for ",
                   _debug_name,
                   " has incorrect base shape ",
                   val.base_sizes(),
                   " which is incompatible with the expected base shape of ",
-                  _base_sizes,
+                  base_sizes,
                   ".");
+#endif
 
   // shortcut when there's no left-batch dimension
   if (_lbatch_sizes.empty())
   {
-    assign_or_add(*_deriv, val);
+    assign_or_add(*_deriv, val.base_reshape(_assembly_sizes));
     return *this;
   }
 
-  // current shape is (lbatch, batch; base)
-  // move lbatch to the front, i.e. (lbatch, batch; base)
-  TensorShape batch_indices(v.batch_dim()), permutation(v.base_dim());
-  std::iota(batch_indices.begin(), batch_indices.end(), 0);
-  std::iota(permutation.begin(), permutation.end(), v.batch_dim());
-  permutation.insert(
-      permutation.begin() + lbatch_dim(), batch_indices.begin(), batch_indices.end());
-  _value = T(at::permute(v, permutation), B);
+  // Move each left-batch to the base
+  //
+  // For example, for first order derivatives with left-batch shapes, the tensor shape of the given
+  // derivative is
+  //   (lbatch1, lbatch2, batch; base1, base2)
+  //
+  // We first move lbatch1 before base1:
+  //   (lbatch2, batch; lbatch1, base1, base2)
+  //
+  // Then we move lbatch2 before base2:
+  //   (batch; lbatch1, base1, lbatch2, base2)
+  //
+  // Finally, we can flatten the base dimensions to get the assembly shape:
+  //   (batch; assembly1, assembly2)
+  //
+  // The same procedure applies to second order derivatives with three left-batch groups.
+  Size lbatch_dim = 0;
+  TensorShape indices(val.dim());
+  std::iota(indices.begin(), indices.end(), 0);
+  auto permutation = indices;
+  auto itr = permutation.begin() + val.batch_dim();
+  for (std::size_t i = 0; i < _lbatch_sizes.size(); ++i)
+  {
+    if (!_lbatch_sizes[i].empty())
+    {
+      lbatch_dim += Size(_lbatch_sizes[i].size());
+      auto begin = permutation.begin();
+      auto end = begin + _lbatch_sizes[i].size();
+      std::rotate(begin, end, itr);
+    }
+    itr = permutation.begin() + _base_sizes[i].size();
+  }
+
+  auto B = val.batch_sizes().slice(lbatch_dim);
+  auto val2 = Tensor(at::permute(val, permutation), B);
+  assign_or_add(*_deriv, val2.base_reshape(_assembly_sizes));
   return *this;
+}
+
+Derivative &
+Derivative::operator=(const VariableBase & var)
+{
+  return Derivative::operator=(var.tensor());
 }
 }

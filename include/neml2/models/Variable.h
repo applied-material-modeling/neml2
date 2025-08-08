@@ -144,6 +144,12 @@ public:
   /// Make a zeros tensor
   Tensor make_zeros(const TraceableTensorShape & batch_shape, const TensorOptions & options) const;
 
+  /// Convert a tensor from assembly format to variable format
+  Tensor from_assembly(const Tensor & val) const;
+
+  /// Convert a tensor from variable format to assembly format
+  Tensor to_assembly(const Tensor & val) const;
+
   /// Set the variable value to zero
   virtual void zero(const TensorOptions & options) = 0;
 
@@ -333,10 +339,10 @@ public:
 
 private:
   /// Left-batch shape of the derivative
-  const std::vector<TensorShape> _lbatch_sizes = {};
+  const std::vector<TensorShapeRef> _lbatch_sizes = {};
 
   /// Base shape of the derivative
-  const std::vector<TensorShape> _base_sizes = {};
+  const std::vector<TensorShapeRef> _base_sizes = {};
 
   /// Assembly storage of the derivative
   const TensorShape _assembly_sizes = {};

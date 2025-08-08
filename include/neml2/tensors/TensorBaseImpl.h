@@ -417,7 +417,13 @@ template <class Derived>
 Derived
 TensorBase<Derived>::batch_unsqueeze(Size d) const
 {
-  auto d2 = d >= 0 ? d : d - base_dim();
+  auto d2 = d >= 0 ? d : d + batch_dim() + 1;
+  neml_assert_dbg(d2 >= 0 && d2 <= batch_dim(),
+                  "The unsqueeze dimension ",
+                  d,
+                  " is out of range for a tensor with batch dimension ",
+                  batch_dim(),
+                  ".");
   auto B = batch_sizes();
   B.insert(B.begin() + d2, 1); // Insert a new batch dimension
   return Derived(unsqueeze(d2), B);

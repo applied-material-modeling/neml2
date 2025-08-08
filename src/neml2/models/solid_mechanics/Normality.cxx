@@ -88,7 +88,7 @@ Normality::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
   {
     if (out && !fvar.derivatives().count(iname))
     {
-      (*ivar) = Tensor::zeros(ivar->base_sizes(), fvar.options());
+      ivar->zero(fvar.options());
       continue;
     }
 
@@ -99,7 +99,8 @@ Normality::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
       for (auto && [jname, jvar] : _model.input_variables())
         if (jvar->is_dependent() && fvar.second_derivatives().count(iname) &&
             fvar.second_derivatives().at(iname).count(jname))
-          ivar->d(*jvar) = fvar.second_derivatives().at(iname).at(jname);
+          ivar->d(*jvar) = fvar.second_derivatives().at(iname).at(jname).base_reshape(
+              utils::add_shapes(ivar->base_sizes(), jvar->base_sizes()));
   }
 }
 } // namespace neml2

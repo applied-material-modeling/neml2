@@ -197,17 +197,20 @@ ModelUnitTest::check_dvalue()
   const auto exact = _model->dvalue(_in);
 
   for (const auto & yname : _model->output_axis().variable_names())
+  {
+    const auto & yvar = _model->output_variable(yname);
     for (const auto & xname : _model->input_axis().variable_names())
     {
-      const auto x0 = _in.count(xname) ? _in.at(xname).base_flatten()
-                                       : Tensor::zeros(_model->input_axis().variable_size(xname),
-                                                       _model->variable_options());
+      const auto & xvar = _model->input_variable(xname);
+      auto x0 = _in.count(xname) ? _in.at(xname) : xvar.make_zeros({}, _model->variable_options());
+      x0 = xvar.to_assembly(x0);
       auto numerical = finite_differencing_derivative(
-          [this, &yname, &xname](const Tensor & x)
+          [this, &yvar, &xvar](const Tensor & x)
           {
             auto in = _in;
-            in[xname] = x;
-            return _model->value(in)[yname].base_flatten();
+            in[xvar.name()] = xvar.from_assembly(x);
+            auto y = _model->value(in)[yvar.name()];
+            return yvar.to_assembly(y);
           },
           x0);
 
@@ -233,6 +236,7 @@ ModelUnitTest::check_dvalue()
             "\nFinite differencing gives:\n",
             numerical);
     }
+  }
 }
 
 void
@@ -244,15 +248,15 @@ ModelUnitTest::check_d2value()
     for (const auto & x1name : _model->input_axis().variable_names())
       for (const auto & x2name : _model->input_axis().variable_names())
       {
-        const auto x20 = _in.count(x2name)
-                             ? _in.at(x2name).base_flatten()
-                             : Tensor::zeros(_model->input_axis().variable_size(x2name),
-                                             _model->variable_options());
+        const auto & x2var = _model->input_variable(x2name);
+        auto x20 =
+            _in.count(x2name) ? _in.at(x2name) : x2var.make_zeros({}, _model->variable_options());
+        x20 = x2var.to_assembly(x20);
         auto numerical = finite_differencing_derivative(
-            [this, &yname, &x1name, &x2name](const Tensor & x)
+            [this, &yname, &x1name, &x2name, &x2var](const Tensor & x)
             {
               auto in = _in;
-              in[x2name] = x;
+              in[x2name] = x2var.from_assembly(x);
               auto deriv = _model->dvalue(in)[yname][x1name];
               if (!deriv.defined())
                 deriv = Tensor::zeros({_model->output_axis().variable_size(yname),
