@@ -250,6 +250,13 @@ R2Base<Derived>::inner(const R2 & other) const
 }
 
 template <class Derived>
+R4
+R2Base<Derived>::outer(const R2 & other) const
+{
+  return this->base_unsqueeze(-1).base_unsqueeze(-1) * other.base_unsqueeze(0).base_unsqueeze(0);
+}
+
+template <class Derived>
 Derived
 R2Base<Derived>::inverse() const
 {

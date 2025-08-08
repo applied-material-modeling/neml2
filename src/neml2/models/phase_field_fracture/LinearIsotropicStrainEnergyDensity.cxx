@@ -78,20 +78,17 @@ LinearIsotropicStrainEnergyDensity::set_value(bool out, bool dout_din, bool d2ou
     if (out)
     {
       _psie_active = 0.5 * SR2(s).inner(_strain);
-      _psie_inactive = Scalar::create(0.0, _strain.options());
+      _psie_inactive = Scalar::zeros_like(_psie_active);
     }
     if (dout_din)
     {
       _psie_active.d(_strain) = s;
-      _psie_inactive.d(_strain) = SR2::fill(0.0, s.options());
     }
     if (d2out_din2)
     {
       const auto I = SSR4::identity_vol(_strain.options());
       const auto J = SSR4::identity_dev(_strain.options());
-
       _psie_active.d(_strain, _strain) = vf * I + df * J;
-      _psie_inactive.d(_strain, _strain) = 0.0 * I + 0.0 * J;
     }
   }
   else if (_decomposition == DecompositionType::VOLDEV)

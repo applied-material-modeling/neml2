@@ -130,6 +130,9 @@ public:
   /// Double contraction ij,ij
   Scalar inner(const R2 & other) const;
 
+  /// Outer product ij,kl
+  R4 outer(const R2 & other) const;
+
   /// Inversion
   Derived inverse() const;
 
