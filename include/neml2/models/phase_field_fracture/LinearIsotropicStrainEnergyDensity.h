@@ -41,13 +41,13 @@ public:
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
+  void no_decomposition(bool out, bool dout_din, bool d2out_din2);
+  void voldev_decomposition(bool out, bool dout_din, bool d2out_din2);
+  void spectral_decomposition(bool out, bool dout_din, bool d2out_din2);
 
   const IsotropicElasticityConverter _converter;
 
-  const enum class DecompositionType : char {
-    NONE = 0,     ///< No decomposition
-    SPECTRAL = 1, ///< Spectral decomposition
-    VOLDEV = 2    ///< Volume-deviatoric decomposition
-  } _decomposition;
+  /// Decomposition type for strain energy density
+  const enum class DecompositionType : char { NONE, SPECTRAL, VOLDEV } _decomposition;
 };
 } // namespace neml2

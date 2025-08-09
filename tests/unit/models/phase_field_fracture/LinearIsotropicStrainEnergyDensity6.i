@@ -5,7 +5,7 @@
     input_SR2_names = 'state/internal/Ee'
     input_SR2_values = 'Ee'
     output_Scalar_names = 'state/psie_active state/psie_inactive'
-    output_Scalar_values = '0.0455795 0.0308605'
+    output_Scalar_values = '0.0455688 0.0308712'
     derivative_abs_tol = 1e-4
     second_derivative_abs_tol = 0
     second_derivative_rel_tol = 1e-3
@@ -16,7 +16,7 @@
 [Tensors]
   [Ee]
     type = FillSR2
-    values = '1e-5 1e-5 1e-5 0.02 0.06 0.03'
+    values = '1e-6 1e-6 1e-6 0.02 0.06 0.03'
   []
 []
 

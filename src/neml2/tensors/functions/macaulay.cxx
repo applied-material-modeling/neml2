@@ -23,7 +23,6 @@
 // THE SOFTWARE.
 
 #include "neml2/tensors/functions/macaulay.h"
-#include "neml2/tensors/functions/heaviside.h"
 #include "neml2/tensors/tensors.h"
 
 namespace neml2

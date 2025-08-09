@@ -15,11 +15,11 @@
 [Tensors]
   [Ee1]
     type = FillSR2
-    values = '0 0 0 0.02 0.06 0.03'
+    values = '1e-6 1e-6 1e-6 0.02 0.06 0.03'
   []
   [Ee2]
     type = FillSR2
-    values = '0 0 0 -0.02 -0.06 0.03'
+    values = '1e-6 1e-6 1e-6 -0.02 -0.06 0.03'
   []
   [Ee]
     type = LinspaceSR2
