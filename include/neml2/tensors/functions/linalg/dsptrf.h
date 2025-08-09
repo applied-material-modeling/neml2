@@ -22,13 +22,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/tensors/functions/macaulay.h"
-#include "neml2/tensors/tensors.h"
+#pragma once
 
-namespace neml2
+#include "neml2/tensors/Vec.h"
+#include "neml2/tensors/R2.h"
+#include "neml2/tensors/SSR4.h"
+
+namespace neml2::linalg
 {
-#define DEFINE_MACAULAY(T)                                                                         \
-  T macaulay(const T & a) { return T(a * (at::sign(a) + 1.0) / 2.0, a.batch_sizes()); }            \
-  static_assert(true)
-FOR_ALL_TENSORBASE(DEFINE_MACAULAY);
-} // namespace neml2
+/**
+ * @brief Derivative of a spectral transformation
+ *
+ * A spectral transformation \f$ f \f$ is defined as
+ * \f[
+ *   f(\mathbf{M}) = \sum_i f(\lambda_i) \mathbf{v}_i \otimes \mathbf{v}_i
+ * \f]
+ * where \f$ \lambda_i \f$ are the eigenvalues and \f$ \mathbf{v}_i \f$ are the eigenvectors of
+ * \f$ \mathbf{M} \f$.
+ */
+SSR4 dsptrf(const Vec & evals, const R2 & evecs, const Vec & f, const Vec & df);
+} // namespace neml2::linalg

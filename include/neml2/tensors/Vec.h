@@ -31,6 +31,7 @@ namespace neml2
 {
 class Scalar;
 class R2;
+class SR2;
 class Rot;
 
 /**
@@ -56,6 +57,9 @@ public:
 
   /// outer product
   R2 outer(const Vec & v) const;
+
+  /// self outer product
+  SR2 self_outer() const;
 
   // Transform by a crystal symmetry operator
   Vec transform(const R2 & op) const override;

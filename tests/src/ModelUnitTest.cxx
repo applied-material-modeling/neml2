@@ -253,7 +253,12 @@ ModelUnitTest::check_d2value()
             {
               auto in = _in;
               in[x2name] = x;
-              return _model->dvalue(in)[yname][x1name];
+              auto deriv = _model->dvalue(in)[yname][x1name];
+              if (!deriv.defined())
+                deriv = Tensor::zeros({_model->output_axis().variable_size(yname),
+                                       _model->input_axis().variable_size(x1name)},
+                                      _model->variable_options());
+              return deriv;
             },
             x20);
 

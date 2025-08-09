@@ -22,13 +22,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/tensors/functions/macaulay.h"
-#include "neml2/tensors/tensors.h"
+#pragma once
 
-namespace neml2
+#include "neml2/tensors/SR2.h"
+#include "neml2/tensors/Vec.h"
+#include "neml2/tensors/R2.h"
+
+namespace neml2::linalg
 {
-#define DEFINE_MACAULAY(T)                                                                         \
-  T macaulay(const T & a) { return T(a * (at::sign(a) + 1.0) / 2.0, a.batch_sizes()); }            \
-  static_assert(true)
-FOR_ALL_TENSORBASE(DEFINE_MACAULAY);
-} // namespace neml2
+/// Calculate the eigenvalues and eigenvectors of a symmetric second order tensor
+std::pair<Vec, R2> eigh(const SR2 & m);
+} // namespace neml2::linalg

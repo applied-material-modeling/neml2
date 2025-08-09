@@ -118,11 +118,20 @@ public:
   /// Accessor
   Scalar operator()(Size i, Size j) const;
 
+  /// Row
+  Vec row(Size i) const;
+
+  /// Coluomn
+  Vec col(Size i) const;
+
   /// Determinant
   Scalar det() const;
 
   /// Double contraction ij,ij
   Scalar inner(const R2 & other) const;
+
+  /// Outer product ij,kl
+  R4 outer(const R2 & other) const;
 
   /// Inversion
   Derived inverse() const;

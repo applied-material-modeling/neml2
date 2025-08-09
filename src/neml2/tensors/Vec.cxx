@@ -25,6 +25,7 @@
 #include "neml2/tensors/Vec.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/R2.h"
+#include "neml2/tensors/SR2.h"
 #include "neml2/tensors/Rot.h"
 
 #include "neml2/tensors/functions/linalg/vecdot.h"
@@ -60,6 +61,12 @@ R2
 Vec::outer(const Vec & v) const
 {
   return linalg::outer(*this, v);
+}
+
+SR2
+Vec::self_outer() const
+{
+  return SR2(this->outer(*this));
 }
 
 Vec

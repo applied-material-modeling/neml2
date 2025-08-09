@@ -22,13 +22,39 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/tensors/functions/macaulay.h"
-#include "neml2/tensors/tensors.h"
+#include <catch2/catch_test_macros.hpp>
 
-namespace neml2
+#include "utils.h"
+#include "neml2/tensors/tensors.h"
+#include "neml2/tensors/functions/abs.h"
+#include "neml2/tensors/functions/linalg/eigh.h"
+
+using namespace neml2;
+using namespace indexing;
+
+TEST_CASE("eigh", "[linalg]")
 {
-#define DEFINE_MACAULAY(T)                                                                         \
-  T macaulay(const T & a) { return T(a * (at::sign(a) + 1.0) / 2.0, a.batch_sizes()); }            \
-  static_assert(true)
-FOR_ALL_TENSORBASE(DEFINE_MACAULAY);
-} // namespace neml2
+  SECTION("eigh function")
+  {
+    auto s = SR2::fill(-0.3482, 0.3482, 0, 0.087045, 0.087045, 0.78333);
+    auto ss = s.batch_expand({5, 4, 1, 2});
+    auto b = Vec::fill(-0.858002364, -0.0158323254, 0.8738346695);
+    auto v = R2::fill(0.83927690982819,
+                      -0.04919575527310,
+                      0.54147386550903,
+                      -0.54287183284760,
+                      -0.13090363144875,
+                      0.82955050468445,
+                      -0.03007052093744,
+                      0.99017369747162,
+                      0.13657139241695);
+    auto [eigvals, eigvecs] = linalg::eigh(s);
+    REQUIRE(at::allclose(eigvals, b));
+    for (Size i = 0; i < 3; i++)
+    {
+      auto v1 = eigvecs.base_index({Slice(), i});
+      auto v2 = v.base_index({Slice(), i});
+      REQUIRE((at::allclose(v1, v2) || at::allclose(v1, -v2)));
+    }
+  }
+}

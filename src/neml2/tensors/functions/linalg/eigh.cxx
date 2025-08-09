@@ -22,13 +22,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/tensors/functions/macaulay.h"
-#include "neml2/tensors/tensors.h"
+#include "neml2/tensors/functions/linalg/eigh.h"
 
-namespace neml2
+namespace neml2::linalg
 {
-#define DEFINE_MACAULAY(T)                                                                         \
-  T macaulay(const T & a) { return T(a * (at::sign(a) + 1.0) / 2.0, a.batch_sizes()); }            \
-  static_assert(true)
-FOR_ALL_TENSORBASE(DEFINE_MACAULAY);
-} // namespace neml2
+std::pair<Vec, R2>
+eigh(const SR2 & m)
+{
+  auto result = at::linalg_eigh(R2(m));
+  auto evals = Vec(std::get<0>(result), m.batch_sizes());
+  auto evecs = R2(std::get<1>(result), m.batch_sizes());
+  return std::make_pair(evals, evecs);
+}
+} // namespace neml2::linalg

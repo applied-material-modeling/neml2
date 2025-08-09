@@ -24,11 +24,15 @@
 
 #include "neml2/models/phase_field_fracture/LinearIsotropicStrainEnergyDensity.h"
 #include "neml2/misc/errors.h"
+#include "neml2/tensors/Vec.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/functions/macaulay.h"
-#include "neml2/tensors/functions/where.h"
+#include "neml2/tensors/functions/heaviside.h"
+#include "neml2/tensors/functions/linalg/eigh.h"
+#include "neml2/tensors/functions/linalg/ieigh.h"
+#include "neml2/tensors/functions/linalg/dsptrf.h"
 #include "neml2/base/EnumSelection.h"
 
 namespace neml2
@@ -61,72 +65,118 @@ LinearIsotropicStrainEnergyDensity::LinearIsotropicStrainEnergyDensity(const Opt
 void
 LinearIsotropicStrainEnergyDensity::set_value(bool out, bool dout_din, bool d2out_din2)
 {
+  switch (_decomposition)
+  {
+    case DecompositionType::NONE:
+      no_decomposition(out, dout_din, d2out_din2);
+      break;
+    case DecompositionType::VOLDEV:
+      voldev_decomposition(out, dout_din, d2out_din2);
+      break;
+    case DecompositionType::SPECTRAL:
+      spectral_decomposition(out, dout_din, d2out_din2);
+      break;
+    default:
+      throw NEMLException("LinearIsotropicStrainEnergyDensity: Unsupported decomposition type.");
+  }
+}
+
+void
+LinearIsotropicStrainEnergyDensity::no_decomposition(bool out, bool dout_din, bool d2out_din2)
+{
   const auto [K_and_dK, G_and_dG] = _converter.convert(_constants);
   const auto & [K, dK] = K_and_dK;
   const auto & [G, dG] = G_and_dG;
-  const auto vf = 3 * K;
-  const auto df = 2 * G;
+  const auto etr = SR2(_strain).tr();
+  const auto edev = SR2(_strain).dev();
+  const auto I2 = SR2::identity(_strain.options());
+  const auto I4 = SSR4::identity(_strain.options());
+  const auto J = SSR4::identity_dev(_strain.options());
 
-  const auto s = vf * SR2(_strain).vol() + df * SR2(_strain).dev();
-
-  if (_decomposition == DecompositionType::NONE)
+  if (out)
   {
-    if (out)
-    {
-      _psie_active = 0.5 * SR2(s).inner(_strain);
-      _psie_inactive = Scalar::create(0.0, _strain.options());
-    }
-    if (dout_din)
-    {
-      _psie_active.d(_strain) = s;
-      _psie_inactive.d(_strain) = SR2::fill(0.0, s.options());
-    }
-    if (d2out_din2)
-    {
-      const auto I = SSR4::identity_vol(_strain.options());
-      const auto J = SSR4::identity_dev(_strain.options());
-
-      _psie_active.d(_strain, _strain) = vf * I + df * J;
-      _psie_inactive.d(_strain, _strain) = 0.0 * I + 0.0 * J;
-    }
+    _psie_active = 0.5 * K * etr * etr + G * edev.inner(edev);
+    _psie_inactive = Scalar::zeros_like(_psie_active);
   }
-  else if (_decomposition == DecompositionType::VOLDEV)
+  if (dout_din)
   {
-    const auto I2 = SR2::identity(_strain.options());
-    auto strain_trace = SR2(_strain).tr();
-    auto strain_trace_pos = macaulay(strain_trace);
-    auto strain_trace_neg = strain_trace - strain_trace_pos;
-    auto strain_dev = SR2(_strain).dev();
-
-    if (out)
-    {
-      auto psie_intact =
-          0.5 * K * strain_trace * strain_trace + G * SR2(strain_dev).inner(strain_dev);
-      _psie_inactive = 0.5 * K * strain_trace_neg * strain_trace_neg;
-      _psie_active = psie_intact - _psie_inactive;
-    }
-    if (dout_din)
-    {
-      auto s_intact = K * strain_trace * I2 + 2 * G * strain_dev;
-      _psie_inactive.d(_strain) = K * strain_trace_neg * I2;
-      _psie_active.d(_strain) = s_intact - K * strain_trace_neg * I2;
-    }
-    if (d2out_din2)
-    {
-      const auto I = SSR4::identity_vol(_strain.options());
-      const auto J = SSR4::identity_dev(_strain.options());
-      const auto elasticity_tensor = vf * I + df * J;
-
-      auto multiplier = where(strain_trace_neg < 0,
-                              Scalar::ones_like(strain_trace_neg),
-                              Scalar::zeros_like(strain_trace_neg));
-
-      auto dstressneg_dstrain = multiplier * (vf * I);
-      _psie_inactive.d(_strain, _strain) = dstressneg_dstrain;
-      _psie_active.d(_strain, _strain) = elasticity_tensor - dstressneg_dstrain;
-    }
+    _psie_active.d(_strain) = K * etr * I2 + 2 * G * edev;
   }
-  else
-    throw NEMLException("LinearIsotropicStrainEnergyDensity: Unsupported decomposition type.");
+  if (d2out_din2)
+  {
+    _psie_active.d(_strain, _strain) = K * I4 + 2 * G * J;
+  }
 }
+
+void
+LinearIsotropicStrainEnergyDensity::voldev_decomposition(bool out, bool dout_din, bool d2out_din2)
+{
+  const auto [K_and_dK, G_and_dG] = _converter.convert(_constants);
+  const auto & [K, dK] = K_and_dK;
+  const auto & [G, dG] = G_and_dG;
+  const auto etr = SR2(_strain).tr();
+  const auto edev = SR2(_strain).dev();
+  const auto I2 = SR2::identity(_strain.options());
+  const auto I4 = SSR4::identity(_strain.options());
+  const auto J = SSR4::identity_dev(_strain.options());
+
+  // Decompose based on the trace of strain
+  const auto etr_pos = macaulay(etr);
+  const auto etr_neg = etr - etr_pos;
+
+  if (out)
+  {
+    _psie_active = 0.5 * K * etr_pos * etr_pos + G * edev.inner(edev);
+    _psie_inactive = 0.5 * K * etr_neg * etr_neg;
+  }
+  if (dout_din)
+  {
+    _psie_active.d(_strain) = K * etr_pos * I2 + 2 * G * edev;
+    _psie_inactive.d(_strain) = K * etr_neg * I2;
+  }
+  if (d2out_din2)
+  {
+    _psie_active.d(_strain, _strain) = K * heaviside(etr) * I4 + 2 * G * J;
+    _psie_inactive.d(_strain, _strain) = K * heaviside(-etr) * I4;
+  }
+}
+
+void
+LinearIsotropicStrainEnergyDensity::spectral_decomposition(bool out, bool dout_din, bool d2out_din2)
+{
+  const auto [lambda_and_dlambda, G_and_dG] = _converter.convert(_constants);
+  const auto & [lambda, dlambda] = lambda_and_dlambda;
+  const auto & [G, dG] = G_and_dG;
+  const auto etr = SR2(_strain).tr();
+  const auto edev = SR2(_strain).dev();
+  const auto I2 = SR2::identity(_strain.options());
+  const auto I4 = SSR4::identity(_strain.options());
+
+  // Decompose based on the eigenvalues of strain
+  const auto etr_pos = macaulay(etr);
+  const auto etr_neg = etr - etr_pos;
+  const auto [evals, evecs] = linalg::eigh(_strain);
+  const auto evals_pos = macaulay(evals);
+  const auto e_pos = linalg::ieigh(evals_pos, evecs);
+  const auto e_neg = _strain - e_pos;
+
+  if (out)
+  {
+    _psie_active = 0.5 * lambda * etr_pos * etr_pos + G * e_pos.inner(e_pos);
+    _psie_inactive = 0.5 * lambda * etr_neg * etr_neg + G * e_neg.inner(e_neg);
+  }
+  if (dout_din)
+  {
+    _psie_active.d(_strain) = lambda * etr_pos * I2 + 2 * G * e_pos;
+    _psie_inactive.d(_strain) = lambda * etr_neg * I2 + 2 * G * e_neg;
+  }
+  if (d2out_din2)
+  {
+    const auto P4_pos = linalg::dsptrf(evals, evecs, evals_pos, heaviside(evals));
+    const auto P4_neg = SSR4::identity_sym(_strain.options()) - P4_pos;
+    _psie_active.d(_strain, _strain) = lambda * heaviside(etr) * I4 + 2 * G * P4_pos;
+    _psie_inactive.d(_strain, _strain) = lambda * heaviside(-etr) * I4 + 2 * G * P4_neg;
+  }
+}
+
 } // namespace neml2
