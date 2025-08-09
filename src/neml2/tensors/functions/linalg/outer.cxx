@@ -23,7 +23,6 @@
 // THE SOFTWARE.
 
 #include "neml2/tensors/functions/linalg/outer.h"
-#include "neml2/tensors/functions/bmm.h"
 #include "neml2/tensors/R2.h"
 #include "neml2/tensors/Vec.h"
 #include "neml2/tensors/assertions.h"
@@ -34,6 +33,6 @@ R2
 outer(const Vec & u, const Vec & v)
 {
   neml_assert_batch_broadcastable_dbg(u, v);
-  return R2(bmm(u.base_unsqueeze(-1), v.base_unsqueeze(-2)));
+  return u.base_unsqueeze(-1) * v.base_unsqueeze(0);
 }
 } // namespace neml2::linalg
