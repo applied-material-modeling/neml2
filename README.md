@@ -62,6 +62,21 @@ NEML2 is developed under a strict quality assurance program. Because the NEML2 d
 ### Citing NEML2
 
 ```tex
+@article{neml2_softwarex_2025,
+  title = {NEML2: An efficient and modular multiphysics constitutive modeling library for hybrid computing environments},
+  journal = {SoftwareX},
+  volume = {31},
+  pages = {102302},
+  year = {2025},
+  issn = {2352-7110},
+  doi = {https://doi.org/10.1016/j.softx.2025.102302},
+  url = {https://www.sciencedirect.com/science/article/pii/S2352711025002687},
+  author = {Tianchen Hu and Mark C. Messner},
+  keywords = {Constitutive model, GPU, Multiphysics}
+}
+```
+
+```tex
 @techreport{neml2osti2440430,
   author      = {Tianchen Hu and Mark C.  Messner and Daniel Schwen and Lynn B.  Munday and Dewen Yushu},
   title       = {NEML2: A High Performance Library for Constitutive Modeling},
