@@ -52,6 +52,6 @@ endif()
 if(@gperftools_FOUND@)
   if(@gperftools_CONTRIB@)
     set(gperftools_ROOT ${_IMPORT_PREFIX})
-  endif
+  endif()
   find_dependency(gperftools MODULE REQUIRED COMPONENTS profiler)
 endif()

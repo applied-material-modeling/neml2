@@ -147,7 +147,7 @@ if(NOT torch_FOUND)
             set(torch_ROOT ${NEML2_CONTRIB_PREFIX}/torch-src)
             find_package(torch MODULE REQUIRED OPTIONAL_COMPONENTS cuda python)
       else()
-            message(FATAL_ERROR "Torch not found and no download URL provided.")
+            message(FATAL_ERROR "Torch not found.")
       endif()
 endif()
 
@@ -350,9 +350,7 @@ endif()
 # argparse
 # ----------------------------------------------------------------------------
 if(NEML2_RUNNER)
-      if(NOT DEFINED argparse_INSTALL_PREFIX)
-            find_package(argparse CONFIG HINTS ${NEML2_CONTRIB_PREFIX}/argparse)
-      endif()
+      find_package(argparse CONFIG HINTS ${NEML2_CONTRIB_PREFIX}/argparse)
 
       if(NOT argparse_FOUND)
             download_from_git(argparse https://github.com/p-ranav/argparse.git ${NEML2_CONTRIB_PREFIX} ${argparse_VERSION})
