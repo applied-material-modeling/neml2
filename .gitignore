@@ -4,7 +4,7 @@ contrib/Catch2*
 contrib/Doxygen*
 contrib/doxygen-awesome-css*
 contrib/hit*
-contrib/json*
+contrib/nlohmann_json*
 contrib/timpi*
 contrib/torch*
 contrib/wasp*

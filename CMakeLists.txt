@@ -156,8 +156,10 @@ endif()
 # For a standard NEML2 installation, we add the absolute link path to the torch
 # libraries as rpath.
 #
-# For a wheel installation, we additionally prepend the rpaths ../torch/lib and
-# ../../torch/lib assuming the wheel is installed in a standard location.
+# For a wheel installation, we prepend the rpaths
+#   ../torch/lib
+#   ../../torch/lib
+# assuming the wheel is installed in a standard site-packages location alongside torch.
 
 # find_package(neml2 CONFIG) will rely on the Findtorch.cmake module
 install(FILES
@@ -179,10 +181,15 @@ if(NOT wasp_FOUND)
       find_package(wasp MODULE REQUIRED COMPONENTS core hit)
 endif()
 
-# wasp will be packaged as part of the NEML2 installation.
-install_glob(${wasp_core_LIBRARY} lib libneml2)
-install_glob(${wasp_hit_LIBRARY} lib libneml2)
-install(DIRECTORY ${wasp_core_INCLUDE_DIR}/waspcore ${wasp_hit_INCLUDE_DIR}/wasphit TYPE INCLUDE COMPONENT libneml2)
+# check if wasp is downloaded
+path_has_prefix(${wasp_ROOT} ${NEML2_CONTRIB_PREFIX} wasp_CONTRIB)
+
+# wasp will be packaged as part of the NEML2 installation if it was downloaded by us (or if it is being built as a wheel).
+if(wasp_CONTRIB OR NEML2_WHEEL)
+      install_glob(${wasp_core_LIBRARY} lib libneml2)
+      install_glob(${wasp_hit_LIBRARY} lib libneml2)
+      install(DIRECTORY ${wasp_core_INCLUDE_DIR}/waspcore ${wasp_hit_INCLUDE_DIR}/wasphit TYPE INCLUDE COMPONENT libneml2)
+endif()
 install(FILES ${NEML2_SOURCE_DIR}/cmake/Modules/Findwasp.cmake DESTINATION share/cmake/neml2/Modules COMPONENT libneml2)
 
 # ----------------------------------------------------------------------------
@@ -204,9 +211,14 @@ if(NOT hit_FOUND)
       find_package(hit MODULE REQUIRED)
 endif()
 
-# hit will be packaged as part of the NEML2 installation.
-install(FILES ${hit_LIBRARY} TYPE LIB COMPONENT libneml2)
-install(DIRECTORY ${hit_INCLUDE_DIR}/hit TYPE INCLUDE COMPONENT libneml2)
+# check if hit is downloaded
+path_has_prefix(${hit_ROOT} ${NEML2_CONTRIB_PREFIX} hit_CONTRIB)
+
+# hit will be packaged as part of the NEML2 installation if it was downloaded by us (or if it is being built as a wheel).
+if(hit_CONTRIB OR NEML2_WHEEL)
+      install(FILES ${hit_LIBRARY} TYPE LIB COMPONENT libneml2)
+      install(DIRECTORY ${hit_INCLUDE_DIR}/hit TYPE INCLUDE COMPONENT libneml2)
+endif()
 install(FILES ${NEML2_SOURCE_DIR}/cmake/Modules/Findhit.cmake DESTINATION share/cmake/neml2/Modules COMPONENT libneml2)
 
 # ----------------------------------------------------------------------------
@@ -225,9 +237,14 @@ if(NEML2_WORK_DISPATCHER)
             find_package(timpi MODULE REQUIRED)
       endif()
 
-      # timpi will be packaged as part of the NEML2 installation.
-      install_glob(${timpi_LIBRARY} lib libneml2)
-      install(DIRECTORY ${timpi_INCLUDE_DIR}/timpi TYPE INCLUDE COMPONENT libneml2)
+      # check if timpi is downloaded
+      path_has_prefix(${timpi_ROOT} ${NEML2_CONTRIB_PREFIX} timpi_CONTRIB)
+
+      # timpi will be packaged as part of the NEML2 installation if it was downloaded by us (or if it is being built as a wheel).
+      if(timpi_CONTRIB OR NEML2_WHEEL)
+            install_glob(${timpi_LIBRARY} lib libneml2)
+            install(DIRECTORY ${timpi_INCLUDE_DIR}/timpi TYPE INCLUDE COMPONENT libneml2)
+      endif()
       install(FILES ${NEML2_SOURCE_DIR}/cmake/Modules/Findtimpi.cmake DESTINATION share/cmake/neml2/Modules COMPONENT libneml2)
 endif()
 
@@ -238,15 +255,20 @@ if(NEML2_JSON)
       find_package(nlohmann_json CONFIG HINTS ${NEML2_CONTRIB_PREFIX}/json)
 
       if(NOT nlohmann_json_FOUND)
-            download_from_git(json https://github.com/nlohmann/json.git ${NEML2_CONTRIB_PREFIX} ${nlohmann_json_VERSION})
-            set(nlohmann_json_INSTALL_PREFIX ${NEML2_CONTRIB_PREFIX}/json CACHE PATH "nlohmann json install prefix")
-            custom_install(json contrib/install_nlohmann_json.sh ${NEML2_CONTRIB_PREFIX}/json-src ${NEML2_CONTRIB_PREFIX}/json-build ${nlohmann_json_INSTALL_PREFIX})
+            download_from_git(nlohmann_json https://github.com/nlohmann/json.git ${NEML2_CONTRIB_PREFIX} ${nlohmann_json_VERSION})
+            set(nlohmann_json_INSTALL_PREFIX ${NEML2_CONTRIB_PREFIX}/nlohmann_json CACHE PATH "nlohmann json install prefix")
+            custom_install(nlohmann_json contrib/install_nlohmann_json.sh ${NEML2_CONTRIB_PREFIX}/nlohmann_json-src ${NEML2_CONTRIB_PREFIX}/nlohmann_json-build ${nlohmann_json_INSTALL_PREFIX})
             find_package(nlohmann_json CONFIG REQUIRED PATHS ${nlohmann_json_INSTALL_PREFIX} NO_DEFAULT_PATH)
       endif()
-
-      # nlohmann json will be packaged as part of the NEML2 installation.
       file(REAL_PATH "../../../" nlohmann_json_DIR BASE_DIRECTORY ${nlohmann_json_DIR})
-      install(DIRECTORY ${nlohmann_json_DIR}/include/nlohmann TYPE INCLUDE COMPONENT libneml2)
+
+      # check if nlohmann json is downloaded
+      path_has_prefix(${nlohmann_json_DIR} ${NEML2_CONTRIB_PREFIX} nlohmann_json_CONTRIB)
+
+      # nlohmann json will be packaged as part of the NEML2 installation if it was downloaded by us (or if it is being built as a wheel).
+      if(nlohmann_json_CONTRIB OR NEML2_WHEEL)
+            install(DIRECTORY ${nlohmann_json_DIR}/include/nlohmann TYPE INCLUDE COMPONENT libneml2)
+      endif()
       install(DIRECTORY ${nlohmann_json_DIR}/share/ DESTINATION share COMPONENT libneml2)
 endif()
 
@@ -270,8 +292,13 @@ if(NEML2_TESTS OR NEML2_RUNNER)
                   find_package(gperftools MODULE REQUIRED COMPONENTS profiler)
             endif()
 
-            # gperftools will be packaged as part of the NEML2 installation.
-            install_glob(${gperftools_profiler_LIBRARY} lib libneml2)
+            # check if gperftools is downloaded
+            path_has_prefix(${gperftools_ROOT} ${NEML2_CONTRIB_PREFIX} gperftools_CONTRIB)
+
+            # gperftools will be packaged as part of the NEML2 installation if it was downloaded by us (or if it is being built as a wheel).
+            if(gperftools_CONTRIB OR NEML2_WHEEL)
+                  install_glob(${gperftools_profiler_LIBRARY} lib libneml2)
+            endif()
             install(FILES ${NEML2_SOURCE_DIR}/cmake/Modules/Findgperftools.cmake DESTINATION share/cmake/neml2/Modules COMPONENT libneml2)
       endif()
 endif()

@@ -23,17 +23,23 @@ else()
 endif()
 
 # wasp
-set(wasp_ROOT ${_IMPORT_PREFIX})
+if(@wasp_CONTRIB@)
+  set(wasp_ROOT ${_IMPORT_PREFIX})
+endif()
 find_dependency(wasp MODULE REQUIRED COMPONENTS core hit)
 
 # hit
-set(hit_ROOT ${_IMPORT_PREFIX})
+if(@hit_CONTRIB@)
+  set(hit_ROOT ${_IMPORT_PREFIX})
+endif()
 find_dependency(hit MODULE REQUIRED)
 
 # timpi
 if(@timpi_FOUND@)
   set(timpi_BUILD_TYPE @timpi_BUILD_TYPE@)
-  set(timpi_ROOT ${_IMPORT_PREFIX})
+  if(@timpi_CONTRIB@)
+    set(timpi_ROOT ${_IMPORT_PREFIX})
+  endif()
   find_dependency(timpi MODULE REQUIRED)
 endif()
 
@@ -44,6 +50,8 @@ endif()
 
 # gperftools
 if(@gperftools_FOUND@)
-  set(gperftools_ROOT ${_IMPORT_PREFIX})
+  if(@gperftools_CONTRIB@)
+    set(gperftools_ROOT ${_IMPORT_PREFIX})
+  endif
   find_dependency(gperftools MODULE REQUIRED COMPONENTS profiler)
 endif()
