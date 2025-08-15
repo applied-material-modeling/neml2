@@ -59,3 +59,23 @@ function(install_glob path install_dir component)
 
   install(FILES ${files} DESTINATION "${install_dir}" COMPONENT ${component})
 endfunction()
+
+# Check if a path has a specific prefix
+# Usage:
+#   path_has_prefix(<path> <prefix> <result_var>)
+#   Sets <result_var> to TRUE if <path> is under <prefix>, else FALSE.
+function(path_has_prefix path prefix result_var)
+  # Resolve to absolute real paths (follows symlinks, normalizes)
+  get_filename_component(abs_path "${path}" REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+  get_filename_component(abs_prefix "${prefix}" REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+
+  # Add trailing slash to prefix for strict matching
+  set(abs_prefix_slash "${abs_prefix}/")
+
+  # Check either exact match or "prefix/" match
+  if(abs_path STREQUAL abs_prefix OR abs_path MATCHES "^${abs_prefix_slash}")
+    set(${result_var} TRUE PARENT_SCOPE)
+  else()
+    set(${result_var} FALSE PARENT_SCOPE)
+  endif()
+endfunction()
