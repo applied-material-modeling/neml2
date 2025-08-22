@@ -215,19 +215,27 @@ MultiColumnCSVScalar::read_all(csv::CSVReader & csv,
                                std::size_t & nrow,
                                std::size_t & ncol) const
 {
+  const auto no_header = input_options().get<bool>("no_header");
   for (const auto & row : csv)
   {
-    for (auto & field : row)
+    if (nrow == 0)
+      ncol = row.size();
+    for (unsigned int i = 0; i < row.size(); i++)
     {
-      neml_assert(field.is_num(),
-                  "Non-numeric value found in CSV file at row ",
-                  nrow,
-                  ", column ",
-                  ncol,
-                  nrow == 0 ? ". Did you mistakenly set no_header=true?" : ".");
-      vals.push_back(field.get<double>());
-      if (nrow == 0)
-        ncol++;
+      if (no_header)
+        neml_assert(row[i].is_num(),
+                    "Non-numeric value found in CSV file at row ",
+                    nrow,
+                    ", column ",
+                    csv.get_col_names()[i],
+                    nrow == 0 ? ". Did you mistakenly set no_header=true?" : ".");
+      else
+        neml_assert(row[i].is_num(),
+                    "Non-numeric value found in CSV file at row ",
+                    nrow,
+                    ", in column with index ",
+                    i);
+      vals.push_back(row[i].get<double>());
     }
     nrow++;
   }
@@ -255,16 +263,17 @@ MultiColumnCSVScalar::read_by_indices(csv::CSVReader & csv,
                   " columns.");
       if (no_header)
         neml_assert(row[idx].is_num(),
-                    "Non-numeric value found in CSV file in column with index ",
+                    "Non-numeric value found in CSV file at row '",
+                    nrow,
+                    "', in column with index ",
                     idx,
-                    ", row ",
-                    nrow);
+                    nrow == 0 ? ". Did you mistakenly set no_header=true?" : ".");
       else
         neml_assert(row[idx].is_num(),
-                    "Non-numeric value found in CSV file at column '",
-                    csv.get_col_names()[idx],
-                    "', row ",
-                    nrow);
+                    "Non-numeric value found in CSV file at row '",
+                    nrow,
+                    "', column ",
+                    csv.get_col_names()[idx]);
       vals.push_back(row[idx].get<double>());
     }
     nrow++;
