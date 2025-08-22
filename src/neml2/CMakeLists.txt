@@ -32,6 +32,7 @@ function(neml2_add_submodule mname TYPE mdir)
     LIBRARY COMPONENT libneml2
     FILE_SET HEADERS COMPONENT libneml2
   )
+
 endfunction()
 
 # ----------------------------------------------------------------------------
@@ -57,6 +58,11 @@ endif()
 if(NEML2_JSON)
   target_compile_definitions(misc PUBLIC NEML2_HAS_JSON)
   target_link_libraries(misc PUBLIC nlohmann_json::nlohmann_json)
+endif()
+
+if(NEML2_CSV)
+  target_compile_definitions(misc PUBLIC NEML2_HAS_CSV)
+  target_link_libraries(misc PUBLIC csv)
 endif()
 
 if(NEML2_PCH)
