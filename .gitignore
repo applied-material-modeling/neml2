@@ -1,6 +1,7 @@
 # 3rd-party libraries
 contrib/argparse*
 contrib/Catch2*
+contrib/csvparser*
 contrib/Doxygen*
 contrib/doxygen-awesome-css*
 contrib/hit*
