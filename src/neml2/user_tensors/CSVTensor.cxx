@@ -27,16 +27,20 @@
 #include "neml2/user_tensors/CSVTensor.h"
 #include "neml2/tensors/indexing.h"
 #include "csvparser/csv.hpp"
+#include "neml2/tensors/tensors.h"
 
 namespace neml2
 {
-register_NEML2_object(CSVTensor);
-
+template <typename T>
 OptionSet
-CSVTensor::expected_options()
+CSVTensor<T>::expected_options()
 {
+  // This is the only way of getting tensor type in a static method like this...
+  // Trim 6 chars to remove 'neml2::'
+  auto tensor_type = utils::demangle(typeid(T).name()).substr(7);
+
   OptionSet options = UserTensorBase::expected_options();
-  options.doc() = "Construct a Scalar Tensor from a CSV file.";
+  options.doc() = "Construct a " + tensor_type + " from a CSV file.";
 
   options.set<TensorShape>("batch_shape") = {};
   options.set("batch_shape").doc() = "Batch shape";
@@ -47,45 +51,39 @@ CSVTensor::expected_options()
   return options;
 }
 
-CSVTensor::CSVTensor(const OptionSet & options)
-  : UserTensorBase(options),
-    Scalar(parse_csv(options.get<std::string>("csv_file"), options.get<TensorShape>("batch_shape")))
+template <typename T>
+CSVTensor<T>::CSVTensor(const OptionSet & options)
+  : T(parse_csv(options.get<std::string>("csv_file"), options.get<TensorShape>("batch_shape"))),
+    UserTensorBase(options)
 {
 }
 
-Scalar
-CSVTensor::parse_csv(const std::string & csv_file, const TensorShape & batch_shape) const
+template <typename T>
+T
+CSVTensor<T>::parse_csv(const std::string & csv_file, const TensorShape & batch_shape) const
 {
+  std::vector<double> csv_vals;
 
-  csv::CSVReader counter(csv_file);
   csv::CSVReader reader(csv_file);
 
-  // set up zeros tensor
-  int no_row = 0;
-  for (csv::CSVRow & row : counter)
-  {
-    no_row += 1;
-  }
-  int no_col = counter.get_col_names().size();
-  int no_ele = no_row * no_col;
-  auto csv_tensor = Scalar::zeros(no_ele);
-
-  // fill zeros tensor with csv values
-  int i = 0;
   for (csv::CSVRow & row : reader)
   {
     for (csv::CSVField & field : row)
     {
-      csv_tensor.index_put_({i}, field.get<double>());
-      i += 1;
+      csv_vals.push_back(field.get<double>());
     }
   }
 
-  // reshape to batch shape
-  csv_tensor = csv_tensor.batch_reshape(batch_shape);
+  auto csv_tensor = neml2::Tensor::create(csv_vals).batch_reshape(batch_shape);
 
   return csv_tensor;
 }
+
+#define REGISTER(T)                                                                                \
+  using T##CSVTensor = CSVTensor<T>;                                                               \
+  register_NEML2_object(T##CSVTensor);
+REGISTER(Scalar);
+
 } // namespace neml2
 
 #endif

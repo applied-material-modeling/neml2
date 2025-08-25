@@ -22,36 +22,28 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifdef NEML2_HAS_CSV
+#include <catch2/catch_test_macros.hpp>
 
-#pragma once
+#include "neml2/base/Factory.h"
+#include "neml2/base/NEML2Object.h"
+#include "neml2/tensors/tensors.h"
 
-#include "neml2/user_tensors/UserTensorBase.h"
+using namespace neml2;
 
-// #include "neml2/tensors/Scalar.h"
+#define test_CSVTensor(tensor_type, tensor_name, batch_shape, value)                               \
+  SECTION("Full" #tensor_type)                                                                     \
+  {                                                                                                \
+    const auto tensor_name = factory->get_object<tensor_type>("Tensors", #tensor_name);            \
+    REQUIRE(tensor_name->batch_sizes() == batch_shape);                                            \
+    REQUIRE(tensor_name->base_sizes() == tensor_type::const_base_sizes);                           \
+    REQUIRE(at::allclose(*tensor_name,                                                             \
+                         tensor_type::full(batch_shape, value, default_tensor_options())));        \
+  }                                                                                                \
+  static_assert(true)
 
-namespace neml2
+TEST_CASE("CSVTensor", "[user_tensors]")
 {
-/**
- * @brief Create a Tensor from the csv file.
- */
-template <typename T>
-class CSVTensor : public T, public UserTensorBase
-{
-public:
-  static OptionSet expected_options();
+  auto factory = load_input("user_tensors/test_CSVTensor.i");
 
-  /**
-   * @brief Construct a new CSVTensor object
-   *
-   * @param options The options extracted from the input file.
-   */
-  CSVTensor(const OptionSet & options);
-
-private:
-  /// A helper method to parse the CSV
-  T parse_csv(const std::string & csv_file, const TensorShape & batch_shape) const;
-};
-} // namespace neml2
-
-#endif
+  test_CSVTensor(Scalar, a, TensorShape{3}, 1.0);
+}
