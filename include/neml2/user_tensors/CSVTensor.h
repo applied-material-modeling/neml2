@@ -49,8 +49,7 @@ public:
   CSVTensor(const OptionSet & options);
 
 private:
-  /// A helper method to parse the CSV
-  T parse_csv(const std::string & csv_file, const TensorShape & batch_shape) const;
+  T parse_csv(const OptionSet & options) const;
 };
 } // namespace neml2
 
