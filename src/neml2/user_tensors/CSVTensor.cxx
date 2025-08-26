@@ -45,11 +45,11 @@ CSVTensor<T>::expected_options()
   options.set<std::string>("csv_file");
   options.set("csv_file").doc() = "Name of CSV file";
 
-  options.set<TensorShape>("batch_shape") = {};
+  options.set<TensorShape>("batch_shape");
   options.set("batch_shape").doc() = "Batch shape";
 
-  options.set<std::vector<std::string>>("csv_column") = {};
-  options.set("csv_column").doc() = "Name of CSV column";
+  options.set<std::vector<std::string>>("csv_columns") = {};
+  options.set("csv_columns").doc() = "Name of CSV columns";
 
   return options;
 }
@@ -67,25 +67,62 @@ CSVTensor<T>::parse_csv(const OptionSet & options) const
 {
   std::string csv_file = options.get<std::string>("csv_file");
   TensorShape batch_shape = options.get<TensorShape>("batch_shape");
-  std::vector<std::string> csv_column = options.get<std::vector<std::string>>("csv_column");
+  std::vector<std::string> csv_columns = options.get<std::vector<std::string>>("csv_columns");
 
-  std::vector<double> csv_vals;
+  // counting row/column number
+  csv::CSVReader counter(csv_file);
 
-  csv::CSVReader reader(csv_file);
+  // vector of vectors to hold csv values
+  std::vector<std::vector<double>> csv_vals;
 
-  if (csv_column.empty())
+  // set no of rows for vector of vectors using counter
+  if (csv_columns.empty()) // if no column specified, use whole csv
   {
-    csv_column = reader.get_col_names();
+    csv_columns = counter.get_col_names();
+    csv_vals.resize(counter.get_col_names().size());
+  }
+  else // columns specified
+  {
+    csv_vals.resize(csv_columns.size());
   }
 
+  // set no of columns for vector of vector using counter
+  for (auto & row : counter)
+  {
+  }
+  for (auto & row : csv_vals)
+  {
+    row.resize(counter.n_rows());
+  }
+
+  // read csv values into vector of vectors
+  int row_count = 0;
+  int col_count = 0;
+  csv::CSVReader reader(csv_file);
   for (auto & row : reader)
   {
-    for (auto & j : csv_column)
-      csv_vals.push_back(row[j].get<double>());
+    for (auto & j : csv_columns)
+    {
+      csv_vals[row_count][col_count] = row[j].get<double>();
+      row_count += 1;
+    }
+    col_count += 1;
+    row_count = 0;
   }
 
-  auto csv_tensor = neml2::Tensor::create(csv_vals, 1).batch_reshape(batch_shape);
-  return csv_tensor;
+  // flatten vector of vectors
+  std::vector<double> csv_vals_2;
+  for (const auto & inner_vec : csv_vals)
+  {
+    for (const auto & element : inner_vec)
+    {
+      csv_vals_2.push_back(element);
+    }
+  }
+
+  // convert to tensor and reshape to batch size
+  auto csv_tensor_2 = neml2::Tensor::create(csv_vals_2, 1).batch_reshape(batch_shape);
+  return csv_tensor_2;
 }
 
 #define REGISTER(T)                                                                                \

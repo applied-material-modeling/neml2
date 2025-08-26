@@ -30,24 +30,22 @@
 
 using namespace neml2;
 
-#define test_CSVTensor(tensor_type, tensor_name, batch_shape, value)                               \
-  SECTION(#tensor_type "CSVTensor")                                                                \
-  {                                                                                                \
-    const auto tensor_name = factory->get_object<tensor_type>("Tensors", #tensor_name);            \
-    REQUIRE(tensor_name->batch_sizes() == batch_shape);                                            \
-    REQUIRE(tensor_name->base_sizes() == tensor_type::const_base_sizes);                           \
-    REQUIRE(at::allclose(*tensor_name,                                                             \
-                         tensor_type::full(batch_shape, value, default_tensor_options())));        \
-  }                                                                                                \
-  static_assert(true)
-
 TEST_CASE("CSVTensor", "[user_tensors]")
 {
-  auto factory = load_input("user_tensors/test_CSVTensor.i");
-  TensorShape B{2, 3};
-  TensorShape C{2};
+  SECTION("Read CSV correctly")
+  {
+    auto factory = load_input("user_tensors/test_CSVTensor.i");
 
-  test_CSVTensor(Scalar, a, B, 1.0);
-  test_CSVTensor(Scalar, b, C, 1.0);
-  // test_CSVTensor(SR2, c, B, 1.0);
+    const auto a = factory->get_object<Scalar>("Tensors", "a");
+    const auto a_correct = Tensor::create({{1, 4}, {2, 5}, {3, 6}});
+    REQUIRE(at::allclose(*a, a_correct));
+    REQUIRE(a->batch_sizes() == TensorShape{3, 2});
+    REQUIRE(a->base_sizes() == TensorShape{});
+
+    const auto b = factory->get_object<Scalar>("Tensors", "b");
+    const auto b_correct = Tensor::create({{1, 4}, {2, 5}});
+    REQUIRE(at::allclose(*b, b_correct));
+    REQUIRE(b->batch_sizes() == TensorShape{2, 2});
+    REQUIRE(b->base_sizes() == TensorShape{});
+  }
 }
