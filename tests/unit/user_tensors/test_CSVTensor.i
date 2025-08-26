@@ -2,13 +2,13 @@
   [a]
     type = ScalarCSVTensor
     csv_file = '/home/jiw/packages/neml2/tests/unit/user_tensors/ScalarCSVTensorData.csv'
-    batch_shape = '(2,3)'
+    batch_shape = '(3,2)'
   []
   [b]
     type = ScalarCSVTensor
     csv_file = '/home/jiw/packages/neml2/tests/unit/user_tensors/ScalarCSVTensorData.csv'
-    batch_shape = '(2)'
-    csv_column = 'x1'
+    batch_shape = '(2,2)'
+    csv_columns = 'x1 x2'
   []
   # [c]
   #   type = SR2CSVTensor
