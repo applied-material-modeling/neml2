@@ -31,7 +31,7 @@
 using namespace neml2;
 
 #define test_CSVTensor(tensor_type, tensor_name, batch_shape, value)                               \
-  SECTION("Full" #tensor_type)                                                                     \
+  SECTION(#tensor_type "CSVTensor")                                                                \
   {                                                                                                \
     const auto tensor_name = factory->get_object<tensor_type>("Tensors", #tensor_name);            \
     REQUIRE(tensor_name->batch_sizes() == batch_shape);                                            \
@@ -44,6 +44,7 @@ using namespace neml2;
 TEST_CASE("CSVTensor", "[user_tensors]")
 {
   auto factory = load_input("user_tensors/test_CSVTensor.i");
-
-  test_CSVTensor(Scalar, a, TensorShape{3}, 1.0);
+  TensorShape B{2, 3};
+  test_CSVTensor(Scalar, a, B, 1.0);
+  // test_CSVTensor(SR2, b, TensorShape{3}, 1.0);
 }
