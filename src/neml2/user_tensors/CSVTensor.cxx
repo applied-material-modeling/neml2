@@ -28,7 +28,6 @@
 #include "csvparser/csv.hpp"
 #include "neml2/tensors/tensors.h"
 #include "neml2/tensors/indexing.h"
-// #include "neml2/tensors/TensorBase.h"
 
 namespace neml2
 {
@@ -43,38 +42,48 @@ CSVTensor<T>::expected_options()
   OptionSet options = UserTensorBase::expected_options();
   options.doc() = "Construct a " + tensor_type + " from a CSV file.";
 
+  options.set<std::string>("csv_file");
+  options.set("csv_file").doc() = "Name of CSV file";
+
   options.set<TensorShape>("batch_shape") = {};
   options.set("batch_shape").doc() = "Batch shape";
 
-  options.set<std::string>("csv_file");
-  options.set("csv_file").doc() = "Name of CSV file";
+  options.set<std::vector<std::string>>("csv_column") = {};
+  options.set("csv_column").doc() = "Name of CSV column";
 
   return options;
 }
 
 template <typename T>
 CSVTensor<T>::CSVTensor(const OptionSet & options)
-  : T(parse_csv(options.get<std::string>("csv_file"), options.get<TensorShape>("batch_shape"))),
+  : T(parse_csv(options)),
     UserTensorBase(options)
 {
 }
 
 template <typename T>
 T
-CSVTensor<T>::parse_csv(const std::string & csv_file, const TensorShape & batch_shape) const
+CSVTensor<T>::parse_csv(const OptionSet & options) const
 {
+  std::string csv_file = options.get<std::string>("csv_file");
+  TensorShape batch_shape = options.get<TensorShape>("batch_shape");
+  std::vector<std::string> csv_column = options.get<std::vector<std::string>>("csv_column");
+
   std::vector<double> csv_vals;
 
   csv::CSVReader reader(csv_file);
 
-  for (csv::CSVRow & row : reader)
+  if (csv_column.empty())
   {
-    for (csv::CSVField & field : row)
-    {
-      csv_vals.push_back(field.get<double>());
-    }
+    csv_column = reader.get_col_names();
   }
-  // only works for scalar
+
+  for (auto & row : reader)
+  {
+    for (auto & j : csv_column)
+      csv_vals.push_back(row[j].get<double>());
+  }
+
   auto csv_tensor = neml2::Tensor::create(csv_vals, 1).batch_reshape(batch_shape);
   return csv_tensor;
 }

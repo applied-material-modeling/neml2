@@ -45,6 +45,9 @@ TEST_CASE("CSVTensor", "[user_tensors]")
 {
   auto factory = load_input("user_tensors/test_CSVTensor.i");
   TensorShape B{2, 3};
+  TensorShape C{2};
+
   test_CSVTensor(Scalar, a, B, 1.0);
-  // test_CSVTensor(SR2, b, TensorShape{3}, 1.0);
+  test_CSVTensor(Scalar, b, C, 1.0);
+  // test_CSVTensor(SR2, c, B, 1.0);
 }
