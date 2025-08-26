@@ -25,9 +25,10 @@
 #ifdef NEML2_HAS_CSV
 
 #include "neml2/user_tensors/CSVTensor.h"
-#include "neml2/tensors/indexing.h"
 #include "csvparser/csv.hpp"
 #include "neml2/tensors/tensors.h"
+#include "neml2/tensors/indexing.h"
+// #include "neml2/tensors/TensorBase.h"
 
 namespace neml2
 {
@@ -73,9 +74,8 @@ CSVTensor<T>::parse_csv(const std::string & csv_file, const TensorShape & batch_
       csv_vals.push_back(field.get<double>());
     }
   }
-
-  auto csv_tensor = neml2::Tensor::create(csv_vals).batch_reshape(batch_shape);
-
+  // only works for scalar
+  auto csv_tensor = neml2::Tensor::create(csv_vals, 1).batch_reshape(batch_shape);
   return csv_tensor;
 }
 
@@ -83,7 +83,7 @@ CSVTensor<T>::parse_csv(const std::string & csv_file, const TensorShape & batch_
   using T##CSVTensor = CSVTensor<T>;                                                               \
   register_NEML2_object(T##CSVTensor);
 REGISTER(Scalar);
-
+// REGISTER(SR2);
 } // namespace neml2
 
 #endif
