@@ -1,0 +1,23 @@
+<map id="R2Multiplication" name="R2Multiplication">
+<area shape="rect" id="Node000001" title="Multiplication of two R2 variables." alt="" coords="488,169,616,194"/>
+<area shape="rect" id="Node000002" href="$classneml2_1_1Model.html" title="The base class for all constitutive models." alt="" coords="377,169,440,194"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="454,179,488,179,488,184,454,184"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="169,5,323,45"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="324,50,331,55,357,83,379,114,405,167,400,170,374,117,353,86,328,59,321,55"/>
+<area shape="rect" id="Node000004" href="$classneml2_1_1Data.html" title=" " alt="" coords="219,70,273,95"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="287,87,331,104,371,135,399,166,395,170,367,139,328,109,285,92"/>
+<area shape="rect" id="Node000005" href="$classneml2_1_1NEML2Object.html" title="The base class of all &quot;manufacturable&quot; objects in the NEML2 library." alt="" coords="5,46,115,71"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="129,65,219,77,219,82,128,70"/>
+<area shape="rect" id="Node000006" href="$classneml2_1_1BufferStore.html" title="Interface for object which can store buffers." alt="" coords="13,95,107,121"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="121,97,219,84,220,89,121,102"/>
+<area shape="rect" id="Node000007" href="$classneml2_1_1ParameterStore.html" title="Interface for object which can store parameters." alt="" coords="185,119,307,145"/>
+<area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="302,146,378,169,376,174,301,151"/>
+<area shape="rect" id="Node000008" href="$classneml2_1_1VariableStore.html" title=" " alt="" coords="191,169,301,194"/>
+<area shape="poly" id="edge7_Node000002_Node000008" title=" " alt="" coords="314,179,377,179,377,184,314,184"/>
+<area shape="rect" id="Node000009" href="$classneml2_1_1NonlinearSystem.html" title="Definition of a nonlinear system of equations." alt="" coords="179,218,313,243"/>
+<area shape="poly" id="edge8_Node000002_Node000009" title=" " alt="" coords="304,212,329,204,376,189,378,194,330,209,305,217"/>
+<area shape="rect" id="Node000010" href="$classneml2_1_1DependencyDefinition.html" title=" " alt="" coords="163,268,329,308"/>
+<area shape="poly" id="edge9_Node000002_Node000010" title=" " alt="" coords="318,260,328,254,366,223,395,192,399,196,370,226,331,258,320,264"/>
+<area shape="rect" id="Node000011" href="$classneml2_1_1DiagnosticsInterface.html" title="Interface for object making diagnostics about common setup errors." alt="" coords="168,333,324,358"/>
+<area shape="poly" id="edge10_Node000002_Node000011" title=" " alt="" coords="318,324,328,318,356,288,377,253,401,193,406,195,382,256,360,291,331,322,321,329"/>
+</map>

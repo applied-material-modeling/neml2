@@ -1,0 +1,9 @@
+<map id="SimpleScheduler" name="SimpleScheduler">
+<area shape="rect" id="Node000001" title="A very simple scheduler." alt="" coords="65,152,196,177"/>
+<area shape="rect" id="Node000002" href="$classneml2_1_1WorkScheduler.html" title="Scheduler for work dispatching." alt="" coords="71,79,190,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="133,118,133,152,128,152,128,118"/>
+<area shape="rect" id="Node000003" href="$classneml2_1_1NEML2Object.html" title="The base class of all &quot;manufacturable&quot; objects in the NEML2 library." alt="" coords="5,5,115,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="83,39,121,77,117,80,79,43"/>
+<area shape="rect" id="Node000004" href="$classneml2_1_1TracingInterface.html" title=" " alt="" coords="139,5,266,31"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="183,43,144,80,140,77,179,39"/>
+</map>

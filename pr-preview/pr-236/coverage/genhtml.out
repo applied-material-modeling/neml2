@@ -1,0 +1,492 @@
+Found 243 entries.
+Found common filename prefix "/home/runner/work/neml2/neml2/src/neml2"
+Generating output.
+Processing file tensors/Tensor.cxx
+  lines=75 hit=71 functions=16 hit=16
+Processing file dispatchers/derivmap_helpers.cxx
+  lines=25 hit=15 functions=3 hit=2
+Processing file tensors/functions/linalg/cross.cxx
+  lines=5 hit=5 functions=1 hit=1
+Processing file drivers/ModelDriver.cxx
+  lines=57 hit=37 functions=8 hit=4
+Processing file models/R2toSR2.cxx
+  lines=21 hit=20 functions=3 hit=3
+Processing file user_tensors/SymmetryFromOrbifold.cxx
+  lines=13 hit=12 functions=2 hit=2
+Processing file tensors/functions/sin.cxx
+  lines=1 hit=1 functions=23 hit=2
+Processing file tensors/functions/atan.cxx
+  lines=1 hit=0 functions=23 hit=0
+Processing file base/EnumSelectionBase.cxx
+  lines=23 hit=23 functions=3 hit=3
+Processing file user_tensors/UserTensor.cxx
+  lines=27 hit=26 functions=2 hit=2
+Processing file models/solid_mechanics/PowerLawKinematicHardeningStaticRecovery.cxx
+  lines=30 hit=29 functions=3 hit=3
+Processing file tensors/functions/linalg/vecdot.cxx
+  lines=10 hit=10 functions=1 hit=1
+Processing file models/solid_mechanics/PhaseTransformationEigenstrain.cxx
+  lines=25 hit=22 functions=3 hit=3
+Processing file models/solid_mechanics/KocksMeckingIntercept.cxx
+  lines=45 hit=44 functions=3 hit=3
+Processing file models/ImplicitUpdate.cxx
+  lines=67 hit=66 functions=5 hit=5
+Processing file models/solid_mechanics/crystal_plasticity/SingleSlipHardeningRule.cxx
+  lines=19 hit=18 functions=2 hit=2
+Processing file base/OptionCollection.cxx
+  lines=7 hit=7 functions=3 hit=3
+Processing file models/ParameterStore.cxx
+  lines=136 hit=99 functions=97 hit=17
+Processing file drivers/solid_mechanics/LDISolidMechanicsDriver.cxx
+  lines=80 hit=74 functions=9 hit=8
+Processing file models/Data.cxx
+  lines=8 hit=7 functions=2 hit=2
+Processing file user_tensors/OnesPrimitiveTensor.cxx
+  lines=12 hit=12 functions=44 hit=33
+Processing file base/Registry.cxx
+  lines=26 hit=20 functions=6 hit=4
+Processing file misc/types.cxx
+  lines=13 hit=0 functions=1 hit=0
+Processing file base/Factory.cxx
+  lines=41 hit=33 functions=8 hit=7
+Processing file user_tensors/ZerosTensor.cxx
+  lines=14 hit=13 functions=2 hit=2
+Processing file tensors/tensors.cxx
+  lines=4 hit=3 functions=1 hit=1
+Processing file user_tensors/FillWR2.cxx
+  lines=14 hit=13 functions=3 hit=3
+Processing file models/solid_mechanics/YieldFunction.cxx
+  lines=38 hit=37 functions=3 hit=3
+Processing file models/solid_mechanics/crystal_plasticity/SumSlipRates.cxx
+  lines=26 hit=25 functions=3 hit=3
+Processing file models/VariableRate.cxx
+  lines=41 hit=40 functions=12 hit=8
+Processing file models/solid_mechanics/elasticity/GeneralElasticity.cxx
+  lines=34 hit=33 functions=3 hit=3
+Processing file models/solid_mechanics/crystal_plasticity/FixOrientation.cxx
+  lines=28 hit=27 functions=3 hit=3
+Processing file models/pyrolysis/PyrolysisKinetics.cxx
+  lines=34 hit=33 functions=3 hit=3
+Processing file tensors/functions/exp.cxx
+  lines=1 hit=1 functions=23 hit=2
+Processing file tensors/functions/macaulay.cxx
+  lines=1 hit=1 functions=23 hit=1
+Processing file tensors/TensorCache.cxx
+  lines=9 hit=9 functions=2 hit=2
+Processing file models/solid_mechanics/FlowRule.cxx
+  lines=11 hit=10 functions=2 hit=2
+Processing file models/solid_mechanics/elasticity/AnisotropicElasticity.cxx
+  lines=10 hit=9 functions=2 hit=2
+Processing file models/solid_mechanics/KinematicHardeningStaticRecovery.cxx
+  lines=16 hit=15 functions=2 hit=2
+Processing file models/BackwardEulerTimeIntegration.cxx
+  lines=41 hit=40 functions=12 hit=9
+Processing file base/LabeledAxisAccessor.cxx
+  lines=89 hit=76 functions=26 hit=24
+Processing file tensors/functions/bvv.cxx
+  lines=2 hit=2 functions=1 hit=1
+Processing file user_tensors/OnesTensor.cxx
+  lines=14 hit=13 functions=2 hit=2
+Processing file models/ForwardEulerTimeIntegration.cxx
+  lines=38 hit=36 functions=12 hit=8
+Processing file models/solid_mechanics/elasticity/IsotropicElasticityConverter.cxx
+  lines=28 hit=16 functions=4 hit=2
+Processing file solvers/TrustRegionSubProblem.cxx
+  lines=23 hit=23 functions=6 hit=6
+Processing file tensors/functions/tan.cxx
+  lines=1 hit=1 functions=23 hit=1
+Processing file models/Model.cxx
+  lines=439 hit=331 functions=56 hit=45
+Processing file tensors/functions/diag_embed.cxx
+  lines=5 hit=4 functions=24 hit=2
+Processing file models/solid_mechanics/crystal_plasticity/SlipStrengthMap.cxx
+  lines=15 hit=14 functions=2 hit=2
+Processing file tensors/WR2.cxx
+  lines=27 hit=27 functions=4 hit=4
+Processing file tensors/functions/log.cxx
+  lines=1 hit=1 functions=23 hit=1
+Processing file tensors/Rot.cxx
+  lines=132 hit=107 functions=18 hit=14
+Processing file models/solid_mechanics/ChabochePlasticHardening.cxx
+  lines=39 hit=38 functions=3 hit=3
+Processing file solvers/NewtonWithLineSearch.cxx
+  lines=63 hit=54 functions=4 hit=4
+Processing file models/solid_mechanics/GTNYieldFunction.cxx
+  lines=196 hit=195 functions=3 hit=3
+Processing file tensors/TensorValue.cxx
+  lines=13 hit=10 functions=115 hit=14
+Processing file tensors/functions/linalg/outer.cxx
+  lines=3 hit=3 functions=1 hit=1
+Processing file models/RotationMatrix.cxx
+  lines=21 hit=20 functions=3 hit=3
+Processing file drivers/solid_mechanics/SDTSolidMechanicsDriver.cxx
+  lines=27 hit=26 functions=4 hit=4
+Processing file jit/utils.cxx
+  lines=22 hit=8 functions=6 hit=1
+Processing file tensors/functions/sqrt.cxx
+  lines=1 hit=1 functions=23 hit=2
+Processing file models/solid_mechanics/MixedControlSetup.cxx
+  lines=51 hit=50 functions=4 hit=4
+Processing file tensors/WSR4.cxx
+  lines=3 hit=3 functions=1 hit=1
+Processing file models/solid_mechanics/elasticity/IsotropicElasticityTensor.cxx
+  lines=24 hit=23 functions=3 hit=3
+Processing file tensors/functions/cos.cxx
+  lines=1 hit=1 functions=23 hit=2
+Processing file tensors/functions/heaviside.cxx
+  lines=1 hit=1 functions=23 hit=2
+Processing file models/BufferStore.cxx
+  lines=56 hit=30 functions=75 hit=13
+Processing file models/solid_mechanics/AssociativeKinematicPlasticHardening.cxx
+  lines=27 hit=26 functions=3 hit=3
+Processing file models/LinearInterpolation.cxx
+  lines=27 hit=26 functions=9 hit=7
+Processing file user_tensors/LinspaceTensor.cxx
+  lines=35 hit=34 functions=3 hit=3
+Processing file models/solid_mechanics/GursonCavitation.cxx
+  lines=29 hit=28 functions=3 hit=3
+Processing file user_tensors/FullPrimitiveTensor.cxx
+  lines=16 hit=16 functions=44 hit=35
+Processing file models/solid_mechanics/crystal_plasticity/ResolvedShear.cxx
+  lines=34 hit=33 functions=3 hit=3
+Processing file models/pyrolysis/AvramiErofeevNucleation.cxx
+  lines=21 hit=20 functions=3 hit=3
+Processing file drivers/solid_mechanics/SolidMechanicsDriver.cxx
+  lines=82 hit=82 functions=7 hit=7
+Processing file tensors/functions/stack.cxx
+  lines=7 hit=6 functions=47 hit=1
+Processing file models/crystallography/CrystalGeometry.cxx
+  lines=120 hit=118 functions=16 hit=16
+Processing file user_tensors/UserPrimitiveTensor.cxx
+  lines=24 hit=20 functions=44 hit=35
+Processing file tensors/functions/sign.cxx
+  lines=1 hit=1 functions=23 hit=2
+Processing file models/pyrolysis/ReactionMechanism.cxx
+  lines=13 hit=12 functions=2 hit=2
+Processing file models/CopyVariable.cxx
+  lines=20 hit=19 functions=66 hit=26
+Processing file models/solid_mechanics/LinearIsotropicHardening.cxx
+  lines=19 hit=18 functions=3 hit=3
+Processing file base/NEML2Object.cxx
+  lines=10 hit=9 functions=2 hit=2
+Processing file base/TensorName.cxx
+  lines=18 hit=18 functions=48 hit=21
+Processing file jit/TraceableSize.cxx
+  lines=19 hit=14 functions=6 hit=4
+Processing file misc/defaults.cxx
+  lines=25 hit=23 functions=11 hit=10
+Processing file models/solid_mechanics/KocksMeckingRateSensitivity.cxx
+  lines=57 hit=56 functions=3 hit=3
+Processing file dispatchers/TensorLoader.cxx
+  lines=12 hit=12 functions=3 hit=3
+Processing file models/solid_mechanics/crystal_plasticity/SlipRule.cxx
+  lines=22 hit=21 functions=2 hit=2
+Processing file models/solid_mechanics/KocksMeckingFlowViscosity.cxx
+  lines=83 hit=82 functions=3 hit=3
+Processing file drivers/TransientDriver.cxx
+  lines=195 hit=178 functions=62 hit=62
+Processing file models/solid_mechanics/IsotropicMandelStress.cxx
+  lines=13 hit=12 functions=2 hit=2
+Processing file tensors/functions/mean.cxx
+  lines=4 hit=1 functions=24 hit=1
+Processing file user_tensors/FillSR2.cxx
+  lines=25 hit=22 functions=3 hit=3
+Processing file models/reactive_infiltration/DiffusionLimitedReaction.cxx
+  lines=46 hit=45 functions=3 hit=3
+Processing file tensors/functions/minimum.cxx
+  lines=1 hit=0 functions=23 hit=0
+Processing file models/solid_mechanics/elasticity/Elasticity.cxx
+  lines=23 hit=22 functions=2 hit=2
+Processing file models/FischerBurmeister.cxx
+  lines=43 hit=43 functions=3 hit=3
+Processing file tensors/functions/log10.cxx
+  lines=1 hit=0 functions=23 hit=0
+Processing file models/ScalarVariableMultiplication.cxx
+  lines=46 hit=45 functions=3 hit=3
+Processing file tensors/functions/pow.cxx
+  lines=14 hit=8 functions=49 hit=5
+Processing file user_tensors/FromTorchScript.cxx
+  lines=29 hit=9 functions=3 hit=1
+Processing file tensors/functions/linalg/lu_solve.cxx
+  lines=2 hit=2 functions=1 hit=1
+Processing file tensors/shape_utils.cxx
+  lines=8 hit=7 functions=2 hit=2
+Processing file dispatchers/SimpleMPIScheduler.cxx
+  lines=65 hit=11 functions=8 hit=1
+Processing file models/solid_mechanics/LinearKinematicHardening.cxx
+  lines=19 hit=18 functions=3 hit=3
+Processing file user_tensors/Orientation.cxx
+  lines=47 hit=40 functions=4 hit=4
+Processing file models/solid_mechanics/ThermalEigenstrain.cxx
+  lines=31 hit=26 functions=3 hit=3
+Processing file user_tensors/IdentityTensor.cxx
+  lines=14 hit=13 functions=2 hit=2
+Processing file solvers/NewtonWithTrustRegion.cxx
+  lines=94 hit=83 functions=8 hit=8
+Processing file dispatchers/WorkScheduler.cxx
+  lines=30 hit=28 functions=8 hit=8
+Processing file tensors/functions/tanh.cxx
+  lines=1 hit=1 functions=23 hit=1
+Processing file base/HITParser.cxx
+  lines=73 hit=73 functions=4 hit=4
+Processing file tensors/functions/acos.cxx
+  lines=1 hit=1 functions=23 hit=1
+Processing file models/InputParameter.cxx
+  lines=23 hit=22 functions=66 hit=26
+Processing file models/solid_mechanics/elasticity/CubicElasticityTensor.cxx
+  lines=28 hit=27 functions=3 hit=3
+Processing file tensors/functions/cbrt.cxx
+  lines=1 hit=0 functions=23 hit=0
+Processing file dispatchers/ValueMapLoader.cxx
+  lines=22 hit=22 functions=4 hit=4
+Processing file tensors/SWR4.cxx
+  lines=3 hit=3 functions=1 hit=1
+Processing file tensors/functions/linalg/lu_factor.cxx
+  lines=4 hit=4 functions=1 hit=1
+Processing file models/Assembler.cxx
+  lines=110 hit=108 functions=6 hit=6
+Processing file jit/TraceableTensorShape.cxx
+  lines=45 hit=36 functions=10 hit=8
+Processing file tensors/VecBase.cxx
+  lines=25 hit=25 functions=30 hit=20
+Processing file models/solid_mechanics/VoceIsotropicHardening.cxx
+  lines=29 hit=28 functions=3 hit=3
+Processing file user_tensors/UserTensorBase.cxx
+  lines=8 hit=7 functions=2 hit=2
+Processing file tensors/functions/abs.cxx
+  lines=1 hit=1 functions=23 hit=2
+Processing file models/pyrolysis/PyrolysisConversionAmount.cxx
+  lines=32 hit=31 functions=3 hit=3
+Processing file models/solid_mechanics/crystal_plasticity/PlasticVorticity.cxx
+  lines=35 hit=34 functions=3 hit=3
+Processing file tensors/Quaternion.cxx
+  lines=34 hit=23 functions=7 hit=4
+Processing file tensors/functions/asin.cxx
+  lines=1 hit=0 functions=23 hit=0
+Processing file models/solid_mechanics/AssociativeJ2FlowDirection.cxx
+  lines=26 hit=25 functions=3 hit=3
+Processing file models/IncrementToRate.cxx
+  lines=31 hit=30 functions=12 hit=12
+Processing file base/MultiEnumSelection.cxx
+  lines=37 hit=37 functions=7 hit=7
+Processing file models/solid_mechanics/IsotropicHardening.cxx
+  lines=13 hit=12 functions=2 hit=2
+Processing file misc/errors.cxx
+  lines=4 hit=4 functions=2 hit=2
+Processing file solvers/Newton.cxx
+  lines=42 hit=38 functions=7 hit=7
+Processing file user_tensors/FillR2.cxx
+  lines=36 hit=32 functions=3 hit=3
+Processing file models/solid_mechanics/IsotropicHardeningStaticRecovery.cxx
+  lines=17 hit=16 functions=2 hit=2
+Processing file tensors/functions/fmod.cxx
+  lines=1 hit=1 functions=46 hit=1
+Processing file models/solid_mechanics/crystal_plasticity/VoceSingleSlipHardeningRule.cxx
+  lines=24 hit=23 functions=3 hit=3
+Processing file user_tensors/LogspacePrimitiveTensor.cxx
+  lines=32 hit=31 functions=66 hit=48
+Processing file models/solid_mechanics/elasticity/LinearIsotropicElasticity.cxx
+  lines=32 hit=31 functions=3 hit=3
+Processing file models/solid_mechanics/LinearIsotropicElasticJ2TrialStressUpdate.cxx
+  lines=41 hit=38 functions=3 hit=3
+Processing file models/solid_mechanics/Normality.cxx
+  lines=42 hit=39 functions=3 hit=3
+Processing file models/WR2ImplicitExponentialTimeIntegration.cxx
+  lines=46 hit=45 functions=4 hit=4
+Processing file tensors/functions/cat.cxx
+  lines=7 hit=7 functions=47 hit=4
+Processing file solvers/NonlinearSolver.cxx
+  lines=16 hit=15 functions=2 hit=2
+Processing file models/solid_mechanics/crystal_plasticity/CrystalMean.cxx
+  lines=27 hit=26 functions=3 hit=3
+Processing file tensors/R2.cxx
+  lines=11 hit=11 functions=4 hit=4
+Processing file models/solid_mechanics/crystal_plasticity/OrientationRate.cxx
+  lines=54 hit=53 functions=6 hit=6
+Processing file tensors/SSR4.cxx
+  lines=85 hit=81 functions=24 hit=22
+Processing file tensors/R3.cxx
+  lines=11 hit=11 functions=3 hit=3
+Processing file models/solid_mechanics/Eigenstrain.cxx
+  lines=9 hit=8 functions=2 hit=2
+Processing file tensors/MillerIndex.cxx
+  lines=16 hit=16 functions=5 hit=5
+Processing file tensors/functions/jacrev.cxx
+  lines=32 hit=32 functions=2 hit=2
+Processing file models/ComposedModel.cxx
+  lines=110 hit=100 functions=6 hit=6
+Processing file models/solid_mechanics/RateIndependentPlasticFlowConstraint.cxx
+  lines=29 hit=28 functions=3 hit=3
+Processing file user_tensors/FullTensor.cxx
+  lines=18 hit=17 functions=2 hit=2
+Processing file models/reactive_infiltration/ProductGeometry.cxx
+  lines=32 hit=31 functions=3 hit=3
+Processing file models/crystallography/CubicCrystal.cxx
+  lines=14 hit=13 functions=2 hit=2
+Processing file models/SR2Invariant.cxx
+  lines=79 hit=73 functions=3 hit=3
+Processing file models/SR2toR2.cxx
+  lines=21 hit=20 functions=3 hit=3
+Processing file models/solid_mechanics/crystal_plasticity/SingleSlipStrengthMap.cxx
+  lines=21 hit=20 functions=3 hit=3
+Processing file solvers/Solver.cxx
+  lines=10 hit=9 functions=2 hit=2
+Processing file models/solid_mechanics/PlasticFlowRate.cxx
+  lines=12 hit=11 functions=2 hit=2
+Processing file models/solid_mechanics/crystal_plasticity/LinearSingleSlipHardeningRule.cxx
+  lines=18 hit=17 functions=3 hit=3
+Processing file tensors/functions/gcd.cxx
+  lines=1 hit=1 functions=23 hit=1
+Processing file tensors/SR2.cxx
+  lines=78 hit=78 functions=24 hit=24
+Processing file models/pyrolysis/ChemicalReactionMechanism.cxx
+  lines=21 hit=20 functions=3 hit=3
+Processing file models/ArrheniusParameter.cxx
+  lines=37 hit=36 functions=3 hit=3
+Processing file models/solid_mechanics/KinematicHardening.cxx
+  lines=13 hit=12 functions=2 hit=2
+Processing file models/solid_mechanics/crystal_plasticity/ElasticStrainRate.cxx
+  lines=54 hit=53 functions=6 hit=6
+Processing file user_tensors/EmptyTensor.cxx
+  lines=15 hit=14 functions=2 hit=2
+Processing file models/Interpolation.cxx
+  lines=18 hit=18 functions=44 hit=5
+Processing file user_tensors/FillMillerIndex.cxx
+  lines=17 hit=16 functions=3 hit=3
+Processing file tensors/functions/cosh.cxx
+  lines=1 hit=1 functions=23 hit=1
+Processing file models/LinearCombination.cxx
+  lines=53 hit=53 functions=9 hit=7
+Processing file tensors/Vec.cxx
+  lines=13 hit=13 functions=6 hit=6
+Processing file tensors/R4.cxx
+  lines=40 hit=37 functions=9 hit=8
+Processing file tensors/functions/linalg/inv.cxx
+  lines=2 hit=2 functions=1 hit=1
+Processing file tensors/functions/operators.cxx
+  lines=42 hit=26 functions=502 hit=103
+Processing file models/solid_mechanics/OlevskySinteringStress.cxx
+  lines=31 hit=30 functions=3 hit=3
+Processing file base/Parser.cxx
+  lines=47 hit=42 functions=6 hit=5
+Processing file tensors/R2Base.cxx
+  lines=86 hit=86 functions=19 hit=19
+Processing file models/solid_mechanics/SlopeSaturationVoceIsotropicHardening.cxx
+  lines=37 hit=36 functions=3 hit=3
+Processing file models/solid_mechanics/PerzynaPlasticFlowRate.cxx
+  lines=31 hit=30 functions=3 hit=3
+Processing file tensors/functions/bmm.cxx
+  lines=7 hit=7 functions=1 hit=1
+Processing file dispatchers/valuemap_helpers.cxx
+  lines=16 hit=16 functions=3 hit=3
+Processing file tensors/WWR4.cxx
+  lines=6 hit=6 functions=2 hit=2
+Processing file tensors/functions/bmv.cxx
+  lines=7 hit=7 functions=1 hit=1
+Processing file models/solid_mechanics/TwoStageThermalAnnealing.cxx
+  lines=44 hit=44 functions=6 hit=6
+Processing file models/ConstantParameter.cxx
+  lines=18 hit=16 functions=66 hit=26
+Processing file models/solid_mechanics/VolumeChangeEigenstrain.cxx
+  lines=25 hit=21 functions=3 hit=3
+Processing file base/EnumSelection.cxx
+  lines=31 hit=29 functions=9 hit=8
+Processing file user_tensors/ZerosPrimitiveTensor.cxx
+  lines=12 hit=12 functions=44 hit=35
+Processing file tensors/Transformable.cxx
+  lines=14 hit=12 functions=6 hit=5
+Processing file user_tensors/FillRot.cxx
+  lines=27 hit=25 functions=3 hit=3
+Processing file models/solid_mechanics/AssociativeIsotropicPlasticHardening.cxx
+  lines=25 hit=24 functions=3 hit=3
+Processing file tensors/functions/deg2rad.cxx
+  lines=1 hit=1 functions=23 hit=1
+Processing file solvers/NonlinearSystem.cxx
+  lines=114 hit=96 functions=16 hit=14
+Processing file tensors/functions/linalg/solve.cxx
+  lines=2 hit=2 functions=1 hit=1
+Processing file models/WR2ExplicitExponentialTimeIntegration.cxx
+  lines=43 hit=35 functions=4 hit=3
+Processing file models/HermiteSmoothStep.cxx
+  lines=34 hit=33 functions=3 hit=3
+Processing file dispatchers/StaticHybridScheduler.cxx
+  lines=91 hit=66 functions=8 hit=5
+Processing file base/OptionSet.cxx
+  lines=50 hit=47 functions=17 hit=16
+Processing file tensors/functions/sinh.cxx
+  lines=1 hit=1 functions=23 hit=1
+Processing file models/R2toWR2.cxx
+  lines=21 hit=20 functions=3 hit=3
+Processing file models/solid_mechanics/crystal_plasticity/PlasticDeformationRate.cxx
+  lines=35 hit=34 functions=3 hit=3
+Processing file models/solid_mechanics/PowerLawIsotropicHardeningStaticRecovery.cxx
+  lines=27 hit=26 functions=3 hit=3
+Processing file dispatchers/SliceGenerator.cxx
+  lines=14 hit=14 functions=3 hit=3
+Processing file models/solid_mechanics/KocksMeckingYieldStress.cxx
+  lines=31 hit=30 functions=3 hit=3
+Processing file base/OptionBase.cxx
+  lines=3 hit=0 functions=1 hit=0
+Processing file base/LabeledAxis.cxx
+  lines=244 hit=223 functions=55 hit=34
+Processing file user_tensors/LogspaceTensor.cxx
+  lines=37 hit=34 functions=3 hit=3
+Processing file models/solid_mechanics/KocksMeckingActivationEnergy.cxx
+  lines=40 hit=39 functions=3 hit=3
+Processing file drivers/Driver.cxx
+  lines=18 hit=16 functions=3 hit=3
+Processing file tensors/functions/clamp.cxx
+  lines=1 hit=1 functions=23 hit=1
+Processing file tensors/crystallography.cxx
+  lines=54 hit=53 functions=6 hit=6
+Processing file tensors/functions/linalg/vector_norm.cxx
+  lines=8 hit=8 functions=1 hit=1
+Processing file models/solid_mechanics/FredrickArmstrongPlasticHardening.cxx
+  lines=43 hit=42 functions=3 hit=3
+Processing file base/DiagnosticsInterface.cxx
+  lines=27 hit=26 functions=6 hit=6
+Processing file dispatchers/SimpleScheduler.cxx
+  lines=33 hit=32 functions=6 hit=6
+Processing file models/solid_mechanics/KocksMeckingFlowSwitch.cxx
+  lines=42 hit=41 functions=3 hit=3
+Processing file models/solid_mechanics/crystal_plasticity/PowerLawSlipRule.cxx
+  lines=27 hit=26 functions=3 hit=3
+Processing file user_tensors/TensorFromTorchScript.cxx
+  lines=9 hit=5 functions=2 hit=1
+Processing file models/solid_mechanics/elasticity/CubicElasticityConverter.cxx
+  lines=33 hit=33 functions=3 hit=3
+Processing file tensors/Scalar.cxx
+  lines=12 hit=12 functions=3 hit=3
+Processing file tensors/functions/diff.cxx
+  lines=1 hit=1 functions=23 hit=2
+Processing file models/Variable.cxx
+  lines=243 hit=196 functions=284 hit=90
+Processing file base/Option.cxx
+  lines=33 hit=22 functions=423 hit=156
+Processing file models/solid_mechanics/MandelStress.cxx
+  lines=13 hit=12 functions=2 hit=2
+Processing file models/solid_mechanics/AssociativePlasticFlow.cxx
+  lines=25 hit=24 functions=3 hit=3
+Processing file models/solid_mechanics/elasticity/ElasticityConverter.cxx
+  lines=22 hit=8 functions=1 hit=1
+Processing file user_tensors/EmptyPrimitiveTensor.cxx
+  lines=12 hit=12 functions=44 hit=35
+Processing file user_tensors/LinspacePrimitiveTensor.cxx
+  lines=29 hit=28 functions=66 hit=50
+Processing file misc/string_utils.cxx
+  lines=33 hit=24 functions=6 hit=5
+Processing file tensors/mandel_notation.cxx
+  lines=90 hit=90 functions=22 hit=22
+Processing file tensors/functions/sum.cxx
+  lines=4 hit=4 functions=24 hit=4
+Processing file user_tensors/PrimitiveTensorFromTorchScript.cxx
+  lines=6 hit=3 functions=44 hit=22
+Processing file base/Settings.cxx
+  lines=36 hit=36 functions=2 hit=2
+Processing file tensors/functions/where.cxx
+  lines=1 hit=1 functions=23 hit=4
+Processing file models/VariableStore.cxx
+  lines=241 hit=230 functions=135 hit=58
+Overall coverage rate:
+  lines......: 89.7% (7338 of 8180 lines)
+  functions......: 43.9% (1839 of 4186 functions)
