@@ -49,40 +49,60 @@ CSVPrimitiveTensor<T>::expected_options()
   options.set<TensorShape>("batch_shape");
   options.set("batch_shape").doc() = "Batch shape";
 
-  //   options.set<std::string>("tensor") = {};
-  //   options.set("tensor").doc() = "Name of tensor column.";
+  options.set<std::string>("tensor_name");
+  options.set("tensor_name").doc() = "Name of tensor.";
 
   return options;
 }
 
 template <typename T>
 CSVPrimitiveTensor<T>::CSVPrimitiveTensor(const OptionSet & options)
-  : T(parse_csv(options)),
+  : T(parse_csv(options.get<std::string>("csv_file"),
+                options.get<std::string>("tensor_name"),
+                options.get<TensorShape>("batch_shape"))),
     UserTensorBase(options)
 {
 }
 
 template <typename T>
 T
-CSVPrimitiveTensor<T>::parse_csv(const OptionSet & options) const
+CSVPrimitiveTensor<T>::parse_csv(const std::string & csv_file,
+                                 const std::string & tensor_name,
+                                 const TensorShape & batch_shape) const
 {
-  std::string csv_file = options.get<std::string>("csv_file");
-  TensorShape batch_shape = options.get<TensorShape>("batch_shape");
-  //   std::vector<std::string> csv_columns = options.get<std::vector<std::string>>("csv_columns");
-
   csv::CSVReader reader(csv_file);
 
   std::vector<double> csv_vals;
 
   for (const auto & row : reader)
-    for (csv::CSVField & field : row)
-    {
-      csv_vals.push_back(field.get<double>());
-    }
+  {
+    csv_vals.push_back(row[tensor_name].get<double>());
+  }
 
   auto csv_tensor = T::create(csv_vals).batch_reshape(batch_shape);
   return csv_tensor;
 }
+
+// template <>
+// SR2
+// CSVPrimitiveTensor<T>::parse_csv(const std::string & csv_file,
+//                                  const std::string & tensor_name,
+//                                  const TensorShape & batch_shape) const
+// {
+//   csv::CSVReader reader(csv_file);
+
+//   std::vector<std::string> sr2_suffix = {"xx", "yy", "zz", "yz", "xz", "xy"};
+
+//   std::vector<double> csv_vals;
+
+//   for (const auto & row : reader)
+//   {
+//     csv_vals.push_back(row[tensor_name].get<double>());
+//   }
+
+//   auto csv_tensor = T::create(csv_vals).batch_reshape(batch_shape);
+//   return csv_tensor;
+// }
 
 // template <typename T>
 // T
@@ -102,7 +122,7 @@ CSVPrimitiveTensor<T>::parse_csv(const OptionSet & options) const
 #define CSVPRIMITIVETENSOR_REGISTER(T)                                                             \
   using CSV##T = CSVPrimitiveTensor<T>;                                                            \
   register_NEML2_object_alias(CSV##T, "CSV" #T)
-FOR_ALL_PRIMITIVETENSOR(CSVPRIMITIVETENSOR_REGISTER);
+CSVPRIMITIVETENSOR_REGISTER(Scalar);
 } // namespace neml2
 
 #endif

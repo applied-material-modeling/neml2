@@ -1,8 +1,14 @@
 [Tensors]
   [a]
     type = CSVScalar
-    csv_file = '/home/jiw/packages/neml2/tests/unit/user_tensors/CSVPrimitiveTensor.csv'
-    # tensor = 'scalar'
+    csv_file = 'user_tensors/CSVPrimitiveTensor.csv'
+    tensor_name = 'scalar'
     batch_shape = '(4)'
   []
+#   [b]
+#     type = CSVSR2
+#     csv_file = 'user_tensors/CSVPrimitiveTensor.csv'
+#     tensor_name = 's'
+#     batch_shape = '(4)'
+#   []
 []
