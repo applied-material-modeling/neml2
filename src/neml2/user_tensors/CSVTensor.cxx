@@ -28,6 +28,7 @@
 #include "csvparser/csv.hpp"
 #include "neml2/tensors/tensors.h"
 #include "neml2/tensors/indexing.h"
+#include "neml2/tensors/functions/stack.h"
 
 namespace neml2
 {
@@ -111,24 +112,15 @@ CSVTensor<T>::parse_csv(const OptionSet & options) const
     row_count = 0;
   }
 
-  // convert csv_vals to tensor and reshape
-  std::vector<double> csv_vals_2;
+  // convert each row in csv_vals to tensor, then stack and reshape
+  std::vector<T> csv_convert;
   for (const auto & row : csv_vals)
   {
-    for (const auto & value : row)
-    {
-      csv_vals_2.push_back(value);
-    }
+    auto csv_test = T::create(row);
+    csv_convert.push_back(csv_test);
   }
-
-  // account for different tensor types?
-  std::cout << "csv_vals_2: " << csv_vals_2 << " size: " << csv_vals_2.size() << std::endl;
-  auto csv_vals_test = {{1, 2, 3, 4, 5, 6}, {1, 2, 3, 4, 5, 6}};
-  auto create_test = T::create(csv_vals_test);
-  std::cout << "create_test: " << create_test << create_test.batch_sizes()
-            << create_test.base_sizes() << std::endl;
-
-  auto csv_tensor = T::create(csv_vals_2).batch_reshape(batch_shape);
+  auto csv_stack = batch_stack(csv_convert);
+  auto csv_tensor = csv_stack.batch_reshape(batch_shape);
 
   return csv_tensor;
 }
