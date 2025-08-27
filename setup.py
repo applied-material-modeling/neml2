@@ -54,10 +54,11 @@ class CMakeBuild(build_ext):
         # Influential env vars
         generator = os.environ.get("CMAKE_GENERATOR", None)
         njob = os.environ.get("CMAKE_BUILD_JOBS", None)
+        btype = os.environ.get("CMAKE_BUILD_TYPE", "RelWithDebInfo")
 
         # Configure arguments
         configure_args = [
-            "-DCMAKE_BUILD_TYPE=RelWithDebInfo",
+            "-DCMAKE_BUILD_TYPE={}".format(btype),
             "-DNEML2_PYBIND=ON",
             "-DNEML2_TESTS=OFF",
             "-DNEML2_RUNNER=OFF",
