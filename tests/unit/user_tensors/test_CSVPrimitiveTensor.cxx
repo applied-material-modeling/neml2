@@ -41,5 +41,14 @@ TEST_CASE("CSVPrimitiveTensor", "[user_tensors]")
     REQUIRE(at::allclose(*a, a_correct));
     REQUIRE(a->batch_sizes() == TensorShape{4});
     REQUIRE(a->base_sizes() == Scalar::const_base_sizes);
+
+    const auto b = factory->get_object<SR2>("Tensors", "b");
+    const auto b_correct = SR2::create({{0.5, 1.1, 2.2, 0.5, 1.1, 2.2},
+                                        {-1.5, 2.2, 3.3, 0.5, 1.1, 2.2},
+                                        {-3.0, -5.0, 100.1, 0.5, 1.1, 2.2},
+                                        {20.1, -1.1, -13.0, 0.5, 1.1, 2.2}});
+    REQUIRE(at::allclose(*b, b_correct));
+    REQUIRE(b->batch_sizes() == TensorShape{4});
+    REQUIRE(b->base_sizes() == SR2::const_base_sizes);
   }
 }

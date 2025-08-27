@@ -47,7 +47,9 @@ public:
   CSVPrimitiveTensor(const OptionSet & options);
 
 private:
-  T parse_csv(const OptionSet & options) const;
+  T parse_csv(const std::string & csv_file,
+              const std::string & tensor_name,
+              const TensorShape & batch_shape) const;
 };
 } // namespace neml2
 
