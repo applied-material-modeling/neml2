@@ -37,15 +37,23 @@ TEST_CASE("CSVTensor", "[user_tensors]")
     auto factory = load_input("user_tensors/test_CSVTensor.i");
 
     const auto a = factory->get_object<Scalar>("Tensors", "a");
-    const auto a_correct = Tensor::create({{1, 4}, {2, 5}, {3, 6}});
+    const auto a_correct = Scalar::create({{1, 4}, {2, 5}, {3, 6}});
     REQUIRE(at::allclose(*a, a_correct));
     REQUIRE(a->batch_sizes() == TensorShape{3, 2});
     REQUIRE(a->base_sizes() == TensorShape{});
 
     const auto b = factory->get_object<Scalar>("Tensors", "b");
-    const auto b_correct = Tensor::create({{1, 4}, {2, 5}});
+    const auto b_correct = Scalar::create({{1, 4}, {2, 5}});
     REQUIRE(at::allclose(*b, b_correct));
     REQUIRE(b->batch_sizes() == TensorShape{2, 2});
     REQUIRE(b->base_sizes() == TensorShape{});
+
+    const auto c = factory->get_object<SR2>("Tensors", "c");
+    const auto c_correct = SR2::create({{{1, 4, 7, 10, 13, 16}, {19, 22, 25, 28, 31, 34}},
+                                        {{2, 5, 8, 11, 14, 17}, {20, 23, 26, 29, 32, 35}},
+                                        {{3, 6, 9, 12, 15, 18}, {21, 24, 27, 30, 33, 36}}});
+    REQUIRE(at::allclose(*c, c_correct));
+    REQUIRE(c->batch_sizes() == TensorShape{3, 2});
+    REQUIRE(c->base_sizes() == TensorShape{});
   }
 }

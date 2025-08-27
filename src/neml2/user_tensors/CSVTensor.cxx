@@ -69,36 +69,37 @@ CSVTensor<T>::parse_csv(const OptionSet & options) const
   TensorShape batch_shape = options.get<TensorShape>("batch_shape");
   std::vector<std::string> csv_columns = options.get<std::vector<std::string>>("csv_columns");
 
-  // counting row/column number
+  // csv readers
   csv::CSVReader counter(csv_file);
+  csv::CSVReader reader(csv_file);
 
   // vector of vectors to hold csv values
   std::vector<std::vector<double>> csv_vals;
 
-  // set no of rows for vector of vectors using counter
-  if (csv_columns.empty()) // if no column specified, use whole csv
+  // set no of rows for csv_vals = no of columns specified
+  if (csv_columns.empty()) // if no columns specified, use whole csv
   {
     csv_columns = counter.get_col_names();
     csv_vals.resize(counter.get_col_names().size());
   }
-  else // columns specified
+  else
   {
     csv_vals.resize(csv_columns.size());
   }
 
-  // set no of columns for vector of vector using counter
+  // set no of columns for csv_vals = no of rows of csv
   for (auto & row : counter)
   {
+    (void)row;
   }
   for (auto & row : csv_vals)
   {
     row.resize(counter.n_rows());
   }
 
-  // read csv values into vector of vectors
+  // fill csv_vals
   int row_count = 0;
   int col_count = 0;
-  csv::CSVReader reader(csv_file);
   for (auto & row : reader)
   {
     for (auto & j : csv_columns)
@@ -110,26 +111,33 @@ CSVTensor<T>::parse_csv(const OptionSet & options) const
     row_count = 0;
   }
 
-  // flatten vector of vectors
+  // convert csv_vals to tensor and reshape
   std::vector<double> csv_vals_2;
-  for (const auto & inner_vec : csv_vals)
+  for (const auto & row : csv_vals)
   {
-    for (const auto & element : inner_vec)
+    for (const auto & value : row)
     {
-      csv_vals_2.push_back(element);
+      csv_vals_2.push_back(value);
     }
   }
 
-  // convert to tensor and reshape to batch size
-  auto csv_tensor_2 = neml2::Tensor::create(csv_vals_2, 1).batch_reshape(batch_shape);
-  return csv_tensor_2;
+  // account for different tensor types?
+  std::cout << "csv_vals_2: " << csv_vals_2 << " size: " << csv_vals_2.size() << std::endl;
+  auto csv_vals_test = {{1, 2, 3, 4, 5, 6}, {1, 2, 3, 4, 5, 6}};
+  auto create_test = T::create(csv_vals_test);
+  std::cout << "create_test: " << create_test << create_test.batch_sizes()
+            << create_test.base_sizes() << std::endl;
+
+  auto csv_tensor = T::create(csv_vals_2).batch_reshape(batch_shape);
+
+  return csv_tensor;
 }
 
 #define REGISTER(T)                                                                                \
   using T##CSVTensor = CSVTensor<T>;                                                               \
   register_NEML2_object(T##CSVTensor);
 REGISTER(Scalar);
-// REGISTER(SR2);
+REGISTER(SR2);
 } // namespace neml2
 
 #endif

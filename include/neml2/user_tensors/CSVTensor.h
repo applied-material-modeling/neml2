@@ -28,8 +28,6 @@
 
 #include "neml2/user_tensors/UserTensorBase.h"
 
-// #include "neml2/tensors/Scalar.h"
-
 namespace neml2
 {
 /**
