@@ -91,6 +91,7 @@ CSVPrimitiveTensor<Vec>::parse_csv(const std::string & csv_file,
   csv::CSVReader reader(csv_file);
 
   std::vector<Vec> csv_vals;
+
   std::vector<std::string> suffix = {"_x", "_y", "_z"};
 
   for (const auto & row : reader)
