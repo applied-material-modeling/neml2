@@ -2,19 +2,25 @@
   [a]
     type = CSVScalar
     csv_file = 'user_tensors/CSVPrimitiveTensor.csv'
-    tensor_name = 'scalar'
+    component_names = 'var'
     batch_shape = '(4)'
   []
   [b]
     type = CSVVec
     csv_file = 'user_tensors/CSVPrimitiveTensor.csv'
-    tensor_name = 'disp'
+    component_names = 'disp_x disp_y disp_z'
     batch_shape = '(4)'
   []
   [c]
-    type = CSVSR2
+    type = CSVVec
     csv_file = 'user_tensors/CSVPrimitiveTensor.csv'
-    tensor_name = 's'
-    batch_shape = '(4)'
+    component_names = 'disp_x disp_y disp_z'
+    batch_shape = '(2,2)'
   []
+  # [d]
+  #   type = CSVSR2
+  #   csv_file = 'user_tensors/CSVPrimitiveTensor.csv'
+  #   component_names = 's_xx s_yy s_zz s_yz s_xz s_xy'
+  #   batch_shape = '(4)'
+  # []
 []

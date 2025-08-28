@@ -35,17 +35,16 @@ OptionSet
 MultiColumnCSVScalar::expected_options()
 {
   OptionSet options = UserTensorBase::expected_options();
-  options.doc() = "Construct a Scalar from a CSV file. Optionally, particular columns of the CSV "
-                  "can be specified.";
+  options.doc() = "Construct a Scalar from a CSV file by column.";
 
   options.set<std::string>("csv_file");
-  options.set("csv_file").doc() = "Name of CSV file";
+  options.set("csv_file").doc() = "Path to the CSV file";
 
   options.set<TensorShape>("batch_shape");
   options.set("batch_shape").doc() = "Batch shape";
 
   options.set<std::vector<std::string>>("csv_columns") = {};
-  options.set("csv_columns").doc() = "Name of CSV columns";
+  options.set("csv_columns").doc() = "Name of CSV columns. Default is all the columnss";
 
   return options;
 }
