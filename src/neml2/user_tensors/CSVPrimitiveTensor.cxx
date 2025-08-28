@@ -43,13 +43,13 @@ CSVPrimitiveTensor<T>::expected_options()
   options.doc() = "Construct a " + tensor_type + " from a CSV file.";
 
   options.set<std::string>("csv_file");
-  options.set("csv_file").doc() = "Name of CSV file";
+  options.set("csv_file").doc() = "Path to the CSV file";
 
   options.set<TensorShape>("batch_shape");
   options.set("batch_shape").doc() = "Batch shape";
 
-  options.set<std::string>("tensor_name");
-  options.set("tensor_name").doc() = "Name of tensor.";
+  options.set<std::vector<std::string>>("component_names");
+  options.set("component_names").doc() = "Column names of components of tensor.";
 
   return options;
 }
@@ -57,7 +57,7 @@ CSVPrimitiveTensor<T>::expected_options()
 template <typename T>
 CSVPrimitiveTensor<T>::CSVPrimitiveTensor(const OptionSet & options)
   : T(parse_csv(options.get<std::string>("csv_file"),
-                options.get<std::string>("tensor_name"),
+                options.get<std::vector<std::string>>("component_names"),
                 options.get<TensorShape>("batch_shape"))),
     UserTensorBase(options)
 {
@@ -66,42 +66,21 @@ CSVPrimitiveTensor<T>::CSVPrimitiveTensor(const OptionSet & options)
 template <typename T>
 T
 CSVPrimitiveTensor<T>::parse_csv(const std::string & csv_file,
-                                 const std::string & tensor_name,
+                                 const std::vector<std::string> & component_names,
                                  const TensorShape & batch_shape) const
 {
   csv::CSVReader reader(csv_file);
 
-  std::vector<double> csv_vals;
-
-  for (const auto & row : reader)
-  {
-    csv_vals.push_back(row[tensor_name].get<double>());
-  }
-
-  auto csv_tensor = T::create(csv_vals).batch_reshape(batch_shape);
-  return csv_tensor;
-}
-
-template <>
-Vec
-CSVPrimitiveTensor<Vec>::parse_csv(const std::string & csv_file,
-                                   const std::string & tensor_name,
-                                   const TensorShape & batch_shape) const
-{
-  csv::CSVReader reader(csv_file);
-
-  std::vector<Vec> csv_vals;
-
-  std::vector<std::string> suffix = {"_x", "_y", "_z"};
+  std::vector<T> csv_vals;
 
   for (const auto & row : reader)
   {
     std::vector<double> csv_row = {};
-    for (auto & j : suffix)
+    for (auto & j : component_names)
     {
-      csv_row.push_back(row[tensor_name + j].get<double>());
+      csv_row.push_back(row[j].get<double>());
     }
-    auto csv_row_tens = Vec::create(csv_row);
+    auto csv_row_tens = T::create(csv_row);
     csv_vals.push_back(csv_row_tens);
   }
 
@@ -109,24 +88,49 @@ CSVPrimitiveTensor<Vec>::parse_csv(const std::string & csv_file,
   return csv_tensor;
 }
 
+// template <typename T>
+// T
+// CSVPrimitiveTensor<T>::parse_csv(const std::string & csv_file,
+//                                  const std::vector<std::string> & component_names,
+//                                  const TensorShape & batch_shape) const
+// {
+//   csv::CSVReader reader(csv_file);
+
+//   std::vector<Scalar> csv_vals;
+
+//   for (const auto & row : reader)
+//   {
+//     std::vector<double> csv_row = {};
+//     for (auto & j : component_names)
+//     {
+//       csv_row.push_back(row[j].get<double>());
+//     }
+//     csv_vals.push_back(Scalar::create(csv_row));
+//     std::cout << "csv_vals: " << csv_vals << csv_vals.size() << std::endl;
+//   }
+
+//   auto csv_stack = base_stack(csv_vals);
+//   auto csv_base = csv_stack.base_reshape(T::const_base_shape);
+//   auto csv_tensor = csv_base.batch_reshape(batch_shape);
+//   return csv_tensor;
+// }
+
 template <>
 SR2
 CSVPrimitiveTensor<SR2>::parse_csv(const std::string & csv_file,
-                                   const std::string & tensor_name,
+                                   const std::vector<std::string> & component_names,
                                    const TensorShape & batch_shape) const
 {
   csv::CSVReader reader(csv_file);
 
   std::vector<SR2> csv_vals;
 
-  std::vector<std::string> suffix = {"_xx", "_yy", "_zz", "_yz", "_xz", "_xy"};
-
   for (const auto & row : reader)
   {
     std::vector<double> csv_row = {};
-    for (auto & j : suffix)
+    for (auto & j : component_names)
     {
-      csv_row.push_back(row[tensor_name + j].get<double>());
+      csv_row.push_back(row[j].get<double>());
     }
     auto csv_row_tens = SR2::create(csv_row);
     csv_vals.push_back(csv_row_tens);

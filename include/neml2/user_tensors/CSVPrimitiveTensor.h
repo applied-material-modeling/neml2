@@ -48,8 +48,9 @@ public:
 
 private:
   T parse_csv(const std::string & csv_file,
-              const std::string & tensor_name,
+              const std::vector<std::string> & component_names,
               const TensorShape & batch_shape) const;
+  T convert(const std::vector<Scalar> & x) const;
 };
 } // namespace neml2
 
