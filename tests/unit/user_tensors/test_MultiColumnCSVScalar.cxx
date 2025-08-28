@@ -48,6 +48,16 @@ TEST_CASE("MultiColumnCSVScalar", "[user_tensors]")
     REQUIRE(at::allclose(*b, b_correct));
     REQUIRE(b->batch_sizes() == TensorShape{2, 2});
     REQUIRE(b->base_sizes() == Scalar::const_base_sizes);
+
+    const auto c = factory->get_object<Scalar>("Tensors", "c");
+    REQUIRE(at::allclose(*c, a_correct));
+    REQUIRE(c->batch_sizes() == TensorShape{3, 2});
+    REQUIRE(c->base_sizes() == Scalar::const_base_sizes);
+
+    const auto d = factory->get_object<Scalar>("Tensors", "d");
+    REQUIRE(at::allclose(*d, a_correct));
+    REQUIRE(d->batch_sizes() == TensorShape{3, 2});
+    REQUIRE(d->base_sizes() == Scalar::const_base_sizes);
   }
 }
 #endif
