@@ -10,4 +10,14 @@
     csv_columns = 'col1 col2'
     batch_shape = '(2,2)'
   []
+  [c]
+    type = MultiColumnCSVScalar
+    csv_file = 'user_tensors/MultiColumnCSVScalarSpace.csv'
+    batch_shape = '(3,2)'
+  []
+  [d]
+    type = MultiColumnCSVScalar
+    csv_file = 'user_tensors/MultiColumnCSVScalarSemicolon.csv'
+    batch_shape = '(3,2)'
+  []
 []

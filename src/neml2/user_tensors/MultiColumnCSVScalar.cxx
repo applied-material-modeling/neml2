@@ -62,8 +62,14 @@ MultiColumnCSVScalar::parse_csv(const OptionSet & options) const
   TensorShape batch_shape = options.get<TensorShape>("batch_shape");
   std::vector<std::string> csv_columns = options.get<std::vector<std::string>>("csv_columns");
 
-  csv::CSVReader counter(csv_file);
-  csv::CSVReader reader(csv_file);
+  // Allow the following delimiters
+  csv::CSVFormat fmt;
+  fmt.delimiter({',', ' ', ';'});
+
+  // csv::CSVFormat no_col_name.no_header();
+
+  csv::CSVReader counter(csv_file, fmt);
+  csv::CSVReader reader(csv_file, fmt);
 
   // Vector of vectors to hold CSV values
   std::vector<std::vector<double>> csv_vals;
@@ -82,6 +88,7 @@ MultiColumnCSVScalar::parse_csv(const OptionSet & options) const
   {
     for (auto & j : csv_columns)
     {
+      // add an error if column name doesn't exist
       csv_vals[row_count][col_count] = row[j].get<double>();
       row_count += 1;
     }
