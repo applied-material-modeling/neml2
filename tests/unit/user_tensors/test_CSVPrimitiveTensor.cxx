@@ -30,6 +30,7 @@
 
 using namespace neml2;
 
+#ifdef NEML2_HAS_CSV
 TEST_CASE("CSVPrimitiveTensor", "[user_tensors]")
 {
   SECTION("Read and reshape CSV  correctly")
@@ -66,3 +67,4 @@ TEST_CASE("CSVPrimitiveTensor", "[user_tensors]")
     // REQUIRE(d->base_sizes() == SR2::const_base_sizes);
   }
 }
+#endif
