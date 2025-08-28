@@ -68,18 +68,12 @@ MultiColumnCSVScalar::parse_csv(const OptionSet & options) const
   // Vector of vectors to hold CSV values
   std::vector<std::vector<double>> csv_vals;
   if (csv_columns.empty())
-  {
     csv_columns = counter.get_col_names();
-  }
   csv_vals.resize(csv_columns.size());
   for (auto & row : counter)
-  {
     (void)row;
-  }
   for (auto & row : csv_vals)
-  {
     row.resize(counter.n_rows());
-  }
 
   // Read CSV values
   int row_count = 0;

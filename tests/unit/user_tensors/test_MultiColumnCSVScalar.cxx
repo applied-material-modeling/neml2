@@ -30,6 +30,7 @@
 
 using namespace neml2;
 
+#ifdef NEML2_HAS_CSV
 TEST_CASE("MultiColumnCSVScalar", "[user_tensors]")
 {
   SECTION("Read MultiColumnCSVScalar CSV correctly")
@@ -49,3 +50,4 @@ TEST_CASE("MultiColumnCSVScalar", "[user_tensors]")
     REQUIRE(b->base_sizes() == Scalar::const_base_sizes);
   }
 }
+#endif
