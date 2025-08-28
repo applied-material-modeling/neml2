@@ -27,7 +27,6 @@
 #include "neml2/user_tensors/CSVPrimitiveTensor.h"
 #include "csvparser/csv.hpp"
 #include "neml2/tensors/tensors.h"
-#include "neml2/tensors/indexing.h"
 #include "neml2/tensors/functions/stack.h"
 
 namespace neml2
@@ -83,46 +82,66 @@ CSVPrimitiveTensor<T>::parse_csv(const std::string & csv_file,
   return csv_tensor;
 }
 
-// template <>
-// SR2
-// CSVPrimitiveTensor<T>::parse_csv(const std::string & csv_file,
-//                                  const std::string & tensor_name,
-//                                  const TensorShape & batch_shape) const
-// {
-//   csv::CSVReader reader(csv_file);
+template <>
+Vec
+CSVPrimitiveTensor<Vec>::parse_csv(const std::string & csv_file,
+                                   const std::string & tensor_name,
+                                   const TensorShape & batch_shape) const
+{
+  csv::CSVReader reader(csv_file);
 
-//   std::vector<std::string> sr2_suffix = {"xx", "yy", "zz", "yz", "xz", "xy"};
+  std::vector<Vec> csv_vals;
 
-//   std::vector<double> csv_vals;
+  std::vector<std::string> suffix = {"_x", "_y", "_z"};
 
-//   for (const auto & row : reader)
-//   {
-//     csv_vals.push_back(row[tensor_name].get<double>());
-//   }
+  for (const auto & row : reader)
+  {
+    std::vector<double> csv_row = {};
+    for (auto & j : suffix)
+    {
+      csv_row.push_back(row[tensor_name + j].get<double>());
+    }
+    auto csv_row_tens = Vec::create(csv_row);
+    csv_vals.push_back(csv_row_tens);
+  }
 
-//   auto csv_tensor = T::create(csv_vals).batch_reshape(batch_shape);
-//   return csv_tensor;
-// }
+  auto csv_tensor = batch_stack(csv_vals).batch_reshape(batch_shape);
+  return csv_tensor;
+}
 
-// template <typename T>
-// T
-// convert(const std::vector<Scalar> & x)
-// {
-//   auto all = base_stack(x);
-//   return all.base_reshape(T::const_base_shape);
-// }
+template <>
+SR2
+CSVPrimitiveTensor<SR2>::parse_csv(const std::string & csv_file,
+                                   const std::string & tensor_name,
+                                   const TensorShape & batch_shape) const
+{
+  csv::CSVReader reader(csv_file);
 
-// template <>
-// SR2
-// convert(const std::vector<Scalar> & x)
-// {
-//   return SR2::fill(x[0], x[1], x[2], x[3], x[4], x[5]);
-// }
+  std::vector<SR2> csv_vals;
+
+  std::vector<std::string> suffix = {"_xx", "_yy", "_zz", "_yz", "_xz", "_xy"};
+
+  for (const auto & row : reader)
+  {
+    std::vector<double> csv_row = {};
+    for (auto & j : suffix)
+    {
+      csv_row.push_back(row[tensor_name + j].get<double>());
+    }
+    auto csv_row_tens = SR2::create(csv_row);
+    csv_vals.push_back(csv_row_tens);
+  }
+
+  auto csv_tensor = batch_stack(csv_vals).batch_reshape(batch_shape);
+  return csv_tensor;
+}
 
 #define CSVPRIMITIVETENSOR_REGISTER(T)                                                             \
   using CSV##T = CSVPrimitiveTensor<T>;                                                            \
   register_NEML2_object_alias(CSV##T, "CSV" #T)
 CSVPRIMITIVETENSOR_REGISTER(Scalar);
+CSVPRIMITIVETENSOR_REGISTER(Vec);
+CSVPRIMITIVETENSOR_REGISTER(SR2);
 } // namespace neml2
 
 #endif
