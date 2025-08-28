@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-08-28 18:31:03</td>
+            <td class="headerValue">2025-08-28 20:19:37</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">94.4&nbsp;%</td>
@@ -106,9 +106,9 @@
 <span id="L44"><span class="lineNum">      44</span>              : }</span>
 <span id="L45"><span class="lineNum">      45</span>              : </span>
 <span id="L46"><span class="lineNum">      46</span>              : bool</span>
-<span id="L47"><span class="lineNum">      47</span> <span class="tlaGNC">       78493 : OptionSet::contains(const std::string &amp; name) const</span></span>
+<span id="L47"><span class="lineNum">      47</span> <span class="tlaGNC">       78461 : OptionSet::contains(const std::string &amp; name) const</span></span>
 <span id="L48"><span class="lineNum">      48</span>              : {</span>
-<span id="L49"><span class="lineNum">      49</span> <span class="tlaGNC">       78493 :   return _values.find(name) != _values.end();</span></span>
+<span id="L49"><span class="lineNum">      49</span> <span class="tlaGNC">       78461 :   return _values.find(name) != _values.end();</span></span>
 <span id="L50"><span class="lineNum">      50</span>              : }</span>
 <span id="L51"><span class="lineNum">      51</span>              : </span>
 <span id="L52"><span class="lineNum">      52</span>              : bool</span>
@@ -135,15 +135,15 @@
 <span id="L73"><span class="lineNum">      73</span>              : }</span>
 <span id="L74"><span class="lineNum">      74</span>              : </span>
 <span id="L75"><span class="lineNum">      75</span>              : OptionBase &amp;</span>
-<span id="L76"><span class="lineNum">      76</span> <span class="tlaGNC">       14242 : OptionSet::set(const std::string &amp; name)</span></span>
+<span id="L76"><span class="lineNum">      76</span> <span class="tlaGNC">       14232 : OptionSet::set(const std::string &amp; name)</span></span>
 <span id="L77"><span class="lineNum">      77</span>              : {</span>
-<span id="L78"><span class="lineNum">      78</span> <span class="tlaGNC">       14242 :   neml_assert(this-&gt;contains(name),</span></span>
+<span id="L78"><span class="lineNum">      78</span> <span class="tlaGNC">       14232 :   neml_assert(this-&gt;contains(name),</span></span>
 <span id="L79"><span class="lineNum">      79</span>              :               &quot;ERROR: no option named \&quot;&quot;,</span>
 <span id="L80"><span class="lineNum">      80</span>              :               name,</span>
 <span id="L81"><span class="lineNum">      81</span>              :               &quot;\&quot; found.\n\nKnown options:\n&quot;,</span>
 <span id="L82"><span class="lineNum">      82</span>              :               *this);</span>
 <span id="L83"><span class="lineNum">      83</span>              : </span>
-<span id="L84"><span class="lineNum">      84</span> <span class="tlaGNC">       14242 :   return *_values[name];</span></span>
+<span id="L84"><span class="lineNum">      84</span> <span class="tlaGNC">       14232 :   return *_values[name];</span></span>
 <span id="L85"><span class="lineNum">      85</span>              : }</span>
 <span id="L86"><span class="lineNum">      86</span>              : </span>
 <span id="L87"><span class="lineNum">      87</span>              : LabeledAxisAccessor &amp;</span>

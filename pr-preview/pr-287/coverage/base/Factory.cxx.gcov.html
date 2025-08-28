@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-08-28 18:31:03</td>
+            <td class="headerValue">2025-08-28 20:19:37</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryMed">66.7&nbsp;%</td>
@@ -93,15 +93,15 @@
 <span id="L31"><span class="lineNum">      31</span>              : namespace neml2</span>
 <span id="L32"><span class="lineNum">      32</span>              : {</span>
 <span id="L33"><span class="lineNum">      33</span>              : std::unique_ptr&lt;Factory&gt;</span>
-<span id="L34"><span class="lineNum">      34</span> <span class="tlaGNC tlaBgGNC">         371 : load_input(const std::filesystem::path &amp; path, const std::string &amp; additional_input)</span></span>
+<span id="L34"><span class="lineNum">      34</span> <span class="tlaGNC tlaBgGNC">         369 : load_input(const std::filesystem::path &amp; path, const std::string &amp; additional_input)</span></span>
 <span id="L35"><span class="lineNum">      35</span>              : {</span>
 <span id="L36"><span class="lineNum">      36</span>              :   // For now we only support HIT</span>
-<span id="L37"><span class="lineNum">      37</span> <span class="tlaGNC">         371 :   if (utils::end_with(path.string(), &quot;.i&quot;))</span></span>
+<span id="L37"><span class="lineNum">      37</span> <span class="tlaGNC">         369 :   if (utils::end_with(path.string(), &quot;.i&quot;))</span></span>
 <span id="L38"><span class="lineNum">      38</span>              :   {</span>
-<span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">         371 :     HITParser parser;</span></span>
-<span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC">         371 :     auto inp = parser.parse(path, additional_input);</span></span>
+<span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">         369 :     HITParser parser;</span></span>
+<span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC">         369 :     auto inp = parser.parse(path, additional_input);</span></span>
 <span id="L41"><span class="lineNum">      41</span> <span class="tlaGNC">         734 :     return std::make_unique&lt;Factory&gt;(inp);</span></span>
-<span id="L42"><span class="lineNum">      42</span> <span class="tlaGNC">         371 :   }</span></span>
+<span id="L42"><span class="lineNum">      42</span> <span class="tlaGNC">         369 :   }</span></span>
 <span id="L43"><span class="lineNum">      43</span>              :   else</span>
 <span id="L44"><span class="lineNum">      44</span> <span class="tlaUNC tlaBgUNC">           0 :     throw ParserException(&quot;Unsupported parser type&quot;);</span></span>
 <span id="L45"><span class="lineNum">      45</span>              : }</span>
