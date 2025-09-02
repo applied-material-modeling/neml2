@@ -20,7 +20,7 @@ jobs:
           path: neml2
           python-version: 3.9
           cmake-version: 3.26
-          torch-version: 2.5.1
+          torch-version: 2.8.0
       - name: Create an example CMake project
         run: |
           cp neml2/cmake/add_subdirectory/main.cxx .
@@ -39,7 +39,7 @@ jobs:
           path: neml2-src
           python-version: 3.9
           cmake-version: 3.26
-          torch-version: 2.5.1
+          torch-version: 2.8.0
       - name: Install neml2
         run: |
           cmake --preset release -GNinja -S neml2-src -B neml2-build -DNEML2_PYBIND=OFF
