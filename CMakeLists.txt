@@ -70,7 +70,7 @@ set(NEML2_WHEEL OFF CACHE INTERNAL "Build NEML2 as a Python wheel. This is suppo
 # ----------------------------------------------------------------------------
 # Dependencies and 3rd party packages
 # ----------------------------------------------------------------------------
-set(torch_VERSION "2.5.1" CACHE STRING "Default libTorch/PyTorch version to download")
+set(torch_VERSION "2.8.0" CACHE STRING "Default libTorch/PyTorch version to download")
 set(torch_SEARCH_SITE_PACKAGES ON CACHE BOOL "Search for libTorch in Python site-packages")
 set(Doxygen_VERSION "1.12.0" CACHE STRING "Default doxygen version to download")
 set(doxygen_awesome_css_VERSION "v2.3.4" CACHE STRING "Default doxygen-awesome version to download")

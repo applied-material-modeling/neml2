@@ -36,7 +36,7 @@ jobs:
         with:
           python-version: 3.9
           cmake-version: 3.26
-          torch-version: 2.5.1
+          torch-version: 2.8.0
       - name: Install
         run: CMAKE_GENERATOR=Ninja pip install -v .
       - name: Run tests
