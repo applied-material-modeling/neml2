@@ -26,6 +26,7 @@ import os
 import re
 import subprocess
 import sys
+import shutil
 from pathlib import Path
 
 from setuptools import Extension, setup
@@ -52,22 +53,24 @@ class CMakeBuild(build_ext):
         extdir = ext_fullpath.parent.resolve() / "neml2"
 
         # Influential env vars
-        generator = os.environ.get("CMAKE_GENERATOR", None)
+        additional_configure_args = os.environ.get("CMAKE_ARGS", "").split()
         njob = os.environ.get("CMAKE_BUILD_JOBS", None)
-        btype = os.environ.get("CMAKE_BUILD_TYPE", "RelWithDebInfo")
 
         # Configure arguments
         configure_args = [
-            "-DCMAKE_BUILD_TYPE={}".format(btype),
+            "--fresh",
+            "-GNinja",
+            "-DCMAKE_BUILD_TYPE=Release",
             "-DNEML2_PYBIND=ON",
             "-DNEML2_TESTS=OFF",
             "-DNEML2_RUNNER=OFF",
             "-DNEML2_DOC=OFF",
             "-DNEML2_WHEEL=ON",
             "-S{}".format(ext.sourcedir),
+            *additional_configure_args,
         ]
-        if generator:
-            configure_args += ["-G", generator]
+        if njob:
+            configure_args += ["-DNEML2_CONTRIB_PARALLEL={}".format(njob)]
 
         # Build arguments
         build_args = ["--build", ".", "--target", "python_stub"]
@@ -83,9 +86,12 @@ class CMakeBuild(build_ext):
             if archs:
                 configure_args += ["-DCMAKE_OSX_ARCHITECTURES={}".format(";".join(archs))]
 
+        # Ensure that the build directory exists
         build_temp = Path(self.build_temp)
-        if not build_temp.exists():
-            build_temp.mkdir(parents=True)
+        build_temp.mkdir(parents=True, exist_ok=True)
+
+        # Clean the extension directory
+        shutil.rmtree(extdir, ignore_errors=True)
 
         subprocess.run(["cmake", *configure_args], cwd=build_temp, check=True)
         subprocess.run(["cmake", *build_args], cwd=build_temp, check=True)

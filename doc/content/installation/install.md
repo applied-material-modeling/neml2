@@ -52,7 +52,7 @@ To install the NEML2 Python package, run the following command at the repository
 ```
 pip install -v .
 ```
-Two optional environment variables can be used to control the build: `CMAKE_GENERATOR` specifies the CMake generator, and `CMAKE_BUILD_JOBS` specifies the number of parallel jobs used to build the package.
+Two optional environment variables can be used to control the build: `CMAKE_ARGS` specifies the additional CMake configure arguments (usually not needed), and `CMAKE_BUILD_JOBS` specifies the number of parallel jobs used to build the package.
 
 Once installed, the package can be imported in Python scripts using
 
