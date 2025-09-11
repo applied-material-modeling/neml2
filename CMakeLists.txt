@@ -75,7 +75,7 @@ set(torch_SEARCH_SITE_PACKAGES ON CACHE BOOL "Search for libTorch in Python site
 set(Doxygen_VERSION "1.12.0" CACHE STRING "Default doxygen version to download")
 set(doxygen_awesome_css_VERSION "v2.3.4" CACHE STRING "Default doxygen-awesome version to download")
 set(wasp_VERSION "78e8705d3743cee12cb0b024a51a98db2c3713bc" CACHE STRING "Default WASP version to download (if not found)")
-set(hit_VERSION "2a78fca034c1eb9ddbda9b0acd6490517cf69370" CACHE STRING "Default HIT version to download")
+set(hit_VERSION "df7e49e95e5ea9ebef0e7578408221d3aeaf7513" CACHE STRING "Default HIT version to download")
 set(catch2_VERSION "v3.5.4" CACHE STRING "Default Catch2 version to download (if not found)")
 set(gperftools_VERSION "gperftools-2.17" CACHE STRING "Default gperftools version to download")
 set(argparse_VERSION "v3.2" CACHE STRING "Default argparse version to download")
