@@ -110,19 +110,45 @@ LinearInterpolation<T>::mask(const T2 & in, const Scalar & m)
 {
   /// extracting the bool tensor
   at::Tensor mt = m.data();
+
   /// keeping only the batch shape safe not base
   const auto B = m.batch_sizes().slice(0, -1);
+
   /// making sure if bool
   if (mt.dtype() != at::kBool)
     mt = mt.to(at::kBool);
+
   /// getting the index of true only. If all false argmax falls back with 0 i.e. first index
   at::Tensor idx = mt.to(at::kLong).argmax(-1);
-  /// expanding for using take_along_dim
-  at::Tensor idx_exp = idx.unsqueeze(-1);
-  /// expanding in for using take_along_dim
-  at::Tensor in_exp = in.batch_expand_as(m).data();
-  at::Tensor gathered = at::take_along_dim(in_exp, idx_exp, /*dim=*/-1).squeeze(-1);
-  /// Wraping back into T2 and restoring batch shape B
+
+  /// getting the input tensor data expanded to match mask's batch structure
+  at::Tensor in_data = in.batch_expand_as(m).data();
+
+  /// getting interpolation dim
+  auto in_shape = in_data.sizes();
+  auto idx_shape = idx.sizes();
+  int interp_dim = static_cast<int>(idx_shape.size());
+
+  /// adding dim to match input tensor dimensions manually (creating shape)
+  at::Tensor idx_exp = idx;
+  for (int i = interp_dim; i < static_cast<int>(in_shape.size()); i++)
+  {
+    if (i == interp_dim)
+      idx_exp = idx_exp.unsqueeze(i);
+    else
+      idx_exp = idx_exp.unsqueeze(-1);
+  }
+  /// expanding to match input shape
+  std::vector<int64_t> expand_shape(in_shape.begin(), in_shape.end());
+  expand_shape[interp_dim] = 1;
+  /// but keep interpolation dim as size 1
+  idx_exp = idx_exp.expand(expand_shape);
+
+  at::Tensor gathered = at::take_along_dim(in_data, idx_exp, interp_dim);
+  gathered = gathered.squeeze(interp_dim);
+
+  /// wraping back into T2 and restoring batch shape B
   return T2(gathered).batch_reshape(B);
 }
+
 } // namespace neml2
