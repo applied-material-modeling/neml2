@@ -109,20 +109,19 @@ T2
 LinearInterpolation<T>::mask(const T2 & in, const Scalar & m)
 {
   /// extracting the bool tensor
-  at::Tensor mt = m.data(); 
+  at::Tensor mt = m.data();
   /// keeping only the batch shape safe not base
   const auto B = m.batch_sizes().slice(0, -1);
   /// making sure if bool
-  if (mt.dtype() != at::kBool) {
+  if (mt.dtype() != at::kBool)
     mt = mt.to(at::kBool);
-  }
   /// getting the index of true only. If all false argmax falls back with 0 i.e. first index
   at::Tensor idx = mt.to(at::kLong).argmax(-1);
   /// expanding for using take_along_dim
-  at::Tensor idx_exp = idx.unsqueeze(-1); 
+  at::Tensor idx_exp = idx.unsqueeze(-1);
   /// expanding in for using take_along_dim
-  at::Tensor in_exp = in.batch_expand_as(m).data(); 
-  at::Tensor gathered = at::take_along_dim(in_exp, idx_exp, /*dim=*/-1).squeeze(-1); 
+  at::Tensor in_exp = in.batch_expand_as(m).data();
+  at::Tensor gathered = at::take_along_dim(in_exp, idx_exp, /*dim=*/-1).squeeze(-1);
   /// Wraping back into T2 and restoring batch shape B
   return T2(gathered).batch_reshape(B);
 }
