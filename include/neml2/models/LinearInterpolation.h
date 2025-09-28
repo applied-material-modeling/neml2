@@ -106,24 +106,25 @@ protected:
 
 template <typename T>
 template <typename T2>
-T2 LinearInterpolation<T>::mask(const T2 & in, const Scalar & m)
+T2
+LinearInterpolation<T>::mask(const T2 & in, const Scalar & m)
 {
-    const auto B = m.batch_sizes().slice(0, -1);
-    
-    auto expanded_in = in.batch_expand_as(m);
-    
-    Scalar bool_mask = m;
-    if (bool_mask.data().dtype() != at::kBool) {
-        bool_mask = Scalar(bool_mask.data().to(at::kBool), bool_mask.batch_sizes());
-    }
-    
-    auto result_data = expanded_in.index({bool_mask});
-    
-    if (B.empty()) 
-        return T2(result_data.data().squeeze());
-    else 
-        return T2(result_data).batch_reshape(B);
-    
+  const auto B = m.batch_sizes().slice(0, -1);
+
+  auto expanded_in = in.batch_expand_as(m);
+
+  Scalar bool_mask = m;
+  if (bool_mask.data().dtype() != at::kBool)
+  {
+    bool_mask = Scalar(bool_mask.data().to(at::kBool), bool_mask.batch_sizes());
+  }
+
+  auto result_data = expanded_in.index({bool_mask});
+
+  if (B.empty())
+    return T2(result_data.data().squeeze());
+  else
+    return T2(result_data).batch_reshape(B);
 }
 
 } // namespace neml2
