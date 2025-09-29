@@ -1,21 +1,54 @@
+[Tensors]
+  [alpha_x]
+    type = Scalar
+    values = '300 400 500'
+    batch_shape = '(3)'
+  []
+  [alpha_y]
+    type = Scalar
+    values = '1e-5 1.5e-5 1.8e-5'
+    batch_shape = '(3)'
+  []
+  [K_x]
+    type = Scalar
+    values = '300 350 400 450'
+    batch_shape = '(4)'
+  []
+  [K_y]
+    type = Scalar
+    values = '1.4e5 1.35e5 1.32e5 1.25e5'
+    batch_shape = '(4)'
+  []
+  [G_x]
+    type = Scalar
+    values = '300 500'
+    batch_shape = '(2)'
+  []
+  [G_y]
+    type = Scalar
+    values = '7.8e4 7e4'
+    batch_shape = '(2)'
+  []
+[]
+
 [Models]
   [alpha]
     type = ScalarLinearInterpolation
     argument = 'forces/T'
-    abscissa = '300 400 500'
-    ordinate = '1e-5 1.5e-5 1.8e-5'
+    abscissa = 'alpha_x'
+    ordinate = 'alpha_y'
   []
   [K]
     type = ScalarLinearInterpolation
     argument = 'forces/T'
-    abscissa = '300 350 400 450'
-    ordinate = '1.4e5 1.35e5 1.32e5 1.25e5'
+    abscissa = 'K_x'
+    ordinate = 'K_y'
   []
   [G]
     type = ScalarLinearInterpolation
     argument = 'forces/T'
-    abscissa = '300 500'
-    ordinate = '7.8e4 7e4'
+    abscissa = 'G_x'
+    ordinate = 'G_y'
   []
   [eq1]
     type = ThermalEigenstrain

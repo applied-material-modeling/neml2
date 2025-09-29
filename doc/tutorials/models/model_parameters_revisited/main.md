@@ -188,7 +188,7 @@ In this input file, a tensor named "alpha" with batch shape `(2, 2)` is created 
 
 ### Variable specifier
 
-While specifying parameters using tensor names is significantly more flexible than using plain numeric literals, the parameter values still remain "static", i.e., the parameter values remain the same during model evaluation unless explicitly updated by the user. In practice, especially when dealing with multiple physics phenomena such as thermal-mechanical coupling, this limitation makes it difficult to specify temperature-dependent parameters.
+While specifying parameters using tensor names is significantly more flexible than using plain numeric literals, the parameter values still remain "static", i.e., the parameter values remain the same during model evaluation unless explicitly updated by the user. In practice, especially when dealing with multiple physics phenomena such as thermo-mechanical coupling, this limitation makes it difficult to specify temperature-dependent parameters.
 
 To remove this limitation, NEML2 allows the use of *variable specifiers* to define model parameters. Suppose the original problem is modified to account for temperature-dependent parameters, e.g.,
 \f{align*}
@@ -198,24 +198,57 @@ To remove this limitation, NEML2 allows the use of *variable specifiers* to defi
 \f}
 where \f$ \alpha(T) \f$, \f$ K(T) \f$, and \f$ G(T) \f$ are linearly interpolated from given data. The input file can be modified accordingly:
 ```
+[Tensors]
+  [alpha_x]
+    type = Scalar
+    values = '300 400 500'
+    batch_shape = '(3)'
+  []
+  [alpha_y]
+    type = Scalar
+    values = '1e-5 1.5e-5 1.8e-5'
+    batch_shape = '(3)'
+  []
+  [K_x]
+    type = Scalar
+    values = '300 350 400 450'
+    batch_shape = '(4)'
+  []
+  [K_y]
+    type = Scalar
+    values = '1.4e5 1.35e5 1.32e5 1.25e5'
+    batch_shape = '(4)'
+  []
+  [G_x]
+    type = Scalar
+    values = '300 500'
+    batch_shape = '(2)'
+  []
+  [G_y]
+    type = Scalar
+    values = '7.8e4 7e4'
+    batch_shape = '(2)'
+  []
+[]
+
 [Models]
   [alpha]
     type = ScalarLinearInterpolation
     argument = 'forces/T'
-    abscissa = '300 400 500'
-    ordinate = '1e-5 1.5e-5 1.8e-5'
+    abscissa = 'alpha_x'
+    ordinate = 'alpha_y'
   []
   [K]
     type = ScalarLinearInterpolation
     argument = 'forces/T'
-    abscissa = '300 350 400 450'
-    ordinate = '1.4e5 1.35e5 1.32e5 1.25e5'
+    abscissa = 'K_x'
+    ordinate = 'K_y'
   []
   [G]
     type = ScalarLinearInterpolation
     argument = 'forces/T'
-    abscissa = '300 500'
-    ordinate = '7.8e4 7e4'
+    abscissa = 'G_x'
+    ordinate = 'G_y'
   []
   [eq1]
     type = ThermalEigenstrain
@@ -296,52 +329,42 @@ The composed model automatically reflects such restructuring:
 When the referenced model has more than one output variable, the variable specification becomes ambiguous. A more precise variable specifier in the form of `<model-name>.<variable-name>` can be used to remove such ambiguity. For example, although unncessary (as [ScalarLinearInterpolation](#scalarlinearinterpolation) defines one and only one output variable), the above example input is equivalent to
 ```
 [Models]
-  [alpha]
-    type = ScalarLinearInterpolation
-    argument = 'forces/T'
-    abscissa = '300 400 500'
-    ordinate = '1e-5 1.5e-5 1.8e-5'
-  []
-  [K]
-    type = ScalarLinearInterpolation
-    argument = 'forces/T'
-    abscissa = '300 350 400 450'
-    ordinate = '1.4e5 1.35e5 1.32e5 1.25e5'
-  []
-  [G]
-    type = ScalarLinearInterpolation
-    argument = 'forces/T'
-    abscissa = '300 500'
-    ordinate = '7.8e4 7e4'
-  []
+  # ...
   [eq1]
     type = ThermalEigenstrain
     reference_temperature = '300'
     CTE = 'alpha.parameters/alpha'
     eigenstrain = 'forces/Eg'
   []
-  [eq2]
-    type = SR2LinearCombination
-    from_var = 'forces/E forces/Eg'
-    to_var = 'forces/Ee'
-    coefficients = '1 -1'
-  []
-  [eq3]
-    type = LinearIsotropicElasticity
-    strain = 'forces/Ee'
-    stress = 'state/S'
-    coefficient_types = 'BULK_MODULUS SHEAR_MODULUS'
-    coefficients = 'K.parameters/K G.parameters/G'
-  []
-  [eq]
-    type = ComposedModel
-    models = 'eq1 eq2 eq3'
-  []
+  # ...
 []
 ```
 
 Finally, a special form of variable specifier can be used to effectively transform a model parameter into an **input variable**. For example, the following input file converts the coefficient of thermal expansion into an input variable.
 ```
+[Tensors]
+  [K_x]
+    type = Scalar
+    values = '300 350 400 450'
+    batch_shape = '(4)'
+  []
+  [K_y]
+    type = Scalar
+    values = '1.4e5 1.35e5 1.32e5 1.25e5'
+    batch_shape = '(4)'
+  []
+  [G_x]
+    type = Scalar
+    values = '300 500'
+    batch_shape = '(2)'
+  []
+  [G_y]
+    type = Scalar
+    values = '7.8e4 7e4'
+    batch_shape = '(2)'
+  []
+[]
+
 [Models]
   [K]
     type = ScalarLinearInterpolation
