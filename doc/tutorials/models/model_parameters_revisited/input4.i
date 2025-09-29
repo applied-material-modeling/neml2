@@ -1,3 +1,26 @@
+[Tensors]
+  [K_x]
+    type = Scalar
+    values = '300 350 400 450'
+    batch_shape = '(4)'
+  []
+  [K_y]
+    type = Scalar
+    values = '1.4e5 1.35e5 1.32e5 1.25e5'
+    batch_shape = '(4)'
+  []
+  [G_x]
+    type = Scalar
+    values = '300 500'
+    batch_shape = '(2)'
+  []
+  [G_y]
+    type = Scalar
+    values = '7.8e4 7e4'
+    batch_shape = '(2)'
+  []
+[]
+
 [Models]
   [K]
     type = ScalarLinearInterpolation
