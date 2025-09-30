@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-09-29 06:03:12</td>
+            <td class="headerValue">2025-09-30 07:02:50</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">78.3&nbsp;%</td>
@@ -527,33 +527,33 @@
 <span id="L465"><span class="lineNum">     465</span> <span class="tlaGNC">        6956 : }</span></span>
 <span id="L466"><span class="lineNum">     466</span>              : </span>
 <span id="L467"><span class="lineNum">     467</span>              : std::string</span>
-<span id="L468"><span class="lineNum">     468</span> <span class="tlaGNC">      160181 : Model::variable_name_lookup(const ATensor &amp; var)</span></span>
+<span id="L468"><span class="lineNum">     468</span> <span class="tlaGNC">      160098 : Model::variable_name_lookup(const ATensor &amp; var)</span></span>
 <span id="L469"><span class="lineNum">     469</span>              : {</span>
 <span id="L470"><span class="lineNum">     470</span>              :   // Look for the variable in the input and output variables</span>
-<span id="L471"><span class="lineNum">     471</span> <span class="tlaGNC">      566514 :   for (auto &amp;&amp; [ivar, val] : input_variables())</span></span>
-<span id="L472"><span class="lineNum">     472</span> <span class="tlaGNC">      407975 :     if (val-&gt;tensor().data_ptr() == var.data_ptr())</span></span>
+<span id="L471"><span class="lineNum">     471</span> <span class="tlaGNC">      566058 :   for (auto &amp;&amp; [ivar, val] : input_variables())</span></span>
+<span id="L472"><span class="lineNum">     472</span> <span class="tlaGNC">      407602 :     if (val-&gt;tensor().data_ptr() == var.data_ptr())</span></span>
 <span id="L473"><span class="lineNum">     473</span> <span class="tlaGNC">        1642 :       return name() + &quot;::&quot; + utils::stringify(ivar);</span></span>
-<span id="L474"><span class="lineNum">     474</span> <span class="tlaGNC">      340564 :   for (auto &amp;&amp; [ovar, val] : output_variables())</span></span>
-<span id="L475"><span class="lineNum">     475</span> <span class="tlaGNC">      182366 :     if (val-&gt;tensor().data_ptr() == var.data_ptr())</span></span>
+<span id="L474"><span class="lineNum">     474</span> <span class="tlaGNC">      340373 :   for (auto &amp;&amp; [ovar, val] : output_variables())</span></span>
+<span id="L475"><span class="lineNum">     475</span> <span class="tlaGNC">      182258 :     if (val-&gt;tensor().data_ptr() == var.data_ptr())</span></span>
 <span id="L476"><span class="lineNum">     476</span> <span class="tlaGNC">         341 :       return name() + &quot;::&quot; + utils::stringify(ovar);</span></span>
 <span id="L477"><span class="lineNum">     477</span>              : </span>
 <span id="L478"><span class="lineNum">     478</span>              :   // Look for the variable in the parameter and buffer store</span>
-<span id="L479"><span class="lineNum">     479</span> <span class="tlaGNC">     1101679 :   for (auto &amp;&amp; [pname, pval] : host&lt;ParameterStore&gt;()-&gt;named_parameters())</span></span>
-<span id="L480"><span class="lineNum">     480</span> <span class="tlaGNC">      944301 :     if (Tensor(*pval).data_ptr() == var.data_ptr())</span></span>
+<span id="L479"><span class="lineNum">     479</span> <span class="tlaGNC">     1100595 :   for (auto &amp;&amp; [pname, pval] : host&lt;ParameterStore&gt;()-&gt;named_parameters())</span></span>
+<span id="L480"><span class="lineNum">     480</span> <span class="tlaGNC">      943300 :     if (Tensor(*pval).data_ptr() == var.data_ptr())</span></span>
 <span id="L481"><span class="lineNum">     481</span> <span class="tlaGNC">         820 :       return name() + &quot;::&quot; + utils::stringify(pname);</span></span>
-<span id="L482"><span class="lineNum">     482</span> <span class="tlaGNC">      859437 :   for (auto &amp;&amp; [bname, bval] : host&lt;BufferStore&gt;()-&gt;named_buffers())</span></span>
-<span id="L483"><span class="lineNum">     483</span> <span class="tlaGNC">      702220 :     if (Tensor(*bval).data_ptr() == var.data_ptr())</span></span>
+<span id="L482"><span class="lineNum">     482</span> <span class="tlaGNC">      858799 :   for (auto &amp;&amp; [bname, bval] : host&lt;BufferStore&gt;()-&gt;named_buffers())</span></span>
+<span id="L483"><span class="lineNum">     483</span> <span class="tlaGNC">      701665 :     if (Tensor(*bval).data_ptr() == var.data_ptr())</span></span>
 <span id="L484"><span class="lineNum">     484</span> <span class="tlaGNC">         161 :       return name() + &quot;::&quot; + utils::stringify(bname);</span></span>
 <span id="L485"><span class="lineNum">     485</span>              : </span>
 <span id="L486"><span class="lineNum">     486</span>              :   // Look for the variable in the registered models</span>
-<span id="L487"><span class="lineNum">     487</span> <span class="tlaGNC">      275273 :   for (auto &amp; submodel : registered_models())</span></span>
+<span id="L487"><span class="lineNum">     487</span> <span class="tlaGNC">      275107 :   for (auto &amp; submodel : registered_models())</span></span>
 <span id="L488"><span class="lineNum">     488</span>              :   {</span>
-<span id="L489"><span class="lineNum">     489</span> <span class="tlaGNC">      118452 :     auto name = submodel-&gt;variable_name_lookup(var);</span></span>
-<span id="L490"><span class="lineNum">     490</span> <span class="tlaGNC">      118452 :     if (!name.empty())</span></span>
+<span id="L489"><span class="lineNum">     489</span> <span class="tlaGNC">      118369 :     auto name = submodel-&gt;variable_name_lookup(var);</span></span>
+<span id="L490"><span class="lineNum">     490</span> <span class="tlaGNC">      118369 :     if (!name.empty())</span></span>
 <span id="L491"><span class="lineNum">     491</span> <span class="tlaGNC">         396 :       return name;</span></span>
-<span id="L492"><span class="lineNum">     492</span> <span class="tlaGNC">      118452 :   }</span></span>
+<span id="L492"><span class="lineNum">     492</span> <span class="tlaGNC">      118369 :   }</span></span>
 <span id="L493"><span class="lineNum">     493</span>              : </span>
-<span id="L494"><span class="lineNum">     494</span> <span class="tlaGNC">      313642 :   return &quot;&quot;;</span></span>
+<span id="L494"><span class="lineNum">     494</span> <span class="tlaGNC">      313476 :   return &quot;&quot;;</span></span>
 <span id="L495"><span class="lineNum">     495</span>              : }</span>
 <span id="L496"><span class="lineNum">     496</span>              : </span>
 <span id="L497"><span class="lineNum">     497</span>              : void</span>
