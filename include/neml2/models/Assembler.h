@@ -30,7 +30,7 @@
 
 namespace neml2
 {
-namespace details
+namespace utils
 {
 template <std::size_t N>
 Tensor to_assembly(const Tensor & from,

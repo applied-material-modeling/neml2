@@ -24,8 +24,6 @@
 
 #pragma once
 
-#include <memory>
-
 #include "neml2/models/map_types_fwd.h"
 #include "neml2/base/LabeledAxisAccessor.h"
 #include "neml2/misc/types.h"
@@ -34,6 +32,7 @@ namespace neml2
 {
 // Forward declarations
 class Model;
+template <std::size_t N>
 class Derivative;
 enum class TensorType : int8_t;
 template <typename, typename>
@@ -145,23 +144,13 @@ public:
   /// Make a zeros tensor
   Tensor make_zeros(const TraceableTensorShape & batch_shape, const TensorOptions & options) const;
 
-  /// Convert a tensor from assembly format to variable format
-  Tensor from_assembly(const Tensor & val) const;
-
-  /// Convert a tensor from variable format to assembly format
-  Tensor to_assembly(const Tensor & val) const;
-
   /// Set the variable value to zero
   virtual void zero(const TensorOptions & options) = 0;
 
-  /// Set the variable value
+  /// Set the variable value from a Tensor in assembly format
   virtual void set(const Tensor & val) = 0;
 
-  /// Set the variable value from a ATensor (with inferred batch shape)
-  /// If force is true, the value is set even if the variable is a reference
-  virtual void set(const ATensor & val, bool force = false) = 0;
-
-  /// Get the variable value for assembly purposes, i.e., with shape (batch; storage) where storage is the size of the flattened size of (lbatch, base)
+  /// Get the variable value in assembly format
   virtual Tensor get() const = 0;
 
   /// Get the variable value cast to Tensor
@@ -197,10 +186,10 @@ public:
   virtual void assign(const ATensor & val, RawAssignment key) = 0;
 
   /// Wrapper for assigning partial derivative
-  Derivative d(const VariableBase & var);
+  Derivative<1> d(const VariableBase & var);
 
   /// Wrapper for assigning second partial derivative
-  Derivative d(const VariableBase & var1, const VariableBase & var2);
+  Derivative<2> d(const VariableBase & var1, const VariableBase & var2);
 
   ///@{
   /// Request to use AD to calculate the derivative of this variable with respect to another variable
@@ -243,12 +232,10 @@ public:
 
 private:
   ValueMap total_derivatives(const DependencyResolver<Model, VariableName> & dep,
-                             Model * model,
-                             const VariableName & yvar) const;
+                             Model * model) const;
 
   DerivMap total_second_derivatives(const DependencyResolver<Model, VariableName> & dep,
-                                    Model * model,
-                                    const VariableName & yvar) const;
+                                    Model * model) const;
 
   /// Left-batch shape of the variable
   const TensorShape _lbatch_sizes = {};
@@ -306,8 +293,6 @@ public:
 
   void set(const Tensor & val) override;
 
-  void set(const ATensor & val, bool force = false) override;
-
   Tensor get() const override;
 
   Tensor tensor() const override;
@@ -343,44 +328,32 @@ protected:
   T _value;
 };
 
+/// Derivative wrapper
+template <std::size_t N>
 class Derivative
 {
 public:
   Derivative() = default;
-
-  /// First order derivative dvar1/dvar2
-  Derivative(const VariableBase & var1, const VariableBase & var2, Tensor * deriv);
-
-  // Second order derivative d2var1/(dvar2 dvar3)
-  Derivative(const VariableBase & var1,
-             const VariableBase & var2,
-             const VariableBase & var3,
+  Derivative(const VariableBase * var,
+             const std::array<const VariableBase *, N> & args,
              Tensor * deriv);
 
-  /// Assignment operator (assuming @p val is in variable format)
+  /// Assignment operator
+  ///@{
   Derivative & operator=(const Tensor & val);
-  Derivative & operator=(const VariableBase & var);
-
-  /// Accumulate derivative (assuming @p val is already in assembly format)
-  void accumulate(const Tensor & val);
-
-  /// Set derivative (assuming @p val is already in assembly format)
-  void set(const Tensor & val);
+  Derivative & operator=(const VariableBase & val);
+  ///@}
 
 private:
-  /// Left-batch shape of the derivative
-  const std::vector<TensorShapeRef> _lbatch_sizes = {};
+  /// Variable to take derivative with
+  const VariableBase * _var = nullptr;
 
-  /// Base shape of the derivative
-  const std::vector<TensorShapeRef> _base_sizes = {};
-
-  /// Assembly storage of the derivative
-  const TensorShape _assembly_sizes = {};
+  /// Arguments
+  std::array<const VariableBase *, N> _args;
 
   /// Derivative to write to
   Tensor * const _deriv = nullptr;
 
-/// Debug name
 #ifndef NDEBUG
   const std::string _debug_name = "";
 #endif

@@ -25,6 +25,9 @@
 #include "neml2/models/Variable.h"
 #include "neml2/models/Model.h"
 #include "neml2/models/DependencyResolver.h"
+#include "neml2/models/Assembler.h"
+#include "neml2/tensors/Tensor.h"
+#include "neml2/tensors/shape_utils.h"
 #include "neml2/tensors/tensors.h"
 #include "neml2/misc/assertions.h"
 #include "neml2/tensors/functions/bmm.h"
@@ -231,74 +234,19 @@ VariableBase::make_zeros(const TraceableTensorShape & batch_shape,
   return tensor;
 }
 
-Tensor
-VariableBase::from_assembly(const Tensor & val) const
-{
-  // shortcut when there's no left-batch dimension
-  if (lbatch_sizes().empty())
-    return val.base_reshape(base_sizes());
-
-  std::cout << "val: " << val.batch_sizes() << "; " << val.base_sizes() << std::endl;
-  std::cout << "expect lbatch: " << lbatch_sizes() << std::endl;
-  std::cout << "expect base: " << base_sizes() << std::endl;
-
-  // left-batch shapes are special:
-  // it is a "base" shape at assembly time, and a "batch" shape at operation time
-  const auto B = utils::add_traceable_shapes(lbatch_sizes(), val.batch_sizes());
-  const auto D = utils::add_shapes(lbatch_sizes(), base_sizes());
-  // reshape to (batch; lbatch, base)
-  auto v = val.base_reshape(D);
-  // move lbatch to the front, i.e. (lbatch, batch; base)
-  TensorShape permutation(v.dim());
-  std::iota(permutation.begin(), permutation.end(), 0);
-  auto begin = permutation.begin() + val.batch_dim();
-  auto end = begin + lbatch_dim();
-  std::rotate(begin, end, permutation.begin());
-  return Tensor(at::permute(v, permutation), B);
-}
-
-Tensor
-VariableBase::to_assembly(const Tensor & val) const
-{
-  // shortcut when there's no left-batch dimension
-  if (lbatch_sizes().empty())
-    return val.base_flatten();
-
-  // variable format has shape (lbatch, batch; base)
-  // we need to permute it to (batch; lbatch, base)
-  TensorShape permutation(val.dim());
-  std::iota(permutation.begin(), permutation.end(), 0);
-  auto begin = permutation.begin();
-  auto end = begin + lbatch_dim();
-  std::rotate(begin, end, permutation.end() - base_dim());
-  return Tensor(at::permute(val, permutation), val.batch_sizes().slice(lbatch_dim()))
-      .base_flatten();
-}
-
-Derivative
+Derivative<1>
 VariableBase::d(const VariableBase & var)
 {
-  neml_assert_dbg(owning(),
-                  "Cannot assign derivative to a referencing variable '",
-                  name(),
-                  "' with respect to '",
-                  var.name(),
-                  "'.");
-  return Derivative(*this, var, &_derivs[var.name()]);
+  neml_assert_dbg(owning(), "Cannot assign derivative to a referencing variable '", name(), "'.");
+  return Derivative<1>(this, {&var}, &_derivs[var.name()]);
 }
 
-Derivative
+Derivative<2>
 VariableBase::d(const VariableBase & var1, const VariableBase & var2)
 {
-  neml_assert_dbg(owning(),
-                  "Cannot assign second derivative to a referencing variable '",
-                  name(),
-                  "' with respect to '",
-                  var1.name(),
-                  "' and '",
-                  var2.name(),
-                  "'.");
-  return Derivative(*this, var1, var2, &_sec_derivs[var1.name()][var2.name()]);
+  neml_assert_dbg(
+      owning(), "Cannot assign second derivative to a referencing variable '", name(), "'.");
+  return Derivative<2>(this, {&var1, &var2}, &_sec_derivs[var1.name()][var2.name()]);
 }
 
 void
@@ -312,7 +260,7 @@ VariableBase::request_AD(const std::vector<const VariableBase *> & us)
 {
   for (const auto & u : us)
   {
-    neml_assert(u, "Cannot request AD for a null variable.");
+    neml_assert(u, "Internal error: null variable pointer.");
     owner().request_AD(*this, *u);
   }
 }
@@ -356,7 +304,7 @@ VariableBase::apply_chain_rule(const DependencyResolver<Model, VariableName> & d
   for (const auto & [model, var] : dep.outbound_items())
     if (var == name())
     {
-      _derivs = total_derivatives(dep, model, var);
+      _derivs = total_derivatives(dep, model);
       return;
     }
 }
@@ -367,7 +315,7 @@ VariableBase::apply_second_order_chain_rule(const DependencyResolver<Model, Vari
   for (const auto & [model, var] : dep.outbound_items())
     if (var == name())
     {
-      _sec_derivs = total_second_derivatives(dep, model, var);
+      _sec_derivs = total_second_derivatives(dep, model);
       return;
     }
 }
@@ -381,21 +329,63 @@ assign_or_add(Tensor & dest, const Tensor & val)
     dest = val;
 }
 
+static Tensor
+derivative_dot(const VariableBase & yvar,
+               const VariableBase & uvar,
+               const Tensor & dy_du,
+               const Tensor & du_dx)
+{
+  // dy_du is in the form
+  //   (lbatch_y, lbatch_u, ...; base_y, base_u)
+  //
+  // du_dx is in the form
+  //   (lbatch_u, lbatch_x, ...; base_u, base_x)
+  //
+  // We need to contract the following dimensions:
+  //   (lbatch_y, lbatch_u,           ...; base_y, base_u)
+  //   (          lbatch_u, lbatch_x, ...;         base_u, base_x)
+  //
+  // After contraction, the derivative would have shape
+  //  (lbatch_y, lbatch_x, ...; base_y, base_x)
+
+  const auto lbatch_dim_u = uvar.lbatch_dim();
+  const auto base_dim_y = yvar.base_dim();
+  const auto base_dim_u = uvar.base_dim();
+  const auto base_dim_x = xvar.base_dim();
+
+  // Get the dimensions to contract for dy_du
+  TensorShape dy_du_cdims(lbatch_dim_u + base_dim_u);
+  std::iota(dy_du_cdims.begin(), dy_du_cdims.begin() + lbatch_dim_u, lbatch_dim_u);
+  std::iota(dy_du_cdims.begin() + lbatch_dim_u, dy_du_cdims.end(), dy_du.batch_dim() + base_dim_y);
+
+  // Get the dimensions to contract for du_dx
+  TensorShape du_dx_cdims(lbatch_dim_u + base_dim_u);
+  std::iota(du_dx_cdims.begin(), du_dx_cdims.begin() + lbatch_dim_u, 0);
+  std::iota(du_dx_cdims.begin() + lbatch_dim_u, du_dx_cdims.end(), du_dx.batch_dim());
+
+  // Contract the dimensions
+  auto result = at::tensordot(dy_du, du_dx, dy_du_cdims, du_dx_cdims);
+  auto B = result.dim() - (base_dim_y + base_dim_x);
+  return Tensor(result, B);
+}
+
 ValueMap
 VariableBase::total_derivatives(const DependencyResolver<Model, VariableName> & dep,
-                                Model * model,
-                                const VariableName & yvar) const
+                                Model * model) const
 {
   ValueMap derivs;
 
-  for (const auto & [uvar, dy_du] : model->output_variable(yvar).derivatives())
+  for (const auto & [uname, dy_du] : derivatives())
   {
-    if (dep.inbound_items().count({model, uvar}))
-      assign_or_add(derivs[uvar], dy_du);
+    if (dep.inbound_items().find({model, uname}) != dep.inbound_items().end())
+      assign_or_add(derivs[uname], dy_du);
     else
-      for (const auto & depu : dep.item_providers().at({model, uvar}))
-        for (const auto & [xvar, du_dx] : total_derivatives(dep, depu.parent, uvar))
-          assign_or_add(derivs[xvar], bmm(dy_du, du_dx));
+      for (const auto & depu : dep.item_providers().at({model, uname}))
+      {
+        const auto & uvar = depu.parent->output_variable(uname);
+        for (const auto & [xvar, du_dx] : uvar.total_derivatives(dep, depu.parent))
+          assign_or_add(derivs[xvar], derivative_dot(*this, uvar, dy_du, du_dx));
+      }
   }
 
   return derivs;
@@ -403,8 +393,7 @@ VariableBase::total_derivatives(const DependencyResolver<Model, VariableName> & 
 
 DerivMap
 VariableBase::total_second_derivatives(const DependencyResolver<Model, VariableName> & dep,
-                                       Model * model,
-                                       const VariableName & yvar) const
+                                       Model * model) const
 {
   DerivMap sec_derivs;
 
@@ -530,7 +519,7 @@ void
 Variable<T>::set(const Tensor & val)
 {
   if (owning())
-    _value = from_assembly(val);
+    _value = utils::from_assembly<1>(val, {base_sizes()}, {lbatch_sizes()}, name().str());
   else
   {
     neml_assert_dbg(_ref_is_mutable,
@@ -551,7 +540,7 @@ Tensor
 Variable<T>::get() const
 {
   neml_assert_dbg(_value.defined(), "Variable '", name(), "' has undefined value.");
-  return to_assembly(_value);
+  return utils::to_assembly<1>(_value, {base_sizes()}, {lbatch_sizes()}, name().str());
 }
 
 template <typename T>
@@ -658,139 +647,72 @@ Variable<T>::clear()
 #define INSTANTIATE_VARIABLE(T) template class Variable<T>
 FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_VARIABLE);
 
-Derivative::Derivative(const VariableBase & var1, const VariableBase & var2, Tensor * deriv)
-  : _lbatch_sizes({var1.lbatch_sizes(), var2.lbatch_sizes()}),
-    _base_sizes({var1.base_sizes(), var2.base_sizes()}),
-    _assembly_sizes({var1.assembly_storage(), var2.assembly_storage()}),
+template <std::size_t N>
+Derivative<N>::Derivative(const VariableBase * var,
+                          const std::array<const VariableBase *, N> & args,
+                          Tensor * deriv)
+  : _var(var),
+    _args(args),
     _deriv(deriv)
 #ifndef NDEBUG
     ,
-    _debug_name(std::string("d(") + var1.name().str() + ")/d(" + var2.name().str() + ")")
+    _debug_name(N == 2
+                    ? std::string("d(") + var->name().str() + ")/d(" + args[0]->name().str() + ")"
+                    : std::string("d2(") + var->name().str() + ")/d(" + args[0]->name().str() +
+                          ")d(" + args[1]->name().str() + ")")
 #endif
 {
 }
 
-Derivative::Derivative(const VariableBase & var1,
-                       const VariableBase & var2,
-                       const VariableBase & var3,
-                       Tensor * deriv)
-  : _lbatch_sizes({var1.lbatch_sizes(), var2.lbatch_sizes(), var3.lbatch_sizes()}),
-    _base_sizes({var1.base_sizes(), var2.base_sizes(), var3.base_sizes()}),
-    _assembly_sizes({var1.assembly_storage(), var2.assembly_storage(), var3.assembly_storage()}),
-    _deriv(deriv)
-#ifndef NDEBUG
-    ,
-    _debug_name(std::string("d2(") + var1.name().str() + ")/d(" + var2.name().str() + ")/d(" +
-                var3.name().str() + ")")
-#endif
-{
-}
-
-Derivative &
-Derivative::operator=(const Tensor & val)
+template <std::size_t N>
+Derivative<N> &
+Derivative<N>::operator=(const Tensor & val)
 {
 #ifndef NDEBUG
-  // check if the given derivative has the correct left-batch shape
-  const auto lbatch_sizes =
-      _lbatch_sizes.size() == 2
-          ? utils::add_shapes(_lbatch_sizes[0], _lbatch_sizes[1])
-          : utils::add_shapes(_lbatch_sizes[0], _lbatch_sizes[1], _lbatch_sizes[2]);
-  neml_assert_dbg(val.batch_dim() >= Size(lbatch_sizes.size()) &&
-                      val.batch_sizes().slice(0, Size(lbatch_sizes.size())) == lbatch_sizes,
-                  "The assigned derivative for ",
+  auto lbatch_sizes = N == 2 ? utils::add_shapes(_var->lbatch_sizes(), _args[0]->lbatch_sizes())
+                             : utils::add_shapes(_var->lbatch_sizes(),
+                                                 _args[0]->lbatch_sizes(),
+                                                 _args[1]->lbatch_sizes());
+  auto base_sizes =
+      N == 2
+          ? utils::add_shapes(_var->base_sizes(), _args[0]->base_sizes())
+          : utils::add_shapes(_var->base_sizes(), _args[0]->base_sizes(), _args[1]->base_sizes());
+  auto lbatch_dim = Size(lbatch_sizes.size());
+  neml_assert_dbg(val.batch_dim() >= lbatch_dim,
+                  "The assigned derivative for variable '",
                   _debug_name,
-                  " has incorrect batch shape ",
-                  val.batch_sizes(),
-                  " which is incompatible with the expected left-batch shape of ",
+                  "' has insufficient batch dimensions. Expected at least ",
+                  lbatch_dim,
+                  ", got ",
+                  val.batch_dim(),
+                  ".");
+  neml_assert_dbg(val.batch_sizes().slice(0, lbatch_dim) == lbatch_sizes,
+                  "The assigned derivative for variable '",
+                  _debug_name,
+                  "' has incorrect left-batch shape. Expected ",
                   lbatch_sizes,
-                  ".");
-  // check if the given derivative has the correct base shape
-  const auto base_sizes = _base_sizes.size() == 2
-                              ? utils::add_shapes(_base_sizes[0], _base_sizes[1])
-                              : utils::add_shapes(_base_sizes[0], _base_sizes[1], _base_sizes[2]);
-  const auto base_dim = Size(base_sizes.size());
-  neml_assert_dbg(val.base_dim() == base_dim && val.base_sizes() == base_sizes,
-                  "The assigned derivative for ",
+                  ", got ",
+                  val.batch_sizes().slice(0, lbatch_dim));
+  neml_assert_dbg(val.base_sizes() == base_sizes,
+                  "The assigned derivative for variable '",
                   _debug_name,
-                  " has incorrect base shape ",
-                  val.base_sizes(),
-                  " which is incompatible with the expected base shape of ",
+                  "' has incorrect base shape. Expected ",
                   base_sizes,
-                  ".");
+                  ", got ",
+                  val.base_sizes());
 #endif
-
-  // shortcut when there's no left-batch dimension
-  if (_lbatch_sizes.empty())
-  {
-    accumulate(val.base_reshape(_assembly_sizes));
-    return *this;
-  }
-
-  // Move each left-batch to the base
-  //
-  // For example, for first order derivatives with left-batch shapes, the tensor shape of the given
-  // derivative is
-  //   (lbatch1, lbatch2, batch; base1, base2)
-  //
-  // We first move lbatch1 before base1:
-  //   (lbatch2, batch; lbatch1, base1, base2)
-  //
-  // Then we move lbatch2 before base2:
-  //   (batch; lbatch1, base1, lbatch2, base2)
-  //
-  // Finally, we can flatten the base dimensions to get the assembly shape:
-  //   (batch; assembly1, assembly2)
-  //
-  // The same procedure applies to second order derivatives with three left-batch groups.
-  Size lbatch_dim = 0;
-  TensorShape indices(val.dim());
-  std::iota(indices.begin(), indices.end(), 0);
-  auto permutation = indices;
-  auto itr = permutation.begin() + val.batch_dim();
-  for (std::size_t i = 0; i < _lbatch_sizes.size(); ++i)
-  {
-    if (!_lbatch_sizes[i].empty())
-    {
-      lbatch_dim += Size(_lbatch_sizes[i].size());
-      auto begin = permutation.begin();
-      auto end = begin + _lbatch_sizes[i].size();
-      std::rotate(begin, end, itr);
-    }
-    itr = permutation.begin() + _base_sizes[i].size();
-  }
-
-  auto B = val.batch_sizes().slice(lbatch_dim);
-  auto val2 = Tensor(at::permute(val, permutation), B);
-  accumulate(val2.base_reshape(_assembly_sizes));
+  assign_or_add(*_deriv, val);
   return *this;
 }
 
-Derivative &
-Derivative::operator=(const VariableBase & var)
+template <std::size_t N>
+Derivative<N> &
+Derivative<N>::operator=(const VariableBase & val)
 {
-  return Derivative::operator=(var.tensor());
+  return Derivative<N>::operator=(val.tensor());
 }
 
-void
-Derivative::accumulate(const Tensor & val)
-{
-  neml_assert_dbg(val.base_sizes() == _assembly_sizes,
-                  "The assigned derivative has incorrect assembly shape. Expected: ",
-                  _assembly_sizes,
-                  ", but got: ",
-                  val.base_sizes());
-  assign_or_add(*_deriv, val);
-}
-
-void
-Derivative::set(const Tensor & val)
-{
-  neml_assert_dbg(val.base_sizes() == _assembly_sizes,
-                  "The assigned derivative has incorrect assembly shape. Expected: ",
-                  _assembly_sizes,
-                  ", but got: ",
-                  val.base_sizes());
-  *_deriv = val;
-}
+template class Derivative<1>;
+template class Derivative<2>;
 
 }
