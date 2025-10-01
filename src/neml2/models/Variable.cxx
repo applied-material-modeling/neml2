@@ -30,9 +30,7 @@
 #include "neml2/tensors/functions/bmm.h"
 #include "neml2/jit/utils.h"
 #include "neml2/jit/TraceableTensorShape.h"
-#include <ATen/core/interned_strings.h>
 #include <ATen/ops/permute.h>
-#include <numeric>
 
 namespace neml2
 {
@@ -237,8 +235,12 @@ Tensor
 VariableBase::from_assembly(const Tensor & val) const
 {
   // shortcut when there's no left-batch dimension
-  if (!lbatch_dim())
+  if (lbatch_sizes().empty())
     return val.base_reshape(base_sizes());
+
+  std::cout << "val: " << val.batch_sizes() << "; " << val.base_sizes() << std::endl;
+  std::cout << "expect lbatch: " << lbatch_sizes() << std::endl;
+  std::cout << "expect base: " << base_sizes() << std::endl;
 
   // left-batch shapes are special:
   // it is a "base" shape at assembly time, and a "batch" shape at operation time
@@ -259,7 +261,7 @@ Tensor
 VariableBase::to_assembly(const Tensor & val) const
 {
   // shortcut when there's no left-batch dimension
-  if (!lbatch_dim())
+  if (lbatch_sizes().empty())
     return val.base_flatten();
 
   // variable format has shape (lbatch, batch; base)
@@ -545,32 +547,6 @@ Variable<T>::set(const Tensor & val)
 }
 
 template <typename T>
-void
-Variable<T>::set(const ATensor & val, bool force)
-{
-  if (owning())
-  {
-    if constexpr (std::is_same_v<T, Tensor>)
-      _value = T(val, val.dim() - base_dim());
-    else
-      _value = T(val);
-  }
-  else
-  {
-    neml_assert_dbg(_ref_is_mutable || force,
-                    "Model '",
-                    owner().name(),
-                    "' is trying to assign value to a variable '",
-                    name(),
-                    "' declared by model '",
-                    ref()->owner().name(),
-                    "' , but the referenced variable is not mutable.");
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-    const_cast<VariableBase *>(ref())->set(val);
-  }
-}
-
-template <typename T>
 Tensor
 Variable<T>::get() const
 {
@@ -604,7 +580,26 @@ void
 Variable<T>::operator=(const Tensor & val)
 {
   if (owning())
+  {
+    neml_assert_dbg(val.defined(), "Variable '", name(), "' is being assigned an undefined value.");
+    neml_assert_dbg(val.base_sizes() == base_sizes(),
+                    "Variable '",
+                    name(),
+                    "' is being assigned a value with incompatible base sizes. Expected: ",
+                    base_sizes(),
+                    ", Got: ",
+                    val.base_sizes());
+    neml_assert_dbg(val.batch_dim() >= lbatch_dim() &&
+                        val.batch_sizes().slice(0, lbatch_dim()) == lbatch_sizes(),
+                    "Variable '",
+                    name(),
+                    "' is being assigned a value with incompatible left-batch shape. Expected "
+                    "left-batch shape: ",
+                    lbatch_sizes(),
+                    ", Got batch shape: ",
+                    val.batch_sizes());
     _value = T(val);
+  }
   else
   {
     neml_assert_dbg(_ref_is_mutable,
@@ -618,6 +613,22 @@ Variable<T>::operator=(const Tensor & val)
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
     *const_cast<VariableBase *>(ref()) = val;
   }
+}
+
+template <typename T>
+void
+Variable<T>::assign(const ATensor & val, RawAssignment key)
+{
+  if (owning())
+  {
+    if constexpr (std::is_same_v<T, Tensor>)
+      _value = T(val, val.dim() - base_dim());
+    else
+      _value = T(val);
+  }
+  else
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+    const_cast<VariableBase *>(ref())->assign(val, key);
 }
 
 template <typename T>
@@ -711,7 +722,7 @@ Derivative::operator=(const Tensor & val)
   // shortcut when there's no left-batch dimension
   if (_lbatch_sizes.empty())
   {
-    assign_or_add(*_deriv, val.base_reshape(_assembly_sizes));
+    accumulate(val.base_reshape(_assembly_sizes));
     return *this;
   }
 
@@ -750,7 +761,7 @@ Derivative::operator=(const Tensor & val)
 
   auto B = val.batch_sizes().slice(lbatch_dim);
   auto val2 = Tensor(at::permute(val, permutation), B);
-  assign_or_add(*_deriv, val2.base_reshape(_assembly_sizes));
+  accumulate(val2.base_reshape(_assembly_sizes));
   return *this;
 }
 
@@ -759,4 +770,27 @@ Derivative::operator=(const VariableBase & var)
 {
   return Derivative::operator=(var.tensor());
 }
+
+void
+Derivative::accumulate(const Tensor & val)
+{
+  neml_assert_dbg(val.base_sizes() == _assembly_sizes,
+                  "The assigned derivative has incorrect assembly shape. Expected: ",
+                  _assembly_sizes,
+                  ", but got: ",
+                  val.base_sizes());
+  assign_or_add(*_deriv, val);
+}
+
+void
+Derivative::set(const Tensor & val)
+{
+  neml_assert_dbg(val.base_sizes() == _assembly_sizes,
+                  "The assigned derivative has incorrect assembly shape. Expected: ",
+                  _assembly_sizes,
+                  ", but got: ",
+                  val.base_sizes());
+  *_deriv = val;
+}
+
 }

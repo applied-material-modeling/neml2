@@ -40,6 +40,7 @@ template <typename, typename>
 class DependencyResolver;
 struct TraceableSize;
 struct TraceableTensorShape;
+class VariableStore;
 
 /**
  * @brief Base class of variable
@@ -175,6 +176,26 @@ public:
   /// Assignment operator
   virtual void operator=(const Tensor & val) = 0;
 
+  /// Secret passkey to control access to the secret assignment method
+  struct RawAssignment
+  {
+    RawAssignment(const RawAssignment &) = default;
+    RawAssignment(RawAssignment &&) = default;
+    RawAssignment & operator=(const RawAssignment &) = delete;
+    RawAssignment & operator=(RawAssignment &&) = delete;
+    ~RawAssignment() = default;
+
+  private:
+    // only the following classes can construct this key
+    friend class VariableStore;
+
+    // private constructor so only trusted friends can construct this key
+    RawAssignment() = default;
+  };
+
+  /// Secret assignment operator used by low-level operations such as jit tracing
+  virtual void assign(const ATensor & val, RawAssignment key) = 0;
+
   /// Wrapper for assigning partial derivative
   Derivative d(const VariableBase & var);
 
@@ -295,6 +316,8 @@ public:
 
   void operator=(const Tensor & val) override;
 
+  void assign(const ATensor & val, RawAssignment key) override;
+
   /// Variable value
   const T & value() const { return owning() ? _value : _ref->value(); }
 
@@ -334,8 +357,15 @@ public:
              const VariableBase & var3,
              Tensor * deriv);
 
+  /// Assignment operator (assuming @p val is in variable format)
   Derivative & operator=(const Tensor & val);
   Derivative & operator=(const VariableBase & var);
+
+  /// Accumulate derivative (assuming @p val is already in assembly format)
+  void accumulate(const Tensor & val);
+
+  /// Set derivative (assuming @p val is already in assembly format)
+  void set(const Tensor & val);
 
 private:
   /// Left-batch shape of the derivative

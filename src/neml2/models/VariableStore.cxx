@@ -280,23 +280,14 @@ void
 VariableStore::assign_input(const ValueMap & vals)
 {
   for (const auto & [name, val] : vals)
-    if (input_axis().has_variable(name))
-      input_variable(name).set(val.clone());
-}
-
-void
-VariableStore::assign_input(ValueMap && vals)
-{
-  for (const auto & [name, val] : std::move(vals))
-    if (input_axis().has_variable(name))
-      input_variable(name).set(val.clone());
+    input_variable(name) = val.clone();
 }
 
 void
 VariableStore::assign_output(const ValueMap & vals)
 {
   for (const auto & [name, val] : vals)
-    output_variable(name).set(val.clone());
+    output_variable(name) = val;
 }
 
 void
@@ -304,9 +295,9 @@ VariableStore::assign_output_derivatives(const DerivMap & derivs)
 {
   for (const auto & [yvar, deriv] : derivs)
   {
-    auto & y = output_variable(yvar);
+    auto & dy = output_variable(yvar).derivatives();
     for (const auto & [xvar, val] : deriv)
-      y.derivatives().insert_or_assign(xvar, val.clone());
+      dy[xvar] = val;
   }
 }
 
@@ -323,7 +314,8 @@ VariableStore::assign_input_stack(jit::Stack & stack)
 
   // Last n tensors in the stack are the input variables
   for (std::size_t i = 0; i < vars.size(); i++)
-    input_variable(vars[i]).set(stack[stack.size() - vars.size() + i].toTensor(), /*force=*/true);
+    input_variable(vars[i]).assign(stack[stack.size() - vars.size() + i].toTensor(),
+                                   VariableBase::RawAssignment{});
 
   // Drop the input variables from the stack
   jit::drop(stack, vars.size());
@@ -359,7 +351,7 @@ VariableStore::assign_output_stack(jit::Stack & stack, bool out, bool dout, bool
     for (const auto & yvar : yvars)
     {
       neml_assert(sparsity[spi++], "Corrupted sparsity tensor.");
-      output_variable(yvar).set(stacklist[sti++], /*force=*/true);
+      output_variable(yvar).assign(stacklist[sti++], VariableBase::RawAssignment{});
     }
   }
 

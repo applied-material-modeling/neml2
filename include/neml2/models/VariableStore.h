@@ -107,8 +107,6 @@ public:
   ///@{
   /// Assign input variable values
   void assign_input(const ValueMap & vals);
-  /// Assign input variable values
-  void assign_input(ValueMap && vals);
   /// Assign output variable values
   void assign_output(const ValueMap & vals);
   /// Assign variable derivatives

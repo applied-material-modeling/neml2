@@ -23,11 +23,175 @@
 // THE SOFTWARE.
 
 #include "neml2/models/Assembler.h"
+#include "neml2/jit/utils.h"
 #include "neml2/tensors/functions/cat.h"
+#include "neml2/tensors/shape_utils.h"
 #include "neml2/misc/assertions.h"
+#include <numeric>
 
 namespace neml2
 {
+namespace details
+{
+template <std::size_t N>
+Tensor
+to_assembly(const Tensor & from,
+            const std::array<TensorShapeRef, N> & base_sizes,
+            const std::array<TensorShapeRef, N> & lbatch_sizes,
+            const std::string & debug_name)
+{
+#ifndef NDEBUG
+  // check if the given tensor has the correct left-batch shape
+  Size offset = 0;
+  for (std::size_t i = 0; i < N; i++)
+  {
+    auto lbatch_dim = Size(lbatch_sizes[i].size());
+    neml_assert_dbg((from.batch_dim() - offset) >= lbatch_dim,
+                    "Insufficient batch dimension for left-batch ",
+                    i,
+                    " of tensor '",
+                    debug_name,
+                    "', left-batch dimension is ",
+                    lbatch_dim,
+                    ", remaining batch dimension is ",
+                    (from.batch_dim() - offset));
+    neml_assert_dbg(from.batch_sizes().slice(offset, offset + lbatch_dim) == lbatch_sizes[i],
+                    "Incompatible left-batch shape for group ",
+                    i,
+                    " of tensor '",
+                    debug_name,
+                    "', expected left-batch shape is ",
+                    lbatch_sizes[i],
+                    ", but got ",
+                    from.batch_sizes().slice(offset, offset + lbatch_dim),
+                    ".");
+    offset += lbatch_dim;
+  }
+
+  // check if the given tensor has the correct base shape
+  offset = 0;
+  for (std::size_t i = 0; i < N; i++)
+  {
+    auto base_dim = Size(base_sizes[i].size());
+    neml_assert_dbg((from.base_dim() - offset) >= base_dim,
+                    "Insufficient batch dimension for base ",
+                    i,
+                    " of tensor '",
+                    debug_name,
+                    "', base dimension is ",
+                    base_dim,
+                    ", remaining batch dimension is ",
+                    (from.base_dim() - offset));
+    neml_assert_dbg(from.base_sizes().slice(offset, offset + base_dim) == base_sizes[i],
+                    "Incompatible base shape for group ",
+                    i,
+                    " of tensor '",
+                    debug_name,
+                    "', expected base shape is ",
+                    base_sizes[i],
+                    ", but got ",
+                    from.base_sizes().slice(offset, offset + base_dim),
+                    ".");
+    offset += base_dim;
+  }
+#endif
+
+  // Generate permutation to move each left-batch to the base
+  //
+  // For example, for N == 2, the tensor shape is in the form of
+  //   (lbatch1, lbatch2, batch; base1, base2)
+  //
+  // We first move lbatch1 before base1:
+  //   (lbatch2, batch; lbatch1, base1, base2)
+  //
+  // Then we move lbatch2 before base2:
+  //   (batch; lbatch1, base1, lbatch2, base2)
+  Size lbatch_dim = 0;
+  TensorShape indices(from.dim());
+  TensorShape assembly_sizes(N);
+  std::iota(indices.begin(), indices.end(), 0);
+  auto permutation = indices;
+  auto itr = permutation.begin() + from.batch_dim();
+  for (std::size_t i = 0; i < N; ++i)
+  {
+    assembly_sizes[i] = utils::storage_size(lbatch_sizes[i]) * utils::storage_size(base_sizes[i]);
+    if (!lbatch_sizes[i].empty())
+    {
+      lbatch_dim += Size(lbatch_sizes[i].size());
+      auto begin = permutation.begin();
+      auto end = begin + lbatch_sizes[i].size();
+      std::rotate(begin, end, itr);
+    }
+    itr = permutation.begin() + base_sizes[i].size();
+  }
+
+  // Perform the permutation
+  auto B = from.batch_sizes().slice(lbatch_dim);
+  auto permuted = Tensor(at::permute(from, permutation), B);
+  return permuted.base_reshape(assembly_sizes);
+}
+
+template <std::size_t N>
+Tensor
+from_assembly(const Tensor & from,
+              const std::array<TensorShapeRef, N> & base_sizes,
+              const std::array<TensorShapeRef, N> & lbatch_sizes,
+              const std::string & debug_name)
+{
+#ifndef NDEBUG
+  TensorShape assembly_sizes(N);
+  for (std::size_t i = 0; i < N; i++)
+    assembly_sizes[i] = utils::storage_size(lbatch_sizes[i]) * utils::storage_size(base_sizes[i]);
+  neml_assert_dbg(assembly_sizes == from.base_sizes(),
+                  "Incompatible base shape for tensor '",
+                  debug_name,
+                  "', expected base shape is ",
+                  assembly_sizes,
+                  ", but got ",
+                  from.base_sizes());
+#endif
+
+  // Generate the unflattened base shape and left-batch shape
+  TensorShape unfl_sizes, total_lbatch_sizes;
+  for (std::size_t i = 0; i < N; i++)
+  {
+    unfl_sizes.insert(unfl_sizes.end(), lbatch_sizes[i].begin(), lbatch_sizes[i].end());
+    unfl_sizes.insert(unfl_sizes.end(), base_sizes[i].begin(), base_sizes[i].end());
+    total_lbatch_sizes.insert(
+        total_lbatch_sizes.end(), lbatch_sizes[i].begin(), lbatch_sizes[i].end());
+  }
+
+  // Unflatten base
+  auto unfl = from.base_reshape(unfl_sizes);
+
+  // Generate permutation to move each left-batch to the batch
+  //
+  // For example, for N == 2, the tensor shape is in the form of
+  //   (batch; lbatch1, base1, lbatch2, base2)
+  //
+  // We first move lbatch2 to the front:
+  //   (lbatch2, batch; lbatch1, base1, base2)
+  //
+  // Then we move lbatch1 to the front:
+  //   (lbatch1, lbatch2, batch; base1, base2)
+  TensorShape indices(unfl.dim());
+  std::iota(indices.begin(), indices.end(), 0);
+  auto permutation = indices;
+  auto begin = permutation.begin() + from.batch_dim();
+  for (std::size_t i = 0; i < N; ++i)
+    if (!lbatch_sizes[i].empty())
+    {
+      auto end = begin + lbatch_sizes[i].size();
+      std::rotate(begin, end, permutation.begin());
+      begin += lbatch_sizes[i].size();
+    }
+
+  // Perform the permutation
+  auto B = utils::add_traceable_shapes(total_lbatch_sizes, from.batch_sizes());
+  return Tensor(at::permute(from, permutation), B);
+}
+}
+
 Tensor
 VectorAssembler::assemble_by_variable(const ValueMap & vals_dict) const
 {
@@ -46,7 +210,13 @@ VectorAssembler::assemble_by_variable(const ValueMap & vals_dict) const
     const auto val = vals_dict.find(_axis.qualify(vars[i]));
     if (val != vals_dict.end())
     {
-      vals[i] = val->second.base_flatten();
+      vals[i] = val->second;
+      neml_assert_dbg(vals[i].base_dim() == 1,
+                      "During matrix assembly, found a tensor associated with variable ",
+                      vars[i],
+                      " with base dimension ",
+                      vals[i].base_dim(),
+                      ". Expected 1.");
       neml_assert_dbg(vals[i].base_size(0) == _axis.variable_sizes()[i],
                       "Invalid size for variable ",
                       vars[i],
