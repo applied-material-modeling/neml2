@@ -36,7 +36,7 @@ Python package:
 - [pybind11-stubgen](https://github.com/sizmailov/pybind11-stubgen) for extracting stubs from Python bindings.
 - [pyzag](https://github.com/applied-material-modeling/pyzag) for training material models.
 - Testing:
-  - [pytest](https://docs.pytest.org/en/stable/index.html) for testing Pythin bindings.
+  - [pytest](https://docs.pytest.org/en/stable/index.html) for testing Python bindings.
 
 Documentation:
 
