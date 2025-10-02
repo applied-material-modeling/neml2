@@ -36,7 +36,7 @@ Python package:
 - [pybind11-stubgen](https://github.com/sizmailov/pybind11-stubgen) for extracting stubs from Python bindings.
 - [pyzag](https://github.com/applied-material-modeling/pyzag) for training material models.
 - Testing:
-  - [pytest](https://docs.pytest.org/en/stable/index.html) for testing Pythin bindings.
+  - [pytest](https://docs.pytest.org/en/stable/index.html) for testing Python bindings.
 
 Documentation:
 
@@ -49,6 +49,10 @@ Work dispatcher:
 
 - [TIMPI](https://github.com/libMesh/TIMPI) for coordinating parallel workers.
 - [json](https://github.com/nlohmann/json) for outputting event traces.
+
+CSV parser:
+
+- [CSV Parser](https://github.com/vincentlaucsb/csv-parser) for reading CSV files
 
 In addition to standard system library locations, the CMake configure script also searches for an installed torch Python package. Recent PyTorch releases within a few minor versions are likely to be compatible.
 
@@ -82,3 +86,4 @@ The following table summarizes the configure options that determine when a depen
 | PyYAML                       | NEML2_DOC                                     |
 | MPI, TIMPI                   | NEML2_WORK_DISPATCHER                         |
 | json                         | NEML2_JSON                                    |
+| CSV Parser                   | NEML2_CSV                                     |
