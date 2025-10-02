@@ -905,7 +905,7 @@ ArrheniusParameter</h2>
 <p>Detailed documentation <a class="el" href="classneml2_1_1ArrheniusParameter.html">link</a></p>
 <h2><a class="anchor" id="associativeisotropicplastichardening"></a>
 AssociativeIsotropicPlasticHardening</h2>
-<p>Map the flow rate (i.e., the consistency parameter in the KKT conditions) to the rate of internal variables. This object calculates the rate of equivalent plastic strain following associative flow rule, i.e. \( \dot{\varepsilon}_p = - \dot{\gamma} \frac{\partial f}{\partial k} \), where \( \dot{\varepsilon}_p \) is the equivalent plastic strain, \( \dot{\gamma} \) is the flow rate, \( f \) is the yield function, and \( k \) is the isotropic hardening. </p><details >
+<p>Map the flow rate (i.e., the consistency parameter in the KKT conditions) to the rate of internal variables. This object calculates the rate of equivalent plastic strain following associative flow rule, i.e. \( \dot{\bar{\varepsilon}}_p = - \dot{\gamma} \frac{\partial f}{\partial k} \), where \( \dot{\bar{\varepsilon}}_p \) is the equivalent plastic strain, \( \dot{\gamma} \) is the flow rate, \( f \) is the yield function, and \( k \) is the isotropic hardening. </p><details >
 <summary >
 <code>equivalent_plastic_strain_rate</code> 🇴 Rate of equivalent plastic strain</summary>
 <p></p>
@@ -4005,7 +4005,7 @@ LinearIsotropicElasticity</h2>
 <p>Detailed documentation <a class="el" href="classneml2_1_1LinearIsotropicElasticity.html">link</a></p>
 <h2><a class="anchor" id="linearisotropichardening"></a>
 LinearIsotropicHardening</h2>
-<p>Map equivalent plastic strain to isotropic hardening following a linear relationship, i.e., \( h = K \varepsilon_p \) where \( K \) is the hardening modulus. </p><details >
+<p>Map equivalent plastic strain to isotropic hardening following a linear relationship, i.e., \( h = K \bar{\varepsilon}_p \) where \( K \) is the hardening modulus. </p><details >
 <summary >
 <code>equivalent_plastic_strain</code> 🇮 Equivalent plastic strain</summary>
 <p></p>
@@ -9605,7 +9605,7 @@ VecVariableRate</h2>
 <p>Detailed documentation <a class="el" href="classneml2_1_1VariableRate.html">link</a></p>
 <h2><a class="anchor" id="voceisotropichardening"></a>
 VoceIsotropicHardening</h2>
-<p>Voce isotropic hardening model, \( h = R \left[ 1 - \exp(-d \varepsilon_p) \right] \), where \( R \) is the isotropic hardening upon saturation, and \( d \) is the hardening rate. </p><details >
+<p>Voce isotropic hardening model, \( h = R \left[ 1 - \exp(-d \bar{\varepsilon}_p) \right] \), where \( R \) is the isotropic hardening upon saturation, and \( d \) is the hardening rate. </p><details >
 <summary >
 <code>equivalent_plastic_strain</code> 🇮 Equivalent plastic strain</summary>
 <p></p>
