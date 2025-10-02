@@ -26,7 +26,6 @@
 #include "neml2/models/Model.h"
 #include "neml2/models/DependencyResolver.h"
 #include "neml2/models/Assembler.h"
-#include "neml2/tensors/Tensor.h"
 #include "neml2/tensors/shape_utils.h"
 #include "neml2/tensors/tensors.h"
 #include "neml2/misc/assertions.h"
@@ -234,19 +233,33 @@ VariableBase::make_zeros(const TraceableTensorShape & batch_shape,
   return tensor;
 }
 
-Derivative<1>
+template <std::size_t N>
+static Derivative<N> &
+get_derivative(std::vector<Derivative<N>> & derivs,
+               const VariableBase * var,
+               const std::array<const VariableBase *, N> & args)
+{
+  auto deriv = Derivative<N>(var, args);
+  auto it = std::find(derivs.begin(), derivs.end(), deriv);
+  if (it != derivs.end())
+    return *it;
+  derivs.push_back(deriv);
+  return derivs.back();
+}
+
+Derivative<1> &
 VariableBase::d(const VariableBase & var)
 {
   neml_assert_dbg(owning(), "Cannot assign derivative to a referencing variable '", name(), "'.");
-  return Derivative<1>(this, {&var}, &_derivs[var.name()]);
+  return get_derivative<1>(_derivs, this, {&var});
 }
 
-Derivative<2>
+Derivative<2> &
 VariableBase::d(const VariableBase & var1, const VariableBase & var2)
 {
   neml_assert_dbg(
       owning(), "Cannot assign second derivative to a referencing variable '", name(), "'.");
-  return Derivative<2>(this, {&var1, &var2}, &_sec_derivs[var1.name()][var2.name()]);
+  return get_derivative<2>(_sec_derivs, this, {&var1, &var2});
 }
 
 void
@@ -301,10 +314,13 @@ VariableBase::clear_derivatives()
 void
 VariableBase::apply_chain_rule(const DependencyResolver<Model, VariableName> & dep)
 {
-  for (const auto & [model, var] : dep.outbound_items())
-    if (var == name())
+  for (const auto & [model, vname] : dep.outbound_items())
+    if (vname == name())
     {
-      _derivs = total_derivatives(dep, model);
+      const auto & yvar = model->output_variable(vname);
+      const auto derivs = total_derivatives(dep, model, yvar);
+      for (const auto & [xname, dy_dx] : derivs)
+        d(_owner->input_variable(xname)).set(dy_dx);
       return;
     }
 }
@@ -312,10 +328,14 @@ VariableBase::apply_chain_rule(const DependencyResolver<Model, VariableName> & d
 void
 VariableBase::apply_second_order_chain_rule(const DependencyResolver<Model, VariableName> & dep)
 {
-  for (const auto & [model, var] : dep.outbound_items())
-    if (var == name())
+  for (const auto & [model, vname] : dep.outbound_items())
+    if (vname == name())
     {
-      _sec_derivs = total_second_derivatives(dep, model);
+      const auto & yvar = model->output_variable(vname);
+      const auto sec_derivs = total_second_derivatives(dep, model, yvar);
+      for (const auto & [x1name, d2y_dx1] : sec_derivs)
+        for (const auto & [x2name, d2y_dx1x2] : d2y_dx1)
+          d(_owner->input_variable(x1name), _owner->input_variable(x2name)).set(d2y_dx1x2);
       return;
     }
 }
@@ -329,63 +349,22 @@ assign_or_add(Tensor & dest, const Tensor & val)
     dest = val;
 }
 
-static Tensor
-derivative_dot(const VariableBase & yvar,
-               const VariableBase & uvar,
-               const Tensor & dy_du,
-               const Tensor & du_dx)
-{
-  // dy_du is in the form
-  //   (lbatch_y, lbatch_u, ...; base_y, base_u)
-  //
-  // du_dx is in the form
-  //   (lbatch_u, lbatch_x, ...; base_u, base_x)
-  //
-  // We need to contract the following dimensions:
-  //   (lbatch_y, lbatch_u,           ...; base_y, base_u)
-  //   (          lbatch_u, lbatch_x, ...;         base_u, base_x)
-  //
-  // After contraction, the derivative would have shape
-  //  (lbatch_y, lbatch_x, ...; base_y, base_x)
-
-  const auto lbatch_dim_u = uvar.lbatch_dim();
-  const auto base_dim_y = yvar.base_dim();
-  const auto base_dim_u = uvar.base_dim();
-  const auto base_dim_x = xvar.base_dim();
-
-  // Get the dimensions to contract for dy_du
-  TensorShape dy_du_cdims(lbatch_dim_u + base_dim_u);
-  std::iota(dy_du_cdims.begin(), dy_du_cdims.begin() + lbatch_dim_u, lbatch_dim_u);
-  std::iota(dy_du_cdims.begin() + lbatch_dim_u, dy_du_cdims.end(), dy_du.batch_dim() + base_dim_y);
-
-  // Get the dimensions to contract for du_dx
-  TensorShape du_dx_cdims(lbatch_dim_u + base_dim_u);
-  std::iota(du_dx_cdims.begin(), du_dx_cdims.begin() + lbatch_dim_u, 0);
-  std::iota(du_dx_cdims.begin() + lbatch_dim_u, du_dx_cdims.end(), du_dx.batch_dim());
-
-  // Contract the dimensions
-  auto result = at::tensordot(dy_du, du_dx, dy_du_cdims, du_dx_cdims);
-  auto B = result.dim() - (base_dim_y + base_dim_x);
-  return Tensor(result, B);
-}
-
 ValueMap
 VariableBase::total_derivatives(const DependencyResolver<Model, VariableName> & dep,
-                                Model * model) const
+                                Model * model,
+                                const VariableBase & yvar) const
 {
   ValueMap derivs;
 
-  for (const auto & [uname, dy_du] : derivatives())
+  for (auto & dy_du : yvar.derivatives())
   {
-    if (dep.inbound_items().find({model, uname}) != dep.inbound_items().end())
-      assign_or_add(derivs[uname], dy_du);
+    const auto & uvar = *dy_du.args()[0];
+    if (dep.inbound_items().count({model, uvar.name()}))
+      assign_or_add(derivs[uvar.name()], dy_du.get());
     else
-      for (const auto & depu : dep.item_providers().at({model, uname}))
-      {
-        const auto & uvar = depu.parent->output_variable(uname);
-        for (const auto & [xvar, du_dx] : uvar.total_derivatives(dep, depu.parent))
-          assign_or_add(derivs[xvar], derivative_dot(*this, uvar, dy_du, du_dx));
-      }
+      for (const auto & depu : dep.item_providers().at({model, uvar.name()}))
+        for (const auto & [xname, du_dx] : total_derivatives(dep, depu.parent, uvar))
+          assign_or_add(derivs[xname], bmm(dy_du.get(), du_dx));
   }
 
   return derivs;
@@ -393,46 +372,52 @@ VariableBase::total_derivatives(const DependencyResolver<Model, VariableName> & 
 
 DerivMap
 VariableBase::total_second_derivatives(const DependencyResolver<Model, VariableName> & dep,
-                                       Model * model) const
+                                       Model * model,
+                                       const VariableBase & yvar) const
 {
   DerivMap sec_derivs;
 
-  for (const auto & [u1var, d2y_du1] : model->output_variable(yvar).second_derivatives())
-    for (const auto & [u2var, d2y_du1u2] : d2y_du1)
-    {
-      if (dep.inbound_items().count({model, u1var}) && dep.inbound_items().count({model, u2var}))
-        assign_or_add(sec_derivs[u1var][u2var], d2y_du1u2);
-      else if (dep.inbound_items().count({model, u1var}))
-        for (const auto & depu2 : dep.item_providers().at({model, u2var}))
-          for (const auto & [x2var, du2_dxk] : total_derivatives(dep, depu2.parent, u2var))
-            assign_or_add(sec_derivs[u1var][x2var],
-                          Tensor(at::einsum("...ijq,...qk", {d2y_du1u2, du2_dxk}),
-                                 utils::broadcast_batch_dim(d2y_du1u2, du2_dxk)));
-      else if (dep.inbound_items().count({model, u2var}))
-        for (const auto & depu1 : dep.item_providers().at({model, u1var}))
-          for (const auto & [x1var, du1_dxj] : total_derivatives(dep, depu1.parent, u1var))
-            assign_or_add(sec_derivs[x1var][u2var],
-                          Tensor(at::einsum("...ipk,...pj", {d2y_du1u2, du1_dxj}),
-                                 utils::broadcast_batch_dim(d2y_du1u2, du1_dxj)));
-      else
-        for (const auto & depu1 : dep.item_providers().at({model, u1var}))
-          for (const auto & [x1var, du1_dxj] : total_derivatives(dep, depu1.parent, u1var))
-            for (const auto & depu2 : dep.item_providers().at({model, u2var}))
-              for (const auto & [x2var, du2_dxk] : total_derivatives(dep, depu2.parent, u2var))
-                assign_or_add(
-                    sec_derivs[x1var][x2var],
-                    Tensor(at::einsum("...ipq,...pj,...qk", {d2y_du1u2, du1_dxj, du2_dxk}),
-                           utils::broadcast_batch_dim(d2y_du1u2, du1_dxj, du2_dxk)));
-    }
+  for (auto & d2y_du1u2 : yvar.second_derivatives())
+  {
+    const auto & u1var = *d2y_du1u2.args()[0];
+    const auto & u2var = *d2y_du1u2.args()[1];
+    if (dep.inbound_items().count({model, u1var.name()}) &&
+        dep.inbound_items().count({model, u2var.name()}))
+      assign_or_add(sec_derivs[u1var.name()][u2var.name()], d2y_du1u2.get());
+    else if (dep.inbound_items().count({model, u1var.name()}))
+      for (const auto & depu2 : dep.item_providers().at({model, u2var.name()}))
+        for (const auto & [x2name, du2_dxk] : total_derivatives(dep, depu2.parent, u2var))
+          assign_or_add(sec_derivs[u1var.name()][x2name],
+                        Tensor(at::einsum("...ijq,...qk", {d2y_du1u2.get(), du2_dxk}),
+                               utils::broadcast_batch_dim(d2y_du1u2.get(), du2_dxk)));
+    else if (dep.inbound_items().count({model, u2var.name()}))
+      for (const auto & depu1 : dep.item_providers().at({model, u1var.name()}))
+        for (const auto & [x1name, du1_dxj] : total_derivatives(dep, depu1.parent, u1var))
+          assign_or_add(sec_derivs[x1name][u2var.name()],
+                        Tensor(at::einsum("...ipk,...pj", {d2y_du1u2.get(), du1_dxj}),
+                               utils::broadcast_batch_dim(d2y_du1u2.get(), du1_dxj)));
+    else
+      for (const auto & depu1 : dep.item_providers().at({model, u1var.name()}))
+        for (const auto & [x1name, du1_dxj] : total_derivatives(dep, depu1.parent, u1var))
+          for (const auto & depu2 : dep.item_providers().at({model, u2var.name()}))
+            for (const auto & [x2name, du2_dxk] : total_derivatives(dep, depu2.parent, u2var))
+              assign_or_add(
+                  sec_derivs[x1name][x2name],
+                  Tensor(at::einsum("...ipq,...pj,...qk", {d2y_du1u2.get(), du1_dxj, du2_dxk}),
+                         utils::broadcast_batch_dim(d2y_du1u2.get(), du1_dxj, du2_dxk)));
+  }
 
-  for (const auto & [uvar, dy_du] : model->output_variable(yvar).derivatives())
-    if (!dep.inbound_items().count({model, uvar}))
-      for (const auto & depu : dep.item_providers().at({model, uvar}))
-        for (const auto & [x1var, d2u_dx1] : total_second_derivatives(dep, depu.parent, uvar))
-          for (const auto & [x2var, d2u_dx1x2] : d2u_dx1)
-            assign_or_add(sec_derivs[x1var][x2var],
-                          Tensor(at::einsum("...ip,...pjk", {dy_du, d2u_dx1x2}),
-                                 utils::broadcast_batch_dim(dy_du, d2u_dx1x2)));
+  for (auto & dy_du : yvar.derivatives())
+  {
+    const auto & uvar = *dy_du.args()[0];
+    if (!dep.inbound_items().count({model, uvar.name()}))
+      for (const auto & depu : dep.item_providers().at({model, uvar.name()}))
+        for (const auto & [x1name, d2u_dx1] : total_second_derivatives(dep, depu.parent, uvar))
+          for (const auto & [x2name, d2u_dx1x2] : d2u_dx1)
+            assign_or_add(sec_derivs[x1name][x2name],
+                          Tensor(at::einsum("...ip,...pjk", {dy_du.get(), d2u_dx1x2}),
+                                 utils::broadcast_batch_dim(dy_du.get(), d2u_dx1x2)));
+  }
 
   return sec_derivs;
 }
@@ -649,14 +634,12 @@ FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_VARIABLE);
 
 template <std::size_t N>
 Derivative<N>::Derivative(const VariableBase * var,
-                          const std::array<const VariableBase *, N> & args,
-                          Tensor * deriv)
+                          const std::array<const VariableBase *, N> & args)
   : _var(var),
-    _args(args),
-    _deriv(deriv)
+    _args(args)
 #ifndef NDEBUG
     ,
-    _debug_name(N == 2
+    _debug_name(N == 1
                     ? std::string("d(") + var->name().str() + ")/d(" + args[0]->name().str() + ")"
                     : std::string("d2(") + var->name().str() + ")/d(" + args[0]->name().str() +
                           ")d(" + args[1]->name().str() + ")")
@@ -669,12 +652,12 @@ Derivative<N> &
 Derivative<N>::operator=(const Tensor & val)
 {
 #ifndef NDEBUG
-  auto lbatch_sizes = N == 2 ? utils::add_shapes(_var->lbatch_sizes(), _args[0]->lbatch_sizes())
+  auto lbatch_sizes = N == 1 ? utils::add_shapes(_var->lbatch_sizes(), _args[0]->lbatch_sizes())
                              : utils::add_shapes(_var->lbatch_sizes(),
                                                  _args[0]->lbatch_sizes(),
                                                  _args[1]->lbatch_sizes());
   auto base_sizes =
-      N == 2
+      N == 1
           ? utils::add_shapes(_var->base_sizes(), _args[0]->base_sizes())
           : utils::add_shapes(_var->base_sizes(), _args[0]->base_sizes(), _args[1]->base_sizes());
   auto lbatch_dim = Size(lbatch_sizes.size());
@@ -701,7 +684,11 @@ Derivative<N>::operator=(const Tensor & val)
                   ", got ",
                   val.base_sizes());
 #endif
-  assign_or_add(*_deriv, val);
+  assign_or_add(_deriv, val);
+
+  // Invalidate the assembly cache
+  _deriv_assembly = Tensor();
+
   return *this;
 }
 
@@ -710,6 +697,42 @@ Derivative<N> &
 Derivative<N>::operator=(const VariableBase & val)
 {
   return Derivative<N>::operator=(val.tensor());
+}
+
+template <std::size_t N>
+const Tensor &
+Derivative<N>::get() const
+{
+  if (_deriv_assembly.defined())
+    return _deriv_assembly;
+
+  if constexpr (N == 1)
+    _deriv_assembly = utils::to_assembly<2>(_deriv,
+                                            {_var->base_sizes(), _args[0]->base_sizes()},
+                                            {_var->lbatch_sizes(), _args[0]->lbatch_sizes()});
+  else
+    _deriv_assembly = utils::to_assembly<3>(
+        _deriv,
+        {_var->base_sizes(), _args[0]->base_sizes(), _args[1]->base_sizes()},
+        {_var->lbatch_sizes(), _args[0]->lbatch_sizes(), _args[1]->lbatch_sizes()});
+  return _deriv_assembly;
+}
+
+template <std::size_t N>
+void
+Derivative<N>::set(const Tensor & val)
+{
+  _deriv_assembly = val;
+
+  if constexpr (N == 1)
+    _deriv = utils::from_assembly<2>(val,
+                                     {_var->base_sizes(), _args[0]->base_sizes()},
+                                     {_var->lbatch_sizes(), _args[0]->lbatch_sizes()});
+  else
+    _deriv = utils::from_assembly<3>(
+        val,
+        {_var->base_sizes(), _args[0]->base_sizes(), _args[1]->base_sizes()},
+        {_var->lbatch_sizes(), _args[0]->lbatch_sizes(), _args[1]->lbatch_sizes()});
 }
 
 template class Derivative<1>;

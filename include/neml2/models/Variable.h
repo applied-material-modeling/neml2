@@ -27,6 +27,7 @@
 #include "neml2/models/map_types_fwd.h"
 #include "neml2/base/LabeledAxisAccessor.h"
 #include "neml2/misc/types.h"
+#include "neml2/tensors/Tensor.h"
 
 namespace neml2
 {
@@ -186,10 +187,10 @@ public:
   virtual void assign(const ATensor & val, RawAssignment key) = 0;
 
   /// Wrapper for assigning partial derivative
-  Derivative<1> d(const VariableBase & var);
+  Derivative<1> & d(const VariableBase & var);
 
   /// Wrapper for assigning second partial derivative
-  Derivative<2> d(const VariableBase & var1, const VariableBase & var2);
+  Derivative<2> & d(const VariableBase & var1, const VariableBase & var2);
 
   ///@{
   /// Request to use AD to calculate the derivative of this variable with respect to another variable
@@ -205,12 +206,12 @@ public:
   ///@}
 
   /// Partial derivatives
-  const ValueMap & derivatives() const { return _derivs; }
-  ValueMap & derivatives() { return _derivs; }
+  const std::vector<Derivative<1>> & derivatives() const { return _derivs; }
+  std::vector<Derivative<1>> & derivatives() { return _derivs; }
 
   /// Partial second derivatives
-  const DerivMap & second_derivatives() const { return _sec_derivs; }
-  DerivMap & second_derivatives() { return _sec_derivs; }
+  const std::vector<Derivative<2>> & second_derivatives() const { return _sec_derivs; }
+  std::vector<Derivative<2>> & second_derivatives() { return _sec_derivs; }
 
   /// Clear the variable value and derivatives
   virtual void clear();
@@ -232,19 +233,21 @@ public:
 
 private:
   ValueMap total_derivatives(const DependencyResolver<Model, VariableName> & dep,
-                             Model * model) const;
+                             Model * model,
+                             const VariableBase & yvar) const;
 
   DerivMap total_second_derivatives(const DependencyResolver<Model, VariableName> & dep,
-                                    Model * model) const;
+                                    Model * model,
+                                    const VariableBase & yvar) const;
 
   /// Left-batch shape of the variable
   const TensorShape _lbatch_sizes = {};
 
   /// Derivatives of this variable with respect to other variables
-  ValueMap _derivs;
+  std::vector<Derivative<1>> _derivs;
 
   /// Second derivatives of this variable with respect to other variables
-  DerivMap _sec_derivs;
+  std::vector<Derivative<2>> _sec_derivs;
 };
 
 /**
@@ -334,15 +337,22 @@ class Derivative
 {
 public:
   Derivative() = default;
-  Derivative(const VariableBase * var,
-             const std::array<const VariableBase *, N> & args,
-             Tensor * deriv);
+  Derivative(const VariableBase * var, const std::array<const VariableBase *, N> & args);
 
   /// Assignment operator
   ///@{
   Derivative & operator=(const Tensor & val);
   Derivative & operator=(const VariableBase & val);
   ///@}
+
+  /// Get the derivative in assembly format
+  const Tensor & get() const;
+
+  /// Set the derivative (given in assembly format)
+  void set(const Tensor & val);
+
+  /// Get the args
+  const std::array<const VariableBase *, N> & args() const { return _args; }
 
 private:
   /// Variable to take derivative with
@@ -352,7 +362,10 @@ private:
   std::array<const VariableBase *, N> _args;
 
   /// Derivative to write to
-  Tensor * const _deriv = nullptr;
+  Tensor _deriv;
+
+  /// Derivative in assembly format
+  mutable Tensor _deriv_assembly;
 
 #ifndef NDEBUG
   const std::string _debug_name = "";
