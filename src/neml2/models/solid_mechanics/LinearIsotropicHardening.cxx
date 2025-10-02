@@ -33,8 +33,9 @@ OptionSet
 LinearIsotropicHardening::expected_options()
 {
   OptionSet options = IsotropicHardening::expected_options();
-  options.doc() += " following a linear relationship, i.e., \\f$ h = K \\varepsilon_p \\f$ where "
-                   "\\f$ K \\f$ is the hardening modulus.";
+  options.doc() +=
+      " following a linear relationship, i.e., \\f$ h = K \\bar{\\varepsilon}_p \\f$ where "
+      "\\f$ K \\f$ is the hardening modulus.";
 
   options.set<bool>("define_second_derivatives") = true;
 
