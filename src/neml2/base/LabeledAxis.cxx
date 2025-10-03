@@ -54,7 +54,9 @@ LabeledAxis::add_subaxis(const std::string & name)
 }
 
 void
-LabeledAxis::add_variable(const LabeledAxisAccessor & name, Size sz)
+LabeledAxis::add_variable(const LabeledAxisAccessor & name,
+                          TensorShapeRef base_sizes,
+                          TensorShapeRef lbatch_sizes)
 {
   neml_assert(!_setup, "Cannot modify a sub-axis after the axis has been set up.");
   neml_assert(!name.empty(), "Cannot add a variable with empty name.");
@@ -65,21 +67,20 @@ LabeledAxis::add_variable(const LabeledAxisAccessor & name, Size sz)
                 "Cannot add a variable with the same name as an existing variable or a sub-axis: '",
                 name[0],
                 "'");
-    _variables.emplace(name[0], sz);
+    _variables.emplace(name[0], std::make_pair(base_sizes, lbatch_sizes));
   }
   else
-    add_subaxis(name[0]).add_variable(name.slice(1), sz);
+    add_subaxis(name[0]).add_variable(name.slice(1), base_sizes, lbatch_sizes);
 }
 
 template <typename T>
 void
-LabeledAxis::add_variable(const LabeledAxisAccessor & name)
+LabeledAxis::add_variable(const LabeledAxisAccessor & name, TensorShapeRef lbatch_sizes)
 {
-  auto sz = utils::storage_size(T::const_base_sizes);
-  add_variable(name, sz);
+  add_variable(name, T::const_base_sizes, lbatch_sizes);
 }
 #define INSTANTIATE_ADD_VARIABLE(T)                                                                \
-  template void LabeledAxis::add_variable<T>(const LabeledAxisAccessor &)
+  template void LabeledAxis::add_variable<T>(const LabeledAxisAccessor &, TensorShapeRef)
 FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_ADD_VARIABLE);
 
 void
@@ -92,6 +93,8 @@ LabeledAxis::setup_layout()
   _id_to_variable_map.clear();
   _id_to_variable_size_map.clear();
   _id_to_variable_slice_map.clear();
+  _id_to_base_sizes_map.clear();
+  _id_to_lbatch_sizes_map.clear();
 
   _sorted_subaxes.clear();
   _subaxis_to_id_map.clear();
@@ -100,12 +103,16 @@ LabeledAxis::setup_layout()
   _id_to_subaxis_slice_map.clear();
 
   // Set up variable assembly IDs and slicing indices
-  for (auto & [name, sz] : _variables)
+  for (const auto & [name, sizes] : _variables)
   {
+    const auto & [base_sizes, lbatch_sizes] = sizes;
+    const auto sz = utils::storage_size(base_sizes) * utils::storage_size(lbatch_sizes);
     _variable_to_id_map.emplace(name, _variable_to_id_map.size());
     _id_to_variable_map.emplace_back(name);
     _id_to_variable_size_map.push_back(sz);
     _id_to_variable_slice_map.emplace_back(_size, _size + sz);
+    _id_to_base_sizes_map.push_back(base_sizes);
+    _id_to_lbatch_sizes_map.push_back(lbatch_sizes);
     _size += sz;
   }
 
@@ -129,6 +136,8 @@ LabeledAxis::setup_layout()
       _variable_to_id_map.emplace(full_name, _variable_to_id_map.size());
       _id_to_variable_map.push_back(full_name);
       _id_to_variable_size_map.push_back(axis->_id_to_variable_size_map[var_id]);
+      _id_to_base_sizes_map.push_back(axis->_id_to_base_sizes_map[var_id]);
+      _id_to_lbatch_sizes_map.push_back(axis->_id_to_lbatch_sizes_map[var_id]);
 
       // Slice is relative to the sub-axis, so we need to shift it
       const auto & slice = axis->_id_to_variable_slice_map[var_id];
@@ -151,8 +160,8 @@ LabeledAxis::size() const
 
   // Otherwise, calculate the size
   Size sz = 0;
-  for (const auto & [name, var_sz] : _variables)
-    sz += var_sz;
+  for (const auto & [name, sizes] : _variables)
+    sz += utils::storage_size(sizes.first) * utils::storage_size(sizes.second);
   for (const auto & [name, axis] : _subaxes)
     sz += axis->size();
   return sz;
