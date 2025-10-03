@@ -58,6 +58,11 @@ TEST_CASE("CSVPrimitiveTensor", "[user_tensors]")
                                   {5.0, 6.0, 7.0, 8.0 * sqrt(2), 9.0 * sqrt(2), 10.0 * sqrt(2)}})));
     REQUIRE(c->batch_sizes() == tensor_size);
     REQUIRE(c->base_sizes() == SR2::const_base_sizes);
+
+    const auto d = factory->get_object<Vec>("Tensors", "d");
+    REQUIRE(at::allclose(*d, Vec::create({{{1, 2, 3}, {2, 3, 4}}, {{3, 4, 5}, {4, 5, 6}}})));
+    REQUIRE(d->batch_sizes() == TensorShape{2, 2});
+    REQUIRE(d->base_sizes() == Vec::const_base_sizes);
   }
 }
 

@@ -69,73 +69,35 @@ CSVPrimitiveTensor<T>::parse_csv(const std::string & csv_file,
                                  const std::vector<std::string> & component_names,
                                  const TensorShape & batch_shape) const
 {
+  // Count number of components of tensor, and rows in CSV
+  auto cols = component_names.size();
+  csv::CSVReader counter(csv_file);
+  for (auto & row : counter)
+    (void)row;
+  auto rows = counter.n_rows();
+  std::vector<T> csv_vals(rows);
+
+  // Modifying factor for currently supported types
+  std::vector<double> factor;
+  if (T::const_base_sizes == TensorShape{})
+    factor = {1.0};
+  else if (T::const_base_sizes == TensorShape{3})
+    factor = {1.0, 1.0, 1.0};
+  else if (T::const_base_sizes == TensorShape{6})
+    factor = {1.0, 1.0, 1.0, std::sqrt(2), std::sqrt(2), std::sqrt(2)};
+
+  // Read CSV values
   csv::CSVReader reader(csv_file);
-
-  std::vector<T> csv_vals;
-
   for (const auto & row : reader)
   {
-    std::vector<double> csv_row = {};
-    for (auto & j : component_names)
-    {
-      csv_row.push_back(row[j].get<double>());
-    }
+    std::vector<double> csv_row(cols);
+    for (std::size_t i = 0; i < cols; ++i)
+      csv_row[i] = row[component_names[i]].get<double>() * factor[i];
     auto csv_row_tens = T::create(csv_row);
-    csv_vals.push_back(csv_row_tens);
+    csv_vals[reader.n_rows() - 1] = csv_row_tens;
   }
 
-  auto csv_tensor = batch_stack(csv_vals).batch_reshape(batch_shape);
-  return csv_tensor;
-}
-
-// template <typename T>
-// T
-// CSVPrimitiveTensor<T>::parse_csv(const std::string & csv_file,
-//                                  const std::vector<std::string> & component_names,
-//                                  const TensorShape & batch_shape) const
-// {
-//   csv::CSVReader reader(csv_file);
-
-//   std::vector<Scalar> csv_vals;
-
-//   for (const auto & row : reader)
-//   {
-//     std::vector<double> csv_row = {};
-//     for (auto & j : component_names)
-//     {
-//       csv_row.push_back(row[j].get<double>());
-//     }
-//     csv_vals.push_back(Scalar::create(csv_row));
-//     std::cout << "csv_vals: " << csv_vals << csv_vals.size() << std::endl;
-//   }
-
-//   auto csv_stack = base_stack(csv_vals);
-//   auto csv_base = csv_stack.base_reshape(T::const_base_shape);
-//   auto csv_tensor = csv_base.batch_reshape(batch_shape);
-//   return csv_tensor;
-// }
-
-template <>
-SR2
-CSVPrimitiveTensor<SR2>::parse_csv(const std::string & csv_file,
-                                   const std::vector<std::string> & component_names,
-                                   const TensorShape & batch_shape) const
-{
-  csv::CSVReader reader(csv_file);
-
-  std::vector<SR2> csv_vals;
-
-  for (const auto & row : reader)
-  {
-    std::vector<double> csv_row = {};
-    for (auto & j : component_names)
-    {
-      csv_row.push_back(row[j].get<double>());
-    }
-    auto csv_row_tens = SR2::create(csv_row);
-    csv_vals.push_back(csv_row_tens);
-  }
-
+  // Reshape
   auto csv_tensor = batch_stack(csv_vals).batch_reshape(batch_shape);
   return csv_tensor;
 }

@@ -17,4 +17,10 @@
     component_names = 's_xx s_yy s_zz s_yz s_xz s_xy'
     batch_shape = '(4)'
   []
+  [d]
+    type = CSVVec
+    csv_file = 'user_tensors/test_CSVPrimitiveTensor/CSVPrimitiveTensor.csv'
+    component_names = 'disp_x disp_y disp_z'
+    batch_shape = '(2,2)'
+  []
 []
