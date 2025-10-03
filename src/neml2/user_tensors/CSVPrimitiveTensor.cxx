@@ -77,7 +77,7 @@ CSVPrimitiveTensor<T>::parse_csv(const std::string & csv_file,
   auto rows = counter.n_rows();
   std::vector<T> csv_vals(rows);
 
-  // Modifying factor for currently supported types
+  // Multiplying factor for currently supported types
   std::vector<double> factor;
   if (T::const_base_sizes == TensorShape{})
     factor = {1.0};
