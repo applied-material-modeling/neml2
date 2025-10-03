@@ -22,48 +22,35 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/solid_mechanics/LinearIsotropicHardening.h"
-#include "neml2/tensors/Scalar.h"
+#ifdef NEML2_HAS_CSV
+
+#pragma once
+
+#include "neml2/user_tensors/UserTensorBase.h"
 
 namespace neml2
 {
-register_NEML2_object(LinearIsotropicHardening);
-
-OptionSet
-LinearIsotropicHardening::expected_options()
+/**
+ * @brief Create a Tensor from a csv file.
+ */
+template <typename T>
+class CSVPrimitiveTensor : public T, public UserTensorBase
 {
-  OptionSet options = IsotropicHardening::expected_options();
-  options.doc() +=
-      " following a linear relationship, i.e., \\f$ h = K \\bar{\\varepsilon}_p \\f$ where "
-      "\\f$ K \\f$ is the hardening modulus.";
+public:
+  static OptionSet expected_options();
 
-  options.set<bool>("define_second_derivatives") = true;
+  /**
+   * @brief Construct a new CSVPrimitiveTensor object
+   *
+   * @param options The options extracted from the input file.
+   */
+  CSVPrimitiveTensor(const OptionSet & options);
 
-  options.set_parameter<TensorName<Scalar>>("hardening_modulus");
-  options.set("hardening_modulus").doc() = "Hardening modulus";
-
-  return options;
-}
-
-LinearIsotropicHardening::LinearIsotropicHardening(const OptionSet & options)
-  : IsotropicHardening(options),
-    _K(declare_parameter<Scalar>("K", "hardening_modulus"))
-{
-}
-
-void
-LinearIsotropicHardening::set_value(bool out, bool dout_din, bool d2out_din2)
-{
-  if (out)
-    _h = _K * _ep;
-
-  if (dout_din)
-    if (_ep.is_dependent())
-      _h.d(_ep) = _K;
-
-  if (d2out_din2)
-  {
-    // zero
-  }
-}
+private:
+  T parse_csv(const std::string & csv_file,
+              const std::vector<std::string> & component_names,
+              const TensorShape & batch_shape) const;
+};
 } // namespace neml2
+
+#endif
