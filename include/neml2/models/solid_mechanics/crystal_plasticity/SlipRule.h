@@ -54,5 +54,11 @@ protected:
 
   /// Slip strengths, mapped from internal variables
   const Variable<Scalar> & _tau;
+
+  /// Kinematic hardening, mapped from internal variables (optional)
+  const Variable<Scalar> * _X;
+
+  /// Isotropic hardening, mapped from internal variables (optional)
+  const Variable<Scalar> * _R;
 };
 } // namespace neml2

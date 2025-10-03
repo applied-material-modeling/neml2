@@ -47,6 +47,16 @@ SlipRule::expected_options()
   options.set_input("slip_strengths") = VariableName(STATE, "internal", "slip_strengths");
   options.set("slip_strengths").doc() = "Name of the tensor containing the slip system strengths";
 
+  options.set_input("kinematic_hardening") = VariableName();
+  options.set("kinematic_hardening").doc() =
+      "Name of the tensor containing the kinematic hardening strengths.  If not provided it will "
+      "not be included.";
+
+  options.set_input("isotropic_hardening") = VariableName();
+  options.set("isotropic_hardening").doc() =
+      "Name of the tensor containing the isotropic hardening strengths.  If not provided it will "
+      "not be included.";
+
   options.set<std::string>("crystal_geometry_name") = "crystal_geometry";
   options.set("crystal_geometry_name").doc() =
       "Name of the Data object containing the crystallographic information";
@@ -60,7 +70,13 @@ SlipRule::SlipRule(const OptionSet & options)
         options.get<std::string>("crystal_geometry_name"))),
     _g(declare_output_variable<Scalar>("slip_rates", _crystal_geometry.nslip())),
     _rss(declare_input_variable<Scalar>("resolved_shears", _crystal_geometry.nslip())),
-    _tau(declare_input_variable<Scalar>("slip_strengths", _crystal_geometry.nslip()))
+    _tau(declare_input_variable<Scalar>("slip_strengths", _crystal_geometry.nslip())),
+    _X(options.user_specified("kinematic_hardening")
+           ? &declare_input_variable<Scalar>("kinematic_hardening", _crystal_geometry.nslip())
+           : nullptr),
+    _R(options.user_specified("isotropic_hardening")
+           ? &declare_input_variable<Scalar>("isotropic_hardening", _crystal_geometry.nslip())
+           : nullptr)
 {
 }
 } // namespace neml2
