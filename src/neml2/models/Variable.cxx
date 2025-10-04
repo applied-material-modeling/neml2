@@ -591,22 +591,6 @@ Variable<T>::operator=(const Tensor & val)
 
 template <typename T>
 void
-Variable<T>::assign(const ATensor & val, RawAssignment key)
-{
-  if (owning())
-  {
-    if constexpr (std::is_same_v<T, Tensor>)
-      _value = T(val, val.dim() - base_dim());
-    else
-      _value = T(val);
-  }
-  else
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-    const_cast<VariableBase *>(ref())->assign(val, key);
-}
-
-template <typename T>
-void
 Variable<T>::clear()
 {
   if (owning())

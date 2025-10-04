@@ -166,26 +166,6 @@ public:
   /// Assignment operator
   virtual void operator=(const Tensor & val) = 0;
 
-  /// Secret passkey to control access to the secret assignment method
-  struct RawAssignment
-  {
-    RawAssignment(const RawAssignment &) = default;
-    RawAssignment(RawAssignment &&) = default;
-    RawAssignment & operator=(const RawAssignment &) = delete;
-    RawAssignment & operator=(RawAssignment &&) = delete;
-    ~RawAssignment() = default;
-
-  private:
-    // only the following classes can construct this key
-    friend class VariableStore;
-
-    // private constructor so only trusted friends can construct this key
-    RawAssignment() = default;
-  };
-
-  /// Secret assignment operator used by low-level operations such as jit tracing
-  virtual void assign(const ATensor & val, RawAssignment key) = 0;
-
   /// Wrapper for assigning partial derivative
   Derivative<1> & d(const VariableBase & var);
 
@@ -304,8 +284,6 @@ public:
 
   void operator=(const Tensor & val) override;
 
-  void assign(const ATensor & val, RawAssignment key) override;
-
   /// Variable value
   const T & value() const { return owning() ? _value : _ref->value(); }
 
@@ -344,6 +322,9 @@ public:
   Derivative & operator=(const Tensor & val);
   Derivative & operator=(const VariableBase & val);
   ///@}
+
+  /// Get the derivative
+  const Tensor & tensor() const { return _deriv; }
 
   /// Get the derivative in assembly format
   const Tensor & get() const;

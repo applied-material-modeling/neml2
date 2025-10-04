@@ -111,6 +111,10 @@ public:
   const std::vector<Size> & variable_sizes() const;
   /// Get the storage size of a variable by name
   Size variable_size(const LabeledAxisAccessor & name) const;
+  /// Get the variable base shapes (in assembly order)
+  const std::vector<TensorShape> & variable_base_sizes() const;
+  /// Get the variable left-batch shapes (in assembly order)
+  const std::vector<TensorShape> & variable_lbatch_sizes() const;
   ///@}
 
   /// Get sub-axis information

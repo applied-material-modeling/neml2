@@ -71,6 +71,9 @@ public:
   ///@}
 
   using VariableStorage = std::map<VariableName, std::unique_ptr<VariableBase>>;
+  using DerivSparsity = std::vector<std::pair<VariableBase *, const VariableBase *>>;
+  using SecDerivSparsity =
+      std::vector<std::tuple<VariableBase *, const VariableBase *, const VariableBase *>>;
 
   ///@{
   /// Variables
@@ -105,22 +108,41 @@ public:
   ///@}
 
   ///@{
-  /// Assign input variable values
-  void assign_input(const ValueMap & vals);
-  /// Assign output variable values
-  void assign_output(const ValueMap & vals);
-  /// Assign variable derivatives
-  void assign_output_derivatives(const DerivMap & derivs);
+  /// Cache sparsity of first derivatives
+  void cache_derivative_sparsity();
+  /// Cache sparsity of second derivatives
+  void cache_second_derivative_sparsity();
+  /// Derivative sparsity
+  const std::optional<DerivSparsity> & derivative_sparsity() const;
+  /// Second derivative sparsity
+  const std::optional<SecDerivSparsity> & second_derivative_sparsity() const;
   ///@}
 
   ///@{
-  /// Collect variable values
-  ValueMap collect_input() const;
-  ValueMap collect_output() const;
+  /// Assign input variable values
+  /// @p assembly indicates if @p vals are in assembly format
+  void assign_input(const ValueMap & vals, bool assembly = false);
+  /// Assign output variable values
+  /// @p assembly indicates if @p vals are in assembly format
+  void assign_output(const ValueMap & vals, bool assembly = false);
+  /// Assign variable derivatives
+  /// @p assembly indicates if @p derivs are in assembly format
+  void assign_output_derivatives(const DerivMap & derivs, bool assembly = false);
+  ///@}
+
+  ///@{
+  /// Collect input variable values
+  /// @p assembly indicates if the returned map should be in assembly format
+  ValueMap collect_input(bool assembly = false) const;
+  /// Collect output variable values
+  /// @p assembly indicates if the returned map should be in assembly format
+  ValueMap collect_output(bool assembly = false) const;
   /// Collect variable derivatives
-  DerivMap collect_output_derivatives() const;
+  /// @p assembly indicates if the returned map should be in assembly format
+  DerivMap collect_output_derivatives(bool assembly = false) const;
   /// Collect variable second derivatives
-  SecDerivMap collect_output_second_derivatives() const;
+  /// @p assembly indicates if the returned map should be in assembly format
+  SecDerivMap collect_output_second_derivatives(bool assembly = false) const;
   ///@}
 
 protected:
@@ -204,5 +226,17 @@ private:
 
   /// Current tensor options for padding variables
   TensorOptions _options;
+
+  /// Derivative sparsity
+  std::optional<DerivSparsity> _deriv_sparsity = std::nullopt;
+
+  /// Second derivative sparsity
+  std::optional<SecDerivSparsity> _secderiv_sparsity = std::nullopt;
+
+  /// Derivative sparsity for the nonlinear system
+  std::optional<DerivSparsity> _deriv_sparsity_nl_sys = std::nullopt;
+
+  /// Second derivative sparsity for the nonlinear system
+  std::optional<SecDerivSparsity> _secderiv_sparsity_nl_sys = std::nullopt;
 };
 } // namespace neml2

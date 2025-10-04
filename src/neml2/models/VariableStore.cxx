@@ -28,6 +28,7 @@
 #include "neml2/models/map_types.h"
 #include "neml2/models/Variable.h"
 #include "neml2/base/LabeledAxis.h"
+#include "neml2/solvers/NonlinearSystem.h"
 #include "neml2/tensors/tensors.h"
 #include "neml2/tensors/functions/sum.h"
 
@@ -277,171 +278,176 @@ VariableStore::zero_output()
 }
 
 void
-VariableStore::assign_input(const ValueMap & vals)
+VariableStore::cache_derivative_sparsity()
 {
-  for (const auto & [name, val] : vals)
-    input_variable(name) = val.clone();
+  std::vector<std::pair<VariableBase *, const VariableBase *>> sparsity;
+  for (auto && [yname, yvar] : output_variables())
+    for (const auto & dy_dx : yvar->derivatives())
+      sparsity.emplace_back(yvar.get(), dy_dx.args()[0]);
+
+  if (currently_solving_nonlinear_system())
+    _deriv_sparsity_nl_sys = std::move(sparsity);
+  else
+    _deriv_sparsity = std::move(sparsity);
 }
 
 void
-VariableStore::assign_output(const ValueMap & vals)
+VariableStore::cache_second_derivative_sparsity()
 {
-  for (const auto & [name, val] : vals)
-    output_variable(name) = val;
+  std::vector<std::tuple<VariableBase *, const VariableBase *, const VariableBase *>> sparsity;
+  for (auto && [yname, yvar] : output_variables())
+    for (const auto & d2y_dx1dx2 : yvar->second_derivatives())
+      sparsity.emplace_back(yvar.get(), d2y_dx1dx2.args()[0], d2y_dx1dx2.args()[1]);
+
+  if (currently_solving_nonlinear_system())
+    _secderiv_sparsity_nl_sys = std::move(sparsity);
+  else
+    _secderiv_sparsity = std::move(sparsity);
+}
+
+const std::optional<VariableStore::DerivSparsity> &
+VariableStore::derivative_sparsity() const
+{
+  if (currently_solving_nonlinear_system())
+    return _deriv_sparsity_nl_sys;
+  return _deriv_sparsity;
+}
+
+const std::optional<VariableStore::SecDerivSparsity> &
+VariableStore::second_derivative_sparsity() const
+{
+  if (currently_solving_nonlinear_system())
+    return _secderiv_sparsity_nl_sys;
+  return _secderiv_sparsity;
 }
 
 void
-VariableStore::assign_output_derivatives(const DerivMap & derivs)
+VariableStore::assign_input(const ValueMap & vals, bool assembly)
 {
-  for (const auto & [yvar, deriv] : derivs)
+  for (const auto & [name, val] : vals)
+    if (assembly)
+      input_variable(name).set(val.clone());
+    else
+      input_variable(name) = val.clone();
+}
+
+void
+VariableStore::assign_output(const ValueMap & vals, bool assembly)
+{
+  for (const auto & [name, val] : vals)
+    if (assembly)
+      output_variable(name).set(val);
+    else
+      output_variable(name) = val;
+}
+
+void
+VariableStore::assign_output_derivatives(const DerivMap & derivs, bool assembly)
+{
+  for (const auto & [yname, deriv] : derivs)
   {
-    auto & dy = output_variable(yvar).derivatives();
-    for (const auto & [xvar, val] : deriv)
-      dy[xvar] = val;
+    auto & yvar = output_variable(yname);
+    for (const auto & [xname, val] : deriv)
+    {
+      const auto & xvar = input_variable(xname);
+      auto & dy_dx = yvar.d(xvar);
+      if (assembly)
+        dy_dx.set(val);
+      else
+        dy_dx = val;
+    }
   }
 }
 
 void
 VariableStore::assign_input_stack(jit::Stack & stack)
 {
-  const auto & vars = input_axis().variable_names();
-  neml_assert_dbg(stack.size() >= vars.size(),
-                  "Number of input variables in the stack (",
-                  stack.size(),
-                  ") is smaller than the number of input variables in the model (",
-                  vars.size(),
-                  ").");
-
-  // Last n tensors in the stack are the input variables
-  for (std::size_t i = 0; i < vars.size(); i++)
-    input_variable(vars[i]).assign(stack[stack.size() - vars.size() + i].toTensor(),
-                                   VariableBase::RawAssignment{});
-
-  // Drop the input variables from the stack
-  jit::drop(stack, vars.size());
+  std::size_t i = 0; // stack counter
+  for (auto & [xname, xvar] : input_variables())
+  {
+    const auto & ten = stack[i++].toTensor();
+    *xvar = Tensor(ten, ten.dim() - xvar->base_dim());
+  }
+  jit::drop(stack, i);
 }
 
 void
 VariableStore::assign_output_stack(jit::Stack & stack, bool out, bool dout, bool d2out)
 {
-  neml_assert_dbg(out || dout || d2out,
-                  "At least one of the output/derivative flags must be true.");
-
-  neml_assert_dbg(!stack.empty(), "Empty output stack.");
-  const auto stacklist = stack.back().toTensorVector();
-
-  // With our protocol, the last tensor in the list is the sparsity tensor
-  const auto sparsity_tensor = stacklist.back().contiguous();
-  neml_assert_dbg(at::sum(sparsity_tensor).item<Size>() == Size(stacklist.size()) - 1,
-                  "Sparsity tensor has incorrect size. Got ",
-                  at::sum(sparsity_tensor).item<Size>(),
-                  " expected ",
-                  Size(stacklist.size()) - 1);
-  const std::vector<Size> sparsity(sparsity_tensor.data_ptr<Size>(),
-                                   sparsity_tensor.data_ptr<Size>() + sparsity_tensor.size(0));
-
-  const auto & yvars = output_axis().variable_names();
-  const auto & xvars = input_axis().variable_names();
-
-  std::size_t sti = 0; // stack counter
-  std::size_t spi = 0; // sparsity counter
+  std::size_t i = 0; // stack counter
 
   if (out)
-  {
-    for (const auto & yvar : yvars)
+    for (auto & [yname, yvar] : output_variables())
     {
-      neml_assert(sparsity[spi++], "Corrupted sparsity tensor.");
-      output_variable(yvar).assign(stacklist[sti++], VariableBase::RawAssignment{});
+      const auto & ten = stack[i++].toTensor();
+      *yvar = Tensor(ten, ten.dim() - yvar->base_dim());
     }
-  }
 
   if (dout)
-  {
-    for (const auto & yvar : yvars)
+    for (auto [yvar, xvar] : derivative_sparsity().value())
     {
-      auto & derivs = output_variable(yvar).derivatives();
-      for (const auto & xvar : xvars)
-      {
-        if (sparsity[spi++])
-        {
-          const auto & val = stacklist[sti++];
-          neml_assert_dbg(val.dim() >= 2,
-                          "Derivative tensor d(",
-                          yvar,
-                          ")/d(",
-                          xvar,
-                          ") must have at least 2 dimensions. Got ",
-                          val.dim(),
-                          ".");
-          derivs[xvar] = Tensor(val, val.dim() - 2);
-        }
-      }
+      const auto & ten = stack[i++].toTensor();
+      yvar->d(*xvar) = Tensor(ten, ten.dim() - yvar->base_dim() - xvar->base_dim());
     }
-  }
 
   if (d2out)
-  {
-    for (const auto & yvar : yvars)
+    for (auto [yvar, x1var, x2var] : second_derivative_sparsity().value())
     {
-      auto & derivs = output_variable(yvar).second_derivatives();
-      for (const auto & x1var : xvars)
-        for (const auto & x2var : xvars)
-        {
-          if (sparsity[spi++])
-          {
-            const auto & val = stacklist[sti++];
-            neml_assert_dbg(val.dim() >= 3,
-                            "Second derivative tensor d2(",
-                            yvar,
-                            ")/d(",
-                            x1var,
-                            ")d(",
-                            x2var,
-                            ") must have at least 3 dimensions. Got ",
-                            val.dim(),
-                            ".");
-            derivs[x1var][x2var] = Tensor(val, val.dim() - 3);
-          }
-        }
+      const auto & ten = stack[i++].toTensor();
+      yvar->d(*x1var, *x2var) =
+          Tensor(ten, ten.dim() - yvar->base_dim() - x1var->base_dim() - x2var->base_dim());
     }
-  }
 
-  jit::drop(stack, 1);
+  jit::drop(stack, i);
 }
 
 ValueMap
-VariableStore::collect_input() const
+VariableStore::collect_input(bool assembly) const
 {
   ValueMap vals;
   for (auto && [name, var] : input_variables())
-    vals[name] = var->tensor();
+    if (assembly)
+      vals[name] = var->get();
+    else
+      vals[name] = var->tensor();
   return vals;
 }
 
 ValueMap
-VariableStore::collect_output() const
+VariableStore::collect_output(bool assembly) const
 {
   ValueMap vals;
   for (auto && [name, var] : output_variables())
-    vals[name] = var->tensor();
+    if (assembly)
+      vals[name] = var->get();
+    else
+      vals[name] = var->tensor();
   return vals;
 }
 
 DerivMap
-VariableStore::collect_output_derivatives() const
+VariableStore::collect_output_derivatives(bool assembly) const
 {
   DerivMap derivs;
   for (auto && [name, var] : output_variables())
-    derivs[name] = var->derivatives();
+    for (auto & deriv : var->derivatives())
+      if (assembly)
+        derivs[name][deriv.args()[0]->name()] = deriv.get();
+      else
+        derivs[name][deriv.args()[0]->name()] = deriv.tensor();
   return derivs;
 }
 
 SecDerivMap
-VariableStore::collect_output_second_derivatives() const
+VariableStore::collect_output_second_derivatives(bool assembly) const
 {
   SecDerivMap sec_derivs;
   for (auto && [name, var] : output_variables())
-    sec_derivs[name] = var->second_derivatives();
+    for (auto & deriv : var->second_derivatives())
+      if (assembly)
+        sec_derivs[name][deriv.args()[0]->name()][deriv.args()[1]->name()] = deriv.get();
+      else
+        sec_derivs[name][deriv.args()[0]->name()][deriv.args()[1]->name()] = deriv.tensor();
   return sec_derivs;
 }
 
@@ -449,81 +455,31 @@ jit::Stack
 VariableStore::collect_input_stack() const
 {
   jit::Stack stack;
-  const auto & vars = input_axis().variable_names();
-  stack.reserve(vars.size());
-  for (const auto & name : vars)
-    stack.emplace_back(input_variable(name).tensor());
+  for (const auto & [xname, xvar] : input_variables())
+    stack.emplace_back(xvar->tensor());
   return stack;
 }
 
 jit::Stack
 VariableStore::collect_output_stack(bool out, bool dout, bool d2out) const
 {
-  neml_assert_dbg(out || dout || d2out,
-                  "At least one of the output/derivative flags must be true.");
-
-  const auto & yvars = output_axis().variable_names();
-  const auto & xvars = input_axis().variable_names();
-
-  std::vector<ATensor> stacklist;
-  std::vector<Size> sparsity;
+  jit::Stack stack;
 
   if (out)
-  {
-    sparsity.insert(sparsity.end(), yvars.size(), 1);
-    for (const auto & yvar : yvars)
-      stacklist.push_back(output_variable(yvar).tensor());
-  }
+    for (const auto & [yname, yvar] : output_variables())
+      stack.emplace_back(yvar->tensor());
 
   if (dout)
-  {
-    for (const auto & yvar : yvars)
-    {
-      const auto & derivs = output_variable(yvar).derivatives();
-      for (const auto & xvar : xvars)
-      {
-        const auto & deriv = derivs.find(xvar);
-        sparsity.push_back(deriv == derivs.end() || !input_variable(xvar).is_dependent() ? 0 : 1);
-        if (sparsity.back())
-          stacklist.push_back(deriv->second);
-      }
-    }
-  }
+    for (const auto [yvar, xvar] : derivative_sparsity().value())
+      if (xvar->is_dependent())
+        stack.emplace_back(yvar->d(*xvar).tensor());
 
   if (d2out)
-  {
-    for (const auto & yvar : yvars)
-    {
-      const auto & derivs = output_variable(yvar).second_derivatives();
-      for (const auto & x1var : xvars)
-      {
-        const auto & x1derivs = derivs.find(x1var);
-        if (x1derivs != derivs.end() && input_variable(x1var).is_dependent())
-          for (const auto & x2var : xvars)
-          {
-            const auto & x1x2deriv = x1derivs->second.find(x2var);
-            sparsity.push_back(
-                x1x2deriv == x1derivs->second.end() || !input_variable(x2var).is_dependent() ? 0
-                                                                                             : 1);
-            if (sparsity.back())
-              stacklist.push_back(x1x2deriv->second);
-          }
-        else
-          sparsity.insert(sparsity.end(), xvars.size(), 0);
-      }
-    }
-  }
+    for (const auto [yvar, x1var, x2var] : second_derivative_sparsity().value())
+      if (x1var->is_dependent() && x2var->is_dependent())
+        stack.emplace_back(yvar->d(*x1var, *x2var).tensor());
 
-  const auto sparsity_tensor = Tensor::create(sparsity, kInt64);
-  const auto nnz = base_sum(sparsity_tensor).item<Size>();
-  neml_assert_dbg(nnz == Size(stacklist.size()),
-                  "Corrupted sparsity tensor. Got ",
-                  nnz,
-                  " non-zero entries, expected ",
-                  Size(stacklist.size()));
-  stacklist.push_back(sparsity_tensor);
-
-  return {stacklist};
+  return stack;
 }
 
 } // namespace neml2

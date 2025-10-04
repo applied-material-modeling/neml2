@@ -30,6 +30,7 @@
 #include "neml2/base/Factory.h"
 #include "neml2/base/Settings.h"
 #include "neml2/jit/utils.h"
+#include "neml2/solvers/NonlinearSystem.h"
 #include "neml2/tensors/functions/jacrev.h"
 #include "neml2/tensors/tensors.h"
 #include "neml2/tensors/TensorValue.h"
@@ -397,6 +398,12 @@ Model::forward(bool out, bool dout, bool d2out)
   if (dout || d2out)
     extract_AD_derivatives(dout, d2out);
 
+  if (dout && !derivative_sparsity().has_value())
+    cache_derivative_sparsity();
+
+  if (d2out && !second_derivative_sparsity().has_value())
+    cache_second_derivative_sparsity();
+
   return;
 }
 
@@ -426,8 +433,9 @@ Model::forward_maybe_jit(bool out, bool dout, bool d2out)
   }
   else
   {
-    // All other models in the world should wait for this model to finish tracing
-    // This is not our fault, torch jit tracing is not thread-safe
+    // This is the first time we are seeing this schema, we need to trace the function.
+    // All other models in the world should wait for this model to finish tracing.
+    // This is not our fault, torch jit tracing is not thread-safe.
     std::shared_ptr<jit::tracer::TracingState> trace;
     static std::mutex trace_mutex;
     trace_mutex.lock();
@@ -849,7 +857,7 @@ Model::extract_AD_derivatives(bool dout, bool d2out)
         if (!u1->is_dependent())
           continue;
 
-        const auto & dy_du1 = y->derivatives()[u1->name()];
+        const auto & dy_du1 = y->d(*u1).tensor();
 
         if (!dy_du1.defined() || !dy_du1.requires_grad())
           continue;

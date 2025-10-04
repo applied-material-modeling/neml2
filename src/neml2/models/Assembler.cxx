@@ -131,6 +131,20 @@ to_assembly(const Tensor & from,
   return permuted.base_reshape(assembly_sizes);
 }
 
+// Explicit instantiations
+template Tensor to_assembly<1>(const Tensor &,
+                               const std::array<TensorShapeRef, 1> &,
+                               const std::array<TensorShapeRef, 1> &,
+                               const std::string &);
+template Tensor to_assembly<2>(const Tensor &,
+                               const std::array<TensorShapeRef, 2> &,
+                               const std::array<TensorShapeRef, 2> &,
+                               const std::string &);
+template Tensor to_assembly<3>(const Tensor &,
+                               const std::array<TensorShapeRef, 3> &,
+                               const std::array<TensorShapeRef, 3> &,
+                               const std::string &);
+
 template <std::size_t N>
 Tensor
 from_assembly(const Tensor & from,
@@ -190,7 +204,22 @@ from_assembly(const Tensor & from,
   auto B = utils::add_traceable_shapes(total_lbatch_sizes, from.batch_sizes());
   return Tensor(at::permute(from, permutation), B);
 }
-}
+
+// Explicit instantiations
+template Tensor from_assembly<1>(const Tensor &,
+                                 const std::array<TensorShapeRef, 1> &,
+                                 const std::array<TensorShapeRef, 1> &,
+                                 const std::string &);
+template Tensor from_assembly<2>(const Tensor &,
+                                 const std::array<TensorShapeRef, 2> &,
+                                 const std::array<TensorShapeRef, 2> &,
+                                 const std::string &);
+template Tensor from_assembly<3>(const Tensor &,
+                                 const std::array<TensorShapeRef, 3> &,
+                                 const std::array<TensorShapeRef, 3> &,
+                                 const std::string &);
+
+} // namespace utils
 
 Tensor
 VectorAssembler::assemble_by_variable(const ValueMap & vals_dict) const
@@ -207,23 +236,24 @@ VectorAssembler::assemble_by_variable(const ValueMap & vals_dict) const
   std::vector<Tensor> vals(vars.size());
   for (std::size_t i = 0; i < vars.size(); ++i)
   {
-    const auto val = vals_dict.find(_axis.qualify(vars[i]));
-    if (val != vals_dict.end())
+    const auto it = vals_dict.find(_axis.qualify(vars[i]));
+    if (it != vals_dict.end())
     {
-      vals[i] = val->second;
-      neml_assert_dbg(vals[i].base_dim() == 1,
+      const auto & val = it->second;
+      neml_assert_dbg(val.base_dim() == 1,
                       "During matrix assembly, found a tensor associated with variable ",
                       vars[i],
                       " with base dimension ",
-                      vals[i].base_dim(),
+                      val.base_dim(),
                       ". Expected 1.");
-      neml_assert_dbg(vals[i].base_size(0) == _axis.variable_sizes()[i],
+      neml_assert_dbg(val.base_size(0) == _axis.variable_sizes()[i],
                       "Invalid size for variable ",
                       vars[i],
                       ". Expected ",
                       _axis.variable_sizes()[i],
                       ", got ",
-                      vals[i].base_size(0));
+                      val.base_size(0));
+      vals[i] = val;
       if (!options_defined)
       {
         options = options.dtype(vals[i].dtype()).device(vals[i].device());
@@ -254,7 +284,10 @@ VectorAssembler::split_by_variable(const Tensor & tensor) const
   const auto vals = tensor.split(_axis.variable_sizes(), -1);
 
   for (std::size_t i = 0; i < keys.size(); ++i)
-    ret[_axis.qualify(keys[i])] = Tensor(vals[i], tensor.batch_sizes());
+  {
+    const Tensor val(vals[i], tensor.batch_sizes());
+    ret[_axis.qualify(keys[i])] = val;
+  }
 
   return ret;
 }
@@ -297,20 +330,20 @@ MatrixAssembler::assemble_by_variable(const DerivMap & vals_dict) const
     std::vector<Tensor> vals(xvars.size());
     for (std::size_t j = 0; j < xvars.size(); ++j)
     {
-      const auto val = vals_row->second.find(_xaxis.qualify(xvars[j]));
-      if (val != vals_row->second.end())
+      const auto it = vals_row->second.find(_xaxis.qualify(xvars[j]));
+      if (it != vals_row->second.end())
       {
-        vals[j] = val->second;
-        neml_assert_dbg(vals[j].base_dim() == 2,
+        const auto & val = it->second;
+        neml_assert_dbg(val.base_dim() == 2,
                         "During matrix assembly, found a tensor associated with variables ",
                         yvars[i],
                         "/",
                         xvars[j],
                         " with base dimension ",
-                        vals[j].base_dim(),
+                        val.base_dim(),
                         ". Expected base dimension of 2.");
-        neml_assert_dbg(vals[j].base_size(0) == _yaxis.variable_sizes()[i] &&
-                            vals[j].base_size(1) == _xaxis.variable_sizes()[j],
+        neml_assert_dbg(val.base_size(0) == _yaxis.variable_sizes()[i] &&
+                            val.base_size(1) == _xaxis.variable_sizes()[j],
                         "Invalid tensor shape associated with variables ",
                         yvars[i],
                         "/",
@@ -318,7 +351,8 @@ MatrixAssembler::assemble_by_variable(const DerivMap & vals_dict) const
                         ". Expected base shape ",
                         TensorShape{_yaxis.variable_sizes()[i], _xaxis.variable_sizes()[j]},
                         ", got ",
-                        vals[j].base_sizes());
+                        val.base_sizes());
+        vals[j] = val;
         if (!options_defined)
         {
           options = options.dtype(vals[j].dtype()).device(vals[j].device());
@@ -365,8 +399,10 @@ MatrixAssembler::split_by_variable(const Tensor & tensor) const
   {
     const auto vals = rows[i].split(_xaxis.variable_sizes(), -1);
     for (std::size_t j = 0; j < xvars.size(); ++j)
-      ret[_yaxis.qualify(yvars[i])][_xaxis.qualify(xvars[j])] =
-          Tensor(vals[j], tensor.batch_sizes());
+    {
+      const Tensor val(vals[j], tensor.batch_sizes());
+      ret[_yaxis.qualify(yvars[i])][_xaxis.qualify(xvars[j])] = val;
+    }
   }
 
   return ret;

@@ -83,6 +83,12 @@ LabeledAxis::add_variable(const LabeledAxisAccessor & name, TensorShapeRef lbatc
   template void LabeledAxis::add_variable<T>(const LabeledAxisAccessor &, TensorShapeRef)
 FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_ADD_VARIABLE);
 
+static Size
+calculate_size(TensorShapeRef base_sizes, TensorShapeRef lbatch_sizes)
+{
+  return utils::storage_size(base_sizes) * utils::storage_size(lbatch_sizes);
+}
+
 void
 LabeledAxis::setup_layout()
 {
@@ -106,7 +112,7 @@ LabeledAxis::setup_layout()
   for (const auto & [name, sizes] : _variables)
   {
     const auto & [base_sizes, lbatch_sizes] = sizes;
-    const auto sz = utils::storage_size(base_sizes) * utils::storage_size(lbatch_sizes);
+    const auto sz = calculate_size(base_sizes, lbatch_sizes);
     _variable_to_id_map.emplace(name, _variable_to_id_map.size());
     _id_to_variable_map.emplace_back(name);
     _id_to_variable_size_map.push_back(sz);
@@ -161,7 +167,7 @@ LabeledAxis::size() const
   // Otherwise, calculate the size
   Size sz = 0;
   for (const auto & [name, sizes] : _variables)
-    sz += utils::storage_size(sizes.first) * utils::storage_size(sizes.second);
+    sz += calculate_size(sizes.first, sizes.second);
   for (const auto & [name, axis] : _subaxes)
     sz += axis->size();
   return sz;
@@ -175,9 +181,21 @@ LabeledAxis::size(const LabeledAxisAccessor & name) const
   // If the name has length 1, it must be a variable or a local sub-axis
   if (name.size() == 1)
   {
+
     const auto var = _variables.find(name[0]);
     if (var != _variables.end())
-      return var->second;
+    {
+      if (_setup)
+      {
+        const auto id = variable_id(name);
+        return _id_to_variable_size_map[id];
+      }
+      else
+      {
+        const auto & [base_sizes, lbatch_sizes] = var->second;
+        return calculate_size(base_sizes, lbatch_sizes);
+      }
+    }
 
     const auto subaxis = _subaxes.find(name[0]);
     neml_assert(subaxis != _subaxes.end(),
@@ -185,6 +203,11 @@ LabeledAxis::size(const LabeledAxisAccessor & name) const
                 name,
                 "' is neither a variable nor a local sub-axis on axis:\n",
                 *this);
+    if (_setup)
+    {
+      const auto id = subaxis_id(name[0]);
+      return _id_to_subaxis_size_map[id];
+    }
     return subaxis->second->size();
   }
 
@@ -308,13 +331,28 @@ LabeledAxis::variable_size(const LabeledAxisAccessor & name) const
     const auto var = _variables.find(name[0]);
     neml_assert(
         var != _variables.end(), "Variable named '", name, "' does not exist on axis:\n", *this);
-    return var->second;
+    const auto & [base_sizes, lbatch_sizes] = var->second;
+    return calculate_size(base_sizes, lbatch_sizes);
   }
 
   const auto subaxis = _subaxes.find(name[0]);
   neml_assert(
       subaxis != _subaxes.end(), "Variable named '", name, "' does not exist on axis:\n", *this);
   return subaxis->second->variable_size(name.slice(1));
+}
+
+const std::vector<TensorShape> &
+LabeledAxis::variable_base_sizes() const
+{
+  ensure_setup_dbg();
+  return _id_to_base_sizes_map;
+}
+
+const std::vector<TensorShape> &
+LabeledAxis::variable_lbatch_sizes() const
+{
+  ensure_setup_dbg();
+  return _id_to_lbatch_sizes_map;
 }
 
 std::size_t
