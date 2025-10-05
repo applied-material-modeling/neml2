@@ -15,7 +15,8 @@
         "NEML2_PYBIND": "OFF",
         "NEML2_DOC": "OFF",
         "NEML2_WORK_DISPATCHER": "ON",
-        "NEML2_JSON": "ON"
+        "NEML2_JSON": "ON",
+        "NEML2_CSV": "ON"
       }
     },
     {
