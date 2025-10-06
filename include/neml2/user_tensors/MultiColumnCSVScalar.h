@@ -26,13 +26,13 @@
 
 #pragma once
 
+#include "csvparser/csv.hpp"
 #include "neml2/user_tensors/UserTensorBase.h"
-
 #include "neml2/tensors/Scalar.h"
 
 namespace neml2
 {
-class MultiColumnCSVScalar : public Scalar, public UserTensorBase
+class MultiColumnCSVScalar : public UserTensorBase, public Scalar
 {
 public:
   static OptionSet expected_options();
@@ -40,9 +40,26 @@ public:
   MultiColumnCSVScalar(const OptionSet & options);
 
 private:
-  void check_col_options(const OptionSet & options, bool header_row) const;
-  std::vector<double> flatten(const std::vector<std::vector<double>> v2d) const;
-  Scalar parse_csv(const OptionSet & options) const;
+  Scalar parse(const OptionSet & options) const;
+
+  /// Helper functions to parse CSV format
+  csv::CSVFormat parse_format() const;
+
+  /// Helper function to parse column indices
+  std::vector<unsigned int> parse_indices(const csv::CSVReader & csv) const;
+
+  /// Read all values without column indices
+  void read_all(csv::CSVReader & csv,
+                std::vector<double> & vals,
+                std::size_t & nrow,
+                std::size_t & ncol) const;
+
+  /// Read values by specified column indices
+  void read_by_indices(csv::CSVReader & csv,
+                       const std::vector<unsigned int> & indices,
+                       std::vector<double> & vals,
+                       std::size_t & nrow,
+                       std::size_t & ncol) const;
 };
 } // namespace neml2
 
