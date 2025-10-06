@@ -22,23 +22,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/solid_mechanics/crystal_plasticity/SingleSlipStrengthMap.h"
+#include "neml2/models/solid_mechanics/crystal_plasticity/PerSlipStrengthMap.h"
 #include "neml2/tensors/Scalar.h"
 
 namespace neml2
 {
-register_NEML2_object(SingleSlipStrengthMap);
+register_NEML2_object(PerSlipStrengthMap);
 
 OptionSet
-SingleSlipStrengthMap::expected_options()
+PerSlipStrengthMap::expected_options()
 {
   OptionSet options = SlipStrengthMap::expected_options();
 
-  options.doc() =
-      "Calculates the slip system strength for all slip systems as \\f$ \\hat{\\tau}_i = "
-      "\\bar{\\tau} + \\tau_0 \\f$ where \\f$ \\hat{\\tau}_i \\f$ is the strength for slip system "
-      "i, \\f$ \\bar{\\tau} \\f$ is an evolving slip system strength (one value for all systems), "
-      "defined by another object, and \\f$ \\tau_0 \\f$ is a constant strength.";
+  options.doc() = "Calculates the slip system strength as \\f$ \\hat{\\tau}_i = "
+                  "\\bar{\\tau}_i + \\tau_{0,i} \\f$ where \\f$ \\hat{\\tau}_i \\f$ is the "
+                  "strength for slip system "
+                  "i, \\f$ \\bar{\\tau}_i \\f$ is an evolving slip system strength, "
+                  "defined by another object, and \\f$ \\tau_{0,i} \\f$ is a constant strength.";
 
   options.set_input("slip_hardening") = VariableName(STATE, "internal", "slip_hardening");
   options.set("slip_hardening").doc() = "The name of the evovling, scalar strength";
@@ -49,23 +49,23 @@ SingleSlipStrengthMap::expected_options()
   return options;
 }
 
-SingleSlipStrengthMap::SingleSlipStrengthMap(const OptionSet & options)
+PerSlipStrengthMap::PerSlipStrengthMap(const OptionSet & options)
   : SlipStrengthMap(options),
-    _tau_bar(declare_input_variable<Scalar>("slip_hardening")),
+    _tau_bar(declare_input_variable<Scalar>("slip_hardening", _crystal_geometry.nslip())),
     _tau_const(declare_parameter<Scalar>("constant_strength", "constant_strength", true))
 {
 }
 
 void
-SingleSlipStrengthMap::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
+PerSlipStrengthMap::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   if (out)
-    _tau = (_tau_bar + _tau_const).batch_unsqueeze(-1).batch_expand(_crystal_geometry.nslip(), -1);
+    _tau = _tau_bar + _tau_const;
 
   if (dout_din)
   {
     if (_tau_bar.is_dependent())
-      _tau.d(_tau_bar) = Tensor::ones(_crystal_geometry.nslip(), _tau_bar.options());
+      _tau.d(_tau_bar) = Tensor::identity(_crystal_geometry.nslip(), _tau_bar.options());
 
     if (const auto * const tau_const = nl_param("constant_strength"))
       _tau.d(*tau_const) = Tensor::ones(_crystal_geometry.nslip(), _tau_const.options());

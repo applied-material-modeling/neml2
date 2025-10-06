@@ -42,10 +42,16 @@ PowerLawSlipRule::expected_options()
 {
   OptionSet options = SlipRule::expected_options();
   options.doc() =
-      "Power law slip rule defined as \\f$ \\dot{\\gamma}_i = \\dot{\\gamma}_0 \\left| "
-      "\\frac{\\tau_i}{\\hat{\\tau}_i} \\right|^{n-1} \\frac{\\tau_i}{\\hat{\\tau}_i} \\f$ with "
+      "Power law slip rule defined as \\f$ \\dot{\\gamma}_i = \\dot{\\gamma}_0 \\left\\langle "
+      "\frac{\\left|\\tau_i - \\hat{\\tau}_i^{(kin)}\\right| - "
+      "\\hat{\\tau}_i^{(iso)}}{\\hat{\\tau}} "
+      "\right\\rangle^n \\operatorname{sign}\\left(\\tau_i - \\hat{\\tau}_i^{(kin)}\\right) \\f$ "
+      "with "
       "\\f$ \\dot{\\gamma}_i \\f$ the slip rate on system \\f$ i \\f$, \\f$ \\tau_i \\f$ the "
-      "resolved shear, \\f$ \\hat{\\tau}_i \\f$ the slip system strength, \\f$ n \\f$ the rate "
+      "resolved shear, \\f$ \\hat{\\tau}_i \\f$ the slip system strength, \\f$ "
+      "\\hat{\\tau}_i^{(kin)} \\f$ is an optional kinematic backstress, \\f$ "
+      "\\hat{\\tau}_i^{(iso)} \\f$ is an optional isotropic hardening resistance, \\f$ n \\f$ the "
+      "rate "
       "senstivity, and \\f$ \\dot{\\gamma}_0 \\f$ a reference slip rate.";
 
   options.set_parameter<TensorName<Scalar>>("gamma0");
