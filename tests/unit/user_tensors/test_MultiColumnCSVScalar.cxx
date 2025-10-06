@@ -27,6 +27,7 @@
 
 #include "neml2/base/Factory.h"
 #include "neml2/tensors/Scalar.h"
+#include "neml2/base/NEML2Object.h"
 
 using namespace neml2;
 
