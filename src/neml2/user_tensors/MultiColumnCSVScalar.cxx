@@ -56,9 +56,7 @@ MultiColumnCSVScalar::expected_options()
   options.set("batch_shape").doc() = "Batch shape";
 
   options.set<std::vector<std::string>>("column_names") = {};
-  options.set("column_names").doc() =
-      "Names of CSV columns. When the CSV file has no header and no_header is set to true, the "
-      "default column names are 'col0', 'col1', 'col2', etc.";
+  options.set("column_names").doc() = "Names of CSV columns.";
 
   options.set<std::vector<unsigned int>>("column_indices") = {};
   options.set("column_indices").doc() = "Indices of CSV columns.";
@@ -72,9 +70,11 @@ MultiColumnCSVScalar::expected_options()
   options.set<bool>("no_header") = false;
   options.set("no_header").doc() = "Whether the CSV file has a header row.";
 
-  options.set<int>("header_row") = 0;
-  options.set("header_row").doc() =
-      "Row number of the header row (0-indexed). Rows before the header row are ignored.";
+  options.set<int>("starting_row") = 0;
+  options.set("starting_row").doc() =
+      "Starting row of the CSV file (0-indexed). Rows before this row are ignored. This should be "
+      "the header row if the CSV file has a header, otherwise it should be the first row of the "
+      "data. By default the starting row is the 0th row.";
 
   return options;
 }
@@ -117,7 +117,7 @@ MultiColumnCSVScalar::parse(const OptionSet & options) const
                 " is incompatible with the number of values read from the CSV file (",
                 scalar.numel(),
                 ").");
-    scalar = scalar.batch_reshape(options.get<TensorShape>("batch_shape"));
+    scalar = scalar.batch_reshape(B);
   }
 
   return scalar;
@@ -133,17 +133,23 @@ MultiColumnCSVScalar::parse_format() const
   const auto delim = options.get<EnumSelection>("delimiter").as<char>();
   fmt.delimiter(delim);
 
-  // Header row
-  fmt.header_row(options.get<int>("header_row"));
-  if (options.get<bool>("no_header"))
+  // Starting row
+  if (!options.get<bool>("no_header"))
   {
-    fmt.no_header();
-    // This is a csvparser bug -- not our fault :/
+    fmt.header_row(options.get<int>("starting_row"));
+    fmt.variable_columns(csv::VariableColumnPolicy::THROW);
+  }
+  else if (!options.user_specified("starting_row"))
+  {
+    fmt.header_row(-1); // header_row(-1) is not overwritten by starting_row = 0 default
     fmt.variable_columns(csv::VariableColumnPolicy::KEEP);
   }
   else
-    // Die a horrible death if rows have different number of columns
-    fmt.variable_columns(csv::VariableColumnPolicy::THROW);
+  {
+    fmt.header_row(options.get<int>("starting_row") -
+                   1); // set 'header row' to one before starting row of data
+    fmt.variable_columns(csv::VariableColumnPolicy::KEEP);
+  }
 
   return fmt;
 }
@@ -166,8 +172,6 @@ MultiColumnCSVScalar::parse_indices(const csv::CSVReader & csv) const
   std::vector<unsigned int> indices;
 
   // If neither column_names nor column_indices is set, use all columns
-  // NOTE: If no_header is true, the column names will be empty. In this case, we will use the
-  // first row (or whatever is specified by header_row) to determine the number of columns.
   if (!options.user_specified("column_names") && !options.user_specified("column_indices"))
     return indices;
 
@@ -197,17 +201,6 @@ MultiColumnCSVScalar::parse_indices(const csv::CSVReader & csv) const
   if (options.user_specified("column_indices"))
   {
     indices = options.get<std::vector<unsigned int>>("column_indices");
-    for (const auto idx : indices)
-      if (idx >= csv.get_col_names().size())
-      {
-        std::stringstream ss;
-        for (std::size_t i = 0; i < csv.get_col_names().size(); i++)
-          ss << csv.get_col_names()[i] << "(" << i << ") ";
-        throw NEMLException("Column index " + std::to_string(idx) +
-                            " is out of bounds. The CSV file has " +
-                            std::to_string(csv.get_col_names().size()) +
-                            " columns. Available columns (indices) are: " + ss.str());
-      }
   }
 
   return indices;
@@ -244,16 +237,31 @@ MultiColumnCSVScalar::read_by_indices(csv::CSVReader & csv,
                                       std::size_t & nrow,
                                       std::size_t & ncol) const
 {
+  const auto & options = this->input_options(); // for no_header option
   ncol = indices.size();
   for (const auto & row : csv)
   {
+    const auto row_size = row.size();
     for (const auto & idx : indices)
     {
-      neml_assert(row[idx].is_num(),
-                  "Non-numeric value found in CSV file at column '",
-                  csv.get_col_names()[idx],
-                  "', row ",
-                  nrow);
+      if (idx >= row_size)
+      {
+        throw NEMLException("Column index " + std::to_string(idx) +
+                            " is out of bounds. The CSV file has " + std::to_string(row_size) +
+                            " columns.");
+      }
+      if (!options.get<bool>("no_header"))
+        neml_assert(row[idx].is_num(),
+                    "Non-numeric value found in CSV file at column '",
+                    csv.get_col_names()[idx],
+                    "', row ",
+                    nrow);
+      else
+        neml_assert(row[idx].is_num(),
+                    "Non-numeric value found in CSV file in column with index ",
+                    std::to_string(idx),
+                    ", row ",
+                    nrow);
       vals.push_back(row[idx].get<double>());
     }
     nrow++;

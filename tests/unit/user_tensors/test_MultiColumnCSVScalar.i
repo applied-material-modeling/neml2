@@ -15,23 +15,29 @@
   []
   [delimiter]
     type = MultiColumnCSVScalar
-    csv_file = 'user_tensors/MultiColumnCSVScalar/data_semicolon.csv'
-    delimiter = 'SEMICOLON'
+    csv_file = 'user_tensors/MultiColumnCSVScalar/data_space.csv'
+    delimiter = 'SPACE'
   []
-  [header_row]
+  [starting_row]
     type = MultiColumnCSVScalar
     csv_file = 'user_tensors/MultiColumnCSVScalar/data_comment.csv'
-    header_row = 2
+    starting_row = 2
   []
   [no_header]
     type = MultiColumnCSVScalar
     csv_file = 'user_tensors/MultiColumnCSVScalar/data_no_header.csv'
     no_header = true
   []
-  [header_row_no_header]
+  [starting_row_no_header]
+    type = MultiColumnCSVScalar
+    csv_file = 'user_tensors/MultiColumnCSVScalar/data_no_header_comment.csv'
+    starting_row = 2
+    no_header = true
+  []
+  [no_header_indices]
     type = MultiColumnCSVScalar
     csv_file = 'user_tensors/MultiColumnCSVScalar/data_no_header.csv'
-    header_row = 3
+    column_indices = '2 0'
     no_header = true
   []
   [row_major]
@@ -68,14 +74,26 @@
   []
   [error_5]
     type = MultiColumnCSVScalar
-    csv_file = 'user_tensors/MultiColumnCSVScalar/data_non_numeric.csv'
+    csv_file = 'user_tensors/MultiColumnCSVScalar/data_no_header.csv'
+    column_indices = '0 3 1'
+    no_header = true
   []
   [error_6]
     type = MultiColumnCSVScalar
     csv_file = 'user_tensors/MultiColumnCSVScalar/data_non_numeric.csv'
-    column_indices = '0 1'
   []
   [error_7]
+    type = MultiColumnCSVScalar
+    csv_file = 'user_tensors/MultiColumnCSVScalar/data_non_numeric.csv'
+    column_indices = '0 1'
+  []
+  [error_8]
+    type = MultiColumnCSVScalar
+    csv_file = 'user_tensors/MultiColumnCSVScalar/data_no_header_non_numeric.csv'
+    column_indices = '0 1'
+    no_header = true
+  []
+  [error_9]
     type = MultiColumnCSVScalar
     csv_file = 'user_tensors/MultiColumnCSVScalar/data.csv'
     batch_shape = '(5,8)'

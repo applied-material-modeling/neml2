@@ -68,9 +68,9 @@ TEST_CASE("MultiColumnCSVScalar", "[user_tensors]")
       const auto expected = Scalar::create({{1, 4}, {2, 5}, {3, 6}});
       REQUIRE(at::allclose(*parsed, expected));
     }
-    SECTION("header_row")
+    SECTION("starting_row")
     {
-      const auto parsed = factory->get_object<Scalar>("Tensors", "header_row");
+      const auto parsed = factory->get_object<Scalar>("Tensors", "starting_row");
       const auto expected = Scalar::create({{1, 4}, {2, 5}, {3, 6}});
       REQUIRE(at::allclose(*parsed, expected));
     }
@@ -80,10 +80,16 @@ TEST_CASE("MultiColumnCSVScalar", "[user_tensors]")
       const auto expected = Scalar::create({{1, 4}, {2, 5}, {3, 6}});
       REQUIRE(at::allclose(*parsed, expected));
     }
-    SECTION("header_row + no_header")
+    SECTION("starting_row + no_header")
     {
-      const auto parsed = factory->get_object<Scalar>("Tensors", "header_row_no_header");
+      const auto parsed = factory->get_object<Scalar>("Tensors", "starting_row_no_header");
       const auto expected = Scalar::create({{1, 4}, {2, 5}, {3, 6}});
+      REQUIRE(at::allclose(*parsed, expected));
+    }
+    SECTION("no_header + indices")
+    {
+      const auto parsed = factory->get_object<Scalar>("Tensors", "no_header_indices");
+      const auto expected = Scalar::create({{3, 6}, {1, 4}});
       REQUIRE(at::allclose(*parsed, expected));
     }
   }
@@ -121,12 +127,18 @@ TEST_CASE("MultiColumnCSVScalar", "[user_tensors]")
                         Catch::Matchers::ContainsSubstring("Column index 3 is out of bounds."));
 
     REQUIRE_THROWS_WITH(factory->get_object<Scalar>("Tensors", "error_5"),
-                        Catch::Matchers::ContainsSubstring("Non-numeric value found in CSV file"));
+                        Catch::Matchers::ContainsSubstring("Column index 3 is out of bounds."));
 
     REQUIRE_THROWS_WITH(factory->get_object<Scalar>("Tensors", "error_6"),
                         Catch::Matchers::ContainsSubstring("Non-numeric value found in CSV file"));
 
     REQUIRE_THROWS_WITH(factory->get_object<Scalar>("Tensors", "error_7"),
+                        Catch::Matchers::ContainsSubstring("Non-numeric value found in CSV file"));
+
+    REQUIRE_THROWS_WITH(factory->get_object<Scalar>("Tensors", "error_8"),
+                        Catch::Matchers::ContainsSubstring("Non-numeric value found in CSV file"));
+
+    REQUIRE_THROWS_WITH(factory->get_object<Scalar>("Tensors", "error_9"),
                         Catch::Matchers::ContainsSubstring(
                             "The requested batch_shape [5, 8] is incompatible with the "
                             "number of values read from the CSV file (6)."));
