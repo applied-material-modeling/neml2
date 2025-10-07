@@ -98,4 +98,9 @@
     csv_file = 'user_tensors/MultiColumnCSVScalar/data.csv'
     batch_shape = '(5,8)'
   []
+  [error_10]
+    type = MultiColumnCSVScalar
+    csv_file = 'user_tensors/MultiColumnCSVScalar/data.csv'
+    starting_row = -1
+  []
 []

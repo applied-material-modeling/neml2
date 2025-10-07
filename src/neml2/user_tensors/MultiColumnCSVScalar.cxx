@@ -22,12 +22,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/tensors/shape_utils.h"
 #ifdef NEML2_HAS_CSV
 
 #include <sstream>
 #include "neml2/user_tensors/MultiColumnCSVScalar.h"
 #include "neml2/misc/assertions.h"
+#include "neml2/tensors/shape_utils.h"
 
 namespace neml2
 {
@@ -133,22 +133,26 @@ MultiColumnCSVScalar::parse_format() const
   const auto delim = options.get<EnumSelection>("delimiter").as<char>();
   fmt.delimiter(delim);
 
-  // Starting row
-  if (!options.get<bool>("no_header"))
+  // no_header=true
+  if (options.get<bool>("no_header"))
   {
-    fmt.header_row(options.get<int>("starting_row"));
-    fmt.variable_columns(csv::VariableColumnPolicy::THROW);
-  }
-  else if (!options.user_specified("starting_row"))
-  {
-    fmt.header_row(-1); // header_row(-1) is not overwritten by starting_row = 0 default
+    // Set 'header row' to one before starting row of data, so that we start reading data from the
+    // starting row
+    fmt.header_row(options.get<int>("starting_row") - 1);
+    // This is a csvparser bug. It false-positively detects variable columns
     fmt.variable_columns(csv::VariableColumnPolicy::KEEP);
   }
+  // no_header=false
   else
   {
-    fmt.header_row(options.get<int>("starting_row") -
-                   1); // set 'header row' to one before starting row of data
-    fmt.variable_columns(csv::VariableColumnPolicy::KEEP);
+    // Use starting_row as header row
+    const auto starting_row = options.get<int>("starting_row");
+    neml_assert(starting_row >= 0,
+                "starting_row must be non-negative. If your CSV file has no header, set no_header "
+                "to true.");
+    fmt.header_row(starting_row);
+    // Throw if row length (number of columns per row) varies across rows
+    fmt.variable_columns(csv::VariableColumnPolicy::THROW);
   }
 
   return fmt;
@@ -199,9 +203,7 @@ MultiColumnCSVScalar::parse_indices(const csv::CSVReader & csv) const
 
   // If column_indices is set, use them directly
   if (options.user_specified("column_indices"))
-  {
     indices = options.get<std::vector<unsigned int>>("column_indices");
-  }
 
   return indices;
 }
@@ -237,30 +239,30 @@ MultiColumnCSVScalar::read_by_indices(csv::CSVReader & csv,
                                       std::size_t & nrow,
                                       std::size_t & ncol) const
 {
-  const auto & options = this->input_options(); // for no_header option
+  const auto no_header = input_options().get<bool>("no_header");
   ncol = indices.size();
   for (const auto & row : csv)
   {
     const auto row_size = row.size();
     for (const auto & idx : indices)
     {
-      if (idx >= row_size)
-      {
-        throw NEMLException("Column index " + std::to_string(idx) +
-                            " is out of bounds. The CSV file has " + std::to_string(row_size) +
-                            " columns.");
-      }
-      if (!options.get<bool>("no_header"))
+      neml_assert(idx < row_size,
+                  "Column index ",
+                  idx,
+                  " is out of bounds. The CSV file has ",
+                  row_size,
+                  " columns.");
+      if (no_header)
+        neml_assert(row[idx].is_num(),
+                    "Non-numeric value found in CSV file in column with index ",
+                    idx,
+                    ", row ",
+                    nrow);
+      else
         neml_assert(row[idx].is_num(),
                     "Non-numeric value found in CSV file at column '",
                     csv.get_col_names()[idx],
                     "', row ",
-                    nrow);
-      else
-        neml_assert(row[idx].is_num(),
-                    "Non-numeric value found in CSV file in column with index ",
-                    std::to_string(idx),
-                    ", row ",
                     nrow);
       vals.push_back(row[idx].get<double>());
     }

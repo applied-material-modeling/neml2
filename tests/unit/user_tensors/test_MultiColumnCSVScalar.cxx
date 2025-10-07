@@ -142,6 +142,9 @@ TEST_CASE("MultiColumnCSVScalar", "[user_tensors]")
                         Catch::Matchers::ContainsSubstring(
                             "The requested batch_shape [5, 8] is incompatible with the "
                             "number of values read from the CSV file (6)."));
+
+    REQUIRE_THROWS_WITH(factory->get_object<Scalar>("Tensors", "error_10"),
+                        Catch::Matchers::ContainsSubstring("starting_row must be non-negative"));
   }
 }
 
