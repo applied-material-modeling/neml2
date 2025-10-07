@@ -22,48 +22,45 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/solid_mechanics/LinearIsotropicHardening.h"
+#ifdef NEML2_HAS_CSV
+
+#pragma once
+
+#include "csvparser/csv.hpp"
+#include "neml2/user_tensors/UserTensorBase.h"
 #include "neml2/tensors/Scalar.h"
 
 namespace neml2
 {
-register_NEML2_object(LinearIsotropicHardening);
-
-OptionSet
-LinearIsotropicHardening::expected_options()
+class MultiColumnCSVScalar : public UserTensorBase, public Scalar
 {
-  OptionSet options = IsotropicHardening::expected_options();
-  options.doc() +=
-      " following a linear relationship, i.e., \\f$ h = K \\bar{\\varepsilon}_p \\f$ where "
-      "\\f$ K \\f$ is the hardening modulus.";
+public:
+  static OptionSet expected_options();
 
-  options.set<bool>("define_second_derivatives") = true;
+  MultiColumnCSVScalar(const OptionSet & options);
 
-  options.set_parameter<TensorName<Scalar>>("hardening_modulus");
-  options.set("hardening_modulus").doc() = "Hardening modulus";
+private:
+  Scalar parse(const OptionSet & options) const;
 
-  return options;
-}
+  /// Helper functions to parse CSV format
+  csv::CSVFormat parse_format() const;
 
-LinearIsotropicHardening::LinearIsotropicHardening(const OptionSet & options)
-  : IsotropicHardening(options),
-    _K(declare_parameter<Scalar>("K", "hardening_modulus"))
-{
-}
+  /// Helper function to parse column indices
+  std::vector<unsigned int> parse_indices(const csv::CSVReader & csv) const;
 
-void
-LinearIsotropicHardening::set_value(bool out, bool dout_din, bool d2out_din2)
-{
-  if (out)
-    _h = _K * _ep;
+  /// Read all values without column indices
+  void read_all(csv::CSVReader & csv,
+                std::vector<double> & vals,
+                std::size_t & nrow,
+                std::size_t & ncol) const;
 
-  if (dout_din)
-    if (_ep.is_dependent())
-      _h.d(_ep) = _K;
-
-  if (d2out_din2)
-  {
-    // zero
-  }
-}
+  /// Read values by specified column indices
+  void read_by_indices(csv::CSVReader & csv,
+                       const std::vector<unsigned int> & indices,
+                       std::vector<double> & vals,
+                       std::size_t & nrow,
+                       std::size_t & ncol) const;
+};
 } // namespace neml2
+
+#endif

@@ -55,3 +55,11 @@ if(@gperftools_FOUND@)
   endif()
   find_dependency(gperftools MODULE REQUIRED COMPONENTS profiler)
 endif()
+
+# csv-parser
+if(@NEML2_CSV@)
+  if(@csvparser_CONTRIB@)
+    set(csvparser ${_IMPORT_PREFIX})
+  endif()
+  find_dependency(csvparser MODULE REQUIRED)
+endif()
