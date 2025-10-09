@@ -26,35 +26,45 @@
 
 #pragma once
 
-#include "neml2/user_tensors/CSVTensorBase.h"
-#include "neml2/tensors/tensors.h"
+#include "csvparser/csv.hpp"
+#include "neml2/user_tensors/UserTensorBase.h"
+
+#include "neml2/misc/assertions.h"
+#include <sstream>
 
 namespace neml2
 {
-/**
- * @brief Create a Tensor from a csv file.
- */
-template <typename T>
-class CSVPrimitiveTensor : public CSVTensorBase, public T
+/// An interface class for reading CSV files
+class CSVReader
 {
 public:
   static OptionSet expected_options();
 
-  /**
-   * @brief Construct a new CSVPrimitiveTensor object
-   *
-   * @param options The options extracted from the input file.
-   */
-  CSVPrimitiveTensor(const OptionSet & options);
+  CSVReader(const NEML2Object * obj);
+
+protected:
+  /// Helper function to parse CSV format
+  csv::CSVFormat parse_format() const;
+
+  /// Helper function to parse column indices
+  std::vector<unsigned int> parse_indices(const csv::CSVReader & csv) const;
+
+  /// Read all values without column indices
+  void read_all(csv::CSVReader & csv,
+                std::vector<double> & vals,
+                std::size_t & nrow,
+                std::size_t & ncol) const;
+
+  /// Read values by specified column indices
+  void read_by_indices(csv::CSVReader & csv,
+                       const std::vector<unsigned int> & indices,
+                       std::vector<double> & vals,
+                       std::size_t & nrow,
+                       std::size_t & ncol) const;
 
 private:
-  T parse_csv(const OptionSet & options) const;
-
-  /// Helper function to check number of columns is valid for tensor type
-  void check_col() const;
-
-  /// Helper function for multiplying CSV values by a factor if needed
-  void multiply_factor(std::vector<double> & vals, std::size_t & nrow, std::size_t & ncol) const;
+  /// pointer to the NEML2 object using this CSV reader
+  const NEML2Object * _obj;
 };
 } // namespace neml2
 

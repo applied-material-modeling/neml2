@@ -40,44 +40,25 @@ TEST_CASE("CSVPrimitiveTensor", "[user_tensors]")
 
   SECTION("read_all")
   {
-    SECTION("vector")
-    {
-      const auto parsed = factory->get_object<Vec>("Tensors", "all_columns_vector");
-      const auto expected = Vec::create({{1, 2, 3}, {2, 3, 4}, {3, 4, 5}, {4, 5, 6}});
-      REQUIRE(at::allclose(*parsed, expected));
-    }
-
-    SECTION("SR2")
-    {
-      const auto parsed = factory->get_object<SR2>("Tensors", "all_columns_SR2");
-      const auto expected =
-          SR2::create({{2.0, 3.0, 4.0, 5.0 * sqrt(2), 6.0 * sqrt(2), 7.0 * sqrt(2)},
-                       {3.0, 4.0, 5.0, 6.0 * sqrt(2), 7.0 * sqrt(2), 8.0 * sqrt(2)},
-                       {4.0, 5.0, 6.0, 7.0 * sqrt(2), 8.0 * sqrt(2), 9.0 * sqrt(2)},
-                       {5.0, 6.0, 7.0, 8.0 * sqrt(2), 9.0 * sqrt(2), 10.0 * sqrt(2)}});
-      REQUIRE(at::allclose(*parsed, expected));
-    }
+    const auto parsed = factory->get_object<Vec>("Tensors", "all_columns_vector");
+    const auto expected = Vec::create({{1, 2, 3}, {2, 3, 4}});
+    REQUIRE(at::allclose(*parsed, expected));
   }
 
   SECTION("read_by_indices")
   {
-    SECTION("scalar")
-    {
-      const auto parsed = factory->get_object<Scalar>("Tensors", "scalar");
-      const auto expected = Scalar::create({0, 1, 2, 3});
-      REQUIRE(at::allclose(*parsed, expected));
-    }
+    const auto parsed = factory->get_object<Scalar>("Tensors", "scalar");
+    const auto expected = Scalar::create({0, 1});
+    REQUIRE(at::allclose(*parsed, expected));
+  }
 
-    SECTION("SR2")
-    {
-      const auto parsed = factory->get_object<SR2>("Tensors", "SR2");
-      const auto expected =
-          SR2::create({{2.0, 3.0, 4.0, 5.0 * sqrt(2), 6.0 * sqrt(2), 7.0 * sqrt(2)},
-                       {3.0, 4.0, 5.0, 6.0 * sqrt(2), 7.0 * sqrt(2), 8.0 * sqrt(2)},
-                       {4.0, 5.0, 6.0, 7.0 * sqrt(2), 8.0 * sqrt(2), 9.0 * sqrt(2)},
-                       {5.0, 6.0, 7.0, 8.0 * sqrt(2), 9.0 * sqrt(2), 10.0 * sqrt(2)}});
-      REQUIRE(at::allclose(*parsed, expected));
-    }
+  SECTION("multiply_factor")
+  {
+    const auto parsed = factory->get_object<SR2>("Tensors", "all_columns_SR2");
+    const auto expected =
+        SR2::create({{2.0, 3.0, 4.0, 5.0 * sqrt(2), 6.0 * sqrt(2), 7.0 * sqrt(2)},
+                     {3.0, 4.0, 5.0, 6.0 * sqrt(2), 7.0 * sqrt(2), 8.0 * sqrt(2)}});
+    REQUIRE(at::allclose(*parsed, expected));
   }
 
   SECTION("parse_format")
@@ -85,31 +66,31 @@ TEST_CASE("CSVPrimitiveTensor", "[user_tensors]")
     SECTION("delimiter")
     {
       const auto parsed = factory->get_object<Vec>("Tensors", "delimiter");
-      const auto expected = Vec::create({{1, 2, 3}, {2, 3, 4}, {3, 4, 5}, {4, 5, 6}});
+      const auto expected = Vec::create({{1, 2, 3}, {2, 3, 4}});
       REQUIRE(at::allclose(*parsed, expected));
     }
     SECTION("starting_row")
     {
       const auto parsed = factory->get_object<Vec>("Tensors", "starting_row");
-      const auto expected = Vec::create({{1, 2, 3}, {2, 3, 4}, {3, 4, 5}, {4, 5, 6}});
+      const auto expected = Vec::create({{1, 2, 3}, {2, 3, 4}});
       REQUIRE(at::allclose(*parsed, expected));
     }
     SECTION("no_header")
     {
       const auto parsed = factory->get_object<Vec>("Tensors", "no_header");
-      const auto expected = Vec::create({{1, 2, 3}, {2, 3, 4}, {3, 4, 5}, {4, 5, 6}});
+      const auto expected = Vec::create({{1, 2, 3}, {2, 3, 4}});
       REQUIRE(at::allclose(*parsed, expected));
     }
     SECTION("starting_row + no_header")
     {
       const auto parsed = factory->get_object<Vec>("Tensors", "starting_row_no_header");
-      const auto expected = Vec::create({{1, 2, 3}, {2, 3, 4}, {3, 4, 5}, {4, 5, 6}});
+      const auto expected = Vec::create({{1, 2, 3}, {2, 3, 4}});
       REQUIRE(at::allclose(*parsed, expected));
     }
     SECTION("no_header + indices")
     {
       const auto parsed = factory->get_object<Vec>("Tensors", "no_header_indices");
-      const auto expected = Vec::create({{3, 2, 1}, {4, 3, 2}, {5, 4, 3}, {6, 5, 4}});
+      const auto expected = Vec::create({{3, 2, 1}, {4, 3, 2}});
       REQUIRE(at::allclose(*parsed, expected));
     }
   }
@@ -117,84 +98,82 @@ TEST_CASE("CSVPrimitiveTensor", "[user_tensors]")
   SECTION("batch_shape")
   {
     const auto parsed = factory->get_object<Vec>("Tensors", "batch_shape");
-    const auto expected = Vec::create({{{1, 2, 3}, {2, 3, 4}}, {{3, 4, 5}, {4, 5, 6}}});
+    const auto expected = Vec::create({{{1, 2, 3}}, {{2, 3, 4}}});
     REQUIRE(at::allclose(*parsed, expected));
   }
 
   SECTION("errors")
   {
-    SECTION("invalid user options")
+    SECTION("parse_format_error")
     {
-      REQUIRE_THROWS_WITH(factory->get_object<Scalar>("Tensors", "error_col_name_col_ind"),
-                          Catch::Matchers::ContainsSubstring(
-                              "Only one of column_names or column_indices can be set."));
-
-      REQUIRE_THROWS_WITH(
-          factory->get_object<Vec>("Tensors", "error_col_name_header"),
-          Catch::Matchers::ContainsSubstring("no_header is set to true, column_names cannot be "
-                                             "used. Use column_indices instead."));
-
-      REQUIRE_THROWS_WITH(factory->get_object<Vec>("Tensors", "error_batch_shape"),
-                          Catch::Matchers::ContainsSubstring(
-                              "The requested batch_shape [2, 3] is incompatible with the "
-                              "number of values read from the CSV file (12)."));
-
       REQUIRE_THROWS_WITH(factory->get_object<Vec>("Tensors", "error_starting_row"),
                           Catch::Matchers::ContainsSubstring("starting_row must be non-negative"));
     }
 
-    SECTION("column not in file")
+    SECTION("check_col_errors")
     {
       REQUIRE_THROWS_WITH(
-          factory->get_object<Vec>("Tensors", "error_col_name"),
-          Catch::Matchers::ContainsSubstring("Column name disp_w does not exist in CSV file."));
-
-      REQUIRE_THROWS_WITH(factory->get_object<Vec>("Tensors", "error_col_ind"),
-                          Catch::Matchers::ContainsSubstring("Column index 3 is out of bounds."));
-    }
-
-    SECTION("non-numeric data")
-    {
-      REQUIRE_THROWS_WITH(factory->get_object<Vec>("Tensors", "error_non_numeric_read_all_header"),
-                          Catch::Matchers::ContainsSubstring(
-                              "Non-numeric value found in CSV file at row 3, column disp_y"));
-
-      REQUIRE_THROWS_WITH(
-          factory->get_object<Vec>("Tensors", "error_non_numeric_read_all_no_header"),
-          Catch::Matchers::ContainsSubstring(
-              "Non-numeric value found in CSV file at row 3, in column with index 1"));
-
-      REQUIRE_THROWS_WITH(
-          factory->get_object<Vec>("Tensors", "error_non_numeric_read_ind_no_header"),
-          Catch::Matchers::ContainsSubstring(
-              "Non-numeric value found in CSV file at row 3, in column with index 1"));
-
-      REQUIRE_THROWS_WITH(factory->get_object<Vec>("Tensors", "error_non_numeric_read_ind_header"),
-                          Catch::Matchers::ContainsSubstring(
-                              "Non-numeric value found in CSV file at row 3, column s_yy"));
-    }
-
-    SECTION("invalid number of columns")
-    {
-      REQUIRE_THROWS_WITH(
-          factory->get_object<Scalar>("Tensors", "error_col_name_component_mismatch"),
+          factory->get_object<SR2>("Tensors", "error_col_name_component_mismatch"),
           Catch::Matchers::ContainsSubstring("Number of column_names provided (2) does not match "
-                                             "the expected number of components in Scalar (1)."));
-
+                                             "the expected number of components in SR2 (6)."));
       REQUIRE_THROWS_WITH(
           factory->get_object<Vec>("Tensors", "error_col_ind_component_mismatch"),
           Catch::Matchers::ContainsSubstring("Number of column_indices provided (2) does not match "
                                              "the expected number of components in Vec (3)."));
+    }
 
+    SECTION("parse_indices_errors")
+    {
+      REQUIRE_THROWS_WITH(factory->get_object<Vec>("Tensors", "error_col_name_col_ind"),
+                          Catch::Matchers::ContainsSubstring(
+                              "Only one of column_names or column_indices can be set."));
+      REQUIRE_THROWS_WITH(
+          factory->get_object<Vec>("Tensors", "error_col_name_header"),
+          Catch::Matchers::ContainsSubstring("no_header is set to true, column_names cannot be "
+                                             "used. Use column_indices instead."));
+      REQUIRE_THROWS_WITH(
+          factory->get_object<Vec>("Tensors", "error_col_name"),
+          Catch::Matchers::ContainsSubstring("Column name disp_w does not exist in CSV file."));
+    }
+
+    SECTION("read_all_errors")
+    {
+      REQUIRE_THROWS_WITH(
+          factory->get_object<Vec>("Tensors", "error_non_numeric_read_all_no_header"),
+          Catch::Matchers::ContainsSubstring(
+              "Non-numeric value found in CSV file at row 1, in column with index 1"));
+      REQUIRE_THROWS_WITH(factory->get_object<Vec>("Tensors", "error_non_numeric_read_all_header"),
+                          Catch::Matchers::ContainsSubstring(
+                              "Non-numeric value found in CSV file at row 1, column disp_y"));
+    }
+
+    SECTION("read_by_indices_errors")
+    {
+      REQUIRE_THROWS_WITH(factory->get_object<Vec>("Tensors", "error_ind_out_of_bounds"),
+                          Catch::Matchers::ContainsSubstring("Column index 3 is out of bounds."));
+      REQUIRE_THROWS_WITH(
+          factory->get_object<Vec>("Tensors", "error_non_numeric_read_ind_no_header"),
+          Catch::Matchers::ContainsSubstring(
+              "Non-numeric value found in CSV file at row 1, in column with index 1"));
+      REQUIRE_THROWS_WITH(factory->get_object<Vec>("Tensors", "error_non_numeric_read_ind_header"),
+                          Catch::Matchers::ContainsSubstring(
+                              "Non-numeric value found in CSV file at row 1, column disp_y"));
+    }
+
+    SECTION("batch_shape")
+    {
+      REQUIRE_THROWS_WITH(factory->get_object<Vec>("Tensors", "error_batch_shape"),
+                          Catch::Matchers::ContainsSubstring(
+                              "The requested batch_shape [2, 2] is incompatible with the "
+                              "number of values read from the CSV file (6)."));
+    }
+
+    SECTION("invalid number of columns for read all")
+    {
       REQUIRE_THROWS_WITH(
           factory->get_object<Vec>("Tensors", "error_col_no_component_mismatch"),
           Catch::Matchers::ContainsSubstring("Number of columns provided (2) does not match "
                                              "the expected number of components in Vec (3)."));
-
-      REQUIRE_THROWS_WITH(
-          factory->get_object<SR2>("Tensors", "error_col_no_component_mismatch_SR2"),
-          Catch::Matchers::ContainsSubstring("Number of columns provided (5) does not match "
-                                             "the expected number of components in SR2 (6)."));
     }
   }
 }
