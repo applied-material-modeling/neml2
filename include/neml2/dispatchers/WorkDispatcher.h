@@ -275,7 +275,7 @@ WorkDispatcher<I, O, Of, Ip, Op>::init_thread_pool()
   {
     // This is necessary to initialize the torch linear algebra library prior to threaded calls
     // See: https://github.com/pytorch/pytorch/issues/90613
-    auto res = at::linalg_inv(at::ones({1}));
+    auto res = at::linalg_inv(at::ones({1, 1}));
     _thread_pool.emplace_back([this, i] { thread_pool_main(_devices[i]); });
   }
 
