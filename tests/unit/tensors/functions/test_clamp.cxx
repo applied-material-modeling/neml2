@@ -27,7 +27,7 @@
 #include <catch2/catch_template_test_macros.hpp>
 
 #include "neml2/tensors/tensors.h"
-#include "neml2/tensors/functions/log10.h"
+#include "neml2/tensors/functions/clamp.h"
 
 #include "unit/tensors/generators.h"
 #include "utils.h"
@@ -36,16 +36,16 @@ using namespace neml2;
 
 #define TYPE_IDENTITY(T) T
 
-TEMPLATE_TEST_CASE("log10", "[tensors/functions]", FOR_ALL_TENSORBASE_COMMA(TYPE_IDENTITY))
+TEMPLATE_TEST_CASE("clamp", "[tensors/functions]", FOR_ALL_TENSORBASE_COMMA(TYPE_IDENTITY))
 {
   at::manual_seed(42);
   auto cfg = test::generate_tensor_config(test::fp_dtypes());
   auto shape = test::generate_tensor_shape<TestType>();
   DYNAMIC_SECTION(cfg.desc() << " " << shape.desc())
   {
-    auto a = test::generate_random_tensor<TestType>(cfg, shape) + 0.01;
-    auto b = neml2::log10(a);
-    auto b0 = at::log10(a);
+    auto a = test::generate_random_tensor<TestType>(cfg, shape);
+    auto b = neml2::clamp(a, 0.4, 0.7);
+    auto b0 = at::clamp(a, 0.4, 0.7);
     REQUIRE(test::match_tensor_shape(b, shape));
     REQUIRE_THAT(b, test::allclose(b0));
   }

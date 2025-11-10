@@ -26,8 +26,10 @@
 #include <catch2/matchers/catch_matchers_all.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 
+#include "neml2/tensors/shape_utils.h"
 #include "neml2/tensors/tensors.h"
-#include "neml2/tensors/functions/log10.h"
+#include "neml2/tensors/functions/dev.h"
+#include "neml2/tensors/functions/tr.h"
 
 #include "unit/tensors/generators.h"
 #include "utils.h"
@@ -36,17 +38,32 @@ using namespace neml2;
 
 #define TYPE_IDENTITY(T) T
 
-TEMPLATE_TEST_CASE("log10", "[tensors/functions]", FOR_ALL_TENSORBASE_COMMA(TYPE_IDENTITY))
+TEMPLATE_TEST_CASE("dev", "[tensors/functions]", R2, SR2)
 {
   at::manual_seed(42);
-  auto cfg = test::generate_tensor_config(test::fp_dtypes());
+  auto cfg = test::generate_tensor_config();
   auto shape = test::generate_tensor_shape<TestType>();
-  DYNAMIC_SECTION(cfg.desc() << " " << shape.desc())
+  DYNAMIC_SECTION(cfg.desc() << " Shape: " << shape.desc())
   {
-    auto a = test::generate_random_tensor<TestType>(cfg, shape) + 0.01;
-    auto b = neml2::log10(a);
-    auto b0 = at::log10(a);
-    REQUIRE(test::match_tensor_shape(b, shape));
-    REQUIRE_THAT(b, test::allclose(b0));
+    auto a = test::generate_random_tensor<TestType>(cfg, shape);
+    auto r1 = a - (1.0 / 3.0) * neml2::tr(a) * TestType::identity(a.options());
+    auto r2 = neml2::dev(a);
+
+    REQUIRE(test::match_tensor_shape(r2, shape));
+    REQUIRE_THAT(r2, test::allclose(r1));
+  }
+}
+
+TEMPLATE_TEST_CASE("dev WR2", "[tensors/functions]", WR2)
+{
+  at::manual_seed(42);
+  auto cfg = test::generate_tensor_config();
+  auto shape = test::generate_tensor_shape<TestType>();
+  DYNAMIC_SECTION(cfg.desc() << " Shape: " << shape.desc())
+  {
+    auto a = test::generate_random_tensor<TestType>(cfg, shape);
+    auto r1 = a;
+    REQUIRE(test::match_tensor_shape(r1, shape));
+    REQUIRE_THAT(neml2::dev(a), test::allclose(r1));
   }
 }

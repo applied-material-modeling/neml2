@@ -43,7 +43,7 @@ TEMPLATE_TEST_CASE("log", "[tensors/functions]", FOR_ALL_TENSORBASE_COMMA(TYPE_I
   auto shape = test::generate_tensor_shape<TestType>();
   DYNAMIC_SECTION(cfg.desc() << " " << shape.desc())
   {
-    auto a = test::generate_random_tensor<TestType>(cfg, shape);
+    auto a = test::generate_random_tensor<TestType>(cfg, shape) + 0.01;
     auto b = neml2::log(a);
     auto b0 = at::log(a);
     REQUIRE(test::match_tensor_shape(b, shape));
