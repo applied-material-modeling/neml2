@@ -53,7 +53,7 @@ TEST_CASE("TensorBase", "[tensors]")
       DYNAMIC_SECTION(cfg.desc() << " " << shape.desc())
       {
         auto a = test::generate_random_tensor(cfg, shape);
-        auto b = Tensor(a, shape.dynamic_sizes, shape.intmd_dim);
+        auto b = Tensor(a, shape.dynamic_dim, shape.intmd_dim);
         REQUIRE(test::match_tensor_config(b, cfg));
         REQUIRE(test::match_tensor_shape(b, shape));
         REQUIRE_THAT(a, test::allclose(ATensor(b)));

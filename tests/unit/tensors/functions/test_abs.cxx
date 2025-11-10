@@ -39,11 +39,11 @@ using namespace neml2;
 TEMPLATE_TEST_CASE("abs", "[tensors/functions]", FOR_ALL_TENSORBASE_COMMA(TYPE_IDENTITY))
 {
   at::manual_seed(42);
-  auto cfg = test::generate_tensor_config();
+  auto cfg = test::generate_tensor_config(test::fp_dtypes());
   auto shape = test::generate_tensor_shape<TestType>();
   DYNAMIC_SECTION(cfg.desc() << " " << shape.desc())
   {
-    auto a = test::generate_random_tensor<TestType>(cfg, shape);
+    auto a = test::generate_random_tensor<TestType>(cfg, shape) - 0.5;
     auto b = neml2::abs(a);
     auto b0 = at::abs(a);
     REQUIRE(test::match_tensor_shape(b, shape));
