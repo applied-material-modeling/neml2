@@ -47,6 +47,6 @@ Tensor
 base_sum(const Tensor & a, Size d)
 {
   d = utils::normalize_dim(d, a.batch_dim(), a.dim());
-  return Tensor(at::sum(a, d), a.dynamic_sizes(), a.intmd_dim());
+  return Tensor(at::sum(a, d).to(a.dtype()), a.dynamic_sizes(), a.intmd_dim());
 }
 } // namespace neml2

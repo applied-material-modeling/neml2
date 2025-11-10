@@ -28,7 +28,6 @@
 
 #include "neml2/tensors/shape_utils.h"
 #include "neml2/tensors/tensors.h"
-#include "neml2/tensors/functions/dev.h"
 #include "neml2/tensors/functions/tr.h"
 
 #include "unit/tensors/generators.h"
@@ -38,23 +37,43 @@ using namespace neml2;
 
 #define TYPE_IDENTITY(T) T
 
-TEMPLATE_TEST_CASE("dev", "[tensors/functions]", R2, SR2)
+TEST_CASE("tr - R2", "[tensors/functions]")
 {
   at::manual_seed(42);
   auto cfg = test::generate_tensor_config();
-  auto shape = test::generate_tensor_shape<TestType>();
+  auto shape = test::generate_tensor_shape<R2>();
   DYNAMIC_SECTION(cfg.desc() << " Shape: " << shape.desc())
   {
-    auto a = test::generate_random_tensor<TestType>(cfg, shape);
-    auto r1 = a - (1.0 / 3.0) * neml2::tr(a) * TestType::identity(a.options());
-    auto r2 = neml2::dev(a);
-
-    REQUIRE(test::match_tensor_shape(r2, shape));
+    auto a = test::generate_random_tensor<R2>(cfg, shape);
+    auto r1 = (a.index({at::indexing::Ellipsis, 0, 0}) + a.index({at::indexing::Ellipsis, 1, 1}) +
+               a.index({at::indexing::Ellipsis, 2, 2}))
+                  .to(a.dtype());
+    auto r2 = neml2::tr(a);
+    REQUIRE(r2.dynamic_sizes() == a.dynamic_sizes());
+    REQUIRE(r2.intmd_sizes() == a.intmd_sizes());
     REQUIRE_THAT(r2, test::allclose(r1));
   }
 }
 
-TEST_CASE("dev - WR2", "[tensors/functions]")
+TEST_CASE("tr - SR2", "[tensors/functions]")
+{
+  at::manual_seed(42);
+  auto cfg = test::generate_tensor_config();
+  auto shape = test::generate_tensor_shape<SR2>();
+  DYNAMIC_SECTION(cfg.desc() << " Shape: " << shape.desc())
+  {
+    auto a = test::generate_random_tensor<SR2>(cfg, shape);
+    auto r1 = (a.index({at::indexing::Ellipsis, 0}) + a.index({at::indexing::Ellipsis, 1}) +
+               a.index({at::indexing::Ellipsis, 2}))
+                  .to(a.dtype());
+    auto r2 = neml2::tr(a);
+    REQUIRE(r2.dynamic_sizes() == a.dynamic_sizes());
+    REQUIRE(r2.intmd_sizes() == a.intmd_sizes());
+    REQUIRE_THAT(r2, test::allclose(r1));
+  }
+}
+
+TEST_CASE("tr - WR2", "[tensors/functions]")
 {
   at::manual_seed(42);
   auto cfg = test::generate_tensor_config();
@@ -62,8 +81,10 @@ TEST_CASE("dev - WR2", "[tensors/functions]")
   DYNAMIC_SECTION(cfg.desc() << " Shape: " << shape.desc())
   {
     auto a = test::generate_random_tensor<WR2>(cfg, shape);
-    auto r1 = a;
-    REQUIRE(test::match_tensor_shape(r1, shape));
-    REQUIRE_THAT(neml2::dev(a), test::allclose(r1));
+    auto r1 = at::zeros(shape.batch_sizes, a.options());
+    auto r2 = neml2::tr(a);
+    REQUIRE(r2.dynamic_sizes() == a.dynamic_sizes());
+    REQUIRE(r2.intmd_sizes() == a.intmd_sizes());
+    REQUIRE_THAT(r2, test::allclose(r1));
   }
 }
