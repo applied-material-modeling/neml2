@@ -88,7 +88,9 @@ TensorMatcher<T>::describe() const
 
   if (_shapes_match && _devices_match && _dtypes_match)
     if (!_allclose)
-      ss << "Tensors are not allclose within rtol=" << _rtol << ", atol=" << _atol << "\n";
+      ss << "Tensors are not allclose within rtol=" << _rtol << ", atol=" << _atol
+         << "\n  Expected:\n"
+         << _m_expected << '\n';
 
   return ss.str();
 }

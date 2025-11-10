@@ -22,18 +22,31 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/tensors/functions/macaulay.h"
-#include "neml2/tensors/tensors.h"
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_all.hpp>
+#include <catch2/catch_template_test_macros.hpp>
 
-namespace neml2
+#include "neml2/tensors/tensors.h"
+#include "neml2/tensors/functions/deg2rad.h"
+
+#include "unit/tensors/generators.h"
+#include "utils.h"
+
+using namespace neml2;
+
+#define TYPE_IDENTITY(T) T
+
+TEMPLATE_TEST_CASE("deg2rad", "[tensors/functions]", FOR_ALL_TENSORBASE_COMMA(TYPE_IDENTITY))
 {
-#define DEFINE_MACAULAY(T)                                                                         \
-  T macaulay(const T & a)                                                                          \
-  {                                                                                                \
-    neml_assert_dbg(a.is_floating_point(),                                                         \
-                    "macaulay is only implemented for floating point tensors.");                   \
-    return T(a * (at::sign(a) + 1) / 2, a.dynamic_sizes(), a.intmd_dim());                         \
-  }                                                                                                \
-  static_assert(true)
-FOR_ALL_TENSORBASE(DEFINE_MACAULAY);
-} // namespace neml2
+  at::manual_seed(42);
+  auto cfg = test::generate_tensor_config();
+  auto shape = test::generate_tensor_shape<TestType>();
+  DYNAMIC_SECTION(cfg.desc() << " " << shape.desc())
+  {
+    auto a = test::generate_random_tensor<TestType>(cfg, shape);
+    auto b = neml2::deg2rad(a);
+    auto b0 = at::deg2rad(a);
+    REQUIRE(test::match_tensor_shape(b, shape));
+    REQUIRE_THAT(b, test::allclose(b0));
+  }
+}

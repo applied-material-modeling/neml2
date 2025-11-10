@@ -22,18 +22,35 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/tensors/functions/macaulay.h"
-#include "neml2/tensors/tensors.h"
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_all.hpp>
+#include <catch2/catch_template_test_macros.hpp>
 
-namespace neml2
+#include "neml2/tensors/shape_utils.h"
+#include "neml2/tensors/tensors.h"
+#include "neml2/tensors/functions/outer.h"
+
+#include "unit/tensors/generators.h"
+#include "utils.h"
+
+using namespace neml2;
+
+#define TYPE_IDENTITY(T) T
+
+TEMPLATE_TEST_CASE("outer", "[tensors/functions]", Tensor, Vec, R2, SR2)
 {
-#define DEFINE_MACAULAY(T)                                                                         \
-  T macaulay(const T & a)                                                                          \
-  {                                                                                                \
-    neml_assert_dbg(a.is_floating_point(),                                                         \
-                    "macaulay is only implemented for floating point tensors.");                   \
-    return T(a * (at::sign(a) + 1) / 2, a.dynamic_sizes(), a.intmd_dim());                         \
-  }                                                                                                \
-  static_assert(true)
-FOR_ALL_TENSORBASE(DEFINE_MACAULAY);
-} // namespace neml2
+  at::manual_seed(42);
+  auto cfg = test::generate_tensor_config();
+  auto shape1 = test::generate_tensor_shape<TestType>();
+  auto shape2 = test::generate_tensor_shape<TestType>();
+  DYNAMIC_SECTION(cfg.desc() << " LHS: " << shape1.desc() << " RHS: " << shape2.desc())
+  {
+    auto a = test::generate_random_tensor<TestType>(cfg, shape1);
+    auto b = test::generate_random_tensor<TestType>(cfg, shape2);
+    auto c = neml2::outer(a, b);
+    REQUIRE(c.dynamic_sizes() ==
+            utils::broadcast_sizes(shape1.dynamic_sizes, shape2.dynamic_sizes));
+    REQUIRE(c.intmd_sizes() == utils::broadcast_sizes(shape1.intmd_sizes, shape2.intmd_sizes));
+    REQUIRE(c.base_sizes() == utils::add_shapes(shape1.base_sizes, shape2.base_sizes));
+  }
+}
