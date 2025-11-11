@@ -50,10 +50,11 @@ TEMPLATE_TEST_CASE("minimum", "[tensors/functions]", FOR_ALL_TENSORBASE_COMMA(TY
     auto b = test::generate_random_tensor<TestType>(cfg, shape2);
 
     auto c = neml2::minimum(a, b);
-    auto [aa, bb, i] = neml2::utils::align_intmd_dim(a, b);
+    auto [aa, bb, i] = neml2::utils::align_static_dim(a, b);
     auto ref = at::where(aa < bb, aa, bb);
 
-    REQUIRE(c.dynamic_sizes() == utils::broadcast_sizes(shape1.dynamic_sizes, shape2.dynamic_sizes));
+    REQUIRE(c.dynamic_sizes() ==
+            utils::broadcast_sizes(shape1.dynamic_sizes, shape2.dynamic_sizes));
     REQUIRE(c.intmd_sizes() == utils::broadcast_sizes(shape1.intmd_sizes, shape2.intmd_sizes));
     REQUIRE(c.base_sizes() == utils::broadcast_sizes(shape1.base_sizes, shape2.base_sizes));
 

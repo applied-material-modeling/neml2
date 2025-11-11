@@ -33,7 +33,7 @@ namespace neml2
   T minimum(const T & a, const T & b)                                                              \
   {                                                                                                \
     neml_assert_broadcastable_dbg(a, b);                                                           \
-    const auto [aa, bb, i] = utils::align_intmd_dim(a, b);                                         \
+    const auto [aa, bb, i] = utils::align_static_dim(a, b);                                        \
     return T(at::minimum(aa, bb), utils::broadcast_dynamic_dim(a, b), i);                          \
   }                                                                                                \
   static_assert(true)
