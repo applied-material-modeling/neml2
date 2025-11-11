@@ -23,38 +23,34 @@
 // THE SOFTWARE.
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_all.hpp>
+#include <catch2/catch_template_test_macros.hpp>
 
-#include "utils.h"
 #include "neml2/tensors/tensors.h"
-#include "neml2/tensors/functions/abs.h"
-#include "neml2/tensors/functions/linalg/eigh.h"
+#include "neml2/tensors/functions/mm.h"
+#include "neml2/tensors/functions/linalg/inv.h"
+
+#include "unit/tensors/generators.h"
+#include "utils.h"
 
 using namespace neml2;
-using namespace indexing;
 
-TEST_CASE("eigh", "[tensors/functions/linalg]")
+TEST_CASE("inv", "[tensors/functions/linag]")
 {
-  SECTION("eigh function")
+  at::manual_seed(42);
+  auto cfg = test::generate_tensor_config(std::vector<c10::ScalarType>({neml2::kFloat64}));
+
+  auto db = std::vector<neml2::TensorShape>({{}, {2}, {4, 2}});
+  auto ib = std::vector<neml2::TensorShape>({{}, {3}, {5, 3}});
+  auto bs = std::vector<neml2::TensorShape>({{3, 3}});
+  auto shape = test::generate_tensor_shape<Tensor>(db, ib, bs);
+
+  DYNAMIC_SECTION(cfg.desc() << " " << shape.desc())
   {
-    auto s = SR2::fill(-0.3482, 0.3482, 0, 0.087045, 0.087045, 0.78333);
-    auto ss = s.dynamic_expand({5, 4, 1, 2});
-    auto b = Vec::fill(-0.858002364, -0.0158323254, 0.8738346695);
-    auto v = R2::fill(0.83927690982819,
-                      -0.04919575527310,
-                      0.54147386550903,
-                      -0.54287183284760,
-                      -0.13090363144875,
-                      0.82955050468445,
-                      -0.03007052093744,
-                      0.99017369747162,
-                      0.13657139241695);
-    auto [eigvals, eigvecs] = linalg::eigh(s);
-    REQUIRE(at::allclose(eigvals, b));
-    for (Size i = 0; i < 3; i++)
-    {
-      auto v1 = eigvecs.base_index({Slice(), i});
-      auto v2 = v.base_index({Slice(), i});
-      REQUIRE((at::allclose(v1, v2) || at::allclose(v1, -v2)));
-    }
+    auto a = test::generate_random_tensor<Tensor>(cfg, shape);
+    auto b = neml2::linalg::inv(a);
+    auto I = Tensor::identity(3);
+    REQUIRE(test::match_tensor_shape(b, shape));
+    REQUIRE(at::allclose(neml2::mm(a, b), I));
   }
 }
