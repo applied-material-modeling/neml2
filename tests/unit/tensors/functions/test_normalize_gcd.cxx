@@ -41,8 +41,8 @@ TEMPLATE_TEST_CASE("normalize_gcd", "[tensors/functions]", FOR_ALL_TENSORBASE_CO
   at::manual_seed(42);
 
   // Test both integer and floating-point inputs
-  auto cfg  = test::generate_tensor_config(test::fp_dtypes());
-  auto shape   = test::generate_tensor_shape<TestType>();
+  auto cfg = test::generate_tensor_config(test::fp_dtypes());
+  auto shape = test::generate_tensor_shape<TestType>();
 
   DYNAMIC_SECTION(cfg.desc() << " " << shape.desc())
   {
@@ -55,11 +55,8 @@ TEMPLATE_TEST_CASE("normalize_gcd", "[tensors/functions]", FOR_ALL_TENSORBASE_CO
     const Size n = bf.base_size(0);
 
     // Distinguish dtype: keep Int as is, convert Float to Int
-    auto convert = [](const at::Tensor &x) {
-      return c10::isIntegralType(x.scalar_type(), false)
-                ? x
-                : x.to(get_default_integer_dtype());
-    };
+    auto convert = [](const at::Tensor & x)
+    { return c10::isIntegralType(x.scalar_type(), false) ? x : x.to(get_default_integer_dtype()); };
 
     // Take the first element as initial gcd
     at::Tensor d = convert(bf.base_index({0}));
@@ -74,8 +71,8 @@ TEMPLATE_TEST_CASE("normalize_gcd", "[tensors/functions]", FOR_ALL_TENSORBASE_CO
     if (c10::isIntegralType(b.scalar_type(), false))
     {
       // Integer: gcd must equal 1 exactly
-      REQUIRE(abs_d.min().item<long long>() == 1);
-      REQUIRE(abs_d.max().item<long long>() == 1);
+      REQUIRE(abs_d.min().item<Size>() == 1);
+      REQUIRE(abs_d.max().item<Size>() == 1);
     }
     else
     {
