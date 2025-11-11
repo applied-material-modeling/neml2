@@ -73,7 +73,8 @@ lu_solve(const Tensor & LU, const Tensor & pivots, const Tensor & B, bool left, 
 
   auto [aligned_LU, aligned_B, aligned_pivots, i] = utils::align_intmd_dim(LU, B, pivots);
 
-  return Tensor(at::linalg_lu_solve(aligned_LU, aligned_pivots, aligned_B, left, adjoint),
+  return Tensor(at::linalg_lu_solve(
+                    aligned_LU.contiguous(), aligned_pivots.contiguous(), aligned_B, left, adjoint),
                 utils::broadcast_dynamic_dim(LU, B, pivots),
                 i);
 }

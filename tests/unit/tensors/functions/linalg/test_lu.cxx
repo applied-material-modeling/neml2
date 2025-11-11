@@ -37,31 +37,7 @@
 
 using namespace neml2;
 
-TEST_CASE("lu - same batch shapes", "[tensors/functions/linag]")
-{
-  at::manual_seed(42);
-  auto cfg = test::generate_tensor_config(std::vector<c10::ScalarType>({kFloat32, kFloat64}));
-
-  auto db = std::vector<TensorShape>({{}, {2, 1}});
-  auto ib = std::vector<TensorShape>({{}, {1, 3}});
-  auto bs = std::vector<TensorShape>({{3, 3}});
-  auto shape = test::generate_tensor_shape<Tensor>(db, ib, bs);
-
-  DYNAMIC_SECTION(cfg.desc() << " " << shape.desc())
-  {
-    auto a = test::generate_random_tensor<Tensor>(cfg, shape);
-    auto vec_shape = test::GeneratedTensorShape(shape.dynamic_sizes, shape.intmd_sizes, {3, 1});
-    auto b = test::generate_random_tensor<Tensor>(cfg, vec_shape);
-
-    auto [lu, pivots] = neml2::linalg::lu_factor(a);
-    auto x = neml2::linalg::lu_solve(lu, pivots, b);
-
-    REQUIRE(test::match_tensor_shape(x, vec_shape));
-    REQUIRE_THAT(neml2::mm(a, x), test::allclose_broadcast(b));
-  }
-}
-
-TEST_CASE("lu - broadcastable batch shapes", "[tensors/functions/linag]")
+TEST_CASE("lu_factor lu_solve", "[tensors/functions/linag]")
 {
   at::manual_seed(42);
   auto cfg = test::generate_tensor_config(std::vector<c10::ScalarType>({kFloat32, kFloat64}));
