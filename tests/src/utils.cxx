@@ -107,6 +107,20 @@ allclose(const T & expected, double rtol, std::optional<double> atol)
   return TensorMatcher<T>(expected, rtol, atol ? *atol : atol_default);
 }
 
+bool
+allclose_broadcast(const neml2::Tensor & a,
+                   const neml2::Tensor & b,
+                   double rtol,
+                   std::optional<double> atol)
+{
+  double atol_default = (a.is_floating_point() || b.is_floating_point())
+                            ? std::sqrt(neml2::machine_precision(
+                                  a.is_floating_point() ? a.scalar_type() : b.scalar_type()))
+                            : 0.0;
+  auto [A_aligned, B_aligned, _] = neml2::utils::align_intmd_dim(a, b);
+  return details::allclose(A_aligned, B_aligned, rtol, atol ? *atol : atol_default);
+}
+
 namespace details
 {
 bool

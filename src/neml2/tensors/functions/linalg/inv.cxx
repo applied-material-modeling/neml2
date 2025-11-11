@@ -30,6 +30,10 @@ namespace neml2::linalg
 Tensor
 inv(const Tensor & m)
 {
+  neml_assert_dbg(m.scalar_type() == neml2::kFloat32 || m.scalar_type() == neml2::kFloat64,
+                  "Inverse only supports float32 and float64, got",
+                  m.scalar_type());
+
   return Tensor(at::linalg_inv(m), m.dynamic_sizes(), m.intmd_dim());
 }
 } // namespace neml2::linalg

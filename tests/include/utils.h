@@ -59,6 +59,11 @@ template <typename T>
 TensorMatcher<T>
 allclose(const T & expected, double rtol = 1e-5, std::optional<double> atol = std::nullopt);
 
+bool allclose_broadcast(const neml2::Tensor & a,
+                        const neml2::Tensor & b,
+                        double rtol = 1e-5,
+                        std::optional<double> atol = std::nullopt);
+
 namespace details
 {
 /// Check if two tensors are equal. In case of floating point tensors, use allclose (with tolerances)

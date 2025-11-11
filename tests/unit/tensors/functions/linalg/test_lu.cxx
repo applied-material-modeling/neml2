@@ -28,14 +28,15 @@
 
 #include "neml2/tensors/tensors.h"
 #include "neml2/tensors/functions/mm.h"
-#include "neml2/tensors/functions/linalg/inv.h"
+#include "neml2/tensors/functions/linalg/lu_factor.h"
+#include "neml2/tensors/functions/linalg/lu_solve.h"
 
 #include "unit/tensors/generators.h"
 #include "utils.h"
 
 using namespace neml2;
 
-TEST_CASE("inv", "[tensors/functions/linag]")
+TEST_CASE("lu - same batch shapes", "[tensors/functions/linag]")
 {
   at::manual_seed(42);
   auto cfg = test::generate_tensor_config(
@@ -49,12 +50,46 @@ TEST_CASE("inv", "[tensors/functions/linag]")
   DYNAMIC_SECTION(cfg.desc() << " " << shape.desc())
   {
     auto a = test::generate_random_tensor<Tensor>(cfg, shape);
-    auto b = neml2::linalg::inv(a);
-    auto I = Tensor::identity(3).to(cfg.options);
-    REQUIRE(test::match_tensor_shape(b, shape));
+    auto vec_shape = test::GeneratedTensorShape(shape.dynamic_sizes, shape.intmd_sizes, {3, 1});
+    auto b = test::generate_random_tensor<Tensor>(cfg, vec_shape);
+
+    auto [lu, pivots] = neml2::linalg::lu_factor(a);
+
+    auto x = neml2::linalg::lu_solve(lu, pivots, b);
 
     auto atol = std::sqrt(neml2::machine_precision(cfg.options.dtype().toScalarType()));
 
-    REQUIRE(at::allclose(neml2::mm(a, b), I, 1e-5, atol));
+    REQUIRE(test::match_tensor_shape(x, vec_shape));
+    REQUIRE(test::allclose_broadcast(neml2::mm(a, x), b, 1e-5, atol));
+  }
+}
+
+TEST_CASE("lu - broadcastable batch shapes", "[tensors/functions/linag]")
+{
+  at::manual_seed(42);
+  auto cfg = test::generate_tensor_config(
+      std::vector<c10::ScalarType>({neml2::kFloat32, neml2::kFloat64}));
+
+  auto db = std::vector<neml2::TensorShape>({{}, {2}, {4, 2}});
+  auto ib = std::vector<neml2::TensorShape>({{}, {3}, {5, 3}});
+  auto bs = std::vector<neml2::TensorShape>({{3, 3}});
+  auto vs = std::vector<neml2::TensorShape>({{3, 1}});
+  auto shape1 = test::generate_tensor_shape<Tensor>(db, ib, bs);
+  auto shape2 = test::generate_tensor_shape<Tensor>(db, ib, vs);
+
+  DYNAMIC_SECTION(cfg.desc() << " " << shape1.desc() << " " << shape2.desc())
+  {
+    auto a = test::generate_random_tensor<Tensor>(cfg, shape1);
+    auto b = test::generate_random_tensor<Tensor>(cfg, shape2);
+
+    auto [lu, pivots] = neml2::linalg::lu_factor(a);
+
+    auto x = neml2::linalg::lu_solve(lu, pivots, b);
+
+    auto res = neml2::mm(a, x);
+
+    auto atol = std::sqrt(neml2::machine_precision(cfg.options.dtype().toScalarType()));
+
+    REQUIRE(test::allclose_broadcast(res, b, 1e-5, atol));
   }
 }
