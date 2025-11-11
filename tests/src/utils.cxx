@@ -73,11 +73,15 @@ TensorMatcher<T, allow_broadcast>::match(const T & m) const
   _dtypes_match = (_m.dtype() == _m_expected.dtype());
 
   if (_shapes_match && _devices_match && _dtypes_match)
+  {
     if constexpr (allow_broadcast)
     {
       auto [m, m_expected, _] = neml2::utils::align_intmd_dim(_m, _m_expected);
       _allclose = details::allclose(m, m_expected, _rtol, _atol);
     }
+    else
+      _allclose = details::allclose(_m, _m_expected, _rtol, _atol);
+  }
 
   return _shapes_match && _devices_match && _dtypes_match && _allclose;
 }
