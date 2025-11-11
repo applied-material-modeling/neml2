@@ -29,7 +29,7 @@ TEST_CASE("vdot", "[tensors/functions]")
     auto b_flat = b.base_flatten();
     auto c_ref = base_sum(a_flat * b_flat);
 
-    REQUIRE(c_neml2.base_dim() == 0);  // scalar output
+    REQUIRE(c_neml2.base_dim() == 0); // scalar output
     REQUIRE(c_ref.base_dim() == 0);
     REQUIRE(c_neml2.dynamic_sizes() ==
             utils::broadcast_sizes(shape1.dynamic_sizes, shape2.dynamic_sizes));

@@ -18,7 +18,7 @@ TEMPLATE_TEST_CASE("inner", "[tensors/functions]", FOR_ALL_TENSORBASE_COMMA(TYPE
   at::manual_seed(42);
 
   // Use only floating-point dtypes (linalg_vecdot does not support integers)
-  auto cfg   = test::generate_tensor_config(test::fp_dtypes());
+  auto cfg = test::generate_tensor_config(test::fp_dtypes());
   auto shape = test::generate_tensor_shape<TestType>();
 
   DYNAMIC_SECTION(cfg.desc() << " " << shape.desc())
@@ -35,13 +35,11 @@ TEMPLATE_TEST_CASE("inner", "[tensors/functions]", FOR_ALL_TENSORBASE_COMMA(TYPE
     auto b_flat = b.base_flatten();
     auto c_ref = base_sum(a_flat * b_flat);
 
-
     REQUIRE(c_neml2.base_dim() == 0);
     REQUIRE(c_ref.base_dim() == 0);
     // Dynamic shape should be the broadcast of a & b
-    auto dyn_expected = neml2::utils::broadcast_dynamic_sizes(std::vector<Tensor>{
-        Tensor(a), Tensor(b)
-    });
+    auto dyn_expected =
+        neml2::utils::broadcast_dynamic_sizes(std::vector<Tensor>{Tensor(a), Tensor(b)});
     REQUIRE(c_neml2.dynamic_sizes() == dyn_expected);
     REQUIRE(c_ref.dynamic_sizes() == dyn_expected);
 
