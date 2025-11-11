@@ -32,7 +32,7 @@ std::tuple<Tensor, Tensor>
 lu_factor(const Tensor & A, bool pivot)
 {
   neml_assert_dbg(A.scalar_type() == neml2::kFloat32 || A.scalar_type() == neml2::kFloat64,
-                  "LU factorization only supports float32 and float64, got",
+                  "LU factorization only supports float32 and float64, got ",
                   A.scalar_type());
   neml_assert_dbg(A.base_size(-2) == A.base_size(-1), "A tensor is not square: ", A.base_sizes());
   neml_assert_dbg(A.base_dim() == 2, "A tensor does not have base dimension 2: ", A.base_dim());
