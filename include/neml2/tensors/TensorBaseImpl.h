@@ -416,7 +416,7 @@ TensorBase<Derived>::intmd_expand(TensorShapeRef shape) const
     return *this;
 
   // Unsqueeze missing dimensions
-  neml_assert_dbg(shape.size() >= intmd_dim(),
+  neml_assert_dbg(Size(shape.size()) >= intmd_dim(),
                   "Invalid intermediate shape to expand. Expected at least ",
                   intmd_dim(),
                   " dimensions.");
@@ -437,7 +437,7 @@ TensorBase<Derived>::base_expand(TensorShapeRef shape) const
     return *this;
 
   // Unsqueeze missing dimensions
-  neml_assert_dbg(shape.size() >= base_dim(),
+  neml_assert_dbg(Size(shape.size()) >= base_dim(),
                   "Invalid base shape to expand. Expected at least ",
                   base_dim(),
                   " dimensions.");
@@ -455,7 +455,7 @@ TensorBase<Derived>::batch_expand(const TraceableTensorShape & dynamic_shape,
                                   TensorShapeRef intmd_shape) const
 {
   // Unsqueeze missing dimensions
-  neml_assert_dbg(intmd_shape.size() >= intmd_dim(),
+  neml_assert_dbg(Size(intmd_shape.size()) >= intmd_dim(),
                   "Invalid intermediate shape to expand. Expected at least ",
                   intmd_dim(),
                   " dimensions.");
@@ -483,11 +483,11 @@ TensorBase<Derived>::static_expand(TensorShapeRef intmd_shape, TensorShapeRef ba
     return *this;
 
   // Unsqueeze missing dimensions
-  neml_assert_dbg(intmd_shape.size() >= intmd_dim(),
+  neml_assert_dbg(Size(intmd_shape.size()) >= intmd_dim(),
                   "Invalid intermediate shape to expand. Expected at least ",
                   intmd_dim(),
                   " dimensions.");
-  neml_assert_dbg(base_shape.size() >= base_dim(),
+  neml_assert_dbg(Size(base_shape.size()) >= base_dim(),
                   "Invalid base shape to expand. Expected at least ",
                   base_dim(),
                   " dimensions.");
@@ -647,7 +647,7 @@ TensorBase<Derived>::static_reshape(TensorShapeRef intmd_shape, TensorShapeRef b
 
   // Record the dynamic sizes in the traced graph if we are tracing
   if (jit::tracer::isTracing())
-    for (std::size_t i = 0; i < dynamic_dim(); ++i)
+    for (Size i = 0; i < dynamic_dim(); ++i)
       if (const auto * const si = dynamic_size(i).traceable())
         jit::tracer::ArgumentStash::stashIntArrayRefElem(
             "shape", dynamic_dim() + intmd_dim + base_shape.size(), i, *si);

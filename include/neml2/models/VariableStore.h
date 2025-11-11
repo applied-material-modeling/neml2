@@ -29,6 +29,7 @@
 #include "neml2/models/map_types_fwd.h"
 #include "neml2/base/LabeledAxisAccessor.h"
 #include "neml2/misc/types.h"
+#include "neml2/tensors/jit.h"
 
 namespace neml2
 {

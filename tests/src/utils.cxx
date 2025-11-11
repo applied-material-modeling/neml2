@@ -22,10 +22,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <filesystem>
+#include <iostream>
+
 #include <ATen/ops/allclose.h>
 #include <catch2/catch_session.hpp>
 #include <catch2/catch_test_macros.hpp>
-#include <filesystem>
 
 #include "utils.h"
 #include "neml2/base/Parser.h"

@@ -27,6 +27,7 @@
 #include <filesystem>
 
 #include "neml2/drivers/Driver.h"
+#include "neml2/tensors/jit.h"
 
 namespace neml2
 {

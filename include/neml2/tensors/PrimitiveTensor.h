@@ -199,7 +199,8 @@ PrimitiveTensor<Derived, S...>::validate_shapes_and_dims() const
 }
 
 template <class Derived, Size... S>
-PrimitiveTensor<Derived, S...>::operator neml2::Tensor() const
+PrimitiveTensor<Derived, S...>::
+operator neml2::Tensor() const
 {
   return neml2::Tensor(*this, this->dynamic_sizes(), this->intmd_dim());
 }
@@ -310,9 +311,10 @@ PrimitiveTensor<Derived, S...>::einsum(c10::string_view equation, TensorList ten
 
 template <class Tuple, std::size_t... I>
 auto
-make_scalars(Tuple && t, std::index_sequence<I...>, const TensorOptions & options)
+make_tensors(Tuple && t, std::index_sequence<I...>, const TensorOptions & options)
 {
-  return std::vector<neml2::Tensor>{Scalar(std::get<I>(std::forward<Tuple>(t)), options)...};
+  return std::vector<neml2::Tensor>{
+      Tensor::create({std::get<I>(std::forward<Tuple>(t))}, options)...};
 }
 
 template <class Derived, Size... S>
@@ -340,7 +342,7 @@ PrimitiveTensor<Derived, S...>::fill(Args &&... args)
   {
     auto tup = std::forward_as_tuple(std::forward<Args>(args)...);
     const auto & options = std::get<sizeof...(Args) - 1>(tup);
-    auto vals = make_scalars(tup, std::make_index_sequence<sizeof...(Args) - 1>{}, options);
+    auto vals = make_tensors(tup, std::make_index_sequence<sizeof...(Args) - 1>{}, options);
     return base_stack(vals).base_reshape(const_base_sizes);
   }
 

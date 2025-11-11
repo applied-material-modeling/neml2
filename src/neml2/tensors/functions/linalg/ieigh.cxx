@@ -24,6 +24,7 @@
 
 #include "neml2/tensors/functions/linalg/ieigh.h"
 #include "neml2/tensors/functions/outer.h"
+#include "neml2/tensors/Scalar.h"
 
 namespace neml2::linalg
 {
