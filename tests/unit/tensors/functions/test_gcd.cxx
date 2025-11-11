@@ -28,7 +28,6 @@
 #include "neml2/tensors/functions/gcd.h"
 #include "neml2/tensors/tensors.h"
 #include "unit/tensors/generators.h"
-#include "utils.h"
 
 using namespace neml2;
 #define TYPE_IDENTITY(T) T
@@ -55,8 +54,8 @@ TEMPLATE_TEST_CASE("gcd", "[tensors/functions]", FOR_ALL_TENSORBASE_COMMA(TYPE_I
     REQUIRE(g.base_sizes() == utils::broadcast_sizes(shape1.base_sizes, shape2.base_sizes));
 
     // Align before checking remainder
-    const auto [aa, gg, i] = utils::align_intmd_dim(a, g);
-    auto a_mod = aa.remainder(gg).abs().max().template item<int64_t>();
+    const auto [aa, gg, i] = utils::align_static_dim(a, g);
+    auto a_mod = aa.remainder(gg).abs().max().template item<Size>();
     REQUIRE(a_mod == 0);
   }
 }
