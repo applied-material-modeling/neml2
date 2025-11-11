@@ -31,43 +31,60 @@
 
 #include "utils.h"
 #include "neml2/base/Parser.h"
+#include "neml2/tensors/functions/utils.h"
+#include "neml2/tensors/shape_utils.h"
 #include "neml2/tensors/tensors.h"
 
 namespace test
 {
-template <typename T>
-TensorMatcher<T>::TensorMatcher(T expected, double rtol, double atol)
+template <typename T, bool allow_broadcast>
+TensorMatcher<T, allow_broadcast>::TensorMatcher(T expected, double rtol, double atol)
   : _m_expected(std::move(expected)),
     _rtol(rtol),
     _atol(atol)
 {
+  if constexpr (std::is_same_v<T, neml2::ATensor>)
+    static_assert(!allow_broadcast, "Broadcasting tensor matcher is not supported for ATensor.");
 }
 
-template <typename T>
+template <typename T, bool allow_broadcast>
 bool
-TensorMatcher<T>::match(const T & m) const
+TensorMatcher<T, allow_broadcast>::match(const T & m) const
 {
   _m = m;
 
   if constexpr (std::is_same_v<T, neml2::ATensor>)
     _shapes_match = (_m.sizes() == _m_expected.sizes());
   else
-    _shapes_match = (_m.dynamic_sizes() == _m_expected.dynamic_sizes()) &&
-                    (_m.intmd_sizes() == _m_expected.intmd_sizes()) &&
-                    (_m.base_sizes() == _m_expected.base_sizes());
+  {
+    if constexpr (!allow_broadcast)
+      _shapes_match = (_m.dynamic_sizes() == _m_expected.dynamic_sizes()) &&
+                      (_m.intmd_sizes() == _m_expected.intmd_sizes()) &&
+                      (_m.base_sizes() == _m_expected.base_sizes());
+    else
+      _shapes_match =
+          neml2::utils::sizes_broadcastable(_m.dynamic_sizes().concrete(),
+                                            _m_expected.dynamic_sizes().concrete()) &&
+          neml2::utils::sizes_broadcastable(_m.intmd_sizes(), _m_expected.intmd_sizes()) &&
+          neml2::utils::sizes_broadcastable(_m.base_sizes(), _m_expected.base_sizes());
+  }
 
   _devices_match = (_m.device() == _m_expected.device());
   _dtypes_match = (_m.dtype() == _m_expected.dtype());
 
   if (_shapes_match && _devices_match && _dtypes_match)
-    _allclose = details::allclose(_m, _m_expected, _rtol, _atol);
+    if constexpr (allow_broadcast)
+    {
+      auto [m, m_expected, _] = neml2::utils::align_intmd_dim(_m, _m_expected);
+      _allclose = details::allclose(m, m_expected, _rtol, _atol);
+    }
 
   return _shapes_match && _devices_match && _dtypes_match && _allclose;
 }
 
-template <typename T>
+template <typename T, bool allow_broadcast>
 std::string
-TensorMatcher<T>::describe() const
+TensorMatcher<T, allow_broadcast>::describe() const
 {
   std::ostringstream ss;
   if (!_shapes_match)
@@ -76,9 +93,9 @@ TensorMatcher<T>::describe() const
       ss << "Shapes do not match: expected " << _m_expected.sizes() << ", got " << _m.sizes()
          << "\n";
     else
-      ss << "Shapes do not match: expected " << _m_expected.dynamic_sizes()
-         << _m_expected.intmd_sizes() << _m_expected.base_sizes() << ", got " << _m.dynamic_sizes()
-         << _m.intmd_sizes() << _m.base_sizes() << "\n";
+      ss << "Shapes do not " << (allow_broadcast ? "broadcast" : "match") << ": expected "
+         << _m_expected.dynamic_sizes() << _m_expected.intmd_sizes() << _m_expected.base_sizes()
+         << ", got " << _m.dynamic_sizes() << _m.intmd_sizes() << _m.base_sizes() << "\n";
   }
 
   if (!_devices_match)
@@ -98,27 +115,23 @@ TensorMatcher<T>::describe() const
 }
 
 template <typename T>
-TensorMatcher<T>
+TensorMatcher<T, false>
 allclose(const T & expected, double rtol, std::optional<double> atol)
 {
   double atol_default = expected.is_floating_point()
                             ? std::sqrt(neml2::machine_precision(expected.scalar_type()))
                             : 0.0;
-  return TensorMatcher<T>(expected, rtol, atol ? *atol : atol_default);
+  return TensorMatcher<T, false>(expected, rtol, atol ? *atol : atol_default);
 }
 
-bool
-allclose_broadcast(const neml2::Tensor & a,
-                   const neml2::Tensor & b,
-                   double rtol,
-                   std::optional<double> atol)
+template <typename T>
+TensorMatcher<T, true>
+allclose_broadcast(const T & expected, double rtol, std::optional<double> atol)
 {
-  double atol_default = (a.is_floating_point() || b.is_floating_point())
-                            ? std::sqrt(neml2::machine_precision(
-                                  a.is_floating_point() ? a.scalar_type() : b.scalar_type()))
+  double atol_default = expected.is_floating_point()
+                            ? std::sqrt(neml2::machine_precision(expected.scalar_type()))
                             : 0.0;
-  auto [A_aligned, B_aligned, _] = neml2::utils::align_intmd_dim(a, b);
-  return details::allclose(A_aligned, B_aligned, rtol, atol ? *atol : atol_default);
+  return TensorMatcher<T, true>(expected, rtol, atol ? *atol : atol_default);
 }
 
 namespace details
@@ -135,10 +148,12 @@ allclose(const neml2::ATensor & a, const neml2::ATensor & b, double rtol, double
 using namespace neml2;
 
 #define INSTANTIATE(T)                                                                             \
-  template class TensorMatcher<T>;                                                                 \
-  template TensorMatcher<T> allclose(const T &, double, std::optional<double>)
+  template class TensorMatcher<T, false>;                                                          \
+  template class TensorMatcher<T, true>;                                                           \
+  template TensorMatcher<T, false> allclose(const T &, double, std::optional<double>);             \
+  template TensorMatcher<T, true> allclose_broadcast(const T &, double, std::optional<double>)
 FOR_ALL_TENSORBASE(INSTANTIATE);
-INSTANTIATE(ATensor);
+template TensorMatcher<ATensor, false> allclose(const ATensor &, double, std::optional<double>);
 #undef INSTANTIATE
 
 } // namespace test

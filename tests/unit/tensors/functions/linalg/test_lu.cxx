@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers.hpp>
 #include <catch2/matchers/catch_matchers_all.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 
@@ -54,13 +55,10 @@ TEST_CASE("lu - same batch shapes", "[tensors/functions/linag]")
     auto b = test::generate_random_tensor<Tensor>(cfg, vec_shape);
 
     auto [lu, pivots] = neml2::linalg::lu_factor(a);
-
     auto x = neml2::linalg::lu_solve(lu, pivots, b);
 
-    auto atol = std::sqrt(neml2::machine_precision(cfg.options.dtype().toScalarType()));
-
     REQUIRE(test::match_tensor_shape(x, vec_shape));
-    REQUIRE(test::allclose_broadcast(neml2::mm(a, x), b, 1e-5, atol));
+    REQUIRE_THAT(neml2::mm(a, x), test::allclose_broadcast(b));
   }
 }
 
@@ -83,13 +81,8 @@ TEST_CASE("lu - broadcastable batch shapes", "[tensors/functions/linag]")
     auto b = test::generate_random_tensor<Tensor>(cfg, shape2);
 
     auto [lu, pivots] = neml2::linalg::lu_factor(a);
-
     auto x = neml2::linalg::lu_solve(lu, pivots, b);
 
-    auto res = neml2::mm(a, x);
-
-    auto atol = std::sqrt(neml2::machine_precision(cfg.options.dtype().toScalarType()));
-
-    REQUIRE(test::allclose_broadcast(res, b, 1e-5, atol));
+    REQUIRE_THAT(neml2::mm(a, x), test::allclose_broadcast(b));
   }
 }

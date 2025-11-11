@@ -34,7 +34,7 @@
 
 namespace test
 {
-template <typename T>
+template <typename T, bool allow_broadcast>
 class TensorMatcher : public Catch::Matchers::MatcherBase<T>
 {
 public:
@@ -56,13 +56,13 @@ private:
 };
 
 template <typename T>
-TensorMatcher<T>
+TensorMatcher<T, false>
 allclose(const T & expected, double rtol = 1e-5, std::optional<double> atol = std::nullopt);
 
-bool allclose_broadcast(const neml2::Tensor & a,
-                        const neml2::Tensor & b,
-                        double rtol = 1e-5,
-                        std::optional<double> atol = std::nullopt);
+template <typename T>
+TensorMatcher<T, true> allclose_broadcast(const T & expected,
+                                          double rtol = 1e-5,
+                                          std::optional<double> atol = std::nullopt);
 
 namespace details
 {
