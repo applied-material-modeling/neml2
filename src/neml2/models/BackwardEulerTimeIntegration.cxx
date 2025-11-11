@@ -24,6 +24,7 @@
 
 #include "neml2/models/BackwardEulerTimeIntegration.h"
 #include "neml2/tensors/functions/imap.h"
+#include <torch/csrc/jit/frontend/tracer.h>
 
 namespace neml2
 {

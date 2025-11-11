@@ -401,7 +401,7 @@ Model::forward(bool out, bool dout, bool d2out)
   if (dout || d2out)
     enable_AD();
 
-  set_value(out || AD_need_value(dout, d2out) || dout || d2out, dout, d2out);
+  set_value(out || dout || d2out, dout, d2out);
 
   if (dout || d2out)
     extract_AD_derivatives(dout, d2out);
@@ -725,22 +725,6 @@ Model::assemble(NonlinearSystem::Res<false> * residual, NonlinearSystem::Jac<fal
     *Jacobian = Jac<false>(
         jac_assembler.assemble_by_variable(collect_output_derivatives(/*assembly=*/true)));
   }
-}
-
-bool
-Model::AD_need_value(bool dout, bool d2out) const
-{
-  if (dout)
-    if (!_ad_derivs.empty())
-      return true;
-
-  if (d2out)
-    for (auto && [y, u1u2s] : _ad_secderivs)
-      for (auto && [u1, u2s] : u1u2s)
-        if (_ad_derivs.count(y) && _ad_derivs.at(y).count(u1))
-          return true;
-
-  return false;
 }
 
 void

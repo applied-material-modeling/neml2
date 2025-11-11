@@ -258,7 +258,8 @@ VariableStore::cache_derivative_sparsity()
   std::vector<std::pair<VariableBase *, const VariableBase *>> sparsity;
   for (auto && [yname, yvar] : output_variables())
     for (const auto & dy_dx : yvar->derivatives())
-      sparsity.emplace_back(yvar.get(), dy_dx.args()[0]);
+      if (dy_dx.args()[0]->is_dependent())
+        sparsity.emplace_back(yvar.get(), dy_dx.args()[0]);
 
   if (currently_solving_nonlinear_system())
     _deriv_sparsity_nl_sys = std::move(sparsity);
@@ -392,10 +393,7 @@ VariableStore::collect_input(bool assembly) const
 {
   ValueMap vals;
   for (auto && [name, var] : input_variables())
-    if (assembly)
-      vals[name] = var->get();
-    else
-      vals[name] = var->tensor();
+    vals[name] = assembly ? var->get() : var->tensor();
   return vals;
 }
 
@@ -404,10 +402,7 @@ VariableStore::collect_output(bool assembly) const
 {
   ValueMap vals;
   for (auto && [name, var] : output_variables())
-    if (assembly)
-      vals[name] = var->get();
-    else
-      vals[name] = var->tensor();
+    vals[name] = assembly ? var->get() : var->tensor();
   return vals;
 }
 
@@ -417,10 +412,7 @@ VariableStore::collect_output_derivatives(bool assembly) const
   DerivMap derivs;
   for (auto && [name, var] : output_variables())
     for (auto & deriv : var->derivatives())
-      if (assembly)
-        derivs[name][deriv.args()[0]->name()] = deriv.get();
-      else
-        derivs[name][deriv.args()[0]->name()] = deriv.tensor();
+      derivs[name][deriv.args()[0]->name()] = assembly ? deriv.get() : deriv.tensor();
   return derivs;
 }
 
@@ -430,10 +422,8 @@ VariableStore::collect_output_second_derivatives(bool assembly) const
   SecDerivMap sec_derivs;
   for (auto && [name, var] : output_variables())
     for (auto & deriv : var->second_derivatives())
-      if (assembly)
-        sec_derivs[name][deriv.args()[0]->name()][deriv.args()[1]->name()] = deriv.get();
-      else
-        sec_derivs[name][deriv.args()[0]->name()][deriv.args()[1]->name()] = deriv.tensor();
+      sec_derivs[name][deriv.args()[0]->name()][deriv.args()[1]->name()] =
+          assembly ? deriv.get() : deriv.tensor();
   return sec_derivs;
 }
 

@@ -199,8 +199,7 @@ PrimitiveTensor<Derived, S...>::validate_shapes_and_dims() const
 }
 
 template <class Derived, Size... S>
-PrimitiveTensor<Derived, S...>::
-operator neml2::Tensor() const
+PrimitiveTensor<Derived, S...>::operator neml2::Tensor() const
 {
   return neml2::Tensor(*this, this->dynamic_sizes(), this->intmd_dim());
 }
@@ -213,7 +212,8 @@ PrimitiveTensor<Derived, S...>::create(const TensorDataContainer & data,
 {
   return Derived(torch::autograd::make_variable(
                      data.convert_to_tensor(options.requires_grad(false)), options.requires_grad()),
-                 intmd_dim);
+                 intmd_dim)
+      .clone(); // clone to take ownership of the data
 }
 
 template <class Derived, Size... S>

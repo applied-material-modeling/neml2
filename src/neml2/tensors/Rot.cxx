@@ -51,6 +51,7 @@
 #include "neml2/tensors/functions/cross.h"
 #include "neml2/tensors/functions/norm.h"
 #include "neml2/tensors/functions/outer.h"
+#include "neml2/tensors/functions/inv.h"
 
 namespace neml2
 {
@@ -70,7 +71,7 @@ Rot::rand(const TraceableTensorShape & dynamic_shape,
   auto w = neml2::sqrt(1.0 - u(0)) * neml2::sin(2.0 * M_PI * u(1));
   auto x = neml2::sqrt(1.0 - u(0)) * neml2::cos(2.0 * M_PI * u(1));
   auto y = neml2::sqrt(u(0)) * neml2::sin(2.0 * M_PI * u(2));
-  auto z = neml2::sqrt(u(1)) * neml2::cos(2.0 * M_PI * u(2));
+  auto z = neml2::sqrt(u(0)) * neml2::cos(2.0 * M_PI * u(2));
 
   auto q = Quaternion(base_stack({w, x, y, z}));
 

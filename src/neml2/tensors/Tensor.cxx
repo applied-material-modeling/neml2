@@ -91,7 +91,8 @@ Tensor::create(const TensorDataContainer & data,
   return Tensor(torch::autograd::make_variable(data.convert_to_tensor(options.requires_grad(false)),
                                                options.requires_grad()),
                 dynamic_dim,
-                intmd_dim);
+                intmd_dim)
+      .clone(); // clone to take ownership of the data
 }
 
 Tensor

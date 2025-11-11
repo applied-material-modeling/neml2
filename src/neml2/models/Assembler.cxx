@@ -63,6 +63,8 @@ VectorAssembler::assemble_by_variable(const ValueMap & vals_dict) const
                       _axis.variable_sizes()[i],
                       ", got ",
                       val.base_size(0));
+      neml_assert_dbg(
+          val.isfinite().all().item<bool>(), "Non-finite value found for variable ", vars[i]);
       vals[i] = val;
       if (!options_defined)
       {
@@ -174,6 +176,11 @@ MatrixAssembler::assemble_by_variable(const DerivMap & vals_dict) const
                         TensorShape{_yaxis.variable_sizes()[i], _xaxis.variable_sizes()[j]},
                         ", got ",
                         val.base_sizes());
+        neml_assert_dbg(val.isfinite().all().item<bool>(),
+                        "Non-finite tensor value found for variables ",
+                        yvars[i],
+                        "/",
+                        xvars[j]);
         vals[j] = val;
         if (!options_defined)
         {

@@ -297,10 +297,6 @@ private:
     forward_maybe_jit(out, dout, d2out);
   }
 
-  /// Given the requested AD derivatives, should the forward operator
-  /// neml2::Model::set_value compute the output variable?
-  bool AD_need_value(bool dout, bool d2out) const;
-
   /// Turn on AD for variable derivatives requested in neml2::Model::request_AD
   void enable_AD();
 
