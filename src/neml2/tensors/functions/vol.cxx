@@ -32,6 +32,7 @@
 
 namespace neml2
 {
+// Should we ask a check for 2nd order tensors only here?
 Tensor
 vol(const Tensor & A)
 {
