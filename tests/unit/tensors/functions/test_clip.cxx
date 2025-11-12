@@ -45,7 +45,7 @@ TEMPLATE_TEST_CASE("clip", "[tensors/functions]", FOR_ALL_TENSORBASE_COMMA(TYPE_
 
   DYNAMIC_SECTION(cfg.desc() << " shape: " << shape.desc())
   {
-    auto a  = test::generate_random_tensor<TestType>(cfg, shape);
+    auto a = test::generate_random_tensor<TestType>(cfg, shape);
     auto lb = test::generate_random_tensor<TestType>(cfg, shape);
     auto ub = test::generate_random_tensor<TestType>(cfg, shape);
 
@@ -66,4 +66,3 @@ TEMPLATE_TEST_CASE("clip", "[tensors/functions]", FOR_ALL_TENSORBASE_COMMA(TYPE_
     REQUIRE_THAT(c2, test::allclose(ref2));
   }
 }
-

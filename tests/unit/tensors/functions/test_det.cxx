@@ -48,8 +48,7 @@ TEST_CASE("det", "[tensors/functions]")
   SECTION("R2")
   {
     auto shape = test::generate_tensor_shape<R2>();
-    auto scalar_shape = test::GeneratedTensorShape(
-          shape.dynamic_sizes, shape.intmd_sizes, {});
+    auto scalar_shape = test::GeneratedTensorShape(shape.dynamic_sizes, shape.intmd_sizes, {});
     DYNAMIC_SECTION(cfg.desc() << " shape: " << shape.desc())
     {
       auto A = test::generate_random_tensor<R2>(cfg, shape);
@@ -75,35 +74,33 @@ TEST_CASE("det", "[tensors/functions]")
   SECTION("SR2")
   {
     auto shape = test::generate_tensor_shape<SR2>();
-    auto scalar_shape = test::GeneratedTensorShape(
-          shape.dynamic_sizes, shape.intmd_sizes, {});
+    auto scalar_shape = test::GeneratedTensorShape(shape.dynamic_sizes, shape.intmd_sizes, {});
     DYNAMIC_SECTION(cfg.desc() << " shape: " << shape.desc())
     {
-        auto A = test::generate_random_tensor<SR2>(cfg, shape);
-        auto detA = neml2::det(A);
+      auto A = test::generate_random_tensor<SR2>(cfg, shape);
+      auto detA = neml2::det(A);
 
-        const auto comps = at::split(A.base_flatten(), 1, -1);
-        const auto & a = comps[0];
-        const auto & e = comps[1];
-        const auto & i = comps[2];
-        const auto f = comps[3] / mandel_factor(3);
-        const auto c = comps[4] / mandel_factor(4);
-        const auto b = comps[5] / mandel_factor(5);
+      const auto comps = at::split(A.base_flatten(), 1, -1);
+      const auto & a = comps[0];
+      const auto & e = comps[1];
+      const auto & i = comps[2];
+      const auto f = comps[3] / mandel_factor(3);
+      const auto c = comps[4] / mandel_factor(4);
+      const auto b = comps[5] / mandel_factor(5);
 
-        auto ref = a * (e * i - f * f) - b * (b * i - c * f) + c * (b * f - e * c);
-        
-        REQUIRE(test::match_tensor_shape(detA, scalar_shape));
+      auto ref = a * (e * i - f * f) - b * (b * i - c * f) + c * (b * f - e * c);
 
-        auto ref_flat = ref.reshape_as(detA);
-        REQUIRE_THAT(detA, test::allclose(ref_flat));
+      REQUIRE(test::match_tensor_shape(detA, scalar_shape));
+
+      auto ref_flat = ref.reshape_as(detA);
+      REQUIRE_THAT(detA, test::allclose(ref_flat));
     }
   }
 
   SECTION("WR2")
   {
     auto shape = test::generate_tensor_shape<WR2>();
-    auto scalar_shape = test::GeneratedTensorShape(
-          shape.dynamic_sizes, shape.intmd_sizes, {});
+    auto scalar_shape = test::GeneratedTensorShape(shape.dynamic_sizes, shape.intmd_sizes, {});
     DYNAMIC_SECTION(cfg.desc() << " shape: " << shape.desc())
     {
       auto A = test::generate_random_tensor<WR2>(cfg, shape);
