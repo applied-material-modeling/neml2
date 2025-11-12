@@ -44,7 +44,7 @@ namespace neml2
   {                                                                                                \
     neml_assert_broadcastable_dbg(a, b);                                                           \
     const auto [cc, aa, bb, i] = utils::align_intmd_dim(c, a, b);                                  \
-    return T(at::where(cc.base_left_unsqueeze_n(a.base_dim()), aa, bb), c.dynamic_sizes(), i);     \
+    return T(at::where(cc.base_unsqueeze_n(a.base_dim(), 0), aa, bb), c.dynamic_sizes(), i);       \
   }                                                                                                \
   static_assert(true)
 FOR_ALL_TENSORBASE(DEFINE_WHERE);

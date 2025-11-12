@@ -48,7 +48,7 @@ TEST_CASE("einsum", "[tensors/functions]")
     auto b = neml2::einsum("...,...ik,...lki", {a1, a2, a3});
     auto b0 = at::einsum(
         "...,...ik,...lki",
-        {a1.intmd_left_unsqueeze_n(1), a2.intmd_left_unsqueeze_n(2), a3.intmd_left_unsqueeze_n(0)});
+        {a1.intmd_unsqueeze_n(1, 0), a2.intmd_unsqueeze_n(2, 0), a3.intmd_unsqueeze_n(0, 0)});
     REQUIRE(b.dynamic_sizes() == TensorShapeRef{3, 2, 2});
     REQUIRE(b.intmd_sizes() == TensorShapeRef{2, 4});
     REQUIRE(b.base_sizes() == TensorShapeRef{3});

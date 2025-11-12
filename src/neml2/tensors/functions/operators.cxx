@@ -46,7 +46,7 @@ namespace neml2
   {                                                                                                \
     neml_assert_dynamic_broadcastable_dbg(a, b);                                                   \
     const auto [aa, bb, i] = utils::align_intmd_dim(a, b);                                         \
-    return T(at::operator+(aa, bb.base_right_unsqueeze_n(a.base_dim())),                           \
+    return T(at::operator+(aa, bb.base_unsqueeze_n(a.base_dim(), -1)),                             \
              utils::broadcast_dynamic_dim(a, b),                                                   \
              i);                                                                                   \
   }                                                                                                \
@@ -94,7 +94,7 @@ DEFINE_ADD_SYM_CSCALAR(Scalar);
   {                                                                                                \
     neml_assert_dynamic_broadcastable_dbg(a, b);                                                   \
     const auto [aa, bb, i] = utils::align_intmd_dim(a, b);                                         \
-    return T(at::operator-(aa, bb.base_right_unsqueeze_n(a.base_dim())),                           \
+    return T(at::operator-(aa, bb.base_unsqueeze_n(a.base_dim(), -1)),                             \
              utils::broadcast_dynamic_dim(a, b),                                                   \
              i);                                                                                   \
   }                                                                                                \
@@ -102,7 +102,7 @@ DEFINE_ADD_SYM_CSCALAR(Scalar);
   {                                                                                                \
     neml_assert_dynamic_broadcastable_dbg(a, b);                                                   \
     const auto [aa, bb, i] = utils::align_intmd_dim(a, b);                                         \
-    return T(at::operator-(aa.base_right_unsqueeze_n(b.base_dim()), bb),                           \
+    return T(at::operator-(aa.base_unsqueeze_n(b.base_dim(), -1), bb),                             \
              utils::broadcast_dynamic_dim(a, b),                                                   \
              i);                                                                                   \
   }                                                                                                \
@@ -152,7 +152,7 @@ DEFINE_SUB_SYM_CSCALAR(Scalar);
   {                                                                                                \
     neml_assert_dynamic_broadcastable_dbg(a, b);                                                   \
     const auto [aa, bb, i] = utils::align_intmd_dim(a, b);                                         \
-    return T(at::operator*(aa, bb.base_right_unsqueeze_n(a.base_dim())),                           \
+    return T(at::operator*(aa, bb.base_unsqueeze_n(a.base_dim(), -1)),                             \
              utils::broadcast_dynamic_dim(a, b),                                                   \
              i);                                                                                   \
   }                                                                                                \
@@ -199,7 +199,7 @@ DEFINE_MUL_SYM_CSCALAR(Scalar);
   {                                                                                                \
     neml_assert_dynamic_broadcastable_dbg(a, b);                                                   \
     const auto [aa, bb, i] = utils::align_intmd_dim(a, b);                                         \
-    return T(at::operator/(aa, bb.base_right_unsqueeze_n(a.base_dim())),                           \
+    return T(at::operator/(aa, bb.base_unsqueeze_n(a.base_dim(), -1)),                             \
              utils::broadcast_dynamic_dim(a, b),                                                   \
              i);                                                                                   \
   }                                                                                                \
@@ -207,7 +207,7 @@ DEFINE_MUL_SYM_CSCALAR(Scalar);
   {                                                                                                \
     neml_assert_dynamic_broadcastable_dbg(a, b);                                                   \
     const auto [aa, bb, i] = utils::align_intmd_dim(a, b);                                         \
-    return T(at::operator/(aa.base_right_unsqueeze_n(b.base_dim()), b),                            \
+    return T(at::operator/(aa.base_unsqueeze_n(b.base_dim(), -1), b),                              \
              utils::broadcast_dynamic_dim(a, b),                                                   \
              i);                                                                                   \
   }                                                                                                \

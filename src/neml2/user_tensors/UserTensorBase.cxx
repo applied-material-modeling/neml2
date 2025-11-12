@@ -119,15 +119,10 @@ apply_shape_manipulation(Tensor & tensor, const std::string & op, const TensorSh
     assert_arg_dim("dynamic_squeeze", arg, 1);
     tensor = tensor.dynamic_squeeze(arg[0]);
   }
-  else if (op == "dynamic_left_unsqueeze_n")
+  else if (op == "dynamic_unsqueeze_n")
   {
-    assert_arg_dim("dynamic_left_unsqueeze_n", arg, 1);
-    tensor = tensor.dynamic_left_unsqueeze_n(arg[0]);
-  }
-  else if (op == "dynamic_right_unsqueeze_n")
-  {
-    assert_arg_dim("dynamic_right_unsqueeze_n", arg, 1);
-    tensor = tensor.dynamic_right_unsqueeze_n(arg[0]);
+    assert_arg_dim("dynamic_unsqueeze_n", arg, 2);
+    tensor = tensor.dynamic_unsqueeze_n(arg[0], arg[1]);
   }
   else if (op == "dynamic_transpose")
   {
@@ -153,15 +148,10 @@ apply_shape_manipulation(Tensor & tensor, const std::string & op, const TensorSh
     assert_arg_dim("intmd_squeeze", arg, 1);
     tensor = tensor.intmd_squeeze(arg[0]);
   }
-  else if (op == "intmd_left_unsqueeze_n")
+  else if (op == "intmd_unsqueeze_n")
   {
-    assert_arg_dim("intmd_left_unsqueeze_n", arg, 1);
-    tensor = tensor.intmd_left_unsqueeze_n(arg[0]);
-  }
-  else if (op == "intmd_right_unsqueeze_n")
-  {
-    assert_arg_dim("intmd_right_unsqueeze_n", arg, 1);
-    tensor = tensor.intmd_right_unsqueeze_n(arg[0]);
+    assert_arg_dim("intmd_unsqueeze_n", arg, 2);
+    tensor = tensor.intmd_unsqueeze_n(arg[0], arg[1]);
   }
   else if (op == "intmd_transpose")
   {

@@ -41,8 +41,8 @@ align_intmd_dim(const T & a, const Ts &... ts)
     return {a, ts..., a.intmd_dim()};
 
   const auto dmax = utils::broadcast_intmd_dim(a, ts...);
-  return {a.intmd_left_unsqueeze_n(dmax - a.intmd_dim()),
-          ts.intmd_left_unsqueeze_n(dmax - ts.intmd_dim())...,
+  return {a.intmd_unsqueeze_n(dmax - a.intmd_dim(), 0),
+          ts.intmd_unsqueeze_n(dmax - ts.intmd_dim(), 0)...,
           dmax};
 }
 
@@ -59,10 +59,10 @@ align_static_dim(const T & a, const Ts &... ts)
 
   const auto imax = utils::broadcast_intmd_dim(a, ts...);
   const auto bmax = utils::broadcast_base_dim(a, ts...);
-  return {a.intmd_left_unsqueeze_n(imax - a.intmd_dim()).base_left_unsqueeze_n(bmax - a.base_dim()),
-          ts.intmd_left_unsqueeze_n(imax - ts.intmd_dim())
-              .base_left_unsqueeze_n(bmax - ts.base_dim())...,
-          imax};
+  return {
+      a.intmd_unsqueeze_n(imax - a.intmd_dim(), 0).base_unsqueeze_n(bmax - a.base_dim(), 0),
+      ts.intmd_unsqueeze_n(imax - ts.intmd_dim(), 0).base_unsqueeze_n(bmax - ts.base_dim(), 0)...,
+      imax};
 }
 
 std::pair<std::vector<Tensor>, Size> align_static_dim(TensorList tensors);

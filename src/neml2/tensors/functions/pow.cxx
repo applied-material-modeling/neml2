@@ -38,7 +38,7 @@ namespace neml2
   {                                                                                                \
     neml_assert_dynamic_broadcastable_dbg(a, n);                                                   \
     const auto [aa, nn, i] = utils::align_intmd_dim(a, n);                                         \
-    return T(at::pow(aa, nn.base_right_unsqueeze_n(a.base_dim())),                                 \
+    return T(at::pow(aa, nn.base_unsqueeze_n(a.base_dim(), -1)),                                   \
              utils::broadcast_dynamic_dim(a, n),                                                   \
              i);                                                                                   \
   }                                                                                                \

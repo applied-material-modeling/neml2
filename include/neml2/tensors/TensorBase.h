@@ -260,17 +260,10 @@ public:
   ///@}
 
   ///@{
-  /// Unsqueeze @p n dimensions to the left
-  Derived dynamic_left_unsqueeze_n(Size n) const;
-  Derived intmd_left_unsqueeze_n(Size n) const;
-  neml2::Tensor base_left_unsqueeze_n(Size n) const;
-  ///@}
-
-  ///@{
-  /// Unsqueeze @p n dimensions to the right
-  Derived dynamic_right_unsqueeze_n(Size n) const;
-  Derived intmd_right_unsqueeze_n(Size n) const;
-  neml2::Tensor base_right_unsqueeze_n(Size n) const;
+  /// Unsqueeze @p n dimensions at @p d
+  Derived dynamic_unsqueeze_n(Size n, Size d) const;
+  Derived intmd_unsqueeze_n(Size n, Size d) const;
+  neml2::Tensor base_unsqueeze_n(Size n, Size d) const;
   ///@}
 
   ///@{

@@ -535,37 +535,39 @@ TEST_CASE("TensorBase", "[tensors]")
     auto shape = test::GeneratedTensorShape({3, 4}, {2, 3}, {1, 2});
 
     auto a = test::generate_random_tensor<Tensor>(cfg, shape);
-    auto b = a.dynamic_left_unsqueeze_n(2);
-    auto c = a.intmd_left_unsqueeze_n(3);
-    auto d = a.base_left_unsqueeze_n(4);
 
-    REQUIRE(b.dynamic_sizes() == TensorShapeRef{1, 1, 3, 4});
-    REQUIRE(b.intmd_sizes() == a.intmd_sizes());
-    REQUIRE(b.base_sizes() == a.base_sizes());
+    auto b1 = a.dynamic_unsqueeze_n(2, 1);
+    auto b2 = a.dynamic_unsqueeze_n(2, -1);
 
-    REQUIRE(c.dynamic_sizes() == a.dynamic_sizes());
-    REQUIRE(c.intmd_sizes() == TensorShapeRef{1, 1, 1, 2, 3});
-    REQUIRE(c.base_sizes() == a.base_sizes());
+    REQUIRE(b1.dynamic_sizes() == TensorShapeRef{3, 1, 1, 4});
+    REQUIRE(b1.intmd_sizes() == a.intmd_sizes());
+    REQUIRE(b1.base_sizes() == a.base_sizes());
 
-    REQUIRE(d.dynamic_sizes() == a.dynamic_sizes());
-    REQUIRE(d.intmd_sizes() == a.intmd_sizes());
-    REQUIRE(d.base_sizes() == TensorShapeRef{1, 1, 1, 1, 1, 2});
+    REQUIRE(b2.dynamic_sizes() == TensorShapeRef{3, 4, 1, 1});
+    REQUIRE(b2.intmd_sizes() == a.intmd_sizes());
+    REQUIRE(b2.base_sizes() == a.base_sizes());
 
-    b = a.dynamic_right_unsqueeze_n(2);
-    c = a.intmd_right_unsqueeze_n(3);
-    d = a.base_right_unsqueeze_n(4);
+    auto c1 = a.intmd_unsqueeze_n(2, 1);
+    auto c2 = a.intmd_unsqueeze_n(2, -1);
 
-    REQUIRE(b.dynamic_sizes() == TensorShapeRef{3, 4, 1, 1});
-    REQUIRE(b.intmd_sizes() == a.intmd_sizes());
-    REQUIRE(b.base_sizes() == a.base_sizes());
+    REQUIRE(c1.dynamic_sizes() == a.dynamic_sizes());
+    REQUIRE(c1.intmd_sizes() == TensorShapeRef{2, 1, 1, 3});
+    REQUIRE(c1.base_sizes() == a.base_sizes());
 
-    REQUIRE(c.dynamic_sizes() == a.dynamic_sizes());
-    REQUIRE(c.intmd_sizes() == TensorShapeRef{2, 3, 1, 1, 1});
-    REQUIRE(c.base_sizes() == a.base_sizes());
+    REQUIRE(c2.dynamic_sizes() == a.dynamic_sizes());
+    REQUIRE(c2.intmd_sizes() == TensorShapeRef{2, 3, 1, 1});
+    REQUIRE(c2.base_sizes() == a.base_sizes());
 
-    REQUIRE(d.dynamic_sizes() == a.dynamic_sizes());
-    REQUIRE(d.intmd_sizes() == a.intmd_sizes());
-    REQUIRE(d.base_sizes() == TensorShapeRef{1, 2, 1, 1, 1, 1});
+    auto d1 = a.base_unsqueeze_n(2, 1);
+    auto d2 = a.base_unsqueeze_n(2, -1);
+
+    REQUIRE(d1.dynamic_sizes() == a.dynamic_sizes());
+    REQUIRE(d1.intmd_sizes() == a.intmd_sizes());
+    REQUIRE(d1.base_sizes() == TensorShapeRef{1, 1, 1, 2});
+
+    REQUIRE(d2.dynamic_sizes() == a.dynamic_sizes());
+    REQUIRE(d2.intmd_sizes() == a.intmd_sizes());
+    REQUIRE(d2.base_sizes() == TensorShapeRef{1, 2, 1, 1});
   }
 
   SECTION("transpose")

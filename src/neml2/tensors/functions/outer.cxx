@@ -35,7 +35,7 @@ namespace neml2
 #define DEFINE_OUTER(R, U)                                                                         \
   R outer(const U & u, const U & v)                                                                \
   {                                                                                                \
-    return u.base_right_unsqueeze_n(v.base_dim()) * v.base_left_unsqueeze_n(u.base_dim());         \
+    return u.base_unsqueeze_n(v.base_dim(), -1) * v.base_unsqueeze_n(u.base_dim(), 0);             \
   }                                                                                                \
                                                                                                    \
   R outer(const U & u) { return outer(U(u), U(u)); }                                               \

@@ -104,43 +104,39 @@ namespace neml2
   {                                                                                                \
     neml_assert_dynamic_broadcastable_dbg(a, b);                                                   \
     const auto [aa, bb, i] = utils::align_intmd_dim(a, b);                                         \
-    return T(at::gt(aa, bb.base_right_unsqueeze_n(a.base_dim())),                                  \
-             utils::broadcast_dynamic_dim(a, b),                                                   \
-             i);                                                                                   \
+    return T(                                                                                      \
+        at::gt(aa, bb.base_unsqueeze_n(a.base_dim(), -1)), utils::broadcast_dynamic_dim(a, b), i); \
   }                                                                                                \
   T operator>(const Scalar & a, const T & b) { return b < a; }                                     \
   T operator<(const T & a, const Scalar & b)                                                       \
   {                                                                                                \
     neml_assert_dynamic_broadcastable_dbg(a, b);                                                   \
     const auto [aa, bb, i] = utils::align_intmd_dim(a, b);                                         \
-    return T(at::lt(aa, bb.base_right_unsqueeze_n(a.base_dim())),                                  \
-             utils::broadcast_dynamic_dim(a, b),                                                   \
-             i);                                                                                   \
+    return T(                                                                                      \
+        at::lt(aa, bb.base_unsqueeze_n(a.base_dim(), -1)), utils::broadcast_dynamic_dim(a, b), i); \
   }                                                                                                \
   T operator<(const Scalar & a, const T & b) { return b > a; }                                     \
   T operator>=(const T & a, const Scalar & b)                                                      \
   {                                                                                                \
     neml_assert_dynamic_broadcastable_dbg(a, b);                                                   \
     const auto [aa, bb, i] = utils::align_intmd_dim(a, b);                                         \
-    return T(at::ge(aa, bb.base_right_unsqueeze_n(a.base_dim())),                                  \
-             utils::broadcast_dynamic_dim(a, b),                                                   \
-             i);                                                                                   \
+    return T(                                                                                      \
+        at::ge(aa, bb.base_unsqueeze_n(a.base_dim(), -1)), utils::broadcast_dynamic_dim(a, b), i); \
   }                                                                                                \
   T operator>=(const Scalar & a, const T & b) { return b <= a; }                                   \
   T operator<=(const T & a, const Scalar & b)                                                      \
   {                                                                                                \
     neml_assert_dynamic_broadcastable_dbg(a, b);                                                   \
     const auto [aa, bb, i] = utils::align_intmd_dim(a, b);                                         \
-    return T(at::le(aa, bb.base_right_unsqueeze_n(a.base_dim())),                                  \
-             utils::broadcast_dynamic_dim(a, b),                                                   \
-             i);                                                                                   \
+    return T(                                                                                      \
+        at::le(aa, bb.base_unsqueeze_n(a.base_dim(), -1)), utils::broadcast_dynamic_dim(a, b), i); \
   }                                                                                                \
   T operator<=(const Scalar & a, const T & b) { return b >= a; }                                   \
   T operator&&(const T & a, const Scalar & b)                                                      \
   {                                                                                                \
     neml_assert_dynamic_broadcastable_dbg(a, b);                                                   \
     const auto [aa, bb, i] = utils::align_intmd_dim(a, b);                                         \
-    return T(at::logical_and(aa, bb.base_right_unsqueeze_n(a.base_dim())),                         \
+    return T(at::logical_and(aa, bb.base_unsqueeze_n(a.base_dim(), -1)),                           \
              utils::broadcast_dynamic_dim(a, b),                                                   \
              i);                                                                                   \
   }                                                                                                \
@@ -149,7 +145,7 @@ namespace neml2
   {                                                                                                \
     neml_assert_dynamic_broadcastable_dbg(a, b);                                                   \
     const auto [aa, bb, i] = utils::align_intmd_dim(a, b);                                         \
-    return T(at::logical_or(aa, bb.base_right_unsqueeze_n(a.base_dim())),                          \
+    return T(at::logical_or(aa, bb.base_unsqueeze_n(a.base_dim(), -1)),                            \
              utils::broadcast_dynamic_dim(a, b),                                                   \
              i);                                                                                   \
   }                                                                                                \
@@ -158,18 +154,16 @@ namespace neml2
   {                                                                                                \
     neml_assert_dynamic_broadcastable_dbg(a, b);                                                   \
     const auto [aa, bb, i] = utils::align_intmd_dim(a, b);                                         \
-    return T(at::eq(aa, bb.base_right_unsqueeze_n(a.base_dim())),                                  \
-             utils::broadcast_dynamic_dim(a, b),                                                   \
-             i);                                                                                   \
+    return T(                                                                                      \
+        at::eq(aa, bb.base_unsqueeze_n(a.base_dim(), -1)), utils::broadcast_dynamic_dim(a, b), i); \
   }                                                                                                \
   T operator==(const Scalar & a, const T & b) { return b == a; }                                   \
   T operator!=(const T & a, const Scalar & b)                                                      \
   {                                                                                                \
     neml_assert_dynamic_broadcastable_dbg(a, b);                                                   \
     const auto [aa, bb, i] = utils::align_intmd_dim(a, b);                                         \
-    return T(at::ne(aa, bb.base_right_unsqueeze_n(a.base_dim())),                                  \
-             utils::broadcast_dynamic_dim(a, b),                                                   \
-             i);                                                                                   \
+    return T(                                                                                      \
+        at::ne(aa, bb.base_unsqueeze_n(a.base_dim(), -1)), utils::broadcast_dynamic_dim(a, b), i); \
   }                                                                                                \
   T operator!=(const Scalar & a, const T & b) { return b != a; }                                   \
   T gt(const T & a, const Scalar & b) { return a > b; }                                            \
@@ -188,7 +182,7 @@ namespace neml2
   {                                                                                                \
     neml_assert_dynamic_broadcastable_dbg(a, b);                                                   \
     const auto [aa, bb, i] = utils::align_intmd_dim(a, b);                                         \
-    return T(at::logical_xor(aa, bb.base_right_unsqueeze_n(a.base_dim())),                         \
+    return T(at::logical_xor(aa, bb.base_unsqueeze_n(a.base_dim(), -1)),                           \
              utils::broadcast_dynamic_dim(a, b),                                                   \
              i);                                                                                   \
   }                                                                                                \
