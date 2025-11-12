@@ -87,13 +87,6 @@ TensorBase<Derived>::validate_shapes_and_dims() const
 }
 
 template <class Derived>
-template <class Derived2>
-TensorBase<Derived>::TensorBase(const TensorBase<Derived2> & tensor)
-  : TensorBase(tensor, tensor.dynamic_sizes(), tensor.intmd_dim())
-{
-}
-
-template <class Derived>
 Derived
 TensorBase<Derived>::empty_like(const Derived & other)
 {

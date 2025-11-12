@@ -86,7 +86,10 @@ public:
 
   /// Copy constructor
   template <class Derived2>
-  TensorBase(const TensorBase<Derived2> & tensor);
+  TensorBase(const TensorBase<Derived2> & tensor)
+    : TensorBase(tensor, tensor.dynamic_sizes(), tensor.intmd_dim())
+  {
+  }
 
   TensorBase(double) = delete;
   TensorBase(float) = delete;
