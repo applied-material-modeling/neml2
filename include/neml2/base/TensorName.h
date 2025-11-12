@@ -98,6 +98,12 @@ private:
   mutable std::shared_ptr<T> _tensor = nullptr;
 };
 
+// Export TensorName so other TU don't repeat the instantiation
+extern template struct TensorName<ATensor>;
+#define EXPORT_TENSORNAME(T) extern template struct TensorName<T>
+FOR_ALL_TENSORBASE(EXPORT_TENSORNAME);
+#undef EXPORT_TENSORNAME
+
 /// Stream into a TensorName (used by Parsers to extract input options)
 template <typename T>
 std::stringstream &

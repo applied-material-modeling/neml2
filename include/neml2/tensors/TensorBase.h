@@ -31,6 +31,7 @@
 #include "neml2/tensors/functions/operators.h"
 #include "neml2/tensors/functions/logical.h"
 #include "neml2/tensors/indexing.h"
+#include "neml2/tensors/macros.h"
 
 namespace neml2
 {
@@ -319,4 +320,9 @@ private:
   // BTW, "intmd" is an abbreviation for "intermediate" found in the Merriam-Webster dictionary :)
   Size _intmd_dim = 0;
 };
+
+// Export TensorBase so other TU don't repeat the instantiation
+#define EXPORT_TENSORBASE(T) extern template class TensorBase<T>
+FOR_ALL_TENSORBASE(EXPORT_TENSORBASE);
+#undef EXPORT_TENSORBASE
 } // namespace neml2
