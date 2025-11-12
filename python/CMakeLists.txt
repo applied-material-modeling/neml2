@@ -32,22 +32,32 @@ find_package(pybind11 CONFIG REQUIRED)
 # ----------------------------------------------------------------------------
 # Macro for defining a submodule
 # ----------------------------------------------------------------------------
-macro(add_submodule mname malias msrcs)
-  pybind11_add_module(${mname} MODULE ${msrcs})
+macro(add_submodule mname malias)
+  # C++ helpers
+  file(GLOB_RECURSE msrcs CONFIGURE_DEPENDS neml2/${malias}/*.cxx)
+  if(msrcs)
+    add_library(${mname}_csrc SHARED ${msrcs})
+    target_include_directories(${mname}_csrc PUBLIC ${NEML2_SOURCE_DIR})
+    target_link_libraries(${mname}_csrc PUBLIC torch::python pybind11::pybind11)
+    set_target_properties(${mname}_csrc PROPERTIES LIBRARY_OUTPUT_DIRECTORY neml2/.libs)
+    if(NEML2_WHEEL)
+      set_target_properties(${mname}_csrc PROPERTIES INSTALL_RPATH "${INSTALL_REL_PATH};${INSTALL_REL_PATH}/lib;${INSTALL_REL_PATH}/../torch/lib")
+    else()
+      set_target_properties(${mname}_csrc PROPERTIES INSTALL_RPATH "${INSTALL_REL_PATH};${INSTALL_REL_PATH}/lib;${torch_LINK_DIR}")
+    endif()
+    install(TARGETS ${mname}_csrc LIBRARY DESTINATION . COMPONENT libneml2-python)
+  endif()
+
+  # pybind11 module
+  pybind11_add_module(${mname} MODULE neml2/module_${malias}.cxx)
+  target_include_directories(${mname} PUBLIC ${NEML2_SOURCE_DIR})
+  if(msrcs)
+    target_link_libraries(${mname} PRIVATE ${mname}_csrc)
+  endif()
   set_target_properties(${mname} PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY neml2
     OUTPUT_NAME ${malias}
   )
-
-  target_include_directories(${mname} PUBLIC ${NEML2_SOURCE_DIR})
-  target_link_libraries(${mname} PRIVATE pybind11::headers torch::python)
-
-  if(NEML2_WHEEL)
-    set_target_properties(${mname} PROPERTIES INSTALL_RPATH "${INSTALL_REL_PATH};${INSTALL_REL_PATH}/lib;${INSTALL_REL_PATH}/../torch/lib")
-  else()
-    set_target_properties(${mname} PROPERTIES INSTALL_RPATH "${INSTALL_REL_PATH};${INSTALL_REL_PATH}/lib;${torch_LINK_DIR}")
-  endif()
-
   install(TARGETS ${mname} LIBRARY DESTINATION . COMPONENT libneml2-python)
 
   # link to the wrapper library
@@ -72,22 +82,20 @@ add_custom_target(python_stub
 # ----------------------------------------------------------------------------
 add_library(pyneml2 INTERFACE)
 
-add_submodule(reserved reserved neml2/reserved.cxx)
-target_link_libraries(reserved PRIVATE base)
+add_submodule(pyreserved reserved)
+target_link_libraries(pyreserved PRIVATE base)
 
-add_submodule(core core neml2/core.cxx)
-target_link_libraries(core PRIVATE neml2)
+add_submodule(pycore core)
+target_link_libraries(pycore_csrc PUBLIC neml2)
 
-file(GLOB_RECURSE tensors_srcs CONFIGURE_DEPENDS neml2/tensors/*.cxx)
-list(APPEND tensors_srcs neml2/tensors.cxx)
-add_submodule(pytensors tensors "${tensors_srcs}")
-target_link_libraries(pytensors PRIVATE tensor)
+add_submodule(pytensors tensors)
+target_link_libraries(pytensors_csrc PUBLIC tensor pycore_csrc)
 
-add_submodule(pymath math neml2/math.cxx)
-target_link_libraries(pymath PRIVATE tensor)
+# add_submodule(pymath math)
+# target_link_libraries(pymath_csrc PUBLIC tensor pycore_csrc)
 
-add_submodule(pycrystallography crystallography neml2/crystallography.cxx)
-target_link_libraries(pycrystallography PRIVATE tensor)
+# add_submodule(pycrystallography crystallography)
+# target_link_libraries(pycrystallography_csrc PUBLIC tensor pycore_csrc)
 
 # ----------------------------------------------------------------------------
 # Artifacts

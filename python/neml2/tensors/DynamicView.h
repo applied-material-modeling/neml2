@@ -24,42 +24,43 @@
 
 #pragma once
 
-#include <pybind11/pybind11.h>
+#include "neml2/misc/types.h"
+#include "neml2/tensors/indexing.h"
+#include "neml2/tensors/Tensor.h"
 
-#include "neml2/tensors/Rot.h"
-
-namespace py = pybind11;
-
-namespace neml2
-{
-
-// Forward declarations
-template <class Derived>
-void def_R2Base(py::class_<Derived> & c);
-
-} // namespace neml2
-
-///////////////////////////////////////////////////////////////////////////////
-// Implementations
-///////////////////////////////////////////////////////////////////////////////
-
-namespace neml2
-{
+#include <pybind11/operators.h>
 
 template <class Derived>
-void
-def_R2Base(py::class_<Derived> & c)
+void def_DynamicView(pybind11::module_ & m, const std::string & name);
+
+/**
+ * @brief Convenient shim for working with dynamic dimensions
+ *
+ * The view does NOT extend the life of of the wrapped tensor.
+ */
+template <class Derived>
+class DynamicView
 {
-  // Ctors, conversions, accessors etc.
-  c.def("__call__", &Derived::operator());
+public:
+  DynamicView(Derived * data);
 
-  // Methods
-  c.def("rotate", py::overload_cast<const Rot &>(&Derived::rotate, py::const_))
-      .def("drotate", py::overload_cast<const Rot &>(&Derived::drotate, py::const_))
-      .def("inverse", &Derived::inverse)
-      .def("transpose", &Derived::transpose);
+  // These methods mirror TensorBase (the dynamic_xxx ones)
+  neml2::Size dim() const;
+  neml2::TensorShape sizes() const;
+  neml2::Size size(neml2::Size) const;
+  Derived index(const neml2::indexing::TensorIndices &) const;
+  Derived slice(neml2::Size, const neml2::indexing::Slice &) const;
+  void index_put_(const neml2::indexing::TensorIndices &, const neml2::ATensor &);
+  Derived expand(neml2::TensorShapeRef) const;
+  Derived expand(neml2::Size, neml2::Size) const;
+  Derived expand_as(const neml2::Tensor &) const;
+  Derived reshape(neml2::TensorShapeRef) const;
+  Derived squeeze(neml2::Size) const;
+  Derived unsqueeze(neml2::Size, neml2::Size n = 1) const;
+  Derived transpose(neml2::Size d1, neml2::Size d2) const;
+  Derived movedim(neml2::Size, neml2::Size) const;
+  Derived flatten() const;
 
-  // Static methods
-}
-
-} // namespace neml2
+private:
+  Derived * _data;
+};

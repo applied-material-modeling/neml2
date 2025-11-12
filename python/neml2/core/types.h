@@ -27,8 +27,56 @@
 #include <torch/python.h>
 #include <torch/csrc/autograd/python_variable_indexing.h>
 
+#include "neml2/tensors/indexing.h"
+
+#include <pybind11/pybind11.h>
+#include <pybind11/pytypes.h>
+
+#define NEML2_TENSOR_OPTIONS_VARGS const Dtype &dtype, const Device &device, bool requires_grad
+
+#define NEML2_TENSOR_OPTIONS                                                                       \
+  torch::TensorOptions().dtype(dtype).device(device).requires_grad(requires_grad)
+
+#define PY_ARG_TENSOR_OPTIONS                                                                      \
+  pybind11::arg("dtype") = Dtype(torch::kFloat64), pybind11::arg("device") = Device(torch::kCPU),  \
+  pybind11::arg("requires_grad") = false
+
 namespace pybind11::detail
 {
+/**
+ * @brief This specialization exposes neml2::indexing::TensorIndices
+ */
+template <>
+struct type_caster<neml2::indexing::TensorIndices>
+{
+public:
+  PYBIND11_TYPE_CASTER(neml2::indexing::TensorIndices, const_name("list[Any]"));
+
+  bool load(handle src, bool)
+  {
+    // if src is an iterable
+    if (isinstance<iterable>(src))
+    {
+      auto src_iterable = reinterpret_borrow<iterable>(src);
+      for (auto item : src_iterable)
+        value.push_back(item.cast<neml2::indexing::TensorIndex>());
+      return true;
+    }
+
+    return false;
+  }
+
+  static handle cast(const neml2::indexing::TensorIndices & src,
+                     return_value_policy /* policy */,
+                     handle /* parent */)
+  {
+    list l;
+    for (const auto & val : src)
+      l.append(val);
+    return l;
+  }
+};
+
 /**
  * @brief Type conversion between Python object <--> at::indexing::Slice
  */
@@ -140,4 +188,4 @@ public:
     return {};
   }
 };
-}
+} // namespace pybind11::detail

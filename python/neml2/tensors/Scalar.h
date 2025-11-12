@@ -22,14 +22,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#pragma once
+
 #include <pybind11/pybind11.h>
 
-#include "neml2/tensors/R5.h"
-
-namespace py = pybind11;
-using namespace neml2;
-
-void
-def_R5(py::class_<R5> & /*c*/)
-{
-}
+void def_Scalar(pybind11::module_ & m);

@@ -22,14 +22,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#pragma once
+
+#include "neml2/base/LabeledAxis.h"
 #include <pybind11/pybind11.h>
 
-#include "neml2/tensors/SFR4.h"
-
-namespace py = pybind11;
-using namespace neml2;
-
-void
-def_SFR4(py::class_<SFR4> & /*c*/)
-{
-}
+void def_LabeledAxis(pybind11::module_ & m);

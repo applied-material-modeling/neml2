@@ -23,47 +23,36 @@
 // THE SOFTWARE.
 
 #include <pybind11/pybind11.h>
-#include <pybind11/operators.h>
 
-#include "neml2/tensors/Rot.h"
-#include "neml2/tensors/Vec.h"
-#include "neml2/tensors/R3.h"
+#include "neml2/tensors/crystallography.h"
 
-#include "python/neml2/types.h"
+#include "python/neml2/core/types.h"
 
 namespace py = pybind11;
 using namespace neml2;
 
-void
-def_Rot(py::class_<Rot> & c)
+PYBIND11_MODULE(crystallography, m)
 {
-  // Ctors, conversions, accessors etc.
-  c.def(py::init<const Vec &>());
+  m.doc() = "Crystallography helper routines";
 
-  // Methods
-  c.def("inverse", &Rot::inverse)
-      .def("euler_rodrigues", &Rot::euler_rodrigues)
-      .def("deuler_rodrigues", &Rot::deuler_rodrigues)
-      .def("rotate", &Rot::rotate)
-      .def("drotate", &Rot::drotate)
-      .def("shadow", &Rot::shadow)
-      .def("dist", &Rot::dist)
-      .def("dV", &Rot::dV);
+  py::module_::import("neml2.tensors");
 
-  // Operators
-  c.def(py::self * py::self);
-
-  // Static methods
-  c.def_static(
-      "identity",
-      [](NEML2_TENSOR_OPTIONS_VARGS) { return Rot::identity(NEML2_TENSOR_OPTIONS); },
+  m.def(
+      "symmetry_operations_from_orbifold",
+      [](const std::string & orbifold, NEML2_TENSOR_OPTIONS_VARGS)
+      {
+        return crystallography::symmetry_operations_from_orbifold(orbifold, NEML2_TENSOR_OPTIONS);
+      },
+      py::arg("orbifold"),
       py::kw_only(),
-      PY_ARG_TENSOR_OPTIONS);
-  c.def_static("fill_euler_angles", &Rot::fill_euler_angles);
-  c.def_static("fill_matrix", &Rot::fill_matrix);
-  c.def_static("fill_random", &Rot::fill_random);
-  c.def_static("fill_rodrigues", &Rot::fill_rodrigues);
-  c.def_static("rotation_from_to", &Rot::rotation_from_to);
-  c.def_static("from_axis_angle", &Rot::from_axis_angle);
-  c.def_static("from_axis_angle_standard", &Rot::from_axis_angle_standard);
+      PY_ARG_TENSOR_OPTIONS,
+      R"(
+Return the symmetry operators for a given symmetry group as a batch of rank two tensors
+
+:param orbifold:    String giving the orbifold notation for the symmetry group
+:param dtype:       Floating point scalar type used throughout the model.
+:param device:      Device on which the model will be evaluated. All parameters, buffers,
+    and custom data are synced to the given device.
+:param requires_grad: If true, turn on requires_grad in the resulting tensor
+)");
 }

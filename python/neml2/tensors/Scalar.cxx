@@ -22,33 +22,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <pybind11/pybind11.h>
-#include <pybind11/operators.h>
-
 #include "neml2/tensors/Scalar.h"
-#include "neml2/tensors/tensors.h"
+#include "python/neml2/tensors/Scalar.h"
+#include "python/neml2/tensors/DynamicView.h"
 
-#include "python/neml2/types.h"
-
-namespace py = pybind11;
 using namespace neml2;
 
 void
-def_Scalar(py::class_<Scalar> & c)
+def_Scalar(pybind11::module_ & m)
 {
-  // Named constructors
-  c.def_static(
-      "identity_map",
-      [](NEML2_TENSOR_OPTIONS_VARGS) { return Scalar::identity_map(NEML2_TENSOR_OPTIONS); },
-      py::kw_only(),
-      PY_ARG_TENSOR_OPTIONS);
-
-// Binary, unary operators
-#define SCALAR_OP(T)                                                                               \
-  c.def(py::self + T())                                                                            \
-      .def(py::self - T())                                                                         \
-      .def(py::self * T())                                                                         \
-      .def(py::self * py::self)                                                                    \
-      .def(py::self / T())
-  FOR_ALL_TENSORBASE(SCALAR_OP);
+  auto c = pybind11::class_<Scalar>(m, "Scalar");
+  def_DynamicView<Scalar>(m, "ScalarDynamicView");
 }

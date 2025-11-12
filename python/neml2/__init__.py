@@ -29,7 +29,7 @@ from .core import *
 from .tensors import *
 
 # Other submodules
-from . import math
-from . import pyzag
-from . import crystallography
+# from . import math
+# from . import pyzag
+# from . import crystallography
 from . import reserved
