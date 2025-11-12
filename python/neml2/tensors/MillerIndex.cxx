@@ -22,9 +22,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
+#include "python/neml2/tensors/TensorBase.h"
 
-#include "neml2/base/LabeledAxisAccessor.h"
-#include <pybind11/pybind11.h>
+using namespace neml2;
 
-void def_LabeledAxisAccessor(pybind11::module_ & m);
+void
+def_MillerIndex(pybind11::module_ & m)
+{
+  auto py_cls = m.attr("MillerIndex");
+  pybind11::class_<MillerIndex> cls(py_cls);
+  def_TensorBase<MillerIndex>(m, "MillerIndex");
+}

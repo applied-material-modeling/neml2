@@ -22,8 +22,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
+#include "python/neml2/tensors/TensorBase.h"
 
-#include <pybind11/pybind11.h>
+using namespace neml2;
 
-void def_Tensor(pybind11::module_ & m);
+void
+def_WFFR4(pybind11::module_ & m)
+{
+  auto py_cls = m.attr("WFFR4");
+  pybind11::class_<WFFR4> cls(py_cls);
+  def_TensorBase<WFFR4>(m, "WFFR4");
+}

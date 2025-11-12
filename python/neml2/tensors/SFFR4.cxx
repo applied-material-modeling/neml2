@@ -27,9 +27,9 @@
 using namespace neml2;
 
 void
-def_Scalar(pybind11::module_ & m)
+def_SFFR4(pybind11::module_ & m)
 {
-  auto py_cls = m.attr("Scalar");
-  pybind11::class_<Scalar> cls(py_cls);
-  def_TensorBase<Scalar>(m, "Scalar");
+  auto py_cls = m.attr("SFFR4");
+  pybind11::class_<SFFR4> cls(py_cls);
+  def_TensorBase<SFFR4>(m, "SFFR4");
 }

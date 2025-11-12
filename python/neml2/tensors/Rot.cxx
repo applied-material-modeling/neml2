@@ -27,9 +27,9 @@
 using namespace neml2;
 
 void
-def_Scalar(pybind11::module_ & m)
+def_Rot(pybind11::module_ & m)
 {
-  auto py_cls = m.attr("Scalar");
-  pybind11::class_<Scalar> cls(py_cls);
-  def_TensorBase<Scalar>(m, "Scalar");
+  auto py_cls = m.attr("Rot");
+  pybind11::class_<Rot> cls(py_cls);
+  def_TensorBase<Rot>(m, "Rot");
 }

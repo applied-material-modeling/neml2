@@ -22,9 +22,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include "neml2/base/LabeledAxisAccessor.h"
 #include "neml2/base/Parser.h"
 
-#include "python/neml2/core/LabeledAxisAccessor.h"
+#include <pybind11/pybind11.h>
 
 namespace py = pybind11;
 using namespace neml2;

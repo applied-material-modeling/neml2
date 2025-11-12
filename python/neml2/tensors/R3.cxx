@@ -22,21 +22,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
+#include "python/neml2/tensors/TensorBase.h"
 
-#include "neml2/tensors/PrimitiveTensor.h"
+using namespace neml2;
 
-namespace neml2
+void
+def_R3(pybind11::module_ & m)
 {
-/**
- * @brief The fourth order tensor with skew symmetry in the first two dimensions.
- *
- * Mandel notation is used for the first two symmetry dimensions, and so the storage space
- * is (3, 3, 3).
- */
-class WFR4 : public PrimitiveTensor<WFR4, 3, 3, 3>
-{
-public:
-  using PrimitiveTensor<WFR4, 3, 3, 3>::PrimitiveTensor;
-};
-} // namespace neml2
+  auto py_cls = m.attr("R3");
+  pybind11::class_<R3> cls(py_cls);
+  def_TensorBase<R3>(m, "R3");
+}

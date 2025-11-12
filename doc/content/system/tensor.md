@@ -43,8 +43,8 @@ neml2::PrimitiveTensor is the parent class for all tensor types with a *fixed* b
 | [R3](@ref neml2::R3)                   | \f$(3,3,3)\f$     | Rank-3 tensor                                                    |
 | [SFR3](@ref neml2::SFR3)               | \f$(6,3)\f$       | Rank-3 tensor with symmetry on base dimensions 0 and 1           |
 | [R4](@ref neml2::R4)                   | \f$(3,3,3,3)\f$   | Rank-4 tensor                                                    |
-| [SFR4](@ref neml2::SFR4)               | \f$(6,3,3\f$)     | Rank-4 tensor with symmetry on base dimensions 0 and 1           |
-| [WFR4](@ref neml2::WFR4)               | \f$(3,3,3\f$)     | Rank-4 tensor with skew symmetry on base dimensions 0 and 1      |
+| [SFFR4](@ref neml2::SFFR4)             | \f$(6,3,3\f$)     | Rank-4 tensor with symmetry on base dimensions 0 and 1           |
+| [WFFR4](@ref neml2::WFFR4)             | \f$(3,3,3\f$)     | Rank-4 tensor with skew symmetry on base dimensions 0 and 1      |
 | [SSR4](@ref neml2::SSR4)               | \f$(6,6)\f$       | Rank-4 tensor with minor symmetry                                |
 | [R5](@ref neml2::R5)                   | \f$(3,3,3,3,3)\f$ | Rank-5 tensor                                                    |
 | [SSFR5](@ref neml2::SSFR5)             | \f$(6,6,3)\f$     | Rank-5 tensor with minor symmetry on base dimensions 0-3         |

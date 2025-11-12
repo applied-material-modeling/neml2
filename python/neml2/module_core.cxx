@@ -26,10 +26,8 @@
 // #include <pybind11/stl.h>
 // #include <pybind11/stl/filesystem.h>
 
-#include "python/neml2/core/LabeledAxisAccessor.h"
-#include "python/neml2/core/LabeledAxis.h"
-
-using namespace neml2;
+void def_LabeledAxisAccessor(pybind11::module_ &);
+void def_LabeledAxis(pybind11::module_ &);
 
 // static ValueMap
 // unpack_tensor_map(const py::dict & pyinputs, const Model * model = nullptr)

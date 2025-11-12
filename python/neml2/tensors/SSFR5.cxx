@@ -27,9 +27,9 @@
 using namespace neml2;
 
 void
-def_Scalar(pybind11::module_ & m)
+def_SSFR5(pybind11::module_ & m)
 {
-  auto py_cls = m.attr("Scalar");
-  pybind11::class_<Scalar> cls(py_cls);
-  def_TensorBase<Scalar>(m, "Scalar");
+  auto py_cls = m.attr("SSFR5");
+  pybind11::class_<SSFR5> cls(py_cls);
+  def_TensorBase<SSFR5>(m, "SSFR5");
 }

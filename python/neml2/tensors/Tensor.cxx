@@ -23,14 +23,18 @@
 // THE SOFTWARE.
 
 #include "neml2/tensors/Tensor.h"
-#include "python/neml2/tensors/Tensor.h"
-#include "python/neml2/tensors/DynamicView.h"
+
+#include "python/neml2/tensors/TensorBase.h"
+
+template <class T>
+void def_TensorBase(pybind11::module_ &, const std::string &);
 
 using namespace neml2;
 
 void
 def_Tensor(pybind11::module_ & m)
 {
-  auto c = pybind11::class_<Tensor>(m, "Tensor");
-  def_DynamicView<Tensor>(m, "TensorDynamicView");
+  auto py_cls = m.attr("Tensor");
+  pybind11::class_<Tensor> cls(py_cls);
+  def_TensorBase<Tensor>(m, "Tensor");
 }

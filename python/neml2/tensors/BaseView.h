@@ -31,42 +31,42 @@
 #include <pybind11/pybind11.h>
 
 template <class T>
-void def_DynamicView(pybind11::module_ & m, const std::string & name);
+void def_BaseView(pybind11::module_ & m, const std::string & name);
 
 /**
- * @brief Convenient shim for working with dynamic dimensions
+ * @brief Convenient shim for working with base dimensions
  *
  * The view does NOT extend the life of of the wrapped tensor.
  */
 template <class T>
-class DynamicView
+class BaseView
 {
 public:
-  DynamicView(T * data);
+  BaseView(T * data);
 
-  // These methods mirror TensorBase (the dynamic_xxx ones)
+  // These methods mirror TensorBase (the intmd_xxx ones)
   neml2::Size dim() const;
-  neml2::TensorShape sizes() const;
+  neml2::TensorShapeRef sizes() const;
   neml2::Size size(neml2::Size) const;
-  T index(const neml2::indexing::TensorIndices &) const;
-  T slice(neml2::Size, const neml2::indexing::Slice &) const;
+  neml2::Tensor index(const neml2::indexing::TensorIndices &) const;
+  neml2::Tensor slice(neml2::Size, const neml2::indexing::Slice &) const;
   void index_put_(const neml2::indexing::TensorIndices &, const neml2::ATensor &);
-  T expand(neml2::TensorShapeRef) const;
-  T expand(neml2::Size, neml2::Size) const;
-  T expand_as(const neml2::Tensor &) const;
-  T reshape(neml2::TensorShapeRef) const;
-  T squeeze(neml2::Size) const;
-  T unsqueeze(neml2::Size, neml2::Size n = 1) const;
-  T transpose(neml2::Size d1, neml2::Size d2) const;
-  T movedim(neml2::Size, neml2::Size) const;
-  T flatten() const;
+  neml2::Tensor expand(neml2::TensorShapeRef) const;
+  neml2::Tensor expand(neml2::Size, neml2::Size) const;
+  neml2::Tensor expand_as(const neml2::Tensor &) const;
+  neml2::Tensor reshape(neml2::TensorShapeRef) const;
+  neml2::Tensor squeeze(neml2::Size) const;
+  neml2::Tensor unsqueeze(neml2::Size, neml2::Size n = 1) const;
+  neml2::Tensor transpose(neml2::Size d1, neml2::Size d2) const;
+  neml2::Tensor movedim(neml2::Size, neml2::Size) const;
+  neml2::Tensor flatten() const;
 
 private:
   T * _data;
 };
 
-#define EXPORT_DYNAMICVIEW(T)                                                                      \
-  extern template void def_DynamicView<neml2::T>(pybind11::module_ &, const std::string &);        \
-  extern template class DynamicView<neml2::T>
-FOR_ALL_TENSORBASE(EXPORT_DYNAMICVIEW);
-#undef EXPORT_DYNAMICVIEW
+#define EXPORT_BASEVIEW(T)                                                                         \
+  extern template void def_BaseView<neml2::T>(pybind11::module_ &, const std::string &);           \
+  extern template class BaseView<neml2::T>
+FOR_ALL_TENSORBASE(EXPORT_BASEVIEW);
+#undef EXPORT_BASEVIEW

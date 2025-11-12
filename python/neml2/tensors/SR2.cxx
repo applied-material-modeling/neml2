@@ -22,21 +22,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
+#include "python/neml2/tensors/TensorBase.h"
 
-#include "neml2/tensors/PrimitiveTensor.h"
+using namespace neml2;
 
-namespace neml2
+void
+def_SR2(pybind11::module_ & m)
 {
-/**
- * @brief The fourth order tensor with symmetry in the first two dimensions.
- *
- * Mandel notation is used for the first two symmetry dimensions, and so the storage space
- * is (6, 3, 3).
- */
-class SFR4 : public PrimitiveTensor<SFR4, 6, 3, 3>
-{
-public:
-  using PrimitiveTensor<SFR4, 6, 3, 3>::PrimitiveTensor;
-};
-} // namespace neml2
+  auto py_cls = m.attr("SR2");
+  pybind11::class_<SR2> cls(py_cls);
+  def_TensorBase<SR2>(m, "SR2");
+}

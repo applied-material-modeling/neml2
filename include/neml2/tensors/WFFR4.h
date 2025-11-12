@@ -22,14 +22,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "python/neml2/tensors/TensorBase.h"
+#pragma once
 
-using namespace neml2;
+#include "neml2/tensors/PrimitiveTensor.h"
 
-void
-def_Scalar(pybind11::module_ & m)
+namespace neml2
 {
-  auto py_cls = m.attr("Scalar");
-  pybind11::class_<Scalar> cls(py_cls);
-  def_TensorBase<Scalar>(m, "Scalar");
-}
+/**
+ * @brief The fourth order tensor with skew symmetry in the first two dimensions.
+ *
+ * Mandel notation is used for the first two symmetry dimensions, and so the storage space
+ * is (3, 3, 3).
+ */
+class WFFR4 : public PrimitiveTensor<WFFR4, 3, 3, 3>
+{
+public:
+  using PrimitiveTensor<WFFR4, 3, 3, 3>::PrimitiveTensor;
+};
+} // namespace neml2

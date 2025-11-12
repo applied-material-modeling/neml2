@@ -27,9 +27,9 @@
 using namespace neml2;
 
 void
-def_Scalar(pybind11::module_ & m)
+def_Vec(pybind11::module_ & m)
 {
-  auto py_cls = m.attr("Scalar");
-  pybind11::class_<Scalar> cls(py_cls);
-  def_TensorBase<Scalar>(m, "Scalar");
+  auto py_cls = m.attr("Vec");
+  pybind11::class_<Vec> cls(py_cls);
+  def_TensorBase<Vec>(m, "Vec");
 }

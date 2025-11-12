@@ -22,14 +22,43 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "python/neml2/tensors/TensorBase.h"
+#pragma once
 
-using namespace neml2;
+#include "neml2/misc/types.h"
+#include "neml2/tensors/indexing.h"
+#include "neml2/tensors/tensors.h"
 
-void
-def_Scalar(pybind11::module_ & m)
+#include <pybind11/pybind11.h>
+
+template <class T>
+void def_StaticView(pybind11::module_ & m, const std::string & name);
+
+/**
+ * @brief Convenient shim for working with static (intmd+base) dimensions
+ *
+ * The view does NOT extend the life of of the wrapped tensor.
+ */
+template <class T>
+class StaticView
 {
-  auto py_cls = m.attr("Scalar");
-  pybind11::class_<Scalar> cls(py_cls);
-  def_TensorBase<Scalar>(m, "Scalar");
-}
+public:
+  StaticView(T * data);
+
+  // These methods mirror TensorBase (the dynamic_xxx ones)
+  neml2::Size dim() const;
+  neml2::TensorShapeRef sizes() const;
+  neml2::Size size(neml2::Size) const;
+  neml2::Tensor expand(neml2::TensorShapeRef, neml2::TensorShapeRef) const;
+  neml2::Tensor expand_as(const neml2::Tensor &) const;
+  neml2::Tensor reshape(neml2::TensorShapeRef, neml2::TensorShapeRef) const;
+  neml2::Tensor flatten() const;
+
+private:
+  T * _data;
+};
+
+#define EXPORT_STATICVIEW(T)                                                                       \
+  extern template void def_StaticView<neml2::T>(pybind11::module_ &, const std::string &);         \
+  extern template class StaticView<neml2::T>
+FOR_ALL_TENSORBASE(EXPORT_STATICVIEW);
+#undef EXPORT_STATICVIEW

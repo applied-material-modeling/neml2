@@ -31,22 +31,22 @@
 #include <pybind11/pybind11.h>
 
 template <class T>
-void def_DynamicView(pybind11::module_ & m, const std::string & name);
+void def_IntmdView(pybind11::module_ & m, const std::string & name);
 
 /**
- * @brief Convenient shim for working with dynamic dimensions
+ * @brief Convenient shim for working with intermediate dimensions
  *
  * The view does NOT extend the life of of the wrapped tensor.
  */
 template <class T>
-class DynamicView
+class IntmdView
 {
 public:
-  DynamicView(T * data);
+  IntmdView(T * data);
 
-  // These methods mirror TensorBase (the dynamic_xxx ones)
+  // These methods mirror TensorBase (the intmd_xxx ones)
   neml2::Size dim() const;
-  neml2::TensorShape sizes() const;
+  neml2::TensorShapeRef sizes() const;
   neml2::Size size(neml2::Size) const;
   T index(const neml2::indexing::TensorIndices &) const;
   T slice(neml2::Size, const neml2::indexing::Slice &) const;
@@ -65,8 +65,8 @@ private:
   T * _data;
 };
 
-#define EXPORT_DYNAMICVIEW(T)                                                                      \
-  extern template void def_DynamicView<neml2::T>(pybind11::module_ &, const std::string &);        \
-  extern template class DynamicView<neml2::T>
-FOR_ALL_TENSORBASE(EXPORT_DYNAMICVIEW);
-#undef EXPORT_DYNAMICVIEW
+#define EXPORT_INTMDVIEW(T)                                                                        \
+  extern template void def_IntmdView<neml2::T>(pybind11::module_ &, const std::string &);          \
+  extern template class IntmdView<neml2::T>
+FOR_ALL_TENSORBASE(EXPORT_INTMDVIEW);
+#undef EXPORT_INTMDVIEW

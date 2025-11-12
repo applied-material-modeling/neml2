@@ -26,68 +26,34 @@
 
 #include <pybind11/pybind11.h>
 
-// #include "python/neml2/tensors/DynamicView.h"
-#include "python/neml2/tensors/Scalar.h"
-#include "python/neml2/tensors/Tensor.h"
-
-// #include "python/neml2/tensors/TensorBase.h"
-// #include "python/neml2/tensors/PrimitiveTensor.h"
-// #include "python/neml2/tensors/VecBase.h"
-// #include "python/neml2/tensors/R2Base.h"
-// #include "python/neml2/core/types.h"
-
-namespace py = pybind11;
-using namespace neml2;
+// Forward declarations
+#define DEF_FWD(T) void def_##T(pybind11::module_ &)
+FOR_ALL_TENSORBASE(DEF_FWD);
 
 PYBIND11_MODULE(tensors, m)
 {
   m.doc() = "NEML2 primitive tensor types";
 
   // Export the Number type
-  m.attr("Number") = py::module_::import("torch.types").attr("Number");
+  m.attr("Number") = pybind11::module_::import("torch.types").attr("Number");
 
   // Export enums
-  auto tensor_type_enum = py::enum_<TensorType>(m, "TensorType");
-#define TENSORTYPE_ENUM_ENTRY(T) tensor_type_enum.value(#T, TensorType::k##T)
+  auto tensor_type_enum = pybind11::enum_<neml2::TensorType>(m, "TensorType");
+#define TENSORTYPE_ENUM_ENTRY(T) tensor_type_enum.value(#T, neml2::TensorType::k##T)
   FOR_ALL_TENSORBASE(TENSORTYPE_ENUM_ENTRY);
 
-  def_Tensor(m);
-  def_Scalar(m);
+// Declare all the TensorBase derived tensors
+// This is as simple as calling py::class_, but it is important to do this for ALL tensors up
+// front. The reason is for typing: Once we build the neml2 python library with all the necessary
+// bindings, we will have to extract all the typing information (mostly function signature) from
+// the library, which is needed by language servers like Pylance. We use pybind11-stubgen for that
+// purpose. For a type to be deducible by pybind11-stubgen, a concrete definition of the binding
+// class must exist at the point of method definition. Therefore, we need to first create all the
+// class definitions before creating method bindings that use them as arguments.
+#define PYCLS_DECL(T) auto T##_cls = pybind11::class_<neml2::T>(m, #T)
+  FOR_ALL_TENSORBASE(PYCLS_DECL);
 
-  // Declare all the TensorBase derived tensors
-  // This is as simple as calling py::class_, but it is important to do this for ALL tensors up
-  // front. The reason is for typing: Once we build the neml2 python library with all the necessary
-  // bindings, we will have to extract all the typing information (mostly function signature) from
-  // the library, which is needed by language servers like Pylance. We use pybind11-stubgen for that
-  // purpose. For a type to be deducible by pybind11-stubgen, a concrete definition of the binding
-  // class must exist at the point of method definition. Therefore, we need to first create all the
-  // class definitions before creating method bindings that use them as arguments.
-  // #define TENSORBASE_DECL(T) auto c_##T = py::class_<T>(m, #T)
-  //   FOR_ALL_TENSORBASE(TENSORBASE_DECL);
-
-  // All of them have BatchView and BaseView
-  // #define BATCHVIEW_DEF(T) def_BatchView<T>(m, #T "BatchView")
-  //   FOR_ALL_TENSORBASE(BATCHVIEW_DEF);
-  // #define BASEVIEW_DEF(T) def_BaseView<T>(m, #T "BaseView")
-  //   FOR_ALL_TENSORBASE(BASEVIEW_DEF);
-
-  //   // Common methods decorated by TensorBase
-  // #define TENSORBASE_DEF(T) def_TensorBase<T>(c_##T)
-  //   FOR_ALL_TENSORBASE(TENSORBASE_DEF);
-
-  //   // Common methods decorated by PrimitiveTensor
-  // #define PRIMITIVETENSOR_DEF(T) def_PrimitiveTensor<T>(c_##T)
-  //   FOR_ALL_PRIMITIVETENSOR(PRIMITIVETENSOR_DEF);
-
-  //   // Common methods decorated by VecBase
-  // #define VECBASE_DEF(T) def_VecBase<T>(c_##T)
-  //   FOR_ALL_VECBASE(VECBASE_DEF);
-
-  //   // Common methods decorated by R2Base
-  // #define R2BASE_DEF(T) def_R2Base<T>(c_##T)
-  //   FOR_ALL_R2BASE(R2BASE_DEF);
-
-  //   // Tensor specific methods
-  // #define TENSOR_CUSTOM_DEF(T) def_##T(c_##T)
-  //   FOR_ALL_TENSORBASE(TENSOR_CUSTOM_DEF);
+// Next, actually define the bindings for each tensor type
+#define PYCLS_DEF(T) def_##T(m)
+  FOR_ALL_TENSORBASE(PYCLS_DEF);
 }

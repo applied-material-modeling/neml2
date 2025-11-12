@@ -22,27 +22,25 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/tensors/tensors.h"
-
 #include "python/neml2/tensors/DynamicView.h"
 #include "python/neml2/core/types.h"
 
 namespace py = pybind11;
 using namespace neml2;
 
-template <class Derived>
+template <class T>
 void
 def_DynamicView(py::module_ & m, const std::string & name)
 {
   // "forward" declarations
-  py::object py_tensor_cls = m.attr("Tensor");
+  auto py_tensor_cls = m.attr("Tensor");
   py::class_<Tensor> tensor_cls(py_tensor_cls);
 
-  auto c = py::class_<DynamicView<Derived>>(m, name.c_str());
-  c.def(py::init<Derived *>())
-      .def("dim", &DynamicView<Derived>::dim)
+  auto c = py::class_<DynamicView<T>>(m, name.c_str());
+  c.def(py::init<T *>())
+      .def("dim", &DynamicView<T>::dim)
       .def_property_readonly("shape",
-                             [](const DynamicView<Derived> & self)
+                             [](const DynamicView<T> & self)
                              {
                                const auto s = self.sizes();
                                py::tuple pys(s.size());
@@ -50,141 +48,140 @@ def_DynamicView(py::module_ & m, const std::string & name)
                                  pys[i] = s[i];
                                return pys;
                              })
-      .def("size", &DynamicView<Derived>::size)
-      .def("__getitem__", &DynamicView<Derived>::index)
+      .def("size", &DynamicView<T>::size)
+      .def("__getitem__", &DynamicView<T>::index)
       .def("__getitem__",
-           [](DynamicView<Derived> * self, at::indexing::TensorIndex index)
+           [](DynamicView<T> * self, at::indexing::TensorIndex index)
            { return self->index({std::move(index)}); })
-      .def("slice", &DynamicView<Derived>::slice)
-      .def("__setitem__", &DynamicView<Derived>::index_put_)
+      .def("slice", &DynamicView<T>::slice)
+      .def("__setitem__", &DynamicView<T>::index_put_)
       .def("__setitem__",
-           [](DynamicView<Derived> * self, at::indexing::TensorIndex index, const ATensor & src)
+           [](DynamicView<T> * self, at::indexing::TensorIndex index, const ATensor & src)
            { return self->index_put_({std::move(index)}, src); })
       .def("__setitem__",
-           [](DynamicView<Derived> * self,
-              const indexing::TensorIndices & indices,
-              const Tensor & src) { return self->index_put_(indices, src); })
+           [](DynamicView<T> * self, const indexing::TensorIndices & indices, const Tensor & src)
+           { return self->index_put_(indices, src); })
       .def("__setitem__",
-           [](DynamicView<Derived> * self, at::indexing::TensorIndex index, const Tensor & src)
+           [](DynamicView<T> * self, at::indexing::TensorIndex index, const Tensor & src)
            { return self->index_put_({std::move(index)}, src); })
-      .def("expand", py::overload_cast<TensorShapeRef>(&DynamicView<Derived>::expand, py::const_))
-      .def("expand", py::overload_cast<Size, Size>(&DynamicView<Derived>::expand, py::const_))
-      .def("expand_as", &DynamicView<Derived>::expand_as)
-      .def("reshape", &DynamicView<Derived>::reshape)
-      .def("squeeze", &DynamicView<Derived>::squeeze)
-      .def("unsqueeze", &DynamicView<Derived>::unsqueeze, py::arg("dim"), py::arg("n") = 1)
-      .def("transpose", &DynamicView<Derived>::transpose)
-      .def("movedim", &DynamicView<Derived>::movedim)
-      .def("flatten", &DynamicView<Derived>::flatten);
+      .def("expand", py::overload_cast<TensorShapeRef>(&DynamicView<T>::expand, py::const_))
+      .def("expand", py::overload_cast<Size, Size>(&DynamicView<T>::expand, py::const_))
+      .def("expand_as", &DynamicView<T>::expand_as)
+      .def("reshape", &DynamicView<T>::reshape)
+      .def("squeeze", &DynamicView<T>::squeeze)
+      .def("unsqueeze", &DynamicView<T>::unsqueeze, py::arg("dim"), py::arg("n") = 1)
+      .def("transpose", &DynamicView<T>::transpose)
+      .def("movedim", &DynamicView<T>::movedim)
+      .def("flatten", &DynamicView<T>::flatten);
 }
 
-template <class Derived>
-DynamicView<Derived>::DynamicView(Derived * data)
+template <class T>
+DynamicView<T>::DynamicView(T * data)
   : _data(data)
 {
 }
 
-template <class Derived>
+template <class T>
 Size
-DynamicView<Derived>::dim() const
+DynamicView<T>::dim() const
 {
   return _data->dynamic_dim();
 }
 
-template <class Derived>
+template <class T>
 TensorShape
-DynamicView<Derived>::sizes() const
+DynamicView<T>::sizes() const
 {
   return _data->dynamic_sizes().concrete();
 }
 
-template <class Derived>
+template <class T>
 Size
-DynamicView<Derived>::size(Size i) const
+DynamicView<T>::size(Size i) const
 {
   return _data->dynamic_size(i).concrete();
 }
 
-template <class Derived>
-Derived
-DynamicView<Derived>::index(const indexing::TensorIndices & indices) const
+template <class T>
+T
+DynamicView<T>::index(const indexing::TensorIndices & indices) const
 {
   return _data->dynamic_index(indices);
 }
 
-template <class Derived>
-Derived
-DynamicView<Derived>::slice(Size dim, const indexing::Slice & slice) const
+template <class T>
+T
+DynamicView<T>::slice(Size dim, const indexing::Slice & slice) const
 {
   return _data->dynamic_slice(dim, slice);
 }
 
-template <class Derived>
+template <class T>
 void
-DynamicView<Derived>::index_put_(const indexing::TensorIndices & indices, const ATensor & src)
+DynamicView<T>::index_put_(const indexing::TensorIndices & indices, const ATensor & src)
 {
   _data->dynamic_index_put_(indices, src);
 }
 
-template <class Derived>
-Derived
-DynamicView<Derived>::expand(TensorShapeRef new_shape) const
+template <class T>
+T
+DynamicView<T>::expand(TensorShapeRef new_shape) const
 {
   return _data->dynamic_expand(new_shape);
 }
 
-template <class Derived>
-Derived
-DynamicView<Derived>::expand(Size dim, Size new_size) const
+template <class T>
+T
+DynamicView<T>::expand(Size dim, Size new_size) const
 {
   return _data->dynamic_expand(dim, new_size);
 }
 
-template <class Derived>
-Derived
-DynamicView<Derived>::expand_as(const Tensor & other) const
+template <class T>
+T
+DynamicView<T>::expand_as(const Tensor & other) const
 {
   return _data->dynamic_expand_as(other);
 }
 
-template <class Derived>
-Derived
-DynamicView<Derived>::reshape(TensorShapeRef new_shape) const
+template <class T>
+T
+DynamicView<T>::reshape(TensorShapeRef new_shape) const
 {
   return _data->dynamic_reshape(new_shape);
 }
 
-template <class Derived>
-Derived
-DynamicView<Derived>::squeeze(Size dim) const
+template <class T>
+T
+DynamicView<T>::squeeze(Size dim) const
 {
   return _data->dynamic_squeeze(dim);
 }
 
-template <class Derived>
-Derived
-DynamicView<Derived>::unsqueeze(Size dim, Size n) const
+template <class T>
+T
+DynamicView<T>::unsqueeze(Size dim, Size n) const
 {
   return _data->dynamic_unsqueeze(dim, n);
 }
 
-template <class Derived>
-Derived
-DynamicView<Derived>::transpose(Size d1, Size d2) const
+template <class T>
+T
+DynamicView<T>::transpose(Size d1, Size d2) const
 {
   return _data->dynamic_transpose(d1, d2);
 }
 
-template <class Derived>
-Derived
-DynamicView<Derived>::movedim(Size source, Size destination) const
+template <class T>
+T
+DynamicView<T>::movedim(Size source, Size destination) const
 {
   return _data->dynamic_movedim(source, destination);
 }
 
-template <class Derived>
-Derived
-DynamicView<Derived>::flatten() const
+template <class T>
+T
+DynamicView<T>::flatten() const
 {
   return _data->dynamic_flatten();
 }
