@@ -38,6 +38,9 @@ namespace neml2
 Tensor
 inv(const Tensor & A)
 {
+  neml_assert_dbg(A.scalar_type() == neml2::kFloat32 || A.scalar_type() == neml2::kFloat64,
+                  "Inverse only supports float32 and float64, got",
+                  A.scalar_type());
   neml_assert_dbg(
       A.base_dim() == 2 || A.base_dim() == 4,
       "Inverse can only be computed for second order and fourth order tensors. Got base dim ",

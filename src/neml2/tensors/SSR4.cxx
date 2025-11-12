@@ -36,9 +36,7 @@
 #include "neml2/tensors/functions/symmetrization.h"
 #include "neml2/tensors/functions/mv.h"
 #include "neml2/tensors/functions/mm.h"
-#include "neml2/tensors/functions/linalg/inv.h"
 #include "neml2/tensors/functions/einsum.h"
-#include "neml2/tensors/functions/inv.h"
 
 namespace neml2
 {
