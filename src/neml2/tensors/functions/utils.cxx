@@ -36,7 +36,7 @@ align_intmd_dim(TensorList tensors)
 
   std::vector<Tensor> aligned(tensors.size());
   for (size_t i = 0; i < tensors.size(); ++i)
-    aligned[i] = tensors[i].intmd_unsqueeze_n(dmax - tensors[i].intmd_dim(), 0);
+    aligned[i] = tensors[i].intmd_unsqueeze(0, dmax - tensors[i].intmd_dim());
   return {aligned, dmax};
 }
 
@@ -56,8 +56,8 @@ align_static_dim(TensorList tensors)
   std::vector<Tensor> aligned(tensors.size());
   for (size_t i = 0; i < tensors.size(); ++i)
     aligned[i] = tensors[i]
-                     .intmd_unsqueeze_n(imax - tensors[i].intmd_dim(), 0)
-                     .base_unsqueeze_n(bmax - tensors[i].base_dim(), 0);
+                     .intmd_unsqueeze(0, imax - tensors[i].intmd_dim())
+                     .base_unsqueeze(0, bmax - tensors[i].base_dim());
   return {aligned, imax};
 }
 }

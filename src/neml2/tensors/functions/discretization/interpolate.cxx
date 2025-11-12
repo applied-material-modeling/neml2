@@ -50,7 +50,7 @@ interpolate(const Tensor & elem_dofs, const Tensor & basis)
               ", but basis implies Ndofe = ",
               basis.dynamic_size(-2));
 
-  return dynamic_sum(elem_dofs.dynamic_unsqueeze(-1).base_unsqueeze_n(basis.base_dim(), -1) * basis,
+  return dynamic_sum(elem_dofs.dynamic_unsqueeze(-1).base_unsqueeze(-1, basis.base_dim()) * basis,
                      -2);
 }
 } // namespace neml2::discretization

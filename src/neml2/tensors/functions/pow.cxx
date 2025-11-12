@@ -38,9 +38,8 @@ namespace neml2
   {                                                                                                \
     neml_assert_dynamic_broadcastable_dbg(a, n);                                                   \
     const auto [aa, nn, i] = utils::align_intmd_dim(a, n);                                         \
-    return T(at::pow(aa, nn.base_unsqueeze_n(a.base_dim(), -1)),                                   \
-             utils::broadcast_dynamic_dim(a, n),                                                   \
-             i);                                                                                   \
+    return T(                                                                                      \
+        at::pow(aa, nn.base_unsqueeze(-1, a.base_dim())), utils::broadcast_dynamic_dim(a, n), i);  \
   }                                                                                                \
   static_assert(true)
 FOR_ALL_NONSCALAR_TENSORBASE(DEFINE_POW);

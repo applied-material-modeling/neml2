@@ -36,16 +36,14 @@ UserTensorBase<T>::expected_options()
   MultiEnumSelection shape_manip_types({"dynamic_expand",
                                         "dynamic_reshape",
                                         "dynamic_squeeze",
-                                        "dynamic_left_unsqueeze_n",
-                                        "dynamic_right_unsqueeze_n",
+                                        "dynamic_unsqueeze",
                                         "dynamic_transpose",
                                         "dynamic_movedim",
                                         "dynamic_flatten",
                                         "intmd_expand",
                                         "intmd_reshape",
                                         "intmd_squeeze",
-                                        "intmd_left_unsqueeze_n",
-                                        "intmd_right_unsqueeze_n",
+                                        "intmd_unsqueeze",
                                         "intmd_transpose",
                                         "intmd_movedim",
                                         "intmd_flatten",
@@ -95,14 +93,18 @@ UserTensorBase<T>::tensor_type()
   return utils::demangle(typeid(T).name()).substr(7);
 }
 
+template <std::size_t... Expected>
 static void
-assert_arg_dim(const std::string & op, const TensorShape & arg, std::size_t expected)
+assert_arg_dim(const std::string & op, const TensorShape & arg)
 {
-  neml_assert(arg.size() == expected,
+  std::string expected_str;
+  std::size_t i = 0;
+  ((expected_str += (i++ ? " or " : "") + std::to_string(Expected)), ...);
+  neml_assert(((arg.size() == Expected) || ...),
               "Shape manipulation operation '",
               op,
               "' expects argument of dimension ",
-              expected,
+              expected_str,
               ", but got argument ",
               arg);
 }
@@ -116,27 +118,30 @@ apply_shape_manipulation(Tensor & tensor, const std::string & op, const TensorSh
     tensor = tensor.dynamic_reshape(arg);
   else if (op == "dynamic_squeeze")
   {
-    assert_arg_dim("dynamic_squeeze", arg, 1);
+    assert_arg_dim<1>("dynamic_squeeze", arg);
     tensor = tensor.dynamic_squeeze(arg[0]);
   }
-  else if (op == "dynamic_unsqueeze_n")
+  else if (op == "dynamic_unsqueeze")
   {
-    assert_arg_dim("dynamic_unsqueeze_n", arg, 2);
-    tensor = tensor.dynamic_unsqueeze_n(arg[0], arg[1]);
+    assert_arg_dim<1, 2>("dynamic_unsqueeze", arg);
+    if (arg.size() == 1)
+      tensor = tensor.dynamic_unsqueeze(arg[0]);
+    else
+      tensor = tensor.dynamic_unsqueeze(arg[0], arg[1]);
   }
   else if (op == "dynamic_transpose")
   {
-    assert_arg_dim("dynamic_transpose", arg, 2);
+    assert_arg_dim<2>("dynamic_transpose", arg);
     tensor = tensor.dynamic_transpose(arg[0], arg[1]);
   }
   else if (op == "dynamic_movedim")
   {
-    assert_arg_dim("dynamic_movedim", arg, 2);
+    assert_arg_dim<2>("dynamic_movedim", arg);
     tensor = tensor.dynamic_movedim(arg[0], arg[1]);
   }
   else if (op == "dynamic_flatten")
   {
-    assert_arg_dim("dynamic_flatten", arg, 0);
+    assert_arg_dim<0>("dynamic_flatten", arg);
     tensor = tensor.dynamic_flatten();
   }
   else if (op == "intmd_expand")
@@ -145,27 +150,30 @@ apply_shape_manipulation(Tensor & tensor, const std::string & op, const TensorSh
     tensor = tensor.intmd_reshape(arg);
   else if (op == "intmd_squeeze")
   {
-    assert_arg_dim("intmd_squeeze", arg, 1);
+    assert_arg_dim<1>("intmd_squeeze", arg);
     tensor = tensor.intmd_squeeze(arg[0]);
   }
-  else if (op == "intmd_unsqueeze_n")
+  else if (op == "intmd_unsqueeze")
   {
-    assert_arg_dim("intmd_unsqueeze_n", arg, 2);
-    tensor = tensor.intmd_unsqueeze_n(arg[0], arg[1]);
+    assert_arg_dim<1, 2>("intmd_unsqueeze", arg);
+    if (arg.size() == 1)
+      tensor = tensor.intmd_unsqueeze(arg[0]);
+    else
+      tensor = tensor.intmd_unsqueeze(arg[0], arg[1]);
   }
   else if (op == "intmd_transpose")
   {
-    assert_arg_dim("intmd_transpose", arg, 2);
+    assert_arg_dim<2>("intmd_transpose", arg);
     tensor = tensor.intmd_transpose(arg[0], arg[1]);
   }
   else if (op == "intmd_movedim")
   {
-    assert_arg_dim("intmd_movedim", arg, 2);
+    assert_arg_dim<2>("intmd_movedim", arg);
     tensor = tensor.intmd_movedim(arg[0], arg[1]);
   }
   else if (op == "intmd_flatten")
   {
-    assert_arg_dim("intmd_flatten", arg, 0);
+    assert_arg_dim<0>("intmd_flatten", arg);
     tensor = tensor.intmd_flatten();
   }
   else

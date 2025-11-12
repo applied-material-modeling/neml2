@@ -70,20 +70,20 @@ template <class Derived>
 void
 TensorBase<Derived>::validate_shapes_and_dims() const
 {
-  neml_assert_dbg(dim() >= dynamic_dim() + intmd_dim(),
-                  "Tensor dimension ",
-                  dim(),
-                  " is not sufficient for the requested number of dynamic dimensions (",
-                  dynamic_dim(),
-                  ") and intermediate dimensions (",
-                  intmd_dim(),
-                  ")");
-  neml_assert_dbg(dynamic_sizes() == sizes().slice(0, dynamic_dim()),
-                  "Tensor of shape ",
-                  sizes(),
-                  " is incompatible with dynamic shape ",
-                  dynamic_sizes(),
-                  ". The leading dimensions must match.");
+  neml_assert(dim() >= dynamic_dim() + intmd_dim(),
+              "Tensor dimension ",
+              dim(),
+              " is not sufficient for the requested number of dynamic dimensions (",
+              dynamic_dim(),
+              ") and intermediate dimensions (",
+              intmd_dim(),
+              ")");
+  neml_assert(dynamic_sizes() == sizes().slice(0, dynamic_dim()),
+              "Tensor of shape ",
+              sizes(),
+              " is incompatible with dynamic shape ",
+              dynamic_sizes(),
+              ". The leading dimensions must match.");
 }
 
 template <class Derived>
@@ -413,7 +413,7 @@ TensorBase<Derived>::intmd_expand(TensorShapeRef shape) const
                   "Invalid intermediate shape to expand. Expected at least ",
                   intmd_dim(),
                   " dimensions.");
-  auto tmp = intmd_unsqueeze_n(shape.size() - intmd_dim(), 0);
+  auto tmp = intmd_unsqueeze(0, shape.size() - intmd_dim());
 
   // We don't want to touch the other dimensions, so put -1 for them.
   TensorShape net(dynamic_dim(), -1);
@@ -434,7 +434,7 @@ TensorBase<Derived>::base_expand(TensorShapeRef shape) const
                   "Invalid base shape to expand. Expected at least ",
                   base_dim(),
                   " dimensions.");
-  auto tmp = base_unsqueeze_n(shape.size() - base_dim(), 0);
+  auto tmp = base_unsqueeze(0, shape.size() - base_dim());
 
   // We don't want to touch the batch dimensions, so put -1 for them.
   TensorShape net(batch_dim(), -1);
@@ -452,7 +452,7 @@ TensorBase<Derived>::batch_expand(const TraceableTensorShape & dynamic_shape,
                   "Invalid intermediate shape to expand. Expected at least ",
                   intmd_dim(),
                   " dimensions.");
-  auto tmp = intmd_unsqueeze_n(intmd_shape.size() - intmd_dim(), 0);
+  auto tmp = intmd_unsqueeze(0, intmd_shape.size() - intmd_dim());
 
   // We don't want to touch the other dimensions, so put -1 for them.
   auto net = utils::add_shapes(dynamic_shape.concrete(), intmd_shape);
@@ -484,8 +484,8 @@ TensorBase<Derived>::static_expand(TensorShapeRef intmd_shape, TensorShapeRef ba
                   "Invalid base shape to expand. Expected at least ",
                   base_dim(),
                   " dimensions.");
-  auto tmp = intmd_unsqueeze_n(intmd_shape.size() - intmd_dim(), 0);
-  tmp = tmp.base_unsqueeze_n(base_shape.size() - base_dim(), 0);
+  auto tmp = intmd_unsqueeze(0, intmd_shape.size() - intmd_dim());
+  tmp = tmp.base_unsqueeze(0, base_shape.size() - base_dim());
 
   // We don't want to touch the other dimensions, so put -1 for them.
   net.insert(net.begin(), dynamic_dim(), -1);
@@ -684,34 +684,9 @@ TensorBase<Derived>::base_squeeze(Size d) const
 
 template <class Derived>
 Derived
-TensorBase<Derived>::dynamic_unsqueeze(Size d) const
+TensorBase<Derived>::dynamic_unsqueeze(Size d, Size n) const
 {
-  d = utils::normalize_itr(d, 0, dynamic_dim());
-  auto sizes = dynamic_sizes();
-  sizes.insert(sizes.begin() + d, 1); // Insert a new dimension
-  return Derived(unsqueeze(d), sizes, intmd_dim());
-}
-
-template <class Derived>
-Derived
-TensorBase<Derived>::intmd_unsqueeze(Size d) const
-{
-  d = utils::normalize_itr(d, dynamic_dim(), batch_dim());
-  return Derived(unsqueeze(d), dynamic_sizes(), intmd_dim() + 1);
-}
-
-template <class Derived>
-neml2::Tensor
-TensorBase<Derived>::base_unsqueeze(Size d) const
-{
-  d = utils::normalize_itr(d, batch_dim(), dim());
-  return neml2::Tensor(unsqueeze(d), dynamic_sizes(), intmd_dim());
-}
-
-template <class Derived>
-Derived
-TensorBase<Derived>::dynamic_unsqueeze_n(Size n, Size d) const
-{
+  neml_assert(n >= 0, "Number of dimensions to unsqueeze must be non-negative.");
   at::Tensor t = *this;
   d = utils::normalize_itr(d, 0, dynamic_dim());
   for (Size i = 0; i < n; ++i)
@@ -723,8 +698,9 @@ TensorBase<Derived>::dynamic_unsqueeze_n(Size n, Size d) const
 
 template <class Derived>
 Derived
-TensorBase<Derived>::intmd_unsqueeze_n(Size n, Size d) const
+TensorBase<Derived>::intmd_unsqueeze(Size d, Size n) const
 {
+  neml_assert(n >= 0, "Number of dimensions to unsqueeze must be non-negative.");
   at::Tensor t = *this;
   d = utils::normalize_itr(d, dynamic_dim(), batch_dim());
   for (Size i = 0; i < n; ++i)
@@ -734,8 +710,9 @@ TensorBase<Derived>::intmd_unsqueeze_n(Size n, Size d) const
 
 template <class Derived>
 neml2::Tensor
-TensorBase<Derived>::base_unsqueeze_n(Size n, Size d) const
+TensorBase<Derived>::base_unsqueeze(Size d, Size n) const
 {
+  neml_assert(n >= 0, "Number of dimensions to unsqueeze must be non-negative.");
   at::Tensor t = *this;
   d = utils::normalize_itr(d, batch_dim(), dim());
   for (Size i = 0; i < n; ++i)

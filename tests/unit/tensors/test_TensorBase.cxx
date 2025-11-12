@@ -512,32 +512,9 @@ TEST_CASE("TensorBase", "[tensors]")
     auto shape = test::GeneratedTensorShape({3, 4}, {2, 3}, {1, 2});
 
     auto a = test::generate_random_tensor<Tensor>(cfg, shape);
-    auto b = a.dynamic_unsqueeze(0);
-    auto c = a.intmd_unsqueeze(1);
-    auto d = a.base_unsqueeze(2);
 
-    REQUIRE(b.dynamic_sizes() == TensorShapeRef{1, 3, 4});
-    REQUIRE(b.intmd_sizes() == a.intmd_sizes());
-    REQUIRE(b.base_sizes() == a.base_sizes());
-
-    REQUIRE(c.dynamic_sizes() == a.dynamic_sizes());
-    REQUIRE(c.intmd_sizes() == TensorShapeRef{2, 1, 3});
-    REQUIRE(c.base_sizes() == a.base_sizes());
-
-    REQUIRE(d.dynamic_sizes() == a.dynamic_sizes());
-    REQUIRE(d.intmd_sizes() == a.intmd_sizes());
-    REQUIRE(d.base_sizes() == TensorShapeRef{1, 2, 1});
-  }
-
-  SECTION("unsqueeze_n")
-  {
-    auto cfg = test::GeneratedTensorConfig(kFloat64, kCPU);
-    auto shape = test::GeneratedTensorShape({3, 4}, {2, 3}, {1, 2});
-
-    auto a = test::generate_random_tensor<Tensor>(cfg, shape);
-
-    auto b1 = a.dynamic_unsqueeze_n(2, 1);
-    auto b2 = a.dynamic_unsqueeze_n(2, -1);
+    auto b1 = a.dynamic_unsqueeze(1, 2);
+    auto b2 = a.dynamic_unsqueeze(-1, 2);
 
     REQUIRE(b1.dynamic_sizes() == TensorShapeRef{3, 1, 1, 4});
     REQUIRE(b1.intmd_sizes() == a.intmd_sizes());
@@ -547,8 +524,8 @@ TEST_CASE("TensorBase", "[tensors]")
     REQUIRE(b2.intmd_sizes() == a.intmd_sizes());
     REQUIRE(b2.base_sizes() == a.base_sizes());
 
-    auto c1 = a.intmd_unsqueeze_n(2, 1);
-    auto c2 = a.intmd_unsqueeze_n(2, -1);
+    auto c1 = a.intmd_unsqueeze(1, 2);
+    auto c2 = a.intmd_unsqueeze(-1, 2);
 
     REQUIRE(c1.dynamic_sizes() == a.dynamic_sizes());
     REQUIRE(c1.intmd_sizes() == TensorShapeRef{2, 1, 1, 3});
@@ -558,8 +535,8 @@ TEST_CASE("TensorBase", "[tensors]")
     REQUIRE(c2.intmd_sizes() == TensorShapeRef{2, 3, 1, 1});
     REQUIRE(c2.base_sizes() == a.base_sizes());
 
-    auto d1 = a.base_unsqueeze_n(2, 1);
-    auto d2 = a.base_unsqueeze_n(2, -1);
+    auto d1 = a.base_unsqueeze(1, 2);
+    auto d2 = a.base_unsqueeze(-1, 2);
 
     REQUIRE(d1.dynamic_sizes() == a.dynamic_sizes());
     REQUIRE(d1.intmd_sizes() == a.intmd_sizes());

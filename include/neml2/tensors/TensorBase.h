@@ -253,17 +253,10 @@ public:
   ///@}
 
   ///@{
-  /// Unsqueeze a dimension
-  Derived dynamic_unsqueeze(Size d) const;
-  Derived intmd_unsqueeze(Size d) const;
-  neml2::Tensor base_unsqueeze(Size d) const;
-  ///@}
-
-  ///@{
   /// Unsqueeze @p n dimensions at @p d
-  Derived dynamic_unsqueeze_n(Size n, Size d) const;
-  Derived intmd_unsqueeze_n(Size n, Size d) const;
-  neml2::Tensor base_unsqueeze_n(Size n, Size d) const;
+  Derived dynamic_unsqueeze(Size d, Size n = 1) const;
+  Derived intmd_unsqueeze(Size d, Size n = 1) const;
+  neml2::Tensor base_unsqueeze(Size d, Size n = 1) const;
   ///@}
 
   ///@{
