@@ -57,6 +57,6 @@ FooModel::set_value(bool out, bool dout, bool)
     _y = _c * _x + _c - 1.0;
 
   if (dout)
-    _y.d(_x) = _c * neml2::imap<neml2::Scalar>(_x.options()).as<neml2::Scalar>();
+    _y.d(_x) = _c * neml2::imap_v<neml2::Scalar>(_x.options());
 }
 }

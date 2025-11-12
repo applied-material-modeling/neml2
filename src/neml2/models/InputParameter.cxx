@@ -68,7 +68,7 @@ InputParameter<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 
   if (dout_din)
     if (_input_var.is_dependent())
-      this->_p.d(_input_var) = imap<T>(_input_var.options()).template as<Tensor>();
+      this->_p.d(_input_var) = imap_v<T>(_input_var.options());
 }
 
 #define REGISTER(T)                                                                                \

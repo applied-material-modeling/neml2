@@ -34,7 +34,7 @@ using namespace neml2;
 
 TEMPLATE_TEST_CASE("imap", "[tensors/functions]", Scalar, Vec, R2, SR2, SSR4)
 {
-  auto I = imap<TestType>();
+  auto I = imap_v<TestType>();
   auto a = TestType::rand({}, {});
 
   auto apply = [](const Tensor & x) { return x; };

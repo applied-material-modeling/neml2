@@ -86,7 +86,7 @@ BackwardEulerTimeIntegration<T>::set_value(bool out, bool dout_din, bool /*d2out
 
   if (dout_din)
   {
-    auto I = imap<T>(_s.options());
+    auto I = imap_v<T>(_s.options());
 
     _r.d(_s) = I;
     _r.d(_ds_dt) = -I * (_t - _tn);

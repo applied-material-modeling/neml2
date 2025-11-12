@@ -146,7 +146,7 @@ LinearCombination<T>::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (dout_din)
   {
-    const auto I = imap<T>(_from[0]->options()).template as<Tensor>();
+    const auto I = imap_v<T>(_from[0]->options());
     for (std::size_t i = 0; i < _from.size(); i++)
     {
       if (_from[i]->is_dependent())

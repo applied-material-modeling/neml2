@@ -61,7 +61,7 @@ IntermediateSum<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
       I.erase(I.begin() + dim);
       const auto n = utils::numel(I);
 
-      const auto deriv = imap<T>(_from.options()).template as<Tensor>();
+      const auto deriv = imap_v<T>(_from.options());
       _to.d(_from) = intmd_diagonalize(deriv.intmd_expand(n))
                          .intmd_reshape(utils::add_shapes(I, I))
                          .intmd_unsqueeze(0)

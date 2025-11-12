@@ -75,7 +75,7 @@ VolumeAdjustDeformationGradient::set_value(bool out, bool dout_din, bool /*d2out
 
     if (_F.is_dependent())
     {
-      auto I = imap<R2>(_F.options()).as<R4>();
+      auto I = imap_v<R2>(_F.options());
       _Fe.d(_F) = pow(_J(), -1.0 / 3.0) * I;
     }
   }

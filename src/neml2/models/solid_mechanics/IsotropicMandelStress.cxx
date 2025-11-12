@@ -51,7 +51,7 @@ IsotropicMandelStress::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (dout_din)
     if (_S.is_dependent())
-      _M.d(_S) = imap<SR2>(_S.options()).template as<Tensor>();
+      _M.d(_S) = imap_v<SR2>(_S.options());
 
   if (d2out_din2)
   {

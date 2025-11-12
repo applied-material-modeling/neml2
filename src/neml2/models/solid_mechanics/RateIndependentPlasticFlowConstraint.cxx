@@ -67,7 +67,7 @@ RateIndependentPlasticFlowConstraint::set_value(bool out, bool dout_din, bool /*
 
   if (dout_din)
   {
-    const auto I = imap<Scalar>(_gamma_dot.options()).as<Scalar>();
+    const auto I = imap_v<Scalar>(_gamma_dot.options());
     const auto eps = machine_precision(_gamma_dot.scalar_type());
 
     if (_gamma_dot.is_dependent())

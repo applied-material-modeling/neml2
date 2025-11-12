@@ -62,7 +62,7 @@ LinearKinematicHardening::set_value(bool out, bool dout_din, bool d2out_din2)
   if (dout_din)
   {
     if (_Kp.is_dependent())
-      _X.d(_Kp) = _H * imap<SR2>(_H.options()).as<Tensor>();
+      _X.d(_Kp) = _H * imap_v<SR2>(_H.options());
 
     if (const auto * const H = nl_param("H"))
       _X.d(*H) = _Kp;

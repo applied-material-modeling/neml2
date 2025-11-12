@@ -78,7 +78,7 @@ ChabochePlasticHardening::set_value(bool out, bool dout_din, bool /*d2out_din2*/
 
   if (dout_din)
   {
-    auto I = imap<SR2>(_X.options()).as<SSR4>();
+    auto I = imap_v<SR2>(_X.options());
 
     if (_gamma_dot.is_dependent())
       _X_dot.d(_gamma_dot) = g_term;

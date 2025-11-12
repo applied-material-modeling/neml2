@@ -90,7 +90,7 @@ FredrickArmstrongPlasticHardening::set_value(bool out, bool dout_din, bool /*d2o
 
   if (dout_din)
   {
-    auto I = imap<SR2>(_X.options()).template as<Tensor>();
+    auto I = imap_v<SR2>(_X.options());
 
     if (_gamma_dot.is_dependent())
       _X_dot.d(_gamma_dot) = g_term;

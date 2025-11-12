@@ -35,49 +35,99 @@
 
 namespace neml2
 {
-///@{
+template <typename T>
+struct imap_t
+{
+  using type = Tensor;
+};
+
 /// Identity map
 template <typename T>
-DTensor<T, T> imap(const TensorOptions & options = default_tensor_options());
-///@}
+DTensor<T, T, typename imap_t<T>::type>
+imap(const TensorOptions & options = default_tensor_options());
+
+/// Get the identity map interpreted as the concrete primitive tensor type
+template <typename T>
+typename imap_t<T>::type imap_v(const TensorOptions & options = default_tensor_options());
+
+///////////////////////////////////////////////////////////////////////////////
+// Implementations
+///////////////////////////////////////////////////////////////////////////////
 
 template <typename T>
-DTensor<T, T>
+DTensor<T, T, typename imap_t<T>::type>
 imap(const TensorOptions & /*options*/)
 {
   throw NEMLException("Identity map not implemented for this tensor type.");
 }
 
+template <typename T>
+typename imap_t<T>::type
+imap_v(const TensorOptions & options)
+{
+  return imap<T>(options);
+}
+
+// Scalar
 template <>
-inline DTensor<Scalar, Scalar>
+struct imap_t<Scalar>
+{
+  using type = Scalar;
+};
+template <>
+inline DTensor<Scalar, Scalar, typename imap_t<Scalar>::type>
 imap(const TensorOptions & options)
 {
   return Scalar::ones(options);
 }
 
+// Vec
 template <>
-inline DTensor<Vec, Vec>
+struct imap_t<Vec>
+{
+  using type = R2;
+};
+template <>
+inline DTensor<Vec, Vec, typename imap_t<Vec>::type>
 imap(const TensorOptions & options)
 {
   return R2::identity(options);
 }
 
+// R2
 template <>
-inline DTensor<R2, R2>
+struct imap_t<R2>
+{
+  using type = R4;
+};
+template <>
+inline DTensor<R2, R2, typename imap_t<R2>::type>
 imap(const TensorOptions & options)
 {
   return neml2::Tensor::identity(9, options).base_reshape({3, 3, 3, 3});
 }
 
+// SR2
 template <>
-inline DTensor<SR2, SR2>
+struct imap_t<SR2>
+{
+  using type = SSR4;
+};
+template <>
+inline DTensor<SR2, SR2, typename imap_t<SR2>::type>
 imap(const TensorOptions & options)
 {
   return SSR4::identity_sym(options);
 }
 
+// SSR4
 template <>
-inline DTensor<SSR4, SSR4>
+struct imap_t<SSR4>
+{
+  using type = SSSSR8;
+};
+template <>
+inline DTensor<SSR4, SSR4, typename imap_t<SSR4>::type>
 imap(const TensorOptions & options)
 {
   auto I = neml2::Tensor::identity(6, options);

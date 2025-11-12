@@ -108,7 +108,7 @@ TwoStageThermalAnnealing<T>::set_value(bool out, bool dout_din, bool /*d2out_din
 
   if (dout_din)
   {
-    auto I = imap<T>(_T.options()).template as<Tensor>();
+    auto I = imap_v<T>(_T.options());
 
     if (_base_rate.is_dependent())
       _modified_rate.d(_base_rate) = base_region * I;

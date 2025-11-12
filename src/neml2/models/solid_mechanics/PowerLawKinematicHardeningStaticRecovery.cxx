@@ -76,7 +76,7 @@ PowerLawKinematicHardeningStaticRecovery::set_value(bool out, bool dout_din, boo
 
   if (dout_din)
   {
-    auto I = imap<SR2>(_X.options()).as<SSR4>();
+    auto I = imap_v<SR2>(_X.options());
 
     if (_X.is_dependent())
       _X_dot.d(_X) = -pow(s, _n - 3) * ((_n - 1) * neml2::outer(_X()) + s * s * I) / pow(_tau, _n);

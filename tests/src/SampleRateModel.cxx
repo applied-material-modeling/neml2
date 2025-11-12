@@ -78,7 +78,7 @@ SampleRateModelTmpl<false>::set_value(bool out, bool dout_din, bool /*d2out_din2
 
     baz_dot.d(foo) = baz * (T - 3);
     baz_dot.d(bar) = baz * (T - 3);
-    baz_dot.d(baz) = (foo + bar) * (T - 3) * imap<SR2>(foo.options()).as<Tensor>();
+    baz_dot.d(baz) = (foo + bar) * (T - 3) * imap_v<SR2>(foo.options());
 
     if (!currently_solving_nonlinear_system())
     {

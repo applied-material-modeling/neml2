@@ -73,7 +73,7 @@ AssociativeKinematicPlasticHardening::set_value(bool out, bool dout_din, bool /*
 
   if (dout_din)
   {
-    auto I = imap<SR2>(_gamma_dot.options()).template as<Tensor>();
+    auto I = imap_v<SR2>(_gamma_dot.options());
 
     if (_gamma_dot.is_dependent())
       _Kp_dot.d(_gamma_dot) = -_NX;

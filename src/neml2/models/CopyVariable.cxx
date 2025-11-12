@@ -61,7 +61,7 @@ CopyVariable<T>::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (_from.is_dependent())
     if (dout_din)
-      _to.d(_from) = imap<T>(_from.options());
+      _to.d(_from) = imap_v<T>(_from.options());
 
   if (d2out_din2)
   {

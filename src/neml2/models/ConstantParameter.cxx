@@ -58,7 +58,7 @@ ConstantParameter<T>::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (dout_din)
     if (const auto value = this->nl_param("value"))
-      this->_p.d(*value) = imap<T>(value->options());
+      this->_p.d(*value) = imap_v<T>(value->options());
 
   // This is zero
   (void)d2out_din2;

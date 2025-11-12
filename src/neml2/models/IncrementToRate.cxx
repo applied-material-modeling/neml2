@@ -79,7 +79,7 @@ IncrementToRate<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
   if (dout_din)
   {
     if (_dv.is_dependent())
-      _dv_dt.d(_dv) = imap<T>(_dv.options()).template as<Tensor>() / dt;
+      _dv_dt.d(_dv) = imap_v<T>(_dv.options()) / dt;
     if (_t.is_dependent())
       _dv_dt.d(_t) = -_dv / dt / dt;
     if (_tn.is_dependent())

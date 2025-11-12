@@ -41,23 +41,24 @@ template <class Seq1, class Seq2>
 using concat_seq_t = typename concat_seq<Seq1, Seq2>::type;
 
 // Turn integer_sequence<Size, ...> into a PrimitiveTensor<Tensor, ...>
-template <class Seq>
+template <class Derived, class Seq>
 struct DTensorBase;
-template <Size... S>
-struct DTensorBase<std::integer_sequence<Size, S...>>
+template <class Derived, Size... S>
+struct DTensorBase<Derived, std::integer_sequence<Size, S...>>
 {
-  using type = PrimitiveTensor<Tensor, S...>;
+  using type = PrimitiveTensor<Derived, S...>;
 };
-template <class Seq>
-using DTensorBase_t = typename DTensorBase<Seq>::type;
+template <class Derived, class Seq>
+using DTensorBase_t = typename DTensorBase<Derived, Seq>::type;
 
 /**
  * @brief Abstract representation of the derivative of a primitive tensor with respect to another
  * primitive tensor.
  */
-template <class T1, class T2>
+template <class T1, class T2, class TR>
 class DTensor
   : public DTensorBase_t<
+        TR,
         concat_seq_t<typename T1::base_sizes_sequence, typename T2::base_sizes_sequence>>
 {
 public:
@@ -67,25 +68,14 @@ public:
   /// Copy constructor
   template <class Derived2>
   DTensor(const TensorBase<Derived2> & tensor);
-
-  /// Implicit conversion to a Tensor
-  template <class U, typename = std::enable_if_t<std::is_base_of_v<TensorBase<U>, U>>>
-  U as() const;
 };
 
-template <class T1, class T2>
+template <class T1, class T2, class TR>
 template <class Derived2>
-DTensor<T1, T2>::DTensor(const TensorBase<Derived2> & tensor)
-  : DTensorBase_t<concat_seq_t<typename T1::base_sizes_sequence, typename T2::base_sizes_sequence>>(
+DTensor<T1, T2, TR>::DTensor(const TensorBase<Derived2> & tensor)
+  : DTensorBase_t<TR,
+                  concat_seq_t<typename T1::base_sizes_sequence, typename T2::base_sizes_sequence>>(
         tensor)
 {
-}
-
-template <class T1, class T2>
-template <class U, typename>
-U
-DTensor<T1, T2>::as() const
-{
-  return U(*this, this->dynamic_sizes(), this->intmd_dim());
 }
 } // namespace neml2
