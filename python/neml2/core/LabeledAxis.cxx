@@ -25,8 +25,7 @@
 #include "neml2/base/LabeledAxis.h"
 #include "neml2/base/Parser.h"
 
-#include <pybind11/pybind11.h>
-
+#include "python/neml2/core/utils.h"
 #include "python/neml2/core/types.h"
 
 namespace py = pybind11;
@@ -35,7 +34,7 @@ using namespace neml2;
 void
 def_LabeledAxis(py::module_ & m)
 {
-  auto c = py::class_<LabeledAxis>(m, "LabeledAxis");
+  auto c = get_pycls<LabeledAxis>(m, "LabeledAxis");
 
   c.def("has_state", &LabeledAxis::has_state)
       .def("has_old_state", &LabeledAxis::has_old_state)

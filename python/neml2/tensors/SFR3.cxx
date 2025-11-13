@@ -29,7 +29,7 @@ using namespace neml2;
 void
 def_SFR3(pybind11::module_ & m)
 {
-  auto py_cls = m.attr("SFR3");
-  pybind11::class_<SFR3> cls(py_cls);
+  auto c = get_pycls<SFR3>(m, "SFR3");
+
   def_TensorBase<SFR3>(m, "SFR3");
 }

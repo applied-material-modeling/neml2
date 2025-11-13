@@ -29,7 +29,7 @@ using namespace neml2;
 void
 def_SR2(pybind11::module_ & m)
 {
-  auto py_cls = m.attr("SR2");
-  pybind11::class_<SR2> cls(py_cls);
+  auto c = get_pycls<SR2>(m, "SR2");
+
   def_TensorBase<SR2>(m, "SR2");
 }

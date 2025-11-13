@@ -29,7 +29,7 @@ using namespace neml2;
 void
 def_Rot(pybind11::module_ & m)
 {
-  auto py_cls = m.attr("Rot");
-  pybind11::class_<Rot> cls(py_cls);
+  auto c = get_pycls<Rot>(m, "Rot");
+
   def_TensorBase<Rot>(m, "Rot");
 }

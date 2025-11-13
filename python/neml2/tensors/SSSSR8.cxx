@@ -29,7 +29,7 @@ using namespace neml2;
 void
 def_SSSSR8(pybind11::module_ & m)
 {
-  auto py_cls = m.attr("SSSSR8");
-  pybind11::class_<SSSSR8> cls(py_cls);
+  auto c = get_pycls<SSSSR8>(m, "SSSSR8");
+
   def_TensorBase<SSSSR8>(m, "SSSSR8");
 }

@@ -22,14 +22,35 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "python/neml2/tensors/TensorBase.h"
+#pragma once
 
-using namespace neml2;
+#include "neml2/models/map_types_fwd.h"
 
-void
-def_Vec(pybind11::module_ & m)
+#include <pybind11/pybind11.h>
+
+namespace neml2
 {
-  auto c = get_pycls<Vec>(m, "Vec");
-
-  def_TensorBase<Vec>(m, "Vec");
+class Model;
 }
+
+/// Get an already registered pybind11 class from a module
+template <typename T>
+pybind11::class_<T>
+get_pycls(const pybind11::module_ & m, const char * name)
+{
+  auto pyc = m.attr(name);
+  return pybind11::class_<T>(pyc);
+}
+
+/// Get an already registered pybind11 class given the module name
+template <typename T>
+pybind11::class_<T>
+get_pycls(const char * mname, const char * name)
+{
+  auto m = pybind11::module_::import(mname);
+  return get_pycls<T>(m, name);
+}
+
+/// Unpack a Python dictionary into a neml2::ValueMap
+neml2::ValueMap unpack_tensor_map(const pybind11::dict & pyinputs,
+                                  const neml2::Model * model = nullptr);

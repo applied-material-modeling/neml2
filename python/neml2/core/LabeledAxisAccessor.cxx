@@ -25,7 +25,7 @@
 #include "neml2/base/LabeledAxisAccessor.h"
 #include "neml2/base/Parser.h"
 
-#include <pybind11/pybind11.h>
+#include "python/neml2/core/utils.h"
 
 namespace py = pybind11;
 using namespace neml2;
@@ -33,7 +33,8 @@ using namespace neml2;
 void
 def_LabeledAxisAccessor(py::module_ & m)
 {
-  auto c = py::class_<LabeledAxisAccessor>(m, "LabeledAxisAccessor");
+  auto c = get_pycls<LabeledAxisAccessor>(m, "LabeledAxisAccessor");
+
   c.def(py::init<>())
       .def(py::init([](const std::string & str) { return utils::parse<LabeledAxisAccessor>(str); }))
       .def(py::init<const LabeledAxisAccessor &>())

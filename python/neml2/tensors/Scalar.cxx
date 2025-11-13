@@ -29,7 +29,7 @@ using namespace neml2;
 void
 def_Scalar(pybind11::module_ & m)
 {
-  auto py_cls = m.attr("Scalar");
-  pybind11::class_<Scalar> cls(py_cls);
+  auto c = get_pycls<Scalar>(m, "Scalar");
+
   def_TensorBase<Scalar>(m, "Scalar");
 }

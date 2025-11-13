@@ -29,7 +29,7 @@ using namespace neml2;
 void
 def_WFFR4(pybind11::module_ & m)
 {
-  auto py_cls = m.attr("WFFR4");
-  pybind11::class_<WFFR4> cls(py_cls);
+  auto c = get_pycls<WFFR4>(m, "WFFR4");
+
   def_TensorBase<WFFR4>(m, "WFFR4");
 }

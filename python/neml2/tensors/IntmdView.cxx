@@ -24,6 +24,7 @@
 
 #include "python/neml2/tensors/IntmdView.h"
 #include "python/neml2/core/types.h"
+#include "python/neml2/core/utils.h"
 
 namespace py = pybind11;
 using namespace neml2;
@@ -32,9 +33,8 @@ template <class T>
 void
 def_IntmdView(py::module_ & m, const std::string & name)
 {
-  // "forward" declarations
-  py::object py_tensor_cls = m.attr("Tensor");
-  py::class_<Tensor> tensor_cls(py_tensor_cls);
+  // import types
+  get_pycls<Tensor>(m, "Tensor");
 
   auto c = py::class_<IntmdView<T>>(m, name.c_str());
   c.def(py::init<T *>())

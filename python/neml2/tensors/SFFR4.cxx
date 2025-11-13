@@ -29,7 +29,7 @@ using namespace neml2;
 void
 def_SFFR4(pybind11::module_ & m)
 {
-  auto py_cls = m.attr("SFFR4");
-  pybind11::class_<SFFR4> cls(py_cls);
+  auto c = get_pycls<SFFR4>(m, "SFFR4");
+
   def_TensorBase<SFFR4>(m, "SFFR4");
 }

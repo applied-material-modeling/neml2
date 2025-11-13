@@ -29,7 +29,7 @@ using namespace neml2;
 void
 def_WWR4(pybind11::module_ & m)
 {
-  auto py_cls = m.attr("WWR4");
-  pybind11::class_<WWR4> cls(py_cls);
+  auto c = get_pycls<WWR4>(m, "WWR4");
+
   def_TensorBase<WWR4>(m, "WWR4");
 }

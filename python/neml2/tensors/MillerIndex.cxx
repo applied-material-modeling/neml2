@@ -29,7 +29,7 @@ using namespace neml2;
 void
 def_MillerIndex(pybind11::module_ & m)
 {
-  auto py_cls = m.attr("MillerIndex");
-  pybind11::class_<MillerIndex> cls(py_cls);
+  auto c = get_pycls<MillerIndex>(m, "MillerIndex");
+
   def_TensorBase<MillerIndex>(m, "MillerIndex");
 }

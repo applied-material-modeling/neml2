@@ -29,7 +29,7 @@ using namespace neml2;
 void
 def_R8(pybind11::module_ & m)
 {
-  auto py_cls = m.attr("R8");
-  pybind11::class_<R8> cls(py_cls);
+  auto c = get_pycls<R8>(m, "R8");
+
   def_TensorBase<R8>(m, "R8");
 }

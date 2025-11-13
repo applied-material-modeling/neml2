@@ -29,7 +29,7 @@ using namespace neml2;
 void
 def_SSFR5(pybind11::module_ & m)
 {
-  auto py_cls = m.attr("SSFR5");
-  pybind11::class_<SSFR5> cls(py_cls);
+  auto c = get_pycls<SSFR5>(m, "SSFR5");
+
   def_TensorBase<SSFR5>(m, "SSFR5");
 }

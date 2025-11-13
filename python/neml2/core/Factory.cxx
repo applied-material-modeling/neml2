@@ -22,14 +22,29 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "python/neml2/tensors/TensorBase.h"
+#include "neml2/base/Factory.h"
+#include "neml2/models/Model.h"
 
+#include "python/neml2/core/utils.h"
+
+namespace py = pybind11;
 using namespace neml2;
 
 void
-def_Vec(pybind11::module_ & m)
+def_Factory(py::module_ & m)
 {
-  auto c = get_pycls<Vec>(m, "Vec");
+  // import types
+  get_pycls<Model>(m, "Model");
 
-  def_TensorBase<Vec>(m, "Vec");
+  auto c = get_pycls<Factory>(m, "Factory");
+
+  c.def(
+      "get_model",
+      [](Factory * self, const std::string & name) { return self->get_model(name); },
+      py::arg("name"),
+      R"(
+  Create a core.Model.
+
+  :param name:        Name of the model
+  )");
 }

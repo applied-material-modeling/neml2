@@ -22,19 +22,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/tensors/Tensor.h"
-
 #include "python/neml2/tensors/TensorBase.h"
-
-template <class T>
-void def_TensorBase(pybind11::module_ &, const std::string &);
 
 using namespace neml2;
 
 void
 def_Tensor(pybind11::module_ & m)
 {
-  auto py_cls = m.attr("Tensor");
-  pybind11::class_<Tensor> cls(py_cls);
+  auto c = get_pycls<Tensor>(m, "Tensor");
+
   def_TensorBase<Tensor>(m, "Tensor");
 }

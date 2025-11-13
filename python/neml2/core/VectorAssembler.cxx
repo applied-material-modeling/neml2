@@ -22,14 +22,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "python/neml2/tensors/TensorBase.h"
+#include "neml2/models/Assembler.h"
 
+#include <pybind11/stl.h>
+
+#include "python/neml2/core/utils.h"
+
+namespace py = pybind11;
 using namespace neml2;
 
 void
-def_Vec(pybind11::module_ & m)
+def_VectorAssembler(py::module_ & m)
 {
-  auto c = get_pycls<Vec>(m, "Vec");
+  auto c = get_pycls<VectorAssembler>(m, "VectorAssembler");
 
-  def_TensorBase<Vec>(m, "Vec");
+  c.def(py::init<const LabeledAxis &>())
+      .def("assemble_by_variable",
+           [](const VectorAssembler & self, const py::dict & py_vals_dict)
+           { return self.assemble_by_variable(unpack_tensor_map(py_vals_dict)); })
+      .def("split_by_variable", &VectorAssembler::split_by_variable)
+      .def("split_by_subaxis", &VectorAssembler::split_by_subaxis);
 }

@@ -29,7 +29,7 @@ using namespace neml2;
 void
 def_R5(pybind11::module_ & m)
 {
-  auto py_cls = m.attr("R5");
-  pybind11::class_<R5> cls(py_cls);
+  auto c = get_pycls<R5>(m, "R5");
+
   def_TensorBase<R5>(m, "R5");
 }
