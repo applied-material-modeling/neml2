@@ -50,6 +50,9 @@ PYBIND11_MODULE(core, m)
   auto cls_VectorAssembler = py::class_<VectorAssembler>(m, "VectorAssembler");
   auto cls_MatrixAssembler = py::class_<MatrixAssembler>(m, "MatrixAssembler");
 
+  // type conversions
+  pybind11::implicitly_convertible<std::string, neml2::LabeledAxisAccessor>();
+
   // free functions
   m.def("load_input",
         &load_input,

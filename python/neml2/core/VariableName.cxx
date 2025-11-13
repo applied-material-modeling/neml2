@@ -51,7 +51,4 @@ def(py::module_ & m, py::class_<neml2::LabeledAxisAccessor> & c)
            [](const LabeledAxisAccessor & a, const LabeledAxisAccessor & b) { return a == b; })
       .def("__ne__",
            [](const LabeledAxisAccessor & a, const LabeledAxisAccessor & b) { return a != b; });
-
-  // type conversions
-  pybind11::implicitly_convertible<std::string, neml2::LabeledAxisAccessor>();
 }
