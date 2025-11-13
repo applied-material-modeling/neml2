@@ -24,12 +24,11 @@
 
 #include "python/neml2/tensors/TensorBase.h"
 
+namespace py = pybind11;
 using namespace neml2;
 
 void
-def_SFR3(pybind11::module_ & m)
+def(py::module_ & m, py::class_<SFR3> & c)
 {
-  auto c = get_pycls<SFR3>(m, "SFR3");
-
   def_TensorBase<SFR3>(m, "SFR3");
 }

@@ -26,7 +26,7 @@
 
 #include <pybind11/pybind11.h>
 
-#include "python/neml2/core/utils.h"
+#include "python/neml2/tensors/types.h"
 
 template <class T>
 void def_TensorBase(pybind11::module_ & m, const std::string & type);

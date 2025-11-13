@@ -22,8 +22,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/Model.h"
-
 #include "python/neml2/core/types.h"
 #include "python/neml2/core/utils.h"
 
@@ -31,10 +29,8 @@ namespace py = pybind11;
 using namespace neml2;
 
 void
-def_Model(py::module_ & m)
+def(py::module_ & m, py::class_<neml2::Model, std::shared_ptr<neml2::Model>> & c)
 {
-  auto c = get_pycls<Model>(m, "Model");
-
   c.def_property_readonly("name", &Model::name, "Name of the model")
       .def(
           "to",

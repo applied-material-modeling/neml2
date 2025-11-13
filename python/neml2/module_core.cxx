@@ -22,49 +22,39 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/base/LabeledAxisAccessor.h"
-#include "neml2/base/LabeledAxis.h"
-#include "neml2/tensors/TensorValue.h"
-#include "neml2/base/Factory.h"
-#include "neml2/models/Model.h"
-#include "neml2/models/Assembler.h"
-
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/stl/filesystem.h>
 
-void def_LabeledAxisAccessor(pybind11::module_ &);
-void def_LabeledAxis(pybind11::module_ &);
-void def_TensorValue(pybind11::module_ &);
-void def_Factory(pybind11::module_ &);
-void def_Model(pybind11::module_ &);
-void def_VectorAssembler(pybind11::module_ &);
-void def_MatrixAssembler(pybind11::module_ &);
+#include "python/neml2/core/types.h"
+
+namespace py = pybind11;
+using namespace neml2;
 
 PYBIND11_MODULE(core, m)
 {
   m.doc() = "NEML2 Python bindings";
 
-  // declare bindings
-  auto c1 = pybind11::class_<neml2::LabeledAxisAccessor>(m, "LabeledAxisAccessor");
-  auto c2 = pybind11::class_<neml2::LabeledAxis>(m, "LabeledAxis");
-  auto c3 = pybind11::class_<neml2::TensorValueBase>(
-      m,
-      "TensorValue",
-      "The interface for working with tensor values (parameters, "
-      "buffers, etc.) managed by models.");
-  auto c4 = pybind11::class_<neml2::Factory>(
-      m, "Factory", "Factory for creating objects defined in the input file");
-  auto c5 = pybind11::class_<neml2::Model, std::shared_ptr<neml2::Model>>(
+  // declare py classes
+  auto cls_VariableName = py::class_<LabeledAxisAccessor>(m, "VariableName");
+  auto cls_LabeledAxis = py::class_<LabeledAxis>(m, "LabeledAxis");
+  auto cls_TensorValue =
+      py::class_<TensorValueBase>(m,
+                                  "TensorValue",
+                                  "The interface for working with tensor values (parameters, "
+                                  "buffers, etc.) managed by models.");
+  auto cls_Factory =
+      py::class_<Factory>(m, "Factory", "Factory for creating objects defined in the input file");
+  auto cls_Model = py::class_<Model, std::shared_ptr<Model>>(
       m, "Model", "The canonical type for constitutive models in NEML2.");
-  auto c6 = pybind11::class_<neml2::VectorAssembler>(m, "VectorAssembler");
-  auto c7 = pybind11::class_<neml2::MatrixAssembler>(m, "MatrixAssembler");
+  auto cls_VectorAssembler = py::class_<VectorAssembler>(m, "VectorAssembler");
+  auto cls_MatrixAssembler = py::class_<MatrixAssembler>(m, "MatrixAssembler");
 
   // free functions
   m.def("load_input",
-        &neml2::load_input,
-        pybind11::arg("path"),
-        pybind11::arg("cli_args") = "",
+        &load_input,
+        py::arg("path"),
+        py::arg("cli_args") = "",
         R"(
   Parse all options from an input file. Note that Previously loaded input options
   will be discarded.
@@ -73,9 +63,9 @@ PYBIND11_MODULE(core, m)
   :param cli_args: Additional command-line arguments to pass to the parser
   )");
   m.def("load_model",
-        &neml2::load_model,
-        pybind11::arg("path"),
-        pybind11::arg("name"),
+        &load_model,
+        py::arg("path"),
+        py::arg("name"),
         R"(
   A convenient function to load an input file and get a model.
 
@@ -90,7 +80,7 @@ PYBIND11_MODULE(core, m)
   )");
   m.def(
       "diagnose",
-      [](const neml2::Model & m)
+      [](const Model & m)
       {
         auto diagnoses = diagnose(m);
         std::vector<std::string> issues;
@@ -99,7 +89,7 @@ PYBIND11_MODULE(core, m)
           issues.emplace_back(diagnosis.what());
         return issues;
       },
-      pybind11::arg("model"),
+      py::arg("model"),
       R"(
   Diagnose common issues in model setup. Raises a runtime error including all identified issues,
   if any.
@@ -108,11 +98,11 @@ PYBIND11_MODULE(core, m)
   )");
 
   // binding definitions
-  def_LabeledAxisAccessor(m);
-  def_LabeledAxis(m);
-  def_TensorValue(m);
-  def_Factory(m);
-  def_Model(m);
-  def_VectorAssembler(m);
-  def_MatrixAssembler(m);
+  def(m, cls_VariableName);
+  def(m, cls_LabeledAxis);
+  def(m, cls_TensorValue);
+  def(m, cls_Factory);
+  def(m, cls_Model);
+  def(m, cls_VectorAssembler);
+  def(m, cls_MatrixAssembler);
 }

@@ -22,20 +22,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/Assembler.h"
-
 #include <pybind11/stl.h>
 
+#include "python/neml2/core/types.h"
 #include "python/neml2/core/utils.h"
 
 namespace py = pybind11;
 using namespace neml2;
 
 void
-def_VectorAssembler(py::module_ & m)
+def(py::module_ & m, py::class_<VectorAssembler> & c)
 {
-  auto c = get_pycls<VectorAssembler>(m, "VectorAssembler");
-
   c.def(py::init<const LabeledAxis &>())
       .def("assemble_by_variable",
            [](const VectorAssembler & self, const py::dict & py_vals_dict)

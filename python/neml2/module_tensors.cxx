@@ -26,20 +26,21 @@
 
 #include <pybind11/pybind11.h>
 
-// Forward declarations
-#define DEF_FWD(T) void def_##T(pybind11::module_ &)
-FOR_ALL_TENSORBASE(DEF_FWD);
+#include "python/neml2/tensors/types.h"
+
+namespace py = pybind11;
+using namespace neml2;
 
 PYBIND11_MODULE(tensors, m)
 {
   m.doc() = "NEML2 primitive tensor types";
 
   // Export the Number type
-  m.attr("Number") = pybind11::module_::import("torch.types").attr("Number");
+  m.attr("Number") = py::module_::import("torch.types").attr("Number");
 
   // Export enums
-  auto tensor_type_enum = pybind11::enum_<neml2::TensorType>(m, "TensorType");
-#define TENSORTYPE_ENUM_ENTRY(T) tensor_type_enum.value(#T, neml2::TensorType::k##T)
+  auto tensor_type_enum = py::enum_<TensorType>(m, "TensorType");
+#define TENSORTYPE_ENUM_ENTRY(T) tensor_type_enum.value(#T, TensorType::k##T)
   FOR_ALL_TENSORBASE(TENSORTYPE_ENUM_ENTRY);
 
 // Declare all the TensorBase derived tensors
@@ -50,10 +51,10 @@ PYBIND11_MODULE(tensors, m)
 // purpose. For a type to be deducible by pybind11-stubgen, a concrete definition of the binding
 // class must exist at the point of method definition. Therefore, we need to first create all the
 // class definitions before creating method bindings that use them as arguments.
-#define PYCLS_DECL(T) auto T##_cls = pybind11::class_<neml2::T>(m, #T)
-  FOR_ALL_TENSORBASE(PYCLS_DECL);
+#define DECL_PYTYPE(T) auto cls_##T = py::class_<T>(m, #T)
+  FOR_ALL_TENSORBASE(DECL_PYTYPE);
 
 // Next, actually define the bindings for each tensor type
-#define PYCLS_DEF(T) def_##T(m)
-  FOR_ALL_TENSORBASE(PYCLS_DEF);
+#define DEF_PYTYPE(T) def(m, cls_##T)
+  FOR_ALL_TENSORBASE(DEF_PYTYPE);
 }

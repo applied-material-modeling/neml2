@@ -22,15 +22,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/tensors/Quaternion.h"
 #include "python/neml2/tensors/TensorBase.h"
 
+namespace py = pybind11;
 using namespace neml2;
 
 void
-def_Quaternion(pybind11::module_ & m)
+def(py::module_ & m, py::class_<Quaternion> & c)
 {
-  auto c = get_pycls<Quaternion>(m, "Quaternion");
-
   def_TensorBase<Quaternion>(m, "Quaternion");
 }

@@ -23,8 +23,7 @@
 // THE SOFTWARE.
 
 #include "python/neml2/tensors/BatchView.h"
-#include "python/neml2/core/types.h"
-#include "python/neml2/core/utils.h"
+#include "python/neml2/tensors/types.h"
 
 namespace py = pybind11;
 using namespace neml2;
@@ -33,9 +32,6 @@ template <class T>
 void
 def_BatchView(py::module_ & m, const std::string & name)
 {
-  // import types
-  get_pycls<Tensor>(m, "Tensor");
-
   auto c = py::class_<BatchView<T>>(m, name.c_str());
   c.def(py::init<T *>())
       .def("dim", &BatchView<T>::dim)

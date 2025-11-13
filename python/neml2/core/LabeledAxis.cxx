@@ -22,20 +22,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/base/LabeledAxis.h"
 #include "neml2/base/Parser.h"
 
-#include "python/neml2/core/utils.h"
 #include "python/neml2/core/types.h"
+#include "python/neml2/tensors/types.h"
 
 namespace py = pybind11;
 using namespace neml2;
 
 void
-def_LabeledAxis(py::module_ & m)
+def(py::module_ & m, py::class_<neml2::LabeledAxis> & c)
 {
-  auto c = get_pycls<LabeledAxis>(m, "LabeledAxis");
-
   c.def("has_state", &LabeledAxis::has_state)
       .def("has_old_state", &LabeledAxis::has_old_state)
       .def("has_forces", &LabeledAxis::has_forces)

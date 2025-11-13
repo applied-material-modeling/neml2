@@ -22,22 +22,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/tensors/TensorValue.h"
-
-#include "python/neml2/core/utils.h"
 #include "python/neml2/core/types.h"
+#include "python/neml2/tensors/types.h"
 
 namespace py = pybind11;
 using namespace neml2;
 
 void
-def_TensorValue(py::module_ & m)
+def(py::module_ & m, py::class_<neml2::TensorValueBase> & c)
 {
-  // import types
-  get_pycls<Tensor>("neml2.tensors", "Tensor");
-
-  auto c = get_pycls<TensorValueBase>(m, "TensorValue");
-
   c.def(
        "torch",
        [](const TensorValueBase & self) { return at::Tensor(Tensor(self)); },

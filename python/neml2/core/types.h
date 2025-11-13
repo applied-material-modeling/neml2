@@ -24,168 +24,32 @@
 
 #pragma once
 
-#include <torch/python.h>
-#include <torch/csrc/autograd/python_variable_indexing.h>
-
-#include "neml2/tensors/indexing.h"
+#include "neml2/base/LabeledAxisAccessor.h"
+#include "neml2/base/LabeledAxis.h"
+#include "neml2/tensors/TensorValue.h"
+#include "neml2/base/Factory.h"
+#include "neml2/models/Model.h"
+#include "neml2/models/Assembler.h"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/pytypes.h>
 
-#define NEML2_TENSOR_OPTIONS_VARGS const Dtype &dtype, const Device &device, bool requires_grad
+#include "python/neml2/macros.h"
 
-#define NEML2_TENSOR_OPTIONS                                                                       \
-  torch::TensorOptions().dtype(dtype).device(device).requires_grad(requires_grad)
+// Forward declarations
+void def(pybind11::module_ &, pybind11::class_<neml2::LabeledAxisAccessor> &);
+void def(pybind11::module_ &, pybind11::class_<neml2::LabeledAxis> &);
+void def(pybind11::module_ &, pybind11::class_<neml2::TensorValueBase> &);
+void def(pybind11::module_ &, pybind11::class_<neml2::Factory> &);
+void def(pybind11::module_ &, pybind11::class_<neml2::Model, std::shared_ptr<neml2::Model>> &);
+void def(pybind11::module_ &, pybind11::class_<neml2::VectorAssembler> &);
+void def(pybind11::module_ &, pybind11::class_<neml2::MatrixAssembler> &);
 
-#define PY_ARG_TENSOR_OPTIONS                                                                      \
-  pybind11::arg("dtype") = Dtype(torch::kFloat64), pybind11::arg("device") = Device(torch::kCPU),  \
-  pybind11::arg("requires_grad") = false
-
-namespace pybind11::detail
-{
-/**
- * @brief This specialization exposes neml2::indexing::TensorIndices
- */
-template <>
-struct type_caster<neml2::indexing::TensorIndices>
-{
-public:
-  PYBIND11_TYPE_CASTER(neml2::indexing::TensorIndices, const_name("list[Any]"));
-
-  bool load(handle src, bool)
-  {
-    // if src is an iterable
-    if (isinstance<iterable>(src))
-    {
-      auto src_iterable = reinterpret_borrow<iterable>(src);
-      for (auto item : src_iterable)
-        value.push_back(item.cast<neml2::indexing::TensorIndex>());
-      return true;
-    }
-
-    return false;
-  }
-
-  static handle cast(const neml2::indexing::TensorIndices & src,
-                     return_value_policy /* policy */,
-                     handle /* parent */)
-  {
-    list l;
-    for (const auto & val : src)
-      l.append(val);
-    return l;
-  }
-};
-
-/**
- * @brief Type conversion between Python object <--> at::indexing::Slice
- */
-template <>
-struct type_caster<at::indexing::Slice>
-{
-public:
-  PYBIND11_TYPE_CASTER(at::indexing::Slice, const_name("Any"));
-
-  bool load(handle src, bool)
-  {
-    PyObject * slice = src.ptr();
-
-    if (!PySlice_Check(slice))
-      return false;
-
-    const auto val = torch::autograd::__PySlice_Unpack(slice);
-    value = at::indexing::Slice(val.start, val.stop, val.step);
-    return true;
-  }
-
-  static handle
-  cast(const at::indexing::Slice & src, return_value_policy /* policy */, handle /* parent */)
-  {
-    auto start = THPUtils_packInt64(src.start().expect_int());
-    auto stop = THPUtils_packInt64(src.stop().expect_int());
-    auto step = THPUtils_packInt64(src.step().expect_int());
-    return PySlice_New(start, stop, step);
-  }
-};
-
-/**
- * @brief Type conversion between Python object <--> TensorIndex
- */
-template <>
-struct type_caster<at::indexing::TensorIndex>
-{
-public:
-  PYBIND11_TYPE_CASTER(at::indexing::TensorIndex, const_name("Any"));
-
-  /**
-   * PYBIND11_TYPE_CASTER defines a member field called value. Since at::indexing::TensorIndex
-   * cannot be default-initialized, we provide this constructor to explicitly initialize that field.
-   * The value doesn't matter as it will be overwritten after a successful call to load.
-   */
-  type_caster()
-    : value(at::indexing::None)
-  {
-  }
-
-  bool load(handle src, bool)
-  {
-    PyObject * index = src.ptr();
-
-    // handle simple types: none, ellipsis
-    if (index == Py_None)
-    {
-      value = at::indexing::None;
-      return true;
-    }
-    if (index == Py_Ellipsis)
-    {
-      value = at::indexing::Ellipsis;
-      return true;
-    }
-
-    // handle simple types: integers, slices, bool
-    if (THPUtils_checkLong(index))
-    {
-      value = at::indexing::TensorIndex(THPUtils_unpackLong(index));
-      return true;
-    }
-    if (PySlice_Check(index))
-    {
-      auto val = torch::autograd::__PySlice_Unpack(index);
-      value = at::indexing::TensorIndex(at::indexing::Slice(val.start, val.stop, val.step));
-      return true;
-    }
-    if (index == Py_False || index == Py_True)
-    {
-      value = at::indexing::TensorIndex(index == Py_True);
-      return true;
-    }
-
-    // TODO: indexing by tensors ("advanced" indexing)
-
-    return false;
-  }
-
-  static handle
-  cast(const at::indexing::TensorIndex & src, return_value_policy /* policy */, handle /* parent */)
-  {
-    if (src.is_none())
-      return Py_None;
-    if (src.is_ellipsis())
-      return Py_Ellipsis;
-    if (src.is_integer())
-      // Will we ever support SymInt? I don't think so...
-      return THPUtils_packInt64(src.integer().expect_int());
-    if (src.is_slice())
-    {
-      auto start = THPUtils_packInt64(src.slice().start().expect_int());
-      auto stop = THPUtils_packInt64(src.slice().stop().expect_int());
-      auto step = THPUtils_packInt64(src.slice().step().expect_int());
-      return PySlice_New(start, stop, step);
-    }
-    if (src.is_boolean())
-      return src.boolean() ? Py_True : Py_False;
-    return {};
-  }
-};
-} // namespace pybind11::detail
+// Type casters are only for cross-module types used in function signatures
+DEFAULT_TYPECASTER(neml2::LabeledAxisAccessor, "neml2.core.VariableName");
+DEFAULT_TYPECASTER(neml2::LabeledAxis, "neml2.core.LabeledAxis");
+DEFAULT_TYPECASTER(neml2::TensorValueBase, "neml2.core.TensorValue");
+DEFAULT_TYPECASTER(neml2::Factory, "neml2.core.Factory");
+DEFAULT_TYPECASTER(neml2::Model, "neml2.core.Model");
+DEFAULT_TYPECASTER(neml2::VectorAssembler, "neml2.core.VectorAssembler");
+DEFAULT_TYPECASTER(neml2::MatrixAssembler, "neml2.core.MatrixAssembler");

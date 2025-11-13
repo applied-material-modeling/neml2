@@ -24,12 +24,11 @@
 
 #include "python/neml2/tensors/TensorBase.h"
 
+namespace py = pybind11;
 using namespace neml2;
 
 void
-def_R8(pybind11::module_ & m)
+def(py::module_ & m, py::class_<R8> & c)
 {
-  auto c = get_pycls<R8>(m, "R8");
-
   def_TensorBase<R8>(m, "R8");
 }

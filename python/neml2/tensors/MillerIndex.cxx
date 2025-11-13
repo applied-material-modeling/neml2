@@ -24,12 +24,11 @@
 
 #include "python/neml2/tensors/TensorBase.h"
 
+namespace py = pybind11;
 using namespace neml2;
 
 void
-def_MillerIndex(pybind11::module_ & m)
+def(py::module_ & m, py::class_<MillerIndex> & c)
 {
-  auto c = get_pycls<MillerIndex>(m, "MillerIndex");
-
   def_TensorBase<MillerIndex>(m, "MillerIndex");
 }

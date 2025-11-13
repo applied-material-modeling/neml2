@@ -24,12 +24,11 @@
 
 #include "python/neml2/tensors/TensorBase.h"
 
+namespace py = pybind11;
 using namespace neml2;
 
 void
-def_WSR4(pybind11::module_ & m)
+def(py::module_ & m, py::class_<WSR4> & c)
 {
-  auto c = get_pycls<WSR4>(m, "WSR4");
-
   def_TensorBase<WSR4>(m, "WSR4");
 }

@@ -22,19 +22,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/base/LabeledAxisAccessor.h"
 #include "neml2/base/Parser.h"
 
-#include "python/neml2/core/utils.h"
+#include "python/neml2/core/types.h"
 
 namespace py = pybind11;
 using namespace neml2;
 
 void
-def_LabeledAxisAccessor(py::module_ & m)
+def(py::module_ & m, py::class_<neml2::LabeledAxisAccessor> & c)
 {
-  auto c = get_pycls<LabeledAxisAccessor>(m, "LabeledAxisAccessor");
-
   c.def(py::init<>())
       .def(py::init([](const std::string & str) { return utils::parse<LabeledAxisAccessor>(str); }))
       .def(py::init<const LabeledAxisAccessor &>())
@@ -55,6 +52,6 @@ def_LabeledAxisAccessor(py::module_ & m)
       .def("__ne__",
            [](const LabeledAxisAccessor & a, const LabeledAxisAccessor & b) { return a != b; });
 
-  // implicit conversion from string
-  py::implicitly_convertible<std::string, LabeledAxisAccessor>();
+  // type conversions
+  pybind11::implicitly_convertible<std::string, neml2::LabeledAxisAccessor>();
 }

@@ -22,22 +22,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/base/Factory.h"
-#include "neml2/models/Model.h"
-
-#include "python/neml2/core/utils.h"
+#include "python/neml2/core/types.h"
 
 namespace py = pybind11;
 using namespace neml2;
 
 void
-def_Factory(py::module_ & m)
+def(py::module_ & m, py::class_<neml2::Factory> & c)
 {
-  // import types
-  get_pycls<Model>(m, "Model");
-
-  auto c = get_pycls<Factory>(m, "Factory");
-
   c.def(
       "get_model",
       [](Factory * self, const std::string & name) { return self->get_model(name); },

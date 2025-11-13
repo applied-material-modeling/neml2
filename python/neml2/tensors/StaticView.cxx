@@ -23,8 +23,7 @@
 // THE SOFTWARE.
 
 #include "python/neml2/tensors/StaticView.h"
-#include "python/neml2/core/types.h"
-#include "python/neml2/core/utils.h"
+#include "python/neml2/tensors/types.h"
 
 namespace py = pybind11;
 using namespace neml2;
@@ -33,9 +32,6 @@ template <class T>
 void
 def_StaticView(py::module_ & m, const std::string & name)
 {
-  // import types
-  get_pycls<Tensor>(m, "Tensor");
-
   auto c = py::class_<StaticView<T>>(m, name.c_str());
   c.def(py::init<T *>())
       .def("dim", &StaticView<T>::dim)

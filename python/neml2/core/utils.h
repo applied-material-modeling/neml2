@@ -28,27 +28,12 @@
 
 #include <pybind11/pybind11.h>
 
+#include "python/neml2/core/types.h"
+#include "python/neml2/tensors/types.h"
+
 namespace neml2
 {
 class Model;
-}
-
-/// Get an already registered pybind11 class from a module
-template <typename T>
-pybind11::class_<T>
-get_pycls(const pybind11::module_ & m, const char * name)
-{
-  auto pyc = m.attr(name);
-  return pybind11::class_<T>(pyc);
-}
-
-/// Get an already registered pybind11 class given the module name
-template <typename T>
-pybind11::class_<T>
-get_pycls(const char * mname, const char * name)
-{
-  auto m = pybind11::module_::import(mname);
-  return get_pycls<T>(m, name);
 }
 
 /// Unpack a Python dictionary into a neml2::ValueMap
