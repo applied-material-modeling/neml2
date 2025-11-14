@@ -64,7 +64,7 @@ void
 SumSlipRates::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   if (out)
-    _sg = intmd_sum(abs(_g()), _dim);
+    _sg = intmd_sum(abs(_g()), _dim, /*keepdim=*/true);
 
   if (dout_din)
     if (_g.is_dependent())

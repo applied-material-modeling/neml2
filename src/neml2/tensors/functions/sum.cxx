@@ -28,25 +28,26 @@
 namespace neml2
 {
 #define DEFINE_SUM(T)                                                                              \
-  T dynamic_sum(const T & a, Size d)                                                               \
+  T dynamic_sum(const T & a, Size d, bool keepdim)                                                 \
   {                                                                                                \
     d = utils::normalize_dim(d, 0, a.dynamic_dim());                                               \
     auto sizes = a.dynamic_sizes();                                                                \
-    sizes.erase(sizes.begin() + d);                                                                \
-    return T(at::sum(a, d), sizes, a.intmd_dim());                                                 \
+    if (!keepdim)                                                                                  \
+      sizes.erase(sizes.begin() + d);                                                              \
+    return T(at::sum(a, d, keepdim), sizes, a.intmd_dim());                                        \
   }                                                                                                \
-  T intmd_sum(const T & a, Size d)                                                                 \
+  T intmd_sum(const T & a, Size d, bool keepdim)                                                   \
   {                                                                                                \
     d = utils::normalize_dim(d, a.dynamic_dim(), a.batch_dim());                                   \
-    return T(at::sum(a, d), a.dynamic_sizes(), a.intmd_dim() - 1);                                 \
+    return T(at::sum(a, d, keepdim), a.dynamic_sizes(), a.intmd_dim() - (keepdim ? 0 : 1));        \
   }                                                                                                \
   static_assert(true)
 FOR_ALL_TENSORBASE(DEFINE_SUM);
 
 Tensor
-base_sum(const Tensor & a, Size d)
+base_sum(const Tensor & a, Size d, bool keepdim)
 {
   d = utils::normalize_dim(d, a.batch_dim(), a.dim());
-  return Tensor(at::sum(a, d).to(a.dtype()), a.dynamic_sizes(), a.intmd_dim());
+  return Tensor(at::sum(a, d, keepdim).to(a.dtype()), a.dynamic_sizes(), a.intmd_dim());
 }
 } // namespace neml2

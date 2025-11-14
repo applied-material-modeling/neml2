@@ -59,25 +59,13 @@ public:
   /// Return the fully qualified name of an item (i.e. useful when this axis is a sub-axis)
   LabeledAxisAccessor qualify(const LabeledAxisAccessor & accessor) const;
 
-  /// Check the existence of reserved subaxes
-  ///@{
-  bool has_state() const { return _has_state; }
-  bool has_old_state() const { return _has_old_state; }
-  bool has_forces() const { return _has_forces; }
-  bool has_old_forces() const { return _has_old_forces; }
-  bool has_residual() const { return _has_residual; }
-  bool has_parameters() const { return _has_parameters; }
-  ///@}
-
   /// Add a sub-axis
   LabeledAxis & add_subaxis(const std::string & name);
 
   /// Add a variable with known storage size
-  void add_variable(const LabeledAxisAccessor & name, TensorShapeRef base_sizes);
-
-  /// Add a variable
-  template <typename T>
-  void add_variable(const LabeledAxisAccessor & name);
+  void add_variable(const LabeledAxisAccessor & name,
+                    TensorShapeRef intmd_sizes,
+                    TensorShapeRef base_sizes);
 
   /// Setup the layout of all items recursively.
   void setup_layout();
@@ -147,9 +135,6 @@ public:
   friend std::ostream & operator<<(std::ostream & os, const LabeledAxis & axis);
 
 private:
-  /// Cache the existence of a reserved subaxis
-  void cache_reserved_subaxis(const std::string & axis_name);
-
   /// Ensure that the axis has been setup
   void ensure_setup_dbg() const;
 
@@ -206,16 +191,6 @@ private:
   std::vector<Size> _id_to_subaxis_size_map;
   /// Map from assembly ID to sub-axis slicing indices
   std::vector<std::pair<Size, Size>> _id_to_subaxis_slice_map;
-  ///@}
-
-  /// Flags for reserved subaxes
-  ///@{
-  bool _has_state = false;
-  bool _has_old_state = false;
-  bool _has_forces = false;
-  bool _has_old_forces = false;
-  bool _has_residual = false;
-  bool _has_parameters = false;
   ///@}
 };
 

@@ -24,7 +24,6 @@
 
 #include "neml2/base/LabeledAxis.h"
 #include "neml2/tensors/shape_utils.h"
-#include "neml2/tensors/tensors.h"
 #include "neml2/misc/assertions.h"
 
 namespace neml2
@@ -46,15 +45,14 @@ LabeledAxis::add_subaxis(const std::string & name)
   neml_assert(!_setup, "Cannot modify a sub-axis after the axis has been set up.");
   neml_assert(
       _variables.count(name) == 0, "Cannot add a subaxis with the same name as a variable: ", name);
-  auto [subaxis, success] =
-      _subaxes.emplace(name, std::make_shared<LabeledAxis>(_prefix.append(name)));
-  if (success)
-    cache_reserved_subaxis(name);
-  return *(subaxis->second);
+  _subaxes.emplace(name, std::make_shared<LabeledAxis>(_prefix.append(name)));
+  return *(_subaxes.at(name));
 }
 
 void
-LabeledAxis::add_variable(const LabeledAxisAccessor & name, TensorShapeRef base_sizes)
+LabeledAxis::add_variable(const LabeledAxisAccessor & name,
+                          TensorShapeRef intmd_sizes,
+                          TensorShapeRef base_sizes)
 {
   neml_assert(!_setup, "Cannot modify a sub-axis after the axis has been set up.");
   neml_assert(!name.empty(), "Cannot add a variable with empty name.");
@@ -65,21 +63,11 @@ LabeledAxis::add_variable(const LabeledAxisAccessor & name, TensorShapeRef base_
                 "Cannot add a variable with the same name as an existing variable or a sub-axis: '",
                 name[0],
                 "'");
-    _variables.emplace(name[0], std::make_pair(TensorShape{}, base_sizes));
+    _variables.emplace(name[0], std::make_pair(intmd_sizes, base_sizes));
   }
   else
-    add_subaxis(name[0]).add_variable(name.slice(1), base_sizes);
+    add_subaxis(name[0]).add_variable(name.slice(1), intmd_sizes, base_sizes);
 }
-
-template <typename T>
-void
-LabeledAxis::add_variable(const LabeledAxisAccessor & name)
-{
-  add_variable(name, T::const_base_sizes);
-}
-#define INSTANTIATE_ADD_VARIABLE(T)                                                                \
-  template void LabeledAxis::add_variable<T>(const LabeledAxisAccessor &)
-FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_ADD_VARIABLE);
 
 void
 LabeledAxis::setup_layout()
@@ -485,23 +473,6 @@ LabeledAxis::equals(const LabeledAxis & other) const
   }
 
   return true;
-}
-
-void
-LabeledAxis::cache_reserved_subaxis(const std::string & axis_name)
-{
-  if (axis_name == STATE)
-    _has_state = true;
-  else if (axis_name == OLD_STATE)
-    _has_old_state = true;
-  else if (axis_name == FORCES)
-    _has_forces = true;
-  else if (axis_name == OLD_FORCES)
-    _has_old_forces = true;
-  else if (axis_name == RESIDUAL)
-    _has_residual = true;
-  else if (axis_name == PARAMETERS)
-    _has_parameters = true;
 }
 
 void

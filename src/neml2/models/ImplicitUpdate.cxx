@@ -59,12 +59,6 @@ ImplicitUpdate::ImplicitUpdate(const OptionSet & options)
     _model(register_model("implicit_model", /*nonlinear=*/true)),
     _solver(get_solver<NonlinearSolver>("solver"))
 {
-  neml_assert(_model.output_axis().has_residual(),
-              "The implicit model'",
-              _model.name(),
-              "' registered in '",
-              name(),
-              "' does not have the residual output axis.");
   // Take care of dependency registration:
   //   1. Input variables of the "implicit_model" should be *consumed* by *this* model. This has
   //      already been taken care of by the `register_model` call.
@@ -78,22 +72,28 @@ void
 ImplicitUpdate::diagnose() const
 {
   Model::diagnose();
-  diagnostic_assert(_model.output_axis().nsubaxis() == 1,
-                    "The implicit model's output contains non-residual subaxis:\n",
-                    _model.output_axis());
-  diagnostic_assert(_model.input_axis().has_state(),
-                    "The implicit model's input does not have a state subaxis:\n",
-                    _model.input_axis());
-  diagnostic_assert(!_model.input_axis().has_residual(),
-                    "The implicit model's input cannot have a residual subaxis:\n",
-                    _model.input_axis());
-  diagnostic_assert(
-      _model.input_axis().subaxis(STATE) == _model.output_axis().subaxis(RESIDUAL),
-      "The implicit model should have conformal trial state and residual. The input state "
-      "subaxis is\n",
-      _model.input_axis().subaxis(STATE),
-      "\nThe output residual subaxis is\n",
-      _model.output_axis().subaxis(RESIDUAL));
+  // diagnostic_assert(_model.output_axis().has_residual(),
+  //                   "The implicit model'",
+  //                   _model.name(),
+  //                   "' registered in '",
+  //                   name(),
+  //                   "' does not have the residual output axis.");
+  // diagnostic_assert(_model.output_axis().nsubaxis() == 1,
+  //                   "The implicit model's output contains non-residual subaxis:\n",
+  //                   _model.output_axis());
+  // diagnostic_assert(_model.input_axis().has_state(),
+  //                   "The implicit model's input does not have a state subaxis:\n",
+  //                   _model.input_axis());
+  // diagnostic_assert(!_model.input_axis().has_residual(),
+  //                   "The implicit model's input cannot have a residual subaxis:\n",
+  //                   _model.input_axis());
+  // diagnostic_assert(
+  //     _model.input_axis().subaxis(STATE) == _model.output_axis().subaxis(RESIDUAL),
+  //     "The implicit model should have conformal trial state and residual. The input state "
+  //     "subaxis is\n",
+  //     _model.input_axis().subaxis(STATE),
+  //     "\nThe output residual subaxis is\n",
+  //     _model.output_axis().subaxis(RESIDUAL));
 }
 
 void

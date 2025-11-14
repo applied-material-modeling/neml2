@@ -84,10 +84,6 @@ ModelUnitTest::expected_options()
 
   options.set<bool>("show_parameters") = false;
   options.set("show_parameters").doc() = "Whether to show model parameters at the beginning";
-  options.set<bool>("show_input_axis") = false;
-  options.set("show_input_axis").doc() = "Whether to show model input axis at the beginning";
-  options.set<bool>("show_output_axis") = false;
-  options.set("show_output_axis").doc() = "Whether to show model output axis at the beginning";
 
   return options;
 }
@@ -109,9 +105,7 @@ ModelUnitTest::ModelUnitTest(const OptionSet & options)
     _param_rtol(options.get<double>("parameter_derivative_rel_tol")),
     _param_atol(options.get<double>("parameter_derivative_abs_tol")),
 
-    _show_params(options.get<bool>("show_parameters")),
-    _show_input(options.get<bool>("show_input_axis")),
-    _show_output(options.get<bool>("show_output_axis"))
+    _show_params(options.get<bool>("show_parameters"))
 {
 #define SET_VARIABLE_(T)                                                                           \
   set_variable<T>(_in, options, "input_" #T "_names", "input_" #T "_values");                      \
@@ -129,12 +123,6 @@ ModelUnitTest::run()
     for (auto && [pname, pval] : _model->named_parameters())
       std::cout << "  " << pname << std::endl;
   }
-
-  if (_show_input)
-    std::cout << _model->name() << "'s input axis:\n" << _model->input_axis() << std::endl;
-
-  if (_show_output)
-    std::cout << _model->name() << "'s output axis:\n" << _model->output_axis() << std::endl;
   // LCOV_EXCL_STOP
 
   check_all();

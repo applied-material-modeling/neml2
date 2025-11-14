@@ -138,8 +138,6 @@ Model::to(const TensorOptions & options)
 void
 Model::setup()
 {
-  setup_layout();
-
   if (host() == this)
   {
     link_output_variables();
@@ -659,22 +657,26 @@ Model::named_nonlinear_parameters(bool recursive) const
 std::set<VariableName>
 Model::consumed_items() const
 {
-  auto items = input_axis().variable_names();
-  return {items.begin(), items.end()};
+  std::set<VariableName> items;
+  for (auto && [name, var] : input_variables())
+    items.insert(name);
+  return items;
 }
 
 std::set<VariableName>
 Model::provided_items() const
 {
-  auto items = output_axis().variable_names();
-  return {items.begin(), items.end()};
+  std::set<VariableName> items;
+  for (auto && [name, var] : output_variables())
+    items.insert(name);
+  return items;
 }
 
 void
 Model::assign_input_stack(jit::Stack & stack)
 {
 #ifndef NDEBUG
-  const auto nstack = input_axis().nvariable() + host<ParameterStore>()->named_parameters().size();
+  const auto nstack = input_variables().size() + host<ParameterStore>()->named_parameters().size();
   neml_assert_dbg(
       stack.size() == nstack,
       "Stack size (",

@@ -6,8 +6,6 @@
     ic_Vec_names = 'state/x state/v'
     ic_Vec_values = 'x0 v0'
     save_as = 'result.pt'
-    show_input_axis = true
-    show_output_axis = true
   []
 []
 

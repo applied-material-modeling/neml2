@@ -79,7 +79,7 @@ void
 PlasticSpatialVelocityGradient::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   const auto A = _crystal_geometry.A();
-  const auto lp_crystal = intmd_sum(_g * A, -1);
+  const auto lp_crystal = intmd_sum(_g * A, -1, /*keepdim=*/true);
 
   if (out)
     _lp = lp_crystal.rotate(_R());

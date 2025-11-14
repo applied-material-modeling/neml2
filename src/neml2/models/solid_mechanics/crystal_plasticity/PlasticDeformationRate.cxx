@@ -76,7 +76,7 @@ PlasticDeformationRate::PlasticDeformationRate(const OptionSet & options)
 void
 PlasticDeformationRate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  const auto dp_crystal = intmd_sum(_g * _crystal_geometry.M(), -1);
+  const auto dp_crystal = intmd_sum(_g * _crystal_geometry.M(), -1, /*keepdim=*/true);
 
   if (out)
     _dp = dp_crystal.rotate(_R());

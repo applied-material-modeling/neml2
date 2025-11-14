@@ -131,8 +131,8 @@ LDISolidMechanicsDriver::diagnose() const
   if (_cp_warmup)
   {
     diagnostic_assert(_control == "STRAIN", "CP warm-up step is only supported for STRAIN control");
-    diagnostic_assert(_model->input_axis().has_variable(_cp_warmup_elastic_strain),
-                      "Model's input axis should have variable ",
+    diagnostic_assert(_model->input_variables().count(_cp_warmup_elastic_strain),
+                      "Model's input should have variable ",
                       _cp_warmup_elastic_strain,
                       " for the CP warm-up step but it does not");
   }

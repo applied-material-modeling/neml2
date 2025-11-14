@@ -121,10 +121,6 @@ zeta = 0.05
     force_Scalar_names = 'forces/T'
     force_Scalar_values = 'T'
 
-    show_input_axis = false
-    show_output_axis = false
-    show_parameters = false
-
     ic_Scalar_names = 'state/wb state/wc'
     ic_Scalar_values = '${wb0} ${wc0}'
     save_as = 'result.pt'

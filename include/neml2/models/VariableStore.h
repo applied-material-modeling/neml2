@@ -55,19 +55,16 @@ public:
 
   LabeledAxis & declare_axis(const std::string & name);
 
-  /// Setup the layout of all the registered axes
-  virtual void setup_layout();
-
   ///@{
-  /// Definition of the input axis showing the layout of input variables
-  LabeledAxis & input_axis() { return _input_axis; }
-  const LabeledAxis & input_axis() const { return _input_axis; }
+  /// Input axis describing the assembly layout of input variables
+  const LabeledAxis & input_axis();
+  const LabeledAxis & input_axis() const;
   ///@}
 
   ///@{
-  /// Definition of the output axis showing the layout of output variables
-  LabeledAxis & output_axis() { return _output_axis; }
-  const LabeledAxis & output_axis() const { return _output_axis; }
+  /// Output axis describing the assembly layout of output variables
+  const LabeledAxis & output_axis();
+  const LabeledAxis & output_axis() const;
   ///@}
 
   using VariableStorage = std::map<VariableName, std::unique_ptr<VariableBase>>;

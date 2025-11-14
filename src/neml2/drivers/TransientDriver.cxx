@@ -173,6 +173,13 @@ void
 TransientDriver::setup()
 {
   ModelDriver::setup();
+
+  for (const auto & [vname, var] : _model->input_variables())
+    if (var->is_state())
+    {
+      _has_input_state = true;
+      break;
+    }
 }
 
 void
@@ -202,14 +209,21 @@ TransientDriver::diagnose() const
   }
 
   // Check for statefulness
-  const auto & input_old_state = _model->input_axis().subaxis(OLD_STATE);
-  const auto & output_state = _model->output_axis().subaxis(STATE);
-  if (_model->input_axis().has_old_state())
-    for (const auto & var : input_old_state.variable_names())
-      diagnostic_assert(output_state.has_variable(var),
-                        "Input axis has old state variable ",
-                        var,
-                        ", but the corresponding output state variable doesn't exist.");
+  bool has_old_state = false;
+  for (const auto & [vname, var] : _model->input_variables())
+    if (var->is_old_state())
+    {
+      has_old_state = true;
+      break;
+    }
+
+  if (has_old_state)
+    for (const auto & [vname, var] : _model->input_variables())
+      if (var->is_old_state())
+        diagnostic_assert(_model->output_variables().count(vname.remount(STATE)),
+                          "Input has old state variable ",
+                          vname,
+                          ", but the corresponding output state variable doesn't exist.");
 }
 
 bool
@@ -262,26 +276,20 @@ void
 TransientDriver::advance_step()
 {
   // State from the previous time step becomes the old state in the current time step
-  if (_model->input_axis().has_old_state())
-  {
-    const auto input_old_state = _model->input_axis().subaxis(OLD_STATE);
-    for (const auto & var : input_old_state.variable_names())
-      _in[var.prepend(OLD_STATE)] = _result_out[_step_count - 1][var.prepend(STATE)];
-  }
+  for (const auto & [var, val] : _result_out[_step_count - 1])
+    if (var.is_state() && _model->input_variables().count(var.remount(OLD_STATE)))
+      _in[var.remount(OLD_STATE)] = val;
 
   // Forces from the previous time step become the old forces in the current time step
-  if (_model->input_axis().has_old_forces())
-  {
-    const auto input_old_forces = _model->input_axis().subaxis(OLD_FORCES);
-    for (const auto & var : input_old_forces.variable_names())
-      _in[var.prepend(OLD_FORCES)] = _result_in[_step_count - 1][var.prepend(FORCES)];
-  }
+  for (const auto & [var, val] : _result_in[_step_count - 1])
+    if (var.is_force() && _model->input_variables().count(var.remount(OLD_FORCES)))
+      _in[var.remount(OLD_FORCES)] = val;
 }
 
 void
 TransientDriver::update_forces()
 {
-  if (_model->input_axis().has_variable(_time_name))
+  if (_model->input_variables().count(_time_name))
     _in[_time_name] = _time.dynamic_index({_step_count});
 
   for (std::size_t i = 0; i < _driving_force_names.size(); i++)
@@ -295,9 +303,9 @@ TransientDriver::apply_ic()
 
   // Figure out what the batch size for our default zero ICs should be
   std::vector<Tensor> defined;
-  for (const auto & var : _model->output_axis().variable_names())
-    if (_result_out[0].count(var))
-      defined.push_back(_result_out[0][var]);
+  for (const auto & [vname, var] : _model->output_variables())
+    if (_result_out[0].count(vname))
+      defined.push_back(_result_out[0][vname]);
   for (const auto & [key, value] : _in)
     defined.push_back(value);
   const auto dynamic_shape = utils::broadcast_dynamic_sizes(defined);
@@ -311,37 +319,37 @@ TransientDriver::apply_ic()
 void
 TransientDriver::apply_predictor()
 {
-  if (!_model->input_axis().has_state())
+  if (!_has_input_state)
     return;
 
-  const auto input_state = _model->input_axis().subaxis(STATE);
-  for (const auto & var : input_state.variable_names())
-    if (_model->output_axis().has_variable(var.prepend(STATE)))
-    {
-      if (_predictor == "PREVIOUS_STATE")
-        _in[var.prepend(STATE)] = _result_out[_step_count - 1][var.prepend(STATE)];
-      else if (_predictor == "LINEAR_EXTRAPOLATION")
+  for (const auto & [vname, var] : _model->input_variables())
+    if (vname.is_state())
+      if (_model->output_variables().count(vname.remount(STATE)))
       {
-        // Fall back to PREVIOUS_STATE predictor at the 1st time step
-        if (_step_count == 1)
-          _in[var.prepend(STATE)] = _result_out[_step_count - 1][var.prepend(STATE)];
-        // Otherwise linearly extrapolate in time
-        else
+        if (_predictor == "PREVIOUS_STATE")
+          _in[vname.remount(STATE)] = _result_out[_step_count - 1][vname.remount(STATE)];
+        else if (_predictor == "LINEAR_EXTRAPOLATION")
         {
-          const auto t = Scalar(_in[_time_name]);
-          const auto t_n = Scalar(_result_in[_step_count - 1][_time_name]);
-          const auto t_nm1 = Scalar(_result_in[_step_count - 2][_time_name]);
-          const auto dt = t - t_n;
-          const auto dt_n = t_n - t_nm1;
+          // Fall back to PREVIOUS_STATE predictor at the 1st time step
+          if (_step_count == 1)
+            _in[vname.remount(STATE)] = _result_out[_step_count - 1][vname.remount(STATE)];
+          // Otherwise linearly extrapolate in time
+          else
+          {
+            const auto t = Scalar(_in[_time_name]);
+            const auto t_n = Scalar(_result_in[_step_count - 1][_time_name]);
+            const auto t_nm1 = Scalar(_result_in[_step_count - 2][_time_name]);
+            const auto dt = t - t_n;
+            const auto dt_n = t_n - t_nm1;
 
-          const auto s_n = _result_out[_step_count - 1][var.prepend(STATE)];
-          const auto s_nm1 = _result_out[_step_count - 2][var.prepend(STATE)];
-          _in[var.prepend(STATE)] = s_n + (s_n - s_nm1) / dt_n * dt;
+            const auto s_n = _result_out[_step_count - 1][vname.remount(STATE)];
+            const auto s_nm1 = _result_out[_step_count - 2][vname.remount(STATE)];
+            _in[vname.remount(STATE)] = s_n + (s_n - s_nm1) / dt_n * dt;
+          }
         }
+        else
+          throw NEMLException("Unrecognized predictor type: " + _predictor.selection());
       }
-      else
-        throw NEMLException("Unrecognized predictor type: " + _predictor.selection());
-    }
 }
 
 void

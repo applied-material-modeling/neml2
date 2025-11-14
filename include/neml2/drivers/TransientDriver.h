@@ -126,5 +126,8 @@ private:
   /// Output in torchscript format
   void output_pt(const std::filesystem::path & out) const;
   ///@}
+
+  /// Whether the model requires initial guesses for the state variables
+  bool _has_input_state = false;
 };
 } // namespace neml2

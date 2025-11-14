@@ -67,10 +67,6 @@ protected:
 
   /// Set to true to list all the model parameters at the beginning
   const bool _show_params;
-  /// Set to true to show model's input axis at the beginning
-  const bool _show_input;
-  /// Set to true to show model's output axis at the beginning
-  const bool _show_output;
 
 #ifdef NEML2_HAS_DISPATCHER
   /// The work scheduler to use

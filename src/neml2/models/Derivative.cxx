@@ -113,17 +113,8 @@ Derivative<N>::operator=(const Tensor & val)
   const auto intmd_sizes = total_intmd_sizes();
   if (val.intmd_sizes() == intmd_sizes)
     assign_or_add(_deriv, val);
-  else
+  else if (at::is_expandable_to(val.intmd_sizes(), var()->intmd_sizes()))
   {
-    neml_assert_dbg(at::is_expandable_to(val.intmd_sizes(), var()->intmd_sizes()),
-                    "The assigned derivative for '",
-                    _debug_name,
-                    "' has incompatible intmd shape ",
-                    val.intmd_sizes(),
-                    ". Expected to either be ",
-                    intmd_sizes,
-                    " or expandable to ",
-                    var()->intmd_sizes());
     const auto broadcasted_intmd_sizes =
         N == 1
             ? utils::add_shapes(var()->intmd_sizes(), var()->intmd_sizes())
@@ -143,6 +134,18 @@ Derivative<N>::operator=(const Tensor & val)
 
     assign_or_add(_deriv, val2);
   }
+  else if (at::is_expandable_to(val.intmd_sizes(), intmd_sizes))
+    assign_or_add(_deriv, val.intmd_expand(intmd_sizes));
+  else
+    neml_assert_dbg(false,
+                    "The assigned derivative for '",
+                    _debug_name,
+                    "' has incompatible intmd shape ",
+                    val.intmd_sizes(),
+                    ". Expected to be either expandable to the variable's intmd shape ",
+                    var()->intmd_sizes(),
+                    " or expandable to the derivative's intmd shape ",
+                    intmd_sizes);
 
   // Invalidate the assembly cache
   _deriv_assembly = Tensor();
