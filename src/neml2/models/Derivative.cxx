@@ -132,7 +132,7 @@ Derivative<N>::operator=(const Tensor & val)
       val2 = intmd_diagonalize(val2);
     val2 = intmd_sum_to_size(val2.intmd_reshape(broadcasted_intmd_sizes), aligned_intmd_sizes);
 
-    assign_or_add(_deriv, val2);
+    assign_or_add(_deriv, val2.intmd_reshape(intmd_sizes));
   }
   else if (at::is_expandable_to(val.intmd_sizes(), intmd_sizes))
     assign_or_add(_deriv, val.intmd_expand(intmd_sizes));

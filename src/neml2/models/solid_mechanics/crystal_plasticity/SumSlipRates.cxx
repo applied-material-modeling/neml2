@@ -70,7 +70,7 @@ SumSlipRates::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
     if (_g.is_dependent())
     {
       auto I = TensorShape(_g.intmd_sizes());
-      I.erase(I.begin() + utils::normalize_dim(_dim, 0, _g.intmd_dim()));
+      I[utils::normalize_dim(_dim, 0, _g.intmd_dim())] = 1;
       _sg.d(_g) = sign(_g()).intmd_expand(utils::add_shapes(I, _g.intmd_sizes()));
     }
 }
