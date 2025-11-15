@@ -36,23 +36,23 @@ macro(add_submodule mname malias)
   # C++ helpers
   file(GLOB_RECURSE msrcs CONFIGURE_DEPENDS neml2/${malias}/*.cxx)
   if(msrcs)
-    add_library(${mname}_csrc SHARED ${msrcs})
-    target_include_directories(${mname}_csrc PUBLIC ${NEML2_SOURCE_DIR})
-    target_link_libraries(${mname}_csrc PUBLIC torch::python pybind11::pybind11)
-    set_target_properties(${mname}_csrc PROPERTIES LIBRARY_OUTPUT_DIRECTORY neml2/.libs)
+    add_library(c${mname} SHARED ${msrcs})
+    target_include_directories(c${mname} PUBLIC ${NEML2_SOURCE_DIR})
+    target_link_libraries(c${mname} PUBLIC torch::python pybind11::pybind11)
+    set_target_properties(c${mname} PROPERTIES LIBRARY_OUTPUT_DIRECTORY neml2/.libs)
     if(NEML2_WHEEL)
-      set_target_properties(${mname}_csrc PROPERTIES INSTALL_RPATH "${INSTALL_REL_PATH};${INSTALL_REL_PATH}/lib;${INSTALL_REL_PATH}/../torch/lib")
+      set_target_properties(c${mname} PROPERTIES INSTALL_RPATH "${INSTALL_REL_PATH};${INSTALL_REL_PATH}/lib;${INSTALL_REL_PATH}/../torch/lib")
     else()
-      set_target_properties(${mname}_csrc PROPERTIES INSTALL_RPATH "${INSTALL_REL_PATH};${INSTALL_REL_PATH}/lib;${torch_LINK_DIR}")
+      set_target_properties(c${mname} PROPERTIES INSTALL_RPATH "${INSTALL_REL_PATH};${INSTALL_REL_PATH}/lib;${torch_LINK_DIR}")
     endif()
-    install(TARGETS ${mname}_csrc LIBRARY DESTINATION . COMPONENT libneml2-python)
+    install(TARGETS c${mname} LIBRARY DESTINATION . COMPONENT libneml2-python)
   endif()
 
   # pybind11 module
   pybind11_add_module(${mname} MODULE neml2/module_${malias}.cxx)
   target_include_directories(${mname} PUBLIC ${NEML2_SOURCE_DIR})
   if(msrcs)
-    target_link_libraries(${mname} PRIVATE ${mname}_csrc)
+    target_link_libraries(${mname} PRIVATE c${mname})
   endif()
   set_target_properties(${mname} PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY neml2
@@ -86,16 +86,16 @@ add_submodule(pyreserved reserved)
 target_link_libraries(pyreserved PRIVATE base)
 
 add_submodule(pycore core)
-target_link_libraries(pycore_csrc PUBLIC neml2)
+target_link_libraries(cpycore PUBLIC neml2)
 
 add_submodule(pytensors tensors)
-target_link_libraries(pytensors_csrc PUBLIC tensor pycore_csrc)
+target_link_libraries(cpytensors PUBLIC tensor cpycore)
 
 # add_submodule(pymath math)
-# target_link_libraries(pymath_csrc PUBLIC tensor pycore_csrc)
+# target_link_libraries(cpymath PUBLIC tensor cpycore)
 
 # add_submodule(pycrystallography crystallography)
-# target_link_libraries(pycrystallography_csrc PUBLIC tensor pycore_csrc)
+# target_link_libraries(cpycrystallography PUBLIC tensor cpycore)
 
 # ----------------------------------------------------------------------------
 # Artifacts

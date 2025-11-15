@@ -43,3 +43,15 @@
   };                                                                                               \
   }                                                                                                \
   static_assert(true)
+
+#define DEFAULT_TYPECASTER_SHARED_PTR(cpptype, pyname)                                             \
+  namespace pybind11::detail                                                                       \
+  {                                                                                                \
+  template <>                                                                                      \
+  struct type_caster<std::shared_ptr<cpptype>>                                                     \
+    : copyable_holder_caster<cpptype, std::shared_ptr<cpptype>>                                    \
+  {                                                                                                \
+    static constexpr auto name = const_name(pyname);                                               \
+  };                                                                                               \
+  }                                                                                                \
+  static_assert(true)

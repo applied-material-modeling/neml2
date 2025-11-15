@@ -33,13 +33,7 @@ using namespace neml2;
 void
 def(py::module_ & m, py::class_<neml2::LabeledAxis> & c)
 {
-  c.def("has_state", &LabeledAxis::has_state)
-      .def("has_old_state", &LabeledAxis::has_old_state)
-      .def("has_forces", &LabeledAxis::has_forces)
-      .def("has_old_forces", &LabeledAxis::has_old_forces)
-      .def("has_residual", &LabeledAxis::has_residual)
-      .def("has_parameters", &LabeledAxis::has_parameters)
-      .def("size", py::overload_cast<>(&LabeledAxis::size, py::const_))
+  c.def("size", py::overload_cast<>(&LabeledAxis::size, py::const_))
       .def("size",
            py::overload_cast<const LabeledAxisAccessor &>(&LabeledAxis::size, py::const_),
            py::arg("name"))

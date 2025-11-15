@@ -51,5 +51,6 @@ DEFAULT_TYPECASTER(neml2::LabeledAxis, "neml2.core.LabeledAxis");
 DEFAULT_TYPECASTER(neml2::TensorValueBase, "neml2.core.TensorValue");
 DEFAULT_TYPECASTER(neml2::Factory, "neml2.core.Factory");
 DEFAULT_TYPECASTER(neml2::Model, "neml2.core.Model");
+DEFAULT_TYPECASTER_SHARED_PTR(neml2::Model, "neml2.core.Model");
 DEFAULT_TYPECASTER(neml2::VectorAssembler, "neml2.core.VectorAssembler");
 DEFAULT_TYPECASTER(neml2::MatrixAssembler, "neml2.core.MatrixAssembler");
