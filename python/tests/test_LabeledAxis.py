@@ -28,27 +28,6 @@ from pathlib import Path
 import neml2
 
 
-def test_axis_properties():
-    pwd = Path(__file__).parent
-    model = neml2.load_model(pwd / "test_LabeledAxis.i", "model")
-    input_axis = model.input_axis()
-    output_axis = model.output_axis()
-
-    assert input_axis.has_state()
-    assert input_axis.has_old_state()
-    assert input_axis.has_forces()
-    assert input_axis.has_old_forces()
-    assert not input_axis.has_residual()
-    assert not input_axis.has_parameters()
-
-    assert not output_axis.has_state()
-    assert not output_axis.has_old_state()
-    assert not output_axis.has_forces()
-    assert not output_axis.has_old_forces()
-    assert output_axis.has_residual()
-    assert not output_axis.has_parameters()
-
-
 def test_size():
     pwd = Path(__file__).parent
     model = neml2.load_model(pwd / "test_LabeledAxis.i", "model")

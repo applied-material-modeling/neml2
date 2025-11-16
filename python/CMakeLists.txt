@@ -20,16 +20,6 @@ if(NOT ${torch_LINK_DIR} STREQUAL ${Python3_SITEARCH}/torch/lib AND NOT ${torch_
 endif()
 
 # ----------------------------------------------------------------------------
-# pybind11
-# ----------------------------------------------------------------------------
-execute_process(
-  COMMAND_ERROR_IS_FATAL ANY
-  COMMAND ${Python3_EXECUTABLE} ${NEML2_SOURCE_DIR}/scripts/check_python_dep.py ${CMAKE_CURRENT_SOURCE_DIR}/neml2/requirements.txt
-)
-set(pybind11_ROOT ${Python3_SITEARCH}/pybind11)
-find_package(pybind11 CONFIG REQUIRED)
-
-# ----------------------------------------------------------------------------
 # Main interface library
 # ----------------------------------------------------------------------------
 add_custom_target(pyneml2_modules)
@@ -43,8 +33,8 @@ macro(add_submodule mname malias)
   file(GLOB_RECURSE msrcs CONFIGURE_DEPENDS neml2/csrc/${malias}/*.cxx)
   if(msrcs)
     add_library(c${mname} SHARED ${msrcs})
-    target_include_directories(c${mname} PUBLIC ${NEML2_SOURCE_DIR})
-    target_link_libraries(c${mname} PUBLIC torch::python pybind11::pybind11)
+    target_include_directories(c${mname} PUBLIC ${NEML2_SOURCE_DIR} ${Python3_INCLUDE_DIRS})
+    target_link_libraries(c${mname} PUBLIC torch::python Python3::Module)
     set_target_properties(c${mname} PROPERTIES LIBRARY_OUTPUT_DIRECTORY neml2/.libs)
     if(NEML2_WHEEL)
       set_target_properties(c${mname} PROPERTIES INSTALL_RPATH "${INSTALL_REL_PATH};${INSTALL_REL_PATH}/lib;${INSTALL_REL_PATH}/../torch/lib")
@@ -55,14 +45,17 @@ macro(add_submodule mname malias)
   endif()
 
   # pybind11 module
-  pybind11_add_module(${mname} MODULE neml2/${malias}.cxx)
-  target_include_directories(${mname} PUBLIC ${NEML2_SOURCE_DIR})
+  add_library(${mname} MODULE neml2/${malias}.cxx)
+  target_include_directories(${mname} PUBLIC ${NEML2_SOURCE_DIR} ${Python3_INCLUDE_DIRS})
+  target_link_libraries(${mname} PUBLIC torch::python Python3::Module)
   if(msrcs)
     target_link_libraries(${mname} PRIVATE c${mname})
   endif()
   set_target_properties(${mname} PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY neml2
     OUTPUT_NAME ${malias}
+    PREFIX ""
+    SUFFIX ".${Python3_SOABI}${CMAKE_SHARED_LIBRARY_SUFFIX}"
   )
   install(TARGETS ${mname} LIBRARY DESTINATION . COMPONENT libneml2-python)
 

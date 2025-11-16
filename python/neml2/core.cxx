@@ -24,7 +24,6 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include <pybind11/stl/filesystem.h>
 
 #include "python/neml2/csrc/core/types.h"
 
@@ -54,22 +53,26 @@ PYBIND11_MODULE(core, m)
   pybind11::implicitly_convertible<std::string, neml2::LabeledAxisAccessor>();
 
   // free functions
-  m.def("load_input",
-        &load_input,
-        py::arg("path"),
-        py::arg("cli_args") = "",
-        R"(
+  m.def(
+      "load_input",
+      [](const py::object & path, const std::string & cli_args)
+      { return load_input(py::str(path).cast<std::string>(), cli_args); },
+      py::arg("path"),
+      py::arg("cli_args") = "",
+      R"(
   Parse all options from an input file. Note that Previously loaded input options
   will be discarded.
 
   :param path:     Path to the input file to be parsed
   :param cli_args: Additional command-line arguments to pass to the parser
   )");
-  m.def("load_model",
-        &load_model,
-        py::arg("path"),
-        py::arg("name"),
-        R"(
+  m.def(
+      "load_model",
+      [](const py::object & path, const std::string & name)
+      { return load_model(py::str(path).cast<std::string>(), name); },
+      py::arg("path"),
+      py::arg("name"),
+      R"(
   A convenient function to load an input file and get a model.
 
   This function is equivalent to calling core.load_input followed by

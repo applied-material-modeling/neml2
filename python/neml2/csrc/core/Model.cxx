@@ -41,13 +41,13 @@ def(py::module_ & m, py::class_<neml2::Model, std::shared_ptr<neml2::Model>> & c
       .def("__str__", [](const Model & self) { return utils::stringify(self); })
       .def(
           "input_axis",
-          [](const Model & self) { return &self.input_axis(); },
+          [](Model & self) { return &self.input_axis(); },
           py::return_value_policy::reference,
           "Input axis of the model. The axis contains information on variable names and their "
           "associated slicing indices.")
       .def(
           "output_axis",
-          [](const Model & self) { return &self.output_axis(); },
+          [](Model & self) { return &self.output_axis(); },
           py::return_value_policy::reference,
           "Output axis of the model. The axis contains information on variable names and their "
           "associated slicing indices.")
