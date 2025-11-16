@@ -23,7 +23,6 @@
 # THE SOFTWARE.
 
 import pytest
-from functools import reduce
 
 # fixtures
 from common import *
@@ -31,233 +30,170 @@ import neml2
 
 
 @pytest.fixture
-def base_shape():
+def tensor_shape_A():
     """
-    Base shape for all sample Tensors
+    Sample tensor shape A, unbatched
     """
-    return (7, 1, 2, 1)
+    dynamic_shape = ()
+    intmd_shape = ()
+    base_shape = (2,)
+    return TensorShape(dynamic_shape, intmd_shape, base_shape)
 
 
 @pytest.fixture
-def _A(base_shape, tensor_options):
+def tensor_shape_B():
     """
-    Sample Tensor A, unbatched
+    Sample tensor shape B, non-trivially broadcastable with A
     """
-    storage = reduce((lambda x, y: x * y), base_shape, 1)
-    sample = torch.arange(storage, **tensor_options).reshape(base_shape)
-    sample = (sample - torch.mean(sample) + 1.1) / storage
-    return neml2.Tensor(sample, 0)
+    dynamic_shape = (2, 1)
+    intmd_shape = (2,)
+    base_shape = (3, 1, 2)
+    return TensorShape(dynamic_shape, intmd_shape, base_shape)
 
 
 @pytest.fixture
-def _B(base_shape, tensor_options):
+def tensor_shape_C():
     """
-    Sample Tensor B, batched and is (non-trivially) broadcastable with sample C
+    Sample tensor shape C, non-trivially broadcastable with A and B
     """
-    batch_shape = (5, 3, 1)
-    shape = batch_shape + base_shape
-    storage = reduce((lambda x, y: x * y), shape, 1)
-    sample = torch.arange(storage, **tensor_options).reshape(shape)
-    sample = (sample - torch.mean(sample) - 0.5) / storage
-    return neml2.Tensor(sample, 3)
+    dynamic_shape = (2, 1, 3)
+    intmd_shape = (3, 1)
+    base_shape = (1, 2)
+    return TensorShape(dynamic_shape, intmd_shape, base_shape)
 
 
-@pytest.fixture
-def _C(base_shape, tensor_options):
-    """
-    Sample Tensor C, batched and is (non-trivially) broadcastable with sample B
-    """
-    batch_shape = (2, 5, 1, 2)
-    shape = batch_shape + base_shape
-    storage = reduce((lambda x, y: x * y), shape, 1)
-    sample = torch.arange(storage, **tensor_options).reshape(shape)
-    sample = (sample - torch.mean(sample) + 0.3) / storage
-    return neml2.Tensor(sample, 4)
-
-
-@pytest.fixture(params=["_A", "_B", "_C"], ids=["A", "B", "C"])
-def sample(request, tensor_options):
+@pytest.fixture(params=["tensor_shape_A", "tensor_shape_B", "tensor_shape_C"], ids=["A", "B", "C"])
+def tensor_shape(request):
     return request.getfixturevalue(request.param)
 
 
-def test_basic(sample, base_shape, tensor_options):
-    # Default c'tor
+def test_empty_ctor():
     A = neml2.Tensor()
     assert not A.defined()
+    # assert A.dtype == torch.get_default_dtype()
 
-    # From a torch.Tensor and a batch dim
-    A0 = torch.ones(3, 4, 5, 6, **tensor_options)
-    A = neml2.Tensor(A0, 2)
+
+def test_ctor(tensor_shape: TensorShape, tensor_options):
+    # From a torch.Tensor
+    A0 = torch.rand(*tensor_shape.shape, **tensor_options)
+    A = neml2.Tensor(A0, tensor_shape.dynamic_dim, tensor_shape.intmd_dim)
     assert torch.allclose(A.torch(), A0)
+    assert_tensor_shape(A, tensor_shape)
 
     # From another Tensor
+    sample = make_sample(tensor_shape, **tensor_options)
     A = neml2.Tensor(sample)
     assert torch.allclose(A.torch(), sample.torch())
-
-    # Basic properties
-    assert sample.batched() == (sample.dim() > len(base_shape))
+    assert_tensor_shape(A, tensor_shape)
 
 
-def test_batch_view(sample, base_shape):
+def test_view(tensor_shape: TensorShape, tensor_options):
+    sample = make_sample(tensor_shape, **tensor_options)
     sample0 = sample.clone()
-    Z = sample.torch()
-
-    # dimension
-    batch_dim = sample.batch.dim()
-    assert batch_dim == sample.dim() - len(base_shape)
-
-    # shape
-    batch_shape = sample.batch.shape
-    assert batch_shape == sample.shape[: sample.batch.dim()]
 
     # __getitem__
-    assert torch.allclose(sample.batch[None].torch(), Z[None])
-    assert torch.allclose(sample.batch[...].torch(), Z[...])
-    if sample.batched():
-        assert torch.allclose(sample.batch[0].torch(), Z[0])
-        assert torch.allclose(sample.batch[0:5:2].torch(), Z[0:5:2])
-        assert torch.allclose(sample.batch[:, 0].torch(), Z[:, 0])
+    assert torch.allclose(sample.dynamic[None].torch(), sample.torch()[None])
+    assert torch.allclose(sample.dynamic[...].torch(), sample.torch()[...])
+    if sample.dynamic.dim() > 0:
+        assert torch.allclose(sample.dynamic[0].torch(), sample.torch()[0])
+        assert torch.allclose(sample.dynamic[0:5:2].torch(), sample.torch()[0:5:2])
+        assert torch.allclose(sample.dynamic[:, 0].torch(), sample.torch()[:, 0])
 
     # __setitem__
-    sample0.batch[...] = Z + 1.3
-    assert torch.allclose(sample0.torch(), Z + 1.3)
+    sample0.dynamic[...] = sample.torch() + 1.3
+    assert torch.allclose(sample0.torch(), sample.torch() + 1.3)
 
     # expand
-    B = sample.batch.expand((10, 2) + batch_shape)
-    assert torch.allclose(B.torch(), Z.expand((10, 2) + Z.shape))
+    target_dynamic_shape = (7, 2) + tensor_shape.dynamic_shape
+    target_shape = target_dynamic_shape + tensor_shape.static_shape
+    B = sample.dynamic.expand(target_dynamic_shape)
+    assert torch.allclose(B.torch(), sample.torch().expand(target_shape))
 
     # unsqueeze
-    B = sample.batch.unsqueeze(0)
-    assert torch.allclose(B.torch(), Z.unsqueeze(0))
-    B = sample.batch.unsqueeze(-1)
-    assert torch.allclose(B.torch(), Z.unsqueeze(batch_dim))
+    B = sample.dynamic.unsqueeze(0)
+    assert torch.allclose(B.torch(), sample.torch().unsqueeze(0))
+    B = sample.dynamic.unsqueeze(-1)
+    assert torch.allclose(B.torch(), sample.torch().unsqueeze(tensor_shape.dynamic_dim))
 
     # transpose
-    if batch_dim >= 2:
-        B = sample.batch.transpose(0, 1)
-        assert torch.allclose(B.torch(), torch.transpose(Z, 0, 1))
+    if tensor_shape.batch_dim >= 2:
+        B = sample.dynamic.transpose(0, 1)
+        assert torch.allclose(B.torch(), torch.transpose(sample.torch(), 0, 1))
 
 
-def test_base_view(sample, base_shape):
-    sample0 = sample.clone()
-    Z = sample.torch()
-    batch_dim = sample.batch.dim()
+def test_binary_ops(
+    tensor_shape_A: TensorShape,
+    tensor_shape_B: TensorShape,
+    tensor_shape_C: TensorShape,
+    tensor_options,
+):
+    A = make_sample(tensor_shape_A, **tensor_options)
+    B = make_sample(tensor_shape_B, **tensor_options)
+    C = make_sample(tensor_shape_C, **tensor_options)
 
-    # dimension
-    base_dim = sample.base.dim()
-    assert base_dim == len(base_shape)
-
-    # shape
-    assert sample.base.shape == base_shape
-
-    # __getitem__
-    I = (slice(None),) * batch_dim
-    assert torch.allclose(sample.base[None].torch(), Z[I + (None,)])
-    assert torch.allclose(sample.base[...].torch(), Z[I + (...,)])
-    if sample.batched():
-        assert torch.allclose(sample.base[0].torch(), Z[I + (0,)])
-        assert torch.allclose(sample.base[0:5:2].torch(), Z[I + (slice(0, 5, 2),)])
-        assert torch.allclose(sample.base[:, 0].torch(), Z[I + (slice(None), 0)])
-
-    # __setitem__
-    sample0.base[...] = Z + 1.3
-    assert torch.allclose(sample0.torch(), Z + 1.3)
-
-    # expand
-    B = sample.base.expand((7, 2, 2, 3))
-    assert torch.allclose(B.torch(), Z.expand(*((-1,) * batch_dim) + (7, 2, 2, 3)))
-
-    # unsqueeze
-    B = sample.base.unsqueeze(0)
-    assert torch.allclose(B.torch(), Z.unsqueeze(batch_dim))
-    B = sample.base.unsqueeze(-1)
-    assert torch.allclose(B.torch(), Z.unsqueeze(-1))
-
-    # transpose
-    B = sample.base.transpose(0, 1)
-    assert torch.allclose(B.torch(), torch.transpose(Z, batch_dim, batch_dim + 1))
-
-
-def test_binary_ops(_A, _B, _C):
     # add
-    assert_unary_op(lambda x: x + 0.5, _A)
-    assert_unary_op(lambda x: x + 0.5, _B)
-    assert_unary_op(lambda x: 0.5 + x, _A)
-    assert_unary_op(lambda x: 0.5 + x, _B)
-    assert_binary_op(lambda x, y: x + y, _A, _B)
-    assert_binary_op(lambda x, y: x + y, _B, _C)
+    assert_unary_op(lambda x: x + 0.5, A)
+    assert_unary_op(lambda x: x + 0.5, B)
+    assert_unary_op(lambda x: 0.5 + x, A)
+    assert_unary_op(lambda x: 0.5 + x, B)
+    assert_binary_op(lambda x, y: x + y, A, B)
+    assert_binary_op(lambda x, y: x + y, B, C)
     # sub
-    assert_unary_op(lambda x: x - 0.5, _A)
-    assert_unary_op(lambda x: x - 0.5, _B)
-    assert_unary_op(lambda x: 0.5 - x, _A)
-    assert_unary_op(lambda x: 0.5 - x, _B)
-    assert_binary_op(lambda x, y: x - y, _A, _B)
-    assert_binary_op(lambda x, y: x - y, _B, _C)
+    assert_unary_op(lambda x: x - 0.5, A)
+    assert_unary_op(lambda x: x - 0.5, B)
+    assert_unary_op(lambda x: 0.5 - x, A)
+    assert_unary_op(lambda x: 0.5 - x, B)
+    assert_binary_op(lambda x, y: x - y, A, B)
+    assert_binary_op(lambda x, y: x - y, B, C)
     # mul
-    assert_unary_op(lambda x: x * 0.5, _A)
-    assert_unary_op(lambda x: x * 0.5, _B)
-    assert_unary_op(lambda x: 0.5 * x, _A)
-    assert_unary_op(lambda x: 0.5 * x, _B)
+    assert_unary_op(lambda x: x * 0.5, A)
+    assert_unary_op(lambda x: x * 0.5, B)
+    assert_unary_op(lambda x: 0.5 * x, A)
+    assert_unary_op(lambda x: 0.5 * x, B)
+    assert_binary_op(lambda x, y: x * y, A, B)
+    assert_binary_op(lambda x, y: x * y, B, C)
     # div
-    assert_unary_op(lambda x: x / 0.5, _A)
-    assert_unary_op(lambda x: x / 0.5, _B)
-    assert_unary_op(lambda x: 0.5 / x, _A)
-    assert_unary_op(lambda x: 0.5 / x, _B)
-    assert_binary_op(lambda x, y: x / y, _A, _B)
-    assert_binary_op(lambda x, y: x / y, _B, _C)
+    assert_unary_op(lambda x: x / 0.5, A)
+    assert_unary_op(lambda x: x / 0.5, B)
+    assert_unary_op(lambda x: 0.5 / x, A)
+    assert_unary_op(lambda x: 0.5 / x, B)
+    assert_binary_op(lambda x, y: x / y, A, B)
+    assert_binary_op(lambda x, y: x / y, B, C)
     # pow
-    assert_unary_op(lambda x: x**0.5, _A)
-    assert_unary_op(lambda x: x**0.5, _B)
-    assert_unary_op(lambda x: 0.5**x, _A)
-    assert_unary_op(lambda x: 0.5**x, _B)
-    assert_binary_op(lambda x, y: x**y, _A, _B)
-    assert_binary_op(lambda x, y: x**y, _B, _C)
+    assert_unary_op(lambda x: x**0.5, A)
+    assert_unary_op(lambda x: x**0.5, B)
+    assert_unary_op(lambda x: 0.5**x, A)
+    assert_unary_op(lambda x: 0.5**x, B)
+    assert_binary_op(lambda x, y: x**y, A, B)
+    assert_binary_op(lambda x, y: x**y, B, C)
 
 
-def test_unary_ops(sample):
+def test_unary_ops(tensor_shape: TensorShape, tensor_options):
+    sample = make_sample(tensor_shape, **tensor_options)
+
     # neg
     assert_unary_op(lambda x: -x, sample)
 
 
-def test_named_ctors(_A, _B, _C, tensor_options):
+def test_named_ctors(tensor_shape: TensorShape, tensor_options):
+    sample = make_sample(tensor_shape, **tensor_options)
+
     # empty_like
-    A = neml2.Tensor.empty_like(_A)
-    assert A.batch.dim() == _A.batch.dim()
-    B = neml2.Tensor.empty_like(_B)
-    assert B.batch.dim() == _B.batch.dim()
+    A = neml2.Tensor.empty_like(sample)
+    assert_tensor_shape(A, tensor_shape)
 
     # zeros_like
-    A = neml2.Tensor.zeros_like(_A)
-    assert A.batch.dim() == _A.batch.dim()
-    assert torch.allclose(A.torch(), torch.zeros_like(_A.torch()))
-    B = neml2.Tensor.zeros_like(_B)
-    assert B.batch.dim() == _B.batch.dim()
-    assert torch.allclose(B.torch(), torch.zeros_like(_B.torch()))
+    A = neml2.Tensor.zeros_like(A)
+    A0 = torch.zeros_like(sample.torch())
+    assert_tensor_shape(A, tensor_shape)
+    assert torch.allclose(A.torch(), A0)
 
     # ones_like
-    A = neml2.Tensor.ones_like(_A)
-    assert A.batch.dim() == _A.batch.dim()
-    assert torch.allclose(A.torch(), torch.ones_like(_A.torch()))
-    B = neml2.Tensor.ones_like(_B)
-    assert B.batch.dim() == _B.batch.dim()
-    assert torch.allclose(B.torch(), torch.ones_like(_B.torch()))
+    A = neml2.Tensor.ones_like(A)
+    assert_tensor_shape(A, tensor_shape)
+    assert torch.allclose(A.torch(), torch.ones_like(sample.torch()))
 
     # full_like
-    A = neml2.Tensor.full_like(_A, 1.1)
-    assert A.batch.dim() == _A.batch.dim()
-    assert torch.allclose(A.torch(), torch.full_like(_A.torch(), 1.1))
-    B = neml2.Tensor.full_like(_B, 2.3)
-    assert B.batch.dim() == _B.batch.dim()
-    assert torch.allclose(B.torch(), torch.full_like(_B.torch(), 2.3))
-
-    # linspace
-    A = neml2.Tensor.linspace(_A, _B, 100)
-    assert A.batch.dim() == 4
-    B = neml2.Tensor.linspace(_B, _C, 100)
-    assert B.batch.dim() == 5
-
-    # logspace
-    A = neml2.Tensor.logspace(_A, _B, 100)
-    assert A.batch.dim() == 4
-    B = neml2.Tensor.logspace(_B, _C, 100)
-    assert B.batch.dim() == 5
+    A = neml2.Tensor.full_like(sample, 1.1)
+    assert_tensor_shape(A, tensor_shape)
+    assert torch.allclose(A.torch(), torch.full_like(sample.torch(), 1.1))

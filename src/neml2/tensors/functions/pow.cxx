@@ -68,7 +68,7 @@ Tensor
 pow(const Tensor & a, const Tensor & n)
 {
   neml_assert_broadcastable_dbg(a, n);
-  const auto [aa, nn, i] = utils::align_intmd_dim(a, n);
+  const auto [aa, nn, i] = utils::align_static_dim(a, n);
   return Tensor(at::pow(aa, nn), utils::broadcast_dynamic_dim(a, n), i);
 }
 

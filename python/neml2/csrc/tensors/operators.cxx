@@ -62,48 +62,48 @@ def_operators(py::module_ & m)
 #define DEF_ADD_NONSCALAR_PRIM(T)                                                                  \
   DEF_BINARY_PYOP(T, T, operator+);                                                                \
   DEF_BINARY_PYOP_SYM(T, Scalar, operator+);                                                       \
-  DEF_BINARY_PYOP_SYM(T, CScalar, operator+)
+  DEF_BINARY_PYOP_SYM(T, double, operator+)
 
   FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DEF_ADD_NONSCALAR_PRIM);
   DEF_BINARY_PYOP(Tensor, Tensor, operator+);
   DEF_BINARY_PYOP_SYM(Tensor, Scalar, operator+);
-  DEF_BINARY_PYOP_SYM(Tensor, CScalar, operator+);
+  DEF_BINARY_PYOP_SYM(Tensor, double, operator+);
   DEF_BINARY_PYOP(Scalar, Scalar, operator+);
-  DEF_BINARY_PYOP_SYM(Scalar, CScalar, operator+);
+  DEF_BINARY_PYOP_SYM(Scalar, double, operator+);
 
 #define DEF_SUB_NONSCALAR_PRIM(T)                                                                  \
   DEF_BINARY_PYOP(T, T, operator-);                                                                \
   DEF_BINARY_PYOP_SYM(T, Scalar, operator-);                                                       \
-  DEF_BINARY_PYOP_SYM(T, CScalar, operator-)
+  DEF_BINARY_PYOP_SYM(T, double, operator-)
 
   FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DEF_SUB_NONSCALAR_PRIM);
   DEF_BINARY_PYOP(Tensor, Tensor, operator-);
   DEF_BINARY_PYOP_SYM(Tensor, Scalar, operator-);
-  DEF_BINARY_PYOP_SYM(Tensor, CScalar, operator-);
+  DEF_BINARY_PYOP_SYM(Tensor, double, operator-);
   DEF_BINARY_PYOP(Scalar, Scalar, operator-);
-  DEF_BINARY_PYOP_SYM(Scalar, CScalar, operator-);
+  DEF_BINARY_PYOP_SYM(Scalar, double, operator-);
 
 #define DEF_MUL_NONSCALAR_PRIM(T)                                                                  \
   DEF_BINARY_PYOP_SYM(T, Scalar, operator*);                                                       \
-  DEF_BINARY_PYOP_SYM(T, CScalar, operator*)
+  DEF_BINARY_PYOP_SYM(T, double, operator*)
 
   FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DEF_MUL_NONSCALAR_PRIM);
   DEF_BINARY_PYOP(Tensor, Tensor, operator*);
   DEF_BINARY_PYOP_SYM(Tensor, Scalar, operator*);
-  DEF_BINARY_PYOP_SYM(Tensor, CScalar, operator*);
+  DEF_BINARY_PYOP_SYM(Tensor, double, operator*);
   DEF_BINARY_PYOP(Scalar, Scalar, operator*);
-  DEF_BINARY_PYOP_SYM(Scalar, CScalar, operator*);
+  DEF_BINARY_PYOP_SYM(Scalar, double, operator*);
 
 #define DEF_DIV_NONSCALAR_PRIM(T)                                                                  \
   DEF_BINARY_PYOP_SYM(T, Scalar, operator/);                                                       \
-  DEF_BINARY_PYOP_SYM(T, CScalar, operator/)
+  DEF_BINARY_PYOP_SYM(T, double, operator/)
 
   FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DEF_DIV_NONSCALAR_PRIM);
   DEF_BINARY_PYOP(Tensor, Tensor, operator/);
   DEF_BINARY_PYOP_SYM(Tensor, Scalar, operator/);
-  DEF_BINARY_PYOP_SYM(Tensor, CScalar, operator/);
+  DEF_BINARY_PYOP_SYM(Tensor, double, operator/);
   DEF_BINARY_PYOP(Scalar, Scalar, operator/);
-  DEF_BINARY_PYOP_SYM(Scalar, CScalar, operator/);
+  DEF_BINARY_PYOP_SYM(Scalar, double, operator/);
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -115,10 +115,10 @@ def_operators(py::module_ & m)
 //             cscalar |
 /////////////////////////////////////////////////////////////////////////////
 #define DEF_INPLACE_TENSORBASE(T)                                                                  \
-  DEF_BINARY_PYOP(T, CScalar, operator+=);                                                         \
-  DEF_BINARY_PYOP(T, CScalar, operator-=);                                                         \
-  DEF_BINARY_PYOP(T, CScalar, operator*=);                                                         \
-  DEF_BINARY_PYOP(T, CScalar, operator/=)
+  DEF_BINARY_PYOP(T, double, operator+=);                                                          \
+  DEF_BINARY_PYOP(T, double, operator-=);                                                          \
+  DEF_BINARY_PYOP(T, double, operator*=);                                                          \
+  DEF_BINARY_PYOP(T, double, operator/=)
   FOR_ALL_TENSORBASE(DEF_INPLACE_TENSORBASE);
 
 /////////////////////////////////////////////////////////////////////////////
@@ -133,24 +133,14 @@ def_operators(py::module_ & m)
 #define DEF_POW_TENSORBASE(T)                                                                      \
   c_##T.def(                                                                                       \
       "__pow__",                                                                                   \
-      [](const T & a, const CScalar & n, const py::object & mod)                                   \
-      {                                                                                            \
-        if (!mod.is_none())                                                                        \
-          throw py::type_error("mod argument not supported");                                      \
-        return neml2::pow(a, n);                                                                   \
-      },                                                                                           \
+      [](const T & a, const double & n) { return neml2::pow(a, n); },                              \
       py::is_operator())
   FOR_ALL_TENSORBASE(DEF_POW_TENSORBASE);
 
 #define DEF_RPOW(T)                                                                                \
   c_##T.def(                                                                                       \
       "__rpow__",                                                                                  \
-      [](const T & n, const CScalar & a, const py::object & mod)                                   \
-      {                                                                                            \
-        if (!mod.is_none())                                                                        \
-          throw py::type_error("mod argument not supported");                                      \
-        return neml2::pow(a, n);                                                                   \
-      },                                                                                           \
+      [](const T & n, const double & a) { return neml2::pow(a, n); },                              \
       py::is_operator())
   DEF_RPOW(Scalar);
   DEF_RPOW(Tensor);
@@ -158,11 +148,6 @@ def_operators(py::module_ & m)
   // element-wise pow
   c_Tensor.def(
       "__pow__",
-      [](const Tensor & a, const Tensor & n, const py::object & mod)
-      {
-        if (!mod.is_none())
-          throw py::type_error("mod argument not supported");
-        return neml2::pow(a, n);
-      },
+      [](const Tensor & a, const Tensor & n) { return neml2::pow(a, n); },
       py::is_operator());
 }
