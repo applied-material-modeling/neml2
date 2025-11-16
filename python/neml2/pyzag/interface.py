@@ -199,13 +199,13 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
 
         # Disassemble state and old_state
         state_vars = self.state_asm.split_by_variable(Tensor(state, bdim))
-        new_state_vars = {k: v.batch[self.lookback :] for k, v in state_vars.items()}
-        old_state_vars = {k.old(): v.batch[: -self.lookback] for k, v in state_vars.items()}
+        new_state_vars = {k: v.dynamic[self.lookback :] for k, v in state_vars.items()}
+        old_state_vars = {k.old(): v.dynamic[: -self.lookback] for k, v in state_vars.items()}
 
         # Disassemble forces and old_forces
         forces_vars = self.forces_asm.split_by_variable(Tensor(forces, bdim))
-        new_forces_vars = {k: v.batch[self.lookback :] for k, v in forces_vars.items()}
-        old_forces_vars = {k.old(): v.batch[: -self.lookback] for k, v in forces_vars.items()}
+        new_forces_vars = {k: v.dynamic[self.lookback :] for k, v in forces_vars.items()}
+        old_forces_vars = {k.old(): v.dynamic[: -self.lookback] for k, v in forces_vars.items()}
 
         return new_state_vars | old_state_vars | new_forces_vars | old_forces_vars
 

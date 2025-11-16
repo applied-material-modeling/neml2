@@ -28,7 +28,6 @@ from pathlib import Path
 
 import torch
 import neml2
-from neml2 import LabeledAxisAccessor as LAA
 from pyzag import nonlinear, chunktime
 
 

@@ -24,62 +24,62 @@
 
 import pytest
 
-from neml2 import LabeledAxisAccessor as LAA
+from neml2 import VariableName
 
 
 def test_ctors():
-    A = LAA()
+    A = VariableName()
     assert str(A) == ""
 
-    A = LAA("state")
+    A = VariableName("state")
     assert str(A) == "state"
 
-    A = LAA("force")
+    A = VariableName("force")
     assert str(A) == "force"
 
-    A = LAA("state/stress")
+    A = VariableName("state/stress")
     assert str(A) == "state/stress"
 
-    A = LAA("state/internal/gamma")
+    A = VariableName("state/internal/gamma")
     assert str(A) == "state/internal/gamma"
 
 
 def test_empty():
-    A = LAA()
-    B = LAA("state/stress")
+    A = VariableName()
+    B = VariableName("state/stress")
     assert not A
     assert B
 
 
 def test_len():
-    A = LAA()
-    B = LAA("state/stress")
+    A = VariableName()
+    B = VariableName("state/stress")
     assert len(A) == 0
     assert len(B) == 2
 
 
 def test_with_suffix():
-    A = LAA("state/stress")
-    B = LAA("state/stress_foo")
+    A = VariableName("state/stress")
+    B = VariableName("state/stress_foo")
     assert A.with_suffix("_foo") == B
 
 
 def test_append():
-    A = LAA("state")
-    B = LAA("foo/bar")
-    C = LAA("state/foo/bar")
+    A = VariableName("state")
+    B = VariableName("foo/bar")
+    C = VariableName("state/foo/bar")
     assert A.append(B) == C
 
 
 def test_prepend():
-    A = LAA("stress")
-    B = LAA("residual/stress")
-    assert A.prepend(LAA("residual")) == B
+    A = VariableName("stress")
+    B = VariableName("residual/stress")
+    assert A.prepend(VariableName("residual")) == B
 
 
 def test_start_with():
-    A = LAA("internal/stress/foo")
-    B = LAA("internal/stress")
-    C = LAA("residual/stress")
+    A = VariableName("internal/stress/foo")
+    B = VariableName("internal/stress")
+    C = VariableName("residual/stress")
     assert A.start_with(B)
     assert not A.start_with(C)
