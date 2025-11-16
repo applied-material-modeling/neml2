@@ -44,8 +44,7 @@ def_TensorBase(py::module_ & m, const std::string & type)
   def_BatchView<T>(m, (type + "BatchView").c_str());
   def_StaticView<T>(m, (type + "StaticView").c_str());
 
-  auto pyc = m.attr(type.c_str());
-  auto c = py::class_<T>(pyc);
+  auto c = m.attr(type.c_str()).cast<py::class_<T>>();
   c.def(py::init<>())
       .def(py::init<const ATensor &, Size, Size>(),
            py::arg("tensor"),

@@ -41,9 +41,7 @@ def_operators(py::module_ & m)
   c_##T1.def(op(T2(), py::self))
 
 // get py types
-#define GET_PYTYPE(T)                                                                              \
-  auto pyc_##T = m.attr(#T);                                                                       \
-  auto c_##T = py::class_<T>(pyc_##T)
+#define GET_PYTYPE(T) auto c_##T = m.attr(#T).cast<py::class_<T>>()
   FOR_ALL_TENSORBASE(GET_PYTYPE);
 
 /////////////////////////////////////////////////////////////////////////////

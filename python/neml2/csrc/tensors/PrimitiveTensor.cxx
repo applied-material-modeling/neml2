@@ -53,8 +53,7 @@ template <class T>
 void
 def_PrimitiveTensor(py::module_ & m, const std::string & type)
 {
-  auto pyc = m.attr(type.c_str());
-  auto c = py::class_<T>(pyc);
+  auto c = m.attr(type.c_str()).cast<py::class_<T>>();
   c.def(py::init<const ATensor &, Size>(), py::arg("tensor"), py::arg("intmd_dim") = 0);
 
   // Static methods
