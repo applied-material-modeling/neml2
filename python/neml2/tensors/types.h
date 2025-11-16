@@ -38,6 +38,7 @@
 #define FORWARD_DECL_DEF(T) void def(pybind11::module_ &, pybind11::class_<neml2::T> &)
 FOR_ALL_TENSORBASE(FORWARD_DECL_DEF);
 #undef FORWARD_DECL_DEF
+void def_operators(py::module_ & m);
 
 // Type casters are only for cross-module types used in function signatures
 DEFAULT_TYPECASTER(neml2::TensorType, "neml2.tensors.TensorType");

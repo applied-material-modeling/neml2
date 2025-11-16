@@ -22,13 +22,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "python/neml2/tensors/TensorBase.h"
+#include "neml2/tensors/tensors.h"
 
-namespace py = pybind11;
-using namespace neml2;
+#include <pybind11/pybind11.h>
 
-void
-def(py::module_ & m, py::class_<R5> & c)
-{
-  def_TensorBase<R5>(m, "R5");
-}
+#include "python/neml2/tensors/types.h"
+
+template <class T>
+void def_PrimitiveTensor(pybind11::module_ & m, const std::string & type);
+
+#define EXPORT_PRIMITIVETENSOR(T)                                                                  \
+  extern template void def_PrimitiveTensor<neml2::T>(pybind11::module_ &, const std::string &)
+FOR_ALL_PRIMITIVETENSOR(EXPORT_PRIMITIVETENSOR);
+#undef EXPORT_PRIMITIVETENSOR

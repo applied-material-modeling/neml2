@@ -122,11 +122,6 @@ imap(const TensorOptions & options)
 
 // SSR4
 template <>
-struct imap_t<SSR4>
-{
-  using type = SSSSR8;
-};
-template <>
 inline DTensor<SSR4, SSR4, typename imap_t<SSR4>::type>
 imap(const TensorOptions & options)
 {

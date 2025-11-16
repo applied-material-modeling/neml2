@@ -31,4 +31,106 @@ void
 def(py::module_ & m, py::class_<Tensor> & c)
 {
   def_TensorBase<Tensor>(m, "Tensor");
+
+  // Static methods
+  c.def_static(
+       "empty",
+       [](TensorShapeRef base_sizes, NEML2_TENSOR_OPTIONS_VARGS)
+       { return Tensor::empty(base_sizes, NEML2_TENSOR_OPTIONS); },
+       py::arg("base_sizes"),
+       py::kw_only(),
+       PY_ARG_TENSOR_OPTIONS)
+      .def_static(
+          "empty",
+          [](TensorShapeRef dynamic_sizes,
+             TensorShapeRef intmd_sizes,
+             TensorShapeRef base_sizes,
+             NEML2_TENSOR_OPTIONS_VARGS)
+          { return Tensor::empty(dynamic_sizes, intmd_sizes, base_sizes, NEML2_TENSOR_OPTIONS); },
+          py::arg("dynamic_sizes"),
+          py::arg("intmd_sizes"),
+          py::arg("base_sizes"),
+          py::kw_only(),
+          PY_ARG_TENSOR_OPTIONS)
+      .def_static(
+          "zeros",
+          [](TensorShapeRef base_sizes, NEML2_TENSOR_OPTIONS_VARGS)
+          { return Tensor::zeros(base_sizes, NEML2_TENSOR_OPTIONS); },
+          py::arg("base_sizes"),
+          py::kw_only(),
+          PY_ARG_TENSOR_OPTIONS)
+      .def_static(
+          "zeros",
+          [](TensorShapeRef dynamic_sizes,
+             TensorShapeRef intmd_sizes,
+             TensorShapeRef base_sizes,
+             NEML2_TENSOR_OPTIONS_VARGS)
+          { return Tensor::zeros(dynamic_sizes, intmd_sizes, base_sizes, NEML2_TENSOR_OPTIONS); },
+          py::arg("dynamic_sizes"),
+          py::arg("intmd_sizes"),
+          py::arg("base_sizes"),
+          py::kw_only(),
+          PY_ARG_TENSOR_OPTIONS)
+      .def_static(
+          "ones",
+          [](TensorShapeRef base_sizes, NEML2_TENSOR_OPTIONS_VARGS)
+          { return Tensor::ones(base_sizes, NEML2_TENSOR_OPTIONS); },
+          py::arg("base_sizes"),
+          py::kw_only(),
+          PY_ARG_TENSOR_OPTIONS)
+      .def_static(
+          "ones",
+          [](TensorShapeRef dynamic_sizes,
+             TensorShapeRef intmd_sizes,
+             TensorShapeRef base_sizes,
+             NEML2_TENSOR_OPTIONS_VARGS)
+          { return Tensor::ones(dynamic_sizes, intmd_sizes, base_sizes, NEML2_TENSOR_OPTIONS); },
+          py::arg("dynamic_sizes"),
+          py::arg("intmd_sizes"),
+          py::arg("base_sizes"),
+          py::kw_only(),
+          PY_ARG_TENSOR_OPTIONS)
+      .def_static(
+          "full",
+          [](TensorShapeRef base_sizes, double init, NEML2_TENSOR_OPTIONS_VARGS)
+          { return Tensor::full(base_sizes, init, NEML2_TENSOR_OPTIONS); },
+          py::arg("base_sizes"),
+          py::arg("fill_value"),
+          py::kw_only(),
+          PY_ARG_TENSOR_OPTIONS)
+      .def_static(
+          "full",
+          [](TensorShapeRef dynamic_sizes,
+             TensorShapeRef intmd_sizes,
+             TensorShapeRef base_sizes,
+             double init,
+             NEML2_TENSOR_OPTIONS_VARGS)
+          {
+            return Tensor::full(dynamic_sizes, intmd_sizes, base_sizes, init, NEML2_TENSOR_OPTIONS);
+          },
+          py::arg("dynamic_sizes"),
+          py::arg("intmd_sizes"),
+          py::arg("base_sizes"),
+          py::arg("fill_value"),
+          py::kw_only(),
+          PY_ARG_TENSOR_OPTIONS)
+      .def_static(
+          "rand",
+          [](TensorShapeRef base_sizes, NEML2_TENSOR_OPTIONS_VARGS)
+          { return Tensor::rand(base_sizes, NEML2_TENSOR_OPTIONS); },
+          py::arg("base_sizes"),
+          py::kw_only(),
+          PY_ARG_TENSOR_OPTIONS)
+      .def_static(
+          "random",
+          [](TensorShapeRef dynamic_sizes,
+             TensorShapeRef intmd_sizes,
+             TensorShapeRef base_sizes,
+             NEML2_TENSOR_OPTIONS_VARGS)
+          { return Tensor::rand(dynamic_sizes, intmd_sizes, base_sizes, NEML2_TENSOR_OPTIONS); },
+          py::arg("dynamic_sizes"),
+          py::arg("intmd_sizes"),
+          py::arg("base_sizes"),
+          py::kw_only(),
+          PY_ARG_TENSOR_OPTIONS);
 }

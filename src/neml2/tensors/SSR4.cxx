@@ -27,11 +27,7 @@
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/R2.h"
 #include "neml2/tensors/R4.h"
-#include "neml2/tensors/R5.h"
-#include "neml2/tensors/SSFR5.h"
 #include "neml2/tensors/Rot.h"
-#include "neml2/tensors/SSSSR8.h"
-#include "neml2/tensors/R8.h"
 #include "neml2/tensors/assertions.h"
 #include "neml2/tensors/functions/symmetrization.h"
 #include "neml2/tensors/functions/mv.h"
@@ -163,14 +159,14 @@ SSR4::rotate(const Rot & r) const
   return R4(*this).rotate(r);
 }
 
-SSFR5
+DTensor<SSR4, Rot, neml2::Tensor>
 SSR4::drotate(const Rot & r) const
 {
   auto dR = R4(*this).drotate(r);
   return full_to_mandel(full_to_mandel(dR), 1);
 }
 
-SSSSR8
+DTensor<SSR4, SSR4, neml2::Tensor>
 SSR4::drotate_self(const Rot & r) const
 {
   auto R = r.euler_rodrigues();
@@ -178,8 +174,9 @@ SSR4::drotate_self(const Rot & r) const
                       neml2::einsum("...mb,...na,...od,...pc->...mnopabcd", {R, R, R, R}) +
                       neml2::einsum("...mb,...na,...oc,...pd->...mnopabcd", {R, R, R, R}) +
                       neml2::einsum("...ma,...nb,...od,...pc->...mnopabcd", {R, R, R, R}));
-  return SSSSR8(full_to_mandel(
-      full_to_mandel(full_to_mandel(full_to_mandel(R8(Tsym, R.batch_dim()), 0), 1), 2), 3));
+  return full_to_mandel(
+      full_to_mandel(full_to_mandel(full_to_mandel(neml2::Tensor(Tsym, R.batch_dim()), 0), 1), 2),
+      3);
 }
 
 Scalar

@@ -25,15 +25,14 @@
 #pragma once
 
 #include "neml2/tensors/PrimitiveTensor.h"
+#include "neml2/tensors/DTensor.h"
 
 namespace neml2
 {
 class Scalar;
 class SR2;
 class R4;
-class SSFR5;
 class Rot;
-class SSSSR8;
 
 /**
  * @brief The symmetric fourth order tensor, with symmetry in the first two dimensionss as
@@ -84,10 +83,10 @@ public:
   SSR4 rotate(const Rot & r) const;
 
   /// Derivative of the rotated tensor w.r.t. the Rodrigues vector
-  SSFR5 drotate(const Rot & r) const;
+  DTensor<SSR4, Rot, neml2::Tensor> drotate(const Rot & r) const;
 
   /// Derivative of the rotated tensor w.r.t. itself
-  SSSSR8 drotate_self(const Rot & r) const;
+  DTensor<SSR4, SSR4, neml2::Tensor> drotate_self(const Rot & r) const;
 
   /// Accessor
   Scalar operator()(Size i, Size j, Size k, Size l) const;

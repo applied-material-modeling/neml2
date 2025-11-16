@@ -31,19 +31,84 @@
 #include "python/neml2/tensors/BatchView.h"
 #include "python/neml2/tensors/StaticView.h"
 
+namespace py = pybind11;
+using namespace neml2;
+
 template <class T>
 void
-def_TensorBase(pybind11::module_ & m, const std::string & type)
+def_TensorBase(py::module_ & m, const std::string & type)
 {
   def_DynamicView<T>(m, (type + "DynamicView").c_str());
   def_IntmdView<T>(m, (type + "IntmdView").c_str());
   def_BaseView<T>(m, (type + "BaseView").c_str());
   def_BatchView<T>(m, (type + "BatchView").c_str());
   def_StaticView<T>(m, (type + "StaticView").c_str());
+
+  auto pyc = m.attr(type.c_str());
+  auto c = py::class_<T>(pyc);
+  c.def(py::init<>())
+      .def(py::init<const ATensor &, Size, Size>(),
+           py::arg("tensor"),
+           py::arg("dynamic_dim"),
+           py::arg("intmd_dim") = 0)
+      .def("__str__",
+           [type](const T & self)
+           {
+             return utils::stringify(self) + '\n' + "<" + type + " of shape " +
+                    utils::stringify(self.dynamic_sizes()) + utils::stringify(self.intmd_sizes()) +
+                    utils::stringify(self.base_sizes()) + ">";
+           })
+      .def("__repr__",
+           [type](const T & self)
+           {
+             return "<" + type + " of shape " + utils::stringify(self.dynamic_sizes()) +
+                    utils::stringify(self.intmd_sizes()) + utils::stringify(self.base_sizes()) +
+                    ">";
+           })
+      .def("torch", [](const T & self) { return torch::Tensor(self); })
+      .def_property_readonly("dynamic", [](T * self) { return new DynamicView<T>(self); })
+      .def_property_readonly("intmd", [](T * self) { return new IntmdView<T>(self); })
+      .def_property_readonly("base", [](T * self) { return new BaseView<T>(self); })
+      .def_property_readonly("batch", [](T * self) { return new BatchView<T>(self); })
+      .def_property_readonly("static", [](T * self) { return new StaticView<T>(self); })
+      .def("contiguous", &T::contiguous)
+      .def("clone", &T::clone)
+      .def("detach", &T::detach)
+      .def("detach_", &T::detach_)
+      .def(
+          "to",
+          [](T * self, NEML2_TENSOR_OPTIONS_VARGS) { return self->to(NEML2_TENSOR_OPTIONS); },
+          py::kw_only(),
+          PY_ARG_TENSOR_OPTIONS)
+      .def("copy_", &T::copy_)
+      .def("zero_", &T::zero_)
+      .def_property_readonly("requires_grad", &T::requires_grad)
+      .def("requires_grad_", &T::requires_grad_)
+      .def("defined", &T::defined)
+      .def_property_readonly("dtype", &T::scalar_type)
+      .def_property_readonly("device", &T::device)
+      .def("dim", &T::dim)
+      .def_property_readonly("shape", &T::sizes)
+      .def_property_readonly("grad", &T::grad)
+      .def("item", [](const T & self) { return self.item(); });
+
+  // convert from another tensor
+#define DEF_COPY_CONSTRUCTOR(T2) c.def(py::init<const T2 &>(), py::arg("other"))
+  FOR_ALL_TENSORBASE(DEF_COPY_CONSTRUCTOR);
+
+  // Static methods
+  c.def_static("empty_like", &T::empty_like)
+      .def_static("zeros_like", &T::zeros_like)
+      .def_static("ones_like", &T::ones_like)
+      .def_static(
+          "full_like",
+          [](const T & other, double init) { return T::full_like(other, init); },
+          py::arg("other"),
+          py::arg("fill_value"))
+      .def_static("rand_like", &T::rand_like);
 }
 
 // Explicit template instantiations
-using namespace neml2;
 #define INSTANTIATE_TENSORBASE(T)                                                                  \
-  template void def_TensorBase<T>(pybind11::module_ &, const std::string &)
+  template void def_TensorBase<T>(py::module_ &, const std::string &)
 FOR_ALL_TENSORBASE(INSTANTIATE_TENSORBASE);

@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "python/neml2/tensors/TensorBase.h"
+#include "python/neml2/tensors/PrimitiveTensor.h"
 
 namespace py = pybind11;
 using namespace neml2;
@@ -31,4 +32,5 @@ void
 def(py::module_ & m, py::class_<Vec> & c)
 {
   def_TensorBase<Vec>(m, "Vec");
+  def_PrimitiveTensor<Vec>(m, "Vec");
 }

@@ -57,4 +57,7 @@ PYBIND11_MODULE(tensors, m)
 // Next, actually define the bindings for each tensor type
 #define DEF_PYTYPE(T) def(m, cls_##T)
   FOR_ALL_TENSORBASE(DEF_PYTYPE);
+
+  // Define operator bindings
+  def_operators(m);
 }
