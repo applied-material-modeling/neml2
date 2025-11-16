@@ -54,6 +54,9 @@ public:
   /// Split the vector (by subaxes)
   ValueMap split_by_subaxis(const Tensor &) const;
 
+  /// Get the axis used for assembly/splitting
+  const LabeledAxis & axis() const { return _axis; }
+
 private:
   const LabeledAxis & _axis;
 };
@@ -82,6 +85,12 @@ public:
 
   /// Split the matrix (by subaxes)
   DerivMap split_by_subaxis(const Tensor &) const;
+
+  /// Get the y-axis used for assembly/splitting
+  const LabeledAxis & yaxis() const { return _yaxis; }
+
+  /// Get the x-axis used for assembly/splitting
+  const LabeledAxis & xaxis() const { return _xaxis; }
 
 private:
   const LabeledAxis & _yaxis;

@@ -59,6 +59,9 @@ public:
   /// Return the fully qualified name of an item (i.e. useful when this axis is a sub-axis)
   LabeledAxisAccessor qualify(const LabeledAxisAccessor & accessor) const;
 
+  /// Return the disqualified name of an item (i.e. remove the prefix)
+  LabeledAxisAccessor disqualify(const LabeledAxisAccessor & accessor) const;
+
   /// Add a sub-axis
   LabeledAxis & add_subaxis(const std::string & name);
 

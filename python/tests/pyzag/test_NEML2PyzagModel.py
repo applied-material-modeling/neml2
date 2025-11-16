@@ -58,13 +58,13 @@ def test_change_parameter_shape():
     # Modify the parameter, batch shape = (10,)
     pmodel.elasticity_E.data = torch.tensor(1.2e5).expand(10)
     pmodel._update_parameter_values()
-    assert torch.allclose(pmodel.model.elasticity_E.torch(), pmodel.elasticity_E)
+    assert torch.allclose(pmodel.model.elasticity_E.torch(), pmodel.get_parameter("elasticity_E"))
     assert pmodel.model.elasticity_E.tensor().batch.shape == (10,)
 
     # Modify again, batch shape = ()
     pmodel.elasticity_E.data = torch.tensor(1.3e5)
     pmodel._update_parameter_values()
-    assert torch.allclose(pmodel.model.elasticity_E.torch(), pmodel.elasticity_E)
+    assert torch.allclose(pmodel.model.elasticity_E.torch(), pmodel.get_parameter("elasticity_E"))
     assert pmodel.model.elasticity_E.tensor().batch.shape == ()
 
 
@@ -78,8 +78,10 @@ def test_compare(input):
     ref = torch.jit.load(pwd / "gold" / "{}.pt".format(input))
     input = dict(ref.input.named_buffers())
     output = dict(ref.output.named_buffers())
-    forces = pmodel.forces_asm.assemble_by_variable(input).torch()
-    state = pmodel.state_asm.assemble_by_variable(output).torch()
+    input_forces = {k: v for k, v in input.items() if k.startswith("forces/")}
+    output_state = {k: v for k, v in output.items() if k.startswith("state/")}
+    forces = pmodel.forces_asm.assemble_by_variable(input_forces, True).torch()
+    state = pmodel.state_asm.assemble_by_variable(output_state, True).torch()
     nstep = forces.shape[0]
 
     solver = nonlinear.RecursiveNonlinearEquationSolver(

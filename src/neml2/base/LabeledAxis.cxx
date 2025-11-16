@@ -39,6 +39,18 @@ LabeledAxis::qualify(const LabeledAxisAccessor & accessor) const
   return accessor.prepend(_prefix);
 }
 
+LabeledAxisAccessor
+LabeledAxis::disqualify(const LabeledAxisAccessor & accessor) const
+{
+  neml_assert(accessor.start_with(_prefix),
+              "Cannot disqualify accessor '",
+              accessor,
+              "' with prefix '",
+              _prefix,
+              "'");
+  return accessor.slice(_prefix.size());
+}
+
 LabeledAxis &
 LabeledAxis::add_subaxis(const std::string & name)
 {

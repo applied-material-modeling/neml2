@@ -37,7 +37,16 @@ def(py::module_ & m, py::class_<VectorAssembler> & c)
       .def(
           "assemble_by_variable",
           [](const VectorAssembler & self, const py::dict & py_vals_dict, bool assembly)
-          { return self.assemble_by_variable(unpack_tensor_map(py_vals_dict), assembly); },
+          {
+            auto base_shape_lookup =
+                [axis = &self.axis()](const neml2::VariableName & key) -> TensorShapeRef
+            {
+              const auto vid = axis->variable_id(axis->disqualify(key));
+              return axis->variable_base_sizes()[vid];
+            };
+            const auto vals = unpack_value_map(py_vals_dict, assembly, base_shape_lookup);
+            return self.assemble_by_variable(vals, assembly);
+          },
           py::arg("vals"),
           py::arg("assembly") = true)
       .def("split_by_variable",

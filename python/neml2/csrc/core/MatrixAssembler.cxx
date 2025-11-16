@@ -38,10 +38,21 @@ def(py::module_ & m, py::class_<MatrixAssembler> & c)
           "assemble_by_variable",
           [](const MatrixAssembler & self, const py::dict & py_vals_dict, bool assembly)
           {
-            DerivMap vals_dict;
-            for (auto && [key, val] : py_vals_dict)
-              vals_dict[key.cast<VariableName>()] = unpack_tensor_map(val.cast<py::dict>());
-            return self.assemble_by_variable(vals_dict, assembly);
+            auto base_shape_lookup_i =
+                [axis = &self.yaxis()](const neml2::VariableName & key) -> TensorShapeRef
+            {
+              const auto vid = axis->variable_id(axis->disqualify(key));
+              return axis->variable_base_sizes()[vid];
+            };
+            auto base_shape_lookup_j =
+                [axis = &self.yaxis()](const neml2::VariableName & key) -> TensorShapeRef
+            {
+              const auto vid = axis->variable_id(axis->disqualify(key));
+              return axis->variable_base_sizes()[vid];
+            };
+            const auto vals =
+                unpack_deriv_map(py_vals_dict, assembly, base_shape_lookup_i, base_shape_lookup_j);
+            return self.assemble_by_variable(vals, assembly);
           },
           py::arg("derivs"),
           py::arg("assembly") = true)

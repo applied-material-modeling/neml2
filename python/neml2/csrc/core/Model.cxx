@@ -112,22 +112,53 @@ def(py::module_ & m, py::class_<neml2::Model, std::shared_ptr<neml2::Model>> & c
           "set_parameters", &Model::set_parameters, "Set the values for multiple model parameters ")
       .def("value",
            [](Model & self, const py::dict & pyinputs)
-           { return self.value(unpack_tensor_map(pyinputs, &self)); })
+           {
+             auto base_shape_lookup = [model =
+                                           &self](const neml2::VariableName & key) -> TensorShapeRef
+             { return model->input_variable(key).base_sizes(); };
+             return self.value(unpack_value_map(pyinputs, false, base_shape_lookup));
+           })
       .def("dvalue",
            [](Model & self, const py::dict & pyinputs)
-           { return self.dvalue(unpack_tensor_map(pyinputs, &self)); })
+           {
+             auto base_shape_lookup = [model =
+                                           &self](const neml2::VariableName & key) -> TensorShapeRef
+             { return model->input_variable(key).base_sizes(); };
+             return self.dvalue(unpack_value_map(pyinputs, false, base_shape_lookup));
+           })
       .def("d2value",
            [](Model & self, const py::dict & pyinputs)
-           { return self.d2value(unpack_tensor_map(pyinputs, &self)); })
+           {
+             auto base_shape_lookup = [model =
+                                           &self](const neml2::VariableName & key) -> TensorShapeRef
+             { return model->input_variable(key).base_sizes(); };
+             return self.d2value(unpack_value_map(pyinputs, false, base_shape_lookup));
+           })
       .def("value_and_dvalue",
            [](Model & self, const py::dict & pyinputs)
-           { return self.value_and_dvalue(unpack_tensor_map(pyinputs, &self)); })
+           {
+             auto base_shape_lookup = [model =
+                                           &self](const neml2::VariableName & key) -> TensorShapeRef
+             { return model->input_variable(key).base_sizes(); };
+             return self.value_and_dvalue(unpack_value_map(pyinputs, false, base_shape_lookup));
+           })
       .def("dvalue_and_d2value",
            [](Model & self, const py::dict & pyinputs)
-           { return self.dvalue_and_d2value(unpack_tensor_map(pyinputs, &self)); })
+           {
+             auto base_shape_lookup = [model =
+                                           &self](const neml2::VariableName & key) -> TensorShapeRef
+             { return model->input_variable(key).base_sizes(); };
+             return self.dvalue_and_d2value(unpack_value_map(pyinputs, false, base_shape_lookup));
+           })
       .def("value_and_dvalue_and_d2value",
            [](Model & self, const py::dict & pyinputs)
-           { return self.value_and_dvalue_and_d2value(unpack_tensor_map(pyinputs, &self)); })
+           {
+             auto base_shape_lookup = [model =
+                                           &self](const neml2::VariableName & key) -> TensorShapeRef
+             { return model->input_variable(key).base_sizes(); };
+             return self.value_and_dvalue_and_d2value(
+                 unpack_value_map(pyinputs, false, base_shape_lookup));
+           })
       .def(
           "dependency",
           [](const Model & self)

@@ -37,5 +37,14 @@ class Model;
 }
 
 /// Unpack a Python dictionary into a neml2::ValueMap
-neml2::ValueMap unpack_tensor_map(const pybind11::dict & pyinputs,
-                                  const neml2::Model * model = nullptr);
+neml2::ValueMap unpack_value_map(
+    const pybind11::dict & pyvals,
+    bool assembly,
+    const std::function<neml2::TensorShapeRef(const neml2::VariableName &)> & base_shape_fn);
+
+/// Unpack a Python dictionary of dictionaries into a neml2::DerivMap
+neml2::DerivMap unpack_deriv_map(
+    const pybind11::dict & pyderivs,
+    bool assembly,
+    const std::function<neml2::TensorShapeRef(const neml2::VariableName &)> & base_shape_fn_i,
+    const std::function<neml2::TensorShapeRef(const neml2::VariableName &)> & base_shape_fn_j);
