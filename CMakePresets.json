@@ -125,7 +125,7 @@
       "description": "Python bindings with tests",
       "configurePreset": "dev",
       "targets": [
-        "python_stub"
+        "pyneml2"
       ]
     },
     {
@@ -201,7 +201,7 @@
       "configurePreset": "release",
       "targets": [
         "runner",
-        "python_stub"
+        "pyneml2"
       ]
     }
   ],

@@ -53,7 +53,7 @@ add_custom_target(syntax_python
   COMMAND ${Python3_EXECUTABLE} ${NEML2_SOURCE_DIR}/scripts/fixup_pystub.py ${NEML2_BINARY_DIR}/doc/content/python/neml2
   VERBATIM
 )
-add_dependencies(syntax_python python_stub)
+add_dependencies(syntax_python pyneml2)
 
 # ----------------------------------------------------------------------------
 # Extract tutorial sources

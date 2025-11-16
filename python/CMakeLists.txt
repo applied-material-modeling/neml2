@@ -30,6 +30,12 @@ set(pybind11_ROOT ${Python3_SITEARCH}/pybind11)
 find_package(pybind11 CONFIG REQUIRED)
 
 # ----------------------------------------------------------------------------
+# Main interface library
+# ----------------------------------------------------------------------------
+add_library(pyneml2_modules INTERFACE)
+add_custom_target(pyneml2)
+
+# ----------------------------------------------------------------------------
 # Macro for defining a submodule
 # ----------------------------------------------------------------------------
 macro(add_submodule mname malias)
@@ -61,27 +67,24 @@ macro(add_submodule mname malias)
   install(TARGETS ${mname} LIBRARY DESTINATION . COMPONENT libneml2-python)
 
   # link to the wrapper library
-  target_link_libraries(pyneml2 INTERFACE ${mname})
+  target_link_libraries(pyneml2_modules INTERFACE ${mname})
 
-  # add to the stub generation
-  add_dependencies(python_stub ${mname})
+  # add a target to extract stub
+  add_custom_target(${mname}_stub
+    COMMENT "Generating type hints for ${mname}"
+    WORKING_DIRECTORY ${NEML2_BINARY_DIR}/python
+    COMMAND PYTHONPATH=. pybind11-stubgen -o . neml2.${malias}
+    VERBATIM
+  )
+  add_dependencies(${mname}_stub pyneml2_modules)
+
+  # add to the catch-all target
+  add_dependencies(pyneml2 ${mname}_stub)
 endmacro()
-
-# ----------------------------------------------------------------------------
-# Extract stub
-# ----------------------------------------------------------------------------
-add_custom_target(python_stub
-  COMMENT "Generating neml2 type hints"
-  WORKING_DIRECTORY ${NEML2_BINARY_DIR}/python
-  COMMAND PYTHONPATH=. pybind11-stubgen -o . neml2
-  VERBATIM
-)
 
 # ----------------------------------------------------------------------------
 # Python submodules
 # ----------------------------------------------------------------------------
-add_library(pyneml2 INTERFACE)
-
 add_submodule(pyreserved reserved)
 target_link_libraries(pyreserved PRIVATE base)
 
