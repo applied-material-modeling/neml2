@@ -40,7 +40,7 @@ add_custom_target(pyneml2)
 # ----------------------------------------------------------------------------
 macro(add_submodule mname malias)
   # C++ helpers
-  file(GLOB_RECURSE msrcs CONFIGURE_DEPENDS neml2/${malias}/*.cxx)
+  file(GLOB_RECURSE msrcs CONFIGURE_DEPENDS neml2/csrc/${malias}/*.cxx)
   if(msrcs)
     add_library(c${mname} SHARED ${msrcs})
     target_include_directories(c${mname} PUBLIC ${NEML2_SOURCE_DIR})
@@ -55,7 +55,7 @@ macro(add_submodule mname malias)
   endif()
 
   # pybind11 module
-  pybind11_add_module(${mname} MODULE neml2/module_${malias}.cxx)
+  pybind11_add_module(${mname} MODULE neml2/${malias}.cxx)
   target_include_directories(${mname} PUBLIC ${NEML2_SOURCE_DIR})
   if(msrcs)
     target_link_libraries(${mname} PRIVATE c${mname})

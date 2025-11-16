@@ -22,37 +22,44 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <pybind11/pybind11.h>
+#include "neml2/models/map_types.h"
+#include "neml2/models/Model.h"
 
-#include "neml2/tensors/crystallography.h"
-
-#include "python/neml2/csrc/core/types.h"
+#include "python/neml2/csrc/core/utils.h"
 
 namespace py = pybind11;
 using namespace neml2;
 
-PYBIND11_MODULE(crystallography, m)
+ValueMap
+unpack_tensor_map(const py::dict & pyinputs, const Model * model)
 {
-  m.doc() = "Crystallography helper routines";
+  std::vector<VariableName> input_names;
+  std::vector<Tensor> input_values;
+  for (auto && [key, val] : pyinputs)
+  {
+    try
+    {
+      input_names.push_back(key.cast<VariableName>());
+    }
+    catch (py::cast_error &)
+    {
+      throw py::cast_error("Dictionary keys must be convertible to neml2.VariableName");
+    }
 
-  py::module_::import("neml2.tensors");
+    try
+    {
+      input_values.push_back(val.cast<Tensor>());
+    }
+    catch (py::cast_error &)
+    {
+      throw py::cast_error("Invalid value for variable '" + input_names.back().str() +
+                           "' -- dictionary values must be convertible to neml2.Tensor");
+    }
+  }
 
-  m.def(
-      "symmetry_operations_from_orbifold",
-      [](const std::string & orbifold, NEML2_TENSOR_OPTIONS_VARGS)
-      {
-        return crystallography::symmetry_operations_from_orbifold(orbifold, NEML2_TENSOR_OPTIONS);
-      },
-      py::arg("orbifold"),
-      py::kw_only(),
-      PY_ARG_TENSOR_OPTIONS,
-      R"(
-Return the symmetry operators for a given symmetry group as a batch of rank two tensors
+  ValueMap inputs;
+  for (size_t i = 0; i < input_names.size(); ++i)
+    inputs[input_names[i]] = input_values[i];
 
-:param orbifold:    String giving the orbifold notation for the symmetry group
-:param dtype:       Floating point scalar type used throughout the model.
-:param device:      Device on which the model will be evaluated. All parameters, buffers,
-    and custom data are synced to the given device.
-:param requires_grad: If true, turn on requires_grad in the resulting tensor
-)");
+  return inputs;
 }

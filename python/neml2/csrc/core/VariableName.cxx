@@ -22,37 +22,33 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <pybind11/pybind11.h>
-
-#include "neml2/tensors/crystallography.h"
+#include "neml2/base/Parser.h"
 
 #include "python/neml2/csrc/core/types.h"
 
 namespace py = pybind11;
 using namespace neml2;
 
-PYBIND11_MODULE(crystallography, m)
+void
+def(py::module_ & m, py::class_<neml2::LabeledAxisAccessor> & c)
 {
-  m.doc() = "Crystallography helper routines";
-
-  py::module_::import("neml2.tensors");
-
-  m.def(
-      "symmetry_operations_from_orbifold",
-      [](const std::string & orbifold, NEML2_TENSOR_OPTIONS_VARGS)
-      {
-        return crystallography::symmetry_operations_from_orbifold(orbifold, NEML2_TENSOR_OPTIONS);
-      },
-      py::arg("orbifold"),
-      py::kw_only(),
-      PY_ARG_TENSOR_OPTIONS,
-      R"(
-Return the symmetry operators for a given symmetry group as a batch of rank two tensors
-
-:param orbifold:    String giving the orbifold notation for the symmetry group
-:param dtype:       Floating point scalar type used throughout the model.
-:param device:      Device on which the model will be evaluated. All parameters, buffers,
-    and custom data are synced to the given device.
-:param requires_grad: If true, turn on requires_grad in the resulting tensor
-)");
+  c.def(py::init<>())
+      .def(py::init([](const std::string & str) { return utils::parse<LabeledAxisAccessor>(str); }))
+      .def(py::init<const LabeledAxisAccessor &>())
+      .def("with_suffix", &LabeledAxisAccessor::with_suffix)
+      .def("append", &LabeledAxisAccessor::append)
+      .def("prepend", &LabeledAxisAccessor::prepend)
+      .def("remount", &LabeledAxisAccessor::remount)
+      .def("start_with", &LabeledAxisAccessor::start_with)
+      .def("current", &LabeledAxisAccessor::current)
+      .def("old", &LabeledAxisAccessor::old)
+      .def("__repr__", [](const LabeledAxisAccessor & self) { return self.str(); })
+      .def("__bool__", [](const LabeledAxisAccessor & self) { return !self.empty(); })
+      .def("__len__", [](const LabeledAxisAccessor & self) { return self.size(); })
+      .def("__hash__",
+           [](const LabeledAxisAccessor & self) { return py::hash(py::cast(self.str())); })
+      .def("__eq__",
+           [](const LabeledAxisAccessor & a, const LabeledAxisAccessor & b) { return a == b; })
+      .def("__ne__",
+           [](const LabeledAxisAccessor & a, const LabeledAxisAccessor & b) { return a != b; });
 }

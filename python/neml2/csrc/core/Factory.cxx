@@ -22,37 +22,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <pybind11/pybind11.h>
-
-#include "neml2/tensors/crystallography.h"
-
 #include "python/neml2/csrc/core/types.h"
 
 namespace py = pybind11;
 using namespace neml2;
 
-PYBIND11_MODULE(crystallography, m)
+void
+def(py::module_ & m, py::class_<neml2::Factory> & c)
 {
-  m.doc() = "Crystallography helper routines";
-
-  py::module_::import("neml2.tensors");
-
-  m.def(
-      "symmetry_operations_from_orbifold",
-      [](const std::string & orbifold, NEML2_TENSOR_OPTIONS_VARGS)
-      {
-        return crystallography::symmetry_operations_from_orbifold(orbifold, NEML2_TENSOR_OPTIONS);
-      },
-      py::arg("orbifold"),
-      py::kw_only(),
-      PY_ARG_TENSOR_OPTIONS,
+  c.def(
+      "get_model",
+      [](Factory * self, const std::string & name) { return self->get_model(name); },
+      py::arg("name"),
       R"(
-Return the symmetry operators for a given symmetry group as a batch of rank two tensors
+  Create a core.Model.
 
-:param orbifold:    String giving the orbifold notation for the symmetry group
-:param dtype:       Floating point scalar type used throughout the model.
-:param device:      Device on which the model will be evaluated. All parameters, buffers,
-    and custom data are synced to the given device.
-:param requires_grad: If true, turn on requires_grad in the resulting tensor
-)");
+  :param name:        Name of the model
+  )");
 }

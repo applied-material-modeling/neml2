@@ -22,37 +22,38 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <pybind11/pybind11.h>
-
-#include "neml2/tensors/crystallography.h"
-
 #include "python/neml2/csrc/core/types.h"
+#include "python/neml2/csrc/tensors/types.h"
 
 namespace py = pybind11;
 using namespace neml2;
 
-PYBIND11_MODULE(crystallography, m)
+void
+def(py::module_ & m, py::class_<neml2::TensorValueBase> & c)
 {
-  m.doc() = "Crystallography helper routines";
-
-  py::module_::import("neml2.tensors");
-
-  m.def(
-      "symmetry_operations_from_orbifold",
-      [](const std::string & orbifold, NEML2_TENSOR_OPTIONS_VARGS)
-      {
-        return crystallography::symmetry_operations_from_orbifold(orbifold, NEML2_TENSOR_OPTIONS);
-      },
-      py::arg("orbifold"),
-      py::kw_only(),
-      PY_ARG_TENSOR_OPTIONS,
-      R"(
-Return the symmetry operators for a given symmetry group as a batch of rank two tensors
-
-:param orbifold:    String giving the orbifold notation for the symmetry group
-:param dtype:       Floating point scalar type used throughout the model.
-:param device:      Device on which the model will be evaluated. All parameters, buffers,
-    and custom data are synced to the given device.
-:param requires_grad: If true, turn on requires_grad in the resulting tensor
-)");
+  c.def(
+       "torch",
+       [](const TensorValueBase & self) { return at::Tensor(Tensor(self)); },
+       "Convert to a torch.Tensor")
+      .def(
+          "tensor",
+          [](const TensorValueBase & self) { return Tensor(self); },
+          "Convert to a tensors.Tensor")
+      .def_property_readonly(
+          "requires_grad",
+          [](const TensorValueBase & self) { return Tensor(self).requires_grad(); },
+          "Value of the boolean requires_grad property of the underlying tensor.")
+      .def(
+          "requires_grad_",
+          [](TensorValueBase & self, bool req) { return self.requires_grad_(req); },
+          py::arg("req") = true,
+          "Set the requires_grad property of the underlying tensor.")
+      .def(
+          "set_",
+          [](TensorValueBase & self, const Tensor & val) { self = val; },
+          "Modify the underlying tensor data.")
+      .def_property_readonly(
+          "grad",
+          [](const TensorValueBase & self) { return Tensor(self).grad(); },
+          "Retrieve the accumulated vector-Jacobian product after a backward propagation.");
 }

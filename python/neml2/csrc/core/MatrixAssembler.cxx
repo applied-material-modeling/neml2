@@ -22,37 +22,26 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <pybind11/pybind11.h>
-
-#include "neml2/tensors/crystallography.h"
+#include <pybind11/stl.h>
 
 #include "python/neml2/csrc/core/types.h"
+#include "python/neml2/csrc/core/utils.h"
 
 namespace py = pybind11;
 using namespace neml2;
 
-PYBIND11_MODULE(crystallography, m)
+void
+def(py::module_ & m, py::class_<MatrixAssembler> & c)
 {
-  m.doc() = "Crystallography helper routines";
-
-  py::module_::import("neml2.tensors");
-
-  m.def(
-      "symmetry_operations_from_orbifold",
-      [](const std::string & orbifold, NEML2_TENSOR_OPTIONS_VARGS)
-      {
-        return crystallography::symmetry_operations_from_orbifold(orbifold, NEML2_TENSOR_OPTIONS);
-      },
-      py::arg("orbifold"),
-      py::kw_only(),
-      PY_ARG_TENSOR_OPTIONS,
-      R"(
-Return the symmetry operators for a given symmetry group as a batch of rank two tensors
-
-:param orbifold:    String giving the orbifold notation for the symmetry group
-:param dtype:       Floating point scalar type used throughout the model.
-:param device:      Device on which the model will be evaluated. All parameters, buffers,
-    and custom data are synced to the given device.
-:param requires_grad: If true, turn on requires_grad in the resulting tensor
-)");
+  c.def(py::init<const LabeledAxis &, const LabeledAxis &>())
+      .def("assemble_by_variable",
+           [](const MatrixAssembler & self, const py::dict & py_vals_dict)
+           {
+             DerivMap vals_dict;
+             for (auto && [key, val] : py_vals_dict)
+               vals_dict[key.cast<VariableName>()] = unpack_tensor_map(val.cast<py::dict>());
+             return self.assemble_by_variable(vals_dict);
+           })
+      .def("split_by_variable", &MatrixAssembler::split_by_variable)
+      .def("split_by_subaxis", &MatrixAssembler::split_by_subaxis);
 }
