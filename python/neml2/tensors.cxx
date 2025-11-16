@@ -60,4 +60,15 @@ PYBIND11_MODULE(tensors, m)
 
   // Define operator bindings
   def_operators(m);
+
+  // type conversions
+#define IMPLICITLY_CONVERTIBLE_TO_TENSOR(T) py::implicitly_convertible<T, Tensor>()
+  FOR_ALL_PRIMITIVETENSOR(IMPLICITLY_CONVERTIBLE_TO_TENSOR);
+
+  // Tensor-like (for typing purposes)
+  auto typing = py::module_::import("typing");
+  auto Union = typing.attr("Union");
+#define pytypeof(T) py::type::of<T>()
+  auto TensorLike = Union.attr("__getitem__")(py::make_tuple(FOR_ALL_TENSORBASE_COMMA(pytypeof)));
+  m.attr("TensorLike") = TensorLike;
 }

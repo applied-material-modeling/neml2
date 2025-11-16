@@ -122,7 +122,7 @@ def(py::module_ & m, py::class_<Tensor> & c)
           py::kw_only(),
           PY_ARG_TENSOR_OPTIONS)
       .def_static(
-          "random",
+          "rand",
           [](TensorShapeRef dynamic_sizes,
              TensorShapeRef intmd_sizes,
              TensorShapeRef base_sizes,
@@ -131,6 +131,13 @@ def(py::module_ & m, py::class_<Tensor> & c)
           py::arg("dynamic_sizes"),
           py::arg("intmd_sizes"),
           py::arg("base_sizes"),
+          py::kw_only(),
+          PY_ARG_TENSOR_OPTIONS)
+      .def_static(
+          "identity",
+          [](Size n, NEML2_TENSOR_OPTIONS_VARGS)
+          { return Tensor::identity(n, NEML2_TENSOR_OPTIONS); },
+          py::arg("n"),
           py::kw_only(),
           PY_ARG_TENSOR_OPTIONS);
 }

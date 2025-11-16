@@ -130,7 +130,7 @@ def make_sample(tensor_shape: TensorShape, **tensor_options):
     return neml2.Tensor(data, tensor_shape.dynamic_dim, tensor_shape.intmd_dim)
 
 
-def assert_tensor_shape(A: neml2.Tensor, tensor_shape: TensorShape):
+def assert_tensor_shape(A, tensor_shape: TensorShape):
     assert A.dynamic.shape == tensor_shape.dynamic_shape
     assert A.intmd.shape == tensor_shape.intmd_shape
     assert A.base.shape == tensor_shape.base_shape

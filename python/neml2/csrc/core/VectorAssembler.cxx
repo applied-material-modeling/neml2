@@ -34,9 +34,15 @@ void
 def(py::module_ & m, py::class_<VectorAssembler> & c)
 {
   c.def(py::init<const LabeledAxis &>())
-      .def("assemble_by_variable",
-           [](const VectorAssembler & self, const py::dict & py_vals_dict)
-           { return self.assemble_by_variable(unpack_tensor_map(py_vals_dict)); })
-      .def("split_by_variable", &VectorAssembler::split_by_variable)
+      .def(
+          "assemble_by_variable",
+          [](const VectorAssembler & self, const py::dict & py_vals_dict, bool assembly)
+          { return self.assemble_by_variable(unpack_tensor_map(py_vals_dict), assembly); },
+          py::arg("vals"),
+          py::arg("assembly") = true)
+      .def("split_by_variable",
+           &VectorAssembler::split_by_variable,
+           py::arg("vec"),
+           py::arg("assembly") = true)
       .def("split_by_subaxis", &VectorAssembler::split_by_subaxis);
 }

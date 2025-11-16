@@ -65,6 +65,7 @@ def_TensorBase(py::module_ & m, const std::string & type)
                     ">";
            })
       .def("torch", [](const T & self) { return torch::Tensor(self); })
+      .def("tensor", [](const T & self) { return neml2::Tensor(self); })
       .def_property_readonly("dynamic", [](T * self) { return new DynamicView<T>(self); })
       .def_property_readonly("intmd", [](T * self) { return new IntmdView<T>(self); })
       .def_property_readonly("base", [](T * self) { return new BaseView<T>(self); })

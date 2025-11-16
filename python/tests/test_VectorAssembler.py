@@ -37,9 +37,10 @@ def test_assemble_by_variable():
     v = assembler.assemble_by_variable(
         {
             "state/bar": Scalar.full(1.0),
-            "state/foo": Scalar.full((2, 3), 2.0),
-            "state/foo_rate": Scalar.full((6, 1, 1), 3.0),
-        }
+            "state/foo": Scalar.full((2, 3), (), 2.0),
+            "state/foo_rate": Scalar.full((6, 1, 1), (), 3.0),
+        },
+        assembly=False,
     )
     assert v.batch.shape == (6, 2, 3)
     assert v.base.shape == (8,)

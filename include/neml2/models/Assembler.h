@@ -44,10 +44,12 @@ public:
   }
 
   /// Assemble a vector of vectors (by variables)
-  Tensor assemble_by_variable(const ValueMap &) const;
+  /// @p assembly indicates whether the variables are in assembly format
+  Tensor assemble_by_variable(const ValueMap &, bool assembly = true) const;
 
   /// Split the vector (by variables)
-  ValueMap split_by_variable(const Tensor &) const;
+  /// @p assembly indicates whether the split variables are returned in assembly format
+  ValueMap split_by_variable(const Tensor &, bool assembly = true) const;
 
   /// Split the vector (by subaxes)
   ValueMap split_by_subaxis(const Tensor &) const;
@@ -71,10 +73,12 @@ public:
   }
 
   /// Assemble a matrix of matrices (by variables)
-  Tensor assemble_by_variable(const DerivMap &) const;
+  /// @p assembly indicates whether the variables are in assembly format
+  Tensor assemble_by_variable(const DerivMap &, bool assembly = true) const;
 
   /// Split the matrix (by variables)
-  DerivMap split_by_variable(const Tensor &) const;
+  /// @p assembly indicates whether the split variables are returned in assembly format
+  DerivMap split_by_variable(const Tensor &, bool assembly = true) const;
 
   /// Split the matrix (by subaxes)
   DerivMap split_by_subaxis(const Tensor &) const;

@@ -34,14 +34,20 @@ void
 def(py::module_ & m, py::class_<MatrixAssembler> & c)
 {
   c.def(py::init<const LabeledAxis &, const LabeledAxis &>())
-      .def("assemble_by_variable",
-           [](const MatrixAssembler & self, const py::dict & py_vals_dict)
-           {
-             DerivMap vals_dict;
-             for (auto && [key, val] : py_vals_dict)
-               vals_dict[key.cast<VariableName>()] = unpack_tensor_map(val.cast<py::dict>());
-             return self.assemble_by_variable(vals_dict);
-           })
-      .def("split_by_variable", &MatrixAssembler::split_by_variable)
+      .def(
+          "assemble_by_variable",
+          [](const MatrixAssembler & self, const py::dict & py_vals_dict, bool assembly)
+          {
+            DerivMap vals_dict;
+            for (auto && [key, val] : py_vals_dict)
+              vals_dict[key.cast<VariableName>()] = unpack_tensor_map(val.cast<py::dict>());
+            return self.assemble_by_variable(vals_dict, assembly);
+          },
+          py::arg("derivs"),
+          py::arg("assembly") = true)
+      .def("split_by_variable",
+           &MatrixAssembler::split_by_variable,
+           py::arg("mat"),
+           py::arg("assembly") = true)
       .def("split_by_subaxis", &MatrixAssembler::split_by_subaxis);
 }

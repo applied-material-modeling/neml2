@@ -42,7 +42,7 @@ void def_operators(py::module_ & m);
 
 // Type casters are only for cross-module types used in function signatures
 DEFAULT_TYPECASTER(neml2::TensorType, "neml2.tensors.TensorType");
-#define SPECIALIZE_TYPECASTER(T) DEFAULT_TYPECASTER(neml2::T, "neml2.tensors." #T)
+#define SPECIALIZE_TYPECASTER(T) DEFAULT_TYPECASTER(neml2::T, "neml2.TensorLike")
 FOR_ALL_TENSORBASE(SPECIALIZE_TYPECASTER);
 #undef SPECIALIZE_TYPECASTER
 

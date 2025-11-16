@@ -47,8 +47,8 @@ def test_parameter_gradient():
     p.requires_grad_(True)
 
     # Evaluate the model and the loss function
-    y = model.value(xassembler.split_by_variable(x))
-    f = torch.norm(yassembler.assemble_by_variable(y).torch())
+    y = model.value(xassembler.split_by_variable(x, False))
+    f = torch.norm(yassembler.assemble_by_variable(y, False).torch())
 
     # # Get the parameter gradient
     f.backward()

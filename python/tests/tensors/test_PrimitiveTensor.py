@@ -28,35 +28,42 @@ import neml2
 
 
 def test_named_ctors(tensor_options):
-    batch_shape = (2, 3)
-    shape = batch_shape
+    s = TensorShape(dynamic=(2, 3), intmd=(2, 1), base=(3, 3))
 
     # empty
-    A = neml2.Scalar.empty(**tensor_options)
+    A = neml2.R2.empty(**tensor_options)
     assert A.batch.dim() == 0
-    A = neml2.Scalar.empty(batch_shape, **tensor_options)
-    assert A.batch.dim() == len(batch_shape)
+    assert A.base.shape == s.base_shape
+
+    A = neml2.R2.empty(s.dynamic_shape, s.intmd_shape, **tensor_options)
+    assert_tensor_shape(A, s)
 
     # zeros
-    A = neml2.Scalar.zeros(**tensor_options)
+    A = neml2.R2.zeros(**tensor_options)
     assert A.batch.dim() == 0
-    assert torch.allclose(A.torch(), torch.zeros(batch_shape, **tensor_options))
-    A = neml2.Scalar.zeros(batch_shape, **tensor_options)
-    assert A.batch.dim() == len(batch_shape)
-    assert torch.allclose(A.torch(), torch.zeros(shape, **tensor_options))
+    assert A.base.shape == s.base_shape
+    assert torch.allclose(A.torch(), torch.zeros(s.base_shape, **tensor_options))
+
+    A = neml2.R2.zeros(s.dynamic_shape, s.intmd_shape, **tensor_options)
+    assert_tensor_shape(A, s)
+    assert torch.allclose(A.torch(), torch.zeros(s.shape, **tensor_options))
 
     # ones
-    A = neml2.Scalar.ones(**tensor_options)
+    A = neml2.R2.ones(**tensor_options)
     assert A.batch.dim() == 0
-    assert torch.allclose(A.torch(), torch.ones(batch_shape, **tensor_options))
-    A = neml2.Scalar.ones(batch_shape, **tensor_options)
-    assert A.batch.dim() == len(batch_shape)
-    assert torch.allclose(A.torch(), torch.ones(shape, **tensor_options))
+    assert A.base.shape == s.base_shape
+    assert torch.allclose(A.torch(), torch.ones(s.base_shape, **tensor_options))
+
+    A = neml2.R2.ones(s.dynamic_shape, s.intmd_shape, **tensor_options)
+    assert_tensor_shape(A, s)
+    assert torch.allclose(A.torch(), torch.ones(s.shape, **tensor_options))
 
     # full
-    A = neml2.Scalar.full(1.1, **tensor_options)
+    A = neml2.R2.full(1.1, **tensor_options)
     assert A.batch.dim() == 0
-    assert torch.allclose(A.torch(), torch.full(batch_shape, 1.1, **tensor_options))
-    A = neml2.Scalar.full(batch_shape, 2.3, **tensor_options)
-    assert A.batch.dim() == len(batch_shape)
-    assert torch.allclose(A.torch(), torch.full(shape, 2.3, **tensor_options))
+    assert A.base.shape == s.base_shape
+    assert torch.allclose(A.torch(), torch.full(s.base_shape, 1.1, **tensor_options))
+
+    A = neml2.R2.full(s.dynamic_shape, s.intmd_shape, 2.3, **tensor_options)
+    assert_tensor_shape(A, s)
+    assert torch.allclose(A.torch(), torch.full(s.shape, 2.3, **tensor_options))

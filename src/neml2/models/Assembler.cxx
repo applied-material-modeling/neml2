@@ -25,12 +25,14 @@
 #include "neml2/models/Assembler.h"
 #include "neml2/misc/types.h"
 #include "neml2/tensors/functions/cat.h"
+#include "neml2/tensors/functions/to_assembly.h"
+#include "neml2/tensors/functions/from_assembly.h"
 #include "neml2/misc/assertions.h"
 
 namespace neml2
 {
 Tensor
-VectorAssembler::assemble_by_variable(const ValueMap & vals_dict) const
+VectorAssembler::assemble_by_variable(const ValueMap & vals_dict, bool assembly) const
 {
   const auto vars = _axis.variable_names();
 
@@ -47,22 +49,29 @@ VectorAssembler::assemble_by_variable(const ValueMap & vals_dict) const
     const auto it = vals_dict.find(_axis.qualify(vars[i]));
     if (it != vals_dict.end())
     {
-      const auto & val = it->second;
-      neml_assert_dbg(val.intmd_dim() == 0,
-                      "Tensor in assembly format should have no intermediate dimensions.");
-      neml_assert_dbg(val.base_dim() == 1,
-                      "During vector assembly, found a tensor associated with variable ",
-                      vars[i],
-                      " with base dimension ",
-                      val.base_dim(),
-                      ". Expected 1.");
-      neml_assert_dbg(val.base_size(0) == _axis.variable_sizes()[i],
-                      "Invalid size for variable ",
-                      vars[i],
-                      ". Expected ",
-                      _axis.variable_sizes()[i],
-                      ", got ",
-                      val.base_size(0));
+      const auto & val_ref = it->second;
+      if (assembly)
+      {
+        neml_assert_dbg(val_ref.intmd_dim() == 0,
+                        "Tensor in assembly format should have no intermediate dimensions.");
+        neml_assert_dbg(val_ref.base_dim() == 1,
+                        "During vector assembly, found a tensor associated with variable ",
+                        vars[i],
+                        " with base dimension ",
+                        val_ref.base_dim(),
+                        ". Expected 1.");
+        neml_assert_dbg(val_ref.base_size(0) == _axis.variable_sizes()[i],
+                        "Invalid size for variable ",
+                        vars[i],
+                        ". Expected ",
+                        _axis.variable_sizes()[i],
+                        ", got ",
+                        val_ref.base_size(0));
+      }
+      const auto val = assembly ? val_ref
+                                : to_assembly<1>(val_ref,
+                                                 {_axis.variable_intmd_sizes()[i]},
+                                                 {_axis.variable_base_sizes()[i]});
       neml_assert_dbg(
           val.isfinite().all().item<bool>(), "Non-finite value found for variable ", vars[i]);
       vals[i] = val;
@@ -88,7 +97,7 @@ VectorAssembler::assemble_by_variable(const ValueMap & vals_dict) const
 }
 
 ValueMap
-VectorAssembler::split_by_variable(const Tensor & tensor) const
+VectorAssembler::split_by_variable(const Tensor & tensor, bool assembly) const
 {
   neml_assert_dbg(tensor.intmd_dim() == 0,
                   "Tensor in assembly format should have no intermediate dimensions.");
@@ -103,7 +112,10 @@ VectorAssembler::split_by_variable(const Tensor & tensor) const
   for (std::size_t i = 0; i < keys.size(); ++i)
   {
     const Tensor val(vals[i], tensor.dynamic_sizes());
-    ret[_axis.qualify(keys[i])] = val;
+    ret[_axis.qualify(keys[i])] = assembly ? val
+                                           : from_assembly<1>(val,
+                                                              {_axis.variable_intmd_sizes()[i]},
+                                                              {_axis.variable_base_sizes()[i]});
   }
 
   return ret;
@@ -129,7 +141,7 @@ VectorAssembler::split_by_subaxis(const Tensor & tensor) const
 }
 
 Tensor
-MatrixAssembler::assemble_by_variable(const DerivMap & vals_dict) const
+MatrixAssembler::assemble_by_variable(const DerivMap & vals_dict, bool assembly) const
 {
   const auto yvars = _yaxis.variable_names();
   const auto xvars = _xaxis.variable_names();
@@ -155,27 +167,36 @@ MatrixAssembler::assemble_by_variable(const DerivMap & vals_dict) const
       const auto it = vals_row->second.find(_xaxis.qualify(xvars[j]));
       if (it != vals_row->second.end())
       {
-        const auto & val = it->second;
-        neml_assert_dbg(val.intmd_dim() == 0,
-                        "Tensor in assembly format should have no intermediate dimensions.");
-        neml_assert_dbg(val.base_dim() == 2,
-                        "During matrix assembly, found a tensor associated with variables ",
-                        yvars[i],
-                        "/",
-                        xvars[j],
-                        " with base dimension ",
-                        val.base_dim(),
-                        ". Expected base dimension of 2.");
-        neml_assert_dbg(val.base_size(0) == _yaxis.variable_sizes()[i] &&
-                            val.base_size(1) == _xaxis.variable_sizes()[j],
-                        "Invalid tensor shape associated with variables ",
-                        yvars[i],
-                        "/",
-                        xvars[j],
-                        ". Expected base shape ",
-                        TensorShape{_yaxis.variable_sizes()[i], _xaxis.variable_sizes()[j]},
-                        ", got ",
-                        val.base_sizes());
+        const auto & val_ref = it->second;
+        if (assembly)
+        {
+          neml_assert_dbg(val_ref.intmd_dim() == 0,
+                          "Tensor in assembly format should have no intermediate dimensions.");
+          neml_assert_dbg(val_ref.base_dim() == 2,
+                          "During matrix assembly, found a tensor associated with variables ",
+                          yvars[i],
+                          "/",
+                          xvars[j],
+                          " with base dimension ",
+                          val_ref.base_dim(),
+                          ". Expected base dimension of 2.");
+          neml_assert_dbg(val_ref.base_size(0) == _yaxis.variable_sizes()[i] &&
+                              val_ref.base_size(1) == _xaxis.variable_sizes()[j],
+                          "Invalid tensor shape associated with variables ",
+                          yvars[i],
+                          "/",
+                          xvars[j],
+                          ". Expected base shape ",
+                          TensorShape{_yaxis.variable_sizes()[i], _xaxis.variable_sizes()[j]},
+                          ", got ",
+                          val_ref.base_sizes());
+        }
+        const auto val =
+            assembly ? val_ref
+                     : to_assembly<2>(
+                           val_ref,
+                           {_yaxis.variable_intmd_sizes()[i], _xaxis.variable_intmd_sizes()[j]},
+                           {_yaxis.variable_base_sizes()[i], _xaxis.variable_base_sizes()[j]});
         neml_assert_dbg(val.isfinite().all().item<bool>(),
                         "Non-finite tensor value found for variables ",
                         yvars[i],
@@ -218,7 +239,7 @@ MatrixAssembler::assemble_by_variable(const DerivMap & vals_dict) const
 }
 
 DerivMap
-MatrixAssembler::split_by_variable(const Tensor & tensor) const
+MatrixAssembler::split_by_variable(const Tensor & tensor, bool assembly) const
 {
   neml_assert_dbg(tensor.intmd_dim() == 0,
                   "Tensor in assembly format should have no intermediate dimensions.");
@@ -237,7 +258,12 @@ MatrixAssembler::split_by_variable(const Tensor & tensor) const
     for (std::size_t j = 0; j < xvars.size(); ++j)
     {
       const Tensor val(vals[j], tensor.dynamic_sizes());
-      ret[_yaxis.qualify(yvars[i])][_xaxis.qualify(xvars[j])] = val;
+      ret[_yaxis.qualify(yvars[i])][_xaxis.qualify(xvars[j])] =
+          assembly ? val
+                   : from_assembly<2>(
+                         val,
+                         {_yaxis.variable_intmd_sizes()[i], _xaxis.variable_intmd_sizes()[j]},
+                         {_yaxis.variable_base_sizes()[i], _xaxis.variable_base_sizes()[j]});
     }
   }
 
