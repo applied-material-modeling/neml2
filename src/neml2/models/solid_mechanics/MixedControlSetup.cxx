@@ -83,7 +83,6 @@ MixedControlSetup::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (out)
   {
-    // Even benign in place operations get errors
     _stress = dstress * _fixed_values + dstrain * _mixed_state;
     _strain = dstrain * _fixed_values + dstress * _mixed_state;
   }

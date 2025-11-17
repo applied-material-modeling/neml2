@@ -60,6 +60,10 @@ public:
 protected:
   /// The model which the driver uses to perform constitutive updates.
   const std::shared_ptr<Model> _model;
+  /// Variable names for which to tag intermediate shapes
+  const std::vector<VariableName> _intmd_vars;
+  /// Corresponding tensor shapes for the intermediate variables
+  const std::vector<TensorShape> _intmd_shapes;
   /// Postprocessor model
   const std::shared_ptr<Model> _postprocessor;
   /// The device on which to evaluate the model

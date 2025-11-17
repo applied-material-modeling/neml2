@@ -182,8 +182,8 @@
   []
   [rename]
     type = CopySR2
-    from = "residual/S"
-    to = "residual/mixed_state"
+    from = 'residual/S'
+    to = 'residual/mixed_state'
   []
   [implicit_rate]
     type = ComposedModel
