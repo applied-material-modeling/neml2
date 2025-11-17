@@ -69,13 +69,6 @@ TEST_CASE("TensorName", "[base]")
     REQUIRE(at::allclose(a.resolve(), SR2::full(3)));
   }
 
-  SECTION("ATensor operator=")
-  {
-    TensorName<ATensor> a;
-    a = "3";
-    REQUIRE(at::allclose(a.resolve(), Scalar::create(3.0)));
-  }
-
   SECTION("empty tensor")
   {
     REQUIRE_THROWS_WITH(load_input("tensors/test_TensorName_empty_Tensor.i"),

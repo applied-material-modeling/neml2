@@ -33,7 +33,7 @@
 namespace neml2
 {
 static std::string diff(const torch::jit::named_buffer_list & res,
-                        const std::map<std::string, ATensor> & ref_map,
+                        const std::map<std::string, Tensor> & ref_map,
                         double rtol,
                         double atol);
 
@@ -45,7 +45,7 @@ VTestVerification::expected_options()
   OptionSet options = Driver::expected_options();
   options.set<std::string>("driver");
   options.set<std::vector<std::string>>("variables");
-  options.set<std::vector<TensorName<ATensor>>>("references");
+  options.set<std::vector<TensorName<Tensor>>>("references");
   options.set<double>("rtol") = 1e-5;
   options.set<double>("atol") = 1e-8;
   return options;
@@ -58,7 +58,7 @@ VTestVerification::VTestVerification(const OptionSet & options)
     _atol(options.get<double>("atol"))
 {
   const auto vars = options.get<std::vector<std::string>>("variables");
-  const auto vals = options.get<std::vector<TensorName<ATensor>>>("references");
+  const auto vals = options.get<std::vector<TensorName<Tensor>>>("references");
   neml_assert(vars.size() == vals.size(),
               "Must provide the same number of variables and references. ",
               vars.size(),
@@ -95,7 +95,7 @@ VTestVerification::run()
 
 std::string
 diff(const torch::jit::named_buffer_list & res,
-     const std::map<std::string, ATensor> & ref_map,
+     const std::map<std::string, Tensor> & ref_map,
      double rtol,
      double atol)
 {
