@@ -25,39 +25,30 @@
 #include "neml2/base/Parser.h"
 
 #include "python/neml2/csrc/core/types.h"
-#include "python/neml2/csrc/tensors/types.h"
 
 namespace py = pybind11;
 using namespace neml2;
 
 void
-def(py::module_ & m, py::class_<neml2::LabeledAxis> & c)
+def(py::module_ & m, py::class_<neml2::LabeledAxisAccessor> & c)
 {
-  c.def("size", py::overload_cast<>(&LabeledAxis::size, py::const_))
-      .def(
-          "size",
-          [](const LabeledAxis & self, const std::string & name)
-          { return self.size(utils::parse<LabeledAxisAccessor>(name)); },
-          py::arg("name"))
-      .def("variable_names", &LabeledAxis::variable_names_unsrt)
-      .def("nvariable", &LabeledAxis::nvariable)
-      .def(
-          "has_variable",
-          [](const LabeledAxis & self, const std::string & name)
-          { return self.has_variable(utils::parse<LabeledAxisAccessor>(name)); },
-          py::arg("name"))
-      .def("subaxis_names", &LabeledAxis::subaxis_names_unsrt)
-      .def("nsubaxis", &LabeledAxis::nsubaxis)
-      .def(
-          "has_subaxis",
-          [](const LabeledAxis & self, const std::string & name)
-          { return self.has_subaxis(utils::parse<LabeledAxisAccessor>(name)); },
-          py::arg("name"))
-      .def(
-          "subaxis",
-          [](const LabeledAxis & self, const std::string & name)
-          { return self.subaxis(utils::parse<LabeledAxisAccessor>(name)); },
-          py::arg("name"),
-          py::return_value_policy::reference)
-      .def("__repr__", [](const LabeledAxis & self) { return utils::stringify(self); });
+  c.def(py::init<>())
+      .def(py::init([](const std::string & str) { return utils::parse<LabeledAxisAccessor>(str); }))
+      .def(py::init<const LabeledAxisAccessor &>())
+      .def("with_suffix", &LabeledAxisAccessor::with_suffix)
+      .def("append", &LabeledAxisAccessor::append)
+      .def("prepend", &LabeledAxisAccessor::prepend)
+      .def("remount", &LabeledAxisAccessor::remount)
+      .def("start_with", &LabeledAxisAccessor::start_with)
+      .def("current", &LabeledAxisAccessor::current)
+      .def("old", &LabeledAxisAccessor::old)
+      .def("__repr__", [](const LabeledAxisAccessor & self) { return self.str(); })
+      .def("__bool__", [](const LabeledAxisAccessor & self) { return !self.empty(); })
+      .def("__len__", [](const LabeledAxisAccessor & self) { return self.size(); })
+      .def("__hash__",
+           [](const LabeledAxisAccessor & self) { return py::hash(py::cast(self.str())); })
+      .def("__eq__",
+           [](const LabeledAxisAccessor & a, const LabeledAxisAccessor & b) { return a == b; })
+      .def("__ne__",
+           [](const LabeledAxisAccessor & a, const LabeledAxisAccessor & b) { return a != b; });
 }

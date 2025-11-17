@@ -33,6 +33,38 @@ LabeledAxis::LabeledAxis(LabeledAxisAccessor prefix)
 {
 }
 
+void
+LabeledAxis::clear()
+{
+  for (auto & [name, axis] : _subaxes)
+    axis->clear();
+
+  _setup = false;
+  _variables.clear();
+  _subaxes.clear();
+
+  clear_data();
+}
+
+void
+LabeledAxis::clear_data()
+{
+  _size = 0;
+
+  _variable_to_id_map.clear();
+  _id_to_variable_map.clear();
+  _id_to_variable_size_map.clear();
+  _id_to_variable_slice_map.clear();
+  _id_to_intmd_sizes_map.clear();
+  _id_to_base_sizes_map.clear();
+
+  _sorted_subaxes.clear();
+  _subaxis_to_id_map.clear();
+  _id_to_subaxis_map.clear();
+  _id_to_subaxis_size_map.clear();
+  _id_to_subaxis_slice_map.clear();
+}
+
 LabeledAxisAccessor
 LabeledAxis::qualify(const LabeledAxisAccessor & accessor) const
 {
@@ -104,7 +136,7 @@ LabeledAxis::setup_layout()
   for (const auto & [name, sizes] : _variables)
   {
     const auto & [intmd_sizes, base_sizes] = sizes;
-    const auto sz = utils::numel(intmd_sizes) * utils::numel(base_sizes);
+    const auto sz = utils::numel(utils::add_shapes(intmd_sizes, base_sizes));
     _variable_to_id_map.emplace(name, _variable_to_id_map.size());
     _id_to_variable_map.emplace_back(name);
     _id_to_variable_size_map.push_back(sz);
@@ -161,7 +193,7 @@ LabeledAxis::size() const
   for (const auto & [name, sizes] : _variables)
   {
     const auto & [intmd_sizes, base_sizes] = sizes;
-    sz += utils::numel(intmd_sizes) * utils::numel(base_sizes);
+    sz += utils::numel(utils::add_shapes(intmd_sizes, base_sizes));
   }
   for (const auto & [name, axis] : _subaxes)
     sz += axis->size();
@@ -188,7 +220,7 @@ LabeledAxis::size(const LabeledAxisAccessor & name) const
       else
       {
         const auto & [intmd_sizes, base_sizes] = var->second;
-        return utils::numel(intmd_sizes) * utils::numel(base_sizes);
+        return utils::numel(utils::add_shapes(intmd_sizes, base_sizes));
       }
     }
 
@@ -343,7 +375,7 @@ LabeledAxis::variable_size(const LabeledAxisAccessor & name) const
     neml_assert(
         var != _variables.end(), "Variable named '", name, "' does not exist on axis:\n", *this);
     const auto & [intmd_sizes, base_sizes] = var->second;
-    return utils::numel(intmd_sizes) * utils::numel(base_sizes);
+    return utils::numel(utils::add_shapes(intmd_sizes, base_sizes));
   }
 
   const auto subaxis = _subaxes.find(name[0]);
@@ -425,6 +457,16 @@ LabeledAxis::subaxis(const LabeledAxisAccessor & name)
 {
   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
   return const_cast<LabeledAxis &>(std::as_const(*this).subaxis(name));
+}
+
+std::vector<std::string>
+LabeledAxis::subaxis_names_unsrt() const
+{
+  std::vector<std::string> names;
+  names.reserve(_subaxes.size());
+  for (const auto & [name, _] : _subaxes)
+    names.emplace_back(name);
+  return names;
 }
 
 const std::vector<std::string> &
@@ -513,7 +555,7 @@ std::ostream &
 operator<<(std::ostream & os, const LabeledAxis & axis)
 {
   // Get unqualified variable names
-  const auto & var_names = axis.variable_names();
+  const auto var_names = axis._setup ? axis.variable_names() : axis.variable_names_unsrt();
 
   // Find the maximum variable name length
   size_t max_var_name_length = 0;

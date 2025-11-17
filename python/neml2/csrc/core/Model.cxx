@@ -41,18 +41,16 @@ def(py::module_ & m, py::class_<Model, std::shared_ptr<Model>> & c)
           PY_ARG_TENSOR_OPTIONS)
       .def_property_readonly("type", &Model::type, "Type of the model")
       .def("__str__", [](const Model & self) { return utils::stringify(self); })
-      .def(
-          "input_axis",
-          [](Model & self) { return &self.input_axis(); },
-          py::return_value_policy::reference,
-          "Input axis of the model. The axis contains information on variable names and their "
-          "associated slicing indices.")
-      .def(
-          "output_axis",
-          [](Model & self) { return &self.output_axis(); },
-          py::return_value_policy::reference,
-          "Output axis of the model. The axis contains information on variable names and their "
-          "associated slicing indices.")
+      .def("input_axis",
+           py::overload_cast<>(&Model::input_axis, py::const_),
+           py::return_value_policy::reference,
+           "Input axis of the model. The axis contains information on variable names and their "
+           "associated slicing indices.")
+      .def("output_axis",
+           py::overload_cast<>(&Model::output_axis, py::const_),
+           py::return_value_policy::reference,
+           "Output axis of the model. The axis contains information on variable names and their "
+           "associated slicing indices.")
       .def(
           "input_type",
           [](const Model & self, const std::string & name)
@@ -117,25 +115,21 @@ def(py::module_ & m, py::class_<Model, std::shared_ptr<Model>> & c)
            {
              auto base_shape_lookup = [model = &self](const VariableName & key) -> TensorShapeRef
              { return model->input_variable(key).base_sizes(); };
-             const auto out = self.value(unpack_value_map(pyinputs, false, base_shape_lookup));
-             return pack_value_map(out);
+             return self.value(unpack_value_map(pyinputs, false, base_shape_lookup));
            })
       .def("dvalue",
            [](Model & self, const py::dict & pyinputs)
            {
              auto base_shape_lookup = [model = &self](const VariableName & key) -> TensorShapeRef
              { return model->input_variable(key).base_sizes(); };
-             const auto dout = self.dvalue(unpack_value_map(pyinputs, false, base_shape_lookup));
-             return pack_deriv_map(dout);
+             return self.dvalue(unpack_value_map(pyinputs, false, base_shape_lookup));
            })
       .def("value_and_dvalue",
            [](Model & self, const py::dict & pyinputs)
            {
              auto base_shape_lookup = [model = &self](const VariableName & key) -> TensorShapeRef
              { return model->input_variable(key).base_sizes(); };
-             const auto [out, dout] =
-                 self.value_and_dvalue(unpack_value_map(pyinputs, false, base_shape_lookup));
-             return std::make_pair(pack_value_map(out), pack_deriv_map(dout));
+             return self.value_and_dvalue(unpack_value_map(pyinputs, false, base_shape_lookup));
            })
       .def(
           "assign_input",

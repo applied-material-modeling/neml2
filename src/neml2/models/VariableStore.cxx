@@ -61,8 +61,10 @@ VariableStore::input_axis()
   if (_input_axis.is_setup())
     return _input_axis;
 
+  _input_axis.clear();
   for (const auto & [name, var] : _input_variables)
     _input_axis.add_variable(name, var->intmd_sizes(), var->base_sizes());
+
   _input_axis.setup_layout();
   return _input_axis;
 }
@@ -70,9 +72,6 @@ VariableStore::input_axis()
 const LabeledAxis &
 VariableStore::input_axis() const
 {
-  neml_assert(
-      _input_axis.is_setup(),
-      "Input axis has not been setup yet. Call the non-const version of input_axis() first.");
   return _input_axis;
 }
 
@@ -82,8 +81,10 @@ VariableStore::output_axis()
   if (_output_axis.is_setup())
     return _output_axis;
 
+  _output_axis.clear();
   for (const auto & [name, var] : _output_variables)
     _output_axis.add_variable(name, var->intmd_sizes(), var->base_sizes());
+
   _output_axis.setup_layout();
   return _output_axis;
 }
@@ -91,9 +92,6 @@ VariableStore::output_axis()
 const LabeledAxis &
 VariableStore::output_axis() const
 {
-  neml_assert(
-      _output_axis.is_setup(),
-      "Output axis has not been setup yet. Call the non-const version of output_axis() first.");
   return _output_axis;
 }
 
@@ -112,6 +110,8 @@ template <typename T>
 const Variable<T> &
 VariableStore::declare_input_variable(const VariableName & name, bool allow_duplicate)
 {
+  if (!allow_duplicate || (allow_duplicate && !_input_axis.has_variable(name)))
+    _input_axis.add_variable(name, {}, T::const_base_sizes);
   return *create_variable<T>(_input_variables, name, allow_duplicate);
 }
 #define INSTANTIATE_DECLARE_INPUT_VARIABLE(T)                                                      \
@@ -133,6 +133,7 @@ template <typename T>
 Variable<T> &
 VariableStore::declare_output_variable(const VariableName & name)
 {
+  _output_axis.add_variable(name, {}, T::const_base_sizes);
   return *create_variable<T>(_output_variables, name);
 }
 #define INSTANTIATE_DECLARE_OUTPUT_VARIABLE(T)                                                     \
@@ -150,6 +151,7 @@ VariableStore::clone_input_variable(const VariableBase & var, const VariableName
       !_input_variables.count(var_name), "Input variable '", var_name.str(), "' already exists.");
   auto var_clone = var.clone(var_name, _object);
 
+  _input_axis.add_variable(var_name, {}, var_clone->base_sizes());
   auto [it, success] = _input_variables.emplace(var_name, std::move(var_clone));
   return it->second.get();
 }
@@ -164,6 +166,7 @@ VariableStore::clone_output_variable(const VariableBase & var, const VariableNam
       !_output_variables.count(var_name), "Output variable '", var_name, "' already exists.");
   auto var_clone = var.clone(var_name, _object);
 
+  _output_axis.add_variable(var_name, {}, var_clone->base_sizes());
   auto [it, success] = _output_variables.emplace(var_name, std::move(var_clone));
   return it->second.get();
 }

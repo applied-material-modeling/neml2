@@ -44,9 +44,9 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
 
     def __init__(
         self,
-        model,
+        model: neml2.Model,
         *args,
-        exclude_parameters=[],
+        exclude_parameters: list[str] = [],
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
@@ -59,21 +59,21 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         self._setup_assemblers()
 
     @property
-    def lookback(self):
+    def lookback(self) -> int:
         return self._lookback
 
     @lookback.setter
-    def lookback(self, lookback):
+    def lookback(self, lookback: int):
         if lookback != 1:
             raise ValueError("NEML2 models only support lookback of 1")
         self._lookback = lookback
 
     @property
-    def nstate(self):
+    def nstate(self) -> int:
         return self.model.input_axis().subaxis(STATE).size()
 
     @property
-    def nforce(self):
+    def nforce(self) -> int:
         return self.model.input_axis().subaxis(FORCES).size()
 
     def _check_model(self):

@@ -35,6 +35,7 @@ PYBIND11_MODULE(core, m)
   m.doc() = "NEML2 Python bindings";
 
   // declare py classes
+  auto cls_VariableName = py::class_<LabeledAxisAccessor>(m, "VariableName");
   auto cls_LabeledAxis = py::class_<LabeledAxis>(m, "LabeledAxis");
   auto cls_TensorValue =
       py::class_<TensorValueBase>(m,
@@ -100,6 +101,7 @@ PYBIND11_MODULE(core, m)
   )");
 
   // binding definitions
+  def(m, cls_VariableName);
   def(m, cls_LabeledAxis);
   def(m, cls_TensorValue);
   def(m, cls_Factory);

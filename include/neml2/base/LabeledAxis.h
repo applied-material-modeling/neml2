@@ -53,6 +53,9 @@ public:
   /// Sub-axis constructor
   LabeledAxis(LabeledAxisAccessor prefix);
 
+  /// De-initialize the axis
+  void clear();
+
   /// Whether the axis has been set up
   bool is_setup() const { return _setup; }
 
@@ -122,6 +125,8 @@ public:
   const LabeledAxis & subaxis(const LabeledAxisAccessor & name) const;
   /// Get a sub-axis by name
   LabeledAxis & subaxis(const LabeledAxisAccessor & name);
+  /// Get subaxis names in unsorted order
+  std::vector<std::string> subaxis_names_unsrt() const;
   /// Get the sub-axis names
   const std::vector<std::string> & subaxis_names() const;
   /// Get the sub-axis slicing indices (in assembly order)
@@ -140,6 +145,9 @@ public:
   friend std::ostream & operator<<(std::ostream & os, const LabeledAxis & axis);
 
 private:
+  /// Clear internal data used for assembly
+  void clear_data();
+
   /// Ensure that the axis has been setup
   void ensure_setup_dbg() const;
 

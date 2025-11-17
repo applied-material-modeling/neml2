@@ -59,10 +59,8 @@ def(py::module_ & m, py::class_<MatrixAssembler> & c)
       .def(
           "split_by_variable",
           [](const MatrixAssembler & self, const Tensor & mat, bool assembly)
-          { return pack_deriv_map(self.split_by_variable(mat, assembly)); },
+          { return self.split_by_variable(mat, assembly); },
           py::arg("mat"),
           py::arg("assembly") = true)
-      .def("split_by_subaxis",
-           [](const MatrixAssembler & self, const Tensor & mat)
-           { return pack_deriv_map(self.split_by_subaxis(mat)); });
+      .def("split_by_subaxis", &MatrixAssembler::split_by_subaxis);
 }

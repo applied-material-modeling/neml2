@@ -52,10 +52,8 @@ def(py::module_ & m, py::class_<VectorAssembler> & c)
       .def(
           "split_by_variable",
           [](const VectorAssembler & self, const Tensor & vec, bool assembly)
-          { return pack_value_map(self.split_by_variable(vec, assembly)); },
+          { return self.split_by_variable(vec, assembly); },
           py::arg("vec"),
           py::arg("assembly") = true)
-      .def("split_by_subaxis",
-           [](const VectorAssembler & self, const Tensor & vec)
-           { return pack_value_map(self.split_by_subaxis(vec)); });
+      .def("split_by_subaxis", &VectorAssembler::split_by_subaxis);
 }
