@@ -55,7 +55,7 @@ VariableStore::declare_axis(const std::string & name)
   return *it->second;
 }
 
-const LabeledAxis &
+LabeledAxis &
 VariableStore::input_axis()
 {
   if (_input_axis.is_setup())
@@ -75,7 +75,7 @@ VariableStore::input_axis() const
   return _input_axis;
 }
 
-const LabeledAxis &
+LabeledAxis &
 VariableStore::output_axis()
 {
   if (_output_axis.is_setup())

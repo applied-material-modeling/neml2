@@ -41,16 +41,30 @@ def(py::module_ & m, py::class_<Model, std::shared_ptr<Model>> & c)
           PY_ARG_TENSOR_OPTIONS)
       .def_property_readonly("type", &Model::type, "Type of the model")
       .def("__str__", [](const Model & self) { return utils::stringify(self); })
-      .def("input_axis",
-           py::overload_cast<>(&Model::input_axis, py::const_),
-           py::return_value_policy::reference,
-           "Input axis of the model. The axis contains information on variable names and their "
-           "associated slicing indices.")
-      .def("output_axis",
-           py::overload_cast<>(&Model::output_axis, py::const_),
-           py::return_value_policy::reference,
-           "Output axis of the model. The axis contains information on variable names and their "
-           "associated slicing indices.")
+      .def(
+          "input_axis",
+          [](Model & self, bool setup)
+          {
+            if (setup)
+              self.input_axis().setup_layout();
+            return &std::as_const(self).input_axis();
+          },
+          py::arg("setup") = false,
+          py::return_value_policy::reference,
+          "Input axis of the model. The axis contains information on variable names and their "
+          "associated slicing indices.")
+      .def(
+          "output_axis",
+          [](Model & self, bool setup)
+          {
+            if (setup)
+              self.output_axis().setup_layout();
+            return &std::as_const(self).output_axis();
+          },
+          py::arg("setup") = false,
+          py::return_value_policy::reference,
+          "Output axis of the model. The axis contains information on variable names and their "
+          "associated slicing indices.")
       .def(
           "input_type",
           [](const Model & self, const std::string & name)
@@ -130,34 +144,6 @@ def(py::module_ & m, py::class_<Model, std::shared_ptr<Model>> & c)
              auto base_shape_lookup = [model = &self](const VariableName & key) -> TensorShapeRef
              { return model->input_variable(key).base_sizes(); };
              return self.value_and_dvalue(unpack_value_map(pyinputs, false, base_shape_lookup));
-           })
-      .def(
-          "assign_input",
-          [](Model & self, const py::dict & pyinputs, bool assembly)
-          {
-            auto base_shape_lookup = [&self](const VariableName & key) -> TensorShapeRef
-            { return self.input_variable(key).base_sizes(); };
-            return self.assign_input(unpack_value_map(pyinputs, assembly, base_shape_lookup));
-          },
-          py::arg("inputs"),
-          py::arg("assembly") = false)
-      .def("residual",
-           [](Model & self, const Tensor & x)
-           {
-             auto r = self.residual(NonlinearSystem::Sol<false>(x));
-             return Tensor(r);
-           })
-      .def("Jacobian",
-           [](Model & self, const Tensor & x)
-           {
-             auto J = self.Jacobian(NonlinearSystem::Sol<false>(x));
-             return Tensor(J);
-           })
-      .def("residual_and_Jacobian",
-           [](Model & self, const Tensor & x)
-           {
-             auto [r, J] = self.residual_and_Jacobian(NonlinearSystem::Sol<false>(x));
-             return std::make_pair(Tensor(r), Tensor(J));
            })
       .def(
           "dependency",

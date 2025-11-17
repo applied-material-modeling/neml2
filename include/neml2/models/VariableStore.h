@@ -57,13 +57,13 @@ public:
 
   ///@{
   /// Input axis describing the assembly layout of input variables
-  const LabeledAxis & input_axis();
+  LabeledAxis & input_axis();
   const LabeledAxis & input_axis() const;
   ///@}
 
   ///@{
   /// Output axis describing the assembly layout of output variables
-  const LabeledAxis & output_axis();
+  LabeledAxis & output_axis();
   const LabeledAxis & output_axis() const;
   ///@}
 

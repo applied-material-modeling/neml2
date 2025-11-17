@@ -32,8 +32,8 @@ import torch
 def test_assemble_by_variable():
     pwd = Path(__file__).parent
     model = neml2.load_model(pwd / "test_LabeledAxis.i", "model")
-    xaxis = model.input_axis()
-    yaxis = model.output_axis()
+    xaxis = model.input_axis(setup=True)
+    yaxis = model.output_axis(setup=True)
     assembler = neml2.MatrixAssembler(yaxis, xaxis)
     M = assembler.assemble_by_variable(
         {
@@ -55,8 +55,8 @@ def test_assemble_by_variable():
 def test_split_by_variable():
     pwd = Path(__file__).parent
     model = neml2.load_model(pwd / "test_LabeledAxis.i", "model")
-    xaxis = model.input_axis()
-    yaxis = model.output_axis()
+    xaxis = model.input_axis(setup=True)
+    yaxis = model.output_axis(setup=True)
     assembler = neml2.MatrixAssembler(yaxis, xaxis)
     M = Tensor(torch.linspace(0, 1, 8).reshape(1, 8), 0)
     vals = assembler.split_by_variable(M)["residual/foo_bar"]
@@ -73,8 +73,8 @@ def test_split_by_variable():
 def test_split_by_subaxis():
     pwd = Path(__file__).parent
     model = neml2.load_model(pwd / "test_LabeledAxis.i", "model")
-    xaxis = model.input_axis()
-    yaxis = model.output_axis()
+    xaxis = model.input_axis(setup=True)
+    yaxis = model.output_axis(setup=True)
     assembler = neml2.MatrixAssembler(yaxis, xaxis)
     M = Tensor(torch.linspace(0, 1, 8).reshape(1, 8), 0)
     vals = assembler.split_by_subaxis(M)["residual"]

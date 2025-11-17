@@ -168,25 +168,29 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
             new_value = getattr(self, pname)
             current_value = self.model.get_parameter(pname).tensor()
             # We may need to update the batch shape
-            batch_dim = new_value.dim() - current_value.base.dim()
-            self.model.set_parameter(pname, Tensor(new_value.clone(), batch_dim))
+            dynamic_dim = new_value.dim() - current_value.base.dim() - current_value.intmd.dim()
+            self.model.set_parameter(
+                pname, Tensor(new_value.clone(), dynamic_dim, current_value.intmd.dim())
+            )
 
     def _setup_assemblers(self):
         """Setup the assemblers for the state and forces"""
 
-        input_axis = self.model.input_axis()
-        output_axis = self.model.output_axis()
+        self.input_axis = self.model.input_axis(setup=True)
+        self.output_axis = self.model.output_axis(setup=True)
 
-        self.input_asm = neml2.VectorAssembler(input_axis)
-        self.output_asm = neml2.VectorAssembler(output_axis)
-        self.deriv_asm = neml2.MatrixAssembler(output_axis, input_axis.subaxis(STATE))
-        self.old_deriv_asm = neml2.MatrixAssembler(output_axis, input_axis.subaxis(OLD_STATE))
+        self.input_asm = neml2.VectorAssembler(self.input_axis)
+        self.output_asm = neml2.VectorAssembler(self.output_axis)
+        self.deriv_asm = neml2.MatrixAssembler(self.output_axis, self.input_axis.subaxis(STATE))
+        self.old_deriv_asm = neml2.MatrixAssembler(
+            self.output_axis, self.input_axis.subaxis(OLD_STATE)
+        )
 
-        self.state_asm = neml2.VectorAssembler(input_axis.subaxis(STATE))
-        self.forces_asm = neml2.VectorAssembler(input_axis.subaxis(FORCES))
+        self.state_asm = neml2.VectorAssembler(self.input_axis.subaxis(STATE))
+        self.forces_asm = neml2.VectorAssembler(self.input_axis.subaxis(FORCES))
 
     def _disassemble_input(self, state, forces):
-        """Assemble the model input from the flat tensors
+        """Disassemble the model input forces, old forces, and old state from the flat tensors
 
         Args:
             state (torch.Tensor): tensor containing the model state
@@ -198,14 +202,32 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         bdim = len(batch_shape)
 
         # Disassemble state and old_state
-        state_vars = self.state_asm.split_by_variable(Tensor(state, bdim))
-        new_state_vars = {k: v.dynamic[self.lookback :] for k, v in state_vars.items()}
-        old_state_vars = {k.old(): v.dynamic[: -self.lookback] for k, v in state_vars.items()}
+        state_vars = self.state_asm.split_by_variable(Tensor(state, bdim), assembly=False)
+        new_state_vars = {
+            k: v.dynamic[self.lookback :]
+            for k, v in state_vars.items()
+            if self.input_axis.has_variable(k)
+        }
+        old_state_vars = {
+            k.old(): v.dynamic[: -self.lookback]
+            for k, v in state_vars.items()
+            if self.input_axis.has_variable(k.old())
+        }
 
         # Disassemble forces and old_forces
-        forces_vars = self.forces_asm.split_by_variable(Tensor(forces, bdim))
-        new_forces_vars = {k: v.dynamic[self.lookback :] for k, v in forces_vars.items()}
-        old_forces_vars = {k.old(): v.dynamic[: -self.lookback] for k, v in forces_vars.items()}
+        forces_vars = self.forces_asm.split_by_variable(
+            Tensor(forces, len(batch_shape)), assembly=False
+        )
+        new_forces_vars = {
+            k: v.dynamic[self.lookback :]
+            for k, v in forces_vars.items()
+            if self.input_axis.has_variable(k)
+        }
+        old_forces_vars = {
+            k.old(): v.dynamic[: -self.lookback]
+            for k, v in forces_vars.items()
+            if self.input_axis.has_variable(k.old())
+        }
 
         return new_state_vars | old_state_vars | new_forces_vars | old_forces_vars
 
@@ -225,8 +247,8 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
             tuple of torch.Tensor: residual, Jacobian
         """
         # Make the residual and Jacobian have the same batch shape
-        J = J.batch.expand(r.batch.shape)
-        J_old = J_old.batch.expand(r.batch.shape)
+        J = J.dynamic.expand(r.dynamic.shape)
+        J_old = J_old.dynamic.expand(r.dynamic.shape)
 
         # Make the Jacobian square
         # The current Jacobian should already be square
@@ -234,11 +256,11 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
 
         # The old Jacobian may not be, in which case we will rely on the deriv_asm to make it square
         if J_old.base.shape[-1] != J_old.base.shape[-2]:
-            J_old_vars = self.old_deriv_asm.split_by_variable(J_old)
+            J_old_vars = self.old_deriv_asm.split_by_variable(J_old, assembly=True)
             J_old_vars_adapted = {}
             for yvar, vs in J_old_vars.items():
                 J_old_vars_adapted[yvar] = {k.current(): v for k, v in vs.items()}
-            J_old = self.deriv_asm.assemble_by_variable(J_old_vars_adapted)
+            J_old = self.deriv_asm.assemble_by_variable(J_old_vars_adapted, assembly=True)
         assert J_old.base.shape[-1] == J_old.base.shape[-2]
 
         return r.torch(), torch.stack([J_old.torch(), J.torch()])
@@ -260,11 +282,11 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         r, J = self.model.value_and_dvalue(x)
 
         # Assemble residual
-        r_vec = self.output_asm.assemble_by_variable(r)
+        r_vec = self.output_asm.assemble_by_variable(r, assembly=False)
 
         # Assemble Jacobian
-        J_new_mat = self.deriv_asm.assemble_by_variable(J)
-        J_old_mat = self.old_deriv_asm.assemble_by_variable(J)
+        J_new_mat = self.deriv_asm.assemble_by_variable(J, assembly=False)
+        J_old_mat = self.old_deriv_asm.assemble_by_variable(J, assembly=False)
 
         # At this point, the residual and Jacobians should be good to go
         return self._adapt_for_pyzag(r_vec, J_new_mat, J_old_mat)

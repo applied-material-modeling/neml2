@@ -124,10 +124,10 @@ public:
   LabeledAxisAccessor with_suffix(const std::string & suffix) const;
 
   /// Append another accessor
-  LabeledAxisAccessor append(const LabeledAxisAccessor & axis) const;
+  LabeledAxisAccessor append(const LabeledAxisAccessor & other) const;
 
   /// Prepend another accessor
-  LabeledAxisAccessor prepend(const LabeledAxisAccessor & axis) const;
+  LabeledAxisAccessor prepend(const LabeledAxisAccessor & other) const;
 
   /// Remove the leading @p N items from the labels.
   LabeledAxisAccessor slice(std::size_t N) const;
@@ -136,10 +136,10 @@ public:
   LabeledAxisAccessor slice(std::size_t N, std::size_t M) const;
 
   /// A combination of slice and prepend
-  LabeledAxisAccessor remount(const LabeledAxisAccessor & axis, int64_t n = 1) const;
+  LabeledAxisAccessor remount(const LabeledAxisAccessor & other, int64_t n = 1) const;
 
   /// Check if this accessor begins with another accessor
-  bool start_with(const LabeledAxisAccessor & axis) const;
+  bool start_with(const LabeledAxisAccessor & other) const;
 
   ///@{
   /// Check if the accessor is on a specific sub-axis

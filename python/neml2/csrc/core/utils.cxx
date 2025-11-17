@@ -33,13 +33,12 @@ namespace py = pybind11;
 using namespace neml2;
 
 template <std::size_t D>
-Tensor
-unpack_tensor(
-    const py::handle & pyval,
-    bool assembly,
-    const std::function<neml2::TensorShapeRef(const neml2::VariableName)> & base_shape_fn_i,
-    const std::function<neml2::TensorShapeRef(const neml2::VariableName)> & base_shape_fn_j,
-    const std::array<VariableName, D> & key)
+static Tensor
+unpack_tensor(const py::handle & pyval,
+              bool assembly,
+              const std::function<TensorShapeRef(const VariableName &)> & base_shape_fn_i,
+              const std::function<TensorShapeRef(const VariableName &)> & base_shape_fn_j,
+              const std::array<VariableName, D> & key)
 {
   const auto key_str = key[0].str() + (D > 1 ? '/' + key[1].str() : "");
 
@@ -87,15 +86,14 @@ unpack_tensor(
 }
 
 ValueMap
-unpack_value_map(
-    const py::dict & pyvals,
-    bool assembly,
-    const std::function<neml2::TensorShapeRef(const neml2::VariableName &)> & base_shape_fn)
+unpack_value_map(const py::dict & pyvals,
+                 bool assembly,
+                 const std::function<TensorShapeRef(const VariableName &)> & base_shape_fn)
 {
   ValueMap unpacked;
   for (const auto & [pykey, pyval] : pyvals)
   {
-    const auto key = utils::parse<LabeledAxisAccessor>(pykey.cast<std::string>());
+    const auto key = unpack_variable_name(pykey);
     const auto val = unpack_tensor<1>(pyval, assembly, base_shape_fn, base_shape_fn, {key});
     unpacked[key] = val;
   }
@@ -103,23 +101,22 @@ unpack_value_map(
 }
 
 DerivMap
-unpack_deriv_map(
-    const py::dict & pyderivs,
-    bool assembly,
-    const std::function<neml2::TensorShapeRef(const neml2::VariableName &)> & base_shape_fn_i,
-    const std::function<neml2::TensorShapeRef(const neml2::VariableName &)> & base_shape_fn_j)
+unpack_deriv_map(const py::dict & pyderivs,
+                 bool assembly,
+                 const std::function<TensorShapeRef(const VariableName &)> & base_shape_fn_i,
+                 const std::function<TensorShapeRef(const VariableName &)> & base_shape_fn_j)
 {
   DerivMap unpacked;
   for (const auto & [pykeyi, pyvals] : pyderivs)
   {
-    const auto keyi = utils::parse<LabeledAxisAccessor>(pykeyi.cast<std::string>());
+    const auto keyi = unpack_variable_name(pykeyi);
 
     if (!py::isinstance<py::dict>(pyvals))
       throw py::cast_error("Dictionary values must be convertible to dict");
 
     for (const auto & [pykeyj, pyval] : pyvals.cast<py::dict>())
     {
-      const auto keyj = utils::parse<LabeledAxisAccessor>(pykeyj.cast<std::string>());
+      const auto keyj = unpack_variable_name(pykeyj);
       const auto val =
           unpack_tensor<2>(pyval, assembly, base_shape_fn_i, base_shape_fn_j, {keyi, keyj});
       unpacked[keyi][keyj] = val;
@@ -128,20 +125,31 @@ unpack_deriv_map(
   return unpacked;
 }
 
-std::map<std::string, neml2::Tensor>
-pack_value_map(const neml2::ValueMap & vals)
+std::map<std::string, Tensor>
+pack_value_map(const ValueMap & vals)
 {
-  std::map<std::string, neml2::Tensor> dict;
+  std::map<std::string, Tensor> dict;
   for (const auto & [key, val] : vals)
     dict[key.str()] = val;
   return dict;
 }
 
-std::map<std::string, std::map<std::string, neml2::Tensor>>
-pack_deriv_map(const neml2::DerivMap & derivs)
+std::map<std::string, std::map<std::string, Tensor>>
+pack_deriv_map(const DerivMap & derivs)
 {
-  std::map<std::string, std::map<std::string, neml2::Tensor>> dict;
+  std::map<std::string, std::map<std::string, Tensor>> dict;
   for (const auto & [keyi, vals] : derivs)
     dict[keyi.str()] = pack_value_map(vals);
   return dict;
+}
+
+VariableName
+unpack_variable_name(const py::handle & obj)
+{
+  if (py::isinstance<py::str>(obj))
+    return utils::parse<VariableName>(obj.cast<std::string>());
+  else if (py::isinstance<VariableName>(obj))
+    return obj.cast<VariableName>();
+  else
+    throw py::cast_error("Cannot convert object to VariableName");
 }

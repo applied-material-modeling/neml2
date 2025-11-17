@@ -22,9 +22,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/base/Parser.h"
-
 #include "python/neml2/csrc/core/types.h"
+#include "python/neml2/csrc/core/utils.h"
 
 namespace py = pybind11;
 using namespace neml2;
@@ -33,13 +32,24 @@ void
 def(py::module_ & m, py::class_<neml2::LabeledAxisAccessor> & c)
 {
   c.def(py::init<>())
-      .def(py::init([](const std::string & str) { return utils::parse<LabeledAxisAccessor>(str); }))
+      .def(py::init([](const py::object & str) { return unpack_variable_name(str); }))
       .def(py::init<const LabeledAxisAccessor &>())
       .def("with_suffix", &LabeledAxisAccessor::with_suffix)
-      .def("append", &LabeledAxisAccessor::append)
-      .def("prepend", &LabeledAxisAccessor::prepend)
-      .def("remount", &LabeledAxisAccessor::remount)
-      .def("start_with", &LabeledAxisAccessor::start_with)
+      .def("append",
+           [](const LabeledAxisAccessor & self, const py::object & other)
+           { return self.append(unpack_variable_name(other)); })
+      .def("prepend",
+           [](const LabeledAxisAccessor & self, const py::object & other)
+           { return self.prepend(unpack_variable_name(other)); })
+      .def(
+          "remount",
+          [](const LabeledAxisAccessor & self, const py::object & other, Size n)
+          { return self.remount(unpack_variable_name(other), n); },
+          py::arg("other"),
+          py::arg("n") = 1)
+      .def("start_with",
+           [](const LabeledAxisAccessor & self, const py::object & other)
+           { return self.start_with(unpack_variable_name(other)); })
       .def("current", &LabeledAxisAccessor::current)
       .def("old", &LabeledAxisAccessor::old)
       .def("__repr__", [](const LabeledAxisAccessor & self) { return self.str(); })
@@ -48,7 +58,9 @@ def(py::module_ & m, py::class_<neml2::LabeledAxisAccessor> & c)
       .def("__hash__",
            [](const LabeledAxisAccessor & self) { return py::hash(py::cast(self.str())); })
       .def("__eq__",
-           [](const LabeledAxisAccessor & a, const LabeledAxisAccessor & b) { return a == b; })
+           [](const LabeledAxisAccessor & a, const py::object & b)
+           { return a == unpack_variable_name(b); })
       .def("__ne__",
-           [](const LabeledAxisAccessor & a, const LabeledAxisAccessor & b) { return a != b; });
+           [](const LabeledAxisAccessor & a, const py::object & b)
+           { return a != unpack_variable_name(b); });
 }

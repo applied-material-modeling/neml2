@@ -36,7 +36,8 @@ reserved_subaxis_names()
   return {STATE, OLD_STATE, FORCES, OLD_FORCES, RESIDUAL, PARAMETERS};
 }
 
-LabeledAxisAccessor::operator std::vector<std::string>() const
+LabeledAxisAccessor::
+operator std::vector<std::string>() const
 {
   std::vector<std::string> v(_item_names.begin(), _item_names.end());
   return v;
@@ -75,15 +76,15 @@ LabeledAxisAccessor::with_suffix(const std::string & suffix) const
 }
 
 LabeledAxisAccessor
-LabeledAxisAccessor::append(const LabeledAxisAccessor & axis) const
+LabeledAxisAccessor::append(const LabeledAxisAccessor & other) const
 {
-  return axis.prepend(*this);
+  return other.prepend(*this);
 }
 
 LabeledAxisAccessor
-LabeledAxisAccessor::prepend(const LabeledAxisAccessor & axis) const
+LabeledAxisAccessor::prepend(const LabeledAxisAccessor & other) const
 {
-  auto new_names = axis._item_names;
+  auto new_names = other._item_names;
   new_names.insert(new_names.end(), _item_names.begin(), _item_names.end());
   return new_names;
 }
@@ -107,15 +108,15 @@ LabeledAxisAccessor::slice(std::size_t N, std::size_t M) const
 }
 
 LabeledAxisAccessor
-LabeledAxisAccessor::remount(const LabeledAxisAccessor & axis, int64_t n) const
+LabeledAxisAccessor::remount(const LabeledAxisAccessor & other, int64_t n) const
 {
-  return slice(n).prepend(axis);
+  return slice(n).prepend(other);
 }
 
 bool
-LabeledAxisAccessor::start_with(const LabeledAxisAccessor & axis) const
+LabeledAxisAccessor::start_with(const LabeledAxisAccessor & other) const
 {
-  return slice(0, int64_t(axis.size())) == axis;
+  return slice(0, int64_t(other.size())) == other;
 }
 
 bool

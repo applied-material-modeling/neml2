@@ -86,7 +86,6 @@ TensorName<T>::resolve_number(double val) const
 }
 
 // Explicit instantiations
-template struct TensorName<ATensor>;
 #define INSTANTIATE(T) template struct TensorName<T>
 FOR_ALL_TENSORBASE(INSTANTIATE);
-} // namesace neml2
+} // namespace neml2

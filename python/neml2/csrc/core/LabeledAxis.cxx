@@ -22,9 +22,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/base/Parser.h"
-
 #include "python/neml2/csrc/core/types.h"
+#include "python/neml2/csrc/core/utils.h"
 #include "python/neml2/csrc/tensors/types.h"
 
 namespace py = pybind11;
@@ -36,27 +35,27 @@ def(py::module_ & m, py::class_<neml2::LabeledAxis> & c)
   c.def("size", py::overload_cast<>(&LabeledAxis::size, py::const_))
       .def(
           "size",
-          [](const LabeledAxis & self, const std::string & name)
-          { return self.size(utils::parse<LabeledAxisAccessor>(name)); },
+          [](const LabeledAxis & self, const py::object & name)
+          { return self.size(unpack_variable_name(name)); },
           py::arg("name"))
       .def("variable_names", &LabeledAxis::variable_names_unsrt)
       .def("nvariable", &LabeledAxis::nvariable)
       .def(
           "has_variable",
-          [](const LabeledAxis & self, const std::string & name)
-          { return self.has_variable(utils::parse<LabeledAxisAccessor>(name)); },
+          [](const LabeledAxis & self, const py::object & name)
+          { return self.has_variable(unpack_variable_name(name)); },
           py::arg("name"))
       .def("subaxis_names", &LabeledAxis::subaxis_names_unsrt)
       .def("nsubaxis", &LabeledAxis::nsubaxis)
       .def(
           "has_subaxis",
-          [](const LabeledAxis & self, const std::string & name)
-          { return self.has_subaxis(utils::parse<LabeledAxisAccessor>(name)); },
+          [](const LabeledAxis & self, const py::object & name)
+          { return self.has_subaxis(unpack_variable_name(name)); },
           py::arg("name"))
       .def(
           "subaxis",
-          [](const LabeledAxis & self, const std::string & name)
-          { return self.subaxis(utils::parse<LabeledAxisAccessor>(name)); },
+          [](const LabeledAxis & self, const py::object & name)
+          { return &self.subaxis(unpack_variable_name(name)); },
           py::arg("name"),
           py::return_value_policy::reference)
       .def("__repr__", [](const LabeledAxis & self) { return utils::stringify(self); });

@@ -99,7 +99,6 @@ private:
 };
 
 // Export TensorName so other TU don't repeat the instantiation
-extern template struct TensorName<ATensor>;
 #define EXPORT_TENSORNAME(T) extern template struct TensorName<T>
 FOR_ALL_TENSORBASE(EXPORT_TENSORNAME);
 #undef EXPORT_TENSORNAME
