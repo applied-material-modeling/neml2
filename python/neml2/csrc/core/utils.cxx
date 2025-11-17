@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/map_types.h"
+#include "neml2/base/Parser.h"
 
 #include <pybind11/pytypes.h>
 
@@ -94,7 +95,7 @@ unpack_value_map(
   ValueMap unpacked;
   for (const auto & [pykey, pyval] : pyvals)
   {
-    const auto key = pykey.cast<VariableName>();
+    const auto key = utils::parse<LabeledAxisAccessor>(pykey.cast<std::string>());
     const auto val = unpack_tensor<1>(pyval, assembly, base_shape_fn, base_shape_fn, {key});
     unpacked[key] = val;
   }
@@ -111,18 +112,36 @@ unpack_deriv_map(
   DerivMap unpacked;
   for (const auto & [pykeyi, pyvals] : pyderivs)
   {
-    const auto keyi = pykeyi.cast<VariableName>();
+    const auto keyi = utils::parse<LabeledAxisAccessor>(pykeyi.cast<std::string>());
 
     if (!py::isinstance<py::dict>(pyvals))
       throw py::cast_error("Dictionary values must be convertible to dict");
 
     for (const auto & [pykeyj, pyval] : pyvals.cast<py::dict>())
     {
-      const auto keyj = pykeyj.cast<VariableName>();
+      const auto keyj = utils::parse<LabeledAxisAccessor>(pykeyj.cast<std::string>());
       const auto val =
           unpack_tensor<2>(pyval, assembly, base_shape_fn_i, base_shape_fn_j, {keyi, keyj});
       unpacked[keyi][keyj] = val;
     }
   }
   return unpacked;
+}
+
+std::map<std::string, neml2::Tensor>
+pack_value_map(const neml2::ValueMap & vals)
+{
+  std::map<std::string, neml2::Tensor> dict;
+  for (const auto & [key, val] : vals)
+    dict[key.str()] = val;
+  return dict;
+}
+
+std::map<std::string, std::map<std::string, neml2::Tensor>>
+pack_deriv_map(const neml2::DerivMap & derivs)
+{
+  std::map<std::string, std::map<std::string, neml2::Tensor>> dict;
+  for (const auto & [keyi, vals] : derivs)
+    dict[keyi.str()] = pack_value_map(vals);
+  return dict;
 }

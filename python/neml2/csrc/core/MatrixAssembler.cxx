@@ -39,13 +39,13 @@ def(py::module_ & m, py::class_<MatrixAssembler> & c)
           [](const MatrixAssembler & self, const py::dict & py_vals_dict, bool assembly)
           {
             auto base_shape_lookup_i =
-                [axis = &self.yaxis()](const neml2::VariableName & key) -> TensorShapeRef
+                [axis = &self.yaxis()](const VariableName & key) -> TensorShapeRef
             {
               const auto vid = axis->variable_id(axis->disqualify(key));
               return axis->variable_base_sizes()[vid];
             };
             auto base_shape_lookup_j =
-                [axis = &self.yaxis()](const neml2::VariableName & key) -> TensorShapeRef
+                [axis = &self.yaxis()](const VariableName & key) -> TensorShapeRef
             {
               const auto vid = axis->variable_id(axis->disqualify(key));
               return axis->variable_base_sizes()[vid];
@@ -56,9 +56,13 @@ def(py::module_ & m, py::class_<MatrixAssembler> & c)
           },
           py::arg("derivs"),
           py::arg("assembly") = true)
-      .def("split_by_variable",
-           &MatrixAssembler::split_by_variable,
-           py::arg("mat"),
-           py::arg("assembly") = true)
-      .def("split_by_subaxis", &MatrixAssembler::split_by_subaxis);
+      .def(
+          "split_by_variable",
+          [](const MatrixAssembler & self, const Tensor & mat, bool assembly)
+          { return pack_deriv_map(self.split_by_variable(mat, assembly)); },
+          py::arg("mat"),
+          py::arg("assembly") = true)
+      .def("split_by_subaxis",
+           [](const MatrixAssembler & self, const Tensor & mat)
+           { return pack_deriv_map(self.split_by_subaxis(mat)); });
 }

@@ -48,3 +48,10 @@ neml2::DerivMap unpack_deriv_map(
     bool assembly,
     const std::function<neml2::TensorShapeRef(const neml2::VariableName &)> & base_shape_fn_i,
     const std::function<neml2::TensorShapeRef(const neml2::VariableName &)> & base_shape_fn_j);
+
+/// Pack a neml2::ValueMap into a std::map<std::string, neml2::Tensor>
+std::map<std::string, neml2::Tensor> pack_value_map(const neml2::ValueMap & vals);
+
+/// Pack a neml2::DerivMap into a std::map<std::string, std::map<std::string, neml2::Tensor>>
+std::map<std::string, std::map<std::string, neml2::Tensor>>
+pack_deriv_map(const neml2::DerivMap & derivs);

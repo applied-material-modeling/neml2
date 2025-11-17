@@ -34,64 +34,36 @@ void
 def(py::module_ & m, py::class_<neml2::LabeledAxis> & c)
 {
   c.def("size", py::overload_cast<>(&LabeledAxis::size, py::const_))
-      .def("size",
-           py::overload_cast<const LabeledAxisAccessor &>(&LabeledAxis::size, py::const_),
-           py::arg("name"))
-      .def("slice", &LabeledAxis::slice, py::arg("name"))
+      .def(
+          "size",
+          [](const LabeledAxis & self, const std::string & name)
+          { return self.size(utils::parse<LabeledAxisAccessor>(name)); },
+          py::arg("name"))
+      .def("variable_names",
+           [](const LabeledAxis & self)
+           {
+             std::vector<std::string> names;
+             for (const auto & name : self.variable_names_unsrt())
+               names.push_back(name.str());
+             return names;
+           })
       .def("nvariable", &LabeledAxis::nvariable)
-      .def("has_variable", &LabeledAxis::has_variable, py::arg("name"))
-      .def("variable_id", &LabeledAxis::variable_id, py::arg("name"))
-      .def("variable_names", &LabeledAxis::variable_names)
-      .def("variable_slices",
-           [](const LabeledAxis & self)
-           {
-             const auto & slices = self.variable_slices();
-             std::vector<py::slice> py_slices;
-             py_slices.reserve(slices.size());
-             for (const auto & slice : slices)
-               py_slices.emplace_back(slice.first, slice.second, 1);
-             return py_slices;
-           })
       .def(
-          "variable_slice",
-          [](const LabeledAxis & self, const VariableName & name)
-          {
-            const auto & slice = self.variable_slice(name);
-            return py::slice(slice.first, slice.second, 1);
-          },
+          "has_variable",
+          [](const LabeledAxis & self, const std::string & name)
+          { return self.has_variable(utils::parse<LabeledAxisAccessor>(name)); },
           py::arg("name"))
-      .def("variable_sizes", &LabeledAxis::variable_sizes)
-      .def("variable_size", &LabeledAxis::variable_size, py::arg("name"))
       .def("nsubaxis", &LabeledAxis::nsubaxis)
-      .def("has_subaxis", &LabeledAxis::has_subaxis, py::arg("name"))
-      .def("subaxis_id", &LabeledAxis::subaxis_id, py::arg("name"))
-      .def("subaxes", &LabeledAxis::subaxes, py::return_value_policy::reference)
-      .def("subaxis",
-           py::overload_cast<const LabeledAxisAccessor &>(&LabeledAxis::subaxis, py::const_),
-           py::arg("name"),
-           py::return_value_policy::reference)
-      .def("subaxis_names", &LabeledAxis::subaxis_names)
-      .def("subaxis_slices",
-           [](const LabeledAxis & self)
-           {
-             const auto & slices = self.subaxis_slices();
-             std::vector<py::slice> py_slices;
-             py_slices.reserve(slices.size());
-             for (const auto & slice : slices)
-               py_slices.emplace_back(slice.first, slice.second, 1);
-             return py_slices;
-           })
       .def(
-          "subaxis_slice",
-          [](const LabeledAxis & self, const SubaxisName & name)
-          {
-            const auto & slice = self.subaxis_slice(name);
-            return py::slice(slice.first, slice.second, 1);
-          },
+          "has_subaxis",
+          [](const LabeledAxis & self, const std::string & name)
+          { return self.has_subaxis(utils::parse<LabeledAxisAccessor>(name)); },
           py::arg("name"))
-      .def("subaxis_sizes", &LabeledAxis::subaxis_sizes)
-      .def("subaxis_size", &LabeledAxis::subaxis_size, py::arg("name"))
-      .def("__repr__", [](const LabeledAxis & self) { return utils::stringify(self); })
-      .def("__eq__", [](const LabeledAxis & a, const LabeledAxis & b) { return a == b; })
-      .def("__ne__", [](const LabeledAxis & a, const LabeledAxis & b) { return a != b; });
+      .def(
+          "subaxis",
+          [](const LabeledAxis & self, const std::string & name)
+          { return self.subaxis(utils::parse<LabeledAxisAccessor>(name)); },
+          py::arg("name"),
+          py::return_value_policy::reference)
+      .def("__repr__", [](const LabeledAxis & self) { return utils::stringify(self); });
 }

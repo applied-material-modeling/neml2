@@ -90,6 +90,8 @@ public:
   bool has_variable(const LabeledAxisAccessor & name) const;
   /// Get the assembly ID of a variable
   std::size_t variable_id(const LabeledAxisAccessor & name) const;
+  /// Get variable names in unsorted order
+  std::vector<LabeledAxisAccessor> variable_names_unsrt() const;
   /// Get the variable names
   const std::vector<LabeledAxisAccessor> & variable_names() const;
   /// Get the variable slicing indices (in assembly order)

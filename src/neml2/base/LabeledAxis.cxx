@@ -285,6 +285,22 @@ LabeledAxis::variable_id(const LabeledAxisAccessor & name) const
   return id->second;
 }
 
+std::vector<LabeledAxisAccessor>
+LabeledAxis::variable_names_unsrt() const
+{
+  std::vector<LabeledAxisAccessor> names;
+  names.reserve(nvariable());
+  for (const auto & [name, _] : _variables)
+    names.emplace_back(name);
+  for (const auto & [subaxis_name, subaxis] : _subaxes)
+  {
+    const auto sub_names = subaxis->variable_names_unsrt();
+    for (const auto & sub_name : sub_names)
+      names.push_back(sub_name.prepend(subaxis_name));
+  }
+  return names;
+}
+
 const std::vector<LabeledAxisAccessor> &
 LabeledAxis::variable_names() const
 {

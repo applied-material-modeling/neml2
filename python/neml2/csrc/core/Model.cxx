@@ -22,6 +22,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include "neml2/base/Parser.h"
+
 #include "python/neml2/csrc/core/types.h"
 #include "python/neml2/csrc/core/utils.h"
 
@@ -29,7 +31,7 @@ namespace py = pybind11;
 using namespace neml2;
 
 void
-def(py::module_ & m, py::class_<neml2::Model, std::shared_ptr<neml2::Model>> & c)
+def(py::module_ & m, py::class_<Model, std::shared_ptr<Model>> & c)
 {
   c.def_property_readonly("name", &Model::name, "Name of the model")
       .def(
@@ -53,14 +55,14 @@ def(py::module_ & m, py::class_<neml2::Model, std::shared_ptr<neml2::Model>> & c
           "associated slicing indices.")
       .def(
           "input_type",
-          [](const Model & self, const VariableName & name)
-          { return self.input_variable(name).type(); },
+          [](const Model & self, const std::string & name)
+          { return self.input_variable(utils::parse<VariableName>(name)).type(); },
           py::arg("variable"),
           "Introspect the underlying tensor type of an input variable. @returns tensors.TensorType")
       .def(
           "output_type",
-          [](const Model & self, const VariableName & name)
-          { return self.output_variable(name).type(); },
+          [](const Model & self, const std::string & name)
+          { return self.output_variable(utils::parse<VariableName>(name)).type(); },
           py::arg("variable"),
           "Introspect the underlying tensor type of an output variable. @returns "
           "tensors.TensorType")
@@ -113,51 +115,55 @@ def(py::module_ & m, py::class_<neml2::Model, std::shared_ptr<neml2::Model>> & c
       .def("value",
            [](Model & self, const py::dict & pyinputs)
            {
-             auto base_shape_lookup = [model =
-                                           &self](const neml2::VariableName & key) -> TensorShapeRef
+             auto base_shape_lookup = [model = &self](const VariableName & key) -> TensorShapeRef
              { return model->input_variable(key).base_sizes(); };
-             return self.value(unpack_value_map(pyinputs, false, base_shape_lookup));
+             const auto out = self.value(unpack_value_map(pyinputs, false, base_shape_lookup));
+             return pack_value_map(out);
            })
       .def("dvalue",
            [](Model & self, const py::dict & pyinputs)
            {
-             auto base_shape_lookup = [model =
-                                           &self](const neml2::VariableName & key) -> TensorShapeRef
+             auto base_shape_lookup = [model = &self](const VariableName & key) -> TensorShapeRef
              { return model->input_variable(key).base_sizes(); };
-             return self.dvalue(unpack_value_map(pyinputs, false, base_shape_lookup));
-           })
-      .def("d2value",
-           [](Model & self, const py::dict & pyinputs)
-           {
-             auto base_shape_lookup = [model =
-                                           &self](const neml2::VariableName & key) -> TensorShapeRef
-             { return model->input_variable(key).base_sizes(); };
-             return self.d2value(unpack_value_map(pyinputs, false, base_shape_lookup));
+             const auto dout = self.dvalue(unpack_value_map(pyinputs, false, base_shape_lookup));
+             return pack_deriv_map(dout);
            })
       .def("value_and_dvalue",
            [](Model & self, const py::dict & pyinputs)
            {
-             auto base_shape_lookup = [model =
-                                           &self](const neml2::VariableName & key) -> TensorShapeRef
+             auto base_shape_lookup = [model = &self](const VariableName & key) -> TensorShapeRef
              { return model->input_variable(key).base_sizes(); };
-             return self.value_and_dvalue(unpack_value_map(pyinputs, false, base_shape_lookup));
+             const auto [out, dout] =
+                 self.value_and_dvalue(unpack_value_map(pyinputs, false, base_shape_lookup));
+             return std::make_pair(pack_value_map(out), pack_deriv_map(dout));
            })
-      .def("dvalue_and_d2value",
-           [](Model & self, const py::dict & pyinputs)
+      .def(
+          "assign_input",
+          [](Model & self, const py::dict & pyinputs, bool assembly)
+          {
+            auto base_shape_lookup = [&self](const VariableName & key) -> TensorShapeRef
+            { return self.input_variable(key).base_sizes(); };
+            return self.assign_input(unpack_value_map(pyinputs, assembly, base_shape_lookup));
+          },
+          py::arg("inputs"),
+          py::arg("assembly") = false)
+      .def("residual",
+           [](Model & self, const Tensor & x)
            {
-             auto base_shape_lookup = [model =
-                                           &self](const neml2::VariableName & key) -> TensorShapeRef
-             { return model->input_variable(key).base_sizes(); };
-             return self.dvalue_and_d2value(unpack_value_map(pyinputs, false, base_shape_lookup));
+             auto r = self.residual(NonlinearSystem::Sol<false>(x));
+             return Tensor(r);
            })
-      .def("value_and_dvalue_and_d2value",
-           [](Model & self, const py::dict & pyinputs)
+      .def("Jacobian",
+           [](Model & self, const Tensor & x)
            {
-             auto base_shape_lookup = [model =
-                                           &self](const neml2::VariableName & key) -> TensorShapeRef
-             { return model->input_variable(key).base_sizes(); };
-             return self.value_and_dvalue_and_d2value(
-                 unpack_value_map(pyinputs, false, base_shape_lookup));
+             auto J = self.Jacobian(NonlinearSystem::Sol<false>(x));
+             return Tensor(J);
+           })
+      .def("residual_and_Jacobian",
+           [](Model & self, const Tensor & x)
+           {
+             auto [r, J] = self.residual_and_Jacobian(NonlinearSystem::Sol<false>(x));
+             return std::make_pair(Tensor(r), Tensor(J));
            })
       .def(
           "dependency",

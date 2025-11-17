@@ -38,8 +38,8 @@ def(py::module_ & m, py::class_<VectorAssembler> & c)
           "assemble_by_variable",
           [](const VectorAssembler & self, const py::dict & py_vals_dict, bool assembly)
           {
-            auto base_shape_lookup =
-                [axis = &self.axis()](const neml2::VariableName & key) -> TensorShapeRef
+            auto base_shape_lookup = [axis =
+                                          &self.axis()](const VariableName & key) -> TensorShapeRef
             {
               const auto vid = axis->variable_id(axis->disqualify(key));
               return axis->variable_base_sizes()[vid];
@@ -49,9 +49,13 @@ def(py::module_ & m, py::class_<VectorAssembler> & c)
           },
           py::arg("vals"),
           py::arg("assembly") = true)
-      .def("split_by_variable",
-           &VectorAssembler::split_by_variable,
-           py::arg("vec"),
-           py::arg("assembly") = true)
-      .def("split_by_subaxis", &VectorAssembler::split_by_subaxis);
+      .def(
+          "split_by_variable",
+          [](const VectorAssembler & self, const Tensor & vec, bool assembly)
+          { return pack_value_map(self.split_by_variable(vec, assembly)); },
+          py::arg("vec"),
+          py::arg("assembly") = true)
+      .def("split_by_subaxis",
+           [](const VectorAssembler & self, const Tensor & vec)
+           { return pack_value_map(self.split_by_subaxis(vec)); });
 }
