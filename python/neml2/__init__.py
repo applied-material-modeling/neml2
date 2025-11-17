@@ -30,6 +30,7 @@ Number = typing.Union[int, float, bool]
 # Bring core functionality and tensors into the main namespace
 from .core import *
 from .tensors import *
+from .math import *
 
 # pybind11-stubgen generates incorrect type annotations for Unions
 # so unfortunately we need to maintain this list

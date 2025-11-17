@@ -34,6 +34,14 @@ import math
 
 
 class DerivativeCheck:
+    model: neml2.pyzag.NEML2PyzagModel
+    nchunk: int
+    initial_state: torch.Tensor
+    nstep: int
+    forces: torch.Tensor
+    atol: float
+    rtol: float
+
     def adjoint_grads(self):
         solver = nonlinear.RecursiveNonlinearEquationSolver(
             self.model,
@@ -44,7 +52,7 @@ class DerivativeCheck:
         res = nonlinear.solve_adjoint(solver, self.initial_state, self.nstep, self.forces)
         val = torch.norm(res)
         val.backward()
-        return {n: p.grad for n, p in solver.named_parameters()}
+        return {n: torch.Tensor(p.grad) for n, p in solver.named_parameters()}
 
     def fd_grads(self, eps=1.0e-6):
         solver = nonlinear.RecursiveNonlinearEquationSolver(
@@ -91,16 +99,16 @@ class TestElasticModel(DerivativeCheck):
         # Prescribed time
         start_time = Scalar.full(0.0)
         end_time = Scalar(torch.logspace(-1, -5, self.nbatch))
-        time = Scalar.linspace(start_time, end_time, self.nstep)
+        time = Scalar.dynamic_linspace(start_time, end_time, self.nstep)
 
         # Prescribed strain
         start_strain = SR2.full(0.0)
         end_strain = SR2.fill(0.1, -0.05, -0.05, 0.0, 0.0, 0.0)
-        strain = SR2.linspace(start_strain, end_strain, self.nstep).batch.unsqueeze(-1)
+        strain = SR2.dynamic_linspace(start_strain, end_strain, self.nstep).dynamic.unsqueeze(-1)
 
         # Prescribed forces
         self.forces = self.model.forces_asm.assemble_by_variable(
-            {"forces/t": time, "forces/E": strain}
+            {"forces/t": time, "forces/E": strain}, assembly=False
         ).torch()
 
         # Initial state
@@ -124,16 +132,16 @@ class TestViscoplasticModel(DerivativeCheck):
         # Prescribed time
         start_time = Scalar.full(0.0)
         end_time = Scalar(torch.logspace(-1, -5, self.nbatch))
-        time = Scalar.linspace(start_time, end_time, self.nstep)
+        time = Scalar.dynamic_linspace(start_time, end_time, self.nstep)
 
         # Prescribed strain
         start_strain = SR2.full(0.0)
         end_strain = SR2.fill(0.1, -0.05, -0.05, 0.0, 0.0, 0.0)
-        strain = SR2.linspace(start_strain, end_strain, self.nstep).batch.unsqueeze(-1)
+        strain = SR2.dynamic_linspace(start_strain, end_strain, self.nstep).dynamic.unsqueeze(-1)
 
         # Prescribed forces
         self.forces = self.model.forces_asm.assemble_by_variable(
-            {"forces/t": time, "forces/E": strain}
+            {"forces/t": time, "forces/E": strain}, assembly=False
         ).torch()
 
         # Initial state
@@ -159,22 +167,24 @@ class TestKocksMeckingMixedControlModel(DerivativeCheck):
         # Prescribed time
         start_time = Scalar.full(0.0)
         end_time = Scalar(torch.logspace(-1, -5, self.nbatch))
-        time = Scalar.linspace(start_time, end_time, self.nstep)
+        time = Scalar.dynamic_linspace(start_time, end_time, self.nstep)
 
         # Prescribed strain/stress
         sqrt2 = math.sqrt(2)  # For Mandel notation
         start_condition = SR2.full(0.0)
-        end_condition = SR2.fill(0.1, -50, -0.025, 0.15 / sqrt2, 75.0 / sqrt2, 0.05 / sqrt2)
-        condition = SR2.linspace(start_condition, end_condition, self.nstep).batch.unsqueeze(-1)
+        end_condition = SR2.fill(0.1, -50.0, -0.025, 0.15 / sqrt2, 75.0 / sqrt2, 0.05 / sqrt2)
+        condition = SR2.dynamic_linspace(
+            start_condition, end_condition, self.nstep
+        ).dynamic.unsqueeze(-1)
 
         # Prescribed control
         # 1st and 4th components are 1.0 (stress-controlled)
         control = Tensor(torch.tensor([0.0, 1.0, 0.0, 0.0, 1.0, 0.0]), 0)
 
         # Prescribed temperature
-        start_temperature = Scalar.linspace(Scalar.full(300), Scalar.full(500), self.nbatch)
-        end_temperature = Scalar.linspace(Scalar.full(600), Scalar.full(1200), self.nbatch)
-        temperature = Scalar.linspace(start_temperature, end_temperature, self.nstep)
+        start_temperature = Scalar.dynamic_linspace(Scalar.full(300), Scalar.full(500), self.nbatch)
+        end_temperature = Scalar.dynamic_linspace(Scalar.full(600), Scalar.full(1200), self.nbatch)
+        temperature = Scalar.dynamic_linspace(start_temperature, end_temperature, self.nstep)
 
         # Prescribed forces
         self.forces = self.model.forces_asm.assemble_by_variable(
@@ -183,7 +193,8 @@ class TestKocksMeckingMixedControlModel(DerivativeCheck):
                 "forces/control": control,
                 "forces/fixed_values": condition,
                 "forces/T": temperature,
-            }
+            },
+            assembly=False,
         ).torch()
 
         # Initial state

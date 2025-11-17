@@ -60,22 +60,23 @@ namespace neml2
     auto B = utils::broadcast_sizes(start.intmd_sizes(), end.intmd_sizes());                       \
     return start.intmd_expand(B).intmd_unsqueeze(dim);                                             \
   }                                                                                                \
-                                                                                                   \
-  Tensor base_linspace(const T & start, const T & end, Size nstep, Size dim)                       \
-  {                                                                                                \
-    neml_assert_dbg(nstep > 0, "nstep must be positive.");                                         \
-                                                                                                   \
-    if (nstep > 1)                                                                                 \
-    {                                                                                              \
-      auto delta = end - start;                                                                    \
-      Tensor steps(at::arange(nstep, delta.options()) / (nstep - 1), 0, 0);                        \
-      auto res = start.base_unsqueeze(0) + steps * delta.base_unsqueeze(0);                        \
-      return res.base_movedim(0, dim);                                                             \
-    }                                                                                              \
-                                                                                                   \
-    auto B = utils::broadcast_sizes(start.base_sizes(), end.base_sizes());                         \
-    return start.base_expand(B).base_unsqueeze(dim);                                               \
-  }                                                                                                \
   static_assert(true)
 FOR_ALL_TENSORBASE(DEFINE_LINSPACE);
+
+Tensor
+base_linspace(const Tensor & start, const Tensor & end, Size nstep, Size dim)
+{
+  neml_assert_dbg(nstep > 0, "nstep must be positive.");
+
+  if (nstep > 1)
+  {
+    auto delta = end - start;
+    Tensor steps(at::arange(nstep, delta.options()) / (nstep - 1), 0, 0);
+    auto res = start.base_unsqueeze(0) + steps * delta.base_unsqueeze(0);
+    return res.base_movedim(0, dim);
+  }
+
+  auto B = utils::broadcast_sizes(start.base_sizes(), end.base_sizes());
+  return start.base_expand(B).base_unsqueeze(dim);
+}
 } // namespace neml2

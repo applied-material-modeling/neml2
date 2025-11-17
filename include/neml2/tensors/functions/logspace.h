@@ -55,10 +55,14 @@ namespace neml2
   T dynamic_logspace(                                                                              \
       const T & start, const T & end, Size nstep, Size dim = 0, const CScalar & base = 10.0);      \
   T intmd_logspace(                                                                                \
-      const T & start, const T & end, Size nstep, Size dim = 0, const CScalar & base = 10.0);      \
-  Tensor base_logspace(                                                                            \
       const T & start, const T & end, Size nstep, Size dim = 0, const CScalar & base = 10.0)
 FOR_ALL_TENSORBASE(DECLARE_LOGSPACE);
 #undef DECLARE_LOGSPACE
+
+Tensor base_logspace(const Tensor & start,
+                     const Tensor & end,
+                     Size nstep,
+                     Size dim = 0,
+                     const CScalar & base = 10.0);
 ///@}
 } // namespace neml2

@@ -130,53 +130,52 @@ def_PrimitiveTensor(py::module_ & m, const std::string & type)
           PY_ARG_TENSOR_OPTIONS);
 
   // fill -- this is a fun one!
-  c.def_static(
-      "fill",
-      [](const py::args & args, const py::kwargs & kwargs)
-      {
-        constexpr auto N = T::const_base_numel;
-        if (args.size() != N)
-          throw py::type_error("Expected " + std::to_string(N) + " arguments, got " +
-                               std::to_string(args.size()));
+  c.def_static("fill",
+               [](const py::args & args, const py::kwargs & kwargs)
+               {
+                 constexpr auto N = T::const_base_numel;
+                 if (args.size() != N)
+                   throw py::type_error("Expected " + std::to_string(N) + " arguments, got " +
+                                        std::to_string(args.size()));
 
-        // arguments must be all Scalars or all numbers
-        bool all_scalar = true;
-        bool all_numbers = true;
-        for (std::size_t i = 0; i < N; ++i)
-        {
-          if (!py::isinstance<Scalar>(args[i]))
-            all_scalar = false;
-          if (!py::isinstance<double>(args[i]))
-            all_numbers = false;
-        }
-        if (!all_scalar && !all_numbers)
-          throw py::type_error("All arguments must be either neml2.tensors.Scalar or float.");
-        if (all_scalar && !kwargs.empty())
-          throw py::type_error(
-              "When passing neml2.tensors.Scalar as arguments, no keyword arguments are allowed.");
+                 // arguments must be all Scalars or all numbers
+                 bool all_scalar = true;
+                 bool all_numbers = true;
+                 for (std::size_t i = 0; i < N; ++i)
+                 {
+                   if (!py::isinstance<Scalar>(args[i]))
+                     all_scalar = false;
+                   if (!py::isinstance<py::float_>(args[i]))
+                     all_numbers = false;
+                 }
+                 if (!all_scalar && !all_numbers)
+                   throw py::type_error("All arguments must be either neml2.Scalar or float.");
+                 if (all_scalar && !kwargs.empty())
+                   throw py::type_error(
+                       "When passing neml2.Scalar as arguments, no keyword arguments are allowed.");
 
-        // get options from kwargs
-        TensorOptions options = default_tensor_options();
-        if (kwargs.contains("dtype"))
-          options = options.dtype(kwargs["dtype"].cast<Dtype>());
-        if (kwargs.contains("device"))
-          options = options.device(kwargs["device"].cast<Device>());
-        if (kwargs.contains("requires_grad"))
-          options = options.requires_grad(kwargs["requires_grad"].cast<bool>());
+                 // get options from kwargs
+                 TensorOptions options = default_tensor_options();
+                 if (kwargs.contains("dtype"))
+                   options = options.dtype(kwargs["dtype"].cast<Dtype>());
+                 if (kwargs.contains("device"))
+                   options = options.device(kwargs["device"].cast<Device>());
+                 if (kwargs.contains("requires_grad"))
+                   options = options.requires_grad(kwargs["requires_grad"].cast<bool>());
 
-        // convert first N positional arguments to Scalars
-        std::array<Scalar, N> vals;
-        for (std::size_t i = 0; i < N; ++i)
-        {
-          if (py::isinstance<Scalar>(args[i]))
-            vals[i] = args[i].cast<Scalar>();
-          else if (py::isinstance<double>(args[i]))
-            vals[i] = Scalar(args[i].cast<double>(), options);
-        }
+                 // convert first N positional arguments to Scalars
+                 std::array<Scalar, N> vals;
+                 for (std::size_t i = 0; i < N; ++i)
+                 {
+                   if (py::isinstance<Scalar>(args[i]))
+                     vals[i] = args[i].cast<Scalar>();
+                   else if (py::isinstance<py::float_>(args[i]))
+                     vals[i] = Scalar(args[i].cast<double>(), options);
+                 }
 
-        // call the implementation
-        return detail::call_fill<T>(vals);
-      });
+                 // call the implementation
+                 return detail::call_fill<T>(vals);
+               });
 }
 
 // Explicit template instantiations

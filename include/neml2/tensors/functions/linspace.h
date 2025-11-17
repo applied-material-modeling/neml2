@@ -52,9 +52,10 @@ namespace neml2
 ///@{
 #define DECLARE_LINSPACE(T)                                                                        \
   T dynamic_linspace(const T & start, const T & end, Size nstep, Size dim = 0);                    \
-  T intmd_linspace(const T & start, const T & end, Size nstep, Size dim = 0);                      \
-  Tensor base_linspace(const T & start, const T & end, Size nstep, Size dim = 0)
+  T intmd_linspace(const T & start, const T & end, Size nstep, Size dim = 0)
 FOR_ALL_TENSORBASE(DECLARE_LINSPACE);
 #undef DECLARE_LINSPACE
+
+Tensor base_linspace(const Tensor & start, const Tensor & end, Size nstep, Size dim = 0);
 ///@}
 } // namespace neml2

@@ -46,9 +46,9 @@ unpack_tensor(const py::handle & pyval,
   {
     const auto val = pyval.cast<Tensor>();
     if (assembly && val.base_dim() != D)
-      throw py::cast_error("Invalid shape for '" + key_str + "'. Expected base dim " +
-                           std::to_string(D) + " for assembly, got " +
-                           std::to_string(val.base_dim()));
+      throw py::value_error("Invalid shape for '" + key_str + "'. Expected base dim " +
+                            std::to_string(D) + " for assembly, got " +
+                            std::to_string(val.base_dim()));
     return val;
   }
   catch (const py::cast_error &)
@@ -60,9 +60,9 @@ unpack_tensor(const py::handle & pyval,
       if (assembly)
       {
         if (val.dim() < D)
-          throw py::cast_error("Invalid shape for '" + key_str + "'. Expected at least " +
-                               std::to_string(D) + " dimensions for assembly, got " +
-                               utils::stringify(val.sizes()));
+          throw py::value_error("Invalid shape for '" + key_str + "'. Expected at least " +
+                                std::to_string(D) + " dimensions for assembly, got " +
+                                utils::stringify(val.sizes()));
         return Tensor(val, val.dim() - D, 0);
       }
 
@@ -73,16 +73,16 @@ unpack_tensor(const py::handle & pyval,
           base_shape = utils::add_shapes(base_shape, base_shape_fn_j(key[1]));
         const auto base_dim = Size(base_shape.size());
         if (val.dim() < base_dim || val.sizes().slice(val.dim() - base_dim) != base_shape)
-          throw py::cast_error("Invalid shape for '" + key_str + "'. Expected shape ending with " +
-                               utils::stringify(base_shape) + ", got " +
-                               utils::stringify(val.sizes()));
+          throw py::value_error("Invalid shape for '" + key_str + "'. Expected shape ending with " +
+                                utils::stringify(base_shape) + ", got " +
+                                utils::stringify(val.sizes()));
         return Tensor(val, val.dim() - base_dim, 0);
       }
     }
   }
 
-  throw py::cast_error("Invalid value for '" + key_str +
-                       "' -- dictionary values must be neml2.Tensor or torch.Tensor");
+  throw py::value_error("Invalid value for '" + key_str +
+                        "' -- dictionary values must be neml2.Tensor or torch.Tensor");
 }
 
 ValueMap
@@ -112,7 +112,7 @@ unpack_deriv_map(const py::dict & pyderivs,
     const auto keyi = unpack_variable_name(pykeyi);
 
     if (!py::isinstance<py::dict>(pyvals))
-      throw py::cast_error("Dictionary values must be convertible to dict");
+      throw py::value_error("Dictionary values must be convertible to dict");
 
     for (const auto & [pykeyj, pyval] : pyvals.cast<py::dict>())
     {

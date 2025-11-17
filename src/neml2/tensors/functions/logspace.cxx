@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/tensors/functions/logspace.h"
+#include "neml2/tensors/Tensor.h"
 #include "neml2/tensors/functions/linspace.h"
 #include "neml2/tensors/functions/pow.h"
 #include "neml2/tensors/tensors.h"
@@ -41,12 +42,13 @@ namespace neml2
     auto exponent = intmd_linspace(start, end, nstep, dim);                                        \
     return neml2::pow(base, Tensor(exponent));                                                     \
   }                                                                                                \
-                                                                                                   \
-  Tensor base_logspace(const T & start, const T & end, Size nstep, Size dim, const CScalar & base) \
-  {                                                                                                \
-    auto exponent = base_linspace(start, end, nstep, dim);                                         \
-    return neml2::pow(base, Tensor(exponent));                                                     \
-  }                                                                                                \
   static_assert(true)
 FOR_ALL_TENSORBASE(DEFINE_LOGSPACE);
+
+Tensor
+base_logspace(const Tensor & start, const Tensor & end, Size nstep, Size dim, const CScalar & base)
+{
+  auto exponent = base_linspace(start, end, nstep, dim);
+  return neml2::pow(base, Tensor(exponent));
+}
 } // namespace neml2
