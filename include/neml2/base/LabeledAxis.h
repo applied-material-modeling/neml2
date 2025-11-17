@@ -73,6 +73,9 @@ public:
                     TensorShapeRef intmd_sizes,
                     TensorShapeRef base_sizes);
 
+  /// Set intermediate shape of a variable
+  void set_intmd_sizes(const LabeledAxisAccessor & name, TensorShapeRef shape);
+
   /// Setup the layout of all items recursively.
   void setup_layout();
 

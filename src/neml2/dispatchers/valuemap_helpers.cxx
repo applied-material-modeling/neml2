@@ -24,6 +24,8 @@
 
 #include "neml2/dispatchers/valuemap_helpers.h"
 #include "neml2/tensors/functions/cat.h"
+#include "neml2/misc/assertions.h"
+#include "neml2/tensors/shape_utils.h"
 
 namespace neml2
 {
@@ -31,11 +33,17 @@ namespace neml2
 ValueMap
 valuemap_cat_reduce(std::vector<ValueMap> && results, Size dynamic_dim)
 {
-  // Re-bin the results
+  // Figure out the broadcast shape of each dispatch
+  std::vector<TensorShape> s(results.size(), TensorShape{});
+  for (std::size_t i = 0; i < results.size(); i++)
+    for (const auto & [name, val] : results[i])
+      s[i] = utils::broadcast_sizes(s[i], val.dynamic_sizes().concrete());
+
+  // Re-bin the results, broadcasting as needed
   std::map<VariableName, std::vector<Tensor>> vars;
   for (auto && result : std::move(results))
-    for (auto && [name, value] : result)
-      vars[name].emplace_back(std::move(value));
+    for (const auto & [name, value] : result)
+      vars[name].emplace_back(value.dynamic_expand(s[std::distance(results.data(), &result)]));
 
   // Concatenate the tensors
   ValueMap ret;

@@ -124,7 +124,7 @@ void
 Variable<T>::zero(const TensorOptions & options)
 {
   if (owning())
-    _value = Tensor::zeros(base_sizes(), options);
+    _value = VariableBase::zeros(options);
   else
   {
     neml_assert_dbg(_ref_is_mutable,

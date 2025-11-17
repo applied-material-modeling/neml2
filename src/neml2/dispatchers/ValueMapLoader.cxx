@@ -73,6 +73,7 @@ ValueMapLoader::generate(std::size_t n)
 
   ValueMap work;
   for (auto && [key, tensor] : _value_map)
+  {
     if (_dynamic_dim >= -tensor.dynamic_dim() && _dynamic_dim < tensor.dynamic_dim())
     {
       if (tensor.dynamic_size(_dynamic_dim).concrete() != 1)
@@ -82,6 +83,7 @@ ValueMapLoader::generate(std::size_t n)
     }
     else
       work[key] = tensor;
+  }
 
   return {m, std::move(work)};
 }

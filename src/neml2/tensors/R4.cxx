@@ -29,6 +29,7 @@
 #include "neml2/tensors/Rot.h"
 #include "neml2/tensors/WWR4.h"
 #include "neml2/tensors/functions/symmetrization.h"
+#include "neml2/tensors/functions/einsum.h"
 
 namespace neml2
 {
@@ -56,10 +57,14 @@ R4::drotate(const Rot & r) const
   const auto R = r.euler_rodrigues();
   const auto F = r.deuler_rodrigues();
 
-  const auto res1 = einsum("...jn,...ko,...lp,...mnop,...imt->...ijklt", {R, R, R, *this, F});
-  const auto res2 = einsum("...im,...ko,...lp,...mnop,...jnt->...ijklt", {R, R, R, *this, F});
-  const auto res3 = einsum("...im,...jn,...lp,...mnop,...kot->...ijklt", {R, R, R, *this, F});
-  const auto res4 = einsum("...im,...jn,...ko,...mnop,...lpt->...ijklt", {R, R, R, *this, F});
+  const auto res1 =
+      neml2::einsum("...jn,...ko,...lp,...mnop,...imt->...ijklt", {R, R, R, *this, F});
+  const auto res2 =
+      neml2::einsum("...im,...ko,...lp,...mnop,...jnt->...ijklt", {R, R, R, *this, F});
+  const auto res3 =
+      neml2::einsum("...im,...jn,...lp,...mnop,...kot->...ijklt", {R, R, R, *this, F});
+  const auto res4 =
+      neml2::einsum("...im,...jn,...ko,...mnop,...lpt->...ijklt", {R, R, R, *this, F});
   return res1 + res2 + res3 + res4;
 }
 
@@ -67,7 +72,7 @@ DTensor<R4, R4, neml2::Tensor>
 R4::drotate_self(const Rot & r) const
 {
   const auto R = r.euler_rodrigues();
-  return einsum("...im,...jn,...ko,...lp->...ijklmnop", {R, R, R, R});
+  return neml2::einsum("...im,...jn,...ko,...lp->...ijklmnop", {R, R, R, R});
 }
 
 R4

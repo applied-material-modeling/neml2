@@ -29,7 +29,7 @@
 
 using namespace neml2;
 
-TEST_CASE("R4", "[R4]")
+TEST_CASE("R4", "[tensors]")
 {
   at::manual_seed(42);
 

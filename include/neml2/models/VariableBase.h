@@ -141,8 +141,14 @@ public:
   /// Get the referencing variable (returns this if this is a storing variable)
   virtual const VariableBase * ref() const = 0;
 
+  /// Set the intermediate shape. @see neml2::VariableStore::tag_input_intmd_sizes
+  virtual void set_intmd_sizes(TensorShapeRef shape);
+
   /// Check if this is an owning variable
   virtual bool owning() const = 0;
+
+  /// Make zeros tensor with the shape of this variable
+  Tensor zeros(const TensorOptions & options) const;
 
   /// Set the variable value to zero
   virtual void zero(const TensorOptions & options) = 0;
@@ -220,10 +226,10 @@ public:
 
   /// Cached intermediate shape that this variable last saw
   /// @note: set() and operator=() are the only methods that cache this. clear() does not invalidate the cache.
-  TensorShape _cached_intmd_sizes;
+  TensorShape _cached_intmd_sizes = {};
 
   /// Base shape of the variable
-  const TensorShape _base_sizes;
+  const TensorShape _base_sizes = {};
 
 private:
   ValueMap total_derivatives(const DependencyResolver<Model, VariableName> & dep,

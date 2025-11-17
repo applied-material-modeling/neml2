@@ -221,6 +221,20 @@ VariableBase::intmd_size(Size i) const
   return intmd_sizes()[i];
 }
 
+void
+VariableBase::set_intmd_sizes(TensorShapeRef shape)
+{
+  neml_assert_dbg(
+      owning(), "Cannot set intermediate sizes for a referencing variable '", name(), "'.");
+  _cached_intmd_sizes = shape;
+}
+
+Tensor
+VariableBase::zeros(const TensorOptions & options) const
+{
+  return Tensor::zeros({}, intmd_sizes(), base_sizes(), options);
+}
+
 bool
 VariableBase::requires_grad() const
 {

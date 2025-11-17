@@ -156,9 +156,6 @@ TransientDriver::TransientDriver(const OptionSet & options)
 {
   _time = _time.to(_device);
 
-#define SET_IC_(T) set_ic<T>(_ics, options, "ic_" #T "_names", "ic_" #T "_values", _device)
-  FOR_ALL_TENSORBASE(SET_IC_);
-
 #define GET_FORCE_(T)                                                                              \
   get_force<T>(_driving_force_names,                                                               \
                _driving_forces,                                                                    \
@@ -299,21 +296,14 @@ TransientDriver::update_forces()
 void
 TransientDriver::apply_ic()
 {
-  _result_out[0] = _ics;
-
-  // Figure out what the batch size for our default zero ICs should be
-  std::vector<Tensor> defined;
-  for (const auto & [vname, var] : _model->output_variables())
-    if (_result_out[0].count(vname))
-      defined.push_back(_result_out[0][vname]);
-  for (const auto & [key, value] : _in)
-    defined.push_back(value);
-  const auto dynamic_shape = utils::broadcast_dynamic_sizes(defined);
+#define SET_IC_(T)                                                                                 \
+  set_ic<T>(_result_out[0], input_options(), "ic_" #T "_names", "ic_" #T "_values", _device)
+  FOR_ALL_TENSORBASE(SET_IC_);
 
   // Variables without a user-defined IC are initialized to zeros
   for (auto && [name, var] : _model->output_variables())
     if (!_result_out[0].count(name))
-      _result_out[0][name] = Tensor::zeros(dynamic_shape, {}, var->base_sizes(), _device);
+      _result_out[0][name] = var->zeros(_device);
 }
 
 void

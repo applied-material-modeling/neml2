@@ -92,9 +92,6 @@ protected:
   /// Outputs from all time steps
   std::vector<ValueMap> _result_out;
 
-  /// Initial conditions
-  ValueMap _ics;
-
   /// Driving forces (other than time)
   std::vector<VariableName> _driving_force_names;
   std::vector<Tensor> _driving_forces;

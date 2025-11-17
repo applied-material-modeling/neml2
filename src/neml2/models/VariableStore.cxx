@@ -489,4 +489,26 @@ VariableStore::collect_output_stack(bool out, bool dout, bool d2out) const
   return {stacklist};
 }
 
+void
+VariableStore::tag_input_intmd_sizes(const VariableName & name, TensorShapeRef shape)
+{
+  neml_assert(_object->host() == _object,
+              "tag_input_intmd_sizes can only be called from the host model.");
+  neml_assert(!_input_axis.is_setup(),
+              "Cannot tag intermediate sizes after the input axis is set up.");
+  _input_axis.set_intmd_sizes(name, shape);
+  _input_variables.at(name)->set_intmd_sizes(shape);
+}
+
+void
+VariableStore::tag_output_intmd_sizes(const VariableName & name, TensorShapeRef shape)
+{
+  neml_assert(_object->host() == _object,
+              "tag_output_intmd_sizes can only be called from the host model.");
+  neml_assert(!_output_axis.is_setup(),
+              "Cannot tag intermediate sizes after the output axis is set up.");
+  _output_axis.set_intmd_sizes(name, shape);
+  _output_variables.at(name)->set_intmd_sizes(shape);
+}
+
 } // namespace neml2

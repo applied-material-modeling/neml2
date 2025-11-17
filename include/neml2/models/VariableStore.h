@@ -139,6 +139,32 @@ public:
   SecDerivMap collect_output_second_derivatives(bool assembly = false) const;
   ///@}
 
+  /**
+   * @brief Tag intermediate shapes for variables
+   *
+   * This is needed for two purposes:
+   *   1. By default we initialize undefined input variables to zero before evaluating the model. If
+   *      a variable is tagged with an non-empty intermediate shape, the zero tensor will be created
+   *      with that shape.
+   *   2. When using input/output axis for assembly, we need to know the intermediate sizes of each
+   *      variable to correctly convert between variable format and assembly format. Variables are
+   *      added to the LabeledAxis assuming zero intermediate dimension. If the actual intermediate
+   *      shape is different, we need to use this method to inform the LabeledAxis about the correct
+   *      shapes.
+   *
+   * @note This manual tagging is only necessary for the external-facing host models. We have the
+   * appropriate caching mechanism for sub-models (e.g., inside a ComposedModel) when they are being
+   * evaluated. In other words, this manual tagging is only necessary if variable intermediate
+   * shapes are needed before any model evaluation.
+   *
+   * @warning We spend no effort on verifying the correctness of the tagged shapes. It is the user's
+   * responsibility to ensure the correctness of the tagged shapes.
+   */
+  ///@{
+  void tag_input_intmd_sizes(const VariableName &, TensorShapeRef);
+  void tag_output_intmd_sizes(const VariableName &, TensorShapeRef);
+  ///@}
+
 protected:
   /**
    * @brief Send padding variables to options

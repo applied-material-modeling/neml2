@@ -114,6 +114,18 @@ LabeledAxis::add_variable(const LabeledAxisAccessor & name,
 }
 
 void
+LabeledAxis::set_intmd_sizes(const LabeledAxisAccessor & name, TensorShapeRef shape)
+{
+  neml_assert(!_setup, "Cannot set intermediate sizes after the axis has been set up.");
+  if (name.size() == 1)
+  {
+    _variables.at(name[0]).first = shape;
+    return;
+  }
+  subaxis(name[0]).set_intmd_sizes(name.slice(1), shape);
+}
+
+void
 LabeledAxis::setup_layout()
 {
   // Clear internal data that may have been constructed from previous setup_layout calls
