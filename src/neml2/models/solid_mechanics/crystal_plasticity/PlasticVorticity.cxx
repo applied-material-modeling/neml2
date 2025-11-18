@@ -75,8 +75,7 @@ PlasticVorticity::PlasticVorticity(const OptionSet & options)
 void
 PlasticVorticity::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  const auto W = _crystal_geometry.W();
-  const auto Wp_crystal = intmd_sum(_gamma_dot * W, -1, /*keepdim=*/true);
+  const auto Wp_crystal = intmd_sum(_gamma_dot * _crystal_geometry.W(), -1, /*keepdim=*/false);
 
   if (out)
     _Wp = Wp_crystal.rotate(_R());
@@ -84,7 +83,7 @@ PlasticVorticity::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
   if (dout_din)
   {
     if (_gamma_dot.is_dependent())
-      _Wp.d(_gamma_dot) = W.rotate(_R());
+      _Wp.d(_gamma_dot) = _crystal_geometry.W().rotate(_R().intmd_unsqueeze(-1));
 
     if (_R.is_dependent())
       _Wp.d(_R) = Wp_crystal.drotate(_R());

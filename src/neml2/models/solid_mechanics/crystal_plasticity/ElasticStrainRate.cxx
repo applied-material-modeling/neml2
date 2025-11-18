@@ -104,16 +104,7 @@ void
 ElasticStrainRate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   if (out)
-  {
     _e_dot = _d - _dp + skew_and_sym_to_sym(_e(), _w());
-    std::cout << "_e_dot: " << _e_dot.dynamic_sizes() << _e_dot.intmd_sizes() << _e_dot.base_sizes()
-              << std::endl;
-    std::cout << "_d: " << _d.dynamic_sizes() << _d.intmd_sizes() << _d.base_sizes() << std::endl;
-    std::cout << "_dp: " << _dp.dynamic_sizes() << _dp.intmd_sizes() << _dp.base_sizes()
-              << std::endl;
-    std::cout << "_e: " << _e.dynamic_sizes() << _e.intmd_sizes() << _e.base_sizes() << std::endl;
-    std::cout << "_w: " << _w.dynamic_sizes() << _w.intmd_sizes() << _w.base_sizes() << std::endl;
-  }
 
   if (dout_din)
   {

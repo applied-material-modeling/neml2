@@ -64,13 +64,13 @@ void
 SumSlipRates::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   if (out)
-    _sg = intmd_sum(abs(_g()), _dim, /*keepdim=*/true);
+    _sg = intmd_sum(abs(_g()), _dim, /*keepdim=*/false);
 
   if (dout_din)
     if (_g.is_dependent())
     {
       auto I = TensorShape(_g.intmd_sizes());
-      I[utils::normalize_dim(_dim, 0, _g.intmd_dim())] = 1;
+      I.erase(I.begin() + utils::normalize_dim(_dim, 0, _g.intmd_dim()));
       _sg.d(_g) = sign(_g()).intmd_expand(utils::add_shapes(I, _g.intmd_sizes()));
     }
 }

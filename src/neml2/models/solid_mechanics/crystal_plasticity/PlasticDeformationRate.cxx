@@ -76,22 +76,15 @@ PlasticDeformationRate::PlasticDeformationRate(const OptionSet & options)
 void
 PlasticDeformationRate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  const auto dp_crystal = intmd_sum(_g * _crystal_geometry.M(), -1, /*keepdim=*/true);
+  const auto dp_crystal = intmd_sum(_g * _crystal_geometry.M(), -1, /*keepdim=*/false);
 
   if (out)
-  {
     _dp = dp_crystal.rotate(_R());
-    std::cout << "_dp: " << _dp.dynamic_sizes() << _dp.intmd_sizes() << _dp.base_sizes()
-              << std::endl;
-    std::cout << "_dp_crystal: " << dp_crystal.dynamic_sizes() << dp_crystal.intmd_sizes()
-              << dp_crystal.base_sizes() << std::endl;
-    std::cout << "_R: " << _R.dynamic_sizes() << _R.intmd_sizes() << _R.base_sizes() << std::endl;
-  }
 
   if (dout_din)
   {
     if (_g.is_dependent())
-      _dp.d(_g) = _crystal_geometry.M().rotate(_R());
+      _dp.d(_g) = _crystal_geometry.M().rotate(_R().intmd_unsqueeze(-1));
 
     if (_R.is_dependent())
       _dp.d(_R) = dp_crystal.drotate(_R());

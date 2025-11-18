@@ -78,7 +78,7 @@ PlasticSpatialVelocityGradient::PlasticSpatialVelocityGradient(const OptionSet &
 void
 PlasticSpatialVelocityGradient::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  const auto lp_crystal = intmd_sum(_g * _crystal_geometry.A(), -1, /*keepdim=*/true);
+  const auto lp_crystal = intmd_sum(_g * _crystal_geometry.A(), -1, /*keepdim=*/false);
 
   if (out)
     _lp = lp_crystal.rotate(_R());
@@ -86,7 +86,7 @@ PlasticSpatialVelocityGradient::set_value(bool out, bool dout_din, bool /*d2out_
   if (dout_din)
   {
     if (_g.is_dependent())
-      _lp.d(_g) = _crystal_geometry.A().rotate(_R());
+      _lp.d(_g) = _crystal_geometry.A().rotate(_R().intmd_unsqueeze(-1));
 
     if (_R.is_dependent())
       _lp.d(_R) = lp_crystal.drotate(_R());

@@ -60,7 +60,7 @@ ncrystal = 4
     values = 'R1 R2 R3'
     method = 'standard'
     shape_manipulations = 'intmd_expand'
-    shape_manipulation_args = '(${ncrystal},1)'
+    shape_manipulation_args = '(${ncrystal})'
   []
 []
 

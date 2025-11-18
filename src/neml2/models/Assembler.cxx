@@ -202,8 +202,6 @@ MatrixAssembler::assemble_by_variable(const DerivMap & vals_dict, bool assembly)
                         yvars[i],
                         "/",
                         xvars[j]);
-        std::cout << yvars[i] << "/" << xvars[j] << val.dynamic_sizes() << val.intmd_sizes()
-                  << val.base_sizes() << std::endl;
         vals[j] = val;
         if (!options_defined)
         {
