@@ -59,8 +59,8 @@ ModelDriver::expected_options()
       "target compute device to be CPU, and device='cuda:1' sets the target compute device to be "
       "CUDA with device ID 1.";
 
-  options.set<bool>("show_parameters") = false;
-  options.set("show_parameters").doc() = "Whether to show model parameters at the beginning";
+  options.set<bool>("show_model_info") = false;
+  options.set("show_model_info").doc() = "Whether to show model information at the beginning";
 
 #ifdef NEML2_HAS_DISPATCHER
   options.set<std::string>("scheduler");
@@ -80,7 +80,7 @@ ModelDriver::ModelDriver(const OptionSet & options)
     _postprocessor(options.get("postprocessor").user_specified() ? get_model("postprocessor")
                                                                  : nullptr),
     _device(options.get<std::string>("device")),
-    _show_params(options.get<bool>("show_parameters"))
+    _show_model_info(options.get<bool>("show_model_info"))
 #ifdef NEML2_HAS_DISPATCHER
     ,
     _scheduler(options.get("scheduler").user_specified() ? get_scheduler("scheduler") : nullptr),
@@ -143,12 +143,8 @@ ModelDriver::setup()
 #endif
 
   // LCOV_EXCL_START
-  if (_show_params)
-  {
-    std::cout << _model->name() << "'s parameters:" << std::endl;
-    for (auto && [pname, pval] : _model->named_parameters())
-      std::cout << "  " << pname << std::endl;
-  }
+  if (_show_model_info)
+    std::cout << *_model << std::endl;
   // LCOV_EXCL_STOP
 }
 

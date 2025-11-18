@@ -83,6 +83,7 @@ ResolvedShear::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 
   if (out)
     _rss = neml2::inner(M.rotate(R), S);
+
   if (dout_din)
   {
     if (_S.is_dependent())

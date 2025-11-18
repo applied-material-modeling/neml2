@@ -29,6 +29,7 @@
 #include "neml2/tensors/functions/abs.h"
 #include "neml2/tensors/functions/log.h"
 #include "neml2/tensors/functions/abs.h"
+#include "neml2/tensors/functions/diagonalize.h"
 
 namespace neml2
 {
@@ -64,22 +65,32 @@ PowerLawSlipRule::PowerLawSlipRule(const OptionSet & options)
 void
 PowerLawSlipRule::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
+  // unsqueeze slip system strength to match rss shape
+  const auto tau = _tau().intmd_unsqueeze(-1);
+
   if (out)
-    _g = _gamma0 * pow(abs(_rss / _tau), _n - 1.0) * _rss / _tau;
+    _g = _gamma0 * pow(abs(_rss / tau), _n - 1.0) * _rss / tau;
 
   if (dout_din)
   {
     if (_rss.is_dependent())
-      _g.d(_rss) = _gamma0 * _n * pow(abs(_rss / _tau), _n - 1.0) / _tau;
+      _g.d(_rss) = _gamma0 * _n * pow(abs(_rss / tau), _n - 1.0) / tau;
 
     if (_tau.is_dependent())
-      _g.d(_tau) = -_n * _gamma0 * _rss * pow(abs(_rss()), _n - 1.0) / pow(_tau(), _n + 1);
+    {
+      auto dg_dtau = -_n * _gamma0 * _rss * pow(abs(_rss()), _n - 1.0) / pow(tau, _n + 1);
+      dg_dtau = dg_dtau.intmd_reshape({utils::numel(_tau.intmd_sizes()), _rss.intmd_size(-1)});
+      dg_dtau = intmd_diagonalize(dg_dtau, 0).intmd_movedim(-1, 1);
+      dg_dtau = dg_dtau.intmd_reshape(
+          utils::add_shapes(_tau.intmd_sizes(), _rss.intmd_size(-1), _tau.intmd_sizes()));
+      _g.d(_tau) = dg_dtau;
+    }
 
     if (const auto * const gamma0 = nl_param("gamma0"))
-      _g.d(*gamma0) = pow(abs(_rss / _tau), _n - 1.0) * _rss / _tau;
+      _g.d(*gamma0) = pow(abs(_rss / tau), _n - 1.0) * _rss / tau;
 
     if (const auto * const n = nl_param("n"))
-      _g.d(*n) = _gamma0 * log(abs(_rss / _tau)) * pow(abs(_rss / _tau), _n - 1.0) * _rss / _tau;
+      _g.d(*n) = _gamma0 * log(abs(_rss / tau)) * pow(abs(_rss / tau), _n - 1.0) * _rss / tau;
   }
 }
 } // namespace neml2

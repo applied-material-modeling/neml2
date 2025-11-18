@@ -70,7 +70,7 @@ protected:
   const Device _device;
 
   /// Set to true to list all the model parameters at the beginning
-  const bool _show_params;
+  const bool _show_model_info;
 
 #ifdef NEML2_HAS_DISPATCHER
   /// The work scheduler to use
