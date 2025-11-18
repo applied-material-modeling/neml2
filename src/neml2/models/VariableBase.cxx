@@ -261,9 +261,10 @@ VariableBase::has_derivative(const VariableName & v1name, const VariableName & v
 template <std::size_t N>
 static Derivative<N> &
 get_derivative(std::vector<Derivative<N>> & derivs,
-               const std::array<const VariableBase *, N + 1> & var_and_args)
+               const std::array<const VariableBase *, N + 1> & var_and_args,
+               const std::array<ArrayRef<Size>, N + 1> & dep_dims)
 {
-  auto deriv = Derivative<N>(var_and_args);
+  auto deriv = Derivative<N>(var_and_args, dep_dims);
   auto it = std::find(derivs.begin(), derivs.end(), deriv);
   if (it != derivs.end())
     return *it;
@@ -272,9 +273,9 @@ get_derivative(std::vector<Derivative<N>> & derivs,
 }
 
 Derivative<1> &
-VariableBase::d(const VariableBase & var)
+VariableBase::d(const VariableBase & var, ArrayRef<Size> var_dep_dims, ArrayRef<Size> arg_dep_dims)
 {
-  return get_derivative<1>(_derivs, {this, &var});
+  return get_derivative<1>(_derivs, {this, &var}, {var_dep_dims, arg_dep_dims});
 }
 
 const Derivative<1> &
@@ -288,13 +289,18 @@ VariableBase::d(const VariableBase & var) const
 }
 
 Derivative<2> &
-VariableBase::d(const VariableBase & var1, const VariableBase & var2)
+VariableBase::d2(const VariableBase & var1,
+                 const VariableBase & var2,
+                 ArrayRef<Size> var_dep_dims,
+                 ArrayRef<Size> arg1_dep_dims,
+                 ArrayRef<Size> arg2_dep_dims)
 {
-  return get_derivative<2>(_sec_derivs, {this, &var1, &var2});
+  return get_derivative<2>(
+      _sec_derivs, {this, &var1, &var2}, {var_dep_dims, arg1_dep_dims, arg2_dep_dims});
 }
 
 const Derivative<2> &
-VariableBase::d(const VariableBase & var1, const VariableBase & var2) const
+VariableBase::d2(const VariableBase & var1, const VariableBase & var2) const
 {
   for (const auto & deriv : _sec_derivs)
     if (deriv.args()[0]->name() == var1.name() && deriv.args()[1]->name() == var2.name())
@@ -376,7 +382,7 @@ VariableBase::apply_second_order_chain_rule(const DependencyResolver<Model, Vari
       const auto sec_derivs = total_second_derivatives(dep, model, yvar);
       for (const auto & [x1name, d2y_dx1] : sec_derivs)
         for (const auto & [x2name, d2y_dx1x2] : d2y_dx1)
-          d(_owner->input_variable(x1name), _owner->input_variable(x2name)).set(d2y_dx1x2);
+          d2(_owner->input_variable(x1name), _owner->input_variable(x2name)).set(d2y_dx1x2);
       return;
     }
 }

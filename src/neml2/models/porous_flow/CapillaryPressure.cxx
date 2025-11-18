@@ -94,7 +94,7 @@ CapillaryPressure::set_value(bool out, bool dout, bool d2out)
       _Pc.d(_S) = where(_S < _Sp, (ln10 * slope) * Pc_ext, dPc_dS);
 
     if (d2out)
-      _Pc.d(_S, _S) = where(_S < _Sp, (ln10 * slope) * (ln10 * slope) * Pc_ext, d2Pc_dS2);
+      _Pc.d2(_S, _S) = where(_S < _Sp, (ln10 * slope) * (ln10 * slope) * Pc_ext, d2Pc_dS2);
   }
   else
   {
@@ -105,7 +105,7 @@ CapillaryPressure::set_value(bool out, bool dout, bool d2out)
       _Pc.d(_S) = dPc_dS;
 
     if (d2out)
-      _Pc.d(_S, _S) = d2Pc_dS2;
+      _Pc.d2(_S, _S) = d2Pc_dS2;
   }
 }
 

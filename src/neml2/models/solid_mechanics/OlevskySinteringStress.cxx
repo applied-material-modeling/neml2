@@ -77,6 +77,6 @@ OlevskySinteringStress::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (d2out_din2)
     if (_phi.is_dependent())
-      _s.d(_phi, _phi) = 6 * _gamma / _r;
+      _s.d2(_phi, _phi) = 6 * _gamma / _r;
 }
 } // namespace neml2

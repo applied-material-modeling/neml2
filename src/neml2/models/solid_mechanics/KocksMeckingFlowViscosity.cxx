@@ -109,48 +109,48 @@ KocksMeckingFlowViscosity::set_value(bool out, bool dout_din, bool d2out_din2)
     // T
     if (_T.is_dependent())
     {
-      _eta.d(_T, _T) = pow(_A * _k * std::log(_eps0) / _b3, 2.0) * exp(_B) * post / _mu;
+      _eta.d2(_T, _T) = pow(_A * _k * std::log(_eps0) / _b3, 2.0) * exp(_B) * post / _mu;
 
       if (const auto * const A = nl_param("A"))
-        _eta.d(_T, *A) = exp(_B) * _k * std::log(_eps0) * post / _b3 *
-                         (std::log(_eps0) * _A * _k * _T / (_b3 * _mu) + 1.0);
+        _eta.d2(_T, *A) = exp(_B) * _k * std::log(_eps0) * post / _b3 *
+                          (std::log(_eps0) * _A * _k * _T / (_b3 * _mu) + 1.0);
 
       if (const auto * const B = nl_param("B"))
-        _eta.d(_T, *B) = _A * exp(_B) * _k * std::log(_eps0) * post / _b3;
+        _eta.d2(_T, *B) = _A * exp(_B) * _k * std::log(_eps0) * post / _b3;
 
       if (const auto * const mu = nl_param("mu"))
-        _eta.d(_T, *mu) = -pow(_A * _k * std::log(_eps0) / (_b3 * _mu), 2.0) * exp(_B) * _T * post;
+        _eta.d2(_T, *mu) = -pow(_A * _k * std::log(_eps0) / (_b3 * _mu), 2.0) * exp(_B) * _T * post;
     }
 
     // A
     if (const auto * const A = nl_param("A"))
     {
       if (_T.is_dependent())
-        _eta.d(*A, _T) = exp(_B) * _k * std::log(_eps0) * post / _b3 *
-                         (std::log(_eps0) * _A * _k * _T / (_b3 * _mu) + 1.0);
+        _eta.d2(*A, _T) = exp(_B) * _k * std::log(_eps0) * post / _b3 *
+                          (std::log(_eps0) * _A * _k * _T / (_b3 * _mu) + 1.0);
 
-      _eta.d(*A, *A) = exp(_B) * pow(_k * _T * std::log(_eps0) / _b3, 2.0) * post / _mu;
+      _eta.d2(*A, *A) = exp(_B) * pow(_k * _T * std::log(_eps0) / _b3, 2.0) * post / _mu;
 
       if (const auto * const B = nl_param("B"))
-        _eta.d(*A, *B) = exp(_B) * _k * _T * std::log(_eps0) * post / _b3;
+        _eta.d2(*A, *B) = exp(_B) * _k * _T * std::log(_eps0) * post / _b3;
 
       if (const auto * const mu = nl_param("mu"))
-        _eta.d(*A, *mu) = -_A * exp(_B) * pow(_k * _T * std::log(_eps0) / (_b3 * _mu), 2.0) * post;
+        _eta.d2(*A, *mu) = -_A * exp(_B) * pow(_k * _T * std::log(_eps0) / (_b3 * _mu), 2.0) * post;
     }
 
     // B
     if (const auto * const B = nl_param("B"))
     {
       if (_T.is_dependent())
-        _eta.d(*B, _T) = _A * exp(_B) * _k * std::log(_eps0) * post / _b3;
+        _eta.d2(*B, _T) = _A * exp(_B) * _k * std::log(_eps0) * post / _b3;
 
       if (const auto * const A = nl_param("A"))
-        _eta.d(*B, *A) = exp(_B) * _k * _T * std::log(_eps0) * post / _b3;
+        _eta.d2(*B, *A) = exp(_B) * _k * _T * std::log(_eps0) * post / _b3;
 
-      _eta.d(*B, *B) = exp(_B) * _mu * post;
+      _eta.d2(*B, *B) = exp(_B) * _mu * post;
 
       if (const auto * const mu = nl_param("mu"))
-        _eta.d(*B, *mu) =
+        _eta.d2(*B, *mu) =
             exp(_B) * post * (_b3 * _mu - _A * _k * _T * std::log(_eps0)) / (_b3 * _mu);
     }
 
@@ -158,16 +158,16 @@ KocksMeckingFlowViscosity::set_value(bool out, bool dout_din, bool d2out_din2)
     if (const auto * const mu = nl_param("mu"))
     {
       if (_T.is_dependent())
-        _eta.d(*mu, _T) = -exp(_B) * pow(_A * _k * std::log(_eps0) / (_b3 * _mu), 2.0) * _T * post;
+        _eta.d2(*mu, _T) = -exp(_B) * pow(_A * _k * std::log(_eps0) / (_b3 * _mu), 2.0) * _T * post;
 
       if (const auto * const A = nl_param("A"))
-        _eta.d(*mu, *A) = -_A * exp(_B) * pow(_k * _T * std::log(_eps0) / (_b3 * _mu), 2.0) * post;
+        _eta.d2(*mu, *A) = -_A * exp(_B) * pow(_k * _T * std::log(_eps0) / (_b3 * _mu), 2.0) * post;
 
       if (const auto * const B = nl_param("B"))
-        _eta.d(*mu, *B) =
+        _eta.d2(*mu, *B) =
             exp(_B) * post * (_b3 * _mu - _A * _k * _T * std::log(_eps0)) / (_b3 * _mu);
 
-      _eta.d(*mu, *mu) =
+      _eta.d2(*mu, *mu) =
           -pow(_A * _k * _T * std::log(_eps0) / (_b3 * _mu), 2.0) * exp(_B) * post / _mu;
     }
   }

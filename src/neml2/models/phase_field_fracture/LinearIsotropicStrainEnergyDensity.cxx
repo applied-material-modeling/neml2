@@ -107,7 +107,7 @@ LinearIsotropicStrainEnergyDensity::no_decomposition(bool out, bool dout_din, bo
   }
   if (d2out_din2)
   {
-    _psie_active.d(_strain, _strain) = K * I4 + 2 * G * J;
+    _psie_active.d2(_strain, _strain) = K * I4 + 2 * G * J;
   }
 }
 
@@ -139,8 +139,8 @@ LinearIsotropicStrainEnergyDensity::voldev_decomposition(bool out, bool dout_din
   }
   if (d2out_din2)
   {
-    _psie_active.d(_strain, _strain) = K * heaviside(etr) * I4 + 2 * G * J;
-    _psie_inactive.d(_strain, _strain) = K * heaviside(-etr) * I4;
+    _psie_active.d2(_strain, _strain) = K * heaviside(etr) * I4 + 2 * G * J;
+    _psie_inactive.d2(_strain, _strain) = K * heaviside(-etr) * I4;
   }
 }
 
@@ -177,8 +177,8 @@ LinearIsotropicStrainEnergyDensity::spectral_decomposition(bool out, bool dout_d
   {
     const auto P4_pos = linalg::dsptrf(evals, evecs, evals_pos, heaviside(evals));
     const auto P4_neg = SSR4::identity_sym(_strain.options()) - P4_pos;
-    _psie_active.d(_strain, _strain) = lambda * heaviside(etr) * I4 + 2 * G * P4_pos;
-    _psie_inactive.d(_strain, _strain) = lambda * heaviside(-etr) * I4 + 2 * G * P4_neg;
+    _psie_active.d2(_strain, _strain) = lambda * heaviside(etr) * I4 + 2 * G * P4_pos;
+    _psie_inactive.d2(_strain, _strain) = lambda * heaviside(-etr) * I4 + 2 * G * P4_neg;
   }
 }
 

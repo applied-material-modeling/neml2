@@ -60,7 +60,7 @@ void
 SingleSlipStrengthMap::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   if (out)
-    _tau = _tau_bar + _tau_const;
+    _tau = (_tau_bar + _tau_const).intmd_unsqueeze(-1);
 
   if (dout_din)
   {

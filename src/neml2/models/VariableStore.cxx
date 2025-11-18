@@ -415,7 +415,7 @@ VariableStore::assign_output_stack(jit::Stack & stack, bool out, bool dout, bool
     for (auto & [yvar, x1var, x2var] : second_derivative_sparsity().value())
     {
       const auto & ten = stacklist[i++];
-      yvar->d(*x1var, *x2var).set(Tensor(ten, ten.dim() - 3));
+      yvar->d2(*x1var, *x2var).set(Tensor(ten, ten.dim() - 3));
     }
 
   jit::drop(stack, 1);
@@ -484,7 +484,7 @@ VariableStore::collect_output_stack(bool out, bool dout, bool d2out) const
 
   if (d2out)
     for (const auto & [yvar, x1var, x2var] : second_derivative_sparsity().value())
-      stacklist.emplace_back(yvar->d(*x1var, *x2var).get());
+      stacklist.emplace_back(yvar->d2(*x1var, *x2var).get());
 
   return {stacklist};
 }

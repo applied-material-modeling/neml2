@@ -47,6 +47,8 @@ VolumeChangeEigenstrain::expected_options()
   options.set_parameter<TensorName<Scalar>>("reference_volume");
   options.set("reference_volume").doc() = "Reference (initial) volume";
 
+  options.set<bool>("define_second_derivatives") = true;
+
   return options;
 }
 
@@ -72,7 +74,7 @@ VolumeChangeEigenstrain::set_value(bool out, bool dout_din, bool d2out_din2)
   if (d2out_din2)
   {
     if (_V.is_dependent())
-      _eg.d(_V, _V) =
+      _eg.d2(_V, _V) =
           -2.0 / (9.0 * _V0 * _V0) * pow(_V / _V0, (-5.0 / 3.0)) * SR2::identity(_V.options());
   }
 }

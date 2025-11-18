@@ -76,12 +76,12 @@ KocksMeckingYieldStress::set_value(bool out, bool dout_din, bool d2out_din2)
   {
     if (const auto * const C = nl_param("C"))
     {
-      _tau.d(*C, *C) = _mu * exp(_C);
+      _tau.d2(*C, *C) = _mu * exp(_C);
 
       if (const auto * const mu = nl_param("mu"))
       {
-        _tau.d(*C, *mu) = exp(_C);
-        _tau.d(*mu, *C) = exp(_C);
+        _tau.d2(*C, *mu) = exp(_C);
+        _tau.d2(*mu, *C) = exp(_C);
       }
     }
   }

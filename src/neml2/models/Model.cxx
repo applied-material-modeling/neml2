@@ -806,7 +806,7 @@ Model::extract_AD_derivatives(bool dout, bool d2out)
           if (u2->is_dependent())
           {
             if (d2y_du1u2s[i].defined())
-              y->d(*u1, *u2) = d2y_du1u2s[i];
+              y->d2(*u1, *u2) = d2y_du1u2s[i];
             i++;
           }
       }

@@ -132,7 +132,7 @@ ScalarMultiplication::set_value(bool out, bool dout_din, bool d2out_din2)
               for (std::size_t k = 0; k < _from.size(); k++)
                 if (k != i && k != j)
                   r = r * (_inv[k] ? 1. / (*_from[k])() : (*_from[k])());
-              _to.d(*_from[i], *_from[j]) = r;
+              _to.d2(*_from[i], *_from[j]) = r;
             }
             else if (_inv[i])
             {
@@ -140,7 +140,7 @@ ScalarMultiplication::set_value(bool out, bool dout_din, bool d2out_din2)
               for (std::size_t k = 0; k < _from.size(); k++)
                 if (k != i)
                   r = r * (_inv[k] ? 1. / (*_from[k])() : (*_from[k])());
-              _to.d(*_from[i], *_from[j]) = r;
+              _to.d2(*_from[i], *_from[j]) = r;
             }
           }
         }

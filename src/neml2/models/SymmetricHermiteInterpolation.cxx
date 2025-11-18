@@ -95,7 +95,7 @@ SymmetricHermiteInterpolation::set_value(bool out, bool dout_din, bool d2out_din
     auto df2_xh = 48 - 192 * (1 - x);
 
     const auto zeromask = x < (1 - eps) && x > eps;
-    _y.d(_x, _x) = zeromask * where(x < 0.5, scale * df2_xl, scale * df2_xh);
+    _y.d2(_x, _x) = zeromask * where(x < 0.5, scale * df2_xl, scale * df2_xh);
   }
 }
 } // namespace neml2

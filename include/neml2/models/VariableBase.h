@@ -178,12 +178,17 @@ public:
   bool has_derivative(const VariableName & v1name, const VariableName & v2name) const;
 
   /// Wrapper for assigning partial derivative
-  Derivative<1> & d(const VariableBase & var);
+  Derivative<1> &
+  d(const VariableBase & var, ArrayRef<Size> var_dep_dims = {}, ArrayRef<Size> arg_dep_dims = {});
   const Derivative<1> & d(const VariableBase & var) const;
 
   /// Wrapper for assigning second partial derivative
-  Derivative<2> & d(const VariableBase & var1, const VariableBase & var2);
-  const Derivative<2> & d(const VariableBase & var1, const VariableBase & var2) const;
+  Derivative<2> & d2(const VariableBase & var1,
+                     const VariableBase & var2,
+                     ArrayRef<Size> var_dep_dims = {},
+                     ArrayRef<Size> arg1_dep_dims = {},
+                     ArrayRef<Size> arg2_dep_dims = {});
+  const Derivative<2> & d2(const VariableBase & var1, const VariableBase & var2) const;
 
   ///@{
   /// Request to use AD to calculate the derivative of this variable with respect to another variable

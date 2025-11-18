@@ -155,8 +155,8 @@ BilinearInterpolation<T>::set_value(bool out, bool dout_din, bool d2out_din2)
   if (d2out_din2)
     if (this->_x1.is_dependent() && this->_x2.is_dependent())
     {
-      this->_p.d(this->_x1, this->_x2) = c3 * dxi_dx1 * deta_dx2;
-      this->_p.d(this->_x2, this->_x1) = c3 * dxi_dx1 * deta_dx2;
+      this->_p.d2(this->_x1, this->_x2) = c3 * dxi_dx1 * deta_dx2;
+      this->_p.d2(this->_x2, this->_x1) = c3 * dxi_dx1 * deta_dx2;
     }
 }
 

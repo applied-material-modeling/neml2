@@ -107,7 +107,7 @@ Normality::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
       for (const auto & [jname, jvar] : _model.input_variables())
         if (jvar->is_dependent() && fvar.has_derivative(iname, jname))
           ovar.d(*jvar) =
-              fvar.d(*ivar, *jvar)
+              fvar.d2(*ivar, *jvar)
                   .tensor()
                   .base_reshape(utils::add_shapes(ivar->base_sizes(), jvar->base_sizes()));
   }
