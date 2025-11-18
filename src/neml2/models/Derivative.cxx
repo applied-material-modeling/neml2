@@ -134,8 +134,8 @@ Derivative<N>::operator=(const Tensor & val)
 
     assign_or_add(_deriv, val2.intmd_reshape(intmd_sizes));
   }
-  else if (at::is_expandable_to(val.intmd_sizes(), intmd_sizes))
-    assign_or_add(_deriv, val.intmd_expand(intmd_sizes));
+  // else if (at::is_expandable_to(val.intmd_sizes(), intmd_sizes))
+  //   assign_or_add(_deriv, val.intmd_expand(intmd_sizes));
   else
     neml_assert_dbg(false,
                     "The assigned derivative for '",

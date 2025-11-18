@@ -30,6 +30,7 @@
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SFFR4.h"
 #include "neml2/tensors/functions/sum.h"
+#include "neml2/tensors/functions/diagonalize.h"
 
 namespace neml2
 {
@@ -76,7 +77,8 @@ PlasticDeformationRate::PlasticDeformationRate(const OptionSet & options)
 void
 PlasticDeformationRate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  const auto dp_crystal = intmd_sum(_g * _crystal_geometry.M(), -1, /*keepdim=*/false);
+  const auto & M = _crystal_geometry.M();
+  const auto dp_crystal = intmd_sum(_g * M, -1, /*keepdim=*/false);
 
   if (out)
     _dp = dp_crystal.rotate(_R());
@@ -84,7 +86,13 @@ PlasticDeformationRate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
   if (dout_din)
   {
     if (_g.is_dependent())
-      _dp.d(_g) = _crystal_geometry.M().rotate(_R().intmd_unsqueeze(-1));
+    {
+      auto dp_dg = M.rotate(_R().intmd_unsqueeze(-1));
+      dp_dg = dp_dg.intmd_reshape({utils::numel(_dp.intmd_sizes()), M.intmd_size(-1)});
+      dp_dg = intmd_diagonalize(dp_dg, 0).intmd_reshape(
+          utils::add_shapes(_dp.intmd_sizes(), _dp.intmd_sizes(), M.intmd_size(-1)));
+      _dp.d(_g) = dp_dg;
+    }
 
     if (_R.is_dependent())
       _dp.d(_R) = dp_crystal.drotate(_R());

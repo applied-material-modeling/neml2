@@ -30,6 +30,7 @@
 #include "neml2/tensors/WR2.h"
 #include "neml2/tensors/R3.h"
 #include "neml2/tensors/functions/sum.h"
+#include "neml2/tensors/functions/diagonalize.h"
 
 namespace neml2
 {
@@ -75,7 +76,8 @@ PlasticVorticity::PlasticVorticity(const OptionSet & options)
 void
 PlasticVorticity::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  const auto Wp_crystal = intmd_sum(_gamma_dot * _crystal_geometry.W(), -1, /*keepdim=*/false);
+  const auto & W = _crystal_geometry.W();
+  const auto Wp_crystal = intmd_sum(_gamma_dot * W, -1, /*keepdim=*/false);
 
   if (out)
     _Wp = Wp_crystal.rotate(_R());
@@ -83,7 +85,13 @@ PlasticVorticity::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
   if (dout_din)
   {
     if (_gamma_dot.is_dependent())
-      _Wp.d(_gamma_dot) = _crystal_geometry.W().rotate(_R().intmd_unsqueeze(-1));
+    {
+      auto dWp_dg = W.rotate(_R().intmd_unsqueeze(-1));
+      dWp_dg = dWp_dg.intmd_reshape({utils::numel(_Wp.intmd_sizes()), W.intmd_size(-1)});
+      dWp_dg = intmd_diagonalize(dWp_dg, 0).intmd_reshape(
+          utils::add_shapes(_Wp.intmd_sizes(), _Wp.intmd_sizes(), W.intmd_size(-1)));
+      _Wp.d(_gamma_dot) = dWp_dg;
+    }
 
     if (_R.is_dependent())
       _Wp.d(_R) = Wp_crystal.drotate(_R());

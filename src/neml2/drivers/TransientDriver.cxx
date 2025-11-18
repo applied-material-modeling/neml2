@@ -314,15 +314,15 @@ TransientDriver::apply_predictor()
 
   for (const auto & [vname, var] : _model->input_variables())
     if (vname.is_state())
-      if (_model->output_variables().count(vname.remount(STATE)))
+      if (_model->output_variables().count(vname))
       {
         if (_predictor == "PREVIOUS_STATE")
-          _in[vname.remount(STATE)] = _result_out[_step_count - 1][vname.remount(STATE)];
+          _in[vname] = _result_out[_step_count - 1][vname];
         else if (_predictor == "LINEAR_EXTRAPOLATION")
         {
           // Fall back to PREVIOUS_STATE predictor at the 1st time step
           if (_step_count == 1)
-            _in[vname.remount(STATE)] = _result_out[_step_count - 1][vname.remount(STATE)];
+            _in[vname] = _result_out[_step_count - 1][vname];
           // Otherwise linearly extrapolate in time
           else
           {
@@ -332,9 +332,9 @@ TransientDriver::apply_predictor()
             const auto dt = t - t_n;
             const auto dt_n = t_n - t_nm1;
 
-            const auto s_n = _result_out[_step_count - 1][vname.remount(STATE)];
-            const auto s_nm1 = _result_out[_step_count - 2][vname.remount(STATE)];
-            _in[vname.remount(STATE)] = s_n + (s_n - s_nm1) / dt_n * dt;
+            const auto s_n = _result_out[_step_count - 1][vname];
+            const auto s_nm1 = _result_out[_step_count - 2][vname];
+            _in[vname] = s_n + (s_n - s_nm1) / dt_n * dt;
           }
         }
         else
