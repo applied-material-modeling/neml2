@@ -35,5 +35,7 @@
 [Models]
   [model]
     type = MixedControlSetup
+    above_variable = 'state/S'
+    below_variable = 'state/E'
   []
 []

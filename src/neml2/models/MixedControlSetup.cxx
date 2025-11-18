@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/solid_mechanics/MixedControlSetup.h"
+#include "neml2/models/MixedControlSetup.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
 #include "neml2/tensors/functions/diagonalize.h"
@@ -36,31 +36,30 @@ MixedControlSetup::expected_options()
 {
   OptionSet options = Model::expected_options();
   options.doc() =
-      "Object to setup a model for mixed stress/strain control.  Copies the values of the "
-      "fixed_values (the input strain or stress) and the mixed_state (the conjugate stress or "
-      "strain values) into the stress and strain tensors used by the model.";
+      "Object to setup a model for mixed control.  Copies the values of the `fixed_values` and the "
+      "`mixed_state` (the conjugate) into the input variables used by the model.";
 
   options.set_input("control") = VariableName(FORCES, "control");
-  options.set("control").doc() =
-      "The name of the control signal.  Values less than the threshold are "
-      "strain control, greater are stress control";
+  options.set("control").doc() = "The control signal.";
 
   options.set<TensorName<SR2>>("threshold") = TensorName<SR2>("0.5");
-  options.set("threshold").doc() = "The threshold to switch between strain and stress control";
+  options.set("threshold").doc() = "The threshold to switch between the two control";
 
   options.set_input("mixed_state") = VariableName(STATE, "mixed_state");
   options.set("mixed_state").doc() = "The name of the mixed state tensor. This holds the conjugate "
                                      "values to those being controlled";
 
   options.set_input("fixed_values") = VariableName(FORCES, "fixed_values");
-  options.set("fixed_values").doc() = "The name of the fixed values, i.e. the actual strain or "
-                                      "stress values being imposed on the model";
+  options.set("fixed_values").doc() =
+      "The name of the fixed values, i.e. the actual values being imposed on the model";
 
-  options.set_output("cauchy_stress") = VariableName(STATE, "S");
-  options.set("cauchy_stress").doc() = "The name of the Cauchy stress tensor";
+  options.set_output("above_variable");
+  options.set("above_variable").doc() =
+      "The prescribed variable when the control signal is greater than the threshold";
 
-  options.set_output("strain") = VariableName(STATE, "E");
-  options.set("strain").doc() = "The name of the strain tensor";
+  options.set_output("below_variable");
+  options.set("below_variable").doc() =
+      "The prescribed variable when the control signal is less than the threshold";
 
   return options;
 }
@@ -71,34 +70,34 @@ MixedControlSetup::MixedControlSetup(const OptionSet & options)
     _control(declare_input_variable<SR2>("control")),
     _fixed_values(declare_input_variable<SR2>("fixed_values")),
     _mixed_state(declare_input_variable<SR2>("mixed_state")),
-    _stress(declare_output_variable<SR2>("cauchy_stress")),
-    _strain(declare_output_variable<SR2>("strain"))
+    _above_var(declare_output_variable<SR2>("above_variable")),
+    _below_var(declare_output_variable<SR2>("below_variable"))
 {
 }
 
 void
 MixedControlSetup::set_value(bool out, bool dout_din, bool d2out_din2)
 {
-  auto [dstrain, dstress] = make_operators(_control());
+  auto [dbelow, dabove] = make_operators(_control());
 
   if (out)
   {
-    _stress = dstress * _fixed_values + dstrain * _mixed_state;
-    _strain = dstrain * _fixed_values + dstress * _mixed_state;
+    _above_var = dabove * _fixed_values + dbelow * _mixed_state;
+    _below_var = dbelow * _fixed_values + dabove * _mixed_state;
   }
 
   if (dout_din)
   {
     if (_fixed_values.is_dependent())
     {
-      _stress.d(_fixed_values) = dstress;
-      _strain.d(_fixed_values) = dstrain;
+      _above_var.d(_fixed_values) = dabove;
+      _below_var.d(_fixed_values) = dbelow;
     }
 
     if (_mixed_state.is_dependent())
     {
-      _stress.d(_mixed_state) = dstrain;
-      _strain.d(_mixed_state) = dstress;
+      _above_var.d(_mixed_state) = dbelow;
+      _below_var.d(_mixed_state) = dabove;
     }
   }
 
@@ -109,17 +108,17 @@ MixedControlSetup::set_value(bool out, bool dout_din, bool d2out_din2)
 std::pair<SSR4, SSR4>
 MixedControlSetup::make_operators(const SR2 & control) const
 {
-  auto strain_select = control <= _threshold;
-  auto stress_select = control > _threshold;
+  auto below = control <= _threshold;
+  auto above = control > _threshold;
 
-  // This also converts these to floats
-  auto ones_stress = Tensor(strain_select.to(control.options()), control.batch_sizes());
-  auto ones_strain = Tensor::ones_like(control) - ones_stress;
+  // convert to matching dtype
+  auto ones_below = below.to(control.options());
+  auto ones_above = 1.0 - ones_below;
 
-  auto dstrain = base_diagonalize(ones_stress);
-  auto dstress = base_diagonalize(ones_strain);
+  auto dbelow = base_diagonalize(ones_below);
+  auto dabove = base_diagonalize(ones_above);
 
-  return {dstrain, dstress};
+  return {dbelow, dabove};
 }
 
 } // namespace neml2

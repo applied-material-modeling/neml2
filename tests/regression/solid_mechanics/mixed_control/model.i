@@ -179,6 +179,8 @@
   []
   [mixed]
     type = MixedControlSetup
+    above_variable = 'state/S'
+    below_variable = 'state/E'
   []
   [rename]
     type = CopySR2
