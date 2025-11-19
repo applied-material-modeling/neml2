@@ -45,8 +45,8 @@ ncrystal = 5
   [prescribed]
     type = FillSR2
     values = '1e-3 0 0 0 0 0' # 1e-3 deformation rate, rest are zero stress
-    shape_manipulations = 'dynamic_expand'
-    shape_manipulation_args = '(${nstep},${nbatch})'
+    shape_manipulations = 'dynamic_expand intmd_expand'
+    shape_manipulation_args = '(${nstep},${nbatch}) (${ncrystal})'
   []
 
   # The solution is unique up to some spin
@@ -70,10 +70,11 @@ ncrystal = 5
     force_WR2_values = 'vorticity'
     ic_Rot_names = 'state/orientation'
     ic_Rot_values = 'initial_orientation'
-    var_with_intmd_dims = 'state/internal/slip_hardening'
-    var_intmd_shapes = '(${ncrystal})'
+    var_with_intmd_dims = 'state/internal/slip_hardening state/mixed_state state/orientation'
+    var_intmd_shapes = '(${ncrystal}) (${ncrystal}) (${ncrystal})'
     predictor = 'PREVIOUS_STATE'
     save_as = 'result.pt'
+    verbose = true
   []
   [regression]
     type = TransientRegression
@@ -86,6 +87,7 @@ ncrystal = 5
   [newton]
     type = NewtonWithLineSearch
     max_linesearch_iterations = 5
+    verbose = true
   []
 []
 
@@ -126,13 +128,7 @@ ncrystal = 5
   [elastic_stretch]
     type = ElasticStrainRate
     deformation_rate = 'state/deformation_rate'
-    elastic_strain_rate = 'state/crystal_elastic_strain_rate'
-  []
-  [elastic_stretch_avg]
-    type = SR2IntermediateMean
-    from = 'state/crystal_elastic_strain_rate'
-    to = 'state/elastic_strain_rate'
-    dim = -1
+    elastic_strain_rate = 'state/elastic_strain_rate'
   []
   [plastic_spin]
     type = PlasticVorticity
@@ -182,7 +178,7 @@ ncrystal = 5
     type = ComposedModel
     models = "mixed_control elasticity euler_rodrigues
               orientation_rate resolved_shear
-              elastic_stretch elastic_stretch_avg
+              elastic_stretch
               plastic_deformation_rate plastic_spin
               sum_slip_rates slip_rule slip_strength voce_hardening
               integrate_slip_hardening integrate_elastic_strain rename_residual integrate_orientation"
