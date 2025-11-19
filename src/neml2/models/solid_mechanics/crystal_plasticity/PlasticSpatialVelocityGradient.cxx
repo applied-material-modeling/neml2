@@ -86,7 +86,7 @@ PlasticSpatialVelocityGradient::set_value(bool out, bool dout_din, bool /*d2out_
   if (dout_din)
   {
     if (_g.is_dependent())
-      _lp.d(_g) = _crystal_geometry.A().rotate(_R().intmd_unsqueeze(-1));
+      _lp.d(_g, {}, {-1}) = _crystal_geometry.A().rotate(_R().intmd_unsqueeze(-1));
 
     if (_R.is_dependent())
       _lp.d(_R) = lp_crystal.drotate(_R());

@@ -86,13 +86,7 @@ PlasticDeformationRate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
   if (dout_din)
   {
     if (_g.is_dependent())
-    {
-      auto dp_dg = M.rotate(_R().intmd_unsqueeze(-1));
-      dp_dg = dp_dg.intmd_reshape({utils::numel(_dp.intmd_sizes()), M.intmd_size(-1)});
-      dp_dg = intmd_diagonalize(dp_dg, 0).intmd_reshape(
-          utils::add_shapes(_dp.intmd_sizes(), _dp.intmd_sizes(), M.intmd_size(-1)));
-      _dp.d(_g) = dp_dg;
-    }
+      _dp.d(_g, {}, {-1}) = M.rotate(_R().intmd_unsqueeze(-1));
 
     if (_R.is_dependent())
       _dp.d(_R) = dp_crystal.drotate(_R());

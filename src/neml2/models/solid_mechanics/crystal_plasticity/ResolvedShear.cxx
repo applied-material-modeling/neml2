@@ -87,17 +87,10 @@ ResolvedShear::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
   if (dout_din)
   {
     if (_S.is_dependent())
-      _rss.d(_S) = M.rotate(R);
+      _rss.d(_S, {-1}) = M.rotate(R);
 
     if (_R.is_dependent())
-    {
-      auto drss_dR = R2::einsum("...ijk,...i->...jk", {M.drotate(R), S});
-      drss_dR = drss_dR.intmd_reshape({utils::numel(_R.intmd_sizes()), M.intmd_size(-1)});
-      drss_dR = intmd_diagonalize(drss_dR, 0).intmd_movedim(-1, 1);
-      drss_dR = drss_dR.intmd_reshape(
-          utils::add_shapes(_R.intmd_sizes(), M.intmd_size(-1), _R.intmd_sizes()));
-      _rss.d(_R) = drss_dR;
-    }
+      _rss.d(_R, {-1}) = R2::einsum("...ijk,...i->...jk", {M.drotate(R), S});
   }
 }
 

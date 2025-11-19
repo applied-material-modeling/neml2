@@ -26,7 +26,6 @@
 #include "neml2/tensors/macros.h"
 #include "neml2/tensors/tensors.h"
 #include "neml2/tensors/functions/mean.h"
-#include "neml2/tensors/functions/diagonalize.h"
 #include "neml2/tensors/functions/imap.h"
 
 namespace neml2
@@ -55,20 +54,7 @@ IntermediateMean<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 
   if (dout_din)
     if (_from.is_dependent())
-    {
-      // const auto dim = utils::normalize_dim(_dim, 0, _from.intmd_dim());
-      // auto I = TensorShape(_from.intmd_sizes());
-      // I.erase(I.begin() + dim);
-      // const auto n = utils::numel(I);
-
-      // const auto deriv = imap_v<T>(_from.options()) / _from.intmd_size(_dim);
-      // _to.d(_from) = intmd_diagonalize(deriv.intmd_expand(n))
-      //                    .intmd_reshape(utils::add_shapes(I, I))
-      //                    .intmd_unsqueeze(0)
-      //                    .intmd_expand(_from.intmd_size(dim), 0)
-      //                    .intmd_movedim(0, dim + _from.intmd_dim() - 1);
       _to.d(_from, {}, _dim) = imap_v<T>(_from.options()) / _from.intmd_size(_dim);
-    }
 }
 
 #define REGISTER_INTERMEDIATEMEAN(T)                                                               \

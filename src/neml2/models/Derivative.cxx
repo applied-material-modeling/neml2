@@ -133,21 +133,23 @@ Derivative<N>::operator=(const Tensor & val)
   // Easiest case if we have the full intermediate shape
   if (val.intmd_sizes() == intmd_sizes)
     assign_or_add(_deriv, val);
+  else
+  {
+    // Otherwise, the intermediate shape must be broadcastable to the variable's intermediate
+    // shape
+    neml_assert_dbg(at::is_expandable_to(val.intmd_sizes(), var()->intmd_sizes()),
+                    "The assigned derivative for '",
+                    _debug_name,
+                    "' has incompatible intermediate shape ",
+                    val.intmd_sizes(),
+                    ". Expected to be either expandable to the variable's intermediate shape ",
+                    var()->intmd_sizes(),
+                    " or match the derivative's full intermediate shape ",
+                    intmd_sizes);
 
-  // Otherwise, the intermediate shape must be broadcastable to the variable's intermediate
-  // shape
-  neml_assert_dbg(at::is_expandable_to(val.intmd_sizes(), var()->intmd_sizes()),
-                  "The assigned derivative for '",
-                  _debug_name,
-                  "' has incompatible intermediate shape ",
-                  val.intmd_sizes(),
-                  ". Expected to be either expandable to the variable's intermediate shape ",
-                  var()->intmd_sizes(),
-                  " or match the derivative's full intermediate shape ",
-                  intmd_sizes);
-
-  // We'll go through a set of operations to get the right shape
-  assign_or_add(_deriv, broadcast_intmd_dims(val));
+    // We'll go through a set of operations to get the right shape
+    assign_or_add(_deriv, broadcast_intmd_dims(val));
+  }
 
   // Invalidate the assembly cache
   _deriv_assembly = Tensor();
@@ -175,11 +177,13 @@ Derivative<N>::broadcast_intmd_dims(const Tensor & val) const
   // Diagonalize independent dims
   for (std::size_t i = 0; i < N; i++)
     val2 = intmd_diagonalize(val2, -1);
-  val2 = val2.intmd_reshape(utils::add_shapes(
-      var_dep_sizes, var_indep_sizes, N == 2 ? var_indep_sizes : TensorShapeRef{}));
+  val2 = val2.intmd_reshape(utils::add_shapes(var_dep_sizes,
+                                              var_indep_sizes,
+                                              var_indep_sizes,
+                                              N == 2 ? var_indep_sizes : TensorShapeRef{}));
 
   // Move variable's dependent dims back to their original positions
-  for (std::size_t i = var_dep_dims.size() - 1; i >= 0; i--)
+  for (Size i = Size(var_dep_dims.size()) - 1; i >= 0; i--)
     val2 = val2.intmd_movedim(Size(i), var_dep_dims[i]);
 
   // Unsqueeze and expand args' dependent dims
@@ -187,6 +191,8 @@ Derivative<N>::broadcast_intmd_dims(const Tensor & val) const
   for (std::size_t i = 1; i <= N; i++)
   {
     const auto & arg_dep_dims = _dep_dims[i];
+    const auto arg_indep_dim = _var_and_args[i]->intmd_dim() - arg_dep_dims.size();
+    d_offset += var_indep_sizes.size() - arg_indep_dim;
     for (const auto & d : arg_dep_dims)
       val2 = val2.intmd_unsqueeze(d_offset + d)
                  .intmd_expand(_var_and_args[i]->intmd_size(d), d_offset + d);
@@ -194,7 +200,12 @@ Derivative<N>::broadcast_intmd_dims(const Tensor & val) const
   }
 
   // Everything is in order now, let's sum_to_size
-  return intmd_sum_to_size(val2, total_intmd_sizes());
+  const auto broadcasted_intmd_sizes = utils::add_shapes(
+      var()->intmd_sizes(),
+      utils::pad_prepend(_var_and_args[1]->intmd_sizes(), var_indep_sizes.size()),
+      N == 2 ? utils::pad_prepend(_var_and_args[2]->intmd_sizes(), var_indep_sizes.size())
+             : TensorShapeRef{});
+  return intmd_sum_to_size(val2, broadcasted_intmd_sizes).intmd_reshape(total_intmd_sizes());
 }
 
 template <std::size_t N>

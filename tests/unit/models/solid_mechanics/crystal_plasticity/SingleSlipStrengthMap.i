@@ -13,6 +13,8 @@
   [hardening]
     type = Scalar
     values = '100.0'
+    shape_manipulations = 'intmd_expand'
+    shape_manipulation_args = '(2,3)'
   []
 []
 
