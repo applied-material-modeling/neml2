@@ -38,13 +38,13 @@ ncrystal = 5
   # Here we want to model uniaxial tension, so only the first component is 1, rest are 0
   [control]
     type = FillSR2
-    values = '1 1 1 1 1 1'
+    values = '1 0 0 0 0 0'
     shape_manipulations = 'dynamic_expand'
     shape_manipulation_args = '(${nstep},${nbatch})'
   []
   [prescribed]
     type = FillSR2
-    values = '0 0 1e-3 -1e-3 0 0'
+    values = '1e-3 0 0 0 0 0' # 1e-3 deformation rate, rest are zero stress
     shape_manipulations = 'dynamic_expand'
     shape_manipulation_args = '(${nstep},${nbatch})'
   []
@@ -74,8 +74,6 @@ ncrystal = 5
     var_intmd_shapes = '(${ncrystal})'
     predictor = 'PREVIOUS_STATE'
     save_as = 'result.pt'
-    verbose = true
-    show_model_info = true
   []
   [regression]
     type = TransientRegression
@@ -88,7 +86,6 @@ ncrystal = 5
   [newton]
     type = NewtonWithLineSearch
     max_linesearch_iterations = 5
-    verbose = true
   []
 []
 
@@ -197,6 +194,6 @@ ncrystal = 5
   [model_with_stress]
     type = ComposedModel
     models = 'model mixed_control elasticity'
-    additional_outputs = 'state/elastic_strain'
+    additional_outputs = 'state/mixed_state state/elastic_strain'
   []
 []
