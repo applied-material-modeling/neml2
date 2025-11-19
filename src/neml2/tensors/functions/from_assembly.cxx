@@ -34,7 +34,7 @@ Tensor
 from_assembly(const Tensor & from,
               const std::array<TensorShapeRef, N> & intmd_shapes,
               const std::array<TensorShapeRef, N> & base_shapes,
-              const std::string & debug_name)
+              [[maybe_unused]] const std::string & debug_name)
 {
 #ifndef NDEBUG
   TensorShape assembly_sizes(N);
