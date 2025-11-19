@@ -42,7 +42,7 @@ SlipStrengthMap::expected_options()
 
 SlipStrengthMap::SlipStrengthMap(const OptionSet & options)
   : Model(options),
-    _tau(declare_output_variable<Scalar>("slip_strengths"))
+    _tau(declare_output_variable<Scalar>("slip_strengths", -1))
 {
 }
 } // namespace neml2

@@ -79,7 +79,8 @@ template <typename T>
 std::unique_ptr<VariableBase>
 Variable<T>::clone(const VariableName & name, Model * owner) const
 {
-  return std::make_unique<Variable<T>>(name.empty() ? this->name() : name, owner ? owner : _owner);
+  return std::make_unique<Variable<T>>(
+      name.empty() ? this->name() : name, owner ? owner : _owner, dep_intmd_dims());
 }
 
 template <typename T>

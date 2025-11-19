@@ -36,10 +36,14 @@
 
 namespace neml2
 {
-VariableBase::VariableBase(VariableName name_in, Model * owner, TensorShapeRef base_shape)
+VariableBase::VariableBase(VariableName name_in,
+                           Model * owner,
+                           TensorShapeRef base_shape,
+                           TensorShapeRef dep_intmd_dims)
   : _name(std::move(name_in)),
     _owner(owner),
-    _base_sizes(base_shape)
+    _base_sizes(base_shape),
+    _dep_intmd_dims(dep_intmd_dims)
 {
 }
 
@@ -229,6 +233,12 @@ VariableBase::set_intmd_sizes(TensorShapeRef shape)
   _cached_intmd_sizes = shape;
 }
 
+TensorShapeRef
+VariableBase::dep_intmd_dims() const
+{
+  return _dep_intmd_dims;
+}
+
 Tensor
 VariableBase::zeros(const TensorOptions & options) const
 {
@@ -262,7 +272,7 @@ template <std::size_t N>
 static Derivative<N> &
 get_derivative(std::vector<Derivative<N>> & derivs,
                const std::array<const VariableBase *, N + 1> & var_and_args,
-               const std::array<ArrayRef<Size>, N + 1> & dep_dims)
+               ArrayRef<Size> dep_dims)
 {
   auto deriv = Derivative<N>(var_and_args, dep_dims);
   auto it = std::find(derivs.begin(), derivs.end(), deriv);
@@ -273,9 +283,9 @@ get_derivative(std::vector<Derivative<N>> & derivs,
 }
 
 Derivative<1> &
-VariableBase::d(const VariableBase & var, ArrayRef<Size> var_dep_dims, ArrayRef<Size> arg_dep_dims)
+VariableBase::d(const VariableBase & var, ArrayRef<Size> dep_dims)
 {
-  return get_derivative<1>(_derivs, {this, &var}, {var_dep_dims, arg_dep_dims});
+  return get_derivative<1>(_derivs, {this, &var}, dep_dims);
 }
 
 const Derivative<1> &
@@ -289,14 +299,9 @@ VariableBase::d(const VariableBase & var) const
 }
 
 Derivative<2> &
-VariableBase::d2(const VariableBase & var1,
-                 const VariableBase & var2,
-                 ArrayRef<Size> var_dep_dims,
-                 ArrayRef<Size> arg1_dep_dims,
-                 ArrayRef<Size> arg2_dep_dims)
+VariableBase::d2(const VariableBase & var1, const VariableBase & var2, ArrayRef<Size> dep_dims)
 {
-  return get_derivative<2>(
-      _sec_derivs, {this, &var1, &var2}, {var_dep_dims, arg1_dep_dims, arg2_dep_dims});
+  return get_derivative<2>(_sec_derivs, {this, &var1, &var2}, dep_dims);
 }
 
 const Derivative<2> &

@@ -161,8 +161,8 @@ public:
    * responsibility to ensure the correctness of the tagged shapes.
    */
   ///@{
-  void tag_input_intmd_sizes(const VariableName &, TensorShapeRef);
-  void tag_output_intmd_sizes(const VariableName &, TensorShapeRef);
+  void set_input_intmd_sizes(const VariableName &, TensorShapeRef);
+  void set_output_intmd_sizes(const VariableName &, TensorShapeRef);
   ///@}
 
 protected:
@@ -175,20 +175,24 @@ protected:
 
   /// Declare an input variable
   template <typename T>
-  const Variable<T> & declare_input_variable(const char * name, bool allow_duplicate = false);
+  const Variable<T> & declare_input_variable(const char * name,
+                                             TensorShapeRef dep_intmd_dims = {},
+                                             bool allow_duplicate = false);
 
   /// Declare an input variable
   template <typename T>
   const Variable<T> & declare_input_variable(const VariableName & name,
+                                             TensorShapeRef dep_intmd_dims = {},
                                              bool allow_duplicate = false);
 
   /// Declare an output variable
   template <typename T>
-  Variable<T> & declare_output_variable(const char * name);
+  Variable<T> & declare_output_variable(const char * name, TensorShapeRef dep_intmd_dims = {});
 
   /// Declare an output variable
   template <typename T>
-  Variable<T> & declare_output_variable(const VariableName & name);
+  Variable<T> & declare_output_variable(const VariableName & name,
+                                        TensorShapeRef dep_intmd_dims = {});
 
   /// Clone a variable and put it on the input axis
   const VariableBase * clone_input_variable(const VariableBase & var,
@@ -219,6 +223,7 @@ private:
   template <typename T>
   Variable<T> * create_variable(VariableStorage & variables,
                                 const VariableName & name,
+                                TensorShapeRef dep_intmd_dims,
                                 bool allow_duplicate = false);
 
   /// Model using this interface

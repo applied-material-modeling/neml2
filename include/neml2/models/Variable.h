@@ -36,8 +36,8 @@ template <typename T>
 class Variable : public VariableBase
 {
 public:
-  Variable(VariableName name_in, Model * owner)
-    : VariableBase(std::move(name_in), owner, T::const_base_sizes),
+  Variable(VariableName name_in, Model * owner, TensorShapeRef dep_intmd_dims = {})
+    : VariableBase(std::move(name_in), owner, T::const_base_sizes, dep_intmd_dims),
       _ref(nullptr)
   {
   }

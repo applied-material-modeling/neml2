@@ -37,8 +37,7 @@ class Derivative
 {
 public:
   Derivative() = default;
-  Derivative(const std::array<const VariableBase *, N + 1> & var_and_args,
-             const std::array<ArrayRef<Size>, N + 1> & dep_dims);
+  Derivative(const std::array<const VariableBase *, N + 1> & var_and_args, ArrayRef<Size> dep_dims);
 
   /// Assignment operator
   ///@{
@@ -65,10 +64,6 @@ public:
   std::array<const VariableBase *, N> args() const;
 
 private:
-  /// Normalize dependent dimensions
-  std::array<TensorShape, N + 1>
-  normalize_dep_dims(const std::array<ArrayRef<Size>, N + 1> & dep_dims) const;
-
   std::array<TensorShapeRef, N + 1> get_intmd_sizes() const;
   std::array<TensorShapeRef, N + 1> get_base_sizes() const;
 
@@ -82,7 +77,7 @@ private:
   const std::array<const VariableBase *, N + 1> _var_and_args = {};
 
   /// Dependent dimensions that do not broadcast
-  const std::array<TensorShape, N + 1> _dep_dims = {};
+  TensorShape _dep_dims = {};
 
   /// Derivative to write to
   Tensor _deriv;

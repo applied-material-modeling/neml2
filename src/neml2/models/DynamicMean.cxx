@@ -40,7 +40,8 @@ DynamicMean<T>::expected_options()
 
 template <typename T>
 DynamicMean<T>::DynamicMean(const OptionSet & options)
-  : Reduction<T>(options)
+  : Reduction<T>(options),
+    _from(this->template declare_input_variable<T>("from"))
 {
 }
 

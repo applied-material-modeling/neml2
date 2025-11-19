@@ -69,7 +69,7 @@ PlasticVorticity::PlasticVorticity(const OptionSet & options)
         options.get<std::string>("crystal_geometry"))),
     _Wp(declare_output_variable<WR2>("plastic_vorticity")),
     _R(declare_input_variable<R2>("orientation")),
-    _gamma_dot(declare_input_variable<Scalar>("slip_rates"))
+    _gamma_dot(declare_input_variable<Scalar>("slip_rates", -1))
 {
 }
 
@@ -85,7 +85,7 @@ PlasticVorticity::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
   if (dout_din)
   {
     if (_gamma_dot.is_dependent())
-      _Wp.d(_gamma_dot, {}, {-1}) = W.rotate(_R().intmd_unsqueeze(-1));
+      _Wp.d(_gamma_dot, -1) = W.rotate(_R().intmd_unsqueeze(-1));
 
     if (_R.is_dependent())
       _Wp.d(_R) = Wp_crystal.drotate(_R());

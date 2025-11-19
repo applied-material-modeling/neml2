@@ -60,7 +60,10 @@ public:
   VariableBase & operator=(VariableBase &&) = delete;
   virtual ~VariableBase() = default;
 
-  VariableBase(VariableName name_in, Model * owner, TensorShapeRef base_shape);
+  VariableBase(VariableName name_in,
+               Model * owner,
+               TensorShapeRef base_shape,
+               TensorShapeRef dep_intmd_dims);
 
   /// Name of this variable
   const VariableName & name() const { return _name; }
@@ -141,8 +144,11 @@ public:
   /// Get the referencing variable (returns this if this is a storing variable)
   virtual const VariableBase * ref() const = 0;
 
-  /// Set the intermediate shape. @see neml2::VariableStore::tag_input_intmd_sizes
-  virtual void set_intmd_sizes(TensorShapeRef shape);
+  /// Set the intermediate shape. @see neml2::VariableStore::set_input_intmd_sizes
+  void set_intmd_sizes(TensorShapeRef shape);
+
+  /// Get dependent intermediate dimensions for derivative calculation
+  ArrayRef<Size> dep_intmd_dims() const;
 
   /// Check if this is an owning variable
   virtual bool owning() const = 0;
@@ -178,16 +184,12 @@ public:
   bool has_derivative(const VariableName & v1name, const VariableName & v2name) const;
 
   /// Wrapper for assigning partial derivative
-  Derivative<1> &
-  d(const VariableBase & var, ArrayRef<Size> var_dep_dims = {}, ArrayRef<Size> arg_dep_dims = {});
+  Derivative<1> & d(const VariableBase & var, ArrayRef<Size> dep_dims = {});
   const Derivative<1> & d(const VariableBase & var) const;
 
   /// Wrapper for assigning second partial derivative
-  Derivative<2> & d2(const VariableBase & var1,
-                     const VariableBase & var2,
-                     ArrayRef<Size> var_dep_dims = {},
-                     ArrayRef<Size> arg1_dep_dims = {},
-                     ArrayRef<Size> arg2_dep_dims = {});
+  Derivative<2> &
+  d2(const VariableBase & var1, const VariableBase & var2, ArrayRef<Size> dep_dims = {});
   const Derivative<2> & d2(const VariableBase & var1, const VariableBase & var2) const;
 
   ///@{
@@ -235,6 +237,9 @@ public:
 
   /// Base shape of the variable
   const TensorShape _base_sizes = {};
+
+  /// Dependent intermediate dimensions for derivative calculation
+  const TensorShape _dep_intmd_dims = {};
 
 private:
   ValueMap total_derivatives(const DependencyResolver<Model, VariableName> & dep,

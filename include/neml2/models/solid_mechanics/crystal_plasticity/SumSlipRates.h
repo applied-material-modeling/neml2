@@ -42,13 +42,13 @@ protected:
   /// Calculate the sum and the derivatives
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
+  /// The dimension over which to sum
+  const Size _dim;
+
   /// Sum of the absolute slip rates
   Variable<Scalar> & _sg;
 
   /// Slip rates
   const Variable<Scalar> & _g;
-
-  /// The dimension over which to sum
-  const Size _dim;
 };
 } // namespace neml2

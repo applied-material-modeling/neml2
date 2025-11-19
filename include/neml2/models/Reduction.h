@@ -37,9 +37,6 @@ public:
   Reduction(const OptionSet & options);
 
 protected:
-  /// Original variable to be reduced
-  const Variable<T> & _from;
-
   /// Reduced variable
   Variable<T> & _to;
 

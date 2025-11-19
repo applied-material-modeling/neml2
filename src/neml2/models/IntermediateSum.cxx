@@ -41,7 +41,8 @@ IntermediateSum<T>::expected_options()
 
 template <typename T>
 IntermediateSum<T>::IntermediateSum(const OptionSet & options)
-  : Reduction<T>(options)
+  : Reduction<T>(options),
+    _from(this->template declare_input_variable<T>("from", _dim))
 {
 }
 
@@ -54,7 +55,7 @@ IntermediateSum<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 
   if (dout_din)
     if (_from.is_dependent())
-      _to.d(_from, {}, _dim) = imap_v<T>(_from.options());
+      _to.d(_from, 0) = imap_v<T>(_from.options()).intmd_expand(_from.intmd_size(_dim));
 }
 
 #define REGISTER_INTERMEDIATESUM(T)                                                                \

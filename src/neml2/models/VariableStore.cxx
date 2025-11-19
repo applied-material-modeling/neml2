@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/VariableStore.h"
+#include "neml2/misc/types.h"
 #include "neml2/models/Model.h"
 #include "neml2/misc/assertions.h"
 #include "neml2/models/map_types.h"
@@ -30,6 +31,7 @@
 #include "neml2/models/Derivative.h"
 #include "neml2/base/LabeledAxis.h"
 #include "neml2/solvers/NonlinearSystem.h"
+#include "neml2/tensors/Tensor.h"
 #include "neml2/tensors/tensors.h"
 
 namespace neml2
@@ -97,48 +99,56 @@ VariableStore::output_axis() const
 
 template <typename T>
 const Variable<T> &
-VariableStore::declare_input_variable(const char * name, bool allow_duplicate)
+VariableStore::declare_input_variable(const char * name,
+                                      TensorShapeRef dep_intmd_dims,
+                                      bool allow_duplicate)
 {
   if (_object->input_options().contains(name))
-    return declare_input_variable<T>(_object->input_options().get<VariableName>(name),
-                                     allow_duplicate);
+    return declare_input_variable<T>(
+        _object->input_options().get<VariableName>(name), dep_intmd_dims, allow_duplicate);
 
-  return declare_input_variable<T>(VariableName(name), allow_duplicate);
+  return declare_input_variable<T>(VariableName(name), dep_intmd_dims, allow_duplicate);
 }
 
 template <typename T>
 const Variable<T> &
-VariableStore::declare_input_variable(const VariableName & name, bool allow_duplicate)
+VariableStore::declare_input_variable(const VariableName & name,
+                                      TensorShapeRef dep_intmd_dims,
+                                      bool allow_duplicate)
 {
   if (!allow_duplicate || (allow_duplicate && !_input_axis.has_variable(name)))
     _input_axis.add_variable(name, {}, T::const_base_sizes);
-  return *create_variable<T>(_input_variables, name, allow_duplicate);
+  return *create_variable<T>(_input_variables, name, dep_intmd_dims, allow_duplicate);
 }
 #define INSTANTIATE_DECLARE_INPUT_VARIABLE(T)                                                      \
-  template const Variable<T> & VariableStore::declare_input_variable<T>(const char *, bool);       \
-  template const Variable<T> & VariableStore::declare_input_variable<T>(const VariableName &, bool)
+  template const Variable<T> & VariableStore::declare_input_variable<T>(                           \
+      const char *, TensorShapeRef, bool);                                                         \
+  template const Variable<T> & VariableStore::declare_input_variable<T>(                           \
+      const VariableName &, TensorShapeRef, bool)
 FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_DECLARE_INPUT_VARIABLE);
 
 template <typename T>
 Variable<T> &
-VariableStore::declare_output_variable(const char * name)
+VariableStore::declare_output_variable(const char * name, TensorShapeRef dep_intmd_dims)
 {
   if (_object->input_options().contains(name))
-    return declare_output_variable<T>(_object->input_options().get<VariableName>(name));
+    return declare_output_variable<T>(_object->input_options().get<VariableName>(name),
+                                      dep_intmd_dims);
 
-  return declare_output_variable<T>(VariableName(name));
+  return declare_output_variable<T>(VariableName(name), dep_intmd_dims);
 }
 
 template <typename T>
 Variable<T> &
-VariableStore::declare_output_variable(const VariableName & name)
+VariableStore::declare_output_variable(const VariableName & name, TensorShapeRef dep_intmd_dims)
 {
   _output_axis.add_variable(name, {}, T::const_base_sizes);
-  return *create_variable<T>(_output_variables, name);
+  return *create_variable<T>(_output_variables, name, dep_intmd_dims);
 }
 #define INSTANTIATE_DECLARE_OUTPUT_VARIABLE(T)                                                     \
-  template Variable<T> & VariableStore::declare_output_variable<T>(const char *);                  \
-  template Variable<T> & VariableStore::declare_output_variable<T>(const VariableName &)
+  template Variable<T> & VariableStore::declare_output_variable<T>(const char *, TensorShapeRef);  \
+  template Variable<T> & VariableStore::declare_output_variable<T>(const VariableName &,           \
+                                                                   TensorShapeRef)
 FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_DECLARE_OUTPUT_VARIABLE);
 
 const VariableBase *
@@ -175,6 +185,7 @@ template <typename T>
 Variable<T> *
 VariableStore::create_variable(VariableStorage & variables,
                                const VariableName & name,
+                               TensorShapeRef dep_intmd_dims,
                                bool allow_duplicate)
 {
   // Make sure we don't duplicate variables
@@ -192,7 +203,7 @@ VariableStore::create_variable(VariableStorage & variables,
   {
     // Allocate
     std::unique_ptr<VariableBase> var;
-    var = std::make_unique<Variable<T>>(name, _object);
+    var = std::make_unique<Variable<T>>(name, _object, dep_intmd_dims);
     auto [it, success] = variables.emplace(name, std::move(var));
     var_base_ptr = it->second.get();
   }
@@ -207,7 +218,7 @@ VariableStore::create_variable(VariableStorage & variables,
 }
 #define INSTANTIATE_CREATE_VARIABLE(T)                                                             \
   template Variable<T> * VariableStore::create_variable<T>(                                        \
-      VariableStorage &, const VariableName &, bool)
+      VariableStorage &, const VariableName &, TensorShapeRef, bool)
 FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_CREATE_VARIABLE);
 
 VariableBase &
@@ -490,10 +501,10 @@ VariableStore::collect_output_stack(bool out, bool dout, bool d2out) const
 }
 
 void
-VariableStore::tag_input_intmd_sizes(const VariableName & name, TensorShapeRef shape)
+VariableStore::set_input_intmd_sizes(const VariableName & name, TensorShapeRef shape)
 {
   neml_assert(_object->host() == _object,
-              "tag_input_intmd_sizes can only be called from the host model.");
+              "set_input_intmd_sizes can only be called from the host model.");
   neml_assert(!_input_axis.is_setup(),
               "Cannot tag intermediate sizes after the input axis is set up.");
   _input_axis.set_intmd_sizes(name, shape);
@@ -501,10 +512,10 @@ VariableStore::tag_input_intmd_sizes(const VariableName & name, TensorShapeRef s
 }
 
 void
-VariableStore::tag_output_intmd_sizes(const VariableName & name, TensorShapeRef shape)
+VariableStore::set_output_intmd_sizes(const VariableName & name, TensorShapeRef shape)
 {
   neml_assert(_object->host() == _object,
-              "tag_output_intmd_sizes can only be called from the host model.");
+              "set_output_intmd_sizes can only be called from the host model.");
   neml_assert(!_output_axis.is_setup(),
               "Cannot tag intermediate sizes after the output axis is set up.");
   _output_axis.set_intmd_sizes(name, shape);

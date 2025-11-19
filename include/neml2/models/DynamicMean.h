@@ -39,7 +39,9 @@ public:
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  using Reduction<T>::_from;
+  /// Original variable to be reduced
+  const Variable<T> & _from;
+
   using Reduction<T>::_to;
   using Reduction<T>::_dim;
 };
