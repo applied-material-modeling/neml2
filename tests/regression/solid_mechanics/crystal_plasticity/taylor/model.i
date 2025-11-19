@@ -74,7 +74,6 @@ ncrystal = 5
     var_intmd_shapes = '(${ncrystal}) (${ncrystal}) (${ncrystal})'
     predictor = 'PREVIOUS_STATE'
     save_as = 'result.pt'
-    verbose = true
   []
   [regression]
     type = TransientRegression
@@ -87,7 +86,6 @@ ncrystal = 5
   [newton]
     type = NewtonWithLineSearch
     max_linesearch_iterations = 5
-    verbose = true
   []
 []
 
