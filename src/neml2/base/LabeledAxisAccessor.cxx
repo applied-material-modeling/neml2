@@ -36,8 +36,7 @@ reserved_subaxis_names()
   return {STATE, OLD_STATE, FORCES, OLD_FORCES, RESIDUAL, PARAMETERS};
 }
 
-LabeledAxisAccessor::
-operator std::vector<std::string>() const
+LabeledAxisAccessor::operator std::vector<std::string>() const
 {
   std::vector<std::string> v(_item_names.begin(), _item_names.end());
   return v;
