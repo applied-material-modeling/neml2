@@ -93,7 +93,7 @@ NewtonWithLineSearch::linesearch(NonlinearSystem & system,
                                  const NonlinearSystem::Sol<true> & dx,
                                  const NonlinearSystem::Res<true> & R0) const
 {
-  auto alpha = Scalar::ones(x.dynamic_sizes(), {}, x.options());
+  auto alpha = Scalar::ones(dx.dynamic_sizes(), {}, x.options());
   const auto nR02 = vdot(R0, R0);
   auto crit = nR02;
 

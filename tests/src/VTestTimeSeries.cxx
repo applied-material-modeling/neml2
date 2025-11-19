@@ -23,10 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/base/NEML2Object.h"
-#include "neml2/tensors/Scalar.h"
-#include "neml2/tensors/SR2.h"
-#include "neml2/tensors/WR2.h"
-#include "neml2/tensors/macros.h"
+#include "neml2/tensors/tensors.h"
 
 #include "VTestTimeSeries.h"
 #include "VTestParser.h"
@@ -37,7 +34,7 @@ template <typename T>
 OptionSet
 VTestTimeSeries<T>::expected_options()
 {
-  OptionSet options = UserTensorBase<Tensor>::expected_options();
+  OptionSet options = UserTensorBase<T>::expected_options();
   options.set<std::string>("vtest");
   options.set<std::string>("variable");
   return options;
@@ -45,20 +42,20 @@ VTestTimeSeries<T>::expected_options()
 
 template <typename T>
 VTestTimeSeries<T>::VTestTimeSeries(const OptionSet & options)
-  : UserTensorBase<Tensor>(options)
+  : UserTensorBase<T>(options)
 {
 }
 
 template <typename T>
-Tensor
+T
 VTestTimeSeries<T>::make() const
 {
   throw NEMLException(static_cast<const NEML2Object *>(this)->name() + " has not been implemented");
-  return Tensor();
+  return T();
 }
 
 template <>
-Tensor
+Scalar
 VTestTimeSeries<Scalar>::make() const
 {
   VTestParser table(input_options().get<std::string>("vtest"));
@@ -67,7 +64,7 @@ VTestTimeSeries<Scalar>::make() const
 }
 
 template <>
-Tensor
+SR2
 VTestTimeSeries<SR2>::make() const
 {
   VTestParser table(input_options().get<std::string>("vtest"));
@@ -82,7 +79,7 @@ VTestTimeSeries<SR2>::make() const
 }
 
 template <>
-Tensor
+WR2
 VTestTimeSeries<WR2>::make() const
 {
   VTestParser table(input_options().get<std::string>("vtest"));

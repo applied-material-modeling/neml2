@@ -54,8 +54,8 @@
   [verification]
     type = VTestVerification
     driver = 'driver'
-    variables = 'output.state/internal/cauchy_stress'
-    references = 'stresses'
+    SR2_names = 'output.state/internal/cauchy_stress'
+    SR2_values = 'stresses'
     # Looser tolerances here are because the NEML(1) model was generated with lagged, explict
     # integration on the orientations
     atol = 1.0

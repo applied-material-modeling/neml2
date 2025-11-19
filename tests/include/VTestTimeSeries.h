@@ -24,13 +24,13 @@
 
 #pragma once
 
-#include "neml2/tensors/Tensor.h"
+#include "neml2/tensors/tensors.h"
 #include "neml2/user_tensors/UserTensorBase.h"
 
 namespace neml2
 {
 template <typename T>
-class VTestTimeSeries : public UserTensorBase<Tensor>
+class VTestTimeSeries : public UserTensorBase<T>
 {
 public:
   static OptionSet expected_options();
@@ -38,6 +38,6 @@ public:
   VTestTimeSeries(const OptionSet & options);
 
 private:
-  Tensor make() const override;
+  T make() const override;
 };
 } // namespace neml2

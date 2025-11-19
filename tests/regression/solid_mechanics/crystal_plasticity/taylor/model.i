@@ -1,19 +1,15 @@
 nstep = 100
-nbatch = 5
-ncrystal = 4
+nbatch = 1
+ncrystal = 5
 
 [Tensors]
-  [end_time]
-    type = LinspaceScalar
-    start = 1
-    end = 10
-    nstep = ${nbatch}
-  []
   [times]
     type = LinspaceScalar
     start = 0
-    end = end_time
+    end = 50
     nstep = ${nstep}
+    shape_manipulations = 'dynamic_unsqueeze dynamic_expand'
+    shape_manipulation_args = '(-1) (${nstep},${nbatch})'
   []
 
   [sdirs]
@@ -25,30 +21,15 @@ ncrystal = 4
     values = '1 1 1'
   []
 
-  [R1]
-    type = LinspaceScalar
-    start = 0
-    end = 0.75
-    nstep = ${nbatch}
-  []
-  [R2]
-    type = LinspaceScalar
-    start = 0
-    end = -0.25
-    nstep = ${nbatch}
-  []
-  [R3]
-    type = LinspaceScalar
-    start = -0.1
-    end = 0.1
-    nstep = ${nbatch}
-  []
   [initial_orientation]
-    type = FillRot
-    values = 'R1 R2 R3'
-    method = 'standard'
-    shape_manipulations = 'intmd_expand'
-    shape_manipulation_args = '(${ncrystal})'
+    type = Rot
+    values = "-0.269981 -0.299844 -0.86408
+              0.209546 0.192014 0.514051
+              -0.0251234 -0.0175916 -0.636644
+              -0.146257 -0.0475218 -0.970804
+              -0.174458 -0.302169 -0.523373"
+    batch_shape = (${ncrystal})
+    intermediate_dimension = 1
   []
 
   # For mixed control:
@@ -57,18 +38,19 @@ ncrystal = 4
   # Here we want to model uniaxial tension, so only the first component is 1, rest are 0
   [control]
     type = FillSR2
-    values = '1 0 0 0 0 0'
+    values = '1 1 1 1 1 1'
     shape_manipulations = 'dynamic_expand'
     shape_manipulation_args = '(${nstep},${nbatch})'
   []
   [prescribed]
     type = FillSR2
-    values = '0.1 0 0 0 0 0' # 0.1 deformation rate, 0 stress
+    values = '0 0 1e-3 -1e-3 0 0'
     shape_manipulations = 'dynamic_expand'
     shape_manipulation_args = '(${nstep},${nbatch})'
   []
 
-  # The solution is unique up to some spin -- we fix it to be zero for simplicity
+  # The solution is unique up to some spin
+  # Here, we fix it to be zero for simplicity
   [vorticity]
     type = FillWR2
     values = '0 0 0'
@@ -125,7 +107,7 @@ ncrystal = 4
     mixed_state = 'state/mixed_state'
     fixed_values = 'forces/prescribed'
     above_variable = 'state/deformation_rate'
-    below_variable = 'state/cauchy_stress'
+    below_variable = 'state/elastic_strain'
   []
   [elasticity]
     type = LinearIsotropicElasticity
@@ -133,7 +115,6 @@ ncrystal = 4
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
     strain = 'state/elastic_strain'
     stress = 'state/cauchy_stress'
-    compliance = true
   []
   [euler_rodrigues]
     type = RotationMatrix
@@ -216,6 +197,6 @@ ncrystal = 4
   [model_with_stress]
     type = ComposedModel
     models = 'model mixed_control elasticity'
-    additional_outputs = 'state/cauchy_stress'
+    additional_outputs = 'state/elastic_strain'
   []
 []
