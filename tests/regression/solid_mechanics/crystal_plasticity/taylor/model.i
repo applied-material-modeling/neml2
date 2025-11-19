@@ -104,7 +104,7 @@ ncrystal = 5
     mixed_state = 'state/mixed_state'
     fixed_values = 'forces/prescribed'
     above_variable = 'state/deformation_rate'
-    below_variable = 'state/elastic_strain'
+    below_variable = 'state/cauchy_stress'
   []
   [elasticity]
     type = LinearIsotropicElasticity
@@ -112,6 +112,7 @@ ncrystal = 5
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
     strain = 'state/elastic_strain'
     stress = 'state/cauchy_stress'
+    compliance = true
   []
   [euler_rodrigues]
     type = RotationMatrix
@@ -194,6 +195,6 @@ ncrystal = 5
   [model_with_stress]
     type = ComposedModel
     models = 'model mixed_control elasticity'
-    additional_outputs = 'state/mixed_state state/elastic_strain'
+    additional_outputs = 'state/mixed_state state/cauchy_stress'
   []
 []
