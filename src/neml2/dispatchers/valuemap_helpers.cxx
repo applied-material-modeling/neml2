@@ -33,17 +33,50 @@ namespace neml2
 ValueMap
 valuemap_cat_reduce(std::vector<ValueMap> && results, Size dynamic_dim)
 {
-  // Figure out the broadcast shape of each dispatch
-  std::vector<TensorShape> s(results.size(), TensorShape{});
-  for (std::size_t i = 0; i < results.size(); i++)
-    for (const auto & [name, val] : results[i])
-      s[i] = utils::broadcast_sizes(s[i], val.dynamic_sizes().concrete());
+  // Figure out the dispatch size for each dispatch
+  std::vector<Size> dispatch_sizes(results.size());
+  for (size_t i = 0; i < results.size(); ++i)
+  {
+    for (auto && [name, value] : results[i])
+      if (dynamic_dim >= -value.dynamic_dim() && dynamic_dim < value.dynamic_dim())
+      {
+        const auto si = value.dynamic_size(dynamic_dim).concrete();
+        if (dispatch_sizes[i] == 0)
+          dispatch_sizes[i] = si;
+        else
+          neml_assert(dispatch_sizes[i] == si,
+                      "Inconsistent dispatch sizes within dispatch ",
+                      i,
+                      ": got ",
+                      dispatch_sizes[i],
+                      " and ",
+                      si,
+                      " for variable ",
+                      name,
+                      ".");
+      }
+      else
+        neml_assert(value.dynamic_dim() == 0,
+                    "Reduction along dynamic dimension ",
+                    dynamic_dim,
+                    " does not make sense for variable ",
+                    name,
+                    " with dynamic shape ",
+                    value.dynamic_sizes());
+    neml_assert(
+        dispatch_sizes[i] > 0, "Unable to determine the dispatch size for dispatch ", i, ".");
+  }
 
   // Re-bin the results, broadcasting as needed
   std::map<VariableName, std::vector<Tensor>> vars;
-  for (auto && result : std::move(results))
-    for (const auto & [name, value] : result)
-      vars[name].emplace_back(value.dynamic_expand(s[std::distance(results.data(), &result)]));
+  for (std::size_t i = 0; i < results.size(); ++i)
+    for (auto && [name, value] : results[i])
+    {
+      if (dynamic_dim >= -value.dynamic_dim() && dynamic_dim < value.dynamic_dim())
+        vars[name].emplace_back(std::move(value));
+      else
+        vars[name].push_back(value.dynamic_expand(dispatch_sizes[i]));
+    }
 
   // Concatenate the tensors
   ValueMap ret;
