@@ -15,16 +15,16 @@
       <tab type="usergroup" url="../tutorials-models" title="Models">
         <tab type="user" url="../tutorials-models-input-file" title="Input file"/>
         <tab type="user" url="../tutorials-models-running-your-first-model" title="Running your first model"/>
-        <tab type="user" url="../tutorials-models-model-parameters" title="Model parameters"/>
+        <!-- <tab type="user" url="../tutorials-models-model-parameters" title="Model parameters"/>
         <tab type="user" url="../tutorials-models-evaluation-device" title="Evaluation device"/>
         <tab type="user" url="../tutorials-models-vectorization" title="Vectorization"/>
         <tab type="user" url="../tutorials-models-model-composition" title="Model composition"/>
         <tab type="user" url="../tutorials-models-model-parameters-revisited" title="Model parameters (revisited)"/>
         <tab type="user" url="../tutorials-models-implicit-model" title="Implicit model"/>
         <tab type="user" url="../tutorials-models-transient-driver" title="Transient driver"/>
-        <tab type="user" url="../tutorials-models-just-in-time-compilation" title="Just-in-time compilation"/>
+        <tab type="user" url="../tutorials-models-just-in-time-compilation" title="Just-in-time compilation"/> -->
       </tab>
-      <tab type="usergroup" url="../tutorials-tensors" title="Tensors">
+      <!-- <tab type="usergroup" url="../tutorials-tensors" title="Tensors">
         <tab type="user" url="../tutorials-tensors-tensor-types" title="Tensor types"/>
         <tab type="user" url="../tutorials-tensors-tensor-creation" title="Tensor creation"/>
         <tab type="user" url="../tutorials-tensors-indexing" title="Indexing"/>
@@ -42,7 +42,7 @@
         <tab type="user" url="../tutorials-optimization-automatic-differentiation" title="Automatic differentiation"/>
         <tab type="user" url="../tutorials-optimization-parameter-calibration" title="Parameter calibration"/>
         <tab type="user" url="../tutorials-optimization-pyzag" title="pyzag"/>
-      </tab>
+      </tab> -->
       <tab type="user" url="../tutorials-next-steps" title="Next steps"/>
     </tab>
     <tab type="usergroup" title="Syntax Documentation">

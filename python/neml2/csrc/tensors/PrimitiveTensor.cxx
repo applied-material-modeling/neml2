@@ -31,24 +31,6 @@
 namespace py = pybind11;
 using namespace neml2;
 
-namespace detail
-{
-template <class T, std::size_t N, std::size_t... Is>
-T
-call_fill_impl(const std::array<Scalar, N> & vals, std::index_sequence<Is...>)
-{
-  // Expands to: T::fill(vals[0], ..., vals[N-1])
-  return T::fill(vals[Is]...);
-}
-
-template <class T, std::size_t N>
-T
-call_fill(const std::array<Scalar, N> & vals)
-{
-  return call_fill_impl<T, N>(vals, std::make_index_sequence<N>{});
-}
-} // namespace detail
-
 template <class T>
 void
 def_PrimitiveTensor(py::module_ & m, const std::string & type)
@@ -128,54 +110,6 @@ def_PrimitiveTensor(py::module_ & m, const std::string & type)
           py::arg("intmd_sizes"),
           py::kw_only(),
           PY_ARG_TENSOR_OPTIONS);
-
-  // fill -- this is a fun one!
-  c.def_static("fill",
-               [](const py::args & args, const py::kwargs & kwargs)
-               {
-                 constexpr auto N = T::const_base_numel;
-                 if (args.size() != N)
-                   throw py::type_error("Expected " + std::to_string(N) + " arguments, got " +
-                                        std::to_string(args.size()));
-
-                 // arguments must be all Scalars or all numbers
-                 bool all_scalar = true;
-                 bool all_numbers = true;
-                 for (std::size_t i = 0; i < N; ++i)
-                 {
-                   if (!py::isinstance<Scalar>(args[i]))
-                     all_scalar = false;
-                   if (!py::isinstance<py::float_>(args[i]))
-                     all_numbers = false;
-                 }
-                 if (!all_scalar && !all_numbers)
-                   throw py::type_error("All arguments must be either neml2.Scalar or float.");
-                 if (all_scalar && !kwargs.empty())
-                   throw py::type_error(
-                       "When passing neml2.Scalar as arguments, no keyword arguments are allowed.");
-
-                 // get options from kwargs
-                 TensorOptions options = default_tensor_options();
-                 if (kwargs.contains("dtype"))
-                   options = options.dtype(kwargs["dtype"].cast<Dtype>());
-                 if (kwargs.contains("device"))
-                   options = options.device(kwargs["device"].cast<Device>());
-                 if (kwargs.contains("requires_grad"))
-                   options = options.requires_grad(kwargs["requires_grad"].cast<bool>());
-
-                 // convert first N positional arguments to Scalars
-                 std::array<Scalar, N> vals;
-                 for (std::size_t i = 0; i < N; ++i)
-                 {
-                   if (py::isinstance<Scalar>(args[i]))
-                     vals[i] = args[i].cast<Scalar>();
-                   else if (py::isinstance<py::float_>(args[i]))
-                     vals[i] = Scalar(args[i].cast<double>(), options);
-                 }
-
-                 // call the implementation
-                 return detail::call_fill<T>(vals);
-               });
 }
 
 // Explicit template instantiations

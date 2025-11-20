@@ -24,6 +24,7 @@
 
 #pragma once
 
+#include <ATen/ScalarOps.h>
 #include <torch/csrc/autograd/variable.h>
 #include <torch/csrc/api/include/torch/detail/TensorDataContainer.h>
 #include <tuple>
@@ -313,8 +314,8 @@ template <class Tuple, std::size_t... I>
 auto
 make_tensors(Tuple && t, std::index_sequence<I...>, const TensorOptions & options)
 {
-  return std::vector<neml2::Tensor>{
-      Tensor::create({std::get<I>(std::forward<Tuple>(t))}, options)...};
+  return std::vector<neml2::Tensor>{neml2::Tensor(
+      at::scalar_to_tensor(std::get<I>(std::forward<Tuple>(t)), options.device()), 0)...};
 }
 
 template <class Derived, Size... S>

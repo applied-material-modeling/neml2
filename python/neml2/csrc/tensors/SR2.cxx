@@ -22,6 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include "neml2/misc/types.h"
 #include "python/neml2/csrc/tensors/TensorBase.h"
 #include "python/neml2/csrc/tensors/PrimitiveTensor.h"
 
@@ -33,4 +34,48 @@ def(py::module_ & m, py::class_<SR2> & c)
 {
   def_TensorBase<SR2>(m, "SR2");
   def_PrimitiveTensor<SR2>(m, "SR2");
+
+  c.def_static(
+       "fill",
+       [](double a, NEML2_TENSOR_OPTIONS_VARGS) { return SR2::fill(a, NEML2_TENSOR_OPTIONS); },
+       py::arg("a"),
+       py::kw_only(),
+       PY_ARG_TENSOR_OPTIONS)
+      .def_static("fill", py::overload_cast<const Scalar &>(&SR2::fill))
+      .def_static(
+          "fill",
+          [](double a11, double a22, double a33, NEML2_TENSOR_OPTIONS_VARGS)
+          { return SR2::fill(a11, a22, a33, NEML2_TENSOR_OPTIONS); },
+          py::arg("a11"),
+          py::arg("a22"),
+          py::arg("a33"),
+          py::kw_only(),
+          PY_ARG_TENSOR_OPTIONS)
+      .def_static("fill",
+                  py::overload_cast<const Scalar &, const Scalar &, const Scalar &>(&SR2::fill))
+      .def_static(
+          "fill",
+          [](double a11,
+             double a22,
+             double a33,
+             double a23,
+             double a13,
+             double a12,
+             NEML2_TENSOR_OPTIONS_VARGS)
+          { return SR2::fill(a11, a22, a33, a23, a13, a12, NEML2_TENSOR_OPTIONS); },
+          py::arg("a11"),
+          py::arg("a22"),
+          py::arg("a33"),
+          py::arg("a23"),
+          py::arg("a13"),
+          py::arg("a12"),
+          py::kw_only(),
+          PY_ARG_TENSOR_OPTIONS)
+      .def_static("fill",
+                  py::overload_cast<const Scalar &,
+                                    const Scalar &,
+                                    const Scalar &,
+                                    const Scalar &,
+                                    const Scalar &,
+                                    const Scalar &>(&SR2::fill));
 }

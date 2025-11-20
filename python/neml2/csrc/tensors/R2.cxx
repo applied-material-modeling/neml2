@@ -33,4 +33,83 @@ def(py::module_ & m, py::class_<R2> & c)
 {
   def_TensorBase<R2>(m, "R2");
   def_PrimitiveTensor<R2>(m, "R2");
+
+  c.def_static(
+       "fill",
+       [](double a, NEML2_TENSOR_OPTIONS_VARGS) { return SR2::fill(a, NEML2_TENSOR_OPTIONS); },
+       py::arg("a"),
+       py::kw_only(),
+       PY_ARG_TENSOR_OPTIONS)
+      .def_static("fill", py::overload_cast<const Scalar &>(&SR2::fill))
+      .def_static(
+          "fill",
+          [](double a11, double a22, double a33, NEML2_TENSOR_OPTIONS_VARGS)
+          { return SR2::fill(a11, a22, a33, NEML2_TENSOR_OPTIONS); },
+          py::arg("a11"),
+          py::arg("a22"),
+          py::arg("a33"),
+          py::kw_only(),
+          PY_ARG_TENSOR_OPTIONS)
+      .def_static("fill",
+                  py::overload_cast<const Scalar &, const Scalar &, const Scalar &>(&SR2::fill))
+      .def_static(
+          "fill",
+          [](double a11,
+             double a22,
+             double a33,
+             double a23,
+             double a13,
+             double a12,
+             NEML2_TENSOR_OPTIONS_VARGS)
+          { return SR2::fill(a11, a22, a33, a23, a13, a12, NEML2_TENSOR_OPTIONS); },
+          py::arg("a11"),
+          py::arg("a22"),
+          py::arg("a33"),
+          py::arg("a23"),
+          py::arg("a13"),
+          py::arg("a12"),
+          py::kw_only(),
+          PY_ARG_TENSOR_OPTIONS)
+      .def_static("fill",
+                  py::overload_cast<const Scalar &,
+                                    const Scalar &,
+                                    const Scalar &,
+                                    const Scalar &,
+                                    const Scalar &,
+                                    const Scalar &>(&SR2::fill))
+      .def_static(
+          "fill",
+          [](double a11,
+             double a12,
+             double a13,
+             double a21,
+             double a22,
+             double a23,
+             double a31,
+             double a32,
+             double a33,
+             NEML2_TENSOR_OPTIONS_VARGS)
+          { return R2::fill(a11, a12, a13, a21, a22, a23, a31, a32, a33, NEML2_TENSOR_OPTIONS); },
+          py::arg("a11"),
+          py::arg("a12"),
+          py::arg("a13"),
+          py::arg("a21"),
+          py::arg("a22"),
+          py::arg("a23"),
+          py::arg("a31"),
+          py::arg("a32"),
+          py::arg("a33"),
+          py::kw_only(),
+          PY_ARG_TENSOR_OPTIONS)
+      .def_static("fill",
+                  [](const Scalar & a11,
+                     const Scalar & a12,
+                     const Scalar & a13,
+                     const Scalar & a21,
+                     const Scalar & a22,
+                     const Scalar & a23,
+                     const Scalar & a31,
+                     const Scalar & a32,
+                     const Scalar & a33)
+                  { return R2::fill(a11, a12, a13, a21, a22, a23, a31, a32, a33); });
 }
