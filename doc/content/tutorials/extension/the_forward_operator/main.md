@@ -30,55 +30,15 @@ Recall that the equation for this model is
   \boldsymbol{a} = \boldsymbol{g} - \mu \boldsymbol{v}.
 \f]
 The forward operator can be implemented as
-@source:src1
-```cpp
-namespace neml2
-{
-void
-ProjectileAcceleration::set_value(bool out, bool dout, bool /*d2out*/)
-{
-  if (out)
-    _a = _g - _mu * _v;
-
-  if (dout)
-    _a.d(_v) = -_mu * Vec::identity_map(_v.options());
-}
-}
-```
-@endsource
+@list:cpp:the_forward_operator/ex1.cxx:forward
 
 ## Evaluation
 
 The model definition is said to be *complete* once all components are properly defined. Custom models can be evaluated in the same way as existing models that come with NEML2.
 
-@source:src1
-```cpp
-int
-main()
-{
-  using namespace neml2;
-  set_default_dtype(kFloat64);
-  auto model = load_model("input.i", "accel");
-
-  // Input velocity
-  auto vel_name = VariableName("state", "v");
-  auto vel = Vec::fill(10, 2, 0);
-
-  // Evaluate the model
-  auto output = model->value({{vel_name, vel}});
-
-  // Output acceleration
-  auto accel_name = VariableName("state", "a");
-  auto & accel = output[accel_name];
-
-  std::cout << "Acceleration: \n" << accel << std::endl;
-}
-```
-@endsource
+@list:cpp:the_forward_operator/ex1.cxx:main
 
 Output:
-```
-@attach-output:src1
-```
+@list-output:ex1
 
 @insert-page-navigation

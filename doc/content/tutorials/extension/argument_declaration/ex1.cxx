@@ -1,4 +1,5 @@
 #include "neml2/models/Model.h"
+#include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/Vec.h"
 
 namespace neml2
@@ -10,19 +11,24 @@ public:
   ProjectileAcceleration(const OptionSet & options);
 
 protected:
-  void set_value(bool, bool, bool) override;
+  // Model forward operator to be defined in the following tutorials
+  void set_value(bool, bool, bool) override {}
 
-  /// Velocity of the projectile (input variable)
+  // @begin:variables
+  // Velocity of the projectile (input variable)
   const Variable<Vec> & _v;
 
-  /// Acceleration of the projectile (output variable)
+  // Acceleration of the projectile (output variable)
   Variable<Vec> & _a;
+  // @end:variables
 
-  /// Gravitational acceleration (parameter)
+  // @begin:parameters
+  // Gravitational acceleration (parameter)
   const Vec & _g;
 
-  /// Dynamic viscosity of the medium (parameter)
+  // Dynamic viscosity of the medium (parameter)
   const Scalar & _mu;
+  // @end:parameters
 };
 
 register_NEML2_object(ProjectileAcceleration);
@@ -38,6 +44,7 @@ ProjectileAcceleration::expected_options()
   return options;
 }
 
+// @begin:constructor
 ProjectileAcceleration::ProjectileAcceleration(const OptionSet & options)
   : Model(options),
     _v(declare_input_variable<Vec>("velocity")),
@@ -46,4 +53,16 @@ ProjectileAcceleration::ProjectileAcceleration(const OptionSet & options)
     _mu(declare_parameter<Scalar>("mu", "dynamic_viscosity"))
 {
 }
+// @end:constructor
 }
+
+// @begin:main
+int
+main()
+{
+  using namespace neml2;
+  set_default_dtype(kFloat64);
+  auto model = load_model("input.i", "accel");
+  std::cout << *model << std::endl;
+}
+// @end:main

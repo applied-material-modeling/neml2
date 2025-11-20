@@ -1,11 +1,27 @@
-#include "ex1.h"
+#include "neml2/models/Model.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/Vec.h"
 
 namespace neml2
 {
-register_NEML2_object(ProjectileAcceleration);
+// @begin:signature
+class ProjectileAcceleration : public Model
+{
+public:
+  static OptionSet expected_options();
+  ProjectileAcceleration(const OptionSet & options);
 
+protected:
+  // Model forward operator to be defined in the following tutorials
+  void set_value(bool, bool, bool) override {}
+};
+// @end:signature
+
+// @begin:registration
+register_NEML2_object(ProjectileAcceleration);
+// @end:registration
+
+// @begin:expected_options
 OptionSet
 ProjectileAcceleration::expected_options()
 {
@@ -16,14 +32,18 @@ ProjectileAcceleration::expected_options()
   options.set<TensorName<Scalar>>("dynamic_viscosity");
   return options;
 }
+// @end:expected_options
 
+// @begin:constructor
 ProjectileAcceleration::ProjectileAcceleration(const OptionSet & options)
   : Model(options)
 // Variable and parameter declarations are to be added in the following tutorials
 {
 }
+// @end:constructor
 }
 
+// @begin:main
 int
 main()
 {
@@ -40,3 +60,4 @@ main()
             << std::endl;
   std::cout << "         dynamic_viscosity: " << options.get("dynamic_viscosity") << std::endl;
 }
+// @end:main

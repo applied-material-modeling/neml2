@@ -134,7 +134,7 @@
       "description": "HTML documentation",
       "configurePreset": "dev",
       "targets": [
-        "tutorials_post"
+        "html"
       ]
     },
     {

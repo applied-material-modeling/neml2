@@ -49,7 +49,7 @@ Let us first search for available models describing this set of equations:
 - \f$ \eqref{3} \f$ corresponds to [LinearCombination](#sr2linearcombination).
 
 The input file then looks like
-@list-input:model_composition/input.i
+@list-input:models/model_composition/input.i
 
 ## Evaluating the models: The hard way
 
@@ -58,12 +58,12 @@ Now that all three models are defined in the input file, we can load and evaluat
 <div class="tabbed">
 
 - <b class="tab-title">C++</b>
-  @list:cpp:model_composition/ex1.cxx
+  @list:cpp:models/model_composition/ex1.cxx
 
   Output:
   @list-output:ex1
 - <b class="tab-title">Python</b>
-  @list:python:model_composition/ex2.py
+  @list:python:models/model_composition/ex2.py
 
   Output:
   @list-output:ex2
@@ -85,7 +85,7 @@ However, that is not ideal because we had to
 This manual method is not scalable when the number of equations, variables, and parameters increase.
 
 Using NEML2's model composition capability can address these issues without sacrificing modularity. [ComposedModel](#composedmodel) allows us to compose a new model from the three existing models:
-@list-input:model_composition/input_composed.i
+@list-input:models/model_composition/input_composed.i
 
 \note
 The names of the other two models are used to specify the coefficients of \f$ \eqref{3} \f$, i.e. `coefficients = 'eq2 eq1'`. This syntax is different from what was covered in the [previous tutorial](#tutorials-models-model-parameters) on model parameters and will be explained in more details in the [next tutorial](#tutorials-models-model-parameters-revisited).
@@ -95,12 +95,12 @@ Let us first inspect the composed model and compare it against the three sub-mod
 <div class="tabbed">
 
 - <b class="tab-title">C++</b>
-  @list:cpp:model_composition/ex3.cxx
+  @list:cpp:models/model_composition/ex3.cxx
 
   Output:
   @list-output:ex3
 - <b class="tab-title">Python</b>
-  @list:python:model_composition/ex4.py
+  @list:python:models/model_composition/ex4.py
 
   Output:
   @list-output:ex4
@@ -118,12 +118,12 @@ The composed model can be evaluated in the same way as regular models:
 <div class="tabbed">
 
 - <b class="tab-title">C++</b>
-  @list:cpp:model_composition/ex5.cxx
+  @list:cpp:models/model_composition/ex5.cxx
 
   Output:
   @list-output:ex5
 - <b class="tab-title">Python</b>
-  @list:python:model_composition/ex6.py
+  @list:python:models/model_composition/ex6.py
 
   Output:
   @list-output:ex6

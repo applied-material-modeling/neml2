@@ -196,23 +196,42 @@ def list_hit_input(ifile: str, spec: str | None = None) -> list[str]:
     return content.splitlines(keepends=True)
 
 
-def list_text(file: str, language: str, start: int | None, end: int | None) -> list[str]:
+def list_text(file: str, language: str, label: str | None) -> list[str]:
     """
-    Lists the contents of a text file or a specific line range.
+    Lists the contents of a text file or a specific labeled section.
 
     Args:
         file: The text file name.
-        start: The starting line number (1-based), or None for the beginning.
-        end: The ending line number (1-based, inclusive), or None for the end.
+        language: The programming language for syntax highlighting.
+        label: The label of the section to list, or None for the whole file.
     Returns:
-        A string representing the contents of the specified line range.
+        A string representing the contents of the specified labeled section.
     """
     path = git_fuzzy_find_file(file)
     with open(path, "r") as f:
         lines = f.readlines()
 
-    start = start or 1
-    end = end or len(lines)
-    content = "".join(lines[start - 1 : end])
+    # language-specific comment symbol
+    comment_symbols = {"python": "#", "cpp": "//"}
+    comment = comment_symbols.get(language, "#")
+
+    if label is not None:
+        start_label = f"{comment} @begin:{label}"
+        end_label = f"{comment} @end:{label}"
+        start_idx = None
+        end_idx = None
+        for idx, line in enumerate(lines):
+            if line.strip() == start_label:
+                start_idx = idx + 1  # content starts after the label line
+            elif line.strip() == end_label and start_idx is not None:
+                end_idx = idx
+                break
+        if start_idx is None or end_idx is None:
+            print(f"Label '{label}' not found in file '{file}'.")
+            sys.exit(1)
+        content = "".join(lines[start_idx:end_idx])
+    else:
+        content = "".join(lines)
+
     content = f"```{language}\n{content}```\n"
     return content.splitlines(keepends=True)

@@ -1,5 +1,7 @@
 #include "neml2/models/Model.h"
 #include "neml2/tensors/Vec.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/functions/imap.h"
 
 namespace neml2
 {
@@ -54,6 +56,20 @@ ProjectileAcceleration::set_value(bool out, bool dout, bool /*d2out*/)
     _a = _g - _mu * _v;
 
   if (dout)
-    _a.d(_v) = -_mu * Vec::identity_map(_v.options());
+    _a.d(_v) = -_mu * imap_v<Vec>(_v.options());
 }
 }
+
+// @begin:main
+#include "neml2/drivers/Driver.h"
+
+int
+main()
+{
+  using namespace neml2;
+  set_default_dtype(kFloat64);
+  auto factory = load_input("input.i");
+  auto driver = factory->get_driver("driver");
+  driver->run();
+}
+// @end:main

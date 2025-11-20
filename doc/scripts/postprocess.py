@@ -46,7 +46,7 @@ if __name__ == "__main__":
             lines = f.readlines()
 
             # Process directives
-            for line in lines[1:]:
+            for line in lines:
 
                 # Output
                 if line.strip().startswith("@insert-output"):

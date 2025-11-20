@@ -81,9 +81,8 @@ if __name__ == "__main__":
                         sys.exit(1)
                     language = tokens[1]
                     textfile = tokens[2]
-                    start = int(tokens[3]) if len(tokens) > 3 else None
-                    end = int(tokens[4]) if len(tokens) > 4 else None
-                    content = listing.list_text(textfile, language, start, end)
+                    label = tokens[3] if len(tokens) > 3 else None
+                    content = listing.list_text(textfile, language, label)
 
                 # List HIT input file
                 elif line.strip().startswith("@list-input:"):
