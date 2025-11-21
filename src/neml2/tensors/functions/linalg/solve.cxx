@@ -25,6 +25,8 @@
 #include "neml2/tensors/functions/linalg/solve.h"
 #include "neml2/tensors/Tensor.h"
 #include "neml2/misc/assertions.h"
+#include "neml2/tensors/shape_utils.h"
+#include "neml2/tensors/functions/utils.h"
 
 namespace neml2::linalg
 {

@@ -314,8 +314,10 @@ template <class Tuple, std::size_t... I>
 auto
 make_tensors(Tuple && t, std::index_sequence<I...>, const TensorOptions & options)
 {
-  return std::vector<neml2::Tensor>{neml2::Tensor(
-      at::scalar_to_tensor(std::get<I>(std::forward<Tuple>(t)), options.device()), 0)...};
+  return std::vector<neml2::Tensor>{
+      neml2::Tensor(at::scalar_to_tensor(std::get<I>(std::forward<Tuple>(t)), options.device_opt())
+                        .to(options.dtype_opt()),
+                    0)...};
 }
 
 template <class Derived, Size... S>
