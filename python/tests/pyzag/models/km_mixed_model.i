@@ -266,14 +266,16 @@
   []
   [mixed]
     type = MixedControlSetup
+    above_variable = 'state/S'
+    below_variable = 'state/E'
   []
   [mixed_old]
     type = MixedControlSetup
-    control = "old_forces/control"
-    mixed_state = "old_state/mixed_state"
-    fixed_values = "old_forces/fixed_values"
-    cauchy_stress = "old_state/S"
-    strain = "old_state/E"
+    control = 'old_forces/control'
+    mixed_state = 'old_state/mixed_state'
+    fixed_values = 'old_forces/fixed_values'
+    above_variable = 'old_state/S'
+    below_variable = 'old_state/E'
   []
   [rename]
     type = CopySR2

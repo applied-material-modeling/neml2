@@ -315,8 +315,8 @@ auto
 make_tensors(Tuple && t, std::index_sequence<I...>, const TensorOptions & options)
 {
   return std::vector<neml2::Tensor>{
-      neml2::Tensor(at::scalar_to_tensor(std::get<I>(std::forward<Tuple>(t)), options.device_opt())
-                        .to(options.dtype_opt()),
+      neml2::Tensor(at::scalar_to_tensor(std::get<I>(std::forward<Tuple>(t)), options.device())
+                        .to(options.dtype()),
                     0)...};
 }
 

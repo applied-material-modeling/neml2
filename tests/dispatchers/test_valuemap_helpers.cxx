@@ -55,7 +55,7 @@ TEST_CASE("valuemap_helpers", "[dispatchers]")
     auto result = valuemap_no_operation(std::move(value_map_1));
     REQUIRE(result.size() == 2);
     REQUIRE(result[strain_name].sizes() == TensorShape({5, 100, 6}));
-    REQUIRE(result[temperature_name].sizes() == TensorShape({5, 1, 5}));
+    REQUIRE(result[temperature_name].sizes() == TensorShape({5, 1}));
   }
   /* Fill this in when we have GPU tests
   SECTION("move device")

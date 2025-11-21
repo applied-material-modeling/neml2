@@ -84,7 +84,7 @@ jobs:
       - name: Build
         run: cmake --build --preset dev-cpp
 
-  no-json:
+  no-optional:
     needs: clang-format
     runs-on: macos-latest
     steps:
@@ -94,7 +94,7 @@ jobs:
           cmake-version: 3.26
           torch-version: 2.8.0
       - name: Configure
-        run: cmake --preset dev -GNinja -DNEML2_JSON=OFF -S .
+        run: cmake --preset dev -GNinja -DNEML2_JSON=OFF -DNEML2_CSV=OFF -S .
       - name: Build
         run: cmake --build --preset dev-cpp
 
