@@ -46,7 +46,7 @@ void def(pybind11::module_ &, pybind11::class_<neml2::VectorAssembler> &);
 void def(pybind11::module_ &, pybind11::class_<neml2::MatrixAssembler> &);
 
 // Type casters are only for cross-module types used in function signatures
-DEFAULT_TYPECASTER(neml2::LabeledAxisAccessor, "neml2.core.VariableName");
+DEFAULT_TYPECASTER(neml2::LabeledAxisAccessor, "Union[neml2.core.VariableName, str]");
 DEFAULT_TYPECASTER(neml2::LabeledAxis, "neml2.core.LabeledAxis");
 DEFAULT_TYPECASTER(neml2::TensorValueBase, "neml2.core.TensorValue");
 DEFAULT_TYPECASTER(neml2::Factory, "neml2.core.Factory");

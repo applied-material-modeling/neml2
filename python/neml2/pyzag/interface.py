@@ -28,6 +28,7 @@ import torch
 import neml2
 from neml2.tensors import Tensor
 from neml2.reserved import *
+from neml2.core import VariableName
 
 
 class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
@@ -209,9 +210,9 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
             if self.input_axis.has_variable(k)
         }
         old_state_vars = {
-            k.old(): v.dynamic[: -self.lookback]
+            VariableName(k).old(): v.dynamic[: -self.lookback]
             for k, v in state_vars.items()
-            if self.input_axis.has_variable(k.old())
+            if self.input_axis.has_variable(VariableName(k).old())
         }
 
         # Disassemble forces and old_forces
@@ -224,9 +225,9 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
             if self.input_axis.has_variable(k)
         }
         old_forces_vars = {
-            k.old(): v.dynamic[: -self.lookback]
+            VariableName(k).old(): v.dynamic[: -self.lookback]
             for k, v in forces_vars.items()
-            if self.input_axis.has_variable(k.old())
+            if self.input_axis.has_variable(VariableName(k).old())
         }
 
         return new_state_vars | old_state_vars | new_forces_vars | old_forces_vars
@@ -259,7 +260,7 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
             J_old_vars = self.old_deriv_asm.split_by_variable(J_old, assembly=True)
             J_old_vars_adapted = {}
             for yvar, vs in J_old_vars.items():
-                J_old_vars_adapted[yvar] = {k.current(): v for k, v in vs.items()}
+                J_old_vars_adapted[yvar] = {VariableName(k).current(): v for k, v in vs.items()}
             J_old = self.deriv_asm.assemble_by_variable(J_old_vars_adapted, assembly=True)
         assert J_old.base.shape[-1] == J_old.base.shape[-2]
 

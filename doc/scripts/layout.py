@@ -27,6 +27,7 @@
 import sys
 from pathlib import Path
 import xml.etree.ElementTree as ET
+from typing import Union
 
 
 def get_navindex(doxygen_layout: Path) -> ET.Element:
@@ -44,7 +45,7 @@ def get_navindex(doxygen_layout: Path) -> ET.Element:
 
 def find_child_with_attribute(
     element: ET.Element, attribute_name: str, attribute_value: str
-) -> ET.Element | None:
+) -> Union[ET.Element, None]:
     """
     Recursively finds a child element with a specific attribute and value.
 

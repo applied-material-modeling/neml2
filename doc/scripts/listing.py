@@ -27,6 +27,7 @@
 import sys
 from pathlib import Path
 import re
+from typing import Union
 
 
 def git_fuzzy_find_file(filename: str) -> Path:
@@ -66,7 +67,7 @@ def git_fuzzy_find_file(filename: str) -> Path:
 SECTION_OPEN_RE = re.compile(r"\[(.+?)\]")  # matches [Name], captures Name
 
 
-def parse_input(input: Path) -> dict[str, tuple[int, int | None, dict]]:
+def parse_input(input: Path) -> dict[str, tuple[int, Union[int, None], dict]]:
     """
     Parses a HIT input file to extract its section structure.
     Args:
@@ -167,7 +168,7 @@ def build_nested_dict(paths, sep="/"):
     return root
 
 
-def list_hit_input(ifile: str, spec: str | None = None) -> list[str]:
+def list_hit_input(ifile: str, spec: Union[str, None] = None) -> list[str]:
     """
     Lists the contents of a HIT input file or a specific section.
 
@@ -196,7 +197,7 @@ def list_hit_input(ifile: str, spec: str | None = None) -> list[str]:
     return content.splitlines(keepends=True)
 
 
-def list_text(file: str, language: str, label: str | None) -> list[str]:
+def list_text(file: str, language: str, label: Union[str, None]) -> list[str]:
     """
     Lists the contents of a text file or a specific labeled section.
 
