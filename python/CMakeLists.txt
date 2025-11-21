@@ -36,22 +36,22 @@ macro(add_submodule mname malias)
     target_include_directories(c${mname} PUBLIC ${NEML2_SOURCE_DIR} ${Python3_INCLUDE_DIRS})
     target_link_libraries(c${mname} PUBLIC torch::python Python3::Module)
     set_target_properties(c${mname} PROPERTIES
-      LIBRARY_OUTPUT_DIRECTORY neml2/.libs
+      LIBRARY_OUTPUT_DIRECTORY neml2/lib
       CXX_VISIBILITY_PRESET default
       VISIBILITY_INLINES_HIDDEN OFF
     )
     if(NEML2_WHEEL)
-      set_target_properties(c${mname} PROPERTIES INSTALL_RPATH "${INSTALL_REL_PATH};${INSTALL_REL_PATH}/lib;${INSTALL_REL_PATH}/../torch/lib")
+      set_target_properties(c${mname} PROPERTIES INSTALL_RPATH "${INSTALL_REL_PATH};${INSTALL_REL_PATH}/../../torch/lib")
     else()
-      set_target_properties(c${mname} PROPERTIES INSTALL_RPATH "${INSTALL_REL_PATH};${INSTALL_REL_PATH}/lib;${torch_LINK_DIR}")
+      set_target_properties(c${mname} PROPERTIES INSTALL_RPATH "${INSTALL_REL_PATH};${torch_LINK_DIR}")
     endif()
-    install(TARGETS c${mname} LIBRARY DESTINATION . COMPONENT libneml2-python)
+    install(TARGETS c${mname} LIBRARY DESTINATION lib COMPONENT libneml2-python)
   endif()
 
   # pybind11 module
   add_library(${mname} MODULE neml2/${malias}.cxx)
   target_include_directories(${mname} PUBLIC ${NEML2_SOURCE_DIR} ${Python3_INCLUDE_DIRS})
-  target_link_libraries(${mname} PUBLIC torch::python Python3::Module)
+  target_link_libraries(${mname} PUBLIC Python3::Module)
   if(msrcs)
     target_link_libraries(${mname} PRIVATE c${mname})
   endif()
@@ -60,7 +60,12 @@ macro(add_submodule mname malias)
     OUTPUT_NAME ${malias}
     PREFIX ""
     SUFFIX ".${Python3_SOABI}${CMAKE_SHARED_MODULE_SUFFIX}"
+    CXX_VISIBILITY_PRESET hidden
+    INSTALL_RPATH "${INSTALL_REL_PATH}/lib"
   )
+  if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    set_property(TARGET ${mname} PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+  endif()
   install(TARGETS ${mname} LIBRARY DESTINATION . COMPONENT libneml2-python)
 
   # link to the wrapper library
