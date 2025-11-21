@@ -35,7 +35,11 @@ macro(add_submodule mname malias)
     add_library(c${mname} SHARED ${msrcs})
     target_include_directories(c${mname} PUBLIC ${NEML2_SOURCE_DIR} ${Python3_INCLUDE_DIRS})
     target_link_libraries(c${mname} PUBLIC torch::python Python3::Module)
-    set_target_properties(c${mname} PROPERTIES LIBRARY_OUTPUT_DIRECTORY neml2/.libs)
+    set_target_properties(c${mname} PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY neml2/.libs
+      CXX_VISIBILITY_PRESET default
+      VISIBILITY_INLINES_HIDDEN OFF
+    )
     if(NEML2_WHEEL)
       set_target_properties(c${mname} PROPERTIES INSTALL_RPATH "${INSTALL_REL_PATH};${INSTALL_REL_PATH}/lib;${INSTALL_REL_PATH}/../torch/lib")
     else()
@@ -55,7 +59,7 @@ macro(add_submodule mname malias)
     LIBRARY_OUTPUT_DIRECTORY neml2
     OUTPUT_NAME ${malias}
     PREFIX ""
-    SUFFIX ".${Python3_SOABI}${CMAKE_SHARED_LIBRARY_SUFFIX}"
+    SUFFIX ".${Python3_SOABI}${CMAKE_SHARED_MODULE_SUFFIX}"
   )
   install(TARGETS ${mname} LIBRARY DESTINATION . COMPONENT libneml2-python)
 
