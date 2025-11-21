@@ -29,32 +29,14 @@ add_custom_target(pyneml2)
 # Macro for defining a submodule
 # ----------------------------------------------------------------------------
 macro(add_submodule mname malias)
-  # C++ helpers
+  # sources
   file(GLOB_RECURSE msrcs CONFIGURE_DEPENDS neml2/csrc/${malias}/*.cxx)
-  if(msrcs)
-    add_library(c${mname} SHARED ${msrcs})
-    target_include_directories(c${mname} PUBLIC ${NEML2_SOURCE_DIR} ${Python3_INCLUDE_DIRS})
-    target_link_libraries(c${mname} PUBLIC torch::python Python3::Module)
-    set_target_properties(c${mname} PROPERTIES
-      LIBRARY_OUTPUT_DIRECTORY neml2/lib
-      CXX_VISIBILITY_PRESET default
-      VISIBILITY_INLINES_HIDDEN OFF
-    )
-    if(NEML2_WHEEL)
-      set_target_properties(c${mname} PROPERTIES INSTALL_RPATH "${INSTALL_REL_PATH};${INSTALL_REL_PATH}/../../torch/lib")
-    else()
-      set_target_properties(c${mname} PROPERTIES INSTALL_RPATH "${INSTALL_REL_PATH};${torch_LINK_DIR}")
-    endif()
-    install(TARGETS c${mname} LIBRARY DESTINATION lib COMPONENT libneml2-python)
-  endif()
+  list(APPEND msrcs neml2/${malias}.cxx)
 
   # pybind11 module
-  add_library(${mname} MODULE neml2/${malias}.cxx)
+  add_library(${mname} MODULE ${msrcs})
   target_include_directories(${mname} PUBLIC ${NEML2_SOURCE_DIR} ${Python3_INCLUDE_DIRS})
-  target_link_libraries(${mname} PUBLIC Python3::Module)
-  if(msrcs)
-    target_link_libraries(${mname} PRIVATE c${mname})
-  endif()
+  target_link_libraries(${mname} PUBLIC torch::python Python3::Module)
   set_target_properties(${mname} PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY neml2
     OUTPUT_NAME ${malias}
@@ -91,16 +73,16 @@ add_submodule(pyreserved reserved)
 target_link_libraries(pyreserved PRIVATE base)
 
 add_submodule(pycore core)
-target_link_libraries(cpycore PUBLIC neml2)
+target_link_libraries(pycore PUBLIC neml2)
 
 add_submodule(pytensors tensors)
-target_link_libraries(cpytensors PUBLIC tensor cpycore)
+target_link_libraries(pytensors PUBLIC tensor)
 
 add_submodule(pymath math)
-target_link_libraries(cpymath PUBLIC cpycore cpytensors)
+target_link_libraries(pymath PUBLIC tensor)
 
 add_submodule(pycrystallography crystallography)
-target_link_libraries(pycrystallography PUBLIC cpytensors)
+target_link_libraries(pycrystallography PUBLIC tensor)
 
 # ----------------------------------------------------------------------------
 # Artifacts
