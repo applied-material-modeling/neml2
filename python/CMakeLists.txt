@@ -99,8 +99,8 @@ target_link_libraries(cpytensors PUBLIC tensor cpycore)
 add_submodule(pymath math)
 target_link_libraries(cpymath PUBLIC cpycore cpytensors)
 
-# add_submodule(pycrystallography crystallography)
-# target_link_libraries(cpycrystallography PUBLIC tensor cpycore)
+add_submodule(pycrystallography crystallography)
+target_link_libraries(pycrystallography PUBLIC cpytensors)
 
 # ----------------------------------------------------------------------------
 # Artifacts

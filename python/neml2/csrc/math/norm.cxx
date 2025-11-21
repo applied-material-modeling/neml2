@@ -22,19 +22,19 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "python/neml2/csrc/tensors/TensorBase.h"
-#include "python/neml2/csrc/tensors/PrimitiveTensor.h"
+#include "neml2/tensors/functions/norm.h"
+
+#include "python/neml2/csrc/math/types.h"
+#include <pybind11/cast.h>
 
 namespace py = pybind11;
 using namespace neml2;
 
 void
-def(py::module_ & m, py::class_<Rot> & c)
+def_norm(py::module_ & m)
 {
-  def_TensorBase<Rot>(m, "Rot");
-  def_PrimitiveTensor<Rot>(m, "Rot");
-
-  c.def_static("rotation_from_to", &Rot::rotation_from_to)
-      .def_static("axis_angle", &Rot::axis_angle)
-      .def_static("axis_angle_standard", &Rot::axis_angle_standard);
+#define DEF_NORM(T)                                                                                \
+  auto c_##T = py::module_::import("neml2.tensors").attr(#T).cast<py::class_<T>>();                \
+  c_##T.def("norm", [](const T & self) { return neml2::norm(self); })
+  FOR_ALL_TENSORBASE(DEF_NORM);
 }

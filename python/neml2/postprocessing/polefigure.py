@@ -31,6 +31,7 @@ import torch
 torch.set_default_dtype(torch.float64)
 
 import matplotlib.pyplot as plt
+from matplotlib.ticker import NullLocator
 
 import scipy.spatial as ss
 
@@ -157,7 +158,7 @@ def symmetry_operators_as_R2(orbifold, device=torch.device("cpu")):
     Keyword Args:
         device (torch.device): which device to place the tensors
     """
-    return crystallography.symmetry_operations_from_orbifold(orbifold, device=device)
+    return crystallography.symmetry(orbifold, device=device)
 
 
 def pole_figure_odf(
@@ -212,7 +213,7 @@ def pole_figure_odf(
     # Get all the equivalent poles
     symmetry_operators = symmetry_operators_as_R2(crystal_symmetry, device=pole.device)
     crystal_poles = symmetry_operators * pole
-    crystal_poles = crystal_poles.batch.unsqueeze(1).batch.unsqueeze(1)
+    crystal_poles = crystal_poles.dynamic.unsqueeze(1).dynamic.unsqueeze(1)
 
     # Calculate the static rotation from crystal to sample poles
     r1 = tensors.Rot.rotation_from_to(crystal_poles, sample_poles)
@@ -224,15 +225,15 @@ def pole_figure_odf(
     # and then drop the metric term.
     angle_values = torch.linspace(0, 2 * torch.pi, nquad + 1, device=pole.device)
     dphi = torch.diff(angle_values)
-    phi = tensors.Scalar(angle_values[:-1]).batch.unsqueeze(1).batch.unsqueeze(1)
-    r2 = tensors.Rot.from_axis_angle_standard(sample_poles, phi)
+    phi = tensors.Scalar(angle_values[:-1]).dynamic.unsqueeze(1).dynamic.unsqueeze(1)
+    r2 = tensors.Rot.axis_angle_standard(sample_poles, phi)
 
     # Compose
-    rm = r1.rotate(r2.batch.unsqueeze(1))
+    rm = r1.rotate(r2.dynamic.unsqueeze(1))
 
     # Calculate the ODF values
-    original_shape = rm.batch.shape
-    rm = rm.batch.reshape((-1,)).torch()
+    original_shape = rm.dynamic.shape
+    rm = rm.dynamic.reshape((-1,)).torch()
     A = torch.stack(
         [odf(tensors.Rot(rm[i : i + nchunk])) for i in range(0, rm.shape[0], nchunk)], dim=0
     ).reshape(original_shape)
@@ -312,7 +313,7 @@ def pretty_plot_pole_figure_odf(
     ax.grid(False)
     ax.get_yaxis().set_visible(False)
     ax.get_xaxis().set_visible(False)
-    ax.xaxis.set_minor_locator(plt.NullLocator())
+    ax.xaxis.set_minor_locator(NullLocator())
     plt.colorbar(CS, label="MRD")
 
 
@@ -350,12 +351,12 @@ def pole_figure_points(
     equivalent_poles = symmetry_operators * pole
 
     # Move from crystal to sample
-    sample_poles = equivalent_poles.rotate(orientations.batch.unsqueeze(-1))
+    sample_poles = equivalent_poles.rotate(orientations.dynamic.unsqueeze(-1))
     # Apply sample symmetry
     sample_symmetry_operators = symmetry_operators_as_R2(
         sample_symmetry, device=orientations.device
     )
-    sample_poles = sample_symmetry_operators * sample_poles.batch.unsqueeze(-1)
+    sample_poles = sample_symmetry_operators * sample_poles.dynamic.unsqueeze(-1)
 
     # For my reference, at this point we have a tensor of (arbitrary_batch_shape,) + (crystal_symmetry,) + (sample_symmetry,) + (3,)
     sample_poles = sample_poles.torch()
@@ -413,7 +414,7 @@ def pretty_plot_pole_figure_points(
     ax.grid(False)
     ax.get_yaxis().set_visible(False)
     ax.get_xaxis().set_visible(False)
-    ax.xaxis.set_minor_locator(plt.NullLocator())
+    ax.xaxis.set_minor_locator(NullLocator())
 
 
 class IPFReduction:
@@ -489,9 +490,9 @@ def inverse_pole_figure_points(
         sample_symmetry, device=orientations.device
     )
     sample_directions = sample_symmetry_operators * direction
-    crystal_directions = sample_directions.rotate(orientations.inverse().batch.unsqueeze(-1))
+    crystal_directions = sample_directions.rotate(orientations.inv().dynamic.unsqueeze(-1))
     symmetry_operators = symmetry_operators_as_R2(crystal_symmetry, device=orientations.device)
-    equivalent_directions = (symmetry_operators * crystal_directions.batch.unsqueeze(-1)).torch()
+    equivalent_directions = (symmetry_operators * crystal_directions.dynamic.unsqueeze(-1)).torch()
 
     # Convention keeps the upper hemisphere
     directions = tensors.Vec(equivalent_directions[equivalent_directions[..., 2] > 0])

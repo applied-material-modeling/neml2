@@ -42,4 +42,6 @@ PYBIND11_MODULE(math, m)
   // Define functions
   def_linspace(m);
   def_logspace(m);
+  def_inv(m);
+  def_norm(m);
 }
