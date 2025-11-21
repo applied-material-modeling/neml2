@@ -7,6 +7,7 @@
 Compiling the NEML2 core library requires
 - A C++ compiler with C++17 support
 - CMake >= 3.26
+- Python >= 3.9
 
 NEML2 is built upon and relies on a collection of third party libraries/packages, most notably PyTorch (and its C++ backend libtorch). However, **there is no need to install dependent libraries prior to installing NEML2**. The build system will automatically search for necessary packages. When a required package is missing, the build system will download one.
 
@@ -21,21 +22,27 @@ NEML2 is available both as a C++ library and as a Python package. Instructions f
 
 First, obtain the NEML2 source code.
 
-```
+```shell
 git clone -b main https://github.com/applied-material-modeling/neml2.git
+```
+
+Install the required Python development dependencies
+
+```shell
+cd neml2
+pip install -r requirements.txt
 ```
 
 Then, configure and build NEML2.
 
-```
-cd neml2
+```shell
 cmake --preset release -S .
 cmake --build --preset release
 ```
 The `--preset` option specifies a predefined configuration to be read by CMake. Build customization, available presets, and their usage scenario are discussed in [build customization](@ref build-customization).
 
 Optionally, NEML2 can be installed as a system library.
-```
+```shell
 cmake --install build/release --component libneml2 --prefix /usr/local
 ```
 The `--prefix` option specifies the path where NEML2 will be installed. Write permission is needed for the installation path. The `--component libneml2` option tells CMake to only install the libraries and runtime artifacts. NEML2 has three installable components:
@@ -47,9 +54,10 @@ The `--prefix` option specifies the path where NEML2 will be installed. Write pe
 
 NEML2 also provides an _experimental_ Python package which provides bindings for the primitive tensors and parsers for deserializing and running material models. Package source distributions are available on PyPI, but package wheels are currently not built and uploaded to PyPI.
 
-To install the NEML2 Python package, run the following command at the repository's root.
+To install the NEML2 Python package, run the following commands at the repository's root.
 
-```
+```shell
+pip install -r requirements.txt
 pip install -v .
 ```
 Two optional environment variables can be used to control the build: `CMAKE_ARGS` specifies the additional CMake configure arguments (usually not needed), and `CMAKE_BUILD_JOBS` specifies the number of parallel jobs used to build the package.

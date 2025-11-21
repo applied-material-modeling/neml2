@@ -57,7 +57,7 @@ macro(add_submodule mname malias)
   add_custom_target(${mname}_stub
     COMMENT "Generating Python type hints for neml2.${malias}"
     WORKING_DIRECTORY ${NEML2_BINARY_DIR}/python
-    COMMAND PYTHONPATH=. pybind11-stubgen -o . neml2.${malias}
+    COMMAND PYTHONPATH=. ${Python3_EXECUTABLE} -m pybind11_stubgen -o . neml2.${malias}
     VERBATIM
   )
   add_dependencies(${mname}_stub pyneml2_modules)
