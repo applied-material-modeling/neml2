@@ -54,6 +54,10 @@ using DTensorBase_t = typename DTensorBase<Derived, Seq>::type;
 /**
  * @brief Abstract representation of the derivative of a primitive tensor with respect to another
  * primitive tensor.
+ *
+ * @tparam T1 The type of the first tensor (the one being derived)
+ * @tparam T2 The type of the second tensor (the one with respect to which we are deriving)
+ * @tparam TR The type of the resulting derivative tensor
  */
 template <class T1, class T2, class TR>
 class DTensor

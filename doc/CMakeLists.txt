@@ -38,7 +38,7 @@ add_custom_target(syntax_cpp
   DEPENDS syntax
   WORKING_DIRECTORY ${NEML2_BINARY_DIR}/doc
   COMMAND ${NEML2_BINARY_DIR}/doc/syntax
-  COMMAND ${Python3_EXECUTABLE} ${NEML2_SOURCE_DIR}/scripts/syntax_to_md.py syntax.yml content/syntax syntax_error.log
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/scripts/syntax_to_md.py syntax.yml content/syntax syntax_error.log
   VERBATIM
 )
 
@@ -50,7 +50,7 @@ add_custom_target(syntax_python
   WORKING_DIRECTORY ${NEML2_BINARY_DIR}/python
   COMMAND ${CMAKE_COMMAND} -E make_directory ${NEML2_BINARY_DIR}/doc/content/python
   COMMAND PYTHONPATH=. pybind11-stubgen -o ${NEML2_BINARY_DIR}/doc/content/python neml2
-  COMMAND ${Python3_EXECUTABLE} ${NEML2_SOURCE_DIR}/scripts/fixup_pystub.py ${NEML2_BINARY_DIR}/doc/content/python/neml2
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/scripts/fixup_pystub.py ${NEML2_BINARY_DIR}/doc/content/python/neml2
   VERBATIM
 )
 add_dependencies(syntax_python pyneml2)

@@ -104,8 +104,8 @@ ModelDriver::setup()
 #ifdef NEML2_HAS_DISPATCHER
   if (_scheduler)
   {
-    auto red = [](std::vector<ValueMap> && results) -> ValueMap
-    { return valuemap_cat_reduce(std::move(results), 0); };
+    auto red = [](const std::vector<ValueMap> & results) -> ValueMap
+    { return valuemap_cat_reduce(results, 0); };
 
     auto post = [this](ValueMap && x) -> ValueMap
     { return valuemap_move_device(std::move(x), _device); };
@@ -123,7 +123,7 @@ ModelDriver::setup()
     _dispatcher = std::make_unique<DispatcherType>(
         *_scheduler,
         _async_dispatch,
-        [&](ValueMap && x, Device device) -> ValueMap
+        [&](const ValueMap & x, Device device) -> ValueMap
         {
           auto & model = _async_dispatch ? _models[std::this_thread::get_id()] : _model;
 

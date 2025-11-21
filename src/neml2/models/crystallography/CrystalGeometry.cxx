@@ -211,7 +211,7 @@ CrystalGeometry::setup_schmid_tensors(const Vec & A,
 
   // List of slip directions and planes needs to be consistent
   if (slip_directions.intmd_sizes() != slip_planes.intmd_sizes())
-    neml_assert("Input slip directions and planes must have the same batch sizes");
+    neml_assert("Input slip directions and planes must have the same intermediate sizes");
 
   auto cmds = slip_directions;
   if (cmds.intmd_dim() == 0)

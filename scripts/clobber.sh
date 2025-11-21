@@ -32,7 +32,7 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 NEML2_DIR=$(dirname "$SCRIPT_DIR")
 
 # go to the git root
-cd $NEML2_DIR
+cd "$NEML2_DIR" || exit 1
 
 # files/directories to clobber
 FILES_ALL=$(git ls-files . --ignored --exclude-standard --others --directory)
@@ -41,8 +41,8 @@ FILES_ALL=$(git ls-files . --ignored --exclude-standard --others --directory)
 FILES=()
 COUNT=0
 for FILE in $FILES_ALL; do
-  if [[ ! " ${EXCLUDE_LIST[*]} " =~ " $FILE " ]]; then
-    FILES+=($FILE)
+  if [[ ! " ${EXCLUDE_LIST[*]} " =~ $FILE ]]; then
+    FILES+=("$FILE")
     COUNT=$((COUNT+1))
   fi
 done
@@ -63,7 +63,7 @@ echo "--------------------------------------------------------"
 while true; do
     read -p "Do you wish to remove the above directories/files? [y/n] " yn
     case $yn in
-        y ) rm -rf ${FILES[@]}; break;;
+        y ) rm -rf "${FILES[@]}"; break;;
         n ) exit;;
         * ) echo "Please enter y (for yes) or n (for no).";;
     esac

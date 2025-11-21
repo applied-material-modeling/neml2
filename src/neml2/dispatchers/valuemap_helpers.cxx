@@ -31,7 +31,7 @@ namespace neml2
 {
 
 ValueMap
-valuemap_cat_reduce(std::vector<ValueMap> && results, Size dynamic_dim)
+valuemap_cat_reduce(const std::vector<ValueMap> & results, Size dynamic_dim)
 {
   // Figure out the dispatch size for each dispatch
   std::vector<Size> dispatch_sizes(results.size());
@@ -70,10 +70,10 @@ valuemap_cat_reduce(std::vector<ValueMap> && results, Size dynamic_dim)
   // Re-bin the results, broadcasting as needed
   std::map<VariableName, std::vector<Tensor>> vars;
   for (std::size_t i = 0; i < results.size(); ++i)
-    for (auto && [name, value] : results[i])
+    for (const auto & [name, value] : results[i])
     {
       if (dynamic_dim >= -value.dynamic_dim() && dynamic_dim < value.dynamic_dim())
-        vars[name].emplace_back(std::move(value));
+        vars[name].emplace_back(value);
       else
         vars[name].push_back(value.dynamic_expand(dispatch_sizes[i]));
     }

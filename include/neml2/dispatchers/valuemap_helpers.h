@@ -32,7 +32,7 @@ namespace neml2
 /// @param results The results to concatenate
 /// @param dynamic_dim The dynamic dimension along which to concatenate
 /// @return ValueMap with the tensors concatenated along the dynamic dimension
-ValueMap valuemap_cat_reduce(std::vector<ValueMap> && results, Size dynamic_dim);
+ValueMap valuemap_cat_reduce(const std::vector<ValueMap> & results, Size dynamic_dim);
 
 /// @brief Move all tensors in a ValueMap to a device
 /// @param x input ValueMap

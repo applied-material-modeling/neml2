@@ -48,7 +48,7 @@ public:
   /// Create an enum selection from a list of choices and their corresponding values
   EnumSelectionBase(const std::vector<std::string> & choices, const std::vector<int> & values);
 
-  /// Candidates
+  /// Choices
   const std::unordered_map<std::string, int> & choices() const { return _choice_map; }
 
   /// Join the choices into a single string with the given separator

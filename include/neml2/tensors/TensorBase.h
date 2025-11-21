@@ -65,7 +65,7 @@ class Tensor;
  * - *dynamic*: The dimensions whose sizes are dynamic in a traced graph of tensor operations,
  *              i.e., the traced graph can be generalized to tensors with different dynamic sizes.
  * - *static*: The dimensions whose sizes are fixed in a traced graph of tensor operations,
- *             i.e., the sizes of these dimension are hard-coded in the traced graph.
+ *             i.e., the sizes of these dimensions are hard-coded in the traced graph.
  * - *intermediate*: Batch dimensions that are static, i.e., their sizes are fixed in the traced
  *                   graph but tensor operations are batched over them.
  *
