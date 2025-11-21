@@ -14,7 +14,7 @@ endif()
 get_target_property(torch_LINK_DIR torch::python INTERFACE_LINK_DIRECTORIES)
 
 if(NOT ${torch_LINK_DIR} STREQUAL ${Python3_SITEARCH}/torch/lib AND NOT ${torch_LINK_DIR} STREQUAL ${Python3_USER_SITE}/torch/lib)
-  message(WARNING "Python bindings can only be built against a Torch python package. Although a Torch is found, it does not appear to come from Python site packages. Reverting NEML2_PYBIND to OFF.")
+  message(WARNING "Python bindings can only be built against a Torch python package. A Torch package was found at ${torch_LINK_DIR}. It does not appear to come from Python site packages. Reverting NEML2_PYBIND to OFF.")
   set(NEML2_PYBIND OFF CACHE BOOL "Build Python bindings" FORCE)
   return()
 endif()
