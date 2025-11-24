@@ -43,8 +43,12 @@ macro(add_submodule mname malias)
     PREFIX ""
     SUFFIX ".${Python3_SOABI}${CMAKE_SHARED_MODULE_SUFFIX}"
     CXX_VISIBILITY_PRESET hidden
-    INSTALL_RPATH "${INSTALL_REL_PATH}/lib"
   )
+  if(NEML2_WHEEL)
+    set_target_properties(${mname} PROPERTIES INSTALL_RPATH "${INSTALL_REL_PATH}/lib;${INSTALL_REL_PATH}/../torch/lib")
+  else()
+    set_target_properties(${mname} PROPERTIES INSTALL_RPATH "${INSTALL_REL_PATH}/lib;${torch_LINK_DIR}")
+  endif()
   if(CMAKE_BUILD_TYPE STREQUAL "Release")
     set_property(TARGET ${mname} PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
   endif()
