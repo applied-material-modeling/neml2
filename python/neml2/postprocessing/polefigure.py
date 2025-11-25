@@ -158,7 +158,7 @@ def symmetry_operators_as_R2(orbifold, device=torch.device("cpu")):
     Keyword Args:
         device (torch.device): which device to place the tensors
     """
-    return crystallography.symmetry(orbifold, device=device)
+    return tensors.R2(crystallography.symmetry(orbifold, device=device).torch(), 0)
 
 
 def pole_figure_odf(
@@ -233,7 +233,7 @@ def pole_figure_odf(
 
     # Calculate the ODF values
     original_shape = rm.dynamic.shape
-    rm = rm.dynamic.reshape((-1,)).torch()
+    rm = rm.dynamic.flatten().torch()
     A = torch.stack(
         [odf(tensors.Rot(rm[i : i + nchunk])) for i in range(0, rm.shape[0], nchunk)], dim=0
     ).reshape(original_shape)

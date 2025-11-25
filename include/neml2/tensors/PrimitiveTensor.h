@@ -168,7 +168,12 @@ PrimitiveTensor<Derived, S...>::PrimitiveTensor(const ATensor & tensor,
   : TensorBase<Derived>(tensor, dynamic_dim, intmd_dim)
 {
   if (dynamic_dim + intmd_dim + const_base_dim != tensor.dim())
-    throw NEMLException("Inconsistent dimensions when constructing PrimitiveTensor");
+    throw NEMLException("Inconsistent dimensions when constructing PrimitiveTensor. Expected "
+                        "tensor to have dynamic dimension " +
+                        std::to_string(dynamic_dim) + ", intmd dimension " +
+                        std::to_string(intmd_dim) + ", and base dimension " +
+                        std::to_string(const_base_dim) + ", but tensor has " +
+                        std::to_string(tensor.dim()) + " dimensions.");
   validate_shapes_and_dims();
 }
 
@@ -200,7 +205,8 @@ PrimitiveTensor<Derived, S...>::validate_shapes_and_dims() const
 }
 
 template <class Derived, Size... S>
-PrimitiveTensor<Derived, S...>::operator neml2::Tensor() const
+PrimitiveTensor<Derived, S...>::
+operator neml2::Tensor() const
 {
   return neml2::Tensor(*this, this->dynamic_sizes(), this->intmd_dim());
 }

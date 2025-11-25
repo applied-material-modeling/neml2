@@ -48,5 +48,13 @@ def(py::module_ & m, py::class_<Rot> & c)
       .def_static("axis_angle", &Rot::axis_angle)
       .def_static("axis_angle_standard", &Rot::axis_angle_standard);
 
+  c.def("euler_rodrigues", &Rot::euler_rodrigues)
+      .def("deuler_rodrigues", &Rot::deuler_rodrigues)
+      .def("rotate", &Rot::rotate)
+      .def("drotate", &Rot::drotate)
+      .def("shadow", &Rot::shadow)
+      .def("dist", &Rot::dist)
+      .def("dV", &Rot::dV);
+
   c.def(py::self * py::self);
 }

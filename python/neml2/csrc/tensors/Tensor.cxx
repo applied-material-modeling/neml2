@@ -32,6 +32,11 @@ def(py::module_ & m, py::class_<Tensor> & c)
 {
   def_TensorBase<Tensor>(m, "Tensor");
 
+  c.def(py::init<const ATensor &, Size, Size>(),
+        py::arg("tensor"),
+        py::arg("dynamic_dim"),
+        py::arg("intmd_dim") = 0);
+
   // Static methods
   c.def_static(
        "empty",

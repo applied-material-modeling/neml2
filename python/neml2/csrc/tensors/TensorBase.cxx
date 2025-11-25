@@ -49,7 +49,7 @@ def_TensorBase(py::module_ & m, const std::string & type)
       .def(py::init<const ATensor &, Size, Size>(),
            py::arg("tensor"),
            py::arg("dynamic_dim"),
-           py::arg("intmd_dim") = 0)
+           py::arg("intmd_dim"))
       .def("__str__",
            [type](const T & self)
            {
