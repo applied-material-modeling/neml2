@@ -22,6 +22,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <pybind11/operators.h>
+
 #include "python/neml2/csrc/tensors/TensorBase.h"
 #include "python/neml2/csrc/tensors/PrimitiveTensor.h"
 
@@ -34,7 +36,17 @@ def(py::module_ & m, py::class_<Rot> & c)
   def_TensorBase<Rot>(m, "Rot");
   def_PrimitiveTensor<Rot>(m, "Rot");
 
-  c.def_static("rotation_from_to", &Rot::rotation_from_to)
+  c.def_static(
+       "identity",
+       [](NEML2_TENSOR_OPTIONS_VARGS) { return Rot::identity(NEML2_TENSOR_OPTIONS); },
+       py::kw_only(),
+       PY_ARG_TENSOR_OPTIONS)
+      .def_static("fill_euler_angles", &Rot::fill_euler_angles)
+      .def_static("fill_matrix", &Rot::fill_matrix)
+      .def_static("fill_rodrigues", &Rot::fill_rodrigues)
+      .def_static("rotation_from_to", &Rot::rotation_from_to)
       .def_static("axis_angle", &Rot::axis_angle)
       .def_static("axis_angle_standard", &Rot::axis_angle_standard);
+
+  c.def(py::self * py::self);
 }

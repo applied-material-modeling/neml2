@@ -22,27 +22,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <pybind11/pybind11.h>
+#include "neml2/tensors/functions/cross.h"
 
 #include "python/neml2/csrc/math/types.h"
+#include <pybind11/cast.h>
 
 namespace py = pybind11;
 using namespace neml2;
 
-PYBIND11_MODULE(math, m)
+void
+def_cross(py::module_ & m)
 {
-  m.doc() = "Mathematical functions for NEML2 tensors";
-
-  // Expose tensor types
-  py::module_::import("neml2.tensors");
-
-  // Export the Number type
-  m.attr("Number") = py::module_::import("torch.types").attr("Number");
-
-  // Define functions
-  def_linspace(m);
-  def_logspace(m);
-  def_inv(m);
-  def_norm(m);
-  def_cross(m);
+  auto c = py::module_::import("neml2.tensors").attr("Vec").cast<py::class_<Vec>>();
+  c.def("cross", [](const Vec & self, const Vec & other) { return neml2::cross(self, other); });
 }

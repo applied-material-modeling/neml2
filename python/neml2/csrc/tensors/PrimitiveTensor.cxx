@@ -103,7 +103,7 @@ def_PrimitiveTensor(py::module_ & m, const std::string & type)
           py::kw_only(),
           PY_ARG_TENSOR_OPTIONS)
       .def_static(
-          "random",
+          "rand",
           [](TensorShapeRef dynamic_sizes, TensorShapeRef intmd_sizes, NEML2_TENSOR_OPTIONS_VARGS)
           { return T::rand(dynamic_sizes, intmd_sizes, NEML2_TENSOR_OPTIONS); },
           py::arg("dynamic_sizes"),

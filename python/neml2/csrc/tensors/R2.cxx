@@ -22,6 +22,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <pybind11/operators.h>
+
 #include "python/neml2/csrc/tensors/TensorBase.h"
 #include "python/neml2/csrc/tensors/PrimitiveTensor.h"
 
@@ -112,4 +114,6 @@ def(py::module_ & m, py::class_<R2> & c)
                      const Scalar & a32,
                      const Scalar & a33)
                   { return R2::fill(a11, a12, a13, a21, a22, a23, a31, a32, a33); });
+
+  c.def(py::self * py::self).def(py::self * Vec());
 }

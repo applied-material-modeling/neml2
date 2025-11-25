@@ -31,3 +31,4 @@ void def_linspace(pybind11::module_ &);
 void def_logspace(pybind11::module_ &);
 void def_inv(pybind11::module_ &);
 void def_norm(pybind11::module_ &);
+void def_cross(pybind11::module_ &);
