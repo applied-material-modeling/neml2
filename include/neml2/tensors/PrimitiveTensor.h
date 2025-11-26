@@ -205,8 +205,7 @@ PrimitiveTensor<Derived, S...>::validate_shapes_and_dims() const
 }
 
 template <class Derived, Size... S>
-PrimitiveTensor<Derived, S...>::
-operator neml2::Tensor() const
+PrimitiveTensor<Derived, S...>::operator neml2::Tensor() const
 {
   return neml2::Tensor(*this, this->dynamic_sizes(), this->intmd_dim());
 }
