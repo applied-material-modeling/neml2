@@ -99,7 +99,7 @@ public:
   const R2 & symmetry_operators() const { return _sym_ops; };
 
   /// Slice a Tensor to provide only the batch associated with a slip system
-  // The slice happens along the last batch axis
+  // The slice happens along the last intermediate axis
   template <class Derived,
             typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<Derived>, Derived>>>
   Derived slip_slice(const Derived & tensor, Size grp) const;
@@ -123,9 +123,6 @@ private:
                        const R2 & cls,
                        const MillerIndex & slip_directions,
                        const MillerIndex & slip_planes);
-
-  /// Helper to return Cartesian vector given miller indices
-  static Vec miller_to_cartesian(const Vec & A, const MillerIndex & d);
 
 private:
   /// Crystal symmetry class with operators
@@ -162,8 +159,7 @@ CrystalGeometry::slip_slice(const Derived & tensor, Size grp) const
 {
   if (grp >= nslip_groups())
     throw NEMLException("Invalid slip group index");
-  return tensor.batch_index(
-      {indexing::Ellipsis, indexing::Slice(_slip_offsets[grp], _slip_offsets[grp + 1])});
+  return tensor.intmd_slice(-1, indexing::Slice(_slip_offsets[grp], _slip_offsets[grp + 1]));
 }
 
 } // namespace crystallography

@@ -43,10 +43,20 @@ public:
   const Tensor & operator()(const TensorOptions &);
 
 private:
+  struct CacheKey
+  {
+    Dtype dtype = kFloat64;
+    Device device;
+    bool operator==(const CacheKey & other) const;
+  };
+
   /// Lambda that creates a tensor given a set of tensor options
   std::function<Tensor(const TensorOptions &)> _creator;
 
-  /// Cache of already created tensors for each dispatch key
-  std::unordered_map<at::DispatchKey, Tensor> _cached_tensors;
+  /// Keys of cached tensors
+  std::vector<CacheKey> _cached_keys;
+
+  /// Cache of already created tensors
+  std::vector<Tensor> _cached_tensors;
 };
 } // namespace neml2

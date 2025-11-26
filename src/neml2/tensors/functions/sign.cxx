@@ -28,7 +28,7 @@
 namespace neml2
 {
 #define DEFINE_SIGN(T)                                                                             \
-  T sign(const T & a) { return T(at::sign(a), a.batch_sizes()); }                                  \
+  T sign(const T & a) { return T(at::sign(a), a.dynamic_sizes(), a.intmd_dim()); }                 \
   static_assert(true)
 FOR_ALL_TENSORBASE(DEFINE_SIGN);
 } // namespace neml2

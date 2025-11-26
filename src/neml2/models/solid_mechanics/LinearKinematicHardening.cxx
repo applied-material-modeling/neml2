@@ -26,6 +26,7 @@
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
+#include "neml2/tensors/functions/imap.h"
 
 namespace neml2
 {
@@ -61,7 +62,7 @@ LinearKinematicHardening::set_value(bool out, bool dout_din, bool d2out_din2)
   if (dout_din)
   {
     if (_Kp.is_dependent())
-      _X.d(_Kp) = _H * SR2::identity_map(_H.options());
+      _X.d(_Kp) = _H * imap_v<SR2>(_H.options());
 
     if (const auto * const H = nl_param("H"))
       _X.d(*H) = _Kp;

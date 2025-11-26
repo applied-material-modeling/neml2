@@ -33,7 +33,7 @@ register_NEML2_object(FillRot);
 OptionSet
 FillRot::expected_options()
 {
-  OptionSet options = UserTensorBase::expected_options();
+  OptionSet options = UserTensorBase<Rot>::expected_options();
   options.doc() = "Construct a Rot from a vector of Scalars.";
 
   options.set<std::vector<TensorName<Scalar>>>("values");
@@ -46,41 +46,41 @@ FillRot::expected_options()
 }
 
 FillRot::FillRot(const OptionSet & options)
-  : UserTensorBase(options),
-    Rot(fill(options.get<std::vector<TensorName<Scalar>>>("values"),
-             options.get<std::string>("method")))
-
+  : UserTensorBase<Rot>(options),
+    _values(options.get<std::vector<TensorName<Scalar>>>("values")),
+    _method(options.get<std::string>("method"))
 {
 }
 
 Rot
-FillRot::fill(const std::vector<TensorName<Scalar>> & values, const std::string & method) const
+FillRot::make() const
 {
   auto * f = factory();
-  neml_assert(f, "Internal error: factory != nullptr");
+  neml_assert(f, "Internal error: factory == nullptr");
 
-  if (method == "modified")
+  if (_method == "modified")
   {
-    neml_assert(values.size() == 3,
+    neml_assert(_values.size() == 3,
                 "Number of values must be 3, but ",
-                values.size(),
+                _values.size(),
                 " values are provided.");
-    return Rot::fill(values[0].resolve(f), values[1].resolve(f), values[2].resolve(f));
+    return Rot::fill(_values[0].resolve(f), _values[1].resolve(f), _values[2].resolve(f));
   }
 
-  if (method == "standard")
+  if (_method == "standard")
   {
-    neml_assert(values.size() == 3,
+    neml_assert(_values.size() == 3,
                 "Number of values must be 3, but ",
-                values.size(),
+                _values.size(),
                 " values are provided.");
-    auto ns = values[0].resolve(f) * values[0].resolve(f) +
-              values[1].resolve(f) * values[1].resolve(f) +
-              values[2].resolve(f) * values[2].resolve(f);
+    auto ns = _values[0].resolve(f) * _values[0].resolve(f) +
+              _values[1].resolve(f) * _values[1].resolve(f) +
+              _values[2].resolve(f) * _values[2].resolve(f);
     auto v = neml2::sqrt(ns + 1.0) + 1.0;
-    return Rot::fill(values[0].resolve(f) / v, values[1].resolve(f) / v, values[2].resolve(f) / v);
+    return Rot::fill(
+        _values[0].resolve(f) / v, _values[1].resolve(f) / v, _values[2].resolve(f) / v);
   }
 
-  throw NEMLException("Unknown Rot fill type " + method);
+  throw NEMLException("Unknown Rot fill type " + _method);
 }
 } // namespace neml2

@@ -84,22 +84,32 @@ Normality::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
   }
 
   const auto & fvar = _model.output_variable(_f);
-  for (auto && [iname, ivar] : _conjugate_pairs)
+  for (const auto & [iname, ivar] : _model.input_variables())
   {
-    if (out && !fvar.derivatives().count(iname))
-    {
-      (*ivar) = Tensor::zeros(ivar->base_sizes(), fvar.options());
+    auto itr = _conjugate_pairs.find(iname);
+    if (itr == _conjugate_pairs.end())
       continue;
-    }
+
+    auto & ovar = *itr->second;
 
     if (out)
-      (*ivar) = fvar.derivatives().at(iname).base_reshape(ivar->base_sizes());
+    {
+      if (!fvar.has_derivative(iname))
+      {
+        ovar.zero(fvar.options());
+        continue;
+      }
+      else
+        ovar = fvar.d(*ivar).tensor().base_reshape(ivar->base_sizes());
+    }
 
     if (dout_din)
-      for (auto && [jname, jvar] : _model.input_variables())
-        if (jvar->is_dependent() && fvar.second_derivatives().count(iname) &&
-            fvar.second_derivatives().at(iname).count(jname))
-          ivar->d(*jvar) = fvar.second_derivatives().at(iname).at(jname);
+      for (const auto & [jname, jvar] : _model.input_variables())
+        if (jvar->is_dependent() && fvar.has_derivative(iname, jname))
+          ovar.d(*jvar) =
+              fvar.d2(*ivar, *jvar)
+                  .tensor()
+                  .base_reshape(utils::add_shapes(ivar->base_sizes(), jvar->base_sizes()));
   }
 }
 } // namespace neml2

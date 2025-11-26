@@ -51,13 +51,13 @@ FischerBurmeister::expected_options()
   options.set<EnumSelection>("first_inequality") = conda;
   options.set("first_inequality").doc() = "Type of inequality for the first variable."
                                           "Default: GE. Options are " +
-                                          conda.candidates_str();
+                                          conda.join();
 
   EnumSelection condb({"GE", "LE"}, "GE");
   options.set<EnumSelection>("second_inequality") = condb;
   options.set("second_inequality").doc() = "Type of inequality for the second variable."
                                            "Default: GE. Options are " +
-                                           condb.candidates_str();
+                                           condb.join();
 
   options.set_output("fischer_burmeister") = VariableName(STATE, "fb");
   options.set("fischer_burmeister").doc() = "Fischer Burmeister condition";

@@ -23,11 +23,12 @@
 // THE SOFTWARE.
 
 #include "neml2/models/LinearInterpolation.h"
-#include "neml2/tensors/functions/diff.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/Vec.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/indexing.h"
+#include "neml2/tensors/shape_utils.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {
@@ -43,6 +44,9 @@ LinearInterpolation<T>::expected_options()
   options.set<TensorName<Scalar>>("abscissa");
   options.set("abscissa").doc() = "Scalar defining the abscissa values of the interpolant";
 
+  options.set<Size>("dim") = -1;
+  options.set("dim").doc() = "Intermediate dimension along which to interpolate";
+
   options.set_input("argument");
   options.set("argument").doc() = "Argument used to query the interpolant";
 
@@ -53,7 +57,8 @@ template <typename T>
 LinearInterpolation<T>::LinearInterpolation(const OptionSet & options)
   : Interpolation<T>(options),
     _X(this->template declare_parameter<Scalar>("X", "abscissa")),
-    _x(this->template declare_input_variable<Scalar>("argument"))
+    _x(this->template declare_input_variable<Scalar>("argument")),
+    _dim(options.get<Size>("dim"))
 {
 }
 
@@ -61,30 +66,41 @@ template <typename T>
 void
 LinearInterpolation<T>::set_value(bool out, bool dout_din, bool d2out_din2)
 {
-  const auto slope =
-      diff(this->_Y, 1, this->_Y.batch_dim() - 1) / diff(this->_X, 1, this->_X.batch_dim() - 1);
-  const auto X0 = this->_X.batch_index({indexing::Ellipsis, indexing::Slice(indexing::None, -1)})
-                      .batch_expand_as(slope);
-  const auto X1 = this->_X.batch_index({indexing::Ellipsis, indexing::Slice(1, indexing::None)})
-                      .batch_expand_as(slope);
-  const auto Y0 = this->_Y.batch_index({indexing::Ellipsis, indexing::Slice(indexing::None, -1)})
-                      .batch_expand_as(slope);
+  using namespace indexing;
 
-  const auto x = Scalar(this->_x);
-  const auto loc =
-      Scalar(at::logical_and(at::gt(x.batch_unsqueeze(-1), X0), at::le(x.batch_unsqueeze(-1), X1)));
-  const auto si = mask<T>(slope, loc);
+  neml_assert_dbg(this->_X.intmd_size(_dim) == this->_Y.intmd_size(_dim),
+                  "Abscissa and ordinate intermediate dimension ",
+                  _dim,
+                  " must have the same size (",
+                  this->_X.intmd_size(_dim),
+                  " vs ",
+                  this->_Y.intmd_size(_dim),
+                  ").");
+
+  // First move the interpolating dimension to the end
+  const auto X = this->_X.intmd_movedim(_dim, -1);
+  const auto Y = this->_Y.intmd_movedim(_dim, -1);
+
+  // Unsqueeze one intermediate dimension in x to match X and Y
+  const auto x = this->_x().intmd_unsqueeze(-1);
+
+  // Get the mask for the interpolating interval
+  // Also transform x onto the parametric space (0, 1]
+  const auto [m, xi, dxi_dx] = parametric_coordinates(X, x);
+
+  // Get the ordinate interval to be interpolated
+  auto Y1 = Y.intmd_slice(-1, Slice(None, -1));
+  auto Y2 = Y.intmd_slice(-1, Slice(1));
+  Y1 = apply_mask(Y1, m, 1);
+  Y2 = apply_mask(Y2, m, 1);
+  auto dY = Y2 - Y1;
 
   if (out)
-  {
-    const auto X0i = mask<Scalar>(X0, loc);
-    const auto Y0i = mask<T>(Y0, loc);
-    this->_p = Y0i + si * (x - X0i);
-  }
+    this->_p = Y1 + xi * dY;
 
   if (dout_din)
     if (this->_x.is_dependent())
-      this->_p.d(this->_x) = si;
+      this->_p.d(this->_x) = dxi_dx * dY;
 
   if (d2out_din2)
   {

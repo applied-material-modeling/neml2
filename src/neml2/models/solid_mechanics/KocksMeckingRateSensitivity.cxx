@@ -88,18 +88,18 @@ KocksMeckingRateSensitivity::set_value(bool out, bool dout_din, bool d2out_din2)
   {
     // T, T
     if (_T.is_dependent())
-      _m.d(_T, _T) = -2.0 * _b3 * _mu / (_A * _k * _T * _T * _T);
+      _m.d2(_T, _T) = -2.0 * _b3 * _mu / (_A * _k * _T * _T * _T);
 
     if (const auto * const A = nl_param("A"))
     {
       // A, A
-      _m.d(*A, *A) = -2.0 * _b3 * _mu / (_A * _A * _A * _k * _T);
+      _m.d2(*A, *A) = -2.0 * _b3 * _mu / (_A * _A * _A * _k * _T);
       // A, T and T, A
       if (_T.is_dependent())
       {
         auto AT = -_b3 * _mu / (_A * _A * _k * _T * _T);
-        _m.d(*A, _T) = AT;
-        _m.d(_T, *A) = AT;
+        _m.d2(*A, _T) = AT;
+        _m.d2(_T, *A) = AT;
       }
     }
 
@@ -109,16 +109,16 @@ KocksMeckingRateSensitivity::set_value(bool out, bool dout_din, bool d2out_din2)
       if (_T.is_dependent())
       {
         auto MT = _b3 / (_A * _k * _T * _T);
-        _m.d(*mu, _T) = MT;
-        _m.d(_T, *mu) = MT;
+        _m.d2(*mu, _T) = MT;
+        _m.d2(_T, *mu) = MT;
       }
 
       if (const auto * const A = nl_param("A"))
       {
         // mu, A and A, mu
         auto MA = _b3 / (_A * _A * _k * _T);
-        _m.d(*mu, *A) = MA;
-        _m.d(*A, *mu) = MA;
+        _m.d2(*mu, *A) = MA;
+        _m.d2(*A, *mu) = MA;
       }
     }
   }

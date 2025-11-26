@@ -30,7 +30,7 @@
 
 namespace neml2
 {
-CScalar
+double
 machine_precision(Dtype dtype)
 {
   switch (dtype)

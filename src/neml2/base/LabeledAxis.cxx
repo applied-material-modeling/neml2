@@ -24,7 +24,6 @@
 
 #include "neml2/base/LabeledAxis.h"
 #include "neml2/tensors/shape_utils.h"
-#include "neml2/tensors/tensors.h"
 #include "neml2/misc/assertions.h"
 
 namespace neml2
@@ -34,10 +33,54 @@ LabeledAxis::LabeledAxis(LabeledAxisAccessor prefix)
 {
 }
 
+void
+LabeledAxis::clear()
+{
+  for (auto & [name, axis] : _subaxes)
+    axis->clear();
+
+  _setup = false;
+  _variables.clear();
+  _subaxes.clear();
+
+  clear_data();
+}
+
+void
+LabeledAxis::clear_data()
+{
+  _size = 0;
+
+  _variable_to_id_map.clear();
+  _id_to_variable_map.clear();
+  _id_to_variable_size_map.clear();
+  _id_to_variable_slice_map.clear();
+  _id_to_intmd_sizes_map.clear();
+  _id_to_base_sizes_map.clear();
+
+  _sorted_subaxes.clear();
+  _subaxis_to_id_map.clear();
+  _id_to_subaxis_map.clear();
+  _id_to_subaxis_size_map.clear();
+  _id_to_subaxis_slice_map.clear();
+}
+
 LabeledAxisAccessor
 LabeledAxis::qualify(const LabeledAxisAccessor & accessor) const
 {
   return accessor.prepend(_prefix);
+}
+
+LabeledAxisAccessor
+LabeledAxis::disqualify(const LabeledAxisAccessor & accessor) const
+{
+  neml_assert(accessor.start_with(_prefix),
+              "Cannot disqualify accessor '",
+              accessor,
+              "' with prefix '",
+              _prefix,
+              "'");
+  return accessor.slice(_prefix.size());
 }
 
 LabeledAxis &
@@ -46,15 +89,14 @@ LabeledAxis::add_subaxis(const std::string & name)
   neml_assert(!_setup, "Cannot modify a sub-axis after the axis has been set up.");
   neml_assert(
       _variables.count(name) == 0, "Cannot add a subaxis with the same name as a variable: ", name);
-  auto [subaxis, success] =
-      _subaxes.emplace(name, std::make_shared<LabeledAxis>(_prefix.append(name)));
-  if (success)
-    cache_reserved_subaxis(name);
-  return *(subaxis->second);
+  _subaxes.emplace(name, std::make_shared<LabeledAxis>(_prefix.append(name)));
+  return *(_subaxes.at(name));
 }
 
 void
-LabeledAxis::add_variable(const LabeledAxisAccessor & name, Size sz)
+LabeledAxis::add_variable(const LabeledAxisAccessor & name,
+                          TensorShapeRef intmd_sizes,
+                          TensorShapeRef base_sizes)
 {
   neml_assert(!_setup, "Cannot modify a sub-axis after the axis has been set up.");
   neml_assert(!name.empty(), "Cannot add a variable with empty name.");
@@ -65,22 +107,23 @@ LabeledAxis::add_variable(const LabeledAxisAccessor & name, Size sz)
                 "Cannot add a variable with the same name as an existing variable or a sub-axis: '",
                 name[0],
                 "'");
-    _variables.emplace(name[0], sz);
+    _variables.emplace(name[0], std::make_pair(intmd_sizes, base_sizes));
   }
   else
-    add_subaxis(name[0]).add_variable(name.slice(1), sz);
+    add_subaxis(name[0]).add_variable(name.slice(1), intmd_sizes, base_sizes);
 }
 
-template <typename T>
 void
-LabeledAxis::add_variable(const LabeledAxisAccessor & name)
+LabeledAxis::set_intmd_sizes(const LabeledAxisAccessor & name, TensorShapeRef shape)
 {
-  auto sz = utils::storage_size(T::const_base_sizes);
-  add_variable(name, sz);
+  neml_assert(!_setup, "Cannot set intermediate sizes after the axis has been set up.");
+  if (name.size() == 1)
+  {
+    _variables.at(name[0]).first = shape;
+    return;
+  }
+  subaxis(name[0]).set_intmd_sizes(name.slice(1), shape);
 }
-#define INSTANTIATE_ADD_VARIABLE(T)                                                                \
-  template void LabeledAxis::add_variable<T>(const LabeledAxisAccessor &)
-FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_ADD_VARIABLE);
 
 void
 LabeledAxis::setup_layout()
@@ -92,6 +135,8 @@ LabeledAxis::setup_layout()
   _id_to_variable_map.clear();
   _id_to_variable_size_map.clear();
   _id_to_variable_slice_map.clear();
+  _id_to_intmd_sizes_map.clear();
+  _id_to_base_sizes_map.clear();
 
   _sorted_subaxes.clear();
   _subaxis_to_id_map.clear();
@@ -100,12 +145,16 @@ LabeledAxis::setup_layout()
   _id_to_subaxis_slice_map.clear();
 
   // Set up variable assembly IDs and slicing indices
-  for (auto & [name, sz] : _variables)
+  for (const auto & [name, sizes] : _variables)
   {
+    const auto & [intmd_sizes, base_sizes] = sizes;
+    const auto sz = utils::numel(utils::add_shapes(intmd_sizes, base_sizes));
     _variable_to_id_map.emplace(name, _variable_to_id_map.size());
     _id_to_variable_map.emplace_back(name);
     _id_to_variable_size_map.push_back(sz);
     _id_to_variable_slice_map.emplace_back(_size, _size + sz);
+    _id_to_intmd_sizes_map.push_back(intmd_sizes);
+    _id_to_base_sizes_map.push_back(base_sizes);
     _size += sz;
   }
 
@@ -129,6 +178,8 @@ LabeledAxis::setup_layout()
       _variable_to_id_map.emplace(full_name, _variable_to_id_map.size());
       _id_to_variable_map.push_back(full_name);
       _id_to_variable_size_map.push_back(axis->_id_to_variable_size_map[var_id]);
+      _id_to_intmd_sizes_map.push_back(axis->_id_to_intmd_sizes_map[var_id]);
+      _id_to_base_sizes_map.push_back(axis->_id_to_base_sizes_map[var_id]);
 
       // Slice is relative to the sub-axis, so we need to shift it
       const auto & slice = axis->_id_to_variable_slice_map[var_id];
@@ -151,8 +202,11 @@ LabeledAxis::size() const
 
   // Otherwise, calculate the size
   Size sz = 0;
-  for (const auto & [name, var_sz] : _variables)
-    sz += var_sz;
+  for (const auto & [name, sizes] : _variables)
+  {
+    const auto & [intmd_sizes, base_sizes] = sizes;
+    sz += utils::numel(utils::add_shapes(intmd_sizes, base_sizes));
+  }
   for (const auto & [name, axis] : _subaxes)
     sz += axis->size();
   return sz;
@@ -166,9 +220,21 @@ LabeledAxis::size(const LabeledAxisAccessor & name) const
   // If the name has length 1, it must be a variable or a local sub-axis
   if (name.size() == 1)
   {
+
     const auto var = _variables.find(name[0]);
     if (var != _variables.end())
-      return var->second;
+    {
+      if (_setup)
+      {
+        const auto id = variable_id(name);
+        return _id_to_variable_size_map[id];
+      }
+      else
+      {
+        const auto & [intmd_sizes, base_sizes] = var->second;
+        return utils::numel(utils::add_shapes(intmd_sizes, base_sizes));
+      }
+    }
 
     const auto subaxis = _subaxes.find(name[0]);
     neml_assert(subaxis != _subaxes.end(),
@@ -176,6 +242,11 @@ LabeledAxis::size(const LabeledAxisAccessor & name) const
                 name,
                 "' is neither a variable nor a local sub-axis on axis:\n",
                 *this);
+    if (_setup)
+    {
+      const auto id = subaxis_id(name[0]);
+      return _id_to_subaxis_size_map[id];
+    }
     return subaxis->second->size();
   }
 
@@ -258,6 +329,22 @@ LabeledAxis::variable_id(const LabeledAxisAccessor & name) const
   return id->second;
 }
 
+std::vector<LabeledAxisAccessor>
+LabeledAxis::variable_names_unsrt() const
+{
+  std::vector<LabeledAxisAccessor> names;
+  names.reserve(nvariable());
+  for (const auto & [name, _] : _variables)
+    names.emplace_back(name);
+  for (const auto & [subaxis_name, subaxis] : _subaxes)
+  {
+    const auto sub_names = subaxis->variable_names_unsrt();
+    for (const auto & sub_name : sub_names)
+      names.push_back(sub_name.prepend(subaxis_name));
+  }
+  return names;
+}
+
 const std::vector<LabeledAxisAccessor> &
 LabeledAxis::variable_names() const
 {
@@ -299,13 +386,28 @@ LabeledAxis::variable_size(const LabeledAxisAccessor & name) const
     const auto var = _variables.find(name[0]);
     neml_assert(
         var != _variables.end(), "Variable named '", name, "' does not exist on axis:\n", *this);
-    return var->second;
+    const auto & [intmd_sizes, base_sizes] = var->second;
+    return utils::numel(utils::add_shapes(intmd_sizes, base_sizes));
   }
 
   const auto subaxis = _subaxes.find(name[0]);
   neml_assert(
       subaxis != _subaxes.end(), "Variable named '", name, "' does not exist on axis:\n", *this);
   return subaxis->second->variable_size(name.slice(1));
+}
+
+const std::vector<TensorShape> &
+LabeledAxis::variable_intmd_sizes() const
+{
+  ensure_setup_dbg();
+  return _id_to_intmd_sizes_map;
+}
+
+const std::vector<TensorShape> &
+LabeledAxis::variable_base_sizes() const
+{
+  ensure_setup_dbg();
+  return _id_to_base_sizes_map;
 }
 
 std::size_t
@@ -367,6 +469,16 @@ LabeledAxis::subaxis(const LabeledAxisAccessor & name)
 {
   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
   return const_cast<LabeledAxis &>(std::as_const(*this).subaxis(name));
+}
+
+std::vector<std::string>
+LabeledAxis::subaxis_names_unsrt() const
+{
+  std::vector<std::string> names;
+  names.reserve(_subaxes.size());
+  for (const auto & [name, _] : _subaxes)
+    names.emplace_back(name);
+  return names;
 }
 
 const std::vector<std::string> &
@@ -446,23 +558,6 @@ LabeledAxis::equals(const LabeledAxis & other) const
 }
 
 void
-LabeledAxis::cache_reserved_subaxis(const std::string & axis_name)
-{
-  if (axis_name == STATE)
-    _has_state = true;
-  else if (axis_name == OLD_STATE)
-    _has_old_state = true;
-  else if (axis_name == FORCES)
-    _has_forces = true;
-  else if (axis_name == OLD_FORCES)
-    _has_old_forces = true;
-  else if (axis_name == RESIDUAL)
-    _has_residual = true;
-  else if (axis_name == PARAMETERS)
-    _has_parameters = true;
-}
-
-void
 LabeledAxis::ensure_setup_dbg() const
 {
   neml_assert_dbg(_setup, "The axis has not been setup yet.");
@@ -472,7 +567,7 @@ std::ostream &
 operator<<(std::ostream & os, const LabeledAxis & axis)
 {
   // Get unqualified variable names
-  const auto var_names = axis.variable_names();
+  const auto var_names = axis._setup ? axis.variable_names() : axis.variable_names_unsrt();
 
   // Find the maximum variable name length
   size_t max_var_name_length = 0;

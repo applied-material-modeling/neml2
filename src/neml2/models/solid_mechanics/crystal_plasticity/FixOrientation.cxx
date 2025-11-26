@@ -26,6 +26,7 @@
 
 #include "neml2/tensors/Rot.h"
 #include "neml2/tensors/functions/where.h"
+#include "neml2/tensors/functions/norm_sq.h"
 
 namespace neml2
 {
@@ -66,16 +67,13 @@ void
 FixOrientation::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   if (out)
-    _output = where(
-        (Rot(_input).norm_sq() < _threshold).unsqueeze(-1), Rot(_input), Rot(_input).shadow());
+    _output = neml2::where(norm_sq(_input()) < _threshold, _input(), _input().shadow());
 
   if (dout_din)
     if (_input.is_dependent())
     {
       const auto I = R2::identity(_input.options());
-      _output.d(_input) = where((Rot(_input).norm_sq() < _threshold).unsqueeze(-1).unsqueeze(-1),
-                                I,
-                                Rot(_input).dshadow());
+      _output.d(_input) = neml2::where(norm_sq(_input()) < _threshold, I, _input().dshadow());
     }
 }
 } // namespace neml2

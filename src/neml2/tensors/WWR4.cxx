@@ -24,7 +24,7 @@
 
 #include "neml2/tensors/WWR4.h"
 #include "neml2/tensors/R4.h"
-#include "neml2/tensors/mandel_notation.h"
+#include "neml2/tensors/functions/symmetrization.h"
 
 namespace neml2
 {

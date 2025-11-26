@@ -34,7 +34,7 @@ std::ostream & operator<<(std::ostream &, const MultiEnumSelection &);
 std::stringstream & operator>>(std::stringstream &, MultiEnumSelection &);
 
 /**
- * @brief Selection of _multiple_ enum value from a list of candidates
+ * @brief Selection of _multiple_ enum value from a list of choices
  * @see neml2::EnumSelectionBase
  */
 class MultiEnumSelection : public EnumSelectionBase
@@ -42,18 +42,21 @@ class MultiEnumSelection : public EnumSelectionBase
 public:
   MultiEnumSelection() = default;
 
-  /// Create a multi-enum selection from a list of candidates and default selections
-  MultiEnumSelection(const std::vector<std::string> & candidates,
+  /// Create a multi-enum selection from a list of choices and default selections
+  MultiEnumSelection(const std::vector<std::string> & choices,
                      const std::vector<std::string> & selections);
 
-  /// Create a multi-enum selection from a list of candidates, their corresponding values, and default selections
-  MultiEnumSelection(const std::vector<std::string> & candidates,
+  /// Create a multi-enum selection from a list of choices, their corresponding values, and default selections
+  MultiEnumSelection(const std::vector<std::string> & choices,
                      const std::vector<int> & values,
                      const std::vector<std::string> & selections);
 
   /// Select new values
   /// @note This will clear the current selection
   void select(const std::vector<std::string> & selections);
+
+  /// Number of selected values
+  std::size_t size() const;
 
   /// Test for inequality
   bool operator==(const MultiEnumSelection & other) const;
@@ -62,10 +65,10 @@ public:
   bool operator!=(const MultiEnumSelection & other) const;
 
   /// Poor man's reflection implementation
-  operator std::vector<std::string>() const { return _selections; }
+  const std::vector<std::string> & selections() const { return _selections; }
 
   /// Selected values cast to int
-  operator std::vector<int>() const { return _values; }
+  const std::vector<int> & values() const { return _values; }
 
   /// Statically cast the enum value to a C++ enum class
   template <typename T>

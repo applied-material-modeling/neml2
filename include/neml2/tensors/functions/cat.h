@@ -29,11 +29,13 @@
 
 namespace neml2
 {
-#define DECLARE_BATCH_CAT(T)                                                                       \
-  T batch_cat(const std::vector<T> & tensors, Size d = 0);                                         \
-  T batch_cat(const std::initializer_list<T> & tensors, Size d = 0)
-FOR_ALL_TENSORBASE(DECLARE_BATCH_CAT);
-#undef DECLARE_BATCH_CAT
+#define DECLARE_CAT(T)                                                                             \
+  T dynamic_cat(const std::vector<T> & tensors, Size d = 0);                                       \
+  T dynamic_cat(const std::initializer_list<T> & tensors, Size d = 0);                             \
+  T intmd_cat(const std::vector<T> & tensors, Size d = 0);                                         \
+  T intmd_cat(const std::initializer_list<T> & tensors, Size d = 0)
+FOR_ALL_TENSORBASE(DECLARE_CAT);
+#undef DECLARE_CAT
 
 Tensor base_cat(const std::vector<Tensor> & tensors, Size d = 0);
 } // namespace neml2

@@ -22,10 +22,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include "neml2/base/NEML2Object.h"
+#include "neml2/tensors/tensors.h"
+
 #include "VTestTimeSeries.h"
 #include "VTestParser.h"
-
-#include "utils.h"
 
 namespace neml2
 {
@@ -33,7 +34,7 @@ template <typename T>
 OptionSet
 VTestTimeSeries<T>::expected_options()
 {
-  OptionSet options = NEML2Object::expected_options();
+  OptionSet options = UserTensorBase<T>::expected_options();
   options.set<std::string>("vtest");
   options.set<std::string>("variable");
   return options;
@@ -41,53 +42,52 @@ VTestTimeSeries<T>::expected_options()
 
 template <typename T>
 VTestTimeSeries<T>::VTestTimeSeries(const OptionSet & options)
-  : NEML2Object(options),
-    T(init(options))
+  : UserTensorBase<T>(options)
 {
 }
 
 template <typename T>
 T
-VTestTimeSeries<T>::init(const OptionSet & /*options*/) const
+VTestTimeSeries<T>::make() const
 {
-  throw NEMLException(name() + " has not been implemented");
+  throw NEMLException(static_cast<const NEML2Object *>(this)->name() + " has not been implemented");
   return T();
 }
 
 template <>
 Scalar
-VTestTimeSeries<Scalar>::init(const OptionSet & options) const
+VTestTimeSeries<Scalar>::make() const
 {
-  VTestParser table(options.get<std::string>("vtest"));
-  auto var = options.get<std::string>("variable");
+  VTestParser table(input_options().get<std::string>("vtest"));
+  auto var = input_options().get<std::string>("variable");
   return Scalar(table[var]);
 }
 
 template <>
 SR2
-VTestTimeSeries<SR2>::init(const OptionSet & options) const
+VTestTimeSeries<SR2>::make() const
 {
-  VTestParser table(options.get<std::string>("vtest"));
-  auto var = options.get<std::string>("variable");
+  VTestParser table(input_options().get<std::string>("vtest"));
+  auto var = input_options().get<std::string>("variable");
   auto val_xx = table[var + "_xx"];
   auto val_yy = table[var + "_yy"];
   auto val_zz = table[var + "_zz"];
   auto val_yz = table[var + "_yz"];
   auto val_xz = table[var + "_xz"];
   auto val_xy = table[var + "_xy"];
-  return SR2(at::stack({val_xx, val_yy, val_zz, val_yz, val_xz, val_xy}, -1));
+  return base_stack({val_xx, val_yy, val_zz, val_yz, val_xz, val_xy}, -1);
 }
 
 template <>
 WR2
-VTestTimeSeries<WR2>::init(const OptionSet & options) const
+VTestTimeSeries<WR2>::make() const
 {
-  VTestParser table(options.get<std::string>("vtest"));
-  auto var = options.get<std::string>("variable");
+  VTestParser table(input_options().get<std::string>("vtest"));
+  auto var = input_options().get<std::string>("variable");
   auto val_zy = table[var + "_zy"];
   auto val_xz = table[var + "_xz"];
   auto val_yx = table[var + "_yx"];
-  return WR2(at::stack({val_zy, val_xz, val_yx}, -1));
+  return base_stack({val_zy, val_xz, val_yx}, -1);
 }
 
 #define REGISTER_VTESTTIMESERIES(T)                                                                \

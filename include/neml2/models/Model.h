@@ -32,12 +32,14 @@
 #include "neml2/models/VariableStore.h"
 #include "neml2/solvers/NonlinearSystem.h"
 #include "neml2/models/NonlinearParameter.h"
+#include "neml2/tensors/jit.h"
 
 // These headers are not directly used by Model, but are included here so that derived classes do
 // not have to include them separately. This is a convenience for the user, and is a reasonable
 // choice since these headers are light and bring in little dependency.
 #include "neml2/base/LabeledAxis.h"
 #include "neml2/models/Variable.h"
+#include "neml2/models/Derivative.h"
 
 namespace neml2
 {
@@ -70,14 +72,16 @@ public:
   /**
    * @brief Schema for the traced forward operators
    *
-   * The schema is determined by the batch dimensions of all input variables and model parameters.
+   * The schema is determined by the dynamic dimensions of all input variables and model parameters.
    */
-  struct TraceSchema
+  struct EvaluationSchema
   {
-    std::vector<Size> batch_dims;
+    std::vector<Size> dynamic_dims;
+    std::vector<TensorShape> intmd_shapes;
     at::DispatchKey dispatch_key;
-    bool operator==(const TraceSchema & other) const;
-    bool operator<(const TraceSchema & other) const;
+    bool operator==(const EvaluationSchema & other) const;
+    bool operator!=(const EvaluationSchema & other) const;
+    bool operator<(const EvaluationSchema & other) const;
   };
 
   static OptionSet expected_options();
@@ -148,8 +152,9 @@ public:
   /// Request to use AD to compute the second derivative of a variable
   void request_AD(VariableBase & y, const VariableBase & u1, const VariableBase & u2);
 
-  /// Forward operator without jit
-  void forward(bool out, bool dout, bool d2out);
+  void clear_input() override;
+  void clear_output() override;
+  void zero_undefined_input() override;
 
   /**
    * @brief Forward operator with jit
@@ -162,32 +167,26 @@ public:
   void forward_maybe_jit(bool out, bool dout, bool d2out);
 
   /// Look up the name of a variable in the traced graph
-  std::string variable_name_lookup(const ATensor & var);
+  std::string variable_name_lookup(const ATensor & var) const;
 
   /// Convenient shortcut to construct and return the model value
   virtual ValueMap value(const ValueMap & in);
-  virtual ValueMap value(ValueMap && in);
 
   /// Convenient shortcut to construct and return the model value and its derivative
   virtual std::tuple<ValueMap, DerivMap> value_and_dvalue(const ValueMap & in);
-  virtual std::tuple<ValueMap, DerivMap> value_and_dvalue(ValueMap && in);
 
   /// Convenient shortcut to construct and return the derivative
   virtual DerivMap dvalue(const ValueMap & in);
-  virtual DerivMap dvalue(ValueMap && in);
 
   /// Convenient shortcut to construct and return the model's value, first and second derivative
   virtual std::tuple<ValueMap, DerivMap, SecDerivMap>
   value_and_dvalue_and_d2value(const ValueMap & in);
-  virtual std::tuple<ValueMap, DerivMap, SecDerivMap> value_and_dvalue_and_d2value(ValueMap && in);
 
   /// Convenient shortcut to construct and return the model's second derivative
   virtual SecDerivMap d2value(const ValueMap & in);
-  virtual SecDerivMap d2value(ValueMap && in);
 
   /// Convenient shortcut to construct and return the model's first and second derivative
   virtual std::tuple<DerivMap, SecDerivMap> dvalue_and_d2value(const ValueMap & in);
-  virtual std::tuple<DerivMap, SecDerivMap> dvalue_and_d2value(ValueMap && in);
 
   /// Declaration of nonlinear parameters may require manipulation of input
   friend class ParameterStore;
@@ -212,11 +211,6 @@ protected:
   virtual void link_output_variables();
   virtual void link_output_variables(Model * submodel);
 
-  void clear_input() override;
-  void clear_output() override;
-  void zero_input() override;
-  void zero_output() override;
-
   /// Check the current default precision and warn if it's not double precision
   void check_precision() const;
 
@@ -234,6 +228,9 @@ protected:
    * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    */
   virtual void request_AD() {}
+
+  /// Forward operator without jit
+  void forward(bool out, bool dout, bool d2out);
 
   /// The map between input -> output, and optionally its derivatives
   virtual void set_value(bool out, bool dout_din, bool d2out_din2) = 0;
@@ -295,15 +292,10 @@ private:
   void forward_helper(T && in, bool out, bool dout, bool d2out)
   {
     check_precision();
-    zero_input();
     assign_input(std::forward<T>(in));
-    zero_output();
+    zero_undefined_input();
     forward_maybe_jit(out, dout, d2out);
   }
-
-  /// Given the requested AD derivatives, should the forward operator
-  /// neml2::Model::set_value compute the output variable?
-  bool AD_need_value(bool dout, bool d2out) const;
 
   /// Turn on AD for variable derivatives requested in neml2::Model::request_AD
   void enable_AD();
@@ -314,8 +306,8 @@ private:
   /// Get the traced function for the forward operator
   std::size_t forward_operator_index(bool out, bool dout, bool d2out) const;
 
-  /// Compute the trace schema
-  TraceSchema compute_trace_schema() const;
+  /// @brief Compute the current schema
+  EvaluationSchema calculate_eval_schema() const;
 
   ///@{
   /// Whether this model defines the value, first derivative, and second derivative
@@ -360,10 +352,10 @@ private:
    * 6, 110, yes, yes, no
    * 7, 111, yes, yes, yes
    */
-  std::array<std::map<TraceSchema, std::unique_ptr<jit::GraphFunction>>, 8> _traced_functions;
+  std::array<std::map<EvaluationSchema, std::unique_ptr<jit::GraphFunction>>, 8> _traced_functions;
 
   /// Similar to _trace_functions, but for the forward operator of the nonlinear system
-  std::array<std::map<TraceSchema, std::unique_ptr<jit::GraphFunction>>, 8>
+  std::array<std::map<EvaluationSchema, std::unique_ptr<jit::GraphFunction>>, 8>
       _traced_functions_nl_sys;
 };
 

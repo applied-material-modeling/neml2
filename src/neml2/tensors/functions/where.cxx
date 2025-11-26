@@ -25,14 +25,26 @@
 #include "neml2/tensors/functions/where.h"
 #include "neml2/tensors/tensors.h"
 #include "neml2/tensors/assertions.h"
+#include "neml2/tensors/functions/utils.h"
 
 namespace neml2
 {
 #define DEFINE_WHERE(T)                                                                            \
-  T where(const ATensor & condition, const T & a, const T & b)                                     \
+  T where(const Tensor & c, const T & a, const T & b)                                              \
   {                                                                                                \
     neml_assert_broadcastable_dbg(a, b);                                                           \
-    return T(at::where(condition, a, b), utils::broadcast_batch_dim(a, b));                        \
+    neml_assert(c.base_sizes() == a.base_sizes() && c.base_sizes() == b.base_sizes(),              \
+                "Condition tensor must have the same base shape as both input tensors.");          \
+                                                                                                   \
+    const auto [cc, aa, bb, i] = utils::align_intmd_dim(c, a, b);                                  \
+    return T(at::where(cc, aa, bb), c.dynamic_sizes(), i);                                         \
+  }                                                                                                \
+                                                                                                   \
+  T where(const Scalar & c, const T & a, const T & b)                                              \
+  {                                                                                                \
+    neml_assert_broadcastable_dbg(a, b);                                                           \
+    const auto [cc, aa, bb, i] = utils::align_intmd_dim(c, a, b);                                  \
+    return T(at::where(cc.base_unsqueeze(0, a.base_dim()), aa, bb), c.dynamic_sizes(), i);         \
   }                                                                                                \
   static_assert(true)
 FOR_ALL_TENSORBASE(DEFINE_WHERE);

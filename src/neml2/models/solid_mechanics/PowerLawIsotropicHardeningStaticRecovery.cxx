@@ -60,7 +60,7 @@ void
 PowerLawIsotropicHardeningStaticRecovery::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   if (out)
-    _h_dot = -pow(abs(Scalar(_h)) / _tau, _n - 1.0) * _h / _tau;
+    _h_dot = -pow(abs(_h()) / _tau, _n - 1.0) * _h / _tau;
 
   if (dout_din)
   {
@@ -68,11 +68,11 @@ PowerLawIsotropicHardeningStaticRecovery::set_value(bool out, bool dout_din, boo
       _h_dot.d(_h) = -_n * pow(abs(_h / _tau), _n - 1) / abs(_tau);
 
     if (const auto * const tau = nl_param("tau"))
-      _h_dot.d(*tau) = _n * _h * pow(_tau, -1 - _n) * pow(abs(Scalar(_h)), _n - 1);
+      _h_dot.d(*tau) = _n * _h * pow(_tau, -1 - _n) * pow(abs(_h()), _n - 1);
 
     if (const auto * const n = nl_param("n"))
-      _h_dot.d(*n) = -_h * pow(_tau, -_n) * pow(abs(Scalar(_h)), _n - 1) *
-                     log(abs(Scalar(_h)) / _tau + machine_precision(_h.scalar_type()));
+      _h_dot.d(*n) = -_h * pow(_tau, -_n) * pow(abs(_h()), _n - 1) *
+                     log(abs(_h()) / _tau + machine_precision(_h.scalar_type()));
   }
 }
 } // namespace neml2

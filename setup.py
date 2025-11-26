@@ -73,7 +73,7 @@ class CMakeBuild(build_ext):
             configure_args += ["-DNEML2_CONTRIB_PARALLEL={}".format(njob)]
 
         # Build arguments
-        build_args = ["--build", ".", "--target", "python_stub"]
+        build_args = ["--build", ".", "--target", "pyneml2"]
         if njob:
             build_args += ["-j", njob]
 

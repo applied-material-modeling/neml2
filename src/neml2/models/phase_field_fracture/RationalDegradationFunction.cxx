@@ -98,7 +98,7 @@ RationalDegradationFunction::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (d2out_din2)
   {
-    _g.d(_d, _d) = ((v * u_prime - u * v_prime) / (v * v)) * (1 - _eta);
+    _g.d2(_d, _d) = ((v * u_prime - u * v_prime) / (v * v)) * (1 - _eta);
   }
 }
 } // namespace neml2

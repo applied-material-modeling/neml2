@@ -42,7 +42,7 @@ TEST_CASE("Symmetry transforms", "[crystallography]")
   SECTION("Vec")
   {
     auto v = Vec::fill(1.0, -2.0, 3.0, DTO);
-    auto vb = v.batch_expand(B);
+    auto vb = v.dynamic_expand(B);
     SECTION("Identity")
     {
       auto op = identity_transform(DTO);
@@ -56,7 +56,7 @@ TEST_CASE("Symmetry transforms", "[crystallography]")
       auto op = proper_rotation_transform(r);
       auto correct = Vec::fill(2.0, 1.0, 3.0, DTO);
       REQUIRE(at::allclose(v.transform(op), correct));
-      REQUIRE(at::allclose(vb.transform(op), correct.batch_expand(B)));
+      REQUIRE(at::allclose(vb.transform(op), correct.dynamic_expand(B)));
     }
     // 90 about z
     SECTION("ImproperRotation")
@@ -64,14 +64,14 @@ TEST_CASE("Symmetry transforms", "[crystallography]")
       auto op = improper_rotation_transform(r);
       auto correct = Vec::fill(2.0, 1.0, -3.0, DTO);
       REQUIRE(at::allclose(v.transform(op), correct));
-      REQUIRE(at::allclose(vb.transform(op), correct.batch_expand(B)));
+      REQUIRE(at::allclose(vb.transform(op), correct.dynamic_expand(B)));
     }
     SECTION("Inversion")
     {
       auto op = inversion_transform(DTO);
       auto correct = Vec::fill(-1.0, 2.0, -3.0, DTO);
       REQUIRE(at::allclose(v.transform(op), correct));
-      REQUIRE(at::allclose(vb.transform(op), correct.batch_expand(B)));
+      REQUIRE(at::allclose(vb.transform(op), correct.dynamic_expand(B)));
     }
   }
 }

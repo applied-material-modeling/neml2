@@ -26,7 +26,8 @@
 
 #include "neml2/tensors/crystallography.h"
 
-#include "python/neml2/types.h"
+#include "python/neml2/csrc/core/types.h"
+#include "python/neml2/csrc/tensors/types.h"
 
 namespace py = pybind11;
 using namespace neml2;
@@ -38,11 +39,9 @@ PYBIND11_MODULE(crystallography, m)
   py::module_::import("neml2.tensors");
 
   m.def(
-      "symmetry_operations_from_orbifold",
+      "symmetry",
       [](const std::string & orbifold, NEML2_TENSOR_OPTIONS_VARGS)
-      {
-        return crystallography::symmetry_operations_from_orbifold(orbifold, NEML2_TENSOR_OPTIONS);
-      },
+      { return crystallography::symmetry(orbifold, NEML2_TENSOR_OPTIONS); },
       py::arg("orbifold"),
       py::kw_only(),
       PY_ARG_TENSOR_OPTIONS,

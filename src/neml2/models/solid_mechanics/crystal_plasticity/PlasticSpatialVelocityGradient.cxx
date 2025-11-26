@@ -29,7 +29,6 @@
 #include "neml2/tensors/R2.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SFFR4.h"
-#include "neml2/tensors/list_tensors.h"
 #include "neml2/tensors/functions/sum.h"
 
 namespace neml2
@@ -59,8 +58,8 @@ PlasticSpatialVelocityGradient::expected_options()
   options.set_input("slip_rates") = VariableName(STATE, "internal", "slip_rates");
   options.set("slip_rates").doc() = "The name of the tensor containg the current slip rates";
 
-  options.set<std::string>("crystal_geometry_name") = "crystal_geometry";
-  options.set("crystal_geometry_name").doc() =
+  options.set<std::string>("crystal_geometry") = "crystal_geometry";
+  options.set("crystal_geometry").doc() =
       "The name of the Data object containing the crystallographic information for the material";
 
   return options;
@@ -69,31 +68,28 @@ PlasticSpatialVelocityGradient::expected_options()
 PlasticSpatialVelocityGradient::PlasticSpatialVelocityGradient(const OptionSet & options)
   : Model(options),
     _crystal_geometry(register_data<crystallography::CrystalGeometry>(
-        options.get<std::string>("crystal_geometry_name"))),
+        options.get<std::string>("crystal_geometry"))),
     _lp(declare_output_variable<R2>("plastic_spatial_velocity_gradient")),
     _R(declare_input_variable<R2>("orientation")),
-    _g(declare_input_variable<Scalar>("slip_rates", _crystal_geometry.nslip()))
+    _g(declare_input_variable<Scalar>("slip_rates", -1))
 {
 }
 
 void
 PlasticSpatialVelocityGradient::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  const auto lp_crystal = batch_sum(_g * _crystal_geometry.A(), -1);
+  const auto lp_crystal = intmd_sum(_g * _crystal_geometry.A(), -1, /*keepdim=*/false);
 
   if (out)
-    _lp = lp_crystal.rotate(_R);
+    _lp = lp_crystal.rotate(_R());
 
   if (dout_din)
   {
     if (_g.is_dependent())
-    {
-      const auto dlp_dg = _crystal_geometry.A().rotate(R2(_R).batch_unsqueeze(-1));
-      _lp.d(_g) = Tensor(dlp_dg.movedim(-3, -1), dlp_dg.batch_sizes().slice(0, -1));
-    }
+      _lp.d(_g, -1) = _crystal_geometry.A().rotate(_R().intmd_unsqueeze(-1));
 
     if (_R.is_dependent())
-      _lp.d(_R) = lp_crystal.drotate(_R);
+      _lp.d(_R) = lp_crystal.drotate(_R());
   }
 }
 } // namespace neml2

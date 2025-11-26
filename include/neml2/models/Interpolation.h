@@ -30,6 +30,19 @@ namespace neml2
 {
 class Scalar;
 
+std::tuple<Scalar, Scalar, Scalar> parametric_coordinates(const Scalar & X, const Scalar & x);
+
+template <typename T>
+T
+apply_mask(const T & a, const Scalar & m, std::size_t mdim)
+{
+  const auto B = utils::broadcast_dynamic_sizes({a, m});
+  auto I = utils::broadcast_sizes(a.intmd_sizes(), m.intmd_sizes());
+  const auto am = T(a.batch_expand(B, I).index({m.batch_expand(B, I)}), 0);
+  I.erase(I.end() - mdim, I.end()); // Remove the last mdim dimensions
+  return am.batch_reshape(B, I);
+}
+
 /**
  * @brief The base class for interpolated variable
  *

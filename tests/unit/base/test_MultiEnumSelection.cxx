@@ -35,23 +35,23 @@ TEST_CASE("MultiEnumSelection", "[base]")
   SECTION("Construct from candidate strings")
   {
     MultiEnumSelection es1({"a", "b", "c"}, {"b"});
-    REQUIRE(std::vector<std::string>(es1) == std::vector<std::string>{"b"});
-    REQUIRE(std::vector<int>(es1) == std::vector<int>{1});
+    REQUIRE(es1.selections() == std::vector<std::string>{"b"});
+    REQUIRE(es1.values() == std::vector<int>{1});
 
     MultiEnumSelection es2({"a", "bb", "cccc"}, {"cccc", "a"});
-    REQUIRE(std::vector<std::string>(es2) == std::vector<std::string>{"cccc", "a"});
-    REQUIRE(std::vector<int>(es2) == std::vector<int>{2, 0});
+    REQUIRE(es2.selections() == std::vector<std::string>{"cccc", "a"});
+    REQUIRE(es2.values() == std::vector<int>{2, 0});
   }
 
   SECTION("Construct from candidate strings and values")
   {
     MultiEnumSelection es1({"a", "b", "c"}, {5, 2, 1}, {"b"});
-    REQUIRE(std::vector<std::string>(es1) == std::vector<std::string>{"b"});
-    REQUIRE(std::vector<int>(es1) == std::vector<int>{2});
+    REQUIRE(es1.selections() == std::vector<std::string>{"b"});
+    REQUIRE(es1.values() == std::vector<int>{2});
 
     MultiEnumSelection es2({"a", "bb", "cccc"}, {-1, -2, -5}, {"cccc", "a"});
-    REQUIRE(std::vector<std::string>(es2) == std::vector<std::string>{"cccc", "a"});
-    REQUIRE(std::vector<int>(es2) == std::vector<int>{-5, -1});
+    REQUIRE(es2.selections() == std::vector<std::string>{"cccc", "a"});
+    REQUIRE(es2.values() == std::vector<int>{-5, -1});
 
     MultiEnumSelection es3 = es2;
     REQUIRE(es3 == es2);
@@ -60,13 +60,13 @@ TEST_CASE("MultiEnumSelection", "[base]")
   SECTION("Modify selection")
   {
     MultiEnumSelection es({"a", "b", "c"}, {5, 2, 1}, {"b"});
-    REQUIRE(std::vector<std::string>(es) == std::vector<std::string>{"b"});
-    REQUIRE(std::vector<int>(es) == std::vector<int>{2});
+    REQUIRE(es.selections() == std::vector<std::string>{"b"});
+    REQUIRE(es.values() == std::vector<int>{2});
 
     std::stringstream ss("c a");
     ss >> es;
-    REQUIRE(std::vector<std::string>(es) == std::vector<std::string>{"c", "a"});
-    REQUIRE(std::vector<int>(es) == std::vector<int>{1, 5});
+    REQUIRE(es.selections() == std::vector<std::string>{"c", "a"});
+    REQUIRE(es.values() == std::vector<int>{1, 5});
 
     std::stringstream ss2("c d");
     REQUIRE_THROWS_WITH(ss2 >> es, Catch::Matchers::ContainsSubstring("Invalid selection"));

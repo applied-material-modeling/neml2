@@ -32,7 +32,7 @@ namespace neml2
 class TensorLoader : public FixedSizeWorkGenerator<Tensor>
 {
 public:
-  TensorLoader(const Tensor & tensor, Size batch_dim);
+  TensorLoader(const Tensor & tensor, Size dynamic_dim);
 
   std::size_t total() const override;
 
@@ -43,8 +43,8 @@ private:
   /// The tensor to load work from
   const Tensor _tensor;
 
-  /// The batch dimension of the tensor along which to load work
-  const Size _batch_dim;
+  /// The dynamic dimension of the tensor along which to load work
+  const Size _dynamic_dim;
 
   /// The slice generator that generates slicing indices for the tensor
   SliceGenerator _slice_gen;

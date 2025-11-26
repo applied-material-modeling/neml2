@@ -40,19 +40,14 @@
   f(R3);                                                                                           \
   f(SFR3);                                                                                         \
   f(R4);                                                                                           \
-  f(SFR4);                                                                                         \
-  f(WFR4);                                                                                         \
-  f(SSR4);                                                                                         \
   f(SFFR4);                                                                                        \
+  f(WFFR4);                                                                                        \
+  f(SSR4);                                                                                         \
   f(SWR4);                                                                                         \
   f(WSR4);                                                                                         \
   f(WWR4);                                                                                         \
-  f(R5);                                                                                           \
-  f(SSFR5);                                                                                        \
   f(Quaternion);                                                                                   \
-  f(MillerIndex);                                                                                  \
-  f(SSSSR8);                                                                                       \
-  f(R8)
+  f(MillerIndex)
 
 #define FOR_ALL_NONSCALAR_TENSORBASE(f)                                                            \
   FOR_ALL_NONSCALAR_PRIMITIVETENSOR(f);                                                            \
@@ -77,8 +72,7 @@
 
 #define FOR_ALL_PRIMITIVETENSOR_COMMA(f)                                                           \
   FOR_ALL_VECBASE_COMMA(f), FOR_ALL_R2BASE_COMMA(f), f(Scalar), f(SR2), f(R3), f(SFR3), f(R4),     \
-      f(SFR4), f(WFR4), f(SSR4), f(SFFR4), f(SWR4), f(WSR4), f(WWR4), f(R5), f(SSFR5),             \
-      f(Quaternion), f(MillerIndex), f(SSSSR8), f(R8)
+      f(SFFR4), f(WFFR4), f(SSR4), f(SWR4), f(WSR4), f(WWR4), f(Quaternion), f(MillerIndex)
 
 #define FOR_ALL_VECBASE_COMMA(f) f(Vec), f(Rot), f(WR2)
 

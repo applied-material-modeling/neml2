@@ -39,6 +39,6 @@ TEST_CASE("IdentityTensor", "[user_tensors]")
     const auto a = factory->get_object<Tensor>("Tensors", "a");
     REQUIRE(a->batch_sizes() == TensorShape{2, 1});
     REQUIRE(a->base_sizes() == TensorShape{12, 12});
-    REQUIRE(at::allclose(*a, Tensor::identity({2, 1}, 12, default_tensor_options())));
+    REQUIRE(at::allclose(*a, Tensor::identity(12, default_tensor_options())));
   }
 }

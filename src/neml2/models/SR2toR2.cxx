@@ -23,7 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/SR2toR2.h"
-#include "neml2/tensors/mandel_notation.h"
+#include "neml2/tensors/functions/symmetrization.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/R2.h"
 #include "neml2/tensors/SSR4.h"
@@ -59,7 +59,7 @@ SR2toR2::SR2toR2(const OptionSet & options)
 void
 SR2toR2::set_value(bool out, bool dout_din, bool d2out_din2)
 {
-  auto A = SR2(_input);
+  const auto & A = _input();
 
   if (out)
     _output = R2(A);

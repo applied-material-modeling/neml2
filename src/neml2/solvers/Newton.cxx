@@ -27,7 +27,7 @@
 
 #include "neml2/solvers/Newton.h"
 #include "neml2/tensors/Scalar.h"
-#include "neml2/tensors/functions/linalg/vector_norm.h"
+#include "neml2/tensors/functions/norm.h"
 #include "neml2/tensors/functions/linalg/solve.h"
 
 namespace neml2
@@ -56,7 +56,7 @@ Newton::solve(NonlinearSystem & system, const NonlinearSystem::Sol<false> & x0)
 
   // The initial residual for relative convergence check
   auto R = system.residual(x);
-  auto nR = linalg::vector_norm(R);
+  auto nR = neml2::norm(R);
   auto nR0 = nR.clone();
 
   // Check for initial convergence
@@ -81,7 +81,7 @@ Newton::solve(NonlinearSystem & system, const NonlinearSystem::Sol<false> & x0)
     auto J = system.Jacobian<true>();
     update(system, x, R, J);
     R = system.residual(x);
-    nR = linalg::vector_norm(R);
+    nR = neml2::norm(R);
 
     // Check for convergence
     if (converged(i, nR, nR0))

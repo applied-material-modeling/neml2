@@ -37,6 +37,7 @@ namespace neml2
 FOR_ALL_TENSORBASE(FORWARD_DECLARATION);
 
 // Define macros (let's be responsible and undefine them afterwards)
+#define DECLARE_UNARY_OP(op, T, TR) TR op(const T & a)
 #define DECLARE_BINARY_OP(op, T1, T2, TR) TR op(const T1 & a, const T2 & b)
 #define DECLARE_BINARY_OP_SELF(op, T) DECLARE_BINARY_OP(op, T, T, T)
 #define DECLARE_BINARY_OP_SYM(op, T1, T2, TR)                                                      \
@@ -47,106 +48,106 @@ FOR_ALL_TENSORBASE(FORWARD_DECLARATION);
 ///////////////////////////////////////////////////////////////////////////////
 // Addition
 ///////////////////////////////////////////////////////////////////////////////
-//       operator+ |  non-scalar-prim tensor scalar real
+//       operator+ |  non-scalar-prim tensor scalar cscalar
 // ----------------------------------------------------------
 // non-scalar-prim |              yes           yes  yes
 //          tensor |                     yes    yes  yes
 //          scalar |              yes    yes    yes  yes
-//            real |              yes    yes    yes
+//         cscalar |              yes    yes    yes
 #define DECLARE_ADD_SELF(T) DECLARE_BINARY_OP_SELF(operator+, T)
 #define DECLARE_ADD_SYM_SCALAR(T) DECLARE_BINARY_OP_SYM(operator+, T, Scalar, T)
-#define DECLARE_ADD_SYM_REAL(T) DECLARE_BINARY_OP_SYM(operator+, T, CScalar, T)
+#define DECLARE_ADD_SYM_CSCALAR(T) DECLARE_BINARY_OP_SYM(operator+, T, CScalar, T)
 FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DECLARE_ADD_SELF);
 FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DECLARE_ADD_SYM_SCALAR);
-FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DECLARE_ADD_SYM_REAL);
+FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DECLARE_ADD_SYM_CSCALAR);
 DECLARE_ADD_SELF(Tensor);
 DECLARE_ADD_SYM_SCALAR(Tensor);
-DECLARE_ADD_SYM_REAL(Tensor);
+DECLARE_ADD_SYM_CSCALAR(Tensor);
 DECLARE_ADD_SELF(Scalar);
-DECLARE_ADD_SYM_REAL(Scalar);
+DECLARE_ADD_SYM_CSCALAR(Scalar);
 #undef DECLARE_ADD_SELF
 #undef DECLARE_ADD_SYM_SCALAR
-#undef DECLARE_ADD_SYM_REAL
+#undef DECLARE_ADD_SYM_CSCALAR
 
 ///////////////////////////////////////////////////////////////////////////////
 // Subtraction
 ///////////////////////////////////////////////////////////////////////////////
-//       operator- |  non-scalar-prim tensor scalar real
+//       operator- |  non-scalar-prim tensor scalar cscalar
 // ----------------------------------------------------------
 // non-scalar-prim |              yes           yes  yes
 //          tensor |                     yes    yes  yes
 //          scalar |              yes    yes    yes  yes
-//            real |              yes    yes    yes
+//         cscalar |              yes    yes    yes
 #define DECLARE_SUB_SELF(T) DECLARE_BINARY_OP_SELF(operator-, T)
 #define DECLARE_SUB_SYM_SCALAR(T) DECLARE_BINARY_OP_SYM(operator-, T, Scalar, T)
-#define DECLARE_SUB_SYM_REAL(T) DECLARE_BINARY_OP_SYM(operator-, T, CScalar, T)
+#define DECLARE_SUB_SYM_CSCALAR(T) DECLARE_BINARY_OP_SYM(operator-, T, CScalar, T)
 FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DECLARE_SUB_SELF);
 FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DECLARE_SUB_SYM_SCALAR);
-FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DECLARE_SUB_SYM_REAL);
+FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DECLARE_SUB_SYM_CSCALAR);
 DECLARE_SUB_SELF(Tensor);
 DECLARE_SUB_SYM_SCALAR(Tensor);
-DECLARE_SUB_SYM_REAL(Tensor);
+DECLARE_SUB_SYM_CSCALAR(Tensor);
 DECLARE_SUB_SELF(Scalar);
-DECLARE_SUB_SYM_REAL(Scalar);
+DECLARE_SUB_SYM_CSCALAR(Scalar);
 #undef DECLARE_SUB_SELF
 #undef DECLARE_SUB_SYM_SCALAR
-#undef DECLARE_SUB_SYM_REAL
+#undef DECLARE_SUB_SYM_CSCALAR
 
 ///////////////////////////////////////////////////////////////////////////////
 // Multiplication
 ///////////////////////////////////////////////////////////////////////////////
-//       operator* |  non-scalar-prim tensor scalar real
+//       operator* |  non-scalar-prim tensor scalar cscalar
 // ----------------------------------------------------------
 // non-scalar-prim |                            yes  yes
 //          tensor |                     yes    yes  yes
 //          scalar |              yes    yes    yes  yes
-//            real |              yes    yes    yes
+//         cscalar |              yes    yes    yes
 #define DECLARE_MUL_SELF(T) DECLARE_BINARY_OP_SELF(operator*, T)
 #define DECLARE_MUL_SYM_SCALAR(T) DECLARE_BINARY_OP_SYM(operator*, T, Scalar, T)
-#define DECLARE_MUL_SYM_REAL(T) DECLARE_BINARY_OP_SYM(operator*, T, CScalar, T)
+#define DECLARE_MUL_SYM_CSCALAR(T) DECLARE_BINARY_OP_SYM(operator*, T, CScalar, T)
 FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DECLARE_MUL_SYM_SCALAR);
-FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DECLARE_MUL_SYM_REAL);
+FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DECLARE_MUL_SYM_CSCALAR);
 DECLARE_MUL_SELF(Tensor);
 DECLARE_MUL_SYM_SCALAR(Tensor);
-DECLARE_MUL_SYM_REAL(Tensor);
+DECLARE_MUL_SYM_CSCALAR(Tensor);
 DECLARE_MUL_SELF(Scalar);
-DECLARE_MUL_SYM_REAL(Scalar);
+DECLARE_MUL_SYM_CSCALAR(Scalar);
 #undef DECLARE_MUL_SELF
 #undef DECLARE_MUL_SYM_SCALAR
-#undef DECLARE_MUL_SYM_REAL
+#undef DECLARE_MUL_SYM_CSCALAR
 
 ///////////////////////////////////////////////////////////////////////////////
 // Division
 ///////////////////////////////////////////////////////////////////////////////
-//       operator/ |  non-scalar-prim tensor scalar real
+//       operator/ |  non-scalar-prim tensor scalar cscalar
 // ----------------------------------------------------------
 // non-scalar-prim |                            yes  yes
 //          tensor |                     yes    yes  yes
 //          scalar |              yes    yes    yes  yes
-//            real |              yes    yes    yes
+//         cscalar |              yes    yes    yes
 #define DECLARE_DIV_SELF(T) DECLARE_BINARY_OP_SELF(operator/, T)
 #define DECLARE_DIV_SYM_SCALAR(T) DECLARE_BINARY_OP_SYM(operator/, T, Scalar, T)
-#define DECLARE_DIV_SYM_REAL(T) DECLARE_BINARY_OP_SYM(operator/, T, CScalar, T)
+#define DECLARE_DIV_SYM_CSCALAR(T) DECLARE_BINARY_OP_SYM(operator/, T, CScalar, T)
 FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DECLARE_DIV_SYM_SCALAR);
-FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DECLARE_DIV_SYM_REAL);
+FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DECLARE_DIV_SYM_CSCALAR);
 DECLARE_DIV_SELF(Tensor);
 DECLARE_DIV_SYM_SCALAR(Tensor);
-DECLARE_DIV_SYM_REAL(Tensor);
+DECLARE_DIV_SYM_CSCALAR(Tensor);
 DECLARE_DIV_SELF(Scalar);
-DECLARE_DIV_SYM_REAL(Scalar);
+DECLARE_DIV_SYM_CSCALAR(Scalar);
 #undef DECLARE_DIV_SELF
 #undef DECLARE_DIV_SYM_SCALAR
-#undef DECLARE_DIV_SYM_REAL
+#undef DECLARE_DIV_SYM_CSCALAR
 
 ///////////////////////////////////////////////////////////////////////////////
 // In-place addition
 ///////////////////////////////////////////////////////////////////////////////
-//      operator+= |  non-scalar-prim tensor scalar real
+//      operator+= |  non-scalar-prim tensor scalar cscalar
 // ----------------------------------------------------------
 // non-scalar-prim |                                 yes
 //          tensor |                                 yes
 //          scalar |                                 yes
-//            real |
+//         cscalar |
 #define DECLARE_ADD_EQ(T) DECLARE_BINARY_OP_NONCONST(operator+=, T, CScalar, T &)
 FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DECLARE_ADD_EQ);
 DECLARE_ADD_EQ(Tensor);
@@ -156,12 +157,12 @@ DECLARE_ADD_EQ(Scalar);
 ///////////////////////////////////////////////////////////////////////////////
 // In-place subtraction
 ///////////////////////////////////////////////////////////////////////////////
-//      operator-= |  non-scalar-prim tensor scalar real
+//      operator-= |  non-scalar-prim tensor scalar cscalar
 // ----------------------------------------------------------
 // non-scalar-prim |                                 yes
 //          tensor |                                 yes
 //          scalar |                                 yes
-//            real |
+//         cscalar |
 #define DECLARE_SUB_EQ(T) DECLARE_BINARY_OP_NONCONST(operator-=, T, CScalar, T &)
 FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DECLARE_SUB_EQ);
 DECLARE_SUB_EQ(Tensor);
@@ -171,12 +172,12 @@ DECLARE_SUB_EQ(Scalar);
 ///////////////////////////////////////////////////////////////////////////////
 // In-place multiplication
 ///////////////////////////////////////////////////////////////////////////////
-//      operator*= |  non-scalar-prim tensor scalar real
+//      operator*= |  non-scalar-prim tensor scalar cscalar
 // ----------------------------------------------------------
 // non-scalar-prim |                                 yes
 //          tensor |                                 yes
 //          scalar |                                 yes
-//            real |
+//         cscalar |
 #define DECLARE_MUL_EQ(T) DECLARE_BINARY_OP_NONCONST(operator*=, T, CScalar, T &)
 FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DECLARE_MUL_EQ);
 DECLARE_MUL_EQ(Tensor);
@@ -186,12 +187,12 @@ DECLARE_MUL_EQ(Scalar);
 ///////////////////////////////////////////////////////////////////////////////
 // In-place division
 ///////////////////////////////////////////////////////////////////////////////
-//      operator/= |  non-scalar-prim tensor scalar real
+//      operator/= |  non-scalar-prim tensor scalar cscalar
 // ----------------------------------------------------------
 // non-scalar-prim |                                 yes
 //          tensor |                                 yes
 //          scalar |                                 yes
-//            real |
+//         cscalar |
 #define DECLARE_DIV_EQ(T) DECLARE_BINARY_OP_NONCONST(operator/=, T, CScalar, T &)
 FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DECLARE_DIV_EQ);
 DECLARE_DIV_EQ(Tensor);

@@ -26,10 +26,10 @@
 
 namespace neml2
 {
-TensorLoader::TensorLoader(const Tensor & tensor, Size batch_dim)
+TensorLoader::TensorLoader(const Tensor & tensor, Size dynamic_dim)
   : _tensor(tensor),
-    _batch_dim(batch_dim),
-    _slice_gen(0, tensor.size(batch_dim))
+    _dynamic_dim(dynamic_dim),
+    _slice_gen(0, tensor.dynamic_size(dynamic_dim).concrete())
 {
 }
 
@@ -43,7 +43,7 @@ std::pair<std::size_t, Tensor>
 TensorLoader::generate(std::size_t n)
 {
   auto && [m, slice] = _slice_gen.next(n);
-  auto work = _tensor.batch_slice(_batch_dim, slice);
+  auto work = _tensor.dynamic_slice(_dynamic_dim, slice);
   return {m, std::move(work)};
 }
 } // namespace neml2

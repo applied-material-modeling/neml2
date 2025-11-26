@@ -116,23 +116,23 @@ LDISolidMechanicsDriver::diagnose() const
 
   if (_vorticity_prescribed)
   {
-    diagnostic_assert(_vorticity.batch_dim() >= 1,
+    diagnostic_assert(_vorticity.dynamic_dim() >= 1,
                       "Input vorticity should have at least one batch dimension but instead "
                       "has batch dimension ",
-                      _vorticity.batch_dim());
+                      _vorticity.dynamic_dim());
     diagnostic_assert(
 
-        _vorticity.batch_size(0) == _time.batch_size(0),
+        _vorticity.dynamic_size(0) == _time.dynamic_size(0),
         "Input vorticity should have the same number of steps steps as time, but instead has ",
-        _vorticity.batch_size(0),
+        _vorticity.dynamic_size(0),
         " time steps");
   }
 
   if (_cp_warmup)
   {
     diagnostic_assert(_control == "STRAIN", "CP warm-up step is only supported for STRAIN control");
-    diagnostic_assert(_model->input_axis().has_variable(_cp_warmup_elastic_strain),
-                      "Model's input axis should have variable ",
+    diagnostic_assert(_model->input_variables().count(_cp_warmup_elastic_strain),
+                      "Model's input should have variable ",
                       _cp_warmup_elastic_strain,
                       " for the CP warm-up step but it does not");
   }
@@ -142,7 +142,7 @@ void
 LDISolidMechanicsDriver::update_forces()
 {
   SolidMechanicsDriver::update_forces();
-  _in[_vorticity_name] = _vorticity.batch_index({_step_count});
+  _in[_vorticity_name] = _vorticity.dynamic_index({_step_count});
 }
 
 void

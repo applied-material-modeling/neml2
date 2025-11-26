@@ -28,7 +28,7 @@
 namespace neml2
 {
 #define DEFINE_ARCTAN(T)                                                                           \
-  T atan(const T & a) { return T(at::atan(a), a.batch_sizes()); }                                  \
+  T atan(const T & a) { return T(at::atan(a), a.dynamic_sizes(), a.intmd_dim()); }                 \
   static_assert(true)
 FOR_ALL_TENSORBASE(DEFINE_ARCTAN);
 } // namespace neml2

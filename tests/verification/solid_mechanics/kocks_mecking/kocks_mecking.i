@@ -24,16 +24,19 @@
     type = Scalar
     values = '750 850 950'
     batch_shape = '(3)'
+    intermediate_dimension = 1
   []
   [E_values]
     type = Scalar
     values = '200000 175000 150000'
     batch_shape = '(3)'
+    intermediate_dimension = 1
   []
   [mu_values]
     type = Scalar
     values = '76923.07692308 67307.69230769 57692.30769231'
     batch_shape = '(3)'
+    intermediate_dimension = 1
   []
 []
 
@@ -49,8 +52,8 @@
   [verification]
     type = VTestVerification
     driver = 'driver'
-    variables = 'output.state/S'
-    references = 'stresses'
+    SR2_names = 'output.state/S'
+    SR2_values = 'stresses'
     rtol = 1.0e-5
     atol = 1.0e-5
   []

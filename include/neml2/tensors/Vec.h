@@ -46,21 +46,6 @@ public:
 
   Vec(const Rot & r);
 
-  /// The derivative of a Vec with respect to itself
-  [[nodiscard]] static R2 identity_map(const TensorOptions & options = default_tensor_options());
-
-  /// dot product
-  Scalar dot(const Vec & v) const;
-
-  /// cross product
-  Vec cross(const Vec & v) const;
-
-  /// outer product
-  R2 outer(const Vec & v) const;
-
-  /// self outer product
-  SR2 self_outer() const;
-
   // Transform by a crystal symmetry operator
   Vec transform(const R2 & op) const override;
 };

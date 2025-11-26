@@ -44,14 +44,38 @@
 #include "neml2/tensors/functions/deg2rad.h"
 #include "neml2/tensors/functions/fmod.h"
 #include "neml2/tensors/functions/stack.h"
-#include "neml2/tensors/functions/diag_embed.h"
+#include "neml2/tensors/functions/diagonalize.h"
 #include "neml2/tensors/functions/clip.h"
+#include "neml2/tensors/functions/norm_sq.h"
+#include "neml2/tensors/functions/vdot.h"
+#include "neml2/tensors/functions/cross.h"
+#include "neml2/tensors/functions/norm.h"
+#include "neml2/tensors/functions/outer.h"
+#include "neml2/tensors/functions/inv.h"
 
 namespace neml2
 {
-Rot::Rot(const Vec & v)
-  : Rot(Tensor(v))
+Rot
+Rot::rand(const TensorOptions & options)
 {
+  return Rot::rand({}, {}, options);
+}
+
+Rot
+Rot::rand(const TraceableTensorShape & dynamic_shape,
+          TensorShapeRef intmd_shape,
+          const TensorOptions & options)
+{
+  auto u = Vec::rand(dynamic_shape, intmd_shape, options);
+
+  auto w = neml2::sqrt(1.0 - u(0)) * neml2::sin(2.0 * M_PI * u(1));
+  auto x = neml2::sqrt(1.0 - u(0)) * neml2::cos(2.0 * M_PI * u(1));
+  auto y = neml2::sqrt(u(0)) * neml2::sin(2.0 * M_PI * u(2));
+  auto z = neml2::sqrt(u(0)) * neml2::cos(2.0 * M_PI * u(2));
+
+  auto q = Quaternion(base_stack({w, x, y, z}));
+
+  return fill_matrix(q.rotation_matrix());
 }
 
 Rot
@@ -86,7 +110,7 @@ Rot::fill_euler_angles(const Vec & v,
     neml_assert(angle_convention == "kocks", "Unknown Rot angle_convention " + angle_convention);
 
   // Make a rotation matrix
-  auto M = R2(neml2::base_diag_embed(m));
+  auto M = R2(neml2::base_diagonalize(m));
   auto a = m.base_index({0});
   auto b = m.base_index({1});
   auto c = m.base_index({2});
@@ -137,60 +161,37 @@ Rot::fill_rodrigues(const Scalar & rx, const Scalar & ry, const Scalar & rz)
 }
 
 Rot
-Rot::fill_random(unsigned int n)
-{
-  auto u0 = Scalar(at::rand({n}, default_tensor_options()));
-  auto u1 = Scalar(at::rand({n}, default_tensor_options()));
-  auto u2 = Scalar(at::rand({n}, default_tensor_options()));
-
-  auto w = neml2::sqrt(1.0 - u0) * neml2::sin(2.0 * M_PI * u1);
-  auto x = neml2::sqrt(1.0 - u0) * neml2::cos(2.0 * M_PI * u1);
-  auto y = neml2::sqrt(u0) * neml2::sin(2.0 * M_PI * u2);
-  auto z = neml2::sqrt(u0) * neml2::cos(2.0 * M_PI * u2);
-
-  auto quats = Quaternion(base_stack({w, x, y, z}));
-
-  return fill_matrix(quats.to_R2());
-}
-
-Rot
 Rot::rotation_from_to(const Vec & v1, const Vec & v2)
 {
-  auto n = v1.cross(v2);
-  auto c = v1.dot(v2);
+  auto n = neml2::cross(v1, v2);
+  auto c = neml2::vdot(v1, v2);
 
   auto srp = n / (1.0 + c);
-  auto nsrp = srp.norm_sq();
+  auto nsrp = neml2::norm_sq(srp);
 
   return srp / (neml2::sqrt(1.0 + nsrp) + 1.0);
 }
 
 Rot
-Rot::from_axis_angle(const Vec & n, const Scalar & theta)
+Rot::axis_angle(const Vec & n, const Scalar & theta)
 {
-  auto nn = n / n.norm();
+  auto nn = n / neml2::norm(n);
   auto t = neml2::tan(theta / 4.0);
 
   return nn * t;
 }
 
 Rot
-Rot::from_axis_angle_standard(const Vec & n, const Scalar & theta)
+Rot::axis_angle_standard(const Vec & n, const Scalar & theta)
 {
-  auto vn = from_axis_angle(n, theta * 2);
-  return vn / (neml2::sqrt(1.0 + vn.norm_sq()) + 1.0);
-}
-
-Rot
-Rot::inverse() const
-{
-  return -(*this);
+  auto vn = axis_angle(n, theta * 2);
+  return vn / (neml2::sqrt(1.0 + norm_sq(vn)) + 1.0);
 }
 
 R2
 Rot::euler_rodrigues() const
 {
-  auto rr = norm_sq();
+  auto rr = norm_sq(*this);
   auto E = R3::levi_civita(options());
   auto W = R2::skew(*this);
 
@@ -201,16 +202,16 @@ Rot::euler_rodrigues() const
 R3
 Rot::deuler_rodrigues() const
 {
-  auto rr = norm_sq();
+  auto rr = norm_sq(*this);
   auto I = R2::identity(options());
   auto E = R3::levi_civita(options());
   auto W = R2::skew(*this);
 
-  return 8.0 * (rr - 3.0) / neml2::pow(1.0 + rr, 3.0) * R3(at::einsum("...ij,...k", {W, *this})) -
-         32.0 / neml2::pow(1 + rr, 3.0) * R3(at::einsum("...ij,...k", {(W * W), *this})) -
-         4.0 * (1 - rr) / neml2::pow(1.0 + rr, 2.0) * R3(at::einsum("...kij->...ijk", {E})) -
+  return 8.0 * (rr - 3.0) / neml2::pow(1.0 + rr, 3.0) * R3::einsum("...ij,...k", {W, *this}) -
+         32.0 / neml2::pow(1 + rr, 3.0) * R3::einsum("...ij,...k", {(W * W), *this}) -
+         4.0 * (1 - rr) / neml2::pow(1.0 + rr, 2.0) * R3::einsum("...kij->...ijk", {E}) -
          8.0 / neml2::pow(1.0 + rr, 2.0) *
-             R3(at::einsum("...kim,...mj", {E, W}) + at::einsum("...im,...kmj", {W, E}));
+             (R3::einsum("...kim,...mj", {E, W}) + R3::einsum("...im,...kmj", {W, E}));
 }
 
 Rot
@@ -224,15 +225,15 @@ Rot::drotate(const Rot & r) const
 {
   auto r1 = *this;
 
-  auto rr1 = r1.norm_sq();
-  auto rr2 = r.norm_sq();
-  auto d = 1.0 + rr1 * rr2 - 2 * Vec(r1).dot(r);
+  auto rr1 = norm_sq(r1);
+  auto rr2 = norm_sq(r);
+  auto d = 1.0 + rr1 * rr2 - 2 * neml2::vdot(r1, r);
   auto r3 = rotate(r);
   auto I = R2::identity(options());
 
   return 1.0 / d *
-         (-Vec(r3).outer(2 * rr1 * Vec(r) - 2.0 * Vec(r1)) - 2 * Vec(r1).outer(Vec(r)) +
-          (1 - rr1) * I - 2 * R2::skew(r1));
+         (-neml2::outer(Vec(r3), 2 * rr1 * Vec(r) - 2.0 * Vec(r1)) -
+          2 * neml2::outer(Vec(r1), Vec(r)) + (1 - rr1) * I - 2 * R2::skew(r1));
 }
 
 R2
@@ -240,28 +241,28 @@ Rot::drotate_self(const Rot & r) const
 {
   auto r2 = *this;
 
-  auto rr1 = r.norm_sq();
-  auto rr2 = r2.norm_sq();
-  auto d = 1.0 + rr1 * rr2 - 2 * Vec(r).dot(r2);
+  auto rr1 = norm_sq(r);
+  auto rr2 = norm_sq(r2);
+  auto d = 1.0 + rr1 * rr2 - 2 * neml2::vdot(r, r2);
   auto r3 = rotate(r);
   auto I = R2::identity(options());
 
   return 1.0 / d *
-         (-Vec(r3).outer(2 * rr1 * Vec(r2) - 2.0 * Vec(r)) - 2 * Vec(r).outer(Vec(r2)) +
-          (1 - rr1) * I + 2 * R2::skew(r));
+         (-neml2::outer(Vec(r3), 2 * rr1 * Vec(r2) - 2.0 * Vec(r)) -
+          2 * neml2::outer(Vec(r), Vec(r2)) + (1 - rr1) * I + 2 * R2::skew(r));
 }
 
 Rot
 Rot::shadow() const
 {
-  return -*this / norm_sq();
+  return -*this / norm_sq(*this);
 }
 
 R2
 Rot::dshadow() const
 {
-  auto ns = norm_sq();
-  return (2.0 / ns * Vec(*this).outer(*this) - R2::identity(options())) / ns;
+  auto ns = norm_sq(*this);
+  return (2.0 / ns * neml2::outer(Vec(*this)) - R2::identity(options())) / ns;
 }
 
 Scalar
@@ -280,8 +281,8 @@ Rot::dist(const Rot & r2) const
 Scalar
 Rot::gdist(const Rot & r) const
 {
-  return 4.0 * neml2::asin(neml2::clip((*this - r).norm() /
-                                           neml2::sqrt((1.0 + norm_sq()) * (1.0 + r.norm_sq())),
+  return 4.0 * neml2::asin(neml2::clip(neml2::norm(*this - r) /
+                                           neml2::sqrt((1.0 + norm_sq(*this)) * (1.0 + norm_sq(r))),
                                        -Scalar(1.0, r.options()),
                                        Scalar(1.0, r.options())));
 }
@@ -289,17 +290,17 @@ Rot::gdist(const Rot & r) const
 Scalar
 Rot::dV() const
 {
-  return 8.0 / M_PI * neml2::pow(1.0 + norm_sq(), -3.0);
+  return 8.0 / M_PI * neml2::pow(1.0 + norm_sq(*this), -3.0);
 }
 
 Rot
 operator*(const Rot & r1, const Rot & r2)
 {
-  auto rr1 = r1.norm_sq();
-  auto rr2 = r2.norm_sq();
+  auto rr1 = norm_sq(r1);
+  auto rr2 = norm_sq(r2);
 
-  return Rot((1 - rr2) * Vec(r1) + (1.0 - rr1) * Vec(r2) - 2.0 * Vec(r2).cross(r1)) /
-         (1.0 + rr1 * rr2 - 2 * Vec(r1).dot(r2));
+  return Rot((1 - rr2) * Vec(r1) + (1.0 - rr1) * Vec(r2) - 2.0 * neml2::cross(Vec(r2), r1)) /
+         (1.0 + rr1 * rr2 - 2 * neml2::vdot(r1, r2));
 }
 
 } // namemspace neml2

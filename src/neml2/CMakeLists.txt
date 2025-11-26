@@ -72,17 +72,9 @@ if(NEML2_PCH)
   )
 endif()
 
-# libneml2_jit
-neml2_add_submodule(jit SHARED jit)
-target_link_libraries(jit PUBLIC misc)
-
-if(NEML2_PCH)
-  target_precompile_headers(jit PUBLIC <neml2/jit/types.h>)
-endif()
-
 # libneml2_tensor
 neml2_add_submodule(tensor SHARED tensors)
-target_link_libraries(tensor PUBLIC jit)
+target_link_libraries(tensor PUBLIC misc)
 
 if(NEML2_PCH)
   target_precompile_headers(tensor PUBLIC

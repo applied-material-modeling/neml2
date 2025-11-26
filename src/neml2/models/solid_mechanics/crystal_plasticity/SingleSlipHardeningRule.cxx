@@ -25,7 +25,6 @@
 #include "neml2/models/solid_mechanics/crystal_plasticity/SingleSlipHardeningRule.h"
 
 #include "neml2/tensors/Scalar.h"
-#include "neml2/tensors/list_tensors.h"
 
 namespace neml2
 {

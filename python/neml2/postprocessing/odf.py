@@ -118,12 +118,12 @@ class ODF(torch.nn.Module):
 
     def __init__(self, X):
         super().__init__()
-        assert X.batch.dim() == 1
+        assert X.dynamic.dim() == 1
         self.X = X
 
     @property
     def n(self):
-        return self.X.batch.shape[0]
+        return self.X.dynamic.shape[0]
 
     def texture_index(self, deg=5):
         """Integrate the texture index as a probability
@@ -147,7 +147,7 @@ def split(X, i):
         X (indexable in first dimension): reference set
         i (int): index to separate
     """
-    l = X.batch.shape[0]
+    l = X.dynamic.shape[0]
 
     keep = torch.arange(l, device=X.device, dtype=torch.long)
     keep = keep[keep != i]
@@ -227,7 +227,7 @@ class KDEODF(ODF):
         Returns:
             torch.tensor with the probabilities
         """
-        dist = self.X.dist(Y.batch.unsqueeze(-1)).torch()
+        dist = self.X.dist(Y.dynamic.unsqueeze(-1)).torch()
 
         return torch.mean(
             self.kernel(torch.cos(dist / 2.0)),

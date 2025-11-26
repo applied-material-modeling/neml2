@@ -26,6 +26,11 @@
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
+#include "neml2/tensors/functions/inner.h"
+#include "neml2/tensors/functions/norm.h"
+#include "neml2/tensors/functions/outer.h"
+#include "neml2/tensors/functions/tr.h"
+#include "neml2/tensors/functions/dev.h"
 #include "neml2/base/EnumSelection.h"
 
 namespace neml2
@@ -54,8 +59,7 @@ SR2Invariant::expected_options()
                                 static_cast<int>(SR2Invariant::IType::INVALID)},
                                "INVALID");
   options.set<EnumSelection>("invariant_type") = type_selection;
-  options.set("invariant_type").doc() =
-      "Type of invariant. Options are: " + type_selection.candidates_str();
+  options.set("invariant_type").doc() = "Type of invariant. Options are: " + type_selection.join();
 
   return options;
 }
@@ -71,12 +75,12 @@ SR2Invariant::SR2Invariant(const OptionSet & options)
 void
 SR2Invariant::set_value(bool out, bool dout_din, bool d2out_din2)
 {
-  auto A = SR2(_A);
+  const auto & A = _A();
 
   if (_type == IType::I1)
   {
     if (out)
-      _invariant = A.tr();
+      _invariant = neml2::tr(A);
 
     if (!_A.is_dependent())
       return;
@@ -91,8 +95,10 @@ SR2Invariant::set_value(bool out, bool dout_din, bool d2out_din2)
   }
   else if (_type == IType::I2)
   {
+    auto trA = neml2::tr(A);
+
     if (out)
-      _invariant = (A.tr() * A.tr() - A.inner(A)) / 2.0;
+      _invariant = (trA * trA - neml2::inner(A, A)) / 2.0;
 
     if (!_A.is_dependent())
       return;
@@ -102,21 +108,21 @@ SR2Invariant::set_value(bool out, bool dout_din, bool d2out_din2)
       auto I2 = SR2::identity(_A.options());
 
       if (dout_din)
-        _invariant.d(_A) = A.tr() * I2 - A;
+        _invariant.d(_A) = trA * I2 - A;
 
       if (d2out_din2)
       {
         auto I2xI2 = SSR4::identity(_A.options());
         auto I4sym = SSR4::identity_sym(_A.options());
-        _invariant.d(_A, _A) = I2xI2 - I4sym;
+        _invariant.d2(_A, _A) = I2xI2 - I4sym;
       }
     }
   }
   else if (_type == IType::VONMISES)
   {
     const auto eps = machine_precision(A.scalar_type());
-    auto S = A.dev();
-    Scalar vm = std::sqrt(3.0 / 2.0) * S.norm(eps);
+    auto S = neml2::dev(A);
+    auto vm = std::sqrt(3.0 / 2.0) * neml2::norm(S, eps);
 
     if (out)
       _invariant = vm;
@@ -135,14 +141,14 @@ SR2Invariant::set_value(bool out, bool dout_din, bool d2out_din2)
       {
         auto I = SSR4::identity_sym(_A.options());
         auto J = SSR4::identity_dev(_A.options());
-        _invariant.d(_A, _A) = 3.0 / 2.0 * (I - 2.0 / 3.0 * dvm_dA.outer(dvm_dA)) * J / vm;
+        _invariant.d2(_A, _A) = 3.0 / 2.0 * (I - 2.0 / 3.0 * neml2::outer(dvm_dA)) * J / vm;
       }
     }
   }
   else if (_type == IType::EFFECTIVE_STRAIN)
   {
     const auto eps = machine_precision(A.scalar_type());
-    Scalar r = std::sqrt(2.0 / 3.0) * A.norm(eps);
+    auto r = std::sqrt(2.0 / 3.0) * neml2::norm(A, eps);
 
     if (out)
       _invariant = r;
@@ -158,12 +164,12 @@ SR2Invariant::set_value(bool out, bool dout_din, bool d2out_din2)
         _invariant.d(_A) = 2.0 / 3.0 * A / r;
 
       if (d2out_din2)
-        _invariant.d(_A, _A) =
-            2.0 / 3.0 * (SSR4::identity_sym(_A.options()) - 3.0 / 2.0 * d.outer(d)) / r;
+        _invariant.d2(_A, _A) =
+            2.0 / 3.0 * (SSR4::identity_sym(_A.options()) - 3.0 / 2.0 * neml2::outer(d)) / r;
     }
   }
   else
     throw NEMLException("Unsupported invariant type: " +
-                        std::string(input_options().get<EnumSelection>("invariant_type")));
+                        input_options().get<EnumSelection>("invariant_type").selection());
 }
 } // namespace neml2

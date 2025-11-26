@@ -25,15 +25,21 @@
 #include "neml2/tensors/functions/pow.h"
 #include "neml2/tensors/tensors.h"
 #include "neml2/tensors/assertions.h"
+#include "neml2/tensors/functions/utils.h"
 
 namespace neml2
 {
 #define DEFINE_POW(T)                                                                              \
-  T pow(const T & a, const CScalar & n) { return T(at::pow(a, n), a.batch_sizes()); }              \
+  T pow(const T & a, const CScalar & n)                                                            \
+  {                                                                                                \
+    return T(at::pow(a, n), a.dynamic_sizes(), a.intmd_dim());                                     \
+  }                                                                                                \
   T pow(const T & a, const Scalar & n)                                                             \
   {                                                                                                \
-    neml_assert_batch_broadcastable_dbg(a, n);                                                     \
-    return T(at::pow(a, n.base_unsqueeze_to(a.base_dim())), utils::broadcast_batch_dim(a, n));     \
+    neml_assert_dynamic_broadcastable_dbg(a, n);                                                   \
+    const auto [aa, nn, i] = utils::align_intmd_dim(a, n);                                         \
+    return T(                                                                                      \
+        at::pow(aa, nn.base_unsqueeze(-1, a.base_dim())), utils::broadcast_dynamic_dim(a, n), i);  \
   }                                                                                                \
   static_assert(true)
 FOR_ALL_NONSCALAR_TENSORBASE(DEFINE_POW);
@@ -41,34 +47,34 @@ FOR_ALL_NONSCALAR_TENSORBASE(DEFINE_POW);
 Scalar
 pow(const Scalar & a, const CScalar & n)
 {
-  return Scalar(at::pow(a, n), a.batch_sizes());
+  return Scalar(at::pow(a, n), a.dynamic_sizes(), a.intmd_dim());
 }
 
 Scalar
 pow(const Scalar & a, const Scalar & n)
 {
-  neml_assert_batch_broadcastable_dbg(a, n);
-  return Scalar(at::pow(a, n));
+  neml_assert_dynamic_broadcastable_dbg(a, n);
+  const auto [aa, nn, i] = utils::align_intmd_dim(a, n);
+  return Scalar(at::pow(aa, nn), i);
 }
 
 Scalar
 pow(const CScalar & a, const Scalar & n)
 {
-  return Scalar(at::pow(a, n), n.batch_sizes());
+  return Scalar(at::pow(a, n), n.dynamic_sizes(), n.intmd_dim());
 }
 
 Tensor
 pow(const Tensor & a, const Tensor & n)
 {
-  neml_assert_batch_broadcastable_dbg(a, n);
-  neml_assert_dbg(utils::sizes_broadcastable(a.base_sizes(), n.base_sizes()),
-                  "Cannot broadcast tensors in pow");
-  return Tensor(at::pow(a, n), utils::broadcast_batch_dim(a, n));
+  neml_assert_broadcastable_dbg(a, n);
+  const auto [aa, nn, i] = utils::align_static_dim(a, n);
+  return Tensor(at::pow(aa, nn), utils::broadcast_dynamic_dim(a, n), i);
 }
 
 Tensor
 pow(const CScalar & a, const Tensor & n)
 {
-  return Tensor(at::pow(a, n), n.batch_sizes());
+  return Tensor(at::pow(a, n), n.dynamic_sizes(), n.intmd_dim());
 }
 } // namespace neml2

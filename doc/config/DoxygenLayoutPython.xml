@@ -36,7 +36,6 @@
         <tab type="user" url="../tutorials-extension-argument-declaration" title="Argument declaration"/>
         <tab type="user" url="../tutorials-extension-the-forward-operator" title="The forward operator"/>
         <tab type="user" url="../tutorials-extension-model-composition" title="Model composition"/>
-        <tab type="user" url="../tutorials-extension-model-visualization" title="Model visualization"/>
       </tab>
       <tab type="usergroup" url="../tutorials-optimization" title="Optimization">
         <tab type="user" url="../tutorials-optimization-automatic-differentiation" title="Automatic differentiation"/>

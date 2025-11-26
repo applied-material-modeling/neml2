@@ -24,7 +24,6 @@
 
 #include "TabulatedPolynomialModel.h"
 #include "neml2/tensors/functions/stack.h"
-#include "neml2/misc/assertions.h"
 #include "neml2/tensors/Scalar.h"
 
 namespace neml2
@@ -98,10 +97,10 @@ void
 TabulatedPolynomialModel::set_value(bool out, bool /*dout_din*/, bool /*d2out_din2*/)
 {
   // Broadcast and expand batch shape
-  std::vector<Tensor> inputs = {_s.value(), _T.value(), _s1.value(), _s2.value()};
-  const auto batch_sizes = utils::broadcast_batch_sizes(inputs);
+  std::vector<Tensor> inputs = {_s(), _T(), _s1(), _s2()};
+  const auto dynamic_sizes = utils::broadcast_dynamic_sizes(inputs);
   for (std::size_t i = 0; i < inputs.size(); ++i)
-    inputs[i] = inputs[i].batch_expand(batch_sizes);
+    inputs[i] = inputs[i].dynamic_expand(dynamic_sizes);
 
   // This example model has 4 input variables:
   //
@@ -116,8 +115,8 @@ TabulatedPolynomialModel::set_value(bool out, bool /*dout_din*/, bool /*d2out_di
   x = x.unsqueeze(-2).unsqueeze(-2).unsqueeze(-1);
 
   // The smooth index ij is of shape (...; 2, 3)
-  auto i = smooth_index(Scalar(_s), _s_lb, _s_ub);
-  auto j = smooth_index(Scalar(_T), _T_lb, _T_ub);
+  auto i = smooth_index(_s(), _s_lb, _s_ub);
+  auto j = smooth_index(_T(), _T_lb, _T_ub);
   auto ij = at::matmul(i.unsqueeze(-1), j.unsqueeze(-2));
 
   if (out)
@@ -130,9 +129,9 @@ TabulatedPolynomialModel::set_value(bool out, bool /*dout_din*/, bool /*d2out_di
     // Now y contains outputs from each cell of the table. We need to "select" the cell.
     // "Selecting" the cell is equivalent to contracting ij with y
     y = at::einsum("...ij,...ijk", {ij, y});
-    _ep_dot = Scalar(y.index({indexing::Ellipsis, 0}));
-    _s1_dot = Scalar(y.index({indexing::Ellipsis, 1}));
-    _s2_dot = Scalar(y.index({indexing::Ellipsis, 2}));
+    _ep_dot = Scalar(y.index({indexing::Ellipsis, 0}), 0);
+    _s1_dot = Scalar(y.index({indexing::Ellipsis, 1}), 0);
+    _s2_dot = Scalar(y.index({indexing::Ellipsis, 2}), 0);
   }
 }
 }

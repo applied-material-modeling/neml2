@@ -34,7 +34,7 @@ std::ostream & operator<<(std::ostream &, const EnumSelection &);
 std::stringstream & operator>>(std::stringstream &, EnumSelection &);
 
 /**
- * @brief Selection of an enum value from a list of candidates
+ * @brief Selection of an enum value from a list of choices
  * @see neml2::EnumSelectionBase
  */
 class EnumSelection : public EnumSelectionBase
@@ -42,11 +42,11 @@ class EnumSelection : public EnumSelectionBase
 public:
   EnumSelection() = default;
 
-  /// Create an enum selection from a list of candidates and a default selection
-  EnumSelection(const std::vector<std::string> & candidates, const std::string & selection);
+  /// Create an enum selection from a list of choices and a default selection
+  EnumSelection(const std::vector<std::string> & choices, const std::string & selection);
 
-  /// Create an enum selection from a list of candidates, a list of values, and a default selection
-  EnumSelection(const std::vector<std::string> & candidates,
+  /// Create an enum selection from a list of choices, a list of values, and a default selection
+  EnumSelection(const std::vector<std::string> & choices,
                 const std::vector<int> & values,
                 const std::string & selection);
 
@@ -66,10 +66,10 @@ public:
   bool operator!=(const std::string & other) const;
 
   /// Poor man's reflection implementation
-  operator std::string() const { return _selection; }
+  const std::string & selection() const { return _selection; }
 
   /// Implicit conversion to int to let it behave more like a enum
-  operator int() const { return _value; }
+  int value() const { return _value; }
 
   /// Statically cast the enum value to a C++ enum class
   template <typename T>

@@ -33,11 +33,13 @@
     type = Scalar
     values = '0.045580 0.017770 0.007025 0.017770 0.045580'
     batch_shape = '(5)'
+    intermediate_dimension = 1
   []
   [psie_inactive]
     type = Scalar
     values = ' 0.030860 0.011870 0.007015 0.011870 0.030860'
     batch_shape = '(5)'
+    intermediate_dimension = 1
   []
 []
 

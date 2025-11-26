@@ -25,6 +25,7 @@
 #include "neml2/models/ParameterToState.h"
 #include "neml2/misc/assertions.h"
 #include "neml2/tensors/tensors.h"
+#include <torch/csrc/jit/frontend/tracer.h>
 
 namespace neml2
 {
@@ -61,9 +62,7 @@ void
 ParameterToState<T>::set_value(bool out, bool /*dout_din*/, bool /*d2out_din2*/)
 {
   if (out)
-  {
     this->_state = _input_param;
-  }
 }
 
 #define REGISTER(T)                                                                                \

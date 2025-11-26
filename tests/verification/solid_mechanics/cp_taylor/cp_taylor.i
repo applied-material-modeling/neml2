@@ -19,23 +19,19 @@
     vtest = 'cp_taylor.vtest'
     variable = 'vorticity'
   []
-  [a]
-    type = Scalar
-    values = '1.0'
-  []
   [sdirs]
-    type = FillMillerIndex
+    type = MillerIndex
     values = '1 1 0'
   []
   [splanes]
-    type = FillMillerIndex
+    type = MillerIndex
     values = '1 1 1'
   []
   [initial_orientation]
     type = Orientation
-    input_type = "euler_angles"
-    angle_convention = "kocks"
-    angle_type = "degrees"
+    input_type = 'euler_angles'
+    angle_convention = 'kocks'
+    angle_type = 'degrees'
     values = '45 50 51
               75 50 10
               10 5  60
@@ -47,7 +43,8 @@
 [Drivers]
   [driver]
     type = LDISolidMechanicsDriver
-    model = 'model_with_stress'
+    model = 'model'
+    postprocessor = 'pp'
     prescribed_time = 'times'
     prescribed_deformation_rate = 'deformation_rate'
     prescribed_vorticity = 'vorticity'
@@ -60,8 +57,8 @@
   [verification]
     type = VTestVerification
     driver = 'driver'
-    variables = 'output.state/mean_cauchy_stress'
-    references = 'stresses'
+    SR2_names = 'output.state/mean_cauchy_stress'
+    SR2_values = 'stresses'
     # Looser tolerances here are because the NEML(1) model was generated with lagged, explict
     # integration on the orientations
     atol = 1.0
@@ -78,7 +75,7 @@
 [Data]
   [crystal_geometry]
     type = CubicCrystal
-    lattice_parameter = 'a'
+    lattice_parameter = 1
     slip_directions = 'sdirs'
     slip_planes = 'splanes'
   []
@@ -154,14 +151,17 @@
     implicit_model = 'implicit_rate'
     solver = 'newton'
   []
+[]
+
+# Postprocessing
+[Models]
   [average_stress]
-    type = SR2CrystalMean
+    type = SR2DynamicMean
     from = 'state/internal/cauchy_stress'
     to = 'state/mean_cauchy_stress'
   []
-  [model_with_stress]
+  [pp]
     type = ComposedModel
-    models = 'model elasticity average_stress'
-    additional_outputs = 'state/elastic_strain state/internal/cauchy_stress'
+    models = 'elasticity average_stress'
   []
 []

@@ -27,6 +27,8 @@
 #include "neml2/base/Factory.h"
 #include "neml2/base/NEML2Object.h"
 #include "neml2/tensors/Tensor.h"
+#include "neml2/tensors/Vec.h"
+#include "neml2/tensors/functions/linspace.h"
 
 using namespace neml2;
 
@@ -34,16 +36,28 @@ TEST_CASE("LinspaceTensor", "[user_tensors]")
 {
   auto factory = load_input("user_tensors/test_LinspaceTensor.i");
 
-  SECTION("LinspaceTensor")
+  SECTION("load correctly")
   {
     const auto a = factory->get_object<Tensor>("Tensors", "a");
-    REQUIRE(a->batch_sizes() == TensorShape{100, 2, 1});
+    REQUIRE(a->dynamic_sizes() == TensorShape{100, 2, 1});
+    REQUIRE(a->intmd_sizes() == TensorShape{});
     REQUIRE(a->base_sizes() == TensorShape{2, 3});
 
     const auto a0 = factory->get_object<Tensor>("Tensors", "a0");
     const auto a1 = factory->get_object<Tensor>("Tensors", "a1");
     Size nstep = 100;
     Size dim = 0;
-    REQUIRE(at::allclose(*a, Tensor::linspace(*a0, *a1, nstep, dim)));
+    REQUIRE(at::allclose(*a, dynamic_linspace(*a0, *a1, nstep, dim)));
+
+    const auto b = factory->get_object<Vec>("Tensors", "b");
+    REQUIRE(b->dynamic_sizes() == TensorShape{2});
+    REQUIRE(b->intmd_sizes() == TensorShape{1, 100, 3});
+    REQUIRE(b->base_sizes() == TensorShape{3});
+
+    const auto b0 = factory->get_object<Vec>("Tensors", "b0");
+    const auto b1 = factory->get_object<Vec>("Tensors", "b1");
+    nstep = 100;
+    dim = 1;
+    REQUIRE(at::allclose(*b, intmd_linspace(*b0, *b1, nstep, dim)));
   }
 }

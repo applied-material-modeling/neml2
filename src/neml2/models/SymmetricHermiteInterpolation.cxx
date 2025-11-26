@@ -25,7 +25,6 @@
 #include "neml2/models/SymmetricHermiteInterpolation.h"
 #include "neml2/tensors/functions/clamp.h"
 #include "neml2/tensors/functions/where.h"
-#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
@@ -71,7 +70,7 @@ SymmetricHermiteInterpolation::SymmetricHermiteInterpolation(const OptionSet & o
 void
 SymmetricHermiteInterpolation::set_value(bool out, bool dout_din, bool d2out_din2)
 {
-  const auto eps = machine_precision(_x.scalar_type()).toDouble();
+  const auto eps = machine_precision(_x.scalar_type());
   const auto x = clamp((_x - _x0) / (_x1 - _x0), eps, 1.0 - eps);
   const auto scale = 1.0 / (_x1 - _x0);
 
@@ -95,8 +94,8 @@ SymmetricHermiteInterpolation::set_value(bool out, bool dout_din, bool d2out_din
     auto df2_xl = 48 - 192 * x;
     auto df2_xh = 48 - 192 * (1 - x);
 
-    const auto zeromask = Scalar(at::logical_and(at::lt(x, 1.0 - eps), at::gt(x, eps)));
-    _y.d(_x, _x) = zeromask * where(x < 0.5, scale * df2_xl, scale * df2_xh);
+    const auto zeromask = x < (1 - eps) && x > eps;
+    _y.d2(_x, _x) = zeromask * where(x < 0.5, scale * df2_xl, scale * df2_xh);
   }
 }
 } // namespace neml2

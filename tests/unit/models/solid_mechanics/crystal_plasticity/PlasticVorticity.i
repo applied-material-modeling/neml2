@@ -6,8 +6,8 @@
     output_WR2_values = 'wp'
     input_Rot_names = 'state/orientation'
     input_Rot_values = 'R'
-    input_Tensor_names = 'state/internal/slip_rates'
-    input_Tensor_values = 'gamma'
+    input_Scalar_names = 'state/internal/slip_rates'
+    input_Scalar_values = 'gamma'
     derivative_rel_tol = 0
     derivative_abs_tol = 5e-6
     second_derivative_rel_tol = 0
@@ -16,30 +16,34 @@
 []
 
 [Tensors]
-  [a]
-    type = Scalar
-    values = '1.2'
-  []
   [sdirs]
-    type = FillMillerIndex
+    type = MillerIndex
     values = '1 1 0'
   []
   [splanes]
-    type = FillMillerIndex
+    type = MillerIndex
     values = '1 1 1'
   []
   [R]
     type = FillRot
     values = '0.00499066 -0.0249533 0.03493462'
   []
+  [gamma_a]
+    type = FullScalar
+    value = '-0.1 -0.1 -0.1'
+    batch_shape = (3)
+  []
+  [gamma_b]
+    type = FullScalar
+    value = '0.2 0.2 0.2'
+    batch_shape = (3)
+  []
   [gamma]
-    type = LinspaceTensor
-    start = -0.1
-    end = 0.2
+    type = LinspaceScalar
+    start = 'gamma_a'
+    end = 'gamma_b'
     nstep = 12
-    dim = 0
-    batch_dim = 0
-    batch_expand = '(10 3)'
+    group = 'intermediate'
   []
   [wp]
     type = FillWR2
@@ -50,9 +54,9 @@
 [Data]
   [crystal_geometry]
     type = CubicCrystal
-    lattice_parameter = "a"
-    slip_directions = "sdirs"
-    slip_planes = "splanes"
+    lattice_parameter = 1.2
+    slip_directions = 'sdirs'
+    slip_planes = 'splanes'
   []
 []
 

@@ -23,50 +23,50 @@
 // THE SOFTWARE.
 
 #include "neml2/user_tensors/UserTensor.h"
-#include "neml2/misc/assertions.h"
+
+#include "neml2/tensors/tensors.h"
 
 namespace neml2
 {
-register_NEML2_object_alias(UserTensor, "Tensor");
-
+template <class T>
 OptionSet
-UserTensor::expected_options()
+UserTensorTmpl<T>::expected_options()
 {
-  OptionSet options = UserTensorBase::expected_options();
-  options.doc() = "Construct a Tensor from a vector of values. The vector will be reshaped "
-                  "according to the specified batch and base shapes.";
+  OptionSet options = FactoryMethodBase<T>::expected_options();
+  options.doc() =
+      "Construct a " + FactoryMethodBase<T>::tensor_type() +
+      " from a vector values. The vector will be reshaped according to the specified batch shape.";
 
   options.set<std::vector<double>>("values");
   options.set("values").doc() = "Values in this (flattened) tensor";
 
-  options.set<TensorShape>("batch_shape") = {};
-  options.set("batch_shape").doc() = "Batch shape";
-
-  options.set<TensorShape>("base_shape") = {};
-  options.set("base_shape").doc() = "Base shape";
-
   return options;
 }
 
-UserTensor::UserTensor(const OptionSet & options)
-  : Tensor(Tensor::empty(options.get<TensorShape>("batch_shape"),
-                         options.get<TensorShape>("base_shape"),
-                         default_tensor_options())),
-    UserTensorBase(options)
+template <class T>
+UserTensorTmpl<T>::UserTensorTmpl(const OptionSet & options)
+  : FactoryMethodBase<T>(options),
+    _vals(options.get<std::vector<double>>("values"))
 {
-  auto vals = options.get<std::vector<double>>("values");
-  auto flat = Tensor::create(vals, default_tensor_options());
-  if (vals.size() == size_t(this->base_storage()))
-    this->index_put_({indexing::Ellipsis}, flat.reshape(this->base_sizes()));
-  else if (vals.size() == size_t(utils::storage_size(this->sizes())))
-    this->index_put_({indexing::Ellipsis}, flat.reshape(this->sizes()));
-  else
-    neml_assert(false,
-                "Number of values ",
-                vals.size(),
-                " must equal to either the base storage size ",
-                this->base_storage(),
-                " or the total storage size ",
-                utils::storage_size(this->sizes()));
 }
+
+template <class T>
+T
+UserTensorTmpl<T>::make() const
+{
+  const auto flat = Tensor::create(_vals, default_tensor_options());
+
+  if (!this->input_options().user_specified("batch_shape") &&
+      !this->input_options().user_specified("intermediate_dimension"))
+    return flat.base_reshape(this->_base_sizes);
+
+  const auto sizes = utils::add_shapes(this->_batch_sizes, this->_base_sizes);
+  return Tensor(
+      flat.reshape(sizes), Size(this->_batch_sizes.size()) - this->_intmd_dim, this->_intmd_dim);
+}
+
+#define USERTENSOR_REGISTER(T)                                                                     \
+  using User##T = UserTensorTmpl<T>;                                                               \
+  register_NEML2_object_alias(User##T, #T)
+FOR_ALL_TENSORBASE(USERTENSOR_REGISTER);
 } // namespace neml2

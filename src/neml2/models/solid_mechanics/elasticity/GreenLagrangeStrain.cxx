@@ -25,7 +25,8 @@
 #include "neml2/models/solid_mechanics/elasticity/GreenLagrangeStrain.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/R2.h"
-#include "neml2/tensors/mandel_notation.h"
+#include "neml2/tensors/functions/symmetrization.h"
+#include "neml2/tensors/functions/einsum.h"
 
 namespace neml2
 {
@@ -60,15 +61,15 @@ GreenLagrangeStrain::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   if (out)
   {
-    const auto C = R2(_F).transpose() * _F;
+    const auto C = _F().transpose() * _F;
     _E = 0.5 * (SR2(C) - SR2::identity(_F.options()));
   }
 
   if (dout_din)
   {
     const auto I = R2::identity(_F.options());
-    const auto dC_dF = R4(at::einsum("...jm,...ni,...jk", {I, I, _F})) +
-                       R4(at::einsum("...jm,...nk,...ji", {I, I, _F}));
+    const auto dC_dF =
+        einsum("...jm,...ni,...jk", {I, I, _F()}) + einsum("...jm,...nk,...ji", {I, I, _F()});
     _E.d(_F) = 0.5 * full_to_mandel(dC_dF);
   }
 }

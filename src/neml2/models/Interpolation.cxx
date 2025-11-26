@@ -28,6 +28,22 @@
 
 namespace neml2
 {
+std::tuple<Scalar, Scalar, Scalar>
+parametric_coordinates(const Scalar & X, const Scalar & x)
+{
+  using namespace indexing;
+  const auto X1 = X.intmd_slice(-1, Slice(None, -1));
+  const auto X2 = X.intmd_slice(-1, Slice(1));
+  const auto m = (x > X1) && (x <= X2);
+  const auto & B = m.dynamic_sizes();
+  const auto I = m.intmd_sizes().slice(0, m.intmd_dim() - 1);
+  const auto X_start = Scalar(X1.batch_expand_as(m).index({m}), 0).batch_reshape(B, I);
+  const auto X_end = Scalar(X2.batch_expand_as(m).index({m}), 0).batch_reshape(B, I);
+  const auto xi = (x.intmd_squeeze(-1) - X_start) / (X_end - X_start);
+  const auto dxi = 1.0 / (X_end - X_start);
+  return {m, xi, dxi};
+}
+
 template <typename T>
 OptionSet
 Interpolation<T>::expected_options()

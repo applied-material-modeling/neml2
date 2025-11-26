@@ -51,10 +51,10 @@ public:
   Scalar operator()(Size i, Size j) const;
 
   /// Exponential map to make this into a rotation (Rot)
-  Rot exp() const;
+  Rot exp_map() const;
 
   /// Derivative of the exponential map
-  R2 dexp() const;
+  R2 dexp_map() const;
 };
 
 } // namespace neml2

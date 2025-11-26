@@ -27,58 +27,30 @@
 #include "neml2/tensors/R2.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/Rot.h"
-#include "neml2/tensors/Tensor.h"
 
 #include "neml2/tensors/functions/cat.h"
-#include "neml2/tensors/functions/stack.h"
-#include "neml2/tensors/functions/bvv.h"
+#include "neml2/tensors/functions/vdot.h"
 #include "neml2/tensors/functions/abs.h"
 #include "neml2/tensors/functions/acos.h"
 #include "neml2/tensors/functions/minimum.h"
-#include "neml2/tensors/functions/linalg/vecdot.h"
+#include "neml2/tensors/functions/norm_sq.h"
 
 namespace neml2
 {
-
-// TODO: replace at::cat with base_cat
 Quaternion::Quaternion(const Rot & r)
   : Quaternion(base_cat(
-        {((1 - r.norm_sq()) / (1 + r.norm_sq())).base_unsqueeze(-1), 2 * r / (1 + r.norm_sq())},
-        -1))
+        {((1 - norm_sq(r)) / (1 + norm_sq(r))).base_unsqueeze(-1), 2 * r / (1 + norm_sq(r))}))
 {
-}
-
-Quaternion
-Quaternion::fill(const CScalar & s,
-                 const CScalar & q1,
-                 const CScalar & q2,
-                 const CScalar & q3,
-                 const TensorOptions & options)
-{
-  return Quaternion::fill(
-      Scalar(s, options), Scalar(q1, options), Scalar(q2, options), Scalar(q3, options));
-}
-
-Quaternion
-Quaternion::fill(const Scalar & s, const Scalar & q1, const Scalar & q2, const Scalar & q3)
-{
-  return Quaternion(base_stack({s, q1, q2, q3}, -1));
-}
-
-Scalar
-Quaternion::operator()(Size i) const
-{
-  return PrimitiveTensor<Quaternion, 4>::base_index({i});
 }
 
 R2
-Quaternion::to_R2() const
+Quaternion::rotation_matrix() const
 {
   const Quaternion & q = *this;
 
-  Scalar v1s = q(1) * q(1);
-  Scalar v2s = q(2) * q(2);
-  Scalar v3s = q(3) * q(3);
+  auto v1s = q(1) * q(1);
+  auto v2s = q(2) * q(2);
+  auto v3s = q(3) * q(3);
 
   return R2::fill(1 - 2 * v2s - 2 * v3s,
                   2 * (q(1) * q(2) - q(3) * q(0)),
@@ -92,15 +64,9 @@ Quaternion::to_R2() const
 }
 
 Scalar
-Quaternion::dot(const Quaternion & other) const
-{
-  return bvv(*this, other);
-}
-
-Scalar
 Quaternion::dist(const Quaternion & other) const
 {
-  Scalar dp = neml2::abs(linalg::vecdot(*this, other));
+  const auto dp = neml2::abs(neml2::vdot(*this, other));
   return 2.0 * neml2::acos(neml2::minimum(dp, Scalar::ones_like(dp)));
 }
 } // namespace neml2

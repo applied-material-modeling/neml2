@@ -30,7 +30,7 @@ namespace neml2
 {
 
 DerivMap
-derivmap_cat_reduce(std::vector<DerivMap> && results, Size batch_dim)
+derivmap_cat_reduce(std::vector<DerivMap> && results, Size dynamic_dim)
 {
   // Re-bin the results
   std::map<VariableName, std::map<VariableName, std::vector<Tensor>>> vars;
@@ -44,18 +44,18 @@ derivmap_cat_reduce(std::vector<DerivMap> && results, Size batch_dim)
   for (auto && [name1, vmap] : vars)
     for (auto && [name2, values] : vmap)
     {
-      if (values.front().batch_dim() <= batch_dim)
+      if (values.front().dynamic_dim() <= dynamic_dim)
       {
 #ifndef NDEBUG
         for (auto && value : values)
-          if (value.batch_dim() != values.front().batch_dim())
+          if (value.dynamic_dim() != values.front().dynamic_dim())
             throw neml2::NEMLException("Some Jacobian entries for " + name1.str() + " and " +
-                                       name2.str() + " have different batch dimensions");
+                                       name2.str() + " have different dynamic dimensions");
 #endif
         ret[name1][name2] = values.front();
       }
       else
-        ret[name1][name2] = batch_cat(values, batch_dim);
+        ret[name1][name2] = dynamic_cat(values, dynamic_dim);
     }
 
   return ret;

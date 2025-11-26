@@ -40,7 +40,6 @@ nbatch = 20
   [Fp0]
     type = R2
     values = '1 0 0 0 1 0 0 0 1'
-    batch_shape = (${nbatch})
   []
 
   [a]
@@ -48,11 +47,11 @@ nbatch = 20
     values = '1.0'
   []
   [sdirs]
-    type = FillMillerIndex
+    type = MillerIndex
     values = '1 1 0'
   []
   [splanes]
-    type = FillMillerIndex
+    type = MillerIndex
     values = '1 1 1'
   []
 

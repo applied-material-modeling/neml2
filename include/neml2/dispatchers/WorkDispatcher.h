@@ -24,6 +24,8 @@
 
 #pragma once
 
+#include <ATen/ops/linalg_inv.h>
+#include <ATen/ops/ones.h>
 #include <functional>
 #include <thread>
 #include <queue>
@@ -37,8 +39,6 @@
 #include "neml2/misc/assertions.h"
 #include "neml2/misc/types.h"
 #include "neml2/base/TracingInterface.h"
-
-#include "neml2/tensors/R2.h"
 
 // Pre-C++20 workaround for std::type_identity
 // https://en.cppreference.com/w/cpp/types/type_identity
@@ -275,7 +275,7 @@ WorkDispatcher<I, O, Of, Ip, Op>::init_thread_pool()
   {
     // This is necessary to initialize the torch linear algebra library prior to threaded calls
     // See: https://github.com/pytorch/pytorch/issues/90613
-    auto res = R2::identity().to(_devices[i]).inverse();
+    auto res = at::linalg_inv(at::ones({1, 1}));
     _thread_pool.emplace_back([this, i] { thread_pool_main(_devices[i]); });
   }
 

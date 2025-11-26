@@ -28,7 +28,7 @@
 namespace neml2
 {
 #define DEFINE_ARCSIN(T)                                                                           \
-  T asin(const T & a) { return T(at::asin(a), a.batch_sizes()); }                                  \
+  T asin(const T & a) { return T(at::asin(a), a.dynamic_sizes(), a.intmd_dim()); }                 \
   static_assert(true)
 FOR_ALL_TENSORBASE(DEFINE_ARCSIN);
 } // namespace neml2

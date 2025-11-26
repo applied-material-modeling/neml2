@@ -202,6 +202,7 @@ nt = 100
   []
   [consistency]
     type = RateIndependentPlasticFlowConstraint
+    jit = false
   []
   [surface]
     type = ComposedModel

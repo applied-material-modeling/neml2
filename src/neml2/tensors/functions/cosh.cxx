@@ -28,7 +28,7 @@
 namespace neml2
 {
 #define DEFINE_COSH(T)                                                                             \
-  T cosh(const T & a) { return T(at::cosh(a), a.batch_sizes()); }                                  \
+  T cosh(const T & a) { return T(at::cosh(a), a.dynamic_sizes(), a.intmd_dim()); }                 \
   static_assert(true)
 FOR_ALL_TENSORBASE(DEFINE_COSH);
 } // namespace neml2

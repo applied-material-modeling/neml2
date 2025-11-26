@@ -67,7 +67,7 @@ using TensorShape = c10::SmallVector<Size, 8>;
 using TensorShapeRef = c10::ArrayRef<Size>;
 
 // Machine precision depending on the dtype
-CScalar machine_precision(Dtype);
+double machine_precision(Dtype);
 
 /**
  * @brief Role in a function definition

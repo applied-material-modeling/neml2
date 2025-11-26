@@ -23,57 +23,14 @@
 // THE SOFTWARE.
 
 #include "neml2/tensors/VecBase.h"
-#include "neml2/tensors/tensors.h"
-#include "neml2/tensors/functions/sqrt.h"
-#include "neml2/tensors/functions/linalg/vecdot.h"
+#include "neml2/tensors/Vec.h"
+#include "neml2/tensors/WR2.h"
+#include "neml2/tensors/Rot.h"
+#include "neml2/tensors/R2.h"
+#include "neml2/tensors/R3.h"
 
 namespace neml2
 {
-template <class Derived>
-Derived
-VecBase<Derived>::fill(const CScalar & v1,
-                       const CScalar & v2,
-                       const CScalar & v3,
-                       const TensorOptions & options)
-{
-  return VecBase<Derived>::fill(Scalar(v1, options), Scalar(v2, options), Scalar(v3, options));
-}
-
-template <class Derived>
-Derived
-VecBase<Derived>::fill(const Scalar & v1, const Scalar & v2, const Scalar & v3)
-{
-  return Derived(at::stack({v1, v2, v3}, -1), v1.batch_sizes());
-}
-
-template <class Derived>
-R2
-VecBase<Derived>::identity_map(const TensorOptions & options)
-{
-  return R2::identity(options);
-}
-
-template <class Derived>
-Scalar
-VecBase<Derived>::operator()(Size i) const
-{
-  return Scalar(this->base_index({i}), this->batch_sizes());
-}
-
-template <class Derived>
-Scalar
-VecBase<Derived>::norm_sq() const
-{
-  return linalg::vecdot(*this, *this);
-}
-
-template <class Derived>
-Scalar
-VecBase<Derived>::norm() const
-{
-  return sqrt(norm_sq());
-}
-
 template <class Derived>
 Derived
 VecBase<Derived>::rotate(const Rot & r) const
@@ -92,7 +49,7 @@ template <class Derived>
 R2
 VecBase<Derived>::drotate(const Rot & r) const
 {
-  return R2(at::einsum("...ijk,...j", {r.deuler_rodrigues(), *this}));
+  return R2::einsum("...ijk,...j", {r.deuler_rodrigues(), *this});
 }
 
 template <class Derived>
@@ -100,7 +57,7 @@ R3
 VecBase<Derived>::drotate(const R2 & R) const
 {
   auto I = R2::identity(R.options());
-  return R3(at::einsum("...ij,...k", {I, *this}));
+  return R3::einsum("...ij,...k", {I, *this});
 }
 
 #define VECBASE_INSTANTIATE(T) template class VecBase<T>

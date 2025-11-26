@@ -29,7 +29,12 @@
 namespace neml2
 {
 #define DEFINE_HEAVISIDE(T)                                                                        \
-  T heaviside(const T & a) { return (sign(a) + 1.0) / 2.0; }                                       \
+  T heaviside(const T & a)                                                                         \
+  {                                                                                                \
+    neml_assert_dbg(a.is_floating_point(),                                                         \
+                    "heaviside is only implemented for floating point tensors.");                  \
+    return (sign(a) + 1) / 2;                                                                      \
+  }                                                                                                \
   static_assert(true)
 FOR_ALL_TENSORBASE(DEFINE_HEAVISIDE);
 } // namespace neml2

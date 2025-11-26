@@ -59,11 +59,19 @@ TensorName<T>::resolve(Factory * factory) const
   }
   catch (const FactoryException & err_tensor)
   {
-    throw ParserException(
-        "Failed to resolve tensor name '" + _raw_str + "'. Two attempts were made:" +
+    auto msg =
+        std::string("Failed to resolve tensor name '") + _raw_str + "'. Two attempts were made:" +
         "\n  1. Parsing it as a plain numeric literal failed with error message: " +
         utils::parse_failure_message<double>(_raw_str) +
-        "\n  2. Parsing it as a tensor object failed with error message: " + err_tensor.what());
+        "\n  2. Parsing it as a tensor object failed with error message: " + err_tensor.what();
+
+    // If the factory has a tensor with this name, it means the error is in constructing the tensor,
+    // and so this exception should be non-recoverable.
+    if (factory->has_object("Tensors", _raw_str))
+      throw NEMLException(msg);
+
+    // Otherwise, just throw a parser exception and rely on other mechanisms to resolve this name
+    throw ParserException(msg);
   }
 }
 
@@ -78,7 +86,6 @@ TensorName<T>::resolve_number(double val) const
 }
 
 // Explicit instantiations
-template struct TensorName<ATensor>;
 #define INSTANTIATE(T) template struct TensorName<T>
 FOR_ALL_TENSORBASE(INSTANTIATE);
-} // namesace neml2
+} // namespace neml2

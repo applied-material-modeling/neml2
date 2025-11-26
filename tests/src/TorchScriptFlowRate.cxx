@@ -78,12 +78,12 @@ TorchScriptFlowRate::set_value(bool out, bool /*dout_din*/, bool /*d2out_din2*/)
     //
     const auto G = Scalar::full(0.1, _s.options());
     const auto C = Scalar::full(0.2, _s.options());
-    const jit::Stack x = {_s.value(), _T.value(), G, C};
+    const jit::Stack x = {_s(), _T(), G, C};
 
     // Send it through the surrogate model loaded from torch script
     const auto y = _surrogate->forward(x).toTensor();
 
-    // Eequivalent plastic strain rate
-    _ep_dot = Scalar(y);
+    // Equivalent plastic strain rate
+    _ep_dot = Scalar(y, 0);
   }
 }

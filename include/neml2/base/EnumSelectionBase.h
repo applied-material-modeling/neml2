@@ -42,21 +42,21 @@ class EnumSelectionBase
 public:
   EnumSelectionBase() = default;
 
-  /// Create an enum selection from a list of candidates
-  EnumSelectionBase(const std::vector<std::string> & candidates);
+  /// Create an enum selection from a list of choices
+  EnumSelectionBase(const std::vector<std::string> & choices);
 
-  /// Create an enum selection from a list of candidates and their corresponding values
-  EnumSelectionBase(const std::vector<std::string> & candidates, const std::vector<int> & values);
+  /// Create an enum selection from a list of choices and their corresponding values
+  EnumSelectionBase(const std::vector<std::string> & choices, const std::vector<int> & values);
 
-  /// Candidates
-  const std::unordered_map<std::string, int> & candidates() const { return _candidate_map; }
+  /// Choices
+  const std::unordered_map<std::string, int> & choices() const { return _choice_map; }
 
-  /// Stringified candidates
-  std::string candidates_str() const;
+  /// Join the choices into a single string with the given separator
+  std::string join(const std::string & separator = ", ") const;
 
 protected:
   /// Mapping enum options to int
-  std::unordered_map<std::string, int> _candidate_map;
+  std::unordered_map<std::string, int> _choice_map;
 };
 
 } // namespace neml2

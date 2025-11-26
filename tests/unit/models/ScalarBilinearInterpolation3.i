@@ -1,13 +1,13 @@
 # Batched argument case:
 #
-# abscissa1: (    3;)
-# abscissa2: (    2;)
-#  ordinate: (  3,2;)
+# abscissa1: (;     3;)
+# abscissa2: (;     2;)
+#  ordinate: (;   3,2;)
 # -------------------------
-# argument1: (4   ;)
-# argument2: (1   ;)
+# argument1: (4;     ;)
+# argument2: (1;     ;)
 # -------------------------
-#    output: (4   ;)
+#    output: (4;     ;)
 
 [Drivers]
   [unit]
@@ -38,16 +38,19 @@
     type = Scalar
     values = '0 1 2'
     batch_shape = '(3)'
+    intermediate_dimension = 1
   []
   [eps_vals]
     type = Scalar
     values = '0 2'
     batch_shape = '(2)'
+    intermediate_dimension = 1
   []
   [S]
     type = Scalar
     values = '1 2 3 4 5 6'
     batch_shape = '(3,2)'
+    intermediate_dimension = 2
   []
   [T]
     type = Scalar

@@ -420,14 +420,16 @@ Modifying a model for mixed control only requires a few additional objects.  The
 ```python
   [mixed]
     type = MixedControlSetup
+    above_variable = "state/S"
+    below_variable = "forces/E"
   []
   [mixed_old]
     type = MixedControlSetup
     control = "old_forces/control"
     mixed_state = "old_state/mixed_state"
     fixed_values = "old_forces/fixed_values"
-    cauchy_stress = "old_state/S"
-    strain = "old_forces/E"
+    above_variable = "old_state/S"
+    below_variable = "old_forces/E"
   []
 ```
 
@@ -448,8 +450,8 @@ These two modifications will allow the model to be run in mixed control.  One ad
 ```python
   [mixed_output]
     type = MixedControlSetup
-    cauchy_stress = 'output/stress'
-    strain = 'output/strain'
+    above_variable = 'output/stress'
+    below_variable = 'output/strain'
   []
 ```
 

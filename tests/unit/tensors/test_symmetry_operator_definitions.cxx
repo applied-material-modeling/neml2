@@ -26,6 +26,8 @@
 
 #include "neml2/tensors/tensors.h"
 #include "neml2/tensors/Transformable.h"
+#include "neml2/tensors/functions/norm.h"
+#include "neml2/tensors/functions/outer.h"
 
 using namespace neml2;
 
@@ -44,7 +46,7 @@ TEST_CASE("Symmetry operator definitions", "[tensors]")
     }
     SECTION("improper rotation")
     {
-      auto ref = R2::identity(DTO) - 2 * (Vec(r) / r.norm()).outer(Vec(r) / r.norm());
+      auto ref = R2::identity(DTO) - 2 * neml2::outer(Vec(r) / neml2::norm(r));
       REQUIRE(at::allclose(improper_rotation_transform(r), r.euler_rodrigues() * ref));
       REQUIRE(at::allclose(improper_rotation_transform(r), ref * r.euler_rodrigues()));
     }
@@ -52,7 +54,7 @@ TEST_CASE("Symmetry operator definitions", "[tensors]")
     SECTION("quaternion")
     {
       auto q = Quaternion::fill(-0.30411437, -0.15205718, 0.91234311, 0.22808578, DTO);
-      REQUIRE(at::allclose(transform_from_quaternion(q), q.to_R2()));
+      REQUIRE(at::allclose(transform_from_quaternion(q), q.rotation_matrix()));
     }
   }
 }

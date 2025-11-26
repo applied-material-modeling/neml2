@@ -27,6 +27,7 @@
 #include "neml2/tensors/Vec.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
+#include "neml2/tensors/functions/imap.h"
 
 namespace neml2
 {
@@ -85,7 +86,7 @@ ForwardEulerTimeIntegration<T>::set_value(bool out, bool dout_din, bool /*d2out_
 
   if (dout_din)
   {
-    auto I = T::identity_map(_ds_dt.options());
+    auto I = imap_v<T>(_ds_dt.options());
 
     _s.d(_ds_dt) = I * (_t - _tn);
 

@@ -29,23 +29,24 @@
 
 using namespace neml2;
 
-TEST_CASE("R4", "[R4]")
+TEST_CASE("R4", "[tensors]")
 {
   at::manual_seed(42);
-  const auto & DTO = default_tensor_options();
 
-  TensorShape B = {5, 3, 1, 2}; // batch shape
-
-  SECTION("class R4")
+  SECTION("constructors")
   {
-    SECTION("R4")
+    SECTION("SSR4")
     {
-      auto u = R4(at::rand(utils::add_shapes(B, 3, 3, 3, 3), DTO));
+      auto u = R4::rand({3, 4}, {2, 1});
       // Symmetrize it
       auto s = (u + u.transpose_minor() + u.transpose(0, 1) + u.transpose(2, 3)) / 4.0;
       // Converting to SSR4 and then back should be equivalent to symmetrization
-      REQUIRE(at::allclose(s, R4(SSR4(u))));
+      REQUIRE_THAT(s, test::allclose(R4(SSR4(u))));
     }
+  }
+
+  SECTION("rotate")
+  {
 
     auto r = Rot::fill(0.13991834, 0.18234513, 0.85043991);
     auto T = R4::create({{{{0.66112296, 0.67364277, 0.52908828},
@@ -75,7 +76,7 @@ TEST_CASE("R4", "[R4]")
                           {{0.63091418, 0.04140195, 0.40599633},
                            {0.66631594, 0.2543073, 0.63205863},
                            {0.76469959, 0.27718685, 0.77058401}}}},
-                        DTO);
+                        0);
     auto Tp = R4::create({{{{0.23820857, 0.43305693, -0.20977483},
                             {0.62563634, 0.54712896, 0.1482663},
                             {-0.42577276, 0.0763476, 0.77115534}},
@@ -103,76 +104,38 @@ TEST_CASE("R4", "[R4]")
                            {{0.69355161, -0.20550391, -1.19532462},
                             {0.15709077, -0.14514052, -0.46242684},
                             {-1.20970014, 0.18995295, 3.24473836}}}},
-                         DTO);
+                         0);
 
-    auto rb = r.batch_expand(B);
-    auto Tb = T.batch_expand(B);
-    auto Tpb = Tp.batch_expand(B);
+    REQUIRE_THAT(T.rotate(r), test::allclose(Tp));
 
-    SECTION("rotate")
-    {
-      REQUIRE(at::allclose(T.rotate(r), Tp));
-      REQUIRE(at::allclose(Tb.rotate(rb), Tpb));
-      REQUIRE(at::allclose(T.rotate(rb), Tpb));
-      REQUIRE(at::allclose(Tb.rotate(r), Tpb));
-    }
+    auto apply1 = [T](const Tensor & x) { return T.rotate(Rot(x)); };
+    auto dTp_dr = finite_differencing_derivative(apply1, r);
+    REQUIRE_THAT(T.drotate(r), test::allclose(dTp_dr, /*rtol=*/0, /*atol=*/1e-4));
 
-    SECTION("drotate")
-    {
-      auto apply = [T](const Tensor & x) { return T.rotate(Rot(x)); };
-      auto dTp_dr = finite_differencing_derivative(apply, r);
-      auto dTp_drb = dTp_dr.batch_expand(B);
+    auto apply2 = [r](const Tensor & x) { return R4(x).rotate(r); };
+    auto dT_dT = finite_differencing_derivative(apply2, T);
+    REQUIRE_THAT(T.drotate_self(r), test::allclose(dT_dT, 1.0e-4, 1.0e-4));
+  }
 
-      REQUIRE(at::allclose(T.drotate(r), dTp_dr, /*rtol=*/0, /*atol=*/1e-4));
-      REQUIRE(at::allclose(Tb.drotate(rb), dTp_drb, /*rtol=*/0, /*atol=*/1e-4));
-      REQUIRE(at::allclose(T.drotate(rb), dTp_drb, /*rtol=*/0, /*atol=*/1e-4));
-      REQUIRE(at::allclose(Tb.drotate(r), dTp_drb, /*rtol=*/0, /*atol=*/1e-4));
-    }
+  SECTION("transpose_minor")
+  {
+    auto u = R4::rand({3, 4}, {2, 1});
+    auto ut = u.transpose_minor();
+    for (Size i = 0; i < 3; i++)
+      for (Size j = 0; j < 3; j++)
+        for (Size k = 0; k < 3; k++)
+          for (Size l = 0; l < 3; l++)
+            REQUIRE_THAT(u(i, j, k, l), test::allclose(ut(j, i, l, k)));
+  }
 
-    SECTION("drotate_self")
-    {
-      auto apply = [r](const Tensor & x) { return R4(x).rotate(r); };
-      auto dT_dT = finite_differencing_derivative(apply, T);
-      auto dT_dTb = dT_dT.batch_expand(B);
-
-      REQUIRE(at::allclose(T.drotate_self(r), dT_dT, 1.0e-4, 1.0e-4));
-      REQUIRE(at::allclose(Tb.drotate_self(r), dT_dTb, 1.0e-4, 1.0e-4));
-      REQUIRE(at::allclose(T.drotate_self(rb), dT_dTb, /*rtol=*/1.0e-4, /*atol=*/1e-4));
-      REQUIRE(at::allclose(Tb.drotate_self(r), dT_dTb, /*rtol=*/1.0e-4, /*atol=*/1e-4));
-    }
-
-    SECTION("operator()")
-    {
-      auto u = R4(at::rand(utils::add_shapes(B, 3, 3, 3, 3), DTO));
-      auto s1 = (u + u.transpose_minor() + u.transpose(0, 1) + u.transpose(2, 3)) / 4.0;
-      auto s2 = R4(SSR4(u));
-      for (Size i = 0; i < 3; i++)
-        for (Size j = 0; j < 3; j++)
-          for (Size k = 0; k < 3; k++)
-            for (Size l = 0; l < 3; l++)
-              REQUIRE(at::allclose(s1(i, j, k, l), s2(i, j, k, l)));
-    }
-
-    SECTION("transpose_minor")
-    {
-      auto u = R4(at::rand(utils::add_shapes(B, 3, 3, 3, 3), DTO));
-      auto ut = u.transpose_minor();
-      for (Size i = 0; i < 3; i++)
-        for (Size j = 0; j < 3; j++)
-          for (Size k = 0; k < 3; k++)
-            for (Size l = 0; l < 3; l++)
-              REQUIRE(at::allclose(u(i, j, k, l), ut(j, i, l, k)));
-    }
-
-    SECTION("transpose_major")
-    {
-      auto u = R4(at::rand(utils::add_shapes(B, 3, 3, 3, 3), DTO));
-      auto ut = u.transpose_major();
-      for (Size i = 0; i < 3; i++)
-        for (Size j = 0; j < 3; j++)
-          for (Size k = 0; k < 3; k++)
-            for (Size l = 0; l < 3; l++)
-              REQUIRE(at::allclose(u(i, j, k, l), ut(k, l, i, j)));
-    }
+  SECTION("transpose_major")
+  {
+    auto u = R4::rand({3, 4}, {2, 1});
+    auto ut = u.transpose_major();
+    for (Size i = 0; i < 3; i++)
+      for (Size j = 0; j < 3; j++)
+        for (Size k = 0; k < 3; k++)
+          for (Size l = 0; l < 3; l++)
+            REQUIRE_THAT(u(i, j, k, l), test::allclose(ut(k, l, i, j)));
   }
 }

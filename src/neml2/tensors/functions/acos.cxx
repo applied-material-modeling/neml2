@@ -28,7 +28,7 @@
 namespace neml2
 {
 #define DEFINE_ARCCOS(T)                                                                           \
-  T acos(const T & a) { return T(at::acos(a), a.batch_sizes()); }                                  \
+  T acos(const T & a) { return T(at::acos(a), a.dynamic_sizes(), a.intmd_dim()); }                 \
   static_assert(true)
 FOR_ALL_TENSORBASE(DEFINE_ARCCOS);
 } // namespace neml2

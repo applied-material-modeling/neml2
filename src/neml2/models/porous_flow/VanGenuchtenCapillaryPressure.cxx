@@ -65,7 +65,7 @@ VanGenuchtenCapillaryPressure::calculate_pressure(const Scalar & S,
                                                   bool dout_din,
                                                   bool d2out_din2) const
 {
-  const auto eps = machine_precision(S.scalar_type()).toDouble();
+  const auto eps = machine_precision(S.scalar_type());
   auto Sc = where(S > (1.0 - eps), Scalar::ones_like(S) - eps, S);
 
   auto f_s = _a * pow((pow(Sc, -1.0 / _m) - 1.0), 1 - _m);

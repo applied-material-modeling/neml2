@@ -31,8 +31,8 @@ import neml2
 def test_parameter_gradient():
     pwd = Path(__file__).parent
     model = neml2.load_model(pwd / "test_training.i", "model")
-    xassembler = neml2.VectorAssembler(model.input_axis())
-    yassembler = neml2.VectorAssembler(model.output_axis())
+    xassembler = neml2.VectorAssembler(model.input_axis(setup=True))
+    yassembler = neml2.VectorAssembler(model.output_axis(setup=True))
 
     # Initialize the model with the correct batch shape
     B = (2, 5)
@@ -47,8 +47,8 @@ def test_parameter_gradient():
     p.requires_grad_(True)
 
     # Evaluate the model and the loss function
-    y = model.value(xassembler.split_by_variable(x))
-    f = torch.norm(yassembler.assemble_by_variable(y).torch())
+    y = model.value(xassembler.split_by_variable(x, False))
+    f = torch.norm(yassembler.assemble_by_variable(y, False).torch())
 
     # # Get the parameter gradient
     f.backward()

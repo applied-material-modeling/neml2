@@ -23,222 +23,116 @@
 // THE SOFTWARE.
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers.hpp>
 
+#include "unit/tensors/generators.h"
 #include "utils.h"
 #include "neml2/tensors/tensors.h"
+#include "neml2/tensors/functions/diagonalize.h"
 
 using namespace neml2;
 
 TEST_CASE("SR2", "[tensors]")
 {
   at::manual_seed(42);
-  const auto & DTO = default_tensor_options();
 
-  TensorShape B = {5, 3, 1, 2}; // batch shape
-
-  SECTION("class SR2")
+  SECTION("constructors")
   {
-    SECTION("SR2")
+    SECTION("R2")
     {
-      SECTION("from R2")
-      {
-        auto S = R2::fill(1.1, 1.2, 1.3, 1.2, 2.2, 2.3, 1.3, 2.3, 3.3);
-        auto s = SR2::fill(1.1, 2.2, 3.3, 2.3, 1.3, 1.2);
-        REQUIRE(at::allclose(SR2(S), s));
-      }
+      auto S = R2::fill(1.1, 1.2, 1.3, 1.2, 2.2, 2.3, 1.3, 2.3, 3.3);
+      auto s = SR2::fill(1.1, 2.2, 3.3, 2.3, 1.3, 1.2);
+      REQUIRE(at::allclose(SR2(S), s));
+    }
+  }
+
+  SECTION("fill")
+  {
+    auto cfg = test::generate_tensor_config({{kFloat32, kFloat64}});
+
+    DYNAMIC_SECTION(cfg.desc())
+    {
+      auto a = SR2::fill(2, cfg.options);
+      auto a0 = at::tensor({2., 2., 2., 0., 0., 0.}, cfg.options);
+      REQUIRE_THAT(a, test::allclose(a0));
+
+      auto b = SR2::fill(1, 2, 3, cfg.options);
+      auto b0 = at::tensor({1., 2., 3., 0., 0., 0.}, cfg.options);
+      REQUIRE_THAT(b, test::allclose(b0));
+
+      auto c = SR2::fill(1, 2, 3, 4, 5, 6, cfg.options);
+      auto c0 = at::tensor({1., 2., 3., 4 * sqrt2, 5 * sqrt2, 6 * sqrt2}, cfg.options);
+      REQUIRE_THAT(c, test::allclose(c0));
     }
 
-    SECTION("fill")
+    auto shape = test::generate_tensor_shape<Scalar>();
+    DYNAMIC_SECTION(cfg.desc() + " " + shape.desc())
     {
-      SECTION("fill from 1 value")
-      {
-        auto a1 = SR2::fill(1.1, DTO);
-        auto a2 = SR2::fill(Scalar(1.1, DTO));
-        auto a3 = SR2::fill(Scalar::full(B, 1.1, DTO));
-        auto b = R2::create({{1.1, 0.0, 0.0}, {0.0, 1.1, 0.0}, {0.0, 0.0, 1.1}}, DTO);
-        REQUIRE(at::allclose(R2(a1), b));
-        REQUIRE(at::allclose(R2(a2), b));
-        REQUIRE(at::allclose(R2(a3), b.batch_expand(B)));
-      }
-      SECTION("fill from 3 values")
-      {
-        auto a1 = SR2::fill(1.1, 2.2, 3.3, DTO);
-        auto a2 = SR2::fill(Scalar(1.1, DTO), Scalar(2.2, DTO), Scalar(3.3, DTO));
-        auto a3 = SR2::fill(
-            Scalar::full(B, 1.1, DTO), Scalar::full(B, 2.2, DTO), Scalar::full(B, 3.3, DTO));
-        auto b = R2::create({{1.1, 0.0, 0.0}, {0.0, 2.2, 0.0}, {0.0, 0.0, 3.3}}, DTO);
-        REQUIRE(at::allclose(R2(a1), b));
-        REQUIRE(at::allclose(R2(a2), b));
-        REQUIRE(at::allclose(R2(a3), b.batch_expand(B)));
-      }
-      SECTION("fill from 6 values")
-      {
-        auto a1 = SR2::fill(1.1, 2.2, 3.3, 2.3, 1.3, 1.2, DTO);
-        auto a2 = SR2::fill(Scalar(1.1, DTO),
-                            Scalar(2.2, DTO),
-                            Scalar(3.3, DTO),
-                            Scalar(2.3, DTO),
-                            Scalar(1.3, DTO),
-                            Scalar(1.2, DTO));
-        auto a3 = SR2::fill(Scalar::full(B, 1.1, DTO),
-                            Scalar::full(B, 2.2, DTO),
-                            Scalar::full(B, 3.3, DTO),
-                            Scalar::full(B, 2.3, DTO),
-                            Scalar::full(B, 1.3, DTO),
-                            Scalar::full(B, 1.2, DTO));
-        auto b = R2::create({{1.1, 1.2, 1.3}, {1.2, 2.2, 2.3}, {1.3, 2.3, 3.3}}, DTO);
-        REQUIRE(at::allclose(R2(a1), b));
-        REQUIRE(at::allclose(R2(a2), b));
-        REQUIRE(at::allclose(R2(a3), b.batch_expand(B)));
-      }
+      auto a = test::generate_random_tensor<Scalar>(cfg, shape);
+      auto A = SR2::fill(a);
+      auto A0 = a * Tensor::identity(3, cfg.options);
+      REQUIRE_THAT(R2(A), test::allclose(A0));
+
+      auto b1 = test::generate_random_tensor<Scalar>(cfg, shape);
+      auto b2 = test::generate_random_tensor<Scalar>(cfg, shape);
+      auto b3 = test::generate_random_tensor<Scalar>(cfg, shape);
+      auto B = SR2::fill(b1, b2, b3);
+      auto B0 = base_diagonalize(base_stack({b1, b2, b3}));
+      REQUIRE_THAT(R2(B), test::allclose(B0));
+
+      auto c1 = test::generate_random_tensor<Scalar>(cfg, shape);
+      auto c2 = test::generate_random_tensor<Scalar>(cfg, shape);
+      auto c3 = test::generate_random_tensor<Scalar>(cfg, shape);
+      auto c4 = test::generate_random_tensor<Scalar>(cfg, shape);
+      auto c5 = test::generate_random_tensor<Scalar>(cfg, shape);
+      auto c6 = test::generate_random_tensor<Scalar>(cfg, shape);
+      auto C = SR2::fill(c1, c2, c3, c4, c5, c6);
+      auto C1 = base_stack({c1, c6, c5});
+      auto C2 = base_stack({c6, c2, c4});
+      auto C3 = base_stack({c5, c4, c3});
+      auto C0 = base_stack({C1, C2, C3});
+      REQUIRE_THAT(R2(C), test::allclose(C0));
     }
+  }
 
-    SECTION("identity")
-    {
-      auto a = SR2::identity(DTO);
-      auto b = at::eye(3, DTO);
-      REQUIRE(at::allclose(R2(a), b));
-    }
+  SECTION("identity")
+  {
+    auto a = SR2::identity();
+    auto b = at::eye(3);
+    REQUIRE(at::allclose(R2(a), b));
+  }
 
-    SECTION("identity_map")
-    {
-      auto I = SR2::identity_map(DTO);
-      auto a = SR2(at::rand(utils::add_shapes(B, 6), DTO));
-
-      auto apply = [](const Tensor & x) { return x; };
-      auto da_da = finite_differencing_derivative(apply, a);
-
-      REQUIRE(at::allclose(I, da_da));
-    }
-
+  SECTION("rotate")
+  {
     auto r = Rot::fill(0.13991834, 0.18234513, 0.85043991);
     auto T = SR2(R2::fill(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0));
     auto Tp = SR2::fill(-1.02332, 0.208734, 15.8146, -1.86545, -2.71806, 0.190785);
 
-    auto rb = r.batch_expand(B);
-    auto Tb = T.batch_expand(B);
-    auto Tpb = Tp.batch_expand(B);
+    REQUIRE(at::allclose(T.rotate(r), Tp));
 
-    SECTION("rotate")
-    {
-      REQUIRE(at::allclose(T.rotate(r), Tp));
-      REQUIRE(at::allclose(Tb.rotate(rb), Tpb));
-      REQUIRE(at::allclose(T.rotate(rb), Tpb));
-      REQUIRE(at::allclose(Tb.rotate(r), Tpb));
-    }
+    // rotate by MRP
+    auto apply_r = [T](const Tensor & x) { return T.rotate(Rot(x)); };
+    auto dTp_dr = finite_differencing_derivative(apply_r, r);
+    REQUIRE(at::allclose(T.drotate(r), dTp_dr, 1e-4));
 
-    SECTION("drotate")
-    {
-      // Rodrigues vector
-      auto apply_r = [T](const Tensor & x) { return T.rotate(Rot(x)); };
-      auto dTp_dr = finite_differencing_derivative(apply_r, r);
-      auto dTp_drb = dTp_dr.batch_expand(B);
+    // rotate by rotation matrix
+    auto R = r.euler_rodrigues();
+    auto apply_R = [T](const Tensor & x) { return T.rotate(R2(x)); };
+    auto dTp_dR = finite_differencing_derivative(apply_R, R);
+    REQUIRE(at::allclose(T.drotate(R), dTp_dR));
+  }
 
-      REQUIRE(at::allclose(T.drotate(r), dTp_dr, 1e-4));
-      REQUIRE(at::allclose(Tb.drotate(rb), dTp_drb, 1e-4));
-      REQUIRE(at::allclose(T.drotate(rb), dTp_drb, 1e-4));
-      REQUIRE(at::allclose(Tb.drotate(r), dTp_drb, 1e-4));
+  SECTION("operator()")
+  {
+    auto a = SR2::rand({}, {});
+    auto b = R2(a);
+    for (Size i = 0; i < 3; i++)
+      for (Size j = 0; j < 3; j++)
+        REQUIRE_THAT(a(i, j), test::allclose(b(i, j)));
+  }
 
-      // Rotation matrix
-      auto R = R2(r);
-      auto Rb = R2(rb);
-      auto apply_R = [T](const Tensor & x) { return T.rotate(R2(x)); };
-      auto dTp_dR = finite_differencing_derivative(apply_R, R);
-      auto dTp_dRb = dTp_dR.batch_expand(B);
-
-      REQUIRE(at::allclose(T.drotate(R), dTp_dR));
-      REQUIRE(at::allclose(Tb.drotate(Rb), dTp_dRb));
-      REQUIRE(at::allclose(T.drotate(Rb), dTp_dRb));
-      REQUIRE(at::allclose(Tb.drotate(R), dTp_dRb));
-    }
-
-    SECTION("operator()")
-    {
-      auto a = SR2(at::rand(utils::add_shapes(B, 6), DTO));
-      auto b = R2(a);
-      for (Size i = 0; i < 3; i++)
-        for (Size j = 0; j < 3; j++)
-          REQUIRE(at::allclose(a(i, j), b(i, j)));
-    }
-
-    SECTION("tr")
-    {
-      auto res = Scalar(15.0, DTO);
-      REQUIRE(at::allclose(T.tr(), res));
-      REQUIRE(at::allclose(T.batch_expand(B).tr(), res.batch_expand(B)));
-    }
-
-    SECTION("vol")
-    {
-      auto res = SR2::fill(5.0, DTO);
-      REQUIRE(at::allclose(T.vol(), res));
-      REQUIRE(at::allclose(T.batch_expand(B).vol(), res.batch_expand(B)));
-    }
-
-    SECTION("dev")
-    {
-      auto res = T - T.vol();
-      REQUIRE(at::allclose(T.dev(), res));
-      REQUIRE(at::allclose(T.batch_expand(B).dev(), res.batch_expand(B)));
-    }
-
-    SECTION("det")
-    {
-      auto res = Scalar(0, DTO);
-      REQUIRE(at::allclose(T.det(), res, /*rtol=*/0, /*atol=*/1e-5));
-      REQUIRE(
-          at::allclose(T.batch_expand(B).det(), res.batch_expand(B), /*rtol=*/0, /*atol=*/1e-5));
-    }
-
-    SECTION("inner")
-    {
-      auto other = SR2(at::rand({6}, DTO));
-      auto res = Scalar(ATensor(T).dot(other));
-      REQUIRE(at::allclose(T.inner(other), res));
-      REQUIRE(at::allclose(T.batch_expand(B).inner(other), res.batch_expand(B)));
-      REQUIRE(at::allclose(T.inner(other.batch_expand(B)), res.batch_expand(B)));
-      REQUIRE(at::allclose(T.batch_expand(B).inner(other.batch_expand(B)), res.batch_expand(B)));
-    }
-
-    SECTION("norm_sq")
-    {
-      auto res = Scalar(273.0, DTO);
-      REQUIRE(at::allclose(T.norm_sq(), res));
-      REQUIRE(at::allclose(T.batch_expand(B).norm_sq(), res.batch_expand(B)));
-    }
-
-    SECTION("norm")
-    {
-      auto res = Scalar(16.522711641858304, DTO);
-      REQUIRE(at::allclose(T.norm(), res));
-      REQUIRE(at::allclose(T.batch_expand(B).norm(), res.batch_expand(B)));
-    }
-
-    SECTION("outer")
-    {
-      auto other = SR2(at::rand({6}, DTO));
-      auto res = SSR4(ATensor(T).outer(other));
-      REQUIRE(at::allclose(T.outer(other), res));
-      REQUIRE(at::allclose(T.batch_expand(B).outer(other), res.batch_expand(B)));
-      REQUIRE(at::allclose(T.outer(other.batch_expand(B)), res.batch_expand(B)));
-      REQUIRE(at::allclose(T.batch_expand(B).outer(other.batch_expand(B)), res.batch_expand(B)));
-    }
-
-    SECTION("inverse")
-    {
-      // We can use T as it's singular...
-      // What's the chance of getting a random singular matrix? We'll see.
-      auto a = SR2(at::rand({6}, DTO));
-      auto res = SR2(R2(ATensor(R2(a)).inverse()));
-      REQUIRE(at::allclose(a.inverse(), res));
-      REQUIRE(at::allclose(a.batch_expand(B).inverse(), res.batch_expand(B)));
-    }
-
-    SECTION("transpose")
-    {
-      auto res = SR2(R2(T).transpose());
-      REQUIRE(at::allclose(T.transpose(), res));
-      REQUIRE(at::allclose(T.batch_expand(B).transpose(), res.batch_expand(B)));
-    }
+  SECTION("transpose")
+  {
+    // no-op
   }
 }

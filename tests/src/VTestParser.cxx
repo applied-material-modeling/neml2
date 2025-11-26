@@ -83,5 +83,5 @@ VTestParser::parse()
 
   // Convert buffers to tensors
   for (size_t i = 0; i < _headers.size(); i++)
-    _data[_headers[i]] = Tensor::create(scalar_buffers[i], 1, default_tensor_options());
+    _data[_headers[i]] = Tensor::create(scalar_buffers[i], 1, 0, default_tensor_options());
 }

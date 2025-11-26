@@ -74,7 +74,7 @@ ElasticStrainRate::ElasticStrainRate(const OptionSet & options)
 {
 }
 
-SR2
+static SR2
 skew_and_sym_to_sym(const SR2 & e, const WR2 & w)
 {
   // In NEML we used an unrolled form, I don't think I ever found
@@ -84,42 +84,40 @@ skew_and_sym_to_sym(const SR2 & e, const WR2 & w)
   return SR2(W * E - E * W);
 }
 
-SSR4
+static SSR4
 d_skew_and_sym_to_sym_d_sym(const WR2 & w)
 {
   auto I = R2::identity(w.options());
   auto W = R2(w);
-  return SSR4(
-      R4(at::einsum("...ia,...jb->...ijab", {W, I}) - at::einsum("...ia,...bj->...ijab", {I, W})));
+  return R4::einsum("...ia,...jb->...ijab", {W, I}) - R4::einsum("...ia,...bj->...ijab", {I, W});
 }
 
-SWR4
+static SWR4
 d_skew_and_sym_to_sym_d_skew(const SR2 & e)
 {
   auto I = R2::identity(e.options());
   auto E = R2(e);
-  return SWR4(
-      R4(at::einsum("...ia,...bj->...ijab", {I, E}) - at::einsum("...ia,...jb->...ijab", {E, I})));
+  return R4::einsum("...ia,...bj->...ijab", {I, E}) - R4::einsum("...ia,...jb->...ijab", {E, I});
 }
 
 void
 ElasticStrainRate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   if (out)
-    _e_dot = _d - _dp + skew_and_sym_to_sym(SR2(_e), WR2(_w));
+    _e_dot = _d - _dp + skew_and_sym_to_sym(_e(), _w());
 
   if (dout_din)
   {
     const auto I = SSR4::identity_sym(_d.options());
 
     if (_e.is_dependent())
-      _e_dot.d(_e) = d_skew_and_sym_to_sym_d_sym(WR2(_w));
+      _e_dot.d(_e) = d_skew_and_sym_to_sym_d_sym(_w());
 
     if (_d.is_dependent())
       _e_dot.d(_d) = I;
 
     if (_w.is_dependent())
-      _e_dot.d(_w) = d_skew_and_sym_to_sym_d_skew(SR2(_e));
+      _e_dot.d(_w) = d_skew_and_sym_to_sym_d_skew(_e());
 
     if (_dp.is_dependent())
       _e_dot.d(_dp) = -I;

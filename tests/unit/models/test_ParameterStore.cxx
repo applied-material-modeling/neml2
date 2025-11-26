@@ -62,8 +62,8 @@ TEST_CASE("ParameterStore", "[models]")
 
       // Modifying the individual parameter references should affect values stored in the parameter
       // dictionary.
-      E = Scalar::full({1, 2}, 1.0);
-      nu = Scalar::full({5, 1}, 0.3);
+      E = Scalar::full({1, 2}, {}, 1.0);
+      nu = Scalar::full({5, 1}, {}, 0.3);
       REQUIRE(Tensor(*params["E"]).batch_sizes() == TensorShape{1, 2});
       REQUIRE(Tensor(*params["nu"]).batch_sizes() == TensorShape{5, 1});
 

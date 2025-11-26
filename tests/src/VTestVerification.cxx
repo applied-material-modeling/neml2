@@ -33,19 +33,49 @@
 namespace neml2
 {
 static std::string diff(const torch::jit::named_buffer_list & res,
-                        const std::map<std::string, ATensor> & ref_map,
+                        const std::map<std::string, Tensor> & ref_map,
                         double rtol,
                         double atol);
 
 register_NEML2_object(VTestVerification);
+
+template <typename T>
+static void
+setup_ref_values(const OptionSet & options,
+                 std::map<std::string, Tensor> & ref,
+                 const std::string & name_opt,
+                 const std::string & value_opt)
+{
+  const auto vars = options.get<std::vector<std::string>>(name_opt);
+  const auto vals = options.get<std::vector<TensorName<T>>>(value_opt);
+  neml_assert(vars.size() == vals.size(),
+              "Must provide the same number of variables and references.",
+              vars.size(),
+              " variables provided to ",
+              name_opt,
+              ", while ",
+              vals.size(),
+              " references provided to ",
+              value_opt,
+              ".");
+  auto * factory = options.get<Factory *>("_factory");
+  for (std::size_t i = 0; i < vars.size(); i++)
+    ref[vars[i]] = Tensor(vals[i].resolve(factory));
+}
 
 OptionSet
 VTestVerification::expected_options()
 {
   OptionSet options = Driver::expected_options();
   options.set<std::string>("driver");
-  options.set<std::vector<std::string>>("variables");
-  options.set<std::vector<TensorName<ATensor>>>("references");
+
+#define OPTION_VAR_(T)                                                                             \
+  options.set<std::vector<std::string>>(#T "_names");                                              \
+  options.set(#T "_names").doc() = "Variables of type " #T " to compare";                          \
+  options.set<std::vector<TensorName<T>>>(#T "_values");                                           \
+  options.set(#T "_values").doc() = "Reference variables of type " #T " to be compared against"
+  FOR_ALL_TENSORBASE(OPTION_VAR_);
+
   options.set<double>("rtol") = 1e-5;
   options.set<double>("atol") = 1e-8;
   return options;
@@ -57,16 +87,8 @@ VTestVerification::VTestVerification(const OptionSet & options)
     _rtol(options.get<double>("rtol")),
     _atol(options.get<double>("atol"))
 {
-  const auto vars = options.get<std::vector<std::string>>("variables");
-  const auto vals = options.get<std::vector<TensorName<ATensor>>>("references");
-  neml_assert(vars.size() == vals.size(),
-              "Must provide the same number of variables and references. ",
-              vars.size(),
-              " variables provided, while ",
-              vals.size(),
-              " references provided.");
-  for (std::size_t i = 0; i < vars.size(); i++)
-    _ref[vars[i]] = vals[i].resolve(factory());
+#define SETUP_REF_(T) setup_ref_values<T>(options, _ref, #T "_names", #T "_values")
+  FOR_ALL_TENSORBASE(SETUP_REF_);
 }
 
 void
@@ -95,7 +117,7 @@ VTestVerification::run()
 
 std::string
 diff(const torch::jit::named_buffer_list & res,
-     const std::map<std::string, ATensor> & ref_map,
+     const std::map<std::string, Tensor> & ref_map,
      double rtol,
      double atol)
 {

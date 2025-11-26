@@ -28,7 +28,7 @@
 namespace neml2
 {
 #define DEFINE_DEG2RAD(T)                                                                          \
-  T deg2rad(const T & a) { return T(at::deg2rad(a), a.batch_sizes()); }                            \
+  T deg2rad(const T & a) { return T(at::deg2rad(a), a.dynamic_sizes(), a.intmd_dim()); }           \
   static_assert(true)
 FOR_ALL_TENSORBASE(DEFINE_DEG2RAD);
 } // namespace neml2

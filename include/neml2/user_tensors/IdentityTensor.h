@@ -33,16 +33,18 @@ namespace neml2
 /**
  * @brief Create an identity Tensor from the input file.
  */
-class IdentityTensor : public Tensor, public UserTensorBase
+class IdentityTensor : public UserTensorBase<Tensor>
 {
 public:
   static OptionSet expected_options();
 
-  /**
-   * @brief Construct a new IdentityTensor object
-   *
-   * @param options The options extracted from the input file.
-   */
   IdentityTensor(const OptionSet & options);
+
+protected:
+  Tensor make() const override;
+
+private:
+  const TensorShape _batch_sizes;
+  const Size _n;
 };
 } // namespace neml2

@@ -29,7 +29,9 @@
 #include "neml2/base/guards.h"
 #include "neml2/base/Factory.h"
 #include "neml2/base/Settings.h"
-#include "neml2/jit/utils.h"
+#include "neml2/tensors/jit.h"
+#include "neml2/models/ParameterStore.h"
+#include "neml2/solvers/NonlinearSystem.h"
 #include "neml2/tensors/functions/jacrev.h"
 #include "neml2/tensors/tensors.h"
 #include "neml2/tensors/TensorValue.h"
@@ -47,17 +49,26 @@ load_model(const std::filesystem::path & path, const std::string & mname)
 }
 
 bool
-Model::TraceSchema::operator==(const TraceSchema & other) const
+Model::EvaluationSchema::operator==(const EvaluationSchema & other) const
 {
-  return batch_dims == other.batch_dims && dispatch_key == other.dispatch_key;
+  return dynamic_dims == other.dynamic_dims && intmd_shapes == other.intmd_shapes &&
+         dispatch_key == other.dispatch_key;
 }
 
 bool
-Model::TraceSchema::operator<(const TraceSchema & other) const
+Model::EvaluationSchema::operator!=(const EvaluationSchema & other) const
+{
+  return !operator==(other);
+}
+
+bool
+Model::EvaluationSchema::operator<(const EvaluationSchema & other) const
 {
   if (dispatch_key != other.dispatch_key)
     return dispatch_key < other.dispatch_key;
-  return batch_dims < other.batch_dims;
+  if (dynamic_dims != other.dynamic_dims)
+    return dynamic_dims < other.dynamic_dims;
+  return intmd_shapes < other.intmd_shapes;
 }
 
 OptionSet
@@ -127,8 +138,6 @@ Model::to(const TensorOptions & options)
 void
 Model::setup()
 {
-  setup_layout();
-
   if (host() == this)
   {
     link_output_variables();
@@ -333,33 +342,32 @@ Model::clear_output()
 }
 
 void
-Model::zero_input()
+Model::zero_undefined_input()
 {
-  VariableStore::zero_input();
+  VariableStore::zero_undefined_input();
   for (auto & submodel : _registered_models)
-    submodel->zero_input();
+    submodel->zero_undefined_input();
 }
 
-void
-Model::zero_output()
+Model::EvaluationSchema
+Model::calculate_eval_schema() const
 {
-  VariableStore::zero_output();
-  for (auto & submodel : _registered_models)
-    submodel->zero_output();
-}
-
-Model::TraceSchema
-Model::compute_trace_schema() const
-{
-  std::vector<Size> batch_dims;
+  std::vector<Size> dynamic_dims;
+  std::vector<TensorShape> intmd_shapes;
   for (auto && [name, var] : input_variables())
-    batch_dims.push_back(var->batch_dim());
+  {
+    dynamic_dims.push_back(var->dynamic_dim());
+    intmd_shapes.emplace_back(var->intmd_sizes());
+  }
   for (auto && [name, param] : host<ParameterStore>()->named_parameters())
-    batch_dims.push_back(Tensor(*param).batch_dim());
+  {
+    dynamic_dims.push_back(Tensor(*param).dynamic_dim());
+    intmd_shapes.emplace_back(Tensor(*param).intmd_sizes());
+  }
 
   const auto dispatch_key = variable_options().computeDispatchKey();
 
-  return TraceSchema{batch_dims, dispatch_key};
+  return EvaluationSchema{dynamic_dims, intmd_shapes, dispatch_key};
 }
 
 std::size_t
@@ -384,18 +392,23 @@ Model::forward(bool out, bool dout, bool d2out)
                   type(),
                   "' is requested to compute second derivatives, but it does not define them.");
 
-  if (dout || d2out)
-    clear_derivatives();
+  VariableStore::clear_output();
 
   c10::InferenceMode mode_guard(_production && !jit::tracer::isTracing());
 
   if (dout || d2out)
     enable_AD();
 
-  set_value(out || AD_need_value(dout, d2out), dout, d2out);
+  set_value(out || dout || d2out, dout, d2out);
 
   if (dout || d2out)
     extract_AD_derivatives(dout, d2out);
+
+  if (dout && !derivative_sparsity().has_value())
+    cache_derivative_sparsity();
+
+  if (d2out && !second_derivative_sparsity().has_value())
+    cache_second_derivative_sparsity();
 
   return;
 }
@@ -413,21 +426,23 @@ Model::forward_maybe_jit(bool out, bool dout, bool d2out)
       currently_solving_nonlinear_system() ? _traced_functions_nl_sys : _traced_functions;
 
   const auto forward_op_idx = forward_operator_index(out, dout, d2out);
-  const auto new_schema = compute_trace_schema();
-  auto traced_schema_and_function = traced_functions[forward_op_idx].find(new_schema);
+  const auto schema = calculate_eval_schema();
+  auto traced_schema_and_function = traced_functions[forward_op_idx].find(schema);
 
   if (traced_schema_and_function != traced_functions[forward_op_idx].end())
   {
-    auto & [trace_schema, traced_function] = *traced_schema_and_function;
+    auto & [schema, traced_function] = *traced_schema_and_function;
     c10::InferenceMode mode_guard(_production);
     auto stack = collect_input_stack();
     traced_function->run(stack);
+    if (dout || d2out)
+      clear_derivatives();
     assign_output_stack(stack, out, dout, d2out);
   }
   else
   {
-    // All other models in the world should wait for this model to finish tracing
-    // This is not our fault, torch jit tracing is not thread-safe
+    // All other models in the world should wait for this model to finish tracing.
+    // This is not our fault, torch jit tracing is not thread-safe.
     std::shared_ptr<jit::tracer::TracingState> trace;
     static std::mutex trace_mutex;
     trace_mutex.lock();
@@ -457,7 +472,7 @@ Model::forward_maybe_jit(bool out, bool dout, bool d2out)
                                                              trace->graph,
                                                              /*function_creator=*/nullptr,
                                                              jit::ExecutorExecutionMode::PROFILING);
-    traced_functions[forward_op_idx].emplace(new_schema, std::move(new_function));
+    traced_functions[forward_op_idx].emplace(schema, std::move(new_function));
 
     // Rerun this method -- this time using the jitted graph (without tracing)
     forward_maybe_jit(out, dout, d2out);
@@ -465,26 +480,28 @@ Model::forward_maybe_jit(bool out, bool dout, bool d2out)
 }
 
 std::string
-Model::variable_name_lookup(const ATensor & var)
+Model::variable_name_lookup(const ATensor & var) const
 {
   // Look for the variable in the input and output variables
-  for (auto && [ivar, val] : input_variables())
-    if (val->tensor().data_ptr() == var.data_ptr())
-      return name() + "::" + utils::stringify(ivar);
-  for (auto && [ovar, val] : output_variables())
-    if (val->tensor().data_ptr() == var.data_ptr())
-      return name() + "::" + utils::stringify(ovar);
+  for (const auto & [ivar, val] : input_variables())
+    if (val->defined())
+      if (val->tensor().data_ptr() == var.data_ptr())
+        return name() + "::" + utils::stringify(ivar);
+  for (const auto & [ovar, val] : output_variables())
+    if (val->defined())
+      if (val->tensor().data_ptr() == var.data_ptr())
+        return name() + "::" + utils::stringify(ovar);
 
   // Look for the variable in the parameter and buffer store
-  for (auto && [pname, pval] : host<ParameterStore>()->named_parameters())
+  for (const auto & [pname, pval] : host<ParameterStore>()->named_parameters())
     if (Tensor(*pval).data_ptr() == var.data_ptr())
       return name() + "::" + utils::stringify(pname);
-  for (auto && [bname, bval] : host<BufferStore>()->named_buffers())
+  for (const auto & [bname, bval] : host<BufferStore>()->named_buffers())
     if (Tensor(*bval).data_ptr() == var.data_ptr())
       return name() + "::" + utils::stringify(bname);
 
   // Look for the variable in the registered models
-  for (auto & submodel : registered_models())
+  for (const auto & submodel : registered_models())
   {
     auto name = submodel->variable_name_lookup(var);
     if (!name.empty())
@@ -518,33 +535,10 @@ Model::value(const ValueMap & in)
   return values;
 }
 
-ValueMap
-Model::value(ValueMap && in)
-{
-  forward_helper(std::move(in), true, false, false);
-
-  auto values = collect_output();
-  clear_input();
-  clear_output();
-  return values;
-}
-
 std::tuple<ValueMap, DerivMap>
 Model::value_and_dvalue(const ValueMap & in)
 {
   forward_helper(in, true, true, false);
-
-  const auto values = collect_output();
-  const auto derivs = collect_output_derivatives();
-  clear_input();
-  clear_output();
-  return {values, derivs};
-}
-
-std::tuple<ValueMap, DerivMap>
-Model::value_and_dvalue(ValueMap && in)
-{
-  forward_helper(std::move(in), true, true, false);
 
   const auto values = collect_output();
   const auto derivs = collect_output_derivatives();
@@ -564,34 +558,10 @@ Model::dvalue(const ValueMap & in)
   return derivs;
 }
 
-DerivMap
-Model::dvalue(ValueMap && in)
-{
-  forward_helper(std::move(in), false, true, false);
-
-  auto derivs = collect_output_derivatives();
-  clear_input();
-  clear_output();
-  return derivs;
-}
-
 std::tuple<ValueMap, DerivMap, SecDerivMap>
 Model::value_and_dvalue_and_d2value(const ValueMap & in)
 {
   forward_helper(in, true, true, true);
-
-  const auto values = collect_output();
-  const auto derivs = collect_output_derivatives();
-  const auto secderivs = collect_output_second_derivatives();
-  clear_input();
-  clear_output();
-  return {values, derivs, secderivs};
-}
-
-std::tuple<ValueMap, DerivMap, SecDerivMap>
-Model::value_and_dvalue_and_d2value(ValueMap && in)
-{
-  forward_helper(std::move(in), true, true, true);
 
   const auto values = collect_output();
   const auto derivs = collect_output_derivatives();
@@ -613,33 +583,10 @@ Model::dvalue_and_d2value(const ValueMap & in)
   return {derivs, secderivs};
 }
 
-std::tuple<DerivMap, SecDerivMap>
-Model::dvalue_and_d2value(ValueMap && in)
-{
-  forward_helper(std::move(in), false, true, true);
-
-  const auto derivs = collect_output_derivatives();
-  const auto secderivs = collect_output_second_derivatives();
-  clear_input();
-  clear_output();
-  return {derivs, secderivs};
-}
-
 SecDerivMap
 Model::d2value(const ValueMap & in)
 {
   forward_helper(in, false, false, true);
-
-  auto secderivs = collect_output_second_derivatives();
-  clear_input();
-  clear_output();
-  return secderivs;
-}
-
-SecDerivMap
-Model::d2value(ValueMap && in)
-{
-  forward_helper(std::move(in), false, false, true);
 
   auto secderivs = collect_output_second_derivatives();
   clear_input();
@@ -710,22 +657,26 @@ Model::named_nonlinear_parameters(bool recursive) const
 std::set<VariableName>
 Model::consumed_items() const
 {
-  auto items = input_axis().variable_names();
-  return {items.begin(), items.end()};
+  std::set<VariableName> items;
+  for (auto && [name, var] : input_variables())
+    items.insert(name);
+  return items;
 }
 
 std::set<VariableName>
 Model::provided_items() const
 {
-  auto items = output_axis().variable_names();
-  return {items.begin(), items.end()};
+  std::set<VariableName> items;
+  for (auto && [name, var] : output_variables())
+    items.insert(name);
+  return items;
 }
 
 void
 Model::assign_input_stack(jit::Stack & stack)
 {
 #ifndef NDEBUG
-  const auto nstack = input_axis().nvariable() + host<ParameterStore>()->named_parameters().size();
+  const auto nstack = input_variables().size() + host<ParameterStore>()->named_parameters().size();
   neml_assert_dbg(
       stack.size() == nstack,
       "Stack size (",
@@ -756,7 +707,7 @@ void
 Model::set_guess(const Sol<false> & x)
 {
   const auto sol_assember = VectorAssembler(input_axis().subaxis(STATE));
-  assign_input(sol_assember.split_by_variable(x));
+  assign_input(sol_assember.split_by_variable(x), /*assembly=*/true);
 }
 
 void
@@ -767,30 +718,15 @@ Model::assemble(NonlinearSystem::Res<false> * residual, NonlinearSystem::Jac<fal
   if (residual)
   {
     const auto res_assembler = VectorAssembler(output_axis().subaxis(RESIDUAL));
-    *residual = Res<false>(res_assembler.assemble_by_variable(collect_output()));
+    *residual = Res<false>(res_assembler.assemble_by_variable(collect_output(/*assembly=*/true)));
   }
   if (Jacobian)
   {
     const auto jac_assembler =
         MatrixAssembler(output_axis().subaxis(RESIDUAL), input_axis().subaxis(STATE));
-    *Jacobian = Jac<false>(jac_assembler.assemble_by_variable(collect_output_derivatives()));
+    *Jacobian = Jac<false>(
+        jac_assembler.assemble_by_variable(collect_output_derivatives(/*assembly=*/true)));
   }
-}
-
-bool
-Model::AD_need_value(bool dout, bool d2out) const
-{
-  if (dout)
-    if (!_ad_derivs.empty())
-      return true;
-
-  if (d2out)
-    for (auto && [y, u1u2s] : _ad_secderivs)
-      for (auto && [u1, u2s] : u1u2s)
-        if (_ad_derivs.count(y) && _ad_derivs.at(y).count(u1))
-          return true;
-
-  return false;
 }
 
 void
@@ -849,7 +785,7 @@ Model::extract_AD_derivatives(bool dout, bool d2out)
         if (!u1->is_dependent())
           continue;
 
-        const auto & dy_du1 = y->derivatives()[u1->name()];
+        const auto & dy_du1 = y->d(*u1).tensor();
 
         if (!dy_du1.defined() || !dy_du1.requires_grad())
           continue;
@@ -870,7 +806,7 @@ Model::extract_AD_derivatives(bool dout, bool d2out)
           if (u2->is_dependent())
           {
             if (d2y_du1u2s[i].defined())
-              y->d(*u1, *u2) = d2y_du1u2s[i];
+              y->d2(*u1, *u2) = d2y_du1u2s[i];
             i++;
           }
       }

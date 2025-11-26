@@ -25,14 +25,15 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include "neml2/dispatchers/TensorLoader.h"
+#include "neml2/tensors/functions/linspace.h"
 
 using namespace neml2;
 
 TEST_CASE("TensorLoader", "[dispatchers]")
 {
-  auto start = Tensor::zeros({5, 5}, {2, 3});
-  auto end = Tensor::full({5, 5}, {2, 3}, 100.0);
-  auto ten = Tensor::linspace(start, end, 100, 1);
+  auto start = Tensor::zeros({5, 5}, {}, {2, 3});
+  auto end = Tensor::full({5, 5}, {}, {2, 3}, 100.0);
+  auto ten = dynamic_linspace(start, end, 100, 1);
   REQUIRE(ten.batch_sizes() == TensorShape{5, 100, 5});
   REQUIRE(ten.base_sizes() == TensorShape{2, 3});
 

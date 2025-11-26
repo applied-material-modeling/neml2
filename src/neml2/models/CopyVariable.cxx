@@ -24,6 +24,7 @@
 
 #include "neml2/models/CopyVariable.h"
 #include "neml2/tensors/tensors.h"
+#include "neml2/tensors/functions/imap.h"
 
 namespace neml2
 {
@@ -56,11 +57,11 @@ void
 CopyVariable<T>::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   if (out)
-    _to = T(_from);
+    _to = _from();
 
   if (_from.is_dependent())
     if (dout_din)
-      _to.d(_from) = T::identity_map(_from.options());
+      _to.d(_from) = imap_v<T>(_from.options());
 
   if (d2out_din2)
   {

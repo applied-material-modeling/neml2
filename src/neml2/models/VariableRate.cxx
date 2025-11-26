@@ -27,6 +27,7 @@
 #include "neml2/tensors/Vec.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
+#include "neml2/tensors/functions/imap.h"
 
 namespace neml2
 {
@@ -84,7 +85,7 @@ VariableRate<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 
   if (dout_din)
   {
-    auto I = T::identity_map(_v.options());
+    auto I = imap_v<T>(_v.options());
 
     if (_v.is_dependent())
       _dv_dt.d(_v) = I / dt;

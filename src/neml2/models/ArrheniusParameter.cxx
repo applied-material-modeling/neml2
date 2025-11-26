@@ -86,7 +86,7 @@ ArrheniusParameter::set_value(bool out, bool dout_din, bool d2out_din2)
         _p.d(_T) = dp_dT;
 
       if (d2out_din2)
-        _p.d(_T, _T) = dp_dT * _Q / _R / _T / _T - 2 * p * _Q / _R / _T / _T / _T;
+        _p.d2(_T, _T) = dp_dT * _Q / _R / _T / _T - 2 * p * _Q / _R / _T / _T / _T;
     }
 }
 } // namespace neml2

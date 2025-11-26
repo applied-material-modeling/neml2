@@ -27,6 +27,7 @@
     end = 2000
     nstep = 100
     dim = 0
+    group = 'intermediate'
   []
   [d0]
     type = FullScalar
@@ -50,6 +51,7 @@
     end = 'D1'
     nstep = 100
     dim = 0
+    group = 'intermediate'
   []
   [dT]
     type = FullScalar

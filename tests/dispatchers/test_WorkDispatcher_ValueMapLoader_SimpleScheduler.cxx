@@ -33,22 +33,22 @@
 #include "neml2/models/Model.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/SR2.h"
-#include "neml2/tensors/functions/cat.h"
+#include "neml2/tensors/functions/linspace.h"
 
 using namespace neml2;
 
 TEST_CASE("WorkDispatcher ValueMapLoader SimpleScheduler", "[dispatchers]")
 {
   // Along which batch dimension to dispatch work
-  const Size batch_dim = 1;
+  const Size dynamic_dim = 1;
 
   const auto strain_name = VariableName{"state", "strain"};
-  const auto strain0 = SR2::fill(0.1, 0.05, -0.01).batch_expand({5, 5});
-  const auto strain1 = SR2::fill(0.2, 0.1, 0).batch_expand({5, 5});
-  const auto strain = SR2::linspace(strain0, strain1, 100, batch_dim);
+  const auto strain0 = SR2::fill(0.1, 0.05, -0.01).dynamic_expand({5, 5});
+  const auto strain1 = SR2::fill(0.2, 0.1, 0).dynamic_expand({5, 5});
+  const auto strain = dynamic_linspace(strain0, strain1, 100, dynamic_dim);
 
   const auto temperature_name = VariableName{"forces", "temperature"};
-  const auto temperature = Scalar::full(300).batch_expand({5, 1, 5});
+  const auto temperature = Scalar::full(300).dynamic_expand({5, 1, 5});
   const auto x = ValueMap{{strain_name, strain}, {temperature_name, temperature}};
 
   const auto stress_name = VariableName{"state", "stress"};
@@ -62,9 +62,9 @@ TEST_CASE("WorkDispatcher ValueMapLoader SimpleScheduler", "[dispatchers]")
     return ValueMap{{stress_name, strain * Scalar(temperature)}};
   };
   auto red = [](std::vector<ValueMap> && results) -> ValueMap
-  { return valuemap_cat_reduce(std::move(results), batch_dim); };
+  { return valuemap_cat_reduce(std::move(results), dynamic_dim); };
 
-  ValueMapLoader loader(x, batch_dim);
+  ValueMapLoader loader(x, dynamic_dim);
 
   SECTION("cpu")
   {

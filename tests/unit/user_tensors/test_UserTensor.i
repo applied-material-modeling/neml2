@@ -19,8 +19,18 @@
   []
   [d]
     type = Tensor
-    values = '1 2 3 4 5 6'
-    batch_shape = '(2)'
-    base_shape = '(2,3)'
+    values = '1 2 3 4 5 6 7 8 9 10 11 12'
+    batch_shape = '(2,3)'
+    intermediate_dimension = 1
+    base_shape = '(2)'
+  []
+  [e]
+    type = SFR3
+    values = "1 2 3 4 5 6 7 8 9
+              1 2 3 4 5 6 7 8 9
+              -1 -2 -3 -4 -5 -6 -7 -8 -9
+              -1 -2 -3 -4 -5 -6 -7 -8 -9"
+    batch_shape = '(2,1,1)'
+    intermediate_dimension = 1
   []
 []

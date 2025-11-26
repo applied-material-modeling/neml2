@@ -23,18 +23,14 @@
 // THE SOFTWARE.
 
 #include "neml2/tensors/functions/clip.h"
+#include "neml2/tensors/functions/clamp.h"
 #include "neml2/tensors/tensors.h"
-#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
 #define DEFINE_CLIP(T)                                                                             \
-  T clip(const T & a, const T & lb, const T & ub)                                                  \
-  {                                                                                                \
-    neml_assert_broadcastable_dbg(a, lb);                                                          \
-    neml_assert_broadcastable_dbg(a, ub);                                                          \
-    return T(at::clip(a, lb, ub), utils::broadcast_batch_dim(a, lb, ub));                          \
-  }                                                                                                \
+  T clip(const T & a, const T & lb, const T & ub) { return clamp(a, lb, ub); }                     \
+  T clip(const T & a, const CScalar & lb, const CScalar & ub) { return clamp(a, lb, ub); }         \
   static_assert(true)
 FOR_ALL_TENSORBASE(DEFINE_CLIP);
 } // namespace neml2

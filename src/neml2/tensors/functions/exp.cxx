@@ -28,7 +28,7 @@
 namespace neml2
 {
 #define DEFINE_EXP(T)                                                                              \
-  T exp(const T & a) { return T(at::exp(a), a.batch_sizes()); }                                    \
+  T exp(const T & a) { return T(at::exp(a), a.dynamic_sizes(), a.intmd_dim()); }                   \
   static_assert(true)
 FOR_ALL_TENSORBASE(DEFINE_EXP);
 } // namespace neml2

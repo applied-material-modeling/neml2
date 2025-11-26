@@ -28,7 +28,7 @@
 namespace neml2
 {
 #define DEFINE_LOG10(T)                                                                            \
-  T log10(const T & a) { return T(at::log10(a), a.batch_sizes()); }                                \
+  T log10(const T & a) { return T(at::log10(a), a.dynamic_sizes(), a.intmd_dim()); }               \
   static_assert(true)
 FOR_ALL_TENSORBASE(DEFINE_LOG10);
 } // namespace neml2

@@ -33,20 +33,17 @@ namespace neml2
 /**
  * @brief Create a filled SR2 from the input file.
  */
-class FillSR2 : public UserTensorBase, public SR2
+class FillSR2 : public UserTensorBase<SR2>
 {
 public:
   static OptionSet expected_options();
 
-  /**
-   * @brief Construct a new FillSR2 object
-   *
-   * @param options The options extracted from the input file.
-   */
   FillSR2(const OptionSet & options);
 
+protected:
+  SR2 make() const override;
+
 private:
-  /// A helper method to dispatch to the correct fill method based on the number of values.
-  SR2 fill(const std::vector<TensorName<Scalar>> & values) const;
+  const std::vector<TensorName<Scalar>> _values;
 };
 } // namespace neml2

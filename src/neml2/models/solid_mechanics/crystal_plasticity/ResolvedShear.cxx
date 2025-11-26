@@ -29,7 +29,8 @@
 #include "neml2/tensors/R2.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SFFR4.h"
-#include "neml2/tensors/list_tensors.h"
+#include "neml2/tensors/functions/inner.h"
+#include "neml2/tensors/functions/diagonalize.h"
 
 namespace neml2
 {
@@ -55,8 +56,8 @@ ResolvedShear::expected_options()
   options.set_input("orientation") = VariableName(STATE, "orientation_matrix");
   options.set("orientation").doc() = "The name of the orientation matrix";
 
-  options.set<std::string>("crystal_geometry_name") = "crystal_geometry";
-  options.set("crystal_geometry_name").doc() =
+  options.set<std::string>("crystal_geometry") = "crystal_geometry";
+  options.set("crystal_geometry").doc() =
       "The name of the data object with the crystallographic information";
   return options;
 }
@@ -64,8 +65,8 @@ ResolvedShear::expected_options()
 ResolvedShear::ResolvedShear(const OptionSet & options)
   : Model(options),
     _crystal_geometry(register_data<crystallography::CrystalGeometry>(
-        options.get<std::string>("crystal_geometry_name"))),
-    _rss(declare_output_variable<Scalar>("resolved_shears", _crystal_geometry.nslip())),
+        options.get<std::string>("crystal_geometry"))),
+    _rss(declare_output_variable<Scalar>("resolved_shears", -1)),
     _S(declare_input_variable<SR2>("stress")),
     _R(declare_input_variable<R2>("orientation"))
 {
@@ -74,26 +75,22 @@ ResolvedShear::ResolvedShear(const OptionSet & options)
 void
 ResolvedShear::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  // Unsqueeze a batch dimension for slip systems
-  const auto S = SR2(_S).batch_unsqueeze(-1);
-  const auto R = R2(_R).batch_unsqueeze(-1);
+  // Schmid tensor
+  const auto & M = _crystal_geometry.M();
+  // unsqueeze R and S to broadcast over slip systems
+  const auto R = _R().intmd_unsqueeze(-1);
+  const auto S = _S().intmd_unsqueeze(-1);
 
   if (out)
-    _rss = _crystal_geometry.M().rotate(R).inner(S);
+    _rss = neml2::inner(M.rotate(R), S);
 
   if (dout_din)
   {
     if (_S.is_dependent())
-    {
-      const auto drss_dS = _crystal_geometry.M().rotate(R);
-      _rss.d(_S) = Tensor(drss_dS, drss_dS.batch_dim() - 1);
-    }
+      _rss.d(_S, -1) = M.rotate(R);
 
     if (_R.is_dependent())
-    {
-      const auto D = utils::broadcast_batch_dim(_S, _R);
-      _rss.d(_R) = Tensor(at::einsum("...ijk,...i", {_crystal_geometry.M().drotate(R), S}), D);
-    }
+      _rss.d(_R, -1) = R2::einsum("...ijk,...i->...jk", {M.drotate(R), S});
   }
 }
 

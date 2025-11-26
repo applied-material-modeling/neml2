@@ -52,6 +52,7 @@ void
 TensorValue<T>::operator=(const Tensor & val)
 {
   _value = T(val);
+  _cached_intmd_dim = _value.intmd_dim();
 }
 
 template <typename T>
@@ -59,6 +60,13 @@ TensorType
 TensorValue<T>::type() const
 {
   return TensorTypeEnum<T>::value;
+}
+
+template <typename T>
+void
+TensorValue<T>::assign(const ATensor & val, TracerPrivilege /*key*/)
+{
+  _value = T(val, _cached_intmd_dim);
 }
 
 #define INSTANTIATE_TENSORVALUE(T) template class TensorValue<T>

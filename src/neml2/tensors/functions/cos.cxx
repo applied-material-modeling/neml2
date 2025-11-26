@@ -28,7 +28,7 @@
 namespace neml2
 {
 #define DEFINE_COS(T)                                                                              \
-  T cos(const T & a) { return T(at::cos(a), a.batch_sizes()); }                                    \
+  T cos(const T & a) { return T(at::cos(a), a.dynamic_sizes(), a.intmd_dim()); }                   \
   static_assert(true)
 FOR_ALL_TENSORBASE(DEFINE_COS);
 } // namespace neml2

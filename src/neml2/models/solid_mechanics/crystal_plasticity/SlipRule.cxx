@@ -23,10 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/models/solid_mechanics/crystal_plasticity/SlipRule.h"
-#include "neml2/models/crystallography/CrystalGeometry.h"
 
 #include "neml2/tensors/Scalar.h"
-#include "neml2/tensors/list_tensors.h"
 
 namespace neml2
 {
@@ -47,20 +45,14 @@ SlipRule::expected_options()
   options.set_input("slip_strengths") = VariableName(STATE, "internal", "slip_strengths");
   options.set("slip_strengths").doc() = "Name of the tensor containing the slip system strengths";
 
-  options.set<std::string>("crystal_geometry_name") = "crystal_geometry";
-  options.set("crystal_geometry_name").doc() =
-      "Name of the Data object containing the crystallographic information";
-
   return options;
 }
 
 SlipRule::SlipRule(const OptionSet & options)
   : Model(options),
-    _crystal_geometry(register_data<crystallography::CrystalGeometry>(
-        options.get<std::string>("crystal_geometry_name"))),
-    _g(declare_output_variable<Scalar>("slip_rates", _crystal_geometry.nslip())),
-    _rss(declare_input_variable<Scalar>("resolved_shears", _crystal_geometry.nslip())),
-    _tau(declare_input_variable<Scalar>("slip_strengths", _crystal_geometry.nslip()))
+    _g(declare_output_variable<Scalar>("slip_rates")),
+    _rss(declare_input_variable<Scalar>("resolved_shears")),
+    _tau(declare_input_variable<Scalar>("slip_strengths"))
 {
 }
 } // namespace neml2

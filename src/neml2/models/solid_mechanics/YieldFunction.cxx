@@ -24,6 +24,7 @@
 
 #include "neml2/models/solid_mechanics/YieldFunction.h"
 #include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/functions/imap.h"
 
 namespace neml2
 {
@@ -79,7 +80,7 @@ YieldFunction::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (dout_din)
   {
-    auto I = Scalar::identity_map(_s.options());
+    auto I = imap_v<Scalar>(_s.options());
 
     if (_s.is_dependent())
       _f.d(_s) = std::sqrt(2.0 / 3.0) * I;

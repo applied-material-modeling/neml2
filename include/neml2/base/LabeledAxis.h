@@ -35,7 +35,7 @@ namespace neml2
 class LabeledAxis;
 
 /**
- * @brief A *labeled* axis used to associate layout of a tensor with human-interpretable names.
+ * @brief A *labeled* axis is used to associate layout of a tensor with human-interpretable names.
  *
  * A one-dimensional tensor requires one LabeledAxis, two-dimensional tensor requires two
  * LabeledAxis, and so on. See @ref model-assembly for a detailed explanation of tensor labeling
@@ -53,31 +53,28 @@ public:
   /// Sub-axis constructor
   LabeledAxis(LabeledAxisAccessor prefix);
 
+  /// De-initialize the axis
+  void clear();
+
   /// Whether the axis has been set up
   bool is_setup() const { return _setup; }
 
-  /// Return the fully qualified name of an item (i.e. this axis is a sub-axis)
+  /// Return the fully qualified name of an item (i.e. useful when this axis is a sub-axis)
   LabeledAxisAccessor qualify(const LabeledAxisAccessor & accessor) const;
 
-  /// Check the existence of reserved subaxes
-  ///@{
-  bool has_state() const { return _has_state; }
-  bool has_old_state() const { return _has_old_state; }
-  bool has_forces() const { return _has_forces; }
-  bool has_old_forces() const { return _has_old_forces; }
-  bool has_residual() const { return _has_residual; }
-  bool has_parameters() const { return _has_parameters; }
-  ///@}
+  /// Return the disqualified name of an item (i.e. remove the prefix)
+  LabeledAxisAccessor disqualify(const LabeledAxisAccessor & accessor) const;
 
   /// Add a sub-axis
   LabeledAxis & add_subaxis(const std::string & name);
 
   /// Add a variable with known storage size
-  void add_variable(const LabeledAxisAccessor & name, Size sz);
+  void add_variable(const LabeledAxisAccessor & name,
+                    TensorShapeRef intmd_sizes,
+                    TensorShapeRef base_sizes);
 
-  /// Add a variable
-  template <typename T>
-  void add_variable(const LabeledAxisAccessor & name);
+  /// Set intermediate shape of a variable
+  void set_intmd_sizes(const LabeledAxisAccessor & name, TensorShapeRef shape);
 
   /// Setup the layout of all items recursively.
   void setup_layout();
@@ -99,6 +96,8 @@ public:
   bool has_variable(const LabeledAxisAccessor & name) const;
   /// Get the assembly ID of a variable
   std::size_t variable_id(const LabeledAxisAccessor & name) const;
+  /// Get variable names in unsorted order
+  std::vector<LabeledAxisAccessor> variable_names_unsrt() const;
   /// Get the variable names
   const std::vector<LabeledAxisAccessor> & variable_names() const;
   /// Get the variable slicing indices (in assembly order)
@@ -109,6 +108,10 @@ public:
   const std::vector<Size> & variable_sizes() const;
   /// Get the storage size of a variable by name
   Size variable_size(const LabeledAxisAccessor & name) const;
+  /// Get the variable left-batch shapes (in assembly order)
+  const std::vector<TensorShape> & variable_intmd_sizes() const;
+  /// Get the variable base shapes (in assembly order)
+  const std::vector<TensorShape> & variable_base_sizes() const;
   ///@}
 
   /// Get sub-axis information
@@ -125,6 +128,8 @@ public:
   const LabeledAxis & subaxis(const LabeledAxisAccessor & name) const;
   /// Get a sub-axis by name
   LabeledAxis & subaxis(const LabeledAxisAccessor & name);
+  /// Get subaxis names in unsorted order
+  std::vector<std::string> subaxis_names_unsrt() const;
   /// Get the sub-axis names
   const std::vector<std::string> & subaxis_names() const;
   /// Get the sub-axis slicing indices (in assembly order)
@@ -143,8 +148,8 @@ public:
   friend std::ostream & operator<<(std::ostream & os, const LabeledAxis & axis);
 
 private:
-  /// Cache the existence of a reserved subaxis
-  void cache_reserved_subaxis(const std::string & axis_name);
+  /// Clear internal data used for assembly
+  void clear_data();
 
   /// Ensure that the axis has been setup
   void ensure_setup_dbg() const;
@@ -158,8 +163,8 @@ private:
   /// The total storage size of the axis
   Size _size = 0;
 
-  /// Variables and their sizes
-  std::map<std::string, Size> _variables;
+  /// Variables and their intermediate/base shapes
+  std::map<std::string, std::pair<TensorShape, TensorShape>> _variables;
 
   /// Sub-axes
   std::map<std::string, std::shared_ptr<LabeledAxis>> _subaxes;
@@ -179,6 +184,10 @@ private:
   std::vector<Size> _id_to_variable_size_map;
   /// Map from assembly ID to variable slicing indices
   std::vector<std::pair<Size, Size>> _id_to_variable_slice_map;
+  /// Map from assembly ID to variable intermediate-batch shape
+  std::vector<TensorShape> _id_to_intmd_sizes_map;
+  /// Map from assembly ID to variable base shape
+  std::vector<TensorShape> _id_to_base_sizes_map;
   ///@}
 
   /**
@@ -198,16 +207,6 @@ private:
   std::vector<Size> _id_to_subaxis_size_map;
   /// Map from assembly ID to sub-axis slicing indices
   std::vector<std::pair<Size, Size>> _id_to_subaxis_slice_map;
-  ///@}
-
-  /// Flags for reserved subaxes
-  ///@{
-  bool _has_state = false;
-  bool _has_old_state = false;
-  bool _has_forces = false;
-  bool _has_old_forces = false;
-  bool _has_residual = false;
-  bool _has_parameters = false;
   ///@}
 };
 

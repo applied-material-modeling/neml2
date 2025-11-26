@@ -76,8 +76,6 @@ public:
                                 const Scalar & a12);
   /// Identity
   [[nodiscard]] static SR2 identity(const TensorOptions & options = default_tensor_options());
-  /// The derivative of a SR2 with respect to itself
-  [[nodiscard]] static SSR4 identity_map(const TensorOptions & options = default_tensor_options());
 
   /// Rotate
   SR2 rotate(const Rot & r) const;
@@ -89,33 +87,6 @@ public:
 
   /// Accessor
   Scalar operator()(Size i, Size j) const;
-
-  /// Trace
-  Scalar tr() const;
-
-  /// Volumetric part of the tensor
-  SR2 vol() const;
-
-  /// Deviatoric part of the tensor
-  SR2 dev() const;
-
-  /// Double contraction ij,ij
-  Scalar inner(const SR2 & other) const;
-
-  /// Norm squared
-  Scalar norm_sq() const;
-
-  /// Norm
-  Scalar norm(const CScalar & eps = 0) const;
-
-  /// Outer product ij,kl -> ijkl
-  SSR4 outer(const SR2 & other) const;
-
-  /// Determinant
-  Scalar det() const;
-
-  /// Inversion
-  SR2 inverse() const;
 
   /// Transpose, no-op
   SR2 transpose() const;

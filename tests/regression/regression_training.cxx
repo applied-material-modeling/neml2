@@ -45,7 +45,8 @@ TEST_CASE("training")
 
   // Request parameter gradient
   auto & p = model->get_parameter("yield_sy");
-  p = Scalar::create(5, default_tensor_options().requires_grad(true));
+  p = Scalar(5, default_tensor_options());
+  p.requires_grad_(true);
 
   // Variables
   VariableName strain(FORCES, "E");
@@ -55,11 +56,11 @@ TEST_CASE("training")
 
   // Evaluate the model for the first time
   ValueMap x1;
-  x1[strain.old()] = SR2::fill(0.0, 0.0, 0.01, -0.01, -0.01, 0.02).batch_expand(nbatch);
-  x1[strain] = SR2::fill(0.01, 0.01, 0.01, -0.02, -0.03, 0.04).batch_expand(nbatch);
-  x1[time] = Scalar::full(1.0).batch_expand(nbatch);
-  x1[stress] = SR2::fill(100.0, 100.0, 200.0, -50.0, -150.0, 50.0).batch_expand(nbatch);
-  x1[ep] = Scalar::full(0.001).batch_expand(nbatch);
+  x1[strain.old()] = SR2::fill(0.0, 0.0, 0.01, -0.01, -0.01, 0.02).dynamic_expand(nbatch);
+  x1[strain] = SR2::fill(0.01, 0.01, 0.01, -0.02, -0.03, 0.04).dynamic_expand(nbatch);
+  x1[time] = Scalar::full(1.0).dynamic_expand(nbatch);
+  x1[stress] = SR2::fill(100.0, 100.0, 200.0, -50.0, -150.0, 50.0).dynamic_expand(nbatch);
+  x1[ep] = Scalar::full(0.001).dynamic_expand(nbatch);
   const auto r1 = model->value(x1);
 
   // Evaluate the model for the second time
@@ -68,10 +69,10 @@ TEST_CASE("training")
   x2[time.old()] = x1[time];
   x2[stress.old()] = r1.at(stress.remount(RESIDUAL)) * 1e-2;
   x2[ep.old()] = r1.at(ep.remount(RESIDUAL)) * 1e-2;
-  x2[strain] = SR2::fill(0.02, 0.02, 0.03, -0.02, -0.01, 0.01).batch_expand(nbatch);
-  x2[time] = Scalar::full(5.0).batch_expand(nbatch);
-  x2[stress] = SR2::fill(100.0, 100.0, 200.0, -50.0, -150.0, 50.0).batch_expand(nbatch);
-  x2[ep] = Scalar::full(0.001).batch_expand(nbatch);
+  x2[strain] = SR2::fill(0.02, 0.02, 0.03, -0.02, -0.01, 0.01).dynamic_expand(nbatch);
+  x2[time] = Scalar::full(5.0).dynamic_expand(nbatch);
+  x2[stress] = SR2::fill(100.0, 100.0, 200.0, -50.0, -150.0, 50.0).dynamic_expand(nbatch);
+  x2[ep] = Scalar::full(0.001).dynamic_expand(nbatch);
   const auto r2 = model->value(x2);
 
   // Evaluate the objective function

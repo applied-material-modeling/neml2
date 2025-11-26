@@ -23,13 +23,16 @@
 // THE SOFTWARE.
 
 #include "neml2/models/Assembler.h"
+#include "neml2/misc/types.h"
 #include "neml2/tensors/functions/cat.h"
+#include "neml2/tensors/functions/to_assembly.h"
+#include "neml2/tensors/functions/from_assembly.h"
 #include "neml2/misc/assertions.h"
 
 namespace neml2
 {
 Tensor
-VectorAssembler::assemble_by_variable(const ValueMap & vals_dict) const
+VectorAssembler::assemble_by_variable(const ValueMap & vals_dict, bool assembly) const
 {
   const auto vars = _axis.variable_names();
 
@@ -43,17 +46,35 @@ VectorAssembler::assemble_by_variable(const ValueMap & vals_dict) const
   std::vector<Tensor> vals(vars.size());
   for (std::size_t i = 0; i < vars.size(); ++i)
   {
-    const auto val = vals_dict.find(_axis.qualify(vars[i]));
-    if (val != vals_dict.end())
+    const auto it = vals_dict.find(_axis.qualify(vars[i]));
+    if (it != vals_dict.end())
     {
-      vals[i] = val->second.base_flatten();
-      neml_assert_dbg(vals[i].base_size(0) == _axis.variable_sizes()[i],
-                      "Invalid size for variable ",
-                      vars[i],
-                      ". Expected ",
-                      _axis.variable_sizes()[i],
-                      ", got ",
-                      vals[i].base_size(0));
+      const auto & val_ref = it->second;
+      if (assembly)
+      {
+        neml_assert_dbg(val_ref.intmd_dim() == 0,
+                        "Tensor in assembly format should have no intermediate dimensions.");
+        neml_assert_dbg(val_ref.base_dim() == 1,
+                        "During vector assembly, found a tensor associated with variable ",
+                        vars[i],
+                        " with base dimension ",
+                        val_ref.base_dim(),
+                        ". Expected 1.");
+        neml_assert_dbg(val_ref.base_size(0) == _axis.variable_sizes()[i],
+                        "Invalid size for variable ",
+                        vars[i],
+                        ". Expected ",
+                        _axis.variable_sizes()[i],
+                        ", got ",
+                        val_ref.base_size(0));
+      }
+      const auto val = assembly ? val_ref
+                                : to_assembly<1>(val_ref,
+                                                 {_axis.variable_intmd_sizes()[i]},
+                                                 {_axis.variable_base_sizes()[i]});
+      neml_assert_dbg(
+          val.isfinite().all().item<bool>(), "Non-finite value found for variable ", vars[i]);
+      vals[i] = val;
       if (!options_defined)
       {
         options = options.dtype(vals[i].dtype()).device(vals[i].device());
@@ -64,27 +85,38 @@ VectorAssembler::assemble_by_variable(const ValueMap & vals_dict) const
 
   neml_assert(options_defined, "No variable values found for assembly");
 
-  // Expand defined tensors with the broadcast batch shape and fill undefined tensors with zeros.
-  const auto batch_sizes = utils::broadcast_batch_sizes(vals);
+  // Expand defined tensors with the broadcast dynamic shape and fill undefined tensors with zeros.
+  const auto dynamic_sizes = utils::broadcast_dynamic_sizes(vals);
   for (std::size_t i = 0; i < vars.size(); ++i)
     if (vals[i].defined())
-      vals[i] = vals[i].batch_expand(batch_sizes);
+      vals[i] = vals[i].dynamic_expand(dynamic_sizes);
     else
-      vals[i] = Tensor::zeros(batch_sizes, _axis.variable_sizes()[i], options);
+      vals[i] = Tensor::zeros(dynamic_sizes, {}, _axis.variable_sizes()[i], options);
 
   return base_cat(vals, -1);
 }
 
 ValueMap
-VectorAssembler::split_by_variable(const Tensor & tensor) const
+VectorAssembler::split_by_variable(const Tensor & tensor, bool assembly) const
 {
+  neml_assert_dbg(tensor.intmd_dim() == 0,
+                  "Tensor in assembly format should have no intermediate dimensions.");
+  neml_assert_dbg(tensor.base_dim() == 1,
+                  "During vector split, the tensor should have a base dimension of 1.");
+
   ValueMap ret;
 
   const auto keys = _axis.variable_names();
   const auto vals = tensor.split(_axis.variable_sizes(), -1);
 
   for (std::size_t i = 0; i < keys.size(); ++i)
-    ret[_axis.qualify(keys[i])] = Tensor(vals[i], tensor.batch_sizes());
+  {
+    const Tensor val(vals[i], tensor.dynamic_sizes());
+    ret[_axis.qualify(keys[i])] = assembly ? val
+                                           : from_assembly<1>(val,
+                                                              {_axis.variable_intmd_sizes()[i]},
+                                                              {_axis.variable_base_sizes()[i]});
+  }
 
   return ret;
 }
@@ -92,19 +124,24 @@ VectorAssembler::split_by_variable(const Tensor & tensor) const
 std::map<SubaxisName, Tensor>
 VectorAssembler::split_by_subaxis(const Tensor & tensor) const
 {
+  neml_assert_dbg(tensor.intmd_dim() == 0,
+                  "Tensor in assembly format should have no intermediate dimensions.");
+  neml_assert_dbg(tensor.base_dim() == 1,
+                  "During vector split, the tensor should have a base dimension of 1.");
+
   std::map<SubaxisName, Tensor> ret;
 
   const auto keys = _axis.subaxis_names();
   const auto vals = tensor.split(_axis.subaxis_sizes(), -1);
 
   for (std::size_t i = 0; i < keys.size(); ++i)
-    ret[_axis.qualify(keys[i])] = Tensor(vals[i], tensor.batch_sizes());
+    ret[_axis.qualify(keys[i])] = Tensor(vals[i], tensor.dynamic_sizes());
 
   return ret;
 }
 
 Tensor
-MatrixAssembler::assemble_by_variable(const DerivMap & vals_dict) const
+MatrixAssembler::assemble_by_variable(const DerivMap & vals_dict, bool assembly) const
 {
   const auto yvars = _yaxis.variable_names();
   const auto xvars = _xaxis.variable_names();
@@ -127,28 +164,45 @@ MatrixAssembler::assemble_by_variable(const DerivMap & vals_dict) const
     std::vector<Tensor> vals(xvars.size());
     for (std::size_t j = 0; j < xvars.size(); ++j)
     {
-      const auto val = vals_row->second.find(_xaxis.qualify(xvars[j]));
-      if (val != vals_row->second.end())
+      const auto it = vals_row->second.find(_xaxis.qualify(xvars[j]));
+      if (it != vals_row->second.end())
       {
-        vals[j] = val->second;
-        neml_assert_dbg(vals[j].base_dim() == 2,
-                        "During matrix assembly, found a tensor associated with variables ",
+        const auto & val_ref = it->second;
+        if (assembly)
+        {
+          neml_assert_dbg(val_ref.intmd_dim() == 0,
+                          "Tensor in assembly format should have no intermediate dimensions.");
+          neml_assert_dbg(val_ref.base_dim() == 2,
+                          "During matrix assembly, found a tensor associated with variables ",
+                          yvars[i],
+                          "/",
+                          xvars[j],
+                          " with base dimension ",
+                          val_ref.base_dim(),
+                          ". Expected base dimension of 2.");
+          neml_assert_dbg(val_ref.base_size(0) == _yaxis.variable_sizes()[i] &&
+                              val_ref.base_size(1) == _xaxis.variable_sizes()[j],
+                          "Invalid tensor shape associated with variables ",
+                          yvars[i],
+                          "/",
+                          xvars[j],
+                          ". Expected base shape ",
+                          TensorShape{_yaxis.variable_sizes()[i], _xaxis.variable_sizes()[j]},
+                          ", got ",
+                          val_ref.base_sizes());
+        }
+        const auto val =
+            assembly ? val_ref
+                     : to_assembly<2>(
+                           val_ref,
+                           {_yaxis.variable_intmd_sizes()[i], _xaxis.variable_intmd_sizes()[j]},
+                           {_yaxis.variable_base_sizes()[i], _xaxis.variable_base_sizes()[j]});
+        neml_assert_dbg(val.isfinite().all().item<bool>(),
+                        "Non-finite tensor value found for variables ",
                         yvars[i],
                         "/",
-                        xvars[j],
-                        " with base dimension ",
-                        vals[j].base_dim(),
-                        ". Expected base dimension of 2.");
-        neml_assert_dbg(vals[j].base_size(0) == _yaxis.variable_sizes()[i] &&
-                            vals[j].base_size(1) == _xaxis.variable_sizes()[j],
-                        "Invalid tensor shape associated with variables ",
-                        yvars[i],
-                        "/",
-                        xvars[j],
-                        ". Expected base shape ",
-                        TensorShape{_yaxis.variable_sizes()[i], _xaxis.variable_sizes()[j]},
-                        ", got ",
-                        vals[j].base_sizes());
+                        xvars[j]);
+        vals[j] = val;
         if (!options_defined)
         {
           options = options.dtype(vals[j].dtype()).device(vals[j].device());
@@ -159,32 +213,39 @@ MatrixAssembler::assemble_by_variable(const DerivMap & vals_dict) const
 
     neml_assert(options_defined, "No variable values found for assembly");
 
-    // Expand defined tensors with the broadcast batch shape and fill undefined tensors with zeros.
-    const auto batch_sizes = utils::broadcast_batch_sizes(vals);
+    // Expand defined tensors with the broadcast dynamic shape and fill undefined tensors with
+    // zeros.
+    const auto dynamic_sizes = utils::broadcast_dynamic_sizes(vals);
     for (std::size_t j = 0; j < xvars.size(); ++j)
       if (vals[j].defined())
-        vals[j] = vals[j].batch_expand(batch_sizes);
+        vals[j] = vals[j].dynamic_expand(dynamic_sizes);
       else
         vals[j] = Tensor::zeros(
-            batch_sizes, {_yaxis.variable_sizes()[i], _xaxis.variable_sizes()[j]}, options);
+            dynamic_sizes, {}, {_yaxis.variable_sizes()[i], _xaxis.variable_sizes()[j]}, options);
 
     rows[i] = base_cat(vals, -1);
   }
 
-  // Expand defined tensors with the broadcast batch shape and fill undefined tensors with zeros.
-  const auto batch_sizes = utils::broadcast_batch_sizes(rows);
+  // Expand defined tensors with the broadcast dynamic shape and fill undefined tensors with zeros.
+  const auto dynamic_sizes = utils::broadcast_dynamic_sizes(rows);
   for (std::size_t i = 0; i < yvars.size(); ++i)
     if (rows[i].defined())
-      rows[i] = rows[i].batch_expand(batch_sizes);
+      rows[i] = rows[i].dynamic_expand(dynamic_sizes);
     else
-      rows[i] = Tensor::zeros(batch_sizes, {_yaxis.variable_sizes()[i], _xaxis.size()}, options);
+      rows[i] =
+          Tensor::zeros(dynamic_sizes, {}, {_yaxis.variable_sizes()[i], _xaxis.size()}, options);
 
   return base_cat(rows, -2);
 }
 
 DerivMap
-MatrixAssembler::split_by_variable(const Tensor & tensor) const
+MatrixAssembler::split_by_variable(const Tensor & tensor, bool assembly) const
 {
+  neml_assert_dbg(tensor.intmd_dim() == 0,
+                  "Tensor in assembly format should have no intermediate dimensions.");
+  neml_assert_dbg(tensor.base_dim() == 2,
+                  "During vector split, the tensor should have a base dimension of 2.");
+
   DerivMap ret;
 
   const auto yvars = _yaxis.variable_names();
@@ -195,8 +256,15 @@ MatrixAssembler::split_by_variable(const Tensor & tensor) const
   {
     const auto vals = rows[i].split(_xaxis.variable_sizes(), -1);
     for (std::size_t j = 0; j < xvars.size(); ++j)
+    {
+      const Tensor val(vals[j], tensor.dynamic_sizes());
       ret[_yaxis.qualify(yvars[i])][_xaxis.qualify(xvars[j])] =
-          Tensor(vals[j], tensor.batch_sizes());
+          assembly ? val
+                   : from_assembly<2>(
+                         val,
+                         {_yaxis.variable_intmd_sizes()[i], _xaxis.variable_intmd_sizes()[j]},
+                         {_yaxis.variable_base_sizes()[i], _xaxis.variable_base_sizes()[j]});
+    }
   }
 
   return ret;
@@ -205,6 +273,11 @@ MatrixAssembler::split_by_variable(const Tensor & tensor) const
 std::map<SubaxisName, std::map<SubaxisName, Tensor>>
 MatrixAssembler::split_by_subaxis(const Tensor & tensor) const
 {
+  neml_assert_dbg(tensor.intmd_dim() == 0,
+                  "Tensor in assembly format should have no intermediate dimensions.");
+  neml_assert_dbg(tensor.base_dim() == 2,
+                  "During vector split, the tensor should have a base dimension of 2.");
+
   std::map<SubaxisName, std::map<SubaxisName, Tensor>> ret;
 
   const auto ynames = _yaxis.subaxis_names();
@@ -216,7 +289,7 @@ MatrixAssembler::split_by_subaxis(const Tensor & tensor) const
     const auto vals = rows[i].split(_xaxis.subaxis_sizes(), -1);
     for (std::size_t j = 0; j < xnames.size(); ++j)
       ret[_yaxis.qualify(ynames[i])][_xaxis.qualify(xnames[j])] =
-          Tensor(vals[j], tensor.batch_sizes());
+          Tensor(vals[j], tensor.dynamic_sizes());
   }
 
   return ret;

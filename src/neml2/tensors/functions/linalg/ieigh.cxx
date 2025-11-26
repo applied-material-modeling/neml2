@@ -23,15 +23,17 @@
 // THE SOFTWARE.
 
 #include "neml2/tensors/functions/linalg/ieigh.h"
+#include "neml2/tensors/functions/outer.h"
+#include "neml2/tensors/Scalar.h"
 
 namespace neml2::linalg
 {
 SR2
 ieigh(const Vec & eigvals, const R2 & eigvecs)
 {
-  auto M0 = eigvecs.col(0).self_outer();
-  auto M1 = eigvecs.col(1).self_outer();
-  auto M2 = eigvecs.col(2).self_outer();
-  return eigvals(0) * M0 + eigvals(1) * M1 + eigvals(2) * M2;
+  auto M0 = neml2::outer(eigvecs.col(0));
+  auto M1 = neml2::outer(eigvecs.col(1));
+  auto M2 = neml2::outer(eigvecs.col(2));
+  return eigvals(0) * SR2(M0) + eigvals(1) * SR2(M1) + eigvals(2) * SR2(M2);
 }
 } // namespace neml2::linalg

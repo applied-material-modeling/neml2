@@ -26,7 +26,7 @@
 #include <iomanip>
 
 #include "neml2/solvers/NewtonWithLineSearch.h"
-#include "neml2/tensors/functions/bvv.h"
+#include "neml2/tensors/functions/vdot.h"
 #include "neml2/tensors/functions/sqrt.h"
 #include "neml2/tensors/assertions.h"
 
@@ -44,7 +44,7 @@ NewtonWithLineSearch::expected_options()
   options.set<EnumSelection>("linesearch_type") = linesearch_type;
   options.set("linesearch_type").doc() = "The type of linesearch used."
                                          "Default: BACKTRACKING. Options are " +
-                                         linesearch_type.candidates_str();
+                                         linesearch_type.join();
 
   options.set<unsigned int>("max_linesearch_iterations") = 10;
   options.set("max_linesearch_iterations").doc() =
@@ -93,18 +93,18 @@ NewtonWithLineSearch::linesearch(NonlinearSystem & system,
                                  const NonlinearSystem::Sol<true> & dx,
                                  const NonlinearSystem::Res<true> & R0) const
 {
-  auto alpha = Scalar::ones(x.batch_sizes(), x.options());
-  const auto nR02 = bvv(R0, R0);
+  auto alpha = Scalar::ones(dx.dynamic_sizes(), {}, x.options());
+  const auto nR02 = vdot(R0, R0);
   auto crit = nR02;
 
   for (std::size_t i = 1; i < _linesearch_miter; i++)
   {
     NonlinearSystem::Sol<true> xp(Tensor(x) + alpha * Tensor(dx));
     auto R = system.residual(xp);
-    auto nR2 = bvv(R, R);
+    auto nR2 = vdot(R, R);
 
     if (_type == "BACKTRACKING")
-      crit = nR02 + 2.0 * _linesearch_c * alpha * bvv(R0, dx);
+      crit = nR02 + 2.0 * _linesearch_c * alpha * vdot(R0, dx);
     else if (_type == "STRONG_WOLFE")
       crit = (1.0 - _linesearch_c * alpha) * nR02;
 
@@ -119,8 +119,8 @@ NewtonWithLineSearch::linesearch(NonlinearSystem & system,
     if (at::all(stop).item<bool>())
       break;
 
-    alpha.batch_index_put_({at::logical_not(stop)},
-                           alpha.batch_index({at::logical_not(stop)}) / _linesearch_sigma);
+    alpha.dynamic_index_put_({at::logical_not(stop)},
+                             alpha.dynamic_index({at::logical_not(stop)}) / _linesearch_sigma);
   }
 
   if (_check_crit)
