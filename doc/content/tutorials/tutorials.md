@@ -30,7 +30,7 @@
 
 <div class="cards">
   <div class="card">
-    <a href="naming-conventions.html">
+    <a href="tutorials-naming-conventions.html">
     <div class="card_container">
       <h2>Naming conventions</h2>
       <p>Understand naming conventions for model variables and parameters, as well as conventions used throughout source code (file name, class name, function name etc.)</p>

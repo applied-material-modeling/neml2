@@ -193,6 +193,7 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
   torch
   REQUIRED_VARS
+  torch_LINK_DIR
   torch_core_FOUND
   HANDLE_COMPONENTS
 )

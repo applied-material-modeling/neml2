@@ -1,1 +1,2 @@
+pyzag==1.1.1
 pybind11-stubgen

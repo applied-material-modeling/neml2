@@ -19,7 +19,7 @@ endif()
 # -----------------------------------------------------------------------------
 if(NOT TARGET csv)
   find_path(csvparser_INCLUDE_DIR csvparser PATH_SUFFIXES csvparser HINTS ${_csvparser_search_paths})
-  
+
   if(csvparser_INCLUDE_DIR)
     add_library(csv INTERFACE IMPORTED)
     target_include_directories(csv INTERFACE ${csvparser_INCLUDE_DIR})
@@ -38,5 +38,6 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
   csvparser
   REQUIRED_VARS
+  csvparser_INCLUDE_DIR
   csvparser_FOUND
 )
