@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-10-10 12:15:50</td>
+            <td class="headerValue">2025-12-06 17:10:54</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -149,7 +149,7 @@
 <span id="L87"><span class="lineNum">      87</span> <span class="tlaGNC">           6 :   auto post = pow(_eps0, _k * _T * _A / (_mu * _b3));</span></span>
 <span id="L88"><span class="lineNum">      88</span>              : </span>
 <span id="L89"><span class="lineNum">      89</span> <span class="tlaGNC">           6 :   if (out)</span></span>
-<span id="L90"><span class="lineNum">      90</span> <span class="tlaGNC">           4 :     _eta = exp(_B) * _mu * post;</span></span>
+<span id="L90"><span class="lineNum">      90</span> <span class="tlaGNC">           6 :     _eta = exp(_B) * _mu * post;</span></span>
 <span id="L91"><span class="lineNum">      91</span>              : </span>
 <span id="L92"><span class="lineNum">      92</span> <span class="tlaGNC">           6 :   if (dout_din)</span></span>
 <span id="L93"><span class="lineNum">      93</span>              :   {</span>
@@ -171,66 +171,66 @@
 <span id="L109"><span class="lineNum">     109</span>              :     // T</span>
 <span id="L110"><span class="lineNum">     110</span> <span class="tlaGNC">           2 :     if (_T.is_dependent())</span></span>
 <span id="L111"><span class="lineNum">     111</span>              :     {</span>
-<span id="L112"><span class="lineNum">     112</span> <span class="tlaGNC">           2 :       _eta.d(_T, _T) = pow(_A * _k * std::log(_eps0) / _b3, 2.0) * exp(_B) * post / _mu;</span></span>
+<span id="L112"><span class="lineNum">     112</span> <span class="tlaGNC">           2 :       _eta.d2(_T, _T) = pow(_A * _k * std::log(_eps0) / _b3, 2.0) * exp(_B) * post / _mu;</span></span>
 <span id="L113"><span class="lineNum">     113</span>              : </span>
 <span id="L114"><span class="lineNum">     114</span> <span class="tlaGNC">           6 :       if (const auto * const A = nl_param(&quot;A&quot;))</span></span>
-<span id="L115"><span class="lineNum">     115</span> <span class="tlaGNC">           4 :         _eta.d(_T, *A) = exp(_B) * _k * std::log(_eps0) * post / _b3 *</span></span>
-<span id="L116"><span class="lineNum">     116</span> <span class="tlaGNC">           5 :                          (std::log(_eps0) * _A * _k * _T / (_b3 * _mu) + 1.0);</span></span>
+<span id="L115"><span class="lineNum">     115</span> <span class="tlaGNC">           3 :         _eta.d2(_T, *A) = exp(_B) * _k * std::log(_eps0) * post / _b3 *</span></span>
+<span id="L116"><span class="lineNum">     116</span> <span class="tlaGNC">           4 :                           (std::log(_eps0) * _A * _k * _T / (_b3 * _mu) + 1.0);</span></span>
 <span id="L117"><span class="lineNum">     117</span>              : </span>
 <span id="L118"><span class="lineNum">     118</span> <span class="tlaGNC">           6 :       if (const auto * const B = nl_param(&quot;B&quot;))</span></span>
-<span id="L119"><span class="lineNum">     119</span> <span class="tlaGNC">           1 :         _eta.d(_T, *B) = _A * exp(_B) * _k * std::log(_eps0) * post / _b3;</span></span>
+<span id="L119"><span class="lineNum">     119</span> <span class="tlaGNC">           1 :         _eta.d2(_T, *B) = _A * exp(_B) * _k * std::log(_eps0) * post / _b3;</span></span>
 <span id="L120"><span class="lineNum">     120</span>              : </span>
 <span id="L121"><span class="lineNum">     121</span> <span class="tlaGNC">           6 :       if (const auto * const mu = nl_param(&quot;mu&quot;))</span></span>
-<span id="L122"><span class="lineNum">     122</span> <span class="tlaGNC">           1 :         _eta.d(_T, *mu) = -pow(_A * _k * std::log(_eps0) / (_b3 * _mu), 2.0) * exp(_B) * _T * post;</span></span>
+<span id="L122"><span class="lineNum">     122</span> <span class="tlaGNC">           1 :         _eta.d2(_T, *mu) = -pow(_A * _k * std::log(_eps0) / (_b3 * _mu), 2.0) * exp(_B) * _T * post;</span></span>
 <span id="L123"><span class="lineNum">     123</span>              :     }</span>
 <span id="L124"><span class="lineNum">     124</span>              : </span>
 <span id="L125"><span class="lineNum">     125</span>              :     // A</span>
 <span id="L126"><span class="lineNum">     126</span> <span class="tlaGNC">           6 :     if (const auto * const A = nl_param(&quot;A&quot;))</span></span>
 <span id="L127"><span class="lineNum">     127</span>              :     {</span>
 <span id="L128"><span class="lineNum">     128</span> <span class="tlaGNC">           1 :       if (_T.is_dependent())</span></span>
-<span id="L129"><span class="lineNum">     129</span> <span class="tlaGNC">           4 :         _eta.d(*A, _T) = exp(_B) * _k * std::log(_eps0) * post / _b3 *</span></span>
-<span id="L130"><span class="lineNum">     130</span> <span class="tlaGNC">           5 :                          (std::log(_eps0) * _A * _k * _T / (_b3 * _mu) + 1.0);</span></span>
+<span id="L129"><span class="lineNum">     129</span> <span class="tlaGNC">           3 :         _eta.d2(*A, _T) = exp(_B) * _k * std::log(_eps0) * post / _b3 *</span></span>
+<span id="L130"><span class="lineNum">     130</span> <span class="tlaGNC">           4 :                           (std::log(_eps0) * _A * _k * _T / (_b3 * _mu) + 1.0);</span></span>
 <span id="L131"><span class="lineNum">     131</span>              : </span>
-<span id="L132"><span class="lineNum">     132</span> <span class="tlaGNC">           1 :       _eta.d(*A, *A) = exp(_B) * pow(_k * _T * std::log(_eps0) / _b3, 2.0) * post / _mu;</span></span>
+<span id="L132"><span class="lineNum">     132</span> <span class="tlaGNC">           1 :       _eta.d2(*A, *A) = exp(_B) * pow(_k * _T * std::log(_eps0) / _b3, 2.0) * post / _mu;</span></span>
 <span id="L133"><span class="lineNum">     133</span>              : </span>
 <span id="L134"><span class="lineNum">     134</span> <span class="tlaGNC">           3 :       if (const auto * const B = nl_param(&quot;B&quot;))</span></span>
-<span id="L135"><span class="lineNum">     135</span> <span class="tlaGNC">           1 :         _eta.d(*A, *B) = exp(_B) * _k * _T * std::log(_eps0) * post / _b3;</span></span>
+<span id="L135"><span class="lineNum">     135</span> <span class="tlaGNC">           1 :         _eta.d2(*A, *B) = exp(_B) * _k * _T * std::log(_eps0) * post / _b3;</span></span>
 <span id="L136"><span class="lineNum">     136</span>              : </span>
 <span id="L137"><span class="lineNum">     137</span> <span class="tlaGNC">           3 :       if (const auto * const mu = nl_param(&quot;mu&quot;))</span></span>
-<span id="L138"><span class="lineNum">     138</span> <span class="tlaGNC">           1 :         _eta.d(*A, *mu) = -_A * exp(_B) * pow(_k * _T * std::log(_eps0) / (_b3 * _mu), 2.0) * post;</span></span>
+<span id="L138"><span class="lineNum">     138</span> <span class="tlaGNC">           1 :         _eta.d2(*A, *mu) = -_A * exp(_B) * pow(_k * _T * std::log(_eps0) / (_b3 * _mu), 2.0) * post;</span></span>
 <span id="L139"><span class="lineNum">     139</span>              :     }</span>
 <span id="L140"><span class="lineNum">     140</span>              : </span>
 <span id="L141"><span class="lineNum">     141</span>              :     // B</span>
 <span id="L142"><span class="lineNum">     142</span> <span class="tlaGNC">           6 :     if (const auto * const B = nl_param(&quot;B&quot;))</span></span>
 <span id="L143"><span class="lineNum">     143</span>              :     {</span>
 <span id="L144"><span class="lineNum">     144</span> <span class="tlaGNC">           1 :       if (_T.is_dependent())</span></span>
-<span id="L145"><span class="lineNum">     145</span> <span class="tlaGNC">           1 :         _eta.d(*B, _T) = _A * exp(_B) * _k * std::log(_eps0) * post / _b3;</span></span>
+<span id="L145"><span class="lineNum">     145</span> <span class="tlaGNC">           1 :         _eta.d2(*B, _T) = _A * exp(_B) * _k * std::log(_eps0) * post / _b3;</span></span>
 <span id="L146"><span class="lineNum">     146</span>              : </span>
 <span id="L147"><span class="lineNum">     147</span> <span class="tlaGNC">           3 :       if (const auto * const A = nl_param(&quot;A&quot;))</span></span>
-<span id="L148"><span class="lineNum">     148</span> <span class="tlaGNC">           1 :         _eta.d(*B, *A) = exp(_B) * _k * _T * std::log(_eps0) * post / _b3;</span></span>
+<span id="L148"><span class="lineNum">     148</span> <span class="tlaGNC">           1 :         _eta.d2(*B, *A) = exp(_B) * _k * _T * std::log(_eps0) * post / _b3;</span></span>
 <span id="L149"><span class="lineNum">     149</span>              : </span>
-<span id="L150"><span class="lineNum">     150</span> <span class="tlaGNC">           1 :       _eta.d(*B, *B) = exp(_B) * _mu * post;</span></span>
+<span id="L150"><span class="lineNum">     150</span> <span class="tlaGNC">           1 :       _eta.d2(*B, *B) = exp(_B) * _mu * post;</span></span>
 <span id="L151"><span class="lineNum">     151</span>              : </span>
 <span id="L152"><span class="lineNum">     152</span> <span class="tlaGNC">           3 :       if (const auto * const mu = nl_param(&quot;mu&quot;))</span></span>
-<span id="L153"><span class="lineNum">     153</span> <span class="tlaGNC">           2 :         _eta.d(*B, *mu) =</span></span>
-<span id="L154"><span class="lineNum">     154</span> <span class="tlaGNC">           3 :             exp(_B) * post * (_b3 * _mu - _A * _k * _T * std::log(_eps0)) / (_b3 * _mu);</span></span>
+<span id="L153"><span class="lineNum">     153</span> <span class="tlaGNC">           1 :         _eta.d2(*B, *mu) =</span></span>
+<span id="L154"><span class="lineNum">     154</span> <span class="tlaGNC">           2 :             exp(_B) * post * (_b3 * _mu - _A * _k * _T * std::log(_eps0)) / (_b3 * _mu);</span></span>
 <span id="L155"><span class="lineNum">     155</span>              :     }</span>
 <span id="L156"><span class="lineNum">     156</span>              : </span>
 <span id="L157"><span class="lineNum">     157</span>              :     // mu</span>
 <span id="L158"><span class="lineNum">     158</span> <span class="tlaGNC">           6 :     if (const auto * const mu = nl_param(&quot;mu&quot;))</span></span>
 <span id="L159"><span class="lineNum">     159</span>              :     {</span>
 <span id="L160"><span class="lineNum">     160</span> <span class="tlaGNC">           1 :       if (_T.is_dependent())</span></span>
-<span id="L161"><span class="lineNum">     161</span> <span class="tlaGNC">           1 :         _eta.d(*mu, _T) = -exp(_B) * pow(_A * _k * std::log(_eps0) / (_b3 * _mu), 2.0) * _T * post;</span></span>
+<span id="L161"><span class="lineNum">     161</span> <span class="tlaGNC">           1 :         _eta.d2(*mu, _T) = -exp(_B) * pow(_A * _k * std::log(_eps0) / (_b3 * _mu), 2.0) * _T * post;</span></span>
 <span id="L162"><span class="lineNum">     162</span>              : </span>
 <span id="L163"><span class="lineNum">     163</span> <span class="tlaGNC">           3 :       if (const auto * const A = nl_param(&quot;A&quot;))</span></span>
-<span id="L164"><span class="lineNum">     164</span> <span class="tlaGNC">           1 :         _eta.d(*mu, *A) = -_A * exp(_B) * pow(_k * _T * std::log(_eps0) / (_b3 * _mu), 2.0) * post;</span></span>
+<span id="L164"><span class="lineNum">     164</span> <span class="tlaGNC">           1 :         _eta.d2(*mu, *A) = -_A * exp(_B) * pow(_k * _T * std::log(_eps0) / (_b3 * _mu), 2.0) * post;</span></span>
 <span id="L165"><span class="lineNum">     165</span>              : </span>
 <span id="L166"><span class="lineNum">     166</span> <span class="tlaGNC">           3 :       if (const auto * const B = nl_param(&quot;B&quot;))</span></span>
-<span id="L167"><span class="lineNum">     167</span> <span class="tlaGNC">           2 :         _eta.d(*mu, *B) =</span></span>
-<span id="L168"><span class="lineNum">     168</span> <span class="tlaGNC">           3 :             exp(_B) * post * (_b3 * _mu - _A * _k * _T * std::log(_eps0)) / (_b3 * _mu);</span></span>
+<span id="L167"><span class="lineNum">     167</span> <span class="tlaGNC">           1 :         _eta.d2(*mu, *B) =</span></span>
+<span id="L168"><span class="lineNum">     168</span> <span class="tlaGNC">           2 :             exp(_B) * post * (_b3 * _mu - _A * _k * _T * std::log(_eps0)) / (_b3 * _mu);</span></span>
 <span id="L169"><span class="lineNum">     169</span>              : </span>
-<span id="L170"><span class="lineNum">     170</span> <span class="tlaGNC">           2 :       _eta.d(*mu, *mu) =</span></span>
-<span id="L171"><span class="lineNum">     171</span> <span class="tlaGNC">           3 :           -pow(_A * _k * _T * std::log(_eps0) / (_b3 * _mu), 2.0) * exp(_B) * post / _mu;</span></span>
+<span id="L170"><span class="lineNum">     170</span> <span class="tlaGNC">           1 :       _eta.d2(*mu, *mu) =</span></span>
+<span id="L171"><span class="lineNum">     171</span> <span class="tlaGNC">           2 :           -pow(_A * _k * _T * std::log(_eps0) / (_b3 * _mu), 2.0) * exp(_B) * post / _mu;</span></span>
 <span id="L172"><span class="lineNum">     172</span>              :     }</span>
 <span id="L173"><span class="lineNum">     173</span>              :   }</span>
 <span id="L174"><span class="lineNum">     174</span> <span class="tlaGNC">           6 : }</span></span>

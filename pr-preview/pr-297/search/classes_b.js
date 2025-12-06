@@ -11,8 +11,6 @@ var searchData=
   ['linearisotropicstrainenergydensity_8',['LinearIsotropicStrainEnergyDensity',['../classneml2_1_1LinearIsotropicStrainEnergyDensity.html',1,'neml2']]],
   ['linearkinematichardening_9',['LinearKinematicHardening',['../classneml2_1_1LinearKinematicHardening.html',1,'neml2']]],
   ['linearsinglesliphardeningrule_10',['LinearSingleSlipHardeningRule',['../classneml2_1_1LinearSingleSlipHardeningRule.html',1,'neml2']]],
-  ['linspaceprimitivetensor_11',['LinspacePrimitiveTensor',['../classneml2_1_1LinspacePrimitiveTensor.html',1,'neml2']]],
-  ['linspacetensor_12',['LinspaceTensor',['../classneml2_1_1LinspaceTensor.html',1,'neml2']]],
-  ['logspaceprimitivetensor_13',['LogspacePrimitiveTensor',['../classneml2_1_1LogspacePrimitiveTensor.html',1,'neml2']]],
-  ['logspacetensor_14',['LogspaceTensor',['../classneml2_1_1LogspaceTensor.html',1,'neml2']]]
+  ['linspacetensortmpl_11',['LinspaceTensorTmpl',['../classneml2_1_1LinspaceTensorTmpl.html',1,'neml2']]],
+  ['logspacetensortmpl_12',['LogspaceTensorTmpl',['../classneml2_1_1LogspaceTensorTmpl.html',1,'neml2']]]
 ];

@@ -6,7 +6,8 @@ var searchData=
   ['composition_3',['composition',['../tutorials-extension-model-composition.html',1,'Model composition'],['../tutorials-models-model-composition.html',1,'Model composition']]],
   ['connection_20to_20input_20files_4',['Connection to input files',['../tutorials-extension-connection-to-input-files.html',1,'']]],
   ['contributing_5',['Contributing',['../tutorials-contributing.html',1,'']]],
-  ['conventions_6',['Naming Conventions',['../tutorials-naming-conventions.html',1,'']]],
-  ['creation_7',['Tensor creation',['../tutorials-tensors-tensor-creation.html',1,'']]],
-  ['customization_8',['Build Customization',['../build-customization.html',1,'']]]
+  ['contributing_6',['contributing',['../md__2home_2runner_2work_2neml2_2neml2_2doc_2content_2tutorials_2contributing.html',1,'']]],
+  ['conventions_7',['Naming Conventions',['../tutorials-naming-conventions.html',1,'']]],
+  ['creation_8',['Tensor creation',['../tutorials-tensors-tensor-creation.html',1,'']]],
+  ['customization_9',['Build Customization',['../build-customization.html',1,'']]]
 ];

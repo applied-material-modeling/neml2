@@ -54,8 +54,7 @@ var menudata={children:[
 {text:"Connection to input files",url:"../tutorials-extension-connection-to-input-files"},
 {text:"Argument declaration",url:"../tutorials-extension-argument-declaration"},
 {text:"The forward operator",url:"../tutorials-extension-the-forward-operator"},
-{text:"Model composition",url:"../tutorials-extension-model-composition"},
-{text:"Model visualization",url:"../tutorials-extension-model-visualization"}]},
+{text:"Model composition",url:"../tutorials-extension-model-composition"}]},
 {text:"Optimization",url:"../tutorials-optimization",children:[
 {text:"Automatic differentiation",url:"../tutorials-optimization-automatic-differentiation"},
 {text:"Parameter calibration",url:"../tutorials-optimization-parameter-calibration"},

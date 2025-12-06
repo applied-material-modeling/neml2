@@ -158,6 +158,23 @@ $(function(){initNavTree('external-project-integration.html',''); initResizable(
       </li>
     </ul>
   </li>
+  <li class="level1">
+    <a href="#autotoc_md161">Makefile integration</a>
+  </li>
+  <li class="level1">
+    <a href="#autotoc_md162">CMake integration</a>
+    <ul>
+      <li class="level2">
+        <a href="#autotoc_md163">Sub-directory</a>
+      </li>
+      <li class="level2">
+        <a href="#autotoc_md164">FetchContent</a>
+      </li>
+      <li class="level2">
+        <a href="#autotoc_md165">find_package</a>
+      </li>
+    </ul>
+  </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md__2home_2runner_2work_2neml2_2neml2_2doc_2content_2installation_2integration"></a></p>
@@ -167,7 +184,6 @@ Makefile integration</h1>
 <li><code>neml2_base</code></li>
 <li><code>neml2_dispatcher</code></li>
 <li><code>neml2_driver</code></li>
-<li><code>neml2_jit</code></li>
 <li><code>neml2_misc</code></li>
 <li><code>neml2_model</code></li>
 <li><code>neml2_solver</code></li>
@@ -196,6 +212,47 @@ FetchContent</h2>
 <div class="line">add_executable(foo main.cxx)</div>
 <div class="line">target_link_libraries(foo neml2)</div>
 </div><!-- fragment --><h2><a class="anchor" id="autotoc_md19"></a>
+find_package</h2>
+<p>NEML2 can also be discovered from its installation location relying on CMake's config mode <code>find_package</code> function</p>
+<div class="fragment"><div class="line">find_package(neml2 CONFIG)</div>
+<div class="line">add_executable(foo main.cxx)</div>
+<div class="line">target_link_libraries(foo neml2::neml2)</div>
+</div><!-- fragment --><p>Note that the config mode search defines several imported targets under the <code><a class="el" href="namespaceneml2.html">neml2</a>::</code> namespace. For example, <code>neml2::misc</code> corresponds to the <code>misc</code> library of NEML2, etc. The <code>neml2::neml2</code> is an interface target that transitively links to all NEML2 libraries.</p>
+<p><a class="anchor" id="md_content_2installation_2integration"></a></p>
+<h1><a class="anchor" id="autotoc_md161"></a>
+Makefile integration</h1>
+<p>Once NEML2 is installed, external C++ projects can use NEML2 by including the development headers and linking against the NEML2 libraries. NEML2 offers a collection of libraries, they are</p><ul>
+<li><code>neml2_base</code></li>
+<li><code>neml2_dispatcher</code></li>
+<li><code>neml2_driver</code></li>
+<li><code>neml2_misc</code></li>
+<li><code>neml2_model</code></li>
+<li><code>neml2_solver</code></li>
+<li><code>neml2_tensor</code></li>
+<li><code>neml2_user_tensor</code></li>
+</ul>
+<p>The names of the libraries are self-explanatory. As a general rule of thumb, the library names collide with the header hierarchy. That is, if your code includes <code>#include "neml2/tensors/SR2.h"</code>, then your program should be linked against the corresponding tensor library using <code>-lneml2_tensor</code>, etc.</p>
+<h1><a class="anchor" id="autotoc_md162"></a>
+CMake integration</h1>
+<h2><a class="anchor" id="autotoc_md163"></a>
+Sub-directory</h2>
+<p>Integrating NEML2 into a project that already uses CMake is fairly straightforward. The following CMakeLists.txt snippet links NEML2 into the target executable called <code>foo</code>:</p>
+<div class="fragment"><div class="line">add_subdirectory(neml2)</div>
+<div class="line">add_executable(foo main.cxx)</div>
+<div class="line">target_link_libraries(foo neml2)</div>
+</div><!-- fragment --><p>The above snippet assumes NEML2 is checked out to the directory neml2, i.e., as a git submodule.</p>
+<h2><a class="anchor" id="autotoc_md164"></a>
+FetchContent</h2>
+<p>Alternatively, you may use CMake's <code>FetchContent</code> module to integrate NEML2 into your project:</p>
+<div class="fragment"><div class="line">FetchContent_Declare(</div>
+<div class="line">  neml2</div>
+<div class="line">  GIT_REPOSITORY https://github.com/applied-material-modeling/neml2.git</div>
+<div class="line">  GIT_TAG v2.0.0</div>
+<div class="line">)</div>
+<div class="line">FetchContent_MakeAvailable(neml2)</div>
+<div class="line">add_executable(foo main.cxx)</div>
+<div class="line">target_link_libraries(foo neml2)</div>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md165"></a>
 find_package</h2>
 <p>NEML2 can also be discovered from its installation location relying on CMake's config mode <code>find_package</code> function</p>
 <div class="fragment"><div class="line">find_package(neml2 CONFIG)</div>

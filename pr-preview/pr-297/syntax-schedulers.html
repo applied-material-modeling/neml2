@@ -142,7 +142,7 @@ $(function(){initNavTree('syntax-schedulers.html',''); initResizable(true); });
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md64">Available objects and their input file syntax</a>
+    <a href="#autotoc_md198">Available objects and their input file syntax</a>
     <ul>
       <li class="level2">
         <a href="#simplempischeduler">SimpleMPIScheduler</a>
@@ -165,7 +165,7 @@ Type name written in PascalCase typically refer to a NEML2 object type, oftentim
 The 🔗 symbol means that the tensor value can be cross-reference another object. See <a class="el" href="tutorials-models-model-parameters-revisited.html">Model parameters (revisited)</a> for details.</dd>
 <dd>
 You can always use <code>Ctrl</code>+<code>F</code> or <code>Cmd</code>+<code>F</code> to search the entire page.</dd></dl>
-<h1><a class="anchor" id="autotoc_md64"></a>
+<h1><a class="anchor" id="autotoc_md198"></a>
 Available objects and their input file syntax</h1>
 <p>Refer to <a class="el" href="system-schedulers.html">System Documentation</a> for detailed explanation about this system.</p>
 <h2><a class="anchor" id="simplempischeduler"></a>
@@ -207,7 +207,7 @@ SimpleMPIScheduler</h2>
 SimpleScheduler</h2>
 <p>Dispatch work to a single device in given batch sizes. </p><details >
 <summary >
-<code>batch_size</code> Batch size</summary>
+<code>batch_size</code> Number of batches to dispatch at once</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: unsigned number </li>
@@ -215,7 +215,7 @@ SimpleScheduler</h2>
 </details>
 <details >
 <summary >
-<code>capacity</code> Maximum number of work items that can be dispatched, default to batch_size</summary>
+<code>capacity</code> Maximum number of batches that can be dispatched simultaneously, default to batch_size</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: unsigned number </li>

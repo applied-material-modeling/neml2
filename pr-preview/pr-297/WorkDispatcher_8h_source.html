@@ -165,21 +165,21 @@ $(function(){initNavTree('WorkDispatcher_8h_source.html',''); initResizable(true
 <div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span> </div>
 <div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="preprocessor">#pragma once</span></div>
 <div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span> </div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span><span class="preprocessor">#include &lt;functional&gt;</span></div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="preprocessor">#include &lt;thread&gt;</span></div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="preprocessor">#include &lt;queue&gt;</span></div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span><span class="preprocessor">#include &lt;mutex&gt;</span></div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="preprocessor">#include &lt;condition_variable&gt;</span></div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span> </div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="preprocessor">#include &lt;ATen/Parallel.h&gt;</span></div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span><span class="preprocessor">#include &lt;ATen/ops/linalg_inv.h&gt;</span></div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="preprocessor">#include &lt;ATen/ops/ones.h&gt;</span></div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="preprocessor">#include &lt;functional&gt;</span></div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span><span class="preprocessor">#include &lt;thread&gt;</span></div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="preprocessor">#include &lt;queue&gt;</span></div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="preprocessor">#include &lt;mutex&gt;</span></div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="preprocessor">#include &lt;condition_variable&gt;</span></div>
 <div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span> </div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><span class="preprocessor">#include &quot;neml2/dispatchers/WorkGenerator.h&quot;</span></div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="preprocessor">#include &quot;neml2/dispatchers/WorkScheduler.h&quot;</span></div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span><span class="preprocessor">#include &quot;neml2/misc/assertions.h&quot;</span></div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="preprocessor">#include &quot;neml2/misc/types.h&quot;</span></div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="preprocessor">#include &quot;neml2/base/TracingInterface.h&quot;</span></div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span> </div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="preprocessor">#include &quot;neml2/tensors/R2.h&quot;</span></div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><span class="preprocessor">#include &lt;ATen/Parallel.h&gt;</span></div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span> </div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span><span class="preprocessor">#include &quot;neml2/dispatchers/WorkGenerator.h&quot;</span></div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="preprocessor">#include &quot;neml2/dispatchers/WorkScheduler.h&quot;</span></div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="preprocessor">#include &quot;neml2/misc/assertions.h&quot;</span></div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><span class="preprocessor">#include &quot;neml2/misc/types.h&quot;</span></div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="preprocessor">#include &quot;neml2/base/TracingInterface.h&quot;</span></div>
 <div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span> </div>
 <div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span><span class="comment">// Pre-C++20 workaround for std::type_identity</span></div>
 <div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span><span class="comment">// https://en.cppreference.com/w/cpp/types/type_identity</span></div>
@@ -352,7 +352,7 @@ $(function(){initNavTree('WorkDispatcher_8h_source.html',''); initResizable(true
 <div class="line"><a id="l00275" name="l00275"></a><span class="lineno">  275</span>  {</div>
 <div class="line"><a id="l00276" name="l00276"></a><span class="lineno">  276</span>    <span class="comment">// This is necessary to initialize the torch linear algebra library prior to threaded calls</span></div>
 <div class="line"><a id="l00277" name="l00277"></a><span class="lineno">  277</span>    <span class="comment">// See: https://github.com/pytorch/pytorch/issues/90613</span></div>
-<div class="line"><a id="l00278" name="l00278"></a><span class="lineno">  278</span>    <span class="keyword">auto</span> res = <a class="code hl_function" href="classneml2_1_1R2Base.html#a7d6b9f0ac4a53468a47ece3b7a5ed31a">R2::identity</a>().<a class="code hl_function" href="classneml2_1_1TensorBase.html#a918138d6026bab5d3868a80b6a70bd7f">to</a>(_devices[i]).<a class="code hl_function" href="classneml2_1_1R2Base.html#a7a6e6f1cd384914419098d991dcb01ab">inverse</a>();</div>
+<div class="line"><a id="l00278" name="l00278"></a><span class="lineno">  278</span>    <span class="keyword">auto</span> res = at::linalg_inv(at::ones({1, 1}));</div>
 <div class="line"><a id="l00279" name="l00279"></a><span class="lineno">  279</span>    _thread_pool.emplace_back([<span class="keyword">this</span>, i] { thread_pool_main(_devices[i]); });</div>
 <div class="line"><a id="l00280" name="l00280"></a><span class="lineno">  280</span>  }</div>
 <div class="line"><a id="l00281" name="l00281"></a><span class="lineno">  281</span> </div>
@@ -615,9 +615,6 @@ $(function(){initNavTree('WorkDispatcher_8h_source.html',''); initResizable(true
 </div>
 <div class="line"><a id="l00526" name="l00526"></a><span class="lineno">  526</span>} <span class="comment">// namespace neml2</span></div>
 <div class="ttc" id="aclassneml2_1_1NEMLException_html"><div class="ttname"><a href="classneml2_1_1NEMLException.html">neml2::NEMLException</a></div><div class="ttdef"><b>Definition</b> errors.h:34</div></div>
-<div class="ttc" id="aclassneml2_1_1R2Base_html_a7a6e6f1cd384914419098d991dcb01ab"><div class="ttname"><a href="classneml2_1_1R2Base.html#a7a6e6f1cd384914419098d991dcb01ab">neml2::R2Base::inverse</a></div><div class="ttdeci">Derived inverse() const</div><div class="ttdoc">Inversion.</div><div class="ttdef"><b>Definition</b> R2Base.cxx:261</div></div>
-<div class="ttc" id="aclassneml2_1_1R2Base_html_a7d6b9f0ac4a53468a47ece3b7a5ed31a"><div class="ttname"><a href="classneml2_1_1R2Base.html#a7d6b9f0ac4a53468a47ece3b7a5ed31a">neml2::R2Base&lt; R2 &gt;::identity</a></div><div class="ttdeci">static R2 identity(const TensorOptions &amp;options=default_tensor_options())</div><div class="ttdef"><b>Definition</b> R2Base.cxx:167</div></div>
-<div class="ttc" id="aclassneml2_1_1TensorBase_html_a918138d6026bab5d3868a80b6a70bd7f"><div class="ttname"><a href="classneml2_1_1TensorBase.html#a918138d6026bab5d3868a80b6a70bd7f">neml2::TensorBase::to</a></div><div class="ttdeci">Derived to(const TensorOptions &amp;options) const</div><div class="ttdoc">Change tensor options.</div><div class="ttdef"><b>Definition</b> TensorBaseImpl.h:154</div></div>
 <div class="ttc" id="aclassneml2_1_1TracingInterface_html"><div class="ttname"><a href="classneml2_1_1TracingInterface.html">neml2::TracingInterface</a></div><div class="ttdef"><b>Definition</b> TracingInterface.h:112</div></div>
 <div class="ttc" id="aclassneml2_1_1WorkDispatcher_html"><div class="ttname"><a href="classneml2_1_1WorkDispatcher.html">neml2::WorkDispatcher</a></div><div class="ttdoc">The work dispatcher who dispatches work to a worker and reduces the results.</div><div class="ttdef"><b>Definition</b> WorkDispatcher.h:108</div></div>
 <div class="ttc" id="aclassneml2_1_1WorkDispatcher_html_a020cfba915552d91ac4d50272fe2fba1"><div class="ttname"><a href="classneml2_1_1WorkDispatcher.html#a020cfba915552d91ac4d50272fe2fba1">neml2::WorkDispatcher::_devices</a></div><div class="ttdeci">const std::vector&lt; Device &gt; _devices</div><div class="ttdoc">Device pool requested by the scheduler.</div><div class="ttdef"><b>Definition</b> WorkDispatcher.h:212</div></div>

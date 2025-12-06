@@ -142,20 +142,20 @@ $(function(){initNavTree('tutorials-tensors-tensor-creation.html',''); initResiz
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md153">Wrapping a torch tensor</a>
+    <a href="#autotoc_md295">Wrapping a torch tensor</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md154">Factory methods</a>
+    <a href="#autotoc_md296">Factory methods</a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_content_2tutorials_2tensors_2tensor__creation_2main"></a></p>
 <p>Related reading: <a href="https://pytorch.org/cppdocs/notes/tensor_creation.html">PyTorch tensor creation API</a></p>
-<h1><a class="anchor" id="autotoc_md153"></a>
+<h1><a class="anchor" id="autotoc_md295"></a>
 Wrapping a torch tensor</h1>
 <p>A <a class="el" href="classneml2_1_1Tensor.html">neml2::Tensor</a> can be created from a <code>torch::Tensor</code> by marking its batch dimension:</p>
 <div class="tabbed"></div><div class="tabbed"><ul>
-<li><p class="startli"><b class="tab-title">C++</b> </p><div class="fragment"><div class="line"><span class="preprocessor">#include &lt;torch/torch.h&gt;</span></div>
+<li><p class="startli"><b class="tab-title">C++</b> @source:src1 </p><div class="fragment"><div class="line"><span class="preprocessor">#include &lt;torch/torch.h&gt;</span></div>
 <div class="line"><span class="preprocessor">#include &quot;neml2/tensors/Tensor.h&quot;</span></div>
 <div class="line"> </div>
 <div class="line"><span class="keywordtype">int</span></div>
@@ -171,14 +171,11 @@ Wrapping a torch tensor</h1>
 <div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;Batch shape of B: &quot;</span> &lt;&lt; B.batch_sizes() &lt;&lt; std::endl;</div>
 <div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot; Base shape of B: &quot;</span> &lt;&lt; B.base_sizes() &lt;&lt; std::endl;</div>
 <div class="line">}</div>
-<div class="ttc" id="aclassneml2_1_1Tensor_html"><div class="ttname"><a href="classneml2_1_1Tensor.html">neml2::Tensor</a></div><div class="ttdef"><b>Definition</b> Tensor.h:46</div></div>
-</div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">Shape of A: [5, 3, 2, 8]</div>
-<div class="line"> </div>
-<div class="line">      Shape of B: [5, 3, 2, 8]</div>
-<div class="line">Batch shape of B: [5, 3]</div>
-<div class="line"> Base shape of B: [2, 8]</div>
+<div class="ttc" id="aclassneml2_1_1Tensor_html"><div class="ttname"><a href="classneml2_1_1Tensor.html">neml2::Tensor</a></div><div class="ttdef"><b>Definition</b> Tensor.h:47</div></div>
+</div><!-- fragment --><p> @endsource</p>
+<p class="startli">Output: </p><div class="fragment"><div class="line">@attach-output:src1</div>
 </div><!-- fragment --></li>
-<li><p class="startli"><b class="tab-title">Python</b> </p><div class="fragment"><div class="line"><span class="keyword">import</span> torch</div>
+<li><p class="startli"><b class="tab-title">Python</b> @source:src2 </p><div class="fragment"><div class="line"><span class="keyword">import</span> torch</div>
 <div class="line"><span class="keyword">from</span> neml2.tensors <span class="keyword">import</span> Tensor</div>
 <div class="line"> </div>
 <div class="line"><span class="comment"># A raw torch tensor</span></div>
@@ -190,14 +187,11 @@ Wrapping a torch tensor</h1>
 <div class="line">print(<span class="stringliteral">&quot;      Shape of B:&quot;</span>, B.shape)</div>
 <div class="line">print(<span class="stringliteral">&quot;Batch shape of B:&quot;</span>, B.batch.shape)</div>
 <div class="line">print(<span class="stringliteral">&quot; Base shape of B:&quot;</span>, B.base.shape)</div>
-</div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">Shape of A: torch.Size([5, 3, 2, 8]) </div>
-<div class="line"> </div>
-<div class="line">      Shape of B: (5, 3, 2, 8)</div>
-<div class="line">Batch shape of B: (5, 3)</div>
-<div class="line"> Base shape of B: (2, 8)</div>
+</div><!-- fragment --><p> @endsource</p>
+<p class="startli">Output: </p><div class="fragment"><div class="line">@attach-output:src2</div>
 </div><!-- fragment --></li>
 </ul>
-</div><div class="tabbed"></div><h1><a class="anchor" id="autotoc_md154"></a>
+</div><div class="tabbed"></div><h1><a class="anchor" id="autotoc_md296"></a>
 Factory methods</h1>
 <p>A factory tensor creation function produces a new tensor. All factory functions adhere to the same schema:</p>
 <div class="tabbed"><ul>
@@ -213,7 +207,7 @@ Factory methods</h1>
 </ul>
 <p>For example, the following code creates a statically (base) shaped, dense, single precision tensor of type <code>SR2</code> filled with zeros, with batch shape \((5, 3)\), allocated on the CPU.</p>
 <div class="tabbed"></div><div class="tabbed"><ul>
-<li><b class="tab-title">C++</b> <div class="fragment"><div class="line"><span class="preprocessor">#include &quot;neml2/tensors/SR2.h&quot;</span></div>
+<li><b class="tab-title">C++</b> @source:src3 <div class="fragment"><div class="line"><span class="preprocessor">#include &quot;neml2/tensors/SR2.h&quot;</span></div>
 <div class="line"> </div>
 <div class="line"><span class="keyword">using namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a>;</div>
 <div class="line"> </div>
@@ -224,12 +218,12 @@ Factory methods</h1>
 <div class="line">}</div>
 <div class="ttc" id="anamespaceneml2_html"><div class="ttname"><a href="namespaceneml2.html">neml2</a></div><div class="ttdef"><b>Definition</b> DiagnosticsInterface.cxx:30</div></div>
 <div class="ttc" id="anamespaceneml2_html_ab6773d3e782bd312d4cd7b30b39ca203"><div class="ttname"><a href="namespaceneml2.html#ab6773d3e782bd312d4cd7b30b39ca203">neml2::TensorOptions</a></div><div class="ttdeci">c10::TensorOptions TensorOptions</div><div class="ttdef"><b>Definition</b> types.h:60</div></div>
-</div><!-- fragment --></li>
-<li><b class="tab-title">Python</b> <div class="fragment"><div class="line"><span class="keyword">import</span> torch</div>
+</div><!-- fragment --> @endsource</li>
+<li><b class="tab-title">Python</b> @source:src4 <div class="fragment"><div class="line"><span class="keyword">import</span> torch</div>
 <div class="line"><span class="keyword">from</span> neml2.tensors <span class="keyword">import</span> SR2</div>
 <div class="line"> </div>
 <div class="line">A = SR2.zeros((5, 3), dtype=torch.float32, device=torch.device(<span class="stringliteral">&quot;cpu&quot;</span>))</div>
-</div><!-- fragment --></li>
+</div><!-- fragment --> @endsource</li>
 </ul>
 </div><div class="tabbed"></div><dl class="section note"><dt>Note</dt><dd>All the factory methods are listed <a class="el" href="group__tensor__creation.html">here</a>.</dd></dl>
 <div class="section_buttons"></div><div class="section_buttons"><table class="markdownTable">

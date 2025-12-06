@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-10-10 12:15:50</td>
+            <td class="headerValue">2025-12-06 17:10:54</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -118,26 +118,26 @@
 <span id="L56"><span class="lineNum">      56</span> <span class="tlaGNC">           3 : }</span></span>
 <span id="L57"><span class="lineNum">      57</span>              : </span>
 <span id="L58"><span class="lineNum">      58</span>              : void</span>
-<span id="L59"><span class="lineNum">      59</span> <span class="tlaGNC">           6 : VoceSingleSlipHardeningRule::set_value(bool out, bool dout_din, bool /*d2out_din2*/)</span></span>
+<span id="L59"><span class="lineNum">      59</span> <span class="tlaGNC">           8 : VoceSingleSlipHardeningRule::set_value(bool out, bool dout_din, bool /*d2out_din2*/)</span></span>
 <span id="L60"><span class="lineNum">      60</span>              : {</span>
-<span id="L61"><span class="lineNum">      61</span> <span class="tlaGNC">           6 :   if (out)</span></span>
-<span id="L62"><span class="lineNum">      62</span> <span class="tlaGNC">           5 :     _tau_dot = _theta_0 * (1 - _tau / _tau_f) * _gamma_dot_sum;</span></span>
+<span id="L61"><span class="lineNum">      61</span> <span class="tlaGNC">           8 :   if (out)</span></span>
+<span id="L62"><span class="lineNum">      62</span> <span class="tlaGNC">           8 :     _tau_dot = _theta_0 * (1 - _tau / _tau_f) * _gamma_dot_sum;</span></span>
 <span id="L63"><span class="lineNum">      63</span>              : </span>
-<span id="L64"><span class="lineNum">      64</span> <span class="tlaGNC">           6 :   if (dout_din)</span></span>
+<span id="L64"><span class="lineNum">      64</span> <span class="tlaGNC">           8 :   if (dout_din)</span></span>
 <span id="L65"><span class="lineNum">      65</span>              :   {</span>
-<span id="L66"><span class="lineNum">      66</span> <span class="tlaGNC">           3 :     if (_tau.is_dependent())</span></span>
-<span id="L67"><span class="lineNum">      67</span> <span class="tlaGNC">           3 :       _tau_dot.d(_tau) = -_theta_0 / _tau_f * _gamma_dot_sum;</span></span>
+<span id="L66"><span class="lineNum">      66</span> <span class="tlaGNC">           4 :     if (_tau.is_dependent())</span></span>
+<span id="L67"><span class="lineNum">      67</span> <span class="tlaGNC">           4 :       _tau_dot.d(_tau) = -_theta_0 / _tau_f * _gamma_dot_sum;</span></span>
 <span id="L68"><span class="lineNum">      68</span>              : </span>
-<span id="L69"><span class="lineNum">      69</span> <span class="tlaGNC">           3 :     if (_gamma_dot_sum.is_dependent())</span></span>
-<span id="L70"><span class="lineNum">      70</span> <span class="tlaGNC">           3 :       _tau_dot.d(_gamma_dot_sum) = _theta_0 * (1 - _tau / _tau_f);</span></span>
+<span id="L69"><span class="lineNum">      69</span> <span class="tlaGNC">           4 :     if (_gamma_dot_sum.is_dependent())</span></span>
+<span id="L70"><span class="lineNum">      70</span> <span class="tlaGNC">           4 :       _tau_dot.d(_gamma_dot_sum) = _theta_0 * (1 - _tau / _tau_f);</span></span>
 <span id="L71"><span class="lineNum">      71</span>              : </span>
-<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC">           9 :     if (const auto * const theta_0 = nl_param(&quot;initial_slope&quot;))</span></span>
+<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC">          12 :     if (const auto * const theta_0 = nl_param(&quot;initial_slope&quot;))</span></span>
 <span id="L73"><span class="lineNum">      73</span> <span class="tlaGNC">           1 :       _tau_dot.d(*theta_0) = (1 - _tau / _tau_f) * _gamma_dot_sum;</span></span>
 <span id="L74"><span class="lineNum">      74</span>              : </span>
-<span id="L75"><span class="lineNum">      75</span> <span class="tlaGNC">           9 :     if (const auto * const tau_f = nl_param(&quot;saturated_hardening&quot;))</span></span>
+<span id="L75"><span class="lineNum">      75</span> <span class="tlaGNC">          12 :     if (const auto * const tau_f = nl_param(&quot;saturated_hardening&quot;))</span></span>
 <span id="L76"><span class="lineNum">      76</span> <span class="tlaGNC">           1 :       _tau_dot.d(*tau_f) = _theta_0 * _tau / (_tau_f * _tau_f) * _gamma_dot_sum;</span></span>
 <span id="L77"><span class="lineNum">      77</span>              :   }</span>
-<span id="L78"><span class="lineNum">      78</span> <span class="tlaGNC">           6 : }</span></span>
+<span id="L78"><span class="lineNum">      78</span> <span class="tlaGNC">           8 : }</span></span>
 <span id="L79"><span class="lineNum">      79</span>              : } // namespace neml2</span>
         </pre>
               </td>

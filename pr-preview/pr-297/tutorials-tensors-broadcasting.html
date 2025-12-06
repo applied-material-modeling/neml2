@@ -142,16 +142,16 @@ $(function(){initNavTree('tutorials-tensors-broadcasting.html',''); initResizabl
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md147">NEML2&#39;s broadcasting rules</a>
+    <a href="#autotoc_md289">NEML2&#39;s broadcasting rules</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md148">Example</a>
+    <a href="#autotoc_md290">Example</a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_content_2tutorials_2tensors_2broadcasting_2main"></a></p>
 <p>Related reading: NumPy manual on <a href="https://numpy.org/doc/stable/user/basics.broadcasting.html">Broadcasting</a></p>
-<h1><a class="anchor" id="autotoc_md147"></a>
+<h1><a class="anchor" id="autotoc_md289"></a>
 NEML2's broadcasting rules</h1>
 <p>NEML2's broadcasting rules are built on top of NumPy's general broadcasting rules.</p>
 <p>When operating on two tensors, NEML2 compares each dimension's size pair one-by-one, from right to left. Before the comparison, the shapes of two tensors are aligned at the final batch dimension. The comparison starts with the trailing (i.e., rightmost) batch dimension and works its way left. Two batch dimensions are compatible (broadcastable) when</p><ul>
@@ -162,12 +162,12 @@ NEML2's broadcasting rules</h1>
 <p>If all dimensions are compatible, the two tensors are <em>batch-broadcastable</em>. Many operations in NEML2 require operands to be batch-broadcastable, and if not, an exception will be thrown (typically only in Debug mode).</p>
 <p>The operands do not need to have the same batch dimension (per the third rule) in order to be batch-broadcastable. After broadcasting, each dimension of the operands are effectively expanded to have the same size as larger size of the two.</p>
 <p>Note that we have not yet mentioned anything about the broadcasting rules for base dimensions, because the requirement for operands' base shapes largely depend on the operation itself. And for all primitive tensor types, since the base shapes are determined statically, no shape check is needed at runtime.</p>
-<h1><a class="anchor" id="autotoc_md148"></a>
+<h1><a class="anchor" id="autotoc_md290"></a>
 Example</h1>
 <p>The utility of broadcasting is best demonstrated with practical examples.</p>
 <p>Suppose we are given two samples made of different materials, and for each sample, we are given a number of strain measurements at different locations. Assuming both materials are homogeneous, we could utilize NEML2's broadcasting rules to perform the constitutive update extremely efficiently.</p>
 <div class="tabbed"></div><div class="tabbed"><ul>
-<li><p class="startli"><b class="tab-title">C++</b> </p><div class="fragment"><div class="line"><span class="preprocessor">#include &lt;torch/torch.h&gt;</span></div>
+<li><p class="startli"><b class="tab-title">C++</b> @source:src1 </p><div class="fragment"><div class="line"><span class="preprocessor">#include &lt;torch/torch.h&gt;</span></div>
 <div class="line"><span class="preprocessor">#include &quot;neml2/tensors/SSR4.h&quot;</span></div>
 <div class="line"><span class="preprocessor">#include &quot;neml2/tensors/SR2.h&quot;</span></div>
 <div class="line"><span class="preprocessor">#include &quot;neml2/tensors/Scalar.h&quot;</span></div>
@@ -195,21 +195,20 @@ Example</h1>
 <div class="line">  <span class="keyword">auto</span> stress = C * strain;</div>
 <div class="line"> </div>
 <div class="line">  <span class="comment">// Do the shapes make sense?</span></div>
-<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;     Shape of C:&quot;</span> &lt;&lt; C.<a class="code hl_function" href="classneml2_1_1TensorBase.html#aaca47ed740b50705766d2aa3d5551f22">batch_sizes</a>() &lt;&lt; C.base_sizes() &lt;&lt; std::endl;</div>
+<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;     Shape of C:&quot;</span> &lt;&lt; C.<a class="code hl_function" href="classneml2_1_1TensorBase.html#a0dabb5e8be686e5f68e387cda1dc6918">batch_sizes</a>() &lt;&lt; C.base_sizes() &lt;&lt; std::endl;</div>
 <div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;Shape of strain: &quot;</span> &lt;&lt; strain.batch_sizes() &lt;&lt; strain.base_sizes() &lt;&lt; std::endl;</div>
-<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;Shape of stress: &quot;</span> &lt;&lt; stress.<a class="code hl_function" href="classneml2_1_1TensorBase.html#aaca47ed740b50705766d2aa3d5551f22">batch_sizes</a>() &lt;&lt; stress.<a class="code hl_function" href="classneml2_1_1TensorBase.html#ad119635009e213bf9836d432993113eb">base_sizes</a>() &lt;&lt; std::endl;</div>
+<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;Shape of stress: &quot;</span> &lt;&lt; stress.<a class="code hl_function" href="classneml2_1_1TensorBase.html#a0dabb5e8be686e5f68e387cda1dc6918">batch_sizes</a>() &lt;&lt; stress.<a class="code hl_function" href="classneml2_1_1TensorBase.html#ad119635009e213bf9836d432993113eb">base_sizes</a>() &lt;&lt; std::endl;</div>
 <div class="line">}</div>
 <div class="ttc" id="aclassneml2_1_1SR2_html"><div class="ttname"><a href="classneml2_1_1SR2.html">neml2::SR2</a></div><div class="ttdoc">The symmetric second order tensor.</div><div class="ttdef"><b>Definition</b> SR2.h:46</div></div>
-<div class="ttc" id="aclassneml2_1_1TensorBase_html_aaca47ed740b50705766d2aa3d5551f22"><div class="ttname"><a href="classneml2_1_1TensorBase.html#aaca47ed740b50705766d2aa3d5551f22">neml2::TensorBase::batch_sizes</a></div><div class="ttdeci">const TraceableTensorShape &amp; batch_sizes() const</div><div class="ttdoc">Return the batch size.</div><div class="ttdef"><b>Definition</b> TensorBaseImpl.h:182</div></div>
-<div class="ttc" id="aclassneml2_1_1TensorBase_html_ad119635009e213bf9836d432993113eb"><div class="ttname"><a href="classneml2_1_1TensorBase.html#ad119635009e213bf9836d432993113eb">neml2::TensorBase::base_sizes</a></div><div class="ttdeci">TensorShapeRef base_sizes() const</div><div class="ttdoc">Return the base size.</div><div class="ttdef"><b>Definition</b> TensorBaseImpl.h:202</div></div>
+<div class="ttc" id="aclassneml2_1_1TensorBase_html_a0dabb5e8be686e5f68e387cda1dc6918"><div class="ttname"><a href="classneml2_1_1TensorBase.html#a0dabb5e8be686e5f68e387cda1dc6918">neml2::TensorBase::batch_sizes</a></div><div class="ttdeci">TraceableTensorShape batch_sizes() const</div><div class="ttdef"><b>Definition</b> TensorBaseImpl.h:189</div></div>
+<div class="ttc" id="aclassneml2_1_1TensorBase_html_ad119635009e213bf9836d432993113eb"><div class="ttname"><a href="classneml2_1_1TensorBase.html#ad119635009e213bf9836d432993113eb">neml2::TensorBase::base_sizes</a></div><div class="ttdeci">TensorShapeRef base_sizes() const</div><div class="ttdef"><b>Definition</b> TensorBaseImpl.h:196</div></div>
 <div class="ttc" id="anamespaceneml2_html"><div class="ttname"><a href="namespaceneml2.html">neml2</a></div><div class="ttdef"><b>Definition</b> DiagnosticsInterface.cxx:30</div></div>
 <div class="ttc" id="anamespaceneml2_html_a16c96ec35672a72196d72131d3f5f8c3"><div class="ttname"><a href="namespaceneml2.html#a16c96ec35672a72196d72131d3f5f8c3">neml2::kFloat64</a></div><div class="ttdeci">constexpr auto kFloat64</div><div class="ttdef"><b>Definition</b> types.h:50</div></div>
 <div class="ttc" id="anamespaceneml2_html_a90023c4b9c19cd471d4603a07a52954e"><div class="ttname"><a href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">neml2::Size</a></div><div class="ttdeci">int64_t Size</div><div class="ttdef"><b>Definition</b> types.h:65</div></div>
-</div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">     Shape of C:[2][6, 6]</div>
-<div class="line">Shape of strain: [1000, 2][6]</div>
-<div class="line">Shape of stress: [1000, 2][6]</div>
+</div><!-- fragment --><p> @endsource</p>
+<p class="startli">Output: </p><div class="fragment"><div class="line">@attach-output:src1</div>
 </div><!-- fragment --></li>
-<li><p class="startli"><b class="tab-title">Python</b> </p><div class="fragment"><div class="line"><span class="keyword">import</span> torch</div>
+<li><p class="startli"><b class="tab-title">Python</b> @source:src2 </p><div class="fragment"><div class="line"><span class="keyword">import</span> torch</div>
 <div class="line"><span class="keyword">from</span> neml2.tensors <span class="keyword">import</span> Scalar, SR2, SSR4</div>
 <div class="line"> </div>
 <div class="line"><span class="comment"># Number of samples</span></div>
@@ -232,9 +231,8 @@ Example</h1>
 <div class="line">print(<span class="stringliteral">&quot;     Shape of C:&quot;</span>, C.batch.shape, C.base.shape)</div>
 <div class="line">print(<span class="stringliteral">&quot;Shape of strain:&quot;</span>, strain.batch.shape, strain.base.shape)</div>
 <div class="line">print(<span class="stringliteral">&quot;Shape of stress:&quot;</span>, stress.batch.shape, stress.base.shape)</div>
-</div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">     Shape of C: (2,) (6, 6)</div>
-<div class="line">Shape of strain: (1000, 2) (6,)</div>
-<div class="line">Shape of stress: (1000, 2) (6,)</div>
+</div><!-- fragment --><p> @endsource</p>
+<p class="startli">Output: </p><div class="fragment"><div class="line">@attach-output:src2</div>
 </div><!-- fragment --></li>
 </ul>
 </div><div class="tabbed"></div><p>To better understand broadcasting, let us try to apply the broadcasting rules manually:</p><ol type="1">

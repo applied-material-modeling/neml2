@@ -64,8 +64,7 @@ var NAVTREE =
         [ "Connection to input files", "../tutorials-extension-connection-to-input-files", null ],
         [ "Argument declaration", "../tutorials-extension-argument-declaration", null ],
         [ "The forward operator", "../tutorials-extension-the-forward-operator", null ],
-        [ "Model composition", "../tutorials-extension-model-composition", null ],
-        [ "Model visualization", "../tutorials-extension-model-visualization", null ]
+        [ "Model composition", "../tutorials-extension-model-composition", null ]
       ] ],
       [ "Optimization", "../tutorials-optimization", [
         [ "Automatic differentiation", "../tutorials-optimization-automatic-differentiation", null ],
@@ -114,25 +113,29 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "../annotated.html",
-"classinterface_1_1NEML2PyzagModel.html#a40469e234adfc7b6fdc4874403ef78c5",
-"classtensors_1_1Quaternion.html#aa29879cd7288410c6dcf2cca2e37aa0f",
-"classtensors_1_1R2BatchView.html#a00508fb3f10419e57302bd6aa7b94b40",
-"classtensors_1_1R4.html#aa29879cd7288410c6dcf2cca2e37aa0f",
-"classtensors_1_1R5BatchView.html#a4b1edc457f26519af032fec0966fcb86",
-"classtensors_1_1Rot.html#a783fedd3223f7a4a051c00b22a8b3016",
-"classtensors_1_1SFFR4BaseView.html#a8280bf84289a1974db6731877052b3be",
-"classtensors_1_1SFR4.html#a6fcf0700890506a2e168d1d792fa5b64",
-"classtensors_1_1SR2BaseView.html#aa0e6661299e6cac39950f99b5acb7fc6",
-"classtensors_1_1SSR4.html#a60c9df390da28cbca1ff851faa17355f",
-"classtensors_1_1SSSSR8BaseView.html#ae0a978323f26d8c5e4c173eb27fa875f",
-"classtensors_1_1Scalar.html#a253843218c9ad5b36ec63c967653cc35",
-"classtensors_1_1Scalar.html#ae87604a2763f73087db7a20e270162aa",
-"classtensors_1_1TensorBaseView.html#a754421ed29c9e1df44df3f8f6011cc71",
-"classtensors_1_1VecBatchView.html#aab1dd4616a9367afcc78364661469843",
-"classtensors_1_1WR2.html#ab9cf602de62212e32734cc4525d7707e",
-"classtensors_1_1WSR4BatchView.html#a4dfa71ea0bdca5bb60e587b597f8df83",
-"namespacemath.html#a247f30625fe20d9844600a9997067b47",
-"namespacemath.html#ad3ccd00263e4dde1a628bb2b04549af2"
+"classtensors_1_1MillerIndex.html#a3d6322dc7729222dcf051ad34bc29deb",
+"classtensors_1_1MillerIndexIntmdView.html#aeda55255a4b4e99018389d3aef2c2de4",
+"classtensors_1_1QuaternionDynamicView.html#a754421ed29c9e1df44df3f8f6011cc71",
+"classtensors_1_1R2BaseView.html#a6b81e8df309106be266b5ed8c73c9e3e",
+"classtensors_1_1R3.html#aaf0d2b98c18675e017e92299b08f1a53",
+"classtensors_1_1R4.html#a5ad424b58991bfc6d13e8bd1b542f5a6",
+"classtensors_1_1R4StaticView.html#aa74c31f3f04d6de3fcfb0f68fd239086",
+"classtensors_1_1RotDynamicView.html#a64417a81d2e4c44ce9118df2aa51b0c0",
+"classtensors_1_1SFFR4BaseView.html#aa6baa13e636e4ae1ddd84b47b771a358",
+"classtensors_1_1SFR3.html#ad2544316d168817295dc511dd30bc361",
+"classtensors_1_1SR2.html#a869067b6ffb8548002f8af8ef4c31cf6",
+"classtensors_1_1SSR4.html#a0f6d09e5e2714846cf28ca9703684231",
+"classtensors_1_1SSR4IntmdView.html#a0f1e3d265dd388631f38ead38949cd4a",
+"classtensors_1_1SWR4BatchView.html#a35536134a6ceb1e866faf188992e9c9f",
+"classtensors_1_1ScalarBaseView.html#a1ca0dc1e1b48d833bec5246700c58b68",
+"classtensors_1_1Tensor.html#a95429145e097d9fbd05e6f9cf89f3295",
+"classtensors_1_1Vec.html",
+"classtensors_1_1VecIntmdView.html#a0a1b9c91ef6262ae4d30998ae2b27cde",
+"classtensors_1_1WFFR4BatchView.html#a35536134a6ceb1e866faf188992e9c9f",
+"classtensors_1_1WR2.html#afc105c7fdd8f389dba381e707f3fd112",
+"classtensors_1_1WSR4.html#aa3f7decbf45b4c0f25b50f9b040e3e6a",
+"classtensors_1_1WWR4.html#a334917fa776c954286a4a59cda41728c",
+"classtensors_1_1WWR4IntmdView.html#aad8df40633f46afee9b7962fe1caa1d0"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

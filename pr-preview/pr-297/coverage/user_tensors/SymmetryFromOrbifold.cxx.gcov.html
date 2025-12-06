@@ -31,18 +31,18 @@
             <td class="headerValue">coverage.info</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntryHi">92.3&nbsp;%</td>
+            <td class="headerCovTableEntryHi">92.9&nbsp;%</td>
+            <td class="headerCovTableEntry">14</td>
             <td class="headerCovTableEntry">13</td>
-            <td class="headerCovTableEntry">12</td>
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-10-10 12:15:50</td>
+            <td class="headerValue">2025-12-06 17:10:54</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
-            <td class="headerCovTableEntry">2</td>
-            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntry">3</td>
+            <td class="headerCovTableEntry">3</td>
           </tr>
                   <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
                 </table>
@@ -94,7 +94,7 @@
 <span id="L32"><span class="lineNum">      32</span>              : OptionSet</span>
 <span id="L33"><span class="lineNum">      33</span> <span class="tlaGNC tlaBgGNC">           2 : SymmetryFromOrbifold::expected_options()</span></span>
 <span id="L34"><span class="lineNum">      34</span>              : {</span>
-<span id="L35"><span class="lineNum">      35</span> <span class="tlaGNC">           2 :   OptionSet options = UserTensorBase::expected_options();</span></span>
+<span id="L35"><span class="lineNum">      35</span> <span class="tlaGNC">           2 :   OptionSet options = UserTensorBase&lt;R2&gt;::expected_options();</span></span>
 <span id="L36"><span class="lineNum">      36</span> <span class="tlaGNC">           2 :   options.doc() = &quot;Returns a tensor of symmetry operations for a given symmetr group represented &quot;</span></span>
 <span id="L37"><span class="lineNum">      37</span> <span class="tlaGNC">           2 :                   &quot;in orbifold notation.&quot;;</span></span>
 <span id="L38"><span class="lineNum">      38</span>              : </span>
@@ -106,11 +106,18 @@
 <span id="L44"><span class="lineNum">      44</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
 <span id="L45"><span class="lineNum">      45</span>              : </span>
 <span id="L46"><span class="lineNum">      46</span> <span class="tlaGNC tlaBgGNC">          55 : SymmetryFromOrbifold::SymmetryFromOrbifold(const OptionSet &amp; options)</span></span>
-<span id="L47"><span class="lineNum">      47</span> <span class="tlaGNC">         220 :   : R2(crystallography::symmetry_operations_from_orbifold(options.get&lt;std::string&gt;(&quot;orbifold&quot;))),</span></span>
-<span id="L48"><span class="lineNum">      48</span> <span class="tlaGNC">         110 :     UserTensorBase(options)</span></span>
+<span id="L47"><span class="lineNum">      47</span>              :   : UserTensorBase&lt;R2&gt;(options),</span>
+<span id="L48"><span class="lineNum">      48</span> <span class="tlaGNC">         110 :     _orbifold(options.get&lt;std::string&gt;(&quot;orbifold&quot;))</span></span>
 <span id="L49"><span class="lineNum">      49</span>              : {</span>
 <span id="L50"><span class="lineNum">      50</span> <span class="tlaGNC">          55 : }</span></span>
-<span id="L51"><span class="lineNum">      51</span>              : } // namespace neml2</span>
+<span id="L51"><span class="lineNum">      51</span>              : </span>
+<span id="L52"><span class="lineNum">      52</span>              : R2</span>
+<span id="L53"><span class="lineNum">      53</span> <span class="tlaGNC">          55 : SymmetryFromOrbifold::make() const</span></span>
+<span id="L54"><span class="lineNum">      54</span>              : {</span>
+<span id="L55"><span class="lineNum">      55</span> <span class="tlaGNC">         110 :   return crystallography::symmetry(_orbifold);</span></span>
+<span id="L56"><span class="lineNum">      56</span>              : }</span>
+<span id="L57"><span class="lineNum">      57</span>              : </span>
+<span id="L58"><span class="lineNum">      58</span>              : } // namespace neml2</span>
         </pre>
               </td>
             </tr>

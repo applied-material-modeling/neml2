@@ -32,12 +32,12 @@
             <td></td>
             <td class="headerItem">Lines:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
-            <td class="headerCovTableEntry">82</td>
-            <td class="headerCovTableEntry">82</td>
+            <td class="headerCovTableEntry">77</td>
+            <td class="headerCovTableEntry">77</td>
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-10-10 12:15:50</td>
+            <td class="headerValue">2025-12-06 17:10:54</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -96,9 +96,9 @@
 <span id="L34"><span class="lineNum">      34</span> <span class="tlaGNC">           4 :   options.doc() = &quot;Driver for solid mechanics material model with optional thermal coupling.&quot;;</span></span>
 <span id="L35"><span class="lineNum">      35</span>              : </span>
 <span id="L36"><span class="lineNum">      36</span> <span class="tlaGNC">          16 :   EnumSelection control_selection({&quot;STRAIN&quot;, &quot;STRESS&quot;, &quot;MIXED&quot;}, &quot;STRAIN&quot;);</span></span>
-<span id="L37"><span class="lineNum">      37</span> <span class="tlaGNC">           4 :   options.set&lt;EnumSelection&gt;(&quot;control&quot;) = control_selection;</span></span>
+<span id="L37"><span class="lineNum">      37</span> <span class="tlaGNC">           8 :   options.set&lt;EnumSelection&gt;(&quot;control&quot;) = control_selection;</span></span>
 <span id="L38"><span class="lineNum">      38</span> <span class="tlaGNC">           8 :   options.set(&quot;control&quot;).doc() =</span></span>
-<span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">          12 :       &quot;External control of the material update. Options are &quot; + control_selection.candidates_str();</span></span>
+<span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">          12 :       &quot;External control of the material update. Options are &quot; + control_selection.join();</span></span>
 <span id="L40"><span class="lineNum">      40</span>              : </span>
 <span id="L41"><span class="lineNum">      41</span> <span class="tlaGNC">          12 :   options.set&lt;VariableName&gt;(&quot;temperature&quot;) = VariableName(FORCES, &quot;T&quot;);</span></span>
 <span id="L42"><span class="lineNum">      42</span> <span class="tlaGNC">           8 :   options.set(&quot;temperature&quot;).doc() = &quot;Name of temperature&quot;;</span></span>
@@ -177,45 +177,45 @@
 <span id="L115"><span class="lineNum">     115</span>              : {</span>
 <span id="L116"><span class="lineNum">     116</span> <span class="tlaGNC">           7 :   TransientDriver::diagnose();</span></span>
 <span id="L117"><span class="lineNum">     117</span>              : </span>
-<span id="L118"><span class="lineNum">     118</span> <span class="tlaGNC">           7 :   diagnostic_assert(_driving_force.batch_dim() &gt;= 1,</span></span>
+<span id="L118"><span class="lineNum">     118</span> <span class="tlaGNC">           7 :   diagnostic_assert(_driving_force.dynamic_dim() &gt;= 1,</span></span>
 <span id="L119"><span class="lineNum">     119</span>              :                     &quot;Input driving force (strain, stress, or mixed conditions) should have at &quot;</span>
 <span id="L120"><span class="lineNum">     120</span>              :                     &quot;least one batch dimension for time steps but instead has batch dimension &quot;,</span>
-<span id="L121"><span class="lineNum">     121</span> <span class="tlaGNC">           7 :                     _driving_force.batch_dim());</span></span>
+<span id="L121"><span class="lineNum">     121</span> <span class="tlaGNC">           7 :                     _driving_force.dynamic_dim());</span></span>
 <span id="L122"><span class="lineNum">     122</span>              : </span>
-<span id="L123"><span class="lineNum">     123</span> <span class="tlaGNC">           7 :   diagnostic_assert(_time.batch_size(0) == _driving_force.batch_size(0),</span></span>
+<span id="L123"><span class="lineNum">     123</span> <span class="tlaGNC">           7 :   diagnostic_assert(_time.dynamic_size(0) == _driving_force.dynamic_size(0),</span></span>
 <span id="L124"><span class="lineNum">     124</span>              :                     &quot;Input driving force (strain, stress, or mixed conditions) and time should &quot;</span>
 <span id="L125"><span class="lineNum">     125</span>              :                     &quot;have the same number of time steps. The input time has &quot;,</span>
-<span id="L126"><span class="lineNum">     126</span> <span class="tlaGNC">          14 :                     _time.batch_size(0),</span></span>
+<span id="L126"><span class="lineNum">     126</span>              :                     _time.dynamic_size(0),</span>
 <span id="L127"><span class="lineNum">     127</span>              :                     &quot; time steps, while the input driving force has &quot;,</span>
-<span id="L128"><span class="lineNum">     128</span> <span class="tlaGNC">          14 :                     _driving_force.batch_size(0),</span></span>
+<span id="L128"><span class="lineNum">     128</span>              :                     _driving_force.dynamic_size(0),</span>
 <span id="L129"><span class="lineNum">     129</span>              :                     &quot; time steps&quot;);</span>
 <span id="L130"><span class="lineNum">     130</span>              : </span>
 <span id="L131"><span class="lineNum">     131</span> <span class="tlaGNC">           7 :   if (_temperature_prescribed)</span></span>
 <span id="L132"><span class="lineNum">     132</span>              :   {</span>
-<span id="L133"><span class="lineNum">     133</span> <span class="tlaGNC">           1 :     diagnostic_assert(_temperature.batch_dim() &gt;= 1,</span></span>
+<span id="L133"><span class="lineNum">     133</span> <span class="tlaGNC">           1 :     diagnostic_assert(_temperature.dynamic_dim() &gt;= 1,</span></span>
 <span id="L134"><span class="lineNum">     134</span>              :                       &quot;Input temperature should have at least one batch dimension for time steps &quot;</span>
 <span id="L135"><span class="lineNum">     135</span>              :                       &quot;but instead has batch dimension &quot;,</span>
-<span id="L136"><span class="lineNum">     136</span> <span class="tlaGNC">           1 :                       _temperature.batch_dim());</span></span>
+<span id="L136"><span class="lineNum">     136</span> <span class="tlaGNC">           1 :                       _temperature.dynamic_dim());</span></span>
 <span id="L137"><span class="lineNum">     137</span>              : </span>
 <span id="L138"><span class="lineNum">     138</span> <span class="tlaGNC">           1 :     diagnostic_assert(</span></span>
-<span id="L139"><span class="lineNum">     139</span> <span class="tlaGNC">           1 :         _time.batch_size(0) == _temperature.batch_size(0),</span></span>
+<span id="L139"><span class="lineNum">     139</span> <span class="tlaGNC">           1 :         _time.dynamic_size(0) == _temperature.dynamic_size(0),</span></span>
 <span id="L140"><span class="lineNum">     140</span>              :         &quot;Input temperature and time should have the same number of time steps. The input time has &quot;,</span>
-<span id="L141"><span class="lineNum">     141</span> <span class="tlaGNC">           2 :         _time.batch_size(0),</span></span>
+<span id="L141"><span class="lineNum">     141</span>              :         _time.dynamic_size(0),</span>
 <span id="L142"><span class="lineNum">     142</span>              :         &quot; time steps, while the input temperature has &quot;,</span>
-<span id="L143"><span class="lineNum">     143</span> <span class="tlaGNC">           2 :         _temperature.batch_size(0),</span></span>
+<span id="L143"><span class="lineNum">     143</span>              :         _temperature.dynamic_size(0),</span>
 <span id="L144"><span class="lineNum">     144</span>              :         &quot; time steps&quot;);</span>
 <span id="L145"><span class="lineNum">     145</span>              :   }</span>
 <span id="L146"><span class="lineNum">     146</span>              : </span>
 <span id="L147"><span class="lineNum">     147</span> <span class="tlaGNC">          14 :   if (_control == &quot;MIXED&quot;)</span></span>
 <span id="L148"><span class="lineNum">     148</span>              :   {</span>
-<span id="L149"><span class="lineNum">     149</span> <span class="tlaGNC">           1 :     diagnostic_assert(_mixed_control.batch_dim() &gt;= 1,</span></span>
+<span id="L149"><span class="lineNum">     149</span> <span class="tlaGNC">           1 :     diagnostic_assert(_mixed_control.dynamic_dim() &gt;= 1,</span></span>
 <span id="L150"><span class="lineNum">     150</span>              :                       &quot;Input control signal should have at least one batch dimension but instead &quot;</span>
 <span id="L151"><span class="lineNum">     151</span>              :                       &quot;has batch dimension &quot;,</span>
-<span id="L152"><span class="lineNum">     152</span> <span class="tlaGNC">           1 :                       _mixed_control.batch_dim());</span></span>
+<span id="L152"><span class="lineNum">     152</span> <span class="tlaGNC">           1 :                       _mixed_control.dynamic_dim());</span></span>
 <span id="L153"><span class="lineNum">     153</span> <span class="tlaGNC">           1 :     diagnostic_assert(</span></span>
-<span id="L154"><span class="lineNum">     154</span> <span class="tlaGNC">           1 :         _mixed_control.batch_size(0) == _time.batch_size(0),</span></span>
+<span id="L154"><span class="lineNum">     154</span> <span class="tlaGNC">           1 :         _mixed_control.dynamic_size(0) == _time.dynamic_size(0),</span></span>
 <span id="L155"><span class="lineNum">     155</span>              :         &quot;Input control signal should have the same number of steps steps as time, but instead has &quot;,</span>
-<span id="L156"><span class="lineNum">     156</span> <span class="tlaGNC">           2 :         _mixed_control.batch_size(0),</span></span>
+<span id="L156"><span class="lineNum">     156</span>              :         _mixed_control.dynamic_size(0),</span>
 <span id="L157"><span class="lineNum">     157</span>              :         &quot; time steps&quot;);</span>
 <span id="L158"><span class="lineNum">     158</span>              :   }</span>
 <span id="L159"><span class="lineNum">     159</span> <span class="tlaGNC">           7 : }</span></span>
@@ -225,13 +225,13 @@
 <span id="L163"><span class="lineNum">     163</span>              : {</span>
 <span id="L164"><span class="lineNum">     164</span> <span class="tlaGNC">          70 :   TransientDriver::update_forces();</span></span>
 <span id="L165"><span class="lineNum">     165</span>              : </span>
-<span id="L166"><span class="lineNum">     166</span> <span class="tlaGNC">         140 :   _in[_driving_force_name] = _driving_force.batch_index({_step_count});</span></span>
+<span id="L166"><span class="lineNum">     166</span> <span class="tlaGNC">         140 :   _in[_driving_force_name] = _driving_force.dynamic_index({_step_count});</span></span>
 <span id="L167"><span class="lineNum">     167</span>              : </span>
 <span id="L168"><span class="lineNum">     168</span> <span class="tlaGNC">          70 :   if (_temperature_prescribed)</span></span>
-<span id="L169"><span class="lineNum">     169</span> <span class="tlaGNC">          20 :     _in[_temperature_name] = _temperature.batch_index({_step_count});</span></span>
+<span id="L169"><span class="lineNum">     169</span> <span class="tlaGNC">          20 :     _in[_temperature_name] = _temperature.dynamic_index({_step_count});</span></span>
 <span id="L170"><span class="lineNum">     170</span>              : </span>
 <span id="L171"><span class="lineNum">     171</span> <span class="tlaGNC">         140 :   if (_control == &quot;MIXED&quot;)</span></span>
-<span id="L172"><span class="lineNum">     172</span> <span class="tlaGNC">          20 :     _in[_mixed_control_name] = _mixed_control.batch_index({_step_count});</span></span>
+<span id="L172"><span class="lineNum">     172</span> <span class="tlaGNC">          20 :     _in[_mixed_control_name] = _mixed_control.dynamic_index({_step_count});</span></span>
 <span id="L173"><span class="lineNum">     173</span> <span class="tlaGNC">         160 : }</span></span>
 <span id="L174"><span class="lineNum">     174</span>              : }</span>
         </pre>

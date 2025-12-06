@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-10-10 12:15:50</td>
+            <td class="headerValue">2025-12-06 17:10:54</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -111,16 +111,14 @@
 <span id="L49"><span class="lineNum">      49</span> <span class="tlaGNC">           3 : CrackGeometricFunctionAT1::set_value(bool out, bool dout_din, bool /*d2out_din2*/)</span></span>
 <span id="L50"><span class="lineNum">      50</span>              : {</span>
 <span id="L51"><span class="lineNum">      51</span> <span class="tlaGNC">           3 :   if (out)</span></span>
-<span id="L52"><span class="lineNum">      52</span>              :   {</span>
-<span id="L53"><span class="lineNum">      53</span> <span class="tlaGNC">           1 :     _alpha = Scalar(_d);</span></span>
-<span id="L54"><span class="lineNum">      54</span>              :   }</span>
-<span id="L55"><span class="lineNum">      55</span>              : </span>
-<span id="L56"><span class="lineNum">      56</span> <span class="tlaGNC">           3 :   if (dout_din)</span></span>
-<span id="L57"><span class="lineNum">      57</span>              :   {</span>
-<span id="L58"><span class="lineNum">      58</span> <span class="tlaGNC">           1 :     _alpha.d(_d) = Scalar::create(1.0, _d.options());</span></span>
-<span id="L59"><span class="lineNum">      59</span>              :   }</span>
-<span id="L60"><span class="lineNum">      60</span> <span class="tlaGNC">           3 : }</span></span>
-<span id="L61"><span class="lineNum">      61</span>              : } // namespace neml2</span>
+<span id="L52"><span class="lineNum">      52</span> <span class="tlaGNC">           3 :     _alpha = _d();</span></span>
+<span id="L53"><span class="lineNum">      53</span>              : </span>
+<span id="L54"><span class="lineNum">      54</span> <span class="tlaGNC">           3 :   if (dout_din)</span></span>
+<span id="L55"><span class="lineNum">      55</span>              :   {</span>
+<span id="L56"><span class="lineNum">      56</span> <span class="tlaGNC">           1 :     _alpha.d(_d) = Scalar(1.0, _d.options());</span></span>
+<span id="L57"><span class="lineNum">      57</span>              :   }</span>
+<span id="L58"><span class="lineNum">      58</span> <span class="tlaGNC">           3 : }</span></span>
+<span id="L59"><span class="lineNum">      59</span>              : } // namespace neml2</span>
         </pre>
               </td>
             </tr>

@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-10-10 12:15:50</td>
+            <td class="headerValue">2025-12-06 17:10:54</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -85,7 +85,7 @@
 <span id="L23"><span class="lineNum">      23</span>              : // THE SOFTWARE.</span>
 <span id="L24"><span class="lineNum">      24</span>              : </span>
 <span id="L25"><span class="lineNum">      25</span>              : #include &quot;neml2/models/R2toSR2.h&quot;</span>
-<span id="L26"><span class="lineNum">      26</span>              : #include &quot;neml2/tensors/mandel_notation.h&quot;</span>
+<span id="L26"><span class="lineNum">      26</span>              : #include &quot;neml2/tensors/functions/symmetrization.h&quot;</span>
 <span id="L27"><span class="lineNum">      27</span>              : #include &quot;neml2/tensors/R2.h&quot;</span>
 <span id="L28"><span class="lineNum">      28</span>              : #include &quot;neml2/tensors/SR2.h&quot;</span>
 <span id="L29"><span class="lineNum">      29</span>              : #include &quot;neml2/tensors/SSR4.h&quot;</span>
@@ -119,20 +119,17 @@
 <span id="L57"><span class="lineNum">      57</span> <span class="tlaGNC">           1 : }</span></span>
 <span id="L58"><span class="lineNum">      58</span>              : </span>
 <span id="L59"><span class="lineNum">      59</span>              : void</span>
-<span id="L60"><span class="lineNum">      60</span> <span class="tlaGNC">           3 : R2toSR2::set_value(bool out, bool dout_din, bool d2out_din2)</span></span>
+<span id="L60"><span class="lineNum">      60</span> <span class="tlaGNC">           3 : R2toSR2::set_value(bool out, bool dout_din, bool /*d2out_din2*/)</span></span>
 <span id="L61"><span class="lineNum">      61</span>              : {</span>
-<span id="L62"><span class="lineNum">      62</span> <span class="tlaGNC">           3 :   auto A = R2(_input);</span></span>
+<span id="L62"><span class="lineNum">      62</span> <span class="tlaGNC">           3 :   const auto &amp; A = _input();</span></span>
 <span id="L63"><span class="lineNum">      63</span>              : </span>
 <span id="L64"><span class="lineNum">      64</span> <span class="tlaGNC">           3 :   if (out)</span></span>
-<span id="L65"><span class="lineNum">      65</span> <span class="tlaGNC">           1 :     _output = SR2(A);</span></span>
+<span id="L65"><span class="lineNum">      65</span> <span class="tlaGNC">           3 :     _output = SR2(A);</span></span>
 <span id="L66"><span class="lineNum">      66</span>              : </span>
 <span id="L67"><span class="lineNum">      67</span> <span class="tlaGNC">           3 :   if (dout_din)</span></span>
 <span id="L68"><span class="lineNum">      68</span> <span class="tlaGNC">           1 :     _output.d(_input) = mandel_to_full(SSR4::identity_sym(A.options()), 1);</span></span>
-<span id="L69"><span class="lineNum">      69</span>              : </span>
-<span id="L70"><span class="lineNum">      70</span>              :   // Second derivative is zero</span>
-<span id="L71"><span class="lineNum">      71</span>              :   (void)d2out_din2;</span>
-<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC">           3 : }</span></span>
-<span id="L73"><span class="lineNum">      73</span>              : } // namespace neml2</span>
+<span id="L69"><span class="lineNum">      69</span> <span class="tlaGNC">           3 : }</span></span>
+<span id="L70"><span class="lineNum">      70</span>              : } // namespace neml2</span>
         </pre>
               </td>
             </tr>

@@ -6,5 +6,5 @@ var searchData=
   ['phase_20field_20fracture_3',['Phase-Field Fracture',['../phase-field-fracture.html',1,'']]],
   ['project_20integration_4',['External Project Integration',['../external-project-integration.html',1,'']]],
   ['pyrolysis_5',['Thermosetting Pyrolysis',['../thermosetting-pyrolysis.html',1,'']]],
-  ['pyzag_6',['pyzag',['../tutorials-optimization-pyzag.html',1,'']]]
+  ['pyzag_6',['pyzag',['../md__2home_2runner_2work_2neml2_2neml2_2doc_2content_2tutorials_2optimization_2pyzag.html',1,'pyzag'],['../tutorials-optimization-pyzag.html',1,'pyzag']]]
 ];

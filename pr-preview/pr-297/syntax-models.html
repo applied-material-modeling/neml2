@@ -142,7 +142,7 @@ $(function(){initNavTree('syntax-models.html',''); initResizable(true); });
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md63">Available objects and their input file syntax</a>
+    <a href="#autotoc_md197">Available objects and their input file syntax</a>
     <ul>
       <li class="level2">
         <a href="#advectivestress">AdvectiveStress</a>
@@ -193,12 +193,6 @@ $(function(){initNavTree('syntax-models.html',''); initResizable(true); });
         <a href="#copyr4">CopyR4</a>
       </li>
       <li class="level2">
-        <a href="#copyr5">CopyR5</a>
-      </li>
-      <li class="level2">
-        <a href="#copyr8">CopyR8</a>
-      </li>
-      <li class="level2">
         <a href="#copyrot">CopyRot</a>
       </li>
       <li class="level2">
@@ -208,19 +202,10 @@ $(function(){initNavTree('syntax-models.html',''); initResizable(true); });
         <a href="#copysfr3">CopySFR3</a>
       </li>
       <li class="level2">
-        <a href="#copysfr4">CopySFR4</a>
-      </li>
-      <li class="level2">
         <a href="#copysr2">CopySR2</a>
       </li>
       <li class="level2">
-        <a href="#copyssfr5">CopySSFR5</a>
-      </li>
-      <li class="level2">
         <a href="#copyssr4">CopySSR4</a>
-      </li>
-      <li class="level2">
-        <a href="#copyssssr8">CopySSSSR8</a>
       </li>
       <li class="level2">
         <a href="#copyswr4">CopySWR4</a>
@@ -232,7 +217,7 @@ $(function(){initNavTree('syntax-models.html',''); initResizable(true); });
         <a href="#copyvec">CopyVec</a>
       </li>
       <li class="level2">
-        <a href="#copywfr4">CopyWFR4</a>
+        <a href="#copywffr4">CopyWFFR4</a>
       </li>
       <li class="level2">
         <a href="#copywr2">CopyWR2</a>
@@ -346,7 +331,19 @@ $(function(){initNavTree('syntax-models.html',''); initResizable(true); });
         <a href="#millerindexconstantparameter">MillerIndexConstantParameter</a>
       </li>
       <li class="level2">
+        <a href="#millerindexdynamicmean">MillerIndexDynamicMean</a>
+      </li>
+      <li class="level2">
+        <a href="#millerindexdynamicsum">MillerIndexDynamicSum</a>
+      </li>
+      <li class="level2">
         <a href="#millerindexinputparameter">MillerIndexInputParameter</a>
+      </li>
+      <li class="level2">
+        <a href="#millerindexintermediatemean">MillerIndexIntermediateMean</a>
+      </li>
+      <li class="level2">
+        <a href="#millerindexintermediatesum">MillerIndexIntermediateSum</a>
       </li>
       <li class="level2">
         <a href="#millerindexparametertostate">MillerIndexParameterToState</a>
@@ -397,7 +394,19 @@ $(function(){initNavTree('syntax-models.html',''); initResizable(true); });
         <a href="#quaternionconstantparameter">QuaternionConstantParameter</a>
       </li>
       <li class="level2">
+        <a href="#quaterniondynamicmean">QuaternionDynamicMean</a>
+      </li>
+      <li class="level2">
+        <a href="#quaterniondynamicsum">QuaternionDynamicSum</a>
+      </li>
+      <li class="level2">
         <a href="#quaternioninputparameter">QuaternionInputParameter</a>
+      </li>
+      <li class="level2">
+        <a href="#quaternionintermediatemean">QuaternionIntermediateMean</a>
+      </li>
+      <li class="level2">
+        <a href="#quaternionintermediatesum">QuaternionIntermediateSum</a>
       </li>
       <li class="level2">
         <a href="#quaternionparametertostate">QuaternionParameterToState</a>
@@ -412,10 +421,22 @@ $(function(){initNavTree('syntax-models.html',''); initResizable(true); });
         <a href="#r2determinant">R2Determinant</a>
       </li>
       <li class="level2">
+        <a href="#r2dynamicmean">R2DynamicMean</a>
+      </li>
+      <li class="level2">
+        <a href="#r2dynamicsum">R2DynamicSum</a>
+      </li>
+      <li class="level2">
         <a href="#r2incrementtorate">R2IncrementToRate</a>
       </li>
       <li class="level2">
         <a href="#r2inputparameter">R2InputParameter</a>
+      </li>
+      <li class="level2">
+        <a href="#r2intermediatemean">R2IntermediateMean</a>
+      </li>
+      <li class="level2">
+        <a href="#r2intermediatesum">R2IntermediateSum</a>
       </li>
       <li class="level2">
         <a href="#r2linearcombination">R2LinearCombination</a>
@@ -436,7 +457,19 @@ $(function(){initNavTree('syntax-models.html',''); initResizable(true); });
         <a href="#r3constantparameter">R3ConstantParameter</a>
       </li>
       <li class="level2">
+        <a href="#r3dynamicmean">R3DynamicMean</a>
+      </li>
+      <li class="level2">
+        <a href="#r3dynamicsum">R3DynamicSum</a>
+      </li>
+      <li class="level2">
         <a href="#r3inputparameter">R3InputParameter</a>
+      </li>
+      <li class="level2">
+        <a href="#r3intermediatemean">R3IntermediateMean</a>
+      </li>
+      <li class="level2">
+        <a href="#r3intermediatesum">R3IntermediateSum</a>
       </li>
       <li class="level2">
         <a href="#r3parametertostate">R3ParameterToState</a>
@@ -445,28 +478,22 @@ $(function(){initNavTree('syntax-models.html',''); initResizable(true); });
         <a href="#r4constantparameter">R4ConstantParameter</a>
       </li>
       <li class="level2">
+        <a href="#r4dynamicmean">R4DynamicMean</a>
+      </li>
+      <li class="level2">
+        <a href="#r4dynamicsum">R4DynamicSum</a>
+      </li>
+      <li class="level2">
         <a href="#r4inputparameter">R4InputParameter</a>
       </li>
       <li class="level2">
+        <a href="#r4intermediatemean">R4IntermediateMean</a>
+      </li>
+      <li class="level2">
+        <a href="#r4intermediatesum">R4IntermediateSum</a>
+      </li>
+      <li class="level2">
         <a href="#r4parametertostate">R4ParameterToState</a>
-      </li>
-      <li class="level2">
-        <a href="#r5constantparameter">R5ConstantParameter</a>
-      </li>
-      <li class="level2">
-        <a href="#r5inputparameter">R5InputParameter</a>
-      </li>
-      <li class="level2">
-        <a href="#r5parametertostate">R5ParameterToState</a>
-      </li>
-      <li class="level2">
-        <a href="#r8constantparameter">R8ConstantParameter</a>
-      </li>
-      <li class="level2">
-        <a href="#r8inputparameter">R8InputParameter</a>
-      </li>
-      <li class="level2">
-        <a href="#r8parametertostate">R8ParameterToState</a>
       </li>
       <li class="level2">
         <a href="#rateindependentplasticflowconstraint">RateIndependentPlasticFlowConstraint</a>
@@ -481,7 +508,19 @@ $(function(){initNavTree('syntax-models.html',''); initResizable(true); });
         <a href="#rotconstantparameter">RotConstantParameter</a>
       </li>
       <li class="level2">
+        <a href="#rotdynamicmean">RotDynamicMean</a>
+      </li>
+      <li class="level2">
+        <a href="#rotdynamicsum">RotDynamicSum</a>
+      </li>
+      <li class="level2">
         <a href="#rotinputparameter">RotInputParameter</a>
+      </li>
+      <li class="level2">
+        <a href="#rotintermediatemean">RotIntermediateMean</a>
+      </li>
+      <li class="level2">
+        <a href="#rotintermediatesum">RotIntermediateSum</a>
       </li>
       <li class="level2">
         <a href="#rotparametertostate">RotParameterToState</a>
@@ -493,7 +532,19 @@ $(function(){initNavTree('syntax-models.html',''); initResizable(true); });
         <a href="#sffr4constantparameter">SFFR4ConstantParameter</a>
       </li>
       <li class="level2">
+        <a href="#sffr4dynamicmean">SFFR4DynamicMean</a>
+      </li>
+      <li class="level2">
+        <a href="#sffr4dynamicsum">SFFR4DynamicSum</a>
+      </li>
+      <li class="level2">
         <a href="#sffr4inputparameter">SFFR4InputParameter</a>
+      </li>
+      <li class="level2">
+        <a href="#sffr4intermediatemean">SFFR4IntermediateMean</a>
+      </li>
+      <li class="level2">
+        <a href="#sffr4intermediatesum">SFFR4IntermediateSum</a>
       </li>
       <li class="level2">
         <a href="#sffr4parametertostate">SFFR4ParameterToState</a>
@@ -502,19 +553,22 @@ $(function(){initNavTree('syntax-models.html',''); initResizable(true); });
         <a href="#sfr3constantparameter">SFR3ConstantParameter</a>
       </li>
       <li class="level2">
+        <a href="#sfr3dynamicmean">SFR3DynamicMean</a>
+      </li>
+      <li class="level2">
+        <a href="#sfr3dynamicsum">SFR3DynamicSum</a>
+      </li>
+      <li class="level2">
         <a href="#sfr3inputparameter">SFR3InputParameter</a>
       </li>
       <li class="level2">
+        <a href="#sfr3intermediatemean">SFR3IntermediateMean</a>
+      </li>
+      <li class="level2">
+        <a href="#sfr3intermediatesum">SFR3IntermediateSum</a>
+      </li>
+      <li class="level2">
         <a href="#sfr3parametertostate">SFR3ParameterToState</a>
-      </li>
-      <li class="level2">
-        <a href="#sfr4constantparameter">SFR4ConstantParameter</a>
-      </li>
-      <li class="level2">
-        <a href="#sfr4inputparameter">SFR4InputParameter</a>
-      </li>
-      <li class="level2">
-        <a href="#sfr4parametertostate">SFR4ParameterToState</a>
       </li>
       <li class="level2">
         <a href="#sr2backwardeulertimeintegration">SR2BackwardEulerTimeIntegration</a>
@@ -526,10 +580,13 @@ $(function(){initNavTree('syntax-models.html',''); initResizable(true); });
         <a href="#sr2constantparameter">SR2ConstantParameter</a>
       </li>
       <li class="level2">
-        <a href="#sr2crystalmean">SR2CrystalMean</a>
+        <a href="#sr2determinant">SR2Determinant</a>
       </li>
       <li class="level2">
-        <a href="#sr2determinant">SR2Determinant</a>
+        <a href="#sr2dynamicmean">SR2DynamicMean</a>
+      </li>
+      <li class="level2">
+        <a href="#sr2dynamicsum">SR2DynamicSum</a>
       </li>
       <li class="level2">
         <a href="#sr2forwardeulertimeintegration">SR2ForwardEulerTimeIntegration</a>
@@ -539,6 +596,12 @@ $(function(){initNavTree('syntax-models.html',''); initResizable(true); });
       </li>
       <li class="level2">
         <a href="#sr2inputparameter">SR2InputParameter</a>
+      </li>
+      <li class="level2">
+        <a href="#sr2intermediatemean">SR2IntermediateMean</a>
+      </li>
+      <li class="level2">
+        <a href="#sr2intermediatesum">SR2IntermediateSum</a>
       </li>
       <li class="level2">
         <a href="#sr2invariant">SR2Invariant</a>
@@ -562,37 +625,43 @@ $(function(){initNavTree('syntax-models.html',''); initResizable(true); });
         <a href="#sr2tor2">SR2toR2</a>
       </li>
       <li class="level2">
-        <a href="#ssfr5constantparameter">SSFR5ConstantParameter</a>
-      </li>
-      <li class="level2">
-        <a href="#ssfr5inputparameter">SSFR5InputParameter</a>
-      </li>
-      <li class="level2">
-        <a href="#ssfr5parametertostate">SSFR5ParameterToState</a>
-      </li>
-      <li class="level2">
         <a href="#ssr4constantparameter">SSR4ConstantParameter</a>
+      </li>
+      <li class="level2">
+        <a href="#ssr4dynamicmean">SSR4DynamicMean</a>
+      </li>
+      <li class="level2">
+        <a href="#ssr4dynamicsum">SSR4DynamicSum</a>
       </li>
       <li class="level2">
         <a href="#ssr4inputparameter">SSR4InputParameter</a>
       </li>
       <li class="level2">
+        <a href="#ssr4intermediatemean">SSR4IntermediateMean</a>
+      </li>
+      <li class="level2">
+        <a href="#ssr4intermediatesum">SSR4IntermediateSum</a>
+      </li>
+      <li class="level2">
         <a href="#ssr4parametertostate">SSR4ParameterToState</a>
-      </li>
-      <li class="level2">
-        <a href="#ssssr8constantparameter">SSSSR8ConstantParameter</a>
-      </li>
-      <li class="level2">
-        <a href="#ssssr8inputparameter">SSSSR8InputParameter</a>
-      </li>
-      <li class="level2">
-        <a href="#ssssr8parametertostate">SSSSR8ParameterToState</a>
       </li>
       <li class="level2">
         <a href="#swr4constantparameter">SWR4ConstantParameter</a>
       </li>
       <li class="level2">
+        <a href="#swr4dynamicmean">SWR4DynamicMean</a>
+      </li>
+      <li class="level2">
+        <a href="#swr4dynamicsum">SWR4DynamicSum</a>
+      </li>
+      <li class="level2">
         <a href="#swr4inputparameter">SWR4InputParameter</a>
+      </li>
+      <li class="level2">
+        <a href="#swr4intermediatemean">SWR4IntermediateMean</a>
+      </li>
+      <li class="level2">
+        <a href="#swr4intermediatesum">SWR4IntermediateSum</a>
       </li>
       <li class="level2">
         <a href="#swr4parametertostate">SWR4ParameterToState</a>
@@ -607,6 +676,12 @@ $(function(){initNavTree('syntax-models.html',''); initResizable(true); });
         <a href="#scalarconstantparameter">ScalarConstantParameter</a>
       </li>
       <li class="level2">
+        <a href="#scalardynamicmean">ScalarDynamicMean</a>
+      </li>
+      <li class="level2">
+        <a href="#scalardynamicsum">ScalarDynamicSum</a>
+      </li>
+      <li class="level2">
         <a href="#scalarforwardeulertimeintegration">ScalarForwardEulerTimeIntegration</a>
       </li>
       <li class="level2">
@@ -614,6 +689,12 @@ $(function(){initNavTree('syntax-models.html',''); initResizable(true); });
       </li>
       <li class="level2">
         <a href="#scalarinputparameter">ScalarInputParameter</a>
+      </li>
+      <li class="level2">
+        <a href="#scalarintermediatemean">ScalarIntermediateMean</a>
+      </li>
+      <li class="level2">
+        <a href="#scalarintermediatesum">ScalarIntermediateSum</a>
       </li>
       <li class="level2">
         <a href="#scalarlinearcombination">ScalarLinearCombination</a>
@@ -670,6 +751,12 @@ $(function(){initNavTree('syntax-models.html',''); initResizable(true); });
         <a href="#vecconstantparameter">VecConstantParameter</a>
       </li>
       <li class="level2">
+        <a href="#vecdynamicmean">VecDynamicMean</a>
+      </li>
+      <li class="level2">
+        <a href="#vecdynamicsum">VecDynamicSum</a>
+      </li>
+      <li class="level2">
         <a href="#vecforwardeulertimeintegration">VecForwardEulerTimeIntegration</a>
       </li>
       <li class="level2">
@@ -677,6 +764,12 @@ $(function(){initNavTree('syntax-models.html',''); initResizable(true); });
       </li>
       <li class="level2">
         <a href="#vecinputparameter">VecInputParameter</a>
+      </li>
+      <li class="level2">
+        <a href="#vecintermediatemean">VecIntermediateMean</a>
+      </li>
+      <li class="level2">
+        <a href="#vecintermediatesum">VecIntermediateSum</a>
       </li>
       <li class="level2">
         <a href="#veclinearcombination">VecLinearCombination</a>
@@ -703,16 +796,34 @@ $(function(){initNavTree('syntax-models.html',''); initResizable(true); });
         <a href="#volumechangeeigenstrain">VolumeChangeEigenstrain</a>
       </li>
       <li class="level2">
-        <a href="#wfr4constantparameter">WFR4ConstantParameter</a>
+        <a href="#wffr4constantparameter">WFFR4ConstantParameter</a>
       </li>
       <li class="level2">
-        <a href="#wfr4inputparameter">WFR4InputParameter</a>
+        <a href="#wffr4dynamicmean">WFFR4DynamicMean</a>
       </li>
       <li class="level2">
-        <a href="#wfr4parametertostate">WFR4ParameterToState</a>
+        <a href="#wffr4dynamicsum">WFFR4DynamicSum</a>
+      </li>
+      <li class="level2">
+        <a href="#wffr4inputparameter">WFFR4InputParameter</a>
+      </li>
+      <li class="level2">
+        <a href="#wffr4intermediatemean">WFFR4IntermediateMean</a>
+      </li>
+      <li class="level2">
+        <a href="#wffr4intermediatesum">WFFR4IntermediateSum</a>
+      </li>
+      <li class="level2">
+        <a href="#wffr4parametertostate">WFFR4ParameterToState</a>
       </li>
       <li class="level2">
         <a href="#wr2constantparameter">WR2ConstantParameter</a>
+      </li>
+      <li class="level2">
+        <a href="#wr2dynamicmean">WR2DynamicMean</a>
+      </li>
+      <li class="level2">
+        <a href="#wr2dynamicsum">WR2DynamicSum</a>
       </li>
       <li class="level2">
         <a href="#wr2explicitexponentialtimeintegration">WR2ExplicitExponentialTimeIntegration</a>
@@ -724,13 +835,31 @@ $(function(){initNavTree('syntax-models.html',''); initResizable(true); });
         <a href="#wr2inputparameter">WR2InputParameter</a>
       </li>
       <li class="level2">
+        <a href="#wr2intermediatemean">WR2IntermediateMean</a>
+      </li>
+      <li class="level2">
+        <a href="#wr2intermediatesum">WR2IntermediateSum</a>
+      </li>
+      <li class="level2">
         <a href="#wr2parametertostate">WR2ParameterToState</a>
       </li>
       <li class="level2">
         <a href="#wsr4constantparameter">WSR4ConstantParameter</a>
       </li>
       <li class="level2">
+        <a href="#wsr4dynamicmean">WSR4DynamicMean</a>
+      </li>
+      <li class="level2">
+        <a href="#wsr4dynamicsum">WSR4DynamicSum</a>
+      </li>
+      <li class="level2">
         <a href="#wsr4inputparameter">WSR4InputParameter</a>
+      </li>
+      <li class="level2">
+        <a href="#wsr4intermediatemean">WSR4IntermediateMean</a>
+      </li>
+      <li class="level2">
+        <a href="#wsr4intermediatesum">WSR4IntermediateSum</a>
       </li>
       <li class="level2">
         <a href="#wsr4parametertostate">WSR4ParameterToState</a>
@@ -739,7 +868,19 @@ $(function(){initNavTree('syntax-models.html',''); initResizable(true); });
         <a href="#wwr4constantparameter">WWR4ConstantParameter</a>
       </li>
       <li class="level2">
+        <a href="#wwr4dynamicmean">WWR4DynamicMean</a>
+      </li>
+      <li class="level2">
+        <a href="#wwr4dynamicsum">WWR4DynamicSum</a>
+      </li>
+      <li class="level2">
         <a href="#wwr4inputparameter">WWR4InputParameter</a>
+      </li>
+      <li class="level2">
+        <a href="#wwr4intermediatemean">WWR4IntermediateMean</a>
+      </li>
+      <li class="level2">
+        <a href="#wwr4intermediatesum">WWR4IntermediateSum</a>
       </li>
       <li class="level2">
         <a href="#wwr4parametertostate">WWR4ParameterToState</a>
@@ -765,7 +906,7 @@ You can always use <code>Ctrl</code>+<code>F</code> or <code>Cmd</code>+<code>F<
 <li>🇵: parameter</li>
 <li>🇧: buffer</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md63"></a>
+<h1><a class="anchor" id="autotoc_md197"></a>
 Available objects and their input file syntax</h1>
 <p>Refer to <a class="el" href="system-models.html">System Documentation</a> for detailed explanation about this system.</p>
 <h2><a class="anchor" id="advectivestress"></a>
@@ -1622,80 +1763,6 @@ CopyR4</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1CopyVariable.html">link</a></p>
-<h2><a class="anchor" id="copyr5"></a>
-CopyR5</h2>
-<p>Copy the value from one variable to another. </p><details >
-<summary >
-<code>from</code> 🇮 Variable to copy value from</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>jit</code> Use JIT compilation for the forward operator</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: true </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: false </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>to</code> 🇴 Variable to copy value to</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name </li>
-</ul>
-</details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1CopyVariable.html">link</a></p>
-<h2><a class="anchor" id="copyr8"></a>
-CopyR8</h2>
-<p>Copy the value from one variable to another. </p><details >
-<summary >
-<code>from</code> 🇮 Variable to copy value from</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>jit</code> Use JIT compilation for the forward operator</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: true </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: false </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>to</code> 🇴 Variable to copy value to</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name </li>
-</ul>
-</details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1CopyVariable.html">link</a></p>
 <h2><a class="anchor" id="copyrot"></a>
 CopyRot</h2>
 <p>Copy the value from one variable to another. </p><details >
@@ -1807,43 +1874,6 @@ CopySFR3</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1CopyVariable.html">link</a></p>
-<h2><a class="anchor" id="copysfr4"></a>
-CopySFR4</h2>
-<p>Copy the value from one variable to another. </p><details >
-<summary >
-<code>from</code> 🇮 Variable to copy value from</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>jit</code> Use JIT compilation for the forward operator</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: true </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: false </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>to</code> 🇴 Variable to copy value to</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name </li>
-</ul>
-</details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1CopyVariable.html">link</a></p>
 <h2><a class="anchor" id="copysr2"></a>
 CopySR2</h2>
 <p>Copy the value from one variable to another. </p><details >
@@ -1881,82 +1911,8 @@ CopySR2</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1CopyVariable.html">link</a></p>
-<h2><a class="anchor" id="copyssfr5"></a>
-CopySSFR5</h2>
-<p>Copy the value from one variable to another. </p><details >
-<summary >
-<code>from</code> 🇮 Variable to copy value from</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>jit</code> Use JIT compilation for the forward operator</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: true </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: false </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>to</code> 🇴 Variable to copy value to</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name </li>
-</ul>
-</details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1CopyVariable.html">link</a></p>
 <h2><a class="anchor" id="copyssr4"></a>
 CopySSR4</h2>
-<p>Copy the value from one variable to another. </p><details >
-<summary >
-<code>from</code> 🇮 Variable to copy value from</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>jit</code> Use JIT compilation for the forward operator</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: true </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: false </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>to</code> 🇴 Variable to copy value to</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name </li>
-</ul>
-</details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1CopyVariable.html">link</a></p>
-<h2><a class="anchor" id="copyssssr8"></a>
-CopySSSSR8</h2>
 <p>Copy the value from one variable to another. </p><details >
 <summary >
 <code>from</code> 🇮 Variable to copy value from</summary>
@@ -2103,8 +2059,8 @@ CopyVec</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1CopyVariable.html">link</a></p>
-<h2><a class="anchor" id="copywfr4"></a>
-CopyWFR4</h2>
+<h2><a class="anchor" id="copywffr4"></a>
+CopyWFFR4</h2>
 <p>Copy the value from one variable to another. </p><details >
 <summary >
 <code>from</code> 🇮 Variable to copy value from</summary>
@@ -2342,7 +2298,7 @@ CubicElasticityTensor</h2>
 </details>
 <details >
 <summary >
-<code>coefficient_types</code> Types for each parameter, options are: INVALID P_WAVE_MODULUS POISSONS_RATIO YOUNGS_MODULUS SHEAR_MODULUS BULK_MODULUS LAME_LAMBDA </summary>
+<code>coefficient_types</code> Types for each parameter, options are: INVALID, P_WAVE_MODULUS, POISSONS_RATIO, YOUNGS_MODULUS, SHEAR_MODULUS, BULK_MODULUS, LAME_LAMBDA</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: MultiEnumSelection</li>
@@ -2775,7 +2731,7 @@ ExponentialLawPermeability</h2>
 FischerBurmeister</h2>
 <p>By default, if \( a \ge 0, b \ge 0, ab = 0 \) then the Fischer Burmeister (FB) condition is: \(a+b-\sqrt(a^2+b^2)\), where a, b is the first_var and second_var respectively and first_inequality = second_inequality = 'GE'. One could set first_inequality = 'LE' (i.e. \( a \le 0, b \ge 0, ab = 0 \), FB conditions is \(-a+b-\sqrt(a^2+b^2) \)). Same goes for second_inequality = 'LE'. </p><details >
 <summary >
-<code>first_inequality</code> Type of inequality for the first variable.Default: GE. Options are LE GE </summary>
+<code>first_inequality</code> Type of inequality for the first variable.Default: GE. Options are LE, GE</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: EnumSelection</li>
@@ -2820,7 +2776,7 @@ FischerBurmeister</h2>
 </details>
 <details >
 <summary >
-<code>second_inequality</code> Type of inequality for the second variable.Default: GE. Options are LE GE </summary>
+<code>second_inequality</code> Type of inequality for the second variable.Default: GE. Options are LE, GE</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: EnumSelection</li>
@@ -3318,7 +3274,7 @@ IsotropicElasticityTensor</h2>
 </details>
 <details >
 <summary >
-<code>coefficient_types</code> Types for each parameter, options are: INVALID P_WAVE_MODULUS POISSONS_RATIO YOUNGS_MODULUS SHEAR_MODULUS BULK_MODULUS LAME_LAMBDA </summary>
+<code>coefficient_types</code> Types for each parameter, options are: INVALID, P_WAVE_MODULUS, POISSONS_RATIO, YOUNGS_MODULUS, SHEAR_MODULUS, BULK_MODULUS, LAME_LAMBDA</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: MultiEnumSelection</li>
@@ -3859,7 +3815,7 @@ LinearIsotropicElasticJ2TrialStressUpdate</h2>
 </details>
 <details >
 <summary >
-<code>coefficient_types</code> Types for each parameter, options are: INVALID P_WAVE_MODULUS POISSONS_RATIO YOUNGS_MODULUS SHEAR_MODULUS BULK_MODULUS LAME_LAMBDA </summary>
+<code>coefficient_types</code> Types for each parameter, options are: INVALID, P_WAVE_MODULUS, POISSONS_RATIO, YOUNGS_MODULUS, SHEAR_MODULUS, BULK_MODULUS, LAME_LAMBDA</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: MultiEnumSelection</li>
@@ -3933,7 +3889,7 @@ LinearIsotropicElasticity</h2>
 </details>
 <details >
 <summary >
-<code>coefficient_types</code> Types for each parameter, options are: INVALID P_WAVE_MODULUS POISSONS_RATIO YOUNGS_MODULUS SHEAR_MODULUS BULK_MODULUS LAME_LAMBDA </summary>
+<code>coefficient_types</code> Types for each parameter, options are: INVALID, P_WAVE_MODULUS, POISSONS_RATIO, YOUNGS_MODULUS, SHEAR_MODULUS, BULK_MODULUS, LAME_LAMBDA</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: MultiEnumSelection</li>
@@ -4063,7 +4019,7 @@ LinearIsotropicStrainEnergyDensity</h2>
 </details>
 <details >
 <summary >
-<code>coefficient_types</code> Types for each parameter, options are: INVALID P_WAVE_MODULUS POISSONS_RATIO YOUNGS_MODULUS SHEAR_MODULUS BULK_MODULUS LAME_LAMBDA </summary>
+<code>coefficient_types</code> Types for each parameter, options are: INVALID, P_WAVE_MODULUS, POISSONS_RATIO, YOUNGS_MODULUS, SHEAR_MODULUS, BULK_MODULUS, LAME_LAMBDA</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: MultiEnumSelection</li>
@@ -4080,7 +4036,7 @@ LinearIsotropicStrainEnergyDensity</h2>
 </details>
 <details >
 <summary >
-<code>decomposition</code> Strain energy density decomposition types, options are: VOLDEV SPECTRAL NONE </summary>
+<code>decomposition</code> Strain energy density decomposition types, options are: VOLDEV, SPECTRAL, NONE</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: EnumSelection</li>
@@ -4265,6 +4221,98 @@ MillerIndexConstantParameter</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1ConstantParameter.html">link</a></p>
+<h2><a class="anchor" id="millerindexdynamicmean"></a>
+MillerIndexDynamicMean</h2>
+<p>Average a dynamic dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1DynamicMean.html">link</a></p>
+<h2><a class="anchor" id="millerindexdynamicsum"></a>
+MillerIndexDynamicSum</h2>
+<p>Sum a dynamic dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1DynamicSum.html">link</a></p>
 <h2><a class="anchor" id="millerindexinputparameter"></a>
 MillerIndexInputParameter</h2>
 <p>A parameter that is defined through an input variable. This object is not intended to be used directly in the input file. </p><details >
@@ -4302,6 +4350,98 @@ MillerIndexInputParameter</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1InputParameter.html">link</a></p>
+<h2><a class="anchor" id="millerindexintermediatemean"></a>
+MillerIndexIntermediateMean</h2>
+<p>Average an intermediate dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1IntermediateMean.html">link</a></p>
+<h2><a class="anchor" id="millerindexintermediatesum"></a>
+MillerIndexIntermediateSum</h2>
+<p>Sum an intermediate dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1IntermediateSum.html">link</a></p>
 <h2><a class="anchor" id="millerindexparametertostate"></a>
 MillerIndexParameterToState</h2>
 <p>Convert the parameter to state variable. </p><details >
@@ -4341,18 +4481,25 @@ MillerIndexParameterToState</h2>
 <p>Detailed documentation <a class="el" href="classneml2_1_1ParameterToState.html">link</a></p>
 <h2><a class="anchor" id="mixedcontrolsetup"></a>
 MixedControlSetup</h2>
-<p>Object to setup a model for mixed stress/strain control. Copies the values of the fixed_values (the input strain or stress) and the mixed_state (the conjugate stress or strain values) into the stress and strain tensors used by the model. </p><details >
+<p>Object to setup a model for mixed control. Copies the values of the <code>fixed_values</code> and the <code>mixed_state</code> (the conjugate) into the input variables used by the model. </p><details >
 <summary >
-<code>cauchy_stress</code> 🇴 The name of the Cauchy stress tensor</summary>
+<code>above_variable</code> 🇴 The prescribed variable when the control signal is greater than the threshold</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: variable name</li>
-<li><u>Default</u>: state/S </li>
+<li><u>Type</u>: variable name </li>
 </ul>
 </details>
 <details >
 <summary >
-<code>control</code> 🇮 The name of the control signal. Values less than the threshold are strain control, greater are stress control</summary>
+<code>below_variable</code> 🇴 The prescribed variable when the control signal is less than the threshold</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>control</code> 🇮 The control signal.</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: variable name</li>
@@ -4361,7 +4508,7 @@ MixedControlSetup</h2>
 </details>
 <details >
 <summary >
-<code>fixed_values</code> 🇮 The name of the fixed values, i.e. the actual strain or stress values being imposed on the model</summary>
+<code>fixed_values</code> 🇮 The name of the fixed values, i.e. the actual values being imposed on the model</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: variable name</li>
@@ -4397,19 +4544,10 @@ MixedControlSetup</h2>
 </details>
 <details >
 <summary >
-<code>strain</code> 🇴 The name of the strain tensor</summary>
+<code>threshold</code> The threshold to switch between the two control</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: variable name</li>
-<li><u>Default</u>: state/E </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>threshold</code> The threshold to switch between strain and stress control</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: Tensor 🔗</li>
+<li><u>Type</u>: SR2 🔗</li>
 <li><u>Default</u>: 0.5 </li>
 </ul>
 </details>
@@ -4695,7 +4833,7 @@ PhaseTransformationEigenstrain</h2>
 PlasticDeformationRate</h2>
 <p>Caclulates the plastic deformation rate as \( d^p = \sum_{i=1}^{n_{slip}} \dot{\gamma}_i Q \operatorname{sym}{\left(d_i \otimes n_i \right)} Q^T \) with \( d^p \) the plastic deformation rate, \( \dot{\gamma}_i \) the slip rate on the ith slip system, \(Q \) the orientation, \( d_i \) the slip system direction, and \( n_i \) the slip system normal. </p><details >
 <summary >
-<code>crystal_geometry_name</code> The name of the Data object containing the crystallographic information for the material</summary>
+<code>crystal_geometry</code> The name of the Data object containing the crystallographic information for the material</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: string</li>
@@ -4752,7 +4890,7 @@ PlasticDeformationRate</h2>
 PlasticSpatialVelocityGradient</h2>
 <p>Caclulates the plastic spatial velocity gradient as \( l^p = \sum_{i=1}^{n_{slip}} \dot{\gamma}_i Q \left(d_i \otimes n_i \right) Q^T \) with \( l^p \) the plastic spatial velocity gradient, \( \dot{\gamma}_i \) the slip rate on the ith slip system, \(Q \) the orientation, \( d_i \) the slip system direction, and \( n_i \) the slip system normal. </p><details >
 <summary >
-<code>crystal_geometry_name</code> The name of the Data object containing the crystallographic information for the material</summary>
+<code>crystal_geometry</code> The name of the Data object containing the crystallographic information for the material</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: string</li>
@@ -4809,7 +4947,7 @@ PlasticSpatialVelocityGradient</h2>
 PlasticVorticity</h2>
 <p>Caclulates the plastic vorcitity as \( w^p = \sum_{i=1}^{n_{slip}} \dot{\gamma}_i Q \operatorname{skew}{\left(d_i \otimes n_i \right)} Q^T \) with \( d^p \) the plastic deformation rate, \( \dot{\gamma}_i \) the slip rate on the ith slip system, \(Q \) the orientation, \( d_i \) the slip system direction, and \( n_i \) the slip system normal. </p><details >
 <summary >
-<code>crystal_geometry_name</code> The name of the Data object containing the crystallographic information for the material</summary>
+<code>crystal_geometry</code> The name of the Data object containing the crystallographic information for the material</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: string</li>
@@ -5092,15 +5230,6 @@ PowerLawPermeability</h2>
 PowerLawSlipRule</h2>
 <p>Power law slip rule defined as \( \dot{\gamma}_i = \dot{\gamma}_0 \left| \frac{\tau_i}{\hat{\tau}_i} \right|^{n-1} \frac{\tau_i}{\hat{\tau}_i} \) with \( \dot{\gamma}_i \) the slip rate on system \( i \), \( \tau_i \) the resolved shear, \( \hat{\tau}_i \) the slip system strength, \( n \) the rate senstivity, and \( \dot{\gamma}_0 \) a reference slip rate. </p><details >
 <summary >
-<code>crystal_geometry_name</code> Name of the Data object containing the crystallographic information</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: string</li>
-<li><u>Default</u>: crystal_geometry </li>
-</ul>
-</details>
-<details >
-<summary >
 <code>gamma0</code> 🇵 Reference slip rate</summary>
 <p></p>
 <ul>
@@ -5190,6 +5319,98 @@ QuaternionConstantParameter</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1ConstantParameter.html">link</a></p>
+<h2><a class="anchor" id="quaterniondynamicmean"></a>
+QuaternionDynamicMean</h2>
+<p>Average a dynamic dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1DynamicMean.html">link</a></p>
+<h2><a class="anchor" id="quaterniondynamicsum"></a>
+QuaternionDynamicSum</h2>
+<p>Sum a dynamic dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1DynamicSum.html">link</a></p>
 <h2><a class="anchor" id="quaternioninputparameter"></a>
 QuaternionInputParameter</h2>
 <p>A parameter that is defined through an input variable. This object is not intended to be used directly in the input file. </p><details >
@@ -5227,6 +5448,98 @@ QuaternionInputParameter</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1InputParameter.html">link</a></p>
+<h2><a class="anchor" id="quaternionintermediatemean"></a>
+QuaternionIntermediateMean</h2>
+<p>Average an intermediate dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1IntermediateMean.html">link</a></p>
+<h2><a class="anchor" id="quaternionintermediatesum"></a>
+QuaternionIntermediateSum</h2>
+<p>Sum an intermediate dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1IntermediateSum.html">link</a></p>
 <h2><a class="anchor" id="quaternionparametertostate"></a>
 QuaternionParameterToState</h2>
 <p>Convert the parameter to state variable. </p><details >
@@ -5405,6 +5718,98 @@ R2Determinant</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1Determinant.html">link</a></p>
+<h2><a class="anchor" id="r2dynamicmean"></a>
+R2DynamicMean</h2>
+<p>Average a dynamic dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1DynamicMean.html">link</a></p>
+<h2><a class="anchor" id="r2dynamicsum"></a>
+R2DynamicSum</h2>
+<p>Sum a dynamic dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1DynamicSum.html">link</a></p>
 <h2><a class="anchor" id="r2incrementtorate"></a>
 R2IncrementToRate</h2>
 <p>Calculate the first order discrete time derivative of a variable as \( \dot{f} = \frac{\Delta f}{t-t_n} \), where \( \Delta f \) is the variable with the increment, and \( t \) is time. </p><details >
@@ -5488,6 +5893,98 @@ R2InputParameter</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1InputParameter.html">link</a></p>
+<h2><a class="anchor" id="r2intermediatemean"></a>
+R2IntermediateMean</h2>
+<p>Average an intermediate dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1IntermediateMean.html">link</a></p>
+<h2><a class="anchor" id="r2intermediatesum"></a>
+R2IntermediateSum</h2>
+<p>Sum an intermediate dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1IntermediateSum.html">link</a></p>
 <h2><a class="anchor" id="r2linearcombination"></a>
 R2LinearCombination</h2>
 <p>Calculate linear combination of multiple R2 tensors as \( u = c_i v_i + s \) (Einstein summation assumed), where \( c_i \) are the coefficients, and \( v_i \) are the variables to be summed. \( s \) is a constant offset. </p><details >
@@ -5780,6 +6277,98 @@ R3ConstantParameter</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1ConstantParameter.html">link</a></p>
+<h2><a class="anchor" id="r3dynamicmean"></a>
+R3DynamicMean</h2>
+<p>Average a dynamic dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1DynamicMean.html">link</a></p>
+<h2><a class="anchor" id="r3dynamicsum"></a>
+R3DynamicSum</h2>
+<p>Sum a dynamic dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1DynamicSum.html">link</a></p>
 <h2><a class="anchor" id="r3inputparameter"></a>
 R3InputParameter</h2>
 <p>A parameter that is defined through an input variable. This object is not intended to be used directly in the input file. </p><details >
@@ -5817,6 +6406,98 @@ R3InputParameter</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1InputParameter.html">link</a></p>
+<h2><a class="anchor" id="r3intermediatemean"></a>
+R3IntermediateMean</h2>
+<p>Average an intermediate dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1IntermediateMean.html">link</a></p>
+<h2><a class="anchor" id="r3intermediatesum"></a>
+R3IntermediateSum</h2>
+<p>Sum an intermediate dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1IntermediateSum.html">link</a></p>
 <h2><a class="anchor" id="r3parametertostate"></a>
 R3ParameterToState</h2>
 <p>Convert the parameter to state variable. </p><details >
@@ -5883,6 +6564,98 @@ R4ConstantParameter</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1ConstantParameter.html">link</a></p>
+<h2><a class="anchor" id="r4dynamicmean"></a>
+R4DynamicMean</h2>
+<p>Average a dynamic dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1DynamicMean.html">link</a></p>
+<h2><a class="anchor" id="r4dynamicsum"></a>
+R4DynamicSum</h2>
+<p>Sum a dynamic dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1DynamicSum.html">link</a></p>
 <h2><a class="anchor" id="r4inputparameter"></a>
 R4InputParameter</h2>
 <p>A parameter that is defined through an input variable. This object is not intended to be used directly in the input file. </p><details >
@@ -5920,6 +6693,98 @@ R4InputParameter</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1InputParameter.html">link</a></p>
+<h2><a class="anchor" id="r4intermediatemean"></a>
+R4IntermediateMean</h2>
+<p>Average an intermediate dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1IntermediateMean.html">link</a></p>
+<h2><a class="anchor" id="r4intermediatesum"></a>
+R4IntermediateSum</h2>
+<p>Sum an intermediate dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1IntermediateSum.html">link</a></p>
 <h2><a class="anchor" id="r4parametertostate"></a>
 R4ParameterToState</h2>
 <p>Convert the parameter to state variable. </p><details >
@@ -5928,212 +6793,6 @@ R4ParameterToState</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: R4 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>jit</code> Use JIT compilation for the forward operator</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: true </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: false </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>to</code> 🇴 The name of the variables, default to 'state/object_name'</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name </li>
-</ul>
-</details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1ParameterToState.html">link</a></p>
-<h2><a class="anchor" id="r5constantparameter"></a>
-R5ConstantParameter</h2>
-<p>A parameter that is just a constant value, generally used to refer to a parameter in more than one downstream object. </p><details >
-<summary >
-<code>jit</code> Use JIT compilation for the forward operator</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: true </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: false </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>value</code> 🇵 The constant value of the parameter</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: R5 🔗 </li>
-</ul>
-</details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1ConstantParameter.html">link</a></p>
-<h2><a class="anchor" id="r5inputparameter"></a>
-R5InputParameter</h2>
-<p>A parameter that is defined through an input variable. This object is not intended to be used directly in the input file. </p><details >
-<summary >
-<code>from</code> 🇮 The input variable that defines this parameter</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>jit</code> Use JIT compilation for the forward operator</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: true </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: false </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>to</code> 🇴 The name of the parameter, default to 'parameters/object_name'</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name </li>
-</ul>
-</details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1InputParameter.html">link</a></p>
-<h2><a class="anchor" id="r5parametertostate"></a>
-R5ParameterToState</h2>
-<p>Convert the parameter to state variable. </p><details >
-<summary >
-<code>from</code> 🇵 The input parameter</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: R5 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>jit</code> Use JIT compilation for the forward operator</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: true </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: false </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>to</code> 🇴 The name of the variables, default to 'state/object_name'</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name </li>
-</ul>
-</details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1ParameterToState.html">link</a></p>
-<h2><a class="anchor" id="r8constantparameter"></a>
-R8ConstantParameter</h2>
-<p>A parameter that is just a constant value, generally used to refer to a parameter in more than one downstream object. </p><details >
-<summary >
-<code>jit</code> Use JIT compilation for the forward operator</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: true </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: false </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>value</code> 🇵 The constant value of the parameter</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: R8 🔗 </li>
-</ul>
-</details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1ConstantParameter.html">link</a></p>
-<h2><a class="anchor" id="r8inputparameter"></a>
-R8InputParameter</h2>
-<p>A parameter that is defined through an input variable. This object is not intended to be used directly in the input file. </p><details >
-<summary >
-<code>from</code> 🇮 The input variable that defines this parameter</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>jit</code> Use JIT compilation for the forward operator</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: true </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: false </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>to</code> 🇴 The name of the parameter, default to 'parameters/object_name'</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name </li>
-</ul>
-</details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1InputParameter.html">link</a></p>
-<h2><a class="anchor" id="r8parametertostate"></a>
-R8ParameterToState</h2>
-<p>Convert the parameter to state variable. </p><details >
-<summary >
-<code>from</code> 🇵 The input parameter</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: R8 🔗 </li>
 </ul>
 </details>
 <details >
@@ -6288,7 +6947,7 @@ RationalDegradationFunction</h2>
 ResolvedShear</h2>
 <p>Calculates the resolved shears as \( \tau_i = \sigma : Q \operatorname{sym}\left(d_i \otimes n_i \right) Q^T \) where \( \tau_i \) is the resolved shear on slip system i, \( \sigma \) is the Cauchy stress \( Q \) is the orientation matrix, \( d_i \) is the slip direction, and \( n_i \) is the slip system normal. </p><details >
 <summary >
-<code>crystal_geometry_name</code> The name of the data object with the crystallographic information</summary>
+<code>crystal_geometry</code> The name of the data object with the crystallographic information</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: string</li>
@@ -6370,6 +7029,98 @@ RotConstantParameter</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1ConstantParameter.html">link</a></p>
+<h2><a class="anchor" id="rotdynamicmean"></a>
+RotDynamicMean</h2>
+<p>Average a dynamic dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1DynamicMean.html">link</a></p>
+<h2><a class="anchor" id="rotdynamicsum"></a>
+RotDynamicSum</h2>
+<p>Sum a dynamic dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1DynamicSum.html">link</a></p>
 <h2><a class="anchor" id="rotinputparameter"></a>
 RotInputParameter</h2>
 <p>A parameter that is defined through an input variable. This object is not intended to be used directly in the input file. </p><details >
@@ -6407,6 +7158,98 @@ RotInputParameter</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1InputParameter.html">link</a></p>
+<h2><a class="anchor" id="rotintermediatemean"></a>
+RotIntermediateMean</h2>
+<p>Average an intermediate dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1IntermediateMean.html">link</a></p>
+<h2><a class="anchor" id="rotintermediatesum"></a>
+RotIntermediateSum</h2>
+<p>Sum an intermediate dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1IntermediateSum.html">link</a></p>
 <h2><a class="anchor" id="rotparametertostate"></a>
 RotParameterToState</h2>
 <p>Convert the parameter to state variable. </p><details >
@@ -6510,6 +7353,98 @@ SFFR4ConstantParameter</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1ConstantParameter.html">link</a></p>
+<h2><a class="anchor" id="sffr4dynamicmean"></a>
+SFFR4DynamicMean</h2>
+<p>Average a dynamic dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1DynamicMean.html">link</a></p>
+<h2><a class="anchor" id="sffr4dynamicsum"></a>
+SFFR4DynamicSum</h2>
+<p>Sum a dynamic dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1DynamicSum.html">link</a></p>
 <h2><a class="anchor" id="sffr4inputparameter"></a>
 SFFR4InputParameter</h2>
 <p>A parameter that is defined through an input variable. This object is not intended to be used directly in the input file. </p><details >
@@ -6547,6 +7482,98 @@ SFFR4InputParameter</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1InputParameter.html">link</a></p>
+<h2><a class="anchor" id="sffr4intermediatemean"></a>
+SFFR4IntermediateMean</h2>
+<p>Average an intermediate dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1IntermediateMean.html">link</a></p>
+<h2><a class="anchor" id="sffr4intermediatesum"></a>
+SFFR4IntermediateSum</h2>
+<p>Sum an intermediate dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1IntermediateSum.html">link</a></p>
 <h2><a class="anchor" id="sffr4parametertostate"></a>
 SFFR4ParameterToState</h2>
 <p>Convert the parameter to state variable. </p><details >
@@ -6613,6 +7640,98 @@ SFR3ConstantParameter</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1ConstantParameter.html">link</a></p>
+<h2><a class="anchor" id="sfr3dynamicmean"></a>
+SFR3DynamicMean</h2>
+<p>Average a dynamic dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1DynamicMean.html">link</a></p>
+<h2><a class="anchor" id="sfr3dynamicsum"></a>
+SFR3DynamicSum</h2>
+<p>Sum a dynamic dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1DynamicSum.html">link</a></p>
 <h2><a class="anchor" id="sfr3inputparameter"></a>
 SFR3InputParameter</h2>
 <p>A parameter that is defined through an input variable. This object is not intended to be used directly in the input file. </p><details >
@@ -6650,6 +7769,98 @@ SFR3InputParameter</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1InputParameter.html">link</a></p>
+<h2><a class="anchor" id="sfr3intermediatemean"></a>
+SFR3IntermediateMean</h2>
+<p>Average an intermediate dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1IntermediateMean.html">link</a></p>
+<h2><a class="anchor" id="sfr3intermediatesum"></a>
+SFR3IntermediateSum</h2>
+<p>Sum an intermediate dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1IntermediateSum.html">link</a></p>
 <h2><a class="anchor" id="sfr3parametertostate"></a>
 SFR3ParameterToState</h2>
 <p>Convert the parameter to state variable. </p><details >
@@ -6658,109 +7869,6 @@ SFR3ParameterToState</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: SFR3 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>jit</code> Use JIT compilation for the forward operator</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: true </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: false </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>to</code> 🇴 The name of the variables, default to 'state/object_name'</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name </li>
-</ul>
-</details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1ParameterToState.html">link</a></p>
-<h2><a class="anchor" id="sfr4constantparameter"></a>
-SFR4ConstantParameter</h2>
-<p>A parameter that is just a constant value, generally used to refer to a parameter in more than one downstream object. </p><details >
-<summary >
-<code>jit</code> Use JIT compilation for the forward operator</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: true </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: false </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>value</code> 🇵 The constant value of the parameter</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: SFR4 🔗 </li>
-</ul>
-</details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1ConstantParameter.html">link</a></p>
-<h2><a class="anchor" id="sfr4inputparameter"></a>
-SFR4InputParameter</h2>
-<p>A parameter that is defined through an input variable. This object is not intended to be used directly in the input file. </p><details >
-<summary >
-<code>from</code> 🇮 The input variable that defines this parameter</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>jit</code> Use JIT compilation for the forward operator</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: true </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: false </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>to</code> 🇴 The name of the parameter, default to 'parameters/object_name'</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name </li>
-</ul>
-</details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1InputParameter.html">link</a></p>
-<h2><a class="anchor" id="sfr4parametertostate"></a>
-SFR4ParameterToState</h2>
-<p>Convert the parameter to state variable. </p><details >
-<summary >
-<code>from</code> 🇵 The input parameter</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: SFR4 🔗 </li>
 </ul>
 </details>
 <details >
@@ -6899,6 +8007,14 @@ SR2BilinearInterpolation</h2>
 </details>
 <details >
 <summary >
+<code>dim</code> Intermediate dimension along which to interpolate</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number </li>
+</ul>
+</details>
+<details >
+<summary >
 <code>jit</code> Use JIT compilation for the forward operator</summary>
 <p></p>
 <ul>
@@ -6961,52 +8077,6 @@ SR2ConstantParameter</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1ConstantParameter.html">link</a></p>
-<h2><a class="anchor" id="sr2crystalmean"></a>
-SR2CrystalMean</h2>
-<p>Average the variable over all crystals. </p><details >
-<summary >
-<code>crystal_geometry_name</code> The name of the Data object containing the crystallographic information</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: string</li>
-<li><u>Default</u>: crystal_geometry </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>from</code> 🇮 Variable to average</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>jit</code> Use JIT compilation for the forward operator</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: true </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: false </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>to</code> 🇴 The averaged variable</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name </li>
-</ul>
-</details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1CrystalMean.html">link</a></p>
 <h2><a class="anchor" id="sr2determinant"></a>
 SR2Determinant</h2>
 <p>Calculate the Jacobian of a second order tensor. </p><details >
@@ -7046,6 +8116,98 @@ SR2Determinant</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1Determinant.html">link</a></p>
+<h2><a class="anchor" id="sr2dynamicmean"></a>
+SR2DynamicMean</h2>
+<p>Average a dynamic dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1DynamicMean.html">link</a></p>
+<h2><a class="anchor" id="sr2dynamicsum"></a>
+SR2DynamicSum</h2>
+<p>Sum a dynamic dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1DynamicSum.html">link</a></p>
 <h2><a class="anchor" id="sr2forwardeulertimeintegration"></a>
 SR2ForwardEulerTimeIntegration</h2>
 <p>Perform forward Euler time integration defined as \( s = s_n + (t - t_n) \dot{s} \), where \(s\) is the variable being integrated, \(\dot{s}\) is the variable rate, and \(t\) is time. Subscripts \(n\) denote quantities from the previous time step. </p><details >
@@ -7175,6 +8337,98 @@ SR2InputParameter</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1InputParameter.html">link</a></p>
+<h2><a class="anchor" id="sr2intermediatemean"></a>
+SR2IntermediateMean</h2>
+<p>Average an intermediate dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1IntermediateMean.html">link</a></p>
+<h2><a class="anchor" id="sr2intermediatesum"></a>
+SR2IntermediateSum</h2>
+<p>Sum an intermediate dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1IntermediateSum.html">link</a></p>
 <h2><a class="anchor" id="sr2invariant"></a>
 SR2Invariant</h2>
 <p>Calculate the invariant of a symmetric second order tensor (of type SR2). </p><details >
@@ -7187,7 +8441,7 @@ SR2Invariant</h2>
 </details>
 <details >
 <summary >
-<code>invariant_type</code> Type of invariant. Options are: INVALID EFFECTIVE_STRAIN VONMISES I2 I1 </summary>
+<code>invariant_type</code> Type of invariant. Options are: INVALID, EFFECTIVE_STRAIN, VONMISES, I2, I1</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: EnumSelection</li>
@@ -7308,6 +8562,15 @@ SR2LinearInterpolation</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>dim</code> Intermediate dimension along which to interpolate</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
 </ul>
 </details>
 <details >
@@ -7543,109 +8806,6 @@ SR2toR2</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1SR2toR2.html">link</a></p>
-<h2><a class="anchor" id="ssfr5constantparameter"></a>
-SSFR5ConstantParameter</h2>
-<p>A parameter that is just a constant value, generally used to refer to a parameter in more than one downstream object. </p><details >
-<summary >
-<code>jit</code> Use JIT compilation for the forward operator</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: true </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: false </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>value</code> 🇵 The constant value of the parameter</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: SSFR5 🔗 </li>
-</ul>
-</details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1ConstantParameter.html">link</a></p>
-<h2><a class="anchor" id="ssfr5inputparameter"></a>
-SSFR5InputParameter</h2>
-<p>A parameter that is defined through an input variable. This object is not intended to be used directly in the input file. </p><details >
-<summary >
-<code>from</code> 🇮 The input variable that defines this parameter</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>jit</code> Use JIT compilation for the forward operator</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: true </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: false </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>to</code> 🇴 The name of the parameter, default to 'parameters/object_name'</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name </li>
-</ul>
-</details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1InputParameter.html">link</a></p>
-<h2><a class="anchor" id="ssfr5parametertostate"></a>
-SSFR5ParameterToState</h2>
-<p>Convert the parameter to state variable. </p><details >
-<summary >
-<code>from</code> 🇵 The input parameter</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: SSFR5 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>jit</code> Use JIT compilation for the forward operator</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: true </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: false </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>to</code> 🇴 The name of the variables, default to 'state/object_name'</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name </li>
-</ul>
-</details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1ParameterToState.html">link</a></p>
 <h2><a class="anchor" id="ssr4constantparameter"></a>
 SSR4ConstantParameter</h2>
 <p>A parameter that is just a constant value, generally used to refer to a parameter in more than one downstream object. </p><details >
@@ -7675,6 +8835,98 @@ SSR4ConstantParameter</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1ConstantParameter.html">link</a></p>
+<h2><a class="anchor" id="ssr4dynamicmean"></a>
+SSR4DynamicMean</h2>
+<p>Average a dynamic dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1DynamicMean.html">link</a></p>
+<h2><a class="anchor" id="ssr4dynamicsum"></a>
+SSR4DynamicSum</h2>
+<p>Sum a dynamic dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1DynamicSum.html">link</a></p>
 <h2><a class="anchor" id="ssr4inputparameter"></a>
 SSR4InputParameter</h2>
 <p>A parameter that is defined through an input variable. This object is not intended to be used directly in the input file. </p><details >
@@ -7712,6 +8964,98 @@ SSR4InputParameter</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1InputParameter.html">link</a></p>
+<h2><a class="anchor" id="ssr4intermediatemean"></a>
+SSR4IntermediateMean</h2>
+<p>Average an intermediate dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1IntermediateMean.html">link</a></p>
+<h2><a class="anchor" id="ssr4intermediatesum"></a>
+SSR4IntermediateSum</h2>
+<p>Sum an intermediate dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1IntermediateSum.html">link</a></p>
 <h2><a class="anchor" id="ssr4parametertostate"></a>
 SSR4ParameterToState</h2>
 <p>Convert the parameter to state variable. </p><details >
@@ -7720,109 +9064,6 @@ SSR4ParameterToState</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: SSR4 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>jit</code> Use JIT compilation for the forward operator</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: true </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: false </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>to</code> 🇴 The name of the variables, default to 'state/object_name'</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name </li>
-</ul>
-</details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1ParameterToState.html">link</a></p>
-<h2><a class="anchor" id="ssssr8constantparameter"></a>
-SSSSR8ConstantParameter</h2>
-<p>A parameter that is just a constant value, generally used to refer to a parameter in more than one downstream object. </p><details >
-<summary >
-<code>jit</code> Use JIT compilation for the forward operator</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: true </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: false </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>value</code> 🇵 The constant value of the parameter</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: SSSSR8 🔗 </li>
-</ul>
-</details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1ConstantParameter.html">link</a></p>
-<h2><a class="anchor" id="ssssr8inputparameter"></a>
-SSSSR8InputParameter</h2>
-<p>A parameter that is defined through an input variable. This object is not intended to be used directly in the input file. </p><details >
-<summary >
-<code>from</code> 🇮 The input variable that defines this parameter</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>jit</code> Use JIT compilation for the forward operator</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: true </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: false </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>to</code> 🇴 The name of the parameter, default to 'parameters/object_name'</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name </li>
-</ul>
-</details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1InputParameter.html">link</a></p>
-<h2><a class="anchor" id="ssssr8parametertostate"></a>
-SSSSR8ParameterToState</h2>
-<p>Convert the parameter to state variable. </p><details >
-<summary >
-<code>from</code> 🇵 The input parameter</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: SSSSR8 🔗 </li>
 </ul>
 </details>
 <details >
@@ -7881,6 +9122,98 @@ SWR4ConstantParameter</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1ConstantParameter.html">link</a></p>
+<h2><a class="anchor" id="swr4dynamicmean"></a>
+SWR4DynamicMean</h2>
+<p>Average a dynamic dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1DynamicMean.html">link</a></p>
+<h2><a class="anchor" id="swr4dynamicsum"></a>
+SWR4DynamicSum</h2>
+<p>Sum a dynamic dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1DynamicSum.html">link</a></p>
 <h2><a class="anchor" id="swr4inputparameter"></a>
 SWR4InputParameter</h2>
 <p>A parameter that is defined through an input variable. This object is not intended to be used directly in the input file. </p><details >
@@ -7918,6 +9251,98 @@ SWR4InputParameter</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1InputParameter.html">link</a></p>
+<h2><a class="anchor" id="swr4intermediatemean"></a>
+SWR4IntermediateMean</h2>
+<p>Average an intermediate dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1IntermediateMean.html">link</a></p>
+<h2><a class="anchor" id="swr4intermediatesum"></a>
+SWR4IntermediateSum</h2>
+<p>Sum an intermediate dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1IntermediateSum.html">link</a></p>
 <h2><a class="anchor" id="swr4parametertostate"></a>
 SWR4ParameterToState</h2>
 <p>Convert the parameter to state variable. </p><details >
@@ -8064,6 +9489,14 @@ ScalarBilinearInterpolation</h2>
 </details>
 <details >
 <summary >
+<code>dim</code> Intermediate dimension along which to interpolate</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number </li>
+</ul>
+</details>
+<details >
+<summary >
 <code>jit</code> Use JIT compilation for the forward operator</summary>
 <p></p>
 <ul>
@@ -8126,6 +9559,98 @@ ScalarConstantParameter</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1ConstantParameter.html">link</a></p>
+<h2><a class="anchor" id="scalardynamicmean"></a>
+ScalarDynamicMean</h2>
+<p>Average a dynamic dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1DynamicMean.html">link</a></p>
+<h2><a class="anchor" id="scalardynamicsum"></a>
+ScalarDynamicSum</h2>
+<p>Sum a dynamic dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1DynamicSum.html">link</a></p>
 <h2><a class="anchor" id="scalarforwardeulertimeintegration"></a>
 ScalarForwardEulerTimeIntegration</h2>
 <p>Perform forward Euler time integration defined as \( s = s_n + (t - t_n) \dot{s} \), where \(s\) is the variable being integrated, \(\dot{s}\) is the variable rate, and \(t\) is time. Subscripts \(n\) denote quantities from the previous time step. </p><details >
@@ -8255,6 +9780,98 @@ ScalarInputParameter</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1InputParameter.html">link</a></p>
+<h2><a class="anchor" id="scalarintermediatemean"></a>
+ScalarIntermediateMean</h2>
+<p>Average an intermediate dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1IntermediateMean.html">link</a></p>
+<h2><a class="anchor" id="scalarintermediatesum"></a>
+ScalarIntermediateSum</h2>
+<p>Sum an intermediate dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1IntermediateSum.html">link</a></p>
 <h2><a class="anchor" id="scalarlinearcombination"></a>
 ScalarLinearCombination</h2>
 <p>Calculate linear combination of multiple Scalar tensors as \( u = c_i v_i + s \) (Einstein summation assumed), where \( c_i \) are the coefficients, and \( v_i \) are the variables to be summed. \( s \) is a constant offset. </p><details >
@@ -8342,6 +9959,15 @@ ScalarLinearInterpolation</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>dim</code> Intermediate dimension along which to interpolate</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
 </ul>
 </details>
 <details >
@@ -8643,15 +10269,6 @@ SingleSlipStrengthMap</h2>
 </details>
 <details >
 <summary >
-<code>crystal_geometry_name</code> Name of the Data object containing the crystallographic information</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: string</li>
-<li><u>Default</u>: crystal_geometry </li>
-</ul>
-</details>
-<details >
-<summary >
 <code>jit</code> Use JIT compilation for the forward operator</summary>
 <p></p>
 <ul>
@@ -8670,7 +10287,7 @@ SingleSlipStrengthMap</h2>
 </details>
 <details >
 <summary >
-<code>slip_hardening</code> 🇮 The name of the evovling, scalar strength</summary>
+<code>slip_hardening</code> 🇮 The name of the evolving, scalar strength</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: variable name</li>
@@ -8754,11 +10371,11 @@ SlopeSaturationVoceIsotropicHardening</h2>
 SumSlipRates</h2>
 <p>Calculates the sum of the absolute value of all the slip rates as \( \sum_{i=1}^{n_{slip}} \left| \dot{\gamma}_i \right| \). </p><details >
 <summary >
-<code>crystal_geometry_name</code> The name of the Data object containing the crystallographic information</summary>
+<code>dim</code> The intermediate dimension over which to sum the slip rates.</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: string</li>
-<li><u>Default</u>: crystal_geometry </li>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
 </ul>
 </details>
 <details >
@@ -8790,7 +10407,7 @@ SumSlipRates</h2>
 </details>
 <details >
 <summary >
-<code>sum_slip_rates</code> 🇴 The outut name for the scalar sum of the slip rates</summary>
+<code>sum_slip_rates</code> 🇴 The output name for the scalar sum of the slip rates</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: variable name</li>
@@ -9205,6 +10822,14 @@ VecBilinearInterpolation</h2>
 </details>
 <details >
 <summary >
+<code>dim</code> Intermediate dimension along which to interpolate</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number </li>
+</ul>
+</details>
+<details >
+<summary >
 <code>jit</code> Use JIT compilation for the forward operator</summary>
 <p></p>
 <ul>
@@ -9267,6 +10892,98 @@ VecConstantParameter</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1ConstantParameter.html">link</a></p>
+<h2><a class="anchor" id="vecdynamicmean"></a>
+VecDynamicMean</h2>
+<p>Average a dynamic dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1DynamicMean.html">link</a></p>
+<h2><a class="anchor" id="vecdynamicsum"></a>
+VecDynamicSum</h2>
+<p>Sum a dynamic dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1DynamicSum.html">link</a></p>
 <h2><a class="anchor" id="vecforwardeulertimeintegration"></a>
 VecForwardEulerTimeIntegration</h2>
 <p>Perform forward Euler time integration defined as \( s = s_n + (t - t_n) \dot{s} \), where \(s\) is the variable being integrated, \(\dot{s}\) is the variable rate, and \(t\) is time. Subscripts \(n\) denote quantities from the previous time step. </p><details >
@@ -9396,6 +11113,98 @@ VecInputParameter</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1InputParameter.html">link</a></p>
+<h2><a class="anchor" id="vecintermediatemean"></a>
+VecIntermediateMean</h2>
+<p>Average an intermediate dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1IntermediateMean.html">link</a></p>
+<h2><a class="anchor" id="vecintermediatesum"></a>
+VecIntermediateSum</h2>
+<p>Sum an intermediate dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1IntermediateSum.html">link</a></p>
 <h2><a class="anchor" id="veclinearcombination"></a>
 VecLinearCombination</h2>
 <p>Calculate linear combination of multiple Vec tensors as \( u = c_i v_i + s \) (Einstein summation assumed), where \( c_i \) are the coefficients, and \( v_i \) are the variables to be summed. \( s \) is a constant offset. </p><details >
@@ -9483,6 +11292,15 @@ VecLinearInterpolation</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>dim</code> Intermediate dimension along which to interpolate</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
 </ul>
 </details>
 <details >
@@ -9814,8 +11632,8 @@ VolumeChangeEigenstrain</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1VolumeChangeEigenstrain.html">link</a></p>
-<h2><a class="anchor" id="wfr4constantparameter"></a>
-WFR4ConstantParameter</h2>
+<h2><a class="anchor" id="wffr4constantparameter"></a>
+WFFR4ConstantParameter</h2>
 <p>A parameter that is just a constant value, generally used to refer to a parameter in more than one downstream object. </p><details >
 <summary >
 <code>jit</code> Use JIT compilation for the forward operator</summary>
@@ -9839,12 +11657,104 @@ WFR4ConstantParameter</h2>
 <code>value</code> 🇵 The constant value of the parameter</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: WFR4 🔗 </li>
+<li><u>Type</u>: WFFR4 🔗 </li>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1ConstantParameter.html">link</a></p>
-<h2><a class="anchor" id="wfr4inputparameter"></a>
-WFR4InputParameter</h2>
+<h2><a class="anchor" id="wffr4dynamicmean"></a>
+WFFR4DynamicMean</h2>
+<p>Average a dynamic dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1DynamicMean.html">link</a></p>
+<h2><a class="anchor" id="wffr4dynamicsum"></a>
+WFFR4DynamicSum</h2>
+<p>Sum a dynamic dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1DynamicSum.html">link</a></p>
+<h2><a class="anchor" id="wffr4inputparameter"></a>
+WFFR4InputParameter</h2>
 <p>A parameter that is defined through an input variable. This object is not intended to be used directly in the input file. </p><details >
 <summary >
 <code>from</code> 🇮 The input variable that defines this parameter</summary>
@@ -9880,14 +11790,106 @@ WFR4InputParameter</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1InputParameter.html">link</a></p>
-<h2><a class="anchor" id="wfr4parametertostate"></a>
-WFR4ParameterToState</h2>
+<h2><a class="anchor" id="wffr4intermediatemean"></a>
+WFFR4IntermediateMean</h2>
+<p>Average an intermediate dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1IntermediateMean.html">link</a></p>
+<h2><a class="anchor" id="wffr4intermediatesum"></a>
+WFFR4IntermediateSum</h2>
+<p>Sum an intermediate dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1IntermediateSum.html">link</a></p>
+<h2><a class="anchor" id="wffr4parametertostate"></a>
+WFFR4ParameterToState</h2>
 <p>Convert the parameter to state variable. </p><details >
 <summary >
 <code>from</code> 🇵 The input parameter</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: WFR4 🔗 </li>
+<li><u>Type</u>: WFFR4 🔗 </li>
 </ul>
 </details>
 <details >
@@ -9946,6 +11948,98 @@ WR2ConstantParameter</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1ConstantParameter.html">link</a></p>
+<h2><a class="anchor" id="wr2dynamicmean"></a>
+WR2DynamicMean</h2>
+<p>Average a dynamic dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1DynamicMean.html">link</a></p>
+<h2><a class="anchor" id="wr2dynamicsum"></a>
+WR2DynamicSum</h2>
+<p>Sum a dynamic dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1DynamicSum.html">link</a></p>
 <h2><a class="anchor" id="wr2explicitexponentialtimeintegration"></a>
 WR2ExplicitExponentialTimeIntegration</h2>
 <p>Perform explicit discrete exponential time integration of a rotation. The update can be written as \( s = \exp\left[ (t-t_n)\dot{s}\right] \circ s_n \), where \( \circ \) denotes the rotation operator. </p><details >
@@ -10102,6 +12196,98 @@ WR2InputParameter</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1InputParameter.html">link</a></p>
+<h2><a class="anchor" id="wr2intermediatemean"></a>
+WR2IntermediateMean</h2>
+<p>Average an intermediate dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1IntermediateMean.html">link</a></p>
+<h2><a class="anchor" id="wr2intermediatesum"></a>
+WR2IntermediateSum</h2>
+<p>Sum an intermediate dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1IntermediateSum.html">link</a></p>
 <h2><a class="anchor" id="wr2parametertostate"></a>
 WR2ParameterToState</h2>
 <p>Convert the parameter to state variable. </p><details >
@@ -10168,6 +12354,98 @@ WSR4ConstantParameter</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1ConstantParameter.html">link</a></p>
+<h2><a class="anchor" id="wsr4dynamicmean"></a>
+WSR4DynamicMean</h2>
+<p>Average a dynamic dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1DynamicMean.html">link</a></p>
+<h2><a class="anchor" id="wsr4dynamicsum"></a>
+WSR4DynamicSum</h2>
+<p>Sum a dynamic dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1DynamicSum.html">link</a></p>
 <h2><a class="anchor" id="wsr4inputparameter"></a>
 WSR4InputParameter</h2>
 <p>A parameter that is defined through an input variable. This object is not intended to be used directly in the input file. </p><details >
@@ -10205,6 +12483,98 @@ WSR4InputParameter</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1InputParameter.html">link</a></p>
+<h2><a class="anchor" id="wsr4intermediatemean"></a>
+WSR4IntermediateMean</h2>
+<p>Average an intermediate dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1IntermediateMean.html">link</a></p>
+<h2><a class="anchor" id="wsr4intermediatesum"></a>
+WSR4IntermediateSum</h2>
+<p>Sum an intermediate dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1IntermediateSum.html">link</a></p>
 <h2><a class="anchor" id="wsr4parametertostate"></a>
 WSR4ParameterToState</h2>
 <p>Convert the parameter to state variable. </p><details >
@@ -10271,6 +12641,98 @@ WWR4ConstantParameter</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1ConstantParameter.html">link</a></p>
+<h2><a class="anchor" id="wwr4dynamicmean"></a>
+WWR4DynamicMean</h2>
+<p>Average a dynamic dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1DynamicMean.html">link</a></p>
+<h2><a class="anchor" id="wwr4dynamicsum"></a>
+WWR4DynamicSum</h2>
+<p>Sum a dynamic dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1DynamicSum.html">link</a></p>
 <h2><a class="anchor" id="wwr4inputparameter"></a>
 WWR4InputParameter</h2>
 <p>A parameter that is defined through an input variable. This object is not intended to be used directly in the input file. </p><details >
@@ -10308,6 +12770,98 @@ WWR4InputParameter</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1InputParameter.html">link</a></p>
+<h2><a class="anchor" id="wwr4intermediatemean"></a>
+WWR4IntermediateMean</h2>
+<p>Average an intermediate dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1IntermediateMean.html">link</a></p>
+<h2><a class="anchor" id="wwr4intermediatesum"></a>
+WWR4IntermediateSum</h2>
+<p>Sum an intermediate dimension </p><details >
+<summary >
+<code>dim</code> The dimension over which to perform the reduction.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number</li>
+<li><u>Default</u>: -1 </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>from</code> 🇮 Variable to reduce</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>jit</code> Use JIT compilation for the forward operator</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>production</code> Production mode. This option is used to disable features like function graph tracking and tensor version tracking which are useful for training (i.e., calibrating model parameters) but are not necessary in production runs.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>to</code> 🇴 The reduced variable</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: variable name </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1IntermediateSum.html">link</a></p>
 <h2><a class="anchor" id="wwr4parametertostate"></a>
 WWR4ParameterToState</h2>
 <p>Convert the parameter to state variable. </p><details >

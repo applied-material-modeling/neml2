@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-10-10 12:15:50</td>
+            <td class="headerValue">2025-12-06 17:10:54</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -137,7 +137,7 @@
 <span id="L75"><span class="lineNum">      75</span> <span class="tlaGNC">           3 :   auto Q = _b1 * _d * (1 + _b2 * _d + _b2 * _b3 * _d * _d);</span></span>
 <span id="L76"><span class="lineNum">      76</span> <span class="tlaGNC">           3 :   if (out)</span></span>
 <span id="L77"><span class="lineNum">      77</span>              :   {</span>
-<span id="L78"><span class="lineNum">      78</span> <span class="tlaGNC">           1 :     _g = pow((1 - _d), _p) / (pow((1 - _d), _p) + Q) * (1 - _eta) + _eta;</span></span>
+<span id="L78"><span class="lineNum">      78</span> <span class="tlaGNC">           3 :     _g = pow((1 - _d), _p) / (pow((1 - _d), _p) + Q) * (1 - _eta) + _eta;</span></span>
 <span id="L79"><span class="lineNum">      79</span>              :   }</span>
 <span id="L80"><span class="lineNum">      80</span>              : </span>
 <span id="L81"><span class="lineNum">      81</span> <span class="tlaGNC">           3 :   auto Q_prime = _b1 * (1 + 2 * _b2 * _d + 3 * _b2 * _b3 * _d * _d);</span></span>
@@ -160,7 +160,7 @@
 <span id="L98"><span class="lineNum">      98</span>              : </span>
 <span id="L99"><span class="lineNum">      99</span> <span class="tlaGNC">           3 :   if (d2out_din2)</span></span>
 <span id="L100"><span class="lineNum">     100</span>              :   {</span>
-<span id="L101"><span class="lineNum">     101</span> <span class="tlaGNC">           1 :     _g.d(_d, _d) = ((v * u_prime - u * v_prime) / (v * v)) * (1 - _eta);</span></span>
+<span id="L101"><span class="lineNum">     101</span> <span class="tlaGNC">           1 :     _g.d2(_d, _d) = ((v * u_prime - u * v_prime) / (v * v)) * (1 - _eta);</span></span>
 <span id="L102"><span class="lineNum">     102</span>              :   }</span>
 <span id="L103"><span class="lineNum">     103</span> <span class="tlaGNC">           3 : }</span></span>
 <span id="L104"><span class="lineNum">     104</span>              : } // namespace neml2</span>

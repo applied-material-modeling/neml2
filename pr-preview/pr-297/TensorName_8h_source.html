@@ -212,28 +212,33 @@ $(function(){initNavTree('TensorName_8h_source.html',''); initResizable(true); }
 <div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>  <span class="keyword">mutable</span> std::shared_ptr&lt;T&gt; _tensor = <span class="keyword">nullptr</span>;</div>
 <div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>};</div>
 <div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span> </div>
-<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>std::stringstream &amp;</div>
-<div class="foldopen" id="foldopen00104" data-start="{" data-end="}">
-<div class="line"><a id="l00104" name="l00104"></a><span class="lineno"><a class="line" href="namespaceneml2.html#a3d045790ff4dc35f7f03d4f84f17b9c6">  104</a></span><a class="code hl_function" href="namespaceneml2.html#ad7d8fe790dcd6ce58311d096930072c0">operator&gt;&gt;</a>(std::stringstream &amp; ss, <a class="code hl_struct" href="structneml2_1_1TensorName.html">TensorName&lt;T&gt;</a> &amp; t)</div>
-<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>{</div>
-<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>  ss &gt;&gt; t.raw();</div>
-<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>  <span class="keywordflow">return</span> ss;</div>
-<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>}</div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span><span class="comment">// Export TensorName so other TU don&#39;t repeat the instantiation</span></div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span><span class="preprocessor">#define EXPORT_TENSORNAME(T) extern template struct TensorName&lt;T&gt;</span></div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno"><a class="line" href="namespaceneml2.html#ab673fb418f8366d4bc102bb43122ce6f">  103</a></span>FOR_ALL_TENSORBASE(EXPORT_TENSORNAME);</div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span><span class="preprocessor">#undef EXPORT_TENSORNAME</span></div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span> </div>
+<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>std::stringstream &amp;</div>
+<div class="foldopen" id="foldopen00109" data-start="{" data-end="}">
+<div class="line"><a id="l00109" name="l00109"></a><span class="lineno"><a class="line" href="namespaceneml2.html#a3d045790ff4dc35f7f03d4f84f17b9c6">  109</a></span><a class="code hl_function" href="namespaceneml2.html#ad7d8fe790dcd6ce58311d096930072c0">operator&gt;&gt;</a>(std::stringstream &amp; ss, <a class="code hl_struct" href="structneml2_1_1TensorName.html">TensorName&lt;T&gt;</a> &amp; t)</div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>{</div>
+<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>  ss &gt;&gt; t.raw();</div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>  <span class="keywordflow">return</span> ss;</div>
+<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>}</div>
 </div>
-<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span> </div>
-<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="foldopen" id="foldopen00112" data-start="{" data-end="}">
-<div class="line"><a id="l00112" name="l00112"></a><span class="lineno"><a class="line" href="namespaceneml2.html#a3bc50661b00214e324cbea8b5d71ced3">  112</a></span>std::ostream &amp;</div>
-<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span><a class="code hl_function" href="namespaceneml2.html#abe5f4914fa546b6fae49a84c4b4f5704">operator&lt;&lt;</a>(std::ostream &amp; os, <span class="keyword">const</span> <a class="code hl_struct" href="structneml2_1_1TensorName.html">TensorName&lt;T&gt;</a> &amp; t)</div>
-<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>{</div>
-<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>  os &lt;&lt; t.raw();</div>
-<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>  <span class="keywordflow">return</span> os;</div>
-<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>}</div>
+<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span> </div>
+<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="foldopen" id="foldopen00117" data-start="{" data-end="}">
+<div class="line"><a id="l00117" name="l00117"></a><span class="lineno"><a class="line" href="namespaceneml2.html#a3bc50661b00214e324cbea8b5d71ced3">  117</a></span>std::ostream &amp;</div>
+<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span><a class="code hl_function" href="namespaceneml2.html#abe5f4914fa546b6fae49a84c4b4f5704">operator&lt;&lt;</a>(std::ostream &amp; os, <span class="keyword">const</span> <a class="code hl_struct" href="structneml2_1_1TensorName.html">TensorName&lt;T&gt;</a> &amp; t)</div>
+<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span>{</div>
+<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span>  os &lt;&lt; t.raw();</div>
+<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span>  <span class="keywordflow">return</span> os;</div>
+<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span>}</div>
 </div>
-<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span>} <span class="comment">// namespace neml2</span></div>
+<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span>} <span class="comment">// namespace neml2</span></div>
 <div class="ttc" id="aclassneml2_1_1Factory_html"><div class="ttname"><a href="classneml2_1_1Factory.html">neml2::Factory</a></div><div class="ttdef"><b>Definition</b> Factory.h:65</div></div>
-<div class="ttc" id="aclassneml2_1_1Model_html"><div class="ttname"><a href="classneml2_1_1Model.html">neml2::Model</a></div><div class="ttdoc">The base class for all constitutive models.</div><div class="ttdef"><b>Definition</b> Model.h:68</div></div>
+<div class="ttc" id="aclassneml2_1_1Model_html"><div class="ttname"><a href="classneml2_1_1Model.html">neml2::Model</a></div><div class="ttdoc">The base class for all constitutive models.</div><div class="ttdef"><b>Definition</b> Model.h:70</div></div>
 <div class="ttc" id="anamespaceneml2_html"><div class="ttname"><a href="namespaceneml2.html">neml2</a></div><div class="ttdef"><b>Definition</b> DiagnosticsInterface.cxx:30</div></div>
 <div class="ttc" id="anamespaceneml2_html_abe5f4914fa546b6fae49a84c4b4f5704"><div class="ttname"><a href="namespaceneml2.html#abe5f4914fa546b6fae49a84c4b4f5704">neml2::operator&lt;&lt;</a></div><div class="ttdeci">std::ostream &amp; operator&lt;&lt;(std::ostream &amp;os, const EnumSelection &amp;es)</div><div class="ttdef"><b>Definition</b> EnumSelection.cxx:31</div></div>
 <div class="ttc" id="anamespaceneml2_html_ad7d8fe790dcd6ce58311d096930072c0"><div class="ttname"><a href="namespaceneml2.html#ad7d8fe790dcd6ce58311d096930072c0">neml2::operator&gt;&gt;</a></div><div class="ttdeci">std::stringstream &amp; operator&gt;&gt;(std::stringstream &amp;ss, EnumSelection &amp;es)</div><div class="ttdef"><b>Definition</b> EnumSelection.cxx:38</div></div>

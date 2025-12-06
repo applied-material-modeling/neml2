@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['resolve_5ftensor_5fname_0',['resolve_tensor_name',['../classneml2_1_1VariableStore.html#a094044d18ca027327ae9687ecbe8dbcd',1,'neml2::VariableStore']]]
+  ['parameterstore_0',['ParameterStore',['../classneml2_1_1Model.html#a6d0153a21afe2fe9ebf7dda41cb464a3',1,'neml2::Model::ParameterStore'],['../structneml2_1_1TracerPrivilege.html#a6d0153a21afe2fe9ebf7dda41cb464a3',1,'neml2::TracerPrivilege::ParameterStore']]]
 ];

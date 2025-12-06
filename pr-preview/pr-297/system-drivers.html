@@ -142,6 +142,10 @@ $(function(){initNavTree('system-drivers.html',''); initResizable(true); });
 <div class="textblock"><p><a class="anchor" id="md__2home_2runner_2work_2neml2_2neml2_2doc_2content_2system_2driver"></a></p>
 <p>Refer to <a class="el" href="syntax-drivers.html">Syntax Documentation</a> for the list of available objects.</p>
 <p>Drivers are objects that "drive" the update and evolution of one or more material models and their internal data. Especially for non-autonomous material models, a driver is mandatory to evolve the mateiral model.</p>
+<p>Drivers must derive from the base class <code>Driver</code> and override the pure virtual method <code>run</code> which returns a boolean indicating whether the model execution was successful.</p>
+<p><a class="anchor" id="md_content_2system_2driver"></a></p>
+<p>Refer to <a class="el" href="syntax-drivers.html">Syntax Documentation</a> for the list of available objects.</p>
+<p>Drivers are objects that "drive" the update and evolution of one or more material models and their internal data. Especially for non-autonomous material models, a driver is mandatory to evolve the mateiral model.</p>
 <p>Drivers must derive from the base class <code>Driver</code> and override the pure virtual method <code>run</code> which returns a boolean indicating whether the model execution was successful. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->

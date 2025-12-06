@@ -31,18 +31,18 @@
             <td class="headerValue">coverage.info</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
             <td class="headerCovTableEntry">1</td>
-            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">1</td>
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-10-10 12:15:50</td>
+            <td class="headerValue">2025-12-06 17:10:54</td>
             <td></td>
             <td class="headerItem">Functions:</td>
-            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
-            <td class="headerCovTableEntry">23</td>
-            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
+            <td class="headerCovTableEntry">36</td>
+            <td class="headerCovTableEntry">36</td>
           </tr>
                   <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
                 </table>
@@ -85,21 +85,17 @@
 <span id="L23"><span class="lineNum">      23</span>              : // THE SOFTWARE.</span>
 <span id="L24"><span class="lineNum">      24</span>              : </span>
 <span id="L25"><span class="lineNum">      25</span>              : #include &quot;neml2/tensors/functions/clip.h&quot;</span>
-<span id="L26"><span class="lineNum">      26</span>              : #include &quot;neml2/tensors/tensors.h&quot;</span>
-<span id="L27"><span class="lineNum">      27</span>              : #include &quot;neml2/tensors/assertions.h&quot;</span>
+<span id="L26"><span class="lineNum">      26</span>              : #include &quot;neml2/tensors/functions/clamp.h&quot;</span>
+<span id="L27"><span class="lineNum">      27</span>              : #include &quot;neml2/tensors/tensors.h&quot;</span>
 <span id="L28"><span class="lineNum">      28</span>              : </span>
 <span id="L29"><span class="lineNum">      29</span>              : namespace neml2</span>
 <span id="L30"><span class="lineNum">      30</span>              : {</span>
 <span id="L31"><span class="lineNum">      31</span>              : #define DEFINE_CLIP(T)                                                                             \</span>
-<span id="L32"><span class="lineNum">      32</span>              :   T clip(const T &amp; a, const T &amp; lb, const T &amp; ub)                                                  \</span>
-<span id="L33"><span class="lineNum">      33</span>              :   {                                                                                                \</span>
-<span id="L34"><span class="lineNum">      34</span>              :     neml_assert_broadcastable_dbg(a, lb);                                                          \</span>
-<span id="L35"><span class="lineNum">      35</span>              :     neml_assert_broadcastable_dbg(a, ub);                                                          \</span>
-<span id="L36"><span class="lineNum">      36</span>              :     return T(at::clip(a, lb, ub), utils::broadcast_batch_dim(a, lb, ub));                          \</span>
-<span id="L37"><span class="lineNum">      37</span>              :   }                                                                                                \</span>
-<span id="L38"><span class="lineNum">      38</span>              :   static_assert(true)</span>
-<span id="L39"><span class="lineNum">      39</span> <span class="tlaUNC tlaBgUNC">           0 : FOR_ALL_TENSORBASE(DEFINE_CLIP);</span></span>
-<span id="L40"><span class="lineNum">      40</span>              : } // namespace neml2</span>
+<span id="L32"><span class="lineNum">      32</span>              :   T clip(const T &amp; a, const T &amp; lb, const T &amp; ub) { return clamp(a, lb, ub); }                     \</span>
+<span id="L33"><span class="lineNum">      33</span>              :   T clip(const T &amp; a, const CScalar &amp; lb, const CScalar &amp; ub) { return clamp(a, lb, ub); }         \</span>
+<span id="L34"><span class="lineNum">      34</span>              :   static_assert(true)</span>
+<span id="L35"><span class="lineNum">      35</span> <span class="tlaGNC tlaBgGNC">        1064 : FOR_ALL_TENSORBASE(DEFINE_CLIP);</span></span>
+<span id="L36"><span class="lineNum">      36</span>              : } // namespace neml2</span>
         </pre>
               </td>
             </tr>

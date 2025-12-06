@@ -37,12 +37,12 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-10-10 12:15:50</td>
+            <td class="headerValue">2025-12-06 17:10:54</td>
             <td></td>
             <td class="headerItem">Functions:</td>
-            <td class="headerCovTableEntryMed">25.0&nbsp;%</td>
-            <td class="headerCovTableEntry">24</td>
-            <td class="headerCovTableEntry">6</td>
+            <td class="headerCovTableEntryLo">18.9&nbsp;%</td>
+            <td class="headerCovTableEntry">37</td>
+            <td class="headerCovTableEntry">7</td>
           </tr>
                   <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
                 </table>
@@ -86,27 +86,33 @@
 <span id="L24"><span class="lineNum">      24</span>              : </span>
 <span id="L25"><span class="lineNum">      25</span>              : #include &quot;neml2/tensors/functions/sum.h&quot;</span>
 <span id="L26"><span class="lineNum">      26</span>              : #include &quot;neml2/tensors/tensors.h&quot;</span>
-<span id="L27"><span class="lineNum">      27</span>              : #include &quot;neml2/tensors/assertions.h&quot;</span>
-<span id="L28"><span class="lineNum">      28</span>              : </span>
-<span id="L29"><span class="lineNum">      29</span>              : namespace neml2</span>
-<span id="L30"><span class="lineNum">      30</span>              : {</span>
-<span id="L31"><span class="lineNum">      31</span>              : #define DEFINE_BATCH_SUM(T)                                                                        \</span>
-<span id="L32"><span class="lineNum">      32</span>              :   T batch_sum(const T &amp; a, Size d)                                                                 \</span>
-<span id="L33"><span class="lineNum">      33</span>              :   {                                                                                                \</span>
-<span id="L34"><span class="lineNum">      34</span>              :     neml_assert_dbg(a.batched(), &quot;Must have a batch dimension to sum along&quot;);                      \</span>
-<span id="L35"><span class="lineNum">      35</span>              :     auto d2 = d &gt;= 0 ? d : d - a.base_dim();                                                       \</span>
-<span id="L36"><span class="lineNum">      36</span>              :     return T(at::sum(a, d2), a.batch_dim() - 1);                                                   \</span>
-<span id="L37"><span class="lineNum">      37</span>              :   }                                                                                                \</span>
-<span id="L38"><span class="lineNum">      38</span>              :   static_assert(true)</span>
-<span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC tlaBgGNC">          18 : FOR_ALL_TENSORBASE(DEFINE_BATCH_SUM);</span></span>
-<span id="L40"><span class="lineNum">      40</span>              : </span>
-<span id="L41"><span class="lineNum">      41</span>              : Tensor</span>
-<span id="L42"><span class="lineNum">      42</span> <span class="tlaGNC">         645 : base_sum(const Tensor &amp; a, Size d)</span></span>
-<span id="L43"><span class="lineNum">      43</span>              : {</span>
-<span id="L44"><span class="lineNum">      44</span> <span class="tlaGNC">         645 :   auto d2 = d &lt; 0 ? d : d + a.batch_dim();</span></span>
-<span id="L45"><span class="lineNum">      45</span> <span class="tlaGNC">        1290 :   return Tensor(at::sum(a, d2), a.batch_sizes());</span></span>
-<span id="L46"><span class="lineNum">      46</span>              : }</span>
-<span id="L47"><span class="lineNum">      47</span>              : } // namespace neml2</span>
+<span id="L27"><span class="lineNum">      27</span>              : </span>
+<span id="L28"><span class="lineNum">      28</span>              : namespace neml2</span>
+<span id="L29"><span class="lineNum">      29</span>              : {</span>
+<span id="L30"><span class="lineNum">      30</span>              : #define DEFINE_SUM(T)                                                                              \</span>
+<span id="L31"><span class="lineNum">      31</span>              :   T dynamic_sum(const T &amp; a, Size d, bool keepdim)                                                 \</span>
+<span id="L32"><span class="lineNum">      32</span>              :   {                                                                                                \</span>
+<span id="L33"><span class="lineNum">      33</span>              :     d = utils::normalize_dim(d, 0, a.dynamic_dim());                                               \</span>
+<span id="L34"><span class="lineNum">      34</span>              :     auto sizes = a.dynamic_sizes();                                                                \</span>
+<span id="L35"><span class="lineNum">      35</span>              :     if (!keepdim)                                                                                  \</span>
+<span id="L36"><span class="lineNum">      36</span>              :       sizes.erase(sizes.begin() + d);                                                              \</span>
+<span id="L37"><span class="lineNum">      37</span>              :     return T(at::sum(a, d, keepdim), sizes, a.intmd_dim());                                        \</span>
+<span id="L38"><span class="lineNum">      38</span>              :   }                                                                                                \</span>
+<span id="L39"><span class="lineNum">      39</span>              :   T intmd_sum(const T &amp; a, Size d, bool keepdim)                                                   \</span>
+<span id="L40"><span class="lineNum">      40</span>              :   {                                                                                                \</span>
+<span id="L41"><span class="lineNum">      41</span>              :     d = utils::normalize_dim(d, a.dynamic_dim(), a.batch_dim());                                   \</span>
+<span id="L42"><span class="lineNum">      42</span>              :     return T(at::sum(a, d, keepdim), a.dynamic_sizes(), a.intmd_dim() - (keepdim ? 0 : 1));        \</span>
+<span id="L43"><span class="lineNum">      43</span>              :   }                                                                                                \</span>
+<span id="L44"><span class="lineNum">      44</span>              :   static_assert(true)</span>
+<span id="L45"><span class="lineNum">      45</span> <span class="tlaGNC tlaBgGNC">          34 : FOR_ALL_TENSORBASE(DEFINE_SUM);</span></span>
+<span id="L46"><span class="lineNum">      46</span>              : </span>
+<span id="L47"><span class="lineNum">      47</span>              : Tensor</span>
+<span id="L48"><span class="lineNum">      48</span> <span class="tlaGNC">         670 : base_sum(const Tensor &amp; a, Size d, bool keepdim)</span></span>
+<span id="L49"><span class="lineNum">      49</span>              : {</span>
+<span id="L50"><span class="lineNum">      50</span> <span class="tlaGNC">         670 :   d = utils::normalize_dim(d, a.batch_dim(), a.dim());</span></span>
+<span id="L51"><span class="lineNum">      51</span> <span class="tlaGNC">        1340 :   return Tensor(at::sum(a, d, keepdim).to(a.dtype()), a.dynamic_sizes(), a.intmd_dim());</span></span>
+<span id="L52"><span class="lineNum">      52</span>              : }</span>
+<span id="L53"><span class="lineNum">      53</span>              : } // namespace neml2</span>
         </pre>
               </td>
             </tr>

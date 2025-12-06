@@ -13,9 +13,8 @@ var searchData=
   ['elasticityinterface_3c_20model_2c_203_20_3e_10',['ElasticityInterface&lt; Model, 3 &gt;',['../classneml2_1_1ElasticityInterface.html',1,'neml2']]],
   ['elasticityinterface_3c_20strainenergydensity_2c_202_20_3e_11',['ElasticityInterface&lt; StrainEnergyDensity, 2 &gt;',['../classneml2_1_1ElasticityInterface.html',1,'neml2']]],
   ['elasticstrainrate_12',['ElasticStrainRate',['../classneml2_1_1ElasticStrainRate.html',1,'neml2']]],
-  ['emptyprimitivetensor_13',['EmptyPrimitiveTensor',['../classneml2_1_1EmptyPrimitiveTensor.html',1,'neml2']]],
-  ['emptytensor_14',['EmptyTensor',['../classneml2_1_1EmptyTensor.html',1,'neml2']]],
-  ['enumselection_15',['EnumSelection',['../classneml2_1_1EnumSelection.html',1,'neml2']]],
-  ['enumselectionbase_16',['EnumSelectionBase',['../classneml2_1_1EnumSelectionBase.html',1,'neml2']]],
-  ['exponentiallawpermeability_17',['ExponentialLawPermeability',['../classneml2_1_1ExponentialLawPermeability.html',1,'neml2']]]
+  ['enumselection_13',['EnumSelection',['../classneml2_1_1EnumSelection.html',1,'neml2']]],
+  ['enumselectionbase_14',['EnumSelectionBase',['../classneml2_1_1EnumSelectionBase.html',1,'neml2']]],
+  ['evaluationschema_15',['EvaluationSchema',['../structneml2_1_1Model_1_1EvaluationSchema.html',1,'neml2::Model']]],
+  ['exponentiallawpermeability_16',['ExponentialLawPermeability',['../classneml2_1_1ExponentialLawPermeability.html',1,'neml2']]]
 ];

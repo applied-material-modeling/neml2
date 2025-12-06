@@ -1,6 +1,6 @@
 var classinterface_1_1NEML2PyzagModel =
 [
-    [ "__init__", "classinterface_1_1NEML2PyzagModel.html#a185ba812d2e2568825c0e405a5eb4036", null ],
+    [ "__init__", "classinterface_1_1NEML2PyzagModel.html#a96c7af3f761852ee1708ae19f3896313", null ],
     [ "_adapt_for_pyzag", "classinterface_1_1NEML2PyzagModel.html#a7916c15c704214bfcbfa326f85a92fb1", null ],
     [ "_check_model", "classinterface_1_1NEML2PyzagModel.html#a07770d00e721194d0a9b1bbcd8e63906", null ],
     [ "_disassemble_input", "classinterface_1_1NEML2PyzagModel.html#a3c2a4dfd93ce2c895775e356796be112", null ],
@@ -8,6 +8,6 @@ var classinterface_1_1NEML2PyzagModel =
     [ "_setup_parameters", "classinterface_1_1NEML2PyzagModel.html#a23f17142d7c7aed0716c85d520dcbb19", null ],
     [ "_update_parameter_values", "classinterface_1_1NEML2PyzagModel.html#a85afbc987b0b493d40b50c58e474ee5c", null ],
     [ "forward", "classinterface_1_1NEML2PyzagModel.html#aef77ff24c4ff05e7852567c0c14a032d", null ],
-    [ "nforce", "classinterface_1_1NEML2PyzagModel.html#a40469e234adfc7b6fdc4874403ef78c5", null ],
-    [ "nstate", "classinterface_1_1NEML2PyzagModel.html#a70d74a87b45210573edfb73e5c93ec22", null ]
+    [ "nforce", "classinterface_1_1NEML2PyzagModel.html#acf51b0af154fd972311057c0bf6fd55c", null ],
+    [ "nstate", "classinterface_1_1NEML2PyzagModel.html#a275dffc664c6501d1091f5bd0fcc6f68", null ]
 ];

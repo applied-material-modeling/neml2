@@ -162,12 +162,6 @@ Functions</h2></td></tr>
 <tr class="memitem:a26af1668c0c79a48d8b1a1b50f318fff" id="r_a26af1668c0c79a48d8b1a1b50f318fff"><td class="memItemLeft" align="right" valign="top">template&lt;&gt; </td></tr>
 <tr class="memitem:a26af1668c0c79a48d8b1a1b50f318fff"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a26af1668c0c79a48d8b1a1b50f318fff">parse_</a> (<a class="el" href="namespaceneml2.html#a09235c8815e870c0e839816a881ce30a">Device</a> &amp;val, const std::string &amp;raw_str)</td></tr>
 <tr class="separator:a26af1668c0c79a48d8b1a1b50f318fff"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afa39b247de52820d13116a87d0f6f1c5" id="r_afa39b247de52820d13116a87d0f6f1c5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structneml2_1_1TraceableTensorShape.html">TraceableTensorShape</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afa39b247de52820d13116a87d0f6f1c5">extract_batch_sizes</a> (const <a class="el" href="namespaceneml2.html#aa244a1ae9b68f1027797ae4238a2e962">ATensor</a> &amp;tensor, <a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> batch_dim)</td></tr>
-<tr class="memdesc:afa39b247de52820d13116a87d0f6f1c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extract the batch shape of a tensor given batch dimension The extracted batch shape will be <em>traceable</em>.  <br /></td></tr>
-<tr class="separator:afa39b247de52820d13116a87d0f6f1c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae79086faa3db17f6d9f27ef215808b0e" id="r_ae79086faa3db17f6d9f27ef215808b0e"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; jit::Graph &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae79086faa3db17f6d9f27ef215808b0e">last_executed_optimized_graph</a> ()</td></tr>
-<tr class="memdesc:ae79086faa3db17f6d9f27ef215808b0e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print last evaluated optimized graph.  <br /></td></tr>
-<tr class="separator:ae79086faa3db17f6d9f27ef215808b0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a979982102c0dbd9e9c970d56c96481e3" id="r_a979982102c0dbd9e9c970d56c96481e3"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a979982102c0dbd9e9c970d56c96481e3">demangle</a> (const char *<a class="el" href="namespaceneml2.html#a5424759a4a25bd0e2f60628d260abb81">name</a>)</td></tr>
 <tr class="memdesc:a979982102c0dbd9e9c970d56c96481e3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Demangle a piece of cxx abi type information.  <br /></td></tr>
 <tr class="separator:a979982102c0dbd9e9c970d56c96481e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -181,17 +175,33 @@ Functions</h2></td></tr>
 <tr class="separator:ace2e2b7d5391f5c58a21171d11b82830"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad66bf63a94a0efa9652244b867351301" id="r_ad66bf63a94a0efa9652244b867351301"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad66bf63a94a0efa9652244b867351301">end_with</a> (std::string_view str, std::string_view suffix)</td></tr>
 <tr class="separator:ad66bf63a94a0efa9652244b867351301"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a17f90e6a5dea33eb01c88e211fd5bc48" id="r_a17f90e6a5dea33eb01c88e211fd5bc48"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a17f90e6a5dea33eb01c88e211fd5bc48">storage_size</a> (<a class="el" href="namespaceneml2.html#aead1bb40178f274bd0b020b5548b4d64">TensorShapeRef</a> shape)</td></tr>
-<tr class="memdesc:a17f90e6a5dea33eb01c88e211fd5bc48"><td class="mdescLeft">&#160;</td><td class="mdescRight">The flattened storage size of a tensor with given shape.  <br /></td></tr>
-<tr class="separator:a17f90e6a5dea33eb01c88e211fd5bc48"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae3ff7ef9a125c5553e1de69102ca4923" id="r_ae3ff7ef9a125c5553e1de69102ca4923"><td class="memItemLeft" align="right" valign="top">std::pair&lt; std::vector&lt; <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &gt;, <a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae3ff7ef9a125c5553e1de69102ca4923">align_intmd_dim</a> (<a class="el" href="namespaceneml2.html#a4d01551b0bcc43fc944ad905beae73ce">TensorList</a> tensors)</td></tr>
+<tr class="separator:ae3ff7ef9a125c5553e1de69102ca4923"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a375115951b58d93643522771a5af8a0e" id="r_a375115951b58d93643522771a5af8a0e"><td class="memItemLeft" align="right" valign="top">std::pair&lt; std::vector&lt; <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &gt;, <a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a375115951b58d93643522771a5af8a0e">align_static_dim</a> (<a class="el" href="namespaceneml2.html#a4d01551b0bcc43fc944ad905beae73ce">TensorList</a> tensors)</td></tr>
+<tr class="separator:a375115951b58d93643522771a5af8a0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae409b54785372c9e8e75ef44c4270a96" id="r_ae409b54785372c9e8e75ef44c4270a96"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structneml2_1_1TraceableSize.html">TraceableSize</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae409b54785372c9e8e75ef44c4270a96">traceable_numel</a> (const <a class="el" href="structneml2_1_1TraceableTensorShape.html">TraceableTensorShape</a> &amp;shape)</td></tr>
+<tr class="memdesc:ae409b54785372c9e8e75ef44c4270a96"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the number of elements in a tensor shape.  <br /></td></tr>
+<tr class="separator:ae409b54785372c9e8e75ef44c4270a96"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6a5b409081a337dc9c2e7476c28b86a0" id="r_a6a5b409081a337dc9c2e7476c28b86a0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structneml2_1_1TraceableTensorShape.html">TraceableTensorShape</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6a5b409081a337dc9c2e7476c28b86a0">extract_traceable_sizes</a> (const <a class="el" href="namespaceneml2.html#a4a57eb2eaae4b2acfea6495c348f1142">ATensor</a> &amp;tensor, std::size_t n, std::size_t m)</td></tr>
+<tr class="separator:a6a5b409081a337dc9c2e7476c28b86a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae79086faa3db17f6d9f27ef215808b0e" id="r_ae79086faa3db17f6d9f27ef215808b0e"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; jit::Graph &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae79086faa3db17f6d9f27ef215808b0e">last_executed_optimized_graph</a> ()</td></tr>
+<tr class="memdesc:ae79086faa3db17f6d9f27ef215808b0e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print last evaluated optimized graph.  <br /></td></tr>
+<tr class="separator:ae79086faa3db17f6d9f27ef215808b0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a78544f49fb23a6a69f9577f23363d3e4" id="r_a78544f49fb23a6a69f9577f23363d3e4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a78544f49fb23a6a69f9577f23363d3e4">normalize_dim</a> (<a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> d, <a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> dl, <a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> du)</td></tr>
+<tr class="memdesc:a78544f49fb23a6a69f9577f23363d3e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper function to normalize a dimension index to be non-negative given the lower- and upper-bound of the context.  <br /></td></tr>
+<tr class="separator:a78544f49fb23a6a69f9577f23363d3e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a75fc4c76618147c3ffff7a841f451d1c" id="r_a75fc4c76618147c3ffff7a841f451d1c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a75fc4c76618147c3ffff7a841f451d1c">normalize_itr</a> (<a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> d, <a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> dl, <a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> du)</td></tr>
+<tr class="memdesc:a75fc4c76618147c3ffff7a841f451d1c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper function to normalize a iterator-like index to be non-negative given the lower- and upper-bound of the context.  <br /></td></tr>
+<tr class="separator:a75fc4c76618147c3ffff7a841f451d1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa17c056bd38d6149904d2189daefcf6d" id="r_aa17c056bd38d6149904d2189daefcf6d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa17c056bd38d6149904d2189daefcf6d">numel</a> (<a class="el" href="namespaceneml2.html#aead1bb40178f274bd0b020b5548b4d64">TensorShapeRef</a> shape)</td></tr>
+<tr class="memdesc:aa17c056bd38d6149904d2189daefcf6d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of elements in a tensor with given shape.  <br /></td></tr>
+<tr class="separator:aa17c056bd38d6149904d2189daefcf6d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2880e22e1dda381473bf23cdd5642a3d" id="r_a2880e22e1dda381473bf23cdd5642a3d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceneml2.html#a1456b5c3b8814c9aa2e7269af73c059d">TensorShape</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2880e22e1dda381473bf23cdd5642a3d">pad_prepend</a> (<a class="el" href="namespaceneml2.html#aead1bb40178f274bd0b020b5548b4d64">TensorShapeRef</a> s, <a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> dim, <a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> pad=1)</td></tr>
 <tr class="memdesc:a2880e22e1dda381473bf23cdd5642a3d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pad shape <code>s</code> to dimension <code>dim</code> by prepending sizes of <code>pad</code>.  <br /></td></tr>
 <tr class="separator:a2880e22e1dda381473bf23cdd5642a3d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a18b0e565141913a258ceb3bb4503b382" id="r_a18b0e565141913a258ceb3bb4503b382"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceneml2.html#aa244a1ae9b68f1027797ae4238a2e962">ATensor</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a18b0e565141913a258ceb3bb4503b382">pad_prepend</a> (const <a class="el" href="namespaceneml2.html#aa244a1ae9b68f1027797ae4238a2e962">ATensor</a> &amp;s, <a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> dim, <a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> pad)</td></tr>
-<tr class="separator:a18b0e565141913a258ceb3bb4503b382"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a214101736bbb02516bdf2343235bb954" id="r_a214101736bbb02516bdf2343235bb954"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structneml2_1_1TraceableTensorShape.html">TraceableTensorShape</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a214101736bbb02516bdf2343235bb954">broadcast_batch_sizes</a> (const std::vector&lt; <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &gt; &amp;tensors)</td></tr>
-<tr class="memdesc:a214101736bbb02516bdf2343235bb954"><td class="mdescLeft">&#160;</td><td class="mdescRight">Find the broadcast batch shape of all the tensors The returned batch shape will be <em>traceable</em>.  <br /></td></tr>
-<tr class="separator:a214101736bbb02516bdf2343235bb954"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad559ad924e610a35eb32bb02a2b2e43e" id="r_ad559ad924e610a35eb32bb02a2b2e43e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structneml2_1_1TraceableTensorShape.html">TraceableTensorShape</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad559ad924e610a35eb32bb02a2b2e43e">broadcast_dynamic_sizes</a> (const std::vector&lt; <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &gt; &amp;tensors)</td></tr>
+<tr class="memdesc:ad559ad924e610a35eb32bb02a2b2e43e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Find the broadcast dynamic shape of all the tensors The returned dynamic shape will be <em>traceable</em>.  <br /></td></tr>
+<tr class="separator:ad559ad924e610a35eb32bb02a2b2e43e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a33c7959193cd1083ba776cf9cc93b44b" id="r_a33c7959193cd1083ba776cf9cc93b44b"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
 <tr class="memitem:a33c7959193cd1083ba776cf9cc93b44b"><td class="memTemplItemLeft" align="right" valign="top">std::string&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a33c7959193cd1083ba776cf9cc93b44b">parse_failure_message</a> (const std::string &amp;raw_str)</td></tr>
 <tr class="separator:a33c7959193cd1083ba776cf9cc93b44b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -232,9 +242,6 @@ Functions</h2></td></tr>
 <tr class="memitem:a974b7c3b9a14c384a467315eab925de5" id="r_a974b7c3b9a14c384a467315eab925de5"><td class="memItemLeft" align="right" valign="top">template&lt;&gt; </td></tr>
 <tr class="memitem:a974b7c3b9a14c384a467315eab925de5"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a974b7c3b9a14c384a467315eab925de5">parse_&lt; Device &gt;</a> (<a class="el" href="namespaceneml2.html#a09235c8815e870c0e839816a881ce30a">Device</a> &amp;, const std::string &amp;raw_str)</td></tr>
 <tr class="separator:a974b7c3b9a14c384a467315eab925de5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac13b703c50d6f8d954409c4b81dcaaf2" id="r_ac13b703c50d6f8d954409c4b81dcaaf2"><td class="memTemplParams" colspan="2">template&lt;typename... S&gt; </td></tr>
-<tr class="memitem:ac13b703c50d6f8d954409c4b81dcaaf2"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structneml2_1_1TraceableTensorShape.html">TraceableTensorShape</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#ac13b703c50d6f8d954409c4b81dcaaf2">add_traceable_shapes</a> (const S &amp;... shape)</td></tr>
-<tr class="separator:ac13b703c50d6f8d954409c4b81dcaaf2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae5807997f865e0b2dd4329e61c0caace" id="r_ae5807997f865e0b2dd4329e61c0caace"><td class="memTemplParams" colspan="2">template&lt;typename T , typename... Args&gt; </td></tr>
 <tr class="memitem:ae5807997f865e0b2dd4329e61c0caace"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#ae5807997f865e0b2dd4329e61c0caace">stream_all</a> (std::ostringstream &amp;ss, T &amp;&amp;val, Args &amp;&amp;... args)</td></tr>
 <tr class="separator:ae5807997f865e0b2dd4329e61c0caace"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -244,27 +251,43 @@ Functions</h2></td></tr>
 <tr class="memitem:aa0e43ffefe5db41bd43693a219af3472" id="r_aa0e43ffefe5db41bd43693a219af3472"><td class="memItemLeft" align="right" valign="top">template&lt;&gt; </td></tr>
 <tr class="memitem:aa0e43ffefe5db41bd43693a219af3472"><td class="memTemplItemLeft" align="right" valign="top">std::string&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#aa0e43ffefe5db41bd43693a219af3472">stringify</a> (const bool &amp;t)</td></tr>
 <tr class="separator:aa0e43ffefe5db41bd43693a219af3472"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae974edcdb50646897b23d5ed5f43ed7f" id="r_ae974edcdb50646897b23d5ed5f43ed7f"><td class="memTemplParams" colspan="2">template&lt;class... T&gt; </td></tr>
-<tr class="memitem:ae974edcdb50646897b23d5ed5f43ed7f"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#ae974edcdb50646897b23d5ed5f43ed7f">broadcastable</a> (const T &amp;... tensors)</td></tr>
-<tr class="separator:ae974edcdb50646897b23d5ed5f43ed7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae7b3533940fa64dd7305157c31d3f162" id="r_ae7b3533940fa64dd7305157c31d3f162"><td class="memTemplParams" colspan="2">template&lt;class... T&gt; </td></tr>
-<tr class="memitem:ae7b3533940fa64dd7305157c31d3f162"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#ae7b3533940fa64dd7305157c31d3f162">batch_broadcastable</a> (const T &amp;... tensors)</td></tr>
-<tr class="separator:ae7b3533940fa64dd7305157c31d3f162"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af507eed67e920edf18119ccde439f859" id="r_af507eed67e920edf18119ccde439f859"><td class="memTemplParams" colspan="2">template&lt;class... T&gt; </td></tr>
-<tr class="memitem:af507eed67e920edf18119ccde439f859"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#af507eed67e920edf18119ccde439f859">base_broadcastable</a> (const T &amp;... tensors)</td></tr>
-<tr class="separator:af507eed67e920edf18119ccde439f859"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a45a8d17d609a40089b07c50dd047957c" id="r_a45a8d17d609a40089b07c50dd047957c"><td class="memTemplParams" colspan="2">template&lt;class... T&gt; </td></tr>
-<tr class="memitem:a45a8d17d609a40089b07c50dd047957c"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a45a8d17d609a40089b07c50dd047957c">broadcast_batch_dim</a> (const T &amp;...)</td></tr>
-<tr class="memdesc:a45a8d17d609a40089b07c50dd047957c"><td class="mdescLeft">&#160;</td><td class="mdescRight">The batch dimension after broadcasting.  <br /></td></tr>
-<tr class="separator:a45a8d17d609a40089b07c50dd047957c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a24ad971a5cdae552164e90336da6b6ac" id="r_a24ad971a5cdae552164e90336da6b6ac"><td class="memTemplParams" colspan="2">template&lt;class... T&gt; </td></tr>
-<tr class="memitem:a24ad971a5cdae552164e90336da6b6ac"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a24ad971a5cdae552164e90336da6b6ac">sizes_same</a> (T &amp;&amp;... shapes)</td></tr>
-<tr class="memdesc:a24ad971a5cdae552164e90336da6b6ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if all shapes are the <em>same</em>.  <br /></td></tr>
-<tr class="separator:a24ad971a5cdae552164e90336da6b6ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4cb07085c0f2894e87bba27ebd10a12d" id="r_a4cb07085c0f2894e87bba27ebd10a12d"><td class="memTemplParams" colspan="2">template&lt;typename T , typename... Ts&gt; </td></tr>
+<tr class="memitem:a4cb07085c0f2894e87bba27ebd10a12d"><td class="memTemplItemLeft" align="right" valign="top">std::tuple&lt; T, Ts..., <a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a4cb07085c0f2894e87bba27ebd10a12d">align_intmd_dim</a> (const T &amp;a, const Ts &amp;... ts)</td></tr>
+<tr class="separator:a4cb07085c0f2894e87bba27ebd10a12d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7e54131de3510519acc3600def49682c" id="r_a7e54131de3510519acc3600def49682c"><td class="memTemplParams" colspan="2">template&lt;typename T , typename... Ts&gt; </td></tr>
+<tr class="memitem:a7e54131de3510519acc3600def49682c"><td class="memTemplItemLeft" align="right" valign="top">std::tuple&lt; T, Ts..., <a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a7e54131de3510519acc3600def49682c">align_static_dim</a> (const T &amp;a, const Ts &amp;... ts)</td></tr>
+<tr class="separator:a7e54131de3510519acc3600def49682c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac13b703c50d6f8d954409c4b81dcaaf2" id="r_ac13b703c50d6f8d954409c4b81dcaaf2"><td class="memTemplParams" colspan="2">template&lt;typename... S&gt; </td></tr>
+<tr class="memitem:ac13b703c50d6f8d954409c4b81dcaaf2"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structneml2_1_1TraceableTensorShape.html">TraceableTensorShape</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#ac13b703c50d6f8d954409c4b81dcaaf2">add_traceable_shapes</a> (const S &amp;... shape)</td></tr>
+<tr class="separator:ac13b703c50d6f8d954409c4b81dcaaf2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9df135c17e6caa8b3c318c9685693111" id="r_a9df135c17e6caa8b3c318c9685693111"><td class="memTemplParams" colspan="2">template&lt;class... T&gt; </td></tr>
 <tr class="memitem:a9df135c17e6caa8b3c318c9685693111"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a9df135c17e6caa8b3c318c9685693111">sizes_broadcastable</a> (const T &amp;... shapes)</td></tr>
 <tr class="memdesc:a9df135c17e6caa8b3c318c9685693111"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if the shapes are broadcastable.  <br /></td></tr>
 <tr class="separator:a9df135c17e6caa8b3c318c9685693111"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae974edcdb50646897b23d5ed5f43ed7f" id="r_ae974edcdb50646897b23d5ed5f43ed7f"><td class="memTemplParams" colspan="2">template&lt;class... T&gt; </td></tr>
+<tr class="memitem:ae974edcdb50646897b23d5ed5f43ed7f"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#ae974edcdb50646897b23d5ed5f43ed7f">broadcastable</a> (const T &amp;... tensors)</td></tr>
+<tr class="separator:ae974edcdb50646897b23d5ed5f43ed7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5c256eebd73e58e200ea0523de5c2f31" id="r_a5c256eebd73e58e200ea0523de5c2f31"><td class="memTemplParams" colspan="2">template&lt;class... T&gt; </td></tr>
+<tr class="memitem:a5c256eebd73e58e200ea0523de5c2f31"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a5c256eebd73e58e200ea0523de5c2f31">dynamic_broadcastable</a> (const T &amp;... tensors)</td></tr>
+<tr class="separator:a5c256eebd73e58e200ea0523de5c2f31"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a303400b16bfce597a947a0291dcd2d72" id="r_a303400b16bfce597a947a0291dcd2d72"><td class="memTemplParams" colspan="2">template&lt;class... T&gt; </td></tr>
+<tr class="memitem:a303400b16bfce597a947a0291dcd2d72"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a303400b16bfce597a947a0291dcd2d72">intmd_broadcastable</a> (const T &amp;... tensors)</td></tr>
+<tr class="separator:a303400b16bfce597a947a0291dcd2d72"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af507eed67e920edf18119ccde439f859" id="r_af507eed67e920edf18119ccde439f859"><td class="memTemplParams" colspan="2">template&lt;class... T&gt; </td></tr>
+<tr class="memitem:af507eed67e920edf18119ccde439f859"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#af507eed67e920edf18119ccde439f859">base_broadcastable</a> (const T &amp;... tensors)</td></tr>
+<tr class="separator:af507eed67e920edf18119ccde439f859"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9d478621033b34a5ea727f770a05afaa" id="r_a9d478621033b34a5ea727f770a05afaa"><td class="memTemplParams" colspan="2">template&lt;class... T&gt; </td></tr>
+<tr class="memitem:a9d478621033b34a5ea727f770a05afaa"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a9d478621033b34a5ea727f770a05afaa">broadcast_dynamic_dim</a> (const T &amp;...)</td></tr>
+<tr class="memdesc:a9d478621033b34a5ea727f770a05afaa"><td class="mdescLeft">&#160;</td><td class="mdescRight">The dynamic dimension after broadcasting.  <br /></td></tr>
+<tr class="separator:a9d478621033b34a5ea727f770a05afaa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae5f8693d41f20fafe6e2e91d95502626" id="r_ae5f8693d41f20fafe6e2e91d95502626"><td class="memTemplParams" colspan="2">template&lt;class... T&gt; </td></tr>
+<tr class="memitem:ae5f8693d41f20fafe6e2e91d95502626"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#ae5f8693d41f20fafe6e2e91d95502626">broadcast_intmd_dim</a> (const T &amp;...)</td></tr>
+<tr class="memdesc:ae5f8693d41f20fafe6e2e91d95502626"><td class="mdescLeft">&#160;</td><td class="mdescRight">The intermediate dimension after broadcasting.  <br /></td></tr>
+<tr class="separator:ae5f8693d41f20fafe6e2e91d95502626"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa2939c189860a5ee0c7911a1b673c231" id="r_aa2939c189860a5ee0c7911a1b673c231"><td class="memTemplParams" colspan="2">template&lt;class... T&gt; </td></tr>
+<tr class="memitem:aa2939c189860a5ee0c7911a1b673c231"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#aa2939c189860a5ee0c7911a1b673c231">broadcast_base_dim</a> (const T &amp;...)</td></tr>
+<tr class="memdesc:aa2939c189860a5ee0c7911a1b673c231"><td class="mdescLeft">&#160;</td><td class="mdescRight">The base dimension after broadcasting.  <br /></td></tr>
+<tr class="separator:aa2939c189860a5ee0c7911a1b673c231"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5e87e925c45a555eeb66651f64eea064" id="r_a5e87e925c45a555eeb66651f64eea064"><td class="memTemplParams" colspan="2">template&lt;class... T&gt; </td></tr>
 <tr class="memitem:a5e87e925c45a555eeb66651f64eea064"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespaceneml2.html#a1456b5c3b8814c9aa2e7269af73c059d">TensorShape</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a5e87e925c45a555eeb66651f64eea064">broadcast_sizes</a> (const T &amp;... shapes)</td></tr>
 <tr class="memdesc:a5e87e925c45a555eeb66651f64eea064"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the broadcast shape of all the shapes.  <br /></td></tr>
@@ -272,9 +295,15 @@ Functions</h2></td></tr>
 <tr class="memitem:a51c529a63cf73205675090131227f151" id="r_a51c529a63cf73205675090131227f151"><td class="memTemplParams" colspan="2">template&lt;typename... S&gt; </td></tr>
 <tr class="memitem:a51c529a63cf73205675090131227f151"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespaceneml2.html#a1456b5c3b8814c9aa2e7269af73c059d">TensorShape</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a51c529a63cf73205675090131227f151">add_shapes</a> (const S &amp;...)</td></tr>
 <tr class="separator:a51c529a63cf73205675090131227f151"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7a61355a5eb3cd2b47a9bedc38faf8f6" id="r_a7a61355a5eb3cd2b47a9bedc38faf8f6"><td class="memTemplParams" colspan="2">template&lt;class... T&gt; </td></tr>
-<tr class="memitem:a7a61355a5eb3cd2b47a9bedc38faf8f6"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a7a61355a5eb3cd2b47a9bedc38faf8f6">broadcast_batch_dim</a> (const T &amp;... tensor)</td></tr>
-<tr class="separator:a7a61355a5eb3cd2b47a9bedc38faf8f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3f60b75f9a53f6768fac26bd99bad391" id="r_a3f60b75f9a53f6768fac26bd99bad391"><td class="memTemplParams" colspan="2">template&lt;class... T&gt; </td></tr>
+<tr class="memitem:a3f60b75f9a53f6768fac26bd99bad391"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a3f60b75f9a53f6768fac26bd99bad391">broadcast_dynamic_dim</a> (const T &amp;... tensor)</td></tr>
+<tr class="separator:a3f60b75f9a53f6768fac26bd99bad391"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a74153688905ce672fed0cbffb15e2214" id="r_a74153688905ce672fed0cbffb15e2214"><td class="memTemplParams" colspan="2">template&lt;class... T&gt; </td></tr>
+<tr class="memitem:a74153688905ce672fed0cbffb15e2214"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a74153688905ce672fed0cbffb15e2214">broadcast_intmd_dim</a> (const T &amp;... tensor)</td></tr>
+<tr class="separator:a74153688905ce672fed0cbffb15e2214"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a90308a1bcd38ee2d2912a58e7b1437c6" id="r_a90308a1bcd38ee2d2912a58e7b1437c6"><td class="memTemplParams" colspan="2">template&lt;class... T&gt; </td></tr>
+<tr class="memitem:a90308a1bcd38ee2d2912a58e7b1437c6"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a90308a1bcd38ee2d2912a58e7b1437c6">broadcast_base_dim</a> (const T &amp;... tensor)</td></tr>
+<tr class="separator:a90308a1bcd38ee2d2912a58e7b1437c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6bdd32c38ddec0687c3d76bc94d66aaf" id="r_a6bdd32c38ddec0687c3d76bc94d66aaf"><td class="memTemplParams" colspan="2">template&lt;typename... S&gt; </td></tr>
 <tr class="memitem:a6bdd32c38ddec0687c3d76bc94d66aaf"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="namespaceneml2.html#a1456b5c3b8814c9aa2e7269af73c059d">TensorShape</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a6bdd32c38ddec0687c3d76bc94d66aaf">add_shapes</a> (const S &amp;... shape)</td></tr>
 <tr class="separator:a6bdd32c38ddec0687c3d76bc94d66aaf"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -337,6 +366,86 @@ template&lt;typename... S&gt; </div>
 
 </div>
 </div>
+<a id="a4cb07085c0f2894e87bba27ebd10a12d" name="a4cb07085c0f2894e87bba27ebd10a12d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4cb07085c0f2894e87bba27ebd10a12d">&#9670;&#160;</a></span>align_intmd_dim() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename... Ts&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">std::tuple&lt; T, Ts..., <a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> &gt; align_intmd_dim </td>
+          <td>(</td>
+          <td class="paramtype">const T &amp;</td>          <td class="paramname"><span class="paramname"><em>a</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Ts &amp;...</td>          <td class="paramname"><span class="paramname"><em>ts</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ae3ff7ef9a125c5553e1de69102ca4923" name="ae3ff7ef9a125c5553e1de69102ca4923"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae3ff7ef9a125c5553e1de69102ca4923">&#9670;&#160;</a></span>align_intmd_dim() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::pair&lt; std::vector&lt; <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &gt;, <a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> &gt; align_intmd_dim </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceneml2.html#a4d01551b0bcc43fc944ad905beae73ce">TensorList</a></td>          <td class="paramname"><span class="paramname"><em>tensors</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a7e54131de3510519acc3600def49682c" name="a7e54131de3510519acc3600def49682c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7e54131de3510519acc3600def49682c">&#9670;&#160;</a></span>align_static_dim() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename... Ts&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">std::tuple&lt; T, Ts..., <a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> &gt; align_static_dim </td>
+          <td>(</td>
+          <td class="paramtype">const T &amp;</td>          <td class="paramname"><span class="paramname"><em>a</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Ts &amp;...</td>          <td class="paramname"><span class="paramname"><em>ts</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a375115951b58d93643522771a5af8a0e" name="a375115951b58d93643522771a5af8a0e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a375115951b58d93643522771a5af8a0e">&#9670;&#160;</a></span>align_static_dim() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::pair&lt; std::vector&lt; <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &gt;, <a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> &gt; align_static_dim </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceneml2.html#a4d01551b0bcc43fc944ad905beae73ce">TensorList</a></td>          <td class="paramname"><span class="paramname"><em>tensors</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="af507eed67e920edf18119ccde439f859" name="af507eed67e920edf18119ccde439f859"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af507eed67e920edf18119ccde439f859">&#9670;&#160;</a></span>base_broadcastable()</h2>
 
@@ -357,8 +466,8 @@ template&lt;class... T&gt; </div>
 
 </div>
 </div>
-<a id="ae7b3533940fa64dd7305157c31d3f162" name="ae7b3533940fa64dd7305157c31d3f162"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae7b3533940fa64dd7305157c31d3f162">&#9670;&#160;</a></span>batch_broadcastable()</h2>
+<a id="a90308a1bcd38ee2d2912a58e7b1437c6" name="a90308a1bcd38ee2d2912a58e7b1437c6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a90308a1bcd38ee2d2912a58e7b1437c6">&#9670;&#160;</a></span>broadcast_base_dim() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -366,27 +475,7 @@ template&lt;class... T&gt; </div>
 template&lt;class... T&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">bool batch_broadcastable </td>
-          <td>(</td>
-          <td class="paramtype">const T &amp;...</td>          <td class="paramname"><span class="paramname"><em>tensors</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Test if the tensors are batch-broadcastable. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="#a9df135c17e6caa8b3c318c9685693111" title="Check if the shapes are broadcastable.">sizes_broadcastable</a> </dd></dl>
-
-</div>
-</div>
-<a id="a7a61355a5eb3cd2b47a9bedc38faf8f6" name="a7a61355a5eb3cd2b47a9bedc38faf8f6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7a61355a5eb3cd2b47a9bedc38faf8f6">&#9670;&#160;</a></span>broadcast_batch_dim() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;class... T&gt; </div>
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> broadcast_batch_dim </td>
+          <td class="memname"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> broadcast_base_dim </td>
           <td>(</td>
           <td class="paramtype">const T &amp;...</td>          <td class="paramname"><span class="paramname"><em>tensor</em></span></td><td>)</td>
           <td></td>
@@ -396,8 +485,8 @@ template&lt;class... T&gt; </div>
 
 </div>
 </div>
-<a id="a45a8d17d609a40089b07c50dd047957c" name="a45a8d17d609a40089b07c50dd047957c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a45a8d17d609a40089b07c50dd047957c">&#9670;&#160;</a></span>broadcast_batch_dim() <span class="overload">[2/2]</span></h2>
+<a id="aa2939c189860a5ee0c7911a1b673c231" name="aa2939c189860a5ee0c7911a1b673c231"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa2939c189860a5ee0c7911a1b673c231">&#9670;&#160;</a></span>broadcast_base_dim() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -405,7 +494,7 @@ template&lt;class... T&gt; </div>
 template&lt;class... T&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> broadcast_batch_dim </td>
+          <td class="memname"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> broadcast_base_dim </td>
           <td>(</td>
           <td class="paramtype">const T &amp;</td>          <td class="paramname"><span class="paramname"><em>...</em></span></td><td>)</td>
           <td></td>
@@ -413,19 +502,58 @@ template&lt;class... T&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p>The batch dimension after broadcasting. </p>
-<p>This should be as simple as the maximum batch_dim() among all arguments. </p>
+<p>The base dimension after broadcasting. </p>
 
 </div>
 </div>
-<a id="a214101736bbb02516bdf2343235bb954" name="a214101736bbb02516bdf2343235bb954"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a214101736bbb02516bdf2343235bb954">&#9670;&#160;</a></span>broadcast_batch_sizes()</h2>
+<a id="a3f60b75f9a53f6768fac26bd99bad391" name="a3f60b75f9a53f6768fac26bd99bad391"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3f60b75f9a53f6768fac26bd99bad391">&#9670;&#160;</a></span>broadcast_dynamic_dim() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class... T&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> broadcast_dynamic_dim </td>
+          <td>(</td>
+          <td class="paramtype">const T &amp;...</td>          <td class="paramname"><span class="paramname"><em>tensor</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a9d478621033b34a5ea727f770a05afaa" name="a9d478621033b34a5ea727f770a05afaa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9d478621033b34a5ea727f770a05afaa">&#9670;&#160;</a></span>broadcast_dynamic_dim() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class... T&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> broadcast_dynamic_dim </td>
+          <td>(</td>
+          <td class="paramtype">const T &amp;</td>          <td class="paramname"><span class="paramname"><em>...</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The dynamic dimension after broadcasting. </p>
+
+</div>
+</div>
+<a id="ad559ad924e610a35eb32bb02a2b2e43e" name="ad559ad924e610a35eb32bb02a2b2e43e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad559ad924e610a35eb32bb02a2b2e43e">&#9670;&#160;</a></span>broadcast_dynamic_sizes()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structneml2_1_1TraceableTensorShape.html">TraceableTensorShape</a> broadcast_batch_sizes </td>
+          <td class="memname"><a class="el" href="structneml2_1_1TraceableTensorShape.html">TraceableTensorShape</a> broadcast_dynamic_sizes </td>
           <td>(</td>
           <td class="paramtype">const std::vector&lt; <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>tensors</em></span></td><td>)</td>
           <td></td>
@@ -433,10 +561,50 @@ template&lt;class... T&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p>Find the broadcast batch shape of all the tensors The returned batch shape will be <em>traceable</em>. </p>
+<p>Find the broadcast dynamic shape of all the tensors The returned dynamic shape will be <em>traceable</em>. </p>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="structneml2_1_1TraceableTensorShape.html" title="Traceable tensor shape.">neml2::TraceableTensorShape</a> </dd></dl>
 <p>Pre-pad ones to the shapes</p>
 <p>Braodcast</p>
+
+</div>
+</div>
+<a id="a74153688905ce672fed0cbffb15e2214" name="a74153688905ce672fed0cbffb15e2214"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a74153688905ce672fed0cbffb15e2214">&#9670;&#160;</a></span>broadcast_intmd_dim() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class... T&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> broadcast_intmd_dim </td>
+          <td>(</td>
+          <td class="paramtype">const T &amp;...</td>          <td class="paramname"><span class="paramname"><em>tensor</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ae5f8693d41f20fafe6e2e91d95502626" name="ae5f8693d41f20fafe6e2e91d95502626"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae5f8693d41f20fafe6e2e91d95502626">&#9670;&#160;</a></span>broadcast_intmd_dim() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class... T&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> broadcast_intmd_dim </td>
+          <td>(</td>
+          <td class="paramtype">const T &amp;</td>          <td class="paramname"><span class="paramname"><em>...</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The intermediate dimension after broadcasting. </p>
 
 </div>
 </div>
@@ -478,8 +646,9 @@ template&lt;class... T&gt; </div>
       </table>
 </div><div class="memdoc">
 <p>Two tensors are said to be broadcastable if</p><ol type="1">
-<li>Base shapes are the same</li>
-<li>Batch shapes are broadcastable (see sizes_broadcastable) </li>
+<li>Base shapes are broadcastable</li>
+<li>Intermediate shapes are broadcastable</li>
+<li>Dynamic shapes are broadcastable </li>
 </ol>
 
 </div>
@@ -500,6 +669,26 @@ template&lt;class... T&gt; </div>
 </div><div class="memdoc">
 
 <p>Demangle a piece of cxx abi type information. </p>
+
+</div>
+</div>
+<a id="a5c256eebd73e58e200ea0523de5c2f31" name="a5c256eebd73e58e200ea0523de5c2f31"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5c256eebd73e58e200ea0523de5c2f31">&#9670;&#160;</a></span>dynamic_broadcastable()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class... T&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">bool dynamic_broadcastable </td>
+          <td>(</td>
+          <td class="paramtype">const T &amp;...</td>          <td class="paramname"><span class="paramname"><em>tensors</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Test if the tensors are dynamic-broadcastable. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="#a9df135c17e6caa8b3c318c9685693111" title="Check if the shapes are broadcastable.">sizes_broadcastable</a> </dd></dl>
 
 </div>
 </div>
@@ -524,27 +713,50 @@ template&lt;class... T&gt; </div>
 
 </div>
 </div>
-<a id="afa39b247de52820d13116a87d0f6f1c5" name="afa39b247de52820d13116a87d0f6f1c5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afa39b247de52820d13116a87d0f6f1c5">&#9670;&#160;</a></span>extract_batch_sizes()</h2>
+<a id="a6a5b409081a337dc9c2e7476c28b86a0" name="a6a5b409081a337dc9c2e7476c28b86a0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6a5b409081a337dc9c2e7476c28b86a0">&#9670;&#160;</a></span>extract_traceable_sizes()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structneml2_1_1TraceableTensorShape.html">TraceableTensorShape</a> extract_batch_sizes </td>
+          <td class="memname"><a class="el" href="structneml2_1_1TraceableTensorShape.html">TraceableTensorShape</a> extract_traceable_sizes </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="namespaceneml2.html#aa244a1ae9b68f1027797ae4238a2e962">ATensor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>tensor</em></span>, </td>
+          <td class="paramtype">const <a class="el" href="namespaceneml2.html#a4a57eb2eaae4b2acfea6495c348f1142">ATensor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>tensor</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a></td>          <td class="paramname"><span class="paramname"><em>batch_dim</em></span>&#160;)</td>
+          <td class="paramtype">std::size_t</td>          <td class="paramname"><span class="paramname"><em>n</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::size_t</td>          <td class="paramname"><span class="paramname"><em>m</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Extract <code>m</code> sizes starting from dimension <code>n</code> of a tensor The extracted shape will be <em>traceable</em>. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="structneml2_1_1TraceableTensorShape.html" title="Traceable tensor shape.">neml2::TraceableTensorShape</a> </dd></dl>
 
-<p>Extract the batch shape of a tensor given batch dimension The extracted batch shape will be <em>traceable</em>. </p>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="structneml2_1_1TraceableTensorShape.html" title="Traceable tensor shape.">neml2::TraceableTensorShape</a> </dd></dl>
+</div>
+</div>
+<a id="a303400b16bfce597a947a0291dcd2d72" name="a303400b16bfce597a947a0291dcd2d72"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a303400b16bfce597a947a0291dcd2d72">&#9670;&#160;</a></span>intmd_broadcastable()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class... T&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">bool intmd_broadcastable </td>
+          <td>(</td>
+          <td class="paramtype">const T &amp;...</td>          <td class="paramname"><span class="paramname"><em>tensors</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Test if the tensors are intermediate-broadcastable. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="#a9df135c17e6caa8b3c318c9685693111" title="Check if the shapes are broadcastable.">sizes_broadcastable</a> </dd></dl>
 
 </div>
 </div>
@@ -588,34 +800,107 @@ template&lt;class... T&gt; </div>
 
 </div>
 </div>
-<a id="a18b0e565141913a258ceb3bb4503b382" name="a18b0e565141913a258ceb3bb4503b382"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a18b0e565141913a258ceb3bb4503b382">&#9670;&#160;</a></span>pad_prepend() <span class="overload">[1/2]</span></h2>
+<a id="a78544f49fb23a6a69f9577f23363d3e4" name="a78544f49fb23a6a69f9577f23363d3e4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a78544f49fb23a6a69f9577f23363d3e4">&#9670;&#160;</a></span>normalize_dim()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="namespaceneml2.html#aa244a1ae9b68f1027797ae4238a2e962">ATensor</a> pad_prepend </td>
+          <td class="memname"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> normalize_dim </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="namespaceneml2.html#aa244a1ae9b68f1027797ae4238a2e962">ATensor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>s</em></span>, </td>
+          <td class="paramtype"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a></td>          <td class="paramname"><span class="paramname"><em>d</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a></td>          <td class="paramname"><span class="paramname"><em>dim</em></span>, </td>
+          <td class="paramtype"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a></td>          <td class="paramname"><span class="paramname"><em>dl</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a></td>          <td class="paramname"><span class="paramname"><em>pad</em></span>&#160;)</td>
+          <td class="paramtype"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a></td>          <td class="paramname"><span class="paramname"><em>du</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
+<p>Helper function to normalize a dimension index to be non-negative given the lower- and upper-bound of the context. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">d</td><td>The dimension index to normalize </td></tr>
+    <tr><td class="paramname">dl</td><td>The lower-bound (inclusive) </td></tr>
+    <tr><td class="paramname">du</td><td>The upper-bound (exclusive) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Size The normalized dimension index </dd></dl>
+
+</div>
+</div>
+<a id="a75fc4c76618147c3ffff7a841f451d1c" name="a75fc4c76618147c3ffff7a841f451d1c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a75fc4c76618147c3ffff7a841f451d1c">&#9670;&#160;</a></span>normalize_itr()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> normalize_itr </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a></td>          <td class="paramname"><span class="paramname"><em>d</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a></td>          <td class="paramname"><span class="paramname"><em>dl</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a></td>          <td class="paramname"><span class="paramname"><em>du</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Helper function to normalize a iterator-like index to be non-negative given the lower- and upper-bound of the context. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">d</td><td>The iterator index to normalize </td></tr>
+    <tr><td class="paramname">dl</td><td>The lower-bound (inclusive) </td></tr>
+    <tr><td class="paramname">du</td><td>The upper-bound (exclusive) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Size The normalized iterator index </dd></dl>
+
+</div>
+</div>
+<a id="aa17c056bd38d6149904d2189daefcf6d" name="aa17c056bd38d6149904d2189daefcf6d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa17c056bd38d6149904d2189daefcf6d">&#9670;&#160;</a></span>numel()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> numel </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceneml2.html#aead1bb40178f274bd0b020b5548b4d64">TensorShapeRef</a></td>          <td class="paramname"><span class="paramname"><em>shape</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Number of elements in a tensor with given shape. </p>
+<p>For example, </p><div class="fragment"><div class="line"><a class="code hl_function" href="#aa17c056bd38d6149904d2189daefcf6d">numel</a>({}) == 1;</div>
+<div class="line"><a class="code hl_function" href="#aa17c056bd38d6149904d2189daefcf6d">numel</a>({0}) == 0;</div>
+<div class="line"><a class="code hl_function" href="#aa17c056bd38d6149904d2189daefcf6d">numel</a>({1}) == 1;</div>
+<div class="line"><a class="code hl_function" href="#aa17c056bd38d6149904d2189daefcf6d">numel</a>({1, 2, 3}) == 6;</div>
+<div class="line"><a class="code hl_function" href="#aa17c056bd38d6149904d2189daefcf6d">numel</a>({5, 1, 1}) == 5;</div>
+<div class="ttc" id="anamespaceneml2_1_1utils_html_aa17c056bd38d6149904d2189daefcf6d"><div class="ttname"><a href="#aa17c056bd38d6149904d2189daefcf6d">neml2::utils::numel</a></div><div class="ttdeci">Size numel(TensorShapeRef shape)</div><div class="ttdoc">Number of elements in a tensor with given shape.</div><div class="ttdef"><b>Definition</b> shape_utils.cxx:64</div></div>
+</div><!-- fragment --> 
 </div>
 </div>
 <a id="a2880e22e1dda381473bf23cdd5642a3d" name="a2880e22e1dda381473bf23cdd5642a3d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2880e22e1dda381473bf23cdd5642a3d">&#9670;&#160;</a></span>pad_prepend() <span class="overload">[2/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a2880e22e1dda381473bf23cdd5642a3d">&#9670;&#160;</a></span>pad_prepend()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1088,27 +1373,6 @@ template&lt;class... T&gt; </div>
 
 </div>
 </div>
-<a id="a24ad971a5cdae552164e90336da6b6ac" name="a24ad971a5cdae552164e90336da6b6ac"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a24ad971a5cdae552164e90336da6b6ac">&#9670;&#160;</a></span>sizes_same()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;class... T&gt; </div>
-      <table class="memname">
-        <tr>
-          <td class="memname">bool sizes_same </td>
-          <td>(</td>
-          <td class="paramtype">T &amp;&amp;...</td>          <td class="paramname"><span class="paramname"><em>shapes</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Check if all shapes are the <em>same</em>. </p>
-
-</div>
-</div>
 <a id="abf55fb05e178e999cef5352ab7ebfcd4" name="abf55fb05e178e999cef5352ab7ebfcd4"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#abf55fb05e178e999cef5352ab7ebfcd4">&#9670;&#160;</a></span>split()</h2>
 
@@ -1149,31 +1413,6 @@ template&lt;class... T&gt; </div>
       </table>
 </div><div class="memdoc">
 
-</div>
-</div>
-<a id="a17f90e6a5dea33eb01c88e211fd5bc48" name="a17f90e6a5dea33eb01c88e211fd5bc48"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a17f90e6a5dea33eb01c88e211fd5bc48">&#9670;&#160;</a></span>storage_size()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> storage_size </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="namespaceneml2.html#aead1bb40178f274bd0b020b5548b4d64">TensorShapeRef</a></td>          <td class="paramname"><span class="paramname"><em>shape</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>The flattened storage size of a tensor with given shape. </p>
-<p>For example, </p><div class="fragment"><div class="line"><a class="code hl_function" href="#a17f90e6a5dea33eb01c88e211fd5bc48">storage_size</a>({}) == 1;</div>
-<div class="line"><a class="code hl_function" href="#a17f90e6a5dea33eb01c88e211fd5bc48">storage_size</a>({0}) == 0;</div>
-<div class="line"><a class="code hl_function" href="#a17f90e6a5dea33eb01c88e211fd5bc48">storage_size</a>({1}) == 1;</div>
-<div class="line"><a class="code hl_function" href="#a17f90e6a5dea33eb01c88e211fd5bc48">storage_size</a>({1, 2, 3}) == 6;</div>
-<div class="line"><a class="code hl_function" href="#a17f90e6a5dea33eb01c88e211fd5bc48">storage_size</a>({5, 1, 1}) == 5;</div>
-<div class="ttc" id="anamespaceneml2_1_1utils_html_a17f90e6a5dea33eb01c88e211fd5bc48"><div class="ttname"><a href="#a17f90e6a5dea33eb01c88e211fd5bc48">neml2::utils::storage_size</a></div><div class="ttdeci">Size storage_size(TensorShapeRef shape)</div><div class="ttdoc">The flattened storage size of a tensor with given shape.</div><div class="ttdef"><b>Definition</b> shape_utils.cxx:32</div></div>
-</div><!-- fragment --> 
 </div>
 </div>
 <a id="ae5807997f865e0b2dd4329e61c0caace" name="ae5807997f865e0b2dd4329e61c0caace"></a>
@@ -1247,6 +1486,25 @@ template&lt;typename T &gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="ae409b54785372c9e8e75ef44c4270a96" name="ae409b54785372c9e8e75ef44c4270a96"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae409b54785372c9e8e75ef44c4270a96">&#9670;&#160;</a></span>traceable_numel()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structneml2_1_1TraceableSize.html">TraceableSize</a> traceable_numel </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structneml2_1_1TraceableTensorShape.html">TraceableTensorShape</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>shape</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the number of elements in a tensor shape. </p>
 
 </div>
 </div>

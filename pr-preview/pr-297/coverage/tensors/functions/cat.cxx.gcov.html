@@ -32,17 +32,17 @@
             <td></td>
             <td class="headerItem">Lines:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
-            <td class="headerCovTableEntry">7</td>
-            <td class="headerCovTableEntry">7</td>
+            <td class="headerCovTableEntry">8</td>
+            <td class="headerCovTableEntry">8</td>
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-10-10 12:15:50</td>
+            <td class="headerValue">2025-12-06 17:10:54</td>
             <td></td>
             <td class="headerItem">Functions:</td>
-            <td class="headerCovTableEntryLo">8.5&nbsp;%</td>
-            <td class="headerCovTableEntry">47</td>
-            <td class="headerCovTableEntry">4</td>
+            <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
+            <td class="headerCovTableEntry">73</td>
+            <td class="headerCovTableEntry">73</td>
           </tr>
                   <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
                 </table>
@@ -85,35 +85,53 @@
 <span id="L23"><span class="lineNum">      23</span>              : // THE SOFTWARE.</span>
 <span id="L24"><span class="lineNum">      24</span>              : </span>
 <span id="L25"><span class="lineNum">      25</span>              : #include &quot;neml2/tensors/functions/cat.h&quot;</span>
-<span id="L26"><span class="lineNum">      26</span>              : #include &quot;neml2/tensors/tensors.h&quot;</span>
-<span id="L27"><span class="lineNum">      27</span>              : #include &quot;neml2/tensors/assertions.h&quot;</span>
-<span id="L28"><span class="lineNum">      28</span>              : </span>
-<span id="L29"><span class="lineNum">      29</span>              : namespace neml2</span>
-<span id="L30"><span class="lineNum">      30</span>              : {</span>
-<span id="L31"><span class="lineNum">      31</span>              : #define DEFINE_CAT(T)                                                                              \</span>
-<span id="L32"><span class="lineNum">      32</span>              :   T batch_cat(const std::vector&lt;T&gt; &amp; tensors, Size d)                                              \</span>
-<span id="L33"><span class="lineNum">      33</span>              :   {                                                                                                \</span>
-<span id="L34"><span class="lineNum">      34</span>              :     neml_assert_dbg(!tensors.empty(), &quot;batch_cat must be given at least one tensor&quot;);              \</span>
-<span id="L35"><span class="lineNum">      35</span>              :     std::vector&lt;ATensor&gt; torch_tensors(tensors.begin(), tensors.end());                            \</span>
-<span id="L36"><span class="lineNum">      36</span>              :     auto d2 = d &gt;= 0 ? d : d - tensors.begin()-&gt;base_dim();                                        \</span>
-<span id="L37"><span class="lineNum">      37</span>              :     return T(at::cat(torch_tensors, d2), tensors.begin()-&gt;batch_dim());                            \</span>
-<span id="L38"><span class="lineNum">      38</span>              :   }                                                                                                \</span>
-<span id="L39"><span class="lineNum">      39</span>              :   T batch_cat(const std::initializer_list&lt;T&gt; &amp; tensors, Size d)                                    \</span>
-<span id="L40"><span class="lineNum">      40</span>              :   {                                                                                                \</span>
-<span id="L41"><span class="lineNum">      41</span>              :     return batch_cat(std::vector&lt;T&gt;(tensors), d);                                                  \</span>
-<span id="L42"><span class="lineNum">      42</span>              :   }                                                                                                \</span>
-<span id="L43"><span class="lineNum">      43</span>              :   static_assert(true)</span>
-<span id="L44"><span class="lineNum">      44</span> <span class="tlaGNC tlaBgGNC">          76 : FOR_ALL_TENSORBASE(DEFINE_CAT);</span></span>
-<span id="L45"><span class="lineNum">      45</span>              : </span>
-<span id="L46"><span class="lineNum">      46</span>              : Tensor</span>
-<span id="L47"><span class="lineNum">      47</span> <span class="tlaGNC">        6700 : base_cat(const std::vector&lt;Tensor&gt; &amp; tensors, Size d)</span></span>
-<span id="L48"><span class="lineNum">      48</span>              : {</span>
-<span id="L49"><span class="lineNum">      49</span> <span class="tlaGNC">        6700 :   neml_assert_dbg(!tensors.empty(), &quot;base_cat must be given at least one tensor&quot;);</span></span>
-<span id="L50"><span class="lineNum">      50</span> <span class="tlaGNC">        6700 :   std::vector&lt;ATensor&gt; torch_tensors(tensors.begin(), tensors.end());</span></span>
-<span id="L51"><span class="lineNum">      51</span> <span class="tlaGNC">        6700 :   auto d2 = d &lt; 0 ? d : d + tensors.begin()-&gt;batch_dim();</span></span>
-<span id="L52"><span class="lineNum">      52</span> <span class="tlaGNC">       13400 :   return neml2::Tensor(at::cat(torch_tensors, d2), tensors.begin()-&gt;batch_sizes());</span></span>
-<span id="L53"><span class="lineNum">      53</span> <span class="tlaGNC">        6700 : }</span></span>
-<span id="L54"><span class="lineNum">      54</span>              : } // namespace neml2</span>
+<span id="L26"><span class="lineNum">      26</span>              : #include &quot;neml2/tensors/shape_utils.h&quot;</span>
+<span id="L27"><span class="lineNum">      27</span>              : #include &quot;neml2/tensors/tensors.h&quot;</span>
+<span id="L28"><span class="lineNum">      28</span>              : #include &quot;neml2/misc/assertions.h&quot;</span>
+<span id="L29"><span class="lineNum">      29</span>              : </span>
+<span id="L30"><span class="lineNum">      30</span>              : namespace neml2</span>
+<span id="L31"><span class="lineNum">      31</span>              : {</span>
+<span id="L32"><span class="lineNum">      32</span>              : #define DEFINE_CAT(T)                                                                              \</span>
+<span id="L33"><span class="lineNum">      33</span>              :   T dynamic_cat(const std::vector&lt;T&gt; &amp; tensors, Size d)                                            \</span>
+<span id="L34"><span class="lineNum">      34</span>              :   {                                                                                                \</span>
+<span id="L35"><span class="lineNum">      35</span>              :     neml_assert_dbg(!tensors.empty(), &quot;dynamic_cat must be given at least one tensor&quot;);            \</span>
+<span id="L36"><span class="lineNum">      36</span>              :     const auto &amp; ref = tensors.front();                                                            \</span>
+<span id="L37"><span class="lineNum">      37</span>              :     std::vector&lt;ATensor&gt; atensors(tensors.begin(), tensors.end());                                 \</span>
+<span id="L38"><span class="lineNum">      38</span>              :     d = utils::normalize_dim(d, 0, ref.dynamic_dim());                                             \</span>
+<span id="L39"><span class="lineNum">      39</span>              :     return T(at::cat(atensors, d), ref.dynamic_dim(), ref.intmd_dim());                            \</span>
+<span id="L40"><span class="lineNum">      40</span>              :   }                                                                                                \</span>
+<span id="L41"><span class="lineNum">      41</span>              :                                                                                                    \</span>
+<span id="L42"><span class="lineNum">      42</span>              :   T dynamic_cat(const std::initializer_list&lt;T&gt; &amp; tensors, Size d)                                  \</span>
+<span id="L43"><span class="lineNum">      43</span>              :   {                                                                                                \</span>
+<span id="L44"><span class="lineNum">      44</span>              :     return dynamic_cat(std::vector&lt;T&gt;(tensors), d);                                                \</span>
+<span id="L45"><span class="lineNum">      45</span>              :   }                                                                                                \</span>
+<span id="L46"><span class="lineNum">      46</span>              :                                                                                                    \</span>
+<span id="L47"><span class="lineNum">      47</span>              :   T intmd_cat(const std::vector&lt;T&gt; &amp; tensors, Size d)                                              \</span>
+<span id="L48"><span class="lineNum">      48</span>              :   {                                                                                                \</span>
+<span id="L49"><span class="lineNum">      49</span>              :     neml_assert_dbg(!tensors.empty(), &quot;intmd_cat must be given at least one tensor&quot;);              \</span>
+<span id="L50"><span class="lineNum">      50</span>              :     const auto &amp; ref = tensors.front();                                                            \</span>
+<span id="L51"><span class="lineNum">      51</span>              :     std::vector&lt;ATensor&gt; atensors(tensors.begin(), tensors.end());                                 \</span>
+<span id="L52"><span class="lineNum">      52</span>              :     d = utils::normalize_dim(d, ref.dynamic_dim(), ref.batch_dim());                               \</span>
+<span id="L53"><span class="lineNum">      53</span>              :     return T(at::cat(atensors, d), ref.dynamic_sizes(), ref.intmd_dim());                          \</span>
+<span id="L54"><span class="lineNum">      54</span>              :   }                                                                                                \</span>
+<span id="L55"><span class="lineNum">      55</span>              :                                                                                                    \</span>
+<span id="L56"><span class="lineNum">      56</span>              :   T intmd_cat(const std::initializer_list&lt;T&gt; &amp; tensors, Size d)                                    \</span>
+<span id="L57"><span class="lineNum">      57</span>              :   {                                                                                                \</span>
+<span id="L58"><span class="lineNum">      58</span>              :     return intmd_cat(std::vector&lt;T&gt;(tensors), d);                                                  \</span>
+<span id="L59"><span class="lineNum">      59</span>              :   }                                                                                                \</span>
+<span id="L60"><span class="lineNum">      60</span>              :   static_assert(true)</span>
+<span id="L61"><span class="lineNum">      61</span> <span class="tlaGNC tlaBgGNC">        3268 : FOR_ALL_TENSORBASE(DEFINE_CAT);</span></span>
+<span id="L62"><span class="lineNum">      62</span>              : </span>
+<span id="L63"><span class="lineNum">      63</span>              : Tensor</span>
+<span id="L64"><span class="lineNum">      64</span> <span class="tlaGNC">        3837 : base_cat(const std::vector&lt;Tensor&gt; &amp; tensors, Size d)</span></span>
+<span id="L65"><span class="lineNum">      65</span>              : {</span>
+<span id="L66"><span class="lineNum">      66</span> <span class="tlaGNC">        3837 :   neml_assert_dbg(!tensors.empty(), &quot;base_cat must be given at least one tensor&quot;);</span></span>
+<span id="L67"><span class="lineNum">      67</span> <span class="tlaGNC">        3837 :   const auto &amp; ref = tensors.front();</span></span>
+<span id="L68"><span class="lineNum">      68</span> <span class="tlaGNC">        3837 :   std::vector&lt;ATensor&gt; atensors(tensors.begin(), tensors.end());</span></span>
+<span id="L69"><span class="lineNum">      69</span> <span class="tlaGNC">        3837 :   d = utils::normalize_dim(d, ref.batch_dim(), ref.dim());</span></span>
+<span id="L70"><span class="lineNum">      70</span> <span class="tlaGNC">       11511 :   return neml2::Tensor(at::cat(atensors, d), ref.dynamic_sizes(), ref.intmd_dim());</span></span>
+<span id="L71"><span class="lineNum">      71</span> <span class="tlaGNC">        3837 : }</span></span>
+<span id="L72"><span class="lineNum">      72</span>              : } // namespace neml2</span>
         </pre>
               </td>
             </tr>

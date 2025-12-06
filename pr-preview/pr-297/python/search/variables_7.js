@@ -1,10 +1,11 @@
 var searchData=
 [
-  ['r2_0',['R2',['../classtensors_1_1TensorType.html#af8a77d8130bbe915125a2c136eb71008',1,'tensors::TensorType']]],
-  ['r3_1',['R3',['../classtensors_1_1TensorType.html#aaf896f092065afb1a96e7c1abf4eb3f4',1,'tensors::TensorType']]],
-  ['r4_2',['R4',['../classtensors_1_1TensorType.html#ac27b8fc2361375ed31984cab73d8611d',1,'tensors::TensorType']]],
-  ['r5_3',['R5',['../classtensors_1_1TensorType.html#afd0bff22b341f1e8d8d8bafdc0055245',1,'tensors::TensorType']]],
-  ['r8_4',['R8',['../classtensors_1_1TensorType.html#a8cf19b0d443272aea39283faa9eac816',1,'tensors::TensorType']]],
-  ['residual_5',['RESIDUAL',['../classinterface_1_1NEML2PyzagModel.html#ad855e5fdf082549e6f9f35ace3ac0ef2',1,'interface.NEML2PyzagModel.RESIDUAL'],['../namespacereserved.html#ad855e5fdf082549e6f9f35ace3ac0ef2',1,'reserved.RESIDUAL']]],
-  ['rot_6',['Rot',['../classtensors_1_1TensorType.html#a893567640ce87ccc7d0fc00e0b64a884',1,'tensors::TensorType']]]
+  ['scalar_0',['Scalar',['../classtensors_1_1TensorType.html#aa0870fe73d755b97f3cdb9e840e465fb',1,'tensors::TensorType']]],
+  ['sffr4_1',['SFFR4',['../classtensors_1_1TensorType.html#ae07e1d421de223412ad052b3763f10c2',1,'tensors::TensorType']]],
+  ['sfr3_2',['SFR3',['../classtensors_1_1TensorType.html#a3a907b6f1d57e842df16100d843fb582',1,'tensors::TensorType']]],
+  ['sr2_3',['SR2',['../classtensors_1_1TensorType.html#a3e3c0687809d76d776a288ede8ee419d',1,'tensors::TensorType']]],
+  ['ssr4_4',['SSR4',['../classtensors_1_1TensorType.html#a702996ce5f54374a120531aa6192afd6',1,'tensors::TensorType']]],
+  ['state_5',['STATE',['../classinterface_1_1NEML2PyzagModel.html#ad05796529f5499cab65861daaa03a7da',1,'interface.NEML2PyzagModel.STATE'],['../namespacereserved.html#ad05796529f5499cab65861daaa03a7da',1,'reserved.STATE']]],
+  ['subaxis_5fnames_6',['subaxis_names',['../classinterface_1_1NEML2PyzagModel.html#a392478988b4565d8886e7b99d2ab3411',1,'interface.NEML2PyzagModel.subaxis_names'],['../namespacereserved.html#a392478988b4565d8886e7b99d2ab3411',1,'reserved.subaxis_names']]],
+  ['swr4_7',['SWR4',['../classtensors_1_1TensorType.html#ad2cd1ddd359cb94b18bdf822ce47fc71',1,'tensors::TensorType']]]
 ];

@@ -142,13 +142,13 @@ $(function(){initNavTree('tutorials-tensors-tensor-types.html',''); initResizabl
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md155">Batching</a>
+    <a href="#autotoc_md297">Batching</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md156">Why batching?</a>
+    <a href="#autotoc_md298">Why batching?</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md157">Tensor types</a>
+    <a href="#autotoc_md299">Tensor types</a>
   </li>
 </ul>
 </div>
@@ -158,7 +158,7 @@ $(function(){initNavTree('tutorials-tensors-tensor-types.html',''); initResizabl
 <li><b>Primitive</b> tensor types commonly used in traditional scientific computing</li>
 <li>Commonly used math operators and functions for primitive tensor types</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md155"></a>
+<h1><a class="anchor" id="autotoc_md297"></a>
 Batching</h1>
 <p>Given a general, \(n\)-dimensional tensor (or array), its shape is usually denoted using a tuple consisting of sizes of each of its dimension, i.e.   </p><p class="formulaDsp">
 \[
@@ -191,7 +191,7 @@ Batching</h1>
 \end{align*}
 </p>
 <p> It is valid for the \(;\) delimiter to appear at the beginning or the end of the shape tuple. If it appears at the beginning it means that tensor has no batch dimensions. If it appears at the end it means the tensor is a batched scalar.</p>
-<h1><a class="anchor" id="autotoc_md156"></a>
+<h1><a class="anchor" id="autotoc_md298"></a>
 Why batching?</h1>
 <p>The definition of batching is fairly straightforward. However, fair question to ask is "why another layer of abstraction on top of the regular tensor shape definition"? Let's briefly consider the high-level motivation behind this design choice.</p>
 <p><b>Shape ambiguity</b>: Consider a tensor of shape \( (55, 100, 3, 3, 3, 3) \), it can be interpreted as</p><ul>
@@ -209,7 +209,7 @@ Why batching?</h1>
 </ul>
 <p>The first option implies a potential memory bound at the stage of JIT compilation, and is difficult to guarantee in practice. The second option imposes a significant runtime overhead whenever re-tracing is necessary.</p>
 <p>With explicit batching, NEML2 is able to generate <em>batch-generalizable</em> graphs. As long as the batch dimensions of the input variables remain unchanged, the same traced graph can be reused without re-tracing.</p>
-<h1><a class="anchor" id="autotoc_md157"></a>
+<h1><a class="anchor" id="autotoc_md299"></a>
 Tensor types</h1>
 <p><a class="el" href="classneml2_1_1Tensor.html">neml2::Tensor</a> is the general-purpose tensor type whose base shape can be modified at runtime.</p>
 <p>In addition, NEML2 offers a rich collection of primitive tensor types whose base shapes are static, i.e., remain fixed at runtime. Currently implemented tensor types are summarized in the following table.</p>
@@ -235,9 +235,9 @@ Tensor types</h1>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyLeft"><a class="el" href="classneml2_1_1R4.html">R4</a>   </td><td class="markdownTableBodyLeft">\((3,3,3,3)\)   </td><td class="markdownTableBodyLeft">Rank-4 tensor    </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyLeft"><a class="el" href="classneml2_1_1SFR4.html">SFR4</a>   </td><td class="markdownTableBodyLeft">\((6,3,3\))   </td><td class="markdownTableBodyLeft">Rank-4 tensor with symmetry on base dimensions 0 and 1    </td></tr>
+<td class="markdownTableBodyLeft"><a class="el" href="classneml2_1_1SFFR4.html">SFFR4</a>   </td><td class="markdownTableBodyLeft">\((6,3,3\))   </td><td class="markdownTableBodyLeft">Rank-4 tensor with symmetry on base dimensions 0 and 1    </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyLeft"><a class="el" href="classneml2_1_1WFR4.html">WFR4</a>   </td><td class="markdownTableBodyLeft">\((3,3,3\))   </td><td class="markdownTableBodyLeft">Rank-4 tensor with skew symmetry on base dimensions 0 and 1    </td></tr>
+<td class="markdownTableBodyLeft"><a class="el" href="classneml2_1_1WFFR4.html">WFFR4</a>   </td><td class="markdownTableBodyLeft">\((3,3,3\))   </td><td class="markdownTableBodyLeft">Rank-4 tensor with skew symmetry on base dimensions 0 and 1    </td></tr>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyLeft"><a class="el" href="classneml2_1_1SSR4.html">SSR4</a>   </td><td class="markdownTableBodyLeft">\((6,6)\)   </td><td class="markdownTableBodyLeft">Rank-4 tensor with minor symmetry    </td></tr>
 <tr class="markdownTableRowOdd">
@@ -246,14 +246,6 @@ Tensor types</h1>
 <td class="markdownTableBodyLeft"><a class="el" href="classneml2_1_1WSR4.html">WSR4</a>   </td><td class="markdownTableBodyLeft">\((3,6)\)   </td><td class="markdownTableBodyLeft">Rank-4 tensor with skew symmetry then minor symmetry    </td></tr>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyLeft"><a class="el" href="classneml2_1_1WWR4.html">WWR4</a>   </td><td class="markdownTableBodyLeft">\((3,3)\)   </td><td class="markdownTableBodyLeft">Rank-4 tensor with skew symmetry    </td></tr>
-<tr class="markdownTableRowEven">
-<td class="markdownTableBodyLeft"><a class="el" href="classneml2_1_1R5.html">R5</a>   </td><td class="markdownTableBodyLeft">\((3,3,3,3,3)\)   </td><td class="markdownTableBodyLeft">Rank-5 tensor    </td></tr>
-<tr class="markdownTableRowOdd">
-<td class="markdownTableBodyLeft"><a class="el" href="classneml2_1_1SSFR5.html">SSFR5</a>   </td><td class="markdownTableBodyLeft">\((6,6,3)\)   </td><td class="markdownTableBodyLeft">Rank-5 tensor with minor symmetry on base dimensions 0-3    </td></tr>
-<tr class="markdownTableRowEven">
-<td class="markdownTableBodyLeft"><a class="el" href="classneml2_1_1R8.html">R8</a>   </td><td class="markdownTableBodyLeft">\((3,3,3,3,3,3,3,3)\)   </td><td class="markdownTableBodyLeft">Rank-8 tensor    </td></tr>
-<tr class="markdownTableRowOdd">
-<td class="markdownTableBodyLeft"><a class="el" href="classneml2_1_1SSSSR8.html">SSSSR8</a>   </td><td class="markdownTableBodyLeft">\((6,6,6,6)\)   </td><td class="markdownTableBodyLeft">Rank-8 tensor with minor symmetry    </td></tr>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyLeft"><a class="el" href="classneml2_1_1Rot.html">Rot</a>   </td><td class="markdownTableBodyLeft">\((3)\)   </td><td class="markdownTableBodyLeft">Rotation tensor represented in the Rodrigues form    </td></tr>
 <tr class="markdownTableRowOdd">

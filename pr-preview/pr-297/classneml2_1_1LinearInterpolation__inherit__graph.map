@@ -1,5 +1,5 @@
 <map id="LinearInterpolation&lt; T &gt;" name="LinearInterpolation&lt; T &gt;">
-<area shape="rect" id="Node000001" title="Linearly interpolate the parameter along a single axis." alt="" coords="679,169,861,194"/>
+<area shape="rect" id="Node000001" title="Linearly interpolate the parameter along an intermediate axis." alt="" coords="679,169,861,194"/>
 <area shape="rect" id="Node000002" href="$classneml2_1_1Interpolation.html" title="The base class for interpolated variable." alt="" coords="488,169,631,194"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="645,179,678,179,678,184,645,184"/>
 <area shape="rect" id="Node000003" href="$classneml2_1_1Model.html" title="The base class for all constitutive models." alt="" coords="377,169,440,194"/>

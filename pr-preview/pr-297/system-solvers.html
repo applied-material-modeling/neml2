@@ -150,6 +150,15 @@ $(function(){initNavTree('system-solvers.html',''); initResizable(true); });
   <li class="level1">
     <a href="#autotoc_md60">Automatic scaling</a>
   </li>
+  <li class="level1">
+    <a href="#autotoc_md211">Nonlinear solver</a>
+  </li>
+  <li class="level1">
+    <a href="#autotoc_md212">Nonlinear system</a>
+  </li>
+  <li class="level1">
+    <a href="#autotoc_md213">Automatic scaling</a>
+  </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md__2home_2runner_2work_2neml2_2neml2_2doc_2content_2system_2solver"></a></p>
@@ -180,6 +189,38 @@ Nonlinear system</h1>
 </ol>
 <p>Since the input "state" sub-axis and the output "residual" sub-axis are required to be conformal, the Jacobian of the nonlinear system must be square (while not necessarily symmetric).</p>
 <h1><a class="anchor" id="autotoc_md60"></a>
+Automatic scaling</h1>
+<p>In addition to the default direct (LU) solver, iterative solvers, e.g. CG, GMRES, etc., can be used to solve the linearized system associated with each nonlinear update. It is well known that the effectiveness of iterative solvers is affected by the conditioning of the linear system.</p>
+<p>Since NEML2 supports general Multiphysics material models, conditioning of the system cannot be guaranteed directly by the model's forward operator. Therefore, NEML2 provides a mechanism to (attempt to) scale the nonlinear system and reduce the condition number.</p>
+<p>The automatic scaling algorithm used by NEML2 is algebraic and is based on the initial Jacobian (i.e., the Jacobian of the nonlinear system evaluated at its initial condition and the initial guess). The implementation closely follows section 2.3 in this <a href="https://cs.stanford.edu/people/paulliu/files/cs517-project.pdf">report</a>. Note that the resulting scaling matrices are <em>not</em> necessarily a global minimizer, nor a local minimizer, of the condition number. In fact, the condition number isn't guaranteed to decrease. However, in most of the material models that have been tested, this algorithm can substantially improve the conditioning of the system.</p>
+<p><a class="anchor" id="md_content_2system_2solver"></a></p>
+<p>Refer to <a class="el" href="syntax-solvers.html">Syntax Documentation</a> for the list of available objects.</p>
+<p>Many material models are <em>implicit</em>, meaning that the update of the material model is the solution to one or more nonlinear systems of equations. While a model or a composition of models can define such nonlinear system, a solver is required to actually <em>solve</em> the system.</p>
+<h1><a class="anchor" id="autotoc_md211"></a>
+Nonlinear solver</h1>
+<p>All nonlinear solvers derive from the common base class <code>NonlinearSolver</code>. The base class defines 3 public members: <code>atol</code> for the absolute tolerance, <code>rtol</code> for the relative tolerance, and <code>miters</code> for the maximum number of iterations.</p>
+<p>Derived classes must override the method </p><div class="fragment"><div class="line">std::tuple&lt;bool, size_t&gt; solve(NonlinearSystem &amp; system, Tensor &amp; sol)</div>
+</div><!-- fragment --><p> The first argument is the nonlinear system of equations to be solved, and the second argument is the initial guess which will be iteratively updated during the solve. The second argument will hold the solution to the system upon convergence. The first tuple element in the return value is a boolean indicating whether the solve has succeeeded, and the second tuple element is the number of iterations taken before convergence.</p>
+<p>While the convergence criteria are defined by the specific solvers derived from the base class, it is generally recommended to use both <code>atol</code> and <code>rtol</code> in the convergence check. Below is an example convergence criteria </p><div class="fragment"><div class="line"><span class="keywordtype">bool</span></div>
+<div class="line">MySolver::converged(<span class="keyword">const</span> ATensor &amp; nR, <span class="keyword">const</span> ATensor &amp; nR0)<span class="keyword"> const</span></div>
+<div class="line"><span class="keyword"></span>{</div>
+<div class="line">  <span class="keywordflow">return</span> at::all(at::logical_or(nR &lt; atol, nR / nR0 &lt; rtol)).item&lt;<span class="keywordtype">bool</span>&gt;();</div>
+<div class="line">}</div>
+</div><!-- fragment --><p> where <code>nR</code> is the vector norm of the current residual, and <code>nR0</code> is the vector norm of the initial residual (evaluated at the initial guess). The above statement makes sure the current residual is either below the absolute tolerance or has been sufficiently reduced, and the condition is applied to <em>all</em> batches of the residual norm.</p>
+<h1><a class="anchor" id="autotoc_md212"></a>
+Nonlinear system</h1>
+<p>The first argument passed to the <code>NonlinearSolver::solve</code> method is of type <code>NonlinearSystem &amp;</code>. Since <code>Model</code> derives from <code>NonlinearSystem</code>, no special action needs to be taken to cast a <code>Model</code> into a <code>NonlinearSystem</code>. However, the input and output axes of the <code>Model</code> must conform with the following requirements in order to be properly recognized as a nonlinear system:</p><ol type="1">
+<li>The input axis must have a sub-axis named "state".</li>
+<li>The output axis must have a sub-axis named "residual".</li>
+<li>The input "state" sub-axis and the output "residual" sub-axis must be conformal, i.e., the variable names on the two axes must have one-to-one correspondence.</li>
+</ol>
+<p>With these requirements, the following rules are implied during the evaluation of a nonlinear system:</p><ol type="1">
+<li>The input "state" sub-axis is used as the initial guess. The driver is responsible for setting the appropriate initial guess.</li>
+<li>The output "residual" sub-axis is the residual of the nonlinear system.</li>
+<li>The derivative sub-block "(residual, state)" is the Jacobian of the nonlinear system.</li>
+</ol>
+<p>Since the input "state" sub-axis and the output "residual" sub-axis are required to be conformal, the Jacobian of the nonlinear system must be square (while not necessarily symmetric).</p>
+<h1><a class="anchor" id="autotoc_md213"></a>
 Automatic scaling</h1>
 <p>In addition to the default direct (LU) solver, iterative solvers, e.g. CG, GMRES, etc., can be used to solve the linearized system associated with each nonlinear update. It is well known that the effectiveness of iterative solvers is affected by the conditioning of the linear system.</p>
 <p>Since NEML2 supports general Multiphysics material models, conditioning of the system cannot be guaranteed directly by the model's forward operator. Therefore, NEML2 provides a mechanism to (attempt to) scale the nonlinear system and reduce the condition number.</p>

@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-10-10 12:15:50</td>
+            <td class="headerValue">2025-12-06 17:10:54</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -134,7 +134,7 @@
 <span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC">           6 : KocksMeckingRateSensitivity::set_value(bool out, bool dout_din, bool d2out_din2)</span></span>
 <span id="L73"><span class="lineNum">      73</span>              : {</span>
 <span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">           6 :   if (out)</span></span>
-<span id="L75"><span class="lineNum">      75</span> <span class="tlaGNC">           4 :     _m = -_mu * _b3 / (_k * _T * _A);</span></span>
+<span id="L75"><span class="lineNum">      75</span> <span class="tlaGNC">           6 :     _m = -_mu * _b3 / (_k * _T * _A);</span></span>
 <span id="L76"><span class="lineNum">      76</span>              : </span>
 <span id="L77"><span class="lineNum">      77</span> <span class="tlaGNC">           6 :   if (dout_din)</span></span>
 <span id="L78"><span class="lineNum">      78</span>              :   {</span>
@@ -150,18 +150,18 @@
 <span id="L88"><span class="lineNum">      88</span>              :   {</span>
 <span id="L89"><span class="lineNum">      89</span>              :     // T, T</span>
 <span id="L90"><span class="lineNum">      90</span> <span class="tlaGNC">           2 :     if (_T.is_dependent())</span></span>
-<span id="L91"><span class="lineNum">      91</span> <span class="tlaGNC">           2 :       _m.d(_T, _T) = -2.0 * _b3 * _mu / (_A * _k * _T * _T * _T);</span></span>
+<span id="L91"><span class="lineNum">      91</span> <span class="tlaGNC">           2 :       _m.d2(_T, _T) = -2.0 * _b3 * _mu / (_A * _k * _T * _T * _T);</span></span>
 <span id="L92"><span class="lineNum">      92</span>              : </span>
 <span id="L93"><span class="lineNum">      93</span> <span class="tlaGNC">           6 :     if (const auto * const A = nl_param(&quot;A&quot;))</span></span>
 <span id="L94"><span class="lineNum">      94</span>              :     {</span>
 <span id="L95"><span class="lineNum">      95</span>              :       // A, A</span>
-<span id="L96"><span class="lineNum">      96</span> <span class="tlaGNC">           1 :       _m.d(*A, *A) = -2.0 * _b3 * _mu / (_A * _A * _A * _k * _T);</span></span>
+<span id="L96"><span class="lineNum">      96</span> <span class="tlaGNC">           1 :       _m.d2(*A, *A) = -2.0 * _b3 * _mu / (_A * _A * _A * _k * _T);</span></span>
 <span id="L97"><span class="lineNum">      97</span>              :       // A, T and T, A</span>
 <span id="L98"><span class="lineNum">      98</span> <span class="tlaGNC">           1 :       if (_T.is_dependent())</span></span>
 <span id="L99"><span class="lineNum">      99</span>              :       {</span>
 <span id="L100"><span class="lineNum">     100</span> <span class="tlaGNC">           1 :         auto AT = -_b3 * _mu / (_A * _A * _k * _T * _T);</span></span>
-<span id="L101"><span class="lineNum">     101</span> <span class="tlaGNC">           1 :         _m.d(*A, _T) = AT;</span></span>
-<span id="L102"><span class="lineNum">     102</span> <span class="tlaGNC">           1 :         _m.d(_T, *A) = AT;</span></span>
+<span id="L101"><span class="lineNum">     101</span> <span class="tlaGNC">           1 :         _m.d2(*A, _T) = AT;</span></span>
+<span id="L102"><span class="lineNum">     102</span> <span class="tlaGNC">           1 :         _m.d2(_T, *A) = AT;</span></span>
 <span id="L103"><span class="lineNum">     103</span> <span class="tlaGNC">           1 :       }</span></span>
 <span id="L104"><span class="lineNum">     104</span>              :     }</span>
 <span id="L105"><span class="lineNum">     105</span>              : </span>
@@ -171,16 +171,16 @@
 <span id="L109"><span class="lineNum">     109</span> <span class="tlaGNC">           1 :       if (_T.is_dependent())</span></span>
 <span id="L110"><span class="lineNum">     110</span>              :       {</span>
 <span id="L111"><span class="lineNum">     111</span> <span class="tlaGNC">           1 :         auto MT = _b3 / (_A * _k * _T * _T);</span></span>
-<span id="L112"><span class="lineNum">     112</span> <span class="tlaGNC">           1 :         _m.d(*mu, _T) = MT;</span></span>
-<span id="L113"><span class="lineNum">     113</span> <span class="tlaGNC">           1 :         _m.d(_T, *mu) = MT;</span></span>
+<span id="L112"><span class="lineNum">     112</span> <span class="tlaGNC">           1 :         _m.d2(*mu, _T) = MT;</span></span>
+<span id="L113"><span class="lineNum">     113</span> <span class="tlaGNC">           1 :         _m.d2(_T, *mu) = MT;</span></span>
 <span id="L114"><span class="lineNum">     114</span> <span class="tlaGNC">           1 :       }</span></span>
 <span id="L115"><span class="lineNum">     115</span>              : </span>
 <span id="L116"><span class="lineNum">     116</span> <span class="tlaGNC">           3 :       if (const auto * const A = nl_param(&quot;A&quot;))</span></span>
 <span id="L117"><span class="lineNum">     117</span>              :       {</span>
 <span id="L118"><span class="lineNum">     118</span>              :         // mu, A and A, mu</span>
 <span id="L119"><span class="lineNum">     119</span> <span class="tlaGNC">           1 :         auto MA = _b3 / (_A * _A * _k * _T);</span></span>
-<span id="L120"><span class="lineNum">     120</span> <span class="tlaGNC">           1 :         _m.d(*mu, *A) = MA;</span></span>
-<span id="L121"><span class="lineNum">     121</span> <span class="tlaGNC">           1 :         _m.d(*A, *mu) = MA;</span></span>
+<span id="L120"><span class="lineNum">     120</span> <span class="tlaGNC">           1 :         _m.d2(*mu, *A) = MA;</span></span>
+<span id="L121"><span class="lineNum">     121</span> <span class="tlaGNC">           1 :         _m.d2(*A, *mu) = MA;</span></span>
 <span id="L122"><span class="lineNum">     122</span> <span class="tlaGNC">           1 :       }</span></span>
 <span id="L123"><span class="lineNum">     123</span>              :     }</span>
 <span id="L124"><span class="lineNum">     124</span>              :   }</span>

@@ -142,49 +142,26 @@ $(function(){initNavTree('tutorials-contributing.html',''); initResizable(true);
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md68">Model development</a>
-  </li>
-  <li class="level1">
-    <a href="#testing-cpp">C++ backend</a>
+    <a href="#autotoc_md214">Model development</a>
     <ul>
       <li class="level2">
-        <a href="#testing-catch-tests">Catch tests</a>
-      </li>
-      <li class="level2">
-        <a href="#testing-unit-tests">Unit tests</a>
-      </li>
-      <li class="level2">
-        <a href="#testing-regression-tests">Regression tests</a>
-      </li>
-      <li class="level2">
-        <a href="#testing-verification-tests">Verification tests</a>
-      </li>
-      <li class="level2">
-        <a href="#autotoc_md69">Command-line arguments</a>
+        <a href="#autotoc_md215">Command-line arguments</a>
       </li>
     </ul>
   </li>
   <li class="level1">
-    <a href="#autotoc_md70">Python package</a>
-    <ul>
-      <li class="level2">
-        <a href="#testing-python">Setup</a>
-      </li>
-      <li class="level2">
-        <a href="#testing-pytest">pytest</a>
-      </li>
-    </ul>
+    <a href="#autotoc_md216">Python package</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md71">Documentation</a>
+    <a href="#autotoc_md217">Documentation</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md72">Code formatting and static analysis</a>
+    <a href="#autotoc_md218">Code formatting and static analysis</a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_content_2tutorials_2contributing"></a></p>
-<h1><a class="anchor" id="autotoc_md68"></a>
+<h1><a class="anchor" id="autotoc_md214"></a>
 Model development</h1>
 <p>Although NEML2 comes with a large collection of modular building blocks for composing material models, it is sometimes necessary to write your own material models (and integrate them with existing NEML2 models). The <a class="el" href="tutorials-extension.html">extension</a> tutorial set demonstrates how a custom model can be implemented within the NEML2 framework and provides an in-depth explanation for each step in the development process.</p>
 <h1><a class="anchor" id="testing-cpp"></a>
@@ -220,13 +197,13 @@ Verification tests</h2>
 <p>Each input file for model verification tests should be stored inside a separate folder inside <code>tests/verification</code>. Every input file with the <code>.i</code> extension will be automatically discovered and executed. To run all the model verification tests, use the <code>verification_tests</code> executable followed by the physics module, i.e. </p><div class="fragment"><div class="line">../build/dev/verification/verification_tests &quot;solid mechanics&quot;</div>
 </div><!-- fragment --><p>To run a specific model verification test, use the <code>-c</code> command line option followed by the relative location of the input file, i.e. </p><div class="fragment"><div class="line">./build/dev/verification/verification_tests &quot;solid mechanics&quot; -c chaboche/chaboche.i</div>
 </div><!-- fragment --><p> The regression test compares variables (specified using the <code>variables</code> option) against reference values (specified using the <code>references</code> option). The reference variables can be read using input objects with type <code>VTestTimeSeries</code>.</p>
-<h2><a class="anchor" id="autotoc_md69"></a>
+<h2><a class="anchor" id="autotoc_md215"></a>
 Command-line arguments</h2>
 <p>The above test suites, including unit tests, regression tests, verification tests, and dispatcher tests, support a variety of configuration options that can be controlled from the command line. See <a href="https://github.com/catchorg/Catch2/blob/devel/docs/command-line.md">Catch2 command line</a> documentation for a list of useful command-line options. In addition, NEML2 test suites additionally support the following options:</p><ul>
 <li><code>-p</code>, <code>--path</code>: working directory. This argument is optional and is only needed when the default guessing mechanism fails to locate the test input files.</li>
 <li><code>-d</code>, <code>--devices</code>: list of additional (non-CPU) devices to test.</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md70"></a>
+<h1><a class="anchor" id="autotoc_md216"></a>
 Python package</h1>
 <h2><a class="anchor" id="testing-python"></a>
 Setup</h2>
@@ -244,13 +221,13 @@ pytest</h2>
 </div><!-- fragment --><p>To run a specific test case, use</p>
 <div class="fragment"><div class="line">PYTHONPATH=build/dev/python pytest &quot;python/tests/test_Model.py::test_forward&quot;</div>
 </div><!-- fragment --><p> which runs the function named <code>test_forward</code> defined in the <code>python/tests/test_Model.py</code> file.</p>
-<h1><a class="anchor" id="autotoc_md71"></a>
+<h1><a class="anchor" id="autotoc_md217"></a>
 Documentation</h1>
 <p>It is of paramount importance to write documentation as the library is being developed. While NEML2 supports both Doxygen-style in-code documentation mechanisms and runtime syntax documentation mechanisms, it is still sometimes necessary to write standalone, self-contained documentation.</p>
 <p>To this end, the "dev" configure preset and the "dev-doc" build preset (see <a class="el" href="build-customization.html">build customization</a>) can be used to generate and render the documentation locally: </p><div class="fragment"><div class="line">cmake --preset dev -S .</div>
 <div class="line">cmake --build --preset dev-doc</div>
 </div><!-- fragment --><p> Once the documentation is built, the site can be previewed locally in any browser that supports static HTML, i.e. </p><div class="fragment"><div class="line">firefox build/dev/doc/build/html/index.html</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md72"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md218"></a>
 Code formatting and static analysis</h1>
 <p>The C++ source code is formatted using <code>clang-format</code>. A <code>.clang-format</code> file is provided at the repository root specifying the formatting requirements. When using an IDE providing plugins or extensions to format C++ source code, it is important to</p><ol type="1">
 <li>Point the plugin/extension to use the <code>.clang-format</code> file located at NEML2's repository root.</li>

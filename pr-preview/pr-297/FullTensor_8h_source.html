@@ -165,28 +165,33 @@ $(function(){initNavTree('FullTensor_8h_source.html',''); initResizable(true); }
 <div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span> </div>
 <div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="preprocessor">#pragma once</span></div>
 <div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span> </div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span><span class="preprocessor">#include &quot;neml2/user_tensors/UserTensorBase.h&quot;</span></div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span><span class="preprocessor">#include &quot;neml2/user_tensors/FactoryMethodBase.h&quot;</span></div>
 <div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span> </div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="preprocessor">#include &quot;neml2/tensors/Tensor.h&quot;</span></div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a></div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>{</div>
-<div class="foldopen" id="foldopen00036" data-start="{" data-end="};">
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno"><a class="line" href="classneml2_1_1FullTensor.html">   36</a></span><span class="keyword">class </span><a class="code hl_class" href="classneml2_1_1FullTensor.html">FullTensor</a> : <span class="keyword">public</span> <a class="code hl_class" href="classneml2_1_1Tensor.html">Tensor</a>, <span class="keyword">public</span> <a class="code hl_class" href="classneml2_1_1UserTensorBase.html">UserTensorBase</a></div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>{</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>  <span class="keyword">static</span> <a class="code hl_class" href="classneml2_1_1OptionSet.html">OptionSet</a> <a class="code hl_function" href="classneml2_1_1FullTensor.html#acec712ff48d4c0884a1362c116f3257a">expected_options</a>();</div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span> </div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>  <a class="code hl_function" href="classneml2_1_1FullTensor.html#a954aa5df9dcd01905b718ce98dca217a">FullTensor</a>(<span class="keyword">const</span> <a class="code hl_class" href="classneml2_1_1OptionSet.html">OptionSet</a> &amp; options);</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>};</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a></div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>{</div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="foldopen" id="foldopen00037" data-start="{" data-end="};">
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno"><a class="line" href="classneml2_1_1FullTensorTmpl.html">   37</a></span><span class="keyword">class </span><a class="code hl_class" href="classneml2_1_1FullTensorTmpl.html">FullTensorTmpl</a> : <span class="keyword">public</span> <a class="code hl_class" href="classneml2_1_1FactoryMethodBase.html">FactoryMethodBase</a>&lt;T&gt;</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>{</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>  <span class="keyword">static</span> <a class="code hl_class" href="classneml2_1_1OptionSet.html">OptionSet</a> <a class="code hl_function" href="classneml2_1_1FullTensorTmpl.html#acec712ff48d4c0884a1362c116f3257a">expected_options</a>();</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span> </div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>  <a class="code hl_function" href="classneml2_1_1FullTensorTmpl.html#ab5a6dffb94b0434d2f38a84a3438eb97">FullTensorTmpl</a>(<span class="keyword">const</span> <a class="code hl_class" href="classneml2_1_1OptionSet.html">OptionSet</a> &amp; options);</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span> </div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span><span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>  T <a class="code hl_function" href="classneml2_1_1FullTensorTmpl.html#a9242f35e507185a2e3d98da0007c851e">make</a>() <span class="keyword">const override</span>;</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span> </div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>  <span class="keywordtype">double</span> _value;</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>};</div>
 </div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>} <span class="comment">// namespace neml2</span></div>
-<div class="ttc" id="aclassneml2_1_1FullTensor_html"><div class="ttname"><a href="classneml2_1_1FullTensor.html">neml2::FullTensor</a></div><div class="ttdoc">Create a full Tensor from the input file.</div><div class="ttdef"><b>Definition</b> FullTensor.h:37</div></div>
-<div class="ttc" id="aclassneml2_1_1FullTensor_html_a954aa5df9dcd01905b718ce98dca217a"><div class="ttname"><a href="classneml2_1_1FullTensor.html#a954aa5df9dcd01905b718ce98dca217a">neml2::FullTensor::FullTensor</a></div><div class="ttdeci">FullTensor(const OptionSet &amp;options)</div><div class="ttdoc">Construct a new FullTensor object.</div><div class="ttdef"><b>Definition</b> FullTensor.cxx:50</div></div>
-<div class="ttc" id="aclassneml2_1_1FullTensor_html_acec712ff48d4c0884a1362c116f3257a"><div class="ttname"><a href="classneml2_1_1FullTensor.html#acec712ff48d4c0884a1362c116f3257a">neml2::FullTensor::expected_options</a></div><div class="ttdeci">static OptionSet expected_options()</div><div class="ttdef"><b>Definition</b> FullTensor.cxx:32</div></div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>} <span class="comment">// namespace neml2</span></div>
+<div class="ttc" id="aclassneml2_1_1FactoryMethodBase_html"><div class="ttname"><a href="classneml2_1_1FactoryMethodBase.html">neml2::FactoryMethodBase</a></div><div class="ttdoc">Create an empty tensor of type T from the input file.</div><div class="ttdef"><b>Definition</b> FactoryMethodBase.h:38</div></div>
+<div class="ttc" id="aclassneml2_1_1FullTensorTmpl_html"><div class="ttname"><a href="classneml2_1_1FullTensorTmpl.html">neml2::FullTensorTmpl</a></div><div class="ttdoc">Create a full tensor of type T from the input file.</div><div class="ttdef"><b>Definition</b> FullTensor.h:38</div></div>
+<div class="ttc" id="aclassneml2_1_1FullTensorTmpl_html_a9242f35e507185a2e3d98da0007c851e"><div class="ttname"><a href="classneml2_1_1FullTensorTmpl.html#a9242f35e507185a2e3d98da0007c851e">neml2::FullTensorTmpl::make</a></div><div class="ttdeci">T make() const override</div><div class="ttdoc">Create the tensor given input options.</div><div class="ttdef"><b>Definition</b> FullTensor.cxx:52</div></div>
+<div class="ttc" id="aclassneml2_1_1FullTensorTmpl_html_ab5a6dffb94b0434d2f38a84a3438eb97"><div class="ttname"><a href="classneml2_1_1FullTensorTmpl.html#ab5a6dffb94b0434d2f38a84a3438eb97">neml2::FullTensorTmpl::FullTensorTmpl</a></div><div class="ttdeci">FullTensorTmpl(const OptionSet &amp;options)</div><div class="ttdef"><b>Definition</b> FullTensor.cxx:44</div></div>
+<div class="ttc" id="aclassneml2_1_1FullTensorTmpl_html_acec712ff48d4c0884a1362c116f3257a"><div class="ttname"><a href="classneml2_1_1FullTensorTmpl.html#acec712ff48d4c0884a1362c116f3257a">neml2::FullTensorTmpl::expected_options</a></div><div class="ttdeci">static OptionSet expected_options()</div><div class="ttdef"><b>Definition</b> FullTensor.cxx:33</div></div>
 <div class="ttc" id="aclassneml2_1_1OptionSet_html"><div class="ttname"><a href="classneml2_1_1OptionSet.html">neml2::OptionSet</a></div><div class="ttdoc">A custom map-like data structure. The keys are strings, and the values can be nonhomogeneously typed.</div><div class="ttdef"><b>Definition</b> OptionSet.h:51</div></div>
-<div class="ttc" id="aclassneml2_1_1Tensor_html"><div class="ttname"><a href="classneml2_1_1Tensor.html">neml2::Tensor</a></div><div class="ttdef"><b>Definition</b> Tensor.h:46</div></div>
-<div class="ttc" id="aclassneml2_1_1UserTensorBase_html"><div class="ttname"><a href="classneml2_1_1UserTensorBase.html">neml2::UserTensorBase</a></div><div class="ttdef"><b>Definition</b> UserTensorBase.h:38</div></div>
 <div class="ttc" id="anamespaceneml2_html"><div class="ttname"><a href="namespaceneml2.html">neml2</a></div><div class="ttdef"><b>Definition</b> DiagnosticsInterface.cxx:30</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->

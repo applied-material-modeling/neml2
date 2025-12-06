@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-10-10 12:15:50</td>
+            <td class="headerValue">2025-12-06 17:10:54</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -85,18 +85,20 @@
 <span id="L23"><span class="lineNum">      23</span>              : // THE SOFTWARE.</span>
 <span id="L24"><span class="lineNum">      24</span>              : </span>
 <span id="L25"><span class="lineNum">      25</span>              : #include &quot;neml2/tensors/functions/linalg/ieigh.h&quot;</span>
-<span id="L26"><span class="lineNum">      26</span>              : </span>
-<span id="L27"><span class="lineNum">      27</span>              : namespace neml2::linalg</span>
-<span id="L28"><span class="lineNum">      28</span>              : {</span>
-<span id="L29"><span class="lineNum">      29</span>              : SR2</span>
-<span id="L30"><span class="lineNum">      30</span> <span class="tlaGNC tlaBgGNC">          15 : ieigh(const Vec &amp; eigvals, const R2 &amp; eigvecs)</span></span>
-<span id="L31"><span class="lineNum">      31</span>              : {</span>
-<span id="L32"><span class="lineNum">      32</span> <span class="tlaGNC">          15 :   auto M0 = eigvecs.col(0).self_outer();</span></span>
-<span id="L33"><span class="lineNum">      33</span> <span class="tlaGNC">          15 :   auto M1 = eigvecs.col(1).self_outer();</span></span>
-<span id="L34"><span class="lineNum">      34</span> <span class="tlaGNC">          15 :   auto M2 = eigvecs.col(2).self_outer();</span></span>
-<span id="L35"><span class="lineNum">      35</span> <span class="tlaGNC">          30 :   return eigvals(0) * M0 + eigvals(1) * M1 + eigvals(2) * M2;</span></span>
-<span id="L36"><span class="lineNum">      36</span> <span class="tlaGNC">          15 : }</span></span>
-<span id="L37"><span class="lineNum">      37</span>              : } // namespace neml2::linalg</span>
+<span id="L26"><span class="lineNum">      26</span>              : #include &quot;neml2/tensors/functions/outer.h&quot;</span>
+<span id="L27"><span class="lineNum">      27</span>              : #include &quot;neml2/tensors/Scalar.h&quot;</span>
+<span id="L28"><span class="lineNum">      28</span>              : </span>
+<span id="L29"><span class="lineNum">      29</span>              : namespace neml2::linalg</span>
+<span id="L30"><span class="lineNum">      30</span>              : {</span>
+<span id="L31"><span class="lineNum">      31</span>              : SR2</span>
+<span id="L32"><span class="lineNum">      32</span> <span class="tlaGNC tlaBgGNC">          15 : ieigh(const Vec &amp; eigvals, const R2 &amp; eigvecs)</span></span>
+<span id="L33"><span class="lineNum">      33</span>              : {</span>
+<span id="L34"><span class="lineNum">      34</span> <span class="tlaGNC">          15 :   auto M0 = neml2::outer(eigvecs.col(0));</span></span>
+<span id="L35"><span class="lineNum">      35</span> <span class="tlaGNC">          15 :   auto M1 = neml2::outer(eigvecs.col(1));</span></span>
+<span id="L36"><span class="lineNum">      36</span> <span class="tlaGNC">          15 :   auto M2 = neml2::outer(eigvecs.col(2));</span></span>
+<span id="L37"><span class="lineNum">      37</span> <span class="tlaGNC">          30 :   return eigvals(0) * SR2(M0) + eigvals(1) * SR2(M1) + eigvals(2) * SR2(M2);</span></span>
+<span id="L38"><span class="lineNum">      38</span> <span class="tlaGNC">          15 : }</span></span>
+<span id="L39"><span class="lineNum">      39</span>              : } // namespace neml2::linalg</span>
         </pre>
               </td>
             </tr>

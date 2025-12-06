@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-10-10 12:15:50</td>
+            <td class="headerValue">2025-12-06 17:10:54</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -122,31 +122,31 @@
 <span id="L60"><span class="lineNum">      60</span> <span class="tlaGNC">           5 : }</span></span>
 <span id="L61"><span class="lineNum">      61</span>              : </span>
 <span id="L62"><span class="lineNum">      62</span>              : void</span>
-<span id="L63"><span class="lineNum">      63</span> <span class="tlaGNC">          10 : PerzynaPlasticFlowRate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)</span></span>
+<span id="L63"><span class="lineNum">      63</span> <span class="tlaGNC">          22 : PerzynaPlasticFlowRate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)</span></span>
 <span id="L64"><span class="lineNum">      64</span>              : {</span>
 <span id="L65"><span class="lineNum">      65</span>              :   // Compute the Perzyna approximation of the yield surface</span>
-<span id="L66"><span class="lineNum">      66</span> <span class="tlaGNC">          10 :   auto Hf = heaviside(Scalar(_f));</span></span>
-<span id="L67"><span class="lineNum">      67</span> <span class="tlaGNC">          10 :   auto f_abs = abs(Scalar(_f));</span></span>
-<span id="L68"><span class="lineNum">      68</span> <span class="tlaGNC">          10 :   auto gamma_dot_m = pow(f_abs / _eta, _n);</span></span>
-<span id="L69"><span class="lineNum">      69</span> <span class="tlaGNC">          10 :   auto gamma_dot = gamma_dot_m * Hf;</span></span>
+<span id="L66"><span class="lineNum">      66</span> <span class="tlaGNC">          22 :   auto Hf = heaviside(_f());</span></span>
+<span id="L67"><span class="lineNum">      67</span> <span class="tlaGNC">          22 :   auto f_abs = abs(_f());</span></span>
+<span id="L68"><span class="lineNum">      68</span> <span class="tlaGNC">          22 :   auto gamma_dot_m = pow(f_abs / _eta, _n);</span></span>
+<span id="L69"><span class="lineNum">      69</span> <span class="tlaGNC">          22 :   auto gamma_dot = gamma_dot_m * Hf;</span></span>
 <span id="L70"><span class="lineNum">      70</span>              : </span>
-<span id="L71"><span class="lineNum">      71</span> <span class="tlaGNC">          10 :   if (out)</span></span>
-<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC">           9 :     _gamma_dot = gamma_dot;</span></span>
+<span id="L71"><span class="lineNum">      71</span> <span class="tlaGNC">          22 :   if (out)</span></span>
+<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC">          22 :     _gamma_dot = gamma_dot;</span></span>
 <span id="L73"><span class="lineNum">      73</span>              : </span>
-<span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">          10 :   if (dout_din)</span></span>
+<span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">          22 :   if (dout_din)</span></span>
 <span id="L75"><span class="lineNum">      75</span>              :   {</span>
-<span id="L76"><span class="lineNum">      76</span> <span class="tlaGNC">           5 :     auto dgamma_dot_df = _n / f_abs * gamma_dot;</span></span>
+<span id="L76"><span class="lineNum">      76</span> <span class="tlaGNC">          11 :     auto dgamma_dot_df = _n / f_abs * gamma_dot;</span></span>
 <span id="L77"><span class="lineNum">      77</span>              : </span>
-<span id="L78"><span class="lineNum">      78</span> <span class="tlaGNC">           5 :     if (_f.is_dependent())</span></span>
-<span id="L79"><span class="lineNum">      79</span> <span class="tlaGNC">           5 :       _gamma_dot.d(_f) = dgamma_dot_df;</span></span>
+<span id="L78"><span class="lineNum">      78</span> <span class="tlaGNC">          11 :     if (_f.is_dependent())</span></span>
+<span id="L79"><span class="lineNum">      79</span> <span class="tlaGNC">          11 :       _gamma_dot.d(_f) = dgamma_dot_df;</span></span>
 <span id="L80"><span class="lineNum">      80</span>              : </span>
-<span id="L81"><span class="lineNum">      81</span> <span class="tlaGNC">          15 :     if (const auto * const eta = nl_param(&quot;eta&quot;))</span></span>
+<span id="L81"><span class="lineNum">      81</span> <span class="tlaGNC">          33 :     if (const auto * const eta = nl_param(&quot;eta&quot;))</span></span>
 <span id="L82"><span class="lineNum">      82</span> <span class="tlaGNC">           1 :       _gamma_dot.d(*eta) = -_n * gamma_dot / _eta;</span></span>
 <span id="L83"><span class="lineNum">      83</span>              : </span>
-<span id="L84"><span class="lineNum">      84</span> <span class="tlaGNC">          15 :     if (const auto * const n = nl_param(&quot;n&quot;))</span></span>
+<span id="L84"><span class="lineNum">      84</span> <span class="tlaGNC">          33 :     if (const auto * const n = nl_param(&quot;n&quot;))</span></span>
 <span id="L85"><span class="lineNum">      85</span> <span class="tlaGNC">           1 :       _gamma_dot.d(*n) = gamma_dot * log(f_abs / _eta);</span></span>
-<span id="L86"><span class="lineNum">      86</span> <span class="tlaGNC">           5 :   }</span></span>
-<span id="L87"><span class="lineNum">      87</span> <span class="tlaGNC">          10 : }</span></span>
+<span id="L86"><span class="lineNum">      86</span> <span class="tlaGNC">          11 :   }</span></span>
+<span id="L87"><span class="lineNum">      87</span> <span class="tlaGNC">          22 : }</span></span>
 <span id="L88"><span class="lineNum">      88</span>              : } // namespace neml2</span>
         </pre>
               </td>

@@ -142,25 +142,25 @@ $(function(){initNavTree('tutorials-naming-conventions.html',''); initResizable(
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md136">Naming conventions</a>
+    <a href="#autotoc_md278">Naming conventions</a>
     <ul>
       <li class="level2">
-        <a href="#autotoc_md137">Reserved axis names</a>
+        <a href="#autotoc_md279">Reserved axis names</a>
       </li>
       <li class="level2">
-        <a href="#autotoc_md138">Variable naming conventions</a>
+        <a href="#autotoc_md280">Variable naming conventions</a>
       </li>
       <li class="level2">
-        <a href="#autotoc_md139">Source code naming conventions</a>
+        <a href="#autotoc_md281">Source code naming conventions</a>
       </li>
     </ul>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_content_2tutorials_2naming__conventions"></a></p>
-<h1><a class="anchor" id="autotoc_md136"></a>
+<h1><a class="anchor" id="autotoc_md278"></a>
 Naming conventions</h1>
-<h2><a class="anchor" id="autotoc_md137"></a>
+<h2><a class="anchor" id="autotoc_md279"></a>
 Reserved axis names</h2>
 <p>NEML2 models group variables onto different axes by their names, and the collection of variable names (with their corresponding layout) is called a labeled axis (<a class="el" href="classneml2_1_1LabeledAxis.html">LabeledAxis</a>). NEML2 predefines six sub-axes to categorize all the input, output and intermediate variables:</p><ul>
 <li>State \(\mathcal{S}\) (axis name <code>state</code>): Variables collectively characterizing the current <em>state</em> of the material subject to given external forces. The state variables are usually the output of a physically meaningful material model.</li>
@@ -171,7 +171,7 @@ Reserved axis names</h2>
 <li>Parameters \(\mathcal{P}\) (axis name <code>parameters</code>): The (nonlinear) parameters.</li>
 </ul>
 <dl class="section note"><dt>Note</dt><dd>When authoring C++ source code, it is recommended to avoid hard-coding reserved axis names as pure strings. Instead, inlined <code>const</code> string names (defined in <code>neml2/models/LabeledAxisAccessor.h</code>) should be used wherever possible, i.e. <code>STATE</code>, <code>OLD_STATE</code>, <code>FORCES</code>, <code>OLD_FORCES</code>, <code>RESIDUAL</code>, and <code>PARAMETERS</code>.</dd></dl>
-<h2><a class="anchor" id="autotoc_md138"></a>
+<h2><a class="anchor" id="autotoc_md280"></a>
 Variable naming conventions</h2>
 <p>Variable names have the type <a class="el" href="namespaceneml2.html#a5cf0dc3e9d16378ebe48923973730e54">neml2::VariableName</a> which is an alias to <a class="el" href="classneml2_1_1LabeledAxisAccessor.html" title="The accessor containing all the information needed to access an item in a LabeledAxis.">neml2::LabeledAxisAccessor</a>. The following characters are not allowed in variable names:</p><ul>
 <li>whitespace characters: input file parsing ambiguity</li>
@@ -181,7 +181,7 @@ Variable naming conventions</h2>
 <li><code>/</code>: separator reserved for nested variable name</li>
 </ul>
 <p>In the input file, the separator <code>/</code> is used to denote nested variable names. For example, <code>A/B/foo</code> specifies a variable named "foo" defined on the sub-axis named "B" which is a nested sub-axis of "A".</p>
-<h2><a class="anchor" id="autotoc_md139"></a>
+<h2><a class="anchor" id="autotoc_md281"></a>
 Source code naming conventions</h2>
 <p>In NEML2 source code, the following naming conventions are recommended:</p><ul>
 <li>User-facing variables and option names should be <em>as descriptive as possible</em>. For example, the equivalent plastic strain is named "equivalent_plastic_strain". Note that white spaces, quotes, and left slashes are not allowed in the names. Underscores are recommended as a replacement for white spaces.</li>

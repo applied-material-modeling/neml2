@@ -150,6 +150,15 @@ $(function(){initNavTree('chemical-reactions.html',''); initResizable(true); });
   <li class="level1">
     <a href="#autotoc_md22">Examples</a>
   </li>
+  <li class="level1">
+    <a href="#autotoc_md166">Reaction mechanisms</a>
+  </li>
+  <li class="level1">
+    <a href="#autotoc_md167">Effective volume</a>
+  </li>
+  <li class="level1">
+    <a href="#autotoc_md168">Examples</a>
+  </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md__2home_2runner_2work_2neml2_2neml2_2doc_2content_2physics_2chemical__reactions"></a></p>
@@ -162,6 +171,21 @@ Effective volume</h1>
 <p>The macroscale chemical reaction models are often defined for a given control mass, i.e., the system under consideration is assumed to be impermeable w.r.t. the neighborhood of the material point.</p>
 <p>However, other physics modules, such as solid mechanics or porous flow, are often derived under the assumptions of control volume. In order to couple chemical reactions to other physics, the <a class="el" href="syntax-models.html#effectivevolume">EffectiveVolume</a> model can be used to calculate the effective volume corresponding to the control mass during the reactions as a function of mass fractions of each reactant. The effective volume can then serve as the bridging quantity when coupling to other physics, such as volume-dependent eigenstrain and/or deformation Jacobian.</p>
 <h1><a class="anchor" id="autotoc_md22"></a>
+Examples</h1>
+<ul>
+<li><a class="el" href="thermosetting-pyrolysis.html">Thermosetting pyrolysis</a></li>
+<li><a class="el" href="reactive-infiltration.html">Reactive infiltration</a></li>
+</ul>
+<p><a class="anchor" id="md_content_2physics_2chemical__reactions"></a></p>
+<p>The chemical reactions physics module is a collection of objects serving as building blocks for composing models describing various chemical reactions. The models defined in this module do not attempt to define reaction kinetics from first principles. Instead, these models define macroscale, homogenized reaction rates of some composite system, which can be coupled with other physics such as solid mechanics and porous flow.</p>
+<h1><a class="anchor" id="autotoc_md166"></a>
+Reaction mechanisms</h1>
+<p>A variety of empirical reaction mechanisms are provided by the module. These models relate the degree of conversion \( \alpha \) to the reaction rate (defined as the rate of change of the degree of conversion).</p>
+<h1><a class="anchor" id="autotoc_md167"></a>
+Effective volume</h1>
+<p>The macroscale chemical reaction models are often defined for a given control mass, i.e., the system under consideration is assumed to be impermeable w.r.t. the neighborhood of the material point.</p>
+<p>However, other physics modules, such as solid mechanics or porous flow, are often derived under the assumptions of control volume. In order to couple chemical reactions to other physics, the <a class="el" href="syntax-models.html#effectivevolume">EffectiveVolume</a> model can be used to calculate the effective volume corresponding to the control mass during the reactions as a function of mass fractions of each reactant. The effective volume can then serve as the bridging quantity when coupling to other physics, such as volume-dependent eigenstrain and/or deformation Jacobian.</p>
+<h1><a class="anchor" id="autotoc_md168"></a>
 Examples</h1>
 <ul>
 <li><a class="el" href="thermosetting-pyrolysis.html">Thermosetting pyrolysis</a></li>

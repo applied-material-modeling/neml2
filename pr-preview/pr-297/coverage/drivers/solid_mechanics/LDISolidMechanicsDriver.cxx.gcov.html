@@ -31,13 +31,13 @@
             <td class="headerValue">coverage.info</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntryHi">92.5&nbsp;%</td>
-            <td class="headerCovTableEntry">80</td>
-            <td class="headerCovTableEntry">74</td>
+            <td class="headerCovTableEntryHi">92.4&nbsp;%</td>
+            <td class="headerCovTableEntry">79</td>
+            <td class="headerCovTableEntry">73</td>
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-10-10 12:15:50</td>
+            <td class="headerValue">2025-12-06 17:10:54</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">88.9&nbsp;%</td>
@@ -178,23 +178,23 @@
 <span id="L116"><span class="lineNum">     116</span>              : </span>
 <span id="L117"><span class="lineNum">     117</span> <span class="tlaGNC">           1 :   if (_vorticity_prescribed)</span></span>
 <span id="L118"><span class="lineNum">     118</span>              :   {</span>
-<span id="L119"><span class="lineNum">     119</span> <span class="tlaGNC">           1 :     diagnostic_assert(_vorticity.batch_dim() &gt;= 1,</span></span>
+<span id="L119"><span class="lineNum">     119</span> <span class="tlaGNC">           1 :     diagnostic_assert(_vorticity.dynamic_dim() &gt;= 1,</span></span>
 <span id="L120"><span class="lineNum">     120</span>              :                       &quot;Input vorticity should have at least one batch dimension but instead &quot;</span>
 <span id="L121"><span class="lineNum">     121</span>              :                       &quot;has batch dimension &quot;,</span>
-<span id="L122"><span class="lineNum">     122</span> <span class="tlaGNC">           1 :                       _vorticity.batch_dim());</span></span>
+<span id="L122"><span class="lineNum">     122</span> <span class="tlaGNC">           1 :                       _vorticity.dynamic_dim());</span></span>
 <span id="L123"><span class="lineNum">     123</span> <span class="tlaGNC">           1 :     diagnostic_assert(</span></span>
 <span id="L124"><span class="lineNum">     124</span>              : </span>
-<span id="L125"><span class="lineNum">     125</span> <span class="tlaGNC">           1 :         _vorticity.batch_size(0) == _time.batch_size(0),</span></span>
+<span id="L125"><span class="lineNum">     125</span> <span class="tlaGNC">           1 :         _vorticity.dynamic_size(0) == _time.dynamic_size(0),</span></span>
 <span id="L126"><span class="lineNum">     126</span>              :         &quot;Input vorticity should have the same number of steps steps as time, but instead has &quot;,</span>
-<span id="L127"><span class="lineNum">     127</span> <span class="tlaGNC">           2 :         _vorticity.batch_size(0),</span></span>
+<span id="L127"><span class="lineNum">     127</span>              :         _vorticity.dynamic_size(0),</span>
 <span id="L128"><span class="lineNum">     128</span>              :         &quot; time steps&quot;);</span>
 <span id="L129"><span class="lineNum">     129</span>              :   }</span>
 <span id="L130"><span class="lineNum">     130</span>              : </span>
 <span id="L131"><span class="lineNum">     131</span> <span class="tlaGNC">           1 :   if (_cp_warmup)</span></span>
 <span id="L132"><span class="lineNum">     132</span>              :   {</span>
 <span id="L133"><span class="lineNum">     133</span> <span class="tlaGNC">           1 :     diagnostic_assert(_control == &quot;STRAIN&quot;, &quot;CP warm-up step is only supported for STRAIN control&quot;);</span></span>
-<span id="L134"><span class="lineNum">     134</span> <span class="tlaGNC">           1 :     diagnostic_assert(_model-&gt;input_axis().has_variable(_cp_warmup_elastic_strain),</span></span>
-<span id="L135"><span class="lineNum">     135</span>              :                       &quot;Model's input axis should have variable &quot;,</span>
+<span id="L134"><span class="lineNum">     134</span> <span class="tlaGNC">           1 :     diagnostic_assert(_model-&gt;input_variables().count(_cp_warmup_elastic_strain),</span></span>
+<span id="L135"><span class="lineNum">     135</span>              :                       &quot;Model's input should have variable &quot;,</span>
 <span id="L136"><span class="lineNum">     136</span> <span class="tlaGNC">           1 :                       _cp_warmup_elastic_strain,</span></span>
 <span id="L137"><span class="lineNum">     137</span>              :                       &quot; for the CP warm-up step but it does not&quot;);</span>
 <span id="L138"><span class="lineNum">     138</span>              :   }</span>
@@ -204,7 +204,7 @@
 <span id="L142"><span class="lineNum">     142</span> <span class="tlaGNC">          10 : LDISolidMechanicsDriver::update_forces()</span></span>
 <span id="L143"><span class="lineNum">     143</span>              : {</span>
 <span id="L144"><span class="lineNum">     144</span> <span class="tlaGNC">          10 :   SolidMechanicsDriver::update_forces();</span></span>
-<span id="L145"><span class="lineNum">     145</span> <span class="tlaGNC">          20 :   _in[_vorticity_name] = _vorticity.batch_index({_step_count});</span></span>
+<span id="L145"><span class="lineNum">     145</span> <span class="tlaGNC">          20 :   _in[_vorticity_name] = _vorticity.dynamic_index({_step_count});</span></span>
 <span id="L146"><span class="lineNum">     146</span> <span class="tlaGNC">          20 : }</span></span>
 <span id="L147"><span class="lineNum">     147</span>              : </span>
 <span id="L148"><span class="lineNum">     148</span>              : void</span>

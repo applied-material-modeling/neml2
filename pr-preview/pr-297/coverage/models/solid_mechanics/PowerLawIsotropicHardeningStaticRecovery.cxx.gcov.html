@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-10-10 12:15:50</td>
+            <td class="headerValue">2025-12-06 17:10:54</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -122,7 +122,7 @@
 <span id="L60"><span class="lineNum">      60</span> <span class="tlaGNC">           2 : PowerLawIsotropicHardeningStaticRecovery::set_value(bool out, bool dout_din, bool /*d2out_din2*/)</span></span>
 <span id="L61"><span class="lineNum">      61</span>              : {</span>
 <span id="L62"><span class="lineNum">      62</span> <span class="tlaGNC">           2 :   if (out)</span></span>
-<span id="L63"><span class="lineNum">      63</span> <span class="tlaGNC">           2 :     _h_dot = -pow(abs(Scalar(_h)) / _tau, _n - 1.0) * _h / _tau;</span></span>
+<span id="L63"><span class="lineNum">      63</span> <span class="tlaGNC">           2 :     _h_dot = -pow(abs(_h()) / _tau, _n - 1.0) * _h / _tau;</span></span>
 <span id="L64"><span class="lineNum">      64</span>              : </span>
 <span id="L65"><span class="lineNum">      65</span> <span class="tlaGNC">           2 :   if (dout_din)</span></span>
 <span id="L66"><span class="lineNum">      66</span>              :   {</span>
@@ -130,11 +130,11 @@
 <span id="L68"><span class="lineNum">      68</span> <span class="tlaGNC">           1 :       _h_dot.d(_h) = -_n * pow(abs(_h / _tau), _n - 1) / abs(_tau);</span></span>
 <span id="L69"><span class="lineNum">      69</span>              : </span>
 <span id="L70"><span class="lineNum">      70</span> <span class="tlaGNC">           3 :     if (const auto * const tau = nl_param(&quot;tau&quot;))</span></span>
-<span id="L71"><span class="lineNum">      71</span> <span class="tlaGNC">           1 :       _h_dot.d(*tau) = _n * _h * pow(_tau, -1 - _n) * pow(abs(Scalar(_h)), _n - 1);</span></span>
+<span id="L71"><span class="lineNum">      71</span> <span class="tlaGNC">           1 :       _h_dot.d(*tau) = _n * _h * pow(_tau, -1 - _n) * pow(abs(_h()), _n - 1);</span></span>
 <span id="L72"><span class="lineNum">      72</span>              : </span>
 <span id="L73"><span class="lineNum">      73</span> <span class="tlaGNC">           3 :     if (const auto * const n = nl_param(&quot;n&quot;))</span></span>
-<span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">           4 :       _h_dot.d(*n) = -_h * pow(_tau, -_n) * pow(abs(Scalar(_h)), _n - 1) *</span></span>
-<span id="L75"><span class="lineNum">      75</span> <span class="tlaGNC">           5 :                      log(abs(Scalar(_h)) / _tau + machine_precision(_h.scalar_type()));</span></span>
+<span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">           3 :       _h_dot.d(*n) = -_h * pow(_tau, -_n) * pow(abs(_h()), _n - 1) *</span></span>
+<span id="L75"><span class="lineNum">      75</span> <span class="tlaGNC">           4 :                      log(abs(_h()) / _tau + machine_precision(_h.scalar_type()));</span></span>
 <span id="L76"><span class="lineNum">      76</span>              :   }</span>
 <span id="L77"><span class="lineNum">      77</span> <span class="tlaGNC">           2 : }</span></span>
 <span id="L78"><span class="lineNum">      78</span>              : } // namespace neml2</span>

@@ -64,8 +64,7 @@ var NAVTREE =
         [ "Connection to input files", "tutorials-extension-connection-to-input-files.html", null ],
         [ "Argument declaration", "tutorials-extension-argument-declaration.html", null ],
         [ "The forward operator", "tutorials-extension-the-forward-operator.html", null ],
-        [ "Model composition", "tutorials-extension-model-composition.html", null ],
-        [ "Model visualization", "tutorials-extension-model-visualization.html", null ]
+        [ "Model composition", "tutorials-extension-model-composition.html", null ]
       ] ],
       [ "Optimization", "tutorials-optimization.html", [
         [ "Automatic differentiation", "tutorials-optimization-automatic-differentiation.html", null ],
@@ -115,24 +114,26 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"classneml2_1_1CrackGeometricFunction.html",
-"classneml2_1_1ElasticStrainRate.html#ad31dd478f20e930273267b03fd98ba22",
-"classneml2_1_1FredrickArmstrongPlasticHardening.html#af5600a36813e455aefee72bec1d574fb",
-"classneml2_1_1KocksMeckingFlowSwitch.html#a99319771e4e71ed98c0189f51f5fb44e",
-"classneml2_1_1LabeledAxisAccessor.html#ad69bd11391be1a1dba5c8202259664f8",
-"classneml2_1_1Model.html#a9c22b18d63883cc22d4a68e83731c459",
-"classneml2_1_1NonlinearSystem.html#a514a33c0092202b5fc7c1e902b2fec83",
-"classneml2_1_1ParameterStore.html#a2d96d9f92a985de65651abf452cb49a2",
-"classneml2_1_1R2.html#aa75627258e1455e9b9d800347a4ccda9",
-"classneml2_1_1SR2Invariant.html#a3181ff2bf4fde309df780aa97495286fade414d1f5640413d7f7f5f9c37e8e88a",
-"classneml2_1_1StaticHybridScheduler.html#ac0b73dc40ca33ff933c1f351578a00d0",
-"classneml2_1_1TracingInterface.html#a90b295353d919122293e42e4a2f9fbb7",
-"classneml2_1_1VariableBase.html#a69a3e35631424a12e8f6430ac19a3d10",
-"classneml2_1_1VolumeAdjustDeformationGradient.html",
-"classneml2_1_1crystallography_1_1CrystalGeometry.html#ae408ae12ed540c5809614973bb3948e7",
-"namespaceneml2.html#a68a015440980f0157f486f3fdf7e2f44",
-"namespaceneml2.html#ae967f8787f96a877c328116b756356ba",
-"structneml2_1_1OptionBase_1_1Metadata.html#ad0dad440c5621dbbf1afb3db44f478fe"
+"classneml2_1_1CopyVariable.html#af5600a36813e455aefee72bec1d574fb",
+"classneml2_1_1EffectiveVolume.html#a4c03c6b309fbedd3ddd031c6431449cc",
+"classneml2_1_1ForwardEulerTimeIntegration.html",
+"classneml2_1_1IsotropicMandelStress.html#ada0110969b6f09c672a95c7e750c7ddc",
+"classneml2_1_1LabeledAxisAccessor.html#a131f9ec0218970bfafb7c2070fc7d1fa",
+"classneml2_1_1Model.html#a61acb2cb0a63326a01ed4e93e0fa8118",
+"classneml2_1_1NonlinearSolver.html#a0cf640f7d773e8524e9266f8947fdcb5",
+"classneml2_1_1Orientation.html#a950b459666df2e0edfae7a92bec1d37a",
+"classneml2_1_1ProjectileAcceleration.html#a83543b502da8255ced01db85b58bde37",
+"classneml2_1_1SR2Invariant.html#a3181ff2bf4fde309df780aa97495286fa64af7596b9f83e64122fdcc92dda8765",
+"classneml2_1_1StrainEnergyDensity.html",
+"classneml2_1_1TensorValueBase.html#a0fd6d95840ab2cfc18e1ed721c8a8059",
+"classneml2_1_1Variable.html#addbff7dde6f134d617689a3e0097e635",
+"classneml2_1_1VariableStore.html#abdb804291187ec48dbeebabe0eaa1e18",
+"classneml2_1_1WorkGenerator.html#aed3cb2e6884fc0872d7ca2c0e15b3f77",
+"namespaceneml2.html#a3438b30839403ced979d2879b0ff4e4e",
+"namespaceneml2.html#a8c475be462325def94e988bda4fc824b",
+"namespaceneml2.html#ae12008f4808fad6f061685113e17b766",
+"structneml2_1_1NonlinearParameter.html#a37ab1e4966a2022fafed4a25f20df2d1",
+"tutorials-extension.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

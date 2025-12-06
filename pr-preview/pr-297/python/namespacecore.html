@@ -149,13 +149,13 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcore_1_1LabeledAxis.html">LabeledAxis</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcore_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcore_1_1MatrixAssembler.html">MatrixAssembler</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcore_1_1Model.html">Model</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcore_1_1TensorValue.html">TensorValue</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcore_1_1VariableName.html">VariableName</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcore_1_1VectorAssembler.html">VectorAssembler</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -164,10 +164,10 @@ Classes</h2></td></tr>
 Functions</h2></td></tr>
 <tr class="memitem:a5dad95adb89f9a0f716a4e026fd02bb5" id="r_a5dad95adb89f9a0f716a4e026fd02bb5"><td class="memItemLeft" align="right" valign="top">list[str]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5dad95adb89f9a0f716a4e026fd02bb5">diagnose</a> (<a class="el" href="classcore_1_1Model.html">Model</a> model)</td></tr>
 <tr class="separator:a5dad95adb89f9a0f716a4e026fd02bb5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7f2fd90ccced53e382b30f364b835caa" id="r_a7f2fd90ccced53e382b30f364b835caa"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classcore_1_1Factory.html">Factory</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7f2fd90ccced53e382b30f364b835caa">load_input</a> (os.PathLike|str|bytes path, str cli_args='')</td></tr>
-<tr class="separator:a7f2fd90ccced53e382b30f364b835caa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a858d798bb8a287b2943a5a9f2ae26457" id="r_a858d798bb8a287b2943a5a9f2ae26457"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classcore_1_1Model.html">Model</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a858d798bb8a287b2943a5a9f2ae26457">load_model</a> (os.PathLike|str|bytes path, str name)</td></tr>
-<tr class="separator:a858d798bb8a287b2943a5a9f2ae26457"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a697fe3b1c9893108c5adfa82af1485b2" id="r_a697fe3b1c9893108c5adfa82af1485b2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classcore_1_1Factory.html">Factory</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a697fe3b1c9893108c5adfa82af1485b2">load_input</a> (typing.Any path, str cli_args='')</td></tr>
+<tr class="separator:a697fe3b1c9893108c5adfa82af1485b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeeea17b9d6081b9c348e905f4b4bb125" id="r_aeeea17b9d6081b9c348e905f4b4bb125"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classcore_1_1Model.html">Model</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aeeea17b9d6081b9c348e905f4b4bb125">load_model</a> (typing.Any path, str name)</td></tr>
+<tr class="separator:aeeea17b9d6081b9c348e905f4b4bb125"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><pre class="fragment">NEML2 Python bindings
@@ -186,14 +186,15 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Diagnose common issues in model setup. Raises a runtime error including all identified issues, if any.
+<pre class="fragment">  Diagnose common issues in model setup. Raises a runtime error including all identified issues,
+  if any.
 
-:param model: Model to be diagnosed
+  :param model: Model to be diagnosed
 </pre> 
 </div>
 </div>
-<a id="a7f2fd90ccced53e382b30f364b835caa" name="a7f2fd90ccced53e382b30f364b835caa"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7f2fd90ccced53e382b30f364b835caa">&#9670;&#160;</a></span>load_input()</h2>
+<a id="a697fe3b1c9893108c5adfa82af1485b2" name="a697fe3b1c9893108c5adfa82af1485b2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a697fe3b1c9893108c5adfa82af1485b2">&#9670;&#160;</a></span>load_input()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -201,7 +202,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="memname"> <a class="el" href="classcore_1_1Factory.html">Factory</a> load_input </td>
           <td>(</td>
-          <td class="paramtype">os.PathLike | str | bytes</td>          <td class="paramname"><span class="paramname"><em>path</em></span>, </td>
+          <td class="paramtype">typing.Any</td>          <td class="paramname"><span class="paramname"><em>path</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -210,16 +211,16 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Parse all options from an input file. Note that Previously loaded input options
-will be discarded.
+<pre class="fragment">  Parse all options from an input file. Note that Previously loaded input options
+  will be discarded.
 
-:param path:     Path to the input file to be parsed
-:param cli_args: Additional command-line arguments to pass to the parser
+  :param path:     Path to the input file to be parsed
+  :param cli_args: Additional command-line arguments to pass to the parser
 </pre> 
 </div>
 </div>
-<a id="a858d798bb8a287b2943a5a9f2ae26457" name="a858d798bb8a287b2943a5a9f2ae26457"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a858d798bb8a287b2943a5a9f2ae26457">&#9670;&#160;</a></span>load_model()</h2>
+<a id="aeeea17b9d6081b9c348e905f4b4bb125" name="aeeea17b9d6081b9c348e905f4b4bb125"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeeea17b9d6081b9c348e905f4b4bb125">&#9670;&#160;</a></span>load_model()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -227,7 +228,7 @@ will be discarded.
         <tr>
           <td class="memname"> <a class="el" href="classcore_1_1Model.html">Model</a> load_model </td>
           <td>(</td>
-          <td class="paramtype">os.PathLike | str | bytes</td>          <td class="paramname"><span class="paramname"><em>path</em></span>, </td>
+          <td class="paramtype">typing.Any</td>          <td class="paramname"><span class="paramname"><em>path</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -236,16 +237,16 @@ will be discarded.
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">A convenient function to load an input file and get a model.
+<pre class="fragment">  A convenient function to load an input file and get a model.
 
-This function is equivalent to calling core.load_input followed by
-Factory.get_model. Note that this convenient function does not support passing
-additional command-line arguments and will force the creation of a new
-core.Model even if one has already been created. Use core.load_input and
-Factory.get_model if you need finer control over the model creation behavior.
+  This function is equivalent to calling core.load_input followed by
+  Factory.get_model. Note that this convenient function does not support passing
+  additional command-line arguments and will force the creation of a new
+  core.Model even if one has already been created. Use core.load_input and
+  Factory.get_model if you need finer control over the model creation behavior.
 
-:param path:      Path to the input file to be parsed
-:param name:      Name of the model
+  :param path:      Path to the input file to be parsed
+  :param name:      Name of the model
 </pre> 
 </div>
 </div>

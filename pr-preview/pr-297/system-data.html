@@ -147,6 +147,12 @@ $(function(){initNavTree('system-data.html',''); initResizable(true); });
   <li class="level1">
     <a href="#autotoc_md50">Data</a>
   </li>
+  <li class="level1">
+    <a href="#autotoc_md202">Buffer</a>
+  </li>
+  <li class="level1">
+    <a href="#autotoc_md203">Data</a>
+  </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md__2home_2runner_2work_2neml2_2neml2_2doc_2content_2system_2data"></a></p>
@@ -156,6 +162,22 @@ Buffer</h1>
 <p>The term "buffer" is inherited from PyTorch. In a <code>torch.nn.Module</code> (which can be thought of the PyTorch equivalent of NEML2's <code>Model</code>), a set of <em>parameters</em> and <em>buffer</em> can be declared. Both parameters and buffer are tensors registered to the model. When the model is sent to a different device, i.e., from CPU to GPU, the parameters and buffer registered with the model are sent to the target device.</p>
 <p>The only notable difference between buffer and parameter is that buffer tensors are <em>NOT</em> meant to part of the function graph (while calling the model's forward operator), while parameters are expected to be differentiated. Some examples of buffer, in the context of crystal plasticity, include crystal class, lattice vectors, slip planes, and slip directions of a crystal.</p>
 <h1><a class="anchor" id="autotoc_md50"></a>
+Data</h1>
+<p>NEML2 provides the Data system to predefine commonly used buffer tensors that are oftentimes shared among material models. Data objects shall inherit from the base class <code>Data</code> and can register as many buffer tensors as necessary.</p>
+<p>Objects that are defined as part of the Data system are different from models in several ways:</p><ol type="1">
+<li>Data objects <em>do not</em> contain parameters.</li>
+<li>Data objects <em>do not</em> define variables.</li>
+<li>Data objects <em>do not</em> define forward operator.</li>
+<li>Data objects <em>do not</em> participate in dependency resolution.</li>
+</ol>
+<p>A model can register a Data object using the <code>register_data</code> method which returns a reference to the registered <code>Data</code>.</p>
+<p><a class="anchor" id="md_content_2system_2data"></a></p>
+<p>Refer to <a class="el" href="syntax-data.html">Syntax Documentation</a> for the list of available objects.</p>
+<h1><a class="anchor" id="autotoc_md202"></a>
+Buffer</h1>
+<p>The term "buffer" is inherited from PyTorch. In a <code>torch.nn.Module</code> (which can be thought of the PyTorch equivalent of NEML2's <code>Model</code>), a set of <em>parameters</em> and <em>buffer</em> can be declared. Both parameters and buffer are tensors registered to the model. When the model is sent to a different device, i.e., from CPU to GPU, the parameters and buffer registered with the model are sent to the target device.</p>
+<p>The only notable difference between buffer and parameter is that buffer tensors are <em>NOT</em> meant to part of the function graph (while calling the model's forward operator), while parameters are expected to be differentiated. Some examples of buffer, in the context of crystal plasticity, include crystal class, lattice vectors, slip planes, and slip directions of a crystal.</p>
+<h1><a class="anchor" id="autotoc_md203"></a>
 Data</h1>
 <p>NEML2 provides the Data system to predefine commonly used buffer tensors that are oftentimes shared among material models. Data objects shall inherit from the base class <code>Data</code> and can register as many buffer tensors as necessary.</p>
 <p>Objects that are defined as part of the Data system are different from models in several ways:</p><ol type="1">

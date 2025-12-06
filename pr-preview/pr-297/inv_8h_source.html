@@ -7,7 +7,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=11" />
   <meta name="generator" content="Doxygen 1.12.0" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>NEML2: /home/runner/work/neml2/neml2/include/neml2/tensors/functions/linalg/inv.h Source File</title>
+  <title>NEML2: /home/runner/work/neml2/neml2/include/neml2/tensors/functions/inv.h Source File</title>
   <link href="tabs.css" rel="stylesheet" type="text/css" />
   <script type="text/javascript" src="jquery.js"></script>
   <script type="text/javascript" src="dynsections.js"></script>
@@ -168,20 +168,30 @@ $(function(){initNavTree('inv_8h_source.html',''); initResizable(true); });
 <div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a></div>
 <div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>{</div>
 <div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="keyword">class </span>Tensor;</div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="keyword">namespace </span>linalg</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>{</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>Tensor <a class="code hl_function" href="namespaceneml2_1_1linalg.html#aa300036a4e5e38d3f281ef7fb90117e2">inv</a>(<span class="keyword">const</span> Tensor &amp; m);</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>} <span class="comment">// namespace linalg</span></div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>} <span class="comment">// namespace neml2</span></div>
-<div class="ttc" id="anamespaceneml2_1_1linalg_html_aa300036a4e5e38d3f281ef7fb90117e2"><div class="ttname"><a href="namespaceneml2_1_1linalg.html#aa300036a4e5e38d3f281ef7fb90117e2">neml2::linalg::inv</a></div><div class="ttdeci">Tensor inv(const Tensor &amp;m)</div><div class="ttdoc">Inverse of a square matrix.</div><div class="ttdef"><b>Definition</b> inv.cxx:31</div></div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span><span class="keyword">class </span>Rot;</div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="keyword">class </span>R2;</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="keyword">class </span>SR2;</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="keyword">class </span>R4;</div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="keyword">class </span>SSR4;</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span> </div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>Tensor <a class="code hl_function" href="namespaceneml2.html#a77915d53f4bde1069df5a567a1b988e9">inv</a>(<span class="keyword">const</span> Tensor &amp;);</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span> </div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>Rot <a class="code hl_function" href="namespaceneml2.html#a77915d53f4bde1069df5a567a1b988e9">inv</a>(<span class="keyword">const</span> Rot &amp;);</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span> </div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>R2 <a class="code hl_function" href="namespaceneml2.html#a77915d53f4bde1069df5a567a1b988e9">inv</a>(<span class="keyword">const</span> R2 &amp;);</div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>SR2 <a class="code hl_function" href="namespaceneml2.html#a77915d53f4bde1069df5a567a1b988e9">inv</a>(<span class="keyword">const</span> SR2 &amp;);</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span> </div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>R4 <a class="code hl_function" href="namespaceneml2.html#a77915d53f4bde1069df5a567a1b988e9">inv</a>(<span class="keyword">const</span> R4 &amp;);</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>SSR4 <a class="code hl_function" href="namespaceneml2.html#a77915d53f4bde1069df5a567a1b988e9">inv</a>(<span class="keyword">const</span> SSR4 &amp;);</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>} <span class="comment">// namespace neml2</span></div>
 <div class="ttc" id="anamespaceneml2_html"><div class="ttname"><a href="namespaceneml2.html">neml2</a></div><div class="ttdef"><b>Definition</b> DiagnosticsInterface.cxx:30</div></div>
+<div class="ttc" id="anamespaceneml2_html_a77915d53f4bde1069df5a567a1b988e9"><div class="ttname"><a href="namespaceneml2.html#a77915d53f4bde1069df5a567a1b988e9">neml2::inv</a></div><div class="ttdeci">Tensor inv(const Tensor &amp;A)</div><div class="ttdoc">Inverse of a second order or fourth order tensor.</div><div class="ttdef"><b>Definition</b> inv.cxx:39</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_9cf5769d2b40588116f141f6f2ecaac3.html">neml2</a></li><li class="navelem"><a class="el" href="dir_2a4c8801966253403c3e56ba195c955f.html">tensors</a></li><li class="navelem"><a class="el" href="dir_7a3cc9205f0e463815b4aab3ded49a9d.html">functions</a></li><li class="navelem"><a class="el" href="dir_b5c714d092f5388122e01327ee104657.html">linalg</a></li><li class="navelem"><b>inv.h</b></li>
+    <li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_9cf5769d2b40588116f141f6f2ecaac3.html">neml2</a></li><li class="navelem"><a class="el" href="dir_2a4c8801966253403c3e56ba195c955f.html">tensors</a></li><li class="navelem"><a class="el" href="dir_7a3cc9205f0e463815b4aab3ded49a9d.html">functions</a></li><li class="navelem"><b>inv.h</b></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.12.0 </li>
   </ul>
 </div>

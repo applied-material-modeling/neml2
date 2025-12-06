@@ -170,18 +170,20 @@ $(function(){initNavTree('cat_8h_source.html',''); initResizable(true); });
 <div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span> </div>
 <div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a></div>
 <div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>{</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="preprocessor">#define DECLARE_BATCH_CAT(T)                                                                       \</span></div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="preprocessor">  T batch_cat(const std::vector&lt;T&gt; &amp; tensors, Size d = 0);                                         \</span></div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="preprocessor">  T batch_cat(const std::initializer_list&lt;T&gt; &amp; tensors, Size d = 0)</span></div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno"><a class="line" href="namespaceneml2.html#ae27bcdd582a8982b870d08214995ee79">   35</a></span>FOR_ALL_TENSORBASE(DECLARE_BATCH_CAT);</div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="preprocessor">#undef DECLARE_BATCH_CAT</span></div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><a class="code hl_class" href="classneml2_1_1Tensor.html">Tensor</a> <a class="code hl_function" href="namespaceneml2.html#adf547343b026249ea90c785d3bfc7b59">base_cat</a>(<span class="keyword">const</span> std::vector&lt;Tensor&gt; &amp; tensors, <a class="code hl_typedef" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> d = 0);</div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>} <span class="comment">// namespace neml2</span></div>
-<div class="ttc" id="aclassneml2_1_1Tensor_html"><div class="ttname"><a href="classneml2_1_1Tensor.html">neml2::Tensor</a></div><div class="ttdef"><b>Definition</b> Tensor.h:46</div></div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="preprocessor">#define DECLARE_CAT(T)                                                                             \</span></div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="preprocessor">  T dynamic_cat(const std::vector&lt;T&gt; &amp; tensors, Size d = 0);                                       \</span></div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="preprocessor">  T dynamic_cat(const std::initializer_list&lt;T&gt; &amp; tensors, Size d = 0);                             \</span></div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><span class="preprocessor">  T intmd_cat(const std::vector&lt;T&gt; &amp; tensors, Size d = 0);                                         \</span></div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="preprocessor">  T intmd_cat(const std::initializer_list&lt;T&gt; &amp; tensors, Size d = 0)</span></div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno"><a class="line" href="namespaceneml2.html#a5289eb83ecf77659691637e08e723beb">   37</a></span>FOR_ALL_TENSORBASE(DECLARE_CAT);</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="preprocessor">#undef DECLARE_CAT</span></div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span> </div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><a class="code hl_class" href="classneml2_1_1Tensor.html">Tensor</a> <a class="code hl_function" href="namespaceneml2.html#adf547343b026249ea90c785d3bfc7b59">base_cat</a>(<span class="keyword">const</span> std::vector&lt;Tensor&gt; &amp; tensors, <a class="code hl_typedef" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> d = 0);</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>} <span class="comment">// namespace neml2</span></div>
+<div class="ttc" id="aclassneml2_1_1Tensor_html"><div class="ttname"><a href="classneml2_1_1Tensor.html">neml2::Tensor</a></div><div class="ttdef"><b>Definition</b> Tensor.h:47</div></div>
 <div class="ttc" id="anamespaceneml2_html"><div class="ttname"><a href="namespaceneml2.html">neml2</a></div><div class="ttdef"><b>Definition</b> DiagnosticsInterface.cxx:30</div></div>
 <div class="ttc" id="anamespaceneml2_html_a90023c4b9c19cd471d4603a07a52954e"><div class="ttname"><a href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">neml2::Size</a></div><div class="ttdeci">int64_t Size</div><div class="ttdef"><b>Definition</b> types.h:65</div></div>
-<div class="ttc" id="anamespaceneml2_html_adf547343b026249ea90c785d3bfc7b59"><div class="ttname"><a href="namespaceneml2.html#adf547343b026249ea90c785d3bfc7b59">neml2::base_cat</a></div><div class="ttdeci">Tensor base_cat(const std::vector&lt; Tensor &gt; &amp;tensors, Size d)</div><div class="ttdef"><b>Definition</b> cat.cxx:47</div></div>
+<div class="ttc" id="anamespaceneml2_html_adf547343b026249ea90c785d3bfc7b59"><div class="ttname"><a href="namespaceneml2.html#adf547343b026249ea90c785d3bfc7b59">neml2::base_cat</a></div><div class="ttdeci">Tensor base_cat(const std::vector&lt; Tensor &gt; &amp;tensors, Size d)</div><div class="ttdef"><b>Definition</b> cat.cxx:64</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

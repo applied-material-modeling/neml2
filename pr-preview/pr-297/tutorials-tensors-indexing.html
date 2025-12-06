@@ -142,16 +142,16 @@ $(function(){initNavTree('tutorials-tensors-indexing.html',''); initResizable(tr
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md149">Batch versus base indexing</a>
+    <a href="#autotoc_md291">Batch versus base indexing</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md150">Single element indexing</a>
+    <a href="#autotoc_md292">Single element indexing</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md151">Slicing</a>
+    <a href="#autotoc_md293">Slicing</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md152">Dimensional indexing tools</a>
+    <a href="#autotoc_md294">Dimensional indexing tools</a>
   </li>
 </ul>
 </div>
@@ -160,14 +160,14 @@ $(function(){initNavTree('tutorials-tensors-indexing.html',''); initResizable(tr
 <li>NumPy manual <a href="https://numpy.org/doc/2.2/user/basics.indexing.html">Indexing on ndarrays</a></li>
 <li>PyTorch documentation <a href="https://pytorch.org/cppdocs/notes/tensor_indexing.html">Tensor Indexing API</a></li>
 </ul>
-<h1><a class="anchor" id="autotoc_md149"></a>
+<h1><a class="anchor" id="autotoc_md291"></a>
 Batch versus base indexing</h1>
 <p>NEML2 tensor indexing works much in the same way as in NumPy and PyTorch. We also offer a simple one-to-one translation between C++ and Python tensor indexing API. The major difference between indexing (batched) NEML2 tensor and indexing tensors in PyTorch or N-D arrays in NumPy is that <b>most indexing APIs have two variants &ndash; one for indexing batch dimensions and the other for indexing base dimensions</b>.</p>
-<h1><a class="anchor" id="autotoc_md150"></a>
+<h1><a class="anchor" id="autotoc_md292"></a>
 Single element indexing</h1>
 <p>Single element indexing works exactly like that for indexing flat containers such as vectors, arrays, lists, etc. The indexing is 0-based and accepts negative integers (for reverse indexing).</p>
 <div class="tabbed"></div><div class="tabbed"><ul>
-<li><p class="startli"><b class="tab-title">C++</b> </p><div class="fragment"><div class="line"><span class="preprocessor">#include &quot;neml2/tensors/Tensor.h&quot;</span></div>
+<li><p class="startli"><b class="tab-title">C++</b> @source:src1 </p><div class="fragment"><div class="line"><span class="preprocessor">#include &quot;neml2/tensors/Tensor.h&quot;</span></div>
 <div class="line"> </div>
 <div class="line"><span class="keywordtype">int</span></div>
 <div class="line">main()</div>
@@ -178,27 +178,22 @@ Single element indexing</h1>
 <div class="line">  <span class="comment">// Create a tensor with shape (; 5)</span></div>
 <div class="line">  <span class="keyword">auto</span> a = Tensor::create({3, 4, 5, 6, 7}, 0);</div>
 <div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.base[2] = &quot;</span> &lt;&lt; a.base_index({2}).item&lt;double&gt;() &lt;&lt; std::endl;</div>
-<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.base[-1] = &quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1crystal__symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a>.base_index({-1}).item&lt;double&gt;() &lt;&lt; std::endl;</div>
-<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.base[-2] = &quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1crystal__symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a>.base_index({-2}).item&lt;double&gt;() &lt;&lt; <span class="charliteral">&#39;\n&#39;</span> &lt;&lt; std::endl;</div>
+<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.base[-1] = &quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a>.base_index({-1}).item&lt;double&gt;() &lt;&lt; std::endl;</div>
+<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.base[-2] = &quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a>.base_index({-2}).item&lt;double&gt;() &lt;&lt; <span class="charliteral">&#39;\n&#39;</span> &lt;&lt; std::endl;</div>
 <div class="line"> </div>
 <div class="line">  <span class="comment">// Create a tensor with shape (4;)</span></div>
-<div class="line">  <span class="keyword">auto</span> <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1crystal__symmetry__operators.html#aa93a189fb7bbbf87be54bcc7bd11bb6f">b</a> = Tensor::create({7, 6, 5, 4}, 1);</div>
-<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;b.batch[2] = &quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1crystal__symmetry__operators.html#aa93a189fb7bbbf87be54bcc7bd11bb6f">b</a>.batch_index({2}).item&lt;double&gt;() &lt;&lt; std::endl;</div>
-<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;b.batch[-1] = &quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1crystal__symmetry__operators.html#aa93a189fb7bbbf87be54bcc7bd11bb6f">b</a>.batch_index({-1}).item&lt;double&gt;() &lt;&lt; std::endl;</div>
-<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;b.batch[-2] = &quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1crystal__symmetry__operators.html#aa93a189fb7bbbf87be54bcc7bd11bb6f">b</a>.batch_index({-2}).item&lt;double&gt;() &lt;&lt; std::endl;</div>
+<div class="line">  <span class="keyword">auto</span> <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1symmetry__operators.html#aa93a189fb7bbbf87be54bcc7bd11bb6f">b</a> = Tensor::create({7, 6, 5, 4}, 1);</div>
+<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;b.batch[2] = &quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1symmetry__operators.html#aa93a189fb7bbbf87be54bcc7bd11bb6f">b</a>.batch_index({2}).item&lt;double&gt;() &lt;&lt; std::endl;</div>
+<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;b.batch[-1] = &quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1symmetry__operators.html#aa93a189fb7bbbf87be54bcc7bd11bb6f">b</a>.batch_index({-1}).item&lt;double&gt;() &lt;&lt; std::endl;</div>
+<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;b.batch[-2] = &quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1symmetry__operators.html#aa93a189fb7bbbf87be54bcc7bd11bb6f">b</a>.batch_index({-2}).item&lt;double&gt;() &lt;&lt; std::endl;</div>
 <div class="line">}</div>
-<div class="ttc" id="anamespaceneml2_1_1crystallography_1_1crystal__symmetry__operators_html_a188caae18b60b66f9f44214c7e28ac1f"><div class="ttname"><a href="namespaceneml2_1_1crystallography_1_1crystal__symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">neml2::crystallography::crystal_symmetry_operators::a</a></div><div class="ttdeci">constexpr double a</div><div class="ttdef"><b>Definition</b> crystallography.h:36</div></div>
-<div class="ttc" id="anamespaceneml2_1_1crystallography_1_1crystal__symmetry__operators_html_aa93a189fb7bbbf87be54bcc7bd11bb6f"><div class="ttname"><a href="namespaceneml2_1_1crystallography_1_1crystal__symmetry__operators.html#aa93a189fb7bbbf87be54bcc7bd11bb6f">neml2::crystallography::crystal_symmetry_operators::b</a></div><div class="ttdeci">constexpr double b</div><div class="ttdef"><b>Definition</b> crystallography.h:37</div></div>
+<div class="ttc" id="anamespaceneml2_1_1crystallography_1_1symmetry__operators_html_a188caae18b60b66f9f44214c7e28ac1f"><div class="ttname"><a href="namespaceneml2_1_1crystallography_1_1symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">neml2::crystallography::symmetry_operators::a</a></div><div class="ttdeci">constexpr double a</div><div class="ttdef"><b>Definition</b> crystallography.h:43</div></div>
+<div class="ttc" id="anamespaceneml2_1_1crystallography_1_1symmetry__operators_html_aa93a189fb7bbbf87be54bcc7bd11bb6f"><div class="ttname"><a href="namespaceneml2_1_1crystallography_1_1symmetry__operators.html#aa93a189fb7bbbf87be54bcc7bd11bb6f">neml2::crystallography::symmetry_operators::b</a></div><div class="ttdeci">constexpr double b</div><div class="ttdef"><b>Definition</b> crystallography.h:44</div></div>
 <div class="ttc" id="anamespaceneml2_html"><div class="ttname"><a href="namespaceneml2.html">neml2</a></div><div class="ttdef"><b>Definition</b> DiagnosticsInterface.cxx:30</div></div>
-</div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">a.base[2] = 5</div>
-<div class="line">a.base[-1] = 7</div>
-<div class="line">a.base[-2] = 6</div>
-<div class="line"> </div>
-<div class="line">b.batch[2] = 5</div>
-<div class="line">b.batch[-1] = 4</div>
-<div class="line">b.batch[-2] = 5</div>
+</div><!-- fragment --><p> @endsource</p>
+<p class="startli">Output: </p><div class="fragment"><div class="line">@attach-output:src1</div>
 </div><!-- fragment --></li>
-<li><p class="startli"><b class="tab-title">Python</b> </p><div class="fragment"><div class="line"><span class="keyword">import</span> torch</div>
+<li><p class="startli"><b class="tab-title">Python</b> @source:src2 </p><div class="fragment"><div class="line"><span class="keyword">import</span> torch</div>
 <div class="line"><span class="keyword">from</span> neml2.tensors <span class="keyword">import</span> Tensor</div>
 <div class="line"> </div>
 <div class="line">torch.set_default_dtype(torch.double)</div>
@@ -215,18 +210,13 @@ Single element indexing</h1>
 <div class="line">print(<span class="stringliteral">&quot;b.batch[2] =&quot;</span>, b.batch[2].item())</div>
 <div class="line">print(<span class="stringliteral">&quot;b.batch[-1] =&quot;</span>, b.batch[-1].item())</div>
 <div class="line">print(<span class="stringliteral">&quot;b.batch[-2] =&quot;</span>, b.batch[-2].item())</div>
-</div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">a.base[2] = 5</div>
-<div class="line">a.base[-1] = 7</div>
-<div class="line">a.base[-2] = 6</div>
-<div class="line"> </div>
-<div class="line">b.batch[2] = 5</div>
-<div class="line">b.batch[-1] = 4</div>
-<div class="line">b.batch[-2] = 5</div>
+</div><!-- fragment --><p> @endsource</p>
+<p class="startli">Output: </p><div class="fragment"><div class="line">@attach-output:src2</div>
 </div><!-- fragment --></li>
 </ul>
 </div><div class="tabbed"></div><p>Single element indexing can be used to index multidimensional tensors, in which case each integer corresponds to one dimension, counting from the leading (leftmost) dimension onward. If the number of indices is smaller than the number of dimensions, a view of the subdimensional tensor is returned.</p>
 <div class="tabbed"></div><div class="tabbed"><ul>
-<li><p class="startli"><b class="tab-title">C++</b> </p><div class="fragment"><div class="line"><span class="preprocessor">#include &quot;neml2/tensors/Tensor.h&quot;</span></div>
+<li><p class="startli"><b class="tab-title">C++</b> @source:src3 </p><div class="fragment"><div class="line"><span class="preprocessor">#include &quot;neml2/tensors/Tensor.h&quot;</span></div>
 <div class="line"> </div>
 <div class="line"><span class="keywordtype">int</span></div>
 <div class="line">main()</div>
@@ -239,47 +229,17 @@ Single element indexing</h1>
 <div class="line">                           {{{-1}, {-2}, {-3}}, {{-4}, {-5}, {-6}}}}, 2);</div>
 <div class="line"> </div>
 <div class="line">  <span class="comment">// Single element indexing along batch dimensions</span></div>
-<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.batch[1, 0] = \n&quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1crystal__symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a>.batch_index({1, 0}) &lt;&lt; <span class="charliteral">&#39;\n&#39;</span> &lt;&lt; std::endl;</div>
-<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.batch[0] = \n&quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1crystal__symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a>.batch_index({0}) &lt;&lt; <span class="charliteral">&#39;\n&#39;</span> &lt;&lt; std::endl;</div>
+<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.batch[1, 0] = \n&quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a>.batch_index({1, 0}) &lt;&lt; <span class="charliteral">&#39;\n&#39;</span> &lt;&lt; std::endl;</div>
+<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.batch[0] = \n&quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a>.batch_index({0}) &lt;&lt; <span class="charliteral">&#39;\n&#39;</span> &lt;&lt; std::endl;</div>
 <div class="line"> </div>
 <div class="line">  <span class="comment">// Single element indexing along base dimensions</span></div>
-<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.base[2, 0] = \n&quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1crystal__symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a>.base_index({2, 0}) &lt;&lt; <span class="charliteral">&#39;\n&#39;</span> &lt;&lt; std::endl;</div>
-<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.base[1] = \n&quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1crystal__symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a>.base_index({1}) &lt;&lt; std::endl;</div>
+<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.base[2, 0] = \n&quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a>.base_index({2, 0}) &lt;&lt; <span class="charliteral">&#39;\n&#39;</span> &lt;&lt; std::endl;</div>
+<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.base[1] = \n&quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a>.base_index({1}) &lt;&lt; std::endl;</div>
 <div class="line">}</div>
-</div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">a.batch[1, 0] = </div>
-<div class="line">-1</div>
-<div class="line">-2</div>
-<div class="line">-3</div>
-<div class="line">[ CPUDoubleType{3,1} ]</div>
-<div class="line"> </div>
-<div class="line">a.batch[0] = </div>
-<div class="line">(1,.,.) = </div>
-<div class="line"> 1</div>
-<div class="line">  2</div>
-<div class="line">  3</div>
-<div class="line"> </div>
-<div class="line">(2,.,.) = </div>
-<div class="line"> 4</div>
-<div class="line">  5</div>
-<div class="line">  6</div>
-<div class="line">[ CPUDoubleType{2,3,1} ]</div>
-<div class="line"> </div>
-<div class="line">a.base[2, 0] = </div>
-<div class="line"> 3  6</div>
-<div class="line">-3 -6</div>
-<div class="line">[ CPUDoubleType{2,2} ]</div>
-<div class="line"> </div>
-<div class="line">a.base[1] = </div>
-<div class="line">(1,.,.) = </div>
-<div class="line"> 2</div>
-<div class="line">  5</div>
-<div class="line"> </div>
-<div class="line">(2,.,.) = </div>
-<div class="line">-2</div>
-<div class="line"> -5</div>
-<div class="line">[ CPUDoubleType{2,2,1} ]</div>
+</div><!-- fragment --><p> @endsource</p>
+<p class="startli">Output: </p><div class="fragment"><div class="line">@attach-output:src3</div>
 </div><!-- fragment --></li>
-<li><p class="startli"><b class="tab-title">Python</b> </p><div class="fragment"><div class="line"><span class="keyword">import</span> torch</div>
+<li><p class="startli"><b class="tab-title">Python</b> @source:src4 </p><div class="fragment"><div class="line"><span class="keyword">import</span> torch</div>
 <div class="line"><span class="keyword">from</span> neml2.tensors <span class="keyword">import</span> Tensor</div>
 <div class="line"> </div>
 <div class="line">torch.set_default_dtype(torch.double)</div>
@@ -299,51 +259,17 @@ Single element indexing</h1>
 <div class="line">print(a.base[2, 0], <span class="stringliteral">&quot;\n&quot;</span>)</div>
 <div class="line">print(<span class="stringliteral">&quot;a.base[1] =&quot;</span>)</div>
 <div class="line">print(a.base[1])</div>
-</div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">a.batch[1, 0] =</div>
-<div class="line">-1</div>
-<div class="line">-2</div>
-<div class="line">-3</div>
-<div class="line">[ CPULongType{3,1} ]</div>
-<div class="line">&lt;Tensor of shape [][3, 1]&gt; </div>
-<div class="line"> </div>
-<div class="line">a.batch[0] =</div>
-<div class="line">(1,.,.) = </div>
-<div class="line"> 1</div>
-<div class="line">  2</div>
-<div class="line">  3</div>
-<div class="line"> </div>
-<div class="line">(2,.,.) = </div>
-<div class="line"> 4</div>
-<div class="line">  5</div>
-<div class="line">  6</div>
-<div class="line">[ CPULongType{2,3,1} ]</div>
-<div class="line">&lt;Tensor of shape [2][3, 1]&gt; </div>
-<div class="line"> </div>
-<div class="line">a.base[2, 0] =</div>
-<div class="line"> 3  6</div>
-<div class="line">-3 -6</div>
-<div class="line">[ CPULongType{2,2} ]</div>
-<div class="line">&lt;Tensor of shape [2, 2][]&gt; </div>
-<div class="line"> </div>
-<div class="line">a.base[1] =</div>
-<div class="line">(1,.,.) = </div>
-<div class="line"> 2</div>
-<div class="line">  5</div>
-<div class="line"> </div>
-<div class="line">(2,.,.) = </div>
-<div class="line">-2</div>
-<div class="line"> -5</div>
-<div class="line">[ CPULongType{2,2,1} ]</div>
-<div class="line">&lt;Tensor of shape [2, 2][1]&gt;</div>
+</div><!-- fragment --><p> @endsource</p>
+<p class="startli">Output: </p><div class="fragment"><div class="line">@attach-output:src4</div>
 </div><!-- fragment --></li>
 </ul>
-</div><div class="tabbed"></div><h1><a class="anchor" id="autotoc_md151"></a>
+</div><div class="tabbed"></div><h1><a class="anchor" id="autotoc_md293"></a>
 Slicing</h1>
 <p>NEML2 supports the same slicing rules as in NumPy and PyTorch. A slice takes the form of </p><div class="fragment"><div class="line">start:stop:step</div>
 </div><!-- fragment --><p> where <code>start</code>, <code>stop</code>, and <code>step</code> are integers representing the starting index, ending index, and the striding of the sliced tensor view. All of these integers are optional when constructing a slice: <code>start</code> default to 0, <code>stop</code> default to \(\infty\) (i.e., <code>std::numeric_limits&lt;Size&gt;::max()</code>), and <code>step</code> default to 1. Note that <code>step</code> must be positive.</p>
 <p>It is best to learn slicing from examples. Below are equivalent C++ and Python codes applying the same set of slicing operations on the same tensor.</p>
 <div class="tabbed"></div><div class="tabbed"><ul>
-<li><p class="startli"><b class="tab-title">C++</b> </p><div class="fragment"><div class="line"><span class="preprocessor">#include &quot;neml2/tensors/Scalar.h&quot;</span></div>
+<li><p class="startli"><b class="tab-title">C++</b> @source:src5 </p><div class="fragment"><div class="line"><span class="preprocessor">#include &quot;neml2/tensors/Scalar.h&quot;</span></div>
 <div class="line"> </div>
 <div class="line"> </div>
 <div class="line"><span class="keywordtype">int</span></div>
@@ -365,104 +291,25 @@ Slicing</h1>
 <div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.batch[-15:-3:2] =\n&quot;</span> &lt;&lt; a.batch_index({Slice(-15, -3, 2)}) &lt;&lt; <span class="charliteral">&#39;\n&#39;</span> &lt;&lt; std::endl;</div>
 <div class="line"> </div>
 <div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;start default to 0&quot;</span> &lt;&lt; std::endl;</div>
-<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.batch[:17:3] =\n&quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1crystal__symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a>.batch_index({Slice(None, 17, 3)}) &lt;&lt; <span class="charliteral">&#39;\n&#39;</span> &lt;&lt; std::endl;</div>
+<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.batch[:17:3] =\n&quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a>.batch_index({Slice(None, 17, 3)}) &lt;&lt; <span class="charliteral">&#39;\n&#39;</span> &lt;&lt; std::endl;</div>
 <div class="line"> </div>
 <div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;stop default to &#39;consuming all remaining elements&#39;&quot;</span> &lt;&lt; std::endl;</div>
-<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.batch[12::2] =\n&quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1crystal__symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a>.batch_index({Slice(12, None, 2)}) &lt;&lt; <span class="charliteral">&#39;\n&#39;</span> &lt;&lt; std::endl;</div>
+<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.batch[12::2] =\n&quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a>.batch_index({Slice(12, None, 2)}) &lt;&lt; <span class="charliteral">&#39;\n&#39;</span> &lt;&lt; std::endl;</div>
 <div class="line"> </div>
 <div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;step default to 1&quot;</span> &lt;&lt; std::endl;</div>
-<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.batch[3:6:] =\n&quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1crystal__symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a>.batch_index({Slice(3, 6, None)}) &lt;&lt; <span class="charliteral">&#39;\n&#39;</span> &lt;&lt; std::endl;</div>
+<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.batch[3:6:] =\n&quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a>.batch_index({Slice(3, 6, None)}) &lt;&lt; <span class="charliteral">&#39;\n&#39;</span> &lt;&lt; std::endl;</div>
 <div class="line"> </div>
 <div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;Trailing colon(s) can be omitted&quot;</span> &lt;&lt; std::endl;</div>
-<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.batch[3:6] =\n&quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1crystal__symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a>.batch_index({Slice(3, 6)}) &lt;&lt; <span class="charliteral">&#39;\n&#39;</span> &lt;&lt; std::endl;</div>
-<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.batch[17:] =\n&quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1crystal__symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a>.batch_index({Slice(17)}) &lt;&lt; <span class="charliteral">&#39;\n&#39;</span> &lt;&lt; std::endl;</div>
+<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.batch[3:6] =\n&quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a>.batch_index({Slice(3, 6)}) &lt;&lt; <span class="charliteral">&#39;\n&#39;</span> &lt;&lt; std::endl;</div>
+<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.batch[17:] =\n&quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a>.batch_index({Slice(17)}) &lt;&lt; <span class="charliteral">&#39;\n&#39;</span> &lt;&lt; std::endl;</div>
 <div class="line"> </div>
 <div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;The default is therefore equivalent to slicing the entire dimension&quot;</span> &lt;&lt; std::endl;</div>
-<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.batch[:] =\n&quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1crystal__symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a>.batch_index({Slice()}) &lt;&lt; std::endl;</div>
+<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.batch[:] =\n&quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a>.batch_index({Slice()}) &lt;&lt; std::endl;</div>
 <div class="line">}</div>
-</div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">Basic syntax: start:stop:step</div>
-<div class="line">a.batch[5:17:2] =</div>
-<div class="line">  5</div>
-<div class="line">  7</div>
-<div class="line">  9</div>
-<div class="line"> 11</div>
-<div class="line"> 13</div>
-<div class="line"> 15</div>
-<div class="line">[ CPUDoubleType{6} ]</div>
-<div class="line"> </div>
-<div class="line">Negative start and stop are counted backward</div>
-<div class="line">a.batch[-15:-3:2] =</div>
-<div class="line">  5</div>
-<div class="line">  7</div>
-<div class="line">  9</div>
-<div class="line"> 11</div>
-<div class="line"> 13</div>
-<div class="line"> 15</div>
-<div class="line">[ CPUDoubleType{6} ]</div>
-<div class="line"> </div>
-<div class="line">start default to 0</div>
-<div class="line">a.batch[:17:3] =</div>
-<div class="line">  0</div>
-<div class="line">  3</div>
-<div class="line">  6</div>
-<div class="line">  9</div>
-<div class="line"> 12</div>
-<div class="line"> 15</div>
-<div class="line">[ CPUDoubleType{6} ]</div>
-<div class="line"> </div>
-<div class="line">stop default to &#39;consuming all remaining elements&#39;</div>
-<div class="line">a.batch[12::2] =</div>
-<div class="line"> 12</div>
-<div class="line"> 14</div>
-<div class="line"> 16</div>
-<div class="line"> 18</div>
-<div class="line">[ CPUDoubleType{4} ]</div>
-<div class="line"> </div>
-<div class="line">step default to 1</div>
-<div class="line">a.batch[3:6:] =</div>
-<div class="line"> 3</div>
-<div class="line"> 4</div>
-<div class="line"> 5</div>
-<div class="line">[ CPUDoubleType{3} ]</div>
-<div class="line"> </div>
-<div class="line">Trailing colon(s) can be omitted</div>
-<div class="line">a.batch[3:6] =</div>
-<div class="line"> 3</div>
-<div class="line"> 4</div>
-<div class="line"> 5</div>
-<div class="line">[ CPUDoubleType{3} ]</div>
-<div class="line"> </div>
-<div class="line">a.batch[17:] =</div>
-<div class="line"> 17</div>
-<div class="line"> 18</div>
-<div class="line"> 19</div>
-<div class="line">[ CPUDoubleType{3} ]</div>
-<div class="line"> </div>
-<div class="line">The default is therefore equivalent to slicing the entire dimension</div>
-<div class="line">a.batch[:] =</div>
-<div class="line">  0</div>
-<div class="line">  1</div>
-<div class="line">  2</div>
-<div class="line">  3</div>
-<div class="line">  4</div>
-<div class="line">  5</div>
-<div class="line">  6</div>
-<div class="line">  7</div>
-<div class="line">  8</div>
-<div class="line">  9</div>
-<div class="line"> 10</div>
-<div class="line"> 11</div>
-<div class="line"> 12</div>
-<div class="line"> 13</div>
-<div class="line"> 14</div>
-<div class="line"> 15</div>
-<div class="line"> 16</div>
-<div class="line"> 17</div>
-<div class="line"> 18</div>
-<div class="line"> 19</div>
-<div class="line">[ CPUDoubleType{20} ]</div>
+</div><!-- fragment --><p> @endsource</p>
+<p class="startli">Output: </p><div class="fragment"><div class="line">@attach-output:src5</div>
 </div><!-- fragment --></li>
-<li><p class="startli"><b class="tab-title">Python</b> </p><div class="fragment"><div class="line"><span class="keyword">from</span> neml2.tensors <span class="keyword">import</span> Scalar</div>
+<li><p class="startli"><b class="tab-title">Python</b> @source:src6 </p><div class="fragment"><div class="line"><span class="keyword">from</span> neml2.tensors <span class="keyword">import</span> Scalar</div>
 <div class="line"><span class="keyword">import</span> torch</div>
 <div class="line"> </div>
 <div class="line">torch.set_default_dtype(torch.double)</div>
@@ -501,100 +348,13 @@ Slicing</h1>
 <div class="line">print(<span class="stringliteral">&quot;The default is therefore equivalent to slicing the entire dimension&quot;</span>)</div>
 <div class="line">print(<span class="stringliteral">&quot;a.batch[:] =&quot;</span>)</div>
 <div class="line">print(a.batch[:])</div>
-</div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">Basic syntax: start:stop:step</div>
-<div class="line">a.batch[5:17:2] =</div>
-<div class="line">  5</div>
-<div class="line">  7</div>
-<div class="line">  9</div>
-<div class="line"> 11</div>
-<div class="line"> 13</div>
-<div class="line"> 15</div>
-<div class="line">[ CPUDoubleType{6} ]</div>
-<div class="line">&lt;Scalar of shape [6][]&gt; </div>
-<div class="line"> </div>
-<div class="line">Negative start and stop are counted backward</div>
-<div class="line">a.batch[-15:-3:2] =</div>
-<div class="line">  5</div>
-<div class="line">  7</div>
-<div class="line">  9</div>
-<div class="line"> 11</div>
-<div class="line"> 13</div>
-<div class="line"> 15</div>
-<div class="line">[ CPUDoubleType{6} ]</div>
-<div class="line">&lt;Scalar of shape [6][]&gt; </div>
-<div class="line"> </div>
-<div class="line">start default to 0</div>
-<div class="line">a.batch[:17:3] =</div>
-<div class="line">  0</div>
-<div class="line">  3</div>
-<div class="line">  6</div>
-<div class="line">  9</div>
-<div class="line"> 12</div>
-<div class="line"> 15</div>
-<div class="line">[ CPUDoubleType{6} ]</div>
-<div class="line">&lt;Scalar of shape [6][]&gt; </div>
-<div class="line"> </div>
-<div class="line">stop default to &#39;consuming all remaining elements&#39;</div>
-<div class="line">a.batch[12::2] =</div>
-<div class="line"> 12</div>
-<div class="line"> 14</div>
-<div class="line"> 16</div>
-<div class="line"> 18</div>
-<div class="line">[ CPUDoubleType{4} ]</div>
-<div class="line">&lt;Scalar of shape [4][]&gt; </div>
-<div class="line"> </div>
-<div class="line">step default to 1</div>
-<div class="line">a.batch[3:6:] =</div>
-<div class="line"> 3</div>
-<div class="line"> 4</div>
-<div class="line"> 5</div>
-<div class="line">[ CPUDoubleType{3} ]</div>
-<div class="line">&lt;Scalar of shape [3][]&gt; </div>
-<div class="line"> </div>
-<div class="line">Trailing colon(s) can be omitted</div>
-<div class="line">a.batch[3:6] =</div>
-<div class="line"> 3</div>
-<div class="line"> 4</div>
-<div class="line"> 5</div>
-<div class="line">[ CPUDoubleType{3} ]</div>
-<div class="line">&lt;Scalar of shape [3][]&gt; </div>
-<div class="line"> </div>
-<div class="line">a.batch[17:] =</div>
-<div class="line"> 17</div>
-<div class="line"> 18</div>
-<div class="line"> 19</div>
-<div class="line">[ CPUDoubleType{3} ]</div>
-<div class="line">&lt;Scalar of shape [3][]&gt; </div>
-<div class="line"> </div>
-<div class="line">The default is therefore equivalent to slicing the entire dimension</div>
-<div class="line">a.batch[:] =</div>
-<div class="line">  0</div>
-<div class="line">  1</div>
-<div class="line">  2</div>
-<div class="line">  3</div>
-<div class="line">  4</div>
-<div class="line">  5</div>
-<div class="line">  6</div>
-<div class="line">  7</div>
-<div class="line">  8</div>
-<div class="line">  9</div>
-<div class="line"> 10</div>
-<div class="line"> 11</div>
-<div class="line"> 12</div>
-<div class="line"> 13</div>
-<div class="line"> 14</div>
-<div class="line"> 15</div>
-<div class="line"> 16</div>
-<div class="line"> 17</div>
-<div class="line"> 18</div>
-<div class="line"> 19</div>
-<div class="line">[ CPUDoubleType{20} ]</div>
-<div class="line">&lt;Scalar of shape [20][]&gt;</div>
+</div><!-- fragment --><p> @endsource</p>
+<p class="startli">Output: </p><div class="fragment"><div class="line">@attach-output:src6</div>
 </div><!-- fragment --></li>
 </ul>
 </div><div class="tabbed"></div><p>Similar to single element indexing, slicing can also be used to index multidimensional tensors. When the number of slices is smaller than the number of dimensions, a view of the subdimensional tensor is returned.</p>
 <div class="tabbed"></div><div class="tabbed"><ul>
-<li><p class="startli"><b class="tab-title">C++</b> </p><div class="fragment"><div class="line"><span class="preprocessor">#include &quot;neml2/tensors/Tensor.h&quot;</span></div>
+<li><p class="startli"><b class="tab-title">C++</b> @source:src7 </p><div class="fragment"><div class="line"><span class="preprocessor">#include &quot;neml2/tensors/Tensor.h&quot;</span></div>
 <div class="line"> </div>
 <div class="line"><span class="keywordtype">int</span></div>
 <div class="line">main()</div>
@@ -606,23 +366,14 @@ Slicing</h1>
 <div class="line">  <span class="comment">// Create a tensor with shape (3, 4; 2)</span></div>
 <div class="line">  <span class="keyword">auto</span> a0 = Tensor::create({{0, 1}, {2, 3}, {4, 5}}, 1);</div>
 <div class="line">  <span class="keyword">auto</span> a1 = Tensor::create({{3, 4}, {5, 6}, {7, 8}}, 1);</div>
-<div class="line">  <span class="keyword">auto</span> <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1crystal__symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a> = Tensor::linspace(a0, a1, 4, 1);</div>
+<div class="line">  <span class="keyword">auto</span> <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a> = Tensor::linspace(a0, a1, 4, 1);</div>
 <div class="line"> </div>
-<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.batch[:2, -3:4] =\n&quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1crystal__symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a>.batch_index({Slice(None, 2), Slice(-3, 4)}) &lt;&lt; std::endl;</div>
+<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.batch[:2, -3:4] =\n&quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a>.batch_index({Slice(None, 2), Slice(-3, 4)}) &lt;&lt; std::endl;</div>
 <div class="line">}</div>
-</div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">a.batch[:2, -3:4] =</div>
-<div class="line">(1,.,.) = </div>
-<div class="line"> 1  2</div>
-<div class="line">  2  3</div>
-<div class="line">  3  4</div>
-<div class="line"> </div>
-<div class="line">(2,.,.) = </div>
-<div class="line"> 3  4</div>
-<div class="line">  4  5</div>
-<div class="line">  5  6</div>
-<div class="line">[ CPUDoubleType{2,3,2} ]</div>
+</div><!-- fragment --><p> @endsource</p>
+<p class="startli">Output: </p><div class="fragment"><div class="line">@attach-output:src7</div>
 </div><!-- fragment --></li>
-<li><p class="startli"><b class="tab-title">Python</b> </p><div class="fragment"><div class="line"><span class="keyword">import</span> torch</div>
+<li><p class="startli"><b class="tab-title">Python</b> @source:src8 </p><div class="fragment"><div class="line"><span class="keyword">import</span> torch</div>
 <div class="line"><span class="keyword">from</span> neml2.tensors <span class="keyword">import</span> Tensor</div>
 <div class="line"> </div>
 <div class="line">torch.set_default_dtype(torch.double)</div>
@@ -633,21 +384,11 @@ Slicing</h1>
 <div class="line"> </div>
 <div class="line">print(<span class="stringliteral">&quot;a.batch[:2, -3:4] =&quot;</span>)</div>
 <div class="line">print(a.batch[:2, -3:4])</div>
-</div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">a.batch[:2, -3:4] =</div>
-<div class="line">(1,.,.) = </div>
-<div class="line"> 1  2</div>
-<div class="line">  2  3</div>
-<div class="line">  3  4</div>
-<div class="line"> </div>
-<div class="line">(2,.,.) = </div>
-<div class="line"> 3  4</div>
-<div class="line">  4  5</div>
-<div class="line">  5  6</div>
-<div class="line">[ CPUDoubleType{2,3,2} ]</div>
-<div class="line">&lt;Tensor of shape [2, 3][2]&gt;</div>
+</div><!-- fragment --><p> @endsource</p>
+<p class="startli">Output: </p><div class="fragment"><div class="line">@attach-output:src8</div>
 </div><!-- fragment --></li>
 </ul>
-</div><div class="tabbed"></div><h1><a class="anchor" id="autotoc_md152"></a>
+</div><div class="tabbed"></div><h1><a class="anchor" id="autotoc_md294"></a>
 Dimensional indexing tools</h1>
 <p>When indexing multidimensional tensors, having to specify the element index or slicing for each dimension would be cumbersome. To simplify multidimensional indexing, some special syntax and notations are reserved for inferring tensor shapes.</p>
 <p>NEML2 currently supports two special symbols:</p><ul>
@@ -656,7 +397,7 @@ Dimensional indexing tools</h1>
 </ul>
 <p>Again, the use of these special symbols are best illustrated by examples.</p>
 <div class="tabbed"></div><div class="tabbed"><ul>
-<li><p class="startli"><b class="tab-title">C++</b> </p><div class="fragment"><div class="line"><span class="preprocessor">#include &lt;torch/torch.h&gt;</span></div>
+<li><p class="startli"><b class="tab-title">C++</b> @source:src9 </p><div class="fragment"><div class="line"><span class="preprocessor">#include &lt;torch/torch.h&gt;</span></div>
 <div class="line"><span class="preprocessor">#include &quot;neml2/tensors/Tensor.h&quot;</span></div>
 <div class="line"> </div>
 <div class="line"><span class="keywordtype">int</span></div>
@@ -673,21 +414,19 @@ Dimensional indexing tools</h1>
 <div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.batch[2:, ..., :].shape = &quot;</span> &lt;&lt; a.batch_index({Slice(2), Ellipsis, Slice()}).sizes() &lt;&lt; std::endl;</div>
 <div class="line"> </div>
 <div class="line">  <span class="comment">// Batch indexing with none</span></div>
-<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.batch[2:, :, :, None, :].shape = &quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1crystal__symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a>.batch_index({Slice(2), Slice(), Slice(), None, Slice()}).sizes() &lt;&lt; std::endl;</div>
+<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.batch[2:, :, :, None, :].shape = &quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a>.batch_index({Slice(2), Slice(), Slice(), None, Slice()}).sizes() &lt;&lt; std::endl;</div>
 <div class="line"> </div>
 <div class="line">  <span class="comment">// Batch indexing with both ellipsis and none</span></div>
-<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.batch[..., None, :].shape = &quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1crystal__symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a>.batch_index({Ellipsis, None, Slice()}).sizes() &lt;&lt; std::endl;</div>
+<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.batch[..., None, :].shape = &quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a>.batch_index({Ellipsis, None, Slice()}).sizes() &lt;&lt; std::endl;</div>
 <div class="line"> </div>
 <div class="line">  <span class="comment">// Same rules apply to base indexing</span></div>
-<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.base[..., None, :].shape = &quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1crystal__symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a>.base_index({Ellipsis, None, Slice()}).sizes() &lt;&lt; std::endl;</div>
+<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;a.base[..., None, :].shape = &quot;</span> &lt;&lt; <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a>.base_index({Ellipsis, None, Slice()}).sizes() &lt;&lt; std::endl;</div>
 <div class="line">}</div>
-<div class="ttc" id="aclassneml2_1_1Tensor_html"><div class="ttname"><a href="classneml2_1_1Tensor.html">neml2::Tensor</a></div><div class="ttdef"><b>Definition</b> Tensor.h:46</div></div>
-</div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">a.batch[2:, ..., :].shape = [3, 3, 1, 3, 1, 7, 8]</div>
-<div class="line">a.batch[2:, :, :, None, :].shape = [3, 3, 1, 1, 3, 1, 7, 8]</div>
-<div class="line">a.batch[..., None, :].shape = [5, 3, 1, 1, 3, 1, 7, 8]</div>
-<div class="line">a.base[..., None, :].shape = [5, 3, 1, 3, 1, 7, 1, 8]</div>
+<div class="ttc" id="aclassneml2_1_1Tensor_html"><div class="ttname"><a href="classneml2_1_1Tensor.html">neml2::Tensor</a></div><div class="ttdef"><b>Definition</b> Tensor.h:47</div></div>
+</div><!-- fragment --><p> @endsource</p>
+<p class="startli">Output: </p><div class="fragment"><div class="line">@attach-output:src9</div>
 </div><!-- fragment --></li>
-<li><p class="startli"><b class="tab-title">Python</b> </p><div class="fragment"><div class="line"><span class="keyword">import</span> torch</div>
+<li><p class="startli"><b class="tab-title">Python</b> @source:src10 </p><div class="fragment"><div class="line"><span class="keyword">import</span> torch</div>
 <div class="line"><span class="keyword">from</span> neml2.tensors <span class="keyword">import</span> Tensor</div>
 <div class="line"> </div>
 <div class="line">torch.set_default_dtype(torch.double)</div>
@@ -706,10 +445,8 @@ Dimensional indexing tools</h1>
 <div class="line"> </div>
 <div class="line"><span class="comment"># Same rules apply to base indexing</span></div>
 <div class="line">print(<span class="stringliteral">&quot;a.base[..., None, :].shape =&quot;</span>, a.base[..., <span class="keywordtype">None</span>, :].shape)</div>
-</div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">a.batch[2:, ..., :].shape = (3, 3, 1, 3, 1, 7, 8)</div>
-<div class="line">a.batch[2:, :, :, None, :].shape = (3, 3, 1, 1, 3, 1, 7, 8)</div>
-<div class="line">a.batch[..., None, :].shape = (5, 3, 1, 1, 3, 1, 7, 8)</div>
-<div class="line">a.base[..., None, :].shape = (5, 3, 1, 3, 1, 7, 1, 8)</div>
+</div><!-- fragment --><p> @endsource</p>
+<p class="startli">Output: </p><div class="fragment"><div class="line">@attach-output:src10</div>
 </div><!-- fragment --></li>
 </ul>
 </div><div class="tabbed"></div><div class="section_buttons"></div><div class="section_buttons"><table class="markdownTable">

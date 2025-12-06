@@ -37,12 +37,12 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-10-10 12:15:50</td>
+            <td class="headerValue">2025-12-06 17:10:54</td>
             <td></td>
             <td class="headerItem">Functions:</td>
-            <td class="headerCovTableEntryLo">13.0&nbsp;%</td>
-            <td class="headerCovTableEntry">23</td>
-            <td class="headerCovTableEntry">3</td>
+            <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
+            <td class="headerCovTableEntry">18</td>
+            <td class="headerCovTableEntry">18</td>
           </tr>
                   <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
                 </table>
@@ -91,10 +91,15 @@
 <span id="L29"><span class="lineNum">      29</span>              : namespace neml2</span>
 <span id="L30"><span class="lineNum">      30</span>              : {</span>
 <span id="L31"><span class="lineNum">      31</span>              : #define DEFINE_HEAVISIDE(T)                                                                        \</span>
-<span id="L32"><span class="lineNum">      32</span>              :   T heaviside(const T &amp; a) { return (sign(a) + 1.0) / 2.0; }                                       \</span>
-<span id="L33"><span class="lineNum">      33</span>              :   static_assert(true)</span>
-<span id="L34"><span class="lineNum">      34</span> <span class="tlaGNC tlaBgGNC">          70 : FOR_ALL_TENSORBASE(DEFINE_HEAVISIDE);</span></span>
-<span id="L35"><span class="lineNum">      35</span>              : } // namespace neml2</span>
+<span id="L32"><span class="lineNum">      32</span>              :   T heaviside(const T &amp; a)                                                                         \</span>
+<span id="L33"><span class="lineNum">      33</span>              :   {                                                                                                \</span>
+<span id="L34"><span class="lineNum">      34</span>              :     neml_assert_dbg(a.is_floating_point(),                                                         \</span>
+<span id="L35"><span class="lineNum">      35</span>              :                     &quot;heaviside is only implemented for floating point tensors.&quot;);                  \</span>
+<span id="L36"><span class="lineNum">      36</span>              :     return (sign(a) + 1) / 2;                                                                      \</span>
+<span id="L37"><span class="lineNum">      37</span>              :   }                                                                                                \</span>
+<span id="L38"><span class="lineNum">      38</span>              :   static_assert(true)</span>
+<span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC tlaBgGNC">         273 : FOR_ALL_TENSORBASE(DEFINE_HEAVISIDE);</span></span>
+<span id="L40"><span class="lineNum">      40</span>              : } // namespace neml2</span>
         </pre>
               </td>
             </tr>

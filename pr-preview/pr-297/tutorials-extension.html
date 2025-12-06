@@ -142,20 +142,20 @@ $(function(){initNavTree('tutorials-extension.html',''); initResizable(true); })
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md80">Problem description</a>
+    <a href="#autotoc_md226">Problem description</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md81">Seaching for available models</a>
+    <a href="#autotoc_md227">Seaching for available models</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md82">Outline</a>
+    <a href="#autotoc_md228">Outline</a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_content_2tutorials_2extension_2extension"></a></p>
 <dl class="section note"><dt>Note</dt><dd>Before diving into the following tutorials we recommend reading the <a class="el" href="tutorials-contributing.html">Contributing</a> guide.</dd></dl>
 <p>NEML2 models can be easily extended or adapted to model the material behavior of your interest.</p>
-<h1><a class="anchor" id="autotoc_md80"></a>
+<h1><a class="anchor" id="autotoc_md226"></a>
 Problem description</h1>
 <p>This set of tutorials define a custom equation to model the conventional <em>projectile motion</em> problem:    </p><p class="formulaDsp">
 \begin{align}
@@ -179,14 +179,14 @@ Problem description</h1>
 \end{align}
 </p>
 <p> subject to appropriate initial conditions \(\boldsymbol{x}_0\) and \(\boldsymbol{v}_0\)</p>
-<h1><a class="anchor" id="autotoc_md81"></a>
+<h1><a class="anchor" id="autotoc_md227"></a>
 Seaching for available models</h1>
 <p>Among these equations:</p><ul>
 <li>\(\eqref{1}\) and \(\eqref{3}\) can be defined using <a class="el" href="syntax-models.html#vecbackwardeulertimeintegration">VecBackwardEulerTimeIntegration</a>.</li>
 <li>\(\eqref{2}\) is not available in NEML2, and is the focus of this set of tutorials. We will name it <code>ProjectileAcceleration</code>.</li>
 <li>\(\eqref{4}\) is the <a class="el" href="syntax-models.html#implicitupdate">ImplicitUpdate</a>.</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md82"></a>
+<h1><a class="anchor" id="autotoc_md228"></a>
 Outline</h1>
 <p>Each tutorial builds on top of the previous tutorials, introduces and explains one small piece in model development. It is therefore recommended to follow these tutorials in order.</p>
 <ul>
@@ -194,7 +194,6 @@ Outline</h1>
 <li><a class="el" href="tutorials-extension-argument-declaration.html">Argument declaration</a></li>
 <li><a class="el" href="tutorials-extension-the-forward-operator.html">The forward operator</a></li>
 <li><a class="el" href="tutorials-extension-model-composition.html">Model composition</a></li>
-<li><a class="el" href="tutorials-extension-model-visualization.html">Model visualization</a></li>
 </ul>
 <p>The final model is then used in another set of <a class="el" href="tutorials-optimization.html">tutorials</a> on parameter calibration and inference. </p>
 </div></div><!-- contents -->

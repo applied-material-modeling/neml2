@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-10-10 12:15:50</td>
+            <td class="headerValue">2025-12-06 17:10:54</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -92,8 +92,8 @@
 <span id="L30"><span class="lineNum">      30</span> <span class="tlaGNC tlaBgGNC">          16 : eigh(const SR2 &amp; m)</span></span>
 <span id="L31"><span class="lineNum">      31</span>              : {</span>
 <span id="L32"><span class="lineNum">      32</span> <span class="tlaGNC">          16 :   auto result = at::linalg_eigh(R2(m));</span></span>
-<span id="L33"><span class="lineNum">      33</span> <span class="tlaGNC">          16 :   auto evals = Vec(std::get&lt;0&gt;(result), m.batch_sizes());</span></span>
-<span id="L34"><span class="lineNum">      34</span> <span class="tlaGNC">          16 :   auto evecs = R2(std::get&lt;1&gt;(result), m.batch_sizes());</span></span>
+<span id="L33"><span class="lineNum">      33</span> <span class="tlaGNC">          16 :   auto evals = Vec(std::get&lt;0&gt;(result), m.dynamic_sizes(), m.intmd_dim());</span></span>
+<span id="L34"><span class="lineNum">      34</span> <span class="tlaGNC">          16 :   auto evecs = R2(std::get&lt;1&gt;(result), m.dynamic_sizes(), m.intmd_dim());</span></span>
 <span id="L35"><span class="lineNum">      35</span> <span class="tlaGNC">          32 :   return std::make_pair(evals, evecs);</span></span>
 <span id="L36"><span class="lineNum">      36</span> <span class="tlaGNC">          16 : }</span></span>
 <span id="L37"><span class="lineNum">      37</span>              : } // namespace neml2::linalg</span>

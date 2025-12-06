@@ -32,12 +32,12 @@
             <td></td>
             <td class="headerItem">Lines:</td>
             <td class="headerCovTableEntryHi">99.5&nbsp;%</td>
-            <td class="headerCovTableEntry">196</td>
-            <td class="headerCovTableEntry">195</td>
+            <td class="headerCovTableEntry">194</td>
+            <td class="headerCovTableEntry">193</td>
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-10-10 12:15:50</td>
+            <td class="headerValue">2025-12-06 17:10:54</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -164,8 +164,8 @@
 <span id="L102"><span class="lineNum">     102</span> <span class="tlaGNC">           9 :   const auto sf = _h ? _s0 + (*_h) : _s0;</span></span>
 <span id="L103"><span class="lineNum">     103</span>              : </span>
 <span id="L104"><span class="lineNum">     104</span> <span class="tlaGNC">           9 :   if (out)</span></span>
-<span id="L105"><span class="lineNum">     105</span> <span class="tlaGNC">          14 :     _f = pow(_se / sf, 2.0) + 2 * _q1 * _phi * cosh(_q2 / 2.0 * _sp / sf) -</span></span>
-<span id="L106"><span class="lineNum">     106</span> <span class="tlaGNC">          21 :          (1.0 + _q3 * pow(Scalar(_phi), 2.0));</span></span>
+<span id="L105"><span class="lineNum">     105</span> <span class="tlaGNC">          18 :     _f = pow(_se / sf, 2.0) + 2 * _q1 * _phi * cosh(_q2 / 2.0 * _sp / sf) -</span></span>
+<span id="L106"><span class="lineNum">     106</span> <span class="tlaGNC">          27 :          (1.0 + _q3 * pow(_phi(), 2.0));</span></span>
 <span id="L107"><span class="lineNum">     107</span>              : </span>
 <span id="L108"><span class="lineNum">     108</span> <span class="tlaGNC">           9 :   if (dout_din)</span></span>
 <span id="L109"><span class="lineNum">     109</span>              :   {</span>
@@ -179,13 +179,13 @@
 <span id="L117"><span class="lineNum">     117</span> <span class="tlaGNC">           5 :       _f.d(_phi) = 2.0 * _q1 * cosh(_q2 / 2.0 * _sp / sf) - 2.0 * _q3 * _phi;</span></span>
 <span id="L118"><span class="lineNum">     118</span>              : </span>
 <span id="L119"><span class="lineNum">     119</span> <span class="tlaGNC">           5 :     if (_h)</span></span>
-<span id="L120"><span class="lineNum">     120</span> <span class="tlaGNC">          20 :       _f.d(*_h) = -2 * pow(Scalar(_se), 2.0) / pow(sf, 3.0) -</span></span>
-<span id="L121"><span class="lineNum">     121</span> <span class="tlaGNC">          25 :                   _q1 * _phi * _q2 * _sp / pow(sf, 2.0) * sinh(_q2 / 2.0 * _sp / sf);</span></span>
+<span id="L120"><span class="lineNum">     120</span> <span class="tlaGNC">          15 :       _f.d(*_h) = -2 * pow(_se(), 2.0) / pow(sf, 3.0) -</span></span>
+<span id="L121"><span class="lineNum">     121</span> <span class="tlaGNC">          20 :                   _q1 * _phi * _q2 * _sp / pow(sf, 2.0) * sinh(_q2 / 2.0 * _sp / sf);</span></span>
 <span id="L122"><span class="lineNum">     122</span>              : </span>
 <span id="L123"><span class="lineNum">     123</span>              :     // Handle the case of variable coupling</span>
 <span id="L124"><span class="lineNum">     124</span> <span class="tlaGNC">          15 :     if (const auto * const sy = nl_param(&quot;sy&quot;))</span></span>
-<span id="L125"><span class="lineNum">     125</span> <span class="tlaGNC">           8 :       _f.d(*sy) = -2 * pow(Scalar(_se), 2.0) / pow(sf, 3.0) -</span></span>
-<span id="L126"><span class="lineNum">     126</span> <span class="tlaGNC">          10 :                   _q1 * _phi * _q2 * _sp / pow(sf, 2.0) * sinh(_q2 / 2.0 * _sp / sf);</span></span>
+<span id="L125"><span class="lineNum">     125</span> <span class="tlaGNC">           6 :       _f.d(*sy) = -2 * pow(_se(), 2.0) / pow(sf, 3.0) -</span></span>
+<span id="L126"><span class="lineNum">     126</span> <span class="tlaGNC">           8 :                   _q1 * _phi * _q2 * _sp / pow(sf, 2.0) * sinh(_q2 / 2.0 * _sp / sf);</span></span>
 <span id="L127"><span class="lineNum">     127</span>              : </span>
 <span id="L128"><span class="lineNum">     128</span> <span class="tlaGNC">          15 :     if (const auto * const q1 = nl_param(&quot;q1&quot;))</span></span>
 <span id="L129"><span class="lineNum">     129</span> <span class="tlaGNC">           2 :       _f.d(*q1) = 2.0 * _phi * cosh(_q2 / 2.0 * _sp / sf);</span></span>
@@ -194,7 +194,7 @@
 <span id="L132"><span class="lineNum">     132</span> <span class="tlaGNC">           2 :       _f.d(*q2) = _q1 * _phi * _sp / sf * sinh(_q2 / 2.0 * _sp / sf);</span></span>
 <span id="L133"><span class="lineNum">     133</span>              : </span>
 <span id="L134"><span class="lineNum">     134</span> <span class="tlaGNC">          15 :     if (const auto * const q3 = nl_param(&quot;q3&quot;))</span></span>
-<span id="L135"><span class="lineNum">     135</span> <span class="tlaGNC">           2 :       _f.d(*q3) = -pow(Scalar(_phi), 2.0);</span></span>
+<span id="L135"><span class="lineNum">     135</span> <span class="tlaGNC">           2 :       _f.d(*q3) = -pow(_phi(), 2.0);</span></span>
 <span id="L136"><span class="lineNum">     136</span>              :   }</span>
 <span id="L137"><span class="lineNum">     137</span>              : </span>
 <span id="L138"><span class="lineNum">     138</span> <span class="tlaGNC">           9 :   if (d2out_din2)</span></span>
@@ -235,13 +235,13 @@
 <span id="L173"><span class="lineNum">     173</span>              :     ////////////////////////////////////////////////////////////////////////////////////////////////</span>
 <span id="L174"><span class="lineNum">     174</span> <span class="tlaGNC">           3 :     if (_se.is_dependent())</span></span>
 <span id="L175"><span class="lineNum">     175</span>              :     {</span>
-<span id="L176"><span class="lineNum">     176</span> <span class="tlaGNC">           3 :       _f.d(_se, _se) = 2.0 / pow(sf, 2.0);</span></span>
+<span id="L176"><span class="lineNum">     176</span> <span class="tlaGNC">           3 :       _f.d2(_se, _se) = 2.0 / pow(sf, 2.0);</span></span>
 <span id="L177"><span class="lineNum">     177</span>              : </span>
 <span id="L178"><span class="lineNum">     178</span> <span class="tlaGNC">           3 :       if (_h)</span></span>
-<span id="L179"><span class="lineNum">     179</span> <span class="tlaGNC">           3 :         _f.d(_se, *_h) = -4.0 * _se / pow(sf, 3.0);</span></span>
+<span id="L179"><span class="lineNum">     179</span> <span class="tlaGNC">           3 :         _f.d2(_se, *_h) = -4.0 * _se / pow(sf, 3.0);</span></span>
 <span id="L180"><span class="lineNum">     180</span>              : </span>
 <span id="L181"><span class="lineNum">     181</span> <span class="tlaGNC">           3 :       if (sy)</span></span>
-<span id="L182"><span class="lineNum">     182</span> <span class="tlaGNC">           1 :         _f.d(_se, *sy) = -4.0 * _se / pow(sf, 3.0);</span></span>
+<span id="L182"><span class="lineNum">     182</span> <span class="tlaGNC">           1 :         _f.d2(_se, *sy) = -4.0 * _se / pow(sf, 3.0);</span></span>
 <span id="L183"><span class="lineNum">     183</span>              :     }</span>
 <span id="L184"><span class="lineNum">     184</span>              : </span>
 <span id="L185"><span class="lineNum">     185</span>              :     ////////////////////////////////////////////////////////////////////////////////////////////////</span>
@@ -253,31 +253,31 @@
 <span id="L191"><span class="lineNum">     191</span>              :     ////////////////////////////////////////////////////////////////////////////////////////////////</span>
 <span id="L192"><span class="lineNum">     192</span> <span class="tlaGNC">           3 :     if (_sp.is_dependent())</span></span>
 <span id="L193"><span class="lineNum">     193</span>              :     {</span>
-<span id="L194"><span class="lineNum">     194</span> <span class="tlaGNC">           6 :       _f.d(_sp, _sp) =</span></span>
-<span id="L195"><span class="lineNum">     195</span> <span class="tlaGNC">           9 :           _phi * _q1 * pow(_q2, 2.0) / (2.0 * pow(sf, 2.0)) * cosh(_q2 / 2.0 * _sp / sf);</span></span>
+<span id="L194"><span class="lineNum">     194</span> <span class="tlaGNC">           3 :       _f.d2(_sp, _sp) =</span></span>
+<span id="L195"><span class="lineNum">     195</span> <span class="tlaGNC">           6 :           _phi * _q1 * pow(_q2, 2.0) / (2.0 * pow(sf, 2.0)) * cosh(_q2 / 2.0 * _sp / sf);</span></span>
 <span id="L196"><span class="lineNum">     196</span>              : </span>
 <span id="L197"><span class="lineNum">     197</span> <span class="tlaGNC">           3 :       if (_phi.is_dependent())</span></span>
-<span id="L198"><span class="lineNum">     198</span> <span class="tlaGNC">           3 :         _f.d(_sp, _phi) = _q1 * _q2 * sinh(_q2 / 2.0 * _sp / sf) / sf;</span></span>
+<span id="L198"><span class="lineNum">     198</span> <span class="tlaGNC">           3 :         _f.d2(_sp, _phi) = _q1 * _q2 * sinh(_q2 / 2.0 * _sp / sf) / sf;</span></span>
 <span id="L199"><span class="lineNum">     199</span>              : </span>
 <span id="L200"><span class="lineNum">     200</span> <span class="tlaGNC">           3 :       if (_h)</span></span>
-<span id="L201"><span class="lineNum">     201</span> <span class="tlaGNC">           6 :         _f.d(_sp, *_h) =</span></span>
+<span id="L201"><span class="lineNum">     201</span> <span class="tlaGNC">           3 :         _f.d2(_sp, *_h) =</span></span>
 <span id="L202"><span class="lineNum">     202</span> <span class="tlaGNC">           6 :             -_phi * _q1 * _q2 *</span></span>
 <span id="L203"><span class="lineNum">     203</span> <span class="tlaGNC">          12 :             (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) + 2 * sf * sinh(_q2 / 2.0 * _sp / sf)) /</span></span>
-<span id="L204"><span class="lineNum">     204</span> <span class="tlaGNC">          15 :             (2 * pow(sf, 3.0));</span></span>
+<span id="L204"><span class="lineNum">     204</span> <span class="tlaGNC">          12 :             (2 * pow(sf, 3.0));</span></span>
 <span id="L205"><span class="lineNum">     205</span> <span class="tlaGNC">           3 :       if (sy)</span></span>
-<span id="L206"><span class="lineNum">     206</span> <span class="tlaGNC">           2 :         _f.d(_sp, *sy) =</span></span>
+<span id="L206"><span class="lineNum">     206</span> <span class="tlaGNC">           1 :         _f.d2(_sp, *sy) =</span></span>
 <span id="L207"><span class="lineNum">     207</span> <span class="tlaGNC">           2 :             -_phi * _q1 * _q2 *</span></span>
 <span id="L208"><span class="lineNum">     208</span> <span class="tlaGNC">           4 :             (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) + 2 * sf * sinh(_q2 / 2.0 * _sp / sf)) /</span></span>
-<span id="L209"><span class="lineNum">     209</span> <span class="tlaGNC">           5 :             (2 * pow(sf, 3.0));</span></span>
+<span id="L209"><span class="lineNum">     209</span> <span class="tlaGNC">           4 :             (2 * pow(sf, 3.0));</span></span>
 <span id="L210"><span class="lineNum">     210</span>              : </span>
 <span id="L211"><span class="lineNum">     211</span> <span class="tlaGNC">           3 :       if (q1)</span></span>
-<span id="L212"><span class="lineNum">     212</span> <span class="tlaGNC">           1 :         _f.d(_sp, *q1) = _phi * _q2 * sinh(_q2 / 2.0 * _sp / sf) / sf;</span></span>
+<span id="L212"><span class="lineNum">     212</span> <span class="tlaGNC">           1 :         _f.d2(_sp, *q1) = _phi * _q2 * sinh(_q2 / 2.0 * _sp / sf) / sf;</span></span>
 <span id="L213"><span class="lineNum">     213</span>              : </span>
 <span id="L214"><span class="lineNum">     214</span> <span class="tlaGNC">           3 :       if (q2)</span></span>
-<span id="L215"><span class="lineNum">     215</span> <span class="tlaGNC">           2 :         _f.d(_sp, *q2) =</span></span>
+<span id="L215"><span class="lineNum">     215</span> <span class="tlaGNC">           1 :         _f.d2(_sp, *q2) =</span></span>
 <span id="L216"><span class="lineNum">     216</span> <span class="tlaGNC">           2 :             _phi * _q1 *</span></span>
 <span id="L217"><span class="lineNum">     217</span> <span class="tlaGNC">           4 :             (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) + 2.0 * sf * sinh(_q2 / 2.0 * _sp / sf)) /</span></span>
-<span id="L218"><span class="lineNum">     218</span> <span class="tlaGNC">           5 :             (2.0 * pow(sf, 2.0));</span></span>
+<span id="L218"><span class="lineNum">     218</span> <span class="tlaGNC">           4 :             (2.0 * pow(sf, 2.0));</span></span>
 <span id="L219"><span class="lineNum">     219</span>              :     }</span>
 <span id="L220"><span class="lineNum">     220</span>              : </span>
 <span id="L221"><span class="lineNum">     221</span>              :     ////////////////////////////////////////////////////////////////////////////////////////////////</span>
@@ -290,24 +290,24 @@
 <span id="L228"><span class="lineNum">     228</span> <span class="tlaGNC">           3 :     if (_phi.is_dependent())</span></span>
 <span id="L229"><span class="lineNum">     229</span>              :     {</span>
 <span id="L230"><span class="lineNum">     230</span> <span class="tlaGNC">           3 :       if (_sp.is_dependent())</span></span>
-<span id="L231"><span class="lineNum">     231</span> <span class="tlaGNC">           3 :         _f.d(_phi, _sp) = _q1 * _q2 * sinh(_q2 / 2.0 * _sp / sf) / sf;</span></span>
+<span id="L231"><span class="lineNum">     231</span> <span class="tlaGNC">           3 :         _f.d2(_phi, _sp) = _q1 * _q2 * sinh(_q2 / 2.0 * _sp / sf) / sf;</span></span>
 <span id="L232"><span class="lineNum">     232</span>              : </span>
-<span id="L233"><span class="lineNum">     233</span> <span class="tlaGNC">           3 :       _f.d(_phi, _phi) = -2.0 * _q3;</span></span>
+<span id="L233"><span class="lineNum">     233</span> <span class="tlaGNC">           3 :       _f.d2(_phi, _phi) = -2.0 * _q3;</span></span>
 <span id="L234"><span class="lineNum">     234</span>              : </span>
 <span id="L235"><span class="lineNum">     235</span> <span class="tlaGNC">           3 :       if (_h)</span></span>
-<span id="L236"><span class="lineNum">     236</span> <span class="tlaGNC">           3 :         _f.d(_phi, *_h) = -_q1 * _q2 * _sp * sinh(_q2 / 2.0 * _sp / sf) / pow(sf, 2.0);</span></span>
+<span id="L236"><span class="lineNum">     236</span> <span class="tlaGNC">           3 :         _f.d2(_phi, *_h) = -_q1 * _q2 * _sp * sinh(_q2 / 2.0 * _sp / sf) / pow(sf, 2.0);</span></span>
 <span id="L237"><span class="lineNum">     237</span>              : </span>
 <span id="L238"><span class="lineNum">     238</span> <span class="tlaGNC">           3 :       if (sy)</span></span>
-<span id="L239"><span class="lineNum">     239</span> <span class="tlaGNC">           1 :         _f.d(_phi, *sy) = -_q1 * _q2 * _sp * sinh(_q2 / 2.0 * _sp / sf) / pow(sf, 2.0);</span></span>
+<span id="L239"><span class="lineNum">     239</span> <span class="tlaGNC">           1 :         _f.d2(_phi, *sy) = -_q1 * _q2 * _sp * sinh(_q2 / 2.0 * _sp / sf) / pow(sf, 2.0);</span></span>
 <span id="L240"><span class="lineNum">     240</span>              : </span>
 <span id="L241"><span class="lineNum">     241</span> <span class="tlaGNC">           3 :       if (q1)</span></span>
-<span id="L242"><span class="lineNum">     242</span> <span class="tlaGNC">           1 :         _f.d(_phi, *q1) = 2 * cosh(_q2 / 2.0 * _sp / sf);</span></span>
+<span id="L242"><span class="lineNum">     242</span> <span class="tlaGNC">           1 :         _f.d2(_phi, *q1) = 2 * cosh(_q2 / 2.0 * _sp / sf);</span></span>
 <span id="L243"><span class="lineNum">     243</span>              : </span>
 <span id="L244"><span class="lineNum">     244</span> <span class="tlaGNC">           3 :       if (q2)</span></span>
-<span id="L245"><span class="lineNum">     245</span> <span class="tlaGNC">           1 :         _f.d(_phi, *q2) = _q1 * _sp * sinh(_q2 / 2.0 * _sp / sf) / sf;</span></span>
+<span id="L245"><span class="lineNum">     245</span> <span class="tlaGNC">           1 :         _f.d2(_phi, *q2) = _q1 * _sp * sinh(_q2 / 2.0 * _sp / sf) / sf;</span></span>
 <span id="L246"><span class="lineNum">     246</span>              : </span>
 <span id="L247"><span class="lineNum">     247</span> <span class="tlaGNC">           3 :       if (q3)</span></span>
-<span id="L248"><span class="lineNum">     248</span> <span class="tlaGNC">           1 :         _f.d(_phi, *q3) = -2.0 * _phi;</span></span>
+<span id="L248"><span class="lineNum">     248</span> <span class="tlaGNC">           1 :         _f.d2(_phi, *q3) = -2.0 * _phi;</span></span>
 <span id="L249"><span class="lineNum">     249</span>              :     }</span>
 <span id="L250"><span class="lineNum">     250</span>              : </span>
 <span id="L251"><span class="lineNum">     251</span>              :     ////////////////////////////////////////////////////////////////////////////////////////////////</span>
@@ -320,153 +320,151 @@
 <span id="L258"><span class="lineNum">     258</span> <span class="tlaGNC">           3 :     if (_h)</span></span>
 <span id="L259"><span class="lineNum">     259</span>              :     {</span>
 <span id="L260"><span class="lineNum">     260</span> <span class="tlaGNC">           3 :       if (_se.is_dependent())</span></span>
-<span id="L261"><span class="lineNum">     261</span> <span class="tlaGNC">           3 :         _f.d(*_h, _se) = -4.0 * _se / pow(sf, 3.0);</span></span>
+<span id="L261"><span class="lineNum">     261</span> <span class="tlaGNC">           3 :         _f.d2(*_h, _se) = -4.0 * _se / pow(sf, 3.0);</span></span>
 <span id="L262"><span class="lineNum">     262</span>              : </span>
 <span id="L263"><span class="lineNum">     263</span> <span class="tlaGNC">           3 :       if (_sp.is_dependent())</span></span>
-<span id="L264"><span class="lineNum">     264</span> <span class="tlaGNC">           6 :         _f.d(*_h, _sp) =</span></span>
+<span id="L264"><span class="lineNum">     264</span> <span class="tlaGNC">           3 :         _f.d2(*_h, _sp) =</span></span>
 <span id="L265"><span class="lineNum">     265</span> <span class="tlaGNC">           6 :             -_phi * _q1 * _q2 *</span></span>
 <span id="L266"><span class="lineNum">     266</span> <span class="tlaGNC">          12 :             (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) + 2.0 * sf * sinh(_q2 / 2.0 * _sp / sf)) /</span></span>
-<span id="L267"><span class="lineNum">     267</span> <span class="tlaGNC">          15 :             (2.0 * pow(sf, 3.0));</span></span>
+<span id="L267"><span class="lineNum">     267</span> <span class="tlaGNC">          12 :             (2.0 * pow(sf, 3.0));</span></span>
 <span id="L268"><span class="lineNum">     268</span>              : </span>
 <span id="L269"><span class="lineNum">     269</span> <span class="tlaGNC">           3 :       if (_phi.is_dependent())</span></span>
-<span id="L270"><span class="lineNum">     270</span> <span class="tlaGNC">           3 :         _f.d(*_h, _phi) = -_q1 * _q2 * _sp * sinh(_q2 / 2.0 * _sp / sf) / pow(sf, 2.0);</span></span>
+<span id="L270"><span class="lineNum">     270</span> <span class="tlaGNC">           3 :         _f.d2(*_h, _phi) = -_q1 * _q2 * _sp * sinh(_q2 / 2.0 * _sp / sf) / pow(sf, 2.0);</span></span>
 <span id="L271"><span class="lineNum">     271</span>              : </span>
-<span id="L272"><span class="lineNum">     272</span> <span class="tlaGNC">          12 :       _f.d(*_h, *_h) = (12 * pow(Scalar(_se), 2.0) + _phi * _q1 * _q2 * _sp *</span></span>
-<span id="L273"><span class="lineNum">     273</span> <span class="tlaGNC">           6 :                                                          (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) +</span></span>
-<span id="L274"><span class="lineNum">     274</span> <span class="tlaGNC">          12 :                                                           4.0 * sf * sinh(_q2 / 2.0 * _sp / sf))) /</span></span>
-<span id="L275"><span class="lineNum">     275</span> <span class="tlaGNC">          15 :                        (2 * pow(sf, 4.0));</span></span>
+<span id="L272"><span class="lineNum">     272</span> <span class="tlaGNC">           9 :       _f.d2(*_h, *_h) = (12 * pow(_se(), 2.0) + _phi * _q1 * _q2 * _sp *</span></span>
+<span id="L273"><span class="lineNum">     273</span> <span class="tlaGNC">           6 :                                                     (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) +</span></span>
+<span id="L274"><span class="lineNum">     274</span> <span class="tlaGNC">          12 :                                                      4.0 * sf * sinh(_q2 / 2.0 * _sp / sf))) /</span></span>
+<span id="L275"><span class="lineNum">     275</span> <span class="tlaGNC">          12 :                         (2 * pow(sf, 4.0));</span></span>
 <span id="L276"><span class="lineNum">     276</span>              : </span>
 <span id="L277"><span class="lineNum">     277</span> <span class="tlaGNC">           3 :       if (sy)</span></span>
-<span id="L278"><span class="lineNum">     278</span> <span class="tlaGNC">           2 :         _f.d(*_h, *sy) =</span></span>
-<span id="L279"><span class="lineNum">     279</span> <span class="tlaGNC">           2 :             (12 * pow(Scalar(_se), 2.0) +</span></span>
-<span id="L280"><span class="lineNum">     280</span> <span class="tlaGNC">           2 :              _phi * _q1 * _q2 * _sp *</span></span>
-<span id="L281"><span class="lineNum">     281</span> <span class="tlaGNC">           4 :                  (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) + 4.0 * sf * sinh(_q2 / 2.0 * _sp / sf))) /</span></span>
-<span id="L282"><span class="lineNum">     282</span> <span class="tlaGNC">           5 :             (2 * pow(sf, 4.0));</span></span>
-<span id="L283"><span class="lineNum">     283</span>              : </span>
-<span id="L284"><span class="lineNum">     284</span> <span class="tlaGNC">           3 :       if (q1)</span></span>
-<span id="L285"><span class="lineNum">     285</span> <span class="tlaGNC">           1 :         _f.d(*_h, *q1) = -_phi * _q2 * _sp * sinh(_q2 / 2.0 * _sp / sf) / pow(sf, 2.0);</span></span>
-<span id="L286"><span class="lineNum">     286</span>              : </span>
-<span id="L287"><span class="lineNum">     287</span> <span class="tlaGNC">           3 :       if (q2)</span></span>
-<span id="L288"><span class="lineNum">     288</span> <span class="tlaGNC">           2 :         _f.d(*_h, *q2) =</span></span>
-<span id="L289"><span class="lineNum">     289</span> <span class="tlaGNC">           2 :             -_phi * _q1 * _sp *</span></span>
-<span id="L290"><span class="lineNum">     290</span> <span class="tlaGNC">           4 :             (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) + 2.0 * sf * sinh(_q2 / 2.0 * _sp / sf)) /</span></span>
-<span id="L291"><span class="lineNum">     291</span> <span class="tlaGNC">           5 :             (2 * pow(sf, 3.0));</span></span>
-<span id="L292"><span class="lineNum">     292</span>              :     }</span>
-<span id="L293"><span class="lineNum">     293</span>              : </span>
-<span id="L294"><span class="lineNum">     294</span>              :     ////////////////////////////////////////////////////////////////////////////////////////////////</span>
-<span id="L295"><span class="lineNum">     295</span>              :     //</span>
-<span id="L296"><span class="lineNum">     296</span>              :     // f(se, sp, phi, h; sy, q1, q2, q3)</span>
-<span id="L297"><span class="lineNum">     297</span>              :     //</span>
-<span id="L298"><span class="lineNum">     298</span>              :     // sy: (Optionally nonlinear) yield stress</span>
-<span id="L299"><span class="lineNum">     299</span>              :     //</span>
-<span id="L300"><span class="lineNum">     300</span>              :     ////////////////////////////////////////////////////////////////////////////////////////////////</span>
-<span id="L301"><span class="lineNum">     301</span> <span class="tlaGNC">           3 :     if (sy)</span></span>
-<span id="L302"><span class="lineNum">     302</span>              :     {</span>
-<span id="L303"><span class="lineNum">     303</span> <span class="tlaGNC">           1 :       if (_se.is_dependent())</span></span>
-<span id="L304"><span class="lineNum">     304</span> <span class="tlaGNC">           1 :         _f.d(*sy, _se) = -4.0 * _se / pow(sf, 3.0);</span></span>
-<span id="L305"><span class="lineNum">     305</span>              : </span>
-<span id="L306"><span class="lineNum">     306</span> <span class="tlaGNC">           1 :       if (_phi.is_dependent())</span></span>
-<span id="L307"><span class="lineNum">     307</span> <span class="tlaGNC">           1 :         _f.d(*sy, _phi) = -_q1 * _q2 * _sp * sinh(_q2 / 2.0 * _sp / sf) / pow(sf, 2.0);</span></span>
-<span id="L308"><span class="lineNum">     308</span>              : </span>
-<span id="L309"><span class="lineNum">     309</span> <span class="tlaGNC">           1 :       if (_h)</span></span>
-<span id="L310"><span class="lineNum">     310</span> <span class="tlaGNC">           2 :         _f.d(*sy, *_h) =</span></span>
-<span id="L311"><span class="lineNum">     311</span> <span class="tlaGNC">           2 :             (12 * pow(Scalar(_se), 2.0) +</span></span>
-<span id="L312"><span class="lineNum">     312</span> <span class="tlaGNC">           2 :              _phi * _q1 * _q2 * _sp *</span></span>
-<span id="L313"><span class="lineNum">     313</span> <span class="tlaGNC">           4 :                  (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) + 4.0 * sf * sinh(_q2 / 2.0 * _sp / sf))) /</span></span>
-<span id="L314"><span class="lineNum">     314</span> <span class="tlaGNC">           5 :             (2 * pow(sf, 4.0));</span></span>
-<span id="L315"><span class="lineNum">     315</span>              : </span>
-<span id="L316"><span class="lineNum">     316</span> <span class="tlaGNC">           4 :       _f.d(*sy, *sy) = (12 * pow(Scalar(_se), 2.0) + _phi * _q1 * _q2 * _sp *</span></span>
-<span id="L317"><span class="lineNum">     317</span> <span class="tlaGNC">           2 :                                                          (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) +</span></span>
-<span id="L318"><span class="lineNum">     318</span> <span class="tlaGNC">           4 :                                                           4.0 * sf * sinh(_q2 / 2.0 * _sp / sf))) /</span></span>
-<span id="L319"><span class="lineNum">     319</span> <span class="tlaGNC">           5 :                        (2 * pow(sf, 4.0));</span></span>
-<span id="L320"><span class="lineNum">     320</span>              : </span>
-<span id="L321"><span class="lineNum">     321</span> <span class="tlaGNC">           1 :       if (q1)</span></span>
-<span id="L322"><span class="lineNum">     322</span> <span class="tlaGNC">           1 :         _f.d(*sy, *q1) = -_phi * _q2 * _sp * sinh(_q2 / 2.0 * _sp / sf) / pow(sf, 2.0);</span></span>
-<span id="L323"><span class="lineNum">     323</span>              : </span>
-<span id="L324"><span class="lineNum">     324</span> <span class="tlaGNC">           1 :       if (q2)</span></span>
-<span id="L325"><span class="lineNum">     325</span> <span class="tlaGNC">           2 :         _f.d(*sy, *q2) =</span></span>
-<span id="L326"><span class="lineNum">     326</span> <span class="tlaGNC">           2 :             -_phi * _q1 * _sp *</span></span>
-<span id="L327"><span class="lineNum">     327</span> <span class="tlaGNC">           4 :             (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) + 2.0 * sf * sinh(_q2 / 2.0 * _sp / sf)) /</span></span>
-<span id="L328"><span class="lineNum">     328</span> <span class="tlaGNC">           5 :             (2 * pow(sf, 3.0));</span></span>
-<span id="L329"><span class="lineNum">     329</span>              :     }</span>
-<span id="L330"><span class="lineNum">     330</span>              : </span>
-<span id="L331"><span class="lineNum">     331</span>              :     ////////////////////////////////////////////////////////////////////////////////////////////////</span>
+<span id="L278"><span class="lineNum">     278</span> <span class="tlaGNC">           3 :         _f.d2(*_h, *sy) = (12 * pow(_se(), 2.0) + _phi * _q1 * _q2 * _sp *</span></span>
+<span id="L279"><span class="lineNum">     279</span> <span class="tlaGNC">           2 :                                                       (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) +</span></span>
+<span id="L280"><span class="lineNum">     280</span> <span class="tlaGNC">           4 :                                                        4.0 * sf * sinh(_q2 / 2.0 * _sp / sf))) /</span></span>
+<span id="L281"><span class="lineNum">     281</span> <span class="tlaGNC">           4 :                           (2 * pow(sf, 4.0));</span></span>
+<span id="L282"><span class="lineNum">     282</span>              : </span>
+<span id="L283"><span class="lineNum">     283</span> <span class="tlaGNC">           3 :       if (q1)</span></span>
+<span id="L284"><span class="lineNum">     284</span> <span class="tlaGNC">           1 :         _f.d2(*_h, *q1) = -_phi * _q2 * _sp * sinh(_q2 / 2.0 * _sp / sf) / pow(sf, 2.0);</span></span>
+<span id="L285"><span class="lineNum">     285</span>              : </span>
+<span id="L286"><span class="lineNum">     286</span> <span class="tlaGNC">           3 :       if (q2)</span></span>
+<span id="L287"><span class="lineNum">     287</span> <span class="tlaGNC">           1 :         _f.d2(*_h, *q2) =</span></span>
+<span id="L288"><span class="lineNum">     288</span> <span class="tlaGNC">           2 :             -_phi * _q1 * _sp *</span></span>
+<span id="L289"><span class="lineNum">     289</span> <span class="tlaGNC">           4 :             (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) + 2.0 * sf * sinh(_q2 / 2.0 * _sp / sf)) /</span></span>
+<span id="L290"><span class="lineNum">     290</span> <span class="tlaGNC">           4 :             (2 * pow(sf, 3.0));</span></span>
+<span id="L291"><span class="lineNum">     291</span>              :     }</span>
+<span id="L292"><span class="lineNum">     292</span>              : </span>
+<span id="L293"><span class="lineNum">     293</span>              :     ////////////////////////////////////////////////////////////////////////////////////////////////</span>
+<span id="L294"><span class="lineNum">     294</span>              :     //</span>
+<span id="L295"><span class="lineNum">     295</span>              :     // f(se, sp, phi, h; sy, q1, q2, q3)</span>
+<span id="L296"><span class="lineNum">     296</span>              :     //</span>
+<span id="L297"><span class="lineNum">     297</span>              :     // sy: (Optionally nonlinear) yield stress</span>
+<span id="L298"><span class="lineNum">     298</span>              :     //</span>
+<span id="L299"><span class="lineNum">     299</span>              :     ////////////////////////////////////////////////////////////////////////////////////////////////</span>
+<span id="L300"><span class="lineNum">     300</span> <span class="tlaGNC">           3 :     if (sy)</span></span>
+<span id="L301"><span class="lineNum">     301</span>              :     {</span>
+<span id="L302"><span class="lineNum">     302</span> <span class="tlaGNC">           1 :       if (_se.is_dependent())</span></span>
+<span id="L303"><span class="lineNum">     303</span> <span class="tlaGNC">           1 :         _f.d2(*sy, _se) = -4.0 * _se / pow(sf, 3.0);</span></span>
+<span id="L304"><span class="lineNum">     304</span>              : </span>
+<span id="L305"><span class="lineNum">     305</span> <span class="tlaGNC">           1 :       if (_phi.is_dependent())</span></span>
+<span id="L306"><span class="lineNum">     306</span> <span class="tlaGNC">           1 :         _f.d2(*sy, _phi) = -_q1 * _q2 * _sp * sinh(_q2 / 2.0 * _sp / sf) / pow(sf, 2.0);</span></span>
+<span id="L307"><span class="lineNum">     307</span>              : </span>
+<span id="L308"><span class="lineNum">     308</span> <span class="tlaGNC">           1 :       if (_h)</span></span>
+<span id="L309"><span class="lineNum">     309</span> <span class="tlaGNC">           3 :         _f.d2(*sy, *_h) = (12 * pow(_se(), 2.0) + _phi * _q1 * _q2 * _sp *</span></span>
+<span id="L310"><span class="lineNum">     310</span> <span class="tlaGNC">           2 :                                                       (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) +</span></span>
+<span id="L311"><span class="lineNum">     311</span> <span class="tlaGNC">           4 :                                                        4.0 * sf * sinh(_q2 / 2.0 * _sp / sf))) /</span></span>
+<span id="L312"><span class="lineNum">     312</span> <span class="tlaGNC">           4 :                           (2 * pow(sf, 4.0));</span></span>
+<span id="L313"><span class="lineNum">     313</span>              : </span>
+<span id="L314"><span class="lineNum">     314</span> <span class="tlaGNC">           3 :       _f.d2(*sy, *sy) = (12 * pow(_se(), 2.0) + _phi * _q1 * _q2 * _sp *</span></span>
+<span id="L315"><span class="lineNum">     315</span> <span class="tlaGNC">           2 :                                                     (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) +</span></span>
+<span id="L316"><span class="lineNum">     316</span> <span class="tlaGNC">           4 :                                                      4.0 * sf * sinh(_q2 / 2.0 * _sp / sf))) /</span></span>
+<span id="L317"><span class="lineNum">     317</span> <span class="tlaGNC">           4 :                         (2 * pow(sf, 4.0));</span></span>
+<span id="L318"><span class="lineNum">     318</span>              : </span>
+<span id="L319"><span class="lineNum">     319</span> <span class="tlaGNC">           1 :       if (q1)</span></span>
+<span id="L320"><span class="lineNum">     320</span> <span class="tlaGNC">           1 :         _f.d2(*sy, *q1) = -_phi * _q2 * _sp * sinh(_q2 / 2.0 * _sp / sf) / pow(sf, 2.0);</span></span>
+<span id="L321"><span class="lineNum">     321</span>              : </span>
+<span id="L322"><span class="lineNum">     322</span> <span class="tlaGNC">           1 :       if (q2)</span></span>
+<span id="L323"><span class="lineNum">     323</span> <span class="tlaGNC">           1 :         _f.d2(*sy, *q2) =</span></span>
+<span id="L324"><span class="lineNum">     324</span> <span class="tlaGNC">           2 :             -_phi * _q1 * _sp *</span></span>
+<span id="L325"><span class="lineNum">     325</span> <span class="tlaGNC">           4 :             (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) + 2.0 * sf * sinh(_q2 / 2.0 * _sp / sf)) /</span></span>
+<span id="L326"><span class="lineNum">     326</span> <span class="tlaGNC">           4 :             (2 * pow(sf, 3.0));</span></span>
+<span id="L327"><span class="lineNum">     327</span>              :     }</span>
+<span id="L328"><span class="lineNum">     328</span>              : </span>
+<span id="L329"><span class="lineNum">     329</span>              :     ////////////////////////////////////////////////////////////////////////////////////////////////</span>
+<span id="L330"><span class="lineNum">     330</span>              :     //</span>
+<span id="L331"><span class="lineNum">     331</span>              :     // f(se, sp, phi, h; sy, q1, q2, q3)</span>
 <span id="L332"><span class="lineNum">     332</span>              :     //</span>
-<span id="L333"><span class="lineNum">     333</span>              :     // f(se, sp, phi, h; sy, q1, q2, q3)</span>
+<span id="L333"><span class="lineNum">     333</span>              :     // q1: (Optionally nonlinear) GTN parameter q1</span>
 <span id="L334"><span class="lineNum">     334</span>              :     //</span>
-<span id="L335"><span class="lineNum">     335</span>              :     // q1: (Optionally nonlinear) GTN parameter q1</span>
-<span id="L336"><span class="lineNum">     336</span>              :     //</span>
-<span id="L337"><span class="lineNum">     337</span>              :     ////////////////////////////////////////////////////////////////////////////////////////////////</span>
-<span id="L338"><span class="lineNum">     338</span> <span class="tlaGNC">           3 :     if (q1)</span></span>
-<span id="L339"><span class="lineNum">     339</span>              :     {</span>
-<span id="L340"><span class="lineNum">     340</span> <span class="tlaGNC">           1 :       if (_sp.is_dependent())</span></span>
-<span id="L341"><span class="lineNum">     341</span> <span class="tlaGNC">           1 :         _f.d(*q1, _sp) = _phi * _q2 * sinh(_q2 / 2.0 * _sp / sf) / sf;</span></span>
-<span id="L342"><span class="lineNum">     342</span>              : </span>
-<span id="L343"><span class="lineNum">     343</span> <span class="tlaGNC">           1 :       if (_phi.is_dependent())</span></span>
-<span id="L344"><span class="lineNum">     344</span> <span class="tlaGNC">           1 :         _f.d(*q1, _phi) = 2.0 * cosh(_q2 / 2.0 * _sp / sf);</span></span>
-<span id="L345"><span class="lineNum">     345</span>              : </span>
-<span id="L346"><span class="lineNum">     346</span> <span class="tlaGNC">           1 :       if (_h)</span></span>
-<span id="L347"><span class="lineNum">     347</span> <span class="tlaGNC">           1 :         _f.d(*q1, *_h) = -_phi * _q2 * _sp * sinh(_q2 / 2.0 * _sp / sf) / pow(sf, 2.0);</span></span>
-<span id="L348"><span class="lineNum">     348</span>              : </span>
-<span id="L349"><span class="lineNum">     349</span> <span class="tlaGNC">           1 :       if (sy)</span></span>
-<span id="L350"><span class="lineNum">     350</span> <span class="tlaGNC">           1 :         _f.d(*q1, *sy) = -_phi * _q2 * _sp * sinh(_q2 / 2.0 * _sp / sf) / pow(sf, 2.0);</span></span>
-<span id="L351"><span class="lineNum">     351</span>              : </span>
-<span id="L352"><span class="lineNum">     352</span> <span class="tlaGNC">           1 :       if (q2)</span></span>
-<span id="L353"><span class="lineNum">     353</span> <span class="tlaGNC">           1 :         _f.d(*q1, *q2) = _phi * _sp * sinh(_q2 / 2.0 * _sp / sf) / sf;</span></span>
-<span id="L354"><span class="lineNum">     354</span>              :     }</span>
-<span id="L355"><span class="lineNum">     355</span>              : </span>
-<span id="L356"><span class="lineNum">     356</span>              :     ////////////////////////////////////////////////////////////////////////////////////////////////</span>
+<span id="L335"><span class="lineNum">     335</span>              :     ////////////////////////////////////////////////////////////////////////////////////////////////</span>
+<span id="L336"><span class="lineNum">     336</span> <span class="tlaGNC">           3 :     if (q1)</span></span>
+<span id="L337"><span class="lineNum">     337</span>              :     {</span>
+<span id="L338"><span class="lineNum">     338</span> <span class="tlaGNC">           1 :       if (_sp.is_dependent())</span></span>
+<span id="L339"><span class="lineNum">     339</span> <span class="tlaGNC">           1 :         _f.d2(*q1, _sp) = _phi * _q2 * sinh(_q2 / 2.0 * _sp / sf) / sf;</span></span>
+<span id="L340"><span class="lineNum">     340</span>              : </span>
+<span id="L341"><span class="lineNum">     341</span> <span class="tlaGNC">           1 :       if (_phi.is_dependent())</span></span>
+<span id="L342"><span class="lineNum">     342</span> <span class="tlaGNC">           1 :         _f.d2(*q1, _phi) = 2.0 * cosh(_q2 / 2.0 * _sp / sf);</span></span>
+<span id="L343"><span class="lineNum">     343</span>              : </span>
+<span id="L344"><span class="lineNum">     344</span> <span class="tlaGNC">           1 :       if (_h)</span></span>
+<span id="L345"><span class="lineNum">     345</span> <span class="tlaGNC">           1 :         _f.d2(*q1, *_h) = -_phi * _q2 * _sp * sinh(_q2 / 2.0 * _sp / sf) / pow(sf, 2.0);</span></span>
+<span id="L346"><span class="lineNum">     346</span>              : </span>
+<span id="L347"><span class="lineNum">     347</span> <span class="tlaGNC">           1 :       if (sy)</span></span>
+<span id="L348"><span class="lineNum">     348</span> <span class="tlaGNC">           1 :         _f.d2(*q1, *sy) = -_phi * _q2 * _sp * sinh(_q2 / 2.0 * _sp / sf) / pow(sf, 2.0);</span></span>
+<span id="L349"><span class="lineNum">     349</span>              : </span>
+<span id="L350"><span class="lineNum">     350</span> <span class="tlaGNC">           1 :       if (q2)</span></span>
+<span id="L351"><span class="lineNum">     351</span> <span class="tlaGNC">           1 :         _f.d2(*q1, *q2) = _phi * _sp * sinh(_q2 / 2.0 * _sp / sf) / sf;</span></span>
+<span id="L352"><span class="lineNum">     352</span>              :     }</span>
+<span id="L353"><span class="lineNum">     353</span>              : </span>
+<span id="L354"><span class="lineNum">     354</span>              :     ////////////////////////////////////////////////////////////////////////////////////////////////</span>
+<span id="L355"><span class="lineNum">     355</span>              :     //</span>
+<span id="L356"><span class="lineNum">     356</span>              :     // f(se, sp, phi, h; sy, q1, q2, q3)</span>
 <span id="L357"><span class="lineNum">     357</span>              :     //</span>
-<span id="L358"><span class="lineNum">     358</span>              :     // f(se, sp, phi, h; sy, q1, q2, q3)</span>
+<span id="L358"><span class="lineNum">     358</span>              :     // q2: (Optionally nonlinear) GTN parameter q2</span>
 <span id="L359"><span class="lineNum">     359</span>              :     //</span>
-<span id="L360"><span class="lineNum">     360</span>              :     // q2: (Optionally nonlinear) GTN parameter q2</span>
-<span id="L361"><span class="lineNum">     361</span>              :     //</span>
-<span id="L362"><span class="lineNum">     362</span>              :     ////////////////////////////////////////////////////////////////////////////////////////////////</span>
-<span id="L363"><span class="lineNum">     363</span> <span class="tlaGNC">           3 :     if (q2)</span></span>
-<span id="L364"><span class="lineNum">     364</span>              :     {</span>
-<span id="L365"><span class="lineNum">     365</span> <span class="tlaGNC">           1 :       if (_sp.is_dependent())</span></span>
-<span id="L366"><span class="lineNum">     366</span> <span class="tlaGNC">           2 :         _f.d(*q2, _sp) =</span></span>
-<span id="L367"><span class="lineNum">     367</span> <span class="tlaGNC">           2 :             _phi * _q1 *</span></span>
-<span id="L368"><span class="lineNum">     368</span> <span class="tlaGNC">           4 :             (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) + 2 * sf * sinh(_q2 / 2.0 * _sp / sf)) /</span></span>
-<span id="L369"><span class="lineNum">     369</span> <span class="tlaGNC">           5 :             (2 * pow(sf, 2.0));</span></span>
-<span id="L370"><span class="lineNum">     370</span>              : </span>
-<span id="L371"><span class="lineNum">     371</span> <span class="tlaGNC">           1 :       if (_phi.is_dependent())</span></span>
-<span id="L372"><span class="lineNum">     372</span> <span class="tlaGNC">           1 :         _f.d(*q2, _phi) = _q1 * _sp * sinh(_q2 / 2.0 * _sp / sf) / sf;</span></span>
-<span id="L373"><span class="lineNum">     373</span>              : </span>
-<span id="L374"><span class="lineNum">     374</span> <span class="tlaGNC">           1 :       if (_h)</span></span>
-<span id="L375"><span class="lineNum">     375</span> <span class="tlaGNC">           2 :         _f.d(*q2, *_h) =</span></span>
-<span id="L376"><span class="lineNum">     376</span> <span class="tlaGNC">           2 :             -_phi * _q1 * _sp *</span></span>
-<span id="L377"><span class="lineNum">     377</span> <span class="tlaGNC">           4 :             (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) + 2 * sf * sinh(_q2 / 2.0 * _sp / sf)) /</span></span>
-<span id="L378"><span class="lineNum">     378</span> <span class="tlaGNC">           5 :             (2 * pow(sf, 3.0));</span></span>
-<span id="L379"><span class="lineNum">     379</span>              : </span>
-<span id="L380"><span class="lineNum">     380</span> <span class="tlaGNC">           1 :       if (sy)</span></span>
-<span id="L381"><span class="lineNum">     381</span> <span class="tlaGNC">           2 :         _f.d(*q2, *sy) =</span></span>
-<span id="L382"><span class="lineNum">     382</span> <span class="tlaGNC">           2 :             -_phi * _q1 * _sp *</span></span>
-<span id="L383"><span class="lineNum">     383</span> <span class="tlaGNC">           4 :             (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) + 2 * sf * sinh(_q2 / 2.0 * _sp / sf)) /</span></span>
-<span id="L384"><span class="lineNum">     384</span> <span class="tlaGNC">           5 :             (2 * pow(sf, 3.0));</span></span>
-<span id="L385"><span class="lineNum">     385</span>              : </span>
-<span id="L386"><span class="lineNum">     386</span> <span class="tlaGNC">           1 :       if (q1)</span></span>
-<span id="L387"><span class="lineNum">     387</span> <span class="tlaGNC">           1 :         _f.d(*q2, *q1) = _phi * _sp * sinh(_q2 / 2.0 * _sp / sf) / sf;</span></span>
-<span id="L388"><span class="lineNum">     388</span>              : </span>
-<span id="L389"><span class="lineNum">     389</span> <span class="tlaGNC">           2 :       _f.d(*q2, *q2) =</span></span>
-<span id="L390"><span class="lineNum">     390</span> <span class="tlaGNC">           3 :           _phi * _q1 * pow(Scalar(_sp), 2.0) * cosh(_q2 / 2.0 * _sp / sf) / (2 * pow(sf, 2.0));</span></span>
-<span id="L391"><span class="lineNum">     391</span>              :     }</span>
-<span id="L392"><span class="lineNum">     392</span>              : </span>
-<span id="L393"><span class="lineNum">     393</span>              :     ////////////////////////////////////////////////////////////////////////////////////////////////</span>
+<span id="L360"><span class="lineNum">     360</span>              :     ////////////////////////////////////////////////////////////////////////////////////////////////</span>
+<span id="L361"><span class="lineNum">     361</span> <span class="tlaGNC">           3 :     if (q2)</span></span>
+<span id="L362"><span class="lineNum">     362</span>              :     {</span>
+<span id="L363"><span class="lineNum">     363</span> <span class="tlaGNC">           1 :       if (_sp.is_dependent())</span></span>
+<span id="L364"><span class="lineNum">     364</span> <span class="tlaGNC">           1 :         _f.d2(*q2, _sp) =</span></span>
+<span id="L365"><span class="lineNum">     365</span> <span class="tlaGNC">           2 :             _phi * _q1 *</span></span>
+<span id="L366"><span class="lineNum">     366</span> <span class="tlaGNC">           4 :             (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) + 2 * sf * sinh(_q2 / 2.0 * _sp / sf)) /</span></span>
+<span id="L367"><span class="lineNum">     367</span> <span class="tlaGNC">           4 :             (2 * pow(sf, 2.0));</span></span>
+<span id="L368"><span class="lineNum">     368</span>              : </span>
+<span id="L369"><span class="lineNum">     369</span> <span class="tlaGNC">           1 :       if (_phi.is_dependent())</span></span>
+<span id="L370"><span class="lineNum">     370</span> <span class="tlaGNC">           1 :         _f.d2(*q2, _phi) = _q1 * _sp * sinh(_q2 / 2.0 * _sp / sf) / sf;</span></span>
+<span id="L371"><span class="lineNum">     371</span>              : </span>
+<span id="L372"><span class="lineNum">     372</span> <span class="tlaGNC">           1 :       if (_h)</span></span>
+<span id="L373"><span class="lineNum">     373</span> <span class="tlaGNC">           1 :         _f.d2(*q2, *_h) =</span></span>
+<span id="L374"><span class="lineNum">     374</span> <span class="tlaGNC">           2 :             -_phi * _q1 * _sp *</span></span>
+<span id="L375"><span class="lineNum">     375</span> <span class="tlaGNC">           4 :             (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) + 2 * sf * sinh(_q2 / 2.0 * _sp / sf)) /</span></span>
+<span id="L376"><span class="lineNum">     376</span> <span class="tlaGNC">           4 :             (2 * pow(sf, 3.0));</span></span>
+<span id="L377"><span class="lineNum">     377</span>              : </span>
+<span id="L378"><span class="lineNum">     378</span> <span class="tlaGNC">           1 :       if (sy)</span></span>
+<span id="L379"><span class="lineNum">     379</span> <span class="tlaGNC">           1 :         _f.d2(*q2, *sy) =</span></span>
+<span id="L380"><span class="lineNum">     380</span> <span class="tlaGNC">           2 :             -_phi * _q1 * _sp *</span></span>
+<span id="L381"><span class="lineNum">     381</span> <span class="tlaGNC">           4 :             (_q2 * _sp * cosh(_q2 / 2.0 * _sp / sf) + 2 * sf * sinh(_q2 / 2.0 * _sp / sf)) /</span></span>
+<span id="L382"><span class="lineNum">     382</span> <span class="tlaGNC">           4 :             (2 * pow(sf, 3.0));</span></span>
+<span id="L383"><span class="lineNum">     383</span>              : </span>
+<span id="L384"><span class="lineNum">     384</span> <span class="tlaGNC">           1 :       if (q1)</span></span>
+<span id="L385"><span class="lineNum">     385</span> <span class="tlaGNC">           1 :         _f.d2(*q2, *q1) = _phi * _sp * sinh(_q2 / 2.0 * _sp / sf) / sf;</span></span>
+<span id="L386"><span class="lineNum">     386</span>              : </span>
+<span id="L387"><span class="lineNum">     387</span> <span class="tlaGNC">           1 :       _f.d2(*q2, *q2) =</span></span>
+<span id="L388"><span class="lineNum">     388</span> <span class="tlaGNC">           2 :           _phi * _q1 * pow(_sp(), 2.0) * cosh(_q2 / 2.0 * _sp / sf) / (2 * pow(sf, 2.0));</span></span>
+<span id="L389"><span class="lineNum">     389</span>              :     }</span>
+<span id="L390"><span class="lineNum">     390</span>              : </span>
+<span id="L391"><span class="lineNum">     391</span>              :     ////////////////////////////////////////////////////////////////////////////////////////////////</span>
+<span id="L392"><span class="lineNum">     392</span>              :     //</span>
+<span id="L393"><span class="lineNum">     393</span>              :     // f(se, sp, phi, h; sy, q1, q2, q3)</span>
 <span id="L394"><span class="lineNum">     394</span>              :     //</span>
-<span id="L395"><span class="lineNum">     395</span>              :     // f(se, sp, phi, h; sy, q1, q2, q3)</span>
+<span id="L395"><span class="lineNum">     395</span>              :     // q3: (Optionally nonlinear) GTN parameter q3</span>
 <span id="L396"><span class="lineNum">     396</span>              :     //</span>
-<span id="L397"><span class="lineNum">     397</span>              :     // q3: (Optionally nonlinear) GTN parameter q3</span>
-<span id="L398"><span class="lineNum">     398</span>              :     //</span>
-<span id="L399"><span class="lineNum">     399</span>              :     ////////////////////////////////////////////////////////////////////////////////////////////////</span>
-<span id="L400"><span class="lineNum">     400</span> <span class="tlaGNC">           3 :     if (q3)</span></span>
-<span id="L401"><span class="lineNum">     401</span>              :     {</span>
-<span id="L402"><span class="lineNum">     402</span> <span class="tlaGNC">           1 :       if (_phi.is_dependent())</span></span>
-<span id="L403"><span class="lineNum">     403</span> <span class="tlaGNC">           1 :         _f.d(*q3, _phi) = -2.0 * _phi;</span></span>
-<span id="L404"><span class="lineNum">     404</span>              :     }</span>
-<span id="L405"><span class="lineNum">     405</span>              :   }</span>
-<span id="L406"><span class="lineNum">     406</span> <span class="tlaGNC">           9 : }</span></span>
-<span id="L407"><span class="lineNum">     407</span>              : } // namespace neml2</span>
+<span id="L397"><span class="lineNum">     397</span>              :     ////////////////////////////////////////////////////////////////////////////////////////////////</span>
+<span id="L398"><span class="lineNum">     398</span> <span class="tlaGNC">           3 :     if (q3)</span></span>
+<span id="L399"><span class="lineNum">     399</span>              :     {</span>
+<span id="L400"><span class="lineNum">     400</span> <span class="tlaGNC">           1 :       if (_phi.is_dependent())</span></span>
+<span id="L401"><span class="lineNum">     401</span> <span class="tlaGNC">           1 :         _f.d2(*q3, _phi) = -2.0 * _phi;</span></span>
+<span id="L402"><span class="lineNum">     402</span>              :     }</span>
+<span id="L403"><span class="lineNum">     403</span>              :   }</span>
+<span id="L404"><span class="lineNum">     404</span> <span class="tlaGNC">           9 : }</span></span>
+<span id="L405"><span class="lineNum">     405</span>              : } // namespace neml2</span>
         </pre>
               </td>
             </tr>

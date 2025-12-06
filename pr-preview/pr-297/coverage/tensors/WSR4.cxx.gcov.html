@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-10-10 12:15:50</td>
+            <td class="headerValue">2025-12-06 17:10:54</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -86,15 +86,15 @@
 <span id="L24"><span class="lineNum">      24</span>              : </span>
 <span id="L25"><span class="lineNum">      25</span>              : #include &quot;neml2/tensors/WSR4.h&quot;</span>
 <span id="L26"><span class="lineNum">      26</span>              : #include &quot;neml2/tensors/R4.h&quot;</span>
-<span id="L27"><span class="lineNum">      27</span>              : #include &quot;neml2/tensors/mandel_notation.h&quot;</span>
+<span id="L27"><span class="lineNum">      27</span>              : #include &quot;neml2/tensors/functions/symmetrization.h&quot;</span>
 <span id="L28"><span class="lineNum">      28</span>              : </span>
 <span id="L29"><span class="lineNum">      29</span>              : namespace neml2</span>
 <span id="L30"><span class="lineNum">      30</span>              : {</span>
 <span id="L31"><span class="lineNum">      31</span>              : </span>
-<span id="L32"><span class="lineNum">      32</span> <span class="tlaGNC tlaBgGNC">           4 : WSR4::WSR4(const R4 &amp; F)</span></span>
-<span id="L33"><span class="lineNum">      33</span> <span class="tlaGNC">           4 :   : WSR4(full_to_mandel(full_to_skew((F + F.transpose(2, 3)) / 2.0), 1))</span></span>
+<span id="L32"><span class="lineNum">      32</span> <span class="tlaGNC tlaBgGNC">           6 : WSR4::WSR4(const R4 &amp; F)</span></span>
+<span id="L33"><span class="lineNum">      33</span> <span class="tlaGNC">           6 :   : WSR4(full_to_mandel(full_to_skew((F + F.transpose(2, 3)) / 2.0), 1))</span></span>
 <span id="L34"><span class="lineNum">      34</span>              : {</span>
-<span id="L35"><span class="lineNum">      35</span> <span class="tlaGNC">           4 : }</span></span>
+<span id="L35"><span class="lineNum">      35</span> <span class="tlaGNC">           6 : }</span></span>
 <span id="L36"><span class="lineNum">      36</span>              : </span>
 <span id="L37"><span class="lineNum">      37</span>              : } // neml2</span>
         </pre>

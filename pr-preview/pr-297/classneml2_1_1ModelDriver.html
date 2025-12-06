@@ -187,6 +187,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ac5f353043fa790f2efd03a94da2bb7ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a13dfbdd8c00d5c134b09bf2ab3cfa1e5" id="r_a13dfbdd8c00d5c134b09bf2ab3cfa1e5"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classneml2_1_1Model.html">Model</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a13dfbdd8c00d5c134b09bf2ab3cfa1e5">model</a> () const</td></tr>
 <tr class="separator:a13dfbdd8c00d5c134b09bf2ab3cfa1e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abdf953929a486a3d763763c7e755b946" id="r_abdf953929a486a3d763763c7e755b946"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classneml2_1_1Model.html">Model</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abdf953929a486a3d763763c7e755b946">postprocessor</a> () const</td></tr>
+<tr class="separator:abdf953929a486a3d763763c7e755b946"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classneml2_1_1Driver"><td colspan="2" onclick="javascript:dynsection.toggleInherit('pub_methods_classneml2_1_1Driver')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classneml2_1_1Driver.html">Driver</a></td></tr>
 <tr class="memitem:a490912852a8e295d1f16b07793ddabc2 inherit pub_methods_classneml2_1_1Driver" id="r_a490912852a8e295d1f16b07793ddabc2"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneml2_1_1Driver.html#a490912852a8e295d1f16b07793ddabc2">Driver</a> (const <a class="el" href="classneml2_1_1OptionSet.html">OptionSet</a> &amp;options)</td></tr>
 <tr class="memdesc:a490912852a8e295d1f16b07793ddabc2 inherit pub_methods_classneml2_1_1Driver"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a new <a class="el" href="classneml2_1_1Driver.html" title="The Driver drives the execution of a NEML2 Model.">Driver</a> object.  <br /></td></tr>
@@ -300,18 +302,21 @@ Protected Attributes</h2></td></tr>
 <tr class="memitem:a8672ad5a0854ab51ae8843b52cf8b8c0" id="r_a8672ad5a0854ab51ae8843b52cf8b8c0"><td class="memItemLeft" align="right" valign="top">const std::shared_ptr&lt; <a class="el" href="classneml2_1_1Model.html">Model</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8672ad5a0854ab51ae8843b52cf8b8c0">_model</a></td></tr>
 <tr class="memdesc:a8672ad5a0854ab51ae8843b52cf8b8c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">The model which the driver uses to perform constitutive updates.  <br /></td></tr>
 <tr class="separator:a8672ad5a0854ab51ae8843b52cf8b8c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2d2d87a14fcb46491343d7f986fae125" id="r_a2d2d87a14fcb46491343d7f986fae125"><td class="memItemLeft" align="right" valign="top">const std::vector&lt; <a class="el" href="namespaceneml2.html#a5cf0dc3e9d16378ebe48923973730e54">VariableName</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2d2d87a14fcb46491343d7f986fae125">_intmd_vars</a></td></tr>
+<tr class="memdesc:a2d2d87a14fcb46491343d7f986fae125"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classneml2_1_1Variable.html" title="Concrete definition of a variable.">Variable</a> names for which to tag intermediate shapes.  <br /></td></tr>
+<tr class="separator:a2d2d87a14fcb46491343d7f986fae125"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a240508b805ea72a8a71a382e56972317" id="r_a240508b805ea72a8a71a382e56972317"><td class="memItemLeft" align="right" valign="top">const std::vector&lt; <a class="el" href="namespaceneml2.html#a1456b5c3b8814c9aa2e7269af73c059d">TensorShape</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a240508b805ea72a8a71a382e56972317">_intmd_shapes</a></td></tr>
+<tr class="memdesc:a240508b805ea72a8a71a382e56972317"><td class="mdescLeft">&#160;</td><td class="mdescRight">Corresponding tensor shapes for the intermediate variables.  <br /></td></tr>
+<tr class="separator:a240508b805ea72a8a71a382e56972317"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a82bf5a153430a22204b4ffb4620eb656" id="r_a82bf5a153430a22204b4ffb4620eb656"><td class="memItemLeft" align="right" valign="top">const std::shared_ptr&lt; <a class="el" href="classneml2_1_1Model.html">Model</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a82bf5a153430a22204b4ffb4620eb656">_postprocessor</a></td></tr>
+<tr class="memdesc:a82bf5a153430a22204b4ffb4620eb656"><td class="mdescLeft">&#160;</td><td class="mdescRight">Postprocessor model.  <br /></td></tr>
+<tr class="separator:a82bf5a153430a22204b4ffb4620eb656"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac46afcd724c8a99b866a5d45ad22a780" id="r_ac46afcd724c8a99b866a5d45ad22a780"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="namespaceneml2.html#a09235c8815e870c0e839816a881ce30a">Device</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac46afcd724c8a99b866a5d45ad22a780">_device</a></td></tr>
 <tr class="memdesc:ac46afcd724c8a99b866a5d45ad22a780"><td class="mdescLeft">&#160;</td><td class="mdescRight">The device on which to evaluate the model.  <br /></td></tr>
 <tr class="separator:ac46afcd724c8a99b866a5d45ad22a780"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a45b45a797ec870f251d4ab6f79c7a5d4" id="r_a45b45a797ec870f251d4ab6f79c7a5d4"><td class="memItemLeft" align="right" valign="top">const bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a45b45a797ec870f251d4ab6f79c7a5d4">_show_params</a></td></tr>
-<tr class="memdesc:a45b45a797ec870f251d4ab6f79c7a5d4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set to true to list all the model parameters at the beginning.  <br /></td></tr>
-<tr class="separator:a45b45a797ec870f251d4ab6f79c7a5d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a14dbdb42cec7e51c2f4efa8f3d54cc2c" id="r_a14dbdb42cec7e51c2f4efa8f3d54cc2c"><td class="memItemLeft" align="right" valign="top">const bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a14dbdb42cec7e51c2f4efa8f3d54cc2c">_show_input</a></td></tr>
-<tr class="memdesc:a14dbdb42cec7e51c2f4efa8f3d54cc2c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set to true to show model's input axis at the beginning.  <br /></td></tr>
-<tr class="separator:a14dbdb42cec7e51c2f4efa8f3d54cc2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a190b8fd6bb076c47c43954dba00ac0e2" id="r_a190b8fd6bb076c47c43954dba00ac0e2"><td class="memItemLeft" align="right" valign="top">const bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a190b8fd6bb076c47c43954dba00ac0e2">_show_output</a></td></tr>
-<tr class="memdesc:a190b8fd6bb076c47c43954dba00ac0e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set to true to show model's output axis at the beginning.  <br /></td></tr>
-<tr class="separator:a190b8fd6bb076c47c43954dba00ac0e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad30ff35f96e78d1e7321d713a68ef86c" id="r_ad30ff35f96e78d1e7321d713a68ef86c"><td class="memItemLeft" align="right" valign="top">const bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad30ff35f96e78d1e7321d713a68ef86c">_show_model_info</a></td></tr>
+<tr class="memdesc:ad30ff35f96e78d1e7321d713a68ef86c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set to true to list all the model parameters at the beginning.  <br /></td></tr>
+<tr class="separator:ad30ff35f96e78d1e7321d713a68ef86c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_attribs_classneml2_1_1Driver"><td colspan="2" onclick="javascript:dynsection.toggleInherit('pro_attribs_classneml2_1_1Driver')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="classneml2_1_1Driver.html">Driver</a></td></tr>
 <tr class="memitem:a350251bf0dbeb6a343c649789df9f572 inherit pro_attribs_classneml2_1_1Driver" id="r_a350251bf0dbeb6a343c649789df9f572"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneml2_1_1Driver.html#a350251bf0dbeb6a343c649789df9f572">_verbose</a></td></tr>
 <tr class="memdesc:a350251bf0dbeb6a343c649789df9f572 inherit pro_attribs_classneml2_1_1Driver"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether to print out additional (debugging) information during the execution.  <br /></td></tr>
@@ -419,6 +424,31 @@ Protected Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="abdf953929a486a3d763763c7e755b946" name="abdf953929a486a3d763763c7e755b946"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abdf953929a486a3d763763c7e755b946">&#9670;&#160;</a></span>postprocessor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="classneml2_1_1Model.html">Model</a> &amp; postprocessor </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="ac0b73dc40ca33ff933c1f351578a00d0" name="ac0b73dc40ca33ff933c1f351578a00d0"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac0b73dc40ca33ff933c1f351578a00d0">&#9670;&#160;</a></span>setup()</h2>
 
@@ -476,6 +506,54 @@ Protected Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="a240508b805ea72a8a71a382e56972317" name="a240508b805ea72a8a71a382e56972317"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a240508b805ea72a8a71a382e56972317">&#9670;&#160;</a></span>_intmd_shapes</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const std::vector&lt;<a class="el" href="namespaceneml2.html#a1456b5c3b8814c9aa2e7269af73c059d">TensorShape</a>&gt; _intmd_shapes</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Corresponding tensor shapes for the intermediate variables. </p>
+
+</div>
+</div>
+<a id="a2d2d87a14fcb46491343d7f986fae125" name="a2d2d87a14fcb46491343d7f986fae125"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2d2d87a14fcb46491343d7f986fae125">&#9670;&#160;</a></span>_intmd_vars</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const std::vector&lt;<a class="el" href="namespaceneml2.html#a5cf0dc3e9d16378ebe48923973730e54">VariableName</a>&gt; _intmd_vars</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><a class="el" href="classneml2_1_1Variable.html" title="Concrete definition of a variable.">Variable</a> names for which to tag intermediate shapes. </p>
+
+</div>
+</div>
 <a id="a8672ad5a0854ab51ae8843b52cf8b8c0" name="a8672ad5a0854ab51ae8843b52cf8b8c0"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8672ad5a0854ab51ae8843b52cf8b8c0">&#9670;&#160;</a></span>_model</h2>
 
@@ -500,8 +578,8 @@ Protected Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a14dbdb42cec7e51c2f4efa8f3d54cc2c" name="a14dbdb42cec7e51c2f4efa8f3d54cc2c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a14dbdb42cec7e51c2f4efa8f3d54cc2c">&#9670;&#160;</a></span>_show_input</h2>
+<a id="a82bf5a153430a22204b4ffb4620eb656" name="a82bf5a153430a22204b4ffb4620eb656"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a82bf5a153430a22204b4ffb4620eb656">&#9670;&#160;</a></span>_postprocessor</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -510,7 +588,7 @@ Protected Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const bool _show_input</td>
+          <td class="memname">const std::shared_ptr&lt;<a class="el" href="classneml2_1_1Model.html">Model</a>&gt; _postprocessor</td>
         </tr>
       </table>
   </td>
@@ -520,12 +598,12 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Set to true to show model's input axis at the beginning. </p>
+<p>Postprocessor model. </p>
 
 </div>
 </div>
-<a id="a190b8fd6bb076c47c43954dba00ac0e2" name="a190b8fd6bb076c47c43954dba00ac0e2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a190b8fd6bb076c47c43954dba00ac0e2">&#9670;&#160;</a></span>_show_output</h2>
+<a id="ad30ff35f96e78d1e7321d713a68ef86c" name="ad30ff35f96e78d1e7321d713a68ef86c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad30ff35f96e78d1e7321d713a68ef86c">&#9670;&#160;</a></span>_show_model_info</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -534,31 +612,7 @@ Protected Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const bool _show_output</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Set to true to show model's output axis at the beginning. </p>
-
-</div>
-</div>
-<a id="a45b45a797ec870f251d4ab6f79c7a5d4" name="a45b45a797ec870f251d4ab6f79c7a5d4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a45b45a797ec870f251d4ab6f79c7a5d4">&#9670;&#160;</a></span>_show_params</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">const bool _show_params</td>
+          <td class="memname">const bool _show_model_info</td>
         </tr>
       </table>
   </td>

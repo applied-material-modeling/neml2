@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2025-10-10 12:15:50</td>
+            <td class="headerValue">2025-12-06 17:10:54</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -120,7 +120,7 @@
 <span id="L58"><span class="lineNum">      58</span>              : {</span>
 <span id="L59"><span class="lineNum">      59</span> <span class="tlaGNC">           3 :   if (out)</span></span>
 <span id="L60"><span class="lineNum">      60</span>              :   {</span>
-<span id="L61"><span class="lineNum">      61</span> <span class="tlaGNC">           1 :     _g = pow((1 - _d), _p) * (1 - _eta) + _eta;</span></span>
+<span id="L61"><span class="lineNum">      61</span> <span class="tlaGNC">           3 :     _g = pow((1 - _d), _p) * (1 - _eta) + _eta;</span></span>
 <span id="L62"><span class="lineNum">      62</span>              :   }</span>
 <span id="L63"><span class="lineNum">      63</span>              : </span>
 <span id="L64"><span class="lineNum">      64</span> <span class="tlaGNC">           3 :   if (dout_din)</span></span>
@@ -130,7 +130,7 @@
 <span id="L68"><span class="lineNum">      68</span>              : </span>
 <span id="L69"><span class="lineNum">      69</span> <span class="tlaGNC">           3 :   if (d2out_din2)</span></span>
 <span id="L70"><span class="lineNum">      70</span>              :   {</span>
-<span id="L71"><span class="lineNum">      71</span> <span class="tlaGNC">           1 :     _g.d(_d, _d) = (_p * (_p - 1)) * pow((1 - _d), (_p - 2)) * (1 - _eta);</span></span>
+<span id="L71"><span class="lineNum">      71</span> <span class="tlaGNC">           1 :     _g.d2(_d, _d) = (_p * (_p - 1)) * pow((1 - _d), (_p - 2)) * (1 - _eta);</span></span>
 <span id="L72"><span class="lineNum">      72</span>              :   }</span>
 <span id="L73"><span class="lineNum">      73</span> <span class="tlaGNC">           3 : }</span></span>
 <span id="L74"><span class="lineNum">      74</span>              : } // namespace neml2</span>

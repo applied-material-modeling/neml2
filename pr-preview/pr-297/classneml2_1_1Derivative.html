@@ -7,7 +7,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=11" />
   <meta name="generator" content="Doxygen 1.12.0" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>NEML2: Derivative Class Reference</title>
+  <title>NEML2: Derivative&lt; N &gt; Class Template Reference</title>
   <link href="tabs.css" rel="stylesheet" type="text/css" />
   <script type="text/javascript" src="jquery.js"></script>
   <script type="text/javascript" src="dynsections.js"></script>
@@ -139,30 +139,56 @@ $(function(){initNavTree('classneml2_1_1Derivative.html',''); initResizable(true
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="classneml2_1_1Derivative-members.html">List of all members</a>  </div>
-  <div class="headertitle"><div class="title">Derivative Class Reference</div></div>
+  <div class="headertitle"><div class="title">Derivative&lt; N &gt; Class Template Reference</div></div>
 </div><!--header-->
 <div class="contents">
 
-<p><code>#include &lt;<a class="el" href="Variable_8h_source.html">Variable.h</a>&gt;</code></p>
+<p><a class="el" href="classneml2_1_1Derivative.html" title="Derivative wrapper.">Derivative</a> wrapper.  
+ <a href="#details">More...</a></p>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><div class="compoundTemplParams">template&lt;std::size_t N&gt;<br />
+class neml2::Derivative&lt; N &gt;</div><p><a class="el" href="classneml2_1_1Derivative.html" title="Derivative wrapper.">Derivative</a> wrapper. </p>
+</div>
+<p><code>#include &lt;<a class="el" href="Derivative_8h_source.html">Derivative.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a00334719d24834aeb66a4d400fd2aa68" id="r_a00334719d24834aeb66a4d400fd2aa68"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a00334719d24834aeb66a4d400fd2aa68">Derivative</a> ()</td></tr>
-<tr class="separator:a00334719d24834aeb66a4d400fd2aa68"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a316cb12ea2e5446ccb114a6113285108" id="r_a316cb12ea2e5446ccb114a6113285108"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a316cb12ea2e5446ccb114a6113285108">Derivative</a> (<a class="el" href="namespaceneml2.html#aead1bb40178f274bd0b020b5548b4d64">TensorShapeRef</a> base_sizes, <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> *deriv)</td></tr>
-<tr class="separator:a316cb12ea2e5446ccb114a6113285108"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0237cdd33289a06e669ba36bb7009c2e" id="r_a0237cdd33289a06e669ba36bb7009c2e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1Derivative.html">Derivative</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0237cdd33289a06e669ba36bb7009c2e">operator=</a> (const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp;val)</td></tr>
-<tr class="separator:a0237cdd33289a06e669ba36bb7009c2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a13303b7976b09f192da523fe3d681737" id="r_a13303b7976b09f192da523fe3d681737"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
-<tr class="memitem:a13303b7976b09f192da523fe3d681737"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1Derivative.html">Derivative</a> &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a13303b7976b09f192da523fe3d681737">operator=</a> (const <a class="el" href="classneml2_1_1Variable.html">Variable</a>&lt; T &gt; &amp;var)</td></tr>
-<tr class="separator:a13303b7976b09f192da523fe3d681737"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a62c8ff4ba7449b6cc4c3a7c8314b73e2" id="r_a62c8ff4ba7449b6cc4c3a7c8314b73e2"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a62c8ff4ba7449b6cc4c3a7c8314b73e2">Derivative</a> ()=default</td></tr>
+<tr class="separator:a62c8ff4ba7449b6cc4c3a7c8314b73e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:accf48327504d41d19f47012d2cdad4c6" id="r_accf48327504d41d19f47012d2cdad4c6"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#accf48327504d41d19f47012d2cdad4c6">Derivative</a> (const std::array&lt; const <a class="el" href="classneml2_1_1VariableBase.html">VariableBase</a> *, N+1 &gt; &amp;var_and_args, <a class="el" href="namespaceneml2.html#a88dc57f8d315d969f86c6a5530b23fcf">ArrayRef</a>&lt; <a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> &gt; dep_dims)</td></tr>
+<tr class="separator:accf48327504d41d19f47012d2cdad4c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6fadad016f37a8e259956e517a1546da" id="r_a6fadad016f37a8e259956e517a1546da"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6fadad016f37a8e259956e517a1546da">operator==</a> (const <a class="el" href="classneml2_1_1Derivative.html">Derivative</a>&lt; N &gt; &amp;other) const</td></tr>
+<tr class="memdesc:a6fadad016f37a8e259956e517a1546da"><td class="mdescLeft">&#160;</td><td class="mdescRight">Equality operator (for searching in a container)  <br /></td></tr>
+<tr class="separator:a6fadad016f37a8e259956e517a1546da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2b0af669577917de4340353ebb6a8a70" id="r_a2b0af669577917de4340353ebb6a8a70"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2b0af669577917de4340353ebb6a8a70">tensor</a> () const</td></tr>
+<tr class="memdesc:a2b0af669577917de4340353ebb6a8a70"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the derivative.  <br /></td></tr>
+<tr class="separator:a2b0af669577917de4340353ebb6a8a70"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad9512be6a104b8455e7bebbb53027952" id="r_ad9512be6a104b8455e7bebbb53027952"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad9512be6a104b8455e7bebbb53027952">get</a> () const</td></tr>
+<tr class="memdesc:ad9512be6a104b8455e7bebbb53027952"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the derivative in assembly format.  <br /></td></tr>
+<tr class="separator:ad9512be6a104b8455e7bebbb53027952"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a805e64bbd57b053b354c7e3bca0df4ba" id="r_a805e64bbd57b053b354c7e3bca0df4ba"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a805e64bbd57b053b354c7e3bca0df4ba">set</a> (const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp;val)</td></tr>
+<tr class="memdesc:a805e64bbd57b053b354c7e3bca0df4ba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the derivative (given in assembly format)  <br /></td></tr>
+<tr class="separator:a805e64bbd57b053b354c7e3bca0df4ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af6c834def424d246aa2f85c1090695a2" id="r_af6c834def424d246aa2f85c1090695a2"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classneml2_1_1VariableBase.html">VariableBase</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af6c834def424d246aa2f85c1090695a2">var</a> () const</td></tr>
+<tr class="memdesc:af6c834def424d246aa2f85c1090695a2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the variable.  <br /></td></tr>
+<tr class="separator:af6c834def424d246aa2f85c1090695a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a339689b65e053b9bf3c53be7164c9c0f" id="r_a339689b65e053b9bf3c53be7164c9c0f"><td class="memItemLeft" align="right" valign="top">std::array&lt; const <a class="el" href="classneml2_1_1VariableBase.html">VariableBase</a> *, N &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a339689b65e053b9bf3c53be7164c9c0f">args</a> () const</td></tr>
+<tr class="memdesc:a339689b65e053b9bf3c53be7164c9c0f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the args.  <br /></td></tr>
+<tr class="separator:a339689b65e053b9bf3c53be7164c9c0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:ab2cabdf3fe036d1eb9ee378d68d083c4" id="r_ab2cabdf3fe036d1eb9ee378d68d083c4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1Derivative.html">Derivative</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab2cabdf3fe036d1eb9ee378d68d083c4">operator=</a> (const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp;val)</td></tr>
+<tr class="separator:ab2cabdf3fe036d1eb9ee378d68d083c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a07161339dc94aec670b1c0132a604ffd" id="r_a07161339dc94aec670b1c0132a604ffd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1Derivative.html">Derivative</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a07161339dc94aec670b1c0132a604ffd">operator=</a> (const <a class="el" href="classneml2_1_1VariableBase.html">VariableBase</a> &amp;val)</td></tr>
+<tr class="separator:a07161339dc94aec670b1c0132a604ffd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a00334719d24834aeb66a4d400fd2aa68" name="a00334719d24834aeb66a4d400fd2aa68"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a00334719d24834aeb66a4d400fd2aa68">&#9670;&#160;</a></span>Derivative() <span class="overload">[1/2]</span></h2>
+<a id="a62c8ff4ba7449b6cc4c3a7c8314b73e2" name="a62c8ff4ba7449b6cc4c3a7c8314b73e2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a62c8ff4ba7449b6cc4c3a7c8314b73e2">&#9670;&#160;</a></span>Derivative() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;std::size_t N&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -176,51 +202,149 @@ Public Member Functions</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+<span class="mlabels"><span class="mlabel">default</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a id="a316cb12ea2e5446ccb114a6113285108" name="a316cb12ea2e5446ccb114a6113285108"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a316cb12ea2e5446ccb114a6113285108">&#9670;&#160;</a></span>Derivative() <span class="overload">[2/2]</span></h2>
+<a id="accf48327504d41d19f47012d2cdad4c6" name="accf48327504d41d19f47012d2cdad4c6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#accf48327504d41d19f47012d2cdad4c6">&#9670;&#160;</a></span>Derivative() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
+<div class="memtemplate">
+template&lt;std::size_t N&gt; </div>
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="classneml2_1_1Derivative.html">Derivative</a> </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="namespaceneml2.html#aead1bb40178f274bd0b020b5548b4d64">TensorShapeRef</a></td>          <td class="paramname"><span class="paramname"><em>base_sizes</em></span>, </td>
+          <td class="paramtype">const std::array&lt; const <a class="el" href="classneml2_1_1VariableBase.html">VariableBase</a> *, N+1 &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>var_and_args</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classneml2_1_1Tensor.html">Tensor</a> *</td>          <td class="paramname"><span class="paramname"><em>deriv</em></span>&#160;)</td>
+          <td class="paramtype"><a class="el" href="namespaceneml2.html#a88dc57f8d315d969f86c6a5530b23fcf">ArrayRef</a>&lt; <a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> &gt;</td>          <td class="paramname"><span class="paramname"><em>dep_dims</em></span>&#160;)</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a0237cdd33289a06e669ba36bb7009c2e" name="a0237cdd33289a06e669ba36bb7009c2e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0237cdd33289a06e669ba36bb7009c2e">&#9670;&#160;</a></span>operator=() <span class="overload">[1/2]</span></h2>
+<a id="a339689b65e053b9bf3c53be7164c9c0f" name="a339689b65e053b9bf3c53be7164c9c0f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a339689b65e053b9bf3c53be7164c9c0f">&#9670;&#160;</a></span>args()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;std::size_t N&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classneml2_1_1Derivative.html">Derivative</a> &amp; operator= </td>
+          <td class="memname">std::array&lt; const <a class="el" href="classneml2_1_1VariableBase.html">VariableBase</a> *, N &gt; args </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the args. </p>
+
+</div>
+</div>
+<a id="ad9512be6a104b8455e7bebbb53027952" name="ad9512be6a104b8455e7bebbb53027952"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad9512be6a104b8455e7bebbb53027952">&#9670;&#160;</a></span>get()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;std::size_t N&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp; get </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the derivative in assembly format. </p>
+
+</div>
+</div>
+<a id="ab2cabdf3fe036d1eb9ee378d68d083c4" name="ab2cabdf3fe036d1eb9ee378d68d083c4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab2cabdf3fe036d1eb9ee378d68d083c4">&#9670;&#160;</a></span>operator=() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;std::size_t N&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classneml2_1_1Derivative.html">Derivative</a>&lt; N &gt; &amp; operator= </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>val</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Assignment operator </p>
+
+</div>
+</div>
+<a id="a07161339dc94aec670b1c0132a604ffd" name="a07161339dc94aec670b1c0132a604ffd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a07161339dc94aec670b1c0132a604ffd">&#9670;&#160;</a></span>operator=() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;std::size_t N&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classneml2_1_1Derivative.html">Derivative</a>&lt; N &gt; &amp; operator= </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classneml2_1_1VariableBase.html">VariableBase</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>val</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a6fadad016f37a8e259956e517a1546da" name="a6fadad016f37a8e259956e517a1546da"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6fadad016f37a8e259956e517a1546da">&#9670;&#160;</a></span>operator==()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;std::size_t N&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">bool operator== </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classneml2_1_1Derivative.html">Derivative</a>&lt; N &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>other</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Equality operator (for searching in a container) </p>
+
+</div>
+</div>
+<a id="a805e64bbd57b053b354c7e3bca0df4ba" name="a805e64bbd57b053b354c7e3bca0df4ba"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a805e64bbd57b053b354c7e3bca0df4ba">&#9670;&#160;</a></span>set()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;std::size_t N&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void set </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>val</em></span></td><td>)</td>
           <td></td>
@@ -228,24 +352,26 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Set the derivative (given in assembly format) </p>
+
 </div>
 </div>
-<a id="a13303b7976b09f192da523fe3d681737" name="a13303b7976b09f192da523fe3d681737"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a13303b7976b09f192da523fe3d681737">&#9670;&#160;</a></span>operator=() <span class="overload">[2/2]</span></h2>
+<a id="a2b0af669577917de4340353ebb6a8a70" name="a2b0af669577917de4340353ebb6a8a70"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2b0af669577917de4340353ebb6a8a70">&#9670;&#160;</a></span>tensor()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T &gt; </div>
+template&lt;std::size_t N&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classneml2_1_1Derivative.html">Derivative</a> &amp; operator= </td>
+          <td class="memname">const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp; tensor </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classneml2_1_1Variable.html">Variable</a>&lt; T &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>var</em></span></td><td>)</td>
-          <td></td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
         </tr>
       </table>
   </td>
@@ -254,6 +380,37 @@ template&lt;typename T &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Get the derivative. </p>
+
+</div>
+</div>
+<a id="af6c834def424d246aa2f85c1090695a2" name="af6c834def424d246aa2f85c1090695a2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af6c834def424d246aa2f85c1090695a2">&#9670;&#160;</a></span>var()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;std::size_t N&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="classneml2_1_1VariableBase.html">VariableBase</a> * var </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get the variable. </p>
 
 </div>
 </div>
