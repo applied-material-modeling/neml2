@@ -26,35 +26,25 @@
 
 #pragma once
 
-#include "neml2/user_tensors/CSVTensorBase.h"
+#include "neml2/user_tensors/UserTensorBase.h"
+#include "neml2/user_tensors/CSVReader.h"
 #include "neml2/tensors/tensors.h"
 
 namespace neml2
 {
 /**
- * @brief Create a Tensor from a csv file.
+ * @brief Create a primitive tensor by reading values from a csv file.
  */
 template <typename T>
-class CSVPrimitiveTensor : public CSVTensorBase, public T
+class CSVPrimitiveTensor : public UserTensorBase<T>, public CSVReader
 {
 public:
   static OptionSet expected_options();
 
-  /**
-   * @brief Construct a new CSVPrimitiveTensor object
-   *
-   * @param options The options extracted from the input file.
-   */
   CSVPrimitiveTensor(const OptionSet & options);
 
-private:
-  T parse_csv(const OptionSet & options) const;
-
-  /// Helper function to check number of columns is valid for tensor type
-  void check_col() const;
-
-  /// Helper function for multiplying CSV values by a factor if needed
-  void multiply_factor(std::vector<double> & vals, std::size_t & nrow, std::size_t & ncol) const;
+protected:
+  T make() const override;
 };
 } // namespace neml2
 

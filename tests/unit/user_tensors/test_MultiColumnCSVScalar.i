@@ -45,11 +45,6 @@
     csv_file = 'user_tensors/MultiColumnCSVScalar/data.csv'
     indexing = 'ROW_MAJOR'
   []
-  [batch_shape]
-    type = MultiColumnCSVScalar
-    csv_file = 'user_tensors/MultiColumnCSVScalar/data.csv'
-    batch_shape = '(2,3,1)'
-  []
   [error_starting_row]
     type = MultiColumnCSVScalar
     csv_file = 'user_tensors/MultiColumnCSVScalar/data.csv'
@@ -97,10 +92,4 @@
     csv_file = 'user_tensors/MultiColumnCSVScalar/data.csv'
     column_indices = '0 3 1'
   []
-  [error_batch_shape]
-    type = MultiColumnCSVScalar
-    csv_file = 'user_tensors/MultiColumnCSVScalar/data.csv'
-    batch_shape = '(5,8)'
-  []
-
 []

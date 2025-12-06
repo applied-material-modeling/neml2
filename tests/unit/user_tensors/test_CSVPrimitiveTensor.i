@@ -39,11 +39,6 @@
     column_indices = '2 1 0'
     no_header = true
   []
-  [batch_shape]
-    type = CSVVec
-    csv_file = 'user_tensors/CSVPrimitiveTensor/data.csv'
-    batch_shape = '(2,1)'
-  []
   [error_starting_row]
     type = CSVVec
     csv_file = 'user_tensors/CSVPrimitiveTensor/data.csv'
@@ -100,11 +95,6 @@
     type = CSVVec
     csv_file = 'user_tensors/CSVPrimitiveTensor/data_non_numeric.csv'
     column_names = 'disp_x disp_y disp_z'
-  []
-  [error_batch_shape]
-    type = CSVVec
-    csv_file = 'user_tensors/CSVPrimitiveTensor/data.csv'
-    batch_shape = '(2,2)'
   []
   [error_col_no_component_mismatch]
     type = CSVVec

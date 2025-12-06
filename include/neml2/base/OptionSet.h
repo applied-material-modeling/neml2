@@ -245,7 +245,11 @@ OptionSet::get(const std::string & name) const
     throw NEMLException("ERROR: no option named \"" + name + "\" found.\n\nKnown options:\n" +
                         to_str());
 
-  auto ptr = dynamic_cast<Option<T> *>(_values.at(name).get());
+  auto * opt_base = _values.at(name).get();
+  auto ptr = dynamic_cast<Option<T> *>(opt_base);
+  if (!ptr)
+    throw NEMLException("ERROR: option named \"" + name +
+                        "\" is not of the requested type: " + opt_base->type());
   return ptr->get();
 }
 

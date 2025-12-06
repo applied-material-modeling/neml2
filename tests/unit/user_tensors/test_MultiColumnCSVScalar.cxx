@@ -29,6 +29,8 @@
 #include "neml2/tensors/Scalar.h"
 #include "neml2/base/NEML2Object.h"
 
+#include "utils.h"
+
 using namespace neml2;
 
 #ifdef NEML2_HAS_CSV
@@ -41,7 +43,7 @@ TEST_CASE("MultiColumnCSVScalar", "[user_tensors]")
   {
     const auto parsed = factory->get_object<Scalar>("Tensors", "all_columns");
     const auto expected = Scalar::create({{1, 4}, {2, 5}, {3, 6}});
-    REQUIRE(at::allclose(*parsed, expected));
+    REQUIRE_THAT(*parsed, test::allclose(expected));
   }
 
   SECTION("read_by_indices")
@@ -50,13 +52,13 @@ TEST_CASE("MultiColumnCSVScalar", "[user_tensors]")
     {
       const auto parsed = factory->get_object<Scalar>("Tensors", "column_names");
       const auto expected = Scalar::create({{3, 6}, {1, 4}});
-      REQUIRE(at::allclose(*parsed, expected));
+      REQUIRE_THAT(*parsed, test::allclose(expected));
     }
     SECTION("column_indices")
     {
       const auto parsed = factory->get_object<Scalar>("Tensors", "column_indices");
       const auto expected = Scalar::create({{3, 6}, {1, 4}});
-      REQUIRE(at::allclose(*parsed, expected));
+      REQUIRE_THAT(*parsed, test::allclose(expected));
     }
   }
 
@@ -66,31 +68,31 @@ TEST_CASE("MultiColumnCSVScalar", "[user_tensors]")
     {
       const auto parsed = factory->get_object<Scalar>("Tensors", "delimiter");
       const auto expected = Scalar::create({{1, 4}, {2, 5}, {3, 6}});
-      REQUIRE(at::allclose(*parsed, expected));
+      REQUIRE_THAT(*parsed, test::allclose(expected));
     }
     SECTION("starting_row")
     {
       const auto parsed = factory->get_object<Scalar>("Tensors", "starting_row");
       const auto expected = Scalar::create({{1, 4}, {2, 5}, {3, 6}});
-      REQUIRE(at::allclose(*parsed, expected));
+      REQUIRE_THAT(*parsed, test::allclose(expected));
     }
     SECTION("no_header")
     {
       const auto parsed = factory->get_object<Scalar>("Tensors", "no_header");
       const auto expected = Scalar::create({{1, 4}, {2, 5}, {3, 6}});
-      REQUIRE(at::allclose(*parsed, expected));
+      REQUIRE_THAT(*parsed, test::allclose(expected));
     }
     SECTION("starting_row + no_header")
     {
       const auto parsed = factory->get_object<Scalar>("Tensors", "starting_row_no_header");
       const auto expected = Scalar::create({{1, 4}, {2, 5}, {3, 6}});
-      REQUIRE(at::allclose(*parsed, expected));
+      REQUIRE_THAT(*parsed, test::allclose(expected));
     }
     SECTION("no_header + indices")
     {
       const auto parsed = factory->get_object<Scalar>("Tensors", "no_header_indices");
       const auto expected = Scalar::create({{3, 6}, {1, 4}});
-      REQUIRE(at::allclose(*parsed, expected));
+      REQUIRE_THAT(*parsed, test::allclose(expected));
     }
   }
 
@@ -98,14 +100,7 @@ TEST_CASE("MultiColumnCSVScalar", "[user_tensors]")
   {
     const auto parsed = factory->get_object<Scalar>("Tensors", "row_major");
     const auto expected = Scalar::create({{1, 2, 3}, {4, 5, 6}});
-    REQUIRE(at::allclose(*parsed, expected));
-  }
-
-  SECTION("batch_shape")
-  {
-    const auto parsed = factory->get_object<Scalar>("Tensors", "batch_shape");
-    const auto expected = Scalar::create({{{1}, {4}, {2}}, {{5}, {3}, {6}}});
-    REQUIRE(at::allclose(*parsed, expected));
+    REQUIRE_THAT(*parsed, test::allclose(expected));
   }
 
   SECTION("errors")
@@ -156,14 +151,6 @@ TEST_CASE("MultiColumnCSVScalar", "[user_tensors]")
           factory->get_object<Scalar>("Tensors", "error_non_numeric_read_ind_header"),
           Catch::Matchers::ContainsSubstring(
               "Non-numeric value found in CSV file at row 1, column col2"));
-    }
-
-    SECTION("batch_shape")
-    {
-      REQUIRE_THROWS_WITH(factory->get_object<Scalar>("Tensors", "error_batch_shape"),
-                          Catch::Matchers::ContainsSubstring(
-                              "The requested batch_shape [5, 8] is incompatible with the "
-                              "number of values read from the CSV file (6)."));
     }
   }
 }

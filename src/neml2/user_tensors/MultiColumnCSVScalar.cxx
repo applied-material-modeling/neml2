@@ -39,9 +39,7 @@ MultiColumnCSVScalar::expected_options()
       "Construct a two-dimensional Scalar from a CSV file. A subset of columns can be selected "
       "using `column_indices` or `column_names`. By default, the CSV is interpreted as "
       "column-major, i.e., each column in the CSV corresponds to one row of the 2D Scalar. This "
-      "behavior can be altered via the `indexing` option. If `batch_shape` is specified, an "
-      "additional reshaping is performed on the 2D Scalar (and the resulting Scalar is not "
-      "necessarily 2D anymore).";
+      "behavior can be altered via the `indexing` option.";
 
   EnumSelection indexing_selection({"COLUMN_MAJOR", "ROW_MAJOR"}, "COLUMN_MAJOR");
   options.set<EnumSelection>("indexing") = indexing_selection;
