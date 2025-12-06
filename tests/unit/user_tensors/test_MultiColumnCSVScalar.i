@@ -45,62 +45,51 @@
     csv_file = 'user_tensors/MultiColumnCSVScalar/data.csv'
     indexing = 'ROW_MAJOR'
   []
-  [batch_shape]
+  [error_starting_row]
     type = MultiColumnCSVScalar
     csv_file = 'user_tensors/MultiColumnCSVScalar/data.csv'
-    batch_shape = '(2,3,1)'
+    starting_row = -1
   []
-  [error_1]
+  [error_col_name_col_ind]
     type = MultiColumnCSVScalar
     csv_file = 'user_tensors/MultiColumnCSVScalar/data.csv'
     column_names = 'col1 col2'
     column_indices = '0 1'
   []
-  [error_2]
+  [error_col_name_header]
     type = MultiColumnCSVScalar
     csv_file = 'user_tensors/MultiColumnCSVScalar/data.csv'
     column_names = 'col1 col2'
     no_header = true
   []
-  [error_3]
+  [error_col_name]
     type = MultiColumnCSVScalar
     csv_file = 'user_tensors/MultiColumnCSVScalar/data.csv'
     column_names = 'col1 col4'
   []
-  [error_4]
+  [error_non_numeric_read_all_no_header]
     type = MultiColumnCSVScalar
-    csv_file = 'user_tensors/MultiColumnCSVScalar/data.csv'
-    column_indices = '0 3 1'
-  []
-  [error_5]
-    type = MultiColumnCSVScalar
-    csv_file = 'user_tensors/MultiColumnCSVScalar/data_no_header.csv'
-    column_indices = '0 3 1'
+    csv_file = 'user_tensors/MultiColumnCSVScalar/data_non_numeric_no_header.csv'
     no_header = true
   []
-  [error_6]
+  [error_non_numeric_read_all_header]
     type = MultiColumnCSVScalar
     csv_file = 'user_tensors/MultiColumnCSVScalar/data_non_numeric.csv'
   []
-  [error_7]
+  [error_non_numeric_read_ind_no_header]
     type = MultiColumnCSVScalar
-    csv_file = 'user_tensors/MultiColumnCSVScalar/data_non_numeric.csv'
-    column_indices = '0 1'
-  []
-  [error_8]
-    type = MultiColumnCSVScalar
-    csv_file = 'user_tensors/MultiColumnCSVScalar/data_no_header_non_numeric.csv'
+    csv_file = 'user_tensors/MultiColumnCSVScalar/data_non_numeric_no_header.csv'
     column_indices = '0 1'
     no_header = true
   []
-  [error_9]
+  [error_non_numeric_read_ind_header]
     type = MultiColumnCSVScalar
-    csv_file = 'user_tensors/MultiColumnCSVScalar/data.csv'
-    batch_shape = '(5,8)'
+    csv_file = 'user_tensors/MultiColumnCSVScalar/data_non_numeric.csv'
+    column_names = 'col1 col2'
   []
-  [error_10]
+  [error_ind_out_of_bounds]
     type = MultiColumnCSVScalar
     csv_file = 'user_tensors/MultiColumnCSVScalar/data.csv'
-    starting_row = -1
+    column_indices = '0 3 1'
   []
 []

@@ -26,21 +26,45 @@
 
 #pragma once
 
+#include "csvparser/csv.hpp"
 #include "neml2/user_tensors/UserTensorBase.h"
-#include "neml2/user_tensors/CSVReader.h"
-#include "neml2/tensors/Scalar.h"
+
+#include "neml2/misc/assertions.h"
+#include <sstream>
 
 namespace neml2
 {
-class MultiColumnCSVScalar : public UserTensorBase<Scalar>, public CSVReader
+/// An interface class for reading CSV files
+class CSVReader
 {
 public:
   static OptionSet expected_options();
 
-  MultiColumnCSVScalar(const OptionSet & options);
+  CSVReader(const NEML2Object * obj);
 
 protected:
-  Scalar make() const override;
+  /// Helper function to parse CSV format
+  csv::CSVFormat parse_format() const;
+
+  /// Helper function to parse column indices
+  std::vector<unsigned int> parse_indices(const csv::CSVReader & csv) const;
+
+  /// Read all values without column indices
+  void read_all(csv::CSVReader & csv,
+                std::vector<double> & vals,
+                std::size_t & nrow,
+                std::size_t & ncol) const;
+
+  /// Read values by specified column indices
+  void read_by_indices(csv::CSVReader & csv,
+                       const std::vector<unsigned int> & indices,
+                       std::vector<double> & vals,
+                       std::size_t & nrow,
+                       std::size_t & ncol) const;
+
+private:
+  /// pointer to the NEML2 object using this CSV reader
+  const NEML2Object * _obj;
 };
 } // namespace neml2
 
