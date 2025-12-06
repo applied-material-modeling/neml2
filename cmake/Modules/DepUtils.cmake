@@ -42,8 +42,11 @@ function(custom_install NAME SCRIPT SOURCE_DIR BINARY_DIR INSTALL_PREFIX)
     WORKING_DIRECTORY ${BINARY_DIR}
     OUTPUT_QUIET OUTPUT_FILE configure.log
     ERROR_QUIET ERROR_FILE configure.err
-    COMMAND_ERROR_IS_FATAL ANY
+    RESULT_VARIABLE retcode
   )
+  if(NOT retcode EQUAL 0)
+    message(FATAL_ERROR "Installation of ${NAME} failed. See ${BINARY_DIR}/configure.log and ${BINARY_DIR}/configure.err for details.")
+  endif()
 endfunction()
 
 # Install a file and all files with the same name but different extensions
