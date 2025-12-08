@@ -116,6 +116,24 @@ public:
   /// @brief Get a const reference to the specified option value.
   const OptionBase & get(const std::string &) const;
 
+  /// Get two options and bind them to find a map
+  ///
+  /// @tparam K Key type
+  /// @tparam V Value type
+
+  /**
+   * @brief Get two options and bind them to find a map
+   *
+   * The two options are expected to be of type std::vector<K> and std::vector<V>, respectively.
+   * Keys shall be unique. Otherwise, an exception is thrown.
+   *
+   * @tparam K Key type
+   * @tparam V Value type
+   * @return std::map<K, V>
+   */
+  template <typename K, typename V>
+  std::map<K, V> get_map(const std::string &, const std::string &) const;
+
   ///@{
   /**
    * @return A writable reference to the specified option value. This method will create the option
@@ -251,6 +269,37 @@ OptionSet::get(const std::string & name) const
     throw NEMLException("ERROR: option named \"" + name +
                         "\" is not of the requested type: " + opt_base->type());
   return ptr->get();
+}
+
+template <typename K, typename V>
+std::map<K, V>
+OptionSet::get_map(const std::string & key_option, const std::string & value_option) const
+{
+  const auto keys = this->get<std::vector<K>>(key_option);
+  const auto values = this->get<std::vector<V>>(value_option);
+  neml_assert(keys.size() == values.size(),
+              "Trying to build a map from '",
+              key_option,
+              "' and '",
+              value_option,
+              "' with ",
+              keys.size(),
+              " keys and ",
+              values.size(),
+              " values.");
+  std::map<K, V> result;
+  for (size_t i = 0; i < keys.size(); i++)
+  {
+    neml_assert(result.find(keys[i]) == result.end(),
+                "Trying to build a map from '",
+                key_option,
+                "' and '",
+                value_option,
+                "' with duplicate key: ",
+                keys[i]);
+    result[keys[i]] = values[i];
+  }
+  return result;
 }
 
 template <typename T, FType F>

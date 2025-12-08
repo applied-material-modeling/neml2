@@ -118,6 +118,10 @@
 [Solvers]
   [newton]
     type = Newton
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
   []
 []
 
@@ -257,8 +261,8 @@
   []
   [rename]
     type = CopySR2
-    from = "residual/S"
-    to = "residual/mixed_state"
+    from = 'residual/S'
+    to = 'residual/mixed_state'
   []
   [surface]
     type = ComposedModel

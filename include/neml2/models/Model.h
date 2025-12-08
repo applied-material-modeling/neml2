@@ -39,11 +39,26 @@
 // choice since these headers are light and bring in little dependency.
 #include "neml2/base/LabeledAxis.h"
 #include "neml2/models/Variable.h"
-#include "neml2/models/Derivative.h"
+#include "neml2/tensors/Derivative.h"
 
 namespace neml2
 {
 class Model;
+
+// Guard a region where implicit solve is being performed
+struct AssemblyingNonlinearSystem
+{
+  AssemblyingNonlinearSystem(Model * const, bool assembling = true);
+
+  AssemblyingNonlinearSystem(const AssemblyingNonlinearSystem &) = delete;
+  AssemblyingNonlinearSystem(AssemblyingNonlinearSystem &&) = delete;
+  AssemblyingNonlinearSystem & operator=(const AssemblyingNonlinearSystem &) = delete;
+  AssemblyingNonlinearSystem & operator=(AssemblyingNonlinearSystem &&) = delete;
+  ~AssemblyingNonlinearSystem();
+
+  Model * const model;
+  const bool prev_bool;
+};
 
 /**
  * @brief The base class for all constitutive models.
@@ -102,6 +117,12 @@ public:
 
   /// Whether this model defines one or more nonlinear equations to be solved
   virtual bool is_nonlinear_system() const { return _nonlinear_system; }
+
+  ///@{
+  /// Set or get whether we are currently assembling the nonlinear system
+  void currently_assembling_nonlinear_system(bool);
+  bool currently_assembling_nonlinear_system() const;
+  ///@}
 
   /// Whether JIT is enabled
   virtual bool is_jit_enabled() const { return _jit; }
@@ -274,14 +295,20 @@ protected:
 
   jit::Stack collect_input_stack() const;
 
-  void set_guess(const Sol<false> &) override;
+  void set_solution(const es::Vector &) override;
+  es::Vector get_solution() const override;
+  void assemble(es::Vector *, es::Matrix *) override;
 
-  void assemble(Res<false> *, Jac<false> *) override;
+  // Allow ImplicitUpdate to assemble the system
+  friend class ImplicitUpdate;
 
   /// Models *this* model may use during its evaluation
   std::vector<std::shared_ptr<Model>> _registered_models;
 
 private:
+  /// Setup the nonlinear system, e.g., umap, rmap, gmap, etc.
+  void setup_nl_sys();
+
   template <typename T>
   void forward_helper(T && in, bool out, bool dout, bool d2out)
   {
@@ -351,6 +378,9 @@ private:
   /// Similar to _trace_functions, but for the forward operator of the nonlinear system
   std::array<std::map<EvaluationSchema, std::unique_ptr<jit::GraphFunction>>, 8>
       _traced_functions_nl_sys;
+
+  /// Whether we are currently assembling a nonlinear system
+  bool _currently_assembling_nonlinear_system = false;
 };
 
 std::ostream & operator<<(std::ostream & os, const Model & model);

@@ -22,38 +22,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <pybind11/stl.h>
+#include "neml2/solvers/LinearSolver.h"
 
-#include "python/neml2/csrc/core/types.h"
-#include "python/neml2/csrc/core/utils.h"
-
-namespace py = pybind11;
-using namespace neml2;
-
-void
-def(py::module_ & m, py::class_<VectorAssembler> & c)
+namespace neml2
 {
-  c.def(py::init<const LabeledAxis &>())
-      .def(
-          "assemble_by_variable",
-          [](const VectorAssembler & self, const py::dict & py_vals_dict, bool assembly)
-          {
-            auto base_shape_lookup = [axis =
-                                          &self.axis()](const VariableName & key) -> TensorShapeRef
-            {
-              const auto vid = axis->variable_id(axis->disqualify(key));
-              return axis->variable_base_sizes()[vid];
-            };
-            const auto vals = unpack_value_map(py_vals_dict, assembly, base_shape_lookup);
-            return self.assemble_by_variable(vals, assembly);
-          },
-          py::arg("vals"),
-          py::arg("assembly") = true)
-      .def(
-          "split_by_variable",
-          [](const VectorAssembler & self, const Tensor & vec, bool assembly)
-          { return self.split_by_variable(vec, assembly); },
-          py::arg("vec"),
-          py::arg("assembly") = true)
-      .def("split_by_subaxis", &VectorAssembler::split_by_subaxis);
+
+OptionSet
+LinearSolver::expected_options()
+{
+  OptionSet options = Solver::expected_options();
+  return options;
+}
+
+LinearSolver::LinearSolver(const OptionSet & options)
+  : Solver(options)
+{
+}
+
 }

@@ -38,8 +38,6 @@ public:
 
   void diagnose() const override;
 
-  void link_output_variables() override;
-
   std::size_t last_iterations() const { return _last_iterations; }
 
 protected:

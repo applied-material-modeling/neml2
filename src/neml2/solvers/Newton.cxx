@@ -27,8 +27,6 @@
 
 #include "neml2/solvers/Newton.h"
 #include "neml2/tensors/Scalar.h"
-#include "neml2/tensors/functions/norm.h"
-#include "neml2/tensors/functions/linalg/solve.h"
 
 namespace neml2
 {
@@ -49,14 +47,13 @@ Newton::Newton(const OptionSet & options)
 }
 
 Newton::Result
-Newton::solve(NonlinearSystem & system, const NonlinearSystem::Sol<false> & x0)
+Newton::solve(NonlinearSystem & system, const es::Vector & x0)
 {
-  // Solve always takes place in the "scaled" space
-  auto x = system.scale(x0);
+  auto x = x0;
 
   // The initial residual for relative convergence check
   auto R = system.residual(x);
-  auto nR = neml2::norm(R);
+  auto nR = neml2::es::norm(R);
   auto nR0 = nR.clone();
 
   // Check for initial convergence
@@ -64,9 +61,9 @@ Newton::solve(NonlinearSystem & system, const NonlinearSystem::Sol<false> & x0)
   {
     // The final update is only necessary if we use AD
     if (R.requires_grad())
-      final_update(system, x, R, system.Jacobian<true>());
+      final_update(system, x, R, system.Jacobian());
 
-    return {RetCode::SUCCESS, system.unscale(x), 0};
+    return {RetCode::SUCCESS, x, 0};
   }
 
   // Prepare any solver internal data before the iterative update
@@ -78,27 +75,27 @@ Newton::solve(NonlinearSystem & system, const NonlinearSystem::Sol<false> & x0)
   // 3. i > miters (failure)
   for (size_t i = 1; i < miters; i++)
   {
-    auto J = system.Jacobian<true>();
+    auto J = system.Jacobian();
     update(system, x, R, J);
     R = system.residual(x);
-    nR = neml2::norm(R);
+    nR = neml2::es::norm(R);
 
     // Check for convergence
     if (converged(i, nR, nR0))
     {
       // The final update is only necessary if we use AD
       if (R.requires_grad())
-        final_update(system, x, R, system.Jacobian<true>());
+        final_update(system, x, R, system.Jacobian());
 
-      return {RetCode::SUCCESS, system.unscale(x), i};
+      return {RetCode::SUCCESS, x, i};
     }
   }
 
-  return {RetCode::MAXITER, system.unscale(x), miters};
+  return {RetCode::MAXITER, x, miters};
 }
 
 bool
-Newton::converged(size_t itr, const ATensor & nR, const ATensor & nR0) const
+Newton::converged(size_t itr, const Scalar & nR, const Scalar & nR0) const
 {
   // LCOV_EXCL_START
   if (verbose)
@@ -112,29 +109,26 @@ Newton::converged(size_t itr, const ATensor & nR, const ATensor & nR0) const
 
 void
 Newton::update(NonlinearSystem & /*system*/,
-               NonlinearSystem::Sol<true> & x,
-               const NonlinearSystem::Res<true> & r,
-               const NonlinearSystem::Jac<true> & J)
+               es::Vector & x,
+               const es::Vector & r,
+               const es::Matrix & J)
 {
-  x = NonlinearSystem::Sol<true>(x.variable_data() + Tensor(solve_direction(r, J)));
+  x.update_data(solve_direction(r, J));
 }
 
 void
 Newton::final_update(NonlinearSystem & /*system*/,
-                     NonlinearSystem::Sol<true> & x,
-                     const NonlinearSystem::Res<true> & r,
-                     const NonlinearSystem::Jac<true> & J)
+                     es::Vector & x,
+                     const es::Vector & r,
+                     const es::Matrix & J)
 {
-  x = NonlinearSystem::Sol<true>(Tensor(x) + Tensor(solve_direction(r, J)));
+  x.update(solve_direction(r, J));
 }
 
-NonlinearSystem::Sol<true>
-Newton::solve_direction(const NonlinearSystem::Res<true> & r, const NonlinearSystem::Jac<true> & J)
+es::Vector
+Newton::solve_direction(const es::Vector & r, const es::Matrix & J)
 {
-  if (r.base_dim() == 0 && J.base_dim() == 0)
-    return NonlinearSystem::Sol<true>(-Tensor(r) / Tensor(J));
-
-  return NonlinearSystem::Sol<true>(-linalg::solve(J, r));
+  return -linear_solver->solve(J, r);
 }
 
 } // namespace neml2

@@ -3,6 +3,7 @@
 # ------------------------------------------------------------------------------
 file(GLOB_RECURSE srcs CONFIGURE_DEPENDS src/*.cxx)
 add_executable(runner ${srcs})
+set_target_properties(runner PROPERTIES DISABLE_PRECOMPILE_HEADERS ON)
 
 target_compile_options(runner PRIVATE -Wall -Wextra -pedantic)
 target_link_libraries(runner PRIVATE neml2 argparse::argparse)

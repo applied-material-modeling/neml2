@@ -12,6 +12,8 @@
     derivative_abs_tol = 1e-3
     second_derivative_rel_tol = 0
     second_derivative_abs_tol = 1e-3
+    input_with_intrsc_intmd_dims = 'state/internal/slip_rates'
+    input_intrsc_intmd_dims = '1'
   []
 []
 

@@ -26,6 +26,7 @@
 #include <pybind11/stl.h>
 
 #include "python/neml2/csrc/core/types.h"
+#include "python/neml2/csrc/core/utils.h"
 
 namespace py = pybind11;
 using namespace neml2;
@@ -46,8 +47,8 @@ PYBIND11_MODULE(core, m)
       py::class_<Factory>(m, "Factory", "Factory for creating objects defined in the input file");
   auto cls_Model = py::class_<Model, std::shared_ptr<Model>>(
       m, "Model", "The canonical type for constitutive models in NEML2.");
-  auto cls_VectorAssembler = py::class_<VectorAssembler>(m, "VectorAssembler");
-  auto cls_MatrixAssembler = py::class_<MatrixAssembler>(m, "MatrixAssembler");
+  auto cls_ESVector = py::class_<es::Vector>(m, "ESVector", "Vector for equation systems.");
+  auto cls_ESMatrix = py::class_<es::Matrix>(m, "ESMatrix", "Matrix for equation systems.");
 
   // free functions
   m.def(
@@ -82,6 +83,29 @@ PYBIND11_MODULE(core, m)
   :param name:      Name of the model
   )");
   m.def(
+      "load_nl_sys",
+      [](const py::object & path, const std::string & name)
+      {
+        auto factory = load_input(py::str(path).cast<std::string>());
+        OptionSet extra_opts;
+        extra_opts.set<bool>("_nonlinear_system") = true;
+        return factory->get_object<Model>("Models", name, extra_opts);
+      },
+      py::arg("path"),
+      py::arg("name"),
+      R"(
+  A convenient function to load an input file and get a model as a nonlinear system.
+
+  This function is equivalent to calling core.load_input followed by
+  Factory.get_nl_sys. Note that this convenient function does not support passing
+  additional command-line arguments and will force the creation of a new
+  core.Model even if one has already been created. Use core.load_input and
+  Factory.get_nl_sys if you need finer control over the model creation behavior.
+
+  :param path:      Path to the input file to be parsed
+  :param name:      Name of the model
+  )");
+  m.def(
       "diagnose",
       [](const Model & m)
       {
@@ -99,6 +123,27 @@ PYBIND11_MODULE(core, m)
 
   :param model: Model to be diagnosed
   )");
+  m.def(
+      "bind",
+      [](const py::object & p, const es::Vector & v)
+      {
+        // cast p to iterable
+        auto p_itr = py::cast<py::iterable>(p);
+        std::vector<VariableName> names;
+        names.reserve(py::len(p_itr));
+        for (const auto & item : p_itr)
+          names.emplace_back(unpack_variable_name(item));
+        return neml2::bind(names, v);
+      },
+      py::arg("variable_names"),
+      py::arg("es_vector"),
+      R"(
+Bind an ESVector to variable names to form a dictionary whose keys are
+variable names and values are sub-tensors in ESVector.
+
+:param variable_names: List of variable names
+:param es_vector: ESVector to be bound
+        )");
 
   // binding definitions
   def(m, cls_VariableName);
@@ -106,6 +151,6 @@ PYBIND11_MODULE(core, m)
   def(m, cls_TensorValue);
   def(m, cls_Factory);
   def(m, cls_Model);
-  def(m, cls_VectorAssembler);
-  def(m, cls_MatrixAssembler);
+  def(m, cls_ESVector);
+  def(m, cls_ESMatrix);
 }

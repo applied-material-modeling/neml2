@@ -46,17 +46,13 @@ SumSlipRates::expected_options()
   options.set_output("sum_slip_rates") = VariableName(STATE, "internal", "sum_slip_rates");
   options.set("sum_slip_rates").doc() = "The output name for the scalar sum of the slip rates";
 
-  options.set<Size>("dim") = -1;
-  options.set("dim").doc() = "The intermediate dimension over which to sum the slip rates.";
-
   return options;
 }
 
 SumSlipRates::SumSlipRates(const OptionSet & options)
   : Model(options),
-    _dim(options.get<Size>("dim")),
     _sg(declare_output_variable<Scalar>("sum_slip_rates")),
-    _g(declare_input_variable<Scalar>("slip_rates", _dim))
+    _g(declare_input_variable<Scalar>("slip_rates"))
 {
 }
 
@@ -64,11 +60,10 @@ void
 SumSlipRates::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   if (out)
-    _sg = intmd_sum(abs(_g()), _dim, /*keepdim=*/false);
-
+    _sg = intmd_sum(abs(_g()), -1, /*keepdim=*/false);
   if (dout_din)
     if (_g.is_dependent())
-      _sg.d(_g, _dim) = sign(_g());
+      _sg.d(_g, 1, 0, 1) = sign(_g());
 }
 
 } // namespace neml2

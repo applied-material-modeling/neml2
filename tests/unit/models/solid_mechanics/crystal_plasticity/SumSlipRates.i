@@ -6,6 +6,8 @@
     input_Scalar_values = 'rates'
     output_Scalar_names = 'state/internal/sum_slip_rates'
     output_Scalar_values = '1.91'
+    input_with_intrsc_intmd_dims = 'state/internal/slip_rates'
+    input_intrsc_intmd_dims = '1'
   []
 []
 

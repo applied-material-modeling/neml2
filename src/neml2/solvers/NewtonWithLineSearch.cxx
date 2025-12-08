@@ -26,9 +26,7 @@
 #include <iomanip>
 
 #include "neml2/solvers/NewtonWithLineSearch.h"
-#include "neml2/tensors/functions/vdot.h"
 #include "neml2/tensors/functions/sqrt.h"
-#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
@@ -78,33 +76,33 @@ NewtonWithLineSearch::NewtonWithLineSearch(const OptionSet & options)
 
 void
 NewtonWithLineSearch::update(NonlinearSystem & system,
-                             NonlinearSystem::Sol<true> & x,
-                             const NonlinearSystem::Res<true> & r,
-                             const NonlinearSystem::Jac<true> & J)
+                             es::Vector & x,
+                             const es::Vector & r,
+                             const es::Matrix & J)
 {
   auto dx = solve_direction(r, J);
   auto alpha = linesearch(system, x, dx, r);
-  x = NonlinearSystem::Sol<true>(x.variable_data() + alpha * Tensor(dx));
+  x.update_data(alpha * dx);
 }
 
 Scalar
 NewtonWithLineSearch::linesearch(NonlinearSystem & system,
-                                 const NonlinearSystem::Sol<true> & x,
-                                 const NonlinearSystem::Sol<true> & dx,
-                                 const NonlinearSystem::Res<true> & R0) const
+                                 const es::Vector & x,
+                                 const es::Vector & dx,
+                                 const es::Vector & R0) const
 {
-  auto alpha = Scalar::ones(dx.dynamic_sizes(), {}, x.options());
-  const auto nR02 = vdot(R0, R0);
+  auto alpha = Scalar::ones(x.options());
+  const auto nR02 = norm_sq(R0);
   auto crit = nR02;
 
   for (std::size_t i = 1; i < _linesearch_miter; i++)
   {
-    NonlinearSystem::Sol<true> xp(Tensor(x) + alpha * Tensor(dx));
+    auto xp = x + alpha * dx;
     auto R = system.residual(xp);
-    auto nR2 = vdot(R, R);
+    auto nR2 = norm_sq(R);
 
     if (_type == "BACKTRACKING")
-      crit = nR02 + 2.0 * _linesearch_c * alpha * vdot(R0, dx);
+      crit = nR02 + 2.0 * _linesearch_c * alpha * R0 * dx;
     else if (_type == "STRONG_WOLFE")
       crit = (1.0 - _linesearch_c * alpha) * nR02;
 
@@ -114,13 +112,13 @@ NewtonWithLineSearch::linesearch(NonlinearSystem & system,
                 << at::max(sqrt(nR2)).item<double>() << ", min(||Rc||) = " << std::scientific
                 << at::min(sqrt(crit)).item<double>() << std::endl;
 
-    auto stop = at::logical_or(nR2 <= crit, nR2 <= std::pow(atol, 2));
+    auto stop = nR2 <= crit || nR2 <= std::pow(atol, 2);
 
     if (at::all(stop).item<bool>())
       break;
 
-    alpha.dynamic_index_put_({at::logical_not(stop)},
-                             alpha.dynamic_index({at::logical_not(stop)}) / _linesearch_sigma);
+    alpha = alpha.dynamic_expand_as(stop).contiguous();
+    alpha.dynamic_index_put_({!stop}, alpha.dynamic_index({!stop}) / _linesearch_sigma);
   }
 
   if (_check_crit)

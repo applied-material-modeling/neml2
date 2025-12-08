@@ -41,6 +41,17 @@ namespace neml2::utils
 Size normalize_dim(Size d, Size dl, Size du);
 
 /**
+ * @brief Helper function to normalize multiple dimension indices to be non-negative given the
+ * lower- and upper-bound of the context.
+ *
+ * @param d The dimension indices to normalize
+ * @param dl The lower-bound (inclusive)
+ * @param du The upper-bound (exclusive)
+ * @return TensorShape The normalized dimension indices
+ */
+TensorShape normalize_dims(ArrayRef<Size> d, Size dl, Size du);
+
+/**
  * @brief Helper function to normalize a iterator-like index to be non-negative given the lower- and
  * upper-bound of the context.
  *
@@ -50,6 +61,17 @@ Size normalize_dim(Size d, Size dl, Size du);
  * @return Size The normalized iterator index
  */
 Size normalize_itr(Size d, Size dl, Size du);
+
+/**
+ * @brief Helper function to normalize multiple iterator-like indices to be non-negative given the
+ * lower- and upper-bound of the context.
+ *
+ * @param d The iterator indices to normalize
+ * @param dl The lower-bound (inclusive)
+ * @param du The upper-bound (exclusive)
+ * @return TensorShape The normalized iterator indices
+ */
+TensorShape normalize_itrs(ArrayRef<Size> d, Size dl, Size du);
 
 /**
  * @brief Check if the shapes are broadcastable.
@@ -134,7 +156,7 @@ TensorShape add_shapes(const S &...);
  * @param pad The values used to pad the shape, default to 1
  * @return TensorShape The padded shape with dimension \p dim
  */
-TensorShape pad_prepend(TensorShapeRef s, Size dim, Size pad = 1);
+TensorShape pad_prepend(TensorShapeRef s, std::size_t dim, Size pad = 1);
 
 namespace details
 {

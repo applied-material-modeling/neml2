@@ -22,30 +22,33 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <catch2/catch_test_macros.hpp>
-#include <catch2/matchers/catch_matchers_all.hpp>
+#pragma once
 
-#include "SampleNonlinearSystems.h"
+#include "neml2/solvers/Solver.h"
+#include "neml2/tensors/equation_system/Vector.h"
+#include "neml2/tensors/equation_system/Matrix.h"
 
-using namespace neml2;
-
-TEST_CASE("NonlinearSystem", "[solvers]")
+namespace neml2
 {
-  // Initial guess
-  TensorShape batch_sz = {2};
-  Size nbase = 4;
-  auto x0 =
-      NonlinearSystem::Sol<false>(Tensor::full(batch_sz, {}, nbase, 2.0, default_tensor_options()));
+/**
+ * @brief The linear solver solves a linear system of equations.
+ *
+ */
+class LinearSolver : public Solver
+{
+public:
+  static OptionSet expected_options();
 
-  // Create the nonlinear system
-  auto options = PowerTestSystem::expected_options();
-  options.set<bool>("automatic_scaling") = true;
-  PowerTestSystem system(options);
+  LinearSolver(const OptionSet & options);
 
-  SECTION("Automatic scaling can reduce condition number")
-  {
-    system.init_scaling(x0);
-    auto x0p = system.scale(x0);
-    REQUIRE(at::max(at::linalg_cond(system.Jacobian(x0p))).item<double>() == Catch::Approx(1.0));
-  }
-}
+  /// Solve Ax = b for x
+  virtual es::Vector solve(const es::Matrix & A, const es::Vector & b) const = 0;
+
+  /// Solve AX = B for X
+  virtual es::Matrix solve(const es::Matrix & A, const es::Matrix & B) const = 0;
+
+  /// Solve AXi = Bi for Xi, implementation should consider reusing factorization of A (if any)
+  virtual std::vector<es::Matrix> solve(const es::Matrix & A,
+                                        const std::vector<es::Matrix> & B) const = 0;
+};
+} // namespace neml2

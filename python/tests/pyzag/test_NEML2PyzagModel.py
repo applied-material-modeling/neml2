@@ -33,7 +33,7 @@ from pyzag import nonlinear, chunktime
 
 def test_definition():
     pwd = Path(__file__).parent
-    nmodel = neml2.load_model(pwd / "models" / "correct_model.i", "implicit_rate")
+    nmodel = neml2.load_nl_sys(pwd / "models" / "correct_model.i", "implicit_rate")
     pmodel = neml2.pyzag.NEML2PyzagModel(nmodel, exclude_parameters=["elasticity_nu"])
 
     assert set(dict(pmodel.named_parameters()).keys()) == {
@@ -52,7 +52,7 @@ def test_definition():
 
 def test_change_parameter_shape():
     pwd = Path(__file__).parent
-    nmodel = neml2.load_model(pwd / "models" / "correct_model.i", "implicit_rate")
+    nmodel = neml2.load_nl_sys(pwd / "models" / "correct_model.i", "implicit_rate")
     pmodel = neml2.pyzag.NEML2PyzagModel(nmodel, exclude_parameters=["elasticity_nu"])
 
     # Modify the parameter, batch shape = (10,)
@@ -71,17 +71,15 @@ def test_change_parameter_shape():
 @pytest.mark.parametrize("input", ["elastic_model", "viscoplastic_model", "km_mixed_model"])
 def test_compare(input):
     pwd = Path(__file__).parent
-    nmodel = neml2.load_model(pwd / "models" / "{}.i".format(input), "implicit_rate")
+    nmodel = neml2.load_nl_sys(pwd / "models" / "{}.i".format(input), "implicit_rate")
     pmodel = neml2.pyzag.NEML2PyzagModel(nmodel)
 
     # Reference to compare against
     ref = torch.jit.load(pwd / "gold" / "{}.pt".format(input))
     input = dict(ref.input.named_buffers())
     output = dict(ref.output.named_buffers())
-    input_forces = {k: v for k, v in input.items() if k.startswith("forces/")}
-    output_state = {k: v for k, v in output.items() if k.startswith("state/")}
-    forces = pmodel.forces_asm.assemble_by_variable(input_forces, True).torch()
-    state = pmodel.state_asm.assemble_by_variable(output_state, True).torch()
+    forces = torch.cat([input[v] for v in nmodel.gmap()], -1)
+    state = torch.cat([output[v] for v in nmodel.umap()], -1)
     nstep = forces.shape[0]
 
     solver = nonlinear.RecursiveNonlinearEquationSolver(

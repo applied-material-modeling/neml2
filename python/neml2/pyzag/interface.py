@@ -22,6 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+import typing
 from pyzag import nonlinear
 
 import torch
@@ -57,7 +58,6 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
 
         self._check_model()
         self._setup_parameters(exclude_parameters)
-        self._setup_assemblers()
 
     @property
     def lookback(self) -> int:
@@ -77,8 +77,39 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
     def nforce(self) -> int:
         return self.model.input_axis().subaxis(FORCES).size()
 
+    def forward(
+        self, state: torch.Tensor, forces: torch.Tensor
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        """Actually call the NEML2 model and return the residual and Jacobian
+
+        Args:
+            state (torch.Tensor): tensor with the flattened state
+            forces (torch.Tensor): tensor with the flattened forces
+        """
+        # Update the parameter values
+        self._update_parameter_values()
+
+        # Make a big LabeledVector with the input
+        x = self._disassemble_input(state, forces)
+
+        # Call the model
+        r, J = self.model.value_and_dvalue(x)
+
+        # Assemble residual
+        r_vec = self._assemble_residual(r)
+
+        # Assemble Jacobian
+        J_mat, J_mat_old = self._assemble_Jacobian(J)
+
+        # At this point, the residual and Jacobians should be good to go
+        return self._adapt_for_pyzag(r_vec, J_mat, J_mat_old)
+
     def _check_model(self):
         """Simple consistency checks, could be a debug check but we only call this once"""
+
+        # To use pyzag, the NEML2 model must be a nonlinear system
+        if not self.model.is_nonlinear_system():
+            raise ValueError("Wrapped NEML2 model must be a nonlinear system")
 
         # First run diagnostics from NEML2
         # TODO: This check is temporarily disabled because the default diagnostics
@@ -141,7 +172,7 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
                 )
             )
 
-    def _setup_parameters(self, exclude_parameters):
+    def _setup_parameters(self, exclude_parameters: list[str]):
         """Mirror parameters of the NEML2 model with torch.nn.Parameter
 
         Args:
@@ -174,23 +205,7 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
                 pname, Tensor(new_value.clone(), dynamic_dim, current_value.intmd.dim())
             )
 
-    def _setup_assemblers(self):
-        """Setup the assemblers for the state and forces"""
-
-        self.input_axis = self.model.input_axis(setup=True)
-        self.output_axis = self.model.output_axis(setup=True)
-
-        self.input_asm = neml2.VectorAssembler(self.input_axis)
-        self.output_asm = neml2.VectorAssembler(self.output_axis)
-        self.deriv_asm = neml2.MatrixAssembler(self.output_axis, self.input_axis.subaxis(STATE))
-        self.old_deriv_asm = neml2.MatrixAssembler(
-            self.output_axis, self.input_axis.subaxis(OLD_STATE)
-        )
-
-        self.state_asm = neml2.VectorAssembler(self.input_axis.subaxis(STATE))
-        self.forces_asm = neml2.VectorAssembler(self.input_axis.subaxis(FORCES))
-
-    def _disassemble_input(self, state, forces):
+    def _disassemble_input(self, state: torch.Tensor, forces: torch.Tensor):
         """Disassemble the model input forces, old forces, and old state from the flat tensors
 
         Args:
@@ -203,36 +218,73 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         bdim = len(batch_shape)
 
         # Disassemble state and old_state
-        state_vars = self.state_asm.split_by_variable(Tensor(state, bdim), assembly=False)
+        u = self.model.create_uvec()
+        u.disassemble(Tensor(state, bdim))
+        state_vars = neml2.bind(self.model.umap(), u)
         new_state_vars = {
             k: v.dynamic[self.lookback :]
             for k, v in state_vars.items()
-            if self.input_axis.has_variable(k)
+            if self.model.input_axis().has_variable(k)
         }
         old_state_vars = {
             VariableName(k).old(): v.dynamic[: -self.lookback]
             for k, v in state_vars.items()
-            if self.input_axis.has_variable(VariableName(k).old())
+            if self.model.input_axis().has_variable(VariableName(k).old())
         }
 
         # Disassemble forces and old_forces
-        forces_vars = self.forces_asm.split_by_variable(
-            Tensor(forces, len(batch_shape)), assembly=False
-        )
+        f = self.model.create_gvec()
+        f.disassemble(Tensor(forces, bdim))
+        forces_vars = neml2.bind(self.model.gmap(), f)
         new_forces_vars = {
             k: v.dynamic[self.lookback :]
             for k, v in forces_vars.items()
-            if self.input_axis.has_variable(k)
+            if self.model.input_axis().has_variable(k)
         }
         old_forces_vars = {
             VariableName(k).old(): v.dynamic[: -self.lookback]
             for k, v in forces_vars.items()
-            if self.input_axis.has_variable(VariableName(k).old())
+            if self.model.input_axis().has_variable(VariableName(k).old())
         }
 
         return new_state_vars | old_state_vars | new_forces_vars | old_forces_vars
 
-    def _adapt_for_pyzag(self, r, J, J_old):
+    def _assemble_residual(self, r: dict[typing.Union[VariableName, str], Tensor]) -> neml2.Tensor:
+        """Assemble the residual into a flat ESVector"""
+
+        r_vals = [r[v] for v in self.model.rmap()]
+        r_vec = neml2.ESVector(r_vals, self.model.rlayout())
+        return r_vec.assemble()[0]
+
+    def _assemble_Jacobian(
+        self,
+        J: dict[typing.Union[VariableName, str], dict[typing.Union[VariableName, str], Tensor]],
+    ) -> tuple[neml2.Tensor, neml2.Tensor]:
+        """Assemble the Jacobian and old Jacobian into flat ESMatrices"""
+
+        m = len(self.model.rmap())
+        n = len(self.model.umap())
+        J_vals = [[neml2.Tensor()] * n for _ in range(m)]
+        J_vals_old = [[neml2.Tensor()] * n for _ in range(m)]
+        for i, rname in enumerate(self.model.rmap()):
+            if not rname in J:
+                continue
+            for j, uname in enumerate(self.model.umap()):
+                if not uname in J[rname]:
+                    continue
+                J_vals[i][j] = J[rname][uname]
+            for j, uname in enumerate(self.model.umap()):
+                if not VariableName(uname).old() in J[rname]:
+                    continue
+                J_vals_old[i][j] = J[rname][VariableName(uname).old()]
+        J_mat = neml2.ESMatrix(J_vals, self.model.rlayout(), self.model.ulayout())
+        J_mat_old = neml2.ESMatrix(J_vals_old, self.model.rlayout(), self.model.ulayout())
+
+        return J_mat.assemble()[0], J_mat_old.assemble()[0]
+
+    def _adapt_for_pyzag(
+        self, r: neml2.Tensor, J: neml2.Tensor, J_old: neml2.Tensor
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         """Adapt the residual and Jacobians for pyzag
 
         pyzag has additional requirements on residual and Jacobians:
@@ -251,43 +303,8 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         J = J.dynamic.expand(r.dynamic.shape)
         J_old = J_old.dynamic.expand(r.dynamic.shape)
 
-        # Make the Jacobian square
-        # The current Jacobian should already be square
+        # Make sure the Jacobians are square
         assert J.base.shape[-1] == J.base.shape[-2]
-
-        # The old Jacobian may not be, in which case we will rely on the deriv_asm to make it square
-        if J_old.base.shape[-1] != J_old.base.shape[-2]:
-            J_old_vars = self.old_deriv_asm.split_by_variable(J_old, assembly=True)
-            J_old_vars_adapted = {}
-            for yvar, vs in J_old_vars.items():
-                J_old_vars_adapted[yvar] = {VariableName(k).current(): v for k, v in vs.items()}
-            J_old = self.deriv_asm.assemble_by_variable(J_old_vars_adapted, assembly=True)
         assert J_old.base.shape[-1] == J_old.base.shape[-2]
 
         return r.torch(), torch.stack([J_old.torch(), J.torch()])
-
-    def forward(self, state, forces):
-        """Actually call the NEML2 model and return the residual and Jacobian
-
-        Args:
-            state (torch.tensor): tensor with the flattened state
-            forces (torch.tensor): tensor with the flattened forces
-        """
-        # Update the parameter values
-        self._update_parameter_values()
-
-        # Make a big LabeledVector with the input
-        x = self._disassemble_input(state, forces)
-
-        # Call the model
-        r, J = self.model.value_and_dvalue(x)
-
-        # Assemble residual
-        r_vec = self.output_asm.assemble_by_variable(r, assembly=False)
-
-        # Assemble Jacobian
-        J_new_mat = self.deriv_asm.assemble_by_variable(J, assembly=False)
-        J_old_mat = self.old_deriv_asm.assemble_by_variable(J, assembly=False)
-
-        # At this point, the residual and Jacobians should be good to go
-        return self._adapt_for_pyzag(r_vec, J_new_mat, J_old_mat)
