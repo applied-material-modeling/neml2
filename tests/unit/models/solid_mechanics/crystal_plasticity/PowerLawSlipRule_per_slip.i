@@ -38,13 +38,13 @@
   [gamma0_x]
     type = Scalar
     values = '300 400 500 600'
-    batch_shape = '(4,1)'
+    batch_shape = '(1,4)'
     intermediate_dimension = 2
   []
   [gamma0_y]
     type = Scalar
     values = '1e-3 1.5e-3 1.8e-3 2.1e-3'
-    batch_shape = '(4,1)'
+    batch_shape = '(1,4)'
     intermediate_dimension = 2
   []
   [rates]
@@ -63,7 +63,6 @@
     argument = 'forces/T'
     abscissa = 'gamma0_x'
     ordinate = 'gamma0_y'
-    dim = 0
   []
   [model0]
     type = PowerLawSlipRule

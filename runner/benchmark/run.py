@@ -37,7 +37,7 @@ def extract_time(output: str) -> float:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("runner", help="Path to the runner")
+    parser.add_argument("neml2", help="Path to the neml2 executable")
     parser.add_argument(
         "codename",
         help="Benchmark problem's code name (folder names under this directory)",

@@ -23,27 +23,23 @@
 // THE SOFTWARE.
 
 #include "neml2/models/VariableBase.h"
-#include "neml2/models/Derivative.h"
+#include "neml2/base/LabeledAxisAccessor.h"
+#include "neml2/tensors/Derivative.h"
 #include "neml2/misc/types.h"
 #include "neml2/models/Model.h"
-#include "neml2/models/DependencyResolver.h"
 #include "neml2/tensors/shape_utils.h"
 #include "neml2/misc/assertions.h"
-#include "neml2/tensors/functions/mm.h"
-#include "neml2/tensors/functions/einsum.h"
+#include "neml2/tensors/functions/chain_rule.h"
 #include "neml2/tensors/jit.h"
 #include "neml2/tensors/TraceableTensorShape.h"
+#include "neml2/models/DependencyResolver.h"
 
 namespace neml2
 {
-VariableBase::VariableBase(VariableName name_in,
-                           Model * owner,
-                           TensorShapeRef base_shape,
-                           TensorShapeRef dep_intmd_dims)
+VariableBase::VariableBase(VariableName name_in, Model * owner, TensorShapeRef base_shape)
   : _name(std::move(name_in)),
     _owner(owner),
-    _base_sizes(base_shape),
-    _dep_intmd_dims(dep_intmd_dims)
+    _base_sizes(base_shape)
 {
 }
 
@@ -106,7 +102,7 @@ VariableBase::is_solve_dependent() const
 bool
 VariableBase::is_dependent() const
 {
-  return !currently_solving_nonlinear_system() || is_solve_dependent();
+  return !owner().currently_assembling_nonlinear_system() || is_solve_dependent();
 }
 
 Size
@@ -225,24 +221,26 @@ VariableBase::intmd_size(Size i) const
   return intmd_sizes()[i];
 }
 
-void
-VariableBase::set_intmd_sizes(TensorShapeRef shape)
+bool
+VariableBase::is_mutable() const
 {
-  neml_assert_dbg(
-      owning(), "Cannot set intermediate sizes for a referencing variable '", name(), "'.");
-  _cached_intmd_sizes = shape;
+  if (!owning())
+    return ref()->is_mutable();
+  return _mutable;
 }
 
-TensorShapeRef
-VariableBase::dep_intmd_dims() const
+void
+VariableBase::set_mutable(bool m)
 {
-  return _dep_intmd_dims;
+  if (!owning())
+    ref()->set_mutable(m);
+  _mutable = m;
 }
 
 Tensor
 VariableBase::zeros(const TensorOptions & options) const
 {
-  return Tensor::zeros({}, intmd_sizes(), base_sizes(), options);
+  return Tensor::zeros({}, {}, base_sizes(), options);
 }
 
 bool
@@ -254,64 +252,123 @@ VariableBase::requires_grad() const
 bool
 VariableBase::has_derivative(const VariableName & vname) const
 {
-  return std::any_of(_derivs.begin(),
-                     _derivs.end(),
-                     [&vname](const Derivative<1> & d) { return d.args()[0]->name() == vname; });
+  for (const auto & [deriv, arg] : _derivs)
+    if (arg->name() == vname && deriv.defined())
+      return true;
+  return false;
 }
 
 bool
 VariableBase::has_derivative(const VariableName & v1name, const VariableName & v2name) const
 {
-  return std::any_of(_sec_derivs.begin(),
-                     _sec_derivs.end(),
-                     [&v1name, &v2name](const Derivative<2> & d)
-                     { return d.args()[0]->name() == v1name && d.args()[1]->name() == v2name; });
+  for (const auto & [deriv, arg1, arg2] : _sec_derivs)
+    if (arg1->name() == v1name && arg2->name() == v2name && deriv.defined())
+      return true;
+  return false;
 }
 
-template <std::size_t N>
-static Derivative<N> &
-get_derivative(std::vector<Derivative<N>> & derivs,
-               const std::array<const VariableBase *, N + 1> & var_and_args,
-               ArrayRef<Size> dep_dims)
+static Derivative<1> &
+get_deriv(VariableBase::DerivContainer & derivs,
+          const VariableBase & var,
+          const VariableBase & arg,
+          std::size_t deriv_intrsc_intmd_dim,
+          std::size_t var_intrsc_intmd_dim,
+          std::size_t arg_intrsc_intmd_dim)
 {
-  auto deriv = Derivative<N>(var_and_args, dep_dims);
-  auto it = std::find(derivs.begin(), derivs.end(), deriv);
-  if (it != derivs.end())
-    return *it;
-  derivs.push_back(deriv);
-  return derivs.back();
+  // Check if derivative already exists
+  for (auto & [deriv, a] : derivs)
+    if (a->name() == arg.name())
+      return deriv;
+
+  // Make a new derivative
+  const auto intmd_sizes = std::array{var.intmd_sizes(), arg.intmd_sizes()};
+  const auto base_sizes = std::array{var.base_sizes(), arg.base_sizes()};
+  auto & deriv = derivs.emplace_back(Derivative<1>(deriv_intrsc_intmd_dim,
+                                                   {var_intrsc_intmd_dim, arg_intrsc_intmd_dim},
+                                                   intmd_sizes,
+                                                   base_sizes,
+                                                   var.name().str(),
+                                                   {arg.name().str()}),
+                                     &arg);
+  return std::get<0>(deriv);
 }
 
 Derivative<1> &
-VariableBase::d(const VariableBase & var, ArrayRef<Size> dep_dims)
+VariableBase::d(const VariableBase & arg,
+                std::size_t deriv_intrsc_intmd_dim,
+                std::size_t var_intrsc_intmd_dim,
+                std::size_t arg_intrsc_intmd_dim)
 {
-  return get_derivative<1>(_derivs, {this, &var}, dep_dims);
+  return get_deriv(
+      _derivs, *this, arg, deriv_intrsc_intmd_dim, var_intrsc_intmd_dim, arg_intrsc_intmd_dim);
 }
 
 const Derivative<1> &
-VariableBase::d(const VariableBase & var) const
+VariableBase::d(const VariableBase & arg) const
 {
-  for (const auto & deriv : _derivs)
-    if (deriv.args()[0]->name() == var.name())
+  for (const auto & [deriv, a] : _derivs)
+    if (a->name() == arg.name())
       return deriv;
   throw NEMLException("Variable '" + name().str() + "' does not have derivative with respect to '" +
-                      var.name().str() + "'.");
+                      arg.name().str() + "'.");
+}
+
+static Derivative<2> &
+get_secderiv(VariableBase::SecDerivContainer & secderivs,
+             const VariableBase & var,
+             const VariableBase & arg1,
+             const VariableBase & arg2,
+             std::size_t deriv_intrsc_intmd_dim,
+             std::size_t var_intrsc_intmd_dim,
+             std::size_t arg1_intrsc_intmd_dim,
+             std::size_t arg2_intrsc_intmd_dim)
+{
+  // Check if derivative already exists
+  for (auto & [deriv, a1, a2] : secderivs)
+    if (a1->name() == arg1.name() && a2->name() == arg2.name())
+      return deriv;
+
+  // Make a new derivative
+  const auto intmd_sizes = std::array{var.intmd_sizes(), arg1.intmd_sizes(), arg2.intmd_sizes()};
+  const auto base_sizes = std::array{var.base_sizes(), arg1.base_sizes(), arg2.base_sizes()};
+  auto & deriv = secderivs.emplace_back(
+      Derivative<2>(deriv_intrsc_intmd_dim,
+                    {var_intrsc_intmd_dim, arg1_intrsc_intmd_dim, arg2_intrsc_intmd_dim},
+                    intmd_sizes,
+                    base_sizes,
+                    var.name().str(),
+                    {arg1.name().str(), arg2.name().str()}),
+      &arg1,
+      &arg2);
+  return std::get<0>(deriv);
 }
 
 Derivative<2> &
-VariableBase::d2(const VariableBase & var1, const VariableBase & var2, ArrayRef<Size> dep_dims)
+VariableBase::d2(const VariableBase & arg1,
+                 const VariableBase & arg2,
+                 std::size_t deriv_intrsc_intmd_dim,
+                 std::size_t var_intrsc_intmd_dim,
+                 std::size_t arg1_intrsc_intmd_dim,
+                 std::size_t arg2_intrsc_intmd_dim)
 {
-  return get_derivative<2>(_sec_derivs, {this, &var1, &var2}, dep_dims);
+  return get_secderiv(_sec_derivs,
+                      *this,
+                      arg1,
+                      arg2,
+                      deriv_intrsc_intmd_dim,
+                      var_intrsc_intmd_dim,
+                      arg1_intrsc_intmd_dim,
+                      arg2_intrsc_intmd_dim);
 }
 
 const Derivative<2> &
-VariableBase::d2(const VariableBase & var1, const VariableBase & var2) const
+VariableBase::d2(const VariableBase & arg1, const VariableBase & arg2) const
 {
-  for (const auto & deriv : _sec_derivs)
-    if (deriv.args()[0]->name() == var1.name() && deriv.args()[1]->name() == var2.name())
+  for (const auto & [deriv, a1, a2] : _sec_derivs)
+    if (a1->name() == arg1.name() && a2->name() == arg2.name())
       return deriv;
   throw NEMLException("Variable '" + name().str() + "' does not have derivative with respect to '" +
-                      var1.name().str() + "' and '" + var2.name().str() + "'.");
+                      arg1.name().str() + "' and '" + arg2.name().str() + "'.");
 }
 
 void
@@ -359,119 +416,186 @@ VariableBase::clear()
 void
 VariableBase::clear_derivatives()
 {
-  _derivs.clear();
-  _sec_derivs.clear();
+  for (auto & [deriv, arg] : _derivs)
+    deriv.clear();
+  for (auto & [deriv, arg1, arg2] : _sec_derivs)
+    deriv.clear();
+}
+
+bool
+VariableBase::is_leaf(const DependencyResolver<Model, VariableName> & deps) const
+{
+  return deps.inbound_items().count({_owner, name()});
+}
+
+const VariableBase &
+VariableBase::provider(const DependencyResolver<Model, VariableName> & deps) const
+{
+  if (owning())
+    return *this;
+
+#ifndef NDEBUG
+  if (deps.item_providers().count({_owner, name()}) == 0)
+  {
+    std::stringstream ss;
+    ss << "Variable '" << name() << "' declared by model '" << owner().name()
+       << "' has no provider in the dependency resolver. The dependency graph knows the providers "
+          "for the following variables:\n";
+    for (const auto & item : deps.item_providers())
+      ss << "    " << item.first.parent->name() << ": " << item.first.value << '\n';
+    ss << "and the dependency graph knows about the following leaf variables:\n";
+    for (const auto & item : deps.inbound_items())
+      ss << "    " << item.parent->name() << ": " << item.value << '\n';
+    throw NEMLException(ss.str());
+  }
+#endif
+
+  const auto providers = deps.item_providers().at({_owner, name()});
+  neml_assert_dbg(
+      providers.size() == 1, "Internal error: variable '", name(), "' has multiple providers.");
+  return providers.begin()->parent->output_variable(name());
+}
+
+const VariableBase::DerivContainer &
+VariableBase::total_derivatives(const DependencyResolver<Model, VariableName> & deps) const
+{
+  // return cached derivatives if available
+  if (!_total_derivs.empty())
+    return _total_derivs;
+
+  for (const auto & [dy_du, uvar] : derivatives())
+  {
+    if (!dy_du.defined())
+      continue;
+    // u is leaf variable
+    if (uvar->is_leaf(deps))
+      get_deriv(_total_derivs,
+                *this,
+                *uvar,
+                dy_du.intrsc_intmd_dim(),
+                dy_du.var_intrsc_intmd_dim(),
+                dy_du.arg_intrsc_intmd_dim(0)) += dy_du;
+    // apply chain rule
+    else
+      for (const auto & [du_dx, xvar] : uvar->provider(deps).total_derivatives(deps))
+      {
+        auto dy_dx = chain_rule(dy_du, du_dx);
+        get_deriv(_total_derivs,
+                  *this,
+                  *xvar,
+                  dy_dx.intrsc_intmd_dim(),
+                  dy_dx.var_intrsc_intmd_dim(),
+                  dy_dx.arg_intrsc_intmd_dim(0)) += dy_dx;
+      }
+  }
+
+  return _total_derivs;
+}
+
+const VariableBase::SecDerivContainer &
+VariableBase::total_second_derivatives(const DependencyResolver<Model, VariableName> & deps) const
+{
+  // return cached derivatives if available
+  if (!_total_sec_derivs.empty())
+    return _total_sec_derivs;
+
+  for (const auto & [d2y_du1u2, u1var, u2var] : second_derivatives())
+  {
+    if (!d2y_du1u2.defined())
+      continue;
+
+    // both u1 and u2 are leaf variables
+    if (u1var->is_leaf(deps) && u2var->is_leaf(deps))
+      get_secderiv(_total_sec_derivs,
+                   *this,
+                   *u1var,
+                   *u2var,
+                   d2y_du1u2.intrsc_intmd_dim(),
+                   d2y_du1u2.var_intrsc_intmd_dim(),
+                   d2y_du1u2.arg_intrsc_intmd_dim(0),
+                   d2y_du1u2.arg_intrsc_intmd_dim(1)) += d2y_du1u2;
+
+    // u1 is leaf, u2 is not
+    else if (u1var->is_leaf(deps))
+      for (const auto & [du2_dx2, x2var] : u2var->provider(deps).total_derivatives(deps))
+      {
+        auto d2y_dx1x2 = chain_rule(d2y_du1u2, nullptr, &du2_dx2);
+        get_secderiv(_total_sec_derivs,
+                     *this,
+                     *u1var,
+                     *x2var,
+                     d2y_dx1x2.intrsc_intmd_dim(),
+                     d2y_dx1x2.var_intrsc_intmd_dim(),
+                     d2y_dx1x2.arg_intrsc_intmd_dim(0),
+                     d2y_dx1x2.arg_intrsc_intmd_dim(1)) += d2y_dx1x2;
+      }
+
+    // u2 is leaf, u1 is not
+    else if (u2var->is_leaf(deps))
+      for (const auto & [du1_dx1, x1var] : u1var->provider(deps).total_derivatives(deps))
+      {
+        auto d2y_dx1x2 = chain_rule(d2y_du1u2, &du1_dx1, nullptr);
+        get_secderiv(_total_sec_derivs,
+                     *this,
+                     *x1var,
+                     *u2var,
+                     d2y_dx1x2.intrsc_intmd_dim(),
+                     d2y_dx1x2.var_intrsc_intmd_dim(),
+                     d2y_dx1x2.arg_intrsc_intmd_dim(0),
+                     d2y_dx1x2.arg_intrsc_intmd_dim(1)) += d2y_dx1x2;
+      }
+
+    // neither u1 nor u2 is leaf variable
+    else
+      for (const auto & [du1_dx1, x1var] : u1var->provider(deps).total_derivatives(deps))
+        for (const auto & [du2_dx2, x2var] : u2var->provider(deps).total_derivatives(deps))
+        {
+          auto d2y_dx1x2 = chain_rule(d2y_du1u2, &du1_dx1, &du2_dx2);
+          get_secderiv(_total_sec_derivs,
+                       *this,
+                       *x1var,
+                       *x2var,
+                       d2y_dx1x2.intrsc_intmd_dim(),
+                       d2y_dx1x2.var_intrsc_intmd_dim(),
+                       d2y_dx1x2.arg_intrsc_intmd_dim(0),
+                       d2y_dx1x2.arg_intrsc_intmd_dim(1)) += d2y_dx1x2;
+        }
+  }
+
+  for (const auto & [dy_du, uvar] : derivatives())
+  {
+    if (!dy_du.defined())
+      continue;
+
+    // second derivative of a leaf variable is zero
+    if (uvar->is_leaf(deps))
+      continue;
+
+    for (const auto & [d2u_dx1x2, x1var, x2var] :
+         uvar->provider(deps).total_second_derivatives(deps))
+    {
+      auto d2y_dx1x2 = chain_rule(dy_du, d2u_dx1x2);
+      get_secderiv(_total_sec_derivs,
+                   *this,
+                   *x1var,
+                   *x2var,
+                   d2y_dx1x2.intrsc_intmd_dim(),
+                   d2y_dx1x2.var_intrsc_intmd_dim(),
+                   d2y_dx1x2.arg_intrsc_intmd_dim(0),
+                   d2y_dx1x2.arg_intrsc_intmd_dim(1)) += d2y_dx1x2;
+    }
+  }
+
+  return _total_sec_derivs;
 }
 
 void
-VariableBase::apply_chain_rule(const DependencyResolver<Model, VariableName> & dep)
+VariableBase::clear_chain_rule_cache(const DependencyResolver<Model, VariableName> & deps) const
 {
-  for (const auto & [model, vname] : dep.outbound_items())
-    if (vname == name())
-    {
-      const auto & yvar = model->output_variable(vname);
-      const auto derivs = total_derivatives(dep, model, yvar);
-      for (const auto & [xname, dy_dx] : derivs)
-        d(_owner->input_variable(xname)).set(dy_dx);
-      return;
-    }
-}
-
-void
-VariableBase::apply_second_order_chain_rule(const DependencyResolver<Model, VariableName> & dep)
-{
-  for (const auto & [model, vname] : dep.outbound_items())
-    if (vname == name())
-    {
-      const auto & yvar = model->output_variable(vname);
-      const auto sec_derivs = total_second_derivatives(dep, model, yvar);
-      for (const auto & [x1name, d2y_dx1] : sec_derivs)
-        for (const auto & [x2name, d2y_dx1x2] : d2y_dx1)
-          d2(_owner->input_variable(x1name), _owner->input_variable(x2name)).set(d2y_dx1x2);
-      return;
-    }
-}
-
-static void
-assign_or_add(Tensor & dest, const Tensor & val)
-{
-  if (dest.defined())
-    dest = dest + val;
-  else
-    dest = val;
-}
-
-ValueMap
-VariableBase::total_derivatives(const DependencyResolver<Model, VariableName> & dep,
-                                Model * model,
-                                const VariableBase & yvar) const
-{
-  ValueMap derivs;
-
-  for (auto & dy_du : yvar.derivatives())
-  {
-    const auto & uvar = *dy_du.args()[0];
-    if (dep.inbound_items().count({model, uvar.name()}))
-      assign_or_add(derivs[uvar.name()], dy_du.get());
-    else
-      for (const auto & depu : dep.item_providers().at({model, uvar.name()}))
-        for (const auto & [xname, du_dx] :
-             total_derivatives(dep, depu.parent, depu.parent->output_variable(depu.value)))
-          assign_or_add(derivs[xname], mm(dy_du.get(), du_dx));
-  }
-
-  return derivs;
-}
-
-DerivMap
-VariableBase::total_second_derivatives(const DependencyResolver<Model, VariableName> & dep,
-                                       Model * model,
-                                       const VariableBase & yvar) const
-{
-  DerivMap sec_derivs;
-
-  for (auto & d2y_du1u2 : yvar.second_derivatives())
-  {
-    const auto & u1var = *d2y_du1u2.args()[0];
-    const auto & u2var = *d2y_du1u2.args()[1];
-    if (dep.inbound_items().count({model, u1var.name()}) &&
-        dep.inbound_items().count({model, u2var.name()}))
-      assign_or_add(sec_derivs[u1var.name()][u2var.name()], d2y_du1u2.get());
-    else if (dep.inbound_items().count({model, u1var.name()}))
-      for (const auto & depu2 : dep.item_providers().at({model, u2var.name()}))
-        for (const auto & [x2name, du2_dxk] :
-             total_derivatives(dep, depu2.parent, depu2.parent->output_variable(depu2.value)))
-          assign_or_add(sec_derivs[u1var.name()][x2name],
-                        einsum("...ijq,...qk", {d2y_du1u2.get(), du2_dxk}));
-    else if (dep.inbound_items().count({model, u2var.name()}))
-      for (const auto & depu1 : dep.item_providers().at({model, u1var.name()}))
-        for (const auto & [x1name, du1_dxj] :
-             total_derivatives(dep, depu1.parent, depu1.parent->output_variable(depu1.value)))
-          assign_or_add(sec_derivs[x1name][u2var.name()],
-                        einsum("...ipk,...pj", {d2y_du1u2.get(), du1_dxj}));
-    else
-      for (const auto & depu1 : dep.item_providers().at({model, u1var.name()}))
-        for (const auto & [x1name, du1_dxj] :
-             total_derivatives(dep, depu1.parent, depu1.parent->output_variable(depu1.value)))
-          for (const auto & depu2 : dep.item_providers().at({model, u2var.name()}))
-            for (const auto & [x2name, du2_dxk] :
-                 total_derivatives(dep, depu2.parent, depu2.parent->output_variable(depu2.value)))
-              assign_or_add(sec_derivs[x1name][x2name],
-                            einsum("...ipq,...pj,...qk", {d2y_du1u2.get(), du1_dxj, du2_dxk}));
-  }
-
-  for (auto & dy_du : yvar.derivatives())
-  {
-    const auto & uvar = *dy_du.args()[0];
-    if (!dep.inbound_items().count({model, uvar.name()}))
-      for (const auto & depu : dep.item_providers().at({model, uvar.name()}))
-        for (const auto & [x1name, d2u_dx1] :
-             total_second_derivatives(dep, depu.parent, depu.parent->output_variable(depu.value)))
-          for (const auto & [x2name, d2u_dx1x2] : d2u_dx1)
-            assign_or_add(sec_derivs[x1name][x2name],
-                          einsum("...ip,...pjk", {dy_du.get(), d2u_dx1x2}));
-  }
-
-  return sec_derivs;
+  _total_derivs.clear();
+  _total_sec_derivs.clear();
+  for (const auto & [dy_du, uvar] : derivatives())
+    if (!uvar->is_leaf(deps))
+      uvar->provider(deps).clear_chain_rule_cache(deps);
 }
 } // namespace neml2

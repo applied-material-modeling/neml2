@@ -71,7 +71,6 @@ Once the system of equations are properly defined, we can use the [ImplicitUpdat
 NEML2 offers three fully vectorized Newton solvers to be used in conjunction with [ImplicitUpdate](#implicitupdate):
 - [Newton](#newton), the (vectorized) vanilla version of the Newton-Raphson algorithm which always takes the "full" step.
 - [NewtonWithLineSearch](#newtonwithlinesearch), similar to Newton but offers several commonly used (again fully vectorized) line search strategies.
-- [NewtonWithTrustRegion](#newtonwithtrustregion), the trust-region variant of the Newton-Raphson algorithm, where a scalar-valued, fully vectorized quadratic sub-problem is solved to identify the search direction in each update.
 
 In addition, the assembly routines as well as the application of the implicit function theorem are also implemented in a vectorized fashion.
 

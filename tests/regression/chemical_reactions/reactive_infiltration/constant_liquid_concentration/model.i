@@ -45,6 +45,10 @@ oSiCm1 = 0.08 # 1/Omega_SiC
   [newton]
     type = Newton
     verbose = false
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
   []
 []
 

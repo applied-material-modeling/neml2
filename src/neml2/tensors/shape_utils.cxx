@@ -26,7 +26,6 @@
 
 #include "neml2/tensors/shape_utils.h"
 #include "neml2/misc/assertions.h"
-#include "neml2/misc/errors.h"
 
 namespace neml2::utils
 {
@@ -45,6 +44,18 @@ normalize_dim(Size d, Size dl, Size du)
   return d >= 0 ? dl + d : du + d;
 }
 
+TensorShape
+normalize_dims(ArrayRef<Size> d, Size dl, Size du)
+{
+  TensorShape dn;
+  dn.reserve(d.size());
+  std::transform(d.begin(),
+                 d.end(),
+                 std::back_inserter(dn),
+                 [dl, du](Size dim) { return normalize_dim(dim, dl, du); });
+  return dn;
+}
+
 Size
 normalize_itr(Size d, Size dl, Size du)
 {
@@ -60,6 +71,18 @@ normalize_itr(Size d, Size dl, Size du)
   return d >= 0 ? dl + d : du + d + 1;
 }
 
+TensorShape
+normalize_itrs(ArrayRef<Size> d, Size dl, Size du)
+{
+  TensorShape dn;
+  dn.reserve(d.size());
+  std::transform(d.begin(),
+                 d.end(),
+                 std::back_inserter(dn),
+                 [dl, du](Size dim) { return normalize_itr(dim, dl, du); });
+  return dn;
+}
+
 Size
 numel(TensorShapeRef shape)
 {
@@ -68,9 +91,9 @@ numel(TensorShapeRef shape)
 }
 
 TensorShape
-pad_prepend(TensorShapeRef s, Size dim, Size pad)
+pad_prepend(TensorShapeRef s, std::size_t dim, Size pad)
 {
-  neml_assert(Size(s.size()) <= dim, "pad_prepend given shape ", s, " and dim ", dim);
+  neml_assert(s.size() <= dim, "pad_prepend given shape ", s, " and dim ", dim);
   TensorShape s2(s);
   s2.insert(s2.begin(), dim - s.size(), pad);
   return s2;

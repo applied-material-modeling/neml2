@@ -25,6 +25,7 @@
 #pragma once
 
 #include "neml2/models/Model.h"
+#include "neml2/models/ModelNonlinearSystem.h"
 #include "neml2/solvers/NonlinearSolver.h"
 
 namespace neml2
@@ -36,10 +37,6 @@ public:
 
   ImplicitUpdate(const OptionSet & options);
 
-  void diagnose() const override;
-
-  void link_output_variables() override;
-
   std::size_t last_iterations() const { return _last_iterations; }
 
 protected:
@@ -47,6 +44,9 @@ protected:
 
   /// The implicit model to be updated
   Model & _model;
+
+  /// The nonlinear system defined by the implicit model
+  ModelNonlinearSystem _nl_sys;
 
   /// The nonlinear solver used to solve the nonlinear system
   std::shared_ptr<NonlinearSolver> _solver;

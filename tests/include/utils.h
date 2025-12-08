@@ -30,7 +30,6 @@
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/functions/abs.h"
 #include "neml2/tensors/functions/stack.h"
-#include "neml2/tensors/functions/from_assembly.h"
 
 namespace test
 {
@@ -140,11 +139,8 @@ finite_differencing_derivative(F && f,
   double aeps2 = aeps.value_or(aeps_default);
 
   // Flatten x to support arbitrarily shaped input
-  auto xf = x.static_flatten();
+  auto xf = x.base_flatten();
   auto y0 = Tensor(std::forward<F>(f)(x)).clone();
-  auto y_intmd_sizes = y0.intmd_sizes().vec();
-  auto y_base_sizes = y0.base_sizes().vec();
-  y0 = y0.static_flatten();
   auto dyf_dxf = std::vector<Tensor>(xf.base_size(0));
   for (Size i = 0; i < xf.base_size(0); i++)
   {
@@ -153,13 +149,13 @@ finite_differencing_derivative(F && f,
 
     auto xf1 = xf.clone();
     xf1.base_index_put_({i}, xf1.base_index({i}) + dx);
-    auto x1 = xf1.static_reshape(x.intmd_sizes(), x.base_sizes());
+    auto x1 = xf1.base_reshape(x.base_sizes());
 
-    auto y1 = Tensor(std::forward<F>(f)(x1)).clone().static_flatten();
+    auto y1 = Tensor(std::forward<F>(f)(x1)).clone();
     dyf_dxf[i] = (y1 - y0) / dx;
   }
 
   // Reshape the derivative back to the correct shape
   auto dy_dx = base_stack(dyf_dxf, -1);
-  return from_assembly<2>(dy_dx, {y_intmd_sizes, x.intmd_sizes()}, {y_base_sizes, x.base_sizes()});
+  return dy_dx.base_reshape(utils::add_shapes(y0.base_sizes(), x.base_sizes()));
 }

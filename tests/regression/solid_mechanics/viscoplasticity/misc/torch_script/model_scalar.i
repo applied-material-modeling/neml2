@@ -91,6 +91,10 @@ nbatch = 20
     type = Newton
     abs_tol = 1e-8
     rel_tol = 1e-6
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
   []
 []
 

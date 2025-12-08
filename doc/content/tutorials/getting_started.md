@@ -20,9 +20,9 @@ cmake --preset runner -S .
 cmake --build --preset runner
 ```
 
-Once the runner is built (and/or installed), an executable named `runner` will be placed under the build directory (or the installation directory). Invoking the executable without any additional argument or with the `-h` or `--help` argument will print out the usage message:
+Once the runner is built (and/or installed), an executable named `neml2` will be placed under the build directory (or the installation directory). Invoking the executable without any additional argument or with the `-h` or `--help` argument will print out the usage message:
 ```
-Usage: runner [--help] [--version] {diagnose,inspect,run,time}
+Usage: neml2 [--help] [--version] {diagnose,inspect,run,time}
 
 Optional arguments:
   -h, --help     shows help message and exits

@@ -26,9 +26,7 @@
 #include <iomanip>
 
 #include "neml2/solvers/NewtonWithLineSearch.h"
-#include "neml2/tensors/functions/vdot.h"
 #include "neml2/tensors/functions/sqrt.h"
-#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
@@ -59,9 +57,10 @@ NewtonWithLineSearch::expected_options()
   options.set("linesearch_stopping_criteria").doc() =
       "The lineseach tolerance slightly relaxing the definition of residual decrease";
 
-  options.set<bool>("check_negative_critertia_value") = false;
-  options.set("check_negative_critertia_value").doc() =
-      "Whether to check if the convergence criteria for line search becomes negative";
+  options.set<bool>("check_negative_critertion") = false;
+  options.set("check_negative_critertion").doc() =
+      "Whether to check if the threshold used in the convergence criterion for line search becomes "
+      "negative. If true, and a negative value is detected, a warning message is printed to cerr.";
 
   return options;
 }
@@ -72,62 +71,62 @@ NewtonWithLineSearch::NewtonWithLineSearch(const OptionSet & options)
     _linesearch_sigma(options.get<double>("linesearch_cutback")),
     _linesearch_c(options.get<double>("linesearch_stopping_criteria")),
     _type(options.get<EnumSelection>("linesearch_type")),
-    _check_crit(options.get<bool>("check_negative_critertia_value"))
+    _check_crit(options.get<bool>("check_negative_critertion"))
 {
 }
 
 void
 NewtonWithLineSearch::update(NonlinearSystem & system,
-                             NonlinearSystem::Sol<true> & x,
-                             const NonlinearSystem::Res<true> & r,
-                             const NonlinearSystem::Jac<true> & J)
+                             HVector & u,
+                             const HVector & b,
+                             const HMatrix & A)
 {
-  auto dx = solve_direction(r, J);
-  auto alpha = linesearch(system, x, dx, r);
-  x = NonlinearSystem::Sol<true>(x.variable_data() + alpha * Tensor(dx));
+  auto du = solve_direction(b, A);
+  auto alpha = linesearch(system, u, du, b);
+  u.update_data(alpha * du);
 }
 
 Scalar
 NewtonWithLineSearch::linesearch(NonlinearSystem & system,
-                                 const NonlinearSystem::Sol<true> & x,
-                                 const NonlinearSystem::Sol<true> & dx,
-                                 const NonlinearSystem::Res<true> & R0) const
+                                 const HVector & u,
+                                 const HVector & du,
+                                 const HVector & b0) const
 {
-  auto alpha = Scalar::ones(dx.dynamic_sizes(), {}, x.options());
-  const auto nR02 = vdot(R0, R0);
-  auto crit = nR02;
+  auto alpha = Scalar::ones(u.options());
+  const auto nb0 = norm_sq(b0);
+  auto crit = nb0;
 
   for (std::size_t i = 1; i < _linesearch_miter; i++)
   {
-    NonlinearSystem::Sol<true> xp(Tensor(x) + alpha * Tensor(dx));
-    auto R = system.residual(xp);
-    auto nR2 = vdot(R, R);
+    auto up = u + alpha * du;
+    system.set_u(up);
+    auto b = system.b();
+    auto nb = norm_sq(b);
 
     if (_type == "BACKTRACKING")
-      crit = nR02 + 2.0 * _linesearch_c * alpha * vdot(R0, dx);
+      crit = nb0 - 2.0 * _linesearch_c * alpha * b0 * du;
     else if (_type == "STRONG_WOLFE")
-      crit = (1.0 - _linesearch_c * alpha) * nR02;
+      crit = (1.0 - _linesearch_c * alpha) * nb0;
 
     if (verbose)
       std::cout << "     LS ITERATION " << std::setw(3) << i << ", min(alpha) = " << std::scientific
                 << at::min(alpha).item<double>() << ", max(||R||) = " << std::scientific
-                << at::max(sqrt(nR2)).item<double>() << ", min(||Rc||) = " << std::scientific
+                << at::max(sqrt(nb)).item<double>() << ", min(||Rc||) = " << std::scientific
                 << at::min(sqrt(crit)).item<double>() << std::endl;
 
-    auto stop = at::logical_or(nR2 <= crit, nR2 <= std::pow(atol, 2));
+    auto stop = nb <= crit || nb <= std::pow(atol, 2);
 
     if (at::all(stop).item<bool>())
       break;
 
-    alpha.dynamic_index_put_({at::logical_not(stop)},
-                             alpha.dynamic_index({at::logical_not(stop)}) / _linesearch_sigma);
+    alpha = alpha.dynamic_expand_as(stop).contiguous();
+    alpha.dynamic_index_put_({!stop}, alpha.dynamic_index({!stop}) / _linesearch_sigma);
   }
 
   if (_check_crit)
     if (at::max(crit).item<double>() < 0)
-      std::cerr << "WARNING: Line Search produces negative stopping "
-                   "criteria, this could lead to convergence issue. Try with other "
-                   "linesearch_type, increase linesearch_cutback "
+      std::cerr << "WARNING: Line Search produces negative stopping criteria, this could lead to "
+                   "convergence issue. Try with other linesearch_type, increase linesearch_cutback "
                    "or reduce linesearch_stopping_criteria"
                 << std::endl;
 

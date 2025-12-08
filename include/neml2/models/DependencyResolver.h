@@ -30,6 +30,7 @@
 
 #include "neml2/models/DependencyDefinition.h"
 #include "neml2/misc/string_utils.h"
+#include "neml2/misc/errors.h"
 
 namespace neml2
 {
@@ -85,13 +86,13 @@ public:
   DependencyResolver() = default;
 
   /// Add a node (defining consumed/provided items) in the dependency graph
-  void add_node(DependencyDefinition<ItemType> *);
+  void add_node(Node *);
 
   /// Add an additional outbound item that the dependency graph _provides_
   void add_additional_outbound_item(const ItemType & item);
 
   /// Set a node's priority, useful for resolving cyclic dependency
-  void set_priority(DependencyDefinition<ItemType> *, size_t);
+  void set_priority(Node *, size_t);
 
   /// Resolve nodal dependency and find an evaluation order
   void resolve();
@@ -203,15 +204,20 @@ private:
 
 template <typename Node, typename ItemType>
 void
-DependencyResolver<Node, ItemType>::add_node(DependencyDefinition<ItemType> * def)
+DependencyResolver<Node, ItemType>::add_node(Node * node)
 {
-  auto node = dynamic_cast<Node *>(def);
+  if (!node)
+    throw NEMLException("Cannot add a nullptr node to the dependency resolver.");
+
   _nodes.emplace(node);
 
-  for (const auto & item : node->consumed_items())
-    _consumed_items.emplace(node, item);
+  auto * def = dynamic_cast<DependencyDefinition<ItemType> *>(node);
+  if (!def)
+    throw NEMLException("Internal error: Node is not derived from DependencyDefinition.");
 
-  for (const auto & item : node->provided_items())
+  for (const auto & item : def->consumed_items())
+    _consumed_items.emplace(node, item);
+  for (const auto & item : def->provided_items())
     _provided_items.emplace(node, item);
 }
 
@@ -224,10 +230,8 @@ DependencyResolver<Node, ItemType>::add_additional_outbound_item(const ItemType 
 
 template <typename Node, typename ItemType>
 void
-DependencyResolver<Node, ItemType>::set_priority(DependencyDefinition<ItemType> * def,
-                                                 size_t priority)
+DependencyResolver<Node, ItemType>::set_priority(Node * node, size_t priority)
 {
-  auto node = dynamic_cast<Node *>(def);
   _priority[node] = priority;
 }
 

@@ -1,0 +1,44 @@
+// Copyright 2024, UChicago Argonne, LLC
+// All Rights Reserved
+// Software Name: NEML2 -- the New Engineering material Model Library, version 2
+// By: Argonne National Laboratory
+// OPEN SOURCE LICENSE (MIT)
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_all.hpp>
+
+#include "neml2/tensors/Tensor.h"
+#include "neml2/tensors/functions/chain_rule.h"
+
+using namespace neml2;
+
+#define TYPE_IDENTITY(T) T
+
+TEST_CASE("chain_rule", "[tensors/functions]")
+{
+  at::manual_seed(42);
+  // auto dy_du = Tensor::rand({3}, {2, 1, 3, 5, 6}, {7, 2, 1, 3});
+  // auto du_dx = Tensor::rand({2, 1}, {4, 5, 6, 2, 1}, {1, 3, 2});
+  // auto dy_dx = chain_rule(dy_du, du_dx, {7, 2}, {1, 3}, {2}, 1, 2, 2);
+  // REQUIRE(dy_dx.dynamic_sizes() == TensorShapeRef{2, 3});
+  // REQUIRE(dy_dx.intmd_sizes() == TensorShapeRef{2, 4, 3, 2, 1});
+  // REQUIRE(dy_dx.base_sizes() == TensorShapeRef{7, 2, 2});
+}

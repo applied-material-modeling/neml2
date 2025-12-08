@@ -39,7 +39,8 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "NEML2_PYBIND": "ON",
-        "NEML2_DOC": "ON"
+        "NEML2_DOC": "ON",
+        "NEML2_RUNNER": "ON"
       }
     },
     {

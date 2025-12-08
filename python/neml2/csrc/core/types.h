@@ -24,11 +24,13 @@
 
 #pragma once
 
+#include "neml2/models/ModelNonlinearSystem.h"
 #include "neml2/neml2.h"
 #include "neml2/base/LabeledAxisAccessor.h"
 #include "neml2/base/LabeledAxis.h"
 #include "neml2/tensors/TensorValue.h"
-#include "neml2/models/Assembler.h"
+#include "neml2/equation_systems/HVector.h"
+#include "neml2/equation_systems/HMatrix.h"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/pytypes.h>
@@ -41,8 +43,9 @@ void def(pybind11::module_ &, pybind11::class_<neml2::LabeledAxis> &);
 void def(pybind11::module_ &, pybind11::class_<neml2::TensorValueBase> &);
 void def(pybind11::module_ &, pybind11::class_<neml2::Factory> &);
 void def(pybind11::module_ &, pybind11::class_<neml2::Model, std::shared_ptr<neml2::Model>> &);
-void def(pybind11::module_ &, pybind11::class_<neml2::VectorAssembler> &);
-void def(pybind11::module_ &, pybind11::class_<neml2::MatrixAssembler> &);
+void def(pybind11::module_ &, pybind11::class_<neml2::HVector> &);
+void def(pybind11::module_ &, pybind11::class_<neml2::HMatrix> &);
+void def(pybind11::module_ &, pybind11::class_<neml2::ModelNonlinearSystem> &);
 
 // Type casters are only for cross-module types used in function signatures
 DEFAULT_TYPECASTER(neml2::LabeledAxisAccessor, "Union[neml2.core.VariableName, str]");
@@ -51,5 +54,46 @@ DEFAULT_TYPECASTER(neml2::TensorValueBase, "neml2.core.TensorValue");
 DEFAULT_TYPECASTER(neml2::Factory, "neml2.core.Factory");
 DEFAULT_TYPECASTER(neml2::Model, "neml2.core.Model");
 DEFAULT_TYPECASTER_SHARED_PTR(neml2::Model, "neml2.core.Model");
-DEFAULT_TYPECASTER(neml2::VectorAssembler, "neml2.core.VectorAssembler");
-DEFAULT_TYPECASTER(neml2::MatrixAssembler, "neml2.core.MatrixAssembler");
+DEFAULT_TYPECASTER(neml2::HVector, "neml2.core.HVector");
+DEFAULT_TYPECASTER(neml2::HMatrix, "neml2.core.HMatrix");
+DEFAULT_TYPECASTER(neml2::ModelNonlinearSystem, "neml2.core.ModelNonlinearSystem");
+
+namespace pybind11::detail
+{
+/**
+ * @brief This specialization exposes neml2::TensorShape
+ */
+template <>
+struct type_caster<neml2::TensorShape>
+{
+public:
+  PYBIND11_TYPE_CASTER(neml2::TensorShape, const_name("tuple[int, ...]"));
+
+  bool load(handle src, bool)
+  {
+    if (!src)
+      return false;
+
+    // Accept any Python sequence (tuple/list/torch.Size behaves like a sequence)
+    if (!isinstance<sequence>(src))
+      return false;
+
+    sequence seq = reinterpret_borrow<sequence>(src);
+    value.clear();
+    value.reserve(len(seq));
+    for (handle item : seq)
+      value.push_back(item.cast<neml2::Size>());
+
+    return true;
+  }
+
+  static handle
+  cast(const neml2::TensorShape & src, return_value_policy /*policy*/, handle /*parent*/)
+  {
+    tuple t(src.size());
+    for (size_t i = 0; i < src.size(); ++i)
+      t[i] = pybind11::int_(src[i]);
+    return t.release();
+  }
+};
+} // namespace pybind11::detail

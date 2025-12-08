@@ -44,9 +44,6 @@ LinearInterpolation<T>::expected_options()
   options.set<TensorName<Scalar>>("abscissa");
   options.set("abscissa").doc() = "Scalar defining the abscissa values of the interpolant";
 
-  options.set<Size>("dim") = -1;
-  options.set("dim").doc() = "Intermediate dimension along which to interpolate";
-
   options.set_input("argument");
   options.set("argument").doc() = "Argument used to query the interpolant";
 
@@ -57,8 +54,7 @@ template <typename T>
 LinearInterpolation<T>::LinearInterpolation(const OptionSet & options)
   : Interpolation<T>(options),
     _X(this->template declare_parameter<Scalar>("X", "abscissa")),
-    _x(this->template declare_input_variable<Scalar>("argument")),
-    _dim(options.get<Size>("dim"))
+    _x(this->template declare_input_variable<Scalar>("argument"))
 {
 }
 
@@ -68,18 +64,17 @@ LinearInterpolation<T>::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   using namespace indexing;
 
-  neml_assert_dbg(this->_X.intmd_size(_dim) == this->_Y.intmd_size(_dim),
+  neml_assert_dbg(this->_X.intmd_size(-1) == this->_Y.intmd_size(-1),
                   "Abscissa and ordinate intermediate dimension ",
-                  _dim,
+                  -1,
                   " must have the same size (",
-                  this->_X.intmd_size(_dim),
+                  this->_X.intmd_size(-1),
                   " vs ",
-                  this->_Y.intmd_size(_dim),
+                  this->_Y.intmd_size(-1),
                   ").");
 
-  // First move the interpolating dimension to the end
-  const auto X = this->_X.intmd_movedim(_dim, -1);
-  const auto Y = this->_Y.intmd_movedim(_dim, -1);
+  const auto X = this->_X;
+  const auto Y = this->_Y;
 
   // Unsqueeze one intermediate dimension in x to match X and Y
   const auto x = this->_x().intmd_unsqueeze(-1);

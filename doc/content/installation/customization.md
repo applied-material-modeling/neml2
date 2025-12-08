@@ -13,7 +13,7 @@ The configuration of NEML2 can be customized via a variety of high-level configu
 | :-------------------- | :---------------------- | :------------------------------------------------ |
 | NEML2_PCH             | <u>ON</u>, OFF          | Use precompiled headers to accelerate compilation |
 | NEML2_TESTS           | <u>ON</u>, OFF          | Master knob for including/excluding all tests     |
-| NEML2_RUNNER          | ON, <u>OFF</u>          | Create a simple runner                            |
+| NEML2_RUNNER          | ON, <u>OFF</u>          | Create a simple neml2 executable                  |
 | NEML2_PYBIND          | ON, <u>OFF</u>          | Create the Python bindings target                 |
 | NEML2_DOC             | ON, <u>OFF</u>          | Create the documentation target                   |
 | NEML2_WORK_DISPATCHER | ON, <u>OFF</u>          | Enable work dispatcher                            |
@@ -28,10 +28,10 @@ Since many configure options are available for customizing the build, it is some
 NEML2 predefines six configure presets, serving different development purposes:
 - dev: This preset is best suited for developing the C++ backend and Python bindings. Compiler optimization is turned off, and debug symbols are enabled. In addition, targets for locally generating the documentation (this website) are enabled.
 - coverage: Unit tests are built with coverage flags enabled. `gcov` or similar tools can be used to record code coverage data.
-- runner: The NEML2 Runner is built with the highest level of compiler optimization. The Runner is an executable that can be used to parse, evaluate, diagnose NEML2 input files.
+- runner: The NEML2 runner is built with the highest level of compiler optimization. The runner is an executable that can be used to parse, evaluate, inspect, and diagnose NEML2 input files.
 - tsan: Build the NEML2 Runner with thread sanitizer flags. The Runner can then be used to detect races.
 - release: Build both the C++ backend and the Python package for production runs.
-- profiling: Similar to runner, but additionally links the Runner against gperftools' CPU profiler for profiling purposes.
+- profiling: Similar to runner, but additionally links the executable against gperftools' CPU profiler for profiling purposes.
 
 The configure presets and their corresponding configure options are summarized below.
 

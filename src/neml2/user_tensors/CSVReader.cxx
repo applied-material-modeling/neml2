@@ -22,9 +22,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifdef NEML2_CSV
-
 #include "neml2/user_tensors/CSVReader.h"
+
+#ifdef NEML2_CSV
 
 namespace neml2
 {

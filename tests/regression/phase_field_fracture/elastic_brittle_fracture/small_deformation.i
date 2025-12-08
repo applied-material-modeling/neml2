@@ -23,6 +23,10 @@
     rel_tol = 1e-08
     abs_tol = 1e-10
     max_its = 50
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
   []
 []
 

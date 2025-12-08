@@ -88,18 +88,5 @@ TEST_CASE("Model", "[models]")
                    Catch::Matchers::ContainsSubstring(
                        "Output variable whatever/foo must be on one of the following sub-axes"));
     }
-
-    SECTION("nonlinear system")
-    {
-      auto model = load_model("models/test_Model_diagnose3.i", "model");
-      auto diagnoses = diagnose(*model);
-
-      REQUIRE(diagnoses.size() == 1);
-      REQUIRE_THAT(
-          diagnoses[0].what(),
-          Catch::Matchers::ContainsSubstring(
-              "This model is part of a nonlinear system. At least one of the input variables is "
-              "solve-dependent, so all output variables MUST be solve-dependent"));
-    }
   }
 }

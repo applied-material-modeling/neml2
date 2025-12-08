@@ -25,7 +25,9 @@
 #pragma once
 
 #include "neml2/solvers/Solver.h"
-#include "neml2/solvers/NonlinearSystem.h"
+#include "neml2/solvers/LinearSolver.h"
+#include "neml2/equation_systems/NonlinearSystem.h"
+#include "neml2/equation_systems/HVector.h"
 
 namespace neml2
 {
@@ -51,30 +53,26 @@ public:
     /// Solver return code, @see neml2::NonlinearSolver::RetCode
     RetCode ret = RetCode::FAILURE;
     /// Solution to the nonlinear system
-    NonlinearSystem::Sol<false> solution;
+    HVector solution;
     /// Number of iterations before convergence
     std::size_t iterations = 0;
   };
 
-public:
   static OptionSet expected_options();
 
-  /**
-   * @brief Construct a new NonlinearSolver object
-   *
-   * @param options The options extracted from the input file
-   */
   NonlinearSolver(const OptionSet & options);
 
   /**
    * @brief Solve the given nonlinear system.
    *
    * @param system The nonlinear system of equations.
-   * @param x0 The initial guess
+   * @param u0 The initial guess
    * @return @see neml2::NonlinearSolver::Result
    */
-  virtual Result solve(NonlinearSystem & system, const NonlinearSystem::Sol<false> & x0) = 0;
+  virtual Result solve(NonlinearSystem & system, const HVector & u0) = 0;
 
+  /// Linear solver used by the nonlinear solver
+  std::shared_ptr<LinearSolver> linear_solver;
   /// Absolute tolerance
   double atol;
   /// Relative tolerance

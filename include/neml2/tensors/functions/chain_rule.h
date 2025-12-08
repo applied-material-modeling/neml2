@@ -22,30 +22,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <catch2/catch_test_macros.hpp>
-#include <catch2/matchers/catch_matchers_all.hpp>
+#pragma once
 
-#include "SampleNonlinearSystems.h"
+#include "neml2/tensors/Derivative.h"
 
-using namespace neml2;
-
-TEST_CASE("NonlinearSystem", "[solvers]")
+namespace neml2
 {
-  // Initial guess
-  TensorShape batch_sz = {2};
-  Size nbase = 4;
-  auto x0 =
-      NonlinearSystem::Sol<false>(Tensor::full(batch_sz, {}, nbase, 2.0, default_tensor_options()));
 
-  // Create the nonlinear system
-  auto options = PowerTestSystem::expected_options();
-  options.set<bool>("automatic_scaling") = true;
-  PowerTestSystem system(options);
+/// Apply chain rule on two first-order derivatives
+Derivative<1> chain_rule(const Derivative<1> & dy_du, const Derivative<1> & du_dx);
 
-  SECTION("Automatic scaling can reduce condition number")
-  {
-    system.init_scaling(x0);
-    auto x0p = system.scale(x0);
-    REQUIRE(at::max(at::linalg_cond(system.Jacobian(x0p))).item<double>() == Catch::Approx(1.0));
-  }
-}
+/// Apply second order chain rule on d2y_du1u2, du1_dx1, du2_dx2
+/// In einstein notation: ipq, pj, qk -> ijk
+Derivative<2> chain_rule(const Derivative<2> & d2y_du1u2,
+                         const Derivative<1> * du_dx1,
+                         const Derivative<1> * du_dx2);
+
+/// Apply second order chain rule on dy_du, d2u_dx1x2
+/// In einstein notation: ip, pjk -> ijk
+Derivative<2> chain_rule(const Derivative<1> & dy_du, const Derivative<2> & d2u_dx1x2);
+
+} // namespace neml2

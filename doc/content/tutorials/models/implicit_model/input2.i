@@ -70,5 +70,9 @@
     abs_tol = 1e-10
     max_its = 50
     verbose = true
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
   []
 []

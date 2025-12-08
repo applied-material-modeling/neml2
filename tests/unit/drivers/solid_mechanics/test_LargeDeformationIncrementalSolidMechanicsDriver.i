@@ -1,9 +1,11 @@
+nbatch = 20
+
 [Tensors]
   [end_time]
     type = LinspaceScalar
     start = 0.1
     end = 1
-    nstep = 20
+    nstep = ${nbatch}
   []
   [times]
     type = LinspaceScalar
@@ -13,17 +15,17 @@
   []
   [dxx]
     type = FullScalar
-    batch_shape = '(20)'
+    batch_shape = '(${nbatch})'
     value = 0.1
   []
   [dyy]
     type = FullScalar
-    batch_shape = '(20)'
+    batch_shape = '(${nbatch})'
     value = -0.05
   []
   [dzz]
     type = FullScalar
-    batch_shape = '(20)'
+    batch_shape = '(${nbatch})'
     value = -0.05
   []
   [deformation_rate_single]
@@ -39,17 +41,17 @@
 
   [w1]
     type = FullScalar
-    batch_shape = '(20)'
+    batch_shape = '(${nbatch})'
     value = 0.001
   []
   [w2]
     type = FullScalar
-    batch_shape = '(20)'
+    batch_shape = '(${nbatch})'
     value = -0.0005
   []
   [w3]
     type = FullScalar
-    batch_shape = '(20)'
+    batch_shape = '(${nbatch})'
     value = -0.0005
   []
   [vorticity_single]
@@ -76,19 +78,19 @@
     type = LinspaceScalar
     start = 0
     end = 0.75
-    nstep = 20
+    nstep = ${nbatch}
   []
   [R2]
     type = LinspaceScalar
     start = 0
     end = -0.25
-    nstep = 20
+    nstep = ${nbatch}
   []
   [R3]
     type = LinspaceScalar
     start = -0.1
     end = 0.1
-    nstep = 20
+    nstep = ${nbatch}
   []
 
   [initial_orientation]
@@ -118,6 +120,10 @@
   [newton]
     type = NewtonWithLineSearch
     max_linesearch_iterations = 5
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
   []
 []
 

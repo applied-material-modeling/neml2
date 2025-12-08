@@ -69,6 +69,10 @@
 [Solvers]
   [newton]
     type = NewtonWithLineSearch
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
   []
 []
 

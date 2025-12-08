@@ -58,6 +58,10 @@
     type = Newton
     rel_tol = 1e-6
     abs_tol = 1e-8
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
   []
 []
 

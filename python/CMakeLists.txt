@@ -91,7 +91,11 @@ target_link_libraries(pycrystallography PUBLIC tensor)
 # ----------------------------------------------------------------------------
 # Artifacts
 # ----------------------------------------------------------------------------
-file(COPY neml2/ DESTINATION ${NEML2_BINARY_DIR}/python/neml2 FILES_MATCHING PATTERN "*.py")
+file(GLOB_RECURSE pyartifacts CONFIGURE_DEPENDS neml2/*.py)
+foreach(pyartifact IN LISTS pyartifacts)
+  file(RELATIVE_PATH relpath ${NEML2_SOURCE_DIR}/python ${pyartifact})
+  configure_file(${pyartifact} ${NEML2_BINARY_DIR}/python/${relpath} COPYONLY)
+endforeach()
 install(DIRECTORY
   ${NEML2_BINARY_DIR}/python/neml2/
   DESTINATION .

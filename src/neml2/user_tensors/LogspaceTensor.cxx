@@ -77,7 +77,7 @@ T
 LogspaceTensorTmpl<T>::make() const
 {
   auto * f = this->factory();
-  neml_assert(f, "Internal error: factory == nullptr");
+  neml_assert(f, "Failed assertion: factory != nullptr");
 
   if (_group == "dynamic")
     return dynamic_logspace(_start.resolve(f), _end.resolve(f), _nstep, _dim, _base);
