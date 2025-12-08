@@ -28,19 +28,23 @@
 
 #include "neml2/user_tensors/UserTensorBase.h"
 #include "neml2/user_tensors/CSVReader.h"
-#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/tensors.h"
 
 namespace neml2
 {
-class MultiColumnCSVScalar : public UserTensorBase<Scalar>, public CSVReader
+/**
+ * @brief Create a primitive tensor by reading values from a csv file.
+ */
+template <typename T>
+class CSVPrimitiveTensor : public UserTensorBase<T>, public CSVReader
 {
 public:
   static OptionSet expected_options();
 
-  MultiColumnCSVScalar(const OptionSet & options);
+  CSVPrimitiveTensor(const OptionSet & options);
 
 protected:
-  Scalar make() const override;
+  T make() const override;
 };
 } // namespace neml2
 
