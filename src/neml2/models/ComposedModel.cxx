@@ -208,23 +208,23 @@ void
 ComposedModel::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   for (const auto & i : registered_models())
-  {
-    if (out && !dout_din && !d2out_din2)
-      i->forward_maybe_jit(true, false, false);
-    else if (dout_din && !d2out_din2)
-      i->forward_maybe_jit(true, true, false);
-    else if (d2out_din2)
-      i->forward_maybe_jit(true, true, true);
-    else
-      throw NEMLException("Unsupported call signature to set_value");
-  }
+    i->forward_maybe_jit(out || dout_din || d2out_din2, dout_din || d2out_din2, d2out_din2);
 
   if (dout_din)
     for (auto && [name, var] : output_variables())
-      var->apply_chain_rule(_dependency);
+      for (const auto & [xvar, dy_dx] : var->ref()->total_derivatives(_dependency))
+        var->d(input_variable(xvar->name())) = dy_dx;
 
   if (d2out_din2)
     for (auto && [name, var] : output_variables())
-      var->apply_second_order_chain_rule(_dependency);
+      for (const auto & [xvars, d2y_dx1x2] : var->ref()->total_second_derivatives(_dependency))
+      {
+        const auto [x1var, x2var] = xvars;
+        var->d2(input_variable(x1var->name()), input_variable(x2var->name())) = d2y_dx1x2;
+      }
+
+  if (dout_din || d2out_din2)
+    for (auto && [name, var] : output_variables())
+      var->ref()->clear_chain_rule_cache(_dependency);
 }
 } // namespace neml2

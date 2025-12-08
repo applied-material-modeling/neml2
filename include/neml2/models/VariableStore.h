@@ -176,23 +176,22 @@ protected:
   /// Declare an input variable
   template <typename T>
   const Variable<T> & declare_input_variable(const char * name,
-                                             TensorShapeRef dep_intmd_dims = {},
+                                             std::size_t dep_intmd_dim = 0,
                                              bool allow_duplicate = false);
 
   /// Declare an input variable
   template <typename T>
   const Variable<T> & declare_input_variable(const VariableName & name,
-                                             TensorShapeRef dep_intmd_dims = {},
+                                             std::size_t dep_intmd_dim = 0,
                                              bool allow_duplicate = false);
 
   /// Declare an output variable
   template <typename T>
-  Variable<T> & declare_output_variable(const char * name, TensorShapeRef dep_intmd_dims = {});
+  Variable<T> & declare_output_variable(const char * name, std::size_t dep_intmd_dim = 0);
 
   /// Declare an output variable
   template <typename T>
-  Variable<T> & declare_output_variable(const VariableName & name,
-                                        TensorShapeRef dep_intmd_dims = {});
+  Variable<T> & declare_output_variable(const VariableName & name, std::size_t dep_intmd_dim = 0);
 
   /// Clone a variable and put it on the input axis
   const VariableBase * clone_input_variable(const VariableBase & var,
@@ -223,7 +222,7 @@ private:
   template <typename T>
   Variable<T> * create_variable(VariableStorage & variables,
                                 const VariableName & name,
-                                TensorShapeRef dep_intmd_dims,
+                                std::size_t dep_intmd_dim,
                                 bool allow_duplicate = false);
 
   /// Model using this interface

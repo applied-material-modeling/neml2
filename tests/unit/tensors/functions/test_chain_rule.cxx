@@ -22,27 +22,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/solid_mechanics/crystal_plasticity/SlipStrengthMap.h"
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_all.hpp>
 
-#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/Tensor.h"
+#include "neml2/tensors/functions/chain_rule.h"
 
-namespace neml2
+using namespace neml2;
+
+#define TYPE_IDENTITY(T) T
+
+TEST_CASE("chain_rule", "[tensors/functions]")
 {
-OptionSet
-SlipStrengthMap::expected_options()
-{
-  OptionSet options = Model::expected_options();
-  options.doc() = "Map between internal variables the slip system strengths.";
-
-  options.set_output("slip_strengths") = VariableName(STATE, "internal", "slip_strengths");
-  options.set("slip_strengths").doc() = "Name of the slip system strengths";
-
-  return options;
+  at::manual_seed(42);
+  // auto dy_du = Tensor::rand({3}, {2, 1, 3, 5, 6}, {7, 2, 1, 3});
+  // auto du_dx = Tensor::rand({2, 1}, {4, 5, 6, 2, 1}, {1, 3, 2});
+  // auto dy_dx = chain_rule(dy_du, du_dx, {7, 2}, {1, 3}, {2}, 1, 2, 2);
+  // REQUIRE(dy_dx.dynamic_sizes() == TensorShapeRef{2, 3});
+  // REQUIRE(dy_dx.intmd_sizes() == TensorShapeRef{2, 4, 3, 2, 1});
+  // REQUIRE(dy_dx.base_sizes() == TensorShapeRef{7, 2, 2});
 }
-
-SlipStrengthMap::SlipStrengthMap(const OptionSet & options)
-  : Model(options),
-    _tau(declare_output_variable<Scalar>("slip_strengths", 1))
-{
-}
-} // namespace neml2

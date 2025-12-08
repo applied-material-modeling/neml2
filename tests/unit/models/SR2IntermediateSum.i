@@ -42,6 +42,5 @@
     type = SR2IntermediateSum
     from = 'state/S'
     to = 'state/S_sum'
-    dim = 1
   []
 []

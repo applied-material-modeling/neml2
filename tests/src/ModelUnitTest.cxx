@@ -33,7 +33,7 @@
 namespace neml2
 {
 template <typename T>
-void
+static void
 set_variable(ValueMap & storage,
              const OptionSet & options,
              const std::string & option_vars,
@@ -208,7 +208,7 @@ ModelUnitTest::check_dvalue()
 
       // Convert derivative to variable format
       numerical = from_assembly<2>(numerical,
-                                   {yvar->intmd_sizes(), xvar->intmd_sizes()},
+                                   {yvar->dep_intmd_sizes(), xvar->dep_intmd_sizes()},
                                    {yvar->base_sizes(), xvar->base_sizes()});
 
       // If the derivative does not exist, the numerical derivative should be zero
@@ -256,13 +256,13 @@ ModelUnitTest::check_d2value()
               _model->forward_maybe_jit(false, true, false);
               if (!yvar->has_derivative(x1var->name()))
               {
-                auto deriv =
-                    Tensor::zeros({},
-                                  utils::add_shapes(yvar->intmd_sizes(), x1var->intmd_sizes()),
-                                  utils::add_shapes(yvar->base_sizes(), x1var->base_sizes()),
-                                  x.options());
+                auto deriv = Tensor::zeros(
+                    {},
+                    utils::add_shapes(yvar->dep_intmd_sizes(), x1var->dep_intmd_sizes()),
+                    utils::add_shapes(yvar->base_sizes(), x1var->base_sizes()),
+                    x.options());
                 return to_assembly<2>(deriv,
-                                      {yvar->intmd_sizes(), x1var->intmd_sizes()},
+                                      {yvar->dep_intmd_sizes(), x1var->dep_intmd_sizes()},
                                       {yvar->base_sizes(), x1var->base_sizes()});
               }
               return yvar->d(*x1var).get();
@@ -272,10 +272,10 @@ ModelUnitTest::check_d2value()
             1e-6);
 
         // Convert derivative to variable format
-        numerical =
-            from_assembly<3>(numerical,
-                             {yvar->intmd_sizes(), x1var->intmd_sizes(), x2var->intmd_sizes()},
-                             {yvar->base_sizes(), x1var->base_sizes(), x2var->base_sizes()});
+        numerical = from_assembly<3>(
+            numerical,
+            {yvar->dep_intmd_sizes(), x1var->dep_intmd_sizes(), x2var->dep_intmd_sizes()},
+            {yvar->base_sizes(), x1var->base_sizes(), x2var->base_sizes()});
 
         // If the derivative does not exist, the numerical derivative should be zero
         if (!exact.count(yname) || !exact.at(yname).count(x1name) ||

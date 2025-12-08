@@ -45,6 +45,18 @@ normalize_dim(Size d, Size dl, Size du)
   return d >= 0 ? dl + d : du + d;
 }
 
+TensorShape
+normalize_dims(ArrayRef<Size> d, Size dl, Size du)
+{
+  TensorShape dn;
+  dn.reserve(d.size());
+  std::transform(d.begin(),
+                 d.end(),
+                 std::back_inserter(dn),
+                 [dl, du](Size dim) { return normalize_dim(dim, dl, du); });
+  return dn;
+}
+
 Size
 normalize_itr(Size d, Size dl, Size du)
 {
@@ -58,6 +70,18 @@ normalize_itr(Size d, Size dl, Size du)
                   delta,
                   "].");
   return d >= 0 ? dl + d : du + d + 1;
+}
+
+TensorShape
+normalize_itrs(ArrayRef<Size> d, Size dl, Size du)
+{
+  TensorShape dn;
+  dn.reserve(d.size());
+  std::transform(d.begin(),
+                 d.end(),
+                 std::back_inserter(dn),
+                 [dl, du](Size dim) { return normalize_itr(dim, dl, du); });
+  return dn;
 }
 
 Size

@@ -90,7 +90,7 @@ WR2ExplicitExponentialTimeIntegration::set_value(bool out, bool dout_din, bool /
     const auto de = (_s_dot * dt).dexp_map();
     _s.d(_s_dot) = _sn().drotate(inc) * de * dt;
 
-    if (currently_solving_nonlinear_system())
+    if (currently_assembling_nonlinear_system())
       return;
 
     _s.d(_sn) = _sn().drotate_self(inc);

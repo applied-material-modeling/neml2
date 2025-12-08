@@ -31,24 +31,6 @@
 
 namespace neml2
 {
-bool &
-currently_solving_nonlinear_system()
-{
-  thread_local bool _solving_nl_sys = false;
-  return _solving_nl_sys;
-}
-
-SolvingNonlinearSystem::SolvingNonlinearSystem(bool solving)
-  : prev_bool(currently_solving_nonlinear_system())
-{
-  currently_solving_nonlinear_system() = solving;
-}
-
-SolvingNonlinearSystem::~SolvingNonlinearSystem()
-{
-  currently_solving_nonlinear_system() = prev_bool;
-}
-
 OptionSet
 NonlinearSystem::expected_options()
 {

@@ -121,7 +121,7 @@ BufferStore::assign_buffer_stack(jit::Stack & stack)
   neml_assert_dbg(stack.size() >= buffers.size(),
                   "Stack size (",
                   stack.size(),
-                  ") is smaller than the number of buffers in the model (",
+                  ") is insufficient for the number of buffers in the model (",
                   buffers.size(),
                   ").");
 
@@ -129,11 +129,14 @@ BufferStore::assign_buffer_stack(jit::Stack & stack)
   std::size_t i = stack.size() - buffers.size();
   for (auto && [name, buffer] : buffers)
   {
-    const auto tensor = stack[i++].toTensor();
-    buffer->assign(tensor, TracerPrivilege{});
+    const auto & ten = stack[i++].toTensor();
+    const auto dynamic_dim = ten.dim() - buffer->static_dim();
+    const auto intmd_dim = buffer->intmd_dim();
+    Tensor val(ten, dynamic_dim, intmd_dim);
+    buffer->assign(val, TracerPrivilege{});
   }
 
-  // Drop the input variables from the stack
+  // Drop the buffers from the stack
   jit::drop(stack, buffers.size());
 }
 

@@ -39,8 +39,5 @@ public:
 protected:
   /// Reduced variable
   Variable<T> & _to;
-
-  /// Dimension over which to perform the reduction
-  const Size _dim;
 };
 } // namespace neml2

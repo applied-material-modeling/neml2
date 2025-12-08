@@ -42,6 +42,5 @@
     type = SR2IntermediateMean
     from = 'state/S'
     to = 'state/S_mean'
-    dim = 1
   []
 []

@@ -28,8 +28,9 @@
 #include "neml2/misc/assertions.h"
 #include "neml2/models/map_types.h"
 #include "neml2/models/Variable.h"
-#include "neml2/models/Derivative.h"
+#include "neml2/tensors/Derivative.h"
 #include "neml2/base/LabeledAxis.h"
+#include "neml2/models/utils.h"
 #include "neml2/solvers/NonlinearSystem.h"
 #include "neml2/tensors/Tensor.h"
 #include "neml2/tensors/tensors.h"
@@ -100,55 +101,53 @@ VariableStore::output_axis() const
 template <typename T>
 const Variable<T> &
 VariableStore::declare_input_variable(const char * name,
-                                      TensorShapeRef dep_intmd_dims,
+                                      std::size_t dep_intmd_dim,
                                       bool allow_duplicate)
 {
   if (_object->input_options().contains(name))
     return declare_input_variable<T>(
-        _object->input_options().get<VariableName>(name), dep_intmd_dims, allow_duplicate);
-
-  return declare_input_variable<T>(VariableName(name), dep_intmd_dims, allow_duplicate);
+        _object->input_options().get<VariableName>(name), dep_intmd_dim, allow_duplicate);
+  return declare_input_variable<T>(VariableName(name), dep_intmd_dim, allow_duplicate);
 }
 
 template <typename T>
 const Variable<T> &
 VariableStore::declare_input_variable(const VariableName & name,
-                                      TensorShapeRef dep_intmd_dims,
+                                      std::size_t dep_intmd_dim,
                                       bool allow_duplicate)
 {
   if (!allow_duplicate || (allow_duplicate && !_input_axis.has_variable(name)))
     _input_axis.add_variable(name, {}, T::const_base_sizes);
-  return *create_variable<T>(_input_variables, name, dep_intmd_dims, allow_duplicate);
+  return *create_variable<T>(_input_variables, name, dep_intmd_dim, allow_duplicate);
 }
 #define INSTANTIATE_DECLARE_INPUT_VARIABLE(T)                                                      \
   template const Variable<T> & VariableStore::declare_input_variable<T>(                           \
-      const char *, TensorShapeRef, bool);                                                         \
+      const char *, std::size_t, bool);                                                            \
   template const Variable<T> & VariableStore::declare_input_variable<T>(                           \
-      const VariableName &, TensorShapeRef, bool)
+      const VariableName &, std::size_t, bool)
 FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_DECLARE_INPUT_VARIABLE);
 
 template <typename T>
 Variable<T> &
-VariableStore::declare_output_variable(const char * name, TensorShapeRef dep_intmd_dims)
+VariableStore::declare_output_variable(const char * name, std::size_t dep_intmd_dim)
 {
   if (_object->input_options().contains(name))
     return declare_output_variable<T>(_object->input_options().get<VariableName>(name),
-                                      dep_intmd_dims);
-
-  return declare_output_variable<T>(VariableName(name), dep_intmd_dims);
+                                      dep_intmd_dim);
+  return declare_output_variable<T>(VariableName(name), dep_intmd_dim);
 }
 
 template <typename T>
 Variable<T> &
-VariableStore::declare_output_variable(const VariableName & name, TensorShapeRef dep_intmd_dims)
+VariableStore::declare_output_variable(const VariableName & name, std::size_t dep_intmd_dim)
 {
   _output_axis.add_variable(name, {}, T::const_base_sizes);
-  return *create_variable<T>(_output_variables, name, dep_intmd_dims);
+  return *create_variable<T>(_output_variables, name, dep_intmd_dim);
 }
 #define INSTANTIATE_DECLARE_OUTPUT_VARIABLE(T)                                                     \
-  template Variable<T> & VariableStore::declare_output_variable<T>(const char *, TensorShapeRef);  \
+  template Variable<T> & VariableStore::declare_output_variable<T>(const char *, std::size_t);     \
   template Variable<T> & VariableStore::declare_output_variable<T>(const VariableName &,           \
-                                                                   TensorShapeRef)
+                                                                   std::size_t)
 FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_DECLARE_OUTPUT_VARIABLE);
 
 const VariableBase *
@@ -185,7 +184,7 @@ template <typename T>
 Variable<T> *
 VariableStore::create_variable(VariableStorage & variables,
                                const VariableName & name,
-                               TensorShapeRef dep_intmd_dims,
+                               std::size_t dep_intmd_dim,
                                bool allow_duplicate)
 {
   // Make sure we don't duplicate variables
@@ -203,7 +202,7 @@ VariableStore::create_variable(VariableStorage & variables,
   {
     // Allocate
     std::unique_ptr<VariableBase> var;
-    var = std::make_unique<Variable<T>>(name, _object, dep_intmd_dims);
+    var = std::make_unique<Variable<T>>(name, _object, dep_intmd_dim);
     auto [it, success] = variables.emplace(name, std::move(var));
     var_base_ptr = it->second.get();
   }
@@ -218,7 +217,7 @@ VariableStore::create_variable(VariableStorage & variables,
 }
 #define INSTANTIATE_CREATE_VARIABLE(T)                                                             \
   template Variable<T> * VariableStore::create_variable<T>(                                        \
-      VariableStorage &, const VariableName &, TensorShapeRef, bool)
+      VariableStorage &, const VariableName &, std::size_t, bool)
 FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_CREATE_VARIABLE);
 
 VariableBase &
@@ -301,11 +300,11 @@ VariableStore::cache_derivative_sparsity()
 {
   std::vector<std::pair<VariableBase *, const VariableBase *>> sparsity;
   for (auto && [yname, yvar] : output_variables())
-    for (const auto & dy_dx : yvar->derivatives())
-      if (dy_dx.args()[0]->is_dependent())
-        sparsity.emplace_back(yvar.get(), dy_dx.args()[0]);
+    for (const auto & [xvar, dy_dx] : yvar->derivatives())
+      if (xvar->is_dependent() && dy_dx.defined())
+        sparsity.emplace_back(yvar.get(), xvar);
 
-  if (currently_solving_nonlinear_system())
+  if (_object->currently_assembling_nonlinear_system())
     _deriv_sparsity_nl_sys = std::move(sparsity);
   else
     _deriv_sparsity = std::move(sparsity);
@@ -316,10 +315,11 @@ VariableStore::cache_second_derivative_sparsity()
 {
   std::vector<std::tuple<VariableBase *, const VariableBase *, const VariableBase *>> sparsity;
   for (auto && [yname, yvar] : output_variables())
-    for (const auto & d2y_dx1dx2 : yvar->second_derivatives())
-      sparsity.emplace_back(yvar.get(), d2y_dx1dx2.args()[0], d2y_dx1dx2.args()[1]);
+    for (const auto & [xvars, d2y_dx1dx2] : yvar->second_derivatives())
+      if (d2y_dx1dx2.defined())
+        sparsity.emplace_back(yvar.get(), xvars.first, xvars.second);
 
-  if (currently_solving_nonlinear_system())
+  if (_object->currently_assembling_nonlinear_system())
     _secderiv_sparsity_nl_sys = std::move(sparsity);
   else
     _secderiv_sparsity = std::move(sparsity);
@@ -328,7 +328,7 @@ VariableStore::cache_second_derivative_sparsity()
 const std::optional<VariableStore::DerivSparsity> &
 VariableStore::derivative_sparsity() const
 {
-  if (currently_solving_nonlinear_system())
+  if (_object->currently_assembling_nonlinear_system())
     return _deriv_sparsity_nl_sys;
   return _deriv_sparsity;
 }
@@ -336,7 +336,7 @@ VariableStore::derivative_sparsity() const
 const std::optional<VariableStore::SecDerivSparsity> &
 VariableStore::second_derivative_sparsity() const
 {
-  if (currently_solving_nonlinear_system())
+  if (_object->currently_assembling_nonlinear_system())
     return _secderiv_sparsity_nl_sys;
   return _secderiv_sparsity;
 }
@@ -386,11 +386,9 @@ VariableStore::assign_input_stack(jit::Stack & stack)
   for (auto & [xname, xvar] : input_variables())
   {
     const auto & ten = stack[i++].toTensor();
-    // When we collect the input variables during tracing, we always collect them in assembly
-    // format. Therefore, we know precisely the tensor has base dimension 1, the rest are dynamic
-    // dimensions, and there's no intermediate dimension. All of this is guaranteed by the assembly
-    // format.
-    xvar->set(Tensor(ten, ten.dim() - 1), TracerPrivilege{});
+    const auto dyna_dim = ten.dim() - xvar->static_dim();
+    const auto intmd_dim = xvar->intmd_dim();
+    xvar->assign(Tensor(ten, dyna_dim, intmd_dim), TracerPrivilege{});
   }
   jit::drop(stack, i);
 }
@@ -403,30 +401,33 @@ VariableStore::assign_output_stack(jit::Stack & stack, bool out, bool dout, bool
 
   std::size_t i = 0; // stack counter
 
-  // When we collect the output variables and derivatives during tracing, we always collect them in
-  // assembly format. Therefore, we know precisely the tensor has base dimension 1 for output
-  // variables, 2 for derivatives, 3 for second derivatives, the rest are dynamic dimensions, and
-  // there's no intermediate dimension. All of this is guaranteed by the assembly format.
-
   if (out)
     for (auto & [yname, yvar] : output_variables())
     {
       const auto & ten = stacklist[i++];
-      yvar->set(Tensor(ten, ten.dim() - 1), TracerPrivilege{});
+      const auto dyna_dim = ten.dim() - yvar->static_dim();
+      const auto intmd_dim = yvar->intmd_dim();
+      yvar->assign(Tensor(ten, dyna_dim, intmd_dim), TracerPrivilege{});
     }
 
   if (dout)
     for (auto & [yvar, xvar] : derivative_sparsity().value())
     {
       const auto & ten = stacklist[i++];
-      yvar->d(*xvar).set(Tensor(ten, ten.dim() - 2));
+      const auto & deriv = yvar->d(*xvar);
+      const auto dyna_dim = ten.dim() - deriv.static_dim();
+      const auto intmd_dim = deriv.intmd_dim();
+      yvar->d(*xvar) = Tensor(ten, dyna_dim, intmd_dim);
     }
 
   if (d2out)
     for (auto & [yvar, x1var, x2var] : second_derivative_sparsity().value())
     {
       const auto & ten = stacklist[i++];
-      yvar->d2(*x1var, *x2var).set(Tensor(ten, ten.dim() - 3));
+      const auto & deriv = yvar->d2(*x1var, *x2var);
+      const auto dyna_dim = ten.dim() - deriv.static_dim();
+      const auto intmd_dim = deriv.intmd_dim();
+      yvar->d2(*x1var, *x2var) = Tensor(ten, dyna_dim, intmd_dim);
     }
 
   jit::drop(stack, 1);
@@ -455,8 +456,9 @@ VariableStore::collect_output_derivatives(bool assembly) const
 {
   DerivMap derivs;
   for (auto && [name, var] : output_variables())
-    for (auto & deriv : var->derivatives())
-      derivs[name][deriv.args()[0]->name()] = assembly ? deriv.get() : deriv.tensor();
+    for (const auto & [xvar, deriv] : var->derivatives())
+      if (deriv.defined())
+        derivs[name][xvar->name()] = assembly ? deriv.get() : deriv.tensor();
   return derivs;
 }
 
@@ -465,9 +467,10 @@ VariableStore::collect_output_second_derivatives(bool assembly) const
 {
   SecDerivMap sec_derivs;
   for (auto && [name, var] : output_variables())
-    for (auto & deriv : var->second_derivatives())
-      sec_derivs[name][deriv.args()[0]->name()][deriv.args()[1]->name()] =
-          assembly ? deriv.get() : deriv.tensor();
+    for (const auto & [xvars, deriv] : var->second_derivatives())
+      if (deriv.defined())
+        sec_derivs[name][xvars.first->name()][xvars.second->name()] =
+            assembly ? deriv.get() : deriv.tensor();
   return sec_derivs;
 }
 
@@ -476,7 +479,7 @@ VariableStore::collect_input_stack() const
 {
   jit::Stack stack;
   for (const auto & [xname, xvar] : input_variables())
-    stack.emplace_back(xvar->get());
+    stack.emplace_back(xvar->tensor());
   return stack;
 }
 
@@ -487,15 +490,15 @@ VariableStore::collect_output_stack(bool out, bool dout, bool d2out) const
 
   if (out)
     for (const auto & [yname, yvar] : output_variables())
-      stacklist.emplace_back(yvar->get());
+      stacklist.emplace_back(yvar->tensor());
 
   if (dout)
     for (const auto & [yvar, xvar] : derivative_sparsity().value())
-      stacklist.emplace_back(yvar->d(*xvar).get());
+      stacklist.emplace_back(yvar->d(*xvar).tensor());
 
   if (d2out)
     for (const auto & [yvar, x1var, x2var] : second_derivative_sparsity().value())
-      stacklist.emplace_back(yvar->d2(*x1var, *x2var).get());
+      stacklist.emplace_back(yvar->d2(*x1var, *x2var).tensor());
 
   return {stacklist};
 }
