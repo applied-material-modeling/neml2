@@ -22,27 +22,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/solid_mechanics/crystal_plasticity/SlipStrengthMap.h"
+#pragma once
 
-#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/Derivative.h"
 
 namespace neml2
 {
-OptionSet
-SlipStrengthMap::expected_options()
-{
-  OptionSet options = Model::expected_options();
-  options.doc() = "Map between internal variables the slip system strengths.";
 
-  options.set_output("slip_strengths") = VariableName(STATE, "internal", "slip_strengths");
-  options.set("slip_strengths").doc() = "Name of the slip system strengths";
+/// Apply chain rule on two first-order derivatives
+Derivative<1> chain_rule(const Derivative<1> & dy_du, const Derivative<1> & du_dx);
 
-  return options;
-}
+/// Apply second order chain rule on d2y_du1u2, du1_dx1, du2_dx2
+/// In einstein notation: ipq, pj, qk -> ijk
+Derivative<2> chain_rule(const Derivative<2> & d2y_du1u2,
+                         const Derivative<1> * du_dx1,
+                         const Derivative<1> * du_dx2);
 
-SlipStrengthMap::SlipStrengthMap(const OptionSet & options)
-  : Model(options),
-    _tau(declare_output_variable<Scalar>("slip_strengths", 1))
-{
-}
+/// Apply second order chain rule on dy_du, d2u_dx1x2
+/// In einstein notation: ip, pjk -> ijk
+Derivative<2> chain_rule(const Derivative<1> & dy_du, const Derivative<2> & d2u_dx1x2);
+
 } // namespace neml2

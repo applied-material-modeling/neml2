@@ -32,7 +32,7 @@ class Tensor;
 
 template <std::size_t N>
 Tensor from_assembly(const Tensor & from,
-                     const std::array<TensorShapeRef, N> & intmd_shapes,
+                     const std::array<TensorShapeRef, N> & dep_intmd_shapes,
                      const std::array<TensorShapeRef, N> & base_shapes,
                      const std::string & debug_name = "<anonymous>");
 }

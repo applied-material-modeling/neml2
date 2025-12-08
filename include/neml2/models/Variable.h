@@ -36,8 +36,8 @@ template <typename T>
 class Variable : public VariableBase
 {
 public:
-  Variable(VariableName name_in, Model * owner, TensorShapeRef dep_intmd_dims = {})
-    : VariableBase(std::move(name_in), owner, T::const_base_sizes, dep_intmd_dims),
+  Variable(VariableName name_in, Model * owner, std::size_t dep_intmd_dim = 0)
+    : VariableBase(std::move(name_in), owner, T::const_base_sizes, dep_intmd_dim),
       _ref(nullptr)
   {
   }
@@ -70,13 +70,15 @@ public:
 
   void zero(const TensorOptions & options) override;
 
-  void set(const Tensor & val, std::optional<TracerPrivilege> key) override;
+  void set(const Tensor & val) override;
 
   Tensor get() const override;
 
   Tensor tensor() const override;
 
   void requires_grad_(bool req = true) override;
+
+  void assign(const Tensor & val, std::optional<TracerPrivilege> key = std::nullopt) override;
 
   void operator=(const Tensor & val) override;
 

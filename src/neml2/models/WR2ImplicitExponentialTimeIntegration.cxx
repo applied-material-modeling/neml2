@@ -95,7 +95,7 @@ WR2ImplicitExponentialTimeIntegration::set_value(bool out, bool dout_din, bool /
     _r.d(_s) = R2::identity(_s.options());
     _r.d(_s_dot) = -_sn().drotate(inc) * de * dt;
 
-    if (currently_solving_nonlinear_system())
+    if (currently_assembling_nonlinear_system())
       return;
 
     _r.d(_sn) = -_sn().drotate_self(inc);

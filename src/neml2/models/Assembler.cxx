@@ -56,13 +56,13 @@ VectorAssembler::assemble_by_variable(const ValueMap & vals_dict, bool assembly)
                         "Tensor in assembly format should have no intermediate dimensions.");
         neml_assert_dbg(val_ref.base_dim() == 1,
                         "During vector assembly, found a tensor associated with variable ",
-                        vars[i],
+                        _axis.qualify(vars[i]),
                         " with base dimension ",
                         val_ref.base_dim(),
                         ". Expected 1.");
         neml_assert_dbg(val_ref.base_size(0) == _axis.variable_sizes()[i],
                         "Invalid size for variable ",
-                        vars[i],
+                        _axis.qualify(vars[i]),
                         ". Expected ",
                         _axis.variable_sizes()[i],
                         ", got ",
@@ -72,8 +72,9 @@ VectorAssembler::assemble_by_variable(const ValueMap & vals_dict, bool assembly)
                                 : to_assembly<1>(val_ref,
                                                  {_axis.variable_intmd_sizes()[i]},
                                                  {_axis.variable_base_sizes()[i]});
-      neml_assert_dbg(
-          val.isfinite().all().item<bool>(), "Non-finite value found for variable ", vars[i]);
+      neml_assert_dbg(val.isfinite().all().item<bool>(),
+                      "Non-finite value found for variable ",
+                      _axis.qualify(vars[i]));
       vals[i] = val;
       if (!options_defined)
       {
@@ -174,18 +175,18 @@ MatrixAssembler::assemble_by_variable(const DerivMap & vals_dict, bool assembly)
                           "Tensor in assembly format should have no intermediate dimensions.");
           neml_assert_dbg(val_ref.base_dim() == 2,
                           "During matrix assembly, found a tensor associated with variables ",
-                          yvars[i],
+                          _yaxis.qualify(yvars[i]),
                           "/",
-                          xvars[j],
+                          _xaxis.qualify(xvars[j]),
                           " with base dimension ",
                           val_ref.base_dim(),
                           ". Expected base dimension of 2.");
           neml_assert_dbg(val_ref.base_size(0) == _yaxis.variable_sizes()[i] &&
                               val_ref.base_size(1) == _xaxis.variable_sizes()[j],
                           "Invalid tensor shape associated with variables ",
-                          yvars[i],
+                          _yaxis.qualify(yvars[i]),
                           "/",
-                          xvars[j],
+                          _xaxis.qualify(xvars[j]),
                           ". Expected base shape ",
                           TensorShape{_yaxis.variable_sizes()[i], _xaxis.variable_sizes()[j]},
                           ", got ",
@@ -199,9 +200,9 @@ MatrixAssembler::assemble_by_variable(const DerivMap & vals_dict, bool assembly)
                            {_yaxis.variable_base_sizes()[i], _xaxis.variable_base_sizes()[j]});
         neml_assert_dbg(val.isfinite().all().item<bool>(),
                         "Non-finite tensor value found for variables ",
-                        yvars[i],
+                        _yaxis.qualify(yvars[i]),
                         "/",
-                        xvars[j]);
+                        _xaxis.qualify(xvars[j]));
         vals[j] = val;
         if (!options_defined)
         {

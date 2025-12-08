@@ -62,7 +62,7 @@ LinearSingleSlipHardeningRule::set_value(bool out, bool dout_din, bool /*d2out_d
       _tau_dot.d(_gamma_dot_sum) = _theta;
 
     if (const auto * const theta = nl_param("hardening_slope"))
-      _tau_dot.d(*theta) = _gamma_dot_sum;
+      _tau_dot.d(*theta) = _gamma_dot_sum();
   }
 }
 } // namespace neml2

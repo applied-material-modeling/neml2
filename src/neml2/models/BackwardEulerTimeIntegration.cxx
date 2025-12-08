@@ -91,12 +91,12 @@ BackwardEulerTimeIntegration<T>::set_value(bool out, bool dout_din, bool /*d2out
     _r.d(_s) = I;
     _r.d(_ds_dt) = -I * (_t - _tn);
 
-    if (currently_solving_nonlinear_system())
+    if (currently_assembling_nonlinear_system())
       return;
 
     _r.d(_sn) = -I;
     _r.d(_t) = -_ds_dt;
-    _r.d(_tn) = _ds_dt;
+    _r.d(_tn) = _ds_dt();
   }
 }
 

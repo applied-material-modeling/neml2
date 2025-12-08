@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/tensors/functions/from_assembly.h"
+#include "neml2/misc/types.h"
 #include "neml2/tensors/Tensor.h"
 #include "neml2/tensors/shape_utils.h"
 #include "neml2/misc/assertions.h"
@@ -32,20 +33,18 @@ namespace neml2
 template <std::size_t N>
 Tensor
 from_assembly(const Tensor & from,
-              const std::array<TensorShapeRef, N> & intmd_shapes,
+              const std::array<TensorShapeRef, N> & dep_intmd_shapes,
               const std::array<TensorShapeRef, N> & base_shapes,
               [[maybe_unused]] const std::string & debug_name)
 {
 #ifndef NDEBUG
   TensorShape assembly_sizes(N);
   for (std::size_t i = 0; i < N; i++)
-    assembly_sizes[i] = utils::numel(intmd_shapes[i]) * utils::numel(base_shapes[i]);
-  neml_assert_dbg(from.intmd_dim() == 0,
-                  "Tensor in assembly format should have no intermediate dimensions");
+    assembly_sizes[i] = utils::numel(dep_intmd_shapes[i]) * utils::numel(base_shapes[i]);
   neml_assert_dbg(assembly_sizes == from.base_sizes(),
                   "Incompatible base shape for tensor '",
                   debug_name,
-                  "', expected base shape is ",
+                  "', expected base shape ",
                   assembly_sizes,
                   ", but got ",
                   from.base_sizes());
@@ -55,47 +54,28 @@ from_assembly(const Tensor & from,
   TensorShape unfl_sizes;
   for (std::size_t i = 0; i < N; i++)
   {
-    unfl_sizes.insert(unfl_sizes.end(), intmd_shapes[i].begin(), intmd_shapes[i].end());
+    unfl_sizes.insert(unfl_sizes.end(), dep_intmd_shapes[i].begin(), dep_intmd_shapes[i].end());
     unfl_sizes.insert(unfl_sizes.end(), base_shapes[i].begin(), base_shapes[i].end());
   }
 
   // Unflatten base
   auto unfl = from.base_reshape(unfl_sizes);
 
-  // Generate permutation for intmd dimensions
-  //
-  // For example, for N == 3, the tensor shape is in the form of
-  //   (dynamic; intmd1, base1, intmd2, base2, intmd3, base3)
-  //
-  // We first move intmd1 after dynamic:
-  //   (dynamic; intmd1; base1, intmd2, base2, intmd3, base3)
-  //
-  // Then we move intmd2 after intmd1:
-  //   (dynamic; intmd1, intmd2; base1, base2, intmd3, base3)
-  //
-  // Finally, we move intmd3 after intmd2:
-  //   (dynamic; intmd1, intmd2, intmd3; base1, base2, base3)
-  Size intmd_dim = intmd_shapes[0].size();
-  TensorShape indices(unfl.dim());
-  std::iota(indices.begin(), indices.end(), 0);
-  auto permutation = indices;
-  auto first = permutation.begin() + unfl.dynamic_dim() + intmd_shapes[0].size();
-  auto middle = first + base_shapes[0].size();
-  for (std::size_t i = 1; i < N; ++i)
+  // The given tensor should have shape
+  //   (*dynamic; *indep_intmd; *dep_intmd_0, *base_0, ..., *dep_intmd_{N-1}, *base_{N-1})
+  // We need to move the dependent intermediate dimension from base to intmd
+  auto src_dim = from.batch_dim();
+  auto dest_dim = from.batch_dim();
+  auto raw = ATensor(unfl);
+  Size total_dep_intmd_dim = 0;
+  for (std::size_t i = 0; i < N; i++)
   {
-    if (!intmd_shapes[i].empty())
-    {
-      intmd_dim += intmd_shapes[i].size();
-      auto last = middle + intmd_shapes[i].size();
-      std::rotate(first, middle, last);
-      first += intmd_shapes[i].size();
-      middle += intmd_shapes[i].size();
-    }
-    middle += base_shapes[i].size();
+    for (std::size_t j = 0; j < dep_intmd_shapes[i].size(); j++)
+      raw = raw.movedim(src_dim++, dest_dim++);
+    src_dim += base_shapes[i].size();
+    total_dep_intmd_dim += dep_intmd_shapes[i].size();
   }
-
-  // Perform the permutation
-  return Tensor(at::permute(unfl, permutation), unfl.dynamic_sizes(), intmd_dim);
+  return Tensor(raw, from.dynamic_sizes(), from.intmd_dim() + total_dep_intmd_dim);
 }
 
 // Explicit instantiations

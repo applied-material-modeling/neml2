@@ -41,6 +41,19 @@
 
 namespace neml2
 {
+
+AssemblyingNonlinearSystem::AssemblyingNonlinearSystem(Model * const model, bool assembling)
+  : model(model),
+    prev_bool(model->currently_assembling_nonlinear_system())
+{
+  model->currently_assembling_nonlinear_system(assembling);
+}
+
+AssemblyingNonlinearSystem::~AssemblyingNonlinearSystem()
+{
+  model->currently_assembling_nonlinear_system(prev_bool);
+}
+
 bool
 Model::EvaluationSchema::operator==(const EvaluationSchema & other) const
 {
@@ -416,7 +429,7 @@ Model::forward_maybe_jit(bool out, bool dout, bool d2out)
   }
 
   auto & traced_functions =
-      currently_solving_nonlinear_system() ? _traced_functions_nl_sys : _traced_functions;
+      currently_assembling_nonlinear_system() ? _traced_functions_nl_sys : _traced_functions;
 
   const auto forward_op_idx = forward_operator_index(out, dout, d2out);
   const auto schema = calculate_eval_schema();
@@ -697,6 +710,18 @@ Model::collect_input_stack() const
 }
 
 void
+Model::currently_assembling_nonlinear_system(bool value)
+{
+  host<Model>()->_currently_assembling_nonlinear_system = value;
+}
+
+bool
+Model::currently_assembling_nonlinear_system() const
+{
+  return host<Model>()->_currently_assembling_nonlinear_system;
+}
+
+void
 Model::set_guess(const Sol<false> & x)
 {
   const auto sol_assember = VectorAssembler(input_axis().subaxis(STATE));
@@ -706,7 +731,10 @@ Model::set_guess(const Sol<false> & x)
 void
 Model::assemble(NonlinearSystem::Res<false> * residual, NonlinearSystem::Jac<false> * Jacobian)
 {
-  forward_maybe_jit(residual, Jacobian, false);
+  {
+    AssemblyingNonlinearSystem assembling_nl_sys(this, true);
+    forward_maybe_jit(residual, Jacobian, false);
+  }
 
   if (residual)
   {

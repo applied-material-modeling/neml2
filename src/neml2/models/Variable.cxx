@@ -23,9 +23,11 @@
 // THE SOFTWARE.
 
 #include <ATen/ExpandUtils.h>
+#include <torch/csrc/jit/frontend/tracer.h>
 
 #include "neml2/models/Variable.h"
-#include "neml2/models/Derivative.h"
+#include "neml2/tensors/jit.h"
+#include "neml2/tensors/Derivative.h"
 #include "neml2/misc/assertions.h"
 #include "neml2/models/Model.h"
 #include "neml2/tensors/functions/to_assembly.h"
@@ -80,7 +82,7 @@ std::unique_ptr<VariableBase>
 Variable<T>::clone(const VariableName & name, Model * owner) const
 {
   return std::make_unique<Variable<T>>(
-      name.empty() ? this->name() : name, owner ? owner : _owner, dep_intmd_dims());
+      name.empty() ? this->name() : name, owner ? owner : _owner, dep_intmd_dim());
 }
 
 template <typename T>
@@ -143,44 +145,41 @@ Variable<T>::zero(const TensorOptions & options)
 
 template <typename T>
 void
-Variable<T>::set(const Tensor & val, std::optional<TracerPrivilege> key)
+Variable<T>::set(const Tensor & val)
 {
-  if (owning())
-    _value = from_assembly<1>(val, {intmd_sizes()}, {base_sizes()}, name().str());
-  else
-  {
-    neml_assert_dbg(_ref_is_mutable || key.has_value(),
-                    "Model '",
-                    owner().name(),
-                    "' is trying to assign value to a variable '",
-                    name(),
-                    "' declared by model '",
-                    ref()->owner().name(),
-                    "' , but the referenced variable is not mutable.");
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-    const_cast<VariableBase *>(ref())->set(val);
-  }
+  neml_assert_dbg(val.defined(), "Variable '", name(), "' is being set to an undefined value.");
+  assign(from_assembly<1>(val, {dep_intmd_sizes()}, {base_sizes()}, name().str()));
 }
 
 template <typename T>
 Tensor
 Variable<T>::get() const
 {
-  if (!owning())
-    return ref()->get();
-
-  neml_assert_dbg(_value.defined(), "Variable '", name(), "' has undefined value.");
-  return to_assembly<1>(_value, {intmd_sizes()}, {base_sizes()}, name().str());
+  return to_assembly<1>(tensor(), {dep_intmd_sizes()}, {base_sizes()}, name().str());
 }
 
 template <typename T>
 Tensor
 Variable<T>::tensor() const
 {
-  if (owning())
-    return _value;
+  if (!owning())
+    return ref()->tensor();
 
-  return ref()->tensor();
+  if (!jit::tracer::isTracing())
+    neml_assert_dbg(
+        _value.defined() && _value.isfinite().all().template item<bool>(),
+        "Variable '",
+        name(),
+        "' has undefined or non-finite value. Below is some additional debugging information:\n",
+        "  owner: ",
+        owner().name(),
+        "\n  owning: ",
+        owning() ? "true" : "false",
+        "\n  defined: ",
+        _value.defined() ? "true" : "false",
+        "\n  isfinite: ",
+        _value.defined() && _value.isfinite().all().template item<bool>() ? "true" : "false");
+  return _value;
 }
 
 template <typename T>
@@ -196,11 +195,10 @@ Variable<T>::requires_grad_(bool req)
 
 template <typename T>
 void
-Variable<T>::operator=(const Tensor & val)
+Variable<T>::assign(const Tensor & val, std::optional<TracerPrivilege> key)
 {
   if (owning())
   {
-    neml_assert_dbg(val.defined(), "Variable '", name(), "' is being assigned an undefined value.");
     neml_assert_dbg(val.base_sizes() == base_sizes(),
                     "Variable '",
                     name(),
@@ -208,12 +206,25 @@ Variable<T>::operator=(const Tensor & val)
                     base_sizes(),
                     ", Got: ",
                     val.base_sizes());
+    neml_assert_dbg(val.defined() && val.isfinite().all().template item<bool>(),
+                    "Variable '",
+                    name(),
+                    "' is assigned with undefined or non-finite value. Below is some additional "
+                    "debugging information:\n",
+                    "  owner: ",
+                    owner().name(),
+                    "\n  owning: ",
+                    owning() ? "true" : "false",
+                    "\n  defined: ",
+                    val.defined() ? "true" : "false",
+                    "\n  isfinite: ",
+                    val.defined() && val.isfinite().all().template item<bool>() ? "true" : "false");
     _value = T(val);
     _cached_intmd_sizes = val.intmd_sizes();
   }
   else
   {
-    neml_assert_dbg(_ref_is_mutable,
+    neml_assert_dbg(_ref_is_mutable || key.has_value(),
                     "Model '",
                     owner().name(),
                     "' is trying to assign value to a variable '",
@@ -222,8 +233,15 @@ Variable<T>::operator=(const Tensor & val)
                     ref()->owner().name(),
                     "' , but the referenced variable is not mutable.");
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-    *const_cast<VariableBase *>(ref()) = val;
+    const_cast<VariableBase *>(ref())->assign(val);
   }
+}
+
+template <typename T>
+void
+Variable<T>::operator=(const Tensor & val)
+{
+  assign(val);
 }
 
 template <typename T>

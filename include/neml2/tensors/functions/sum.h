@@ -30,10 +30,10 @@
 namespace neml2
 {
 #define DECLARE_SUM(T)                                                                             \
-  T dynamic_sum(const T & a, Size d = 0, bool keepdim = false);                                    \
-  T intmd_sum(const T & a, Size d = 0, bool keepdim = false)
+  T dynamic_sum(const T & a, ArrayRef<Size> d = 0, bool keepdim = false);                          \
+  T intmd_sum(const T & a, ArrayRef<Size> d = 0, bool keepdim = false)
 FOR_ALL_TENSORBASE(DECLARE_SUM);
 #undef DECLARE_SUM
 
-Tensor base_sum(const Tensor & a, Size d = 0, bool keepdim = false);
+Tensor base_sum(const Tensor & a, ArrayRef<Size> d = 0, bool keepdim = false);
 } // namespace neml2

@@ -341,7 +341,7 @@ ParameterStore::assign_parameter_stack(jit::Stack & stack)
   neml_assert_dbg(stack.size() >= params.size(),
                   "Stack size (",
                   stack.size(),
-                  ") is smaller than the number of parameters in the model (",
+                  ") is insufficient for the number of parameters in the model (",
                   params.size(),
                   ").");
 
@@ -349,11 +349,14 @@ ParameterStore::assign_parameter_stack(jit::Stack & stack)
   std::size_t i = stack.size() - params.size();
   for (auto && [name, param] : params)
   {
-    const auto tensor = stack[i++].toTensor();
-    param->assign(tensor, TracerPrivilege{});
+    const auto & ten = stack[i++].toTensor();
+    const auto dynamic_dim = ten.dim() - param->static_dim();
+    const auto intmd_dim = param->intmd_dim();
+    Tensor val(ten, dynamic_dim, intmd_dim);
+    param->assign(val, TracerPrivilege{});
   }
 
-  // Drop the input variables from the stack
+  // Drop the parameters from the stack
   jit::drop(stack, params.size());
 }
 
