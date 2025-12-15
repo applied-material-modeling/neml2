@@ -293,6 +293,15 @@ TensorBase<Derived>::base_index(indexing::TensorIndicesRef indices) const
 
 template <class Derived>
 Derived
+TensorBase<Derived>::batch_index(indexing::TensorIndicesRef indices) const
+{
+  neml_assert_dbg(_intmd_dim == 0,
+                  "batch_index is only supported when there are no intermediate dimensions.");
+  return dynamic_index(indices);
+}
+
+template <class Derived>
+Derived
 TensorBase<Derived>::dynamic_slice(Size d, const indexing::Slice & index) const
 {
   d = utils::normalize_dim(d, 0, dynamic_dim());
@@ -319,6 +328,16 @@ TensorBase<Derived>::base_slice(Size d, const indexing::Slice & index) const
   auto res = this->slice(
       d, index.start().expect_int(), index.stop().expect_int(), index.step().expect_int());
   return neml2::Tensor(res, dynamic_sizes(), intmd_dim());
+}
+
+template <class Derived>
+Derived
+TensorBase<Derived>::batch_slice(Size d, const indexing::Slice & index) const
+{
+  d = utils::normalize_dim(d, 0, batch_dim());
+  if (d < dynamic_dim())
+    return dynamic_slice(d, index);
+  return intmd_slice(d - dynamic_dim(), index);
 }
 
 template <class Derived>
@@ -375,6 +394,24 @@ TensorBase<Derived>::base_index_put_(indexing::TensorIndicesRef indices, const C
   indexing::TensorIndices indices2(batch_dim(), indexing::Slice());
   indices2.insert(indices2.end(), indices.begin(), indices.end());
   this->index_put_(indices2, v);
+}
+
+template <class Derived>
+void
+TensorBase<Derived>::batch_index_put_(indexing::TensorIndicesRef indices, const ATensor & other)
+{
+  neml_assert_dbg(_intmd_dim == 0,
+                  "batch_index_put_ is only supported when there are no intermediate dimensions.");
+  dynamic_index_put_(indices, other);
+}
+
+template <class Derived>
+void
+TensorBase<Derived>::batch_index_put_(indexing::TensorIndicesRef indices, const CScalar & v)
+{
+  neml_assert_dbg(_intmd_dim == 0,
+                  "batch_index_put_ is only supported when there are no intermediate dimensions.");
+  dynamic_index_put_(indices, v);
 }
 
 template <class Derived>
@@ -684,6 +721,16 @@ TensorBase<Derived>::base_squeeze(Size d) const
 
 template <class Derived>
 Derived
+TensorBase<Derived>::batch_squeeze(Size d) const
+{
+  d = utils::normalize_dim(d, 0, batch_dim());
+  if (d < dynamic_dim())
+    return dynamic_squeeze(d);
+  return intmd_squeeze(d - dynamic_dim());
+}
+
+template <class Derived>
+Derived
 TensorBase<Derived>::dynamic_unsqueeze(Size d, Size n) const
 {
   neml_assert(n >= 0, "Number of dimensions to unsqueeze must be non-negative.");
@@ -718,6 +765,16 @@ TensorBase<Derived>::base_unsqueeze(Size d, Size n) const
   for (Size i = 0; i < n; ++i)
     t = t.unsqueeze(d);
   return neml2::Tensor(t, dynamic_sizes(), intmd_dim());
+}
+
+template <class Derived>
+Derived
+TensorBase<Derived>::batch_unsqueeze(Size d, Size n) const
+{
+  d = utils::normalize_itr(d, 0, batch_dim());
+  if (d <= dynamic_dim())
+    return dynamic_unsqueeze(d, n);
+  return intmd_unsqueeze(d - dynamic_dim(), n);
 }
 
 template <class Derived>
@@ -785,6 +842,15 @@ TensorBase<Derived>::base_movedim(Size old_dim, Size new_dim) const
   old_dim = utils::normalize_dim(old_dim, batch_dim(), dim());
   new_dim = utils::normalize_dim(new_dim, batch_dim(), dim());
   return neml2::Tensor(movedim(old_dim, new_dim), dynamic_sizes(), intmd_dim());
+}
+
+template <class Derived>
+Derived
+TensorBase<Derived>::batch_movedim(Size old_dim, Size new_dim) const
+{
+  neml_assert_dbg(_intmd_dim == 0,
+                  "batch_movedim is only supported when there are no intermediate dimensions.");
+  return dynamic_movedim(old_dim, new_dim);
 }
 
 template <class Derived>

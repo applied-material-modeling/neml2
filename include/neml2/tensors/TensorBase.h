@@ -187,6 +187,7 @@ public:
   Derived dynamic_index(indexing::TensorIndicesRef indices) const;
   Derived intmd_index(indexing::TensorIndicesRef indices) const;
   neml2::Tensor base_index(indexing::TensorIndicesRef indices) const;
+  Derived batch_index(indexing::TensorIndicesRef indices) const;
   ///@}
 
   ///@{
@@ -194,6 +195,7 @@ public:
   Derived dynamic_slice(Size d, const indexing::Slice & index) const;
   Derived intmd_slice(Size d, const indexing::Slice & index) const;
   neml2::Tensor base_slice(Size d, const indexing::Slice & index) const;
+  Derived batch_slice(Size d, const indexing::Slice & index) const;
   ///@}
 
   ///@{
@@ -204,6 +206,8 @@ public:
   void intmd_index_put_(indexing::TensorIndicesRef indices, const CScalar & v);
   void base_index_put_(indexing::TensorIndicesRef indices, const ATensor & other);
   void base_index_put_(indexing::TensorIndicesRef indices, const CScalar & v);
+  void batch_index_put_(indexing::TensorIndicesRef indices, const ATensor & other);
+  void batch_index_put_(indexing::TensorIndicesRef indices, const CScalar & v);
   ///@}
 
   /// Variable data without function graph
@@ -215,7 +219,7 @@ public:
   Derived intmd_expand(TensorShapeRef shape) const;
   neml2::Tensor base_expand(TensorShapeRef shape) const;
   Derived batch_expand(const TraceableTensorShape & dynamic_shape,
-                       TensorShapeRef intmd_shape) const;
+                       TensorShapeRef intmd_shape = {}) const;
   neml2::Tensor static_expand(TensorShapeRef intmd_shape, TensorShapeRef base_shape) const;
   ///@}
 
@@ -241,7 +245,7 @@ public:
   Derived intmd_reshape(TensorShapeRef shape) const;
   neml2::Tensor base_reshape(TensorShapeRef shape) const;
   Derived batch_reshape(const TraceableTensorShape & dynamic_shape,
-                        TensorShapeRef intmd_shape) const;
+                        TensorShapeRef intmd_shape = {}) const;
   neml2::Tensor static_reshape(TensorShapeRef intmd_shape, TensorShapeRef base_shape) const;
   ///@}
 
@@ -250,6 +254,7 @@ public:
   Derived dynamic_squeeze(Size d) const;
   Derived intmd_squeeze(Size d) const;
   neml2::Tensor base_squeeze(Size d) const;
+  Derived batch_squeeze(Size d) const;
   ///@}
 
   ///@{
@@ -257,6 +262,7 @@ public:
   Derived dynamic_unsqueeze(Size d, Size n = 1) const;
   Derived intmd_unsqueeze(Size d, Size n = 1) const;
   neml2::Tensor base_unsqueeze(Size d, Size n = 1) const;
+  Derived batch_unsqueeze(Size d, Size n = 1) const;
   ///@}
 
   ///@{
@@ -271,6 +277,7 @@ public:
   Derived dynamic_movedim(Size old_dim, Size new_dim) const;
   Derived intmd_movedim(Size old_dim, Size new_dim) const;
   neml2::Tensor base_movedim(Size old_dim, Size new_dim) const;
+  Derived batch_movedim(Size old_dim, Size new_dim) const;
   ///@}
 
   ///@{
