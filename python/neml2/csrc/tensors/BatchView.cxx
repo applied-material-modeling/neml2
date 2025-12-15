@@ -99,6 +99,27 @@ BatchView<T>::size(Size i) const
 
 template <class T>
 T
+BatchView<T>::index(const indexing::TensorIndices & indices) const
+{
+  return _data->batch_index(indices);
+}
+
+template <class T>
+T
+BatchView<T>::slice(Size dim, const indexing::Slice & slice) const
+{
+  return _data->batch_slice(dim, slice);
+}
+
+template <class T>
+void
+BatchView<T>::index_put_(const indexing::TensorIndices & indices, const ATensor & src)
+{
+  _data->batch_index_put_(indices, src);
+}
+
+template <class T>
+T
 BatchView<T>::expand(TensorShapeRef new_dynamic_shape, TensorShapeRef new_intmd_shape) const
 {
   return _data->batch_expand(new_dynamic_shape, new_intmd_shape);
@@ -116,6 +137,34 @@ T
 BatchView<T>::reshape(TensorShapeRef new_dynamic_shape, TensorShapeRef new_intmd_shape) const
 {
   return _data->batch_reshape(new_dynamic_shape, new_intmd_shape);
+}
+
+template <class T>
+T
+BatchView<T>::squeeze(Size dim) const
+{
+  return _data->batch_squeeze(dim);
+}
+
+template <class T>
+T
+BatchView<T>::unsqueeze(Size dim, Size n) const
+{
+  return _data->batch_unsqueeze(dim, n);
+}
+
+template <class T>
+T
+BatchView<T>::transpose(Size d1, Size d2) const
+{
+  return _data->batch_transpose(d1, d2);
+}
+
+template <class T>
+T
+BatchView<T>::movedim(Size source, Size destination) const
+{
+  return _data->batch_movedim(source, destination);
 }
 
 template <class T>
