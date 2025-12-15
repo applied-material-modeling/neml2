@@ -270,6 +270,7 @@ public:
   Derived dynamic_transpose(Size d1, Size d2) const;
   Derived intmd_transpose(Size d1, Size d2) const;
   neml2::Tensor base_transpose(Size d1, Size d2) const;
+  Derived batch_transpose(Size d1, Size d2) const;
   ///@}
 
   ///@{}

@@ -45,9 +45,28 @@ def_BatchView(py::module_ & m, const std::string & name)
                                return pys;
                              })
       .def("size", &BatchView<T>::size)
+      .def("__getitem__", &BatchView<T>::index)
+      .def("__getitem__",
+           [](BatchView<T> * self, at::indexing::TensorIndex index)
+           { return self->index({std::move(index)}); })
+      .def("slice", &BatchView<T>::slice)
+      .def("__setitem__", &BatchView<T>::index_put_)
+      .def("__setitem__",
+           [](BatchView<T> * self, at::indexing::TensorIndex index, const ATensor & src)
+           { return self->index_put_({std::move(index)}, src); })
+      .def("__setitem__",
+           [](BatchView<T> * self, const indexing::TensorIndices & indices, const Tensor & src)
+           { return self->index_put_(indices, src); })
+      .def("__setitem__",
+           [](BatchView<T> * self, at::indexing::TensorIndex index, const Tensor & src)
+           { return self->index_put_({std::move(index)}, src); })
       .def("expand", &BatchView<T>::expand)
       .def("expand_as", &BatchView<T>::expand_as)
       .def("reshape", &BatchView<T>::reshape)
+      .def("squeeze", &BatchView<T>::squeeze)
+      .def("unsqueeze", &BatchView<T>::unsqueeze, py::arg("dim"), py::arg("n") = 1)
+      .def("transpose", &BatchView<T>::transpose)
+      .def("movedim", &BatchView<T>::movedim)
       .def("flatten", &BatchView<T>::flatten);
 }
 

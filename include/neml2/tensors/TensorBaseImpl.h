@@ -810,6 +810,15 @@ TensorBase<Derived>::base_transpose(Size d1, Size d2) const
 
 template <class Derived>
 Derived
+TensorBase<Derived>::batch_transpose(Size d1, Size d2) const
+{
+  neml_assert_dbg(_intmd_dim == 0,
+                  "batch_transpose is only supported when there are no intermediate dimensions.");
+  return dynamic_transpose(d1, d2);
+}
+
+template <class Derived>
+Derived
 TensorBase<Derived>::dynamic_movedim(Size old_dim, Size new_dim) const
 {
   old_dim = utils::normalize_dim(old_dim, 0, dynamic_dim());

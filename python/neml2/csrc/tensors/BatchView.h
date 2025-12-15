@@ -44,13 +44,20 @@ class BatchView
 public:
   BatchView(T * data);
 
-  // These methods mirror TensorBase (the dynamic_xxx ones)
+  // These methods mirror TensorBase (the batch_xxx ones)
   neml2::Size dim() const;
   neml2::TensorShape sizes() const;
   neml2::Size size(neml2::Size) const;
+  T index(const neml2::indexing::TensorIndices &) const;
+  T slice(neml2::Size, const neml2::indexing::Slice &) const;
+  void index_put_(const neml2::indexing::TensorIndices &, const neml2::ATensor &);
   T expand(neml2::TensorShapeRef, neml2::TensorShapeRef) const;
   T expand_as(const neml2::Tensor &) const;
   T reshape(neml2::TensorShapeRef, neml2::TensorShapeRef) const;
+  T squeeze(neml2::Size) const;
+  T unsqueeze(neml2::Size, neml2::Size n = 1) const;
+  T transpose(neml2::Size d1, neml2::Size d2) const;
+  T movedim(neml2::Size, neml2::Size) const;
   T flatten() const;
 
 private:
