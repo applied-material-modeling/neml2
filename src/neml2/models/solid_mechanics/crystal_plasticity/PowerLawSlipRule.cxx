@@ -71,18 +71,18 @@ PowerLawSlipRule::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
   if (dout_din)
   {
     if (_rss.is_dependent())
-      _g.d(_rss) = _gamma0 * _n * pow(abs(_rss / _tau), _n - 1.0) / _tau;
+      _g.d(_rss, 1) = _gamma0 * _n * pow(abs(_rss / _tau), _n - 1.0) / _tau;
 
     if (_tau.is_dependent())
     {
-      _g.d(_tau) = -_n * _gamma0 * _rss * pow(abs(_rss()), _n - 1.0) / pow(_tau(), _n + 1);
+      _g.d(_tau, 1) = -_n * _gamma0 * _rss * pow(abs(_rss()), _n - 1.0) / pow(_tau(), _n + 1);
     }
 
     if (const auto * const gamma0 = nl_param("gamma0"))
-      _g.d(*gamma0) = pow(abs(_rss / _tau), _n - 1.0) * _rss / _tau;
+      _g.d(*gamma0, 1) = pow(abs(_rss / _tau), _n - 1.0) * _rss / _tau;
 
     if (const auto * const n = nl_param("n"))
-      _g.d(*n) = _gamma0 * log(abs(_rss / _tau)) * pow(abs(_rss / _tau), _n - 1.0) * _rss / _tau;
+      _g.d(*n, 1) = _gamma0 * log(abs(_rss / _tau)) * pow(abs(_rss / _tau), _n - 1.0) * _rss / _tau;
   }
 }
 } // namespace neml2

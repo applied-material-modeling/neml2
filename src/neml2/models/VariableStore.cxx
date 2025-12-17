@@ -101,24 +101,24 @@ VariableStore::output_axis() const
 template <typename T>
 const Variable<T> &
 VariableStore::declare_input_variable(const char * name,
-                                      std::size_t dep_intmd_dim,
+                                      std::size_t intmd_dim,
                                       bool allow_duplicate)
 {
   if (_object->input_options().contains(name))
     return declare_input_variable<T>(
-        _object->input_options().get<VariableName>(name), dep_intmd_dim, allow_duplicate);
-  return declare_input_variable<T>(VariableName(name), dep_intmd_dim, allow_duplicate);
+        _object->input_options().get<VariableName>(name), intmd_dim, allow_duplicate);
+  return declare_input_variable<T>(VariableName(name), intmd_dim, allow_duplicate);
 }
 
 template <typename T>
 const Variable<T> &
 VariableStore::declare_input_variable(const VariableName & name,
-                                      std::size_t dep_intmd_dim,
+                                      std::size_t intmd_dim,
                                       bool allow_duplicate)
 {
   if (!allow_duplicate || (allow_duplicate && !_input_axis.has_variable(name)))
     _input_axis.add_variable(name, {}, T::const_base_sizes);
-  return *create_variable<T>(_input_variables, name, dep_intmd_dim, allow_duplicate);
+  return *create_variable<T>(_input_variables, name, intmd_dim, allow_duplicate);
 }
 #define INSTANTIATE_DECLARE_INPUT_VARIABLE(T)                                                      \
   template const Variable<T> & VariableStore::declare_input_variable<T>(                           \
@@ -129,20 +129,19 @@ FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_DECLARE_INPUT_VARIABLE);
 
 template <typename T>
 Variable<T> &
-VariableStore::declare_output_variable(const char * name, std::size_t dep_intmd_dim)
+VariableStore::declare_output_variable(const char * name, std::size_t intmd_dim)
 {
   if (_object->input_options().contains(name))
-    return declare_output_variable<T>(_object->input_options().get<VariableName>(name),
-                                      dep_intmd_dim);
-  return declare_output_variable<T>(VariableName(name), dep_intmd_dim);
+    return declare_output_variable<T>(_object->input_options().get<VariableName>(name), intmd_dim);
+  return declare_output_variable<T>(VariableName(name), intmd_dim);
 }
 
 template <typename T>
 Variable<T> &
-VariableStore::declare_output_variable(const VariableName & name, std::size_t dep_intmd_dim)
+VariableStore::declare_output_variable(const VariableName & name, std::size_t intmd_dim)
 {
   _output_axis.add_variable(name, {}, T::const_base_sizes);
-  return *create_variable<T>(_output_variables, name, dep_intmd_dim);
+  return *create_variable<T>(_output_variables, name, intmd_dim);
 }
 #define INSTANTIATE_DECLARE_OUTPUT_VARIABLE(T)                                                     \
   template Variable<T> & VariableStore::declare_output_variable<T>(const char *, std::size_t);     \
@@ -184,7 +183,7 @@ template <typename T>
 Variable<T> *
 VariableStore::create_variable(VariableStorage & variables,
                                const VariableName & name,
-                               std::size_t dep_intmd_dim,
+                               std::size_t intmd_dim,
                                bool allow_duplicate)
 {
   // Make sure we don't duplicate variables
@@ -202,7 +201,7 @@ VariableStore::create_variable(VariableStorage & variables,
   {
     // Allocate
     std::unique_ptr<VariableBase> var;
-    var = std::make_unique<Variable<T>>(name, _object, dep_intmd_dim);
+    var = std::make_unique<Variable<T>>(name, _object, intmd_dim);
     auto [it, success] = variables.emplace(name, std::move(var));
     var_base_ptr = it->second.get();
   }
@@ -415,8 +414,8 @@ VariableStore::assign_output_stack(jit::Stack & stack, bool out, bool dout, bool
     {
       const auto & ten = stacklist[i++];
       const auto & deriv = yvar->d(*xvar);
-      const auto dyna_dim = ten.dim() - deriv.static_dim();
-      const auto intmd_dim = deriv.intmd_dim();
+      const auto dyna_dim = ten.dim() - deriv.total_intmd_dim() - deriv.total_base_dim();
+      const auto intmd_dim = deriv.total_intmd_dim();
       yvar->d(*xvar) = Tensor(ten, dyna_dim, intmd_dim);
     }
 
@@ -425,8 +424,8 @@ VariableStore::assign_output_stack(jit::Stack & stack, bool out, bool dout, bool
     {
       const auto & ten = stacklist[i++];
       const auto & deriv = yvar->d2(*x1var, *x2var);
-      const auto dyna_dim = ten.dim() - deriv.static_dim();
-      const auto intmd_dim = deriv.intmd_dim();
+      const auto dyna_dim = ten.dim() - deriv.total_intmd_dim() - deriv.total_base_dim();
+      const auto intmd_dim = deriv.total_intmd_dim();
       yvar->d2(*x1var, *x2var) = Tensor(ten, dyna_dim, intmd_dim);
     }
 

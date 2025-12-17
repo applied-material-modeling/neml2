@@ -50,9 +50,9 @@ SlipRule::expected_options()
 
 SlipRule::SlipRule(const OptionSet & options)
   : Model(options),
-    _g(declare_output_variable<Scalar>("slip_rates")),
-    _rss(declare_input_variable<Scalar>("resolved_shears")),
-    _tau(declare_input_variable<Scalar>("slip_strengths"))
+    _g(declare_output_variable<Scalar>("slip_rates", 1)),
+    _rss(declare_input_variable<Scalar>("resolved_shears", 1)),
+    _tau(declare_input_variable<Scalar>("slip_strengths", 1))
 {
 }
 } // namespace neml2

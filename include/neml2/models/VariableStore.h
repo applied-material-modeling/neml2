@@ -173,25 +173,61 @@ protected:
    */
   virtual void send_variables_to(const TensorOptions & options);
 
-  /// Declare an input variable
+  /**
+   * @brief Declare an input variable
+   *
+   * @tparam T Tensor type
+   * @param name Variable name
+   * @param intmd_dim Minimum number of intermediate dimensions that are intrinsic to the model
+   * definition
+   * @param allow_duplicate Whether to allow duplicate variable declaration
+   * @return const Variable<T>&
+   */
   template <typename T>
   const Variable<T> & declare_input_variable(const char * name,
-                                             std::size_t dep_intmd_dim = 0,
+                                             std::size_t intmd_dim = 0,
                                              bool allow_duplicate = false);
 
-  /// Declare an input variable
+  /**
+   * @brief Declare an input variable
+   *
+   * @tparam T Tensor type
+   * @param name Variable name
+   * @param intmd_dim Minimum number of intermediate dimensions that are intrinsic to the model
+   * definition
+   * @param allow_duplicate Whether to allow duplicate variable declaration
+   * @return const Variable<T>&
+   */
   template <typename T>
   const Variable<T> & declare_input_variable(const VariableName & name,
-                                             std::size_t dep_intmd_dim = 0,
+                                             std::size_t intmd_dim = 0,
                                              bool allow_duplicate = false);
 
-  /// Declare an output variable
+  /**
+   * @brief Declare an output variable
+   *
+   * @tparam T Tensor type
+   * @param name Variable name
+   * @param intmd_dim Minimum number of intermediate dimensions that are intrinsic to the model
+   * definition
+   * @param allow_duplicate Whether to allow duplicate variable declaration
+   * @return const Variable<T>&
+   */
   template <typename T>
-  Variable<T> & declare_output_variable(const char * name, std::size_t dep_intmd_dim = 0);
+  Variable<T> & declare_output_variable(const char * name, std::size_t intmd_dim = 0);
 
-  /// Declare an output variable
+  /**
+   * @brief Declare an output variable
+   *
+   * @tparam T Tensor type
+   * @param name Variable name
+   * @param intmd_dim Minimum number of intermediate dimensions that are intrinsic to the model
+   * definition
+   * @param allow_duplicate Whether to allow duplicate variable declaration
+   * @return const Variable<T>&
+   */
   template <typename T>
-  Variable<T> & declare_output_variable(const VariableName & name, std::size_t dep_intmd_dim = 0);
+  Variable<T> & declare_output_variable(const VariableName & name, std::size_t intmd_dim = 0);
 
   /// Clone a variable and put it on the input axis
   const VariableBase * clone_input_variable(const VariableBase & var,
@@ -222,7 +258,7 @@ private:
   template <typename T>
   Variable<T> * create_variable(VariableStorage & variables,
                                 const VariableName & name,
-                                std::size_t dep_intmd_dim,
+                                std::size_t intmd_dim,
                                 bool allow_duplicate = false);
 
   /// Model using this interface

@@ -82,7 +82,7 @@ std::unique_ptr<VariableBase>
 Variable<T>::clone(const VariableName & name, Model * owner) const
 {
   return std::make_unique<Variable<T>>(
-      name.empty() ? this->name() : name, owner ? owner : _owner, dep_intmd_dim());
+      name.empty() ? this->name() : name, owner ? owner : _owner, intrsc_intmd_dim());
 }
 
 template <typename T>
@@ -118,6 +118,21 @@ Variable<T>::ref(const VariableBase & var, bool ref_is_mutable)
               " of type ",
               var.type(),
               ": Dynamic cast failure.");
+  neml_assert(intrsc_intmd_dim() == var_ptr->intrsc_intmd_dim(),
+              "Variable '",
+              name(),
+              "' declared by '",
+              owner().name(),
+              "' cannot reference variable '",
+              var.name(),
+              "' declared by '",
+              var.owner().name(),
+              "' due to incompatible intrinsic intermediate dimensions. \nThe "
+              "referencing variable has intrinsic intermediate dimension ",
+              intrsc_intmd_dim(),
+              ", while the referenced variable has intrinsic intermediate dimension ",
+              var_ptr->intrsc_intmd_dim(),
+              ".");
   _ref = var_ptr;
   _ref_is_mutable |= ref_is_mutable;
 }
@@ -148,14 +163,14 @@ void
 Variable<T>::set(const Tensor & val)
 {
   neml_assert_dbg(val.defined(), "Variable '", name(), "' is being set to an undefined value.");
-  assign(from_assembly<1>(val, {dep_intmd_sizes()}, {base_sizes()}, name().str()));
+  assign(from_assembly<1>(val, {intrsc_intmd_sizes()}, {base_sizes()}, name().str()));
 }
 
 template <typename T>
 Tensor
 Variable<T>::get() const
 {
-  return to_assembly<1>(tensor(), {dep_intmd_sizes()}, {base_sizes()}, name().str());
+  return to_assembly<1>(tensor(), {intrsc_intmd_sizes()}, {base_sizes()}, name().str());
 }
 
 template <typename T>
