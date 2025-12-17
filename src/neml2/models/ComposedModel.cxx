@@ -212,16 +212,14 @@ ComposedModel::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (dout_din)
     for (auto && [name, var] : output_variables())
-      for (const auto & [xvar, dy_dx] : var->ref()->total_derivatives(_dependency))
+      for (const auto & [dy_dx, xvar] : var->ref()->total_derivatives(_dependency))
         var->d(input_variable(xvar->name())) = dy_dx;
 
   if (d2out_din2)
     for (auto && [name, var] : output_variables())
-      for (const auto & [xvars, d2y_dx1x2] : var->ref()->total_second_derivatives(_dependency))
-      {
-        const auto [x1var, x2var] = xvars;
+      for (const auto & [d2y_dx1x2, x1var, x2var] :
+           var->ref()->total_second_derivatives(_dependency))
         var->d2(input_variable(x1var->name()), input_variable(x2var->name())) = d2y_dx1x2;
-      }
 
   if (dout_din || d2out_din2)
     for (auto && [name, var] : output_variables())

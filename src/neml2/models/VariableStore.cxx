@@ -300,7 +300,7 @@ VariableStore::cache_derivative_sparsity()
 {
   std::vector<std::pair<VariableBase *, const VariableBase *>> sparsity;
   for (auto && [yname, yvar] : output_variables())
-    for (const auto & [xvar, dy_dx] : yvar->derivatives())
+    for (const auto & [dy_dx, xvar] : yvar->derivatives())
       if (xvar->is_dependent() && dy_dx.defined())
         sparsity.emplace_back(yvar.get(), xvar);
 
@@ -315,9 +315,9 @@ VariableStore::cache_second_derivative_sparsity()
 {
   std::vector<std::tuple<VariableBase *, const VariableBase *, const VariableBase *>> sparsity;
   for (auto && [yname, yvar] : output_variables())
-    for (const auto & [xvars, d2y_dx1dx2] : yvar->second_derivatives())
+    for (const auto & [d2y_dx1dx2, x1var, x2var] : yvar->second_derivatives())
       if (d2y_dx1dx2.defined())
-        sparsity.emplace_back(yvar.get(), xvars.first, xvars.second);
+        sparsity.emplace_back(yvar.get(), x1var, x2var);
 
   if (_object->currently_assembling_nonlinear_system())
     _secderiv_sparsity_nl_sys = std::move(sparsity);
@@ -456,7 +456,7 @@ VariableStore::collect_output_derivatives(bool assembly) const
 {
   DerivMap derivs;
   for (auto && [name, var] : output_variables())
-    for (const auto & [xvar, deriv] : var->derivatives())
+    for (const auto & [deriv, xvar] : var->derivatives())
       if (deriv.defined())
         derivs[name][xvar->name()] = assembly ? deriv.get() : deriv.tensor();
   return derivs;
@@ -467,10 +467,9 @@ VariableStore::collect_output_second_derivatives(bool assembly) const
 {
   SecDerivMap sec_derivs;
   for (auto && [name, var] : output_variables())
-    for (const auto & [xvars, deriv] : var->second_derivatives())
+    for (const auto & [deriv, x1var, x2var] : var->second_derivatives())
       if (deriv.defined())
-        sec_derivs[name][xvars.first->name()][xvars.second->name()] =
-            assembly ? deriv.get() : deriv.tensor();
+        sec_derivs[name][x1var->name()][x2var->name()] = assembly ? deriv.get() : deriv.tensor();
   return sec_derivs;
 }
 
