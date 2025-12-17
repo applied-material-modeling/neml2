@@ -208,9 +208,10 @@ public:
                   const std::vector<const VariableBase *> & u2s);
   ///@}
 
-  using DerivContainer = std::map<const VariableBase *, Derivative<1>>;
-  using SecDerivContainer =
-      std::map<std::pair<const VariableBase *, const VariableBase *>, Derivative<2>>;
+  using DerivTuple = std::tuple<Derivative<1>, const VariableBase *>;
+  using DerivContainer = std::vector<DerivTuple>;
+  using SecDerivTuple = std::tuple<Derivative<2>, const VariableBase *, const VariableBase *>;
+  using SecDerivContainer = std::vector<SecDerivTuple>;
 
   /// Partial derivatives
   const DerivContainer & derivatives() const { return _derivs; }
