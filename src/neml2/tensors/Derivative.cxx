@@ -246,7 +246,7 @@ Derivative<N>::try_intmd_expand(const Tensor & deriv) const
       deriv.intmd_sizes().slice(0, deriv.intmd_dim() - _intrsc_intmd_dim);
   const auto target_intmd_sizes = utils::add_shapes(extrsc_intmd_sizes, intrsc_intmd_sizes(0));
   const auto deriv_aligned =
-      deriv.intmd_unsqueeze(-_intrsc_intmd_dim - 1, total_intrsc_intmd_dim() - _intrsc_intmd_dim);
+      deriv.intmd_unsqueeze(-_intrsc_intmd_dim - 1, intrsc_intmd_dim(0) - _intrsc_intmd_dim);
   return deriv_aligned.intmd_expand(target_intmd_sizes);
 }
 
