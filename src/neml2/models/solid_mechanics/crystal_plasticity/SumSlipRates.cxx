@@ -63,7 +63,7 @@ SumSlipRates::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
     _sg = intmd_sum(abs(_g()), -1, /*keepdim=*/false);
   if (dout_din)
     if (_g.is_dependent())
-      _sg.d(_g) = sign(_g());
+      _sg.d(_g, 1) = sign(_g());
 }
 
 } // namespace neml2

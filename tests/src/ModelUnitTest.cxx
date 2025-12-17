@@ -208,7 +208,7 @@ ModelUnitTest::check_dvalue()
 
       // Convert derivative to variable format
       numerical = from_assembly<2>(numerical,
-                                   {yvar->dep_intmd_sizes(), xvar->dep_intmd_sizes()},
+                                   {yvar->intrsc_intmd_sizes(), xvar->intrsc_intmd_sizes()},
                                    {yvar->base_sizes(), xvar->base_sizes()});
 
       // If the derivative does not exist, the numerical derivative should be zero
@@ -258,11 +258,11 @@ ModelUnitTest::check_d2value()
               {
                 auto deriv = Tensor::zeros(
                     {},
-                    utils::add_shapes(yvar->dep_intmd_sizes(), x1var->dep_intmd_sizes()),
+                    utils::add_shapes(yvar->intrsc_intmd_sizes(), x1var->intrsc_intmd_sizes()),
                     utils::add_shapes(yvar->base_sizes(), x1var->base_sizes()),
                     x.options());
                 return to_assembly<2>(deriv,
-                                      {yvar->dep_intmd_sizes(), x1var->dep_intmd_sizes()},
+                                      {yvar->intrsc_intmd_sizes(), x1var->intrsc_intmd_sizes()},
                                       {yvar->base_sizes(), x1var->base_sizes()});
               }
               return yvar->d(*x1var).get();
@@ -274,7 +274,7 @@ ModelUnitTest::check_d2value()
         // Convert derivative to variable format
         numerical = from_assembly<3>(
             numerical,
-            {yvar->dep_intmd_sizes(), x1var->dep_intmd_sizes(), x2var->dep_intmd_sizes()},
+            {yvar->intrsc_intmd_sizes(), x1var->intrsc_intmd_sizes(), x2var->intrsc_intmd_sizes()},
             {yvar->base_sizes(), x1var->base_sizes(), x2var->base_sizes()});
 
         // If the derivative does not exist, the numerical derivative should be zero

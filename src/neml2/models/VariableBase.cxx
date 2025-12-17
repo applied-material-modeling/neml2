@@ -39,11 +39,11 @@ namespace neml2
 VariableBase::VariableBase(VariableName name_in,
                            Model * owner,
                            TensorShapeRef base_shape,
-                           std::size_t dep_intmd_dim)
+                           std::size_t intrsc_intmd_dim)
   : _name(std::move(name_in)),
     _owner(owner),
     _base_sizes(base_shape),
-    _dep_intmd_dim(dep_intmd_dim)
+    _intrsc_intmd_dim(intrsc_intmd_dim)
 {
 }
 
@@ -176,9 +176,9 @@ VariableBase::intmd_sizes() const
 }
 
 TensorShapeRef
-VariableBase::dep_intmd_sizes() const
+VariableBase::intrsc_intmd_sizes() const
 {
-  return intmd_sizes().slice(intmd_sizes().size() - dep_intmd_dim());
+  return intmd_sizes().slice(intmd_sizes().size() - intrsc_intmd_dim());
 }
 
 Size
@@ -240,9 +240,9 @@ VariableBase::set_intmd_sizes(TensorShapeRef shape)
 }
 
 std::size_t
-VariableBase::dep_intmd_dim() const
+VariableBase::intrsc_intmd_dim() const
 {
-  return _dep_intmd_dim;
+  return _intrsc_intmd_dim;
 }
 
 Tensor
@@ -276,7 +276,10 @@ VariableBase::has_derivative(const VariableName & v1name, const VariableName & v
 }
 
 static Derivative<1> &
-get_deriv(VariableBase::DerivContainer & derivs, const VariableBase & var, const VariableBase & arg)
+get_deriv(VariableBase::DerivContainer & derivs,
+          const VariableBase & var,
+          const VariableBase & arg,
+          std::size_t intrsc_intmd_dim = 0)
 {
   // Check if derivative already exists
   for (auto & [deriv, a] : derivs)
@@ -284,17 +287,18 @@ get_deriv(VariableBase::DerivContainer & derivs, const VariableBase & var, const
       return deriv;
 
   // Make a new derivative
-  const auto dep_intmd_sizes = std::array{var.dep_intmd_sizes(), arg.dep_intmd_sizes()};
+  const auto intrsc_intmd_sizes = std::array{var.intrsc_intmd_sizes(), arg.intrsc_intmd_sizes()};
   const auto base_sizes = std::array{var.base_sizes(), arg.base_sizes()};
   const auto debug_name = derivative_name(var.name().str(), arg.name().str());
-  auto & deriv = derivs.emplace_back(Derivative<1>(dep_intmd_sizes, base_sizes, debug_name), &arg);
+  auto & deriv = derivs.emplace_back(
+      Derivative<1>(intrsc_intmd_sizes, base_sizes, debug_name, intrsc_intmd_dim), &arg);
   return std::get<0>(deriv);
 }
 
 Derivative<1> &
-VariableBase::d(const VariableBase & var)
+VariableBase::d(const VariableBase & var, std::size_t intrsc_intmd_dim)
 {
-  return get_deriv(_derivs, *this, var);
+  return get_deriv(_derivs, *this, var, intrsc_intmd_dim);
 }
 
 const Derivative<1> &
@@ -311,7 +315,8 @@ static Derivative<2> &
 get_secderiv(VariableBase::SecDerivContainer & secderivs,
              const VariableBase & var,
              const VariableBase & arg1,
-             const VariableBase & arg2)
+             const VariableBase & arg2,
+             std::size_t intrsc_intmd_dim = 0)
 {
   // Check if derivative already exists
   for (auto & [deriv, a1, a2] : secderivs)
@@ -319,19 +324,19 @@ get_secderiv(VariableBase::SecDerivContainer & secderivs,
       return deriv;
 
   // Make a new derivative
-  const auto dep_intmd_sizes =
-      std::array{var.dep_intmd_sizes(), arg1.dep_intmd_sizes(), arg2.dep_intmd_sizes()};
+  const auto intrsc_intmd_sizes =
+      std::array{var.intrsc_intmd_sizes(), arg1.intrsc_intmd_sizes(), arg2.intrsc_intmd_sizes()};
   const auto base_sizes = std::array{var.base_sizes(), arg1.base_sizes(), arg2.base_sizes()};
   const auto debug_name = derivative_name(var.name().str(), arg1.name().str(), arg2.name().str());
-  auto & deriv =
-      secderivs.emplace_back(Derivative<2>(dep_intmd_sizes, base_sizes, debug_name), &arg1, &arg2);
+  auto & deriv = secderivs.emplace_back(
+      Derivative<2>(intrsc_intmd_sizes, base_sizes, debug_name, intrsc_intmd_dim), &arg1, &arg2);
   return std::get<0>(deriv);
 }
 
 Derivative<2> &
-VariableBase::d2(const VariableBase & var1, const VariableBase & var2)
+VariableBase::d2(const VariableBase & var1, const VariableBase & var2, std::size_t intrsc_intmd_dim)
 {
-  return get_secderiv(_sec_derivs, *this, var1, var2);
+  return get_secderiv(_sec_derivs, *this, var1, var2, intrsc_intmd_dim);
 }
 
 const Derivative<2> &

@@ -85,7 +85,7 @@ PlasticVorticity::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
   if (dout_din)
   {
     if (_gamma_dot.is_dependent())
-      _Wp.d(_gamma_dot) = W.rotate(_R().intmd_unsqueeze(-1));
+      _Wp.d(_gamma_dot, 1) = W.rotate(_R().intmd_unsqueeze(-1));
 
     if (_R.is_dependent())
       _Wp.d(_R) = Wp_crystal.drotate(_R());

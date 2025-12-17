@@ -60,10 +60,19 @@ public:
   VariableBase & operator=(VariableBase &&) = delete;
   virtual ~VariableBase() = default;
 
+  /**
+   * @brief The canonical constructor
+   *
+   * @param name_in Variable name
+   * @param owner Model who declared this variable
+   * @param base_shape Base shape of this variable
+   * @param intrsc_intmd_dim Minimum number of intermediate dimensions that are intrinsic to the
+   * model definition. These dimensions are always on the far right of the intermediate batch shape.
+   */
   VariableBase(VariableName name_in,
                Model * owner,
                TensorShapeRef base_shape,
-               std::size_t dep_intmd_dim);
+               std::size_t intrsc_intmd_dim);
 
   /// Name of this variable
   const VariableName & name() const { return _name; }
@@ -122,7 +131,7 @@ public:
   virtual const TraceableTensorShape & dynamic_sizes() const = 0;
   TensorShapeRef static_sizes() const;
   TensorShapeRef intmd_sizes() const;
-  TensorShapeRef dep_intmd_sizes() const;
+  TensorShapeRef intrsc_intmd_sizes() const;
   ///@}
 
   /// @return the size of dimension @p i
@@ -149,7 +158,7 @@ public:
   void set_intmd_sizes(TensorShapeRef shape);
 
   /// Get dependent intermediate dimension
-  std::size_t dep_intmd_dim() const;
+  std::size_t intrsc_intmd_dim() const;
 
   /// Check if this is an owning variable
   virtual bool owning() const = 0;
@@ -188,11 +197,12 @@ public:
   bool has_derivative(const VariableName & v1name, const VariableName & v2name) const;
 
   /// Wrapper for assigning partial derivative
-  Derivative<1> & d(const VariableBase & var);
+  Derivative<1> & d(const VariableBase & var, std::size_t intrsc_intmd_dim = 0);
   const Derivative<1> & d(const VariableBase & var) const;
 
   /// Wrapper for assigning second partial derivative
-  Derivative<2> & d2(const VariableBase & var1, const VariableBase & var2);
+  Derivative<2> &
+  d2(const VariableBase & var1, const VariableBase & var2, std::size_t intrsc_intmd_dim = 0);
   const Derivative<2> & d2(const VariableBase & var1, const VariableBase & var2) const;
 
   ///@{
@@ -254,8 +264,8 @@ public:
   /// Base shape of the variable
   const TensorShape _base_sizes = {};
 
-  /// Number of trailing intermediate dimensions that have inter-batch dependencies
-  const std::size_t _dep_intmd_dim = 0;
+  /// Number of trailing intermediate dimensions that are intrinsic to the model definition
+  const std::size_t _intrsc_intmd_dim = 0;
 
 private:
   /// Derivatives of this variable with respect to other variables
