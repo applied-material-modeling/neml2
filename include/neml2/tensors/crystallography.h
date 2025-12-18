@@ -25,12 +25,11 @@
 #pragma once
 
 #include "neml2/tensors/R2.h"
+#include "neml2/tensors/Rot.h"
 
 namespace neml2
 {
-class R2;
 class Scalar;
-class Rot;
 
 namespace crystallography
 {
@@ -42,6 +41,17 @@ Vec unique_bidirectional(const R2 & ops, const Vec & inp);
 
 /// Calculate the misorientation of two batches of rotations
 Scalar misorientation(const Rot & r1, const Rot & r2, std::string orbifold = "1");
+
+/// Move a collection of orientations to a fundemental zone defined by the crystal symmetry
+// The coice of the reference orientation is arbitrary.  This matches the results from
+// Messner, Mark C., and Tianchen Hu. "Fully implicit crystal plasticity models representing
+// orientations with modified Rodrigues parameters." Mechanics of Materials (2025): 105388.
+//
+// This function doesn't tolerate input intermediate dimensions because it needs advanced indexing
+//
+Rot move_to_fundamental_zone(const Rot & r,
+                             std::string orbifold,
+                             Rot ref = Rot(at::tensor({0.0, 0.0, 0.005}), 0));
 
 namespace symmetry_operators
 {

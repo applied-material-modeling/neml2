@@ -35,6 +35,7 @@
 #include "neml2/tensors/functions/acos.h"
 #include "neml2/tensors/functions/tr.h"
 #include "neml2/tensors/functions/min.h"
+#include "neml2/tensors/functions/argmin.h"
 
 namespace neml2::crystallography
 {
@@ -173,6 +174,27 @@ misorientation(const Rot & r1, const Rot & r2, std::string orbifold)
   R2 prod = r1_mat.transpose() * S_mat * r2_mat;
 
   return intmd_min(acos(clamp((tr(prod) - 1.0) / 2.0, -1.0, 1.0)), -1);
+}
+
+Rot
+move_to_fundamental_zone(const Rot & r, std::string orbifold, Rot ref)
+{
+  neml_assert_dbg(r.intmd_dim() == 0, "Input must not have intermediate dimensions");
+
+  auto orig_dynamic_sizes = r.dynamic_sizes();
+  auto flattened_r = r.batch_flatten();
+
+  auto ops = symmetry(orbifold, r.options());
+  auto poss = Rot::fill_matrix(ops * flattened_r.euler_rodrigues().intmd_unsqueeze(-1));
+
+  auto dist = poss.dist(ref.intmd_unsqueeze(-1).to(r.options()));
+
+  // At this point we need to go the torch tensors
+  auto idx = argmin(dist, -1);
+  auto batch_idx = at::arange(flattened_r.size(0)).to(idx.device());
+  auto data = at::Tensor(poss).index({batch_idx, idx});
+
+  return Rot(data, /*intmd_dim=*/0).batch_reshape(orig_dynamic_sizes, {});
 }
 
 } // namespace neml2
