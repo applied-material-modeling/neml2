@@ -33,4 +33,6 @@ def(py::module_ & m, py::class_<Quaternion> & c)
 {
   def_TensorBase<Quaternion>(m, "Quaternion");
   def_PrimitiveTensor<Quaternion>(m, "Quaternion");
+
+  c.def("rotation_matrix", &Quaternion::rotation_matrix, "Convert to rotation matrix");
 }
