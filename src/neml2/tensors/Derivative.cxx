@@ -30,6 +30,8 @@
 #include "neml2/tensors/shape_utils.h"
 #include "neml2/tensors/functions/to_assembly.h"
 #include "neml2/tensors/functions/from_assembly.h"
+#include "neml2/tensors/functions/diagonalize.h"
+#include "neml2/tensors/functions/sum_to_size.h"
 
 namespace neml2
 {
@@ -90,7 +92,7 @@ template <std::size_t N>
 bool
 Derivative<N>::is_intrsc_intmd_broadcast() const
 {
-  return _intrsc_intmd_dim <= total_intrsc_intmd_dim();
+  return _intrsc_intmd_dim < total_intrsc_intmd_dim();
 }
 
 template <std::size_t N>
@@ -242,6 +244,17 @@ Derivative<N>::try_intmd_expand(const Tensor & deriv) const
     return deriv;
   }
 
+  neml_assert_dbg(
+      at::is_expandable_to(deriv.intmd_sizes().slice(deriv.intmd_dim() - _intrsc_intmd_dim),
+                           intrsc_intmd_sizes(0)),
+      "The intrinsic intermediate shape (",
+      deriv.intmd_sizes().slice(deriv.intmd_dim() - _intrsc_intmd_dim),
+      ") of the assigned derivative for '",
+      _debug_name,
+      "' is not broadcastable to the variable's intrinsic intermediate shape (",
+      intrsc_intmd_sizes(0),
+      ").");
+
   const auto extrsc_intmd_sizes =
       deriv.intmd_sizes().slice(0, deriv.intmd_dim() - _intrsc_intmd_dim);
   const auto target_intmd_sizes = utils::add_shapes(extrsc_intmd_sizes, intrsc_intmd_sizes(0));
@@ -335,7 +348,57 @@ Tensor
 Derivative<N>::get() const
 {
   neml_assert_dbg(_deriv.defined(), "Derivative '", _debug_name, "' is not defined.");
-  return to_assembly<N + 1>(_deriv, intrsc_intmd_sizes(), base_sizes(), _debug_name);
+
+  if (!is_intrsc_intmd_broadcast())
+    return to_assembly<N + 1>(_deriv, intrsc_intmd_sizes(), base_sizes(), _debug_name);
+
+  neml_assert_dbg(at::is_expandable_to(intrsc_intmd_sizes(1), intrsc_intmd_sizes(0)),
+                  "The intrinsic intermediate shape (",
+                  intrsc_intmd_sizes(1),
+                  ") of the argument for derivative '",
+                  _debug_name,
+                  "' is not broadcastable to the variable's intrinsic intermediate shape (",
+                  intrsc_intmd_sizes(0),
+                  ").");
+  if constexpr (N == 2)
+    neml_assert_dbg(at::is_expandable_to(intrsc_intmd_sizes(2), intrsc_intmd_sizes(0)),
+                    "The intrinsic intermediate shape (",
+                    intrsc_intmd_sizes(2),
+                    ") of the second argument for derivative '",
+                    _debug_name,
+                    "' is not broadcastable to the variable's intrinsic intermediate shape (",
+                    intrsc_intmd_sizes(0),
+                    ").");
+  // flatten the intrinsic intermediate dimensions
+  const auto extrsc_intmd_sizes =
+      _deriv.intmd_sizes().slice(0, _deriv.intmd_dim() - _intrsc_intmd_dim);
+  const auto flat_intmd_sizes =
+      utils::add_shapes(extrsc_intmd_sizes, utils::numel(intrsc_intmd_sizes(0)));
+  auto deriv_fl = _deriv.intmd_reshape(flat_intmd_sizes);
+
+  // diagonal expand to arguments' intrinsic intermediate dimensions
+  for (std::size_t i = 1; i <= N; i++)
+    deriv_fl = intmd_diagonalize(deriv_fl, -1);
+
+  // unflatten to inflated intrinsic intermediate dimensions (variable's intrinsic intermediate
+  // dimensions repeated N times)
+  const auto inflated_intmd_sizes =
+      utils::add_shapes(extrsc_intmd_sizes,
+                        intrsc_intmd_sizes(0),
+                        intrsc_intmd_sizes(0),
+                        N == 2 ? intrsc_intmd_sizes(0) : TensorShape{});
+  auto deriv_infl = deriv_fl.intmd_reshape(inflated_intmd_sizes);
+
+  // reduce to arguments' intrinsic intermediate dimensions
+  const auto padded_intmd_sizes = utils::add_shapes(
+      extrsc_intmd_sizes,
+      intrsc_intmd_sizes(0),
+      utils::pad_prepend(intrsc_intmd_sizes(1), intrsc_intmd_dim(0)),
+      N == 2 ? utils::pad_prepend(intrsc_intmd_sizes(2), intrsc_intmd_dim(0)) : TensorShape{});
+  auto deriv =
+      intmd_sum_to_size(deriv_infl, padded_intmd_sizes)
+          .intmd_reshape(utils::add_shapes(extrsc_intmd_sizes, total_intrsc_intmd_sizes()));
+  return to_assembly<N + 1>(deriv, intrsc_intmd_sizes(), base_sizes(), _debug_name);
 }
 
 template <std::size_t N>
@@ -344,7 +407,25 @@ Derivative<N>::set(const Tensor & val)
 {
   neml_assert_dbg(
       val.defined(), "Derivative '", _debug_name, "' is assigned with undefined value.");
-  _deriv = from_assembly<N + 1>(val, intrsc_intmd_sizes(), base_sizes(), _debug_name);
+
+  const auto val2 = from_assembly<N + 1>(val, intrsc_intmd_sizes(), base_sizes(), _debug_name);
+
+  if (!is_intrsc_intmd_broadcast())
+  {
+    _deriv = val2;
+    _cached_intmd_dim = val2.intmd_dim();
+    return;
+  }
+
+  const auto extrsc_intmd_sizes =
+      val2.intmd_sizes().slice(0, val2.intmd_dim() - total_intrsc_intmd_dim());
+  const auto target_intmd_sizes =
+      utils::add_shapes(extrsc_intmd_sizes,
+                        intrsc_intmd_sizes(0),
+                        TensorShape(intrsc_intmd_dim(1), 1),
+                        N == 2 ? TensorShape(intrsc_intmd_dim(2), 1) : TensorShape{});
+  const auto val2_reduced = intmd_sum_to_size(val2, target_intmd_sizes);
+  _deriv = val2_reduced.intmd_reshape(utils::add_shapes(extrsc_intmd_sizes, intrsc_intmd_sizes(0)));
   _cached_intmd_dim = _deriv.intmd_dim();
 }
 
