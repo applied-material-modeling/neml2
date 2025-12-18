@@ -90,7 +90,7 @@ const T &
 BufferStore::declare_buffer(const std::string & name, const TensorName<T> & tensorname)
 {
   auto * factory = _object->factory();
-  neml_assert(factory, "Internal error: factory != nullptr");
+  neml_assert(factory, "Internal error: factory == nullptr");
   return declare_buffer(name, tensorname.resolve(factory));
 }
 

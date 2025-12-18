@@ -231,18 +231,7 @@ Derivative<N>::try_intmd_expand(const Tensor & deriv) const
               ").");
 
   if (_intrsc_intmd_dim == total_intrsc_intmd_dim())
-  {
-    neml_assert_dbg(deriv.intmd_sizes().slice(deriv.intmd_dim() - _intrsc_intmd_dim) ==
-                        total_intrsc_intmd_sizes(),
-                    "The intrinsic intermediate shape (",
-                    deriv.intmd_sizes().slice(deriv.intmd_dim() - _intrsc_intmd_dim),
-                    ") of the assigned derivative for '",
-                    _debug_name,
-                    "' does not match the declared intrinsic intermediate shape (",
-                    total_intrsc_intmd_sizes(),
-                    ").");
     return deriv;
-  }
 
   neml_assert_dbg(
       at::is_expandable_to(deriv.intmd_sizes().slice(deriv.intmd_dim() - _intrsc_intmd_dim),

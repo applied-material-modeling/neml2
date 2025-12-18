@@ -123,7 +123,8 @@ protected:
   template <typename T, typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<T>, T>>>
   const T & declare_parameter(const std::string & name,
                               const TensorName<T> & tensorname,
-                              bool allow_nonlinear);
+                              bool allow_nonlinear,
+                              std::size_t intmd_dim = 0);
 
   /**
    * @brief Declare a parameter.
@@ -141,7 +142,8 @@ protected:
   template <typename T, typename = typename std::enable_if_t<std::is_base_of_v<TensorBase<T>, T>>>
   const T & declare_parameter(const std::string & name,
                               const std::string & input_option_name,
-                              bool allow_nonlinear = false);
+                              bool allow_nonlinear = false,
+                              std::size_t intmd_dim = 0);
 
   /// Assign stack to parameters
   void assign_parameter_stack(jit::Stack & stack);
