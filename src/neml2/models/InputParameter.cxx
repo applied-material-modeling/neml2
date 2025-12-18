@@ -46,16 +46,21 @@ InputParameter<T>::expected_options()
   options.set_output("to");
   options.set("to").doc() = "The name of the parameter, default to 'parameters/object_name'";
 
+  options.set<unsigned int>("intrsc_intmd_dim") = 0;
+  options.set("intrsc_intmd_dim").doc() = "The intrinsic intermediate dimension of this parameter";
+
   return options;
 }
 
 template <typename T>
 InputParameter<T>::InputParameter(const OptionSet & options)
   : Model(options),
-    _input_var(this->template declare_input_variable<T>("from")),
+    _intrsc_intmd_dim(options.get<unsigned int>("intrsc_intmd_dim")),
+    _input_var(this->template declare_input_variable<T>("from", _intrsc_intmd_dim)),
     _p(options.get("to").user_specified()
-           ? this->template declare_output_variable<T>("to")
-           : this->template declare_output_variable<T>(VariableName(PARAMETERS, this->name())))
+           ? this->template declare_output_variable<T>("to", _intrsc_intmd_dim)
+           : this->template declare_output_variable<T>(VariableName(PARAMETERS, this->name()),
+                                                       _intrsc_intmd_dim))
 {
 }
 

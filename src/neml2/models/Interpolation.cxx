@@ -63,16 +63,22 @@ Interpolation<T>::expected_options()
   options.set_output("output");
   options.set("output").doc() = tensor_type + " output of the interpolant";
 
+  options.set<unsigned int>("intrsc_intmd_dim") = 0;
+  options.set("intrsc_intmd_dim").doc() =
+      "The intrinsic intermediate dimension of the output variable.";
+
   return options;
 }
 
 template <typename T>
 Interpolation<T>::Interpolation(const OptionSet & options)
   : Model(options),
+    _intrsc_intmd_dim(options.get<unsigned int>("intrsc_intmd_dim")),
     _Y(this->template declare_parameter<T>("Y", "ordinate")),
     _p(options.get("output").user_specified()
-           ? this->template declare_output_variable<T>("output")
-           : this->template declare_output_variable<T>(VariableName(PARAMETERS, name())))
+           ? this->template declare_output_variable<T>("output", _intrsc_intmd_dim)
+           : this->template declare_output_variable<T>(VariableName(PARAMETERS, name()),
+                                                       _intrsc_intmd_dim))
 {
 }
 

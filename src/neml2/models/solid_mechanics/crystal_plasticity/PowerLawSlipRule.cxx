@@ -57,8 +57,8 @@ PowerLawSlipRule::expected_options()
 
 PowerLawSlipRule::PowerLawSlipRule(const OptionSet & options)
   : SlipRule(options),
-    _gamma0(declare_parameter<Scalar>("gamma0", "gamma0", true)),
-    _n(declare_parameter<Scalar>("n", "n", true))
+    _gamma0(declare_parameter<Scalar>("gamma0", "gamma0", true, 1)),
+    _n(declare_parameter<Scalar>("n", "n", true, 1))
 {
 }
 

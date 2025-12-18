@@ -42,6 +42,10 @@ public:
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
+private:
+  const unsigned int _intrsc_intmd_dim;
+
+protected:
   const Variable<T> & _input_var;
 
   Variable<T> & _p;

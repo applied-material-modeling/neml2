@@ -56,10 +56,17 @@ chain_rule(const Derivative<1> & dy_du, const Derivative<1> & du_dx)
       du_dx.tensor().base_reshape({utils::numel(u_base_sizes), utils::numel(x_base_sizes)});
 
   // Align dependent intermediate dimensions (for matrix multiplication)
-  if (!du_dx.is_intrsc_intmd_broadcast())
+  if (dy_du.is_intrsc_intmd_broadcast())
+    dy_du_f = dy_du_f.intmd_unsqueeze(-1, Size(u_intrsc_intmd_dim));
+  if (du_dx.is_intrsc_intmd_broadcast())
+    du_dx_f = du_dx_f.intmd_unsqueeze(Size(-du_dx.intrsc_intmd_dim(0) - 1),
+                                      Size(y_intrsc_intmd_dim + u_intrsc_intmd_dim));
+  else
+  {
     dy_du_f = dy_du_f.intmd_unsqueeze(-1, Size(x_intrsc_intmd_dim));
-  du_dx_f = du_dx_f.intmd_unsqueeze(Size(-u_intrsc_intmd_dim - x_intrsc_intmd_dim - 1),
-                                    Size(y_intrsc_intmd_dim));
+    du_dx_f = du_dx_f.intmd_unsqueeze(Size(-du_dx.total_intrsc_intmd_dim() - 1),
+                                      Size(y_intrsc_intmd_dim));
+  }
 
   // Apply chain rule via matrix multiplication
   auto dy_dx_f = neml2::mm(dy_du_f, du_dx_f);
@@ -78,6 +85,7 @@ chain_rule(const Derivative<1> & dy_du, const Derivative<1> & du_dx)
                              "<anonymous chain rule>",
                              y_intrsc_intmd_dim + x_intrsc_intmd_dim);
   dy_dx = dy_dx_f.base_reshape(utils::add_shapes(y_base_sizes, x_base_sizes));
+
   return dy_dx;
 }
 

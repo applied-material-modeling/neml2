@@ -251,7 +251,8 @@ protected:
 
   // TensorName resolution may require declare_input_variable
   template <typename T>
-  friend const T & resolve_tensor_name(const TensorName<T> &, Model *, const std::string &);
+  friend const T &
+  resolve_tensor_name(const TensorName<T> &, Model *, const std::string &, std::size_t);
 
 private:
   // Create a variable

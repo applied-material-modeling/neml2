@@ -68,6 +68,8 @@ public:
   Interpolation(const OptionSet & options);
 
 protected:
+  const unsigned int _intrsc_intmd_dim;
+
   /// The ordinate values of the interpolant
   const T & _Y;
 
