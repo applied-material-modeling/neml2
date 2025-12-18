@@ -24,41 +24,16 @@
 
 #pragma once
 
-#include "neml2/tensors/R2.h"
+#include "neml2/misc/types.h"
+#include "neml2/tensors/tensors_fwd.h"
 
 namespace neml2
 {
-class R2;
-class Scalar;
-class Rot;
+#define DECLARE_BATCH_MAX(T)                                                                       \
+  T dynamic_max(const T & a, Size d = 0);                                                          \
+  T intmd_max(const T & a, Size d = 0)
+FOR_ALL_TENSORBASE(DECLARE_BATCH_MAX);
+#undef DECLARE_BATCH_MAX
 
-namespace crystallography
-{
-/// Helper function to return the symmetry operators given the Orbifold notation
-R2 symmetry(const std::string & orbifold, const TensorOptions & options = default_tensor_options());
-
-/// Helper to return all symmetrically-equivalent directions from a cartesian vector
-Vec unique_bidirectional(const R2 & ops, const Vec & inp);
-
-/// Calculate the misorientation of two batches of rotations
-Scalar misorientation(const Rot & r1, const Rot & r2, std::string orbifold = "1");
-
-namespace symmetry_operators
-{
-constexpr double a = 0.7071067811865476;
-constexpr double b = 0.8660254037844386;
-constexpr double h = 0.5;
-constexpr double o = 1.0;
-constexpr double z = 0.0;
-
-/// @brief tetragonal symmetry operators
-Quaternion tetragonal(const TensorOptions & options = default_tensor_options());
-
-/// @brief hexagonal symmetry operators
-Quaternion hexagonal(const TensorOptions & options = default_tensor_options());
-
-/// @brief cubic symmetry operators
-Quaternion cubic(const TensorOptions & options = default_tensor_options());
-} // namespace symmetry_operators
-} // namespace crystallography
+Tensor base_max(const Tensor & a, Size d = 0);
 } // namespace neml2
