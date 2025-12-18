@@ -185,7 +185,11 @@ ModelUnitTest::check_value()
 void
 ModelUnitTest::check_dvalue()
 {
-  const auto exact = _model->dvalue(_in);
+  _model->clear_input();
+  _model->assign_input(_in);
+  _model->zero_undefined_input();
+  _model->forward_maybe_jit(false, true, false);
+  const auto exact = _model->collect_output_derivatives(/*assembly=*/true);
 
   for (const auto & [yname, yvar] : _model->output_variables())
     for (const auto & [xname, xvar] : _model->input_variables())
@@ -205,11 +209,6 @@ ModelUnitTest::check_dvalue()
           x0,
           1e-6,
           1e-6);
-
-      // Convert derivative to variable format
-      numerical = from_assembly<2>(numerical,
-                                   {yvar->intrsc_intmd_sizes(), xvar->intrsc_intmd_sizes()},
-                                   {yvar->base_sizes(), xvar->base_sizes()});
 
       // If the derivative does not exist, the numerical derivative should be zero
       if (!exact.count(yname) || !exact.at(yname).count(xname))
@@ -238,7 +237,11 @@ ModelUnitTest::check_dvalue()
 void
 ModelUnitTest::check_d2value()
 {
-  const auto exact = _model->d2value(_in);
+  _model->clear_input();
+  _model->assign_input(_in);
+  _model->zero_undefined_input();
+  _model->forward_maybe_jit(false, false, true);
+  const auto exact = _model->collect_output_second_derivatives(/*assembly=*/true);
 
   for (const auto & [yname, yvar] : _model->output_variables())
     for (const auto & [x1name, x1var] : _model->input_variables())
@@ -270,12 +273,6 @@ ModelUnitTest::check_d2value()
             x20,
             1e-6,
             1e-6);
-
-        // Convert derivative to variable format
-        numerical = from_assembly<3>(
-            numerical,
-            {yvar->intrsc_intmd_sizes(), x1var->intrsc_intmd_sizes(), x2var->intrsc_intmd_sizes()},
-            {yvar->base_sizes(), x1var->base_sizes(), x2var->base_sizes()});
 
         // If the derivative does not exist, the numerical derivative should be zero
         if (!exact.count(yname) || !exact.at(yname).count(x1name) ||

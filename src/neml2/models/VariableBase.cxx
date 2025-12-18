@@ -261,7 +261,7 @@ bool
 VariableBase::has_derivative(const VariableName & vname) const
 {
   for (const auto & [deriv, arg] : _derivs)
-    if (arg->name() == vname)
+    if (arg->name() == vname && deriv.defined())
       return true;
   return false;
 }
@@ -270,7 +270,7 @@ bool
 VariableBase::has_derivative(const VariableName & v1name, const VariableName & v2name) const
 {
   for (const auto & [deriv, arg1, arg2] : _sec_derivs)
-    if (arg1->name() == v1name && arg2->name() == v2name)
+    if (arg1->name() == v1name && arg2->name() == v2name && deriv.defined())
       return true;
   return false;
 }
