@@ -33,6 +33,9 @@
 #include "neml2/tensors/WR2.h"
 #include "neml2/tensors/Quaternion.h"
 #include "neml2/misc/assertions.h"
+#include "neml2/misc/types.h"
+#include "neml2/tensors/functions/abs.h"
+#include "neml2/tensors/functions/atan2.h"
 #include "neml2/tensors/functions/sqrt.h"
 #include "neml2/tensors/functions/pow.h"
 #include "neml2/tensors/functions/sin.h"
@@ -52,6 +55,7 @@
 #include "neml2/tensors/functions/norm.h"
 #include "neml2/tensors/functions/outer.h"
 #include "neml2/tensors/functions/inv.h"
+#include "neml2/tensors/functions/where.h"
 
 namespace neml2
 {
@@ -89,22 +93,22 @@ Rot::fill_euler_angles(const Vec & v,
                        const std::string & angle_convention,
                        const std::string & angle_type)
 {
-  auto m = v;
+  auto m = v.clone();
 
   if (angle_type == "degrees")
-    m = neml2::deg2rad(v);
+    m = neml2::deg2rad(m);
   else
     neml_assert(angle_type == "radians", "Rot angle_type must be either 'degrees' or 'radians'");
 
   if (angle_convention == "bunge")
   {
-    m.base_index_put_({0}, neml2::fmod(m.base_index({0}) - M_PI / 2.0, 2.0 * M_PI));
-    m.base_index_put_({1}, neml2::fmod(m.base_index({1}), M_PI));
-    m.base_index_put_({2}, neml2::fmod(M_PI / 2.0 - m.base_index({2}), 2.0 * M_PI));
+    m.base_index_put_({0}, neml2::fmod(m.base_index({0}) - pi / 2.0, 2.0 * pi));
+    m.base_index_put_({1}, neml2::fmod(m.base_index({1}), pi));
+    m.base_index_put_({2}, neml2::fmod(pi / 2.0 - m.base_index({2}), 2.0 * pi));
   }
   else if (angle_convention == "roe")
   {
-    m.base_index_put_({2}, M_PI - m.base_index({2}));
+    m.base_index_put_({2}, pi - m.base_index({2}));
   }
   else
     neml_assert(angle_convention == "kocks", "Unknown Rot angle_convention " + angle_convention);
@@ -137,11 +141,12 @@ Rot::fill_matrix(const R2 & M)
 {
   // Get the angle
   auto trace = M(0, 0) + M(1, 1) + M(2, 2);
-  auto theta = neml2::acos((trace - 1.0) / 2.0);
+  auto theta = neml2::acos(neml2::clip((trace - 1.0) / 2.0, -1.0, 1.0));
 
   // Get the standard Rod. parameters
   auto scale = neml2::tan(theta / 2.0) / (2.0 * neml2::sin(theta));
   scale.index_put_({theta == 0}, 0.0);
+
   auto rx = (M(2, 1) - M(1, 2)) * scale;
   auto ry = (M(0, 2) - M(2, 0)) * scale;
   auto rz = (M(1, 0) - M(0, 1)) * scale;
@@ -293,6 +298,34 @@ Rot::dV() const
   return 8.0 / M_PI * neml2::pow(1.0 + norm_sq(*this), -3.0);
 }
 
+Vec
+Rot::to_euler_angles(const std::string & angle_convention, const std::string & angle_type) const
+{
+  auto M = this->euler_rodrigues();
+  auto tol = machine_precision(scalar_type()) * 2;
+
+  auto s1 = neml2::atan2(M.base_index({0, 1}), M.base_index({0, 0})) / 2.0 - pi / 2.0;
+  auto option_1 = Vec(base_stack({s1, Scalar::zeros_like(s1), -s1}));
+
+  auto t2 = neml2::acos(M.base_index({2, 2}));
+  auto s = neml2::sin(t2);
+  auto t3 = pi / 2.0 - neml2::atan2(M.base_index({0, 2}) / s, M.base_index({1, 2}) / s);
+  auto t1 = pi / 2.0 - neml2::atan2(M.base_index({2, 0}) / s, M.base_index({2, 1}) / s);
+  auto option_2 = Vec(base_stack({t1, t2, t3}));
+
+  auto crit = neml2::Tensor(neml2::abs(neml2::abs(M.base_index({2, 2})) - 1.0) < tol);
+
+  auto kocks = neml2::where(crit.base_expand_as(option_1), option_1, option_2);
+
+  auto correct = convert_euler_angles_from_kocks(kocks, angle_convention);
+
+  if (angle_type == "degrees")
+    correct = correct * (180.0 / pi);
+  else
+    neml_assert(angle_type == "radians", "Rot angle_type must be either 'degrees' or 'radians'");
+  return correct;
+}
+
 Rot
 operator*(const Rot & r1, const Rot & r2)
 {
@@ -301,6 +334,40 @@ operator*(const Rot & r1, const Rot & r2)
 
   return Rot((1 - rr2) * Vec(r1) + (1.0 - rr1) * Vec(r2) - 2.0 * neml2::cross(Vec(r2), r1)) /
          (1.0 + rr1 * rr2 - 2 * neml2::vdot(r1, r2));
+}
+
+Vec
+convert_euler_angles_from_kocks(const Vec & angles, const std::string & to_convention)
+{
+  Vec result;
+
+  if (to_convention == "kocks")
+  {
+    result = angles;
+  }
+  else if (to_convention == "bunge")
+  {
+    auto a = angles.base_index({0});
+    auto b = angles.base_index({1});
+    auto c = angles.base_index({2});
+
+    result = Vec(base_stack({neml2::fmod(a + pi / 2.0, 2 * pi),
+                             neml2::fmod(b, pi),
+                             neml2::fmod(pi / 2.0 - c, 2 * pi)}));
+  }
+  else if (to_convention == "roe")
+  {
+    auto a = angles.base_index({0});
+    auto b = angles.base_index({1});
+    auto c = angles.base_index({2});
+
+    result = Vec(base_stack({a, b, M_PI - c}));
+  }
+  else
+  {
+    neml_assert(false, "Unknown euler angle convention " + to_convention);
+  }
+  return result;
 }
 
 } // namemspace neml2

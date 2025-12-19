@@ -30,8 +30,16 @@
 #include "neml2/tensors/functions/stack.h"
 #include "neml2/misc/assertions.h"
 
+#include "neml2/tensors/R2.h"
+#include "neml2/tensors/functions/clamp.h"
+#include "neml2/tensors/functions/acos.h"
+#include "neml2/tensors/functions/tr.h"
+#include "neml2/tensors/functions/min.h"
+#include "neml2/tensors/functions/argmin.h"
+
 namespace neml2::crystallography
 {
+
 namespace symmetry_operators
 {
 Quaternion
@@ -151,6 +159,42 @@ unique_bidirectional(const R2 & ops, const Vec & inp)
   }
   // Get the batch of all possible answers
   return unique_vecs;
+}
+
+Scalar
+misorientation(const Rot & r1, const Rot & r2, const std::string & orbifold)
+{
+  neml_assert_broadcastable_dbg(r1, r2);
+  const auto [r1a, r2a, i] = utils::align_intmd_dim(r1, r2);
+
+  R2 r1_mat = r1a.intmd_unsqueeze(-1).euler_rodrigues();
+  R2 r2_mat = r2a.intmd_unsqueeze(-1).euler_rodrigues();
+  R2 S_mat = symmetry(orbifold, r1.options());
+
+  R2 prod = r1_mat.transpose() * S_mat * r2_mat;
+
+  return intmd_min(acos(clamp((tr(prod) - 1.0) / 2.0, -1.0, 1.0)), -1);
+}
+
+Rot
+move_to_fundamental_zone(const Rot & r, const std::string & orbifold, const Rot & ref)
+{
+  neml_assert_dbg(r.intmd_dim() == 0, "Input must not have intermediate dimensions");
+
+  const auto & orig_dynamic_sizes = r.dynamic_sizes();
+  auto flattened_r = r.batch_flatten();
+
+  auto ops = symmetry(orbifold, r.options());
+  auto poss = Rot::fill_matrix(ops * flattened_r.euler_rodrigues().intmd_unsqueeze(-1));
+
+  auto dist = poss.dist(ref.intmd_unsqueeze(-1).to(r.options()));
+
+  // At this point we need to go the torch tensors
+  auto idx = argmin(dist, -1);
+  auto batch_idx = at::arange(flattened_r.size(0)).to(idx.device());
+  auto data = at::Tensor(poss).index({batch_idx, idx});
+
+  return Rot(data, /*intmd_dim=*/0).batch_reshape(orig_dynamic_sizes, {});
 }
 
 } // namespace neml2

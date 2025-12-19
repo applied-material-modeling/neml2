@@ -112,6 +112,9 @@ public:
 
   /// Volume element at locations
   Scalar dV() const;
+
+  /// Convert back to Euler angles
+  Vec to_euler_angles(const std::string & angle_convention, const std::string & angle_type) const;
 };
 
 /// Composition of rotations r3 = r1 * r2 (r2 first, then r1)
@@ -119,5 +122,10 @@ public:
 //  as the standard matrix product R1 * R2 where R1 and R2 are the
 //  matrix representations of r1 and r2
 Rot operator*(const Rot & r1, const Rot & r2);
+
+/// Convert between Euler angle types
+//  Input/output in radians
+//  to_convention one of "kocks", "bunge", "roe"
+Vec convert_euler_angles_from_kocks(const Vec & angles, const std::string & to_convention);
 
 } // namespace neml2

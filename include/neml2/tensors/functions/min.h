@@ -22,40 +22,18 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <pybind11/operators.h>
+#pragma once
 
-#include "python/neml2/csrc/tensors/TensorBase.h"
-#include "python/neml2/csrc/tensors/PrimitiveTensor.h"
+#include "neml2/misc/types.h"
+#include "neml2/tensors/tensors_fwd.h"
 
-namespace py = pybind11;
-using namespace neml2;
-
-void
-def(py::module_ & m, py::class_<Rot> & c)
+namespace neml2
 {
-  def_TensorBase<Rot>(m, "Rot");
-  def_PrimitiveTensor<Rot>(m, "Rot");
+#define DECLARE_BATCH_MIN(T)                                                                       \
+  T dynamic_min(const T & a, Size d = 0);                                                          \
+  T intmd_min(const T & a, Size d = 0)
+FOR_ALL_TENSORBASE(DECLARE_BATCH_MIN);
+#undef DECLARE_BATCH_MIN
 
-  c.def_static(
-       "identity",
-       [](NEML2_TENSOR_OPTIONS_VARGS) { return Rot::identity(NEML2_TENSOR_OPTIONS); },
-       py::kw_only(),
-       PY_ARG_TENSOR_OPTIONS)
-      .def_static("fill_euler_angles", &Rot::fill_euler_angles)
-      .def_static("fill_matrix", &Rot::fill_matrix)
-      .def_static("fill_rodrigues", &Rot::fill_rodrigues)
-      .def_static("rotation_from_to", &Rot::rotation_from_to)
-      .def_static("axis_angle", &Rot::axis_angle)
-      .def_static("axis_angle_standard", &Rot::axis_angle_standard);
-
-  c.def("euler_rodrigues", &Rot::euler_rodrigues)
-      .def("deuler_rodrigues", &Rot::deuler_rodrigues)
-      .def("rotate", &Rot::rotate)
-      .def("drotate", &Rot::drotate)
-      .def("shadow", &Rot::shadow)
-      .def("dist", &Rot::dist)
-      .def("dV", &Rot::dV)
-      .def("to_euler_angles", &Rot::to_euler_angles);
-
-  c.def(py::self * py::self);
-}
+Tensor base_min(const Tensor & a, Size d = 0);
+} // namespace neml2
