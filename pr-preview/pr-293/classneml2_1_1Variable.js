@@ -1,0 +1,26 @@
+var classneml2_1_1Variable =
+[
+    [ "Variable", "classneml2_1_1Variable.html#ae6e3d5651972515f6fcbfa1c0bc9b24b", null ],
+    [ "Variable", "classneml2_1_1Variable.html#a1725605aeade52b13738f4ff4e42592d", null ],
+    [ "base_sizes", "classneml2_1_1Variable.html#aeb67956bb12c95b90d92d4093258fb52", null ],
+    [ "clear", "classneml2_1_1Variable.html#aee7cb2065b88d21ac4ad05bc997ecf82", null ],
+    [ "clone", "classneml2_1_1Variable.html#ad5d754c7bbbbdf1d66fbd17f175d9e60", null ],
+    [ "get", "classneml2_1_1Variable.html#a06c4d78e0f45d3f773b035893e2353fd", null ],
+    [ "operator T", "classneml2_1_1Variable.html#a54724b9dd792a6022b918eae2f393734", null ],
+    [ "operator-", "classneml2_1_1Variable.html#a9d13ef98e126ced1a93723d1c1eb923c", null ],
+    [ "operator=", "classneml2_1_1Variable.html#a3cd04abf5f378154f0dd70296e6090b3", null ],
+    [ "owning", "classneml2_1_1Variable.html#ace07a4ae7e3ca6e978db6857f1d295d5", null ],
+    [ "ref", "classneml2_1_1Variable.html#a64189bff3dcaa9d03c09eac7dff3d7e4", null ],
+    [ "ref", "classneml2_1_1Variable.html#a5bee7616e6b50b04d453536202e8b634", null ],
+    [ "requires_grad_", "classneml2_1_1Variable.html#a0e5d0734e623567857c4351c93c05c30", null ],
+    [ "set", "classneml2_1_1Variable.html#a84c7826613223f1ae050bbfbe1c89a60", null ],
+    [ "set", "classneml2_1_1Variable.html#aac54fec580d702a3d7db2981f7901353", null ],
+    [ "tensor", "classneml2_1_1Variable.html#a0c0cf9ce8a539c7f13dc51c55e1a63d6", null ],
+    [ "type", "classneml2_1_1Variable.html#ac007458a82f91682deada64cbac6a61e", null ],
+    [ "value", "classneml2_1_1Variable.html#ab5d906b55180c260032ce43d6c5d4d06", null ],
+    [ "zero", "classneml2_1_1Variable.html#a814ddce4d45e28cc2e0a4b88d95af9fd", null ],
+    [ "_base_sizes", "classneml2_1_1Variable.html#a9edc658fd37a17669b66190c2aa1f1a4", null ],
+    [ "_ref", "classneml2_1_1Variable.html#a0bdd95120a6e74edff246381cf65d84b", null ],
+    [ "_ref_is_mutable", "classneml2_1_1Variable.html#a25c427977e145a4ba4f9235b1e71923e", null ],
+    [ "_value", "classneml2_1_1Variable.html#addbff7dde6f134d617689a3e0097e635", null ]
+];

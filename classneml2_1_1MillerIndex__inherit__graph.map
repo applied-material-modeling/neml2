@@ -1,0 +1,9 @@
+<map id="MillerIndex" name="MillerIndex">
+<area shape="rect" id="Node000001" title="Represention of a crystal direction or plane a Miller Index." alt="" coords="79,225,174,251"/>
+<area shape="rect" id="Node000002" href="$classneml2_1_1PrimitiveTensor.html" title=" " alt="" coords="5,152,248,177"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="129,191,129,225,124,225,124,191"/>
+<area shape="rect" id="Node000003" href="$classneml2_1_1TensorBase.html" title=" " alt="" coords="27,79,226,104"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="129,118,129,152,124,152,124,118"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="91,5,163,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="129,44,129,79,124,79,124,44"/>
+</map>

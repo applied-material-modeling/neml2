@@ -1,0 +1,13 @@
+<map id="IdentityTensor" name="IdentityTensor">
+<area shape="rect" id="Node000001" title="Create an identity Tensor from the input file." alt="" coords="57,299,172,324"/>
+<area shape="rect" id="Node000002" href="$classneml2_1_1UserTensorBase.html" title=" " alt="" coords="15,225,214,251"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="117,264,117,299,112,299,112,264"/>
+<area shape="rect" id="Node000003" href="$classneml2_1_1NEML2Object.html" title="The base class of all &quot;manufacturable&quot; objects in the NEML2 library." alt="" coords="5,152,115,177"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="79,187,108,224,104,227,75,190"/>
+<area shape="rect" id="Node000004" href="$classneml2_1_1Tensor.html" title=" " alt="" coords="139,152,203,177"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="155,190,126,227,122,224,151,187"/>
+<area shape="rect" id="Node000005" href="$classneml2_1_1TensorBase.html" title=" " alt="" coords="87,79,255,104"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="173,118,173,152,168,152,168,118"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="135,5,207,31"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="173,44,173,79,168,79,168,44"/>
+</map>
