@@ -141,11 +141,12 @@ Rot::fill_matrix(const R2 & M)
 {
   // Get the angle
   auto trace = M(0, 0) + M(1, 1) + M(2, 2);
-  auto theta = neml2::acos((trace - 1.0) / 2.0);
+  auto theta = neml2::acos(neml2::clip((trace - 1.0) / 2.0, -1.0, 1.0));
 
   // Get the standard Rod. parameters
   auto scale = neml2::tan(theta / 2.0) / (2.0 * neml2::sin(theta));
   scale.index_put_({theta == 0}, 0.0);
+
   auto rx = (M(2, 1) - M(1, 2)) * scale;
   auto ry = (M(0, 2) - M(2, 0)) * scale;
   auto rz = (M(1, 0) - M(0, 1)) * scale;
