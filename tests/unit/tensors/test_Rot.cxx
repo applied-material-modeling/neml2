@@ -127,4 +127,37 @@ TEST_CASE("Rot", "[tensors]")
     auto c = Rot::fill(1.48720771, -2.26086024, 1.02025338);
     REQUIRE_THAT(a * b, test::allclose(c));
   }
+
+  SECTION("euler angle conversions")
+  {
+    auto kocks_radians = Vec::fill(0.1, 0.5, 1.0);
+    auto r_kocks_radians = Rot::fill_euler_angles(kocks_radians, "kocks", "radians");
+    auto a_kocks_radians = r_kocks_radians.to_euler_angles("kocks", "radians");
+    REQUIRE_THAT(a_kocks_radians, test::allclose(kocks_radians));
+
+    auto kocks_degrees = Vec::fill(10.0, 30.0, 60.0);
+    auto r_kocks_degrees = Rot::fill_euler_angles(kocks_degrees, "kocks", "degrees");
+    auto a_kocks_degrees = r_kocks_degrees.to_euler_angles("kocks", "degrees");
+    REQUIRE_THAT(a_kocks_degrees, test::allclose(kocks_degrees));
+
+    auto bunge_radians = Vec::fill(0.2, 0.6, 1.2);
+    auto r_bunge_radians = Rot::fill_euler_angles(bunge_radians, "bunge", "radians");
+    auto a_bunge_radians = r_bunge_radians.to_euler_angles("bunge", "radians");
+    REQUIRE_THAT(a_bunge_radians, test::allclose(bunge_radians));
+
+    auto bunge_degrees = Vec::fill(20.0, 40.0, 70.0);
+    auto r_bunge_degrees = Rot::fill_euler_angles(bunge_degrees, "bunge", "degrees");
+    auto a_bunge_degrees = r_bunge_degrees.to_euler_angles("bunge", "degrees");
+    REQUIRE_THAT(a_bunge_degrees, test::allclose(bunge_degrees));
+
+    auto roe_radians = Vec::fill(0.3, 0.7, 1.4);
+    auto r_roe_radians = Rot::fill_euler_angles(roe_radians, "roe", "radians");
+    auto a_roe_radians = r_roe_radians.to_euler_angles("roe", "radians");
+    REQUIRE_THAT(a_roe_radians, test::allclose(roe_radians));
+
+    auto roe_degrees = Vec::fill(30.0, 50.0, 80.0);
+    auto r_roe_degrees = Rot::fill_euler_angles(roe_degrees, "roe", "degrees");
+    auto a_roe_degrees = r_roe_degrees.to_euler_angles("roe", "degrees");
+    REQUIRE_THAT(a_roe_degrees, test::allclose(roe_degrees));
+  }
 }
