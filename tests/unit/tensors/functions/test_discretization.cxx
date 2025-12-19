@@ -24,9 +24,9 @@
 
 #include <catch2/catch_test_macros.hpp>
 
+#include "neml2/neml2.h"
 #include "neml2/tensors/TraceableTensorShape.h"
 #include "neml2/misc/types.h"
-#include "neml2/models/Model.h"
 #include "neml2/tensors/functions/discretization/assemble.h"
 #include "neml2/tensors/functions/discretization/interpolate.h"
 #include "neml2/tensors/functions/discretization/scatter.h"

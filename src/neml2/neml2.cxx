@@ -22,47 +22,35 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <catch2/catch_test_macros.hpp>
-
-#include "neml2/base/Registry.h"
 #include "neml2/neml2.h"
-#include "neml2/tensors/Scalar.h"
+#include "neml2/base/HITParser.h"
 
-TEST_CASE("Registry", "[base]")
+namespace neml2
 {
-  SECTION("load")
+std::unique_ptr<Factory>
+load_input(const std::filesystem::path & path, const std::string & additional_input)
+{
+  // Force link dynamic libraries
+  ::_neml2_force_link_models();
+  ::_neml2_force_link_solvers();
+  ::_neml2_force_link_user_tensors();
+  ::_neml2_force_link_drivers();
+
+  // For now we only support HIT
+  if (utils::end_with(path.string(), ".i"))
   {
-    const auto & reg = neml2::Registry::get();
-    REQUIRE(reg.info().count("FooModel") == 0);
-
-    // Find the dynamic library
-    namespace fs = std::filesystem;
-    auto pwd = fs::current_path();
-    auto lib_dir = pwd / ".." / "extension";
-    REQUIRE(fs::exists(lib_dir));
-    REQUIRE(fs::is_directory(lib_dir));
-    auto lib_so = lib_dir / "libextension.so";
-    auto lib_dylib = lib_dir / "libextension.dylib";
-    REQUIRE(fs::exists(lib_so) != fs::exists(lib_dylib));
-
-    // Load the library
-    if (fs::exists(lib_so))
-      neml2::Registry::load(lib_so);
-    else
-      neml2::Registry::load(lib_dylib);
-    REQUIRE(reg.info().count("FooModel") == 1);
+    HITParser parser;
+    auto inp = parser.parse(path, additional_input);
+    return std::make_unique<Factory>(inp);
   }
-
-  SECTION("load from input")
-  {
-    namespace fs = std::filesystem;
-    auto pwd = fs::current_path();
-    auto lib_dir = pwd / ".." / "extension";
-    auto model = neml2::load_model(lib_dir / "FooModel.i", "foo");
-
-    const auto x = neml2::Scalar::full(5);
-    const auto out = model->value({{neml2::VariableName("forces", "x"), x}});
-    const auto & y = out.at(neml2::VariableName("state", "y"));
-    REQUIRE(at::allclose(y, neml2::Scalar::full(5.6)));
-  }
+  else
+    throw ParserException("Unsupported parser type");
 }
+
+std::shared_ptr<Model>
+load_model(const std::filesystem::path & path, const std::string & mname)
+{
+  auto factory = load_input(path);
+  return factory->get_model(mname);
+}
+} // namespace neml2

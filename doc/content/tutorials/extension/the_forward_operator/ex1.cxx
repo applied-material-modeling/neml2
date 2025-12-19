@@ -1,4 +1,4 @@
-#include "neml2/models/Model.h"
+#include "neml2/neml2.h"
 #include "neml2/tensors/Vec.h"
 #include "neml2/tensors/Scalar.h"
 

@@ -27,7 +27,7 @@
 #include <filesystem>
 
 #include "utils.h"
-#include "neml2/base/Factory.h"
+#include "neml2/neml2.h"
 #include "neml2/models/crystallography/CubicCrystal.h"
 #include "neml2/tensors/tensors.h"
 #include "neml2/tensors/functions/vdot.h"

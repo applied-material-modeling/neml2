@@ -27,7 +27,7 @@
 
 #include <filesystem>
 
-#include "neml2/base/Factory.h"
+#include "neml2/neml2.h"
 #include "neml2/base/NEML2Object.h"
 #include "neml2/tensors/R2.h"
 #include "neml2/tensors/Tensor.h"

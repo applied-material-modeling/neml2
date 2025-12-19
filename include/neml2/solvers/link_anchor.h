@@ -22,31 +22,19 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <catch2/catch_test_macros.hpp>
+#pragma once
 
-#include "neml2/neml2.h"
-#include "neml2/base/NEML2Object.h"
-#include "neml2/tensors/R2.h"
+/**
+ * The neml2_solvers library uses the factory-registry pattern to dynamically register available
+ * objects. However, some linkers will not include object files from the library if no symbols
+ * from those object files are referenced.
+ *
+ * Of course, to work around this issue, one can use linker flags like --no-as-needed to force the
+ * linker to include all object files from the library. However, this is not an ideal solution as it
+ * may break other parts of the link line.
+ *
+ * The approach we take here is to define a symbol in the neml2_models library that is always
+ * referenced when the library is used.
+ */
 
-using namespace neml2;
-
-TEST_CASE("FillR2", "[user_tensors]")
-{
-  auto factory = load_input("user_tensors/test_FillR2.i");
-
-  const auto auto_1 = factory->get_object<R2>("Tensors", "1");
-  const auto auto_1_correct = R2::fill(1);
-  REQUIRE(at::allclose(*auto_1, auto_1_correct));
-
-  const auto auto_3 = factory->get_object<R2>("Tensors", "3");
-  const auto auto_3_correct = R2::fill(1, 2, 3);
-  REQUIRE(at::allclose(*auto_3, auto_3_correct));
-
-  const auto auto_6 = factory->get_object<R2>("Tensors", "6");
-  const auto auto_6_correct = R2::fill(1, 2, 3, 4, 5, 6);
-  REQUIRE(at::allclose(*auto_6, auto_6_correct));
-
-  const auto auto_9 = factory->get_object<R2>("Tensors", "9");
-  const auto auto_9_correct = R2::fill(1, 2, 3, 4, 5, 6, 7, 8, 9);
-  REQUIRE(at::allclose(*auto_9, auto_9_correct));
-}
+extern "C" void _neml2_force_link_solvers();
