@@ -54,7 +54,8 @@ def(py::module_ & m, py::class_<Rot> & c)
       .def("drotate", &Rot::drotate)
       .def("shadow", &Rot::shadow)
       .def("dist", &Rot::dist)
-      .def("dV", &Rot::dV);
+      .def("dV", &Rot::dV)
+      .def("to_euler_angles", &Rot::to_euler_angles);
 
   c.def(py::self * py::self);
 }
