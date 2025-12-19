@@ -46,14 +46,6 @@ namespace neml2
 class Model;
 
 /**
- * @brief A convenient function to load an input file and get a model
- *
- * @param path Path to the input file to be parsed
- * @param mname Name of the model
- */
-std::shared_ptr<Model> load_model(const std::filesystem::path & path, const std::string & mname);
-
-/**
  * @brief The base class for all constitutive models.
  *
  * A model maps some input to output. The forward operator (and its derivative) is defined in the

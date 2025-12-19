@@ -26,7 +26,8 @@
 #include <catch2/matchers/catch_matchers_all.hpp>
 
 #include "utils.h"
-#include "neml2/models/Model.h"
+
+#include "neml2/neml2.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/TensorValue.h"

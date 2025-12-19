@@ -25,8 +25,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_all.hpp>
 
-#include "neml2/base/Factory.h"
-#include "neml2/models/Model.h"
+#include "neml2/neml2.h"
 #include "neml2/models/Assembler.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/SR2.h"

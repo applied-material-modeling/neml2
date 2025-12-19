@@ -24,11 +24,10 @@
 
 #pragma once
 
+#include "neml2/neml2.h"
 #include "neml2/base/LabeledAxisAccessor.h"
 #include "neml2/base/LabeledAxis.h"
 #include "neml2/tensors/TensorValue.h"
-#include "neml2/base/Factory.h"
-#include "neml2/models/Model.h"
 #include "neml2/models/Assembler.h"
 
 #include <pybind11/pybind11.h>

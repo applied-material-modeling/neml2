@@ -25,6 +25,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include "utils.h"
+#include "neml2/neml2.h"
 #include "neml2/drivers/solid_mechanics/SolidMechanicsDriver.h"
 
 using namespace neml2;

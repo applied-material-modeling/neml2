@@ -25,7 +25,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 
-#include "neml2/base/Factory.h"
+#include "neml2/neml2.h"
 #include "neml2/drivers/Driver.h"
 
 using namespace neml2;

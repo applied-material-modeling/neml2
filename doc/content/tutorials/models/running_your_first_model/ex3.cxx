@@ -1,4 +1,4 @@
-#include "neml2/models/Model.h"
+#include "neml2/neml2.h"
 #include "neml2/tensors/SR2.h"
 
 int

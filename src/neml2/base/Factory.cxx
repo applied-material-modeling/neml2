@@ -30,20 +30,6 @@
 
 namespace neml2
 {
-std::unique_ptr<Factory>
-load_input(const std::filesystem::path & path, const std::string & additional_input)
-{
-  // For now we only support HIT
-  if (utils::end_with(path.string(), ".i"))
-  {
-    HITParser parser;
-    auto inp = parser.parse(path, additional_input);
-    return std::make_unique<Factory>(inp);
-  }
-  else
-    throw ParserException("Unsupported parser type");
-}
-
 Factory::Factory(InputFile inp)
   : _input_file(std::move(inp)),
     _objects()
