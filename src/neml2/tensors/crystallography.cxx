@@ -162,7 +162,7 @@ unique_bidirectional(const R2 & ops, const Vec & inp)
 }
 
 Scalar
-misorientation(const Rot & r1, const Rot & r2, std::string orbifold)
+misorientation(const Rot & r1, const Rot & r2, const std::string & orbifold)
 {
   neml_assert_broadcastable_dbg(r1, r2);
   const auto [r1a, r2a, i] = utils::align_intmd_dim(r1, r2);
@@ -177,11 +177,11 @@ misorientation(const Rot & r1, const Rot & r2, std::string orbifold)
 }
 
 Rot
-move_to_fundamental_zone(const Rot & r, std::string orbifold, Rot ref)
+move_to_fundamental_zone(const Rot & r, const std::string & orbifold, const Rot & ref)
 {
   neml_assert_dbg(r.intmd_dim() == 0, "Input must not have intermediate dimensions");
 
-  auto orig_dynamic_sizes = r.dynamic_sizes();
+  const auto & orig_dynamic_sizes = r.dynamic_sizes();
   auto flattened_r = r.batch_flatten();
 
   auto ops = symmetry(orbifold, r.options());

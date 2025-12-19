@@ -40,7 +40,7 @@ R2 symmetry(const std::string & orbifold, const TensorOptions & options = defaul
 Vec unique_bidirectional(const R2 & ops, const Vec & inp);
 
 /// Calculate the misorientation of two batches of rotations
-Scalar misorientation(const Rot & r1, const Rot & r2, std::string orbifold = "1");
+Scalar misorientation(const Rot & r1, const Rot & r2, const std::string & orbifold = "1");
 
 /// Move a collection of orientations to a fundemental zone defined by the crystal symmetry
 // The coice of the reference orientation is arbitrary.  This matches the results from
@@ -50,8 +50,8 @@ Scalar misorientation(const Rot & r1, const Rot & r2, std::string orbifold = "1"
 // This function doesn't tolerate input intermediate dimensions because it needs advanced indexing
 //
 Rot move_to_fundamental_zone(const Rot & r,
-                             std::string orbifold,
-                             Rot ref = Rot(at::tensor({0.0, 0.0, 0.005}), 0));
+                             const std::string & orbifold,
+                             const Rot & ref = Rot::fill(0, 0, 0.005));
 
 namespace symmetry_operators
 {

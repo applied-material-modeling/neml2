@@ -55,9 +55,7 @@ Calculate the misorientation of two batches of rotations
         &crystallography::move_to_fundamental_zone,
         py::arg("r"),
         py::arg("orbifold"),
-        py::arg_v("ref",
-                  Rot(at::tensor({0.0, 0.0, 0.005}), 0),
-                  "Rot(torch.tensor([0.0, 0.0, 0.005]), 0)"),
+        py::arg_v("ref", Rot::fill(0.0, 0.0, 0.005), "Rot(torch.tensor([0.0, 0.0, 0.005]), 0)"),
         R"(
 Move a collection of orientations to a fundemental zone defined by the crystal symmetry
 :param r:           Batch of rotations to move to the fundamental zone
