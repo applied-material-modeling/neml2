@@ -178,6 +178,16 @@ VariableBase::intmd_sizes() const
 TensorShapeRef
 VariableBase::intrsc_intmd_sizes() const
 {
+  if (intmd_dim() == 0)
+    return TensorShapeRef{};
+  neml_assert_dbg(intmd_sizes().size() >= intrsc_intmd_dim(),
+                  "Intermediate dimension (",
+                  intmd_sizes().size(),
+                  ") is smaller than the intrinsic intermediate dimension (",
+                  intrsc_intmd_dim(),
+                  ") for variable '",
+                  name(),
+                  "'.");
   return intmd_sizes().slice(intmd_sizes().size() - intrsc_intmd_dim());
 }
 

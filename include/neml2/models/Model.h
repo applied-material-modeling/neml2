@@ -43,6 +43,23 @@
 
 namespace neml2
 {
+class Model;
+
+// Guard a region where implicit solve is being performed
+struct AssemblyingNonlinearSystem
+{
+  AssemblyingNonlinearSystem(Model * const, bool assembling = true);
+
+  AssemblyingNonlinearSystem(const AssemblyingNonlinearSystem &) = delete;
+  AssemblyingNonlinearSystem(AssemblyingNonlinearSystem &&) = delete;
+  AssemblyingNonlinearSystem & operator=(const AssemblyingNonlinearSystem &) = delete;
+  AssemblyingNonlinearSystem & operator=(AssemblyingNonlinearSystem &&) = delete;
+  ~AssemblyingNonlinearSystem();
+
+  Model * const model;
+  const bool prev_bool;
+};
+
 /**
  * @brief The base class for all constitutive models.
  *

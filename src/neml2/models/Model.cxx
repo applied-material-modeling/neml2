@@ -41,6 +41,18 @@
 
 namespace neml2
 {
+AssemblyingNonlinearSystem::AssemblyingNonlinearSystem(Model * const model, bool assembling)
+  : model(model),
+    prev_bool(model->currently_assembling_nonlinear_system())
+{
+  model->currently_assembling_nonlinear_system(assembling);
+}
+
+AssemblyingNonlinearSystem::~AssemblyingNonlinearSystem()
+{
+  model->currently_assembling_nonlinear_system(prev_bool);
+}
+
 bool
 Model::EvaluationSchema::operator==(const EvaluationSchema & other) const
 {
