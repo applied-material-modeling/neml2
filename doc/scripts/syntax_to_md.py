@@ -42,7 +42,7 @@ def remove_namespace(type):
 
 
 def demangle(type):
-    type = type.replace("SmallVector<long, 6u>", "tensor shape")
+    type = re.sub(r"SmallVector<[^>]*>", "tensor shape", type)
     type = type.replace(
         "std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >",
         "std::string",
@@ -57,6 +57,7 @@ def demangle(type):
     type = type.replace("int", "number")
     type = type.replace("long", "number")
     type = type.replace("double", "number")
+    type = type.replace("unsigned", "non-negative")
 
     return type
 
