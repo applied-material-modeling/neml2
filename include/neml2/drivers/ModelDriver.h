@@ -28,7 +28,7 @@
 #include "neml2/models/map_types.h"
 #include "neml2/tensors/tensors.h"
 
-#ifdef NEML2_HAS_DISPATCHER
+#ifdef NEML2_WORK_DISPATCHER
 #include "neml2/dispatchers/WorkScheduler.h"
 #include "neml2/dispatchers/WorkDispatcher.h"
 #endif
@@ -72,7 +72,7 @@ protected:
   /// Set to true to list all the model parameters at the beginning
   const bool _show_model_info;
 
-#ifdef NEML2_HAS_DISPATCHER
+#ifdef NEML2_WORK_DISPATCHER
   /// The work scheduler to use
   std::shared_ptr<WorkScheduler> _scheduler;
   /// Work dispatcher

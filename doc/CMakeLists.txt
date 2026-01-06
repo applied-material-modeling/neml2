@@ -19,7 +19,8 @@ macro(generate_doxyfile output inputs)
   file(WRITE ${output}.in "")
 
   foreach(input ${inputs})
-    file(READ ${input} _content)
+    configure_file(${input} "${NEML2_BINARY_DIR}/doc/${input}" COPYONLY)
+    file(READ "${NEML2_BINARY_DIR}/doc/${input}" _content)
     file(APPEND ${output}.in ${_content})
   endforeach()
 

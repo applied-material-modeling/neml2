@@ -49,10 +49,10 @@ if __name__ == "__main__":
             for line in lines:
 
                 # Output
-                if line.strip().startswith("@insert-output"):
+                if line.strip().startswith("@list-output"):
                     tokens = line.strip().split(":")
                     if len(tokens) < 2:
-                        print(f"Invalid @insert-output directive: {line.strip()}")
+                        print(f"Invalid @list-output directive: {line.strip()}")
                         sys.exit(1)
                     output = tokens[1]
                     file = (md.parent / output).with_suffix(".out")

@@ -9,9 +9,12 @@ function(neml2_add_submodule mname TYPE mdir)
   target_sources(${mname}
     PUBLIC
     FILE_SET HEADERS
-    BASE_DIRS ${NEML2_SOURCE_DIR}/include
+    BASE_DIRS
+    ${NEML2_SOURCE_DIR}/include
+    ${NEML2_BINARY_DIR}/include
     FILES
     ${mheaders}
+    ${NEML2_BINARY_DIR}/include/neml2/config.h
   )
 
   set_target_properties(${mname} PROPERTIES OUTPUT_NAME "neml2_${mname}$<IF:$<CONFIG:Release>,,_$<CONFIG>>")
@@ -44,9 +47,12 @@ add_library(neml2 SHARED "neml2.cxx")
 target_sources(neml2
   PUBLIC
   FILE_SET HEADERS
-  BASE_DIRS ${NEML2_SOURCE_DIR}/include
+  BASE_DIRS
+  ${NEML2_SOURCE_DIR}/include
+  ${NEML2_BINARY_DIR}/include
   FILES
   ${NEML2_SOURCE_DIR}/include/neml2/neml2.h
+  ${NEML2_BINARY_DIR}/include/neml2/config.h
 )
 set_target_properties(neml2 PROPERTIES OUTPUT_NAME "neml2$<IF:$<CONFIG:Release>,,_$<CONFIG>>")
 if(NEML2_WHEEL)
@@ -66,12 +72,10 @@ if(TARGET torch::cuda)
 endif()
 
 if(NEML2_JSON)
-  target_compile_definitions(misc PUBLIC NEML2_HAS_JSON)
   target_link_libraries(misc PUBLIC nlohmann_json::nlohmann_json)
 endif()
 
 if(NEML2_CSV)
-  target_compile_definitions(misc PUBLIC NEML2_HAS_CSV)
   target_link_libraries(misc PUBLIC csv)
 endif()
 
@@ -136,9 +140,14 @@ if(NEML2_WORK_DISPATCHER)
   neml2_add_submodule(dispatcher SHARED dispatchers)
   target_link_libraries(dispatcher PUBLIC tensor model)
   target_link_libraries(dispatcher PUBLIC timpi)
-  target_compile_definitions(dispatcher PUBLIC NEML2_HAS_DISPATCHER)
   target_link_libraries(driver PUBLIC dispatcher)
 endif()
+
+# feature definitions
+configure_file(
+  ${NEML2_SOURCE_DIR}/include/neml2/config.h.in
+  ${NEML2_BINARY_DIR}/include/neml2/config.h
+)
 
 # ----------------------------------------------------------------------------
 # Version number and hash

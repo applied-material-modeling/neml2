@@ -22,9 +22,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifdef NEML2_HAS_CSV
-
 #pragma once
+
+#include "neml2/config.h"
+
+#ifdef NEML2_CSV
 
 #include "csvparser/csv.hpp"
 #include "neml2/user_tensors/UserTensorBase.h"

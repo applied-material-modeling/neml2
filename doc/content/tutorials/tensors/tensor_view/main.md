@@ -24,80 +24,15 @@ The following example demonstrates the two bullet points, i.e., "change in origi
 <div class="tabbed">
 
 - <b class="tab-title">C++</b>
-  @source:src1
-  ```cpp
-  #include "neml2/tensors/Tensor.h"
-
-  using namespace neml2;
-  using namespace indexing;
-
-  int
-  main()
-  {
-    // Create a tensor with shape (; 4, 3) filled with zeros
-    auto a = Tensor::zeros({4, 3});
-    std::cout << "a =\n" << a << std::endl;
-
-    // b is a view into the first row and the third row of a
-    auto b = a.base_index({Slice(None, None, 2)});
-    std::cout << "b =\n" << b << std::endl;
-
-    // Modification in a is reflected in b
-    a += 1.0;
-    std::cout << "\nAfter first modification" << std::endl;
-    std::cout << "a =\n" << a << std::endl;
-    std::cout << "b =\n" << b << std::endl;
-
-    // Modification in data viewed by b is reflected in a
-    b += 1.0;
-    std::cout << "\nAfter second modification" << std::endl;
-    std::cout << "a =\n" << a << std::endl;
-    std::cout << "b =\n" << b << std::endl;
-  }
-  ```
-  @endsource
+  @list:cpp:tensors/tensor_view/ex1.cxx
 
   Output:
-  ```
-  @attach-output:src1
-  ```
+  @list-output:ex1
 - <b class="tab-title">Python</b>
-  @source:src2
-  ```python
-  from neml2.tensors import Tensor
-
-  # Create a tensor with shape (; 4, 3) filled with zeros
-  a = Tensor.zeros((4, 3))
-  print("a =")
-  print(a)
-
-  # b is a view into the first row and the third row of a
-  b = a.base[::2]
-  print("b =")
-  print(b)
-
-  # Modification in a is reflected in b
-  a += 1.0
-  print("\nAfter first modification")
-  print("a =")
-  print(a)
-  print("b =")
-  print(b)
-
-  # Modification in data viewed by b is reflected in a
-  b += 1.0
-  print("\nAfter second modification")
-  print("a =")
-  print(a)
-  print("b =")
-  print(b)
-  ```
-  @endsource
+  @list:python:tensors/tensor_view/ex2.py
 
   Output:
-  ```
-  @attach-output:src2
-  ```
+  @list-output:ex2
 
 </div>
 

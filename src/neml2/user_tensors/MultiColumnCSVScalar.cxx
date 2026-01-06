@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifdef NEML2_HAS_CSV
+#ifdef NEML2_CSV
 
 #include "neml2/user_tensors/MultiColumnCSVScalar.h"
 
@@ -84,4 +84,4 @@ MultiColumnCSVScalar::make() const
 
 } // namespace neml2
 
-#endif // NEML2_HAS_CSV
+#endif // NEML2_CSV

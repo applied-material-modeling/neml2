@@ -28,80 +28,15 @@ Suppose we are given two samples made of different materials, and for each sampl
 <div class="tabbed">
 
 - <b class="tab-title">C++</b>
-  @source:src1
-  ```cpp
-  #include <torch/torch.h>
-  #include "neml2/tensors/SSR4.h"
-  #include "neml2/tensors/SR2.h"
-  #include "neml2/tensors/Scalar.h"
-
-  int
-  main()
-  {
-    using namespace neml2;
-    set_default_dtype(kFloat64);
-
-    // Number of samples
-    Size ns = 2;
-    // Number of strain measurements
-    Size nm = 1000;
-
-    // Elasticity tensor of the two materials
-    auto youngs_modulus = Scalar::create({1e5, 2e5});
-    auto poissons_ratio = Scalar::create({0.1, 0.2});
-    auto C = SSR4::isotropic_E_nu(youngs_modulus, poissons_ratio);
-
-    // (Fake) strain measurements
-    auto strain = SR2(torch::rand({nm, ns, 6}, kFloat64));
-
-    // Perform the constitutive update
-    auto stress = C * strain;
-
-    // Do the shapes make sense?
-    std::cout << "     Shape of C:" << C.batch_sizes() << C.base_sizes() << std::endl;
-    std::cout << "Shape of strain: " << strain.batch_sizes() << strain.base_sizes() << std::endl;
-    std::cout << "Shape of stress: " << stress.batch_sizes() << stress.base_sizes() << std::endl;
-  }
-  ```
-  @endsource
+  @list:cpp:tensors/broadcasting/ex1.cxx
 
   Output:
-  ```
-  @attach-output:src1
-  ```
+  @list-output:ex1
 - <b class="tab-title">Python</b>
-  @source:src2
-  ```python
-  import torch
-  from neml2.tensors import Scalar, SR2, SSR4
-
-  # Number of samples
-  ns = 2
-  # Number of strain measurements
-  nm = 1000
-
-  # Elasticity tensor of the two materials
-  youngs_modulus = Scalar(torch.tensor([1e5, 2e5], dtype=torch.float64))
-  poissons_ratio = Scalar(torch.tensor([0.1, 0.2], dtype=torch.float64))
-  C = SSR4.isotropic_E_nu(youngs_modulus, poissons_ratio)
-
-  # (Fake) strain measurements
-  strain = SR2(torch.rand(nm, ns, 6, dtype=torch.float64))
-
-  # Perform the constitutive update
-  stress = C * strain
-
-  # Do the shapes make sense?
-  print("     Shape of C:", C.batch.shape, C.base.shape)
-  print("Shape of strain:", strain.batch.shape, strain.base.shape)
-  print("Shape of stress:", stress.batch.shape, stress.base.shape)
-  ```
-  @endsource
+  @list:python:tensors/broadcasting/ex2.py
 
   Output:
-  ```
-  @attach-output:src2
-  ```
+  @list-output:ex2
 
 </div>
 

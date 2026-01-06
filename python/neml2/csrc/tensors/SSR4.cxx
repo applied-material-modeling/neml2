@@ -22,6 +22,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <pybind11/operators.h>
+
 #include "python/neml2/csrc/tensors/TensorBase.h"
 #include "python/neml2/csrc/tensors/PrimitiveTensor.h"
 
@@ -33,4 +35,65 @@ def(py::module_ & m, py::class_<SSR4> & c)
 {
   def_TensorBase<SSR4>(m, "SSR4");
   def_PrimitiveTensor<SSR4>(m, "SSR4");
+
+  c.def_static(
+       "identity",
+       [](NEML2_TENSOR_OPTIONS_VARGS) { return SSR4::identity(NEML2_TENSOR_OPTIONS); },
+       py::kw_only(),
+       PY_ARG_TENSOR_OPTIONS)
+      .def_static(
+          "identity_sym",
+          [](NEML2_TENSOR_OPTIONS_VARGS) { return SSR4::identity_sym(NEML2_TENSOR_OPTIONS); },
+          py::kw_only(),
+          PY_ARG_TENSOR_OPTIONS)
+      .def_static(
+          "identity_vol",
+          [](NEML2_TENSOR_OPTIONS_VARGS) { return SSR4::identity_vol(NEML2_TENSOR_OPTIONS); },
+          py::kw_only(),
+          PY_ARG_TENSOR_OPTIONS)
+      .def_static(
+          "identity_dev",
+          [](NEML2_TENSOR_OPTIONS_VARGS) { return SSR4::identity_dev(NEML2_TENSOR_OPTIONS); },
+          py::kw_only(),
+          PY_ARG_TENSOR_OPTIONS)
+      .def_static(
+          "identity_C1",
+          [](NEML2_TENSOR_OPTIONS_VARGS) { return SSR4::identity_C1(NEML2_TENSOR_OPTIONS); },
+          py::kw_only(),
+          PY_ARG_TENSOR_OPTIONS)
+      .def_static(
+          "identity_C2",
+          [](NEML2_TENSOR_OPTIONS_VARGS) { return SSR4::identity_C2(NEML2_TENSOR_OPTIONS); },
+          py::kw_only(),
+          PY_ARG_TENSOR_OPTIONS)
+      .def_static(
+          "identity_C3",
+          [](NEML2_TENSOR_OPTIONS_VARGS) { return SSR4::identity_C3(NEML2_TENSOR_OPTIONS); },
+          py::kw_only(),
+          PY_ARG_TENSOR_OPTIONS)
+      .def_static(
+          "isotropic_E_nu",
+          [](double E, double nu, NEML2_TENSOR_OPTIONS_VARGS)
+          { return SSR4::isotropic_E_nu(E, nu, NEML2_TENSOR_OPTIONS); },
+          py::arg("E"),
+          py::arg("nu"),
+          py::kw_only(),
+          PY_ARG_TENSOR_OPTIONS)
+      .def_static("isotropic_E_nu",
+                  py::overload_cast<const Scalar &, const Scalar &>(&SSR4::isotropic_E_nu))
+      .def_static(
+          "fill_C1_C2_C3",
+          [](double C1, double C2, double C3, NEML2_TENSOR_OPTIONS_VARGS)
+          { return SSR4::fill_C1_C2_C3(C1, C2, C3, NEML2_TENSOR_OPTIONS); },
+          py::arg("C1"),
+          py::arg("C2"),
+          py::arg("C3"),
+          py::kw_only(),
+          PY_ARG_TENSOR_OPTIONS)
+      .def_static(
+          "fill_C1_C2_C3",
+          py::overload_cast<const Scalar &, const Scalar &, const Scalar &>(&SSR4::fill_C1_C2_C3));
+
+  // Operators
+  c.def(py::self * py::self).def(py::self * SR2());
 }
