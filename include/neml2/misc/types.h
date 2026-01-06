@@ -28,6 +28,9 @@
 #include <c10/core/TensorOptions.h>
 #include <c10/core/Scalar.h>
 
+// preprocessor macros
+#include "neml2/config.h"
+
 namespace at
 {
 class Tensor;

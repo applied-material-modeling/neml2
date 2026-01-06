@@ -24,7 +24,6 @@
 
 #pragma once
 
-#include "neml2/config.h"
 #include "neml2/base/Factory.h"
 #include "neml2/models/Model.h"
 
