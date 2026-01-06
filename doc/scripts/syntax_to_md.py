@@ -53,7 +53,6 @@ def demangle(type):
     type = re.sub("TensorName<(.+)>", r"\1 🔗", type)
     type = re.sub("vector<(.+)>", r"list of \1", type)
     # Call all integral/floating point types "number", as this syntax documentation faces the general audience potentially without computer science background
-    type = type.replace("unsigned int", "number")
     type = type.replace("int", "number")
     type = type.replace("long", "number")
     type = type.replace("double", "number")
@@ -201,6 +200,7 @@ if __name__ == "__main__":
                         stream.write("</details>\n")
                     stream.write("\n")
                     stream.write("Detailed documentation [link](@ref {})\n\n".format(type))
+            log.write("\nFinished processing Section '{}'.\n".format(section))
 
         if missing == 0:
             log.write("No syntax error, good job! :purple_heart:")
