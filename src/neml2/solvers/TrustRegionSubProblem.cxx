@@ -38,9 +38,7 @@ TrustRegionSubProblem::TrustRegionSubProblem(const OptionSet & options)
 }
 
 void
-TrustRegionSubProblem::reinit(const NonlinearSystem::Res<true> & r,
-                              const NonlinearSystem::Jac<true> & J,
-                              const Scalar & delta)
+TrustRegionSubProblem::reinit(const es::Vector & r, const es::Matrix & J, const Scalar & delta)
 {
   _delta = delta;
   _JJ = mm(J.base_transpose(0, 1), J);
@@ -48,24 +46,22 @@ TrustRegionSubProblem::reinit(const NonlinearSystem::Res<true> & r,
 }
 
 void
-TrustRegionSubProblem::set_guess(const NonlinearSystem::Sol<false> & x)
+TrustRegionSubProblem::set_solution(const es::Vector & x)
 {
   _s = Scalar(x);
 }
 
 void
-TrustRegionSubProblem::assemble(NonlinearSystem::Res<false> * residual,
-                                NonlinearSystem::Jac<false> * Jacobian)
+TrustRegionSubProblem::assemble(es::Vector * residual, es::Matrix * Jacobian)
 {
   auto p = -preconditioned_direction(_s);
   auto np = sqrt(vdot(p, p));
 
   if (residual)
-    *residual = NonlinearSystem::Res<false>(1.0 / np - 1.0 / sqrt(2.0 * _delta));
+    *residual = es::Vector(1.0 / np - 1.0 / sqrt(2.0 * _delta));
 
   if (Jacobian)
-    *Jacobian =
-        NonlinearSystem::Jac<false>(1.0 / pow(np, 3.0) * vdot(p, preconditioned_solve(_s, p)));
+    *Jacobian = es::Matrix(1.0 / pow(np, 3.0) * vdot(p, preconditioned_solve(_s, p)));
 }
 
 Tensor

@@ -293,9 +293,12 @@ protected:
 
   jit::Stack collect_input_stack() const;
 
-  void set_guess(const Sol<false> &) override;
-
+  void set_solution(const Sol<false> &) override;
+  Sol<false> get_solution() const override;
   void assemble(Res<false> *, Jac<false> *) override;
+
+  // Allow ImplicitUpdate to assemble the system
+  friend class ImplicitUpdate;
 
   /// Models *this* model may use during its evaluation
   std::vector<std::shared_ptr<Model>> _registered_models;

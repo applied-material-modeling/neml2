@@ -78,20 +78,20 @@ NewtonWithLineSearch::NewtonWithLineSearch(const OptionSet & options)
 
 void
 NewtonWithLineSearch::update(NonlinearSystem & system,
-                             NonlinearSystem::Sol<true> & x,
-                             const NonlinearSystem::Res<true> & r,
-                             const NonlinearSystem::Jac<true> & J)
+                             es::Vector & x,
+                             const es::Vector & r,
+                             const es::Matrix & J)
 {
   auto dx = solve_direction(r, J);
   auto alpha = linesearch(system, x, dx, r);
-  x = NonlinearSystem::Sol<true>(x.variable_data() + alpha * Tensor(dx));
+  x = es::Vector(x.variable_data() + alpha * Tensor(dx));
 }
 
 Scalar
 NewtonWithLineSearch::linesearch(NonlinearSystem & system,
-                                 const NonlinearSystem::Sol<true> & x,
-                                 const NonlinearSystem::Sol<true> & dx,
-                                 const NonlinearSystem::Res<true> & R0) const
+                                 const es::Vector & x,
+                                 const es::Vector & dx,
+                                 const es::Vector & R0) const
 {
   auto alpha = Scalar::ones(dx.dynamic_sizes(), {}, x.options());
   const auto nR02 = vdot(R0, R0);
@@ -99,7 +99,7 @@ NewtonWithLineSearch::linesearch(NonlinearSystem & system,
 
   for (std::size_t i = 1; i < _linesearch_miter; i++)
   {
-    NonlinearSystem::Sol<true> xp(Tensor(x) + alpha * Tensor(dx));
+    es::Vector xp(Tensor(x) + alpha * Tensor(dx));
     auto R = system.residual(xp);
     auto nR2 = vdot(R, R);
 

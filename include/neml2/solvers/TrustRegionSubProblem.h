@@ -46,7 +46,7 @@ public:
   Tensor preconditioned_direction(const Scalar & s) const;
 
 protected:
-  void set_guess(const Sol<false> & x) override;
+  void set_solution(const Sol<false> & x) override;
 
   void assemble(Res<false> * residual, Jac<false> * Jacobian) override;
 

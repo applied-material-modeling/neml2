@@ -22,12 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <iostream>
-
 #include "neml2/solvers/NonlinearSystem.h"
-#include "neml2/misc/assertions.h"
-#include "neml2/tensors/functions/mm.h"
-#include "neml2/tensors/functions/diagonalize.h"
 
 namespace neml2
 {
@@ -36,176 +31,96 @@ NonlinearSystem::expected_options()
 {
   OptionSet options;
 
-  options.set<bool>("automatic_scaling") = false;
-  options.set("automatic_scaling").doc() =
-      "Whether to perform automatic scaling. See neml2::NonlinearSystem::init_scaling for "
-      "implementation details.";
-
-  options.set<double>("automatic_scaling_tol") = 0.01;
-  options.set("automatic_scaling_tol").doc() =
-      "Tolerance used in iteratively updating the scaling matrices.";
-
-  options.set<unsigned int>("automatic_scaling_miter") = 20;
-  options.set("automatic_scaling_miter").doc() =
-      "Maximum number of automatic scaling iterations. No error is produced upon reaching the "
-      "maximum number of scaling iterations, and the scaling matrices obtained at the last "
-      "iteration are used to scale the nonlinear system.";
-
   return options;
 }
 
-void
-NonlinearSystem::disable_automatic_scaling(OptionSet & options)
-{
-  options.set("automatic_scaling").suppressed() = true;
-  options.set("automatic_scaling_tol").suppressed() = true;
-  options.set("automatic_scaling_miter").suppressed() = true;
-}
+NonlinearSystem::NonlinearSystem(const OptionSet & /*options*/) {}
 
 void
-NonlinearSystem::enable_automatic_scaling(OptionSet & options)
+NonlinearSystem::set_unknown_ordering(const std::vector<LabeledAxisAccessor> & unknowns)
 {
-  options.set("automatic_scaling").suppressed() = false;
-  options.set("automatic_scaling_tol").suppressed() = false;
-  options.set("automatic_scaling_miter").suppressed() = false;
+  _unknowns = unknowns;
 }
 
-NonlinearSystem::NonlinearSystem(const OptionSet & options)
-  : _autoscale(options.get<bool>("automatic_scaling")),
-    _autoscale_tol(options.get<double>("automatic_scaling_tol")),
-    _autoscale_miter(options.get<unsigned int>("automatic_scaling_miter"))
+const std::vector<LabeledAxisAccessor> &
+NonlinearSystem::unknown_ordering() const
 {
+  return _unknowns;
 }
 
 void
-NonlinearSystem::init_scaling(const NonlinearSystem::Sol<false> & x, const bool verbose)
+NonlinearSystem::set_residual_ordering(const std::vector<LabeledAxisAccessor> & residuals)
 {
-  if (!_autoscale)
-    return;
+  _residuals = residuals;
+}
 
-  if (_scaling_matrices_initialized)
-    return;
-
-  // First compute the unscaled Jacobian
-  auto J = Jacobian(x);
-
-  // Initialize the scaling matrices
-  auto Jp = J.clone();
-  _row_scaling = Tensor::ones_like(x);
-  _col_scaling = Tensor::ones_like(x);
-
-  if (verbose)
-    std::cout << "Before automatic scaling cond(J) = " << std::scientific
-              << at::max(at::linalg_cond(Jp)).item<double>() << std::endl;
-
-  const auto eps = machine_precision(x.scalar_type());
-
-  for (unsigned int itr = 0; itr < _autoscale_miter; itr++)
-  {
-    // check for convergence
-    auto rR = at::max(at::abs(1.0 - 1.0 / (at::sqrt(at::abs(std::get<0>(Jp.max(-1)))) + eps)))
-                  .item<double>();
-    auto rC = at::max(at::abs(1.0 - 1.0 / (at::sqrt(at::abs(std::get<0>(Jp.max(-2)))) + eps)))
-                  .item<double>();
-
-    if (verbose)
-      std::cout << "ITERATION " << itr << ", ROW ILLNESS = " << std::scientific << rR
-                << ", COL ILLNESS = " << std::scientific << rC << std::endl;
-    if (rR < _autoscale_tol && rC < _autoscale_tol)
-      break;
-
-    // scale rows and columns
-    for (Size i = 0; i < x.base_size(-1); i++)
-    {
-      auto ar = 1.0 / (at::sqrt(at::max(at::abs(Jp.base_index({i})))) + eps);
-      auto ac = 1.0 / (at::sqrt(at::max(at::abs(Jp.base_index({indexing::Slice(), i})))) + eps);
-      _row_scaling.base_index({i}) *= ar;
-      _col_scaling.base_index({i}) *= ac;
-      Jp.base_index({i}) *= ar;
-      Jp.base_index({indexing::Slice(), i}) *= ac;
-    }
-  }
-
-  _scaling_matrices_initialized = true;
-
-  if (verbose)
-    std::cout << " After automatic scaling cond(J) = " << std::scientific
-              << at::max(at::linalg_cond(Jp)).item<double>() << std::endl;
+const std::vector<LabeledAxisAccessor> &
+NonlinearSystem::residual_ordering() const
+{
+  return _residuals;
 }
 
 void
-NonlinearSystem::ensure_scaling_matrices_initialized_dbg() const
+NonlinearSystem::set_prescribed_ordering(const std::vector<LabeledAxisAccessor> & prescribeds)
 {
-  neml_assert_dbg(
-      _autoscale == _scaling_matrices_initialized,
-      _autoscale ? "Automatic scaling is requested but scaling matrices have not been initialized."
-                 : "Automatic scaling is not requested but scaling matrices were initialized.");
+  _prescribeds = prescribeds;
 }
 
-NonlinearSystem::Res<true>
-NonlinearSystem::scale(const NonlinearSystem::Res<false> & r) const
+const std::vector<LabeledAxisAccessor> &
+NonlinearSystem::prescribed_ordering() const
 {
-  if (!_autoscale)
-    return Res<true>(r);
-
-  ensure_scaling_matrices_initialized_dbg();
-  return Res<true>(_row_scaling * r);
-}
-
-NonlinearSystem::Res<false>
-NonlinearSystem::unscale(const NonlinearSystem::Res<true> & r) const
-{
-  if (!_autoscale)
-    return Res<false>(r);
-
-  ensure_scaling_matrices_initialized_dbg();
-  return Res<false>(1. / _row_scaling * r);
-}
-
-NonlinearSystem::Jac<true>
-NonlinearSystem::scale(const NonlinearSystem::Jac<false> & J) const
-{
-  if (!_autoscale)
-    return Jac<true>(J);
-
-  ensure_scaling_matrices_initialized_dbg();
-  return Jac<true>(mm(mm(base_diagonalize(_row_scaling), J), base_diagonalize(_col_scaling)));
-}
-
-NonlinearSystem::Jac<false>
-NonlinearSystem::unscale(const NonlinearSystem::Jac<true> & J) const
-{
-  if (!_autoscale)
-    return Jac<false>(J);
-
-  ensure_scaling_matrices_initialized_dbg();
-  return Jac<false>(
-      mm(mm(base_diagonalize(1.0 / _row_scaling), J), base_diagonalize(1.0 / _col_scaling)));
-}
-
-NonlinearSystem::Sol<true>
-NonlinearSystem::scale(const NonlinearSystem::Sol<false> & u) const
-{
-  if (!_autoscale)
-    return Sol<true>(u);
-
-  ensure_scaling_matrices_initialized_dbg();
-  return Sol<true>(1. / _col_scaling * u);
-}
-
-NonlinearSystem::Sol<false>
-NonlinearSystem::unscale(const NonlinearSystem::Sol<true> & u) const
-{
-  if (!_autoscale)
-    return Sol<false>(u);
-
-  ensure_scaling_matrices_initialized_dbg();
-  return Sol<false>(_col_scaling * u);
+  return _prescribeds;
 }
 
 void
-NonlinearSystem::set_guess(const NonlinearSystem::Sol<true> & x)
+NonlinearSystem::set_solution(const es::Vector & x)
 {
-  set_guess(unscale(x));
+  set_solution(x);
+}
+
+es::Vector
+NonlinearSystem::residual()
+{
+  es::Vector r;
+  assemble(&r, nullptr);
+  return r;
+}
+
+es::Vector
+NonlinearSystem::residual(const es::Vector & x)
+{
+  set_solution(x);
+  return residual();
+}
+
+es::Matrix
+NonlinearSystem::Jacobian()
+{
+  es::Matrix J;
+  assemble(nullptr, &J);
+  return J;
+}
+
+es::Matrix
+NonlinearSystem::Jacobian(const es::Vector & x)
+{
+  set_solution(x);
+  return Jacobian();
+}
+
+std::tuple<es::Vector, es::Matrix>
+NonlinearSystem::residual_and_Jacobian()
+{
+  es::Vector r;
+  es::Matrix J;
+  assemble(&r, &J);
+  return {r, J};
+}
+
+std::tuple<es::Vector, es::Matrix>
+NonlinearSystem::residual_and_Jacobian(const es::Vector & x)
+{
+  set_solution(x);
+  return residual_and_Jacobian();
 }
 } // namespace neml2

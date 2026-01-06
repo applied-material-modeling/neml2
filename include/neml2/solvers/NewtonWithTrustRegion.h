@@ -57,20 +57,18 @@ protected:
   /// Extract options for the subproblem solver
   OptionSet subproblem_solver_options(const OptionSet &) const;
 
-  void prepare(const NonlinearSystem & system, const NonlinearSystem::Sol<true> & x) override;
+  void prepare(const NonlinearSystem & system, const es::Vector & x) override;
 
   void update(NonlinearSystem & system,
-              NonlinearSystem::Sol<true> & x,
-              const NonlinearSystem::Res<true> & r,
-              const NonlinearSystem::Jac<true> & J) override;
+              es::Vector & x,
+              const es::Vector & r,
+              const es::Matrix & J) override;
 
-  NonlinearSystem::Sol<true> solve_direction(const NonlinearSystem::Res<true> & r,
-                                             const NonlinearSystem::Jac<true> & J) override;
+  es::Vector solve_direction(const es::Vector & r, const es::Matrix & J) override;
 
   /// Reduction in the merit function
-  Scalar merit_function_reduction(const NonlinearSystem::Res<true> & r,
-                                  const NonlinearSystem::Jac<true> & J,
-                                  const NonlinearSystem::Sol<true> & p) const;
+  Scalar
+  merit_function_reduction(const es::Vector & r, const es::Matrix & J, const es::Vector & p) const;
 
   /// Trust-region subproblem
   TrustRegionSubProblem _subproblem;

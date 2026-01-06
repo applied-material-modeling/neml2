@@ -1,5 +1,5 @@
 // Copyright 2024, UChicago Argonne, LLC
-// All Rights Reserved
+// All Rights Rerved
 // Software Name: NEML2 -- the New Engineering material Model Library, version 2
 // By: Argonne National Laboratory
 // OPEN SOURCE LICENSE (MIT)
@@ -24,28 +24,48 @@
 
 #pragma once
 
-#include "neml2/base/NEML2Object.h"
-#include "neml2/base/Registry.h"
+#include <vector>
+#include "neml2/tensors/Tensor.h"
 
-namespace neml2
+namespace neml2::es
 {
-/**
- * @brief The solver solves a system of equations.
- *
- */
-class Solver : public NEML2Object
+struct Vector : public std::vector<Tensor>
 {
-public:
-  static OptionSet expected_options();
+  Vector() = default;
 
-  /**
-   * @brief Construct a new Solver object
-   *
-   * @param options The options extracted from the input file
-   */
-  Solver(const OptionSet & options);
+  /// Conversion from vector of Tensors must be explicit
+  explicit Vector(std::vector<Tensor> r)
+    : std::vector<Tensor>(std::move(r))
+  {
+  }
 
-  /// Whether to print additional (debugging) information during the solve
-  const bool verbose;
+  /// Whether any of the contained Tensors require gradients
+  bool requires_grad() const;
+
+  /// Negation
+  Vector operator-() const;
+
+  /// Update the data of the contained Tensors (without changing their computational graph)
+  void update_data(const Vector & other);
+
+  /// Update the contained Tensors
+  void update(const Vector & other);
 };
-} // namespace neml2
+
+struct Matrix : public std::vector<std::vector<Tensor>>
+{
+  Matrix() = default;
+
+  /// Conversion from matrix of Tensors must be explicit
+  explicit Matrix(std::vector<std::vector<Tensor>> J)
+    : std::vector<std::vector<Tensor>>(std::move(J))
+  {
+  }
+};
+
+/// squared vector-norm of an es::Vector
+Scalar norm_sq(const Vector & v);
+
+/// vector-norm of an es::Vector
+Scalar norm(const Vector & v);
+} // namespace neml2::es

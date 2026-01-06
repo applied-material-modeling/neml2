@@ -24,28 +24,23 @@
 
 #pragma once
 
-#include "neml2/base/NEML2Object.h"
-#include "neml2/base/Registry.h"
+#include "neml2/solvers/Solver.h"
+#include "neml2/solvers/LinearSystem.h"
 
 namespace neml2
 {
 /**
- * @brief The solver solves a system of equations.
+ * @brief The linear solver solves a linear system of equations.
  *
  */
-class Solver : public NEML2Object
+class LinearSolver : public Solver
 {
 public:
   static OptionSet expected_options();
 
-  /**
-   * @brief Construct a new Solver object
-   *
-   * @param options The options extracted from the input file
-   */
-  Solver(const OptionSet & options);
+  LinearSolver(const OptionSet & options);
 
-  /// Whether to print additional (debugging) information during the solve
-  const bool verbose;
+  /// Solve Ax = b for x
+  virtual es::Vector solve(const es::Matrix & A, const es::Vector & b) = 0;
 };
 } // namespace neml2

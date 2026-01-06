@@ -34,8 +34,7 @@ TEST_CASE("NonlinearSystem", "[solvers]")
   // Initial guess
   TensorShape batch_sz = {2};
   Size nbase = 4;
-  auto x0 =
-      NonlinearSystem::Sol<false>(Tensor::full(batch_sz, {}, nbase, 2.0, default_tensor_options()));
+  auto x0 = es::Vector(Tensor::full(batch_sz, {}, nbase, 2.0, default_tensor_options()));
 
   // Create the nonlinear system
   auto options = PowerTestSystem::expected_options();

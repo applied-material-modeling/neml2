@@ -49,7 +49,7 @@ SumSlipRates::expected_options()
   return options;
 }
 
-SumSlipRates::SumSlipRates(const OptionSet & options)
+SumSlipRates::SolutionumSlipRates(const OptionSet & options)
   : Model(options),
     _sg(declare_output_variable<Scalar>("sum_slip_rates")),
     _g(declare_input_variable<Scalar>("slip_rates", 1))
@@ -57,7 +57,7 @@ SumSlipRates::SumSlipRates(const OptionSet & options)
 }
 
 void
-SumSlipRates::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
+SumSlipRates::Solutionet_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   if (out)
     _sg = intmd_sum(abs(_g()), -1, /*keepdim=*/false);

@@ -42,10 +42,10 @@ ImplicitUpdate::expected_options()
 
   options.set<std::string>("implicit_model");
   options.set("implicit_model").doc() =
-      "The implicit model defining the implicit system of equations to be solved";
+      "The model defining the (nonlinear) system of equations to be solved";
 
   options.set<std::string>("solver");
-  options.set("solver").doc() = "Solver used to solve the implicit system";
+  options.set("solver").doc() = "Solver used to solve the (nonlinear) system of equations";
 
   // No jitting :/
   options.set<bool>("jit") = false;
@@ -72,48 +72,13 @@ void
 ImplicitUpdate::diagnose() const
 {
   Model::diagnose();
-  // diagnostic_assert(_model.output_axis().has_residual(),
-  //                   "The implicit model'",
-  //                   _model.name(),
-  //                   "' registered in '",
-  //                   name(),
-  //                   "' does not have the residual output axis.");
-  // diagnostic_assert(_model.output_axis().nsubaxis() == 1,
-  //                   "The implicit model's output contains non-residual subaxis:\n",
-  //                   _model.output_axis());
-  // diagnostic_assert(_model.input_axis().has_state(),
-  //                   "The implicit model's input does not have a state subaxis:\n",
-  //                   _model.input_axis());
-  // diagnostic_assert(!_model.input_axis().has_residual(),
-  //                   "The implicit model's input cannot have a residual subaxis:\n",
-  //                   _model.input_axis());
-  // diagnostic_assert(
-  //     _model.input_axis().subaxis(STATE) == _model.output_axis().subaxis(RESIDUAL),
-  //     "The implicit model should have conformal trial state and residual. The input state "
-  //     "subaxis is\n",
-  //     _model.input_axis().subaxis(STATE),
-  //     "\nThe output residual subaxis is\n",
-  //     _model.output_axis().subaxis(RESIDUAL));
-}
-
-void
-ImplicitUpdate::link_output_variables()
-{
-  Model::link_output_variables();
 }
 
 void
 ImplicitUpdate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   // The trial state is used as the initial guess
-  const auto sol_assember = VectorAssembler(_model.input_axis().subaxis(STATE));
-  auto x0 = NonlinearSystem::Sol<false>(
-      sol_assember.assemble_by_variable(_model.collect_input(/*assembly=*/true)));
-
-  // Perform automatic scaling (using the trial state)
-  // TODO: Add an interface to allow user to specify where (and when) to evaluate the Jacobian for
-  // automatic scaling.
-  _model.init_scaling(x0, _solver->verbose);
+  const auto x0 = _model.get_solution();
 
   // Solve for the next state
   NonlinearSolver::Result res = _solver->solve(_model, x0);
@@ -121,32 +86,21 @@ ImplicitUpdate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
   neml_assert(res.ret == NonlinearSolver::RetCode::SUCCESS, "Nonlinear solve failed.");
 
   if (out)
-    assign_output(sol_assember.split_by_variable(res.solution), /*assembly=*/true);
+    assign_output(_model.unknown_ordering(), res.solution);
 
   // Use the implicit function theorem (IFT) to calculate the other derivatives
   if (dout_din)
   {
     // IFT requires the Jacobian evaluated at the solution:
     _model.forward_maybe_jit(false, true, false);
-    const auto jac_assembler = MatrixAssembler(_model.output_axis(), _model.input_axis());
-    const auto J =
-        jac_assembler.assemble_by_variable(_model.collect_output_derivatives(/*assembly=*/true));
-    const auto derivs = jac_assembler.split_by_subaxis(J).at(RESIDUAL);
-    const auto dr_ds = derivs.at(STATE);
+    const auto dr_ds =
+        _model.collect_output_derivatives(_model.residual_ordering(), _model.unknown_ordering());
+    const auto dr_dp =
+        _model.collect_output_derivatives(_model.residual_ordering(), _model.prescribed_ordering());
 
-    // Factorize the Jacobian once and for all
-    const auto [LU, pivot] = linalg::lu_factor(dr_ds);
-
-    // The actual IFT:
-    for (const auto & [subaxis, deriv] : derivs)
-    {
-      if (subaxis == STATE)
-        continue;
-      const auto ift_assembler =
-          MatrixAssembler(output_axis(), _model.input_axis().subaxis(subaxis));
-      assign_output_derivatives(
-          ift_assembler.split_by_variable(-linalg::lu_solve(LU, pivot, deriv)), /*assembly=*/true);
-    }
+    // ds/dp = - (dr/ds)^{-1} (dr/dp)
+    const auto ds_dp = -_solver->linear_solver->solve(dr_ds, dr_dp);
+    assign_output_derivatives(_model.unknown_ordering(), _model.prescribed_ordering(), ds_dp);
   }
 }
 } // namespace neml2

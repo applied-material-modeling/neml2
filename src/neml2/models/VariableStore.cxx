@@ -351,6 +351,21 @@ VariableStore::assign_input(const ValueMap & vals, bool assembly)
 }
 
 void
+VariableStore::assign_input(const std::vector<VariableName> & names,
+                            const std::vector<Tensor> & vals)
+{
+  neml_assert_dbg(names.size() == vals.size(),
+                  "Number of input variable names (",
+                  names.size(),
+                  ") does not match number of values (",
+                  vals.size(),
+                  ").");
+
+  for (std::size_t i = 0; i < names.size(); i++)
+    input_variable(names[i]) = vals[i];
+}
+
+void
 VariableStore::assign_output(const ValueMap & vals, bool assembly)
 {
   for (const auto & [name, val] : vals)
@@ -358,6 +373,21 @@ VariableStore::assign_output(const ValueMap & vals, bool assembly)
       output_variable(name).set(val);
     else
       output_variable(name) = val;
+}
+
+void
+VariableStore::assign_output(const std::vector<VariableName> & names,
+                             const std::vector<Tensor> & vals)
+{
+  neml_assert_dbg(names.size() == vals.size(),
+                  "Number of output variable names (",
+                  names.size(),
+                  ") does not match number of values (",
+                  vals.size(),
+                  ").");
+
+  for (std::size_t i = 0; i < names.size(); i++)
+    output_variable(names[i]) = vals[i];
 }
 
 void
@@ -375,6 +405,35 @@ VariableStore::assign_output_derivatives(const DerivMap & derivs, bool assembly)
       else
         dy_dx = val;
     }
+  }
+}
+
+void
+VariableStore::assign_output_derivatives(const std::vector<VariableName> & ynames,
+                                         const std::vector<VariableName> & xnames,
+                                         const std::vector<std::vector<Tensor>> & derivs)
+{
+  neml_assert_dbg(ynames.size() == derivs.size(),
+                  "Number of output variable names (",
+                  ynames.size(),
+                  ") does not match number of rows of values (",
+                  derivs.size(),
+                  ").");
+
+  for (std::size_t i = 0; i < ynames.size(); i++)
+  {
+    neml_assert_dbg(xnames.size() == derivs[i].size(),
+                    "Number of input variable names (",
+                    xnames.size(),
+                    ") does not match number of columns of values (",
+                    derivs[i].size(),
+                    ").");
+
+    auto & yvar = output_variable(ynames[i]);
+    for (std::size_t j = 0; j < xnames.size(); j++)
+      for (auto & [dy_dx, xvar] : yvar.derivatives())
+        if (xvar->name() == xnames[j] && dy_dx.defined())
+          dy_dx = derivs[i][j];
   }
 }
 
@@ -441,12 +500,30 @@ VariableStore::collect_input(bool assembly) const
   return vals;
 }
 
+std::vector<Tensor>
+VariableStore::collect_input(const std::vector<VariableName> & names) const
+{
+  std::vector<Tensor> vals(names.size());
+  for (std::size_t i = 0; i < names.size(); i++)
+    vals[i] = input_variable(names[i]).tensor();
+  return vals;
+}
+
 ValueMap
 VariableStore::collect_output(bool assembly) const
 {
   ValueMap vals;
   for (auto && [name, var] : output_variables())
     vals[name] = assembly ? var->get() : var->tensor();
+  return vals;
+}
+
+std::vector<Tensor>
+VariableStore::collect_output(const std::vector<VariableName> & names) const
+{
+  std::vector<Tensor> vals(names.size());
+  for (std::size_t i = 0; i < names.size(); i++)
+    vals[i] = output_variable(names[i]).tensor();
   return vals;
 }
 
@@ -458,6 +535,24 @@ VariableStore::collect_output_derivatives(bool assembly) const
     for (const auto & [deriv, xvar] : var->derivatives())
       if (deriv.defined())
         derivs[name][xvar->name()] = assembly ? deriv.get() : deriv.tensor();
+  return derivs;
+}
+
+std::vector<std::vector<Tensor>>
+VariableStore::collect_output_derivatives(const std::vector<VariableName> & ynames,
+                                          const std::vector<VariableName> & xnames) const
+{
+  std::vector<std::vector<Tensor>> derivs(ynames.size(), std::vector<Tensor>(xnames.size()));
+  for (std::size_t i = 0; i < ynames.size(); i++)
+  {
+    const auto & dy = output_variable(ynames[i]).derivatives();
+    for (std::size_t j = 0; j < xnames.size(); j++)
+    {
+      for (const auto & [deriv, arg] : dy)
+        if (arg->name() == xnames[j] && deriv.defined())
+          derivs[i][j] = deriv.tensor();
+    }
+  }
   return derivs;
 }
 

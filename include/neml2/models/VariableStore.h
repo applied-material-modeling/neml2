@@ -116,24 +116,40 @@ public:
   /// Assign input variable values
   /// @p assembly indicates if @p vals are in assembly format
   void assign_input(const ValueMap & vals, bool assembly = false);
+  /// Assign input variable values for the given variable names
+  void assign_input(const std::vector<VariableName> &, const std::vector<Tensor> &);
   /// Assign output variable values
   /// @p assembly indicates if @p vals are in assembly format
   void assign_output(const ValueMap & vals, bool assembly = false);
+  /// Assign output variable values for the given variable names
+  void assign_output(const std::vector<VariableName> &, const std::vector<Tensor> &);
   /// Assign variable derivatives
   /// @p assembly indicates if @p derivs are in assembly format
   void assign_output_derivatives(const DerivMap & derivs, bool assembly = false);
+  /// Assign variable derivatives for the given variable names
+  void assign_output_derivatives(const std::vector<VariableName> &,
+                                 const std::vector<VariableName> &,
+                                 const std::vector<std::vector<Tensor>> &);
   ///@}
 
   ///@{
   /// Collect input variable values
   /// @p assembly indicates if the returned map should be in assembly format
   ValueMap collect_input(bool assembly = false) const;
+  /// Collect input variable values for the given variable names
+  std::vector<Tensor> collect_input(const std::vector<VariableName> &) const;
   /// Collect output variable values
   /// @p assembly indicates if the returned map should be in assembly format
   ValueMap collect_output(bool assembly = false) const;
+  /// Collect output variable values for the given variable names
+  std::vector<Tensor> collect_output(const std::vector<VariableName> &) const;
   /// Collect variable derivatives
   /// @p assembly indicates if the returned map should be in assembly format
   DerivMap collect_output_derivatives(bool assembly = false) const;
+  /// Collect variable derivatives for the given variable names
+  std::vector<std::vector<Tensor>>
+  collect_output_derivatives(const std::vector<VariableName> &,
+                             const std::vector<VariableName> &) const;
   /// Collect variable second derivatives
   /// @p assembly indicates if the returned map should be in assembly format
   SecDerivMap collect_output_second_derivatives(bool assembly = false) const;

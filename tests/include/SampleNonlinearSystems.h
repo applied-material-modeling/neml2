@@ -33,7 +33,7 @@ class TestNonlinearSystem : public NonlinearSystem
 public:
   TestNonlinearSystem(const OptionSet & options);
 
-  void set_guess(const Sol<false> & x) override;
+  void set_solution(const Sol<false> & x) override;
   virtual Tensor exact_solution(const Sol<false> & x) const = 0;
 
 protected:

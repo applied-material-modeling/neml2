@@ -116,17 +116,16 @@ NewtonWithTrustRegion::subproblem_solver_options(const OptionSet & options) cons
 }
 
 void
-NewtonWithTrustRegion::prepare(const NonlinearSystem & /*system*/,
-                               const NonlinearSystem::Sol<true> & x)
+NewtonWithTrustRegion::prepare(const NonlinearSystem & /*system*/, const es::Vector & x)
 {
   _delta = Scalar::full(x.dynamic_sizes(), {}, _delta_0, x.options());
 }
 
 void
 NewtonWithTrustRegion::update(NonlinearSystem & system,
-                              NonlinearSystem::Sol<true> & x,
-                              const NonlinearSystem::Res<true> & r,
-                              const NonlinearSystem::Jac<true> & J)
+                              es::Vector & x,
+                              const es::Vector & r,
+                              const es::Matrix & J)
 {
   auto p = solve_direction(r, J);
 
@@ -135,7 +134,7 @@ NewtonWithTrustRegion::update(NonlinearSystem & system,
   auto red_b = merit_function_reduction(r, J, p);
 
   // Actual reduction in the objective function
-  NonlinearSystem::Sol<true> xp(Tensor(x) + Tensor(p));
+  es::Vector xp(Tensor(x) + Tensor(p));
   auto rp = system.residual(xp);
   auto nrp = neml2::norm(rp);
   auto red_a = 0.5 * pow(nr, 2.0) - 0.5 * pow(nrp, 2.0);
@@ -167,20 +166,18 @@ NewtonWithTrustRegion::update(NonlinearSystem & system,
               << at::max(_delta).item<double>() << std::endl;
   }
 
-  x = NonlinearSystem::Sol<true>(neml2::where(accept, Tensor(xp), x.variable_data()));
+  x = es::Vector(neml2::where(accept, Tensor(xp), x.variable_data()));
 }
 
-NonlinearSystem::Sol<true>
-NewtonWithTrustRegion::solve_direction(const NonlinearSystem::Res<true> & r,
-                                       const NonlinearSystem::Jac<true> & J)
+es::Vector
+NewtonWithTrustRegion::solve_direction(const es::Vector & r, const es::Matrix & J)
 {
   // The full Newton step
   auto p_newton = Newton::solve_direction(r, J);
 
   // The trust region step (obtained by solving the bound constrained subproblem)
   _subproblem.reinit(r, J, _delta);
-  auto res = _subproblem_solver.solve(_subproblem,
-                                      NonlinearSystem::Sol<false>(Tensor::zeros_like(_delta)));
+  auto res = _subproblem_solver.solve(_subproblem, es::Vector(Tensor::zeros_like(_delta)));
 
   // Do some printing if verbose
   if (verbose)
@@ -196,14 +193,14 @@ NewtonWithTrustRegion::solve_direction(const NonlinearSystem::Res<true> & r,
   // Now select between the two... Basically take the full Newton step whenever possible
   auto newton_inside_trust_region = (neml2::norm(p_newton) <= sqrt(2.0 * _delta)).unsqueeze(-1);
 
-  return NonlinearSystem::Sol<true>(Tensor(
+  return es::Vector(Tensor(
       at::where(newton_inside_trust_region, p_newton, p_trust), p_newton.dynamic_sizes(), 0));
 }
 
 Scalar
-NewtonWithTrustRegion::merit_function_reduction(const NonlinearSystem::Res<true> & r,
-                                                const NonlinearSystem::Jac<true> & J,
-                                                const NonlinearSystem::Sol<true> & p) const
+NewtonWithTrustRegion::merit_function_reduction(const es::Vector & r,
+                                                const es::Matrix & J,
+                                                const es::Vector & p) const
 {
   auto Jp = mv(J, p);
   return -vdot(r, Jp) - 0.5 * vdot(Jp, Jp);

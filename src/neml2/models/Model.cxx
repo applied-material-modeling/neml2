@@ -26,7 +26,6 @@
 #include <torch/csrc/jit/frontend/tracer.h>
 
 #include "neml2/misc/assertions.h"
-#include "neml2/base/guards.h"
 #include "neml2/base/Factory.h"
 #include "neml2/base/Settings.h"
 #include "neml2/tensors/jit.h"
@@ -36,7 +35,6 @@
 #include "neml2/tensors/tensors.h"
 #include "neml2/tensors/TensorValue.h"
 #include "neml2/models/Model.h"
-#include "neml2/models/Assembler.h"
 #include "neml2/models/map_types_fwd.h"
 
 namespace neml2
@@ -81,7 +79,6 @@ Model::expected_options()
 {
   OptionSet options = Data::expected_options();
   options += NonlinearSystem::expected_options();
-  NonlinearSystem::disable_automatic_scaling(options);
 
   options.section() = "Models";
 
@@ -721,14 +718,19 @@ Model::currently_assembling_nonlinear_system() const
 }
 
 void
-Model::set_guess(const Sol<false> & x)
+Model::set_solution(const Sol<false> & x)
 {
-  const auto sol_assember = VectorAssembler(input_axis().subaxis(STATE));
-  assign_input(sol_assember.split_by_variable(x), /*assembly=*/true);
+  assign_input(unknown_ordering(), x);
+}
+
+es::Vector
+Model::get_solution() const
+{
+  return Sol<false>(collect_input(unknown_ordering()));
 }
 
 void
-Model::assemble(NonlinearSystem::Res<false> * residual, NonlinearSystem::Jac<false> * Jacobian)
+Model::assemble(es::Vector * residual, es::Matrix * Jacobian)
 {
   {
     AssemblyingNonlinearSystem assembling_nl_sys(this, true);
@@ -736,17 +738,10 @@ Model::assemble(NonlinearSystem::Res<false> * residual, NonlinearSystem::Jac<fal
   }
 
   if (residual)
-  {
-    const auto res_assembler = VectorAssembler(output_axis().subaxis(RESIDUAL));
-    *residual = Res<false>(res_assembler.assemble_by_variable(collect_output(/*assembly=*/true)));
-  }
+    *residual = es::Vector(collect_output(residual_ordering()));
+
   if (Jacobian)
-  {
-    const auto jac_assembler =
-        MatrixAssembler(output_axis().subaxis(RESIDUAL), input_axis().subaxis(STATE));
-    *Jacobian = Jac<false>(
-        jac_assembler.assemble_by_variable(collect_output_derivatives(/*assembly=*/true)));
-  }
+    *Jacobian = es::Matrix(collect_output_derivatives(residual_ordering(), unknown_ordering()));
 }
 
 void
