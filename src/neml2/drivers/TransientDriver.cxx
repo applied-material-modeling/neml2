@@ -30,7 +30,7 @@
 #include "neml2/misc/assertions.h"
 #include "neml2/models/Model.h"
 
-#ifdef NEML2_HAS_DISPATCHER
+#ifdef NEML2_WORK_DISPATCHER
 #include "neml2/dispatchers/ValueMapLoader.h"
 #endif
 
@@ -345,7 +345,7 @@ TransientDriver::apply_predictor()
 void
 TransientDriver::solve_step()
 {
-#ifdef NEML2_HAS_DISPATCHER
+#ifdef NEML2_WORK_DISPATCHER
   if (_dispatcher)
   {
     ValueMapLoader loader(_in, 0);

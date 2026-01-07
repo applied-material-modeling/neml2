@@ -24,6 +24,7 @@
 
 #include <fstream>
 
+#include "neml2/neml2.h"
 #include "neml2/base/Registry.h"
 #include "neml2/base/Settings.h"
 #include "neml2/base/OptionSet.h"
@@ -31,6 +32,12 @@
 int
 main()
 {
+  // Force link dynamic libraries
+  ::_neml2_force_link_models();
+  ::_neml2_force_link_solvers();
+  ::_neml2_force_link_user_tensors();
+  ::_neml2_force_link_drivers();
+
   std::ofstream syntax_file;
   syntax_file.open("syntax.yml");
 

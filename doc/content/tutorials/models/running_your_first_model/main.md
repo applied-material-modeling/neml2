@@ -45,13 +45,13 @@ The following code parses the given input file named "input.i" and retrieves a M
   @list:cpp:running_your_first_model/ex1.cxx
 
   Output:
-  @insert-output:ex1
+  @list-output:ex1
 
 - <b class="tab-title">Python</b>
   @list:python:running_your_first_model/ex2.py
 
   Output:
-  @insert-output:ex2
+  @list-output:ex2
 
 </div>
 
@@ -94,12 +94,12 @@ Note that `set_default_dtype(kFloat64)` is used to change the default precision 
   @list:cpp:running_your_first_model/ex3.cxx
 
   Output:
-  @insert-output:ex3
+  @list-output:ex3
 - <b class="tab-title">Python</b>
   @list:python:running_your_first_model/ex4.py
 
   Output:
-  @insert-output:ex4
+  @list-output:ex4
 
 </div>
 

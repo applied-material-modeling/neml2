@@ -33,7 +33,7 @@
 
 using namespace neml2;
 
-#ifdef NEML2_HAS_CSV
+#ifdef NEML2_CSV
 
 TEST_CASE("CSVPrimitiveTensor", "[user_tensors]")
 {

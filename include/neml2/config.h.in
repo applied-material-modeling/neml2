@@ -24,30 +24,6 @@
 
 #pragma once
 
-namespace neml2
-{
-class Tensor;
-class Rot;
-class R2;
-class SR2;
-class R4;
-class SSR4;
-
-/// Inverse of a second order or fourth order tensor
-Tensor inv(const Tensor &);
-
-/// Inverse of a rotation (MRP)
-Rot inv(const Rot &);
-
-///@{
-/// Inverse of a second order tensor
-R2 inv(const R2 &);
-SR2 inv(const SR2 &);
-///@}
-
-///@{
-/// Inverse of a fourth order tensor, i.e., \f$A^{-1}_{ijmn} A_{mnkl} = \delta_{il} \delta_{jk}\f$
-R4 inv(const R4 &);
-SSR4 inv(const SSR4 &);
-///@}
-} // namespace neml2
+#cmakedefine NEML2_JSON
+#cmakedefine NEML2_CSV
+#cmakedefine NEML2_WORK_DISPATCHER

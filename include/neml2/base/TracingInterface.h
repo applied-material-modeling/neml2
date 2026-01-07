@@ -29,7 +29,9 @@
 #include <mutex>
 #include <unordered_map>
 
-#ifdef NEML2_HAS_JSON
+#include "neml2/config.h"
+
+#ifdef NEML2_JSON
 #include "nlohmann/json.hpp"
 #endif
 
@@ -37,7 +39,7 @@
 
 namespace neml2
 {
-#ifdef NEML2_HAS_JSON
+#ifdef NEML2_JSON
 using json = nlohmann::json;
 #endif
 
@@ -60,7 +62,7 @@ struct TraceWriter
   /// Output stream for the trace file
   std::ofstream out;
 
-#ifdef NEML2_HAS_JSON
+#ifdef NEML2_JSON
   void trace_duration_begin(const std::string & name,
                             const std::string & category,
                             const json & args = {},
@@ -77,7 +79,7 @@ struct TraceWriter
 #endif
 
 private:
-#ifdef NEML2_HAS_JSON
+#ifdef NEML2_JSON
   /// Define common event fields
   void write_event_common(json & event,
                           const std::string & name,

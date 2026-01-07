@@ -19,11 +19,12 @@ macro(generate_doxyfile output inputs)
   file(WRITE ${output}.in "")
 
   foreach(input ${inputs})
-    file(READ ${input} _content)
+    configure_file(${input} "${NEML2_BINARY_DIR}/doc/${input}" COPYONLY)
+    file(READ "${NEML2_BINARY_DIR}/doc/${input}" _content)
     file(APPEND ${output}.in ${_content})
   endforeach()
 
-  configure_file(${output}.in ${output}.sh)
+  configure_file(${output}.in ${output})
 
   file(REMOVE ${output}.in)
 endmacro()
@@ -153,7 +154,7 @@ add_custom_target(html
   COMMENT "Generating HTML documentation"
   DEPENDS "syntax_cpp;syntax_python;tutorials_post"
   WORKING_DIRECTORY ${NEML2_BINARY_DIR}/doc
-  COMMAND ${DOXYGEN_EXECUTABLE} -q DoxyfileHTML.sh
-  COMMAND ${DOXYGEN_EXECUTABLE} -q DoxyfilePython.sh
+  COMMAND ${DOXYGEN_EXECUTABLE} -q DoxyfileHTML
+  COMMAND ${DOXYGEN_EXECUTABLE} -q DoxyfilePython
   VERBATIM
 )

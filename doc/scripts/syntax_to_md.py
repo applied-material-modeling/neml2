@@ -42,7 +42,7 @@ def remove_namespace(type):
 
 
 def demangle(type):
-    type = type.replace("SmallVector<long, 6u>", "tensor shape")
+    type = re.sub(r"SmallVector<[^>]*>", "tensor shape", type)
     type = type.replace(
         "std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >",
         "std::string",
@@ -53,10 +53,10 @@ def demangle(type):
     type = re.sub("TensorName<(.+)>", r"\1 🔗", type)
     type = re.sub("vector<(.+)>", r"list of \1", type)
     # Call all integral/floating point types "number", as this syntax documentation faces the general audience potentially without computer science background
-    type = type.replace("unsigned int", "number")
     type = type.replace("int", "number")
     type = type.replace("long", "number")
     type = type.replace("double", "number")
+    type = type.replace("unsigned", "non-negative")
 
     return type
 
@@ -200,6 +200,7 @@ if __name__ == "__main__":
                         stream.write("</details>\n")
                     stream.write("\n")
                     stream.write("Detailed documentation [link](@ref {})\n\n".format(type))
+            log.write("\nFinished processing Section '{}'.\n".format(section))
 
         if missing == 0:
             log.write("No syntax error, good job! :purple_heart:")

@@ -11,53 +11,15 @@ A neml2::Tensor can be created from a `torch::Tensor` by marking its batch dimen
 <div class="tabbed">
 
 - <b class="tab-title">C++</b>
-  @source:src1
-  ```cpp
-  #include <torch/torch.h>
-  #include "neml2/tensors/Tensor.h"
-
-  int
-  main()
-  {
-    // A raw torch tensor
-    auto A = torch::rand({5, 3, 2, 8});
-    std::cout << "Shape of A: " << A.sizes() << '\n' << std::endl;
-
-    // Mark it with batch dimension of 2
-    auto B = neml2::Tensor(A, 2);
-    std::cout << "      Shape of B: " << B.sizes() << std::endl;
-    std::cout << "Batch shape of B: " << B.batch_sizes() << std::endl;
-    std::cout << " Base shape of B: " << B.base_sizes() << std::endl;
-  }
-  ```
-  @endsource
+  @list:cpp:tensors/tensor_creation/ex1.cxx
 
   Output:
-  ```
-  @attach-output:src1
-  ```
+  @list-output:ex1
 - <b class="tab-title">Python</b>
-  @source:src2
-  ```python
-  import torch
-  from neml2.tensors import Tensor
-
-  # A raw torch tensor
-  A = torch.rand(5, 3, 2, 8)
-  print("Shape of A:", A.shape, "\n")
-
-  # Mark it with batch dimension of 2
-  B = Tensor(A, 2)
-  print("      Shape of B:", B.shape)
-  print("Batch shape of B:", B.batch.shape)
-  print(" Base shape of B:", B.base.shape)
-  ```
-  @endsource
+  @list:python:tensors/tensor_creation/ex2.py
 
   Output:
-  ```
-  @attach-output:src2
-  ```
+  @list-output:ex2
 
 </div>
 
@@ -86,28 +48,15 @@ For example, the following code creates a statically (base) shaped, dense, singl
 <div class="tabbed">
 
 - <b class="tab-title">C++</b>
-  @source:src3
-  ```cpp
-  #include "neml2/tensors/SR2.h"
+  @list:cpp:tensors/tensor_creation/ex3.cxx
 
-  using namespace neml2;
-
-  int
-  main()
-  {
-    auto A = SR2::zeros({5, 3}, TensorOptions().dtype(kFloat32).device(kCPU));
-  }
-  ```
-  @endsource
+  Output:
+  @list-output:ex3
 - <b class="tab-title">Python</b>
-  @source:src4
-  ```python
-  import torch
-  from neml2.tensors import SR2
+  @list:python:tensors/tensor_creation/ex4.py
 
-  A = SR2.zeros((5, 3), dtype=torch.float32, device=torch.device("cpu"))
-  ```
-  @endsource
+  Output:
+  @list-output:ex4
 
 </div>
 

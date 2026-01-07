@@ -26,7 +26,7 @@
 #include "neml2/misc/assertions.h"
 #include "neml2/models/Model.h"
 
-#ifdef NEML2_HAS_DISPATCHER
+#ifdef NEML2_WORK_DISPATCHER
 #include "neml2/dispatchers/valuemap_helpers.h"
 #endif
 
@@ -62,7 +62,7 @@ ModelDriver::expected_options()
   options.set<bool>("show_model_info") = false;
   options.set("show_model_info").doc() = "Whether to show model information at the beginning";
 
-#ifdef NEML2_HAS_DISPATCHER
+#ifdef NEML2_WORK_DISPATCHER
   options.set<std::string>("scheduler");
   options.set("scheduler").doc() = "The work scheduler to use";
   options.set<bool>("async_dispatch") = true;
@@ -81,7 +81,7 @@ ModelDriver::ModelDriver(const OptionSet & options)
                                                                  : nullptr),
     _device(options.get<std::string>("device")),
     _show_model_info(options.get<bool>("show_model_info"))
-#ifdef NEML2_HAS_DISPATCHER
+#ifdef NEML2_WORK_DISPATCHER
     ,
     _scheduler(options.get("scheduler").user_specified() ? get_scheduler("scheduler") : nullptr),
     _async_dispatch(options.get<bool>("async_dispatch"))
@@ -101,7 +101,7 @@ ModelDriver::setup()
   // Send to device
   _model->to(_device);
 
-#ifdef NEML2_HAS_DISPATCHER
+#ifdef NEML2_WORK_DISPATCHER
   if (_scheduler)
   {
     auto red = [](const std::vector<ValueMap> & results) -> ValueMap

@@ -55,7 +55,7 @@ Note that the parameters of the composed model is defined by the *union* of the 
 While specifying parameter values as plain numeric literals is convenient and expressive, it is however not always possible to do so. For example, when the parameter value is *batched*, it is not possible to fully define it using one number. In such scenario, a tensor can be created under the `[Tensors]` section, and the name of that tensor can be used in place of the parameter value.
 
 The following example input file shows how to specify the coefficient of thermal expansion as a batched scalar:
-@list-input/model_parameters_revisited/input2.i
+@list-input:model_parameters_revisited/input2.i
 
 In this input file, a tensor named "alpha" with batch shape `(2, 2)` is created under the "[Tensors]" section. The coefficient of thermal expansion in model "eq1" then references that tensor using its name, i.e., "CTE = 'alpha'". Note that this approach does not alter the model structure, i.e., `eq1_alpha` is still a model parameter, albeit initialized with the tensor value.
 

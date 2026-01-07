@@ -51,6 +51,8 @@ class Model;
  * A model maps some input to output. The forward operator (and its derivative) is defined in the
  * method `Model::set_value`. All concrete models must provide the implementation of the forward
  * operator by overriding the `Model::set_value` method.
+ *
+ * \hideinheritancegraph
  */
 class Model : public std::enable_shared_from_this<Model>,
               public Data,
