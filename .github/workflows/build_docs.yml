@@ -47,9 +47,9 @@ jobs:
         run: |
           cat build/dev/doc/syntax_error.log >> $GITHUB_STEP_SUMMARY
       - name: Error if C++ warnings exist
-        run: ! grep -q "warning:" build/dev/doc/doxygen.html.log
+        run: "! grep -q 'warning:' build/dev/doc/doxygen.html.log"
       - name: Error if Python warnings exist
-        run: ! grep -q "warning:" build/dev/doc/doxygen.python.log
+        run: "! grep -q 'warning:' build/dev/doc/doxygen.python.log"
       - name: Error if syntax errors were detected
         run: grep -q "No syntax error" build/dev/doc/syntax_error.log
 
