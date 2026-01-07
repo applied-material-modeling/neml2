@@ -1,0 +1,15 @@
+<map id="Rot" name="Rot">
+<area shape="rect" id="Node000001" title="Rotation stored as modified Rodrigues parameters." alt="" coords="79,299,123,324"/>
+<area shape="rect" id="Node000006" href="$classneml2_1_1FillRot.html" title="Create a filled R2 from the input file." alt="" coords="19,372,81,397"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="86,337,60,373,56,370,82,334"/>
+<area shape="rect" id="Node000007" href="$classneml2_1_1Orientation.html" title="Create batch of rotations, with various methods." alt="" coords="105,372,200,397"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="119,334,146,370,142,373,115,337"/>
+<area shape="rect" id="Node000002" href="$classneml2_1_1VecBase.html" title=" " alt="" coords="36,225,165,251"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="103,264,103,299,98,299,98,264"/>
+<area shape="rect" id="Node000003" href="$classneml2_1_1PrimitiveTensor.html" title=" " alt="" coords="5,152,196,177"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="103,191,103,225,98,225,98,191"/>
+<area shape="rect" id="Node000004" href="$classneml2_1_1TensorBase.html" title=" " alt="" coords="27,79,175,104"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="103,118,103,152,98,152,98,118"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="65,5,137,31"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="103,44,103,79,98,79,98,44"/>
+</map>

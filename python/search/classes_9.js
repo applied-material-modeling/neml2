@@ -1,0 +1,27 @@
+var searchData=
+[
+  ['wffr4_0',['WFFR4',['../classtensors_1_1WFFR4.html',1,'tensors']]],
+  ['wffr4baseview_1',['WFFR4BaseView',['../classtensors_1_1WFFR4BaseView.html',1,'tensors']]],
+  ['wffr4batchview_2',['WFFR4BatchView',['../classtensors_1_1WFFR4BatchView.html',1,'tensors']]],
+  ['wffr4dynamicview_3',['WFFR4DynamicView',['../classtensors_1_1WFFR4DynamicView.html',1,'tensors']]],
+  ['wffr4intmdview_4',['WFFR4IntmdView',['../classtensors_1_1WFFR4IntmdView.html',1,'tensors']]],
+  ['wffr4staticview_5',['WFFR4StaticView',['../classtensors_1_1WFFR4StaticView.html',1,'tensors']]],
+  ['wr2_6',['WR2',['../classtensors_1_1WR2.html',1,'tensors']]],
+  ['wr2baseview_7',['WR2BaseView',['../classtensors_1_1WR2BaseView.html',1,'tensors']]],
+  ['wr2batchview_8',['WR2BatchView',['../classtensors_1_1WR2BatchView.html',1,'tensors']]],
+  ['wr2dynamicview_9',['WR2DynamicView',['../classtensors_1_1WR2DynamicView.html',1,'tensors']]],
+  ['wr2intmdview_10',['WR2IntmdView',['../classtensors_1_1WR2IntmdView.html',1,'tensors']]],
+  ['wr2staticview_11',['WR2StaticView',['../classtensors_1_1WR2StaticView.html',1,'tensors']]],
+  ['wsr4_12',['WSR4',['../classtensors_1_1WSR4.html',1,'tensors']]],
+  ['wsr4baseview_13',['WSR4BaseView',['../classtensors_1_1WSR4BaseView.html',1,'tensors']]],
+  ['wsr4batchview_14',['WSR4BatchView',['../classtensors_1_1WSR4BatchView.html',1,'tensors']]],
+  ['wsr4dynamicview_15',['WSR4DynamicView',['../classtensors_1_1WSR4DynamicView.html',1,'tensors']]],
+  ['wsr4intmdview_16',['WSR4IntmdView',['../classtensors_1_1WSR4IntmdView.html',1,'tensors']]],
+  ['wsr4staticview_17',['WSR4StaticView',['../classtensors_1_1WSR4StaticView.html',1,'tensors']]],
+  ['wwr4_18',['WWR4',['../classtensors_1_1WWR4.html',1,'tensors']]],
+  ['wwr4baseview_19',['WWR4BaseView',['../classtensors_1_1WWR4BaseView.html',1,'tensors']]],
+  ['wwr4batchview_20',['WWR4BatchView',['../classtensors_1_1WWR4BatchView.html',1,'tensors']]],
+  ['wwr4dynamicview_21',['WWR4DynamicView',['../classtensors_1_1WWR4DynamicView.html',1,'tensors']]],
+  ['wwr4intmdview_22',['WWR4IntmdView',['../classtensors_1_1WWR4IntmdView.html',1,'tensors']]],
+  ['wwr4staticview_23',['WWR4StaticView',['../classtensors_1_1WWR4StaticView.html',1,'tensors']]]
+];

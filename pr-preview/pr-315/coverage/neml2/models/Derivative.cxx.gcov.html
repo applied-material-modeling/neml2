@@ -1,0 +1,433 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - neml2/models/Derivative.cxx</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">neml2/models</a> - Derivative.cxx<span style="font-size: 80%;"> (source / <a href="Derivative.cxx.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryHi">91.4&nbsp;%</td>
+            <td class="headerCovTableEntry">128</td>
+            <td class="headerCovTableEntry">117</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-01-07 00:07:38</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryHi">89.7&nbsp;%</td>
+            <td class="headerCovTableEntry">39</td>
+            <td class="headerCovTableEntry">35</td>
+          </tr>
+                  <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">            Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>              : // Copyright 2024, UChicago Argonne, LLC</span>
+<span id="L2"><span class="lineNum">       2</span>              : // All Rights Reserved</span>
+<span id="L3"><span class="lineNum">       3</span>              : // Software Name: NEML2 -- the New Engineering material Model Library, version 2</span>
+<span id="L4"><span class="lineNum">       4</span>              : // By: Argonne National Laboratory</span>
+<span id="L5"><span class="lineNum">       5</span>              : // OPEN SOURCE LICENSE (MIT)</span>
+<span id="L6"><span class="lineNum">       6</span>              : //</span>
+<span id="L7"><span class="lineNum">       7</span>              : // Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span id="L8"><span class="lineNum">       8</span>              : // of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span id="L9"><span class="lineNum">       9</span>              : // in the Software without restriction, including without limitation the rights</span>
+<span id="L10"><span class="lineNum">      10</span>              : // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span id="L11"><span class="lineNum">      11</span>              : // copies of the Software, and to permit persons to whom the Software is</span>
+<span id="L12"><span class="lineNum">      12</span>              : // furnished to do so, subject to the following conditions:</span>
+<span id="L13"><span class="lineNum">      13</span>              : //</span>
+<span id="L14"><span class="lineNum">      14</span>              : // The above copyright notice and this permission notice shall be included in</span>
+<span id="L15"><span class="lineNum">      15</span>              : // all copies or substantial portions of the Software.</span>
+<span id="L16"><span class="lineNum">      16</span>              : //</span>
+<span id="L17"><span class="lineNum">      17</span>              : // THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span id="L18"><span class="lineNum">      18</span>              : // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span id="L19"><span class="lineNum">      19</span>              : // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span id="L20"><span class="lineNum">      20</span>              : // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span id="L21"><span class="lineNum">      21</span>              : // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span id="L22"><span class="lineNum">      22</span>              : // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
+<span id="L23"><span class="lineNum">      23</span>              : // THE SOFTWARE.</span>
+<span id="L24"><span class="lineNum">      24</span>              : </span>
+<span id="L25"><span class="lineNum">      25</span>              : #include &lt;ATen/ExpandUtils.h&gt;</span>
+<span id="L26"><span class="lineNum">      26</span>              : </span>
+<span id="L27"><span class="lineNum">      27</span>              : #include &quot;neml2/misc/assertions.h&quot;</span>
+<span id="L28"><span class="lineNum">      28</span>              : #include &quot;neml2/models/Derivative.h&quot;</span>
+<span id="L29"><span class="lineNum">      29</span>              : #include &quot;neml2/misc/types.h&quot;</span>
+<span id="L30"><span class="lineNum">      30</span>              : #include &quot;neml2/models/VariableBase.h&quot;</span>
+<span id="L31"><span class="lineNum">      31</span>              : #include &quot;neml2/tensors/shape_utils.h&quot;</span>
+<span id="L32"><span class="lineNum">      32</span>              : #include &quot;neml2/tensors/functions/diagonalize.h&quot;</span>
+<span id="L33"><span class="lineNum">      33</span>              : #include &quot;neml2/tensors/functions/sum_to_size.h&quot;</span>
+<span id="L34"><span class="lineNum">      34</span>              : #include &quot;neml2/tensors/functions/to_assembly.h&quot;</span>
+<span id="L35"><span class="lineNum">      35</span>              : #include &quot;neml2/tensors/functions/from_assembly.h&quot;</span>
+<span id="L36"><span class="lineNum">      36</span>              : </span>
+<span id="L37"><span class="lineNum">      37</span>              : namespace neml2</span>
+<span id="L38"><span class="lineNum">      38</span>              : {</span>
+<span id="L39"><span class="lineNum">      39</span>              : static TensorShape</span>
+<span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC tlaBgGNC">          42 : normalize_dims(ArrayRef&lt;Size&gt; dims, Size lb, Size ub)</span></span>
+<span id="L41"><span class="lineNum">      41</span>              : {</span>
+<span id="L42"><span class="lineNum">      42</span> <span class="tlaGNC">          42 :   TensorShape res(dims.size());</span></span>
+<span id="L43"><span class="lineNum">      43</span> <span class="tlaGNC">          48 :   for (std::size_t i = 0; i &lt; dims.size(); i++)</span></span>
+<span id="L44"><span class="lineNum">      44</span> <span class="tlaGNC">           6 :     res[i] = utils::normalize_dim(dims[i], lb, ub);</span></span>
+<span id="L45"><span class="lineNum">      45</span> <span class="tlaGNC">          42 :   std::sort(res.begin(), res.end());</span></span>
+<span id="L46"><span class="lineNum">      46</span> <span class="tlaGNC">          42 :   return res;</span></span>
+<span id="L47"><span class="lineNum">      47</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
+<span id="L48"><span class="lineNum">      48</span>              : </span>
+<span id="L49"><span class="lineNum">      49</span>              : static TensorShape</span>
+<span id="L50"><span class="lineNum">      50</span> <span class="tlaGNC tlaBgGNC">          28 : remove_dims(TensorShapeRef shape, const TensorShape &amp; dims_to_remove)</span></span>
+<span id="L51"><span class="lineNum">      51</span>              : {</span>
+<span id="L52"><span class="lineNum">      52</span> <span class="tlaGNC">          28 :   TensorShape res{shape};</span></span>
+<span id="L53"><span class="lineNum">      53</span> <span class="tlaGNC">          31 :   for (std::size_t i = 0; i &lt; dims_to_remove.size(); i++)</span></span>
+<span id="L54"><span class="lineNum">      54</span> <span class="tlaGNC">           3 :     res.erase(res.begin() + dims_to_remove[i] - Size(i));</span></span>
+<span id="L55"><span class="lineNum">      55</span> <span class="tlaGNC">          28 :   return res;</span></span>
+<span id="L56"><span class="lineNum">      56</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
+<span id="L57"><span class="lineNum">      57</span>              : </span>
+<span id="L58"><span class="lineNum">      58</span>              : template &lt;std::size_t N&gt;</span>
+<span id="L59"><span class="lineNum">      59</span> <span class="tlaGNC tlaBgGNC">       13162 : Derivative&lt;N&gt;::Derivative(const std::array&lt;const VariableBase *, N + 1&gt; &amp; var_and_args,</span></span>
+<span id="L60"><span class="lineNum">      60</span>              :                           ArrayRef&lt;Size&gt; dep_dims)</span>
+<span id="L61"><span class="lineNum">      61</span> <span class="tlaGNC">       13162 :   : _var_and_args(var_and_args),</span></span>
+<span id="L62"><span class="lineNum">      62</span> <span class="tlaGNC">       13162 :     _dep_dims(dep_dims)</span></span>
+<span id="L63"><span class="lineNum">      63</span>              : #ifndef NDEBUG</span>
+<span id="L64"><span class="lineNum">      64</span>              :     ,</span>
+<span id="L65"><span class="lineNum">      65</span> <span class="tlaGNC">       41120 :     _debug_name(N == 1 ? std::string(&quot;d(&quot;) + var_and_args[0]-&gt;name().str() + &quot;)/d(&quot; +</span></span>
+<span id="L66"><span class="lineNum">      66</span> <span class="tlaGNC">       12345 :                              var_and_args[1]-&gt;name().str() + &quot;)&quot;</span></span>
+<span id="L67"><span class="lineNum">      67</span> <span class="tlaGNC">        3268 :                        : std::string(&quot;d2(&quot;) + var_and_args[0]-&gt;name().str() + &quot;)/d(&quot; +</span></span>
+<span id="L68"><span class="lineNum">      68</span> <span class="tlaGNC">        1634 :                              var_and_args[1]-&gt;name().str() + &quot;)d(&quot; + var_and_args[2]-&gt;name().str() +</span></span>
+<span id="L69"><span class="lineNum">      69</span> <span class="tlaGNC">       13162 :                              &quot;)&quot;)</span></span>
+<span id="L70"><span class="lineNum">      70</span>              : #endif</span>
+<span id="L71"><span class="lineNum">      71</span>              : {</span>
+<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC">       13162 : }</span></span>
+<span id="L73"><span class="lineNum">      73</span>              : </span>
+<span id="L74"><span class="lineNum">      74</span>              : template &lt;std::size_t N&gt;</span>
+<span id="L75"><span class="lineNum">      75</span>              : std::array&lt;const VariableBase *, N&gt;</span>
+<span id="L76"><span class="lineNum">      76</span> <span class="tlaGNC">       13255 : Derivative&lt;N&gt;::args() const</span></span>
+<span id="L77"><span class="lineNum">      77</span>              : {</span>
+<span id="L78"><span class="lineNum">      78</span> <span class="tlaGNC">       13255 :   std::array&lt;const VariableBase *, N&gt; a{};</span></span>
+<span id="L79"><span class="lineNum">      79</span> <span class="tlaGNC">       13255 :   std::copy(_var_and_args.begin() + 1, _var_and_args.end(), a.begin());</span></span>
+<span id="L80"><span class="lineNum">      80</span> <span class="tlaGNC">       13255 :   return a;</span></span>
+<span id="L81"><span class="lineNum">      81</span>              : }</span>
+<span id="L82"><span class="lineNum">      82</span>              : </span>
+<span id="L83"><span class="lineNum">      83</span>              : template &lt;std::size_t N&gt;</span>
+<span id="L84"><span class="lineNum">      84</span>              : std::array&lt;TensorShapeRef, N + 1&gt;</span>
+<span id="L85"><span class="lineNum">      85</span> <span class="tlaGNC">       12696 : Derivative&lt;N&gt;::get_intmd_sizes() const</span></span>
+<span id="L86"><span class="lineNum">      86</span>              : {</span>
+<span id="L87"><span class="lineNum">      87</span> <span class="tlaGNC">       25392 :   return std::apply([&amp;](auto &amp;&amp;... i) { return std::array{i-&gt;intmd_sizes()...}; }, _var_and_args);</span></span>
+<span id="L88"><span class="lineNum">      88</span>              : }</span>
+<span id="L89"><span class="lineNum">      89</span>              : </span>
+<span id="L90"><span class="lineNum">      90</span>              : template &lt;std::size_t N&gt;</span>
+<span id="L91"><span class="lineNum">      91</span>              : std::array&lt;TensorShapeRef, N + 1&gt;</span>
+<span id="L92"><span class="lineNum">      92</span> <span class="tlaGNC">       12682 : Derivative&lt;N&gt;::get_base_sizes() const</span></span>
+<span id="L93"><span class="lineNum">      93</span>              : {</span>
+<span id="L94"><span class="lineNum">      94</span> <span class="tlaGNC">       25364 :   return std::apply([&amp;](auto &amp;&amp;... i) { return std::array{i-&gt;base_sizes()...}; }, _var_and_args);</span></span>
+<span id="L95"><span class="lineNum">      95</span>              : }</span>
+<span id="L96"><span class="lineNum">      96</span>              : </span>
+<span id="L97"><span class="lineNum">      97</span>              : template &lt;std::size_t N&gt;</span>
+<span id="L98"><span class="lineNum">      98</span>              : TensorShape</span>
+<span id="L99"><span class="lineNum">      99</span> <span class="tlaGNC">        1251 : Derivative&lt;N&gt;::total_intmd_sizes() const</span></span>
+<span id="L100"><span class="lineNum">     100</span>              : {</span>
+<span id="L101"><span class="lineNum">     101</span> <span class="tlaGNC">        2502 :   return std::apply([&amp;](auto &amp;&amp;... args) { return utils::add_shapes(args...); }, get_intmd_sizes());</span></span>
+<span id="L102"><span class="lineNum">     102</span>              : }</span>
+<span id="L103"><span class="lineNum">     103</span>              : </span>
+<span id="L104"><span class="lineNum">     104</span>              : template &lt;std::size_t N&gt;</span>
+<span id="L105"><span class="lineNum">     105</span>              : TensorShape</span>
+<span id="L106"><span class="lineNum">     106</span> <span class="tlaGNC">        1237 : Derivative&lt;N&gt;::total_base_sizes() const</span></span>
+<span id="L107"><span class="lineNum">     107</span>              : {</span>
+<span id="L108"><span class="lineNum">     108</span> <span class="tlaGNC">        2474 :   return std::apply([&amp;](auto &amp;&amp;... args) { return utils::add_shapes(args...); }, get_base_sizes());</span></span>
+<span id="L109"><span class="lineNum">     109</span>              : }</span>
+<span id="L110"><span class="lineNum">     110</span>              : </span>
+<span id="L111"><span class="lineNum">     111</span>              : static void</span>
+<span id="L112"><span class="lineNum">     112</span> <span class="tlaGNC">        1237 : assign_or_add(Tensor &amp; dest, const Tensor &amp; val)</span></span>
+<span id="L113"><span class="lineNum">     113</span>              : {</span>
+<span id="L114"><span class="lineNum">     114</span> <span class="tlaGNC">        1237 :   if (dest.defined())</span></span>
+<span id="L115"><span class="lineNum">     115</span> <span class="tlaGNC">           2 :     dest = dest + val;</span></span>
+<span id="L116"><span class="lineNum">     116</span>              :   else</span>
+<span id="L117"><span class="lineNum">     117</span> <span class="tlaGNC">        1235 :     dest = val;</span></span>
+<span id="L118"><span class="lineNum">     118</span> <span class="tlaGNC">        1237 : }</span></span>
+<span id="L119"><span class="lineNum">     119</span>              : </span>
+<span id="L120"><span class="lineNum">     120</span>              : template &lt;std::size_t N&gt;</span>
+<span id="L121"><span class="lineNum">     121</span>              : Derivative&lt;N&gt; &amp;</span>
+<span id="L122"><span class="lineNum">     122</span> <span class="tlaGNC">        1237 : Derivative&lt;N&gt;::operator=(const Tensor &amp; val)</span></span>
+<span id="L123"><span class="lineNum">     123</span>              : {</span>
+<span id="L124"><span class="lineNum">     124</span>              : #ifndef NDEBUG</span>
+<span id="L125"><span class="lineNum">     125</span> <span class="tlaGNC">        1237 :   const auto base_sizes = total_base_sizes();</span></span>
+<span id="L126"><span class="lineNum">     126</span> <span class="tlaGNC">        1237 :   neml_assert_dbg(val.base_sizes() == base_sizes,</span></span>
+<span id="L127"><span class="lineNum">     127</span>              :                   &quot;The assigned derivative for '&quot;,</span>
+<span id="L128"><span class="lineNum">     128</span> <span class="tlaGNC">        1237 :                   _debug_name,</span></span>
+<span id="L129"><span class="lineNum">     129</span>              :                   &quot;' has incompatible base shape. Expected &quot;,</span>
+<span id="L130"><span class="lineNum">     130</span>              :                   base_sizes,</span>
+<span id="L131"><span class="lineNum">     131</span>              :                   &quot;, got &quot;,</span>
+<span id="L132"><span class="lineNum">     132</span> <span class="tlaGNC">        1237 :                   val.base_sizes());</span></span>
+<span id="L133"><span class="lineNum">     133</span>              : #endif</span>
+<span id="L134"><span class="lineNum">     134</span>              : </span>
+<span id="L135"><span class="lineNum">     135</span> <span class="tlaGNC">        1237 :   const auto intmd_sizes = total_intmd_sizes();</span></span>
+<span id="L136"><span class="lineNum">     136</span>              : </span>
+<span id="L137"><span class="lineNum">     137</span>              :   // Easiest case if we have the full intermediate shape</span>
+<span id="L138"><span class="lineNum">     138</span> <span class="tlaGNC">        1237 :   if (val.intmd_sizes() == intmd_sizes)</span></span>
+<span id="L139"><span class="lineNum">     139</span> <span class="tlaGNC">        1223 :     assign_or_add(_deriv, val);</span></span>
+<span id="L140"><span class="lineNum">     140</span>              :   else</span>
+<span id="L141"><span class="lineNum">     141</span>              :   {</span>
+<span id="L142"><span class="lineNum">     142</span>              :     // We'll go through a set of operations to get the right shape</span>
+<span id="L143"><span class="lineNum">     143</span> <span class="tlaGNC">          14 :     assign_or_add(_deriv, broadcast_intmd_dims(val));</span></span>
+<span id="L144"><span class="lineNum">     144</span>              :   }</span>
+<span id="L145"><span class="lineNum">     145</span>              : </span>
+<span id="L146"><span class="lineNum">     146</span>              :   // Invalidate the assembly cache</span>
+<span id="L147"><span class="lineNum">     147</span> <span class="tlaGNC">        1237 :   _deriv_assembly = Tensor();</span></span>
+<span id="L148"><span class="lineNum">     148</span>              : </span>
+<span id="L149"><span class="lineNum">     149</span> <span class="tlaGNC">        1237 :   return *this;</span></span>
+<span id="L150"><span class="lineNum">     150</span> <span class="tlaGNC">        1237 : }</span></span>
+<span id="L151"><span class="lineNum">     151</span>              : </span>
+<span id="L152"><span class="lineNum">     152</span>              : template &lt;std::size_t N&gt;</span>
+<span id="L153"><span class="lineNum">     153</span>              : Tensor</span>
+<span id="L154"><span class="lineNum">     154</span> <span class="tlaGNC">          14 : Derivative&lt;N&gt;::broadcast_intmd_dims(const Tensor &amp; val) const</span></span>
+<span id="L155"><span class="lineNum">     155</span>              : {</span>
+<span id="L156"><span class="lineNum">     156</span>              :   // Using this concrete example to illustrate the procedure:</span>
+<span id="L157"><span class="lineNum">     157</span>              :   //   var:  (...; 7, 2, _2_, 3; ...)</span>
+<span id="L158"><span class="lineNum">     158</span>              :   //   arg1: (...; _4_, 1, 3; ...)</span>
+<span id="L159"><span class="lineNum">     159</span>              :   //   arg2: (...; 2, 1, _9_; ...)</span>
+<span id="L160"><span class="lineNum">     160</span>              :   // Underscored dimensions are _dependent_ dimensions tagged in the variable/arguments</span>
+<span id="L161"><span class="lineNum">     161</span>              :   //</span>
+<span id="L162"><span class="lineNum">     162</span>              :   // Suppose we are given a derivative tensor 'val' with shape</span>
+<span id="L163"><span class="lineNum">     163</span>              :   //   val:  (...; 2, _2_, 1, _4_, _9_; ...)</span>
+<span id="L164"><span class="lineNum">     164</span>              :   //</span>
+<span id="L165"><span class="lineNum">     165</span>              :   // The derivative must have the dependent dimensions tagged as well, in the order of</span>
+<span id="L166"><span class="lineNum">     166</span>              :   // var, arg1, arg2.</span>
+<span id="L167"><span class="lineNum">     167</span>              : </span>
+<span id="L168"><span class="lineNum">     168</span>              :   // Normalize and sort derivative's dependent dims</span>
+<span id="L169"><span class="lineNum">     169</span>              :   // After this, dep_dims should be (1, 3, 4) in the example above</span>
+<span id="L170"><span class="lineNum">     170</span> <span class="tlaGNC">          14 :   const auto dep_dims = normalize_dims(_dep_dims, 0, val.intmd_dim());</span></span>
+<span id="L171"><span class="lineNum">     171</span>              : </span>
+<span id="L172"><span class="lineNum">     172</span>              :   // Normalize and sort variable and args' dependent dims</span>
+<span id="L173"><span class="lineNum">     173</span>              :   // After this, var_and_args_dep_dims should be {2}, {0}, {2} in the example above</span>
+<span id="L174"><span class="lineNum">     174</span> <span class="tlaGNC">          42 :   std::array&lt;TensorShape, N + 1&gt; var_and_args_dep_dims{};</span></span>
+<span id="L175"><span class="lineNum">     175</span> <span class="tlaGNC">          14 :   std::transform(_var_and_args.begin(),</span></span>
+<span id="L176"><span class="lineNum">     176</span>              :                  _var_and_args.end(),</span>
+<span id="L177"><span class="lineNum">     177</span>              :                  var_and_args_dep_dims.begin(),</span>
+<span id="L178"><span class="lineNum">     178</span> <span class="tlaGNC">          28 :                  [](const auto * x)</span></span>
+<span id="L179"><span class="lineNum">     179</span> <span class="tlaGNC">          28 :                  { return normalize_dims(x-&gt;dep_intmd_dims(), 0, x-&gt;intmd_dim()); });</span></span>
+<span id="L180"><span class="lineNum">     180</span>              : </span>
+<span id="L181"><span class="lineNum">     181</span>              :   // Each dependent dimension must have the same size as the corresponding tagged dimension</span>
+<span id="L182"><span class="lineNum">     182</span> <span class="tlaGNC">          14 :   neml_assert_dbg(dep_dims.size() == std::accumulate(var_and_args_dep_dims.begin(),</span></span>
+<span id="L183"><span class="lineNum">     183</span>              :                                                      var_and_args_dep_dims.end(),</span>
+<span id="L184"><span class="lineNum">     184</span>              :                                                      std::size_t{0},</span>
+<span id="L185"><span class="lineNum">     185</span> <span class="tlaGNC">          28 :                                                      [](std::size_t a, const auto &amp; s)</span></span>
+<span id="L186"><span class="lineNum">     186</span> <span class="tlaGNC">          28 :                                                      { return a + s.size(); }),</span></span>
+<span id="L187"><span class="lineNum">     187</span>              :                   &quot;The number of dependent dimensions in the assigned derivative for '&quot;,</span>
+<span id="L188"><span class="lineNum">     188</span> <span class="tlaGNC">          14 :                   _debug_name,</span></span>
+<span id="L189"><span class="lineNum">     189</span>              :                   &quot;' does not match the total number of tagged dependent dimensions in the &quot;</span>
+<span id="L190"><span class="lineNum">     190</span>              :                   &quot;variable and its arguments.&quot;);</span>
+<span id="L191"><span class="lineNum">     191</span>              : </span>
+<span id="L192"><span class="lineNum">     192</span>              : #ifndef NDEBUG</span>
+<span id="L193"><span class="lineNum">     193</span> <span class="tlaGNC">          14 :   std::size_t d = 0;</span></span>
+<span id="L194"><span class="lineNum">     194</span> <span class="tlaGNC">          42 :   for (std::size_t i = 0; i &lt; N + 1; i++)</span></span>
+<span id="L195"><span class="lineNum">     195</span> <span class="tlaGNC">          31 :     for (const auto &amp; dd : var_and_args_dep_dims[i])</span></span>
+<span id="L196"><span class="lineNum">     196</span>              :     {</span>
+<span id="L197"><span class="lineNum">     197</span> <span class="tlaGNC">           6 :       neml_assert_dbg(val.intmd_size(dep_dims[d]) == _var_and_args[i]-&gt;intmd_size(dd),</span></span>
+<span id="L198"><span class="lineNum">     198</span>              :                       &quot;The size of dependent dimension &quot;,</span>
+<span id="L199"><span class="lineNum">     199</span>              :                       dep_dims[d],</span>
+<span id="L200"><span class="lineNum">     200</span>              :                       &quot; in the assigned derivative for '&quot;,</span>
+<span id="L201"><span class="lineNum">     201</span> <span class="tlaGNC">           3 :                       _debug_name,</span></span>
+<span id="L202"><span class="lineNum">     202</span>              :                       &quot;' does not match the size of tagged dependent dimension &quot;,</span>
+<span id="L203"><span class="lineNum">     203</span>              :                       dd,</span>
+<span id="L204"><span class="lineNum">     204</span>              :                       &quot; of size &quot;,</span>
+<span id="L205"><span class="lineNum">     205</span> <span class="tlaGNC">           6 :                       _var_and_args[i]-&gt;intmd_size(dd),</span></span>
+<span id="L206"><span class="lineNum">     206</span>              :                       &quot; in variable '&quot;,</span>
+<span id="L207"><span class="lineNum">     207</span> <span class="tlaGNC">           3 :                       _var_and_args[i]-&gt;name().str(),</span></span>
+<span id="L208"><span class="lineNum">     208</span>              :                       &quot;'.&quot;);</span>
+<span id="L209"><span class="lineNum">     209</span> <span class="tlaGNC">           3 :       d++;</span></span>
+<span id="L210"><span class="lineNum">     210</span>              :     }</span>
+<span id="L211"><span class="lineNum">     211</span>              : #endif</span>
+<span id="L212"><span class="lineNum">     212</span>              : </span>
+<span id="L213"><span class="lineNum">     213</span>              :   // Move dependent dims to the end</span>
+<span id="L214"><span class="lineNum">     214</span>              :   // After this, val2 should have shape (...; 2, 1, _2_, _4_, _9_; ...)</span>
+<span id="L215"><span class="lineNum">     215</span> <span class="tlaGNC">          14 :   auto val2 = val;</span></span>
+<span id="L216"><span class="lineNum">     216</span> <span class="tlaGNC">          17 :   for (std::size_t i = 0; i &lt; dep_dims.size(); i++)</span></span>
+<span id="L217"><span class="lineNum">     217</span> <span class="tlaGNC">           3 :     val2 = val2.intmd_movedim(dep_dims[i] - Size(i), -1);</span></span>
+<span id="L218"><span class="lineNum">     218</span>              : </span>
+<span id="L219"><span class="lineNum">     219</span>              :   // Get the dependent shape</span>
+<span id="L220"><span class="lineNum">     220</span>              :   // After this, using the example above</span>
+<span id="L221"><span class="lineNum">     221</span>              :   //   indep_sizes should be (2, 1)</span>
+<span id="L222"><span class="lineNum">     222</span>              :   //   dep_sizes should be (2, 4, 9)</span>
+<span id="L223"><span class="lineNum">     223</span> <span class="tlaGNC">          14 :   const auto indep_sizes = val2.intmd_sizes().slice(0, val2.intmd_dim() - dep_dims.size());</span></span>
+<span id="L224"><span class="lineNum">     224</span> <span class="tlaGNC">          14 :   const auto dep_sizes = val2.intmd_sizes().slice(val2.intmd_dim() - dep_dims.size());</span></span>
+<span id="L225"><span class="lineNum">     225</span>              : </span>
+<span id="L226"><span class="lineNum">     226</span>              :   // The derivative's independent shape must be broadcastable to the variable's independent shape</span>
+<span id="L227"><span class="lineNum">     227</span>              :   // Here, var_indep_sizes should be (7, 2, 3)</span>
+<span id="L228"><span class="lineNum">     228</span> <span class="tlaGNC">          14 :   const auto var_indep_sizes = remove_dims(var()-&gt;intmd_sizes(), var_and_args_dep_dims[0]);</span></span>
+<span id="L229"><span class="lineNum">     229</span> <span class="tlaGNC">          14 :   neml_assert_dbg(at::is_expandable_to(indep_sizes, var_indep_sizes),</span></span>
+<span id="L230"><span class="lineNum">     230</span>              :                   &quot;The independent intermediate shape &quot;,</span>
+<span id="L231"><span class="lineNum">     231</span>              :                   indep_sizes,</span>
+<span id="L232"><span class="lineNum">     232</span>              :                   &quot; of the assigned derivative for '&quot;,</span>
+<span id="L233"><span class="lineNum">     233</span> <span class="tlaGNC">          14 :                   _debug_name,</span></span>
+<span id="L234"><span class="lineNum">     234</span>              :                   &quot;' is not broadcastable to the variable's independent intermediate shape &quot;,</span>
+<span id="L235"><span class="lineNum">     235</span>              :                   var_indep_sizes,</span>
+<span id="L236"><span class="lineNum">     236</span>              :                   &quot;.&quot;);</span>
+<span id="L237"><span class="lineNum">     237</span>              : </span>
+<span id="L238"><span class="lineNum">     238</span>              :   // Expand and flatten the derivative's independent dims</span>
+<span id="L239"><span class="lineNum">     239</span>              :   // After this, val2 should have shape (...; 42, _2_, _4_, _9_; ...)</span>
+<span id="L240"><span class="lineNum">     240</span> <span class="tlaGNC">          42 :   val2 = val2.intmd_expand(utils::add_shapes(var_indep_sizes, dep_sizes))</span></span>
+<span id="L241"><span class="lineNum">     241</span> <span class="tlaGNC">          28 :              .intmd_reshape(utils::add_shapes(utils::numel(var_indep_sizes), dep_sizes));</span></span>
+<span id="L242"><span class="lineNum">     242</span>              : </span>
+<span id="L243"><span class="lineNum">     243</span>              :   // Diagonalize the flattened independent dim for each argument</span>
+<span id="L244"><span class="lineNum">     244</span>              :   // After this, val2 should have shape (...; 42, 42, 42, _2_, _4_, _9_; ...)</span>
+<span id="L245"><span class="lineNum">     245</span> <span class="tlaGNC">          28 :   for (std::size_t i = 1; i &lt;= N; i++)</span></span>
+<span id="L246"><span class="lineNum">     246</span> <span class="tlaGNC">          14 :     val2 = intmd_diagonalize(val2, 0);</span></span>
+<span id="L247"><span class="lineNum">     247</span>              : </span>
+<span id="L248"><span class="lineNum">     248</span>              :   // Unflatten the independent dims</span>
+<span id="L249"><span class="lineNum">     249</span>              :   // After this, val2 should have shape (...; 7, 2, 3, 7, 2, 3, 7, 2, 3, _2_, _4_, _9_; ...)</span>
+<span id="L250"><span class="lineNum">     250</span> <span class="tlaGNC">          14 :   val2 = val2.intmd_reshape(utils::add_shapes(</span></span>
+<span id="L251"><span class="lineNum">     251</span> <span class="tlaUNC tlaBgUNC">           0 :       var_indep_sizes, var_indep_sizes, N == 2 ? var_indep_sizes : TensorShapeRef{}, dep_sizes));</span></span>
+<span id="L252"><span class="lineNum">     252</span>              : </span>
+<span id="L253"><span class="lineNum">     253</span>              :   // Some argument's independent dimensions might have been broadcasted, so we need to perform a</span>
+<span id="L254"><span class="lineNum">     254</span>              :   // reduction along those dims.</span>
+<span id="L255"><span class="lineNum">     255</span>              :   // Here,</span>
+<span id="L256"><span class="lineNum">     256</span>              :   //   total_indep_sizes should be (7, 2, 3, 3, 2, 1)</span>
+<span id="L257"><span class="lineNum">     257</span>              :   //   aligned_indep_sizes should be (7, 2, 3, 1, 1, 3, 1, 2, 1)</span>
+<span id="L258"><span class="lineNum">     258</span>              :   // note the padded ones in aligned_indep_sizes for alignment.</span>
+<span id="L259"><span class="lineNum">     259</span>              :   // After this, val2 should have shape (...; 7, 2, 3, 3, 2, 1, _2_, _4_, _9_; ...)</span>
+<span id="L260"><span class="lineNum">     260</span> <span class="tlaGNC tlaBgGNC">          14 :   const auto arg1_indep_sizes =</span></span>
+<span id="L261"><span class="lineNum">     261</span> <span class="tlaGNC">          14 :       remove_dims(_var_and_args[1]-&gt;intmd_sizes(), var_and_args_dep_dims[1]);</span></span>
+<span id="L262"><span class="lineNum">     262</span> <span class="tlaGNC">          14 :   neml_assert_dbg(at::is_expandable_to(arg1_indep_sizes, var_indep_sizes),</span></span>
+<span id="L263"><span class="lineNum">     263</span>              :                   &quot;The independent intermediate shape &quot;,</span>
+<span id="L264"><span class="lineNum">     264</span>              :                   arg1_indep_sizes,</span>
+<span id="L265"><span class="lineNum">     265</span>              :                   &quot; of argument variable '&quot;,</span>
+<span id="L266"><span class="lineNum">     266</span> <span class="tlaGNC">          14 :                   _var_and_args[1]-&gt;name().str(),</span></span>
+<span id="L267"><span class="lineNum">     267</span>              :                   &quot;' is not broadcastable to the variable's independent intermediate shape &quot;,</span>
+<span id="L268"><span class="lineNum">     268</span>              :                   var_indep_sizes,</span>
+<span id="L269"><span class="lineNum">     269</span>              :                   &quot;.&quot;);</span>
+<span id="L270"><span class="lineNum">     270</span> <span class="tlaGNC">          14 :   auto total_indep_sizes = utils::add_shapes(var_indep_sizes, arg1_indep_sizes);</span></span>
+<span id="L271"><span class="lineNum">     271</span> <span class="tlaGNC">          14 :   auto aligned_indep_sizes = utils::add_shapes(</span></span>
+<span id="L272"><span class="lineNum">     272</span> <span class="tlaGNC">          14 :       var_indep_sizes, utils::pad_prepend(arg1_indep_sizes, var_indep_sizes.size()));</span></span>
+<span id="L273"><span class="lineNum">     273</span>              :   if constexpr (N == 2)</span>
+<span id="L274"><span class="lineNum">     274</span>              :   {</span>
+<span id="L275"><span class="lineNum">     275</span> <span class="tlaUNC tlaBgUNC">           0 :     const auto arg2_indep_sizes =</span></span>
+<span id="L276"><span class="lineNum">     276</span> <span class="tlaUNC">           0 :         remove_dims(_var_and_args[2]-&gt;intmd_sizes(), var_and_args_dep_dims[2]);</span></span>
+<span id="L277"><span class="lineNum">     277</span> <span class="tlaUNC">           0 :     neml_assert_dbg(at::is_expandable_to(arg2_indep_sizes, var_indep_sizes),</span></span>
+<span id="L278"><span class="lineNum">     278</span>              :                     &quot;The independent intermediate shape &quot;,</span>
+<span id="L279"><span class="lineNum">     279</span>              :                     arg2_indep_sizes,</span>
+<span id="L280"><span class="lineNum">     280</span>              :                     &quot; of argument variable '&quot;,</span>
+<span id="L281"><span class="lineNum">     281</span> <span class="tlaUNC">           0 :                     _var_and_args[2]-&gt;name().str(),</span></span>
+<span id="L282"><span class="lineNum">     282</span>              :                     &quot;' is not broadcastable to the variable's independent intermediate shape &quot;,</span>
+<span id="L283"><span class="lineNum">     283</span>              :                     var_indep_sizes,</span>
+<span id="L284"><span class="lineNum">     284</span>              :                     &quot;.&quot;);</span>
+<span id="L285"><span class="lineNum">     285</span> <span class="tlaUNC">           0 :     total_indep_sizes = utils::add_shapes(total_indep_sizes, arg2_indep_sizes);</span></span>
+<span id="L286"><span class="lineNum">     286</span> <span class="tlaUNC">           0 :     aligned_indep_sizes = utils::add_shapes(</span></span>
+<span id="L287"><span class="lineNum">     287</span> <span class="tlaUNC">           0 :         aligned_indep_sizes, utils::pad_prepend(arg2_indep_sizes, var_indep_sizes.size()));</span></span>
+<span id="L288"><span class="lineNum">     288</span> <span class="tlaUNC">           0 :   }</span></span>
+<span id="L289"><span class="lineNum">     289</span> <span class="tlaGNC tlaBgGNC">          14 :   val2 = intmd_sum_to_size(val2, utils::add_shapes(aligned_indep_sizes, dep_sizes))</span></span>
+<span id="L290"><span class="lineNum">     290</span>              :              .intmd_reshape(utils::add_shapes(total_indep_sizes, dep_sizes));</span>
+<span id="L291"><span class="lineNum">     291</span>              : </span>
+<span id="L292"><span class="lineNum">     292</span>              :   // Finally, move the dependent dims back to their original positions</span>
+<span id="L293"><span class="lineNum">     293</span>              :   // Before this, val2 havs shape (...; 7, 2, 3, 3, 2, 1, _2_, _4_, _9_; ...)</span>
+<span id="L294"><span class="lineNum">     294</span>              :   // After this, val2 should have shape (...; 7, 2, _2_, 3, _4_, 1, 3; 2, 1, _9_; ...)</span>
+<span id="L295"><span class="lineNum">     295</span> <span class="tlaGNC">          14 :   auto d0 = -Size(dep_dims.size());</span></span>
+<span id="L296"><span class="lineNum">     296</span> <span class="tlaGNC">          14 :   Size d_offset = 0;</span></span>
+<span id="L297"><span class="lineNum">     297</span> <span class="tlaGNC">          42 :   for (std::size_t i = 0; i &lt; N + 1; i++)</span></span>
+<span id="L298"><span class="lineNum">     298</span>              :   {</span>
+<span id="L299"><span class="lineNum">     299</span> <span class="tlaGNC">          31 :     for (const auto &amp; dd : var_and_args_dep_dims[i])</span></span>
+<span id="L300"><span class="lineNum">     300</span>              :     {</span>
+<span id="L301"><span class="lineNum">     301</span> <span class="tlaGNC">           3 :       const auto d1 = d_offset + dd;</span></span>
+<span id="L302"><span class="lineNum">     302</span> <span class="tlaGNC">           3 :       val2 = val2.intmd_movedim(d0, d1);</span></span>
+<span id="L303"><span class="lineNum">     303</span> <span class="tlaGNC">           3 :       d0++;</span></span>
+<span id="L304"><span class="lineNum">     304</span>              :     }</span>
+<span id="L305"><span class="lineNum">     305</span> <span class="tlaGNC">          28 :     d_offset += _var_and_args[i]-&gt;intmd_dim();</span></span>
+<span id="L306"><span class="lineNum">     306</span>              :   }</span>
+<span id="L307"><span class="lineNum">     307</span>              : </span>
+<span id="L308"><span class="lineNum">     308</span> <span class="tlaGNC">          14 :   neml_assert_dbg(val2.intmd_sizes() == total_intmd_sizes(),</span></span>
+<span id="L309"><span class="lineNum">     309</span>              :                   &quot;Internal error in broadcasting dependent dimensions for derivative '&quot;,</span>
+<span id="L310"><span class="lineNum">     310</span> <span class="tlaGNC">          14 :                   _debug_name,</span></span>
+<span id="L311"><span class="lineNum">     311</span>              :                   &quot;'.&quot;);</span>
+<span id="L312"><span class="lineNum">     312</span> <span class="tlaGNC">          28 :   return val2;</span></span>
+<span id="L313"><span class="lineNum">     313</span> <span class="tlaGNC">          14 : }</span></span>
+<span id="L314"><span class="lineNum">     314</span>              : </span>
+<span id="L315"><span class="lineNum">     315</span>              : template &lt;std::size_t N&gt;</span>
+<span id="L316"><span class="lineNum">     316</span>              : Derivative&lt;N&gt; &amp;</span>
+<span id="L317"><span class="lineNum">     317</span> <span class="tlaGNC">          39 : Derivative&lt;N&gt;::operator=(const VariableBase &amp; val)</span></span>
+<span id="L318"><span class="lineNum">     318</span>              : {</span>
+<span id="L319"><span class="lineNum">     319</span> <span class="tlaGNC">          39 :   return Derivative&lt;N&gt;::operator=(val.tensor());</span></span>
+<span id="L320"><span class="lineNum">     320</span>              : }</span>
+<span id="L321"><span class="lineNum">     321</span>              : </span>
+<span id="L322"><span class="lineNum">     322</span>              : template &lt;std::size_t N&gt;</span>
+<span id="L323"><span class="lineNum">     323</span>              : bool</span>
+<span id="L324"><span class="lineNum">     324</span> <span class="tlaGNC">       23775 : Derivative&lt;N&gt;::operator==(const Derivative&lt;N&gt; &amp; other) const</span></span>
+<span id="L325"><span class="lineNum">     325</span>              : {</span>
+<span id="L326"><span class="lineNum">     326</span> <span class="tlaGNC">       50536 :   for (std::size_t i = 0; i &lt; N + 1; i++)</span></span>
+<span id="L327"><span class="lineNum">     327</span> <span class="tlaGNC">       48756 :     if (_var_and_args[i] != other._var_and_args[i])</span></span>
+<span id="L328"><span class="lineNum">     328</span> <span class="tlaGNC">       21995 :       return false;</span></span>
+<span id="L329"><span class="lineNum">     329</span>              : </span>
+<span id="L330"><span class="lineNum">     330</span> <span class="tlaGNC">        1780 :   return true;</span></span>
+<span id="L331"><span class="lineNum">     331</span>              : }</span>
+<span id="L332"><span class="lineNum">     332</span>              : </span>
+<span id="L333"><span class="lineNum">     333</span>              : template &lt;std::size_t N&gt;</span>
+<span id="L334"><span class="lineNum">     334</span>              : const Tensor &amp;</span>
+<span id="L335"><span class="lineNum">     335</span> <span class="tlaGNC">        9289 : Derivative&lt;N&gt;::get() const</span></span>
+<span id="L336"><span class="lineNum">     336</span>              : {</span>
+<span id="L337"><span class="lineNum">     337</span> <span class="tlaGNC">        9289 :   if (_deriv_assembly.defined())</span></span>
+<span id="L338"><span class="lineNum">     338</span> <span class="tlaGNC">        8095 :     return _deriv_assembly;</span></span>
+<span id="L339"><span class="lineNum">     339</span>              : </span>
+<span id="L340"><span class="lineNum">     340</span> <span class="tlaGNC">        1194 :   if (_deriv.defined())</span></span>
+<span id="L341"><span class="lineNum">     341</span> <span class="tlaGNC">        1194 :     _deriv_assembly = to_assembly&lt;N + 1&gt;(_deriv, get_intmd_sizes(), get_base_sizes(), _debug_name);</span></span>
+<span id="L342"><span class="lineNum">     342</span>              : </span>
+<span id="L343"><span class="lineNum">     343</span> <span class="tlaGNC">        1194 :   return _deriv_assembly;</span></span>
+<span id="L344"><span class="lineNum">     344</span>              : }</span>
+<span id="L345"><span class="lineNum">     345</span>              : </span>
+<span id="L346"><span class="lineNum">     346</span>              : template &lt;std::size_t N&gt;</span>
+<span id="L347"><span class="lineNum">     347</span>              : void</span>
+<span id="L348"><span class="lineNum">     348</span> <span class="tlaGNC">       10251 : Derivative&lt;N&gt;::set(const Tensor &amp; val)</span></span>
+<span id="L349"><span class="lineNum">     349</span>              : {</span>
+<span id="L350"><span class="lineNum">     350</span> <span class="tlaGNC">       10251 :   _deriv_assembly = val;</span></span>
+<span id="L351"><span class="lineNum">     351</span> <span class="tlaGNC">       10251 :   _deriv = from_assembly&lt;N + 1&gt;(val, get_intmd_sizes(), get_base_sizes(), _debug_name);</span></span>
+<span id="L352"><span class="lineNum">     352</span> <span class="tlaGNC">       10251 : }</span></span>
+<span id="L353"><span class="lineNum">     353</span>              : </span>
+<span id="L354"><span class="lineNum">     354</span>              : template class Derivative&lt;1&gt;;</span>
+<span id="L355"><span class="lineNum">     355</span>              : template class Derivative&lt;2&gt;;</span>
+<span id="L356"><span class="lineNum">     356</span>              : </span>
+<span id="L357"><span class="lineNum">     357</span>              : }</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

@@ -1,0 +1,7 @@
+<map id="TensorLoader" name="TensorLoader">
+<area shape="rect" id="Node000001" title=" " alt="" coords="47,167,155,192"/>
+<area shape="rect" id="Node000002" href="$classneml2_1_1FixedSizeWorkGenerator.html" title=" " alt="" coords="11,79,192,119"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="104,132,104,166,99,166,99,132"/>
+<area shape="rect" id="Node000003" href="$classneml2_1_1WorkGenerator.html" title=" " alt="" coords="5,5,197,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="104,44,104,79,99,79,99,44"/>
+</map>
