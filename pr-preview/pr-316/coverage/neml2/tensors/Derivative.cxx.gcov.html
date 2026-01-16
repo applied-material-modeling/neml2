@@ -31,18 +31,18 @@
             <td class="headerValue">coverage.info</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntryHi">77.7&nbsp;%</td>
-            <td class="headerCovTableEntry">166</td>
-            <td class="headerCovTableEntry">129</td>
+            <td class="headerCovTableEntryHi">78.9&nbsp;%</td>
+            <td class="headerCovTableEntry">161</td>
+            <td class="headerCovTableEntry">127</td>
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2026-01-16 01:27:21</td>
+            <td class="headerValue">2026-01-16 16:51:15</td>
             <td></td>
             <td class="headerItem">Functions:</td>
-            <td class="headerCovTableEntryHi">77.8&nbsp;%</td>
-            <td class="headerCovTableEntry">72</td>
-            <td class="headerCovTableEntry">56</td>
+            <td class="headerCovTableEntryHi">78.8&nbsp;%</td>
+            <td class="headerCovTableEntry">66</td>
+            <td class="headerCovTableEntry">52</td>
           </tr>
                   <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
                 </table>
@@ -169,13 +169,13 @@
 <span id="L107"><span class="lineNum">     107</span>              : </span>
 <span id="L108"><span class="lineNum">     108</span>              : template &lt;std::size_t N&gt;</span>
 <span id="L109"><span class="lineNum">     109</span>              : TensorShapeRef</span>
-<span id="L110"><span class="lineNum">     110</span> <span class="tlaGNC">        1773 : Derivative&lt;N&gt;::intrsc_intmd_sizes(std::size_t i) const</span></span>
+<span id="L110"><span class="lineNum">     110</span> <span class="tlaGNC">        1761 : Derivative&lt;N&gt;::intrsc_intmd_sizes(std::size_t i) const</span></span>
 <span id="L111"><span class="lineNum">     111</span>              : {</span>
-<span id="L112"><span class="lineNum">     112</span> <span class="tlaGNC">        1773 :   neml_assert_dbg(i &lt;= N,</span></span>
+<span id="L112"><span class="lineNum">     112</span> <span class="tlaGNC">        1761 :   neml_assert_dbg(i &lt;= N,</span></span>
 <span id="L113"><span class="lineNum">     113</span>              :                   &quot;Index out of bounds when accessing intrinsic intermediate shape of derivative '&quot;,</span>
-<span id="L114"><span class="lineNum">     114</span> <span class="tlaGNC">        1773 :                   _debug_name,</span></span>
+<span id="L114"><span class="lineNum">     114</span> <span class="tlaGNC">        1761 :                   _debug_name,</span></span>
 <span id="L115"><span class="lineNum">     115</span>              :                   &quot;'.&quot;);</span>
-<span id="L116"><span class="lineNum">     116</span> <span class="tlaGNC">        1773 :   return _intrsc_intmd_sizes[i];</span></span>
+<span id="L116"><span class="lineNum">     116</span> <span class="tlaGNC">        1761 :   return _intrsc_intmd_sizes[i];</span></span>
 <span id="L117"><span class="lineNum">     117</span>              : }</span>
 <span id="L118"><span class="lineNum">     118</span>              : </span>
 <span id="L119"><span class="lineNum">     119</span>              : template &lt;std::size_t N&gt;</span>
@@ -206,9 +206,9 @@
 <span id="L144"><span class="lineNum">     144</span>              : </span>
 <span id="L145"><span class="lineNum">     145</span>              : template &lt;std::size_t N&gt;</span>
 <span id="L146"><span class="lineNum">     146</span>              : TensorShape</span>
-<span id="L147"><span class="lineNum">     147</span> <span class="tlaGNC">       26988 : Derivative&lt;N&gt;::total_base_sizes() const</span></span>
+<span id="L147"><span class="lineNum">     147</span> <span class="tlaGNC">       26006 : Derivative&lt;N&gt;::total_base_sizes() const</span></span>
 <span id="L148"><span class="lineNum">     148</span>              : {</span>
-<span id="L149"><span class="lineNum">     149</span> <span class="tlaGNC">       80964 :   return std::apply([](auto &amp;&amp;... s) { return utils::add_shapes(s...); }, _base_sizes);</span></span>
+<span id="L149"><span class="lineNum">     149</span> <span class="tlaGNC">       78018 :   return std::apply([](auto &amp;&amp;... s) { return utils::add_shapes(s...); }, _base_sizes);</span></span>
 <span id="L150"><span class="lineNum">     150</span>              : }</span>
 <span id="L151"><span class="lineNum">     151</span>              : </span>
 <span id="L152"><span class="lineNum">     152</span>              : template &lt;std::size_t N&gt;</span>
@@ -229,24 +229,24 @@
 <span id="L167"><span class="lineNum">     167</span>              : </span>
 <span id="L168"><span class="lineNum">     168</span>              : template &lt;std::size_t N&gt;</span>
 <span id="L169"><span class="lineNum">     169</span>              : Size</span>
-<span id="L170"><span class="lineNum">     170</span> <span class="tlaGNC tlaBgGNC">        8931 : Derivative&lt;N&gt;::intrsc_intmd_dim(std::size_t i) const</span></span>
+<span id="L170"><span class="lineNum">     170</span> <span class="tlaGNC tlaBgGNC">        8927 : Derivative&lt;N&gt;::intrsc_intmd_dim(std::size_t i) const</span></span>
 <span id="L171"><span class="lineNum">     171</span>              : {</span>
-<span id="L172"><span class="lineNum">     172</span> <span class="tlaGNC">        8931 :   neml_assert_dbg(</span></span>
+<span id="L172"><span class="lineNum">     172</span> <span class="tlaGNC">        8927 :   neml_assert_dbg(</span></span>
 <span id="L173"><span class="lineNum">     173</span>              :       i &lt;= N,</span>
 <span id="L174"><span class="lineNum">     174</span>              :       &quot;Index out of bounds when accessing intrinsic intermediate dimension of derivative '&quot;,</span>
-<span id="L175"><span class="lineNum">     175</span> <span class="tlaGNC">        8931 :       _debug_name,</span></span>
+<span id="L175"><span class="lineNum">     175</span> <span class="tlaGNC">        8927 :       _debug_name,</span></span>
 <span id="L176"><span class="lineNum">     176</span>              :       &quot;'.&quot;);</span>
-<span id="L177"><span class="lineNum">     177</span> <span class="tlaGNC">        8931 :   return static_cast&lt;Size&gt;(_intrsc_intmd_sizes[i].size());</span></span>
+<span id="L177"><span class="lineNum">     177</span> <span class="tlaGNC">        8927 :   return static_cast&lt;Size&gt;(_intrsc_intmd_sizes[i].size());</span></span>
 <span id="L178"><span class="lineNum">     178</span>              : }</span>
 <span id="L179"><span class="lineNum">     179</span>              : </span>
 <span id="L180"><span class="lineNum">     180</span>              : template &lt;std::size_t N&gt;</span>
 <span id="L181"><span class="lineNum">     181</span>              : Size</span>
-<span id="L182"><span class="lineNum">     182</span> <span class="tlaGNC">       20189 : Derivative&lt;N&gt;::total_intrsc_intmd_dim() const</span></span>
+<span id="L182"><span class="lineNum">     182</span> <span class="tlaGNC">       19698 : Derivative&lt;N&gt;::total_intrsc_intmd_dim() const</span></span>
 <span id="L183"><span class="lineNum">     183</span>              : {</span>
-<span id="L184"><span class="lineNum">     184</span> <span class="tlaGNC">       20189 :   return std::accumulate(_intrsc_intmd_sizes.begin(),</span></span>
+<span id="L184"><span class="lineNum">     184</span> <span class="tlaGNC">       19698 :   return std::accumulate(_intrsc_intmd_sizes.begin(),</span></span>
 <span id="L185"><span class="lineNum">     185</span>              :                          _intrsc_intmd_sizes.end(),</span>
 <span id="L186"><span class="lineNum">     186</span>              :                          Size(0),</span>
-<span id="L187"><span class="lineNum">     187</span> <span class="tlaGNC">       62279 :                          [](Size sum, TensorShapeRef shape) { return sum + shape.size(); });</span></span>
+<span id="L187"><span class="lineNum">     187</span> <span class="tlaGNC">       60690 :                          [](Size sum, TensorShapeRef shape) { return sum + shape.size(); });</span></span>
 <span id="L188"><span class="lineNum">     188</span>              : }</span>
 <span id="L189"><span class="lineNum">     189</span>              : </span>
 <span id="L190"><span class="lineNum">     190</span>              : template &lt;std::size_t N&gt;</span>
@@ -281,208 +281,192 @@
 <span id="L219"><span class="lineNum">     219</span>              : </span>
 <span id="L220"><span class="lineNum">     220</span>              : template &lt;std::size_t N&gt;</span>
 <span id="L221"><span class="lineNum">     221</span>              : Tensor</span>
-<span id="L222"><span class="lineNum">     222</span> <span class="tlaGNC">       13494 : Derivative&lt;N&gt;::try_intmd_expand(const Tensor &amp; deriv) const</span></span>
+<span id="L222"><span class="lineNum">     222</span> <span class="tlaGNC">       13003 : Derivative&lt;N&gt;::try_intmd_expand(const Tensor &amp; deriv) const</span></span>
 <span id="L223"><span class="lineNum">     223</span>              : {</span>
-<span id="L224"><span class="lineNum">     224</span> <span class="tlaGNC">       13494 :   neml_assert(deriv.intmd_dim() &gt;= _intrsc_intmd_dim,</span></span>
+<span id="L224"><span class="lineNum">     224</span> <span class="tlaGNC">       13003 :   neml_assert(deriv.intmd_dim() &gt;= _intrsc_intmd_dim,</span></span>
 <span id="L225"><span class="lineNum">     225</span>              :               &quot;The intermediate dimension (&quot;,</span>
-<span id="L226"><span class="lineNum">     226</span> <span class="tlaGNC">       13494 :               deriv.intmd_dim(),</span></span>
+<span id="L226"><span class="lineNum">     226</span> <span class="tlaGNC">       13003 :               deriv.intmd_dim(),</span></span>
 <span id="L227"><span class="lineNum">     227</span>              :               &quot;) of the assigned derivative for '&quot;,</span>
-<span id="L228"><span class="lineNum">     228</span> <span class="tlaGNC">       13494 :               _debug_name,</span></span>
+<span id="L228"><span class="lineNum">     228</span> <span class="tlaGNC">       13003 :               _debug_name,</span></span>
 <span id="L229"><span class="lineNum">     229</span>              :               &quot;' is smaller than the declared intrinsic intermediate dimension (&quot;,</span>
-<span id="L230"><span class="lineNum">     230</span> <span class="tlaGNC">       13494 :               _intrsc_intmd_dim,</span></span>
+<span id="L230"><span class="lineNum">     230</span> <span class="tlaGNC">       13003 :               _intrsc_intmd_dim,</span></span>
 <span id="L231"><span class="lineNum">     231</span>              :               &quot;).&quot;);</span>
 <span id="L232"><span class="lineNum">     232</span>              : </span>
-<span id="L233"><span class="lineNum">     233</span> <span class="tlaGNC">       13494 :   if (_intrsc_intmd_dim == total_intrsc_intmd_dim())</span></span>
-<span id="L234"><span class="lineNum">     234</span> <span class="tlaGNC">       13467 :     return deriv;</span></span>
+<span id="L233"><span class="lineNum">     233</span> <span class="tlaGNC">       13003 :   if (_intrsc_intmd_dim == total_intrsc_intmd_dim())</span></span>
+<span id="L234"><span class="lineNum">     234</span> <span class="tlaGNC">       12980 :     return deriv;</span></span>
 <span id="L235"><span class="lineNum">     235</span>              : </span>
-<span id="L236"><span class="lineNum">     236</span> <span class="tlaGNC">          27 :   neml_assert_dbg(</span></span>
-<span id="L237"><span class="lineNum">     237</span> <span class="tlaGNC">          27 :       at::is_expandable_to(deriv.intmd_sizes().slice(deriv.intmd_dim() - _intrsc_intmd_dim),</span></span>
+<span id="L236"><span class="lineNum">     236</span> <span class="tlaGNC">          23 :   neml_assert_dbg(</span></span>
+<span id="L237"><span class="lineNum">     237</span> <span class="tlaGNC">          23 :       at::is_expandable_to(deriv.intmd_sizes().slice(deriv.intmd_dim() - _intrsc_intmd_dim),</span></span>
 <span id="L238"><span class="lineNum">     238</span>              :                            intrsc_intmd_sizes(0)),</span>
 <span id="L239"><span class="lineNum">     239</span>              :       &quot;The intrinsic intermediate shape (&quot;,</span>
-<span id="L240"><span class="lineNum">     240</span> <span class="tlaGNC">          27 :       deriv.intmd_sizes().slice(deriv.intmd_dim() - _intrsc_intmd_dim),</span></span>
+<span id="L240"><span class="lineNum">     240</span> <span class="tlaGNC">          23 :       deriv.intmd_sizes().slice(deriv.intmd_dim() - _intrsc_intmd_dim),</span></span>
 <span id="L241"><span class="lineNum">     241</span>              :       &quot;) of the assigned derivative for '&quot;,</span>
-<span id="L242"><span class="lineNum">     242</span> <span class="tlaGNC">          27 :       _debug_name,</span></span>
+<span id="L242"><span class="lineNum">     242</span> <span class="tlaGNC">          23 :       _debug_name,</span></span>
 <span id="L243"><span class="lineNum">     243</span>              :       &quot;' is not broadcastable to the variable's intrinsic intermediate shape (&quot;,</span>
-<span id="L244"><span class="lineNum">     244</span> <span class="tlaGNC">          27 :       intrsc_intmd_sizes(0),</span></span>
+<span id="L244"><span class="lineNum">     244</span> <span class="tlaGNC">          23 :       intrsc_intmd_sizes(0),</span></span>
 <span id="L245"><span class="lineNum">     245</span>              :       &quot;).&quot;);</span>
 <span id="L246"><span class="lineNum">     246</span>              : </span>
 <span id="L247"><span class="lineNum">     247</span>              :   const auto extrsc_intmd_sizes =</span>
-<span id="L248"><span class="lineNum">     248</span> <span class="tlaGNC">          27 :       deriv.intmd_sizes().slice(0, deriv.intmd_dim() - _intrsc_intmd_dim);</span></span>
-<span id="L249"><span class="lineNum">     249</span> <span class="tlaGNC">          27 :   const auto target_intmd_sizes = utils::add_shapes(extrsc_intmd_sizes, intrsc_intmd_sizes(0));</span></span>
-<span id="L250"><span class="lineNum">     250</span> <span class="tlaGNC">          54 :   const auto deriv_aligned =</span></span>
-<span id="L251"><span class="lineNum">     251</span> <span class="tlaGNC">          27 :       deriv.intmd_unsqueeze(-_intrsc_intmd_dim - 1, intrsc_intmd_dim(0) - _intrsc_intmd_dim);</span></span>
-<span id="L252"><span class="lineNum">     252</span> <span class="tlaGNC">          27 :   return deriv_aligned.intmd_expand(target_intmd_sizes);</span></span>
-<span id="L253"><span class="lineNum">     253</span> <span class="tlaGNC">          27 : }</span></span>
+<span id="L248"><span class="lineNum">     248</span> <span class="tlaGNC">          23 :       deriv.intmd_sizes().slice(0, deriv.intmd_dim() - _intrsc_intmd_dim);</span></span>
+<span id="L249"><span class="lineNum">     249</span> <span class="tlaGNC">          23 :   const auto target_intmd_sizes = utils::add_shapes(extrsc_intmd_sizes, intrsc_intmd_sizes(0));</span></span>
+<span id="L250"><span class="lineNum">     250</span> <span class="tlaGNC">          46 :   const auto deriv_aligned =</span></span>
+<span id="L251"><span class="lineNum">     251</span> <span class="tlaGNC">          23 :       deriv.intmd_unsqueeze(-_intrsc_intmd_dim - 1, intrsc_intmd_dim(0) - _intrsc_intmd_dim);</span></span>
+<span id="L252"><span class="lineNum">     252</span> <span class="tlaGNC">          23 :   return deriv_aligned.intmd_expand(target_intmd_sizes);</span></span>
+<span id="L253"><span class="lineNum">     253</span> <span class="tlaGNC">          23 : }</span></span>
 <span id="L254"><span class="lineNum">     254</span>              : </span>
 <span id="L255"><span class="lineNum">     255</span>              : template &lt;std::size_t N&gt;</span>
 <span id="L256"><span class="lineNum">     256</span>              : Derivative&lt;N&gt; &amp;</span>
-<span id="L257"><span class="lineNum">     257</span> <span class="tlaGNC">         491 : Derivative&lt;N&gt;::operator=(const Derivative&lt;N&gt; &amp; deriv)</span></span>
+<span id="L257"><span class="lineNum">     257</span> <span class="tlaGNC">       11713 : Derivative&lt;N&gt;::operator=(const Tensor &amp; val)</span></span>
 <span id="L258"><span class="lineNum">     258</span>              : {</span>
-<span id="L259"><span class="lineNum">     259</span> <span class="tlaGNC">         491 :   _intrsc_intmd_dim = deriv._intrsc_intmd_dim;</span></span>
-<span id="L260"><span class="lineNum">     260</span> <span class="tlaGNC">         491 :   return operator=(deriv.tensor());</span></span>
-<span id="L261"><span class="lineNum">     261</span>              : }</span>
-<span id="L262"><span class="lineNum">     262</span>              : </span>
-<span id="L263"><span class="lineNum">     263</span>              : template &lt;std::size_t N&gt;</span>
-<span id="L264"><span class="lineNum">     264</span>              : Derivative&lt;N&gt; &amp;</span>
-<span id="L265"><span class="lineNum">     265</span> <span class="tlaUNC tlaBgUNC">           0 : Derivative&lt;N&gt;::operator=(Derivative&lt;N&gt; &amp;&amp; deriv) noexcept</span></span>
-<span id="L266"><span class="lineNum">     266</span>              : {</span>
-<span id="L267"><span class="lineNum">     267</span> <span class="tlaUNC">           0 :   _intrsc_intmd_dim = deriv._intrsc_intmd_dim;</span></span>
-<span id="L268"><span class="lineNum">     268</span> <span class="tlaUNC">           0 :   return operator=(std::move(deriv).tensor());</span></span>
-<span id="L269"><span class="lineNum">     269</span>              : }</span>
-<span id="L270"><span class="lineNum">     270</span>              : </span>
-<span id="L271"><span class="lineNum">     271</span>              : template &lt;std::size_t N&gt;</span>
-<span id="L272"><span class="lineNum">     272</span>              : Derivative&lt;N&gt; &amp;</span>
-<span id="L273"><span class="lineNum">     273</span> <span class="tlaGNC tlaBgGNC">       12204 : Derivative&lt;N&gt;::operator=(const Tensor &amp; val)</span></span>
-<span id="L274"><span class="lineNum">     274</span>              : {</span>
-<span id="L275"><span class="lineNum">     275</span> <span class="tlaGNC">       24408 :   neml_assert_dbg(val.base_sizes() == total_base_sizes(),</span></span>
-<span id="L276"><span class="lineNum">     276</span>              :                   &quot;The assigned derivative for '&quot;,</span>
-<span id="L277"><span class="lineNum">     277</span> <span class="tlaGNC">       12204 :                   _debug_name,</span></span>
-<span id="L278"><span class="lineNum">     278</span>              :                   &quot;' has incompatible base shape. Expected &quot;,</span>
-<span id="L279"><span class="lineNum">     279</span>              :                   total_base_sizes(),</span>
-<span id="L280"><span class="lineNum">     280</span>              :                   &quot;, got &quot;,</span>
-<span id="L281"><span class="lineNum">     281</span> <span class="tlaGNC">       12204 :                   val.base_sizes());</span></span>
-<span id="L282"><span class="lineNum">     282</span>              : </span>
-<span id="L283"><span class="lineNum">     283</span> <span class="tlaGNC">       12204 :   _deriv = try_intmd_expand(val);</span></span>
-<span id="L284"><span class="lineNum">     284</span> <span class="tlaGNC">       12204 :   _cached_intmd_dim = _deriv.intmd_dim();</span></span>
-<span id="L285"><span class="lineNum">     285</span>              : </span>
-<span id="L286"><span class="lineNum">     286</span> <span class="tlaGNC">       12204 :   return *this;</span></span>
-<span id="L287"><span class="lineNum">     287</span>              : }</span>
-<span id="L288"><span class="lineNum">     288</span>              : </span>
-<span id="L289"><span class="lineNum">     289</span>              : template &lt;std::size_t N&gt;</span>
-<span id="L290"><span class="lineNum">     290</span>              : Derivative&lt;N&gt; &amp;</span>
-<span id="L291"><span class="lineNum">     291</span> <span class="tlaGNC">         449 : Derivative&lt;N&gt;::operator+=(const Derivative&lt;N&gt; &amp; deriv)</span></span>
-<span id="L292"><span class="lineNum">     292</span>              : {</span>
-<span id="L293"><span class="lineNum">     293</span> <span class="tlaGNC">         449 :   _intrsc_intmd_dim = deriv._intrsc_intmd_dim;</span></span>
-<span id="L294"><span class="lineNum">     294</span> <span class="tlaGNC">         449 :   return operator+=(deriv.tensor());</span></span>
-<span id="L295"><span class="lineNum">     295</span>              : }</span>
-<span id="L296"><span class="lineNum">     296</span>              : </span>
-<span id="L297"><span class="lineNum">     297</span>              : template &lt;std::size_t N&gt;</span>
-<span id="L298"><span class="lineNum">     298</span>              : Derivative&lt;N&gt; &amp;</span>
-<span id="L299"><span class="lineNum">     299</span> <span class="tlaGNC">         756 : Derivative&lt;N&gt;::operator+=(Derivative&lt;N&gt; &amp;&amp; deriv) noexcept</span></span>
-<span id="L300"><span class="lineNum">     300</span>              : {</span>
-<span id="L301"><span class="lineNum">     301</span> <span class="tlaGNC">         756 :   _intrsc_intmd_dim = std::move(deriv)._intrsc_intmd_dim;</span></span>
-<span id="L302"><span class="lineNum">     302</span> <span class="tlaGNC">         756 :   return operator+=(std::move(deriv).tensor());</span></span>
-<span id="L303"><span class="lineNum">     303</span>              : }</span>
-<span id="L304"><span class="lineNum">     304</span>              : </span>
-<span id="L305"><span class="lineNum">     305</span>              : template &lt;std::size_t N&gt;</span>
-<span id="L306"><span class="lineNum">     306</span>              : Derivative&lt;N&gt; &amp;</span>
-<span id="L307"><span class="lineNum">     307</span> <span class="tlaGNC">        1290 : Derivative&lt;N&gt;::operator+=(const Tensor &amp; val)</span></span>
-<span id="L308"><span class="lineNum">     308</span>              : {</span>
-<span id="L309"><span class="lineNum">     309</span> <span class="tlaGNC">        2580 :   neml_assert_dbg(val.base_sizes() == total_base_sizes(),</span></span>
-<span id="L310"><span class="lineNum">     310</span>              :                   &quot;The assigned derivative for '&quot;,</span>
-<span id="L311"><span class="lineNum">     311</span> <span class="tlaGNC">        1290 :                   _debug_name,</span></span>
-<span id="L312"><span class="lineNum">     312</span>              :                   &quot;' has incompatible base shape. Expected &quot;,</span>
-<span id="L313"><span class="lineNum">     313</span>              :                   total_base_sizes(),</span>
-<span id="L314"><span class="lineNum">     314</span>              :                   &quot;, got &quot;,</span>
-<span id="L315"><span class="lineNum">     315</span> <span class="tlaGNC">        1290 :                   val.base_sizes());</span></span>
-<span id="L316"><span class="lineNum">     316</span>              : </span>
-<span id="L317"><span class="lineNum">     317</span> <span class="tlaGNC">        1290 :   if (_deriv.defined())</span></span>
-<span id="L318"><span class="lineNum">     318</span> <span class="tlaGNC">         136 :     _deriv = _deriv + try_intmd_expand(val);</span></span>
-<span id="L319"><span class="lineNum">     319</span>              :   else</span>
-<span id="L320"><span class="lineNum">     320</span> <span class="tlaGNC">        1154 :     _deriv = try_intmd_expand(val);</span></span>
-<span id="L321"><span class="lineNum">     321</span>              : </span>
-<span id="L322"><span class="lineNum">     322</span> <span class="tlaGNC">        1290 :   _cached_intmd_dim = _deriv.intmd_dim();</span></span>
-<span id="L323"><span class="lineNum">     323</span>              : </span>
-<span id="L324"><span class="lineNum">     324</span> <span class="tlaGNC">        1290 :   return *this;</span></span>
-<span id="L325"><span class="lineNum">     325</span>              : }</span>
-<span id="L326"><span class="lineNum">     326</span>              : </span>
-<span id="L327"><span class="lineNum">     327</span>              : template &lt;std::size_t N&gt;</span>
-<span id="L328"><span class="lineNum">     328</span>              : const Tensor &amp;</span>
-<span id="L329"><span class="lineNum">     329</span> <span class="tlaGNC">       10189 : Derivative&lt;N&gt;::tensor() const</span></span>
-<span id="L330"><span class="lineNum">     330</span>              : {</span>
-<span id="L331"><span class="lineNum">     331</span> <span class="tlaGNC">       10189 :   neml_assert_dbg(_deriv.defined(), &quot;Derivative '&quot;, _debug_name, &quot;' is not defined.&quot;);</span></span>
-<span id="L332"><span class="lineNum">     332</span> <span class="tlaGNC">       10189 :   return _deriv;</span></span>
-<span id="L333"><span class="lineNum">     333</span>              : }</span>
-<span id="L334"><span class="lineNum">     334</span>              : </span>
-<span id="L335"><span class="lineNum">     335</span>              : template &lt;std::size_t N&gt;</span>
-<span id="L336"><span class="lineNum">     336</span>              : Tensor</span>
-<span id="L337"><span class="lineNum">     337</span> <span class="tlaGNC">        1553 : Derivative&lt;N&gt;::get() const</span></span>
-<span id="L338"><span class="lineNum">     338</span>              : {</span>
-<span id="L339"><span class="lineNum">     339</span> <span class="tlaGNC">        1553 :   neml_assert_dbg(_deriv.defined(), &quot;Derivative '&quot;, _debug_name, &quot;' is not defined.&quot;);</span></span>
-<span id="L340"><span class="lineNum">     340</span>              : </span>
-<span id="L341"><span class="lineNum">     341</span> <span class="tlaGNC">        1553 :   if (!is_intrsc_intmd_broadcast())</span></span>
-<span id="L342"><span class="lineNum">     342</span> <span class="tlaGNC">        1547 :     return to_assembly&lt;N + 1&gt;(_deriv, intrsc_intmd_sizes(), base_sizes(), _debug_name);</span></span>
-<span id="L343"><span class="lineNum">     343</span>              : </span>
-<span id="L344"><span class="lineNum">     344</span> <span class="tlaGNC">           6 :   neml_assert_dbg(at::is_expandable_to(intrsc_intmd_sizes(1), intrsc_intmd_sizes(0)),</span></span>
-<span id="L345"><span class="lineNum">     345</span>              :                   &quot;The intrinsic intermediate shape (&quot;,</span>
-<span id="L346"><span class="lineNum">     346</span> <span class="tlaUNC tlaBgUNC">           0 :                   intrsc_intmd_sizes(1),</span></span>
-<span id="L347"><span class="lineNum">     347</span>              :                   &quot;) of the argument for derivative '&quot;,</span>
-<span id="L348"><span class="lineNum">     348</span> <span class="tlaGNC tlaBgGNC">           6 :                   _debug_name,</span></span>
-<span id="L349"><span class="lineNum">     349</span>              :                   &quot;' is not broadcastable to the variable's intrinsic intermediate shape (&quot;,</span>
-<span id="L350"><span class="lineNum">     350</span> <span class="tlaGNC">           6 :                   intrsc_intmd_sizes(0),</span></span>
-<span id="L351"><span class="lineNum">     351</span>              :                   &quot;).&quot;);</span>
-<span id="L352"><span class="lineNum">     352</span>              :   if constexpr (N == 2)</span>
-<span id="L353"><span class="lineNum">     353</span> <span class="tlaUNC tlaBgUNC">           0 :     neml_assert_dbg(at::is_expandable_to(intrsc_intmd_sizes(2), intrsc_intmd_sizes(0)),</span></span>
-<span id="L354"><span class="lineNum">     354</span>              :                     &quot;The intrinsic intermediate shape (&quot;,</span>
-<span id="L355"><span class="lineNum">     355</span> <span class="tlaUNC">           0 :                     intrsc_intmd_sizes(2),</span></span>
-<span id="L356"><span class="lineNum">     356</span>              :                     &quot;) of the second argument for derivative '&quot;,</span>
-<span id="L357"><span class="lineNum">     357</span> <span class="tlaUNC">           0 :                     _debug_name,</span></span>
-<span id="L358"><span class="lineNum">     358</span>              :                     &quot;' is not broadcastable to the variable's intrinsic intermediate shape (&quot;,</span>
-<span id="L359"><span class="lineNum">     359</span> <span class="tlaUNC">           0 :                     intrsc_intmd_sizes(0),</span></span>
-<span id="L360"><span class="lineNum">     360</span>              :                     &quot;).&quot;);</span>
-<span id="L361"><span class="lineNum">     361</span>              :   // flatten the intrinsic intermediate dimensions</span>
-<span id="L362"><span class="lineNum">     362</span>              :   const auto extrsc_intmd_sizes =</span>
-<span id="L363"><span class="lineNum">     363</span> <span class="tlaGNC tlaBgGNC">           6 :       _deriv.intmd_sizes().slice(0, _deriv.intmd_dim() - _intrsc_intmd_dim);</span></span>
-<span id="L364"><span class="lineNum">     364</span> <span class="tlaGNC">           6 :   const auto flat_intmd_sizes =</span></span>
-<span id="L365"><span class="lineNum">     365</span> <span class="tlaGNC">           6 :       utils::add_shapes(extrsc_intmd_sizes, utils::numel(intrsc_intmd_sizes(0)));</span></span>
-<span id="L366"><span class="lineNum">     366</span> <span class="tlaGNC">           6 :   auto deriv_fl = _deriv.intmd_reshape(flat_intmd_sizes);</span></span>
-<span id="L367"><span class="lineNum">     367</span>              : </span>
-<span id="L368"><span class="lineNum">     368</span>              :   // diagonal expand to arguments' intrinsic intermediate dimensions</span>
-<span id="L369"><span class="lineNum">     369</span> <span class="tlaGNC">          12 :   for (std::size_t i = 1; i &lt;= N; i++)</span></span>
-<span id="L370"><span class="lineNum">     370</span> <span class="tlaGNC">           6 :     deriv_fl = intmd_diagonalize(deriv_fl, -1);</span></span>
-<span id="L371"><span class="lineNum">     371</span>              : </span>
-<span id="L372"><span class="lineNum">     372</span>              :   // unflatten to inflated intrinsic intermediate dimensions (variable's intrinsic intermediate</span>
-<span id="L373"><span class="lineNum">     373</span>              :   // dimensions repeated N times)</span>
-<span id="L374"><span class="lineNum">     374</span> <span class="tlaGNC">           6 :   const auto inflated_intmd_sizes =</span></span>
-<span id="L375"><span class="lineNum">     375</span>              :       utils::add_shapes(extrsc_intmd_sizes,</span>
-<span id="L376"><span class="lineNum">     376</span> <span class="tlaGNC">           6 :                         intrsc_intmd_sizes(0),</span></span>
-<span id="L377"><span class="lineNum">     377</span> <span class="tlaGNC">           6 :                         intrsc_intmd_sizes(0),</span></span>
-<span id="L378"><span class="lineNum">     378</span> <span class="tlaGNC">          12 :                         N == 2 ? intrsc_intmd_sizes(0) : TensorShape{});</span></span>
-<span id="L379"><span class="lineNum">     379</span> <span class="tlaGNC">           6 :   auto deriv_infl = deriv_fl.intmd_reshape(inflated_intmd_sizes);</span></span>
-<span id="L380"><span class="lineNum">     380</span>              : </span>
-<span id="L381"><span class="lineNum">     381</span>              :   // reduce to arguments' intrinsic intermediate dimensions</span>
-<span id="L382"><span class="lineNum">     382</span> <span class="tlaGNC">          12 :   const auto padded_intmd_sizes = utils::add_shapes(</span></span>
-<span id="L383"><span class="lineNum">     383</span>              :       extrsc_intmd_sizes,</span>
-<span id="L384"><span class="lineNum">     384</span> <span class="tlaGNC">          12 :       intrsc_intmd_sizes(0),</span></span>
-<span id="L385"><span class="lineNum">     385</span>              :       utils::pad_prepend(intrsc_intmd_sizes(1), intrsc_intmd_dim(0)),</span>
-<span id="L386"><span class="lineNum">     386</span> <span class="tlaGNC">          12 :       N == 2 ? utils::pad_prepend(intrsc_intmd_sizes(2), intrsc_intmd_dim(0)) : TensorShape{});</span></span>
-<span id="L387"><span class="lineNum">     387</span> <span class="tlaGNC">           6 :   auto deriv =</span></span>
-<span id="L388"><span class="lineNum">     388</span>              :       intmd_sum_to_size(deriv_infl, padded_intmd_sizes)</span>
-<span id="L389"><span class="lineNum">     389</span>              :           .intmd_reshape(utils::add_shapes(extrsc_intmd_sizes, total_intrsc_intmd_sizes()));</span>
-<span id="L390"><span class="lineNum">     390</span> <span class="tlaGNC">           6 :   return to_assembly&lt;N + 1&gt;(deriv, intrsc_intmd_sizes(), base_sizes(), _debug_name);</span></span>
-<span id="L391"><span class="lineNum">     391</span> <span class="tlaGNC">           6 : }</span></span>
+<span id="L259"><span class="lineNum">     259</span> <span class="tlaGNC">       23426 :   neml_assert_dbg(val.base_sizes() == total_base_sizes(),</span></span>
+<span id="L260"><span class="lineNum">     260</span>              :                   &quot;The assigned derivative for '&quot;,</span>
+<span id="L261"><span class="lineNum">     261</span> <span class="tlaGNC">       11713 :                   _debug_name,</span></span>
+<span id="L262"><span class="lineNum">     262</span>              :                   &quot;' has incompatible base shape. Expected &quot;,</span>
+<span id="L263"><span class="lineNum">     263</span>              :                   total_base_sizes(),</span>
+<span id="L264"><span class="lineNum">     264</span>              :                   &quot;, got &quot;,</span>
+<span id="L265"><span class="lineNum">     265</span> <span class="tlaGNC">       11713 :                   val.base_sizes());</span></span>
+<span id="L266"><span class="lineNum">     266</span>              : </span>
+<span id="L267"><span class="lineNum">     267</span> <span class="tlaGNC">       11713 :   _deriv = try_intmd_expand(val);</span></span>
+<span id="L268"><span class="lineNum">     268</span> <span class="tlaGNC">       11713 :   _cached_intmd_dim = _deriv.intmd_dim();</span></span>
+<span id="L269"><span class="lineNum">     269</span>              : </span>
+<span id="L270"><span class="lineNum">     270</span> <span class="tlaGNC">       11713 :   return *this;</span></span>
+<span id="L271"><span class="lineNum">     271</span>              : }</span>
+<span id="L272"><span class="lineNum">     272</span>              : </span>
+<span id="L273"><span class="lineNum">     273</span>              : template &lt;std::size_t N&gt;</span>
+<span id="L274"><span class="lineNum">     274</span>              : Derivative&lt;N&gt; &amp;</span>
+<span id="L275"><span class="lineNum">     275</span> <span class="tlaGNC">        1290 : Derivative&lt;N&gt;::operator+=(const Tensor &amp; val)</span></span>
+<span id="L276"><span class="lineNum">     276</span>              : {</span>
+<span id="L277"><span class="lineNum">     277</span> <span class="tlaGNC">        2580 :   neml_assert_dbg(val.base_sizes() == total_base_sizes(),</span></span>
+<span id="L278"><span class="lineNum">     278</span>              :                   &quot;The assigned derivative for '&quot;,</span>
+<span id="L279"><span class="lineNum">     279</span> <span class="tlaGNC">        1290 :                   _debug_name,</span></span>
+<span id="L280"><span class="lineNum">     280</span>              :                   &quot;' has incompatible base shape. Expected &quot;,</span>
+<span id="L281"><span class="lineNum">     281</span>              :                   total_base_sizes(),</span>
+<span id="L282"><span class="lineNum">     282</span>              :                   &quot;, got &quot;,</span>
+<span id="L283"><span class="lineNum">     283</span> <span class="tlaGNC">        1290 :                   val.base_sizes());</span></span>
+<span id="L284"><span class="lineNum">     284</span>              : </span>
+<span id="L285"><span class="lineNum">     285</span> <span class="tlaGNC">        1290 :   if (_deriv.defined())</span></span>
+<span id="L286"><span class="lineNum">     286</span> <span class="tlaGNC">         136 :     _deriv = _deriv + try_intmd_expand(val);</span></span>
+<span id="L287"><span class="lineNum">     287</span>              :   else</span>
+<span id="L288"><span class="lineNum">     288</span> <span class="tlaGNC">        1154 :     _deriv = try_intmd_expand(val);</span></span>
+<span id="L289"><span class="lineNum">     289</span>              : </span>
+<span id="L290"><span class="lineNum">     290</span> <span class="tlaGNC">        1290 :   _cached_intmd_dim = _deriv.intmd_dim();</span></span>
+<span id="L291"><span class="lineNum">     291</span>              : </span>
+<span id="L292"><span class="lineNum">     292</span> <span class="tlaGNC">        1290 :   return *this;</span></span>
+<span id="L293"><span class="lineNum">     293</span>              : }</span>
+<span id="L294"><span class="lineNum">     294</span>              : </span>
+<span id="L295"><span class="lineNum">     295</span>              : template &lt;std::size_t N&gt;</span>
+<span id="L296"><span class="lineNum">     296</span>              : Derivative&lt;N&gt; &amp;</span>
+<span id="L297"><span class="lineNum">     297</span> <span class="tlaGNC">        1205 : Derivative&lt;N&gt;::operator+=(const Derivative&lt;N&gt; &amp; deriv)</span></span>
+<span id="L298"><span class="lineNum">     298</span>              : {</span>
+<span id="L299"><span class="lineNum">     299</span> <span class="tlaGNC">        1205 :   _intrsc_intmd_dim = deriv._intrsc_intmd_dim;</span></span>
+<span id="L300"><span class="lineNum">     300</span> <span class="tlaGNC">        1205 :   return operator+=(deriv.tensor());</span></span>
+<span id="L301"><span class="lineNum">     301</span>              : }</span>
+<span id="L302"><span class="lineNum">     302</span>              : </span>
+<span id="L303"><span class="lineNum">     303</span>              : template &lt;std::size_t N&gt;</span>
+<span id="L304"><span class="lineNum">     304</span>              : const Tensor &amp;</span>
+<span id="L305"><span class="lineNum">     305</span> <span class="tlaGNC">        9698 : Derivative&lt;N&gt;::tensor() const</span></span>
+<span id="L306"><span class="lineNum">     306</span>              : {</span>
+<span id="L307"><span class="lineNum">     307</span> <span class="tlaGNC">        9698 :   neml_assert_dbg(</span></span>
+<span id="L308"><span class="lineNum">     308</span> <span class="tlaGNC">       19396 :       _deriv.defined() &amp;&amp; _deriv.isfinite().all().template item&lt;bool&gt;(),</span></span>
+<span id="L309"><span class="lineNum">     309</span>              :       &quot;Derivative '&quot;,</span>
+<span id="L310"><span class="lineNum">     310</span> <span class="tlaGNC">        9698 :       name(),</span></span>
+<span id="L311"><span class="lineNum">     311</span>              :       &quot;' has undefined or non-finite value. Below is some additional debugging information:\n&quot;,</span>
+<span id="L312"><span class="lineNum">     312</span>              :       &quot;  defined: &quot;,</span>
+<span id="L313"><span class="lineNum">     313</span> <span class="tlaGNC">        9698 :       _deriv.defined() ? &quot;true&quot; : &quot;false&quot;,</span></span>
+<span id="L314"><span class="lineNum">     314</span>              :       &quot;\n  isfinite: &quot;,</span>
+<span id="L315"><span class="lineNum">     315</span> <span class="tlaGNC">       19396 :       _deriv.defined() &amp;&amp; _deriv.isfinite().all().template item&lt;bool&gt;() ? &quot;true&quot; : &quot;false&quot;);</span></span>
+<span id="L316"><span class="lineNum">     316</span> <span class="tlaGNC">        9698 :   return _deriv;</span></span>
+<span id="L317"><span class="lineNum">     317</span>              : }</span>
+<span id="L318"><span class="lineNum">     318</span>              : </span>
+<span id="L319"><span class="lineNum">     319</span>              : template &lt;std::size_t N&gt;</span>
+<span id="L320"><span class="lineNum">     320</span>              : Tensor</span>
+<span id="L321"><span class="lineNum">     321</span> <span class="tlaGNC">        1553 : Derivative&lt;N&gt;::get() const</span></span>
+<span id="L322"><span class="lineNum">     322</span>              : {</span>
+<span id="L323"><span class="lineNum">     323</span> <span class="tlaGNC">        1553 :   neml_assert_dbg(_deriv.defined(), &quot;Derivative '&quot;, _debug_name, &quot;' is not defined.&quot;);</span></span>
+<span id="L324"><span class="lineNum">     324</span>              : </span>
+<span id="L325"><span class="lineNum">     325</span> <span class="tlaGNC">        1553 :   if (!is_intrsc_intmd_broadcast())</span></span>
+<span id="L326"><span class="lineNum">     326</span> <span class="tlaGNC">        1547 :     return to_assembly&lt;N + 1&gt;(_deriv, intrsc_intmd_sizes(), base_sizes(), _debug_name);</span></span>
+<span id="L327"><span class="lineNum">     327</span>              : </span>
+<span id="L328"><span class="lineNum">     328</span> <span class="tlaGNC">           6 :   neml_assert_dbg(at::is_expandable_to(intrsc_intmd_sizes(1), intrsc_intmd_sizes(0)),</span></span>
+<span id="L329"><span class="lineNum">     329</span>              :                   &quot;The intrinsic intermediate shape (&quot;,</span>
+<span id="L330"><span class="lineNum">     330</span> <span class="tlaUNC tlaBgUNC">           0 :                   intrsc_intmd_sizes(1),</span></span>
+<span id="L331"><span class="lineNum">     331</span>              :                   &quot;) of the argument for derivative '&quot;,</span>
+<span id="L332"><span class="lineNum">     332</span> <span class="tlaGNC tlaBgGNC">           6 :                   _debug_name,</span></span>
+<span id="L333"><span class="lineNum">     333</span>              :                   &quot;' is not broadcastable to the variable's intrinsic intermediate shape (&quot;,</span>
+<span id="L334"><span class="lineNum">     334</span> <span class="tlaGNC">           6 :                   intrsc_intmd_sizes(0),</span></span>
+<span id="L335"><span class="lineNum">     335</span>              :                   &quot;).&quot;);</span>
+<span id="L336"><span class="lineNum">     336</span>              :   if constexpr (N == 2)</span>
+<span id="L337"><span class="lineNum">     337</span> <span class="tlaUNC tlaBgUNC">           0 :     neml_assert_dbg(at::is_expandable_to(intrsc_intmd_sizes(2), intrsc_intmd_sizes(0)),</span></span>
+<span id="L338"><span class="lineNum">     338</span>              :                     &quot;The intrinsic intermediate shape (&quot;,</span>
+<span id="L339"><span class="lineNum">     339</span> <span class="tlaUNC">           0 :                     intrsc_intmd_sizes(2),</span></span>
+<span id="L340"><span class="lineNum">     340</span>              :                     &quot;) of the second argument for derivative '&quot;,</span>
+<span id="L341"><span class="lineNum">     341</span> <span class="tlaUNC">           0 :                     _debug_name,</span></span>
+<span id="L342"><span class="lineNum">     342</span>              :                     &quot;' is not broadcastable to the variable's intrinsic intermediate shape (&quot;,</span>
+<span id="L343"><span class="lineNum">     343</span> <span class="tlaUNC">           0 :                     intrsc_intmd_sizes(0),</span></span>
+<span id="L344"><span class="lineNum">     344</span>              :                     &quot;).&quot;);</span>
+<span id="L345"><span class="lineNum">     345</span>              :   // flatten the intrinsic intermediate dimensions</span>
+<span id="L346"><span class="lineNum">     346</span>              :   const auto extrsc_intmd_sizes =</span>
+<span id="L347"><span class="lineNum">     347</span> <span class="tlaGNC tlaBgGNC">           6 :       _deriv.intmd_sizes().slice(0, _deriv.intmd_dim() - _intrsc_intmd_dim);</span></span>
+<span id="L348"><span class="lineNum">     348</span> <span class="tlaGNC">           6 :   const auto flat_intmd_sizes =</span></span>
+<span id="L349"><span class="lineNum">     349</span> <span class="tlaGNC">           6 :       utils::add_shapes(extrsc_intmd_sizes, utils::numel(intrsc_intmd_sizes(0)));</span></span>
+<span id="L350"><span class="lineNum">     350</span> <span class="tlaGNC">           6 :   auto deriv_fl = _deriv.intmd_reshape(flat_intmd_sizes);</span></span>
+<span id="L351"><span class="lineNum">     351</span>              : </span>
+<span id="L352"><span class="lineNum">     352</span>              :   // diagonal expand to arguments' intrinsic intermediate dimensions</span>
+<span id="L353"><span class="lineNum">     353</span> <span class="tlaGNC">          12 :   for (std::size_t i = 1; i &lt;= N; i++)</span></span>
+<span id="L354"><span class="lineNum">     354</span> <span class="tlaGNC">           6 :     deriv_fl = intmd_diagonalize(deriv_fl, -1);</span></span>
+<span id="L355"><span class="lineNum">     355</span>              : </span>
+<span id="L356"><span class="lineNum">     356</span>              :   // unflatten to inflated intrinsic intermediate dimensions (variable's intrinsic intermediate</span>
+<span id="L357"><span class="lineNum">     357</span>              :   // dimensions repeated N times)</span>
+<span id="L358"><span class="lineNum">     358</span> <span class="tlaGNC">           6 :   const auto inflated_intmd_sizes =</span></span>
+<span id="L359"><span class="lineNum">     359</span>              :       utils::add_shapes(extrsc_intmd_sizes,</span>
+<span id="L360"><span class="lineNum">     360</span> <span class="tlaGNC">           6 :                         intrsc_intmd_sizes(0),</span></span>
+<span id="L361"><span class="lineNum">     361</span> <span class="tlaGNC">           6 :                         intrsc_intmd_sizes(0),</span></span>
+<span id="L362"><span class="lineNum">     362</span> <span class="tlaGNC">          12 :                         N == 2 ? intrsc_intmd_sizes(0) : TensorShape{});</span></span>
+<span id="L363"><span class="lineNum">     363</span> <span class="tlaGNC">           6 :   auto deriv_infl = deriv_fl.intmd_reshape(inflated_intmd_sizes);</span></span>
+<span id="L364"><span class="lineNum">     364</span>              : </span>
+<span id="L365"><span class="lineNum">     365</span>              :   // reduce to arguments' intrinsic intermediate dimensions</span>
+<span id="L366"><span class="lineNum">     366</span> <span class="tlaGNC">          12 :   const auto padded_intmd_sizes = utils::add_shapes(</span></span>
+<span id="L367"><span class="lineNum">     367</span>              :       extrsc_intmd_sizes,</span>
+<span id="L368"><span class="lineNum">     368</span> <span class="tlaGNC">          12 :       intrsc_intmd_sizes(0),</span></span>
+<span id="L369"><span class="lineNum">     369</span>              :       utils::pad_prepend(intrsc_intmd_sizes(1), intrsc_intmd_dim(0)),</span>
+<span id="L370"><span class="lineNum">     370</span> <span class="tlaGNC">          12 :       N == 2 ? utils::pad_prepend(intrsc_intmd_sizes(2), intrsc_intmd_dim(0)) : TensorShape{});</span></span>
+<span id="L371"><span class="lineNum">     371</span> <span class="tlaGNC">           6 :   auto deriv =</span></span>
+<span id="L372"><span class="lineNum">     372</span>              :       intmd_sum_to_size(deriv_infl, padded_intmd_sizes)</span>
+<span id="L373"><span class="lineNum">     373</span>              :           .intmd_reshape(utils::add_shapes(extrsc_intmd_sizes, total_intrsc_intmd_sizes()));</span>
+<span id="L374"><span class="lineNum">     374</span> <span class="tlaGNC">           6 :   return to_assembly&lt;N + 1&gt;(deriv, intrsc_intmd_sizes(), base_sizes(), _debug_name);</span></span>
+<span id="L375"><span class="lineNum">     375</span> <span class="tlaGNC">           6 : }</span></span>
+<span id="L376"><span class="lineNum">     376</span>              : </span>
+<span id="L377"><span class="lineNum">     377</span>              : template &lt;std::size_t N&gt;</span>
+<span id="L378"><span class="lineNum">     378</span>              : void</span>
+<span id="L379"><span class="lineNum">     379</span> <span class="tlaUNC tlaBgUNC">           0 : Derivative&lt;N&gt;::set(const Tensor &amp; val)</span></span>
+<span id="L380"><span class="lineNum">     380</span>              : {</span>
+<span id="L381"><span class="lineNum">     381</span> <span class="tlaUNC">           0 :   neml_assert_dbg(</span></span>
+<span id="L382"><span class="lineNum">     382</span> <span class="tlaUNC">           0 :       val.defined(), &quot;Derivative '&quot;, _debug_name, &quot;' is assigned with undefined value.&quot;);</span></span>
+<span id="L383"><span class="lineNum">     383</span>              : </span>
+<span id="L384"><span class="lineNum">     384</span> <span class="tlaUNC">           0 :   const auto val2 = from_assembly&lt;N + 1&gt;(val, intrsc_intmd_sizes(), base_sizes(), _debug_name);</span></span>
+<span id="L385"><span class="lineNum">     385</span>              : </span>
+<span id="L386"><span class="lineNum">     386</span> <span class="tlaUNC">           0 :   if (!is_intrsc_intmd_broadcast())</span></span>
+<span id="L387"><span class="lineNum">     387</span>              :   {</span>
+<span id="L388"><span class="lineNum">     388</span> <span class="tlaUNC">           0 :     _deriv = val2;</span></span>
+<span id="L389"><span class="lineNum">     389</span> <span class="tlaUNC">           0 :     _cached_intmd_dim = val2.intmd_dim();</span></span>
+<span id="L390"><span class="lineNum">     390</span> <span class="tlaUNC">           0 :     return;</span></span>
+<span id="L391"><span class="lineNum">     391</span>              :   }</span>
 <span id="L392"><span class="lineNum">     392</span>              : </span>
-<span id="L393"><span class="lineNum">     393</span>              : template &lt;std::size_t N&gt;</span>
-<span id="L394"><span class="lineNum">     394</span>              : void</span>
-<span id="L395"><span class="lineNum">     395</span> <span class="tlaUNC tlaBgUNC">           0 : Derivative&lt;N&gt;::set(const Tensor &amp; val)</span></span>
-<span id="L396"><span class="lineNum">     396</span>              : {</span>
-<span id="L397"><span class="lineNum">     397</span> <span class="tlaUNC">           0 :   neml_assert_dbg(</span></span>
-<span id="L398"><span class="lineNum">     398</span> <span class="tlaUNC">           0 :       val.defined(), &quot;Derivative '&quot;, _debug_name, &quot;' is assigned with undefined value.&quot;);</span></span>
-<span id="L399"><span class="lineNum">     399</span>              : </span>
-<span id="L400"><span class="lineNum">     400</span> <span class="tlaUNC">           0 :   const auto val2 = from_assembly&lt;N + 1&gt;(val, intrsc_intmd_sizes(), base_sizes(), _debug_name);</span></span>
-<span id="L401"><span class="lineNum">     401</span>              : </span>
-<span id="L402"><span class="lineNum">     402</span> <span class="tlaUNC">           0 :   if (!is_intrsc_intmd_broadcast())</span></span>
-<span id="L403"><span class="lineNum">     403</span>              :   {</span>
-<span id="L404"><span class="lineNum">     404</span> <span class="tlaUNC">           0 :     _deriv = val2;</span></span>
-<span id="L405"><span class="lineNum">     405</span> <span class="tlaUNC">           0 :     _cached_intmd_dim = val2.intmd_dim();</span></span>
-<span id="L406"><span class="lineNum">     406</span> <span class="tlaUNC">           0 :     return;</span></span>
-<span id="L407"><span class="lineNum">     407</span>              :   }</span>
-<span id="L408"><span class="lineNum">     408</span>              : </span>
-<span id="L409"><span class="lineNum">     409</span>              :   const auto extrsc_intmd_sizes =</span>
-<span id="L410"><span class="lineNum">     410</span> <span class="tlaUNC">           0 :       val2.intmd_sizes().slice(0, val2.intmd_dim() - total_intrsc_intmd_dim());</span></span>
-<span id="L411"><span class="lineNum">     411</span> <span class="tlaUNC">           0 :   const auto target_intmd_sizes =</span></span>
-<span id="L412"><span class="lineNum">     412</span>              :       utils::add_shapes(extrsc_intmd_sizes,</span>
-<span id="L413"><span class="lineNum">     413</span> <span class="tlaUNC">           0 :                         intrsc_intmd_sizes(0),</span></span>
-<span id="L414"><span class="lineNum">     414</span> <span class="tlaUNC">           0 :                         TensorShape(intrsc_intmd_dim(1), 1),</span></span>
-<span id="L415"><span class="lineNum">     415</span> <span class="tlaUNC">           0 :                         N == 2 ? TensorShape(intrsc_intmd_dim(2), 1) : TensorShape{});</span></span>
-<span id="L416"><span class="lineNum">     416</span> <span class="tlaUNC">           0 :   const auto val2_reduced = intmd_sum_to_size(val2, target_intmd_sizes);</span></span>
-<span id="L417"><span class="lineNum">     417</span> <span class="tlaUNC">           0 :   _deriv = val2_reduced.intmd_reshape(utils::add_shapes(extrsc_intmd_sizes, intrsc_intmd_sizes(0)));</span></span>
-<span id="L418"><span class="lineNum">     418</span> <span class="tlaUNC">           0 :   _cached_intmd_dim = _deriv.intmd_dim();</span></span>
-<span id="L419"><span class="lineNum">     419</span> <span class="tlaUNC">           0 : }</span></span>
-<span id="L420"><span class="lineNum">     420</span>              : </span>
-<span id="L421"><span class="lineNum">     421</span>              : template class Derivative&lt;1&gt;;</span>
-<span id="L422"><span class="lineNum">     422</span>              : template class Derivative&lt;2&gt;;</span>
-<span id="L423"><span class="lineNum">     423</span>              : }</span>
+<span id="L393"><span class="lineNum">     393</span>              :   const auto extrsc_intmd_sizes =</span>
+<span id="L394"><span class="lineNum">     394</span> <span class="tlaUNC">           0 :       val2.intmd_sizes().slice(0, val2.intmd_dim() - total_intrsc_intmd_dim());</span></span>
+<span id="L395"><span class="lineNum">     395</span> <span class="tlaUNC">           0 :   const auto target_intmd_sizes =</span></span>
+<span id="L396"><span class="lineNum">     396</span>              :       utils::add_shapes(extrsc_intmd_sizes,</span>
+<span id="L397"><span class="lineNum">     397</span> <span class="tlaUNC">           0 :                         intrsc_intmd_sizes(0),</span></span>
+<span id="L398"><span class="lineNum">     398</span> <span class="tlaUNC">           0 :                         TensorShape(intrsc_intmd_dim(1), 1),</span></span>
+<span id="L399"><span class="lineNum">     399</span> <span class="tlaUNC">           0 :                         N == 2 ? TensorShape(intrsc_intmd_dim(2), 1) : TensorShape{});</span></span>
+<span id="L400"><span class="lineNum">     400</span> <span class="tlaUNC">           0 :   const auto val2_reduced = intmd_sum_to_size(val2, target_intmd_sizes);</span></span>
+<span id="L401"><span class="lineNum">     401</span> <span class="tlaUNC">           0 :   _deriv = val2_reduced.intmd_reshape(utils::add_shapes(extrsc_intmd_sizes, intrsc_intmd_sizes(0)));</span></span>
+<span id="L402"><span class="lineNum">     402</span> <span class="tlaUNC">           0 :   _cached_intmd_dim = _deriv.intmd_dim();</span></span>
+<span id="L403"><span class="lineNum">     403</span> <span class="tlaUNC">           0 : }</span></span>
+<span id="L404"><span class="lineNum">     404</span>              : </span>
+<span id="L405"><span class="lineNum">     405</span>              : template class Derivative&lt;1&gt;;</span>
+<span id="L406"><span class="lineNum">     406</span>              : template class Derivative&lt;2&gt;;</span>
+<span id="L407"><span class="lineNum">     407</span>              : }</span>
         </pre>
               </td>
             </tr>

@@ -1,7 +1,5 @@
 var NAVTREEINDEX6 =
 {
-"classneml2_1_1LogspaceTensorTmpl.html#a9242f35e507185a2e3d98da0007c851e":[7,1,0,120,1],
-"classneml2_1_1MandelStress.html":[7,0,1,126],
 "classneml2_1_1MandelStress.html":[7,1,0,121],
 "classneml2_1_1MandelStress.html#a625a5fa5646f7cf5af4786e6461a6717":[7,0,1,126,2],
 "classneml2_1_1MandelStress.html#a625a5fa5646f7cf5af4786e6461a6717":[7,1,0,121,2],
@@ -249,5 +247,7 @@ var NAVTREEINDEX6 =
 "classneml2_1_1NEML2Object.html#ad9cb8bba430bcfb31348ddfe6b9b00c8":[7,1,0,128,3],
 "classneml2_1_1NEML2Object.html#adb931c218966158e867d8af1438d6bc0":[7,0,1,133,12],
 "classneml2_1_1NEML2Object.html#adb931c218966158e867d8af1438d6bc0":[7,1,0,128,12],
-"classneml2_1_1NEMLException.html":[7,0,1,135]
+"classneml2_1_1NEMLException.html":[7,0,1,135],
+"classneml2_1_1NEMLException.html":[7,1,0,130],
+"classneml2_1_1NEMLException.html#a292042b22e88998066022029d87e51d1":[7,0,1,135,0]
 };

@@ -1,7 +1,5 @@
 var NAVTREEINDEX8 =
 {
-"classneml2_1_1OptionSet.html#a6fa3c684ca51dd6ef087c7cc60d4703f":[7,1,0,140,5],
-"classneml2_1_1OptionSet.html#a7157eb0f3e4314a1d621f0bed374ea97":[7,0,1,145,35],
 "classneml2_1_1OptionSet.html#a7157eb0f3e4314a1d621f0bed374ea97":[7,1,0,140,35],
 "classneml2_1_1OptionSet.html#a72f6cb3878f66a117f1bcba505a5b76e":[7,0,1,145,16],
 "classneml2_1_1OptionSet.html#a72f6cb3878f66a117f1bcba505a5b76e":[7,1,0,140,16],
@@ -249,5 +247,7 @@ var NAVTREEINDEX8 =
 "classneml2_1_1PowerLawKinematicHardeningStaticRecovery.html":[7,1,0,156],
 "classneml2_1_1PowerLawKinematicHardeningStaticRecovery.html#a36523d4e84a1270d56d184bbdebe099a":[7,0,1,161,3],
 "classneml2_1_1PowerLawKinematicHardeningStaticRecovery.html#a36523d4e84a1270d56d184bbdebe099a":[7,1,0,156,3],
-"classneml2_1_1PowerLawKinematicHardeningStaticRecovery.html#a6644dbfab08bce2264651b42570533b8":[7,0,1,161,2]
+"classneml2_1_1PowerLawKinematicHardeningStaticRecovery.html#a6644dbfab08bce2264651b42570533b8":[7,0,1,161,2],
+"classneml2_1_1PowerLawKinematicHardeningStaticRecovery.html#a6644dbfab08bce2264651b42570533b8":[7,1,0,156,2],
+"classneml2_1_1PowerLawKinematicHardeningStaticRecovery.html#ad180ffaa5a1ad04cb591fe940bf1412e":[7,0,1,161,0]
 };

@@ -1,7 +1,5 @@
 var NAVTREEINDEX20 =
 {
-"structneml2_1_1TraceWriter.html#a42a21beb8018ac623f4d09db1343b9cf":[7,1,0,220,9],
-"structneml2_1_1TraceWriter.html#a4659edae7ea41a9ba191fd1c0309faa0":[7,0,1,225,1],
 "structneml2_1_1TraceWriter.html#a4659edae7ea41a9ba191fd1c0309faa0":[7,1,0,220,1],
 "structneml2_1_1TraceWriter.html#a51d404543decdeef5c0a3e6e95c810b7":[7,0,1,225,0],
 "structneml2_1_1TraceWriter.html#a51d404543decdeef5c0a3e6e95c810b7":[7,1,0,220,0],

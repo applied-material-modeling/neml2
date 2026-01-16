@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2026-01-16 01:27:21</td>
+            <td class="headerValue">2026-01-16 16:51:15</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryMed">32.0&nbsp;%</td>
@@ -106,9 +106,9 @@
 <span id="L44"><span class="lineNum">      44</span>              : </span>
 <span id="L45"><span class="lineNum">      45</span>              : template &lt;typename T&gt;</span>
 <span id="L46"><span class="lineNum">      46</span>              : bool</span>
-<span id="L47"><span class="lineNum">      47</span> <span class="tlaGNC">     1682262 : Variable&lt;T&gt;::defined() const</span></span>
+<span id="L47"><span class="lineNum">      47</span> <span class="tlaGNC">     2354834 : Variable&lt;T&gt;::defined() const</span></span>
 <span id="L48"><span class="lineNum">      48</span>              : {</span>
-<span id="L49"><span class="lineNum">      49</span> <span class="tlaGNC">     1682262 :   return operator()().defined();</span></span>
+<span id="L49"><span class="lineNum">      49</span> <span class="tlaGNC">     2354834 :   return operator()().defined();</span></span>
 <span id="L50"><span class="lineNum">      50</span>              : }</span>
 <span id="L51"><span class="lineNum">      51</span>              : </span>
 <span id="L52"><span class="lineNum">      52</span>              : template &lt;typename T&gt;</span>
@@ -237,12 +237,12 @@
 <span id="L175"><span class="lineNum">     175</span>              : </span>
 <span id="L176"><span class="lineNum">     176</span>              : template &lt;typename T&gt;</span>
 <span id="L177"><span class="lineNum">     177</span>              : Tensor</span>
-<span id="L178"><span class="lineNum">     178</span> <span class="tlaGNC">     2696666 : Variable&lt;T&gt;::tensor() const</span></span>
+<span id="L178"><span class="lineNum">     178</span> <span class="tlaGNC">     3841738 : Variable&lt;T&gt;::tensor() const</span></span>
 <span id="L179"><span class="lineNum">     179</span>              : {</span>
-<span id="L180"><span class="lineNum">     180</span> <span class="tlaGNC">     2696666 :   if (!owning())</span></span>
-<span id="L181"><span class="lineNum">     181</span> <span class="tlaGNC">     1123794 :     return ref()-&gt;tensor();</span></span>
+<span id="L180"><span class="lineNum">     180</span> <span class="tlaGNC">     3841738 :   if (!owning())</span></span>
+<span id="L181"><span class="lineNum">     181</span> <span class="tlaGNC">     1605847 :     return ref()-&gt;tensor();</span></span>
 <span id="L182"><span class="lineNum">     182</span>              : </span>
-<span id="L183"><span class="lineNum">     183</span> <span class="tlaGNC">     1572872 :   if (!jit::tracer::isTracing())</span></span>
+<span id="L183"><span class="lineNum">     183</span> <span class="tlaGNC">     2235891 :   if (!jit::tracer::isTracing())</span></span>
 <span id="L184"><span class="lineNum">     184</span> <span class="tlaGNC">       33786 :     neml_assert_dbg(</span></span>
 <span id="L185"><span class="lineNum">     185</span> <span class="tlaGNC">       67572 :         _value.defined() &amp;&amp; _value.isfinite().all().template item&lt;bool&gt;(),</span></span>
 <span id="L186"><span class="lineNum">     186</span>              :         &quot;Variable '&quot;,</span>
@@ -256,7 +256,7 @@
 <span id="L194"><span class="lineNum">     194</span> <span class="tlaGNC">       33786 :         _value.defined() ? &quot;true&quot; : &quot;false&quot;,</span></span>
 <span id="L195"><span class="lineNum">     195</span>              :         &quot;\n  isfinite: &quot;,</span>
 <span id="L196"><span class="lineNum">     196</span> <span class="tlaGNC">       67572 :         _value.defined() &amp;&amp; _value.isfinite().all().template item&lt;bool&gt;() ? &quot;true&quot; : &quot;false&quot;);</span></span>
-<span id="L197"><span class="lineNum">     197</span> <span class="tlaGNC">     1572872 :   return _value;</span></span>
+<span id="L197"><span class="lineNum">     197</span> <span class="tlaGNC">     2235891 :   return _value;</span></span>
 <span id="L198"><span class="lineNum">     198</span>              : }</span>
 <span id="L199"><span class="lineNum">     199</span>              : </span>
 <span id="L200"><span class="lineNum">     200</span>              : template &lt;typename T&gt;</span>

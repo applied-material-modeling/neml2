@@ -1,7 +1,5 @@
 var NAVTREEINDEX18 =
 {
-"namespaceneml2.html#ac0467bed5f342fac9fee4ec1bdbf2c11":[7,0,1,500],
-"namespaceneml2.html#ac0ba8ba3d2a60abdef08802c8f385558":[7,0,1,464],
 "namespaceneml2.html#ac236ceb33f8a5a6e9ddc205a5251c59d":[7,0,1,955],
 "namespaceneml2.html#ac2687a7c25ab7f6c4b30d3be35326482":[7,0,1,727],
 "namespaceneml2.html#ac26c78ab22f0b76b8ff47f21630d69d0":[7,0,1,756],
@@ -249,5 +247,7 @@ var NAVTREEINDEX18 =
 "namespaceneml2_1_1utils.html#a33c7959193cd1083ba776cf9cc93b44b":[7,0,1,6,42],
 "namespaceneml2_1_1utils.html#a35c385b3f50d165aeb08a1f01f475c55":[7,0,1,6,48],
 "namespaceneml2_1_1utils.html#a375115951b58d93643522771a5af8a0e":[7,0,1,6,6],
-"namespaceneml2_1_1utils.html#a3d31a46678d81ec6f336869129b60cd3":[7,0,1,6,41]
+"namespaceneml2_1_1utils.html#a3d31a46678d81ec6f336869129b60cd3":[7,0,1,6,41],
+"namespaceneml2_1_1utils.html#a3f60b75f9a53f6768fac26bd99bad391":[7,0,1,6,10],
+"namespaceneml2_1_1utils.html#a4cb07085c0f2894e87bba27ebd10a12d":[7,0,1,6,3]
 };

@@ -1,7 +1,5 @@
 var NAVTREEINDEX5 =
 {
-"classneml2_1_1LabeledAxis.html#a152eaecb8d8038f34f5a074f06b37659":[7,1,0,107,9],
-"classneml2_1_1LabeledAxis.html#a31004f8ea339fdf6a30c9f750589bbe3":[7,0,1,112,8],
 "classneml2_1_1LabeledAxis.html#a31004f8ea339fdf6a30c9f750589bbe3":[7,1,0,107,8],
 "classneml2_1_1LabeledAxis.html#a390b6fe333989685b93c6b33d1c3ec28":[7,0,1,112,19],
 "classneml2_1_1LabeledAxis.html#a390b6fe333989685b93c6b33d1c3ec28":[7,1,0,107,19],
@@ -249,5 +247,7 @@ var NAVTREEINDEX5 =
 "classneml2_1_1LogspaceTensorTmpl.html":[7,1,0,120],
 "classneml2_1_1LogspaceTensorTmpl.html#a34c323f291dd2648af6adec8bb02e37d":[7,0,1,125,0],
 "classneml2_1_1LogspaceTensorTmpl.html#a34c323f291dd2648af6adec8bb02e37d":[7,1,0,120,0],
-"classneml2_1_1LogspaceTensorTmpl.html#a9242f35e507185a2e3d98da0007c851e":[7,0,1,125,1]
+"classneml2_1_1LogspaceTensorTmpl.html#a9242f35e507185a2e3d98da0007c851e":[7,0,1,125,1],
+"classneml2_1_1LogspaceTensorTmpl.html#a9242f35e507185a2e3d98da0007c851e":[7,1,0,120,1],
+"classneml2_1_1MandelStress.html":[7,0,1,126]
 };

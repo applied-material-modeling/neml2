@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2026-01-16 01:27:21</td>
+            <td class="headerValue">2026-01-16 16:51:15</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -123,7 +123,7 @@
 <span id="L61"><span class="lineNum">      61</span> <span class="tlaGNC">         252 :               vals.size(),</span></span>
 <span id="L62"><span class="lineNum">      62</span>              :               &quot; respectively.&quot;);</span>
 <span id="L63"><span class="lineNum">      63</span> <span class="tlaGNC">         126 :   auto * factory = options.get&lt;Factory *&gt;(&quot;_factory&quot;);</span></span>
-<span id="L64"><span class="lineNum">      64</span> <span class="tlaGNC">         126 :   neml_assert(factory, &quot;Internal error: factory == nullptr&quot;);</span></span>
+<span id="L64"><span class="lineNum">      64</span> <span class="tlaGNC">         126 :   neml_assert(factory, &quot;Failed assertion: factory != nullptr&quot;);</span></span>
 <span id="L65"><span class="lineNum">      65</span> <span class="tlaGNC">         127 :   for (std::size_t i = 0; i &lt; names.size(); i++)</span></span>
 <span id="L66"><span class="lineNum">      66</span>              :   {</span>
 <span id="L67"><span class="lineNum">      67</span> <span class="tlaGNC">           1 :     neml_assert(names[i].is_state(),</span></span>
@@ -155,7 +155,7 @@
 <span id="L93"><span class="lineNum">      93</span> <span class="tlaGNC">         252 :               vals.size(),</span></span>
 <span id="L94"><span class="lineNum">      94</span>              :               &quot; respectively.&quot;);</span>
 <span id="L95"><span class="lineNum">      95</span> <span class="tlaGNC">         126 :   auto * factory = options.get&lt;Factory *&gt;(&quot;_factory&quot;);</span></span>
-<span id="L96"><span class="lineNum">      96</span> <span class="tlaGNC">         126 :   neml_assert(factory, &quot;Internal error: factory == nullptr&quot;);</span></span>
+<span id="L96"><span class="lineNum">      96</span> <span class="tlaGNC">         126 :   neml_assert(factory, &quot;Failed assertion: factory != nullptr&quot;);</span></span>
 <span id="L97"><span class="lineNum">      97</span> <span class="tlaGNC">         126 :   for (std::size_t i = 0; i &lt; force_names.size(); i++)</span></span>
 <span id="L98"><span class="lineNum">      98</span>              :   {</span>
 <span id="L99"><span class="lineNum">      99</span> <span class="tlaUNC tlaBgUNC">           0 :     neml_assert(force_names[i].is_force(),</span></span>

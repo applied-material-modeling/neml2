@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2026-01-16 01:27:21</td>
+            <td class="headerValue">2026-01-16 16:51:15</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">75.0&nbsp;%</td>
@@ -120,18 +120,18 @@
 <span id="L58"><span class="lineNum">      58</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
 <span id="L59"><span class="lineNum">      59</span>              : </span>
 <span id="L60"><span class="lineNum">      60</span>              : Size</span>
-<span id="L61"><span class="lineNum">      61</span> <span class="tlaGNC tlaBgGNC">      132412 : normalize_itr(Size d, Size dl, Size du)</span></span>
+<span id="L61"><span class="lineNum">      61</span> <span class="tlaGNC tlaBgGNC">      132408 : normalize_itr(Size d, Size dl, Size du)</span></span>
 <span id="L62"><span class="lineNum">      62</span>              : {</span>
-<span id="L63"><span class="lineNum">      63</span> <span class="tlaGNC">      132412 :   auto delta = du - dl;</span></span>
-<span id="L64"><span class="lineNum">      64</span> <span class="tlaGNC">      132412 :   neml_assert_dbg(d &gt;= -delta - 1 &amp;&amp; d &lt;= delta,</span></span>
+<span id="L63"><span class="lineNum">      63</span> <span class="tlaGNC">      132408 :   auto delta = du - dl;</span></span>
+<span id="L64"><span class="lineNum">      64</span> <span class="tlaGNC">      132408 :   neml_assert_dbg(d &gt;= -delta - 1 &amp;&amp; d &lt;= delta,</span></span>
 <span id="L65"><span class="lineNum">      65</span>              :                   &quot;The dimension &quot;,</span>
 <span id="L66"><span class="lineNum">      66</span>              :                   d,</span>
 <span id="L67"><span class="lineNum">      67</span>              :                   &quot; is out of range [&quot;,</span>
-<span id="L68"><span class="lineNum">      68</span> <span class="tlaGNC">      132414 :                   -delta - 1,</span></span>
+<span id="L68"><span class="lineNum">      68</span> <span class="tlaGNC">      132410 :                   -delta - 1,</span></span>
 <span id="L69"><span class="lineNum">      69</span>              :                   &quot;, &quot;,</span>
 <span id="L70"><span class="lineNum">      70</span>              :                   delta,</span>
 <span id="L71"><span class="lineNum">      71</span>              :                   &quot;].&quot;);</span>
-<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC">      264820 :   return d &gt;= 0 ? dl + d : du + d + 1;</span></span>
+<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC">      264812 :   return d &gt;= 0 ? dl + d : du + d + 1;</span></span>
 <span id="L73"><span class="lineNum">      73</span>              : }</span>
 <span id="L74"><span class="lineNum">      74</span>              : </span>
 <span id="L75"><span class="lineNum">      75</span>              : TensorShape</span>
