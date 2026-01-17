@@ -145,6 +145,15 @@ $(function(){initNavTree('syntax-tensors.html',''); initResizable(true); });
     <a href="#autotoc_md55">Available objects and their input file syntax</a>
     <ul>
       <li class="level2">
+        <a href="#csvsr2">CSVSR2</a>
+      </li>
+      <li class="level2">
+        <a href="#csvscalar">CSVScalar</a>
+      </li>
+      <li class="level2">
+        <a href="#csvvec">CSVVec</a>
+      </li>
+      <li class="level2">
         <a href="#fillr2">FillR2</a>
       </li>
       <li class="level2">
@@ -328,6 +337,9 @@ $(function(){initNavTree('syntax-tensors.html',''); initResizable(true); });
         <a href="#millerindexfromtorchscript">MillerIndexFromTorchScript</a>
       </li>
       <li class="level2">
+        <a href="#multicolumncsvscalar">MultiColumnCSVScalar</a>
+      </li>
+      <li class="level2">
         <a href="#orientation">Orientation</a>
       </li>
       <li class="level2">
@@ -501,6 +513,216 @@ You can always use <code>Ctrl</code>+<code>F</code> or <code>Cmd</code>+<code>F<
 <h1><a class="anchor" id="autotoc_md55"></a>
 Available objects and their input file syntax</h1>
 <p>Refer to <a class="el" href="system-tensors.html">System Documentation</a> for detailed explanation about this system.</p>
+<h2><a class="anchor" id="csvsr2"></a>
+CSVSR2</h2>
+<p>Construct a SR2 from a CSV file. Each component of the SR2 should be provided as a column in the CSV. By default the entire CSV is read in order of the columns. A subset/different order of columns can be selected using <code>column_indices</code> or <code>column_names</code>. Each row of the CSV corresponds to a batch. The default batch shape is the number of rows in the CSV. </p><details >
+<summary >
+<code>column_indices</code> Indices of CSV columns.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: list of non-negative number </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>column_names</code> Names of CSV columns.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: list of string </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>csv_file</code> Path to the CSV file</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: string </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>delimiter</code> Delimiter used to parse the CSV file. Options are SPACE, TAB, SEMICOLON, COMMA</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: EnumSelection</li>
+<li><u>Default</u>: COMMA </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>no_header</code> Whether the CSV file has a header row.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>shape_manipulation_args</code> A list of arguments corresponding to each shape manipulation operation. The number of entries should match the number of operations in 'shape_manipulations'. Each entry is a tensor shape that encodes the arguments for the corresponding operation. For operations that do not require any argument, an empty shape, i.e. (), should be used.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: list of tensor shape </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>shape_manipulations</code> A list of shape manipulation operations to apply to the created tensor. Supported operations are: intmd_flatten, dynamic_expand, dynamic_reshape, dynamic_squeeze, intmd_expand, dynamic_transpose, dynamic_flatten, intmd_reshape, intmd_squeeze, INVALID, intmd_unsqueeze, dynamic_movedim, intmd_transpose, dynamic_unsqueeze, intmd_movedim</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: MultiEnumSelection</li>
+<li><u>Default</u>: (INVALID) </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>starting_row</code> Starting row of the CSV file (0-indexed). Rows before this row are ignored. This should be the header row if the CSV file has a header, otherwise it should be the first row of the data. By default the starting row is the 0th row.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1CSVPrimitiveTensor.html">link</a></p>
+<h2><a class="anchor" id="csvscalar"></a>
+CSVScalar</h2>
+<p>Construct a Scalar from a CSV file. Each component of the Scalar should be provided as a column in the CSV. By default the entire CSV is read in order of the columns. A subset/different order of columns can be selected using <code>column_indices</code> or <code>column_names</code>. Each row of the CSV corresponds to a batch. The default batch shape is the number of rows in the CSV. </p><details >
+<summary >
+<code>column_indices</code> Indices of CSV columns.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: list of non-negative number </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>column_names</code> Names of CSV columns.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: list of string </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>csv_file</code> Path to the CSV file</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: string </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>delimiter</code> Delimiter used to parse the CSV file. Options are SPACE, TAB, SEMICOLON, COMMA</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: EnumSelection</li>
+<li><u>Default</u>: COMMA </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>no_header</code> Whether the CSV file has a header row.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>shape_manipulation_args</code> A list of arguments corresponding to each shape manipulation operation. The number of entries should match the number of operations in 'shape_manipulations'. Each entry is a tensor shape that encodes the arguments for the corresponding operation. For operations that do not require any argument, an empty shape, i.e. (), should be used.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: list of tensor shape </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>shape_manipulations</code> A list of shape manipulation operations to apply to the created tensor. Supported operations are: intmd_flatten, dynamic_expand, dynamic_reshape, dynamic_squeeze, intmd_expand, dynamic_transpose, dynamic_flatten, intmd_reshape, intmd_squeeze, INVALID, intmd_unsqueeze, dynamic_movedim, intmd_transpose, dynamic_unsqueeze, intmd_movedim</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: MultiEnumSelection</li>
+<li><u>Default</u>: (INVALID) </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>starting_row</code> Starting row of the CSV file (0-indexed). Rows before this row are ignored. This should be the header row if the CSV file has a header, otherwise it should be the first row of the data. By default the starting row is the 0th row.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1CSVPrimitiveTensor.html">link</a></p>
+<h2><a class="anchor" id="csvvec"></a>
+CSVVec</h2>
+<p>Construct a Vec from a CSV file. Each component of the Vec should be provided as a column in the CSV. By default the entire CSV is read in order of the columns. A subset/different order of columns can be selected using <code>column_indices</code> or <code>column_names</code>. Each row of the CSV corresponds to a batch. The default batch shape is the number of rows in the CSV. </p><details >
+<summary >
+<code>column_indices</code> Indices of CSV columns.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: list of non-negative number </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>column_names</code> Names of CSV columns.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: list of string </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>csv_file</code> Path to the CSV file</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: string </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>delimiter</code> Delimiter used to parse the CSV file. Options are SPACE, TAB, SEMICOLON, COMMA</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: EnumSelection</li>
+<li><u>Default</u>: COMMA </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>no_header</code> Whether the CSV file has a header row.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>shape_manipulation_args</code> A list of arguments corresponding to each shape manipulation operation. The number of entries should match the number of operations in 'shape_manipulations'. Each entry is a tensor shape that encodes the arguments for the corresponding operation. For operations that do not require any argument, an empty shape, i.e. (), should be used.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: list of tensor shape </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>shape_manipulations</code> A list of shape manipulation operations to apply to the created tensor. Supported operations are: intmd_flatten, dynamic_expand, dynamic_reshape, dynamic_squeeze, intmd_expand, dynamic_transpose, dynamic_flatten, intmd_reshape, intmd_squeeze, INVALID, intmd_unsqueeze, dynamic_movedim, intmd_transpose, dynamic_unsqueeze, intmd_movedim</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: MultiEnumSelection</li>
+<li><u>Default</u>: (INVALID) </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>starting_row</code> Starting row of the CSV file (0-indexed). Rows before this row are ignored. This should be the header row if the CSV file has a header, otherwise it should be the first row of the data. By default the starting row is the 0th row.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1CSVPrimitiveTensor.html">link</a></p>
 <h2><a class="anchor" id="fillr2"></a>
 FillR2</h2>
 <p>Construct a R2 with a vector of Scalars. The vector length must be 1, 3, 6, or 9. When vector length is 1, the Scalar value is used to fill the diagonals; when vector length is 3, the Scalar values are used to fill the respective diagonal entries; when vector length is 6, the Scalar values are used to fill the tensor following the Voigt notation; when vector length is 9, the Scalar values are used to fill the tensor in the row-major fashion. </p><details >
@@ -3912,6 +4134,85 @@ MillerIndexFromTorchScript</h2>
 </ul>
 </details>
 <p>Detailed documentation <a class="el" href="classneml2_1_1FromTorchScript.html">link</a></p>
+<h2><a class="anchor" id="multicolumncsvscalar"></a>
+MultiColumnCSVScalar</h2>
+<p>Construct a two-dimensional Scalar from a CSV file. A subset of columns can be selected using <code>column_indices</code> or <code>column_names</code>. By default, the CSV is interpreted as column-major, i.e., each column in the CSV corresponds to one row of the 2D Scalar. This behavior can be altered via the <code>indexing</code> option. </p><details >
+<summary >
+<code>column_indices</code> Indices of CSV columns.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: list of non-negative number </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>column_names</code> Names of CSV columns.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: list of string </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>csv_file</code> Path to the CSV file</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: string </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>delimiter</code> Delimiter used to parse the CSV file. Options are SPACE, TAB, SEMICOLON, COMMA</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: EnumSelection</li>
+<li><u>Default</u>: COMMA </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>indexing</code> Indexing interpretation. Options are ROW_MAJOR, COLUMN_MAJOR</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: EnumSelection</li>
+<li><u>Default</u>: COLUMN_MAJOR </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>no_header</code> Whether the CSV file has a header row.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: bool</li>
+<li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>shape_manipulation_args</code> A list of arguments corresponding to each shape manipulation operation. The number of entries should match the number of operations in 'shape_manipulations'. Each entry is a tensor shape that encodes the arguments for the corresponding operation. For operations that do not require any argument, an empty shape, i.e. (), should be used.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: list of tensor shape </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>shape_manipulations</code> A list of shape manipulation operations to apply to the created tensor. Supported operations are: intmd_flatten, dynamic_expand, dynamic_reshape, dynamic_squeeze, intmd_expand, dynamic_transpose, dynamic_flatten, intmd_reshape, intmd_squeeze, INVALID, intmd_unsqueeze, dynamic_movedim, intmd_transpose, dynamic_unsqueeze, intmd_movedim</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: MultiEnumSelection</li>
+<li><u>Default</u>: (INVALID) </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>starting_row</code> Starting row of the CSV file (0-indexed). Rows before this row are ignored. This should be the header row if the CSV file has a header, otherwise it should be the first row of the data. By default the starting row is the 0th row.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: number </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="classneml2_1_1MultiColumnCSVScalar.html">link</a></p>
 <h2><a class="anchor" id="orientation"></a>
 Orientation</h2>
 <p>An orientation, internally defined as a set of Modified Rodrigues parameters given by \( r = n \tan{\frac{\theta}{4}} \) with \( n \) the axis of rotation and \( \theta \) the rotation angle about that axis. However, this class provides a variety of ways to define the orientation in terms of other, more common representations. </p><details >

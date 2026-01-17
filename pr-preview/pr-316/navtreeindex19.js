@@ -1,5 +1,12 @@
 var NAVTREEINDEX19 =
 {
+"namespaceneml2_1_1utils.html#a303400b16bfce597a947a0291dcd2d72":[7,0,1,6,21],
+"namespaceneml2_1_1utils.html#a33c7959193cd1083ba776cf9cc93b44b":[7,0,1,6,42],
+"namespaceneml2_1_1utils.html#a35c385b3f50d165aeb08a1f01f475c55":[7,0,1,6,48],
+"namespaceneml2_1_1utils.html#a375115951b58d93643522771a5af8a0e":[7,0,1,6,6],
+"namespaceneml2_1_1utils.html#a3d31a46678d81ec6f336869129b60cd3":[7,0,1,6,41],
+"namespaceneml2_1_1utils.html#a3f60b75f9a53f6768fac26bd99bad391":[7,0,1,6,10],
+"namespaceneml2_1_1utils.html#a4cb07085c0f2894e87bba27ebd10a12d":[7,0,1,6,3],
 "namespaceneml2_1_1utils.html#a50310c733ebe7d4c0ebe62cd2976561f":[7,0,1,6,38],
 "namespaceneml2_1_1utils.html#a51c529a63cf73205675090131227f151":[7,0,1,6,1],
 "namespaceneml2_1_1utils.html#a5c256eebd73e58e200ea0523de5c2f31":[7,0,1,6,18],
@@ -242,12 +249,5 @@ var NAVTREEINDEX19 =
 "structneml2_1_1TraceWriter.html":[7,0,1,225],
 "structneml2_1_1TraceWriter.html":[7,1,0,220],
 "structneml2_1_1TraceWriter.html#a1afd661908bd7e690dda03fe20e5904a":[7,0,1,225,8],
-"structneml2_1_1TraceWriter.html#a1afd661908bd7e690dda03fe20e5904a":[7,1,0,220,8],
-"structneml2_1_1TraceWriter.html#a21ade6a174ee1de042c7645e6c2db93e":[7,0,1,225,7],
-"structneml2_1_1TraceWriter.html#a21ade6a174ee1de042c7645e6c2db93e":[7,1,0,220,7],
-"structneml2_1_1TraceWriter.html#a3d6166fccad6aa6530333cbbb4c1331b":[7,0,1,225,10],
-"structneml2_1_1TraceWriter.html#a3d6166fccad6aa6530333cbbb4c1331b":[7,1,0,220,10],
-"structneml2_1_1TraceWriter.html#a42a21beb8018ac623f4d09db1343b9cf":[7,0,1,225,9],
-"structneml2_1_1TraceWriter.html#a42a21beb8018ac623f4d09db1343b9cf":[7,1,0,220,9],
-"structneml2_1_1TraceWriter.html#a4659edae7ea41a9ba191fd1c0309faa0":[7,0,1,225,1]
+"structneml2_1_1TraceWriter.html#a1afd661908bd7e690dda03fe20e5904a":[7,1,0,220,8]
 };
