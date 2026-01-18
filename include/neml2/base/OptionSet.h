@@ -30,6 +30,7 @@
 
 #include "neml2/base/Option.h"
 #include "neml2/misc/errors.h"
+#include "neml2/misc/string_utils.h"
 
 namespace neml2
 {
@@ -286,7 +287,7 @@ OptionSet::get_map(const std::string & key_option, const std::string & value_opt
   {
     if (result.find(keys[i]) != result.end())
       throw NEMLException("Trying to build a map from '" + key_option + "' and '" + value_option +
-                          "' with duplicate key: " + keys[i]);
+                          "' with duplicate key: " + utils::stringify(keys[i]));
     result[keys[i]] = values[i];
   }
   return result;
