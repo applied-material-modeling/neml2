@@ -556,7 +556,11 @@ VariableStore::collect_output_derivatives(const std::vector<VariableName> & ynam
     {
       for (const auto & [deriv, arg] : dy)
         if (arg->name() == xnames[j] && deriv.defined())
+        {
           derivs[i][j] = deriv.tensor();
+          std::cout << deriv.name() << ": " << deriv.tensor().dynamic_sizes()
+                    << deriv.tensor().intmd_sizes() << deriv.tensor().base_sizes() << std::endl;
+        }
     }
   }
 

@@ -21,6 +21,10 @@ ncrystal = 5
     values = '1 1 1'
   []
 
+  # Initial conditions for the state variables
+  # Normally we would fill zeros if an initial state is not specified
+  # Here, however, we specify the initial elastic strain and slip hardening
+  # so that they have the correct shape with intermediate dimensions
   [initial_orientation]
     type = Rot
     values = "-0.269981 -0.299844 -0.86408
@@ -103,10 +107,16 @@ ncrystal = 5
   [newton]
     type = NewtonWithLineSearch
     max_linesearch_iterations = 5
-    linear_solver = 'lu'
+    linear_solver = 'schur'
   []
   [lu]
     type = DenseLU
+  []
+  [schur]
+    type = SchurComplement
+    schur_variables = 'state/mixed_state'
+    schur_linear_solver = 'lu'
+    primary_linear_solver = 'lu'
   []
 []
 
@@ -327,7 +337,7 @@ ncrystal = 5
   #
   # It is easy to see that the system has (6 + ncrystal * (6 + 3 + 1))
   # degrees of freedom. Naively, one may treat the entire system as a big,
-  # dense system. However, this would be extremely inefficient as the number
+  # dense system. However, that would scale extremely inefficiently as the number
   # of crystals increases. Both memory and complexity grows like O(ncrystal^3).
   #
   # Fortunately, we can exploit the structure of the system to solve it
@@ -338,9 +348,9 @@ ncrystal = 5
   #
   # For a system like this, we can use a Schur complement approach to
   # efficiently compute the Newton update. The complexity of this approach
-  # is O(ncrystal), as opposed to O(ncrystal^3) for a dense solve. That is a
-  # big win! Memory wise, since we are not storing the off-diagonal zeros,
-  # we also save a lot of memory.
+  # is O(ncrystal) when ncrystal >> ndof, as opposed to O(ncrystal^3) for a
+  # dense solve. That is a big win! Memory wise, since we are not storing the
+  # off-diagonal zeros, we also save a lot of memory.
   ############################################################################
   [implicit_model]
     type = ComposedModel
