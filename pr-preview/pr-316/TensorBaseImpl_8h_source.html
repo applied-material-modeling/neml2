@@ -1224,7 +1224,7 @@ $(function(){initNavTree('TensorBaseImpl_8h_source.html',''); initResizable(true
 <div class="line"><a id="l00874" name="l00874"></a><span class="lineno">  874</span> </div>
 <div class="line"><a id="l00875" name="l00875"></a><span class="lineno">  875</span>  start_dim = <a class="code hl_function" href="namespaceneml2_1_1utils.html#a78544f49fb23a6a69f9577f23363d3e4">utils::normalize_dim</a>(start_dim, 0, dynamic_dim());</div>
 <div class="line"><a id="l00876" name="l00876"></a><span class="lineno">  876</span>  end_dim = <a class="code hl_function" href="namespaceneml2_1_1utils.html#a78544f49fb23a6a69f9577f23363d3e4">utils::normalize_dim</a>(end_dim, 0, dynamic_dim());</div>
-<div class="line"><a id="l00877" name="l00877"></a><span class="lineno">  877</span>  <span class="keyword">auto</span> n = <a class="code hl_function" href="namespaceneml2_1_1utils.html#ae409b54785372c9e8e75ef44c4270a96">utils::traceable_numel</a>(dynamic_sizes().slice(start_dim, end_dim - start_dim));</div>
+<div class="line"><a id="l00877" name="l00877"></a><span class="lineno">  877</span>  <span class="keyword">auto</span> n = <a class="code hl_function" href="namespaceneml2_1_1utils.html#ae409b54785372c9e8e75ef44c4270a96">utils::traceable_numel</a>(dynamic_sizes().slice(start_dim, end_dim - start_dim + 1));</div>
 <div class="line"><a id="l00878" name="l00878"></a><span class="lineno">  878</span> </div>
 <div class="line"><a id="l00879" name="l00879"></a><span class="lineno">  879</span>  <span class="keywordflow">return</span> Derived(flatten(start_dim, end_dim), {n}, intmd_dim());</div>
 <div class="line"><a id="l00880" name="l00880"></a><span class="lineno">  880</span>}</div>

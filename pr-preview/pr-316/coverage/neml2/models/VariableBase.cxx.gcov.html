@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2026-01-18 05:02:38</td>
+            <td class="headerValue">2026-01-18 16:46:08</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryMed">73.5&nbsp;%</td>
@@ -106,17 +106,17 @@
 <span id="L44"><span class="lineNum">      44</span> <span class="tlaGNC">        1769 : }</span></span>
 <span id="L45"><span class="lineNum">      45</span>              : </span>
 <span id="L46"><span class="lineNum">      46</span>              : const Model &amp;</span>
-<span id="L47"><span class="lineNum">      47</span> <span class="tlaGNC">       44585 : VariableBase::owner() const</span></span>
+<span id="L47"><span class="lineNum">      47</span> <span class="tlaGNC">       44579 : VariableBase::owner() const</span></span>
 <span id="L48"><span class="lineNum">      48</span>              : {</span>
-<span id="L49"><span class="lineNum">      49</span> <span class="tlaGNC">       44585 :   neml_assert_dbg(_owner, &quot;Owner of variable '&quot;, name(), &quot;' has not been defined.&quot;);</span></span>
-<span id="L50"><span class="lineNum">      50</span> <span class="tlaGNC">       44585 :   return *_owner;</span></span>
+<span id="L49"><span class="lineNum">      49</span> <span class="tlaGNC">       44579 :   neml_assert_dbg(_owner, &quot;Owner of variable '&quot;, name(), &quot;' has not been defined.&quot;);</span></span>
+<span id="L50"><span class="lineNum">      50</span> <span class="tlaGNC">       44579 :   return *_owner;</span></span>
 <span id="L51"><span class="lineNum">      51</span>              : }</span>
 <span id="L52"><span class="lineNum">      52</span>              : </span>
 <span id="L53"><span class="lineNum">      53</span>              : Model &amp;</span>
-<span id="L54"><span class="lineNum">      54</span> <span class="tlaGNC">       26072 : VariableBase::owner()</span></span>
+<span id="L54"><span class="lineNum">      54</span> <span class="tlaGNC">       26068 : VariableBase::owner()</span></span>
 <span id="L55"><span class="lineNum">      55</span>              : {</span>
-<span id="L56"><span class="lineNum">      56</span> <span class="tlaGNC">       26072 :   neml_assert_dbg(_owner, &quot;Owner of variable '&quot;, name(), &quot;' has not been defined.&quot;);</span></span>
-<span id="L57"><span class="lineNum">      57</span> <span class="tlaGNC">       26072 :   return *_owner;</span></span>
+<span id="L56"><span class="lineNum">      56</span> <span class="tlaGNC">       26068 :   neml_assert_dbg(_owner, &quot;Owner of variable '&quot;, name(), &quot;' has not been defined.&quot;);</span></span>
+<span id="L57"><span class="lineNum">      57</span> <span class="tlaGNC">       26068 :   return *_owner;</span></span>
 <span id="L58"><span class="lineNum">      58</span>              : }</span>
 <span id="L59"><span class="lineNum">      59</span>              : </span>
 <span id="L60"><span class="lineNum">      60</span>              : bool</span>
@@ -180,27 +180,27 @@
 <span id="L118"><span class="lineNum">     118</span>              : }</span>
 <span id="L119"><span class="lineNum">     119</span>              : </span>
 <span id="L120"><span class="lineNum">     120</span>              : Size</span>
-<span id="L121"><span class="lineNum">     121</span> <span class="tlaGNC tlaBgGNC">        7280 : VariableBase::base_dim() const</span></span>
+<span id="L121"><span class="lineNum">     121</span> <span class="tlaGNC tlaBgGNC">        7277 : VariableBase::base_dim() const</span></span>
 <span id="L122"><span class="lineNum">     122</span>              : {</span>
-<span id="L123"><span class="lineNum">     123</span> <span class="tlaGNC">        7280 :   return Size(base_sizes().size());</span></span>
+<span id="L123"><span class="lineNum">     123</span> <span class="tlaGNC">        7277 :   return Size(base_sizes().size());</span></span>
 <span id="L124"><span class="lineNum">     124</span>              : }</span>
 <span id="L125"><span class="lineNum">     125</span>              : </span>
 <span id="L126"><span class="lineNum">     126</span>              : Size</span>
-<span id="L127"><span class="lineNum">     127</span> <span class="tlaGNC">       26632 : VariableBase::dynamic_dim() const</span></span>
+<span id="L127"><span class="lineNum">     127</span> <span class="tlaGNC">       26629 : VariableBase::dynamic_dim() const</span></span>
 <span id="L128"><span class="lineNum">     128</span>              : {</span>
-<span id="L129"><span class="lineNum">     129</span> <span class="tlaGNC">       26632 :   return Size(dynamic_sizes().size());</span></span>
+<span id="L129"><span class="lineNum">     129</span> <span class="tlaGNC">       26629 :   return Size(dynamic_sizes().size());</span></span>
 <span id="L130"><span class="lineNum">     130</span>              : }</span>
 <span id="L131"><span class="lineNum">     131</span>              : </span>
 <span id="L132"><span class="lineNum">     132</span>              : Size</span>
-<span id="L133"><span class="lineNum">     133</span> <span class="tlaGNC">        7280 : VariableBase::static_dim() const</span></span>
+<span id="L133"><span class="lineNum">     133</span> <span class="tlaGNC">        7277 : VariableBase::static_dim() const</span></span>
 <span id="L134"><span class="lineNum">     134</span>              : {</span>
-<span id="L135"><span class="lineNum">     135</span> <span class="tlaGNC">        7280 :   return intmd_dim() + base_dim();</span></span>
+<span id="L135"><span class="lineNum">     135</span> <span class="tlaGNC">        7277 :   return intmd_dim() + base_dim();</span></span>
 <span id="L136"><span class="lineNum">     136</span>              : }</span>
 <span id="L137"><span class="lineNum">     137</span>              : </span>
 <span id="L138"><span class="lineNum">     138</span>              : Size</span>
-<span id="L139"><span class="lineNum">     139</span> <span class="tlaGNC">       14562 : VariableBase::intmd_dim() const</span></span>
+<span id="L139"><span class="lineNum">     139</span> <span class="tlaGNC">       14556 : VariableBase::intmd_dim() const</span></span>
 <span id="L140"><span class="lineNum">     140</span>              : {</span>
-<span id="L141"><span class="lineNum">     141</span> <span class="tlaGNC">       14562 :   return Size(intmd_sizes().size());</span></span>
+<span id="L141"><span class="lineNum">     141</span> <span class="tlaGNC">       14556 :   return Size(intmd_sizes().size());</span></span>
 <span id="L142"><span class="lineNum">     142</span>              : }</span>
 <span id="L143"><span class="lineNum">     143</span>              : </span>
 <span id="L144"><span class="lineNum">     144</span>              : TensorShapeRef</span>
@@ -216,9 +216,9 @@
 <span id="L154"><span class="lineNum">     154</span>              : }</span>
 <span id="L155"><span class="lineNum">     155</span>              : </span>
 <span id="L156"><span class="lineNum">     156</span>              : TensorShapeRef</span>
-<span id="L157"><span class="lineNum">     157</span> <span class="tlaGNC tlaBgGNC">       59431 : VariableBase::base_sizes() const</span></span>
+<span id="L157"><span class="lineNum">     157</span> <span class="tlaGNC tlaBgGNC">       59406 : VariableBase::base_sizes() const</span></span>
 <span id="L158"><span class="lineNum">     158</span>              : {</span>
-<span id="L159"><span class="lineNum">     159</span> <span class="tlaGNC">       59431 :   return _base_sizes;</span></span>
+<span id="L159"><span class="lineNum">     159</span> <span class="tlaGNC">       59406 :   return _base_sizes;</span></span>
 <span id="L160"><span class="lineNum">     160</span>              : }</span>
 <span id="L161"><span class="lineNum">     161</span>              : </span>
 <span id="L162"><span class="lineNum">     162</span>              : TensorShapeRef</span>
@@ -228,9 +228,9 @@
 <span id="L166"><span class="lineNum">     166</span>              : }</span>
 <span id="L167"><span class="lineNum">     167</span>              : </span>
 <span id="L168"><span class="lineNum">     168</span>              : TensorShapeRef</span>
-<span id="L169"><span class="lineNum">     169</span> <span class="tlaGNC tlaBgGNC">       46632 : VariableBase::intmd_sizes() const</span></span>
+<span id="L169"><span class="lineNum">     169</span> <span class="tlaGNC tlaBgGNC">       46623 : VariableBase::intmd_sizes() const</span></span>
 <span id="L170"><span class="lineNum">     170</span>              : {</span>
-<span id="L171"><span class="lineNum">     171</span> <span class="tlaGNC">       46632 :   return ref()-&gt;_cached_intmd_sizes;</span></span>
+<span id="L171"><span class="lineNum">     171</span> <span class="tlaGNC">       46623 :   return ref()-&gt;_cached_intmd_sizes;</span></span>
 <span id="L172"><span class="lineNum">     172</span>              : }</span>
 <span id="L173"><span class="lineNum">     173</span>              : </span>
 <span id="L174"><span class="lineNum">     174</span>              : Size</span>
@@ -453,20 +453,20 @@
 <span id="L391"><span class="lineNum">     391</span> <span class="tlaGNC">           3 : }</span></span>
 <span id="L392"><span class="lineNum">     392</span>              : </span>
 <span id="L393"><span class="lineNum">     393</span>              : void</span>
-<span id="L394"><span class="lineNum">     394</span> <span class="tlaGNC">        7682 : VariableBase::clear()</span></span>
+<span id="L394"><span class="lineNum">     394</span> <span class="tlaGNC">        7681 : VariableBase::clear()</span></span>
 <span id="L395"><span class="lineNum">     395</span>              : {</span>
-<span id="L396"><span class="lineNum">     396</span> <span class="tlaGNC">        7682 :   neml_assert_dbg(owning(), &quot;Cannot clear a referencing variable '&quot;, name(), &quot;'.&quot;);</span></span>
-<span id="L397"><span class="lineNum">     397</span> <span class="tlaGNC">        7682 :   clear_derivatives();</span></span>
-<span id="L398"><span class="lineNum">     398</span> <span class="tlaGNC">        7682 : }</span></span>
+<span id="L396"><span class="lineNum">     396</span> <span class="tlaGNC">        7681 :   neml_assert_dbg(owning(), &quot;Cannot clear a referencing variable '&quot;, name(), &quot;'.&quot;);</span></span>
+<span id="L397"><span class="lineNum">     397</span> <span class="tlaGNC">        7681 :   clear_derivatives();</span></span>
+<span id="L398"><span class="lineNum">     398</span> <span class="tlaGNC">        7681 : }</span></span>
 <span id="L399"><span class="lineNum">     399</span>              : </span>
 <span id="L400"><span class="lineNum">     400</span>              : void</span>
-<span id="L401"><span class="lineNum">     401</span> <span class="tlaGNC">       10919 : VariableBase::clear_derivatives()</span></span>
+<span id="L401"><span class="lineNum">     401</span> <span class="tlaGNC">       10918 : VariableBase::clear_derivatives()</span></span>
 <span id="L402"><span class="lineNum">     402</span>              : {</span>
-<span id="L403"><span class="lineNum">     403</span> <span class="tlaGNC">       29570 :   for (auto &amp; [deriv, arg] : _derivs)</span></span>
+<span id="L403"><span class="lineNum">     403</span> <span class="tlaGNC">       29569 :   for (auto &amp; [deriv, arg] : _derivs)</span></span>
 <span id="L404"><span class="lineNum">     404</span> <span class="tlaGNC">       18651 :     deriv.clear();</span></span>
-<span id="L405"><span class="lineNum">     405</span> <span class="tlaGNC">       21314 :   for (auto &amp; [deriv, arg1, arg2] : _sec_derivs)</span></span>
+<span id="L405"><span class="lineNum">     405</span> <span class="tlaGNC">       21313 :   for (auto &amp; [deriv, arg1, arg2] : _sec_derivs)</span></span>
 <span id="L406"><span class="lineNum">     406</span> <span class="tlaGNC">       10395 :     deriv.clear();</span></span>
-<span id="L407"><span class="lineNum">     407</span> <span class="tlaGNC">       10919 : }</span></span>
+<span id="L407"><span class="lineNum">     407</span> <span class="tlaGNC">       10918 : }</span></span>
 <span id="L408"><span class="lineNum">     408</span>              : </span>
 <span id="L409"><span class="lineNum">     409</span>              : bool</span>
 <span id="L410"><span class="lineNum">     410</span> <span class="tlaGNC">        2135 : VariableBase::is_leaf(const DependencyResolver&lt;Model, VariableName&gt; &amp; deps) const</span></span>

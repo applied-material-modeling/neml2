@@ -1,7 +1,5 @@
 var NAVTREEINDEX7 =
 {
-"classneml2_1_1NEML2Object.html#adb931c218966158e867d8af1438d6bc0":[7,1,0,128,12],
-"classneml2_1_1NEMLException.html":[7,0,1,135],
 "classneml2_1_1NEMLException.html":[7,1,0,130],
 "classneml2_1_1NEMLException.html#a292042b22e88998066022029d87e51d1":[7,0,1,135,0],
 "classneml2_1_1NEMLException.html#a292042b22e88998066022029d87e51d1":[7,1,0,130,0],
@@ -249,5 +247,7 @@ var NAVTREEINDEX7 =
 "classneml2_1_1OptionSet.html#a4acb75b8abcd83a41915c116edbd003c":[7,1,0,140,38],
 "classneml2_1_1OptionSet.html#a4efab3e8fee40211c6e9034cc23b64eb":[7,0,1,145,30],
 "classneml2_1_1OptionSet.html#a4efab3e8fee40211c6e9034cc23b64eb":[7,1,0,140,30],
-"classneml2_1_1OptionSet.html#a693ecff21e01db0f9239e23d346a596a":[7,0,1,145,33]
+"classneml2_1_1OptionSet.html#a693ecff21e01db0f9239e23d346a596a":[7,0,1,145,33],
+"classneml2_1_1OptionSet.html#a693ecff21e01db0f9239e23d346a596a":[7,1,0,140,33],
+"classneml2_1_1OptionSet.html#a696e405735f7148b5177eefa9c82d66d":[7,0,1,145,24]
 };

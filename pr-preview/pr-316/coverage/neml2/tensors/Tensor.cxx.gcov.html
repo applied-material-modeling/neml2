@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2026-01-18 05:02:38</td>
+            <td class="headerValue">2026-01-18 16:46:08</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -133,10 +133,10 @@
 <span id="L71"><span class="lineNum">      71</span>              : {</span>
 <span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC">       74902 : }</span></span>
 <span id="L73"><span class="lineNum">      73</span>              : </span>
-<span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">    11671892 : Tensor::Tensor(const ATensor &amp; tensor, const TraceableTensorShape &amp; dynamic_shape, Size intmd_dim)</span></span>
-<span id="L75"><span class="lineNum">      75</span> <span class="tlaGNC">    11671892 :   : TensorBase(tensor, dynamic_shape, intmd_dim)</span></span>
+<span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">    11676037 : Tensor::Tensor(const ATensor &amp; tensor, const TraceableTensorShape &amp; dynamic_shape, Size intmd_dim)</span></span>
+<span id="L75"><span class="lineNum">      75</span> <span class="tlaGNC">    11676037 :   : TensorBase(tensor, dynamic_shape, intmd_dim)</span></span>
 <span id="L76"><span class="lineNum">      76</span>              : {</span>
-<span id="L77"><span class="lineNum">      77</span> <span class="tlaGNC">    11671891 : }</span></span>
+<span id="L77"><span class="lineNum">      77</span> <span class="tlaGNC">    11676037 : }</span></span>
 <span id="L78"><span class="lineNum">      78</span>              : </span>
 <span id="L79"><span class="lineNum">      79</span>              : Tensor</span>
 <span id="L80"><span class="lineNum">      80</span> <span class="tlaGNC">         375 : Tensor::create(const TensorDataContainer &amp; data, const TensorOptions &amp; options)</span></span>
@@ -183,27 +183,27 @@
 <span id="L121"><span class="lineNum">     121</span>              : }</span>
 <span id="L122"><span class="lineNum">     122</span>              : </span>
 <span id="L123"><span class="lineNum">     123</span>              : Tensor</span>
-<span id="L124"><span class="lineNum">     124</span> <span class="tlaGNC">        1594 : Tensor::zeros(TensorShapeRef base_shape, const TensorOptions &amp; options)</span></span>
+<span id="L124"><span class="lineNum">     124</span> <span class="tlaGNC">        1601 : Tensor::zeros(TensorShapeRef base_shape, const TensorOptions &amp; options)</span></span>
 <span id="L125"><span class="lineNum">     125</span>              : {</span>
-<span id="L126"><span class="lineNum">     126</span> <span class="tlaGNC">        1594 :   return Tensor(at::zeros(base_shape, options), 0);</span></span>
+<span id="L126"><span class="lineNum">     126</span> <span class="tlaGNC">        1601 :   return Tensor(at::zeros(base_shape, options), 0);</span></span>
 <span id="L127"><span class="lineNum">     127</span>              : }</span>
 <span id="L128"><span class="lineNum">     128</span>              : </span>
 <span id="L129"><span class="lineNum">     129</span>              : Tensor</span>
-<span id="L130"><span class="lineNum">     130</span> <span class="tlaGNC">         703 : Tensor::zeros(const TraceableTensorShape &amp; dynamic_shape,</span></span>
+<span id="L130"><span class="lineNum">     130</span> <span class="tlaGNC">         695 : Tensor::zeros(const TraceableTensorShape &amp; dynamic_shape,</span></span>
 <span id="L131"><span class="lineNum">     131</span>              :               TensorShapeRef intmd_shape,</span>
 <span id="L132"><span class="lineNum">     132</span>              :               TensorShapeRef base_shape,</span>
 <span id="L133"><span class="lineNum">     133</span>              :               const TensorOptions &amp; options)</span>
 <span id="L134"><span class="lineNum">     134</span>              : {</span>
 <span id="L135"><span class="lineNum">     135</span>              :   // Record dynamic shape</span>
-<span id="L136"><span class="lineNum">     136</span> <span class="tlaGNC">         993 :   for (Size i = 0; i &lt; (Size)dynamic_shape.size(); ++i)</span></span>
+<span id="L136"><span class="lineNum">     136</span> <span class="tlaGNC">         985 :   for (Size i = 0; i &lt; (Size)dynamic_shape.size(); ++i)</span></span>
 <span id="L137"><span class="lineNum">     137</span> <span class="tlaGNC">         290 :     if (const auto * const si = dynamic_shape[i].traceable())</span></span>
 <span id="L138"><span class="lineNum">     138</span> <span class="tlaGNC">         828 :       jit::tracer::ArgumentStash::stashIntArrayRefElem(</span></span>
 <span id="L139"><span class="lineNum">     139</span> <span class="tlaGNC">         276 :           &quot;size&quot;, dynamic_shape.size() + intmd_shape.size() + base_shape.size(), i, *si);</span></span>
 <span id="L140"><span class="lineNum">     140</span>              : </span>
 <span id="L141"><span class="lineNum">     141</span>              :   return Tensor(</span>
-<span id="L142"><span class="lineNum">     142</span> <span class="tlaGNC">        1406 :       at::zeros(utils::add_shapes(dynamic_shape.concrete(), intmd_shape, base_shape), options),</span></span>
+<span id="L142"><span class="lineNum">     142</span> <span class="tlaGNC">        1390 :       at::zeros(utils::add_shapes(dynamic_shape.concrete(), intmd_shape, base_shape), options),</span></span>
 <span id="L143"><span class="lineNum">     143</span>              :       dynamic_shape,</span>
-<span id="L144"><span class="lineNum">     144</span> <span class="tlaGNC">        2109 :       Size(intmd_shape.size()));</span></span>
+<span id="L144"><span class="lineNum">     144</span> <span class="tlaGNC">        2085 :       Size(intmd_shape.size()));</span></span>
 <span id="L145"><span class="lineNum">     145</span>              : }</span>
 <span id="L146"><span class="lineNum">     146</span>              : </span>
 <span id="L147"><span class="lineNum">     147</span>              : Tensor</span>
@@ -231,9 +231,9 @@
 <span id="L169"><span class="lineNum">     169</span>              : }</span>
 <span id="L170"><span class="lineNum">     170</span>              : </span>
 <span id="L171"><span class="lineNum">     171</span>              : Tensor</span>
-<span id="L172"><span class="lineNum">     172</span> <span class="tlaGNC">        1981 : Tensor::full(TensorShapeRef base_shape, const CScalar &amp; init, const TensorOptions &amp; options)</span></span>
+<span id="L172"><span class="lineNum">     172</span> <span class="tlaGNC">        1980 : Tensor::full(TensorShapeRef base_shape, const CScalar &amp; init, const TensorOptions &amp; options)</span></span>
 <span id="L173"><span class="lineNum">     173</span>              : {</span>
-<span id="L174"><span class="lineNum">     174</span> <span class="tlaGNC">        1981 :   return Tensor(at::full(base_shape, init, options), 0, 0);</span></span>
+<span id="L174"><span class="lineNum">     174</span> <span class="tlaGNC">        1980 :   return Tensor(at::full(base_shape, init, options), 0, 0);</span></span>
 <span id="L175"><span class="lineNum">     175</span>              : }</span>
 <span id="L176"><span class="lineNum">     176</span>              : </span>
 <span id="L177"><span class="lineNum">     177</span>              : Tensor</span>

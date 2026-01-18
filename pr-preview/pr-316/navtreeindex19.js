@@ -1,5 +1,6 @@
 var NAVTREEINDEX19 =
 {
+"namespaceneml2_1_1utils.html#a75fc4c76618147c3ffff7a841f451d1c":[7,0,1,6,26],
 "namespaceneml2_1_1utils.html#a78544f49fb23a6a69f9577f23363d3e4":[7,0,1,6,24],
 "namespaceneml2_1_1utils.html#a7e54131de3510519acc3600def49682c":[7,0,1,6,5],
 "namespaceneml2_1_1utils.html#a830777301a31a3d6a9e60237c7f34578":[7,0,1,6,35],
@@ -248,6 +249,5 @@ var NAVTREEINDEX19 =
 "structneml2_1_1TraceWriter.html#a9bf7cc162f402b3df5727c2d76614dd2":[7,0,1,225,6],
 "structneml2_1_1TraceWriter.html#a9bf7cc162f402b3df5727c2d76614dd2":[7,1,0,220,6],
 "structneml2_1_1TraceWriter.html#a9e4016fcce8a527ddc0898c56a5f35e1":[7,0,1,225,3],
-"structneml2_1_1TraceWriter.html#a9e4016fcce8a527ddc0898c56a5f35e1":[7,1,0,220,3],
-"structneml2_1_1TraceWriter.html#ac53823922b46ab533bcdad55c4827819":[7,0,1,225,4]
+"structneml2_1_1TraceWriter.html#a9e4016fcce8a527ddc0898c56a5f35e1":[7,1,0,220,3]
 };

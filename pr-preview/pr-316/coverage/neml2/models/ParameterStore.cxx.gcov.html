@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2026-01-18 05:02:38</td>
+            <td class="headerValue">2026-01-18 16:46:08</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryLo">23.4&nbsp;%</td>
@@ -109,12 +109,12 @@
 <span id="L47"><span class="lineNum">      47</span> <span class="tlaGNC">          91 : }</span></span>
 <span id="L48"><span class="lineNum">      48</span>              : </span>
 <span id="L49"><span class="lineNum">      49</span>              : void</span>
-<span id="L50"><span class="lineNum">      50</span> <span class="tlaGNC">         804 : ParameterStore::set_parameter(const std::string &amp; name, const Tensor &amp; value)</span></span>
+<span id="L50"><span class="lineNum">      50</span> <span class="tlaGNC">         800 : ParameterStore::set_parameter(const std::string &amp; name, const Tensor &amp; value)</span></span>
 <span id="L51"><span class="lineNum">      51</span>              : {</span>
-<span id="L52"><span class="lineNum">      52</span> <span class="tlaGNC">         804 :   neml_assert(_object-&gt;host() == _object, &quot;This method should only be called on the host model.&quot;);</span></span>
-<span id="L53"><span class="lineNum">      53</span> <span class="tlaGNC">         804 :   neml_assert(named_parameters().count(name), &quot;There is no parameter named &quot;, name);</span></span>
-<span id="L54"><span class="lineNum">      54</span> <span class="tlaGNC">         804 :   *named_parameters()[name] = value;</span></span>
-<span id="L55"><span class="lineNum">      55</span> <span class="tlaGNC">         804 : }</span></span>
+<span id="L52"><span class="lineNum">      52</span> <span class="tlaGNC">         800 :   neml_assert(_object-&gt;host() == _object, &quot;This method should only be called on the host model.&quot;);</span></span>
+<span id="L53"><span class="lineNum">      53</span> <span class="tlaGNC">         800 :   neml_assert(named_parameters().count(name), &quot;There is no parameter named &quot;, name);</span></span>
+<span id="L54"><span class="lineNum">      54</span> <span class="tlaGNC">         800 :   *named_parameters()[name] = value;</span></span>
+<span id="L55"><span class="lineNum">      55</span> <span class="tlaGNC">         800 : }</span></span>
 <span id="L56"><span class="lineNum">      56</span>              : </span>
 <span id="L57"><span class="lineNum">      57</span>              : TensorValueBase &amp;</span>
 <span id="L58"><span class="lineNum">      58</span> <span class="tlaGNC">           7 : ParameterStore::get_parameter(const std::string &amp; name)</span></span>
@@ -132,11 +132,11 @@
 <span id="L70"><span class="lineNum">      70</span> <span class="tlaUNC">           0 : }</span></span>
 <span id="L71"><span class="lineNum">      71</span>              : </span>
 <span id="L72"><span class="lineNum">      72</span>              : std::map&lt;std::string, std::unique_ptr&lt;TensorValueBase&gt;&gt; &amp;</span>
-<span id="L73"><span class="lineNum">      73</span> <span class="tlaGNC tlaBgGNC">      613862 : ParameterStore::named_parameters()</span></span>
+<span id="L73"><span class="lineNum">      73</span> <span class="tlaGNC tlaBgGNC">      614011 : ParameterStore::named_parameters()</span></span>
 <span id="L74"><span class="lineNum">      74</span>              : {</span>
-<span id="L75"><span class="lineNum">      75</span> <span class="tlaGNC">      613862 :   neml_assert(_object-&gt;host() == _object,</span></span>
+<span id="L75"><span class="lineNum">      75</span> <span class="tlaGNC">      614011 :   neml_assert(_object-&gt;host() == _object,</span></span>
 <span id="L76"><span class="lineNum">      76</span>              :               &quot;named_parameters() should only be called on the host model.&quot;);</span>
-<span id="L77"><span class="lineNum">      77</span> <span class="tlaGNC">      613862 :   return _param_values;</span></span>
+<span id="L77"><span class="lineNum">      77</span> <span class="tlaGNC">      614011 :   return _param_values;</span></span>
 <span id="L78"><span class="lineNum">      78</span>              : }</span>
 <span id="L79"><span class="lineNum">      79</span>              : </span>
 <span id="L80"><span class="lineNum">      80</span>              : template &lt;typename T, typename&gt;</span>
@@ -423,14 +423,14 @@
 <span id="L361"><span class="lineNum">     361</span> <span class="tlaGNC">         477 : }</span></span>
 <span id="L362"><span class="lineNum">     362</span>              : </span>
 <span id="L363"><span class="lineNum">     363</span>              : jit::Stack</span>
-<span id="L364"><span class="lineNum">     364</span> <span class="tlaGNC">        5774 : ParameterStore::collect_parameter_stack() const</span></span>
+<span id="L364"><span class="lineNum">     364</span> <span class="tlaGNC">        5771 : ParameterStore::collect_parameter_stack() const</span></span>
 <span id="L365"><span class="lineNum">     365</span>              : {</span>
-<span id="L366"><span class="lineNum">     366</span> <span class="tlaGNC">        5774 :   const auto &amp; params = _object-&gt;host&lt;ParameterStore&gt;()-&gt;named_parameters();</span></span>
-<span id="L367"><span class="lineNum">     367</span> <span class="tlaGNC">        5774 :   jit::Stack stack;</span></span>
-<span id="L368"><span class="lineNum">     368</span> <span class="tlaGNC">        5774 :   stack.reserve(params.size());</span></span>
-<span id="L369"><span class="lineNum">     369</span> <span class="tlaGNC">       19068 :   for (auto &amp;&amp; [name, param] : params)</span></span>
-<span id="L370"><span class="lineNum">     370</span> <span class="tlaGNC">       13294 :     stack.emplace_back(Tensor(*param));</span></span>
-<span id="L371"><span class="lineNum">     371</span> <span class="tlaGNC">        5774 :   return stack;</span></span>
+<span id="L366"><span class="lineNum">     366</span> <span class="tlaGNC">        5771 :   const auto &amp; params = _object-&gt;host&lt;ParameterStore&gt;()-&gt;named_parameters();</span></span>
+<span id="L367"><span class="lineNum">     367</span> <span class="tlaGNC">        5771 :   jit::Stack stack;</span></span>
+<span id="L368"><span class="lineNum">     368</span> <span class="tlaGNC">        5771 :   stack.reserve(params.size());</span></span>
+<span id="L369"><span class="lineNum">     369</span> <span class="tlaGNC">       19062 :   for (auto &amp;&amp; [name, param] : params)</span></span>
+<span id="L370"><span class="lineNum">     370</span> <span class="tlaGNC">       13291 :     stack.emplace_back(Tensor(*param));</span></span>
+<span id="L371"><span class="lineNum">     371</span> <span class="tlaGNC">        5771 :   return stack;</span></span>
 <span id="L372"><span class="lineNum">     372</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
 <span id="L373"><span class="lineNum">     373</span>              : } // namespace neml2</span>
         </pre>

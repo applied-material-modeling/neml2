@@ -7,6 +7,5 @@ var classneml2_1_1ModelDriver =
     [ "setup", "classneml2_1_1ModelDriver.html#ac0b73dc40ca33ff933c1f351578a00d0", null ],
     [ "_device", "classneml2_1_1ModelDriver.html#ac46afcd724c8a99b866a5d45ad22a780", null ],
     [ "_model", "classneml2_1_1ModelDriver.html#a8672ad5a0854ab51ae8843b52cf8b8c0", null ],
-    [ "_postprocessor", "classneml2_1_1ModelDriver.html#a82bf5a153430a22204b4ffb4620eb656", null ],
-    [ "_show_model_info", "classneml2_1_1ModelDriver.html#ad30ff35f96e78d1e7321d713a68ef86c", null ]
+    [ "_postprocessor", "classneml2_1_1ModelDriver.html#a82bf5a153430a22204b4ffb4620eb656", null ]
 ];

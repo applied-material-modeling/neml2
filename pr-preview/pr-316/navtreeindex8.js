@@ -1,7 +1,5 @@
 var NAVTREEINDEX8 =
 {
-"classneml2_1_1OptionSet.html#a693ecff21e01db0f9239e23d346a596a":[7,1,0,140,33],
-"classneml2_1_1OptionSet.html#a696e405735f7148b5177eefa9c82d66d":[7,0,1,145,24],
 "classneml2_1_1OptionSet.html#a696e405735f7148b5177eefa9c82d66d":[7,1,0,140,24],
 "classneml2_1_1OptionSet.html#a6fa3c684ca51dd6ef087c7cc60d4703f":[7,0,1,145,5],
 "classneml2_1_1OptionSet.html#a6fa3c684ca51dd6ef087c7cc60d4703f":[7,1,0,140,5],
@@ -249,5 +247,7 @@ var NAVTREEINDEX8 =
 "classneml2_1_1PowerLawIsotropicHardeningStaticRecovery.html#a6644dbfab08bce2264651b42570533b8":[7,1,0,155,2],
 "classneml2_1_1PowerLawIsotropicHardeningStaticRecovery.html#af5600a36813e455aefee72bec1d574fb":[7,0,1,160,1],
 "classneml2_1_1PowerLawIsotropicHardeningStaticRecovery.html#af5600a36813e455aefee72bec1d574fb":[7,1,0,155,1],
-"classneml2_1_1PowerLawKinematicHardeningStaticRecovery.html":[7,0,1,161]
+"classneml2_1_1PowerLawKinematicHardeningStaticRecovery.html":[7,0,1,161],
+"classneml2_1_1PowerLawKinematicHardeningStaticRecovery.html":[7,1,0,156],
+"classneml2_1_1PowerLawKinematicHardeningStaticRecovery.html#a36523d4e84a1270d56d184bbdebe099a":[7,0,1,161,3]
 };

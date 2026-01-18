@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2026-01-18 05:02:38</td>
+            <td class="headerValue">2026-01-18 16:46:08</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">75.0&nbsp;%</td>
@@ -92,18 +92,18 @@
 <span id="L30"><span class="lineNum">      30</span>              : namespace neml2::utils</span>
 <span id="L31"><span class="lineNum">      31</span>              : {</span>
 <span id="L32"><span class="lineNum">      32</span>              : Size</span>
-<span id="L33"><span class="lineNum">      33</span> <span class="tlaGNC tlaBgGNC">       97967 : normalize_dim(Size d, Size dl, Size du)</span></span>
+<span id="L33"><span class="lineNum">      33</span> <span class="tlaGNC tlaBgGNC">       97960 : normalize_dim(Size d, Size dl, Size du)</span></span>
 <span id="L34"><span class="lineNum">      34</span>              : {</span>
-<span id="L35"><span class="lineNum">      35</span> <span class="tlaGNC">       97967 :   auto delta = du - dl;</span></span>
-<span id="L36"><span class="lineNum">      36</span> <span class="tlaGNC">       97967 :   neml_assert_dbg(d &gt;= -delta &amp;&amp; d &lt; delta,</span></span>
+<span id="L35"><span class="lineNum">      35</span> <span class="tlaGNC">       97960 :   auto delta = du - dl;</span></span>
+<span id="L36"><span class="lineNum">      36</span> <span class="tlaGNC">       97960 :   neml_assert_dbg(d &gt;= -delta &amp;&amp; d &lt; delta,</span></span>
 <span id="L37"><span class="lineNum">      37</span>              :                   &quot;The dimension &quot;,</span>
 <span id="L38"><span class="lineNum">      38</span>              :                   d,</span>
 <span id="L39"><span class="lineNum">      39</span>              :                   &quot; is out of range [&quot;,</span>
-<span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC">       97969 :                   -delta,</span></span>
+<span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC">       97962 :                   -delta,</span></span>
 <span id="L41"><span class="lineNum">      41</span>              :                   &quot;, &quot;,</span>
 <span id="L42"><span class="lineNum">      42</span>              :                   delta,</span>
 <span id="L43"><span class="lineNum">      43</span>              :                   &quot;).&quot;);</span>
-<span id="L44"><span class="lineNum">      44</span> <span class="tlaGNC">      195930 :   return d &gt;= 0 ? dl + d : du + d;</span></span>
+<span id="L44"><span class="lineNum">      44</span> <span class="tlaGNC">      195916 :   return d &gt;= 0 ? dl + d : du + d;</span></span>
 <span id="L45"><span class="lineNum">      45</span>              : }</span>
 <span id="L46"><span class="lineNum">      46</span>              : </span>
 <span id="L47"><span class="lineNum">      47</span>              : TensorShape</span>
@@ -119,18 +119,18 @@
 <span id="L57"><span class="lineNum">      57</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
 <span id="L58"><span class="lineNum">      58</span>              : </span>
 <span id="L59"><span class="lineNum">      59</span>              : Size</span>
-<span id="L60"><span class="lineNum">      60</span> <span class="tlaGNC tlaBgGNC">      138846 : normalize_itr(Size d, Size dl, Size du)</span></span>
+<span id="L60"><span class="lineNum">      60</span> <span class="tlaGNC tlaBgGNC">      138840 : normalize_itr(Size d, Size dl, Size du)</span></span>
 <span id="L61"><span class="lineNum">      61</span>              : {</span>
-<span id="L62"><span class="lineNum">      62</span> <span class="tlaGNC">      138846 :   auto delta = du - dl;</span></span>
-<span id="L63"><span class="lineNum">      63</span> <span class="tlaGNC">      138846 :   neml_assert_dbg(d &gt;= -delta - 1 &amp;&amp; d &lt;= delta,</span></span>
+<span id="L62"><span class="lineNum">      62</span> <span class="tlaGNC">      138840 :   auto delta = du - dl;</span></span>
+<span id="L63"><span class="lineNum">      63</span> <span class="tlaGNC">      138840 :   neml_assert_dbg(d &gt;= -delta - 1 &amp;&amp; d &lt;= delta,</span></span>
 <span id="L64"><span class="lineNum">      64</span>              :                   &quot;The dimension &quot;,</span>
 <span id="L65"><span class="lineNum">      65</span>              :                   d,</span>
 <span id="L66"><span class="lineNum">      66</span>              :                   &quot; is out of range [&quot;,</span>
-<span id="L67"><span class="lineNum">      67</span> <span class="tlaGNC">      138848 :                   -delta - 1,</span></span>
+<span id="L67"><span class="lineNum">      67</span> <span class="tlaGNC">      138842 :                   -delta - 1,</span></span>
 <span id="L68"><span class="lineNum">      68</span>              :                   &quot;, &quot;,</span>
 <span id="L69"><span class="lineNum">      69</span>              :                   delta,</span>
 <span id="L70"><span class="lineNum">      70</span>              :                   &quot;].&quot;);</span>
-<span id="L71"><span class="lineNum">      71</span> <span class="tlaGNC">      277688 :   return d &gt;= 0 ? dl + d : du + d + 1;</span></span>
+<span id="L71"><span class="lineNum">      71</span> <span class="tlaGNC">      277676 :   return d &gt;= 0 ? dl + d : du + d + 1;</span></span>
 <span id="L72"><span class="lineNum">      72</span>              : }</span>
 <span id="L73"><span class="lineNum">      73</span>              : </span>
 <span id="L74"><span class="lineNum">      74</span>              : TensorShape</span>
@@ -146,19 +146,19 @@
 <span id="L84"><span class="lineNum">      84</span> <span class="tlaUNC">           0 : }</span></span>
 <span id="L85"><span class="lineNum">      85</span>              : </span>
 <span id="L86"><span class="lineNum">      86</span>              : Size</span>
-<span id="L87"><span class="lineNum">      87</span> <span class="tlaGNC tlaBgGNC">       11910 : numel(TensorShapeRef shape)</span></span>
+<span id="L87"><span class="lineNum">      87</span> <span class="tlaGNC tlaBgGNC">        9177 : numel(TensorShapeRef shape)</span></span>
 <span id="L88"><span class="lineNum">      88</span>              : {</span>
-<span id="L89"><span class="lineNum">      89</span> <span class="tlaGNC">       11910 :   Size sz = 1;</span></span>
-<span id="L90"><span class="lineNum">      90</span> <span class="tlaGNC">       11910 :   return std::accumulate(shape.begin(), shape.end(), sz, std::multiplies&lt;&gt;());</span></span>
+<span id="L89"><span class="lineNum">      89</span> <span class="tlaGNC">        9177 :   Size sz = 1;</span></span>
+<span id="L90"><span class="lineNum">      90</span> <span class="tlaGNC">        9177 :   return std::accumulate(shape.begin(), shape.end(), sz, std::multiplies&lt;&gt;());</span></span>
 <span id="L91"><span class="lineNum">      91</span>              : }</span>
 <span id="L92"><span class="lineNum">      92</span>              : </span>
 <span id="L93"><span class="lineNum">      93</span>              : TensorShape</span>
-<span id="L94"><span class="lineNum">      94</span> <span class="tlaGNC">     1175657 : pad_prepend(TensorShapeRef s, std::size_t dim, Size pad)</span></span>
+<span id="L94"><span class="lineNum">      94</span> <span class="tlaGNC">     1175643 : pad_prepend(TensorShapeRef s, std::size_t dim, Size pad)</span></span>
 <span id="L95"><span class="lineNum">      95</span>              : {</span>
-<span id="L96"><span class="lineNum">      96</span> <span class="tlaGNC">     1175657 :   neml_assert(s.size() &lt;= dim, &quot;pad_prepend given shape &quot;, s, &quot; and dim &quot;, dim);</span></span>
-<span id="L97"><span class="lineNum">      97</span> <span class="tlaGNC">     1175657 :   TensorShape s2(s);</span></span>
-<span id="L98"><span class="lineNum">      98</span> <span class="tlaGNC">     1175657 :   s2.insert(s2.begin(), dim - s.size(), pad);</span></span>
-<span id="L99"><span class="lineNum">      99</span> <span class="tlaGNC">     1175657 :   return s2;</span></span>
+<span id="L96"><span class="lineNum">      96</span> <span class="tlaGNC">     1175643 :   neml_assert(s.size() &lt;= dim, &quot;pad_prepend given shape &quot;, s, &quot; and dim &quot;, dim);</span></span>
+<span id="L97"><span class="lineNum">      97</span> <span class="tlaGNC">     1175643 :   TensorShape s2(s);</span></span>
+<span id="L98"><span class="lineNum">      98</span> <span class="tlaGNC">     1175643 :   s2.insert(s2.begin(), dim - s.size(), pad);</span></span>
+<span id="L99"><span class="lineNum">      99</span> <span class="tlaGNC">     1175643 :   return s2;</span></span>
 <span id="L100"><span class="lineNum">     100</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
 <span id="L101"><span class="lineNum">     101</span>              : } // namespace neml2::utils</span>
         </pre>

@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2026-01-18 05:02:38</td>
+            <td class="headerValue">2026-01-18 16:46:08</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryMed">30.7&nbsp;%</td>
@@ -104,9 +104,9 @@
 <span id="L42"><span class="lineNum">      42</span>              : </span>
 <span id="L43"><span class="lineNum">      43</span>              : template &lt;typename T&gt;</span>
 <span id="L44"><span class="lineNum">      44</span>              : bool</span>
-<span id="L45"><span class="lineNum">      45</span> <span class="tlaGNC">     2355503 : Variable&lt;T&gt;::defined() const</span></span>
+<span id="L45"><span class="lineNum">      45</span> <span class="tlaGNC">     2356336 : Variable&lt;T&gt;::defined() const</span></span>
 <span id="L46"><span class="lineNum">      46</span>              : {</span>
-<span id="L47"><span class="lineNum">      47</span> <span class="tlaGNC">     2355503 :   return operator()().defined();</span></span>
+<span id="L47"><span class="lineNum">      47</span> <span class="tlaGNC">     2356336 :   return operator()().defined();</span></span>
 <span id="L48"><span class="lineNum">      48</span>              : }</span>
 <span id="L49"><span class="lineNum">      49</span>              : </span>
 <span id="L50"><span class="lineNum">      50</span>              : template &lt;typename T&gt;</span>
@@ -132,9 +132,9 @@
 <span id="L70"><span class="lineNum">      70</span>              : </span>
 <span id="L71"><span class="lineNum">      71</span>              : template &lt;typename T&gt;</span>
 <span id="L72"><span class="lineNum">      72</span>              : const TraceableTensorShape &amp;</span>
-<span id="L73"><span class="lineNum">      73</span> <span class="tlaGNC tlaBgGNC">       26632 : Variable&lt;T&gt;::dynamic_sizes() const</span></span>
+<span id="L73"><span class="lineNum">      73</span> <span class="tlaGNC tlaBgGNC">       26629 : Variable&lt;T&gt;::dynamic_sizes() const</span></span>
 <span id="L74"><span class="lineNum">      74</span>              : {</span>
-<span id="L75"><span class="lineNum">      75</span> <span class="tlaGNC">       26632 :   return operator()().dynamic_sizes();</span></span>
+<span id="L75"><span class="lineNum">      75</span> <span class="tlaGNC">       26629 :   return operator()().dynamic_sizes();</span></span>
 <span id="L76"><span class="lineNum">      76</span>              : }</span>
 <span id="L77"><span class="lineNum">      77</span>              : </span>
 <span id="L78"><span class="lineNum">      78</span>              : template &lt;typename T&gt;</span>
@@ -204,26 +204,26 @@
 <span id="L142"><span class="lineNum">     142</span>              : </span>
 <span id="L143"><span class="lineNum">     143</span>              : template &lt;typename T&gt;</span>
 <span id="L144"><span class="lineNum">     144</span>              : Tensor</span>
-<span id="L145"><span class="lineNum">     145</span> <span class="tlaGNC">     3838076 : Variable&lt;T&gt;::tensor() const</span></span>
+<span id="L145"><span class="lineNum">     145</span> <span class="tlaGNC">     3840716 : Variable&lt;T&gt;::tensor() const</span></span>
 <span id="L146"><span class="lineNum">     146</span>              : {</span>
-<span id="L147"><span class="lineNum">     147</span> <span class="tlaGNC">     3838076 :   if (!owning())</span></span>
-<span id="L148"><span class="lineNum">     148</span> <span class="tlaGNC">     1604848 :     return ref()-&gt;tensor();</span></span>
+<span id="L147"><span class="lineNum">     147</span> <span class="tlaGNC">     3840716 :   if (!owning())</span></span>
+<span id="L148"><span class="lineNum">     148</span> <span class="tlaGNC">     1605936 :     return ref()-&gt;tensor();</span></span>
 <span id="L149"><span class="lineNum">     149</span>              : </span>
-<span id="L150"><span class="lineNum">     150</span> <span class="tlaGNC">     2233228 :   if (!jit::tracer::isTracing())</span></span>
-<span id="L151"><span class="lineNum">     151</span> <span class="tlaGNC">       33522 :     neml_assert_dbg(</span></span>
-<span id="L152"><span class="lineNum">     152</span> <span class="tlaGNC">       67044 :         _value.defined() &amp;&amp; _value.isfinite().all().template item&lt;bool&gt;(),</span></span>
+<span id="L150"><span class="lineNum">     150</span> <span class="tlaGNC">     2234780 :   if (!jit::tracer::isTracing())</span></span>
+<span id="L151"><span class="lineNum">     151</span> <span class="tlaGNC">       33516 :     neml_assert_dbg(</span></span>
+<span id="L152"><span class="lineNum">     152</span> <span class="tlaGNC">       67032 :         _value.defined() &amp;&amp; _value.isfinite().all().template item&lt;bool&gt;(),</span></span>
 <span id="L153"><span class="lineNum">     153</span>              :         &quot;Variable '&quot;,</span>
-<span id="L154"><span class="lineNum">     154</span> <span class="tlaGNC">       33522 :         name(),</span></span>
+<span id="L154"><span class="lineNum">     154</span> <span class="tlaGNC">       33516 :         name(),</span></span>
 <span id="L155"><span class="lineNum">     155</span>              :         &quot;' has undefined or non-finite value. Below is some additional debugging information:\n&quot;,</span>
 <span id="L156"><span class="lineNum">     156</span>              :         &quot;  owner: &quot;,</span>
-<span id="L157"><span class="lineNum">     157</span> <span class="tlaGNC">       33522 :         owner().name(),</span></span>
+<span id="L157"><span class="lineNum">     157</span> <span class="tlaGNC">       33516 :         owner().name(),</span></span>
 <span id="L158"><span class="lineNum">     158</span>              :         &quot;\n  owning: &quot;,</span>
-<span id="L159"><span class="lineNum">     159</span> <span class="tlaGNC">       33522 :         owning() ? &quot;true&quot; : &quot;false&quot;,</span></span>
+<span id="L159"><span class="lineNum">     159</span> <span class="tlaGNC">       33516 :         owning() ? &quot;true&quot; : &quot;false&quot;,</span></span>
 <span id="L160"><span class="lineNum">     160</span>              :         &quot;\n  defined: &quot;,</span>
-<span id="L161"><span class="lineNum">     161</span> <span class="tlaGNC">       33522 :         _value.defined() ? &quot;true&quot; : &quot;false&quot;,</span></span>
+<span id="L161"><span class="lineNum">     161</span> <span class="tlaGNC">       33516 :         _value.defined() ? &quot;true&quot; : &quot;false&quot;,</span></span>
 <span id="L162"><span class="lineNum">     162</span>              :         &quot;\n  isfinite: &quot;,</span>
-<span id="L163"><span class="lineNum">     163</span> <span class="tlaGNC">       67044 :         _value.defined() &amp;&amp; _value.isfinite().all().template item&lt;bool&gt;() ? &quot;true&quot; : &quot;false&quot;);</span></span>
-<span id="L164"><span class="lineNum">     164</span> <span class="tlaGNC">     2233228 :   return _value;</span></span>
+<span id="L163"><span class="lineNum">     163</span> <span class="tlaGNC">       67032 :         _value.defined() &amp;&amp; _value.isfinite().all().template item&lt;bool&gt;() ? &quot;true&quot; : &quot;false&quot;);</span></span>
+<span id="L164"><span class="lineNum">     164</span> <span class="tlaGNC">     2234780 :   return _value;</span></span>
 <span id="L165"><span class="lineNum">     165</span>              : }</span>
 <span id="L166"><span class="lineNum">     166</span>              : </span>
 <span id="L167"><span class="lineNum">     167</span>              : template &lt;typename T&gt;</span>
@@ -239,32 +239,32 @@
 <span id="L177"><span class="lineNum">     177</span>              : </span>
 <span id="L178"><span class="lineNum">     178</span>              : template &lt;typename T&gt;</span>
 <span id="L179"><span class="lineNum">     179</span>              : void</span>
-<span id="L180"><span class="lineNum">     180</span> <span class="tlaGNC">       26010 : Variable&lt;T&gt;::assign(const Tensor &amp; val, std::optional&lt;TracerPrivilege&gt; key)</span></span>
+<span id="L180"><span class="lineNum">     180</span> <span class="tlaGNC">       26006 : Variable&lt;T&gt;::assign(const Tensor &amp; val, std::optional&lt;TracerPrivilege&gt; key)</span></span>
 <span id="L181"><span class="lineNum">     181</span>              : {</span>
-<span id="L182"><span class="lineNum">     182</span> <span class="tlaGNC">       26010 :   if (owning())</span></span>
+<span id="L182"><span class="lineNum">     182</span> <span class="tlaGNC">       26006 :   if (owning())</span></span>
 <span id="L183"><span class="lineNum">     183</span>              :   {</span>
-<span id="L184"><span class="lineNum">     184</span> <span class="tlaGNC">       19244 :     neml_assert_dbg(val.base_sizes() == base_sizes(),</span></span>
+<span id="L184"><span class="lineNum">     184</span> <span class="tlaGNC">       19240 :     neml_assert_dbg(val.base_sizes() == base_sizes(),</span></span>
 <span id="L185"><span class="lineNum">     185</span>              :                     &quot;Variable '&quot;,</span>
-<span id="L186"><span class="lineNum">     186</span> <span class="tlaGNC">       19244 :                     name(),</span></span>
+<span id="L186"><span class="lineNum">     186</span> <span class="tlaGNC">       19240 :                     name(),</span></span>
 <span id="L187"><span class="lineNum">     187</span>              :                     &quot;' is being assigned a value with incompatible base sizes. Expected: &quot;,</span>
-<span id="L188"><span class="lineNum">     188</span> <span class="tlaGNC">       19244 :                     base_sizes(),</span></span>
+<span id="L188"><span class="lineNum">     188</span> <span class="tlaGNC">       19240 :                     base_sizes(),</span></span>
 <span id="L189"><span class="lineNum">     189</span>              :                     &quot;, Got: &quot;,</span>
-<span id="L190"><span class="lineNum">     190</span> <span class="tlaGNC">       19244 :                     val.base_sizes());</span></span>
-<span id="L191"><span class="lineNum">     191</span> <span class="tlaGNC">       19244 :     neml_assert_dbg(val.defined() &amp;&amp; val.isfinite().all().template item&lt;bool&gt;(),</span></span>
+<span id="L190"><span class="lineNum">     190</span> <span class="tlaGNC">       19240 :                     val.base_sizes());</span></span>
+<span id="L191"><span class="lineNum">     191</span> <span class="tlaGNC">       19240 :     neml_assert_dbg(val.defined() &amp;&amp; val.isfinite().all().template item&lt;bool&gt;(),</span></span>
 <span id="L192"><span class="lineNum">     192</span>              :                     &quot;Variable '&quot;,</span>
-<span id="L193"><span class="lineNum">     193</span> <span class="tlaGNC">       19244 :                     name(),</span></span>
+<span id="L193"><span class="lineNum">     193</span> <span class="tlaGNC">       19240 :                     name(),</span></span>
 <span id="L194"><span class="lineNum">     194</span>              :                     &quot;' is assigned with undefined or non-finite value. Below is some additional &quot;</span>
 <span id="L195"><span class="lineNum">     195</span>              :                     &quot;debugging information:\n&quot;,</span>
 <span id="L196"><span class="lineNum">     196</span>              :                     &quot;  owner: &quot;,</span>
-<span id="L197"><span class="lineNum">     197</span> <span class="tlaGNC">       19244 :                     owner().name(),</span></span>
+<span id="L197"><span class="lineNum">     197</span> <span class="tlaGNC">       19240 :                     owner().name(),</span></span>
 <span id="L198"><span class="lineNum">     198</span>              :                     &quot;\n  owning: &quot;,</span>
-<span id="L199"><span class="lineNum">     199</span> <span class="tlaGNC">       19244 :                     owning() ? &quot;true&quot; : &quot;false&quot;,</span></span>
+<span id="L199"><span class="lineNum">     199</span> <span class="tlaGNC">       19240 :                     owning() ? &quot;true&quot; : &quot;false&quot;,</span></span>
 <span id="L200"><span class="lineNum">     200</span>              :                     &quot;\n  defined: &quot;,</span>
-<span id="L201"><span class="lineNum">     201</span> <span class="tlaGNC">       19244 :                     val.defined() ? &quot;true&quot; : &quot;false&quot;,</span></span>
+<span id="L201"><span class="lineNum">     201</span> <span class="tlaGNC">       19240 :                     val.defined() ? &quot;true&quot; : &quot;false&quot;,</span></span>
 <span id="L202"><span class="lineNum">     202</span>              :                     &quot;\n  isfinite: &quot;,</span>
-<span id="L203"><span class="lineNum">     203</span> <span class="tlaGNC">       38488 :                     val.defined() &amp;&amp; val.isfinite().all().template item&lt;bool&gt;() ? &quot;true&quot; : &quot;false&quot;);</span></span>
-<span id="L204"><span class="lineNum">     204</span> <span class="tlaGNC">       19244 :     _value = T(val);</span></span>
-<span id="L205"><span class="lineNum">     205</span> <span class="tlaGNC">       19244 :     _cached_intmd_sizes = val.intmd_sizes();</span></span>
+<span id="L203"><span class="lineNum">     203</span> <span class="tlaGNC">       38480 :                     val.defined() &amp;&amp; val.isfinite().all().template item&lt;bool&gt;() ? &quot;true&quot; : &quot;false&quot;);</span></span>
+<span id="L204"><span class="lineNum">     204</span> <span class="tlaGNC">       19240 :     _value = T(val);</span></span>
+<span id="L205"><span class="lineNum">     205</span> <span class="tlaGNC">       19240 :     _cached_intmd_sizes = val.intmd_sizes();</span></span>
 <span id="L206"><span class="lineNum">     206</span>              :   }</span>
 <span id="L207"><span class="lineNum">     207</span>              :   else</span>
 <span id="L208"><span class="lineNum">     208</span>              :   {</span>
@@ -279,23 +279,23 @@
 <span id="L217"><span class="lineNum">     217</span>              :     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)</span>
 <span id="L218"><span class="lineNum">     218</span> <span class="tlaGNC">        6766 :     const_cast&lt;VariableBase *&gt;(ref())-&gt;assign(val);</span></span>
 <span id="L219"><span class="lineNum">     219</span>              :   }</span>
-<span id="L220"><span class="lineNum">     220</span> <span class="tlaGNC">       26010 : }</span></span>
+<span id="L220"><span class="lineNum">     220</span> <span class="tlaGNC">       26006 : }</span></span>
 <span id="L221"><span class="lineNum">     221</span>              : </span>
 <span id="L222"><span class="lineNum">     222</span>              : template &lt;typename T&gt;</span>
 <span id="L223"><span class="lineNum">     223</span>              : void</span>
-<span id="L224"><span class="lineNum">     224</span> <span class="tlaGNC">       11964 : Variable&lt;T&gt;::operator=(const Tensor &amp; val)</span></span>
+<span id="L224"><span class="lineNum">     224</span> <span class="tlaGNC">       11963 : Variable&lt;T&gt;::operator=(const Tensor &amp; val)</span></span>
 <span id="L225"><span class="lineNum">     225</span>              : {</span>
-<span id="L226"><span class="lineNum">     226</span> <span class="tlaGNC">       11964 :   assign(val);</span></span>
-<span id="L227"><span class="lineNum">     227</span> <span class="tlaGNC">       11964 : }</span></span>
+<span id="L226"><span class="lineNum">     226</span> <span class="tlaGNC">       11963 :   assign(val);</span></span>
+<span id="L227"><span class="lineNum">     227</span> <span class="tlaGNC">       11963 : }</span></span>
 <span id="L228"><span class="lineNum">     228</span>              : </span>
 <span id="L229"><span class="lineNum">     229</span>              : template &lt;typename T&gt;</span>
 <span id="L230"><span class="lineNum">     230</span>              : void</span>
-<span id="L231"><span class="lineNum">     231</span> <span class="tlaGNC">        7682 : Variable&lt;T&gt;::clear()</span></span>
+<span id="L231"><span class="lineNum">     231</span> <span class="tlaGNC">        7681 : Variable&lt;T&gt;::clear()</span></span>
 <span id="L232"><span class="lineNum">     232</span>              : {</span>
-<span id="L233"><span class="lineNum">     233</span> <span class="tlaGNC">        7682 :   if (owning())</span></span>
+<span id="L233"><span class="lineNum">     233</span> <span class="tlaGNC">        7681 :   if (owning())</span></span>
 <span id="L234"><span class="lineNum">     234</span>              :   {</span>
-<span id="L235"><span class="lineNum">     235</span> <span class="tlaGNC">        7682 :     VariableBase::clear();</span></span>
-<span id="L236"><span class="lineNum">     236</span> <span class="tlaGNC">        7682 :     _value = T();</span></span>
+<span id="L235"><span class="lineNum">     235</span> <span class="tlaGNC">        7681 :     VariableBase::clear();</span></span>
+<span id="L236"><span class="lineNum">     236</span> <span class="tlaGNC">        7681 :     _value = T();</span></span>
 <span id="L237"><span class="lineNum">     237</span>              :   }</span>
 <span id="L238"><span class="lineNum">     238</span>              :   else</span>
 <span id="L239"><span class="lineNum">     239</span>              :   {</span>
@@ -310,7 +310,7 @@
 <span id="L248"><span class="lineNum">     248</span>              :     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)</span>
 <span id="L249"><span class="lineNum">     249</span> <span class="tlaUNC">           0 :     const_cast&lt;VariableBase *&gt;(ref())-&gt;clear();</span></span>
 <span id="L250"><span class="lineNum">     250</span>              :   }</span>
-<span id="L251"><span class="lineNum">     251</span> <span class="tlaGNC tlaBgGNC">        7682 : }</span></span>
+<span id="L251"><span class="lineNum">     251</span> <span class="tlaGNC tlaBgGNC">        7681 : }</span></span>
 <span id="L252"><span class="lineNum">     252</span>              : </span>
 <span id="L253"><span class="lineNum">     253</span>              : #define INSTANTIATE_VARIABLE(T) template class Variable&lt;T&gt;</span>
 <span id="L254"><span class="lineNum">     254</span>              : FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_VARIABLE);</span>

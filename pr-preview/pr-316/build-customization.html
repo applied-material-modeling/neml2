@@ -165,7 +165,7 @@ Configure options</h1>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyLeft">NEML2_TESTS   </td><td class="markdownTableBodyLeft"><u>ON</u>, OFF   </td><td class="markdownTableBodyLeft">Master knob for including/excluding all tests    </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyLeft">NEML2_RUNNER   </td><td class="markdownTableBodyLeft">ON, <u>OFF</u>   </td><td class="markdownTableBodyLeft">Create a simple runner    </td></tr>
+<td class="markdownTableBodyLeft">NEML2_RUNNER   </td><td class="markdownTableBodyLeft">ON, <u>OFF</u>   </td><td class="markdownTableBodyLeft">Create a simple <a class="el" href="namespaceneml2.html">neml2</a> executable    </td></tr>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyLeft">NEML2_PYBIND   </td><td class="markdownTableBodyLeft">ON, <u>OFF</u>   </td><td class="markdownTableBodyLeft">Create the Python bindings target    </td></tr>
 <tr class="markdownTableRowOdd">
@@ -182,10 +182,10 @@ Configure presets</h1>
 <p>NEML2 predefines six configure presets, serving different development purposes:</p><ul>
 <li>dev: This preset is best suited for developing the C++ backend and Python bindings. Compiler optimization is turned off, and debug symbols are enabled. In addition, targets for locally generating the documentation (this website) are enabled.</li>
 <li>coverage: Unit tests are built with coverage flags enabled. <code>gcov</code> or similar tools can be used to record code coverage data.</li>
-<li>runner: The NEML2 Runner is built with the highest level of compiler optimization. The Runner is an executable that can be used to parse, evaluate, diagnose NEML2 input files.</li>
+<li>runner: The NEML2 runner is built with the highest level of compiler optimization. The runner is an executable that can be used to parse, evaluate, inspect, and diagnose NEML2 input files.</li>
 <li>tsan: Build the NEML2 Runner with thread sanitizer flags. The Runner can then be used to detect races.</li>
 <li>release: Build both the C++ backend and the Python package for production runs.</li>
-<li>profiling: Similar to runner, but additionally links the Runner against gperftools' CPU profiler for profiling purposes.</li>
+<li>profiling: Similar to runner, but additionally links the executable against gperftools' CPU profiler for profiling purposes.</li>
 </ul>
 <p>The configure presets and their corresponding configure options are summarized below.</p>
 <table class="markdownTable">

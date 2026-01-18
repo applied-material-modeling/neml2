@@ -1,7 +1,5 @@
 var NAVTREEINDEX13 =
 {
-"classneml2_1_1ValueMapLoader.html":[7,1,0,227],
-"classneml2_1_1ValueMapLoader.html#a80c2637b7bc92cb7c95a4743d6aa965a":[7,0,1,232,1],
 "classneml2_1_1ValueMapLoader.html#a80c2637b7bc92cb7c95a4743d6aa965a":[7,1,0,227,1],
 "classneml2_1_1ValueMapLoader.html#a9291b65963d6446933bdf2be635039a7":[7,0,1,232,0],
 "classneml2_1_1ValueMapLoader.html#a9291b65963d6446933bdf2be635039a7":[7,1,0,227,0],
@@ -249,5 +247,7 @@ var NAVTREEINDEX13 =
 "classneml2_1_1VariableRate.html#ac5f353043fa790f2efd03a94da2bb7ec":[7,1,0,231,1],
 "classneml2_1_1VariableRate.html#af5600a36813e455aefee72bec1d574fb":[7,0,1,236,2],
 "classneml2_1_1VariableRate.html#af5600a36813e455aefee72bec1d574fb":[7,1,0,231,2],
-"classneml2_1_1VariableStore.html":[7,0,1,237]
+"classneml2_1_1VariableStore.html":[7,0,1,237],
+"classneml2_1_1VariableStore.html":[7,1,0,232],
+"classneml2_1_1VariableStore.html#a094044d18ca027327ae9687ecbe8dbcd":[7,0,1,237,55]
 };

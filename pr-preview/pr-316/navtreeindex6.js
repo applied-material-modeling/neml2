@@ -169,8 +169,6 @@ var NAVTREEINDEX6 =
 "classneml2_1_1ModelDriver.html#ac46afcd724c8a99b866a5d45ad22a780":[7,1,0,125,5],
 "classneml2_1_1ModelDriver.html#ac5f353043fa790f2efd03a94da2bb7ec":[7,0,1,130,1],
 "classneml2_1_1ModelDriver.html#ac5f353043fa790f2efd03a94da2bb7ec":[7,1,0,125,1],
-"classneml2_1_1ModelDriver.html#ad30ff35f96e78d1e7321d713a68ef86c":[7,0,1,130,8],
-"classneml2_1_1ModelDriver.html#ad30ff35f96e78d1e7321d713a68ef86c":[7,1,0,125,8],
 "classneml2_1_1ModelDriver.html#ae9b10a38541d898bc72263dfd306d5eb":[7,0,1,130,0],
 "classneml2_1_1ModelDriver.html#ae9b10a38541d898bc72263dfd306d5eb":[7,1,0,125,0],
 "classneml2_1_1MultiColumnCSVScalar.html":[7,0,1,131],
@@ -249,5 +247,7 @@ var NAVTREEINDEX6 =
 "classneml2_1_1NEML2Object.html#acdbec052162148bccd32155d0e4b4ca3":[7,1,0,128,4],
 "classneml2_1_1NEML2Object.html#ad9cb8bba430bcfb31348ddfe6b9b00c8":[7,0,1,133,3],
 "classneml2_1_1NEML2Object.html#ad9cb8bba430bcfb31348ddfe6b9b00c8":[7,1,0,128,3],
-"classneml2_1_1NEML2Object.html#adb931c218966158e867d8af1438d6bc0":[7,0,1,133,12]
+"classneml2_1_1NEML2Object.html#adb931c218966158e867d8af1438d6bc0":[7,0,1,133,12],
+"classneml2_1_1NEML2Object.html#adb931c218966158e867d8af1438d6bc0":[7,1,0,128,12],
+"classneml2_1_1NEMLException.html":[7,0,1,135]
 };

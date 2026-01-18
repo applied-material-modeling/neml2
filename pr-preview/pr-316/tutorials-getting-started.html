@@ -165,7 +165,7 @@ The Runner</h1>
 <p>We acknowledge the common need to use NEML2 as a standalone program and therefore provide two convenient options for users to effectively use NEML2 as a standalone program, with the first option being the <em>NEML2 Runner</em>.</p>
 <p>As documented in <a class="el" href="build-customization.html">build customization</a>, the "runner" preset or the <code>NEML2_RUNNER</code> CMake option can be used to create a simple "runner" program for parsing, diagnosing, and running NEML2 material models. </p><div class="fragment"><div class="line">cmake --preset runner -S .</div>
 <div class="line">cmake --build --preset runner</div>
-</div><!-- fragment --><p>Once the runner is built (and/or installed), an executable named <code>runner</code> will be placed under the build directory (or the installation directory). Invoking the executable without any additional argument or with the <code>-h</code> or <code>--help</code> argument will print out the usage message: </p><div class="fragment"><div class="line">Usage: runner [--help] [--version] {diagnose,inspect,run,time}</div>
+</div><!-- fragment --><p>Once the runner is built (and/or installed), an executable named <code><a class="el" href="namespaceneml2.html">neml2</a></code> will be placed under the build directory (or the installation directory). Invoking the executable without any additional argument or with the <code>-h</code> or <code>--help</code> argument will print out the usage message: </p><div class="fragment"><div class="line">Usage: neml2 [--help] [--version] {diagnose,inspect,run,time}</div>
 <div class="line"> </div>
 <div class="line">Optional arguments:</div>
 <div class="line">  -h, --help     shows help message and exits</div>
