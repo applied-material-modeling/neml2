@@ -26,7 +26,6 @@
 #include <torch/csrc/jit/frontend/tracer.h>
 
 #include "neml2/misc/assertions.h"
-#include "neml2/base/guards.h"
 #include "neml2/base/Factory.h"
 #include "neml2/base/Settings.h"
 #include "neml2/tensors/jit.h"
@@ -36,11 +35,29 @@
 #include "neml2/tensors/tensors.h"
 #include "neml2/tensors/TensorValue.h"
 #include "neml2/models/Model.h"
-#include "neml2/models/Assembler.h"
 #include "neml2/models/map_types_fwd.h"
 
 namespace neml2
 {
+AssemblyingNonlinearSystem::AssemblyingNonlinearSystem(Model * const model, bool assembling)
+  : model(model),
+    prev_bool(model->currently_assembling_nonlinear_system())
+{
+  model->currently_assembling_nonlinear_system(assembling);
+}
+
+// destructor cannot throw, but the following function might (as it tries to resolve host())
+// However, in the constructor we already verified that model->host() is valid, so this should be
+// safe.
+//
+// Static analysis tools might still complain, let's silence them for now. In the future, when we
+// add a proper logger, we can log the error message.
+// NOLINTNEXTLINE(bugprone-exception-escape)
+AssemblyingNonlinearSystem::~AssemblyingNonlinearSystem()
+{
+  model->currently_assembling_nonlinear_system(prev_bool);
+}
+
 bool
 Model::EvaluationSchema::operator==(const EvaluationSchema & other) const
 {
@@ -69,7 +86,6 @@ Model::expected_options()
 {
   OptionSet options = Data::expected_options();
   options += NonlinearSystem::expected_options();
-  NonlinearSystem::disable_automatic_scaling(options);
 
   options.section() = "Models";
 
@@ -137,7 +153,61 @@ Model::setup()
     link_input_variables();
   }
 
+  if (is_nonlinear_system())
+    setup_nl_sys();
+
   request_AD();
+}
+
+void
+Model::setup_nl_sys()
+{
+  // Note: These data structures are serving the same purpose as LabeledAxis, and yes, we are
+  // storing redundant information. This is because we are transitioning away from LabeledAxis. In
+  // future versions, we will remove LabeledAxis and only use these data structures.
+  //
+  // Also note: only nonlinear systems need to define these maps. Regular feed-forward models do not
+  // need to define these maps. This is an important distinction from LabeledAxis which is always
+  // defined.
+
+  std::vector<VariableName> unknowns, given, old_solution, old_given, residuals;
+  std::vector<TensorShapeRef> unknown_shapes, given_shapes, old_solution_shapes, old_given_shapes,
+      residual_shapes;
+
+  for (const auto & [vname, var] : input_variables())
+    if (var->is_state())
+    {
+      unknowns.push_back(vname);
+      unknown_shapes.push_back(var->base_sizes());
+    }
+    else if (var->is_force())
+    {
+      given.push_back(vname);
+      given_shapes.push_back(var->base_sizes());
+    }
+    else if (var->is_old_state())
+    {
+      old_solution.push_back(vname);
+      old_solution_shapes.push_back(var->base_sizes());
+    }
+    else if (var->is_old_force())
+    {
+      old_given.push_back(vname);
+      old_given_shapes.push_back(var->base_sizes());
+    }
+
+  for (const auto & [vname, var] : output_variables())
+    if (var->is_residual())
+    {
+      residuals.push_back(vname);
+      residual_shapes.push_back(var->base_sizes());
+    }
+
+  set_umap(unknowns, unknown_shapes);
+  set_unmap(old_solution, old_solution_shapes);
+  set_gmap(given, given_shapes);
+  set_gnmap(old_given, old_given_shapes);
+  set_rmap(residuals, residual_shapes);
 }
 
 void
@@ -416,7 +486,7 @@ Model::forward_maybe_jit(bool out, bool dout, bool d2out)
   }
 
   auto & traced_functions =
-      currently_solving_nonlinear_system() ? _traced_functions_nl_sys : _traced_functions;
+      currently_assembling_nonlinear_system() ? _traced_functions_nl_sys : _traced_functions;
 
   const auto forward_op_idx = forward_operator_index(out, dout, d2out);
   const auto schema = calculate_eval_schema();
@@ -697,29 +767,42 @@ Model::collect_input_stack() const
 }
 
 void
-Model::set_guess(const Sol<false> & x)
+Model::currently_assembling_nonlinear_system(bool value)
 {
-  const auto sol_assember = VectorAssembler(input_axis().subaxis(STATE));
-  assign_input(sol_assember.split_by_variable(x), /*assembly=*/true);
+  host<Model>()->_currently_assembling_nonlinear_system = value;
+}
+
+bool
+Model::currently_assembling_nonlinear_system() const
+{
+  return host<Model>()->_currently_assembling_nonlinear_system;
 }
 
 void
-Model::assemble(NonlinearSystem::Res<false> * residual, NonlinearSystem::Jac<false> * Jacobian)
+Model::set_solution(const es::Vector & x)
 {
-  forward_maybe_jit(residual, Jacobian, false);
+  assign_input(umap(), x);
+}
+
+es::Vector
+Model::get_solution() const
+{
+  return es::Vector(collect_input(umap()));
+}
+
+void
+Model::assemble(es::Vector * residual, es::Matrix * Jacobian)
+{
+  {
+    AssemblyingNonlinearSystem assembling_nl_sys(this, true);
+    forward_maybe_jit(residual, Jacobian, false);
+  }
 
   if (residual)
-  {
-    const auto res_assembler = VectorAssembler(output_axis().subaxis(RESIDUAL));
-    *residual = Res<false>(res_assembler.assemble_by_variable(collect_output(/*assembly=*/true)));
-  }
+    *residual = collect_output(rmap());
+
   if (Jacobian)
-  {
-    const auto jac_assembler =
-        MatrixAssembler(output_axis().subaxis(RESIDUAL), input_axis().subaxis(STATE));
-    *Jacobian = Jac<false>(
-        jac_assembler.assemble_by_variable(collect_output_derivatives(/*assembly=*/true)));
-  }
+    *Jacobian = collect_output_derivatives(rmap(), umap());
 }
 
 void

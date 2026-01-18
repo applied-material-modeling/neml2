@@ -24,15 +24,31 @@
 
 #pragma once
 
-#include "neml2/misc/types.h"
+#include "neml2/solvers/Solver.h"
+#include "neml2/tensors/equation_system/Vector.h"
+#include "neml2/tensors/equation_system/Matrix.h"
 
 namespace neml2
 {
-class Tensor;
+/**
+ * @brief The linear solver solves a linear system of equations.
+ *
+ */
+class LinearSolver : public Solver
+{
+public:
+  static OptionSet expected_options();
 
-template <std::size_t N>
-Tensor to_assembly(const Tensor & from,
-                   const std::array<TensorShapeRef, N> & intmd_shapes,
-                   const std::array<TensorShapeRef, N> & base_shapes,
-                   const std::string & debug_name = "<anonymous>");
-}
+  LinearSolver(const OptionSet & options);
+
+  /// Solve Ax = b for x
+  virtual es::Vector solve(const es::Matrix & A, const es::Vector & b) const = 0;
+
+  /// Solve AX = B for X
+  virtual es::Matrix solve(const es::Matrix & A, const es::Matrix & B) const = 0;
+
+  /// Solve AXi = Bi for Xi, implementation should consider reusing factorization of A (if any)
+  virtual std::vector<es::Matrix> solve(const es::Matrix & A,
+                                        const std::vector<es::Matrix> & B) const = 0;
+};
+} // namespace neml2

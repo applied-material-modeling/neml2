@@ -66,7 +66,7 @@ ResolvedShear::ResolvedShear(const OptionSet & options)
   : Model(options),
     _crystal_geometry(register_data<crystallography::CrystalGeometry>(
         options.get<std::string>("crystal_geometry"))),
-    _rss(declare_output_variable<Scalar>("resolved_shears", -1)),
+    _rss(declare_output_variable<Scalar>("resolved_shears")),
     _S(declare_input_variable<SR2>("stress")),
     _R(declare_input_variable<R2>("orientation"))
 {
@@ -87,10 +87,10 @@ ResolvedShear::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
   if (dout_din)
   {
     if (_S.is_dependent())
-      _rss.d(_S, -1) = M.rotate(R);
+      _rss.d(_S, 1, 1, 0) = M.rotate(R);
 
     if (_R.is_dependent())
-      _rss.d(_R, -1) = R2::einsum("...ijk,...i->...jk", {M.drotate(R), S});
+      _rss.d(_R, 1, 1, 0) = R2::einsum("...ijk,...i->...jk", {M.drotate(R), S});
   }
 }
 

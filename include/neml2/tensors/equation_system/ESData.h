@@ -22,30 +22,41 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <catch2/catch_test_macros.hpp>
-#include <catch2/matchers/catch_matchers_all.hpp>
+#pragma once
 
-#include "SampleNonlinearSystems.h"
+#include <vector>
+#include "neml2/misc/types.h"
+#include "neml2/tensors/Tensor.h"
 
-using namespace neml2;
-
-TEST_CASE("NonlinearSystem", "[solvers]")
+namespace neml2::es
 {
-  // Initial guess
-  TensorShape batch_sz = {2};
-  Size nbase = 4;
-  auto x0 =
-      NonlinearSystem::Sol<false>(Tensor::full(batch_sz, {}, nbase, 2.0, default_tensor_options()));
+/// Base data structure for discrete equation system data (e.g., Vector and Matrix)
+struct ESData
+{
+  ESData() = default;
+  ESData(std::vector<Tensor>);
 
-  // Create the nonlinear system
-  auto options = PowerTestSystem::expected_options();
-  options.set<bool>("automatic_scaling") = true;
-  PowerTestSystem system(options);
+  /// Whether any of the contained Tensors require gradients
+  bool requires_grad() const;
+  /// Tensor options
+  TensorOptions options() const;
+  /// Is _data empty? empty means no dense sub-block hence zero
+  bool zero() const { return _data.empty(); }
 
-  SECTION("Automatic scaling can reduce condition number")
-  {
-    system.init_scaling(x0);
-    auto x0p = system.scale(x0);
-    REQUIRE(at::max(at::linalg_cond(system.Jacobian(x0p))).item<double>() == Catch::Approx(1.0));
-  }
-}
+  ///@{
+  // iterator business
+  using iterator = typename std::vector<Tensor>::iterator;
+  using const_iterator = typename std::vector<Tensor>::const_iterator;
+  iterator begin() noexcept { return _data.begin(); }
+  iterator end() noexcept { return _data.end(); }
+  const_iterator begin() const noexcept { return _data.begin(); }
+  const_iterator end() const noexcept { return _data.end(); }
+  const_iterator cbegin() const noexcept { return _data.cbegin(); }
+  const_iterator cend() const noexcept { return _data.cend(); }
+  ///@}
+
+protected:
+  /// Sub-block tensors
+  std::vector<Tensor> _data;
+};
+} // namespace neml2::es

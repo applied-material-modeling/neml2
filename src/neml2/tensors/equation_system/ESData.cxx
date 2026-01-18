@@ -22,47 +22,33 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
+#include "neml2/tensors/equation_system/ESData.h"
+#include "neml2/misc/errors.h"
 
-#include "neml2/solvers/NonlinearSystem.h"
-#include "neml2/tensors/Scalar.h"
-
-namespace neml2
+namespace neml2::es
 {
-/**
- * The trust region subproblem introduced in
- *
- * > Yuan, Ya-xiang. Trust region algorithms for nonlinear equations. Hong Kong Baptist
- * > University, Department of Mathematics, 1994.
- */
-class TrustRegionSubProblem : public NonlinearSystem
+
+ESData::ESData(std::vector<Tensor> v)
+  : _data(std::move(v))
 {
-public:
-  TrustRegionSubProblem(const OptionSet & options);
+}
 
-  /// Record the current state of the underlying problem
-  void reinit(const Res<true> & r, const Jac<true> & J, const Scalar & delta);
+bool
+ESData::requires_grad() const
+{
+  for (const auto & vi : _data)
+    if (vi.defined() && vi.requires_grad())
+      return true;
+  return false;
+}
 
-  Tensor preconditioned_direction(const Scalar & s) const;
+TensorOptions
+ESData::options() const
+{
+  for (const auto & vi : _data)
+    if (vi.defined())
+      return vi.options();
+  throw NEMLException("empty es::Vector/Matrix has no options.");
+}
 
-protected:
-  void set_guess(const Sol<false> & x) override;
-
-  void assemble(Res<false> * residual, Jac<false> * Jacobian) override;
-
-  Tensor preconditioned_solve(const Scalar & s, const Tensor & v) const;
-
-private:
-  /// Solution to the Lagrange multiplier
-  Scalar _s;
-
-  /// The trust region radius
-  Scalar _delta;
-
-  /// Temporary Jacobian-Jacobian product
-  Tensor _JJ;
-
-  /// Temporary Jacobian-Residual product
-  Tensor _Jr;
-};
-} // namespace neml2
+} // namespace neml2::es

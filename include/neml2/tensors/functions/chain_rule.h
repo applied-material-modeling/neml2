@@ -22,38 +22,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <pybind11/stl.h>
+#pragma once
 
-#include "python/neml2/csrc/core/types.h"
-#include "python/neml2/csrc/core/utils.h"
+#include "neml2/tensors/Derivative.h"
 
-namespace py = pybind11;
-using namespace neml2;
-
-void
-def(py::module_ & m, py::class_<VectorAssembler> & c)
+namespace neml2
 {
-  c.def(py::init<const LabeledAxis &>())
-      .def(
-          "assemble_by_variable",
-          [](const VectorAssembler & self, const py::dict & py_vals_dict, bool assembly)
-          {
-            auto base_shape_lookup = [axis =
-                                          &self.axis()](const VariableName & key) -> TensorShapeRef
-            {
-              const auto vid = axis->variable_id(axis->disqualify(key));
-              return axis->variable_base_sizes()[vid];
-            };
-            const auto vals = unpack_value_map(py_vals_dict, assembly, base_shape_lookup);
-            return self.assemble_by_variable(vals, assembly);
-          },
-          py::arg("vals"),
-          py::arg("assembly") = true)
-      .def(
-          "split_by_variable",
-          [](const VectorAssembler & self, const Tensor & vec, bool assembly)
-          { return self.split_by_variable(vec, assembly); },
-          py::arg("vec"),
-          py::arg("assembly") = true)
-      .def("split_by_subaxis", &VectorAssembler::split_by_subaxis);
-}
+
+/// Apply chain rule on two first-order derivatives
+Derivative<1> chain_rule(const Derivative<1> & dy_du, const Derivative<1> & du_dx);
+
+/// Apply second order chain rule on d2y_du1u2, du1_dx1, du2_dx2
+/// In einstein notation: ipq, pj, qk -> ijk
+Derivative<2> chain_rule(const Derivative<2> & d2y_du1u2,
+                         const Derivative<1> * du_dx1,
+                         const Derivative<1> * du_dx2);
+
+/// Apply second order chain rule on dy_du, d2u_dx1x2
+/// In einstein notation: ip, pjk -> ijk
+Derivative<2> chain_rule(const Derivative<1> & dy_du, const Derivative<2> & d2u_dx1x2);
+
+} // namespace neml2

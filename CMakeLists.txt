@@ -59,7 +59,7 @@ set(CMAKE_CXX_FLAGS_ADDRESSSANITIZER "-O1 -g -fsanitize=address -fno-omit-frame-
 set(CMAKE_CXX_FLAGS_PROFILING "-O2 -g -fno-omit-frame-pointer" CACHE STRING "Flags used by C++ compiler for build type Profiling" FORCE)
 set(NEML2_PCH ON CACHE BOOL "Use precompiled headers")
 set(NEML2_TESTS ON CACHE BOOL "Build NEML2 tests")
-set(NEML2_RUNNER OFF CACHE BOOL "Build a simple runner for benchmarking, debugging, etc.")
+set(NEML2_RUNNER OFF CACHE BOOL "Build a simple neml2 executable for benchmarking, debugging, etc.")
 set(NEML2_PYBIND OFF CACHE BOOL "Build NEML2 Python bindings")
 set(NEML2_DOC OFF CACHE BOOL "Build NEML2 documentation (html)")
 set(NEML2_WORK_DISPATCHER OFF CACHE BOOL "Enable NEML2 work dispatcher")

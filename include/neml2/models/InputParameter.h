@@ -42,6 +42,7 @@ public:
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
+protected:
   const Variable<T> & _input_var;
 
   Variable<T> & _p;

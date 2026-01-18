@@ -8,6 +8,7 @@ ${CMAKE_COMMAND} \
   -DJSON_Install=ON \
   -DJSON_MultipleHeaders=OFF \
   -DJSON_BuildTests=OFF \
+  -DBUILD_TESTING=OFF \
   -B"${BINARY_DIR}" \
   -S"${SOURCE_DIR}"
 

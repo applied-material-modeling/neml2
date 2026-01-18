@@ -130,6 +130,10 @@
   [newton]
     type = NewtonWithLineSearch
     max_linesearch_iterations = 5
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
   []
 []
 

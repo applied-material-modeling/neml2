@@ -74,9 +74,7 @@ PowerLawSlipRule::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
       _g.d(_rss) = _gamma0 * _n * pow(abs(_rss / _tau), _n - 1.0) / _tau;
 
     if (_tau.is_dependent())
-    {
       _g.d(_tau) = -_n * _gamma0 * _rss * pow(abs(_rss()), _n - 1.0) / pow(_tau(), _n + 1);
-    }
 
     if (const auto * const gamma0 = nl_param("gamma0"))
       _g.d(*gamma0) = pow(abs(_rss / _tau), _n - 1.0) * _rss / _tau;

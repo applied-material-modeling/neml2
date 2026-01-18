@@ -50,6 +50,10 @@ Tf = 1700
 [Solvers]
   [newton]
     type = Newton
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
   []
 []
 

@@ -157,4 +157,36 @@ def(py::module_ & m, py::class_<Model, std::shared_ptr<Model>> & c)
           },
           py::return_value_policy::reference,
           "Get the dictionary describing this model's dependency information, if any.");
+
+  // wrappers for nonlinear system-related methods
+  c.def("is_nonlinear_system",
+        &Model::is_nonlinear_system,
+        "Whether this model defines a nonlinear system")
+      .def("umap", &Model::umap, "Get the unknowns for this nonlinear system")
+      .def("unmap", &Model::unmap, "Get the old solutions for this nonlinear system")
+      .def("gmap", &Model::gmap, "Get the given variables for this nonlinear system")
+      .def("gnmap", &Model::gnmap, "Get the old given variables for this nonlinear system")
+      .def("rmap", &Model::rmap, "Get the residuals for this nonlinear system")
+      .def("ulayout", &Model::ulayout, "Get the unknown layout for this nonlinear system")
+      .def("unlayout", &Model::unlayout, "Get the old solution layout for this nonlinear system")
+      .def("glayout", &Model::glayout, "Get the given variable layout for this nonlinear system")
+      .def("gnlayout",
+           &Model::gnlayout,
+           "Get the old given variable layout for this nonlinear system")
+      .def("rlayout", &Model::rlayout, "Get the residual layout for this nonlinear system")
+      .def("create_uvec",
+           &Model::create_uvec,
+           "Create a vector for unknowns compatible with this nonlinear system")
+      .def("create_unvec",
+           &Model::create_unvec,
+           "Create a old solution vector compatible with this nonlinear system")
+      .def("create_gvec",
+           &Model::create_gvec,
+           "Create a vector for given variables compatible with this nonlinear system")
+      .def("create_gnvec",
+           &Model::create_gnvec,
+           "Create a vector for old given variables compatible with this nonlinear system")
+      .def("create_rvec",
+           &Model::create_rvec,
+           "Create a vector for residuals compatible with this nonlinear system");
 }

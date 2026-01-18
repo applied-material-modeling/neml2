@@ -52,7 +52,7 @@ tr(const R2 & A)
 Scalar
 tr(const SR2 & A)
 {
-  return base_sum(A.base_index({indexing::Slice(0, 3)}), -1);
+  return A(0) + A(1) + A(2);
 }
 
 Scalar

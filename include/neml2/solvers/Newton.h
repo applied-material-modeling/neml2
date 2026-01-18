@@ -41,13 +41,11 @@ public:
 
   Newton(const OptionSet & options);
 
-  Result solve(NonlinearSystem & system, const NonlinearSystem::Sol<false> & x0) override;
+  Result solve(NonlinearSystem & system, const es::Vector & x0) override;
 
 protected:
   /// Prepare solver internal data before the iterative update
-  virtual void prepare(const NonlinearSystem & /*system*/, const NonlinearSystem::Sol<true> & /*x*/)
-  {
-  }
+  virtual void prepare(const NonlinearSystem & /*system*/, const es::Vector & /*x*/) {}
 
   /**
    * @brief Check for convergence. The current iteration is said to be converged if the residual
@@ -60,22 +58,19 @@ protected:
    * @return true Converged
    * @return false Not converged
    */
-  virtual bool converged(size_t itr, const ATensor & nR, const ATensor & nR0) const;
+  virtual bool converged(size_t itr, const Scalar & nR, const Scalar & nR0) const;
 
   /// Update trial solution
-  virtual void update(NonlinearSystem & system,
-                      NonlinearSystem::Sol<true> & x,
-                      const NonlinearSystem::Res<true> & r,
-                      const NonlinearSystem::Jac<true> & J);
+  virtual void
+  update(NonlinearSystem & system, es::Vector & x, const es::Vector & r, const es::Matrix & J);
 
   /// Do a final update to track AD function graph
   virtual void final_update(NonlinearSystem & system,
-                            NonlinearSystem::Sol<true> & x,
-                            const NonlinearSystem::Res<true> & r,
-                            const NonlinearSystem::Jac<true> & J);
+                            es::Vector & x,
+                            const es::Vector & r,
+                            const es::Matrix & J);
 
   /// Find the current update direction
-  virtual NonlinearSystem::Sol<true> solve_direction(const NonlinearSystem::Res<true> & r,
-                                                     const NonlinearSystem::Jac<true> & J);
+  virtual es::Vector solve_direction(const es::Vector & r, const es::Matrix & J);
 };
 } // namespace neml2

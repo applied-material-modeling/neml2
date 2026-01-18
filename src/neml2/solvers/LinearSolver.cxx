@@ -22,17 +22,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-
-#include "neml2/misc/types.h"
+#include "neml2/solvers/LinearSolver.h"
 
 namespace neml2
 {
-class Tensor;
 
-template <std::size_t N>
-Tensor from_assembly(const Tensor & from,
-                     const std::array<TensorShapeRef, N> & intmd_shapes,
-                     const std::array<TensorShapeRef, N> & base_shapes,
-                     const std::string & debug_name = "<anonymous>");
+OptionSet
+LinearSolver::expected_options()
+{
+  OptionSet options = Solver::expected_options();
+  return options;
+}
+
+LinearSolver::LinearSolver(const OptionSet & options)
+  : Solver(options)
+{
+}
+
 }

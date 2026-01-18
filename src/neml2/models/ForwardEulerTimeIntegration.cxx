@@ -90,11 +90,11 @@ ForwardEulerTimeIntegration<T>::set_value(bool out, bool dout_din, bool /*d2out_
 
     _s.d(_ds_dt) = I * (_t - _tn);
 
-    if (currently_solving_nonlinear_system())
+    if (currently_assembling_nonlinear_system())
       return;
 
     _s.d(_sn) = I;
-    _s.d(_t) = _ds_dt;
+    _s.d(_t) = _ds_dt();
     _s.d(_tn) = -_ds_dt;
   }
 }

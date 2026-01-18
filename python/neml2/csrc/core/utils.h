@@ -36,6 +36,11 @@ namespace neml2
 class Model;
 }
 
+/// Unpack a Python sequence into a std::vector<neml2::Tensor>
+std::vector<neml2::Tensor>
+unpack_tensor_list(const pybind11::sequence & pytensors,
+                   const std::function<neml2::TensorShapeRef(std::size_t)> & base_shape_fn);
+
 /// Unpack a Python dictionary into a neml2::ValueMap
 neml2::ValueMap unpack_value_map(
     const pybind11::dict & pyvals,

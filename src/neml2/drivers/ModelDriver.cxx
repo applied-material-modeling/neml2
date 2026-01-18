@@ -40,14 +40,6 @@ ModelDriver::expected_options()
   options.set<std::string>("model");
   options.set("model").doc() = "The material model to be updated by the driver";
 
-  options.set<std::vector<VariableName>>("var_with_intmd_dims") = {};
-  options.set("var_with_intmd_dims").doc() =
-      "A list of input variable names for which to set intermediate shapes";
-
-  options.set<std::vector<TensorShape>>("var_intmd_shapes") = {};
-  options.set("var_intmd_shapes").doc() =
-      "A list of tensor shapes corresponding to the variables in 'var_with_intmd_dims'";
-
   options.set<std::string>("postprocessor");
   options.set("postprocessor").doc() = "The postprocessor model to be applied on the model output";
 
@@ -58,9 +50,6 @@ ModelDriver::expected_options()
       "and :<device-index> optionally specifies a device index. For example, device='cpu' sets the "
       "target compute device to be CPU, and device='cuda:1' sets the target compute device to be "
       "CUDA with device ID 1.";
-
-  options.set<bool>("show_model_info") = false;
-  options.set("show_model_info").doc() = "Whether to show model information at the beginning";
 
 #ifdef NEML2_WORK_DISPATCHER
   options.set<std::string>("scheduler");
@@ -75,12 +64,9 @@ ModelDriver::expected_options()
 ModelDriver::ModelDriver(const OptionSet & options)
   : Driver(options),
     _model(get_model("model")),
-    _intmd_vars(options.get<std::vector<VariableName>>("var_with_intmd_dims")),
-    _intmd_shapes(options.get<std::vector<TensorShape>>("var_intmd_shapes")),
     _postprocessor(options.get("postprocessor").user_specified() ? get_model("postprocessor")
                                                                  : nullptr),
-    _device(options.get<std::string>("device")),
-    _show_model_info(options.get<bool>("show_model_info"))
+    _device(options.get<std::string>("device"))
 #ifdef NEML2_WORK_DISPATCHER
     ,
     _scheduler(options.get("scheduler").user_specified() ? get_scheduler("scheduler") : nullptr),
@@ -93,10 +79,6 @@ void
 ModelDriver::setup()
 {
   Driver::setup();
-
-  // Tag intermediate shapes
-  for (size_t i = 0; i < _intmd_vars.size(); ++i)
-    _model->set_input_intmd_sizes(_intmd_vars[i], _intmd_shapes[i]);
 
   // Send to device
   _model->to(_device);
@@ -114,8 +96,6 @@ ModelDriver::setup()
     {
       auto new_factory = Factory(_model->factory()->input_file());
       auto new_model = new_factory.get_model(_model->name());
-      for (size_t i = 0; i < _intmd_vars.size(); ++i)
-        new_model->set_input_intmd_sizes(_intmd_vars[i], _intmd_shapes[i]);
       new_model->to(device);
       _models[std::this_thread::get_id()] = std::move(new_model);
     };
@@ -141,11 +121,6 @@ ModelDriver::setup()
         _async_dispatch ? thread_init : std::function<void(Device)>());
   }
 #endif
-
-  // LCOV_EXCL_START
-  if (_show_model_info)
-    std::cout << *_model << std::endl;
-  // LCOV_EXCL_STOP
 }
 
 void
@@ -153,10 +128,6 @@ ModelDriver::diagnose() const
 {
   Driver::diagnose();
   neml2::diagnose(*_model);
-
-  diagnostic_assert(
-      _intmd_vars.size() == _intmd_shapes.size(),
-      "The number of intermediate variables and intermediate shapes must be the same.");
 
   if (_postprocessor)
     neml2::diagnose(*_postprocessor);
