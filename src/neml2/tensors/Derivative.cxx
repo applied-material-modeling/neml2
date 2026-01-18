@@ -32,12 +32,6 @@
 
 namespace neml2
 {
-template <typename T, std::size_t N>
-static T
-sum_array(const std::array<T, N> & arr)
-{
-  return std::accumulate(arr.begin(), arr.end(), T(0), [](T sum, T x) { return sum + x; });
-}
 
 template <std::size_t N>
 Derivative<N>::Derivative(std::size_t intrsc_intmd_dim,
@@ -76,7 +70,7 @@ Derivative<N>::Derivative(std::size_t intrsc_intmd_dim,
                     "'s intermediate dimension (",
                     intmd_sizes[i + 1].size(),
                     ").");
-  const auto total_intrsc_intmd_dim = sum_array(intrsc_intmd_dims);
+  const auto total_intrsc_intmd_dim = utils::sum_array(intrsc_intmd_dims);
   neml_assert_dbg(
       intrsc_intmd_dim <= intrsc_intmd_dims[0] || intrsc_intmd_dim == total_intrsc_intmd_dim,
       "The intrinsic intermediate dimension (",
@@ -149,7 +143,7 @@ template <std::size_t N>
 bool
 Derivative<N>::is_intrsc_intmd_broadcast() const
 {
-  const auto total_intrsc_intmd_dim = sum_array(_intrsc_intmd_dims);
+  const auto total_intrsc_intmd_dim = utils::sum_array(_intrsc_intmd_dims);
   return _intrsc_intmd_dim < total_intrsc_intmd_dim;
 }
 

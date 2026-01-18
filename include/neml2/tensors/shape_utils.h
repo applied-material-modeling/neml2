@@ -29,6 +29,15 @@
 
 namespace neml2::utils
 {
+
+/**
+ * @brief Sum all elements in an array.
+ *
+ * @note This assumes, of course, that the + operator is defined for type T.
+ */
+template <typename T, std::size_t N>
+static T sum_array(const std::array<T, N> & arr);
+
 /**
  * @brief Helper function to normalize a dimension index to be non-negative given the lower- and
  * upper-bound of the context.
@@ -171,6 +180,13 @@ TensorShape add_shapes_impl(TensorShape &, TensorShapeRef, const S &...);
 
 namespace neml2::utils
 {
+template <typename T, std::size_t N>
+static T
+sum_array(const std::array<T, N> & arr)
+{
+  return std::accumulate(arr.begin(), arr.end(), T(0), [](T sum, T x) { return sum + x; });
+}
+
 template <class... T>
 bool
 sizes_broadcastable(const T &... shapes)

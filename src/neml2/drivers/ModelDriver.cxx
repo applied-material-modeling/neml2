@@ -51,9 +51,6 @@ ModelDriver::expected_options()
       "target compute device to be CPU, and device='cuda:1' sets the target compute device to be "
       "CUDA with device ID 1.";
 
-  options.set<bool>("show_model_info") = false;
-  options.set("show_model_info").doc() = "Whether to show model information at the beginning";
-
 #ifdef NEML2_WORK_DISPATCHER
   options.set<std::string>("scheduler");
   options.set("scheduler").doc() = "The work scheduler to use";
@@ -69,8 +66,7 @@ ModelDriver::ModelDriver(const OptionSet & options)
     _model(get_model("model")),
     _postprocessor(options.get("postprocessor").user_specified() ? get_model("postprocessor")
                                                                  : nullptr),
-    _device(options.get<std::string>("device")),
-    _show_model_info(options.get<bool>("show_model_info"))
+    _device(options.get<std::string>("device"))
 #ifdef NEML2_WORK_DISPATCHER
     ,
     _scheduler(options.get("scheduler").user_specified() ? get_scheduler("scheduler") : nullptr),
@@ -125,11 +121,6 @@ ModelDriver::setup()
         _async_dispatch ? thread_init : std::function<void(Device)>());
   }
 #endif
-
-  // LCOV_EXCL_START
-  if (_show_model_info)
-    std::cout << *_model << std::endl;
-  // LCOV_EXCL_STOP
 }
 
 void

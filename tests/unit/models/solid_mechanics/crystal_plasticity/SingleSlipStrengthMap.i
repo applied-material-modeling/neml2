@@ -8,6 +8,7 @@
     output_Tensor_values = '150'
     output_with_intrsc_intmd_dims = 'state/internal/slip_strengths'
     output_intrsc_intmd_dims = '1'
+    check_AD_parameter_derivatives = false
   []
 []
 

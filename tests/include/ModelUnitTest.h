@@ -66,7 +66,5 @@ private:
 
   std::map<VariableName, Size> _input_intrsc_intmd_dims;
   std::map<VariableName, Size> _output_intrsc_intmd_dims;
-
-  const bool _show_params;
 };
 } // namespace neml2

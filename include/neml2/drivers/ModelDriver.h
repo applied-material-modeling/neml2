@@ -65,9 +65,6 @@ protected:
   /// The device on which to evaluate the model
   const Device _device;
 
-  /// Set to true to list all the model parameters at the beginning
-  const bool _show_model_info;
-
 #ifdef NEML2_WORK_DISPATCHER
   /// The work scheduler to use
   std::shared_ptr<WorkScheduler> _scheduler;

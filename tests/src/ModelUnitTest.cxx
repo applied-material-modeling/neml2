@@ -24,11 +24,8 @@
 
 #include "ModelUnitTest.h"
 #include "neml2/misc/types.h"
-#include "neml2/tensors/functions/to_assembly.h"
-#include "neml2/tensors/functions/from_assembly.h"
+#include "neml2/tensors/functions/intrsc_intmd_dim_utils.h"
 #include "neml2/tensors/functions/jacrev.h"
-#include "neml2/tensors/functions/diagonalize.h"
-#include "neml2/tensors/functions/sum_to_size.h"
 #include "neml2/misc/assertions.h"
 
 #include "neml2/tensors/shape_utils.h"
@@ -91,9 +88,6 @@ ModelUnitTest::expected_options()
   options.set<std::vector<VariableName>>("output_with_intrsc_intmd_dims");
   options.set<std::vector<Size>>("output_intrsc_intmd_dims");
 
-  options.set<bool>("show_parameters") = false;
-  options.set("show_parameters").doc() = "Whether to show model parameters at the beginning";
-
   return options;
 }
 
@@ -117,9 +111,7 @@ ModelUnitTest::ModelUnitTest(const OptionSet & options)
     _input_intrsc_intmd_dims(options.get_map<VariableName, Size>("input_with_intrsc_intmd_dims",
                                                                  "input_intrsc_intmd_dims")),
     _output_intrsc_intmd_dims(options.get_map<VariableName, Size>("output_with_intrsc_intmd_dims",
-                                                                  "output_intrsc_intmd_dims")),
-
-    _show_params(options.get<bool>("show_parameters"))
+                                                                  "output_intrsc_intmd_dims"))
 {
 #define SET_VARIABLE_(T)                                                                           \
   set_variable<T>(_in, options, "input_" #T "_names", "input_" #T "_values");                      \
@@ -130,15 +122,6 @@ ModelUnitTest::ModelUnitTest(const OptionSet & options)
 bool
 ModelUnitTest::run()
 {
-  // LCOV_EXCL_START
-  if (_show_params)
-  {
-    std::cout << _model->name() << "'s parameters:\n";
-    for (auto && [pname, pval] : _model->named_parameters())
-      std::cout << "  " << pname << std::endl;
-  }
-  // LCOV_EXCL_STOP
-
   check_all();
 
   for (const auto & device : get_test_suite_additional_devices())
@@ -194,78 +177,6 @@ ModelUnitTest::check_value()
                 "\nThe model gives the following values:\n",
                 out.at(name));
   }
-}
-
-static Tensor
-pop_intrsc_intmd_dim(const Tensor & t, Size dim)
-{
-  if (dim == 0)
-    return t;
-  neml_assert_dbg(dim <= t.intmd_dim(),
-                  "Unable to pop ",
-                  dim,
-                  " intermediate dimensions from a tensor with intermediate dimension ",
-                  t.intmd_dim(),
-                  ".");
-  return Tensor(t, t.dynamic_sizes(), t.intmd_dim() - dim);
-}
-
-static Tensor
-push_intrsc_intmd_dim(const Tensor & t, Size dim)
-{
-  if (dim == 0)
-    return t;
-  neml_assert_dbg(dim <= t.base_dim(),
-                  "Unable to push ",
-                  dim,
-                  " intermediate dimensions from a tensor with base dimension ",
-                  t.base_dim(),
-                  ".");
-  return Tensor(t, t.dynamic_sizes(), t.intmd_dim() + dim);
-}
-
-static Tensor
-pop_intrsc_intmd_dim(const Derivative<1> & deriv)
-{
-  auto t = deriv.tensor();
-
-  const auto deriv_ex_is = deriv.extrsc_intmd_sizes();
-  const auto var_is = deriv.var_intrsc_intmd_sizes();
-  const auto arg_is = deriv.arg_intrsc_intmd_sizes(0);
-  const auto var_bs = deriv.var_base_sizes();
-  const auto arg_bs = deriv.arg_base_sizes(0);
-
-  if (deriv.is_intrsc_intmd_broadcast())
-  {
-    neml_assert_dbg(
-        at::is_expandable_to(deriv.arg_intrsc_intmd_sizes(0), deriv.var_intrsc_intmd_sizes()),
-        "The intrinsic intermediate shape (",
-        deriv.arg_intrsc_intmd_sizes(0),
-        ") of the argument for derivative '",
-        deriv.name(),
-        "' is not broadcastable to the variable's intrinsic intermediate shape (",
-        deriv.var_intrsc_intmd_sizes(),
-        ").");
-
-    // flatten the intrinsic intermediate dimensions
-    t = t.intmd_flatten(t.intmd_dim() - deriv.intrsc_intmd_dim());
-
-    // diagonal expand to arguments' intrinsic intermediate dimensions
-    t = intmd_diagonalize(t, -1);
-
-    // unflatten to inflated intrinsic intermediate dimensions (variable's intrinsic intermediate
-    // dimensions repeated N times)
-    const auto inflated_intmd_sizes = utils::add_shapes(deriv_ex_is, var_is, var_is);
-    t = t.intmd_reshape(inflated_intmd_sizes);
-
-    // reduce to arguments' intrinsic intermediate dimensions
-    const auto padded_intmd_sizes =
-        utils::add_shapes(deriv_ex_is, var_is, utils::pad_prepend(arg_is, var_is.size()));
-    t = intmd_sum_to_size(t, padded_intmd_sizes)
-            .intmd_reshape(utils::add_shapes(deriv_ex_is, var_is, arg_is));
-  }
-
-  return to_assembly<2>(t, {var_is, arg_is}, {var_bs, arg_bs}, deriv.name());
 }
 
 void
@@ -365,14 +276,8 @@ ModelUnitTest::check_d2value()
               (*x2var) = x;
               _model->forward_maybe_jit(false, true, false);
               if (!yvar->has_derivative(x1var->name()))
-              {
-                auto deriv =
-                    Tensor::zeros({},
-                                  {},
-                                  utils::add_shapes(yvar->base_sizes(), x1var->base_sizes()),
-                                  x.options());
-                return to_assembly<2>(deriv, {}, {yvar->base_sizes(), x1var->base_sizes()});
-              }
+                return Tensor::zeros(utils::add_shapes(yvar->base_sizes(), x1var->base_sizes()),
+                                     x.options());
               return yvar->d(*x1var).tensor();
             },
             x20,

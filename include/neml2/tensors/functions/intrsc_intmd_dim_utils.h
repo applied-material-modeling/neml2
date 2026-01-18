@@ -29,10 +29,24 @@
 namespace neml2
 {
 class Tensor;
+template <std::size_t N>
+class Derivative;
+
+Tensor pop_intrsc_intmd_dim(const Tensor & t, Size dim);
+
+Tensor push_intrsc_intmd_dim(const Tensor & t, Size dim);
+
+Tensor pop_intrsc_intmd_dim(const Derivative<1> & deriv);
 
 template <std::size_t N>
-Tensor to_assembly(const Tensor & from,
-                   const std::array<TensorShapeRef, N> & dep_intmd_shapes,
-                   const std::array<TensorShapeRef, N> & base_shapes,
-                   const std::string & debug_name = "<anonymous>");
+Tensor pop_intrsc_intmd_dim(const Tensor & from,
+                            const std::array<std::size_t, N> & intrsc_intmd_dims,
+                            const std::array<TensorShapeRef, N> & base_shapes,
+                            const std::string & debug_name = "<anonymous>");
+
+template <std::size_t N>
+Tensor push_intrsc_intmd_dim(const Tensor & from,
+                             const std::array<std::size_t, N> & intrsc_intmd_dims,
+                             const std::array<TensorShapeRef, N> & base_shapes,
+                             const std::string & debug_name = "<anonymous>");
 }
