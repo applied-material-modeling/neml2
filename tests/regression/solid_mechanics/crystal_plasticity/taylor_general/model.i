@@ -31,6 +31,18 @@ ncrystal = 5
     batch_shape = (${ncrystal})
     intermediate_dimension = 1
   []
+  [initial_elastic_strain]
+    type = FillSR2
+    values = '0'
+    shape_manipulations = 'intmd_expand'
+    shape_manipulation_args = '(${ncrystal})'
+  []
+  [initial_slip_hardening]
+    type = Scalar
+    values = '0'
+    shape_manipulations = 'intmd_expand'
+    shape_manipulation_args = '(${ncrystal})'
+  []
 
   # For mixed control:
   # Control signals above 0.5 -> strain control (via deformation rate)
@@ -62,30 +74,39 @@ ncrystal = 5
 [Drivers]
   [driver]
     type = TransientDriver
-    model = 'model_with_stress'
+    model = 'model'
     prescribed_time = 'times'
+
     force_SR2_names = 'forces/prescribed forces/control'
     force_SR2_values = 'prescribed control'
     force_WR2_names = 'forces/vorticity'
     force_WR2_values = 'vorticity'
+
     ic_Rot_names = 'state/orientation'
     ic_Rot_values = 'initial_orientation'
-    var_with_intmd_dims = 'state/internal/slip_hardening state/elastic_strain state/orientation'
-    var_intmd_shapes = '(${ncrystal}) (${ncrystal}) (${ncrystal})'
+    ic_SR2_names = 'state/elastic_strain'
+    ic_SR2_values = 'initial_elastic_strain'
+    ic_Scalar_names = 'state/internal/slip_hardening'
+    ic_Scalar_values = 'initial_slip_hardening'
+
     predictor = 'PREVIOUS_STATE'
     save_as = 'result.pt'
   []
-  # [regression]
-  #   type = TransientRegression
-  #   driver = 'driver'
-  #   reference = 'gold/result.pt'
-  # []
+  [regression]
+    type = TransientRegression
+    driver = 'driver'
+    reference = 'gold/result.pt'
+  []
 []
 
 [Solvers]
   [newton]
     type = NewtonWithLineSearch
     max_linesearch_iterations = 5
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
   []
 []
 
