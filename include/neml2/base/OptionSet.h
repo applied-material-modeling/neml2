@@ -277,26 +277,16 @@ OptionSet::get_map(const std::string & key_option, const std::string & value_opt
 {
   const auto keys = this->get<std::vector<K>>(key_option);
   const auto values = this->get<std::vector<V>>(value_option);
-  neml_assert(keys.size() == values.size(),
-              "Trying to build a map from '",
-              key_option,
-              "' and '",
-              value_option,
-              "' with ",
-              keys.size(),
-              " keys and ",
-              values.size(),
-              " values.");
+  if (keys.size() != values.size())
+    throw NEMLException("Trying to build a map from '" + key_option + "' and '" + value_option +
+                        "' with " + std::to_string(keys.size()) + " keys and " +
+                        std::to_string(values.size()) + " values.");
   std::map<K, V> result;
   for (size_t i = 0; i < keys.size(); i++)
   {
-    neml_assert(result.find(keys[i]) == result.end(),
-                "Trying to build a map from '",
-                key_option,
-                "' and '",
-                value_option,
-                "' with duplicate key: ",
-                keys[i]);
+    if (result.find(keys[i]) != result.end())
+      throw NEMLException("Trying to build a map from '" + key_option + "' and '" + value_option +
+                          "' with duplicate key: " + keys[i]);
     result[keys[i]] = values[i];
   }
   return result;
