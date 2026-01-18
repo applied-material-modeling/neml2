@@ -1143,9 +1143,9 @@ Functions</h2></td></tr>
 <tr class="separator:af2dfd736935783dab23c336c69529156"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adaf729acffee13165dd8eb67cc6b2687" id="r_adaf729acffee13165dd8eb67cc6b2687"><td class="memItemLeft" align="right" valign="top">std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adaf729acffee13165dd8eb67cc6b2687">operator&lt;&lt;</a> (std::ostream &amp;os, const <a class="el" href="classneml2_1_1Model.html">Model</a> &amp;model)</td></tr>
 <tr class="separator:adaf729acffee13165dd8eb67cc6b2687"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3e36fb34f1d6ba44751a93da341e93ba" id="r_a3e36fb34f1d6ba44751a93da341e93ba"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
-<tr class="memitem:a3e36fb34f1d6ba44751a93da341e93ba"><td class="memTemplItemLeft" align="right" valign="top">const T &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a3e36fb34f1d6ba44751a93da341e93ba">resolve_tensor_name</a> (const <a class="el" href="structneml2_1_1TensorName.html">TensorName</a>&lt; T &gt; &amp;tn, <a class="el" href="classneml2_1_1Model.html">Model</a> *caller, const std::string &amp;pname, std::size_t intmd_dim)</td></tr>
-<tr class="separator:a3e36fb34f1d6ba44751a93da341e93ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a094044d18ca027327ae9687ecbe8dbcd" id="r_a094044d18ca027327ae9687ecbe8dbcd"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a094044d18ca027327ae9687ecbe8dbcd"><td class="memTemplItemLeft" align="right" valign="top">const T &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a094044d18ca027327ae9687ecbe8dbcd">resolve_tensor_name</a> (const <a class="el" href="structneml2_1_1TensorName.html">TensorName</a>&lt; T &gt; &amp;tn, <a class="el" href="classneml2_1_1Model.html">Model</a> *caller, const std::string &amp;pname)</td></tr>
+<tr class="separator:a094044d18ca027327ae9687ecbe8dbcd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a352bfea755fedbe267e88b461b412d31" id="r_a352bfea755fedbe267e88b461b412d31"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a352bfea755fedbe267e88b461b412d31">FOR_ALL_TENSORBASE</a> (PARAMETERSTORE_INTANTIATE_TENSORBASE)</td></tr>
 <tr class="separator:a352bfea755fedbe267e88b461b412d31"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa9f997dfa58f0ffb1586a4ae3692ce55" id="r_aa9f997dfa58f0ffb1586a4ae3692ce55"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa9f997dfa58f0ffb1586a4ae3692ce55">FOR_ALL_PRIMITIVETENSOR</a> (PARAMETERSTORE_INTANTIATE_PRIMITIVETENSOR)</td></tr>
@@ -2106,6 +2106,10 @@ Functions</h2></td></tr>
 <tr class="memitem:a1e0baf8336722e0aea33c81762e185eb" id="r_a1e0baf8336722e0aea33c81762e185eb"><td class="memTemplParams" colspan="2">template&lt;class... T&gt; </td></tr>
 <tr class="memitem:a1e0baf8336722e0aea33c81762e185eb"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a1e0baf8336722e0aea33c81762e185eb">neml_assert_static_broadcastable_dbg</a> (const T &amp;... tensors)</td></tr>
 <tr class="separator:a1e0baf8336722e0aea33c81762e185eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4a712885f47dac040248fcf89a0e6836" id="r_a4a712885f47dac040248fcf89a0e6836"><td class="memTemplParams" colspan="2">template&lt;std::size_t N&gt; </td></tr>
+<tr class="memitem:a4a712885f47dac040248fcf89a0e6836"><td class="memTemplItemLeft" align="right" valign="top">std::string&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a4a712885f47dac040248fcf89a0e6836">derivative_name</a> (const std::string &amp;var_name, const std::array&lt; std::string, N &gt; &amp;arg_names)</td></tr>
+<tr class="memdesc:a4a712885f47dac040248fcf89a0e6836"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pretty print derivative names.  <br /></td></tr>
+<tr class="separator:a4a712885f47dac040248fcf89a0e6836"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a96b0305f09091f68e2bf823d894c57ea" id="r_a96b0305f09091f68e2bf823d894c57ea"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a96b0305f09091f68e2bf823d894c57ea">FOR_ALL_TENSORBASE</a> (DECLARE_ABS)</td></tr>
 <tr class="separator:a96b0305f09091f68e2bf823d894c57ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0976a5684af5879d0c3ca096299636dd" id="r_a0976a5684af5879d0c3ca096299636dd"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0976a5684af5879d0c3ca096299636dd">FOR_ALL_TENSORBASE</a> (DECLARE_ACOS)</td></tr>
@@ -2275,11 +2279,6 @@ Functions</h2></td></tr>
 <tr class="memitem:a97f9b5d456f35181fc27b1d583240ac8" id="r_a97f9b5d456f35181fc27b1d583240ac8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="#ab6773d3e782bd312d4cd7b30b39ca203">TensorOptions</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a97f9b5d456f35181fc27b1d583240ac8">default_integer_tensor_options</a> ()</td></tr>
 <tr class="memdesc:a97f9b5d456f35181fc27b1d583240ac8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default integral tensor options.  <br /></td></tr>
 <tr class="separator:a97f9b5d456f35181fc27b1d583240ac8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr><td colspan="2"><div class="groupHeader"></div></td></tr>
-<tr class="memitem:a3933b9e4b6cfb5dfd85d4dca5ce4650b" id="r_a3933b9e4b6cfb5dfd85d4dca5ce4650b"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3933b9e4b6cfb5dfd85d4dca5ce4650b">derivative_name</a> (const std::string &amp;var_name, const std::string &amp;arg_name)</td></tr>
-<tr class="separator:a3933b9e4b6cfb5dfd85d4dca5ce4650b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a02934fc7d90826e21da67616cf6cc9ee" id="r_a02934fc7d90826e21da67616cf6cc9ee"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a02934fc7d90826e21da67616cf6cc9ee">derivative_name</a> (const std::string &amp;var_name, const std::string &amp;arg1_name, const std::string &amp;arg2_name)</td></tr>
-<tr class="separator:a02934fc7d90826e21da67616cf6cc9ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader"></div></td></tr>
 <tr class="memitem:aa1aefec3d36afa61739eaa93335662f7" id="r_aa1aefec3d36afa61739eaa93335662f7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1Scalar.html">Scalar</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa1aefec3d36afa61739eaa93335662f7">det</a> (const <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &amp;A)</td></tr>
 <tr class="separator:aa1aefec3d36afa61739eaa93335662f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -3838,11 +3837,13 @@ template&lt;typename T &gt; </div>
 
 </div>
 </div>
-<a id="a02934fc7d90826e21da67616cf6cc9ee" name="a02934fc7d90826e21da67616cf6cc9ee"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a02934fc7d90826e21da67616cf6cc9ee">&#9670;&#160;</a></span>derivative_name() <span class="overload">[1/2]</span></h2>
+<a id="a4a712885f47dac040248fcf89a0e6836" name="a4a712885f47dac040248fcf89a0e6836"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4a712885f47dac040248fcf89a0e6836">&#9670;&#160;</a></span>derivative_name()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;std::size_t N&gt; </div>
       <table class="memname">
         <tr>
           <td class="memname">std::string derivative_name </td>
@@ -3852,37 +3853,12 @@ template&lt;typename T &gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>arg1_name</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>arg2_name</em></span>&#160;)</td>
+          <td class="paramtype">const std::array&lt; std::string, N &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>arg_names</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-</div>
-</div>
-<a id="a3933b9e4b6cfb5dfd85d4dca5ce4650b" name="a3933b9e4b6cfb5dfd85d4dca5ce4650b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3933b9e4b6cfb5dfd85d4dca5ce4650b">&#9670;&#160;</a></span>derivative_name() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::string derivative_name </td>
-          <td>(</td>
-          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>var_name</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>arg_name</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Pretty print derivative names </p>
+<p>Pretty print derivative names. </p>
 
 </div>
 </div>
@@ -15724,8 +15700,8 @@ template&lt;typename T1 , typename T2 , typename  = typename std::enable_if_t&lt
 
 </div>
 </div>
-<a id="a3e36fb34f1d6ba44751a93da341e93ba" name="a3e36fb34f1d6ba44751a93da341e93ba"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3e36fb34f1d6ba44751a93da341e93ba">&#9670;&#160;</a></span>resolve_tensor_name()</h2>
+<a id="a094044d18ca027327ae9687ecbe8dbcd" name="a094044d18ca027327ae9687ecbe8dbcd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a094044d18ca027327ae9687ecbe8dbcd">&#9670;&#160;</a></span>resolve_tensor_name()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -15745,12 +15721,7 @@ template&lt;typename T &gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>pname</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">std::size_t</td>          <td class="paramname"><span class="paramname"><em>intmd_dim</em></span>&#160;)</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>pname</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">

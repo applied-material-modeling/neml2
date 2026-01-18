@@ -32,12 +32,12 @@
             <td></td>
             <td class="headerItem">Lines:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
-            <td class="headerCovTableEntry">32</td>
-            <td class="headerCovTableEntry">32</td>
+            <td class="headerCovTableEntry">28</td>
+            <td class="headerCovTableEntry">28</td>
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2026-01-17 16:27:54</td>
+            <td class="headerValue">2026-01-18 05:02:38</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryLo">17.1&nbsp;%</td>
@@ -125,28 +125,22 @@
 <span id="L63"><span class="lineNum">      63</span> <span class="tlaGNC">          12 :   options.set_output(&quot;output&quot;);</span></span>
 <span id="L64"><span class="lineNum">      64</span> <span class="tlaGNC">          36 :   options.set(&quot;output&quot;).doc() = tensor_type + &quot; output of the interpolant&quot;;</span></span>
 <span id="L65"><span class="lineNum">      65</span>              : </span>
-<span id="L66"><span class="lineNum">      66</span> <span class="tlaGNC">          24 :   options.set&lt;unsigned int&gt;(&quot;intrsc_intmd_dim&quot;) = 0;</span></span>
-<span id="L67"><span class="lineNum">      67</span> <span class="tlaGNC">          12 :   options.set(&quot;intrsc_intmd_dim&quot;).doc() =</span></span>
-<span id="L68"><span class="lineNum">      68</span>              :       &quot;The intrinsic intermediate dimension of the output variable.&quot;;</span>
-<span id="L69"><span class="lineNum">      69</span>              : </span>
-<span id="L70"><span class="lineNum">      70</span> <span class="tlaGNC">          24 :   return options;</span></span>
-<span id="L71"><span class="lineNum">      71</span> <span class="tlaGNC">          12 : }</span></span>
-<span id="L72"><span class="lineNum">      72</span>              : </span>
-<span id="L73"><span class="lineNum">      73</span>              : template &lt;typename T&gt;</span>
-<span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">          17 : Interpolation&lt;T&gt;::Interpolation(const OptionSet &amp; options)</span></span>
-<span id="L75"><span class="lineNum">      75</span>              :   : Model(options),</span>
-<span id="L76"><span class="lineNum">      76</span> <span class="tlaGNC">          17 :     _intrsc_intmd_dim(options.get&lt;unsigned int&gt;(&quot;intrsc_intmd_dim&quot;)),</span></span>
-<span id="L77"><span class="lineNum">      77</span> <span class="tlaGNC">          85 :     _Y(this-&gt;template declare_parameter&lt;T&gt;(&quot;Y&quot;, &quot;ordinate&quot;)),</span></span>
-<span id="L78"><span class="lineNum">      78</span> <span class="tlaGNC">          17 :     _p(options.get(&quot;output&quot;).user_specified()</span></span>
-<span id="L79"><span class="lineNum">      79</span> <span class="tlaGNC">          17 :            ? this-&gt;template declare_output_variable&lt;T&gt;(&quot;output&quot;, _intrsc_intmd_dim)</span></span>
-<span id="L80"><span class="lineNum">      80</span> <span class="tlaGNC">          17 :            : this-&gt;template declare_output_variable&lt;T&gt;(VariableName(PARAMETERS, name()),</span></span>
-<span id="L81"><span class="lineNum">      81</span> <span class="tlaGNC">          33 :                                                        _intrsc_intmd_dim))</span></span>
-<span id="L82"><span class="lineNum">      82</span>              : {</span>
-<span id="L83"><span class="lineNum">      83</span> <span class="tlaGNC">          17 : }</span></span>
-<span id="L84"><span class="lineNum">      84</span>              : </span>
-<span id="L85"><span class="lineNum">      85</span>              : #define INSTANTIATE(T) template class Interpolation&lt;T&gt;</span>
-<span id="L86"><span class="lineNum">      86</span>              : FOR_ALL_PRIMITIVETENSOR(INSTANTIATE);</span>
-<span id="L87"><span class="lineNum">      87</span>              : } // namespace neml2</span>
+<span id="L66"><span class="lineNum">      66</span> <span class="tlaGNC">          24 :   return options;</span></span>
+<span id="L67"><span class="lineNum">      67</span> <span class="tlaGNC">          12 : }</span></span>
+<span id="L68"><span class="lineNum">      68</span>              : </span>
+<span id="L69"><span class="lineNum">      69</span>              : template &lt;typename T&gt;</span>
+<span id="L70"><span class="lineNum">      70</span> <span class="tlaGNC">          17 : Interpolation&lt;T&gt;::Interpolation(const OptionSet &amp; options)</span></span>
+<span id="L71"><span class="lineNum">      71</span>              :   : Model(options),</span>
+<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC">          68 :     _Y(this-&gt;template declare_parameter&lt;T&gt;(&quot;Y&quot;, &quot;ordinate&quot;)),</span></span>
+<span id="L73"><span class="lineNum">      73</span> <span class="tlaGNC">          17 :     _p(options.get(&quot;output&quot;).user_specified()</span></span>
+<span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">          17 :            ? this-&gt;template declare_output_variable&lt;T&gt;(&quot;output&quot;)</span></span>
+<span id="L75"><span class="lineNum">      75</span> <span class="tlaGNC">          34 :            : this-&gt;template declare_output_variable&lt;T&gt;(VariableName(PARAMETERS, name())))</span></span>
+<span id="L76"><span class="lineNum">      76</span>              : {</span>
+<span id="L77"><span class="lineNum">      77</span> <span class="tlaGNC">          17 : }</span></span>
+<span id="L78"><span class="lineNum">      78</span>              : </span>
+<span id="L79"><span class="lineNum">      79</span>              : #define INSTANTIATE(T) template class Interpolation&lt;T&gt;</span>
+<span id="L80"><span class="lineNum">      80</span>              : FOR_ALL_PRIMITIVETENSOR(INSTANTIATE);</span>
+<span id="L81"><span class="lineNum">      81</span>              : } // namespace neml2</span>
         </pre>
               </td>
             </tr>

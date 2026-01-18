@@ -13,7 +13,6 @@ var classneml2_1_1LabeledAxis =
     [ "nsubaxis", "classneml2_1_1LabeledAxis.html#a0a2bd698150626713afe8f591833d86c", null ],
     [ "nvariable", "classneml2_1_1LabeledAxis.html#a77c8aab005ddbad5779ab778bf98dfa7", null ],
     [ "qualify", "classneml2_1_1LabeledAxis.html#aee4e42da0b5eca0919de5ab6a38c5d56", null ],
-    [ "set_intmd_sizes", "classneml2_1_1LabeledAxis.html#a7e35a7320eb85e27374c63ced36c282c", null ],
     [ "setup_layout", "classneml2_1_1LabeledAxis.html#aacd1f1cb625061037d2564e63fdd8bd6", null ],
     [ "size", "classneml2_1_1LabeledAxis.html#acce0ab2cacc475b2434f24c65c91685a", null ],
     [ "size", "classneml2_1_1LabeledAxis.html#abe60734a2089eb7af4f1e46c47ca0565", null ],

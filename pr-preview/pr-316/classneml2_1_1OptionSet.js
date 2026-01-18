@@ -18,6 +18,7 @@ var classneml2_1_1OptionSet =
     [ "end", "classneml2_1_1OptionSet.html#ae5d39af0c299dd8065b2249d0bac36a4", null ],
     [ "get", "classneml2_1_1OptionSet.html#a72f6cb3878f66a117f1bcba505a5b76e", null ],
     [ "get", "classneml2_1_1OptionSet.html#a8d539aebcbe1c92120aba8caf0c954bc", null ],
+    [ "get_map", "classneml2_1_1OptionSet.html#a18fa0385a22be9ded5fca7ebd733c454", null ],
     [ "name", "classneml2_1_1OptionSet.html#a7e655a505173f492cd64fc45cb2944c5", null ],
     [ "name", "classneml2_1_1OptionSet.html#a24dcbf29c0d6cd766009a182a6484e3b", null ],
     [ "operator+=", "classneml2_1_1OptionSet.html#abf66b5d5efcdc0d044a2b719d8c2b574", null ],

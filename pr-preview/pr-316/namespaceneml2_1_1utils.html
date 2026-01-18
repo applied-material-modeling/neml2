@@ -202,9 +202,9 @@ Functions</h2></td></tr>
 <tr class="memitem:aa17c056bd38d6149904d2189daefcf6d" id="r_aa17c056bd38d6149904d2189daefcf6d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa17c056bd38d6149904d2189daefcf6d">numel</a> (<a class="el" href="namespaceneml2.html#aead1bb40178f274bd0b020b5548b4d64">TensorShapeRef</a> shape)</td></tr>
 <tr class="memdesc:aa17c056bd38d6149904d2189daefcf6d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of elements in a tensor with given shape.  <br /></td></tr>
 <tr class="separator:aa17c056bd38d6149904d2189daefcf6d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2880e22e1dda381473bf23cdd5642a3d" id="r_a2880e22e1dda381473bf23cdd5642a3d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceneml2.html#a1456b5c3b8814c9aa2e7269af73c059d">TensorShape</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2880e22e1dda381473bf23cdd5642a3d">pad_prepend</a> (<a class="el" href="namespaceneml2.html#aead1bb40178f274bd0b020b5548b4d64">TensorShapeRef</a> s, <a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> dim, <a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> pad=1)</td></tr>
-<tr class="memdesc:a2880e22e1dda381473bf23cdd5642a3d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pad shape <code>s</code> to dimension <code>dim</code> by prepending sizes of <code>pad</code>.  <br /></td></tr>
-<tr class="separator:a2880e22e1dda381473bf23cdd5642a3d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a846d4a188b5617ed275e80f24afafd61" id="r_a846d4a188b5617ed275e80f24afafd61"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceneml2.html#a1456b5c3b8814c9aa2e7269af73c059d">TensorShape</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a846d4a188b5617ed275e80f24afafd61">pad_prepend</a> (<a class="el" href="namespaceneml2.html#aead1bb40178f274bd0b020b5548b4d64">TensorShapeRef</a> s, std::size_t dim, <a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> pad=1)</td></tr>
+<tr class="memdesc:a846d4a188b5617ed275e80f24afafd61"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pad shape <code>s</code> to dimension <code>dim</code> by prepending sizes of <code>pad</code>.  <br /></td></tr>
+<tr class="separator:a846d4a188b5617ed275e80f24afafd61"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad559ad924e610a35eb32bb02a2b2e43e" id="r_ad559ad924e610a35eb32bb02a2b2e43e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structneml2_1_1TraceableTensorShape.html">TraceableTensorShape</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad559ad924e610a35eb32bb02a2b2e43e">broadcast_dynamic_sizes</a> (const std::vector&lt; <a class="el" href="classneml2_1_1Tensor.html">Tensor</a> &gt; &amp;tensors)</td></tr>
 <tr class="memdesc:ad559ad924e610a35eb32bb02a2b2e43e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Find the broadcast dynamic shape of all the tensors The returned dynamic shape will be <em>traceable</em>.  <br /></td></tr>
 <tr class="separator:ad559ad924e610a35eb32bb02a2b2e43e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -975,12 +975,12 @@ template&lt;class... T&gt; </div>
 <div class="line"><a class="code hl_function" href="#aa17c056bd38d6149904d2189daefcf6d">numel</a>({1}) == 1;</div>
 <div class="line"><a class="code hl_function" href="#aa17c056bd38d6149904d2189daefcf6d">numel</a>({1, 2, 3}) == 6;</div>
 <div class="line"><a class="code hl_function" href="#aa17c056bd38d6149904d2189daefcf6d">numel</a>({5, 1, 1}) == 5;</div>
-<div class="ttc" id="anamespaceneml2_1_1utils_html_aa17c056bd38d6149904d2189daefcf6d"><div class="ttname"><a href="#aa17c056bd38d6149904d2189daefcf6d">neml2::utils::numel</a></div><div class="ttdeci">Size numel(TensorShapeRef shape)</div><div class="ttdoc">Number of elements in a tensor with given shape.</div><div class="ttdef"><b>Definition</b> shape_utils.cxx:88</div></div>
+<div class="ttc" id="anamespaceneml2_1_1utils_html_aa17c056bd38d6149904d2189daefcf6d"><div class="ttname"><a href="#aa17c056bd38d6149904d2189daefcf6d">neml2::utils::numel</a></div><div class="ttdeci">Size numel(TensorShapeRef shape)</div><div class="ttdoc">Number of elements in a tensor with given shape.</div><div class="ttdef"><b>Definition</b> shape_utils.cxx:87</div></div>
 </div><!-- fragment --> 
 </div>
 </div>
-<a id="a2880e22e1dda381473bf23cdd5642a3d" name="a2880e22e1dda381473bf23cdd5642a3d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2880e22e1dda381473bf23cdd5642a3d">&#9670;&#160;</a></span>pad_prepend()</h2>
+<a id="a846d4a188b5617ed275e80f24afafd61" name="a846d4a188b5617ed275e80f24afafd61"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a846d4a188b5617ed275e80f24afafd61">&#9670;&#160;</a></span>pad_prepend()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -993,7 +993,7 @@ template&lt;class... T&gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a></td>          <td class="paramname"><span class="paramname"><em>dim</em></span>, </td>
+          <td class="paramtype">std::size_t</td>          <td class="paramname"><span class="paramname"><em>dim</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>

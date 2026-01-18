@@ -31,13 +31,13 @@
             <td class="headerValue">coverage.info</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntryMed">55.1&nbsp;%</td>
-            <td class="headerCovTableEntry">234</td>
-            <td class="headerCovTableEntry">129</td>
+            <td class="headerCovTableEntryMed">55.3&nbsp;%</td>
+            <td class="headerCovTableEntry">235</td>
+            <td class="headerCovTableEntry">130</td>
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2026-01-17 16:27:54</td>
+            <td class="headerValue">2026-01-18 05:02:38</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryMed">55.6&nbsp;%</td>
@@ -232,267 +232,269 @@
 <span id="L170"><span class="lineNum">     170</span> <span class="tlaGNC">        2084 :     const auto &amp; v = _data[indices[i]];</span></span>
 <span id="L171"><span class="lineNum">     171</span> <span class="tlaGNC">        2084 :     if (!v.defined())</span></span>
 <span id="L172"><span class="lineNum">     172</span> <span class="tlaUNC tlaBgUNC">           0 :       continue;</span></span>
-<span id="L173"><span class="lineNum">     173</span> <span class="tlaGNC tlaBgGNC">        2084 :     const auto v_f = v.base_flatten();</span></span>
-<span id="L174"><span class="lineNum">     174</span> <span class="tlaGNC">        2084 :     vs_f[i] = v_f;</span></span>
-<span id="L175"><span class="lineNum">     175</span> <span class="tlaGNC">        2084 :   }</span></span>
-<span id="L176"><span class="lineNum">     176</span>              : </span>
-<span id="L177"><span class="lineNum">     177</span>              :   // Expand defined tensors with the broadcast dynamic shape and fill undefined tensors with zeros.</span>
-<span id="L178"><span class="lineNum">     178</span> <span class="tlaGNC">         709 :   const auto dynamic_sizes = utils::broadcast_dynamic_sizes(vs_f);</span></span>
-<span id="L179"><span class="lineNum">     179</span> <span class="tlaGNC">        2793 :   for (std::size_t i = 0; i &lt; vs_f.size(); ++i)</span></span>
-<span id="L180"><span class="lineNum">     180</span> <span class="tlaGNC">        2084 :     if (vs_f[i].defined())</span></span>
-<span id="L181"><span class="lineNum">     181</span> <span class="tlaGNC">        2084 :       vs_f[i] = vs_f[i].dynamic_expand(dynamic_sizes);</span></span>
-<span id="L182"><span class="lineNum">     182</span>              :     else</span>
-<span id="L183"><span class="lineNum">     183</span> <span class="tlaUNC tlaBgUNC">           0 :       vs_f[i] = Tensor::zeros(dynamic_sizes, {}, split_sizes[i], options());</span></span>
-<span id="L184"><span class="lineNum">     184</span>              : </span>
-<span id="L185"><span class="lineNum">     185</span> <span class="tlaGNC tlaBgGNC">        1418 :   return {base_cat(vs_f, -1), split_sizes};</span></span>
-<span id="L186"><span class="lineNum">     186</span> <span class="tlaGNC">         709 : }</span></span>
-<span id="L187"><span class="lineNum">     187</span>              : </span>
-<span id="L188"><span class="lineNum">     188</span>              : void</span>
-<span id="L189"><span class="lineNum">     189</span> <span class="tlaUNC tlaBgUNC">           0 : Vector::disassemble(const Tensor &amp; vec, OptionalArrayRef&lt;std::size_t&gt; blocks)</span></span>
-<span id="L190"><span class="lineNum">     190</span>              : {</span>
-<span id="L191"><span class="lineNum">     191</span> <span class="tlaUNC">           0 :   const auto indices = select_subblock_indices(blocks, n());</span></span>
-<span id="L192"><span class="lineNum">     192</span> <span class="tlaUNC">           0 :   const auto shapes = select_shapes(_shapes, indices);</span></span>
-<span id="L193"><span class="lineNum">     193</span> <span class="tlaUNC">           0 :   const auto split_sizes = numel(shapes);</span></span>
-<span id="L194"><span class="lineNum">     194</span> <span class="tlaUNC">           0 :   const auto &amp; S = vec.dynamic_sizes();</span></span>
-<span id="L195"><span class="lineNum">     195</span> <span class="tlaUNC">           0 :   const auto vs = vec.split(split_sizes, -1);</span></span>
-<span id="L196"><span class="lineNum">     196</span>              : </span>
-<span id="L197"><span class="lineNum">     197</span> <span class="tlaUNC">           0 :   for (std::size_t i = 0; i &lt; indices.size(); ++i)</span></span>
-<span id="L198"><span class="lineNum">     198</span> <span class="tlaUNC">           0 :     _data[indices[i]] = Tensor(vs[i], S).base_reshape(shapes[i]);</span></span>
-<span id="L199"><span class="lineNum">     199</span> <span class="tlaUNC">           0 : }</span></span>
-<span id="L200"><span class="lineNum">     200</span>              : </span>
-<span id="L201"><span class="lineNum">     201</span>              : void</span>
-<span id="L202"><span class="lineNum">     202</span> <span class="tlaGNC tlaBgGNC">         683 : Vector::update_data(const Vector &amp; other)</span></span>
-<span id="L203"><span class="lineNum">     203</span>              : {</span>
-<span id="L204"><span class="lineNum">     204</span> <span class="tlaGNC">         683 :   neml_assert_dbg(</span></span>
-<span id="L205"><span class="lineNum">     205</span> <span class="tlaGNC">         683 :       n() == other.n(), &quot;es::Vector::update_data: size mismatch (&quot;, n(), &quot;) vs (&quot;, other.n(), &quot;)&quot;);</span></span>
-<span id="L206"><span class="lineNum">     206</span> <span class="tlaGNC">        2689 :   for (std::size_t i = 0; i &lt; n(); i++)</span></span>
-<span id="L207"><span class="lineNum">     207</span>              :   {</span>
-<span id="L208"><span class="lineNum">     208</span> <span class="tlaGNC">        2006 :     auto &amp; v = _data[i];</span></span>
-<span id="L209"><span class="lineNum">     209</span> <span class="tlaGNC">        2006 :     v = v.variable_data() + other[i];</span></span>
-<span id="L210"><span class="lineNum">     210</span>              :   }</span>
-<span id="L211"><span class="lineNum">     211</span> <span class="tlaGNC">         683 : }</span></span>
-<span id="L212"><span class="lineNum">     212</span>              : </span>
-<span id="L213"><span class="lineNum">     213</span>              : void</span>
-<span id="L214"><span class="lineNum">     214</span> <span class="tlaGNC">          26 : Vector::update(const Vector &amp; other)</span></span>
-<span id="L215"><span class="lineNum">     215</span>              : {</span>
-<span id="L216"><span class="lineNum">     216</span> <span class="tlaGNC">          26 :   neml_assert_dbg(</span></span>
-<span id="L217"><span class="lineNum">     217</span> <span class="tlaGNC">          26 :       n() == other.n(), &quot;es::Vector::update_data: size mismatch (&quot;, n(), &quot;) vs (&quot;, other.n(), &quot;)&quot;);</span></span>
-<span id="L218"><span class="lineNum">     218</span> <span class="tlaGNC">         104 :   for (size_t i = 0; i &lt; n(); i++)</span></span>
-<span id="L219"><span class="lineNum">     219</span>              :   {</span>
-<span id="L220"><span class="lineNum">     220</span> <span class="tlaGNC">          78 :     auto &amp; v = (*this)[i];</span></span>
-<span id="L221"><span class="lineNum">     221</span> <span class="tlaGNC">          78 :     v = v + other[i];</span></span>
-<span id="L222"><span class="lineNum">     222</span>              :   }</span>
-<span id="L223"><span class="lineNum">     223</span> <span class="tlaGNC">          26 : }</span></span>
-<span id="L224"><span class="lineNum">     224</span>              : </span>
-<span id="L225"><span class="lineNum">     225</span>              : Vector</span>
-<span id="L226"><span class="lineNum">     226</span> <span class="tlaGNC">         179 : operator+(const Vector &amp; a, const Vector &amp; b)</span></span>
-<span id="L227"><span class="lineNum">     227</span>              : {</span>
-<span id="L228"><span class="lineNum">     228</span> <span class="tlaGNC">         179 :   neml_assert_dbg(</span></span>
-<span id="L229"><span class="lineNum">     229</span> <span class="tlaGNC">         358 :       a.n() == b.n(), &quot;es::Vector::operator+: size mismatch (&quot;, a.n(), &quot;) vs (&quot;, b.n(), &quot;)&quot;);</span></span>
-<span id="L230"><span class="lineNum">     230</span> <span class="tlaGNC">         179 :   std::vector&lt;Tensor&gt; v(a.n());</span></span>
-<span id="L231"><span class="lineNum">     231</span> <span class="tlaGNC">         739 :   for (std::size_t i = 0; i &lt; a.n(); i++)</span></span>
-<span id="L232"><span class="lineNum">     232</span>              :   {</span>
-<span id="L233"><span class="lineNum">     233</span> <span class="tlaGNC">         560 :     const auto &amp; ai = a[i];</span></span>
-<span id="L234"><span class="lineNum">     234</span> <span class="tlaGNC">         560 :     const auto &amp; bi = b[i];</span></span>
-<span id="L235"><span class="lineNum">     235</span> <span class="tlaGNC">         560 :     if (ai.defined() &amp;&amp; bi.defined())</span></span>
-<span id="L236"><span class="lineNum">     236</span> <span class="tlaGNC">         560 :       v[i] = ai + bi;</span></span>
-<span id="L237"><span class="lineNum">     237</span> <span class="tlaUNC tlaBgUNC">           0 :     else if (ai.defined())</span></span>
-<span id="L238"><span class="lineNum">     238</span> <span class="tlaUNC">           0 :       v[i] = ai;</span></span>
-<span id="L239"><span class="lineNum">     239</span> <span class="tlaUNC">           0 :     else if (bi.defined())</span></span>
-<span id="L240"><span class="lineNum">     240</span> <span class="tlaUNC">           0 :       v[i] = bi;</span></span>
-<span id="L241"><span class="lineNum">     241</span>              :   }</span>
-<span id="L242"><span class="lineNum">     242</span> <span class="tlaGNC tlaBgGNC">         358 :   return Vector(std::move(v), a.block_sizes());</span></span>
-<span id="L243"><span class="lineNum">     243</span> <span class="tlaGNC">         179 : }</span></span>
-<span id="L244"><span class="lineNum">     244</span>              : </span>
-<span id="L245"><span class="lineNum">     245</span>              : Vector</span>
-<span id="L246"><span class="lineNum">     246</span> <span class="tlaUNC tlaBgUNC">           0 : operator+(const Scalar &amp; a, const Vector &amp; b)</span></span>
-<span id="L247"><span class="lineNum">     247</span>              : {</span>
-<span id="L248"><span class="lineNum">     248</span> <span class="tlaUNC">           0 :   std::vector&lt;Tensor&gt; v(b.n());</span></span>
-<span id="L249"><span class="lineNum">     249</span> <span class="tlaUNC">           0 :   for (std::size_t i = 0; i &lt; b.n(); i++)</span></span>
-<span id="L250"><span class="lineNum">     250</span>              :   {</span>
-<span id="L251"><span class="lineNum">     251</span> <span class="tlaUNC">           0 :     const auto &amp; bi = b[i];</span></span>
-<span id="L252"><span class="lineNum">     252</span> <span class="tlaUNC">           0 :     v[i] = bi.defined() ? a + bi : Tensor(a);</span></span>
-<span id="L253"><span class="lineNum">     253</span>              :   }</span>
-<span id="L254"><span class="lineNum">     254</span> <span class="tlaUNC">           0 :   return Vector(std::move(v), b.block_sizes());</span></span>
-<span id="L255"><span class="lineNum">     255</span> <span class="tlaUNC">           0 : }</span></span>
-<span id="L256"><span class="lineNum">     256</span>              : </span>
-<span id="L257"><span class="lineNum">     257</span>              : Vector</span>
-<span id="L258"><span class="lineNum">     258</span> <span class="tlaUNC">           0 : operator+(const Vector &amp; a, const Scalar &amp; b)</span></span>
-<span id="L259"><span class="lineNum">     259</span>              : {</span>
-<span id="L260"><span class="lineNum">     260</span> <span class="tlaUNC">           0 :   return b + a;</span></span>
-<span id="L261"><span class="lineNum">     261</span>              : }</span>
-<span id="L262"><span class="lineNum">     262</span>              : </span>
-<span id="L263"><span class="lineNum">     263</span>              : Vector</span>
-<span id="L264"><span class="lineNum">     264</span> <span class="tlaUNC">           0 : operator+(const CScalar &amp; a, const Vector &amp; b)</span></span>
-<span id="L265"><span class="lineNum">     265</span>              : {</span>
-<span id="L266"><span class="lineNum">     266</span> <span class="tlaUNC">           0 :   std::vector&lt;Tensor&gt; v(b.n());</span></span>
-<span id="L267"><span class="lineNum">     267</span> <span class="tlaUNC">           0 :   for (std::size_t i = 0; i &lt; b.n(); i++)</span></span>
-<span id="L268"><span class="lineNum">     268</span>              :   {</span>
-<span id="L269"><span class="lineNum">     269</span> <span class="tlaUNC">           0 :     const auto &amp; bi = b[i];</span></span>
-<span id="L270"><span class="lineNum">     270</span> <span class="tlaUNC">           0 :     v[i] = bi.defined() ? a + bi : Tensor(Scalar(a, bi.options()));</span></span>
-<span id="L271"><span class="lineNum">     271</span>              :   }</span>
-<span id="L272"><span class="lineNum">     272</span> <span class="tlaUNC">           0 :   return Vector(std::move(v), b.block_sizes());</span></span>
-<span id="L273"><span class="lineNum">     273</span> <span class="tlaUNC">           0 : }</span></span>
-<span id="L274"><span class="lineNum">     274</span>              : </span>
-<span id="L275"><span class="lineNum">     275</span>              : Vector</span>
-<span id="L276"><span class="lineNum">     276</span> <span class="tlaUNC">           0 : operator+(const Vector &amp; a, const CScalar &amp; b)</span></span>
-<span id="L277"><span class="lineNum">     277</span>              : {</span>
-<span id="L278"><span class="lineNum">     278</span> <span class="tlaUNC">           0 :   return b + a;</span></span>
-<span id="L279"><span class="lineNum">     279</span>              : }</span>
-<span id="L280"><span class="lineNum">     280</span>              : </span>
-<span id="L281"><span class="lineNum">     281</span>              : Vector</span>
-<span id="L282"><span class="lineNum">     282</span> <span class="tlaUNC">           0 : operator-(const Vector &amp; a, const Vector &amp; b)</span></span>
-<span id="L283"><span class="lineNum">     283</span>              : {</span>
-<span id="L284"><span class="lineNum">     284</span> <span class="tlaUNC">           0 :   neml_assert_dbg(</span></span>
-<span id="L285"><span class="lineNum">     285</span> <span class="tlaUNC">           0 :       a.n() == b.n(), &quot;es::Vector::operator-: size mismatch (&quot;, a.n(), &quot;) vs (&quot;, b.n(), &quot;)&quot;);</span></span>
-<span id="L286"><span class="lineNum">     286</span> <span class="tlaUNC">           0 :   std::vector&lt;Tensor&gt; v(a.n());</span></span>
-<span id="L287"><span class="lineNum">     287</span> <span class="tlaUNC">           0 :   for (std::size_t i = 0; i &lt; a.n(); i++)</span></span>
-<span id="L288"><span class="lineNum">     288</span>              :   {</span>
-<span id="L289"><span class="lineNum">     289</span> <span class="tlaUNC">           0 :     const auto &amp; ai = a[i];</span></span>
-<span id="L290"><span class="lineNum">     290</span> <span class="tlaUNC">           0 :     const auto &amp; bi = b[i];</span></span>
-<span id="L291"><span class="lineNum">     291</span> <span class="tlaUNC">           0 :     if (ai.defined() &amp;&amp; bi.defined())</span></span>
-<span id="L292"><span class="lineNum">     292</span> <span class="tlaUNC">           0 :       v[i] = ai - bi;</span></span>
-<span id="L293"><span class="lineNum">     293</span> <span class="tlaUNC">           0 :     else if (ai.defined())</span></span>
-<span id="L294"><span class="lineNum">     294</span> <span class="tlaUNC">           0 :       v[i] = ai;</span></span>
-<span id="L295"><span class="lineNum">     295</span> <span class="tlaUNC">           0 :     else if (bi.defined())</span></span>
-<span id="L296"><span class="lineNum">     296</span> <span class="tlaUNC">           0 :       v[i] = -bi;</span></span>
-<span id="L297"><span class="lineNum">     297</span>              :   }</span>
-<span id="L298"><span class="lineNum">     298</span> <span class="tlaUNC">           0 :   return Vector(std::move(v), a.block_sizes());</span></span>
-<span id="L299"><span class="lineNum">     299</span> <span class="tlaUNC">           0 : }</span></span>
-<span id="L300"><span class="lineNum">     300</span>              : </span>
-<span id="L301"><span class="lineNum">     301</span>              : Vector</span>
-<span id="L302"><span class="lineNum">     302</span> <span class="tlaUNC">           0 : operator-(const Scalar &amp; a, const Vector &amp; b)</span></span>
-<span id="L303"><span class="lineNum">     303</span>              : {</span>
-<span id="L304"><span class="lineNum">     304</span> <span class="tlaUNC">           0 :   std::vector&lt;Tensor&gt; v(b.n());</span></span>
-<span id="L305"><span class="lineNum">     305</span> <span class="tlaUNC">           0 :   for (std::size_t i = 0; i &lt; b.n(); i++)</span></span>
-<span id="L306"><span class="lineNum">     306</span>              :   {</span>
-<span id="L307"><span class="lineNum">     307</span> <span class="tlaUNC">           0 :     const auto &amp; bi = b[i];</span></span>
-<span id="L308"><span class="lineNum">     308</span> <span class="tlaUNC">           0 :     v[i] = bi.defined() ? a - bi : Tensor(a);</span></span>
-<span id="L309"><span class="lineNum">     309</span>              :   }</span>
-<span id="L310"><span class="lineNum">     310</span> <span class="tlaUNC">           0 :   return Vector(std::move(v), b.block_sizes());</span></span>
-<span id="L311"><span class="lineNum">     311</span> <span class="tlaUNC">           0 : }</span></span>
-<span id="L312"><span class="lineNum">     312</span>              : </span>
-<span id="L313"><span class="lineNum">     313</span>              : Vector</span>
-<span id="L314"><span class="lineNum">     314</span> <span class="tlaUNC">           0 : operator-(const Vector &amp; a, const Scalar &amp; b)</span></span>
-<span id="L315"><span class="lineNum">     315</span>              : {</span>
-<span id="L316"><span class="lineNum">     316</span> <span class="tlaUNC">           0 :   return (-b) + a;</span></span>
-<span id="L317"><span class="lineNum">     317</span>              : }</span>
-<span id="L318"><span class="lineNum">     318</span>              : </span>
-<span id="L319"><span class="lineNum">     319</span>              : Vector</span>
-<span id="L320"><span class="lineNum">     320</span> <span class="tlaUNC">           0 : operator-(const CScalar &amp; a, const Vector &amp; b)</span></span>
-<span id="L321"><span class="lineNum">     321</span>              : {</span>
-<span id="L322"><span class="lineNum">     322</span> <span class="tlaUNC">           0 :   std::vector&lt;Tensor&gt; v(b.n());</span></span>
-<span id="L323"><span class="lineNum">     323</span> <span class="tlaUNC">           0 :   for (std::size_t i = 0; i &lt; b.n(); i++)</span></span>
-<span id="L324"><span class="lineNum">     324</span>              :   {</span>
-<span id="L325"><span class="lineNum">     325</span> <span class="tlaUNC">           0 :     const auto &amp; bi = b[i];</span></span>
-<span id="L326"><span class="lineNum">     326</span> <span class="tlaUNC">           0 :     v[i] = bi.defined() ? a - bi : Tensor(Scalar(a, bi.options()));</span></span>
-<span id="L327"><span class="lineNum">     327</span>              :   }</span>
-<span id="L328"><span class="lineNum">     328</span> <span class="tlaUNC">           0 :   return Vector(std::move(v), b.block_sizes());</span></span>
-<span id="L329"><span class="lineNum">     329</span> <span class="tlaUNC">           0 : }</span></span>
-<span id="L330"><span class="lineNum">     330</span>              : </span>
-<span id="L331"><span class="lineNum">     331</span>              : Vector</span>
-<span id="L332"><span class="lineNum">     332</span> <span class="tlaUNC">           0 : operator-(const Vector &amp; a, const CScalar &amp; b)</span></span>
-<span id="L333"><span class="lineNum">     333</span>              : {</span>
-<span id="L334"><span class="lineNum">     334</span> <span class="tlaUNC">           0 :   return (-b) + a;</span></span>
-<span id="L335"><span class="lineNum">     335</span>              : }</span>
-<span id="L336"><span class="lineNum">     336</span>              : </span>
-<span id="L337"><span class="lineNum">     337</span>              : Scalar</span>
-<span id="L338"><span class="lineNum">     338</span> <span class="tlaGNC tlaBgGNC">         179 : operator*(const Vector &amp; a, const Vector &amp; b)</span></span>
-<span id="L339"><span class="lineNum">     339</span>              : {</span>
-<span id="L340"><span class="lineNum">     340</span> <span class="tlaGNC">         179 :   neml_assert_dbg(</span></span>
-<span id="L341"><span class="lineNum">     341</span> <span class="tlaGNC">         179 :       a.n() == b.n(), &quot;es::Vector::operator*: size mismatch (&quot;, a.n(), &quot;) vs (&quot;, b.n(), &quot;)&quot;);</span></span>
-<span id="L342"><span class="lineNum">     342</span> <span class="tlaGNC">         179 :   auto v = Scalar::zeros(a.options());</span></span>
-<span id="L343"><span class="lineNum">     343</span> <span class="tlaGNC">         739 :   for (std::size_t i = 0; i &lt; a.n(); i++)</span></span>
-<span id="L344"><span class="lineNum">     344</span>              :   {</span>
-<span id="L345"><span class="lineNum">     345</span> <span class="tlaGNC">         560 :     const auto &amp; ai = a[i];</span></span>
-<span id="L346"><span class="lineNum">     346</span> <span class="tlaGNC">         560 :     const auto &amp; bi = b[i];</span></span>
-<span id="L347"><span class="lineNum">     347</span> <span class="tlaGNC">         560 :     if (ai.defined() &amp;&amp; bi.defined())</span></span>
-<span id="L348"><span class="lineNum">     348</span> <span class="tlaGNC">         560 :       v = v + inner(ai, bi);</span></span>
-<span id="L349"><span class="lineNum">     349</span>              :   }</span>
-<span id="L350"><span class="lineNum">     350</span> <span class="tlaGNC">         179 :   return v;</span></span>
-<span id="L351"><span class="lineNum">     351</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
-<span id="L352"><span class="lineNum">     352</span>              : </span>
-<span id="L353"><span class="lineNum">     353</span>              : Vector</span>
-<span id="L354"><span class="lineNum">     354</span> <span class="tlaGNC tlaBgGNC">         438 : operator*(const Scalar &amp; a, const Vector &amp; b)</span></span>
-<span id="L355"><span class="lineNum">     355</span>              : {</span>
-<span id="L356"><span class="lineNum">     356</span> <span class="tlaGNC">         438 :   std::vector&lt;Tensor&gt; v(b.n());</span></span>
-<span id="L357"><span class="lineNum">     357</span> <span class="tlaGNC">        1816 :   for (std::size_t i = 0; i &lt; b.n(); i++)</span></span>
-<span id="L358"><span class="lineNum">     358</span>              :   {</span>
-<span id="L359"><span class="lineNum">     359</span> <span class="tlaGNC">        1378 :     const auto &amp; bi = b[i];</span></span>
-<span id="L360"><span class="lineNum">     360</span> <span class="tlaGNC">        1378 :     if (bi.defined())</span></span>
-<span id="L361"><span class="lineNum">     361</span> <span class="tlaGNC">        1378 :       v[i] = a * bi;</span></span>
-<span id="L362"><span class="lineNum">     362</span>              :   }</span>
-<span id="L363"><span class="lineNum">     363</span> <span class="tlaGNC">         876 :   return Vector(std::move(v), b.block_sizes());</span></span>
-<span id="L364"><span class="lineNum">     364</span> <span class="tlaGNC">         438 : }</span></span>
-<span id="L365"><span class="lineNum">     365</span>              : </span>
-<span id="L366"><span class="lineNum">     366</span>              : Vector</span>
-<span id="L367"><span class="lineNum">     367</span> <span class="tlaUNC tlaBgUNC">           0 : operator*(const Vector &amp; a, const Scalar &amp; b)</span></span>
-<span id="L368"><span class="lineNum">     368</span>              : {</span>
-<span id="L369"><span class="lineNum">     369</span> <span class="tlaUNC">           0 :   return b * a;</span></span>
-<span id="L370"><span class="lineNum">     370</span>              : }</span>
-<span id="L371"><span class="lineNum">     371</span>              : </span>
-<span id="L372"><span class="lineNum">     372</span>              : Vector</span>
-<span id="L373"><span class="lineNum">     373</span> <span class="tlaUNC">           0 : operator*(const CScalar &amp; a, const Vector &amp; b)</span></span>
-<span id="L374"><span class="lineNum">     374</span>              : {</span>
-<span id="L375"><span class="lineNum">     375</span> <span class="tlaUNC">           0 :   std::vector&lt;Tensor&gt; v(b.n());</span></span>
-<span id="L376"><span class="lineNum">     376</span> <span class="tlaUNC">           0 :   for (std::size_t i = 0; i &lt; b.n(); i++)</span></span>
-<span id="L377"><span class="lineNum">     377</span>              :   {</span>
-<span id="L378"><span class="lineNum">     378</span> <span class="tlaUNC">           0 :     const auto &amp; bi = b[i];</span></span>
-<span id="L379"><span class="lineNum">     379</span> <span class="tlaUNC">           0 :     if (bi.defined())</span></span>
-<span id="L380"><span class="lineNum">     380</span> <span class="tlaUNC">           0 :       v[i] = a * bi;</span></span>
-<span id="L381"><span class="lineNum">     381</span>              :   }</span>
-<span id="L382"><span class="lineNum">     382</span> <span class="tlaUNC">           0 :   return Vector(std::move(v), b.block_sizes());</span></span>
-<span id="L383"><span class="lineNum">     383</span> <span class="tlaUNC">           0 : }</span></span>
-<span id="L384"><span class="lineNum">     384</span>              : </span>
-<span id="L385"><span class="lineNum">     385</span>              : Vector</span>
-<span id="L386"><span class="lineNum">     386</span> <span class="tlaUNC">           0 : operator*(const Vector &amp; a, const CScalar &amp; b)</span></span>
-<span id="L387"><span class="lineNum">     387</span>              : {</span>
-<span id="L388"><span class="lineNum">     388</span> <span class="tlaUNC">           0 :   return b * a;</span></span>
-<span id="L389"><span class="lineNum">     389</span>              : }</span>
-<span id="L390"><span class="lineNum">     390</span>              : </span>
-<span id="L391"><span class="lineNum">     391</span>              : Vector</span>
-<span id="L392"><span class="lineNum">     392</span> <span class="tlaUNC">           0 : operator/(const Vector &amp; a, const Scalar &amp; b)</span></span>
-<span id="L393"><span class="lineNum">     393</span>              : {</span>
-<span id="L394"><span class="lineNum">     394</span> <span class="tlaUNC">           0 :   std::vector&lt;Tensor&gt; v(a.n());</span></span>
-<span id="L395"><span class="lineNum">     395</span> <span class="tlaUNC">           0 :   for (std::size_t i = 0; i &lt; a.n(); i++)</span></span>
-<span id="L396"><span class="lineNum">     396</span>              :   {</span>
-<span id="L397"><span class="lineNum">     397</span> <span class="tlaUNC">           0 :     const auto &amp; ai = a[i];</span></span>
-<span id="L398"><span class="lineNum">     398</span> <span class="tlaUNC">           0 :     if (ai.defined())</span></span>
-<span id="L399"><span class="lineNum">     399</span> <span class="tlaUNC">           0 :       v[i] = ai / b;</span></span>
-<span id="L400"><span class="lineNum">     400</span>              :   }</span>
-<span id="L401"><span class="lineNum">     401</span> <span class="tlaUNC">           0 :   return Vector(std::move(v), a.block_sizes());</span></span>
-<span id="L402"><span class="lineNum">     402</span> <span class="tlaUNC">           0 : }</span></span>
-<span id="L403"><span class="lineNum">     403</span>              : </span>
-<span id="L404"><span class="lineNum">     404</span>              : Vector</span>
-<span id="L405"><span class="lineNum">     405</span> <span class="tlaUNC">           0 : operator/(const Vector &amp; a, const CScalar &amp; b)</span></span>
-<span id="L406"><span class="lineNum">     406</span>              : {</span>
-<span id="L407"><span class="lineNum">     407</span> <span class="tlaUNC">           0 :   std::vector&lt;Tensor&gt; v(a.n());</span></span>
-<span id="L408"><span class="lineNum">     408</span> <span class="tlaUNC">           0 :   for (std::size_t i = 0; i &lt; a.n(); i++)</span></span>
-<span id="L409"><span class="lineNum">     409</span>              :   {</span>
-<span id="L410"><span class="lineNum">     410</span> <span class="tlaUNC">           0 :     const auto &amp; ai = a[i];</span></span>
-<span id="L411"><span class="lineNum">     411</span> <span class="tlaUNC">           0 :     if (ai.defined())</span></span>
-<span id="L412"><span class="lineNum">     412</span> <span class="tlaUNC">           0 :       v[i] = ai / b;</span></span>
-<span id="L413"><span class="lineNum">     413</span>              :   }</span>
-<span id="L414"><span class="lineNum">     414</span> <span class="tlaUNC">           0 :   return Vector(std::move(v), a.block_sizes());</span></span>
-<span id="L415"><span class="lineNum">     415</span> <span class="tlaUNC">           0 : }</span></span>
-<span id="L416"><span class="lineNum">     416</span>              : </span>
-<span id="L417"><span class="lineNum">     417</span>              : Scalar</span>
-<span id="L418"><span class="lineNum">     418</span> <span class="tlaGNC tlaBgGNC">        1137 : norm_sq(const Vector &amp; v)</span></span>
-<span id="L419"><span class="lineNum">     419</span>              : {</span>
-<span id="L420"><span class="lineNum">     420</span> <span class="tlaGNC">        1137 :   Scalar sum_sq = Scalar::zeros();</span></span>
-<span id="L421"><span class="lineNum">     421</span> <span class="tlaGNC">        4501 :   for (const auto &amp; vi : v)</span></span>
-<span id="L422"><span class="lineNum">     422</span> <span class="tlaGNC">        3364 :     if (vi.defined())</span></span>
-<span id="L423"><span class="lineNum">     423</span> <span class="tlaGNC">        3364 :       sum_sq = sum_sq + neml2::norm_sq(vi);</span></span>
-<span id="L424"><span class="lineNum">     424</span> <span class="tlaGNC">        1137 :   return sum_sq;</span></span>
-<span id="L425"><span class="lineNum">     425</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
-<span id="L426"><span class="lineNum">     426</span>              : </span>
-<span id="L427"><span class="lineNum">     427</span>              : Scalar</span>
-<span id="L428"><span class="lineNum">     428</span> <span class="tlaGNC tlaBgGNC">         878 : norm(const Vector &amp; v)</span></span>
-<span id="L429"><span class="lineNum">     429</span>              : {</span>
-<span id="L430"><span class="lineNum">     430</span> <span class="tlaGNC">         878 :   return neml2::sqrt(norm_sq(v));</span></span>
-<span id="L431"><span class="lineNum">     431</span>              : }</span>
-<span id="L432"><span class="lineNum">     432</span>              : </span>
-<span id="L433"><span class="lineNum">     433</span>              : } // namespace neml2::es</span>
+<span id="L173"><span class="lineNum">     173</span> <span class="tlaGNC tlaBgGNC">        2084 :     neml_assert_dbg(v.intmd_dim() == 0,</span></span>
+<span id="L174"><span class="lineNum">     174</span>              :                     &quot;cannot assemble es::Vector with a sub-block having intermediate dimension(s)&quot;);</span>
+<span id="L175"><span class="lineNum">     175</span> <span class="tlaGNC">        2084 :     const auto v_f = v.base_flatten();</span></span>
+<span id="L176"><span class="lineNum">     176</span> <span class="tlaGNC">        2084 :     vs_f[i] = v_f;</span></span>
+<span id="L177"><span class="lineNum">     177</span> <span class="tlaGNC">        2084 :   }</span></span>
+<span id="L178"><span class="lineNum">     178</span>              : </span>
+<span id="L179"><span class="lineNum">     179</span>              :   // Expand defined tensors with the broadcast dynamic shape and fill undefined tensors with zeros.</span>
+<span id="L180"><span class="lineNum">     180</span> <span class="tlaGNC">         709 :   const auto dynamic_sizes = utils::broadcast_dynamic_sizes(vs_f);</span></span>
+<span id="L181"><span class="lineNum">     181</span> <span class="tlaGNC">        2793 :   for (std::size_t i = 0; i &lt; vs_f.size(); ++i)</span></span>
+<span id="L182"><span class="lineNum">     182</span> <span class="tlaGNC">        2084 :     if (vs_f[i].defined())</span></span>
+<span id="L183"><span class="lineNum">     183</span> <span class="tlaGNC">        2084 :       vs_f[i] = vs_f[i].dynamic_expand(dynamic_sizes);</span></span>
+<span id="L184"><span class="lineNum">     184</span>              :     else</span>
+<span id="L185"><span class="lineNum">     185</span> <span class="tlaUNC tlaBgUNC">           0 :       vs_f[i] = Tensor::zeros(dynamic_sizes, {}, split_sizes[i], options());</span></span>
+<span id="L186"><span class="lineNum">     186</span>              : </span>
+<span id="L187"><span class="lineNum">     187</span> <span class="tlaGNC tlaBgGNC">        1418 :   return {base_cat(vs_f, -1), split_sizes};</span></span>
+<span id="L188"><span class="lineNum">     188</span> <span class="tlaGNC">         709 : }</span></span>
+<span id="L189"><span class="lineNum">     189</span>              : </span>
+<span id="L190"><span class="lineNum">     190</span>              : void</span>
+<span id="L191"><span class="lineNum">     191</span> <span class="tlaUNC tlaBgUNC">           0 : Vector::disassemble(const Tensor &amp; vec, OptionalArrayRef&lt;std::size_t&gt; blocks)</span></span>
+<span id="L192"><span class="lineNum">     192</span>              : {</span>
+<span id="L193"><span class="lineNum">     193</span> <span class="tlaUNC">           0 :   const auto indices = select_subblock_indices(blocks, n());</span></span>
+<span id="L194"><span class="lineNum">     194</span> <span class="tlaUNC">           0 :   const auto shapes = select_shapes(_shapes, indices);</span></span>
+<span id="L195"><span class="lineNum">     195</span> <span class="tlaUNC">           0 :   const auto split_sizes = numel(shapes);</span></span>
+<span id="L196"><span class="lineNum">     196</span> <span class="tlaUNC">           0 :   const auto &amp; S = vec.dynamic_sizes();</span></span>
+<span id="L197"><span class="lineNum">     197</span> <span class="tlaUNC">           0 :   const auto vs = vec.split(split_sizes, -1);</span></span>
+<span id="L198"><span class="lineNum">     198</span>              : </span>
+<span id="L199"><span class="lineNum">     199</span> <span class="tlaUNC">           0 :   for (std::size_t i = 0; i &lt; indices.size(); ++i)</span></span>
+<span id="L200"><span class="lineNum">     200</span> <span class="tlaUNC">           0 :     _data[indices[i]] = Tensor(vs[i], S).base_reshape(shapes[i]);</span></span>
+<span id="L201"><span class="lineNum">     201</span> <span class="tlaUNC">           0 : }</span></span>
+<span id="L202"><span class="lineNum">     202</span>              : </span>
+<span id="L203"><span class="lineNum">     203</span>              : void</span>
+<span id="L204"><span class="lineNum">     204</span> <span class="tlaGNC tlaBgGNC">         683 : Vector::update_data(const Vector &amp; other)</span></span>
+<span id="L205"><span class="lineNum">     205</span>              : {</span>
+<span id="L206"><span class="lineNum">     206</span> <span class="tlaGNC">         683 :   neml_assert_dbg(</span></span>
+<span id="L207"><span class="lineNum">     207</span> <span class="tlaGNC">         683 :       n() == other.n(), &quot;es::Vector::update_data: size mismatch (&quot;, n(), &quot;) vs (&quot;, other.n(), &quot;)&quot;);</span></span>
+<span id="L208"><span class="lineNum">     208</span> <span class="tlaGNC">        2689 :   for (std::size_t i = 0; i &lt; n(); i++)</span></span>
+<span id="L209"><span class="lineNum">     209</span>              :   {</span>
+<span id="L210"><span class="lineNum">     210</span> <span class="tlaGNC">        2006 :     auto &amp; v = _data[i];</span></span>
+<span id="L211"><span class="lineNum">     211</span> <span class="tlaGNC">        2006 :     v = v.variable_data() + other[i];</span></span>
+<span id="L212"><span class="lineNum">     212</span>              :   }</span>
+<span id="L213"><span class="lineNum">     213</span> <span class="tlaGNC">         683 : }</span></span>
+<span id="L214"><span class="lineNum">     214</span>              : </span>
+<span id="L215"><span class="lineNum">     215</span>              : void</span>
+<span id="L216"><span class="lineNum">     216</span> <span class="tlaGNC">          26 : Vector::update(const Vector &amp; other)</span></span>
+<span id="L217"><span class="lineNum">     217</span>              : {</span>
+<span id="L218"><span class="lineNum">     218</span> <span class="tlaGNC">          26 :   neml_assert_dbg(</span></span>
+<span id="L219"><span class="lineNum">     219</span> <span class="tlaGNC">          26 :       n() == other.n(), &quot;es::Vector::update_data: size mismatch (&quot;, n(), &quot;) vs (&quot;, other.n(), &quot;)&quot;);</span></span>
+<span id="L220"><span class="lineNum">     220</span> <span class="tlaGNC">         104 :   for (size_t i = 0; i &lt; n(); i++)</span></span>
+<span id="L221"><span class="lineNum">     221</span>              :   {</span>
+<span id="L222"><span class="lineNum">     222</span> <span class="tlaGNC">          78 :     auto &amp; v = (*this)[i];</span></span>
+<span id="L223"><span class="lineNum">     223</span> <span class="tlaGNC">          78 :     v = v + other[i];</span></span>
+<span id="L224"><span class="lineNum">     224</span>              :   }</span>
+<span id="L225"><span class="lineNum">     225</span> <span class="tlaGNC">          26 : }</span></span>
+<span id="L226"><span class="lineNum">     226</span>              : </span>
+<span id="L227"><span class="lineNum">     227</span>              : Vector</span>
+<span id="L228"><span class="lineNum">     228</span> <span class="tlaGNC">         179 : operator+(const Vector &amp; a, const Vector &amp; b)</span></span>
+<span id="L229"><span class="lineNum">     229</span>              : {</span>
+<span id="L230"><span class="lineNum">     230</span> <span class="tlaGNC">         179 :   neml_assert_dbg(</span></span>
+<span id="L231"><span class="lineNum">     231</span> <span class="tlaGNC">         358 :       a.n() == b.n(), &quot;es::Vector::operator+: size mismatch (&quot;, a.n(), &quot;) vs (&quot;, b.n(), &quot;)&quot;);</span></span>
+<span id="L232"><span class="lineNum">     232</span> <span class="tlaGNC">         179 :   std::vector&lt;Tensor&gt; v(a.n());</span></span>
+<span id="L233"><span class="lineNum">     233</span> <span class="tlaGNC">         739 :   for (std::size_t i = 0; i &lt; a.n(); i++)</span></span>
+<span id="L234"><span class="lineNum">     234</span>              :   {</span>
+<span id="L235"><span class="lineNum">     235</span> <span class="tlaGNC">         560 :     const auto &amp; ai = a[i];</span></span>
+<span id="L236"><span class="lineNum">     236</span> <span class="tlaGNC">         560 :     const auto &amp; bi = b[i];</span></span>
+<span id="L237"><span class="lineNum">     237</span> <span class="tlaGNC">         560 :     if (ai.defined() &amp;&amp; bi.defined())</span></span>
+<span id="L238"><span class="lineNum">     238</span> <span class="tlaGNC">         560 :       v[i] = ai + bi;</span></span>
+<span id="L239"><span class="lineNum">     239</span> <span class="tlaUNC tlaBgUNC">           0 :     else if (ai.defined())</span></span>
+<span id="L240"><span class="lineNum">     240</span> <span class="tlaUNC">           0 :       v[i] = ai;</span></span>
+<span id="L241"><span class="lineNum">     241</span> <span class="tlaUNC">           0 :     else if (bi.defined())</span></span>
+<span id="L242"><span class="lineNum">     242</span> <span class="tlaUNC">           0 :       v[i] = bi;</span></span>
+<span id="L243"><span class="lineNum">     243</span>              :   }</span>
+<span id="L244"><span class="lineNum">     244</span> <span class="tlaGNC tlaBgGNC">         358 :   return Vector(std::move(v), a.block_sizes());</span></span>
+<span id="L245"><span class="lineNum">     245</span> <span class="tlaGNC">         179 : }</span></span>
+<span id="L246"><span class="lineNum">     246</span>              : </span>
+<span id="L247"><span class="lineNum">     247</span>              : Vector</span>
+<span id="L248"><span class="lineNum">     248</span> <span class="tlaUNC tlaBgUNC">           0 : operator+(const Scalar &amp; a, const Vector &amp; b)</span></span>
+<span id="L249"><span class="lineNum">     249</span>              : {</span>
+<span id="L250"><span class="lineNum">     250</span> <span class="tlaUNC">           0 :   std::vector&lt;Tensor&gt; v(b.n());</span></span>
+<span id="L251"><span class="lineNum">     251</span> <span class="tlaUNC">           0 :   for (std::size_t i = 0; i &lt; b.n(); i++)</span></span>
+<span id="L252"><span class="lineNum">     252</span>              :   {</span>
+<span id="L253"><span class="lineNum">     253</span> <span class="tlaUNC">           0 :     const auto &amp; bi = b[i];</span></span>
+<span id="L254"><span class="lineNum">     254</span> <span class="tlaUNC">           0 :     v[i] = bi.defined() ? a + bi : Tensor(a);</span></span>
+<span id="L255"><span class="lineNum">     255</span>              :   }</span>
+<span id="L256"><span class="lineNum">     256</span> <span class="tlaUNC">           0 :   return Vector(std::move(v), b.block_sizes());</span></span>
+<span id="L257"><span class="lineNum">     257</span> <span class="tlaUNC">           0 : }</span></span>
+<span id="L258"><span class="lineNum">     258</span>              : </span>
+<span id="L259"><span class="lineNum">     259</span>              : Vector</span>
+<span id="L260"><span class="lineNum">     260</span> <span class="tlaUNC">           0 : operator+(const Vector &amp; a, const Scalar &amp; b)</span></span>
+<span id="L261"><span class="lineNum">     261</span>              : {</span>
+<span id="L262"><span class="lineNum">     262</span> <span class="tlaUNC">           0 :   return b + a;</span></span>
+<span id="L263"><span class="lineNum">     263</span>              : }</span>
+<span id="L264"><span class="lineNum">     264</span>              : </span>
+<span id="L265"><span class="lineNum">     265</span>              : Vector</span>
+<span id="L266"><span class="lineNum">     266</span> <span class="tlaUNC">           0 : operator+(const CScalar &amp; a, const Vector &amp; b)</span></span>
+<span id="L267"><span class="lineNum">     267</span>              : {</span>
+<span id="L268"><span class="lineNum">     268</span> <span class="tlaUNC">           0 :   std::vector&lt;Tensor&gt; v(b.n());</span></span>
+<span id="L269"><span class="lineNum">     269</span> <span class="tlaUNC">           0 :   for (std::size_t i = 0; i &lt; b.n(); i++)</span></span>
+<span id="L270"><span class="lineNum">     270</span>              :   {</span>
+<span id="L271"><span class="lineNum">     271</span> <span class="tlaUNC">           0 :     const auto &amp; bi = b[i];</span></span>
+<span id="L272"><span class="lineNum">     272</span> <span class="tlaUNC">           0 :     v[i] = bi.defined() ? a + bi : Tensor(Scalar(a, bi.options()));</span></span>
+<span id="L273"><span class="lineNum">     273</span>              :   }</span>
+<span id="L274"><span class="lineNum">     274</span> <span class="tlaUNC">           0 :   return Vector(std::move(v), b.block_sizes());</span></span>
+<span id="L275"><span class="lineNum">     275</span> <span class="tlaUNC">           0 : }</span></span>
+<span id="L276"><span class="lineNum">     276</span>              : </span>
+<span id="L277"><span class="lineNum">     277</span>              : Vector</span>
+<span id="L278"><span class="lineNum">     278</span> <span class="tlaUNC">           0 : operator+(const Vector &amp; a, const CScalar &amp; b)</span></span>
+<span id="L279"><span class="lineNum">     279</span>              : {</span>
+<span id="L280"><span class="lineNum">     280</span> <span class="tlaUNC">           0 :   return b + a;</span></span>
+<span id="L281"><span class="lineNum">     281</span>              : }</span>
+<span id="L282"><span class="lineNum">     282</span>              : </span>
+<span id="L283"><span class="lineNum">     283</span>              : Vector</span>
+<span id="L284"><span class="lineNum">     284</span> <span class="tlaUNC">           0 : operator-(const Vector &amp; a, const Vector &amp; b)</span></span>
+<span id="L285"><span class="lineNum">     285</span>              : {</span>
+<span id="L286"><span class="lineNum">     286</span> <span class="tlaUNC">           0 :   neml_assert_dbg(</span></span>
+<span id="L287"><span class="lineNum">     287</span> <span class="tlaUNC">           0 :       a.n() == b.n(), &quot;es::Vector::operator-: size mismatch (&quot;, a.n(), &quot;) vs (&quot;, b.n(), &quot;)&quot;);</span></span>
+<span id="L288"><span class="lineNum">     288</span> <span class="tlaUNC">           0 :   std::vector&lt;Tensor&gt; v(a.n());</span></span>
+<span id="L289"><span class="lineNum">     289</span> <span class="tlaUNC">           0 :   for (std::size_t i = 0; i &lt; a.n(); i++)</span></span>
+<span id="L290"><span class="lineNum">     290</span>              :   {</span>
+<span id="L291"><span class="lineNum">     291</span> <span class="tlaUNC">           0 :     const auto &amp; ai = a[i];</span></span>
+<span id="L292"><span class="lineNum">     292</span> <span class="tlaUNC">           0 :     const auto &amp; bi = b[i];</span></span>
+<span id="L293"><span class="lineNum">     293</span> <span class="tlaUNC">           0 :     if (ai.defined() &amp;&amp; bi.defined())</span></span>
+<span id="L294"><span class="lineNum">     294</span> <span class="tlaUNC">           0 :       v[i] = ai - bi;</span></span>
+<span id="L295"><span class="lineNum">     295</span> <span class="tlaUNC">           0 :     else if (ai.defined())</span></span>
+<span id="L296"><span class="lineNum">     296</span> <span class="tlaUNC">           0 :       v[i] = ai;</span></span>
+<span id="L297"><span class="lineNum">     297</span> <span class="tlaUNC">           0 :     else if (bi.defined())</span></span>
+<span id="L298"><span class="lineNum">     298</span> <span class="tlaUNC">           0 :       v[i] = -bi;</span></span>
+<span id="L299"><span class="lineNum">     299</span>              :   }</span>
+<span id="L300"><span class="lineNum">     300</span> <span class="tlaUNC">           0 :   return Vector(std::move(v), a.block_sizes());</span></span>
+<span id="L301"><span class="lineNum">     301</span> <span class="tlaUNC">           0 : }</span></span>
+<span id="L302"><span class="lineNum">     302</span>              : </span>
+<span id="L303"><span class="lineNum">     303</span>              : Vector</span>
+<span id="L304"><span class="lineNum">     304</span> <span class="tlaUNC">           0 : operator-(const Scalar &amp; a, const Vector &amp; b)</span></span>
+<span id="L305"><span class="lineNum">     305</span>              : {</span>
+<span id="L306"><span class="lineNum">     306</span> <span class="tlaUNC">           0 :   std::vector&lt;Tensor&gt; v(b.n());</span></span>
+<span id="L307"><span class="lineNum">     307</span> <span class="tlaUNC">           0 :   for (std::size_t i = 0; i &lt; b.n(); i++)</span></span>
+<span id="L308"><span class="lineNum">     308</span>              :   {</span>
+<span id="L309"><span class="lineNum">     309</span> <span class="tlaUNC">           0 :     const auto &amp; bi = b[i];</span></span>
+<span id="L310"><span class="lineNum">     310</span> <span class="tlaUNC">           0 :     v[i] = bi.defined() ? a - bi : Tensor(a);</span></span>
+<span id="L311"><span class="lineNum">     311</span>              :   }</span>
+<span id="L312"><span class="lineNum">     312</span> <span class="tlaUNC">           0 :   return Vector(std::move(v), b.block_sizes());</span></span>
+<span id="L313"><span class="lineNum">     313</span> <span class="tlaUNC">           0 : }</span></span>
+<span id="L314"><span class="lineNum">     314</span>              : </span>
+<span id="L315"><span class="lineNum">     315</span>              : Vector</span>
+<span id="L316"><span class="lineNum">     316</span> <span class="tlaUNC">           0 : operator-(const Vector &amp; a, const Scalar &amp; b)</span></span>
+<span id="L317"><span class="lineNum">     317</span>              : {</span>
+<span id="L318"><span class="lineNum">     318</span> <span class="tlaUNC">           0 :   return (-b) + a;</span></span>
+<span id="L319"><span class="lineNum">     319</span>              : }</span>
+<span id="L320"><span class="lineNum">     320</span>              : </span>
+<span id="L321"><span class="lineNum">     321</span>              : Vector</span>
+<span id="L322"><span class="lineNum">     322</span> <span class="tlaUNC">           0 : operator-(const CScalar &amp; a, const Vector &amp; b)</span></span>
+<span id="L323"><span class="lineNum">     323</span>              : {</span>
+<span id="L324"><span class="lineNum">     324</span> <span class="tlaUNC">           0 :   std::vector&lt;Tensor&gt; v(b.n());</span></span>
+<span id="L325"><span class="lineNum">     325</span> <span class="tlaUNC">           0 :   for (std::size_t i = 0; i &lt; b.n(); i++)</span></span>
+<span id="L326"><span class="lineNum">     326</span>              :   {</span>
+<span id="L327"><span class="lineNum">     327</span> <span class="tlaUNC">           0 :     const auto &amp; bi = b[i];</span></span>
+<span id="L328"><span class="lineNum">     328</span> <span class="tlaUNC">           0 :     v[i] = bi.defined() ? a - bi : Tensor(Scalar(a, bi.options()));</span></span>
+<span id="L329"><span class="lineNum">     329</span>              :   }</span>
+<span id="L330"><span class="lineNum">     330</span> <span class="tlaUNC">           0 :   return Vector(std::move(v), b.block_sizes());</span></span>
+<span id="L331"><span class="lineNum">     331</span> <span class="tlaUNC">           0 : }</span></span>
+<span id="L332"><span class="lineNum">     332</span>              : </span>
+<span id="L333"><span class="lineNum">     333</span>              : Vector</span>
+<span id="L334"><span class="lineNum">     334</span> <span class="tlaUNC">           0 : operator-(const Vector &amp; a, const CScalar &amp; b)</span></span>
+<span id="L335"><span class="lineNum">     335</span>              : {</span>
+<span id="L336"><span class="lineNum">     336</span> <span class="tlaUNC">           0 :   return (-b) + a;</span></span>
+<span id="L337"><span class="lineNum">     337</span>              : }</span>
+<span id="L338"><span class="lineNum">     338</span>              : </span>
+<span id="L339"><span class="lineNum">     339</span>              : Scalar</span>
+<span id="L340"><span class="lineNum">     340</span> <span class="tlaGNC tlaBgGNC">         179 : operator*(const Vector &amp; a, const Vector &amp; b)</span></span>
+<span id="L341"><span class="lineNum">     341</span>              : {</span>
+<span id="L342"><span class="lineNum">     342</span> <span class="tlaGNC">         179 :   neml_assert_dbg(</span></span>
+<span id="L343"><span class="lineNum">     343</span> <span class="tlaGNC">         179 :       a.n() == b.n(), &quot;es::Vector::operator*: size mismatch (&quot;, a.n(), &quot;) vs (&quot;, b.n(), &quot;)&quot;);</span></span>
+<span id="L344"><span class="lineNum">     344</span> <span class="tlaGNC">         179 :   auto v = Scalar::zeros(a.options());</span></span>
+<span id="L345"><span class="lineNum">     345</span> <span class="tlaGNC">         739 :   for (std::size_t i = 0; i &lt; a.n(); i++)</span></span>
+<span id="L346"><span class="lineNum">     346</span>              :   {</span>
+<span id="L347"><span class="lineNum">     347</span> <span class="tlaGNC">         560 :     const auto &amp; ai = a[i];</span></span>
+<span id="L348"><span class="lineNum">     348</span> <span class="tlaGNC">         560 :     const auto &amp; bi = b[i];</span></span>
+<span id="L349"><span class="lineNum">     349</span> <span class="tlaGNC">         560 :     if (ai.defined() &amp;&amp; bi.defined())</span></span>
+<span id="L350"><span class="lineNum">     350</span> <span class="tlaGNC">         560 :       v = v + inner(ai, bi);</span></span>
+<span id="L351"><span class="lineNum">     351</span>              :   }</span>
+<span id="L352"><span class="lineNum">     352</span> <span class="tlaGNC">         179 :   return v;</span></span>
+<span id="L353"><span class="lineNum">     353</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
+<span id="L354"><span class="lineNum">     354</span>              : </span>
+<span id="L355"><span class="lineNum">     355</span>              : Vector</span>
+<span id="L356"><span class="lineNum">     356</span> <span class="tlaGNC tlaBgGNC">         438 : operator*(const Scalar &amp; a, const Vector &amp; b)</span></span>
+<span id="L357"><span class="lineNum">     357</span>              : {</span>
+<span id="L358"><span class="lineNum">     358</span> <span class="tlaGNC">         438 :   std::vector&lt;Tensor&gt; v(b.n());</span></span>
+<span id="L359"><span class="lineNum">     359</span> <span class="tlaGNC">        1816 :   for (std::size_t i = 0; i &lt; b.n(); i++)</span></span>
+<span id="L360"><span class="lineNum">     360</span>              :   {</span>
+<span id="L361"><span class="lineNum">     361</span> <span class="tlaGNC">        1378 :     const auto &amp; bi = b[i];</span></span>
+<span id="L362"><span class="lineNum">     362</span> <span class="tlaGNC">        1378 :     if (bi.defined())</span></span>
+<span id="L363"><span class="lineNum">     363</span> <span class="tlaGNC">        1378 :       v[i] = a * bi;</span></span>
+<span id="L364"><span class="lineNum">     364</span>              :   }</span>
+<span id="L365"><span class="lineNum">     365</span> <span class="tlaGNC">         876 :   return Vector(std::move(v), b.block_sizes());</span></span>
+<span id="L366"><span class="lineNum">     366</span> <span class="tlaGNC">         438 : }</span></span>
+<span id="L367"><span class="lineNum">     367</span>              : </span>
+<span id="L368"><span class="lineNum">     368</span>              : Vector</span>
+<span id="L369"><span class="lineNum">     369</span> <span class="tlaUNC tlaBgUNC">           0 : operator*(const Vector &amp; a, const Scalar &amp; b)</span></span>
+<span id="L370"><span class="lineNum">     370</span>              : {</span>
+<span id="L371"><span class="lineNum">     371</span> <span class="tlaUNC">           0 :   return b * a;</span></span>
+<span id="L372"><span class="lineNum">     372</span>              : }</span>
+<span id="L373"><span class="lineNum">     373</span>              : </span>
+<span id="L374"><span class="lineNum">     374</span>              : Vector</span>
+<span id="L375"><span class="lineNum">     375</span> <span class="tlaUNC">           0 : operator*(const CScalar &amp; a, const Vector &amp; b)</span></span>
+<span id="L376"><span class="lineNum">     376</span>              : {</span>
+<span id="L377"><span class="lineNum">     377</span> <span class="tlaUNC">           0 :   std::vector&lt;Tensor&gt; v(b.n());</span></span>
+<span id="L378"><span class="lineNum">     378</span> <span class="tlaUNC">           0 :   for (std::size_t i = 0; i &lt; b.n(); i++)</span></span>
+<span id="L379"><span class="lineNum">     379</span>              :   {</span>
+<span id="L380"><span class="lineNum">     380</span> <span class="tlaUNC">           0 :     const auto &amp; bi = b[i];</span></span>
+<span id="L381"><span class="lineNum">     381</span> <span class="tlaUNC">           0 :     if (bi.defined())</span></span>
+<span id="L382"><span class="lineNum">     382</span> <span class="tlaUNC">           0 :       v[i] = a * bi;</span></span>
+<span id="L383"><span class="lineNum">     383</span>              :   }</span>
+<span id="L384"><span class="lineNum">     384</span> <span class="tlaUNC">           0 :   return Vector(std::move(v), b.block_sizes());</span></span>
+<span id="L385"><span class="lineNum">     385</span> <span class="tlaUNC">           0 : }</span></span>
+<span id="L386"><span class="lineNum">     386</span>              : </span>
+<span id="L387"><span class="lineNum">     387</span>              : Vector</span>
+<span id="L388"><span class="lineNum">     388</span> <span class="tlaUNC">           0 : operator*(const Vector &amp; a, const CScalar &amp; b)</span></span>
+<span id="L389"><span class="lineNum">     389</span>              : {</span>
+<span id="L390"><span class="lineNum">     390</span> <span class="tlaUNC">           0 :   return b * a;</span></span>
+<span id="L391"><span class="lineNum">     391</span>              : }</span>
+<span id="L392"><span class="lineNum">     392</span>              : </span>
+<span id="L393"><span class="lineNum">     393</span>              : Vector</span>
+<span id="L394"><span class="lineNum">     394</span> <span class="tlaUNC">           0 : operator/(const Vector &amp; a, const Scalar &amp; b)</span></span>
+<span id="L395"><span class="lineNum">     395</span>              : {</span>
+<span id="L396"><span class="lineNum">     396</span> <span class="tlaUNC">           0 :   std::vector&lt;Tensor&gt; v(a.n());</span></span>
+<span id="L397"><span class="lineNum">     397</span> <span class="tlaUNC">           0 :   for (std::size_t i = 0; i &lt; a.n(); i++)</span></span>
+<span id="L398"><span class="lineNum">     398</span>              :   {</span>
+<span id="L399"><span class="lineNum">     399</span> <span class="tlaUNC">           0 :     const auto &amp; ai = a[i];</span></span>
+<span id="L400"><span class="lineNum">     400</span> <span class="tlaUNC">           0 :     if (ai.defined())</span></span>
+<span id="L401"><span class="lineNum">     401</span> <span class="tlaUNC">           0 :       v[i] = ai / b;</span></span>
+<span id="L402"><span class="lineNum">     402</span>              :   }</span>
+<span id="L403"><span class="lineNum">     403</span> <span class="tlaUNC">           0 :   return Vector(std::move(v), a.block_sizes());</span></span>
+<span id="L404"><span class="lineNum">     404</span> <span class="tlaUNC">           0 : }</span></span>
+<span id="L405"><span class="lineNum">     405</span>              : </span>
+<span id="L406"><span class="lineNum">     406</span>              : Vector</span>
+<span id="L407"><span class="lineNum">     407</span> <span class="tlaUNC">           0 : operator/(const Vector &amp; a, const CScalar &amp; b)</span></span>
+<span id="L408"><span class="lineNum">     408</span>              : {</span>
+<span id="L409"><span class="lineNum">     409</span> <span class="tlaUNC">           0 :   std::vector&lt;Tensor&gt; v(a.n());</span></span>
+<span id="L410"><span class="lineNum">     410</span> <span class="tlaUNC">           0 :   for (std::size_t i = 0; i &lt; a.n(); i++)</span></span>
+<span id="L411"><span class="lineNum">     411</span>              :   {</span>
+<span id="L412"><span class="lineNum">     412</span> <span class="tlaUNC">           0 :     const auto &amp; ai = a[i];</span></span>
+<span id="L413"><span class="lineNum">     413</span> <span class="tlaUNC">           0 :     if (ai.defined())</span></span>
+<span id="L414"><span class="lineNum">     414</span> <span class="tlaUNC">           0 :       v[i] = ai / b;</span></span>
+<span id="L415"><span class="lineNum">     415</span>              :   }</span>
+<span id="L416"><span class="lineNum">     416</span> <span class="tlaUNC">           0 :   return Vector(std::move(v), a.block_sizes());</span></span>
+<span id="L417"><span class="lineNum">     417</span> <span class="tlaUNC">           0 : }</span></span>
+<span id="L418"><span class="lineNum">     418</span>              : </span>
+<span id="L419"><span class="lineNum">     419</span>              : Scalar</span>
+<span id="L420"><span class="lineNum">     420</span> <span class="tlaGNC tlaBgGNC">        1137 : norm_sq(const Vector &amp; v)</span></span>
+<span id="L421"><span class="lineNum">     421</span>              : {</span>
+<span id="L422"><span class="lineNum">     422</span> <span class="tlaGNC">        1137 :   Scalar sum_sq = Scalar::zeros();</span></span>
+<span id="L423"><span class="lineNum">     423</span> <span class="tlaGNC">        4501 :   for (const auto &amp; vi : v)</span></span>
+<span id="L424"><span class="lineNum">     424</span> <span class="tlaGNC">        3364 :     if (vi.defined())</span></span>
+<span id="L425"><span class="lineNum">     425</span> <span class="tlaGNC">        3364 :       sum_sq = sum_sq + neml2::norm_sq(vi);</span></span>
+<span id="L426"><span class="lineNum">     426</span> <span class="tlaGNC">        1137 :   return sum_sq;</span></span>
+<span id="L427"><span class="lineNum">     427</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
+<span id="L428"><span class="lineNum">     428</span>              : </span>
+<span id="L429"><span class="lineNum">     429</span>              : Scalar</span>
+<span id="L430"><span class="lineNum">     430</span> <span class="tlaGNC tlaBgGNC">         878 : norm(const Vector &amp; v)</span></span>
+<span id="L431"><span class="lineNum">     431</span>              : {</span>
+<span id="L432"><span class="lineNum">     432</span> <span class="tlaGNC">         878 :   return neml2::sqrt(norm_sq(v));</span></span>
+<span id="L433"><span class="lineNum">     433</span>              : }</span>
+<span id="L434"><span class="lineNum">     434</span>              : </span>
+<span id="L435"><span class="lineNum">     435</span>              : } // namespace neml2::es</span>
         </pre>
               </td>
             </tr>

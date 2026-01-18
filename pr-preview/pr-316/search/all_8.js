@@ -60,5 +60,6 @@ var searchData=
   ['exponentiallawpermeability_57',['ExponentialLawPermeability',['../classneml2_1_1ExponentialLawPermeability.html',1,'ExponentialLawPermeability'],['../classneml2_1_1ExponentialLawPermeability.html#a15eb1ebfbcc674a2b1ac85f8b57f0e53',1,'neml2::ExponentialLawPermeability::ExponentialLawPermeability()'],['../syntax-models.html#exponentiallawpermeability',1,'ExponentialLawPermeability']]],
   ['extension_58',['Extension',['../tutorials-extension.html',1,'']]],
   ['external_20project_20integration_59',['External Project Integration',['../external-project-integration.html',1,'']]],
-  ['extract_5ftraceable_5fsizes_60',['extract_traceable_sizes',['../namespaceneml2_1_1utils.html#a6a5b409081a337dc9c2e7476c28b86a0',1,'neml2::utils']]]
+  ['extract_5ftraceable_5fsizes_60',['extract_traceable_sizes',['../namespaceneml2_1_1utils.html#a6a5b409081a337dc9c2e7476c28b86a0',1,'neml2::utils']]],
+  ['extrsc_5fintmd_5fsizes_61',['extrsc_intmd_sizes',['../classneml2_1_1Derivative.html#ae8aa03638d69233089f341695e3bb47a',1,'neml2::Derivative']]]
 ];

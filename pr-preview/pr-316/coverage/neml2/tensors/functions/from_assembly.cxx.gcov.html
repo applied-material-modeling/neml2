@@ -37,12 +37,12 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2026-01-17 16:27:54</td>
+            <td class="headerValue">2026-01-18 05:02:38</td>
             <td></td>
             <td class="headerItem">Functions:</td>
-            <td class="headerCovTableEntryMed">66.7&nbsp;%</td>
+            <td class="headerCovTableEntryMed">33.3&nbsp;%</td>
             <td class="headerCovTableEntry">3</td>
-            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntry">1</td>
           </tr>
                   <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
                 </table>
@@ -94,51 +94,51 @@
 <span id="L32"><span class="lineNum">      32</span>              : {</span>
 <span id="L33"><span class="lineNum">      33</span>              : template &lt;std::size_t N&gt;</span>
 <span id="L34"><span class="lineNum">      34</span>              : Tensor</span>
-<span id="L35"><span class="lineNum">      35</span> <span class="tlaGNC tlaBgGNC">        2876 : from_assembly(const Tensor &amp; from,</span></span>
+<span id="L35"><span class="lineNum">      35</span> <span class="tlaGNC tlaBgGNC">         143 : from_assembly(const Tensor &amp; from,</span></span>
 <span id="L36"><span class="lineNum">      36</span>              :               const std::array&lt;TensorShapeRef, N&gt; &amp; dep_intmd_shapes,</span>
 <span id="L37"><span class="lineNum">      37</span>              :               const std::array&lt;TensorShapeRef, N&gt; &amp; base_shapes,</span>
 <span id="L38"><span class="lineNum">      38</span>              :               [[maybe_unused]] const std::string &amp; debug_name)</span>
 <span id="L39"><span class="lineNum">      39</span>              : {</span>
 <span id="L40"><span class="lineNum">      40</span>              : #ifndef NDEBUG</span>
-<span id="L41"><span class="lineNum">      41</span> <span class="tlaGNC">        2876 :   TensorShape assembly_sizes(N);</span></span>
-<span id="L42"><span class="lineNum">      42</span> <span class="tlaGNC">        5895 :   for (std::size_t i = 0; i &lt; N; i++)</span></span>
-<span id="L43"><span class="lineNum">      43</span> <span class="tlaGNC">        3019 :     assembly_sizes[i] = utils::numel(dep_intmd_shapes[i]) * utils::numel(base_shapes[i]);</span></span>
-<span id="L44"><span class="lineNum">      44</span> <span class="tlaGNC">        2876 :   neml_assert_dbg(assembly_sizes == from.base_sizes(),</span></span>
+<span id="L41"><span class="lineNum">      41</span> <span class="tlaGNC">         143 :   TensorShape assembly_sizes(N);</span></span>
+<span id="L42"><span class="lineNum">      42</span> <span class="tlaGNC">         429 :   for (std::size_t i = 0; i &lt; N; i++)</span></span>
+<span id="L43"><span class="lineNum">      43</span> <span class="tlaGNC">         286 :     assembly_sizes[i] = utils::numel(dep_intmd_shapes[i]) * utils::numel(base_shapes[i]);</span></span>
+<span id="L44"><span class="lineNum">      44</span> <span class="tlaGNC">         143 :   neml_assert_dbg(assembly_sizes == from.base_sizes(),</span></span>
 <span id="L45"><span class="lineNum">      45</span>              :                   &quot;Incompatible base shape for tensor '&quot;,</span>
 <span id="L46"><span class="lineNum">      46</span>              :                   debug_name,</span>
 <span id="L47"><span class="lineNum">      47</span>              :                   &quot;', expected base shape &quot;,</span>
 <span id="L48"><span class="lineNum">      48</span>              :                   assembly_sizes,</span>
 <span id="L49"><span class="lineNum">      49</span>              :                   &quot;, but got &quot;,</span>
-<span id="L50"><span class="lineNum">      50</span> <span class="tlaGNC">        2876 :                   from.base_sizes());</span></span>
+<span id="L50"><span class="lineNum">      50</span> <span class="tlaGNC">         143 :                   from.base_sizes());</span></span>
 <span id="L51"><span class="lineNum">      51</span>              : #endif</span>
 <span id="L52"><span class="lineNum">      52</span>              : </span>
 <span id="L53"><span class="lineNum">      53</span>              :   // Generate the unflattened base shape</span>
-<span id="L54"><span class="lineNum">      54</span> <span class="tlaGNC">        2876 :   TensorShape unfl_sizes;</span></span>
-<span id="L55"><span class="lineNum">      55</span> <span class="tlaGNC">        5895 :   for (std::size_t i = 0; i &lt; N; i++)</span></span>
+<span id="L54"><span class="lineNum">      54</span> <span class="tlaGNC">         143 :   TensorShape unfl_sizes;</span></span>
+<span id="L55"><span class="lineNum">      55</span> <span class="tlaGNC">         429 :   for (std::size_t i = 0; i &lt; N; i++)</span></span>
 <span id="L56"><span class="lineNum">      56</span>              :   {</span>
-<span id="L57"><span class="lineNum">      57</span> <span class="tlaGNC">        3019 :     unfl_sizes.insert(unfl_sizes.end(), dep_intmd_shapes[i].begin(), dep_intmd_shapes[i].end());</span></span>
-<span id="L58"><span class="lineNum">      58</span> <span class="tlaGNC">        3019 :     unfl_sizes.insert(unfl_sizes.end(), base_shapes[i].begin(), base_shapes[i].end());</span></span>
+<span id="L57"><span class="lineNum">      57</span> <span class="tlaGNC">         286 :     unfl_sizes.insert(unfl_sizes.end(), dep_intmd_shapes[i].begin(), dep_intmd_shapes[i].end());</span></span>
+<span id="L58"><span class="lineNum">      58</span> <span class="tlaGNC">         286 :     unfl_sizes.insert(unfl_sizes.end(), base_shapes[i].begin(), base_shapes[i].end());</span></span>
 <span id="L59"><span class="lineNum">      59</span>              :   }</span>
 <span id="L60"><span class="lineNum">      60</span>              : </span>
 <span id="L61"><span class="lineNum">      61</span>              :   // Unflatten base</span>
-<span id="L62"><span class="lineNum">      62</span> <span class="tlaGNC">        2876 :   auto unfl = from.base_reshape(unfl_sizes);</span></span>
+<span id="L62"><span class="lineNum">      62</span> <span class="tlaGNC">         143 :   auto unfl = from.base_reshape(unfl_sizes);</span></span>
 <span id="L63"><span class="lineNum">      63</span>              : </span>
 <span id="L64"><span class="lineNum">      64</span>              :   // The given tensor should have shape</span>
 <span id="L65"><span class="lineNum">      65</span>              :   //   (*dynamic; *indep_intmd; *dep_intmd_0, *base_0, ..., *dep_intmd_{N-1}, *base_{N-1})</span>
 <span id="L66"><span class="lineNum">      66</span>              :   // We need to move the dependent intermediate dimension from base to intmd</span>
-<span id="L67"><span class="lineNum">      67</span> <span class="tlaGNC">        2876 :   auto src_dim = from.batch_dim();</span></span>
-<span id="L68"><span class="lineNum">      68</span> <span class="tlaGNC">        2876 :   auto dest_dim = from.batch_dim();</span></span>
-<span id="L69"><span class="lineNum">      69</span> <span class="tlaGNC">        2876 :   auto raw = ATensor(unfl);</span></span>
-<span id="L70"><span class="lineNum">      70</span> <span class="tlaGNC">        2876 :   Size total_dep_intmd_dim = 0;</span></span>
-<span id="L71"><span class="lineNum">      71</span> <span class="tlaGNC">        5895 :   for (std::size_t i = 0; i &lt; N; i++)</span></span>
+<span id="L67"><span class="lineNum">      67</span> <span class="tlaGNC">         143 :   auto src_dim = from.batch_dim();</span></span>
+<span id="L68"><span class="lineNum">      68</span> <span class="tlaGNC">         143 :   auto dest_dim = from.batch_dim();</span></span>
+<span id="L69"><span class="lineNum">      69</span> <span class="tlaGNC">         143 :   auto raw = ATensor(unfl);</span></span>
+<span id="L70"><span class="lineNum">      70</span> <span class="tlaGNC">         143 :   Size total_dep_intmd_dim = 0;</span></span>
+<span id="L71"><span class="lineNum">      71</span> <span class="tlaGNC">         429 :   for (std::size_t i = 0; i &lt; N; i++)</span></span>
 <span id="L72"><span class="lineNum">      72</span>              :   {</span>
-<span id="L73"><span class="lineNum">      73</span> <span class="tlaGNC">        3190 :     for (std::size_t j = 0; j &lt; dep_intmd_shapes[i].size(); j++)</span></span>
-<span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">         171 :       raw = raw.movedim(src_dim++, dest_dim++);</span></span>
-<span id="L75"><span class="lineNum">      75</span> <span class="tlaGNC">        3019 :     src_dim += base_shapes[i].size();</span></span>
-<span id="L76"><span class="lineNum">      76</span> <span class="tlaGNC">        3019 :     total_dep_intmd_dim += dep_intmd_shapes[i].size();</span></span>
+<span id="L73"><span class="lineNum">      73</span> <span class="tlaGNC">         289 :     for (std::size_t j = 0; j &lt; dep_intmd_shapes[i].size(); j++)</span></span>
+<span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">           3 :       raw = raw.movedim(src_dim++, dest_dim++);</span></span>
+<span id="L75"><span class="lineNum">      75</span> <span class="tlaGNC">         286 :     src_dim += base_shapes[i].size();</span></span>
+<span id="L76"><span class="lineNum">      76</span> <span class="tlaGNC">         286 :     total_dep_intmd_dim += dep_intmd_shapes[i].size();</span></span>
 <span id="L77"><span class="lineNum">      77</span>              :   }</span>
-<span id="L78"><span class="lineNum">      78</span> <span class="tlaGNC">        5752 :   return Tensor(raw, from.dynamic_sizes(), from.intmd_dim() + total_dep_intmd_dim);</span></span>
-<span id="L79"><span class="lineNum">      79</span> <span class="tlaGNC">        2876 : }</span></span>
+<span id="L78"><span class="lineNum">      78</span> <span class="tlaGNC">         286 :   return Tensor(raw, from.dynamic_sizes(), from.intmd_dim() + total_dep_intmd_dim);</span></span>
+<span id="L79"><span class="lineNum">      79</span> <span class="tlaGNC">         143 : }</span></span>
 <span id="L80"><span class="lineNum">      80</span>              : </span>
 <span id="L81"><span class="lineNum">      81</span>              : // Explicit instantiations</span>
 <span id="L82"><span class="lineNum">      82</span>              : template Tensor from_assembly&lt;1&gt;(const Tensor &amp;,</span>

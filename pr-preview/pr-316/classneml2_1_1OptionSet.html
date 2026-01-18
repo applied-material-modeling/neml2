@@ -218,6 +218,10 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a8d539aebcbe1c92120aba8caf0c954bc" id="r_a8d539aebcbe1c92120aba8caf0c954bc"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classneml2_1_1OptionBase.html">OptionBase</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8d539aebcbe1c92120aba8caf0c954bc">get</a> (const std::string &amp;) const</td></tr>
 <tr class="memdesc:a8d539aebcbe1c92120aba8caf0c954bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a const reference to the specified option value.  <br /></td></tr>
 <tr class="separator:a8d539aebcbe1c92120aba8caf0c954bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a18fa0385a22be9ded5fca7ebd733c454" id="r_a18fa0385a22be9ded5fca7ebd733c454"><td class="memTemplParams" colspan="2">template&lt;typename K , typename V &gt; </td></tr>
+<tr class="memitem:a18fa0385a22be9ded5fca7ebd733c454"><td class="memTemplItemLeft" align="right" valign="top">std::map&lt; K, V &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="#a18fa0385a22be9ded5fca7ebd733c454">get_map</a> (const std::string &amp;, const std::string &amp;) const</td></tr>
+<tr class="memdesc:a18fa0385a22be9ded5fca7ebd733c454"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get two options and bind them to find a map.  <br /></td></tr>
+<tr class="separator:a18fa0385a22be9ded5fca7ebd733c454"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader"></div></td></tr>
 <tr class="memitem:abf66b5d5efcdc0d044a2b719d8c2b574" id="r_abf66b5d5efcdc0d044a2b719d8c2b574"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abf66b5d5efcdc0d044a2b719d8c2b574">operator+=</a> (const <a class="el" href="classneml2_1_1OptionSet.html">OptionSet</a> &amp;source)</td></tr>
 <tr class="separator:abf66b5d5efcdc0d044a2b719d8c2b574"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -617,6 +621,48 @@ template&lt;typename T &gt; </div>
 </div><div class="memdoc">
 
 <p>Get a const reference to the specified option value. </p>
+
+</div>
+</div>
+<a id="a18fa0385a22be9ded5fca7ebd733c454" name="a18fa0385a22be9ded5fca7ebd733c454"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a18fa0385a22be9ded5fca7ebd733c454">&#9670;&#160;</a></span>get_map()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename K , typename V &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">std::map&lt; K, V &gt; get_map </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>key_option</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>value_option</em></span>&#160;) const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get two options and bind them to find a map. </p>
+<p>Get two options and bind them to find a map</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">K</td><td>Key type </td></tr>
+    <tr><td class="paramname">V</td><td>Value type </td></tr>
+  </table>
+  </dd>
+</dl>
+<p>The two options are expected to be of type std::vector&lt;K&gt; and std::vector&lt;V&gt;, respectively. Keys shall be unique. Otherwise, an exception is thrown.</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">K</td><td>Key type </td></tr>
+    <tr><td class="paramname">V</td><td>Value type </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>std::map&lt;K, V&gt; </dd></dl>
 
 </div>
 </div>

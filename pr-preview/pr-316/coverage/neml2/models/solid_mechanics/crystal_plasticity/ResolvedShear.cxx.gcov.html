@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2026-01-17 16:27:54</td>
+            <td class="headerValue">2026-01-18 05:02:38</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -128,7 +128,7 @@
 <span id="L66"><span class="lineNum">      66</span>              :   : Model(options),</span>
 <span id="L67"><span class="lineNum">      67</span> <span class="tlaGNC">           2 :     _crystal_geometry(register_data&lt;crystallography::CrystalGeometry&gt;(</span></span>
 <span id="L68"><span class="lineNum">      68</span> <span class="tlaGNC">           4 :         options.get&lt;std::string&gt;(&quot;crystal_geometry&quot;))),</span></span>
-<span id="L69"><span class="lineNum">      69</span> <span class="tlaGNC">           2 :     _rss(declare_output_variable&lt;Scalar&gt;(&quot;resolved_shears&quot;, 1)),</span></span>
+<span id="L69"><span class="lineNum">      69</span> <span class="tlaGNC">           2 :     _rss(declare_output_variable&lt;Scalar&gt;(&quot;resolved_shears&quot;)),</span></span>
 <span id="L70"><span class="lineNum">      70</span> <span class="tlaGNC">           2 :     _S(declare_input_variable&lt;SR2&gt;(&quot;stress&quot;)),</span></span>
 <span id="L71"><span class="lineNum">      71</span> <span class="tlaGNC">           4 :     _R(declare_input_variable&lt;R2&gt;(&quot;orientation&quot;))</span></span>
 <span id="L72"><span class="lineNum">      72</span>              : {</span>
@@ -149,10 +149,10 @@
 <span id="L87"><span class="lineNum">      87</span> <span class="tlaGNC">           8 :   if (dout_din)</span></span>
 <span id="L88"><span class="lineNum">      88</span>              :   {</span>
 <span id="L89"><span class="lineNum">      89</span> <span class="tlaGNC">           4 :     if (_S.is_dependent())</span></span>
-<span id="L90"><span class="lineNum">      90</span> <span class="tlaGNC">           4 :       _rss.d(_S, 1) = M.rotate(R);</span></span>
+<span id="L90"><span class="lineNum">      90</span> <span class="tlaGNC">           4 :       _rss.d(_S, 1, 1, 0) = M.rotate(R);</span></span>
 <span id="L91"><span class="lineNum">      91</span>              : </span>
 <span id="L92"><span class="lineNum">      92</span> <span class="tlaGNC">           4 :     if (_R.is_dependent())</span></span>
-<span id="L93"><span class="lineNum">      93</span> <span class="tlaGNC">          12 :       _rss.d(_R, 1) = R2::einsum(&quot;...ijk,...i-&gt;...jk&quot;, {M.drotate(R), S});</span></span>
+<span id="L93"><span class="lineNum">      93</span> <span class="tlaGNC">          12 :       _rss.d(_R, 1, 1, 0) = R2::einsum(&quot;...ijk,...i-&gt;...jk&quot;, {M.drotate(R), S});</span></span>
 <span id="L94"><span class="lineNum">      94</span>              :   }</span>
 <span id="L95"><span class="lineNum">      95</span> <span class="tlaGNC">          12 : }</span></span>
 <span id="L96"><span class="lineNum">      96</span>              : </span>

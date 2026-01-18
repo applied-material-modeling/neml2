@@ -31,13 +31,13 @@
             <td class="headerValue">coverage.info</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntryMed">73.2&nbsp;%</td>
-            <td class="headerCovTableEntry">112</td>
-            <td class="headerCovTableEntry">82</td>
+            <td class="headerCovTableEntryMed">73.7&nbsp;%</td>
+            <td class="headerCovTableEntry">114</td>
+            <td class="headerCovTableEntry">84</td>
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2026-01-17 16:27:54</td>
+            <td class="headerValue">2026-01-18 05:02:38</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">78.6&nbsp;%</td>
@@ -220,65 +220,68 @@
 <span id="L158"><span class="lineNum">     158</span> <span class="tlaGNC">        6612 :       const auto &amp; v = (*this)(row_indices[i], col_indices[j]);</span></span>
 <span id="L159"><span class="lineNum">     159</span> <span class="tlaGNC">        6612 :       if (!v.defined())</span></span>
 <span id="L160"><span class="lineNum">     160</span> <span class="tlaGNC">         288 :         continue;</span></span>
-<span id="L161"><span class="lineNum">     161</span> <span class="tlaGNC">        6324 :       const auto v_f = v.base_reshape({row_split_sizes[i], col_split_sizes[j]});</span></span>
-<span id="L162"><span class="lineNum">     162</span> <span class="tlaGNC">        6324 :       vs_f_cols[j] = v_f;</span></span>
-<span id="L163"><span class="lineNum">     163</span> <span class="tlaGNC">        6324 :     }</span></span>
-<span id="L164"><span class="lineNum">     164</span>              : </span>
-<span id="L165"><span class="lineNum">     165</span>              :     // Expand defined tensors with the broadcast dynamic shape and fill undefined tensors with</span>
-<span id="L166"><span class="lineNum">     166</span>              :     // zeros.</span>
-<span id="L167"><span class="lineNum">     167</span> <span class="tlaGNC">        2130 :     const auto dynamic_sizes = utils::broadcast_dynamic_sizes(vs_f_cols);</span></span>
-<span id="L168"><span class="lineNum">     168</span> <span class="tlaGNC">        8742 :     for (std::size_t j = 0; j &lt; col_indices.size(); ++j)</span></span>
-<span id="L169"><span class="lineNum">     169</span>              :     {</span>
-<span id="L170"><span class="lineNum">     170</span> <span class="tlaGNC">        6612 :       auto &amp; v = vs_f_cols[j];</span></span>
-<span id="L171"><span class="lineNum">     171</span> <span class="tlaGNC">        6612 :       if (v.defined())</span></span>
-<span id="L172"><span class="lineNum">     172</span> <span class="tlaGNC">        6324 :         v = v.dynamic_expand(dynamic_sizes);</span></span>
-<span id="L173"><span class="lineNum">     173</span>              :       else</span>
-<span id="L174"><span class="lineNum">     174</span> <span class="tlaGNC">         288 :         v = Tensor::zeros(dynamic_sizes, {}, {row_split_sizes[i], col_split_sizes[j]}, options());</span></span>
-<span id="L175"><span class="lineNum">     175</span>              :     }</span>
-<span id="L176"><span class="lineNum">     176</span>              : </span>
-<span id="L177"><span class="lineNum">     177</span> <span class="tlaGNC">        2130 :     vs_f_rows[i] = base_cat(vs_f_cols, -1);</span></span>
-<span id="L178"><span class="lineNum">     178</span> <span class="tlaGNC">        2130 :   }</span></span>
+<span id="L161"><span class="lineNum">     161</span> <span class="tlaGNC">        6324 :       neml_assert_dbg(</span></span>
+<span id="L162"><span class="lineNum">     162</span> <span class="tlaGNC">        6324 :           v.intmd_dim() == 0,</span></span>
+<span id="L163"><span class="lineNum">     163</span>              :           &quot;cannot assemble es::Matrix with a sub-block having intermediate dimension(s)&quot;);</span>
+<span id="L164"><span class="lineNum">     164</span> <span class="tlaGNC">        6324 :       const auto v_f = v.base_reshape({row_split_sizes[i], col_split_sizes[j]});</span></span>
+<span id="L165"><span class="lineNum">     165</span> <span class="tlaGNC">        6324 :       vs_f_cols[j] = v_f;</span></span>
+<span id="L166"><span class="lineNum">     166</span> <span class="tlaGNC">        6324 :     }</span></span>
+<span id="L167"><span class="lineNum">     167</span>              : </span>
+<span id="L168"><span class="lineNum">     168</span>              :     // Expand defined tensors with the broadcast dynamic shape and fill undefined tensors with</span>
+<span id="L169"><span class="lineNum">     169</span>              :     // zeros.</span>
+<span id="L170"><span class="lineNum">     170</span> <span class="tlaGNC">        2130 :     const auto dynamic_sizes = utils::broadcast_dynamic_sizes(vs_f_cols);</span></span>
+<span id="L171"><span class="lineNum">     171</span> <span class="tlaGNC">        8742 :     for (std::size_t j = 0; j &lt; col_indices.size(); ++j)</span></span>
+<span id="L172"><span class="lineNum">     172</span>              :     {</span>
+<span id="L173"><span class="lineNum">     173</span> <span class="tlaGNC">        6612 :       auto &amp; v = vs_f_cols[j];</span></span>
+<span id="L174"><span class="lineNum">     174</span> <span class="tlaGNC">        6612 :       if (v.defined())</span></span>
+<span id="L175"><span class="lineNum">     175</span> <span class="tlaGNC">        6324 :         v = v.dynamic_expand(dynamic_sizes);</span></span>
+<span id="L176"><span class="lineNum">     176</span>              :       else</span>
+<span id="L177"><span class="lineNum">     177</span> <span class="tlaGNC">         288 :         v = Tensor::zeros(dynamic_sizes, {}, {row_split_sizes[i], col_split_sizes[j]}, options());</span></span>
+<span id="L178"><span class="lineNum">     178</span>              :     }</span>
 <span id="L179"><span class="lineNum">     179</span>              : </span>
-<span id="L180"><span class="lineNum">     180</span>              :   // Expand defined tensors with the broadcast dynamic shape and fill undefined tensors with zeros.</span>
-<span id="L181"><span class="lineNum">     181</span> <span class="tlaGNC">         727 :   const auto dynamic_sizes = utils::broadcast_dynamic_sizes(vs_f_rows);</span></span>
-<span id="L182"><span class="lineNum">     182</span> <span class="tlaGNC">        2857 :   for (std::size_t i = 0; i &lt; row_indices.size(); ++i)</span></span>
-<span id="L183"><span class="lineNum">     183</span>              :   {</span>
-<span id="L184"><span class="lineNum">     184</span> <span class="tlaGNC">        2130 :     auto &amp; v = vs_f_rows[i];</span></span>
-<span id="L185"><span class="lineNum">     185</span> <span class="tlaGNC">        2130 :     if (v.defined())</span></span>
-<span id="L186"><span class="lineNum">     186</span> <span class="tlaGNC">        2130 :       v = v.dynamic_expand(dynamic_sizes);</span></span>
-<span id="L187"><span class="lineNum">     187</span>              :     else</span>
-<span id="L188"><span class="lineNum">     188</span> <span class="tlaUNC tlaBgUNC">           0 :       v = Tensor::zeros(dynamic_sizes, {}, {row_split_sizes[i], col_split_sizes[i]}, options());</span></span>
-<span id="L189"><span class="lineNum">     189</span>              :   }</span>
-<span id="L190"><span class="lineNum">     190</span>              : </span>
-<span id="L191"><span class="lineNum">     191</span> <span class="tlaGNC tlaBgGNC">        1454 :   return {base_cat(vs_f_rows, -2), row_split_sizes, col_split_sizes};</span></span>
-<span id="L192"><span class="lineNum">     192</span> <span class="tlaGNC">         727 : }</span></span>
+<span id="L180"><span class="lineNum">     180</span> <span class="tlaGNC">        2130 :     vs_f_rows[i] = base_cat(vs_f_cols, -1);</span></span>
+<span id="L181"><span class="lineNum">     181</span> <span class="tlaGNC">        2130 :   }</span></span>
+<span id="L182"><span class="lineNum">     182</span>              : </span>
+<span id="L183"><span class="lineNum">     183</span>              :   // Expand defined tensors with the broadcast dynamic shape and fill undefined tensors with zeros.</span>
+<span id="L184"><span class="lineNum">     184</span> <span class="tlaGNC">         727 :   const auto dynamic_sizes = utils::broadcast_dynamic_sizes(vs_f_rows);</span></span>
+<span id="L185"><span class="lineNum">     185</span> <span class="tlaGNC">        2857 :   for (std::size_t i = 0; i &lt; row_indices.size(); ++i)</span></span>
+<span id="L186"><span class="lineNum">     186</span>              :   {</span>
+<span id="L187"><span class="lineNum">     187</span> <span class="tlaGNC">        2130 :     auto &amp; v = vs_f_rows[i];</span></span>
+<span id="L188"><span class="lineNum">     188</span> <span class="tlaGNC">        2130 :     if (v.defined())</span></span>
+<span id="L189"><span class="lineNum">     189</span> <span class="tlaGNC">        2130 :       v = v.dynamic_expand(dynamic_sizes);</span></span>
+<span id="L190"><span class="lineNum">     190</span>              :     else</span>
+<span id="L191"><span class="lineNum">     191</span> <span class="tlaUNC tlaBgUNC">           0 :       v = Tensor::zeros(dynamic_sizes, {}, {row_split_sizes[i], col_split_sizes[i]}, options());</span></span>
+<span id="L192"><span class="lineNum">     192</span>              :   }</span>
 <span id="L193"><span class="lineNum">     193</span>              : </span>
-<span id="L194"><span class="lineNum">     194</span>              : void</span>
-<span id="L195"><span class="lineNum">     195</span> <span class="tlaUNC tlaBgUNC">           0 : Matrix::disassemble(const Tensor &amp; mat,</span></span>
-<span id="L196"><span class="lineNum">     196</span>              :                     OptionalArrayRef&lt;std::size_t&gt; row_blocks,</span>
-<span id="L197"><span class="lineNum">     197</span>              :                     OptionalArrayRef&lt;std::size_t&gt; col_blocks)</span>
-<span id="L198"><span class="lineNum">     198</span>              : {</span>
-<span id="L199"><span class="lineNum">     199</span> <span class="tlaUNC">           0 :   const auto row_indices = select_subblock_indices(row_blocks, m());</span></span>
-<span id="L200"><span class="lineNum">     200</span> <span class="tlaUNC">           0 :   const auto col_indices = select_subblock_indices(col_blocks, n());</span></span>
-<span id="L201"><span class="lineNum">     201</span> <span class="tlaUNC">           0 :   const auto row_shapes = select_shapes(_row_shapes, row_indices);</span></span>
-<span id="L202"><span class="lineNum">     202</span> <span class="tlaUNC">           0 :   const auto col_shapes = select_shapes(_col_shapes, col_indices);</span></span>
-<span id="L203"><span class="lineNum">     203</span> <span class="tlaUNC">           0 :   const auto row_split_sizes = numel(row_shapes);</span></span>
-<span id="L204"><span class="lineNum">     204</span> <span class="tlaUNC">           0 :   const auto col_split_sizes = numel(col_shapes);</span></span>
-<span id="L205"><span class="lineNum">     205</span> <span class="tlaUNC">           0 :   const auto &amp; S = mat.dynamic_sizes();</span></span>
-<span id="L206"><span class="lineNum">     206</span>              : </span>
-<span id="L207"><span class="lineNum">     207</span>              :   // split into rows</span>
-<span id="L208"><span class="lineNum">     208</span> <span class="tlaUNC">           0 :   auto mat_rows = mat.split(row_split_sizes, -2);</span></span>
-<span id="L209"><span class="lineNum">     209</span> <span class="tlaUNC">           0 :   for (std::size_t i = 0; i &lt; row_indices.size(); ++i)</span></span>
-<span id="L210"><span class="lineNum">     210</span>              :   {</span>
-<span id="L211"><span class="lineNum">     211</span>              :     // split into columns</span>
-<span id="L212"><span class="lineNum">     212</span> <span class="tlaUNC">           0 :     auto mat_cols = mat_rows[i].split(col_split_sizes, -1);</span></span>
-<span id="L213"><span class="lineNum">     213</span> <span class="tlaUNC">           0 :     for (std::size_t j = 0; j &lt; col_indices.size(); ++j)</span></span>
-<span id="L214"><span class="lineNum">     214</span> <span class="tlaUNC">           0 :       _data[row_indices[i] * n() + col_indices[j]] =</span></span>
-<span id="L215"><span class="lineNum">     215</span> <span class="tlaUNC">           0 :           Tensor(mat_cols[j], S).base_reshape(utils::add_shapes(row_shapes[i], col_shapes[j]));</span></span>
-<span id="L216"><span class="lineNum">     216</span> <span class="tlaUNC">           0 :   }</span></span>
-<span id="L217"><span class="lineNum">     217</span> <span class="tlaUNC">           0 : }</span></span>
-<span id="L218"><span class="lineNum">     218</span>              : </span>
-<span id="L219"><span class="lineNum">     219</span>              : } // namespace neml2::es</span>
+<span id="L194"><span class="lineNum">     194</span> <span class="tlaGNC tlaBgGNC">        1454 :   return {base_cat(vs_f_rows, -2), row_split_sizes, col_split_sizes};</span></span>
+<span id="L195"><span class="lineNum">     195</span> <span class="tlaGNC">         727 : }</span></span>
+<span id="L196"><span class="lineNum">     196</span>              : </span>
+<span id="L197"><span class="lineNum">     197</span>              : void</span>
+<span id="L198"><span class="lineNum">     198</span> <span class="tlaUNC tlaBgUNC">           0 : Matrix::disassemble(const Tensor &amp; mat,</span></span>
+<span id="L199"><span class="lineNum">     199</span>              :                     OptionalArrayRef&lt;std::size_t&gt; row_blocks,</span>
+<span id="L200"><span class="lineNum">     200</span>              :                     OptionalArrayRef&lt;std::size_t&gt; col_blocks)</span>
+<span id="L201"><span class="lineNum">     201</span>              : {</span>
+<span id="L202"><span class="lineNum">     202</span> <span class="tlaUNC">           0 :   const auto row_indices = select_subblock_indices(row_blocks, m());</span></span>
+<span id="L203"><span class="lineNum">     203</span> <span class="tlaUNC">           0 :   const auto col_indices = select_subblock_indices(col_blocks, n());</span></span>
+<span id="L204"><span class="lineNum">     204</span> <span class="tlaUNC">           0 :   const auto row_shapes = select_shapes(_row_shapes, row_indices);</span></span>
+<span id="L205"><span class="lineNum">     205</span> <span class="tlaUNC">           0 :   const auto col_shapes = select_shapes(_col_shapes, col_indices);</span></span>
+<span id="L206"><span class="lineNum">     206</span> <span class="tlaUNC">           0 :   const auto row_split_sizes = numel(row_shapes);</span></span>
+<span id="L207"><span class="lineNum">     207</span> <span class="tlaUNC">           0 :   const auto col_split_sizes = numel(col_shapes);</span></span>
+<span id="L208"><span class="lineNum">     208</span> <span class="tlaUNC">           0 :   const auto &amp; S = mat.dynamic_sizes();</span></span>
+<span id="L209"><span class="lineNum">     209</span>              : </span>
+<span id="L210"><span class="lineNum">     210</span>              :   // split into rows</span>
+<span id="L211"><span class="lineNum">     211</span> <span class="tlaUNC">           0 :   auto mat_rows = mat.split(row_split_sizes, -2);</span></span>
+<span id="L212"><span class="lineNum">     212</span> <span class="tlaUNC">           0 :   for (std::size_t i = 0; i &lt; row_indices.size(); ++i)</span></span>
+<span id="L213"><span class="lineNum">     213</span>              :   {</span>
+<span id="L214"><span class="lineNum">     214</span>              :     // split into columns</span>
+<span id="L215"><span class="lineNum">     215</span> <span class="tlaUNC">           0 :     auto mat_cols = mat_rows[i].split(col_split_sizes, -1);</span></span>
+<span id="L216"><span class="lineNum">     216</span> <span class="tlaUNC">           0 :     for (std::size_t j = 0; j &lt; col_indices.size(); ++j)</span></span>
+<span id="L217"><span class="lineNum">     217</span> <span class="tlaUNC">           0 :       _data[row_indices[i] * n() + col_indices[j]] =</span></span>
+<span id="L218"><span class="lineNum">     218</span> <span class="tlaUNC">           0 :           Tensor(mat_cols[j], S).base_reshape(utils::add_shapes(row_shapes[i], col_shapes[j]));</span></span>
+<span id="L219"><span class="lineNum">     219</span> <span class="tlaUNC">           0 :   }</span></span>
+<span id="L220"><span class="lineNum">     220</span> <span class="tlaUNC">           0 : }</span></span>
+<span id="L221"><span class="lineNum">     221</span>              : </span>
+<span id="L222"><span class="lineNum">     222</span>              : } // namespace neml2::es</span>
         </pre>
               </td>
             </tr>
