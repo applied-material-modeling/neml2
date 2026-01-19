@@ -28,13 +28,13 @@
 #include "neml2/misc/types.h"
 #include "neml2/tensors/Tensor.h"
 
-namespace neml2::es
+namespace neml2
 {
-/// Base data structure for discrete equation system data (e.g., Vector and Matrix)
-struct ESData
+/// Base data structure for discrete, heterogeneous data (e.g., HVector and HMatrix)
+struct HeterogeneousData
 {
-  ESData() = default;
-  ESData(std::vector<Tensor>);
+  HeterogeneousData() = default;
+  HeterogeneousData(std::vector<Tensor>);
 
   /// Whether any of the contained Tensors require gradients
   bool requires_grad() const;
@@ -59,4 +59,4 @@ protected:
   /// Sub-block tensors
   std::vector<Tensor> _data;
 };
-} // namespace neml2::es
+} // namespace neml2

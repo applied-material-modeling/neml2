@@ -112,7 +112,7 @@ class TestElasticModel(DerivativeCheck):
 
         # Prescribed forces
         forces = dict_to_list({"forces/t": time, "forces/E": strain}, nmodel.gmap())
-        self.forces = neml2.ESVector(forces, nmodel.glayout()).assemble()[0].torch()
+        self.forces = neml2.HVector(forces, nmodel.glayout()).assemble()[0].torch()
 
         # Initial state
         self.initial_state = torch.zeros((self.nbatch, self.model.nstate))
@@ -144,7 +144,7 @@ class TestViscoplasticModel(DerivativeCheck):
 
         # Prescribed forces
         forces = dict_to_list({"forces/t": time, "forces/E": strain}, nmodel.gmap())
-        self.forces = neml2.ESVector(forces, nmodel.glayout()).assemble()[0].torch()
+        self.forces = neml2.HVector(forces, nmodel.glayout()).assemble()[0].torch()
 
         # Initial state
         self.initial_state = torch.zeros((self.nbatch, self.model.nstate))
@@ -198,7 +198,7 @@ class TestKocksMeckingMixedControlModel(DerivativeCheck):
             },
             nmodel.gmap(),
         )
-        self.forces = neml2.ESVector(forces, nmodel.glayout()).assemble()[0].torch()
+        self.forces = neml2.HVector(forces, nmodel.glayout()).assemble()[0].torch()
 
         # Initial state
         self.initial_state = torch.zeros((self.nbatch, self.model.nstate))

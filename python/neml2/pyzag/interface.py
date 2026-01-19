@@ -250,10 +250,10 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         return new_state_vars | old_state_vars | new_forces_vars | old_forces_vars
 
     def _assemble_residual(self, r: dict[typing.Union[VariableName, str], Tensor]) -> neml2.Tensor:
-        """Assemble the residual into a flat ESVector"""
+        """Assemble the residual into a flat HVector"""
 
         r_vals = [r[v] for v in self.model.rmap()]
-        r_vec = neml2.ESVector(r_vals, self.model.rlayout())
+        r_vec = neml2.HVector(r_vals, self.model.rlayout())
         return r_vec.assemble()[0]
 
     def _assemble_Jacobian(
@@ -277,8 +277,8 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
                 if not VariableName(uname).old() in J[rname]:
                     continue
                 J_vals_old[i][j] = J[rname][VariableName(uname).old()]
-        J_mat = neml2.ESMatrix(J_vals, self.model.rlayout(), self.model.ulayout())
-        J_mat_old = neml2.ESMatrix(J_vals_old, self.model.rlayout(), self.model.ulayout())
+        J_mat = neml2.HMatrix(J_vals, self.model.rlayout(), self.model.ulayout())
+        J_mat_old = neml2.HMatrix(J_vals_old, self.model.rlayout(), self.model.ulayout())
 
         return J_mat.assemble()[0], J_mat_old.assemble()[0]
 

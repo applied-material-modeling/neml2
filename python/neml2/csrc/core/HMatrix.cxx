@@ -31,7 +31,7 @@ namespace py = pybind11;
 using namespace neml2;
 
 void
-def(py::module_ & m, py::class_<neml2::es::Matrix> & c)
+def(py::module_ & m, py::class_<neml2::HMatrix> & c)
 {
   c.def(py::init<std::vector<TensorShape>, std::vector<TensorShape>>(),
         py::arg("row_block_sizes"),
@@ -42,20 +42,20 @@ def(py::module_ & m, py::class_<neml2::es::Matrix> & c)
            py::arg("values"),
            py::arg("row_block_sizes"),
            py::arg("col_block_sizes"))
-      .def_property_readonly("m", &neml2::es::Matrix::m)
-      .def_property_readonly("n", &neml2::es::Matrix::n)
-      .def("block_row_sizes", py::overload_cast<>(&neml2::es::Matrix::block_row_sizes, py::const_))
+      .def_property_readonly("m", &neml2::HMatrix::m)
+      .def_property_readonly("n", &neml2::HMatrix::n)
+      .def("block_row_sizes", py::overload_cast<>(&neml2::HMatrix::block_row_sizes, py::const_))
       .def("block_row_sizes",
-           py::overload_cast<std::size_t>(&neml2::es::Matrix::block_row_sizes, py::const_),
+           py::overload_cast<std::size_t>(&neml2::HMatrix::block_row_sizes, py::const_),
            py::arg("i"))
-      .def("block_col_sizes", py::overload_cast<>(&neml2::es::Matrix::block_col_sizes, py::const_))
+      .def("block_col_sizes", py::overload_cast<>(&neml2::HMatrix::block_col_sizes, py::const_))
       .def("block_col_sizes",
-           py::overload_cast<std::size_t>(&neml2::es::Matrix::block_col_sizes, py::const_),
+           py::overload_cast<std::size_t>(&neml2::HMatrix::block_col_sizes, py::const_),
            py::arg("i"))
-      .def("assemble", [](const es::Matrix & self) { return self.assemble(); })
+      .def("assemble", [](const HMatrix & self) { return self.assemble(); })
       .def(
           "assemble",
-          [](const es::Matrix & self,
+          [](const HMatrix & self,
              const std::vector<std::size_t> & row_blocks,
              const std::vector<std::size_t> & col_blocks)
           { return self.assemble(row_blocks, col_blocks); },
@@ -63,11 +63,11 @@ def(py::module_ & m, py::class_<neml2::es::Matrix> & c)
           py::arg("col_blocks"))
       .def(
           "disassemble",
-          [](es::Matrix & self, const Tensor & assembled) { self.disassemble(assembled); },
+          [](HMatrix & self, const Tensor & assembled) { self.disassemble(assembled); },
           py::arg("assembled"))
       .def(
           "disassemble",
-          [](es::Matrix & self,
+          [](HMatrix & self,
              const Tensor & assembled,
              const std::vector<std::size_t> & row_blocks,
              const std::vector<std::size_t> & col_blocks)

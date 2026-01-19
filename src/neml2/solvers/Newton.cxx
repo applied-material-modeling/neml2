@@ -47,21 +47,21 @@ Newton::Newton(const OptionSet & options)
 }
 
 Newton::Result
-Newton::solve(NonlinearSystem & system, const es::Vector & x0)
+Newton::solve(NonlinearSystem & system, const HVector & x0)
 {
   auto x = x0;
 
   // The initial residual for relative convergence check
-  auto R = system.residual(x);
-  auto nR = neml2::es::norm(R);
-  auto nR0 = nR.clone();
+  auto b = system.b(x);
+  auto nb = neml2::norm(b);
+  auto nb0 = nb.clone();
 
   // Check for initial convergence
-  if (converged(0, nR0, nR0))
+  if (converged(0, nb0, nb0))
   {
     // The final update is only necessary if we use AD
-    if (R.requires_grad())
-      final_update(system, x, R, system.Jacobian());
+    if (b.requires_grad())
+      final_update(system, x, b, system.A());
 
     return {RetCode::SUCCESS, x, 0};
   }
@@ -75,17 +75,17 @@ Newton::solve(NonlinearSystem & system, const es::Vector & x0)
   // 3. i > miters (failure)
   for (size_t i = 1; i < miters; i++)
   {
-    auto J = system.Jacobian();
-    update(system, x, R, J);
-    R = system.residual(x);
-    nR = neml2::es::norm(R);
+    auto A = system.A();
+    update(system, x, b, A);
+    b = system.b(x);
+    nb = neml2::norm(b);
 
     // Check for convergence
-    if (converged(i, nR, nR0))
+    if (converged(i, nb, nb0))
     {
       // The final update is only necessary if we use AD
-      if (R.requires_grad())
-        final_update(system, x, R, system.Jacobian());
+      if (b.requires_grad())
+        final_update(system, x, b, system.A());
 
       return {RetCode::SUCCESS, x, i};
     }
@@ -95,40 +95,37 @@ Newton::solve(NonlinearSystem & system, const es::Vector & x0)
 }
 
 bool
-Newton::converged(size_t itr, const Scalar & nR, const Scalar & nR0) const
+Newton::converged(size_t itr, const Scalar & nb, const Scalar & nb0) const
 {
   // LCOV_EXCL_START
   if (verbose)
     std::cout << "ITERATION " << std::setw(3) << itr << ", |R| = " << std::scientific
-              << at::max(nR).item<double>() << ", |R0| = " << std::scientific
-              << at::max(nR0).item<double>() << std::endl;
+              << at::max(nb).item<double>() << ", |R0| = " << std::scientific
+              << at::max(nb0).item<double>() << std::endl;
   // LCOV_EXCL_STOP
 
-  return at::all(at::logical_or(nR < atol, nR / nR0 < rtol)).item<bool>();
+  return at::all(at::logical_or(nb < atol, nb / nb0 < rtol)).item<bool>();
 }
 
 void
-Newton::update(NonlinearSystem & /*system*/,
-               es::Vector & x,
-               const es::Vector & r,
-               const es::Matrix & J)
+Newton::update(NonlinearSystem & /*system*/, HVector & x, const HVector & b, const HMatrix & A)
 {
-  x.update_data(solve_direction(r, J));
+  x.update_data(solve_direction(b, A));
 }
 
 void
 Newton::final_update(NonlinearSystem & /*system*/,
-                     es::Vector & x,
-                     const es::Vector & r,
-                     const es::Matrix & J)
+                     HVector & x,
+                     const HVector & b,
+                     const HMatrix & A)
 {
-  x.update(solve_direction(r, J));
+  x.update(solve_direction(b, A));
 }
 
-es::Vector
-Newton::solve_direction(const es::Vector & r, const es::Matrix & J)
+HVector
+Newton::solve_direction(const HVector & b, const HMatrix & A)
 {
-  return -linear_solver->solve(J, r);
+  return linear_solver->solve(A, b);
 }
 
 } // namespace neml2

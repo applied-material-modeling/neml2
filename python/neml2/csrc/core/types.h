@@ -28,8 +28,8 @@
 #include "neml2/base/LabeledAxisAccessor.h"
 #include "neml2/base/LabeledAxis.h"
 #include "neml2/tensors/TensorValue.h"
-#include "neml2/tensors/equation_system/Vector.h"
-#include "neml2/tensors/equation_system/Matrix.h"
+#include "neml2/solvers/HVector.h"
+#include "neml2/solvers/HMatrix.h"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/pytypes.h>
@@ -42,8 +42,8 @@ void def(pybind11::module_ &, pybind11::class_<neml2::LabeledAxis> &);
 void def(pybind11::module_ &, pybind11::class_<neml2::TensorValueBase> &);
 void def(pybind11::module_ &, pybind11::class_<neml2::Factory> &);
 void def(pybind11::module_ &, pybind11::class_<neml2::Model, std::shared_ptr<neml2::Model>> &);
-void def(pybind11::module_ &, pybind11::class_<neml2::es::Vector> &);
-void def(pybind11::module_ &, pybind11::class_<neml2::es::Matrix> &);
+void def(pybind11::module_ &, pybind11::class_<neml2::HVector> &);
+void def(pybind11::module_ &, pybind11::class_<neml2::HMatrix> &);
 
 // Type casters are only for cross-module types used in function signatures
 DEFAULT_TYPECASTER(neml2::LabeledAxisAccessor, "Union[neml2.core.VariableName, str]");
@@ -52,8 +52,8 @@ DEFAULT_TYPECASTER(neml2::TensorValueBase, "neml2.core.TensorValue");
 DEFAULT_TYPECASTER(neml2::Factory, "neml2.core.Factory");
 DEFAULT_TYPECASTER(neml2::Model, "neml2.core.Model");
 DEFAULT_TYPECASTER_SHARED_PTR(neml2::Model, "neml2.core.Model");
-DEFAULT_TYPECASTER(neml2::es::Vector, "neml2.core.ESVector");
-DEFAULT_TYPECASTER(neml2::es::Matrix, "neml2.core.ESMatrix");
+DEFAULT_TYPECASTER(neml2::HVector, "neml2.core.HVector");
+DEFAULT_TYPECASTER(neml2::HMatrix, "neml2.core.HMatrix");
 
 namespace pybind11::detail
 {

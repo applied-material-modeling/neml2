@@ -32,7 +32,7 @@ namespace py = pybind11;
 using namespace neml2;
 
 void
-def(py::module_ & m, py::class_<neml2::es::Vector> & c)
+def(py::module_ & m, py::class_<neml2::HVector> & c)
 {
   c.def(py::init<std::vector<TensorShape>>(), py::arg("block_sizes"))
       .def(py::init(
@@ -40,34 +40,32 @@ def(py::module_ & m, py::class_<neml2::es::Vector> & c)
                {
                  auto base_shape_lookup = [&block_sizes](std::size_t i) -> TensorShapeRef
                  { return block_sizes[i]; };
-                 return es::Vector(unpack_tensor_list(blocks, base_shape_lookup), block_sizes);
+                 return HVector(unpack_tensor_list(blocks, base_shape_lookup), block_sizes);
                }),
            py::arg("blocks"),
            py::arg("block_sizes"))
-      .def_property_readonly("n", &neml2::es::Vector::n)
-      .def("block_sizes", py::overload_cast<>(&neml2::es::Vector::block_sizes, py::const_))
+      .def_property_readonly("n", &neml2::HVector::n)
+      .def("block_sizes", py::overload_cast<>(&neml2::HVector::block_sizes, py::const_))
       .def("block_sizes",
-           py::overload_cast<std::size_t>(&neml2::es::Vector::block_sizes, py::const_),
+           py::overload_cast<std::size_t>(&neml2::HVector::block_sizes, py::const_),
            py::arg("i"))
       .def("__getitem__",
-           py::overload_cast<std::size_t>(&neml2::es::Vector::operator[], py::const_),
+           py::overload_cast<std::size_t>(&neml2::HVector::operator[], py::const_),
            py::arg("i"))
-      .def("__setitem__",
-           py::overload_cast<std::size_t>(&neml2::es::Vector::operator[]),
-           py::arg("i"))
-      .def("assemble", [](const es::Vector & self) { return self.assemble(); })
+      .def("__setitem__", py::overload_cast<std::size_t>(&neml2::HVector::operator[]), py::arg("i"))
+      .def("assemble", [](const HVector & self) { return self.assemble(); })
       .def(
           "assemble",
-          [](const es::Vector & self, const std::vector<std::size_t> & blocks)
+          [](const HVector & self, const std::vector<std::size_t> & blocks)
           { return self.assemble(blocks); },
           py::arg("blocks"))
       .def(
           "disassemble",
-          [](es::Vector & self, const Tensor & assembled) { self.disassemble(assembled); },
+          [](HVector & self, const Tensor & assembled) { self.disassemble(assembled); },
           py::arg("assembled"))
       .def(
           "disassemble",
-          [](es::Vector & self, const Tensor & assembled, const std::vector<std::size_t> & blocks)
+          [](HVector & self, const Tensor & assembled, const std::vector<std::size_t> & blocks)
           { self.disassemble(assembled, blocks); },
           py::arg("assembled"),
           py::arg("blocks"));

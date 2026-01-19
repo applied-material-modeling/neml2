@@ -45,16 +45,13 @@ public:
 
 protected:
   /// Update trial solution
-  void update(NonlinearSystem & system,
-              es::Vector & x,
-              const es::Vector & r,
-              const es::Matrix & J) override;
+  void update(NonlinearSystem & system, HVector & x, const HVector & b, const HMatrix & A) override;
 
   /// Perform Armijo linesearch
   virtual Scalar linesearch(NonlinearSystem & system,
-                            const es::Vector & x,
-                            const es::Vector & dx,
-                            const es::Vector & R0) const;
+                            const HVector & x,
+                            const HVector & dx,
+                            const HVector & b0) const;
 
   /// Linesearch maximum iterations
   unsigned int _linesearch_miter;

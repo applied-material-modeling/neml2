@@ -24,8 +24,8 @@
 
 #include "SampleNonlinearSystems.h"
 #include "neml2/tensors/Scalar.h"
-#include "neml2/tensors/equation_system/Vector.h"
-#include "neml2/tensors/equation_system/Matrix.h"
+#include "neml2/solvers/HVector.h"
+#include "neml2/solvers/HMatrix.h"
 #include "neml2/tensors/functions/pow.h"
 
 namespace neml2
@@ -36,7 +36,7 @@ TestNonlinearSystem::TestNonlinearSystem(const OptionSet & options)
 }
 
 void
-TestNonlinearSystem::set_solution(const es::Vector & x)
+TestNonlinearSystem::set_solution(const HVector & x)
 {
   _x = x;
 }
@@ -47,33 +47,33 @@ PowerTestSystem::PowerTestSystem(const OptionSet & options)
 }
 
 void
-PowerTestSystem::assemble(es::Vector * residual, es::Matrix * Jacobian)
+PowerTestSystem::assemble(HVector * residual, HMatrix * Jacobian)
 {
   std::vector<TensorShape> s(_x.n(), TensorShape{});
 
   if (residual)
   {
-    *residual = es::Vector(s);
+    *residual = HVector(s);
     for (Size i = 0; i < Size(_x.n()); i++)
       (*residual)[i] = pow(_x[i], Scalar(i + 1, _x.options())) - 1.0;
   }
 
   if (Jacobian)
   {
-    *Jacobian = es::Matrix(s, s);
+    *Jacobian = HMatrix(s, s);
     for (Size i = 0; i < Size(_x.n()); i++)
       (*Jacobian)(i, i) = (i + 1) * pow(_x[i], Scalar(i, _x.options()));
   }
 }
 
-es::Vector
-PowerTestSystem::exact_solution(const es::Vector & x) const
+HVector
+PowerTestSystem::exact_solution(const HVector & x) const
 {
   std::vector<TensorShape> s(_x.n(), TensorShape{});
   std::vector<Tensor> sol(x.n());
   for (std::size_t i = 0; i < x.n(); i++)
     sol[i] = Tensor::ones_like(x[i]);
-  return es::Vector(sol, s);
+  return HVector(sol, s);
 }
 
 RosenbrockTestSystem::RosenbrockTestSystem(const OptionSet & options)
@@ -82,13 +82,13 @@ RosenbrockTestSystem::RosenbrockTestSystem(const OptionSet & options)
 }
 
 void
-RosenbrockTestSystem::assemble(es::Vector * residual, es::Matrix * Jacobian)
+RosenbrockTestSystem::assemble(HVector * residual, HMatrix * Jacobian)
 {
   std::vector<TensorShape> s(_x.n(), TensorShape{});
 
   if (residual)
   {
-    *residual = es::Vector(s);
+    *residual = HVector(s);
     for (Size i = 1; i < Size(_x.n()) - 1; i++)
       (*residual)[i] = 200 * (_x[i] - pow(_x[i - 1], 2.0)) -
                        400 * (_x[i + 1] - pow(_x[i], 2.0)) * _x[i] - 2 * (1 - _x[i]);
@@ -98,7 +98,7 @@ RosenbrockTestSystem::assemble(es::Vector * residual, es::Matrix * Jacobian)
 
   if (Jacobian)
   {
-    *Jacobian = es::Matrix(s, s);
+    *Jacobian = HMatrix(s, s);
     for (Size i = 1; i < Size(_x.n()) - 1; i++)
     {
       (*Jacobian)(i, i - 1) = -400 * _x[i - 1];
@@ -112,13 +112,13 @@ RosenbrockTestSystem::assemble(es::Vector * residual, es::Matrix * Jacobian)
   }
 }
 
-es::Vector
-RosenbrockTestSystem::exact_solution(const es::Vector & x) const
+HVector
+RosenbrockTestSystem::exact_solution(const HVector & x) const
 {
   std::vector<TensorShape> s(_x.n(), TensorShape{});
   std::vector<Tensor> sol(x.n());
   for (std::size_t i = 0; i < x.n(); i++)
     sol[i] = Tensor::ones_like(x[i]);
-  return es::Vector(sol, s);
+  return HVector(sol, s);
 }
 }

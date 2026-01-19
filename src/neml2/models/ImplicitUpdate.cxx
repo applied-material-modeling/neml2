@@ -23,7 +23,6 @@
 // THE SOFTWARE.
 
 #include "neml2/models/ImplicitUpdate.h"
-#include "neml2/solvers/NonlinearSolver.h"
 #include "neml2/misc/assertions.h"
 
 namespace neml2
@@ -35,14 +34,14 @@ ImplicitUpdate::expected_options()
 {
   OptionSet options = Model::expected_options();
   options.doc() =
-      "Update an implicit model by solving the underlying implicit system of equations.";
+      "Update an implicit model by solving the underlying nonlinear system of equations.";
 
   options.set<std::string>("implicit_model");
   options.set("implicit_model").doc() =
-      "The model defining the (nonlinear) system of equations to be solved";
+      "The model defining the nonlinear system of equations to be solved";
 
   options.set<std::string>("solver");
-  options.set("solver").doc() = "Solver used to solve the (nonlinear) system of equations";
+  options.set("solver").doc() = "Solver used to solve the nonlinear system of equations";
 
   // No jitting :/
   options.set<bool>("jit") = false;
@@ -53,7 +52,8 @@ ImplicitUpdate::expected_options()
 
 ImplicitUpdate::ImplicitUpdate(const OptionSet & options)
   : Model(options),
-    _model(register_model("implicit_model", /*nonlinear=*/true)),
+    _model(register_model("implicit_model")),
+    _nl_sys(&_model),
     _solver(get_solver<NonlinearSolver>("solver"))
 {
   // Take care of dependency registration:
@@ -66,51 +66,59 @@ ImplicitUpdate::ImplicitUpdate(const OptionSet & options)
 }
 
 void
-ImplicitUpdate::diagnose() const
-{
-  Model::diagnose();
-}
-
-void
 ImplicitUpdate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   // The trial state is used as the initial guess
-  const auto x0 = _model.get_solution();
+  const auto x0 = _nl_sys.x();
 
   // Solve for the next state
-  NonlinearSolver::Result res = _solver->solve(_model, x0);
+  NonlinearSolver::Result res = _solver->solve(_nl_sys, x0);
   _last_iterations = res.iterations;
   neml_assert(res.ret == NonlinearSolver::RetCode::SUCCESS, "Nonlinear solve failed.");
 
   if (out)
-    assign_output(_model.umap(), res.solution);
+    assign_output(_nl_sys.umap(), res.solution);
 
   // Use the implicit function theorem (IFT) to calculate the other derivatives
   if (dout_din)
   {
     // IFT requires the Jacobian evaluated at the solution:
     _model.forward_maybe_jit(false, true, false);
-    const auto dr_ds = _model.collect_output_derivatives(_model.rmap(), _model.umap());
+    const auto dr_ds = _model.collect_output_derivatives(_nl_sys.rmap(), _nl_sys.umap());
 
     // collect dr/df
-    std::vector<es::Matrix> dr_dfs;
-    dr_dfs.reserve(_model.unmap().size() + _model.gmap().size() + _model.gnmap().size());
-    for (const auto & f : _model.unmap())
-      dr_dfs.emplace_back(_model.collect_output_derivatives(_model.rmap(), {f}));
-    for (const auto & f : _model.gmap())
-      dr_dfs.emplace_back(_model.collect_output_derivatives(_model.rmap(), {f}));
-    for (const auto & f : _model.gnmap())
-      dr_dfs.emplace_back(_model.collect_output_derivatives(_model.rmap(), {f}));
+    std::vector<HMatrix> dr_dfs;
+    dr_dfs.reserve(_nl_sys.unmap().size() + _nl_sys.gmap().size() + _nl_sys.gnmap().size());
+    for (const auto & f : _nl_sys.unmap())
+      dr_dfs.emplace_back(_model.collect_output_derivatives(_nl_sys.rmap(), {f}));
+    for (const auto & f : _nl_sys.gmap())
+      dr_dfs.emplace_back(_model.collect_output_derivatives(_nl_sys.rmap(), {f}));
+    for (const auto & f : _nl_sys.gnmap())
+      dr_dfs.emplace_back(_model.collect_output_derivatives(_nl_sys.rmap(), {f}));
 
     // ds/df = - (dr/ds)^{-1} (dr/df)
-    const auto ds_dfs = _solver->linear_solver->solve(dr_ds, dr_dfs);
+    std::vector<HMatrix> ds_dfs;
+    ds_dfs.reserve(dr_dfs.size());
+    // If the solver supports LU factorization, use that:
+    if (_solver->linear_solver->support_lu_factorization())
+    {
+      auto [LU, pivot] = _solver->linear_solver->lu_factor(dr_ds);
+      for (const auto & dr_df : dr_dfs)
+        ds_dfs.emplace_back(-_solver->linear_solver->lu_solve(LU, pivot, dr_df));
+    }
+    // Otherwise, fall back to calling solve repeatedly
+    else
+      for (const auto & dr_df : dr_dfs)
+        ds_dfs.emplace_back(-_solver->linear_solver->solve(dr_ds, dr_df));
+
+    // assign derivatives back
     std::size_t i = 0;
-    for (const auto & f : _model.unmap())
-      assign_output_derivatives(_model.umap(), {f}, -ds_dfs[i++]);
-    for (const auto & f : _model.gmap())
-      assign_output_derivatives(_model.umap(), {f}, -ds_dfs[i++]);
-    for (const auto & f : _model.gnmap())
-      assign_output_derivatives(_model.umap(), {f}, -ds_dfs[i++]);
+    for (const auto & f : _nl_sys.unmap())
+      assign_output_derivatives(_nl_sys.umap(), {f}, ds_dfs[i++]);
+    for (const auto & f : _nl_sys.gmap())
+      assign_output_derivatives(_nl_sys.umap(), {f}, ds_dfs[i++]);
+    for (const auto & f : _nl_sys.gnmap())
+      assign_output_derivatives(_nl_sys.umap(), {f}, ds_dfs[i++]);
   }
 }
 } // namespace neml2

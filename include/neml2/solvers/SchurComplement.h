@@ -24,59 +24,43 @@
 
 #pragma once
 
-#include "neml2/solvers/Solver.h"
 #include "neml2/solvers/LinearSolver.h"
-#include "neml2/solvers/NonlinearSystem.h"
 
 namespace neml2
 {
 /**
- * @brief The nonlinear solver solves a nonlinear system of equations.
+ * A linear solver which uses the Schur complement method to solve systems with a specific
+ * structure.
  *
+ * This is particularly useful for systems that can be partitioned into blocks where one block is
+ * significantly smaller than the others, and the coupling between blocks is limited.
+ *
+ * The variables corresponding to the smaller block are referred to as "schur variables", and the
+ * rest are "primary variables". The solver first eliminates the primary variables to form a reduced
+ * system involving only the schur variables. After solving this reduced system, it back-substitutes
+ * to find the primary variables.
+ *
+ * Consider a linear system represented in block matrix form:
+ *
+ *   | A11  A12 | | x1 |   =   | b1 |
+ *   | A21  A22 | | x2 |       | b2 |
+ *
+ * Here, x1 represents the primary variables, and x2 represents the schur variables.
+ *
+ * The solver proceeds as follows:
+ * 1. Compute the Schur complement S = A22 - A21 * A11^{-1} * A12.
+ * 2. Compute the modified right-hand side c = b2 - A21 * A11^{-1} * b1.
+ * 3. Solve the reduced system S * x2 = c for x2.
+ * 4. Back-substitute to find x1 using x1 = A11^{-1} * (b1 - A12 * x2).
  */
-class NonlinearSolver : public Solver
+class SchurComplement : public LinearSolver
 {
 public:
-  enum class RetCode : std::uint8_t
-  {
-    /// Solver converged successfully
-    SUCCESS = 0,
-    /// Maximum number of iterations reached (without convergence)
-    MAXITER = 1,
-    /// Solver failed to converge
-    FAILURE = 2
-  };
-
-  struct Result
-  {
-    /// Solver return code, @see neml2::NonlinearSolver::RetCode
-    RetCode ret = RetCode::FAILURE;
-    /// Solution to the nonlinear system
-    HVector solution;
-    /// Number of iterations before convergence
-    std::size_t iterations = 0;
-  };
-
   static OptionSet expected_options();
 
-  NonlinearSolver(const OptionSet & options);
+  SchurComplement(const OptionSet & options);
 
-  /**
-   * @brief Solve the given nonlinear system.
-   *
-   * @param system The nonlinear system of equations.
-   * @param x0 The initial guess
-   * @return @see neml2::NonlinearSolver::Result
-   */
-  virtual Result solve(NonlinearSystem & system, const HVector & x0) = 0;
-
-  /// Linear solver used by the nonlinear solver
-  std::shared_ptr<LinearSolver> linear_solver;
-  /// Absolute tolerance
-  double atol;
-  /// Relative tolerance
-  double rtol;
-  /// Maximum number of iterations
-  unsigned int miters;
+  HVector solve(const HMatrix & A, const HVector & b) const override;
+  HMatrix solve(const HMatrix & A, const HMatrix & B) const override;
 };
 } // namespace neml2

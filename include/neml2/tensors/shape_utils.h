@@ -194,7 +194,7 @@ sizes_broadcastable(const T &... shapes)
   auto dim = std::max({shapes.size()...});
   auto all_shapes_padded = std::vector<TensorShape>{pad_prepend(shapes, dim)...};
 
-  for (size_t i = 0; i < dim; i++)
+  for (std::size_t i = 0; i < dim; i++)
   {
     Size max_sz = 1;
     for (const auto & s : all_shapes_padded)
@@ -279,7 +279,7 @@ broadcast_sizes(const T &... shapes)
   auto all_shapes_padded = std::vector<TensorShape>{pad_prepend(shapes, dim)...};
   auto bshape = TensorShape(dim, 1);
 
-  for (size_t i = 0; i < dim; i++)
+  for (std::size_t i = 0; i < dim; i++)
     for (const auto & s : all_shapes_padded)
       if (s[i] > bshape[i])
         bshape[i] = s[i];

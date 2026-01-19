@@ -30,7 +30,6 @@
 #include "neml2/models/Data.h"
 #include "neml2/models/ParameterStore.h"
 #include "neml2/models/VariableStore.h"
-#include "neml2/solvers/NonlinearSystem.h"
 #include "neml2/models/NonlinearParameter.h"
 #include "neml2/tensors/jit.h"
 
@@ -73,7 +72,6 @@ class Model : public std::enable_shared_from_this<Model>,
               public Data,
               public ParameterStore,
               public VariableStore,
-              public NonlinearSystem,
               public DependencyDefinition<VariableName>,
               public DiagnosticsInterface
 {
@@ -114,9 +112,6 @@ public:
 
   /// Whether this model defines second derivatives
   virtual bool defines_second_derivatives() const { return _defines_d2value; }
-
-  /// Whether this model defines one or more nonlinear equations to be solved
-  virtual bool is_nonlinear_system() const { return _nonlinear_system; }
 
   ///@{
   /// Set or get whether we are currently assembling the nonlinear system
@@ -218,9 +213,6 @@ protected:
   void diagnostic_check_input_variable(const VariableBase & v) const;
   void diagnostic_check_output_variable(const VariableBase & v) const;
 
-  /// Additional diagnostics for a nonlinear system
-  void diagnose_nl_sys() const;
-
   virtual void link_input_variables();
   virtual void link_input_variables(Model * submodel);
   virtual void link_output_variables();
@@ -257,13 +249,12 @@ protected:
    * model, which will affect dependency resolution inside a ComposedModel.
    *
    * @param name The model to register
-   * @param nonlinear Set to true if the registered model defines a nonlinear system to be solved
    * @param merge_input Whether to merge the input axis of the registered model into *this* model's
    * input axis. This will make sure that the input variables of the registered model are "ready" by
    * the time *this* model is evaluated.
    */
   template <typename T = Model, typename = typename std::enable_if_t<std::is_base_of_v<Model, T>>>
-  T & register_model(const std::string & name, bool nonlinear = false, bool merge_input = true)
+  T & register_model(const std::string & name, bool merge_input = true)
   {
     auto model_name =
         input_options().contains(name) ? input_options().get<std::string>(name) : name;
@@ -273,7 +264,6 @@ protected:
 
     OptionSet extra_opts;
     extra_opts.set<NEML2Object *>("_host") = host();
-    extra_opts.set<bool>("_nonlinear_system") = nonlinear;
 
     if (!host()->factory())
       throw SetupException("Internal error: Host object '" + host()->name() +
@@ -295,20 +285,10 @@ protected:
 
   jit::Stack collect_input_stack() const;
 
-  void set_solution(const es::Vector &) override;
-  es::Vector get_solution() const override;
-  void assemble(es::Vector *, es::Matrix *) override;
-
-  // Allow ImplicitUpdate to assemble the system
-  friend class ImplicitUpdate;
-
   /// Models *this* model may use during its evaluation
   std::vector<std::shared_ptr<Model>> _registered_models;
 
 private:
-  /// Setup the nonlinear system, e.g., umap, rmap, gmap, etc.
-  void setup_nl_sys();
-
   template <typename T>
   void forward_helper(T && in, bool out, bool dout, bool d2out)
   {
@@ -336,9 +316,6 @@ private:
   bool _defines_dvalue;
   bool _defines_d2value;
   ///@}
-
-  /// Whether this is a nonlinear system
-  bool _nonlinear_system;
 
   /// Parameters whose values are provided by another model
   std::map<std::string, NonlinearParameter> _nl_params;

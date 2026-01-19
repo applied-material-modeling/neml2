@@ -24,25 +24,25 @@
 
 #pragma once
 
-#include "neml2/tensors/equation_system/Vector.h"
+#include "neml2/solvers/HeterogeneousData.h"
 
-namespace neml2::es
+namespace neml2
 {
-struct Matrix : public ESData
+struct HMatrix : public HeterogeneousData
 {
-  Matrix() = default;
+  HMatrix() = default;
 
-  /// construct a zero Matrix with given sub-block shapes
-  Matrix(const std::vector<TensorShapeRef> &, const std::vector<TensorShapeRef> &);
-  Matrix(std::vector<TensorShape>, std::vector<TensorShape>);
+  /// construct a zero HMatrix with given sub-block shapes
+  HMatrix(const std::vector<TensorShapeRef> &, const std::vector<TensorShapeRef> &);
+  HMatrix(std::vector<TensorShape>, std::vector<TensorShape>);
 
-  /// construct a Matrix from a matrix of sub-block Tensors and shapes of each sub-tensor
-  Matrix(const std::vector<std::vector<Tensor>> &,
-         const std::vector<TensorShapeRef> &,
-         const std::vector<TensorShapeRef> &);
-  Matrix(const std::vector<std::vector<Tensor>> &,
-         std::vector<TensorShape>,
-         std::vector<TensorShape>);
+  /// construct a HMatrix from a matrix of sub-block Tensors and shapes of each sub-tensor
+  HMatrix(const std::vector<std::vector<Tensor>> &,
+          const std::vector<TensorShapeRef> &,
+          const std::vector<TensorShapeRef> &);
+  HMatrix(const std::vector<std::vector<Tensor>> &,
+          std::vector<TensorShape>,
+          std::vector<TensorShape>);
 
   /// Number of rows of sub-tensors
   std::size_t m() const { return _row_shapes.size(); }
@@ -63,7 +63,7 @@ struct Matrix : public ESData
   ///@}
 
   /// Negation
-  Matrix operator-() const;
+  HMatrix operator-() const;
 
   /// Assemble into a dense, flat matrix
   std::tuple<Tensor, std::vector<Size>, std::vector<Size>>
@@ -77,12 +77,12 @@ struct Matrix : public ESData
 
 private:
   /// Construct from a flat vector of sub-tensors
-  Matrix(std::vector<Tensor> J,
-         const std::vector<TensorShapeRef> & row_shapes,
-         const std::vector<TensorShapeRef> & col_shapes);
-  Matrix(std::vector<Tensor> J,
-         std::vector<TensorShape> row_shapes,
-         std::vector<TensorShape> col_shapes);
+  HMatrix(std::vector<Tensor> J,
+          const std::vector<TensorShapeRef> & row_shapes,
+          const std::vector<TensorShapeRef> & col_shapes);
+  HMatrix(std::vector<Tensor> J,
+          std::vector<TensorShape> row_shapes,
+          std::vector<TensorShape> col_shapes);
 
   ///@{
   /// sub-block shapes
@@ -90,4 +90,4 @@ private:
   std::vector<TensorShape> _col_shapes;
   ///@}
 };
-} // namespace neml2::es
+} // namespace neml2

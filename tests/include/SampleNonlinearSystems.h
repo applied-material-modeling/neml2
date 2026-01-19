@@ -33,12 +33,12 @@ class TestNonlinearSystem : public NonlinearSystem
 public:
   TestNonlinearSystem(const OptionSet & options);
 
-  void set_solution(const es::Vector & x) override;
-  es::Vector get_solution() const override { return _x; }
-  virtual es::Vector exact_solution(const es::Vector & x) const = 0;
+  void set_solution(const HVector & x) override;
+  HVector get_solution() const override { return _x; }
+  virtual HVector exact_solution(const HVector & x) const = 0;
 
 protected:
-  es::Vector _x;
+  HVector _x;
 };
 
 class PowerTestSystem : public TestNonlinearSystem
@@ -46,10 +46,10 @@ class PowerTestSystem : public TestNonlinearSystem
 public:
   PowerTestSystem(const OptionSet & options);
 
-  es::Vector exact_solution(const es::Vector & x) const override;
+  HVector exact_solution(const HVector & x) const override;
 
 protected:
-  void assemble(es::Vector *, es::Matrix *) override;
+  void assemble(HVector *, HMatrix *) override;
 };
 
 class RosenbrockTestSystem : public TestNonlinearSystem
@@ -57,9 +57,9 @@ class RosenbrockTestSystem : public TestNonlinearSystem
 public:
   RosenbrockTestSystem(const neml2::OptionSet & options);
 
-  es::Vector exact_solution(const es::Vector & x) const override;
+  HVector exact_solution(const HVector & x) const override;
 
 protected:
-  void assemble(es::Vector *, es::Matrix *) override;
+  void assemble(HVector *, HMatrix *) override;
 };
 }

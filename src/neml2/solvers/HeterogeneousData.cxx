@@ -22,40 +22,33 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-
-#include "neml2/solvers/Solver.h"
-#include "neml2/solvers/HVector.h"
-#include "neml2/solvers/HMatrix.h"
+#include "neml2/solvers/HeterogeneousData.h"
+#include "neml2/misc/errors.h"
 
 namespace neml2
 {
-/**
- * @brief The linear solver solves a linear system of equations.
- *
- */
-class LinearSolver : public Solver
+
+HeterogeneousData::HeterogeneousData(std::vector<Tensor> v)
+  : _data(std::move(v))
 {
-public:
-  static OptionSet expected_options();
+}
 
-  LinearSolver(const OptionSet & options);
+bool
+HeterogeneousData::requires_grad() const
+{
+  for (const auto & vi : _data)
+    if (vi.defined() && vi.requires_grad())
+      return true;
+  return false;
+}
 
-  /// Solve Ax = b for x
-  virtual HVector solve(const HMatrix & A, const HVector & b) const = 0;
+TensorOptions
+HeterogeneousData::options() const
+{
+  for (const auto & vi : _data)
+    if (vi.defined())
+      return vi.options();
+  throw NEMLException("empty HVector/Matrix has no options.");
+}
 
-  /// Solve AX = B for X
-  virtual HMatrix solve(const HMatrix & A, const HMatrix & B) const = 0;
-
-  ///@{
-  /// Whether the derived solver supports LU factorization (and its reuse)
-  virtual bool support_lu_factorization() const { return false; }
-  /// LU factorization of A, @return tuple of (LU, pivot)
-  virtual std::tuple<Tensor, Tensor> lu_factor(const HMatrix & A) const;
-  /// LU solve using precomputed LU factors
-  virtual HVector lu_solve(const Tensor & LU, const Tensor & pivot, const HVector & b) const;
-  /// LU solve using precomputed LU factors
-  virtual HMatrix lu_solve(const Tensor & LU, const Tensor & pivot, const HMatrix & B) const;
-  ///@}
-};
 } // namespace neml2

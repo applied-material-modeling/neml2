@@ -30,7 +30,6 @@
 #include "neml2/base/Settings.h"
 #include "neml2/tensors/jit.h"
 #include "neml2/models/ParameterStore.h"
-#include "neml2/solvers/NonlinearSystem.h"
 #include "neml2/tensors/functions/jacrev.h"
 #include "neml2/tensors/tensors.h"
 #include "neml2/tensors/TensorValue.h"
@@ -51,7 +50,7 @@ AssemblyingNonlinearSystem::AssemblyingNonlinearSystem(Model * const model, bool
 // safe.
 //
 // Static analysis tools might still complain, let's silence them for now. In the future, when we
-// add a proper logger, we can log the error message.
+// add a proper logger, we can catch the throw and log the error message.
 // NOLINTNEXTLINE(bugprone-exception-escape)
 AssemblyingNonlinearSystem::~AssemblyingNonlinearSystem()
 {
@@ -85,7 +84,6 @@ OptionSet
 Model::expected_options()
 {
   OptionSet options = Data::expected_options();
-  options += NonlinearSystem::expected_options();
 
   options.section() = "Models";
 
@@ -119,12 +117,10 @@ Model::Model(const OptionSet & options)
   : Data(options),
     ParameterStore(this),
     VariableStore(this),
-    NonlinearSystem(options),
     DiagnosticsInterface(this),
     _defines_value(options.get<bool>("define_values")),
     _defines_dvalue(options.get<bool>("define_derivatives")),
     _defines_d2value(options.get<bool>("define_second_derivatives")),
-    _nonlinear_system(options.get<bool>("_nonlinear_system")),
     _jit(settings().disable_jit() ? false : options.get<bool>("jit")),
     _production(options.get<bool>("production"))
 {
@@ -153,61 +149,7 @@ Model::setup()
     link_input_variables();
   }
 
-  if (is_nonlinear_system())
-    setup_nl_sys();
-
   request_AD();
-}
-
-void
-Model::setup_nl_sys()
-{
-  // Note: These data structures are serving the same purpose as LabeledAxis, and yes, we are
-  // storing redundant information. This is because we are transitioning away from LabeledAxis. In
-  // future versions, we will remove LabeledAxis and only use these data structures.
-  //
-  // Also note: only nonlinear systems need to define these maps. Regular feed-forward models do not
-  // need to define these maps. This is an important distinction from LabeledAxis which is always
-  // defined.
-
-  std::vector<VariableName> unknowns, given, old_solution, old_given, residuals;
-  std::vector<TensorShapeRef> unknown_shapes, given_shapes, old_solution_shapes, old_given_shapes,
-      residual_shapes;
-
-  for (const auto & [vname, var] : input_variables())
-    if (var->is_state())
-    {
-      unknowns.push_back(vname);
-      unknown_shapes.push_back(var->base_sizes());
-    }
-    else if (var->is_force())
-    {
-      given.push_back(vname);
-      given_shapes.push_back(var->base_sizes());
-    }
-    else if (var->is_old_state())
-    {
-      old_solution.push_back(vname);
-      old_solution_shapes.push_back(var->base_sizes());
-    }
-    else if (var->is_old_force())
-    {
-      old_given.push_back(vname);
-      old_given_shapes.push_back(var->base_sizes());
-    }
-
-  for (const auto & [vname, var] : output_variables())
-    if (var->is_residual())
-    {
-      residuals.push_back(vname);
-      residual_shapes.push_back(var->base_sizes());
-    }
-
-  set_umap(unknowns, unknown_shapes);
-  set_unmap(old_solution, old_solution_shapes);
-  set_gmap(given, given_shapes);
-  set_gnmap(old_given, old_given_shapes);
-  set_rmap(residuals, residual_shapes);
 }
 
 void
@@ -222,38 +164,11 @@ Model::diagnose() const
   for (auto && [name, var] : output_variables())
     diagnostic_check_output_variable(*var);
 
-  if (is_nonlinear_system())
-    diagnose_nl_sys();
-
   if (settings().disable_jit())
     if (input_options().user_specified("jit"))
       diagnostic_assert(!input_options().get<bool>("jit"),
                         "JIT compilation is disabled globally by Settings/disable_jit=true, and it "
                         "is an error to explicitly set jit to true for any model.");
-}
-
-void
-Model::diagnose_nl_sys() const
-{
-  for (auto & submodel : registered_models())
-    submodel->diagnose_nl_sys();
-
-  // Check if any input variable is solve-dependent
-  bool input_solve_dep = false;
-  for (auto && [name, var] : input_variables())
-    if (var->is_solve_dependent())
-      input_solve_dep = true;
-
-  // If any input variable is solve-dependent, ALL output variables must be solve-dependent!
-  if (input_solve_dep)
-    for (auto && [name, var] : output_variables())
-      diagnostic_assert(
-          var->is_solve_dependent(),
-          "This model is part of a nonlinear system. At least one of the input variables is "
-          "solve-dependent, so all output variables MUST be solve-dependent, i.e., they must be "
-          "on one of the following sub-axes: state, residual, parameters. However, got output "
-          "variable ",
-          name);
 }
 
 void
@@ -342,7 +257,7 @@ void
 Model::link_input_variables(Model * submodel)
 {
   for (auto && [name, var] : submodel->input_variables())
-    var->ref(input_variable(name), submodel->is_nonlinear_system());
+    var->ref(input_variable(name));
 }
 
 void
@@ -776,33 +691,6 @@ bool
 Model::currently_assembling_nonlinear_system() const
 {
   return host<Model>()->_currently_assembling_nonlinear_system;
-}
-
-void
-Model::set_solution(const es::Vector & x)
-{
-  assign_input(umap(), x);
-}
-
-es::Vector
-Model::get_solution() const
-{
-  return es::Vector(collect_input(umap()));
-}
-
-void
-Model::assemble(es::Vector * residual, es::Matrix * Jacobian)
-{
-  {
-    AssemblyingNonlinearSystem assembling_nl_sys(this, true);
-    forward_maybe_jit(residual, Jacobian, false);
-  }
-
-  if (residual)
-    *residual = collect_output(rmap());
-
-  if (Jacobian)
-    *Jacobian = collect_output_derivatives(rmap(), umap());
 }
 
 void

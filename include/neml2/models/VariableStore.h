@@ -30,8 +30,8 @@
 #include "neml2/base/LabeledAxisAccessor.h"
 #include "neml2/misc/types.h"
 #include "neml2/tensors/jit.h"
-#include "neml2/tensors/equation_system/Vector.h"
-#include "neml2/tensors/equation_system/Matrix.h"
+#include "neml2/solvers/HVector.h"
+#include "neml2/solvers/HMatrix.h"
 
 namespace neml2
 {
@@ -44,8 +44,8 @@ class Variable;
 template <typename T>
 struct TensorName;
 
-/// Bind es::Vector to variable names
-ValueMap bind(const std::vector<VariableName> &, const es::Vector &);
+/// Bind HVector to variable names
+ValueMap bind(const std::vector<VariableName> &, const HVector &);
 
 class VariableStore
 {
@@ -121,33 +121,33 @@ public:
   /// Assign input variable values
   void assign_input(const ValueMap & vals);
   /// Assign input variable values for the given variable names
-  void assign_input(const std::vector<VariableName> &, const es::Vector &);
+  void assign_input(const std::vector<VariableName> &, const HVector &);
   /// Assign output variable values
   void assign_output(const ValueMap & vals);
   /// Assign output variable values for the given variable names
-  void assign_output(const std::vector<VariableName> &, const es::Vector &);
+  void assign_output(const std::vector<VariableName> &, const HVector &);
   /// Assign variable derivatives
   void assign_output_derivatives(const DerivMap & derivs);
   /// Assign variable derivatives for the given variable names
   void assign_output_derivatives(const std::vector<VariableName> &,
                                  const std::vector<VariableName> &,
-                                 const es::Matrix &);
+                                 const HMatrix &);
   ///@}
 
   ///@{
   /// Collect input variable values
   ValueMap collect_input() const;
   /// Collect input variable values for the given variable names
-  es::Vector collect_input(const std::vector<VariableName> &) const;
+  HVector collect_input(const std::vector<VariableName> &) const;
   /// Collect output variable values
   ValueMap collect_output() const;
   /// Collect output variable values for the given variable names
-  es::Vector collect_output(const std::vector<VariableName> &) const;
+  HVector collect_output(const std::vector<VariableName> &) const;
   /// Collect variable derivatives
   DerivMap collect_output_derivatives() const;
   /// Collect variable derivatives for the given variable names
-  es::Matrix collect_output_derivatives(const std::vector<VariableName> &,
-                                        const std::vector<VariableName> &) const;
+  HMatrix collect_output_derivatives(const std::vector<VariableName> &,
+                                     const std::vector<VariableName> &) const;
   /// Collect variable second derivatives
   SecDerivMap collect_output_second_derivatives() const;
   ///@}

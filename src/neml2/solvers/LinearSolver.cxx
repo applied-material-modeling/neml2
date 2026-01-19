@@ -39,4 +39,25 @@ LinearSolver::LinearSolver(const OptionSet & options)
 {
 }
 
+std::tuple<Tensor, Tensor>
+LinearSolver::lu_factor(const HMatrix &) const
+{
+  throw NEMLException("LU factorization not supported by solver " + name() + " of type " +
+                      this->type());
+}
+
+HVector
+LinearSolver::lu_solve(const Tensor &, const Tensor &, const HVector &) const
+{
+  throw NEMLException("LU factorization not supported by solver " + name() + " of type " +
+                      this->type());
+}
+
+HMatrix
+LinearSolver::lu_solve(const Tensor &, const Tensor &, const HMatrix &) const
+{
+  throw NEMLException("LU factorization not supported by solver " + name() + " of type " +
+                      this->type());
+}
+
 }

@@ -47,7 +47,7 @@ def test_parameter_gradient():
     # Disassemble the flat input vector into model variables
     input_vars = ["forces/E", "forces/t", "old_forces/E", "old_forces/t", "old_state/S", "state/S"]
     input_var_sizes = [(6,), (), (6,), (), (6,), (6,)]
-    X = neml2.ESVector(input_var_sizes)
+    X = neml2.HVector(input_var_sizes)
     X.disassemble(x)
 
     # Say I want to get the parameter gradient on the flow viscosity
@@ -60,7 +60,7 @@ def test_parameter_gradient():
     # Assemble the model output variables back into a flat vector
     output_vars = ["state/S"]
     output_var_sizes = [(6,)]
-    Y = neml2.ESVector([y[v] for v in output_vars], output_var_sizes)
+    Y = neml2.HVector([y[v] for v in output_vars], output_var_sizes)
     [y_f, _] = Y.assemble()
 
     # Calculate the loss function

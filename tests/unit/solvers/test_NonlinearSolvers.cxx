@@ -51,7 +51,7 @@ TEST_CASE("NonlinearSolver", "[solvers]")
       // Initial guess
       std::vector<TensorShape> x_shapes(n, TensorShape{});
       std::vector<Tensor> x_data(n, Scalar::full(batch_sz, {}, 2.0));
-      es::Vector x(x_data, x_shapes);
+      HVector x(x_data, x_shapes);
 
       // Create the nonlinear system
       auto options = PowerTestSystem::expected_options();
@@ -71,7 +71,7 @@ TEST_CASE("NonlinearSolver", "[solvers]")
       // Initial guess
       std::vector<TensorShape> x_shapes(n, TensorShape{});
       std::vector<Tensor> x_data(n, Scalar::full(batch_sz, {}, 0.75));
-      es::Vector x(x_data, x_shapes);
+      HVector x(x_data, x_shapes);
 
       // Create the nonlinear system
       auto options = RosenbrockTestSystem::expected_options();

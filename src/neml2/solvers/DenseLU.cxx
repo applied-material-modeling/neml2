@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/solvers/DenseLU.h"
+#include "neml2/tensors/Tensor.h"
 #include "neml2/tensors/functions/linalg/solve.h"
 #include "neml2/tensors/functions/linalg/lu_factor.h"
 #include "neml2/tensors/functions/linalg/lu_solve.h"
@@ -48,79 +49,88 @@ DenseLU::DenseLU(const OptionSet & options)
 {
 }
 
-es::Vector
-DenseLU::solve(const es::Matrix & A, const es::Vector & b) const
+static HVector
+split_vector(const Tensor & x, const std::vector<Size> & s, const std::vector<TensorShapeRef> & bs)
+{
+  const auto & D = x.dynamic_sizes();
+  auto xfs = at::split(x, s, -1);
+  std::vector<Tensor> v(xfs.size());
+  for (std::size_t i = 0; i < xfs.size(); ++i)
+    v[i] = Tensor(xfs[i], D).base_reshape(bs[i]);
+  return HVector(std::move(v), bs);
+}
+
+static HMatrix
+split_matrix(const Tensor & X,
+             const std::vector<Size> & rs,
+             const std::vector<Size> & cs,
+             const std::vector<TensorShapeRef> & rbs,
+             const std::vector<TensorShapeRef> & cbs)
+{
+  const auto & S = X.dynamic_sizes();
+  auto xfs = at::split(X, rs, -2);
+  auto M = HMatrix(rbs, cbs);
+  for (std::size_t i = 0; i < rs.size(); ++i)
+  {
+    auto xs = at::split(xfs[i], cs, -1);
+    for (std::size_t j = 0; j < cs.size(); ++j)
+      M(i, j) = Tensor(xs[j], S).base_reshape(utils::add_shapes(rbs[i], cbs[j]));
+  }
+  return M;
+}
+
+HVector
+DenseLU::solve(const HMatrix & A, const HVector & b) const
 {
   // assemble A and b into flat tensors and solve
   const auto [A_f, A_rs, A_cs] = A.assemble();
   const auto [b_f, b_cs] = b.assemble();
   const auto x_f = linalg::solve(A_f, b_f);
 
-  // split the solution back into es::Vector
-  const auto & S = x_f.dynamic_sizes();
-  auto xfs = at::split(x_f, b_cs, -1);
-  std::vector<Tensor> x(xfs.size());
-  for (std::size_t i = 0; i < xfs.size(); ++i)
-    x[i] = Tensor(xfs[i], S).base_reshape(b.block_sizes(i));
-  return es::Vector(std::move(x), b.block_sizes());
+  // split the solution back into HVector
+  return split_vector(x_f, b_cs, b.block_sizes());
 }
 
-es::Matrix
-DenseLU::solve(const es::Matrix & A, const es::Matrix & B) const
+HMatrix
+DenseLU::solve(const HMatrix & A, const HMatrix & B) const
 {
   // assemble A and B into flat tensors and solve
   const auto [A_f, A_rs, A_cs] = A.assemble();
   const auto [B_f, B_rs, B_cs] = B.assemble();
   const auto X_f = linalg::solve(A_f, B_f);
 
-  // split the solution back into es::Matrix
-  const auto & S = X_f.dynamic_sizes();
-  auto xfs = at::split(X_f, A_cs, -2);
-  auto X = es::Matrix(A.block_col_sizes(), B.block_col_sizes());
-  for (std::size_t i = 0; i < A.n(); ++i)
-  {
-    auto xs = at::split(xfs[i], B_cs, -1);
-    for (std::size_t j = 0; j < B.n(); ++j)
-      X(i, j) = Tensor(xs[j], S).base_reshape(
-          utils::add_shapes(A.block_col_sizes(i), B.block_col_sizes(j)));
-  }
-  return X;
+  // split the solution back into HMatrix
+  return split_matrix(X_f, B_rs, B_cs, B.block_row_sizes(), B.block_col_sizes());
 }
 
-std::vector<es::Matrix>
-DenseLU::solve(const es::Matrix & A, const std::vector<es::Matrix> & B) const
+std::tuple<Tensor, Tensor>
+DenseLU::lu_factor(const HMatrix & A) const
 {
   // assemble A and factorize
   const auto [A_f, A_rs, A_cs] = A.assemble();
-  const auto [lu, pivot] = linalg::lu_factor(A_f);
-
-  // assemble B into flat tensors and solve
-  std::vector<es::Matrix> X(B.size());
-  for (std::size_t i = 0; i < B.size(); ++i)
-  {
-    const auto & Bi = B[i];
-
-    // Xi = 0 if Bi = 0
-    if (Bi.zero())
-      continue;
-
-    const auto [B_f, B_rs, B_cs] = Bi.assemble();
-    const auto X_f = linalg::lu_solve(lu, pivot, B_f);
-
-    // split the solution back into es::Matrix
-    const auto & S = X_f.dynamic_sizes();
-    auto xfs = at::split(X_f, A_cs, -2);
-    auto Xi = es::Matrix(A.block_col_sizes(), Bi.block_col_sizes());
-    for (std::size_t i = 0; i < A.n(); ++i)
-    {
-      auto xs = at::split(xfs[i], B_cs, -1);
-      for (std::size_t j = 0; j < Bi.n(); ++j)
-        Xi(i, j) = Tensor(xs[j], S).base_reshape(
-            utils::add_shapes(A.block_col_sizes(i), Bi.block_col_sizes(j)));
-    }
-    X[i] = std::move(Xi);
-  }
-
-  return X;
+  return linalg::lu_factor(A_f);
 }
+
+HVector
+DenseLU::lu_solve(const Tensor & LU, const Tensor & pivot, const HVector & b) const
+{
+  // assemble b into a flat vector and solve
+  const auto [b_f, b_cs] = b.assemble();
+  const auto x_f = linalg::lu_solve(LU, pivot, b_f);
+
+  // split the solution back into HVector
+  return split_vector(x_f, b_cs, b.block_sizes());
+}
+
+HMatrix
+DenseLU::lu_solve(const Tensor & LU, const Tensor & pivot, const HMatrix & B) const
+{
+  // assemble B into a flat matrix and solve
+  const auto [B_f, B_rs, B_cs] = B.assemble();
+  const auto X_f = linalg::lu_solve(LU, pivot, B_f);
+
+  // split the solution back into HVector
+  return split_matrix(X_f, B_rs, B_cs, B.block_row_sizes(), B.block_col_sizes());
+}
+
 }

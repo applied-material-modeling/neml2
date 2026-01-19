@@ -22,33 +22,32 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/tensors/equation_system/ESData.h"
-#include "neml2/misc/errors.h"
+#pragma once
 
-namespace neml2::es
+#include "neml2/models/Model.h"
+#include "neml2/solvers/NonlinearSystem.h"
+
+namespace neml2
 {
-
-ESData::ESData(std::vector<Tensor> v)
-  : _data(std::move(v))
+/// A nonlinear system defined by a Model
+class ModelNonlinearSystem : public NonlinearSystem
 {
-}
+public:
+  ModelNonlinearSystem(Model * model);
 
-bool
-ESData::requires_grad() const
-{
-  for (const auto & vi : _data)
-    if (vi.defined() && vi.requires_grad())
-      return true;
-  return false;
-}
+  ModelNonlinearSystem(const ModelNonlinearSystem &) = default;
+  ModelNonlinearSystem(ModelNonlinearSystem &&) noexcept = default;
+  ModelNonlinearSystem & operator=(const ModelNonlinearSystem &) = default;
+  ModelNonlinearSystem & operator=(ModelNonlinearSystem &&) = default;
+  virtual ~ModelNonlinearSystem() = default;
 
-TensorOptions
-ESData::options() const
-{
-  for (const auto & vi : _data)
-    if (vi.defined())
-      return vi.options();
-  throw NEMLException("empty es::Vector/Matrix has no options.");
-}
+  void set_x(const HVector & x) override;
+  HVector x() const override;
 
-} // namespace neml2::es
+protected:
+  void assemble(HMatrix *, HVector *) override;
+
+  Model * _model;
+};
+
+} // namespace neml2

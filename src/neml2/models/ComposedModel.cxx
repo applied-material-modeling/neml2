@@ -67,7 +67,7 @@ ComposedModel::ComposedModel(const OptionSet & options)
   // be registered as a sub-model by different models, and it could be evaluated with _different_
   // input, and hence yields _different_ output values.
   for (const auto & model_name : options.get<std::vector<std::string>>("models"))
-    register_model(model_name, /*nonlinear=*/false, /*merge_input=*/false);
+    register_model(model_name, /*merge_input=*/false);
 
   // Each sub-model may have nonlinear parameters. In our design, nonlinear parameters _are_
   // models. Since we do not want to put the burden of "adding nonlinear parameters in the input

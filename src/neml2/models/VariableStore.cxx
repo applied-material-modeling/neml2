@@ -37,12 +37,12 @@
 namespace neml2
 {
 ValueMap
-bind(const std::vector<VariableName> & vars, const es::Vector & vec)
+bind(const std::vector<VariableName> & vars, const HVector & vec)
 {
   neml_assert(vars.size() == vec.n(),
               "Number of variable names (",
               vars.size(),
-              ") does not match number of sub-tensors in es::Vector (",
+              ") does not match number of sub-tensors in HVector (",
               vec.n(),
               ").");
 
@@ -355,7 +355,7 @@ VariableStore::assign_input(const ValueMap & vals)
 }
 
 void
-VariableStore::assign_input(const std::vector<VariableName> & names, const es::Vector & v)
+VariableStore::assign_input(const std::vector<VariableName> & names, const HVector & v)
 {
   neml_assert_dbg(names.size() == v.n(),
                   "Number of input variable names (",
@@ -376,7 +376,7 @@ VariableStore::assign_output(const ValueMap & vals)
 }
 
 void
-VariableStore::assign_output(const std::vector<VariableName> & names, const es::Vector & v)
+VariableStore::assign_output(const std::vector<VariableName> & names, const HVector & v)
 {
   neml_assert_dbg(names.size() == v.n(),
                   "Number of output variable names (",
@@ -406,7 +406,7 @@ VariableStore::assign_output_derivatives(const DerivMap & derivs)
 void
 VariableStore::assign_output_derivatives(const std::vector<VariableName> & ynames,
                                          const std::vector<VariableName> & xnames,
-                                         const es::Matrix & J)
+                                         const HMatrix & J)
 {
   neml_assert_dbg(ynames.size() == J.m(),
                   "Number of output variable names (",
@@ -493,7 +493,7 @@ VariableStore::collect_input() const
   return vals;
 }
 
-es::Vector
+HVector
 VariableStore::collect_input(const std::vector<VariableName> & names) const
 {
   std::vector<Tensor> vals(names.size());
@@ -504,7 +504,7 @@ VariableStore::collect_input(const std::vector<VariableName> & names) const
     vals[i] = var.tensor();
     shapes[i] = var.base_sizes();
   }
-  return es::Vector(vals, shapes);
+  return HVector(vals, shapes);
 }
 
 ValueMap
@@ -516,7 +516,7 @@ VariableStore::collect_output() const
   return vals;
 }
 
-es::Vector
+HVector
 VariableStore::collect_output(const std::vector<VariableName> & names) const
 {
   std::vector<Tensor> vals(names.size());
@@ -527,7 +527,7 @@ VariableStore::collect_output(const std::vector<VariableName> & names) const
     vals[i] = var.tensor();
     shapes[i] = var.base_sizes();
   }
-  return es::Vector(vals, shapes);
+  return HVector(vals, shapes);
 }
 
 DerivMap
@@ -541,7 +541,7 @@ VariableStore::collect_output_derivatives() const
   return derivs;
 }
 
-es::Matrix
+HMatrix
 VariableStore::collect_output_derivatives(const std::vector<VariableName> & ynames,
                                           const std::vector<VariableName> & xnames) const
 {
@@ -553,15 +553,9 @@ VariableStore::collect_output_derivatives(const std::vector<VariableName> & ynam
     row_shapes[i] = yvar.base_sizes();
     const auto & dy = yvar.derivatives();
     for (std::size_t j = 0; j < xnames.size(); j++)
-    {
       for (const auto & [deriv, arg] : dy)
         if (arg->name() == xnames[j] && deriv.defined())
-        {
           derivs[i][j] = deriv.tensor();
-          std::cout << deriv.name() << ": " << deriv.tensor().dynamic_sizes()
-                    << deriv.tensor().intmd_sizes() << deriv.tensor().base_sizes() << std::endl;
-        }
-    }
   }
 
   std::vector<TensorShapeRef> col_shapes(xnames.size());
@@ -571,7 +565,7 @@ VariableStore::collect_output_derivatives(const std::vector<VariableName> & ynam
     col_shapes[j] = xvar.base_sizes();
   }
 
-  return es::Matrix(derivs, row_shapes, col_shapes);
+  return HMatrix(derivs, row_shapes, col_shapes);
 }
 
 SecDerivMap

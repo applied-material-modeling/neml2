@@ -47,8 +47,10 @@ PYBIND11_MODULE(core, m)
       py::class_<Factory>(m, "Factory", "Factory for creating objects defined in the input file");
   auto cls_Model = py::class_<Model, std::shared_ptr<Model>>(
       m, "Model", "The canonical type for constitutive models in NEML2.");
-  auto cls_ESVector = py::class_<es::Vector>(m, "ESVector", "Vector for equation systems.");
-  auto cls_ESMatrix = py::class_<es::Matrix>(m, "ESMatrix", "Matrix for equation systems.");
+  auto cls_HVector =
+      py::class_<HVector>(m, "HVector", "Heterogeneous vector for equation systems.");
+  auto cls_HMatrix =
+      py::class_<HMatrix>(m, "HMatrix", "Heterogeneous matrix for equation systems.");
 
   // free functions
   m.def(
@@ -125,7 +127,7 @@ PYBIND11_MODULE(core, m)
   )");
   m.def(
       "bind",
-      [](const py::object & p, const es::Vector & v)
+      [](const py::object & p, const HVector & v)
       {
         // cast p to iterable
         auto p_itr = py::cast<py::iterable>(p);
@@ -138,11 +140,11 @@ PYBIND11_MODULE(core, m)
       py::arg("variable_names"),
       py::arg("es_vector"),
       R"(
-Bind an ESVector to variable names to form a dictionary whose keys are
-variable names and values are sub-tensors in ESVector.
+Bind an HVector to variable names to form a dictionary whose keys are
+variable names and values are sub-tensors in HVector.
 
 :param variable_names: List of variable names
-:param es_vector: ESVector to be bound
+:param es_vector: HVector to be bound
         )");
 
   // binding definitions
@@ -151,6 +153,6 @@ variable names and values are sub-tensors in ESVector.
   def(m, cls_TensorValue);
   def(m, cls_Factory);
   def(m, cls_Model);
-  def(m, cls_ESVector);
-  def(m, cls_ESMatrix);
+  def(m, cls_HVector);
+  def(m, cls_HMatrix);
 }

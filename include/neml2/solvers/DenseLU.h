@@ -41,9 +41,12 @@ public:
 
   DenseLU(const OptionSet & options);
 
-  es::Vector solve(const es::Matrix & A, const es::Vector & b) const override;
-  es::Matrix solve(const es::Matrix & A, const es::Matrix & B) const override;
-  std::vector<es::Matrix> solve(const es::Matrix & A,
-                                const std::vector<es::Matrix> & B) const override;
+  HVector solve(const HMatrix & A, const HVector & b) const override;
+  HMatrix solve(const HMatrix & A, const HMatrix & B) const override;
+
+  bool support_lu_factorization() const override { return true; }
+  std::tuple<Tensor, Tensor> lu_factor(const HMatrix & A) const override;
+  HVector lu_solve(const Tensor & LU, const Tensor & pivot, const HVector & b) const override;
+  HMatrix lu_solve(const Tensor & LU, const Tensor & pivot, const HMatrix & B) const override;
 };
 } // namespace neml2

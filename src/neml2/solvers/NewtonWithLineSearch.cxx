@@ -57,9 +57,10 @@ NewtonWithLineSearch::expected_options()
   options.set("linesearch_stopping_criteria").doc() =
       "The lineseach tolerance slightly relaxing the definition of residual decrease";
 
-  options.set<bool>("check_negative_critertia_value") = false;
-  options.set("check_negative_critertia_value").doc() =
-      "Whether to check if the convergence criteria for line search becomes negative";
+  options.set<bool>("check_negative_critertion") = false;
+  options.set("check_negative_critertion").doc() =
+      "Whether to check if the threshold used in the convergence criterion for line search becomes "
+      "negative. If true, and a negative value is detected, a warning message is printed to cerr.";
 
   return options;
 }
@@ -76,43 +77,43 @@ NewtonWithLineSearch::NewtonWithLineSearch(const OptionSet & options)
 
 void
 NewtonWithLineSearch::update(NonlinearSystem & system,
-                             es::Vector & x,
-                             const es::Vector & r,
-                             const es::Matrix & J)
+                             HVector & x,
+                             const HVector & b,
+                             const HMatrix & A)
 {
-  auto dx = solve_direction(r, J);
-  auto alpha = linesearch(system, x, dx, r);
+  auto dx = solve_direction(b, A);
+  auto alpha = linesearch(system, x, dx, b);
   x.update_data(alpha * dx);
 }
 
 Scalar
 NewtonWithLineSearch::linesearch(NonlinearSystem & system,
-                                 const es::Vector & x,
-                                 const es::Vector & dx,
-                                 const es::Vector & R0) const
+                                 const HVector & x,
+                                 const HVector & dx,
+                                 const HVector & b0) const
 {
   auto alpha = Scalar::ones(x.options());
-  const auto nR02 = norm_sq(R0);
-  auto crit = nR02;
+  const auto nb0 = norm_sq(b0);
+  auto crit = nb0;
 
   for (std::size_t i = 1; i < _linesearch_miter; i++)
   {
     auto xp = x + alpha * dx;
-    auto R = system.residual(xp);
-    auto nR2 = norm_sq(R);
+    auto b = system.b(xp);
+    auto nb = norm_sq(b);
 
     if (_type == "BACKTRACKING")
-      crit = nR02 + 2.0 * _linesearch_c * alpha * R0 * dx;
+      crit = nb0 - 2.0 * _linesearch_c * alpha * b0 * dx;
     else if (_type == "STRONG_WOLFE")
-      crit = (1.0 - _linesearch_c * alpha) * nR02;
+      crit = (1.0 - _linesearch_c * alpha) * nb0;
 
     if (verbose)
       std::cout << "     LS ITERATION " << std::setw(3) << i << ", min(alpha) = " << std::scientific
                 << at::min(alpha).item<double>() << ", max(||R||) = " << std::scientific
-                << at::max(sqrt(nR2)).item<double>() << ", min(||Rc||) = " << std::scientific
+                << at::max(sqrt(nb)).item<double>() << ", min(||Rc||) = " << std::scientific
                 << at::min(sqrt(crit)).item<double>() << std::endl;
 
-    auto stop = nR2 <= crit || nR2 <= std::pow(atol, 2);
+    auto stop = nb <= crit || nb <= std::pow(atol, 2);
 
     if (at::all(stop).item<bool>())
       break;
@@ -123,9 +124,8 @@ NewtonWithLineSearch::linesearch(NonlinearSystem & system,
 
   if (_check_crit)
     if (at::max(crit).item<double>() < 0)
-      std::cerr << "WARNING: Line Search produces negative stopping "
-                   "criteria, this could lead to convergence issue. Try with other "
-                   "linesearch_type, increase linesearch_cutback "
+      std::cerr << "WARNING: Line Search produces negative stopping criteria, this could lead to "
+                   "convergence issue. Try with other linesearch_type, increase linesearch_cutback "
                    "or reduce linesearch_stopping_criteria"
                 << std::endl;
 
