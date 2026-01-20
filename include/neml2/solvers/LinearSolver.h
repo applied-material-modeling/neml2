@@ -29,8 +29,9 @@
 namespace neml2
 {
 class Tensor;
-struct HVector;
-struct HMatrix;
+class LinearSystem;
+class NonlinearSystem;
+struct SparseTensorList;
 
 /**
  * @brief The linear solver solves a linear system of equations.
@@ -44,20 +45,9 @@ public:
   LinearSolver(const OptionSet & options);
 
   /// Solve Ax = b for x
-  virtual HVector solve(const HMatrix & A, const HVector & b) const = 0;
+  virtual SparseTensorList solve(LinearSystem &) const = 0;
 
-  /// Solve AX = B for X
-  virtual HMatrix solve(const HMatrix & A, const HMatrix & B) const = 0;
-
-  ///@{
-  /// Whether the derived solver supports LU factorization (and its reuse)
-  virtual bool support_lu_factorization() const { return false; }
-  /// LU factorization of A, @return tuple of (LU, pivot)
-  virtual std::tuple<Tensor, Tensor> lu_factor(const HMatrix & A) const;
-  /// LU solve using precomputed LU factors
-  virtual HVector lu_solve(const Tensor & LU, const Tensor & pivot, const HVector & b) const;
-  /// LU solve using precomputed LU factors
-  virtual HMatrix lu_solve(const Tensor & LU, const Tensor & pivot, const HMatrix & B) const;
-  ///@}
+  /// Solve dr/du du/dg = -dr/dg
+  virtual SparseTensorList ift(NonlinearSystem &) const = 0;
 };
 } // namespace neml2

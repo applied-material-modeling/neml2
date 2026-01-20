@@ -97,7 +97,7 @@ HITParser::parse(hit::Node * root) const
 }
 
 OptionSet
-HITParser::extract_object_options(hit::Node * object, hit::Node * section) const
+HITParser::extract_object_options(hit::Node * object, hit::Node * /*section*/) const
 {
   // There is a special field reserved for object type
   std::string type = object->param<std::string>("type");
@@ -108,7 +108,7 @@ HITParser::extract_object_options(hit::Node * object, hit::Node * section) const
   // Also fill in the metadata
   options.name() = object->path();
   options.type() = type;
-  options.path() = section->fullpath();
+  options.path() = object->fullpath();
 
   return options;
 }

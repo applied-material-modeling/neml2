@@ -30,6 +30,7 @@
 #include "neml2/base/LabeledAxisAccessor.h"
 #include "neml2/misc/types.h"
 #include "neml2/tensors/jit.h"
+#include "neml2/equation_systems/SparseTensorList.h"
 
 namespace neml2
 {
@@ -41,11 +42,9 @@ template <typename T>
 class Variable;
 template <typename T>
 struct TensorName;
-struct HVector;
-struct HMatrix;
 
-/// Bind HVector to variable names
-ValueMap bind(const std::vector<VariableName> &, const HVector &);
+/// Bind a vector of tensors to variable names
+ValueMap bind(const std::vector<VariableName> &, const std::vector<Tensor> &);
 
 class VariableStore
 {
@@ -121,33 +120,33 @@ public:
   /// Assign input variable values
   void assign_input(const ValueMap & vals);
   /// Assign input variable values for the given variable names
-  void assign_input(const std::vector<VariableName> &, const HVector &);
+  void assign_input(const std::vector<VariableName> &, const SparseTensorList &);
   /// Assign output variable values
   void assign_output(const ValueMap & vals);
   /// Assign output variable values for the given variable names
-  void assign_output(const std::vector<VariableName> &, const HVector &);
+  void assign_output(const std::vector<VariableName> &, const SparseTensorList &);
   /// Assign variable derivatives
   void assign_output_derivatives(const DerivMap & derivs);
   /// Assign variable derivatives for the given variable names
   void assign_output_derivatives(const std::vector<VariableName> &,
                                  const std::vector<VariableName> &,
-                                 const HMatrix &);
+                                 const SparseTensorList &);
   ///@}
 
   ///@{
   /// Collect input variable values
   ValueMap collect_input() const;
   /// Collect input variable values for the given variable names
-  HVector collect_input(const std::vector<VariableName> &) const;
+  SparseTensorList collect_input(const std::vector<VariableName> &) const;
   /// Collect output variable values
   ValueMap collect_output() const;
   /// Collect output variable values for the given variable names
-  HVector collect_output(const std::vector<VariableName> &) const;
+  SparseTensorList collect_output(const std::vector<VariableName> &) const;
   /// Collect variable derivatives
   DerivMap collect_output_derivatives() const;
   /// Collect variable derivatives for the given variable names
-  HMatrix collect_output_derivatives(const std::vector<VariableName> &,
-                                     const std::vector<VariableName> &) const;
+  SparseTensorList collect_output_derivatives(const std::vector<VariableName> &,
+                                              const std::vector<VariableName> &) const;
   /// Collect variable second derivatives
   SecDerivMap collect_output_second_derivatives() const;
   ///@}

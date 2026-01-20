@@ -17,19 +17,6 @@
   []
 []
 
-[Solvers]
-  [newton]
-    type = Newton
-    abs_tol = 1e-10
-    rel_tol = 1e-08
-    max_its = 100
-    linear_solver = 'lu'
-  []
-  [lu]
-    type = DenseLU
-  []
-[]
-
 [Models]
   [foo_rate]
     type = CopyScalar
@@ -44,9 +31,32 @@
     type = ComposedModel
     models = 'foo_rate integrate_foo'
   []
+[]
+
+[EquationSystems]
+  [eq_sys]
+    type = NonlinearSystem
+    model = 'implicit_model'
+  []
+[]
+
+[Solvers]
+  [newton]
+    type = Newton
+    abs_tol = 1e-10
+    rel_tol = 1e-08
+    max_its = 100
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
+  []
+[]
+
+[Models]
   [model]
     type = ImplicitUpdate
-    implicit_model = 'implicit_model'
+    equation_system = 'eq_sys'
     solver = 'newton'
   []
 []

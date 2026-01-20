@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/VariableStore.h"
+#include "neml2/equation_systems/EquationSystem.h"
 #include "neml2/misc/types.h"
 #include "neml2/models/Model.h"
 #include "neml2/misc/assertions.h"
@@ -33,19 +34,17 @@
 #include "neml2/models/utils.h"
 #include "neml2/tensors/Tensor.h"
 #include "neml2/tensors/tensors.h"
-#include "neml2/equation_systems/HVector.h"
-#include "neml2/equation_systems/HMatrix.h"
 
 namespace neml2
 {
 ValueMap
-bind(const std::vector<VariableName> & vars, const HVector & vec)
+bind(const std::vector<VariableName> & vars, const std::vector<Tensor> & vec)
 {
-  neml_assert(vars.size() == vec.n(),
+  neml_assert(vars.size() == vec.size(),
               "Number of variable names (",
               vars.size(),
-              ") does not match number of sub-tensors in HVector (",
-              vec.n(),
+              ") does not match number of sub-tensors in vector (",
+              vec.size(),
               ").");
 
   ValueMap result;
@@ -357,13 +356,13 @@ VariableStore::assign_input(const ValueMap & vals)
 }
 
 void
-VariableStore::assign_input(const std::vector<VariableName> & names, const HVector & v)
+VariableStore::assign_input(const std::vector<VariableName> & names, const SparseTensorList & v)
 {
-  neml_assert_dbg(names.size() == v.n(),
+  neml_assert_dbg(names.size() == v.size(),
                   "Number of input variable names (",
                   names.size(),
                   ") does not match number of values (",
-                  v.n(),
+                  v.size(),
                   ").");
 
   for (std::size_t i = 0; i < names.size(); i++)
@@ -378,13 +377,13 @@ VariableStore::assign_output(const ValueMap & vals)
 }
 
 void
-VariableStore::assign_output(const std::vector<VariableName> & names, const HVector & v)
+VariableStore::assign_output(const std::vector<VariableName> & names, const SparseTensorList & v)
 {
-  neml_assert_dbg(names.size() == v.n(),
+  neml_assert_dbg(names.size() == v.size(),
                   "Number of output variable names (",
                   names.size(),
                   ") does not match number of values (",
-                  v.n(),
+                  v.size(),
                   ").");
 
   for (std::size_t i = 0; i < names.size(); i++)
@@ -408,27 +407,23 @@ VariableStore::assign_output_derivatives(const DerivMap & derivs)
 void
 VariableStore::assign_output_derivatives(const std::vector<VariableName> & ynames,
                                          const std::vector<VariableName> & xnames,
-                                         const HMatrix & J)
+                                         const SparseTensorList & J)
 {
-  neml_assert_dbg(ynames.size() == J.m(),
-                  "Number of output variable names (",
-                  ynames.size(),
-                  ") does not match number of rows of values (",
-                  J.m(),
-                  ").");
-  neml_assert_dbg(xnames.size() == J.n(),
-                  "Number of input variable names (",
-                  xnames.size(),
-                  ") does not match number of columns of values (",
-                  J.n(),
+  neml_assert_dbg(ynames.size() * xnames.size() == J.size(),
+                  "Number of derivatives (",
+                  ynames.size() * xnames.size(),
+                  ") does not match number of values (",
+                  J.size(),
                   ").");
 
-  for (std::size_t i = 0; i < ynames.size(); i++)
+  const auto m = ynames.size();
+  const auto n = xnames.size();
+  for (std::size_t i = 0; i < m; i++)
   {
     auto & yvar = output_variable(ynames[i]);
-    for (std::size_t j = 0; j < xnames.size(); j++)
-      if (J(i, j).defined())
-        yvar.d(input_variable(xnames[j])) = J(i, j);
+    for (std::size_t j = 0; j < n; j++)
+      if (J[i * n + j].defined())
+        yvar.d(input_variable(xnames[j])) = J[i * n + j];
   }
 }
 
@@ -495,18 +490,13 @@ VariableStore::collect_input() const
   return vals;
 }
 
-HVector
+SparseTensorList
 VariableStore::collect_input(const std::vector<VariableName> & names) const
 {
-  std::vector<Tensor> vals(names.size());
-  std::vector<TensorShapeRef> shapes(names.size());
+  SparseTensorList vals(names.size());
   for (std::size_t i = 0; i < names.size(); i++)
-  {
-    const auto & var = input_variable(names[i]);
-    vals[i] = var.tensor();
-    shapes[i] = var.base_sizes();
-  }
-  return HVector(vals, shapes);
+    vals[i] = input_variable(names[i]).tensor();
+  return vals;
 }
 
 ValueMap
@@ -518,18 +508,13 @@ VariableStore::collect_output() const
   return vals;
 }
 
-HVector
+SparseTensorList
 VariableStore::collect_output(const std::vector<VariableName> & names) const
 {
-  std::vector<Tensor> vals(names.size());
-  std::vector<TensorShapeRef> shapes(names.size());
+  SparseTensorList vals(names.size());
   for (std::size_t i = 0; i < names.size(); i++)
-  {
-    const auto & var = output_variable(names[i]);
-    vals[i] = var.tensor();
-    shapes[i] = var.base_sizes();
-  }
-  return HVector(vals, shapes);
+    vals[i] = output_variable(names[i]).tensor();
+  return vals;
 }
 
 DerivMap
@@ -543,31 +528,23 @@ VariableStore::collect_output_derivatives() const
   return derivs;
 }
 
-HMatrix
+SparseTensorList
 VariableStore::collect_output_derivatives(const std::vector<VariableName> & ynames,
                                           const std::vector<VariableName> & xnames) const
 {
-  std::vector<std::vector<Tensor>> derivs(ynames.size(), std::vector<Tensor>(xnames.size()));
-  std::vector<TensorShapeRef> row_shapes(ynames.size());
-  for (std::size_t i = 0; i < ynames.size(); i++)
+  const auto m = ynames.size();
+  const auto n = xnames.size();
+  SparseTensorList derivs(m * n);
+  for (std::size_t i = 0; i < m; i++)
   {
     const auto & yvar = output_variable(ynames[i]);
-    row_shapes[i] = yvar.base_sizes();
     const auto & dy = yvar.derivatives();
-    for (std::size_t j = 0; j < xnames.size(); j++)
+    for (std::size_t j = 0; j < n; j++)
       for (const auto & [deriv, arg] : dy)
         if (arg->name() == xnames[j] && deriv.defined())
-          derivs[i][j] = deriv.tensor();
+          derivs[i * n + j] = deriv.tensor();
   }
-
-  std::vector<TensorShapeRef> col_shapes(xnames.size());
-  for (std::size_t j = 0; j < xnames.size(); j++)
-  {
-    const auto & xvar = input_variable(xnames[j]);
-    col_shapes[j] = xvar.base_sizes();
-  }
-
-  return HMatrix(derivs, row_shapes, col_shapes);
+  return derivs;
 }
 
 SecDerivMap

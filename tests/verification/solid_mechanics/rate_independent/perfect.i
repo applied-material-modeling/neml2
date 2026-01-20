@@ -34,16 +34,6 @@
   []
 []
 
-[Solvers]
-  [newton]
-    type = Newton
-    linear_solver = 'lu'
-  []
-  [lu]
-    type = DenseLU
-  []
-[]
-
 [Models]
   [elastic_strain]
     type = SR2LinearCombination
@@ -97,9 +87,29 @@
               yield normality Eprate
               consistency integrate_Ep"
   []
+[]
+
+[EquationSystems]
+  [eq_sys]
+    type = NonlinearSystem
+    model = 'surface'
+  []
+[]
+
+[Solvers]
+  [newton]
+    type = Newton
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
+  []
+[]
+
+[Models]
   [return_map]
     type = ImplicitUpdate
-    implicit_model = 'surface'
+    equation_system = 'eq_sys'
     solver = 'newton'
   []
   [model]

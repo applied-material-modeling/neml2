@@ -53,7 +53,7 @@ The library is structured so that adding a new feature to an existing material m
 
 #### Friendly user interfaces
 
-There are three general ways of interfacing with NEML2 material models: the compiled C++ library, the Python package, and the Runner. In all interfaces, creation and archival of NEML2 models rely on input files written in the hierarchical [HIT](https://github.com/idaholab/moose/tree/master/framework/contrib/hit) format. NEML2 models created using the Python bindings are fully interoperable with PyTorch tensors and modules, meaning that NEML2 material models can seamlessly work with popular machine learning frameworks developed using PyTorch.
+There are three general ways of interfacing with NEML2 material models: the compiled C++ library, the Python package, and the runner. In all interfaces, creation and archival of NEML2 models rely on input files written in the hierarchical [HIT](https://github.com/idaholab/moose/tree/master/framework/contrib/hit) format. NEML2 models created using the Python bindings are fully interoperable with PyTorch tensors and modules, meaning that NEML2 material models can seamlessly work with popular machine learning frameworks developed using PyTorch.
 
 #### Strict quality assurance
 

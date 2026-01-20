@@ -108,16 +108,6 @@ nbatch = 20
   []
 []
 
-[Solvers]
-  [newton]
-    type = Newton
-    linear_solver = 'lu'
-  []
-  [lu]
-    type = DenseLU
-  []
-[]
-
 [Data]
   [crystal_geometry]
     type = CubicCrystal
@@ -214,7 +204,6 @@ nbatch = 20
     type = R2BackwardEulerTimeIntegration
     variable = 'state/Fp'
   []
-  # The implicit model that we solve for
   [implicit_rate]
     type = ComposedModel
     models = "euler_rodrigues slip_strength voce_hardening
@@ -222,9 +211,29 @@ nbatch = 20
               plastic_velgrad plastic_defgrad_rate
               integrate_slip_hardening integrate_plastic_defgrad"
   []
+[]
+
+[EquationSystems]
+  [eq_sys]
+    type = NonlinearSystem
+    model = 'implicit_rate'
+  []
+[]
+
+[Solvers]
+  [newton]
+    type = Newton
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
+  []
+[]
+
+[Models]
   [model]
     type = ImplicitUpdate
-    implicit_model = 'implicit_rate'
+    equation_system = 'eq_sys'
     solver = 'newton'
   []
   [model_with_pk2_stress]

@@ -40,6 +40,7 @@
  * referenced when the library is used.
  */
 extern "C" void _neml2_force_link_models();
+extern "C" void _neml2_force_link_equation_systems();
 extern "C" void _neml2_force_link_solvers();
 extern "C" void _neml2_force_link_user_tensors();
 extern "C" void _neml2_force_link_drivers();

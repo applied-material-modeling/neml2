@@ -98,4 +98,25 @@ pad_prepend(TensorShapeRef s, std::size_t dim, Size pad)
   s2.insert(s2.begin(), dim - s.size(), pad);
   return s2;
 }
+
+std::vector<TensorShape>
+shape_refs_to_shapes(const std::vector<TensorShapeRef> & shape_refs)
+{
+  std::vector<TensorShape> shapes;
+  shapes.reserve(shape_refs.size());
+  for (const auto & sr : shape_refs)
+    shapes.emplace_back(sr);
+  return shapes;
+}
+
+std::vector<TensorShapeRef>
+shapes_to_shape_refs(const std::vector<TensorShape> & shapes)
+{
+  std::vector<TensorShapeRef> shape_refs;
+  shape_refs.reserve(shapes.size());
+  for (const auto & s : shapes)
+    shape_refs.emplace_back(s);
+  return shape_refs;
+}
+
 } // namespace neml2::utils

@@ -67,21 +67,21 @@ def git_fuzzy_find_file(filename: str) -> Path:
 SECTION_OPEN_RE = re.compile(r"\[(.+?)\]")  # matches [Name], captures Name
 
 
-def parse_input(input: Path) -> dict[str, tuple[int, Union[int, None], dict]]:
+def parse_input(input: Path) -> dict[str, list[tuple[int, Union[int, None], dict]]]:
     """
     Parses a HIT input file to extract its section structure.
     Args:
         input: Path to the HIT input file.
     Returns:
         A nested dictionary representing the section structure. Dictionary keys are section names,
-        and values are tuples of (start_line, end_line, children_dict).
+        and values are lists of tuples (start_line, end_line, children_dict) for each occurrence.
     """
 
     with open(input, "r") as f:
         lines = f.readlines()
 
     # Internal representation for each node:
-    # { "start": int, "end": int | None, "children": {name: node, ...} }
+    # { "start": int, "end": int | None, "children": {name: [node, ...], ...} }
     root_children = {}
     # Stack of (name, node_dict). Root has a dummy name and holds root_children.
     stack = [("ROOT", {"start": None, "end": None, "children": root_children})]
@@ -105,11 +105,8 @@ def parse_input(input: Path) -> dict[str, tuple[int, Union[int, None], dict]]:
             sec_name = m.group(1).strip()
             parent_node = stack[-1][1]  # current top of stack
             children = parent_node["children"]  # its children dict
-            if sec_name in children:
-                print(f"Duplicate section name '{sec_name}' under the same parent at line {lineno}")
-                sys.exit(1)
             new_node = {"start": lineno, "end": None, "children": {}}
-            children[sec_name] = new_node
+            children.setdefault(sec_name, []).append(new_node)
             stack.append((sec_name, new_node))
             continue
 
@@ -123,12 +120,16 @@ def parse_input(input: Path) -> dict[str, tuple[int, Union[int, None], dict]]:
     # Convert internal node representation to the requested tuple format
     def to_tuple_dict(children_dict):
         out = {}
-        for name, node in children_dict.items():
-            out[name] = (
-                node["start"],
-                node["end"],
-                to_tuple_dict(node["children"]),
-            )
+        for name, nodes in children_dict.items():
+            out[name] = []
+            for node in nodes:
+                out[name].append(
+                    (
+                        node["start"],
+                        node["end"],
+                        to_tuple_dict(node["children"]),
+                    )
+                )
         return out
 
     return to_tuple_dict(root_children)
@@ -138,22 +139,27 @@ def list_hit_section(
     structure: dict, lines: list[str], section_map: dict[str, dict], top_level: bool = True
 ) -> str:
     content = ""
-    for section, subsections in section_map.items():
+    items = list(section_map.items())
+    for section_index, (section, subsections) in enumerate(items):
         if section not in structure:
-            print(f"Section '{section}' not found.")
-            sys.exit(1)
-        start, end, substructure = structure[section]
-        if end is None:
-            print(f"Section '{section}' is not closed.")
-            sys.exit(1)
+            continue
+        entries = structure[section]
+        for entry_index, (start, end, substructure) in enumerate(entries):
+            if end is None:
+                print(f"Section '{section}' is not closed.")
+                sys.exit(1)
 
-        if not subsections:
-            return "".join(lines[start - 1 : end])
+            if not subsections:
+                content += "".join(lines[start - 1 : end])
+                if top_level and (entry_index < len(entries) - 1 or section_index < len(items) - 1):
+                    content += "\n"
+                continue
 
-        content += lines[start - 1]  # include section header line
-        content += list_hit_section(substructure, lines, subsections, top_level=False)
-        content += lines[end - 1]  # include section closing line
-        content += "\n" if top_level else ""
+            content += lines[start - 1]  # include section header line
+            content += list_hit_section(substructure, lines, subsections, top_level=False)
+            content += lines[end - 1]  # include section closing line
+            if top_level and (entry_index < len(entries) - 1 or section_index < len(items) - 1):
+                content += "\n"
     return content
 
 

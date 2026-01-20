@@ -26,6 +26,8 @@
 #include <iomanip>
 
 #include "neml2/solvers/NewtonWithLineSearch.h"
+#include "neml2/equation_systems/SparseTensorList.h"
+#include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/functions/sqrt.h"
 
 namespace neml2
@@ -76,35 +78,24 @@ NewtonWithLineSearch::NewtonWithLineSearch(const OptionSet & options)
 }
 
 void
-NewtonWithLineSearch::update(NonlinearSystem & system,
-                             HVector & u,
-                             const HVector & b,
-                             const HMatrix & A)
+NewtonWithLineSearch::update(NonlinearSystem & sys)
 {
-  auto du = solve_direction(b, A);
-  auto alpha = linesearch(system, u, du, b);
-  u.update_data(alpha * du);
-}
-
-Scalar
-NewtonWithLineSearch::linesearch(NonlinearSystem & system,
-                                 const HVector & u,
-                                 const HVector & du,
-                                 const HVector & b0) const
-{
+  auto du = linear_solver->solve(sys);
+  auto u = sys.u();
   auto alpha = Scalar::ones(u.options());
-  const auto nb0 = norm_sq(b0);
+  const auto b0 = sys.b();
+  const auto nb0 = neml2::norm_sq(b0);
   auto crit = nb0;
 
   for (std::size_t i = 1; i < _linesearch_miter; i++)
   {
     auto up = u + alpha * du;
-    system.set_u(up);
-    auto b = system.b();
+    sys.set_u(up);
+    auto b = sys.b();
     auto nb = norm_sq(b);
 
     if (_type == "BACKTRACKING")
-      crit = nb0 - 2.0 * _linesearch_c * alpha * b0 * du;
+      crit = nb0 - 2.0 * _linesearch_c * alpha * neml2::inner(b0, du);
     else if (_type == "STRONG_WOLFE")
       crit = (1.0 - _linesearch_c * alpha) * nb0;
 
@@ -129,8 +120,6 @@ NewtonWithLineSearch::linesearch(NonlinearSystem & system,
                    "convergence issue. Try with other linesearch_type, increase linesearch_cutback "
                    "or reduce linesearch_stopping_criteria"
                 << std::endl;
-
-  return alpha;
 }
 
 } // namespace neml2

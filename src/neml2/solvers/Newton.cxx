@@ -27,8 +27,7 @@
 
 #include "neml2/solvers/Newton.h"
 #include "neml2/tensors/Scalar.h"
-#include "neml2/equation_systems/HVector.h"
-#include "neml2/equation_systems/HMatrix.h"
+#include "neml2/equation_systems/SparseTensorList.h"
 
 namespace neml2
 {
@@ -49,13 +48,10 @@ Newton::Newton(const OptionSet & options)
 }
 
 Newton::Result
-Newton::solve(NonlinearSystem & system, const HVector & u0)
+Newton::solve(NonlinearSystem & sys)
 {
-  auto u = u0;
-
   // The initial residual for relative convergence check
-  system.set_u(u);
-  auto b = system.b();
+  auto b = sys.b();
   auto nb = neml2::norm(b);
   auto nb0 = nb.clone();
 
@@ -63,14 +59,14 @@ Newton::solve(NonlinearSystem & system, const HVector & u0)
   if (converged(0, nb0, nb0))
   {
     // The final update is only necessary if we use AD
-    if (b.requires_grad())
-      final_update(system, u, b, system.A());
+    if (nb0.requires_grad())
+      final_update(sys);
 
-    return {RetCode::SUCCESS, u, 0};
+    return {RetCode::SUCCESS, 0};
   }
 
   // Prepare any solver internal data before the iterative update
-  prepare(system, u);
+  prepare(sys);
 
   // Continuing iterating until one of:
   // 1. nR < atol (success)
@@ -78,24 +74,22 @@ Newton::solve(NonlinearSystem & system, const HVector & u0)
   // 3. i > miters (failure)
   for (size_t i = 1; i < miters; i++)
   {
-    auto A = system.A();
-    update(system, u, b, A);
-    system.set_u(u);
-    b = system.b();
+    update(sys);
+    b = sys.b();
     nb = neml2::norm(b);
 
     // Check for convergence
     if (converged(i, nb, nb0))
     {
       // The final update is only necessary if we use AD
-      if (b.requires_grad())
-        final_update(system, u, b, system.A());
+      if (nb.requires_grad())
+        final_update(sys);
 
-      return {RetCode::SUCCESS, u, i};
+      return {RetCode::SUCCESS, i};
     }
   }
 
-  return {RetCode::MAXITER, u, miters};
+  return {RetCode::MAXITER, miters};
 }
 
 bool
@@ -112,24 +106,17 @@ Newton::converged(size_t itr, const Scalar & nb, const Scalar & nb0) const
 }
 
 void
-Newton::update(NonlinearSystem & /*system*/, HVector & u, const HVector & b, const HMatrix & A)
+Newton::update(NonlinearSystem & sys)
 {
-  u.update_data(solve_direction(b, A));
+  auto du = linear_solver->solve(sys);
+  sys.set_u(sys.u().data() + du);
 }
 
 void
-Newton::final_update(NonlinearSystem & /*system*/,
-                     HVector & u,
-                     const HVector & b,
-                     const HMatrix & A)
+Newton::final_update(NonlinearSystem & sys)
 {
-  u.update(solve_direction(b, A));
-}
-
-HVector
-Newton::solve_direction(const HVector & b, const HMatrix & A)
-{
-  return linear_solver->solve(A, b);
+  auto du = linear_solver->solve(sys);
+  sys.set_u(sys.u() + du);
 }
 
 } // namespace neml2

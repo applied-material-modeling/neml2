@@ -53,16 +53,6 @@
   []
 []
 
-[Solvers]
-  [newton]
-    type = Newton
-    linear_solver = 'lu'
-  []
-  [lu]
-    type = DenseLU
-  []
-[]
-
 [Models]
   [mandel_stress]
     type = IsotropicMandelStress
@@ -164,9 +154,29 @@
               Eprate eprate Erate Eerate elasticity
               integrate_stress integrate_ep"
   []
+[]
+
+[EquationSystems]
+  [eq_sys]
+    type = NonlinearSystem
+    model = 'implicit_rate'
+  []
+[]
+
+[Solvers]
+  [newton]
+    type = Newton
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
+  []
+[]
+
+[Models]
   [model]
     type = ImplicitUpdate
-    implicit_model = 'implicit_rate'
+    equation_system = 'eq_sys'
     solver = 'newton'
   []
 []
