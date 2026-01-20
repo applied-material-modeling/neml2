@@ -23,9 +23,6 @@
 // THE SOFTWARE.
 
 #include "neml2/solvers/LinearSolver.h"
-#include "neml2/tensors/Tensor.h"
-#include "neml2/equation_systems/HVector.h"
-#include "neml2/equation_systems/HMatrix.h"
 
 namespace neml2
 {
@@ -40,27 +37,6 @@ LinearSolver::expected_options()
 LinearSolver::LinearSolver(const OptionSet & options)
   : Solver(options)
 {
-}
-
-std::tuple<Tensor, Tensor>
-LinearSolver::lu_factor(const HMatrix &) const
-{
-  throw NEMLException("LU factorization not supported by solver " + name() + " of type " +
-                      this->type());
-}
-
-HVector
-LinearSolver::lu_solve(const Tensor &, const Tensor &, const HVector &) const
-{
-  throw NEMLException("LU factorization not supported by solver " + name() + " of type " +
-                      this->type());
-}
-
-HMatrix
-LinearSolver::lu_solve(const Tensor &, const Tensor &, const HMatrix &) const
-{
-  throw NEMLException("LU factorization not supported by solver " + name() + " of type " +
-                      this->type());
 }
 
 }

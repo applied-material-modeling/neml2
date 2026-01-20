@@ -22,42 +22,22 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/equation_systems/HeterogeneousData.h"
-#include "neml2/misc/errors.h"
+#pragma once
+
+#include "neml2/base/NEML2Object.h"
 
 namespace neml2
 {
-
-HeterogeneousData::HeterogeneousData(std::vector<Tensor> v)
-  : _data(std::move(v))
+/// Base class for manufacturable objects under the EquationSystems section
+class EquationSystem : public NEML2Object
 {
-}
+public:
+  static OptionSet expected_options();
 
-bool
-HeterogeneousData::requires_grad() const
-{
-  for (const auto & vi : _data)
-    if (vi.defined() && vi.requires_grad())
-      return true;
-  return false;
-}
+  EquationSystem(const OptionSet & options);
 
-TensorOptions
-HeterogeneousData::options() const
-{
-  for (const auto & vi : _data)
-    if (vi.defined())
-      return vi.options();
-  throw NEMLException("empty HVector/Matrix has no options.");
-}
-
-bool
-HeterogeneousData::zero() const
-{
-  for (const auto & vi : _data)
-    if (vi.defined())
-      return false;
-  return true;
-}
+  /// Change the device and dtype of the equation system's internal data
+  virtual void to(const TensorOptions &) {}
+};
 
 } // namespace neml2

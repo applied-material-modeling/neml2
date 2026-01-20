@@ -97,15 +97,12 @@
     type = ComposedModel
     models = 'eq1 eq2 surface eq5 eq6 eq7 eq8'
   []
-  [model0]
-    type = ImplicitUpdate
-    implicit_model = 'system'
-    solver = 'newton'
-  []
-  [model]
-    type = ComposedModel
-    models = 'model0 eq1 eq2'
-    additional_outputs = 'state/Ep'
+[]
+
+[EquationSystems]
+  [eq_sys]
+    type = ModelEquationSystem
+    model = 'system'
   []
 []
 
@@ -120,5 +117,18 @@
   []
   [lu]
     type = DenseLU
+  []
+[]
+
+[Models]
+  [model0]
+    type = ImplicitUpdate
+    equation_system = 'eq_sys'
+    solver = 'newton'
+  []
+  [model]
+    type = ComposedModel
+    models = 'model0 eq1 eq2'
+    additional_outputs = 'state/Ep'
   []
 []

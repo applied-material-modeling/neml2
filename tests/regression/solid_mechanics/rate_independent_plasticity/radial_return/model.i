@@ -56,16 +56,6 @@ nt = 100
   []
 []
 
-[Solvers]
-  [newton]
-    type = Newton
-    linear_solver = 'lu'
-  []
-  [lu]
-    type = DenseLU
-  []
-[]
-
 [Models]
   ###############################################################################
   # Use the trial state to precalculate invariant flow directions
@@ -215,9 +205,29 @@ nt = 100
               equivalent_plastic_strain_rate equivalent_plastic_strain isoharden
               overstress vonmises yield consistency"
   []
+[]
+
+[EquationSystems]
+  [eq_sys]
+    type = NonlinearSystem
+    model = 'surface'
+  []
+[]
+
+[Solvers]
+  [newton]
+    type = Newton
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
+  []
+[]
+
+[Models]
   [return_map]
     type = ImplicitUpdate
-    implicit_model = 'surface'
+    equation_system = 'eq_sys'
     solver = 'newton'
   []
   [model0]

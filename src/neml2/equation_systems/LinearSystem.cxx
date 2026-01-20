@@ -23,15 +23,88 @@
 // THE SOFTWARE.
 
 #include "neml2/equation_systems/LinearSystem.h"
-#include "neml2/equation_systems/HVector.h"
-#include "neml2/equation_systems/HMatrix.h"
+#include "neml2/misc/assertions.h"
+#include "neml2/equation_systems/SparseTensorList.h"
+#include "neml2/base/LabeledAxisAccessor.h"
 
 namespace neml2
 {
+
+void
+LinearSystem::setup()
+{
+  EquationSystem::setup();
+
+  // Note: These data structures we are setting here serve the same purpose as LabeledAxis, and yes,
+  // we are storing redundant information. This is because we are transitioning away from
+  // LabeledAxis. In future versions, we will remove LabeledAxis and only use these data structures.
+  //
+  // Also note: only nonlinear systems need to define these maps. Regular feed-forward models do not
+  // need to define these maps. This is an important distinction from LabeledAxis which is always
+  // defined.
+  //
+  // Another note: Right now we can "smartly" determine these maps based on variable subaxes. In the
+  // future, since we are removing LabeledAxis, we will need let the user explicitly define these
+  // maps, i.e., from within the input files.
+
+  _umap = setup_umap();
+  _ulayout = setup_ulayout();
+
+  _bmap = setup_bmap();
+  _blayout = setup_blayout();
+}
+
+std::size_t
+LinearSystem::m() const
+{
+  return _bmap.size();
+}
+
+std::size_t
+LinearSystem::n() const
+{
+  return _umap.size();
+}
+
+SparseTensorList
+LinearSystem::A()
+{
+  SparseTensorList A;
+  assemble(&A, nullptr);
+  post_assemble(&A, nullptr);
+  return A;
+}
+
+SparseTensorList
+LinearSystem::b()
+{
+  SparseTensorList b;
+  assemble(nullptr, &b);
+  post_assemble(nullptr, &b);
+  return b;
+}
+
+std::tuple<SparseTensorList, SparseTensorList>
+LinearSystem::A_and_b()
+{
+  SparseTensorList A, b;
+  assemble(&A, &b);
+  post_assemble(&A, &b);
+  return {A, b};
+}
+
 const std::vector<LabeledAxisAccessor> &
 LinearSystem::umap() const
 {
   return _umap;
+}
+
+const std::vector<TensorShape> &
+LinearSystem::intmd_ulayout() const
+{
+  neml_assert(_intmd_ulayout.has_value(),
+              "Intermediate shapes for unknowns requested but not set up.");
+  return _intmd_ulayout.value();
 }
 
 const std::vector<TensorShape> &
@@ -41,45 +114,16 @@ LinearSystem::ulayout() const
 }
 
 const std::vector<LabeledAxisAccessor> &
-LinearSystem::unmap() const
-{
-  return _unmap;
-}
-
-const std::vector<TensorShape> &
-LinearSystem::unlayout() const
-{
-  return _unlayout;
-}
-
-const std::vector<LabeledAxisAccessor> &
-LinearSystem::gmap() const
-{
-  return _gmap;
-}
-
-const std::vector<TensorShape> &
-LinearSystem::glayout() const
-{
-  return _glayout;
-}
-
-const std::vector<LabeledAxisAccessor> &
-LinearSystem::gnmap() const
-{
-  return _gnmap;
-}
-
-const std::vector<TensorShape> &
-LinearSystem::gnlayout() const
-{
-  return _gnlayout;
-}
-
-const std::vector<LabeledAxisAccessor> &
 LinearSystem::bmap() const
 {
   return _bmap;
+}
+
+const std::vector<TensorShape> &
+LinearSystem::intmd_blayout() const
+{
+  neml_assert(_intmd_blayout.has_value(), "Intermediate shapes for RHS requested but not set up.");
+  return _intmd_blayout.value();
 }
 
 const std::vector<TensorShape> &
@@ -88,114 +132,17 @@ LinearSystem::blayout() const
   return _blayout;
 }
 
-HVector
-LinearSystem::create_uvec() const
+void
+LinearSystem::post_assemble(SparseTensorList * A, SparseTensorList * b)
 {
-  return HVector(_ulayout);
-}
+  _A_up_to_date |= bool(A);
+  _b_up_to_date |= bool(A) || bool(b);
 
-HVector
-LinearSystem::create_unvec() const
-{
-  return HVector(_unlayout);
-}
+  if (!_intmd_ulayout.has_value())
+    _intmd_ulayout = setup_intmd_ulayout();
 
-HVector
-LinearSystem::create_gvec() const
-{
-  return HVector(_glayout);
-}
-
-HVector
-LinearSystem::create_gnvec() const
-{
-  return HVector(_gnlayout);
-}
-
-HVector
-LinearSystem::create_bvec() const
-{
-  return HVector(_blayout);
-}
-
-HVector
-LinearSystem::u_to_un(const HVector & u) const
-{
-  HVector un = create_unvec();
-  if (u.zero())
-    return un;
-
-  for (std::size_t i = 0; i < _un_to_u.size(); ++i)
-  {
-    if (_un_to_u[i] == -1)
-      continue;
-    un[i] = u[_un_to_u[i]];
-  }
-  return un;
-}
-
-HVector
-LinearSystem::g_to_gn(const HVector & g) const
-{
-  HVector gn = create_gnvec();
-  if (g.zero())
-    return gn;
-
-  for (std::size_t i = 0; i < _gn_to_g.size(); ++i)
-  {
-    if (_gn_to_g[i] == -1)
-      continue;
-    gn[i] = g[_gn_to_g[i]];
-  }
-  return gn;
-}
-
-HMatrix
-LinearSystem::un_to_u(const HMatrix & A) const
-{
-  HMatrix Ap(A.block_row_sizes(), shapes_to_shape_refs(_ulayout));
-  if (A.zero())
-    return Ap;
-
-  for (std::size_t i = 0; i < A.m(); ++i)
-  {
-    for (std::size_t j = 0; j < _ulayout.size(); ++j)
-    {
-      auto jp = _u_to_un[j];
-      if (jp == -1)
-        continue;
-      const auto & Aij = A(i, jp);
-      if (!Aij.defined())
-        continue;
-      Ap(i, j) = Aij;
-    }
-  }
-  return Ap;
-}
-
-HMatrix
-LinearSystem::A()
-{
-  HMatrix A;
-  assemble(&A, nullptr);
-  return A;
-}
-
-HVector
-LinearSystem::b()
-{
-  HVector b;
-  assemble(nullptr, &b);
-  return b;
-}
-
-std::tuple<HMatrix, HVector>
-LinearSystem::A_and_b()
-{
-  HVector b;
-  HMatrix A;
-  assemble(&A, &b);
-  return {A, b};
+  if (!_intmd_blayout.has_value())
+    _intmd_blayout = setup_intmd_blayout();
 }
 
 } // namespace neml2

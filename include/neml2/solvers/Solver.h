@@ -45,6 +45,9 @@ public:
    */
   Solver(const OptionSet & options);
 
+  /// Change the device and dtype of the solver's internal data
+  virtual void to(const TensorOptions &) {}
+
   /// Whether to print additional (debugging) information during the solve
   const bool verbose;
 };

@@ -27,6 +27,7 @@
 
 #include "SampleNonlinearSystems.h"
 
+#include "neml2/equation_systems/SparseTensorList.h"
 #include "neml2/neml2.h"
 #include "neml2/solvers/NonlinearSolver.h"
 
@@ -48,42 +49,44 @@ TEST_CASE("NonlinearSolver", "[solvers]")
 
     SECTION("power")
     {
-      // Initial guess
-      std::vector<TensorShape> x_shapes(n, TensorShape{});
-      std::vector<Tensor> x_data(n, Scalar::full(batch_sz, {}, 2.0));
-      HVector x(x_data, x_shapes);
-
       // Create the nonlinear system
-      PowerTestSystem system;
+      PowerTestSystem eq_sys(n);
+      eq_sys.setup();
+
+      // Initial guess
+      SparseTensorList u0(n, Scalar::full(batch_sz, {}, 2.0));
+      eq_sys.set_u(u0);
 
       // Solve
-      auto res = solver->solve(system, x);
+      auto res = solver->solve(eq_sys);
       REQUIRE(res.ret == NonlinearSolver::RetCode::SUCCESS);
 
       // Check solution
-      const auto expected = system.exact_solution(x);
+      const auto sol = eq_sys.u();
+      const auto expected = eq_sys.exact_solution(u0);
       for (std::size_t i = 0; i < n; i++)
-        REQUIRE(at::allclose(res.solution[i], expected[i]));
+        REQUIRE(at::allclose(sol[i], expected[i]));
     }
 
     SECTION("Rosenbrock")
     {
-      // Initial guess
-      std::vector<TensorShape> x_shapes(n, TensorShape{});
-      std::vector<Tensor> x_data(n, Scalar::full(batch_sz, {}, 0.75));
-      HVector x(x_data, x_shapes);
-
       // Create the nonlinear system
-      RosenbrockTestSystem system;
+      RosenbrockTestSystem eq_sys(n);
+      eq_sys.setup();
+
+      // Initial guess
+      SparseTensorList u0(n, Scalar::full(batch_sz, {}, 0.75));
+      eq_sys.set_u(u0);
 
       // Solve
-      auto res = solver->solve(system, x);
+      auto res = solver->solve(eq_sys);
       REQUIRE(res.ret == NonlinearSolver::RetCode::SUCCESS);
 
       // Check solution
-      const auto expected = system.exact_solution(x);
+      const auto sol = eq_sys.u();
+      const auto expected = eq_sys.exact_solution(u0);
       for (std::size_t i = 0; i < n; i++)
-        REQUIRE(at::allclose(res.solution[i], expected[i]));
+        REQUIRE(at::allclose(sol[i], expected[i]));
     }
   }
 }

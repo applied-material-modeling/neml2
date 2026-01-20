@@ -25,7 +25,6 @@
 #pragma once
 
 #include "neml2/solvers/Newton.h"
-#include "neml2/tensors/Scalar.h"
 #include "neml2/base/EnumSelection.h"
 
 namespace neml2
@@ -45,26 +44,21 @@ public:
 
 protected:
   /// Update trial solution
-  void update(NonlinearSystem & system, HVector & u, const HVector & b, const HMatrix & A) override;
-
-  /// Perform Armijo linesearch
-  virtual Scalar linesearch(NonlinearSystem & system,
-                            const HVector & u,
-                            const HVector & du,
-                            const HVector & b0) const;
+  void update(NonlinearSystem &) override;
 
   /// Linesearch maximum iterations
-  unsigned int _linesearch_miter;
+  const unsigned int _linesearch_miter;
 
   /// Decrease factor for linesearch
-  double _linesearch_sigma;
+  const double _linesearch_sigma;
 
   /// Stopping criteria for linesearch
-  double _linesearch_c;
+  const double _linesearch_c;
 
-  /// Seclect the type of line search
-  EnumSelection _type;
+  /// Select the type of line search
+  const EnumSelection _type;
 
-  bool _check_crit;
+  /// Whether to check the Armijo condition
+  const bool _check_crit;
 };
 } // namespace neml2

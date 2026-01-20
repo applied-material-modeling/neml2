@@ -27,7 +27,6 @@
 #include "neml2/solvers/Solver.h"
 #include "neml2/solvers/LinearSolver.h"
 #include "neml2/equation_systems/NonlinearSystem.h"
-#include "neml2/equation_systems/HVector.h"
 
 namespace neml2
 {
@@ -52,8 +51,6 @@ public:
   {
     /// Solver return code, @see neml2::NonlinearSolver::RetCode
     RetCode ret = RetCode::FAILURE;
-    /// Solution to the nonlinear system
-    HVector solution;
     /// Number of iterations before convergence
     std::size_t iterations = 0;
   };
@@ -62,14 +59,15 @@ public:
 
   NonlinearSolver(const OptionSet & options);
 
+  void to(const TensorOptions &) override;
+
   /**
    * @brief Solve the given nonlinear system.
    *
-   * @param system The nonlinear system of equations.
-   * @param u0 The initial guess
+   * @param system The nonlinear system to solve
    * @return @see neml2::NonlinearSolver::Result
    */
-  virtual Result solve(NonlinearSystem & system, const HVector & u0) = 0;
+  virtual Result solve(NonlinearSystem & system) = 0;
 
   /// Linear solver used by the nonlinear solver
   std::shared_ptr<LinearSolver> linear_solver;

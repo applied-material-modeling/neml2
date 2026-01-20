@@ -167,6 +167,12 @@ TensorShape add_shapes(const S &...);
  */
 TensorShape pad_prepend(TensorShapeRef s, std::size_t dim, Size pad = 1);
 
+///@{
+/// Convert between TensorShapeRef and TensorShape
+std::vector<TensorShape> shape_refs_to_shapes(const std::vector<TensorShapeRef> &);
+std::vector<TensorShapeRef> shapes_to_shape_refs(const std::vector<TensorShape> &);
+///@}
+
 namespace details
 {
 template <typename... S>

@@ -23,87 +23,130 @@
 // THE SOFTWARE.
 
 #include "SampleNonlinearSystems.h"
+#include "neml2/base/LabeledAxisAccessor.h"
+#include "neml2/misc/types.h"
 #include "neml2/tensors/Scalar.h"
-#include "neml2/equation_systems/HVector.h"
-#include "neml2/equation_systems/HMatrix.h"
 #include "neml2/tensors/functions/pow.h"
 
 namespace neml2
 {
-void
-TestNonlinearSystem::set_u(const HVector & u)
+TestNonlinearSystem::TestNonlinearSystem(std::size_t n)
+  : NonlinearSystem(NonlinearSystem::expected_options()),
+    _n(n)
 {
-  _u = u;
+}
+
+std::vector<LabeledAxisAccessor>
+TestNonlinearSystem::setup_umap()
+{
+  std::vector<LabeledAxisAccessor> umap(_n);
+  for (std::size_t i = 0; i < _n; i++)
+    umap[i] = LabeledAxisAccessor(STATE, "u" + std::to_string(i));
+  return umap;
+}
+
+std::vector<TensorShape>
+TestNonlinearSystem::setup_intmd_ulayout()
+{
+  return std::vector<TensorShape>(_n, TensorShape{});
+}
+
+std::vector<TensorShape>
+TestNonlinearSystem::setup_ulayout()
+{
+  return std::vector<TensorShape>(_n, TensorShape{});
+}
+
+std::vector<LabeledAxisAccessor>
+TestNonlinearSystem::setup_bmap()
+{
+  std::vector<LabeledAxisAccessor> bmap(_n);
+  for (std::size_t i = 0; i < _n; i++)
+    bmap[i] = LabeledAxisAccessor(RESIDUAL, "r" + std::to_string(i));
+  return bmap;
+}
+
+std::vector<TensorShape>
+TestNonlinearSystem::setup_intmd_blayout()
+{
+  return std::vector<TensorShape>(_n, TensorShape{});
+}
+
+std::vector<TensorShape>
+TestNonlinearSystem::setup_blayout()
+{
+  return std::vector<TensorShape>(_n, TensorShape{});
 }
 
 void
-PowerTestSystem::assemble(HMatrix * A, HVector * b)
+PowerTestSystem::assemble(SparseTensorList * A, SparseTensorList * b)
 {
-  std::vector<TensorShape> s(_u.n(), TensorShape{});
+  const auto n = _u.size();
+  const auto opts = _u.options();
 
   if (b)
   {
-    *b = HVector(s);
-    for (Size i = 0; i < Size(_u.n()); i++)
-      (*b)[i] = 1.0 - pow(_u[i], Scalar(i + 1, _u.options()));
+    b->resize(n);
+    for (std::size_t i = 0; i < n; i++)
+      (*b)[i] = 1.0 - pow(_u[i], Scalar(double(i) + 1, opts));
   }
 
   if (A)
   {
-    *A = HMatrix(s, s);
-    for (Size i = 0; i < Size(_u.n()); i++)
-      (*A)(i, i) = (i + 1) * pow(_u[i], Scalar(i, _u.options()));
+    A->resize(n * n);
+    for (std::size_t i = 0; i < n; i++)
+      (*A)[i * n + i] = (i + 1) * pow(_u[i], Scalar(double(i), opts));
   }
 }
 
-HVector
-PowerTestSystem::exact_solution(const HVector & u) const
+SparseTensorList
+PowerTestSystem::exact_solution(const SparseTensorList & u) const
 {
-  std::vector<TensorShape> s(_u.n(), TensorShape{});
-  std::vector<Tensor> sol(u.n());
-  for (std::size_t i = 0; i < u.n(); i++)
+  const auto n = u.size();
+  SparseTensorList sol(n);
+  for (std::size_t i = 0; i < n; i++)
     sol[i] = Tensor::ones_like(u[i]);
-  return HVector(sol, s);
+  return sol;
 }
 
 void
-RosenbrockTestSystem::assemble(HMatrix * A, HVector * b)
+RosenbrockTestSystem::assemble(SparseTensorList * A, SparseTensorList * b)
 {
-  std::vector<TensorShape> s(_u.n(), TensorShape{});
+  const auto n = _u.size();
 
   if (b)
   {
-    *b = HVector(s);
-    for (Size i = 1; i < Size(_u.n()) - 1; i++)
+    b->resize(n);
+    for (std::size_t i = 1; i < n - 1; i++)
       (*b)[i] = -200 * (_u[i] - pow(_u[i - 1], 2.0)) + 400 * (_u[i + 1] - pow(_u[i], 2.0)) * _u[i] +
                 2 * (1 - _u[i]);
     (*b)[0] = 400 * _u[0] * (_u[1] - pow(_u[0], 2.0)) + 2 * (1 - _u[0]);
-    (*b)[_u.n() - 1] = -200.0 * (_u[_u.n() - 1] - pow(_u[_u.n() - 2], 2.0));
+    (*b)[n - 1] = -200.0 * (_u[n - 1] - pow(_u[n - 2], 2.0));
   }
 
   if (A)
   {
-    *A = HMatrix(s, s);
-    for (Size i = 1; i < Size(_u.n()) - 1; i++)
+    A->resize(n * n);
+    for (std::size_t i = 1; i < n - 1; i++)
     {
-      (*A)(i, i - 1) = -400 * _u[i - 1];
-      (*A)(i, i) = 202 + 1200 * pow(_u[i], 2.0) - 400 * _u[i + 1];
-      (*A)(i, i + 1) = -400 * _u[i];
+      (*A)[i * n + i - 1] = -400 * _u[i - 1];
+      (*A)[i * n + i] = 202 + 1200 * pow(_u[i], 2.0) - 400 * _u[i + 1];
+      (*A)[i * n + i + 1] = -400 * _u[i];
     }
-    (*A)(0, 0) = 1200 * pow(_u[0], 2.0) - 400 * _u[1] + 2;
-    (*A)(0, 1) = -400 * _u[0];
-    (*A)(_u.n() - 1, _u.n() - 2) = -400 * _u[_u.n() - 2];
-    (*A)(_u.n() - 1, _u.n() - 1) = Scalar(200.0, _u.options());
+    (*A)[0 * n + 0] = 1200 * pow(_u[0], 2.0) - 400 * _u[1] + 2;
+    (*A)[0 * n + 1] = -400 * _u[0];
+    (*A)[(n - 1) * n + (n - 2)] = -400 * _u[n - 2];
+    (*A)[(n - 1) * n + (n - 1)] = Scalar(200.0, _u.options());
   }
 }
 
-HVector
-RosenbrockTestSystem::exact_solution(const HVector & u) const
+SparseTensorList
+RosenbrockTestSystem::exact_solution(const SparseTensorList & u) const
 {
-  std::vector<TensorShape> s(_u.n(), TensorShape{});
-  std::vector<Tensor> sol(u.n());
-  for (std::size_t i = 0; i < u.n(); i++)
+  const auto n = u.size();
+  SparseTensorList sol(n);
+  for (std::size_t i = 0; i < n; i++)
     sol[i] = Tensor::ones_like(u[i]);
-  return HVector(sol, s);
+  return sol;
 }
 }

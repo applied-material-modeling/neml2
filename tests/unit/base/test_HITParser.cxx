@@ -70,7 +70,7 @@ TEST_CASE("HITParser", "[base]")
       {
         REQUIRE(options.name() == "foo");
         REQUIRE(options.type() == "SampleParserTestingModel");
-        REQUIRE(options.path() == "Models");
+        REQUIRE(options.path() == "Models/foo");
         REQUIRE(options.doc() == "This model tests the correctness of parsed options.");
       }
 

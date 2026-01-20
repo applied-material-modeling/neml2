@@ -34,6 +34,7 @@ main()
 {
   // Force link dynamic libraries
   ::_neml2_force_link_models();
+  ::_neml2_force_link_equation_systems();
   ::_neml2_force_link_solvers();
   ::_neml2_force_link_user_tensors();
   ::_neml2_force_link_drivers();

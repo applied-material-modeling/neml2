@@ -25,6 +25,7 @@
 #pragma once
 
 #include "neml2/equation_systems/NonlinearSystem.h"
+#include "neml2/equation_systems/SparseTensorList.h"
 
 namespace neml2
 {
@@ -34,31 +35,41 @@ class Model;
 class ModelNonlinearSystem : public NonlinearSystem
 {
 public:
-  ModelNonlinearSystem(Model * model, bool assembly_guard = true);
+  static OptionSet expected_options();
 
-  void set_u(const HVector &) override;
-  void set_un(const HVector &) override;
-  void set_g(const HVector &) override;
-  void set_gn(const HVector &) override;
-
-  HVector u() const override;
-  HVector un() const override;
-  HVector g() const override;
-  HVector gn() const override;
+  ModelNonlinearSystem(const OptionSet & options);
 
   const Model & model() const { return *_model; }
   Model & model() { return *_model; }
 
-  /// Whether this nonlinear system uses the AssemblyingNonlinearSystem guard when evaluating the model
-  bool assembly_guard() const { return _assembly_guard; }
+  void setup() override;
+
+  void to(const TensorOptions &) override;
+
+  void set_u(const SparseTensorList &) override;
+  void set_g(const SparseTensorList &) override;
+
+  SparseTensorList u() const override;
+  SparseTensorList g() const override;
+  SparseTensorList B() override;
 
 protected:
-  void assemble(HMatrix *, HVector *) override;
+  std::vector<LabeledAxisAccessor> setup_umap() override;
+  std::vector<TensorShape> setup_intmd_ulayout() override;
+  std::vector<TensorShape> setup_ulayout() override;
 
-  Model * _model;
+  std::vector<LabeledAxisAccessor> setup_bmap() override;
+  std::vector<TensorShape> setup_intmd_blayout() override;
+  std::vector<TensorShape> setup_blayout() override;
 
-  /// Whether to use the AssemblyingNonlinearSystem guard when evaluating the model
-  bool _assembly_guard = true;
+  std::vector<LabeledAxisAccessor> setup_gmap() override;
+  std::vector<TensorShape> setup_intmd_glayout() override;
+  std::vector<TensorShape> setup_glayout() override;
+
+  void assemble(SparseTensorList * A, SparseTensorList * b) override;
+
+private:
+  std::shared_ptr<Model> _model;
 };
 
 } // namespace neml2

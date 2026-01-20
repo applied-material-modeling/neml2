@@ -112,7 +112,7 @@
 [Drivers]
   [driver]
     type = LDISolidMechanicsDriver
-    model = 'model_with_stress'
+    model = 'model'
     prescribed_time = 'times'
     prescribed_deformation_rate = 'deformation_rate'
     prescribed_vorticity = 'vorticity'
@@ -125,31 +125,19 @@
     cp_warmup_elastic_scale = 0.1
     save_as = 'result.pt'
   []
-#  [regression]
-#    type = TransientRegression
-#    driver = 'driver'
-#    reference = 'gold/result.pt'
-#  []
-[]
-
-[Solvers]
-  [newton]
-    type = NewtonWithLineSearch
-    max_linesearch_iterations = 5
-    linear_solver = 'lu'
-    verbose = true
-  []
-  [lu]
-    type = DenseLU
+  [regression]
+    type = TransientRegression
+    driver = 'driver'
+    reference = 'gold/result.pt'
   []
 []
 
 [Data]
   [crystal_geometry]
     type = CubicCrystal
-    lattice_parameter = "a"
-    slip_directions = "sdirs"
-    slip_planes = "splanes"
+    lattice_parameter = 'a'
+    slip_directions = 'sdirs'
+    slip_planes = 'splanes'
   []
 []
 
@@ -191,7 +179,7 @@
     dislocation_density = 'state/internal/dislocation_density'
     alpha = 0.3
     mu = 1.0e5
-    b = 1.0e-10 
+    b = 1.0e-10
     constant_strength = 50.0
   []
   [dislocation_density]
@@ -221,14 +209,36 @@
               slip_rule slip_strength dislocation_density
               integrate_dislocation_density integrate_elastic_strain integrate_orientation"
   []
-  [model]
+[]
+
+[EquationSystems]
+  [es]
+    type = NonlinearSystem
+    model = 'implicit_rate'
+  []
+[]
+
+[Solvers]
+  [newton]
+    type = NewtonWithLineSearch
+    max_linesearch_iterations = 5
+    linear_solver = 'lu'
+    verbose = true
+  []
+  [lu]
+    type = DenseLU
+  []
+[]
+
+[Models]
+  [update]
     type = ImplicitUpdate
-    implicit_model = 'implicit_rate'
+    equation_system = 'es'
     solver = 'newton'
   []
-  [model_with_stress]
+  [model]
     type = ComposedModel
-    models = 'model elasticity'
+    models = 'update elasticity'
     additional_outputs = 'state/elastic_strain'
   []
 []

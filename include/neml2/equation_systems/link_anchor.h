@@ -24,39 +24,17 @@
 
 #pragma once
 
-#include <vector>
-#include "neml2/misc/types.h"
-#include "neml2/tensors/Tensor.h"
+/**
+ * The neml2_equation_system library uses the factory-registry pattern to dynamically register
+ * available objects. However, some linkers will not include object files from the library if no
+ * symbols from those object files are referenced.
+ *
+ * Of course, to work around this issue, one can use linker flags like --no-as-needed to force the
+ * linker to include all object files from the library. However, this is not an ideal solution as it
+ * may break other parts of the link line.
+ *
+ * The approach we take here is to define a symbol in the neml2_equation_system library that is
+ * always referenced when the library is used.
+ */
 
-namespace neml2
-{
-/// Base data structure for discrete, heterogeneous data (e.g., HVector and HMatrix)
-struct HeterogeneousData
-{
-  HeterogeneousData() = default;
-  HeterogeneousData(std::vector<Tensor>);
-
-  /// Whether any of the contained Tensors require gradients
-  bool requires_grad() const;
-  /// Tensor options
-  TensorOptions options() const;
-  /// Is _data empty? empty means no dense sub-block hence zero
-  bool zero() const;
-
-  ///@{
-  // iterator business
-  using iterator = typename std::vector<Tensor>::iterator;
-  using const_iterator = typename std::vector<Tensor>::const_iterator;
-  iterator begin() noexcept { return _data.begin(); }
-  iterator end() noexcept { return _data.end(); }
-  const_iterator begin() const noexcept { return _data.begin(); }
-  const_iterator end() const noexcept { return _data.end(); }
-  const_iterator cbegin() const noexcept { return _data.cbegin(); }
-  const_iterator cend() const noexcept { return _data.cend(); }
-  ///@}
-
-protected:
-  /// Sub-block tensors
-  std::vector<Tensor> _data;
-};
-} // namespace neml2
+extern "C" void _neml2_force_link_equation_systems();

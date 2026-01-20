@@ -34,22 +34,6 @@
   []
 []
 
-[Solvers]
-  [newton]
-    type = Newton
-    linear_solver = 'lu'
-  []
-  [lu]
-    type = DenseLU
-  []
-[]
-
-[Predictors]
-  [simple]
-    type = LinearExtrapolationPredictor
-  []
-[]
-
 [Models]
   [isoharden]
     type = VoceIsotropicHardening
@@ -133,9 +117,29 @@
               yield normality eprate Kprate Eprate
               consistency integrate_ep integrate_Kp integrate_Ep"
   []
+[]
+
+[EquationSystems]
+  [eq_sys]
+    type = NonlinearSystem
+    model = 'surface'
+  []
+[]
+
+[Solvers]
+  [newton]
+    type = Newton
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
+  []
+[]
+
+[Models]
   [return_map]
     type = ImplicitUpdate
-    implicit_model = 'surface'
+    equation_system = 'eq_sys'
     solver = 'newton'
   []
   [model]
