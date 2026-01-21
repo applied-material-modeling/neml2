@@ -109,7 +109,7 @@ public:
     pybind11::int_ start(src.start().expect_int());
     pybind11::int_ stop(src.stop().expect_int());
     pybind11::int_ step(src.step().expect_int());
-    return pybind11::slice(start, stop, step).release();
+    return pybind11::slice(start, stop, step);
   }
 };
 
@@ -186,7 +186,7 @@ public:
       pybind11::int_ start(src.slice().start().expect_int());
       pybind11::int_ stop(src.slice().stop().expect_int());
       pybind11::int_ step(src.slice().step().expect_int());
-      return pybind11::slice(start, stop, step).release();
+      return pybind11::slice(start, stop, step);
     }
     if (src.is_boolean())
       return src.boolean() ? Py_True : Py_False;

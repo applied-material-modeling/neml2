@@ -69,34 +69,39 @@ def_TensorBase(py::module_ & m, const std::string & type)
       .def("torch", [](const T & self) { return torch::Tensor(self); })
       .def("tensor", [](const T & self) { return neml2::Tensor(self); })
       .def_property_readonly("dynamic",
-                             [](T * self)
+                             [](py::object self)
                              {
-                               py::capsule free_when_done(&self, [](void * f) {});
-                               return DynamicView<T>(self);
+                               auto view = py::cast(DynamicView<T>(self.cast<T *>()));
+                               py::detail::keep_alive_impl(view, self);
+                               return view;
                              })
       .def_property_readonly("intmd",
-                             [](T * self)
+                             [](py::object self)
                              {
-                               py::capsule free_when_done(&self, [](void * f) {});
-                               return IntmdView<T>(self);
+                               auto view = py::cast(IntmdView<T>(self.cast<T *>()));
+                               py::detail::keep_alive_impl(view, self);
+                               return view;
                              })
       .def_property_readonly("base",
-                             [](T * self)
+                             [](py::object self)
                              {
-                               py::capsule free_when_done(&self, [](void * f) {});
-                               return BaseView<T>(self);
+                               auto view = py::cast(BaseView<T>(self.cast<T *>()));
+                               py::detail::keep_alive_impl(view, self);
+                               return view;
                              })
       .def_property_readonly("batch",
-                             [](T * self)
+                             [](py::object self)
                              {
-                               py::capsule free_when_done(&self, [](void * f) {});
-                               return BatchView<T>(self);
+                               auto view = py::cast(BatchView<T>(self.cast<T *>()));
+                               py::detail::keep_alive_impl(view, self);
+                               return view;
                              })
       .def_property_readonly("static",
-                             [](T * self)
+                             [](py::object self)
                              {
-                               py::capsule free_when_done(&self, [](void * f) {});
-                               return StaticView<T>(self);
+                               auto view = py::cast(StaticView<T>(self.cast<T *>()));
+                               py::detail::keep_alive_impl(view, self);
+                               return view;
                              })
       .def("contiguous", &T::contiguous)
       .def("clone", &T::clone)
