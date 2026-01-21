@@ -48,40 +48,44 @@ TEST_CASE("NonlinearSolver", "[solvers]")
 
     SECTION("power")
     {
-      // Initial guess
-      std::vector<TensorShape> x_shapes(n, TensorShape{});
-      std::vector<Tensor> x_data(n, Scalar::full(batch_sz, {}, 2.0));
-      HVector x(x_data, x_shapes);
-
       // Create the nonlinear system
-      PowerTestSystem system;
+      const auto opts = PowerTestSystem::expected_options();
+      PowerTestSystem eq_sys(opts);
+
+      // Initial guess
+      std::vector<TensorShape> u_shapes(n, TensorShape{});
+      std::vector<Tensor> u_data(n, Scalar::full(batch_sz, {}, 2.0));
+      HVector u(u_data, u_shapes);
+      eq_sys.set_u(u);
 
       // Solve
-      auto res = solver->solve(system, x);
+      auto res = solver->solve(eq_sys);
       REQUIRE(res.ret == NonlinearSolver::RetCode::SUCCESS);
 
       // Check solution
-      const auto expected = system.exact_solution(x);
+      const auto expected = eq_sys.exact_solution(u);
       for (std::size_t i = 0; i < n; i++)
         REQUIRE(at::allclose(res.solution[i], expected[i]));
     }
 
     SECTION("Rosenbrock")
     {
-      // Initial guess
-      std::vector<TensorShape> x_shapes(n, TensorShape{});
-      std::vector<Tensor> x_data(n, Scalar::full(batch_sz, {}, 0.75));
-      HVector x(x_data, x_shapes);
-
       // Create the nonlinear system
-      RosenbrockTestSystem system;
+      const auto opts = RosenbrockTestSystem::expected_options();
+      RosenbrockTestSystem eq_sys(opts);
+
+      // Initial guess
+      std::vector<TensorShape> u_shapes(n, TensorShape{});
+      std::vector<Tensor> u_data(n, Scalar::full(batch_sz, {}, 0.75));
+      HVector u(u_data, u_shapes);
+      eq_sys.set_u(u);
 
       // Solve
-      auto res = solver->solve(system, x);
+      auto res = solver->solve(eq_sys);
       REQUIRE(res.ret == NonlinearSolver::RetCode::SUCCESS);
 
       // Check solution
-      const auto expected = system.exact_solution(x);
+      const auto expected = eq_sys.exact_solution(u);
       for (std::size_t i = 0; i < n; i++)
         REQUIRE(at::allclose(res.solution[i], expected[i]));
     }

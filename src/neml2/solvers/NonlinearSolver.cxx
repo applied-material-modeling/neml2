@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/solvers/NonlinearSolver.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {
@@ -55,4 +56,11 @@ NonlinearSolver::NonlinearSolver(const OptionSet & options)
     miters(options.get<unsigned int>("max_its"))
 {
 }
+
+void
+NonlinearSolver::to(const TensorOptions & options)
+{
+  linear_solver->to(options);
+}
+
 } // namespace neml2

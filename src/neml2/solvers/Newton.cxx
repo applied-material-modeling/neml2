@@ -49,13 +49,13 @@ Newton::Newton(const OptionSet & options)
 }
 
 Newton::Result
-Newton::solve(NonlinearSystem & system, const HVector & u0)
+Newton::solve(NonlinearSystem & sys)
 {
-  auto u = u0;
+  // Get the initial guess
+  auto u = sys.u();
 
   // The initial residual for relative convergence check
-  system.set_u(u);
-  auto b = system.b();
+  auto b = sys.b();
   auto nb = neml2::norm(b);
   auto nb0 = nb.clone();
 
@@ -64,13 +64,13 @@ Newton::solve(NonlinearSystem & system, const HVector & u0)
   {
     // The final update is only necessary if we use AD
     if (b.requires_grad())
-      final_update(system, u, b, system.A());
+      final_update(sys, u, b);
 
     return {RetCode::SUCCESS, u, 0};
   }
 
   // Prepare any solver internal data before the iterative update
-  prepare(system, u);
+  prepare(sys, u);
 
   // Continuing iterating until one of:
   // 1. nR < atol (success)
@@ -78,10 +78,9 @@ Newton::solve(NonlinearSystem & system, const HVector & u0)
   // 3. i > miters (failure)
   for (size_t i = 1; i < miters; i++)
   {
-    auto A = system.A();
-    update(system, u, b, A);
-    system.set_u(u);
-    b = system.b();
+    update(sys, u, b);
+    sys.set_u(u);
+    b = sys.b();
     nb = neml2::norm(b);
 
     // Check for convergence
@@ -89,7 +88,7 @@ Newton::solve(NonlinearSystem & system, const HVector & u0)
     {
       // The final update is only necessary if we use AD
       if (b.requires_grad())
-        final_update(system, u, b, system.A());
+        final_update(sys, u, b);
 
       return {RetCode::SUCCESS, u, i};
     }
@@ -112,18 +111,15 @@ Newton::converged(size_t itr, const Scalar & nb, const Scalar & nb0) const
 }
 
 void
-Newton::update(NonlinearSystem & /*system*/, HVector & u, const HVector & b, const HMatrix & A)
+Newton::update(NonlinearSystem & sys, HVector & u, const HVector & b)
 {
-  u.update_data(solve_direction(b, A));
+  u.update_data(solve_direction(b, sys.A()));
 }
 
 void
-Newton::final_update(NonlinearSystem & /*system*/,
-                     HVector & u,
-                     const HVector & b,
-                     const HMatrix & A)
+Newton::final_update(NonlinearSystem & sys, HVector & u, const HVector & b)
 {
-  u.update(solve_direction(b, A));
+  u.update(solve_direction(b, sys.A()));
 }
 
 HVector

@@ -33,6 +33,8 @@ namespace neml2
 class TestNonlinearSystem : public NonlinearSystem
 {
 public:
+  using NonlinearSystem::NonlinearSystem;
+
   void set_u(const HVector &) override;
   void set_un(const HVector &) override {}
   void set_g(const HVector &) override {}
@@ -52,6 +54,7 @@ protected:
 class PowerTestSystem : public TestNonlinearSystem
 {
 public:
+  using TestNonlinearSystem::TestNonlinearSystem;
   HVector exact_solution(const HVector &) const override;
 
 protected:
@@ -61,6 +64,7 @@ protected:
 class RosenbrockTestSystem : public TestNonlinearSystem
 {
 public:
+  using TestNonlinearSystem::TestNonlinearSystem;
   HVector exact_solution(const HVector &) const override;
 
 protected:

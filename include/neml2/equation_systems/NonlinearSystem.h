@@ -40,10 +40,9 @@ namespace neml2
 class NonlinearSystem : public LinearSystem
 {
 public:
-  /// Set the unknown variable u at the current step
-  virtual void set_u(const HVector & u) = 0;
-  /// Get the unknown variable u at the current step
-  virtual HVector u() const = 0;
+  using LinearSystem::LinearSystem;
+
+  void input_changed() override;
 };
 
 } // namespace neml2

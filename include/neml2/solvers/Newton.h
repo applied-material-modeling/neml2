@@ -24,6 +24,7 @@
 
 #pragma once
 
+#include "neml2/equation_systems/NonlinearSystem.h"
 #include "neml2/solvers/NonlinearSolver.h"
 
 namespace neml2
@@ -41,11 +42,11 @@ public:
 
   Newton(const OptionSet & options);
 
-  Result solve(NonlinearSystem &, const HVector &) override;
+  Result solve(NonlinearSystem &) override;
 
 protected:
   /// Prepare solver internal data before the iterative update
-  virtual void prepare(const NonlinearSystem & /*system*/, const HVector & /*u*/) {}
+  virtual void prepare(const NonlinearSystem &, const HVector &) {}
 
   /**
    * @brief Check for convergence. The current iteration is said to be converged if the residual
@@ -59,11 +60,10 @@ protected:
   virtual bool converged(size_t itr, const Scalar & nb, const Scalar & nb0) const;
 
   /// Update trial solution
-  virtual void update(NonlinearSystem & system, HVector & u, const HVector & b, const HMatrix & A);
+  virtual void update(NonlinearSystem & sys, HVector & u, const HVector & b);
 
   /// Do a final update to track AD function graph
-  virtual void
-  final_update(NonlinearSystem & system, HVector & u, const HVector & b, const HMatrix & A);
+  virtual void final_update(NonlinearSystem & sys, HVector & u, const HVector & b);
 
   /// Find the current update direction
   virtual HVector solve_direction(const HVector & b, const HMatrix & A);

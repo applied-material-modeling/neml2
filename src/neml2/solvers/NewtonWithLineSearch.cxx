@@ -27,6 +27,7 @@
 
 #include "neml2/solvers/NewtonWithLineSearch.h"
 #include "neml2/tensors/functions/sqrt.h"
+#include "neml2/equation_systems/HMatrix.h"
 
 namespace neml2
 {
@@ -76,21 +77,18 @@ NewtonWithLineSearch::NewtonWithLineSearch(const OptionSet & options)
 }
 
 void
-NewtonWithLineSearch::update(NonlinearSystem & system,
-                             HVector & u,
-                             const HVector & b,
-                             const HMatrix & A)
+NewtonWithLineSearch::update(NonlinearSystem & sys, HVector & u, const HVector & b)
 {
-  auto du = solve_direction(b, A);
-  auto alpha = linesearch(system, u, du, b);
+  auto du = solve_direction(b, sys.A());
+  auto alpha = linesearch(sys, u, du, b);
   u.update_data(alpha * du);
 }
 
 Scalar
-NewtonWithLineSearch::linesearch(NonlinearSystem & system,
+NewtonWithLineSearch::linesearch(NonlinearSystem & sys,
                                  const HVector & u,
                                  const HVector & du,
-                                 const HVector & b0) const
+                                 const HVector & b0)
 {
   auto alpha = Scalar::ones(u.options());
   const auto nb0 = norm_sq(b0);
@@ -99,8 +97,8 @@ NewtonWithLineSearch::linesearch(NonlinearSystem & system,
   for (std::size_t i = 1; i < _linesearch_miter; i++)
   {
     auto up = u + alpha * du;
-    system.set_u(up);
-    auto b = system.b();
+    sys.set_u(up);
+    auto b = sys.b();
     auto nb = norm_sq(b);
 
     if (_type == "BACKTRACKING")

@@ -34,6 +34,7 @@
 namespace neml2
 {
 class Settings;
+class EquationSystem;
 class Solver;
 class Data;
 class Model;
@@ -110,6 +111,9 @@ public:
   /// Get an object from the factory
   template <class T>
   std::shared_ptr<T> get_object(const std::string & section, const std::string & name);
+  /// Get an equation system from the factory
+  template <class T = EquationSystem>
+  std::shared_ptr<T> get_es(const std::string & name);
   /// Get a solver from the factory
   template <class T = Solver>
   std::shared_ptr<T> get_solver(const std::string & name);
@@ -170,9 +174,30 @@ std::shared_ptr<T>
 NEML2Object::get_object(const std::string & section, const std::string & name)
 {
   auto obj_name = _input_options.contains(name) ? _input_options.get<std::string>(name) : name;
+
   if (!_factory)
     throw NEMLException("Internal error: factory is nullptr for object " + this->name());
+
+  if (!_factory->has_object(section, obj_name))
+  {
+    if (_input_options.contains(name))
+      throw NEMLException(
+          path() + " failed to get an object via option '" + name + "' under section " + section +
+          ". Currently, " + path() + "/" + name + " = '" + obj_name +
+          "'. Check to make sure the object name is specified correctly in the input file.");
+    else
+      throw NEMLException(path() + " failed to get an object named '" + obj_name +
+                          "' under section " + section + ".");
+  }
+
   return _factory->get_object<T>(section, obj_name);
+}
+
+template <class T>
+std::shared_ptr<T>
+NEML2Object::get_es(const std::string & name)
+{
+  return get_object<T>("EquationSystems", name);
 }
 
 template <class T>

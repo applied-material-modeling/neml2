@@ -24,48 +24,21 @@
 
 #pragma once
 
-#include "neml2/equation_systems/NonlinearSystem.h"
+#include "neml2/base/NEML2Object.h"
 
 namespace neml2
 {
-class Model;
 
-/// A monolith nonlinear system defined by a Model
-class ModelNonlinearSystem : public NonlinearSystem
+/// Base class for manufacturable objects under the EquationSystems section
+class EquationSystem : public NEML2Object
 {
 public:
   static OptionSet expected_options();
 
-  ModelNonlinearSystem(const OptionSet & options);
+  EquationSystem(const OptionSet & options);
 
-  void to(const TensorOptions &) override;
-
-  void setup_umap_and_layout() override;
-  void setup_unmap_and_layout() override;
-  void setup_gmap_and_layout() override;
-  void setup_gnmap_and_layout() override;
-  void setup_bmap_and_layout() override;
-  void setup_current_to_old_maps() override;
-  void setup_old_to_current_maps() override;
-
-  void set_u(const HVector &) override;
-  void set_un(const HVector &) override;
-  void set_g(const HVector &) override;
-  void set_gn(const HVector &) override;
-
-  HVector u() const override;
-  HVector un() const override;
-  HVector g() const override;
-  HVector gn() const override;
-
-  const Model & model() const { return *_model; }
-  Model & model() { return *_model; }
-
-protected:
-  void assemble(HMatrix *, HVector *) override;
-
-private:
-  std::shared_ptr<Model> _model;
+  /// Change the device and dtype of the equation system's internal data
+  virtual void to(const TensorOptions &) {}
 };
 
 } // namespace neml2

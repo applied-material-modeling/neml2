@@ -25,7 +25,7 @@
 #pragma once
 
 #include "neml2/base/LabeledAxisAccessor.h"
-#include "neml2/base/OptionSet.h"
+#include "neml2/equation_systems/EquationSystem.h"
 
 namespace neml2
 {
@@ -36,32 +36,36 @@ struct HMatrix;
  * @brief Definition of a linear system of equations, Au = b.
  *
  */
-class LinearSystem
+class LinearSystem : public EquationSystem
 {
 public:
-  LinearSystem() = default;
-  LinearSystem(const LinearSystem &) = default;
-  LinearSystem(LinearSystem &&) noexcept = default;
-  LinearSystem & operator=(const LinearSystem &) = default;
-  LinearSystem & operator=(LinearSystem &&) = default;
-  virtual ~LinearSystem() = default;
+  using EquationSystem::EquationSystem;
+
+  void setup() override;
+
+  /// Trigger when input variables change
+  virtual void input_changed() {}
 
   ///@{
-  /// Set the unknown u from the previous step
-  virtual void set_un(const HVector & un) = 0;
+  /// Set the unknown u from the current step
+  virtual void set_u(const HVector &) {}
+  /// Set the solution u from the previous step
+  virtual void set_un(const HVector &) {}
   /// Set the given variables g from the current step
-  virtual void set_g(const HVector & g) = 0;
+  virtual void set_g(const HVector &) {}
   /// Set the given variables g from the previous step
-  virtual void set_gn(const HVector & gn) = 0;
+  virtual void set_gn(const HVector &) {}
   ///@}
 
   ///@{
-  /// Get the unknown u from the previous step
-  virtual HVector un() const = 0;
+  /// Get the unknown u from the current step
+  virtual HVector u() const;
+  /// Get the solution u from the previous step
+  virtual HVector un() const;
   /// Get the given variables g from the current step
-  virtual HVector g() const = 0;
+  virtual HVector g() const;
   /// Get the given variables g from the previous step
-  virtual HVector gn() const = 0;
+  virtual HVector gn() const;
   ///@}
 
   ///@{
@@ -119,6 +123,23 @@ public:
   HMatrix un_to_u(const HMatrix & A) const;
 
 protected:
+  ///@{
+  /// Setup the unknown map and layout
+  virtual void setup_umap_and_layout() {};
+  /// Setup the old solution map and layout
+  virtual void setup_unmap_and_layout() {}
+  /// Setup the given variable map and layout
+  virtual void setup_gmap_and_layout() {}
+  /// Setup the old given variable map and layout
+  virtual void setup_gnmap_and_layout() {}
+  /// Setup the RHS map and layout
+  virtual void setup_bmap_and_layout() {};
+  /// Setup current-to-old maps
+  virtual void setup_current_to_old_maps() {}
+  /// Setup old-to-current maps
+  virtual void setup_old_to_current_maps() {}
+  ///@}
+
   /// Flag indicating if the system matrix is up to date. Setters invalidate this.
   bool _A_up_to_date = false;
   /// Flag indicating if the system RHS is up to date. Setters invalidate this.

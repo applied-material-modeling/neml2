@@ -28,6 +28,32 @@
 
 namespace neml2
 {
+void
+LinearSystem::setup()
+{
+  EquationSystem::setup();
+
+  // Note: These data structures we are setting here serve the same purpose as LabeledAxis, and yes,
+  // we are storing redundant information. This is because we are transitioning away from
+  // LabeledAxis. In future versions, we will remove LabeledAxis and only use these data structures.
+  //
+  // Also note: only nonlinear systems need to define these maps. Regular feed-forward models do not
+  // need to define these maps. This is an important distinction from LabeledAxis which is always
+  // defined.
+  //
+  // Another note: Right now we can "smartly" determine these maps based on variable subaxes. In the
+  // future, since we are removing LabeledAxis, we will need let the user explicitly define these
+  // maps, i.e., from within the input files.
+
+  setup_umap_and_layout();
+  setup_unmap_and_layout();
+  setup_gmap_and_layout();
+  setup_gnmap_and_layout();
+  setup_bmap_and_layout();
+  setup_current_to_old_maps();
+  setup_old_to_current_maps();
+}
+
 const std::vector<LabeledAxisAccessor> &
 LinearSystem::umap() const
 {
@@ -86,6 +112,30 @@ const std::vector<TensorShape> &
 LinearSystem::blayout() const
 {
   return _blayout;
+}
+
+HVector
+LinearSystem::u() const
+{
+  return create_uvec();
+}
+
+HVector
+LinearSystem::un() const
+{
+  return create_unvec();
+}
+
+HVector
+LinearSystem::g() const
+{
+  return create_gvec();
+}
+
+HVector
+LinearSystem::gn() const
+{
+  return create_gnvec();
 }
 
 HVector
@@ -178,6 +228,7 @@ LinearSystem::A()
 {
   HMatrix A;
   assemble(&A, nullptr);
+  _A_up_to_date = true;
   return A;
 }
 
@@ -186,6 +237,7 @@ LinearSystem::b()
 {
   HVector b;
   assemble(nullptr, &b);
+  _b_up_to_date = true;
   return b;
 }
 
@@ -195,6 +247,8 @@ LinearSystem::A_and_b()
   HVector b;
   HMatrix A;
   assemble(&A, &b);
+  _A_up_to_date = true;
+  _b_up_to_date = true;
   return {A, b};
 }
 

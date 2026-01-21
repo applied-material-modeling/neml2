@@ -37,16 +37,17 @@ public:
 
   ImplicitUpdate(const OptionSet & options);
 
+  void to(const TensorOptions & options) override;
+
   std::size_t last_iterations() const { return _last_iterations; }
 
 protected:
+  void link_input_variables() override;
+
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  /// The implicit model to be updated
-  Model & _model;
-
-  /// The nonlinear system defined by the implicit model
-  ModelNonlinearSystem _nl_sys;
+  /// The underlying nonlinear system that wraps around a Model
+  std::shared_ptr<ModelNonlinearSystem> _sys;
 
   /// The nonlinear solver used to solve the nonlinear system
   std::shared_ptr<NonlinearSolver> _solver;

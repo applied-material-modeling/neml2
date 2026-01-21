@@ -29,70 +29,95 @@
 
 namespace neml2
 {
+register_NEML2_object_alias(ModelNonlinearSystem, "NonlinearSystem");
 
-ModelNonlinearSystem::ModelNonlinearSystem(Model * model, bool assembly_guard)
-  : _model(model),
-    _assembly_guard(assembly_guard)
+OptionSet
+ModelNonlinearSystem::expected_options()
 {
-  // Note: These data structures we are setting here serve the same purpose as LabeledAxis, and yes,
-  // we are storing redundant information. This is because we are transitioning away from
-  // LabeledAxis. In future versions, we will remove LabeledAxis and only use these data structures.
-  //
-  // Also note: only nonlinear systems need to define these maps. Regular feed-forward models do not
-  // need to define these maps. This is an important distinction from LabeledAxis which is always
-  // defined.
-  //
-  // Another note: Right now we can "smartly" determine these maps based on variable subaxes. In the
-  // future, since we are removing LabeledAxis, we will need let the user explicitly define these
-  // maps, i.e., from within the input files.
+  OptionSet options = EquationSystem::expected_options();
 
+  options.doc() = "A nonlinear system defined by a Model.";
+
+  options.set<std::string>("model") = "model";
+  options.set("model").doc() = "The Model defining this nonlinear system.";
+
+  return options;
+}
+
+ModelNonlinearSystem::ModelNonlinearSystem(const OptionSet & options)
+  : NonlinearSystem(options),
+    _model(get_model("model"))
+{
+}
+
+void
+ModelNonlinearSystem::to(const TensorOptions & options)
+{
+  _model->to(options);
+}
+
+void
+ModelNonlinearSystem::setup_umap_and_layout()
+{
   for (const auto & [vname, var] : _model->input_variables())
     if (var->is_state())
     {
       _umap.push_back(vname);
       _ulayout.emplace_back(var->base_sizes());
     }
-    else if (var->is_force())
-    {
-      _gmap.push_back(vname);
-      _glayout.emplace_back(var->base_sizes());
-    }
-    else if (var->is_old_state())
+
+  // unknown variables should be marked mutable, as they will be updated during the nonlinear solve
+  for (const auto & vname : _umap)
+    _model->input_variable(vname).set_mutable(true);
+}
+
+void
+ModelNonlinearSystem::setup_unmap_and_layout()
+{
+  for (const auto & [vname, var] : _model->input_variables())
+    if (var->is_old_state())
     {
       _unmap.push_back(vname);
       _unlayout.emplace_back(var->base_sizes());
     }
-    else if (var->is_old_force())
+}
+
+void
+ModelNonlinearSystem::setup_gmap_and_layout()
+{
+  for (const auto & [vname, var] : _model->input_variables())
+    if (var->is_force())
+    {
+      _gmap.push_back(vname);
+      _glayout.emplace_back(var->base_sizes());
+    }
+}
+
+void
+ModelNonlinearSystem::setup_gnmap_and_layout()
+{
+  for (const auto & [vname, var] : _model->input_variables())
+    if (var->is_old_force())
     {
       _gnmap.push_back(vname);
       _gnlayout.emplace_back(var->base_sizes());
     }
+}
 
+void
+ModelNonlinearSystem::setup_bmap_and_layout()
+{
   for (const auto & [vname, var] : _model->output_variables())
     if (var->is_residual())
     {
       _bmap.push_back(vname);
       _blayout.emplace_back(var->base_sizes());
     }
+}
 
-  // setup old-to-current maps
-  auto setup_old_to_current = [](const std::vector<LabeledAxisAccessor> & old_map,
-                                 const std::vector<LabeledAxisAccessor> & current_map,
-                                 std::vector<int64_t> & old_to_current)
-  {
-    old_to_current.resize(old_map.size(), -1);
-    for (std::size_t i = 0; i < old_map.size(); ++i)
-    {
-      const auto & uname = old_map[i].current();
-      auto itr = std::find(current_map.begin(), current_map.end(), uname);
-      if (itr != current_map.end())
-        old_to_current[i] = std::distance(current_map.begin(), itr);
-    }
-  };
-  setup_old_to_current(_unmap, _umap, _un_to_u);
-  setup_old_to_current(_gnmap, _gmap, _gn_to_g);
-
-  // setup current-to-old maps
+void
+ModelNonlinearSystem::setup_current_to_old_maps()
+{
   auto setup_current_to_old = [](const std::vector<LabeledAxisAccessor> & current_map,
                                  const std::vector<LabeledAxisAccessor> & old_map,
                                  std::vector<int64_t> & current_to_old)
@@ -108,42 +133,54 @@ ModelNonlinearSystem::ModelNonlinearSystem(Model * model, bool assembly_guard)
   };
   setup_current_to_old(_umap, _unmap, _u_to_un);
   setup_current_to_old(_gmap, _gnmap, _g_to_gn);
+}
 
-  // umap variables should be marked mutable, as they will be updated during the nonlinear solve
-  for (const auto & vname : _umap)
-    _model->input_variable(vname).set_mutable(true);
+void
+ModelNonlinearSystem::setup_old_to_current_maps()
+{
+  auto setup_old_to_current = [](const std::vector<LabeledAxisAccessor> & old_map,
+                                 const std::vector<LabeledAxisAccessor> & current_map,
+                                 std::vector<int64_t> & old_to_current)
+  {
+    old_to_current.resize(old_map.size(), -1);
+    for (std::size_t i = 0; i < old_map.size(); ++i)
+    {
+      const auto & uname = old_map[i].current();
+      auto itr = std::find(current_map.begin(), current_map.end(), uname);
+      if (itr != current_map.end())
+        old_to_current[i] = std::distance(current_map.begin(), itr);
+    }
+  };
+  setup_old_to_current(_unmap, _umap, _un_to_u);
+  setup_old_to_current(_gnmap, _gmap, _gn_to_g);
 }
 
 void
 ModelNonlinearSystem::set_u(const HVector & u)
 {
   _model->assign_input(umap(), u);
-  _A_up_to_date = false;
-  _b_up_to_date = false;
+  input_changed();
 }
 
 void
 ModelNonlinearSystem::set_un(const HVector & un)
 {
   _model->assign_input(unmap(), un);
-  _A_up_to_date = false;
-  _b_up_to_date = false;
+  input_changed();
 }
 
 void
 ModelNonlinearSystem::set_g(const HVector & g)
 {
   _model->assign_input(gmap(), g);
-  _A_up_to_date = false;
-  _b_up_to_date = false;
+  input_changed();
 }
 
 void
 ModelNonlinearSystem::set_gn(const HVector & gn)
 {
   _model->assign_input(gnmap(), gn);
-  _A_up_to_date = false;
-  _b_up_to_date = false;
+  input_changed();
 }
 
 HVector
@@ -174,10 +211,8 @@ void
 ModelNonlinearSystem::assemble(HMatrix * A, HVector * b)
 {
   {
-    AssemblyingNonlinearSystem assembling_nl_sys(_model, _assembly_guard);
+    AssemblyingNonlinearSystem assembling_nl_sys(_model.get());
     _model->forward_maybe_jit(b && !_b_up_to_date, A && !_A_up_to_date, false);
-    _A_up_to_date |= bool(A);
-    _b_up_to_date |= bool(b);
   }
 
   if (b)

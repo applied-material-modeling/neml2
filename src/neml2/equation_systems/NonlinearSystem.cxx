@@ -27,4 +27,11 @@
 namespace neml2
 {
 
+void
+NonlinearSystem::input_changed()
+{
+  _A_up_to_date = false;
+  _b_up_to_date = false;
+}
+
 } // namespace neml2
