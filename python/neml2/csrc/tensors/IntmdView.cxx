@@ -33,8 +33,7 @@ void
 def_IntmdView(py::module_ & m, const std::string & name)
 {
   auto c = py::class_<IntmdView<T>>(m, name.c_str());
-  c.def(py::init<T *>())
-      .def("dim", &IntmdView<T>::dim)
+  c.def("dim", &IntmdView<T>::dim)
       .def_property_readonly("shape",
                              [](const IntmdView<T> & self)
                              {
@@ -72,8 +71,9 @@ def_IntmdView(py::module_ & m, const std::string & name)
 }
 
 template <class T>
-IntmdView<T>::IntmdView(T * data)
-  : _data(data)
+IntmdView<T>::IntmdView(py::object data)
+  : _owner(std::move(data)),
+    _data(_owner.cast<T *>())
 {
 }
 

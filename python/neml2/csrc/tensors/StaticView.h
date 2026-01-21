@@ -42,7 +42,7 @@ template <class T>
 class StaticView
 {
 public:
-  StaticView(T * data);
+  StaticView(pybind11::object data);
 
   // These methods mirror TensorBase (the dynamic_xxx ones)
   neml2::Size dim() const;
@@ -54,6 +54,7 @@ public:
   neml2::Tensor flatten() const;
 
 private:
+  pybind11::object _owner;
   T * _data;
 };
 

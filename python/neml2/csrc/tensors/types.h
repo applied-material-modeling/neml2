@@ -106,10 +106,10 @@ public:
   static handle
   cast(const at::indexing::Slice & src, return_value_policy /* policy */, handle /* parent */)
   {
-    auto start = THPUtils_packInt64(src.start().expect_int());
-    auto stop = THPUtils_packInt64(src.stop().expect_int());
-    auto step = THPUtils_packInt64(src.step().expect_int());
-    return PySlice_New(start, stop, step);
+    pybind11::int_ start(src.start().expect_int());
+    pybind11::int_ stop(src.stop().expect_int());
+    pybind11::int_ step(src.step().expect_int());
+    return pybind11::slice(start, stop, step);
   }
 };
 
@@ -183,10 +183,10 @@ public:
       return THPUtils_packInt64(src.integer().expect_int());
     if (src.is_slice())
     {
-      auto start = THPUtils_packInt64(src.slice().start().expect_int());
-      auto stop = THPUtils_packInt64(src.slice().stop().expect_int());
-      auto step = THPUtils_packInt64(src.slice().step().expect_int());
-      return PySlice_New(start, stop, step);
+      pybind11::int_ start(src.slice().start().expect_int());
+      pybind11::int_ stop(src.slice().stop().expect_int());
+      pybind11::int_ step(src.slice().step().expect_int());
+      return pybind11::slice(start, stop, step);
     }
     if (src.is_boolean())
       return src.boolean() ? Py_True : Py_False;

@@ -33,8 +33,7 @@ void
 def_BatchView(py::module_ & m, const std::string & name)
 {
   auto c = py::class_<BatchView<T>>(m, name.c_str());
-  c.def(py::init<T *>())
-      .def("dim", &BatchView<T>::dim)
+  c.def("dim", &BatchView<T>::dim)
       .def_property_readonly("shape",
                              [](const BatchView<T> & self)
                              {
@@ -71,8 +70,9 @@ def_BatchView(py::module_ & m, const std::string & name)
 }
 
 template <class T>
-BatchView<T>::BatchView(T * data)
-  : _data(data)
+BatchView<T>::BatchView(py::object data)
+  : _owner(std::move(data)),
+    _data(_owner.cast<T *>())
 {
 }
 
