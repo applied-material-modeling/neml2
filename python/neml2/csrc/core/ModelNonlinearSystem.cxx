@@ -38,9 +38,8 @@ void
 def(py::module_ & m, py::class_<ModelNonlinearSystem> & c)
 {
   // wrappers for nonlinear system-related methods
-  c.def(py::init<Model *, bool>(),
+  c.def(py::init<Model *>(),
         py::arg("model"),
-        py::arg("assembly_guard") = true,
         "Interpret a Model as a nonlinear system of equations")
       .def("umap", &ModelNonlinearSystem::umap, "Get the unknowns for this nonlinear system")
       .def("unmap", &ModelNonlinearSystem::unmap, "Get the old solutions for this nonlinear system")

@@ -98,7 +98,7 @@ jobs:
       - name: Build
         run: cmake --build --preset dev-cpp
 
-  runner:
+  release:
     needs: clang-format
     strategy:
       matrix:
@@ -111,11 +111,11 @@ jobs:
           cmake-version: 3.26
           torch-version: 2.8.0
       - name: Configure
-        run: cmake --preset runner -GNinja -S .
+        run: cmake --preset release -GNinja -S .
       - name: Build
-        run: cmake --build --preset runner
-      - name: Run tests
-        run: ctest --preset runner --output-on-failure
+        run: cmake --build --preset release
+      - name: Run benchmark tests
+        run: ctest --preset benchmark --output-on-failure
 
   profiling:
     needs: clang-format

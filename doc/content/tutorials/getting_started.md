@@ -10,14 +10,14 @@ Once the NEML2 library is built following the [installation guide](@ref install)
 
 NEML2 core capabilities are implemented as a _library_, not a _program_. As a library, it will be used by another C++ program to parse and evaluate a material model defined in an [input file](@ref tutorials-models-input-file). Boilerplate for the C++ program can be found in this [set of tutorials](#tutorials-models), and external project integration is documented in the [installation guide](@ref external-project-integration).
 
-## The Runner
+## The runner
 
-We acknowledge the common need to use NEML2 as a standalone program and therefore provide two convenient options for users to effectively use NEML2 as a standalone program, with the first option being the *NEML2 Runner*.
+We acknowledge the common need to use NEML2 as a standalone program and therefore provide two convenient options for users to effectively use NEML2 as a standalone program, with the first option being the *NEML2 runner*.
 
-As documented in [build customization](@ref build-customization), the "runner" preset or the `NEML2_RUNNER` CMake option can be used to create a simple "runner" program for parsing, diagnosing, and running NEML2 material models.
+As documented in [build customization](@ref build-customization), the "release" preset or the `NEML2_RUNNER` CMake option can be used to create a convenient executable for parsing, diagnosing, and running NEML2 material models.
 ```
-cmake --preset runner -S .
-cmake --build --preset runner
+cmake --preset release -S .
+cmake --build --preset release
 ```
 
 Once the runner is built (and/or installed), an executable named `neml2` will be placed under the build directory (or the installation directory). Invoking the executable without any additional argument or with the `-h` or `--help` argument will print out the usage message:

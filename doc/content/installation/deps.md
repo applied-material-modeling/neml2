@@ -23,7 +23,7 @@ C++ backend:
 - Testing:
   - [Catch2](https://github.com/catchorg/Catch2) for unit and regression testing.
 
-The Runner:
+The runner:
 
 - [argparse](https://github.com/p-ranav/argparse) for command-line argument parsing.
 - Profiling:
