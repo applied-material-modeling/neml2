@@ -61,16 +61,6 @@ zeta = 0.05
   []
 []
 
-[Solvers]
-  [newton]
-    type = Newton
-    linear_solver = 'lu'
-  []
-  [lu]
-    type = DenseLU
-  []
-[]
-
 [Models]
   [reaction_coef]
     type = ArrheniusParameter
@@ -95,9 +85,29 @@ zeta = 0.05
     type = ComposedModel
     models = 'reaction_rate reaction_ode'
   []
+[]
+
+[EquationSystems]
+  [eq_sys]
+    type = NonlinearSystem
+    model = 'reaction'
+  []
+[]
+
+[Solvers]
+  [newton]
+    type = Newton
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
+  []
+[]
+
+[Models]
   [solve_reaction]
     type = ImplicitUpdate
-    implicit_model = 'reaction'
+    equation_system = 'eq_sys'
     solver = 'newton'
   []
   [binder_rate]

@@ -34,7 +34,7 @@ namespace neml2
  * Instead of directly defining a nonlinear system, we define the linearized
  * system via its residual and Jacobian, evaluated at a given state u, the
  * linearized system is usually expressed as dr(u)/du * du = -r(u). Rewriting
- * this in the more familiar form Ax = b, we have A := dr(u)/du and b := -r(u).
+ * this in the more familiar form Au = b, we have A := dr(u)/du and b := -r(u).
  *
  */
 class NonlinearSystem : public LinearSystem

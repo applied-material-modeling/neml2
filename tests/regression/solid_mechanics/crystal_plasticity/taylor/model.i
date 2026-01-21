@@ -2,6 +2,10 @@ nstep = 100
 nbatch = 1
 ncrystal = 5
 
+
+
+
+
 [Tensors]
   [times]
     type = LinspaceScalar
@@ -100,23 +104,6 @@ ncrystal = 5
     type = TransientRegression
     driver = 'driver'
     reference = 'gold/result.pt'
-  []
-[]
-
-[Solvers]
-  [newton]
-    type = NewtonWithLineSearch
-    max_linesearch_iterations = 5
-    linear_solver = 'schur'
-  []
-  [lu]
-    type = DenseLU
-  []
-  [schur]
-    type = SchurComplement
-    schur_variables = 'state/mixed_state'
-    schur_linear_solver = 'lu'
-    primary_linear_solver = 'lu'
   []
 []
 
@@ -356,9 +343,36 @@ ncrystal = 5
     type = ComposedModel
     models = 'mixed_control per_crystal_update global_constraint'
   []
+[]
+
+[EquationSystems]
+  [eq_sys]
+    type = NonlinearSystem
+    model = 'implicit_model'
+  []
+[]
+
+[Solvers]
+  [newton]
+    type = NewtonWithLineSearch
+    max_linesearch_iterations = 5
+    linear_solver = 'schur'
+  []
+  [lu]
+    type = DenseLU
+  []
+  [schur]
+    type = SchurComplement
+    schur_variables = 'state/mixed_state'
+    schur_linear_solver = 'lu'
+    primary_linear_solver = 'lu'
+  []
+[]
+
+[Models]
   [model]
     type = ImplicitUpdate
-    implicit_model = 'implicit_model'
+    equation_system = 'eq_sys'
     solver = 'newton'
   []
 []

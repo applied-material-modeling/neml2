@@ -53,18 +53,6 @@
   []
 []
 
-[Solvers]
-  [newton]
-    type = Newton
-    rel_tol = 1e-6
-    abs_tol = 1e-8
-    linear_solver = 'lu'
-  []
-  [lu]
-    type = DenseLU
-  []
-[]
-
 [Models]
   [mandel_stress]
     type = IsotropicMandelStress
@@ -156,9 +144,31 @@
               yield yield_zero normality eprate Eprate Erate Eerate
               ri_flowrate rd_flowrate flowrate integrate_ep integrate_stress"
   []
+[]
+
+[EquationSystems]
+  [eq_sys]
+    type = NonlinearSystem
+    model = 'surface'
+  []
+[]
+
+[Solvers]
+  [newton]
+    type = Newton
+    rel_tol = 1e-6
+    abs_tol = 1e-8
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
+  []
+[]
+
+[Models]
   [model]
     type = ImplicitUpdate
-    implicit_model = 'surface'
+    equation_system = 'eq_sys'
     solver = 'newton'
   []
 []
