@@ -1,0 +1,7 @@
+<map id="HeterogeneousData" name="HeterogeneousData">
+<area shape="rect" id="Node000001" title="Base data structure for discrete, heterogeneous data (e.g., HVector and HMatrix)" alt="" coords="16,5,168,31"/>
+<area shape="rect" id="Node000002" href="$structneml2_1_1HMatrix.html" title=" " alt="" coords="5,79,80,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="78,44,53,80,48,77,74,41"/>
+<area shape="rect" id="Node000003" href="$structneml2_1_1HVector.html" title=" " alt="" coords="105,79,178,104"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="110,41,136,77,131,80,106,44"/>
+</map>
