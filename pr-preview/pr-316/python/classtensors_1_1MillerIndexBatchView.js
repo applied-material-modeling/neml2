@@ -1,6 +1,5 @@
 var classtensors_1_1MillerIndexBatchView =
 [
-    [ "__init__", "classtensors_1_1MillerIndexBatchView.html#a526d48d3532dac41667d9f6c72d098ff", null ],
     [ "__getitem__", "classtensors_1_1MillerIndexBatchView.html#aca1ef32515509b8142907461dc35f16e", null ],
     [ "__getitem__", "classtensors_1_1MillerIndexBatchView.html#ad9e5593eb9a1cb6619d1e7d19b6224df", null ],
     [ "__setitem__", "classtensors_1_1MillerIndexBatchView.html#a0a1b9c91ef6262ae4d30998ae2b27cde", null ],

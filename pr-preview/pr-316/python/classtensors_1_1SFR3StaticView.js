@@ -1,6 +1,5 @@
 var classtensors_1_1SFR3StaticView =
 [
-    [ "__init__", "classtensors_1_1SFR3StaticView.html#acca1e87e47f8481d95c9d91c565592c0", null ],
     [ "dim", "classtensors_1_1SFR3StaticView.html#a35536134a6ceb1e866faf188992e9c9f", null ],
     [ "expand", "classtensors_1_1SFR3StaticView.html#a396ebaa2cb63516c00fa5dbb05cd02fb", null ],
     [ "expand_as", "classtensors_1_1SFR3StaticView.html#a3be8e86e5d6fd48aed227316ffb67c1a", null ],

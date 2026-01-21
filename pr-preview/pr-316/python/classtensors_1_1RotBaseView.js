@@ -1,6 +1,5 @@
 var classtensors_1_1RotBaseView =
 [
-    [ "__init__", "classtensors_1_1RotBaseView.html#a0bc8b030407cfc8e0b76b9c2fef83971", null ],
     [ "__getitem__", "classtensors_1_1RotBaseView.html#af5660da15dc8287c0eefb4c0603276c7", null ],
     [ "__getitem__", "classtensors_1_1RotBaseView.html#ae5096d14925d383130d7d82a3bd4cd68", null ],
     [ "__setitem__", "classtensors_1_1RotBaseView.html#a0a1b9c91ef6262ae4d30998ae2b27cde", null ],

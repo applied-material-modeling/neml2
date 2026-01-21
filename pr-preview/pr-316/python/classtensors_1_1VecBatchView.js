@@ -1,6 +1,5 @@
 var classtensors_1_1VecBatchView =
 [
-    [ "__init__", "classtensors_1_1VecBatchView.html#a7a85ad2caa36772ad24f3359ea7fd5db", null ],
     [ "__getitem__", "classtensors_1_1VecBatchView.html#aa4a1f8ab5e919b7b19f16b8989dc2a1a", null ],
     [ "__getitem__", "classtensors_1_1VecBatchView.html#ada086e8ccb5ca3c932de4bfe844e7e93", null ],
     [ "__setitem__", "classtensors_1_1VecBatchView.html#a0a1b9c91ef6262ae4d30998ae2b27cde", null ],

@@ -1,6 +1,5 @@
 var classtensors_1_1ScalarDynamicView =
 [
-    [ "__init__", "classtensors_1_1ScalarDynamicView.html#a8d0c28f1572a05b0d1260188973aec69", null ],
     [ "__getitem__", "classtensors_1_1ScalarDynamicView.html#a5093770c7ffa41760959e5b71004ce57", null ],
     [ "__getitem__", "classtensors_1_1ScalarDynamicView.html#af4e5a82dd2091933207dba0cb6253b85", null ],
     [ "__setitem__", "classtensors_1_1ScalarDynamicView.html#a0a1b9c91ef6262ae4d30998ae2b27cde", null ],

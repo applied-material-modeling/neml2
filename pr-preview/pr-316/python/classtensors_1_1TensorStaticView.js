@@ -1,6 +1,5 @@
 var classtensors_1_1TensorStaticView =
 [
-    [ "__init__", "classtensors_1_1TensorStaticView.html#adc959329e26bc34a3494ca95ed41169a", null ],
     [ "dim", "classtensors_1_1TensorStaticView.html#a35536134a6ceb1e866faf188992e9c9f", null ],
     [ "expand", "classtensors_1_1TensorStaticView.html#a396ebaa2cb63516c00fa5dbb05cd02fb", null ],
     [ "expand_as", "classtensors_1_1TensorStaticView.html#a3be8e86e5d6fd48aed227316ffb67c1a", null ],

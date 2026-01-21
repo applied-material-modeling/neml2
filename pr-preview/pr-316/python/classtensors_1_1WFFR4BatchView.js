@@ -1,6 +1,5 @@
 var classtensors_1_1WFFR4BatchView =
 [
-    [ "__init__", "classtensors_1_1WFFR4BatchView.html#ae832a6b49ead15832c12cc1a80fc7a45", null ],
     [ "__getitem__", "classtensors_1_1WFFR4BatchView.html#a99e4ce17acf60a6fddb226613c4d1348", null ],
     [ "__getitem__", "classtensors_1_1WFFR4BatchView.html#a858a68c3c7760e0d999a3ac79eaf8fde", null ],
     [ "__setitem__", "classtensors_1_1WFFR4BatchView.html#a0a1b9c91ef6262ae4d30998ae2b27cde", null ],

@@ -1,6 +1,5 @@
 var classtensors_1_1R2IntmdView =
 [
-    [ "__init__", "classtensors_1_1R2IntmdView.html#a6ca0f485323e60284a563bb22fbe3fa5", null ],
     [ "__getitem__", "classtensors_1_1R2IntmdView.html#ab5b8fbc25e05e408763018590691214c", null ],
     [ "__getitem__", "classtensors_1_1R2IntmdView.html#a00508fb3f10419e57302bd6aa7b94b40", null ],
     [ "__setitem__", "classtensors_1_1R2IntmdView.html#a0a1b9c91ef6262ae4d30998ae2b27cde", null ],

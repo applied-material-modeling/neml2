@@ -1,6 +1,5 @@
 var classtensors_1_1R3BaseView =
 [
-    [ "__init__", "classtensors_1_1R3BaseView.html#a4d341229c2b45f5f833cfa59d5c4c42f", null ],
     [ "__getitem__", "classtensors_1_1R3BaseView.html#af5660da15dc8287c0eefb4c0603276c7", null ],
     [ "__getitem__", "classtensors_1_1R3BaseView.html#ae5096d14925d383130d7d82a3bd4cd68", null ],
     [ "__setitem__", "classtensors_1_1R3BaseView.html#a0a1b9c91ef6262ae4d30998ae2b27cde", null ],

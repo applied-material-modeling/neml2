@@ -1,6 +1,5 @@
 var classtensors_1_1ScalarBaseView =
 [
-    [ "__init__", "classtensors_1_1ScalarBaseView.html#a8d0c28f1572a05b0d1260188973aec69", null ],
     [ "__getitem__", "classtensors_1_1ScalarBaseView.html#af5660da15dc8287c0eefb4c0603276c7", null ],
     [ "__getitem__", "classtensors_1_1ScalarBaseView.html#ae5096d14925d383130d7d82a3bd4cd68", null ],
     [ "__setitem__", "classtensors_1_1ScalarBaseView.html#a0a1b9c91ef6262ae4d30998ae2b27cde", null ],

@@ -1,6 +1,5 @@
 var classtensors_1_1SWR4BaseView =
 [
-    [ "__init__", "classtensors_1_1SWR4BaseView.html#a53f791fe0463e9323c97d5f5cb72daab", null ],
     [ "__getitem__", "classtensors_1_1SWR4BaseView.html#af5660da15dc8287c0eefb4c0603276c7", null ],
     [ "__getitem__", "classtensors_1_1SWR4BaseView.html#ae5096d14925d383130d7d82a3bd4cd68", null ],
     [ "__setitem__", "classtensors_1_1SWR4BaseView.html#a0a1b9c91ef6262ae4d30998ae2b27cde", null ],

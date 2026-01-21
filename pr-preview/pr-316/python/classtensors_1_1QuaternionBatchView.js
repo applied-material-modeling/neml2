@@ -1,6 +1,5 @@
 var classtensors_1_1QuaternionBatchView =
 [
-    [ "__init__", "classtensors_1_1QuaternionBatchView.html#acb632072001de789afacec5d090910de", null ],
     [ "__getitem__", "classtensors_1_1QuaternionBatchView.html#afb59d969a0063c82fd239ad21ec10ab8", null ],
     [ "__getitem__", "classtensors_1_1QuaternionBatchView.html#a4c8984decd40c95e3e3ee1b61cf91f10", null ],
     [ "__setitem__", "classtensors_1_1QuaternionBatchView.html#a0a1b9c91ef6262ae4d30998ae2b27cde", null ],

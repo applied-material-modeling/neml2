@@ -1,6 +1,5 @@
 var classtensors_1_1SR2BatchView =
 [
-    [ "__init__", "classtensors_1_1SR2BatchView.html#a4fb6609bd2f3071aa70e131ded737500", null ],
     [ "__getitem__", "classtensors_1_1SR2BatchView.html#a257669a03d9b23dca5a641cec370a498", null ],
     [ "__getitem__", "classtensors_1_1SR2BatchView.html#a26d8ee42cc6c781c98eead0f89a6c3f8", null ],
     [ "__setitem__", "classtensors_1_1SR2BatchView.html#a0a1b9c91ef6262ae4d30998ae2b27cde", null ],
