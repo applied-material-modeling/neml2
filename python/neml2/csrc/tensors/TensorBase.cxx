@@ -24,6 +24,8 @@
 
 #include "neml2/tensors/tensors.h"
 
+#include <memory>
+
 #include "python/neml2/csrc/tensors/TensorBase.h"
 #include "python/neml2/csrc/tensors/DynamicView.h"
 #include "python/neml2/csrc/tensors/IntmdView.h"
@@ -66,11 +68,26 @@ def_TensorBase(py::module_ & m, const std::string & type)
            })
       .def("torch", [](const T & self) { return torch::Tensor(self); })
       .def("tensor", [](const T & self) { return neml2::Tensor(self); })
-      .def_property_readonly("dynamic", [](T * self) { return new DynamicView<T>(self); })
-      .def_property_readonly("intmd", [](T * self) { return new IntmdView<T>(self); })
-      .def_property_readonly("base", [](T * self) { return new BaseView<T>(self); })
-      .def_property_readonly("batch", [](T * self) { return new BatchView<T>(self); })
-      .def_property_readonly("static", [](T * self) { return new StaticView<T>(self); })
+      .def_property_readonly(
+          "dynamic",
+          [](T * self) { return std::make_unique<DynamicView<T>>(self); },
+          py::keep_alive<0, 1>())
+      .def_property_readonly(
+          "intmd",
+          [](T * self) { return std::make_unique<IntmdView<T>>(self); },
+          py::keep_alive<0, 1>())
+      .def_property_readonly(
+          "base",
+          [](T * self) { return std::make_unique<BaseView<T>>(self); },
+          py::keep_alive<0, 1>())
+      .def_property_readonly(
+          "batch",
+          [](T * self) { return std::make_unique<BatchView<T>>(self); },
+          py::keep_alive<0, 1>())
+      .def_property_readonly(
+          "static",
+          [](T * self) { return std::make_unique<StaticView<T>>(self); },
+          py::keep_alive<0, 1>())
       .def("contiguous", &T::contiguous)
       .def("clone", &T::clone)
       .def("detach", &T::detach)
