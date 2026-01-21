@@ -24,8 +24,6 @@
 
 #include "neml2/tensors/tensors.h"
 
-#include <memory>
-
 #include "python/neml2/csrc/tensors/TensorBase.h"
 #include "python/neml2/csrc/tensors/DynamicView.h"
 #include "python/neml2/csrc/tensors/IntmdView.h"
