@@ -33,8 +33,7 @@ void
 def_StaticView(py::module_ & m, const std::string & name)
 {
   auto c = py::class_<StaticView<T>>(m, name.c_str());
-  c.def(py::init<T *>())
-      .def("dim", &StaticView<T>::dim)
+  c.def("dim", &StaticView<T>::dim)
       .def_property_readonly("shape",
                              [](const StaticView<T> & self)
                              {
@@ -52,8 +51,9 @@ def_StaticView(py::module_ & m, const std::string & name)
 }
 
 template <class T>
-StaticView<T>::StaticView(T * data)
-  : _data(data)
+StaticView<T>::StaticView(py::object data)
+  : _owner(std::move(data)),
+    _data(_owner.cast<T *>())
 {
 }
 

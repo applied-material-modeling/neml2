@@ -33,8 +33,7 @@ void
 def_DynamicView(py::module_ & m, const std::string & name)
 {
   auto c = py::class_<DynamicView<T>>(m, name.c_str());
-  c.def(py::init<T *>())
-      .def("dim", &DynamicView<T>::dim)
+  c.def("dim", &DynamicView<T>::dim)
       .def_property_readonly("shape",
                              [](const DynamicView<T> & self)
                              {
@@ -72,8 +71,9 @@ def_DynamicView(py::module_ & m, const std::string & name)
 }
 
 template <class T>
-DynamicView<T>::DynamicView(T * data)
-  : _data(data)
+DynamicView<T>::DynamicView(py::object data)
+  : _owner(std::move(data)),
+    _data(_owner.cast<T *>())
 {
 }
 

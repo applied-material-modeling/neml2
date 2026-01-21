@@ -67,40 +67,12 @@ def_TensorBase(py::module_ & m, const std::string & type)
       .def("torch", [](const T & self) { return torch::Tensor(self); })
       .def("tensor", [](const T & self) { return neml2::Tensor(self); })
       .def_property_readonly("dynamic",
-                             [](py::object self)
-                             {
-                               auto view = py::cast(DynamicView<T>(self.cast<T *>()));
-                               py::detail::keep_alive_impl(view, self);
-                               return view;
-                             })
-      .def_property_readonly("intmd",
-                             [](py::object self)
-                             {
-                               auto view = py::cast(IntmdView<T>(self.cast<T *>()));
-                               py::detail::keep_alive_impl(view, self);
-                               return view;
-                             })
-      .def_property_readonly("base",
-                             [](py::object self)
-                             {
-                               auto view = py::cast(BaseView<T>(self.cast<T *>()));
-                               py::detail::keep_alive_impl(view, self);
-                               return view;
-                             })
-      .def_property_readonly("batch",
-                             [](py::object self)
-                             {
-                               auto view = py::cast(BatchView<T>(self.cast<T *>()));
-                               py::detail::keep_alive_impl(view, self);
-                               return view;
-                             })
+                             [](py::object self) { return DynamicView<T>(std::move(self)); })
+      .def_property_readonly("intmd", [](py::object self) { return IntmdView<T>(std::move(self)); })
+      .def_property_readonly("base", [](py::object self) { return BaseView<T>(std::move(self)); })
+      .def_property_readonly("batch", [](py::object self) { return BatchView<T>(std::move(self)); })
       .def_property_readonly("static",
-                             [](py::object self)
-                             {
-                               auto view = py::cast(StaticView<T>(self.cast<T *>()));
-                               py::detail::keep_alive_impl(view, self);
-                               return view;
-                             })
+                             [](py::object self) { return StaticView<T>(std::move(self)); })
       .def("contiguous", &T::contiguous)
       .def("clone", &T::clone)
       .def("detach", &T::detach)

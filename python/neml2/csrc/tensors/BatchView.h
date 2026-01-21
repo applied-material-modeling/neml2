@@ -42,7 +42,7 @@ template <class T>
 class BatchView
 {
 public:
-  BatchView(T * data);
+  BatchView(pybind11::object data);
 
   // These methods mirror TensorBase (the batch_xxx ones)
   neml2::Size dim() const;
@@ -61,6 +61,7 @@ public:
   T flatten() const;
 
 private:
+  pybind11::object _owner;
   T * _data;
 };
 

@@ -42,7 +42,7 @@ template <class T>
 class IntmdView
 {
 public:
-  IntmdView(T * data);
+  IntmdView(pybind11::object data);
 
   // These methods mirror TensorBase (the intmd_xxx ones)
   neml2::Size dim() const;
@@ -62,6 +62,7 @@ public:
   T flatten() const;
 
 private:
+  pybind11::object _owner;
   T * _data;
 };
 
