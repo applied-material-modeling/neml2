@@ -24,41 +24,46 @@
 
 #pragma once
 
-#include "neml2/solvers/NonlinearSystem.h"
+#include "neml2/equation_systems/NonlinearSystem.h"
+#include "neml2/equation_systems/HVector.h"
+#include "neml2/equation_systems/HMatrix.h"
 
 namespace neml2
 {
 class TestNonlinearSystem : public NonlinearSystem
 {
 public:
-  TestNonlinearSystem(const OptionSet & options);
+  void set_u(const HVector &) override;
+  void set_un(const HVector &) override {}
+  void set_g(const HVector &) override {}
+  void set_gn(const HVector &) override {}
 
-  void set_guess(const Sol<false> & x) override;
-  virtual Tensor exact_solution(const Sol<false> & x) const = 0;
+  HVector u() const override { return _u; }
+  HVector un() const override { return HVector(); }
+  HVector g() const override { return HVector(); }
+  HVector gn() const override { return HVector(); }
+
+  virtual HVector exact_solution(const HVector & u) const = 0;
 
 protected:
-  Tensor _x;
+  HVector _u;
 };
 
 class PowerTestSystem : public TestNonlinearSystem
 {
 public:
-  PowerTestSystem(const OptionSet & options);
-
-  Tensor exact_solution(const Sol<false> & x) const override;
+  HVector exact_solution(const HVector &) const override;
 
 protected:
-  void assemble(Res<false> *, Jac<false> *) override;
+  void assemble(HMatrix *, HVector *) override;
 };
 
 class RosenbrockTestSystem : public TestNonlinearSystem
 {
 public:
-  RosenbrockTestSystem(const neml2::OptionSet & options);
-
-  neml2::Tensor exact_solution(const Sol<false> & x) const override;
+  HVector exact_solution(const HVector &) const override;
 
 protected:
-  void assemble(Res<false> *, Jac<false> *) override;
+  void assemble(HMatrix *, HVector *) override;
 };
 }

@@ -26,6 +26,7 @@
 
 #include "neml2/solvers/Newton.h"
 #include "neml2/tensors/Scalar.h"
+#include "neml2/base/EnumSelection.h"
 
 namespace neml2
 {
@@ -44,16 +45,13 @@ public:
 
 protected:
   /// Update trial solution
-  void update(NonlinearSystem & system,
-              NonlinearSystem::Sol<true> & x,
-              const NonlinearSystem::Res<true> & r,
-              const NonlinearSystem::Jac<true> & J) override;
+  void update(NonlinearSystem & system, HVector & u, const HVector & b, const HMatrix & A) override;
 
   /// Perform Armijo linesearch
   virtual Scalar linesearch(NonlinearSystem & system,
-                            const NonlinearSystem::Sol<true> & x,
-                            const NonlinearSystem::Sol<true> & dx,
-                            const NonlinearSystem::Res<true> & R0) const;
+                            const HVector & u,
+                            const HVector & du,
+                            const HVector & b0) const;
 
   /// Linesearch maximum iterations
   unsigned int _linesearch_miter;

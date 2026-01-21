@@ -38,8 +38,6 @@ ComposedModel::expected_options()
       "treated as a new model and composed with others. The [system documentation](@ref "
       "model-composition) provides in-depth explanation on how the models are composed together.";
 
-  NonlinearSystem::enable_automatic_scaling(options);
-
   options.set<std::vector<std::string>>("models");
   options.set("models").doc() = "Models being composed together";
 
@@ -69,7 +67,7 @@ ComposedModel::ComposedModel(const OptionSet & options)
   // be registered as a sub-model by different models, and it could be evaluated with _different_
   // input, and hence yields _different_ output values.
   for (const auto & model_name : options.get<std::vector<std::string>>("models"))
-    register_model(model_name, /*nonlinear=*/false, /*merge_input=*/false);
+    register_model(model_name, /*merge_input=*/false);
 
   // Each sub-model may have nonlinear parameters. In our design, nonlinear parameters _are_
   // models. Since we do not want to put the burden of "adding nonlinear parameters in the input
@@ -208,23 +206,21 @@ void
 ComposedModel::set_value(bool out, bool dout_din, bool d2out_din2)
 {
   for (const auto & i : registered_models())
-  {
-    if (out && !dout_din && !d2out_din2)
-      i->forward_maybe_jit(true, false, false);
-    else if (dout_din && !d2out_din2)
-      i->forward_maybe_jit(true, true, false);
-    else if (d2out_din2)
-      i->forward_maybe_jit(true, true, true);
-    else
-      throw NEMLException("Unsupported call signature to set_value");
-  }
+    i->forward_maybe_jit(out || dout_din || d2out_din2, dout_din || d2out_din2, d2out_din2);
 
   if (dout_din)
     for (auto && [name, var] : output_variables())
-      var->apply_chain_rule(_dependency);
+      for (const auto & [dy_dx, xvar] : var->direct_ref()->total_derivatives(_dependency))
+        var->d(input_variable(xvar->name())) = dy_dx;
 
   if (d2out_din2)
     for (auto && [name, var] : output_variables())
-      var->apply_second_order_chain_rule(_dependency);
+      for (const auto & [d2y_dx1x2, x1var, x2var] :
+           var->direct_ref()->total_second_derivatives(_dependency))
+        var->d2(input_variable(x1var->name()), input_variable(x2var->name())) = d2y_dx1x2;
+
+  if (dout_din || d2out_din2)
+    for (auto && [name, var] : output_variables())
+      var->direct_ref()->clear_chain_rule_cache(_dependency);
 }
 } // namespace neml2

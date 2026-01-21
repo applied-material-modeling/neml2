@@ -64,6 +64,32 @@ broadcast_dynamic_sizes(const std::vector<Tensor> & tensors)
   const auto all_shapes = at::stack(shapes);
   return std::get<0>(at::max(all_shapes, 0));
 }
+
+TensorShape
+broadcast_intmd_sizes(const std::vector<Tensor> & tensors)
+{
+  Size dim = 0;
+  auto shapes = std::vector<TensorShape>{};
+  for (const auto & t : tensors)
+    if (t.defined())
+    {
+      dim = t.intmd_dim() > dim ? t.intmd_dim() : dim;
+      shapes.emplace_back(t.intmd_sizes());
+    }
+  if (shapes.empty())
+    return {};
+
+  for (auto & s : shapes)
+    s = pad_prepend(s, dim, 1);
+  auto bshape = TensorShape(dim, 1);
+
+  for (std::size_t i = 0; i < std::size_t(dim); i++)
+    for (const auto & s : shapes)
+      if (s[i] > bshape[i])
+        bshape[i] = s[i];
+
+  return bshape;
+}
 } // namespace utils
 
 Tensor::Tensor(const ATensor & tensor, Size dynamic_dim, Size intmd_dim)

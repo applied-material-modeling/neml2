@@ -9,6 +9,7 @@ Checks: >
   -bugprone-reserved-identifier,
   -bugprone-swapped-arguments,
   -bugprone-unchecked-optional-access,
+  -bugprone-virtual-near-miss,
   clang-diagnostic-missing-prototypes,
   cppcoreguidelines-*,
   -cppcoreguidelines-avoid-c-arrays,

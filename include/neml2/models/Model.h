@@ -30,7 +30,6 @@
 #include "neml2/models/Data.h"
 #include "neml2/models/ParameterStore.h"
 #include "neml2/models/VariableStore.h"
-#include "neml2/solvers/NonlinearSystem.h"
 #include "neml2/models/NonlinearParameter.h"
 #include "neml2/tensors/jit.h"
 
@@ -39,11 +38,26 @@
 // choice since these headers are light and bring in little dependency.
 #include "neml2/base/LabeledAxis.h"
 #include "neml2/models/Variable.h"
-#include "neml2/models/Derivative.h"
+#include "neml2/tensors/Derivative.h"
 
 namespace neml2
 {
 class Model;
+
+// Guard a region where implicit solve is being performed
+struct AssemblyingNonlinearSystem
+{
+  AssemblyingNonlinearSystem(Model * const, bool assembling = true);
+
+  AssemblyingNonlinearSystem(const AssemblyingNonlinearSystem &) = delete;
+  AssemblyingNonlinearSystem(AssemblyingNonlinearSystem &&) = delete;
+  AssemblyingNonlinearSystem & operator=(const AssemblyingNonlinearSystem &) = delete;
+  AssemblyingNonlinearSystem & operator=(AssemblyingNonlinearSystem &&) = delete;
+  ~AssemblyingNonlinearSystem();
+
+  Model * const model;
+  const bool prev_bool;
+};
 
 /**
  * @brief The base class for all constitutive models.
@@ -58,7 +72,6 @@ class Model : public std::enable_shared_from_this<Model>,
               public Data,
               public ParameterStore,
               public VariableStore,
-              public NonlinearSystem,
               public DependencyDefinition<VariableName>,
               public DiagnosticsInterface
 {
@@ -100,8 +113,11 @@ public:
   /// Whether this model defines second derivatives
   virtual bool defines_second_derivatives() const { return _defines_d2value; }
 
-  /// Whether this model defines one or more nonlinear equations to be solved
-  virtual bool is_nonlinear_system() const { return _nonlinear_system; }
+  ///@{
+  /// Set or get whether we are currently assembling the nonlinear system
+  void currently_assembling_nonlinear_system(bool);
+  bool currently_assembling_nonlinear_system() const;
+  ///@}
 
   /// Whether JIT is enabled
   virtual bool is_jit_enabled() const { return _jit; }
@@ -197,9 +213,6 @@ protected:
   void diagnostic_check_input_variable(const VariableBase & v) const;
   void diagnostic_check_output_variable(const VariableBase & v) const;
 
-  /// Additional diagnostics for a nonlinear system
-  void diagnose_nl_sys() const;
-
   virtual void link_input_variables();
   virtual void link_input_variables(Model * submodel);
   virtual void link_output_variables();
@@ -236,13 +249,12 @@ protected:
    * model, which will affect dependency resolution inside a ComposedModel.
    *
    * @param name The model to register
-   * @param nonlinear Set to true if the registered model defines a nonlinear system to be solved
    * @param merge_input Whether to merge the input axis of the registered model into *this* model's
    * input axis. This will make sure that the input variables of the registered model are "ready" by
    * the time *this* model is evaluated.
    */
   template <typename T = Model, typename = typename std::enable_if_t<std::is_base_of_v<Model, T>>>
-  T & register_model(const std::string & name, bool nonlinear = false, bool merge_input = true)
+  T & register_model(const std::string & name, bool merge_input = true)
   {
     auto model_name =
         input_options().contains(name) ? input_options().get<std::string>(name) : name;
@@ -252,7 +264,6 @@ protected:
 
     OptionSet extra_opts;
     extra_opts.set<NEML2Object *>("_host") = host();
-    extra_opts.set<bool>("_nonlinear_system") = nonlinear;
 
     if (!host()->factory())
       throw SetupException("Internal error: Host object '" + host()->name() +
@@ -273,10 +284,6 @@ protected:
   void assign_input_stack(jit::Stack & stack);
 
   jit::Stack collect_input_stack() const;
-
-  void set_guess(const Sol<false> &) override;
-
-  void assemble(Res<false> *, Jac<false> *) override;
 
   /// Models *this* model may use during its evaluation
   std::vector<std::shared_ptr<Model>> _registered_models;
@@ -309,9 +316,6 @@ private:
   bool _defines_dvalue;
   bool _defines_d2value;
   ///@}
-
-  /// Whether this is a nonlinear system
-  bool _nonlinear_system;
 
   /// Parameters whose values are provided by another model
   std::map<std::string, NonlinearParameter> _nl_params;
@@ -351,6 +355,9 @@ private:
   /// Similar to _trace_functions, but for the forward operator of the nonlinear system
   std::array<std::map<EvaluationSchema, std::unique_ptr<jit::GraphFunction>>, 8>
       _traced_functions_nl_sys;
+
+  /// Whether we are currently assembling a nonlinear system
+  bool _currently_assembling_nonlinear_system = false;
 };
 
 std::ostream & operator<<(std::ostream & os, const Model & model);

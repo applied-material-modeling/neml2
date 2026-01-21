@@ -22,17 +22,45 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-
-#include "neml2/misc/types.h"
+#include "neml2/solvers/LinearSolver.h"
+#include "neml2/tensors/Tensor.h"
+#include "neml2/equation_systems/HVector.h"
+#include "neml2/equation_systems/HMatrix.h"
 
 namespace neml2
 {
-class Tensor;
 
-template <std::size_t N>
-Tensor to_assembly(const Tensor & from,
-                   const std::array<TensorShapeRef, N> & intmd_shapes,
-                   const std::array<TensorShapeRef, N> & base_shapes,
-                   const std::string & debug_name = "<anonymous>");
+OptionSet
+LinearSolver::expected_options()
+{
+  OptionSet options = Solver::expected_options();
+  return options;
+}
+
+LinearSolver::LinearSolver(const OptionSet & options)
+  : Solver(options)
+{
+}
+
+std::tuple<Tensor, Tensor>
+LinearSolver::lu_factor(const HMatrix &) const
+{
+  throw NEMLException("LU factorization not supported by solver " + name() + " of type " +
+                      this->type());
+}
+
+HVector
+LinearSolver::lu_solve(const Tensor &, const Tensor &, const HVector &) const
+{
+  throw NEMLException("LU factorization not supported by solver " + name() + " of type " +
+                      this->type());
+}
+
+HMatrix
+LinearSolver::lu_solve(const Tensor &, const Tensor &, const HMatrix &) const
+{
+  throw NEMLException("LU factorization not supported by solver " + name() + " of type " +
+                      this->type());
+}
+
 }

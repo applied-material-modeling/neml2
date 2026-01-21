@@ -26,21 +26,37 @@
 #include <torch/csrc/jit/frontend/tracer.h>
 
 #include "neml2/misc/assertions.h"
-#include "neml2/base/guards.h"
 #include "neml2/base/Factory.h"
 #include "neml2/base/Settings.h"
 #include "neml2/tensors/jit.h"
 #include "neml2/models/ParameterStore.h"
-#include "neml2/solvers/NonlinearSystem.h"
 #include "neml2/tensors/functions/jacrev.h"
 #include "neml2/tensors/tensors.h"
 #include "neml2/tensors/TensorValue.h"
 #include "neml2/models/Model.h"
-#include "neml2/models/Assembler.h"
 #include "neml2/models/map_types_fwd.h"
 
 namespace neml2
 {
+AssemblyingNonlinearSystem::AssemblyingNonlinearSystem(Model * const model, bool assembling)
+  : model(model),
+    prev_bool(model->currently_assembling_nonlinear_system())
+{
+  model->currently_assembling_nonlinear_system(assembling);
+}
+
+// destructor cannot throw, but the following function might (as it tries to resolve host())
+// However, in the constructor we already verified that model->host() is valid, so this should be
+// safe.
+//
+// Static analysis tools might still complain, let's silence them for now. In the future, when we
+// add a proper logger, we can catch the throw and log the error message.
+// NOLINTNEXTLINE(bugprone-exception-escape)
+AssemblyingNonlinearSystem::~AssemblyingNonlinearSystem()
+{
+  model->currently_assembling_nonlinear_system(prev_bool);
+}
+
 bool
 Model::EvaluationSchema::operator==(const EvaluationSchema & other) const
 {
@@ -68,8 +84,6 @@ OptionSet
 Model::expected_options()
 {
   OptionSet options = Data::expected_options();
-  options += NonlinearSystem::expected_options();
-  NonlinearSystem::disable_automatic_scaling(options);
 
   options.section() = "Models";
 
@@ -103,12 +117,10 @@ Model::Model(const OptionSet & options)
   : Data(options),
     ParameterStore(this),
     VariableStore(this),
-    NonlinearSystem(options),
     DiagnosticsInterface(this),
     _defines_value(options.get<bool>("define_values")),
     _defines_dvalue(options.get<bool>("define_derivatives")),
     _defines_d2value(options.get<bool>("define_second_derivatives")),
-    _nonlinear_system(options.get<bool>("_nonlinear_system")),
     _jit(settings().disable_jit() ? false : options.get<bool>("jit")),
     _production(options.get<bool>("production"))
 {
@@ -152,38 +164,11 @@ Model::diagnose() const
   for (auto && [name, var] : output_variables())
     diagnostic_check_output_variable(*var);
 
-  if (is_nonlinear_system())
-    diagnose_nl_sys();
-
   if (settings().disable_jit())
     if (input_options().user_specified("jit"))
       diagnostic_assert(!input_options().get<bool>("jit"),
                         "JIT compilation is disabled globally by Settings/disable_jit=true, and it "
                         "is an error to explicitly set jit to true for any model.");
-}
-
-void
-Model::diagnose_nl_sys() const
-{
-  for (auto & submodel : registered_models())
-    submodel->diagnose_nl_sys();
-
-  // Check if any input variable is solve-dependent
-  bool input_solve_dep = false;
-  for (auto && [name, var] : input_variables())
-    if (var->is_solve_dependent())
-      input_solve_dep = true;
-
-  // If any input variable is solve-dependent, ALL output variables must be solve-dependent!
-  if (input_solve_dep)
-    for (auto && [name, var] : output_variables())
-      diagnostic_assert(
-          var->is_solve_dependent(),
-          "This model is part of a nonlinear system. At least one of the input variables is "
-          "solve-dependent, so all output variables MUST be solve-dependent, i.e., they must be "
-          "on one of the following sub-axes: state, residual, parameters. However, got output "
-          "variable ",
-          name);
 }
 
 void
@@ -272,7 +257,7 @@ void
 Model::link_input_variables(Model * submodel)
 {
   for (auto && [name, var] : submodel->input_variables())
-    var->ref(input_variable(name), submodel->is_nonlinear_system());
+    var->ref(input_variable(name));
 }
 
 void
@@ -372,6 +357,9 @@ Model::forward_operator_index(bool out, bool dout, bool d2out) const
 void
 Model::forward(bool out, bool dout, bool d2out)
 {
+  if (!out && !dout && !d2out)
+    return;
+
   neml_assert_dbg(defines_values() || (defines_values() == out),
                   "Model of type '",
                   type(),
@@ -416,7 +404,7 @@ Model::forward_maybe_jit(bool out, bool dout, bool d2out)
   }
 
   auto & traced_functions =
-      currently_solving_nonlinear_system() ? _traced_functions_nl_sys : _traced_functions;
+      currently_assembling_nonlinear_system() ? _traced_functions_nl_sys : _traced_functions;
 
   const auto forward_op_idx = forward_operator_index(out, dout, d2out);
   const auto schema = calculate_eval_schema();
@@ -697,29 +685,15 @@ Model::collect_input_stack() const
 }
 
 void
-Model::set_guess(const Sol<false> & x)
+Model::currently_assembling_nonlinear_system(bool value)
 {
-  const auto sol_assember = VectorAssembler(input_axis().subaxis(STATE));
-  assign_input(sol_assember.split_by_variable(x), /*assembly=*/true);
+  host<Model>()->_currently_assembling_nonlinear_system = value;
 }
 
-void
-Model::assemble(NonlinearSystem::Res<false> * residual, NonlinearSystem::Jac<false> * Jacobian)
+bool
+Model::currently_assembling_nonlinear_system() const
 {
-  forward_maybe_jit(residual, Jacobian, false);
-
-  if (residual)
-  {
-    const auto res_assembler = VectorAssembler(output_axis().subaxis(RESIDUAL));
-    *residual = Res<false>(res_assembler.assemble_by_variable(collect_output(/*assembly=*/true)));
-  }
-  if (Jacobian)
-  {
-    const auto jac_assembler =
-        MatrixAssembler(output_axis().subaxis(RESIDUAL), input_axis().subaxis(STATE));
-    *Jacobian = Jac<false>(
-        jac_assembler.assemble_by_variable(collect_output_derivatives(/*assembly=*/true)));
-  }
+  return host<Model>()->_currently_assembling_nonlinear_system;
 }
 
 void

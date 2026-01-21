@@ -35,13 +35,18 @@ DynamicSum<T>::expected_options()
 {
   OptionSet options = Reduction<T>::expected_options();
   options.doc() = "Sum a dynamic dimension";
+
+  options.set<Size>("dim");
+  options.set("dim").doc() = "The dimension to sum";
+
   return options;
 }
 
 template <typename T>
 DynamicSum<T>::DynamicSum(const OptionSet & options)
   : Reduction<T>(options),
-    _from(this->template declare_input_variable<T>("from"))
+    _from(this->template declare_input_variable<T>("from")),
+    _dim(options.get<Size>("dim"))
 {
 }
 

@@ -135,9 +135,7 @@ Since a composed model uses chain rule to efficiently evaluate the total derivat
 
 ## Model assembly {#model-assembly}
 
-NEML2 stores each variable in contiguous memory, but does not guarantee contiguity across variables. This choice is made to allow for massive asynchronous evaluation (with the help of lazy tensors) and to reduce memory consumption (since variables can have different number of batch shapes). However, this choice is not ideal for a family of nonlinear material models whose constitutive updates require solving one (or more) implicit system of equations. To address such issue, NEML2 offers two mechanisms to facilitate the creation of the implicit system (e.g., its residual and Jacobian):
-- [Axis labeling](@ref axis-labeling) for setting up the layout of the implicit system
-- [Tensor assembly](@ref tensor-assembly) for assembling and disassembling the implicit system
+NEML2 stores each variable in contiguous memory, but does not guarantee contiguity across variables. This choice is made to allow for asynchronous evaluation (with the help of lazy tensors) and to reduce memory consumption (since variables can have different number of batch shapes). However, this choice is not ideal for a family of nonlinear material models whose constitutive updates require solving one (or more) implicit system of equations. To address such issue, NEML2 implements semi-contiguous variable and derivative containers in neml2::HVector and neml2::HMatrix. These containers store discontiguous tensor values in sparse, contiguous sequences. Please refer to the corresponding Doxygen documentation for implementation details. In the regular model development process, there is typically no need to directly interact with these internal containers.
 
 ### Axis labeling {#axis-labeling}
 
@@ -173,18 +171,3 @@ A label cannot contain: white spaces, quotes, left slash (`/`), or new line.
 Due to performance considerations, a `LabeledAxis` can only be modified, e.g., adding/removing variables and sub-axis, at the time a model is constructed. After the model construction phase, the `LabeledAxis` associated with that model can no longer be modified over the entire course of the simulation.
 
 Refer to the documentation for a complete list of APIs for creating and modifying a [LabeledAxis](@ref neml2::LabeledAxis).
-
-### Tensor assembly {#tensor-assembly}
-
-NEML2 implements two types of "assemblers" to assemble (or split) the implicit system given the axis layout defined by [LabeledAxis](@ref neml2::LabeledAxis):
-- [VectorAssembler](@ref neml2::VectorAssembler): Assemble a map of vectors into a single vector (neml2::VectorAssembler::assemble_by_variable), or split a single vector into a map of vectors (neml2::VectorAssembler::split_by_variable).
-- [MatrixAssembler](@ref neml2::MatrixAssembler): Assemble a map of map of matrices into a single matrix (neml2::MatrixAssembler::assemble_by_variable), or split a single matrix into a map of map of matrices (neml2::MatrixAssembler::split_by_variable).
-
-The `assemble_by_variable` methods take a map (1D map for the vector assembler and 2D map for the matrix assembler) as input argument. The keys of the map are variable names.
-
-\note
-Variable values not provided by the map are filled with zeros.
-
-The [VectorAssembler](@ref neml2::VectorAssembler) is useful for working with the residual and solution vectors of the implicit system, and the [MatrixAssembler](@ref neml2::MatrixAssembler) is primarily used to work with the Jacobian matrix of the implicit system.
-
-In addition to the `assemble_by_variable` and `split_by_variable` methods, the assemblers also provide a third method called `split_by_subaxis`. The `split_by_subaxis` method is similar to `split_by_variable`, but it splits the tensor by subaxes instead of variables.

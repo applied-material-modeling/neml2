@@ -24,6 +24,7 @@
 
 #include "neml2/models/map_types.h"
 #include "neml2/base/Parser.h"
+#include "neml2/tensors/shape_utils.h"
 
 #include <pybind11/pytypes.h>
 
@@ -36,19 +37,14 @@ template <std::size_t D>
 static Tensor
 unpack_tensor(const py::handle & pyval,
               bool assembly,
-              const std::function<TensorShapeRef(const VariableName &)> & base_shape_fn_i,
-              const std::function<TensorShapeRef(const VariableName &)> & base_shape_fn_j,
-              const std::array<VariableName, D> & key)
+              const std::array<TensorShapeRef, D> & base_shapes)
 {
-  const auto key_str = key[0].str() + (D > 1 ? '/' + key[1].str() : "");
-
   try
   {
     const auto val = pyval.cast<Tensor>();
     if (assembly && val.base_dim() != D)
-      throw py::value_error("Invalid shape for '" + key_str + "'. Expected base dim " +
-                            std::to_string(D) + " for assembly, got " +
-                            std::to_string(val.base_dim()));
+      throw py::value_error("Invalid shape. Expected base dim " + std::to_string(D) +
+                            " for assembly, got " + std::to_string(val.base_dim()));
     return val;
   }
   catch (const py::cast_error &)
@@ -60,29 +56,55 @@ unpack_tensor(const py::handle & pyval,
       if (assembly)
       {
         if (val.dim() < D)
-          throw py::value_error("Invalid shape for '" + key_str + "'. Expected at least " +
-                                std::to_string(D) + " dimensions for assembly, got " +
-                                utils::stringify(val.sizes()));
+          throw py::value_error("Invalid shape. Expected at least " + std::to_string(D) +
+                                " dimensions for assembly, got " + utils::stringify(val.sizes()));
         return Tensor(val, val.dim() - D, 0);
       }
 
-      if (base_shape_fn_i && base_shape_fn_j)
-      {
-        TensorShape base_shape{base_shape_fn_i(key[0])};
-        if constexpr (D > 1)
-          base_shape = utils::add_shapes(base_shape, base_shape_fn_j(key[1]));
-        const auto base_dim = Size(base_shape.size());
-        if (val.dim() < base_dim || val.sizes().slice(val.dim() - base_dim) != base_shape)
-          throw py::value_error("Invalid shape for '" + key_str + "'. Expected shape ending with " +
-                                utils::stringify(base_shape) + ", got " +
-                                utils::stringify(val.sizes()));
-        return Tensor(val, val.dim() - base_dim, 0);
-      }
+      auto base_shape = TensorShape(base_shapes[0]);
+      if constexpr (D > 1)
+        base_shape = utils::add_shapes(base_shape, base_shapes[1]);
+      const auto base_dim = Size(base_shape.size());
+      if (val.dim() < base_dim || val.sizes().slice(val.dim() - base_dim) != base_shape)
+        throw py::value_error("Invalid shape. Expected shape ending with " +
+                              utils::stringify(base_shape) + ", got " +
+                              utils::stringify(val.sizes()));
+      return Tensor(val, val.dim() - base_dim, 0);
     }
   }
 
-  throw py::value_error("Invalid value for '" + key_str +
-                        "' -- dictionary values must be neml2.Tensor or torch.Tensor");
+  throw py::value_error(
+      "Invalid value tensor -- dictionary values must be neml2.Tensor or torch.Tensor");
+}
+
+template <std::size_t D>
+static Tensor
+unpack_tensor(const py::handle & pyval,
+              bool assembly,
+              const std::function<TensorShapeRef(const VariableName &)> & base_shape_fn_i,
+              const std::function<TensorShapeRef(const VariableName &)> & base_shape_fn_j,
+              const std::array<VariableName, D> & key)
+{
+  const auto key_str = key[0].str() + (D > 1 ? '/' + key[1].str() : "");
+  std::array<TensorShapeRef, D> base_shapes;
+  base_shapes[0] = base_shape_fn_i ? base_shape_fn_i(key[0]) : TensorShapeRef{};
+  if constexpr (D > 1)
+    base_shapes[1] = base_shape_fn_j ? base_shape_fn_j(key[1]) : TensorShapeRef{};
+  return unpack_tensor<D>(pyval, assembly, base_shapes);
+}
+
+std::vector<neml2::Tensor>
+unpack_tensor_list(const pybind11::sequence & pytensors,
+                   const std::function<neml2::TensorShapeRef(std::size_t)> & base_shape_fn)
+{
+  std::vector<neml2::Tensor> unpacked;
+  unpacked.reserve(pytensors.size());
+  for (std::size_t i = 0; i < pytensors.size(); ++i)
+  {
+    const auto tensor = unpack_tensor<1>(pytensors[i], false, {base_shape_fn(i)});
+    unpacked.push_back(tensor);
+  }
+  return unpacked;
 }
 
 ValueMap

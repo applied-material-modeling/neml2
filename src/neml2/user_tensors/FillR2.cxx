@@ -57,7 +57,7 @@ R2
 FillR2::make() const
 {
   auto * f = factory();
-  neml_assert(f, "Internal error: factory == nullptr");
+  neml_assert(f, "Failed assertion: factory != nullptr");
 
   if (_values.size() == 1)
     return R2::fill(_values[0].resolve(f));

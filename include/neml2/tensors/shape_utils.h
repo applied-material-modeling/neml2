@@ -29,6 +29,15 @@
 
 namespace neml2::utils
 {
+
+/**
+ * @brief Sum all elements in an array.
+ *
+ * @note This assumes, of course, that the + operator is defined for type T.
+ */
+template <typename T, std::size_t N>
+static T sum_array(const std::array<T, N> & arr);
+
 /**
  * @brief Helper function to normalize a dimension index to be non-negative given the lower- and
  * upper-bound of the context.
@@ -41,6 +50,17 @@ namespace neml2::utils
 Size normalize_dim(Size d, Size dl, Size du);
 
 /**
+ * @brief Helper function to normalize multiple dimension indices to be non-negative given the
+ * lower- and upper-bound of the context.
+ *
+ * @param d The dimension indices to normalize
+ * @param dl The lower-bound (inclusive)
+ * @param du The upper-bound (exclusive)
+ * @return TensorShape The normalized dimension indices
+ */
+TensorShape normalize_dims(ArrayRef<Size> d, Size dl, Size du);
+
+/**
  * @brief Helper function to normalize a iterator-like index to be non-negative given the lower- and
  * upper-bound of the context.
  *
@@ -50,6 +70,17 @@ Size normalize_dim(Size d, Size dl, Size du);
  * @return Size The normalized iterator index
  */
 Size normalize_itr(Size d, Size dl, Size du);
+
+/**
+ * @brief Helper function to normalize multiple iterator-like indices to be non-negative given the
+ * lower- and upper-bound of the context.
+ *
+ * @param d The iterator indices to normalize
+ * @param dl The lower-bound (inclusive)
+ * @param du The upper-bound (exclusive)
+ * @return TensorShape The normalized iterator indices
+ */
+TensorShape normalize_itrs(ArrayRef<Size> d, Size dl, Size du);
 
 /**
  * @brief Check if the shapes are broadcastable.
@@ -134,7 +165,7 @@ TensorShape add_shapes(const S &...);
  * @param pad The values used to pad the shape, default to 1
  * @return TensorShape The padded shape with dimension \p dim
  */
-TensorShape pad_prepend(TensorShapeRef s, Size dim, Size pad = 1);
+TensorShape pad_prepend(TensorShapeRef s, std::size_t dim, Size pad = 1);
 
 namespace details
 {
@@ -149,6 +180,13 @@ TensorShape add_shapes_impl(TensorShape &, TensorShapeRef, const S &...);
 
 namespace neml2::utils
 {
+template <typename T, std::size_t N>
+static T
+sum_array(const std::array<T, N> & arr)
+{
+  return std::accumulate(arr.begin(), arr.end(), T(0), [](T sum, T x) { return sum + x; });
+}
+
 template <class... T>
 bool
 sizes_broadcastable(const T &... shapes)
@@ -156,7 +194,7 @@ sizes_broadcastable(const T &... shapes)
   auto dim = std::max({shapes.size()...});
   auto all_shapes_padded = std::vector<TensorShape>{pad_prepend(shapes, dim)...};
 
-  for (size_t i = 0; i < dim; i++)
+  for (std::size_t i = 0; i < dim; i++)
   {
     Size max_sz = 1;
     for (const auto & s : all_shapes_padded)
@@ -241,7 +279,7 @@ broadcast_sizes(const T &... shapes)
   auto all_shapes_padded = std::vector<TensorShape>{pad_prepend(shapes, dim)...};
   auto bshape = TensorShape(dim, 1);
 
-  for (size_t i = 0; i < dim; i++)
+  for (std::size_t i = 0; i < dim; i++)
     for (const auto & s : all_shapes_padded)
       if (s[i] > bshape[i])
         bshape[i] = s[i];

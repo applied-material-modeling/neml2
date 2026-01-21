@@ -6,6 +6,8 @@
     input_SR2_values = 'S'
     output_SR2_names = 'state/S_sum'
     output_SR2_values = 'S_sum'
+    input_with_intrsc_intmd_dims = 'state/S'
+    input_intrsc_intmd_dims = '1'
   []
 []
 
@@ -42,6 +44,5 @@
     type = SR2IntermediateSum
     from = 'state/S'
     to = 'state/S_sum'
-    dim = 1
   []
 []

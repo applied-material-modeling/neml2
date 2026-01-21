@@ -56,7 +56,7 @@ Rot
 FillRot::make() const
 {
   auto * f = factory();
-  neml_assert(f, "Internal error: factory == nullptr");
+  neml_assert(f, "Failed assertion: factory != nullptr");
 
   if (_method == "modified")
   {

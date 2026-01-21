@@ -30,6 +30,7 @@
 
 #include "neml2/base/Option.h"
 #include "neml2/misc/errors.h"
+#include "neml2/misc/string_utils.h"
 
 namespace neml2
 {
@@ -115,6 +116,24 @@ public:
 
   /// @brief Get a const reference to the specified option value.
   const OptionBase & get(const std::string &) const;
+
+  /// Get two options and bind them to find a map
+  ///
+  /// @tparam K Key type
+  /// @tparam V Value type
+
+  /**
+   * @brief Get two options and bind them to find a map
+   *
+   * The two options are expected to be of type std::vector<K> and std::vector<V>, respectively.
+   * Keys shall be unique. Otherwise, an exception is thrown.
+   *
+   * @tparam K Key type
+   * @tparam V Value type
+   * @return std::map<K, V>
+   */
+  template <typename K, typename V>
+  std::map<K, V> get_map(const std::string &, const std::string &) const;
 
   ///@{
   /**
@@ -251,6 +270,27 @@ OptionSet::get(const std::string & name) const
     throw NEMLException("ERROR: option named \"" + name +
                         "\" is not of the requested type: " + opt_base->type());
   return ptr->get();
+}
+
+template <typename K, typename V>
+std::map<K, V>
+OptionSet::get_map(const std::string & key_option, const std::string & value_option) const
+{
+  const auto keys = this->get<std::vector<K>>(key_option);
+  const auto values = this->get<std::vector<V>>(value_option);
+  if (keys.size() != values.size())
+    throw NEMLException("Trying to build a map from '" + key_option + "' and '" + value_option +
+                        "' with " + std::to_string(keys.size()) + " keys and " +
+                        std::to_string(values.size()) + " values.");
+  std::map<K, V> result;
+  for (size_t i = 0; i < keys.size(); i++)
+  {
+    if (result.find(keys[i]) != result.end())
+      throw NEMLException("Trying to build a map from '" + key_option + "' and '" + value_option +
+                          "' with duplicate key: " + utils::stringify(keys[i]));
+    result[keys[i]] = values[i];
+  }
+  return result;
 }
 
 template <typename T, FType F>

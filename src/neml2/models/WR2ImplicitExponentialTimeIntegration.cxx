@@ -43,8 +43,6 @@ WR2ImplicitExponentialTimeIntegration::expected_options()
                   "(t-t_n)\\dot{s}\\right] \\circ s_n \\f$, where \\f$ \\circ \\f$ denotes the "
                   "rotation operator.";
 
-  NonlinearSystem::enable_automatic_scaling(options);
-
   options.set_input("variable");
   options.set("variable").doc() = "Variable being integrated";
 
@@ -95,7 +93,7 @@ WR2ImplicitExponentialTimeIntegration::set_value(bool out, bool dout_din, bool /
     _r.d(_s) = R2::identity(_s.options());
     _r.d(_s_dot) = -_sn().drotate(inc) * de * dt;
 
-    if (currently_solving_nonlinear_system())
+    if (currently_assembling_nonlinear_system())
       return;
 
     _r.d(_sn) = -_sn().drotate_self(inc);

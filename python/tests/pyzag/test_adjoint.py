@@ -82,6 +82,10 @@ class DerivativeCheck:
             assert torch.allclose(grads_adjoint[n], grads_fd[n], atol=self.atol, rtol=self.rtol)
 
 
+def dict_to_list(d: dict, keys: list):
+    return [d[k] for k in keys]
+
+
 class TestElasticModel(DerivativeCheck):
     @pytest.fixture(autouse=True)
     def _setup(self):
@@ -107,9 +111,8 @@ class TestElasticModel(DerivativeCheck):
         strain = SR2.dynamic_linspace(start_strain, end_strain, self.nstep).dynamic.unsqueeze(-1)
 
         # Prescribed forces
-        self.forces = self.model.forces_asm.assemble_by_variable(
-            {"forces/t": time, "forces/E": strain}, assembly=False
-        ).torch()
+        forces = dict_to_list({"forces/t": time, "forces/E": strain}, self.model.nl_sys.gmap())
+        self.forces = neml2.HVector(forces, self.model.nl_sys.glayout()).assemble()[0].torch()
 
         # Initial state
         self.initial_state = torch.zeros((self.nbatch, self.model.nstate))
@@ -140,9 +143,8 @@ class TestViscoplasticModel(DerivativeCheck):
         strain = SR2.dynamic_linspace(start_strain, end_strain, self.nstep).dynamic.unsqueeze(-1)
 
         # Prescribed forces
-        self.forces = self.model.forces_asm.assemble_by_variable(
-            {"forces/t": time, "forces/E": strain}, assembly=False
-        ).torch()
+        forces = dict_to_list({"forces/t": time, "forces/E": strain}, self.model.nl_sys.gmap())
+        self.forces = neml2.HVector(forces, self.model.nl_sys.glayout()).assemble()[0].torch()
 
         # Initial state
         self.initial_state = torch.zeros((self.nbatch, self.model.nstate))
@@ -187,15 +189,16 @@ class TestKocksMeckingMixedControlModel(DerivativeCheck):
         temperature = Scalar.dynamic_linspace(start_temperature, end_temperature, self.nstep)
 
         # Prescribed forces
-        self.forces = self.model.forces_asm.assemble_by_variable(
+        forces = dict_to_list(
             {
                 "forces/t": time,
                 "forces/control": control,
                 "forces/fixed_values": condition,
                 "forces/T": temperature,
             },
-            assembly=False,
-        ).torch()
+            self.model.nl_sys.gmap(),
+        )
+        self.forces = neml2.HVector(forces, self.model.nl_sys.glayout()).assemble()[0].torch()
 
         # Initial state
         self.initial_state = torch.zeros((self.nbatch, self.model.nstate))

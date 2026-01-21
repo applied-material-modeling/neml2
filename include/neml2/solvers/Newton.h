@@ -41,13 +41,11 @@ public:
 
   Newton(const OptionSet & options);
 
-  Result solve(NonlinearSystem & system, const NonlinearSystem::Sol<false> & x0) override;
+  Result solve(NonlinearSystem &, const HVector &) override;
 
 protected:
   /// Prepare solver internal data before the iterative update
-  virtual void prepare(const NonlinearSystem & /*system*/, const NonlinearSystem::Sol<true> & /*x*/)
-  {
-  }
+  virtual void prepare(const NonlinearSystem & /*system*/, const HVector & /*u*/) {}
 
   /**
    * @brief Check for convergence. The current iteration is said to be converged if the residual
@@ -55,27 +53,19 @@ protected:
    * residual norm is below the relative tolerance.
    *
    * @param itr The current iteration number
-   * @param nR The current residual norm
-   * @param nR0 The initial residual norm
-   * @return true Converged
-   * @return false Not converged
+   * @param nb The current residual norm
+   * @param nb0 The initial residual norm
    */
-  virtual bool converged(size_t itr, const ATensor & nR, const ATensor & nR0) const;
+  virtual bool converged(size_t itr, const Scalar & nb, const Scalar & nb0) const;
 
   /// Update trial solution
-  virtual void update(NonlinearSystem & system,
-                      NonlinearSystem::Sol<true> & x,
-                      const NonlinearSystem::Res<true> & r,
-                      const NonlinearSystem::Jac<true> & J);
+  virtual void update(NonlinearSystem & system, HVector & u, const HVector & b, const HMatrix & A);
 
   /// Do a final update to track AD function graph
-  virtual void final_update(NonlinearSystem & system,
-                            NonlinearSystem::Sol<true> & x,
-                            const NonlinearSystem::Res<true> & r,
-                            const NonlinearSystem::Jac<true> & J);
+  virtual void
+  final_update(NonlinearSystem & system, HVector & u, const HVector & b, const HMatrix & A);
 
   /// Find the current update direction
-  virtual NonlinearSystem::Sol<true> solve_direction(const NonlinearSystem::Res<true> & r,
-                                                     const NonlinearSystem::Jac<true> & J);
+  virtual HVector solve_direction(const HVector & b, const HMatrix & A);
 };
 } // namespace neml2

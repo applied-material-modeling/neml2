@@ -24,45 +24,39 @@
 
 #pragma once
 
-#include "neml2/solvers/NonlinearSystem.h"
-#include "neml2/tensors/Scalar.h"
+#include <vector>
+#include "neml2/misc/types.h"
+#include "neml2/tensors/Tensor.h"
 
 namespace neml2
 {
-/**
- * The trust region subproblem introduced in
- *
- * > Yuan, Ya-xiang. Trust region algorithms for nonlinear equations. Hong Kong Baptist
- * > University, Department of Mathematics, 1994.
- */
-class TrustRegionSubProblem : public NonlinearSystem
+/// Base data structure for discrete, heterogeneous data (e.g., HVector and HMatrix)
+struct HeterogeneousData
 {
-public:
-  TrustRegionSubProblem(const OptionSet & options);
+  HeterogeneousData() = default;
+  HeterogeneousData(std::vector<Tensor>);
 
-  /// Record the current state of the underlying problem
-  void reinit(const Res<true> & r, const Jac<true> & J, const Scalar & delta);
+  /// Whether any of the contained Tensors require gradients
+  bool requires_grad() const;
+  /// Tensor options
+  TensorOptions options() const;
+  /// Is _data empty? empty means no dense sub-block hence zero
+  bool zero() const;
 
-  Tensor preconditioned_direction(const Scalar & s) const;
+  ///@{
+  // iterator business
+  using iterator = typename std::vector<Tensor>::iterator;
+  using const_iterator = typename std::vector<Tensor>::const_iterator;
+  iterator begin() noexcept { return _data.begin(); }
+  iterator end() noexcept { return _data.end(); }
+  const_iterator begin() const noexcept { return _data.begin(); }
+  const_iterator end() const noexcept { return _data.end(); }
+  const_iterator cbegin() const noexcept { return _data.cbegin(); }
+  const_iterator cend() const noexcept { return _data.cend(); }
+  ///@}
 
 protected:
-  void set_guess(const Sol<false> & x) override;
-
-  void assemble(Res<false> * residual, Jac<false> * Jacobian) override;
-
-  Tensor preconditioned_solve(const Scalar & s, const Tensor & v) const;
-
-private:
-  /// Solution to the Lagrange multiplier
-  Scalar _s;
-
-  /// The trust region radius
-  Scalar _delta;
-
-  /// Temporary Jacobian-Jacobian product
-  Tensor _JJ;
-
-  /// Temporary Jacobian-Residual product
-  Tensor _Jr;
+  /// Sub-block tensors
+  std::vector<Tensor> _data;
 };
 } // namespace neml2

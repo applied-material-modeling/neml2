@@ -10,6 +10,7 @@ Once NEML2 is installed, external C++ projects can use NEML2 by including the de
 - `neml2_driver`
 - `neml2_misc`
 - `neml2_model`
+- `neml2_equation_system`
 - `neml2_solver`
 - `neml2_tensor`
 - `neml2_user_tensor`

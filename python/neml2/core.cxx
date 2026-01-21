@@ -26,6 +26,7 @@
 #include <pybind11/stl.h>
 
 #include "python/neml2/csrc/core/types.h"
+#include "python/neml2/csrc/core/utils.h"
 
 namespace py = pybind11;
 using namespace neml2;
@@ -46,8 +47,12 @@ PYBIND11_MODULE(core, m)
       py::class_<Factory>(m, "Factory", "Factory for creating objects defined in the input file");
   auto cls_Model = py::class_<Model, std::shared_ptr<Model>>(
       m, "Model", "The canonical type for constitutive models in NEML2.");
-  auto cls_VectorAssembler = py::class_<VectorAssembler>(m, "VectorAssembler");
-  auto cls_MatrixAssembler = py::class_<MatrixAssembler>(m, "MatrixAssembler");
+  auto cls_HVector =
+      py::class_<HVector>(m, "HVector", "Heterogeneous vector for equation systems.");
+  auto cls_HMatrix =
+      py::class_<HMatrix>(m, "HMatrix", "Heterogeneous matrix for equation systems.");
+  auto cls_ModelNonlinearSystem = py::class_<ModelNonlinearSystem>(
+      m, "ModelNonlinearSystem", "Nonlinear system wrapper for models.");
 
   // free functions
   m.def(
@@ -99,6 +104,27 @@ PYBIND11_MODULE(core, m)
 
   :param model: Model to be diagnosed
   )");
+  m.def(
+      "bind",
+      [](const py::object & p, const HVector & v)
+      {
+        // cast p to iterable
+        auto p_itr = py::cast<py::iterable>(p);
+        std::vector<VariableName> names;
+        names.reserve(py::len(p_itr));
+        for (const auto & item : p_itr)
+          names.emplace_back(unpack_variable_name(item));
+        return neml2::bind(names, v);
+      },
+      py::arg("variable_names"),
+      py::arg("es_vector"),
+      R"(
+Bind an HVector to variable names to form a dictionary whose keys are
+variable names and values are sub-tensors in HVector.
+
+:param variable_names: List of variable names
+:param es_vector: HVector to be bound
+        )");
 
   // binding definitions
   def(m, cls_VariableName);
@@ -106,6 +132,7 @@ PYBIND11_MODULE(core, m)
   def(m, cls_TensorValue);
   def(m, cls_Factory);
   def(m, cls_Model);
-  def(m, cls_VectorAssembler);
-  def(m, cls_MatrixAssembler);
+  def(m, cls_HVector);
+  def(m, cls_HMatrix);
+  def(m, cls_ModelNonlinearSystem);
 }

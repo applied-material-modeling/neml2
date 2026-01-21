@@ -23,11 +23,11 @@ inputs = {
     "state/c": c,
     "forces/t": t,
     "old_state/a": a_n,
-    "old_state/b": b,
-    "old_state/c": c,
-    "old_forces/t": t,
+    "old_state/b": b_n,
+    "old_state/c": c_n,
+    "old_forces/t": t_n,
 }
 for i in range(10):
     model.value(inputs)
 
-print(torch.jit.last_executed_optimized_graph())
+print(torch.jit.last_executed_optimized_graph())  # type: ignore[attr-defined]

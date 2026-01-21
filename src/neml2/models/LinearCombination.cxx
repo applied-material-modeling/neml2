@@ -150,13 +150,13 @@ LinearCombination<T>::set_value(bool out, bool dout_din, bool d2out_din2)
     for (std::size_t i = 0; i < _from.size(); i++)
     {
       if (_from[i]->is_dependent())
-        _to.d(*_from[i]) = (*_coefs[i]) * I;
+        _to.d(*_from[i]) += (*_coefs[i]) * I;
 
       if (const auto * const pi = nl_param("c_" + std::to_string(i)))
-        _to.d(*pi) = (*_from[i]);
+        _to.d(*pi) += (*_from[i])();
     }
     if (const auto * const s = nl_param("s"))
-      _to.d(*s) = neml2::Scalar::full(1.0, _from[0]->options());
+      _to.d(*s) += neml2::Scalar::full(1.0, _from[0]->options());
   }
 
   if (d2out_din2)
