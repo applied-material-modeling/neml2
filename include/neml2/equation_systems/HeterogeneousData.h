@@ -30,33 +30,54 @@
 
 namespace neml2
 {
-/// Base data structure for discrete, heterogeneous data (e.g., HVector and HMatrix)
+/// Base data structure for discontiguous, heterogeneous data (e.g., HVector and HMatrix)
 struct HeterogeneousData
 {
+  enum class Preference : int8_t
+  {
+    Assembled,
+    Disassembled
+  };
+
   HeterogeneousData() = default;
-  HeterogeneousData(std::vector<Tensor>);
+
+  HeterogeneousData(const HeterogeneousData &) = default;
+  HeterogeneousData(HeterogeneousData &&) noexcept = default;
+  HeterogeneousData & operator=(const HeterogeneousData &) = default;
+  HeterogeneousData & operator=(HeterogeneousData &&) noexcept = default;
+  virtual ~HeterogeneousData() = default;
+
+  HeterogeneousData(std::vector<Tensor>, Preference p = Preference::Disassembled);
+  HeterogeneousData(Tensor, Preference p = Preference::Assembled);
 
   /// Whether any of the contained Tensors require gradients
   bool requires_grad() const;
   /// Tensor options
   TensorOptions options() const;
-  /// Is _data empty? empty means no dense sub-block hence zero
-  bool zero() const;
+  /// Whether the disassembled data cache exists
+  bool disassembled() const;
+  /// Whether the assembled data cache exists
+  bool assembled() const;
 
-  ///@{
-  // iterator business
-  using iterator = typename std::vector<Tensor>::iterator;
-  using const_iterator = typename std::vector<Tensor>::const_iterator;
-  iterator begin() noexcept { return _data.begin(); }
-  iterator end() noexcept { return _data.end(); }
-  const_iterator begin() const noexcept { return _data.begin(); }
-  const_iterator end() const noexcept { return _data.end(); }
-  const_iterator cbegin() const noexcept { return _data.cbegin(); }
-  const_iterator cend() const noexcept { return _data.cend(); }
-  ///@}
+  /// Get the assembled data (perform assembly on cache miss)
+  const Tensor & get_assembled() const;
+  /// Get the disassembled data (perform disassembly on cache miss)
+  const std::vector<Tensor> & get_disassembled() const;
 
 protected:
+  /// Assemble the disassembled data into the assembled data cache
+  virtual void assemble() const = 0;
+  /// Disassemble the assembled data into the disassembled data cache
+  virtual void disassemble() const = 0;
+
   /// Sub-block tensors
-  std::vector<Tensor> _data;
+  mutable std::vector<Tensor> _disassembled_data;
+
+  /// Cache for the assembled data. The assembled data is contiguous
+  // and flat, and is padded with zeros for missing sub-blocks.
+  mutable Tensor _assembled_data;
+
+  /// Preference for data storage when performing operations
+  Preference _preference = Preference::Disassembled;
 };
 } // namespace neml2

@@ -31,16 +31,8 @@ namespace neml2
 std::vector<TensorShape> shape_refs_to_shapes(const std::vector<TensorShapeRef> & shape_refs);
 std::vector<TensorShapeRef> shapes_to_shape_refs(const std::vector<TensorShape> & shapes);
 
-std::vector<std::size_t> select_subblock_indices(OptionalArrayRef<std::size_t> blocks,
-                                                 std::size_t n);
-std::vector<TensorShapeRef> select_shapes(const std::vector<TensorShape> & all_shapes,
-                                          ArrayRef<std::size_t> blocks);
-std::vector<Size> numel(const std::vector<TensorShapeRef> & shapes);
-
 struct HVector : public HeterogeneousData
 {
-  HVector() = default;
-
   /// construct a zero HVector with given sub-block shapes
   HVector(const std::vector<TensorShapeRef> &);
   HVector(std::vector<TensorShape>);
@@ -49,12 +41,25 @@ struct HVector : public HeterogeneousData
   HVector(std::vector<Tensor>, const std::vector<TensorShapeRef> &);
   HVector(std::vector<Tensor>, std::vector<TensorShape>);
 
+  /// construct a HVector by splitting an assembled vector into sub-blocks
+  HVector(Tensor, const std::vector<TensorShapeRef> &);
+  HVector(Tensor, std::vector<TensorShape>);
+
+  /// Assign from disassembled data
+  void operator=(const std::vector<Tensor> &);
+  /// Assign from assembled data
+  void operator=(Tensor);
+
   /// Number of sub-tensors
   std::size_t n() const { return _shapes.size(); }
   /// Sub-block shapes
   std::vector<TensorShapeRef> block_sizes() const;
   /// Shape of a sub-tensor
-  TensorShapeRef block_sizes(std::size_t i) const { return _shapes[i]; }
+  TensorShapeRef block_sizes(std::size_t i) const;
+  /// Split sizes of sub-blocks
+  const std::vector<Size> & block_numel() const { return _numels; }
+  /// Split size of a sub-block
+  Size block_numel(std::size_t i) const;
 
   ///@{
   /// Access to sub-tensors
@@ -65,13 +70,6 @@ struct HVector : public HeterogeneousData
   /// Negation
   HVector operator-() const;
 
-  /// Assemble into a dense, flat vector
-  std::pair<Tensor, std::vector<Size>>
-  assemble(OptionalArrayRef<std::size_t> blocks = std::nullopt) const;
-
-  /// Take an assembled vector and split it into sub-blocks
-  void disassemble(const Tensor &, OptionalArrayRef<std::size_t> blocks = std::nullopt);
-
   /// Update the data of the contained Tensors (without changing their computational graph)
   void update_data(const HVector & other);
 
@@ -79,8 +77,17 @@ struct HVector : public HeterogeneousData
   void update(const HVector & other);
 
 private:
+  /// Assemble the existing sub-blocks into the assembled data cache
+  void assemble() const override;
+
+  /// Disassemble the existing assembled data into the sub-blocks cache
+  void disassemble() const override;
+
   /// sub-block shapes
   std::vector<TensorShape> _shapes;
+
+  /// sub-block numels
+  std::vector<Size> _numels;
 };
 
 ///@{

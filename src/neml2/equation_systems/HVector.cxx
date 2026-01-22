@@ -25,6 +25,7 @@
 #include <utility>
 
 #include "neml2/equation_systems/HVector.h"
+#include "neml2/equation_systems/HeterogeneousData.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/functions/inner.h"
 #include "neml2/tensors/functions/norm_sq.h"
@@ -54,65 +55,22 @@ shapes_to_shape_refs(const std::vector<TensorShape> & shapes)
   return shape_refs;
 }
 
-std::vector<std::size_t>
-select_subblock_indices(OptionalArrayRef<std::size_t> blocks, std::size_t n)
-{
-  if (blocks)
-    return blocks->vec();
-
-  std::vector<std::size_t> default_blocks;
-  default_blocks.resize(n);
-  std::iota(default_blocks.begin(), default_blocks.end(), 0);
-  return default_blocks;
-}
-
-std::vector<TensorShapeRef>
-select_shapes(const std::vector<TensorShape> & all_shapes, ArrayRef<std::size_t> blocks)
-{
-  neml_assert(blocks.size() <= all_shapes.size(),
-              "HVector/Matrix::assemble: number of sub-blocks (",
-              blocks.size(),
-              ") to assemble exceeds total number of sub-blocks (",
-              all_shapes.size(),
-              ").");
-  std::vector<TensorShapeRef> shapes(blocks.size());
-  for (std::size_t i = 0; i < shapes.size(); ++i)
-  {
-    neml_assert(blocks[i] < all_shapes.size(),
-                "HVector/Matrix::assemble: block index (",
-                blocks[i],
-                ") out of bounds (",
-                all_shapes.size(),
-                ").");
-    shapes[i] = all_shapes[blocks[i]];
-  }
-  return shapes;
-}
-
-std::vector<Size>
-numel(const std::vector<TensorShapeRef> & shapes)
-{
-  std::vector<Size> split_sizes(shapes.size());
-  for (std::size_t i = 0; i < shapes.size(); ++i)
-    split_sizes[i] = utils::numel(shapes[i]);
-  return split_sizes;
-}
-
 HVector::HVector(const std::vector<TensorShapeRef> & shapes)
-  : _shapes(shape_refs_to_shapes(shapes))
+  : HVector(shape_refs_to_shapes(shapes))
 {
-  _data.resize(_shapes.size());
 }
 
 HVector::HVector(std::vector<TensorShape> shapes)
   : _shapes(std::move(shapes))
 {
-  _data.resize(_shapes.size());
+  neml_assert_dbg(!_shapes.empty(), "HVector::HVector: must have at least one sub-block");
+  _numels.resize(_shapes.size());
+  for (std::size_t i = 0; i < _shapes.size(); ++i)
+    _numels[i] = utils::numel(_shapes[i]);
 }
 
 HVector::HVector(std::vector<Tensor> v, const std::vector<TensorShapeRef> & shapes)
-  : HeterogeneousData(std::move(v)),
-    _shapes(shape_refs_to_shapes(shapes))
+  : HVector(std::move(v), shape_refs_to_shapes(shapes))
 {
 }
 
@@ -120,6 +78,46 @@ HVector::HVector(std::vector<Tensor> v, std::vector<TensorShape> shapes)
   : HeterogeneousData(std::move(v)),
     _shapes(std::move(shapes))
 {
+  neml_assert_dbg(_disassembled_data.size() == _shapes.size(),
+                  "HVector::HVector: size mismatch (",
+                  _disassembled_data.size(),
+                  ") vs (",
+                  _shapes.size(),
+                  ")");
+  _numels.resize(_shapes.size());
+  for (std::size_t i = 0; i < _shapes.size(); ++i)
+    _numels[i] = utils::numel(_shapes[i]);
+}
+
+HVector::HVector(Tensor v, const std::vector<TensorShapeRef> & shapes)
+  : HVector(std::move(v), shape_refs_to_shapes(shapes))
+{
+}
+
+HVector::HVector(Tensor v, std::vector<TensorShape> shapes)
+  : HeterogeneousData(std::move(v)),
+    _shapes(std::move(shapes))
+{
+  _numels.resize(_shapes.size());
+  for (std::size_t i = 0; i < _shapes.size(); ++i)
+    _numels[i] = utils::numel(_shapes[i]);
+}
+
+void
+HVector::operator=(const std::vector<Tensor> & v)
+{
+  neml_assert_dbg(
+      v.size() == n(), "HVector::operator=: size mismatch (", v.size(), ") vs (", n(), ")");
+  _disassembled_data = v;
+  _assembled_data = Tensor();
+}
+
+void
+HVector::operator=(Tensor v)
+{
+  neml_assert_dbg(v.defined(), "HVector::operator=: assigned assembled data is undefined");
+  _assembled_data = std::move(v);
+  _disassembled_data.clear();
 }
 
 std::vector<TensorShapeRef>
@@ -128,11 +126,25 @@ HVector::block_sizes() const
   return shapes_to_shape_refs(_shapes);
 }
 
+TensorShapeRef
+HVector::block_sizes(std::size_t i) const
+{
+  neml_assert(i < n(), "HVector::block_sizes: index (", i, ") out of bounds (", n(), ")");
+  return _shapes[i];
+}
+
+Size
+HVector::block_numel(std::size_t i) const
+{
+  neml_assert(i < n(), "HVector::block_numel: index (", i, ") out of bounds (", n(), ")");
+  return _numels[i];
+}
+
 const Tensor &
 HVector::operator[](std::size_t i) const
 {
   neml_assert(i < n(), "HVector::operator[]: index (", i, ") out of bounds (", n(), ")");
-  return _data[i];
+  return get_disassembled()[i];
 }
 
 Tensor &
@@ -145,29 +157,35 @@ HVector::operator[](std::size_t i)
 HVector
 HVector::operator-() const
 {
-  std::vector<Tensor> v(n());
-  for (size_t i = 0; i < n(); i++)
+  if (_preference == Preference::Assembled)
+    return HVector(-get_assembled(), block_sizes());
+  else if (_preference == Preference::Disassembled)
   {
-    const auto & vi = _data[i];
-    if (vi.defined())
-      v[i] = -vi;
+    const auto & v0 = get_disassembled();
+    std::vector<Tensor> v(n());
+    for (size_t i = 0; i < n(); i++)
+    {
+      const auto & vi = v0[i];
+      if (vi.defined())
+        v[i] = -vi;
+    }
+    return HVector(std::move(v), block_sizes());
   }
-  return HVector(std::move(v), block_sizes());
+
+  throw NEMLException("HVector::operator-: invalid preference");
 }
 
-std::pair<Tensor, std::vector<Size>>
-HVector::assemble(OptionalArrayRef<std::size_t> blocks) const
+void
+HVector::assemble() const
 {
-  const auto indices = select_subblock_indices(blocks, n());
-  const auto shapes = select_shapes(_shapes, indices);
-  const auto split_sizes = numel(shapes);
+  neml_assert(disassembled(), "HVector::assemble: no disassembled data to assemble");
 
   // If a variable is not found, tensor at that position remains undefined, and all undefined tensor
   // will later be filled with zeros.
-  std::vector<Tensor> vs_f(indices.size());
-  for (std::size_t i = 0; i < indices.size(); ++i)
+  std::vector<Tensor> vs_f(n());
+  for (std::size_t i = 0; i < n(); ++i)
   {
-    const auto & v = _data[indices[i]];
+    const auto & v = _disassembled_data[i];
     if (!v.defined())
       continue;
     const auto v_f = v.base_flatten();
@@ -177,27 +195,25 @@ HVector::assemble(OptionalArrayRef<std::size_t> blocks) const
   // Expand defined tensors with the broadcast dynamic shape and fill undefined tensors with zeros.
   const auto dynamic_sizes = utils::broadcast_dynamic_sizes(vs_f);
   const auto intmd_sizes = utils::broadcast_intmd_sizes(vs_f);
-  for (std::size_t i = 0; i < vs_f.size(); ++i)
+  for (std::size_t i = 0; i < n(); ++i)
     if (vs_f[i].defined())
       vs_f[i] = vs_f[i].batch_expand(dynamic_sizes, intmd_sizes);
     else
-      vs_f[i] = Tensor::zeros(dynamic_sizes, intmd_sizes, split_sizes[i], options());
-
-  return {base_cat(vs_f, -1), split_sizes};
+      vs_f[i] = Tensor::zeros(dynamic_sizes, intmd_sizes, _numels[i], options());
+  _assembled_data = base_cat(vs_f, -1);
 }
 
 void
-HVector::disassemble(const Tensor & vec, OptionalArrayRef<std::size_t> blocks)
+HVector::disassemble() const
 {
-  const auto indices = select_subblock_indices(blocks, n());
-  const auto shapes = select_shapes(_shapes, indices);
-  const auto split_sizes = numel(shapes);
-  const auto & D = vec.dynamic_sizes();
-  const auto I = vec.intmd_dim();
-  const auto vs = vec.split(split_sizes, -1);
+  neml_assert(assembled(), "HVector::disassemble: no assembled data to disassemble");
 
-  for (std::size_t i = 0; i < indices.size(); ++i)
-    _data[indices[i]] = Tensor(vs[i], D, I).base_reshape(shapes[i]);
+  const auto & D = _assembled_data.dynamic_sizes();
+  const auto I = _assembled_data.intmd_dim();
+  const auto vs = _assembled_data.split(_numels, -1);
+
+  for (std::size_t i = 0; i < n(); ++i)
+    _disassembled_data[i] = Tensor(vs[i], D, I).base_reshape(_shapes[i]);
 }
 
 void
@@ -205,10 +221,21 @@ HVector::update_data(const HVector & other)
 {
   neml_assert_dbg(
       n() == other.n(), "HVector::update_data: size mismatch (", n(), ") vs (", other.n(), ")");
-  for (std::size_t i = 0; i < n(); i++)
+
+  if (_preference == Preference::Assembled)
   {
-    auto & v = _data[i];
-    v = v.variable_data() + other[i];
+    assemble();
+    _assembled_data = _assembled_data.variable_data() + other.get_assembled();
+    _disassembled_data.clear();
+  }
+  else if (_preference == Preference::Disassembled)
+  {
+    auto & vs = get_disassembled();
+    for (std::size_t i = 0; i < n(); i++)
+    {
+      auto & v = _disassembled_data[i];
+      v = v.variable_data() + other[i];
+    }
   }
 }
 
