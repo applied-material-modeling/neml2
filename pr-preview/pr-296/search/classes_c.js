@@ -7,5 +7,6 @@ var searchData=
   ['mixedcontrolsetup_4',['MixedControlSetup',['../classneml2_1_1MixedControlSetup.html',1,'neml2']]],
   ['model_5',['Model',['../classneml2_1_1Model.html',1,'neml2']]],
   ['modeldriver_6',['ModelDriver',['../classneml2_1_1ModelDriver.html',1,'neml2']]],
-  ['multienumselection_7',['MultiEnumSelection',['../classneml2_1_1MultiEnumSelection.html',1,'neml2']]]
+  ['multicolumncsvscalar_7',['MultiColumnCSVScalar',['../classneml2_1_1MultiColumnCSVScalar.html',1,'neml2']]],
+  ['multienumselection_8',['MultiEnumSelection',['../classneml2_1_1MultiEnumSelection.html',1,'neml2']]]
 ];

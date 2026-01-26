@@ -144,20 +144,86 @@ $(function(){initNavTree('namespacecrystallography.html',''); initResizable(true
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a3db6bff04fc4f71d431715881051d3a4" id="r_a3db6bff04fc4f71d431715881051d3a4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classtensors_1_1R2.html">tensors.R2</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3db6bff04fc4f71d431715881051d3a4">symmetry_operations_from_orbifold</a> (str orbifold, *, torch.dtype dtype=..., torch.device device=..., bool requires_grad=False)</td></tr>
-<tr class="separator:a3db6bff04fc4f71d431715881051d3a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8cacfe315b7dba0a42322c3965edbd41" id="r_a8cacfe315b7dba0a42322c3965edbd41"><td class="memItemLeft" align="right" valign="top">Scalar&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8cacfe315b7dba0a42322c3965edbd41">misorientation</a> (Rot r1, Rot r2, str orbifold='1')</td></tr>
+<tr class="separator:a8cacfe315b7dba0a42322c3965edbd41"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa7cc5eb0d7dc631cdc7152e31d93346f" id="r_aa7cc5eb0d7dc631cdc7152e31d93346f"><td class="memItemLeft" align="right" valign="top">Rot&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa7cc5eb0d7dc631cdc7152e31d93346f">move_to_fundamental_zone</a> (Rot r, str orbifold, Rot ref=...)</td></tr>
+<tr class="separator:aa7cc5eb0d7dc631cdc7152e31d93346f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9964ed3076d8d51325f5fd2963e847a5" id="r_a9964ed3076d8d51325f5fd2963e847a5"><td class="memItemLeft" align="right" valign="top">R2&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9964ed3076d8d51325f5fd2963e847a5">symmetry</a> (str orbifold, *, torch.dtype dtype=..., torch.device device=..., bool requires_grad=False)</td></tr>
+<tr class="separator:a9964ed3076d8d51325f5fd2963e847a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><pre class="fragment">Crystallography helper routines
 </pre> </div><h2 class="groupheader">Function Documentation</h2>
-<a id="a3db6bff04fc4f71d431715881051d3a4" name="a3db6bff04fc4f71d431715881051d3a4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3db6bff04fc4f71d431715881051d3a4">&#9670;&#160;</a></span>symmetry_operations_from_orbifold()</h2>
+<a id="a8cacfe315b7dba0a42322c3965edbd41" name="a8cacfe315b7dba0a42322c3965edbd41"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8cacfe315b7dba0a42322c3965edbd41">&#9670;&#160;</a></span>misorientation()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"> <a class="el" href="classtensors_1_1R2.html">tensors.R2</a> symmetry_operations_from_orbifold </td>
+          <td class="memname"> Scalar misorientation </td>
+          <td>(</td>
+          <td class="paramtype">Rot</td>          <td class="paramname"><span class="paramname"><em>r1</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Rot</td>          <td class="paramname"><span class="paramname"><em>r2</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">str </td>          <td class="paramname"><span class="paramname"><em>orbifold</em></span><span class="paramdefsep"> = </span><span class="paramdefval">'1'</span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<pre class="fragment">Calculate the misorientation of two batches of rotations
+:param r1:          First batch of rotations
+:param r2:          Second batch of rotations
+:param orbifold:    String giving the orbifold notation for the symmetry group
+:return:            Batch of misorientation angles in radians
+</pre> 
+</div>
+</div>
+<a id="aa7cc5eb0d7dc631cdc7152e31d93346f" name="aa7cc5eb0d7dc631cdc7152e31d93346f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa7cc5eb0d7dc631cdc7152e31d93346f">&#9670;&#160;</a></span>move_to_fundamental_zone()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"> Rot move_to_fundamental_zone </td>
+          <td>(</td>
+          <td class="paramtype">Rot</td>          <td class="paramname"><span class="paramname"><em>r</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">str</td>          <td class="paramname"><span class="paramname"><em>orbifold</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Rot </td>          <td class="paramname"><span class="paramname"><em>ref</em></span><span class="paramdefsep"> = </span><span class="paramdefval">...</span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<pre class="fragment">Move a collection of orientations to a fundemental zone defined by the crystal symmetry
+:param r:           Batch of rotations to move to the fundamental zone
+:param orbifold:    String giving the orbifold notation for the symmetry group
+:param ref:         Reference orientation to define the fundamental zone
+:return:            Batch of rotations moved to the fundamental zone
+</pre> 
+</div>
+</div>
+<a id="a9964ed3076d8d51325f5fd2963e847a5" name="a9964ed3076d8d51325f5fd2963e847a5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9964ed3076d8d51325f5fd2963e847a5">&#9670;&#160;</a></span>symmetry()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"> R2 symmetry </td>
           <td>(</td>
           <td class="paramtype">str</td>          <td class="paramname"><span class="paramname"><em>orbifold</em></span>, </td>
         </tr>

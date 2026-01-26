@@ -160,25 +160,16 @@ $(function(){initNavTree('tutorials-extension-connection-to-input-files.html',''
 <h1><a class="anchor" id="autotoc_md76"></a>
 Parser</h1>
 <p>A class is said to be runtime-manufacturable if its constructor can be retrieved at runtime using a string identification of its symbol. To allow for a unified object creation signature, runtime-manufacturable objects (e.g., models) are required to derive from <a class="el" href="classneml2_1_1NEML2Object.html" title="The base class of all &quot;manufacturable&quot; objects in the NEML2 library.">neml2::NEML2Object</a> and provide a constructor and a static method with the following signatures</p>
-<div class="fragment"><div class="line"><span class="preprocessor">#include &quot;neml2/models/Model.h&quot;</span></div>
-<div class="line"> </div>
-<div class="line"><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a></div>
-<div class="line">{</div>
-<div class="line"><span class="keyword">class </span>ProjectileAcceleration : <span class="keyword">public</span> Model</div>
+<div class="fragment"><div class="line"><span class="keyword">class </span>ProjectileAcceleration : <span class="keyword">public</span> Model</div>
 <div class="line">{</div>
 <div class="line"><span class="keyword">public</span>:</div>
-<div class="line">  <span class="keyword">static</span> OptionSet <a class="code hl_function" href="classneml2_1_1ProjectileAcceleration.html#acec712ff48d4c0884a1362c116f3257a">expected_options</a>();</div>
-<div class="line">  <a class="code hl_function" href="classneml2_1_1ProjectileAcceleration.html#a83543b502da8255ced01db85b58bde37">ProjectileAcceleration</a>(<span class="keyword">const</span> OptionSet &amp; options);</div>
+<div class="line">  <span class="keyword">static</span> OptionSet expected_options();</div>
+<div class="line">  ProjectileAcceleration(<span class="keyword">const</span> OptionSet &amp; options);</div>
 <div class="line"> </div>
 <div class="line"><span class="keyword">protected</span>:</div>
 <div class="line">  <span class="comment">// Model forward operator to be defined in the following tutorials</span></div>
-<div class="line">  <span class="keywordtype">void</span> <a class="code hl_function" href="classneml2_1_1ProjectileAcceleration.html#ae6396730f8e20adc1c9d3875c473acdd">set_value</a>(<span class="keywordtype">bool</span>, <span class="keywordtype">bool</span>, <span class="keywordtype">bool</span>)<span class="keyword"> override </span>{}</div>
+<div class="line">  <span class="keywordtype">void</span> set_value(<span class="keywordtype">bool</span>, <span class="keywordtype">bool</span>, <span class="keywordtype">bool</span>)<span class="keyword"> override </span>{}</div>
 <div class="line">};</div>
-<div class="line">}</div>
-<div class="ttc" id="aclassneml2_1_1ProjectileAcceleration_html_a83543b502da8255ced01db85b58bde37"><div class="ttname"><a href="classneml2_1_1ProjectileAcceleration.html#a83543b502da8255ced01db85b58bde37">neml2::ProjectileAcceleration::ProjectileAcceleration</a></div><div class="ttdeci">ProjectileAcceleration(const OptionSet &amp;options)</div><div class="ttdef"><b>Definition</b> src1.cxx:46</div></div>
-<div class="ttc" id="aclassneml2_1_1ProjectileAcceleration_html_acec712ff48d4c0884a1362c116f3257a"><div class="ttname"><a href="classneml2_1_1ProjectileAcceleration.html#acec712ff48d4c0884a1362c116f3257a">neml2::ProjectileAcceleration::expected_options</a></div><div class="ttdeci">static OptionSet expected_options()</div><div class="ttdef"><b>Definition</b> src1.cxx:34</div></div>
-<div class="ttc" id="aclassneml2_1_1ProjectileAcceleration_html_ae6396730f8e20adc1c9d3875c473acdd"><div class="ttname"><a href="classneml2_1_1ProjectileAcceleration.html#ae6396730f8e20adc1c9d3875c473acdd">neml2::ProjectileAcceleration::set_value</a></div><div class="ttdeci">void set_value(bool, bool, bool) override</div><div class="ttdoc">The map between input -&gt; output, and optionally its derivatives.</div><div class="ttdef"><b>Definition</b> src1.cxx:13</div></div>
-<div class="ttc" id="anamespaceneml2_html"><div class="ttname"><a href="namespaceneml2.html">neml2</a></div><div class="ttdef"><b>Definition</b> DiagnosticsInterface.cxx:30</div></div>
 </div><!-- fragment --><ul>
 <li>The static method <code>expected_options</code> allows the NEML2 registry to record required input options <em>expected</em> from the user in order to create an instance of the class.</li>
 <li>The constructor is responsible for constructing an instance given input options <em>extracted</em> from the input file.</li>
@@ -203,42 +194,29 @@ Input file</h1>
 <div class="line">    dynamic_viscosity = &#39;mu&#39;</div>
 <div class="line">  []</div>
 <div class="line">[]</div>
-</div><!-- fragment --><p>By going through this exercise, we have effectively identified the <em>expected</em> input file options: </p><div class="fragment"><div class="line"><span class="preprocessor">#include &quot;neml2/tensors/Vec.h&quot;</span></div>
-<div class="line"> </div>
-<div class="line"><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a></div>
+</div><!-- fragment --><p>By going through this exercise, we have effectively identified the <em>expected</em> input file options: </p><div class="fragment"><div class="line">OptionSet</div>
+<div class="line">ProjectileAcceleration::expected_options()</div>
 <div class="line">{</div>
-<div class="line">OptionSet</div>
-<div class="line"><a class="code hl_function" href="classneml2_1_1ProjectileAcceleration.html#acec712ff48d4c0884a1362c116f3257a">ProjectileAcceleration::expected_options</a>()</div>
-<div class="line">{</div>
-<div class="line">  OptionSet options = <a class="code hl_function" href="classneml2_1_1Model.html#acec712ff48d4c0884a1362c116f3257a">Model::expected_options</a>();</div>
-<div class="line">  options.set&lt;<a class="code hl_typedef" href="namespaceneml2.html#a5cf0dc3e9d16378ebe48923973730e54">VariableName</a>&gt;(<span class="stringliteral">&quot;velocity&quot;</span>);</div>
-<div class="line">  options.set&lt;<a class="code hl_typedef" href="namespaceneml2.html#a5cf0dc3e9d16378ebe48923973730e54">VariableName</a>&gt;(<span class="stringliteral">&quot;acceleration&quot;</span>);</div>
+<div class="line">  OptionSet options = Model::expected_options();</div>
+<div class="line">  options.set&lt;VariableName&gt;(<span class="stringliteral">&quot;velocity&quot;</span>);</div>
+<div class="line">  options.set&lt;VariableName&gt;(<span class="stringliteral">&quot;acceleration&quot;</span>);</div>
 <div class="line">  options.set&lt;TensorName&lt;Vec&gt;&gt;(<span class="stringliteral">&quot;gravitational_acceleration&quot;</span>);</div>
 <div class="line">  options.set&lt;TensorName&lt;Scalar&gt;&gt;(<span class="stringliteral">&quot;dynamic_viscosity&quot;</span>);</div>
 <div class="line">  <span class="keywordflow">return</span> options;</div>
 <div class="line">}</div>
-<div class="line">}</div>
-<div class="ttc" id="aclassneml2_1_1Model_html_acec712ff48d4c0884a1362c116f3257a"><div class="ttname"><a href="classneml2_1_1Model.html#acec712ff48d4c0884a1362c116f3257a">neml2::Model::expected_options</a></div><div class="ttdeci">static OptionSet expected_options()</div><div class="ttdef"><b>Definition</b> Model.cxx:64</div></div>
-<div class="ttc" id="anamespaceneml2_html_a5cf0dc3e9d16378ebe48923973730e54"><div class="ttname"><a href="namespaceneml2.html#a5cf0dc3e9d16378ebe48923973730e54">neml2::VariableName</a></div><div class="ttdeci">LabeledAxisAccessor VariableName</div><div class="ttdef"><b>Definition</b> LabeledAxisAccessor.h:185</div></div>
 </div><!-- fragment --><h1><a class="anchor" id="autotoc_md78"></a>
 Registry</h1>
 <p>The registry is a <a href="https://en.wikipedia.org/wiki/Resource_acquisition_is_initialization">RAII-style</a> singleton responsible for storing the mapping from the string identification of each runtime-manufacturable object to the constructor pointer along with the expected input file options.</p>
 <p>The registration is accomplished by the static method <a class="el" href="classneml2_1_1Registry.html#adadcce9759678b439278443b8caea939" title="Add information on a NEML2Object to the registry.">neml2::Registry::add</a> templated on the class type. The static registration method combined with the singleton enables distributed class registration in each translation unit. The convenience macro register_NEML2_object and its variants wrap around <a class="el" href="classneml2_1_1Registry.html#adadcce9759678b439278443b8caea939" title="Add information on a NEML2Object to the registry.">neml2::Registry::add</a> to provide syntatic simplification of the registration call.</p>
-<p>An example usage of the macro is </p><div class="fragment"><div class="line"><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a></div>
-<div class="line">{</div>
-<div class="line">register_NEML2_object(ProjectileAcceleration);</div>
-<div class="line">}</div>
-</div><!-- fragment --><p> Note that a dummy static variable (unique to the class typename) is created to prevent duplicate registration.</p>
+<p>An example usage of the macro is </p><div class="fragment"><div class="line">register_NEML2_object(ProjectileAcceleration);</div>
+</div><!-- fragment --><p>Note that a dummy static variable (unique to the class typename) is created to prevent duplicate registration.</p>
 <h1><a class="anchor" id="autotoc_md79"></a>
 Factory</h1>
 <p>The NEML2 factory handles the creation of objects at runtime. The generic API for object creation and retrieval is <a class="el" href="classneml2_1_1Factory.html#a040afc3a35b64268f79ca9e297b9984f" title="Retrive an object pointer under the given section with the given object name.">neml2::Factory::get_object</a>.</p>
-<p>In our example, the parser will first extract input file options from the input file and use them to fill out the expected options (defined by the <code>ProjectileAcceleration::expected_options()</code> method). The factory then passes the collected options to the constructor to create this object. The constructor should accept an <a class="el" href="classneml2_1_1OptionSet.html" title="A custom map-like data structure. The keys are strings, and the values can be nonhomogeneously typed.">neml2::OptionSet</a> and define how the collected options are used. </p><div class="fragment"><div class="line"><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a></div>
-<div class="line">{</div>
-<div class="line"><a class="code hl_function" href="classneml2_1_1ProjectileAcceleration.html#a83543b502da8255ced01db85b58bde37">ProjectileAcceleration::ProjectileAcceleration</a>(<span class="keyword">const</span> OptionSet &amp; options)</div>
+<p>In our example, the parser will first extract input file options from the input file and use them to fill out the expected options (defined by the <code>ProjectileAcceleration::expected_options()</code> method). The factory then passes the collected options to the constructor to create this object. The constructor should accept an <a class="el" href="classneml2_1_1OptionSet.html" title="A custom map-like data structure. The keys are strings, and the values can be nonhomogeneously typed.">neml2::OptionSet</a> and define how the collected options are used. </p><div class="fragment"><div class="line">ProjectileAcceleration::ProjectileAcceleration(<span class="keyword">const</span> OptionSet &amp; options)</div>
 <div class="line">  : Model(options)</div>
-<div class="line">    <span class="comment">// Variable and parameter declarations are to be added in the following tutorials</span></div>
+<div class="line"><span class="comment">// Variable and parameter declarations are to be added in the following tutorials</span></div>
 <div class="line">{</div>
-<div class="line">}</div>
 <div class="line">}</div>
 </div><!-- fragment --><p>The following tutorials will explain how to declare variables and parameters in the constructor.</p>
 <p>Suppose an input file named "input.i" has the following content </p><div class="fragment"><div class="line">[Tensors]</div>
@@ -261,7 +239,7 @@ Factory</h1>
 <div class="line">    dynamic_viscosity = &#39;mu&#39;</div>
 <div class="line">  []</div>
 <div class="line">[]</div>
-</div><!-- fragment --><p> To verify that our custom model is correctly accepting these input file options, let us use the factory to create this model and examine the option values.</p>
+</div><!-- fragment --><p>To verify that our custom model is correctly accepting these input file options, let us use the factory to create this model and examine the option values.</p>
 <div class="fragment"><div class="line"><span class="keywordtype">int</span></div>
 <div class="line">main()</div>
 <div class="line">{</div>
@@ -274,10 +252,12 @@ Factory</h1>
 <div class="line"> </div>
 <div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;                  velocity: &quot;</span> &lt;&lt; options.get(<span class="stringliteral">&quot;velocity&quot;</span>) &lt;&lt; std::endl;</div>
 <div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;              acceleration: &quot;</span> &lt;&lt; options.get(<span class="stringliteral">&quot;acceleration&quot;</span>) &lt;&lt; std::endl;</div>
-<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;gravitational_acceleration: &quot;</span> &lt;&lt; options.get(<span class="stringliteral">&quot;gravitational_acceleration&quot;</span>) &lt;&lt; std::endl;</div>
+<div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;gravitational_acceleration: &quot;</span> &lt;&lt; options.get(<span class="stringliteral">&quot;gravitational_acceleration&quot;</span>)</div>
+<div class="line">            &lt;&lt; std::endl;</div>
 <div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;         dynamic_viscosity: &quot;</span> &lt;&lt; options.get(<span class="stringliteral">&quot;dynamic_viscosity&quot;</span>) &lt;&lt; std::endl;</div>
 <div class="line">}</div>
-<div class="ttc" id="anamespaceneml2_html_aa98735f2ffd7c3ae8b0b339621eb8ab3"><div class="ttname"><a href="namespaceneml2.html#aa98735f2ffd7c3ae8b0b339621eb8ab3">neml2::load_model</a></div><div class="ttdeci">std::shared_ptr&lt; Model &gt; load_model(const std::filesystem::path &amp;path, const std::string &amp;mname)</div><div class="ttdoc">A convenient function to load an input file and get a model.</div><div class="ttdef"><b>Definition</b> Model.cxx:43</div></div>
+<div class="ttc" id="anamespaceneml2_html"><div class="ttname"><a href="namespaceneml2.html">neml2</a></div><div class="ttdef"><b>Definition</b> DiagnosticsInterface.cxx:30</div></div>
+<div class="ttc" id="anamespaceneml2_html_aa98735f2ffd7c3ae8b0b339621eb8ab3"><div class="ttname"><a href="namespaceneml2.html#aa98735f2ffd7c3ae8b0b339621eb8ab3">neml2::load_model</a></div><div class="ttdeci">std::shared_ptr&lt; Model &gt; load_model(const std::filesystem::path &amp;path, const std::string &amp;mname)</div><div class="ttdoc">A convenient function to load an input file and get a model.</div><div class="ttdef"><b>Definition</b> neml2.cxx:51</div></div>
 </div><!-- fragment --><p>Output: </p><div class="fragment"><div class="line">                  velocity: state/v</div>
 <div class="line">              acceleration: state/a</div>
 <div class="line">gravitational_acceleration: g</div>

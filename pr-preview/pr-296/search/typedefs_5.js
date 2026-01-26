@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['map_5ftype_0',['map_type',['../classneml2_1_1OptionSet.html#a7ba45a0deb7ed53d4fe528f09773c6f9',1,'neml2::OptionSet']]]
+  ['json_0',['json',['../namespaceneml2.html#ab701e3ac61a85b337ec5c1abaad6742d',1,'neml2']]]
 ];

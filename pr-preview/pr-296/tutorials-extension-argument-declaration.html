@@ -167,24 +167,21 @@ $(function(){initNavTree('tutorials-extension-argument-declaration.html',''); in
 <p>The first three are introduced in this tutorial.</p>
 <h1><a class="anchor" id="autotoc_md73"></a>
 Variable declaration</h1>
-<p>The API <a class="el" href="classneml2_1_1VariableStore.html#abebfaebbb9c5a3b42b6208b0979997b0" title="Declare an input variable.">neml2::Model::declare_input_variable</a> can be used to declare input variables. This method should be called in the constructor of the model. It allocate storage for the underlying tensor and returns a const-reference i.e., <code>const Variable&lt;T&gt; &amp;</code>, to the variable, where <code>T</code> is the variable tensor type. Similarly, the method <a class="el" href="classneml2_1_1VariableStore.html#a3586f9e5861f613dbfe349c7cda999e9" title="Declare an output variable.">neml2::Model::declare_output_variable</a> is for declaring output variables which returns a non-const-reference i.e., <code>Variable&lt;T&gt; &amp;</code>, to the variable.</p>
+<p>The API <a class="el" href="classneml2_1_1VariableStore.html#ab6580013e1f20ccd1eadbb3ec8738418" title="Declare an input variable.">neml2::Model::declare_input_variable</a> can be used to declare input variables. This method should be called in the constructor of the model. It allocate storage for the underlying tensor and returns a const-reference i.e., <code>const Variable&lt;T&gt; &amp;</code>, to the variable, where <code>T</code> is the variable tensor type. Similarly, the method <a class="el" href="classneml2_1_1VariableStore.html#a02722154556e8b8051ef2147174affdb" title="Declare an output variable.">neml2::Model::declare_output_variable</a> is for declaring output variables which returns a non-const-reference i.e., <code>Variable&lt;T&gt; &amp;</code>, to the variable.</p>
 <p>In our example, the only input variable is \(\boldsymbol{v}\), and the only output variable is \(\boldsymbol{a}\). To declare them, first create the corresponding members in the class like </p><div class="fragment"><div class="line"><span class="comment">// Velocity of the projectile (input variable)</span></div>
 <div class="line"><span class="keyword">const</span> Variable&lt;Vec&gt; &amp; _v;</div>
 <div class="line"> </div>
 <div class="line"><span class="comment">// Acceleration of the projectile (output variable)</span></div>
-<div class="line">Variable&lt;Vec&gt; _a;</div>
-</div><!-- fragment --><p> Then, use the variable declaration method in the constructor, i.e. </p><div class="fragment"><div class="line"><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a></div>
-<div class="line">{</div>
-<div class="line"><a class="code hl_function" href="classneml2_1_1ProjectileAcceleration.html#a83543b502da8255ced01db85b58bde37">ProjectileAcceleration::ProjectileAcceleration</a>(<span class="keyword">const</span> OptionSet &amp; options)</div>
+<div class="line">Variable&lt;Vec&gt; &amp; _a;</div>
+</div><!-- fragment --><p>Then, use the variable declaration method in the constructor, i.e. </p><div class="fragment"><div class="line">ProjectileAcceleration::ProjectileAcceleration(<span class="keyword">const</span> OptionSet &amp; options)</div>
 <div class="line">  : Model(options),</div>
 <div class="line">    _v(declare_input_variable&lt;Vec&gt;(<span class="stringliteral">&quot;velocity&quot;</span>)),</div>
-<div class="line">    _a(declare_output_variable&lt;Vec&gt;(<span class="stringliteral">&quot;acceleration&quot;</span>))</div>
+<div class="line">    _a(declare_output_variable&lt;Vec&gt;(<span class="stringliteral">&quot;acceleration&quot;</span>)),</div>
+<div class="line">    _g(declare_buffer&lt;Vec&gt;(<span class="stringliteral">&quot;g&quot;</span>, <span class="stringliteral">&quot;gravitational_acceleration&quot;</span>)),</div>
+<div class="line">    _mu(declare_parameter&lt;Scalar&gt;(<span class="stringliteral">&quot;mu&quot;</span>, <span class="stringliteral">&quot;dynamic_viscosity&quot;</span>))</div>
 <div class="line">{</div>
 <div class="line">}</div>
-<div class="line">}</div>
-<div class="ttc" id="aclassneml2_1_1ProjectileAcceleration_html_a83543b502da8255ced01db85b58bde37"><div class="ttname"><a href="classneml2_1_1ProjectileAcceleration.html#a83543b502da8255ced01db85b58bde37">neml2::ProjectileAcceleration::ProjectileAcceleration</a></div><div class="ttdeci">ProjectileAcceleration(const OptionSet &amp;options)</div><div class="ttdef"><b>Definition</b> src1.cxx:46</div></div>
-<div class="ttc" id="anamespaceneml2_html"><div class="ttname"><a href="namespaceneml2.html">neml2</a></div><div class="ttdef"><b>Definition</b> DiagnosticsInterface.cxx:30</div></div>
-</div><!-- fragment --><p> NEML2 will look for an input option named "velocity" and declare a vector-valued input variable with the user-specified variable name. Similarly, another input option named "acceleration" will be used to declare a vector-valued output variable.</p>
+</div><!-- fragment --><p>NEML2 will look for an input option named "velocity" and declare a vector-valued input variable with the user-specified variable name. Similarly, another input option named "acceleration" will be used to declare a vector-valued output variable.</p>
 <h1><a class="anchor" id="autotoc_md74"></a>
 Parameter declaration</h1>
 <p>Parameter (and buffer) declaration is semantically similarly to variable declaration.</p><ul>
@@ -197,9 +194,7 @@ Parameter declaration</h1>
 <div class="line"> </div>
 <div class="line"><span class="comment">// Dynamic viscosity of the medium (parameter)</span></div>
 <div class="line"><span class="keyword">const</span> Scalar &amp; _mu;</div>
-</div><!-- fragment --><p> Then, call the declaration methods in the constructor, i.e. </p><div class="fragment"><div class="line"><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a></div>
-<div class="line">{</div>
-<div class="line"><a class="code hl_function" href="classneml2_1_1ProjectileAcceleration.html#a83543b502da8255ced01db85b58bde37">ProjectileAcceleration::ProjectileAcceleration</a>(<span class="keyword">const</span> OptionSet &amp; options)</div>
+</div><!-- fragment --><p>Then, call the declaration methods in the constructor, i.e. </p><div class="fragment"><div class="line">ProjectileAcceleration::ProjectileAcceleration(<span class="keyword">const</span> OptionSet &amp; options)</div>
 <div class="line">  : Model(options),</div>
 <div class="line">    _v(declare_input_variable&lt;Vec&gt;(<span class="stringliteral">&quot;velocity&quot;</span>)),</div>
 <div class="line">    _a(declare_output_variable&lt;Vec&gt;(<span class="stringliteral">&quot;acceleration&quot;</span>)),</div>
@@ -207,8 +202,7 @@ Parameter declaration</h1>
 <div class="line">    _mu(declare_parameter&lt;Scalar&gt;(<span class="stringliteral">&quot;mu&quot;</span>, <span class="stringliteral">&quot;dynamic_viscosity&quot;</span>))</div>
 <div class="line">{</div>
 <div class="line">}</div>
-<div class="line">}</div>
-</div><!-- fragment --><p> The first argument of the parameter/buffer declaration method takes a string specifying the name of the parameter/buffer used internally. These names will then become the "handles" for retrieving and updating parameter/buffer values.</p>
+</div><!-- fragment --><p>The first argument of the parameter/buffer declaration method takes a string specifying the name of the parameter/buffer used internally. These names will then become the "handles" for retrieving and updating parameter/buffer values.</p>
 <p>NEML2 will look for input options named "gravitational_acceleration" and "dynamic_viscosity" and declare the corresponding parameter and buffer.</p>
 <h1><a class="anchor" id="autotoc_md75"></a>
 Model inspection</h1>
@@ -220,6 +214,7 @@ Model inspection</h1>
 <div class="line">  <span class="keyword">auto</span> model = load_model(<span class="stringliteral">&quot;input.i&quot;</span>, <span class="stringliteral">&quot;accel&quot;</span>);</div>
 <div class="line">  std::cout &lt;&lt; *model &lt;&lt; std::endl;</div>
 <div class="line">}</div>
+<div class="ttc" id="anamespaceneml2_html"><div class="ttname"><a href="namespaceneml2.html">neml2</a></div><div class="ttdef"><b>Definition</b> DiagnosticsInterface.cxx:30</div></div>
 </div><!-- fragment --><p>Output: </p><div class="fragment"><div class="line">Name:       accel</div>
 <div class="line">Input:      state/v [Vec]</div>
 <div class="line">Output:     state/a [Vec]</div>

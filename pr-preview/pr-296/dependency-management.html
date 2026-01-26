@@ -152,7 +152,7 @@ $(function(){initNavTree('dependency-management.html',''); initResizable(true); 
   </li>
 </ul>
 </div>
-<div class="textblock"><p><a class="anchor" id="md__2home_2runner_2work_2neml2_2neml2_2doc_2content_2installation_2deps"></a></p>
+<div class="textblock"><p><a class="anchor" id="md_content_2installation_2deps"></a></p>
 <h1><a class="anchor" id="autotoc_md9"></a>
 Dependency search</h1>
 <p>In most cases, there is no need to manually obtain the dependent libraries/packages. The build system will automatically search for the required packages at usual locations. If the package is already installed on the system, it will be used to build NEML2. Otherwise, a compatible version of the package will be downloaded and installed under the NEML2 build directory.</p>
@@ -185,11 +185,10 @@ List of dependencies</h1>
 <p>Python package:</p>
 <ul>
 <li><a href="https://docs.python.org/3/extending/extending.html">Python development libraries</a> for python bindings.</li>
-<li><a href="https://github.com/pybind/pybind11">pybind11</a> for building Python bindings.</li>
 <li><a href="https://github.com/sizmailov/pybind11-stubgen">pybind11-stubgen</a> for extracting stubs from Python bindings.</li>
 <li><a href="https://github.com/applied-material-modeling/pyzag">pyzag</a> for training material models.</li>
 <li>Testing:<ul>
-<li><a href="https://docs.pytest.org/en/stable/index.html">pytest</a> for testing Pythin bindings.</li>
+<li><a href="https://docs.pytest.org/en/stable/index.html">pytest</a> for testing Python bindings.</li>
 </ul>
 </li>
 </ul>
@@ -204,6 +203,10 @@ List of dependencies</h1>
 <ul>
 <li><a href="https://github.com/libMesh/TIMPI">TIMPI</a> for coordinating parallel workers.</li>
 <li><a href="https://github.com/nlohmann/json">json</a> for outputting event traces.</li>
+</ul>
+<p>CSV parser:</p>
+<ul>
+<li><a href="https://github.com/vincentlaucsb/csv-parser">CSV Parser</a> for reading CSV files</li>
 </ul>
 <p>In addition to standard system library locations, the CMake configure script also searches for an installed torch Python package. Recent PyTorch releases within a few minor versions are likely to be compatible.</p>
 <dl class="section warning"><dt>Warning</dt><dd>If no PyTorch is found after searching, a CPU-only libtorch binary is downloaded from the official website. Such libtorch is not able to use the CUDA co-processor, even if there is one. If using CUDA is desired, please install the torch Python package or a CUDA-enabled libtorch before configuring NEML2.</dd></dl>
@@ -228,25 +231,25 @@ Skipping dependencies</h1>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyLeft">Python development libraries   </td><td class="markdownTableBodyLeft">NEML2_PYBIND    </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyLeft">pybind11   </td><td class="markdownTableBodyLeft">NEML2_PYBIND    </td></tr>
-<tr class="markdownTableRowEven">
 <td class="markdownTableBodyLeft">pybind11-stubgen   </td><td class="markdownTableBodyLeft">NEML2_PYBIND    </td></tr>
-<tr class="markdownTableRowOdd">
+<tr class="markdownTableRowEven">
 <td class="markdownTableBodyLeft">pyzag   </td><td class="markdownTableBodyLeft">NEML2_PYBIND &amp;&amp; NEML2_TESTS    </td></tr>
-<tr class="markdownTableRowEven">
+<tr class="markdownTableRowOdd">
 <td class="markdownTableBodyLeft">pytest   </td><td class="markdownTableBodyLeft">NEML2_PYBIND &amp;&amp; NEML2_TESTS    </td></tr>
-<tr class="markdownTableRowOdd">
+<tr class="markdownTableRowEven">
 <td class="markdownTableBodyLeft">Doxygen   </td><td class="markdownTableBodyLeft">NEML2_DOC    </td></tr>
-<tr class="markdownTableRowEven">
+<tr class="markdownTableRowOdd">
 <td class="markdownTableBodyLeft">Doxygen Awesome   </td><td class="markdownTableBodyLeft">NEML2_DOC    </td></tr>
-<tr class="markdownTableRowOdd">
+<tr class="markdownTableRowEven">
 <td class="markdownTableBodyLeft">graphviz   </td><td class="markdownTableBodyLeft">NEML2_PYBIND &amp;&amp; NEML2_TESTS    </td></tr>
-<tr class="markdownTableRowEven">
-<td class="markdownTableBodyLeft">PyYAML   </td><td class="markdownTableBodyLeft">NEML2_DOC    </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyLeft">MPI, TIMPI   </td><td class="markdownTableBodyLeft">NEML2_WORK_DISPATCHER    </td></tr>
+<td class="markdownTableBodyLeft">PyYAML   </td><td class="markdownTableBodyLeft">NEML2_DOC    </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyLeft">json   </td><td class="markdownTableBodyLeft">NEML2_JSON   </td></tr>
+<td class="markdownTableBodyLeft">MPI, TIMPI   </td><td class="markdownTableBodyLeft">NEML2_WORK_DISPATCHER    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft">json   </td><td class="markdownTableBodyLeft">NEML2_JSON    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyLeft">CSV Parser   </td><td class="markdownTableBodyLeft">NEML2_CSV   </td></tr>
 </table>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->

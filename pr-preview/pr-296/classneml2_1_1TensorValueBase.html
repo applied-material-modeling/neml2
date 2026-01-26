@@ -138,6 +138,7 @@ $(function(){initNavTree('classneml2_1_1TensorValueBase.html',''); initResizable
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="classneml2_1_1TensorValueBase-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">TensorValueBase Class Reference<span class="mlabels"><span class="mlabel">abstract</span></span></div></div>
 </div><!--header-->
@@ -189,6 +190,15 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ad92ce6276da9f2ba19a0120603b89fc6" id="r_ad92ce6276da9f2ba19a0120603b89fc6"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="namespaceneml2.html#a9b44248b88341f8c9cafe5d9d822a443">TensorType</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad92ce6276da9f2ba19a0120603b89fc6">type</a> () const =0</td></tr>
 <tr class="memdesc:ad92ce6276da9f2ba19a0120603b89fc6"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classneml2_1_1Tensor.html">Tensor</a> type.  <br /></td></tr>
 <tr class="separator:ad92ce6276da9f2ba19a0120603b89fc6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab7f945fbe4439a412e4481b3157ebf71" id="r_ab7f945fbe4439a412e4481b3157ebf71"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab7f945fbe4439a412e4481b3157ebf71">assign</a> (const <a class="el" href="namespaceneml2.html#a4a57eb2eaae4b2acfea6495c348f1142">ATensor</a> &amp;val, <a class="el" href="structneml2_1_1TracerPrivilege.html">TracerPrivilege</a> key)=0</td></tr>
+<tr class="memdesc:ab7f945fbe4439a412e4481b3157ebf71"><td class="mdescLeft">&#160;</td><td class="mdescRight">Secret assignment operator used by low-level operations such as jit tracing.  <br /></td></tr>
+<tr class="separator:ab7f945fbe4439a412e4481b3157ebf71"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-attribs" name="pro-attribs"></a>
+Protected Attributes</h2></td></tr>
+<tr class="memitem:aa229ba6274a90a4deaf5d75a06de2dcd" id="r_aa229ba6274a90a4deaf5d75a06de2dcd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa229ba6274a90a4deaf5d75a06de2dcd">_cached_intmd_dim</a> = 0</td></tr>
+<tr class="memdesc:aa229ba6274a90a4deaf5d75a06de2dcd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cached intermediate dimension.  <br /></td></tr>
+<tr class="separator:aa229ba6274a90a4deaf5d75a06de2dcd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a40a12aa4dc5576a7adcf419a4ae1a902" name="a40a12aa4dc5576a7adcf419a4ae1a902"></a>
@@ -292,6 +302,39 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="ab7f945fbe4439a412e4481b3157ebf71" name="ab7f945fbe4439a412e4481b3157ebf71"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab7f945fbe4439a412e4481b3157ebf71">&#9670;&#160;</a></span>assign()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void assign </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceneml2.html#a4a57eb2eaae4b2acfea6495c348f1142">ATensor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>val</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structneml2_1_1TracerPrivilege.html">TracerPrivilege</a></td>          <td class="paramname"><span class="paramname"><em>key</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Secret assignment operator used by low-level operations such as jit tracing. </p>
+
+<p>Implemented in <a class="el" href="classneml2_1_1TensorValue.html#adeaa66c993f4637267dac0676a829756">TensorValue&lt; T &gt;</a>.</p>
+
+</div>
+</div>
 <a id="ae6ff55311159cbd47320333d9057036f" name="ae6ff55311159cbd47320333d9057036f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae6ff55311159cbd47320333d9057036f">&#9670;&#160;</a></span>operator Tensor()</h2>
 
@@ -484,6 +527,31 @@ Public Member Functions</h2></td></tr>
 <p><a class="el" href="classneml2_1_1Tensor.html">Tensor</a> type. </p>
 
 <p>Implemented in <a class="el" href="classneml2_1_1TensorValue.html#ac007458a82f91682deada64cbac6a61e">TensorValue&lt; T &gt;</a>.</p>
+
+</div>
+</div>
+<h2 class="groupheader">Member Data Documentation</h2>
+<a id="aa229ba6274a90a4deaf5d75a06de2dcd" name="aa229ba6274a90a4deaf5d75a06de2dcd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa229ba6274a90a4deaf5d75a06de2dcd">&#9670;&#160;</a></span>_cached_intmd_dim</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> _cached_intmd_dim = 0</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Cached intermediate dimension. </p>
 
 </div>
 </div>

@@ -142,15 +142,15 @@ $(function(){initNavTree('tutorials-optimization-automatic-differentiation.html'
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md140">Model definition</a>
+    <a href="#autotoc_md136">Model definition</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md141">Automatic differentiation</a>
+    <a href="#autotoc_md137">Automatic differentiation</a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_content_2tutorials_2optimization_2automatic__differentiation_2main"></a></p>
-<h1><a class="anchor" id="autotoc_md140"></a>
+<h1><a class="anchor" id="autotoc_md136"></a>
 Model definition</h1>
 <p>For demonstration purposes, let us go back to an earlier example model &ndash; linear isotropic elasticity: </p><div class="fragment"><div class="line">[Models]</div>
 <div class="line">  [model]</div>
@@ -165,13 +165,13 @@ Model definition</h1>
 <div class="line"> </div>
 <div class="line">model = <a class="code hl_function" href="namespaceneml2.html#aa98735f2ffd7c3ae8b0b339621eb8ab3">neml2.load_model</a>(<span class="stringliteral">&quot;input.i&quot;</span>, <span class="stringliteral">&quot;model&quot;</span>)</div>
 <div class="line">print(model)</div>
-<div class="ttc" id="anamespaceneml2_html_aa98735f2ffd7c3ae8b0b339621eb8ab3"><div class="ttname"><a href="namespaceneml2.html#aa98735f2ffd7c3ae8b0b339621eb8ab3">neml2::load_model</a></div><div class="ttdeci">std::shared_ptr&lt; Model &gt; load_model(const std::filesystem::path &amp;path, const std::string &amp;mname)</div><div class="ttdoc">A convenient function to load an input file and get a model.</div><div class="ttdef"><b>Definition</b> Model.cxx:43</div></div>
+<div class="ttc" id="anamespaceneml2_html_aa98735f2ffd7c3ae8b0b339621eb8ab3"><div class="ttname"><a href="namespaceneml2.html#aa98735f2ffd7c3ae8b0b339621eb8ab3">neml2::load_model</a></div><div class="ttdeci">std::shared_ptr&lt; Model &gt; load_model(const std::filesystem::path &amp;path, const std::string &amp;mname)</div><div class="ttdoc">A convenient function to load an input file and get a model.</div><div class="ttdef"><b>Definition</b> neml2.cxx:51</div></div>
 </div><!-- fragment --><p>Output: </p><div class="fragment"><div class="line">Name:       model</div>
 <div class="line">Input:      forces/E [SR2]</div>
 <div class="line">Output:     state/S [SR2]</div>
 <div class="line">Parameters: G [Scalar][Float][cpu]</div>
 <div class="line">            K [Scalar][Float][cpu]</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md141"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md137"></a>
 Automatic differentiation</h1>
 <p>NEML2 tensors can be used interchangeably with PyTorch tensors in a seamless fashion. Function graph traced through NEML2 tensor operations can be back-propagated using PyTorch's autograd engine.</p>
 <p>For example, the following Python script demonstrates the calculation of \(\pdv{l}{p}\) using an arbitrary, scalar-valued loss function \(l\) obtained by a combination of NEML2 operations and PyTorch operations.</p>

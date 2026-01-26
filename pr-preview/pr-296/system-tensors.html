@@ -168,7 +168,7 @@ $(function(){initNavTree('system-tensors.html',''); initResizable(true); });
   </li>
 </ul>
 </div>
-<div class="textblock"><p><a class="anchor" id="md__2home_2runner_2work_2neml2_2neml2_2doc_2content_2system_2tensor"></a></p>
+<div class="textblock"><p><a class="anchor" id="md_content_2system_2tensor"></a></p>
 <p>Refer to <a class="el" href="syntax-tensors.html">Syntax Documentation</a> for the list of available objects.</p>
 <h1><a class="anchor" id="tensor-types"></a>
 Tensor types</h1>
@@ -207,15 +207,11 @@ Statically shaped tensors</h2>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyLeft"><a class="el" href="classneml2_1_1R4.html">R4</a>   </td><td class="markdownTableBodyLeft">\((3,3,3,3)\)   </td><td class="markdownTableBodyLeft">Rank-4 tensor    </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyLeft"><a class="el" href="classneml2_1_1SFR4.html">SFR4</a>   </td><td class="markdownTableBodyLeft">\((6,3,3\))   </td><td class="markdownTableBodyLeft">Rank-4 tensor with symmetry on base dimensions 0 and 1    </td></tr>
+<td class="markdownTableBodyLeft"><a class="el" href="classneml2_1_1SFFR4.html">SFFR4</a>   </td><td class="markdownTableBodyLeft">\((6,3,3\))   </td><td class="markdownTableBodyLeft">Rank-4 tensor with symmetry on base dimensions 0 and 1    </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyLeft"><a class="el" href="classneml2_1_1WFR4.html">WFR4</a>   </td><td class="markdownTableBodyLeft">\((3,3,3\))   </td><td class="markdownTableBodyLeft">Rank-4 tensor with skew symmetry on base dimensions 0 and 1    </td></tr>
+<td class="markdownTableBodyLeft"><a class="el" href="classneml2_1_1WFFR4.html">WFFR4</a>   </td><td class="markdownTableBodyLeft">\((3,3,3\))   </td><td class="markdownTableBodyLeft">Rank-4 tensor with skew symmetry on base dimensions 0 and 1    </td></tr>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyLeft"><a class="el" href="classneml2_1_1SSR4.html">SSR4</a>   </td><td class="markdownTableBodyLeft">\((6,6)\)   </td><td class="markdownTableBodyLeft">Rank-4 tensor with minor symmetry    </td></tr>
-<tr class="markdownTableRowEven">
-<td class="markdownTableBodyLeft"><a class="el" href="classneml2_1_1R5.html">R5</a>   </td><td class="markdownTableBodyLeft">\((3,3,3,3,3)\)   </td><td class="markdownTableBodyLeft">Rank-5 tensor    </td></tr>
-<tr class="markdownTableRowOdd">
-<td class="markdownTableBodyLeft"><a class="el" href="classneml2_1_1SSFR5.html">SSFR5</a>   </td><td class="markdownTableBodyLeft">\((6,6,3)\)   </td><td class="markdownTableBodyLeft">Rank-5 tensor with minor symmetry on base dimensions 0-3    </td></tr>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyLeft"><a class="el" href="classneml2_1_1Rot.html">Rot</a>   </td><td class="markdownTableBodyLeft">\((3)\)   </td><td class="markdownTableBodyLeft">Rotation tensor represented in the Rodrigues form    </td></tr>
 <tr class="markdownTableRowOdd">
@@ -263,7 +259,7 @@ Tensor indexing</h2>
 </p>
 <p> Otherwise, it will not be possible to view self tensor as shape without copying it. </p>
 </blockquote>
-<p>In NEML2, use <a class="el" href="classneml2_1_1TensorBase.html#aefc1893a238f1f58f082a0f560f7a524" title="Get a tensor by slicing on the base dimensions.">neml2::TensorBase::base_index</a> for indexing the base dimensions and <a class="el" href="classneml2_1_1TensorBase.html#a27fea0fe6db55ec7c5077db8494b5c71" title="Get a tensor by slicing on the batch dimensions.">neml2::TensorBase::batch_index</a> for indexing the batch dimensions: </p><div class="fragment"><div class="line">Tensor A::create({{2, 3, 4}, {-1, -2, 3}, {6, 9, 7}}, 1);</div>
+<p>In NEML2, use <a class="el" href="classneml2_1_1TensorBase.html#aefc1893a238f1f58f082a0f560f7a524">neml2::TensorBase::base_index</a> for indexing the base dimensions and <a class="el" href="classneml2_1_1TensorBase.html#a27fea0fe6db55ec7c5077db8494b5c71">neml2::TensorBase::batch_index</a> for indexing the batch dimensions: </p><div class="fragment"><div class="line">Tensor A::create({{2, 3, 4}, {-1, -2, 3}, {6, 9, 7}}, 1);</div>
 <div class="line"><span class="comment">// A = [[  2  3  4]</span></div>
 <div class="line"><span class="comment">//      [ -1 -2  3]</span></div>
 <div class="line"><span class="comment">//      [  6  9  7]]</span></div>

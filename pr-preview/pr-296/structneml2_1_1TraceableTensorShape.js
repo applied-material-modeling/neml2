@@ -7,6 +7,6 @@ var structneml2_1_1TraceableTensorShape =
     [ "TraceableTensorShape", "structneml2_1_1TraceableTensorShape.html#a806e238cf0b1518982466a4d2f232e24", null ],
     [ "as_tensor", "structneml2_1_1TraceableTensorShape.html#ac69b01e80c83dec2a960e17dc1c09d96", null ],
     [ "concrete", "structneml2_1_1TraceableTensorShape.html#a1ee68d9343f6ce43649f36f9cf5e4392", null ],
-    [ "slice", "structneml2_1_1TraceableTensorShape.html#ad4735e907c3d4e8e7a8e03d1625c85f0", null ],
-    [ "slice", "structneml2_1_1TraceableTensorShape.html#ac54a09deb2b6a2fb2af63c52e2c55647", null ]
+    [ "slice", "structneml2_1_1TraceableTensorShape.html#a66d09f528848b41c80cc93670234961d", null ],
+    [ "slice", "structneml2_1_1TraceableTensorShape.html#ac9b8309245c7c4ec1700c1c66bfdc36f", null ]
 ];

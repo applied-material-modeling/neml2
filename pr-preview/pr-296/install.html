@@ -157,12 +157,13 @@ $(function(){initNavTree('install.html',''); initResizable(true); });
   </li>
 </ul>
 </div>
-<div class="textblock"><p><a class="anchor" id="md__2home_2runner_2work_2neml2_2neml2_2doc_2content_2installation_2install"></a></p>
+<div class="textblock"><p><a class="anchor" id="md_content_2installation_2install"></a></p>
 <h1><a class="anchor" id="autotoc_md12"></a>
 Prerequisites</h1>
 <p>Compiling the NEML2 core library requires</p><ul>
 <li>A C++ compiler with C++17 support</li>
 <li>CMake &gt;= 3.26</li>
+<li>Python &gt;= 3.9</li>
 </ul>
 <p>NEML2 is built upon and relies on a collection of third party libraries/packages, most notably PyTorch (and its C++ backend libtorch). However, <b>there is no need to install dependent libraries prior to installing NEML2</b>. The build system will automatically search for necessary packages. When a required package is missing, the build system will download one.</p>
 <p>Refer to <a class="el" href="dependency-management.html">dependency management</a> for a list of dependent libraries/packages and more information on the search procedure.</p>
@@ -173,9 +174,11 @@ Build</h1>
 C++ backend</h2>
 <p>First, obtain the NEML2 source code.</p>
 <div class="fragment"><div class="line">git clone -b main https://github.com/applied-material-modeling/neml2.git</div>
-</div><!-- fragment --><p>Then, configure and build NEML2.</p>
+</div><!-- fragment --><p>Install the required Python development dependencies</p>
 <div class="fragment"><div class="line">cd neml2</div>
-<div class="line">cmake --preset release -S .</div>
+<div class="line">pip install -r requirements.txt</div>
+</div><!-- fragment --><p>Then, configure and build NEML2.</p>
+<div class="fragment"><div class="line">cmake --preset release -S .</div>
 <div class="line">cmake --build --preset release</div>
 </div><!-- fragment --><p> The <code>--preset</code> option specifies a predefined configuration to be read by CMake. Build customization, available presets, and their usage scenario are discussed in <a class="el" href="build-customization.html">build customization</a>.</p>
 <p>Optionally, NEML2 can be installed as a system library. </p><div class="fragment"><div class="line">cmake --install build/release --component libneml2 --prefix /usr/local</div>
@@ -187,8 +190,9 @@ C++ backend</h2>
 <h2><a class="anchor" id="autotoc_md14"></a>
 Python package</h2>
 <p>NEML2 also provides an <em>experimental</em> Python package which provides bindings for the primitive tensors and parsers for deserializing and running material models. Package source distributions are available on PyPI, but package wheels are currently not built and uploaded to PyPI.</p>
-<p>To install the NEML2 Python package, run the following command at the repository's root.</p>
-<div class="fragment"><div class="line">pip install -v .</div>
+<p>To install the NEML2 Python package, run the following commands at the repository's root.</p>
+<div class="fragment"><div class="line">pip install -r requirements.txt</div>
+<div class="line">pip install -v .</div>
 </div><!-- fragment --><p> Two optional environment variables can be used to control the build: <code>CMAKE_ARGS</code> specifies the additional CMake configure arguments (usually not needed), and <code>CMAKE_BUILD_JOBS</code> specifies the number of parallel jobs used to build the package.</p>
 <p>Once installed, the package can be imported in Python scripts using</p>
 <div class="fragment"><div class="line"><span class="keyword">import</span> neml2</div>

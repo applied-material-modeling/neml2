@@ -144,10 +144,10 @@ $(function(){initNavTree('classneml2_1_1LabeledAxisAccessor.html',''); initResiz
 </div><!--header-->
 <div class="contents">
 
-<p>The accessor containing all the information needed to access an item in a <code><a class="el" href="classneml2_1_1LabeledAxis.html" title="A labeled axis used to associate layout of a tensor with human-interpretable names.">LabeledAxis</a></code>.  
+<p>The accessor containing all the information needed to access an item in a <code><a class="el" href="classneml2_1_1LabeledAxis.html" title="A labeled axis is used to associate layout of a tensor with human-interpretable names.">LabeledAxis</a></code>.  
  <a href="#details">More...</a></p>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>The accessor containing all the information needed to access an item in a <code><a class="el" href="classneml2_1_1LabeledAxis.html" title="A labeled axis used to associate layout of a tensor with human-interpretable names.">LabeledAxis</a></code>. </p>
+<div class="textblock"><p>The accessor containing all the information needed to access an item in a <code><a class="el" href="classneml2_1_1LabeledAxis.html" title="A labeled axis is used to associate layout of a tensor with human-interpretable names.">LabeledAxis</a></code>. </p>
 <p>The accessor consists of an arbitrary number of item names. The last item name can be either a variable name or a sub-axis name. All the other item names are considered to be sub-axis names.</p>
 <p>The <a class="el" href="classneml2_1_1LabeledAxisAccessor.html" title="The accessor containing all the information needed to access an item in a LabeledAxis.">LabeledAxisAccessor</a> stores the item labels and does not resolve the actual layout of the item. This way an accessor can be used access the same variable from different tensor layouts.</p>
 <p>The item names cannot contain whitespace, ".", ",", ";", or "/". </p>
@@ -182,31 +182,31 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ae9b08fca99a89639cd78a91152a64d5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a644718bb2fb240de962dc3c9a1fdf0dc" id="r_a644718bb2fb240de962dc3c9a1fdf0dc"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a644718bb2fb240de962dc3c9a1fdf0dc">empty</a> () const</td></tr>
 <tr class="separator:a644718bb2fb240de962dc3c9a1fdf0dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a259cb5a711406a8c3e5d937eb9350cca" id="r_a259cb5a711406a8c3e5d937eb9350cca"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a259cb5a711406a8c3e5d937eb9350cca">size</a> () const</td></tr>
-<tr class="separator:a259cb5a711406a8c3e5d937eb9350cca"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afe3d8226a476f90dc6b5563bc11a229d" id="r_afe3d8226a476f90dc6b5563bc11a229d"><td class="memItemLeft" align="right" valign="top">const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afe3d8226a476f90dc6b5563bc11a229d">operator[]</a> (size_t i) const</td></tr>
-<tr class="separator:afe3d8226a476f90dc6b5563bc11a229d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ade1601ccf1fa3bcf050867f0852ca4e5" id="r_ade1601ccf1fa3bcf050867f0852ca4e5"><td class="memItemLeft" align="right" valign="top">std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ade1601ccf1fa3bcf050867f0852ca4e5">size</a> () const</td></tr>
+<tr class="separator:ade1601ccf1fa3bcf050867f0852ca4e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa678785cfae64b710d272152acf21713" id="r_aa678785cfae64b710d272152acf21713"><td class="memItemLeft" align="right" valign="top">const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa678785cfae64b710d272152acf21713">operator[]</a> (std::size_t i) const</td></tr>
+<tr class="separator:aa678785cfae64b710d272152acf21713"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a68aee86962a6ea2deef39fd6a9f86a4c" id="r_a68aee86962a6ea2deef39fd6a9f86a4c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a68aee86962a6ea2deef39fd6a9f86a4c">with_suffix</a> (const std::string &amp;suffix) const</td></tr>
 <tr class="memdesc:a68aee86962a6ea2deef39fd6a9f86a4c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Append a suffix to the final item name.  <br /></td></tr>
 <tr class="separator:a68aee86962a6ea2deef39fd6a9f86a4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3bc21352099bd9fa964b5cb536dc1057" id="r_a3bc21352099bd9fa964b5cb536dc1057"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3bc21352099bd9fa964b5cb536dc1057">append</a> (const <a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a> &amp;axis) const</td></tr>
-<tr class="memdesc:a3bc21352099bd9fa964b5cb536dc1057"><td class="mdescLeft">&#160;</td><td class="mdescRight">Append another accessor.  <br /></td></tr>
-<tr class="separator:a3bc21352099bd9fa964b5cb536dc1057"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a54a0457553ab1f399991a41c36b13b1f" id="r_a54a0457553ab1f399991a41c36b13b1f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a54a0457553ab1f399991a41c36b13b1f">prepend</a> (const <a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a> &amp;axis) const</td></tr>
-<tr class="memdesc:a54a0457553ab1f399991a41c36b13b1f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepend another accessor.  <br /></td></tr>
-<tr class="separator:a54a0457553ab1f399991a41c36b13b1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adc32cebc1f3b92f5adcb677cde294efe" id="r_adc32cebc1f3b92f5adcb677cde294efe"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adc32cebc1f3b92f5adcb677cde294efe">slice</a> (int64_t n) const</td></tr>
-<tr class="memdesc:adc32cebc1f3b92f5adcb677cde294efe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove the leading <code>n</code> items from the labels.  <br /></td></tr>
-<tr class="separator:adc32cebc1f3b92f5adcb677cde294efe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a949473a52cdf56e041f999cf32a5af21" id="r_a949473a52cdf56e041f999cf32a5af21"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a949473a52cdf56e041f999cf32a5af21">slice</a> (int64_t n1, int64_t n2) const</td></tr>
-<tr class="memdesc:a949473a52cdf56e041f999cf32a5af21"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extract out the labels from <code>n1</code> to <code>n2</code>.  <br /></td></tr>
-<tr class="separator:a949473a52cdf56e041f999cf32a5af21"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a705a81dee513937c16fadec72303361e" id="r_a705a81dee513937c16fadec72303361e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a705a81dee513937c16fadec72303361e">remount</a> (const <a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a> &amp;axis, int64_t n=1) const</td></tr>
-<tr class="memdesc:a705a81dee513937c16fadec72303361e"><td class="mdescLeft">&#160;</td><td class="mdescRight">A combination of slice and prepend.  <br /></td></tr>
-<tr class="separator:a705a81dee513937c16fadec72303361e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a64779a9b4ce79c080898dcd85ddc4cee" id="r_a64779a9b4ce79c080898dcd85ddc4cee"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a64779a9b4ce79c080898dcd85ddc4cee">start_with</a> (const <a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a> &amp;axis) const</td></tr>
-<tr class="memdesc:a64779a9b4ce79c080898dcd85ddc4cee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if this accessor begins with another accessor.  <br /></td></tr>
-<tr class="separator:a64779a9b4ce79c080898dcd85ddc4cee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4fa670f116d060652dd06be03e3847cd" id="r_a4fa670f116d060652dd06be03e3847cd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4fa670f116d060652dd06be03e3847cd">append</a> (const <a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a> &amp;other) const</td></tr>
+<tr class="memdesc:a4fa670f116d060652dd06be03e3847cd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Append another accessor.  <br /></td></tr>
+<tr class="separator:a4fa670f116d060652dd06be03e3847cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a538a6960068d44393c0b3bc1d9361a37" id="r_a538a6960068d44393c0b3bc1d9361a37"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a538a6960068d44393c0b3bc1d9361a37">prepend</a> (const <a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a> &amp;other) const</td></tr>
+<tr class="memdesc:a538a6960068d44393c0b3bc1d9361a37"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepend another accessor.  <br /></td></tr>
+<tr class="separator:a538a6960068d44393c0b3bc1d9361a37"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1374cb193cc69a44aee10305be47a7e9" id="r_a1374cb193cc69a44aee10305be47a7e9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1374cb193cc69a44aee10305be47a7e9">slice</a> (std::size_t N) const</td></tr>
+<tr class="memdesc:a1374cb193cc69a44aee10305be47a7e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove the leading <code>N</code> items from the labels.  <br /></td></tr>
+<tr class="separator:a1374cb193cc69a44aee10305be47a7e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0e27993f976b52e5ca6067a2c3a14728" id="r_a0e27993f976b52e5ca6067a2c3a14728"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0e27993f976b52e5ca6067a2c3a14728">slice</a> (std::size_t N, std::size_t M) const</td></tr>
+<tr class="memdesc:a0e27993f976b52e5ca6067a2c3a14728"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extract <code>M</code> labels staring at <code>N</code>.  <br /></td></tr>
+<tr class="separator:a0e27993f976b52e5ca6067a2c3a14728"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af30033a42ec14c42ea2d8b6cf96ceaec" id="r_af30033a42ec14c42ea2d8b6cf96ceaec"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af30033a42ec14c42ea2d8b6cf96ceaec">remount</a> (const <a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a> &amp;other, int64_t n=1) const</td></tr>
+<tr class="memdesc:af30033a42ec14c42ea2d8b6cf96ceaec"><td class="mdescLeft">&#160;</td><td class="mdescRight">A combination of slice and prepend.  <br /></td></tr>
+<tr class="separator:af30033a42ec14c42ea2d8b6cf96ceaec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aac0088b8fb6c1d4ea497b59c093c2f86" id="r_aac0088b8fb6c1d4ea497b59c093c2f86"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aac0088b8fb6c1d4ea497b59c093c2f86">start_with</a> (const <a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a> &amp;other) const</td></tr>
+<tr class="memdesc:aac0088b8fb6c1d4ea497b59c093c2f86"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if this accessor begins with another accessor.  <br /></td></tr>
+<tr class="separator:aac0088b8fb6c1d4ea497b59c093c2f86"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3d9232156e114273d52e4ccdb20fe9ae" id="r_a3d9232156e114273d52e4ccdb20fe9ae"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3d9232156e114273d52e4ccdb20fe9ae">current</a> () const</td></tr>
 <tr class="memdesc:a3d9232156e114273d52e4ccdb20fe9ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the "current" counterpart.  <br /></td></tr>
 <tr class="separator:a3d9232156e114273d52e4ccdb20fe9ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -383,8 +383,8 @@ template&lt;typename Container , typename  = typename std::enable_if_t&lt;      
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a3bc21352099bd9fa964b5cb536dc1057" name="a3bc21352099bd9fa964b5cb536dc1057"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3bc21352099bd9fa964b5cb536dc1057">&#9670;&#160;</a></span>append()</h2>
+<a id="a4fa670f116d060652dd06be03e3847cd" name="a4fa670f116d060652dd06be03e3847cd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4fa670f116d060652dd06be03e3847cd">&#9670;&#160;</a></span>append()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -392,7 +392,7 @@ template&lt;typename Container , typename  = typename std::enable_if_t&lt;      
         <tr>
           <td class="memname"><a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a> append </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>axis</em></span></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>other</em></span></td><td>)</td>
           <td> const</td>
         </tr>
       </table>
@@ -685,8 +685,8 @@ template&lt;typename Container , typename  = typename std::enable_if_t&lt;      
 
 </div>
 </div>
-<a id="afe3d8226a476f90dc6b5563bc11a229d" name="afe3d8226a476f90dc6b5563bc11a229d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afe3d8226a476f90dc6b5563bc11a229d">&#9670;&#160;</a></span>operator[]()</h2>
+<a id="aa678785cfae64b710d272152acf21713" name="aa678785cfae64b710d272152acf21713"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa678785cfae64b710d272152acf21713">&#9670;&#160;</a></span>operator[]()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -694,7 +694,7 @@ template&lt;typename Container , typename  = typename std::enable_if_t&lt;      
         <tr>
           <td class="memname">const std::string &amp; operator[] </td>
           <td>(</td>
-          <td class="paramtype">size_t</td>          <td class="paramname"><span class="paramname"><em>i</em></span></td><td>)</td>
+          <td class="paramtype">std::size_t</td>          <td class="paramname"><span class="paramname"><em>i</em></span></td><td>)</td>
           <td> const</td>
         </tr>
       </table>
@@ -702,8 +702,8 @@ template&lt;typename Container , typename  = typename std::enable_if_t&lt;      
 
 </div>
 </div>
-<a id="a54a0457553ab1f399991a41c36b13b1f" name="a54a0457553ab1f399991a41c36b13b1f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a54a0457553ab1f399991a41c36b13b1f">&#9670;&#160;</a></span>prepend()</h2>
+<a id="a538a6960068d44393c0b3bc1d9361a37" name="a538a6960068d44393c0b3bc1d9361a37"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a538a6960068d44393c0b3bc1d9361a37">&#9670;&#160;</a></span>prepend()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -711,7 +711,7 @@ template&lt;typename Container , typename  = typename std::enable_if_t&lt;      
         <tr>
           <td class="memname"><a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a> prepend </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>axis</em></span></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>other</em></span></td><td>)</td>
           <td> const</td>
         </tr>
       </table>
@@ -721,8 +721,8 @@ template&lt;typename Container , typename  = typename std::enable_if_t&lt;      
 
 </div>
 </div>
-<a id="a705a81dee513937c16fadec72303361e" name="a705a81dee513937c16fadec72303361e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a705a81dee513937c16fadec72303361e">&#9670;&#160;</a></span>remount()</h2>
+<a id="af30033a42ec14c42ea2d8b6cf96ceaec" name="af30033a42ec14c42ea2d8b6cf96ceaec"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af30033a42ec14c42ea2d8b6cf96ceaec">&#9670;&#160;</a></span>remount()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -730,7 +730,7 @@ template&lt;typename Container , typename  = typename std::enable_if_t&lt;      
         <tr>
           <td class="memname"><a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a> remount </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>axis</em></span>, </td>
+          <td class="paramtype">const <a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>other</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -744,14 +744,14 @@ template&lt;typename Container , typename  = typename std::enable_if_t&lt;      
 
 </div>
 </div>
-<a id="a259cb5a711406a8c3e5d937eb9350cca" name="a259cb5a711406a8c3e5d937eb9350cca"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a259cb5a711406a8c3e5d937eb9350cca">&#9670;&#160;</a></span>size()</h2>
+<a id="ade1601ccf1fa3bcf050867f0852ca4e5" name="ade1601ccf1fa3bcf050867f0852ca4e5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ade1601ccf1fa3bcf050867f0852ca4e5">&#9670;&#160;</a></span>size()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">size_t size </td>
+          <td class="memname">std::size_t size </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td> const</td>
@@ -761,8 +761,8 @@ template&lt;typename Container , typename  = typename std::enable_if_t&lt;      
 
 </div>
 </div>
-<a id="adc32cebc1f3b92f5adcb677cde294efe" name="adc32cebc1f3b92f5adcb677cde294efe"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adc32cebc1f3b92f5adcb677cde294efe">&#9670;&#160;</a></span>slice() <span class="overload">[1/2]</span></h2>
+<a id="a1374cb193cc69a44aee10305be47a7e9" name="a1374cb193cc69a44aee10305be47a7e9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1374cb193cc69a44aee10305be47a7e9">&#9670;&#160;</a></span>slice() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -770,18 +770,18 @@ template&lt;typename Container , typename  = typename std::enable_if_t&lt;      
         <tr>
           <td class="memname"><a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a> slice </td>
           <td>(</td>
-          <td class="paramtype">int64_t</td>          <td class="paramname"><span class="paramname"><em>n</em></span></td><td>)</td>
+          <td class="paramtype">std::size_t</td>          <td class="paramname"><span class="paramname"><em>N</em></span></td><td>)</td>
           <td> const</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Remove the leading <code>n</code> items from the labels. </p>
+<p>Remove the leading <code>N</code> items from the labels. </p>
 
 </div>
 </div>
-<a id="a949473a52cdf56e041f999cf32a5af21" name="a949473a52cdf56e041f999cf32a5af21"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a949473a52cdf56e041f999cf32a5af21">&#9670;&#160;</a></span>slice() <span class="overload">[2/2]</span></h2>
+<a id="a0e27993f976b52e5ca6067a2c3a14728" name="a0e27993f976b52e5ca6067a2c3a14728"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0e27993f976b52e5ca6067a2c3a14728">&#9670;&#160;</a></span>slice() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -789,22 +789,22 @@ template&lt;typename Container , typename  = typename std::enable_if_t&lt;      
         <tr>
           <td class="memname"><a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a> slice </td>
           <td>(</td>
-          <td class="paramtype">int64_t</td>          <td class="paramname"><span class="paramname"><em>n1</em></span>, </td>
+          <td class="paramtype">std::size_t</td>          <td class="paramname"><span class="paramname"><em>N</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int64_t</td>          <td class="paramname"><span class="paramname"><em>n2</em></span>&#160;) const</td>
+          <td class="paramtype">std::size_t</td>          <td class="paramname"><span class="paramname"><em>M</em></span>&#160;) const</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Extract out the labels from <code>n1</code> to <code>n2</code>. </p>
+<p>Extract <code>M</code> labels staring at <code>N</code>. </p>
 
 </div>
 </div>
-<a id="a64779a9b4ce79c080898dcd85ddc4cee" name="a64779a9b4ce79c080898dcd85ddc4cee"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a64779a9b4ce79c080898dcd85ddc4cee">&#9670;&#160;</a></span>start_with()</h2>
+<a id="aac0088b8fb6c1d4ea497b59c093c2f86" name="aac0088b8fb6c1d4ea497b59c093c2f86"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aac0088b8fb6c1d4ea497b59c093c2f86">&#9670;&#160;</a></span>start_with()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -812,7 +812,7 @@ template&lt;typename Container , typename  = typename std::enable_if_t&lt;      
         <tr>
           <td class="memname">bool start_with </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>axis</em></span></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>other</em></span></td><td>)</td>
           <td> const</td>
         </tr>
       </table>

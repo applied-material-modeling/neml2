@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['wfr4_0',['WFR4',['../classneml2_1_1WFR4.html',1,'neml2']]],
+  ['wffr4_0',['WFFR4',['../classneml2_1_1WFFR4.html',1,'neml2']]],
   ['workdispatcher_1',['WorkDispatcher',['../classneml2_1_1WorkDispatcher.html',1,'neml2']]],
   ['workgenerator_2',['WorkGenerator',['../classneml2_1_1WorkGenerator.html',1,'neml2']]],
   ['workgenerator_3c_20indexing_3a_3aslice_20_3e_3',['WorkGenerator&lt; indexing::Slice &gt;',['../classneml2_1_1WorkGenerator.html',1,'neml2']]],

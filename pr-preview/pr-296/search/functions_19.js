@@ -1,24 +1,7 @@
 var searchData=
 [
-  ['_7ebufferstore_0',['~BufferStore',['../classneml2_1_1BufferStore.html#a038167df8ac0aee8f6771de0b334bb45',1,'neml2::BufferStore']]],
-  ['_7edependencydefinition_1',['~DependencyDefinition',['../classneml2_1_1DependencyDefinition.html#ac3806d61d0696217ba26cd4a0a0cf8ab',1,'neml2::DependencyDefinition']]],
-  ['_7ediagnosing_2',['~Diagnosing',['../structneml2_1_1Diagnosing.html#ab8ae0a22d5051957a390de754cd3b1c6',1,'neml2::Diagnosing']]],
-  ['_7ediagnosticsinterface_3',['~DiagnosticsInterface',['../classneml2_1_1DiagnosticsInterface.html#afacf8fc9e8cb0e56c1c351788c475ec9',1,'neml2::DiagnosticsInterface']]],
-  ['_7ehitparser_4',['~HITParser',['../classneml2_1_1HITParser.html#a0553d4dd18d956da476705f64e14df33',1,'neml2::HITParser']]],
-  ['_7eneml2object_5',['~NEML2Object',['../classneml2_1_1NEML2Object.html#ad9cb8bba430bcfb31348ddfe6b9b00c8',1,'neml2::NEML2Object']]],
-  ['_7enonlinearsystem_6',['~NonlinearSystem',['../classneml2_1_1NonlinearSystem.html#aa62a80340427a799c1c39dafcc509241',1,'neml2::NonlinearSystem']]],
-  ['_7eoptionbase_7',['~OptionBase',['../classneml2_1_1OptionBase.html#a4f58f9ab0365689e468d9be63afe52e1',1,'neml2::OptionBase']]],
-  ['_7eoptionset_8',['~OptionSet',['../classneml2_1_1OptionSet.html#a1bc9c5aafad6d681547ed24cfa05e0da',1,'neml2::OptionSet']]],
-  ['_7eparameterstore_9',['~ParameterStore',['../classneml2_1_1ParameterStore.html#a889a94f03e297dafb62417c2ef50db1e',1,'neml2::ParameterStore']]],
-  ['_7eparser_10',['~Parser',['../classneml2_1_1Parser.html#a7beb386e47902b5990e7c5d834c53d87',1,'neml2::Parser']]],
-  ['_7esolvingnonlinearsystem_11',['~SolvingNonlinearSystem',['../structneml2_1_1SolvingNonlinearSystem.html#aaf300fbcfc094bb8dcaa667f1d9854fb',1,'neml2::SolvingNonlinearSystem']]],
-  ['_7etensorvaluebase_12',['~TensorValueBase',['../classneml2_1_1TensorValueBase.html#a7e08960d46282e5832e73c36ac71d207',1,'neml2::TensorValueBase']]],
-  ['_7etimedsection_13',['~TimedSection',['../structneml2_1_1TimedSection.html#a35796cd4996644b125d719ed976e3cdc',1,'neml2::TimedSection']]],
-  ['_7etracewriter_14',['~TraceWriter',['../structneml2_1_1TraceWriter.html#a4659edae7ea41a9ba191fd1c0309faa0',1,'neml2::TraceWriter']]],
-  ['_7etracinginterface_15',['~TracingInterface',['../classneml2_1_1TracingInterface.html#a0938f54c230e1f6e91b5f26d7627aa1d',1,'neml2::TracingInterface']]],
-  ['_7etransformable_16',['~Transformable',['../classneml2_1_1Transformable.html#a2015a73dabd206a9a68a209bceaae958',1,'neml2::Transformable']]],
-  ['_7evariablebase_17',['~VariableBase',['../classneml2_1_1VariableBase.html#a11c5fe28b4558368c4e40dd53523aadb',1,'neml2::VariableBase']]],
-  ['_7evariablestore_18',['~VariableStore',['../classneml2_1_1VariableStore.html#a3b95f80628615e9fd70b3b8da7dc656f',1,'neml2::VariableStore']]],
-  ['_7eworkdispatcher_19',['~WorkDispatcher',['../classneml2_1_1WorkDispatcher.html#a642cb1181c7b2eaa5de38aab62fdb7a1',1,'neml2::WorkDispatcher']]],
-  ['_7eworkgenerator_20',['~WorkGenerator',['../classneml2_1_1WorkGenerator.html#adb517005f724bd6a29bbc3c5b53d9cde',1,'neml2::WorkGenerator']]]
+  ['zero_0',['zero',['../classneml2_1_1Variable.html#a814ddce4d45e28cc2e0a4b88d95af9fd',1,'neml2::Variable::zero()'],['../classneml2_1_1VariableBase.html#a886b3198c602561453693d5fe0f1336d',1,'neml2::VariableBase::zero()']]],
+  ['zero_5fundefined_5finput_1',['zero_undefined_input',['../classneml2_1_1Model.html#a259384b9b2c3295aef48512b1d4fb4db',1,'neml2::Model::zero_undefined_input()'],['../classneml2_1_1VariableStore.html#a11c555d886ed40971ec279af12f99dde',1,'neml2::VariableStore::zero_undefined_input()']]],
+  ['zeros_2',['zeros',['../classneml2_1_1VariableBase.html#a49dc105874c2252721affd68e97efced',1,'neml2::VariableBase::zeros()'],['../classneml2_1_1PrimitiveTensor.html#ae8ece162e9b79c9215f19aebc4d4e7fc',1,'neml2::PrimitiveTensor::zeros(const TensorOptions &amp;options=default_tensor_options())'],['../classneml2_1_1PrimitiveTensor.html#a84e2954624ada4f9fd2f2ccaba355df3',1,'neml2::PrimitiveTensor::zeros(const TraceableTensorShape &amp;dynamic_shape, TensorShapeRef intmd_shape={}, const TensorOptions &amp;options=default_tensor_options())'],['../classneml2_1_1Tensor.html#a8f19ca2bcfcef3d4132fa0c0ccb65680',1,'neml2::Tensor::zeros(TensorShapeRef base_shape, const TensorOptions &amp;options=default_tensor_options())'],['../classneml2_1_1Tensor.html#a6c46ec3e8f4a3255ff34db2b9300a3f1',1,'neml2::Tensor::zeros(const TraceableTensorShape &amp;dynamic_shape, TensorShapeRef intmd_shape, TensorShapeRef base_shape, const TensorOptions &amp;options=default_tensor_options())']]],
+  ['zeros_5flike_3',['zeros_like',['../group__tensor__creation.html#ga9f8f7b529e5ff91dff05c9d68d78ef43',1,'neml2::TensorBase']]]
 ];

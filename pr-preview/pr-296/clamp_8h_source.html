@@ -170,10 +170,12 @@ $(function(){initNavTree('clamp_8h_source.html',''); initResizable(true); });
 <div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span> </div>
 <div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a></div>
 <div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>{</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="preprocessor">#define DECLARE_CLAMP(T) T clamp(const T &amp; a, const CScalar &amp; lb, const CScalar &amp; ub)</span></div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno"><a class="line" href="namespaceneml2.html#aac6733e69d32de874e3366d846d20a41">   33</a></span>FOR_ALL_TENSORBASE(DECLARE_CLAMP);</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="preprocessor">#undef DECLARE_CLAMP</span></div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>} <span class="comment">// namespace neml2</span></div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="preprocessor">#define DECLARE_CLAMP(T)                                                                           \</span></div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="preprocessor">  T clamp(const T &amp; a, const T &amp; lb, const T &amp; ub);                                                \</span></div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="preprocessor">  T clamp(const T &amp; a, const CScalar &amp; lb, const CScalar &amp; ub)</span></div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno"><a class="line" href="namespaceneml2.html#aac6733e69d32de874e3366d846d20a41">   35</a></span>FOR_ALL_TENSORBASE(DECLARE_CLAMP);</div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="preprocessor">#undef DECLARE_CLAMP</span></div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>} <span class="comment">// namespace neml2</span></div>
 <div class="ttc" id="anamespaceneml2_html"><div class="ttname"><a href="namespaceneml2.html">neml2</a></div><div class="ttdef"><b>Definition</b> DiagnosticsInterface.cxx:30</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->

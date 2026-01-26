@@ -142,15 +142,15 @@ $(function(){initNavTree('tutorials-models-transient-driver.html',''); initResiz
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md129">Problem description</a>
+    <a href="#autotoc_md125">Problem description</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md130">Simulating the stress-strain curve</a>
+    <a href="#autotoc_md126">Simulating the stress-strain curve</a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_content_2tutorials_2models_2transient__driver_2main"></a></p>
-<h1><a class="anchor" id="autotoc_md129"></a>
+<h1><a class="anchor" id="autotoc_md125"></a>
 Problem description</h1>
 <p>In the previous tutorial, we demonstrated the use of <a class="el" href="syntax-models.html#implicitupdate">ImplicitUpdate</a> to perform constitutive update by solving an implicit system of equations. In particular, we have addressed the constitutive update in the following form   </p><p class="formulaDsp">
 \begin{align}
@@ -167,7 +167,7 @@ Problem description</h1>
 </p>
 <p> where \(N\) is the total number of steps used to discretize the "transient".</p>
 <p>NEML2 models, including those composed from submodels, can only be used to describe the first form of constitutive \(\eqref{form1}\), i.e., a single step constitutive update. In order to simulate the initial-value problem defined in \(\eqref{form2}\), a <a class="el" href="classneml2_1_1TransientDriver.html" title="The driver for a transient initial-value problem.">neml2::TransientDriver</a> can be used to perform the recursive constitutive update to obtain the transient response.</p>
-<h1><a class="anchor" id="autotoc_md130"></a>
+<h1><a class="anchor" id="autotoc_md126"></a>
 Simulating the stress-strain curve</h1>
 <p>Reusing the viscoplasticity model defined in the previous tutorial, along with the Newton-Raphson solver, a predefined driver <a class="el" href="syntax-drivers.html#sdtsolidmechanicsdriver">SDTSolidMechanicsDriver</a> can be used to obtain the stress-strain curve.</p>
 <div class="fragment"><div class="line">[Drivers]</div>
@@ -176,12 +176,11 @@ Simulating the stress-strain curve</h1>
 <div class="line">    model = &#39;model&#39;</div>
 <div class="line">    prescribed_time = &#39;times&#39;</div>
 <div class="line">    prescribed_strain = &#39;strains&#39;</div>
-<div class="line">    predictor = LINEAR_EXTRAPOLATION</div>
 <div class="line">    save_as = &#39;result.pt&#39;</div>
 <div class="line">  []</div>
 <div class="line">[]</div>
-<div class="line"> </div>
-<div class="line">[Tensors]</div>
+</div><!-- fragment --><p>with tensors defined as</p>
+<div class="fragment"><div class="line">[Tensors]</div>
 <div class="line">  [times]</div>
 <div class="line">    type = LinspaceScalar</div>
 <div class="line">    start = 0</div>
@@ -216,7 +215,7 @@ Simulating the stress-strain curve</h1>
 <li>LINEAR_EXTRAPOLATION, linearly extrapolates the converged solutions from the previous two steps as the initial guess for the current solve.</li>
 </ul>
 <p>The optional option "save_as" tells the driver to write the results into a file named "result.pt".</p>
-<p>The following C++ code retrieves and executes the driver to obtain the stress-strain curve. </p><div class="fragment"><div class="line"><span class="preprocessor">#include &quot;neml2/base/Factory.h&quot;</span></div>
+<p>The following C++ code retrieves and executes the driver to obtain the stress-strain curve. </p><div class="fragment"><div class="line"><span class="preprocessor">#include &quot;neml2/neml2.h&quot;</span></div>
 <div class="line"><span class="preprocessor">#include &quot;neml2/drivers/Driver.h&quot;</span></div>
 <div class="line"> </div>
 <div class="line"><span class="keywordtype">int</span></div>

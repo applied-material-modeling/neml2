@@ -142,23 +142,23 @@ $(function(){initNavTree('tutorials-extension-the-forward-operator.html',''); in
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md90">Method signature</a>
+    <a href="#autotoc_md86">Method signature</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md91">Implementation</a>
+    <a href="#autotoc_md87">Implementation</a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md92">Evaluation</a>
+    <a href="#autotoc_md88">Evaluation</a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_content_2tutorials_2extension_2the__forward__operator_2main"></a></p>
-<h1><a class="anchor" id="autotoc_md90"></a>
+<h1><a class="anchor" id="autotoc_md86"></a>
 Method signature</h1>
 <p>The base class <a class="el" href="classneml2_1_1Model.html" title="The base class for all constitutive models.">neml2::Model</a> declares a pure virtual method <a class="el" href="classneml2_1_1Model.html#a6a028925dc10166ea6426fc4d7635ad2" title="The map between input -&gt; output, and optionally its derivatives.">neml2::Model::set_value</a> for derived classes to define the forward operator. The forward operator is responsible for calculating output variables given input variables, parameters, and buffers. Optionally, the <a class="el" href="classneml2_1_1Model.html#a6a028925dc10166ea6426fc4d7635ad2" title="The map between input -&gt; output, and optionally its derivatives.">neml2::Model::set_value</a> method can define derivatives and second derivatives, if requested.</p>
 <p>The signature of the method is </p><div class="fragment"><div class="line"><span class="keyword">virtual</span> <span class="keywordtype">void</span> set_value(<span class="keywordtype">bool</span>, <span class="keywordtype">bool</span>, <span class="keywordtype">bool</span>) = 0;</div>
 </div><!-- fragment --><p> The three boolean arguments denote whether the caller is requesting output variable values, their derivatives, or their second derivatives. Derived classes should therefore override this method, i.e. </p><div class="fragment"><div class="line"><span class="keywordtype">void</span> set_value(<span class="keywordtype">bool</span>, <span class="keywordtype">bool</span>, <span class="keywordtype">bool</span>) <span class="keyword">override</span>;</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md91"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md87"></a>
 Implementation</h1>
 <p>By default, the model forward operator is responsible for calculating the output variable values and their first derivatives. Definition of second order derivatives is not required. Such default behavior can be changed by modifying the corresponding input file option in <a class="el" href="classneml2_1_1Model.html#acec712ff48d4c0884a1362c116f3257a">neml2::Model::expected_options</a>, i.e. </p><div class="fragment"><div class="line">options.set&lt;<span class="keywordtype">bool</span>&gt;(<span class="stringliteral">&quot;define_values&quot;</span>) = <span class="keyword">true</span>;</div>
 <div class="line">options.set&lt;<span class="keywordtype">bool</span>&gt;(<span class="stringliteral">&quot;define_derivatives&quot;</span>) = <span class="keyword">true</span>;</div>
@@ -169,7 +169,9 @@ Implementation</h1>
   \boldsymbol{a} = \boldsymbol{g} - \mu \boldsymbol{v}.
 \]
 </p>
-<p> The forward operator can be implemented as </p><div class="fragment"><div class="line"><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a></div>
+<p> The forward operator can be implemented as </p><div class="fragment"><div class="line"><span class="preprocessor">#include &quot;neml2/tensors/functions/imap.h&quot;</span></div>
+<div class="line"> </div>
+<div class="line"><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceneml2.html">neml2</a></div>
 <div class="line">{</div>
 <div class="line"><span class="keywordtype">void</span></div>
 <div class="line"><a class="code hl_function" href="classneml2_1_1ProjectileAcceleration.html#ae6396730f8e20adc1c9d3875c473acdd">ProjectileAcceleration::set_value</a>(<span class="keywordtype">bool</span> out, <span class="keywordtype">bool</span> dout, <span class="keywordtype">bool</span> <span class="comment">/*d2out*/</span>)</div>
@@ -178,17 +180,17 @@ Implementation</h1>
 <div class="line">    <a class="code hl_variable" href="classneml2_1_1ProjectileAcceleration.html#a2a6d883e66e282fd6ae13155c1c071e9">_a</a> = <a class="code hl_variable" href="classneml2_1_1ProjectileAcceleration.html#a735fbf1c41fa017f70c4abee922d032e">_g</a> - <a class="code hl_variable" href="classneml2_1_1ProjectileAcceleration.html#ae052393230c00bcdf7aebdf158a9d9dc">_mu</a> * <a class="code hl_variable" href="classneml2_1_1ProjectileAcceleration.html#a4d09339c2d851ac3fef30e9f06f1d782">_v</a>;</div>
 <div class="line"> </div>
 <div class="line">  <span class="keywordflow">if</span> (dout)</div>
-<div class="line">    <a class="code hl_variable" href="classneml2_1_1ProjectileAcceleration.html#a2a6d883e66e282fd6ae13155c1c071e9">_a</a>.d(<a class="code hl_variable" href="classneml2_1_1ProjectileAcceleration.html#a4d09339c2d851ac3fef30e9f06f1d782">_v</a>) = -<a class="code hl_variable" href="classneml2_1_1ProjectileAcceleration.html#ae052393230c00bcdf7aebdf158a9d9dc">_mu</a> * <a class="code hl_function" href="classneml2_1_1Vec.html#ae8ea0aeeeb359cde236d6f350a18783a">Vec::identity_map</a>(<a class="code hl_variable" href="classneml2_1_1ProjectileAcceleration.html#a4d09339c2d851ac3fef30e9f06f1d782">_v</a>.options());</div>
+<div class="line">    <a class="code hl_variable" href="classneml2_1_1ProjectileAcceleration.html#a2a6d883e66e282fd6ae13155c1c071e9">_a</a>.d(<a class="code hl_variable" href="classneml2_1_1ProjectileAcceleration.html#a4d09339c2d851ac3fef30e9f06f1d782">_v</a>) = -<a class="code hl_variable" href="classneml2_1_1ProjectileAcceleration.html#ae052393230c00bcdf7aebdf158a9d9dc">_mu</a> * <a class="code hl_function" href="namespaceneml2.html#a3d1edda955512723d63a7f93bb6b8103">imap_v&lt;Vec&gt;</a>(<a class="code hl_variable" href="classneml2_1_1ProjectileAcceleration.html#a4d09339c2d851ac3fef30e9f06f1d782">_v</a>.options());</div>
 <div class="line">}</div>
 <div class="line">}</div>
-<div class="ttc" id="aclassneml2_1_1ProjectileAcceleration_html_a2a6d883e66e282fd6ae13155c1c071e9"><div class="ttname"><a href="classneml2_1_1ProjectileAcceleration.html#a2a6d883e66e282fd6ae13155c1c071e9">neml2::ProjectileAcceleration::_a</a></div><div class="ttdeci">Variable&lt; Vec &gt; &amp; _a</div><div class="ttdoc">Acceleration of the projectile (output variable)</div><div class="ttdef"><b>Definition</b> src1.cxx:19</div></div>
-<div class="ttc" id="aclassneml2_1_1ProjectileAcceleration_html_a4d09339c2d851ac3fef30e9f06f1d782"><div class="ttname"><a href="classneml2_1_1ProjectileAcceleration.html#a4d09339c2d851ac3fef30e9f06f1d782">neml2::ProjectileAcceleration::_v</a></div><div class="ttdeci">const Variable&lt; Vec &gt; &amp; _v</div><div class="ttdoc">Velocity of the projectile (input variable)</div><div class="ttdef"><b>Definition</b> src1.cxx:16</div></div>
-<div class="ttc" id="aclassneml2_1_1ProjectileAcceleration_html_a735fbf1c41fa017f70c4abee922d032e"><div class="ttname"><a href="classneml2_1_1ProjectileAcceleration.html#a735fbf1c41fa017f70c4abee922d032e">neml2::ProjectileAcceleration::_g</a></div><div class="ttdeci">const Vec &amp; _g</div><div class="ttdoc">Gravitational acceleration (parameter)</div><div class="ttdef"><b>Definition</b> src1.cxx:22</div></div>
-<div class="ttc" id="aclassneml2_1_1ProjectileAcceleration_html_ae052393230c00bcdf7aebdf158a9d9dc"><div class="ttname"><a href="classneml2_1_1ProjectileAcceleration.html#ae052393230c00bcdf7aebdf158a9d9dc">neml2::ProjectileAcceleration::_mu</a></div><div class="ttdeci">const Scalar &amp; _mu</div><div class="ttdoc">Dynamic viscosity of the medium (parameter)</div><div class="ttdef"><b>Definition</b> src1.cxx:25</div></div>
-<div class="ttc" id="aclassneml2_1_1ProjectileAcceleration_html_ae6396730f8e20adc1c9d3875c473acdd"><div class="ttname"><a href="classneml2_1_1ProjectileAcceleration.html#ae6396730f8e20adc1c9d3875c473acdd">neml2::ProjectileAcceleration::set_value</a></div><div class="ttdeci">void set_value(bool, bool, bool) override</div><div class="ttdoc">The map between input -&gt; output, and optionally its derivatives.</div><div class="ttdef"><b>Definition</b> src1.cxx:13</div></div>
-<div class="ttc" id="aclassneml2_1_1Vec_html_ae8ea0aeeeb359cde236d6f350a18783a"><div class="ttname"><a href="classneml2_1_1Vec.html#ae8ea0aeeeb359cde236d6f350a18783a">neml2::Vec::identity_map</a></div><div class="ttdeci">static R2 identity_map(const TensorOptions &amp;options=default_tensor_options())</div><div class="ttdoc">The derivative of a Vec with respect to itself.</div><div class="ttdef"><b>Definition</b> Vec.cxx:43</div></div>
+<div class="ttc" id="aclassneml2_1_1ProjectileAcceleration_html_a2a6d883e66e282fd6ae13155c1c071e9"><div class="ttname"><a href="classneml2_1_1ProjectileAcceleration.html#a2a6d883e66e282fd6ae13155c1c071e9">neml2::ProjectileAcceleration::_a</a></div><div class="ttdeci">Variable&lt; Vec &gt; &amp; _a</div><div class="ttdoc">Acceleration of the projectile (output variable)</div><div class="ttdef"><b>Definition</b> ex1.cxx:22</div></div>
+<div class="ttc" id="aclassneml2_1_1ProjectileAcceleration_html_a4d09339c2d851ac3fef30e9f06f1d782"><div class="ttname"><a href="classneml2_1_1ProjectileAcceleration.html#a4d09339c2d851ac3fef30e9f06f1d782">neml2::ProjectileAcceleration::_v</a></div><div class="ttdeci">const Variable&lt; Vec &gt; &amp; _v</div><div class="ttdoc">Velocity of the projectile (input variable)</div><div class="ttdef"><b>Definition</b> ex1.cxx:19</div></div>
+<div class="ttc" id="aclassneml2_1_1ProjectileAcceleration_html_a735fbf1c41fa017f70c4abee922d032e"><div class="ttname"><a href="classneml2_1_1ProjectileAcceleration.html#a735fbf1c41fa017f70c4abee922d032e">neml2::ProjectileAcceleration::_g</a></div><div class="ttdeci">const Vec &amp; _g</div><div class="ttdoc">Gravitational acceleration (parameter)</div><div class="ttdef"><b>Definition</b> ex1.cxx:27</div></div>
+<div class="ttc" id="aclassneml2_1_1ProjectileAcceleration_html_ae052393230c00bcdf7aebdf158a9d9dc"><div class="ttname"><a href="classneml2_1_1ProjectileAcceleration.html#ae052393230c00bcdf7aebdf158a9d9dc">neml2::ProjectileAcceleration::_mu</a></div><div class="ttdeci">const Scalar &amp; _mu</div><div class="ttdoc">Dynamic viscosity of the medium (parameter)</div><div class="ttdef"><b>Definition</b> ex1.cxx:30</div></div>
+<div class="ttc" id="aclassneml2_1_1ProjectileAcceleration_html_ae6396730f8e20adc1c9d3875c473acdd"><div class="ttname"><a href="classneml2_1_1ProjectileAcceleration.html#ae6396730f8e20adc1c9d3875c473acdd">neml2::ProjectileAcceleration::set_value</a></div><div class="ttdeci">void set_value(bool, bool, bool) override</div><div class="ttdoc">The map between input -&gt; output, and optionally its derivatives.</div><div class="ttdef"><b>Definition</b> ex1.cxx:15</div></div>
 <div class="ttc" id="anamespaceneml2_html"><div class="ttname"><a href="namespaceneml2.html">neml2</a></div><div class="ttdef"><b>Definition</b> DiagnosticsInterface.cxx:30</div></div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md92"></a>
+<div class="ttc" id="anamespaceneml2_html_a3d1edda955512723d63a7f93bb6b8103"><div class="ttname"><a href="namespaceneml2.html#a3d1edda955512723d63a7f93bb6b8103">neml2::imap_v</a></div><div class="ttdeci">imap_t&lt; T &gt;::type imap_v(const TensorOptions &amp;options=default_tensor_options())</div><div class="ttdoc">Get the identity map interpreted as the concrete primitive tensor type.</div><div class="ttdef"><b>Definition</b> imap.h:66</div></div>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md88"></a>
 Evaluation</h1>
 <p>The model definition is said to be <em>complete</em> once all components are properly defined. Custom models can be evaluated in the same way as existing models that come with NEML2.</p>
 <div class="fragment"><div class="line"><span class="keywordtype">int</span></div>

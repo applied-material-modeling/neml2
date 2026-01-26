@@ -180,7 +180,7 @@ $(function(){initNavTree('system-models.html',''); initResizable(true); });
   </li>
 </ul>
 </div>
-<div class="textblock"><p><a class="anchor" id="md__2home_2runner_2work_2neml2_2neml2_2doc_2content_2system_2model"></a></p>
+<div class="textblock"><p><a class="anchor" id="md_content_2system_2model"></a></p>
 <p>Refer to <a class="el" href="syntax-models.html">Syntax Documentation</a> for the list of available objects.</p>
 <h1><a class="anchor" id="model-definition"></a>
 Model definition</h1>
@@ -201,8 +201,8 @@ Model definition</h1>
 </p>
 <p>Translating the above mathematical definition into NEML2 is straightforward.</p><ul>
 <li>A model following this definition derives from <a class="el" href="classneml2_1_1Model.html">Model</a>.</li>
-<li><a class="el" href="classneml2_1_1VariableStore.html#abebfaebbb9c5a3b42b6208b0979997b0">declare_input_variable</a> declares an input variable \(x_i\) in the input space \(\mathbb{R}^m\).</li>
-<li><a class="el" href="classneml2_1_1VariableStore.html#a3586f9e5861f613dbfe349c7cda999e9">declare_output_variable</a> declares an output variable \(y_i\) in the output space \(\mathbb{R}^n\).</li>
+<li><a class="el" href="classneml2_1_1VariableStore.html#ab6580013e1f20ccd1eadbb3ec8738418">declare_input_variable</a> declares an input variable \(x_i\) in the input space \(\mathbb{R}^m\).</li>
+<li><a class="el" href="classneml2_1_1VariableStore.html#a02722154556e8b8051ef2147174affdb">declare_output_variable</a> declares an output variable \(y_i\) in the output space \(\mathbb{R}^n\).</li>
 <li><a class="el" href="classneml2_1_1Model.html#a6a028925dc10166ea6426fc4d7635ad2">set_value</a> is a method defining the forward operator \(f\) itself.</li>
 </ul>
 <p>Both <code>declare_input_variable</code> and <code>declare_output_variable</code> are templated on the variable type &ndash; recall that only a variable of the NEML2 primitive tensor type can be registered. Furthermore, both methods return a <code>Variable&lt;T&gt; &amp;</code> used for retrieving and setting the variable value inside the forward operator, i.e. <code>set_value</code>. Note that the reference returned by <code>declare_input_variable</code> is writable, while the reference returned by <code>declare_output_variable</code> is read-only.</p>
@@ -343,8 +343,8 @@ Axis labeling</h2>
 <h2><a class="anchor" id="tensor-assembly"></a>
 Tensor assembly</h2>
 <p>NEML2 implements two types of "assemblers" to assemble (or split) the implicit system given the axis layout defined by <a class="el" href="classneml2_1_1LabeledAxis.html">LabeledAxis</a>:</p><ul>
-<li><a class="el" href="classneml2_1_1VectorAssembler.html">VectorAssembler</a>: Assemble a map of vectors into a single vector (<a class="el" href="classneml2_1_1VectorAssembler.html#a9602ccc4344c1fd16e9334427403c16b" title="Assemble a vector of vectors (by variables)">neml2::VectorAssembler::assemble_by_variable</a>), or split a single vector into a map of vectors (<a class="el" href="classneml2_1_1VectorAssembler.html#a108323e051fd2a7f0bc3516328b0e5fc" title="Split the vector (by variables)">neml2::VectorAssembler::split_by_variable</a>).</li>
-<li><a class="el" href="classneml2_1_1MatrixAssembler.html">MatrixAssembler</a>: Assemble a map of map of matrices into a single matrix (<a class="el" href="classneml2_1_1MatrixAssembler.html#a4c28328a1a60e6a685f8c4c1d68e9ad0" title="Assemble a matrix of matrices (by variables)">neml2::MatrixAssembler::assemble_by_variable</a>), or split a single matrix into a map of map of matrices (<a class="el" href="classneml2_1_1MatrixAssembler.html#a7b83960e9c6e84713a3664ac03ce8af8" title="Split the matrix (by variables)">neml2::MatrixAssembler::split_by_variable</a>).</li>
+<li><a class="el" href="classneml2_1_1VectorAssembler.html">VectorAssembler</a>: Assemble a map of vectors into a single vector (<a class="el" href="classneml2_1_1VectorAssembler.html#a2ee806d36943a91a768adbe131550cd7">neml2::VectorAssembler::assemble_by_variable</a>), or split a single vector into a map of vectors (<a class="el" href="classneml2_1_1VectorAssembler.html#a46c3b70908615bc447cfd4ce91e42bf6">neml2::VectorAssembler::split_by_variable</a>).</li>
+<li><a class="el" href="classneml2_1_1MatrixAssembler.html">MatrixAssembler</a>: Assemble a map of map of matrices into a single matrix (<a class="el" href="classneml2_1_1MatrixAssembler.html#a771d69340a6758dbc87624be771d9da3">neml2::MatrixAssembler::assemble_by_variable</a>), or split a single matrix into a map of map of matrices (<a class="el" href="classneml2_1_1MatrixAssembler.html#ad20dfd30b4f0ee2526bc976e7c5e8405">neml2::MatrixAssembler::split_by_variable</a>).</li>
 </ul>
 <p>The <code>assemble_by_variable</code> methods take a map (1D map for the vector assembler and 2D map for the matrix assembler) as input argument. The keys of the map are variable names.</p>
 <dl class="section note"><dt>Note</dt><dd>Variable values not provided by the map are filled with zeros.</dd></dl>

@@ -280,7 +280,7 @@ Protected Member Functions</h2></td></tr>
 <tr class="memitem:a6b596f9d00fc4927ddaeccbff532c33d" id="r_a6b596f9d00fc4927ddaeccbff532c33d"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6b596f9d00fc4927ddaeccbff532c33d">prepare</a> (const <a class="el" href="classneml2_1_1NonlinearSystem.html">NonlinearSystem</a> &amp;, const <a class="el" href="structneml2_1_1NonlinearSystem_1_1Sol.html">NonlinearSystem::Sol</a>&lt; true &gt; &amp;)</td></tr>
 <tr class="memdesc:a6b596f9d00fc4927ddaeccbff532c33d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepare solver internal data before the iterative update.  <br /></td></tr>
 <tr class="separator:a6b596f9d00fc4927ddaeccbff532c33d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aac46497c562e13ff3eb82e338bb74d2f" id="r_aac46497c562e13ff3eb82e338bb74d2f"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aac46497c562e13ff3eb82e338bb74d2f">converged</a> (size_t itr, const <a class="el" href="namespaceneml2.html#aa244a1ae9b68f1027797ae4238a2e962">ATensor</a> &amp;nR, const <a class="el" href="namespaceneml2.html#aa244a1ae9b68f1027797ae4238a2e962">ATensor</a> &amp;nR0) const</td></tr>
+<tr class="memitem:aac46497c562e13ff3eb82e338bb74d2f" id="r_aac46497c562e13ff3eb82e338bb74d2f"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aac46497c562e13ff3eb82e338bb74d2f">converged</a> (size_t itr, const <a class="el" href="namespaceneml2.html#a4a57eb2eaae4b2acfea6495c348f1142">ATensor</a> &amp;nR, const <a class="el" href="namespaceneml2.html#a4a57eb2eaae4b2acfea6495c348f1142">ATensor</a> &amp;nR0) const</td></tr>
 <tr class="memdesc:aac46497c562e13ff3eb82e338bb74d2f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check for convergence. The current iteration is said to be converged if the residual norm is below the absolute tolerance or or the ratio between the residual norm and the initial residual norm is below the relative tolerance.  <br /></td></tr>
 <tr class="separator:aac46497c562e13ff3eb82e338bb74d2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab092ec8ad3e9272242aa66cd01af4d00" id="r_ab092ec8ad3e9272242aa66cd01af4d00"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab092ec8ad3e9272242aa66cd01af4d00">update</a> (<a class="el" href="classneml2_1_1NonlinearSystem.html">NonlinearSystem</a> &amp;system, <a class="el" href="structneml2_1_1NonlinearSystem_1_1Sol.html">NonlinearSystem::Sol</a>&lt; true &gt; &amp;x, const <a class="el" href="structneml2_1_1NonlinearSystem_1_1Res.html">NonlinearSystem::Res</a>&lt; true &gt; &amp;r, const <a class="el" href="structneml2_1_1NonlinearSystem_1_1Jac.html">NonlinearSystem::Jac</a>&lt; true &gt; &amp;J)</td></tr>
@@ -352,12 +352,12 @@ Additional Inherited Members</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="namespaceneml2.html#aa244a1ae9b68f1027797ae4238a2e962">ATensor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>nR</em></span>, </td>
+          <td class="paramtype">const <a class="el" href="namespaceneml2.html#a4a57eb2eaae4b2acfea6495c348f1142">ATensor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>nR</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="namespaceneml2.html#aa244a1ae9b68f1027797ae4238a2e962">ATensor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>nR0</em></span>&#160;) const</td>
+          <td class="paramtype">const <a class="el" href="namespaceneml2.html#a4a57eb2eaae4b2acfea6495c348f1142">ATensor</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>nR0</em></span>&#160;) const</td>
         </tr>
       </table>
   </td>

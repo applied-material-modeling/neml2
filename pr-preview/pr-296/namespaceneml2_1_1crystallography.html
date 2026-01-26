@@ -146,7 +146,7 @@ $(function(){initNavTree('namespaceneml2_1_1crystallography.html',''); initResiz
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="namespaces" name="namespaces"></a>
 Namespaces</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceneml2_1_1crystallography_1_1crystal__symmetry__operators.html">crystal_symmetry_operators</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceneml2_1_1crystallography_1_1symmetry__operators.html">symmetry_operators</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
@@ -164,14 +164,76 @@ Functions</h2></td></tr>
 <tr class="separator:a889dd34ef17120f33dff9713e302f5d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab2aa1766ea6875c2d3d3ae3d07574485" id="r_ab2aa1766ea6875c2d3d3ae3d07574485"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab2aa1766ea6875c2d3d3ae3d07574485">register_NEML2_object</a> (<a class="el" href="classneml2_1_1crystallography_1_1CubicCrystal.html">CubicCrystal</a>)</td></tr>
 <tr class="separator:ab2aa1766ea6875c2d3d3ae3d07574485"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad0c33437b02e01cbd71800fd7b9c05ed" id="r_ad0c33437b02e01cbd71800fd7b9c05ed"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1R2.html">R2</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad0c33437b02e01cbd71800fd7b9c05ed">symmetry_operations_from_orbifold</a> (const std::string &amp;orbifold, const <a class="el" href="namespaceneml2.html#ab6773d3e782bd312d4cd7b30b39ca203">TensorOptions</a> &amp;options=<a class="el" href="namespaceneml2.html#a26868c5c62c4d204486adb5ef3a034e0">default_tensor_options</a>())</td></tr>
-<tr class="memdesc:ad0c33437b02e01cbd71800fd7b9c05ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper function to return the symmetry operators given the Orbifold notation.  <br /></td></tr>
-<tr class="separator:ad0c33437b02e01cbd71800fd7b9c05ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a41efd34219af3127a1aaf787037d4322" id="r_a41efd34219af3127a1aaf787037d4322"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1R2.html">R2</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a41efd34219af3127a1aaf787037d4322">symmetry</a> (const std::string &amp;orbifold, const <a class="el" href="namespaceneml2.html#ab6773d3e782bd312d4cd7b30b39ca203">TensorOptions</a> &amp;options=<a class="el" href="namespaceneml2.html#a26868c5c62c4d204486adb5ef3a034e0">default_tensor_options</a>())</td></tr>
+<tr class="memdesc:a41efd34219af3127a1aaf787037d4322"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper function to return the symmetry operators given the Orbifold notation.  <br /></td></tr>
+<tr class="separator:a41efd34219af3127a1aaf787037d4322"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2a8634e10751e0d7000cbcb18b9b0db3" id="r_a2a8634e10751e0d7000cbcb18b9b0db3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1Vec.html">Vec</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2a8634e10751e0d7000cbcb18b9b0db3">unique_bidirectional</a> (const <a class="el" href="classneml2_1_1R2.html">R2</a> &amp;ops, const <a class="el" href="classneml2_1_1Vec.html">Vec</a> &amp;inp)</td></tr>
 <tr class="memdesc:a2a8634e10751e0d7000cbcb18b9b0db3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper to return all symmetrically-equivalent directions from a cartesian vector.  <br /></td></tr>
 <tr class="separator:a2a8634e10751e0d7000cbcb18b9b0db3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a45f9f53c8294ffa45b87fd986617e56a" id="r_a45f9f53c8294ffa45b87fd986617e56a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1Scalar.html">Scalar</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a45f9f53c8294ffa45b87fd986617e56a">misorientation</a> (const <a class="el" href="classneml2_1_1Rot.html">Rot</a> &amp;r1, const <a class="el" href="classneml2_1_1Rot.html">Rot</a> &amp;r2, const std::string &amp;orbifold=&quot;1&quot;)</td></tr>
+<tr class="memdesc:a45f9f53c8294ffa45b87fd986617e56a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate the misorientation of two batches of rotations.  <br /></td></tr>
+<tr class="separator:a45f9f53c8294ffa45b87fd986617e56a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6929ac56e987e716a86953078d8f0bcc" id="r_a6929ac56e987e716a86953078d8f0bcc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneml2_1_1Rot.html">Rot</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6929ac56e987e716a86953078d8f0bcc">move_to_fundamental_zone</a> (const <a class="el" href="classneml2_1_1Rot.html">Rot</a> &amp;r, const std::string &amp;orbifold, const <a class="el" href="classneml2_1_1Rot.html">Rot</a> &amp;ref=<a class="el" href="classneml2_1_1PrimitiveTensor.html#aac8740b7591985dd6c32edb1a2881f97">Rot::fill</a>(0, 0, 0.005))</td></tr>
+<tr class="memdesc:a6929ac56e987e716a86953078d8f0bcc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Move a collection of orientations to a fundemental zone defined by the crystal symmetry.  <br /></td></tr>
+<tr class="separator:a6929ac56e987e716a86953078d8f0bcc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
+<a id="a45f9f53c8294ffa45b87fd986617e56a" name="a45f9f53c8294ffa45b87fd986617e56a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a45f9f53c8294ffa45b87fd986617e56a">&#9670;&#160;</a></span>misorientation()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classneml2_1_1Scalar.html">Scalar</a> misorientation </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classneml2_1_1Rot.html">Rot</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>r1</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classneml2_1_1Rot.html">Rot</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>r2</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>orbifold</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Calculate the misorientation of two batches of rotations. </p>
+
+</div>
+</div>
+<a id="a6929ac56e987e716a86953078d8f0bcc" name="a6929ac56e987e716a86953078d8f0bcc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6929ac56e987e716a86953078d8f0bcc">&#9670;&#160;</a></span>move_to_fundamental_zone()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classneml2_1_1Rot.html">Rot</a> move_to_fundamental_zone </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classneml2_1_1Rot.html">Rot</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>r</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>orbifold</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classneml2_1_1Rot.html">Rot</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>ref</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Move a collection of orientations to a fundemental zone defined by the crystal symmetry. </p>
+
+</div>
+</div>
 <a id="a889dd34ef17120f33dff9713e302f5d6" name="a889dd34ef17120f33dff9713e302f5d6"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a889dd34ef17120f33dff9713e302f5d6">&#9670;&#160;</a></span>register_NEML2_object() <span class="overload">[1/2]</span></h2>
 
@@ -206,14 +268,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ad0c33437b02e01cbd71800fd7b9c05ed" name="ad0c33437b02e01cbd71800fd7b9c05ed"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad0c33437b02e01cbd71800fd7b9c05ed">&#9670;&#160;</a></span>symmetry_operations_from_orbifold()</h2>
+<a id="a41efd34219af3127a1aaf787037d4322" name="a41efd34219af3127a1aaf787037d4322"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a41efd34219af3127a1aaf787037d4322">&#9670;&#160;</a></span>symmetry()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classneml2_1_1R2.html">R2</a> symmetry_operations_from_orbifold </td>
+          <td class="memname"><a class="el" href="classneml2_1_1R2.html">R2</a> symmetry </td>
           <td>(</td>
           <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>orbifold</em></span>, </td>
         </tr>

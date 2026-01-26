@@ -163,6 +163,12 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ac53823922b46ab533bcdad55c4827819"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af0d63d536b3427dcb34cc212aedd2683" id="r_af0d63d536b3427dcb34cc212aedd2683"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structneml2_1_1TraceWriter.html">TraceWriter</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af0d63d536b3427dcb34cc212aedd2683">operator=</a> (<a class="el" href="structneml2_1_1TraceWriter.html">TraceWriter</a> &amp;&amp;)=delete</td></tr>
 <tr class="separator:af0d63d536b3427dcb34cc212aedd2683"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9bf7cc162f402b3df5727c2d76614dd2" id="r_a9bf7cc162f402b3df5727c2d76614dd2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9bf7cc162f402b3df5727c2d76614dd2">trace_duration_begin</a> (const std::string &amp;<a class="el" href="namespaceneml2.html#a5424759a4a25bd0e2f60628d260abb81">name</a>, const std::string &amp;category, const <a class="el" href="namespaceneml2.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a> &amp;args={}, unsigned int pid=0)</td></tr>
+<tr class="separator:a9bf7cc162f402b3df5727c2d76614dd2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a21ade6a174ee1de042c7645e6c2db93e" id="r_a21ade6a174ee1de042c7645e6c2db93e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a21ade6a174ee1de042c7645e6c2db93e">trace_duration_end</a> (const std::string &amp;<a class="el" href="namespaceneml2.html#a5424759a4a25bd0e2f60628d260abb81">name</a>, const std::string &amp;category, const <a class="el" href="namespaceneml2.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a> &amp;args={}, unsigned int pid=0)</td></tr>
+<tr class="separator:a21ade6a174ee1de042c7645e6c2db93e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1afd661908bd7e690dda03fe20e5904a" id="r_a1afd661908bd7e690dda03fe20e5904a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1afd661908bd7e690dda03fe20e5904a">trace_instant</a> (const std::string &amp;<a class="el" href="namespaceneml2.html#a5424759a4a25bd0e2f60628d260abb81">name</a>, const std::string &amp;category, const <a class="el" href="namespaceneml2.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a> &amp;args={}, const std::string &amp;scope=&quot;t&quot;, unsigned int pid=0)</td></tr>
+<tr class="separator:a1afd661908bd7e690dda03fe20e5904a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -311,6 +317,104 @@ Public Attributes</h2></td></tr>
 <span class="mlabels"><span class="mlabel">delete</span></span>  </td>
   </tr>
 </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a9bf7cc162f402b3df5727c2d76614dd2" name="a9bf7cc162f402b3df5727c2d76614dd2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9bf7cc162f402b3df5727c2d76614dd2">&#9670;&#160;</a></span>trace_duration_begin()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void trace_duration_begin </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>name</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>category</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceneml2.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>args</em></span><span class="paramdefsep"> = </span><span class="paramdefval">{}</span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned int</td>          <td class="paramname"><span class="paramname"><em>pid</em></span><span class="paramdefsep"> = </span><span class="paramdefval">0</span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a21ade6a174ee1de042c7645e6c2db93e" name="a21ade6a174ee1de042c7645e6c2db93e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a21ade6a174ee1de042c7645e6c2db93e">&#9670;&#160;</a></span>trace_duration_end()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void trace_duration_end </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>name</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>category</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceneml2.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>args</em></span><span class="paramdefsep"> = </span><span class="paramdefval">{}</span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned int</td>          <td class="paramname"><span class="paramname"><em>pid</em></span><span class="paramdefsep"> = </span><span class="paramdefval">0</span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a1afd661908bd7e690dda03fe20e5904a" name="a1afd661908bd7e690dda03fe20e5904a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1afd661908bd7e690dda03fe20e5904a">&#9670;&#160;</a></span>trace_instant()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void trace_instant </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>name</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>category</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceneml2.html#ab701e3ac61a85b337ec5c1abaad6742d">json</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>args</em></span><span class="paramdefsep"> = </span><span class="paramdefval">{}</span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>scope</em></span><span class="paramdefsep"> = </span><span class="paramdefval">&quot;t&quot;</span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned int</td>          <td class="paramname"><span class="paramname"><em>pid</em></span><span class="paramdefsep"> = </span><span class="paramdefval">0</span>&#160;)</td>
+        </tr>
+      </table>
 </div><div class="memdoc">
 
 </div>

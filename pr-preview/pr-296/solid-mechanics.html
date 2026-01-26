@@ -184,7 +184,7 @@ $(function(){initNavTree('solid-mechanics.html',''); initResizable(true); });
   </li>
 </ul>
 </div>
-<div class="textblock"><p><a class="anchor" id="md__2home_2runner_2work_2neml2_2neml2_2doc_2content_2physics_2solid__mechanics"></a></p>
+<div class="textblock"><p><a class="anchor" id="md_content_2physics_2solid__mechanics"></a></p>
 <p>The solid mechanics physics module is a collection of objects serving as building blocks for composing material models for solids. Each category of the material model is explained below, with both the mathematical formulations and example input files.</p>
 <h1><a class="anchor" id="autotoc_md31"></a>
 Elasticity</h1>
@@ -551,14 +551,16 @@ Mixed stress/strain control</h1>
 <p>Modifying a model for mixed control only requires a few additional objects. The first maps from the mixed input and a conjugate mixed state vector into the actual model stress and strain input axes:</p>
 <div class="fragment"><div class="line">[mixed]</div>
 <div class="line">  type = MixedControlSetup</div>
+<div class="line">  above_variable = <span class="stringliteral">&quot;state/S&quot;</span></div>
+<div class="line">  below_variable = <span class="stringliteral">&quot;forces/E&quot;</span></div>
 <div class="line">[]</div>
 <div class="line">[mixed_old]</div>
 <div class="line">  type = MixedControlSetup</div>
 <div class="line">  control = <span class="stringliteral">&quot;old_forces/control&quot;</span></div>
 <div class="line">  mixed_state = <span class="stringliteral">&quot;old_state/mixed_state&quot;</span></div>
 <div class="line">  fixed_values = <span class="stringliteral">&quot;old_forces/fixed_values&quot;</span></div>
-<div class="line">  cauchy_stress = <span class="stringliteral">&quot;old_state/S&quot;</span></div>
-<div class="line">  strain = <span class="stringliteral">&quot;old_forces/E&quot;</span></div>
+<div class="line">  above_variable = <span class="stringliteral">&quot;old_state/S&quot;</span></div>
+<div class="line">  below_variable = <span class="stringliteral">&quot;old_forces/E&quot;</span></div>
 <div class="line">[]</div>
 </div><!-- fragment --><p>The second modification renames the resulting residual to map to the correct name for the mixed state:</p>
 <div class="fragment"><div class="line">[rename]</div>
@@ -570,8 +572,8 @@ Mixed stress/strain control</h1>
 <p>These two modifications will allow the model to be run in mixed control. One additional modification clarifies the output by mapping the mixed input and state back to stress and strain tensors</p>
 <div class="fragment"><div class="line">[mixed_output]</div>
 <div class="line">  type = MixedControlSetup</div>
-<div class="line">  cauchy_stress = <span class="stringliteral">&#39;output/stress&#39;</span></div>
-<div class="line">  strain = <span class="stringliteral">&#39;output/strain&#39;</span></div>
+<div class="line">  above_variable = <span class="stringliteral">&#39;output/stress&#39;</span></div>
+<div class="line">  below_variable = <span class="stringliteral">&#39;output/strain&#39;</span></div>
 <div class="line">[]</div>
 </div><!-- fragment --><h1><a class="anchor" id="autotoc_md43"></a>
 Crystal plasticity</h1>

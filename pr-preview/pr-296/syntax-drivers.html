@@ -142,7 +142,7 @@ $(function(){initNavTree('syntax-drivers.html',''); initResizable(true); });
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md62">Available objects and their input file syntax</a>
+    <a href="#autotoc_md50">Available objects and their input file syntax</a>
     <ul>
       <li class="level2">
         <a href="#ldisolidmechanicsdriver">LDISolidMechanicsDriver</a>
@@ -165,7 +165,7 @@ Type name written in PascalCase typically refer to a NEML2 object type, oftentim
 The 🔗 symbol means that the tensor value can be cross-reference another object. See <a class="el" href="tutorials-models-model-parameters-revisited.html">Model parameters (revisited)</a> for details.</dd>
 <dd>
 You can always use <code>Ctrl</code>+<code>F</code> or <code>Cmd</code>+<code>F</code> to search the entire page.</dd></dl>
-<h1><a class="anchor" id="autotoc_md62"></a>
+<h1><a class="anchor" id="autotoc_md50"></a>
 Available objects and their input file syntax</h1>
 <p>Refer to <a class="el" href="system-drivers.html">System Documentation</a> for detailed explanation about this system.</p>
 <h2><a class="anchor" id="ldisolidmechanicsdriver"></a>
@@ -190,7 +190,7 @@ LDISolidMechanicsDriver</h2>
 </details>
 <details >
 <summary >
-<code>control</code> External control of the material update. Options are MIXED STRESS STRAIN </summary>
+<code>control</code> External control of the material update. Options are MIXED, STRESS, STRAIN</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: EnumSelection</li>
@@ -324,38 +324,6 @@ LDISolidMechanicsDriver</h2>
 </details>
 <details >
 <summary >
-<code>force_R5_names</code> Prescribed driving force of tensor type R5</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>force_R5_values</code> Prescribed driving force values of tensor type R5</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of R5 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>force_R8_names</code> Prescribed driving force of tensor type R8</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>force_R8_values</code> Prescribed driving force values of tensor type R8</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of R8 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
 <code>force_Rot_names</code> Prescribed driving force of tensor type Rot</summary>
 <p></p>
 <ul>
@@ -404,22 +372,6 @@ LDISolidMechanicsDriver</h2>
 </details>
 <details >
 <summary >
-<code>force_SFR4_names</code> Prescribed driving force of tensor type SFR4</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>force_SFR4_values</code> Prescribed driving force values of tensor type SFR4</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SFR4 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
 <code>force_SR2_names</code> Prescribed driving force of tensor type SR2</summary>
 <p></p>
 <ul>
@@ -436,22 +388,6 @@ LDISolidMechanicsDriver</h2>
 </details>
 <details >
 <summary >
-<code>force_SSFR5_names</code> Prescribed driving force of tensor type SSFR5</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>force_SSFR5_values</code> Prescribed driving force values of tensor type SSFR5</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SSFR5 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
 <code>force_SSR4_names</code> Prescribed driving force of tensor type SSR4</summary>
 <p></p>
 <ul>
@@ -464,22 +400,6 @@ LDISolidMechanicsDriver</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: list of SSR4 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>force_SSSSR8_names</code> Prescribed driving force of tensor type SSSSR8</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>force_SSSSR8_values</code> Prescribed driving force values of tensor type SSSSR8</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SSSSR8 🔗 </li>
 </ul>
 </details>
 <details >
@@ -548,7 +468,7 @@ LDISolidMechanicsDriver</h2>
 </details>
 <details >
 <summary >
-<code>force_WFR4_names</code> Prescribed driving force of tensor type WFR4</summary>
+<code>force_WFFR4_names</code> Prescribed driving force of tensor type WFFR4</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: list of variable name </li>
@@ -556,10 +476,10 @@ LDISolidMechanicsDriver</h2>
 </details>
 <details >
 <summary >
-<code>force_WFR4_values</code> Prescribed driving force values of tensor type WFR4</summary>
+<code>force_WFFR4_values</code> Prescribed driving force values of tensor type WFFR4</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of WFR4 🔗 </li>
+<li><u>Type</u>: list of WFFR4 🔗 </li>
 </ul>
 </details>
 <details >
@@ -692,38 +612,6 @@ LDISolidMechanicsDriver</h2>
 </details>
 <details >
 <summary >
-<code>ic_R5_names</code> Apply initial conditions to these R5 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>ic_R5_values</code> Initial condition values for the R5 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of R5 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>ic_R8_names</code> Apply initial conditions to these R8 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>ic_R8_values</code> Initial condition values for the R8 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of R8 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
 <code>ic_Rot_names</code> Apply initial conditions to these Rot variables</summary>
 <p></p>
 <ul>
@@ -772,22 +660,6 @@ LDISolidMechanicsDriver</h2>
 </details>
 <details >
 <summary >
-<code>ic_SFR4_names</code> Apply initial conditions to these SFR4 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>ic_SFR4_values</code> Initial condition values for the SFR4 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SFR4 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
 <code>ic_SR2_names</code> Apply initial conditions to these SR2 variables</summary>
 <p></p>
 <ul>
@@ -804,22 +676,6 @@ LDISolidMechanicsDriver</h2>
 </details>
 <details >
 <summary >
-<code>ic_SSFR5_names</code> Apply initial conditions to these SSFR5 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>ic_SSFR5_values</code> Initial condition values for the SSFR5 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SSFR5 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
 <code>ic_SSR4_names</code> Apply initial conditions to these SSR4 variables</summary>
 <p></p>
 <ul>
@@ -832,22 +688,6 @@ LDISolidMechanicsDriver</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: list of SSR4 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>ic_SSSSR8_names</code> Apply initial conditions to these SSSSR8 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>ic_SSSSR8_values</code> Initial condition values for the SSSSR8 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SSSSR8 🔗 </li>
 </ul>
 </details>
 <details >
@@ -916,7 +756,7 @@ LDISolidMechanicsDriver</h2>
 </details>
 <details >
 <summary >
-<code>ic_WFR4_names</code> Apply initial conditions to these WFR4 variables</summary>
+<code>ic_WFFR4_names</code> Apply initial conditions to these WFFR4 variables</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: list of variable name </li>
@@ -924,10 +764,10 @@ LDISolidMechanicsDriver</h2>
 </details>
 <details >
 <summary >
-<code>ic_WFR4_values</code> Initial condition values for the WFR4 variables</summary>
+<code>ic_WFFR4_values</code> Initial condition values for the WFFR4 variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of WFR4 🔗 </li>
+<li><u>Type</u>: list of WFFR4 🔗 </li>
 </ul>
 </details>
 <details >
@@ -1006,7 +846,15 @@ LDISolidMechanicsDriver</h2>
 </details>
 <details >
 <summary >
-<code>predictor</code> Predictor used to set the initial guess for each time step. Options are LINEAR_EXTRAPOLATION PREVIOUS_STATE </summary>
+<code>postprocessor</code> The postprocessor model to be applied on the model output</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: string </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>predictor</code> Predictor used to set the initial guess for each time step. Options are LINEAR_EXTRAPOLATION, PREVIOUS_STATE</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: EnumSelection</li>
@@ -1095,25 +943,7 @@ LDISolidMechanicsDriver</h2>
 </details>
 <details >
 <summary >
-<code>show_input_axis</code> Whether to show model input axis at the beginning</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: false </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>show_output_axis</code> Whether to show model output axis at the beginning</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: false </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>show_parameters</code> Whether to show model parameters at the beginning</summary>
+<code>show_model_info</code> Whether to show model information at the beginning</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: bool</li>
@@ -1136,6 +966,22 @@ LDISolidMechanicsDriver</h2>
 <ul>
 <li><u>Type</u>: variable name</li>
 <li><u>Default</u>: forces/t </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>var_intmd_shapes</code> A list of tensor shapes corresponding to the variables in 'var_with_intmd_dims'</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: list of tensor shape </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>var_with_intmd_dims</code> A list of input variable names for which to set intermediate shapes</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: list of variable name </li>
 </ul>
 </details>
 <details >
@@ -1170,7 +1016,7 @@ SDTSolidMechanicsDriver</h2>
 </details>
 <details >
 <summary >
-<code>control</code> External control of the material update. Options are MIXED STRESS STRAIN </summary>
+<code>control</code> External control of the material update. Options are MIXED, STRESS, STRAIN</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: EnumSelection</li>
@@ -1268,38 +1114,6 @@ SDTSolidMechanicsDriver</h2>
 </details>
 <details >
 <summary >
-<code>force_R5_names</code> Prescribed driving force of tensor type R5</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>force_R5_values</code> Prescribed driving force values of tensor type R5</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of R5 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>force_R8_names</code> Prescribed driving force of tensor type R8</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>force_R8_values</code> Prescribed driving force values of tensor type R8</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of R8 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
 <code>force_Rot_names</code> Prescribed driving force of tensor type Rot</summary>
 <p></p>
 <ul>
@@ -1348,22 +1162,6 @@ SDTSolidMechanicsDriver</h2>
 </details>
 <details >
 <summary >
-<code>force_SFR4_names</code> Prescribed driving force of tensor type SFR4</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>force_SFR4_values</code> Prescribed driving force values of tensor type SFR4</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SFR4 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
 <code>force_SR2_names</code> Prescribed driving force of tensor type SR2</summary>
 <p></p>
 <ul>
@@ -1380,22 +1178,6 @@ SDTSolidMechanicsDriver</h2>
 </details>
 <details >
 <summary >
-<code>force_SSFR5_names</code> Prescribed driving force of tensor type SSFR5</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>force_SSFR5_values</code> Prescribed driving force values of tensor type SSFR5</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SSFR5 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
 <code>force_SSR4_names</code> Prescribed driving force of tensor type SSR4</summary>
 <p></p>
 <ul>
@@ -1408,22 +1190,6 @@ SDTSolidMechanicsDriver</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: list of SSR4 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>force_SSSSR8_names</code> Prescribed driving force of tensor type SSSSR8</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>force_SSSSR8_values</code> Prescribed driving force values of tensor type SSSSR8</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SSSSR8 🔗 </li>
 </ul>
 </details>
 <details >
@@ -1492,7 +1258,7 @@ SDTSolidMechanicsDriver</h2>
 </details>
 <details >
 <summary >
-<code>force_WFR4_names</code> Prescribed driving force of tensor type WFR4</summary>
+<code>force_WFFR4_names</code> Prescribed driving force of tensor type WFFR4</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: list of variable name </li>
@@ -1500,10 +1266,10 @@ SDTSolidMechanicsDriver</h2>
 </details>
 <details >
 <summary >
-<code>force_WFR4_values</code> Prescribed driving force values of tensor type WFR4</summary>
+<code>force_WFFR4_values</code> Prescribed driving force values of tensor type WFFR4</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of WFR4 🔗 </li>
+<li><u>Type</u>: list of WFFR4 🔗 </li>
 </ul>
 </details>
 <details >
@@ -1636,38 +1402,6 @@ SDTSolidMechanicsDriver</h2>
 </details>
 <details >
 <summary >
-<code>ic_R5_names</code> Apply initial conditions to these R5 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>ic_R5_values</code> Initial condition values for the R5 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of R5 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>ic_R8_names</code> Apply initial conditions to these R8 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>ic_R8_values</code> Initial condition values for the R8 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of R8 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
 <code>ic_Rot_names</code> Apply initial conditions to these Rot variables</summary>
 <p></p>
 <ul>
@@ -1716,22 +1450,6 @@ SDTSolidMechanicsDriver</h2>
 </details>
 <details >
 <summary >
-<code>ic_SFR4_names</code> Apply initial conditions to these SFR4 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>ic_SFR4_values</code> Initial condition values for the SFR4 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SFR4 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
 <code>ic_SR2_names</code> Apply initial conditions to these SR2 variables</summary>
 <p></p>
 <ul>
@@ -1748,22 +1466,6 @@ SDTSolidMechanicsDriver</h2>
 </details>
 <details >
 <summary >
-<code>ic_SSFR5_names</code> Apply initial conditions to these SSFR5 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>ic_SSFR5_values</code> Initial condition values for the SSFR5 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SSFR5 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
 <code>ic_SSR4_names</code> Apply initial conditions to these SSR4 variables</summary>
 <p></p>
 <ul>
@@ -1776,22 +1478,6 @@ SDTSolidMechanicsDriver</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: list of SSR4 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>ic_SSSSR8_names</code> Apply initial conditions to these SSSSR8 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>ic_SSSSR8_values</code> Initial condition values for the SSSSR8 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SSSSR8 🔗 </li>
 </ul>
 </details>
 <details >
@@ -1860,7 +1546,7 @@ SDTSolidMechanicsDriver</h2>
 </details>
 <details >
 <summary >
-<code>ic_WFR4_names</code> Apply initial conditions to these WFR4 variables</summary>
+<code>ic_WFFR4_names</code> Apply initial conditions to these WFFR4 variables</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: list of variable name </li>
@@ -1868,10 +1554,10 @@ SDTSolidMechanicsDriver</h2>
 </details>
 <details >
 <summary >
-<code>ic_WFR4_values</code> Initial condition values for the WFR4 variables</summary>
+<code>ic_WFFR4_values</code> Initial condition values for the WFFR4 variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of WFR4 🔗 </li>
+<li><u>Type</u>: list of WFFR4 🔗 </li>
 </ul>
 </details>
 <details >
@@ -1950,7 +1636,15 @@ SDTSolidMechanicsDriver</h2>
 </details>
 <details >
 <summary >
-<code>predictor</code> Predictor used to set the initial guess for each time step. Options are LINEAR_EXTRAPOLATION PREVIOUS_STATE </summary>
+<code>postprocessor</code> The postprocessor model to be applied on the model output</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: string </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>predictor</code> Predictor used to set the initial guess for each time step. Options are LINEAR_EXTRAPOLATION, PREVIOUS_STATE</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: EnumSelection</li>
@@ -2031,25 +1725,7 @@ SDTSolidMechanicsDriver</h2>
 </details>
 <details >
 <summary >
-<code>show_input_axis</code> Whether to show model input axis at the beginning</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: false </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>show_output_axis</code> Whether to show model output axis at the beginning</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: false </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>show_parameters</code> Whether to show model parameters at the beginning</summary>
+<code>show_model_info</code> Whether to show model information at the beginning</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: bool</li>
@@ -2090,6 +1766,22 @@ SDTSolidMechanicsDriver</h2>
 <ul>
 <li><u>Type</u>: variable name</li>
 <li><u>Default</u>: forces/t </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>var_intmd_shapes</code> A list of tensor shapes corresponding to the variables in 'var_with_intmd_dims'</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: list of tensor shape </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>var_with_intmd_dims</code> A list of input variable names for which to set intermediate shapes</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: list of variable name </li>
 </ul>
 </details>
 <details >
@@ -2204,38 +1896,6 @@ TransientDriver</h2>
 </details>
 <details >
 <summary >
-<code>force_R5_names</code> Prescribed driving force of tensor type R5</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>force_R5_values</code> Prescribed driving force values of tensor type R5</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of R5 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>force_R8_names</code> Prescribed driving force of tensor type R8</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>force_R8_values</code> Prescribed driving force values of tensor type R8</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of R8 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
 <code>force_Rot_names</code> Prescribed driving force of tensor type Rot</summary>
 <p></p>
 <ul>
@@ -2284,22 +1944,6 @@ TransientDriver</h2>
 </details>
 <details >
 <summary >
-<code>force_SFR4_names</code> Prescribed driving force of tensor type SFR4</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>force_SFR4_values</code> Prescribed driving force values of tensor type SFR4</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SFR4 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
 <code>force_SR2_names</code> Prescribed driving force of tensor type SR2</summary>
 <p></p>
 <ul>
@@ -2316,22 +1960,6 @@ TransientDriver</h2>
 </details>
 <details >
 <summary >
-<code>force_SSFR5_names</code> Prescribed driving force of tensor type SSFR5</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>force_SSFR5_values</code> Prescribed driving force values of tensor type SSFR5</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SSFR5 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
 <code>force_SSR4_names</code> Prescribed driving force of tensor type SSR4</summary>
 <p></p>
 <ul>
@@ -2344,22 +1972,6 @@ TransientDriver</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: list of SSR4 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>force_SSSSR8_names</code> Prescribed driving force of tensor type SSSSR8</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>force_SSSSR8_values</code> Prescribed driving force values of tensor type SSSSR8</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SSSSR8 🔗 </li>
 </ul>
 </details>
 <details >
@@ -2428,7 +2040,7 @@ TransientDriver</h2>
 </details>
 <details >
 <summary >
-<code>force_WFR4_names</code> Prescribed driving force of tensor type WFR4</summary>
+<code>force_WFFR4_names</code> Prescribed driving force of tensor type WFFR4</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: list of variable name </li>
@@ -2436,10 +2048,10 @@ TransientDriver</h2>
 </details>
 <details >
 <summary >
-<code>force_WFR4_values</code> Prescribed driving force values of tensor type WFR4</summary>
+<code>force_WFFR4_values</code> Prescribed driving force values of tensor type WFFR4</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of WFR4 🔗 </li>
+<li><u>Type</u>: list of WFFR4 🔗 </li>
 </ul>
 </details>
 <details >
@@ -2572,38 +2184,6 @@ TransientDriver</h2>
 </details>
 <details >
 <summary >
-<code>ic_R5_names</code> Apply initial conditions to these R5 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>ic_R5_values</code> Initial condition values for the R5 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of R5 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>ic_R8_names</code> Apply initial conditions to these R8 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>ic_R8_values</code> Initial condition values for the R8 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of R8 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
 <code>ic_Rot_names</code> Apply initial conditions to these Rot variables</summary>
 <p></p>
 <ul>
@@ -2652,22 +2232,6 @@ TransientDriver</h2>
 </details>
 <details >
 <summary >
-<code>ic_SFR4_names</code> Apply initial conditions to these SFR4 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>ic_SFR4_values</code> Initial condition values for the SFR4 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SFR4 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
 <code>ic_SR2_names</code> Apply initial conditions to these SR2 variables</summary>
 <p></p>
 <ul>
@@ -2684,22 +2248,6 @@ TransientDriver</h2>
 </details>
 <details >
 <summary >
-<code>ic_SSFR5_names</code> Apply initial conditions to these SSFR5 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>ic_SSFR5_values</code> Initial condition values for the SSFR5 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SSFR5 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
 <code>ic_SSR4_names</code> Apply initial conditions to these SSR4 variables</summary>
 <p></p>
 <ul>
@@ -2712,22 +2260,6 @@ TransientDriver</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: list of SSR4 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>ic_SSSSR8_names</code> Apply initial conditions to these SSSSR8 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>ic_SSSSR8_values</code> Initial condition values for the SSSSR8 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SSSSR8 🔗 </li>
 </ul>
 </details>
 <details >
@@ -2796,7 +2328,7 @@ TransientDriver</h2>
 </details>
 <details >
 <summary >
-<code>ic_WFR4_names</code> Apply initial conditions to these WFR4 variables</summary>
+<code>ic_WFFR4_names</code> Apply initial conditions to these WFFR4 variables</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: list of variable name </li>
@@ -2804,10 +2336,10 @@ TransientDriver</h2>
 </details>
 <details >
 <summary >
-<code>ic_WFR4_values</code> Initial condition values for the WFR4 variables</summary>
+<code>ic_WFFR4_values</code> Initial condition values for the WFFR4 variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of WFR4 🔗 </li>
+<li><u>Type</u>: list of WFFR4 🔗 </li>
 </ul>
 </details>
 <details >
@@ -2868,7 +2400,15 @@ TransientDriver</h2>
 </details>
 <details >
 <summary >
-<code>predictor</code> Predictor used to set the initial guess for each time step. Options are LINEAR_EXTRAPOLATION PREVIOUS_STATE </summary>
+<code>postprocessor</code> The postprocessor model to be applied on the model output</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: string </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>predictor</code> Predictor used to set the initial guess for each time step. Options are LINEAR_EXTRAPOLATION, PREVIOUS_STATE</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: EnumSelection</li>
@@ -2909,25 +2449,7 @@ TransientDriver</h2>
 </details>
 <details >
 <summary >
-<code>show_input_axis</code> Whether to show model input axis at the beginning</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: false </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>show_output_axis</code> Whether to show model output axis at the beginning</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: false </li>
-</ul>
-</details>
-<details >
-<summary >
-<code>show_parameters</code> Whether to show model parameters at the beginning</summary>
+<code>show_model_info</code> Whether to show model information at the beginning</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: bool</li>
@@ -2941,6 +2463,22 @@ TransientDriver</h2>
 <ul>
 <li><u>Type</u>: variable name</li>
 <li><u>Default</u>: forces/t </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>var_intmd_shapes</code> A list of tensor shapes corresponding to the variables in 'var_with_intmd_dims'</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: list of tensor shape </li>
+</ul>
+</details>
+<details >
+<summary >
+<code>var_with_intmd_dims</code> A list of input variable names for which to set intermediate shapes</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: list of variable name </li>
 </ul>
 </details>
 <details >
