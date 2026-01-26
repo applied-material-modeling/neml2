@@ -23,23 +23,25 @@
 // THE SOFTWARE.
 
 #include "neml2/user_tensors/LinspaceTensor.h"
-#include "neml2/misc/assertions.h"
+#include "neml2/tensors/tensors.h"
+#include "neml2/tensors/functions/linspace.h"
 
 namespace neml2
 {
-register_NEML2_object(LinspaceTensor);
-
+template <typename T>
 OptionSet
-LinspaceTensor::expected_options()
+LinspaceTensorTmpl<T>::expected_options()
 {
-  OptionSet options = UserTensorBase::expected_options();
-  options.doc() = "Construct a Tensor linearly spaced on the batch dimensions. See "
-                  "neml2::TensorBase::linspace for a detailed explanation.";
+  OptionSet options = UserTensorBase<T>::expected_options();
+  options.doc() =
+      "Construct a " + UserTensorBase<T>::tensor_type() +
+      " linearly spaced on the batch/intermediate dimensions. See neml2::dynamic_linspace, "
+      "neml2::intmd_linspace, or neml2::base_linspace for a detailed explanation.";
 
-  options.set<TensorName<Tensor>>("start");
+  options.set<TensorName<T>>("start");
   options.set("start").doc() = "The starting tensor";
 
-  options.set<TensorName<Tensor>>("end");
+  options.set<TensorName<T>>("end");
   options.set("end").doc() = "The ending tensor";
 
   options.set<Size>("nstep");
@@ -48,43 +50,42 @@ LinspaceTensor::expected_options()
   options.set<Size>("dim") = 0;
   options.set("dim").doc() = "Where to insert the new dimension";
 
-  options.set<Size>("batch_dim") = -1;
-  options.set("batch_dim").doc() = "Batch dimension of the output";
-
-  options.set<TensorShape>("batch_expand") = TensorShape();
-  options.set("batch_expand").doc() = "After construction, perform an additional batch expanding "
-                                      "operation into the given batch shape.";
+  EnumSelection selection({"dynamic", "intermediate"}, "dynamic");
+  options.set<EnumSelection>("group") = selection;
+  options.set("group").doc() =
+      "Dimension group to apply the operation. Options are: " + selection.join();
 
   return options;
 }
 
-LinspaceTensor::LinspaceTensor(const OptionSet & options)
-  : UserTensorBase(options),
-    Tensor(make(options))
+template <typename T>
+LinspaceTensorTmpl<T>::LinspaceTensorTmpl(const OptionSet & options)
+  : UserTensorBase<T>(options),
+    _start(options.get<TensorName<T>>("start")),
+    _end(options.get<TensorName<T>>("end")),
+    _nstep(options.get<Size>("nstep")),
+    _dim(options.get<Size>("dim")),
+    _group(options.get<EnumSelection>("group"))
 {
 }
 
-Tensor
-LinspaceTensor::make(const OptionSet & options) const
+template <typename T>
+T
+LinspaceTensorTmpl<T>::make() const
 {
   auto * f = this->factory();
-  neml_assert(f, "Internal error: factory != nullptr");
+  neml_assert(f, "Internal error: factory == nullptr");
 
-  auto t = Tensor::linspace(options.get<TensorName<Tensor>>("start").resolve(f),
-                            options.get<TensorName<Tensor>>("end").resolve(f),
-                            options.get<Size>("nstep"),
-                            options.get<Size>("dim"));
+  if (_group == "dynamic")
+    return dynamic_linspace(_start.resolve(f), _end.resolve(f), _nstep, _dim);
+  else if (_group == "intermediate")
+    return intmd_linspace(_start.resolve(f), _end.resolve(f), _nstep, _dim);
 
-  // Change batch dimension if requested
-  auto B = options.get<Size>("batch_dim");
-  if (B >= 0)
-    t = Tensor(t, B);
-
-  // Expand if requested
-  auto S = options.get<TensorShape>("batch_expand");
-  if (!S.empty())
-    t = t.batch_expand(S);
-
-  return t;
+  throw NEMLException("Internal error: invalid group selection");
 }
+
+#define LINSPACETENSOR_REGISTER(T)                                                                 \
+  using Linspace##T = LinspaceTensorTmpl<T>;                                                       \
+  register_NEML2_object_alias(Linspace##T, "Linspace" #T)
+FOR_ALL_TENSORBASE(LINSPACETENSOR_REGISTER);
 } // namespace neml2

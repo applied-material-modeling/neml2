@@ -33,20 +33,17 @@ namespace neml2
 /**
  * @brief Create a filled WR2 from the input file.
  */
-class FillWR2 : public UserTensorBase, public WR2
+class FillWR2 : public UserTensorBase<WR2>
 {
 public:
   static OptionSet expected_options();
 
-  /**
-   * @brief Construct a new FillWR2 object
-   *
-   * @param options The options extracted from the input file.
-   */
   FillWR2(const OptionSet & options);
 
+protected:
+  WR2 make() const override;
+
 private:
-  /// A helper method to dispatch to the correct fill method based on the number of values.
-  WR2 fill(const std::vector<TensorName<Scalar>> & values) const;
+  const std::vector<TensorName<Scalar>> _values;
 };
 } // namespace neml2

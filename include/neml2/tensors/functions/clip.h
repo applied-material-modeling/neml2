@@ -24,11 +24,14 @@
 
 #pragma once
 
+#include "neml2/misc/types.h"
 #include "neml2/tensors/tensors_fwd.h"
 
 namespace neml2
 {
-#define DECLARE_CLIP(T) T clip(const T & a, const T & lb, const T & ub)
+#define DECLARE_CLIP(T)                                                                            \
+  T clip(const T & a, const T & lb, const T & ub);                                                 \
+  T clip(const T & a, const CScalar & lb, const CScalar & ub)
 FOR_ALL_TENSORBASE(DECLARE_CLIP);
 #undef DECLARE_CLIP
 } // namespace neml2

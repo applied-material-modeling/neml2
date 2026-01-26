@@ -58,10 +58,10 @@ void
 RotationMatrix::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   if (out)
-    _to = Rot(_from).euler_rodrigues();
+    _to = _from().euler_rodrigues();
 
   if (dout_din)
     if (_from.is_dependent())
-      _to.d(_from) = Rot(_from).deuler_rodrigues();
+      _to.d(_from) = _from().deuler_rodrigues();
 }
 } // namespace neml2

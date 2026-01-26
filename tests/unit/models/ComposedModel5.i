@@ -3,11 +3,13 @@
     type = Scalar
     values = '0 100 200'
     batch_shape = '(3)'
+    intermediate_dimension = 1
   []
   [c_A_vals]
     type = Scalar
     values = '1 2 3'
     batch_shape = '(3)'
+    intermediate_dimension = 1
   []
 []
 

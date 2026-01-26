@@ -23,8 +23,12 @@
 // THE SOFTWARE.
 
 #include "neml2/tensors/Transformable.h"
-
-#include "neml2/tensors/tensors.h"
+#include "neml2/tensors/R2.h"
+#include "neml2/tensors/Rot.h"
+#include "neml2/tensors/Vec.h"
+#include "neml2/tensors/Quaternion.h"
+#include "neml2/tensors/functions/unit.h"
+#include "neml2/tensors/functions/outer.h"
 
 namespace neml2
 {
@@ -32,7 +36,7 @@ namespace neml2
 R2
 transform_from_quaternion(const Quaternion & q)
 {
-  return q.to_R2();
+  return q.rotation_matrix();
 }
 
 R2
@@ -50,14 +54,14 @@ proper_rotation_transform(const Rot & rot)
 R2
 improper_rotation_transform(const Rot & rot)
 {
-  Vec v = rot / rot.norm();
-  return rot.euler_rodrigues() * (R2::identity(rot.options()) - 2 * v.outer(v));
+  Vec v = neml2::unit(rot);
+  return rot.euler_rodrigues() * (R2::identity(rot.options()) - 2 * neml2::outer(v));
 }
 
 R2
 reflection_transform(const Vec & v)
 {
-  return R2::identity(v.options()) - 2 * v.outer(v);
+  return R2::identity(v.options()) - 2 * neml2::outer(v);
 }
 
 R2

@@ -25,15 +25,16 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_all.hpp>
 
-#include "neml2/base/Factory.h"
+#include "neml2/neml2.h"
 #include "neml2/base/NEML2Object.h"
 #include "neml2/tensors/Tensor.h"
+#include "neml2/tensors/SFR3.h"
 
 using namespace neml2;
 
 TEST_CASE("UserTensor", "[user_tensors]")
 {
-  SECTION("load and reshape correctly")
+  SECTION("load correctly")
   {
     auto factory = load_input("user_tensors/test_UserTensor.i");
 
@@ -56,19 +57,31 @@ TEST_CASE("UserTensor", "[user_tensors]")
     REQUIRE(c->base_sizes() == TensorShape{});
 
     const auto d = factory->get_object<Tensor>("Tensors", "d");
-    const auto d_correct = Tensor::create({{{1, 2, 3}, {4, 5, 6}}, {{1, 2, 3}, {4, 5, 6}}});
+    const auto d_correct = Tensor::create({{{1, 2}, {3, 4}, {5, 6}}, {{7, 8}, {9, 10}, {11, 12}}});
     REQUIRE(at::allclose(*d, d_correct));
-    REQUIRE(d->batch_sizes() == TensorShape{2});
-    REQUIRE(d->base_sizes() == TensorShape{2, 3});
+    REQUIRE(d->dynamic_sizes() == TensorShape{2});
+    REQUIRE(d->intmd_sizes() == TensorShape{3});
+    REQUIRE(d->base_sizes() == TensorShape{2});
+
+    const auto e = factory->get_object<SFR3>("Tensors", "e");
+    const auto e_correct = Tensor::create(
+        {{{{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}, {1, 2, 3}, {4, 5, 6}, {7, 8, 9}}}},
+         {{{{-1, -2, -3}, {-4, -5, -6}, {-7, -8, -9}, {-1, -2, -3}, {-4, -5, -6}, {-7, -8, -9}}}}},
+        2,
+        1);
+    REQUIRE(at::allclose(*e, e_correct));
+    REQUIRE(e->dynamic_sizes() == TensorShape{2, 1});
+    REQUIRE(e->intmd_sizes() == TensorShape{1});
+    REQUIRE(e->base_sizes() == TensorShape{6, 3});
   }
 
-  SECTION("error on invalid shape")
+  SECTION("errors")
   {
     auto factory = load_input("user_tensors/test_UserTensor_error.i");
 
     REQUIRE_THROWS_WITH(
         factory->get_object<Tensor>("Tensors", "a"),
-        Catch::Matchers::ContainsSubstring("Number of values 1 must equal to either the "
-                                           "base storage size 6 or the total storage size 12"));
+        Catch::Matchers::ContainsSubstring("Intermediate dimension 2 must be less than or equal to "
+                                           "the number of batch dimensions 1"));
   }
 }

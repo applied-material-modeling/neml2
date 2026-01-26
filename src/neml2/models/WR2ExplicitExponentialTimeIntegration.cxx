@@ -80,22 +80,22 @@ WR2ExplicitExponentialTimeIntegration::set_value(bool out, bool dout_din, bool /
   const auto dt = _t - _tn;
 
   // Incremental rotation
-  const auto inc = (_s_dot * dt).exp();
+  const auto inc = (_s_dot * dt).exp_map();
 
   if (out)
-    _s = Rot(_sn).rotate(inc);
+    _s = _sn().rotate(inc);
 
   if (dout_din)
   {
-    const auto de = (_s_dot * dt).dexp();
-    _s.d(_s_dot) = Rot(_sn).drotate(inc) * de * dt;
+    const auto de = (_s_dot * dt).dexp_map();
+    _s.d(_s_dot) = _sn().drotate(inc) * de * dt;
 
     if (currently_solving_nonlinear_system())
       return;
 
-    _s.d(_sn) = Rot(_sn).drotate_self(inc);
-    _s.d(_t) = Rot(_sn).drotate(inc) * de * Vec(_s_dot.value());
-    _s.d(_tn) = -Rot(_sn).drotate(inc) * de * Vec(_s_dot.value());
+    _s.d(_sn) = _sn().drotate_self(inc);
+    _s.d(_t) = _sn().drotate(inc) * de * Vec(_s_dot());
+    _s.d(_tn) = -_s.d(_t).tensor();
   }
 }
 

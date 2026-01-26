@@ -24,10 +24,52 @@
 
 #pragma once
 
+#include <catch2/matchers/catch_matchers_templated.hpp>
+
 #include "neml2/tensors/indexing.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/functions/abs.h"
 #include "neml2/tensors/functions/stack.h"
+#include "neml2/tensors/functions/from_assembly.h"
+
+namespace test
+{
+template <typename T, bool allow_broadcast>
+class TensorMatcher : public Catch::Matchers::MatcherBase<T>
+{
+public:
+  explicit TensorMatcher(T expected, double rtol, double atol);
+  bool match(const T & actual) const override;
+  std::string describe() const override;
+
+private:
+  const T _m_expected;
+  mutable T _m;
+
+  mutable bool _shapes_match = false;
+  mutable bool _devices_match = false;
+  mutable bool _dtypes_match = false;
+
+  const double _rtol;
+  const double _atol;
+  mutable bool _allclose = false;
+};
+
+template <typename T>
+TensorMatcher<T, false>
+allclose(const T & expected, double rtol = 1e-5, std::optional<double> atol = std::nullopt);
+
+template <typename T>
+TensorMatcher<T, true> allclose_broadcast(const T & expected,
+                                          double rtol = 1e-5,
+                                          std::optional<double> atol = std::nullopt);
+
+namespace details
+{
+/// Check if two tensors are equal. In case of floating point tensors, use allclose (with tolerances)
+bool allclose(const neml2::ATensor & a, const neml2::ATensor & b, double rtol, double atol);
+} // namespace details
+} // namespace test
 
 /// Generic main function for the test suite of name \p name.
 int test_main(int argc, char * argv[], const std::string & name);
@@ -89,44 +131,35 @@ template <typename F>
 finite_differencing_derivative(F && f,
                                const neml2::Tensor & x,
                                double eps = 1e-6,
-                               double aeps = 1e-6)
+                               std::optional<double> aeps = std::nullopt)
 {
   using namespace neml2;
 
-  // The scalar case is trivial
-  if (x.base_dim() == 0)
-  {
-    auto y0 = Tensor(f(x)).clone();
-
-    auto dx = eps * Scalar(neml2::abs(x));
-    dx.index_put_({dx < aeps}, aeps);
-
-    auto x1 = x + dx;
-
-    auto y1 = Tensor(f(x1)).clone();
-    auto dy_dx = (y1 - y0) / dx;
-
-    return dy_dx;
-  }
+  // Set absolute perturbation based on dtype
+  double aeps_default = std::sqrt(neml2::machine_precision(x.scalar_type()));
+  double aeps2 = aeps.value_or(aeps_default);
 
   // Flatten x to support arbitrarily shaped input
-  auto xf = x.base_flatten();
-  auto y0 = Tensor(f(x)).clone();
-  auto dy_dxf = std::vector<Tensor>(xf.base_size(0));
+  auto xf = x.static_flatten();
+  auto y0 = Tensor(std::forward<F>(f)(x)).clone();
+  auto y_intmd_sizes = y0.intmd_sizes().vec();
+  auto y_base_sizes = y0.base_sizes().vec();
+  y0 = y0.static_flatten();
+  auto dyf_dxf = std::vector<Tensor>(xf.base_size(0));
   for (Size i = 0; i < xf.base_size(0); i++)
   {
     auto dx = eps * Scalar(abs(xf.base_index({i})));
-    dx.index_put_({dx < aeps}, aeps);
+    dx.index_put_({dx < aeps2}, aeps2);
 
     auto xf1 = xf.clone();
     xf1.base_index_put_({i}, xf1.base_index({i}) + dx);
-    auto x1 = Tensor(xf1.reshape(x.sizes()), x.batch_sizes());
+    auto x1 = xf1.static_reshape(x.intmd_sizes(), x.base_sizes());
 
-    auto y1 = Tensor(f(x1)).clone();
-    dy_dxf[i] = (y1 - y0) / dx;
+    auto y1 = Tensor(std::forward<F>(f)(x1)).clone().static_flatten();
+    dyf_dxf[i] = (y1 - y0) / dx;
   }
 
   // Reshape the derivative back to the correct shape
-  auto dy_dx = base_stack(dy_dxf, -1);
-  return dy_dx.base_reshape(utils::add_shapes(y0.base_sizes(), x.base_sizes()));
+  auto dy_dx = base_stack(dyf_dxf, -1);
+  return from_assembly<2>(dy_dx, {y_intmd_sizes, x.intmd_sizes()}, {y_base_sizes, x.base_sizes()});
 }

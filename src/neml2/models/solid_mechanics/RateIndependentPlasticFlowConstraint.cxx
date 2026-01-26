@@ -25,6 +25,7 @@
 #include "neml2/models/solid_mechanics/RateIndependentPlasticFlowConstraint.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/functions/sqrt.h"
+#include "neml2/tensors/functions/imap.h"
 
 namespace neml2
 {
@@ -66,7 +67,7 @@ RateIndependentPlasticFlowConstraint::set_value(bool out, bool dout_din, bool /*
 
   if (dout_din)
   {
-    const auto I = Scalar::identity_map(_gamma_dot.options());
+    const auto I = imap_v<Scalar>(_gamma_dot.options());
     const auto eps = machine_precision(_gamma_dot.scalar_type());
 
     if (_gamma_dot.is_dependent())

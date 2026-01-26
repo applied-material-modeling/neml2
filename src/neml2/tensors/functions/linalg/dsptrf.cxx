@@ -24,7 +24,9 @@
 
 #include "neml2/tensors/functions/linalg/dsptrf.h"
 #include "neml2/tensors/functions/where.h"
+#include "neml2/tensors/functions/outer.h"
 
+#include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/Vec.h"
 #include "neml2/tensors/R2.h"
 #include "neml2/tensors/SR2.h"
@@ -41,7 +43,7 @@ dsptrf(const Vec & evals, const R2 & evecs, const Vec & f, const Vec & df)
   // Helper lambda to handle the degenerate cases
   auto theta = [&](Size i, Size j) -> Scalar
   {
-    return where(
+    return neml2::where(
         evals(i) != evals(j), 0.5 * (f(i) - f(j)) / (evals(i) - evals(j)), 0.25 * (df(i) + df(j)));
   };
 
@@ -51,23 +53,24 @@ dsptrf(const Vec & evals, const R2 & evecs, const Vec & f, const Vec & df)
   const Vec v3 = evecs.col(2);
 
   // Some useful tensor products
-  const SR2 M_11 = v1.self_outer();
-  const SR2 M_22 = v2.self_outer();
-  const SR2 M_33 = v3.self_outer();
-  const R2 M_12 = v1.outer(v2);
-  const R2 M_13 = v1.outer(v3);
-  const R2 M_23 = v2.outer(v3);
+  const SR2 M_11(neml2::outer(v1));
+  const SR2 M_22(neml2::outer(v2));
+  const SR2 M_33(neml2::outer(v3));
+  const R2 M_12 = neml2::outer(v1, v2);
+  const R2 M_13 = neml2::outer(v1, v3);
+  const R2 M_23 = neml2::outer(v2, v3);
 
   // Derivative contribution from eigenvalues
-  const SSR4 P_1 = (df(0) * M_11.outer(M_11) + df(1) * M_22.outer(M_22) + df(2) * M_33.outer(M_33));
+  const SSR4 P_1 =
+      df(0) * neml2::outer(M_11) + df(1) * neml2::outer(M_22) + df(2) * neml2::outer(M_33);
 
   // Derivative contribution from eigenvectors
   // Note the symmetrization is handled by the constructor of SSR4(R4)
   const Scalar theta_12 = theta(0, 1);
   const Scalar theta_23 = theta(1, 2);
   const Scalar theta_13 = theta(0, 2);
-  const SSR4 P_2 = theta_12 * SSR4(M_12.outer(M_12)) + theta_13 * SSR4(M_13.outer(M_13)) +
-                   theta_23 * SSR4(M_23.outer(M_23));
+  const SSR4 P_2 = theta_12 * SSR4(neml2::outer(M_12)) + theta_13 * SSR4(neml2::outer(M_13)) +
+                   theta_23 * SSR4(neml2::outer(M_23));
 
   return P_1 + 4 * P_2;
 }

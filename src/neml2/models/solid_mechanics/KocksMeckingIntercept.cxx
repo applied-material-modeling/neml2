@@ -85,20 +85,20 @@ KocksMeckingIntercept::set_value(bool out, bool dout_din, bool d2out_din2)
   {
     if (const auto * const A = nl_param("A"))
     {
-      _b.d(*A, *A) = 2.0 * (_C - _B) / pow(_A, 3.0);
+      _b.d2(*A, *A) = 2.0 * (_C - _B) / pow(_A, 3.0);
       if (const auto * const B = nl_param("B"))
-        _b.d(*A, *B) = 1.0 / pow(_A, 2.0);
+        _b.d2(*A, *B) = 1.0 / pow(_A, 2.0);
       if (const auto * const C = nl_param("C"))
-        _b.d(*A, *C) = -1.0 / pow(_A, 2.0);
+        _b.d2(*A, *C) = -1.0 / pow(_A, 2.0);
     }
 
     if (const auto * const B = nl_param("B"))
       if (const auto * const A = nl_param("A"))
-        _b.d(*B, *A) = 1.0 / pow(_A, 2.0);
+        _b.d2(*B, *A) = 1.0 / pow(_A, 2.0);
 
     if (const auto * const C = nl_param("C"))
       if (const auto * const A = nl_param("A"))
-        _b.d(*C, *A) = -1.0 / pow(_A, 2.0);
+        _b.d2(*C, *A) = -1.0 / pow(_A, 2.0);
   }
 }
 } // namespace neml2

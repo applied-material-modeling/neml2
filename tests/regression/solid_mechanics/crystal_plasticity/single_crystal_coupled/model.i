@@ -68,11 +68,11 @@
     values = '1.0'
   []
   [sdirs]
-    type = FillMillerIndex
+    type = MillerIndex
     values = '1 1 0'
   []
   [splanes]
-    type = FillMillerIndex
+    type = MillerIndex
     values = '1 1 1'
   []
 
@@ -149,8 +149,8 @@
     type = LinearIsotropicElasticity
     coefficients = '1e5 0.25'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
-    strain = "state/elastic_strain"
-    stress = "state/internal/cauchy_stress"
+    strain = 'state/elastic_strain'
+    stress = 'state/internal/cauchy_stress'
   []
   [resolved_shear]
     type = ResolvedShear

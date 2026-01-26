@@ -224,7 +224,7 @@ nt = 100
   []
   [implicit_rate]
     type = ComposedModel
-    models = "surface flow_rate integrate_gamma"
+    models = 'surface flow_rate integrate_gamma'
   []
   [return_map]
     type = ImplicitUpdate

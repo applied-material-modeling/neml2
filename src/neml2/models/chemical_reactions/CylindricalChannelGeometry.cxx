@@ -67,7 +67,7 @@ CylindricalChannelGeometry::set_value(bool out, bool dout_din, bool d2out_din2)
   neml_assert_dbg(_phi_s.scalar_type() == _phi_p.scalar_type(),
                   "Solid and product fractions must have the same scalar type");
 
-  const auto eps = machine_precision(_phi_s.scalar_type()).toDouble();
+  const auto eps = machine_precision(_phi_s.scalar_type());
   const auto cap = 1 - _phi_s - _phi_p;
   const auto ri = sqrt(clamp(cap, eps, 1.0 - eps));
   const auto ro = sqrt(1 - _phi_s);

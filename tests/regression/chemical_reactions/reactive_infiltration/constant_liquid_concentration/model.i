@@ -33,9 +33,6 @@ oSiCm1 = 0.08 # 1/Omega_SiC
     ic_Scalar_names = 'state/phi_P state/phi_S state/alpha_P state/alpha_S'
     ic_Scalar_values = '0 0.3 0 0.05660377358'
     save_as = 'result.pt'
-    verbose = false
-    show_input_axis = false
-    show_output_axis = false
   []
   [regression]
     type = TransientRegression

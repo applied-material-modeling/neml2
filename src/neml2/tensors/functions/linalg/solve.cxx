@@ -24,12 +24,49 @@
 
 #include "neml2/tensors/functions/linalg/solve.h"
 #include "neml2/tensors/Tensor.h"
+#include "neml2/misc/assertions.h"
+#include "neml2/tensors/shape_utils.h"
+#include "neml2/tensors/functions/utils.h"
 
 namespace neml2::linalg
 {
 Tensor
 solve(const Tensor & A, const Tensor & B)
 {
-  return Tensor(at::linalg_solve(A.batch_expand_as(B), B, /*left=*/true), B.batch_sizes());
+  neml_assert_dbg(A.scalar_type() == neml2::kFloat32 || A.scalar_type() == neml2::kFloat64,
+                  "LU solve only supports float32 and float64, got",
+                  A.scalar_type(),
+                  " for A.");
+  neml_assert_dbg(B.scalar_type() == neml2::kFloat32 || B.scalar_type() == neml2::kFloat64,
+                  "LU solve only supports float32 and float64, got",
+                  B.scalar_type(),
+                  " for right hand side.");
+
+  neml_assert_dbg(neml2::utils::dynamic_broadcastable(A, B),
+                  "A and B tensors are not dynamic broadcastable: ",
+                  A.dynamic_sizes(),
+                  " vs ",
+                  B.dynamic_sizes());
+  neml_assert_dbg(neml2::utils::intmd_broadcastable(A, B),
+                  "A and B tensors are not intmd broadcastable: ",
+                  A.intmd_sizes(),
+                  " vs ",
+                  B.intmd_sizes());
+  neml_assert_dbg(A.base_size(-2) == A.base_size(-1), "A tensor is not square: ", A.base_sizes());
+  neml_assert_dbg(A.base_dim() == 2, "A tensor does not have base dimension 2: ", A.base_dim());
+
+  // This is obnoxious
+  if (B.base_dim() == 1)
+  {
+    auto [aligned_A, aligned_B, i] = utils::align_intmd_dim(A, B.base_unsqueeze(-1));
+    return Tensor(at::linalg_solve(aligned_A.contiguous(), aligned_B.contiguous(), /*left=*/true),
+                  utils::broadcast_dynamic_dim(aligned_A, aligned_B),
+                  i)
+        .base_squeeze(-1);
+  }
+  auto [aligned_A, aligned_B, i] = utils::align_intmd_dim(A, B);
+  return Tensor(at::linalg_solve(aligned_A.contiguous(), aligned_B.contiguous(), /*left=*/true),
+                utils::broadcast_dynamic_dim(aligned_A, aligned_B),
+                i);
 }
 } // namespace neml2::linalg

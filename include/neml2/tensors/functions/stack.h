@@ -29,11 +29,13 @@
 
 namespace neml2
 {
-#define DECLARE_BATCH_STACK(T)                                                                     \
-  T batch_stack(const std::vector<T> & tensors, Size d = 0);                                       \
-  T batch_stack(const std::initializer_list<T> & tensors, Size d = 0)
-FOR_ALL_TENSORBASE(DECLARE_BATCH_STACK);
-#undef DECLARE_BATCH_STACK
+#define DECLARE_STACK(T)                                                                           \
+  T dynamic_stack(const std::vector<T> & tensors, Size d = 0);                                     \
+  T dynamic_stack(const std::initializer_list<T> & tensors, Size d = 0);                           \
+  T intmd_stack(const std::vector<T> & tensors, Size d = 0);                                       \
+  T intmd_stack(const std::initializer_list<T> & tensors, Size d = 0)
+FOR_ALL_TENSORBASE(DECLARE_STACK);
+#undef DECLARE_STACK
 
 neml2::Tensor base_stack(const std::vector<Tensor> & tensors, Size d = 0);
 } // namespace neml2

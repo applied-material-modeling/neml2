@@ -23,88 +23,26 @@
 // THE SOFTWARE.
 
 #include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
 
-#include "neml2/tensors/tensors.h"
-#include "neml2/tensors/mandel_notation.h"
-
-#include "neml2/tensors/functions/bmm.h"
-#include "neml2/tensors/functions/bmv.h"
-#include "neml2/tensors/functions/bvv.h"
-#include "neml2/tensors/functions/cat.h"
-#include "neml2/tensors/functions/stack.h"
-#include "neml2/tensors/functions/sum.h"
-#include "neml2/tensors/functions/mean.h"
-#include "neml2/tensors/functions/sign.h"
-#include "neml2/tensors/functions/cosh.h"
-#include "neml2/tensors/functions/sinh.h"
-#include "neml2/tensors/functions/tanh.h"
-#include "neml2/tensors/functions/where.h"
-#include "neml2/tensors/functions/heaviside.h"
-#include "neml2/tensors/functions/macaulay.h"
-#include "neml2/tensors/functions/sqrt.h"
-#include "neml2/tensors/functions/exp.h"
-#include "neml2/tensors/functions/abs.h"
-#include "neml2/tensors/functions/log.h"
-#include "neml2/tensors/functions/clip.h"
-
-#include "python/neml2/types.h"
+#include "python/neml2/csrc/math/types.h"
 
 namespace py = pybind11;
 using namespace neml2;
 
 PYBIND11_MODULE(math, m)
 {
-  m.doc() = "Mathematical functions and utilities";
+  m.doc() = "Mathematical functions for NEML2 tensors";
 
-  // Bring in tensor types
+  // Expose tensor types
   py::module_::import("neml2.tensors");
 
-  // Methods
-  m.def("bmm", &neml2::bmm);
-  m.def("bmv", &neml2::bmv);
-  m.def("bvv", &neml2::bvv);
-  m.def("base_cat", &neml2::base_cat, py::arg("values"), py::arg("dim") = 0);
-  m.def("base_stack", &neml2::base_stack, py::arg("values"), py::arg("dim") = 0);
-  m.def("base_sum", &neml2::base_sum, py::arg("values"), py::arg("dim") = 0);
-  m.def("base_mean", &neml2::base_mean, py::arg("values"), py::arg("dim") = 0);
+  // Export the Number type
+  m.attr("Number") = py::module_::import("torch.types").attr("Number");
 
-  // Helpers
-  m.def("full_to_mandel", &neml2::full_to_mandel, py::arg("full"), py::arg("dim") = 0);
-  m.def("mandel_to_full", &neml2::mandel_to_full, py::arg("mandel"), py::arg("dim") = 0);
-
-  // Templated methods
-  // These methods are special because the argument could be anything derived from TensorBase,
-  // so we need to bind every possible instantiation.
-#define MATH_DEF_TENSORBASE(T)                                                                     \
-  m.def("batch_cat",                                                                               \
-        py::overload_cast<const std::vector<T> &, Size>(&neml2::batch_cat),                        \
-        py::arg("values"),                                                                         \
-        py::arg("dim") = 0)                                                                        \
-      .def("batch_stack",                                                                          \
-           py::overload_cast<const std::vector<T> &, Size>(&neml2::batch_stack),                   \
-           py::arg("values"),                                                                      \
-           py::arg("dim") = 0)                                                                     \
-      .def("batch_sum",                                                                            \
-           py::overload_cast<const T &, Size>(&neml2::batch_sum),                                  \
-           py::arg("values"),                                                                      \
-           py::arg("dim") = 0)                                                                     \
-      .def("batch_mean",                                                                           \
-           py::overload_cast<const T &, Size>(&neml2::batch_mean),                                 \
-           py::arg("values"),                                                                      \
-           py::arg("dim") = 0)                                                                     \
-      .def("sign", py::overload_cast<const T &>(&neml2::sign))                                     \
-      .def("cosh", py::overload_cast<const T &>(&neml2::cosh))                                     \
-      .def("sinh", py::overload_cast<const T &>(&neml2::sinh))                                     \
-      .def("tanh", py::overload_cast<const T &>(&neml2::tanh))                                     \
-      .def("where", py::overload_cast<const ATensor &, const T &, const T &>(&neml2::where))       \
-      .def("heaviside", py::overload_cast<const T &>(&neml2::heaviside))                           \
-      .def("macaulay", py::overload_cast<const T &>(&neml2::macaulay))                             \
-      .def("sqrt", py::overload_cast<const T &>(&neml2::sqrt))                                     \
-      .def("exp", py::overload_cast<const T &>(&neml2::exp))                                       \
-      .def("abs", py::overload_cast<const T &>(&neml2::abs))                                       \
-      .def("log", py::overload_cast<const T &>(&neml2::log))                                       \
-      .def("clip", py::overload_cast<const T &, const T &, const T &>(&neml2::clip))
-
-  FOR_ALL_TENSORBASE(MATH_DEF_TENSORBASE);
+  // Define functions
+  def_linspace(m);
+  def_logspace(m);
+  def_inv(m);
+  def_norm(m);
+  def_cross(m);
 }

@@ -26,8 +26,6 @@
 
 #include "neml2/models/Model.h"
 
-#include "neml2/models/crystallography/CrystalGeometry.h"
-
 namespace neml2
 {
 class Scalar;
@@ -41,9 +39,6 @@ public:
   SlipStrengthMap(const OptionSet & options);
 
 protected:
-  /// Crystal geometry class with slip geometry
-  const crystallography::CrystalGeometry & _crystal_geometry;
-
   /// Slip strengths
   Variable<Scalar> & _tau;
 };

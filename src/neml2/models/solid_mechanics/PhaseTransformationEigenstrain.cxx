@@ -45,6 +45,8 @@ PhaseTransformationEigenstrain::expected_options()
   options.set_input("phase_fraction") = VariableName(STATE, "f");
   options.set("phase_fraction").doc() = "Phase fraction";
 
+  options.set<bool>("define_second_derivatives") = true;
+
   return options;
 }
 
@@ -69,8 +71,8 @@ PhaseTransformationEigenstrain::set_value(bool out, bool dout_din, bool d2out_di
 
   if (d2out_din2)
   {
-    _eg.d(_f, _dv) = SR2::identity(_f.options());
-    _eg.d(_dv, _f) = SR2::identity(_f.options());
+    _eg.d2(_f, _dv) = SR2::identity(_f.options());
+    _eg.d2(_dv, _f) = SR2::identity(_f.options());
   }
 }
 }

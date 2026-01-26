@@ -33,8 +33,8 @@
   [verification]
     type = VTestVerification
     driver = 'driver'
-    variables = 'output.state/S'
-    references = 'stresses'
+    SR2_names = 'output.state/S'
+    SR2_values = 'stresses'
     rtol = 1e-2
     atol = 1e-5
   []

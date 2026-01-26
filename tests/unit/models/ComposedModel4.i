@@ -1,7 +1,7 @@
 [Tensors]
   [foo]
-    type = Scalar
-    values = '1.0'
+    type = FullScalar
+    value = '1.0'
     batch_shape = '(5,2)'
   []
 []

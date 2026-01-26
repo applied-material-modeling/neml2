@@ -29,10 +29,6 @@
 namespace neml2
 {
 class Scalar;
-namespace crystallography
-{
-class CrystalGeometry;
-}
 
 /// Parent class of slip rules, mapping from resolved shear and internal state to slip rates
 class SlipRule : public Model
@@ -43,9 +39,6 @@ public:
   SlipRule(const OptionSet & options);
 
 protected:
-  /// Crystal geometry class with slip geometry
-  const crystallography::CrystalGeometry & _crystal_geometry;
-
   /// Slip rates
   Variable<Scalar> & _g;
 

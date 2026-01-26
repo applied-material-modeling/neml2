@@ -52,8 +52,8 @@
     nstep = 100
   []
   [f0]
-    type = Scalar
-    values = '0.01'
+    type = FullScalar
+    value = '0.01'
     batch_shape = '(20)'
   []
 []

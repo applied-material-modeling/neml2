@@ -34,9 +34,10 @@ OptionSet
 VoceIsotropicHardening::expected_options()
 {
   OptionSet options = IsotropicHardening::expected_options();
-  options.doc() = "Voce isotropic hardening model, \\f$ h = R \\left[ 1 - \\exp(-d \\varepsilon_p) "
-                  "\\right] \\f$, where \\f$ R \\f$ is the isotropic hardening upon saturation, "
-                  "and \\f$ d \\f$ is the hardening rate.";
+  options.doc() =
+      "Voce isotropic hardening model, \\f$ h = R \\left[ 1 - \\exp(-d \\bar{\\varepsilon}_p) "
+      "\\right] \\f$, where \\f$ R \\f$ is the isotropic hardening upon saturation, "
+      "and \\f$ d \\f$ is the hardening rate.";
 
   options.set<bool>("define_second_derivatives") = true;
 
@@ -75,6 +76,6 @@ VoceIsotropicHardening::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (d2out_din2)
     if (_ep.is_dependent())
-      _h.d(_ep, _ep) = -_R * _d * _d * exp(-_d * _ep);
+      _h.d2(_ep, _ep) = -_R * _d * _d * exp(-_d * _ep);
 }
 } // namespace neml2

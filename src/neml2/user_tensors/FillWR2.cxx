@@ -33,7 +33,7 @@ OptionSet
 FillWR2::expected_options()
 {
   OptionSet options = UserTensorBase::expected_options();
-  options.doc() = "Construct a Rot from a vector of Scalars.";
+  options.doc() = "Construct a WR2 from a vector of Scalars.";
 
   options.set<std::vector<TensorName<Scalar>>>("values");
   options.set("values").doc() = "Scalars used to fill the WR2";
@@ -42,21 +42,20 @@ FillWR2::expected_options()
 }
 
 FillWR2::FillWR2(const OptionSet & options)
-  : UserTensorBase(options),
-    WR2(fill(options.get<std::vector<TensorName<Scalar>>>("values")))
+  : UserTensorBase<WR2>(options),
+    _values(options.get<std::vector<TensorName<Scalar>>>("values"))
 {
+  neml_assert(_values.size() == 3,
+              "Number of values must be 3, but ",
+              _values.size(),
+              " values are provided.");
 }
 
 WR2
-FillWR2::fill(const std::vector<TensorName<Scalar>> & values) const
+FillWR2::make() const
 {
   auto * f = factory();
-  neml_assert(f, "Internal error: factory != nullptr");
-  neml_assert(values.size() == 3,
-              "Number of values must be 3, but ",
-              values.size(),
-              " values are provided.");
-
-  return WR2::fill(values[0].resolve(f), values[1].resolve(f), values[2].resolve(f));
+  neml_assert(f, "Internal error: factory == nullptr");
+  return WR2::fill(_values[0].resolve(f), _values[1].resolve(f), _values[2].resolve(f));
 }
 } // namespace neml2

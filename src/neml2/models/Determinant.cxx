@@ -25,6 +25,8 @@
 #include "neml2/models/Determinant.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/R2.h"
+#include "neml2/tensors/functions/det.h"
+#include "neml2/tensors/functions/inv.h"
 
 namespace neml2
 {
@@ -62,11 +64,11 @@ void
 Determinant<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   if (out)
-    _J = T(_F).det();
+    _J = neml2::det(_F());
 
   if (dout_din)
     if (_F.is_dependent())
-      _J.d(_F) = T(_F).det() * T(_F).inverse().transpose();
+      _J.d(_F) = neml2::det(_F()) * neml2::inv(_F()).transpose();
 }
 
 template class Determinant<R2>;

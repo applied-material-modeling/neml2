@@ -24,6 +24,8 @@
 
 #include "neml2/models/solid_mechanics/elasticity/LinearIsotropicElasticity.h"
 #include "neml2/tensors/SSR4.h"
+#include "neml2/tensors/functions/dev.h"
+#include "neml2/tensors/functions/vol.h"
 
 namespace neml2
 {
@@ -57,7 +59,7 @@ LinearIsotropicElasticity::set_value(bool out, bool dout_din, bool /*d2out_din2*
   const auto df = _compliance ? 1 / (2 * G) : 2 * G;
 
   if (out)
-    _to = vf * SR2(_from).vol() + df * SR2(_from).dev();
+    _to = vf * neml2::vol(_from()) + df * neml2::dev(_from());
 
   if (dout_din)
   {
@@ -73,10 +75,10 @@ LinearIsotropicElasticity::set_value(bool out, bool dout_din, bool /*d2out_din2*
     const auto ddf_dG = _compliance ? -df / G : Scalar::full(2.0, G.options());
 
     if (p1)
-      _to.d(*p1) = dvf_dK * dK[0] * SR2(_from).vol() + ddf_dG * dG[0] * SR2(_from).dev();
+      _to.d(*p1) = dvf_dK * dK[0] * neml2::vol(_from()) + ddf_dG * dG[0] * neml2::dev(_from());
 
     if (p2)
-      _to.d(*p2) = dvf_dK * dK[1] * SR2(_from).vol() + ddf_dG * dG[1] * SR2(_from).dev();
+      _to.d(*p2) = dvf_dK * dK[1] * neml2::vol(_from()) + ddf_dG * dG[1] * neml2::dev(_from());
   }
 }
 } // namespace neml2

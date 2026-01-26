@@ -44,13 +44,18 @@ public:
   }
 
   /// Assemble a vector of vectors (by variables)
-  Tensor assemble_by_variable(const ValueMap &) const;
+  /// @p assembly indicates whether the variables are in assembly format
+  Tensor assemble_by_variable(const ValueMap &, bool assembly = true) const;
 
   /// Split the vector (by variables)
-  ValueMap split_by_variable(const Tensor &) const;
+  /// @p assembly indicates whether the split variables are returned in assembly format
+  ValueMap split_by_variable(const Tensor &, bool assembly = true) const;
 
   /// Split the vector (by subaxes)
   ValueMap split_by_subaxis(const Tensor &) const;
+
+  /// Get the axis used for assembly/splitting
+  const LabeledAxis & axis() const { return _axis; }
 
 private:
   const LabeledAxis & _axis;
@@ -71,13 +76,21 @@ public:
   }
 
   /// Assemble a matrix of matrices (by variables)
-  Tensor assemble_by_variable(const DerivMap &) const;
+  /// @p assembly indicates whether the variables are in assembly format
+  Tensor assemble_by_variable(const DerivMap &, bool assembly = true) const;
 
   /// Split the matrix (by variables)
-  DerivMap split_by_variable(const Tensor &) const;
+  /// @p assembly indicates whether the split variables are returned in assembly format
+  DerivMap split_by_variable(const Tensor &, bool assembly = true) const;
 
   /// Split the matrix (by subaxes)
   DerivMap split_by_subaxis(const Tensor &) const;
+
+  /// Get the y-axis used for assembly/splitting
+  const LabeledAxis & yaxis() const { return _yaxis; }
+
+  /// Get the x-axis used for assembly/splitting
+  const LabeledAxis & xaxis() const { return _xaxis; }
 
 private:
   const LabeledAxis & _yaxis;

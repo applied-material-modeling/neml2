@@ -26,7 +26,7 @@
     start = 273.15
     end = 2000
     nstep = 100
-    dim = 0
+    group = 'intermediate'
   []
   [E0]
     type = FullScalar
@@ -43,6 +43,6 @@
     start = 'E0'
     end = 'E1'
     nstep = 100
-    dim = 2
+    group = 'intermediate'
   []
 []

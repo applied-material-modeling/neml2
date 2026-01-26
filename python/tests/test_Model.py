@@ -68,14 +68,13 @@ def test_forward():
     pwd = Path(__file__).parent
     model = neml2.load_model(pwd / "test_Model.i", "model")
 
-    # Note input variables can have different batch shapes,
-    # and values can be either neml2.Tensor or torch.Tensor
+    # Note input variables can have different batch shapes
     x = {
-        "forces/t": Scalar.full((1, 2), 0.1),
-        "old_forces/t": torch.zeros((3, 1, 1)),
+        "forces/t": Scalar.full((1, 2), (), 0.1),
+        "old_forces/t": Scalar.zeros((3, 1, 1)),
         "state/foo_rate": Scalar.full(0.1),
         "state/foo": Scalar.full(1.5),
-        "old_state/foo": torch.ones(5, 2) * 2,
+        "old_state/foo": Scalar.full((5, 2), (), 2),
         "state/bar_rate": Scalar.full(-0.2),
         "state/bar": Scalar.full(1.5),
         "old_state/bar": Scalar.full(2.0),
@@ -88,35 +87,35 @@ def test_forward():
 
     def check_dy_dx(dy_dx):
         val = dy_dx["residual/foo_bar"]["forces/t"].torch()
-        assert val.shape == (1, 1)
+        assert val.shape == ()
         assert torch.allclose(val, torch.tensor(0.1))
 
         val = dy_dx["residual/foo_bar"]["old_forces/t"].torch()
-        assert val.shape == (1, 1)
+        assert val.shape == ()
         assert torch.allclose(val, torch.tensor(-0.1))
 
         val = dy_dx["residual/foo_bar"]["old_state/bar"].torch()
-        assert val.shape == (1, 1)
+        assert val.shape == ()
         assert torch.allclose(val, torch.tensor(-1.0))
 
         val = dy_dx["residual/foo_bar"]["old_state/foo"].torch()
-        assert val.shape == (1, 1)
+        assert val.shape == ()
         assert torch.allclose(val, torch.tensor(-1.0))
 
         val = dy_dx["residual/foo_bar"]["state/bar"].torch()
-        assert val.shape == (1, 1)
+        assert val.shape == ()
         assert torch.allclose(val, torch.tensor(1.0))
 
         val = dy_dx["residual/foo_bar"]["state/bar_rate"].torch()
-        assert val.shape == (3, 1, 2, 1, 1)
+        assert val.shape == (3, 1, 2)
         assert torch.allclose(val, torch.tensor(-0.1))
 
         val = dy_dx["residual/foo_bar"]["state/foo"].torch()
-        assert val.shape == (1, 1)
+        assert val.shape == ()
         assert torch.allclose(val, torch.tensor(1.0))
 
         val = dy_dx["residual/foo_bar"]["state/foo_rate"].torch()
-        assert val.shape == (3, 1, 2, 1, 1)
+        assert val.shape == (3, 1, 2)
         assert torch.allclose(val, torch.tensor(-0.1))
 
     y = model.value(x)

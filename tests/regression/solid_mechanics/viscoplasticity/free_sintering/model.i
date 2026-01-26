@@ -58,8 +58,8 @@ nstep = 100
     nstep = ${nstep}
   []
   [f0]
-    type = Scalar
-    values = '0.36'
+    type = FullScalar
+    value = '0.36'
     batch_shape = '(${nbatch})'
   []
   [gamma]

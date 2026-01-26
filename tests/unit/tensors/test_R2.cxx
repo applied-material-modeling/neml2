@@ -22,8 +22,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <ATen/Context.h>
 #include <catch2/catch_test_macros.hpp>
 
+#include "neml2/misc/types.h"
+#include "unit/tensors/generators.h"
 #include "utils.h"
 #include "neml2/tensors/tensors.h"
 
@@ -32,234 +35,133 @@ using namespace neml2;
 TEST_CASE("R2", "[tensors]")
 {
   at::manual_seed(42);
-  const auto & DTO = default_tensor_options();
 
-  TensorShape B = {5, 3, 1, 2}; // batch shape
-
-  SECTION("class R2")
+  SECTION("constructor")
   {
-    SECTION("R2")
+    SECTION("SR2")
     {
-      SECTION("from SR2")
-      {
-        auto S = R2::fill(1.1, 1.2, 1.3, 1.2, 2.2, 2.3, 1.3, 2.3, 3.3);
-        auto s = SR2::fill(1.1, 2.2, 3.3, 2.3, 1.3, 1.2);
-        REQUIRE(at::allclose(R2(s), S));
-      }
-      SECTION("from WR2")
-      {
-        auto W = R2::fill(0, -1.2, 0.8, 1.2, 0, -0.5, -0.8, 0.5, 0);
-        auto w = WR2::fill(0.5, 0.8, 1.2);
-        REQUIRE(at::allclose(R2(w), W));
-      }
-      SECTION("from Rot")
-      {
-        auto r = Rot(at::rand(utils::add_shapes(B, 3), DTO));
-        REQUIRE(at::allclose(R2(r), r.euler_rodrigues()));
-      }
+      auto S = R2::fill(1.1, 1.2, 1.3, 1.2, 2.2, 2.3, 1.3, 2.3, 3.3);
+      auto s = SR2::fill(1.1, 2.2, 3.3, 2.3, 1.3, 1.2);
+      REQUIRE_THAT(R2(s), test::allclose(S));
     }
 
-    SECTION("fill")
+    SECTION("WR2")
     {
-      SECTION("fill from 1 value")
-      {
-        auto a1 = R2::fill(1.1, DTO);
-        auto a2 = R2::fill(Scalar(1.1, DTO));
-        auto a3 = R2::fill(Scalar::full(B, 1.1, DTO));
-        auto b = R2::create({{1.1, 0.0, 0.0}, {0.0, 1.1, 0.0}, {0.0, 0.0, 1.1}}, DTO);
-        REQUIRE(at::allclose(a1, b));
-        REQUIRE(at::allclose(a2, b));
-        REQUIRE(at::allclose(a3, b.batch_expand(B)));
-      }
-      SECTION("fill from 3 values")
-      {
-        auto a1 = R2::fill(1.1, 2.2, 3.3, DTO);
-        auto a2 = R2::fill(Scalar(1.1, DTO), Scalar(2.2, DTO), Scalar(3.3, DTO));
-        auto a3 = R2::fill(
-            Scalar::full(B, 1.1, DTO), Scalar::full(B, 2.2, DTO), Scalar::full(B, 3.3, DTO));
-        auto b = R2::create({{1.1, 0.0, 0.0}, {0.0, 2.2, 0.0}, {0.0, 0.0, 3.3}}, DTO);
-        REQUIRE(at::allclose(a1, b));
-        REQUIRE(at::allclose(a2, b));
-        REQUIRE(at::allclose(a3, b.batch_expand(B)));
-      }
-      SECTION("fill from 6 values")
-      {
-        auto a1 = R2::fill(1.1, 2.2, 3.3, 2.3, 1.3, 1.2, DTO);
-        auto a2 = R2::fill(Scalar(1.1, DTO),
-                           Scalar(2.2, DTO),
-                           Scalar(3.3, DTO),
-                           Scalar(2.3, DTO),
-                           Scalar(1.3, DTO),
-                           Scalar(1.2, DTO));
-        auto a3 = R2::fill(Scalar::full(B, 1.1, DTO),
-                           Scalar::full(B, 2.2, DTO),
-                           Scalar::full(B, 3.3, DTO),
-                           Scalar::full(B, 2.3, DTO),
-                           Scalar::full(B, 1.3, DTO),
-                           Scalar::full(B, 1.2, DTO));
-        auto b = R2::create({{1.1, 1.2, 1.3}, {1.2, 2.2, 2.3}, {1.3, 2.3, 3.3}}, DTO);
-        REQUIRE(at::allclose(a1, b));
-        REQUIRE(at::allclose(a2, b));
-        REQUIRE(at::allclose(a3, b.batch_expand(B)));
-      }
-      SECTION("fill from 9 values")
-      {
-        auto a1 = R2::fill(1.1, 1.2, 1.3, 2.1, 2.2, 2.3, 3.1, 3.2, 3.3, DTO);
-        auto a2 = R2::fill(Scalar(1.1, DTO),
-                           Scalar(1.2, DTO),
-                           Scalar(1.3, DTO),
-                           Scalar(2.1, DTO),
-                           Scalar(2.2, DTO),
-                           Scalar(2.3, DTO),
-                           Scalar(3.1, DTO),
-                           Scalar(3.2, DTO),
-                           Scalar(3.3, DTO));
-        auto a3 = R2::fill(Scalar::full(B, 1.1, DTO),
-                           Scalar::full(B, 1.2, DTO),
-                           Scalar::full(B, 1.3, DTO),
-                           Scalar::full(B, 2.1, DTO),
-                           Scalar::full(B, 2.2, DTO),
-                           Scalar::full(B, 2.3, DTO),
-                           Scalar::full(B, 3.1, DTO),
-                           Scalar::full(B, 3.2, DTO),
-                           Scalar::full(B, 3.3, DTO));
-        auto b = R2::create({{1.1, 1.2, 1.3}, {2.1, 2.2, 2.3}, {3.1, 3.2, 3.3}}, DTO);
-        REQUIRE(at::allclose(a1, b));
-        REQUIRE(at::allclose(a2, b));
-        REQUIRE(at::allclose(a3, b.batch_expand(B)));
-      }
-    }
-
-    SECTION("skew")
-    {
-      auto a = Vec::fill(1.2, 2.1, -1.5, DTO);
-      auto b = R2::skew(a);
-      auto c = R2::skew(a.batch_expand(B));
-      REQUIRE(at::allclose(b.transpose(), -b));
-      REQUIRE(at::allclose(c.transpose(), -c));
-    }
-
-    SECTION("identity")
-    {
-      auto a = R2::identity(DTO);
-      auto b = at::eye(3, DTO);
-      REQUIRE(at::allclose(a, b));
-    }
-
-    SECTION("rotate")
-    {
-      auto r = Rot::fill(0.13991834, 0.18234513, 0.85043991, DTO);
-      auto T = R2::fill(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0);
-      auto Tp = R2::fill(-1.02332,
-                         -0.0592151,
-                         -0.290549,
-                         0.440785,
-                         0.208734,
-                         -1.65399,
-                         -5.14556,
-                         -2.0769,
-                         15.8146);
-
-      auto rb = r.batch_expand(B);
-      auto Tb = T.batch_expand(B);
-      auto Tpb = Tp.batch_expand(B);
-
-      REQUIRE(at::allclose(T.rotate(r), Tp));
-      REQUIRE(at::allclose(Tb.rotate(rb), Tpb));
-      REQUIRE(at::allclose(T.rotate(rb), Tpb));
-      REQUIRE(at::allclose(Tb.rotate(r), Tpb));
-    }
-
-    SECTION("drotate")
-    {
-      auto r = Rot::fill(0.13991834, 0.18234513, 0.85043991, DTO);
-      auto T = R2::fill(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0);
-      auto Tp = R2::fill(-1.02332,
-                         -0.0592151,
-                         -0.290549,
-                         0.440785,
-                         0.208734,
-                         -1.65399,
-                         -5.14556,
-                         -2.0769,
-                         15.8146);
-
-      auto rb = r.batch_expand(B);
-      auto Tb = T.batch_expand(B);
-      auto Tpb = Tp.batch_expand(B);
-
-      auto apply = [T](const Tensor & x) { return T.rotate(Rot(x)); };
-      auto dTp_dr = finite_differencing_derivative(apply, r);
-      auto dTp_drb = dTp_dr.batch_expand(B);
-
-      REQUIRE(at::allclose(T.drotate(r), dTp_dr));
-      REQUIRE(at::allclose(Tb.drotate(rb), dTp_drb));
-      REQUIRE(at::allclose(T.drotate(rb), dTp_drb));
-      REQUIRE(at::allclose(Tb.drotate(r), dTp_drb));
-    }
-
-    SECTION("operator()")
-    {
-      auto a = R2(at::rand(utils::add_shapes(B, 3, 3), DTO));
-      for (Size i = 0; i < 3; i++)
-        for (Size j = 0; j < 3; j++)
-          REQUIRE(at::allclose(a(i, j), a.index({indexing::Ellipsis, i, j})));
-    }
-
-    SECTION("det")
-    {
-      auto a = R2(at::rand({3, 3}, DTO));
-      auto d = Scalar(ATensor(a).det());
-      REQUIRE(at::allclose(a.det(), d));
-      REQUIRE(at::allclose(a.batch_expand(B).det(), d.batch_expand(B)));
-    }
-
-    SECTION("inverse")
-    {
-      auto a = R2(at::rand({3, 3}, DTO));
-      auto ai = R2(ATensor(a).inverse());
-      REQUIRE(at::allclose(a.inverse(), ai));
-      REQUIRE(at::allclose(a.batch_expand(B).inverse(), ai.batch_expand(B)));
-    }
-
-    SECTION("transpose")
-    {
-      auto a = R2::fill(1.1, 1.2, 1.3, 2.1, 2.2, 2.3, 3.1, 3.2, 3.3, DTO);
-      auto at = R2::fill(1.1, 2.1, 3.1, 1.2, 2.2, 3.2, 1.3, 2.3, 3.3, DTO);
-      REQUIRE(at::allclose(a.transpose(), at));
-      REQUIRE(at::allclose(a.batch_expand(B).transpose(), at.batch_expand(B)));
+      auto W = R2::fill(0.0, -1.2, 0.8, 1.2, 0.0, -0.5, -0.8, 0.5, 0.0);
+      auto w = WR2::fill(0.5, 0.8, 1.2);
+      REQUIRE_THAT(R2(w), test::allclose(W));
     }
   }
 
-  SECTION("operator*")
+  SECTION("fill")
   {
-    auto a = R2::create({{0.89072077, 0.82632195, 0.04234413},
-                         {0.85614465, 0.9737414, 0.9491076},
-                         {0.07230831, 0.49570559, 0.42566357}},
-                        DTO);
-    SECTION("R2 * R2")
+    auto cfg = test::generate_tensor_config();
+    DYNAMIC_SECTION(cfg.desc())
     {
-      auto b = R2::create({{0.94487948, 0.15144116, 0.03378262},
-                           {0.51449125, 0.56508379, 0.06392479},
-                           {0.46572483, 0.00443049, 0.42061576}},
-                          DTO);
-      auto c = R2::create({{1.28647989, 0.60202053, 0.10072394},
-                           {1.75195791, 0.68410603, 0.49037864},
-                           {0.52160092, 0.29295155, 0.21317145}},
-                          DTO);
-      REQUIRE(at::allclose(a * b, c));
-      REQUIRE(at::allclose(a.batch_expand(B) * b, c.batch_expand(B)));
-      REQUIRE(at::allclose(a * b.batch_expand(B), c.batch_expand(B)));
-      REQUIRE(at::allclose(a.batch_expand(B) * b.batch_expand(B), c.batch_expand(B)));
+      auto a = R2::fill(1, 2, 3, cfg.options);
+      auto a0 = Tensor::create({{1, 0, 0}, {0, 2, 0}, {0, 0, 3}}, cfg.options);
+      REQUIRE_THAT(a, test::allclose(a0));
+
+      auto a1 = Scalar::full({2, 3}, {4}, 1, cfg.options);
+      auto a2 = Scalar::full({2, 3}, {4}, 2, cfg.options);
+      auto a3 = Scalar::full({2, 3}, {4}, 3, cfg.options);
+      a = R2::fill(a1, a2, a3);
+      a0 = a0.batch_expand({2, 3}, {4});
+      REQUIRE(a.dynamic_sizes() == TensorShapeRef{2, 3});
+      REQUIRE(a.intmd_sizes() == TensorShapeRef{4});
+      REQUIRE_THAT(a, test::allclose(a0));
+
+      auto b = R2::fill(1, 2, 3, 4, 5, 6, cfg.options);
+      auto b0 = Tensor::create({{1, 6, 5}, {6, 2, 4}, {5, 4, 3}}, cfg.options);
+      REQUIRE_THAT(b, test::allclose(b0));
+
+      auto b11 = Scalar::full({2, 1, 2}, {3}, 1, cfg.options);
+      auto b22 = Scalar::full({2, 1, 2}, {3}, 2, cfg.options);
+      auto b33 = Scalar::full({2, 1, 2}, {3}, 3, cfg.options);
+      auto b23 = Scalar::full({2, 1, 2}, {3}, 4, cfg.options);
+      auto b13 = Scalar::full({2, 1, 2}, {3}, 5, cfg.options);
+      auto b12 = Scalar::full({2, 1, 2}, {3}, 6, cfg.options);
+      b = R2::fill(b11, b22, b33, b23, b13, b12);
+      b0 = b0.batch_expand({2, 1, 2}, {3});
+      REQUIRE(b.dynamic_sizes() == TensorShapeRef{2, 1, 2});
+      REQUIRE(b.intmd_sizes() == TensorShapeRef{3});
+      REQUIRE_THAT(b, test::allclose(b0));
     }
-    SECTION("R2 * Vec")
+  }
+
+  SECTION("skew")
+  {
+    auto cfg = test::generate_tensor_config();
+    DYNAMIC_SECTION(cfg.desc())
     {
-      auto b = Vec::fill(0.05425937, 0.55065082, 0.24673347);
-      auto c = Vec::fill(0.51379251, 0.81682197, 0.38190954);
-      REQUIRE(at::allclose(a * b, c));
-      REQUIRE(at::allclose(a.batch_expand(B) * b, c.batch_expand(B)));
-      REQUIRE(at::allclose(a * b.batch_expand(B), c.batch_expand(B)));
-      REQUIRE(at::allclose(a.batch_expand(B) * b.batch_expand(B), c.batch_expand(B)));
+      auto v = Vec::fill(1, 2, 3, cfg.options);
+      auto s = R2::skew(v);
+      auto s0 = Tensor::create({{0, -3, 2}, {3, 0, -1}, {-2, 1, 0}}, cfg.options);
+      REQUIRE_THAT(s, test::allclose(s0));
     }
+  }
+
+  SECTION("identity")
+  {
+    auto cfg = test::generate_tensor_config();
+    DYNAMIC_SECTION(cfg.desc())
+    {
+      auto I = R2::identity(cfg.options);
+      auto I0 = Tensor::create({{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}, cfg.options);
+      REQUIRE_THAT(I, test::allclose(I0));
+    }
+  }
+
+  SECTION("rotate")
+  {
+    auto r = Rot::fill(0.13991834, 0.18234513, 0.85043991);
+    auto T = R2::fill(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0);
+    auto Tp = R2::fill(
+        -1.02332, -0.0592151, -0.290549, 0.440785, 0.208734, -1.65399, -5.14556, -2.0769, 15.8146);
+
+    REQUIRE_THAT(T.rotate(r), test::allclose(Tp));
+
+    auto apply = [T](const Tensor & x) { return T.rotate(Rot(x)); };
+    auto dTp_dr = finite_differencing_derivative(apply, r);
+    REQUIRE_THAT(T.drotate(r), test::allclose(dTp_dr));
+
+    auto R = r.euler_rodrigues();
+    auto apply_R = [T](const Tensor & x) { return T.rotate(R2(x)); };
+    auto dTp_dR = finite_differencing_derivative(apply_R, R);
+    REQUIRE_THAT(T.drotate(R), test::allclose(dTp_dR));
+  }
+
+  SECTION("row")
+  {
+    auto a = R2::rand({2, 3}, {2, 1});
+    for (Size i = 0; i < 3; i++)
+    {
+      auto ar = a.row(i);
+      auto ar0 = a.index({indexing::Ellipsis, i, indexing::Slice()});
+      REQUIRE_THAT(ar, test::allclose(ar0));
+    }
+  }
+
+  SECTION("col")
+  {
+    auto a = R2::rand({2, 3}, {2, 1});
+    for (Size i = 0; i < 3; i++)
+    {
+      auto ac = a.col(i);
+      auto ac0 = a.index({indexing::Ellipsis, indexing::Slice(), i});
+      REQUIRE_THAT(ac, test::allclose(ac0));
+    }
+  }
+
+  SECTION("transpose")
+  {
+    auto a = R2::rand({2, 3}, {2, 1});
+    auto at = a.transpose();
+    REQUIRE_THAT(at(0, 0), test::allclose(a(0, 0)));
+    REQUIRE_THAT(at(1, 1), test::allclose(a(1, 1)));
+    REQUIRE_THAT(at(2, 2), test::allclose(a(2, 2)));
+    REQUIRE_THAT(at(1, 2), test::allclose(a(2, 1)));
+    REQUIRE_THAT(at(0, 2), test::allclose(a(2, 0)));
+    REQUIRE_THAT(at(0, 1), test::allclose(a(1, 0)));
   }
 }

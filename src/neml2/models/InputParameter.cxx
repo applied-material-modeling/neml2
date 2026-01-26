@@ -25,6 +25,7 @@
 #include "neml2/models/InputParameter.h"
 #include "neml2/misc/assertions.h"
 #include "neml2/tensors/tensors.h"
+#include "neml2/tensors/functions/imap.h"
 
 namespace neml2
 {
@@ -63,11 +64,11 @@ void
 InputParameter<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   if (out)
-    this->_p = _input_var.value();
+    this->_p = _input_var();
 
   if (dout_din)
     if (_input_var.is_dependent())
-      this->_p.d(_input_var) = T::identity_map(_input_var.options());
+      this->_p.d(_input_var) = imap_v<T>(_input_var.options());
 }
 
 #define REGISTER(T)                                                                                \

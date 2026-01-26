@@ -66,11 +66,11 @@
     values = '1.0'
   []
   [sdirs]
-    type = FillMillerIndex
+    type = MillerIndex
     values = '1 1 0'
   []
   [splanes]
-    type = FillMillerIndex
+    type = MillerIndex
     values = '1 1 1'
   []
   [initial_orientation]
@@ -95,6 +95,7 @@
     cp_warmup_elastic_scale = 0.05
     device = ${device}
     random_seed = 25
+    verbose = true
   []
 []
 
@@ -104,6 +105,7 @@
     linesearch_cutback = 2.0
     linesearch_stopping_criteria = 1.0e-3
     max_linesearch_iterations = 5
+    verbose = true
   []
 []
 

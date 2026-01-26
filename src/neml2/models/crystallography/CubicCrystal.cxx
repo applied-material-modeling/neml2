@@ -55,12 +55,12 @@ CubicCrystal::CubicCrystal(const OptionSet & options)
 }
 
 CubicCrystal::CubicCrystal(const OptionSet & options, Factory * factory)
-  : CrystalGeometry(options,
-                    symmetry_operations_from_orbifold("432"),
-                    Vec(ATensor(R2::fill(
-                        options.get<TensorName<Scalar>>("lattice_parameter").resolve(factory)))),
-                    options.get<TensorName<MillerIndex>>("slip_directions").resolve(factory),
-                    options.get<TensorName<MillerIndex>>("slip_planes").resolve(factory))
+  : CrystalGeometry(
+        options,
+        symmetry("432"),
+        Vec(R2::fill(options.get<TensorName<Scalar>>("lattice_parameter").resolve(factory)), 1),
+        options.get<TensorName<MillerIndex>>("slip_directions").resolve(factory),
+        options.get<TensorName<MillerIndex>>("slip_planes").resolve(factory))
 {
 }
 

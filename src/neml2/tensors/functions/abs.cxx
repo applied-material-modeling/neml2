@@ -28,7 +28,7 @@
 namespace neml2
 {
 #define DEFINE_ABS(T)                                                                              \
-  T abs(const T & a) { return T(at::abs(a), a.batch_sizes()); }                                    \
+  T abs(const T & a) { return T(at::abs(a), a.dynamic_sizes(), a.intmd_dim()); }                   \
   static_assert(true)
 FOR_ALL_TENSORBASE(DEFINE_ABS);
 } // namespace neml2

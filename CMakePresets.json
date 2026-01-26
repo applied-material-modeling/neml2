@@ -15,7 +15,8 @@
         "NEML2_PYBIND": "OFF",
         "NEML2_DOC": "OFF",
         "NEML2_WORK_DISPATCHER": "ON",
-        "NEML2_JSON": "ON"
+        "NEML2_JSON": "ON",
+        "NEML2_CSV": "ON"
       }
     },
     {
@@ -48,7 +49,16 @@
       "inherits": "default",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "ThreadSanitizer",
-        "NEML2_TESTS": "OFF",
+        "NEML2_RUNNER": "ON"
+      }
+    },
+    {
+      "name": "asan",
+      "displayName": "AddressSanitizer",
+      "description": "Clang AddressSanitizer",
+      "inherits": "default",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "AddressSanitizer",
         "NEML2_RUNNER": "ON"
       }
     },
@@ -89,7 +99,7 @@
       "inherits": "default",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-        "NEML2_TESTS": "OFF",
+        "NEML2_TESTS": "ON",
         "NEML2_PYBIND": "ON"
       }
     }
@@ -115,7 +125,7 @@
       "description": "Python bindings with tests",
       "configurePreset": "dev",
       "targets": [
-        "python_stub"
+        "pyneml2"
       ]
     },
     {
@@ -133,6 +143,23 @@
       "description": "Runner compiled and linked against ThreadSanitizer",
       "configurePreset": "tsan",
       "targets": [
+        "unit_tests",
+        "regression_tests",
+        "verification_tests",
+        "dispatcher_tests",
+        "runner"
+      ]
+    },
+    {
+      "name": "asan",
+      "displayName": "AddressSanitizer",
+      "description": "Runner compiled and linked against AddressSanitizer",
+      "configurePreset": "asan",
+      "targets": [
+        "unit_tests",
+        "regression_tests",
+        "verification_tests",
+        "dispatcher_tests",
         "runner"
       ]
     },
@@ -173,8 +200,12 @@
       "description": "C++ backend and Python bindings for release",
       "configurePreset": "release",
       "targets": [
+        "unit_tests",
+        "regression_tests",
+        "verification_tests",
+        "dispatcher_tests",
         "runner",
-        "python_stub"
+        "pyneml2"
       ]
     }
   ],

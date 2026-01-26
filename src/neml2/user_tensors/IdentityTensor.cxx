@@ -31,7 +31,7 @@ register_NEML2_object(IdentityTensor);
 OptionSet
 IdentityTensor::expected_options()
 {
-  OptionSet options = UserTensorBase::expected_options();
+  OptionSet options = UserTensorBase<Tensor>::expected_options();
   options.doc() = "Construct an identity Tensor with given batch shape.";
 
   options.set<TensorShape>("batch_shape") = {};
@@ -45,9 +45,16 @@ IdentityTensor::expected_options()
 }
 
 IdentityTensor::IdentityTensor(const OptionSet & options)
-  : Tensor(Tensor::identity(
-        options.get<TensorShape>("batch_shape"), options.get<Size>("n"), default_tensor_options())),
-    UserTensorBase(options)
+  : UserTensorBase<Tensor>(options),
+    _batch_sizes(options.get<TensorShape>("batch_shape")),
+    _n(options.get<Size>("n"))
 {
 }
+
+Tensor
+IdentityTensor::make() const
+{
+  return Tensor::identity(_n, default_tensor_options()).dynamic_expand(_batch_sizes);
+}
+
 } // namespace neml2

@@ -24,24 +24,30 @@
 
 #include "neml2/tensors/functions/mean.h"
 #include "neml2/tensors/tensors.h"
-#include "neml2/tensors/assertions.h"
+#include "neml2/tensors/shape_utils.h"
 
 namespace neml2
 {
-#define DEFINE_BATCH_MEAN(T)                                                                       \
-  T batch_mean(const T & a, Size d)                                                                \
+#define DEFINE_MEAN(T)                                                                             \
+  T dynamic_mean(const T & a, Size d)                                                              \
   {                                                                                                \
-    neml_assert_dbg(a.batched(), "Must have a batch dimension to take average");                   \
-    auto d2 = d >= 0 ? d : d - a.base_dim();                                                       \
-    return T(at::mean(a, d2), a.batch_dim() - 1);                                                  \
+    d = utils::normalize_dim(d, 0, a.dynamic_dim());                                               \
+    auto sizes = a.dynamic_sizes();                                                                \
+    sizes.erase(sizes.begin() + d);                                                                \
+    return T(at::mean(a, d), sizes, a.intmd_dim());                                                \
+  }                                                                                                \
+  T intmd_mean(const T & a, Size d)                                                                \
+  {                                                                                                \
+    d = utils::normalize_dim(d, a.dynamic_dim(), a.batch_dim());                                   \
+    return T(at::mean(a, d), a.dynamic_sizes(), a.intmd_dim() - 1);                                \
   }                                                                                                \
   static_assert(true)
-FOR_ALL_TENSORBASE(DEFINE_BATCH_MEAN);
+FOR_ALL_TENSORBASE(DEFINE_MEAN);
 
 Tensor
 base_mean(const Tensor & a, Size d)
 {
-  auto d2 = d < 0 ? d : d + a.batch_dim();
-  return Tensor(at::mean(a, d2), a.batch_sizes());
+  d = utils::normalize_dim(d, a.batch_dim(), a.dim());
+  return Tensor(at::mean(a, d), a.dynamic_sizes(), a.intmd_dim());
 }
 } // namespace neml2

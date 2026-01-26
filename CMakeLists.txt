@@ -54,7 +54,8 @@ list(APPEND CMAKE_MODULE_PATH ${NEML2_SOURCE_DIR}/cmake/Modules)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS_COVERAGE "-O0 -fprofile-arcs -ftest-coverage" CACHE STRING "Flags used by C++ compiler during coverage builds" FORCE)
-set(CMAKE_CXX_FLAGS_THREADSANITIZER "-O0 -fsanitize=thread" CACHE STRING "Flags used by C++ compiler for build type ThreadSanitizer" FORCE)
+set(CMAKE_CXX_FLAGS_THREADSANITIZER "-O1 -g -fsanitize=thread" CACHE STRING "Flags used by C++ compiler for build type ThreadSanitizer" FORCE)
+set(CMAKE_CXX_FLAGS_ADDRESSSANITIZER "-O1 -g -fsanitize=address -fno-omit-frame-pointer" CACHE STRING "Flags used by C++ compiler for build type AddressSanitizer" FORCE)
 set(CMAKE_CXX_FLAGS_PROFILING "-O2 -g -fno-omit-frame-pointer" CACHE STRING "Flags used by C++ compiler for build type Profiling" FORCE)
 set(NEML2_PCH ON CACHE BOOL "Use precompiled headers")
 set(NEML2_TESTS ON CACHE BOOL "Build NEML2 tests")
@@ -63,6 +64,7 @@ set(NEML2_PYBIND OFF CACHE BOOL "Build NEML2 Python bindings")
 set(NEML2_DOC OFF CACHE BOOL "Build NEML2 documentation (html)")
 set(NEML2_WORK_DISPATCHER OFF CACHE BOOL "Enable NEML2 work dispatcher")
 set(NEML2_JSON OFF CACHE BOOL "Enable JSON support")
+set(NEML2_CSV OFF CACHE BOOL "Enable CSV support")
 set(NEML2_CONTRIB_PREFIX ${NEML2_SOURCE_DIR}/contrib CACHE PATH "NEML2 contrib prefix for downloaded dependencies")
 set(NEML2_CONTRIB_PARALLEL 1 CACHE STRING "Number of parallel jobs for NEML2 dependencies build")
 set(NEML2_WHEEL OFF CACHE INTERNAL "Build NEML2 as a Python wheel. This is supposed to be set by setup.py and not by the user.")
@@ -81,6 +83,7 @@ set(gperftools_VERSION "gperftools-2.17" CACHE STRING "Default gperftools versio
 set(argparse_VERSION "v3.2" CACHE STRING "Default argparse version to download")
 set(timpi_VERSION "v1.9.0_bootstrapped" CACHE STRING "Default TIMPI version to download")
 set(nlohmann_json_VERSION "v3.11.3" CACHE STRING "Default nlohmann json version to download")
+set(csvparser_VERSION "2.3.0" CACHE STRING "Default csv-parser version to download")
 
 # ----------------------------------------------------------------------------
 # Install message
@@ -270,6 +273,29 @@ if(NEML2_JSON)
             install(DIRECTORY ${nlohmann_json_DIR}/include/nlohmann TYPE INCLUDE COMPONENT libneml2)
       endif()
       install(DIRECTORY ${nlohmann_json_DIR}/share/ DESTINATION share COMPONENT libneml2)
+endif()
+
+# ----------------------------------------------------------------------------
+# csv-parser
+# ----------------------------------------------------------------------------
+if(NEML2_CSV)
+      find_package(csvparser MODULE)
+
+      if(NOT csvparser_FOUND)
+            download_from_git(csvparser https://github.com/vincentlaucsb/csv-parser.git ${NEML2_CONTRIB_PREFIX} ${csvparser_VERSION})
+            set(csvparser_INSTALL_PREFIX ${NEML2_CONTRIB_PREFIX}/csvparser CACHE PATH "csv-parser install prefix")
+            file(COPY ${NEML2_CONTRIB_PREFIX}/csvparser-src/single_include/csv.hpp DESTINATION ${NEML2_CONTRIB_PREFIX}/csvparser/csvparser)
+            find_package(csvparser MODULE REQUIRED)
+      endif()
+
+      # check if csvparser is downloaded
+      path_has_prefix(${csvparser_ROOT} ${NEML2_CONTRIB_PREFIX} csvparser_CONTRIB)
+
+      # csv-parser will be packaged as part of the NEML2 installation if it was downloaded by us (or if it is being built as a wheel).
+      if(csvparser_CONTRIB OR NEML2_WHEEL)
+            install(DIRECTORY ${csvparser_ROOT}/csvparser/csvparser TYPE INCLUDE COMPONENT libneml2)
+      endif()
+      install(FILES ${NEML2_SOURCE_DIR}/cmake/Modules/Findcsvparser.cmake DESTINATION share/cmake/neml2/Modules COMPONENT libneml2)
 endif()
 
 # ----------------------------------------------------------------------------

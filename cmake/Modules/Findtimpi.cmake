@@ -44,5 +44,6 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
   timpi
   REQUIRED_VARS
+  timpi_LINK_DIR
   timpi_FOUND
 )

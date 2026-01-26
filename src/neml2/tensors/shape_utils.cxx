@@ -25,11 +25,43 @@
 #include <numeric>
 
 #include "neml2/tensors/shape_utils.h"
+#include "neml2/misc/assertions.h"
+#include "neml2/misc/errors.h"
 
 namespace neml2::utils
 {
 Size
-storage_size(TensorShapeRef shape)
+normalize_dim(Size d, Size dl, Size du)
+{
+  auto delta = du - dl;
+  neml_assert_dbg(d >= -delta && d < delta,
+                  "The dimension ",
+                  d,
+                  " is out of range [",
+                  -delta,
+                  ", ",
+                  delta,
+                  ").");
+  return d >= 0 ? dl + d : du + d;
+}
+
+Size
+normalize_itr(Size d, Size dl, Size du)
+{
+  auto delta = du - dl;
+  neml_assert_dbg(d >= -delta - 1 && d <= delta,
+                  "The dimension ",
+                  d,
+                  " is out of range [",
+                  -delta - 1,
+                  ", ",
+                  delta,
+                  "].");
+  return d >= 0 ? dl + d : du + d + 1;
+}
+
+Size
+numel(TensorShapeRef shape)
 {
   Size sz = 1;
   return std::accumulate(shape.begin(), shape.end(), sz, std::multiplies<>());
@@ -38,6 +70,7 @@ storage_size(TensorShapeRef shape)
 TensorShape
 pad_prepend(TensorShapeRef s, Size dim, Size pad)
 {
+  neml_assert(Size(s.size()) <= dim, "pad_prepend given shape ", s, " and dim ", dim);
   TensorShape s2(s);
   s2.insert(s2.begin(), dim - s.size(), pad);
   return s2;

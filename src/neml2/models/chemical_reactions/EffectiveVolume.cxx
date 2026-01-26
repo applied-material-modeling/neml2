@@ -90,7 +90,7 @@ EffectiveVolume::EffectiveVolume(const OptionSet & options)
 void
 EffectiveVolume::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  auto sum = Scalar::zeros_like(*_ws[0]);
+  auto sum = Scalar::zeros_like((*_ws[0])());
 
   for (std::size_t i = 0; i < _ws.size(); i++)
     sum = sum + *_ws[i] / *_rhos[i];

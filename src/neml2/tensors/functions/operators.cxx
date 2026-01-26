@@ -25,6 +25,7 @@
 #include "neml2/tensors/functions/operators.h"
 #include "neml2/tensors/tensors.h"
 #include "neml2/tensors/assertions.h"
+#include "neml2/tensors/functions/utils.h"
 
 namespace neml2
 {
@@ -34,34 +35,47 @@ namespace neml2
 #define DEFINE_ADD_SELF(T)                                                                         \
   T operator+(const T & a, const T & b)                                                            \
   {                                                                                                \
-    neml_assert_batch_broadcastable_dbg(a, b);                                                     \
-    return T(at::operator+(a, b), utils::broadcast_batch_dim(a, b));                               \
+    neml_assert_dynamic_broadcastable_dbg(a, b);                                                   \
+    const auto [aa, bb, i] = utils::align_intmd_dim(a, b);                                         \
+    return T(at::operator+(aa, bb), utils::broadcast_dynamic_dim(a, b), i);                        \
   }                                                                                                \
   static_assert(true)
 
 #define DEFINE_ADD_SYM_SCALAR(T)                                                                   \
   T operator+(const T & a, const Scalar & b)                                                       \
   {                                                                                                \
-    neml_assert_batch_broadcastable_dbg(a, b);                                                     \
-    return T(at::operator+(a, b.base_unsqueeze_to(a.base_dim())),                                  \
-             utils::broadcast_batch_dim(a, b));                                                    \
+    neml_assert_dynamic_broadcastable_dbg(a, b);                                                   \
+    const auto [aa, bb, i] = utils::align_intmd_dim(a, b);                                         \
+    return T(at::operator+(aa, bb.base_unsqueeze(-1, a.base_dim())),                               \
+             utils::broadcast_dynamic_dim(a, b),                                                   \
+             i);                                                                                   \
   }                                                                                                \
   T operator+(const Scalar & a, const T & b) { return b + a; }                                     \
   static_assert(true)
 
-#define DEFINE_ADD_SYM_REAL(T)                                                                     \
-  T operator+(const T & a, const CScalar & b) { return T(at::operator+(a, b), a.batch_sizes()); }  \
+#define DEFINE_ADD_SYM_CSCALAR(T)                                                                  \
+  T operator+(const T & a, const CScalar & b)                                                      \
+  {                                                                                                \
+    return T(at::operator+(a, b), a.dynamic_sizes(), a.intmd_dim());                               \
+  }                                                                                                \
   T operator+(const CScalar & a, const T & b) { return b + a; }                                    \
   static_assert(true)
 
+Tensor
+operator+(const Tensor & a, const Tensor & b)
+{
+  neml_assert_dynamic_broadcastable_dbg(a, b);
+  const auto [aa, bb, i] = utils::align_static_dim(a, b);
+  return Tensor(at::operator+(aa, bb), utils::broadcast_dynamic_dim(a, b), i);
+}
+
 FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DEFINE_ADD_SELF);
 FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DEFINE_ADD_SYM_SCALAR);
-FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DEFINE_ADD_SYM_REAL);
-DEFINE_ADD_SELF(Tensor);
+FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DEFINE_ADD_SYM_CSCALAR);
 DEFINE_ADD_SYM_SCALAR(Tensor);
-DEFINE_ADD_SYM_REAL(Tensor);
+DEFINE_ADD_SYM_CSCALAR(Tensor);
 DEFINE_ADD_SELF(Scalar);
-DEFINE_ADD_SYM_REAL(Scalar);
+DEFINE_ADD_SYM_CSCALAR(Scalar);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Subtraction
@@ -69,39 +83,57 @@ DEFINE_ADD_SYM_REAL(Scalar);
 #define DEFINE_SUB_SELF(T)                                                                         \
   T operator-(const T & a, const T & b)                                                            \
   {                                                                                                \
-    neml_assert_batch_broadcastable_dbg(a, b);                                                     \
-    return T(at::operator-(a, b), utils::broadcast_batch_dim(a, b));                               \
+    neml_assert_dynamic_broadcastable_dbg(a, b);                                                   \
+    const auto [aa, bb, i] = utils::align_intmd_dim(a, b);                                         \
+    return T(at::operator-(aa, bb), utils::broadcast_dynamic_dim(a, b), i);                        \
   }                                                                                                \
   static_assert(true)
 
 #define DEFINE_SUB_SYM_SCALAR(T)                                                                   \
   T operator-(const T & a, const Scalar & b)                                                       \
   {                                                                                                \
-    neml_assert_batch_broadcastable_dbg(a, b);                                                     \
-    return T(at::operator-(a, b.base_unsqueeze_to(a.base_dim())),                                  \
-             utils::broadcast_batch_dim(a, b));                                                    \
+    neml_assert_dynamic_broadcastable_dbg(a, b);                                                   \
+    const auto [aa, bb, i] = utils::align_intmd_dim(a, b);                                         \
+    return T(at::operator-(aa, bb.base_unsqueeze(-1, a.base_dim())),                               \
+             utils::broadcast_dynamic_dim(a, b),                                                   \
+             i);                                                                                   \
   }                                                                                                \
   T operator-(const Scalar & a, const T & b)                                                       \
   {                                                                                                \
-    neml_assert_batch_broadcastable_dbg(a, b);                                                     \
-    return T(at::operator-(a.base_unsqueeze_to(b.base_dim()), b),                                  \
-             utils::broadcast_batch_dim(a, b));                                                    \
+    neml_assert_dynamic_broadcastable_dbg(a, b);                                                   \
+    const auto [aa, bb, i] = utils::align_intmd_dim(a, b);                                         \
+    return T(at::operator-(aa.base_unsqueeze(-1, b.base_dim()), bb),                               \
+             utils::broadcast_dynamic_dim(a, b),                                                   \
+             i);                                                                                   \
   }                                                                                                \
   static_assert(true)
 
-#define DEFINE_SUB_SYM_REAL(T)                                                                     \
-  T operator-(const T & a, const CScalar & b) { return T(at::operator-(a, b), a.batch_sizes()); }  \
-  T operator-(const CScalar & a, const T & b) { return T(at::operator-(a, b), b.batch_sizes()); }  \
+#define DEFINE_SUB_SYM_CSCALAR(T)                                                                  \
+  T operator-(const T & a, const CScalar & b)                                                      \
+  {                                                                                                \
+    return T(at::operator-(a, b), a.dynamic_sizes(), a.intmd_dim());                               \
+  }                                                                                                \
+  T operator-(const CScalar & a, const T & b)                                                      \
+  {                                                                                                \
+    return T(at::operator-(a, b), b.dynamic_sizes(), b.intmd_dim());                               \
+  }                                                                                                \
   static_assert(true)
+
+Tensor
+operator-(const Tensor & a, const Tensor & b)
+{
+  neml_assert_dynamic_broadcastable_dbg(a, b);
+  const auto [aa, bb, i] = utils::align_static_dim(a, b);
+  return Tensor(at::operator-(aa, bb), utils::broadcast_dynamic_dim(a, b), i);
+}
 
 FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DEFINE_SUB_SELF);
 FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DEFINE_SUB_SYM_SCALAR);
-FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DEFINE_SUB_SYM_REAL);
-DEFINE_SUB_SELF(Tensor);
+FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DEFINE_SUB_SYM_CSCALAR);
 DEFINE_SUB_SYM_SCALAR(Tensor);
-DEFINE_SUB_SYM_REAL(Tensor);
+DEFINE_SUB_SYM_CSCALAR(Tensor);
 DEFINE_SUB_SELF(Scalar);
-DEFINE_SUB_SYM_REAL(Scalar);
+DEFINE_SUB_SYM_CSCALAR(Scalar);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Multiplication
@@ -109,33 +141,46 @@ DEFINE_SUB_SYM_REAL(Scalar);
 #define DEFINE_MUL_SELF(T)                                                                         \
   T operator*(const T & a, const T & b)                                                            \
   {                                                                                                \
-    neml_assert_batch_broadcastable_dbg(a, b);                                                     \
-    return T(at::operator*(a, b), utils::broadcast_batch_dim(a, b));                               \
+    neml_assert_dynamic_broadcastable_dbg(a, b);                                                   \
+    const auto [aa, bb, i] = utils::align_intmd_dim(a, b);                                         \
+    return T(at::operator*(aa, bb), utils::broadcast_dynamic_dim(a, b), i);                        \
   }                                                                                                \
   static_assert(true)
 
 #define DEFINE_MUL_SYM_SCALAR(T)                                                                   \
   T operator*(const T & a, const Scalar & b)                                                       \
   {                                                                                                \
-    neml_assert_batch_broadcastable_dbg(a, b);                                                     \
-    return T(at::operator*(a, b.base_unsqueeze_to(a.base_dim())),                                  \
-             utils::broadcast_batch_dim(a, b));                                                    \
+    neml_assert_dynamic_broadcastable_dbg(a, b);                                                   \
+    const auto [aa, bb, i] = utils::align_intmd_dim(a, b);                                         \
+    return T(at::operator*(aa, bb.base_unsqueeze(-1, a.base_dim())),                               \
+             utils::broadcast_dynamic_dim(a, b),                                                   \
+             i);                                                                                   \
   }                                                                                                \
   T operator*(const Scalar & a, const T & b) { return b * a; }                                     \
   static_assert(true)
 
-#define DEFINE_MUL_SYM_REAL(T)                                                                     \
-  T operator*(const T & a, const CScalar & b) { return T(at::operator*(a, b), a.batch_sizes()); }  \
+#define DEFINE_MUL_SYM_CSCALAR(T)                                                                  \
+  T operator*(const T & a, const CScalar & b)                                                      \
+  {                                                                                                \
+    return T(at::operator*(a, b), a.dynamic_sizes(), a.intmd_dim());                               \
+  }                                                                                                \
   T operator*(const CScalar & a, const T & b) { return b * a; }                                    \
   static_assert(true)
 
+Tensor
+operator*(const Tensor & a, const Tensor & b)
+{
+  neml_assert_dynamic_broadcastable_dbg(a, b);
+  const auto [aa, bb, i] = utils::align_static_dim(a, b);
+  return Tensor(at::operator*(aa, bb), utils::broadcast_dynamic_dim(a, b), i);
+}
+
 FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DEFINE_MUL_SYM_SCALAR);
-FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DEFINE_MUL_SYM_REAL);
-DEFINE_MUL_SELF(Tensor);
+FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DEFINE_MUL_SYM_CSCALAR);
 DEFINE_MUL_SYM_SCALAR(Tensor);
-DEFINE_MUL_SYM_REAL(Tensor);
+DEFINE_MUL_SYM_CSCALAR(Tensor);
 DEFINE_MUL_SELF(Scalar);
-DEFINE_MUL_SYM_REAL(Scalar);
+DEFINE_MUL_SYM_CSCALAR(Scalar);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Division
@@ -143,38 +188,56 @@ DEFINE_MUL_SYM_REAL(Scalar);
 #define DEFINE_DIV_SELF(T)                                                                         \
   T operator/(const T & a, const T & b)                                                            \
   {                                                                                                \
-    neml_assert_batch_broadcastable_dbg(a, b);                                                     \
-    return T(at::operator/(a, b), utils::broadcast_batch_dim(a, b));                               \
+    neml_assert_dynamic_broadcastable_dbg(a, b);                                                   \
+    const auto [aa, bb, i] = utils::align_intmd_dim(a, b);                                         \
+    return T(at::operator/(aa, bb), utils::broadcast_dynamic_dim(a, b), i);                        \
   }                                                                                                \
   static_assert(true)
 
 #define DEFINE_DIV_SYM_SCALAR(T)                                                                   \
   T operator/(const T & a, const Scalar & b)                                                       \
   {                                                                                                \
-    neml_assert_batch_broadcastable_dbg(a, b);                                                     \
-    return T(at::operator/(a, b.base_unsqueeze_to(a.base_dim())),                                  \
-             utils::broadcast_batch_dim(a, b));                                                    \
+    neml_assert_dynamic_broadcastable_dbg(a, b);                                                   \
+    const auto [aa, bb, i] = utils::align_intmd_dim(a, b);                                         \
+    return T(at::operator/(aa, bb.base_unsqueeze(-1, a.base_dim())),                               \
+             utils::broadcast_dynamic_dim(a, b),                                                   \
+             i);                                                                                   \
   }                                                                                                \
   T operator/(const Scalar & a, const T & b)                                                       \
   {                                                                                                \
-    neml_assert_batch_broadcastable_dbg(a, b);                                                     \
-    return T(at::operator/(a.base_unsqueeze_to(b.base_dim()), b),                                  \
-             utils::broadcast_batch_dim(a, b));                                                    \
+    neml_assert_dynamic_broadcastable_dbg(a, b);                                                   \
+    const auto [aa, bb, i] = utils::align_intmd_dim(a, b);                                         \
+    return T(at::operator/(aa.base_unsqueeze(-1, b.base_dim()), b),                                \
+             utils::broadcast_dynamic_dim(a, b),                                                   \
+             i);                                                                                   \
   }                                                                                                \
   static_assert(true)
 
-#define DEFINE_DIV_SYM_REAL(T)                                                                     \
-  T operator/(const T & a, const CScalar & b) { return T(at::operator/(a, b), a.batch_sizes()); }  \
-  T operator/(const CScalar & a, const T & b) { return T(at::operator/(a, b), b.batch_sizes()); }  \
+#define DEFINE_DIV_SYM_CSCALAR(T)                                                                  \
+  T operator/(const T & a, const CScalar & b)                                                      \
+  {                                                                                                \
+    return T(at::operator/(a, b), a.dynamic_sizes(), a.intmd_dim());                               \
+  }                                                                                                \
+  T operator/(const CScalar & a, const T & b)                                                      \
+  {                                                                                                \
+    return T(at::operator/(a, b), b.dynamic_sizes(), b.intmd_dim());                               \
+  }                                                                                                \
   static_assert(true)
 
+Tensor
+operator/(const Tensor & a, const Tensor & b)
+{
+  neml_assert_dynamic_broadcastable_dbg(a, b);
+  const auto [aa, bb, i] = utils::align_static_dim(a, b);
+  return Tensor(at::operator/(aa, bb), utils::broadcast_dynamic_dim(a, b), i);
+}
+
 FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DEFINE_DIV_SYM_SCALAR);
-FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DEFINE_DIV_SYM_REAL);
-DEFINE_DIV_SELF(Tensor);
+FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DEFINE_DIV_SYM_CSCALAR);
 DEFINE_DIV_SYM_SCALAR(Tensor);
-DEFINE_DIV_SYM_REAL(Tensor);
+DEFINE_DIV_SYM_CSCALAR(Tensor);
 DEFINE_DIV_SELF(Scalar);
-DEFINE_DIV_SYM_REAL(Scalar);
+DEFINE_DIV_SYM_CSCALAR(Scalar);
 
 ///////////////////////////////////////////////////////////////////////////////
 // In-place addition
@@ -235,5 +298,4 @@ DEFINE_MUL_EQ(Scalar);
 FOR_ALL_NONSCALAR_PRIMITIVETENSOR(DEFINE_DIV_EQ);
 DEFINE_DIV_EQ(Tensor);
 DEFINE_DIV_EQ(Scalar);
-
 } // namespace neml2

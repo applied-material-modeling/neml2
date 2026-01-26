@@ -113,7 +113,7 @@ ComposedModel::ComposedModel(const OptionSet & options)
 
   // Register input variables
   for (const auto & item : _dependency.inbound_items())
-    if (!input_axis().has_variable(item.value))
+    if (!input_variables().count(item.value))
       clone_input_variable(item.parent->input_variable(item.value));
 
   // Register output variables
@@ -123,7 +123,7 @@ ComposedModel::ComposedModel(const OptionSet & options)
   // Declare nonlinear parameters
   for (auto & submodel : submodels)
     for (auto && [pname, param] : submodel->named_nonlinear_parameters(/*recursive=*/true))
-      if (input_axis().has_variable(param.provider_var))
+      if (input_variables().count(param.provider_var))
         register_nonlinear_parameter(pname, param);
 
   // Check if this composed model defines values

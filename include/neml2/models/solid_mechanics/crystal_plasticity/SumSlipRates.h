@@ -29,10 +29,6 @@
 namespace neml2
 {
 class Scalar;
-namespace crystallography
-{
-class CrystalGeometry;
-}
 
 /// A helper model to calculate the sum of the absolute value of the slip rates
 class SumSlipRates : public Model
@@ -46,8 +42,8 @@ protected:
   /// Calculate the sum and the derivatives
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  /// Crystal geometry class with slip geometry
-  const crystallography::CrystalGeometry & _crystal_geometry;
+  /// The dimension over which to sum
+  const Size _dim;
 
   /// Sum of the absolute slip rates
   Variable<Scalar> & _sg;

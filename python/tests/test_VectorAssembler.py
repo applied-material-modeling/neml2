@@ -32,14 +32,15 @@ import torch
 def test_assemble_by_variable():
     pwd = Path(__file__).parent
     model = neml2.load_model(pwd / "test_LabeledAxis.i", "model")
-    axis = model.input_axis()
+    axis = model.input_axis(setup=True)
     assembler = neml2.VectorAssembler(axis)
     v = assembler.assemble_by_variable(
         {
             "state/bar": Scalar.full(1.0),
-            "state/foo": Scalar.full((2, 3), 2.0),
-            "state/foo_rate": Scalar.full((6, 1, 1), 3.0),
-        }
+            "state/foo": Scalar.full((2, 3), (), 2.0),
+            "state/foo_rate": Scalar.full((6, 1, 1), (), 3.0),
+        },
+        assembly=False,
     )
     assert v.batch.shape == (6, 2, 3)
     assert v.base.shape == (8,)
@@ -51,7 +52,7 @@ def test_assemble_by_variable():
 def test_split_by_variable():
     pwd = Path(__file__).parent
     model = neml2.load_model(pwd / "test_LabeledAxis.i", "model")
-    axis = model.input_axis()
+    axis = model.input_axis(setup=True)
     assembler = neml2.VectorAssembler(axis)
     v = Tensor(torch.linspace(0, 1, 8), 0)
     vals = assembler.split_by_variable(v)
@@ -68,7 +69,7 @@ def test_split_by_variable():
 def test_split_by_subaxis():
     pwd = Path(__file__).parent
     model = neml2.load_model(pwd / "test_LabeledAxis.i", "model")
-    axis = model.input_axis()
+    axis = model.input_axis(setup=True)
     assembler = neml2.VectorAssembler(axis)
     v = Tensor(torch.linspace(0, 1, 8), 0)
     vals = assembler.split_by_subaxis(v)

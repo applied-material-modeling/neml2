@@ -44,5 +44,6 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
   hit
   REQUIRED_VARS
+  hit_LINK_DIR
   hit_FOUND
 )

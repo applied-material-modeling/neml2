@@ -26,6 +26,7 @@
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/R2.h"
 #include "neml2/tensors/functions/pow.h"
+#include "neml2/tensors/functions/inner.h"
 
 namespace neml2
 {
@@ -77,12 +78,12 @@ AdvectiveStress::AdvectiveStress(const OptionSet & options)
 void
 AdvectiveStress::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  Scalar Js = _Js ? _Js->value() : Scalar::full(1.0, _P.options());
-  Scalar Jt = _Jt ? _Jt->value() : Scalar::full(1.0, _P.options());
+  Scalar Js = _Js ? (*_Js)() : Scalar::full(1.0, _P.options());
+  Scalar Jt = _Jt ? (*_Jt)() : Scalar::full(1.0, _P.options());
 
   if (out)
   {
-    _ps = -_coeff / 3.0 * pow(Js, -5.0 / 3.0) * pow(Jt, -2.0 / 3.0) * R2(_P).inner(R2(_F));
+    _ps = -_coeff / 3.0 * pow(Js, -5.0 / 3.0) * pow(Jt, -2.0 / 3.0) * neml2::inner(_P(), _F());
   }
 
   if (dout_din)
@@ -91,11 +92,11 @@ AdvectiveStress::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 
     if (_Js && _Js->is_dependent())
       _ps.d(*_Js) = 5.0 / 3.0 * _coeff / 3.0 * pow(Js, -8.0 / 3.0) * pow(Jt, -2.0 / 3.0) *
-                    R2(_P).inner(R2(_F));
+                    neml2::inner(_P(), _F());
 
     if (_Jt && _Jt->is_dependent())
       _ps.d(*_Jt) = 2.0 / 3.0 * _coeff / 3.0 * pow(Js, -5.0 / 3.0) * pow(Jt, -5.0 / 3.0) *
-                    R2(_P).inner(R2(_F));
+                    neml2::inner(_P(), _F());
 
     if (_P.is_dependent())
       _ps.d(_P) = -_coeff / 3.0 * pow(Js, -5.0 / 3.0) * pow(Jt, -2.0 / 3.0) * _F;

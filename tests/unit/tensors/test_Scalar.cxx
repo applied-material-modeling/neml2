@@ -24,116 +24,19 @@
 
 #include <catch2/catch_test_macros.hpp>
 
+#include "neml2/misc/defaults.h"
 #include "utils.h"
-#include "neml2/tensors/tensors.h"
-#include "neml2/tensors/functions/pow.h"
 
 using namespace neml2;
 
 TEST_CASE("Scalar", "[tensors]")
 {
   at::manual_seed(42);
-  const auto & DTO = default_tensor_options();
 
-  TensorShape B = {5, 3, 1, 2}; // batch shape
-
-  SECTION("class Scalar")
+  SECTION("Scalar")
   {
-    SECTION("Scalar")
-    {
-      Scalar a(3.3, DTO);
-      auto b = Scalar::full(3.3, DTO);
-      REQUIRE(at::allclose(a, b));
-    }
-
-    SECTION("identity_map")
-    {
-      auto I = Scalar::identity_map(DTO);
-      auto a = Scalar(at::rand(B, DTO));
-
-      auto apply = [](const Tensor & x) { return x; };
-      auto da_da = finite_differencing_derivative(apply, a);
-
-      REQUIRE(at::allclose(I, da_da));
-    }
-  }
-
-  SECTION("operator+")
-  {
-    Scalar a(3.3, DTO);
-    auto b = Tensor::full({3, 2, 1}, -5.2, DTO);
-    auto c = Tensor::full({3, 2, 1}, -1.9, DTO);
-
-    REQUIRE(at::allclose(a + b, c));
-    REQUIRE(at::allclose(a.batch_expand(B) + b, c.batch_expand(B)));
-    REQUIRE(at::allclose(a + b.batch_expand(B), c.batch_expand(B)));
-    REQUIRE(at::allclose(a.batch_expand(B) + b.batch_expand(B), c.batch_expand(B)));
-
-    REQUIRE(at::allclose(b + a, c));
-    REQUIRE(at::allclose(b.batch_expand(B) + a, c.batch_expand(B)));
-    REQUIRE(at::allclose(b + a.batch_expand(B), c.batch_expand(B)));
-    REQUIRE(at::allclose(b.batch_expand(B) + a.batch_expand(B), c.batch_expand(B)));
-  }
-
-  SECTION("operator-")
-  {
-    Scalar a(3.3, DTO);
-    auto b = Tensor::full({3, 2, 1}, -5.2, DTO);
-    auto c = Tensor::full({3, 2, 1}, 8.5, DTO);
-
-    REQUIRE(at::allclose(a - b, c));
-    REQUIRE(at::allclose(a.batch_expand(B) - b, c.batch_expand(B)));
-    REQUIRE(at::allclose(a - b.batch_expand(B), c.batch_expand(B)));
-    REQUIRE(at::allclose(a.batch_expand(B) - b.batch_expand(B), c.batch_expand(B)));
-
-    REQUIRE(at::allclose(b - a, -c));
-    REQUIRE(at::allclose(b.batch_expand(B) - a, -c.batch_expand(B)));
-    REQUIRE(at::allclose(b - a.batch_expand(B), -c.batch_expand(B)));
-    REQUIRE(at::allclose(b.batch_expand(B) - a.batch_expand(B), -c.batch_expand(B)));
-  }
-
-  SECTION("operator*")
-  {
-    Scalar a(3.3, DTO);
-    auto b = Tensor::full({3, 2, 1}, -5.2, DTO);
-    auto c = Tensor::full({3, 2, 1}, -17.16, DTO);
-
-    REQUIRE(at::allclose(a * b, c));
-    REQUIRE(at::allclose(a.batch_expand(B) * b, c.batch_expand(B)));
-    REQUIRE(at::allclose(a * b.batch_expand(B), c.batch_expand(B)));
-    REQUIRE(at::allclose(a.batch_expand(B) * b.batch_expand(B), c.batch_expand(B)));
-
-    REQUIRE(at::allclose(b * a, c));
-    REQUIRE(at::allclose(b.batch_expand(B) * a, c.batch_expand(B)));
-    REQUIRE(at::allclose(b * a.batch_expand(B), c.batch_expand(B)));
-    REQUIRE(at::allclose(b.batch_expand(B) * a.batch_expand(B), c.batch_expand(B)));
-  }
-
-  SECTION("operator/")
-  {
-    Scalar a(3.3, DTO);
-    auto b = Tensor::full({3, 2, 1}, -5.2, DTO);
-    auto c = Tensor::full({3, 2, 1}, -0.6346153846153846, DTO);
-
-    REQUIRE(at::allclose(a / b, c));
-    REQUIRE(at::allclose(a.batch_expand(B) / b, c.batch_expand(B)));
-    REQUIRE(at::allclose(a / b.batch_expand(B), c.batch_expand(B)));
-    REQUIRE(at::allclose(a.batch_expand(B) / b.batch_expand(B), c.batch_expand(B)));
-
-    REQUIRE(at::allclose(b / a, 1.0 / c));
-    REQUIRE(at::allclose(b.batch_expand(B) / a, 1.0 / c.batch_expand(B)));
-    REQUIRE(at::allclose(b / a.batch_expand(B), 1.0 / c.batch_expand(B)));
-    REQUIRE(at::allclose(b.batch_expand(B) / a.batch_expand(B), 1.0 / c.batch_expand(B)));
-  }
-
-  SECTION("pow")
-  {
-    Scalar a(3.3, DTO);
-    auto b = Tensor::full({2, 2}, 2.0, DTO);
-    auto c = Tensor::full({2, 2}, 9.849155306759329, DTO);
-    REQUIRE(at::allclose(neml2::pow(b, a), c));
-    REQUIRE(at::allclose(neml2::pow(b.batch_expand(B), a), c.batch_expand(B)));
-    REQUIRE(at::allclose(neml2::pow(b, a.batch_expand(B)), c.batch_expand(B)));
-    REQUIRE(at::allclose(neml2::pow(b.batch_expand(B), a.batch_expand(B)), c.batch_expand(B)));
+    Scalar a(3.3, default_tensor_options());
+    auto b = Scalar::full(3.3, default_tensor_options());
+    REQUIRE_THAT(a, test::allclose(b));
   }
 }

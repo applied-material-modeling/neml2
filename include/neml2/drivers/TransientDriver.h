@@ -67,6 +67,8 @@ protected:
   virtual void apply_predictor();
   /// Perform the constitutive update for the current time step.
   virtual void solve_step();
+  /// Postprocess the output of the current time step.
+  virtual void postprocess();
   /// Save the input of the current time step.
   virtual void store_input();
   // @}
@@ -89,9 +91,6 @@ protected:
   std::vector<ValueMap> _result_in;
   /// Outputs from all time steps
   std::vector<ValueMap> _result_out;
-
-  /// Initial conditions
-  ValueMap _ics;
 
   /// Driving forces (other than time)
   std::vector<VariableName> _driving_force_names;
@@ -124,5 +123,8 @@ private:
   /// Output in torchscript format
   void output_pt(const std::filesystem::path & out) const;
   ///@}
+
+  /// Whether the model requires initial guesses for the state variables
+  bool _has_input_state = false;
 };
 } // namespace neml2

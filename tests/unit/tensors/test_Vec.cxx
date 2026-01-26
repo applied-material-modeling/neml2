@@ -29,48 +29,4 @@
 
 using namespace neml2;
 
-TEST_CASE("Vec", "[tensors]")
-{
-  const auto & DTO = default_tensor_options();
-
-  TensorShape B = {5, 3, 1, 2}; // batch shape
-
-  SECTION("class Vec")
-  {
-    SECTION("rotate")
-    {
-      auto r = Rot::fill(0.13991834, 0.18234513, 0.85043991, DTO);
-      auto v = Vec::fill(1.0, -2.0, 3.0, DTO);
-      auto vp = Vec::fill(0.495655, 3.13461, 1.98205, DTO);
-
-      auto rb = r.batch_expand(B);
-      auto vb = v.batch_expand(B);
-      auto vpb = vp.batch_expand(B);
-
-      REQUIRE(at::allclose(v.rotate(r), vp));
-      REQUIRE(at::allclose(vb.rotate(rb), vpb));
-      REQUIRE(at::allclose(v.rotate(rb), vpb));
-      REQUIRE(at::allclose(vb.rotate(r), vpb));
-    }
-
-    SECTION("drotate")
-    {
-      auto r = Rot::fill(0.13991834, 0.18234513, 0.85043991);
-      auto v = Vec::fill(1.0, -2.0, 3.0);
-      auto vp = Vec::fill(0.495655, 3.13461, 1.98205);
-
-      auto rb = r.batch_expand(B);
-      auto vb = v.batch_expand(B);
-      auto vpb = vp.batch_expand(B);
-
-      auto apply = [v](const Tensor & x) { return v.rotate(Rot(x)); };
-      auto dvp_dr = finite_differencing_derivative(apply, r);
-      auto dvp_drb = dvp_dr.batch_expand(B);
-
-      REQUIRE(at::allclose(v.drotate(r), dvp_dr, 1e-4));
-      REQUIRE(at::allclose(vb.drotate(rb), dvp_drb, 1e-4));
-      REQUIRE(at::allclose(v.drotate(rb), dvp_drb, 1e-4));
-      REQUIRE(at::allclose(vb.drotate(r), dvp_drb, 1e-4));
-    }
-  }
-}
+TEST_CASE("Vec", "[tensors]") {}

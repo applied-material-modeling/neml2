@@ -57,17 +57,17 @@ TEST_CASE("LabeledAxis", "[models]")
   SECTION("class LabeledAxis")
   {
     LabeledAxis a;
-    a.add_variable<Scalar>("scalar");
-    a.add_variable<SR2>("r2t");
+    a.add_variable("scalar", {}, {});
+    a.add_variable("r2t", {}, {6});
     a.add_subaxis("sub1");
-    a.subaxis("sub1").add_variable<Scalar>("scalar");
-    a.subaxis("sub1").add_variable<SR2>("r2t");
+    a.subaxis("sub1").add_variable("scalar", {}, {});
+    a.subaxis("sub1").add_variable("r2t", {}, {6});
     a.subaxis("sub1").add_subaxis("sub2");
-    a.subaxis("sub1").subaxis("sub2").add_variable<Scalar>("scalar");
-    a.subaxis("sub1").subaxis("sub2").add_variable<SR2>("r2t");
+    a.subaxis("sub1").subaxis("sub2").add_variable("scalar", {}, {});
+    a.subaxis("sub1").subaxis("sub2").add_variable("r2t", {}, {6});
     a.subaxis("sub1").add_subaxis("sub3");
-    a.subaxis("sub1").subaxis("sub3").add_variable<Scalar>("scalar");
-    a.subaxis("sub1").subaxis("sub3").add_variable("foo", 5);
+    a.subaxis("sub1").subaxis("sub3").add_variable("scalar", {}, {});
+    a.subaxis("sub1").subaxis("sub3").add_variable("foo", {}, 5);
     const auto & sub1 = a.subaxis("sub1");
     const auto & sub2 = sub1.subaxis("sub2");
     const auto & sub3 = sub1.subaxis("sub3");
@@ -406,19 +406,19 @@ TEST_CASE("LabeledAxis", "[models]")
     // test1 and test2 are equal:
     // They have the same set of items with same names and storage sizes.
     LabeledAxis test1;
-    test1.add_variable<Scalar>("scalar1");
-    test1.add_variable<SR2>("r2t1");
-    test1.add_variable<Scalar>("scalar2");
-    test1.add_variable<SR2>("r2t2");
-    test1.add_variable<Scalar>("scalar3");
+    test1.add_variable("scalar1", {}, {});
+    test1.add_variable("r2t1", {}, {6});
+    test1.add_variable("scalar2", {}, {});
+    test1.add_variable("r2t2", {}, {6});
+    test1.add_variable("scalar3", {}, {});
     test1.setup_layout();
 
     LabeledAxis test2;
-    test2.add_variable<SR2>("r2t1");
-    test2.add_variable<Scalar>("scalar3");
-    test2.add_variable<SR2>("r2t2");
-    test2.add_variable<Scalar>("scalar2");
-    test2.add_variable<Scalar>("scalar1");
+    test2.add_variable("r2t1", {}, {6});
+    test2.add_variable("scalar3", {}, {});
+    test2.add_variable("r2t2", {}, {6});
+    test2.add_variable("scalar2", {}, {});
+    test2.add_variable("scalar1", {}, {});
     test2.setup_layout();
 
     REQUIRE(test1 == test2);
@@ -429,26 +429,26 @@ TEST_CASE("LabeledAxis", "[models]")
     // test1 and test2 are equal:
     // They have the same set of items with same names and storage sizes.
     LabeledAxis test1;
-    test1.add_variable<Scalar>("scalar1");
-    test1.add_variable<SR2>("r2t1");
-    test1.add_variable<Scalar>("scalar2");
-    test1.add_variable<SR2>("r2t2");
-    test1.add_variable<Scalar>("scalar3");
+    test1.add_variable("scalar1", {}, {});
+    test1.add_variable("r2t1", {}, {6});
+    test1.add_variable("scalar2", {}, {});
+    test1.add_variable("r2t2", {}, {6});
+    test1.add_variable("scalar3", {}, {});
     test1.setup_layout();
 
     LabeledAxis test2;
-    test2.add_variable<SR2>("r2t1");
-    test2.add_variable<Scalar>("scalar3");
-    test2.add_variable<SR2>("r2t2");
-    test2.add_variable<Scalar>("scalar2");
-    test2.add_variable<Scalar>("scalar1");
+    test2.add_variable("r2t1", {}, {6});
+    test2.add_variable("scalar3", {}, {});
+    test2.add_variable("r2t2", {}, {6});
+    test2.add_variable("scalar2", {}, {});
+    test2.add_variable("scalar1", {}, {});
     test2.setup_layout();
 
     // test3 is NOT equal to test1 nor test2
     LabeledAxis test3;
-    test3.add_variable<SR2>("r2t1");
-    test3.add_variable<Scalar>("scalar3");
-    test3.add_variable<SR2>("r2t2");
+    test3.add_variable("r2t1", {}, {6});
+    test3.add_variable("scalar3", {}, {});
+    test3.add_variable("r2t2", {}, {6});
     test3.setup_layout();
 
     REQUIRE(test1 != test3);

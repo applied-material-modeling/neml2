@@ -23,22 +23,39 @@
 // THE SOFTWARE.
 
 #include "neml2/tensors/functions/cat.h"
+#include "neml2/tensors/shape_utils.h"
 #include "neml2/tensors/tensors.h"
-#include "neml2/tensors/assertions.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {
 #define DEFINE_CAT(T)                                                                              \
-  T batch_cat(const std::vector<T> & tensors, Size d)                                              \
+  T dynamic_cat(const std::vector<T> & tensors, Size d)                                            \
   {                                                                                                \
-    neml_assert_dbg(!tensors.empty(), "batch_cat must be given at least one tensor");              \
-    std::vector<ATensor> torch_tensors(tensors.begin(), tensors.end());                            \
-    auto d2 = d >= 0 ? d : d - tensors.begin()->base_dim();                                        \
-    return T(at::cat(torch_tensors, d2), tensors.begin()->batch_dim());                            \
+    neml_assert_dbg(!tensors.empty(), "dynamic_cat must be given at least one tensor");            \
+    const auto & ref = tensors.front();                                                            \
+    std::vector<ATensor> atensors(tensors.begin(), tensors.end());                                 \
+    d = utils::normalize_dim(d, 0, ref.dynamic_dim());                                             \
+    return T(at::cat(atensors, d), ref.dynamic_dim(), ref.intmd_dim());                            \
   }                                                                                                \
-  T batch_cat(const std::initializer_list<T> & tensors, Size d)                                    \
+                                                                                                   \
+  T dynamic_cat(const std::initializer_list<T> & tensors, Size d)                                  \
   {                                                                                                \
-    return batch_cat(std::vector<T>(tensors), d);                                                  \
+    return dynamic_cat(std::vector<T>(tensors), d);                                                \
+  }                                                                                                \
+                                                                                                   \
+  T intmd_cat(const std::vector<T> & tensors, Size d)                                              \
+  {                                                                                                \
+    neml_assert_dbg(!tensors.empty(), "intmd_cat must be given at least one tensor");              \
+    const auto & ref = tensors.front();                                                            \
+    std::vector<ATensor> atensors(tensors.begin(), tensors.end());                                 \
+    d = utils::normalize_dim(d, ref.dynamic_dim(), ref.batch_dim());                               \
+    return T(at::cat(atensors, d), ref.dynamic_sizes(), ref.intmd_dim());                          \
+  }                                                                                                \
+                                                                                                   \
+  T intmd_cat(const std::initializer_list<T> & tensors, Size d)                                    \
+  {                                                                                                \
+    return intmd_cat(std::vector<T>(tensors), d);                                                  \
   }                                                                                                \
   static_assert(true)
 FOR_ALL_TENSORBASE(DEFINE_CAT);
@@ -47,8 +64,9 @@ Tensor
 base_cat(const std::vector<Tensor> & tensors, Size d)
 {
   neml_assert_dbg(!tensors.empty(), "base_cat must be given at least one tensor");
-  std::vector<ATensor> torch_tensors(tensors.begin(), tensors.end());
-  auto d2 = d < 0 ? d : d + tensors.begin()->batch_dim();
-  return neml2::Tensor(at::cat(torch_tensors, d2), tensors.begin()->batch_sizes());
+  const auto & ref = tensors.front();
+  std::vector<ATensor> atensors(tensors.begin(), tensors.end());
+  d = utils::normalize_dim(d, ref.batch_dim(), ref.dim());
+  return neml2::Tensor(at::cat(atensors, d), ref.dynamic_sizes(), ref.intmd_dim());
 }
 } // namespace neml2

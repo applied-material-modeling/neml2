@@ -60,7 +60,7 @@ PowerTestSystem::assemble(NonlinearSystem::Res<false> * residual,
   if (Jacobian)
   {
     *Jacobian = NonlinearSystem::Jac<false>(
-        Tensor::zeros(_x.batch_sizes(), {_x.base_size(0), _x.base_size(0)}, _x.options()));
+        Tensor::zeros(_x.dynamic_sizes(), {}, {_x.base_size(0), _x.base_size(0)}, _x.options()));
     for (Size i = 0; i < _x.base_size(0); i++)
       Jacobian->base_index_put_({i, i}, (i + 1) * pow(_x.base_index({i}), Scalar(i, _x.options())));
   }
@@ -118,7 +118,8 @@ RosenbrockTestSystem::assemble(NonlinearSystem::Res<false> * residual,
     diagonal.base_index_put_({-1}, Scalar(200.0, _x.options()));
     diagonal.base_index_put_({indexing::Slice(1, -1)}, 202 + 1200 * pow(s_x11, 2.0) - 400 * s_x2);
 
-    *Jacobian = NonlinearSystem::Jac<false>(Tensor(at::diag_embed(diagonal) + H, _x.batch_sizes()));
+    *Jacobian =
+        NonlinearSystem::Jac<false>(Tensor(at::diag_embed(diagonal) + H, _x.dynamic_sizes()));
   }
 }
 

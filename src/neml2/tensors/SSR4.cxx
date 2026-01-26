@@ -25,16 +25,14 @@
 #include "neml2/tensors/SSR4.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/SR2.h"
+#include "neml2/tensors/R2.h"
 #include "neml2/tensors/R4.h"
-#include "neml2/tensors/R5.h"
-#include "neml2/tensors/SSFR5.h"
 #include "neml2/tensors/Rot.h"
-#include "neml2/tensors/SSSSR8.h"
-#include "neml2/tensors/R8.h"
 #include "neml2/tensors/assertions.h"
-#include "neml2/tensors/mandel_notation.h"
-#include "neml2/tensors/functions/bmv.h"
-#include "neml2/tensors/functions/linalg/inv.h"
+#include "neml2/tensors/functions/symmetrization.h"
+#include "neml2/tensors/functions/mv.h"
+#include "neml2/tensors/functions/mm.h"
+#include "neml2/tensors/functions/einsum.h"
 
 namespace neml2
 {
@@ -56,6 +54,7 @@ SSR4::identity(const TensorOptions & options)
                        {0, 0, 0, 0, 0, 0},
                        {0, 0, 0, 0, 0, 0},
                        {0, 0, 0, 0, 0, 0}},
+                      0,
                       options);
 }
 
@@ -68,6 +67,7 @@ SSR4::identity_C1(const TensorOptions & options)
                        {0, 0, 0, 0, 0, 0},
                        {0, 0, 0, 0, 0, 0},
                        {0, 0, 0, 0, 0, 0}},
+                      0,
                       options);
 }
 
@@ -80,6 +80,7 @@ SSR4::identity_C2(const TensorOptions & options)
                        {0, 0, 0, 0, 0, 0},
                        {0, 0, 0, 0, 0, 0},
                        {0, 0, 0, 0, 0, 0}},
+                      0,
                       options);
 }
 
@@ -92,6 +93,7 @@ SSR4::identity_C3(const TensorOptions & options)
                        {0, 0, 0, 1, 0, 0},
                        {0, 0, 0, 0, 1, 0},
                        {0, 0, 0, 0, 0, 1}},
+                      0,
                       options);
 }
 
@@ -151,36 +153,30 @@ SSR4::fill_C1_C2_C3(const double & C1,
   return SSR4::fill_C1_C2_C3(Scalar(C1, options), Scalar(C2, options), Scalar(C3, options));
 }
 
-SSSSR8
-SSR4::identity_map(const TensorOptions & options)
-{
-  auto I = at::eye(6, options);
-  return SSSSR8(at::einsum("ik,jl", {I, I}));
-}
-
 SSR4
 SSR4::rotate(const Rot & r) const
 {
   return R4(*this).rotate(r);
 }
 
-SSFR5
+DTensor<SSR4, Rot, neml2::Tensor>
 SSR4::drotate(const Rot & r) const
 {
   auto dR = R4(*this).drotate(r);
   return full_to_mandel(full_to_mandel(dR), 1);
 }
 
-SSSSR8
+DTensor<SSR4, SSR4, neml2::Tensor>
 SSR4::drotate_self(const Rot & r) const
 {
   auto R = r.euler_rodrigues();
-  auto Tsym = 0.25 * (at::einsum("...ma,...nb,...oc,...pd->...mnopabcd", {R, R, R, R}) +
-                      at::einsum("...mb,...na,...od,...pc->...mnopabcd", {R, R, R, R}) +
-                      at::einsum("...mb,...na,...oc,...pd->...mnopabcd", {R, R, R, R}) +
-                      at::einsum("...ma,...nb,...od,...pc->...mnopabcd", {R, R, R, R}));
-  return SSSSR8(full_to_mandel(
-      full_to_mandel(full_to_mandel(full_to_mandel(R8(Tsym, R.batch_dim()), 0), 1), 2), 3));
+  auto Tsym = 0.25 * (neml2::einsum("...ma,...nb,...oc,...pd->...mnopabcd", {R, R, R, R}) +
+                      neml2::einsum("...mb,...na,...od,...pc->...mnopabcd", {R, R, R, R}) +
+                      neml2::einsum("...mb,...na,...oc,...pd->...mnopabcd", {R, R, R, R}) +
+                      neml2::einsum("...ma,...nb,...od,...pc->...mnopabcd", {R, R, R, R}));
+  return full_to_mandel(
+      full_to_mandel(full_to_mandel(full_to_mandel(neml2::Tensor(Tsym, R.batch_dim()), 0), 1), 2),
+      3);
 }
 
 Scalar
@@ -189,19 +185,6 @@ SSR4::operator()(Size i, Size j, Size k, Size l) const
   const auto a = mandel_reverse_index[i][j];
   const auto b = mandel_reverse_index[k][l];
   return base_index({a, b}) / (mandel_factor(a) * mandel_factor(b));
-}
-
-SSR4
-SSR4::inverse() const
-{
-  return linalg::inv(*this);
-}
-
-SSSSR8
-SSR4::dinverse() const
-{
-  auto SI = this->inverse();
-  return SSSSR8(-at::einsum("...ik,...lj->...ijkl", {SI, SI}));
 }
 
 SSR4
@@ -216,21 +199,15 @@ SSR4::transpose_major() const
   return TensorBase<SSR4>::base_transpose(0, 1);
 }
 
-SR2
-operator*(const SSR4 & a, const SR2 & b)
-{
-  return SR2(bmv(a, b));
-}
-
-SR2
-operator*(const SR2 & a, const SSR4 & b)
-{
-  return SR2(bmv(b.transpose_major(), a));
-}
-
 SSR4
 operator*(const SSR4 & a, const SSR4 & b)
 {
-  return SSR4(at::matmul(a, b));
+  return neml2::mm(a, b);
+}
+
+SR2
+operator*(const SSR4 & a, const SR2 & b)
+{
+  return neml2::mv(a, b);
 }
 } // namespace neml2

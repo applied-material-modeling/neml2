@@ -30,7 +30,7 @@
 
 using namespace neml2;
 
-#ifdef NEML2_HAS_JSON
+#ifdef NEML2_JSON
 TEST_CASE("TracingInterface", "[base]")
 {
   SECTION("single writer")

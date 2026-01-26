@@ -32,12 +32,12 @@
 using namespace neml2;
 using namespace indexing;
 
-TEST_CASE("eigh", "[linalg]")
+TEST_CASE("eigh", "[tensors/functions/linalg]")
 {
   SECTION("eigh function")
   {
     auto s = SR2::fill(-0.3482, 0.3482, 0, 0.087045, 0.087045, 0.78333);
-    auto ss = s.batch_expand({5, 4, 1, 2});
+    auto ss = s.dynamic_expand({5, 4, 1, 2});
     auto b = Vec::fill(-0.858002364, -0.0158323254, 0.8738346695);
     auto v = R2::fill(0.83927690982819,
                       -0.04919575527310,

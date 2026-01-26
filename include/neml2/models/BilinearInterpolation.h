@@ -31,54 +31,6 @@ namespace neml2
 {
 /**
  * @brief Linearly interpolate the parameter along on a 2D grid.
- *
- * Currently, this object is hard-coded to always interpolate along the last two batch dimensions.
- * A few examples of tensor shapes are listed below to demonstrate how broadcasting is handled:
- *
- * Example 1: unbatched abscissa, unbatched ordinate (of type R2), unbatched input argument,
- * interpolation grid 6x8
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * abscissa 1 shape: (   6;     )
- * abscissa 2 shape: (   8;     )
- *   ordinate shape: (6, 8; 3, 3)
- *    input 1 shape: (    ;     )
- *    input 2 shape: (    ;     )
- *     output shape: (    ; 3, 3)
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *
- * Example 2: unbatched abscissa, unbatched ordinate (of type R2), batched input argument (with
- * batch shape `(2, 3)`), interpolation grid 6x8
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * abscissa 1 shape: (         6;     )
- * abscissa 2 shape: (         8;     )
- *   ordinate shape: (      6, 8; 3, 3)
- *    input 1 shape: (2, 3      ;     )
- *    input 2 shape: (2, 3      ;     )
- *     output shape: (2, 3      ; 3, 3)
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *
- * Example 3: unbatched abscissa, batched ordinate (of type R2 and with batch shape `(5, 1)`),
- * batched input argument (with batch shape `(2, 5, 2)`), interpolation grid 6x8
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * abscissa 1 shape: (            6;     )
- * abscissa 2 shape: (            8;     )
- *   ordinate shape: (   5, 1, 6, 8; 3, 3)
- *    input 1 shape: (2, 5, 2      ;     )
- *    input 2 shape: (2, 5, 2      ;     )
- *     output shape: (2, 5, 2      ; 3, 3)
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *
- * Example 4: batched abscissa (with batch shape `(7, 8, 1)`), unbatched ordinate (of type R2),
- * batched input argument (with batch shape `(7, 1, 5)` and `(8, 1)`), interpolation grid 10x10
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * abscissa 1 shape: (            6;     )
- * abscissa 2 shape: (            8;     )
- *   ordinate shape: (         6, 8; 3, 3)
- *    input 1 shape: (7, 1, 5      ;     )
- *    input 2 shape: (   8, 1      ;     )
- *     output shape: (7, 8, 5      ; 3, 3)
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *
  */
 template <typename T>
 class BilinearInterpolation : public Interpolation<T>
@@ -98,5 +50,8 @@ protected:
   /// Argument of interpolation
   const Variable<Scalar> & _x1;
   const Variable<Scalar> & _x2;
+
+  /// Intermediate dimension to interpolate
+  const Size _dim;
 };
 } // namespace neml2

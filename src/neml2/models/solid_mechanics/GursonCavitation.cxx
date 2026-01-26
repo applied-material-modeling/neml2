@@ -26,6 +26,7 @@
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
+#include "neml2/tensors/functions/tr.h"
 
 namespace neml2
 {
@@ -61,7 +62,7 @@ GursonCavitation::GursonCavitation(const OptionSet & options)
 void
 GursonCavitation::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  const auto ep_dot = SR2(_Ep_dot).tr();
+  const auto ep_dot = neml2::tr(_Ep_dot());
 
   if (out)
     _phi_dot = (1 - _phi) * ep_dot;

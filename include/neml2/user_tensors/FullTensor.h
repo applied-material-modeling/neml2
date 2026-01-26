@@ -24,25 +24,27 @@
 
 #pragma once
 
-#include "neml2/user_tensors/UserTensorBase.h"
-
-#include "neml2/tensors/Tensor.h"
+#include "neml2/user_tensors/FactoryMethodBase.h"
 
 namespace neml2
 {
 /**
- * @brief Create a full Tensor from the input file.
+ * @brief Create a full tensor of type T from the input file.
+ *
+ * @tparam T The concrete tensor derived from TensorBase
  */
-class FullTensor : public Tensor, public UserTensorBase
+template <typename T>
+class FullTensorTmpl : public FactoryMethodBase<T>
 {
 public:
   static OptionSet expected_options();
 
-  /**
-   * @brief Construct a new FullTensor object
-   *
-   * @param options The options extracted from the input file.
-   */
-  FullTensor(const OptionSet & options);
+  FullTensorTmpl(const OptionSet & options);
+
+protected:
+  T make() const override;
+
+private:
+  double _value;
 };
 } // namespace neml2

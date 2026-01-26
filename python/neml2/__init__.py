@@ -23,13 +23,40 @@
 # THE SOFTWARE.
 
 import torch
+import typing
+
+Number = typing.Union[int, float, bool]
 
 # Bring core functionality and tensors into the main namespace
 from .core import *
 from .tensors import *
+from .math import *
+
+# pybind11-stubgen generates incorrect type annotations for Unions
+# so unfortunately we need to maintain this list
+# see issue https://github.com/sizmailov/pybind11-stubgen/issues/276
+TensorLike = typing.Union[
+    Vec,
+    Rot,
+    WR2,
+    R2,
+    Scalar,
+    SR2,
+    R3,
+    SFR3,
+    R4,
+    SFFR4,
+    WFFR4,
+    SSR4,
+    SWR4,
+    WSR4,
+    WWR4,
+    Quaternion,
+    MillerIndex,
+    Tensor,
+]
 
 # Other submodules
-from . import math
 from . import pyzag
 from . import crystallography
 from . import reserved

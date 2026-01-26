@@ -84,23 +84,23 @@ void
 WR2ImplicitExponentialTimeIntegration::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   const auto dt = _t - _tn;
-  const auto inc = (_s_dot * dt).exp();
+  const auto inc = (_s_dot * dt).exp_map();
 
   if (out)
-    _r = _s - Rot(_sn).rotate(inc);
+    _r = _s - _sn().rotate(inc);
 
   if (dout_din)
   {
-    const auto de = (_s_dot * dt).dexp();
+    const auto de = (_s_dot * dt).dexp_map();
     _r.d(_s) = R2::identity(_s.options());
-    _r.d(_s_dot) = -Rot(_sn).drotate(inc) * de * dt;
+    _r.d(_s_dot) = -_sn().drotate(inc) * de * dt;
 
     if (currently_solving_nonlinear_system())
       return;
 
-    _r.d(_sn) = -Rot(_sn).drotate_self(inc);
-    _r.d(_t) = -Rot(_sn).drotate(inc) * de * Vec(_s_dot.value());
-    _r.d(_tn) = Rot(_sn).drotate(inc) * de * Vec(_s_dot.value());
+    _r.d(_sn) = -_sn().drotate_self(inc);
+    _r.d(_t) = -_sn().drotate(inc) * de * Vec(_s_dot());
+    _r.d(_tn) = -_r.d(_t).tensor();
   }
 }
 } // namespace neml2

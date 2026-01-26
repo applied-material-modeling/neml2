@@ -44,12 +44,6 @@ public:
 
   /// Alternating symbol
   [[nodiscard]] static R3 levi_civita(const TensorOptions & options = default_tensor_options());
-
-  /// Accessor
-  Scalar operator()(Size i, Size j, Size k) const;
-
-  /// R3,Vector->R2 product ijk,k->ij
-  R2 contract_k(const Vec & v) const;
 };
 
 } // namespace neml2

@@ -49,13 +49,11 @@ void
 CrackGeometricFunctionAT1::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   if (out)
-  {
-    _alpha = Scalar(_d);
-  }
+    _alpha = _d();
 
   if (dout_din)
   {
-    _alpha.d(_d) = Scalar::create(1.0, _d.options());
+    _alpha.d(_d) = Scalar(1.0, _d.options());
   }
 }
 } // namespace neml2

@@ -43,20 +43,6 @@ class Driver;
 class WorkScheduler;
 
 /**
- * @brief A convenient function to parse all options from an input file
- *
- * Previously loaded input options will be discarded!
- *
- * @warning All threads share the same input options, so in principle this function is not intended
- * to be called inside a threaded region.
- *
- * @param path Path to the input file to be parsed
- * @param additional_input Additional cliargs to pass to the parser
- */
-std::unique_ptr<Factory> load_input(const std::filesystem::path & path,
-                                    const std::string & additional_input = "");
-
-/**
  * The factory is responsible for:
  * 1. retriving a NEML2Object given the object name as a std::string
  * 2. creating a NEML2Object given the type of the NEML2Object as a std::string.

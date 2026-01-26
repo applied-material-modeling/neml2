@@ -29,8 +29,8 @@
 #include "neml2/tensors/R2.h"
 #include "neml2/tensors/WR2.h"
 #include "neml2/tensors/R3.h"
-#include "neml2/tensors/list_tensors.h"
 #include "neml2/tensors/functions/sum.h"
+#include "neml2/tensors/functions/diagonalize.h"
 
 namespace neml2
 {
@@ -56,8 +56,8 @@ PlasticVorticity::expected_options()
   options.set_input("slip_rates") = VariableName(STATE, "internal", "slip_rates");
   options.set("slip_rates").doc() = "The name of the tensor containg the current slip rates";
 
-  options.set<std::string>("crystal_geometry_name") = "crystal_geometry";
-  options.set("crystal_geometry_name").doc() =
+  options.set<std::string>("crystal_geometry") = "crystal_geometry";
+  options.set("crystal_geometry").doc() =
       "The name of the Data object containing the crystallographic information for the material";
 
   return options;
@@ -66,32 +66,29 @@ PlasticVorticity::expected_options()
 PlasticVorticity::PlasticVorticity(const OptionSet & options)
   : Model(options),
     _crystal_geometry(register_data<crystallography::CrystalGeometry>(
-        options.get<std::string>("crystal_geometry_name"))),
+        options.get<std::string>("crystal_geometry"))),
     _Wp(declare_output_variable<WR2>("plastic_vorticity")),
     _R(declare_input_variable<R2>("orientation")),
-    _gamma_dot(declare_input_variable<Scalar>("slip_rates", _crystal_geometry.nslip()))
+    _gamma_dot(declare_input_variable<Scalar>("slip_rates", -1))
 {
 }
 
 void
 PlasticVorticity::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  const auto Wp_crystal = batch_sum(_gamma_dot * _crystal_geometry.W(), -1);
+  const auto & W = _crystal_geometry.W();
+  const auto Wp_crystal = intmd_sum(_gamma_dot * W, -1, /*keepdim=*/false);
 
   if (out)
-    _Wp = Wp_crystal.rotate(_R);
+    _Wp = Wp_crystal.rotate(_R());
 
   if (dout_din)
   {
     if (_gamma_dot.is_dependent())
-    {
-      const auto d_Wp_d_gamma_dot = _crystal_geometry.W().rotate(R2(_R).batch_unsqueeze(-1));
-      const auto B = d_Wp_d_gamma_dot.batch_sizes().slice(0, -1);
-      _Wp.d(_gamma_dot) = Tensor(d_Wp_d_gamma_dot, B).base_transpose(-1, -2);
-    }
+      _Wp.d(_gamma_dot, -1) = W.rotate(_R().intmd_unsqueeze(-1));
 
     if (_R.is_dependent())
-      _Wp.d(_R) = Wp_crystal.drotate(_R);
+      _Wp.d(_R) = Wp_crystal.drotate(_R());
   }
 }
 } // namespace neml2

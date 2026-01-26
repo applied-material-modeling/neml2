@@ -23,50 +23,15 @@
 // THE SOFTWARE.
 
 #include "neml2/tensors/Vec.h"
-#include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/R2.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/Rot.h"
 
-#include "neml2/tensors/functions/linalg/vecdot.h"
-#include "neml2/tensors/functions/linalg/cross.h"
-#include "neml2/tensors/functions/linalg/outer.h"
-
 namespace neml2
 {
 Vec::Vec(const Rot & r)
-  : Vec(Tensor(r))
+  : Vec(neml2::Tensor(r))
 {
-}
-
-R2
-Vec::identity_map(const TensorOptions & options)
-{
-  return R2::identity(options);
-}
-
-Scalar
-Vec::dot(const Vec & v) const
-{
-  return linalg::vecdot(*this, v);
-}
-
-Vec
-Vec::cross(const Vec & v) const
-{
-  return linalg::cross(*this, v);
-}
-
-R2
-Vec::outer(const Vec & v) const
-{
-  return linalg::outer(*this, v);
-}
-
-SR2
-Vec::self_outer() const
-{
-  return SR2(this->outer(*this));
 }
 
 Vec

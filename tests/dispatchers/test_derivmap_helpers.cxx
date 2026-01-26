@@ -35,8 +35,8 @@ TEST_CASE("derivmap_helpers", "[dispatchers]")
 {
   const auto scalar1_name = VariableName{"state", "s1"};
   const auto scalar2_name = VariableName{"state", "s2"};
-  const auto deriv_value_1 = Scalar::full(300).batch_expand({5, 10});
-  const auto deriv_value_2 = Scalar::full(500).batch_expand({7, 10});
+  const auto deriv_value_1 = Scalar::full(300).dynamic_expand({5, 10});
+  const auto deriv_value_2 = Scalar::full(500).dynamic_expand({7, 10});
   auto dvalue_map_1 = DerivMap({{scalar2_name, ValueMap({{scalar1_name, deriv_value_1}})}});
   auto dvalue_map_2 = DerivMap({{scalar2_name, ValueMap({{scalar1_name, deriv_value_2}})}});
 

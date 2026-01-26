@@ -154,6 +154,9 @@ private:
 
   /// The actual storage for all the parameters
   std::map<std::string, std::unique_ptr<TensorValueBase>> _param_values;
+
+  /// Cached intermediate dimensions of parameters
+  std::map<std::string, Size> _param_intmd_dims;
 };
 
 } // namespace neml2

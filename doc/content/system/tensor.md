@@ -33,24 +33,22 @@ neml2_assert(batch_sz == TensorShape{5, 2});
 
 neml2::PrimitiveTensor is the parent class for all tensor types with a *fixed* base shape. It is templated on the base shape of the tensor. NEML2 offers a rich collection of primitive tensor types inherited from `PrimitiveTensor`. Currently implemented primitive tensor types are summarized in the following table.
 
-| Tensor type                            | Base shape        | Description                                                      |
-| :------------------------------------- | :---------------- | :--------------------------------------------------------------- |
-| [Scalar](@ref neml2::Scalar)           | \f$()\f$          | Rank-0 tensor, i.e. scalar                                       |
-| [Vec](@ref neml2::Vec)                 | \f$(3)\f$         | Rank-1 tensor, i.e. vector                                       |
-| [R2](@ref neml2::R2)                   | \f$(3,3)\f$       | Rank-2 tensor                                                    |
-| [SR2](@ref neml2::SR2)                 | \f$(6)\f$         | Symmetric rank-2 tensor                                          |
-| [WR2](@ref neml2::WR2)                 | \f$(3)\f$         | Skew-symmetric rank-2 tensor                                     |
-| [R3](@ref neml2::R3)                   | \f$(3,3,3)\f$     | Rank-3 tensor                                                    |
-| [SFR3](@ref neml2::SFR3)               | \f$(6,3)\f$       | Rank-3 tensor with symmetry on base dimensions 0 and 1           |
-| [R4](@ref neml2::R4)                   | \f$(3,3,3,3)\f$   | Rank-4 tensor                                                    |
-| [SFR4](@ref neml2::SFR4)               | \f$(6,3,3\f$)     | Rank-4 tensor with symmetry on base dimensions 0 and 1           |
-| [WFR4](@ref neml2::WFR4)               | \f$(3,3,3\f$)     | Rank-4 tensor with skew symmetry on base dimensions 0 and 1      |
-| [SSR4](@ref neml2::SSR4)               | \f$(6,6)\f$       | Rank-4 tensor with minor symmetry                                |
-| [R5](@ref neml2::R5)                   | \f$(3,3,3,3,3)\f$ | Rank-5 tensor                                                    |
-| [SSFR5](@ref neml2::SSFR5)             | \f$(6,6,3)\f$     | Rank-5 tensor with minor symmetry on base dimensions 0-3         |
-| [Rot](@ref neml2::Rot)                 | \f$(3)\f$         | Rotation tensor represented in the Rodrigues form                |
-| [Quaternion](@ref neml2::Quaternion)   | \f$(4)\f$         | Quaternion                                                       |
-| [MillerIndex](@ref neml2::MillerIndex) | \f$(3)\f$         | Crystal direction or lattice plane represented as Miller indices |
+| Tensor type                            | Base shape      | Description                                                      |
+| :------------------------------------- | :-------------- | :--------------------------------------------------------------- |
+| [Scalar](@ref neml2::Scalar)           | \f$()\f$        | Rank-0 tensor, i.e. scalar                                       |
+| [Vec](@ref neml2::Vec)                 | \f$(3)\f$       | Rank-1 tensor, i.e. vector                                       |
+| [R2](@ref neml2::R2)                   | \f$(3,3)\f$     | Rank-2 tensor                                                    |
+| [SR2](@ref neml2::SR2)                 | \f$(6)\f$       | Symmetric rank-2 tensor                                          |
+| [WR2](@ref neml2::WR2)                 | \f$(3)\f$       | Skew-symmetric rank-2 tensor                                     |
+| [R3](@ref neml2::R3)                   | \f$(3,3,3)\f$   | Rank-3 tensor                                                    |
+| [SFR3](@ref neml2::SFR3)               | \f$(6,3)\f$     | Rank-3 tensor with symmetry on base dimensions 0 and 1           |
+| [R4](@ref neml2::R4)                   | \f$(3,3,3,3)\f$ | Rank-4 tensor                                                    |
+| [SFFR4](@ref neml2::SFFR4)             | \f$(6,3,3\f$)   | Rank-4 tensor with symmetry on base dimensions 0 and 1           |
+| [WFFR4](@ref neml2::WFFR4)             | \f$(3,3,3\f$)   | Rank-4 tensor with skew symmetry on base dimensions 0 and 1      |
+| [SSR4](@ref neml2::SSR4)               | \f$(6,6)\f$     | Rank-4 tensor with minor symmetry                                |
+| [Rot](@ref neml2::Rot)                 | \f$(3)\f$       | Rotation tensor represented in the Rodrigues form                |
+| [Quaternion](@ref neml2::Quaternion)   | \f$(4)\f$       | Quaternion                                                       |
+| [MillerIndex](@ref neml2::MillerIndex) | \f$(3)\f$       | Crystal direction or lattice plane represented as Miller indices |
 
 Furthermore, all primitive tensor types can be "registered" as variables on a `LabeledAxis`.
 

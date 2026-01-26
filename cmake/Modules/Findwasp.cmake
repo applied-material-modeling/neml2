@@ -91,6 +91,7 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
   wasp
   REQUIRED_VARS
+  wasp_core_LINK_DIR
   wasp_core_FOUND
   HANDLE_COMPONENTS
 )

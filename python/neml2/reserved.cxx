@@ -22,9 +22,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include "neml2/base/LabeledAxisAccessor.h"
+
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include "neml2/base/LabeledAxisAccessor.h"
 
 PYBIND11_MODULE(reserved, m)
 {

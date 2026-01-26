@@ -29,7 +29,7 @@
 #include "neml2/base/Settings.h"
 #include "neml2/base/HITParser.h"
 #include "neml2/base/InputFile.h"
-#include "neml2/models/Model.h"
+#include "neml2/neml2.h"
 
 using namespace neml2;
 

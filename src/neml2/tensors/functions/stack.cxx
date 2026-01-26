@@ -25,30 +25,48 @@
 #include "neml2/tensors/functions/stack.h"
 #include "neml2/tensors/tensors.h"
 #include "neml2/tensors/assertions.h"
+#include "neml2/tensors/shape_utils.h"
 
 namespace neml2
 {
-#define DEFINE_BATCH_STACK(T)                                                                      \
-  T batch_stack(const std::vector<T> & tensors, Size d)                                            \
+#define DEFINE_STACK(T)                                                                            \
+  T dynamic_stack(const std::vector<T> & tensors, Size d)                                          \
   {                                                                                                \
-    neml_assert_dbg(!tensors.empty(), "batch_stack must be given at least one tensor");            \
-    std::vector<ATensor> torch_tensors(tensors.begin(), tensors.end());                            \
-    auto d2 = d >= 0 ? d : d - tensors.begin()->base_dim();                                        \
-    return T(at::stack(torch_tensors, d2), tensors.begin()->batch_dim() + 1);                      \
+    neml_assert_dbg(!tensors.empty(), "dynamic_stack must be given at least one tensor");          \
+    const auto & ref = tensors.front();                                                            \
+    std::vector<ATensor> atensors(tensors.begin(), tensors.end());                                 \
+    d = utils::normalize_itr(d, 0, ref.dynamic_dim());                                             \
+    return T(at::stack(atensors, d), ref.dynamic_dim() + 1, ref.intmd_dim());                      \
   }                                                                                                \
-  T batch_stack(const std::initializer_list<T> & tensors, Size d)                                  \
+                                                                                                   \
+  T dynamic_stack(const std::initializer_list<T> & tensors, Size d)                                \
   {                                                                                                \
-    return batch_stack(std::vector<T>(tensors), d);                                                \
+    return dynamic_stack(std::vector<T>(tensors), d);                                              \
+  }                                                                                                \
+                                                                                                   \
+  T intmd_stack(const std::vector<T> & tensors, Size d)                                            \
+  {                                                                                                \
+    neml_assert_dbg(!tensors.empty(), "intmd_stack must be given at least one tensor");            \
+    const auto & ref = tensors.front();                                                            \
+    std::vector<ATensor> atensors(tensors.begin(), tensors.end());                                 \
+    d = utils::normalize_itr(d, ref.dynamic_dim(), ref.batch_dim());                               \
+    return T(at::stack(atensors, d), ref.dynamic_sizes(), ref.intmd_dim() + 1);                    \
+  }                                                                                                \
+                                                                                                   \
+  T intmd_stack(const std::initializer_list<T> & tensors, Size d)                                  \
+  {                                                                                                \
+    return intmd_stack(std::vector<T>(tensors), d);                                                \
   }                                                                                                \
   static_assert(true)
-FOR_ALL_TENSORBASE(DEFINE_BATCH_STACK);
+FOR_ALL_TENSORBASE(DEFINE_STACK);
 
 Tensor
 base_stack(const std::vector<Tensor> & tensors, Size d)
 {
   neml_assert_dbg(!tensors.empty(), "base_stack must be given at least one tensor");
-  std::vector<ATensor> torch_tensors(tensors.begin(), tensors.end());
-  auto d2 = d < 0 ? d : d + tensors.begin()->batch_dim();
-  return neml2::Tensor(at::stack(torch_tensors, d2), tensors.begin()->batch_sizes());
+  const auto & ref = tensors.front();
+  std::vector<ATensor> atensors(tensors.begin(), tensors.end());
+  d = utils::normalize_itr(d, ref.batch_dim(), ref.dim());
+  return neml2::Tensor(at::stack(atensors, d), ref.dynamic_sizes(), ref.intmd_dim());
 }
 } // namespace neml2

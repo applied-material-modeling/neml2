@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers.hpp>
 
 #include "utils.h"
 #include "neml2/tensors/tensors.h"
@@ -32,29 +33,22 @@ using namespace neml2;
 TEST_CASE("WWR4", "[tensors]")
 {
   at::manual_seed(42);
-  const auto & DTO = default_tensor_options();
 
-  TensorShape B = {5, 3, 1, 2}; // batch shape
-
-  SECTION("class WWR4")
+  SECTION("constructors")
   {
-    SECTION("WWR4")
+    SECTION("R4")
     {
-      SECTION("from R4")
-      {
-        auto u = R4(at::rand(utils::add_shapes(B, 3, 3, 3, 3), DTO));
-        // Symmetrize it
-        auto s = (u - u.transpose(0, 1) - u.transpose(2, 3) + u.transpose_minor()) / 4.0;
-
-        // Converting to WWR4 should be equivalent to symmetrization
-        REQUIRE(at::allclose(WWR4(s), WWR4(u)));
-      }
+      auto u = R4::rand({3, 4}, {2, 1});
+      // Symmetrize it
+      auto s = (u - u.transpose(0, 1) - u.transpose(2, 3) + u.transpose_minor()) / 4.0;
+      // Converting to WWR4 should be equivalent to symmetrization
+      REQUIRE_THAT(WWR4(u), test::allclose(WWR4(s)));
     }
+  }
 
-    SECTION("identity")
-    {
-      auto a = WWR4::identity(DTO);
-      REQUIRE(at::allclose(a, at::eye(3, DTO)));
-    }
+  SECTION("identity")
+  {
+    auto a = WWR4::identity();
+    REQUIRE_THAT(a, test::allclose(at::eye(3, a.options())));
   }
 }

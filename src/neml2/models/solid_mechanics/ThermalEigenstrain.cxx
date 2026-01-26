@@ -49,6 +49,8 @@ ThermalEigenstrain::expected_options()
   options.set_parameter<TensorName<Scalar>>("CTE");
   options.set("CTE").doc() = "Coefficient of thermal expansion";
 
+  options.set<bool>("define_second_derivatives") = true;
+
   return options;
 }
 
@@ -80,8 +82,8 @@ ThermalEigenstrain::set_value(bool out, bool dout_din, bool d2out_din2)
     if (_T.is_dependent())
       if (const auto * const alpha = nl_param("alpha"))
       {
-        _eg.d(_T, *alpha) = SR2::identity(_T.options());
-        _eg.d(*alpha, _T) = SR2::identity(_T.options());
+        _eg.d2(_T, *alpha) = SR2::identity(_T.options());
+        _eg.d2(*alpha, _T) = SR2::identity(_T.options());
       }
   }
 }

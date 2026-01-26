@@ -26,9 +26,12 @@
 
 #include <filesystem>
 
-#include "neml2/base/Factory.h"
+#include "neml2/neml2.h"
 #include "neml2/models/crystallography/CrystalGeometry.h"
 #include "neml2/tensors/tensors.h"
+#include "neml2/tensors/functions/vdot.h"
+#include "neml2/tensors/functions/norm.h"
+#include "neml2/tensors/functions/outer.h"
 
 using namespace neml2;
 using namespace neml2::crystallography;
@@ -46,14 +49,14 @@ TEST_CASE("CrystalGeometry", "[models/crystallography]")
   {
     auto model = factory->get_object<CrystalGeometry>("Data", "scgeom");
 
-    SECTION("Lattice vectors are okay")
+    SECTION("Lattice vectors")
     {
       REQUIRE(at::allclose(model->a1(), Vec::fill(1.2, 0.0, 0.0, DTO)));
       REQUIRE(at::allclose(model->a2(), Vec::fill(0.0, 1.2, 0.0, DTO)));
       REQUIRE(at::allclose(model->a3(), Vec::fill(0.0, 0.0, 1.2, DTO)));
     }
 
-    SECTION("Reciprocol lattice vectors are okay")
+    SECTION("Reciprocol lattice vectors")
     {
       REQUIRE(at::allclose(model->b1(), Vec::fill(1.0 / 1.2, 0.0, 0.0, DTO)));
       REQUIRE(at::allclose(model->b2(), Vec::fill(0.0, 1.0 / 1.2, 0.0, DTO)));
@@ -80,21 +83,24 @@ TEST_CASE("CrystalGeometry", "[models/crystallography]")
       }
       SECTION("Slip directions are unit vectors")
       {
-        REQUIRE(
-            at::allclose(model->cartesian_slip_directions().norm(), at::scalar_tensor(1.0, DTO)));
+        REQUIRE(at::allclose(neml2::norm(model->cartesian_slip_directions()),
+                             at::scalar_tensor(1.0, DTO)));
       }
       SECTION("Slip planes are unit vectors")
       {
-        REQUIRE(at::allclose(model->cartesian_slip_planes().norm(), at::scalar_tensor(1.0, DTO)));
+        REQUIRE(
+            at::allclose(neml2::norm(model->cartesian_slip_planes()), at::scalar_tensor(1.0, DTO)));
       }
       SECTION("Slip directions and planes are orthogonal")
       {
-        REQUIRE(at::allclose(model->cartesian_slip_directions().dot(model->cartesian_slip_planes()),
-                             at::scalar_tensor(0.0, DTO)));
+        REQUIRE(at::allclose(
+            neml2::vdot(model->cartesian_slip_directions(), model->cartesian_slip_planes()),
+            at::scalar_tensor(0.0, DTO)));
       }
       SECTION("Schmid tensors")
       {
-        R2 should = model->cartesian_slip_directions().outer(model->cartesian_slip_planes());
+        R2 should =
+            neml2::outer(model->cartesian_slip_directions(), model->cartesian_slip_planes());
         SECTION("Full tensors") { REQUIRE(at::allclose(should, model->A())); }
         SECTION("Symmetric tensors") { REQUIRE(at::allclose(SR2(should), model->M())); }
         SECTION("Skew symmetric tensors") { REQUIRE(at::allclose(WR2(should), model->W())); }

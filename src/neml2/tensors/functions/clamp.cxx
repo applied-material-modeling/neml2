@@ -24,13 +24,20 @@
 
 #include "neml2/tensors/functions/clamp.h"
 #include "neml2/tensors/tensors.h"
+#include "neml2/tensors/functions/utils.h"
 
 namespace neml2
 {
 #define DEFINE_CLAMP(T)                                                                            \
+  T clamp(const T & a, const T & lb, const T & ub)                                                 \
+  {                                                                                                \
+    neml_assert_broadcastable_dbg(a, lb, ub);                                                      \
+    const auto [aa, ll, uu, i] = utils::align_intmd_dim(a, lb, ub);                                \
+    return T(at::clamp(aa, ll, uu), utils::broadcast_dynamic_dim(aa, ll, uu), i);                  \
+  }                                                                                                \
   T clamp(const T & a, const CScalar & lb, const CScalar & ub)                                     \
   {                                                                                                \
-    return T(at::clamp(a, lb, ub), a.batch_sizes());                                               \
+    return T(at::clamp(a, lb, ub), a.dynamic_sizes(), a.intmd_dim());                              \
   }                                                                                                \
   static_assert(true)
 FOR_ALL_TENSORBASE(DEFINE_CLAMP);

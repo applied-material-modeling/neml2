@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/R2Multiplication.h"
+#include "neml2/tensors/functions/inv.h"
 
 namespace neml2
 {
@@ -74,11 +75,11 @@ R2Multiplication::R2Multiplication(const OptionSet & options)
 void
 R2Multiplication::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  auto A = _invA ? R2(_A).inverse() : _A;
+  auto A = _invA ? neml2::inv(_A()) : _A();
   if (_transA)
     A = A.transpose();
 
-  auto B = _invB ? R2(_B).inverse() : _B;
+  auto B = _invB ? neml2::inv(_B()) : _B();
   if (_transB)
     B = B.transpose();
 

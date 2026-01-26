@@ -24,10 +24,7 @@
 
 #include "neml2/models/solid_mechanics/crystal_plasticity/SumSlipRates.h"
 
-#include "neml2/models/crystallography/CrystalGeometry.h"
-
 #include "neml2/tensors/Scalar.h"
-#include "neml2/tensors/list_tensors.h"
 #include "neml2/tensors/functions/abs.h"
 #include "neml2/tensors/functions/sum.h"
 #include "neml2/tensors/functions/sign.h"
@@ -47,21 +44,19 @@ SumSlipRates::expected_options()
   options.set("slip_rates").doc() = "The name of individual slip rates";
 
   options.set_output("sum_slip_rates") = VariableName(STATE, "internal", "sum_slip_rates");
-  options.set("sum_slip_rates").doc() = "The outut name for the scalar sum of the slip rates";
+  options.set("sum_slip_rates").doc() = "The output name for the scalar sum of the slip rates";
 
-  options.set<std::string>("crystal_geometry_name") = "crystal_geometry";
-  options.set("crystal_geometry_name").doc() =
-      "The name of the Data object containing the crystallographic information";
+  options.set<Size>("dim") = -1;
+  options.set("dim").doc() = "The intermediate dimension over which to sum the slip rates.";
 
   return options;
 }
 
 SumSlipRates::SumSlipRates(const OptionSet & options)
   : Model(options),
-    _crystal_geometry(register_data<crystallography::CrystalGeometry>(
-        options.get<std::string>("crystal_geometry_name"))),
+    _dim(options.get<Size>("dim")),
     _sg(declare_output_variable<Scalar>("sum_slip_rates")),
-    _g(declare_input_variable<Scalar>("slip_rates", _crystal_geometry.nslip()))
+    _g(declare_input_variable<Scalar>("slip_rates", _dim))
 {
 }
 
@@ -69,11 +64,11 @@ void
 SumSlipRates::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   if (out)
-    _sg = batch_sum(abs(_g.value()), -1);
+    _sg = intmd_sum(abs(_g()), _dim, /*keepdim=*/false);
 
   if (dout_din)
     if (_g.is_dependent())
-      _sg.d(_g) = Tensor(sign(_g.value()).batch_unsqueeze(-1), _g.batch_dim());
+      _sg.d(_g, _dim) = sign(_g());
 }
 
 } // namespace neml2

@@ -33,7 +33,7 @@ register_NEML2_object(FillR2);
 OptionSet
 FillR2::expected_options()
 {
-  OptionSet options = UserTensorBase::expected_options();
+  OptionSet options = UserTensorBase<R2>::expected_options();
   options.doc() = "Construct a R2 with a vector of Scalars. The vector length must be 1, 3, 6, or "
                   "9. When vector length is 1, the Scalar value is used to fill the diagonals; "
                   "when vector length is 3, the Scalar values are used to fill the respective "
@@ -48,44 +48,40 @@ FillR2::expected_options()
 }
 
 FillR2::FillR2(const OptionSet & options)
-  : UserTensorBase(options),
-    R2(fill(options.get<std::vector<TensorName<Scalar>>>("values")))
+  : UserTensorBase<R2>(options),
+    _values(options.get<std::vector<TensorName<Scalar>>>("values"))
 {
 }
 
 R2
-FillR2::fill(const std::vector<TensorName<Scalar>> & values) const
+FillR2::make() const
 {
   auto * f = factory();
-  neml_assert(f, "Internal error: factory != nullptr");
+  neml_assert(f, "Internal error: factory == nullptr");
 
-  if (values.size() == 1)
-    return R2::fill(values[0].resolve(f));
-  if (values.size() == 3)
-    return R2::fill(values[0].resolve(f), values[1].resolve(f), values[2].resolve(f));
-  if (values.size() == 6)
-    return R2::fill(values[0].resolve(f),
-                    values[1].resolve(f),
-                    values[2].resolve(f),
-                    values[3].resolve(f),
-                    values[4].resolve(f),
-                    values[5].resolve(f));
-  if (values.size() == 9)
-    return R2::fill(values[0].resolve(f),
-                    values[1].resolve(f),
-                    values[2].resolve(f),
-                    values[3].resolve(f),
-                    values[4].resolve(f),
-                    values[5].resolve(f),
-                    values[6].resolve(f),
-                    values[7].resolve(f),
-                    values[8].resolve(f));
+  if (_values.size() == 1)
+    return R2::fill(_values[0].resolve(f));
+  if (_values.size() == 3)
+    return R2::fill(_values[0].resolve(f), _values[1].resolve(f), _values[2].resolve(f));
+  if (_values.size() == 6)
+    return R2::fill(_values[0].resolve(f),
+                    _values[1].resolve(f),
+                    _values[2].resolve(f),
+                    _values[3].resolve(f),
+                    _values[4].resolve(f),
+                    _values[5].resolve(f));
+  if (_values.size() == 9)
+    return R2::fill(_values[0].resolve(f),
+                    _values[1].resolve(f),
+                    _values[2].resolve(f),
+                    _values[3].resolve(f),
+                    _values[4].resolve(f),
+                    _values[5].resolve(f),
+                    _values[6].resolve(f),
+                    _values[7].resolve(f),
+                    _values[8].resolve(f));
 
-  neml_assert(false,
-              "Number of values must be 1, 3, 6, or 9, but ",
-              values.size(),
-              " values are provided.");
-
-  return R2();
+  throw NEMLException("Number of values must be 1, 3, 6, or 9, but " +
+                      std::to_string(_values.size()) + " values are provided.");
 }
 } // namespace neml2

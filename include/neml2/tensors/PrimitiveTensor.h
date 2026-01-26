@@ -24,12 +24,18 @@
 
 #pragma once
 
+#include <ATen/ScalarOps.h>
 #include <torch/csrc/autograd/variable.h>
 #include <torch/csrc/api/include/torch/detail/TensorDataContainer.h>
+#include <tuple>
+#include <type_traits>
 
+#include "neml2/misc/defaults.h"
 #include "neml2/misc/errors.h"
+#include "neml2/misc/types.h"
 #include "neml2/tensors/Tensor.h"
-#include "neml2/tensors/shape_utils.h"
+#include "neml2/tensors/functions/utils.h"
+#include "neml2/tensors/functions/stack.h"
 
 namespace neml2
 {
@@ -44,64 +50,104 @@ template <class Derived, Size... S>
 class PrimitiveTensor : public TensorBase<Derived>
 {
 public:
+  /// Base shape sequence
+  using base_sizes_sequence = std::integer_sequence<Size, S...>;
+
   /// The base shape
   static inline const TensorShape const_base_sizes = {S...};
 
   /// The base dim
   static constexpr Size const_base_dim = sizeof...(S);
 
-  /// The base storage
-  static inline const Size const_base_storage = utils::storage_size({S...});
+  /// The base numel
+  static constexpr Size const_base_numel = (1 * ... * S);
 
   /// Special member functions
   PrimitiveTensor() = default;
 
-  /// Construct from another ATensor given batch dimension
-  PrimitiveTensor(const ATensor & tensor, Size batch_dim);
+  /// Construct from an ATensor and infer dynamic shape
+  PrimitiveTensor(const ATensor & tensor, Size intmd_dim);
 
-  /// Construct from another ATensor given batch shape
-  PrimitiveTensor(const ATensor & tensor, const TraceableTensorShape & batch_shape);
+  /// Construct from an ATensor and extract dynamic shape given dynamic dimension
+  PrimitiveTensor(const ATensor & tensor, Size dynamic_dim, Size intmd_dim);
+
+  /// Construct from an ATensor given dynamic shape
+  PrimitiveTensor(const ATensor & tensor,
+                  const TraceableTensorShape & dynamic_shape,
+                  Size intmd_dim);
 
   /// Copy constructor
-  PrimitiveTensor(const Tensor & tensor);
+  template <class Derived2>
+  PrimitiveTensor(const TensorBase<Derived2> & tensor);
 
-  /// Construct from another ATensor and infer batch dimension
-  explicit PrimitiveTensor(const ATensor & tensor);
-
-  /// Implicit conversion to a Tensor and loses information on the fixed base shape
-  operator Tensor() const;
+  /// Implicit conversion to a Tensor (discards information on the fixed base shape)
+  operator neml2::Tensor() const;
 
   /// Arbitrary tensor from a nested container with inferred batch dimension
   [[nodiscard]] static Derived create(const TensorDataContainer & data,
+                                      Size intmd_dim = 0,
                                       const TensorOptions & options = default_tensor_options());
-  /// Unbatched empty tensor
+
+  /// Empty tensor with undefined values
+  ///@{
   [[nodiscard]] static Derived empty(const TensorOptions & options = default_tensor_options());
-  /// Empty tensor given batch shape
-  [[nodiscard]] static Derived empty(const TraceableTensorShape & batch_shape,
+  [[nodiscard]] static Derived empty(const TraceableTensorShape & dynamic_shape,
+                                     TensorShapeRef intmd_shape = {},
                                      const TensorOptions & options = default_tensor_options());
-  /// Unbatched zero tensor
+  ///@}
+
+  /// Tensor filled with zeros
+  ///@{
   [[nodiscard]] static Derived zeros(const TensorOptions & options = default_tensor_options());
-  /// Zero tensor given batch shape
-  [[nodiscard]] static Derived zeros(const TraceableTensorShape & batch_shape,
+  [[nodiscard]] static Derived zeros(const TraceableTensorShape & dynamic_shape,
+                                     TensorShapeRef intmd_shape = {},
                                      const TensorOptions & options = default_tensor_options());
-  /// Unbatched unit tensor
+  ///@}
+
+  /// Tensor filled with ones
+  ///@{
   [[nodiscard]] static Derived ones(const TensorOptions & options = default_tensor_options());
-  /// Unit tensor given batch shape
-  [[nodiscard]] static Derived ones(const TraceableTensorShape & batch_shape,
+  [[nodiscard]] static Derived ones(const TraceableTensorShape & dynamic_shape,
+                                    TensorShapeRef intmd_shape = {},
                                     const TensorOptions & options = default_tensor_options());
-  /// Unbatched tensor filled with a given value given base shape
+  ///@}
+
+  /// Tensor filled with a given value
+  ///@{
   [[nodiscard]] static Derived full(const CScalar & init,
                                     const TensorOptions & options = default_tensor_options());
-  /// Full tensor given batch shape
-  [[nodiscard]] static Derived full(const TraceableTensorShape & batch_shape,
+  [[nodiscard]] static Derived full(const TraceableTensorShape & dynamic_shape,
+                                    TensorShapeRef intmd_shape,
                                     const CScalar & init,
                                     const TensorOptions & options = default_tensor_options());
+  ///@}
 
-  /// Derived tensor classes should define identity_map where appropriate
-  [[nodiscard]] static Tensor identity_map(const TensorOptions &)
-  {
-    throw NEMLException("Not implemented");
-  }
+  /// Tensor filled with random values from a uniform distribution [0, 1)
+  ///@{
+  [[nodiscard]] static Derived rand(const TensorOptions & options = default_tensor_options());
+  [[nodiscard]] static Derived rand(const TraceableTensorShape & dynamic_shape,
+                                    TensorShapeRef intmd_shape,
+                                    const TensorOptions & options = default_tensor_options());
+  ///@}
+
+  /// Fill tensor with values
+  ///@{
+  template <typename... Args,
+            typename = std::enable_if_t<(sizeof...(Args) == const_base_numel ||
+                                         sizeof...(Args) == const_base_numel + 1)>>
+  [[nodiscard]] static Derived fill(Args &&... args);
+  ///@}
+
+  /// Einstein summation along base dimensions
+  [[nodiscard]] static Derived einsum(c10::string_view equation, TensorList tensors);
+
+  /// Single-element accessor
+  template <typename... Args>
+  Scalar operator()(Args... i) const;
+
+protected:
+  /// Validate shapes and dimensions
+  void validate_shapes_and_dims() const;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -109,39 +155,48 @@ public:
 ///////////////////////////////////////////////////////////////////////////////
 
 template <class Derived, Size... S>
-PrimitiveTensor<Derived, S...>::PrimitiveTensor(const ATensor & tensor, Size batch_dim)
-  : TensorBase<Derived>(tensor, batch_dim)
+PrimitiveTensor<Derived, S...>::PrimitiveTensor(const ATensor & tensor, Size intmd_dim)
+  : TensorBase<Derived>(tensor, tensor.dim() - const_base_dim - intmd_dim, intmd_dim)
 {
-#ifndef NDEBUG
-  if (this->base_sizes() != const_base_sizes)
-    throw NEMLException("Base shape mismatch");
-#endif
+  validate_shapes_and_dims();
 }
 
 template <class Derived, Size... S>
 PrimitiveTensor<Derived, S...>::PrimitiveTensor(const ATensor & tensor,
-                                                const TraceableTensorShape & batch_shape)
-  : TensorBase<Derived>(tensor, batch_shape)
+                                                Size dynamic_dim,
+                                                Size intmd_dim)
+  : TensorBase<Derived>(tensor, dynamic_dim, intmd_dim)
 {
-#ifndef NDEBUG
-  if (this->base_sizes() != const_base_sizes)
-    throw NEMLException("Base shape mismatch");
-#endif
+  if (dynamic_dim + intmd_dim + const_base_dim != tensor.dim())
+    throw NEMLException("Inconsistent dimensions when constructing PrimitiveTensor. Expected "
+                        "tensor to have dynamic dimension " +
+                        std::to_string(dynamic_dim) + ", intmd dimension " +
+                        std::to_string(intmd_dim) + ", and base dimension " +
+                        std::to_string(const_base_dim) + ", but tensor has " +
+                        std::to_string(tensor.dim()) + " dimensions.");
+  validate_shapes_and_dims();
 }
 
 template <class Derived, Size... S>
-PrimitiveTensor<Derived, S...>::PrimitiveTensor(const Tensor & tensor)
+PrimitiveTensor<Derived, S...>::PrimitiveTensor(const ATensor & tensor,
+                                                const TraceableTensorShape & dynamic_shape,
+                                                Size intmd_dim)
+  : TensorBase<Derived>(tensor, dynamic_shape, intmd_dim)
+{
+  validate_shapes_and_dims();
+}
+
+template <class Derived, Size... S>
+template <class Derived2>
+PrimitiveTensor<Derived, S...>::PrimitiveTensor(const TensorBase<Derived2> & tensor)
   : TensorBase<Derived>(tensor)
 {
-#ifndef NDEBUG
-  if (this->base_sizes() != const_base_sizes)
-    throw NEMLException("Base shape mismatch");
-#endif
+  validate_shapes_and_dims();
 }
 
 template <class Derived, Size... S>
-PrimitiveTensor<Derived, S...>::PrimitiveTensor(const ATensor & tensor)
-  : TensorBase<Derived>(tensor, tensor.dim() - const_base_dim)
+void
+PrimitiveTensor<Derived, S...>::validate_shapes_and_dims() const
 {
 #ifndef NDEBUG
   if (this->base_sizes() != const_base_sizes)
@@ -150,18 +205,21 @@ PrimitiveTensor<Derived, S...>::PrimitiveTensor(const ATensor & tensor)
 }
 
 template <class Derived, Size... S>
-PrimitiveTensor<Derived, S...>::operator Tensor() const
+PrimitiveTensor<Derived, S...>::operator neml2::Tensor() const
 {
-  return Tensor(*this, this->batch_sizes());
+  return neml2::Tensor(*this, this->dynamic_sizes(), this->intmd_dim());
 }
 
 template <class Derived, Size... S>
 Derived
 PrimitiveTensor<Derived, S...>::create(const TensorDataContainer & data,
+                                       Size intmd_dim,
                                        const TensorOptions & options)
 {
   return Derived(torch::autograd::make_variable(
-      data.convert_to_tensor(options.requires_grad(false)), options.requires_grad()));
+                     data.convert_to_tensor(options.requires_grad(false)), options.requires_grad()),
+                 intmd_dim)
+      .clone(); // clone to take ownership of the data
 }
 
 template <class Derived, Size... S>
@@ -173,10 +231,11 @@ PrimitiveTensor<Derived, S...>::empty(const TensorOptions & options)
 
 template <class Derived, Size... S>
 Derived
-PrimitiveTensor<Derived, S...>::empty(const TraceableTensorShape & batch_shape,
+PrimitiveTensor<Derived, S...>::empty(const TraceableTensorShape & dynamic_shape,
+                                      TensorShapeRef intmd_shape,
                                       const TensorOptions & options)
 {
-  return Tensor::empty(batch_shape, const_base_sizes, options);
+  return Tensor::empty(dynamic_shape, intmd_shape, const_base_sizes, options);
 }
 
 template <class Derived, Size... S>
@@ -188,10 +247,11 @@ PrimitiveTensor<Derived, S...>::zeros(const TensorOptions & options)
 
 template <class Derived, Size... S>
 Derived
-PrimitiveTensor<Derived, S...>::zeros(const TraceableTensorShape & batch_shape,
+PrimitiveTensor<Derived, S...>::zeros(const TraceableTensorShape & dynamic_shape,
+                                      TensorShapeRef intmd_shape,
                                       const TensorOptions & options)
 {
-  return Tensor::zeros(batch_shape, const_base_sizes, options);
+  return Tensor::zeros(dynamic_shape, intmd_shape, const_base_sizes, options);
 }
 
 template <class Derived, Size... S>
@@ -203,10 +263,11 @@ PrimitiveTensor<Derived, S...>::ones(const TensorOptions & options)
 
 template <class Derived, Size... S>
 Derived
-PrimitiveTensor<Derived, S...>::ones(const TraceableTensorShape & batch_shape,
+PrimitiveTensor<Derived, S...>::ones(const TraceableTensorShape & dynamic_shape,
+                                     TensorShapeRef intmd_shape,
                                      const TensorOptions & options)
 {
-  return Tensor::ones(batch_shape, const_base_sizes, options);
+  return Tensor::ones(dynamic_shape, intmd_shape, const_base_sizes, options);
 }
 
 template <class Derived, Size... S>
@@ -218,10 +279,82 @@ PrimitiveTensor<Derived, S...>::full(const CScalar & init, const TensorOptions &
 
 template <class Derived, Size... S>
 Derived
-PrimitiveTensor<Derived, S...>::full(const TraceableTensorShape & batch_shape,
+PrimitiveTensor<Derived, S...>::full(const TraceableTensorShape & dynamic_shape,
+                                     TensorShapeRef intmd_shape,
                                      const CScalar & init,
                                      const TensorOptions & options)
 {
-  return Tensor::full(batch_shape, const_base_sizes, init, options);
+  return Tensor::full(dynamic_shape, intmd_shape, const_base_sizes, init, options);
 }
+
+template <class Derived, Size... S>
+Derived
+PrimitiveTensor<Derived, S...>::rand(const TensorOptions & options)
+{
+  return Tensor::rand(const_base_sizes, options);
+}
+
+template <class Derived, Size... S>
+Derived
+PrimitiveTensor<Derived, S...>::rand(const TraceableTensorShape & dynamic_shape,
+                                     TensorShapeRef intmd_shape,
+                                     const TensorOptions & options)
+{
+  return Tensor::rand(dynamic_shape, intmd_shape, const_base_sizes, options);
+}
+
+template <class Derived, Size... S>
+Derived
+PrimitiveTensor<Derived, S...>::einsum(c10::string_view equation, TensorList tensors)
+{
+  const auto [tensors_aligned, i] = utils::align_intmd_dim(tensors);
+  std::vector<ATensor> tensors_einsum(tensors_aligned.size());
+  for (std::size_t j = 0; j < tensors_aligned.size(); ++j)
+    tensors_einsum[j] = tensors_aligned[j];
+  auto res = at::einsum(equation, tensors_einsum);
+  return Derived(res, i);
+}
+
+template <class Tuple, std::size_t... I>
+auto
+make_tensors(Tuple && t, std::index_sequence<I...>, const TensorOptions & options)
+{
+  return std::vector<neml2::Tensor>{
+      neml2::Tensor(at::scalar_to_tensor(std::get<I>(std::forward<Tuple>(t)), options.device())
+                        .to(options.dtype()),
+                    0)...};
+}
+
+template <class Derived, Size... S>
+template <typename... Args, typename>
+Derived
+PrimitiveTensor<Derived, S...>::fill(Args &&... args)
+{
+  if constexpr (sizeof...(Args) == const_base_numel)
+  {
+    if constexpr ((std::is_convertible_v<Args, neml2::Tensor> && ...))
+    {
+#ifndef NDEBUG
+      neml_assert_dbg(((args.base_dim() == 0) && ...),
+                      "All input tensors must be scalar-like (no base dimensions)");
+#endif
+      return base_stack({std::forward<Args>(args)...}).base_reshape(const_base_sizes);
+    }
+    else if constexpr ((std::is_convertible_v<Args, CScalar> && ...))
+    {
+      auto t = neml2::Tensor::create({std::forward<Args>(args)...}, default_tensor_options());
+      return t.base_reshape(const_base_sizes);
+    }
+  }
+  else if constexpr (sizeof...(Args) == const_base_numel + 1)
+  {
+    auto tup = std::forward_as_tuple(std::forward<Args>(args)...);
+    const auto & options = std::get<sizeof...(Args) - 1>(tup);
+    auto vals = make_tensors(tup, std::make_index_sequence<sizeof...(Args) - 1>{}, options);
+    return base_stack(vals).base_reshape(const_base_sizes);
+  }
+
+  throw NEMLException("Invalid argument types to PrimitiveTensor::fill");
+}
+
 } // namespace neml2

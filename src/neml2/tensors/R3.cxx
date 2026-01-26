@@ -23,33 +23,18 @@
 // THE SOFTWARE.
 
 #include "neml2/tensors/R3.h"
-#include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/Vec.h"
 #include "neml2/tensors/R2.h"
-#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
-
 R3
 R3::levi_civita(const TensorOptions & options)
 {
   return R3::create({{{0, 0, 0}, {0, 0, 1}, {0, -1, 0}},
                      {{0, 0, -1}, {0, 0, 0}, {1, 0, 0}},
                      {{0, 1, 0}, {-1, 0, 0}, {0, 0, 0}}},
+                    0,
                     options);
-}
-
-Scalar
-R3::operator()(Size i, Size j, Size k) const
-{
-  return base_index({i, j, k});
-}
-
-R2
-R3::contract_k(const Vec & v) const
-{
-  neml_assert_batch_broadcastable_dbg(*this, v);
-  return R2(at::einsum("...ijk,...k", {*this, v}), utils::broadcast_batch_dim(*this, v));
 }
 } // namespace neml2

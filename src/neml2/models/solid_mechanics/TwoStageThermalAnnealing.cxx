@@ -28,6 +28,7 @@
 #include "neml2/tensors/SSR4.h"
 #include "neml2/misc/string_utils.h"
 #include "neml2/tensors/functions/where.h"
+#include "neml2/tensors/functions/imap.h"
 
 namespace neml2
 {
@@ -97,8 +98,8 @@ template <typename T>
 void
 TwoStageThermalAnnealing<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  auto one = Scalar::ones_like(_T);
-  auto zero = Scalar::zeros_like(_T);
+  auto one = Scalar::ones_like(_T());
+  auto zero = Scalar::zeros_like(_T());
   auto base_region = where(_T < _T1, one, zero);
   auto recover_region = where(_T >= _T2, one, zero);
 
@@ -107,7 +108,7 @@ TwoStageThermalAnnealing<T>::set_value(bool out, bool dout_din, bool /*d2out_din
 
   if (dout_din)
   {
-    auto I = T::identity_map(_T.options());
+    auto I = imap_v<T>(_T.options());
 
     if (_base_rate.is_dependent())
       _modified_rate.d(_base_rate) = base_region * I;

@@ -74,7 +74,7 @@ OrientationRate::OrientationRate(const OptionSet & options)
 {
 }
 
-WR2
+static WR2
 multiply_and_make_skew(const SR2 & a, const SR2 & b)
 {
   auto A = R2(a);
@@ -83,42 +83,40 @@ multiply_and_make_skew(const SR2 & a, const SR2 & b)
   return WR2(A * B - B * A);
 }
 
-WSR4
+static WSR4
 d_multiply_and_make_skew_d_first(const SR2 & b)
 {
   auto I = R2::identity(b.options());
   auto B = R2(b);
-  return WSR4(
-      R4(at::einsum("...ia,...bj->...ijab", {I, B}) - at::einsum("...ia,...jb->...ijab", {B, I})));
+  return R4::einsum("...ia,...bj->...ijab", {I, B}) - R4::einsum("...ia,...jb->...ijab", {B, I});
 }
 
-WSR4
+static WSR4
 d_multiply_and_make_skew_d_second(const SR2 & a)
 {
   auto I = R2::identity(a.options());
   auto A = R2(a);
-  return WSR4(
-      R4(at::einsum("...ia,...jb->...ijab", {A, I}) - at::einsum("...ia,...bj->...ijab", {I, A})));
+  return R4::einsum("...ia,...jb->...ijab", {A, I}) - R4::einsum("...ia,...bj->...ijab", {I, A});
 }
 
 void
 OrientationRate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   if (out)
-    _R_dot = _w - _wp + multiply_and_make_skew(SR2(_dp), SR2(_e));
+    _R_dot = _w - _wp + multiply_and_make_skew(_dp(), _e());
 
   if (dout_din)
   {
     const auto I = WWR4::identity(_w.options());
 
     if (_e.is_dependent())
-      _R_dot.d(_e) = d_multiply_and_make_skew_d_second(SR2(_dp));
+      _R_dot.d(_e) = d_multiply_and_make_skew_d_second(_dp());
 
     if (_w.is_dependent())
       _R_dot.d(_w) = I;
 
     if (_dp.is_dependent())
-      _R_dot.d(_dp) = d_multiply_and_make_skew_d_first(SR2(_e));
+      _R_dot.d(_dp) = d_multiply_and_make_skew_d_first(_e());
 
     if (_wp.is_dependent())
       _R_dot.d(_wp) = -I;

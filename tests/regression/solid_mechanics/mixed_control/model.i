@@ -179,11 +179,13 @@
   []
   [mixed]
     type = MixedControlSetup
+    above_variable = 'state/S'
+    below_variable = 'state/E'
   []
   [rename]
     type = CopySR2
-    from = "residual/S"
-    to = "residual/mixed_state"
+    from = 'residual/S'
+    to = 'residual/mixed_state'
   []
   [implicit_rate]
     type = ComposedModel

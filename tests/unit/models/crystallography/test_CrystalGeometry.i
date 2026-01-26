@@ -10,16 +10,17 @@
 
 [Tensors]
   [sdirs]
-    type = FillMillerIndex
+    type = MillerIndex
     values = '1 1 0'
   []
   [splanes]
-    type = FillMillerIndex
+    type = MillerIndex
     values = '1 1 1'
   []
   [lvecs]
     type = Vec
     batch_shape = '(3)'
+    intermediate_dimension = 1
     values = "1.2 0.0 0.0
               0.0 1.2 0.0
               0.0 0.0 1.2"

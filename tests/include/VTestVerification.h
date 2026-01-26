@@ -59,7 +59,7 @@ private:
   const std::shared_ptr<TransientDriver> _driver;
 
   /// The variables with the correct values (from the vtest file)
-  std::map<std::string, ATensor> _ref;
+  std::map<std::string, Tensor> _ref;
 
   double _rtol;
   double _atol;

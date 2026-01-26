@@ -30,38 +30,26 @@
 namespace neml2::utils
 {
 /**
- * Two tensors are said to be broadcastable if
- * 1. Base shapes are the same
- * 2. Batch shapes are broadcastable (see sizes_broadcastable)
- */
-template <class... T>
-bool broadcastable(const T &... tensors);
-
-/**
- * Test if the tensors are batch-broadcastable.
- * @see sizes_broadcastable
- */
-template <class... T>
-bool batch_broadcastable(const T &... tensors);
-
-/**
- * Test if the tensors are base-broadcastable.
- * @see sizes_broadcastable
- */
-template <class... T>
-bool base_broadcastable(const T &... tensors);
-
-/**
- * @brief The batch dimension after broadcasting
+ * @brief Helper function to normalize a dimension index to be non-negative given the lower- and
+ * upper-bound of the context.
  *
- * This should be as simple as the maximum batch_dim() among all arguments.
+ * @param d The dimension index to normalize
+ * @param dl The lower-bound (inclusive)
+ * @param du The upper-bound (exclusive)
+ * @return Size The normalized dimension index
  */
-template <class... T>
-Size broadcast_batch_dim(const T &...);
+Size normalize_dim(Size d, Size dl, Size du);
 
-/// Check if all shapes are the *same*.
-template <class... T>
-bool sizes_same(T &&... shapes);
+/**
+ * @brief Helper function to normalize a iterator-like index to be non-negative given the lower- and
+ * upper-bound of the context.
+ *
+ * @param d The iterator index to normalize
+ * @param dl The lower-bound (inclusive)
+ * @param du The upper-bound (exclusive)
+ * @return Size The normalized iterator index
+ */
+Size normalize_itr(Size d, Size dl, Size du);
 
 /**
  * @brief Check if the shapes are broadcastable.
@@ -74,24 +62,66 @@ template <class... T>
 bool sizes_broadcastable(const T &... shapes);
 
 /**
+ * Two tensors are said to be broadcastable if
+ * 1. Base shapes are broadcastable
+ * 2. Intermediate shapes are broadcastable
+ * 3. Dynamic shapes are broadcastable
+ */
+template <class... T>
+bool broadcastable(const T &... tensors);
+
+/**
+ * Test if the tensors are dynamic-broadcastable.
+ * @see sizes_broadcastable
+ */
+template <class... T>
+bool dynamic_broadcastable(const T &... tensors);
+
+/**
+ * Test if the tensors are intermediate-broadcastable.
+ * @see sizes_broadcastable
+ */
+template <class... T>
+bool intmd_broadcastable(const T &... tensors);
+
+/**
+ * Test if the tensors are base-broadcastable.
+ * @see sizes_broadcastable
+ */
+template <class... T>
+bool base_broadcastable(const T &... tensors);
+
+/// The dynamic dimension after broadcasting
+template <class... T>
+Size broadcast_dynamic_dim(const T &...);
+
+/// The intermediate dimension after broadcasting
+template <class... T>
+Size broadcast_intmd_dim(const T &...);
+
+/// The base dimension after broadcasting
+template <class... T>
+Size broadcast_base_dim(const T &...);
+
+/**
  * @brief Return the broadcast shape of all the shapes.
  */
 template <class... T>
 TensorShape broadcast_sizes(const T &... shapes);
 
 /**
- * @brief The flattened storage size of a tensor with given shape
+ * @brief Number of elements in a tensor with given shape
  *
  * For example,
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~cpp
- * storage_size({}) == 1;
- * storage_size({0}) == 0;
- * storage_size({1}) == 1;
- * storage_size({1, 2, 3}) == 6;
- * storage_size({5, 1, 1}) == 5;
+ * numel({}) == 1;
+ * numel({0}) == 0;
+ * numel({1}) == 1;
+ * numel({1, 2, 3}) == 6;
+ * numel({5, 1, 1}) == 5;
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-Size storage_size(TensorShapeRef shape);
+Size numel(TensorShapeRef shape);
 
 template <typename... S>
 TensorShape add_shapes(const S &...);
@@ -121,47 +151,6 @@ namespace neml2::utils
 {
 template <class... T>
 bool
-broadcastable(const T &... tensors)
-{
-  if (!sizes_same(tensors.base_sizes()...))
-    return false;
-  return batch_broadcastable(tensors...);
-}
-
-template <class... T>
-bool
-batch_broadcastable(const T &... tensors)
-{
-  return sizes_broadcastable(tensors.batch_sizes().concrete()...);
-}
-
-template <class... T>
-bool
-base_broadcastable(const T &... tensors)
-{
-  return sizes_broadcastable(tensors.base_sizes()...);
-}
-
-template <class... T>
-Size
-broadcast_batch_dim(const T &... tensor)
-{
-  return std::max({tensor.batch_dim()...});
-}
-
-template <class... T>
-bool
-sizes_same(T &&... shapes)
-{
-  auto all_shapes = std::vector<TensorShapeRef>{std::forward<T>(shapes)...};
-  for (size_t i = 0; i < all_shapes.size() - 1; i++)
-    if (all_shapes[i] != all_shapes[i + 1])
-      return false;
-  return true;
-}
-
-template <class... T>
-bool
 sizes_broadcastable(const T &... shapes)
 {
   auto dim = std::max({shapes.size()...});
@@ -187,6 +176,56 @@ sizes_broadcastable(const T &... shapes)
   }
 
   return true;
+}
+
+template <class... T>
+bool
+broadcastable(const T &... tensors)
+{
+  return dynamic_broadcastable(tensors...) && intmd_broadcastable(tensors...) &&
+         base_broadcastable(tensors...);
+}
+
+template <class... T>
+bool
+dynamic_broadcastable(const T &... tensors)
+{
+  return sizes_broadcastable(tensors.dynamic_sizes().concrete()...);
+}
+
+template <class... T>
+bool
+intmd_broadcastable(const T &... tensors)
+{
+  return sizes_broadcastable(tensors.intmd_sizes()...);
+}
+
+template <class... T>
+bool
+base_broadcastable(const T &... tensors)
+{
+  return sizes_broadcastable(tensors.base_sizes()...);
+}
+
+template <class... T>
+Size
+broadcast_dynamic_dim(const T &... tensor)
+{
+  return std::max({tensor.dynamic_dim()...});
+}
+
+template <class... T>
+Size
+broadcast_intmd_dim(const T &... tensor)
+{
+  return std::max({tensor.intmd_dim()...});
+}
+
+template <class... T>
+Size
+broadcast_base_dim(const T &... tensor)
+{
+  return std::max({tensor.base_dim()...});
 }
 
 template <class... T>

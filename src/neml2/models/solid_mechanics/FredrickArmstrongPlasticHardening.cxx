@@ -26,6 +26,8 @@
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
+#include "neml2/tensors/functions/norm.h"
+#include "neml2/tensors/functions/imap.h"
 
 namespace neml2
 {
@@ -79,7 +81,7 @@ FredrickArmstrongPlasticHardening::set_value(bool out, bool dout_din, bool /*d2o
 {
   auto eps = machine_precision(_X.scalar_type());
   // The effective stress
-  auto s = SR2(_X).norm(eps);
+  auto s = neml2::norm(_X(), eps);
   // The part that's proportional to the plastic strain rate
   auto g_term = 2.0 / 3.0 * _C * _NM - _g * _X;
 
@@ -88,7 +90,7 @@ FredrickArmstrongPlasticHardening::set_value(bool out, bool dout_din, bool /*d2o
 
   if (dout_din)
   {
-    auto I = SR2::identity_map(_X.options());
+    auto I = imap_v<SR2>(_X.options());
 
     if (_gamma_dot.is_dependent())
       _X_dot.d(_gamma_dot) = g_term;

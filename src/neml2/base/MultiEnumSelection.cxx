@@ -31,7 +31,7 @@ namespace neml2
 std::ostream &
 operator<<(std::ostream & os, const MultiEnumSelection & es)
 {
-  auto selections = std::vector<std::string>(es);
+  const auto & selections = es.selections();
   os << '(';
   for (size_t i = 0; i < selections.size(); i++)
   {
@@ -50,17 +50,17 @@ operator>>(std::stringstream & ss, MultiEnumSelection & es)
   return ss;
 }
 
-MultiEnumSelection::MultiEnumSelection(const std::vector<std::string> & candidates,
+MultiEnumSelection::MultiEnumSelection(const std::vector<std::string> & choices,
                                        const std::vector<std::string> & selections)
-  : EnumSelectionBase(candidates)
+  : EnumSelectionBase(choices)
 {
   select(selections);
 }
 
-MultiEnumSelection::MultiEnumSelection(const std::vector<std::string> & candidates,
+MultiEnumSelection::MultiEnumSelection(const std::vector<std::string> & choices,
                                        const std::vector<int> & values,
                                        const std::vector<std::string> & selections)
-  : EnumSelectionBase(candidates, values)
+  : EnumSelectionBase(choices, values)
 {
   select(selections);
 }
@@ -68,7 +68,7 @@ MultiEnumSelection::MultiEnumSelection(const std::vector<std::string> & candidat
 bool
 MultiEnumSelection::operator==(const MultiEnumSelection & other) const
 {
-  return _candidate_map == other._candidate_map && _selections == other._selections &&
+  return _choice_map == other._choice_map && _selections == other._selections &&
          _values == other._values;
 }
 
@@ -85,11 +85,17 @@ MultiEnumSelection::select(const std::vector<std::string> & selections)
   _values.clear();
   for (const auto & selection : selections)
   {
-    neml_assert(_candidate_map.count(selection),
+    neml_assert(_choice_map.count(selection),
                 "Invalid selection for MultiEnumSelection. Candidates are ",
-                candidates_str());
+                join());
     _selections.push_back(selection);
-    _values.push_back(_candidate_map[selection]);
+    _values.push_back(_choice_map[selection]);
   }
 }
-} // namesace neml2
+
+std::size_t
+MultiEnumSelection::size() const
+{
+  return _selections.size();
+}
+} // namespace neml2

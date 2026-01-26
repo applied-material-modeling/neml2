@@ -32,7 +32,7 @@ namespace neml2
 class ValueMapLoader : public FixedSizeWorkGenerator<ValueMap>
 {
 public:
-  ValueMapLoader(const ValueMap & value_map, Size batch_dim);
+  ValueMapLoader(const ValueMap & value_map, Size dynamic_dim);
 
   std::size_t total() const override;
 
@@ -43,8 +43,8 @@ private:
   /// The map of tensors to load work from
   const ValueMap _value_map;
 
-  /// The batch dimension of the tensor along which to load work
-  const Size _batch_dim;
+  /// The dynamic dimension of the tensor along which to load work
+  const Size _dynamic_dim;
 
   /// The slice generator that generates slicing indices for the tensor
   SliceGenerator _slice_gen;

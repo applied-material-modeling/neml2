@@ -29,40 +29,46 @@
 
 namespace neml2
 {
-EnumSelectionBase::EnumSelectionBase(const std::vector<std::string> & candidates)
+EnumSelectionBase::EnumSelectionBase(const std::vector<std::string> & choices)
 {
-  std::set<std::string> candidates_set(candidates.begin(), candidates.end());
-  neml_assert(candidates_set.size() == candidates.size(),
-              "Candidates of (Multi)EnumSelection must be unique.");
+  std::set<std::string> choices_set(choices.begin(), choices.end());
+  neml_assert(choices_set.size() == choices.size(),
+              "Choices of (Multi)EnumSelection must be unique.");
 
   int count = 0;
-  for (const auto & candidate : candidates)
-    _candidate_map.emplace(candidate, count++);
+  for (const auto & candidate : choices)
+    _choice_map.emplace(candidate, count++);
 }
 
-EnumSelectionBase::EnumSelectionBase(const std::vector<std::string> & candidates,
+EnumSelectionBase::EnumSelectionBase(const std::vector<std::string> & choices,
                                      const std::vector<int> & values)
 {
-  neml_assert(candidates.size() == values.size(),
-              "In (Multi)EnumSelection, number of candidates must match the number of values.");
+  neml_assert(choices.size() == values.size(),
+              "In (Multi)EnumSelection, number of choices must match the number of values.");
 
-  std::set<std::string> candidates_set(candidates.begin(), candidates.end());
-  neml_assert(candidates_set.size() == candidates.size(),
-              "Candidates of (Multi)EnumSelection must be unique.");
+  std::set<std::string> choices_set(choices.begin(), choices.end());
+  neml_assert(choices_set.size() == choices.size(),
+              "Choices of (Multi)EnumSelection must be unique.");
 
   std::set<int> values_set(values.begin(), values.end());
   neml_assert(values_set.size() == values.size(), "Values of (Multi)EnumSelection must be unique.");
 
-  for (size_t i = 0; i < candidates.size(); i++)
-    _candidate_map.emplace(candidates[i], values[i]);
+  for (size_t i = 0; i < choices.size(); i++)
+    _choice_map.emplace(choices[i], values[i]);
 }
 
 std::string
-EnumSelectionBase::candidates_str() const
+EnumSelectionBase::join(const std::string & separator) const
 {
   std::stringstream ss;
-  for (const auto & [e, v] : _candidate_map)
-    ss << e << " ";
+  std::size_t count = 0;
+  for (const auto & [e, v] : _choice_map)
+  {
+    ss << e;
+    if (count < _choice_map.size() - 1)
+      ss << separator;
+    count++;
+  }
   return ss.str();
 }
-} // namesace neml2
+} // namespace neml2

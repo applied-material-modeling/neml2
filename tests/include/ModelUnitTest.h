@@ -65,7 +65,5 @@ private:
   double _param_atol;
 
   const bool _show_params;
-  const bool _show_input;
-  const bool _show_output;
 };
 } // namespace neml2

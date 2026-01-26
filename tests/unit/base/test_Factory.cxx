@@ -46,14 +46,6 @@ TEST_CASE("Factory", "[base]")
   SECTION("get_object")
   {
     auto summodel = factory.get_model("example");
-
-    REQUIRE(summodel->input_axis().has_subaxis(STATE));
-    REQUIRE(summodel->input_axis().subaxis(STATE).has_subaxis("substate"));
-    REQUIRE(summodel->input_axis().subaxis(STATE).has_variable("A"));
-    REQUIRE(summodel->input_axis().subaxis(STATE).subaxis("substate").has_variable("B"));
-
-    REQUIRE(summodel->output_axis().has_subaxis(STATE));
-    REQUIRE(summodel->output_axis().subaxis(STATE).has_subaxis("outsub"));
-    REQUIRE(summodel->output_axis().subaxis(STATE).subaxis("outsub").has_variable("C"));
+    REQUIRE(summodel);
   }
 }

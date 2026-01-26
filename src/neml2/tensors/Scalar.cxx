@@ -23,30 +23,16 @@
 // THE SOFTWARE.
 
 #include "neml2/tensors/Scalar.h"
-#include "neml2/tensors/assertions.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {
 Scalar::Scalar(const CScalar & init, const TensorOptions & options)
-  : Scalar(at::scalar_tensor(init, options))
+  : Scalar(at::scalar_tensor(init, options), 0)
 {
   neml_assert_dbg(
       !options.requires_grad(),
       "When creating a Scalar from a constant, requires_grad must be false. If you are "
       "trying to create a Scalar as a leaf variable, use Scalar::create or Scalar::full.");
-}
-
-Scalar
-Scalar::identity_map(const TensorOptions & options)
-{
-  return Scalar::ones(options);
-}
-
-neml2::Tensor
-Scalar::base_unsqueeze_to(Size n) const
-{
-  indexing::TensorIndices net{indexing::Ellipsis};
-  net.insert(net.end(), n, indexing::None);
-  return neml2::Tensor(index(net), batch_sizes());
 }
 } // namespace neml2

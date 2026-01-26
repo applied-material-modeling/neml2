@@ -14,80 +14,79 @@ endif()
 get_target_property(torch_LINK_DIR torch::python INTERFACE_LINK_DIRECTORIES)
 
 if(NOT ${torch_LINK_DIR} STREQUAL ${Python3_SITEARCH}/torch/lib AND NOT ${torch_LINK_DIR} STREQUAL ${Python3_USER_SITE}/torch/lib)
-  message(WARNING "Python bindings can only be built against a Torch python package. Although a Torch is found, it does not appear to come from Python site packages. Reverting NEML2_PYBIND to OFF.")
+  message(WARNING "Python bindings can only be built against a Torch python package. A Torch package was found at ${torch_LINK_DIR}. It does not appear to come from Python site packages. Reverting NEML2_PYBIND to OFF.")
   set(NEML2_PYBIND OFF CACHE BOOL "Build Python bindings" FORCE)
   return()
 endif()
 
 # ----------------------------------------------------------------------------
-# pybind11
+# Main interface library
 # ----------------------------------------------------------------------------
-execute_process(
-  COMMAND_ERROR_IS_FATAL ANY
-  COMMAND ${Python3_EXECUTABLE} ${NEML2_SOURCE_DIR}/scripts/check_python_dep.py ${CMAKE_CURRENT_SOURCE_DIR}/neml2/requirements.txt
-)
-set(pybind11_ROOT ${Python3_SITEARCH}/pybind11)
-find_package(pybind11 CONFIG REQUIRED)
+add_custom_target(pyneml2_modules)
+add_custom_target(pyneml2)
 
 # ----------------------------------------------------------------------------
 # Macro for defining a submodule
 # ----------------------------------------------------------------------------
-macro(add_submodule mname malias msrcs)
-  pybind11_add_module(${mname} MODULE ${msrcs})
+macro(add_submodule mname malias)
+  # sources
+  file(GLOB_RECURSE msrcs CONFIGURE_DEPENDS neml2/csrc/${malias}/*.cxx)
+  list(APPEND msrcs neml2/${malias}.cxx)
+
+  # pybind11 module
+  add_library(${mname} MODULE ${msrcs})
+  target_include_directories(${mname} PUBLIC ${NEML2_SOURCE_DIR} ${Python3_INCLUDE_DIRS})
+  target_link_libraries(${mname} PUBLIC torch::python Python3::Module)
   set_target_properties(${mname} PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY neml2
     OUTPUT_NAME ${malias}
+    PREFIX ""
+    SUFFIX ".${Python3_SOABI}${CMAKE_SHARED_MODULE_SUFFIX}"
+    CXX_VISIBILITY_PRESET hidden
   )
-
-  target_include_directories(${mname} PUBLIC ${NEML2_SOURCE_DIR})
-  target_link_libraries(${mname} PRIVATE pybind11::headers torch::python)
-
   if(NEML2_WHEEL)
-    set_target_properties(${mname} PROPERTIES INSTALL_RPATH "${INSTALL_REL_PATH};${INSTALL_REL_PATH}/lib;${INSTALL_REL_PATH}/../torch/lib")
+    set_target_properties(${mname} PROPERTIES INSTALL_RPATH "${INSTALL_REL_PATH}/lib;${INSTALL_REL_PATH}/../torch/lib")
   else()
-    set_target_properties(${mname} PROPERTIES INSTALL_RPATH "${INSTALL_REL_PATH};${INSTALL_REL_PATH}/lib;${torch_LINK_DIR}")
+    set_target_properties(${mname} PROPERTIES INSTALL_RPATH "${INSTALL_REL_PATH}/lib;${torch_LINK_DIR}")
   endif()
-
+  if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    set_property(TARGET ${mname} PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+  endif()
   install(TARGETS ${mname} LIBRARY DESTINATION . COMPONENT libneml2-python)
 
   # link to the wrapper library
-  target_link_libraries(pyneml2 INTERFACE ${mname})
+  add_dependencies(pyneml2_modules ${mname})
 
-  # add to the stub generation
-  add_dependencies(python_stub ${mname})
+  # add a target to extract stub
+  add_custom_target(${mname}_stub
+    COMMENT "Generating Python type hints for neml2.${malias}"
+    WORKING_DIRECTORY ${NEML2_BINARY_DIR}/python
+    COMMAND PYTHONPATH=. ${Python3_EXECUTABLE} -m pybind11_stubgen -o . neml2.${malias}
+    VERBATIM
+  )
+  add_dependencies(${mname}_stub pyneml2_modules)
+
+  # add to the catch-all target
+  add_dependencies(pyneml2 ${mname}_stub)
 endmacro()
-
-# ----------------------------------------------------------------------------
-# Extract stub
-# ----------------------------------------------------------------------------
-add_custom_target(python_stub
-  COMMENT "Generating neml2 type hints"
-  WORKING_DIRECTORY ${NEML2_BINARY_DIR}/python
-  COMMAND PYTHONPATH=. pybind11-stubgen -o . neml2
-  VERBATIM
-)
 
 # ----------------------------------------------------------------------------
 # Python submodules
 # ----------------------------------------------------------------------------
-add_library(pyneml2 INTERFACE)
+add_submodule(pyreserved reserved)
+target_link_libraries(pyreserved PRIVATE base)
 
-add_submodule(reserved reserved neml2/reserved.cxx)
-target_link_libraries(reserved PRIVATE base)
+add_submodule(pycore core)
+target_link_libraries(pycore PUBLIC neml2)
 
-add_submodule(core core neml2/core.cxx)
-target_link_libraries(core PRIVATE neml2)
+add_submodule(pytensors tensors)
+target_link_libraries(pytensors PUBLIC tensor)
 
-file(GLOB_RECURSE tensors_srcs CONFIGURE_DEPENDS neml2/tensors/*.cxx)
-list(APPEND tensors_srcs neml2/tensors.cxx)
-add_submodule(pytensors tensors "${tensors_srcs}")
-target_link_libraries(pytensors PRIVATE tensor)
+add_submodule(pymath math)
+target_link_libraries(pymath PUBLIC tensor)
 
-add_submodule(pymath math neml2/math.cxx)
-target_link_libraries(pymath PRIVATE tensor)
-
-add_submodule(pycrystallography crystallography neml2/crystallography.cxx)
-target_link_libraries(pycrystallography PRIVATE tensor)
+add_submodule(pycrystallography crystallography)
+target_link_libraries(pycrystallography PUBLIC tensor)
 
 # ----------------------------------------------------------------------------
 # Artifacts

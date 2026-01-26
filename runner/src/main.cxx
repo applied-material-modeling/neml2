@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/base/Factory.h"
+#include "neml2/neml2.h"
 #include "neml2/base/guards.h"
 #include "neml2/drivers/Driver.h"
 #include "neml2/models/Model.h"

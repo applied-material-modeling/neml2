@@ -63,16 +63,12 @@
     nstep = 10
   []
 
-  [a]
-    type = Scalar
-    values = '1.0'
-  []
   [sdirs]
-    type = FillMillerIndex
+    type = MillerIndex
     values = '1 1 0'
   []
   [splanes]
-    type = FillMillerIndex
+    type = MillerIndex
     values = '1 1 1'
   []
 
@@ -128,9 +124,9 @@
 [Data]
   [crystal_geometry]
     type = CubicCrystal
-    lattice_parameter = "a"
-    slip_directions = "sdirs"
-    slip_planes = "splanes"
+    lattice_parameter = 1
+    slip_directions = 'sdirs'
+    slip_planes = 'splanes'
   []
 []
 

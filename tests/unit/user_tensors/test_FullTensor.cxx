@@ -24,7 +24,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include "neml2/base/Factory.h"
+#include "neml2/neml2.h"
 #include "neml2/base/NEML2Object.h"
 #include "neml2/tensors/Tensor.h"
 
@@ -39,6 +39,6 @@ TEST_CASE("FullTensor", "[user_tensors]")
     const auto a = factory->get_object<Tensor>("Tensors", "a");
     REQUIRE(a->batch_sizes() == TensorShape{2, 1});
     REQUIRE(a->base_sizes() == TensorShape{2, 3});
-    REQUIRE(at::allclose(*a, Tensor::full({2, 1}, {2, 3}, 3.9, default_tensor_options())));
+    REQUIRE(at::allclose(*a, Tensor::full({2, 1}, {}, {2, 3}, 3.9, default_tensor_options())));
   }
 }

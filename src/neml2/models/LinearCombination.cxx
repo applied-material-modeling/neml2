@@ -29,6 +29,7 @@
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SSR4.h"
 #include "neml2/misc/assertions.h"
+#include "neml2/tensors/functions/imap.h"
 
 namespace neml2
 {
@@ -145,7 +146,7 @@ LinearCombination<T>::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (dout_din)
   {
-    const auto I = T::identity_map(_from[0]->options());
+    const auto I = imap_v<T>(_from[0]->options());
     for (std::size_t i = 0; i < _from.size(); i++)
     {
       if (_from[i]->is_dependent())

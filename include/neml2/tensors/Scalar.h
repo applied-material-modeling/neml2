@@ -40,12 +40,21 @@ public:
   using PrimitiveTensor<Scalar>::PrimitiveTensor;
 
   Scalar(const CScalar & init, const TensorOptions & options);
-
-  /// The derivative of a Scalar with respect to itself
-  [[nodiscard]] static Scalar
-  identity_map(const TensorOptions & options = default_tensor_options());
-
-  /// Expand base dimension to a given size
-  neml2::Tensor base_unsqueeze_to(Size n) const;
 };
+
+// The implementation of the single-element accessor depends on the complete definition of Scalar
+// However, Scalar is derived from PrimitiveTensor, so we have no choice but to put the
+// implementation here.
+//
+// Practically, whoever wants to use the single-element accessor must also include Scalar.h
+template <class Derived, Size... S>
+template <typename... Args>
+Scalar
+PrimitiveTensor<Derived, S...>::operator()(Args... i) const
+{
+  static_assert(sizeof...(Args) == const_base_dim, "Incorrect number of arguments.");
+  static_assert((std::is_convertible_v<Args, Size> && ...),
+                "All arguments must be convertible to neml2::Size, aka int64_t");
+  return this->base_index({i...});
+}
 } // namespace neml2

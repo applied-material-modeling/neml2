@@ -26,7 +26,7 @@
 #include "neml2/misc/assertions.h"
 #include "neml2/models/Model.h"
 
-#ifdef NEML2_HAS_DISPATCHER
+#ifdef NEML2_WORK_DISPATCHER
 #include "neml2/dispatchers/valuemap_helpers.h"
 #endif
 
@@ -40,6 +40,17 @@ ModelDriver::expected_options()
   options.set<std::string>("model");
   options.set("model").doc() = "The material model to be updated by the driver";
 
+  options.set<std::vector<VariableName>>("var_with_intmd_dims") = {};
+  options.set("var_with_intmd_dims").doc() =
+      "A list of input variable names for which to set intermediate shapes";
+
+  options.set<std::vector<TensorShape>>("var_intmd_shapes") = {};
+  options.set("var_intmd_shapes").doc() =
+      "A list of tensor shapes corresponding to the variables in 'var_with_intmd_dims'";
+
+  options.set<std::string>("postprocessor");
+  options.set("postprocessor").doc() = "The postprocessor model to be applied on the model output";
+
   options.set<std::string>("device") = "cpu";
   options.set("device").doc() =
       "Device on which to evaluate the material model. The string supplied must follow the "
@@ -48,14 +59,10 @@ ModelDriver::expected_options()
       "target compute device to be CPU, and device='cuda:1' sets the target compute device to be "
       "CUDA with device ID 1.";
 
-  options.set<bool>("show_parameters") = false;
-  options.set("show_parameters").doc() = "Whether to show model parameters at the beginning";
-  options.set<bool>("show_input_axis") = false;
-  options.set("show_input_axis").doc() = "Whether to show model input axis at the beginning";
-  options.set<bool>("show_output_axis") = false;
-  options.set("show_output_axis").doc() = "Whether to show model output axis at the beginning";
+  options.set<bool>("show_model_info") = false;
+  options.set("show_model_info").doc() = "Whether to show model information at the beginning";
 
-#ifdef NEML2_HAS_DISPATCHER
+#ifdef NEML2_WORK_DISPATCHER
   options.set<std::string>("scheduler");
   options.set("scheduler").doc() = "The work scheduler to use";
   options.set<bool>("async_dispatch") = true;
@@ -68,11 +75,13 @@ ModelDriver::expected_options()
 ModelDriver::ModelDriver(const OptionSet & options)
   : Driver(options),
     _model(get_model("model")),
+    _intmd_vars(options.get<std::vector<VariableName>>("var_with_intmd_dims")),
+    _intmd_shapes(options.get<std::vector<TensorShape>>("var_intmd_shapes")),
+    _postprocessor(options.get("postprocessor").user_specified() ? get_model("postprocessor")
+                                                                 : nullptr),
     _device(options.get<std::string>("device")),
-    _show_params(options.get<bool>("show_parameters")),
-    _show_input(options.get<bool>("show_input_axis")),
-    _show_output(options.get<bool>("show_output_axis"))
-#ifdef NEML2_HAS_DISPATCHER
+    _show_model_info(options.get<bool>("show_model_info"))
+#ifdef NEML2_WORK_DISPATCHER
     ,
     _scheduler(options.get("scheduler").user_specified() ? get_scheduler("scheduler") : nullptr),
     _async_dispatch(options.get<bool>("async_dispatch"))
@@ -84,13 +93,19 @@ void
 ModelDriver::setup()
 {
   Driver::setup();
+
+  // Tag intermediate shapes
+  for (size_t i = 0; i < _intmd_vars.size(); ++i)
+    _model->set_input_intmd_sizes(_intmd_vars[i], _intmd_shapes[i]);
+
+  // Send to device
   _model->to(_device);
 
-#ifdef NEML2_HAS_DISPATCHER
+#ifdef NEML2_WORK_DISPATCHER
   if (_scheduler)
   {
-    auto red = [](std::vector<ValueMap> && results) -> ValueMap
-    { return valuemap_cat_reduce(std::move(results), 0); };
+    auto red = [](const std::vector<ValueMap> & results) -> ValueMap
+    { return valuemap_cat_reduce(results, 0); };
 
     auto post = [this](ValueMap && x) -> ValueMap
     { return valuemap_move_device(std::move(x), _device); };
@@ -99,6 +114,8 @@ ModelDriver::setup()
     {
       auto new_factory = Factory(_model->factory()->input_file());
       auto new_model = new_factory.get_model(_model->name());
+      for (size_t i = 0; i < _intmd_vars.size(); ++i)
+        new_model->set_input_intmd_sizes(_intmd_vars[i], _intmd_shapes[i]);
       new_model->to(device);
       _models[std::this_thread::get_id()] = std::move(new_model);
     };
@@ -106,7 +123,7 @@ ModelDriver::setup()
     _dispatcher = std::make_unique<DispatcherType>(
         *_scheduler,
         _async_dispatch,
-        [&](ValueMap && x, Device device) -> ValueMap
+        [&](const ValueMap & x, Device device) -> ValueMap
         {
           auto & model = _async_dispatch ? _models[std::this_thread::get_id()] : _model;
 
@@ -116,7 +133,7 @@ ModelDriver::setup()
             model->to(device);
 
           neml_assert_dbg(model->variable_options().device() == device);
-          return model->value(std::move(x));
+          return model->value(x);
         },
         red,
         &valuemap_move_device,
@@ -126,18 +143,8 @@ ModelDriver::setup()
 #endif
 
   // LCOV_EXCL_START
-  if (_show_input)
-    std::cout << _model->name() << "'s input axis:\n" << _model->input_axis() << std::endl;
-
-  if (_show_output)
-    std::cout << _model->name() << "'s output axis:\n" << _model->output_axis() << std::endl;
-
-  if (_show_params)
-  {
-    std::cout << _model->name() << "'s parameters:" << std::endl;
-    for (auto && [pname, pval] : _model->named_parameters())
-      std::cout << "  " << pname << std::endl;
-  }
+  if (_show_model_info)
+    std::cout << *_model << std::endl;
   // LCOV_EXCL_STOP
 }
 
@@ -146,5 +153,12 @@ ModelDriver::diagnose() const
 {
   Driver::diagnose();
   neml2::diagnose(*_model);
+
+  diagnostic_assert(
+      _intmd_vars.size() == _intmd_shapes.size(),
+      "The number of intermediate variables and intermediate shapes must be the same.");
+
+  if (_postprocessor)
+    neml2::diagnose(*_postprocessor);
 }
 } // namespace neml2

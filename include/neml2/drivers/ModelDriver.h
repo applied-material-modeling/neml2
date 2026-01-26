@@ -28,7 +28,7 @@
 #include "neml2/models/map_types.h"
 #include "neml2/tensors/tensors.h"
 
-#ifdef NEML2_HAS_DISPATCHER
+#ifdef NEML2_WORK_DISPATCHER
 #include "neml2/dispatchers/WorkScheduler.h"
 #include "neml2/dispatchers/WorkDispatcher.h"
 #endif
@@ -55,20 +55,24 @@ public:
 
   const Model & model() const { return *_model; }
 
+  const Model & postprocessor() const { return *_postprocessor; }
+
 protected:
   /// The model which the driver uses to perform constitutive updates.
   const std::shared_ptr<Model> _model;
+  /// Variable names for which to tag intermediate shapes
+  const std::vector<VariableName> _intmd_vars;
+  /// Corresponding tensor shapes for the intermediate variables
+  const std::vector<TensorShape> _intmd_shapes;
+  /// Postprocessor model
+  const std::shared_ptr<Model> _postprocessor;
   /// The device on which to evaluate the model
   const Device _device;
 
   /// Set to true to list all the model parameters at the beginning
-  const bool _show_params;
-  /// Set to true to show model's input axis at the beginning
-  const bool _show_input;
-  /// Set to true to show model's output axis at the beginning
-  const bool _show_output;
+  const bool _show_model_info;
 
-#ifdef NEML2_HAS_DISPATCHER
+#ifdef NEML2_WORK_DISPATCHER
   /// The work scheduler to use
   std::shared_ptr<WorkScheduler> _scheduler;
   /// Work dispatcher

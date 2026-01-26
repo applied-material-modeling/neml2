@@ -30,9 +30,9 @@ namespace neml2
 {
 /// @brief  Concatenate the tensors in the DerivMap along the batch dimension
 /// @param results The results to concatenate
-/// @param batch_dim The batch dimension along which to concatenate
-/// @return DerivMap with the tensors concatenated along the batch dimension
-DerivMap derivmap_cat_reduce(std::vector<DerivMap> && results, Size batch_dim);
+/// @param dynamic_dim The dynamic dimension along which to concatenate
+/// @return DerivMap with the tensors concatenated along the dynamic dimension
+DerivMap derivmap_cat_reduce(std::vector<DerivMap> && results, Size dynamic_dim);
 
 /// @brief Move all tensors in a DerivMap to a device
 /// @param x input DerivMap

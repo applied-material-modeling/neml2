@@ -24,23 +24,30 @@
 
 #include <catch2/catch_test_macros.hpp>
 
+#include "neml2/tensors/Quaternion.h"
+#include "neml2/tensors/R2.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/Rot.h"
 #include "utils.h"
-#include "neml2/tensors/tensors.h"
 
 using namespace neml2;
 
 TEST_CASE("Quaternion", "[tensors]")
 {
-  at::manual_seed(42);
-  const auto & DTO = default_tensor_options();
-
-  TensorShape B = {5, 3, 1, 2}; // batch shape
-
-  auto q = Quaternion::fill(-0.30411437, -0.15205718, 0.91234311, 0.22808578, DTO);
-  auto qb = q.batch_expand(B);
-
-  SECTION("convert to matrix")
+  SECTION("constructors")
   {
+    SECTION("Rot")
+    {
+      auto r = Rot::fill(0.1, 0.2, 0.3);
+      auto q = Quaternion(r);
+      auto q_expected = Quaternion::fill(0.75438596491, 0.1754386, 0.35087719, 0.52631579);
+      REQUIRE_THAT(q, test::allclose(q_expected));
+    }
+  }
+
+  SECTION("rotation_matrix")
+  {
+    auto q = Quaternion::fill(-0.30411437, -0.15205718, 0.91234311, 0.22808578);
     auto R2 = R2::fill(-0.76878613,
                        -0.13872832,
                        -0.62427746,
@@ -49,9 +56,18 @@ TEST_CASE("Quaternion", "[tensors]")
                        0.32369942,
                        0.48554913,
                        0.50867052,
-                       -0.71098266,
-                       DTO);
-    REQUIRE(at::allclose(q.to_R2(), R2));
-    REQUIRE(at::allclose(qb.to_R2(), R2.batch_expand(B)));
+                       -0.71098266);
+    REQUIRE_THAT(q.rotation_matrix(), test::allclose(R2));
+  }
+
+  SECTION("dist")
+  {
+    auto q1 = Quaternion::fill(0.5, 0.2, 0.2, 0.5);
+    auto q2 = Quaternion::fill(0.6, 0.5, 0.5, 0.4);
+    auto q3 = Quaternion::fill(-0.8, -0.9, -0.8, -0.9);
+    auto dist12 = Scalar(2 * std::acos(0.7), default_tensor_options());
+    auto dist13 = Scalar(2 * std::acos(1.0), default_tensor_options());
+    REQUIRE_THAT(q1.dist(q2), test::allclose(dist12));
+    REQUIRE_THAT(q1.dist(q3), test::allclose(dist13));
   }
 }

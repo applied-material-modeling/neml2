@@ -25,13 +25,11 @@
 #pragma once
 
 #include "neml2/tensors/PrimitiveTensor.h"
-#include "neml2/tensors/Scalar.h"
-#include "neml2/tensors/R2.h"
-#include "neml2/tensors/functions/linalg/vector_norm.h"
 
 namespace neml2
 {
 class Rot;
+class R2;
 class R3;
 
 /**
@@ -44,25 +42,6 @@ class VecBase : public PrimitiveTensor<Derived, 3>
 {
 public:
   using PrimitiveTensor<Derived, 3>::PrimitiveTensor;
-
-  [[nodiscard]] static Derived fill(const CScalar & v1,
-                                    const CScalar & v2,
-                                    const CScalar & v3,
-                                    const TensorOptions & options = default_tensor_options());
-
-  [[nodiscard]] static Derived fill(const Scalar & v1, const Scalar & v2, const Scalar & v3);
-
-  /// The derivative of a vector with respect to itself
-  [[nodiscard]] static R2 identity_map(const TensorOptions & options = default_tensor_options());
-
-  /// Accessor
-  Scalar operator()(Size i) const;
-
-  /// Norm squared
-  Scalar norm_sq() const;
-
-  /// Norm
-  Scalar norm() const;
 
   /// Rotate using a Rodrigues vector
   Derived rotate(const Rot & r) const;

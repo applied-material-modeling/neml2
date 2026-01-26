@@ -3,7 +3,6 @@ requires = [
   "setuptools>=42",
   "cmake>=3.26",
   "ninja",
-  "pybind11",
   "pybind11-stubgen",
   "packaging",
 ]

@@ -26,7 +26,7 @@
 #include <catch2/matchers/catch_matchers_all.hpp>
 
 #include "utils.h"
-#include "neml2/models/Model.h"
+#include "neml2/neml2.h"
 #include "neml2/tensors/tensors.h"
 #include "neml2/tensors/TensorValue.h"
 
@@ -62,8 +62,8 @@ TEST_CASE("ParameterStore", "[models]")
 
       // Modifying the individual parameter references should affect values stored in the parameter
       // dictionary.
-      E = Scalar::full({1, 2}, 1.0);
-      nu = Scalar::full({5, 1}, 0.3);
+      E = Scalar::full({1, 2}, {}, 1.0);
+      nu = Scalar::full({5, 1}, {}, 0.3);
       REQUIRE(Tensor(*params["E"]).batch_sizes() == TensorShape{1, 2});
       REQUIRE(Tensor(*params["nu"]).batch_sizes() == TensorShape{5, 1});
 

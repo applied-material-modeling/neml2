@@ -139,6 +139,9 @@ private:
 
   /// The actual storage for all the buffers
   std::map<std::string, std::unique_ptr<TensorValueBase>> _buffer_values;
+
+  /// Cached intermediate dimensions of buffers
+  std::map<std::string, Size> _buffer_intmd_dims;
 };
 
 } // namespace neml2

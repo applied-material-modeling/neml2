@@ -24,11 +24,11 @@
     values = '1.0'
   []
   [sdirs]
-    type = FillMillerIndex
+    type = MillerIndex
     values = '1 1 0'
   []
   [splanes]
-    type = FillMillerIndex
+    type = MillerIndex
     values = '1 1 1'
   []
   [initial_orientation]
@@ -54,8 +54,8 @@
   [verification]
     type = VTestVerification
     driver = 'driver'
-    variables = 'output.state/internal/cauchy_stress'
-    references = 'stresses'
+    SR2_names = 'output.state/internal/cauchy_stress'
+    SR2_values = 'stresses'
     # Looser tolerances here are because the NEML(1) model was generated with lagged, explict
     # integration on the orientations
     atol = 1.0
