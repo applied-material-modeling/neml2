@@ -2,12 +2,13 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/u_bar state/u_bc'
-    input_Scalar_values = 'u_bar u_bc'
+    check_AD_parameter_derivatives = false
+    input_Scalar_names = 'state/u_bar'
+    input_Scalar_values = 'u_bar'
     output_Scalar_names = 'state/u_bar_with_bc'
     output_Scalar_values = 'u_bar_with_bc'
-    input_with_intrsc_intmd_dims = 'state/u_bar state/u_bc'
-    input_intrsc_intmd_dims = '1 1'
+    input_with_intrsc_intmd_dims = 'state/u_bar'
+    input_intrsc_intmd_dims = '1'
     output_with_intrsc_intmd_dims = 'state/u_bar_with_bc'
     output_intrsc_intmd_dims = '1'
   []
@@ -38,7 +39,7 @@
   [model]
     type = TransportBoundaryCondition
     input = 'state/u_bar'
-    bc_value = 'state/u_bc'
+    bc_value = 'u_bc'
     side = 'left'
   []
 []

@@ -52,7 +52,7 @@ protected:
   const Variable<Scalar> & _input;
 
   /// Boundary value to append
-  const Variable<Scalar> & _bc_value;
+  const Scalar & _bc_value;
 
   /// Output tensor with boundary condition appended
   Variable<Scalar> & _output;

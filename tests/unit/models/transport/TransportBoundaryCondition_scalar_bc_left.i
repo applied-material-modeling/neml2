@@ -22,14 +22,12 @@
     intermediate_dimension = 1
   []
   [u_bc]
-    type = Scalar
-    values = '10'
-    batch_shape = '(1)'
-    intermediate_dimension = 1
+    type = FullScalar
+    value = 10
   []
   [u_bar_with_bc]
     type = Scalar
-    values = '1 2 3 10'
+    values = '10 1 2 3'
     batch_shape = '(4)'
     intermediate_dimension = 1
   []
@@ -40,6 +38,6 @@
     type = TransportBoundaryCondition
     input = 'state/u_bar'
     bc_value = 'u_bc'
-    side = 'right'
+    side = 'left'
   []
 []

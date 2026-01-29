@@ -22,10 +22,8 @@
     intermediate_dimension = 1
   []
   [u_bc]
-    type = Scalar
-    values = '10'
-    batch_shape = '(1)'
-    intermediate_dimension = 1
+    type = FullScalar
+    value = 10
   []
   [u_bar_with_bc]
     type = Scalar
