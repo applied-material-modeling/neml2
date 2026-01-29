@@ -45,7 +45,7 @@ protected:
   const Variable<Scalar> & _u;
 
   /// Cell-centered diffusivity values
-  const Variable<Scalar> & _D;
+  const Scalar & _D;
 
   /// Cell-edge diffusive fluxes
   Variable<Scalar> & _J;

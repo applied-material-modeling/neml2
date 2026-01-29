@@ -37,7 +37,7 @@ LinearReaction::expected_options()
   OptionSet options = Model::expected_options();
   options.doc() = "Linear reaction rate R = -lambda * u.";
 
-  options.set_input("lambda") = VariableName(STATE, "lambda");
+  options.set_parameter<TensorName<Scalar>>("lambda");
   options.set("lambda").doc() = "Reaction parameter lambda.";
 
   options.set_input("u") = VariableName(STATE, "u");
@@ -51,7 +51,7 @@ LinearReaction::expected_options()
 
 LinearReaction::LinearReaction(const OptionSet & options)
   : Model(options),
-    _lambda(declare_input_variable<Scalar>("lambda")),
+    _lambda(declare_parameter<Scalar>("lambda", "lambda", true)),
     _u(declare_input_variable<Scalar>("u")),
     _R(declare_output_variable<Scalar>("reaction"))
 {
@@ -71,18 +71,18 @@ LinearReaction::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
     // dR/du is a diagonal map over the intermediate dimension
     if (_u.is_dependent())
     {
-      const auto lambda_vec = (_lambda.intmd_dim() == 0 ? _lambda().intmd_expand(N) : _lambda());
+      const auto lambda_vec = (_lambda.intmd_dim() == 0 ? _lambda.intmd_expand(N) : _lambda);
       _R.d(_u, 2, 1, 1) = (-lambda_vec).intmd_unsqueeze(1) * I;
     }
 
-    if (_lambda.is_dependent())
+    if (const auto * const lambda = nl_param("lambda"))
     {
-      if (_lambda.intmd_dim() == 0)
+      if (lambda->intmd_dim() == 0)
         // lambda is a scalar: derivative is a vector over u's intermediate dimension
-        _R.d(_lambda, 1, 1, 0) = -_u();
+        _R.d(*lambda, 1, 1, 0) = -_u();
       else
         // lambda has matching intermediate dimension: diagonal map
-        _R.d(_lambda, 2, 1, 1) = (-_u()).intmd_unsqueeze(1) * I;
+        _R.d(*lambda, 2, 1, 1) = (-_u()).intmd_unsqueeze(1) * I;
     }
   }
 }

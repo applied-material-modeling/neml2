@@ -42,7 +42,7 @@ protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
   /// Reaction parameter lambda
-  const Variable<Scalar> & _lambda;
+  const Scalar & _lambda;
 
   /// Field values
   const Variable<Scalar> & _u;

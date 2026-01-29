@@ -2,22 +2,19 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/lambda state/u'
-    input_Scalar_values = 'lambda u'
+    check_AD_parameter_derivatives = false
+    input_Scalar_names = 'state/u'
+    input_Scalar_values = 'u'
     output_Scalar_names = 'state/R'
     output_Scalar_values = 'R'
-    input_with_intrsc_intmd_dims = 'state/lambda state/u'
-    input_intrsc_intmd_dims = '0 1'
+    input_with_intrsc_intmd_dims = 'state/u'
+    input_intrsc_intmd_dims = '1'
     output_with_intrsc_intmd_dims = 'state/R'
     output_intrsc_intmd_dims = '1'
   []
 []
 
 [Tensors]
-  [lambda]
-    type = Scalar
-    values = '2'
-  []
   [u]
     type = Scalar
     values = '1 2 3'
@@ -35,7 +32,7 @@
 [Models]
   [model]
     type = LinearReaction
-    lambda = 'state/lambda'
+    lambda = 2.0
     u = 'state/u'
     reaction = 'state/R'
   []

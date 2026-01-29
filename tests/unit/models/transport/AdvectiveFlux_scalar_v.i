@@ -17,19 +17,13 @@
 [Tensors]
   [u]
     type = Scalar
-    values = '1 2 4'
-    batch_shape = '(3)'
-    intermediate_dimension = 1
-  []
-  [D]
-    type = Scalar
-    values = '2 4 6'
+    values = '1 2 3'
     batch_shape = '(3)'
     intermediate_dimension = 1
   []
   [J]
     type = Scalar
-    values = '-3 -10'
+    values = '2 4'
     batch_shape = '(2)'
     intermediate_dimension = 1
   []
@@ -37,9 +31,9 @@
 
 [Models]
   [model]
-    type = DiffusiveFlux
+    type = AdvectiveFlux
     u = 'state/u'
-    D = 'D'
+    v = 2.0
     flux = 'state/J'
   []
 []

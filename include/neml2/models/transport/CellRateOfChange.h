@@ -45,7 +45,7 @@ protected:
   const Variable<Scalar> & _flux;
 
   /// Cell sizes
-  const Variable<Scalar> & _dx;
+  const Scalar & _dx;
 
   /// Cell reaction rates
   const Variable<Scalar> & _R;

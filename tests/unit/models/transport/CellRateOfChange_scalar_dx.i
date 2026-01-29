@@ -21,12 +21,6 @@
     batch_shape = '(4)'
     intermediate_dimension = 1
   []
-  [dx]
-    type = Scalar
-    values = '0.5 0.5 0.5'
-    batch_shape = '(3)'
-    intermediate_dimension = 1
-  []
   [R]
     type = Scalar
     values = '0.1 0.2 0.3'
@@ -45,7 +39,7 @@
   [model]
     type = CellRateOfChange
     flux = 'state/J'
-    cell_size = 'dx'
+    cell_size = 0.5
     reaction = 'state/R'
     rate = 'state/u_rate'
   []

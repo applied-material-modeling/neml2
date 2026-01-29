@@ -45,7 +45,7 @@ protected:
   const Variable<Scalar> & _u;
 
   /// Cell-centered advection velocity values
-  const Variable<Scalar> & _v;
+  const Scalar & _v;
 
   /// Cell-edge advective fluxes
   Variable<Scalar> & _J;

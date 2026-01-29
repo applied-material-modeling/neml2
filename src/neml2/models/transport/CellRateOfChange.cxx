@@ -42,7 +42,7 @@ CellRateOfChange::expected_options()
   options.set_input("flux") = VariableName(STATE, "J");
   options.set("flux").doc() = "Cell-edge total fluxes.";
 
-  options.set_input("cell_size") = VariableName(STATE, "dx");
+  options.set_parameter<TensorName<Scalar>>("cell_size");
   options.set("cell_size").doc() = "Cell sizes.";
 
   options.set_input("reaction") = VariableName(STATE, "R");
@@ -57,7 +57,7 @@ CellRateOfChange::expected_options()
 CellRateOfChange::CellRateOfChange(const OptionSet & options)
   : Model(options),
     _flux(declare_input_variable<Scalar>("flux")),
-    _dx(declare_input_variable<Scalar>("cell_size")),
+    _dx(declare_parameter<Scalar>("cell_size", "cell_size", true)),
     _R(declare_input_variable<Scalar>("reaction")),
     _u_dot(declare_output_variable<Scalar>("rate"))
 {
@@ -67,23 +67,27 @@ void
 CellRateOfChange::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   const auto dJ = intmd_diff(_flux(), 1, -1);
-  const auto inv_dx = 1.0 / _dx();
+  const auto N = _R.intmd_size(-1);
+  const auto dx_vec = (_dx.intmd_dim() == 0 ? _dx.intmd_expand(N) : _dx);
+  const auto inv_dx = 1.0 / dx_vec;
 
   if (out)
     _u_dot = _R - dJ * inv_dx;
 
   if (dout_din)
   {
-    const auto N = _R.intmd_size(-1);
     const auto I = intmd_diagonalize(imap_v<Scalar>(_R.options()).intmd_expand(N));
 
     if (_R.is_dependent())
       _u_dot.d(_R, 2, 1, 1) = I;
 
-    if (_dx.is_dependent())
+    if (const auto * const dx = nl_param("cell_size"))
     {
       const auto dJ_over_dx2 = dJ * inv_dx * inv_dx;
-      _u_dot.d(_dx, 2, 1, 1) = dJ_over_dx2.intmd_unsqueeze(1) * I;
+      if (dx->intmd_dim() == 0)
+        _u_dot.d(*dx, 1, 1, 0) = dJ_over_dx2;
+      else
+        _u_dot.d(*dx, 2, 1, 1) = dJ_over_dx2.intmd_unsqueeze(1) * I;
     }
 
     if (_flux.is_dependent())

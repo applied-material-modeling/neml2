@@ -43,7 +43,7 @@ AdvectiveFlux::expected_options()
   options.set_input("u") = VariableName(STATE, "u");
   options.set("u").doc() = "Cell-averaged field values.";
 
-  options.set_input("v") = VariableName(STATE, "v");
+  options.set_parameter<TensorName<Scalar>>("v");
   options.set("v").doc() = "Cell-centered advection velocity values.";
 
   options.set_output("flux") = VariableName(STATE, "J_advection");
@@ -55,7 +55,7 @@ AdvectiveFlux::expected_options()
 AdvectiveFlux::AdvectiveFlux(const OptionSet & options)
   : Model(options),
     _u(declare_input_variable<Scalar>("u")),
-    _v(declare_input_variable<Scalar>("v")),
+    _v(declare_parameter<Scalar>("v", "v", true)),
     _J(declare_output_variable<Scalar>("flux"))
 {
 }
@@ -66,8 +66,9 @@ AdvectiveFlux::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
   const auto N = _u.intmd_size(-1);
   const auto u_left = _u().intmd_slice(-1, indexing::Slice(0, N - 1));
   const auto u_right = _u().intmd_slice(-1, indexing::Slice(1, N));
-  const auto v_left = _v().intmd_slice(-1, indexing::Slice(0, N - 1));
-  const auto v_right = _v().intmd_slice(-1, indexing::Slice(1, N));
+  const auto v_vec = (_v.intmd_dim() == 0 ? _v.intmd_expand(N) : _v);
+  const auto v_left = v_vec.intmd_slice(-1, indexing::Slice(0, N - 1));
+  const auto v_right = v_vec.intmd_slice(-1, indexing::Slice(1, N));
 
   const auto v_half = 0.5 * (v_left + v_right);
   const auto v_abs = neml2::abs(v_half);
@@ -85,23 +86,27 @@ AdvectiveFlux::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
     const auto S_left_u = diag_u.intmd_slice(0, indexing::Slice(0, N - 1));
     const auto S_right_u = diag_u.intmd_slice(0, indexing::Slice(1, N));
 
-    const auto v_map = imap_v<Scalar>(_v.options()).intmd_expand(N);
-    const auto diag_v = intmd_diagonalize(v_map);
-    const auto S_left_v = diag_v.intmd_slice(0, indexing::Slice(0, N - 1));
-    const auto S_right_v = diag_v.intmd_slice(0, indexing::Slice(1, N));
-
     if (_u.is_dependent())
       _J.d(_u, 2, 1, 1) =
           v_plus.intmd_unsqueeze(1) * S_left_u + v_minus.intmd_unsqueeze(1) * S_right_u;
 
-    if (_v.is_dependent())
+    if (const auto * const v = nl_param("v"))
     {
       const auto s = neml2::sign(v_half);
       const auto dvp = 0.5 * (1.0 + s);
       const auto dvm = 0.5 * (1.0 - s);
       const auto dJ_dvhalf = dvp * u_left + dvm * u_right;
 
-      _J.d(_v, 2, 1, 1) = (0.5 * dJ_dvhalf).intmd_unsqueeze(1) * (S_left_v + S_right_v);
+      if (v->intmd_dim() == 0)
+        _J.d(*v, 1, 1, 0) = dJ_dvhalf;
+      else
+      {
+        const auto v_map = imap_v<Scalar>(_u.options()).intmd_expand(N);
+        const auto diag_v = intmd_diagonalize(v_map);
+        const auto S_left_v = diag_v.intmd_slice(0, indexing::Slice(0, N - 1));
+        const auto S_right_v = diag_v.intmd_slice(0, indexing::Slice(1, N));
+        _J.d(*v, 2, 1, 1) = (0.5 * dJ_dvhalf).intmd_unsqueeze(1) * (S_left_v + S_right_v);
+      }
     }
   }
 }

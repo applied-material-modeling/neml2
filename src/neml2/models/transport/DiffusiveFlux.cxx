@@ -41,7 +41,7 @@ DiffusiveFlux::expected_options()
   options.set_input("u") = VariableName(STATE, "u");
   options.set("u").doc() = "Cell-averaged field values.";
 
-  options.set_input("D") = VariableName(STATE, "D");
+  options.set_parameter<TensorName<Scalar>>("D");
   options.set("D").doc() = "Cell-centered diffusivity values.";
 
   options.set_output("flux") = VariableName(STATE, "J_diffusion");
@@ -53,7 +53,7 @@ DiffusiveFlux::expected_options()
 DiffusiveFlux::DiffusiveFlux(const OptionSet & options)
   : Model(options),
     _u(declare_input_variable<Scalar>("u")),
-    _D(declare_input_variable<Scalar>("D")),
+    _D(declare_parameter<Scalar>("D", "D", true)),
     _J(declare_output_variable<Scalar>("flux"))
 {
 }
@@ -64,8 +64,9 @@ DiffusiveFlux::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
   const auto N = _u.intmd_size(-1);
   const auto u_left = _u().intmd_slice(-1, indexing::Slice(0, N - 1));
   const auto u_right = _u().intmd_slice(-1, indexing::Slice(1, N));
-  const auto D_left = _D().intmd_slice(-1, indexing::Slice(0, N - 1));
-  const auto D_right = _D().intmd_slice(-1, indexing::Slice(1, N));
+  const auto D_vec = (_D.intmd_dim() == 0 ? _D.intmd_expand(N) : _D);
+  const auto D_left = D_vec.intmd_slice(-1, indexing::Slice(0, N - 1));
+  const auto D_right = D_vec.intmd_slice(-1, indexing::Slice(1, N));
 
   const auto du = u_right - u_left;
   const auto D_avg = 0.5 * (D_left + D_right);
@@ -86,8 +87,13 @@ DiffusiveFlux::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
       _J.d(_u, 2, 1, 1) = (-D_avg).intmd_unsqueeze(1) * (S_right - S_left);
 
     // dJ/dD = -0.5 * du * (S_left + S_right)
-    if (_D.is_dependent())
-      _J.d(_D, 2, 1, 1) = (-0.5 * du).intmd_unsqueeze(1) * (S_left + S_right);
+    if (const auto * const D = nl_param("D"))
+    {
+      if (D->intmd_dim() == 0)
+        _J.d(*D, 1, 1, 0) = -du;
+      else
+        _J.d(*D, 2, 1, 1) = (-0.5 * du).intmd_unsqueeze(1) * (S_left + S_right);
+    }
   }
 }
 } // namespace neml2
