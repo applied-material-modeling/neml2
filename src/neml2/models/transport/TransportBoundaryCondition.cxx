@@ -44,6 +44,10 @@ TransportBoundaryCondition::expected_options()
   options.set_parameter<TensorName<Scalar>>("bc_value");
   options.set("bc_value").doc() = "Boundary condition value to append.";
 
+  options.set_output("output");
+  options.set("output").doc() =
+      "Output tensor name. Defaults to input + '_with_bc_left' or '_with_bc_right'.";
+
   EnumSelection side_selection(
       {"left", "right"}, {static_cast<int>(Side::LEFT), static_cast<int>(Side::RIGHT)}, "left");
   options.set<EnumSelection>("side") = side_selection;
@@ -57,9 +61,11 @@ TransportBoundaryCondition::TransportBoundaryCondition(const OptionSet & options
   : Model(options),
     _input(declare_input_variable<Scalar>(options.get<VariableName>("input"))),
     _bc_value(declare_parameter<Scalar>("bc_value", "bc_value", true)),
-    _output(declare_output_variable<Scalar>(
-        options.get<VariableName>("input").with_suffix("_with_bc"))),
-    _side(options.get<EnumSelection>("side").as<Side>())
+    _side(options.get<EnumSelection>("side").as<Side>()),
+    _output(options.get("output").user_specified()
+                ? declare_output_variable<Scalar>("output")
+                : declare_output_variable<Scalar>(options.get<VariableName>("input").with_suffix(
+                      _side == Side::LEFT ? "_with_bc_left" : "_with_bc_right")))
 {
 }
 
@@ -68,8 +74,7 @@ TransportBoundaryCondition::set_value(bool out, bool dout_din, bool /*d2out_din2
 {
   if (out)
   {
-    auto bc_value = (_bc_value.intmd_dim() == 0 ? Scalar(_bc_value.unsqueeze(0), 0, 1)
-                          : _bc_value);
+    auto bc_value = (_bc_value.intmd_dim() == 0 ? Scalar(_bc_value.unsqueeze(0), 0, 1) : _bc_value);
     bc_value = bc_value.dynamic_expand_as(_input());
     if (_side == Side::LEFT)
       _output = intmd_cat({bc_value, _input()}, 0);
@@ -85,8 +90,7 @@ TransportBoundaryCondition::set_value(bool out, bool dout_din, bool /*d2out_din2
     // d(output)/d(input) is a (N+1)xN matrix with an identity block and a zero row.
     // d(output)/d(bc) is a (N+1)x1 vector with a single 1 at the appended location.
     const auto in_map = imap_v<Scalar>(_input.options()).intmd_expand(_input.intmd_size(-1));
-    auto bc_value = (_bc_value.intmd_dim() == 0 ? Scalar(_bc_value.unsqueeze(0), 0, 1)
-                          : _bc_value);
+    auto bc_value = (_bc_value.intmd_dim() == 0 ? Scalar(_bc_value.unsqueeze(0), 0, 1) : _bc_value);
     bc_value = bc_value.dynamic_expand_as(_input());
     const auto bc_map = imap_v<Scalar>(bc_value.options()).intmd_expand(bc_value.intmd_size(-1));
     const auto diag_in = intmd_diagonalize(in_map);        // N x N identity in intmd dims

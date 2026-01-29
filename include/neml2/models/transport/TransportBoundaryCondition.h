@@ -54,10 +54,10 @@ protected:
   /// Boundary value to append
   const Scalar & _bc_value;
 
-  /// Output tensor with boundary condition appended
-  Variable<Scalar> & _output;
-
   /// Which side to append to
   Side _side;
+
+  /// Output tensor with boundary condition appended
+  Variable<Scalar> & _output;
 };
 } // namespace neml2
