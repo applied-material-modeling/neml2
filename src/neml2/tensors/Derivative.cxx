@@ -361,17 +361,12 @@ template <std::size_t N>
 Tensor
 Derivative<N>::try_intmd_expand(const Tensor & deriv) const
 {
-  neml_assert(deriv.intmd_dim() >= _intrsc_intmd_dim,
-              "The intermediate dimension (",
-              deriv.intmd_dim(),
-              ") of the assigned derivative for '",
-              name(),
-              "' is smaller than the declared intrinsic intermediate dimension (",
-              _intrsc_intmd_dim,
-              ").");
+  auto deriv2 = deriv;
+  if (deriv2.intmd_dim() < _intrsc_intmd_dim)
+    deriv2 = deriv2.intmd_unsqueeze(-1, _intrsc_intmd_dim - deriv2.intmd_dim());
 
   const auto deriv_intrsc_intmd_sizes =
-      deriv.intmd_sizes().slice(deriv.intmd_dim() - _intrsc_intmd_dim);
+      deriv2.intmd_sizes().slice(deriv2.intmd_dim() - _intrsc_intmd_dim);
   const auto total_intrsc_intmd_sizes =
       N == 1 ? utils::add_shapes(var_intrsc_intmd_sizes(), arg_intrsc_intmd_sizes(0))
              : utils::add_shapes(
@@ -380,7 +375,7 @@ Derivative<N>::try_intmd_expand(const Tensor & deriv) const
   // Easy case: intrinsic intermediate shape of the derivative matches the total intrinsice
   // intermediate shape -- no broadcasting needed
   if (deriv_intrsc_intmd_sizes == total_intrsc_intmd_sizes)
-    return deriv;
+    return deriv2;
 
   // Broadcasting case: need to broadcast the intrinsic intermediate shape of the derivative
   // to the variable's intrinsic intermediate shape
@@ -394,10 +389,10 @@ Derivative<N>::try_intmd_expand(const Tensor & deriv) const
                   ").");
 
   const auto extrsc_intmd_sizes =
-      deriv.intmd_sizes().slice(0, deriv.intmd_dim() - _intrsc_intmd_dim);
+      deriv2.intmd_sizes().slice(0, deriv2.intmd_dim() - _intrsc_intmd_dim);
   const auto target_intmd_sizes = utils::add_shapes(extrsc_intmd_sizes, var_intrsc_intmd_sizes());
   const auto deriv_aligned =
-      deriv.intmd_unsqueeze(-_intrsc_intmd_dim - 1, var_intrsc_intmd_dim() - _intrsc_intmd_dim);
+      deriv2.intmd_unsqueeze(-_intrsc_intmd_dim - 1, var_intrsc_intmd_dim() - _intrsc_intmd_dim);
   return deriv_aligned.intmd_expand(target_intmd_sizes);
 }
 
