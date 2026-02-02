@@ -125,11 +125,11 @@
     cp_warmup_elastic_scale = 0.1
     save_as = 'result.pt'
   []
-#  [regression]
-#    type = TransientRegression
-#    driver = 'driver'
-#    reference = 'gold/result.pt'
-#  []
+  [regression]
+    type = TransientRegression
+    driver = 'driver'
+    reference = 'gold/result.pt'
+  []
 []
 
 [Data]
@@ -223,7 +223,6 @@
     type = NewtonWithLineSearch
     max_linesearch_iterations = 5
     linear_solver = 'lu'
-    verbose = true
   []
   [lu]
     type = DenseLU

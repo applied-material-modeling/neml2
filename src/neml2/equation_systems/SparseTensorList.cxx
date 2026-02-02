@@ -105,7 +105,7 @@ inner(const SparseTensorList & a, const SparseTensorList & b)
   auto s = Scalar::zeros(a.options());
   for (std::size_t i = 0; i < a.size(); i++)
     if (a[i].defined() && b[i].defined())
-      s = s + neml2::inner(a[i], b[i]);
+      s = s + neml2::inner(a[i].static_flatten(), b[i].static_flatten());
   return s;
 }
 
