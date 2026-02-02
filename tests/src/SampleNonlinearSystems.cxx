@@ -95,7 +95,7 @@ PowerTestSystem::assemble(SparseTensorList * A, SparseTensorList * b)
   {
     A->resize(n * n);
     for (std::size_t i = 0; i < n; i++)
-      (*A)[i * n + i] = (i + 1) * pow(_u[i], Scalar(double(i), opts));
+      (*A)[i * n + i] = (double(i) + 1) * pow(_u[i], Scalar(double(i), opts));
   }
 }
 
