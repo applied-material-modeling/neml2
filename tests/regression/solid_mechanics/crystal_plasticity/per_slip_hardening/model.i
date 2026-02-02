@@ -104,7 +104,7 @@
   [initial_dislocation_density]
     type = FullScalar
     batch_shape = '(20, 12)'
-    value = 1.0
+    value = 1.0e1
     intermediate_dimension = 1
   []
 []
@@ -179,15 +179,15 @@
     dislocation_density = 'state/internal/dislocation_density'
     alpha = 0.3
     mu = 1.0e5
-    b = 1.0e-10
+    b = 1.0e-4
     constant_strength = 50.0
   []
   [dislocation_density]
     type = PerSlipForestDislocationEvolution
     dislocation_density = 'state/internal/dislocation_density'
     slip_rates = 'state/internal/slip_rates'
-    k1 = 1e-3
-    k2 = 0.0
+    k1 = 1e2
+    k2 = 40.0
   []
   [integrate_dislocation_density]
     type = ScalarBackwardEulerTimeIntegration
