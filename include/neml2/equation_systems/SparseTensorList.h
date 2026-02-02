@@ -42,6 +42,9 @@ struct SparseTensorList : public std::vector<Tensor>
 {
   using std::vector<Tensor>::vector;
 
+  /// Construct from a vector of Tensors
+  explicit SparseTensorList(const std::vector<Tensor> &);
+
   /// Tensor options
   TensorOptions options() const;
 

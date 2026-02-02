@@ -30,6 +30,11 @@
 
 namespace neml2
 {
+SparseTensorList::SparseTensorList(const std::vector<Tensor> & v)
+  : std::vector<Tensor>(v)
+{
+}
+
 TensorOptions
 SparseTensorList::options() const
 {

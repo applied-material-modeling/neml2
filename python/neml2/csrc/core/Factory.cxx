@@ -40,17 +40,13 @@ def(py::module_ & m, py::class_<neml2::Factory> & c)
   :param name:        Name of the model
   )")
       .def(
-          "get_nl_sys",
+          "get_nonlinear_system",
           [](Factory * self, const std::string & name)
-          {
-            OptionSet extra_opts;
-            extra_opts.set<bool>("_nonlinear_system") = true;
-            return self->get_object<Model>("Models", name, extra_opts);
-          },
+          { return self->get_es<ModelNonlinearSystem>(name); },
           py::arg("name"),
           R"(
-  Create a core.Model which represents a nonlinear system.
+  Create a core.NonlinearSystem.
 
-  :param name:        Name of the model
+  :param name:        Name of the nonlinear system
   )");
 }

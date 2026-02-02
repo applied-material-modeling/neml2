@@ -24,8 +24,7 @@
 
 #include "neml2/models/ModelNonlinearSystem.h"
 
-#include "neml2/equation_systems/HVector.h"
-#include "neml2/models/Model.h"
+#include "neml2/equation_systems/SparseTensorList.h"
 #include "python/neml2/csrc/core/types.h"
 #include "python/neml2/csrc/core/utils.h"
 #include <pybind11/cast.h>
@@ -37,95 +36,87 @@ using namespace neml2;
 void
 def(py::module_ & m, py::class_<ModelNonlinearSystem> & c)
 {
-  // wrappers for nonlinear system-related methods
-  c.def(py::init<Model *>(),
-        py::arg("model"),
-        "Interpret a Model as a nonlinear system of equations")
-      .def("umap", &ModelNonlinearSystem::umap, "Get the unknowns for this nonlinear system")
-      .def("unmap", &ModelNonlinearSystem::unmap, "Get the old solutions for this nonlinear system")
-      .def("gmap", &ModelNonlinearSystem::gmap, "Get the given variables for this nonlinear system")
-      .def("gnmap",
-           &ModelNonlinearSystem::gnmap,
-           "Get the old given variables for this nonlinear system")
-      .def("bmap", &ModelNonlinearSystem::bmap, "Get the residuals for this nonlinear system")
+  c.def(
+       "to",
+       [](ModelNonlinearSystem * self, NEML2_TENSOR_OPTIONS_VARGS)
+       { return self->to(NEML2_TENSOR_OPTIONS); },
+       py::kw_only(),
+       PY_ARG_TENSOR_OPTIONS)
+      .def("model",
+           (py::overload_cast<>(&ModelNonlinearSystem::model)),
+           py::return_value_policy::reference,
+           "Get the model defining this nonlinear system")
+      .def_property_readonly(
+          "m", &ModelNonlinearSystem::m, "Number of rows of blocks in the system")
+      .def_property_readonly(
+          "n", &ModelNonlinearSystem::n, "Number of columns of blocks in the system")
+      .def_property_readonly(
+          "p", &ModelNonlinearSystem::p, "Number of columns of blocks in the auxiliary system")
+      .def(
+          "set_u",
+          [](ModelNonlinearSystem * self, const std::vector<Tensor> & u)
+          { self->set_u(SparseTensorList(u)); },
+          py::arg("u"),
+          "Set the unknowns for this nonlinear system")
+      .def(
+          "set_g",
+          [](ModelNonlinearSystem * self, const std::vector<Tensor> & g)
+          { self->set_g(SparseTensorList(g)); },
+          py::arg("g"),
+          "Set the given variables for this nonlinear system")
+      .def(
+          "u",
+          [](ModelNonlinearSystem * self) { return std::vector<Tensor>(self->u()); },
+          "Get the unknowns for this nonlinear system")
+      .def(
+          "g",
+          [](ModelNonlinearSystem * self) { return std::vector<Tensor>(self->g()); },
+          "Get the given variables for this nonlinear system")
+      .def(
+          "A",
+          [](ModelNonlinearSystem * self) { return std::vector<Tensor>(self->A()); },
+          "Get the system matrix for this nonlinear system")
+      .def(
+          "b",
+          [](ModelNonlinearSystem * self) { return std::vector<Tensor>(self->b()); },
+          "Get the right-hand side vector for this nonlinear system")
+      .def(
+          "A_and_b",
+          [](ModelNonlinearSystem * self)
+          {
+            auto [A, b] = self->A_and_b();
+            return std::make_pair(std::vector<Tensor>(A), std::vector<Tensor>(b));
+          },
+          "Get the system matrix and the right-hand side vector for this nonlinear system")
+      .def(
+          "B",
+          [](ModelNonlinearSystem * self) { return std::vector<Tensor>(self->B()); },
+          "Get the auxiliary system matrix for this nonlinear system")
+      .def("umap",
+           &ModelNonlinearSystem::umap,
+           "Get the ID-to-unknown mapping for this nonlinear system")
+      .def("bmap",
+           &ModelNonlinearSystem::bmap,
+           "Get the ID-to-RHS mapping for this nonlinear system")
+      .def("gmap",
+           &ModelNonlinearSystem::gmap,
+           "Get the ID-to-given mapping for this nonlinear system")
+      .def("intmd_ulayout",
+           &ModelNonlinearSystem::intmd_ulayout,
+           "Get the ID-to-unknown-intermediate-shape mapping for this nonlinear system")
       .def("ulayout",
            &ModelNonlinearSystem::ulayout,
-           "Get the unknown layout for this nonlinear system")
-      .def("unlayout",
-           &ModelNonlinearSystem::unlayout,
-           "Get the old solution layout for this nonlinear system")
-      .def("glayout",
-           &ModelNonlinearSystem::glayout,
-           "Get the given variable layout for this nonlinear system")
-      .def("gnlayout",
-           &ModelNonlinearSystem::gnlayout,
-           "Get the old given variable layout for this nonlinear system")
+           "Get the ID-to-unknown-base-shape mapping for this nonlinear system")
+      .def("intmd_blayout",
+           &ModelNonlinearSystem::intmd_blayout,
+           "Get the ID-to-RHS-intermediate-shape mapping for this nonlinear system")
       .def("blayout",
            &ModelNonlinearSystem::blayout,
-           "Get the residual layout for this nonlinear system")
-      .def("create_uvec",
-           &ModelNonlinearSystem::create_uvec,
-           "Create a vector for unknowns compatible with this nonlinear system")
-      .def("create_unvec",
-           &ModelNonlinearSystem::create_unvec,
-           "Create a old solution vector compatible with this nonlinear system")
-      .def("create_gvec",
-           &ModelNonlinearSystem::create_gvec,
-           "Create a vector for given variables compatible with this nonlinear system")
-      .def("create_gnvec",
-           &ModelNonlinearSystem::create_gnvec,
-           "Create a vector for old given variables compatible with this nonlinear system")
-      .def("create_bvec",
-           &ModelNonlinearSystem::create_bvec,
-           "Create a vector for residuals compatible with this nonlinear system")
-      .def("u_to_un",
-           py::overload_cast<const HVector &>(&ModelNonlinearSystem::u_to_un, py::const_),
-           py::arg("u"),
-           "Map a current unknown vector to the old solution vector")
-      .def("g_to_gn",
-           py::overload_cast<const HVector &>(&ModelNonlinearSystem::g_to_gn, py::const_),
-           py::arg("g"),
-           "Map a current given variable vector to the old given variable vector")
-      .def("un_to_u",
-           py::overload_cast<const HMatrix &>(&ModelNonlinearSystem::un_to_u, py::const_),
-           py::arg("A"),
-           "Map a matrix whose columns are old solutions to a matrix whose columns are current "
-           "unknowns")
-      .def("set_u",
-           &ModelNonlinearSystem::set_u,
-           py::arg("u"),
-           "Set the current unknowns in the nonlinear system")
-      .def("set_un",
-           &ModelNonlinearSystem::set_un,
-           py::arg("un"),
-           "Set the old solution in the nonlinear system")
-      .def("set_g",
-           &ModelNonlinearSystem::set_g,
-           py::arg("g"),
-           "Set the current given variables in the nonlinear system")
-      .def("set_gn",
-           &ModelNonlinearSystem::set_gn,
-           py::arg("gn"),
-           "Set the old given variables in the nonlinear system")
-      .def("u", &ModelNonlinearSystem::u, "Get the current unknowns from the nonlinear system")
-      .def("un", &ModelNonlinearSystem::un, "Get the old solution from the nonlinear system")
-      .def("g",
-           &ModelNonlinearSystem::g,
-           "Get the current given variables from the nonlinear system")
-      .def("gn", &ModelNonlinearSystem::gn, "Get the old given variables from the nonlinear system")
-      .def("A", &ModelNonlinearSystem::A, "Get the system matrix for the nonlinear system")
-      .def("b", &ModelNonlinearSystem::b, "Get the right-hand side vector for the nonlinear system")
-      .def("A_and_b",
-           &ModelNonlinearSystem::A_and_b,
-           "Get the system matrix and the right-hand side vector for the nonlinear system");
-
-  c.def(
-      "An",
-      [](ModelNonlinearSystem & self)
-      {
-        if (self.assembly_guard())
-          self.model().forward_maybe_jit(false, true, false);
-        return self.model().collect_output_derivatives(self.bmap(), self.unmap());
-      },
-      "Get the derivative of the current residual w.r.t. old solution.");
+           "Get the ID-to-RHS-shape mapping for this nonlinear system")
+      .def("intmd_glayout",
+           &ModelNonlinearSystem::intmd_glayout,
+           "Get the ID-to-given-intermediate-shape mapping for this nonlinear system")
+      .def("glayout",
+           &ModelNonlinearSystem::glayout,
+           "Get the ID-to-given-base-shape mapping for this nonlinear system");
 }

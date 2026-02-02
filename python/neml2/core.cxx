@@ -25,6 +25,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+#include "neml2/models/ModelNonlinearSystem.h"
 #include "python/neml2/csrc/core/types.h"
 #include "python/neml2/csrc/core/utils.h"
 
@@ -47,12 +48,8 @@ PYBIND11_MODULE(core, m)
       py::class_<Factory>(m, "Factory", "Factory for creating objects defined in the input file");
   auto cls_Model = py::class_<Model, std::shared_ptr<Model>>(
       m, "Model", "The canonical type for constitutive models in NEML2.");
-  auto cls_HVector =
-      py::class_<HVector>(m, "HVector", "Heterogeneous vector for equation systems.");
-  auto cls_HMatrix =
-      py::class_<HMatrix>(m, "HMatrix", "Heterogeneous matrix for equation systems.");
-  auto cls_ModelNonlinearSystem = py::class_<ModelNonlinearSystem>(
-      m, "ModelNonlinearSystem", "Nonlinear system wrapper for models.");
+  auto cls_NonlinearSystem = py::class_<ModelNonlinearSystem>(
+      m, "NonlinearSystem", "Nonlinear system wrapper for models.");
 
   // free functions
   m.def(
@@ -87,6 +84,27 @@ PYBIND11_MODULE(core, m)
   :param name:      Name of the model
   )");
   m.def(
+      "load_nonlinear_system",
+      [](const py::object & path, const std::string & name)
+      {
+        auto factory = load_input(py::str(path).cast<std::string>());
+        return factory->get_es<ModelNonlinearSystem>(name);
+      },
+      py::arg("path"),
+      py::arg("name"),
+      R"(
+  A convenient function to load an input file and get a nonlinear system.
+
+  This function is equivalent to calling core.load_input followed by
+  Factory.get_nonlinear_system. Note that this convenient function does not
+  support passing additional command-line arguments and will force the creation of a new
+  core.NonlinearSystem even if one has already been created. Use core.load_input and
+  Factory.get_nonlinear_system if you need finer control over the model creation behavior.
+
+  :param path:      Path to the input file to be parsed
+  :param name:      Name of the nonlinear system
+  )");
+  m.def(
       "diagnose",
       [](const Model & m)
       {
@@ -106,7 +124,7 @@ PYBIND11_MODULE(core, m)
   )");
   m.def(
       "bind",
-      [](const py::object & p, const HVector & v)
+      [](const py::object & p, const std::vector<Tensor> & v)
       {
         // cast p to iterable
         auto p_itr = py::cast<py::iterable>(p);
@@ -117,13 +135,13 @@ PYBIND11_MODULE(core, m)
         return neml2::bind(names, v);
       },
       py::arg("variable_names"),
-      py::arg("es_vector"),
+      py::arg("values"),
       R"(
-Bind an HVector to variable names to form a dictionary whose keys are
-variable names and values are sub-tensors in HVector.
+Bind a vector of Tensors to variable names to form a dictionary whose keys are
+variable names and values are sub-tensors.
 
 :param variable_names: List of variable names
-:param es_vector: HVector to be bound
+:param values: Vector of Tensors to be bound
         )");
 
   // binding definitions
@@ -132,7 +150,5 @@ variable names and values are sub-tensors in HVector.
   def(m, cls_TensorValue);
   def(m, cls_Factory);
   def(m, cls_Model);
-  def(m, cls_HVector);
-  def(m, cls_HMatrix);
-  def(m, cls_ModelNonlinearSystem);
+  def(m, cls_NonlinearSystem);
 }
