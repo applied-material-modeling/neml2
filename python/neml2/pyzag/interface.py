@@ -33,10 +33,10 @@ from neml2.core import VariableName
 
 
 class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
-    """Wraps a NEML2 model into a `nonlinear.NonlinearRecursiveFunction`
+    """Wraps a NEML2 nonlinear system into a `nonlinear.NonlinearRecursiveFunction`
 
     Args:
-        model (NEML2 model): the model to wrap
+        sys: the NEML2 nonlinear system to wrap
 
     Keyword Args:
         exclude_parameters (list of str): exclude these parameters from being wrapped as a pytorch parameter
@@ -46,15 +46,15 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
 
     def __init__(
         self,
-        model: neml2.Model,
+        sys: neml2.NonlinearSystem,
         *args,
         exclude_parameters: list[str] = [],
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
 
-        self.model = model
-        self.nl_sys = neml2.ModelNonlinearSystem(model, assembly_guard=False)
+        self.sys = sys
+        self.model = sys.model()
         self._lookback = 1
 
         self._check_model()
@@ -72,11 +72,11 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
 
     @property
     def nstate(self) -> int:
-        return self.model.input_axis().subaxis(STATE).size()
+        return self.sys.n
 
     @property
     def nforce(self) -> int:
-        return self.model.input_axis().subaxis(FORCES).size()
+        return self.sys.p
 
     def forward(
         self, state: torch.Tensor, forces: torch.Tensor
@@ -94,8 +94,8 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         self._update_nl_sys(state, forces)
 
         # Call the model
-        A, b = self.nl_sys.A_and_b()
-        An = self.nl_sys.un_to_u(self.nl_sys.An())
+        A, b = self.sys.A_and_b()
+        An = self.sys.un_to_u(self.sys.An())
 
         # Assemble residual, remember r = -b
         r = -b.assemble()[0]
