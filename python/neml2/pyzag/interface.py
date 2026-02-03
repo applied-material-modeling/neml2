@@ -105,7 +105,12 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         # Assemble residual and Jacobians
         r, J, Jn = self._assemble(A, B, b)
 
-        print(r.dynamic[0, 0])
+        print("------------------------------------------")
+        print(state.norm())
+        print(forces.norm())
+        print(r.torch().norm())
+        print(J.torch().norm())
+        print(Jn.torch().norm())
 
         # At this point, the residual and Jacobians should be good to go
         return self._adapt_for_pyzag(r, J, Jn)
@@ -356,7 +361,7 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         Args:
             r (neml2.Tensor): residual
             J (neml2.Tensor): Jacobian
-            J_old (neml2.Tensor): Jacobian for the old state
+            Jn (neml2.Tensor): Jacobian for the old state
 
         Returns:
             tuple of torch.Tensor: residual, Jacobian
