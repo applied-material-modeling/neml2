@@ -47,6 +47,8 @@ ModelNonlinearSystem::expected_options()
 
 ModelNonlinearSystem::ModelNonlinearSystem(const OptionSet & options)
   : NonlinearSystem(options),
+    ParameterStore(this),
+    BufferStore(this),
     _model(get_model("model"))
 {
 }
@@ -55,6 +57,12 @@ void
 ModelNonlinearSystem::setup()
 {
   NonlinearSystem::setup();
+
+  if (host() == this)
+  {
+    _model->link_output_variables();
+    _model->link_input_variables();
+  }
 
   // unknown variables should be marked mutable, as they will be updated during the nonlinear solve
   for (const auto & vname : umap())
@@ -65,6 +73,8 @@ void
 ModelNonlinearSystem::to(const TensorOptions & options)
 {
   _model->to(options);
+  send_parameters_to(options);
+  send_buffers_to(options);
 }
 
 std::vector<LabeledAxisAccessor>
@@ -208,7 +218,7 @@ void
 ModelNonlinearSystem::assemble(SparseTensorList * A, SparseTensorList * b)
 {
   {
-    AssemblyingNonlinearSystem assembling_nl_sys(_model.get());
+    AssemblyingNonlinearSystem assembling_nl_sys(true);
     _model->forward_maybe_jit(b && !_b_up_to_date, A && !_A_up_to_date, false);
   }
 

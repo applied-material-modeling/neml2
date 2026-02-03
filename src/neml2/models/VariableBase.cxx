@@ -102,7 +102,7 @@ VariableBase::is_solve_dependent() const
 bool
 VariableBase::is_dependent() const
 {
-  return !owner().currently_assembling_nonlinear_system() || is_solve_dependent();
+  return !currently_assembling_nonlinear_system() || is_solve_dependent();
 }
 
 Size

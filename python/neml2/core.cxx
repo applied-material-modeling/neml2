@@ -48,7 +48,8 @@ PYBIND11_MODULE(core, m)
       py::class_<Factory>(m, "Factory", "Factory for creating objects defined in the input file");
   auto cls_Model = py::class_<Model, std::shared_ptr<Model>>(
       m, "Model", "The canonical type for constitutive models in NEML2.");
-  auto cls_NonlinearSystem = py::class_<ModelNonlinearSystem>(
+  auto cls_NonlinearSystem = py::class_<ModelNonlinearSystem,
+                                        std::shared_ptr<ModelNonlinearSystem>>(
       m, "NonlinearSystem", "Nonlinear system wrapper for models.");
 
   // free functions

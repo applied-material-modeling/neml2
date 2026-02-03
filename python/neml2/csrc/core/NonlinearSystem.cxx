@@ -34,7 +34,7 @@ namespace py = pybind11;
 using namespace neml2;
 
 void
-def(py::module_ & m, py::class_<ModelNonlinearSystem> & c)
+def(py::module_ & m, py::class_<ModelNonlinearSystem, std::shared_ptr<ModelNonlinearSystem>> & c)
 {
   // assembly routines
   m.def(
@@ -133,10 +133,10 @@ def(py::module_ & m, py::class_<ModelNonlinearSystem> & c)
        { return self->to(NEML2_TENSOR_OPTIONS); },
        py::kw_only(),
        PY_ARG_TENSOR_OPTIONS)
-      .def("model",
-           (py::overload_cast<>(&ModelNonlinearSystem::model)),
-           py::return_value_policy::reference,
-           "Get the model defining this nonlinear system")
+      .def(
+          "model",
+          [](const ModelNonlinearSystem * self) { return self->model_ptr(); },
+          "Get the model defining this nonlinear system")
       .def_property_readonly(
           "m", &ModelNonlinearSystem::m, "Number of rows of blocks in the system")
       .def_property_readonly(
@@ -223,4 +223,46 @@ def(py::module_ & m, py::class_<ModelNonlinearSystem> & c)
       .def("glayout",
            &ModelNonlinearSystem::glayout,
            "Get the ID-to-given-base-shape mapping for this nonlinear system");
+
+  // Parameter/buffer related methods
+  c.def(
+       "named_parameters",
+       [](ModelNonlinearSystem & self)
+       {
+         std::map<std::string, TensorValueBase *> params;
+         for (auto && [pname, pval] : self.named_parameters())
+           params[pname] = pval.get();
+         return params;
+       },
+       py::return_value_policy::reference,
+       "Get the model parameters. The keys of the returned dictionary are the parameters' "
+       "names.")
+      .def(
+          "named_buffers",
+          [](ModelNonlinearSystem & self)
+          {
+            std::map<std::string, TensorValueBase *> buffers;
+            for (auto && [bname, bval] : self.named_buffers())
+              buffers[bname] = bval.get();
+            return buffers;
+          },
+          py::return_value_policy::reference,
+          "Get the model buffers. The keys of the returned dictionary are the buffers' names.")
+      .def("__getattr__",
+           py::overload_cast<const std::string &>(&ModelNonlinearSystem::get_parameter, py::const_),
+           py::return_value_policy::reference,
+           "Get a model parameter given its name")
+      .def("__setattr__",
+           &ModelNonlinearSystem::set_parameter,
+           "Set the value for a model parameter")
+      .def("get_parameter",
+           py::overload_cast<const std::string &>(&ModelNonlinearSystem::get_parameter, py::const_),
+           py::return_value_policy::reference,
+           "Get a model parameter given its name")
+      .def("set_parameter",
+           &ModelNonlinearSystem::set_parameter,
+           "Set the value for a model parameter")
+      .def("set_parameters",
+           &ModelNonlinearSystem::set_parameters,
+           "Set the values for multiple model parameters ");
 }

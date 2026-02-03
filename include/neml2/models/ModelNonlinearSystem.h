@@ -26,13 +26,15 @@
 
 #include "neml2/equation_systems/NonlinearSystem.h"
 #include "neml2/equation_systems/SparseTensorList.h"
+#include "neml2/models/ParameterStore.h"
+#include "neml2/models/BufferStore.h"
 
 namespace neml2
 {
 class Model;
 
 /// A monolith nonlinear system defined by a Model
-class ModelNonlinearSystem : public NonlinearSystem
+class ModelNonlinearSystem : public NonlinearSystem, public ParameterStore, public BufferStore
 {
 public:
   static OptionSet expected_options();

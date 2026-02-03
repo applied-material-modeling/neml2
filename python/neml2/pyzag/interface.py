@@ -53,6 +53,11 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
     ):
         super().__init__(*args, **kwargs)
 
+        if not isinstance(sys, neml2.NonlinearSystem):
+            raise TypeError(
+                f"sys should be a neml2.NonlinearSystem, instead got {type(sys)}. Please use neml2.load_nonlinear_system or neml2.Factory.get_nonlinear_system to load a nonlinear system from the input file."
+            )
+
         self.sys = sys
         self.model = sys.model()
         self._lookback = 1
@@ -73,11 +78,11 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
 
     @property
     def nstate(self) -> int:
-        return self.sys.n
+        return self.model.input_axis().subaxis(STATE).size()
 
     @property
     def nforce(self) -> int:
-        return self.sys.p
+        return self.model.input_axis().subaxis(FORCES).size()
 
     def forward(
         self, state: torch.Tensor, forces: torch.Tensor
@@ -99,6 +104,14 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
 
         # Assemble residual and Jacobians
         r, J, Jn = self._assemble(A, B, b)
+
+        print("J")
+        print(J.dynamic[0, 0])
+        print("Jn")
+        print(Jn.dynamic[0, 0])
+        import pdb
+
+        pdb.set_trace()
 
         # At this point, the residual and Jacobians should be good to go
         return self._adapt_for_pyzag(r, J, Jn)
@@ -174,7 +187,7 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
             exclude_parameters (list of str): NEML2 parameters to exclude
         """
         self.parameter_names = []
-        for pname, param in self.model.named_parameters().items():
+        for pname, param in self.sys.named_parameters().items():
             if "." in pname:
                 errmsg = "Parameter name {} contains a period, which is not allowed. \nMake sure Settings/parameter_name_separator='_' in the NEML2 input file."
                 raise ValueError(errmsg.format(pname))
@@ -193,10 +206,10 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         for pname in self.parameter_names:
             # See comment in _setup_parameters, using getattr here lets us reparamterize things with torch
             new_value = getattr(self, pname)
-            current_value = self.model.get_parameter(pname).tensor()
+            current_value = self.sys.get_parameter(pname).tensor()
             # We may need to update the batch shape
             dynamic_dim = new_value.dim() - current_value.base.dim() - current_value.intmd.dim()
-            self.model.set_parameter(
+            self.sys.set_parameter(
                 pname, Tensor(new_value.clone(), dynamic_dim, current_value.intmd.dim())
             )
 
@@ -222,26 +235,41 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
                     if VariableName(v) == VariableName(vt):
                         index_map.append(i)
                         break
-                index_map.append(-1)
+                else:
+                    index_map.append(-1)
             return index_map
 
         # state --> unknowns
-        # this mapping is just identify
+        # this mapping is just identity
+        self.smap = self.sys.umap()
+        self.slayout = self.sys.ulayout()
 
         # old state --> given variables
-        sn_map = [VariableName(v).old() for v in self.sys.umap()]
-        self._sn_to_g_map = _index_map_from_to(sn_map, self.sys.gmap())
+        snmap = [VariableName(v).old() for v in self.smap]
+        self._sn_to_g_map = _index_map_from_to(snmap, self.sys.gmap())
 
         # forces --> given variables
-        f_map = [v for v in self.sys.gmap() if VariableName(v).start_with(FORCES)]
-        self._f_to_g_map = _index_map_from_to(f_map, self.sys.gmap())
+        self.fmap = [v for v in self.sys.gmap() if VariableName(v).start_with(FORCES)]
+        self.flayout = [
+            self.sys.glayout()[i]
+            for i, v in enumerate(self.sys.gmap())
+            if VariableName(v).start_with(FORCES)
+        ]
+        self._f_to_g_map = _index_map_from_to(self.fmap, self.sys.gmap())
 
         # old forces --> given variables
-        fn_map = [VariableName(v).old() for v in f_map]
+        fn_map = [VariableName(v).old() for v in self.fmap]
         self._fn_to_g_map = _index_map_from_to(fn_map, self.sys.gmap())
 
+        # make sure we have full coverage of the given variables
+        g_coverage = set(self._sn_to_g_map + self._f_to_g_map + self._fn_to_g_map)
+        g_coverage = list(g_coverage - {-1})
+        assert g_coverage == list(
+            range(len(self.sys.gmap()))
+        ), "Internal error: Not all given variables are covered!"
+
         # given variables --> state
-        self._g_to_sn_map = _index_map_from_to(self.sys.gmap(), sn_map)
+        self._g_to_sn_map = _index_map_from_to(self.sys.gmap(), snmap)
 
     def _update_sys(self, state: torch.Tensor, forces: torch.Tensor):
         """
@@ -261,15 +289,15 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         sf = Tensor(state, bdim)
         sf_np1 = sf.dynamic[self.lookback :]
         sf_n = sf.dynamic[: -self.lookback]
-        s_np1 = neml2.disassemble_vector(sf_np1, self.sys.ulayout())
-        s_n = neml2.disassemble_vector(sf_n, self.sys.ulayout())
+        s_np1 = neml2.disassemble_vector(sf_np1, self.slayout)
+        s_n = neml2.disassemble_vector(sf_n, self.slayout)
 
         # Disassemble forces and old_forces
         ff = Tensor(forces, bdim)
         ff_np1 = ff.dynamic[self.lookback :]
         ff_n = ff.dynamic[: -self.lookback]
-        f_np1 = neml2.disassemble_vector(ff_np1, self.sys.glayout())
-        f_n = neml2.disassemble_vector(ff_n, self.sys.glayout())
+        f_np1 = neml2.disassemble_vector(ff_np1, self.flayout)
+        f_n = neml2.disassemble_vector(ff_n, self.flayout)
 
         # Update the current unknowns in the nonlinear system
         self.sys.set_u(s_np1)
@@ -283,6 +311,11 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         for i, j in enumerate(self._fn_to_g_map):
             g[j] = f_n[i] if j != -1 else neml2.Tensor()
         self.sys.set_g(g)
+
+        # Last but not the least, pyzag expects strict current -> old mapping while NEML2 does not
+        # Practically, this means some old state/forces may still be undefined at this point
+        # Let's zero them out to be safe
+        self.model.zero_undefined_input()
 
     def _assemble(
         self, A: list[neml2.Tensor], B: list[neml2.Tensor], b: list[neml2.Tensor]
@@ -298,19 +331,20 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
             tuple of neml2.Tensor: residual, Jacobian w.r.t. unknowns, Jacobian w.r.t. old state
         """
         # Assemble residual
-        r = -neml2.assemble_vector(b, self.sys.blayout())
+        r = -neml2.assemble_vector(b, self.slayout)
 
         # Assemble Jacobian w.r.t. unknowns
-        J = neml2.assemble_matrix(A, self.sys.blayout(), self.sys.ulayout())
+        J = neml2.assemble_matrix(A, self.slayout, self.slayout)
 
         # Assemble Jacobian w.r.t. old state
-        Jn = [neml2.Tensor()] * self.nstate * self.nstate
-        for i in range(self.nstate):
+        n = len(self.smap)
+        Jn = [neml2.Tensor()] * n * n
+        for i in range(n):
             for j in range(self.sys.p):
                 k = self._g_to_sn_map[j]
                 if k != -1:
-                    Jn[i * self.nstate + k] = B[i * self.sys.p + j]
-        Jn = neml2.assemble_matrix(Jn, self.sys.blayout(), self.sys.ulayout())
+                    Jn[i * n + k] = B[i * self.sys.p + j]
+        Jn = neml2.assemble_matrix(Jn, self.slayout, self.slayout)
 
         return r, J, Jn
 

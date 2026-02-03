@@ -187,7 +187,8 @@ Factory::get_object(const std::string & section,
   auto obj = std::dynamic_pointer_cast<T>(_objects[section][name].back());
 
   if (!obj)
-    throw FactoryException("Internal error: Factory failed to create object " + name);
+    throw FactoryException("Found object named " + name + " under section " + section +
+                           ". But dynamic cast failed. Did you specify the correct object type?");
 
   return obj;
 }

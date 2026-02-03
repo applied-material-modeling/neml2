@@ -33,7 +33,7 @@ from pyzag import nonlinear, chunktime
 
 def test_definition():
     pwd = Path(__file__).parent
-    nmodel = neml2.load_model(pwd / "models" / "correct_model.i", "implicit_rate")
+    nmodel = neml2.load_nonlinear_system(pwd / "models" / "correct_model.i", "eq_sys")
     pmodel = neml2.pyzag.NEML2PyzagModel(nmodel, exclude_parameters=["elasticity_nu"])
 
     assert set(dict(pmodel.named_parameters()).keys()) == {
@@ -44,7 +44,7 @@ def test_definition():
         "yield_sy",
     }
     for pname, param in pmodel.named_parameters():
-        assert torch.allclose(param, pmodel.model.get_parameter(pname).torch())
+        assert torch.allclose(param, pmodel.sys.get_parameter(pname).torch())
     assert pmodel.nstate == 7
     assert pmodel.nforce == 7
     assert pmodel.lookback == 1
@@ -52,34 +52,34 @@ def test_definition():
 
 def test_change_parameter_shape():
     pwd = Path(__file__).parent
-    nmodel = neml2.load_model(pwd / "models" / "correct_model.i", "implicit_rate")
+    nmodel = neml2.load_nonlinear_system(pwd / "models" / "correct_model.i", "eq_sys")
     pmodel = neml2.pyzag.NEML2PyzagModel(nmodel, exclude_parameters=["elasticity_nu"])
 
     # Modify the parameter, batch shape = (10,)
     pmodel.elasticity_E.data = torch.tensor(1.2e5).expand(10)
     pmodel._update_parameter_values()
-    assert torch.allclose(pmodel.model.elasticity_E.torch(), pmodel.get_parameter("elasticity_E"))
-    assert pmodel.model.elasticity_E.tensor().batch.shape == (10,)
+    assert torch.allclose(pmodel.sys.elasticity_E.torch(), pmodel.get_parameter("elasticity_E"))
+    assert pmodel.sys.elasticity_E.tensor().batch.shape == (10,)
 
     # Modify again, batch shape = ()
     pmodel.elasticity_E.data = torch.tensor(1.3e5)
     pmodel._update_parameter_values()
-    assert torch.allclose(pmodel.model.elasticity_E.torch(), pmodel.get_parameter("elasticity_E"))
-    assert pmodel.model.elasticity_E.tensor().batch.shape == ()
+    assert torch.allclose(pmodel.sys.elasticity_E.torch(), pmodel.get_parameter("elasticity_E"))
+    assert pmodel.sys.elasticity_E.tensor().batch.shape == ()
 
 
 @pytest.mark.parametrize("input", ["elastic_model", "viscoplastic_model", "km_mixed_model"])
 def test_compare(input):
     pwd = Path(__file__).parent
-    nmodel = neml2.load_model(pwd / "models" / "{}.i".format(input), "implicit_rate")
+    nmodel = neml2.load_nonlinear_system(pwd / "models" / "{}.i".format(input), "eq_sys")
     pmodel = neml2.pyzag.NEML2PyzagModel(nmodel)
 
     # Reference to compare against
     ref = torch.jit.load(pwd / "gold" / "{}.pt".format(input))
     input = dict(ref.input.named_buffers())
     output = dict(ref.output.named_buffers())
-    forces = torch.cat([input[v] for v in pmodel.nl_sys.gmap()], -1)
-    state = torch.cat([output[v] for v in pmodel.nl_sys.umap()], -1)
+    forces = torch.cat([input[v] for v in pmodel.fmap], -1)
+    state = torch.cat([output[v] for v in pmodel.smap], -1)
     nstep = forces.shape[0]
 
     solver = nonlinear.RecursiveNonlinearEquationSolver(

@@ -311,7 +311,7 @@ VariableStore::cache_derivative_sparsity()
       if (xvar->is_dependent() && dy_dx.defined())
         sparsity.emplace_back(yvar.get(), xvar);
 
-  if (_object->currently_assembling_nonlinear_system())
+  if (currently_assembling_nonlinear_system())
     _deriv_sparsity_nl_sys = std::move(sparsity);
   else
     _deriv_sparsity = std::move(sparsity);
@@ -326,7 +326,7 @@ VariableStore::cache_second_derivative_sparsity()
       if (d2y_dx1dx2.defined())
         sparsity.emplace_back(yvar.get(), x1var, x2var);
 
-  if (_object->currently_assembling_nonlinear_system())
+  if (currently_assembling_nonlinear_system())
     _secderiv_sparsity_nl_sys = std::move(sparsity);
   else
     _secderiv_sparsity = std::move(sparsity);
@@ -335,7 +335,7 @@ VariableStore::cache_second_derivative_sparsity()
 const std::optional<VariableStore::DerivSparsity> &
 VariableStore::derivative_sparsity() const
 {
-  if (_object->currently_assembling_nonlinear_system())
+  if (currently_assembling_nonlinear_system())
     return _deriv_sparsity_nl_sys;
   return _deriv_sparsity;
 }
@@ -343,7 +343,7 @@ VariableStore::derivative_sparsity() const
 const std::optional<VariableStore::SecDerivSparsity> &
 VariableStore::second_derivative_sparsity() const
 {
-  if (_object->currently_assembling_nonlinear_system())
+  if (currently_assembling_nonlinear_system())
     return _secderiv_sparsity_nl_sys;
   return _secderiv_sparsity;
 }
@@ -366,7 +366,8 @@ VariableStore::assign_input(const std::vector<VariableName> & names, const Spars
                   ").");
 
   for (std::size_t i = 0; i < names.size(); i++)
-    input_variable(names[i]) = v[i];
+    if (v[i].defined())
+      input_variable(names[i]) = v[i];
 }
 
 void

@@ -30,6 +30,7 @@
 #include "neml2/base/Settings.h"
 #include "neml2/tensors/jit.h"
 #include "neml2/models/ParameterStore.h"
+#include "neml2/models/ModelNonlinearSystem.h"
 #include "neml2/tensors/functions/jacrev.h"
 #include "neml2/tensors/tensors.h"
 #include "neml2/tensors/TensorValue.h"
@@ -38,23 +39,23 @@
 
 namespace neml2
 {
-AssemblyingNonlinearSystem::AssemblyingNonlinearSystem(Model * const model, bool assembling)
-  : model(model),
-    prev_bool(model->currently_assembling_nonlinear_system())
+
+bool &
+currently_assembling_nonlinear_system()
 {
-  model->currently_assembling_nonlinear_system(assembling);
+  thread_local static bool _assembling_nl_sys = false;
+  return _assembling_nl_sys;
 }
 
-// destructor cannot throw, but the following function might (as it tries to resolve host())
-// However, in the constructor we already verified that model->host() is valid, so this should be
-// safe.
-//
-// Static analysis tools might still complain, let's silence them for now. In the future, when we
-// add a proper logger, we can catch the throw and log the error message.
-// NOLINTNEXTLINE(bugprone-exception-escape)
+AssemblyingNonlinearSystem::AssemblyingNonlinearSystem(bool assembling)
+  : prev_bool(currently_assembling_nonlinear_system())
+{
+  currently_assembling_nonlinear_system() = assembling;
+}
+
 AssemblyingNonlinearSystem::~AssemblyingNonlinearSystem()
 {
-  model->currently_assembling_nonlinear_system(prev_bool);
+  currently_assembling_nonlinear_system() = prev_bool;
 }
 
 bool
@@ -94,12 +95,6 @@ Model::expected_options()
   options.set("define_values").suppressed() = true;
   options.set("define_derivatives").suppressed() = true;
   options.set("define_second_derivatives").suppressed() = true;
-
-  // Model defaults to _not_ being part of a nonlinear system
-  // Model::get_model will set this to true if the model is expected to be part of a nonlinear
-  // system, and additional diagnostics will be performed
-  options.set<bool>("_nonlinear_system") = false;
-  options.set("_nonlinear_system").suppressed() = true;
 
   options.set<bool>("jit") = true;
   options.set("jit").doc() = "Use JIT compilation for the forward operator";
@@ -685,18 +680,6 @@ Model::collect_input_stack() const
 }
 
 void
-Model::currently_assembling_nonlinear_system(bool value)
-{
-  host<Model>()->_currently_assembling_nonlinear_system = value;
-}
-
-bool
-Model::currently_assembling_nonlinear_system() const
-{
-  return host<Model>()->_currently_assembling_nonlinear_system;
-}
-
-void
 Model::enable_AD()
 {
   for (auto * ad_arg : _ad_args)
@@ -813,11 +796,17 @@ operator<<(std::ostream & os, const Model & model)
     }
   }
 
-  if (!model.named_parameters().empty())
+  if (model.host() != &model)
+  {
+    os << "Host:       " << model.host()->name() << '\n';
+  }
+
+  const auto * pstore = model.host<ParameterStore>();
+  if (!pstore->named_parameters().empty())
   {
     os << "Parameters: ";
     first = true;
-    for (auto && [name, param] : model.named_parameters())
+    for (auto && [name, param] : pstore->named_parameters())
     {
       os << (first ? "" : tab);
       os << name << " [" << param->type() << "][" << Tensor(*param).scalar_type() << "]["
@@ -826,11 +815,12 @@ operator<<(std::ostream & os, const Model & model)
     }
   }
 
-  if (!model.named_buffers().empty())
+  const auto * bstore = model.host<BufferStore>();
+  if (!bstore->named_buffers().empty())
   {
     os << "Buffers:    ";
     first = true;
-    for (auto && [name, buffer] : model.named_buffers())
+    for (auto && [name, buffer] : bstore->named_buffers())
     {
       os << (first ? "" : tab);
       os << name << " [" << buffer->type() << "][" << Tensor(*buffer).scalar_type() << "]["

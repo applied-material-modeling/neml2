@@ -34,7 +34,7 @@
 
 namespace neml2
 {
-ParameterStore::ParameterStore(Model * object)
+ParameterStore::ParameterStore(NEML2Object * object)
   : _object(object)
 {
 }
@@ -286,10 +286,11 @@ ParameterStore::declare_parameter(const std::string & name,
   }
   catch (const SetupException & err_tensor)
   {
-    if (allow_nonlinear)
+    auto * model_ptr = dynamic_cast<Model *>(_object);
+    if (allow_nonlinear && model_ptr)
       try
       {
-        return resolve_tensor_name(tensorname, _object, name);
+        return resolve_tensor_name(tensorname, model_ptr, name);
       }
       catch (const SetupException & err_var)
       {

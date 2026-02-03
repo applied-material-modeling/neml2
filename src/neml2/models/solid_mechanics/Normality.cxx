@@ -79,7 +79,7 @@ Normality::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
     // Since normality maps the derivatives to the output variables, we need to evaluate the
     // sub-model's derivatives if normality asks for output variables, and evaluate the sub-model's
     // second derivatives if normality asks for derivatives of output variables.
-    AssemblyingNonlinearSystem assembling_nl_sys(&_model, false);
+    AssemblyingNonlinearSystem assembling_nl_sys(false);
     _model.forward_maybe_jit(false, out, dout_din);
   }
 

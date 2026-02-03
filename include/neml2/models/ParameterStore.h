@@ -35,7 +35,6 @@ namespace neml2
 // Forward decl
 class NEML2Object;
 class VariableBase;
-class Model;
 template <typename T>
 struct TensorName;
 class TensorValueBase;
@@ -52,7 +51,7 @@ using namespace torch::jit;
 class ParameterStore
 {
 public:
-  ParameterStore(Model * object);
+  ParameterStore(NEML2Object * object);
 
   ParameterStore(const ParameterStore &) = delete;
   ParameterStore(ParameterStore &&) = delete;
@@ -150,7 +149,7 @@ protected:
   jit::Stack collect_parameter_stack() const;
 
 private:
-  Model * _object;
+  NEML2Object * _object;
 
   /// The actual storage for all the parameters
   std::map<std::string, std::unique_ptr<TensorValueBase>> _param_values;

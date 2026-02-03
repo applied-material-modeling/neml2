@@ -44,10 +44,17 @@ namespace neml2
 {
 class Model;
 
+/**
+ * During the solve of the nonlinear system, we only need derivatives with respect to the unknowns,
+ * not w.r.t. the given variables. Therefore, the model can/should avoid unnecessary computations by
+ * examining whether the current evaluation is part of the assembly process.
+ */
+bool & currently_assembling_nonlinear_system();
+
 // Guard a region where implicit solve is being performed
 struct AssemblyingNonlinearSystem
 {
-  AssemblyingNonlinearSystem(Model * const, bool assembling = true);
+  AssemblyingNonlinearSystem(bool assembling = true);
 
   AssemblyingNonlinearSystem(const AssemblyingNonlinearSystem &) = delete;
   AssemblyingNonlinearSystem(AssemblyingNonlinearSystem &&) = delete;
@@ -55,7 +62,6 @@ struct AssemblyingNonlinearSystem
   AssemblyingNonlinearSystem & operator=(AssemblyingNonlinearSystem &&) = delete;
   ~AssemblyingNonlinearSystem();
 
-  Model * const model;
   const bool prev_bool;
 };
 
@@ -112,12 +118,6 @@ public:
 
   /// Whether this model defines second derivatives
   virtual bool defines_second_derivatives() const { return _defines_d2value; }
-
-  ///@{
-  /// Set or get whether we are currently assembling the nonlinear system
-  void currently_assembling_nonlinear_system(bool);
-  bool currently_assembling_nonlinear_system() const;
-  ///@}
 
   /// Whether JIT is enabled
   virtual bool is_jit_enabled() const { return _jit; }
@@ -203,6 +203,9 @@ public:
 
   /// ComposedModel's set_value need to call submodel's set_value
   friend class ComposedModel;
+
+  /// ModelNonlinearSystem needs access to some setup methods
+  friend class ModelNonlinearSystem;
 
 protected:
   void diagnostic_assert_state(const VariableBase & v) const;
