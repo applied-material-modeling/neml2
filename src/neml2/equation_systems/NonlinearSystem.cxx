@@ -73,7 +73,7 @@ NonlinearSystem::glayout() const
 }
 
 void
-NonlinearSystem::post_assemble(SparseTensorList * A, SparseTensorList * b)
+NonlinearSystem::post_assemble(bool A, bool b)
 {
   LinearSystem::post_assemble(A, b);
 

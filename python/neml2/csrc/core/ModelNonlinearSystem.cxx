@@ -89,8 +89,21 @@ def(py::module_ & m, py::class_<ModelNonlinearSystem> & c)
           },
           "Get the system matrix and the right-hand side vector for this nonlinear system")
       .def(
-          "B",
-          [](ModelNonlinearSystem * self) { return std::vector<Tensor>(self->B()); },
+          "A_and_B",
+          [](ModelNonlinearSystem * self)
+          {
+            auto [A, B] = self->A_and_B();
+            return std::make_pair(std::vector<Tensor>(A), std::vector<Tensor>(B));
+          },
+          "Get the auxiliary system matrix for this nonlinear system")
+      .def(
+          "A_and_B_and_b",
+          [](ModelNonlinearSystem * self)
+          {
+            auto [A, B, b] = self->A_and_B_and_b();
+            return std::make_tuple(
+                std::vector<Tensor>(A), std::vector<Tensor>(B), std::vector<Tensor>(b));
+          },
           "Get the auxiliary system matrix for this nonlinear system")
       .def("umap",
            &ModelNonlinearSystem::umap,

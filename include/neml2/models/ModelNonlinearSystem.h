@@ -51,7 +51,9 @@ public:
 
   SparseTensorList u() const override;
   SparseTensorList g() const override;
-  SparseTensorList B() override;
+
+  std::tuple<SparseTensorList, SparseTensorList> A_and_B() override;
+  std::tuple<SparseTensorList, SparseTensorList, SparseTensorList> A_and_B_and_b() override;
 
 protected:
   std::vector<LabeledAxisAccessor> setup_umap() override;

@@ -71,7 +71,7 @@ LinearSystem::A()
 {
   SparseTensorList A;
   assemble(&A, nullptr);
-  post_assemble(&A, nullptr);
+  post_assemble(true, false);
   return A;
 }
 
@@ -80,7 +80,7 @@ LinearSystem::b()
 {
   SparseTensorList b;
   assemble(nullptr, &b);
-  post_assemble(nullptr, &b);
+  post_assemble(false, true);
   return b;
 }
 
@@ -89,7 +89,7 @@ LinearSystem::A_and_b()
 {
   SparseTensorList A, b;
   assemble(&A, &b);
-  post_assemble(&A, &b);
+  post_assemble(true, true);
   return {A, b};
 }
 
@@ -133,10 +133,10 @@ LinearSystem::blayout() const
 }
 
 void
-LinearSystem::post_assemble(SparseTensorList * A, SparseTensorList * b)
+LinearSystem::post_assemble(bool A, bool b)
 {
-  _A_up_to_date |= bool(A);
-  _b_up_to_date |= bool(A) || bool(b);
+  _A_up_to_date |= A;
+  _b_up_to_date |= A || b;
 
   if (!_intmd_ulayout.has_value())
     _intmd_ulayout = setup_intmd_ulayout();

@@ -57,6 +57,12 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         self.model = sys.model()
         self._lookback = 1
 
+        self._setup_complete = False
+        self._intmd_ulayout = None
+        self._base_ulayout = None
+        self._intmd_flayout = None
+        self._base_flayout = None
+
         self._check_model()
         self._setup_parameters(exclude_parameters)
 
@@ -90,19 +96,19 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         # Update the parameter values
         self._update_parameter_values()
 
+        # Evaluate the model once to populate some internal caches
+        # For example, the intermediate shapes are not known until after the first evaluation
+        if not self._setup_complete:
+            self._setup()
+
         # Update the current state of the nonlinear system
-        self._update_nl_sys(state, forces)
+        self._update_sys(state, forces)
 
         # Call the model
-        A, b = self.sys.A_and_b()
-        An = self.sys.un_to_u(self.sys.An())
+        A, B, b = self.sys.A_and_B_and_b()
 
         # Assemble residual, remember r = -b
-        r = -b.assemble()[0]
-
-        # Assemble Jacobians
-        J = A.assemble()[0]
-        Jn = neml2.Tensor.zeros_like(J) if An.zero() else An.assemble()[0]
+        r, J, Jn = self._assemble(A, B, b)
 
         # At this point, the residual and Jacobians should be good to go
         return self._adapt_for_pyzag(r, J, Jn)
@@ -204,7 +210,16 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
                 pname, Tensor(new_value.clone(), dynamic_dim, current_value.intmd.dim())
             )
 
-    def _update_nl_sys(self, state: torch.Tensor, forces: torch.Tensor):
+    def _setup(self):
+        """Setup internal layouts after the first model evaluation"""
+        self.sys.b()  # Dummy call
+        self._intmd_ulayout = self.sys.intmd_ulayout()
+        self._base_ulayout = self.sys.ulayout()
+        self._intmd_flayout = self.sys.intmd_glayout()
+        self._base_flayout = self.sys.glayout()
+        self._setup_complete = True
+
+    def _update_sys(self, state: torch.Tensor, forces: torch.Tensor):
         """
         Disassemble the model input forces, old forces, and old state from
         the flat tensors and update them in the nonlinear system
@@ -220,31 +235,17 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
 
         # Disassemble state and old_state
         uf = Tensor(state, bdim)
-
         uf_np1 = uf.dynamic[self.lookback :]
-        u_np1 = self.nl_sys.create_uvec()
-        u_np1.disassemble(uf_np1)
-        self.nl_sys.set_u(u_np1)
-
         uf_n = uf.dynamic[: -self.lookback]
-        u_n = self.nl_sys.create_uvec()
-        u_n.disassemble(uf_n)
-        u_n = self.nl_sys.u_to_un(u_n)
-        self.nl_sys.set_un(u_n)
+        u_np1 = neml2.diassemble(uf_np1, self.sys.intmd_ulayout(), self.sys.ulayout())
+        u_n = neml2.diassemble(uf_n, self.sys.intmd_ulayout(), self.sys.ulayout())
 
         # Disassemble forces and old_forces
         gf = Tensor(forces, bdim)
-
         gf_np1 = gf.dynamic[self.lookback :]
-        g_np1 = self.nl_sys.create_gvec()
-        g_np1.disassemble(gf_np1)
-        self.nl_sys.set_g(g_np1)
-
         gf_n = gf.dynamic[: -self.lookback]
-        g_n = self.nl_sys.create_gvec()
-        g_n.disassemble(gf_n)
-        g_n = self.nl_sys.g_to_gn(g_n)
-        self.nl_sys.set_gn(g_n)
+        g_np1 = neml2.diassemble(gf_np1, self.sys.intmd_glayout(), self.sys.glayout())
+        g_n = neml2.diassemble(gf_n, self.sys.intmd_glayout(), self.sys.glayout())
 
     def _adapt_for_pyzag(
         self, r: neml2.Tensor, J: neml2.Tensor, J_old: neml2.Tensor

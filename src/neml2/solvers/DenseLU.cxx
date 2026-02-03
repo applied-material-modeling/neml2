@@ -80,8 +80,9 @@ DenseLU::ift(NonlinearSystem & sys) const
   const auto & glayout = sys.glayout();
 
   // assemble A and B into flat tensors
-  const auto Af = assemble(sys.A(), bilayout, uilayout, blayout, ulayout);
-  const auto Bf = assemble(sys.B(), bilayout, gilayout, blayout, glayout);
+  const auto [A, B] = sys.A_and_B();
+  const auto Af = assemble(A, bilayout, uilayout, blayout, ulayout);
+  const auto Bf = assemble(B, bilayout, gilayout, blayout, glayout);
 
   // solve
   const auto Xf = -linalg::solve(Af, Bf);

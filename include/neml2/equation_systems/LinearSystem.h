@@ -101,10 +101,10 @@ protected:
    * This is useful, for example, to collect information that isn't available after the first
    * assembly
    *
-   * @param A Pointer to the operator matrix -- nullptr if not requested
-   * @param b Pointer to the RHS vector -- nullptr if not requested
+   * @param A Whether the operator matrix was assembled
+   * @param b Whether the RHS vector was assembled
    */
-  virtual void post_assemble(SparseTensorList * A, SparseTensorList * b);
+  virtual void post_assemble(bool A, bool b);
 
   /// Flag indicating if the system matrix is up to date. Setters invalidate this.
   bool _A_up_to_date = false;

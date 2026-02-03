@@ -64,8 +64,10 @@ public:
   /// Get the ID-to-prescribed-variable-base-shape mapping for assembly
   const std::vector<TensorShape> & glayout() const;
 
-  /// Assemble the auxiliary matrix B = dr/dg
-  virtual SparseTensorList B() = 0;
+  /// Assemble the auxiliary matrix B = dr/dg along with A
+  virtual std::tuple<SparseTensorList, SparseTensorList> A_and_B() = 0;
+  /// Assemble the auxiliary matrix B = dr/dg along with A and b
+  virtual std::tuple<SparseTensorList, SparseTensorList, SparseTensorList> A_and_B_and_b() = 0;
   /// Number of columns in the auxiliary matrix
   std::size_t p() const;
 
@@ -77,7 +79,7 @@ protected:
   /// Setup the given variable base layout
   virtual std::vector<TensorShape> setup_glayout() = 0;
 
-  void post_assemble(SparseTensorList * A, SparseTensorList * b) override;
+  void post_assemble(bool, bool) override;
 
   /**
    * @brief The ID-to-given-variable mapping

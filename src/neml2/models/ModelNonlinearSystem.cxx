@@ -183,11 +183,25 @@ ModelNonlinearSystem::g() const
   return _model->collect_input(gmap());
 }
 
-SparseTensorList
-ModelNonlinearSystem::B()
+std::tuple<SparseTensorList, SparseTensorList>
+ModelNonlinearSystem::A_and_B()
 {
   _model->forward_maybe_jit(false, true, false);
-  return _model->collect_output_derivatives(bmap(), gmap());
+  auto A = _model->collect_output_derivatives(bmap(), umap());
+  auto B = _model->collect_output_derivatives(bmap(), gmap());
+  post_assemble(true, false);
+  return {A, B};
+}
+
+std::tuple<SparseTensorList, SparseTensorList, SparseTensorList>
+ModelNonlinearSystem::A_and_B_and_b()
+{
+  _model->forward_maybe_jit(true, true, false);
+  auto A = _model->collect_output_derivatives(bmap(), umap());
+  auto B = _model->collect_output_derivatives(bmap(), gmap());
+  auto b = -_model->collect_output(bmap());
+  post_assemble(true, true);
+  return {A, B, b};
 }
 
 void
