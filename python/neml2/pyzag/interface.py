@@ -105,13 +105,7 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         # Assemble residual and Jacobians
         r, J, Jn = self._assemble(A, B, b)
 
-        print("J")
-        print(J.dynamic[0, 0])
-        print("Jn")
-        print(Jn.dynamic[0, 0])
-        import pdb
-
-        pdb.set_trace()
+        print(r.dynamic[0, 0])
 
         # At this point, the residual and Jacobians should be good to go
         return self._adapt_for_pyzag(r, J, Jn)
