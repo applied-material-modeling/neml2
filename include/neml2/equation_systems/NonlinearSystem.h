@@ -65,9 +65,9 @@ public:
   const std::vector<TensorShape> & glayout() const;
 
   /// Assemble the auxiliary matrix B = dr/dg along with A
-  virtual std::tuple<SparseTensorList, SparseTensorList> A_and_B() = 0;
+  virtual std::tuple<SparseTensorList, SparseTensorList> A_and_B();
   /// Assemble the auxiliary matrix B = dr/dg along with A and b
-  virtual std::tuple<SparseTensorList, SparseTensorList, SparseTensorList> A_and_B_and_b() = 0;
+  virtual std::tuple<SparseTensorList, SparseTensorList, SparseTensorList> A_and_B_and_b();
   /// Number of columns in the auxiliary matrix
   std::size_t p() const;
 

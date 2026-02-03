@@ -93,7 +93,7 @@ ModelUnitTest::expected_options()
 
 ModelUnitTest::ModelUnitTest(const OptionSet & options)
   : Driver(options),
-    _model(get_model("model")),
+    _model(factory()->get_model(options.get<std::string>("model"))),
     _check_values(options.get<bool>("check_values")),
     _check_derivs(options.get<bool>("check_derivatives")),
     _check_secderivs(options.get<bool>("check_second_derivatives")),

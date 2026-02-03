@@ -25,6 +25,7 @@
 #include "neml2/equation_systems/NonlinearSystem.h"
 #include "neml2/misc/assertions.h"
 #include "neml2/base/LabeledAxisAccessor.h"
+#include "neml2/equation_systems/SparseTensorList.h"
 
 namespace neml2
 {
@@ -70,6 +71,18 @@ const std::vector<TensorShape> &
 NonlinearSystem::glayout() const
 {
   return _glayout;
+}
+
+std::tuple<SparseTensorList, SparseTensorList>
+NonlinearSystem::A_and_B()
+{
+  throw NEMLException("A_and_B() not implemented for this NonlinearSystem.");
+}
+
+std::tuple<SparseTensorList, SparseTensorList, SparseTensorList>
+NonlinearSystem::A_and_B_and_b()
+{
+  throw NEMLException("A_and_B() not implemented for this NonlinearSystem.");
 }
 
 void

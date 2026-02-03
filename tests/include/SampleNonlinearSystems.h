@@ -39,7 +39,6 @@ public:
 
   SparseTensorList u() const override { return _u; }
   SparseTensorList g() const override { return {}; }
-  SparseTensorList B() override { return {}; }
 
   virtual SparseTensorList exact_solution(const SparseTensorList & u) const = 0;
 

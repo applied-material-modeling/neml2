@@ -63,13 +63,16 @@ ModelDriver::expected_options()
 
 ModelDriver::ModelDriver(const OptionSet & options)
   : Driver(options),
-    _model(get_model("model")),
-    _postprocessor(options.get("postprocessor").user_specified() ? get_model("postprocessor")
-                                                                 : nullptr),
+    _model(factory()->get_model(options.get<std::string>("model"))),
+    _postprocessor(options.get("postprocessor").user_specified()
+                       ? factory()->get_model(options.get<std::string>("postprocessor"))
+                       : nullptr),
     _device(options.get<std::string>("device"))
 #ifdef NEML2_WORK_DISPATCHER
     ,
-    _scheduler(options.get("scheduler").user_specified() ? get_scheduler("scheduler") : nullptr),
+    _scheduler(options.get("scheduler").user_specified()
+                   ? factory()->get_scheduler(options.get<std::string>("scheduler"))
+                   : nullptr),
     _async_dispatch(options.get<bool>("async_dispatch"))
 #endif
 {
