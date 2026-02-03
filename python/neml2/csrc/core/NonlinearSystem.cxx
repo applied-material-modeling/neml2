@@ -25,10 +25,10 @@
 #include "neml2/models/ModelNonlinearSystem.h"
 
 #include "neml2/equation_systems/SparseTensorList.h"
+#include "neml2/equation_systems/assembly.h"
 #include "python/neml2/csrc/core/types.h"
 #include "python/neml2/csrc/core/utils.h"
 #include <pybind11/cast.h>
-#include <pybind11/detail/common.h>
 
 namespace py = pybind11;
 using namespace neml2;
@@ -36,6 +36,97 @@ using namespace neml2;
 void
 def(py::module_ & m, py::class_<ModelNonlinearSystem> & c)
 {
+  // assembly routines
+  m.def(
+       "from_assembly",
+       [](const Tensor & t, const TensorShape & intmd_shape, const TensorShape & base_shape)
+       { return from_assembly<1>(t, {intmd_shape}, {base_shape}); },
+       py::arg("from"),
+       py::arg("intmd_shape"),
+       py::arg("base_shape"),
+       "Convert a tensor (variable value) from assembly format to normal format")
+      .def(
+          "from_assembly",
+          [](const Tensor & t,
+             const TensorShape & intmd_shape1,
+             const TensorShape & intmd_shape2,
+             const TensorShape & base_shape1,
+             const TensorShape & base_shape2)
+          { return from_assembly<2>(t, {intmd_shape1, intmd_shape2}, {base_shape1, base_shape2}); },
+          py::arg("from"),
+          py::arg("intmd_shape1"),
+          py::arg("intmd_shape2"),
+          py::arg("base_shape1"),
+          py::arg("base_shape2"),
+          "Convert a tensor (variable derivative) from assembly format to normal format")
+      .def(
+          "to_assembly",
+          [](const Tensor & t, const TensorShape & intmd_shape, const TensorShape & base_shape)
+          { return to_assembly<1>(t, {intmd_shape}, {base_shape}); },
+          py::arg("from"),
+          py::arg("intmd_shape"),
+          py::arg("base_shape"),
+          "Convert a tensor (variable value) to assembly format from normal format")
+      .def(
+          "to_assembly",
+          [](const Tensor & t,
+             const TensorShape & intmd_shape1,
+             const TensorShape & intmd_shape2,
+             const TensorShape & base_shape1,
+             const TensorShape & base_shape2)
+          { return to_assembly<2>(t, {intmd_shape1, intmd_shape2}, {base_shape1, base_shape2}); },
+          py::arg("from"),
+          py::arg("intmd_shape1"),
+          py::arg("intmd_shape2"),
+          py::arg("base_shape1"),
+          py::arg("base_shape2"),
+          "Convert a tensor (variable derivative) to assembly format from normal format")
+      .def(
+          "assemble_vector",
+          [](const std::vector<Tensor> & ts, const std::vector<TensorShape> & base_shapes)
+          { return assemble(SparseTensorList(ts), std::nullopt, base_shapes); },
+          py::arg("tensors"),
+          py::arg("base_shapes"),
+          "Assemble a list of tensors into a single tensor (vector, with one base dimension) in "
+          "assembly format")
+      .def(
+          "disassemble_vector",
+          [](const Tensor & t, const std::vector<TensorShape> & base_shapes)
+          { return std::vector<Tensor>(disassemble(t, std::nullopt, base_shapes)); },
+          py::arg("tensor"),
+          py::arg("base_shapes"),
+          "Disassemble a tensor (vector, with one base dimension) into a list of tensors from "
+          "assembly format")
+      .def(
+          "assemble_matrix",
+          [](const std::vector<Tensor> & ts,
+             const std::vector<TensorShape> & row_base_shapes,
+             const std::vector<TensorShape> & col_base_shapes)
+          {
+            return assemble(
+                SparseTensorList(ts), std::nullopt, std::nullopt, row_base_shapes, col_base_shapes);
+          },
+          py::arg("tensors"),
+          py::arg("row_base_shapes"),
+          py::arg("col_base_shapes"),
+          "Assemble a list of tensors into a single tensor (matrix, with two base dimensions) in "
+          "assembly format")
+      .def(
+          "disassemble_matrix",
+          [](const Tensor & t,
+             const std::vector<TensorShape> & row_base_shapes,
+             const std::vector<TensorShape> & col_base_shapes)
+          {
+            return std::vector<Tensor>(
+                disassemble(t, std::nullopt, std::nullopt, row_base_shapes, col_base_shapes));
+          },
+          py::arg("tensor"),
+          py::arg("row_base_shapes"),
+          py::arg("col_base_shapes"),
+          "Disassemble a tensor (matrix, with two base dimensions) into a list of tensors from "
+          "assembly format");
+
+  // NonlinearSystem
   c.def(
        "to",
        [](ModelNonlinearSystem * self, NEML2_TENSOR_OPTIONS_VARGS)

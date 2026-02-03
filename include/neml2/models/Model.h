@@ -269,16 +269,34 @@ protected:
       throw SetupException("Internal error: Host object '" + host()->name() +
                            "' does not have a factory set.");
     auto model = host()->factory()->get_object<T>("Models", model_name, extra_opts);
+
+    register_model(model, merge_input);
+    return *model;
+  }
+
+  /**
+   * @brief Register a model that the current model may use during its evaluation.
+   *
+   * If \p merge_input is set to true, this model will also *consume* the consumed variables of \p
+   * model, which will affect dependency resolution inside a ComposedModel.
+   *
+   * @param model The model to register
+   * @param merge_input Whether to merge the input axis of the registered model into *this* model's
+   * input axis. This will make sure that the input variables of the registered model are "ready" by
+   * the time *this* model is evaluated.
+   */
+  template <typename T = Model, typename = typename std::enable_if_t<std::is_base_of_v<Model, T>>>
+  void register_model(const std::shared_ptr<T> & model, bool merge_input = true)
+  {
     if (std::find(_registered_models.begin(), _registered_models.end(), model) !=
         _registered_models.end())
-      throw SetupException("Model named '" + model_name + "' has already been registered.");
+      throw SetupException("Model named '" + model->name() + "' has already been registered.");
 
     if (merge_input)
       for (auto && [name, var] : model->input_variables())
         clone_input_variable(*var);
 
     _registered_models.push_back(model);
-    return *model;
   }
 
   void assign_input_stack(jit::Stack & stack);

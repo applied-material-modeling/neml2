@@ -36,35 +36,34 @@ def test_parameter_gradient():
     pwd = Path(__file__).parent
     model = neml2.load_model(pwd / "test_training.i", "model")
 
-    # Initialize the model with the correct batch shape
+    # The model is batched
     B = (2, 5)
 
     # Define the input
     ndof = model.input_axis().size()
-    x = torch.linspace(0, 0.2, ndof).expand(*B, -1)
-    x = neml2.Tensor(x, len(B))
+    xf = torch.linspace(0, 0.2, ndof).expand(*B, -1)
+    xf = neml2.Tensor(xf, len(B))
 
     # Disassemble the flat input vector into model variables
     input_vars = ["forces/E", "forces/t", "old_forces/E", "old_forces/t", "old_state/S", "state/S"]
     input_var_sizes = [(6,), (), (6,), (), (6,), (6,)]
-    X = neml2.HVector(input_var_sizes)
-    X.disassemble(x)
+    input_vals = neml2.disassemble_vector(xf, input_var_sizes)
 
     # Say I want to get the parameter gradient on the flow viscosity
     p = model.flow_rate_eta
     p.requires_grad_(True)
 
     # Evaluate the model and the loss function
-    y = model.value(neml2.bind(input_vars, X))
+    y = model.value(neml2.bind(input_vars, input_vals))
 
     # Assemble the model output variables back into a flat vector
     output_vars = ["state/S"]
     output_var_sizes = [(6,)]
-    Y = neml2.HVector([y[v] for v in output_vars], output_var_sizes)
-    [y_f, _] = Y.assemble()
+    output_vals = [y[v] for v in output_vars]
+    yf = neml2.assemble_vector(output_vals, output_var_sizes)
 
     # Calculate the loss function
-    f = torch.norm(y_f.torch())
+    f = torch.norm(yf.torch())
 
     # Get the parameter gradient
     f.backward()

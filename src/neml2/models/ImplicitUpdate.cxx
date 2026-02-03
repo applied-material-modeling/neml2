@@ -24,7 +24,6 @@
 
 #include "neml2/models/ImplicitUpdate.h"
 #include "neml2/misc/assertions.h"
-#include "neml2/equation_systems/SparseTensorList.h"
 #include "neml2/models/ModelNonlinearSystem.h"
 
 namespace neml2
@@ -60,10 +59,9 @@ ImplicitUpdate::ImplicitUpdate(const OptionSet & options)
   //   1. Input variables of the "implicit_model" should be *consumed* by *this* model.
   //   2. Output variables of the "implicit_model" on the "residual" subaxis should be *provided* by
   //      *this* model.
-  const auto & model = _sys->model();
-  for (auto && [name, var] : model.input_variables())
-    clone_input_variable(*var);
-  for (auto && [name, var] : model.output_variables())
+  const auto model = _sys->model_ptr();
+  register_model(model, /*merge_input=*/true);
+  for (auto && [name, var] : model->output_variables())
     clone_output_variable(*var, name.remount(STATE));
 }
 
@@ -73,14 +71,6 @@ ImplicitUpdate::to(const TensorOptions & options)
   Model::to(options);
   _sys->to(options);
   _solver->to(options);
-}
-
-void
-ImplicitUpdate::link_input_variables()
-{
-  Model::link_input_variables();
-  for (auto && [name, var] : _sys->model().input_variables())
-    var->ref(input_variable(name));
 }
 
 void

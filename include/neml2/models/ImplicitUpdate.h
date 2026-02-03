@@ -42,8 +42,6 @@ public:
   std::size_t last_iterations() const { return _last_iterations; }
 
 protected:
-  void link_input_variables() override;
-
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
   /// The underlying nonlinear system that wraps around a Model

@@ -39,6 +39,7 @@ public:
 
   ModelNonlinearSystem(const OptionSet & options);
 
+  const std::shared_ptr<Model> & model_ptr() const { return _model; }
   const Model & model() const { return *_model; }
   Model & model() { return *_model; }
 

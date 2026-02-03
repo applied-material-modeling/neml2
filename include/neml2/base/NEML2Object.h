@@ -190,7 +190,9 @@ NEML2Object::get_object(const std::string & section, const std::string & name)
                           "' under section " + section + ".");
   }
 
-  return _factory->get_object<T>(section, obj_name);
+  OptionSet extra_opts;
+  extra_opts.set<NEML2Object *>("_host") = host();
+  return _factory->get_object<T>(section, obj_name, extra_opts, /*force_create=*/false);
 }
 
 template <class T>
