@@ -60,7 +60,8 @@ template <class... T>
 void neml_assert_intmd_broadcastable(const T &...);
 
 #ifndef NDEBUG
-#define neml_assert_intmd_broadcastable_dbg(...) ::neml2::neml_assert_broadcastable(__VA_ARGS__)
+#define neml_assert_intmd_broadcastable_dbg(...)                                                   \
+  ::neml2::neml_assert_intmd_broadcastable(__VA_ARGS__)
 #else
 #define neml_assert_intmd_broadcastable_dbg(...) ((void)0)
 #endif
