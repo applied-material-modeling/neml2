@@ -219,7 +219,8 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
 
         # Helper function to get index map from one variable list to another
         def _index_map_from_to(
-            from_map: list[VariableName | str], to_map: list[VariableName | str]
+            from_map: list[typing.Union[VariableName, str]],
+            to_map: list[typing.Union[VariableName, str]],
         ) -> list[int]:
             index_map = []
             for v in from_map:
