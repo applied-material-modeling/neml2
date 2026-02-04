@@ -154,11 +154,7 @@
       "description": "C++ backend compiled with coverage flags",
       "configurePreset": "coverage",
       "targets": [
-        "extension",
-        "unit_tests",
-        "regression_tests",
-        "verification_tests",
-        "dispatcher_tests"
+        "unit_tests"
       ]
     },
     {
@@ -167,10 +163,6 @@
       "description": "Runner for profiling",
       "configurePreset": "profiling",
       "targets": [
-        "unit_tests",
-        "regression_tests",
-        "verification_tests",
-        "dispatcher_tests",
         "runner"
       ]
     },
