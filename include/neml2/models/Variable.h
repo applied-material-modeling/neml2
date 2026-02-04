@@ -76,7 +76,8 @@ public:
 
   void requires_grad_(bool req = true) override;
 
-  void assign(const Tensor & val, std::optional<TracerPrivilege> key = std::nullopt) override;
+  void assign(const Tensor & val,
+              [[maybe_unused]] std::optional<TracerPrivilege> key = std::nullopt) override;
 
   void operator=(const Tensor & val) override;
 

@@ -175,7 +175,7 @@ Variable<T>::requires_grad_(bool req)
 
 template <typename T>
 void
-Variable<T>::assign(const Tensor & val, std::optional<TracerPrivilege> key)
+Variable<T>::assign(const Tensor & val, [[maybe_unused]] std::optional<TracerPrivilege> key)
 {
   if (owning())
   {

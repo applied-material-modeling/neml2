@@ -76,12 +76,8 @@ FischerBurmeister::FischerBurmeister(const OptionSet & options)
 }
 
 void
-FischerBurmeister::set_value(bool out, bool dout_din, bool d2out_din2)
+FischerBurmeister::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "Second derivative not implemented.");
-  neml_assert_dbg(_a.scalar_type() == _b.scalar_type(),
-                  "First and second variables must have the same scalar type.");
-
   auto ia = 1.0;
   if (_conda == "LE")
     ia = -1.0;

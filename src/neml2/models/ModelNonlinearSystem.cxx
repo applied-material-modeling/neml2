@@ -200,7 +200,8 @@ ModelNonlinearSystem::assemble(SparseTensorList * A, SparseTensorList * B, Spars
 {
   {
     AssemblyingNonlinearSystem assembling_nl_sys(!B);
-    _model->forward_maybe_jit(true, (A && !_A_up_to_date) || (B && !_B_up_to_date), false);
+    _model->forward_maybe_jit(
+        b && !_b_up_to_date, (A && !_A_up_to_date) || (B && !_B_up_to_date), false);
   }
 
   if (b)

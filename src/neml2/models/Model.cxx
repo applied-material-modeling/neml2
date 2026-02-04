@@ -352,9 +352,6 @@ Model::forward_operator_index(bool out, bool dout, bool d2out) const
 void
 Model::forward(bool out, bool dout, bool d2out)
 {
-  if (!out && !dout && !d2out)
-    return;
-
   neml_assert_dbg(defines_values() || (defines_values() == out),
                   "Model of type '",
                   type(),
@@ -392,6 +389,9 @@ Model::forward(bool out, bool dout, bool d2out)
 void
 Model::forward_maybe_jit(bool out, bool dout, bool d2out)
 {
+  if (!out && !dout && !d2out)
+    return;
+
   if (!is_jit_enabled() || jit::tracer::isTracing())
   {
     forward(out, dout, d2out);

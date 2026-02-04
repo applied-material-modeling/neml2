@@ -32,6 +32,7 @@ namespace neml2::utils
 Size
 normalize_dim(Size d, Size dl, Size du)
 {
+#ifndef NDEBUG
   auto delta = du - dl;
   neml_assert_dbg(d >= -delta && d < delta,
                   "The dimension ",
@@ -41,6 +42,7 @@ normalize_dim(Size d, Size dl, Size du)
                   ", ",
                   delta,
                   ").");
+#endif
   return d >= 0 ? dl + d : du + d;
 }
 
@@ -59,6 +61,7 @@ normalize_dims(ArrayRef<Size> d, Size dl, Size du)
 Size
 normalize_itr(Size d, Size dl, Size du)
 {
+#ifndef NDEBUG
   auto delta = du - dl;
   neml_assert_dbg(d >= -delta - 1 && d <= delta,
                   "The dimension ",
@@ -68,6 +71,7 @@ normalize_itr(Size d, Size dl, Size du)
                   ", ",
                   delta,
                   "].");
+#endif
   return d >= 0 ? dl + d : du + d + 1;
 }
 
