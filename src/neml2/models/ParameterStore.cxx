@@ -306,6 +306,9 @@ ParameterStore::declare_parameter(const std::string & name,
           "coupling has not been implemented for this parameter. If this is intended, please "
           "consider opening an issue on the NEML2 GitHub repository.");
   }
+
+  // It's impossible to reach here, but IDK why certain versions of GCC complain
+  throw NEMLException("Internal error within declare_parameter");
 }
 
 template <typename T, typename>
