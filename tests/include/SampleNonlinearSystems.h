@@ -66,7 +66,7 @@ public:
   SparseTensorList exact_solution(const SparseTensorList &) const override;
 
 protected:
-  void assemble(SparseTensorList *, SparseTensorList *) override;
+  void assemble(SparseTensorList *, SparseTensorList *, SparseTensorList *) override;
 };
 
 class RosenbrockTestSystem : public TestNonlinearSystem
@@ -76,6 +76,6 @@ public:
   SparseTensorList exact_solution(const SparseTensorList &) const override;
 
 protected:
-  void assemble(SparseTensorList *, SparseTensorList *) override;
+  void assemble(SparseTensorList *, SparseTensorList *, SparseTensorList *) override;
 };
 }

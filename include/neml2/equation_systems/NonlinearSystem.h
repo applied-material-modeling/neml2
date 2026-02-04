@@ -45,52 +45,8 @@ class NonlinearSystem : public LinearSystem
 public:
   using LinearSystem::LinearSystem;
 
-  void setup() override;
-
   /// Trigger when unknown variables changed
-  virtual void u_changed();
-  /// Trigger when given variables changed
-  virtual void g_changed();
-
-  /// Set the given variables g from the current step
-  virtual void set_g(const SparseTensorList &) = 0;
-  /// Get the given variables g from the current step
-  virtual SparseTensorList g() const = 0;
-
-  /// Get the ID-to-prescribed-variable mapping for assembly
-  const std::vector<LabeledAxisAccessor> & gmap() const;
-  /// Get the ID-to-prescribed-variable-intermediate-shape mapping for assembly
-  const std::vector<TensorShape> & intmd_glayout() const;
-  /// Get the ID-to-prescribed-variable-base-shape mapping for assembly
-  const std::vector<TensorShape> & glayout() const;
-
-  /// Assemble the auxiliary matrix B = dr/dg along with A
-  virtual std::tuple<SparseTensorList, SparseTensorList> A_and_B();
-  /// Assemble the auxiliary matrix B = dr/dg along with A and b
-  virtual std::tuple<SparseTensorList, SparseTensorList, SparseTensorList> A_and_B_and_b();
-  /// Number of columns in the auxiliary matrix
-  std::size_t p() const;
-
-protected:
-  /// Setup the given variable map
-  virtual std::vector<LabeledAxisAccessor> setup_gmap() = 0;
-  /// Setup the given variable intermediate layout
-  virtual std::vector<TensorShape> setup_intmd_glayout() = 0;
-  /// Setup the given variable base layout
-  virtual std::vector<TensorShape> setup_glayout() = 0;
-
-  void post_assemble(bool, bool) override;
-
-  /**
-   * @brief The ID-to-given-variable mapping
-   *
-   * The vector of given variables is ordered according to this mapping.
-   */
-  std::vector<LabeledAxisAccessor> _gmap;
-  /// ID-to-given intermediate shape mapping
-  std::optional<std::vector<TensorShape>> _intmd_glayout;
-  /// ID-to-given base shape mapping
-  std::vector<TensorShape> _glayout;
+  void u_changed() override;
 };
 
 } // namespace neml2

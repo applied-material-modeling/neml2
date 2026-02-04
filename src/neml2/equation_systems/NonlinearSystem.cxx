@@ -23,81 +23,15 @@
 // THE SOFTWARE.
 
 #include "neml2/equation_systems/NonlinearSystem.h"
-#include "neml2/misc/assertions.h"
-#include "neml2/base/LabeledAxisAccessor.h"
-#include "neml2/equation_systems/SparseTensorList.h"
 
 namespace neml2
 {
 void
-NonlinearSystem::setup()
-{
-  LinearSystem::setup();
-
-  _gmap = setup_gmap();
-  _glayout = setup_glayout();
-  _intmd_glayout = setup_intmd_glayout();
-}
-
-void
 NonlinearSystem::u_changed()
 {
   _A_up_to_date = false;
+  _B_up_to_date = false;
   _b_up_to_date = false;
-}
-
-void
-NonlinearSystem::g_changed()
-{
-  _A_up_to_date = false;
-  _b_up_to_date = false;
-}
-
-const std::vector<LabeledAxisAccessor> &
-NonlinearSystem::gmap() const
-{
-  return _gmap;
-}
-
-const std::vector<TensorShape> &
-NonlinearSystem::intmd_glayout() const
-{
-  neml_assert(_intmd_glayout.has_value(),
-              "Intermediate shapes for given variables requested but not set up.");
-  return _intmd_glayout.value();
-}
-
-const std::vector<TensorShape> &
-NonlinearSystem::glayout() const
-{
-  return _glayout;
-}
-
-std::tuple<SparseTensorList, SparseTensorList>
-NonlinearSystem::A_and_B()
-{
-  throw NEMLException("A_and_B() not implemented for this NonlinearSystem.");
-}
-
-std::tuple<SparseTensorList, SparseTensorList, SparseTensorList>
-NonlinearSystem::A_and_B_and_b()
-{
-  throw NEMLException("A_and_B() not implemented for this NonlinearSystem.");
-}
-
-void
-NonlinearSystem::post_assemble(bool A, bool b)
-{
-  LinearSystem::post_assemble(A, b);
-
-  if (!_intmd_glayout.has_value())
-    _intmd_glayout = setup_intmd_glayout();
-}
-
-std::size_t
-NonlinearSystem::p() const
-{
-  return _gmap.size();
 }
 
 } // namespace neml2

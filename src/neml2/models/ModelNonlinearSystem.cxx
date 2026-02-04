@@ -193,35 +193,12 @@ ModelNonlinearSystem::g() const
   return _model->collect_input(gmap());
 }
 
-std::tuple<SparseTensorList, SparseTensorList>
-ModelNonlinearSystem::A_and_B()
-{
-  pre_assemble(true, false);
-  _model->forward_maybe_jit(false, true, false);
-  auto A = _model->collect_output_derivatives(bmap(), umap());
-  auto B = _model->collect_output_derivatives(bmap(), gmap());
-  post_assemble(true, false);
-  return {A, B};
-}
-
-std::tuple<SparseTensorList, SparseTensorList, SparseTensorList>
-ModelNonlinearSystem::A_and_B_and_b()
-{
-  pre_assemble(true, true);
-  _model->forward_maybe_jit(true, true, false);
-  auto A = _model->collect_output_derivatives(bmap(), umap());
-  auto B = _model->collect_output_derivatives(bmap(), gmap());
-  auto b = -_model->collect_output(bmap());
-  post_assemble(true, true);
-  return {A, B, b};
-}
-
 void
-ModelNonlinearSystem::assemble(SparseTensorList * A, SparseTensorList * b)
+ModelNonlinearSystem::assemble(SparseTensorList * A, SparseTensorList * B, SparseTensorList * b)
 {
   {
-    AssemblyingNonlinearSystem assembling_nl_sys(true);
-    _model->forward_maybe_jit(b && !_b_up_to_date, A && !_A_up_to_date, false);
+    AssemblyingNonlinearSystem assembling_nl_sys(!B);
+    _model->forward_maybe_jit(true, (A && !_A_up_to_date) || (B && !_B_up_to_date), false);
   }
 
   if (b)
@@ -230,22 +207,29 @@ ModelNonlinearSystem::assemble(SparseTensorList * A, SparseTensorList * b)
 
   if (A)
     *A = _model->collect_output_derivatives(bmap(), umap());
+
+  if (B)
+    *B = _model->collect_output_derivatives(bmap(), gmap());
 }
 
 void
-ModelNonlinearSystem::pre_assemble(bool A, bool b)
+ModelNonlinearSystem::pre_assemble(bool A, bool B, bool b)
 {
-  NonlinearSystem::pre_assemble(A, b);
+  NonlinearSystem::pre_assemble(A, B, b);
+
   if (host() == this)
     _model->zero_undefined_input();
 }
 
 void
-ModelNonlinearSystem::post_assemble(bool A, bool b)
+ModelNonlinearSystem::post_assemble(bool A, bool B, bool b)
 {
-  NonlinearSystem::post_assemble(A, b);
+  NonlinearSystem::post_assemble(A, B, b);
+
   if (host() == this)
   {
+    u_changed();
+    g_changed();
     _model->clear_input();
     _model->clear_output();
   }

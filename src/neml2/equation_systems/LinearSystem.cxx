@@ -50,6 +50,9 @@ LinearSystem::setup()
   _umap = setup_umap();
   _ulayout = setup_ulayout();
 
+  _gmap = setup_gmap();
+  _glayout = setup_glayout();
+
   _bmap = setup_bmap();
   _blayout = setup_blayout();
 }
@@ -66,13 +69,32 @@ LinearSystem::n() const
   return _umap.size();
 }
 
+std::size_t
+LinearSystem::p() const
+{
+  return _gmap.size();
+}
+
+void
+LinearSystem::u_changed()
+{
+}
+
+void
+LinearSystem::g_changed()
+{
+  _A_up_to_date = false;
+  _B_up_to_date = false;
+  _b_up_to_date = false;
+}
+
 SparseTensorList
 LinearSystem::A()
 {
   SparseTensorList A;
-  pre_assemble(true, false);
-  assemble(&A, nullptr);
-  post_assemble(true, false);
+  pre_assemble(true, false, false);
+  assemble(&A, nullptr, nullptr);
+  post_assemble(true, false, false);
   return A;
 }
 
@@ -80,9 +102,9 @@ SparseTensorList
 LinearSystem::b()
 {
   SparseTensorList b;
-  pre_assemble(false, true);
-  assemble(nullptr, &b);
-  post_assemble(false, true);
+  pre_assemble(false, false, true);
+  assemble(nullptr, nullptr, &b);
+  post_assemble(false, false, true);
   return b;
 }
 
@@ -90,10 +112,30 @@ std::tuple<SparseTensorList, SparseTensorList>
 LinearSystem::A_and_b()
 {
   SparseTensorList A, b;
-  pre_assemble(true, true);
-  assemble(&A, &b);
-  post_assemble(true, true);
+  pre_assemble(true, false, true);
+  assemble(&A, nullptr, &b);
+  post_assemble(true, false, true);
   return {A, b};
+}
+
+std::tuple<SparseTensorList, SparseTensorList>
+LinearSystem::A_and_B()
+{
+  SparseTensorList A, B;
+  pre_assemble(true, true, false);
+  assemble(&A, &B, nullptr);
+  post_assemble(true, true, false);
+  return {A, B};
+}
+
+std::tuple<SparseTensorList, SparseTensorList, SparseTensorList>
+LinearSystem::A_and_B_and_b()
+{
+  SparseTensorList A, B, b;
+  pre_assemble(true, true, true);
+  assemble(&A, &B, &b);
+  post_assemble(true, true, true);
+  return {A, B, b};
 }
 
 const std::vector<LabeledAxisAccessor> &
@@ -117,6 +159,26 @@ LinearSystem::ulayout() const
 }
 
 const std::vector<LabeledAxisAccessor> &
+LinearSystem::gmap() const
+{
+  return _gmap;
+}
+
+const std::vector<TensorShape> &
+LinearSystem::intmd_glayout() const
+{
+  neml_assert(_intmd_glayout.has_value(),
+              "Intermediate shapes for given variables requested but not set up.");
+  return _intmd_glayout.value();
+}
+
+const std::vector<TensorShape> &
+LinearSystem::glayout() const
+{
+  return _glayout;
+}
+
+const std::vector<LabeledAxisAccessor> &
 LinearSystem::bmap() const
 {
   return _bmap;
@@ -136,18 +198,22 @@ LinearSystem::blayout() const
 }
 
 void
-LinearSystem::pre_assemble(bool /*A*/, bool /*b*/)
+LinearSystem::pre_assemble(bool /*A*/, bool /*B*/, bool /*b*/)
 {
 }
 
 void
-LinearSystem::post_assemble(bool A, bool b)
+LinearSystem::post_assemble(bool A, bool B, bool b)
 {
   _A_up_to_date |= A;
-  _b_up_to_date |= A || b;
+  _B_up_to_date |= B;
+  _b_up_to_date |= A || B || b;
 
   if (!_intmd_ulayout.has_value())
     _intmd_ulayout = setup_intmd_ulayout();
+
+  if (!_intmd_glayout.has_value())
+    _intmd_glayout = setup_intmd_glayout();
 
   if (!_intmd_blayout.has_value())
     _intmd_blayout = setup_intmd_blayout();

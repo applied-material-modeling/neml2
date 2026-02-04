@@ -24,6 +24,7 @@
 
 #include "SampleNonlinearSystems.h"
 #include "neml2/base/LabeledAxisAccessor.h"
+#include "neml2/equation_systems/SparseTensorList.h"
 #include "neml2/misc/types.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/functions/pow.h"
@@ -79,7 +80,7 @@ TestNonlinearSystem::setup_blayout()
 }
 
 void
-PowerTestSystem::assemble(SparseTensorList * A, SparseTensorList * b)
+PowerTestSystem::assemble(SparseTensorList * A, SparseTensorList * /*B*/, SparseTensorList * b)
 {
   const auto n = _u.size();
   const auto opts = _u.options();
@@ -110,7 +111,7 @@ PowerTestSystem::exact_solution(const SparseTensorList & u) const
 }
 
 void
-RosenbrockTestSystem::assemble(SparseTensorList * A, SparseTensorList * b)
+RosenbrockTestSystem::assemble(SparseTensorList * A, SparseTensorList * /*B*/, SparseTensorList * b)
 {
   const auto n = _u.size();
 

@@ -25,6 +25,7 @@
 #pragma once
 
 #include "neml2/equation_systems/EquationSystem.h"
+#include "neml2/base/LabeledAxisAccessor.h"
 
 namespace neml2
 {
@@ -45,11 +46,22 @@ public:
   std::size_t m() const;
   /// Number of columns in the matrix
   std::size_t n() const;
+  /// Number of columns in the auxiliary matrix
+  std::size_t p() const;
 
   /// Set the unknown u
   virtual void set_u(const SparseTensorList &) = 0;
+  /// Set the given variables g from the current step
+  virtual void set_g(const SparseTensorList &) = 0;
   /// Get the unknown u
   virtual SparseTensorList u() const = 0;
+  /// Get the given variables g from the current step
+  virtual SparseTensorList g() const = 0;
+
+  /// Trigger when unknown variables changed
+  virtual void u_changed();
+  /// Trigger when given variables changed
+  virtual void g_changed();
 
   /// Assemble and return the operator, A
   SparseTensorList A();
@@ -57,6 +69,10 @@ public:
   SparseTensorList b();
   /// Assemble and return the right-hand side and operator
   std::tuple<SparseTensorList, SparseTensorList> A_and_b();
+  /// Assemble the auxiliary matrix B = dr/dg along with A
+  std::tuple<SparseTensorList, SparseTensorList> A_and_B();
+  /// Assemble the auxiliary matrix B = dr/dg along with A and b
+  std::tuple<SparseTensorList, SparseTensorList, SparseTensorList> A_and_B_and_b();
 
   /// Get the ID-to-unknown mapping for assembly
   const std::vector<LabeledAxisAccessor> & umap() const;
@@ -64,6 +80,13 @@ public:
   const std::vector<TensorShape> & intmd_ulayout() const;
   /// Get the ID-to-unknown-base-shape mapping for assembly
   const std::vector<TensorShape> & ulayout() const;
+
+  /// Get the ID-to-prescribed-variable mapping for assembly
+  const std::vector<LabeledAxisAccessor> & gmap() const;
+  /// Get the ID-to-prescribed-variable-intermediate-shape mapping for assembly
+  const std::vector<TensorShape> & intmd_glayout() const;
+  /// Get the ID-to-prescribed-variable-base-shape mapping for assembly
+  const std::vector<TensorShape> & glayout() const;
 
   /// Get the ID-to-RHS mapping for assembly
   const std::vector<LabeledAxisAccessor> & bmap() const;
@@ -80,6 +103,13 @@ protected:
   /// Setup the unknown layout
   virtual std::vector<TensorShape> setup_ulayout() = 0;
 
+  /// Setup the given variable map
+  virtual std::vector<LabeledAxisAccessor> setup_gmap() = 0;
+  /// Setup the given variable intermediate layout
+  virtual std::vector<TensorShape> setup_intmd_glayout() = 0;
+  /// Setup the given variable base layout
+  virtual std::vector<TensorShape> setup_glayout() = 0;
+
   /// Setup the RHS map
   virtual std::vector<LabeledAxisAccessor> setup_bmap() = 0;
   /// Setup the RHS intermediate layout
@@ -91,9 +121,10 @@ protected:
    * @brief Compute the operator and right-hand side
    *
    * @param A Pointer to the operator matrix -- nullptr if not requested
+   * @param B Pointer to the auxiliary matrix -- nullptr if not requested
    * @param b Pointer to the RHS vector -- nullptr if not requested
    */
-  virtual void assemble(SparseTensorList * A, SparseTensorList * b) = 0;
+  virtual void assemble(SparseTensorList * A, SparseTensorList * B, SparseTensorList * b) = 0;
 
   /**
    * @brief Callback before assembly to perform
@@ -101,9 +132,10 @@ protected:
    * This is useful, for example, to clear obsolete data structures
    *
    * @param A Whether the operator matrix was assembled
+   * @param B Whether the auxiliary matrix was assembled
    * @param b Whether the RHS vector was assembled
    */
-  virtual void pre_assemble(bool A, bool b);
+  virtual void pre_assemble(bool A, bool B, bool b);
 
   /**
    * @brief Callback after assembly to perform
@@ -112,12 +144,15 @@ protected:
    * assembly
    *
    * @param A Whether the operator matrix was assembled
+   * @param B Whether the auxiliary matrix was assembled
    * @param b Whether the RHS vector was assembled
    */
-  virtual void post_assemble(bool A, bool b);
+  virtual void post_assemble(bool A, bool B, bool b);
 
   /// Flag indicating if the system matrix is up to date. Setters invalidate this.
   bool _A_up_to_date = false;
+  /// Flag indicating if the auxiliary matrix is up to date. Setters invalidate this.
+  bool _B_up_to_date = false;
   /// Flag indicating if the system RHS is up to date. Setters invalidate this.
   bool _b_up_to_date = false;
 
@@ -132,6 +167,17 @@ protected:
   std::optional<std::vector<TensorShape>> _intmd_ulayout;
   /// ID-to-unknown base shape mapping
   std::vector<TensorShape> _ulayout;
+
+  /**
+   * @brief The ID-to-given-variable mapping
+   *
+   * The vector of given variables is ordered according to this mapping.
+   */
+  std::vector<LabeledAxisAccessor> _gmap;
+  /// ID-to-given intermediate shape mapping
+  std::optional<std::vector<TensorShape>> _intmd_glayout;
+  /// ID-to-given base shape mapping
+  std::vector<TensorShape> _glayout;
 
   /**
    * @brief The ID-to-RHS mapping

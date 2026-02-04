@@ -55,9 +55,6 @@ public:
   SparseTensorList u() const override;
   SparseTensorList g() const override;
 
-  std::tuple<SparseTensorList, SparseTensorList> A_and_B() override;
-  std::tuple<SparseTensorList, SparseTensorList, SparseTensorList> A_and_B_and_b() override;
-
 protected:
   std::vector<LabeledAxisAccessor> setup_umap() override;
   std::vector<TensorShape> setup_intmd_ulayout() override;
@@ -71,9 +68,9 @@ protected:
   std::vector<TensorShape> setup_intmd_glayout() override;
   std::vector<TensorShape> setup_glayout() override;
 
-  void assemble(SparseTensorList * A, SparseTensorList * b) override;
-  void pre_assemble(bool A, bool b) override;
-  void post_assemble(bool A, bool b) override;
+  void assemble(SparseTensorList * A, SparseTensorList * B, SparseTensorList * b) override;
+  void pre_assemble(bool A, bool B, bool b) override;
+  void post_assemble(bool A, bool B, bool b) override;
 
 private:
   std::shared_ptr<Model> _model;
