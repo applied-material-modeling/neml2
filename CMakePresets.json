@@ -97,7 +97,6 @@
       "description": "C++ backend with tests",
       "configurePreset": "dev",
       "targets": [
-        "extension",
         "unit_tests",
         "regression_tests",
         "verification_tests",
