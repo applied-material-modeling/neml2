@@ -43,11 +43,3 @@ With these requirements, the following rules are implied during the evaluation o
 Since the input "state" sub-axis and the output "residual" sub-axis are required to be conformal, the Jacobian of the nonlinear system must be square (while not necessarily symmetric).
 
 In input files, [ImplicitUpdate](#implicitupdate) references a nonlinear system via the `equation_system` option, which points to an entry under the `EquationSystems` section.
-
-## Automatic scaling
-
-In addition to the default direct (LU) solver, iterative solvers, e.g. CG, GMRES, etc., can be used to solve the linearized system associated with each nonlinear update. It is well known that the effectiveness of iterative solvers is affected by the conditioning of the linear system.
-
-Since NEML2 supports general Multiphysics material models, conditioning of the system cannot be guaranteed directly by the model's forward operator. Therefore, NEML2 provides a mechanism to (attempt to) scale the nonlinear system and reduce the condition number.
-
-The automatic scaling algorithm used by NEML2 is algebraic and is based on the initial Jacobian (i.e., the Jacobian of the nonlinear system evaluated at its initial condition and the initial guess). The implementation closely follows section 2.3 in this [report](https://cs.stanford.edu/people/paulliu/files/cs517-project.pdf). Note that the resulting scaling matrices are _not_ necessarily a global minimizer, nor a local minimizer, of the condition number. In fact, the condition number isn't guaranteed to decrease. However, in most of the material models that have been tested, this algorithm can substantially improve the conditioning of the system.

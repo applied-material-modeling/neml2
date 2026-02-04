@@ -41,13 +41,27 @@ def remove_namespace(type):
     return type
 
 
+def normalize_string_types(type):
+    return re.sub(
+        r"(?:\b[\w:]+::)?basic_string<\s*char\s*,\s*(?:[\w:]+::)?char_traits<char>\s*,\s*(?:[\w:]+::)?allocator<char>\s*>\s*",
+        "std::string",
+        type,
+    )
+
+
+def normalize_vector_types(type):
+    return re.sub(
+        r"(?:\b[\w:]+::)?vector<\s*([^,>]+)\s*,\s*(?:[\w:]+::)?allocator<[^>]+>\s*>\s*",
+        r"vector<\1>",
+        type,
+    )
+
+
 def demangle(type):
     type = re.sub(r"SmallVector<[^>]*>", "tensor shape", type)
-    type = type.replace(
-        "std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >",
-        "std::string",
-    )
-    type = re.sub(", std::allocator<.+> ", "", type)
+    type = normalize_string_types(type)
+    type = normalize_vector_types(type)
+    type = re.sub(r",\s*(?:[\w:]+::)?allocator<[^>]+>\s*", "", type)
     type = remove_namespace(type)
     type = type.replace("LabeledAxisAccessor", "variable name")
     type = re.sub("TensorName<(.+)>", r"\1 🔗", type)
