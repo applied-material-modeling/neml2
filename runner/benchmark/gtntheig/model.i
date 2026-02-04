@@ -79,16 +79,6 @@
   []
 []
 
-[Solvers]
-  [newton]
-    type = Newton
-    linear_solver = 'lu'
-  []
-  [lu]
-    type = DenseLU
-  []
-[]
-
 [Models]
   [isoharden]
     type = VoceIsotropicHardening
@@ -198,9 +188,29 @@
               Eprate eprate voidrate
               integrate_Ep integrate_ep integrate_void"
   []
+[]
+
+[EquationSystems]
+  [eq_sys]
+    type = NonlinearSystem
+    model = 'surface'
+  []
+[]
+
+[Solvers]
+  [newton]
+    type = Newton
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
+  []
+[]
+
+[Models]
   [return_map]
     type = ImplicitUpdate
-    implicit_model = 'surface'
+    equation_system = 'eq_sys'
     solver = 'newton'
   []
   [model]

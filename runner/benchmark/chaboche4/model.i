@@ -48,16 +48,6 @@
   []
 []
 
-[Solvers]
-  [newton]
-    type = Newton
-    linear_solver = 'lu'
-  []
-  [lu]
-    type = DenseLU
-  []
-[]
-
 [Models]
   [isoharden]
     type = VoceIsotropicHardening
@@ -190,9 +180,29 @@
               flow_rate eprate Eprate X1rate X2rate X3rate X4rate Erate Eerate elasticity
               integrate_stress integrate_ep integrate_X1 integrate_X2 integrate_X3 integrate_X4"
   []
+[]
+
+[EquationSystems]
+  [eq_sys]
+    type = NonlinearSystem
+    model = 'implicit_rate'
+  []
+[]
+
+[Solvers]
+  [newton]
+    type = Newton
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
+  []
+[]
+
+[Models]
   [model]
     type = ImplicitUpdate
-    implicit_model = 'implicit_rate'
+    equation_system = 'eq_sys'
     solver = 'newton'
   []
 []
