@@ -12,9 +12,11 @@ All nonlinear solvers derive from the common base class `NonlinearSolver`. The b
 
 Derived classes must override the method
 ```cpp
-std::tuple<bool, size_t> solve(NonlinearSystem & system, Tensor & sol)
+NonlinearSolver::Result solve(NonlinearSystem & system)
 ```
-The first argument is the nonlinear system of equations to be solved, and the second argument is the initial guess which will be iteratively updated during the solve. The second argument will hold the solution to the system upon convergence. The first tuple element in the return value is a boolean indicating whether the solve has succeeeded, and the second tuple element is the number of iterations taken before convergence.
+The argument is the nonlinear system of equations to be solved. The return value contains a return code and the number of iterations taken before convergence. The nonlinear solver reads the current unknowns from the system and updates them in-place during the solve.
+
+Each nonlinear solver also owns a linear solver, configured via the `linear_solver` option, that is used to solve the linearized system in each iteration.
 
 While the convergence criteria are defined by the specific solvers derived from the base class, it is generally recommended to use both `atol` and `rtol` in the convergence check. Below is an example convergence criteria
 ```cpp
@@ -28,7 +30,7 @@ where `nR` is the vector norm of the current residual, and `nR0` is the vector n
 
 ## Nonlinear system
 
-The first argument passed to the `NonlinearSolver::solve` method is of type `NonlinearSystem &`. Since `Model` derives from `NonlinearSystem`, no special action needs to be taken to cast a `Model` into a `NonlinearSystem`. However, the input and output axes of the `Model` must conform with the following requirements in order to be properly recognized as a nonlinear system:
+The first argument passed to the `NonlinearSolver::solve` method is of type `NonlinearSystem &`. Nonlinear systems are defined under the `EquationSystems` section in input files. NEML2 provides `ModelNonlinearSystem` (use `type = NonlinearSystem`) to wrap a `Model` as a nonlinear system. The wrapped model must satisfy the following requirements:
 1. The input axis must have a sub-axis named "state".
 2. The output axis must have a sub-axis named "residual".
 3. The input "state" sub-axis and the output "residual" sub-axis must be conformal, i.e., the variable names on the two axes must have one-to-one correspondence.
@@ -39,6 +41,8 @@ With these requirements, the following rules are implied during the evaluation o
 3. The derivative sub-block "(residual, state)" is the Jacobian of the nonlinear system.
 
 Since the input "state" sub-axis and the output "residual" sub-axis are required to be conformal, the Jacobian of the nonlinear system must be square (while not necessarily symmetric).
+
+In input files, [ImplicitUpdate](#implicitupdate) references a nonlinear system via the `equation_system` option, which points to an entry under the `EquationSystems` section.
 
 ## Automatic scaling
 

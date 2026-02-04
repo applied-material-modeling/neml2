@@ -103,9 +103,29 @@ This complementarity condition is implemented by the object `RateIndependentPlas
               vonmises yield_function normality Eprate
               consistency integrate_Ep"
   []
+[]
+
+[EquationSystems]
+  [return_map_sys]
+    type = NonlinearSystem
+    model = 'surface'
+  []
+[]
+
+[Solvers]
+  [newton]
+    type = Newton
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
+  []
+[]
+
+[Models]
   [return_map]
     type = ImplicitUpdate
-    implicit_model = 'surface'
+    equation_system = 'return_map_sys'
     solver = 'newton'
   []
   [model]
@@ -180,9 +200,29 @@ The Perzyna model is implemented by the object `PerzynaPlasticFlowRate`. A compl
               vonmises yield_function flow_rate
               normality Eprate integrate_Ep"
   []
+[]
+
+[EquationSystems]
+  [return_map_sys]
+    type = NonlinearSystem
+    model = 'implicit_rate'
+  []
+[]
+
+[Solvers]
+  [newton]
+    type = Newton
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
+  []
+[]
+
+[Models]
   [return_map]
     type = ImplicitUpdate
-    implicit_model = 'implicit_rate'
+    equation_system = 'return_map_sys'
     solver = 'newton'
   []
   [model]

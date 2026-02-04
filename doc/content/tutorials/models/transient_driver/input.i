@@ -101,7 +101,7 @@
 
 [EquationSystems]
   [eq_sys]
-    type = ModelEquationSystem
+    type = NonlinearSystem
     model = 'system'
   []
 []

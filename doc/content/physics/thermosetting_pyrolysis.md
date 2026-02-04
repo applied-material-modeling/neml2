@@ -165,9 +165,29 @@ zeta = 0.05
     type = ComposedModel
     models = 'reaction_rate reaction_ode'
   []
+[]
+
+[EquationSystems]
+  [solve_reaction_sys]
+    type = NonlinearSystem
+    model = 'reaction'
+  []
+[]
+
+[Solvers]
+  [newton]
+    type = Newton
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
+  []
+[]
+
+[Models]
   [solve_reaction]
     type = ImplicitUpdate
-    implicit_model = 'reaction'
+    equation_system = 'solve_reaction_sys'
     solver = 'newton'
   []
   [binder_rate]

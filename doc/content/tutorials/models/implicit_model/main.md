@@ -64,7 +64,6 @@ The structure of the system of equations can be summarized using the code below.
 Once the system of equations are properly defined, we can use the [ImplicitUpdate](#implicitupdate) to solve the system of equations. The [ImplicitUpdate](#implicitupdate) is responsible for the following:
 - (Re)declare the solution to the system of equations as output variables.
 - Validate the shape of input variables and residual variables to make sure the system is square.
-- Assemble the residual vector and Jacobian matrix of the underlying linear system.
 - Invoke a *solver* to solve the system of equations.
 - Apply the implicit function theorem to calculate exact derivatives (up to machine precision).
 
@@ -74,8 +73,10 @@ NEML2 offers three fully vectorized Newton solvers to be used in conjunction wit
 
 In addition, the assembly routines as well as the application of the implicit function theorem are also implemented in a vectorized fashion.
 
+In the input file, the nonlinear system is defined under the `EquationSystems` section (e.g., `type = NonlinearSystem` with a `model`), and the nonlinear solver references a linear solver (e.g., `type = DenseLU`).
+
 The additional sections needed in the input file are
-@list-input:implicit_model/input2.i:Models/model,Solvers/newton
+@list-input:implicit_model/input2.i:EquationSystems/eq_sys,Solvers/newton,Models/model
 
 The [ImplicitUpdate](#implicitupdate) model can then be invoked in the same way as regular models.
 

@@ -37,7 +37,7 @@ A work scheduler determines how to divide the full batch of model updates into s
 2. A single CPU task has exclusive access to one or more compute devices.
 3. Multiple CPU tasks share access to one or more compute devices (this is work in progress and not available in the current release of NEML2).
 
-A CPU task here can either mean a single program calling NEML2, for example the runner program provided with the NEML2 release, or a single MPI rank in a distributed parallel application.  The third type of scheduler covers the most general heterogenous compute architecture, where a collection of local CPU threads have shared access to a collection of accelerator devices.  However, the first two types of schedulers can also be used in distributed computing environments, with the caveat that each task/MPI rank must have *exclusive* access to a collection of accelerators.
+A CPU task here can either mean a single program calling NEML2, for example the `neml2` executable provided with the NEML2 release, or a single MPI rank in a distributed parallel application.  The third type of scheduler covers the most general heterogenous compute architecture, where a collection of local CPU threads have shared access to a collection of accelerator devices.  However, the first two types of schedulers can also be used in distributed computing environments, with the caveat that each task/MPI rank must have *exclusive* access to a collection of accelerators.
 
 ### SimpleScheduler
 
