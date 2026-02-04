@@ -45,8 +45,8 @@ diagonalize_if_needed(const Tensor & t, std::array<TensorShapeRef, N> intmd_shap
 
   auto expanded = t;
   expanded = intmd_diagonalize(expanded.intmd_expand(intmd_shapes[0]).intmd_flatten());
-  auto expanded_intmd_sizes = intmd_shapes[0];
-  auto padded_intmd_sizes = intmd_shapes[0];
+  auto expanded_intmd_sizes = TensorShape(intmd_shapes[0]);
+  auto padded_intmd_sizes = TensorShape(intmd_shapes[0]);
   for (std::size_t i = 1; i < N; ++i)
   {
     expanded_intmd_sizes = utils::add_shapes(expanded_intmd_sizes, intmd_shapes[0]);

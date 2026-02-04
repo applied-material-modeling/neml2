@@ -69,6 +69,9 @@ namespace neml2
                     a.intmd_dim(),                                                                 \
                     ").");                                                                         \
                                                                                                    \
+    if (a.intmd_sizes() == shape)                                                                  \
+      return a;                                                                                    \
+                                                                                                   \
     if (jit::tracer::isTracing())                                                                  \
       for (Size i = 0; i < a.dynamic_dim(); ++i)                                                   \
         if (const auto * const si = a.dynamic_size(i).traceable())                                 \
@@ -99,6 +102,9 @@ base_sum_to_size(const Tensor & a, TensorShapeRef shape)
                   " with different number of base dimensions (",
                   a.base_dim(),
                   ").");
+
+  if (a.base_sizes() == shape)
+    return a;
 
   // Record the dynamic sizes in the traced graph if we are tracing
   if (jit::tracer::isTracing())
