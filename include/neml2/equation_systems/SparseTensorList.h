@@ -27,10 +27,10 @@
 #include <vector>
 
 #include "neml2/misc/types.h"
+#include "neml2/tensors/Tensor.h"
 
 namespace neml2
 {
-class Tensor;
 class Scalar;
 
 /**
