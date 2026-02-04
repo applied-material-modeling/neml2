@@ -31,10 +31,8 @@ namespace neml2
 {
 
 void
-LinearSystem::setup()
+LinearSystem::init()
 {
-  EquationSystem::setup();
-
   // Note: These data structures we are setting here serve the same purpose as LabeledAxis, and yes,
   // we are storing redundant information. This is because we are transitioning away from
   // LabeledAxis. In future versions, we will remove LabeledAxis and only use these data structures.

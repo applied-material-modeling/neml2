@@ -32,8 +32,7 @@
 namespace neml2
 {
 TestNonlinearSystem::TestNonlinearSystem(std::size_t n)
-  : NonlinearSystem(NonlinearSystem::expected_options()),
-    _n(n)
+  : _n(n)
 {
 }
 

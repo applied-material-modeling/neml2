@@ -24,8 +24,8 @@
 
 #pragma once
 
-#include "neml2/equation_systems/EquationSystem.h"
 #include "neml2/base/LabeledAxisAccessor.h"
+#include "neml2/misc/types.h"
 
 namespace neml2
 {
@@ -35,12 +35,17 @@ struct SparseTensorList;
  * @brief Definition of a linear system of equations, Au = b.
  *
  */
-class LinearSystem : public EquationSystem
+class LinearSystem
 {
 public:
-  using EquationSystem::EquationSystem;
+  LinearSystem() = default;
+  LinearSystem(const LinearSystem &) = default;
+  LinearSystem(LinearSystem &&) noexcept = default;
+  LinearSystem & operator=(const LinearSystem &) = default;
+  LinearSystem & operator=(LinearSystem &&) noexcept = default;
+  virtual ~LinearSystem() = default;
 
-  void setup() override;
+  virtual void init();
 
   /// Number of rows in the matrix
   std::size_t m() const;

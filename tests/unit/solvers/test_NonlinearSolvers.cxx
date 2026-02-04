@@ -51,7 +51,7 @@ TEST_CASE("NonlinearSolver", "[solvers]")
     {
       // Create the nonlinear system
       PowerTestSystem eq_sys(n);
-      eq_sys.setup();
+      eq_sys.init();
 
       // Initial guess
       SparseTensorList u0(n, Scalar::full(batch_sz, {}, 2.0));
@@ -72,7 +72,7 @@ TEST_CASE("NonlinearSolver", "[solvers]")
     {
       // Create the nonlinear system
       RosenbrockTestSystem eq_sys(n);
-      eq_sys.setup();
+      eq_sys.init();
 
       // Initial guess
       SparseTensorList u0(n, Scalar::full(batch_sz, {}, 0.75));

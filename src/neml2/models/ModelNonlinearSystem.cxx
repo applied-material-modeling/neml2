@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/ModelNonlinearSystem.h"
+#include "neml2/equation_systems/EquationSystem.h"
 #include "neml2/equation_systems/NonlinearSystem.h"
 #include "neml2/equation_systems/SparseTensorList.h"
 #include "neml2/misc/types.h"
@@ -46,7 +47,7 @@ ModelNonlinearSystem::expected_options()
 }
 
 ModelNonlinearSystem::ModelNonlinearSystem(const OptionSet & options)
-  : NonlinearSystem(options),
+  : EquationSystem(options),
     ParameterStore(this),
     BufferStore(this),
     _model(get_model("model"))
@@ -56,7 +57,8 @@ ModelNonlinearSystem::ModelNonlinearSystem(const OptionSet & options)
 void
 ModelNonlinearSystem::setup()
 {
-  NonlinearSystem::setup();
+  EquationSystem::setup();
+  NonlinearSystem::init();
 
   if (host() == this)
   {
