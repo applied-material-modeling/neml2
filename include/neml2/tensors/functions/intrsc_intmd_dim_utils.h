@@ -32,6 +32,9 @@ class Tensor;
 template <std::size_t N>
 class Derivative;
 
+template <std::size_t N>
+Tensor fullify_intrsc_intmd_dims(const Derivative<N> & deriv);
+
 Tensor pop_intrsc_intmd_dim(const Tensor & t, Size dim);
 
 Tensor push_intrsc_intmd_dim(const Tensor & t, Size dim);

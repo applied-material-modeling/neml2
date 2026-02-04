@@ -29,6 +29,7 @@
 #include "neml2/misc/errors.h"
 #include "neml2/misc/types.h"
 #include "neml2/tensors/shape_utils.h"
+#include "neml2/tensors/functions/intrsc_intmd_dim_utils.h"
 
 namespace neml2
 {
@@ -440,8 +441,30 @@ template <std::size_t N>
 Derivative<N> &
 Derivative<N>::operator+=(const Derivative<N> & deriv)
 {
-  _intrsc_intmd_dim = deriv._intrsc_intmd_dim;
-  return operator+=(deriv.tensor());
+  // check difference in number of intrinsic intermediate dimensions
+  auto d = var_intrsc_intmd_dim() - deriv.var_intrsc_intmd_dim();
+  for (std::size_t i = 0; i < N; ++i)
+    neml_assert_dbg(arg_intrsc_intmd_dim(i) - deriv.arg_intrsc_intmd_dim(i) == d,
+                    "Incompatible intrinsic intermediate dimensions in operator+= for derivative '",
+                    name());
+
+  // reinterpret if needed
+  if (d > 0)
+    return operator+=(deriv.reinterpret(d));
+  else if (d < 0)
+    *this = reinterpret(-d);
+
+  // fullify if needed
+  auto t = deriv.tensor();
+  if (!is_intrsc_intmd_broadcast() && deriv.is_intrsc_intmd_broadcast())
+    t = fullify_intrsc_intmd_dims(deriv);
+  else if (is_intrsc_intmd_broadcast() && !deriv.is_intrsc_intmd_broadcast())
+    _deriv = fullify_intrsc_intmd_dims(*this);
+
+  _intrsc_intmd_dim = std::max(_intrsc_intmd_dim, deriv._intrsc_intmd_dim);
+  for (std::size_t i = 0; i < 2; ++i)
+    _intrsc_intmd_dims[i] = std::max(_intrsc_intmd_dims[i], deriv._intrsc_intmd_dims[i]);
+  return operator+=(t);
 }
 
 template class Derivative<1>;

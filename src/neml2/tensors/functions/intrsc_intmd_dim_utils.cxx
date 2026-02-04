@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/tensors/functions/intrsc_intmd_dim_utils.h"
+#include "neml2/misc/errors.h"
 #include "neml2/tensors/functions/diagonalize.h"
 #include "neml2/tensors/functions/sum_to_size.h"
 #include "neml2/tensors/Derivative.h"
@@ -32,6 +33,55 @@
 
 namespace neml2
 {
+
+template <>
+Tensor
+fullify_intrsc_intmd_dims(const Derivative<1> & deriv)
+{
+  if (!deriv.is_intrsc_intmd_broadcast())
+    return deriv.tensor();
+
+  neml_assert_dbg(
+      at::is_expandable_to(deriv.arg_intrsc_intmd_sizes(0), deriv.var_intrsc_intmd_sizes()),
+      "The intrinsic intermediate shape (",
+      deriv.arg_intrsc_intmd_sizes(0),
+      ") of the argument for derivative '",
+      deriv.name(),
+      "' is not broadcastable to the variable's intrinsic intermediate shape (",
+      deriv.var_intrsc_intmd_sizes(),
+      ").");
+
+  auto t = deriv.tensor();
+  const auto deriv_ex_is = deriv.extrsc_intmd_sizes();
+  const auto var_is = deriv.var_intrsc_intmd_sizes();
+  const auto arg_is = deriv.arg_intrsc_intmd_sizes(0);
+
+  // flatten the intrinsic intermediate dimensions
+  t = t.intmd_flatten(t.intmd_dim() - deriv.intrsc_intmd_dim());
+
+  // diagonal expand to arguments' intrinsic intermediate dimensions
+  t = intmd_diagonalize(t, -1);
+
+  // unflatten to inflated intrinsic intermediate dimensions (variable's intrinsic intermediate
+  // dimensions repeated N times)
+  const auto inflated_intmd_sizes = utils::add_shapes(deriv_ex_is, var_is, var_is);
+  t = t.intmd_reshape(inflated_intmd_sizes);
+
+  // reduce to arguments' intrinsic intermediate dimensions
+  const auto padded_intmd_sizes =
+      utils::add_shapes(deriv_ex_is, var_is, utils::pad_prepend(arg_is, var_is.size()));
+  t = intmd_sum_to_size(t, padded_intmd_sizes)
+          .intmd_reshape(utils::add_shapes(deriv_ex_is, var_is, arg_is));
+  return t;
+}
+
+template <>
+Tensor
+fullify_intrsc_intmd_dims(const Derivative<2> & /*deriv*/)
+{
+  throw NEMLException(
+      "fullify_intrsc_intmd_dims is only implemented for Derivative<1> at this time.");
+}
 
 Tensor
 pop_intrsc_intmd_dim(const Tensor & t, Size dim)
@@ -64,43 +114,12 @@ push_intrsc_intmd_dim(const Tensor & t, Size dim)
 Tensor
 pop_intrsc_intmd_dim(const Derivative<1> & deriv)
 {
-  auto t = deriv.tensor();
+  auto t = fullify_intrsc_intmd_dims(deriv);
 
-  const auto deriv_ex_is = deriv.extrsc_intmd_sizes();
   const auto var_is = deriv.var_intrsc_intmd_sizes();
   const auto arg_is = deriv.arg_intrsc_intmd_sizes(0);
   const auto var_bs = deriv.var_base_sizes();
   const auto arg_bs = deriv.arg_base_sizes(0);
-
-  if (deriv.is_intrsc_intmd_broadcast())
-  {
-    neml_assert_dbg(
-        at::is_expandable_to(deriv.arg_intrsc_intmd_sizes(0), deriv.var_intrsc_intmd_sizes()),
-        "The intrinsic intermediate shape (",
-        deriv.arg_intrsc_intmd_sizes(0),
-        ") of the argument for derivative '",
-        deriv.name(),
-        "' is not broadcastable to the variable's intrinsic intermediate shape (",
-        deriv.var_intrsc_intmd_sizes(),
-        ").");
-
-    // flatten the intrinsic intermediate dimensions
-    t = t.intmd_flatten(t.intmd_dim() - deriv.intrsc_intmd_dim());
-
-    // diagonal expand to arguments' intrinsic intermediate dimensions
-    t = intmd_diagonalize(t, -1);
-
-    // unflatten to inflated intrinsic intermediate dimensions (variable's intrinsic intermediate
-    // dimensions repeated N times)
-    const auto inflated_intmd_sizes = utils::add_shapes(deriv_ex_is, var_is, var_is);
-    t = t.intmd_reshape(inflated_intmd_sizes);
-
-    // reduce to arguments' intrinsic intermediate dimensions
-    const auto padded_intmd_sizes =
-        utils::add_shapes(deriv_ex_is, var_is, utils::pad_prepend(arg_is, var_is.size()));
-    t = intmd_sum_to_size(t, padded_intmd_sizes)
-            .intmd_reshape(utils::add_shapes(deriv_ex_is, var_is, arg_is));
-  }
 
   return pop_intrsc_intmd_dim<2>(t, {var_is.size(), arg_is.size()}, {var_bs, arg_bs}, deriv.name());
 }
@@ -206,4 +225,5 @@ template Tensor push_intrsc_intmd_dim<3>(const Tensor &,
                                          const std::array<std::size_t, 3> &,
                                          const std::array<TensorShapeRef, 3> &,
                                          const std::string &);
+
 }
