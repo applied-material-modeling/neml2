@@ -70,6 +70,7 @@ SparseTensorList
 LinearSystem::A()
 {
   SparseTensorList A;
+  pre_assemble(true, false);
   assemble(&A, nullptr);
   post_assemble(true, false);
   return A;
@@ -79,6 +80,7 @@ SparseTensorList
 LinearSystem::b()
 {
   SparseTensorList b;
+  pre_assemble(false, true);
   assemble(nullptr, &b);
   post_assemble(false, true);
   return b;
@@ -88,6 +90,7 @@ std::tuple<SparseTensorList, SparseTensorList>
 LinearSystem::A_and_b()
 {
   SparseTensorList A, b;
+  pre_assemble(true, true);
   assemble(&A, &b);
   post_assemble(true, true);
   return {A, b};
@@ -130,6 +133,11 @@ const std::vector<TensorShape> &
 LinearSystem::blayout() const
 {
   return _blayout;
+}
+
+void
+LinearSystem::pre_assemble(bool /*A*/, bool /*b*/)
+{
 }
 
 void

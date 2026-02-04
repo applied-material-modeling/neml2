@@ -366,8 +366,7 @@ VariableStore::assign_input(const std::vector<VariableName> & names, const Spars
                   ").");
 
   for (std::size_t i = 0; i < names.size(); i++)
-    if (v[i].defined())
-      input_variable(names[i]) = v[i];
+    input_variable(names[i]) = v[i];
 }
 
 void

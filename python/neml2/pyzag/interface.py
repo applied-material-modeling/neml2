@@ -105,13 +105,6 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         # Assemble residual and Jacobians
         r, J, Jn = self._assemble(A, B, b)
 
-        print("------------------------------------------")
-        print(state.norm())
-        print(forces.norm())
-        print(r.torch().norm())
-        print(J.torch().norm())
-        print(Jn.torch().norm())
-
         # At this point, the residual and Jacobians should be good to go
         return self._adapt_for_pyzag(r, J, Jn)
 
@@ -304,17 +297,15 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         # Update the given variables in the nonlinear system
         g = [neml2.Tensor()] * len(self.sys.gmap())
         for i, j in enumerate(self._sn_to_g_map):
-            g[j] = s_n[i] if j != -1 else neml2.Tensor()
+            if j != -1:
+                g[j] = s_n[i]
         for i, j in enumerate(self._f_to_g_map):
-            g[j] = f_np1[i] if j != -1 else neml2.Tensor()
+            if j != -1:
+                g[j] = f_np1[i]
         for i, j in enumerate(self._fn_to_g_map):
-            g[j] = f_n[i] if j != -1 else neml2.Tensor()
+            if j != -1:
+                g[j] = f_n[i]
         self.sys.set_g(g)
-
-        # Last but not the least, pyzag expects strict current -> old mapping while NEML2 does not
-        # Practically, this means some old state/forces may still be undefined at this point
-        # Let's zero them out to be safe
-        self.model.zero_undefined_input()
 
     def _assemble(
         self, A: list[neml2.Tensor], B: list[neml2.Tensor], b: list[neml2.Tensor]

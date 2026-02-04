@@ -196,6 +196,7 @@ ModelNonlinearSystem::g() const
 std::tuple<SparseTensorList, SparseTensorList>
 ModelNonlinearSystem::A_and_B()
 {
+  pre_assemble(true, false);
   _model->forward_maybe_jit(false, true, false);
   auto A = _model->collect_output_derivatives(bmap(), umap());
   auto B = _model->collect_output_derivatives(bmap(), gmap());
@@ -206,6 +207,7 @@ ModelNonlinearSystem::A_and_B()
 std::tuple<SparseTensorList, SparseTensorList, SparseTensorList>
 ModelNonlinearSystem::A_and_B_and_b()
 {
+  pre_assemble(true, true);
   _model->forward_maybe_jit(true, true, false);
   auto A = _model->collect_output_derivatives(bmap(), umap());
   auto B = _model->collect_output_derivatives(bmap(), gmap());
@@ -228,6 +230,25 @@ ModelNonlinearSystem::assemble(SparseTensorList * A, SparseTensorList * b)
 
   if (A)
     *A = _model->collect_output_derivatives(bmap(), umap());
+}
+
+void
+ModelNonlinearSystem::pre_assemble(bool A, bool b)
+{
+  NonlinearSystem::pre_assemble(A, b);
+  if (host() == this)
+    _model->zero_undefined_input();
+}
+
+void
+ModelNonlinearSystem::post_assemble(bool A, bool b)
+{
+  NonlinearSystem::post_assemble(A, b);
+  if (host() == this)
+  {
+    _model->clear_input();
+    _model->clear_output();
+  }
 }
 
 } // namespace neml2

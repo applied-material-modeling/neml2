@@ -96,6 +96,16 @@ protected:
   virtual void assemble(SparseTensorList * A, SparseTensorList * b) = 0;
 
   /**
+   * @brief Callback before assembly to perform
+   *
+   * This is useful, for example, to clear obsolete data structures
+   *
+   * @param A Whether the operator matrix was assembled
+   * @param b Whether the RHS vector was assembled
+   */
+  virtual void pre_assemble(bool A, bool b);
+
+  /**
    * @brief Callback after assembly to perform
    *
    * This is useful, for example, to collect information that isn't available after the first

@@ -72,6 +72,8 @@ protected:
   std::vector<TensorShape> setup_glayout() override;
 
   void assemble(SparseTensorList * A, SparseTensorList * b) override;
+  void pre_assemble(bool A, bool b) override;
+  void post_assemble(bool A, bool b) override;
 
 private:
   std::shared_ptr<Model> _model;
