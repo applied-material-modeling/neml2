@@ -59,7 +59,7 @@ SimpleMPIScheduler::SimpleMPIScheduler(const OptionSet & options)
     _capacities(options.get("capacities").user_specified()
                     ? options.get<std::vector<std::size_t>>("capacities")
                     : _batch_sizes),
-    _comm(TIMPI::Communicator(MPI_COMM_WORLD))
+    _comm(MPI_COMM_WORLD)
 {
   neml_assert(_available_devices.size() == _batch_sizes.size(),
               "Number of batch sizes must match the number of devices.");
@@ -113,18 +113,24 @@ SimpleMPIScheduler::determine_my_device()
   // NOLINTBEGIN(modernize-avoid-c-arrays)
   char c_str_hostname[MPI_MAX_PROCESSOR_NAME];
   int name_len = 0;
-  timpi_call_mpi(MPI_Get_processor_name(c_str_hostname, &name_len));
+  MPI_Get_processor_name(c_str_hostname, &name_len);
   std::string hostname = std::string(c_str_hostname);
 
   std::hash<std::string> hasher;
   int id = static_cast<int>(hasher(hostname) % std::numeric_limits<int>::max());
 
   // Make a new communicator based on this hashed hostname
-  TIMPI::Communicator new_comm;
-  _comm.split(id, int(_comm.rank()), new_comm);
+  MPI_Comm new_comm;
+  int comm_rank = 0;
+  MPI_Comm_rank(_comm, &comm_rank);
+  MPI_Comm_split(_comm, id, comm_rank, &new_comm);
   // Assign our device index based on the new communicator
-  _device_index = new_comm.rank();
-  neml_assert(new_comm.size() <= _available_devices.size(),
+  int new_rank;
+  MPI_Comm_rank(new_comm, &new_rank);
+  _device_index = new_rank;
+  int new_size;
+  MPI_Comm_size(new_comm, &new_size);
+  neml_assert(static_cast<std::size_t>(new_size) <= _available_devices.size(),
               "MPI split by host would require too many devices");
   // NOLINTEND(modernize-avoid-c-arrays)
 }

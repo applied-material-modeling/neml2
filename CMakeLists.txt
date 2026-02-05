@@ -81,7 +81,6 @@ set(hit_VERSION "df7e49e95e5ea9ebef0e7578408221d3aeaf7513" CACHE STRING "Default
 set(catch2_VERSION "v3.5.4" CACHE STRING "Default Catch2 version to download (if not found)")
 set(gperftools_VERSION "gperftools-2.17" CACHE STRING "Default gperftools version to download")
 set(argparse_VERSION "v3.2" CACHE STRING "Default argparse version to download")
-set(timpi_VERSION "v1.9.0_bootstrapped" CACHE STRING "Default TIMPI version to download")
 set(nlohmann_json_VERSION "v3.11.3" CACHE STRING "Default nlohmann json version to download")
 set(csvparser_VERSION "2.3.0" CACHE STRING "Default csv-parser version to download")
 
@@ -225,33 +224,6 @@ endif()
 install(FILES ${NEML2_SOURCE_DIR}/cmake/Modules/Findhit.cmake DESTINATION share/cmake/neml2/Modules COMPONENT libneml2)
 
 # ----------------------------------------------------------------------------
-# timpi
-# ----------------------------------------------------------------------------
-# map between CMake build type and timpi build type
-set(timpi_BUILD_TYPE "opt" CACHE STRING "Build type for TIMPI")
-
-if(NEML2_WORK_DISPATCHER)
-      find_package(timpi MODULE)
-
-      if(NOT timpi_FOUND)
-            download_from_git(timpi https://github.com/libMesh/TIMPI.git ${NEML2_CONTRIB_PREFIX} ${timpi_VERSION})
-            set(timpi_INSTALL_PREFIX ${NEML2_CONTRIB_PREFIX}/timpi CACHE PATH "timpi install prefix")
-            custom_install(timpi contrib/install_timpi.sh ${NEML2_CONTRIB_PREFIX}/timpi-src ${NEML2_CONTRIB_PREFIX}/timpi-build/${timpi_BUILD_TYPE} ${timpi_INSTALL_PREFIX})
-            find_package(timpi MODULE REQUIRED)
-      endif()
-
-      # check if timpi is downloaded
-      path_has_prefix(${timpi_ROOT} ${NEML2_CONTRIB_PREFIX} timpi_CONTRIB)
-
-      # timpi will be packaged as part of the NEML2 installation if it was downloaded by us (or if it is being built as a wheel).
-      if(timpi_CONTRIB OR NEML2_WHEEL)
-            install_glob(${timpi_LIBRARY} lib libneml2)
-            install(DIRECTORY ${timpi_INCLUDE_DIR}/timpi TYPE INCLUDE COMPONENT libneml2)
-      endif()
-      install(FILES ${NEML2_SOURCE_DIR}/cmake/Modules/Findtimpi.cmake DESTINATION share/cmake/neml2/Modules COMPONENT libneml2)
-endif()
-
-# ----------------------------------------------------------------------------
 # nlohmann json
 # ----------------------------------------------------------------------------
 if(NEML2_JSON)
@@ -370,6 +342,13 @@ if(NEML2_DOC)
 
       download_from_git(doxygen-awesome-css https://github.com/jothepro/doxygen-awesome-css.git ${NEML2_CONTRIB_PREFIX} ${doxygen_awesome_css_VERSION})
       set(doxygen-awesome-css_SOURCE_DIR ${NEML2_CONTRIB_PREFIX}/doxygen-awesome-css-src)
+endif()
+
+# ----------------------------------------------------------------------------
+# MPI
+# ----------------------------------------------------------------------------
+if(NEML2_WORK_DISPATCHER)
+      find_package(MPI COMPONENTS CXX REQUIRED)
 endif()
 
 # ----------------------------------------------------------------------------

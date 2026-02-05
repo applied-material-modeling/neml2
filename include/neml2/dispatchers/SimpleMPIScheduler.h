@@ -24,12 +24,12 @@
 
 #pragma once
 
+#include <mpi.h>
+
 #include "neml2/dispatchers/WorkScheduler.h"
 #include "neml2/base/Registry.h"
 #include "neml2/base/NEML2Object.h"
 #include "neml2/base/Factory.h"
-
-#include "timpi/communicator.h"
 
 namespace neml2
 {
@@ -63,9 +63,9 @@ public:
 
   std::vector<Device> devices() const override { return {_available_devices[_device_index]}; }
 
-  virtual TIMPI::Communicator & comm() { return _comm; }
+  virtual MPI_Comm & comm() { return _comm; }
 
-  virtual void set_comm(TIMPI::Communicator comm) { _comm.duplicate(comm); }
+  virtual void set_comm(MPI_Comm comm) { _comm = comm; }
 
 protected:
   bool schedule_work_impl(Device &, std::size_t &) const override;
@@ -87,7 +87,7 @@ private:
   std::vector<std::size_t> _capacities;
 
   /// Global communicator to use to split
-  TIMPI::Communicator _comm;
+  MPI_Comm _comm;
 
   /// This rank's device
   std::size_t _device_index = 0;

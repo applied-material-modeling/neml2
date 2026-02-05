@@ -142,8 +142,7 @@ target_link_libraries(driver PUBLIC model tensor base)
 # libneml2_dispatcher
 if(NEML2_WORK_DISPATCHER)
   neml2_add_submodule(dispatcher SHARED dispatchers)
-  target_link_libraries(dispatcher PUBLIC tensor model)
-  target_link_libraries(dispatcher PUBLIC timpi)
+  target_link_libraries(dispatcher PUBLIC tensor model MPI::MPI_CXX)
   target_link_libraries(driver PUBLIC dispatcher)
 endif()
 
