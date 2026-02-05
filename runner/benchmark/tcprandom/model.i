@@ -95,17 +95,6 @@
     cp_warmup_elastic_scale = 0.05
     device = ${device}
     random_seed = 25
-    verbose = true
-  []
-[]
-
-[Solvers]
-  [newton]
-    type = NewtonWithLineSearch
-    linesearch_cutback = 2.0
-    linesearch_stopping_criteria = 1.0e-3
-    max_linesearch_iterations = 5
-    verbose = true
   []
 []
 
@@ -175,15 +164,36 @@
     type = WR2ImplicitExponentialTimeIntegration
     variable = 'state/orientation'
   []
-
   [implicit_rate]
     type = ComposedModel
     models = 'euler_rodrigues elasticity orientation_rate resolved_shear elastic_stretch plastic_deformation_rate plastic_spin sum_slip_rates slip_rule slip_strength voce_hardening integrate_slip_hardening integrate_elastic_strain integrate_orientation'
-    automatic_scaling = true
   []
+[]
+
+[EquationSystems]
+  [eq_sys]
+    type = NonlinearSystem
+    model = 'implicit_rate'
+  []
+[]
+
+[Solvers]
+  [newton]
+    type = NewtonWithLineSearch
+    linesearch_cutback = 2.0
+    linesearch_stopping_criteria = 1.0e-3
+    max_linesearch_iterations = 5
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
+  []
+[]
+
+[Models]
   [model]
     type = ImplicitUpdate
-    implicit_model = 'implicit_rate'
+    equation_system = 'eq_sys'
     solver = 'newton'
   []
   [fix_orientation]

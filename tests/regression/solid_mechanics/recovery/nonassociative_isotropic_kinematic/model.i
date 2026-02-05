@@ -53,12 +53,6 @@
   []
 []
 
-[Solvers]
-  [newton]
-    type = Newton
-  []
-[]
-
 [Models]
   [isoharden]
     type = SlopeSaturationVoceIsotropicHardening
@@ -158,9 +152,29 @@
     type = ComposedModel
     models = 'isoharden kinharden mandel_stress overstress vonmises yield normality flow_rate Eprate X1rate X2rate Erate Eerate elasticity integrate_stress integrate_k integrate_X1 integrate_X2'
   []
+[]
+
+[EquationSystems]
+  [eq_sys]
+    type = NonlinearSystem
+    model = 'implicit_rate'
+  []
+[]
+
+[Solvers]
+  [newton]
+    type = Newton
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
+  []
+[]
+
+[Models]
   [model]
     type = ImplicitUpdate
-    implicit_model = 'implicit_rate'
+    equation_system = 'eq_sys'
     solver = 'newton'
   []
 []

@@ -93,7 +93,7 @@ VariableRate<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
     if (_vn.is_dependent())
       _dv_dt.d(_vn) = -I / dt;
 
-    if (currently_solving_nonlinear_system())
+    if (currently_assembling_nonlinear_system())
       return;
 
     _dv_dt.d(_t) = -dv / dt / dt;

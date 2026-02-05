@@ -31,7 +31,7 @@
 using namespace neml2;
 namespace fs = std::filesystem;
 
-TEST_CASE("phase_field_fracture")
+TEST_CASE("phase field fracture")
 {
   const auto pwd = fs::current_path();
   const auto search_path = pwd / "phase_field_fracture";

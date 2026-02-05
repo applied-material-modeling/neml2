@@ -60,10 +60,14 @@ public:
   VariableBase & operator=(VariableBase &&) = delete;
   virtual ~VariableBase() = default;
 
-  VariableBase(VariableName name_in,
-               Model * owner,
-               TensorShapeRef base_shape,
-               TensorShapeRef dep_intmd_dims);
+  /**
+   * @brief The canonical constructor
+   *
+   * @param name_in Variable name
+   * @param owner Model who declared this variable
+   * @param base_shape Base shape of this variable
+   */
+  VariableBase(VariableName name_in, Model * owner, TensorShapeRef base_shape);
 
   /// Name of this variable
   const VariableName & name() const { return _name; }
@@ -139,31 +143,30 @@ public:
                                               Model * owner = nullptr) const = 0;
 
   /// Reference another variable
-  virtual void ref(const VariableBase & other, bool ref_is_mutable = false) = 0;
+  virtual void ref(VariableBase & other) = 0;
 
   /// Get the referencing variable (returns this if this is a storing variable)
   virtual const VariableBase * ref() const = 0;
+  virtual VariableBase * ref() = 0;
 
-  /// Set the intermediate shape. @see neml2::VariableStore::set_input_intmd_sizes
-  void set_intmd_sizes(TensorShapeRef shape);
-
-  /// Get dependent intermediate dimensions for derivative calculation
-  ArrayRef<Size> dep_intmd_dims() const;
+  /// Get the direct referencing variable (returns nullptr if this is a storing variable)
+  virtual const VariableBase * direct_ref() const = 0;
+  virtual VariableBase * direct_ref() = 0;
 
   /// Check if this is an owning variable
   virtual bool owning() const = 0;
+
+  /// Whether this variable is mutable when it is referenced by another variable
+  bool is_mutable() const;
+
+  /// Allow/disable mutation of this variable when it is referenced by another variable
+  void set_mutable(bool m);
 
   /// Make zeros tensor with the shape of this variable
   Tensor zeros(const TensorOptions & options) const;
 
   /// Set the variable value to zero
   virtual void zero(const TensorOptions & options) = 0;
-
-  /// Set the variable value from a Tensor in assembly format
-  virtual void set(const Tensor & val, std::optional<TracerPrivilege> key = std::nullopt) = 0;
-
-  /// Get the variable value in assembly format
-  virtual Tensor get() const = 0;
 
   /// Get the variable value cast to Tensor
   virtual Tensor tensor() const = 0;
@@ -173,6 +176,10 @@ public:
 
   /// Mark this variable as a leaf variable in tracing function graph for AD
   virtual void requires_grad_(bool req = true) = 0;
+
+  /// Assignment operator (with TracerPrivilege)
+  virtual void assign(const Tensor & val,
+                      [[maybe_unused]] std::optional<TracerPrivilege> key = std::nullopt) = 0;
 
   /// Assignment operator
   virtual void operator=(const Tensor & val) = 0;
@@ -184,14 +191,20 @@ public:
   bool has_derivative(const VariableName & v1name, const VariableName & v2name) const;
 
   /// Wrapper for assigning partial derivative
-  Derivative<1> & d(const VariableBase & var, ArrayRef<Size> dep_dims = {});
-  const Derivative<1> & d(const VariableBase & var) const;
+  Derivative<1> & d(const VariableBase & arg,
+                    std::size_t deriv_intrsc_intmd_dim = 0,
+                    std::size_t var_intrsc_intmd_dim = 0,
+                    std::size_t arg_intrsc_intmd_dim = 0);
+  const Derivative<1> & d(const VariableBase & arg) const;
 
   /// Wrapper for assigning second partial derivative
-  Derivative<2> &
-  d2(const VariableBase & var1, const VariableBase & var2, ArrayRef<Size> dep_dims = {});
-  const Derivative<2> & d2(const VariableBase & var1, const VariableBase & var2) const;
-
+  Derivative<2> & d2(const VariableBase & arg1,
+                     const VariableBase & arg2,
+                     std::size_t deriv_intrsc_intmd_dim = 0,
+                     std::size_t var_intrsc_intmd_dim = 0,
+                     std::size_t arg1_intrsc_intmd_dim = 0,
+                     std::size_t arg2_intrsc_intmd_dim = 0);
+  const Derivative<2> & d2(const VariableBase & arg1, const VariableBase & arg2) const;
   ///@{
   /// Request to use AD to calculate the derivative of this variable with respect to another variable
   void request_AD(const VariableBase & u);
@@ -205,13 +218,18 @@ public:
                   const std::vector<const VariableBase *> & u2s);
   ///@}
 
+  using DerivTuple = std::tuple<Derivative<1>, const VariableBase *>;
+  using DerivContainer = std::vector<DerivTuple>;
+  using SecDerivTuple = std::tuple<Derivative<2>, const VariableBase *, const VariableBase *>;
+  using SecDerivContainer = std::vector<SecDerivTuple>;
+
   /// Partial derivatives
-  const std::vector<Derivative<1>> & derivatives() const { return _derivs; }
-  std::vector<Derivative<1>> & derivatives() { return _derivs; }
+  const DerivContainer & derivatives() const { return _derivs; }
+  DerivContainer & derivatives() { return _derivs; }
 
   /// Partial second derivatives
-  const std::vector<Derivative<2>> & second_derivatives() const { return _sec_derivs; }
-  std::vector<Derivative<2>> & second_derivatives() { return _sec_derivs; }
+  const SecDerivContainer & second_derivatives() const { return _sec_derivs; }
+  SecDerivContainer & second_derivatives() { return _sec_derivs; }
 
   /// Clear the variable value and derivatives
   virtual void clear();
@@ -219,12 +237,21 @@ public:
   /// Clear only the derivatives
   void clear_derivatives();
 
-  /// Apply first order chain rule
-  void apply_chain_rule(const DependencyResolver<Model, VariableName> &);
+  ///@{
+  /// Whether this variable is a leaf variable in the dependency graph
+  bool is_leaf(const DependencyResolver<Model, VariableName> &) const;
+  /// Get the provider in the dependency graph
+  const VariableBase & provider(const DependencyResolver<Model, VariableName> &) const;
+  /// Get total derivatives with respect to leaf variables
+  const DerivContainer & total_derivatives(const DependencyResolver<Model, VariableName> &) const;
+  /// Get total second derivatives with respect to leaf variables
+  const SecDerivContainer &
+  total_second_derivatives(const DependencyResolver<Model, VariableName> &) const;
+  /// Clear chain rule cache
+  void clear_chain_rule_cache(const DependencyResolver<Model, VariableName> &) const;
+  ///@}
 
-  /// Apply second order chain rule
-  void apply_second_order_chain_rule(const DependencyResolver<Model, VariableName> &);
-
+protected:
   /// Name of the variable
   const VariableName _name = {};
 
@@ -238,23 +265,20 @@ public:
   /// Base shape of the variable
   const TensorShape _base_sizes = {};
 
-  /// Dependent intermediate dimensions for derivative calculation
-  const TensorShape _dep_intmd_dims = {};
+  /// When referenced by another variable, whether to allow the referencing variable to mutate my value
+  bool _mutable = false;
 
 private:
-  ValueMap total_derivatives(const DependencyResolver<Model, VariableName> & dep,
-                             Model * model,
-                             const VariableBase & yvar) const;
-
-  DerivMap total_second_derivatives(const DependencyResolver<Model, VariableName> & dep,
-                                    Model * model,
-                                    const VariableBase & yvar) const;
-
+  ///@{
   /// Derivatives of this variable with respect to other variables
-  std::vector<Derivative<1>> _derivs;
-
+  DerivContainer _derivs;
   /// Second derivatives of this variable with respect to other variables
-  std::vector<Derivative<2>> _sec_derivs;
+  SecDerivContainer _sec_derivs;
+  /// Cache for total derivatives (with respect to leaf variables)
+  mutable DerivContainer _total_derivs;
+  /// Cache for second total derivatives (with respect to leaf variables)
+  mutable SecDerivContainer _total_sec_derivs;
+  ///@}
 };
 
 // Everything below is just for convenience: We just forward operations to the the variable values

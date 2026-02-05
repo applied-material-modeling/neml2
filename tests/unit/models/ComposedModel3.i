@@ -11,15 +11,6 @@
   []
 []
 
-[Solvers]
-  [newton]
-    type = Newton
-    abs_tol = 1e-10
-    rel_tol = 1e-08
-    max_its = 100
-  []
-[]
-
 [Models]
   [rate]
     type = SampleRateModel
@@ -40,9 +31,32 @@
     type = ComposedModel
     models = 'rate integrate_foo integrate_bar integrate_baz'
   []
+[]
+
+[EquationSystems]
+  [eq_sys]
+    type = NonlinearSystem
+    model = 'implicit_rate'
+  []
+[]
+
+[Solvers]
+  [newton]
+    type = Newton
+    abs_tol = 1e-10
+    rel_tol = 1e-08
+    max_its = 100
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
+  []
+[]
+
+[Models]
   [implicit_update]
     type = ImplicitUpdate
-    implicit_model = 'implicit_rate'
+    equation_system = 'eq_sys'
     solver = 'newton'
   []
   [baz_tr]

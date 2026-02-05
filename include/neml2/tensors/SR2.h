@@ -86,6 +86,7 @@ public:
   SFFR4 drotate(const R2 & R) const;
 
   /// Accessor
+  using PrimitiveTensor<SR2, 6>::operator();
   Scalar operator()(Size i, Size j) const;
 
   /// Transpose, no-op

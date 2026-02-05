@@ -76,14 +76,6 @@ nbatch = 20
   []
 []
 
-[Solvers]
-  [newton]
-    type = Newton
-    abs_tol = 1e-8
-    rel_tol = 1e-6
-  []
-[]
-
 [Models]
   #####################################################################################
   # Compute the invariant plastic flow direction since we are doing J2 radial return
@@ -176,9 +168,31 @@ nbatch = 20
     models = "plastic_update stress_update vonmises rom
               integrate_ep"
   []
+[]
+
+[EquationSystems]
+  [eq_sys]
+    type = NonlinearSystem
+    model = 'rate'
+  []
+[]
+
+[Solvers]
+  [newton]
+    type = Newton
+    abs_tol = 1e-8
+    rel_tol = 1e-6
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
+  []
+[]
+
+[Models]
   [radial_return]
     type = ImplicitUpdate
-    implicit_model = 'rate'
+    equation_system = 'eq_sys'
     solver = 'newton'
   []
 

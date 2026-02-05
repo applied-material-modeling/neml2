@@ -68,10 +68,12 @@
     type = ComposedModel
     models = 'eq2 eq3'
   []
+[]
+
+[EquationSystems]
   [eq4]
-    type = ImplicitUpdate
-    implicit_model = 'system'
-    solver = 'newton'
+    type = NonlinearSystem
+    model = 'system'
   []
 []
 
@@ -81,5 +83,17 @@
     rel_tol = 1e-08
     abs_tol = 1e-10
     max_its = 50
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
+  []
+[]
+
+[Models]
+  [eq4]
+    type = ImplicitUpdate
+    equation_system = 'eq4'
+    solver = 'newton'
   []
 []

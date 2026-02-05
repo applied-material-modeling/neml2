@@ -13,7 +13,7 @@ The configuration of NEML2 can be customized via a variety of high-level configu
 | :-------------------- | :---------------------- | :------------------------------------------------ |
 | NEML2_PCH             | <u>ON</u>, OFF          | Use precompiled headers to accelerate compilation |
 | NEML2_TESTS           | <u>ON</u>, OFF          | Master knob for including/excluding all tests     |
-| NEML2_RUNNER          | ON, <u>OFF</u>          | Create a simple runner                            |
+| NEML2_RUNNER          | ON, <u>OFF</u>          | Create a simple neml2 executable                  |
 | NEML2_PYBIND          | ON, <u>OFF</u>          | Create the Python bindings target                 |
 | NEML2_DOC             | ON, <u>OFF</u>          | Create the documentation target                   |
 | NEML2_WORK_DISPATCHER | ON, <u>OFF</u>          | Enable work dispatcher                            |
@@ -28,23 +28,22 @@ Since many configure options are available for customizing the build, it is some
 NEML2 predefines six configure presets, serving different development purposes:
 - dev: This preset is best suited for developing the C++ backend and Python bindings. Compiler optimization is turned off, and debug symbols are enabled. In addition, targets for locally generating the documentation (this website) are enabled.
 - coverage: Unit tests are built with coverage flags enabled. `gcov` or similar tools can be used to record code coverage data.
-- runner: The NEML2 Runner is built with the highest level of compiler optimization. The Runner is an executable that can be used to parse, evaluate, diagnose NEML2 input files.
-- tsan: Build the NEML2 Runner with thread sanitizer flags. The Runner can then be used to detect races.
-- release: Build both the C++ backend and the Python package for production runs.
-- profiling: Similar to runner, but additionally links the Runner against gperftools' CPU profiler for profiling purposes.
+- tsan: Build the NEML2 runner with thread sanitizer flags. The runner can then be used to detect races.
+- release: Build both the C++ backend and the runner.
+- profiling: Similar to runner, but additionally links the executable against gperftools' CPU profiler for profiling purposes.
 
 The configure presets and their corresponding configure options are summarized below.
 
-| preset                | dev   | coverage | runner  | tsan            | release        | profiling |
-| :-------------------- | :---- | :------- | :------ | :-------------- | :------------- | :-------- |
-| CMAKE_BUILD_TYPE      | Debug | Coverage | Release | ThreadSanitizer | RelWithDebInfo | Profiling |
-| NEML2_PCH             | ON    | ON       | ON      | ON              | ON             | ON        |
-| NEML2_TESTS           | ON    | ON       |         |                 |                |           |
-| NEML2_RUNNER          |       |          | ON      | ON              | ON             | ON        |
-| NEML2_PYBIND          | ON    |          |         |                 | ON             |           |
-| NEML2_DOC             | ON    |          |         |                 |                |           |
-| NEML2_WORK_DISPATCHER | ON    | ON       | ON      | ON              | ON             | ON        |
-| NEML2_JSON            | ON    | ON       | ON      | ON              | ON             | ON        |
+| preset                | dev   | coverage | tsan            | release | profiling |
+| :-------------------- | :---- | :------- | :-------------- | :------ | :-------- |
+| CMAKE_BUILD_TYPE      | Debug | Coverage | ThreadSanitizer | Release | Profiling |
+| NEML2_PCH             | ON    | ON       | ON              | ON      | ON        |
+| NEML2_TESTS           | ON    | ON       | ON              | ON      |           |
+| NEML2_RUNNER          | ON    |          | ON              | ON      | ON        |
+| NEML2_PYBIND          | ON    |          |                 | ON      |           |
+| NEML2_DOC             | ON    |          |                 |         |           |
+| NEML2_WORK_DISPATCHER | ON    | ON       | ON              | ON      | ON        |
+| NEML2_JSON            | ON    | ON       | ON              | ON      | ON        |
 
 To select a specific configure preset, use the `--preset` option on the command line.
 
@@ -68,8 +67,7 @@ NEML2 offers a number of build presets:
 - dev-python: Python bindings with tests
 - dev-doc: HTML documentation
 - coverage: C++ backend compiled with coverage flags
-- runner: Runner
 - release: C++ backend and Python bindings for release
-- profiling: Runner with debug symbols linked against profiler
+- profiling: runner with debug symbols linked against profiler
 
 To use a build preset, use the `--preset` option on the command line.

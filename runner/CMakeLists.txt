@@ -3,6 +3,10 @@
 # ------------------------------------------------------------------------------
 file(GLOB_RECURSE srcs CONFIGURE_DEPENDS src/*.cxx)
 add_executable(runner ${srcs})
+set_target_properties(runner PROPERTIES
+  DISABLE_PRECOMPILE_HEADERS ON
+  OUTPUT_NAME neml2
+)
 
 target_compile_options(runner PRIVATE -Wall -Wextra -pedantic)
 target_link_libraries(runner PRIVATE neml2 argparse::argparse)
@@ -38,7 +42,7 @@ if(NEML2_TESTS)
   list(APPEND BENCHMARK_ARGS "device=cpu")
 
   macro(add_benchmark name)
-    add_test(NAME ${name} COMMAND runner run ${BENCHMARK_DIR}/${name}/model.i ${BENCHMARK_ARGS})
+    add_test(NAME ${name} COMMAND neml2 run ${BENCHMARK_DIR}/${name}/model.i ${BENCHMARK_ARGS})
   endmacro()
 
   add_benchmark(elasticity)

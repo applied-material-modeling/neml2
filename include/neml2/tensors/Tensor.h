@@ -41,6 +41,8 @@ namespace utils
 /// @brief Find the broadcast dynamic shape of all the tensors
 /// The returned dynamic shape will be _traceable_. @see neml2::TraceableTensorShape
 TraceableTensorShape broadcast_dynamic_sizes(const std::vector<Tensor> & tensors);
+/// @brief Find the broadcast intermediate shape of all the tensors
+TensorShape broadcast_intmd_sizes(const std::vector<Tensor> & tensors);
 } // namespace utils
 
 class Tensor : public TensorBase<Tensor>

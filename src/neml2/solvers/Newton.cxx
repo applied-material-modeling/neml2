@@ -27,8 +27,7 @@
 
 #include "neml2/solvers/Newton.h"
 #include "neml2/tensors/Scalar.h"
-#include "neml2/tensors/functions/norm.h"
-#include "neml2/tensors/functions/linalg/solve.h"
+#include "neml2/equation_systems/SparseTensorList.h"
 
 namespace neml2
 {
@@ -49,28 +48,25 @@ Newton::Newton(const OptionSet & options)
 }
 
 Newton::Result
-Newton::solve(NonlinearSystem & system, const NonlinearSystem::Sol<false> & x0)
+Newton::solve(NonlinearSystem & sys)
 {
-  // Solve always takes place in the "scaled" space
-  auto x = system.scale(x0);
-
   // The initial residual for relative convergence check
-  auto R = system.residual(x);
-  auto nR = neml2::norm(R);
-  auto nR0 = nR.clone();
+  auto b = sys.b();
+  auto nb = neml2::norm(b);
+  auto nb0 = nb.clone();
 
   // Check for initial convergence
-  if (converged(0, nR0, nR0))
+  if (converged(0, nb0, nb0))
   {
     // The final update is only necessary if we use AD
-    if (R.requires_grad())
-      final_update(system, x, R, system.Jacobian<true>());
+    if (nb0.requires_grad())
+      final_update(sys);
 
-    return {RetCode::SUCCESS, system.unscale(x), 0};
+    return {RetCode::SUCCESS, 0};
   }
 
   // Prepare any solver internal data before the iterative update
-  prepare(system, x);
+  prepare(sys);
 
   // Continuing iterating until one of:
   // 1. nR < atol (success)
@@ -78,63 +74,49 @@ Newton::solve(NonlinearSystem & system, const NonlinearSystem::Sol<false> & x0)
   // 3. i > miters (failure)
   for (size_t i = 1; i < miters; i++)
   {
-    auto J = system.Jacobian<true>();
-    update(system, x, R, J);
-    R = system.residual(x);
-    nR = neml2::norm(R);
+    update(sys);
+    b = sys.b();
+    nb = neml2::norm(b);
 
     // Check for convergence
-    if (converged(i, nR, nR0))
+    if (converged(i, nb, nb0))
     {
       // The final update is only necessary if we use AD
-      if (R.requires_grad())
-        final_update(system, x, R, system.Jacobian<true>());
+      if (nb.requires_grad())
+        final_update(sys);
 
-      return {RetCode::SUCCESS, system.unscale(x), i};
+      return {RetCode::SUCCESS, i};
     }
   }
 
-  return {RetCode::MAXITER, system.unscale(x), miters};
+  return {RetCode::MAXITER, miters};
 }
 
 bool
-Newton::converged(size_t itr, const ATensor & nR, const ATensor & nR0) const
+Newton::converged(size_t itr, const Scalar & nb, const Scalar & nb0) const
 {
   // LCOV_EXCL_START
   if (verbose)
     std::cout << "ITERATION " << std::setw(3) << itr << ", |R| = " << std::scientific
-              << at::max(nR).item<double>() << ", |R0| = " << std::scientific
-              << at::max(nR0).item<double>() << std::endl;
+              << at::max(nb).item<double>() << ", |R0| = " << std::scientific
+              << at::max(nb0).item<double>() << std::endl;
   // LCOV_EXCL_STOP
 
-  return at::all(at::logical_or(nR < atol, nR / nR0 < rtol)).item<bool>();
+  return at::all(at::logical_or(nb < atol, nb / nb0 < rtol)).item<bool>();
 }
 
 void
-Newton::update(NonlinearSystem & /*system*/,
-               NonlinearSystem::Sol<true> & x,
-               const NonlinearSystem::Res<true> & r,
-               const NonlinearSystem::Jac<true> & J)
+Newton::update(NonlinearSystem & sys)
 {
-  x = NonlinearSystem::Sol<true>(x.variable_data() + Tensor(solve_direction(r, J)));
+  auto du = linear_solver->solve(sys);
+  sys.set_u(sys.u().data() + du);
 }
 
 void
-Newton::final_update(NonlinearSystem & /*system*/,
-                     NonlinearSystem::Sol<true> & x,
-                     const NonlinearSystem::Res<true> & r,
-                     const NonlinearSystem::Jac<true> & J)
+Newton::final_update(NonlinearSystem & sys)
 {
-  x = NonlinearSystem::Sol<true>(Tensor(x) + Tensor(solve_direction(r, J)));
-}
-
-NonlinearSystem::Sol<true>
-Newton::solve_direction(const NonlinearSystem::Res<true> & r, const NonlinearSystem::Jac<true> & J)
-{
-  if (r.base_dim() == 0 && J.base_dim() == 0)
-    return NonlinearSystem::Sol<true>(-Tensor(r) / Tensor(J));
-
-  return NonlinearSystem::Sol<true>(-linalg::solve(J, r));
+  auto du = linear_solver->solve(sys);
+  sys.set_u(sys.u() + du);
 }
 
 } // namespace neml2

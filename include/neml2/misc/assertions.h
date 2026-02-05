@@ -54,13 +54,10 @@ neml_assert(bool assertion, Args &&... args)
     throw NEMLException(oss.str().data());
   }
 }
-
-template <typename... Args>
-void
-neml_assert_dbg([[maybe_unused]] bool assertion, [[maybe_unused]] Args &&... args)
-{
-#ifndef NDEBUG
-  neml_assert(assertion, std::forward<Args>(args)...);
-#endif
-}
 } // namespace neml2
+
+#ifndef NDEBUG
+#define neml_assert_dbg(assertion, ...) ::neml2::neml_assert((assertion), __VA_ARGS__)
+#else
+#define neml_assert_dbg(...) ((void)0)
+#endif

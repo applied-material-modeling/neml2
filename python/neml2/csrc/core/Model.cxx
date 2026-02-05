@@ -124,6 +124,7 @@ def(py::module_ & m, py::class_<Model, std::shared_ptr<Model>> & c)
       .def("set_parameter", &Model::set_parameter, "Set the value for a model parameter")
       .def(
           "set_parameters", &Model::set_parameters, "Set the values for multiple model parameters ")
+      .def("zero_undefined_input", &Model::zero_undefined_input, "Zero undefined input variables")
       .def("value",
            [](Model & self, const py::dict & pyinputs)
            {

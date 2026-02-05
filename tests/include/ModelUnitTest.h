@@ -64,6 +64,7 @@ private:
   double _param_rtol;
   double _param_atol;
 
-  const bool _show_params;
+  std::map<VariableName, Size> _input_intrsc_intmd_dims;
+  std::map<VariableName, Size> _output_intrsc_intmd_dims;
 };
 } // namespace neml2

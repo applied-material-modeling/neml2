@@ -117,9 +117,13 @@ endif()
 neml2_add_submodule(user_tensor SHARED user_tensors)
 target_link_libraries(user_tensor PUBLIC tensor base)
 
+# libneml2_equation_system
+neml2_add_submodule(equation_system SHARED equation_systems)
+target_link_libraries(equation_system PUBLIC tensor base)
+
 # libneml2_solver
 neml2_add_submodule(solver SHARED solvers)
-target_link_libraries(solver PUBLIC tensor base)
+target_link_libraries(solver PUBLIC equation_system)
 
 # libneml2_model
 neml2_add_submodule(model SHARED models)

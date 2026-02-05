@@ -38,7 +38,7 @@ main(int argc, char * argv[])
   // Set default tensor options
   neml2::set_default_dtype(neml2::kFloat64);
 
-  argparse::ArgumentParser program("runner");
+  argparse::ArgumentParser program("neml2");
 
   // sub-commend: run
   argparse::ArgumentParser run_command("run");
@@ -91,6 +91,13 @@ main(int argc, char * argv[])
   program.add_subparser(diagnose_command);
   program.add_subparser(inspect_command);
   program.add_subparser(time_command);
+
+  // Show help if no arguments were provided
+  if (argc == 1)
+  {
+    std::cout << program;
+    return 0;
+  }
 
   try
   {

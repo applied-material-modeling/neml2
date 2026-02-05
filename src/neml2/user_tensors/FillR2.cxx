@@ -57,7 +57,9 @@ R2
 FillR2::make() const
 {
   auto * f = factory();
-  neml_assert(f, "Internal error: factory == nullptr");
+  neml_assert(f,
+              "Internal error: factory is null while resolving tensor names. Ensure this user "
+              "tensor is created via the NEML2 factory.");
 
   if (_values.size() == 1)
     return R2::fill(_values[0].resolve(f));

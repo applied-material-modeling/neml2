@@ -26,13 +26,13 @@
 
 #include "neml2/tensors/shape_utils.h"
 #include "neml2/misc/assertions.h"
-#include "neml2/misc/errors.h"
 
 namespace neml2::utils
 {
 Size
 normalize_dim(Size d, Size dl, Size du)
 {
+#ifndef NDEBUG
   auto delta = du - dl;
   neml_assert_dbg(d >= -delta && d < delta,
                   "The dimension ",
@@ -42,12 +42,26 @@ normalize_dim(Size d, Size dl, Size du)
                   ", ",
                   delta,
                   ").");
+#endif
   return d >= 0 ? dl + d : du + d;
+}
+
+TensorShape
+normalize_dims(ArrayRef<Size> d, Size dl, Size du)
+{
+  TensorShape dn;
+  dn.reserve(d.size());
+  std::transform(d.begin(),
+                 d.end(),
+                 std::back_inserter(dn),
+                 [dl, du](Size dim) { return normalize_dim(dim, dl, du); });
+  return dn;
 }
 
 Size
 normalize_itr(Size d, Size dl, Size du)
 {
+#ifndef NDEBUG
   auto delta = du - dl;
   neml_assert_dbg(d >= -delta - 1 && d <= delta,
                   "The dimension ",
@@ -57,7 +71,20 @@ normalize_itr(Size d, Size dl, Size du)
                   ", ",
                   delta,
                   "].");
+#endif
   return d >= 0 ? dl + d : du + d + 1;
+}
+
+TensorShape
+normalize_itrs(ArrayRef<Size> d, Size dl, Size du)
+{
+  TensorShape dn;
+  dn.reserve(d.size());
+  std::transform(d.begin(),
+                 d.end(),
+                 std::back_inserter(dn),
+                 [dl, du](Size dim) { return normalize_itr(dim, dl, du); });
+  return dn;
 }
 
 Size
@@ -68,11 +95,32 @@ numel(TensorShapeRef shape)
 }
 
 TensorShape
-pad_prepend(TensorShapeRef s, Size dim, Size pad)
+pad_prepend(TensorShapeRef s, std::size_t dim, Size pad)
 {
-  neml_assert(Size(s.size()) <= dim, "pad_prepend given shape ", s, " and dim ", dim);
+  neml_assert(s.size() <= dim, "pad_prepend given shape ", s, " and dim ", dim);
   TensorShape s2(s);
   s2.insert(s2.begin(), dim - s.size(), pad);
   return s2;
 }
+
+std::vector<TensorShape>
+shape_refs_to_shapes(const std::vector<TensorShapeRef> & shape_refs)
+{
+  std::vector<TensorShape> shapes;
+  shapes.reserve(shape_refs.size());
+  for (const auto & sr : shape_refs)
+    shapes.emplace_back(sr);
+  return shapes;
+}
+
+std::vector<TensorShapeRef>
+shapes_to_shape_refs(const std::vector<TensorShape> & shapes)
+{
+  std::vector<TensorShapeRef> shape_refs;
+  shape_refs.reserve(shapes.size());
+  for (const auto & s : shapes)
+    shape_refs.emplace_back(s);
+  return shape_refs;
+}
+
 } // namespace neml2::utils

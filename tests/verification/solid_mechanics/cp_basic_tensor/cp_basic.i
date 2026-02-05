@@ -63,15 +63,6 @@
   []
 []
 
-[Solvers]
-  [newton]
-    type = NewtonWithLineSearch
-    linesearch_cutback = 2.0
-    linesearch_stopping_criteria = 1.0e-3
-    max_linesearch_iterations = 5
-  []
-[]
-
 [Data]
   [crystal_geometry]
     type = CubicCrystal
@@ -142,7 +133,6 @@
     type = WR2ImplicitExponentialTimeIntegration
     variable = 'state/orientation'
   []
-
   [implicit_rate]
     type = ComposedModel
     models = "euler_rodrigues elasticity orientation_rate
@@ -150,9 +140,32 @@
               plastic_spin sum_slip_rates slip_rule slip_strength voce_hardening
               integrate_slip_hardening integrate_elastic_strain integrate_orientation"
   []
+[]
+
+[EquationSystems]
+  [eq_sys]
+    type = NonlinearSystem
+    model = 'implicit_rate'
+  []
+[]
+
+[Solvers]
+  [newton]
+    type = NewtonWithLineSearch
+    linesearch_cutback = 2.0
+    linesearch_stopping_criteria = 1.0e-3
+    max_linesearch_iterations = 5
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
+  []
+[]
+
+[Models]
   [model]
     type = ImplicitUpdate
-    implicit_model = 'implicit_rate'
+    equation_system = 'eq_sys'
     solver = 'newton'
   []
   [model_with_stress]

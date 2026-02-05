@@ -71,7 +71,7 @@ PlasticSpatialVelocityGradient::PlasticSpatialVelocityGradient(const OptionSet &
         options.get<std::string>("crystal_geometry"))),
     _lp(declare_output_variable<R2>("plastic_spatial_velocity_gradient")),
     _R(declare_input_variable<R2>("orientation")),
-    _g(declare_input_variable<Scalar>("slip_rates", -1))
+    _g(declare_input_variable<Scalar>("slip_rates"))
 {
 }
 
@@ -86,7 +86,7 @@ PlasticSpatialVelocityGradient::set_value(bool out, bool dout_din, bool /*d2out_
   if (dout_din)
   {
     if (_g.is_dependent())
-      _lp.d(_g, -1) = _crystal_geometry.A().rotate(_R().intmd_unsqueeze(-1));
+      _lp.d(_g, 1, 0, 1) = _crystal_geometry.A().rotate(_R().intmd_unsqueeze(-1));
 
     if (_R.is_dependent())
       _lp.d(_R) = lp_crystal.drotate(_R());

@@ -74,7 +74,7 @@ AssociativePlasticFlow::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
     auto I = imap_v<SR2>(_gamma_dot.options());
 
     if (_gamma_dot.is_dependent())
-      _Ep_dot.d(_gamma_dot) = _NM;
+      _Ep_dot.d(_gamma_dot) = _NM();
 
     if (_NM.is_dependent())
       _Ep_dot.d(_NM) = _gamma_dot * I;

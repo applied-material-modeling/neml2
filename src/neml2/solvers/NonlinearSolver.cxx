@@ -31,6 +31,9 @@ NonlinearSolver::expected_options()
 {
   OptionSet options = Solver::expected_options();
 
+  options.set<std::string>("linear_solver");
+  options.set("linear_solver").doc() = "The linear solver to use within the nonlinear solver";
+
   options.set<double>("abs_tol") = 1e-10;
   options.set("abs_tol").doc() = "Absolute tolerance in the convergence criteria";
 
@@ -46,9 +49,17 @@ NonlinearSolver::expected_options()
 
 NonlinearSolver::NonlinearSolver(const OptionSet & options)
   : Solver(options),
+    linear_solver(get_solver<LinearSolver>("linear_solver")),
     atol(options.get<double>("abs_tol")),
     rtol(options.get<double>("rel_tol")),
     miters(options.get<unsigned int>("max_its"))
 {
 }
+
+void
+NonlinearSolver::to(const TensorOptions & options)
+{
+  linear_solver->to(options);
+}
+
 } // namespace neml2

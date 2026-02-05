@@ -15,6 +15,7 @@ fi
 "${SOURCE_DIR}"/configure \
   --prefix="${INSTALL_PREFIX}" \
   --enable-cpu-profiler \
+  --enable-libunwind \
   --disable-heap-profiler \
   --disable-debugalloc \
   --enable-static=no \

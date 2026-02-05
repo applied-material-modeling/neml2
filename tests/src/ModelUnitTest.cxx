@@ -23,17 +23,18 @@
 // THE SOFTWARE.
 
 #include "ModelUnitTest.h"
-#include "neml2/tensors/functions/to_assembly.h"
-#include "neml2/tensors/functions/from_assembly.h"
+#include "neml2/misc/types.h"
+#include "neml2/equation_systems/assembly.h"
 #include "neml2/tensors/functions/jacrev.h"
 #include "neml2/misc/assertions.h"
 
+#include "neml2/tensors/shape_utils.h"
 #include "utils.h"
 
 namespace neml2
 {
 template <typename T>
-void
+static void
 set_variable(ValueMap & storage,
              const OptionSet & options,
              const std::string & option_vars,
@@ -48,7 +49,7 @@ set_variable(ValueMap & storage,
               vars.size(),
               " variables.");
   auto * factory = options.get<Factory *>("_factory");
-  neml_assert(factory, "Internal error: factory != nullptr");
+  neml_assert(factory, "Failed assertion: factory != nullptr");
   for (size_t i = 0; i < vars.size(); i++)
     storage[vars[i]] = vals[i].resolve(factory);
 }
@@ -82,15 +83,17 @@ ModelUnitTest::expected_options()
   options.set<std::vector<TensorName<T>>>("output_" #T "_values")
   FOR_ALL_TENSORBASE(OPTION_SET_);
 
-  options.set<bool>("show_parameters") = false;
-  options.set("show_parameters").doc() = "Whether to show model parameters at the beginning";
+  options.set<std::vector<VariableName>>("input_with_intrsc_intmd_dims");
+  options.set<std::vector<Size>>("input_intrsc_intmd_dims");
+  options.set<std::vector<VariableName>>("output_with_intrsc_intmd_dims");
+  options.set<std::vector<Size>>("output_intrsc_intmd_dims");
 
   return options;
 }
 
 ModelUnitTest::ModelUnitTest(const OptionSet & options)
   : Driver(options),
-    _model(get_model("model")),
+    _model(factory()->get_model(options.get<std::string>("model"))),
     _check_values(options.get<bool>("check_values")),
     _check_derivs(options.get<bool>("check_derivatives")),
     _check_secderivs(options.get<bool>("check_second_derivatives")),
@@ -105,7 +108,10 @@ ModelUnitTest::ModelUnitTest(const OptionSet & options)
     _param_rtol(options.get<double>("parameter_derivative_rel_tol")),
     _param_atol(options.get<double>("parameter_derivative_abs_tol")),
 
-    _show_params(options.get<bool>("show_parameters"))
+    _input_intrsc_intmd_dims(options.get_map<VariableName, Size>("input_with_intrsc_intmd_dims",
+                                                                 "input_intrsc_intmd_dims")),
+    _output_intrsc_intmd_dims(options.get_map<VariableName, Size>("output_with_intrsc_intmd_dims",
+                                                                  "output_intrsc_intmd_dims"))
 {
 #define SET_VARIABLE_(T)                                                                           \
   set_variable<T>(_in, options, "input_" #T "_names", "input_" #T "_values");                      \
@@ -116,15 +122,6 @@ ModelUnitTest::ModelUnitTest(const OptionSet & options)
 bool
 ModelUnitTest::run()
 {
-  // LCOV_EXCL_START
-  if (_show_params)
-  {
-    std::cout << _model->name() << "'s parameters:\n";
-    for (auto && [pname, pval] : _model->named_parameters())
-      std::cout << "  " << pname << std::endl;
-  }
-  // LCOV_EXCL_STOP
-
   check_all();
 
   for (const auto & device : get_test_suite_additional_devices())
@@ -185,31 +182,38 @@ ModelUnitTest::check_value()
 void
 ModelUnitTest::check_dvalue()
 {
-  const auto exact = _model->dvalue(_in);
+  _model->clear_input();
+  _model->assign_input(_in);
+  _model->zero_undefined_input();
+  _model->forward_maybe_jit(false, true, false);
+
+  DerivMap exact;
+  for (const auto & [yname, yvar] : _model->output_variables())
+    for (const auto & [dy_dx, xvar] : yvar->derivatives())
+      if (dy_dx.defined())
+        exact[yname][xvar->name()] = pop_intrsc_intmd_dim(dy_dx);
 
   for (const auto & [yname, yvar] : _model->output_variables())
-    for (const auto & [xname, xvar] : _model->input_variables())
+    for (auto & [xname, xvar] : _model->input_variables())
     {
       _model->clear_input();
       _model->assign_input(_in);
       _model->zero_undefined_input();
 
-      const auto & x0 = xvar->get();
-      auto numerical = finite_differencing_derivative(
-          [this, &xvar = xvar, &yvar = yvar](const Tensor & x)
+      const auto & x0 = xvar->tensor();
+      const auto y_intrsc_intmd_dim = _output_intrsc_intmd_dims[yname];
+      const auto x_intrsc_intmd_dim = _input_intrsc_intmd_dims[xname];
+      const auto numerical = finite_differencing_derivative(
+          [this, &xvar = xvar, &yvar = yvar, x_intrsc_intmd_dim, y_intrsc_intmd_dim](
+              const Tensor & x)
           {
-            xvar->set(x);
+            (*xvar) = push_intrsc_intmd_dim(x, x_intrsc_intmd_dim);
             _model->forward_maybe_jit(true, false, false);
-            return yvar->get();
+            return pop_intrsc_intmd_dim(yvar->tensor(), y_intrsc_intmd_dim);
           },
-          x0,
+          pop_intrsc_intmd_dim(x0, x_intrsc_intmd_dim),
           1e-6,
           1e-6);
-
-      // Convert derivative to variable format
-      numerical = from_assembly<2>(numerical,
-                                   {yvar->intmd_sizes(), xvar->intmd_sizes()},
-                                   {yvar->base_sizes(), xvar->base_sizes()});
 
       // If the derivative does not exist, the numerical derivative should be zero
       if (!exact.count(yname) || !exact.at(yname).count(xname))
@@ -222,8 +226,20 @@ ModelUnitTest::check_dvalue()
                     numerical);
       // Otherwise, the numerical derivative should be close to the exact derivative
       else
+      {
+        const auto & exact_val = exact.at(yname).at(xname);
+        neml_assert(utils::sizes_broadcastable(exact_val.sizes(), numerical.sizes()),
+                    "The model's and finite differencing derivatives for output '",
+                    yname,
+                    "' with respect to '",
+                    xname,
+                    "' have incompatible shapes. The model derivative shape is ",
+                    exact_val.sizes(),
+                    " while the finite differencing derivative shape is ",
+                    numerical.sizes(),
+                    ".");
         neml_assert(
-            at::allclose(exact.at(yname).at(xname), numerical, _deriv_rtol, _deriv_atol),
+            at::allclose(exact_val, numerical, _deriv_rtol, _deriv_atol),
             "The model gives derivatives that are different from finite differencing for output '",
             yname,
             "' with respect to '",
@@ -232,50 +248,41 @@ ModelUnitTest::check_dvalue()
             exact.at(yname).at(xname),
             "\nFinite differencing gives:\n",
             numerical);
+      }
     }
 }
 
 void
 ModelUnitTest::check_d2value()
 {
-  const auto exact = _model->d2value(_in);
+  _model->clear_input();
+  _model->assign_input(_in);
+  _model->zero_undefined_input();
+  _model->forward_maybe_jit(false, false, true);
+  const auto exact = _model->collect_output_second_derivatives();
 
   for (const auto & [yname, yvar] : _model->output_variables())
     for (const auto & [x1name, x1var] : _model->input_variables())
-      for (const auto & [x2name, x2var] : _model->input_variables())
+      for (auto & [x2name, x2var] : _model->input_variables())
       {
         _model->clear_input();
         _model->assign_input(_in);
         _model->zero_undefined_input();
 
-        const auto & x20 = x2var->get();
+        const auto & x20 = x2var->tensor();
         auto numerical = finite_differencing_derivative(
             [this, &yvar = yvar, &x1var = x1var, &x2var = x2var](const Tensor & x)
             {
-              x2var->set(x);
+              (*x2var) = x;
               _model->forward_maybe_jit(false, true, false);
               if (!yvar->has_derivative(x1var->name()))
-              {
-                auto deriv =
-                    Tensor::zeros({},
-                                  utils::add_shapes(yvar->intmd_sizes(), x1var->intmd_sizes()),
-                                  utils::add_shapes(yvar->base_sizes(), x1var->base_sizes()),
-                                  x.options());
-                return to_assembly<2>(deriv,
-                                      {yvar->intmd_sizes(), x1var->intmd_sizes()},
-                                      {yvar->base_sizes(), x1var->base_sizes()});
-              }
-              return yvar->d(*x1var).get();
+                return Tensor::zeros(utils::add_shapes(yvar->base_sizes(), x1var->base_sizes()),
+                                     x.options());
+              return yvar->d(*x1var).tensor();
             },
             x20,
             1e-6,
             1e-6);
-
-        // Convert derivative to variable format
-        numerical =
-            from_assembly<3>(numerical,
-                             {yvar->intmd_sizes(), x1var->intmd_sizes(), x2var->intmd_sizes()},
-                             {yvar->base_sizes(), x1var->base_sizes(), x2var->base_sizes()});
 
         // If the derivative does not exist, the numerical derivative should be zero
         if (!exact.count(yname) || !exact.at(yname).count(x1name) ||

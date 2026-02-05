@@ -21,6 +21,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+
 #pragma once
 
 #include "neml2/tensors/Tensor.h"
@@ -65,6 +66,13 @@ public:
   /// Secret assignment operator used by low-level operations such as jit tracing
   virtual void assign(const ATensor & val, TracerPrivilege key) = 0;
 
+  /// Dimensions
+  ///@{
+  Size intmd_dim() const;
+  virtual Size base_dim() const = 0;
+  Size static_dim() const;
+  ///@}
+
 protected:
   /// Cached intermediate dimension
   Size _cached_intmd_dim = 0;
@@ -87,8 +95,8 @@ public:
   void operator=(const Tensor & val) override;
   TensorType type() const override;
   const T & operator()() const { return _value; }
-
   void assign(const ATensor & val, TracerPrivilege key) override;
+  Size base_dim() const override;
 
 private:
   T _value;

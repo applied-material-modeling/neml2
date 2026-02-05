@@ -39,8 +39,6 @@ BackwardEulerTimeIntegration<T>::expected_options()
       "rate, and \\f$t\\f$ is time. Subscripts \\f$n\\f$ denote quantities from the previous time "
       "step.";
 
-  NonlinearSystem::enable_automatic_scaling(options);
-
   options.set_input("variable");
   options.set("variable").doc() = "Variable being integrated";
 
@@ -91,12 +89,12 @@ BackwardEulerTimeIntegration<T>::set_value(bool out, bool dout_din, bool /*d2out
     _r.d(_s) = I;
     _r.d(_ds_dt) = -I * (_t - _tn);
 
-    if (currently_solving_nonlinear_system())
+    if (currently_assembling_nonlinear_system())
       return;
 
     _r.d(_sn) = -I;
     _r.d(_t) = -_ds_dt;
-    _r.d(_tn) = _ds_dt;
+    _r.d(_tn) = _ds_dt();
   }
 }
 

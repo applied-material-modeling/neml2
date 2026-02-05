@@ -241,9 +241,29 @@ oSiCm1 = 0.08 # 1/Omega_SiC
               liquid_volume_fraction outer_radius liquid_reactivity solid_reactivity
               reaction_rate substance_product product_rate substance_solid  solid_rate"
   []
+[]
+
+[EquationSystems]
+  [model_update_sys]
+    type = NonlinearSystem
+    model = 'model_residual'
+  []
+[]
+
+[Solvers]
+  [newton]
+    type = Newton
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
+  []
+[]
+
+[Models]
   [model_update]
     type = ImplicitUpdate
-    implicit_model = 'model_residual'
+    equation_system = 'model_update_sys'
     solver = 'newton'
   []
   [substance_product_new]

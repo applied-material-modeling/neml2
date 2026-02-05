@@ -28,26 +28,28 @@
 namespace neml2
 {
 #define DEFINE_SUM(T)                                                                              \
-  T dynamic_sum(const T & a, Size d, bool keepdim)                                                 \
+  T dynamic_sum(const T & a, ArrayRef<Size> d, bool keepdim)                                       \
   {                                                                                                \
-    d = utils::normalize_dim(d, 0, a.dynamic_dim());                                               \
+    auto dn = utils::normalize_dims(d, 0, a.dynamic_dim());                                        \
     auto sizes = a.dynamic_sizes();                                                                \
     if (!keepdim)                                                                                  \
-      sizes.erase(sizes.begin() + d);                                                              \
-    return T(at::sum(a, d, keepdim), sizes, a.intmd_dim());                                        \
+      for (auto & dim : dn)                                                                        \
+        sizes.erase(sizes.begin() + dim);                                                          \
+    return T(at::sum(a, dn, keepdim), sizes, a.intmd_dim());                                       \
   }                                                                                                \
-  T intmd_sum(const T & a, Size d, bool keepdim)                                                   \
+  T intmd_sum(const T & a, ArrayRef<Size> d, bool keepdim)                                         \
   {                                                                                                \
-    d = utils::normalize_dim(d, a.dynamic_dim(), a.batch_dim());                                   \
-    return T(at::sum(a, d, keepdim), a.dynamic_sizes(), a.intmd_dim() - (keepdim ? 0 : 1));        \
+    auto dn = utils::normalize_dims(d, a.dynamic_dim(), a.batch_dim());                            \
+    return T(                                                                                      \
+        at::sum(a, dn, keepdim), a.dynamic_sizes(), a.intmd_dim() - (keepdim ? 0 : d.size()));     \
   }                                                                                                \
   static_assert(true)
 FOR_ALL_TENSORBASE(DEFINE_SUM);
 
 Tensor
-base_sum(const Tensor & a, Size d, bool keepdim)
+base_sum(const Tensor & a, ArrayRef<Size> d, bool keepdim)
 {
-  d = utils::normalize_dim(d, a.batch_dim(), a.dim());
-  return Tensor(at::sum(a, d, keepdim).to(a.dtype()), a.dynamic_sizes(), a.intmd_dim());
+  auto dn = utils::normalize_dims(d, a.batch_dim(), a.dim());
+  return Tensor(at::sum(a, dn, keepdim), a.dynamic_sizes(), a.intmd_dim());
 }
 } // namespace neml2

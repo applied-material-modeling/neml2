@@ -32,7 +32,7 @@ namespace neml2
 /**
  * @brief Linearly interpolate the parameter along an intermediate axis.
  *
- * Reduction is done along the specified intermediate axis. The dynamic shape of the output tensor
+ * Reduction is done along the _last_ intermediate axis. The dynamic shape of the output tensor
  * is determined by broadcasting the input, abscissa, and ordinate tensors. The base shape of the
  * output tensor is the same as the ordinate tensor.
  */
@@ -52,8 +52,5 @@ protected:
 
   /// Argument of interpolation
   const Variable<Scalar> & _x;
-
-  /// The intermediate dimension along which to interpolate
-  const Size _dim;
 };
 } // namespace neml2

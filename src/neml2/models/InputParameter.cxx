@@ -23,7 +23,6 @@
 // THE SOFTWARE.
 
 #include "neml2/models/InputParameter.h"
-#include "neml2/misc/assertions.h"
 #include "neml2/tensors/tensors.h"
 #include "neml2/tensors/functions/imap.h"
 

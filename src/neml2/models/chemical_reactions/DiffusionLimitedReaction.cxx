@@ -74,10 +74,8 @@ DiffusionLimitedReaction::DiffusionLimitedReaction(const OptionSet & options)
 }
 
 void
-DiffusionLimitedReaction::set_value(bool out, bool dout_din, bool d2out_din2)
+DiffusionLimitedReaction::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  neml_assert_dbg(!d2out_din2, "Second derivatives not implemented");
-
   const auto factor = 2 * _D * _R_l * _R_s / _omega;
   const auto ratio = _ro / (_ro - _ri + _delta);
 

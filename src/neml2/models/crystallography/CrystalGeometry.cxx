@@ -173,7 +173,7 @@ CrystalGeometry::nslip_groups() const
 Size
 CrystalGeometry::nslip_in_group(Size i) const
 {
-  neml_assert_dbg(i < nslip_groups());
+  neml_assert_dbg(i < nslip_groups(), "Slip group index out of range");
   return _slip_offsets[i + 1] - _slip_offsets[i];
 }
 

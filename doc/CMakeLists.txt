@@ -34,6 +34,7 @@ endmacro()
 # ----------------------------------------------------------------------------
 add_executable(syntax syntax.cxx)
 target_link_libraries(syntax PRIVATE neml2)
+set_target_properties(syntax PROPERTIES DISABLE_PRECOMPILE_HEADERS ON)
 add_custom_target(syntax_cpp
   COMMENT "Generating libneml2 syntax"
   DEPENDS syntax
@@ -97,8 +98,12 @@ foreach(TUTORIAL_SOURCE ${TUTORIAL_SOURCES})
   get_filename_component(TUTORIAL_TARGET ${TUTORIAL_TARGET} NAME_WE)
   add_executable(${TUTORIAL_TARGET} ${TUTORIAL_SOURCE})
   target_link_libraries(${TUTORIAL_TARGET} PRIVATE neml2)
-  set_target_properties(${TUTORIAL_TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${TUTORIAL_SOURCE_DIR})
-  set_target_properties(${TUTORIAL_TARGET} PROPERTIES OUTPUT_NAME ${TUTORIAL_NAME})
+  set_target_properties(${TUTORIAL_TARGET}
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${TUTORIAL_SOURCE_DIR}
+    OUTPUT_NAME ${TUTORIAL_NAME}
+    DISABLE_PRECOMPILE_HEADERS ON
+  )
 
   # Capture the output of the tutorial
   add_custom_target("${TUTORIAL_TARGET}_run"

@@ -82,11 +82,15 @@ class DerivativeCheck:
             assert torch.allclose(grads_adjoint[n], grads_fd[n], atol=self.atol, rtol=self.rtol)
 
 
+def dict_to_list(d: dict, keys: list):
+    return [d[k] for k in keys]
+
+
 class TestElasticModel(DerivativeCheck):
     @pytest.fixture(autouse=True)
     def _setup(self):
         pwd = Path(__file__).parent
-        nmodel = neml2.load_model(pwd / "models" / "elastic_model.i", "implicit_rate")
+        nmodel = neml2.load_nonlinear_system(pwd / "models" / "elastic_model.i", "eq_sys")
         self.model = neml2.pyzag.NEML2PyzagModel(nmodel)
 
         # Test configuration
@@ -107,9 +111,8 @@ class TestElasticModel(DerivativeCheck):
         strain = SR2.dynamic_linspace(start_strain, end_strain, self.nstep).dynamic.unsqueeze(-1)
 
         # Prescribed forces
-        self.forces = self.model.forces_asm.assemble_by_variable(
-            {"forces/t": time, "forces/E": strain}, assembly=False
-        ).torch()
+        forces = dict_to_list({"forces/t": time, "forces/E": strain}, self.model.fmap)
+        self.forces = neml2.assemble_vector(forces, self.model.flayout).torch()
 
         # Initial state
         self.initial_state = torch.zeros((self.nbatch, self.model.nstate))
@@ -119,7 +122,7 @@ class TestViscoplasticModel(DerivativeCheck):
     @pytest.fixture(autouse=True)
     def _setup(self):
         pwd = Path(__file__).parent
-        nmodel = neml2.load_model(pwd / "models" / "viscoplastic_model.i", "implicit_rate")
+        nmodel = neml2.load_nonlinear_system(pwd / "models" / "viscoplastic_model.i", "eq_sys")
         self.model = neml2.pyzag.NEML2PyzagModel(nmodel)
 
         # Test configuration
@@ -140,9 +143,8 @@ class TestViscoplasticModel(DerivativeCheck):
         strain = SR2.dynamic_linspace(start_strain, end_strain, self.nstep).dynamic.unsqueeze(-1)
 
         # Prescribed forces
-        self.forces = self.model.forces_asm.assemble_by_variable(
-            {"forces/t": time, "forces/E": strain}, assembly=False
-        ).torch()
+        forces = dict_to_list({"forces/t": time, "forces/E": strain}, self.model.fmap)
+        self.forces = neml2.assemble_vector(forces, self.model.flayout).torch()
 
         # Initial state
         self.initial_state = torch.zeros((self.nbatch, self.model.nstate))
@@ -152,7 +154,7 @@ class TestKocksMeckingMixedControlModel(DerivativeCheck):
     @pytest.fixture(autouse=True)
     def _setup(self):
         pwd = Path(__file__).parent
-        nmodel = neml2.load_model(pwd / "models" / "km_mixed_model.i", "implicit_rate")
+        nmodel = neml2.load_nonlinear_system(pwd / "models" / "km_mixed_model.i", "eq_sys")
         self.model = neml2.pyzag.NEML2PyzagModel(
             nmodel, exclude_parameters=["yield_zero_sy", "mu_X", "mu_Y"]
         )
@@ -187,15 +189,16 @@ class TestKocksMeckingMixedControlModel(DerivativeCheck):
         temperature = Scalar.dynamic_linspace(start_temperature, end_temperature, self.nstep)
 
         # Prescribed forces
-        self.forces = self.model.forces_asm.assemble_by_variable(
+        forces = dict_to_list(
             {
                 "forces/t": time,
                 "forces/control": control,
                 "forces/fixed_values": condition,
                 "forces/T": temperature,
             },
-            assembly=False,
-        ).torch()
+            self.model.fmap,
+        )
+        self.forces = neml2.assemble_vector(forces, self.model.flayout).torch()
 
         # Initial state
         self.initial_state = torch.zeros((self.nbatch, self.model.nstate))

@@ -40,17 +40,13 @@ Reduction<T>::expected_options()
   options.set_output("to");
   options.set("to").doc() = "The reduced variable";
 
-  options.set<Size>("dim") = -1;
-  options.set("dim").doc() = "The dimension over which to perform the reduction.";
-
   return options;
 }
 
 template <typename T>
 Reduction<T>::Reduction(const OptionSet & options)
   : Model(options),
-    _to(declare_output_variable<T>("to")),
-    _dim(options.get<Size>("dim"))
+    _to(declare_output_variable<T>("to"))
 {
 }
 

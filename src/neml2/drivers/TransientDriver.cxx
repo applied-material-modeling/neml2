@@ -61,7 +61,9 @@ set_ic(ValueMap & storage,
               vals.size(),
               " respectively.");
   auto * factory = options.get<Factory *>("_factory");
-  neml_assert(factory, "Internal error: factory == nullptr");
+  neml_assert(factory,
+              "Internal error: factory is null while resolving tensor names. Ensure this driver "
+              "is created via the NEML2 factory.");
   for (std::size_t i = 0; i < names.size(); i++)
   {
     neml_assert(names[i].is_state(),
@@ -93,7 +95,9 @@ get_force(std::vector<VariableName> & names,
               vals.size(),
               " respectively.");
   auto * factory = options.get<Factory *>("_factory");
-  neml_assert(factory, "Internal error: factory == nullptr");
+  neml_assert(factory,
+              "Internal error: factory is null while resolving tensor names. Ensure this driver "
+              "is created via the NEML2 factory.");
   for (std::size_t i = 0; i < force_names.size(); i++)
   {
     neml_assert(force_names[i].is_force(),

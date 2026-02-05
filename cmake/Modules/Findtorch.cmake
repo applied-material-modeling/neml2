@@ -67,7 +67,7 @@ if(NOT TARGET torch::core)
     endif()
 
     add_library(torch::core INTERFACE IMPORTED)
-    target_include_directories(torch::core INTERFACE ${torch_INCLUDE_DIR} ${torch_csrc_INCLUDE_DIR})
+    target_include_directories(torch::core SYSTEM INTERFACE ${torch_INCLUDE_DIR} ${torch_csrc_INCLUDE_DIR})
     target_link_directories(torch::core INTERFACE ${c10_LINK_DIR})
     target_link_libraries(torch::core INTERFACE ${c10_LIBRARY} ${torch_LIBRARY} ${torch_cpu_LIBRARY})
     get_filename_component(torch_ROOT ${torch_LINK_DIR} DIRECTORY)

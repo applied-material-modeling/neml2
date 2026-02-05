@@ -26,6 +26,7 @@
 
 #include "neml2/base/Factory.h"
 #include "neml2/models/Model.h"
+#include "neml2/models/ModelNonlinearSystem.h"
 
 /**
  * Some neml2 libraries use the factory-registry pattern to dynamically register available
@@ -40,6 +41,7 @@
  * referenced when the library is used.
  */
 extern "C" void _neml2_force_link_models();
+extern "C" void _neml2_force_link_equation_systems();
 extern "C" void _neml2_force_link_solvers();
 extern "C" void _neml2_force_link_user_tensors();
 extern "C" void _neml2_force_link_drivers();

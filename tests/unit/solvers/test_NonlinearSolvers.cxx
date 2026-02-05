@@ -23,78 +23,70 @@
 // THE SOFTWARE.
 
 #include <catch2/catch_test_macros.hpp>
-#include <catch2/catch_template_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
 #include "SampleNonlinearSystems.h"
-#include "neml2/solvers/Newton.h"
-#include "neml2/solvers/NewtonWithLineSearch.h"
-#include "neml2/solvers/NewtonWithTrustRegion.h"
+
+#include "neml2/equation_systems/SparseTensorList.h"
+#include "neml2/neml2.h"
+#include "neml2/solvers/NonlinearSolver.h"
 
 using namespace neml2;
 
-using solver_types = std::tuple<Newton, NewtonWithLineSearch, NewtonWithTrustRegion>;
-
-TEMPLATE_LIST_TEST_CASE("NonlinearSolvers", "[solvers]", solver_types)
+TEST_CASE("NonlinearSolver", "[solvers]")
 {
   // System shape
   TensorShape batch_sz = {2};
-  Size nbase = 4;
+  std::size_t n = 4;
 
-  // Create the nonlinear solver
-  OptionSet options = TestType::expected_options();
-  options.set<bool>("verbose") = false;
-  TestType solver(options);
+  // Create the solver
+  auto factory = load_input("solvers/solvers.i");
+  auto solver_name = GENERATE("newton", "newton_with_line_search");
 
-  SECTION("solve")
+  SECTION(solver_name)
   {
+    auto solver = factory->get_solver<NonlinearSolver>(solver_name);
+
     SECTION("power")
     {
-      // Initial guess
-      auto x = NonlinearSystem::Sol<false>(
-          Tensor::full(batch_sz, {}, nbase, 2.0, default_tensor_options()));
-
       // Create the nonlinear system
-      auto options = PowerTestSystem::expected_options();
-      PowerTestSystem system(options);
+      PowerTestSystem eq_sys(n);
+      eq_sys.init();
 
-      auto res = solver.solve(system, x);
+      // Initial guess
+      SparseTensorList u0(n, Scalar::full(batch_sz, {}, 2.0));
+      eq_sys.set_u(u0);
 
+      // Solve
+      auto res = solver->solve(eq_sys);
       REQUIRE(res.ret == NonlinearSolver::RetCode::SUCCESS);
-      REQUIRE(at::allclose(res.solution, system.exact_solution(x)));
+
+      // Check solution
+      const auto sol = eq_sys.u();
+      const auto expected = eq_sys.exact_solution(u0);
+      for (std::size_t i = 0; i < n; i++)
+        REQUIRE(at::allclose(sol[i], expected[i]));
     }
 
     SECTION("Rosenbrock")
     {
-      // Initial guess
-      auto x = NonlinearSystem::Sol<false>(
-          Tensor::full(batch_sz, {}, nbase, 0.75, default_tensor_options()));
-
       // Create the nonlinear system
-      auto options = RosenbrockTestSystem::expected_options();
-      PowerTestSystem system(options);
+      RosenbrockTestSystem eq_sys(n);
+      eq_sys.init();
 
-      auto res = solver.solve(system, x);
+      // Initial guess
+      SparseTensorList u0(n, Scalar::full(batch_sz, {}, 0.75));
+      eq_sys.set_u(u0);
 
+      // Solve
+      auto res = solver->solve(eq_sys);
       REQUIRE(res.ret == NonlinearSolver::RetCode::SUCCESS);
-      REQUIRE(at::allclose(res.solution, system.exact_solution(x)));
+
+      // Check solution
+      const auto sol = eq_sys.u();
+      const auto expected = eq_sys.exact_solution(u0);
+      for (std::size_t i = 0; i < n; i++)
+        REQUIRE(at::allclose(sol[i], expected[i]));
     }
-  }
-
-  SECTION("automatic scaling")
-  {
-    // Initial guess
-    auto x = NonlinearSystem::Sol<false>(
-        Tensor::full(batch_sz, {}, nbase, 2.0, default_tensor_options()));
-
-    // Create the nonlinear system (with automatic scaling)
-    auto options = PowerTestSystem::expected_options();
-    options.set<bool>("automatic_scaling") = true;
-    PowerTestSystem system(options);
-
-    system.init_scaling(x, solver.verbose);
-    auto res = solver.solve(system, x);
-
-    REQUIRE(res.ret == NonlinearSolver::RetCode::SUCCESS);
-    REQUIRE(at::allclose(res.solution, system.exact_solution(x)));
   }
 }

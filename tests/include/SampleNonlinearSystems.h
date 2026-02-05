@@ -24,41 +24,58 @@
 
 #pragma once
 
-#include "neml2/solvers/NonlinearSystem.h"
+#include "neml2/equation_systems/NonlinearSystem.h"
+#include "neml2/equation_systems/SparseTensorList.h"
 
 namespace neml2
 {
 class TestNonlinearSystem : public NonlinearSystem
 {
 public:
-  TestNonlinearSystem(const OptionSet & options);
+  TestNonlinearSystem(std::size_t n);
 
-  void set_guess(const Sol<false> & x) override;
-  virtual Tensor exact_solution(const Sol<false> & x) const = 0;
+  void set_u(const SparseTensorList & u) override { _u = u; }
+  void set_g(const SparseTensorList & /*g*/) override {}
+
+  SparseTensorList u() const override { return _u; }
+  SparseTensorList g() const override { return {}; }
+
+  virtual SparseTensorList exact_solution(const SparseTensorList & u) const = 0;
 
 protected:
-  Tensor _x;
+  std::vector<LabeledAxisAccessor> setup_umap() override;
+  std::vector<TensorShape> setup_intmd_ulayout() override;
+  std::vector<TensorShape> setup_ulayout() override;
+
+  std::vector<LabeledAxisAccessor> setup_bmap() override;
+  std::vector<TensorShape> setup_intmd_blayout() override;
+  std::vector<TensorShape> setup_blayout() override;
+
+  std::vector<LabeledAxisAccessor> setup_gmap() override { return {}; }
+  std::vector<TensorShape> setup_intmd_glayout() override { return {}; }
+  std::vector<TensorShape> setup_glayout() override { return {}; }
+
+  const std::size_t _n;
+  SparseTensorList _u;
 };
 
 class PowerTestSystem : public TestNonlinearSystem
 {
 public:
-  PowerTestSystem(const OptionSet & options);
-
-  Tensor exact_solution(const Sol<false> & x) const override;
+  using TestNonlinearSystem::TestNonlinearSystem;
+  SparseTensorList exact_solution(const SparseTensorList &) const override;
 
 protected:
-  void assemble(Res<false> *, Jac<false> *) override;
+  void assemble(SparseTensorList *, SparseTensorList *, SparseTensorList *) override;
 };
 
 class RosenbrockTestSystem : public TestNonlinearSystem
 {
 public:
-  RosenbrockTestSystem(const neml2::OptionSet & options);
-
-  neml2::Tensor exact_solution(const Sol<false> & x) const override;
+  using TestNonlinearSystem::TestNonlinearSystem;
+  SparseTensorList exact_solution(const SparseTensorList &) const override;
 
 protected:
-  void assemble(Res<false> *, Jac<false> *) override;
+  void assemble(SparseTensorList *, SparseTensorList *, SparseTensorList *) override;
 };
 }

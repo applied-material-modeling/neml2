@@ -48,8 +48,7 @@
       "description": "Clang ThreadSanitizer",
       "inherits": "default",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "ThreadSanitizer",
-        "NEML2_RUNNER": "ON"
+        "CMAKE_BUILD_TYPE": "ThreadSanitizer"
       }
     },
     {
@@ -58,18 +57,7 @@
       "description": "Clang AddressSanitizer",
       "inherits": "default",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "AddressSanitizer",
-        "NEML2_RUNNER": "ON"
-      }
-    },
-    {
-      "name": "runner",
-      "displayName": "Runner",
-      "description": "Runner for benchmarking and diagnostics",
-      "inherits": "default",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release",
-        "NEML2_TESTS": "OFF"
+        "CMAKE_BUILD_TYPE": "AddressSanitizer"
       }
     },
     {
@@ -95,12 +83,10 @@
     {
       "name": "release",
       "displayName": "Release",
-      "description": "Production build for C++ backend and Python bindings",
+      "description": "Production build for the C++ backend",
       "inherits": "default",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-        "NEML2_TESTS": "ON",
-        "NEML2_PYBIND": "ON"
+        "CMAKE_BUILD_TYPE": "Release"
       }
     }
   ],
@@ -111,7 +97,6 @@
       "description": "C++ backend with tests",
       "configurePreset": "dev",
       "targets": [
-        "extension",
         "unit_tests",
         "regression_tests",
         "verification_tests",
@@ -169,20 +154,7 @@
       "description": "C++ backend compiled with coverage flags",
       "configurePreset": "coverage",
       "targets": [
-        "extension",
-        "unit_tests",
-        "regression_tests",
-        "verification_tests",
-        "dispatcher_tests"
-      ]
-    },
-    {
-      "name": "runner",
-      "displayName": "Runner",
-      "description": "Runner for benchmarking and diagnostics",
-      "configurePreset": "runner",
-      "targets": [
-        "runner"
+        "unit_tests"
       ]
     },
     {
@@ -197,24 +169,23 @@
     {
       "name": "release",
       "displayName": "Release",
-      "description": "C++ backend and Python bindings for release",
+      "description": "C++ backend and the runner executable for release",
       "configurePreset": "release",
       "targets": [
         "unit_tests",
         "regression_tests",
         "verification_tests",
         "dispatcher_tests",
-        "runner",
-        "pyneml2"
+        "runner"
       ]
     }
   ],
   "testPresets": [
     {
-      "name": "runner",
+      "name": "benchmark",
       "displayName": "Benchmark tests",
       "description": "Run benchmark tests using the Runner (note that this only checks if the tests run without error)",
-      "configurePreset": "runner"
+      "configurePreset": "release"
     },
     {
       "name": "tsan",

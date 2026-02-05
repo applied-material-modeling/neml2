@@ -283,9 +283,9 @@ public:
 
   ///@{
   /// Flatten a dimension group
-  Derived dynamic_flatten() const;
-  Derived intmd_flatten() const;
-  neml2::Tensor base_flatten() const;
+  Derived dynamic_flatten(Size start_dim = 0, Size end_dim = -1) const;
+  Derived intmd_flatten(Size start_dim = 0, Size end_dim = -1) const;
+  neml2::Tensor base_flatten(Size start_dim = 0, Size end_dim = -1) const;
   /**
    * @brief Flatten batch dimensions
    *

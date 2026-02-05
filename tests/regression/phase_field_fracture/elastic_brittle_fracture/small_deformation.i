@@ -17,15 +17,6 @@
   []
 []
 
-[Solvers]
-  [newton]
-    type = Newton
-    rel_tol = 1e-08
-    abs_tol = 1e-10
-    max_its = 50
-  []
-[]
-
 [Tensors]
   [times]
     type = LinspaceScalar
@@ -144,10 +135,33 @@
     type = ComposedModel
     models = 'Fish_Burm functional drate dpsidd'
   []
+[]
+
+[EquationSystems]
+  [eq_sys]
+    type = NonlinearSystem
+    model = 'eq'
+  []
+[]
+
+[Solvers]
+  [newton]
+    type = Newton
+    rel_tol = 1e-08
+    abs_tol = 1e-10
+    max_its = 50
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
+  []
+[]
+
+[Models]
   # solve for d
   [solve_d]
     type = ImplicitUpdate
-    implicit_model = 'eq'
+    equation_system = 'eq_sys'
     solver = 'newton'
   []
   # after the solve take derivative of the total energy w.r.t. strain to get stress

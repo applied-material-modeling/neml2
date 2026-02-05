@@ -42,7 +42,9 @@ protected:
   /// Original variable to be reduced
   const Variable<T> & _from;
 
+  /// Dimension to reduce
+  const Size _dim;
+
   using Reduction<T>::_to;
-  using Reduction<T>::_dim;
 };
 } // namespace neml2

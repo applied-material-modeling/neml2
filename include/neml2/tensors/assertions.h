@@ -33,48 +33,76 @@ namespace neml2
 ///@{
 template <class... T>
 void neml_assert_broadcastable(const T &...);
-template <class... T>
-void neml_assert_broadcastable_dbg(const T &...);
+
+#ifndef NDEBUG
+#define neml_assert_broadcastable_dbg(...) ::neml2::neml_assert_broadcastable(__VA_ARGS__)
+#else
+#define neml_assert_broadcastable_dbg(...) ((void)0)
+#endif
 ///@}
 
 /// Assert that all tensors are dynamic-broadcastable
 ///@{
 template <class... T>
 void neml_assert_dynamic_broadcastable(const T &...);
-template <class... T>
-void neml_assert_dynamic_broadcastable_dbg(const T &...);
+
+#ifndef NDEBUG
+#define neml_assert_dynamic_broadcastable_dbg(...)                                                 \
+  ::neml2::neml_assert_dynamic_broadcastable(__VA_ARGS__)
+#else
+#define neml_assert_dynamic_broadcastable_dbg(...) ((void)0)
+#endif
 ///@}
 
 /// Assert that all tensors are intermediate-broadcastable
 ///@{
 template <class... T>
 void neml_assert_intmd_broadcastable(const T &...);
-template <class... T>
-void neml_assert_intmd_broadcastable_dbg(const T &...);
+
+#ifndef NDEBUG
+#define neml_assert_intmd_broadcastable_dbg(...)                                                   \
+  ::neml2::neml_assert_intmd_broadcastable(__VA_ARGS__)
+#else
+#define neml_assert_intmd_broadcastable_dbg(...) ((void)0)
+#endif
 ///@}
 
 /// Assert that all tensors are batch-broadcastable
 ///@{
 template <class... T>
 void neml_assert_batch_broadcastable(const T &...);
-template <class... T>
-void neml_assert_batch_broadcastable_dbg(const T &...);
+
+#ifndef NDEBUG
+#define neml_assert_batch_broadcastable_dbg(...)                                                   \
+  ::neml2::neml_assert_batch_broadcastable(__VA_ARGS__)
+#else
+#define neml_assert_batch_broadcastable_dbg(...) ((void)0)
+#endif
 ///@}
 
 /// Assert that all tensors are base-broadcastable
 ///@{
 template <class... T>
 void neml_assert_base_broadcastable(const T &...);
-template <class... T>
-void neml_assert_base_broadcastable_dbg(const T &...);
+
+#ifndef NDEBUG
+#define neml_assert_base_broadcastable_dbg(...) ::neml2::neml_assert_base_broadcastable(__VA_ARGS__)
+#else
+#define neml_assert_base_broadcastable_dbg(...) ((void)0)
+#endif
 ///@}
 
 /// Assert that all tensors are static-broadcastable
 ///@{
 template <class... T>
 void neml_assert_static_broadcastable(const T &...);
-template <class... T>
-void neml_assert_static_broadcastable_dbg(const T &...);
+
+#ifndef NDEBUG
+#define neml_assert_static_broadcastable_dbg(...)                                                  \
+  ::neml2::neml_assert_static_broadcastable(__VA_ARGS__)
+#else
+#define neml_assert_static_broadcastable_dbg(...) ((void)0)
+#endif
 ///@}
 } // namespace neml2
 
@@ -101,15 +129,6 @@ neml_assert_broadcastable(const T &... tensors)
 
 template <class... T>
 void
-neml_assert_broadcastable_dbg([[maybe_unused]] const T &... tensors)
-{
-#ifndef NDEBUG
-  neml_assert_broadcastable(tensors...);
-#endif
-}
-
-template <class... T>
-void
 neml_assert_dynamic_broadcastable(const T &... tensors)
 {
   neml_assert(utils::dynamic_broadcastable(tensors...),
@@ -121,15 +140,6 @@ neml_assert_dynamic_broadcastable(const T &... tensors)
 
 template <class... T>
 void
-neml_assert_dynamic_broadcastable_dbg([[maybe_unused]] const T &... tensors)
-{
-#ifndef NDEBUG
-  neml_assert_dynamic_broadcastable(tensors...);
-#endif
-}
-
-template <class... T>
-void
 neml_assert_intmd_broadcastable(const T &... tensors)
 {
   neml_assert(utils::intmd_broadcastable(tensors...),
@@ -137,15 +147,6 @@ neml_assert_intmd_broadcastable(const T &... tensors)
               sizeof...(tensors),
               " operands are not intermediate-broadcastable. The intermediate shapes are ",
               tensors.intmd_sizes()...);
-}
-
-template <class... T>
-void
-neml_assert_intmd_broadcastable_dbg([[maybe_unused]] const T &... tensors)
-{
-#ifndef NDEBUG
-  neml_assert_intmd_broadcastable(tensors...);
-#endif
 }
 
 template <class... T>
@@ -163,15 +164,6 @@ neml_assert_batch_broadcastable(const T &... tensors)
 
 template <class... T>
 void
-neml_assert_batch_broadcastable_dbg([[maybe_unused]] const T &... tensors)
-{
-#ifndef NDEBUG
-  neml_assert_batch_broadcastable(tensors...);
-#endif
-}
-
-template <class... T>
-void
 neml_assert_base_broadcastable(const T &... tensors)
 {
   neml_assert(utils::base_broadcastable(tensors...),
@@ -179,15 +171,6 @@ neml_assert_base_broadcastable(const T &... tensors)
               sizeof...(tensors),
               " operands are not base-broadcastable. The base shapes are ",
               tensors.base_sizes()...);
-}
-
-template <class... T>
-void
-neml_assert_base_broadcastable_dbg([[maybe_unused]] const T &... tensors)
-{
-#ifndef NDEBUG
-  neml_assert_base_broadcastable(tensors...);
-#endif
 }
 
 template <class... T>
@@ -201,14 +184,5 @@ neml_assert_static_broadcastable(const T &... tensors)
               tensors.intmd_sizes()...,
               ", and the base shapes are ",
               tensors.base_sizes()...);
-}
-
-template <class... T>
-void
-neml_assert_static_broadcastable_dbg([[maybe_unused]] const T &... tensors)
-{
-#ifndef NDEBUG
-  neml_assert_static_broadcastable(tensors...);
-#endif
 }
 } // namespace neml2

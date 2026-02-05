@@ -864,35 +864,51 @@ TensorBase<Derived>::batch_movedim(Size old_dim, Size new_dim) const
 
 template <class Derived>
 Derived
-TensorBase<Derived>::dynamic_flatten() const
+TensorBase<Derived>::dynamic_flatten(Size start_dim, Size end_dim) const
 {
   if (dynamic_dim() == 1)
     return *this;
 
-  auto n = utils::traceable_numel(dynamic_sizes());
-  if (const auto * const nt = n.traceable())
-    jit::tracer::ArgumentStash::stashIntArrayRefElem("shape", 1 + static_dim(), 0, *nt);
+  if (dynamic_dim() == 0)
+    return dynamic_unsqueeze(0);
 
-  auto sizes = utils::add_shapes(n.concrete(), intmd_sizes(), base_sizes());
-  return Derived(reshape(sizes), {n}, intmd_dim());
+  start_dim = utils::normalize_dim(start_dim, 0, dynamic_dim());
+  end_dim = utils::normalize_dim(end_dim, 0, dynamic_dim());
+  auto n = utils::traceable_numel(dynamic_sizes().slice(start_dim, end_dim - start_dim + 1));
+
+  return Derived(flatten(start_dim, end_dim), {n}, intmd_dim());
 }
 
 template <class Derived>
 Derived
-TensorBase<Derived>::intmd_flatten() const
+TensorBase<Derived>::intmd_flatten(Size start_dim, Size end_dim) const
 {
   if (intmd_dim() == 1)
     return *this;
-  return intmd_reshape(utils::numel(intmd_sizes()));
+
+  if (intmd_dim() == 0)
+    return intmd_unsqueeze(0);
+
+  start_dim = utils::normalize_dim(start_dim, dynamic_dim(), batch_dim());
+  end_dim = utils::normalize_dim(end_dim, dynamic_dim(), batch_dim());
+
+  return Derived(flatten(start_dim, end_dim), dynamic_sizes(), 1);
 }
 
 template <class Derived>
 neml2::Tensor
-TensorBase<Derived>::base_flatten() const
+TensorBase<Derived>::base_flatten(Size start_dim, Size end_dim) const
 {
   if (base_dim() == 1)
     return *this;
-  return base_reshape(utils::numel(base_sizes()));
+
+  if (base_dim() == 0)
+    return base_unsqueeze(0);
+
+  start_dim = utils::normalize_dim(start_dim, batch_dim(), dim());
+  end_dim = utils::normalize_dim(end_dim, batch_dim(), dim());
+
+  return neml2::Tensor(flatten(start_dim, end_dim), dynamic_sizes(), intmd_dim());
 }
 
 template <class Derived>
@@ -901,7 +917,12 @@ TensorBase<Derived>::batch_flatten() const
 {
   if (intmd_dim() == 0 && dynamic_dim() == 1)
     return *this;
-  return batch_reshape({utils::traceable_numel(batch_sizes())}, {});
+
+  if (batch_dim() == 0)
+    return dynamic_unsqueeze(0);
+
+  auto n = utils::traceable_numel(dynamic_sizes()) * utils::numel(intmd_sizes());
+  return Derived(flatten(0, batch_dim() - 1), {n}, 0);
 }
 
 template <class Derived>
@@ -910,7 +931,11 @@ TensorBase<Derived>::static_flatten() const
 {
   if (intmd_dim() == 0 && base_dim() == 1)
     return *this;
-  return static_reshape({}, utils::numel(static_sizes()));
+
+  if (static_dim() == 0)
+    return base_unsqueeze(0);
+
+  return neml2::Tensor(flatten(dynamic_dim()), dynamic_sizes(), 0);
 }
 
 template <class Derived>

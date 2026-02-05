@@ -27,11 +27,6 @@
 #include "neml2/base/NEML2Object.h"
 #include "neml2/base/Registry.h"
 
-// The following are not directly used by Solver itself.
-// We put them here so that derived classes can add expected options of these types.
-#include "neml2/base/TensorName.h"
-#include "neml2/base/EnumSelection.h"
-
 namespace neml2
 {
 /**
@@ -49,6 +44,9 @@ public:
    * @param options The options extracted from the input file
    */
   Solver(const OptionSet & options);
+
+  /// Change the device and dtype of the solver's internal data
+  virtual void to(const TensorOptions &) {}
 
   /// Whether to print additional (debugging) information during the solve
   const bool verbose;

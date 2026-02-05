@@ -126,13 +126,6 @@
   []
 []
 
-[Solvers]
-  [newton]
-    type = NewtonWithLineSearch
-    max_linesearch_iterations = 5
-  []
-[]
-
 [Data]
   [crystal_geometry]
     type = CubicCrystal
@@ -209,7 +202,6 @@
     type = WR2ImplicitExponentialTimeIntegration
     variable = 'state/orientation'
   []
-
   [implicit_rate]
     type = ComposedModel
     models = "split_to_deformation_rate split_to_vorticity
@@ -218,9 +210,30 @@
               sum_slip_rates slip_rule slip_strength voce_hardening
               integrate_slip_hardening integrate_elastic_strain integrate_orientation"
   []
+[]
+
+[EquationSystems]
+  [eq_sys]
+    type = NonlinearSystem
+    model = 'implicit_rate'
+  []
+[]
+
+[Solvers]
+  [newton]
+    type = NewtonWithLineSearch
+    max_linesearch_iterations = 5
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
+  []
+[]
+
+[Models]
   [model]
     type = ImplicitUpdate
-    implicit_model = 'implicit_rate'
+    equation_system = 'eq_sys'
     solver = 'newton'
   []
   [full_stress]

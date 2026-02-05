@@ -54,7 +54,7 @@ Normality::expected_options()
 
 Normality::Normality(const OptionSet & options)
   : Model(options),
-    _model(register_model(options.get<std::string>("model"))),
+    _model(register_model("model")),
     _f(options.get<VariableName>("function"))
 {
   // Set up the conjugate pairs
@@ -76,10 +76,10 @@ void
 Normality::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   {
-    SolvingNonlinearSystem guard(false);
     // Since normality maps the derivatives to the output variables, we need to evaluate the
     // sub-model's derivatives if normality asks for output variables, and evaluate the sub-model's
     // second derivatives if normality asks for derivatives of output variables.
+    AssemblyingNonlinearSystem assembling_nl_sys(false);
     _model.forward_maybe_jit(false, out, dout_din);
   }
 
@@ -106,7 +106,7 @@ Normality::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
     if (dout_din)
       for (const auto & [jname, jvar] : _model.input_variables())
         if (jvar->is_dependent() && fvar.has_derivative(iname, jname))
-          ovar.d(*jvar) =
+          ovar.d(input_variable(jname)) =
               fvar.d2(*ivar, *jvar)
                   .tensor()
                   .base_reshape(utils::add_shapes(ivar->base_sizes(), jvar->base_sizes()));

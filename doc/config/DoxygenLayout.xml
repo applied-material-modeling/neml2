@@ -48,6 +48,7 @@
       <tab type="user" url="@ref syntax-settings" title="[Settings]"/>
       <tab type="user" url="@ref syntax-tensors" title="[Tensors]"/>
       <tab type="user" url="@ref syntax-models" title="[Models]"/>
+      <tab type="user" url="@ref syntax-equationsystems" title="[EquationSystems]"/>
       <tab type="user" url="@ref syntax-solvers" title="[Solvers]"/>
       <tab type="user" url="@ref syntax-data" title="[Data]"/>
       <tab type="user" url="@ref syntax-drivers" title="[Drivers]"/>
@@ -57,6 +58,7 @@
       <tab type="user" url="@ref system-settings" title="Settings"/>
       <tab type="user" url="@ref system-tensors" title="Tensor"/>
       <tab type="user" url="@ref system-models" title="Model"/>
+      <tab type="user" url="@ref system-equationsystems" title="Equation System"/>
       <tab type="user" url="@ref system-solvers" title="Solver"/>
       <tab type="user" url="@ref system-data" title="Data"/>
       <tab type="user" url="@ref system-drivers" title="Driver"/>

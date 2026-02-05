@@ -123,13 +123,6 @@
   []
 []
 
-[Solvers]
-  [newton]
-    type = NewtonWithLineSearch
-    max_linesearch_iterations = 5
-  []
-[]
-
 [Data]
   [crystal_geometry]
     type = CubicCrystal
@@ -196,11 +189,6 @@
               sum_slip_rates slip_rule slip_strength voce_hardening
               integrate_slip_hardening integrate_elastic_strain"
   []
-  [subsystem1]
-    type = ImplicitUpdate
-    implicit_model = 'implicit_rate_1'
-    solver = 'newton'
-  []
 
   ############################################################################
   # Sub-system #2 for updating orientation
@@ -240,9 +228,39 @@
               slip_rule slip_strength_2 orientation_rate
               integrate_orientation"
   []
+[]
+
+[EquationSystems]
+  [eq_sys_1]
+    type = NonlinearSystem
+    model = 'implicit_rate_1'
+  []
+  [eq_sys_2]
+    type = NonlinearSystem
+    model = 'implicit_rate_2'
+  []
+[]
+
+[Solvers]
+  [newton]
+    type = NewtonWithLineSearch
+    max_linesearch_iterations = 5
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
+  []
+[]
+
+[Models]
+  [subsystem1]
+    type = ImplicitUpdate
+    equation_system = 'eq_sys_1'
+    solver = 'newton'
+  []
   [subsystem2]
     type = ImplicitUpdate
-    implicit_model = 'implicit_rate_2'
+    equation_system = 'eq_sys_2'
     solver = 'newton'
   []
 

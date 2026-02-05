@@ -31,12 +31,22 @@ void
 def(py::module_ & m, py::class_<neml2::Factory> & c)
 {
   c.def(
-      "get_model",
-      [](Factory * self, const std::string & name) { return self->get_model(name); },
-      py::arg("name"),
-      R"(
+       "get_model",
+       [](Factory * self, const std::string & name) { return self->get_model(name); },
+       py::arg("name"),
+       R"(
   Create a core.Model.
 
   :param name:        Name of the model
+  )")
+      .def(
+          "get_nonlinear_system",
+          [](Factory * self, const std::string & name)
+          { return self->get_es<ModelNonlinearSystem>(name); },
+          py::arg("name"),
+          R"(
+  Create a core.NonlinearSystem.
+
+  :param name:        Name of the nonlinear system
   )");
 }

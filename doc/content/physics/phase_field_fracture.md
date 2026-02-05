@@ -182,10 +182,30 @@ The complementarity condition can be implicitly solved for the phase field, \f$ 
     type = ComposedModel
     models = 'Fisch_Burm functional drate dpsidd'
   []
+[]
+
+[EquationSystems]
+  [solve_d_sys]
+    type = NonlinearSystem
+    model = 'eq'
+  []
+[]
+
+[Solvers]
+  [newton]
+    type = Newton
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
+  []
+[]
+
+[Models]
   # solve for d
   [solve_d]
     type = ImplicitUpdate
-    implicit_model = 'eq'
+    equation_system = 'solve_d_sys'
     solver = 'newton'
   []
   # After the solve take the derivative of the total energy w.r.t. strain to get stress
@@ -215,7 +235,6 @@ The stress evaluated at the end of the input file acts only as a post-processor 
 
 ![Corresponding degradation of the uniaxial stress over time][singlestress]{html: width=95%}
 [singlestress]: asset/stress.png
-
 
 
 

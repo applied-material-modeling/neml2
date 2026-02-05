@@ -36,8 +36,8 @@ template <typename T>
 class Variable : public VariableBase
 {
 public:
-  Variable(VariableName name_in, Model * owner, TensorShapeRef dep_intmd_dims = {})
-    : VariableBase(std::move(name_in), owner, T::const_base_sizes, dep_intmd_dims),
+  Variable(VariableName name_in, Model * owner)
+    : VariableBase(std::move(name_in), owner, T::const_base_sizes),
       _ref(nullptr)
   {
   }
@@ -62,21 +62,22 @@ public:
   std::unique_ptr<VariableBase> clone(const VariableName & name = {},
                                       Model * owner = nullptr) const override;
 
-  void ref(const VariableBase & var, bool ref_is_mutable = false) override;
-
+  void ref(VariableBase & var) override;
   const VariableBase * ref() const override { return _ref ? _ref->ref() : this; }
+  VariableBase * ref() override { return _ref ? _ref->ref() : this; }
+  const VariableBase * direct_ref() const override { return _ref; }
+  VariableBase * direct_ref() override { return _ref; }
 
   bool owning() const override { return !_ref; }
 
   void zero(const TensorOptions & options) override;
 
-  void set(const Tensor & val, std::optional<TracerPrivilege> key) override;
-
-  Tensor get() const override;
-
   Tensor tensor() const override;
 
   void requires_grad_(bool req = true) override;
+
+  void assign(const Tensor & val,
+              [[maybe_unused]] std::optional<TracerPrivilege> key = std::nullopt) override;
 
   void operator=(const Tensor & val) override;
 
@@ -90,10 +91,7 @@ public:
 
 protected:
   /// The variable referenced by this (nullptr if this is a storing variable)
-  const Variable<T> * _ref;
-
-  /// Whether mutating the referenced variable is allowed
-  bool _ref_is_mutable = false;
+  Variable<T> * _ref;
 
   /// Variable value (undefined if this is a referencing variable)
   T _value;

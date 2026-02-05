@@ -39,10 +39,12 @@ public:
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  /// Original variable to be reduced
+  /// Variable to be reduced
   const Variable<T> & _from;
 
+  /// Dimension to reduce
+  const Size _dim;
+
   using Reduction<T>::_to;
-  using Reduction<T>::_dim;
 };
 } // namespace neml2

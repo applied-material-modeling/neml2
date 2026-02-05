@@ -9,6 +9,7 @@ add_subdirectory(extension)
 
 # Unit tests
 add_subdirectory(unit)
+add_dependencies(unit_tests extension)
 
 # Regression tests
 add_subdirectory(regression)

@@ -24,12 +24,16 @@
 
 #include <catch2/catch_test_macros.hpp>
 
+#include "neml2/config.h"
 #include "neml2/base/Registry.h"
 #include "neml2/neml2.h"
 #include "neml2/tensors/Scalar.h"
 
 TEST_CASE("Registry", "[base]")
 {
+  if (std::string(CMAKE_BUILD_TYPE) != "Debug")
+    SKIP("Registry dynamic loading only tested in the Debug build");
+
   SECTION("load")
   {
     const auto & reg = neml2::Registry::get();

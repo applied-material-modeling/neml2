@@ -30,7 +30,7 @@
 namespace neml2
 {
 const std::vector<std::string> Parser::sections = {
-    "Tensors", "Solvers", "Data", "Models", "Drivers", "Schedulers"};
+    "Tensors", "EquationSystems", "Solvers", "Data", "Models", "Drivers", "Schedulers"};
 
 namespace utils
 {

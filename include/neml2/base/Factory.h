@@ -36,6 +36,7 @@ namespace neml2
 class Settings;
 class Factory;
 class NEML2Object;
+class EquationSystem;
 class Solver;
 class Data;
 class Model;
@@ -86,6 +87,9 @@ public:
                                 const OptionSet & additional_options = OptionSet(),
                                 bool force_create = true);
 
+  /// Get an equation system by its name
+  template <class T = EquationSystem>
+  std::shared_ptr<T> get_es(const std::string & name);
   /// Get a solver by its name
   template <class T = Solver>
   std::shared_ptr<T> get_solver(const std::string & name);
@@ -183,9 +187,17 @@ Factory::get_object(const std::string & section,
   auto obj = std::dynamic_pointer_cast<T>(_objects[section][name].back());
 
   if (!obj)
-    throw FactoryException("Internal error: Factory failed to create object " + name);
+    throw FactoryException("Found object named " + name + " under section " + section +
+                           ". But dynamic cast failed. Did you specify the correct object type?");
 
   return obj;
+}
+
+template <class T>
+std::shared_ptr<T>
+Factory::get_es(const std::string & name)
+{
+  return get_object<T>("EquationSystems", name);
 }
 
 template <class T>

@@ -34,7 +34,7 @@
 
 namespace neml2
 {
-ParameterStore::ParameterStore(Model * object)
+ParameterStore::ParameterStore(NEML2Object * object)
   : _object(object)
 {
 }
@@ -247,16 +247,17 @@ resolve_tensor_name(const TensorName<T> & tn, Model * caller, const std::string 
     }
   }
 
-  // Declare the input variable
-  caller->declare_input_variable<T>(var_name, {}, /*allow_duplicate=*/true);
-
   // Get the variable
-  const auto * var = &provider->output_variable(var_name);
-  const auto * var_ptr = dynamic_cast<const Variable<T> *>(var);
+  auto * var = &provider->output_variable(var_name);
+  auto * var_ptr = dynamic_cast<Variable<T> *>(var);
   if (!var_ptr)
     throw ParserException("The variable specifier '" + tn.raw() +
                           "' is valid, but the variable cannot be cast to type " +
                           utils::demangle(typeid(T).name()));
+
+  // Declare the input variable and let it reference the provider variable
+  const auto & ivar = caller->declare_input_variable<T>(var_name, /*allow_duplicate=*/true);
+  caller->input_variable(var_name).ref(*var);
 
   // For bookkeeping, the caller shall record the model that provides this variable
   // This is needed for two reasons:
@@ -264,7 +265,7 @@ resolve_tensor_name(const TensorName<T> & tn, Model * caller, const std::string 
   //      bring in the provider.
   //   2. When the caller is sent to a different device/dtype, the caller needs to forward the
   //      call to the provider.
-  caller->register_nonlinear_parameter(pname, NonlinearParameter{provider, var_name, var_ptr});
+  caller->register_nonlinear_parameter(pname, NonlinearParameter{provider, var_name, &ivar});
 
   // Done!
   return (*var_ptr)();
@@ -277,7 +278,9 @@ ParameterStore::declare_parameter(const std::string & name,
                                   bool allow_nonlinear)
 {
   auto * factory = _object->factory();
-  neml_assert(factory, "Internal error: factory != nullptr");
+  neml_assert(factory,
+              "Internal error: factory is null while resolving tensor names. Ensure the owning "
+              "object is created via the NEML2 factory.");
 
   try
   {
@@ -285,16 +288,17 @@ ParameterStore::declare_parameter(const std::string & name,
   }
   catch (const SetupException & err_tensor)
   {
-    if (allow_nonlinear)
+    auto * model_ptr = dynamic_cast<Model *>(_object);
+    if (allow_nonlinear && model_ptr)
       try
       {
-        return resolve_tensor_name(tensorname, _object, name);
+        return resolve_tensor_name(tensorname, model_ptr, name);
       }
       catch (const SetupException & err_var)
       {
         throw ParserException(std::string(err_tensor.what()) +
                               "\nAn additional attempt was made to interpret the tensor name as a "
-                              "variable specifier, but it failed with error message:" +
+                              "variable specifier, but it failed with error message: " +
                               err_var.what());
       }
     else
@@ -304,6 +308,9 @@ ParameterStore::declare_parameter(const std::string & name,
           "coupling has not been implemented for this parameter. If this is intended, please "
           "consider opening an issue on the NEML2 GitHub repository.");
   }
+
+  // It's impossible to reach here, but IDK why certain versions of GCC complain
+  throw NEMLException("Internal error within declare_parameter");
 }
 
 template <typename T, typename>
@@ -315,7 +322,6 @@ ParameterStore::declare_parameter(const std::string & name,
   if (_object->input_options().contains(input_option_name))
     return declare_parameter<T>(
         name, _object->input_options().get<TensorName<T>>(input_option_name), allow_nonlinear);
-
   throw NEMLException("Trying to register parameter named " + name + " from input option named " +
                       input_option_name + " of type " + utils::demangle(typeid(T).name()) +
                       ". Make sure you provided the correct parameter name, option name, and "
@@ -341,7 +347,7 @@ ParameterStore::assign_parameter_stack(jit::Stack & stack)
   neml_assert_dbg(stack.size() >= params.size(),
                   "Stack size (",
                   stack.size(),
-                  ") is smaller than the number of parameters in the model (",
+                  ") is insufficient for the number of parameters in the model (",
                   params.size(),
                   ").");
 
@@ -349,11 +355,14 @@ ParameterStore::assign_parameter_stack(jit::Stack & stack)
   std::size_t i = stack.size() - params.size();
   for (auto && [name, param] : params)
   {
-    const auto tensor = stack[i++].toTensor();
-    param->assign(tensor, TracerPrivilege{});
+    const auto & ten = stack[i++].toTensor();
+    const auto dynamic_dim = ten.dim() - param->static_dim();
+    const auto intmd_dim = param->intmd_dim();
+    Tensor val(ten, dynamic_dim, intmd_dim);
+    param->assign(val, TracerPrivilege{});
   }
 
-  // Drop the input variables from the stack
+  // Drop the parameters from the stack
   jit::drop(stack, params.size());
 }
 

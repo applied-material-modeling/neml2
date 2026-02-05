@@ -65,7 +65,7 @@ LinearKinematicHardening::set_value(bool out, bool dout_din, bool d2out_din2)
       _X.d(_Kp) = _H * imap_v<SR2>(_H.options());
 
     if (const auto * const H = nl_param("H"))
-      _X.d(*H) = _Kp;
+      _X.d(*H) = _Kp();
   }
 
   if (d2out_din2)
