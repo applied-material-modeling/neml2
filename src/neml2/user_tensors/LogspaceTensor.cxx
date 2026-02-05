@@ -77,7 +77,9 @@ T
 LogspaceTensorTmpl<T>::make() const
 {
   auto * f = this->factory();
-  neml_assert(f, "Failed assertion: factory != nullptr");
+  neml_assert(f,
+              "Internal error: factory is null while resolving tensor names. Ensure this user "
+              "tensor is created via the NEML2 factory.");
 
   if (_group == "dynamic")
     return dynamic_logspace(_start.resolve(f), _end.resolve(f), _nstep, _dim, _base);

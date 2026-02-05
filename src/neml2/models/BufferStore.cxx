@@ -90,7 +90,9 @@ const T &
 BufferStore::declare_buffer(const std::string & name, const TensorName<T> & tensorname)
 {
   auto * factory = _object->factory();
-  neml_assert(factory, "Failed assertion: factory != nullptr");
+  neml_assert(factory,
+              "Internal error: factory is null while resolving tensor names. Ensure the owning "
+              "object is created via the NEML2 factory.");
   return declare_buffer(name, tensorname.resolve(factory));
 }
 

@@ -55,7 +55,9 @@ WR2
 FillWR2::make() const
 {
   auto * f = factory();
-  neml_assert(f, "Failed assertion: factory != nullptr");
+  neml_assert(f,
+              "Internal error: factory is null while resolving tensor names. Ensure this user "
+              "tensor is created via the NEML2 factory.");
   return WR2::fill(_values[0].resolve(f), _values[1].resolve(f), _values[2].resolve(f));
 }
 } // namespace neml2

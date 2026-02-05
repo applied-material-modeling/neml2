@@ -278,7 +278,9 @@ ParameterStore::declare_parameter(const std::string & name,
                                   bool allow_nonlinear)
 {
   auto * factory = _object->factory();
-  neml_assert(factory, "Failed assertion: factory != nullptr");
+  neml_assert(factory,
+              "Internal error: factory is null while resolving tensor names. Ensure the owning "
+              "object is created via the NEML2 factory.");
 
   try
   {
