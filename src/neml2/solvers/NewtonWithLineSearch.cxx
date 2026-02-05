@@ -59,8 +59,8 @@ NewtonWithLineSearch::expected_options()
   options.set("linesearch_stopping_criteria").doc() =
       "The lineseach tolerance slightly relaxing the definition of residual decrease";
 
-  options.set<bool>("check_negative_critertion") = false;
-  options.set("check_negative_critertion").doc() =
+  options.set<bool>("check_negative_criterion") = false;
+  options.set("check_negative_criterion").doc() =
       "Whether to check if the threshold used in the convergence criterion for line search becomes "
       "negative. If true, and a negative value is detected, a warning message is printed to cerr.";
 
@@ -73,7 +73,7 @@ NewtonWithLineSearch::NewtonWithLineSearch(const OptionSet & options)
     _linesearch_sigma(options.get<double>("linesearch_cutback")),
     _linesearch_c(options.get<double>("linesearch_stopping_criteria")),
     _type(options.get<EnumSelection>("linesearch_type")),
-    _check_crit(options.get<bool>("check_negative_critertion"))
+    _check_crit(options.get<bool>("check_negative_criterion"))
 {
 }
 
