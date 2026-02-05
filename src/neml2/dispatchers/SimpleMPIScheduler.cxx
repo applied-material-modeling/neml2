@@ -114,23 +114,23 @@ SimpleMPIScheduler::determine_my_device()
   // NOLINTBEGIN(modernize-avoid-c-arrays)
   char c_str_hostname[MPI_MAX_PROCESSOR_NAME];
   int name_len = 0;
-  MPI_Get_processor_name(c_str_hostname, &name_len);
+  neml2_call_mpi(MPI_Get_processor_name(c_str_hostname, &name_len));
   std::string hostname = std::string(c_str_hostname);
 
   std::hash<std::string> hasher;
   int id = static_cast<int>(hasher(hostname) % std::numeric_limits<int>::max());
 
   // Make a new communicator based on this hashed hostname
-  MPI_Comm new_comm;
+  MPI_Comm new_comm = MPI_COMM_NULL;
   int comm_rank = 0;
-  MPI_Comm_rank(_comm, &comm_rank);
-  MPI_Comm_split(_comm, id, comm_rank, &new_comm);
+  neml2_call_mpi(MPI_Comm_rank(_comm, &comm_rank));
+  neml2_call_mpi(MPI_Comm_split(_comm, id, comm_rank, &new_comm));
   // Assign our device index based on the new communicator
-  int new_rank;
-  MPI_Comm_rank(new_comm, &new_rank);
+  int new_rank = 0;
+  neml2_call_mpi(MPI_Comm_rank(new_comm, &new_rank));
   _device_index = new_rank;
-  int new_size;
-  MPI_Comm_size(new_comm, &new_size);
+  int new_size = 0;
+  neml2_call_mpi(MPI_Comm_size(new_comm, &new_size));
   neml_assert(static_cast<std::size_t>(new_size) <= _available_devices.size(),
               "MPI split by host would require too many devices");
   // NOLINTEND(modernize-avoid-c-arrays)

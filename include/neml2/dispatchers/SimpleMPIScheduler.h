@@ -96,4 +96,17 @@ private:
   std::size_t _load = 0;
 };
 
+#define neml2_call_mpi(call)                                                                       \
+  do                                                                                               \
+  {                                                                                                \
+    int err = (call);                                                                              \
+    if (err != MPI_SUCCESS)                                                                        \
+    {                                                                                              \
+      char err_string[MPI_MAX_ERROR_STRING];                                                       \
+      int len = 0;                                                                                 \
+      MPI_Error_string(err, err_string, &len);                                                     \
+      throw std::runtime_error(std::string("MPI error: ") + err_string);                           \
+    }                                                                                              \
+  } while (0)
+
 } // namespace neml2
