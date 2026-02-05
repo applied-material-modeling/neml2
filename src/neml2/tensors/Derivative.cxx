@@ -29,7 +29,8 @@
 #include "neml2/misc/errors.h"
 #include "neml2/misc/types.h"
 #include "neml2/tensors/shape_utils.h"
-#include "neml2/tensors/functions/intrsc_intmd_dim_utils.h"
+#include "neml2/tensors/functions/diagonalize.h"
+#include "neml2/tensors/functions/sum_to_size.h"
 
 namespace neml2
 {
@@ -398,6 +399,92 @@ Derivative<N>::try_intmd_expand(const Tensor & deriv) const
 }
 
 template <std::size_t N>
+Tensor
+fullify(const Tensor & t, Size iid, std::array<TensorShape, N> iiss)
+{
+  neml_assert_dbg(iid >= 0 && iid <= t.intmd_dim(),
+                  "The intrinsic intermediate dimension (",
+                  iid,
+                  ") is out of range for tensor with intermediate dimension (",
+                  t.intmd_dim(),
+                  ").");
+  const auto iis = t.intmd_sizes().slice(t.intmd_dim() - iid);
+
+  // no-op if the intrinsic intermediate shape is already full
+  const auto full_iss =
+      std::apply([](const auto &... xs) { return utils::add_shapes(xs...); }, iiss);
+  if (iis == full_iss)
+    return t;
+
+  // otherwise, the intrinsic intermediate shape must be broadcastable to variable's intrinsic
+  // intermediate shape
+  const auto deriv_eis = t.intmd_sizes().slice(0, t.intmd_dim() - iid);
+  const auto var_iis = iiss[0];
+  neml_assert_dbg(at::is_expandable_to(iis, var_iis),
+                  "The intrinsic intermediate shape ",
+                  iis,
+                  " is not broadcastable to the variable's intrinsic intermediate shape ",
+                  var_iis);
+
+  // shortcut for N == 1
+  if constexpr (N == 1)
+    return t.intmd_unsqueeze(-1, var_iis.size() - iid)
+        .intmd_expand(utils::add_shapes(deriv_eis, var_iis));
+
+  // flatten the intrinsic intermediate dimensions
+  auto t2 = t.intmd_flatten(t.intmd_dim() - iid);
+
+  // diagonal expand to arguments' intrinsic intermediate dimensions
+  t2 = intmd_diagonalize(t2, -1);
+  for (std::size_t i = 2; i < N; ++i)
+    t2 = intmd_diagonalize(t2, -1);
+
+  // unflatten to inflated intrinsic intermediate dimensions (variable's intrinsic intermediate
+  // dimensions repeated N times)
+  auto inflated_intmd_sizes = utils::add_shapes(deriv_eis, var_iis, var_iis);
+  for (std::size_t i = 2; i < N; ++i)
+    inflated_intmd_sizes = utils::add_shapes(inflated_intmd_sizes, var_iis);
+  t2 = t2.intmd_reshape(inflated_intmd_sizes);
+
+  // reduce to arguments' intrinsic intermediate dimensions
+  auto padded_intmd_sizes =
+      utils::add_shapes(deriv_eis, var_iis, utils::pad_prepend(iiss[1], var_iis.size()));
+  auto target_intmd_sizes = utils::add_shapes(deriv_eis, var_iis, iiss[1]);
+  for (std::size_t i = 2; i < N; ++i)
+  {
+    padded_intmd_sizes =
+        utils::add_shapes(padded_intmd_sizes, utils::pad_prepend(iiss[i], var_iis.size()));
+    target_intmd_sizes = utils::add_shapes(target_intmd_sizes, iiss[i]);
+  }
+  t2 = intmd_sum_to_size(t2, padded_intmd_sizes).intmd_reshape(target_intmd_sizes);
+  return t2;
+}
+
+// Explicit instantiations
+template Tensor fullify<1>(const Tensor &, Size, std::array<TensorShape, 1>);
+template Tensor fullify<2>(const Tensor &, Size, std::array<TensorShape, 2>);
+template Tensor fullify<3>(const Tensor &, Size, std::array<TensorShape, 3>);
+
+template <>
+Tensor
+Derivative<1>::fullify() const
+{
+  const auto iiss =
+      std::array{TensorShape(var_intrsc_intmd_sizes()), TensorShape(arg_intrsc_intmd_sizes(0))};
+  return neml2::fullify<2>(tensor(), _intrsc_intmd_dim, iiss);
+}
+
+template <>
+Tensor
+Derivative<2>::fullify() const
+{
+  const auto iiss = std::array{TensorShape(var_intrsc_intmd_sizes()),
+                               TensorShape(arg_intrsc_intmd_sizes(0)),
+                               TensorShape(arg_intrsc_intmd_sizes(1))};
+  return neml2::fullify<3>(tensor(), _intrsc_intmd_dim, iiss);
+}
+
+template <std::size_t N>
 Derivative<N> &
 Derivative<N>::operator=(const Tensor & val)
 {
@@ -457,9 +544,9 @@ Derivative<N>::operator+=(const Derivative<N> & deriv)
   // fullify if needed
   auto t = deriv.tensor();
   if (!is_intrsc_intmd_broadcast() && deriv.is_intrsc_intmd_broadcast())
-    t = fullify_intrsc_intmd_dims(deriv);
+    t = deriv.fullify();
   else if (is_intrsc_intmd_broadcast() && !deriv.is_intrsc_intmd_broadcast())
-    _deriv = fullify_intrsc_intmd_dims(*this);
+    _deriv = fullify();
 
   _intrsc_intmd_dim = std::max(_intrsc_intmd_dim, deriv._intrsc_intmd_dim);
   for (std::size_t i = 0; i < 2; ++i)

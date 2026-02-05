@@ -32,13 +32,4 @@ using namespace neml2;
 
 #define TYPE_IDENTITY(T) T
 
-TEST_CASE("chain_rule", "[tensors/functions]")
-{
-  at::manual_seed(42);
-  // auto dy_du = Tensor::rand({3}, {2, 1, 3, 5, 6}, {7, 2, 1, 3});
-  // auto du_dx = Tensor::rand({2, 1}, {4, 5, 6, 2, 1}, {1, 3, 2});
-  // auto dy_dx = chain_rule(dy_du, du_dx, {7, 2}, {1, 3}, {2}, 1, 2, 2);
-  // REQUIRE(dy_dx.dynamic_sizes() == TensorShapeRef{2, 3});
-  // REQUIRE(dy_dx.intmd_sizes() == TensorShapeRef{2, 4, 3, 2, 1});
-  // REQUIRE(dy_dx.base_sizes() == TensorShapeRef{7, 2, 2});
-}
+TEST_CASE("chain_rule", "[tensors/functions]") { at::manual_seed(42); }

@@ -22,34 +22,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_all.hpp>
 
-#include "neml2/misc/types.h"
+#include "neml2/equation_systems/assembly.h"
 
-namespace neml2
-{
-class Tensor;
-template <std::size_t N>
-class Derivative;
+using namespace neml2;
 
-template <std::size_t N>
-Tensor fullify_intrsc_intmd_dims(const Derivative<N> & deriv);
-
-Tensor pop_intrsc_intmd_dim(const Tensor & t, Size dim);
-
-Tensor push_intrsc_intmd_dim(const Tensor & t, Size dim);
-
-Tensor pop_intrsc_intmd_dim(const Derivative<1> & deriv);
-
-template <std::size_t N>
-Tensor pop_intrsc_intmd_dim(const Tensor & from,
-                            const std::array<std::size_t, N> & intrsc_intmd_dims,
-                            const std::array<TensorShapeRef, N> & base_shapes,
-                            const std::string & debug_name = "<anonymous>");
-
-template <std::size_t N>
-Tensor push_intrsc_intmd_dim(const Tensor & from,
-                             const std::array<std::size_t, N> & intrsc_intmd_dims,
-                             const std::array<TensorShapeRef, N> & base_shapes,
-                             const std::string & debug_name = "<anonymous>");
-}
+TEST_CASE("assembly", "[equation_systems]") {}

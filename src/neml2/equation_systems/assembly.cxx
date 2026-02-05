@@ -22,46 +22,168 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <ATen/ExpandUtils.h>
+#include <cstddef>
+
 #include "neml2/equation_systems/assembly.h"
 #include "neml2/tensors/Tensor.h"
+#include "neml2/tensors/Derivative.h"
 #include "neml2/tensors/shape_utils.h"
 #include "neml2/tensors/functions/cat.h"
-#include "neml2/tensors/functions/diagonalize.h"
-#include "neml2/tensors/functions/sum_to_size.h"
 #include "neml2/equation_systems/SparseTensorList.h"
 #include "neml2/misc/assertions.h"
-#include <ATen/ExpandUtils.h>
 
 namespace neml2
 {
-template <std::size_t N>
-static Tensor
-diagonalize_if_needed(const Tensor & t, std::array<TensorShapeRef, N> intmd_shapes)
-{
-  const auto expected_intmd_sizes =
-      std::apply([](const auto &... xs) { return utils::add_shapes(xs...); }, intmd_shapes);
-  if (t.intmd_sizes() == expected_intmd_sizes)
-    return t;
 
-  auto expanded = t;
-  expanded = intmd_diagonalize(expanded.intmd_expand(intmd_shapes[0]).intmd_flatten());
-  auto expanded_intmd_sizes = TensorShape(intmd_shapes[0]);
-  auto padded_intmd_sizes = TensorShape(intmd_shapes[0]);
-  for (std::size_t i = 1; i < N; ++i)
-  {
-    expanded_intmd_sizes = utils::add_shapes(expanded_intmd_sizes, intmd_shapes[0]);
-    padded_intmd_sizes = utils::add_shapes(
-        padded_intmd_sizes, utils::pad_prepend(intmd_shapes[i], intmd_shapes[0].size()));
-  }
-  return intmd_sum_to_size(expanded.intmd_reshape(expanded_intmd_sizes), padded_intmd_sizes)
-      .intmd_reshape(expected_intmd_sizes);
+Tensor
+pop_intrsc_intmd_dim(const Tensor & t, Size dim)
+{
+  if (dim == 0)
+    return t;
+  neml_assert_dbg(dim <= t.intmd_dim(),
+                  "Unable to pop ",
+                  dim,
+                  " intermediate dimensions from a tensor with intermediate dimension ",
+                  t.intmd_dim(),
+                  ".");
+  return Tensor(t, t.dynamic_sizes(), t.intmd_dim() - dim);
+}
+
+Tensor
+push_intrsc_intmd_dim(const Tensor & t, Size dim)
+{
+  if (dim == 0)
+    return t;
+  neml_assert_dbg(dim <= t.base_dim(),
+                  "Unable to push ",
+                  dim,
+                  " intermediate dimensions from a tensor with base dimension ",
+                  t.base_dim(),
+                  ".");
+  return Tensor(t, t.dynamic_sizes(), t.intmd_dim() + dim);
+}
+
+Tensor
+pop_intrsc_intmd_dim(const Derivative<1> & deriv)
+{
+  auto t = deriv.fullify();
+
+  const auto var_id = std::size_t(deriv.var_intrsc_intmd_dim());
+  const auto arg_id = std::size_t(deriv.arg_intrsc_intmd_dim(0));
+  const auto var_bs = TensorShape(deriv.var_base_sizes());
+  const auto arg_bs = TensorShape(deriv.arg_base_sizes(0));
+
+  return pop_intrsc_intmd_dim<2>(t, {var_id, arg_id}, {var_bs, arg_bs}, deriv.name());
 }
 
 template <std::size_t N>
 Tensor
+pop_intrsc_intmd_dim(const Tensor & from,
+                     const std::array<std::size_t, N> & intrsc_intmd_dims,
+                     const std::array<TensorShape, N> & base_shapes,
+                     [[maybe_unused]] const std::string & debug_name)
+{
+  const auto total_id = utils::sum_array(intrsc_intmd_dims);
+
+#ifndef NDEBUG
+  // The given tensor should have shape
+  //   (*dynamic; *indep_intmd, *dep_intmd; *base)
+  //
+  // where dep_intmd = (*dep_intmd_0, ..., *dep_intmd_{N-1})
+  //            base = (*base_0, ..., *base_{N-1})
+  neml_assert_dbg(from.intmd_dim() >= Size(total_id),
+                  "Number of intermediate dimensions (",
+                  from.intmd_dim(),
+                  ") is less than the total number of intermediate dimensions to pop (",
+                  total_id,
+                  ") for tensor '",
+                  debug_name,
+                  "'.");
+  const auto total_base_sizes =
+      std::apply([](const auto &... xs) { return utils::add_shapes(xs...); }, base_shapes);
+  neml_assert_dbg(from.base_sizes() == total_base_sizes,
+                  "Incompatible base shape for tensor '",
+                  debug_name,
+                  "', expected base shape ",
+                  total_base_sizes,
+                  ", but got ",
+                  from.base_sizes());
+#endif
+
+  // Move each intrinsic dimension to its corresponding position in the base
+  auto src_dim = -total_id;
+  if (src_dim != 0)
+    src_dim = utils::normalize_dim(src_dim, from.dynamic_dim(), from.batch_dim());
+  auto dest_dim = from.batch_dim() - 1;
+  auto raw = ATensor(from);
+  for (std::size_t i = 0; i < N; i++)
+  {
+    for (std::size_t j = 0; j < intrsc_intmd_dims[i]; j++)
+      raw = raw.movedim(src_dim, dest_dim);
+    dest_dim += base_shapes[i].size();
+  }
+
+  return Tensor(raw, from.dynamic_sizes(), from.intmd_dim() - total_id);
+}
+
+// Explicit instantiations
+template Tensor pop_intrsc_intmd_dim<1>(const Tensor &,
+                                        const std::array<std::size_t, 1> &,
+                                        const std::array<TensorShape, 1> &,
+                                        const std::string &);
+template Tensor pop_intrsc_intmd_dim<2>(const Tensor &,
+                                        const std::array<std::size_t, 2> &,
+                                        const std::array<TensorShape, 2> &,
+                                        const std::string &);
+template Tensor pop_intrsc_intmd_dim<3>(const Tensor &,
+                                        const std::array<std::size_t, 3> &,
+                                        const std::array<TensorShape, 3> &,
+                                        const std::string &);
+
+template <std::size_t N>
+Tensor
+push_intrsc_intmd_dim(const Tensor & from,
+                      const std::array<std::size_t, N> & intrsc_intmd_dims,
+                      const std::array<TensorShape, N> & base_shapes,
+                      [[maybe_unused]] const std::string & debug_name)
+{
+  // The given tensor should have shape
+  //   (*dynamic; *indep_intmd; *dep_intmd_0, *base_0, ..., *dep_intmd_{N-1}, *base_{N-1})
+  // We need to move the dependent intermediate dimension from base to intmd
+  auto src_dim = from.batch_dim();
+  auto dest_dim = from.batch_dim();
+  auto raw = ATensor(from);
+  Size total_id = 0;
+  for (std::size_t i = 0; i < N; i++)
+  {
+    for (std::size_t j = 0; j < intrsc_intmd_dims[i]; j++)
+      raw = raw.movedim(src_dim++, dest_dim++);
+    src_dim += base_shapes[i].size();
+    total_id += intrsc_intmd_dims[i];
+  }
+  return Tensor(raw, from.dynamic_sizes(), from.intmd_dim() + total_id);
+}
+
+// Explicit instantiations
+template Tensor push_intrsc_intmd_dim<1>(const Tensor &,
+                                         const std::array<std::size_t, 1> &,
+                                         const std::array<TensorShape, 1> &,
+                                         const std::string &);
+template Tensor push_intrsc_intmd_dim<2>(const Tensor &,
+                                         const std::array<std::size_t, 2> &,
+                                         const std::array<TensorShape, 2> &,
+                                         const std::string &);
+template Tensor push_intrsc_intmd_dim<3>(const Tensor &,
+                                         const std::array<std::size_t, 3> &,
+                                         const std::array<TensorShape, 3> &,
+                                         const std::string &);
+
+template <std::size_t N>
+Tensor
 to_assembly(const Tensor & from,
-            const std::array<TensorShapeRef, N> & intmd_shapes,
-            const std::array<TensorShapeRef, N> & base_shapes)
+            const std::array<TensorShape, N> & intmd_shapes,
+            const std::array<TensorShape, N> & base_shapes)
 {
 #ifndef NDEBUG
   // The given tensor should have shape
@@ -87,7 +209,7 @@ to_assembly(const Tensor & from,
 #endif
 
   // Expand intermediate sizes if needed
-  auto expanded = diagonalize_if_needed(from, intmd_shapes);
+  auto expanded = fullify<N>(from, from.intmd_dim(), intmd_shapes);
 
   // Generate permutation to move each intmd before each corresponding base
   //
@@ -123,17 +245,17 @@ to_assembly(const Tensor & from,
 
 // Explicit instantiations
 template Tensor to_assembly<1>(const Tensor &,
-                               const std::array<TensorShapeRef, 1> &,
-                               const std::array<TensorShapeRef, 1> &);
+                               const std::array<TensorShape, 1> &,
+                               const std::array<TensorShape, 1> &);
 template Tensor to_assembly<2>(const Tensor &,
-                               const std::array<TensorShapeRef, 2> &,
-                               const std::array<TensorShapeRef, 2> &);
+                               const std::array<TensorShape, 2> &,
+                               const std::array<TensorShape, 2> &);
 
 template <std::size_t N>
 Tensor
 from_assembly(const Tensor & from,
-              const std::array<TensorShapeRef, N> & intmd_shapes,
-              const std::array<TensorShapeRef, N> & base_shapes)
+              const std::array<TensorShape, N> & intmd_shapes,
+              const std::array<TensorShape, N> & base_shapes)
 {
 #ifndef NDEBUG
   TensorShape assembly_sizes(N);
@@ -197,11 +319,11 @@ from_assembly(const Tensor & from,
 
 // Explicit instantiations
 template Tensor from_assembly<1>(const Tensor &,
-                                 const std::array<TensorShapeRef, 1> &,
-                                 const std::array<TensorShapeRef, 1> &);
+                                 const std::array<TensorShape, 1> &,
+                                 const std::array<TensorShape, 1> &);
 template Tensor from_assembly<2>(const Tensor &,
-                                 const std::array<TensorShapeRef, 2> &,
-                                 const std::array<TensorShapeRef, 2> &);
+                                 const std::array<TensorShape, 2> &,
+                                 const std::array<TensorShape, 2> &);
 
 static std::vector<Size>
 split_sizes(const std::optional<std::vector<TensorShape>> & intmd_shapes,

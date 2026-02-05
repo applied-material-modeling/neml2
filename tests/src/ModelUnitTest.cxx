@@ -24,7 +24,7 @@
 
 #include "ModelUnitTest.h"
 #include "neml2/misc/types.h"
-#include "neml2/tensors/functions/intrsc_intmd_dim_utils.h"
+#include "neml2/equation_systems/assembly.h"
 #include "neml2/tensors/functions/jacrev.h"
 #include "neml2/misc/assertions.h"
 

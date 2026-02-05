@@ -29,6 +29,10 @@
 
 namespace neml2
 {
+// forward declaration
+template <std::size_t N>
+class Derivative;
+
 /// Pretty print derivative names
 template <std::size_t N>
 std::string
@@ -42,6 +46,19 @@ derivative_name(const std::string & var_name, const std::array<std::string, N> &
     name += "d(" + arg_name + ")";
   return name;
 }
+
+/**
+ * Convert the derivative with broadcasting intrinsic intermediate dimensions into a Tensor
+ * with full intrinsic intermediate dimensions. If this derivative is already full, simply
+ * returns the underlying tensor.
+ *
+ * @tparam N The order of the derivative plus one
+ * @param t The input derivative tensor
+ * @param iid The number of intrinsic intermediate dimensions of the derivative
+ * @param iiss The intrinsic intermediate shapes of the variable and arguments
+ */
+template <std::size_t N>
+Tensor fullify(const Tensor & t, Size iid, std::array<TensorShape, N> iiss);
 
 /// Derivative wrapper
 template <std::size_t N>
@@ -123,6 +140,13 @@ public:
 
   /// Reinterpret the derivative to add additional intrinsic intermediate dimensions to the variable and arguments
   Derivative<N> reinterpret(std::size_t additional_intrsc_intmd_dim) const;
+
+  /**
+   * Convert the derivative with broadcasting intrinsic intermediate dimensions into a Tensor
+   * with full intrinsic intermediate dimensions. If this derivative is already full, simply
+   * returns the underlying tensor.
+   */
+  Tensor fullify() const;
 
 private:
   Tensor try_intmd_expand(const Tensor & val) const;

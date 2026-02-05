@@ -32,22 +32,58 @@ namespace neml2
 {
 class Tensor;
 struct SparseTensorList;
+template <std::size_t N>
+class Derivative;
+
+/// Move the trailing @p dim intermediate dimensions to the base
+Tensor pop_intrsc_intmd_dim(const Tensor & t, Size dim);
+
+/// Move the leading @p dim base dimensions to intermediate dimensions
+Tensor push_intrsc_intmd_dim(const Tensor & t, Size dim);
+
+/**
+ * Move the trailing intrinsic intermediate dimensions to the base for a Derivative If the
+ * derivative has broadcasting intrinsic intermediate dimensions, this also handles fullification.
+ */
+Tensor pop_intrsc_intmd_dim(const Derivative<1> & deriv);
+
+/**
+ * Move the trailing intrinsic intermediate dimensions to the base for a Derivative of order @tparam
+ * N. This also handles permutation of variable and argument's intrinsic intermediate dimensions and
+ * base dimensions.
+ */
+template <std::size_t N>
+Tensor pop_intrsc_intmd_dim(const Tensor & from,
+                            const std::array<std::size_t, N> & intrsc_intmd_dims,
+                            const std::array<TensorShape, N> & base_shapes,
+                            const std::string & debug_name = "<anonymous>");
+
+/**
+ * Move the leading base dimensions to intermediate dimensions for a Derivative of order @tparam
+ * N. This also handles permutation of variable and argument's intermediate dimensions and base
+ * dimensions.
+ */
+template <std::size_t N>
+Tensor push_intrsc_intmd_dim(const Tensor & from,
+                             const std::array<std::size_t, N> & intrsc_intmd_dims,
+                             const std::array<TensorShape, N> & base_shapes,
+                             const std::string & debug_name = "<anonymous>");
 
 /**
  * Convert a tensor from the assembly format to the normal format.
  */
 template <std::size_t N>
 Tensor from_assembly(const Tensor & from,
-                     const std::array<TensorShapeRef, N> & intmd_shapes,
-                     const std::array<TensorShapeRef, N> & base_shapes);
+                     const std::array<TensorShape, N> & intmd_shapes,
+                     const std::array<TensorShape, N> & base_shapes);
 
 /**
  * Convert a tensor from the normal format to the assembly format.
  */
 template <std::size_t N>
 Tensor to_assembly(const Tensor & from,
-                   const std::array<TensorShapeRef, N> & intmd_shapes,
-                   const std::array<TensorShapeRef, N> & base_shapes);
+                   const std::array<TensorShape, N> & intmd_shapes,
+                   const std::array<TensorShape, N> & base_shapes);
 
 /**
  * Disassemble a Tensor with one base dimension into a vector of Tensors according to base shapes
