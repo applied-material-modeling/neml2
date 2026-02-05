@@ -46,7 +46,6 @@ Documentation:
 
 Work dispatcher:
 
-- [TIMPI](https://github.com/libMesh/TIMPI) for coordinating parallel workers.
 - [json](https://github.com/nlohmann/json) for outputting event traces.
 
 CSV parser:
@@ -82,6 +81,6 @@ The following table summarizes the configure options that determine when a depen
 | Doxygen Awesome              | NEML2_DOC                                     |
 | graphviz                     | NEML2_PYBIND && NEML2_TESTS                   |
 | PyYAML                       | NEML2_DOC                                     |
-| MPI, TIMPI                   | NEML2_WORK_DISPATCHER                         |
+| MPI                          | NEML2_WORK_DISPATCHER                         |
 | json                         | NEML2_JSON                                    |
 | CSV Parser                   | NEML2_CSV                                     |

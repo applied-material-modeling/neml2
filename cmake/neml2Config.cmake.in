@@ -34,15 +34,6 @@ if(@hit_CONTRIB@)
 endif()
 find_dependency(hit MODULE REQUIRED)
 
-# timpi
-if(@timpi_FOUND@)
-  set(timpi_BUILD_TYPE @timpi_BUILD_TYPE@)
-  if(@timpi_CONTRIB@)
-    set(timpi_ROOT ${_IMPORT_PREFIX})
-  endif()
-  find_dependency(timpi MODULE REQUIRED)
-endif()
-
 # json
 if(@NEML2_JSON@)
   find_dependency(nlohmann_json CONFIG REQUIRED PATHS ${_IMPORT_PREFIX} NO_DEFAULT_PATH)
@@ -62,4 +53,9 @@ if(@NEML2_CSV@)
     set(csvparser ${_IMPORT_PREFIX})
   endif()
   find_dependency(csvparser MODULE REQUIRED)
+endif()
+
+# MPI
+if(@NEML2_WORK_DISPATCHER@)
+  find_package(MPI COMPONENTS CXX REQUIRED)
 endif()
