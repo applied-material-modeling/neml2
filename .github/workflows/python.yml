@@ -19,7 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: psf/black@stable
+      - name: Run black style check
+        uses: psf/black@stable
         with:
           options: "--check -v"
           src: "python/neml2 python/tests"
@@ -35,10 +36,10 @@ jobs:
       - uses: applied-material-modeling/neml2-ci@main
         with:
           python-version: 3.9
-          cmake-version: 3.26
+          cmake-version: 3.26.0
           torch-version: 2.8.0
       - name: Install
-        run: CMAKE_GENERATOR=Ninja pip install -v .
+        run: pip install ".[dev]" -v
       - name: Run tests
         run: pytest -v --junitxml=pytest.xml python/tests
       - name: Test results

@@ -5,6 +5,10 @@ on:
     workflows: ["Documentation"]
     types: [completed]
 
+concurrency:
+  group: docs-deploy-${{ github.event.workflow_run.head_sha }}
+  cancel-in-progress: true
+
 permissions:
   actions: read
   contents: write

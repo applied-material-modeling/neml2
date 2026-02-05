@@ -34,8 +34,21 @@ NEML2_DIR=$(dirname "$SCRIPT_DIR")
 # go to the git root
 cd "$NEML2_DIR" || exit 1
 
+# Optional directory pathspec relative to repository root
+TARGET_DIR="${1:-.}"
+
+if [ "$#" -gt 1 ]; then
+  echo "Usage: $0 [directory]"
+  exit 1
+fi
+
+if [ ! -d "$TARGET_DIR" ]; then
+  echo "Directory does not exist: $TARGET_DIR"
+  exit 1
+fi
+
 # files/directories to clobber
-FILES_ALL=$(git ls-files . --ignored --exclude-standard --others --directory)
+FILES_ALL=$(git ls-files --ignored --exclude-standard --others --directory -- "$TARGET_DIR")
 
 # filter out excluded files/directories
 FILES=()

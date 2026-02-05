@@ -64,6 +64,7 @@ function(install_glob path install_dir component)
 endfunction()
 
 # Check if a path has a specific prefix
+#
 # Usage:
 #   path_has_prefix(<path> <prefix> <result_var>)
 #   Sets <result_var> to TRUE if <path> is under <prefix>, else FALSE.
@@ -80,5 +81,35 @@ function(path_has_prefix path prefix result_var)
     set(${result_var} TRUE PARENT_SCOPE)
   else()
     set(${result_var} FALSE PARENT_SCOPE)
+  endif()
+endfunction()
+
+# Check if a Python module can be imported
+#
+# Usage:
+#   check_python_import(<module>)
+#
+# module is a dotted name like "numpy" or "torch.utils.cpp_extension"
+function(check_python_import module)
+  # fatal error is python not found
+  if(NOT Python3_EXECUTABLE)
+    message(FATAL_ERROR "Python executable not found. Cannot check for Python module: ${module}")
+  endif()
+
+  execute_process(
+    COMMAND "${Python3_EXECUTABLE}" "-c" "import importlib; importlib.import_module('${module}')"
+    RESULT_VARIABLE _rc
+    OUTPUT_QUIET
+    ERROR_VARIABLE _err
+  )
+
+  if(NOT _rc EQUAL 0)
+    string(REPLACE "\n" "\n  " _err_indented "${_err}")
+    message(FATAL_ERROR
+      "Python import check failed:\n"
+      "  Python: ${Python3_EXECUTABLE}\n"
+      "  Module: ${module}\n"
+      "  Error:\n  ${_err_indented}\n"
+    )
   endif()
 endfunction()

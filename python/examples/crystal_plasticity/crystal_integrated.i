@@ -120,3 +120,10 @@
               integrate_slip_hardening integrate_plastic_defgrad"
   []
 []
+
+[EquationSystems]
+  [eq_sys]
+    type = NonlinearSystem
+    model = 'implicit_rate'
+  []
+[]

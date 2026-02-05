@@ -1,6 +1,0 @@
-nbdime
-pyro-ppl
-tqdm
-matplotlib
-ipykernel
-ipywidgets

@@ -18,7 +18,7 @@ jobs:
       - uses: applied-material-modeling/neml2-ci@main
         with:
           python-version: 3.9
-          cmake-version: 3.26
+          cmake-version: 3.26.0
           torch-version: 2.8.0
           doxygen-version: 1.16.1
       - uses: actions/setup-node@v4
@@ -26,10 +26,14 @@ jobs:
         run: cd doc/js && npm install
       - name: Install NEML2 Python package
         run: pip install ".[dev]" -v
+      - name: Generate stubs for documentation
+        run: neml2-stub
+      - name: Install graphviz
+        run: sudo apt install -y graphviz
       - name: Run examples
-        run: ./doc/scripts/examples.py -log-level trace --cmake-configure-args="-GNinja"
+        run: ./doc/scripts/examples.py --log-level trace --cmake-configure-args="-GNinja"
       - name: Build documentation
-        run: ./doc/scripts/genhtml.py -log-level trace
+        run: ./doc/scripts/genhtml.py --log-level trace
 
       # Documentation error checking
       - name: Show build logs for C++ documentation
@@ -42,13 +46,13 @@ jobs:
           cat build/doc/doxygen.python.log >> $GITHUB_STEP_SUMMARY
       - name: Warn about syntax errors
         run: |
-          cat build/doc/syntax_error.log >> $GITHUB_STEP_SUMMARY
+          cat build/doc/syntax.err >> $GITHUB_STEP_SUMMARY
       - name: Error if C++ warnings exist
         run: "! grep -q 'warning:' build/doc/doxygen.html.log"
       - name: Error if Python warnings exist
         run: "! grep -q 'warning:' build/doc/doxygen.python.log"
       - name: Error if syntax errors were detected
-        run: grep -q "No syntax error" build/doc/syntax_error.log
+        run: grep -q "No syntax error" build/doc/syntax.err
 
       - name: Upload documentation
         uses: actions/upload-artifact@v4
@@ -62,7 +66,7 @@ jobs:
       - uses: applied-material-modeling/neml2-ci@main
         with:
           python-version: 3.9
-          cmake-version: 3.26
+          cmake-version: 3.26.0
           torch-version: 2.8.0
       - name: Configure
         run: cmake --preset coverage -GNinja -S .
@@ -83,7 +87,7 @@ jobs:
       - uses: applied-material-modeling/neml2-ci@main
         with:
           python-version: 3.9
-          cmake-version: 3.26
+          cmake-version: 3.26.0
           torch-version: 2.8.0
       - name: Install clang-tidy
         run: sudo apt-get install -y clang-tidy

@@ -66,21 +66,13 @@ In some cases, certain dependencies cannot be obtained or are incompatible with 
 
 The following table summarizes the configure options that determine when a dependency is required, and hence how a dependency can be skipped.
 
-| Dependency                   | Dependent configure option(s)                 |
-| :--------------------------- | :-------------------------------------------- |
-| Torch                        |                                               |
-| WASP                         |                                               |
-| Catch2                       | NEML2_TESTS                                   |
-| argparse                     | NEML2_RUNNER                                  |
-| Gperftools                   | NEML2_RUNNER && CMAKE_BUILD_TYPE == Profiling |
-| Python development libraries | NEML2_PYBIND                                  |
-| pybind11-stubgen             | NEML2_PYBIND                                  |
-| pyzag                        | NEML2_PYBIND && NEML2_TESTS                   |
-| pytest                       | NEML2_PYBIND && NEML2_TESTS                   |
-| Doxygen                      | NEML2_DOC                                     |
-| Doxygen Awesome              | NEML2_DOC                                     |
-| graphviz                     | NEML2_PYBIND && NEML2_TESTS                   |
-| PyYAML                       | NEML2_DOC                                     |
-| MPI                          | NEML2_WORK_DISPATCHER                         |
-| json                         | NEML2_JSON                                    |
-| CSV Parser                   | NEML2_CSV                                     |
+| Dependency | Dependent configure option(s)               |
+| :--------- | :------------------------------------------ |
+| Torch      |                                             |
+| WASP       |                                             |
+| Catch2     | NEML2_TESTS                                 |
+| argparse   | NEML2_TOOLS                                 |
+| Gperftools | NEML2_TOOLS & CMAKE_BUILD_TYPE == Profiling |
+| MPI        | NEML2_WORK_DISPATCHER                       |
+| json       | NEML2_JSON                                  |
+| CSV Parser | NEML2_CSV                                   |

@@ -124,14 +124,24 @@ You can always use `Ctrl`+`F` or `Cmd`+`F` to search the entire page.
     return prologue
 
 
-if __name__ == "__main__":
-    with open(sys.argv[1], "r") as stream:
+def syntax_to_md(syntax_file: Path, outdir: Path, logfile: Path) -> int:
+    """
+    Convert the syntax YAML file extracted by neml2-syntax into markdown files for documentation.
+
+    Args:
+        syntax_file: the input YAML file containing the syntax information
+        outdir: the output directory to write the markdown files to
+        logfile: the output log file to write any syntax issues to
+
+    Returns:
+        the number of syntax issues found, where an issue can be either a missing section, missing object description,
+        or missing option description. Note that syntax issues do not necessarily indicate a problem with the
+        code, but they do indicate missing documentation that should be filled in for better user experience.
+    """
+
+    with open(syntax_file, "r") as stream:
         syntax = yaml.safe_load(stream)
-
-    outdir = Path(sys.argv[2])
     outdir.mkdir(parents=True, exist_ok=True)
-
-    logfile = Path(sys.argv[3])
     logfile.parent.mkdir(parents=True, exist_ok=True)
 
     with open(logfile, "w") as log:
@@ -214,7 +224,6 @@ if __name__ == "__main__":
                         stream.write("</details>\n")
                     stream.write("\n")
                     stream.write("Detailed documentation [link](@ref {})\n\n".format(type))
-            log.write("\nFinished processing Section '{}'.\n".format(section))
 
         if missing == 0:
             log.write("No syntax error, good job! :purple_heart:")
@@ -222,3 +231,5 @@ if __name__ == "__main__":
             print("*" * 79, file=sys.stderr)
             print("Syntax errors have been written to", logfile, file=sys.stderr)
             print("*" * 79, file=sys.stderr)
+
+        return missing

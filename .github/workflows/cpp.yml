@@ -40,7 +40,7 @@ jobs:
       - uses: applied-material-modeling/neml2-ci@main
         with:
           python-version: 3.9
-          cmake-version: 3.26
+          cmake-version: 3.26.0
           torch-version: 2.8.0
       - name: Configure
         if: matrix.btype == 'Release'
@@ -49,7 +49,7 @@ jobs:
         if: matrix.btype != 'Release'
         run: cmake --preset dev -GNinja -DCMAKE_BUILD_TYPE=${{ matrix.btype }} -DCMAKE_CXX_FLAGS="-Werror" -S .
       - name: Build
-        run: cmake --build --preset dev-cpp
+        run: cmake --build --preset dev
       - name: Run tests
         run: |
           ./build/dev/tests/unit/unit_tests -r JUnit::out=unit_tests.xml -r console::out=-::colour-mode=ansi
@@ -77,12 +77,12 @@ jobs:
       - uses: applied-material-modeling/neml2-ci@main
         with:
           python-version: 3.9
-          cmake-version: 3.26
+          cmake-version: 3.26.0
           torch-version: 2.8.0
       - name: Configure
         run: cmake --preset dev -GNinja -DNEML2_PCH=OFF -S .
       - name: Build
-        run: cmake --build --preset dev-cpp
+        run: cmake --build --preset dev
 
   no-optional:
     needs: clang-format
@@ -91,12 +91,12 @@ jobs:
       - uses: applied-material-modeling/neml2-ci@main
         with:
           python-version: 3.9
-          cmake-version: 3.26
+          cmake-version: 3.26.0
           torch-version: 2.8.0
       - name: Configure
-        run: cmake --preset dev -GNinja -DNEML2_JSON=OFF -DNEML2_CSV=OFF -S .
+        run: cmake --preset dev -GNinja -DNEML2_JSON=OFF -DNEML2_CSV=OFF -DNEML2_WORK_DISPATCHER=OFF -S .
       - name: Build
-        run: cmake --build --preset dev-cpp
+        run: cmake --build --preset dev
 
   release:
     needs: clang-format
@@ -108,7 +108,7 @@ jobs:
       - uses: applied-material-modeling/neml2-ci@main
         with:
           python-version: 3.9
-          cmake-version: 3.26
+          cmake-version: 3.26.0
           torch-version: 2.8.0
       - name: Configure
         run: cmake --preset release -GNinja -S .
@@ -127,7 +127,7 @@ jobs:
       - uses: applied-material-modeling/neml2-ci@main
         with:
           python-version: 3.9
-          cmake-version: 3.26
+          cmake-version: 3.26.0
           torch-version: 2.8.0
       - name: Configure
         run: cmake --preset profiling -GNinja -S .
@@ -135,7 +135,7 @@ jobs:
         run: cmake --build --preset profiling
       - name: Check profile generation
         run: |
-          CPUPROFILE=prof.out ./build/profiling/runner/neml2 time runner/benchmark/elasticity/model.i driver nbatch=1 device=cpu
+          CPUPROFILE=prof.out ./build/profiling/src/tools/time benchmark/elasticity/model.i driver nbatch=1 device=cpu
           [[ -f prof.out ]]
 
   thread-sanitizer:
@@ -148,7 +148,7 @@ jobs:
       - uses: applied-material-modeling/neml2-ci@main
         with:
           python-version: 3.9
-          cmake-version: 3.26
+          cmake-version: 3.26.0
           torch-version: 2.8.0
       - name: Configure
         run: cmake --preset tsan -GNinja -S .

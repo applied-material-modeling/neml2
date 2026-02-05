@@ -19,7 +19,7 @@ jobs:
         with:
           path: neml2
           python-version: 3.9
-          cmake-version: 3.26
+          cmake-version: 3.26.0
           torch-version: 2.8.0
       - name: Create an example CMake project
         run: |
@@ -38,11 +38,11 @@ jobs:
         with:
           path: neml2-src
           python-version: 3.9
-          cmake-version: 3.26
+          cmake-version: 3.26.0
           torch-version: 2.8.0
       - name: Install neml2
         run: |
-          cmake --preset release -GNinja -S neml2-src -B neml2-build -DNEML2_PYBIND=OFF
+          cmake --preset release -GNinja -S neml2-src -B neml2-build
           cmake --build neml2-build
           cmake --install neml2-build --prefix neml2-install --component libneml2
       - name: Create an example CMake project

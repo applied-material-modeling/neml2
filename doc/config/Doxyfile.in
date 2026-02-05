@@ -6,7 +6,7 @@
 DOXYFILE_ENCODING      = UTF-8
 PROJECT_NAME           = NEML2
 PROJECT_NUMBER         = 2.0.0
-OUTPUT_DIRECTORY       = build
+OUTPUT_DIRECTORY       = ${build_dir}/build
 TOC_INCLUDE_HEADINGS   = 3
 
 #---------------------------------------------------------------------------
@@ -18,7 +18,7 @@ HIDE_SCOPE_NAMES       = YES
 SHOW_USED_FILES        = NO
 SHOW_FILES             = NO
 SHOW_NAMESPACES        = YES
-LAYOUT_FILE            = ${NEML2_SOURCE_DIR}/doc/config/DoxygenLayout.xml
+LAYOUT_FILE            = ${repo_root}/doc/config/DoxygenLayout.xml
 
 #---------------------------------------------------------------------------
 # Configuration options related to warning and progress messages
@@ -28,19 +28,18 @@ WARN_NO_PARAMDOC       = YES
 #---------------------------------------------------------------------------
 # Configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = ${NEML2_SOURCE_DIR}/README.md \
-                         ${NEML2_SOURCE_DIR}/src \
-                         ${NEML2_SOURCE_DIR}/include \
-                         ${NEML2_BINARY_DIR}/doc/content
-FILE_PATTERNS          = *.cxx \
-                         *.h \
+INPUT                  = ${repo_root}/README.md \
+                         ${neml2_path}/include/neml2 \
+                         ${build_dir}/content
+FILE_PATTERNS          = *.h \
                          *.md
-INCLUDE_PATH           = ${NEML2_BINARY_DIR}/include
+INCLUDE_PATH           = ${neml2_path}/include
 INCLUDE_FILE_PATTERNS  = *.h
-IMAGE_PATH             = ${NEML2_BINARY_DIR}/doc/content
+IMAGE_PATH             = ${build_dir}/content \
+                         ${repo_root}/doc/content/asset
 RECURSIVE              = YES
 EXCLUDE_SYMBOLS        = neml2::*internal neml2::*details
-USE_MDFILE_AS_MAINPAGE = ${NEML2_SOURCE_DIR}/README.md
+USE_MDFILE_AS_MAINPAGE = ${repo_root}/README.md
 
 #---------------------------------------------------------------------------
 # Configuration options related to the alphabetical class index

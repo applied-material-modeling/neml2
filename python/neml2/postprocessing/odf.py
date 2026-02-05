@@ -193,7 +193,7 @@ class KDEODF(ODF):
             loss = (
                 self.texture_index() - 2.0 * sum(self.leave_out(i) for i in range(self.n)) / self.n
             )
-            if verbose:
+            if verbose and isinstance(it, tqdm):
                 it.set_description("loss: %6.5e" % loss.detach().cpu())
             loss.backward()
             optim.step()

@@ -59,9 +59,7 @@ set(CMAKE_CXX_FLAGS_ADDRESSSANITIZER "-O1 -g -fsanitize=address -fno-omit-frame-
 set(CMAKE_CXX_FLAGS_PROFILING "-O2 -g -fno-omit-frame-pointer -DNDEBUG" CACHE STRING "Flags used by C++ compiler for build type Profiling" FORCE)
 set(NEML2_PCH ON CACHE BOOL "Use precompiled headers")
 set(NEML2_TESTS ON CACHE BOOL "Build NEML2 tests")
-set(NEML2_RUNNER OFF CACHE BOOL "Build a simple neml2 executable for benchmarking, debugging, etc.")
-set(NEML2_PYBIND OFF CACHE BOOL "Build NEML2 Python bindings")
-set(NEML2_DOC OFF CACHE BOOL "Build NEML2 documentation (html)")
+set(NEML2_TOOLS OFF CACHE BOOL "Build utility binaries")
 set(NEML2_WORK_DISPATCHER OFF CACHE BOOL "Enable NEML2 work dispatcher")
 set(NEML2_JSON OFF CACHE BOOL "Enable JSON support")
 set(NEML2_CSV OFF CACHE BOOL "Enable CSV support")
@@ -74,8 +72,6 @@ set(NEML2_WHEEL OFF CACHE INTERNAL "Build NEML2 as a Python wheel. This is suppo
 # ----------------------------------------------------------------------------
 set(torch_VERSION "2.8.0" CACHE STRING "Default libTorch/PyTorch version to download")
 set(torch_SEARCH_SITE_PACKAGES ON CACHE BOOL "Search for libTorch in Python site-packages")
-set(Doxygen_VERSION "1.12.0" CACHE STRING "Default doxygen version to download")
-set(doxygen_awesome_css_VERSION "v2.3.4" CACHE STRING "Default doxygen-awesome version to download")
 set(wasp_VERSION "78e8705d3743cee12cb0b024a51a98db2c3713bc" CACHE STRING "Default WASP version to download (if not found)")
 set(hit_VERSION "df7e49e95e5ea9ebef0e7578408221d3aeaf7513" CACHE STRING "Default HIT version to download")
 set(catch2_VERSION "v3.5.4" CACHE STRING "Default Catch2 version to download (if not found)")
@@ -104,17 +100,18 @@ endif()
 include(DepUtils)
 
 # ----------------------------------------------------------------------------
-# Python3
+# lib directory
 # ----------------------------------------------------------------------------
-find_package(Python3 COMPONENTS Interpreter OPTIONAL_COMPONENTS Development.Module)
-# If Python3 is found, let's also find the user site-packages (in case torch is installed there)
-if(Python3_EXECUTABLE)
-      execute_process(
-            COMMAND ${Python3_EXECUTABLE} -m site --user-site
-            OUTPUT_VARIABLE Python3_USER_SITE
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-      )
+# During an editable wheel install, we want to put the cpython libraries in the source tree so
+# that they can be found by the redirected imports..
+if(NEML2_WHEEL AND DEFINED SKBUILD_STATE AND SKBUILD_STATE STREQUAL "editable")
+      set(INSTALL_LIBDIR ${NEML2_SOURCE_DIR}/python/neml2/lib)
+      set(INSTALL_BINDIR ${NEML2_SOURCE_DIR}/python/neml2/bin)
+else()
+      set(INSTALL_LIBDIR lib)
+      set(INSTALL_BINDIR bin)
 endif()
+
 
 # ----------------------------------------------------------------------------
 # The following blocks are used to find and download 3rd party dependencies
@@ -164,12 +161,14 @@ endif()
 # assuming the wheel is installed in a standard site-packages location alongside torch.
 
 # find_package(neml2 CONFIG) will rely on the Findtorch.cmake module
-install(FILES
-      ${NEML2_SOURCE_DIR}/cmake/Modules/Findtorch.cmake
-      ${NEML2_SOURCE_DIR}/cmake/Modules/DetectTorchCXXABI.cxx
-      DESTINATION share/cmake/neml2/Modules
-      COMPONENT libneml2
-)
+if(NOT SKBUILD_STATE STREQUAL "editable")
+      install(FILES
+            ${NEML2_SOURCE_DIR}/cmake/Modules/Findtorch.cmake
+            ${NEML2_SOURCE_DIR}/cmake/Modules/DetectTorchCXXABI.cxx
+            DESTINATION share/cmake/neml2/Modules
+            COMPONENT libneml2
+      )
+endif()
 
 # ----------------------------------------------------------------------------
 # wasp
@@ -188,11 +187,15 @@ path_has_prefix(${wasp_ROOT} ${NEML2_CONTRIB_PREFIX} wasp_CONTRIB)
 
 # wasp will be packaged as part of the NEML2 installation if it was downloaded by us (or if it is being built as a wheel).
 if(wasp_CONTRIB OR NEML2_WHEEL)
-      install_glob(${wasp_core_LIBRARY} lib libneml2)
-      install_glob(${wasp_hit_LIBRARY} lib libneml2)
-      install(DIRECTORY ${wasp_core_INCLUDE_DIR}/waspcore ${wasp_hit_INCLUDE_DIR}/wasphit TYPE INCLUDE COMPONENT libneml2)
+      install_glob(${wasp_core_LIBRARY} ${INSTALL_LIBDIR} libneml2)
+      install_glob(${wasp_hit_LIBRARY} ${INSTALL_LIBDIR} libneml2)
+      if(NOT SKBUILD_STATE STREQUAL "editable")
+            install(DIRECTORY ${wasp_core_INCLUDE_DIR}/waspcore ${wasp_hit_INCLUDE_DIR}/wasphit TYPE INCLUDE COMPONENT libneml2)
+      endif()
 endif()
-install(FILES ${NEML2_SOURCE_DIR}/cmake/Modules/Findwasp.cmake DESTINATION share/cmake/neml2/Modules COMPONENT libneml2)
+if(NOT SKBUILD_STATE STREQUAL "editable")
+      install(FILES ${NEML2_SOURCE_DIR}/cmake/Modules/Findwasp.cmake DESTINATION share/cmake/neml2/Modules COMPONENT libneml2)
+endif()
 
 # ----------------------------------------------------------------------------
 # hit
@@ -218,16 +221,20 @@ path_has_prefix(${hit_ROOT} ${NEML2_CONTRIB_PREFIX} hit_CONTRIB)
 
 # hit will be packaged as part of the NEML2 installation if it was downloaded by us (or if it is being built as a wheel).
 if(hit_CONTRIB OR NEML2_WHEEL)
-      install(FILES ${hit_LIBRARY} TYPE LIB COMPONENT libneml2)
-      install(DIRECTORY ${hit_INCLUDE_DIR}/hit TYPE INCLUDE COMPONENT libneml2)
+      install(FILES ${hit_LIBRARY} DESTINATION ${INSTALL_LIBDIR} COMPONENT libneml2)
+      if(NOT SKBUILD_STATE STREQUAL "editable")
+            install(DIRECTORY ${hit_INCLUDE_DIR}/hit TYPE INCLUDE COMPONENT libneml2)
+      endif()
 endif()
-install(FILES ${NEML2_SOURCE_DIR}/cmake/Modules/Findhit.cmake DESTINATION share/cmake/neml2/Modules COMPONENT libneml2)
+if(NOT SKBUILD_STATE STREQUAL "editable")
+      install(FILES ${NEML2_SOURCE_DIR}/cmake/Modules/Findhit.cmake DESTINATION share/cmake/neml2/Modules COMPONENT libneml2)
+endif()
 
 # ----------------------------------------------------------------------------
 # nlohmann json
 # ----------------------------------------------------------------------------
 if(NEML2_JSON)
-      find_package(nlohmann_json CONFIG HINTS ${NEML2_CONTRIB_PREFIX}/json)
+      find_package(nlohmann_json CONFIG HINTS ${NEML2_CONTRIB_PREFIX}/nlohmann_json)
 
       if(NOT nlohmann_json_FOUND)
             download_from_git(nlohmann_json https://github.com/nlohmann/json.git ${NEML2_CONTRIB_PREFIX} ${nlohmann_json_VERSION})
@@ -242,9 +249,13 @@ if(NEML2_JSON)
 
       # nlohmann json will be packaged as part of the NEML2 installation if it was downloaded by us (or if it is being built as a wheel).
       if(nlohmann_json_CONTRIB OR NEML2_WHEEL)
-            install(DIRECTORY ${nlohmann_json_DIR}/include/nlohmann TYPE INCLUDE COMPONENT libneml2)
+            if(NOT SKBUILD_STATE STREQUAL "editable")
+                  install(DIRECTORY ${nlohmann_json_DIR}/include/nlohmann TYPE INCLUDE COMPONENT libneml2)
+            endif()
       endif()
-      install(DIRECTORY ${nlohmann_json_DIR}/share/ DESTINATION share COMPONENT libneml2)
+      if(NOT SKBUILD_STATE STREQUAL "editable")
+            install(DIRECTORY ${nlohmann_json_DIR}/share/ DESTINATION share COMPONENT libneml2)
+      endif()
 endif()
 
 # ----------------------------------------------------------------------------
@@ -265,15 +276,19 @@ if(NEML2_CSV)
 
       # csv-parser will be packaged as part of the NEML2 installation if it was downloaded by us (or if it is being built as a wheel).
       if(csvparser_CONTRIB OR NEML2_WHEEL)
-            install(DIRECTORY ${csvparser_ROOT}/csvparser/csvparser TYPE INCLUDE COMPONENT libneml2)
+            if(NOT SKBUILD_STATE STREQUAL "editable")
+                  install(DIRECTORY ${csvparser_ROOT}/csvparser/csvparser TYPE INCLUDE COMPONENT libneml2)
+            endif()
       endif()
-      install(FILES ${NEML2_SOURCE_DIR}/cmake/Modules/Findcsvparser.cmake DESTINATION share/cmake/neml2/Modules COMPONENT libneml2)
+      if(NOT SKBUILD_STATE STREQUAL "editable")
+            install(FILES ${NEML2_SOURCE_DIR}/cmake/Modules/Findcsvparser.cmake DESTINATION share/cmake/neml2/Modules COMPONENT libneml2)
+      endif()
 endif()
 
 # ----------------------------------------------------------------------------
 # CPU Profiler
 # ----------------------------------------------------------------------------
-if(NEML2_TESTS OR NEML2_RUNNER)
+if(NEML2_TOOLS)
       if(CMAKE_BUILD_TYPE STREQUAL "Profiling")
             find_package(gperftools MODULE COMPONENTS profiler)
 
@@ -295,9 +310,11 @@ if(NEML2_TESTS OR NEML2_RUNNER)
 
             # gperftools will be packaged as part of the NEML2 installation if it was downloaded by us (or if it is being built as a wheel).
             if(gperftools_CONTRIB OR NEML2_WHEEL)
-                  install_glob(${gperftools_profiler_LIBRARY} lib libneml2)
+                  install_glob(${gperftools_profiler_LIBRARY} ${INSTALL_LIBDIR} libneml2)
             endif()
-            install(FILES ${NEML2_SOURCE_DIR}/cmake/Modules/Findgperftools.cmake DESTINATION share/cmake/neml2/Modules COMPONENT libneml2)
+            if(NOT SKBUILD_STATE STREQUAL "editable")
+                  install(FILES ${NEML2_SOURCE_DIR}/cmake/Modules/Findgperftools.cmake DESTINATION share/cmake/neml2/Modules COMPONENT libneml2)
+            endif()
       endif()
 endif()
 
@@ -317,34 +334,6 @@ if(NEML2_TESTS)
 endif()
 
 # ----------------------------------------------------------------------------
-# Doxygen (and stylesheet)
-# ----------------------------------------------------------------------------
-if(NEML2_DOC AND NOT NEML2_PYBIND)
-      message(WARNING "Documentation requires Python bindings(NEML2_PYBIND=ON) , reverting NEML2_DOC to OFF")
-      set(NEML2_DOC OFF CACHE BOOL "Build NEML2 documentation(html)" FORCE)
-endif()
-
-if(NEML2_DOC)
-      find_package(Doxygen MODULE COMPONENTS dot)
-
-      if(NOT Doxygen_FOUND)
-            if(UNIX AND NOT APPLE)
-                  string(REPLACE "." "_" Doxygen_RELEASE ${Doxygen_VERSION})
-                  set(Doxygen_URL https://github.com/doxygen/doxygen/releases/download/Release_${Doxygen_RELEASE}/doxygen-${Doxygen_VERSION}.linux.bin.tar.gz)
-                  download_from_url(Doxygen ${Doxygen_URL} ${NEML2_CONTRIB_PREFIX})
-                  set(Doxygen_ROOT ${NEML2_CONTRIB_PREFIX}/Doxygen-src CACHE PATH "Doxygen install prefix")
-                  find_package(Doxygen MODULE REQUIRED COMPONENTS dot)
-            else()
-                  message(WARNING "Doxygen not found. Please install Doxygen manually or set NEML2_DOC to OFF.")
-                  set(NEML2_DOC OFF CACHE BOOL "Build NEML2 documentation(html)" FORCE)
-            endif()
-      endif()
-
-      download_from_git(doxygen-awesome-css https://github.com/jothepro/doxygen-awesome-css.git ${NEML2_CONTRIB_PREFIX} ${doxygen_awesome_css_VERSION})
-      set(doxygen-awesome-css_SOURCE_DIR ${NEML2_CONTRIB_PREFIX}/doxygen-awesome-css-src)
-endif()
-
-# ----------------------------------------------------------------------------
 # MPI
 # ----------------------------------------------------------------------------
 if(NEML2_WORK_DISPATCHER)
@@ -354,7 +343,7 @@ endif()
 # ----------------------------------------------------------------------------
 # argparse
 # ----------------------------------------------------------------------------
-if(NEML2_RUNNER)
+if(NEML2_TOOLS)
       find_package(argparse CONFIG HINTS ${NEML2_CONTRIB_PREFIX}/argparse)
 
       if(NOT argparse_FOUND)
@@ -378,24 +367,17 @@ if(NEML2_TESTS)
 endif()
 
 # ----------------------------------------------------------------------------
-# runner
+# tools
 # ----------------------------------------------------------------------------
-if(NEML2_RUNNER)
-      add_subdirectory(runner)
+if(NEML2_TOOLS)
+      add_subdirectory(src/tools)
 endif()
 
 # ----------------------------------------------------------------------------
 # Python bindings
 # ----------------------------------------------------------------------------
-if(NEML2_PYBIND)
+if(NEML2_WHEEL)
       add_subdirectory(python)
-endif()
-
-# ----------------------------------------------------------------------------
-# Documentation
-# ----------------------------------------------------------------------------
-if(NEML2_DOC)
-      add_subdirectory(doc)
 endif()
 
 # ----------------------------------------------------------------------------

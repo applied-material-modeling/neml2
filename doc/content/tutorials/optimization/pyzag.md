@@ -5,8 +5,8 @@
 The [previous tutorial](@ref tutorials-optimization-parameter-calibration) demonstrates the calibration of NEML2 model parameters using a simple gradient descent algorithm. While the algorithm and workflow are largely applicable for practical model calibration tasks, several challenges (discussed below) remain to be addressed.
 
 The NEML2 development team offers a companion Python package named [pyzag](https://github.com/applied-material-modeling/pyzag) to address these challenges. The challenges and their corresponding solutions are briefly discussed below. Two examples are available for interested users:
-- `python/examples/deterministic.ipynb`: Example calibration of a deterministic NEML2 material model against stress-strain curves using pyzag.
-- `python/examples/statistical.ipynb`: Example calibration of a stochastic NEML2 material model against stress-strain curves using pyzag.
+- @ref python-examples-deterministic
+- @ref python-examples-statistical
 
 ## Challenge 1: Obtaining parameter derivatives of recursive nonlinear functions
 

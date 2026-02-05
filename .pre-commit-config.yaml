@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: jupytext-sync
+        name: jupytext sync paired notebooks
+        language: system
+        files: ^python/examples/.*\.ipynb$
+        pass_filenames: true
+        entry: bash -c 'jupytext --sync "$@" && git add -u' --

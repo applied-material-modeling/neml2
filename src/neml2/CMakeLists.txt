@@ -19,7 +19,7 @@ function(neml2_add_submodule mname TYPE mdir)
 
   set_target_properties(${mname} PROPERTIES OUTPUT_NAME "neml2_${mname}$<IF:$<CONFIG:Release>,,_$<CONFIG>>")
 
-  if(NEML2_WHEEL)
+  if(NEML2_WHEEL AND NOT SKBUILD_STATE STREQUAL "editable")
     set_target_properties(${mname} PROPERTIES INSTALL_RPATH "${INSTALL_REL_PATH};${INSTALL_REL_PATH}/../../torch/lib")
   else()
     set_target_properties(${mname} PROPERTIES INSTALL_RPATH "${INSTALL_REL_PATH};${torch_LINK_DIR}")
@@ -31,11 +31,16 @@ function(neml2_add_submodule mname TYPE mdir)
   target_link_libraries(neml2 PUBLIC ${mname})
 
   install(TARGETS ${mname}
-    EXPORT neml2targets
-    LIBRARY COMPONENT libneml2
-    FILE_SET HEADERS COMPONENT libneml2
+    LIBRARY DESTINATION ${INSTALL_LIBDIR}
+    COMPONENT libneml2
   )
-
+  if(NOT SKBUILD_STATE STREQUAL "editable")
+    install(TARGETS ${mname}
+      EXPORT neml2targets
+      FILE_SET HEADERS DESTINATION include
+      COMPONENT libneml2
+    )
+  endif()
 endfunction()
 
 # ----------------------------------------------------------------------------
@@ -55,7 +60,7 @@ target_sources(neml2
   ${NEML2_BINARY_DIR}/include/neml2/config.h
 )
 set_target_properties(neml2 PROPERTIES OUTPUT_NAME "neml2$<IF:$<CONFIG:Release>,,_$<CONFIG>>")
-if(NEML2_WHEEL)
+if(NEML2_WHEEL AND NOT SKBUILD_STATE STREQUAL "editable")
   set_target_properties(neml2 PROPERTIES INSTALL_RPATH "${INSTALL_REL_PATH};${INSTALL_REL_PATH}/../../torch/lib")
 else()
   set_target_properties(neml2 PROPERTIES INSTALL_RPATH "${INSTALL_REL_PATH};${torch_LINK_DIR}")
@@ -164,7 +169,7 @@ if(Git_FOUND)
     OUTPUT_VARIABLE NEML2_VERSION
     OUTPUT_STRIP_TRAILING_WHITESPACE
   )
-  file(WRITE ${NEML2_BINARY_DIR}/version ${NEML2_VERSION})
+  file(WRITE ${NEML2_BINARY_DIR}/version "${NEML2_VERSION}\n")
 
   execute_process(
     COMMAND ${GIT_EXECUTABLE} rev-parse HEAD
@@ -172,7 +177,7 @@ if(Git_FOUND)
     OUTPUT_VARIABLE NEML2_HASH
     OUTPUT_STRIP_TRAILING_WHITESPACE
   )
-  file(WRITE ${NEML2_BINARY_DIR}/hash ${NEML2_HASH})
+  file(WRITE ${NEML2_BINARY_DIR}/hash "${NEML2_HASH}\n")
 
   install(FILES
     ${NEML2_BINARY_DIR}/version
@@ -186,11 +191,17 @@ endif()
 # Export targets
 # ----------------------------------------------------------------------------
 install(TARGETS neml2
-  EXPORT neml2targets
-  LIBRARY COMPONENT libneml2
-  FILE_SET HEADERS COMPONENT libneml2
+  LIBRARY DESTINATION ${INSTALL_LIBDIR}
+  COMPONENT libneml2
 )
-install(EXPORT neml2targets NAMESPACE neml2:: DESTINATION share/cmake/neml2 COMPONENT libneml2)
+if(NOT SKBUILD_STATE STREQUAL "editable")
+  install(TARGETS neml2
+    EXPORT neml2targets
+    FILE_SET HEADERS DESTINATION include
+    COMPONENT libneml2
+  )
+  install(EXPORT neml2targets NAMESPACE neml2:: DESTINATION share/cmake/neml2 COMPONENT libneml2)
+endif()
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(
@@ -205,10 +216,12 @@ write_basic_package_version_file(
   COMPATIBILITY SameMajorVersion
 )
 
-install(
-  FILES
-  ${NEML2_BINARY_DIR}/neml2Config.cmake
-  ${NEML2_BINARY_DIR}/neml2ConfigVersion.cmake
-  DESTINATION share/cmake/neml2
-  COMPONENT libneml2
-)
+if(NOT SKBUILD_STATE STREQUAL "editable")
+  install(
+    FILES
+    ${NEML2_BINARY_DIR}/neml2Config.cmake
+    ${NEML2_BINARY_DIR}/neml2ConfigVersion.cmake
+    DESTINATION share/cmake/neml2
+    COMPONENT libneml2
+  )
+endif()

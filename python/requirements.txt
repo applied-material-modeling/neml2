@@ -1,2 +1,0 @@
--r neml2/requirements.txt
--r tests/requirements.txt

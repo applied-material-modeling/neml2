@@ -16,9 +16,9 @@
 [Data]
   [crystal_geometry]
     type = CubicCrystal
-    lattice_parameter = "a"
-    slip_directions = "sdirs"
-    slip_planes = "splanes"
+    lattice_parameter = 'a'
+    slip_directions = 'sdirs'
+    slip_planes = 'splanes'
   []
 []
 
@@ -83,12 +83,18 @@
     type = WR2ImplicitExponentialTimeIntegration
     variable = 'state/orientation'
   []
-
   [implicit_rate]
     type = ComposedModel
     models = "euler_rodrigues elasticity orientation_rate resolved_shear
               elastic_stretch plastic_deformation_rate plastic_spin
               sum_slip_rates slip_rule slip_strength voce_hardening
               integrate_slip_hardening integrate_elastic_strain integrate_orientation"
+  []
+[]
+
+[EquationSystems]
+  [eq_sys]
+    type = NonlinearSystem
+    model = 'implicit_rate'
   []
 []

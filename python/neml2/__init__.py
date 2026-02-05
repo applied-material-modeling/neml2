@@ -24,6 +24,21 @@
 
 import torch
 import typing
+from pathlib import Path
+
+# Determine version
+version_file = Path(__file__).parent / "version"
+if version_file.exists():
+    __version__ = version_file.read_text().strip()
+else:
+    __version__ = "unknown"
+
+# Determine hash
+hash_file = Path(__file__).parent / "hash"
+if hash_file.exists():
+    __hash__ = hash_file.read_text().strip()
+else:
+    __hash__ = "unknown"
 
 Number = typing.Union[int, float, bool]
 
