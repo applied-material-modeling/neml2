@@ -24,47 +24,40 @@
 
 #pragma once
 
-#include "neml2/drivers/Driver.h"
-
-namespace jit
-{
-template <typename T>
-struct slot_list_impl;
-namespace detail
-{
-struct BufferPolicy;
-template <typename P>
-struct NamedPolicy;
-} // namespace detail
-using named_buffer_list = slot_list_impl<detail::NamedPolicy<detail::BufferPolicy>>;
-} // namespace jit
+#include "neml2/user_tensors/UserTensorBase.h"
+#include "neml2/tensors/Scalar.h"
 
 namespace neml2
 {
-class TransientDriver;
-
-class VTestVerification : public Driver
+/**
+ * @brief Create a Gaussian tensor evaluated at provided points.
+ *
+ * @tparam T The concrete tensor derived from TensorBase
+ */
+template <typename T>
+class GaussianTensorTmpl : public UserTensorBase<T>
 {
 public:
   static OptionSet expected_options();
 
-  VTestVerification(const OptionSet & options);
+  GaussianTensorTmpl(const OptionSet & options);
 
-  void diagnose() const override;
-
-  bool run() override;
+protected:
+  T make() const override;
 
 private:
-  /// The driver that will run the NEML2 model
-  const std::shared_ptr<TransientDriver> _driver;
+  /// The coordinates to evaluate the Gaussian at
+  const TensorName<T> _points;
 
-  /// The variables with the correct values (from the vtest file)
-  std::map<std::string, Tensor> _ref;
+  /// The Gaussian width
+  const TensorName<Scalar> _width;
 
-  double _rtol;
-  double _atol;
+  /// The Gaussian height
+  const TensorName<Scalar> _height;
 
-  /// Time steps to verify
-  std::vector<size_t> _time_steps;
+  /// The Gaussian center
+  const TensorName<Scalar> _center;
+
+  // Note: No linspace parameters are required; points are provided directly.
 };
 } // namespace neml2

@@ -22,49 +22,29 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
+#include <catch2/catch_test_macros.hpp>
 
-#include "neml2/drivers/Driver.h"
+#include "neml2/neml2.h"
+#include "neml2/base/NEML2Object.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/indexing.h"
 
-namespace jit
+using namespace neml2;
+
+TEST_CASE("CenterTensor", "[user_tensors]")
 {
-template <typename T>
-struct slot_list_impl;
-namespace detail
-{
-struct BufferPolicy;
-template <typename P>
-struct NamedPolicy;
-} // namespace detail
-using named_buffer_list = slot_list_impl<detail::NamedPolicy<detail::BufferPolicy>>;
-} // namespace jit
+  auto factory = load_input("user_tensors/test_CenterTensor.i");
 
-namespace neml2
-{
-class TransientDriver;
+  SECTION("load correctly")
+  {
+    const auto points = factory->get_object<Scalar>("Tensors", "points");
+    const auto centers = factory->get_object<Scalar>("Tensors", "centers");
 
-class VTestVerification : public Driver
-{
-public:
-  static OptionSet expected_options();
+    const auto n = points->intmd_size(0);
+    const auto left = points->intmd_slice(0, indexing::Slice(0, n - 1));
+    const auto right = points->intmd_slice(0, indexing::Slice(1, n));
+    const auto expected = 0.5 * (left + right);
 
-  VTestVerification(const OptionSet & options);
-
-  void diagnose() const override;
-
-  bool run() override;
-
-private:
-  /// The driver that will run the NEML2 model
-  const std::shared_ptr<TransientDriver> _driver;
-
-  /// The variables with the correct values (from the vtest file)
-  std::map<std::string, Tensor> _ref;
-
-  double _rtol;
-  double _atol;
-
-  /// Time steps to verify
-  std::vector<size_t> _time_steps;
-};
-} // namespace neml2
+    REQUIRE(at::allclose(*centers, expected));
+  }
+}

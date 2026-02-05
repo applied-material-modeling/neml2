@@ -24,47 +24,30 @@
 
 #pragma once
 
-#include "neml2/drivers/Driver.h"
-
-namespace jit
-{
-template <typename T>
-struct slot_list_impl;
-namespace detail
-{
-struct BufferPolicy;
-template <typename P>
-struct NamedPolicy;
-} // namespace detail
-using named_buffer_list = slot_list_impl<detail::NamedPolicy<detail::BufferPolicy>>;
-} // namespace jit
+#include "neml2/models/Model.h"
 
 namespace neml2
 {
-class TransientDriver;
-
-class VTestVerification : public Driver
+/**
+ * @brief Linear reaction rate: R = -lambda * u.
+ */
+class LinearReaction : public Model
 {
 public:
   static OptionSet expected_options();
 
-  VTestVerification(const OptionSet & options);
+  LinearReaction(const OptionSet & options);
 
-  void diagnose() const override;
+protected:
+  void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  bool run() override;
+  /// Reaction parameter lambda
+  const Scalar & _lambda;
 
-private:
-  /// The driver that will run the NEML2 model
-  const std::shared_ptr<TransientDriver> _driver;
+  /// Field values
+  const Variable<Scalar> & _u;
 
-  /// The variables with the correct values (from the vtest file)
-  std::map<std::string, Tensor> _ref;
-
-  double _rtol;
-  double _atol;
-
-  /// Time steps to verify
-  std::vector<size_t> _time_steps;
+  /// Reaction rate
+  Variable<Scalar> & _R;
 };
 } // namespace neml2

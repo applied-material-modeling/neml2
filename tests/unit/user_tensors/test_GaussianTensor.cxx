@@ -22,49 +22,34 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
+#include <catch2/catch_test_macros.hpp>
 
-#include "neml2/drivers/Driver.h"
+#include "neml2/neml2.h"
+#include "neml2/base/NEML2Object.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/functions/exp.h"
 
-namespace jit
+using namespace neml2;
+
+TEST_CASE("GaussianTensor", "[user_tensors]")
 {
-template <typename T>
-struct slot_list_impl;
-namespace detail
-{
-struct BufferPolicy;
-template <typename P>
-struct NamedPolicy;
-} // namespace detail
-using named_buffer_list = slot_list_impl<detail::NamedPolicy<detail::BufferPolicy>>;
-} // namespace jit
+  auto factory = load_input("user_tensors/test_GaussianTensor.i");
 
-namespace neml2
-{
-class TransientDriver;
+  SECTION("load correctly")
+  {
+    const auto g = factory->get_object<Scalar>("Tensors", "g");
+    REQUIRE(g->dynamic_sizes() == TensorShape{3});
+    REQUIRE(g->intmd_sizes() == TensorShape{});
+    REQUIRE(g->base_sizes() == TensorShape{});
 
-class VTestVerification : public Driver
-{
-public:
-  static OptionSet expected_options();
+    const auto points = factory->get_object<Scalar>("Tensors", "points");
+    const auto width = factory->get_object<Scalar>("Tensors", "width");
+    const auto height = factory->get_object<Scalar>("Tensors", "height");
+    const auto center = factory->get_object<Scalar>("Tensors", "center");
 
-  VTestVerification(const OptionSet & options);
+    const auto z = (*points - *center) / *width;
+    const auto expected = *height * neml2::exp(-0.5 * z * z);
 
-  void diagnose() const override;
-
-  bool run() override;
-
-private:
-  /// The driver that will run the NEML2 model
-  const std::shared_ptr<TransientDriver> _driver;
-
-  /// The variables with the correct values (from the vtest file)
-  std::map<std::string, Tensor> _ref;
-
-  double _rtol;
-  double _atol;
-
-  /// Time steps to verify
-  std::vector<size_t> _time_steps;
-};
-} // namespace neml2
+    REQUIRE(at::allclose(*g, expected));
+  }
+}

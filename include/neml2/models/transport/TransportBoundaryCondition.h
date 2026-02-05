@@ -24,47 +24,40 @@
 
 #pragma once
 
-#include "neml2/drivers/Driver.h"
-
-namespace jit
-{
-template <typename T>
-struct slot_list_impl;
-namespace detail
-{
-struct BufferPolicy;
-template <typename P>
-struct NamedPolicy;
-} // namespace detail
-using named_buffer_list = slot_list_impl<detail::NamedPolicy<detail::BufferPolicy>>;
-} // namespace jit
+#include "neml2/base/EnumSelection.h"
+#include "neml2/models/Model.h"
 
 namespace neml2
 {
-class TransientDriver;
-
-class VTestVerification : public Driver
+/**
+ * @brief Append a boundary condition value to the intermediate dimension.
+ */
+class TransportBoundaryCondition : public Model
 {
 public:
+  enum class Side
+  {
+    LEFT = 0,
+    RIGHT = 1
+  };
+
   static OptionSet expected_options();
 
-  VTestVerification(const OptionSet & options);
+  TransportBoundaryCondition(const OptionSet & options);
 
-  void diagnose() const override;
+protected:
+  void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  bool run() override;
+  /// Input tensor (e.g., cell values or cell-edge fluxes)
+  const Variable<Scalar> & _input;
 
-private:
-  /// The driver that will run the NEML2 model
-  const std::shared_ptr<TransientDriver> _driver;
+  /// Boundary value to append
+  const Scalar & _bc_value;
 
-  /// The variables with the correct values (from the vtest file)
-  std::map<std::string, Tensor> _ref;
+  /// Which side to append to
+  Side _side;
 
-  double _rtol;
-  double _atol;
-
-  /// Time steps to verify
-  std::vector<size_t> _time_steps;
+  /// Output tensor with boundary condition appended
+  Variable<Scalar> & _output;
 };
 } // namespace neml2

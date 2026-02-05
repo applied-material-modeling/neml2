@@ -22,6 +22,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <algorithm>
+
 #include <torch/script.h>
 
 #include "VTestVerification.h"
@@ -35,7 +37,8 @@ namespace neml2
 static std::string diff(const torch::jit::named_buffer_list & res,
                         const std::map<std::string, Tensor> & ref_map,
                         double rtol,
-                        double atol);
+                        double atol,
+                        const std::vector<size_t> & indices);
 
 register_NEML2_object(VTestVerification);
 
@@ -78,6 +81,10 @@ VTestVerification::expected_options()
 
   options.set<double>("rtol") = 1e-5;
   options.set<double>("atol") = 1e-8;
+
+  options.set<std::vector<size_t>>("time_steps") = {};
+  options.set("time_steps").doc() =
+      "Time steps to verify. If empty, all time steps will be verified.";
   return options;
 }
 
@@ -85,7 +92,8 @@ VTestVerification::VTestVerification(const OptionSet & options)
   : Driver(options),
     _driver(get_driver<TransientDriver>("driver")),
     _rtol(options.get<double>("rtol")),
-    _atol(options.get<double>("atol"))
+    _atol(options.get<double>("atol")),
+    _time_steps(options.get<std::vector<size_t>>("time_steps"))
 {
 #define SETUP_REF_(T) setup_ref_values<T>(options, _ref, #T "_names", #T "_values")
   FOR_ALL_TENSORBASE(SETUP_REF_);
@@ -108,7 +116,7 @@ VTestVerification::run()
   _driver->run();
 
   auto res = torch::jit::load(_driver->save_as_path());
-  auto err_msg = diff(res.named_buffers(), _ref, _rtol, _atol);
+  auto err_msg = diff(res.named_buffers(), _ref, _rtol, _atol, _time_steps);
 
   neml_assert(err_msg.empty(), err_msg);
 
@@ -119,7 +127,8 @@ std::string
 diff(const torch::jit::named_buffer_list & res,
      const std::map<std::string, Tensor> & ref_map,
      double rtol,
-     double atol)
+     double atol,
+     const std::vector<size_t> & indices)
 {
   std::map<std::string, ATensor> res_map;
   for (auto item : res)
@@ -133,9 +142,16 @@ diff(const torch::jit::named_buffer_list & res,
     if (tokens.size() < 2)
       err_msg << "Invalid reference variable name " << name << ".\n";
     const auto nstep = val.size(0);
+    Size j = 0;
     for (Size i = 0; i < nstep; i++)
     {
-      const auto refi = val.index({i}).squeeze();
+      if (!indices.empty() &&
+          !std::binary_search(indices.begin(), indices.end(), static_cast<size_t>(i)))
+        continue;
+
+      const auto refi = indices.size() == 1 ? at::Tensor(val) : val.index({j}).squeeze();
+      j++;
+
       auto restokens = tokens;
       restokens.insert(restokens.begin() + 1, std::to_string(i));
       const auto resname = utils::join(restokens, ".");

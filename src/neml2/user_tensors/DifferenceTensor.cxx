@@ -22,49 +22,48 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-
-#include "neml2/drivers/Driver.h"
-
-namespace jit
-{
-template <typename T>
-struct slot_list_impl;
-namespace detail
-{
-struct BufferPolicy;
-template <typename P>
-struct NamedPolicy;
-} // namespace detail
-using named_buffer_list = slot_list_impl<detail::NamedPolicy<detail::BufferPolicy>>;
-} // namespace jit
+#include "neml2/user_tensors/DifferenceTensor.h"
+#include "neml2/tensors/tensors.h"
+#include "neml2/tensors/functions/diff.h"
 
 namespace neml2
 {
-class TransientDriver;
-
-class VTestVerification : public Driver
+template <typename T>
+OptionSet
+DifferenceTensorTmpl<T>::expected_options()
 {
-public:
-  static OptionSet expected_options();
+  OptionSet options = UserTensorBase<T>::expected_options();
+  options.doc() = "Compute finite differences along an intermediate dimension.";
 
-  VTestVerification(const OptionSet & options);
+  options.set<TensorName<T>>("points");
+  options.set("points").doc() = "The input tensor to be differenced";
 
-  void diagnose() const override;
+  options.set<Size>("dim") = 0;
+  options.set("dim").doc() = "Intermediate dimension to take the finite difference";
 
-  bool run() override;
+  return options;
+}
 
-private:
-  /// The driver that will run the NEML2 model
-  const std::shared_ptr<TransientDriver> _driver;
+template <typename T>
+DifferenceTensorTmpl<T>::DifferenceTensorTmpl(const OptionSet & options)
+  : UserTensorBase<T>(options),
+    _points(options.get<TensorName<T>>("points")),
+    _dim(options.get<Size>("dim"))
+{
+}
 
-  /// The variables with the correct values (from the vtest file)
-  std::map<std::string, Tensor> _ref;
+template <typename T>
+T
+DifferenceTensorTmpl<T>::make() const
+{
+  auto * f = this->factory();
+  neml_assert(f, "Failed assertion: factory != nullptr");
 
-  double _rtol;
-  double _atol;
+  return intmd_diff(_points.resolve(f), 1, _dim);
+}
 
-  /// Time steps to verify
-  std::vector<size_t> _time_steps;
-};
+#define DIFFERENCETENSOR_REGISTER(T)                                                               \
+  using Difference##T = DifferenceTensorTmpl<T>;                                                   \
+  register_NEML2_object_alias(Difference##T, "Difference" #T)
+FOR_ALL_TENSORBASE(DIFFERENCETENSOR_REGISTER);
 } // namespace neml2

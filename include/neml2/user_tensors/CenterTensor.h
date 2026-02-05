@@ -24,47 +24,31 @@
 
 #pragma once
 
-#include "neml2/drivers/Driver.h"
-
-namespace jit
-{
-template <typename T>
-struct slot_list_impl;
-namespace detail
-{
-struct BufferPolicy;
-template <typename P>
-struct NamedPolicy;
-} // namespace detail
-using named_buffer_list = slot_list_impl<detail::NamedPolicy<detail::BufferPolicy>>;
-} // namespace jit
+#include "neml2/user_tensors/UserTensorBase.h"
 
 namespace neml2
 {
-class TransientDriver;
-
-class VTestVerification : public Driver
+/**
+ * @brief Compute interval centers along an intermediate dimension.
+ *
+ * @tparam T The concrete tensor derived from TensorBase
+ */
+template <typename T>
+class CenterTensorTmpl : public UserTensorBase<T>
 {
 public:
   static OptionSet expected_options();
 
-  VTestVerification(const OptionSet & options);
+  CenterTensorTmpl(const OptionSet & options);
 
-  void diagnose() const override;
-
-  bool run() override;
+protected:
+  T make() const override;
 
 private:
-  /// The driver that will run the NEML2 model
-  const std::shared_ptr<TransientDriver> _driver;
+  /// The input tensor to be centered
+  const TensorName<T> _points;
 
-  /// The variables with the correct values (from the vtest file)
-  std::map<std::string, Tensor> _ref;
-
-  double _rtol;
-  double _atol;
-
-  /// Time steps to verify
-  std::vector<size_t> _time_steps;
+  /// Intermediate dimension to compute centers
+  const Size _dim;
 };
 } // namespace neml2
