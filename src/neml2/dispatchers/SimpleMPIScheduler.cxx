@@ -25,6 +25,7 @@
 #include "neml2/dispatchers/SimpleMPIScheduler.h"
 #include "neml2/misc/assertions.h"
 
+#include <set>
 #include <string>
 #include <functional>
 

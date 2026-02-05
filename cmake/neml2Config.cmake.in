@@ -54,3 +54,8 @@ if(@NEML2_CSV@)
   endif()
   find_dependency(csvparser MODULE REQUIRED)
 endif()
+
+# MPI
+if(@NEML2_WORK_DISPATCHER@)
+  find_package(MPI COMPONENTS CXX REQUIRED)
+endif()
