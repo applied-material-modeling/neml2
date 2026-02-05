@@ -69,7 +69,7 @@ TEST_CASE("transport")
     }
 
     // Catch2 will split dynamic sections into different test cases, so we need to set the current
-    // path back to where we were. Otherwise the next test case will start from the
+    // path back to where we were. Otherwise the next test case will start from the wrong directory
     fs::current_path(pwd);
   }
 }

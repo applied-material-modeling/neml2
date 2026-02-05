@@ -73,7 +73,7 @@ AdvectiveFlux::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
   const auto v_plus = 0.5 * (v_vec + v_abs);
   const auto v_minus = 0.5 * (v_vec - v_abs);
 
-  if (out || dout_din)
+  if (out)
     _J = v_plus * u_left + v_minus * u_right;
 
   if (dout_din)

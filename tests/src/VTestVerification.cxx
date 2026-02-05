@@ -84,7 +84,8 @@ VTestVerification::expected_options()
 
   options.set<std::vector<size_t>>("time_steps") = {};
   options.set("time_steps").doc() =
-      "Time steps to verify. If empty, all time steps will be verified.";
+      "Time steps provided in the provided reference solutions to verify. If empty, all time steps "
+      "must be provided and will be verified.";
   return options;
 }
 

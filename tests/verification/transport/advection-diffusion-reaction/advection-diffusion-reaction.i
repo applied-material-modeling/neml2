@@ -146,7 +146,7 @@ final_center = 0.75
   []
   [rate_of_change]
     type = CellRateOfChange
-    flux = 'state/J_with_bc_left_with_bc_right '
+    flux = 'state/J_with_bc_left_with_bc_right'
     cell_size = 'dx'
     reaction = 'state/R'
     rate = 'state/concentration_rate'

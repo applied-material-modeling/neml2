@@ -35,7 +35,7 @@ namespace neml2
 class TransportBoundaryCondition : public Model
 {
 public:
-  enum class Side
+  enum class Side : std::uint8_t
   {
     LEFT = 0,
     RIGHT = 1
