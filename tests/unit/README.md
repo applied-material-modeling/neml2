@@ -1,7 +1,7 @@
 # Guidelines on writing unit tests
 
 In general, Catch2 poses almost zero restriction on how the test cases should be
-structured and organized. However, we should try to restrain ourselves from
+structured and organized. However, we should try to refrain ourselves from
 writing disorganized unit tests. I am coming up with the following rules as I
 write the unit tests.
 
