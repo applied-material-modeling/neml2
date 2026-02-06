@@ -1,23 +1,23 @@
 D = 0.01
-v = 0.5
-l = 0.1
+v = 0.0
+l = 0.0
 
 c0 = 1.0
 w = 0.05
-center = 0.25
+center = 0.625
 
 t = 1.0
 
 # D_eff = D + |v| * \delta x / 2
 
 # Final height = c0 * w / sqrt(2 * D_eff * t + w^2) * exp(-l*t)
-h_final = 0.2826237
+h_final = 0.3333333333
 
 # Final width = sqrt(2 * D_eff * t + w^2)
-final_width = 0.1600781
+final_width = 0.15
 
 # Final center = center + v * t
-final_center = 0.75
+final_center = 0.625
 
 [Tensors]
   [edges]
@@ -73,8 +73,8 @@ final_center = 0.75
     driver = 'driver'
     Scalar_names = 'output.state/concentration'
     Scalar_values = 'result'
-    atol = 1e-2
-    rtol = 1e-2 # The time integration also adds diffusion...
+    atol = 1e-3
+    rtol = 1e-4
     time_steps = '499'
   []
 []

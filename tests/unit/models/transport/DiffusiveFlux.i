@@ -27,6 +27,12 @@
     batch_shape = '(2)'
     intermediate_dimension = 1
   []
+  [centers]
+    type = Scalar
+    values = '0 1 2'
+    batch_shape = '(3)'
+    intermediate_dimension = 1
+  []
   [J]
     type = Scalar
     values = '-3 -10'
@@ -40,6 +46,7 @@
     type = DiffusiveFlux
     u = 'state/u'
     D_edge = 'state/D_edge'
+    cell_centers = 'centers'
     flux = 'state/J'
   []
 []

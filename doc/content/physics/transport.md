@@ -85,7 +85,7 @@ with
 The transport module introduces several small models intended to be composed together:
 
 - **LinearlyInterpolateToCellEdges**: Interpolates cell-centered values onto cell edges on nonuniform grids.
-- **DiffusiveFlux**: Computes \f$J_{diffusion}\f$ at cell edges from \f$u\f$ and edge diffusivity \f$D_{edge}\f$.
+- **DiffusiveFlux**: Computes \f$J_{diffusion}\f$ at cell edges from \f$u\f$, edge diffusivity \f$D_{edge}\f$, and cell center positions.
 - **AdvectiveFlux**: Computes \f$J_{advection}\f$ at cell edges with first-order upwinding from \f$u\f$ and edge velocity \f$v_{edge}\f$.
 - **LinearReaction**: Computes \f$R = -\lambda u\f$.
 - **TransportBoundaryCondition**: Appends a boundary value to the left or right side of an intermediate dimension (useful for flux boundary conditions).
@@ -148,6 +148,7 @@ Below is a compact example that assembles a full transport system, applies bound
     type = DiffusiveFlux
     u = 'state/concentration'
     D_edge = 'state/D_edge'
+    cell_centers = 'centers'
   []
   [advective_flux]
     type = AdvectiveFlux

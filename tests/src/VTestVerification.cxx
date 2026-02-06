@@ -38,7 +38,7 @@ static std::string diff(const torch::jit::named_buffer_list & res,
                         const std::map<std::string, Tensor> & ref_map,
                         double rtol,
                         double atol,
-                        const std::vector<size_t> & indices);
+                        std::vector<size_t> & indices);
 
 register_NEML2_object(VTestVerification);
 
@@ -129,8 +129,11 @@ diff(const torch::jit::named_buffer_list & res,
      const std::map<std::string, Tensor> & ref_map,
      double rtol,
      double atol,
-     const std::vector<size_t> & indices)
+     std::vector<size_t> & indices)
 {
+  // Sort indices for future use
+  std::sort(indices.begin(), indices.end());
+
   std::map<std::string, ATensor> res_map;
   for (auto item : res)
     res_map.emplace(item.name, item.value);
@@ -142,7 +145,34 @@ diff(const torch::jit::named_buffer_list & res,
     const auto tokens = utils::split(name, ".");
     if (tokens.size() < 2)
       err_msg << "Invalid reference variable name " << name << ".\n";
-    const auto nstep = val.size(0);
+    Size nstep = 0;
+    bool found = false;
+    for (const auto & [resname, resval] : res_map)
+    {
+      const auto restokens = utils::split(resname, ".");
+      if (restokens.size() != tokens.size() + 1)
+        continue;
+      if (restokens.front() != tokens.front())
+        continue;
+      if (!std::equal(tokens.begin() + 1, tokens.end(), restokens.begin() + 2))
+        continue;
+
+      try
+      {
+        const auto step = static_cast<Size>(std::stoull(restokens[1]));
+        nstep = std::max(nstep, step + 1);
+        found = true;
+      }
+      catch (const std::exception &)
+      {
+        continue;
+      }
+    }
+    if (!found)
+    {
+      err_msg << "Result is missing variable " << name << ".\n";
+      continue;
+    }
     Size j = 0;
     for (Size i = 0; i < nstep; i++)
     {

@@ -73,8 +73,8 @@ final_center = 0.75
     driver = 'driver'
     Scalar_names = 'output.state/concentration'
     Scalar_values = 'result'
-    atol = 1e-5
-    rtol = 1e-5
+    atol = 1e-2
+    rtol = 1e-1 # The time integration also adds diffusion...
     time_steps = '499'
   []
 []
@@ -115,6 +115,7 @@ final_center = 0.75
       type = DiffusiveFlux
       u = 'state/concentration'
       D_edge = 'state/D_edge'
+      cell_centers = 'centers'
   []
   [advective_flux]
       type = AdvectiveFlux

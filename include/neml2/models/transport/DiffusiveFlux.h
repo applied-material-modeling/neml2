@@ -47,6 +47,9 @@ protected:
   /// Cell-edge diffusivity values
   const Variable<Scalar> & _D_edge;
 
+  /// Cell center positions
+  const Scalar & _cell_centers;
+
   /// Cell-edge diffusive fluxes
   Variable<Scalar> & _J;
 };

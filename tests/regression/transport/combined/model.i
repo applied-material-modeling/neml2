@@ -82,6 +82,7 @@
       type = DiffusiveFlux
       u = 'state/concentration'
       D_edge = 'state/D_edge'
+      cell_centers = 'centers'
   []
   [advective_flux]
       type = AdvectiveFlux

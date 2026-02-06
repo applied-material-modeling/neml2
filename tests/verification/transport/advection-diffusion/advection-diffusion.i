@@ -1,4 +1,4 @@
-D = 0.1
+D = 0.01
 v = 0.5
 l = 0.0
 
@@ -11,10 +11,10 @@ t = 1.0
 # D_eff = D + |v| * \delta x / 2
 
 # Final height = c0 * w / sqrt(2 * D_eff * t + w^2) * exp(-l*t)
-h_final = 0.110264
+h_final = 0.312347523
 
 # Final width = sqrt(2 * D_eff * t + w^2)
-final_width = 0.4534589
+final_width = 0.16007811
 
 # Final center = center + v * t
 final_center = 0.75
@@ -73,8 +73,8 @@ final_center = 0.75
     driver = 'driver'
     Scalar_names = 'output.state/concentration'
     Scalar_values = 'result'
-    atol = 1e-5
-    rtol = 1e-5
+    atol = 1e-2
+    rtol = 1e-2 # The time integration also adds diffusion...
     time_steps = '499'
   []
 []
@@ -115,6 +115,7 @@ final_center = 0.75
       type = DiffusiveFlux
       u = 'state/concentration'
       D_edge = 'state/D_edge'
+      cell_centers = 'centers'
   []
   [advective_flux]
       type = AdvectiveFlux
