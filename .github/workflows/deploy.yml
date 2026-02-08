@@ -1,0 +1,56 @@
+name: Deploy documentation
+
+on:
+  workflow_run:
+    workflows: ["Documentation"]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: documentation
+          path: site/html
+      - uses: actions/download-artifact@v4
+        with:
+          name: coverage
+          path: site/html/coverage
+      - uses: actions/download-artifact@v4
+        if: github.event.workflow_run.event == 'pull_request'
+        with:
+          name: clang-tidy
+          path: site/html/clang-tidy
+
+      # PR preview
+      - name: Deploy preview to GitHub Pages
+        if: github.event.workflow_run.event == 'pull_request'
+        uses: JamesIves/github-pages-deploy-action@v4.4.1
+        with:
+          branch: gh-pages
+          folder: site/html
+          target-folder: pr-preview/${{ github.event.workflow_run.pull_requests[0].number }}
+      - name: Update comment with preview link
+        if: github.event.workflow_run.event == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: doc-preview-link
+          message: |
+            Documentation preview: <https://applied-material-modeling.github.io/neml2/pr-preview/${{ github.event.workflow_run.pull_requests[0].number }}>
+            Code coverage: <https://applied-material-modeling.github.io/neml2/pr-preview/${{ github.event.workflow_run.pull_requests[0].number }}/coverage>
+            Static analysis: <https://applied-material-modeling.github.io/neml2/pr-preview/${{ github.event.workflow_run.pull_requests[0].number }}/clang-tidy>
+
+      # Deploy to GitHub Pages
+      - name: Deploy to GitHub Pages
+        if: github.event.workflow_run.event == 'push'
+        uses: JamesIves/github-pages-deploy-action@v4.4.1
+        with:
+          branch: gh-pages
+          folder: html
+          clean-exclude: pr-preview
+          single-commit: true

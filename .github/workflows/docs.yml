@@ -3,7 +3,7 @@ name: Documentation
 on:
   push:
     branches: [main]
-  pull_request_target:
+  pull_request:
     branches: [main]
 
 # Newer commits should cancel old runs
@@ -13,58 +13,54 @@ concurrency:
 
 jobs:
   documentation:
-    permissions:
-      contents: read
-      pull-requests: write
     runs-on: ubuntu-latest
     steps:
       - uses: applied-material-modeling/neml2-ci@main
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.ref }}
           python-version: 3.9
           cmake-version: 3.26
           torch-version: 2.8.0
+          doxygen-version: 1.16.1
       - uses: actions/setup-node@v4
-      - name: Install Node.js dependencies
-        run: |
-          cd doc/js
-          npm install
-      - name: Configure
-        run: cmake --preset dev -GNinja -DNEML2_PCH=OFF -S .
-      - name: Build
-        run: cmake --build --preset dev-doc
+      - name: Install node.js dependencies
+        run: cd doc/js && npm install
+      - name: Install NEML2 Python package
+        run: pip install ".[dev]" -v
+      - name: Run examples
+        run: ./doc/scripts/examples.py -log-level trace --cmake-configure-args="-GNinja"
+      - name: Build documentation
+        run: ./doc/scripts/genhtml.py -log-level trace
 
       # Documentation error checking
       - name: Show build logs for C++ documentation
         run: |
           echo '### C++ documentation build log' >> $GITHUB_STEP_SUMMARY
-          cat build/dev/doc/doxygen.html.log >> $GITHUB_STEP_SUMMARY
+          cat build/doc/doxygen.html.log >> $GITHUB_STEP_SUMMARY
       - name: Show build logs for Python documentation
         run: |
           echo '### Python documentation build log' >> $GITHUB_STEP_SUMMARY
-          cat build/dev/doc/doxygen.python.log >> $GITHUB_STEP_SUMMARY
+          cat build/doc/doxygen.python.log >> $GITHUB_STEP_SUMMARY
       - name: Warn about syntax errors
         run: |
-          cat build/dev/doc/syntax_error.log >> $GITHUB_STEP_SUMMARY
+          cat build/doc/syntax_error.log >> $GITHUB_STEP_SUMMARY
       - name: Error if C++ warnings exist
-        run: "! grep -q 'warning:' build/dev/doc/doxygen.html.log"
+        run: "! grep -q 'warning:' build/doc/doxygen.html.log"
       - name: Error if Python warnings exist
-        run: "! grep -q 'warning:' build/dev/doc/doxygen.python.log"
+        run: "! grep -q 'warning:' build/doc/doxygen.python.log"
       - name: Error if syntax errors were detected
-        run: grep -q "No syntax error" build/dev/doc/syntax_error.log
+        run: grep -q "No syntax error" build/doc/syntax_error.log
 
       - name: Upload documentation
         uses: actions/upload-artifact@v4
         with:
           name: documentation
-          path: build/dev/doc/build/html
+          path: build/doc/build/html
 
   coverage:
     runs-on: ubuntu-latest
     steps:
       - uses: applied-material-modeling/neml2-ci@main
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.ref }}
           python-version: 3.9
           cmake-version: 3.26
           torch-version: 2.8.0
@@ -81,12 +77,11 @@ jobs:
           path: build/coverage/coverage
 
   clang-tidy:
-    if: github.event_name == 'pull_request_target'
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: applied-material-modeling/neml2-ci@main
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
           python-version: 3.9
           cmake-version: 3.26
           torch-version: 2.8.0
@@ -120,54 +115,3 @@ jobs:
         with:
           name: clang-tidy
           path: reports/html
-
-  deploy:
-    needs: [documentation, coverage, clang-tidy]
-    if: always()
-    permissions:
-      contents: write
-      pull-requests: write
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: documentation
-          path: site/html
-      - uses: actions/download-artifact@v4
-        with:
-          name: coverage
-          path: site/html/coverage
-      - uses: actions/download-artifact@v4
-        if: github.event_name == 'pull_request_target'
-        with:
-          name: clang-tidy
-          path: site/html/clang-tidy
-
-      # PR preview
-      - name: Deploy preview to GitHub Pages
-        if: github.event_name == 'pull_request_target'
-        uses: JamesIves/github-pages-deploy-action@v4.4.1
-        with:
-          branch: gh-pages
-          folder: site/html
-          target-folder: pr-preview/pr-${{ github.event.number }}
-      - name: Update comment with preview link
-        if: github.event_name == 'pull_request_target'
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-          header: preview-link
-          message: |
-            Documentation preview: <https://applied-material-modeling.github.io/neml2/pr-preview/pr-${{ github.event.number }}>
-            Code coverage: <https://applied-material-modeling.github.io/neml2/pr-preview/pr-${{ github.event.number }}/coverage>
-            Static analysis: <https://applied-material-modeling.github.io/neml2/pr-preview/pr-${{ github.event.number }}/clang-tidy>
-
-      # Deploy to GitHub Pages
-      - name: Deploy to GitHub Pages
-        if: github.event_name == 'push'
-        uses: JamesIves/github-pages-deploy-action@v4.4.1
-        with:
-          branch: gh-pages
-          folder: site/html
-          clean-exclude: pr-preview/
-          single-commit: true
