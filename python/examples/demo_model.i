@@ -215,3 +215,10 @@
               mixed mixed_old rename"
   []
 []
+
+[EquationSystems]
+  [eq_sys]
+    type = NonlinearSystem
+    model = 'implicit_rate'
+  []
+[]

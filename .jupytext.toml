@@ -1,0 +1,3 @@
+formats = "ipynb,myst"
+notebook_metadata_filter = "jupytext"
+cell_metadata_filter = "tags,raises-exception"

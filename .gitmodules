@@ -1,0 +1,5 @@
+[submodule "contrib/doxygen-awesome-css"]
+	path = contrib/doxygen-awesome-css
+	url = https://github.com/jothepro/doxygen-awesome-css.git
+  tag = v2.4.1
+  update = none

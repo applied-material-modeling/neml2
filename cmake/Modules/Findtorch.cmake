@@ -33,23 +33,36 @@ set(_torch_search_paths
   $ENV{TORCH_DIR}
 )
 
+# PyTorch that the current python executable sees.
+# This is the most reliable way to find the correct torch installation, especially
+# in virtual envs, PEP517 isolated environments, and environments with multiple
+# versions of torch installed.
+find_package(Python3 COMPONENTS Interpreter)
+if(Python3_FOUND AND torch_SEARCH_SITE_PACKAGES)
+  execute_process(
+    COMMAND ${Python3_EXECUTABLE} -m site --user-site
+    OUTPUT_VARIABLE Python3_USER_SITE
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+
+  if(EXISTS "${Python3_USER_SITE}")
+    list(APPEND _torch_search_paths ${Python3_USER_SITE}/torch)
+  endif()
+
+  if(EXISTS "${Python3_SITEARCH}")
+    list(APPEND _torch_search_paths ${Python3_SITEARCH}/torch)
+  endif()
+endif()
+
 if(NEML2_CONTRIB_PREFIX)
   list(APPEND _torch_search_paths ${NEML2_CONTRIB_PREFIX}/torch-src)
-endif()
-
-if(torch_SEARCH_SITE_PACKAGES AND Python3_USER_SITE)
-  list(APPEND _torch_search_paths ${Python3_USER_SITE}/torch)
-endif()
-
-if(torch_SEARCH_SITE_PACKAGES AND Python3_SITEARCH)
-  list(APPEND _torch_search_paths ${Python3_SITEARCH}/torch)
 endif()
 
 # -----------------------------------------------------------------------------
 # torch::core
 # -----------------------------------------------------------------------------
 if(NOT TARGET torch::core)
-  find_path(torch_INCLUDE_DIR torch PATH_SUFFIXES include HINTS ${_torch_search_paths})
+  find_path(torch_INCLUDE_DIR torch PATH_SUFFIXES include HINTS ${_torch_search_paths} NO_DEFAULT_PATH)
   find_path(torch_csrc_INCLUDE_DIR torch/torch.h PATHS ${torch_INCLUDE_DIR}/torch/csrc/api/include NO_DEFAULT_PATH)
   find_library(c10_LIBRARY NAMES c10 PATH_SUFFIXES lib HINTS ${_torch_search_paths})
   find_library(torch_LIBRARY NAMES torch PATH_SUFFIXES lib HINTS ${_torch_search_paths})

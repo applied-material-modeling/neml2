@@ -97,6 +97,17 @@
 
 <div class="cards">
   <div class="card">
+    <a href="tutorials-notebooks.html">
+    <div class="card_container">
+      <h2>Jupyter notebooks</h2>
+      <p>Additional learning resources in the form of Jupyter notebooks.</p>
+    </div>
+    </a>
+  </div>
+</div>
+
+<div class="cards">
+  <div class="card">
     <a href="https://mooseframework.inl.gov/getting_started/installation/install_neml2.html">
     <div class="card_container">
       <h2>MOOSE</h2>

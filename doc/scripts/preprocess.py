@@ -26,30 +26,24 @@
 
 import sys
 from pathlib import Path
+from loguru import logger
 
 import layout
 import listing
 
 from utils import *
 
-if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: preprocess.py DoxygenLayout.xml <content_dir>")
-        sys.exit(1)
 
-    doxygen_layout = Path(sys.argv[1])
-    if not doxygen_layout.exists():
-        print("Doxygen layout file not found.")
-        sys.exit(1)
-
+def preprocess(doxygen_layout: Path, mds: list[Path], content_dir: Path):
+    """
+    Preprocesses markdown files in the content directory using the Doxygen layout.
+    """
     navindex = layout.get_navindex(doxygen_layout)
 
-    content_dir = Path(sys.argv[2])
-    if not content_dir.exists():
-        print("Content directory not found.")
-        sys.exit(1)
-
-    for md in content_dir.rglob("*.md.in"):
+    # sort files so that the behavior is deterministic
+    mds.sort()
+    for md in mds:
+        logger.trace("preprocessing {}", md.relative_to(content_dir))
         new_lines = []
         with open(md, "r") as f:
             lines = f.readlines()
@@ -66,23 +60,32 @@ if __name__ == "__main__":
             for line in lines[1:]:
 
                 # Subsection list
-                if line.strip() == "@insert-subsection-list":
+                if line.strip() == "@insert-subsection-list" and ref is not None:
                     content = layout.get_subsection_list(ref, navindex)
 
                 # Page navigation
-                elif line.strip() == "@insert-page-navigation":
+                elif line.strip() == "@insert-page-navigation" and ref is not None:
                     content = layout.get_page_navigation(ref, navindex)
 
                 # List text
                 elif line.strip().startswith("@list:"):
                     tokens = line.strip().split(":")
                     if len(tokens) < 3:
-                        print(f"Invalid @list directive: {line.strip()}")
+                        logger.error("invalid @list directive: {}", line.strip())
                         sys.exit(1)
                     language = tokens[1]
                     textfile = tokens[2]
                     label = tokens[3] if len(tokens) > 3 else None
                     content = listing.list_text(textfile, language, label)
+
+                # List example output
+                elif line.strip().startswith("@list-output:"):
+                    tokens = line.strip().split(":")
+                    if len(tokens) != 2:
+                        logger.error("invalid @list-output directive: {}", line.strip())
+                        sys.exit(1)
+                    ex = tokens[1]
+                    content = listing.list_output(md.parent, ex)
 
                 # List HIT input file
                 elif line.strip().startswith("@list-input:"):

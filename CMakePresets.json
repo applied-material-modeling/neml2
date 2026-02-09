@@ -11,9 +11,8 @@
         "CMAKE_EXPORT_COMPILE_COMMANDS": "OFF",
         "NEML2_PCH": "ON",
         "NEML2_TESTS": "ON",
-        "NEML2_RUNNER": "ON",
-        "NEML2_PYBIND": "OFF",
-        "NEML2_DOC": "OFF",
+        "NEML2_TOOLS": "ON",
+        "NEML2_WHEEL": "OFF",
         "NEML2_WORK_DISPATCHER": "ON",
         "NEML2_JSON": "ON",
         "NEML2_CSV": "ON"
@@ -27,19 +26,17 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-        "NEML2_PCH": "OFF",
-        "NEML2_PYBIND": "ON"
+        "NEML2_WHEEL": "ON",
+        "NEML2_PCH": "OFF"
       }
     },
     {
       "name": "dev",
       "displayName": "Development",
-      "description": "C++ backend, Python binding, tests, and documentation",
+      "description": "C++ backend",
       "inherits": "default",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "NEML2_PYBIND": "ON",
-        "NEML2_DOC": "ON"
+        "CMAKE_BUILD_TYPE": "Debug"
       }
     },
     {
@@ -77,7 +74,7 @@
       "inherits": "default",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Coverage",
-        "NEML2_RUNNER": "OFF"
+        "NEML2_TOOLS": "OFF"
       }
     },
     {
@@ -92,34 +89,13 @@
   ],
   "buildPresets": [
     {
-      "name": "dev-cpp",
+      "name": "dev",
       "displayName": "C++ Backend",
       "description": "C++ backend with tests",
       "configurePreset": "dev",
       "targets": [
-        "unit_tests",
-        "regression_tests",
-        "verification_tests",
-        "dispatcher_tests",
-        "runner"
-      ]
-    },
-    {
-      "name": "dev-python",
-      "displayName": "Python Bindings",
-      "description": "Python bindings with tests",
-      "configurePreset": "dev",
-      "targets": [
-        "pyneml2"
-      ]
-    },
-    {
-      "name": "dev-doc",
-      "displayName": "Documentation",
-      "description": "HTML documentation",
-      "configurePreset": "dev",
-      "targets": [
-        "html"
+        "tests",
+        "tools"
       ]
     },
     {
@@ -128,11 +104,8 @@
       "description": "Runner compiled and linked against ThreadSanitizer",
       "configurePreset": "tsan",
       "targets": [
-        "unit_tests",
-        "regression_tests",
-        "verification_tests",
-        "dispatcher_tests",
-        "runner"
+        "tests",
+        "tools"
       ]
     },
     {
@@ -141,11 +114,8 @@
       "description": "Runner compiled and linked against AddressSanitizer",
       "configurePreset": "asan",
       "targets": [
-        "unit_tests",
-        "regression_tests",
-        "verification_tests",
-        "dispatcher_tests",
-        "runner"
+        "tests",
+        "tools"
       ]
     },
     {
@@ -163,7 +133,7 @@
       "description": "Runner for profiling",
       "configurePreset": "profiling",
       "targets": [
-        "runner"
+        "tools"
       ]
     },
     {
@@ -172,11 +142,8 @@
       "description": "C++ backend and the runner executable for release",
       "configurePreset": "release",
       "targets": [
-        "unit_tests",
-        "regression_tests",
-        "verification_tests",
-        "dispatcher_tests",
-        "runner"
+        "tests",
+        "tools"
       ]
     }
   ],

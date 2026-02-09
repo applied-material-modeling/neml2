@@ -1,12 +1,36 @@
 [build-system]
-requires = [
-  "setuptools>=42",
-  "cmake>=3.26",
-  "ninja",
-  "pybind11-stubgen",
-  "packaging",
+requires = ["scikit-build-core"]
+build-backend = "scikit_build_core.build"
+
+[tool.scikit-build]
+minimum-version = "0.10"
+cmake.version = ">=3.26.1"
+cmake.build-type = "Release"
+ninja.version = ">=1.11"
+ninja.make-fallback = false
+sdist.exclude = [
+  ".github",
+  ".clang-format",
+  ".clang-tidy",
+  ".codechecker",
+  ".gitattributes",
+  ".gitignore",
+  ".gitmodules",
+  ".jupytext.toml",
+  ".pre-commit-config.yaml",
+  "scripts",
 ]
-build-backend = "setuptools.build_meta"
+build-dir = "build/{wheel_tag}"
+build.targets = ["pyneml2", "tools"]
+wheel.install-dir = "neml2"
+
+[tool.scikit-build.cmake.define]
+NEML2_WHEEL = "ON"
+NEML2_TESTS = "OFF"
+NEML2_TOOLS = "ON"
+NEML2_WORK_DISPATCHER = "ON"
+NEML2_JSON = "ON"
+NEML2_CSV = "ON"
 
 [project]
 name = "neml2"
@@ -18,7 +42,42 @@ authors = [
 description = "GPU-enabled vectorized material modeling library"
 readme = "README.md"
 requires-python = ">=3.9"
-dependencies = ["torch"]
+dependencies = ["torch", "pyzag==1.1.1"]
+
+[project.optional-dependencies]
+dev = [
+  # testing
+  "pytest",
+  "pytest-xdist",
+  "nbmake",
+  # doc
+  "pybind11-stubgen",
+  "PyYAML",
+  "matplotlib",
+  "numpy",
+  "scipy",
+  "pandas",
+  "loguru",
+  "pyro-ppl",
+  "tqdm",
+  "nbconvert",
+  "nbformat",
+  "livereload",
+  # git
+  "jupytext",
+  "pre-commit",
+]
+
+[project.scripts]
+neml2-diagnose = "neml2._cli:diagnose"
+neml2-inspect = "neml2._cli:inspect"
+neml2-run = "neml2._cli:run"
+neml2-syntax = "neml2._cli:syntax"
+neml2-time = "neml2._cli:time"
+neml2-stub = "neml2._cli:stub"
+
+[tool.uv]
+no-build-isolation-package = ["neml2"]
 
 [tool.black]
 line-length = 100

@@ -23,5 +23,8 @@ target_link_directories(hit PUBLIC @wasp_hit_LINK_DIR@)
 target_link_libraries(hit PUBLIC waspcore wasphit)
 set_target_properties(hit PROPERTIES INSTALL_RPATH "@INSTALL_REL_PATH@;@INSTALL_REL_PATH@/../../wasp/lib")
 
-install(TARGETS hit LIBRARY)
-install(TARGETS hit FILE_SET HEADERS)
+install(TARGETS hit
+  LIBRARY
+  FILE_SET HEADERS
+  COMPONENT libneml2
+)

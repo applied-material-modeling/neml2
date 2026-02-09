@@ -87,7 +87,7 @@ A collection of tests are available under `python/tests` to ensure the NEML2 Pyt
 }
 ```
 
-If the Python bindings are built (with `NEML2_PYBIND` set to `ON`) but are not installed to the site-packages directory (i.e. during development), pytest will not be able to import the %neml2 package unless the environment variable `PYTHONPATH` is modified according to the specified build directory. For Visual Studio Code users, create a `.env` file in the repository's root and include an entry `PYTHONPATH=build/dev/python` (assuming the build directory is `build/dev` which is the default from CMake presets), and the Python extension will be able to import the NEML2 Python package.
+If the Python bindings are built but are not installed to the site-packages directory (i.e. during development), pytest will not be able to import the %neml2 package unless the environment variable `PYTHONPATH` is modified according to the specified build directory. For Visual Studio Code users, create a `.env` file in the repository's root and include an entry `PYTHONPATH=build/dev/python` (assuming the build directory is `build/dev` which is the default from CMake presets), and the Python extension will be able to import the NEML2 Python package.
 
 ### pytest {#testing-pytest}
 

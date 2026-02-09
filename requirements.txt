@@ -1,3 +1,0 @@
-numpy<2
--r doc/requirements.txt
--r python/requirements.txt

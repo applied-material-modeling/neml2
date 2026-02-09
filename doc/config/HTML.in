@@ -5,25 +5,25 @@ GENERATE_HTML          = YES
 DISABLE_INDEX          = NO
 FULL_SIDEBAR           = NO
 HTML_OUTPUT            = html
-HTML_HEADER            = ${NEML2_SOURCE_DIR}/doc/config/header.html
-HTML_EXTRA_FILES       = ${doxygen-awesome-css_SOURCE_DIR}/doxygen-awesome-darkmode-toggle.js \
-                         ${doxygen-awesome-css_SOURCE_DIR}/doxygen-awesome-paragraph-link.js \
-                         ${doxygen-awesome-css_SOURCE_DIR}/doxygen-awesome-interactive-toc.js \
-                         ${NEML2_SOURCE_DIR}/doc/js/components/work-dispatcher.js \
-                         ${NEML2_SOURCE_DIR}/doc/js/components/static-hybrid-scheduler.js \
-                         ${NEML2_SOURCE_DIR}/doc/js/components/simple-scheduler-demo.js \
-                         ${NEML2_SOURCE_DIR}/doc/js/components/static-hybrid-scheduler-demo.js \
-                         ${NEML2_SOURCE_DIR}/doc/js/node_modules/animejs/lib/anime.min.js
-HTML_EXTRA_STYLESHEET  = ${doxygen-awesome-css_SOURCE_DIR}/doxygen-awesome.css \
-                         ${doxygen-awesome-css_SOURCE_DIR}/doxygen-awesome-sidebar-only.css \
-                         ${doxygen-awesome-css_SOURCE_DIR}/doxygen-awesome-sidebar-only-darkmode-toggle.css \
-                         ${doxygen-awesome-css_SOURCE_DIR}/doxygen-awesome-tabs.js \
-                         ${NEML2_SOURCE_DIR}/doc/config/custom.css
+HTML_HEADER            = ${repo_root}/doc/config/header.html
+HTML_EXTRA_FILES       = ${repo_root}/contrib/doxygen-awesome-css/doxygen-awesome-darkmode-toggle.js \
+                         ${repo_root}/contrib/doxygen-awesome-css/doxygen-awesome-paragraph-link.js \
+                         ${repo_root}/contrib/doxygen-awesome-css/doxygen-awesome-interactive-toc.js \
+                         ${repo_root}/doc/js/components/work-dispatcher.js \
+                         ${repo_root}/doc/js/components/static-hybrid-scheduler.js \
+                         ${repo_root}/doc/js/components/simple-scheduler-demo.js \
+                         ${repo_root}/doc/js/components/static-hybrid-scheduler-demo.js \
+                         ${repo_root}/doc/js/node_modules/animejs/lib/anime.min.js
+HTML_EXTRA_STYLESHEET  = ${repo_root}/contrib/doxygen-awesome-css/doxygen-awesome.css \
+                         ${repo_root}/contrib/doxygen-awesome-css/doxygen-awesome-sidebar-only.css \
+                         ${repo_root}/contrib/doxygen-awesome-css/doxygen-awesome-sidebar-only-darkmode-toggle.css \
+                         ${repo_root}/contrib/doxygen-awesome-css/doxygen-awesome-tabs.js \
+                         ${repo_root}/doc/config/custom.css
 HTML_COLORSTYLE        = LIGHT
 GENERATE_TREEVIEW      = YES
 USE_MATHJAX            = YES
 MATHJAX_VERSION        = MathJax_3
 MATHJAX_FORMAT         = HTML-CSS
 MATHJAX_RELPATH        = https://cdn.jsdelivr.net/npm/mathjax@3
-MATHJAX_CODEFILE       = ${NEML2_SOURCE_DIR}/doc/config/mathjax.js
-WARN_LOGFILE           = ${NEML2_BINARY_DIR}/doc/doxygen.html.log
+MATHJAX_CODEFILE       = ${repo_root}/doc/config/mathjax.js
+WARN_LOGFILE           = ${build_dir}/doxygen.html.log

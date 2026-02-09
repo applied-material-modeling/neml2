@@ -42,6 +42,12 @@
         <tab type="user" url="@ref tutorials-optimization-parameter-calibration" title="Parameter calibration"/>
         <tab type="user" url="@ref tutorials-optimization-pyzag" title="pyzag"/>
       </tab>
+      <tab type="usergroup" url="@ref tutorials-notebooks" title="Jupyter Notebooks">
+        <tab type="user" url="@ref python-examples-deterministic" title="Deterministic material model calibration"/>
+        <tab type="user" url="@ref python-examples-statistical" title="Statistical material model calibration"/>
+        <tab type="user" url="@ref python-examples-crystal_plasticity-compare_formulations" title="Crystal plasticity formulations"/>
+        <tab type="user" url="@ref python-examples-crystal_plasticity-polefigures" title="Plotting polefigures"/>
+      </tab>
       <tab type="user" url="@ref tutorials-next-steps" title="Next steps"/>
     </tab>
     <tab type="usergroup" title="Syntax Documentation">

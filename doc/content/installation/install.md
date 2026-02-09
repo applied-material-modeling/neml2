@@ -7,9 +7,9 @@
 Compiling the NEML2 core library requires
 - A C++ compiler with C++17 support
 - CMake >= 3.26
-- Python >= 3.9
+- Python >= 3.9, or its libtorch distribution
 
-NEML2 is built upon and relies on a collection of third party libraries/packages, most notably PyTorch (and its C++ backend libtorch). However, **there is no need to install dependent libraries prior to installing NEML2**. The build system will automatically search for necessary packages. When a required package is missing, the build system will download one.
+NEML2 is built upon and relies on a collection of third party libraries/packages, most notably PyTorch (or its C++ backend libtorch). The build system will automatically search for necessary packages and download missing dependencies when appropriate.
 
 Refer to [dependency management](@ref dependency-management) for a list of dependent libraries/packages and more information on the search procedure.
 
@@ -26,13 +26,6 @@ First, obtain the NEML2 source code.
 git clone -b main https://github.com/applied-material-modeling/neml2.git
 ```
 
-Install the required Python development dependencies
-
-```shell
-cd neml2
-pip install -r requirements.txt
-```
-
 Then, configure and build NEML2.
 
 ```shell
@@ -45,27 +38,23 @@ Optionally, NEML2 can be installed as a system library.
 ```shell
 cmake --install build/release --component libneml2 --prefix /usr/local
 ```
-The `--prefix` option specifies the path where NEML2 will be installed. Write permission is needed for the installation path. The `--component libneml2` option tells CMake to only install the libraries and runtime artifacts. NEML2 has three installable components:
+The `--prefix` option specifies the path where NEML2 will be installed. Write permission is needed for the installation path. The `--component libneml2` option tells CMake to only install the libraries and runtime artifacts. NEML2 has two installable components:
 - `libneml2`: core libraries and public headers
-- `libneml2-bin`: executables and utilities such as `neml2`
-- `libneml2-python`: Python bindings, submodules, and scripts
+- `libneml2-bin`: utility binaries
 
 ### Python package
 
-NEML2 also provides an _experimental_ Python package which provides bindings for the primitive tensors and parsers for deserializing and running material models. Package source distributions are available on PyPI, but package wheels are currently not built and uploaded to PyPI.
+NEML2 also offers a Python package which provides bindings for the primitive tensors and parsers for deserializing and running material models. Package source distributions are available on PyPI, but package wheels are currently not built and uploaded to PyPI.
 
-To install the NEML2 Python package, run the following commands at the repository's root.
+To install the NEML2 Python package, first make sure Python development headers and libraries are installed. Then, install [PyTorch](https://pytorch.org/get-started/locally/) and run the following command at the repository's root.
 
 ```shell
-pip install -r requirements.txt
-pip install -v .
+pip install .
 ```
-Two optional environment variables can be used to control the build: `CMAKE_ARGS` specifies the additional CMake configure arguments (usually not needed), and `CMAKE_BUILD_JOBS` specifies the number of parallel jobs used to build the package.
 
+The installation will take a while, as it needs to build both the library and its bindings. Pass `-v` to see additional details.
 Once installed, the package can be imported in Python scripts using
 
 ```python
 import neml2
 ```
-
-For security reasons, static analysis tools and IDEs for Python usually refuse to extract function signature, type hints, etc. from binary extensions such as the NEML2 Python bindings. As a workaround, NEML2 automatically generates "stubs" using `pybind11-stubgen` immediately after Python bindings are built to make them less opaque. Refer to the [pybind11-stubgen documentation](https://pypi.org/project/pybind11-stubgen/) for more information.
