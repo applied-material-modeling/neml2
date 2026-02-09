@@ -44,7 +44,7 @@ The `--prefix` option specifies the path where NEML2 will be installed. Write pe
 
 ### Python package
 
-NEML2 also offers a Python package which provides bindings for the primitive tensors and parsers for deserializing and running material models. Package source distributions are available on PyPI, but package wheels are currently not built and uploaded to PyPI.
+NEML2 also offers a Python package which provides bindings for the primitive tensors and parsers for deserializing and running material models. Package source distributions are available on PyPI. Python wheel deployment is planned and currently under development.
 
 To install the NEML2 Python package, first make sure Python development headers and libraries are installed. Then, install [PyTorch](https://pytorch.org/get-started/locally/) and run the following command at the repository's root.
 
@@ -53,6 +53,15 @@ pip install .
 ```
 
 The installation will take a while, as it needs to build both the library and its bindings. Pass `-v` to see additional details.
+After installation from source, optionally generate Python stub files with
+```shell
+neml2-stub
+```
+These stubs improve IDE autocomplete, type hints, and documentation generation for compiled bindings.
+
+\note
+Planned PyPI wheels are expected to ship with stubs pre-generated, in which case the `neml2-stub` step will no longer be needed for wheel installs.
+
 Once installed, the package can be imported in Python scripts using
 
 ```python

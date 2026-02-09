@@ -16,6 +16,7 @@ The configuration of NEML2 can be customized via a variety of high-level configu
 | NEML2_TOOLS           | ON, <u>OFF</u>          | Create targets for utility binaries               |
 | NEML2_WORK_DISPATCHER | ON, <u>OFF</u>          | Enable work dispatcher                            |
 | NEML2_JSON            | ON, <u>OFF</u>          | Enable JSON support                               |
+| NEML2_CSV             | ON, <u>OFF</u>          | Enable CSV support                                |
 
 Additional configuration options can be passed via command line using the `-DOPTION` or `-DOPTION=ON` format (see e.g., [cmake manual](https://cmake.org/cmake/help/latest/manual/cmake.1.html)).
 
@@ -23,23 +24,27 @@ Additional configuration options can be passed via command line using the `-DOPT
 
 Since many configure options are available for customizing the build, it is sometimes challenging to keep track of them during the development workflow. CMake introduces the concept of [preset](https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html) to help manage common configurations.
 
-NEML2 predefines six configure presets, serving different development purposes:
-- dev: This preset is best suited for developing the C++ backend and Python bindings. Compiler optimization is turned off, and debug symbols are enabled. In addition, targets for locally generating the documentation (this website) are enabled.
+NEML2 predefines configure presets serving different development purposes:
+- cc: Export compile commands for static analysis and language servers.
+- dev: This preset is best suited for developing the C++ backend and utility binaries. Compiler optimization is turned off, and debug symbols are enabled.
 - coverage: Unit tests are built with coverage flags enabled. `gcov` or similar tools can be used to record code coverage data.
-- tsan: Build the NEML2 runner with thread sanitizer flags. The runner can then be used to detect races.
-- release: Build both the C++ backend and the runner.
-- profiling: Similar to runner, but additionally links the executable against gperftools' CPU profiler for profiling purposes.
+- tsan: Build with thread sanitizer flags to detect races in tests and tools.
+- asan: Build with address sanitizer flags to detect memory errors in tests and tools.
+- release: Production build for the C++ backend and utility binaries.
+- profiling: Build utility binaries and additionally link against gperftools' CPU profiler.
 
 The configure presets and their corresponding configure options are summarized below.
 
-| preset                | dev   | coverage | tsan            | release | profiling |
-| :-------------------- | :---- | :------- | :-------------- | :------ | :-------- |
-| CMAKE_BUILD_TYPE      | Debug | Coverage | ThreadSanitizer | Release | Profiling |
-| NEML2_PCH             | ON    | ON       | ON              | ON      | ON        |
-| NEML2_TESTS           | ON    | ON       | ON              | ON      |           |
-| NEML2_TOOLS           | ON    |          | ON              | ON      | ON        |
-| NEML2_WORK_DISPATCHER | ON    | ON       | ON              | ON      | ON        |
-| NEML2_JSON            | ON    | ON       | ON              | ON      | ON        |
+| preset                        | cc    | dev   | coverage | tsan            | asan             | release | profiling |
+| :---------------------------- | :---- | :---- | :------- | :-------------- | :--------------- | :------ | :-------- |
+| CMAKE_BUILD_TYPE              | Debug | Debug | Coverage | ThreadSanitizer | AddressSanitizer | Release | Profiling |
+| CMAKE_EXPORT_COMPILE_COMMANDS | ON    | OFF   | OFF      | OFF             | OFF              | OFF     | OFF       |
+| NEML2_PCH                     | OFF   | ON    | ON       | ON              | ON               | ON      | ON        |
+| NEML2_TESTS                   | ON    | ON    | ON       | ON              | ON               | ON      | OFF       |
+| NEML2_TOOLS                   | ON    | ON    | OFF      | ON              | ON               | ON      | ON        |
+| NEML2_WORK_DISPATCHER         | ON    | ON    | ON       | ON              | ON               | ON      | ON        |
+| NEML2_JSON                    | ON    | ON    | ON       | ON              | ON               | ON      | ON        |
+| NEML2_CSV                     | ON    | ON    | ON       | ON              | ON               | ON      | ON        |
 
 To select a specific configure preset, use the `--preset` option on the command line.
 
@@ -59,10 +64,11 @@ would use the configure preset "release" while disabling the work dispatcher, an
 Once the project is configured (e.g., using configure presets), one or more build targets will be generated. Different configure options would generate different sets of build targets. The `--target` command line option can be used to specify the target to build. Similar to configure presets, build presets are used to pre-define "groups" of build targets.
 
 NEML2 offers a number of build presets:
-- dev: C++ backend with tests
-- doc: HTML documentation
+- dev: Tests and utility binaries for development
+- tsan: Tests and utility binaries built with ThreadSanitizer
+- asan: Tests and utility binaries built with AddressSanitizer
 - coverage: C++ backend compiled with coverage flags
-- release: C++ backend and Python bindings for release
-- profiling: runner with debug symbols linked against profiler
+- release: Tests and utility binaries for release
+- profiling: utility binaries with debug symbols linked against profiler
 
-To use a build preset, use the `--preset` option on the command line.
+To use a build preset, use the `--preset` option on the command line, i.e.
