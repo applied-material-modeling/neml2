@@ -1,0 +1,32 @@
+name: Notebook execution
+
+on:
+  schedule:
+    # Nightly at 06:00 UTC
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+# Newer commits should cancel old runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  notebooks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: applied-material-modeling/neml2-ci@main
+        with:
+          python-version: 3.9
+          cmake-version: 3.26.0
+          torch-version: 2.8.0
+      - name: Install NEML2 and dev dependencies
+        run: pip install ".[dev]" -v
+      - name: Run all notebooks with nbmake
+        run: |
+          NOTEBOOKS="$(git ls-files '*.ipynb')"
+          if [ -z "$NOTEBOOKS" ]; then
+            echo "No tracked notebooks found."
+            exit 0
+          fi
+          pytest -v -s --nbmake --nbmake-timeout=14400 $NOTEBOOKS
