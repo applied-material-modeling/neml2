@@ -54,6 +54,7 @@ jobs:
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: doc-preview-link
+          number: ${{ github.event.workflow_run.pull_requests[0].number }}
           message: |
             Documentation preview: <https://applied-material-modeling.github.io/neml2/pr-preview/${{ github.event.workflow_run.pull_requests[0].number }}>
             Code coverage: <https://applied-material-modeling.github.io/neml2/pr-preview/${{ github.event.workflow_run.pull_requests[0].number }}/coverage>
