@@ -6,6 +6,7 @@ on:
     types: [completed]
 
 permissions:
+  actions: read
   contents: write
   pull-requests: write
 
@@ -13,19 +14,31 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Show upstream workflow information
+        run: |
+          echo "upstream workflow: ${{ github.event.workflow_run.name }}"
+          echo "upstream event:    ${{ github.event.workflow_run.event }}"
+          echo "upstream id:       ${{ github.event.workflow_run.id }}"
+          echo "upstream sha:      ${{ github.event.workflow_run.head_sha }}"
       - uses: actions/download-artifact@v4
         with:
           name: documentation
           path: site/html
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/download-artifact@v4
         with:
           name: coverage
           path: site/html/coverage
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/download-artifact@v4
         if: github.event.workflow_run.event == 'pull_request'
         with:
           name: clang-tidy
           path: site/html/clang-tidy
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       # PR preview
       - name: Deploy preview to GitHub Pages
@@ -51,6 +64,6 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4.4.1
         with:
           branch: gh-pages
-          folder: html
+          folder: site/html
           clean-exclude: pr-preview
           single-commit: true
