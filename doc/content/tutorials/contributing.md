@@ -124,8 +124,8 @@ which runs the function named `test_forward` defined in the `python/tests/test_M
 
 NEML2 tracks notebooks with a paired-text workflow so notebook changes remain reviewable and reproducible.
 
-1. Notebook files (`*.ipynb`) are deliberately marked as binary in `.gitattributes`, so they are not the primary code-review surface.
-2. Each notebook is paired with a MyST markdown file via `jupytext` (`.jupytext.toml`), and the paired markdown is the review surface.
+1. Notebook files (`*.ipynb`) are deliberately marked as binary in `.gitattributes`, so they show up as binaries in git diffs (instead of line-by-line diffs on mangled metadata).
+2. Each notebook is paired with a MyST markdown file via `jupytext` (`.jupytext.toml`), and the paired markdown is the review surface which shows up as detailed git diffs for pull request review.
 3. Developers should edit notebooks directly, not the paired markdown files.
 4. After modifying a notebook, all code cells must be executed. The documentation build flow (`doc/scripts/examples.py`) checks for unexecuted cells and fails if any are found.
 5. Install pre-commit hooks so notebook/markdown pairs are synced automatically on commit:
