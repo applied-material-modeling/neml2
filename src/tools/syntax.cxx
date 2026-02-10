@@ -42,11 +42,7 @@ main(int argc, char * argv[])
       .default_value(std::string("syntax.yml"));
 
   // Force link dynamic libraries
-  ::_neml2_force_link_models();
-  ::_neml2_force_link_equation_systems();
-  ::_neml2_force_link_solvers();
-  ::_neml2_force_link_user_tensors();
-  ::_neml2_force_link_drivers();
+  neml2::force_link_runtime();
 
   // Parse cliargs
   program.parse_args(argc, argv);

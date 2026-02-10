@@ -3,7 +3,7 @@
 export CC="${CMAKE_C_COMPILER}"
 export CXX="${CMAKE_CXX_COMPILER}"
 export CFLAGS="${CMAKE_C_FLAGS}"
-export CXXFLAGS="-D_GLIBCXX_USE_CXX11_ABI=${GLIBCXX_USE_CXX11_ABI} -I${SOURCE_DIR}"
+export CXXFLAGS="-I${SOURCE_DIR}"
 
 # Set the SDKROOT if on macOS
 if [[ "$(uname)" == "Darwin" ]]; then

@@ -4,18 +4,41 @@
 
 ## Makefile integration
 
-Once NEML2 is installed, external C++ projects can use NEML2 by including the development headers and linking against the NEML2 libraries. NEML2 offers a collection of libraries, they are
-- `neml2_base`
-- `neml2_dispatcher`
-- `neml2_driver`
-- `neml2_misc`
-- `neml2_model`
-- `neml2_equation_system`
-- `neml2_solver`
-- `neml2_tensor`
-- `neml2_user_tensor`
+NEML2 officially supports GNU Make integration via `pkg-config`.
 
-The names of the libraries are self-explanatory. As a general rule of thumb, the library names collide with the header hierarchy. That is, if your code includes `#include "neml2/tensors/SR2.h"`, then your program should be linked against the corresponding tensor library using `-lneml2_tensor`, etc. 
+After installing NEML2, point `PKG_CONFIG_PATH` to the directory containing `neml2.pc` (typically `<prefix>/share/pkgconfig`), then query compile and link flags from `pkg-config`.
+
+The following example Makefile compiles a program named `foo` from `main.cxx`:
+
+```make
+CXX ?= c++
+PKG_CONFIG ?= pkg-config
+
+TARGET := foo
+SOURCES := main.cxx
+comma := ,
+
+CXXFLAGS += $(shell $(PKG_CONFIG) --cflags neml2)
+LDFLAGS += $(foreach libdir,$(shell $(PKG_CONFIG) --libs-only-L neml2),$(patsubst -L%,-Wl$(comma)-rpath$(comma)%,$(libdir)))
+LDLIBS += $(shell $(PKG_CONFIG) --libs neml2)
+
+.PHONY: all clean
+
+all: $(TARGET)
+
+$(TARGET): $(SOURCES)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $(SOURCES) $(LDLIBS)
+
+clean:
+	rm -f $(TARGET)
+```
+
+Example usage:
+
+```bash
+PKG_CONFIG_PATH=/path/to/neml2-install/share/pkgconfig make
+./foo
+```
 
 ## CMake integration
 
