@@ -134,9 +134,9 @@ The neml2 documentation is available here for general context: https://applied-m
 
 For context on what the different types of tensor dimensions mean in NEML2 see `include/tensors/TensorBase.h`
 
-1. We'll make this a new submodule, with new subfolders in `include/models`, `src/models`, and the tests called `transport`.
+1. We'll make this a new submodule, with new subfolders in `include/models`, `src/models`, and the tests called `finite_volume`.
 2. For each model we need a corresponding unit test that checks correctness of both the model itself and the derivatives.  Examples are in `tests/unit/models`.
-3. When we have a working system we'll need regression tests in `tests/regression/models/transport` and at least one verification test against an analytic solution in `tests/verification/models/transport`.
+3. When we have a working system we'll need regression tests in `tests/regression/finite_volume` and at least one verification test against an analytic solution in `tests/verification/finite_volume`.
 4. All models must be able to handle arbitrary dynamic batch dimensions.
 5. Our fundamental values will be $\bar{u}_i$ in cells.  We will store this in a neml2 `Scalar` variable with an intermediate dimension representing the discretized quantities.
 6. The user will provide functions of the form $f(t,x,\bar{u})$ to calculate the advection velocity $v$, the diffusion coefficient $D$, and the reaction $R$ at cells.  The details of these functions are outside the scope of the transport system, but we'll implement a few simple examples to help debug and verify the system.

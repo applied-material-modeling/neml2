@@ -1,8 +1,8 @@
-# Transport Physics {#transport}
+# Finite Volume Transport Physics {#finite_volume}
 
 [TOC]
 
-The transport physics module provides composable building blocks for 1D finite-volume advection–diffusion–reaction systems. The models are designed for arbitrary batch dimensions and integrate with the standard NEML2 time integration and nonlinear solve infrastructure.
+The finite volume transport physics module provides composable building blocks for 1D finite-volume advection–diffusion–reaction systems. The models are designed for arbitrary batch dimensions and integrate with the standard NEML2 time integration and nonlinear solve infrastructure.
 
 ## Governing equation
 
@@ -80,9 +80,9 @@ with
   v^\pm_{i+\frac{1}{2}} = \frac{1}{2}\left(v_{i+\frac{1}{2}} \pm |v_{i+\frac{1}{2}}|\right).
 \f]
 
-## Transport model building blocks
+## Finite volume transport model building blocks
 
-The transport module introduces several small models intended to be composed together:
+The finite volume transport module introduces several small models intended to be composed together:
 
 - **LinearlyInterpolateToCellEdges**: Interpolates cell-centered values onto cell edges on nonuniform grids.
 - **DiffusiveFlux**: Computes \f$J_{diffusion}\f$ at cell edges from \f$u\f$, edge diffusivity \f$D_{edge}\f$, and cell center positions.
@@ -100,7 +100,7 @@ In addition, helper tensors are provided for common 1D mesh setups:
 
 ## Example: combined advection–diffusion–reaction
 
-Below is a compact example that assembles a full transport system, applies boundary conditions, and advances in time using backward Euler. The full regression test can be found in tests/regression/transport/combined/model.i.
+Below is a compact example that assembles a full transport system, applies boundary conditions, and advances in time using backward Euler. The full regression test can be found in tests/regression/finite_volume/combined/model.i.
 
 ```
 [Tensors]
@@ -198,4 +198,4 @@ Below is a compact example that assembles a full transport system, applies bound
 
 ## Verification and regression tests
 
-The module includes unit tests for each component and verification tests for advection, diffusion, and combined advection–diffusion–reaction problems. These are located under tests/unit/models/transport and tests/verification/transport.
+The module includes unit tests for each component and verification tests for advection, diffusion, and combined advection–diffusion–reaction problems. These are located under tests/unit/models/finite_volume and tests/verification/finite_volume.

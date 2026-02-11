@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/transport/AdvectiveFlux.h"
+#include "neml2/models/finite_volume/AdvectiveFlux.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/functions/abs.h"
 #include "neml2/tensors/functions/diagonalize.h"

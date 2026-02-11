@@ -31,12 +31,12 @@
 using namespace neml2;
 namespace fs = std::filesystem;
 
-TEST_CASE("transport")
+TEST_CASE("finite_volume")
 {
   const auto pwd = fs::current_path();
-  const auto search_path = pwd / "transport";
+  const auto search_path = pwd / "finite_volume";
 
-  // Find all verification tests
+  // Find all regression tests
   std::vector<fs::path> tests;
   using rdi = fs::recursive_directory_iterator;
   for (const auto & entry : rdi(search_path))
@@ -47,7 +47,6 @@ TEST_CASE("transport")
   {
     // Change current working directory to the parent directory of the input file
     fs::current_path(test.parent_path());
-    const auto cwd = fs::current_path();
 
     auto section_name = (pwd / test).lexically_relative(search_path).string();
 
@@ -57,7 +56,7 @@ TEST_CASE("transport")
       {
         // Load and run the model
         auto factory = load_input(test.filename());
-        auto driver = factory->get_driver("verification");
+        auto driver = factory->get_driver("regression");
         diagnose_and_throw(*driver);
         REQUIRE(driver->run());
       }
@@ -69,7 +68,7 @@ TEST_CASE("transport")
     }
 
     // Catch2 will split dynamic sections into different test cases, so we need to set the current
-    // path back to where we were. Otherwise the next test case will start from the wrong directory
+    // path back to where we were. Otherwise the next test case will start from the wrong directory.
     fs::current_path(pwd);
   }
 }
