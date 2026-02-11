@@ -24,40 +24,30 @@
 
 #pragma once
 
-#include "neml2/base/EnumSelection.h"
 #include "neml2/models/Model.h"
 
 namespace neml2
 {
 /**
- * @brief Append a boundary condition value to the intermediate dimension.
+ * @brief First-order upwind advective flux at cell edges.
  */
-class TransportBoundaryCondition : public Model
+class FiniteVolumeUpwindedAdvectiveFlux : public Model
 {
 public:
-  enum class Side : std::uint8_t
-  {
-    LEFT = 0,
-    RIGHT = 1
-  };
-
   static OptionSet expected_options();
 
-  TransportBoundaryCondition(const OptionSet & options);
+  FiniteVolumeUpwindedAdvectiveFlux(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  /// Input tensor (e.g., cell values or cell-edge fluxes)
-  const Variable<Scalar> & _input;
+  /// Cell-averaged field values
+  const Variable<Scalar> & _u;
 
-  /// Boundary value to append
-  const Scalar & _bc_value;
+  /// Cell-edge advection velocity values
+  const Variable<Scalar> & _v_edge;
 
-  /// Which side to append to
-  Side _side;
-
-  /// Output tensor with boundary condition appended
-  Variable<Scalar> & _output;
+  /// Cell-edge advective fluxes
+  Variable<Scalar> & _J;
 };
 } // namespace neml2

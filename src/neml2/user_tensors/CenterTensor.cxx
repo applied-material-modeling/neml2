@@ -61,6 +61,9 @@ CenterTensorTmpl<T>::make() const
 
   const auto points = _points.resolve(f);
   const auto n = points.intmd_size(_dim);
+  neml_assert_dbg(n > 1,
+                  "Failed assertion: number of points along the dimension to be centered must be "
+                  "greater than 1");
   const auto left = points.intmd_slice(_dim, indexing::Slice(0, n - 1));
   const auto right = points.intmd_slice(_dim, indexing::Slice(1, n));
   return 0.5 * (left + right);

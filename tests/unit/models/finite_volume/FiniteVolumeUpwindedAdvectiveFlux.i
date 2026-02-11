@@ -37,7 +37,7 @@
 
 [Models]
   [model]
-    type = AdvectiveFlux
+    type = FiniteVolumeUpwindedAdvectiveFlux
     u = 'state/u'
     v_edge = 'state/v_edge'
     flux = 'state/J'

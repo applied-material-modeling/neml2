@@ -17,27 +17,27 @@
 [Tensors]
   [u_bar]
     type = Scalar
-    values = '1 2 3'
-    batch_shape = '(3)'
+    values = '1 2 3 4 5 6'
+    batch_shape = '(2,3)'
     intermediate_dimension = 1
   []
   [u_bc]
     type = Scalar
-    values = '10'
-    batch_shape = '(1)'
+    values = '10 20'
+    batch_shape = '(2,1)'
     intermediate_dimension = 1
   []
   [u_bar_with_bc_left]
     type = Scalar
-    values = '10 1 2 3'
-    batch_shape = '(4)'
+    values = '10 1 2 3 20 4 5 6'
+    batch_shape = '(2,4)'
     intermediate_dimension = 1
   []
 []
 
 [Models]
   [model]
-    type = TransportBoundaryCondition
+    type = FiniteVolumeAppendBoundaryCondition
     input = 'state/u_bar'
     bc_value = 'u_bc'
     side = 'left'

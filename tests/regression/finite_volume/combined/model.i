@@ -89,7 +89,7 @@
     dx = 'dx_centers'
   []
   [advective_flux]
-    type = AdvectiveFlux
+    type = FiniteVolumeUpwindedAdvectiveFlux
     u = 'state/concentration'
     v_edge = 'state/v_edge'
   []
@@ -106,13 +106,13 @@
     coefficients = '1 1'
   []
   [left_bc]
-    type = TransportBoundaryCondition
+    type = FiniteVolumeAppendBoundaryCondition
     input = 'state/J'
     bc_value = 0.0
     side = 'left'
   []
   [right_bc]
-    type = TransportBoundaryCondition
+    type = FiniteVolumeAppendBoundaryCondition
     input = 'state/J_with_bc_left'
     bc_value = 0.0
     side = 'right'

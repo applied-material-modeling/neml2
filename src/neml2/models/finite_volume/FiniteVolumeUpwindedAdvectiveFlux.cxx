@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/finite_volume/AdvectiveFlux.h"
+#include "neml2/models/finite_volume/FiniteVolumeUpwindedAdvectiveFlux.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/functions/abs.h"
 #include "neml2/tensors/functions/diagonalize.h"
@@ -32,10 +32,10 @@
 
 namespace neml2
 {
-register_NEML2_object(AdvectiveFlux);
+register_NEML2_object(FiniteVolumeUpwindedAdvectiveFlux);
 
 OptionSet
-AdvectiveFlux::expected_options()
+FiniteVolumeUpwindedAdvectiveFlux::expected_options()
 {
   OptionSet options = Model::expected_options();
   options.doc() = "Compute upwinded advective fluxes at cell edges.";
@@ -52,7 +52,7 @@ AdvectiveFlux::expected_options()
   return options;
 }
 
-AdvectiveFlux::AdvectiveFlux(const OptionSet & options)
+FiniteVolumeUpwindedAdvectiveFlux::FiniteVolumeUpwindedAdvectiveFlux(const OptionSet & options)
   : Model(options),
     _u(declare_input_variable<Scalar>("u")),
     _v_edge(declare_input_variable<Scalar>("v_edge")),
@@ -61,7 +61,7 @@ AdvectiveFlux::AdvectiveFlux(const OptionSet & options)
 }
 
 void
-AdvectiveFlux::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
+FiniteVolumeUpwindedAdvectiveFlux::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   const auto N = _u.intmd_size(-1);
   const auto M = N - 1;
