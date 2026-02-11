@@ -9,7 +9,7 @@ In most cases, there is no need to manually obtain the dependent libraries/packa
 In case the package of interest has been installed at a non-conventional location, and CMake's default searching mechanism fails to find it, some special configure options can be used to help locate it. For a package named `<PackageName>`, the following variables are tried in sequence:
 - `<PackageName>_ROOT` CMake variable
 - `<PACKAGENAME>_ROOT` CMake variable
-- `<PackageName>_ROOT` enviroment variable
+- `<PackageName>_ROOT` environment variable
 - `<PACKAGENAME>_ROOT` environment variable
 
 Please refer to the [CMake documentation](https://cmake.org/cmake/help/latest/command/find_package.html#config-mode-search-procedure) for additional hints that can be used to facilitate the package search procedure.
@@ -23,7 +23,7 @@ C++ backend:
 - Testing:
   - [Catch2](https://github.com/catchorg/Catch2) for unit and regression testing.
 
-The runner:
+Utility binaries:
 
 - [argparse](https://github.com/p-ranav/argparse) for command-line argument parsing.
 - Profiling:
@@ -45,6 +45,10 @@ Documentation:
 - [PyYAML](https://pyyaml.org/) for extracting syntax documentation.
 
 Work dispatcher:
+
+- [MPI](https://www.mpi-forum.org/) for distributed scheduling.
+
+JSON support:
 
 - [json](https://github.com/nlohmann/json) for outputting event traces.
 

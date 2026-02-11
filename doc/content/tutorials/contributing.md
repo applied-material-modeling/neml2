@@ -69,7 +69,7 @@ The regression test compares variables (specified using the `variables` option) 
 
 ### Command-line arguments
 
-The above test suites, including unit tests, regression tests, verification tests, and dispatcher tests, support a variety of configuration options that can be controlled from the command line. See [Catch2 command line](https://github.com/catchorg/Catch2/blob/devel/docs/command-line.md) documentation for a list of useful command-line options. In addition, NEML2 test suites additionally support the following options:
+The above test suites, including unit tests, regression tests, verification tests, and dispatcher tests, support a variety of configuration options that can be controlled from the command line. See [Catch2 command line](https://github.com/catchorg/Catch2/blob/devel/docs/command-line.md) documentation for a list of useful command-line options. In addition, NEML2 test suites support the following options:
 - `-p`, `--path`: working directory. This argument is optional and is only needed when the default guessing mechanism fails to locate the test input files.
 - `-d`, `--devices`: list of additional (non-CPU) devices to test.
 
@@ -77,7 +77,14 @@ The above test suites, including unit tests, regression tests, verification test
 
 ### Setup {#testing-python}
 
-A collection of tests are available under `python/tests` to ensure the NEML2 Python package is working correctly. For Visual Studio Code users, the [Python](https://github.com/Microsoft/vscode-python) extension can be used to automatically discover and run tests. In the extension settings, the "Pytest Enabled" variable shall be set to true. In addition, "pytestArgs" shall provide the location of tests, i.e. "${workspaceFolder}/python/tests". The `settings.json` file shall contain the following entries:
+A collection of tests are available under `python/tests` to ensure the NEML2 Python package is working correctly.
+
+First install the package with development dependencies:
+```shell
+pip install ".[dev]" -v
+```
+
+For Visual Studio Code users, the [Python](https://github.com/Microsoft/vscode-python) extension can be used to automatically discover and run tests. In the extension settings, the "Pytest Enabled" variable shall be set to true. In addition, "pytestArgs" shall provide the location of tests, i.e. "${workspaceFolder}/python/tests". The `settings.json` file shall contain the following entries:
 ```json
 {
   "python.testing.pytestEnabled": true,
@@ -87,36 +94,73 @@ A collection of tests are available under `python/tests` to ensure the NEML2 Pyt
 }
 ```
 
-If the Python bindings are built but are not installed to the site-packages directory (i.e. during development), pytest will not be able to import the %neml2 package unless the environment variable `PYTHONPATH` is modified according to the specified build directory. For Visual Studio Code users, create a `.env` file in the repository's root and include an entry `PYTHONPATH=build/dev/python` (assuming the build directory is `build/dev` which is the default from CMake presets), and the Python extension will be able to import the NEML2 Python package.
+### Python stubs {#testing-python-stubs}
+
+NEML2's Python API is primarily exposed through compiled bindings. To make type information and function signatures visible to IDEs, static analyzers, and documentation tooling, stub files must be generated.
+
+Use the `neml2-stub` command line tool:
+```shell
+neml2-stub
+```
+
+Generating stubs is recommended after changing Python bindings and before building documentation.
 
 ### pytest {#testing-pytest}
 
-The Python tests use the [pytest](https://docs.pytest.org/en/stable/index.html) framework. To run tests using commandline, invoke `pytest` with the correct `PYTHONPATH`, i.e.
+The Python tests use the [pytest](https://docs.pytest.org/en/stable/index.html) framework. To run all tests:
 
 ```
-PYTHONPATH=build/dev/python pytest python/tests
+pytest -v python/tests
 ```
 
 To run a specific test case, use
 
 ```
-PYTHONPATH=build/dev/python pytest "python/tests/test_Model.py::test_forward"
+pytest -v "python/tests/test_Model.py::test_forward"
 ```
 which runs the function named `test_forward` defined in the `python/tests/test_Model.py` file.
+
+## Jupyter notebooks
+
+NEML2 tracks notebooks with a paired-text workflow so notebook changes remain reviewable and reproducible.
+
+1. Notebook files (`*.ipynb`) are deliberately marked as binary in `.gitattributes`, so they show up as binaries in git diffs (instead of line-by-line diffs on mangled metadata).
+2. Each notebook is paired with a MyST markdown file via `jupytext` (`.jupytext.toml`), and the paired markdown is the review surface which shows up as detailed git diffs for pull request review.
+3. Developers should edit notebooks directly, not the paired markdown files.
+4. After modifying a notebook, all code cells must be executed. The documentation build flow (`doc/scripts/examples.py`) checks for unexecuted cells and fails if any are found.
+5. Install pre-commit hooks so notebook/markdown pairs are synced automatically on commit:
+   ```shell
+   pre-commit install
+   ```
+   The repository hook `jupytext-sync` keeps paired files in sync for notebook examples.
 
 ## Documentation
 
 It is of paramount importance to write documentation as the library is being developed. While NEML2 supports both Doxygen-style in-code documentation mechanisms and runtime syntax documentation mechanisms, it is still sometimes necessary to write standalone, self-contained documentation.
 
-To this end, the "dev" configure preset and the "dev-doc" build preset (see [build customization](@ref build-customization)) can be used to generate and render the documentation locally:
+The documentation workflow is driven by scripts in `doc/scripts`:
+1. `doc/scripts/examples.py`: builds/runs tutorial examples and prepares tutorial outputs.
+2. `doc/scripts/genhtml.py`: syncs content, extracts syntax pages, and generates HTML documentation.
+
+A typical local workflow is:
+```shell
+pip install ".[dev]" -v
+neml2-stub
+./doc/scripts/examples.py --log-level INFO --cmake-configure-args="-GNinja"
+./doc/scripts/genhtml.py --log-level INFO
 ```
-cmake --preset dev -S .
-cmake --build --preset dev-doc
+The documentation scripts require a non-editable `neml2` installation in `site-packages`.
+
+Once built, preview the site locally:
+```shell
+firefox build/doc/build/html/index.html
 ```
-Once the documentation is built, the site can be previewed locally in any browser that supports static HTML, i.e.
+
+For live preview during editing:
+```shell
+./doc/scripts/genhtml.py --serve
 ```
-firefox build/dev/doc/build/html/index.html
-```
+This starts a local server (default `http://127.0.0.1:8000/`) and automatically rebuilds docs when tracked content changes.
 
 ## Code formatting and static analysis
 

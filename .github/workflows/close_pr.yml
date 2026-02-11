@@ -17,7 +17,7 @@ jobs:
           ref: gh-pages
       - name: Delete preview
         run: |
-          git rm -r --cached pr-preview/pr-${{ github.event.number }}
+          git rm -r --cached pr-preview/${{ github.event.number }}
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git commit -m 'Remove preview for PR #${{ github.event.number }}'

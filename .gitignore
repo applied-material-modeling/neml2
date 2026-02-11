@@ -2,7 +2,6 @@
 contrib/argparse*
 contrib/Catch2*
 contrib/csvparser*
-contrib/Doxygen*
 contrib/hit*
 contrib/nlohmann_json*
 contrib/torch*
