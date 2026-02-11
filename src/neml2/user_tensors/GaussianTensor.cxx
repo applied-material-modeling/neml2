@@ -34,10 +34,9 @@ GaussianTensorTmpl<T>::expected_options()
 {
   OptionSet options = UserTensorBase<T>::expected_options();
   options.doc() = "Construct a " + UserTensorBase<T>::tensor_type() +
-                  " with values sampled from a Gaussian profile at given points. "
-                  "The Gaussian is \f$g(x) = h \\exp(-\\tfrac{1}{2} z^2)\f$ with "
-                  "\f$z = (x - c) / w\f$, where \f$h\f$ is the height, \f$w\f$ is the "
-                  "width, and \f$c\f$ is the center.";
+                  " with values sampled from a Gaussian profile at given points. The Gaussian is "
+                  "\\f$g(x) = h \\exp(-\\tfrac{1}{2} z^2)\\f$ with \\f$z = (x - c) / w\\f$, where "
+                  "\\f$h\\f$ is the height, \\f$w\\f$ is the width, and \\f$c\\f$ is the center.";
 
   options.set<TensorName<T>>("points");
   options.set("points").doc() = "The coordinates to evaluate the Gaussian at";

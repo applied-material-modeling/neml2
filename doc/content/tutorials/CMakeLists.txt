@@ -5,6 +5,8 @@ find_package(neml2 CONFIG REQUIRED)
 # ----------------------------------------------------------------------------
 # C++ examples
 # ----------------------------------------------------------------------------
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 file(GLOB_RECURSE ex_srcs CONFIGURE_DEPENDS *.cxx)
 set(ex_paths "")
 
