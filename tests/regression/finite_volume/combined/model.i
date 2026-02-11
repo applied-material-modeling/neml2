@@ -11,6 +11,10 @@
     type = CenterScalar
     points = 'edges'
   []
+  [dx_centers]
+    type = DifferenceScalar
+    points = 'centers'
+  []
   [dx]
     type = DifferenceScalar
     points = 'edges'
@@ -69,7 +73,7 @@
     cell_values = 0.5
     cell_centers = 'centers'
     cell_edges = 'edges'
-    edge_values = 'state/D_edge'
+    edge_values = 'state/D'
   []
   [advection_velocity]
     type = LinearlyInterpolateToCellEdges
@@ -79,24 +83,25 @@
     edge_values = 'state/v_edge'
   []
   [diffusive_flux]
-      type = DiffusiveFlux
-      u = 'state/concentration'
-      D_edge = 'state/D_edge'
-      cell_centers = 'centers'
+    type = FiniteVolumeGradient
+    u = 'state/concentration'
+    prefactor = 'state/D'
+    dx = 'dx_centers'
   []
   [advective_flux]
-      type = AdvectiveFlux
-      u = 'state/concentration'
-      v_edge = 'state/v_edge'
+    type = AdvectiveFlux
+    u = 'state/concentration'
+    v_edge = 'state/v_edge'
   []
   [reaction]
-      type = LinearReaction
-      lambda = 0.05
-      u = 'state/concentration'
+    type = ScalarLinearCombination
+    from_var = 'state/concentration'
+    to_var = 'state/R'
+    coefficients = '-0.05'
   []
   [total_flux]
     type = ScalarLinearCombination
-    from_var = 'state/J_diffusion state/J_advection'
+    from_var = 'state/grad_u state/J_advection'
     to_var = 'state/J'
     coefficients = '1 1'
   []
@@ -112,12 +117,17 @@
     bc_value = 0.0
     side = 'right'
   []
+  [flux_divergence]
+    type = FiniteVolumeGradient
+    u = 'state/J_with_bc_left_with_bc_right'
+    dx = 'dx'
+    grad_u = 'state/flux_div'
+  []
   [rate_of_change]
-    type = CellRateOfChange
-    flux = 'state/J_with_bc_left_with_bc_right'
-    cell_size = 'dx'
-    reaction = 'state/R'
-    rate = 'state/concentration_rate'
+    type = ScalarLinearCombination
+    from_var = 'state/R state/flux_div'
+    to_var = 'state/concentration_rate'
+    coefficients = '1 1'
   []
   [integrate_u]
     type = ScalarBackwardEulerTimeIntegration
@@ -125,7 +135,7 @@
   []
   [implicit_rate]
     type = ComposedModel
-    models = 'diffusivity advection_velocity diffusive_flux advective_flux reaction total_flux left_bc right_bc rate_of_change integrate_u'
+    models = 'diffusivity advection_velocity diffusive_flux advective_flux reaction total_flux left_bc right_bc flux_divergence rate_of_change integrate_u'
   []
   [model]
     type = ImplicitUpdate

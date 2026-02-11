@@ -58,12 +58,12 @@ For nonuniform grids, cell-edge values are obtained by linear interpolation:
   + \frac{x_{i+\frac{1}{2}}-x_i}{x_{i+1}-x_i} q_{i+1}.
 \f]
 
-### Diffusive flux
+### Prefactor-weighted gradient
 
-The diffusive flux uses a first-order reconstructed gradient:
+The prefactor-weighted gradient uses a first-order reconstructed gradient:
 
 \f[
-  J_{diffusion, i+\frac{1}{2}} = -D_{i+\frac{1}{2}} \frac{\bar{u}_{i+1}-\bar{u}_i}{x_{i+1}-x_i}.
+  \mathrm{grad}_{u, i+\frac{1}{2}} = -p_{i+\frac{1}{2}} \frac{\bar{u}_{i+1}-\bar{u}_i}{x_{i+1}-x_i}.
 \f]
 
 ### Advective flux
@@ -85,11 +85,10 @@ with
 The finite volume transport module introduces several small models intended to be composed together:
 
 - **LinearlyInterpolateToCellEdges**: Interpolates cell-centered values onto cell edges on nonuniform grids.
-- **DiffusiveFlux**: Computes \f$J_{diffusion}\f$ at cell edges from \f$u\f$, edge diffusivity \f$D_{edge}\f$, and cell center positions.
+- **FiniteVolumeGradient**: Computes prefactor-weighted gradients at cell edges from \f$u\f$, edge prefactor values, and the spacing between cell centers.
 - **AdvectiveFlux**: Computes \f$J_{advection}\f$ at cell edges with first-order upwinding from \f$u\f$ and edge velocity \f$v_{edge}\f$.
-- **LinearReaction**: Computes \f$R = -\lambda u\f$.
 - **TransportBoundaryCondition**: Appends a boundary value to the left or right side of an intermediate dimension (useful for flux boundary conditions).
-- **CellRateOfChange**: Combines reaction and flux divergence to form \f$\dot{u}\f$.
+- **ScalarLinearCombination**: Combines flux divergence and reaction to form \f$\dot{u}\f$.
 
 In addition, helper tensors are provided for common 1D mesh setups:
 
@@ -116,6 +115,10 @@ Below is a compact example that assembles a full transport system, applies bound
     type = CenterScalar
     points = 'edges'
   []
+  [dx_centers]
+    type = DifferenceScalar
+    points = 'centers'
+  []
   [dx]
     type = DifferenceScalar
     points = 'edges'
@@ -135,7 +138,7 @@ Below is a compact example that assembles a full transport system, applies bound
     cell_values = 0.5
     cell_centers = 'centers'
     cell_edges = 'edges'
-    edge_values = 'state/D_edge'
+    edge_values = 'state/prefactor'
   []
   [advection_velocity]
     type = LinearlyInterpolateToCellEdges
@@ -145,10 +148,10 @@ Below is a compact example that assembles a full transport system, applies bound
     edge_values = 'state/v_edge'
   []
   [diffusive_flux]
-    type = DiffusiveFlux
+    type = FiniteVolumeGradient
     u = 'state/concentration'
-    D_edge = 'state/D_edge'
-    cell_centers = 'centers'
+    prefactor = 'state/prefactor'
+    dx = 'dx_centers'
   []
   [advective_flux]
     type = AdvectiveFlux
@@ -156,13 +159,14 @@ Below is a compact example that assembles a full transport system, applies bound
     v_edge = 'state/v_edge'
   []
   [reaction]
-    type = LinearReaction
-    lambda = 0.05
-    u = 'state/concentration'
+    type = ScalarLineCombination
+    from_var = 'state/concentration'
+    to_var = 'state/R'
+    coefficients = 0.05
   []
   [total_flux]
     type = ScalarLinearCombination
-    from_var = 'state/J_diffusion state/J_advection'
+    from_var = 'state/grad_u state/J_advection'
     to_var = 'state/J'
     coefficients = '1 1'
   []
@@ -178,12 +182,18 @@ Below is a compact example that assembles a full transport system, applies bound
     bc_value = 0.0
     side = 'right'
   []
+  [flux_divergence]
+    type = FiniteVolumeGradient
+    u = 'state/J_with_bc_left_with_bc_right'
+    prefactor = 1
+    dx = 'dx'
+    grad_u = 'state/flux_div'
+  []
   [rate_of_change]
-    type = CellRateOfChange
-    flux = 'state/J_with_bc_left_with_bc_right'
-    cell_size = 'dx'
-    reaction = 'state/R'
-    rate = 'state/concentration_rate'
+    type = ScalarLinearCombination
+    from_var = 'state/R state/flux_div'
+    to_var = 'state/concentration_rate'
+    coefficients = '1 1'
   []
   [integrate_u]
     type = ScalarBackwardEulerTimeIntegration
@@ -191,7 +201,7 @@ Below is a compact example that assembles a full transport system, applies bound
   []
   [implicit_rate]
     type = ComposedModel
-    models = 'diffusivity advection_velocity diffusive_flux advective_flux reaction total_flux left_bc right_bc rate_of_change integrate_u'
+    models = 'diffusivity advection_velocity diffusive_flux advective_flux reaction total_flux left_bc right_bc flux_divergence rate_of_change integrate_u'
   []
 []
 ```

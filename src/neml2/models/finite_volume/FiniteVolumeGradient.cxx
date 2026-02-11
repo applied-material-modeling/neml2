@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/finite_volume/DiffusiveFlux.h"
+#include "neml2/models/finite_volume/FiniteVolumeGradient.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/functions/diagonalize.h"
 #include "neml2/tensors/functions/imap.h"
@@ -30,58 +30,55 @@
 
 namespace neml2
 {
-register_NEML2_object(DiffusiveFlux);
+register_NEML2_object(FiniteVolumeGradient);
 
 OptionSet
-DiffusiveFlux::expected_options()
+FiniteVolumeGradient::expected_options()
 {
   OptionSet options = Model::expected_options();
-  options.doc() = "Compute diffusive fluxes at cell edges using first-order reconstruction.";
+  options.doc() =
+      "Compute prefactor-weighted gradients at cell edges using first-order reconstruction.";
 
   options.set_input("u") = VariableName(STATE, "u");
   options.set("u").doc() = "Cell-averaged field values.";
 
-  options.set_input("D_edge") = VariableName(STATE, "D_edge");
-  options.set("D_edge").doc() = "Cell-edge diffusivity values.";
+  options.set_parameter<TensorName<Scalar>>("prefactor") = "1";
+  options.set("prefactor").doc() = "Cell-edge prefactor values (defaults to 1).";
 
-  options.set_parameter<TensorName<Scalar>>("cell_centers");
-  options.set("cell_centers").doc() = "Cell center positions.";
+  options.set_parameter<TensorName<Scalar>>("dx");
+  options.set("dx").doc() = "Cell center spacing between adjacent cells.";
 
-  options.set_output("flux") = VariableName(STATE, "J_diffusion");
-  options.set("flux").doc() = "Cell-edge diffusive fluxes.";
+  options.set_output("grad_u") = VariableName(STATE, "grad_u");
+  options.set("grad_u").doc() = "Cell-edge prefactor-weighted gradients.";
 
   return options;
 }
 
-DiffusiveFlux::DiffusiveFlux(const OptionSet & options)
+FiniteVolumeGradient::FiniteVolumeGradient(const OptionSet & options)
   : Model(options),
     _u(declare_input_variable<Scalar>("u")),
-    _D_edge(declare_input_variable<Scalar>("D_edge")),
-    _cell_centers(declare_parameter<Scalar>("cell_centers", "cell_centers", true)),
-    _J(declare_output_variable<Scalar>("flux"))
+    _prefactor(declare_parameter<Scalar>("prefactor", "prefactor", true)),
+    _dx(declare_parameter<Scalar>("dx", "dx", true)),
+    _grad_u(declare_output_variable<Scalar>("grad_u"))
 {
 }
 
 void
-DiffusiveFlux::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
+FiniteVolumeGradient::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   const auto N = _u.intmd_size(-1);
   const auto M = N - 1;
   const auto u_left = _u().intmd_slice(-1, indexing::Slice(0, N - 1));
   const auto u_right = _u().intmd_slice(-1, indexing::Slice(1, N));
-  const auto D_vec = (_D_edge.intmd_dim() == 0 ? _D_edge().intmd_expand(M) : _D_edge());
-  const auto x_vec =
-      (_cell_centers.intmd_dim() == 0 ? _cell_centers.intmd_expand(N) : _cell_centers);
-  const auto x_left = x_vec.intmd_slice(-1, indexing::Slice(0, N - 1));
-  const auto x_right = x_vec.intmd_slice(-1, indexing::Slice(1, N));
-
-  const auto dx = x_right - x_left;
-  const auto inv_dx = 1.0 / dx;
+  const auto prefactor_vec =
+      (_prefactor.intmd_dim() == 0 ? _prefactor.intmd_expand(M) : _prefactor);
+  const auto dx_vec = (_dx.intmd_dim() == 0 ? _dx.intmd_expand(M) : _dx);
+  const auto inv_dx = 1.0 / dx_vec;
 
   const auto du = u_right - u_left;
 
   if (out)
-    _J = -D_vec * du * inv_dx;
+    _grad_u = -prefactor_vec * du * inv_dx;
 
   if (dout_din)
   {
@@ -91,33 +88,37 @@ DiffusiveFlux::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
     const auto S_left = diag_u.intmd_slice(0, indexing::Slice(0, N - 1));
     const auto S_right = diag_u.intmd_slice(0, indexing::Slice(1, N));
 
-    // dJ/du = -D_edge / dx * (S_right - S_left)
+    // dgrad_u/du = -prefactor / dx * (S_right - S_left)
     if (_u.is_dependent())
-      _J.d(_u, 2, 1, 1) = (-D_vec * inv_dx).intmd_unsqueeze(1) * (S_right - S_left);
+      _grad_u.d(_u, 2, 1, 1) = (-prefactor_vec * inv_dx).intmd_unsqueeze(1) * (S_right - S_left);
 
-    // dJ/dD_edge = -du / dx * I
-    if (_D_edge.is_dependent())
+    // dgrad_u/dprefactor = -du / dx * I
+    if (const auto * const prefactor = nl_param("prefactor"))
     {
-      if (_D_edge.intmd_dim() == 0)
-        _J.d(_D_edge, 1, 1, 0) = -du * inv_dx;
+      const auto dgrad_dprefactor = -du * inv_dx;
+      if (prefactor->intmd_dim() == 0)
+        _grad_u.d(*prefactor, 1, 1, 0) = dgrad_dprefactor;
       else
       {
-        const auto d_map = imap_v<Scalar>(_D_edge.options()).intmd_expand(M);
+        const auto d_map = imap_v<Scalar>(prefactor->options()).intmd_expand(M);
         const auto diag_d = intmd_diagonalize(d_map);
-        _J.d(_D_edge, 2, 1, 1) = (-du * inv_dx).intmd_unsqueeze(1) * diag_d;
+        _grad_u.d(*prefactor, 2, 1, 1) = dgrad_dprefactor.intmd_unsqueeze(1) * diag_d;
       }
     }
 
-    // dJ/dx = (-D_edge * du) * d(1/dx)/dx
-    if (const auto * const x = nl_param("cell_centers"))
+    // dgrad_u/ddx = (-prefactor * du) * d(1/dx)/dx = prefactor * du / dx^2
+    if (const auto * const dx = nl_param("dx"))
     {
-      const auto x_map = imap_v<Scalar>(_cell_centers.options()).intmd_expand(N);
-      const auto diag_x = intmd_diagonalize(x_map);
-      const auto S_left_x = diag_x.intmd_slice(0, indexing::Slice(0, N - 1));
-      const auto S_right_x = diag_x.intmd_slice(0, indexing::Slice(1, N));
       const auto inv_dx2 = inv_dx * inv_dx;
-      const auto coeff = -D_vec * du * inv_dx2;
-      _J.d(*x, 2, 1, 1) = coeff.intmd_unsqueeze(1) * (S_left_x - S_right_x);
+      const auto dgrad_over_dx2 = prefactor_vec * du * inv_dx2;
+      if (dx->intmd_dim() == 0)
+        _grad_u.d(*dx, 1, 1, 0) = dgrad_over_dx2;
+      else
+      {
+        const auto dx_map = imap_v<Scalar>(dx->options()).intmd_expand(M);
+        const auto diag_dx = intmd_diagonalize(dx_map);
+        _grad_u.d(*dx, 2, 1, 1) = dgrad_over_dx2.intmd_unsqueeze(1) * diag_dx;
+      }
     }
   }
 }

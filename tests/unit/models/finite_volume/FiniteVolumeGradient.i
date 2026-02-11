@@ -3,13 +3,13 @@
     type = ModelUnitTest
     model = 'model'
     check_AD_parameter_derivatives = false
-    input_Scalar_names = 'state/u state/D_edge'
-    input_Scalar_values = 'u D_edge'
-    output_Scalar_names = 'state/J'
-    output_Scalar_values = 'J'
-    input_with_intrsc_intmd_dims = 'state/u state/D_edge'
-    input_intrsc_intmd_dims = '1 1'
-    output_with_intrsc_intmd_dims = 'state/J'
+    input_Scalar_names = 'state/u'
+    input_Scalar_values = 'u'
+    output_Scalar_names = 'state/grad_u'
+    output_Scalar_values = 'grad_u'
+    input_with_intrsc_intmd_dims = 'state/u'
+    input_intrsc_intmd_dims = '1'
+    output_with_intrsc_intmd_dims = 'state/grad_u'
     output_intrsc_intmd_dims = '1'
   []
 []
@@ -21,19 +21,19 @@
     batch_shape = '(3)'
     intermediate_dimension = 1
   []
-  [D_edge]
+  [prefactor]
     type = Scalar
     values = '3 5'
     batch_shape = '(2)'
     intermediate_dimension = 1
   []
-  [centers]
+  [dx]
     type = Scalar
-    values = '0 1 2'
-    batch_shape = '(3)'
+    values = '1 1'
+    batch_shape = '(2)'
     intermediate_dimension = 1
   []
-  [J]
+  [grad_u]
     type = Scalar
     values = '-3 -10'
     batch_shape = '(2)'
@@ -43,10 +43,10 @@
 
 [Models]
   [model]
-    type = DiffusiveFlux
+    type = FiniteVolumeGradient
     u = 'state/u'
-    D_edge = 'state/D_edge'
-    cell_centers = 'centers'
-    flux = 'state/J'
+    prefactor = 'prefactor'
+    dx = 'dx'
+    grad_u = 'state/grad_u'
   []
 []

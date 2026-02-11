@@ -29,14 +29,14 @@
 namespace neml2
 {
 /**
- * @brief Diffusive flux at cell edges using first-order reconstruction.
+ * @brief Prefactor-weighted gradient at cell edges using first-order reconstruction.
  */
-class DiffusiveFlux : public Model
+class FiniteVolumeGradient : public Model
 {
 public:
   static OptionSet expected_options();
 
-  DiffusiveFlux(const OptionSet & options);
+  FiniteVolumeGradient(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
@@ -44,13 +44,13 @@ protected:
   /// Cell-averaged field values
   const Variable<Scalar> & _u;
 
-  /// Cell-edge diffusivity values
-  const Variable<Scalar> & _D_edge;
+  /// Cell-edge prefactor values
+  const Scalar & _prefactor;
 
-  /// Cell center positions
-  const Scalar & _cell_centers;
+  /// Cell center spacing between adjacent cells
+  const Scalar & _dx;
 
-  /// Cell-edge diffusive fluxes
-  Variable<Scalar> & _J;
+  /// Cell-edge prefactor-weighted gradients
+  Variable<Scalar> & _grad_u;
 };
 } // namespace neml2
