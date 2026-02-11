@@ -25,6 +25,7 @@
 #include "neml2/models/finite_volume/FiniteVolumeGradient.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/functions/diagonalize.h"
+#include "neml2/tensors/functions/diff.h"
 #include "neml2/tensors/functions/imap.h"
 #include "neml2/tensors/indexing.h"
 
@@ -68,29 +69,26 @@ FiniteVolumeGradient::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   const auto N = _u.intmd_size(-1);
   const auto M = N - 1;
-  const auto u_left = _u().intmd_slice(-1, indexing::Slice(0, N - 1));
-  const auto u_right = _u().intmd_slice(-1, indexing::Slice(1, N));
   const auto prefactor_vec =
       (_prefactor.intmd_dim() == 0 ? _prefactor.intmd_expand(M) : _prefactor);
   const auto dx_vec = (_dx.intmd_dim() == 0 ? _dx.intmd_expand(M) : _dx);
   const auto inv_dx = 1.0 / dx_vec;
 
-  const auto du = u_right - u_left;
+  const auto du = intmd_diff(_u(), 1, -1);
 
   if (out)
     _grad_u = -prefactor_vec * du * inv_dx;
 
   if (dout_din)
   {
-    // Build selector matrices for adjacent pairs. S_left picks i, S_right picks i+1.
+    // Build selector matrices for adjacent pairs. intmd_diff gives S_right - S_left.
     const auto u_map = imap_v<Scalar>(_u.options()).intmd_expand(N);
     const auto diag_u = intmd_diagonalize(u_map);
-    const auto S_left = diag_u.intmd_slice(0, indexing::Slice(0, N - 1));
-    const auto S_right = diag_u.intmd_slice(0, indexing::Slice(1, N));
+    const auto S_diff = intmd_diff(diag_u, 1, 0);
 
     // dgrad_u/du = -prefactor / dx * (S_right - S_left)
     if (_u.is_dependent())
-      _grad_u.d(_u, 2, 1, 1) = (-prefactor_vec * inv_dx).intmd_unsqueeze(1) * (S_right - S_left);
+      _grad_u.d(_u, 2, 1, 1) = (-prefactor_vec * inv_dx).intmd_unsqueeze(1) * S_diff;
 
     // dgrad_u/dprefactor = -du / dx * I
     if (const auto * const prefactor = nl_param("prefactor"))
