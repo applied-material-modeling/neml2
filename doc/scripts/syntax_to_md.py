@@ -30,6 +30,7 @@ import re
 from pathlib import Path
 from loguru import logger
 import unicodedata as ud
+from typing import Union
 
 
 def remove_namespace(type):
@@ -126,7 +127,7 @@ You can always use `Ctrl`+`F` or `Cmd`+`F` to search the entire page.
     return prologue
 
 
-def first_nonprintable(path: Path, encoding="utf-8") -> dict | None:
+def first_nonprintable(path: Path, encoding="utf-8") -> Union[dict, None]:
     BAD_CATEGORIES = {"Cc", "Cf", "Cs"}
     ALLOW = {"\n", "\r", "\t"}
     text = path.read_text(encoding=encoding, errors="surrogateescape")
