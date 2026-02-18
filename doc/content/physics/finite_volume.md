@@ -1,8 +1,8 @@
-# Finite Volume Transport Physics {#finite_volume}
+# Finite Volume Transport Physics {#finite-volume}
 
 [TOC]
 
-The finite volume transport physics module provides composable building blocks for solve 1D PDEs with finite volume methods. The models are designed for arbitrary batch dimensions and 
+The finite volume transport physics module provides composable building blocks for solve 1D PDEs with finite volume methods. The models are designed for arbitrary batch dimensions and
 integrate with the standard NEML2 time integration and nonlinear solve infrastructure.  The module could be used for arbitrary PDEs, but the provided examples and tests focus
 on 1D transport (advection-diffusion-reaction) PDEs.
 
