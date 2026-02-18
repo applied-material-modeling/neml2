@@ -22,6 +22,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <algorithm>
+
 #include <torch/script.h>
 
 #include "VTestVerification.h"
@@ -35,7 +37,8 @@ namespace neml2
 static std::string diff(const torch::jit::named_buffer_list & res,
                         const std::map<std::string, Tensor> & ref_map,
                         double rtol,
-                        double atol);
+                        double atol,
+                        std::vector<size_t> & indices);
 
 register_NEML2_object(VTestVerification);
 
@@ -78,6 +81,11 @@ VTestVerification::expected_options()
 
   options.set<double>("rtol") = 1e-5;
   options.set<double>("atol") = 1e-8;
+
+  options.set<std::vector<size_t>>("time_steps") = {};
+  options.set("time_steps").doc() =
+      "Time steps provided in the provided reference solutions to verify. If empty, all time steps "
+      "must be provided and will be verified.";
   return options;
 }
 
@@ -85,7 +93,8 @@ VTestVerification::VTestVerification(const OptionSet & options)
   : Driver(options),
     _driver(get_driver<TransientDriver>("driver")),
     _rtol(options.get<double>("rtol")),
-    _atol(options.get<double>("atol"))
+    _atol(options.get<double>("atol")),
+    _time_steps(options.get<std::vector<size_t>>("time_steps"))
 {
 #define SETUP_REF_(T) setup_ref_values<T>(options, _ref, #T "_names", #T "_values")
   FOR_ALL_TENSORBASE(SETUP_REF_);
@@ -108,7 +117,7 @@ VTestVerification::run()
   _driver->run();
 
   auto res = torch::jit::load(_driver->save_as_path());
-  auto err_msg = diff(res.named_buffers(), _ref, _rtol, _atol);
+  auto err_msg = diff(res.named_buffers(), _ref, _rtol, _atol, _time_steps);
 
   neml_assert(err_msg.empty(), err_msg);
 
@@ -119,8 +128,12 @@ std::string
 diff(const torch::jit::named_buffer_list & res,
      const std::map<std::string, Tensor> & ref_map,
      double rtol,
-     double atol)
+     double atol,
+     std::vector<size_t> & indices)
 {
+  // Sort indices for future use
+  std::sort(indices.begin(), indices.end());
+
   std::map<std::string, ATensor> res_map;
   for (auto item : res)
     res_map.emplace(item.name, item.value);
@@ -132,10 +145,44 @@ diff(const torch::jit::named_buffer_list & res,
     const auto tokens = utils::split(name, ".");
     if (tokens.size() < 2)
       err_msg << "Invalid reference variable name " << name << ".\n";
-    const auto nstep = val.size(0);
+    Size nstep = 0;
+    bool found = false;
+    for (const auto & [resname, resval] : res_map)
+    {
+      const auto restokens = utils::split(resname, ".");
+      if (restokens.size() != tokens.size() + 1)
+        continue;
+      if (restokens.front() != tokens.front())
+        continue;
+      if (!std::equal(tokens.begin() + 1, tokens.end(), restokens.begin() + 2))
+        continue;
+
+      try
+      {
+        const auto step = static_cast<Size>(std::stoull(restokens[1]));
+        nstep = std::max(nstep, step + 1);
+        found = true;
+      }
+      catch (const std::exception &)
+      {
+        continue;
+      }
+    }
+    if (!found)
+    {
+      err_msg << "Result is missing variable " << name << ".\n";
+      continue;
+    }
+    Size j = 0;
     for (Size i = 0; i < nstep; i++)
     {
-      const auto refi = val.index({i}).squeeze();
+      if (!indices.empty() &&
+          !std::binary_search(indices.begin(), indices.end(), static_cast<size_t>(i)))
+        continue;
+
+      const auto refi = indices.size() == 1 ? at::Tensor(val) : val.index({j}).squeeze();
+      j++;
+
       auto restokens = tokens;
       restokens.insert(restokens.begin() + 1, std::to_string(i));
       const auto resname = utils::join(restokens, ".");

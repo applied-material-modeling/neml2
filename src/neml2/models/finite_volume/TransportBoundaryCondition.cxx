@@ -22,49 +22,5 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-
-#include "neml2/drivers/Driver.h"
-
-namespace jit
-{
-template <typename T>
-struct slot_list_impl;
-namespace detail
-{
-struct BufferPolicy;
-template <typename P>
-struct NamedPolicy;
-} // namespace detail
-using named_buffer_list = slot_list_impl<detail::NamedPolicy<detail::BufferPolicy>>;
-} // namespace jit
-
-namespace neml2
-{
-class TransientDriver;
-
-class VTestVerification : public Driver
-{
-public:
-  static OptionSet expected_options();
-
-  VTestVerification(const OptionSet & options);
-
-  void diagnose() const override;
-
-  bool run() override;
-
-private:
-  /// The driver that will run the NEML2 model
-  const std::shared_ptr<TransientDriver> _driver;
-
-  /// The variables with the correct values (from the vtest file)
-  std::map<std::string, Tensor> _ref;
-
-  double _rtol;
-  double _atol;
-
-  /// Time steps to verify
-  std::vector<size_t> _time_steps;
-};
-} // namespace neml2
+// Deprecated implementation file retained for compatibility; implementation moved to
+// FiniteVolumeAppendBoundaryCondition.

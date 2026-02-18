@@ -28,6 +28,9 @@ import yaml
 import sys
 import re
 from pathlib import Path
+from loguru import logger
+import unicodedata as ud
+from typing import Union
 
 
 def remove_namespace(type):
@@ -124,6 +127,36 @@ You can always use `Ctrl`+`F` or `Cmd`+`F` to search the entire page.
     return prologue
 
 
+def first_nonprintable(path: Path, encoding="utf-8") -> Union[dict, None]:
+    BAD_CATEGORIES = {"Cc", "Cf", "Cs"}
+    ALLOW = {"\n", "\r", "\t"}
+    text = path.read_text(encoding=encoding, errors="surrogateescape")
+
+    line = 1
+    col = 1
+    for idx, ch in enumerate(text):
+        if ch == "\n":
+            line += 1
+            col = 1
+            continue
+
+        cat = ud.category(ch)
+        if ch not in ALLOW and cat in BAD_CATEGORIES:
+            return {
+                "line": line,
+                "col": col,
+                "index": idx,
+                "char": ch,
+                "codepoint": f"U+{ord(ch):04X}",
+                "category": cat,
+                "name": ud.name(ch, "<no name>"),
+            }
+
+        col += 1
+
+    return None
+
+
 def syntax_to_md(syntax_file: Path, outdir: Path, logfile: Path) -> int:
     """
     Convert the syntax YAML file extracted by neml2-syntax into markdown files for documentation.
@@ -140,7 +173,21 @@ def syntax_to_md(syntax_file: Path, outdir: Path, logfile: Path) -> int:
     """
 
     with open(syntax_file, "r") as stream:
-        syntax = yaml.safe_load(stream)
+        try:
+            syntax = yaml.safe_load(stream)
+        except yaml.YAMLError as e:
+            logger.error(f"Error reading YAML file: {syntax_file}")
+            err_msg = str(e)
+            for line in err_msg.splitlines():
+                logger.error(f"  {line}")
+            np = first_nonprintable(syntax_file)
+            if np is not None:
+                logger.error(
+                    "The first non-printable character is at line {line}, column {col} ({codepoint}, {category}, {name})".format(
+                        **np
+                    )
+                )
+            exit(1)
     outdir.mkdir(parents=True, exist_ok=True)
     logfile.parent.mkdir(parents=True, exist_ok=True)
 
