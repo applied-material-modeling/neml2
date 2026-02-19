@@ -151,27 +151,6 @@ if(NEML2_WORK_DISPATCHER)
   target_link_libraries(driver PUBLIC dispatcher)
 endif()
 
-# feature definitions
-set(NEML2_CONFIG_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
-set(NEML2_CONFIG_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/include")
-
-if(IS_ABSOLUTE "${INSTALL_LIBDIR}")
-  set(NEML2_CONFIG_LIB_DIR "${INSTALL_LIBDIR}")
-else()
-  set(NEML2_CONFIG_LIB_DIR "${CMAKE_INSTALL_PREFIX}/${INSTALL_LIBDIR}")
-endif()
-
-if(IS_ABSOLUTE "${INSTALL_BINDIR}")
-  set(NEML2_CONFIG_BIN_DIR "${INSTALL_BINDIR}")
-else()
-  set(NEML2_CONFIG_BIN_DIR "${CMAKE_INSTALL_PREFIX}/${INSTALL_BINDIR}")
-endif()
-
-set(NEML2_CONFIG_TORCH_DIR "${torch_ROOT}")
-set(NEML2_CONFIG_TORCH_INCLUDE_DIR "${torch_INCLUDE_DIR}")
-set(NEML2_CONFIG_TORCH_CSRC_DIR "${torch_csrc_INCLUDE_DIR}")
-set(NEML2_CONFIG_TORCH_LIB_DIR "${torch_LINK_DIR}")
-
 configure_file(
   ${NEML2_SOURCE_DIR}/include/neml2/config.h.in
   ${NEML2_BINARY_DIR}/include/neml2/config.h
