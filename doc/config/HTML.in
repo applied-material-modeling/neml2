@@ -21,6 +21,7 @@ HTML_EXTRA_STYLESHEET  = ${repo_root}/contrib/doxygen-awesome-css/doxygen-awesom
                          ${repo_root}/doc/config/custom.css
 HTML_COLORSTYLE        = LIGHT
 GENERATE_TREEVIEW      = YES
+PAGE_OUTLINE_PANEL     = NO
 USE_MATHJAX            = YES
 MATHJAX_VERSION        = MathJax_3
 MATHJAX_FORMAT         = HTML-CSS
