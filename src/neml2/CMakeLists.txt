@@ -342,8 +342,9 @@ configure_file(
   ${NEML2_BINARY_DIR}/neml2.pc.in
   @ONLY
 )
+set(NEML2_PKGCONFIG_SUFFIX "$<IF:$<CONFIG:Release>,,_$<CONFIG>>")
 file(GENERATE
-  OUTPUT ${NEML2_BINARY_DIR}/neml2.pc
+  OUTPUT ${NEML2_BINARY_DIR}/neml2${NEML2_PKGCONFIG_SUFFIX}.pc
   INPUT ${NEML2_BINARY_DIR}/neml2.pc.in
 )
 
@@ -357,7 +358,7 @@ if(NOT SKBUILD_STATE STREQUAL "editable")
   )
   install(
     FILES
-    ${NEML2_BINARY_DIR}/neml2.pc
+    ${NEML2_BINARY_DIR}/neml2${NEML2_PKGCONFIG_SUFFIX}.pc
     DESTINATION share/pkgconfig
     COMPONENT libneml2
   )
