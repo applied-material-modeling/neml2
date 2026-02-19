@@ -2,8 +2,8 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/R state/x_inf'
-    input_Scalar_values = 'R x_inf'
+    input_Scalar_names = 'state/R state/sum state/dg state/T'
+    input_Scalar_values = 'R sum dg T'
     output_Scalar_names = 'state/R_dot'
     output_Scalar_values = 'R_dot'
     input_with_intrsc_intmd_dims = 'state/R'
@@ -19,13 +19,21 @@
     batch_shape = '(3)'
     intermediate_dimension = 1
   []
-  [x_inf]
+  [sum]
     type = Scalar
-    values = '0.25'
+    values = '0.5'
+  []
+  [dg]
+    type = Scalar
+    values = '2.0'
+  []
+  [T]
+    type = Scalar
+    values = '400.0'
   []
   [R_dot]
     type = Scalar
-    values = '0.42857142857142855 0.21428571428571427 0.10714285714285714'
+    values = '0.00125 0.000625 0.0003125'
     batch_shape = '(3)'
     intermediate_dimension = 1
   []
@@ -33,12 +41,12 @@
 
 [Models]
   [model]
-    type = RateLimitedPrecipitateGrowthRate
+    type = SFFKGPrecipitationGrowthRate
     radius = 'state/R'
-    current_concentration = 'state/x_inf'
-    equilibrium_concentration = 0.1
-    concentration_difference = 0.7
-    diffusivity = 2.0
+    projected_diffusivity_sum = 'state/sum'
+    gibbs_free_energy_difference = 'state/dg'
+    temperature = 'state/T'
+    gas_constant = 8.0
     growth_rate = 'state/R_dot'
   []
 []
