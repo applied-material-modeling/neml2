@@ -1,4 +1,4 @@
-prefix=@CMAKE_INSTALL_PREFIX@
+prefix=@NEML2_PKGCONFIG_PREFIX@
 exec_prefix=${prefix}
 libdir=@NEML2_PKGCONFIG_LIBDIR@
 includedir=${prefix}/include

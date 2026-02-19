@@ -222,6 +222,9 @@ if(IS_ABSOLUTE "${INSTALL_LIBDIR}")
 else()
   set(NEML2_PKGCONFIG_LIBDIR "\${exec_prefix}/${INSTALL_LIBDIR}")
 endif()
+# Keep the pkg-config file relocatable so cmake --install --prefix works.
+# neml2.pc is installed to <prefix>/share/pkgconfig, so prefix is two levels up.
+set(NEML2_PKGCONFIG_PREFIX "\${pcfiledir}/../..")
 
 set(NEML2_PKGCONFIG_LIB_TARGETS neml2)
 get_target_property(_neml2_interface_libs neml2 INTERFACE_LINK_LIBRARIES)
