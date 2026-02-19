@@ -27,15 +27,21 @@
 
 namespace neml2
 {
-std::unique_ptr<Factory>
-load_input(const std::filesystem::path & path, const std::string & additional_input)
+void
+force_link_runtime()
 {
-  // Force link dynamic libraries
   ::_neml2_force_link_models();
   ::_neml2_force_link_equation_systems();
   ::_neml2_force_link_solvers();
   ::_neml2_force_link_user_tensors();
   ::_neml2_force_link_drivers();
+}
+
+std::unique_ptr<Factory>
+load_input(const std::filesystem::path & path, const std::string & additional_input)
+{
+  // Force link dynamic libraries
+  force_link_runtime();
 
   // For now we only support HIT
   if (utils::end_with(path.string(), ".i"))

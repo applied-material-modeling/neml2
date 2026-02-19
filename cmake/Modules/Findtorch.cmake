@@ -95,49 +95,35 @@ if(NOT TARGET torch::core)
     # This is important because the torch library may be built with either the
     # pre C++11 ABI or the C++11 ABI. We need to be consistent with the same ABI.
     if(HAS_GLIBC)
-      if(DEFINED FORCE_GLIBCXX_USE_CXX11_ABI)
-        set(GLIBCXX_USE_CXX11_ABI ${FORCE_GLIBCXX_USE_CXX11_ABI} CACHE INTERNAL "C++11 ABI" FORCE)
-      else()
-        try_compile(
-          torch_GLIBCXX_USE_CXX11_ABI
-          SOURCES
-          ${CMAKE_CURRENT_LIST_DIR}/DetectTorchCXXABI.cxx
-          CMAKE_FLAGS -DINCLUDE_DIRECTORIES=${torch_INCLUDE_DIR}
-          COMPILE_DEFINITIONS -D_GLIBCXX_USE_CXX11_ABI=1
-          LINK_OPTIONS -L${torch_LINK_DIR}
-          LINK_LIBRARIES ${c10_LIBRARY}
-          CXX_STANDARD 17
-        )
-        try_compile(
-          torch_GLIBCXX_USE_PRE_CXX11_ABI
-          SOURCES
-          ${CMAKE_CURRENT_LIST_DIR}/DetectTorchCXXABI.cxx
-          CMAKE_FLAGS -DINCLUDE_DIRECTORIES=${torch_INCLUDE_DIR}
-          COMPILE_DEFINITIONS -D_GLIBCXX_USE_CXX11_ABI=0
-          LINK_OPTIONS -L${torch_LINK_DIR}
-          LINK_LIBRARIES ${c10_LIBRARY}
-          CXX_STANDARD 17
-        )
+      try_compile(
+        torch_GLIBCXX_USE_CXX11_ABI
+        SOURCES
+        ${CMAKE_CURRENT_LIST_DIR}/DetectTorchCXXABI.cxx
+        CMAKE_FLAGS -DINCLUDE_DIRECTORIES=${torch_INCLUDE_DIR}
+        COMPILE_DEFINITIONS -D_GLIBCXX_USE_CXX11_ABI=1
+        LINK_OPTIONS -L${torch_LINK_DIR}
+        LINK_LIBRARIES ${c10_LIBRARY}
+        CXX_STANDARD 17
+      )
+      try_compile(
+        torch_GLIBCXX_USE_PRE_CXX11_ABI
+        SOURCES
+        ${CMAKE_CURRENT_LIST_DIR}/DetectTorchCXXABI.cxx
+        CMAKE_FLAGS -DINCLUDE_DIRECTORIES=${torch_INCLUDE_DIR}
+        COMPILE_DEFINITIONS -D_GLIBCXX_USE_CXX11_ABI=0
+        LINK_OPTIONS -L${torch_LINK_DIR}
+        LINK_LIBRARIES ${c10_LIBRARY}
+        CXX_STANDARD 17
+      )
 
-        # One and only one of the two should succeed
-        if(torch_GLIBCXX_USE_CXX11_ABI STREQUAL torch_GLIBCXX_USE_PRE_CXX11_ABI)
-          message(FATAL_ERROR "Failed to detect the C++11 ABI of torch. Please specify the C++11 ABI manually using FORCE_GLIBCXX_USE_CXX11_ABI=(0|1).")
-        endif()
+      # One and only one of the two should succeed
+      if(torch_GLIBCXX_USE_CXX11_ABI STREQUAL torch_GLIBCXX_USE_PRE_CXX11_ABI)
+        message(FATAL_ERROR "Failed to detect the C++11 ABI of torch. Please specify the C++11 ABI manually using FORCE_GLIBCXX_USE_CXX11_ABI=(0|1).")
+      endif()
 
-        # Set the CXX11 ABI flag based on the detection
-        if(torch_GLIBCXX_USE_PRE_CXX11_ABI)
-          set(GLIBCXX_USE_CXX11_ABI 0 CACHE INTERNAL "C++11 ABI" FORCE)
-        elseif(torch_GLIBCXX_USE_CXX11_ABI)
-          set(GLIBCXX_USE_CXX11_ABI 1 CACHE INTERNAL "C++11 ABI" FORCE)
-        endif()
-
-        target_compile_definitions(torch::core INTERFACE _GLIBCXX_USE_CXX11_ABI=${GLIBCXX_USE_CXX11_ABI})
-
-        if(${GLIBCXX_USE_CXX11_ABI} STREQUAL "0")
-          message(STATUS "Using pre C++11 ABI")
-        else()
-          message(STATUS "Using C++11 ABI")
-        endif()
+      # Set the CXX11 ABI flag based on the detection
+      if(torch_GLIBCXX_USE_PRE_CXX11_ABI)
+        message(FATAL_ERROR "Detected that torch is built with the pre C++11 ABI which is no longer supported. Please upgrade your torch installation.")
       endif()
     endif()
   else()

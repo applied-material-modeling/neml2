@@ -1,4 +1,4 @@
-name: CMake integration
+name: Downstream integration
 
 on:
   push:
@@ -23,8 +23,8 @@ jobs:
           torch-version: 2.8.0
       - name: Create an example CMake project
         run: |
-          cp neml2/cmake/add_subdirectory/main.cxx .
-          cp neml2/cmake/add_subdirectory/CMakeLists.txt .
+          cp neml2/tests/integration/cmake_add_subdirectory/main.cxx .
+          cp neml2/tests/integration/cmake_add_subdirectory/CMakeLists.txt .
       - name: Configure with CMake
         run: cmake -DNEML2_TESTS=OFF -GNinja -B build .
       - name: Compile
@@ -47,10 +47,34 @@ jobs:
           cmake --install neml2-build --prefix neml2-install --component libneml2
       - name: Create an example CMake project
         run: |
-          cp neml2-src/cmake/find_package/main.cxx .
-          cp neml2-src/cmake/find_package/CMakeLists.txt .
+          cp neml2-src/tests/integration/cmake_find_package/main.cxx .
+          cp neml2-src/tests/integration/cmake_find_package/CMakeLists.txt .
       - name: Configure with CMake
         run: cmake -GNinja -Dneml2_ROOT=neml2-install -B build -S .
       - name: Compile
         run: cmake --build build
       - run: ./build/foo
+
+  gnumake:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: applied-material-modeling/neml2-ci@main
+        with:
+          path: neml2-src
+          python-version: 3.9
+          cmake-version: 3.26.0
+          torch-version: 2.8.0
+      - name: Install neml2
+        run: |
+          cmake --preset release -GNinja -S neml2-src -B neml2-build
+          cmake --build neml2-build
+          cmake --install neml2-build --prefix neml2-install --component libneml2
+      - name: Create an example project using gnumake
+        run: |
+          cp neml2-src/tests/integration/gnumake_pkgcfg/main.cxx .
+          cp neml2-src/tests/integration/gnumake_pkgcfg/Makefile .
+      - name: Compile with gnumake and pkg-config
+        run: |
+          PKG_CONFIG_PATH=neml2-install/share/pkgconfig make
+      - name: Run executable
+        run: ./foo

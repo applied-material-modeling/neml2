@@ -134,6 +134,7 @@ if __name__ == "__main__":
         "doc/content",
         "doc/tutorials",
         "doc/config",
+        "tests/integration",
     ]
     exclude_files = []
 
