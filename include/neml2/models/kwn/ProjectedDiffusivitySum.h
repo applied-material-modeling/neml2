@@ -30,33 +30,27 @@ namespace neml2
 {
 class Scalar;
 
-/// Rate-limited precipitate growth rate for a single species.
-class RateLimitedPrecipitateGrowthRate : public Model
+/// Sum of projected species diffusivity terms.
+class ProjectedDiffusivitySum : public Model
 {
 public:
   static OptionSet expected_options();
 
-  RateLimitedPrecipitateGrowthRate(const OptionSet & options);
+  ProjectedDiffusivitySum(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  /// Precipitate radius per size bin
-  const Variable<Scalar> & _R;
+  /// Projected diffusivity sum
+  Variable<Scalar> & _sum;
 
-  /// Current concentration in solution
-  const Variable<Scalar> & _x;
+  /// Concentration differences per species
+  std::vector<const Scalar *> _dxs;
 
-  /// Equilibrium concentration in solution
-  const Scalar & _x_eq;
+  /// Species diffusivities
+  std::vector<const Scalar *> _Ds;
 
-  /// Concentration difference between precipitate and equilibrium
-  const Scalar & _dx;
-
-  /// Species diffusivity in solution
-  const Scalar & _D;
-
-  /// Growth rate per size bin
-  Variable<Scalar> & _R_dot;
+  /// Far-field concentrations
+  std::vector<const Variable<Scalar> *> _x_infs;
 };
 } // namespace neml2

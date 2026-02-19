@@ -47,8 +47,9 @@ RateLimitedPrecipitateGrowthRate::expected_options()
   options.set_parameter<TensorName<Scalar>>("equilibrium_concentration");
   options.set("equilibrium_concentration").doc() = "Equilibrium concentration in solution";
 
-  options.set_parameter<TensorName<Scalar>>("precipitate_concentration");
-  options.set("precipitate_concentration").doc() = "Precipitate concentration";
+  options.set_parameter<TensorName<Scalar>>("concentration_difference");
+  options.set("concentration_difference").doc() =
+      "Concentration difference between precipitate and equilibrium";
 
   options.set_parameter<TensorName<Scalar>>("diffusivity");
   options.set("diffusivity").doc() = "Species diffusivity in solution";
@@ -64,7 +65,7 @@ RateLimitedPrecipitateGrowthRate::RateLimitedPrecipitateGrowthRate(const OptionS
     _R(declare_input_variable<Scalar>("radius")),
     _x(declare_input_variable<Scalar>("current_concentration")),
     _x_eq(declare_parameter<Scalar>("x_eq", "equilibrium_concentration", true)),
-    _x_p(declare_parameter<Scalar>("x_p", "precipitate_concentration", true)),
+    _dx(declare_parameter<Scalar>("dx", "concentration_difference", true)),
     _D(declare_parameter<Scalar>("D", "diffusivity", true)),
     _R_dot(declare_output_variable<Scalar>("growth_rate"))
 {
@@ -77,10 +78,10 @@ RateLimitedPrecipitateGrowthRate::set_value(bool out, bool dout_din, bool /*d2ou
   const auto R = _R();
   const auto x_inf = (_x.intmd_dim() == 0 ? _x().intmd_expand(nbin) : _x());
   const auto x_eq = (_x_eq.intmd_dim() == 0 ? _x_eq.intmd_expand(nbin) : _x_eq);
-  const auto x_p = (_x_p.intmd_dim() == 0 ? _x_p.intmd_expand(nbin) : _x_p);
+  const auto dx = (_dx.intmd_dim() == 0 ? _dx.intmd_expand(nbin) : _dx);
   const auto D = (_D.intmd_dim() == 0 ? _D.intmd_expand(nbin) : _D);
 
-  const auto denom = x_p - x_eq;
+  const auto denom = dx;
   const auto numer = x_inf - x_eq;
   const auto coef = D / R;
 
@@ -114,7 +115,7 @@ RateLimitedPrecipitateGrowthRate::set_value(bool out, bool dout_din, bool /*d2ou
 
     if (const auto * const x_eq_param = nl_param("x_eq"))
     {
-      const auto d_rate_dx_eq = D * (x_inf - x_p) / (R * denom2);
+      const auto d_rate_dx_eq = -D / (R * denom);
       if (x_eq_param->intmd_dim() == 0)
         _R_dot.d(*x_eq_param, 1, 1, 0) = d_rate_dx_eq;
       else
@@ -125,16 +126,16 @@ RateLimitedPrecipitateGrowthRate::set_value(bool out, bool dout_din, bool /*d2ou
       }
     }
 
-    if (const auto * const x_p_param = nl_param("x_p"))
+    if (const auto * const dx_param = nl_param("dx"))
     {
-      const auto d_rate_dx_p = -D * numer / (R * denom2);
-      if (x_p_param->intmd_dim() == 0)
-        _R_dot.d(*x_p_param, 1, 1, 0) = d_rate_dx_p;
+      const auto d_rate_ddx = -D * numer / (R * denom2);
+      if (dx_param->intmd_dim() == 0)
+        _R_dot.d(*dx_param, 1, 1, 0) = d_rate_ddx;
       else
       {
-        const auto xp_map = imap_v<Scalar>(_x_p.options()).intmd_expand(nbin);
-        const auto diag_xp = intmd_diagonalize(xp_map);
-        _R_dot.d(*x_p_param, 2, 1, 1) = d_rate_dx_p.intmd_unsqueeze(1) * diag_xp;
+        const auto dx_map = imap_v<Scalar>(_dx.options()).intmd_expand(nbin);
+        const auto diag_dx = intmd_diagonalize(dx_map);
+        _R_dot.d(*dx_param, 2, 1, 1) = d_rate_ddx.intmd_unsqueeze(1) * diag_dx;
       }
     }
 
