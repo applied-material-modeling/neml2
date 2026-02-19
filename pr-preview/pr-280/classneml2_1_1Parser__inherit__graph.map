@@ -1,0 +1,5 @@
+<map id="Parser" name="Parser">
+<area shape="rect" id="Node000001" title="A parser is responsible for parsing an input file into a collection of options which can be used by t..." alt="" coords="16,5,79,31"/>
+<area shape="rect" id="Node000002" href="$classneml2_1_1HITParser.html" title="A parser is responsible for parsing an input file into a collection of options which can be used by t..." alt="" coords="5,79,89,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="50,44,50,79,45,79,45,44"/>
+</map>

@@ -1,0 +1,15 @@
+<map id="SymmetryFromOrbifold" name="SymmetryFromOrbifold">
+<area shape="rect" id="Node000001" title="Provide the correct symmetry operators for a given crystal class." alt="" coords="22,387,197,412"/>
+<area shape="rect" id="Node000002" href="$classneml2_1_1UserTensorBase.html" title=" " alt="" coords="23,313,196,339"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="112,352,112,387,107,387,107,352"/>
+<area shape="rect" id="Node000003" href="$classneml2_1_1NEML2Object.html" title="The base class of all &quot;manufacturable&quot; objects in the NEML2 library." alt="" coords="5,240,115,265"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="78,275,104,312,99,315,74,278"/>
+<area shape="rect" id="Node000004" href="$classneml2_1_1R2.html" title="Base class for second order tensor." alt="" coords="139,240,178,265"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="145,278,120,315,115,312,141,275"/>
+<area shape="rect" id="Node000005" href="$classneml2_1_1PrimitiveTensor.html" title=" " alt="" coords="79,152,238,192"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="161,206,161,240,156,240,156,206"/>
+<area shape="rect" id="Node000006" href="$classneml2_1_1TensorBase.html" title=" " alt="" coords="87,79,230,104"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="161,118,161,152,156,152,156,118"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="123,5,195,31"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="161,44,161,79,156,79,156,44"/>
+</map>

@@ -1,0 +1,4 @@
+var structneml2_1_1DTensorBase_3_01Derived_00_01std_1_1integer__sequence_3_01Size_00_01S_8_8_8_01_4_01_4 =
+[
+    [ "type", "structneml2_1_1DTensorBase_3_01Derived_00_01std_1_1integer__sequence_3_01Size_00_01S_8_8_8_01_4_01_4.html#a1da2070bbfb902fb80e4080cbdb6c00a", null ]
+];

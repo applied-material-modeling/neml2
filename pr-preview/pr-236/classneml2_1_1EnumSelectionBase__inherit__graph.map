@@ -1,0 +1,7 @@
+<map id="EnumSelectionBase" name="EnumSelectionBase">
+<area shape="rect" id="Node000001" title=" " alt="" coords="69,5,220,31"/>
+<area shape="rect" id="Node000002" href="$classneml2_1_1EnumSelection.html" title="Selection of an enum value from a list of candidates." alt="" coords="5,79,124,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="124,42,80,80,76,76,120,38"/>
+<area shape="rect" id="Node000003" href="$classneml2_1_1MultiEnumSelection.html" title="Selection of multiple enum value from a list of candidates." alt="" coords="149,79,301,104"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="169,38,213,76,210,80,166,42"/>
+</map>

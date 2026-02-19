@@ -1,0 +1,7 @@
+<map id="EquationSystem" name="EquationSystem">
+<area shape="rect" id="Node000001" title="Base class for manufacturable objects under the EquationSystems section." alt="" coords="29,79,157,104"/>
+<area shape="rect" id="Node000003" href="$classneml2_1_1ModelNonlinearSystem.html" title="A monolith nonlinear system defined by a Model." alt="" coords="5,152,180,177"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="95,118,95,152,90,152,90,118"/>
+<area shape="rect" id="Node000002" href="$classneml2_1_1NEML2Object.html" title="The base class of all &quot;manufacturable&quot; objects in the NEML2 library." alt="" coords="38,5,147,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="95,44,95,79,90,79,90,44"/>
+</map>

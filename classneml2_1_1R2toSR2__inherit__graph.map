@@ -1,0 +1,21 @@
+<map id="R2toSR2" name="R2toSR2">
+<area shape="rect" id="Node000001" title="Get the symmetric part of a full rank two tensor." alt="" coords="488,145,565,170"/>
+<area shape="rect" id="Node000002" href="$classneml2_1_1Model.html" title="The base class for all constitutive models." alt="" coords="377,145,440,170"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="454,155,488,155,488,160,454,160"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="169,5,323,45"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="323,50,331,55,355,76,375,101,403,143,398,146,371,104,351,80,328,59,320,54"/>
+<area shape="rect" id="Node000004" href="$classneml2_1_1Data.html" title=" " alt="" coords="219,70,273,95"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="287,89,330,104,364,123,392,142,389,147,361,128,328,109,285,94"/>
+<area shape="rect" id="Node000005" href="$classneml2_1_1NEML2Object.html" title="The base class of all &quot;manufacturable&quot; objects in the NEML2 library." alt="" coords="5,46,115,71"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="129,65,219,77,219,82,128,70"/>
+<area shape="rect" id="Node000006" href="$classneml2_1_1BufferStore.html" title="Interface for object which can store buffers." alt="" coords="13,95,107,121"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="121,97,219,84,220,89,121,102"/>
+<area shape="rect" id="Node000007" href="$classneml2_1_1ParameterStore.html" title="Interface for object which can store parameters." alt="" coords="185,119,307,145"/>
+<area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="321,141,377,150,377,155,321,146"/>
+<area shape="rect" id="Node000008" href="$classneml2_1_1VariableStore.html" title=" " alt="" coords="191,169,301,194"/>
+<area shape="poly" id="edge7_Node000002_Node000008" title=" " alt="" coords="314,169,377,159,378,164,315,174"/>
+<area shape="rect" id="Node000009" href="$classneml2_1_1DependencyDefinition.html" title=" " alt="" coords="163,219,329,259"/>
+<area shape="poly" id="edge8_Node000002_Node000009" title=" " alt="" coords="314,211,328,204,388,168,391,172,331,209,317,216"/>
+<area shape="rect" id="Node000010" href="$classneml2_1_1DiagnosticsInterface.html" title="Interface for object making diagnostics about common setup errors." alt="" coords="168,283,324,309"/>
+<area shape="poly" id="edge9_Node000002_Node000010" title=" " alt="" coords="317,275,328,269,353,245,373,218,400,169,404,172,378,221,357,249,331,273,319,280"/>
+</map>

@@ -1,0 +1,9 @@
+<map id="SetupException" name="SetupException">
+<area shape="rect" id="Node000001" title=" " alt="" coords="88,79,211,104"/>
+<area shape="rect" id="Node000003" href="$classneml2_1_1FactoryException.html" title=" " alt="" coords="5,152,139,177"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="129,115,86,154,83,150,125,111"/>
+<area shape="rect" id="Node000004" href="$classneml2_1_1ParserException.html" title=" " alt="" coords="163,152,290,177"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="174,111,216,150,212,154,170,115"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="106,5,193,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="152,44,152,79,147,79,147,44"/>
+</map>

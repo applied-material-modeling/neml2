@@ -1,0 +1,15 @@
+<map id="Solver" name="Solver">
+<area shape="rect" id="Node000001" title="The solver solves a system of equations." alt="" coords="95,79,157,104"/>
+<area shape="rect" id="Node000003" href="$classneml2_1_1LinearSolver.html" title="The linear solver solves a linear system of equations." alt="" coords="5,152,108,177"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="107,116,70,154,66,150,103,112"/>
+<area shape="rect" id="Node000005" href="$classneml2_1_1NonlinearSolver.html" title="The nonlinear solver solves a nonlinear system of equations." alt="" coords="132,152,259,177"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="149,112,186,150,182,154,145,116"/>
+<area shape="rect" id="Node000002" href="$classneml2_1_1NEML2Object.html" title="The base class of all &quot;manufacturable&quot; objects in the NEML2 library." alt="" coords="71,5,181,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="129,44,129,79,123,79,123,44"/>
+<area shape="rect" id="Node000004" href="$classneml2_1_1DenseLU.html" title=" " alt="" coords="17,225,97,251"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="59,191,59,225,54,225,54,191"/>
+<area shape="rect" id="Node000006" href="$classneml2_1_1Newton.html" title="The nonlinear solver solves a nonlinear system of equations." alt="" coords="159,225,231,251"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="198,191,198,225,193,225,193,191"/>
+<area shape="rect" id="Node000007" href="$classneml2_1_1NewtonWithLineSearch.html" title="The nonlinear solver solves a nonlinear system of equations." alt="" coords="109,299,282,324"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="198,264,198,299,193,299,193,264"/>
+</map>

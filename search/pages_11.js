@@ -1,0 +1,28 @@
+var searchData=
+[
+  ['objects_20and_20their_20input_20file_20syntax_0',['objects and their input file syntax',['../syntax-data.html#autotoc_md56',1,'Available objects and their input file syntax'],['../syntax-drivers.html#autotoc_md57',1,'Available objects and their input file syntax'],['../syntax-equationsystems.html#autotoc_md58',1,'Available objects and their input file syntax'],['../syntax-models.html#autotoc_md59',1,'Available objects and their input file syntax'],['../syntax-schedulers.html#autotoc_md60',1,'Available objects and their input file syntax'],['../syntax-settings.html#autotoc_md61',1,'Available objects and their input file syntax'],['../syntax-solvers.html#autotoc_md62',1,'Available objects and their input file syntax'],['../syntax-tensors.html#autotoc_md63',1,'Available objects and their input file syntax']]],
+  ['obtaining_20parameter_20derivatives_20of_20recursive_20nonlinear_20functions_1',['Challenge 1: Obtaining parameter derivatives of recursive nonlinear functions',['../tutorials-optimization-pyzag.html#autotoc_md152',1,'']]],
+  ['odf_20for_20the_20multiplicative_20model_20results_2',['Construct the ODF for the multiplicative model results',['../python-examples-crystal_plasticity-compare_formulations.html#autotoc_md162',1,'']]],
+  ['odf_20reconstruction_3',['ODF reconstruction',['../python-examples-crystal_plasticity-polefigures.html#autotoc_md169',1,'']]],
+  ['odf_20reconstruction_20for_20the_20seperated_20model_4',['ODF reconstruction for the seperated model',['../python-examples-crystal_plasticity-compare_formulations.html#autotoc_md158',1,'']]],
+  ['of_20dependencies_5',['List of dependencies',['../dependency-management.html#autotoc_md10',1,'']]],
+  ['of_20equations_6',['of equations',['../tutorials-models-implicit-model.html#autotoc_md108',1,'Defining the system of equations'],['../tutorials-models-implicit-model.html#autotoc_md109',1,'Solving the system of equations']]],
+  ['of_20recursive_20nonlinear_20functions_7',['Challenge 1: Obtaining parameter derivatives of recursive nonlinear functions',['../tutorials-optimization-pyzag.html#autotoc_md152',1,'']]],
+  ['of_20the_20elastic_20strains_8',['Plot some comparisons of the elastic strains',['../python-examples-crystal_plasticity-compare_formulations.html#autotoc_md164',1,'']]],
+  ['olevskysinteringstress_9',['OlevskySinteringStress',['../syntax-models.html#olevskysinteringstress',1,'']]],
+  ['on_20a_20different_20device_10',['Evaluating the model on a different device',['../tutorials-models-evaluation-device.html#autotoc_md106',1,'']]],
+  ['on_20the_20implicit_20function_20theorem_11',['Remarks on the implicit function theorem',['../tutorials-models-implicit-model.html#autotoc_md110',1,'']]],
+  ['operator_12',['The forward operator',['../tutorials-extension-the-forward-operator.html',1,'']]],
+  ['operators_13',['Model structure and forward operators',['../tutorials-models-running-your-first-model.html#autotoc_md135',1,'']]],
+  ['optimization_14',['Optimization',['../tutorials-optimization.html',1,'']]],
+  ['optimization_15',['JIT optimization',['../tutorials-models-just-in-time-compilation.html#autotoc_md115',1,'']]],
+  ['options_16',['Configure options',['../build-customization.html#autotoc_md6',1,'']]],
+  ['orientation_17',['Orientation',['../syntax-tensors.html#orientation',1,'']]],
+  ['orientationrate_18',['OrientationRate',['../syntax-models.html#orientationrate',1,'']]],
+  ['orientations_20for_20the_20multiplicative_20model_19',['Extract the orientations for the multiplicative model',['../python-examples-crystal_plasticity-compare_formulations.html#autotoc_md161',1,'']]],
+  ['our_20initial_20guess_20at_20the_20parameters_20',['our initial guess at the parameters',['../python-examples-deterministic.html#autotoc_md173',1,'Define the variability in the synthetic data and for our initial guess at the parameters'],['../python-examples-statistical.html#autotoc_md189',1,'Define the variability in the synthetic data and for our initial guess at the parameters']]],
+  ['our_20repeated_20case_21',['Go back and sample our repeated case',['../python-examples-statistical.html#autotoc_md203',1,'']]],
+  ['outline_22',['Outline',['../tutorials-extension.html#autotoc_md94',1,'']]],
+  ['output_20identification_23',['Automatic input/output identification',['../system-models.html#automatic-input-output-identification',1,'']]],
+  ['overview_24',['Overview',['../index.html#autotoc_md1',1,'']]]
+];

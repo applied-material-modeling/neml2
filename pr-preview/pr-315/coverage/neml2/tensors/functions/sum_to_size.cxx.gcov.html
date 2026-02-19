@@ -1,0 +1,190 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - neml2/tensors/functions/sum_to_size.cxx</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">neml2/tensors/functions</a> - sum_to_size.cxx<span style="font-size: 80%;"> (source / <a href="sum_to_size.cxx.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">7.7&nbsp;%</td>
+            <td class="headerCovTableEntry">13</td>
+            <td class="headerCovTableEntry">1</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-01-07 00:07:38</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">2.7&nbsp;%</td>
+            <td class="headerCovTableEntry">37</td>
+            <td class="headerCovTableEntry">1</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">            Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>              : // Copyright 2024, UChicago Argonne, LLC</span>
+<span id="L2"><span class="lineNum">       2</span>              : // All Rights Reserved</span>
+<span id="L3"><span class="lineNum">       3</span>              : // Software Name: NEML2 -- the New Engineering material Model Library, version 2</span>
+<span id="L4"><span class="lineNum">       4</span>              : // By: Argonne National Laboratory</span>
+<span id="L5"><span class="lineNum">       5</span>              : // OPEN SOURCE LICENSE (MIT)</span>
+<span id="L6"><span class="lineNum">       6</span>              : //</span>
+<span id="L7"><span class="lineNum">       7</span>              : // Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span id="L8"><span class="lineNum">       8</span>              : // of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span id="L9"><span class="lineNum">       9</span>              : // in the Software without restriction, including without limitation the rights</span>
+<span id="L10"><span class="lineNum">      10</span>              : // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span id="L11"><span class="lineNum">      11</span>              : // copies of the Software, and to permit persons to whom the Software is</span>
+<span id="L12"><span class="lineNum">      12</span>              : // furnished to do so, subject to the following conditions:</span>
+<span id="L13"><span class="lineNum">      13</span>              : //</span>
+<span id="L14"><span class="lineNum">      14</span>              : // The above copyright notice and this permission notice shall be included in</span>
+<span id="L15"><span class="lineNum">      15</span>              : // all copies or substantial portions of the Software.</span>
+<span id="L16"><span class="lineNum">      16</span>              : //</span>
+<span id="L17"><span class="lineNum">      17</span>              : // THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span id="L18"><span class="lineNum">      18</span>              : // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span id="L19"><span class="lineNum">      19</span>              : // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span id="L20"><span class="lineNum">      20</span>              : // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span id="L21"><span class="lineNum">      21</span>              : // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span id="L22"><span class="lineNum">      22</span>              : // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
+<span id="L23"><span class="lineNum">      23</span>              : // THE SOFTWARE.</span>
+<span id="L24"><span class="lineNum">      24</span>              : </span>
+<span id="L25"><span class="lineNum">      25</span>              : #include &lt;torch/csrc/jit/frontend/tracer.h&gt;</span>
+<span id="L26"><span class="lineNum">      26</span>              : </span>
+<span id="L27"><span class="lineNum">      27</span>              : #include &quot;neml2/tensors/functions/sum_to_size.h&quot;</span>
+<span id="L28"><span class="lineNum">      28</span>              : #include &quot;neml2/misc/types.h&quot;</span>
+<span id="L29"><span class="lineNum">      29</span>              : #include &quot;neml2/tensors/tensors.h&quot;</span>
+<span id="L30"><span class="lineNum">      30</span>              : #include &quot;neml2/tensors/jit.h&quot;</span>
+<span id="L31"><span class="lineNum">      31</span>              : </span>
+<span id="L32"><span class="lineNum">      32</span>              : namespace neml2</span>
+<span id="L33"><span class="lineNum">      33</span>              : {</span>
+<span id="L34"><span class="lineNum">      34</span>              : #define DEFINE_SUM_TO_SIZE(T)                                                                      \</span>
+<span id="L35"><span class="lineNum">      35</span>              :   T dynamic_sum_to_size(const T &amp; a, const TraceableTensorShape &amp; shape)                           \</span>
+<span id="L36"><span class="lineNum">      36</span>              :   {                                                                                                \</span>
+<span id="L37"><span class="lineNum">      37</span>              :     neml_assert_dbg(at::is_expandable_to(shape.concrete(), a.dynamic_sizes().concrete()),          \</span>
+<span id="L38"><span class="lineNum">      38</span>              :                     &quot;Cannot sum tensor of dynamic shape &quot;,                                         \</span>
+<span id="L39"><span class="lineNum">      39</span>              :                     a.dynamic_sizes(),                                                             \</span>
+<span id="L40"><span class="lineNum">      40</span>              :                     &quot; to shape &quot;,                                                                  \</span>
+<span id="L41"><span class="lineNum">      41</span>              :                     shape,                                                                         \</span>
+<span id="L42"><span class="lineNum">      42</span>              :                     &quot;.&quot;);                                                                          \</span>
+<span id="L43"><span class="lineNum">      43</span>              :                                                                                                    \</span>
+<span id="L44"><span class="lineNum">      44</span>              :     if (jit::tracer::isTracing())                                                                  \</span>
+<span id="L45"><span class="lineNum">      45</span>              :       for (std::size_t i = 0; i &lt; shape.size(); ++i)                                               \</span>
+<span id="L46"><span class="lineNum">      46</span>              :         if (const auto * const si = shape[i].traceable())                                          \</span>
+<span id="L47"><span class="lineNum">      47</span>              :           jit::tracer::ArgumentStash::stashIntArrayRefElem(                                        \</span>
+<span id="L48"><span class="lineNum">      48</span>              :               &quot;size&quot;, shape.size() + a.static_dim(), i, *si);                                      \</span>
+<span id="L49"><span class="lineNum">      49</span>              :                                                                                                    \</span>
+<span id="L50"><span class="lineNum">      50</span>              :     return T(a.sum_to_size(utils::add_shapes(shape.concrete(), a.static_sizes())),                 \</span>
+<span id="L51"><span class="lineNum">      51</span>              :              shape,                                                                                \</span>
+<span id="L52"><span class="lineNum">      52</span>              :              a.intmd_dim());                                                                       \</span>
+<span id="L53"><span class="lineNum">      53</span>              :   }                                                                                                \</span>
+<span id="L54"><span class="lineNum">      54</span>              :                                                                                                    \</span>
+<span id="L55"><span class="lineNum">      55</span>              :   T intmd_sum_to_size(const T &amp; a, TensorShapeRef shape)                                           \</span>
+<span id="L56"><span class="lineNum">      56</span>              :   {                                                                                                \</span>
+<span id="L57"><span class="lineNum">      57</span>              :     neml_assert_dbg(at::is_expandable_to(shape, a.intmd_sizes()),                                  \</span>
+<span id="L58"><span class="lineNum">      58</span>              :                     &quot;Cannot sum tensor of intermediate shape &quot;,                                    \</span>
+<span id="L59"><span class="lineNum">      59</span>              :                     a.intmd_sizes(),                                                               \</span>
+<span id="L60"><span class="lineNum">      60</span>              :                     &quot; to shape &quot;,                                                                  \</span>
+<span id="L61"><span class="lineNum">      61</span>              :                     shape,                                                                         \</span>
+<span id="L62"><span class="lineNum">      62</span>              :                     &quot;.&quot;);                                                                          \</span>
+<span id="L63"><span class="lineNum">      63</span>              :     neml_assert_dbg(Size(shape.size()) == a.intmd_dim(),                                           \</span>
+<span id="L64"><span class="lineNum">      64</span>              :                     &quot;Cannot sum tensor of intermediate shape &quot;,                                    \</span>
+<span id="L65"><span class="lineNum">      65</span>              :                     a.intmd_sizes(),                                                               \</span>
+<span id="L66"><span class="lineNum">      66</span>              :                     &quot; to shape &quot;,                                                                  \</span>
+<span id="L67"><span class="lineNum">      67</span>              :                     shape,                                                                         \</span>
+<span id="L68"><span class="lineNum">      68</span>              :                     &quot; with different number of intermediate dimensions (&quot;,                         \</span>
+<span id="L69"><span class="lineNum">      69</span>              :                     a.intmd_dim(),                                                                 \</span>
+<span id="L70"><span class="lineNum">      70</span>              :                     &quot;).&quot;);                                                                         \</span>
+<span id="L71"><span class="lineNum">      71</span>              :                                                                                                    \</span>
+<span id="L72"><span class="lineNum">      72</span>              :     if (jit::tracer::isTracing())                                                                  \</span>
+<span id="L73"><span class="lineNum">      73</span>              :       for (Size i = 0; i &lt; a.dynamic_dim(); ++i)                                                   \</span>
+<span id="L74"><span class="lineNum">      74</span>              :         if (const auto * const si = a.dynamic_size(i).traceable())                                 \</span>
+<span id="L75"><span class="lineNum">      75</span>              :           jit::tracer::ArgumentStash::stashIntArrayRefElem(&quot;size&quot;, a.dim(), i, *si);               \</span>
+<span id="L76"><span class="lineNum">      76</span>              :                                                                                                    \</span>
+<span id="L77"><span class="lineNum">      77</span>              :     return T(                                                                                      \</span>
+<span id="L78"><span class="lineNum">      78</span>              :         a.sum_to_size(utils::add_shapes(a.dynamic_sizes().concrete(), shape, a.base_sizes())),     \</span>
+<span id="L79"><span class="lineNum">      79</span>              :         a.dynamic_sizes(),                                                                         \</span>
+<span id="L80"><span class="lineNum">      80</span>              :         a.intmd_dim());                                                                            \</span>
+<span id="L81"><span class="lineNum">      81</span>              :   }                                                                                                \</span>
+<span id="L82"><span class="lineNum">      82</span>              :   static_assert(true)</span>
+<span id="L83"><span class="lineNum">      83</span> <span class="tlaGNC tlaBgGNC">          26 : FOR_ALL_TENSORBASE(DEFINE_SUM_TO_SIZE);</span></span>
+<span id="L84"><span class="lineNum">      84</span>              : </span>
+<span id="L85"><span class="lineNum">      85</span>              : Tensor</span>
+<span id="L86"><span class="lineNum">      86</span> <span class="tlaUNC tlaBgUNC">           0 : base_sum_to_size(const Tensor &amp; a, TensorShapeRef shape)</span></span>
+<span id="L87"><span class="lineNum">      87</span>              : {</span>
+<span id="L88"><span class="lineNum">      88</span> <span class="tlaUNC">           0 :   neml_assert_dbg(at::is_expandable_to(shape, a.base_sizes()),</span></span>
+<span id="L89"><span class="lineNum">      89</span>              :                   &quot;Cannot sum tensor of base shape &quot;,</span>
+<span id="L90"><span class="lineNum">      90</span> <span class="tlaUNC">           0 :                   a.base_sizes(),</span></span>
+<span id="L91"><span class="lineNum">      91</span>              :                   &quot; to shape &quot;,</span>
+<span id="L92"><span class="lineNum">      92</span>              :                   shape,</span>
+<span id="L93"><span class="lineNum">      93</span>              :                   &quot;.&quot;);</span>
+<span id="L94"><span class="lineNum">      94</span> <span class="tlaUNC">           0 :   neml_assert_dbg(Size(shape.size()) == a.base_dim(),</span></span>
+<span id="L95"><span class="lineNum">      95</span>              :                   &quot;Cannot sum tensor of base shape &quot;,</span>
+<span id="L96"><span class="lineNum">      96</span> <span class="tlaUNC">           0 :                   a.base_sizes(),</span></span>
+<span id="L97"><span class="lineNum">      97</span>              :                   &quot; to shape &quot;,</span>
+<span id="L98"><span class="lineNum">      98</span>              :                   shape,</span>
+<span id="L99"><span class="lineNum">      99</span>              :                   &quot; with different number of base dimensions (&quot;,</span>
+<span id="L100"><span class="lineNum">     100</span> <span class="tlaUNC">           0 :                   a.base_dim(),</span></span>
+<span id="L101"><span class="lineNum">     101</span>              :                   &quot;).&quot;);</span>
+<span id="L102"><span class="lineNum">     102</span>              : </span>
+<span id="L103"><span class="lineNum">     103</span>              :   // Record the dynamic sizes in the traced graph if we are tracing</span>
+<span id="L104"><span class="lineNum">     104</span> <span class="tlaUNC">           0 :   if (jit::tracer::isTracing())</span></span>
+<span id="L105"><span class="lineNum">     105</span> <span class="tlaUNC">           0 :     for (Size i = 0; i &lt; a.dynamic_dim(); ++i)</span></span>
+<span id="L106"><span class="lineNum">     106</span> <span class="tlaUNC">           0 :       if (const auto * const si = a.dynamic_size(i).traceable())</span></span>
+<span id="L107"><span class="lineNum">     107</span> <span class="tlaUNC">           0 :         jit::tracer::ArgumentStash::stashIntArrayRefElem(&quot;size&quot;, a.dim(), i, *si);</span></span>
+<span id="L108"><span class="lineNum">     108</span>              : </span>
+<span id="L109"><span class="lineNum">     109</span>              :   return Tensor(</span>
+<span id="L110"><span class="lineNum">     110</span> <span class="tlaUNC">           0 :       a.sum_to_size(utils::add_shapes(a.dynamic_sizes().concrete(), a.intmd_sizes(), shape)),</span></span>
+<span id="L111"><span class="lineNum">     111</span>              :       a.dynamic_sizes(),</span>
+<span id="L112"><span class="lineNum">     112</span> <span class="tlaUNC">           0 :       a.intmd_dim());</span></span>
+<span id="L113"><span class="lineNum">     113</span>              : }</span>
+<span id="L114"><span class="lineNum">     114</span>              : } // namespace neml2</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

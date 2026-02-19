@@ -1,0 +1,618 @@
+Found 306 entries.
+Found common filename prefix "/home/runner/work/neml2/neml2/src"
+Generating output.
+Processing file neml2/equation_systems/EquationSystem.cxx
+  lines=8 hit=7 functions=2 hit=2
+Processing file neml2/tensors/functions/inv.cxx
+  lines=66 hit=35 functions=6 hit=3
+Processing file neml2/drivers/solid_mechanics/LDISolidMechanicsDriver.cxx
+  lines=79 hit=73 functions=9 hit=8
+Processing file neml2/tensors/jit.cxx
+  lines=26 hit=12 functions=7 hit=2
+Processing file neml2/models/RotationMatrix.cxx
+  lines=21 hit=20 functions=3 hit=3
+Processing file neml2/models/porous_flow/KozenyCarmanPermeability.cxx
+  lines=27 hit=26 functions=3 hit=3
+Processing file neml2/tensors/functions/discretization/scatter.cxx
+  lines=4 hit=4 functions=1 hit=1
+Processing file neml2/models/solid_mechanics/KocksMeckingActivationEnergy.cxx
+  lines=40 hit=39 functions=3 hit=3
+Processing file neml2/tensors/functions/inner.cxx
+  lines=3 hit=3 functions=1 hit=1
+Processing file neml2/models/VariableStore.cxx
+  lines=298 hit=241 functions=124 hit=65
+Processing file neml2/models/solid_mechanics/SwellingAndPhaseChangeDeformationJacobian.cxx
+  lines=35 hit=34 functions=3 hit=3
+Processing file neml2/models/ImplicitUpdate.cxx
+  lines=38 hit=37 functions=4 hit=4
+Processing file neml2/tensors/functions/tanh.cxx
+  lines=1 hit=1 functions=18 hit=18
+Processing file neml2/base/Factory.cxx
+  lines=23 hit=20 functions=5 hit=4
+Processing file neml2/models/solid_mechanics/elasticity/Elasticity.cxx
+  lines=23 hit=22 functions=2 hit=2
+Processing file neml2/tensors/functions/clamp.cxx
+  lines=1 hit=1 functions=36 hit=36
+Processing file neml2/tensors/functions/operators.cxx
+  lines=58 hit=49 functions=392 hit=170
+Processing file neml2/tensors/WSR4.cxx
+  lines=3 hit=3 functions=1 hit=1
+Processing file neml2/models/BackwardEulerTimeIntegration.cxx
+  lines=40 hit=39 functions=16 hit=10
+Processing file neml2/tensors/functions/utils.cxx
+  lines=25 hit=10 functions=2 hit=1
+Processing file neml2/solvers/NewtonWithLineSearch.cxx
+  lines=61 hit=52 functions=3 hit=3
+Processing file neml2/tensors/functions/sqrt.cxx
+  lines=1 hit=1 functions=18 hit=18
+Processing file neml2/models/solid_mechanics/crystal_plasticity/SingleSlipHardeningRule.cxx
+  lines=19 hit=18 functions=2 hit=2
+Processing file neml2/models/solid_mechanics/FlowRule.cxx
+  lines=11 hit=10 functions=2 hit=2
+Processing file neml2/tensors/R4.cxx
+  lines=29 hit=26 functions=8 hit=7
+Processing file neml2/models/LinearCombination.cxx
+  lines=64 hit=64 functions=12 hit=8
+Processing file neml2/tensors/SSR4.cxx
+  lines=73 hit=67 functions=20 hit=17
+Processing file neml2/models/solid_mechanics/elasticity/LinearIsotropicElasticity.cxx
+  lines=32 hit=31 functions=3 hit=3
+Processing file neml2/models/solid_mechanics/IsotropicHardening.cxx
+  lines=13 hit=12 functions=2 hit=2
+Processing file neml2/tensors/functions/linspace.cxx
+  lines=12 hit=1 functions=37 hit=7
+Processing file neml2/models/chemical_reactions/AvramiErofeevNucleation.cxx
+  lines=20 hit=19 functions=3 hit=3
+Processing file neml2/user_tensors/CSVPrimitiveTensor.cxx
+  lines=41 hit=40 functions=13 hit=13
+Processing file neml2/tensors/functions/det.cxx
+  lines=30 hit=27 functions=4 hit=3
+Processing file neml2/tensors/functions/logspace.cxx
+  lines=5 hit=1 functions=37 hit=3
+Processing file neml2/base/TracingInterface.cxx
+  lines=86 hit=82 functions=13 hit=12
+Processing file neml2/equation_systems/NonlinearSystem.cxx
+  lines=5 hit=5 functions=1 hit=1
+Processing file neml2/tensors/functions/log.cxx
+  lines=1 hit=1 functions=18 hit=18
+Processing file neml2/models/solid_mechanics/FredrickArmstrongPlasticHardening.cxx
+  lines=44 hit=43 functions=3 hit=3
+Processing file neml2/models/solid_mechanics/PowerLawIsotropicHardeningStaticRecovery.cxx
+  lines=27 hit=26 functions=3 hit=3
+Processing file neml2/tensors/functions/mm.cxx
+  lines=7 hit=7 functions=1 hit=1
+Processing file neml2/models/solid_mechanics/crystal_plasticity/ResolvedShear.cxx
+  lines=34 hit=33 functions=3 hit=3
+Processing file neml2/models/solid_mechanics/TwoStageThermalAnnealing.cxx
+  lines=44 hit=44 functions=6 hit=6
+Processing file neml2/tensors/functions/deg2rad.cxx
+  lines=1 hit=1 functions=18 hit=18
+Processing file neml2/models/solid_mechanics/crystal_plasticity/VoceSingleSlipHardeningRule.cxx
+  lines=28 hit=27 functions=3 hit=3
+Processing file neml2/models/solid_mechanics/KocksMeckingRateSensitivity.cxx
+  lines=57 hit=56 functions=3 hit=3
+Processing file neml2/base/MultiEnumSelection.cxx
+  lines=38 hit=38 functions=8 hit=8
+Processing file neml2/drivers/solid_mechanics/SDTSolidMechanicsDriver.cxx
+  lines=27 hit=26 functions=4 hit=4
+Processing file neml2/tensors/functions/gcd.cxx
+  lines=1 hit=1 functions=18 hit=18
+Processing file neml2/models/solid_mechanics/AssociativeIsotropicPlasticHardening.cxx
+  lines=25 hit=24 functions=3 hit=3
+Processing file neml2/models/solid_mechanics/RateIndependentPlasticFlowConstraint.cxx
+  lines=29 hit=28 functions=3 hit=3
+Processing file neml2/models/solid_mechanics/Eigenstrain.cxx
+  lines=9 hit=8 functions=2 hit=2
+Processing file neml2/tensors/TensorValue.cxx
+  lines=25 hit=23 functions=128 hit=28
+Processing file neml2/base/TensorName.cxx
+  lines=26 hit=23 functions=36 hit=13
+Processing file neml2/models/SR2toR2.cxx
+  lines=21 hit=20 functions=3 hit=3
+Processing file neml2/base/NEML2Object.cxx
+  lines=21 hit=18 functions=20 hit=5
+Processing file neml2/models/MixedControlSetup.cxx
+  lines=52 hit=51 functions=4 hit=4
+Processing file neml2/models/phase_field_fracture/RationalDegradationFunction.cxx
+  lines=43 hit=42 functions=3 hit=3
+Processing file neml2/models/solid_mechanics/VoceIsotropicHardening.cxx
+  lines=29 hit=28 functions=3 hit=3
+Processing file neml2/models/solid_mechanics/crystal_plasticity/PlasticDeformationRate.cxx
+  lines=34 hit=33 functions=3 hit=3
+Processing file neml2/misc/types.cxx
+  lines=23 hit=8 functions=2 hit=1
+Processing file neml2/user_tensors/IdentityTensor.cxx
+  lines=16 hit=15 functions=3 hit=3
+Processing file neml2/solvers/NonlinearSolver.cxx
+  lines=22 hit=21 functions=3 hit=3
+Processing file neml2/models/solid_mechanics/elasticity/ElasticityConverter.cxx
+  lines=22 hit=10 functions=1 hit=1
+Processing file neml2/tensors/functions/norm_sq.cxx
+  lines=2 hit=2 functions=1 hit=1
+Processing file neml2/models/ConstantParameter.cxx
+  lines=18 hit=16 functions=51 hit=21
+Processing file neml2/base/LabeledAxis.cxx
+  lines=291 hit=237 functions=39 hit=32
+Processing file neml2/user_tensors/FillR2.cxx
+  lines=37 hit=34 functions=3 hit=3
+Processing file neml2/models/crystallography/CubicCrystal.cxx
+  lines=19 hit=18 functions=3 hit=3
+Processing file neml2/models/crystallography/CrystalGeometry.cxx
+  lines=127 hit=125 functions=17 hit=17
+Processing file neml2/models/ParameterStore.cxx
+  lines=147 hit=108 functions=77 hit=18
+Processing file neml2/models/ForwardEulerTimeIntegration.cxx
+  lines=38 hit=35 functions=12 hit=8
+Processing file neml2/models/solid_mechanics/crystal_plasticity/PerSlipForestDislocationEvolution.cxx
+  lines=40 hit=37 functions=3 hit=3
+Processing file neml2/models/phase_field_fracture/LinearIsotropicStrainEnergyDensity.cxx
+  lines=94 hit=92 functions=6 hit=6
+Processing file neml2/tensors/functions/argmax.cxx
+  lines=1 hit=0 functions=54 hit=0
+Processing file neml2/tensors/WR2.cxx
+  lines=28 hit=28 functions=4 hit=4
+Processing file neml2/tensors/functions/clip.cxx
+  lines=1 hit=1 functions=36 hit=36
+Processing file neml2/models/solid_mechanics/LinearIsotropicElasticJ2TrialStressUpdate.cxx
+  lines=41 hit=38 functions=3 hit=3
+Processing file neml2/base/OptionSet.cxx
+  lines=53 hit=50 functions=18 hit=17
+Processing file neml2/tensors/functions/abs.cxx
+  lines=1 hit=1 functions=18 hit=18
+Processing file neml2/tensors/R3.cxx
+  lines=4 hit=4 functions=1 hit=1
+Processing file neml2/models/SymmetricHermiteInterpolation.cxx
+  lines=42 hit=41 functions=3 hit=3
+Processing file neml2/user_tensors/UserTensor.cxx
+  lines=19 hit=18 functions=54 hit=32
+Processing file neml2/user_tensors/FullTensor.cxx
+  lines=16 hit=15 functions=54 hit=24
+Processing file neml2/models/porous_flow/VanGenuchtenCapillaryPressure.cxx
+  lines=25 hit=24 functions=3 hit=3
+Processing file neml2/user_tensors/LinspaceTensor.cxx
+  lines=31 hit=30 functions=54 hit=28
+Processing file neml2/tensors/Tensor.cxx
+  lines=101 hit=89 functions=18 hit=18
+Processing file neml2/models/solid_mechanics/crystal_plasticity/SlipRule.cxx
+  lines=17 hit=16 functions=2 hit=2
+Processing file neml2/dispatchers/SimpleScheduler.cxx
+  lines=33 hit=11 functions=6 hit=1
+Processing file neml2/tensors/functions/discretization/interpolate.cxx
+  lines=11 hit=11 functions=1 hit=1
+Processing file neml2/models/porous_flow/BrooksCoreyCapillaryPressure.cxx
+  lines=21 hit=20 functions=3 hit=3
+Processing file neml2/models/solid_mechanics/crystal_plasticity/ElasticStrainRate.cxx
+  lines=54 hit=53 functions=6 hit=6
+Processing file neml2/base/HITParser.cxx
+  lines=74 hit=74 functions=5 hit=5
+Processing file neml2/models/solid_mechanics/AssociativeJ2FlowDirection.cxx
+  lines=27 hit=26 functions=3 hit=3
+Processing file neml2/models/R2Multiplication.cxx
+  lines=65 hit=54 functions=3 hit=3
+Processing file neml2/tensors/TensorCache.cxx
+  lines=13 hit=13 functions=3 hit=3
+Processing file neml2/drivers/Driver.cxx
+  lines=14 hit=12 functions=2 hit=2
+Processing file neml2/models/solid_mechanics/PowerLawKinematicHardeningStaticRecovery.cxx
+  lines=30 hit=29 functions=3 hit=3
+Processing file neml2/models/IntermediateSum.cxx
+  lines=15 hit=14 functions=51 hit=21
+Processing file neml2/models/WR2ImplicitExponentialTimeIntegration.cxx
+  lines=45 hit=43 functions=4 hit=4
+Processing file neml2/solvers/Newton.cxx
+  lines=37 hit=35 functions=6 hit=6
+Processing file neml2/tensors/functions/minimum.cxx
+  lines=1 hit=1 functions=18 hit=18
+Processing file neml2/user_tensors/FromTorchScript.cxx
+  lines=46 hit=16 functions=51 hit=17
+Processing file neml2/models/SR2Invariant.cxx
+  lines=81 hit=75 functions=3 hit=3
+Processing file neml2/models/solid_mechanics/elasticity/AnisotropicElasticity.cxx
+  lines=10 hit=9 functions=2 hit=2
+Processing file neml2/tensors/Scalar.cxx
+  lines=4 hit=4 functions=1 hit=1
+Processing file neml2/models/solid_mechanics/ThermalDeformationJacobian.cxx
+  lines=29 hit=27 functions=3 hit=3
+Processing file neml2/tensors/functions/exp.cxx
+  lines=1 hit=1 functions=18 hit=18
+Processing file neml2/models/solid_mechanics/YieldFunction.cxx
+  lines=38 hit=37 functions=3 hit=3
+Processing file neml2/tensors/functions/log10.cxx
+  lines=1 hit=1 functions=18 hit=18
+Processing file neml2/models/porous_flow/PorosityPermeabilityRelation.cxx
+  lines=13 hit=12 functions=2 hit=2
+Processing file neml2/models/solid_mechanics/crystal_plasticity/LinearSingleSlipHardeningRule.cxx
+  lines=20 hit=19 functions=3 hit=3
+Processing file neml2/models/phase_field_fracture/CrackGeometricFunctionAT2.cxx
+  lines=18 hit=17 functions=3 hit=3
+Processing file neml2/models/solid_mechanics/KocksMeckingYieldStress.cxx
+  lines=31 hit=30 functions=3 hit=3
+Processing file neml2/models/Determinant.cxx
+  lines=20 hit=19 functions=6 hit=4
+Processing file neml2/dispatchers/SliceGenerator.cxx
+  lines=14 hit=0 functions=3 hit=0
+Processing file neml2/tensors/TraceableSize.cxx
+  lines=31 hit=21 functions=8 hit=5
+Processing file neml2/models/solid_mechanics/KocksMeckingIntercept.cxx
+  lines=45 hit=44 functions=3 hit=3
+Processing file neml2/user_tensors/RandomTensor.cxx
+  lines=32 hit=8 functions=54 hit=18
+Processing file neml2/tensors/functions/linalg/lu_solve.cxx
+  lines=15 hit=15 functions=1 hit=1
+Processing file neml2/models/solid_mechanics/crystal_plasticity/SumSlipRates.cxx
+  lines=21 hit=20 functions=3 hit=3
+Processing file neml2/models/solid_mechanics/elasticity/GeneralElasticity.cxx
+  lines=32 hit=31 functions=3 hit=3
+Processing file neml2/tensors/functions/einsum.cxx
+  lines=12 hit=12 functions=1 hit=1
+Processing file neml2/misc/string_utils.cxx
+  lines=33 hit=24 functions=6 hit=5
+Processing file neml2/base/DiagnosticsInterface.cxx
+  lines=39 hit=38 functions=7 hit=7
+Processing file neml2/tensors/functions/diagonalize.cxx
+  lines=6 hit=6 functions=37 hit=3
+Processing file neml2/models/solid_mechanics/KinematicHardening.cxx
+  lines=13 hit=12 functions=2 hit=2
+Processing file neml2/models/solid_mechanics/elasticity/CubicElasticityConverter.cxx
+  lines=33 hit=33 functions=3 hit=3
+Processing file neml2/tensors/functions/mv.cxx
+  lines=7 hit=7 functions=1 hit=1
+Processing file neml2/user_tensors/CSVReader.cxx
+  lines=95 hit=95 functions=6 hit=6
+Processing file neml2/base/Registry.cxx
+  lines=27 hit=13 functions=5 hit=3
+Processing file neml2/models/solid_mechanics/GTNYieldFunction.cxx
+  lines=194 hit=193 functions=3 hit=3
+Processing file neml2/models/porous_flow/EffectiveSaturation.cxx
+  lines=29 hit=28 functions=3 hit=3
+Processing file neml2/models/porous_flow/AdvectiveStress.cxx
+  lines=47 hit=46 functions=3 hit=3
+Processing file neml2/tensors/functions/stack.cxx
+  lines=8 hit=8 functions=73 hit=73
+Processing file neml2/base/LabeledAxisAccessor.cxx
+  lines=89 hit=75 functions=26 hit=24
+Processing file neml2/models/VariableRate.cxx
+  lines=41 hit=40 functions=12 hit=8
+Processing file neml2/models/solid_mechanics/elasticity/IsotropicElasticityTensor.cxx
+  lines=24 hit=23 functions=3 hit=3
+Processing file neml2/models/WR2ExplicitExponentialTimeIntegration.cxx
+  lines=43 hit=34 functions=4 hit=3
+Processing file neml2/base/Option.cxx
+  lines=33 hit=22 functions=371 hit=148
+Processing file neml2/tensors/SWR4.cxx
+  lines=3 hit=3 functions=1 hit=1
+Processing file neml2/models/solid_mechanics/crystal_plasticity/OrientationRate.cxx
+  lines=54 hit=53 functions=6 hit=6
+Processing file neml2/models/LinearInterpolation.cxx
+  lines=31 hit=30 functions=9 hit=7
+Processing file neml2/base/InputFile.cxx
+  lines=8 hit=6 functions=3 hit=2
+Processing file neml2/models/solid_mechanics/IsotropicMandelStress.cxx
+  lines=13 hit=12 functions=2 hit=2
+Processing file neml2/tensors/functions/tr.cxx
+  lines=9 hit=6 functions=4 hit=3
+Processing file neml2/tensors/functions/symmetrization.cxx
+  lines=88 hit=88 functions=22 hit=22
+Processing file neml2/drivers/TransientDriver.cxx
+  lines=199 hit=176 functions=53 hit=53
+Processing file neml2/user_tensors/FillWR2.cxx
+  lines=16 hit=15 functions=3 hit=3
+Processing file neml2/tensors/functions/mean.cxx
+  lines=4 hit=1 functions=37 hit=2
+Processing file neml2/tensors/tensors.cxx
+  lines=4 hit=3 functions=1 hit=1
+Processing file neml2/solvers/Solver.cxx
+  lines=10 hit=9 functions=2 hit=2
+Processing file neml2/drivers/link_anchor.cxx
+  lines=3 hit=3 functions=1 hit=1
+Processing file neml2/user_tensors/link_anchor.cxx
+  lines=3 hit=3 functions=1 hit=1
+Processing file neml2/tensors/functions/unit.cxx
+  lines=1 hit=1 functions=18 hit=2
+Processing file neml2/models/phase_field_fracture/StrainEnergyDensity.cxx
+  lines=16 hit=15 functions=2 hit=2
+Processing file neml2/solvers/DenseLU.cxx
+  lines=33 hit=32 functions=4 hit=4
+Processing file neml2/equation_systems/link_anchor.cxx
+  lines=3 hit=3 functions=1 hit=1
+Processing file neml2/user_tensors/FactoryMethodBase.cxx
+  lines=20 hit=19 functions=36 hit=25
+Processing file neml2/user_tensors/SymmetryFromOrbifold.cxx
+  lines=14 hit=13 functions=3 hit=3
+Processing file neml2/misc/errors.cxx
+  lines=4 hit=4 functions=2 hit=2
+Processing file neml2/tensors/functions/cosh.cxx
+  lines=1 hit=1 functions=18 hit=18
+Processing file neml2/tensors/functions/chain_rule.cxx
+  lines=90 hit=90 functions=3 hit=3
+Processing file neml2/tensors/Quaternion.cxx
+  lines=23 hit=23 functions=3 hit=3
+Processing file neml2/tensors/functions/diff.cxx
+  lines=4 hit=1 functions=37 hit=1
+Processing file neml2/tensors/functions/sum_to_size.cxx
+  lines=12 hit=1 functions=37 hit=1
+Processing file neml2/models/BilinearInterpolation.cxx
+  lines=57 hit=56 functions=9 hit=5
+Processing file neml2/tensors/functions/linalg/eigh.cxx
+  lines=6 hit=6 functions=1 hit=1
+Processing file neml2/models/IncrementToRate.cxx
+  lines=31 hit=30 functions=12 hit=12
+Processing file neml2/tensors/functions/linalg/solve.cxx
+  lines=16 hit=16 functions=1 hit=1
+Processing file neml2/models/solid_mechanics/VolumeAdjustDeformationGradient.cxx
+  lines=29 hit=28 functions=3 hit=3
+Processing file neml2/tensors/functions/sin.cxx
+  lines=1 hit=1 functions=18 hit=18
+Processing file neml2/models/solid_mechanics/SlopeSaturationVoceIsotropicHardening.cxx
+  lines=37 hit=36 functions=3 hit=3
+Processing file neml2/drivers/ModelDriver.cxx
+  lines=56 hit=33 functions=8 hit=4
+Processing file neml2/user_tensors/UserTensorBase.cxx
+  lines=82 hit=40 functions=77 hit=57
+Processing file neml2/models/DynamicMean.cxx
+  lines=15 hit=14 functions=51 hit=19
+Processing file neml2/tensors/Derivative.cxx
+  lines=187 hit=149 functions=78 hit=63
+Processing file neml2/models/solid_mechanics/elasticity/IsotropicElasticityConverter.cxx
+  lines=28 hit=28 functions=4 hit=4
+Processing file neml2/tensors/functions/where.cxx
+  lines=1 hit=1 functions=36 hit=4
+Processing file neml2/dispatchers/WorkScheduler.cxx
+  lines=55 hit=5 functions=9 hit=1
+Processing file neml2/tensors/functions/dev.cxx
+  lines=4 hit=3 functions=4 hit=3
+Processing file neml2/models/ScalarToDiagonalSR2.cxx
+  lines=21 hit=20 functions=3 hit=3
+Processing file neml2/models/ComposedModel.cxx
+  lines=113 hit=104 functions=6 hit=6
+Processing file neml2/tensors/functions/linalg/dsptrf.cxx
+  lines=21 hit=21 functions=2 hit=2
+Processing file neml2/tensors/functions/linalg/lu_factor.cxx
+  lines=8 hit=8 functions=1 hit=1
+Processing file neml2/tensors/functions/outer.cxx
+  lines=4 hit=4 functions=8 hit=7
+Processing file neml2/models/solid_mechanics/Normality.cxx
+  lines=48 hit=45 functions=3 hit=3
+Processing file neml2/models/solid_mechanics/AssociativeKinematicPlasticHardening.cxx
+  lines=27 hit=26 functions=3 hit=3
+Processing file neml2/tensors/functions/heaviside.cxx
+  lines=1 hit=1 functions=18 hit=18
+Processing file neml2/tensors/functions/cat.cxx
+  lines=8 hit=8 functions=73 hit=73
+Processing file neml2/user_tensors/FillSR2.cxx
+  lines=27 hit=24 functions=3 hit=3
+Processing file neml2/models/solid_mechanics/PlasticFlowRate.cxx
+  lines=12 hit=11 functions=2 hit=2
+Processing file neml2/models/solid_mechanics/VolumeChangeEigenstrain.cxx
+  lines=26 hit=22 functions=3 hit=3
+Processing file neml2/models/solid_mechanics/KinematicHardeningStaticRecovery.cxx
+  lines=16 hit=15 functions=2 hit=2
+Processing file neml2/dispatchers/derivmap_helpers.cxx
+  lines=25 hit=0 functions=3 hit=0
+Processing file neml2/models/chemical_reactions/DiffusionLimitedReaction.cxx
+  lines=45 hit=44 functions=3 hit=3
+Processing file neml2/drivers/solid_mechanics/SolidMechanicsDriver.cxx
+  lines=77 hit=77 functions=7 hit=7
+Processing file neml2/user_tensors/MultiColumnCSVScalar.cxx
+  lines=29 hit=29 functions=3 hit=3
+Processing file neml2/equation_systems/SparseTensorList.cxx
+  lines=59 hit=50 functions=10 hit=9
+Processing file neml2/models/solid_mechanics/LinearIsotropicHardening.cxx
+  lines=19 hit=18 functions=3 hit=3
+Processing file neml2/tensors/functions/atan2.cxx
+  lines=1 hit=1 functions=18 hit=18
+Processing file neml2/models/phase_field_fracture/CrackGeometricFunction.cxx
+  lines=12 hit=11 functions=2 hit=2
+Processing file neml2/models/link_anchor.cxx
+  lines=3 hit=3 functions=1 hit=1
+Processing file neml2/tensors/Transformable.cxx
+  lines=14 hit=12 functions=6 hit=5
+Processing file neml2/models/solid_mechanics/PhaseTransformationEigenstrain.cxx
+  lines=26 hit=23 functions=3 hit=3
+Processing file neml2/tensors/functions/vv.cxx
+  lines=11 hit=10 functions=1 hit=1
+Processing file neml2/tensors/functions/normalize_gcd.cxx
+  lines=1 hit=1 functions=18 hit=18
+Processing file neml2/models/solid_mechanics/crystal_plasticity/FixOrientation.cxx
+  lines=26 hit=25 functions=3 hit=3
+Processing file neml2/tensors/functions/norm.cxx
+  lines=2 hit=2 functions=1 hit=1
+Processing file neml2/models/porous_flow/ExponentialLawPermeability.cxx
+  lines=23 hit=22 functions=3 hit=3
+Processing file neml2/models/R2toSR2.cxx
+  lines=21 hit=20 functions=3 hit=3
+Processing file neml2/models/solid_mechanics/LinearKinematicHardening.cxx
+  lines=21 hit=20 functions=3 hit=3
+Processing file neml2/tensors/functions/atan.cxx
+  lines=1 hit=1 functions=18 hit=18
+Processing file neml2/models/solid_mechanics/KocksMeckingFlowSwitch.cxx
+  lines=42 hit=41 functions=3 hit=3
+Processing file neml2/tensors/functions/max.cxx
+  lines=4 hit=1 functions=37 hit=36
+Processing file neml2/user_tensors/FillRot.cxx
+  lines=30 hit=28 functions=3 hit=3
+Processing file neml2/tensors/TraceableTensorShape.cxx
+  lines=39 hit=33 functions=10 hit=8
+Processing file neml2/misc/defaults.cxx
+  lines=16 hit=13 functions=7 hit=6
+Processing file neml2/tensors/functions/asin.cxx
+  lines=1 hit=1 functions=18 hit=18
+Processing file neml2/models/solid_mechanics/crystal_plasticity/DislocationObstacleStrengthMap.cxx
+  lines=40 hit=35 functions=3 hit=3
+Processing file neml2/models/solid_mechanics/crystal_plasticity/SingleSlipStrengthMap.cxx
+  lines=23 hit=22 functions=3 hit=3
+Processing file neml2/models/ScalarMultiplication.cxx
+  lines=71 hit=70 functions=3 hit=3
+Processing file neml2/models/solid_mechanics/crystal_plasticity/PlasticVorticity.cxx
+  lines=33 hit=32 functions=3 hit=3
+Processing file neml2/models/solid_mechanics/crystal_plasticity/PlasticSpatialVelocityGradient.cxx
+  lines=34 hit=33 functions=3 hit=3
+Processing file neml2/models/ModelNonlinearSystem.cxx
+  lines=124 hit=101 functions=20 hit=18
+Processing file neml2/models/solid_mechanics/IsotropicHardeningStaticRecovery.cxx
+  lines=17 hit=16 functions=2 hit=2
+Processing file neml2/solvers/link_anchor.cxx
+  lines=3 hit=3 functions=1 hit=1
+Processing file neml2/dispatchers/TensorLoader.cxx
+  lines=12 hit=0 functions=3 hit=0
+Processing file neml2/dispatchers/StaticHybridScheduler.cxx
+  lines=91 hit=12 functions=8 hit=1
+Processing file neml2/tensors/R2.cxx
+  lines=65 hit=65 functions=19 hit=19
+Processing file neml2/tensors/functions/pow.cxx
+  lines=17 hit=12 functions=39 hit=22
+Processing file neml2/models/chemical_reactions/ContractingGeometry.cxx
+  lines=25 hit=23 functions=3 hit=3
+Processing file neml2/models/IntermediateMean.cxx
+  lines=16 hit=15 functions=51 hit=19
+Processing file neml2/tensors/functions/logical.cxx
+  lines=8 hit=6 functions=1532 hit=49
+Processing file neml2/models/solid_mechanics/ChabochePlasticHardening.cxx
+  lines=40 hit=39 functions=3 hit=3
+Processing file neml2/models/R2toWR2.cxx
+  lines=21 hit=20 functions=3 hit=3
+Processing file neml2/tensors/functions/vol.cxx
+  lines=8 hit=6 functions=4 hit=3
+Processing file neml2/tensors/VecBase.cxx
+  lines=11 hit=11 functions=12 hit=8
+Processing file neml2/models/phase_field_fracture/CrackGeometricFunctionAT1.cxx
+  lines=16 hit=15 functions=3 hit=3
+Processing file neml2/models/solid_mechanics/KocksMeckingFlowViscosity.cxx
+  lines=83 hit=82 functions=3 hit=3
+Processing file neml2/models/chemical_reactions/EffectiveVolume.cxx
+  lines=46 hit=45 functions=3 hit=3
+Processing file neml2/tensors/functions/tan.cxx
+  lines=1 hit=1 functions=18 hit=18
+Processing file neml2/models/solid_mechanics/ThermalEigenstrain.cxx
+  lines=32 hit=27 functions=3 hit=3
+Processing file neml2/models/ArrheniusParameter.cxx
+  lines=37 hit=36 functions=3 hit=3
+Processing file neml2/models/HermiteSmoothStep.cxx
+  lines=34 hit=33 functions=3 hit=3
+Processing file neml2/models/Data.cxx
+  lines=8 hit=7 functions=2 hit=2
+Processing file neml2/models/CopyVariable.cxx
+  lines=20 hit=19 functions=51 hit=21
+Processing file neml2/models/solid_mechanics/elasticity/GreenLagrangeStrain.cxx
+  lines=25 hit=24 functions=3 hit=3
+Processing file neml2/models/solid_mechanics/GursonCavitation.cxx
+  lines=29 hit=28 functions=3 hit=3
+Processing file neml2/tensors/functions/acos.cxx
+  lines=1 hit=1 functions=18 hit=18
+Processing file neml2/tensors/shape_utils.cxx
+  lines=45 hit=22 functions=10 hit=6
+Processing file neml2/models/Variable.cxx
+  lines=69 hit=62 functions=238 hit=73
+Processing file neml2/tensors/functions/argmin.cxx
+  lines=1 hit=0 functions=54 hit=0
+Processing file neml2/models/Reduction.cxx
+  lines=11 hit=10 functions=34 hit=19
+Processing file neml2/tensors/WWR4.cxx
+  lines=6 hit=6 functions=2 hit=2
+Processing file neml2/tensors/Rot.cxx
+  lines=183 hit=166 functions=22 hit=19
+Processing file neml2/models/phase_field_fracture/PowerDegradationFunction.cxx
+  lines=23 hit=22 functions=3 hit=3
+Processing file neml2/models/solid_mechanics/MandelStress.cxx
+  lines=13 hit=12 functions=2 hit=2
+Processing file neml2/user_tensors/LogspaceTensor.cxx
+  lines=34 hit=33 functions=54 hit=24
+Processing file neml2/equation_systems/LinearSystem.cxx
+  lines=90 hit=67 functions=22 hit=16
+Processing file neml2/models/Model.cxx
+  lines=393 hit=295 functions=52 hit=41
+Processing file neml2/tensors/functions/cos.cxx
+  lines=1 hit=1 functions=18 hit=18
+Processing file neml2/models/InputParameter.cxx
+  lines=23 hit=22 functions=51 hit=21
+Processing file neml2/base/EnumSelection.cxx
+  lines=31 hit=29 functions=9 hit=8
+Processing file neml2/dispatchers/valuemap_helpers.cxx
+  lines=30 hit=0 functions=3 hit=0
+Processing file neml2/models/solid_mechanics/AssociativePlasticFlow.cxx
+  lines=25 hit=24 functions=3 hit=3
+Processing file neml2/tensors/functions/macaulay.cxx
+  lines=1 hit=1 functions=18 hit=18
+Processing file neml2/neml2.cxx
+  lines=16 hit=15 functions=2 hit=2
+Processing file neml2/base/OptionBase.cxx
+  lines=3 hit=0 functions=1 hit=0
+Processing file neml2/models/DynamicSum.cxx
+  lines=15 hit=14 functions=51 hit=19
+Processing file neml2/models/FischerBurmeister.cxx
+  lines=43 hit=43 functions=3 hit=3
+Processing file neml2/models/solid_mechanics/crystal_plasticity/PowerLawSlipRule.cxx
+  lines=27 hit=26 functions=3 hit=3
+Processing file neml2/models/BufferStore.cxx
+  lines=57 hit=35 functions=60 hit=16
+Processing file neml2/tensors/functions/cross.cxx
+  lines=6 hit=6 functions=1 hit=1
+Processing file neml2/base/Parser.cxx
+  lines=52 hit=43 functions=6 hit=5
+Processing file neml2/models/solid_mechanics/elasticity/CubicElasticityTensor.cxx
+  lines=28 hit=27 functions=3 hit=3
+Processing file neml2/models/IntermediateDiff.cxx
+  lines=25 hit=24 functions=51 hit=19
+Processing file neml2/tensors/functions/min.cxx
+  lines=4 hit=1 functions=37 hit=36
+Processing file neml2/models/chemical_reactions/CylindricalChannelGeometry.cxx
+  lines=32 hit=31 functions=3 hit=3
+Processing file neml2/user_tensors/Orientation.cxx
+  lines=48 hit=41 functions=4 hit=4
+Processing file neml2/dispatchers/SimpleMPIScheduler.cxx
+  lines=73 hit=11 functions=8 hit=1
+Processing file neml2/models/porous_flow/CapillaryPressure.cxx
+  lines=50 hit=40 functions=3 hit=3
+Processing file neml2/equation_systems/assembly.cxx
+  lines=213 hit=209 functions=25 hit=19
+Processing file neml2/base/Settings.cxx
+  lines=31 hit=29 functions=2 hit=2
+Processing file neml2/tensors/SR2.cxx
+  lines=45 hit=43 functions=14 hit=13
+Processing file neml2/models/solid_mechanics/PerzynaPlasticFlowRate.cxx
+  lines=31 hit=30 functions=3 hit=3
+Processing file neml2/dispatchers/ValueMapLoader.cxx
+  lines=28 hit=0 functions=4 hit=0
+Processing file neml2/tensors/functions/sum.cxx
+  lines=5 hit=5 functions=37 hit=8
+Processing file neml2/models/solid_mechanics/OlevskySinteringStress.cxx
+  lines=31 hit=30 functions=3 hit=3
+Processing file neml2/tensors/functions/discretization/assemble.cxx
+  lines=12 hit=7 functions=2 hit=1
+Processing file neml2/models/Interpolation.cxx
+  lines=28 hit=28 functions=35 hit=6
+Processing file neml2/tensors/functions/fmod.cxx
+  lines=1 hit=1 functions=36 hit=18
+Processing file neml2/tensors/functions/jacrev.cxx
+  lines=31 hit=31 functions=2 hit=2
+Processing file neml2/models/phase_field_fracture/DegradationFunction.cxx
+  lines=12 hit=11 functions=2 hit=2
+Processing file neml2/models/VariableBase.cxx
+  lines=270 hit=205 functions=51 hit=38
+Processing file neml2/base/EnumSelectionBase.cxx
+  lines=27 hit=27 functions=3 hit=3
+Processing file neml2/tensors/functions/sign.cxx
+  lines=1 hit=1 functions=18 hit=18
+Processing file neml2/solvers/LinearSolver.cxx
+  lines=6 hit=6 functions=2 hit=2
+Processing file neml2/tensors/functions/sinh.cxx
+  lines=1 hit=1 functions=18 hit=18
+Processing file neml2/tensors/Vec.cxx
+  lines=5 hit=5 functions=2 hit=2
+Processing file neml2/models/ParameterToState.cxx
+  lines=20 hit=19 functions=51 hit=19
+Processing file neml2/tensors/functions/linalg/ieigh.cxx
+  lines=6 hit=6 functions=1 hit=1
+Processing file neml2/models/chemical_reactions/ReactionMechanism.cxx
+  lines=12 hit=11 functions=2 hit=2
+Processing file neml2/models/porous_flow/PowerLawPermeability.cxx
+  lines=23 hit=22 functions=3 hit=3
+Processing file neml2/tensors/crystallography.cxx
+  lines=74 hit=61 functions=8 hit=7
+Processing file neml2/tensors/functions/cbrt.cxx
+  lines=1 hit=1 functions=18 hit=18
+Processing file neml2/models/solid_mechanics/crystal_plasticity/SlipStrengthMap.cxx
+  lines=10 hit=9 functions=2 hit=2
+Overall coverage rate:
+  lines......: 85.8% (8975 of 10459 lines)
+  functions......: 45.2% (2925 of 6466 functions)

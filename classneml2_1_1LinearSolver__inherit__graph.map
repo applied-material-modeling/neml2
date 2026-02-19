@@ -1,0 +1,9 @@
+<map id="LinearSolver" name="LinearSolver">
+<area shape="rect" id="Node000001" title="The linear solver solves a linear system of equations." alt="" coords="9,152,111,177"/>
+<area shape="rect" id="Node000004" href="$classneml2_1_1DenseLU.html" title=" " alt="" coords="20,225,100,251"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="63,191,63,225,57,225,57,191"/>
+<area shape="rect" id="Node000002" href="$classneml2_1_1Solver.html" title="The solver solves a system of equations." alt="" coords="29,79,91,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="63,118,63,152,57,152,57,118"/>
+<area shape="rect" id="Node000003" href="$classneml2_1_1NEML2Object.html" title="The base class of all &quot;manufacturable&quot; objects in the NEML2 library." alt="" coords="5,5,115,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="63,44,63,79,57,79,57,44"/>
+</map>

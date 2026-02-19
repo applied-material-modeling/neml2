@@ -1,0 +1,27 @@
+var searchData=
+[
+  ['r2_0',['R2',['../classneml2_1_1tensors_1_1R2.html',1,'neml2::tensors']]],
+  ['r2baseview_1',['R2BaseView',['../classneml2_1_1tensors_1_1R2BaseView.html',1,'neml2::tensors']]],
+  ['r2batchview_2',['R2BatchView',['../classneml2_1_1tensors_1_1R2BatchView.html',1,'neml2::tensors']]],
+  ['r2dynamicview_3',['R2DynamicView',['../classneml2_1_1tensors_1_1R2DynamicView.html',1,'neml2::tensors']]],
+  ['r2intmdview_4',['R2IntmdView',['../classneml2_1_1tensors_1_1R2IntmdView.html',1,'neml2::tensors']]],
+  ['r2staticview_5',['R2StaticView',['../classneml2_1_1tensors_1_1R2StaticView.html',1,'neml2::tensors']]],
+  ['r3_6',['R3',['../classneml2_1_1tensors_1_1R3.html',1,'neml2::tensors']]],
+  ['r3baseview_7',['R3BaseView',['../classneml2_1_1tensors_1_1R3BaseView.html',1,'neml2::tensors']]],
+  ['r3batchview_8',['R3BatchView',['../classneml2_1_1tensors_1_1R3BatchView.html',1,'neml2::tensors']]],
+  ['r3dynamicview_9',['R3DynamicView',['../classneml2_1_1tensors_1_1R3DynamicView.html',1,'neml2::tensors']]],
+  ['r3intmdview_10',['R3IntmdView',['../classneml2_1_1tensors_1_1R3IntmdView.html',1,'neml2::tensors']]],
+  ['r3staticview_11',['R3StaticView',['../classneml2_1_1tensors_1_1R3StaticView.html',1,'neml2::tensors']]],
+  ['r4_12',['R4',['../classneml2_1_1tensors_1_1R4.html',1,'neml2::tensors']]],
+  ['r4baseview_13',['R4BaseView',['../classneml2_1_1tensors_1_1R4BaseView.html',1,'neml2::tensors']]],
+  ['r4batchview_14',['R4BatchView',['../classneml2_1_1tensors_1_1R4BatchView.html',1,'neml2::tensors']]],
+  ['r4dynamicview_15',['R4DynamicView',['../classneml2_1_1tensors_1_1R4DynamicView.html',1,'neml2::tensors']]],
+  ['r4intmdview_16',['R4IntmdView',['../classneml2_1_1tensors_1_1R4IntmdView.html',1,'neml2::tensors']]],
+  ['r4staticview_17',['R4StaticView',['../classneml2_1_1tensors_1_1R4StaticView.html',1,'neml2::tensors']]],
+  ['rot_18',['Rot',['../classneml2_1_1tensors_1_1Rot.html',1,'neml2::tensors']]],
+  ['rotbaseview_19',['RotBaseView',['../classneml2_1_1tensors_1_1RotBaseView.html',1,'neml2::tensors']]],
+  ['rotbatchview_20',['RotBatchView',['../classneml2_1_1tensors_1_1RotBatchView.html',1,'neml2::tensors']]],
+  ['rotdynamicview_21',['RotDynamicView',['../classneml2_1_1tensors_1_1RotDynamicView.html',1,'neml2::tensors']]],
+  ['rotintmdview_22',['RotIntmdView',['../classneml2_1_1tensors_1_1RotIntmdView.html',1,'neml2::tensors']]],
+  ['rotstaticview_23',['RotStaticView',['../classneml2_1_1tensors_1_1RotStaticView.html',1,'neml2::tensors']]]
+];

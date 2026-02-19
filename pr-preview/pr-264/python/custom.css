@@ -1,0 +1,78 @@
+html {
+  --page-background-color: #ffffff;
+  --side-nav-background: #eeeeee;
+  --card-background-color: #ffffff;
+  --box-shadow-color: 0px 2px 4px -1px rgba(0, 0, 0, 0.2), 0px 4px 5px 0px rgba(0, 0, 0, 0.14), 0px 1px 10px 0px rgba(0, 0, 0, 0.12);
+  --box-shadow-hover-color: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 0px 8px 10px 1px rgba(0, 0, 0, 0.14), 0px 3px 14px 2px rgba(0, 0, 0, 0.12);
+}
+
+html.dark-mode {
+  --page-background-color: #16191f;
+  --side-nav-background: #252628;
+  --card-background-color: #383a3d;
+  --box-shadow-color: 0px 2px 4px -1px rgba(0, 0, 0, 1), 0px 4px 5px 0px rgba(0, 0, 0, 0.94), 0px 1px 10px 0px rgba(0, 0, 0, 0.92);
+  --box-shadow-hover-color: 0px 5px 5px -3px rgba(0, 0, 0, 1), 0px 8px 10px 1px rgba(0, 0, 0, 0.94), 0px 3px 14px 2px rgba(0, 0, 0, 0.92);
+}
+
+.cards {
+  display: flex;
+  grid-gap: 2rem;
+  margin-top: 40px;
+  margin-bottom: 40px;
+}
+
+.card {
+  transition: 0.3s;
+  border-radius: 6px;
+  flex: 32%;
+  padding: 2px;
+  background-color: var(--card-background-color);
+}
+
+/* Add shadows to create the "card" effect */
+.card {
+  box-shadow: var(--box-shadow-color);
+}
+
+.card:hover {
+  box-shadow: var(--box-shadow-hover-color);
+}
+
+/* Add some padding inside the card container */
+.card_container {
+  padding: 0 12px 12px 12px;
+}
+
+/* Clear floats after the columns */
+.cards:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+div.card a {
+  text-decoration: none;
+}
+
+div.card_container a.anchorlink {
+  visibility: hidden;
+}
+
+div.card_container a.anchorlink svg {
+  display: none;
+}
+
+div.card h2 {
+  color: var(--page-foreground-color);
+}
+
+div.card p {
+  font-size: 0.9rem;
+  color: var(--page-foreground-color);
+  line-height: 160%;
+  margin: 1em 0 0 0;
+}
+
+svg text {
+  fill: var(--page-foreground-color);
+}

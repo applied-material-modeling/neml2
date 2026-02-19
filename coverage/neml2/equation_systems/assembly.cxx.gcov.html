@@ -1,0 +1,603 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - neml2/equation_systems/assembly.cxx</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">neml2/equation_systems</a> - assembly.cxx<span style="font-size: 80%;"> (source / <a href="assembly.cxx.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryHi">98.1&nbsp;%</td>
+            <td class="headerCovTableEntry">213</td>
+            <td class="headerCovTableEntry">209</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-02-19 14:36:28</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryHi">76.0&nbsp;%</td>
+            <td class="headerCovTableEntry">25</td>
+            <td class="headerCovTableEntry">19</td>
+          </tr>
+                  <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">            Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>              : // Copyright 2024, UChicago Argonne, LLC</span>
+<span id="L2"><span class="lineNum">       2</span>              : // All Rights Reserved</span>
+<span id="L3"><span class="lineNum">       3</span>              : // Software Name: NEML2 -- the New Engineering material Model Library, version 2</span>
+<span id="L4"><span class="lineNum">       4</span>              : // By: Argonne National Laboratory</span>
+<span id="L5"><span class="lineNum">       5</span>              : // OPEN SOURCE LICENSE (MIT)</span>
+<span id="L6"><span class="lineNum">       6</span>              : //</span>
+<span id="L7"><span class="lineNum">       7</span>              : // Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span id="L8"><span class="lineNum">       8</span>              : // of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span id="L9"><span class="lineNum">       9</span>              : // in the Software without restriction, including without limitation the rights</span>
+<span id="L10"><span class="lineNum">      10</span>              : // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span id="L11"><span class="lineNum">      11</span>              : // copies of the Software, and to permit persons to whom the Software is</span>
+<span id="L12"><span class="lineNum">      12</span>              : // furnished to do so, subject to the following conditions:</span>
+<span id="L13"><span class="lineNum">      13</span>              : //</span>
+<span id="L14"><span class="lineNum">      14</span>              : // The above copyright notice and this permission notice shall be included in</span>
+<span id="L15"><span class="lineNum">      15</span>              : // all copies or substantial portions of the Software.</span>
+<span id="L16"><span class="lineNum">      16</span>              : //</span>
+<span id="L17"><span class="lineNum">      17</span>              : // THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span id="L18"><span class="lineNum">      18</span>              : // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span id="L19"><span class="lineNum">      19</span>              : // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span id="L20"><span class="lineNum">      20</span>              : // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span id="L21"><span class="lineNum">      21</span>              : // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span id="L22"><span class="lineNum">      22</span>              : // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
+<span id="L23"><span class="lineNum">      23</span>              : // THE SOFTWARE.</span>
+<span id="L24"><span class="lineNum">      24</span>              : </span>
+<span id="L25"><span class="lineNum">      25</span>              : #include &lt;ATen/ExpandUtils.h&gt;</span>
+<span id="L26"><span class="lineNum">      26</span>              : #include &lt;cstddef&gt;</span>
+<span id="L27"><span class="lineNum">      27</span>              : </span>
+<span id="L28"><span class="lineNum">      28</span>              : #include &quot;neml2/equation_systems/assembly.h&quot;</span>
+<span id="L29"><span class="lineNum">      29</span>              : #include &quot;neml2/tensors/Tensor.h&quot;</span>
+<span id="L30"><span class="lineNum">      30</span>              : #include &quot;neml2/tensors/Derivative.h&quot;</span>
+<span id="L31"><span class="lineNum">      31</span>              : #include &quot;neml2/tensors/shape_utils.h&quot;</span>
+<span id="L32"><span class="lineNum">      32</span>              : #include &quot;neml2/tensors/functions/cat.h&quot;</span>
+<span id="L33"><span class="lineNum">      33</span>              : #include &quot;neml2/equation_systems/SparseTensorList.h&quot;</span>
+<span id="L34"><span class="lineNum">      34</span>              : #include &quot;neml2/misc/assertions.h&quot;</span>
+<span id="L35"><span class="lineNum">      35</span>              : </span>
+<span id="L36"><span class="lineNum">      36</span>              : namespace neml2</span>
+<span id="L37"><span class="lineNum">      37</span>              : {</span>
+<span id="L38"><span class="lineNum">      38</span>              : </span>
+<span id="L39"><span class="lineNum">      39</span>              : Tensor</span>
+<span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC tlaBgGNC">        2371 : pop_intrsc_intmd_dim(const Tensor &amp; t, Size dim)</span></span>
+<span id="L41"><span class="lineNum">      41</span>              : {</span>
+<span id="L42"><span class="lineNum">      42</span> <span class="tlaGNC">        2371 :   if (dim == 0)</span></span>
+<span id="L43"><span class="lineNum">      43</span> <span class="tlaGNC">        2294 :     return t;</span></span>
+<span id="L44"><span class="lineNum">      44</span> <span class="tlaGNC">          77 :   neml_assert_dbg(dim &lt;= t.intmd_dim(),</span></span>
+<span id="L45"><span class="lineNum">      45</span>              :                   &quot;Unable to pop &quot;,</span>
+<span id="L46"><span class="lineNum">      46</span>              :                   dim,</span>
+<span id="L47"><span class="lineNum">      47</span>              :                   &quot; intermediate dimensions from a tensor with intermediate dimension &quot;,</span>
+<span id="L48"><span class="lineNum">      48</span>              :                   t.intmd_dim(),</span>
+<span id="L49"><span class="lineNum">      49</span>              :                   &quot;.&quot;);</span>
+<span id="L50"><span class="lineNum">      50</span> <span class="tlaGNC">          77 :   return Tensor(t, t.dynamic_sizes(), t.intmd_dim() - dim);</span></span>
+<span id="L51"><span class="lineNum">      51</span>              : }</span>
+<span id="L52"><span class="lineNum">      52</span>              : </span>
+<span id="L53"><span class="lineNum">      53</span>              : Tensor</span>
+<span id="L54"><span class="lineNum">      54</span> <span class="tlaGNC">        1865 : push_intrsc_intmd_dim(const Tensor &amp; t, Size dim)</span></span>
+<span id="L55"><span class="lineNum">      55</span>              : {</span>
+<span id="L56"><span class="lineNum">      56</span> <span class="tlaGNC">        1865 :   if (dim == 0)</span></span>
+<span id="L57"><span class="lineNum">      57</span> <span class="tlaGNC">        1718 :     return t;</span></span>
+<span id="L58"><span class="lineNum">      58</span> <span class="tlaGNC">         147 :   neml_assert_dbg(dim &lt;= t.base_dim(),</span></span>
+<span id="L59"><span class="lineNum">      59</span>              :                   &quot;Unable to push &quot;,</span>
+<span id="L60"><span class="lineNum">      60</span>              :                   dim,</span>
+<span id="L61"><span class="lineNum">      61</span>              :                   &quot; intermediate dimensions from a tensor with base dimension &quot;,</span>
+<span id="L62"><span class="lineNum">      62</span>              :                   t.base_dim(),</span>
+<span id="L63"><span class="lineNum">      63</span>              :                   &quot;.&quot;);</span>
+<span id="L64"><span class="lineNum">      64</span> <span class="tlaGNC">         147 :   return Tensor(t, t.dynamic_sizes(), t.intmd_dim() + dim);</span></span>
+<span id="L65"><span class="lineNum">      65</span>              : }</span>
+<span id="L66"><span class="lineNum">      66</span>              : </span>
+<span id="L67"><span class="lineNum">      67</span>              : Tensor</span>
+<span id="L68"><span class="lineNum">      68</span> <span class="tlaGNC">         481 : pop_intrsc_intmd_dim(const Derivative&lt;1&gt; &amp; deriv)</span></span>
+<span id="L69"><span class="lineNum">      69</span>              : {</span>
+<span id="L70"><span class="lineNum">      70</span> <span class="tlaGNC">         481 :   auto t = deriv.fullify();</span></span>
+<span id="L71"><span class="lineNum">      71</span>              : </span>
+<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC">         481 :   const auto var_id = std::size_t(deriv.var_intrsc_intmd_dim());</span></span>
+<span id="L73"><span class="lineNum">      73</span> <span class="tlaGNC">         481 :   const auto arg_id = std::size_t(deriv.arg_intrsc_intmd_dim(0));</span></span>
+<span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">         481 :   const auto var_bs = TensorShape(deriv.var_base_sizes());</span></span>
+<span id="L75"><span class="lineNum">      75</span> <span class="tlaGNC">         481 :   const auto arg_bs = TensorShape(deriv.arg_base_sizes(0));</span></span>
+<span id="L76"><span class="lineNum">      76</span>              : </span>
+<span id="L77"><span class="lineNum">      77</span> <span class="tlaGNC">        1443 :   return pop_intrsc_intmd_dim&lt;2&gt;(t, {var_id, arg_id}, {var_bs, arg_bs}, deriv.name());</span></span>
+<span id="L78"><span class="lineNum">      78</span> <span class="tlaGNC">         962 : }</span></span>
+<span id="L79"><span class="lineNum">      79</span>              : </span>
+<span id="L80"><span class="lineNum">      80</span>              : template &lt;std::size_t N&gt;</span>
+<span id="L81"><span class="lineNum">      81</span>              : Tensor</span>
+<span id="L82"><span class="lineNum">      82</span> <span class="tlaGNC">         482 : pop_intrsc_intmd_dim(const Tensor &amp; from,</span></span>
+<span id="L83"><span class="lineNum">      83</span>              :                      const std::array&lt;std::size_t, N&gt; &amp; intrsc_intmd_dims,</span>
+<span id="L84"><span class="lineNum">      84</span>              :                      const std::array&lt;TensorShape, N&gt; &amp; base_shapes,</span>
+<span id="L85"><span class="lineNum">      85</span>              :                      [[maybe_unused]] const std::string &amp; debug_name)</span>
+<span id="L86"><span class="lineNum">      86</span>              : {</span>
+<span id="L87"><span class="lineNum">      87</span> <span class="tlaGNC">         482 :   const auto total_id = utils::sum_array(intrsc_intmd_dims);</span></span>
+<span id="L88"><span class="lineNum">      88</span>              : </span>
+<span id="L89"><span class="lineNum">      89</span>              : #ifndef NDEBUG</span>
+<span id="L90"><span class="lineNum">      90</span>              :   // The given tensor should have shape</span>
+<span id="L91"><span class="lineNum">      91</span>              :   //   (*dynamic; *indep_intmd, *dep_intmd; *base)</span>
+<span id="L92"><span class="lineNum">      92</span>              :   //</span>
+<span id="L93"><span class="lineNum">      93</span>              :   // where dep_intmd = (*dep_intmd_0, ..., *dep_intmd_{N-1})</span>
+<span id="L94"><span class="lineNum">      94</span>              :   //            base = (*base_0, ..., *base_{N-1})</span>
+<span id="L95"><span class="lineNum">      95</span> <span class="tlaGNC">         482 :   neml_assert_dbg(from.intmd_dim() &gt;= Size(total_id),</span></span>
+<span id="L96"><span class="lineNum">      96</span>              :                   &quot;Number of intermediate dimensions (&quot;,</span>
+<span id="L97"><span class="lineNum">      97</span>              :                   from.intmd_dim(),</span>
+<span id="L98"><span class="lineNum">      98</span>              :                   &quot;) is less than the total number of intermediate dimensions to pop (&quot;,</span>
+<span id="L99"><span class="lineNum">      99</span>              :                   total_id,</span>
+<span id="L100"><span class="lineNum">     100</span>              :                   &quot;) for tensor '&quot;,</span>
+<span id="L101"><span class="lineNum">     101</span>              :                   debug_name,</span>
+<span id="L102"><span class="lineNum">     102</span>              :                   &quot;'.&quot;);</span>
+<span id="L103"><span class="lineNum">     103</span> <span class="tlaGNC">         482 :   const auto total_base_sizes =</span></span>
+<span id="L104"><span class="lineNum">     104</span> <span class="tlaGNC">         482 :       std::apply([](const auto &amp;... xs) { return utils::add_shapes(xs...); }, base_shapes);</span></span>
+<span id="L105"><span class="lineNum">     105</span> <span class="tlaGNC">         482 :   neml_assert_dbg(from.base_sizes() == total_base_sizes,</span></span>
+<span id="L106"><span class="lineNum">     106</span>              :                   &quot;Incompatible base shape for tensor '&quot;,</span>
+<span id="L107"><span class="lineNum">     107</span>              :                   debug_name,</span>
+<span id="L108"><span class="lineNum">     108</span>              :                   &quot;', expected base shape &quot;,</span>
+<span id="L109"><span class="lineNum">     109</span>              :                   total_base_sizes,</span>
+<span id="L110"><span class="lineNum">     110</span>              :                   &quot;, but got &quot;,</span>
+<span id="L111"><span class="lineNum">     111</span>              :                   from.base_sizes());</span>
+<span id="L112"><span class="lineNum">     112</span>              : #endif</span>
+<span id="L113"><span class="lineNum">     113</span>              : </span>
+<span id="L114"><span class="lineNum">     114</span>              :   // Move each intrinsic dimension to its corresponding position in the base</span>
+<span id="L115"><span class="lineNum">     115</span> <span class="tlaGNC">         482 :   auto src_dim = -total_id;</span></span>
+<span id="L116"><span class="lineNum">     116</span> <span class="tlaGNC">         482 :   if (src_dim != 0)</span></span>
+<span id="L117"><span class="lineNum">     117</span> <span class="tlaGNC">          27 :     src_dim = utils::normalize_dim(src_dim, from.dynamic_dim(), from.batch_dim());</span></span>
+<span id="L118"><span class="lineNum">     118</span> <span class="tlaGNC">         482 :   auto dest_dim = from.batch_dim() - 1;</span></span>
+<span id="L119"><span class="lineNum">     119</span> <span class="tlaGNC">         482 :   auto raw = ATensor(from);</span></span>
+<span id="L120"><span class="lineNum">     120</span> <span class="tlaGNC">        1446 :   for (std::size_t i = 0; i &lt; N; i++)</span></span>
+<span id="L121"><span class="lineNum">     121</span>              :   {</span>
+<span id="L122"><span class="lineNum">     122</span> <span class="tlaGNC">        1005 :     for (std::size_t j = 0; j &lt; intrsc_intmd_dims[i]; j++)</span></span>
+<span id="L123"><span class="lineNum">     123</span> <span class="tlaGNC">          41 :       raw = raw.movedim(src_dim, dest_dim);</span></span>
+<span id="L124"><span class="lineNum">     124</span> <span class="tlaGNC">         964 :     dest_dim += base_shapes[i].size();</span></span>
+<span id="L125"><span class="lineNum">     125</span>              :   }</span>
+<span id="L126"><span class="lineNum">     126</span>              : </span>
+<span id="L127"><span class="lineNum">     127</span> <span class="tlaGNC">         964 :   return Tensor(raw, from.dynamic_sizes(), from.intmd_dim() - total_id);</span></span>
+<span id="L128"><span class="lineNum">     128</span> <span class="tlaGNC">         482 : }</span></span>
+<span id="L129"><span class="lineNum">     129</span>              : </span>
+<span id="L130"><span class="lineNum">     130</span>              : // Explicit instantiations</span>
+<span id="L131"><span class="lineNum">     131</span>              : template Tensor pop_intrsc_intmd_dim&lt;1&gt;(const Tensor &amp;,</span>
+<span id="L132"><span class="lineNum">     132</span>              :                                         const std::array&lt;std::size_t, 1&gt; &amp;,</span>
+<span id="L133"><span class="lineNum">     133</span>              :                                         const std::array&lt;TensorShape, 1&gt; &amp;,</span>
+<span id="L134"><span class="lineNum">     134</span>              :                                         const std::string &amp;);</span>
+<span id="L135"><span class="lineNum">     135</span>              : template Tensor pop_intrsc_intmd_dim&lt;2&gt;(const Tensor &amp;,</span>
+<span id="L136"><span class="lineNum">     136</span>              :                                         const std::array&lt;std::size_t, 2&gt; &amp;,</span>
+<span id="L137"><span class="lineNum">     137</span>              :                                         const std::array&lt;TensorShape, 2&gt; &amp;,</span>
+<span id="L138"><span class="lineNum">     138</span>              :                                         const std::string &amp;);</span>
+<span id="L139"><span class="lineNum">     139</span>              : template Tensor pop_intrsc_intmd_dim&lt;3&gt;(const Tensor &amp;,</span>
+<span id="L140"><span class="lineNum">     140</span>              :                                         const std::array&lt;std::size_t, 3&gt; &amp;,</span>
+<span id="L141"><span class="lineNum">     141</span>              :                                         const std::array&lt;TensorShape, 3&gt; &amp;,</span>
+<span id="L142"><span class="lineNum">     142</span>              :                                         const std::string &amp;);</span>
+<span id="L143"><span class="lineNum">     143</span>              : </span>
+<span id="L144"><span class="lineNum">     144</span>              : template &lt;std::size_t N&gt;</span>
+<span id="L145"><span class="lineNum">     145</span>              : Tensor</span>
+<span id="L146"><span class="lineNum">     146</span> <span class="tlaGNC">           1 : push_intrsc_intmd_dim(const Tensor &amp; from,</span></span>
+<span id="L147"><span class="lineNum">     147</span>              :                       const std::array&lt;std::size_t, N&gt; &amp; intrsc_intmd_dims,</span>
+<span id="L148"><span class="lineNum">     148</span>              :                       const std::array&lt;TensorShape, N&gt; &amp; base_shapes,</span>
+<span id="L149"><span class="lineNum">     149</span>              :                       [[maybe_unused]] const std::string &amp; debug_name)</span>
+<span id="L150"><span class="lineNum">     150</span>              : {</span>
+<span id="L151"><span class="lineNum">     151</span>              :   // The given tensor should have shape</span>
+<span id="L152"><span class="lineNum">     152</span>              :   //   (*dynamic; *indep_intmd; *dep_intmd_0, *base_0, ..., *dep_intmd_{N-1}, *base_{N-1})</span>
+<span id="L153"><span class="lineNum">     153</span>              :   // We need to move the dependent intermediate dimension from base to intmd</span>
+<span id="L154"><span class="lineNum">     154</span> <span class="tlaGNC">           1 :   auto src_dim = from.batch_dim();</span></span>
+<span id="L155"><span class="lineNum">     155</span> <span class="tlaGNC">           1 :   auto dest_dim = from.batch_dim();</span></span>
+<span id="L156"><span class="lineNum">     156</span> <span class="tlaGNC">           1 :   auto raw = ATensor(from);</span></span>
+<span id="L157"><span class="lineNum">     157</span> <span class="tlaGNC">           1 :   Size total_id = 0;</span></span>
+<span id="L158"><span class="lineNum">     158</span> <span class="tlaGNC">           3 :   for (std::size_t i = 0; i &lt; N; i++)</span></span>
+<span id="L159"><span class="lineNum">     159</span>              :   {</span>
+<span id="L160"><span class="lineNum">     160</span> <span class="tlaGNC">           4 :     for (std::size_t j = 0; j &lt; intrsc_intmd_dims[i]; j++)</span></span>
+<span id="L161"><span class="lineNum">     161</span> <span class="tlaGNC">           2 :       raw = raw.movedim(src_dim++, dest_dim++);</span></span>
+<span id="L162"><span class="lineNum">     162</span> <span class="tlaGNC">           2 :     src_dim += base_shapes[i].size();</span></span>
+<span id="L163"><span class="lineNum">     163</span> <span class="tlaGNC">           2 :     total_id += intrsc_intmd_dims[i];</span></span>
+<span id="L164"><span class="lineNum">     164</span>              :   }</span>
+<span id="L165"><span class="lineNum">     165</span> <span class="tlaGNC">           2 :   return Tensor(raw, from.dynamic_sizes(), from.intmd_dim() + total_id);</span></span>
+<span id="L166"><span class="lineNum">     166</span> <span class="tlaGNC">           1 : }</span></span>
+<span id="L167"><span class="lineNum">     167</span>              : </span>
+<span id="L168"><span class="lineNum">     168</span>              : // Explicit instantiations</span>
+<span id="L169"><span class="lineNum">     169</span>              : template Tensor push_intrsc_intmd_dim&lt;1&gt;(const Tensor &amp;,</span>
+<span id="L170"><span class="lineNum">     170</span>              :                                          const std::array&lt;std::size_t, 1&gt; &amp;,</span>
+<span id="L171"><span class="lineNum">     171</span>              :                                          const std::array&lt;TensorShape, 1&gt; &amp;,</span>
+<span id="L172"><span class="lineNum">     172</span>              :                                          const std::string &amp;);</span>
+<span id="L173"><span class="lineNum">     173</span>              : template Tensor push_intrsc_intmd_dim&lt;2&gt;(const Tensor &amp;,</span>
+<span id="L174"><span class="lineNum">     174</span>              :                                          const std::array&lt;std::size_t, 2&gt; &amp;,</span>
+<span id="L175"><span class="lineNum">     175</span>              :                                          const std::array&lt;TensorShape, 2&gt; &amp;,</span>
+<span id="L176"><span class="lineNum">     176</span>              :                                          const std::string &amp;);</span>
+<span id="L177"><span class="lineNum">     177</span>              : template Tensor push_intrsc_intmd_dim&lt;3&gt;(const Tensor &amp;,</span>
+<span id="L178"><span class="lineNum">     178</span>              :                                          const std::array&lt;std::size_t, 3&gt; &amp;,</span>
+<span id="L179"><span class="lineNum">     179</span>              :                                          const std::array&lt;TensorShape, 3&gt; &amp;,</span>
+<span id="L180"><span class="lineNum">     180</span>              :                                          const std::string &amp;);</span>
+<span id="L181"><span class="lineNum">     181</span>              : </span>
+<span id="L182"><span class="lineNum">     182</span>              : template &lt;std::size_t N&gt;</span>
+<span id="L183"><span class="lineNum">     183</span>              : Tensor</span>
+<span id="L184"><span class="lineNum">     184</span> <span class="tlaGNC">        8284 : to_assembly(const Tensor &amp; from,</span></span>
+<span id="L185"><span class="lineNum">     185</span>              :             const std::array&lt;TensorShape, N&gt; &amp; intmd_shapes,</span>
+<span id="L186"><span class="lineNum">     186</span>              :             const std::array&lt;TensorShape, N&gt; &amp; base_shapes)</span>
+<span id="L187"><span class="lineNum">     187</span>              : {</span>
+<span id="L188"><span class="lineNum">     188</span>              : #ifndef NDEBUG</span>
+<span id="L189"><span class="lineNum">     189</span>              :   // The given tensor should have shape</span>
+<span id="L190"><span class="lineNum">     190</span>              :   //   (dynamic; intmd1, intmd2, ..., intmdN; base1, base2, ..., baseN)</span>
+<span id="L191"><span class="lineNum">     191</span> <span class="tlaGNC">        8284 :   const auto expected_intmd_sizes =</span></span>
+<span id="L192"><span class="lineNum">     192</span> <span class="tlaGNC">        8284 :       std::apply([](const auto &amp;... xs) { return utils::add_shapes(xs...); }, intmd_shapes);</span></span>
+<span id="L193"><span class="lineNum">     193</span> <span class="tlaGNC">        8284 :   neml_assert_dbg(from.intmd_sizes() == expected_intmd_sizes ||</span></span>
+<span id="L194"><span class="lineNum">     194</span>              :                       at::is_expandable_to(from.intmd_sizes(), intmd_shapes[0]),</span>
+<span id="L195"><span class="lineNum">     195</span>              :                   &quot;Incompatible intermediate shape, expected intermediate shape to be either &quot;,</span>
+<span id="L196"><span class="lineNum">     196</span>              :                   expected_intmd_sizes,</span>
+<span id="L197"><span class="lineNum">     197</span>              :                   &quot;, or expandable to &quot;,</span>
+<span id="L198"><span class="lineNum">     198</span>              :                   intmd_shapes[0],</span>
+<span id="L199"><span class="lineNum">     199</span>              :                   &quot;, got &quot;,</span>
+<span id="L200"><span class="lineNum">     200</span>              :                   from.intmd_sizes(),</span>
+<span id="L201"><span class="lineNum">     201</span>              :                   &quot;.&quot;);</span>
+<span id="L202"><span class="lineNum">     202</span> <span class="tlaGNC">        8284 :   const auto expected_base_sizes =</span></span>
+<span id="L203"><span class="lineNum">     203</span> <span class="tlaGNC">        8284 :       std::apply([](const auto &amp;... xs) { return utils::add_shapes(xs...); }, base_shapes);</span></span>
+<span id="L204"><span class="lineNum">     204</span> <span class="tlaGNC">        8284 :   neml_assert_dbg(from.base_sizes() == expected_base_sizes,</span></span>
+<span id="L205"><span class="lineNum">     205</span>              :                   &quot;Incompatible base shape, expected base shape is &quot;,</span>
+<span id="L206"><span class="lineNum">     206</span>              :                   expected_base_sizes,</span>
+<span id="L207"><span class="lineNum">     207</span>              :                   &quot;, got &quot;,</span>
+<span id="L208"><span class="lineNum">     208</span>              :                   from.base_sizes());</span>
+<span id="L209"><span class="lineNum">     209</span>              : #endif</span>
+<span id="L210"><span class="lineNum">     210</span>              : </span>
+<span id="L211"><span class="lineNum">     211</span>              :   // Expand intermediate sizes if needed</span>
+<span id="L212"><span class="lineNum">     212</span> <span class="tlaGNC">        8284 :   auto expanded = fullify&lt;N&gt;(from, from.intmd_dim(), intmd_shapes);</span></span>
+<span id="L213"><span class="lineNum">     213</span>              : </span>
+<span id="L214"><span class="lineNum">     214</span>              :   // Generate permutation to move each intmd before each corresponding base</span>
+<span id="L215"><span class="lineNum">     215</span>              :   //</span>
+<span id="L216"><span class="lineNum">     216</span>              :   // For example, for N == 2, the tensor shape is in the form of</span>
+<span id="L217"><span class="lineNum">     217</span>              :   //   (dynamic; intmd1, intmd2; base1, base2)</span>
+<span id="L218"><span class="lineNum">     218</span>              :   //</span>
+<span id="L219"><span class="lineNum">     219</span>              :   // We first move intmd1 before base1:</span>
+<span id="L220"><span class="lineNum">     220</span>              :   //   (dynamic; intmd2; intmd1, base1, base2)</span>
+<span id="L221"><span class="lineNum">     221</span>              :   //</span>
+<span id="L222"><span class="lineNum">     222</span>              :   // Then we move intmd2 before base2:</span>
+<span id="L223"><span class="lineNum">     223</span>              :   //   (dynamic; intmd1, base1, intmd2, base2)</span>
+<span id="L224"><span class="lineNum">     224</span> <span class="tlaGNC">        8284 :   TensorShape indices(expanded.dim());</span></span>
+<span id="L225"><span class="lineNum">     225</span> <span class="tlaGNC">        8284 :   TensorShape assembly_sizes(N);</span></span>
+<span id="L226"><span class="lineNum">     226</span> <span class="tlaGNC">        8284 :   std::iota(indices.begin(), indices.end(), 0);</span></span>
+<span id="L227"><span class="lineNum">     227</span> <span class="tlaGNC">        8284 :   auto permutation = indices;</span></span>
+<span id="L228"><span class="lineNum">     228</span> <span class="tlaGNC">        8284 :   auto first = permutation.begin() + expanded.dynamic_dim();</span></span>
+<span id="L229"><span class="lineNum">     229</span> <span class="tlaGNC">        8284 :   auto last = first + expanded.intmd_dim();</span></span>
+<span id="L230"><span class="lineNum">     230</span> <span class="tlaGNC">       22797 :   for (std::size_t i = 0; i &lt; N; ++i)</span></span>
+<span id="L231"><span class="lineNum">     231</span>              :   {</span>
+<span id="L232"><span class="lineNum">     232</span> <span class="tlaGNC">       14513 :     assembly_sizes[i] = utils::numel(intmd_shapes[i]) * utils::numel(base_shapes[i]);</span></span>
+<span id="L233"><span class="lineNum">     233</span> <span class="tlaGNC">       14513 :     if (!intmd_shapes[i].empty())</span></span>
+<span id="L234"><span class="lineNum">     234</span>              :     {</span>
+<span id="L235"><span class="lineNum">     235</span> <span class="tlaGNC">          12 :       auto middle = first + intmd_shapes[i].size();</span></span>
+<span id="L236"><span class="lineNum">     236</span> <span class="tlaGNC">          12 :       std::rotate(first, middle, last);</span></span>
+<span id="L237"><span class="lineNum">     237</span>              :     }</span>
+<span id="L238"><span class="lineNum">     238</span> <span class="tlaGNC">       14513 :     last += base_shapes[i].size();</span></span>
+<span id="L239"><span class="lineNum">     239</span>              :   }</span>
+<span id="L240"><span class="lineNum">     240</span>              : </span>
+<span id="L241"><span class="lineNum">     241</span>              :   // Perform the permutation</span>
+<span id="L242"><span class="lineNum">     242</span> <span class="tlaGNC">        8284 :   auto permuted = Tensor(at::permute(expanded, permutation), expanded.dynamic_sizes(), 0);</span></span>
+<span id="L243"><span class="lineNum">     243</span> <span class="tlaGNC">       16568 :   return permuted.base_reshape(assembly_sizes);</span></span>
+<span id="L244"><span class="lineNum">     244</span> <span class="tlaGNC">        8284 : }</span></span>
+<span id="L245"><span class="lineNum">     245</span>              : </span>
+<span id="L246"><span class="lineNum">     246</span>              : // Explicit instantiations</span>
+<span id="L247"><span class="lineNum">     247</span>              : template Tensor to_assembly&lt;1&gt;(const Tensor &amp;,</span>
+<span id="L248"><span class="lineNum">     248</span>              :                                const std::array&lt;TensorShape, 1&gt; &amp;,</span>
+<span id="L249"><span class="lineNum">     249</span>              :                                const std::array&lt;TensorShape, 1&gt; &amp;);</span>
+<span id="L250"><span class="lineNum">     250</span>              : template Tensor to_assembly&lt;2&gt;(const Tensor &amp;,</span>
+<span id="L251"><span class="lineNum">     251</span>              :                                const std::array&lt;TensorShape, 2&gt; &amp;,</span>
+<span id="L252"><span class="lineNum">     252</span>              :                                const std::array&lt;TensorShape, 2&gt; &amp;);</span>
+<span id="L253"><span class="lineNum">     253</span>              : </span>
+<span id="L254"><span class="lineNum">     254</span>              : template &lt;std::size_t N&gt;</span>
+<span id="L255"><span class="lineNum">     255</span>              : Tensor</span>
+<span id="L256"><span class="lineNum">     256</span> <span class="tlaGNC">        2099 : from_assembly(const Tensor &amp; from,</span></span>
+<span id="L257"><span class="lineNum">     257</span>              :               const std::array&lt;TensorShape, N&gt; &amp; intmd_shapes,</span>
+<span id="L258"><span class="lineNum">     258</span>              :               const std::array&lt;TensorShape, N&gt; &amp; base_shapes)</span>
+<span id="L259"><span class="lineNum">     259</span>              : {</span>
+<span id="L260"><span class="lineNum">     260</span>              : #ifndef NDEBUG</span>
+<span id="L261"><span class="lineNum">     261</span> <span class="tlaGNC">        2099 :   TensorShape assembly_sizes(N);</span></span>
+<span id="L262"><span class="lineNum">     262</span> <span class="tlaGNC">        4242 :   for (std::size_t i = 0; i &lt; N; i++)</span></span>
+<span id="L263"><span class="lineNum">     263</span> <span class="tlaGNC">        2143 :     assembly_sizes[i] = utils::numel(intmd_shapes[i]) * utils::numel(base_shapes[i]);</span></span>
+<span id="L264"><span class="lineNum">     264</span> <span class="tlaGNC">        2099 :   neml_assert_dbg(from.intmd_dim() == 0,</span></span>
+<span id="L265"><span class="lineNum">     265</span>              :                   &quot;Tensor in assembly format should have no intermediate dimensions&quot;);</span>
+<span id="L266"><span class="lineNum">     266</span> <span class="tlaGNC">        2099 :   neml_assert_dbg(assembly_sizes == from.base_sizes(),</span></span>
+<span id="L267"><span class="lineNum">     267</span>              :                   &quot;Incompatible base shape, expected base shape &quot;,</span>
+<span id="L268"><span class="lineNum">     268</span>              :                   assembly_sizes,</span>
+<span id="L269"><span class="lineNum">     269</span>              :                   &quot;, got &quot;,</span>
+<span id="L270"><span class="lineNum">     270</span>              :                   from.base_sizes());</span>
+<span id="L271"><span class="lineNum">     271</span>              : #endif</span>
+<span id="L272"><span class="lineNum">     272</span>              : </span>
+<span id="L273"><span class="lineNum">     273</span>              :   // Generate the unflattened base shape</span>
+<span id="L274"><span class="lineNum">     274</span> <span class="tlaGNC">        2099 :   TensorShape unfl_sizes;</span></span>
+<span id="L275"><span class="lineNum">     275</span> <span class="tlaGNC">        4242 :   for (std::size_t i = 0; i &lt; N; i++)</span></span>
+<span id="L276"><span class="lineNum">     276</span>              :   {</span>
+<span id="L277"><span class="lineNum">     277</span> <span class="tlaGNC">        2143 :     unfl_sizes.insert(unfl_sizes.end(), intmd_shapes[i].begin(), intmd_shapes[i].end());</span></span>
+<span id="L278"><span class="lineNum">     278</span> <span class="tlaGNC">        2143 :     unfl_sizes.insert(unfl_sizes.end(), base_shapes[i].begin(), base_shapes[i].end());</span></span>
+<span id="L279"><span class="lineNum">     279</span>              :   }</span>
+<span id="L280"><span class="lineNum">     280</span>              : </span>
+<span id="L281"><span class="lineNum">     281</span>              :   // Unflatten base</span>
+<span id="L282"><span class="lineNum">     282</span> <span class="tlaGNC">        2099 :   auto unfl = from.base_reshape(unfl_sizes);</span></span>
+<span id="L283"><span class="lineNum">     283</span>              : </span>
+<span id="L284"><span class="lineNum">     284</span>              :   // Generate permutation for intmd dimensions</span>
+<span id="L285"><span class="lineNum">     285</span>              :   //</span>
+<span id="L286"><span class="lineNum">     286</span>              :   // For example, for N == 3, the tensor shape is in the form of</span>
+<span id="L287"><span class="lineNum">     287</span>              :   //   (dynamic; intmd1, base1, intmd2, base2, intmd3, base3)</span>
+<span id="L288"><span class="lineNum">     288</span>              :   //</span>
+<span id="L289"><span class="lineNum">     289</span>              :   // We first move intmd1 after dynamic:</span>
+<span id="L290"><span class="lineNum">     290</span>              :   //   (dynamic; intmd1; base1, intmd2, base2, intmd3, base3)</span>
+<span id="L291"><span class="lineNum">     291</span>              :   //</span>
+<span id="L292"><span class="lineNum">     292</span>              :   // Then we move intmd2 after intmd1:</span>
+<span id="L293"><span class="lineNum">     293</span>              :   //   (dynamic; intmd1, intmd2; base1, base2, intmd3, base3)</span>
+<span id="L294"><span class="lineNum">     294</span>              :   //</span>
+<span id="L295"><span class="lineNum">     295</span>              :   // Finally, we move intmd3 after intmd2:</span>
+<span id="L296"><span class="lineNum">     296</span>              :   //   (dynamic; intmd1, intmd2, intmd3; base1, base2, base3)</span>
+<span id="L297"><span class="lineNum">     297</span> <span class="tlaGNC">        2099 :   Size intmd_dim = intmd_shapes[0].size();</span></span>
+<span id="L298"><span class="lineNum">     298</span> <span class="tlaGNC">        2099 :   TensorShape indices(unfl.dim());</span></span>
+<span id="L299"><span class="lineNum">     299</span> <span class="tlaGNC">        2099 :   std::iota(indices.begin(), indices.end(), 0);</span></span>
+<span id="L300"><span class="lineNum">     300</span> <span class="tlaGNC">        2099 :   auto permutation = indices;</span></span>
+<span id="L301"><span class="lineNum">     301</span> <span class="tlaGNC">        2099 :   auto first = permutation.begin() + unfl.dynamic_dim() + intmd_shapes[0].size();</span></span>
+<span id="L302"><span class="lineNum">     302</span> <span class="tlaGNC">        2099 :   auto middle = first + base_shapes[0].size();</span></span>
+<span id="L303"><span class="lineNum">     303</span> <span class="tlaGNC">        2143 :   for (std::size_t i = 1; i &lt; N; ++i)</span></span>
+<span id="L304"><span class="lineNum">     304</span>              :   {</span>
+<span id="L305"><span class="lineNum">     305</span> <span class="tlaGNC">          44 :     if (!intmd_shapes[i].empty())</span></span>
+<span id="L306"><span class="lineNum">     306</span>              :     {</span>
+<span id="L307"><span class="lineNum">     307</span> <span class="tlaGNC">           5 :       intmd_dim += intmd_shapes[i].size();</span></span>
+<span id="L308"><span class="lineNum">     308</span> <span class="tlaGNC">           5 :       auto last = middle + intmd_shapes[i].size();</span></span>
+<span id="L309"><span class="lineNum">     309</span> <span class="tlaGNC">           5 :       std::rotate(first, middle, last);</span></span>
+<span id="L310"><span class="lineNum">     310</span> <span class="tlaGNC">           5 :       first += intmd_shapes[i].size();</span></span>
+<span id="L311"><span class="lineNum">     311</span> <span class="tlaGNC">           5 :       middle += intmd_shapes[i].size();</span></span>
+<span id="L312"><span class="lineNum">     312</span>              :     }</span>
+<span id="L313"><span class="lineNum">     313</span> <span class="tlaGNC">          44 :     middle += base_shapes[i].size();</span></span>
+<span id="L314"><span class="lineNum">     314</span>              :   }</span>
+<span id="L315"><span class="lineNum">     315</span>              : </span>
+<span id="L316"><span class="lineNum">     316</span>              :   // Perform the permutation</span>
+<span id="L317"><span class="lineNum">     317</span> <span class="tlaGNC">        4198 :   return Tensor(at::permute(unfl, permutation), unfl.dynamic_sizes(), intmd_dim);</span></span>
+<span id="L318"><span class="lineNum">     318</span> <span class="tlaGNC">        2099 : }</span></span>
+<span id="L319"><span class="lineNum">     319</span>              : </span>
+<span id="L320"><span class="lineNum">     320</span>              : // Explicit instantiations</span>
+<span id="L321"><span class="lineNum">     321</span>              : template Tensor from_assembly&lt;1&gt;(const Tensor &amp;,</span>
+<span id="L322"><span class="lineNum">     322</span>              :                                  const std::array&lt;TensorShape, 1&gt; &amp;,</span>
+<span id="L323"><span class="lineNum">     323</span>              :                                  const std::array&lt;TensorShape, 1&gt; &amp;);</span>
+<span id="L324"><span class="lineNum">     324</span>              : template Tensor from_assembly&lt;2&gt;(const Tensor &amp;,</span>
+<span id="L325"><span class="lineNum">     325</span>              :                                  const std::array&lt;TensorShape, 2&gt; &amp;,</span>
+<span id="L326"><span class="lineNum">     326</span>              :                                  const std::array&lt;TensorShape, 2&gt; &amp;);</span>
+<span id="L327"><span class="lineNum">     327</span>              : </span>
+<span id="L328"><span class="lineNum">     328</span>              : static std::vector&lt;Size&gt;</span>
+<span id="L329"><span class="lineNum">     329</span> <span class="tlaGNC">        2822 : split_sizes(const std::optional&lt;std::vector&lt;TensorShape&gt;&gt; &amp; intmd_shapes,</span></span>
+<span id="L330"><span class="lineNum">     330</span>              :             const std::vector&lt;TensorShape&gt; &amp; base_shapes)</span>
+<span id="L331"><span class="lineNum">     331</span>              : {</span>
+<span id="L332"><span class="lineNum">     332</span> <span class="tlaGNC">        2822 :   std::vector&lt;Size&gt; res(base_shapes.size());</span></span>
+<span id="L333"><span class="lineNum">     333</span> <span class="tlaGNC">       11108 :   for (std::size_t i = 0; i &lt; base_shapes.size(); ++i)</span></span>
+<span id="L334"><span class="lineNum">     334</span>              :   {</span>
+<span id="L335"><span class="lineNum">     335</span> <span class="tlaGNC">        8286 :     res[i] = utils::numel(base_shapes[i]);</span></span>
+<span id="L336"><span class="lineNum">     336</span> <span class="tlaGNC">        8286 :     if (intmd_shapes)</span></span>
+<span id="L337"><span class="lineNum">     337</span> <span class="tlaGNC">        8274 :       res[i] *= utils::numel((*intmd_shapes)[i]);</span></span>
+<span id="L338"><span class="lineNum">     338</span>              :   }</span>
+<span id="L339"><span class="lineNum">     339</span> <span class="tlaGNC">        2822 :   return res;</span></span>
+<span id="L340"><span class="lineNum">     340</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
+<span id="L341"><span class="lineNum">     341</span>              : </span>
+<span id="L342"><span class="lineNum">     342</span>              : SparseTensorList</span>
+<span id="L343"><span class="lineNum">     343</span> <span class="tlaGNC tlaBgGNC">         700 : disassemble(const Tensor &amp; t,</span></span>
+<span id="L344"><span class="lineNum">     344</span>              :             const std::optional&lt;std::vector&lt;TensorShape&gt;&gt; &amp; intmd_shapes,</span>
+<span id="L345"><span class="lineNum">     345</span>              :             const std::vector&lt;TensorShape&gt; &amp; base_shapes)</span>
+<span id="L346"><span class="lineNum">     346</span>              : {</span>
+<span id="L347"><span class="lineNum">     347</span> <span class="tlaGNC">         700 :   neml_assert_dbg(t.base_dim() == 1, &quot;disassemble expects base dimension of 1, got &quot;, t.base_dim());</span></span>
+<span id="L348"><span class="lineNum">     348</span> <span class="tlaGNC">         700 :   if (intmd_shapes)</span></span>
+<span id="L349"><span class="lineNum">     349</span> <span class="tlaGNC">         699 :     neml_assert_dbg(t.intmd_dim() == 0,</span></span>
+<span id="L350"><span class="lineNum">     350</span>              :                     &quot;disassemble with intermediate shapes expects intmd dimension of 0, got &quot;,</span>
+<span id="L351"><span class="lineNum">     351</span>              :                     t.intmd_dim());</span>
+<span id="L352"><span class="lineNum">     352</span>              : </span>
+<span id="L353"><span class="lineNum">     353</span> <span class="tlaGNC">         700 :   const auto ss = split_sizes(intmd_shapes, base_shapes);</span></span>
+<span id="L354"><span class="lineNum">     354</span> <span class="tlaGNC">         700 :   const auto &amp; D = t.dynamic_sizes();</span></span>
+<span id="L355"><span class="lineNum">     355</span> <span class="tlaGNC">         700 :   const auto I = t.intmd_dim();</span></span>
+<span id="L356"><span class="lineNum">     356</span> <span class="tlaGNC">         700 :   const auto vs = t.split(ss, -1);</span></span>
+<span id="L357"><span class="lineNum">     357</span> <span class="tlaGNC">         700 :   const auto n = vs.size();</span></span>
+<span id="L358"><span class="lineNum">     358</span>              : </span>
+<span id="L359"><span class="lineNum">     359</span> <span class="tlaGNC">         700 :   SparseTensorList res;</span></span>
+<span id="L360"><span class="lineNum">     360</span> <span class="tlaGNC">         700 :   res.resize(n);</span></span>
+<span id="L361"><span class="lineNum">     361</span> <span class="tlaGNC">        2755 :   for (std::size_t i = 0; i &lt; n; ++i)</span></span>
+<span id="L362"><span class="lineNum">     362</span>              :   {</span>
+<span id="L363"><span class="lineNum">     363</span> <span class="tlaGNC">        2055 :     auto ti = Tensor(vs[i], D, I);</span></span>
+<span id="L364"><span class="lineNum">     364</span>              :     // if expected intermediate shapes are not given, we won't touch intermediate dims</span>
+<span id="L365"><span class="lineNum">     365</span> <span class="tlaGNC">        2055 :     if (!intmd_shapes)</span></span>
+<span id="L366"><span class="lineNum">     366</span> <span class="tlaGNC">           2 :       res[i] = ti.base_reshape(base_shapes[i]);</span></span>
+<span id="L367"><span class="lineNum">     367</span>              :     else</span>
+<span id="L368"><span class="lineNum">     368</span> <span class="tlaGNC">        4106 :       res[i] = from_assembly&lt;1&gt;(ti, {(*intmd_shapes)[i]}, {base_shapes[i]});</span></span>
+<span id="L369"><span class="lineNum">     369</span> <span class="tlaGNC">        2055 :   }</span></span>
+<span id="L370"><span class="lineNum">     370</span>              : </span>
+<span id="L371"><span class="lineNum">     371</span> <span class="tlaGNC">        1400 :   return res;</span></span>
+<span id="L372"><span class="lineNum">     372</span> <span class="tlaGNC">        4806 : }</span></span>
+<span id="L373"><span class="lineNum">     373</span>              : </span>
+<span id="L374"><span class="lineNum">     374</span>              : Tensor</span>
+<span id="L375"><span class="lineNum">     375</span> <span class="tlaGNC">         700 : assemble(const SparseTensorList &amp; t,</span></span>
+<span id="L376"><span class="lineNum">     376</span>              :          const std::optional&lt;std::vector&lt;TensorShape&gt;&gt; &amp; intmd_shapes,</span>
+<span id="L377"><span class="lineNum">     377</span>              :          const std::vector&lt;TensorShape&gt; &amp; base_shapes)</span>
+<span id="L378"><span class="lineNum">     378</span>              : {</span>
+<span id="L379"><span class="lineNum">     379</span> <span class="tlaGNC">         700 :   const auto ss = split_sizes(intmd_shapes, base_shapes);</span></span>
+<span id="L380"><span class="lineNum">     380</span> <span class="tlaGNC">         700 :   const auto n = t.size();</span></span>
+<span id="L381"><span class="lineNum">     381</span>              : </span>
+<span id="L382"><span class="lineNum">     382</span>              :   // If a variable is not found, tensor at that position remains undefined, and all undefined tensor</span>
+<span id="L383"><span class="lineNum">     383</span>              :   // will later be filled with zeros.</span>
+<span id="L384"><span class="lineNum">     384</span> <span class="tlaGNC">         700 :   std::vector&lt;Tensor&gt; tf(n);</span></span>
+<span id="L385"><span class="lineNum">     385</span> <span class="tlaGNC">        2755 :   for (std::size_t i = 0; i &lt; n; ++i)</span></span>
+<span id="L386"><span class="lineNum">     386</span>              :   {</span>
+<span id="L387"><span class="lineNum">     387</span> <span class="tlaGNC">        2055 :     const auto &amp; ti = t[i];</span></span>
+<span id="L388"><span class="lineNum">     388</span> <span class="tlaGNC">        2055 :     if (!ti.defined())</span></span>
+<span id="L389"><span class="lineNum">     389</span> <span class="tlaUNC tlaBgUNC">           0 :       continue;</span></span>
+<span id="L390"><span class="lineNum">     390</span> <span class="tlaGNC tlaBgGNC">        4108 :     const auto tif = intmd_shapes ? to_assembly&lt;1&gt;(ti, {(*intmd_shapes)[i]}, {base_shapes[i]})</span></span>
+<span id="L391"><span class="lineNum">     391</span> <span class="tlaGNC">        4108 :                                   : ti.base_flatten();</span></span>
+<span id="L392"><span class="lineNum">     392</span> <span class="tlaGNC">        2055 :     tf[i] = tif;</span></span>
+<span id="L393"><span class="lineNum">     393</span> <span class="tlaGNC">        2055 :   }</span></span>
+<span id="L394"><span class="lineNum">     394</span>              : </span>
+<span id="L395"><span class="lineNum">     395</span>              :   // Expand defined tensors with the broadcast dynamic shape and fill undefined tensors with zeros.</span>
+<span id="L396"><span class="lineNum">     396</span> <span class="tlaGNC">         700 :   const auto dynamic_sizes = utils::broadcast_dynamic_sizes(tf);</span></span>
+<span id="L397"><span class="lineNum">     397</span> <span class="tlaGNC">         700 :   const auto intmd_sizes = utils::broadcast_intmd_sizes(tf);</span></span>
+<span id="L398"><span class="lineNum">     398</span> <span class="tlaGNC">        2755 :   for (std::size_t i = 0; i &lt; tf.size(); ++i)</span></span>
+<span id="L399"><span class="lineNum">     399</span>              :   {</span>
+<span id="L400"><span class="lineNum">     400</span> <span class="tlaGNC">        2055 :     auto &amp; tfi = tf[i];</span></span>
+<span id="L401"><span class="lineNum">     401</span> <span class="tlaGNC">        2055 :     if (tfi.defined())</span></span>
+<span id="L402"><span class="lineNum">     402</span> <span class="tlaGNC">        2055 :       tfi = tfi.batch_expand(dynamic_sizes, intmd_sizes);</span></span>
+<span id="L403"><span class="lineNum">     403</span>              :     else</span>
+<span id="L404"><span class="lineNum">     404</span> <span class="tlaUNC tlaBgUNC">           0 :       tfi = Tensor::zeros(dynamic_sizes, intmd_sizes, ss[i], t.options());</span></span>
+<span id="L405"><span class="lineNum">     405</span>              :   }</span>
+<span id="L406"><span class="lineNum">     406</span>              : </span>
+<span id="L407"><span class="lineNum">     407</span> <span class="tlaGNC tlaBgGNC">        1400 :   return base_cat(tf, -1);</span></span>
+<span id="L408"><span class="lineNum">     408</span> <span class="tlaGNC">        4806 : }</span></span>
+<span id="L409"><span class="lineNum">     409</span>              : </span>
+<span id="L410"><span class="lineNum">     410</span>              : SparseTensorList</span>
+<span id="L411"><span class="lineNum">     411</span> <span class="tlaGNC">           5 : disassemble(const Tensor &amp; t,</span></span>
+<span id="L412"><span class="lineNum">     412</span>              :             const std::optional&lt;std::vector&lt;TensorShape&gt;&gt; &amp; row_intmd_shapes,</span>
+<span id="L413"><span class="lineNum">     413</span>              :             const std::optional&lt;std::vector&lt;TensorShape&gt;&gt; &amp; col_intmd_shapes,</span>
+<span id="L414"><span class="lineNum">     414</span>              :             const std::vector&lt;TensorShape&gt; &amp; row_base_shapes,</span>
+<span id="L415"><span class="lineNum">     415</span>              :             const std::vector&lt;TensorShape&gt; &amp; col_base_shapes)</span>
+<span id="L416"><span class="lineNum">     416</span>              : {</span>
+<span id="L417"><span class="lineNum">     417</span> <span class="tlaGNC">           5 :   neml_assert_dbg(t.base_dim() == 2, &quot;disassemble expects base dimension of 2, got &quot;, t.base_dim());</span></span>
+<span id="L418"><span class="lineNum">     418</span> <span class="tlaGNC">           5 :   neml_assert_dbg(</span></span>
+<span id="L419"><span class="lineNum">     419</span>              :       bool(row_intmd_shapes) == bool(col_intmd_shapes),</span>
+<span id="L420"><span class="lineNum">     420</span>              :       &quot;Either both or neither of row_intmd_shapes and col_intmd_shapes should be given.&quot;);</span>
+<span id="L421"><span class="lineNum">     421</span> <span class="tlaGNC">           5 :   if (row_intmd_shapes || col_intmd_shapes)</span></span>
+<span id="L422"><span class="lineNum">     422</span> <span class="tlaGNC">           4 :     neml_assert_dbg(t.intmd_dim() == 0,</span></span>
+<span id="L423"><span class="lineNum">     423</span>              :                     &quot;disassemble with intermediate shapes expects intmd dimension of 0, got &quot;,</span>
+<span id="L424"><span class="lineNum">     424</span>              :                     t.intmd_dim());</span>
+<span id="L425"><span class="lineNum">     425</span>              : </span>
+<span id="L426"><span class="lineNum">     426</span> <span class="tlaGNC">           5 :   const auto row_ss = split_sizes(row_intmd_shapes, row_base_shapes);</span></span>
+<span id="L427"><span class="lineNum">     427</span> <span class="tlaGNC">           5 :   const auto col_ss = split_sizes(col_intmd_shapes, col_base_shapes);</span></span>
+<span id="L428"><span class="lineNum">     428</span> <span class="tlaGNC">           5 :   const auto &amp; D = t.dynamic_sizes();</span></span>
+<span id="L429"><span class="lineNum">     429</span> <span class="tlaGNC">           5 :   const auto I = t.intmd_dim();</span></span>
+<span id="L430"><span class="lineNum">     430</span> <span class="tlaGNC">           5 :   const auto m = row_ss.size();</span></span>
+<span id="L431"><span class="lineNum">     431</span> <span class="tlaGNC">           5 :   const auto n = col_ss.size();</span></span>
+<span id="L432"><span class="lineNum">     432</span>              : </span>
+<span id="L433"><span class="lineNum">     433</span> <span class="tlaGNC">           5 :   SparseTensorList res;</span></span>
+<span id="L434"><span class="lineNum">     434</span> <span class="tlaGNC">           5 :   res.resize(m * n);</span></span>
+<span id="L435"><span class="lineNum">     435</span>              :   // split into rows</span>
+<span id="L436"><span class="lineNum">     436</span> <span class="tlaGNC">           5 :   auto t_rows = t.split(row_ss, -2);</span></span>
+<span id="L437"><span class="lineNum">     437</span> <span class="tlaGNC">          16 :   for (std::size_t i = 0; i &lt; m; ++i)</span></span>
+<span id="L438"><span class="lineNum">     438</span>              :   {</span>
+<span id="L439"><span class="lineNum">     439</span>              :     // split into columns</span>
+<span id="L440"><span class="lineNum">     440</span> <span class="tlaGNC">          11 :     auto t_cols = t_rows[i].split(col_ss, -1);</span></span>
+<span id="L441"><span class="lineNum">     441</span> <span class="tlaGNC">          58 :     for (std::size_t j = 0; j &lt; n; ++j)</span></span>
+<span id="L442"><span class="lineNum">     442</span>              :     {</span>
+<span id="L443"><span class="lineNum">     443</span> <span class="tlaGNC">          47 :       const auto &amp; tij = Tensor(t_cols[j], D, I);</span></span>
+<span id="L444"><span class="lineNum">     444</span>              :       // if expected intermediate shapes are not given, we won't touch intermediate dims</span>
+<span id="L445"><span class="lineNum">     445</span> <span class="tlaGNC">          47 :       if (!row_intmd_shapes || !col_intmd_shapes)</span></span>
+<span id="L446"><span class="lineNum">     446</span> <span class="tlaGNC">           4 :         res[i * n + j] =</span></span>
+<span id="L447"><span class="lineNum">     447</span> <span class="tlaGNC">           8 :             tij.base_reshape(utils::add_shapes(row_base_shapes[i], col_base_shapes[j]));</span></span>
+<span id="L448"><span class="lineNum">     448</span>              :       else</span>
+<span id="L449"><span class="lineNum">     449</span> <span class="tlaGNC">          86 :         res[i * n + j] = from_assembly&lt;2&gt;(tij,</span></span>
+<span id="L450"><span class="lineNum">     450</span> <span class="tlaGNC">          86 :                                           {(*row_intmd_shapes)[i], (*col_intmd_shapes)[j]},</span></span>
+<span id="L451"><span class="lineNum">     451</span> <span class="tlaGNC">          43 :                                           {row_base_shapes[i], col_base_shapes[j]});</span></span>
+<span id="L452"><span class="lineNum">     452</span> <span class="tlaGNC">          47 :     }</span></span>
+<span id="L453"><span class="lineNum">     453</span> <span class="tlaGNC">          11 :   }</span></span>
+<span id="L454"><span class="lineNum">     454</span>              : </span>
+<span id="L455"><span class="lineNum">     455</span> <span class="tlaGNC">          10 :   return res;</span></span>
+<span id="L456"><span class="lineNum">     456</span> <span class="tlaGNC">         134 : }</span></span>
+<span id="L457"><span class="lineNum">     457</span>              : </span>
+<span id="L458"><span class="lineNum">     458</span>              : Tensor</span>
+<span id="L459"><span class="lineNum">     459</span> <span class="tlaGNC">         706 : assemble(const SparseTensorList &amp; t,</span></span>
+<span id="L460"><span class="lineNum">     460</span>              :          const std::optional&lt;std::vector&lt;TensorShape&gt;&gt; &amp; row_intmd_shapes,</span>
+<span id="L461"><span class="lineNum">     461</span>              :          const std::optional&lt;std::vector&lt;TensorShape&gt;&gt; &amp; col_intmd_shapes,</span>
+<span id="L462"><span class="lineNum">     462</span>              :          const std::vector&lt;TensorShape&gt; &amp; row_base_shapes,</span>
+<span id="L463"><span class="lineNum">     463</span>              :          const std::vector&lt;TensorShape&gt; &amp; col_base_shapes)</span>
+<span id="L464"><span class="lineNum">     464</span>              : {</span>
+<span id="L465"><span class="lineNum">     465</span> <span class="tlaGNC">         706 :   neml_assert_dbg(</span></span>
+<span id="L466"><span class="lineNum">     466</span>              :       bool(row_intmd_shapes) == bool(col_intmd_shapes),</span>
+<span id="L467"><span class="lineNum">     467</span>              :       &quot;Either both or neither of row_intmd_shapes and col_intmd_shapes should be given.&quot;);</span>
+<span id="L468"><span class="lineNum">     468</span>              : </span>
+<span id="L469"><span class="lineNum">     469</span> <span class="tlaGNC">         706 :   const bool intmd = row_intmd_shapes &amp;&amp; col_intmd_shapes;</span></span>
+<span id="L470"><span class="lineNum">     470</span> <span class="tlaGNC">         706 :   const auto row_ss = split_sizes(row_intmd_shapes, row_base_shapes);</span></span>
+<span id="L471"><span class="lineNum">     471</span> <span class="tlaGNC">         706 :   const auto col_ss = split_sizes(col_intmd_shapes, col_base_shapes);</span></span>
+<span id="L472"><span class="lineNum">     472</span> <span class="tlaGNC">         706 :   const auto m = row_ss.size();</span></span>
+<span id="L473"><span class="lineNum">     473</span> <span class="tlaGNC">         706 :   const auto n = col_ss.size();</span></span>
+<span id="L474"><span class="lineNum">     474</span>              : </span>
+<span id="L475"><span class="lineNum">     475</span>              :   // column ndof</span>
+<span id="L476"><span class="lineNum">     476</span> <span class="tlaGNC">         706 :   auto col_ndof = std::accumulate(col_ss.begin(), col_ss.end(), Size(0), std::plus&lt;&gt;());</span></span>
+<span id="L477"><span class="lineNum">     477</span>              : </span>
+<span id="L478"><span class="lineNum">     478</span>              :   // If a variable is not found, tensor at that position remains undefined, and all undefined tensor</span>
+<span id="L479"><span class="lineNum">     479</span>              :   // will later be filled with zeros.</span>
+<span id="L480"><span class="lineNum">     480</span> <span class="tlaGNC">         706 :   std::vector&lt;Tensor&gt; tf_rows(m);</span></span>
+<span id="L481"><span class="lineNum">     481</span> <span class="tlaGNC">        2775 :   for (std::size_t i = 0; i &lt; m; ++i)</span></span>
+<span id="L482"><span class="lineNum">     482</span>              :   {</span>
+<span id="L483"><span class="lineNum">     483</span> <span class="tlaGNC">        2069 :     std::vector&lt;Tensor&gt; tf_cols(n);</span></span>
+<span id="L484"><span class="lineNum">     484</span> <span class="tlaGNC">        8590 :     for (std::size_t j = 0; j &lt; n; ++j)</span></span>
+<span id="L485"><span class="lineNum">     485</span>              :     {</span>
+<span id="L486"><span class="lineNum">     486</span> <span class="tlaGNC">        6521 :       const auto &amp; tij = t[i * n + j];</span></span>
+<span id="L487"><span class="lineNum">     487</span> <span class="tlaGNC">        6521 :       if (!tij.defined())</span></span>
+<span id="L488"><span class="lineNum">     488</span> <span class="tlaGNC">         289 :         continue;</span></span>
+<span id="L489"><span class="lineNum">     489</span> <span class="tlaGNC">        6232 :       const auto tijf = intmd ? to_assembly&lt;2&gt;(tij,</span></span>
+<span id="L490"><span class="lineNum">     490</span> <span class="tlaGNC">       12456 :                                                {(*row_intmd_shapes)[i], (*col_intmd_shapes)[j]},</span></span>
+<span id="L491"><span class="lineNum">     491</span> <span class="tlaGNC">       12456 :                                                {row_base_shapes[i], col_base_shapes[j]})</span></span>
+<span id="L492"><span class="lineNum">     492</span> <span class="tlaGNC">           4 :                               : tij.base_reshape({utils::numel(row_base_shapes[i]),</span></span>
+<span id="L493"><span class="lineNum">     493</span> <span class="tlaGNC">       12464 :                                                   utils::numel(col_base_shapes[j])});</span></span>
+<span id="L494"><span class="lineNum">     494</span> <span class="tlaGNC">        6232 :       tf_cols[j] = tijf;</span></span>
+<span id="L495"><span class="lineNum">     495</span> <span class="tlaGNC">        6232 :     }</span></span>
+<span id="L496"><span class="lineNum">     496</span>              : </span>
+<span id="L497"><span class="lineNum">     497</span>              :     // Expand defined tensors with the broadcast dynamic shape and fill undefined tensors with</span>
+<span id="L498"><span class="lineNum">     498</span>              :     // zeros.</span>
+<span id="L499"><span class="lineNum">     499</span> <span class="tlaGNC">        2069 :     const auto dynamic_sizes = utils::broadcast_dynamic_sizes(tf_cols);</span></span>
+<span id="L500"><span class="lineNum">     500</span> <span class="tlaGNC">        2069 :     const auto intmd_sizes = utils::broadcast_intmd_sizes(tf_cols);</span></span>
+<span id="L501"><span class="lineNum">     501</span> <span class="tlaGNC">        8590 :     for (std::size_t j = 0; j &lt; n; ++j)</span></span>
+<span id="L502"><span class="lineNum">     502</span>              :     {</span>
+<span id="L503"><span class="lineNum">     503</span> <span class="tlaGNC">        6521 :       auto &amp; tfij = tf_cols[j];</span></span>
+<span id="L504"><span class="lineNum">     504</span> <span class="tlaGNC">        6521 :       if (tfij.defined())</span></span>
+<span id="L505"><span class="lineNum">     505</span> <span class="tlaGNC">        6232 :         tfij = tfij.batch_expand(dynamic_sizes, intmd_sizes);</span></span>
+<span id="L506"><span class="lineNum">     506</span>              :       else</span>
+<span id="L507"><span class="lineNum">     507</span> <span class="tlaGNC">         289 :         tfij = Tensor::zeros(dynamic_sizes, intmd_sizes, {row_ss[i], col_ss[j]}, t.options());</span></span>
+<span id="L508"><span class="lineNum">     508</span>              :     }</span>
+<span id="L509"><span class="lineNum">     509</span>              : </span>
+<span id="L510"><span class="lineNum">     510</span> <span class="tlaGNC">        2069 :     tf_rows[i] = base_cat(tf_cols, -1);</span></span>
+<span id="L511"><span class="lineNum">     511</span> <span class="tlaGNC">        2069 :   }</span></span>
+<span id="L512"><span class="lineNum">     512</span>              : </span>
+<span id="L513"><span class="lineNum">     513</span>              :   // Expand defined tensors with the broadcast dynamic shape and fill undefined tensors with zeros.</span>
+<span id="L514"><span class="lineNum">     514</span> <span class="tlaGNC">         706 :   const auto dynamic_sizes = utils::broadcast_dynamic_sizes(tf_rows);</span></span>
+<span id="L515"><span class="lineNum">     515</span> <span class="tlaGNC">         706 :   const auto intmd_sizes = utils::broadcast_intmd_sizes(tf_rows);</span></span>
+<span id="L516"><span class="lineNum">     516</span> <span class="tlaGNC">        2775 :   for (std::size_t i = 0; i &lt; m; ++i)</span></span>
+<span id="L517"><span class="lineNum">     517</span>              :   {</span>
+<span id="L518"><span class="lineNum">     518</span> <span class="tlaGNC">        2069 :     auto &amp; tfi = tf_rows[i];</span></span>
+<span id="L519"><span class="lineNum">     519</span> <span class="tlaGNC">        2069 :     if (tfi.defined())</span></span>
+<span id="L520"><span class="lineNum">     520</span> <span class="tlaGNC">        2069 :       tfi = tfi.batch_expand(dynamic_sizes, intmd_sizes);</span></span>
+<span id="L521"><span class="lineNum">     521</span>              :     else</span>
+<span id="L522"><span class="lineNum">     522</span> <span class="tlaUNC tlaBgUNC">           0 :       tfi = Tensor::zeros(dynamic_sizes, intmd_sizes, {row_ss[i], col_ndof}, t.options());</span></span>
+<span id="L523"><span class="lineNum">     523</span>              :   }</span>
+<span id="L524"><span class="lineNum">     524</span>              : </span>
+<span id="L525"><span class="lineNum">     525</span> <span class="tlaGNC tlaBgGNC">        1412 :   return base_cat(tf_rows, -2);</span></span>
+<span id="L526"><span class="lineNum">     526</span> <span class="tlaGNC">       19390 : }</span></span>
+<span id="L527"><span class="lineNum">     527</span>              : } // namespace neml2</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

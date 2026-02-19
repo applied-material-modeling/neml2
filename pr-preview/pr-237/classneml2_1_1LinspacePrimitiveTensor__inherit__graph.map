@@ -1,0 +1,9 @@
+<map id="LinspacePrimitiveTensor&lt; T &gt;" name="LinspacePrimitiveTensor&lt; T &gt;">
+<area shape="rect" id="Node000001" title="Create a linspace PrimitiveTensor of type T from the input file." alt="" coords="5,152,224,177"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="42,79,81,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="80,113,108,150,104,153,76,117"/>
+<area shape="rect" id="Node000003" href="$classneml2_1_1UserTensorBase.html" title=" " alt="" coords="105,79,231,104"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="153,117,125,153,121,150,149,113"/>
+<area shape="rect" id="Node000004" href="$classneml2_1_1NEML2Object.html" title="The base class of all &quot;manufacturable&quot; objects in the NEML2 library." alt="" coords="113,5,223,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="171,44,171,79,165,79,165,44"/>
+</map>

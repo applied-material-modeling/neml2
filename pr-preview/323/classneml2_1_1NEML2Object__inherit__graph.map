@@ -1,0 +1,99 @@
+<map id="NEML2Object" name="NEML2Object">
+<area shape="rect" id="Node000001" title="The base class of all &quot;manufacturable&quot; objects in the NEML2 library." alt="" coords="5,390,115,415"/>
+<area shape="rect" id="Node000002" href="$classneml2_1_1UserTensorBase.html" title=" " alt="" coords="175,69,349,94"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="65,375,77,330,97,273,124,211,161,153,197,117,235,92,238,96,201,121,165,156,129,213,101,274,82,332,70,377"/>
+<area shape="rect" id="Node000005" href="$classneml2_1_1UserTensorBase.html" title=" " alt="" coords="173,167,351,193"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="65,376,76,337,96,290,123,242,141,221,161,202,180,190,183,195,164,206,145,224,128,245,100,292,81,338,70,377"/>
+<area shape="rect" id="Node000008" href="$classneml2_1_1UserTensorBase.html" title=" " alt="" coords="171,217,353,242"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="69,376,103,313,129,280,161,251,183,240,186,244,164,256,133,283,108,316,74,379"/>
+<area shape="rect" id="Node000010" href="$classneml2_1_1UserTensorBase.html" title=" " alt="" coords="169,266,355,291"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="77,377,113,337,136,317,161,300,188,289,190,294,164,305,139,322,117,341,81,381"/>
+<area shape="rect" id="Node000012" href="$classneml2_1_1UserTensorBase.html" title=" " alt="" coords="163,315,361,341"/>
+<area shape="poly" id="edge11_Node000001_Node000012" title=" " alt="" coords="94,381,162,350,199,338,200,343,164,354,96,386"/>
+<area shape="rect" id="Node000014" href="$classneml2_1_1UserTensorBase.html" title=" " alt="" coords="164,365,360,390"/>
+<area shape="poly" id="edge13_Node000001_Node000014" title=" " alt="" coords="128,392,163,387,164,392,129,397"/>
+<area shape="rect" id="Node000016" href="$classneml2_1_1Data.html" title=" " alt="" coords="235,414,289,439"/>
+<area shape="poly" id="edge15_Node000001_Node000016" title=" " alt="" coords="129,408,235,421,235,426,128,413"/>
+<area shape="rect" id="Node000153" href="$classneml2_1_1Driver.html" title="The Driver drives the execution of a NEML2 Model." alt="" coords="231,487,293,513"/>
+<area shape="poly" id="edge32_Node000001_Node000153" title=" " alt="" coords="101,419,236,485,233,490,98,424"/>
+<area shape="rect" id="Node000159" href="$classneml2_1_1EquationSystem.html" title="Base class for manufacturable objects under the EquationSystems section." alt="" coords="198,550,326,575"/>
+<area shape="poly" id="edge34_Node000001_Node000159" title=" " alt="" coords="78,425,114,474,138,499,164,522,189,536,216,547,214,552,187,541,161,526,134,503,110,477,74,429"/>
+<area shape="rect" id="Node000161" href="$classneml2_1_1Solver.html" title="The solver solves a system of equations." alt="" coords="231,611,293,637"/>
+<area shape="poly" id="edge36_Node000001_Node000161" title=" " alt="" coords="72,428,85,463,104,505,131,547,164,585,197,604,231,616,230,621,195,609,161,589,127,551,100,507,80,465,67,429"/>
+<area shape="rect" id="Node000167" href="$classneml2_1_1UserTensorBase.html" title=" " alt="" coords="180,783,344,809"/>
+<area shape="poly" id="edge39_Node000001_Node000167" title=" " alt="" coords="73,428,110,526,165,647,212,724,253,782,249,785,208,727,160,649,105,528,68,430"/>
+<area shape="rect" id="Node000176" href="$classneml2_1_1WorkScheduler.html" title="Scheduler for work dispatching." alt="" coords="203,981,321,1006"/>
+<area shape="poly" id="edge45_Node000001_Node000176" title=" " alt="" coords="68,428,99,596,128,708,165,819,187,867,212,912,254,979,249,982,207,915,182,869,160,821,123,709,94,597,62,429"/>
+<area shape="rect" id="Node000003" href="$classneml2_1_1FillR2.html" title="Create a filled R2 from the input file." alt="" coords="478,19,537,45"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="339,63,477,35,478,40,340,68"/>
+<area shape="rect" id="Node000004" href="$classneml2_1_1SymmetryFromOrbifold.html" title="Provide the correct symmetry operators for a given crystal class." alt="" coords="420,69,595,94"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="363,79,420,79,420,84,363,84"/>
+<area shape="rect" id="Node000006" href="$classneml2_1_1FillRot.html" title="Create a filled R2 from the input file." alt="" coords="476,118,539,143"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="339,162,475,134,476,139,340,167"/>
+<area shape="rect" id="Node000007" href="$classneml2_1_1Orientation.html" title="Create batch of rotations, with various methods." alt="" coords="460,167,555,193"/>
+<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="365,177,460,177,460,183,365,183"/>
+<area shape="rect" id="Node000009" href="$classneml2_1_1FillSR2.html" title="Create a filled SR2 from the input file." alt="" coords="474,217,541,242"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="366,227,473,227,473,232,366,232"/>
+<area shape="rect" id="Node000011" href="$classneml2_1_1FillWR2.html" title="Create a filled WR2 from the input file." alt="" coords="472,266,543,291"/>
+<area shape="poly" id="edge10_Node000010_Node000011" title=" " alt="" coords="369,276,472,276,472,281,369,281"/>
+<area shape="rect" id="Node000013" href="$classneml2_1_1IdentityTensor.html" title="Create an identity Tensor from the input file." alt="" coords="450,315,565,341"/>
+<area shape="poly" id="edge12_Node000012_Node000013" title=" " alt="" coords="375,325,450,325,450,331,375,331"/>
+<area shape="rect" id="Node000015" href="$classneml2_1_1MultiColumnCSVScalar.html" title=" " alt="" coords="422,365,593,390"/>
+<area shape="poly" id="edge14_Node000014_Node000015" title=" " alt="" coords="374,375,422,375,422,380,374,380"/>
+<area shape="rect" id="Node000017" href="$classneml2_1_1Model.html" title="The base class for all constitutive models." alt="" coords="476,414,539,439"/>
+<area shape="poly" id="edge16_Node000016_Node000017" title=" " alt="" coords="303,424,476,424,476,429,303,429"/>
+<area shape="rect" id="Node000151" href="$classneml2_1_1crystallography_1_1CrystalGeometry.html" title="Defines the geometry of a crystal system This includes a basic definition of the crystal lattice,..." alt="" coords="441,463,574,489"/>
+<area shape="poly" id="edge31_Node000016_Node000151" title=" " alt="" coords="303,432,444,461,443,466,302,437"/>
+<area shape="rect" id="Node000018" href="$classneml2_1_1BackwardEulerTimeIntegration.html" title=" " alt="" coords="673,5,895,45"/>
+<area shape="poly" id="edge17_Node000017_Node000018" title=" " alt="" coords="552,423,580,416,603,399,619,378,630,357,639,315,636,272,626,230,617,187,614,143,623,99,635,77,651,55,671,40,674,44,655,59,639,80,628,101,619,143,622,186,632,229,641,272,644,315,635,359,624,381,607,403,582,420,553,428"/>
+<area shape="rect" id="Node000019" href="$classneml2_1_1BackwardEulerTimeIntegration.html" title=" " alt="" coords="673,69,895,109"/>
+<area shape="poly" id="edge18_Node000017_Node000019" title=" " alt="" coords="551,423,580,415,603,399,626,365,634,331,633,297,626,262,620,226,619,191,628,155,651,120,671,104,674,109,655,123,633,157,624,191,626,226,632,261,638,296,639,332,631,367,607,403,582,420,553,428"/>
+<area shape="rect" id="Node000020" href="$classneml2_1_1BackwardEulerTimeIntegration.html" title=" " alt="" coords="673,133,895,173"/>
+<area shape="poly" id="edge19_Node000017_Node000020" title=" " alt="" coords="552,422,580,415,603,399,622,373,629,347,630,321,627,293,623,266,624,238,632,211,651,183,671,169,674,173,655,187,637,213,629,239,629,266,632,293,635,320,635,348,627,376,607,403,582,420,553,428"/>
+<area shape="rect" id="Node000021" href="$classneml2_1_1BackwardEulerTimeIntegration.html" title=" " alt="" coords="673,197,895,237"/>
+<area shape="poly" id="edge20_Node000017_Node000021" title=" " alt="" coords="552,422,579,414,604,399,618,381,625,363,627,325,629,286,636,266,652,247,671,233,674,238,655,251,641,269,634,287,632,325,630,364,622,384,607,403,582,419,553,427"/>
+<area shape="rect" id="Node000022" href="$classneml2_1_1ElasticityInterface.html" title=" " alt="" coords="714,261,854,301"/>
+<area shape="poly" id="edge21_Node000017_Node000022" title=" " alt="" coords="551,420,579,413,604,399,620,379,627,356,634,333,652,311,681,295,713,285,715,290,683,300,655,315,638,336,632,358,625,381,607,403,581,418,553,425"/>
+<area shape="rect" id="Node000024" href="$classneml2_1_1ElasticityInterface.html" title=" " alt="" coords="714,325,854,365"/>
+<area shape="poly" id="edge22_Node000017_Node000024" title=" " alt="" coords="551,415,604,399,652,375,713,357,714,362,654,380,606,404,553,420"/>
+<area shape="rect" id="Node000027" href="$classneml2_1_1AdvectiveStress.html" title="Variational advective stress associated with swelling induced volume change." alt="" coords="721,390,847,415"/>
+<area shape="poly" id="edge23_Node000017_Node000027" title=" " alt="" coords="553,420,720,405,721,411,553,425"/>
+<area shape="rect" id="Node000028" href="$classneml2_1_1ArrheniusParameter.html" title="A scalar&#45;valued parameter following an Arrhenius type relation." alt="" coords="709,439,859,465"/>
+<area shape="poly" id="edge24_Node000017_Node000028" title=" " alt="" coords="553,428,709,442,708,448,552,433"/>
+<area shape="rect" id="Node000029" href="$classneml2_1_1AssociativeJ2FlowDirection.html" title="The plastic flow direction assuming an associative J2 flow." alt="" coords="685,489,883,514"/>
+<area shape="poly" id="edge25_Node000017_Node000029" title=" " alt="" coords="553,433,606,448,631,461,654,474,700,486,698,491,652,478,628,466,604,453,552,438"/>
+<area shape="rect" id="Node000030" href="$classneml2_1_1BackwardEulerTimeIntegration.html" title=" " alt="" coords="653,538,915,563"/>
+<area shape="poly" id="edge26_Node000017_Node000030" title=" " alt="" coords="553,428,581,435,607,449,624,468,632,487,639,506,655,523,679,536,677,540,652,527,634,509,627,489,619,470,604,453,579,440,552,433"/>
+<area shape="rect" id="Node000031" href="$classneml2_1_1CapillaryPressure.html" title="Base class for capillary pressure models in porous flow." alt="" coords="716,587,852,613"/>
+<area shape="poly" id="edge27_Node000017_Node000031" title=" " alt="" coords="553,426,581,434,607,449,621,464,628,480,632,513,636,544,642,559,655,573,684,589,717,597,715,602,682,594,652,577,638,562,630,546,626,513,623,482,616,467,604,453,579,439,552,431"/>
+<area shape="rect" id="Node000034" href="$classneml2_1_1ComposedModel.html" title=" " alt="" coords="719,637,849,662"/>
+<area shape="poly" id="edge28_Node000017_Node000034" title=" " alt="" coords="553,425,582,433,607,449,624,471,631,493,631,538,630,560,632,581,639,602,655,622,685,640,719,648,718,653,683,645,652,626,634,605,627,582,625,560,626,538,626,494,619,473,604,453,580,438,552,431"/>
+<area shape="rect" id="Node000035" href="$classneml2_1_1ConstantParameter.html" title="A parameter that is actually just a constant." alt="" coords="691,686,877,711"/>
+<area shape="poly" id="edge29_Node000017_Node000035" title=" " alt="" coords="553,425,582,432,607,449,627,477,635,506,635,535,631,563,628,591,628,618,636,645,655,671,672,684,692,692,690,697,670,689,651,675,631,648,623,619,622,591,626,562,630,534,630,507,622,479,603,453,580,437,552,430"/>
+<area shape="rect" id="Node000036" href="$classneml2_1_1CopyVariable.html" title="Copy the value of a variable into another variable." alt="" coords="711,735,857,761"/>
+<area shape="poly" id="edge30_Node000017_Node000036" title=" " alt="" coords="553,425,582,432,607,449,630,483,639,518,637,553,631,588,625,622,624,656,632,688,655,721,681,738,711,746,710,751,679,743,651,725,628,691,619,656,620,621,626,587,632,553,633,519,625,486,603,453,580,437,552,430"/>
+<area shape="rect" id="Node000154" href="$classneml2_1_1ModelDriver.html" title="A general&#45;purpose driver that does something with a model." alt="" coords="456,513,559,538"/>
+<area shape="poly" id="edge33_Node000153_Node000154" title=" " alt="" coords="307,502,456,517,456,523,307,507"/>
+<area shape="rect" id="Node000160" href="$classneml2_1_1ModelNonlinearSystem.html" title="A monolith nonlinear system defined by a Model." alt="" coords="420,562,595,587"/>
+<area shape="poly" id="edge35_Node000159_Node000160" title=" " alt="" coords="340,564,420,568,420,573,340,569"/>
+<area shape="rect" id="Node000162" href="$classneml2_1_1LinearSolver.html" title="The linear solver solves a linear system of equations." alt="" coords="456,611,559,637"/>
+<area shape="poly" id="edge37_Node000161_Node000162" title=" " alt="" coords="307,621,456,621,456,627,307,627"/>
+<area shape="rect" id="Node000164" href="$classneml2_1_1NonlinearSolver.html" title="The nonlinear solver solves a nonlinear system of equations." alt="" coords="444,661,571,686"/>
+<area shape="poly" id="edge38_Node000161_Node000164" title=" " alt="" coords="307,630,444,658,443,663,306,635"/>
+<area shape="rect" id="Node000168" href="$classneml2_1_1CSVPrimitiveTensor.html" title="Create a primitive tensor by reading values from a csv file." alt="" coords="414,710,601,735"/>
+<area shape="poly" id="edge40_Node000167_Node000168" title=" " alt="" coords="310,776,409,744,451,733,452,738,410,749,312,781"/>
+<area shape="rect" id="Node000169" href="$classneml2_1_1FactoryMethodBase.html" title="Create an empty tensor of type T from the input file." alt="" coords="413,759,601,785"/>
+<area shape="poly" id="edge41_Node000167_Node000169" title=" " alt="" coords="358,784,413,779,413,784,358,789"/>
+<area shape="rect" id="Node000173" href="$classneml2_1_1FromTorchScript.html" title="Read the tensors provided by a torch script file." alt="" coords="425,809,589,834"/>
+<area shape="poly" id="edge42_Node000167_Node000173" title=" " alt="" coords="358,803,425,810,425,816,358,809"/>
+<area shape="rect" id="Node000174" href="$classneml2_1_1LinspaceTensorTmpl.html" title="Create a linspace tensor of type T from the input file." alt="" coords="411,858,603,883"/>
+<area shape="poly" id="edge43_Node000167_Node000174" title=" " alt="" coords="313,811,410,843,455,855,454,860,409,848,311,816"/>
+<area shape="rect" id="Node000175" href="$classneml2_1_1LogspaceTensorTmpl.html" title="Create a logspace tensor of type T from the input file." alt="" coords="409,907,605,933"/>
+<area shape="poly" id="edge44_Node000167_Node000175" title=" " alt="" coords="290,815,344,854,410,892,445,905,444,910,408,897,341,859,287,819"/>
+<area shape="rect" id="Node000177" href="$classneml2_1_1SimpleMPIScheduler.html" title="A simple MPI scheduler." alt="" coords="430,957,585,982"/>
+<area shape="poly" id="edge46_Node000176_Node000177" title=" " alt="" coords="335,984,430,974,430,980,335,989"/>
+<area shape="rect" id="Node000178" href="$classneml2_1_1SimpleScheduler.html" title="A very simple scheduler." alt="" coords="442,1006,573,1031"/>
+<area shape="poly" id="edge47_Node000176_Node000178" title=" " alt="" coords="335,998,442,1009,442,1015,335,1003"/>
+<area shape="rect" id="Node000179" href="$classneml2_1_1StaticHybridScheduler.html" title="A scheduler for multiple devices with static priority management." alt="" coords="424,1055,591,1081"/>
+<area shape="poly" id="edge48_Node000176_Node000179" title=" " alt="" coords="311,1008,410,1041,452,1053,450,1058,409,1047,309,1013"/>
+</map>

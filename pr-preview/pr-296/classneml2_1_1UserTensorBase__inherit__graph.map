@@ -1,0 +1,23 @@
+<map id="UserTensorBase&lt; T &gt;" name="UserTensorBase&lt; T &gt;">
+<area shape="rect" id="Node000001" title=" " alt="" coords="163,104,327,129"/>
+<area shape="rect" id="Node000004" href="$classneml2_1_1CSVPrimitiveTensor.html" title="Create a primitive tensor by reading values from a csv file." alt="" coords="379,5,566,31"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="274,94,320,66,374,40,408,28,410,33,376,44,323,71,277,98"/>
+<area shape="rect" id="Node000005" href="$classneml2_1_1FactoryMethodBase.html" title="Create an empty tensor of type T from the input file." alt="" coords="379,55,567,80"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="317,98,413,77,414,83,318,104"/>
+<area shape="rect" id="Node000009" href="$classneml2_1_1FromTorchScript.html" title="Read the tensors provided by a torch script file." alt="" coords="391,104,555,129"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="340,114,390,114,390,119,340,119"/>
+<area shape="rect" id="Node000010" href="$classneml2_1_1LinspaceTensorTmpl.html" title="Create a linspace tensor of type T from the input file." alt="" coords="377,153,569,179"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="318,130,414,151,413,156,317,135"/>
+<area shape="rect" id="Node000011" href="$classneml2_1_1LogspaceTensorTmpl.html" title="Create a logspace tensor of type T from the input file." alt="" coords="375,203,571,228"/>
+<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="277,135,323,163,376,189,410,200,408,205,374,194,320,167,274,139"/>
+<area shape="rect" id="Node000002" href="$classneml2_1_1NEML2Object.html" title="The base class of all &quot;manufacturable&quot; objects in the NEML2 library." alt="" coords="5,79,115,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="129,98,163,103,162,108,128,103"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="41,128,79,153"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="92,134,162,125,163,130,93,139"/>
+<area shape="rect" id="Node000006" href="$classneml2_1_1FullTensorTmpl.html" title="Create a full tensor of type T from the input file." alt="" coords="632,5,791,31"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="547,49,648,28,650,33,548,54"/>
+<area shape="rect" id="Node000007" href="$classneml2_1_1RandomTensorImpl.html" title="Create a random tensor of type T from the input file." alt="" coords="619,55,804,80"/>
+<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="581,65,618,65,618,70,581,70"/>
+<area shape="rect" id="Node000008" href="$classneml2_1_1UserTensorTmpl.html" title="Create raw tensor of type T from the input file." alt="" coords="629,104,794,129"/>
+<area shape="poly" id="edge7_Node000005_Node000008" title=" " alt="" coords="548,80,650,101,648,107,547,85"/>
+</map>
