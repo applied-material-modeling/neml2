@@ -30,33 +30,27 @@ namespace neml2
 {
 class Scalar;
 
-/// Rate-limited precipitate growth rate for a single species.
-class RateLimitedPrecipitateGrowthRate : public Model
+/// Chemical Gibbs free energy difference for a set of species.
+class ChemicalGibbsFreeEnergyDifference : public Model
 {
 public:
   static OptionSet expected_options();
 
-  RateLimitedPrecipitateGrowthRate(const OptionSet & options);
+  ChemicalGibbsFreeEnergyDifference(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  /// Precipitate radius per size bin
-  const Variable<Scalar> & _R;
+  /// Chemical Gibbs free energy difference
+  Variable<Scalar> & _dg;
 
-  /// Current concentration in solution
-  const Variable<Scalar> & _x;
+  /// Concentration differences per species
+  std::vector<const Variable<Scalar> *> _dxs;
 
-  /// Equilibrium concentration in solution
-  const Scalar & _x_eq;
+  /// Chemical potentials in the matrix
+  std::vector<const Scalar *> _mus;
 
-  /// Concentration difference between precipitate and equilibrium
-  const Scalar & _dx;
-
-  /// Species diffusivity in solution
-  const Scalar & _D;
-
-  /// Growth rate per size bin
-  Variable<Scalar> & _R_dot;
+  /// Equilibrium chemical potentials
+  std::vector<const Scalar *> _mu_eqs;
 };
 } // namespace neml2

@@ -30,13 +30,13 @@ namespace neml2
 {
 class Scalar;
 
-/// Rate-limited precipitate growth rate for a single species.
-class RateLimitedPrecipitateGrowthRate : public Model
+/// SFFK precipitate growth rate for a single precipitate population.
+class SFFKGPrecipitationGrowthRate : public Model
 {
 public:
   static OptionSet expected_options();
 
-  RateLimitedPrecipitateGrowthRate(const OptionSet & options);
+  SFFKGPrecipitationGrowthRate(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
@@ -44,17 +44,17 @@ protected:
   /// Precipitate radius per size bin
   const Variable<Scalar> & _R;
 
-  /// Current concentration in solution
-  const Variable<Scalar> & _x;
+  /// Projected diffusivity sum
+  const Variable<Scalar> & _proj_sum;
 
-  /// Equilibrium concentration in solution
-  const Scalar & _x_eq;
+  /// Gibbs free energy difference
+  const Variable<Scalar> & _dg;
 
-  /// Concentration difference between precipitate and equilibrium
-  const Scalar & _dx;
+  /// Temperature
+  const Variable<Scalar> & _T;
 
-  /// Species diffusivity in solution
-  const Scalar & _D;
+  /// Gas constant
+  const Scalar & _R_g;
 
   /// Growth rate per size bin
   Variable<Scalar> & _R_dot;

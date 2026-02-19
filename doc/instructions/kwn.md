@@ -24,7 +24,7 @@ $$
 
 ### Constants
 
-1. Gas constant $R$
+1. Gas constant $R_g$
 2. Boltzmann constant $k$
 3. Avagradro's number $N_A$
 
@@ -82,7 +82,13 @@ Two options.
 #### Rate-limited
 
 $$
- \dot{R} = \frac{1}{R} D_{\eta \eta} \frac{x^\infty_\eta - x^*_\eta}{x^p_\eta - x^*_\eta}
+ \dot{R} = \frac{1}{R} D_{\eta \eta} \frac{x^\infty_\eta - x^*_\eta}{\Delta x_\eta}
+$$
+
+with 
+
+$$
+ \Delta x_i = x^p_i - x^\star_i
 $$
 
 for the limiting species $\eta$ and with $x^*$ the equilibrium concentration of the matrix, which we can tabulate as a function of temperature.
@@ -94,16 +100,11 @@ As a sanity check, as the matrix concentration approaches the equilibrium concen
 Based on [Svoboda 2004](https://www.sciencedirect.com/science/article/pii/S0921509304008202) in the dilute limit where precipitates do not interact with each other, just interact pairwise through the matrix chemistry. In this case we can again drop the precipitate subscript as they are all independent. We will also drop the interface mobility and assume we are diffusion limited.
 
 $$
- \dot{R} = \frac{1}{R} \frac{\Delta G_{chem} - \Delta G_{surf} - \Delta G_{el}}{R T \sum_i \frac{\Delta x_i^2}{D_i x^\infty_i}}
+ \dot{R} = \frac{1}{R} \frac{\Delta G_{chem} - \Delta G_{surf} - \Delta G_{el}}{R_g T \sum_i \frac{\Delta x_i^2}{D_i x^\infty_i}}
 $$
 
 with
 
-$$
- \Delta x_i = x^p_i - x^\star_i
-$$
-
-and
 
 $$
  \Delta G_{chem} = \sum_i \Delta x_i \left[\mu^{matrix}(x^\infty) - \mu^{equil}\right]
