@@ -36,46 +36,46 @@ TestNonlinearSystem::TestNonlinearSystem(std::size_t n)
 {
 }
 
-std::vector<LabeledAxisAccessor>
+std::vector<std::vector<LabeledAxisAccessor>>
 TestNonlinearSystem::setup_umap()
 {
   std::vector<LabeledAxisAccessor> umap(_n);
   for (std::size_t i = 0; i < _n; i++)
     umap[i] = LabeledAxisAccessor(STATE, "u" + std::to_string(i));
-  return umap;
+  return {std::move(umap)};
 }
 
-std::vector<TensorShape>
+std::vector<std::vector<TensorShape>>
 TestNonlinearSystem::setup_intmd_ulayout()
 {
-  return std::vector<TensorShape>(_n, TensorShape{});
+  return {std::vector<TensorShape>(_n, TensorShape{})};
 }
 
-std::vector<TensorShape>
+std::vector<std::vector<TensorShape>>
 TestNonlinearSystem::setup_ulayout()
 {
-  return std::vector<TensorShape>(_n, TensorShape{});
+  return {std::vector<TensorShape>(_n, TensorShape{})};
 }
 
-std::vector<LabeledAxisAccessor>
+std::vector<std::vector<LabeledAxisAccessor>>
 TestNonlinearSystem::setup_bmap()
 {
   std::vector<LabeledAxisAccessor> bmap(_n);
   for (std::size_t i = 0; i < _n; i++)
     bmap[i] = LabeledAxisAccessor(RESIDUAL, "r" + std::to_string(i));
-  return bmap;
+  return {std::move(bmap)};
 }
 
-std::vector<TensorShape>
+std::vector<std::vector<TensorShape>>
 TestNonlinearSystem::setup_intmd_blayout()
 {
-  return std::vector<TensorShape>(_n, TensorShape{});
+  return {std::vector<TensorShape>(_n, TensorShape{})};
 }
 
-std::vector<TensorShape>
+std::vector<std::vector<TensorShape>>
 TestNonlinearSystem::setup_blayout()
 {
-  return std::vector<TensorShape>(_n, TensorShape{});
+  return {std::vector<TensorShape>(_n, TensorShape{})};
 }
 
 void

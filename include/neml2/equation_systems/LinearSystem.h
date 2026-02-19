@@ -79,48 +79,63 @@ public:
   /// Assemble the auxiliary matrix B = dr/dg along with A and b
   std::tuple<SparseTensorList, SparseTensorList, SparseTensorList> A_and_B_and_b();
 
-  /// Get the ID-to-unknown mapping for assembly
-  const std::vector<LabeledAxisAccessor> & umap() const;
-  /// Get the ID-to-unknown-intermediate-shape mapping for assembly
-  const std::vector<TensorShape> & intmd_ulayout() const;
-  /// Get the ID-to-unknown-base-shape mapping for assembly
-  const std::vector<TensorShape> & ulayout() const;
+  /**
+   * @brief Get unknown-variable map for assembly.
+   *
+   * @param group_idx Variable-group index.
+   */
+  const std::vector<LabeledAxisAccessor> & umap(std::size_t group_idx = 0) const;
+  /// Flattened unknown-variable map across all groups.
+  std::vector<LabeledAxisAccessor> full_umap() const;
+  /// Unknown intermediate layout for the selected group.
+  const std::vector<TensorShape> & intmd_ulayout(std::size_t group_idx = 0) const;
+  /// Unknown base layout for the selected group.
+  const std::vector<TensorShape> & ulayout(std::size_t group_idx = 0) const;
 
-  /// Get the ID-to-prescribed-variable mapping for assembly
+  /**
+   * @brief Get given-variable map for assembly.
+   */
   const std::vector<LabeledAxisAccessor> & gmap() const;
-  /// Get the ID-to-prescribed-variable-intermediate-shape mapping for assembly
+  /// Given-variable intermediate layout.
   const std::vector<TensorShape> & intmd_glayout() const;
-  /// Get the ID-to-prescribed-variable-base-shape mapping for assembly
+  /// Given-variable base layout.
   const std::vector<TensorShape> & glayout() const;
 
-  /// Get the ID-to-RHS mapping for assembly
-  const std::vector<LabeledAxisAccessor> & bmap() const;
-  /// Get the ID-to-RHS-intermediate-shape mapping for assembly
-  const std::vector<TensorShape> & intmd_blayout() const;
-  /// Get the ID-to-RHS-base-shape mapping for assembly
-  const std::vector<TensorShape> & blayout() const;
+  /// RHS-variable map for the selected group.
+  const std::vector<LabeledAxisAccessor> & bmap(std::size_t group_idx = 0) const;
+  /// Flattened RHS-variable map across all groups.
+  std::vector<LabeledAxisAccessor> full_bmap() const;
+  /// RHS intermediate layout for the selected group.
+  const std::vector<TensorShape> & intmd_blayout(std::size_t group_idx = 0) const;
+  /// RHS base layout for the selected group.
+  const std::vector<TensorShape> & blayout(std::size_t group_idx = 0) const;
+
+  /// Number of unknown-variable groups.
+  std::size_t n_ugroup() const;
+  /// Number of RHS-variable groups.
+  std::size_t n_bgroup() const;
 
 protected:
-  /// Setup the unknown map
-  virtual std::vector<LabeledAxisAccessor> setup_umap() = 0;
-  /// Setup the unknown intermediate layout
-  virtual std::vector<TensorShape> setup_intmd_ulayout() = 0;
-  /// Setup the unknown layout
-  virtual std::vector<TensorShape> setup_ulayout() = 0;
+  /// Setup the unknown map, partitioned by variable group.
+  virtual std::vector<std::vector<LabeledAxisAccessor>> setup_umap() = 0;
+  /// Setup the unknown intermediate layout, partitioned by variable group.
+  virtual std::vector<std::vector<TensorShape>> setup_intmd_ulayout() = 0;
+  /// Setup the unknown layout, partitioned by variable group.
+  virtual std::vector<std::vector<TensorShape>> setup_ulayout() = 0;
 
-  /// Setup the given variable map
+  /// Setup the given variable map.
   virtual std::vector<LabeledAxisAccessor> setup_gmap() = 0;
-  /// Setup the given variable intermediate layout
+  /// Setup the given variable intermediate layout.
   virtual std::vector<TensorShape> setup_intmd_glayout() = 0;
-  /// Setup the given variable base layout
+  /// Setup the given variable base layout.
   virtual std::vector<TensorShape> setup_glayout() = 0;
 
-  /// Setup the RHS map
-  virtual std::vector<LabeledAxisAccessor> setup_bmap() = 0;
-  /// Setup the RHS intermediate layout
-  virtual std::vector<TensorShape> setup_intmd_blayout() = 0;
-  /// Setup the RHS layout
-  virtual std::vector<TensorShape> setup_blayout() = 0;
+  /// Setup the RHS map, partitioned by variable group.
+  virtual std::vector<std::vector<LabeledAxisAccessor>> setup_bmap() = 0;
+  /// Setup the RHS intermediate layout, partitioned by variable group.
+  virtual std::vector<std::vector<TensorShape>> setup_intmd_blayout() = 0;
+  /// Setup the RHS layout, partitioned by variable group.
+  virtual std::vector<std::vector<TensorShape>> setup_blayout() = 0;
 
   /**
    * @brief Compute the operator and right-hand side
@@ -161,42 +176,35 @@ protected:
   /// Flag indicating if the system RHS is up to date. Setters invalidate this.
   bool _b_up_to_date = false;
 
-  /**
-   * @brief The ID-to-unknown mapping
-   *
-   * The solution vector is ordered according to this mapping.
-   * This mapping is used by assemble() to collect values in a consistent order.
-   */
-  std::vector<LabeledAxisAccessor> _umap;
-  /// ID-to-unknown intermediate shape mapping
-  std::optional<std::vector<TensorShape>> _intmd_ulayout;
-  /// ID-to-unknown base shape mapping
-  std::vector<TensorShape> _ulayout;
+  /// ID-to-unknown mapping, partitioned by variable group.
+  std::vector<std::vector<LabeledAxisAccessor>> _umap;
+  /// ID-to-unknown intermediate shape mapping, partitioned by variable group.
+  std::optional<std::vector<std::vector<TensorShape>>> _intmd_ulayout;
+  /// ID-to-unknown base shape mapping, partitioned by variable group.
+  std::vector<std::vector<TensorShape>> _ulayout;
 
-  /**
-   * @brief The ID-to-given-variable mapping
-   *
-   * The vector of given variables is ordered according to this mapping.
-   */
+  /// ID-to-given-variable mapping.
   std::vector<LabeledAxisAccessor> _gmap;
-  /// ID-to-given intermediate shape mapping
+  /// ID-to-given intermediate shape mapping.
   std::optional<std::vector<TensorShape>> _intmd_glayout;
-  /// ID-to-given base shape mapping
+  /// ID-to-given base shape mapping.
   std::vector<TensorShape> _glayout;
 
-  /**
-   * @brief The ID-to-RHS mapping
-   *
-   * The RHS is ordered according to this mapping.
-   * This mapping is used by assemble() to collect values in a consistent order.
-   */
-  std::vector<LabeledAxisAccessor> _bmap;
-  /// ID-to-RHS intermediate shape mapping
-  std::optional<std::vector<TensorShape>> _intmd_blayout;
-  /// ID-to-RHS shape mapping
-  std::vector<TensorShape> _blayout;
+  /// ID-to-RHS mapping, partitioned by variable group.
+  std::vector<std::vector<LabeledAxisAccessor>> _bmap;
+  /// ID-to-RHS intermediate shape mapping, partitioned by variable group.
+  std::optional<std::vector<std::vector<TensorShape>>> _intmd_blayout;
+  /// ID-to-RHS shape mapping, partitioned by variable group.
+  std::vector<std::vector<TensorShape>> _blayout;
 
 private:
+  template <typename T>
+  static const std::vector<T> & resolve_group(std::size_t group_idx,
+                                              const std::vector<std::vector<T>> & group_data,
+                                              const std::string & object_name);
+
+  template <typename T>
+  static std::vector<T> flatten_groups(const std::vector<std::vector<T>> & group_data);
 };
 
 } // namespace neml2

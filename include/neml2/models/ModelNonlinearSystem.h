@@ -29,6 +29,7 @@
 #include "neml2/equation_systems/SparseTensorList.h"
 #include "neml2/models/ParameterStore.h"
 #include "neml2/models/BufferStore.h"
+#include <optional>
 
 namespace neml2
 {
@@ -60,13 +61,13 @@ public:
   SparseTensorList g() const override;
 
 protected:
-  std::vector<LabeledAxisAccessor> setup_umap() override;
-  std::vector<TensorShape> setup_intmd_ulayout() override;
-  std::vector<TensorShape> setup_ulayout() override;
+  std::vector<std::vector<LabeledAxisAccessor>> setup_umap() override;
+  std::vector<std::vector<TensorShape>> setup_intmd_ulayout() override;
+  std::vector<std::vector<TensorShape>> setup_ulayout() override;
 
-  std::vector<LabeledAxisAccessor> setup_bmap() override;
-  std::vector<TensorShape> setup_intmd_blayout() override;
-  std::vector<TensorShape> setup_blayout() override;
+  std::vector<std::vector<LabeledAxisAccessor>> setup_bmap() override;
+  std::vector<std::vector<TensorShape>> setup_intmd_blayout() override;
+  std::vector<std::vector<TensorShape>> setup_blayout() override;
 
   std::vector<LabeledAxisAccessor> setup_gmap() override;
   std::vector<TensorShape> setup_intmd_glayout() override;
@@ -77,6 +78,16 @@ protected:
   void post_assemble(bool A, bool B, bool b) override;
 
 private:
+  /// Optional user-defined partition of unknown/state variables.
+  std::optional<std::vector<std::vector<VariableName>>> _unknown_groups;
+  /// Optional user-defined partition of residual variables.
+  std::optional<std::vector<std::vector<VariableName>>> _residual_groups;
+
+  /// Validate user-specified unknown groups and return grouped state ordering.
+  std::vector<std::vector<LabeledAxisAccessor>> grouped_unknowns() const;
+  /// Validate user-specified residual groups and return grouped residual ordering.
+  std::vector<std::vector<LabeledAxisAccessor>> grouped_residuals() const;
+
   std::shared_ptr<Model> _model;
 };
 

@@ -32,6 +32,20 @@
 
 namespace neml2
 {
+namespace
+{
+template <typename T, typename Getter>
+std::vector<T>
+flatten_grouped(std::size_t num_groups, Getter && getter)
+{
+  std::vector<T> flattened;
+  for (std::size_t i = 0; i < num_groups; ++i)
+    for (const auto & item : getter(i))
+      flattened.push_back(item);
+  return flattened;
+}
+}
+
 register_NEML2_object(DenseLU);
 
 OptionSet
@@ -52,10 +66,14 @@ DenseLU::DenseLU(const OptionSet & options)
 SparseTensorList
 DenseLU::solve(LinearSystem & sys) const
 {
-  const auto & bilayout = sys.intmd_blayout();
-  const auto & uilayout = sys.intmd_ulayout();
-  const auto & blayout = sys.blayout();
-  const auto & ulayout = sys.ulayout();
+  const auto bilayout = flatten_grouped<TensorShape>(
+      sys.n_bgroup(), [&](std::size_t i) -> const auto & { return sys.intmd_blayout(i); });
+  const auto uilayout = flatten_grouped<TensorShape>(
+      sys.n_ugroup(), [&](std::size_t i) -> const auto & { return sys.intmd_ulayout(i); });
+  const auto blayout = flatten_grouped<TensorShape>(
+      sys.n_bgroup(), [&](std::size_t i) -> const auto & { return sys.blayout(i); });
+  const auto ulayout = flatten_grouped<TensorShape>(
+      sys.n_ugroup(), [&](std::size_t i) -> const auto & { return sys.ulayout(i); });
 
   // assemble A and b into flat tensors
   const auto [A, b] = sys.A_and_b();
@@ -66,18 +84,22 @@ DenseLU::solve(LinearSystem & sys) const
   const auto xf = linalg::solve(Af, bf);
 
   // disassemble the solution
-  return disassemble(xf, sys.intmd_ulayout(), sys.ulayout());
+  return disassemble(xf, uilayout, ulayout);
 }
 
 SparseTensorList
 DenseLU::ift(NonlinearSystem & sys) const
 {
-  const auto & bilayout = sys.intmd_blayout();
-  const auto & uilayout = sys.intmd_ulayout();
-  const auto & gilayout = sys.intmd_glayout();
-  const auto & blayout = sys.blayout();
-  const auto & ulayout = sys.ulayout();
-  const auto & glayout = sys.glayout();
+  const auto bilayout = flatten_grouped<TensorShape>(
+      sys.n_bgroup(), [&](std::size_t i) -> const auto & { return sys.intmd_blayout(i); });
+  const auto uilayout = flatten_grouped<TensorShape>(
+      sys.n_ugroup(), [&](std::size_t i) -> const auto & { return sys.intmd_ulayout(i); });
+  const auto gilayout = sys.intmd_glayout();
+  const auto blayout = flatten_grouped<TensorShape>(
+      sys.n_bgroup(), [&](std::size_t i) -> const auto & { return sys.blayout(i); });
+  const auto ulayout = flatten_grouped<TensorShape>(
+      sys.n_ugroup(), [&](std::size_t i) -> const auto & { return sys.ulayout(i); });
+  const auto glayout = sys.glayout();
 
   // assemble A and B into flat tensors
   const auto [A, B] = sys.A_and_B();
