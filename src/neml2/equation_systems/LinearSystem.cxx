@@ -24,11 +24,39 @@
 
 #include "neml2/equation_systems/LinearSystem.h"
 #include "neml2/misc/assertions.h"
+#include "neml2/misc/errors.h"
 #include "neml2/equation_systems/SparseTensorList.h"
 #include "neml2/base/LabeledAxisAccessor.h"
 
 namespace neml2
 {
+template <typename T>
+const std::vector<T> &
+LinearSystem::resolve_group(std::size_t group_idx,
+                            const std::vector<std::vector<T>> & group_data,
+                            const std::string & object_name)
+{
+  if (group_data.empty())
+    throw NEMLException("No groups are defined for '" + object_name + "'.");
+
+  if (group_idx >= group_data.size())
+    throw NEMLException("Invalid group index " + std::to_string(group_idx) + " for '" +
+                        object_name + "'. Available group indices are 0.." +
+                        std::to_string(group_data.size() - 1) + ".");
+
+  return group_data[group_idx];
+}
+
+template <typename T>
+std::vector<T>
+LinearSystem::flatten_groups(const std::vector<std::vector<T>> & group_data)
+{
+  std::vector<T> flattened;
+  for (const auto & group : group_data)
+    for (const auto & item : group)
+      flattened.push_back(item);
+  return flattened;
+}
 
 void
 LinearSystem::init()
@@ -58,13 +86,19 @@ LinearSystem::init()
 std::size_t
 LinearSystem::m() const
 {
-  return _bmap.size();
+  std::size_t total = 0;
+  for (const auto & group : _bmap)
+    total += group.size();
+  return total;
 }
 
 std::size_t
 LinearSystem::n() const
 {
-  return _umap.size();
+  std::size_t total = 0;
+  for (const auto & group : _umap)
+    total += group.size();
+  return total;
 }
 
 std::size_t
@@ -137,23 +171,29 @@ LinearSystem::A_and_B_and_b()
 }
 
 const std::vector<LabeledAxisAccessor> &
-LinearSystem::umap() const
+LinearSystem::umap(std::size_t group_idx) const
 {
-  return _umap;
+  return resolve_group(group_idx, _umap, "umap");
+}
+
+std::vector<LabeledAxisAccessor>
+LinearSystem::full_umap() const
+{
+  return flatten_groups(_umap);
 }
 
 const std::vector<TensorShape> &
-LinearSystem::intmd_ulayout() const
+LinearSystem::intmd_ulayout(std::size_t group_idx) const
 {
   neml_assert(_intmd_ulayout.has_value(),
               "Intermediate shapes for unknowns requested but not set up.");
-  return _intmd_ulayout.value();
+  return resolve_group(group_idx, _intmd_ulayout.value(), "intmd_ulayout");
 }
 
 const std::vector<TensorShape> &
-LinearSystem::ulayout() const
+LinearSystem::ulayout(std::size_t group_idx) const
 {
-  return _ulayout;
+  return resolve_group(group_idx, _ulayout, "ulayout");
 }
 
 const std::vector<LabeledAxisAccessor> &
@@ -177,22 +217,40 @@ LinearSystem::glayout() const
 }
 
 const std::vector<LabeledAxisAccessor> &
-LinearSystem::bmap() const
+LinearSystem::bmap(std::size_t group_idx) const
 {
-  return _bmap;
+  return resolve_group(group_idx, _bmap, "bmap");
+}
+
+std::vector<LabeledAxisAccessor>
+LinearSystem::full_bmap() const
+{
+  return flatten_groups(_bmap);
 }
 
 const std::vector<TensorShape> &
-LinearSystem::intmd_blayout() const
+LinearSystem::intmd_blayout(std::size_t group_idx) const
 {
   neml_assert(_intmd_blayout.has_value(), "Intermediate shapes for RHS requested but not set up.");
-  return _intmd_blayout.value();
+  return resolve_group(group_idx, _intmd_blayout.value(), "intmd_blayout");
 }
 
 const std::vector<TensorShape> &
-LinearSystem::blayout() const
+LinearSystem::blayout(std::size_t group_idx) const
 {
-  return _blayout;
+  return resolve_group(group_idx, _blayout, "blayout");
+}
+
+std::size_t
+LinearSystem::n_ugroup() const
+{
+  return _umap.size();
+}
+
+std::size_t
+LinearSystem::n_bgroup() const
+{
+  return _bmap.size();
 }
 
 void

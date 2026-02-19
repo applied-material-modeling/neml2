@@ -43,13 +43,13 @@ public:
   virtual SparseTensorList exact_solution(const SparseTensorList & u) const = 0;
 
 protected:
-  std::vector<LabeledAxisAccessor> setup_umap() override;
-  std::vector<TensorShape> setup_intmd_ulayout() override;
-  std::vector<TensorShape> setup_ulayout() override;
+  std::vector<std::vector<LabeledAxisAccessor>> setup_umap() override;
+  std::vector<std::vector<TensorShape>> setup_intmd_ulayout() override;
+  std::vector<std::vector<TensorShape>> setup_ulayout() override;
 
-  std::vector<LabeledAxisAccessor> setup_bmap() override;
-  std::vector<TensorShape> setup_intmd_blayout() override;
-  std::vector<TensorShape> setup_blayout() override;
+  std::vector<std::vector<LabeledAxisAccessor>> setup_bmap() override;
+  std::vector<std::vector<TensorShape>> setup_intmd_blayout() override;
+  std::vector<std::vector<TensorShape>> setup_blayout() override;
 
   std::vector<LabeledAxisAccessor> setup_gmap() override { return {}; }
   std::vector<TensorShape> setup_intmd_glayout() override { return {}; }
