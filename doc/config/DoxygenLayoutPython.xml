@@ -73,6 +73,9 @@
       <tab type="user" url="../phase-field-fracture.html" title="Phase-Field Fracture"/>
       <tab type="user" url="../finite-volume.html" title="Finite Volume"/>
     </tab>
+    <tab type="usergroup" title="Migration Guides">
+      <tab type="user" url="../migration-200-210.html" title="Migrating from v2.0.0 to v2.1.0"/>
+    </tab>
     <tab type="topics" title="Aditional Documentation"/>
     <tab type="usergroup" title="C++ API Reference">
       <tab type="user" url="../namespaces.html" title="Namespaces"/>
