@@ -62,7 +62,7 @@ Alternatively, you may use CMake's `FetchContent` module to integrate NEML2 into
 FetchContent_Declare(
   neml2
   GIT_REPOSITORY https://github.com/applied-material-modeling/neml2.git
-  GIT_TAG v2.0.0
+  GIT_TAG v2.1.0
 )
 FetchContent_MakeAvailable(neml2)
 add_executable(foo main.cxx)

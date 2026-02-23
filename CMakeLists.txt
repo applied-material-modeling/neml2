@@ -2,7 +2,7 @@
 # Project metadata
 # ----------------------------------------------------------------------------
 cmake_minimum_required(VERSION 3.26)
-project(NEML2 VERSION 2.0.0 LANGUAGES C CXX)
+project(NEML2 VERSION 2.1.0 LANGUAGES C CXX)
 
 # ----------------------------------------------------------------------------
 # Policy
