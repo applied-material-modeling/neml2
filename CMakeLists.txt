@@ -70,7 +70,6 @@ set(NEML2_WHEEL OFF CACHE INTERNAL "Build NEML2 as a Python wheel. This is suppo
 # ----------------------------------------------------------------------------
 # Dependencies and 3rd party packages
 # ----------------------------------------------------------------------------
-set(torch_VERSION "2.8.0" CACHE STRING "Default libTorch/PyTorch version to download")
 set(torch_SEARCH_SITE_PACKAGES ON CACHE BOOL "Search for libTorch in Python site-packages")
 set(wasp_VERSION "78e8705d3743cee12cb0b024a51a98db2c3713bc" CACHE STRING "Default WASP version to download (if not found)")
 set(hit_VERSION "df7e49e95e5ea9ebef0e7578408221d3aeaf7513" CACHE STRING "Default HIT version to download")
