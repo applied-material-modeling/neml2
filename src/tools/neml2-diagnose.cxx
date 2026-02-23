@@ -23,8 +23,9 @@
 // THE SOFTWARE.
 
 #include "neml2/neml2.h"
-#include "neml2/base/guards.h"
 #include "neml2/drivers/Driver.h"
+#include "neml2/models/Model.h"
+#include "neml2/misc/errors.h"
 
 #include <argparse/argparse.hpp>
 #include "utils.h"
@@ -35,18 +36,12 @@ main(int argc, char * argv[])
   // Set default tensor options
   neml2::set_default_dtype(neml2::kFloat64);
 
-  argparse::ArgumentParser program("time");
-  program.add_description("Time the execution of a driver from an input file.");
+  argparse::ArgumentParser program("neml2-diagnose");
+  program.add_description("Run diagnostics on a driver or a model from an input file.");
   program.add_argument("input").help("path to the input file");
-  program.add_argument("driver").help("name of the driver in the input file to time");
-  program.add_argument("-n", "--num-runs")
-      .default_value(1)
-      .help("number of times to run the driver")
-      .scan<'i', int>();
-  program.add_argument("-w", "--warmup")
-      .default_value(0)
-      .help("number of warmup runs before actually measuring the model evaluation time")
-      .scan<'i', int>();
+  auto & grp = program.add_mutually_exclusive_group();
+  grp.add_argument("-d", "--driver").help("name of the driver in the input file to diagnose");
+  grp.add_argument("-m", "--model").help("name of the model in the input file to diagnose");
   program.add_argument("additional_args")
       .remaining()
       .help("additional command-line arguments to pass to the input file parser");
@@ -59,27 +54,38 @@ main(int argc, char * argv[])
     const auto input = program.get<std::string>("input");
     const auto additional_cliargs = get_additional_cliargs(program);
     auto factory = neml2::load_input(input, additional_cliargs);
-    const auto drivername = program.get<std::string>("driver");
-    auto driver = factory->get_driver(drivername);
 
-    if (program.get<int>("--warmup") > 0)
-      std::cout << "Warming up...\n";
-    for (int i = 0; i < program.get<int>("--warmup"); i++)
-      driver->run();
+    std::vector<neml2::Diagnosis> diagnoses;
 
-    for (int i = 0; i < program.get<int>("--num-runs"); i++)
+    if (program.is_used("--driver"))
     {
-      neml2::TimedSection ts(drivername, "Driver::run");
-      driver->run();
+      auto drivername = program.get<std::string>("--driver");
+      auto driver = factory->get_driver(drivername);
+      std::cout << "Diagnosing driver '" << drivername << "'...\n";
+      diagnoses = neml2::diagnose(*driver);
+    }
+    else if (program.is_used("--model"))
+    {
+      auto modelname = program.get<std::string>("--model");
+      auto model = factory->get_model(modelname);
+      std::cout << "Diagnosing model '" << modelname << "'...\n";
+      diagnoses = neml2::diagnose(*model);
+    }
+    else
+    {
+      std::cerr << "You must specify either a driver or a model to diagnose.\n";
+      std::exit(1);
     }
 
-    std::cout << "Elapsed wall time\n";
-    for (const auto & [section, object_times] : neml2::timed_sections())
+    if (!diagnoses.empty())
     {
-      std::cout << "  " << section << std::endl;
-      for (const auto & [object, time] : object_times)
-        std::cout << "    " << object << ": " << time << " ms" << std::endl;
+      std::cout << "Found the following potential issues(s):\n";
+      for (const auto & e : diagnoses)
+        std::cout << e.what() << std::endl;
+      return 1;
     }
+    else
+      std::cout << "No issue identified :)\n";
   }
   catch (const std::exception & err)
   {

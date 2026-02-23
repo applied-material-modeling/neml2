@@ -17,11 +17,11 @@ We acknowledge the common need to use NEML2 as a standalone program and therefor
 As documented in [build customization](@ref build-customization), the `NEML2_TOOLS` CMake option can be used to create these binaries.
 
 When tools are enabled, NEML2 builds the following standalone executables:
-- `diagnose`
-- `inspect`
-- `run`
-- `syntax`
-- `time`
+- `neml2-diagnose`
+- `neml2-inspect`
+- `neml2-run`
+- `neml2-syntax`
+- `neml2-time`
 
 When installed, these binaries are placed in the installed `bin` directory.
 

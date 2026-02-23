@@ -23,10 +23,11 @@
 // THE SOFTWARE.
 
 #include "neml2/neml2.h"
-#include "neml2/models/Model.h"
+#include "neml2/base/Registry.h"
+#include "neml2/base/Settings.h"
+#include "neml2/base/OptionSet.h"
 
 #include <argparse/argparse.hpp>
-#include "utils.h"
 
 int
 main(int argc, char * argv[])
@@ -34,31 +35,44 @@ main(int argc, char * argv[])
   // Set default tensor options
   neml2::set_default_dtype(neml2::kFloat64);
 
-  argparse::ArgumentParser program("inspect");
-  program.add_description("Summarize the structure of a model.");
-  program.add_argument("input").help("path to the input file");
-  program.add_argument("model").help("name of the model in the input file to inspect");
-  program.add_argument("additional_args")
-      .remaining()
-      .help("additional command-line arguments to pass to the input file parser");
+  argparse::ArgumentParser program("neml2-syntax");
+  program.add_description("Extract object syntax from the registry. By default outputs to stdout.");
+  program.add_argument("--yaml")
+      .help("redirect output to a YAML file")
+      .default_value(std::string("syntax.yml"));
 
-  try
-  {
-    // Parse cliargs
-    program.parse_args(argc, argv);
+  // Force link dynamic libraries
+  neml2::force_link_runtime();
 
-    const auto input = program.get<std::string>("input");
-    const auto additional_cliargs = get_additional_cliargs(program);
-    auto factory = neml2::load_input(input, additional_cliargs);
-    const auto modelname = program.get<std::string>("model");
-    auto model = factory->get_model(modelname);
-    std::cout << *model << std::endl;
-  }
-  catch (const std::exception & err)
+  // Parse cliargs
+  program.parse_args(argc, argv);
+
+  // Create the output stream
+  std::ofstream ofs;
+  std::ostream * out = &std::cout;
+
+  if (program.is_used("--yaml"))
   {
-    std::cerr << err.what() << std::endl;
-    std::exit(1);
+    ofs.open(program.get<std::string>("yaml"));
+    if (!ofs.is_open())
+      throw std::runtime_error("Failed to open output file: " + program.get<std::string>("yaml"));
+    out = &ofs;
   }
+
+  auto settings = neml2::Settings::expected_options();
+  *out << "neml2::Settings:\n";
+  *out << settings << '\n';
+
+  for (const auto & [type, info] : neml2::Registry::info())
+  {
+    *out << info.type_name << ":\n";
+    auto options = info.expected_options;
+    options.set<std::string>("type") = type;
+    *out << options << '\n';
+  }
+
+  if (ofs.is_open())
+    ofs.close();
 
   return 0;
 }

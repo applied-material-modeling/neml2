@@ -38,23 +38,23 @@ def _exec_bin(name: str) -> int:
 
 
 def diagnose() -> int:
-    return _exec_bin("diagnose")
+    return _exec_bin("neml2-diagnose")
 
 
 def inspect() -> int:
-    return _exec_bin("inspect")
+    return _exec_bin("neml2-inspect")
 
 
 def run() -> int:
-    return _exec_bin("run")
+    return _exec_bin("neml2-run")
 
 
 def syntax() -> int:
-    return _exec_bin("syntax")
+    return _exec_bin("neml2-syntax")
 
 
 def time() -> int:
-    return _exec_bin("time")
+    return _exec_bin("neml2-time")
 
 
 def stub() -> int:
