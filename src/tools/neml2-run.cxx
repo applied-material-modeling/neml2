@@ -34,7 +34,7 @@ main(int argc, char * argv[])
   // Set default tensor options
   neml2::set_default_dtype(neml2::kFloat64);
 
-  argparse::ArgumentParser program("run");
+  argparse::ArgumentParser program("neml2-run");
   program.add_description("Run a driver from an input file.");
   program.add_argument("input").help("path to the input file");
   program.add_argument("driver").help("name of the driver in the input file");

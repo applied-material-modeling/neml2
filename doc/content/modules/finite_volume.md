@@ -1,10 +1,8 @@
-# Finite Volume Transport Physics {#finite-volume}
+# Finite Volume {#finite-volume}
 
 [TOC]
 
-The finite volume transport physics module provides composable building blocks for solve 1D PDEs with finite volume methods. The models are designed for arbitrary batch dimensions and
-integrate with the standard NEML2 time integration and nonlinear solve infrastructure.  The module could be used for arbitrary PDEs, but the provided examples and tests focus
-on 1D transport (advection-diffusion-reaction) PDEs.
+The finite volume module provides composable building blocks for solving 1D PDEs with the finite volume method. The models are designed for arbitrary batch dimensions and integrate with the standard NEML2 time integration and nonlinear solve infrastructure.  The module could be used for arbitrary PDEs, but the provided examples and tests focus on 1D transport (advection-diffusion-reaction) PDEs.
 
 ## Finite volume discretization
 
@@ -88,7 +86,7 @@ In addition, helper tensors are provided for common 1D mesh setups:
 
 Below is a compact example that assembles a full transport system, applies boundary conditions, and advances in time using backward Euler. The full regression test can be found in tests/regression/finite_volume/combined/model.i.
 
-@list-input:../../../tests/regression/finite_volume/combined/model.i
+@list-input:tests/regression/finite_volume/combined/model.i:Tensors,Models,EquationSystems,Solvers
 
 ## Verification and regression tests
 

@@ -48,12 +48,12 @@ class StaticHybridSchedulerDemo {
           const scheduler = new StaticHybridScheduler(work_dispatcher);
           const [canvas, timeline] = work_dispatcher.animate(scheduler);
           container.appendChild(canvas);
-          document.querySelector(`.${controlsname} .play`).onclick =
-            timeline.play;
-          document.querySelector(`.${controlsname} .pause`).onclick =
-            timeline.pause;
-          document.querySelector(`.${controlsname} .restart`).onclick =
-            timeline.restart;
+          document.querySelector(`.${controlsname} .play`).onclick = () =>
+            timeline.play();
+          document.querySelector(`.${controlsname} .pause`).onclick = () =>
+            timeline.pause();
+          document.querySelector(`.${controlsname} .restart`).onclick = () =>
+            timeline.restart();
         }
       });
     });

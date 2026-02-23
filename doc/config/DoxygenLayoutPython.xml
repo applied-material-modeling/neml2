@@ -64,13 +64,17 @@
       <tab type="user" url="../system-drivers.html" title="Driver"/>
       <tab type="user" url="../system-schedulers.html" title="Scheduler"/>
     </tab>
-    <tab type="usergroup" title="Physics Documentation">
+    <tab type="usergroup" title="Module Documentation">
       <tab type="user" url="../solid-mechanics.html" title="Solid Mechanics"/>
       <tab type="usergroup" url="../chemical-reactions.html" title="Chemical Reactions">
         <tab type="user" url="../thermosetting-pyrolysis.html" title="Thermosetting Pyrolysis"/>
         <tab type="user" url="../reactive-infiltration.html" title="Reactive Infiltration"/>
       </tab>
       <tab type="user" url="../phase-field-fracture.html" title="Phase-Field Fracture"/>
+      <tab type="user" url="../finite-volume.html" title="Finite Volume"/>
+    </tab>
+    <tab type="usergroup" title="Migration Guides">
+      <tab type="user" url="../migration-200-210.html" title="Migrating from v2.0.0 to v2.1.0"/>
     </tab>
     <tab type="topics" title="Aditional Documentation"/>
     <tab type="usergroup" title="C++ API Reference">

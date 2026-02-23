@@ -6,10 +6,11 @@
 
 Compiling the NEML2 core library requires
 - A C++ compiler with C++17 support
-- CMake >= 3.26
-- Python >= 3.9, or its libtorch distribution
+- [Python](https://www.python.org/downloads/) >= 3.9
+- [PyTorch](https://pytorch.org/get-started/locally/) >= 2.7
+- [CMake](https://cmake.org/download/) >= 3.26
 
-NEML2 is built upon and relies on a collection of third party libraries/packages, most notably PyTorch (or its C++ backend libtorch). The build system will automatically search for necessary packages and download missing dependencies when appropriate.
+NEML2 is built upon and relies on a collection of third party libraries/packages. The build system will automatically search for necessary packages and download missing dependencies when appropriate.
 
 Refer to [dependency management](@ref dependency-management) for a list of dependent libraries/packages and more information on the search procedure.
 

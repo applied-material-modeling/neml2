@@ -23,6 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/solvers/NonlinearSolver.h"
+#include "neml2/solvers/LinearSolver.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {
@@ -49,11 +51,16 @@ NonlinearSolver::expected_options()
 
 NonlinearSolver::NonlinearSolver(const OptionSet & options)
   : Solver(options),
-    linear_solver(get_solver<LinearSolver>("linear_solver")),
     atol(options.get<double>("abs_tol")),
     rtol(options.get<double>("rel_tol")),
     miters(options.get<unsigned int>("max_its"))
 {
+  neml_assert(
+      options.user_specified("linear_solver"),
+      "The 'linear_solver' option is required. Refer to "
+      "https://applied-material-modeling.github.io/neml2/migration-200-210.html#linear_solver for "
+      "more information.");
+  linear_solver = get_solver<LinearSolver>("linear_solver");
 }
 
 void

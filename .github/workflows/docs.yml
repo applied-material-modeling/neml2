@@ -22,8 +22,6 @@ jobs:
           torch-version: 2.8.0
           doxygen-version: 1.16.1
       - uses: actions/setup-node@v4
-      - name: Install node.js dependencies
-        run: cd doc/js && npm install
       - name: Install NEML2 Python package
         run: pip install ".[dev]" -v
       - name: Generate stubs for documentation

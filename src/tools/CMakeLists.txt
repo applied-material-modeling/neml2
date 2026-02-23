@@ -37,11 +37,11 @@ endfunction()
 # ------------------------------------------------------------------------------
 # tools
 # ------------------------------------------------------------------------------
-add_tool(diagnose)
-add_tool(run)
-add_tool(inspect)
-add_tool(time)
-add_tool(syntax)
+add_tool(neml2-diagnose)
+add_tool(neml2-run)
+add_tool(neml2-inspect)
+add_tool(neml2-time)
+add_tool(neml2-syntax)
 
 # ------------------------------------------------------------------------------
 # benchmarks
@@ -63,7 +63,7 @@ if(NEML2_TESTS)
   list(APPEND BENCHMARK_ARGS "device=cpu")
 
   macro(add_benchmark name)
-    add_test(NAME ${name} COMMAND run ${BENCHMARK_DIR}/${name}/model.i ${BENCHMARK_ARGS})
+    add_test(NAME ${name} COMMAND neml2-run ${BENCHMARK_DIR}/${name}/model.i ${BENCHMARK_ARGS})
   endmacro()
 
   add_benchmark(elasticity)

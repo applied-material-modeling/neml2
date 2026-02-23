@@ -22,15 +22,7 @@ where \f$ K \f$ is the bulk modulus, and \f$ G \f$ is the shear modulus.
 
 Below is an example input file that defines a linear elasticity model.
 
-```python
-[Models]
-  [model]
-    type = LinearIsotropicElasticity
-    coefficients = '100 0.3'
-    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
-  []
-[]
-```
+@list-input:tests/unit/models/solid_mechanics/elasticity/LinearIsotropicElasticity.i:Models
 
 ## Plasticity (macroscale)
 
@@ -56,85 +48,7 @@ Residual associated with the KKT conditions can be written as the Fischer-Burmei
 
 This complementarity condition is implemented by the object `RateIndependentPlasticFlowConstraint`. A complete example input file for consistent plasticity is shown below, and the composition and possible modifications are explained in the following subsections.
 
-```
-[Models]
-  [elastic_strain]
-    type = ElasticStrain
-  []
-  [elasticity]
-    type = LinearIsotropicElasticity
-    coefficients = '1e5 0.3'
-    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
-  []
-  [vonmises]
-    type = SR2Invariant
-    invariant_type = 'VONMISES'
-    tensor = 'state/internal/S'
-    invariant = 'state/internal/s'
-  []
-  [yield_function]
-    type = YieldFunction
-    yield_stress = 1000
-  []
-  [flow]
-    type = ComposedModel
-    models = 'vonmises yield_function'
-  []
-  [normality]
-    type = Normality
-    model = 'flow'
-    function = 'state/internal/fp'
-    from = 'state/internal/S'
-    to = 'state/internal/NM'
-  []
-  [Eprate]
-    type = AssociativePlasticFlow
-  []
-  [integrate_Ep]
-    type = SR2BackwardEulerTimeIntegration
-    variable = 'state/internal/Ep'
-  []
-  [consistency]
-    type = RateIndependentPlasticFlowConstraint
-  []
-  [surface]
-    type = ComposedModel
-    models = "elastic_strain elasticity
-              vonmises yield_function normality Eprate
-              consistency integrate_Ep"
-  []
-[]
-
-[EquationSystems]
-  [return_map_sys]
-    type = NonlinearSystem
-    model = 'surface'
-  []
-[]
-
-[Solvers]
-  [newton]
-    type = Newton
-    linear_solver = 'lu'
-  []
-  [lu]
-    type = DenseLU
-  []
-[]
-
-[Models]
-  [return_map]
-    type = ImplicitUpdate
-    equation_system = 'return_map_sys'
-    solver = 'newton'
-  []
-  [model]
-    type = ComposedModel
-    models = 'return_map elastic_strain elasticity'
-    additional_outputs = 'state/internal/Ep'
-  []
-[]
-```
+@list-input:tests/regression/solid_mechanics/rate_independent_plasticity/perfect/model.i:Models,EquationSystems,Solvers
 
 ### Viscoplasticity
 
@@ -148,90 +62,7 @@ where \f$ \eta \f$ is the reference stress and \f$ n \f$ is the power-law expone
 
 The Perzyna model is implemented by the object `PerzynaPlasticFlowRate`. A complete example input file for viscoplasticity is shown below, and the composition and possible modifications are explained in the following subsections.
 
-```
-[Models]
-  [elastic_strain]
-    type = SR2LinearCombination
-    from_var = 'forces/E state/internal/Ep'
-    to_var = 'state/internal/Ee'
-    coefficients = '1 -1'
-  []
-  [elasticity]
-    type = LinearIsotropicElasticity
-    coefficients = '1e5 0.3'
-    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
-  []
-  [vonmises]
-    type = SR2Invariant
-    invariant_type = 'VONMISES'
-    tensor = 'state/internal/S'
-    invariant = 'state/internal/s'
-  []
-  [yield_function]
-    type = YieldFunction
-    yield_stress = 5
-  []
-  [flow]
-    type = ComposedModel
-    models = 'vonmises yield_function'
-  []
-  [normality]
-    type = Normality
-    model = 'flow'
-    function = 'state/internal/fp'
-    from = 'state/internal/S'
-    to = 'state/internal/NM'
-  []
-  [flow_rate]
-    type = PerzynaPlasticFlowRate
-    reference_stress = 100
-    exponent = 2
-  []
-  [Eprate]
-    type = AssociativePlasticFlow
-  []
-  [integrate_Ep]
-    type = SR2BackwardEulerTimeIntegration
-    variable = 'state/internal/Ep'
-  []
-  [implicit_rate]
-    type = ComposedModel
-    models = "isoharden elastic_strain elasticity
-              vonmises yield_function flow_rate
-              normality Eprate integrate_Ep"
-  []
-[]
-
-[EquationSystems]
-  [return_map_sys]
-    type = NonlinearSystem
-    model = 'implicit_rate'
-  []
-[]
-
-[Solvers]
-  [newton]
-    type = Newton
-    linear_solver = 'lu'
-  []
-  [lu]
-    type = DenseLU
-  []
-[]
-
-[Models]
-  [return_map]
-    type = ImplicitUpdate
-    equation_system = 'return_map_sys'
-    solver = 'newton'
-  []
-  [model]
-    type = ComposedModel
-    models = 'return_map elastic_strain elasticity'
-    additional_outputs = 'state/internal/Ep'
-  []
-[]
-```
+@list-input:tests/regression/solid_mechanics/viscoplasticity/perfect/model.i:Models,EquationSystems,Solvers
 
 ### Effective stress
 
@@ -244,16 +75,7 @@ The effective stress is a measure of stress describing how the plastic deformati
 
 Commonly used stress measures are defined using `SR2Invariant`.
 
-```python
-[Models]
-  [vonmises]
-    type = SR2Invariant
-    invariant_type = 'VONMISES'
-    tensor = 'state/internal/S'
-    invariant = 'state/internal/s'
-  []
-[]
-```
+@list-input:tests/unit/models/SR2Invariant_VONMISES.i:Models
 
 ### Perfectly Plastic Yield function
 
@@ -265,20 +87,7 @@ For perfectly plastic materials, the yield function only depends on the effectiv
 
 Below is an example input file defining a perfectly plastic yield function with \f$ J_2 \f$ flow.
 
-```python
-[Models]
-  [vonmises]
-    type = SR2Invariant
-    invariant_type = 'VONMISES'
-    tensor = 'state/internal/S'
-    invariant = 'state/internal/s'
-  []
-  [yield_function]
-    type = YieldFunction
-    yield_stress = 5
-  []
-[]
-```
+@list-input:tests/regression/solid_mechanics/rate_independent_plasticity/perfect/model.i:Models/vonmises,Models/yield
 
 ### Isotropic hardening
 

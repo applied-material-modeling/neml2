@@ -47,6 +47,10 @@ ImplicitUpdate::expected_options()
   options.set<bool>("jit") = false;
   options.set("jit").suppressed() = true;
 
+  // deprecated
+  options.set<std::string>("implicit_model");
+  options.set("implicit_model").doc() = "Deprecated option. Use 'equation_system' instead.";
+
   return options;
 }
 
@@ -55,6 +59,11 @@ ImplicitUpdate::ImplicitUpdate(const OptionSet & options)
     _sys(get_es<ModelNonlinearSystem>("equation_system")),
     _solver(get_solver<NonlinearSolver>("solver"))
 {
+  neml_assert(!options.user_specified("implicit_model"),
+              "The 'implicit_model' option is deprecated. Use 'equation_system' instead. Refer to "
+              "https://applied-material-modeling.github.io/neml2/migration-200-210.html#eqsys for "
+              "more information.");
+
   // Take care of dependency registration:
   //   1. Input variables of the "implicit_model" should be *consumed* by *this* model.
   //   2. Output variables of the "implicit_model" on the "residual" subaxis should be *provided* by
