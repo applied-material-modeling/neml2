@@ -58,10 +58,8 @@ public:
 
   SchurComplement(const OptionSet & options);
 
-  void setup() override;
-
   SparseTensorList solve(LinearSystem &) const override;
-  SparseTensorList ift(NonlinearSystem &) const override;
+  SparseTensorList ift(LinearSystem &) const override;
 
 private:
   /**
@@ -74,11 +72,8 @@ private:
    * @param col_size Number of columns to extract
    * @return Tensor The extracted sub-block
    */
-  static Tensor extract_block(const Tensor & A,
-                              Size row_start,
-                              Size row_size,
-                              Size col_start,
-                              Size col_size);
+  static Tensor
+  extract_block(const Tensor & A, Size row_start, Size row_size, Size col_start, Size col_size);
 
   /**
    * @brief Extract a sub-vector from a dense vector.

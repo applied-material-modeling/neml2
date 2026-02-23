@@ -25,27 +25,13 @@
 #include "neml2/solvers/DenseLU.h"
 #include "neml2/tensors/Tensor.h"
 #include "neml2/equation_systems/LinearSystem.h"
-#include "neml2/equation_systems/NonlinearSystem.h"
 #include "neml2/equation_systems/SparseTensorList.h"
 #include "neml2/equation_systems/assembly.h"
 #include "neml2/tensors/functions/linalg/solve.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {
-namespace
-{
-template <typename T, typename Getter>
-std::vector<T>
-flatten_grouped(std::size_t num_groups, Getter && getter)
-{
-  std::vector<T> flattened;
-  for (std::size_t i = 0; i < num_groups; ++i)
-    for (const auto & item : getter(i))
-      flattened.push_back(item);
-  return flattened;
-}
-}
-
 register_NEML2_object(DenseLU);
 
 OptionSet
@@ -66,14 +52,13 @@ DenseLU::DenseLU(const OptionSet & options)
 SparseTensorList
 DenseLU::solve(LinearSystem & sys) const
 {
-  const auto bilayout = flatten_grouped<TensorShape>(
-      sys.n_bgroup(), [&](std::size_t i) -> const auto & { return sys.intmd_blayout(i); });
-  const auto uilayout = flatten_grouped<TensorShape>(
-      sys.n_ugroup(), [&](std::size_t i) -> const auto & { return sys.intmd_ulayout(i); });
-  const auto blayout = flatten_grouped<TensorShape>(
-      sys.n_bgroup(), [&](std::size_t i) -> const auto & { return sys.blayout(i); });
-  const auto ulayout = flatten_grouped<TensorShape>(
-      sys.n_ugroup(), [&](std::size_t i) -> const auto & { return sys.ulayout(i); });
+  neml_assert_dbg(sys.n_bgroup() == 1, "DenseLU solver only supports a single RHS group.");
+  neml_assert_dbg(sys.n_ugroup() == 1, "DenseLU solver only supports a single unknown group.");
+
+  const auto & bilayout = sys.intmd_blayout();
+  const auto & uilayout = sys.intmd_ulayout();
+  const auto & blayout = sys.blayout();
+  const auto & ulayout = sys.ulayout();
 
   // assemble A and b into flat tensors
   const auto [A, b] = sys.A_and_b();
@@ -84,22 +69,21 @@ DenseLU::solve(LinearSystem & sys) const
   const auto xf = linalg::solve(Af, bf);
 
   // disassemble the solution
-  return disassemble(xf, uilayout, ulayout);
+  return disassemble(xf, sys.intmd_ulayout(), sys.ulayout());
 }
 
 SparseTensorList
-DenseLU::ift(NonlinearSystem & sys) const
+DenseLU::ift(LinearSystem & sys) const
 {
-  const auto bilayout = flatten_grouped<TensorShape>(
-      sys.n_bgroup(), [&](std::size_t i) -> const auto & { return sys.intmd_blayout(i); });
-  const auto uilayout = flatten_grouped<TensorShape>(
-      sys.n_ugroup(), [&](std::size_t i) -> const auto & { return sys.intmd_ulayout(i); });
-  const auto gilayout = sys.intmd_glayout();
-  const auto blayout = flatten_grouped<TensorShape>(
-      sys.n_bgroup(), [&](std::size_t i) -> const auto & { return sys.blayout(i); });
-  const auto ulayout = flatten_grouped<TensorShape>(
-      sys.n_ugroup(), [&](std::size_t i) -> const auto & { return sys.ulayout(i); });
-  const auto glayout = sys.glayout();
+  neml_assert_dbg(sys.n_bgroup() == 1, "DenseLU solver only supports a single RHS group.");
+  neml_assert_dbg(sys.n_ugroup() == 1, "DenseLU solver only supports a single unknown group.");
+
+  const auto & bilayout = sys.intmd_blayout();
+  const auto & uilayout = sys.intmd_ulayout();
+  const auto & gilayout = sys.intmd_glayout();
+  const auto & blayout = sys.blayout();
+  const auto & ulayout = sys.ulayout();
+  const auto & glayout = sys.glayout();
 
   // assemble A and B into flat tensors
   const auto [A, B] = sys.A_and_B();

@@ -26,70 +26,11 @@
 #include "neml2/equation_systems/EquationSystem.h"
 #include "neml2/equation_systems/NonlinearSystem.h"
 #include "neml2/equation_systems/SparseTensorList.h"
-#include "neml2/misc/errors.h"
 #include "neml2/misc/types.h"
 #include "neml2/models/Model.h"
 
-#include <set>
-
 namespace neml2
 {
-template <typename VariableMap, typename Predicate>
-static std::vector<std::vector<LabeledAxisAccessor>>
-build_grouped_map(const VariableMap & vars,
-                  const std::optional<std::vector<std::vector<VariableName>>> & requested_groups,
-                  Predicate predicate,
-                  const std::string & group_option,
-                  const std::string & variable_kind)
-{
-  if (!requested_groups.has_value())
-  {
-    std::vector<LabeledAxisAccessor> vars_in_one_group;
-    for (const auto & [vname, var] : vars)
-      if (predicate(*var))
-        vars_in_one_group.push_back(vname);
-    return {std::move(vars_in_one_group)};
-  }
-
-  const auto & groups = requested_groups.value();
-  if (groups.empty())
-    throw NEMLException("Option '" + group_option + "' must contain at least one group.");
-
-  std::set<std::string> model_vars;
-  for (const auto & [vname, var] : vars)
-    if (predicate(*var))
-      model_vars.insert(vname.str());
-
-  std::set<std::string> seen;
-  for (const auto & group : groups)
-    for (const auto & vname : group)
-    {
-      if (!model_vars.count(vname.str()))
-        throw NEMLException("Variable '" + vname.str() + "' in '" + group_option + "' is not a " +
-                            variable_kind + " variable.");
-      if (!seen.insert(vname.str()).second)
-        throw NEMLException(variable_kind + " variable '" + vname.str() +
-                            "' appears in multiple entries of '" + group_option + "'.");
-    }
-
-  for (const auto & v : model_vars)
-    if (!seen.count(v))
-      throw NEMLException(variable_kind + " variable '" + v + "' is not included in '" +
-                          group_option + "'.");
-
-  std::vector<std::vector<LabeledAxisAccessor>> mapped_groups;
-  for (const auto & group : groups)
-  {
-    std::vector<LabeledAxisAccessor> mapped_group;
-    mapped_group.reserve(group.size());
-    for (const auto & vname : group)
-      mapped_group.push_back(vname);
-    mapped_groups.push_back(std::move(mapped_group));
-  }
-
-  return mapped_groups;
-}
-
 register_NEML2_object_alias(ModelNonlinearSystem, "NonlinearSystem");
 
 OptionSet
@@ -119,19 +60,10 @@ ModelNonlinearSystem::ModelNonlinearSystem(const OptionSet & options)
   : EquationSystem(options),
     ParameterStore(this),
     BufferStore(this),
-    _unknown_groups(
-        options.user_specified("unknown_groups")
-            ? std::optional(options.get<std::vector<std::vector<VariableName>>>("unknown_groups"))
-            : std::nullopt),
-    _residual_groups(
-        options.user_specified("residual_groups")
-            ? std::optional(options.get<std::vector<std::vector<VariableName>>>("residual_groups"))
-            : std::nullopt),
+    _unknown_groups(options.get<std::vector<std::vector<VariableName>>>("unknown_groups")),
+    _residual_groups(options.get<std::vector<std::vector<VariableName>>>("residual_groups")),
     _model(get_model("model"))
 {
-  if (_unknown_groups.has_value() != _residual_groups.has_value())
-    throw NEMLException(
-        "Options 'unknown_groups' and 'residual_groups' must be specified together.");
 }
 
 void
@@ -147,8 +79,9 @@ ModelNonlinearSystem::setup()
   }
 
   // unknown variables should be marked mutable, as they will be updated during the nonlinear solve
-  for (const auto & vname : full_umap())
-    _model->input_variable(vname).set_mutable(true);
+  for (std::size_t i = 0; i < n_ugroup(); ++i)
+    for (const auto & vname : umap(i))
+      _model->input_variable(vname).set_mutable(true);
 }
 
 void
@@ -162,18 +95,26 @@ ModelNonlinearSystem::to(const TensorOptions & options)
 std::vector<std::vector<LabeledAxisAccessor>>
 ModelNonlinearSystem::setup_umap()
 {
-  return grouped_unknowns();
+  if (!_unknown_groups.empty())
+    return _unknown_groups;
+
+  std::vector<LabeledAxisAccessor> umap;
+  for (const auto & [vname, var] : _model->input_variables())
+    if (var->is_state())
+      umap.push_back(vname);
+  return {umap};
 }
 
 std::vector<std::vector<TensorShape>>
 ModelNonlinearSystem::setup_intmd_ulayout()
 {
   std::vector<std::vector<TensorShape>> intmd_ulayout;
-  for (const auto & group : grouped_unknowns())
+  for (std::size_t i = 0; i < n_ugroup(); ++i)
   {
+    const auto & ugroup = umap(i);
     std::vector<TensorShape> group_intmd_ulayout;
-    group_intmd_ulayout.reserve(group.size());
-    for (const auto & vname : group)
+    group_intmd_ulayout.reserve(ugroup.size());
+    for (const auto & vname : ugroup)
       group_intmd_ulayout.emplace_back(model().input_variable(vname).intmd_sizes());
     intmd_ulayout.push_back(std::move(group_intmd_ulayout));
   }
@@ -184,11 +125,12 @@ std::vector<std::vector<TensorShape>>
 ModelNonlinearSystem::setup_ulayout()
 {
   std::vector<std::vector<TensorShape>> ulayout;
-  for (const auto & group : grouped_unknowns())
+  for (std::size_t i = 0; i < n_ugroup(); ++i)
   {
+    const auto & ugroup = umap(i);
     std::vector<TensorShape> group_ulayout;
-    group_ulayout.reserve(group.size());
-    for (const auto & vname : group)
+    group_ulayout.reserve(ugroup.size());
+    for (const auto & vname : ugroup)
       group_ulayout.emplace_back(model().input_variable(vname).base_sizes());
     ulayout.push_back(std::move(group_ulayout));
   }
@@ -198,18 +140,26 @@ ModelNonlinearSystem::setup_ulayout()
 std::vector<std::vector<LabeledAxisAccessor>>
 ModelNonlinearSystem::setup_bmap()
 {
-  return grouped_residuals();
+  if (!_residual_groups.empty())
+    return _residual_groups;
+
+  std::vector<LabeledAxisAccessor> bmap;
+  for (const auto & [vname, var] : _model->output_variables())
+    if (var->is_residual())
+      bmap.push_back(vname);
+  return {bmap};
 }
 
 std::vector<std::vector<TensorShape>>
 ModelNonlinearSystem::setup_intmd_blayout()
 {
   std::vector<std::vector<TensorShape>> intmd_blayout;
-  for (const auto & group : grouped_residuals())
+  for (std::size_t i = 0; i < n_bgroup(); ++i)
   {
+    const auto & bgroup = bmap(i);
     std::vector<TensorShape> group_intmd_blayout;
-    group_intmd_blayout.reserve(group.size());
-    for (const auto & vname : group)
+    group_intmd_blayout.reserve(bgroup.size());
+    for (const auto & vname : bgroup)
       group_intmd_blayout.emplace_back(model().output_variable(vname).intmd_sizes());
     intmd_blayout.push_back(std::move(group_intmd_blayout));
   }
@@ -220,11 +170,12 @@ std::vector<std::vector<TensorShape>>
 ModelNonlinearSystem::setup_blayout()
 {
   std::vector<std::vector<TensorShape>> blayout;
-  for (const auto & group : grouped_residuals())
+  for (std::size_t i = 0; i < n_bgroup(); ++i)
   {
+    const auto & bgroup = bmap(i);
     std::vector<TensorShape> group_blayout;
-    group_blayout.reserve(group.size());
-    for (const auto & vname : group)
+    group_blayout.reserve(bgroup.size());
+    for (const auto & vname : bgroup)
       group_blayout.emplace_back(model().output_variable(vname).base_sizes());
     blayout.push_back(std::move(group_blayout));
   }
@@ -262,9 +213,9 @@ ModelNonlinearSystem::setup_glayout()
 }
 
 void
-ModelNonlinearSystem::set_u(const SparseTensorList & u)
+ModelNonlinearSystem::set_u(const SparseTensorList & u, std::size_t group_idx)
 {
-  _model->assign_input(full_umap(), u);
+  _model->assign_input(umap(group_idx), u);
   u_changed();
 }
 
@@ -276,9 +227,9 @@ ModelNonlinearSystem::set_g(const SparseTensorList & g)
 }
 
 SparseTensorList
-ModelNonlinearSystem::u() const
+ModelNonlinearSystem::u(std::size_t group_idx) const
 {
-  return _model->collect_input(full_umap());
+  return _model->collect_input(umap(group_idx));
 }
 
 SparseTensorList
@@ -288,7 +239,11 @@ ModelNonlinearSystem::g() const
 }
 
 void
-ModelNonlinearSystem::assemble(SparseTensorList * A, SparseTensorList * B, SparseTensorList * b)
+ModelNonlinearSystem::assemble(SparseTensorList * A,
+                               SparseTensorList * B,
+                               SparseTensorList * b,
+                               std::size_t bgroup_idx,
+                               std::size_t ugroup_idx)
 {
   {
     AssemblyingNonlinearSystem assembling_nl_sys(!B);
@@ -298,13 +253,13 @@ ModelNonlinearSystem::assemble(SparseTensorList * A, SparseTensorList * B, Spars
 
   if (b)
     // remember b := -r
-    *b = -_model->collect_output(full_bmap());
+    *b = -_model->collect_output(bmap(bgroup_idx));
 
   if (A)
-    *A = _model->collect_output_derivatives(full_bmap(), full_umap());
+    *A = _model->collect_output_derivatives(bmap(bgroup_idx), umap(ugroup_idx));
 
   if (B)
-    *B = _model->collect_output_derivatives(full_bmap(), gmap());
+    *B = _model->collect_output_derivatives(bmap(bgroup_idx), gmap());
 }
 
 void
@@ -328,28 +283,6 @@ ModelNonlinearSystem::post_assemble(bool A, bool B, bool b)
     _model->clear_input();
     _model->clear_output();
   }
-}
-
-std::vector<std::vector<LabeledAxisAccessor>>
-ModelNonlinearSystem::grouped_unknowns() const
-{
-  return build_grouped_map(
-      _model->input_variables(),
-      _unknown_groups,
-      [](const auto & var) { return var.is_state(); },
-      "unknown_groups",
-      "state");
-}
-
-std::vector<std::vector<LabeledAxisAccessor>>
-ModelNonlinearSystem::grouped_residuals() const
-{
-  return build_grouped_map(
-      _model->output_variables(),
-      _residual_groups,
-      [](const auto & var) { return var.is_residual(); },
-      "residual_groups",
-      "residual");
 }
 
 } // namespace neml2

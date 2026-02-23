@@ -26,6 +26,7 @@
 
 #include "neml2/base/LabeledAxisAccessor.h"
 #include "neml2/misc/types.h"
+#include <cstddef>
 
 namespace neml2
 {
@@ -48,18 +49,18 @@ public:
   virtual void init();
 
   /// Number of rows in the matrix
-  std::size_t m() const;
+  std::size_t m(std::size_t group_idx = 0) const;
   /// Number of columns in the matrix
-  std::size_t n() const;
+  std::size_t n(std::size_t group_idx = 0) const;
   /// Number of columns in the auxiliary matrix
   std::size_t p() const;
 
   /// Set the unknown u
-  virtual void set_u(const SparseTensorList &) = 0;
+  virtual void set_u(const SparseTensorList &, std::size_t group_idx = 0) = 0;
   /// Set the given variables g from the current step
   virtual void set_g(const SparseTensorList &) = 0;
   /// Get the unknown u
-  virtual SparseTensorList u() const = 0;
+  virtual SparseTensorList u(std::size_t group_idx = 0) const = 0;
   /// Get the given variables g from the current step
   virtual SparseTensorList g() const = 0;
 
@@ -69,15 +70,18 @@ public:
   virtual void g_changed();
 
   /// Assemble and return the operator, A
-  SparseTensorList A();
+  SparseTensorList A(std::size_t bgroup_idx = 0, std::size_t ugroup_idx = 0);
   /// Assemble and return the right-hand side, b
-  SparseTensorList b();
+  SparseTensorList b(std::size_t group_idx = 0);
   /// Assemble and return the right-hand side and operator
-  std::tuple<SparseTensorList, SparseTensorList> A_and_b();
+  std::tuple<SparseTensorList, SparseTensorList> A_and_b(std::size_t bgroup_idx = 0,
+                                                         std::size_t ugroup_idx = 0);
   /// Assemble the auxiliary matrix B = dr/dg along with A
-  std::tuple<SparseTensorList, SparseTensorList> A_and_B();
+  std::tuple<SparseTensorList, SparseTensorList> A_and_B(std::size_t bgroup_idx = 0,
+                                                         std::size_t ugroup_idx = 0);
   /// Assemble the auxiliary matrix B = dr/dg along with A and b
-  std::tuple<SparseTensorList, SparseTensorList, SparseTensorList> A_and_B_and_b();
+  std::tuple<SparseTensorList, SparseTensorList, SparseTensorList>
+  A_and_B_and_b(std::size_t bgroup_idx = 0, std::size_t ugroup_idx = 0);
 
   /**
    * @brief Get unknown-variable map for assembly.
@@ -85,8 +89,6 @@ public:
    * @param group_idx Variable-group index.
    */
   const std::vector<LabeledAxisAccessor> & umap(std::size_t group_idx = 0) const;
-  /// Flattened unknown-variable map across all groups.
-  std::vector<LabeledAxisAccessor> full_umap() const;
   /// Unknown intermediate layout for the selected group.
   const std::vector<TensorShape> & intmd_ulayout(std::size_t group_idx = 0) const;
   /// Unknown base layout for the selected group.
@@ -103,8 +105,6 @@ public:
 
   /// RHS-variable map for the selected group.
   const std::vector<LabeledAxisAccessor> & bmap(std::size_t group_idx = 0) const;
-  /// Flattened RHS-variable map across all groups.
-  std::vector<LabeledAxisAccessor> full_bmap() const;
   /// RHS intermediate layout for the selected group.
   const std::vector<TensorShape> & intmd_blayout(std::size_t group_idx = 0) const;
   /// RHS base layout for the selected group.
@@ -143,8 +143,14 @@ protected:
    * @param A Pointer to the operator matrix -- nullptr if not requested
    * @param B Pointer to the auxiliary matrix -- nullptr if not requested
    * @param b Pointer to the RHS vector -- nullptr if not requested
+   * @param bgroup_idx Index of the RHS variable group.
+   * @param ugroup_idx Index of the unknown variable group.
    */
-  virtual void assemble(SparseTensorList * A, SparseTensorList * B, SparseTensorList * b) = 0;
+  virtual void assemble(SparseTensorList * A,
+                        SparseTensorList * B,
+                        SparseTensorList * b,
+                        std::size_t bgroup_idx = 0,
+                        std::size_t ugroup_idx = 0) = 0;
 
   /**
    * @brief Callback before assembly to perform

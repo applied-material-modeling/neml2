@@ -29,7 +29,6 @@
 #include "neml2/equation_systems/SparseTensorList.h"
 #include "neml2/models/ParameterStore.h"
 #include "neml2/models/BufferStore.h"
-#include <optional>
 
 namespace neml2
 {
@@ -54,10 +53,10 @@ public:
 
   void to(const TensorOptions &) override;
 
-  void set_u(const SparseTensorList &) override;
+  void set_u(const SparseTensorList &, std::size_t group_idx) override;
   void set_g(const SparseTensorList &) override;
 
-  SparseTensorList u() const override;
+  SparseTensorList u(std::size_t group_idx) const override;
   SparseTensorList g() const override;
 
 protected:
@@ -73,20 +72,19 @@ protected:
   std::vector<TensorShape> setup_intmd_glayout() override;
   std::vector<TensorShape> setup_glayout() override;
 
-  void assemble(SparseTensorList * A, SparseTensorList * B, SparseTensorList * b) override;
+  void assemble(SparseTensorList * A,
+                SparseTensorList * B,
+                SparseTensorList * b,
+                std::size_t bgroup_idx,
+                std::size_t ugroup_idx) override;
   void pre_assemble(bool A, bool B, bool b) override;
   void post_assemble(bool A, bool B, bool b) override;
 
 private:
   /// Optional user-defined partition of unknown/state variables.
-  std::optional<std::vector<std::vector<VariableName>>> _unknown_groups;
+  std::vector<std::vector<VariableName>> _unknown_groups;
   /// Optional user-defined partition of residual variables.
-  std::optional<std::vector<std::vector<VariableName>>> _residual_groups;
-
-  /// Validate user-specified unknown groups and return grouped state ordering.
-  std::vector<std::vector<LabeledAxisAccessor>> grouped_unknowns() const;
-  /// Validate user-specified residual groups and return grouped residual ordering.
-  std::vector<std::vector<LabeledAxisAccessor>> grouped_residuals() const;
+  std::vector<std::vector<VariableName>> _residual_groups;
 
   std::shared_ptr<Model> _model;
 };

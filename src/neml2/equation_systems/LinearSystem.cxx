@@ -47,17 +47,6 @@ LinearSystem::resolve_group(std::size_t group_idx,
   return group_data[group_idx];
 }
 
-template <typename T>
-std::vector<T>
-LinearSystem::flatten_groups(const std::vector<std::vector<T>> & group_data)
-{
-  std::vector<T> flattened;
-  for (const auto & group : group_data)
-    for (const auto & item : group)
-      flattened.push_back(item);
-  return flattened;
-}
-
 void
 LinearSystem::init()
 {
@@ -84,21 +73,15 @@ LinearSystem::init()
 }
 
 std::size_t
-LinearSystem::m() const
+LinearSystem::m(std::size_t group_idx) const
 {
-  std::size_t total = 0;
-  for (const auto & group : _bmap)
-    total += group.size();
-  return total;
+  return resolve_group(group_idx, _bmap, "bmap").size();
 }
 
 std::size_t
-LinearSystem::n() const
+LinearSystem::n(std::size_t group_idx) const
 {
-  std::size_t total = 0;
-  for (const auto & group : _umap)
-    total += group.size();
-  return total;
+  return resolve_group(group_idx, _umap, "umap").size();
 }
 
 std::size_t
@@ -121,51 +104,51 @@ LinearSystem::g_changed()
 }
 
 SparseTensorList
-LinearSystem::A()
+LinearSystem::A(std::size_t bgroup_idx, std::size_t ugroup_idx)
 {
   SparseTensorList A;
   pre_assemble(true, false, false);
-  assemble(&A, nullptr, nullptr);
+  assemble(&A, nullptr, nullptr, bgroup_idx, ugroup_idx);
   post_assemble(true, false, false);
   return A;
 }
 
 SparseTensorList
-LinearSystem::b()
+LinearSystem::b(std::size_t group_idx)
 {
   SparseTensorList b;
   pre_assemble(false, false, true);
-  assemble(nullptr, nullptr, &b);
+  assemble(nullptr, nullptr, &b, group_idx);
   post_assemble(false, false, true);
   return b;
 }
 
 std::tuple<SparseTensorList, SparseTensorList>
-LinearSystem::A_and_b()
+LinearSystem::A_and_b(std::size_t bgroup_idx, std::size_t ugroup_idx)
 {
   SparseTensorList A, b;
   pre_assemble(true, false, true);
-  assemble(&A, nullptr, &b);
+  assemble(&A, nullptr, &b, bgroup_idx, ugroup_idx);
   post_assemble(true, false, true);
   return {A, b};
 }
 
 std::tuple<SparseTensorList, SparseTensorList>
-LinearSystem::A_and_B()
+LinearSystem::A_and_B(std::size_t bgroup_idx, std::size_t ugroup_idx)
 {
   SparseTensorList A, B;
   pre_assemble(true, true, false);
-  assemble(&A, &B, nullptr);
+  assemble(&A, &B, nullptr, bgroup_idx, ugroup_idx);
   post_assemble(true, true, false);
   return {A, B};
 }
 
 std::tuple<SparseTensorList, SparseTensorList, SparseTensorList>
-LinearSystem::A_and_B_and_b()
+LinearSystem::A_and_B_and_b(std::size_t bgroup_idx, std::size_t ugroup_idx)
 {
   SparseTensorList A, B, b;
   pre_assemble(true, true, true);
-  assemble(&A, &B, &b);
+  assemble(&A, &B, &b, bgroup_idx, ugroup_idx);
   post_assemble(true, true, true);
   return {A, B, b};
 }
@@ -174,12 +157,6 @@ const std::vector<LabeledAxisAccessor> &
 LinearSystem::umap(std::size_t group_idx) const
 {
   return resolve_group(group_idx, _umap, "umap");
-}
-
-std::vector<LabeledAxisAccessor>
-LinearSystem::full_umap() const
-{
-  return flatten_groups(_umap);
 }
 
 const std::vector<TensorShape> &
@@ -220,12 +197,6 @@ const std::vector<LabeledAxisAccessor> &
 LinearSystem::bmap(std::size_t group_idx) const
 {
   return resolve_group(group_idx, _bmap, "bmap");
-}
-
-std::vector<LabeledAxisAccessor>
-LinearSystem::full_bmap() const
-{
-  return flatten_groups(_bmap);
 }
 
 const std::vector<TensorShape> &

@@ -33,6 +33,7 @@
 #include "neml2/equation_systems/NonlinearSystem.h"
 #include "neml2/equation_systems/SparseTensorList.h"
 #include "neml2/equation_systems/assembly.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {
@@ -57,27 +58,26 @@ SchurComplement::expected_options()
 {
   OptionSet options = LinearSolver::expected_options();
 
-  options.doc() =
-      "Schur complement linear solver. This solver partitions the linear system "
-      "into primary and Schur variable groups and applies the Schur complement "
-      "method. The system is partitioned as [[A11, A12], [A21, A22]] with "
-      "unknowns [u1, u2]. The Schur complement S = A22 - A21 * A11^(-1) * A12 "
-      "is formed, then u2 is solved from S * u2 = b2 - A21 * A11^(-1) * b1, "
-      "and u1 is back-solved from A11 * u1 = b1 - A12 * u2.";
+  options.doc() = "Schur complement linear solver. This solver partitions the linear system "
+                  "into primary and Schur variable groups and applies the Schur complement "
+                  "method. The system is partitioned as [[A11, A12], [A21, A22]] with "
+                  "unknowns [u1, u2]. The Schur complement S = A22 - A21 * A11^(-1) * A12 "
+                  "is formed, then u2 is solved from S * u2 = b2 - A21 * A11^(-1) * b1, "
+                  "and u1 is back-solved from A11 * u1 = b1 - A12 * u2.";
 
-  options.set<unsigned int>("primary_group") = 0;
-  options.set("primary_group").doc() =
-      "Index of the variable group to use as primary unknowns (solved first via back-substitution).";
+  options.set<unsigned int>("primary_group");
+  options.set("primary_group").doc() = "Index of the variable group to use as primary unknowns "
+                                       "(solved first via back-substitution).";
 
-  options.set<std::string>("primary_linear_solver") = "";
+  options.set<std::string>("primary_linear_solver");
   options.set("primary_linear_solver").doc() =
       "Linear solver for the primary block A11. Currently uses dense LU decomposition.";
 
-  options.set<unsigned int>("schur_group") = 1;
+  options.set<unsigned int>("schur_group");
   options.set("schur_group").doc() =
       "Index of the variable group for the Schur complement (condensed unknowns).";
 
-  options.set<std::string>("schur_linear_solver") = "";
+  options.set<std::string>("schur_linear_solver");
   options.set("schur_linear_solver").doc() =
       "Linear solver for the Schur complement block. Currently uses dense LU decomposition.";
 
@@ -87,41 +87,24 @@ SchurComplement::expected_options()
 SchurComplement::SchurComplement(const OptionSet & options)
   : LinearSolver(options),
     _primary_group(options.get<unsigned int>("primary_group")),
-    _schur_group(options.get<unsigned int>("schur_group"))
+    _schur_group(options.get<unsigned int>("schur_group")),
+    _primary_solver(get_solver<LinearSolver>("primary_linear_solver")),
+    _schur_solver(get_solver<LinearSolver>("schur_linear_solver"))
 {
   // Validate group indices
   if (_primary_group == _schur_group)
     throw NEMLException("primary_group and schur_group must be different.");
 }
 
-void
-SchurComplement::setup()
-{
-  LinearSolver::setup();
-
-  // Get sub-solvers if specified (for validation)
-  const auto & primary_solver_name = input_options().get<std::string>("primary_linear_solver");
-  const auto & schur_solver_name = input_options().get<std::string>("schur_linear_solver");
-
-  if (!primary_solver_name.empty())
-    _primary_solver = get_solver<LinearSolver>("primary_linear_solver");
-
-  if (!schur_solver_name.empty())
-    _schur_solver = get_solver<LinearSolver>("schur_linear_solver");
-}
-
 Tensor
-SchurComplement::extract_block(const Tensor & A,
-                               Size row_start,
-                               Size row_size,
-                               Size col_start,
-                               Size col_size)
+SchurComplement::extract_block(
+    const Tensor & A, Size row_start, Size row_size, Size col_start, Size col_size)
 {
   // A is expected to have base shape (m, n)
   // Extract the block A[row_start:row_start+row_size, col_start:col_start+col_size]
   using namespace at::indexing;
-  auto block = A.base_index({Slice(row_start, row_start + row_size),
-                             Slice(col_start, col_start + col_size)});
+  auto block = A.base_index(
+      {Slice(row_start, row_start + row_size), Slice(col_start, col_start + col_size)});
   return block;
 }
 
@@ -153,10 +136,12 @@ SchurComplement::compute_group_size(const std::vector<TensorShape> & intmd_shape
 SparseTensorList
 SchurComplement::solve(LinearSystem & sys) const
 {
-  if (sys.n_ugroup() != 2 || sys.n_bgroup() != 2)
-    throw NEMLException("SchurComplement solver currently requires exactly 2 variable groups. "
-                        "Found " + std::to_string(sys.n_ugroup()) + " unknown groups and " +
-                        std::to_string(sys.n_bgroup()) + " residual groups.");
+  neml_assert_dbg(sys.n_ugroup() == 2 && sys.n_bgroup() == 2,
+                  "SchurComplement solver currently requires exactly 2 variable groups. Found ",
+                  sys.n_ugroup(),
+                  " unknown groups and ",
+                  sys.n_bgroup(),
+                  " residual groups.");
 
   if (_primary_group >= sys.n_ugroup() || _schur_group >= sys.n_ugroup())
     throw NEMLException("primary_group and schur_group must be valid group indices in [0, " +
@@ -254,7 +239,8 @@ SchurComplement::ift(NonlinearSystem & sys) const
 {
   if (sys.n_ugroup() != 2 || sys.n_bgroup() != 2)
     throw NEMLException("SchurComplement solver currently requires exactly 2 variable groups. "
-                        "Found " + std::to_string(sys.n_ugroup()) + " unknown groups and " +
+                        "Found " +
+                        std::to_string(sys.n_ugroup()) + " unknown groups and " +
                         std::to_string(sys.n_bgroup()) + " residual groups.");
 
   if (_primary_group >= sys.n_ugroup() || _schur_group >= sys.n_ugroup())

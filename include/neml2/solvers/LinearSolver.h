@@ -30,7 +30,6 @@ namespace neml2
 {
 class Tensor;
 class LinearSystem;
-class NonlinearSystem;
 struct SparseTensorList;
 
 /**
@@ -48,6 +47,6 @@ public:
   virtual SparseTensorList solve(LinearSystem &) const = 0;
 
   /// Solve dr/du du/dg = -dr/dg
-  virtual SparseTensorList ift(NonlinearSystem &) const = 0;
+  virtual SparseTensorList ift(LinearSystem &) const = 0;
 };
 } // namespace neml2
