@@ -70,14 +70,14 @@
       <tab type="user" url="@ref system-drivers" title="Driver"/>
       <tab type="user" url="@ref system-schedulers" title="Scheduler"/>
     </tab>
-    <tab type="usergroup" title="Physics Documentation">
+    <tab type="usergroup" title="Module Documentation">
       <tab type="user" url="@ref solid-mechanics" title="Solid Mechanics"/>
       <tab type="usergroup" url="@ref chemical-reactions" title="Chemical Reactions">
         <tab type="user" url="@ref thermosetting-pyrolysis" title="Thermosetting Pyrolysis"/>
         <tab type="user" url="@ref reactive-infiltration" title="Reactive Infiltration"/>
       </tab>
       <tab type="user" url="@ref phase-field-fracture" title="Phase-Field Fracture"/>
-      <tab type="user" url="@ref finite-volume" title="Finite Volume Methods"/>
+      <tab type="user" url="@ref finite-volume" title="Finite Volume"/>
     </tab>
     <tab type="topics" title="Aditional Documentation"/>
     <tab type="usergroup" title="C++ API Reference">

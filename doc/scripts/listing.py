@@ -44,7 +44,7 @@ def git_fuzzy_find_file(filename: str) -> Path:
     import subprocess
 
     try:
-        root = Path(__file__).parent.parent
+        root = Path(__file__).parent.parent.parent  # repo root
         result = subprocess.run(
             ["git", "ls-files", "*{}".format(filename)],
             capture_output=True,
@@ -156,9 +156,11 @@ def list_hit_section(
                     content += "\n"
                 continue
 
-            content += lines[start - 1]  # include section header line
-            content += list_hit_section(substructure, lines, subsections, top_level=False)
-            content += lines[end - 1]  # include section closing line
+            subcontent = list_hit_section(substructure, lines, subsections, top_level=False)
+            if len(subcontent.strip()) != 0:
+                content += lines[start - 1]  # include section header line
+                content += subcontent
+                content += lines[end - 1]  # include section closing line
             if top_level and (entry_index < len(entries) - 1 or section_index < len(items) - 1):
                 content += "\n"
     return content

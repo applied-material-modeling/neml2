@@ -73,8 +73,9 @@ class WorkDispatcher {
 
     // Simulate the work dispatching process
     let all_work_events = scheduler.simulate(options);
-    var tl = anime.timeline({
-      easing: "easeInOutExpo",
+    const { createTimeline } = anime;
+    var tl = createTimeline({
+      defaults: { ease: "inOutExpo" },
       autoplay: false,
     });
 
@@ -101,48 +102,48 @@ class WorkDispatcher {
       (this.works.length - work_i + work_event.dispatched_to) *
       (options.row_height + options.row_spacing);
     tl.add(
+      doms,
       {
-        targets: doms,
-        opacity: options.highlight_opacity,
+        opacity: [options.work_opacity, options.highlight_opacity],
         duration: options.dispatch_speed,
         translateX: tx,
         translateY: ty,
       },
-      `${work_event.dispatched_at}`
+      work_event.dispatched_at
     );
     // Shift events
     work_event.shifted_at.forEach((shifted_at, j) => {
       const tx = this.batch_width * work_event.shifted_by[j];
       tl.add(
+        doms,
         {
-          targets: doms,
           translateX: `-=${tx}`,
           duration: options.retrieve_speed,
         },
-        `${shifted_at}`
+        shifted_at
       );
     });
     // Retrieve event
     tl.add(
+      doms,
       {
-        targets: doms,
         duration: options.retrieve_speed,
         translateX: 0,
         translateY: 0,
       },
-      `${work_event.retrieved_at}`
+      work_event.retrieved_at
     );
     // Process event
     const x1 = x0 + dx;
     const y1 = y0 + options.row_height;
     tl.add(
+      doms[1],
       {
-        targets: doms[1],
         points: `${x0},${y0} ${x1},${y0} ${x1},${y1} ${x0},${y1}`,
         duration: work_event.process_duration,
-        easing: "linear",
+        ease: "linear",
       },
-      `${work_event.processed_at}`
+      work_event.processed_at
     );
   }
 
