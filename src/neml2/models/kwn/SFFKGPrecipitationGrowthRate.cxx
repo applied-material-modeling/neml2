@@ -38,7 +38,7 @@ SFFKGPrecipitationGrowthRate::expected_options()
   OptionSet options = Model::expected_options();
   options.doc() = "Compute the SFFK precipitate growth rate.";
 
-  options.set_input("radius");
+  options.set_parameter<TensorName<Scalar>>("radius");
   options.set("radius").doc() = "Precipitate radius per size bin";
 
   options.set_input("projected_diffusivity_sum");
@@ -61,7 +61,7 @@ SFFKGPrecipitationGrowthRate::expected_options()
 
 SFFKGPrecipitationGrowthRate::SFFKGPrecipitationGrowthRate(const OptionSet & options)
   : Model(options),
-    _R(declare_input_variable<Scalar>("radius")),
+    _R(declare_parameter<Scalar>("R", "radius", true)),
     _proj_sum(declare_input_variable<Scalar>("projected_diffusivity_sum")),
     _dg(declare_input_variable<Scalar>("gibbs_free_energy_difference")),
     _T(declare_input_variable<Scalar>("temperature")),
@@ -74,7 +74,7 @@ void
 SFFKGPrecipitationGrowthRate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   const auto nbin = _R.intmd_size(-1);
-  const auto R = _R();
+  const auto R = _R;
   const auto proj_sum = _proj_sum();
   const auto dg = _dg();
   const auto T = _T();
@@ -90,12 +90,12 @@ SFFKGPrecipitationGrowthRate::set_value(bool out, bool dout_din, bool /*d2out_di
     const auto inv_denom = 1.0 / denom;
     const auto rate = dg * inv_denom;
 
-    if (_R.is_dependent())
+    if (const auto * const R_param = nl_param("R"))
     {
       const auto d_rate_dR = -rate / R;
       const auto r_map = imap_v<Scalar>(_R.options()).intmd_expand(nbin);
       const auto diag_r = intmd_diagonalize(r_map);
-      _R_dot.d(_R, 2, 1, 1) = d_rate_dR.intmd_unsqueeze(1) * diag_r;
+      _R_dot.d(*R_param, 2, 1, 1) = d_rate_dR.intmd_unsqueeze(1) * diag_r;
     }
 
     if (_proj_sum.is_dependent())

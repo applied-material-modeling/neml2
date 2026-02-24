@@ -38,7 +38,7 @@ RateLimitedPrecipitateGrowthRate::expected_options()
   OptionSet options = Model::expected_options();
   options.doc() = "Compute the rate-limited precipitate growth rate for a single species.";
 
-  options.set_input("radius");
+  options.set_parameter<TensorName<Scalar>>("radius");
   options.set("radius").doc() = "Precipitate radius per size bin";
 
   options.set_input("current_concentration");
@@ -62,7 +62,7 @@ RateLimitedPrecipitateGrowthRate::expected_options()
 
 RateLimitedPrecipitateGrowthRate::RateLimitedPrecipitateGrowthRate(const OptionSet & options)
   : Model(options),
-    _R(declare_input_variable<Scalar>("radius")),
+    _R(declare_parameter<Scalar>("R", "radius", true)),
     _x(declare_input_variable<Scalar>("current_concentration")),
     _x_eq(declare_parameter<Scalar>("x_eq", "equilibrium_concentration", true)),
     _dx(declare_parameter<Scalar>("dx", "concentration_difference", true)),
@@ -75,7 +75,7 @@ void
 RateLimitedPrecipitateGrowthRate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   const auto nbin = _R.intmd_size(-1);
-  const auto R = _R();
+  const auto R = _R;
   const auto x_inf = (_x.intmd_dim() == 0 ? _x().intmd_expand(nbin) : _x());
   const auto x_eq = (_x_eq.intmd_dim() == 0 ? _x_eq.intmd_expand(nbin) : _x_eq);
   const auto dx = (_dx.intmd_dim() == 0 ? _dx.intmd_expand(nbin) : _dx);
@@ -92,12 +92,12 @@ RateLimitedPrecipitateGrowthRate::set_value(bool out, bool dout_din, bool /*d2ou
   {
     const auto denom2 = denom * denom;
 
-    if (_R.is_dependent())
+    if (const auto * const R_param = nl_param("R"))
     {
       const auto d_rate_dR = -coef * numer / (denom * R);
       const auto r_map = imap_v<Scalar>(_R.options()).intmd_expand(nbin);
       const auto diag_r = intmd_diagonalize(r_map);
-      _R_dot.d(_R, 2, 1, 1) = d_rate_dR.intmd_unsqueeze(1) * diag_r;
+      _R_dot.d(*R_param, 2, 1, 1) = d_rate_dR.intmd_unsqueeze(1) * diag_r;
     }
 
     if (_x.is_dependent())
