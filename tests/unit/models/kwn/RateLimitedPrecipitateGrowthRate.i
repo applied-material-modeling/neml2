@@ -2,12 +2,10 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/R state/x_inf'
-    input_Scalar_values = 'R x_inf'
+    input_Scalar_names = 'state/x_inf'
+    input_Scalar_values = 'x_inf'
     output_Scalar_names = 'state/R_dot'
     output_Scalar_values = 'R_dot'
-    input_with_intrsc_intmd_dims = 'state/R'
-    input_intrsc_intmd_dims = '1'
     check_AD_parameter_derivatives = false
   []
 []
@@ -34,7 +32,7 @@
 [Models]
   [model]
     type = RateLimitedPrecipitateGrowthRate
-    radius = 'state/R'
+    radius = 'R'
     current_concentration = 'state/x_inf'
     equilibrium_concentration = 0.1
     concentration_difference = 0.7

@@ -2,12 +2,10 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/R state/sum state/dg state/T'
-    input_Scalar_values = 'R sum dg T'
+    input_Scalar_names = 'state/sum state/dg state/T'
+    input_Scalar_values = 'sum dg T'
     output_Scalar_names = 'state/R_dot'
     output_Scalar_values = 'R_dot'
-    input_with_intrsc_intmd_dims = 'state/R'
-    input_intrsc_intmd_dims = '1'
     check_AD_parameter_derivatives = false
   []
 []
@@ -42,7 +40,7 @@
 [Models]
   [model]
     type = SFFKGPrecipitationGrowthRate
-    radius = 'state/R'
+    radius = 'R'
     projected_diffusivity_sum = 'state/sum'
     gibbs_free_energy_difference = 'state/dg'
     temperature = 'state/T'
