@@ -42,7 +42,7 @@ protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
   /// Precipitate radius per size bin
-  const Variable<Scalar> & _R;
+  const Scalar & _R;
 
   /// Projected diffusivity sum
   const Variable<Scalar> & _proj_sum;
