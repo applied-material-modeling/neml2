@@ -58,7 +58,7 @@ public:
   VariableBase(VariableBase &&) = delete;
   VariableBase & operator=(const VariableBase &) = delete;
   VariableBase & operator=(VariableBase &&) = delete;
-  virtual ~VariableBase() = default;
+  virtual ~VariableBase();
 
   /**
    * @brief The canonical constructor
