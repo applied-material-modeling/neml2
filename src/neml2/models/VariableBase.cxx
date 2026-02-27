@@ -43,6 +43,8 @@ VariableBase::VariableBase(VariableName name_in, Model * owner, TensorShapeRef b
 {
 }
 
+VariableBase::~VariableBase() = default;
+
 const Model &
 VariableBase::owner() const
 {
