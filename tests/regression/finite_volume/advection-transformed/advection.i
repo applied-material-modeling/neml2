@@ -8,23 +8,13 @@ center = 0.25
 
 t = 1.0
 
-# D_eff = D + |v| * \delta x / 2
-
-# Final height = c0 * w / sqrt(2 * D_eff * t + w^2) * exp(-l*t)
-h_final = 0.666667
-
-# Final width = sqrt(2 * D_eff * t + w^2)
-final_width = 0.0750
-
-# Final center = center + v * t
-final_center = 0.75
 
 [Tensors]
   [edges]
     type = LinspaceScalar
     start = 0.0
     end = 1.0
-    nstep = 801
+    nstep = 101
     dim = 0
     group = 'intermediate'
   []
@@ -88,14 +78,6 @@ final_center = 0.75
     end = ${t}
     nstep = 500
   []
-
-  [result]
-    type = GaussianScalar 
-    points = 'true_centers'
-    width = ${final_width} 
-    height = ${h_final}
-    center = ${final_center}
-  []
 []
 
 [Drivers]
@@ -107,15 +89,11 @@ final_center = 0.75
     ic_Scalar_values = 'ic'
     save_as = 'result.pt'
   []
-#  [verification]
-#    type = VTestVerification
-#    driver = 'driver'
-#    Scalar_names = 'output.state/true_concentration'
-#    Scalar_values = 'result'
-#    atol = 1e-2
-#    rtol = 1e-1 # The time integration also adds diffusion...
-#    time_steps = '499'
-#  []
+  [regression]
+    type = TransientRegression
+    driver = 'driver'
+    reference = 'gold/result.pt'
+  []
 []
 
 [EquationSystems]
