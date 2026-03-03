@@ -226,15 +226,4 @@ The complementarity condition can be implicitly solved for the phase field, \f$ 
 
 The stress evaluated at the end of the input file acts only as a post-processor to verify our results.
 
-\anchor singlephase
-
-![Evolution of the phase field][singlephase]{html: width=95%}
-[singlephase]: asset/phase.png
-
-\anchor singlestress
-
-![Corresponding degradation of the uniaxial stress over time][singlestress]{html: width=95%}
-[singlestress]: asset/stress.png
-
-
 

@@ -348,6 +348,20 @@ if __name__ == "__main__":
         logger.error("failed to generate python documentation")
         exit(1)
 
+    # Manually copy logos into the build directory.
+    # This is necessary because logos are referenced with unsupported html tags (e.g., <picture>) in order to support light/dark mode switch.
+    # We need to preserve the relative path in the build directory so that both Doxygen and GitHub markdown could render them.
+    logger.info("")
+    logger.info("copying logos...")
+    logo_light = doc_dir / "asset" / "logo_light.png"
+    logo_dark = doc_dir / "asset" / "logo_dark.png"
+    logo_light_dest = build_dir / "build" / "html" / logo_light.relative_to(root_dir)
+    logo_dark_dest = build_dir / "build" / "html" / logo_dark.relative_to(root_dir)
+    logo_light_dest.parent.mkdir(parents=True, exist_ok=True)
+    logo_dark_dest.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy(logo_light, logo_light_dest)
+    shutil.copy(logo_dark, logo_dark_dest)
+
     if not args.serve:
         exit(0)
 

@@ -76,3 +76,18 @@ div.card p {
 svg text {
   fill: var(--page-foreground-color);
 }
+
+/* Logo */
+/* Fallback to OS preference before the JS toggle logic applies */
+@media (prefers-color-scheme: dark) {
+  .logo-light { display: none; }
+}
+@media (prefers-color-scheme: light) {
+  .logo-dark { display: none; }
+}
+/* But manual toggle wins */
+.logo-dark { display: none; }
+html.dark-mode .logo-light { display: none; }
+html.dark-mode .logo-dark  { display: inline; }
+html:not(.dark-mode) .logo-light { display: inline; }
+html:not(.dark-mode) .logo-dark  { display: none; }
