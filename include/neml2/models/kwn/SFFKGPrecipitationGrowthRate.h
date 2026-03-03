@@ -48,10 +48,10 @@ protected:
   const Variable<Scalar> & _proj_sum;
 
   /// Gibbs free energy difference
-  const Variable<Scalar> & _dg;
+  const Scalar & _dg;
 
   /// Temperature
-  const Variable<Scalar> & _T;
+  const Scalar & _T;
 
   /// Gas constant
   const Scalar & _R_g;
