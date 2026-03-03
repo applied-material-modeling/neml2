@@ -36,7 +36,7 @@ FILE_PATTERNS          = *.h \
 INCLUDE_PATH           = ${neml2_path}/include
 INCLUDE_FILE_PATTERNS  = *.h
 IMAGE_PATH             = ${build_dir}/content \
-                         ${repo_root}/doc/content/asset
+                         ${repo_root}/doc
 RECURSIVE              = YES
 EXCLUDE_SYMBOLS        = neml2::*internal neml2::*details
 USE_MDFILE_AS_MAINPAGE = ${repo_root}/README.md

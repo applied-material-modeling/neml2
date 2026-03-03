@@ -1,6 +1,5 @@
-# NEML2
-
-![](doc/content/asset/cover_min.png)
+<img src="doc/asset/logo_light.png#gh-light-mode-only" class="logo-light" alt="Logo" style="width: 35%">
+<img src="doc/asset/logo_dark.png#gh-dark-mode-only" class="logo-dark" alt="Logo" style="width: 35%">
 
 [![Documentation](https://github.com/applied-material-modeling/neml2/actions/workflows/docs.yml/badge.svg?branch=main)](https://applied-material-modeling.github.io/neml2/) [![C++ backend testing](https://github.com/applied-material-modeling/neml2/actions/workflows/cpp.yml/badge.svg?branch=main)](https://github.com/applied-material-modeling/neml2/actions/workflows/cpp.yml) [![Python package testing](https://github.com/applied-material-modeling/neml2/actions/workflows/python.yml/badge.svg?branch=main)](https://github.com/applied-material-modeling/neml2/actions/workflows/python.yml)
 
@@ -17,6 +16,8 @@ NEML2 is provided as open source software under a MIT [license](https://raw.gith
 > **Disclaimer**
 >
 > NEML2 is _not_ a database of material models. There are many example material models in the library for testing and verification purposes. These models do not represent the response of any actual material.
+
+![](doc/asset/cover_min.png)
 
 ### Quick installation
 
