@@ -60,15 +60,10 @@ D = 297794
     s = 'scale_factor'
   []
 
-  [cell_velocity]
-    type = Scalar
-    values = 1.0
-  []
-
   [unscaled_ic]
     type = LinspaceScalar
-    start = 100
-    end = 100.0
+    start = 1e-12
+    end = 1e-12
     nstep = 100
     dim = 0
     group = 'intermediate'
@@ -119,11 +114,11 @@ D = 297794
     ic_Scalar_values = 'ic'
     save_as = 'result.pt'
   []
-#  [regression]
-#    type = TransientRegression
-#    driver = 'driver'
-#    reference = 'gold/result.pt'
-#  []
+  [regression]
+    type = TransientRegression
+    driver = 'driver'
+    reference = 'gold/result.pt'
+  []
 []
 
 [EquationSystems]
@@ -241,7 +236,7 @@ D = 297794
   []
   [model]
     type = ComposedModel
-    models = 'model_scaled unscale'
-    additional_outputs = 'state/number_density'
+    models = 'model_scaled unscale volume_fraction x_Cu'
+    additional_outputs = 'state/number_density state/true_number_density state/vf state/x_Cu'
    []
 []
