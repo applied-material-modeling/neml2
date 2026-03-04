@@ -29,6 +29,7 @@
 #include "neml2/neml2.h"
 #include "neml2/models/Variable.h"
 #include "neml2/tensors/tensors.h"
+#include "neml2/drivers/Driver.h"
 
 using namespace neml2;
 
@@ -88,5 +89,15 @@ TEST_CASE("Model", "[models]")
                    Catch::Matchers::ContainsSubstring(
                        "Output variable whatever/foo must be on one of the following sub-axes"));
     }
+  }
+
+  SECTION("graph execution exception")
+  {
+    auto factory = load_input("models/test_graph_execution_exception.i");
+    auto driver = factory->get_driver("driver");
+    REQUIRE_THROWS_WITH(
+        driver->run(),
+        Catch::Matchers::ContainsSubstring(
+            "Try turning off just-in-time (JIT) compilation to get more detailed error messages."));
   }
 }

@@ -270,6 +270,13 @@ Model::link_output_variables(Model * /*submodel*/)
 {
 }
 
+std::string
+Model::failed_graph_execution_hint() const
+{
+  return "Try turning off just-in-time (JIT) compilation to get more detailed error messages. This "
+         "can be done by setting 'Settings/disable_jit=true'.";
+}
+
 void
 Model::request_AD(VariableBase & y, const VariableBase & u)
 {
@@ -410,7 +417,15 @@ Model::forward_maybe_jit(bool out, bool dout, bool d2out)
     auto & [schema, traced_function] = *traced_schema_and_function;
     c10::InferenceMode mode_guard(_production);
     auto stack = collect_input_stack();
-    traced_function->run(stack);
+    try
+    {
+      traced_function->run(stack);
+    }
+    catch (const std::exception & e)
+    {
+      throw NEMLException("Failed to run traced model '" + name() + "': \n" + e.what() + "\n" +
+                          failed_graph_execution_hint());
+    }
     if (dout || d2out)
       clear_derivatives();
     assign_output_stack(stack, out, dout, d2out);
