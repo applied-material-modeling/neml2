@@ -41,8 +41,7 @@ CurrentConcentration::expected_options()
   options.set("initial_concentration").doc() = "Initial concentration in solution";
 
   options.set<std::vector<VariableName>>("precipitate_volume_fractions");
-  options.set("precipitate_volume_fractions").doc() =
-      "Precipitate volume fraction variables";
+  options.set("precipitate_volume_fractions").doc() = "Precipitate volume fraction variables";
 
   options.set_parameter<std::vector<TensorName<Scalar>>>("precipitate_concentrations");
   options.set("precipitate_concentrations").doc() = "Precipitate concentrations";
@@ -71,8 +70,8 @@ CurrentConcentration::CurrentConcentration(const OptionSet & options)
 
   _xps.resize(xp_refs.size());
   for (std::size_t i = 0; i < xp_refs.size(); i++)
-    _xps[i] = &declare_parameter<Scalar>(
-        "xp_" + std::to_string(i), xp_refs[i], /*allow_nonlinear=*/true);
+    _xps[i] =
+        &declare_parameter<Scalar>("xp_" + std::to_string(i), xp_refs[i], /*allow_nonlinear=*/true);
 }
 
 void
