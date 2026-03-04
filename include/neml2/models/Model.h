@@ -224,6 +224,9 @@ protected:
   /// Check the current default precision and warn if it's not double precision
   void check_precision() const;
 
+  /// Additional hint to include in the error message when an exception is encountered during execution of the traced graph
+  virtual std::string failed_graph_execution_hint() const;
+
   /**
    * Request the use of automatic differentiation to compute variable derivatives
    *

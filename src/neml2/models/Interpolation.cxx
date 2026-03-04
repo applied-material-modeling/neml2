@@ -25,6 +25,7 @@
 #include "neml2/models/Interpolation.h"
 #include "neml2/misc/string_utils.h"
 #include "neml2/tensors/tensors.h"
+#include <ATen/TensorIndexing.h>
 
 namespace neml2
 {
@@ -37,8 +38,39 @@ parametric_coordinates(const Scalar & X, const Scalar & x)
   const auto m = (x > X1) && (x <= X2);
   const auto & B = m.dynamic_sizes();
   const auto I = m.intmd_sizes().slice(0, m.intmd_dim() - 1);
-  const auto X_start = Scalar(X1.batch_expand_as(m).index({m}), 0).batch_reshape(B, I);
-  const auto X_end = Scalar(X2.batch_expand_as(m).index({m}), 0).batch_reshape(B, I);
+
+  // use the mask to locate the correct interval
+  const auto X1_indexed = X1.batch_expand_as(m).index({m});
+  const auto X2_indexed = X2.batch_expand_as(m).index({m});
+
+  // check if interpolation falls out of bounds
+  auto n = utils::numel(B.concrete()) * utils::numel(I);
+  auto in_bounds = X1_indexed.numel() == n && X2_indexed.numel() == n;
+#ifdef NDEBUG
+  neml_assert(in_bounds, "Interpolation falls out of bounds.");
+#else
+  if (!in_bounds)
+  {
+    auto lb = X.intmd_index({indexing::Ellipsis, 0});
+    auto ub = X.intmd_index({indexing::Ellipsis, -1});
+    auto above = x > lb;
+    auto below = x <= ub;
+    neml_assert_dbg(in_bounds && above.all().item<bool>() && below.all().item<bool>(),
+                    "Interpolation falls out of bounds. ",
+                    above.numel() - above.sum().item<Size>(),
+                    " out of ",
+                    above.numel(),
+                    " batches of arguments fall below the lower bound. ",
+                    below.numel() - below.sum().item<Size>(),
+                    " out of ",
+                    below.numel(),
+                    " batches of arguments fall above the upper bound. The arguments must satisfy "
+                    "lower < x <= upper (note the exclusive lower bound).");
+  }
+#endif
+
+  const auto X_start = Scalar(X1_indexed, 0).batch_reshape(B, I);
+  const auto X_end = Scalar(X2_indexed, 0).batch_reshape(B, I);
   const auto xi = (x.intmd_squeeze(-1) - X_start) / (X_end - X_start);
   const auto dxi = 1.0 / (X_end - X_start);
   return {m, xi, dxi};
