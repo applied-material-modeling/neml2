@@ -12,6 +12,10 @@ diff_FCC_Cu = 3.333270e-01
 # Diffusivity ~ 0.150 exp[-30200/(RT)] cm^2/s which gives 297794 microns^2/hour
 D = 297794
 
+[Settings]
+  disable_jit = true
+[]
+
 [Tensors]
   [edges]
     type = LinspaceScalar
@@ -155,6 +159,13 @@ D = 297794
     current_concentration = 'state/x_Cu'
   []
 
+  [chemical_potential_difference]
+    type = ScalarLinearInterpolation
+    argument = 'state/x_Cu'
+    abscissa = 'X_Cu_vary'
+    ordinate = 'chem_diff'
+  []
+
   [diffusivity_sum]
     type = ProjectedDiffusivitySum
     concentration_differences = ${diff_FCC_Cu}
@@ -166,7 +177,7 @@ D = 297794
     type = SFFKGPrecipitationGrowthRate
     radius = 'true_centers'
     projected_diffusivity_sum = 'state/diff_sum'
-    gibbs_free_energy_difference = 40.0
+    gibbs_free_energy_difference = chemical_potential_difference
     temperature = ${T}
     gas_constant = 8.314
     growth_rate = 'state/growth_rate'
