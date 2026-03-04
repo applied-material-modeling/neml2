@@ -10,7 +10,7 @@ xs = 0.5*(xe[:-1] + xe[1:])
 s = 5.0
 x = s*xs/(1-xs)
 
-for i in [0,249, 499]:
+for i in range(1, 500):
     N = res[f"{i}.state/true_number_density"]
     print(N)
     print(N.shape)
