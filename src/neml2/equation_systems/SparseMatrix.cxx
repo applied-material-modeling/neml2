@@ -22,50 +22,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-
-#include <vector>
-
-#include "neml2/misc/types.h"
-#include "neml2/tensors/Tensor.h"
+#include "neml2/equation_systems/SparseMatrix.h"
 
 namespace neml2
 {
-class Scalar;
-
-/**
- * @brief Alias for a list of Tensors
- *
- * Undefined entries represent zeros in a sparse representation
- */
-class SparseTensorList : public std::vector<Tensor>
+SparseMatrix::SparseMatrix(SparseTensorList tensors,
+                           std::shared_ptr<AxisLayout> row_layout,
+                           std::shared_ptr<AxisLayout> col_layout)
+  : _tensors(std::move(tensors)),
+    _row_layout(std::move(row_layout)),
+    _col_layout(std::move(col_layout))
 {
-public:
-  using std::vector<Tensor>::vector;
-
-  /// Construct from a vector of Tensors
-  explicit SparseTensorList(const std::vector<Tensor> &);
-
-  /// Tensor options
-  TensorOptions options() const;
-
-  /// Start a SparseTensorList with fresh function graph
-  SparseTensorList data() const;
-};
-
-///@{
-/// Unary negation
-SparseTensorList operator-(const SparseTensorList &);
-/// Binary addition
-SparseTensorList operator+(const SparseTensorList &, const SparseTensorList &);
-/// Multiplication with scalar
-SparseTensorList operator*(const Scalar &, const SparseTensorList &);
-SparseTensorList operator*(const SparseTensorList &, const Scalar &);
-/// Inner product
-Scalar inner(const SparseTensorList &, const SparseTensorList &);
-/// Norm-squared
-Scalar norm_sq(const SparseTensorList &);
-/// Norm
-Scalar norm(const SparseTensorList &);
-///@}
+}
 } // namespace neml2

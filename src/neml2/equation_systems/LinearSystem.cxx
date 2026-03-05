@@ -23,30 +23,14 @@
 // THE SOFTWARE.
 
 #include "neml2/equation_systems/LinearSystem.h"
-#include "neml2/misc/assertions.h"
+#include "neml2/equation_systems/AxisLayout.h"
+#include "neml2/equation_systems/SparseMatrix.h"
+#include "neml2/equation_systems/SparseVector.h"
 #include "neml2/misc/errors.h"
 #include "neml2/equation_systems/SparseTensorList.h"
-#include "neml2/base/LabeledAxisAccessor.h"
 
 namespace neml2
 {
-template <typename T>
-const std::vector<T> &
-LinearSystem::resolve_group(std::size_t group_idx,
-                            const std::vector<std::vector<T>> & group_data,
-                            const std::string & object_name)
-{
-  if (group_data.empty())
-    throw NEMLException("No groups are defined for '" + object_name + "'.");
-
-  if (group_idx >= group_data.size())
-    throw NEMLException("Invalid group index " + std::to_string(group_idx) + " for '" +
-                        object_name + "'. Available group indices are 0.." +
-                        std::to_string(group_data.size() - 1) + ".");
-
-  return group_data[group_idx];
-}
-
 void
 LinearSystem::init()
 {
@@ -54,40 +38,16 @@ LinearSystem::init()
   // we are storing redundant information. This is because we are transitioning away from
   // LabeledAxis. In future versions, we will remove LabeledAxis and only use these data structures.
   //
-  // Also note: only nonlinear systems need to define these maps. Regular feed-forward models do not
-  // need to define these maps. This is an important distinction from LabeledAxis which is always
-  // defined.
+  // Also note: only models that are wrapped as equation systems need to define these maps. Regular
+  // feed-forward models do not need to define these maps. This is an important distinction from
+  // LabeledAxis which is always defined for any model.
   //
   // Another note: Right now we can "smartly" determine these maps based on variable subaxes. In the
   // future, since we are removing LabeledAxis, we will need let the user explicitly define these
   // maps, i.e., from within the input files.
-
-  _umap = setup_umap();
   _ulayout = setup_ulayout();
-
-  _gmap = setup_gmap();
   _glayout = setup_glayout();
-
-  _bmap = setup_bmap();
   _blayout = setup_blayout();
-}
-
-std::size_t
-LinearSystem::m(std::size_t group_idx) const
-{
-  return resolve_group(group_idx, _bmap, "bmap").size();
-}
-
-std::size_t
-LinearSystem::n(std::size_t group_idx) const
-{
-  return resolve_group(group_idx, _umap, "umap").size();
-}
-
-std::size_t
-LinearSystem::p() const
-{
-  return _gmap.size();
 }
 
 void
@@ -103,125 +63,90 @@ LinearSystem::g_changed()
   _b_up_to_date = false;
 }
 
-SparseTensorList
+SparseMatrix
 LinearSystem::A(std::size_t bgroup_idx, std::size_t ugroup_idx)
 {
   SparseTensorList A;
   pre_assemble(true, false, false);
   assemble(&A, nullptr, nullptr, bgroup_idx, ugroup_idx);
   post_assemble(true, false, false);
-  return A;
+  return {A, _blayout[bgroup_idx], _ulayout[ugroup_idx]};
 }
 
-SparseTensorList
+SparseVector
 LinearSystem::b(std::size_t group_idx)
 {
   SparseTensorList b;
   pre_assemble(false, false, true);
   assemble(nullptr, nullptr, &b, group_idx);
   post_assemble(false, false, true);
-  return b;
+  return {b, _blayout[group_idx]};
 }
 
-std::tuple<SparseTensorList, SparseTensorList>
+std::tuple<SparseMatrix, SparseVector>
 LinearSystem::A_and_b(std::size_t bgroup_idx, std::size_t ugroup_idx)
 {
   SparseTensorList A, b;
   pre_assemble(true, false, true);
   assemble(&A, nullptr, &b, bgroup_idx, ugroup_idx);
   post_assemble(true, false, true);
-  return {A, b};
+  return {SparseMatrix(A, _blayout[bgroup_idx], _ulayout[ugroup_idx]),
+          SparseVector(b, _blayout[bgroup_idx])};
 }
 
-std::tuple<SparseTensorList, SparseTensorList>
+std::tuple<SparseMatrix, SparseMatrix>
 LinearSystem::A_and_B(std::size_t bgroup_idx, std::size_t ugroup_idx)
 {
   SparseTensorList A, B;
   pre_assemble(true, true, false);
   assemble(&A, &B, nullptr, bgroup_idx, ugroup_idx);
   post_assemble(true, true, false);
-  return {A, B};
+  return {SparseMatrix(A, _blayout[bgroup_idx], _ulayout[ugroup_idx]),
+          SparseMatrix(B, _blayout[bgroup_idx], _ulayout[ugroup_idx])};
 }
 
-std::tuple<SparseTensorList, SparseTensorList, SparseTensorList>
+std::tuple<SparseMatrix, SparseMatrix, SparseVector>
 LinearSystem::A_and_B_and_b(std::size_t bgroup_idx, std::size_t ugroup_idx)
 {
   SparseTensorList A, B, b;
   pre_assemble(true, true, true);
   assemble(&A, &B, &b, bgroup_idx, ugroup_idx);
   post_assemble(true, true, true);
-  return {A, B, b};
+  return {SparseMatrix(A, _blayout[bgroup_idx], _ulayout[ugroup_idx]),
+          SparseMatrix(B, _blayout[bgroup_idx], _ulayout[ugroup_idx]),
+          SparseVector(b, _blayout[bgroup_idx])};
 }
 
-const std::vector<LabeledAxisAccessor> &
-LinearSystem::umap(std::size_t group_idx) const
+static const std::shared_ptr<AxisLayout> &
+resolve_group(std::size_t idx,
+              const std::vector<std::shared_ptr<AxisLayout>> & data,
+              const std::string & name)
 {
-  return resolve_group(group_idx, _umap, "umap");
+  if (data.empty())
+    throw NEMLException("No groups are defined for '" + name + "'.");
+  if (idx >= data.size())
+    throw NEMLException("Invalid group index " + std::to_string(idx) + " for " + name +
+                        ". Available group indices are 0.." + std::to_string(data.size() - 1) +
+                        ".");
+  return data[idx];
 }
 
-const std::vector<TensorShape> &
-LinearSystem::intmd_ulayout(std::size_t group_idx) const
-{
-  neml_assert(_intmd_ulayout.has_value(),
-              "Intermediate shapes for unknowns requested but not set up.");
-  return resolve_group(group_idx, _intmd_ulayout.value(), "intmd_ulayout");
-}
-
-const std::vector<TensorShape> &
+const std::shared_ptr<AxisLayout> &
 LinearSystem::ulayout(std::size_t group_idx) const
 {
-  return resolve_group(group_idx, _ulayout, "ulayout");
+  return resolve_group(group_idx, _ulayout, "unknown variables");
 }
 
-const std::vector<LabeledAxisAccessor> &
-LinearSystem::gmap() const
-{
-  return _gmap;
-}
-
-const std::vector<TensorShape> &
-LinearSystem::intmd_glayout() const
-{
-  neml_assert(_intmd_glayout.has_value(),
-              "Intermediate shapes for given variables requested but not set up.");
-  return _intmd_glayout.value();
-}
-
-const std::vector<TensorShape> &
+const std::shared_ptr<AxisLayout> &
 LinearSystem::glayout() const
 {
   return _glayout;
 }
 
-const std::vector<LabeledAxisAccessor> &
-LinearSystem::bmap(std::size_t group_idx) const
-{
-  return resolve_group(group_idx, _bmap, "bmap");
-}
-
-const std::vector<TensorShape> &
-LinearSystem::intmd_blayout(std::size_t group_idx) const
-{
-  neml_assert(_intmd_blayout.has_value(), "Intermediate shapes for RHS requested but not set up.");
-  return resolve_group(group_idx, _intmd_blayout.value(), "intmd_blayout");
-}
-
-const std::vector<TensorShape> &
+const std::shared_ptr<AxisLayout> &
 LinearSystem::blayout(std::size_t group_idx) const
 {
-  return resolve_group(group_idx, _blayout, "blayout");
-}
-
-std::size_t
-LinearSystem::n_ugroup() const
-{
-  return _umap.size();
-}
-
-std::size_t
-LinearSystem::n_bgroup() const
-{
-  return _bmap.size();
+  return resolve_group(group_idx, _blayout, "RHS variables");
 }
 
 void
@@ -235,15 +160,6 @@ LinearSystem::post_assemble(bool A, bool B, bool b)
   _A_up_to_date |= A;
   _B_up_to_date |= B;
   _b_up_to_date |= A || B || b;
-
-  if (!_intmd_ulayout.has_value())
-    _intmd_ulayout = setup_intmd_ulayout();
-
-  if (!_intmd_glayout.has_value())
-    _intmd_glayout = setup_intmd_glayout();
-
-  if (!_intmd_blayout.has_value())
-    _intmd_blayout = setup_intmd_blayout();
 }
 
 } // namespace neml2

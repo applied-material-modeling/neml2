@@ -24,14 +24,13 @@
 
 #pragma once
 
-#include "neml2/base/LabeledAxisAccessor.h"
-#include "neml2/misc/types.h"
-#include <cstddef>
+#include "neml2/equation_systems/AxisLayout.h"
+#include "neml2/equation_systems/SparseTensorList.h"
+#include "neml2/equation_systems/SparseVector.h"
+#include "neml2/equation_systems/SparseMatrix.h"
 
 namespace neml2
 {
-struct SparseTensorList;
-
 /**
  * @brief Definition of a linear system of equations, Au = b.
  *
@@ -46,23 +45,17 @@ public:
   LinearSystem & operator=(LinearSystem &&) noexcept = default;
   virtual ~LinearSystem() = default;
 
+  /// Setup axis layouts
   virtual void init();
-
-  /// Number of rows in the matrix
-  std::size_t m(std::size_t group_idx = 0) const;
-  /// Number of columns in the matrix
-  std::size_t n(std::size_t group_idx = 0) const;
-  /// Number of columns in the auxiliary matrix
-  std::size_t p() const;
 
   /// Set the unknown u
   virtual void set_u(const SparseTensorList &, std::size_t group_idx = 0) = 0;
   /// Set the given variables g from the current step
   virtual void set_g(const SparseTensorList &) = 0;
   /// Get the unknown u
-  virtual SparseTensorList u(std::size_t group_idx = 0) const = 0;
+  virtual SparseVector u(std::size_t group_idx = 0) const = 0;
   /// Get the given variables g from the current step
-  virtual SparseTensorList g() const = 0;
+  virtual SparseVector g() const = 0;
 
   /// Trigger when unknown variables changed
   virtual void u_changed();
@@ -70,72 +63,33 @@ public:
   virtual void g_changed();
 
   /// Assemble and return the operator, A
-  SparseTensorList A(std::size_t bgroup_idx = 0, std::size_t ugroup_idx = 0);
+  SparseMatrix A(std::size_t bgroup_idx = 0, std::size_t ugroup_idx = 0);
   /// Assemble and return the right-hand side, b
-  SparseTensorList b(std::size_t group_idx = 0);
+  SparseVector b(std::size_t group_idx = 0);
   /// Assemble and return the right-hand side and operator
-  std::tuple<SparseTensorList, SparseTensorList> A_and_b(std::size_t bgroup_idx = 0,
-                                                         std::size_t ugroup_idx = 0);
+  std::tuple<SparseMatrix, SparseVector> A_and_b(std::size_t bgroup_idx = 0,
+                                                 std::size_t ugroup_idx = 0);
   /// Assemble the auxiliary matrix B = dr/dg along with A
-  std::tuple<SparseTensorList, SparseTensorList> A_and_B(std::size_t bgroup_idx = 0,
-                                                         std::size_t ugroup_idx = 0);
+  std::tuple<SparseMatrix, SparseMatrix> A_and_B(std::size_t bgroup_idx = 0,
+                                                 std::size_t ugroup_idx = 0);
   /// Assemble the auxiliary matrix B = dr/dg along with A and b
-  std::tuple<SparseTensorList, SparseTensorList, SparseTensorList>
-  A_and_B_and_b(std::size_t bgroup_idx = 0, std::size_t ugroup_idx = 0);
+  std::tuple<SparseMatrix, SparseMatrix, SparseVector> A_and_B_and_b(std::size_t bgroup_idx = 0,
+                                                                     std::size_t ugroup_idx = 0);
 
-  /**
-   * @brief Get unknown-variable map for assembly.
-   *
-   * @param group_idx Variable-group index.
-   */
-  const std::vector<LabeledAxisAccessor> & umap(std::size_t group_idx = 0) const;
-  /// Unknown intermediate layout for the selected group.
-  const std::vector<TensorShape> & intmd_ulayout(std::size_t group_idx = 0) const;
-  /// Unknown base layout for the selected group.
-  const std::vector<TensorShape> & ulayout(std::size_t group_idx = 0) const;
-
-  /**
-   * @brief Get given-variable map for assembly.
-   */
-  const std::vector<LabeledAxisAccessor> & gmap() const;
-  /// Given-variable intermediate layout.
-  const std::vector<TensorShape> & intmd_glayout() const;
-  /// Given-variable base layout.
-  const std::vector<TensorShape> & glayout() const;
-
-  /// RHS-variable map for the selected group.
-  const std::vector<LabeledAxisAccessor> & bmap(std::size_t group_idx = 0) const;
-  /// RHS intermediate layout for the selected group.
-  const std::vector<TensorShape> & intmd_blayout(std::size_t group_idx = 0) const;
-  /// RHS base layout for the selected group.
-  const std::vector<TensorShape> & blayout(std::size_t group_idx = 0) const;
-
-  /// Number of unknown-variable groups.
-  std::size_t n_ugroup() const;
-  /// Number of RHS-variable groups.
-  std::size_t n_bgroup() const;
+  /// Get the unknown-variable layout for the selected group.
+  const std::shared_ptr<AxisLayout> & ulayout(std::size_t group_idx = 0) const;
+  /// Get the given-variable layout
+  const std::shared_ptr<AxisLayout> & glayout() const;
+  /// Get the RHS variable layout for the selected group.
+  const std::shared_ptr<AxisLayout> & blayout(std::size_t group_idx = 0) const;
 
 protected:
-  /// Setup the unknown map, partitioned by variable group.
-  virtual std::vector<std::vector<LabeledAxisAccessor>> setup_umap() = 0;
-  /// Setup the unknown intermediate layout, partitioned by variable group.
-  virtual std::vector<std::vector<TensorShape>> setup_intmd_ulayout() = 0;
   /// Setup the unknown layout, partitioned by variable group.
-  virtual std::vector<std::vector<TensorShape>> setup_ulayout() = 0;
-
-  /// Setup the given variable map.
-  virtual std::vector<LabeledAxisAccessor> setup_gmap() = 0;
-  /// Setup the given variable intermediate layout.
-  virtual std::vector<TensorShape> setup_intmd_glayout() = 0;
-  /// Setup the given variable base layout.
-  virtual std::vector<TensorShape> setup_glayout() = 0;
-
-  /// Setup the RHS map, partitioned by variable group.
-  virtual std::vector<std::vector<LabeledAxisAccessor>> setup_bmap() = 0;
-  /// Setup the RHS intermediate layout, partitioned by variable group.
-  virtual std::vector<std::vector<TensorShape>> setup_intmd_blayout() = 0;
-  /// Setup the RHS layout, partitioned by variable group.
-  virtual std::vector<std::vector<TensorShape>> setup_blayout() = 0;
+  virtual std::vector<std::shared_ptr<AxisLayout>> setup_ulayout() = 0;
+  /// Setup the given variable layout
+  virtual std::shared_ptr<AxisLayout> setup_glayout() = 0;
+  /// Setup the RHS variable layout
+  virtual std::vector<std::shared_ptr<AxisLayout>> setup_blayout() = 0;
 
   /**
    * @brief Compute the operator and right-hand side
@@ -182,35 +136,12 @@ protected:
   /// Flag indicating if the system RHS is up to date. Setters invalidate this.
   bool _b_up_to_date = false;
 
-  /// ID-to-unknown mapping, partitioned by variable group.
-  std::vector<std::vector<LabeledAxisAccessor>> _umap;
-  /// ID-to-unknown intermediate shape mapping, partitioned by variable group.
-  std::optional<std::vector<std::vector<TensorShape>>> _intmd_ulayout;
-  /// ID-to-unknown base shape mapping, partitioned by variable group.
-  std::vector<std::vector<TensorShape>> _ulayout;
-
-  /// ID-to-given-variable mapping.
-  std::vector<LabeledAxisAccessor> _gmap;
-  /// ID-to-given intermediate shape mapping.
-  std::optional<std::vector<TensorShape>> _intmd_glayout;
-  /// ID-to-given base shape mapping.
-  std::vector<TensorShape> _glayout;
-
-  /// ID-to-RHS mapping, partitioned by variable group.
-  std::vector<std::vector<LabeledAxisAccessor>> _bmap;
-  /// ID-to-RHS intermediate shape mapping, partitioned by variable group.
-  std::optional<std::vector<std::vector<TensorShape>>> _intmd_blayout;
-  /// ID-to-RHS shape mapping, partitioned by variable group.
-  std::vector<std::vector<TensorShape>> _blayout;
-
-private:
-  template <typename T>
-  static const std::vector<T> & resolve_group(std::size_t group_idx,
-                                              const std::vector<std::vector<T>> & group_data,
-                                              const std::string & object_name);
-
-  template <typename T>
-  static std::vector<T> flatten_groups(const std::vector<std::vector<T>> & group_data);
+  /// Layout of unknowns, partitioned by variable groups
+  std::vector<std::shared_ptr<AxisLayout>> _ulayout;
+  /// Layout of given variables
+  std::shared_ptr<AxisLayout> _glayout;
+  /// Layout of RHS variables, partitioned by variable groups
+  std::vector<std::shared_ptr<AxisLayout>> _blayout;
 };
 
 } // namespace neml2

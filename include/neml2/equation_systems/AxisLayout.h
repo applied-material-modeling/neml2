@@ -27,45 +27,20 @@
 #include <vector>
 
 #include "neml2/misc/types.h"
-#include "neml2/tensors/Tensor.h"
+#include "neml2/base/LabeledAxisAccessor.h"
 
 namespace neml2
 {
-class Scalar;
-
-/**
- * @brief Alias for a list of Tensors
- *
- * Undefined entries represent zeros in a sparse representation
- */
-class SparseTensorList : public std::vector<Tensor>
+struct AxisLayout
 {
-public:
-  using std::vector<Tensor>::vector;
+  /// Number of variables
+  std::size_t size() const;
 
-  /// Construct from a vector of Tensors
-  explicit SparseTensorList(const std::vector<Tensor> &);
-
-  /// Tensor options
-  TensorOptions options() const;
-
-  /// Start a SparseTensorList with fresh function graph
-  SparseTensorList data() const;
+  /// ID-to-variable mapping
+  std::vector<LabeledAxisAccessor> vars;
+  /// ID-to-variable intermediate shape mapping
+  std::vector<TensorShape> intmd_shapes;
+  /// ID-to-variable base shape mapping
+  std::vector<TensorShape> base_shapes;
 };
-
-///@{
-/// Unary negation
-SparseTensorList operator-(const SparseTensorList &);
-/// Binary addition
-SparseTensorList operator+(const SparseTensorList &, const SparseTensorList &);
-/// Multiplication with scalar
-SparseTensorList operator*(const Scalar &, const SparseTensorList &);
-SparseTensorList operator*(const SparseTensorList &, const Scalar &);
-/// Inner product
-Scalar inner(const SparseTensorList &, const SparseTensorList &);
-/// Norm-squared
-Scalar norm_sq(const SparseTensorList &);
-/// Norm
-Scalar norm(const SparseTensorList &);
-///@}
 } // namespace neml2

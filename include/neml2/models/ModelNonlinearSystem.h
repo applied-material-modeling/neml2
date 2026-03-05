@@ -56,21 +56,13 @@ public:
   void set_u(const SparseTensorList &, std::size_t group_idx) override;
   void set_g(const SparseTensorList &) override;
 
-  SparseTensorList u(std::size_t group_idx) const override;
-  SparseTensorList g() const override;
+  SparseVector u(std::size_t group_idx) const override;
+  SparseVector g() const override;
 
 protected:
-  std::vector<std::vector<LabeledAxisAccessor>> setup_umap() override;
-  std::vector<std::vector<TensorShape>> setup_intmd_ulayout() override;
-  std::vector<std::vector<TensorShape>> setup_ulayout() override;
-
-  std::vector<std::vector<LabeledAxisAccessor>> setup_bmap() override;
-  std::vector<std::vector<TensorShape>> setup_intmd_blayout() override;
-  std::vector<std::vector<TensorShape>> setup_blayout() override;
-
-  std::vector<LabeledAxisAccessor> setup_gmap() override;
-  std::vector<TensorShape> setup_intmd_glayout() override;
-  std::vector<TensorShape> setup_glayout() override;
+  std::vector<std::shared_ptr<AxisLayout>> setup_ulayout() override;
+  std::shared_ptr<AxisLayout> setup_glayout() override;
+  std::vector<std::shared_ptr<AxisLayout>> setup_blayout() override;
 
   void assemble(SparseTensorList * A,
                 SparseTensorList * B,
