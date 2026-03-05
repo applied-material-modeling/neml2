@@ -1,0 +1,15 @@
+<map id="TracingInterface" name="TracingInterface">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,92,132,117"/>
+<area shape="rect" id="Node000002" href="$classneml2_1_1WorkDispatcher.html" title=" " alt="" coords="180,5,419,60"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="122,85,211,57,212,63,124,90"/>
+<area shape="rect" id="Node000003" href="$classneml2_1_1WorkDispatcher.html" title="The work dispatcher who dispatches work to a worker and reduces the results." alt="" coords="225,85,373,125"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="146,102,225,102,225,107,146,107"/>
+<area shape="rect" id="Node000004" href="$classneml2_1_1WorkScheduler.html" title="Scheduler for work dispatching." alt="" coords="240,149,359,175"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="125,119,181,134,240,148,239,153,179,139,123,124"/>
+<area shape="rect" id="Node000005" href="$classneml2_1_1SimpleMPIScheduler.html" title="A simple MPI scheduler." alt="" coords="473,100,627,125"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="372,145,484,123,485,128,373,150"/>
+<area shape="rect" id="Node000006" href="$classneml2_1_1SimpleScheduler.html" title="A very simple scheduler." alt="" coords="485,149,615,175"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="372,159,484,159,484,165,372,165"/>
+<area shape="rect" id="Node000007" href="$classneml2_1_1StaticHybridScheduler.html" title="A scheduler for multiple devices with static priority management." alt="" coords="467,199,633,224"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="373,174,485,196,484,201,372,179"/>
+</map>
