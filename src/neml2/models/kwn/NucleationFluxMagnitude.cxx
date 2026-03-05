@@ -22,17 +22,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/kwn/NuceationFluxMagnitude.h"
+#include "neml2/models/kwn/NucleationFluxMagnitude.h"
 
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/functions/exp.h"
 
 namespace neml2
 {
-register_NEML2_object(NuceationFluxMagnitude);
+register_NEML2_object(NucleationFluxMagnitude);
 
 OptionSet
-NuceationFluxMagnitude::expected_options()
+NucleationFluxMagnitude::expected_options()
 {
   OptionSet options = Model::expected_options();
   options.doc() = "Compute the nucleation flux magnitude excluding the Dirac delta term.";
@@ -46,7 +46,7 @@ NuceationFluxMagnitude::expected_options()
   options.set_input("nucleation_barrier");
   options.set("nucleation_barrier").doc() = "Nucleation barrier";
 
-  options.set_parameter<TensorName<Scalar>>("temperature");
+  options.set_input("temperature");
   options.set("temperature").doc() = "Temperature";
 
   options.set_parameter<TensorName<Scalar>>("nucleation_site_density");
@@ -62,12 +62,12 @@ NuceationFluxMagnitude::expected_options()
   return options;
 }
 
-NuceationFluxMagnitude::NuceationFluxMagnitude(const OptionSet & options)
+NucleationFluxMagnitude::NucleationFluxMagnitude(const OptionSet & options)
   : Model(options),
     _Z(declare_input_variable<Scalar>("zeldovich_factor")),
     _beta(declare_input_variable<Scalar>("kinetic_factor")),
     _dg(declare_input_variable<Scalar>("nucleation_barrier")),
-    _T(declare_parameter<Scalar>("T", "temperature", /*allow_nonlinear=*/true)),
+    _T(declare_input_variable<Scalar>("temperature")),
     _N0(declare_parameter<Scalar>("N0", "nucleation_site_density", /*allow_nonlinear=*/true)),
     _k(declare_parameter<Scalar>("k", "boltzmann_constant")),
     _J(declare_output_variable<Scalar>("nucleation_flux_magnitude"))
@@ -75,12 +75,12 @@ NuceationFluxMagnitude::NuceationFluxMagnitude(const OptionSet & options)
 }
 
 void
-NuceationFluxMagnitude::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
+NucleationFluxMagnitude::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   const auto Z = _Z();
   const auto beta = _beta();
   const auto dg = _dg();
-  const auto T = _T;
+  const auto T = _T();
   const auto N0 = _N0;
   const auto k = _k;
 
@@ -104,8 +104,8 @@ NuceationFluxMagnitude::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
     if (_dg.is_dependent())
       _J.d(_dg) = -prefactor * exp_raw / (k * T);
 
-    if (const auto * const T_param = nl_param("T"))
-      _J.d(*T_param) = prefactor * exp_raw * dg / (k * T * T);
+    if (_T.is_dependent())
+      _J.d(_T) = prefactor * exp_raw * dg / (k * T * T);
 
     if (const auto * const N0_param = nl_param("N0"))
       _J.d(*N0_param) = Z * beta * exp_raw;

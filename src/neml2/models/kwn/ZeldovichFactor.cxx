@@ -44,7 +44,7 @@ ZeldovichFactor::expected_options()
   options.set_parameter<TensorName<Scalar>>("surface_energy");
   options.set("surface_energy").doc() = "Surface energy of the precipitate";
 
-  options.set_parameter<TensorName<Scalar>>("temperature");
+  options.set_input("temperature");
   options.set("temperature").doc() = "Temperature";
 
   options.set_parameter<TensorName<Scalar>>("molar_volume");
@@ -66,7 +66,7 @@ ZeldovichFactor::ZeldovichFactor(const OptionSet & options)
   : Model(options),
     _R_crit(declare_input_variable<Scalar>("critical_radius")),
     _gamma(declare_parameter<Scalar>("gamma", "surface_energy", true)),
-    _T(declare_parameter<Scalar>("T", "temperature", /*allow_nonlinear=*/true)),
+    _T(declare_input_variable<Scalar>("temperature")),
     _V_m(declare_parameter<Scalar>("V_m", "molar_volume")),
     _N_a(declare_parameter<Scalar>("N_a", "avogadro_number")),
     _k(declare_parameter<Scalar>("k", "boltzmann_constant")),
@@ -79,7 +79,7 @@ ZeldovichFactor::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   const auto R_crit = _R_crit();
   const auto gamma = _gamma;
-  const auto T = _T;
+  const auto T = _T();
   const auto V_m = _V_m;
   const auto N_a = _N_a;
   const auto k = _k;
@@ -99,8 +99,8 @@ ZeldovichFactor::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
     if (const auto * const gamma_param = nl_param("gamma"))
       _Z.d(*gamma_param) = 0.5 * Z / gamma;
 
-    if (const auto * const T_param = nl_param("T"))
-      _Z.d(*T_param) = -0.5 * Z / T;
+    if (_T.is_dependent())
+      _Z.d(_T) = -0.5 * Z / T;
   }
 }
 } // namespace neml2
