@@ -136,7 +136,7 @@ and then the overall growth rate: $1/L \cdot E / mol \cdot (L^2/T)/(E/mol) = L/T
 All precipitates nucleate at the critical radius:
 
 $$
- J_{nuc} = Z \beta N_0 \exp\left(\frac{\Delta G}{kT}\right) \delta(R - R_{crit})
+ J_{nuc} = Z \beta N_0 \exp\left(-\frac{\Delta G}{kT}\right) \delta(R - R_{crit})
 $$
 
 with
@@ -158,10 +158,10 @@ $$
 with
 
 $$
- \beta = \frac{4\pi R^2 N_a^{4/3}}{V_m^{4/3}} \frac{1}{\sum_i \frac{\Delta x_i^2}{D_i x^\infty_i}}
+ \beta = \frac{4\pi R_{crit}^2 N_a^{4/3}}{V_m^{4/3}} \frac{1}{\sum_i \frac{\Delta x_i^2}{D_i x^\infty_i}}
 $$
 
-evaluated at $R_{crit}$. Note the common diffusion term from above.
+Note the common diffusion term from above.
 
 The volumetric driving force is just
 
