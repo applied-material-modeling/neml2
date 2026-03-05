@@ -51,7 +51,7 @@ protected:
   const Scalar & _dg;
 
   /// Temperature
-  const Scalar & _T;
+  const Variable<Scalar> & _T;
 
   /// Gas constant
   const Scalar & _R_g;

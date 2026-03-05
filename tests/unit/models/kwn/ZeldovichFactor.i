@@ -2,8 +2,8 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/R_crit'
-    input_Scalar_values = 'R_crit'
+    input_Scalar_names = 'state/R_crit state/T'
+    input_Scalar_values = 'R_crit T'
     output_Scalar_names = 'state/Z'
     output_Scalar_values = 'Z'
     check_AD_parameter_derivatives = true
@@ -34,7 +34,7 @@
     type = ZeldovichFactor
     critical_radius = 'state/R_crit'
     surface_energy = 'gamma'
-    temperature = 'T'
+    temperature = 'state/T'
     molar_volume = 2.0
     avogadro_number = 2.0
     boltzmann_constant = 1.0
