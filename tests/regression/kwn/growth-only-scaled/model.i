@@ -12,10 +12,6 @@ diff_FCC_Cu = 3.333270e-01
 # Diffusivity ~ 0.150 exp[-30200/(RT)] cm^2/s which gives 297794 microns^2/hour
 D = 297794
 
-[Settings]
-  disable_jit = true
-[]
-
 [Tensors]
   [edges]
     type = LinspaceScalar
@@ -132,7 +128,6 @@ D = 297794
   [newton]
     type = Newton
     linear_solver = 'lu'
-    verbose = true
   []
   [lu]
     type = DenseLU
