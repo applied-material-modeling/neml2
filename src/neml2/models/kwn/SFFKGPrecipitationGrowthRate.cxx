@@ -47,7 +47,7 @@ SFFKGPrecipitationGrowthRate::expected_options()
   options.set_parameter<TensorName<Scalar>>("gibbs_free_energy_difference");
   options.set("gibbs_free_energy_difference").doc() = "Gibbs free energy difference";
 
-  options.set_parameter<TensorName<Scalar>>("temperature");
+  options.set_input("temperature");
   options.set("temperature").doc() = "Temperature";
 
   options.set_parameter<TensorName<Scalar>>("gas_constant");
@@ -64,7 +64,7 @@ SFFKGPrecipitationGrowthRate::SFFKGPrecipitationGrowthRate(const OptionSet & opt
     _R(declare_parameter<Scalar>("R", "radius", true)),
     _proj_sum(declare_input_variable<Scalar>("projected_diffusivity_sum")),
     _dg(declare_parameter<Scalar>("dg", "gibbs_free_energy_difference", true)),
-    _T(declare_parameter<Scalar>("T", "temperature", /*allow_nonlinear=*/true)),
+    _T(declare_input_variable<Scalar>("temperature")),
     _R_g(declare_parameter<Scalar>("R_g", "gas_constant", true)),
     _R_dot(declare_output_variable<Scalar>("growth_rate"))
 {
@@ -77,7 +77,7 @@ SFFKGPrecipitationGrowthRate::set_value(bool out, bool dout_din, bool /*d2out_di
   const auto R = _R;
   const auto proj_sum = _proj_sum();
   const auto dg = _dg;
-  const auto T = _T;
+  const auto T = _T();
   const auto Rg = _R_g;
 
   const auto denom = R * Rg * T * proj_sum;
@@ -104,8 +104,8 @@ SFFKGPrecipitationGrowthRate::set_value(bool out, bool dout_din, bool /*d2out_di
     if (const auto * const dg_param = nl_param("dg"))
       _R_dot.d(*dg_param, 1, 1, 0) = inv_denom;
 
-    if (const auto * const T_param = nl_param("T"))
-      _R_dot.d(*T_param, 1, 1, 0) = -rate / T;
+    if (_T.is_dependent())
+      _R_dot.d(_T, 1, 1, 0) = -rate / T;
 
     if (const auto * const Rg_param = nl_param("R_g"))
       _R_dot.d(*Rg_param, 1, 1, 0) = -rate / Rg;

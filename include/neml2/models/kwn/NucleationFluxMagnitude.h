@@ -31,12 +31,12 @@ namespace neml2
 class Scalar;
 
 /// Magnitude of the nucleation flux (excluding the Dirac delta term).
-class NuceationFluxMagnitude : public Model
+class NucleationFluxMagnitude : public Model
 {
 public:
   static OptionSet expected_options();
 
-  NuceationFluxMagnitude(const OptionSet & options);
+  NucleationFluxMagnitude(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
@@ -51,7 +51,7 @@ protected:
   const Variable<Scalar> & _dg;
 
   /// Temperature
-  const Scalar & _T;
+  const Variable<Scalar> & _T;
 
   /// Number of nucleation sites
   const Scalar & _N0;

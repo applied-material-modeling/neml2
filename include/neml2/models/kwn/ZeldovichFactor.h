@@ -48,7 +48,7 @@ protected:
   const Scalar & _gamma;
 
   /// Temperature
-  const Scalar & _T;
+  const Variable<Scalar> & _T;
 
   /// Molar volume of the precipitate
   const Scalar & _V_m;

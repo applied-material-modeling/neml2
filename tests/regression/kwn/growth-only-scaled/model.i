@@ -135,6 +135,11 @@ D = 297794
 []
 
 [Models]
+  [input_temperature]
+    type = ScalarParameterToState
+    from = '${T}'
+    to = 'forces/T'
+  []
   [volume_fraction]
     type = PrecipitateVolumeFraction
     radius = 'true_centers'
@@ -168,7 +173,7 @@ D = 297794
     radius = 'true_centers'
     projected_diffusivity_sum = 'state/diff_sum'
     gibbs_free_energy_difference = chemical_potential_difference
-    temperature = ${T}
+    temperature = 'forces/T'
     gas_constant = 8.314
     growth_rate = 'state/growth_rate'
   []
@@ -216,7 +221,7 @@ D = 297794
   []
   [implicit_rate]
     type = ComposedModel
-    models = 'growth_rate scaled_cell_velocity advection_velocity advective_flux left_bc right_bc flux_divergence integrate_u unscale volume_fraction x_Cu diffusivity_sum'
+    models = 'input_temperature growth_rate scaled_cell_velocity advection_velocity advective_flux left_bc right_bc flux_divergence integrate_u unscale volume_fraction x_Cu diffusivity_sum'
   []
   [model_scaled]
     type = ImplicitUpdate

@@ -146,6 +146,12 @@ N0 = 1e16
 []
 
 [Models]
+  [input_temperature]
+    type = ScalarParameterToState
+    from = '${T}'
+    to = 'forces/T'
+  []
+
   [volume_fraction]
     type = PrecipitateVolumeFraction
     radius = 'true_centers'
@@ -179,7 +185,7 @@ N0 = 1e16
     radius = 'true_centers'
     projected_diffusivity_sum = 'state/diff_sum'
     gibbs_free_energy_difference = chemical_potential_difference
-    temperature = ${T}
+    temperature = 'forces/T'
     gas_constant = 8.314
     growth_rate = 'state/growth_rate'
   []
@@ -233,7 +239,7 @@ N0 = 1e16
   []
   [implicit_rate]
     type = ComposedModel
-    models = 'growth_rate scaled_cell_velocity advection_velocity advective_flux left_bc right_bc flux_divergence integrate_u unscale volume_fraction x_Cu diffusivity_sum zeldovich_factor kinetic_factor nucleation_barrier_and_critical_radius nucleation_flux_magnitude nucleation_flux rate_of_change'
+    models = 'input_temperature growth_rate scaled_cell_velocity advection_velocity advective_flux left_bc right_bc flux_divergence integrate_u unscale volume_fraction x_Cu diffusivity_sum zeldovich_factor kinetic_factor nucleation_barrier_and_critical_radius nucleation_flux_magnitude nucleation_flux rate_of_change'
   []
   [model_scaled]
     type = ImplicitUpdate
@@ -260,7 +266,7 @@ N0 = 1e16
     type = ZeldovichFactor
     critical_radius = 'state/R_crit'
     surface_energy = ${gamma}
-    temperature = ${T}
+    temperature = 'forces/T'
     molar_volume = ${Vm}
     avogadro_number = 6.02214076e23
     boltzmann_constant = 1.380649e-23
@@ -275,11 +281,11 @@ N0 = 1e16
     kinetic_factor = 'state/beta'
   []
   [nucleation_flux_magnitude]
-    type = NuceationFluxMagnitude
+    type = NucleationFluxMagnitude
     zeldovich_factor = 'state/Z'
     kinetic_factor = 'state/beta'
     nucleation_barrier = 'state/barrier'
-    temperature = ${T}
+    temperature = 'forces/T'
     nucleation_site_density = ${N0}
     boltzmann_constant = 1.380649e-23
     nucleation_flux_magnitude = 'state/nucleation_magnitude'

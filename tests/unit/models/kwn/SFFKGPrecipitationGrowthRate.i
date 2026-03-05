@@ -2,8 +2,8 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/sum'
-    input_Scalar_values = 'sum'
+    input_Scalar_names = 'state/sum state/T'
+    input_Scalar_values = 'sum T'
     output_Scalar_names = 'state/R_dot'
     output_Scalar_values = 'R_dot'
     check_AD_parameter_derivatives = false
@@ -43,7 +43,7 @@
     radius = 'R'
     projected_diffusivity_sum = 'state/sum'
     gibbs_free_energy_difference = 'dg'
-    temperature = 'T'
+    temperature = 'state/T'
     gas_constant = 8.0
     growth_rate = 'state/R_dot'
   []
