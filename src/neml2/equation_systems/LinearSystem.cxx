@@ -26,8 +26,6 @@
 #include "neml2/equation_systems/AxisLayout.h"
 #include "neml2/equation_systems/SparseMatrix.h"
 #include "neml2/equation_systems/SparseVector.h"
-#include "neml2/misc/errors.h"
-#include "neml2/equation_systems/SparseTensorList.h"
 
 namespace neml2
 {
@@ -64,77 +62,63 @@ LinearSystem::g_changed()
 }
 
 SparseMatrix
-LinearSystem::A(std::size_t bgroup_idx, std::size_t ugroup_idx)
+LinearSystem::A()
 {
-  SparseTensorList A;
+  SparseMatrix A(_blayout, _ulayout);
   pre_assemble(true, false, false);
-  assemble(&A, nullptr, nullptr, bgroup_idx, ugroup_idx);
+  assemble(&A, nullptr, nullptr);
   post_assemble(true, false, false);
-  return {A, _blayout[bgroup_idx], _ulayout[ugroup_idx]};
+  return A;
 }
 
 SparseVector
-LinearSystem::b(std::size_t group_idx)
+LinearSystem::b()
 {
-  SparseTensorList b;
+  SparseVector b(_blayout);
   pre_assemble(false, false, true);
-  assemble(nullptr, nullptr, &b, group_idx);
+  assemble(nullptr, nullptr, &b);
   post_assemble(false, false, true);
-  return {b, _blayout[group_idx]};
+  return b;
 }
 
 std::tuple<SparseMatrix, SparseVector>
-LinearSystem::A_and_b(std::size_t bgroup_idx, std::size_t ugroup_idx)
+LinearSystem::A_and_b()
 {
-  SparseTensorList A, b;
+  SparseMatrix A(_blayout, _ulayout);
+  SparseVector b(_blayout);
   pre_assemble(true, false, true);
-  assemble(&A, nullptr, &b, bgroup_idx, ugroup_idx);
+  assemble(&A, nullptr, &b);
   post_assemble(true, false, true);
-  return {SparseMatrix(A, _blayout[bgroup_idx], _ulayout[ugroup_idx]),
-          SparseVector(b, _blayout[bgroup_idx])};
+  return {A, b};
 }
 
 std::tuple<SparseMatrix, SparseMatrix>
-LinearSystem::A_and_B(std::size_t bgroup_idx, std::size_t ugroup_idx)
+LinearSystem::A_and_B()
 {
-  SparseTensorList A, B;
+  SparseMatrix A(_blayout, _ulayout);
+  SparseMatrix B(_blayout, {_glayout});
   pre_assemble(true, true, false);
-  assemble(&A, &B, nullptr, bgroup_idx, ugroup_idx);
+  assemble(&A, &B, nullptr);
   post_assemble(true, true, false);
-  return {SparseMatrix(A, _blayout[bgroup_idx], _ulayout[ugroup_idx]),
-          SparseMatrix(B, _blayout[bgroup_idx], _ulayout[ugroup_idx])};
+  return {A, B};
 }
 
 std::tuple<SparseMatrix, SparseMatrix, SparseVector>
-LinearSystem::A_and_B_and_b(std::size_t bgroup_idx, std::size_t ugroup_idx)
+LinearSystem::A_and_B_and_b()
 {
-  SparseTensorList A, B, b;
+  SparseMatrix A(_blayout, _ulayout);
+  SparseMatrix B(_blayout, {_glayout});
+  SparseVector b(_blayout);
   pre_assemble(true, true, true);
-  assemble(&A, &B, &b, bgroup_idx, ugroup_idx);
+  assemble(&A, &B, &b);
   post_assemble(true, true, true);
-  return {SparseMatrix(A, _blayout[bgroup_idx], _ulayout[ugroup_idx]),
-          SparseMatrix(B, _blayout[bgroup_idx], _ulayout[ugroup_idx]),
-          SparseVector(b, _blayout[bgroup_idx])};
+  return {A, B, b};
 }
 
-static const std::shared_ptr<AxisLayout> &
-resolve_group(std::size_t idx,
-              const std::vector<std::shared_ptr<AxisLayout>> & data,
-              const std::string & name)
+const std::vector<std::shared_ptr<AxisLayout>> &
+LinearSystem::ulayout() const
 {
-  if (data.empty())
-    throw NEMLException("No groups are defined for '" + name + "'.");
-  if (idx >= data.size())
-    throw NEMLException("Invalid group index " + std::to_string(idx) + " for " + name +
-                        ". Available group indices are 0.." + std::to_string(data.size() - 1) +
-                        ".");
-  return data[idx];
-}
-
-const std::shared_ptr<AxisLayout> &
-LinearSystem::ulayout(std::size_t group_idx) const
-{
-  return resolve_group(group_idx, _ulayout, "unknown variables");
+  return _ulayout;
 }
 
 const std::shared_ptr<AxisLayout> &
@@ -143,10 +127,10 @@ LinearSystem::glayout() const
   return _glayout;
 }
 
-const std::shared_ptr<AxisLayout> &
-LinearSystem::blayout(std::size_t group_idx) const
+const std::vector<std::shared_ptr<AxisLayout>> &
+LinearSystem::blayout() const
 {
-  return resolve_group(group_idx, _blayout, "RHS variables");
+  return _blayout;
 }
 
 void

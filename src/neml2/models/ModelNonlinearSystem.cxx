@@ -27,7 +27,6 @@
 #include "neml2/equation_systems/AxisLayout.h"
 #include "neml2/equation_systems/EquationSystem.h"
 #include "neml2/equation_systems/NonlinearSystem.h"
-#include "neml2/equation_systems/SparseTensorList.h"
 #include "neml2/misc/types.h"
 #include "neml2/models/Model.h"
 
@@ -79,10 +78,11 @@ ModelNonlinearSystem::setup()
   }
 
   // unknown variables should be marked mutable, as they will be updated during the nonlinear solve
-  const auto & ul = *ulayout();
-  for (std::size_t i = 0; i < ul.size(); ++i)
-    for (const auto & vname : ul.vars[i])
-      _model->input_variable(vname).set_mutable(true);
+  const auto & uls = ulayout();
+  for (const auto & ul : uls)
+    for (std::size_t i = 0; i < ul->size(); ++i)
+      for (const auto & vname : ul->vars[i])
+        _model->input_variable(vname).set_mutable(true);
 }
 
 void
@@ -107,9 +107,8 @@ ModelNonlinearSystem::setup_ulayout()
 
   // create layout for each variable group
   std::vector<std::shared_ptr<AxisLayout>> layout;
-  for (std::size_t i = 0; i < _unknown_groups.size(); ++i)
+  for (const auto & vars : _unknown_groups)
   {
-    const auto & vars = _unknown_groups[i];
     std::vector<TensorShape> intmd_shapes, base_shapes;
     intmd_shapes.reserve(vars.size());
     base_shapes.reserve(vars.size());
@@ -138,7 +137,7 @@ ModelNonlinearSystem::setup_glayout()
       base_shapes.emplace_back(var->base_sizes());
     }
 
-  return std::make_shared<AxisLayout>(vars, intmd_shapes, base_shapes);
+  return std::make_shared<AxisLayout>(AxisLayout{vars, intmd_shapes, base_shapes});
 }
 
 std::vector<std::shared_ptr<AxisLayout>>
@@ -155,9 +154,8 @@ ModelNonlinearSystem::setup_blayout()
 
   // create layout for each variable group
   std::vector<std::shared_ptr<AxisLayout>> layout;
-  for (std::size_t i = 0; i < _residual_groups.size(); ++i)
+  for (const auto & vars : _residual_groups)
   {
-    const auto & vars = _residual_groups[i];
     std::vector<TensorShape> intmd_shapes, base_shapes;
     intmd_shapes.reserve(vars.size());
     base_shapes.reserve(vars.size());
@@ -174,37 +172,33 @@ ModelNonlinearSystem::setup_blayout()
 }
 
 void
-ModelNonlinearSystem::set_u(const SparseTensorList & u, std::size_t group_idx)
+ModelNonlinearSystem::set_u(const SparseVector & u)
 {
-  _model->assign_input(_ulayout[group_idx]->vars, u);
+  _model->assign_input(u);
   u_changed();
 }
 
 void
-ModelNonlinearSystem::set_g(const SparseTensorList & g)
+ModelNonlinearSystem::set_g(const SparseVector & g)
 {
-  _model->assign_input(_glayout->vars, g);
+  _model->assign_input(g);
   g_changed();
 }
 
 SparseVector
-ModelNonlinearSystem::u(std::size_t group_idx) const
+ModelNonlinearSystem::u() const
 {
-  return {_model->collect_input(_ulayout[group_idx]->vars), _ulayout[group_idx]};
+  return _model->collect_input(_ulayout);
 }
 
 SparseVector
 ModelNonlinearSystem::g() const
 {
-  return {_model->collect_input(_glayout->vars), _glayout};
+  return _model->collect_input({_glayout});
 }
 
 void
-ModelNonlinearSystem::assemble(SparseTensorList * A,
-                               SparseTensorList * B,
-                               SparseTensorList * b,
-                               std::size_t bgroup_idx,
-                               std::size_t ugroup_idx)
+ModelNonlinearSystem::assemble(SparseMatrix * A, SparseMatrix * B, SparseVector * b)
 {
   {
     AssemblyingNonlinearSystem assembling_nl_sys(!B);
@@ -214,13 +208,13 @@ ModelNonlinearSystem::assemble(SparseTensorList * A,
 
   if (b)
     // remember b := -r
-    *b = -_model->collect_output(_blayout[bgroup_idx]->vars);
+    *b = -_model->collect_output(_blayout);
 
   if (A)
-    *A = _model->collect_output_derivatives(_blayout[bgroup_idx]->vars, _ulayout[ugroup_idx]->vars);
+    *A = _model->collect_output_derivatives(_blayout, _ulayout);
 
   if (B)
-    *B = _model->collect_output_derivatives(_blayout[bgroup_idx]->vars, _glayout->vars);
+    *B = _model->collect_output_derivatives(_blayout, {_glayout});
 }
 
 void

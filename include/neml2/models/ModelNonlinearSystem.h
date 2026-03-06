@@ -26,7 +26,6 @@
 
 #include "neml2/equation_systems/EquationSystem.h"
 #include "neml2/equation_systems/NonlinearSystem.h"
-#include "neml2/equation_systems/SparseTensorList.h"
 #include "neml2/models/ParameterStore.h"
 #include "neml2/models/BufferStore.h"
 
@@ -53,10 +52,10 @@ public:
 
   void to(const TensorOptions &) override;
 
-  void set_u(const SparseTensorList &, std::size_t group_idx) override;
-  void set_g(const SparseTensorList &) override;
+  void set_u(const SparseVector &) override;
+  void set_g(const SparseVector &) override;
 
-  SparseVector u(std::size_t group_idx) const override;
+  SparseVector u() const override;
   SparseVector g() const override;
 
 protected:
@@ -64,11 +63,7 @@ protected:
   std::shared_ptr<AxisLayout> setup_glayout() override;
   std::vector<std::shared_ptr<AxisLayout>> setup_blayout() override;
 
-  void assemble(SparseTensorList * A,
-                SparseTensorList * B,
-                SparseTensorList * b,
-                std::size_t bgroup_idx,
-                std::size_t ugroup_idx) override;
+  void assemble(SparseMatrix * A, SparseMatrix * B, SparseVector * b) override;
   void pre_assemble(bool A, bool B, bool b) override;
   void post_assemble(bool A, bool B, bool b) override;
 

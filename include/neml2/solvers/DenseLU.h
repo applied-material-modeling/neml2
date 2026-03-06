@@ -41,7 +41,7 @@ public:
 
   DenseLU(const OptionSet & options);
 
-  SparseTensorList solve(LinearSystem &) const override;
-  SparseTensorList ift(LinearSystem &) const override;
+  SparseVector solve(const SparseMatrix &, const SparseVector &) const override;
+  SparseMatrix solve(const SparseMatrix &, const SparseMatrix &) const override;
 };
 } // namespace neml2

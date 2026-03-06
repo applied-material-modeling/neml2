@@ -25,7 +25,8 @@
 #include "neml2/solvers/DenseLU.h"
 #include "neml2/tensors/Tensor.h"
 #include "neml2/equation_systems/LinearSystem.h"
-#include "neml2/equation_systems/SparseTensorList.h"
+#include "neml2/equation_systems/SparseVector.h"
+#include "neml2/equation_systems/SparseMatrix.h"
 #include "neml2/equation_systems/assembly.h"
 #include "neml2/tensors/functions/linalg/solve.h"
 #include "neml2/misc/assertions.h"
@@ -49,11 +50,11 @@ DenseLU::DenseLU(const OptionSet & options)
 {
 }
 
-SparseTensorList
-DenseLU::solve(LinearSystem & sys) const
+SparseVector
+DenseLU::solve(const SparseMatrix & A, const SparseVector & b) const
 {
-  neml_assert_dbg(sys.n_bgroup() == 1, "DenseLU solver only supports a single RHS group.");
-  neml_assert_dbg(sys.n_ugroup() == 1, "DenseLU solver only supports a single unknown group.");
+  neml_assert_dbg(A.n_bgroup() == 1, "DenseLU solver only supports a single RHS group.");
+  neml_assert_dbg(A.n_ugroup() == 1, "DenseLU solver only supports a single unknown group.");
 
   const auto & bilayout = sys.intmd_blayout();
   const auto & uilayout = sys.intmd_ulayout();

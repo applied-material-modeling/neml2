@@ -49,11 +49,11 @@ public:
   virtual void init();
 
   /// Set the unknown u
-  virtual void set_u(const SparseTensorList &, std::size_t group_idx = 0) = 0;
+  virtual void set_u(const SparseVector &) = 0;
   /// Set the given variables g from the current step
-  virtual void set_g(const SparseTensorList &) = 0;
+  virtual void set_g(const SparseVector &) = 0;
   /// Get the unknown u
-  virtual SparseVector u(std::size_t group_idx = 0) const = 0;
+  virtual SparseVector u() const = 0;
   /// Get the given variables g from the current step
   virtual SparseVector g() const = 0;
 
@@ -63,25 +63,22 @@ public:
   virtual void g_changed();
 
   /// Assemble and return the operator, A
-  SparseMatrix A(std::size_t bgroup_idx = 0, std::size_t ugroup_idx = 0);
+  SparseMatrix A();
   /// Assemble and return the right-hand side, b
-  SparseVector b(std::size_t group_idx = 0);
+  SparseVector b();
   /// Assemble and return the right-hand side and operator
-  std::tuple<SparseMatrix, SparseVector> A_and_b(std::size_t bgroup_idx = 0,
-                                                 std::size_t ugroup_idx = 0);
+  std::tuple<SparseMatrix, SparseVector> A_and_b();
   /// Assemble the auxiliary matrix B = dr/dg along with A
-  std::tuple<SparseMatrix, SparseMatrix> A_and_B(std::size_t bgroup_idx = 0,
-                                                 std::size_t ugroup_idx = 0);
+  std::tuple<SparseMatrix, SparseMatrix> A_and_B();
   /// Assemble the auxiliary matrix B = dr/dg along with A and b
-  std::tuple<SparseMatrix, SparseMatrix, SparseVector> A_and_B_and_b(std::size_t bgroup_idx = 0,
-                                                                     std::size_t ugroup_idx = 0);
+  std::tuple<SparseMatrix, SparseMatrix, SparseVector> A_and_B_and_b();
 
-  /// Get the unknown-variable layout for the selected group.
-  const std::shared_ptr<AxisLayout> & ulayout(std::size_t group_idx = 0) const;
+  /// Get the unknown-variable layout
+  const std::vector<std::shared_ptr<AxisLayout>> & ulayout() const;
   /// Get the given-variable layout
   const std::shared_ptr<AxisLayout> & glayout() const;
-  /// Get the RHS variable layout for the selected group.
-  const std::shared_ptr<AxisLayout> & blayout(std::size_t group_idx = 0) const;
+  /// Get the RHS variable layout
+  const std::vector<std::shared_ptr<AxisLayout>> & blayout() const;
 
 protected:
   /// Setup the unknown layout, partitioned by variable group.
@@ -97,14 +94,8 @@ protected:
    * @param A Pointer to the operator matrix -- nullptr if not requested
    * @param B Pointer to the auxiliary matrix -- nullptr if not requested
    * @param b Pointer to the RHS vector -- nullptr if not requested
-   * @param bgroup_idx Index of the RHS variable group.
-   * @param ugroup_idx Index of the unknown variable group.
    */
-  virtual void assemble(SparseTensorList * A,
-                        SparseTensorList * B,
-                        SparseTensorList * b,
-                        std::size_t bgroup_idx = 0,
-                        std::size_t ugroup_idx = 0) = 0;
+  virtual void assemble(SparseMatrix * A, SparseMatrix * B, SparseVector * b) = 0;
 
   /**
    * @brief Callback before assembly to perform

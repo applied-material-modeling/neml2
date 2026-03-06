@@ -33,12 +33,13 @@ namespace neml2
 class SparseVector
 {
 public:
-  SparseVector(SparseTensorList, std::shared_ptr<AxisLayout>);
+  SparseVector(std::vector<std::shared_ptr<AxisLayout>>);
+  SparseVector(SparseTensorList, std::vector<std::shared_ptr<AxisLayout>>);
 
 private:
-  /// List of tensors
+  /// List of tensors, partitioned by variable groups
   SparseTensorList _tensors;
-  /// Layout of the tensors
-  std::shared_ptr<AxisLayout> _layout;
+  /// Layout of the tensors, partitioned by variable groups
+  std::vector<std::shared_ptr<AxisLayout>> _layout;
 };
 } // namespace neml2

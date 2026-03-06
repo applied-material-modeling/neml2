@@ -30,7 +30,8 @@
 #include "neml2/base/LabeledAxisAccessor.h"
 #include "neml2/misc/types.h"
 #include "neml2/tensors/jit.h"
-#include "neml2/equation_systems/SparseTensorList.h"
+#include "neml2/equation_systems/SparseMatrix.h"
+#include "neml2/equation_systems/SparseVector.h"
 
 namespace neml2
 {
@@ -118,35 +119,27 @@ public:
 
   ///@{
   /// Assign input variable values
-  void assign_input(const ValueMap & vals);
-  /// Assign input variable values for the given variable names
-  void assign_input(const std::vector<VariableName> &, const SparseTensorList &);
+  void assign_input(const ValueMap &);
+  void assign_input(const SparseVector &);
   /// Assign output variable values
-  void assign_output(const ValueMap & vals);
-  /// Assign output variable values for the given variable names
-  void assign_output(const std::vector<VariableName> &, const SparseTensorList &);
+  void assign_output(const ValueMap &);
+  void assign_output(const SparseVector &);
   /// Assign variable derivatives
   void assign_output_derivatives(const DerivMap & derivs);
-  /// Assign variable derivatives for the given variable names
-  void assign_output_derivatives(const std::vector<VariableName> &,
-                                 const std::vector<VariableName> &,
-                                 const SparseTensorList &);
+  void assign_output_derivatives(const SparseMatrix &);
   ///@}
 
   ///@{
   /// Collect input variable values
   ValueMap collect_input() const;
-  /// Collect input variable values for the given variable names
-  SparseTensorList collect_input(const std::vector<VariableName> &) const;
+  SparseVector collect_input(const std::vector<std::shared_ptr<AxisLayout>> &) const;
   /// Collect output variable values
   ValueMap collect_output() const;
-  /// Collect output variable values for the given variable names
-  SparseTensorList collect_output(const std::vector<VariableName> &) const;
+  SparseVector collect_output(const std::vector<std::shared_ptr<AxisLayout>> &) const;
   /// Collect variable derivatives
   DerivMap collect_output_derivatives() const;
-  /// Collect variable derivatives for the given variable names
-  SparseTensorList collect_output_derivatives(const std::vector<VariableName> &,
-                                              const std::vector<VariableName> &) const;
+  SparseMatrix collect_output_derivatives(const std::vector<std::shared_ptr<AxisLayout>> &,
+                                          const std::vector<std::shared_ptr<AxisLayout>> &) const;
   /// Collect variable second derivatives
   SecDerivMap collect_output_second_derivatives() const;
   ///@}
