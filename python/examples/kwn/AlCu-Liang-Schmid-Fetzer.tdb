@@ -1,0 +1,118 @@
+$ Al-Cu system: 
+$ TDB for the paper:  Thermodynamic reassessment the Al-Cu-Zn system, 
+$ part II: Al-Cu binary system
+$ Case sensitive. Direct use in Pandat. 
+$ For Thermocalc: Enter line breaks, change to Upper Case
+$ Prepared by Song-Mao Liang and Rainer Schmid-Fetzer.
+$  --------------- 2015-08-20. 
+
+
+$----------------------------80 Characters at #--------------------------------#
+
+ ELEMENT /-   ELECTRON_GAS              0.0000E+00  0.0000E+00  0.0000E+00 !
+ ELEMENT VA   VACUUM                    0.0000E+00  0.0000E+00  0.0000E+00 !
+ ELEMENT Al   Fcc                       2.6982E+01  4.5773E+03  2.8322E+01 !
+ ELEMENT Cu   Fcc                       6.3546E+01  5.0041E+03  3.3150E+01 !
+
+
+Function GHSERAL 298.14     -7976.15+137.093038*T-24.3671976*T*LN(T)
+     -.001884662*T**2-8.77664E-07*T**3+74092*T**(-1); 700 Y
+    -11276.24+223.048446*T-38.5844296*T*LN(T)+.018531982*T**2
+   	-5.764227E-06*T**3+74092*T**(-1); 933.47 Y
+    -11278.378+188.684153*T-31.748192*T*LN(T)-1.231E+28*T**(-9); 2900 N !
+Function GLIQAL 298.14	+11005.029-11.841867*T+7.934E-20*T**7+GHSERAL; 933.6 Y
+    +10482.382-11.253974*T+1.231E+28*T**(-9)+GHSERAL; 6000 N !
+Function GHSERCU 270      -7770.458+130.485235*T-24.112392*T*LN(T)
+    -.00265684*T**2+52478*T**(-1)+1.29223E-07*T**3; 1357.77 Y
+    -13542.026+183.803828*T-31.38*T*LN(T)+3.64167E+29*T**(-9); 2900 N !
+Function GLIQCU 270  +5194.277+120.973331*T-24.112392*T*LN(T)-2.65684E-3*T**2
+    +0.129223E-6*T**3 +52478*T**(-1)-584.89E-23*T**7; 1357.77 Y
+    -46.545+173.881484*T-31.38*T*LN(T); 3200 N !
+Function GBCCAL 298.15     +10083-4.813*T+GHSERAL; 6000 N !
+Function GBCCCU 270      +4017.-1.255*T+GHSERCU; 6000 N !
+
+Define_System_Default SPECIE 2 !
+Default_Command DEF_SYS_ELEMENT VA !
+TYPE_DEFINITION % SEQ *!
+
+Phase Liquid:L % 1 1 !
+Constituent Liquid:L :Al,Cu:!
+    Parameter G(Liquid,Al;0) 298.14     GLIQAL; 6000 N !
+    Parameter G(Liquid,Cu;0) 270     GLIQCU; 3200 N !
+    Parameter L(Liquid,Al,Cu;0) 298.15     -67094+8.555*T; 6000 N !
+    Parameter L(Liquid,Al,Cu;1) 298.15     +32148-7.118*T; 6000 N !
+    Parameter L(Liquid,Al,Cu;2) 298.15     +5915-5.889*T; 6000 N !
+	Parameter L(Liquid,Al,Cu;3) 298.15     -7290+5.5*T; 6000 N !
+
+Phase Bcc % 1 1 !
+Constituent Bcc :Al,Cu:!
+    Parameter G(Bcc,Al;0) 298.15     GBCCAL; 6000 N !
+    Parameter G(Bcc,Cu;0) 298.15     GBCCCU; 6000 N !
+    Parameter L(Bcc,Al,Cu;0) 298.15     -73537+3.98*T; 6000 N !
+    Parameter L(Bcc,Al,Cu;1) 298.15     51696-12*T; 6000 N !
+
+Phase Fcc % 1 1 !
+Constituent Fcc :Al,Cu:!
+    Parameter G(Fcc,Al;0) 298.15       +GHSERAL; 6000 N !
+    Parameter G(Fcc,Cu;0) 298.15       +GHSERCU; 6000 N !
+    Parameter L(Fcc,Al,Cu;0) 270    -53520+2*T; 6000 N !
+    Parameter L(Fcc,Al,Cu;1) 270    39005-2.368*T; 6000 N !
+    Parameter L(Fcc,Al,Cu;2) 270      1210; 6000 N !
+
+Phase Al5Cu8 % 2 5 8 !
+ Constituent Al5Cu8 :Al:Cu:!
+    Parameter G(Al5Cu8,Al:Cu;0) 270 -278450+5.2*T+5*GHSERAL+8*GHSERCU; 6000 N !
+
+	
+Phase Eps2 % 2 1 1 !
+Constituent Eps2 :Al,Cu:Cu:!
+    Parameter G(Eps2,Al:Cu;0) 270  -40326+4.100*T+GHSERAL+GHSERCU; 6000 N !
+    Parameter G(Eps2,Cu:Cu;0) 270  14850+30.1*T+2*GHSERCU; 6000 N !
+    Parameter L(Eps2,Al,Cu:Cu;0) 270     -56870-55*T; 6000 N !
+
+Phase Eta1 % 2 1 1 !
+Constituent Eta1 :Al,Cu:Cu:!
+    Parameter G(Eta1,Al:Cu;0) 270   -39431+1.9*T+GHSERAL+GHSERCU; 6000 N !
+    Parameter G(Eta1,Cu:Cu;0) 270  4770+9*T+2*GHSERCU; 6000 N !
+    Parameter L(Eta1,Al,Cu:Cu;0) 270      0; 6000 N !
+    Parameter L(Eta1,Al,Cu:Cu;1) 270     -43168-18.5*T; 6000 N !
+
+
+Phase Eta2 % 2 0.48 0.52 !
+Constituent Eta2 :Al:Cu:!
+    Parameter G(Eta2,Al:Cu;0) 270  -20987+1.62*T+0.48*GHSERAL+0.52*GHSERCU; 6000 N !
+
+	
+Phase Al2Cu % 2 2 1 !
+Constituent Al2Cu :Al:Al,Cu:!
+    Parameter G(Al2Cu,Al:Al;0) 270  +3*GBCCAL; 6000 N !
+    Parameter G(Al2Cu,Al:Cu;0) 270  -48361+8*T+2*GHSERAL+GHSERCU; 6000 N !
+    Parameter L(Al2Cu,Al:Al,Cu;0) 270      2211; 6000 N !
+
+Phase Al9Cu11 % 2 9 11 !
+ Constituent Al9Cu11 :Al,Cu:Cu:!
+     Parameter G(Al9Cu11,Al:Cu;0) 270 -424720+20*T+9*GHSERAL+11*GHSERCU; 6000 N !
+     Parameter G(Al9Cu11,Cu:Cu;0) 270 20*GBCCCU; 6000 N !
+	 Parameter L(Al9Cu11,Al,Cu:Cu;0) 270 0; 6000 N !	 
+	 Parameter L(Al9Cu11,Al,Cu:Cu;1) 270 -413300+100*T; 6000 N !
+
+Phase Gam1 % 3 4 6 16 !
+Constituent Gam1 :Cu:Cu:Al,Cu: !
+    Parameter G(Gam1,Cu:Cu:Al;0) 270  -94322.4+389.508*T
+	                                 +16*GHSERAL+10*GHSERCU; 6000 N !
+    Parameter G(Gam1,Cu:Cu:Cu;0) 270  +26*GHSERCU+2600; 6000 N !
+	Parameter L(Gam1,Cu:Cu:Al,Cu;0) 270     -1613680-708*T; 6000 N !  
+	Parameter L(Gam1,Cu:Cu:Al,Cu;1) 270     -1585780-100*T; 6000 N !
+   
+Phase Gam2 % 3 4 6 16 !
+Constituent Gam2 :Cu:Cu:Al,Cu: !
+    Parameter G(Gam2,Cu:Cu:Al;0) 270  -94322.4+389.508*T
+	                                 +16*GHSERAL+10*GHSERCU; 6000 N !
+    Parameter G(Gam2,Cu:Cu:Cu;0) 270  +26*GHSERCU+2600; 6000 N !
+	Parameter L(Gam2,Cu:Cu:Al,Cu;0) 270     -1451526.6-859.628*T; 6000 N !  
+	Parameter L(Gam2,Cu:Cu:Al,Cu;1) 270     -1516652.4-92*T; 6000 N !
+
+Phase Alpha2 % 2 0.23 0.77 !
+Constituent Alpha2 :Al:Cu: !
+    Parameter G(Alpha2,Al:Cu;0) 270  -13904.9-3*T+0.23*GHSERAL+0.77*GHSERCU; 6000 N !
+
