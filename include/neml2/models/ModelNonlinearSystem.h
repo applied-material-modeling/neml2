@@ -59,9 +59,9 @@ public:
   SparseVector g() const override;
 
 protected:
-  std::vector<std::shared_ptr<AxisLayout>> setup_ulayout() override;
+  std::shared_ptr<AxisLayout> setup_ulayout() override;
   std::shared_ptr<AxisLayout> setup_glayout() override;
-  std::vector<std::shared_ptr<AxisLayout>> setup_blayout() override;
+  std::shared_ptr<AxisLayout> setup_blayout() override;
 
   void assemble(SparseMatrix * A, SparseMatrix * B, SparseVector * b) override;
   void pre_assemble(bool A, bool B, bool b) override;
@@ -69,9 +69,9 @@ protected:
 
 private:
   /// Optional user-defined partition of unknown/state variables.
-  std::vector<std::vector<VariableName>> _unknown_groups;
+  const std::vector<std::vector<VariableName>> _unknown_groups;
   /// Optional user-defined partition of residual variables.
-  std::vector<std::vector<VariableName>> _residual_groups;
+  const std::vector<std::vector<VariableName>> _residual_groups;
 
   std::shared_ptr<Model> _model;
 };

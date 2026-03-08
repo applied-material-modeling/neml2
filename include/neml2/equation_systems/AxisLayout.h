@@ -31,10 +31,27 @@
 
 namespace neml2
 {
+struct AxisLayoutView;
+
 struct AxisLayout
 {
+  /**
+   * @brief Construct a new Axis Layout object
+   *
+   * @param vars ID-to-variable mapping, partitioned by variable groups
+   * @param intmd_shapes ID-to-variable intermediate shape mapping
+   * @param base_shapes ID-to-variable base shape mapping
+   */
+  AxisLayout(std::vector<std::vector<LabeledAxisAccessor>>,
+             std::vector<TensorShape>,
+             std::vector<TensorShape>);
+
   /// Number of variables
   std::size_t size() const;
+  /// Number of variable groups
+  std::size_t ngrp() const;
+  /// Contiguous view of the variable group
+  AxisLayoutView group(std::size_t) const;
 
   /// ID-to-variable mapping
   std::vector<LabeledAxisAccessor> vars;
@@ -42,5 +59,19 @@ struct AxisLayout
   std::vector<TensorShape> intmd_shapes;
   /// ID-to-variable base shape mapping
   std::vector<TensorShape> base_shapes;
+  /// Offset of each variable group in the layout
+  std::vector<std::size_t> offsets;
+};
+
+struct AxisLayoutView
+{
+  /// Number of variables
+  std::size_t size() const;
+  /// ID-to-variable mapping
+  ArrayRef<LabeledAxisAccessor> vars;
+  /// ID-to-variable intermediate shape mapping
+  ArrayRef<TensorShape> intmd_shapes;
+  /// ID-to-variable base shape mapping
+  ArrayRef<TensorShape> base_shapes;
 };
 } // namespace neml2

@@ -25,21 +25,41 @@
 #pragma once
 
 #include "neml2/equation_systems/AxisLayout.h"
-#include "neml2/equation_systems/SparseTensorList.h"
+#include "neml2/tensors/Tensor.h"
 
 namespace neml2
 {
-/// Sparse representation of a vector consisting of a list of tensors and their layout
-class SparseVector
-{
-public:
-  SparseVector(std::vector<std::shared_ptr<AxisLayout>>);
-  SparseVector(SparseTensorList, std::vector<std::shared_ptr<AxisLayout>>);
+struct SparseVectorView;
 
-private:
-  /// List of tensors, partitioned by variable groups
-  SparseTensorList _tensors;
-  /// Layout of the tensors, partitioned by variable groups
-  std::vector<std::shared_ptr<AxisLayout>> _layout;
+/// Sparse representation of a vector consisting of a list of tensors and their layout
+struct SparseVector
+{
+  SparseVector(std::shared_ptr<AxisLayout>);
+  SparseVector(std::vector<Tensor>, std::shared_ptr<AxisLayout>);
+
+  /// Number of variables
+  std::size_t size() const;
+  /// Number of variable groups
+  std::size_t ngrp() const;
+  /// Contiguous view of the sparse vector
+  SparseVectorView grp(std::size_t) const;
+  /// List of tensors
+  std::vector<Tensor> tensors;
+  /// Layout of the tensors
+  std::shared_ptr<AxisLayout> layout;
+};
+
+struct SparseVectorView
+{
+  /// Number of variables
+  std::size_t size() const;
+  /// Assemble into a Tensor with one base dimension
+  Tensor assemble() const;
+  /// Disassemble a Tensor according to the axis layout
+  void disassemble(const Tensor &);
+  /// View of the list of tensors
+  ArrayRef<Tensor> tensors;
+  /// View of the layout of the tensors
+  AxisLayoutView layout;
 };
 } // namespace neml2

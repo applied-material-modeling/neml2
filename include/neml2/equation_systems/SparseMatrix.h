@@ -25,25 +25,52 @@
 #pragma once
 
 #include "neml2/equation_systems/AxisLayout.h"
-#include "neml2/equation_systems/SparseTensorList.h"
+#include "neml2/tensors/Tensor.h"
 
 namespace neml2
 {
-/// Sparse representation of a matrix consisting of a 2D-list of tensors and their layout
-class SparseMatrix
-{
-public:
-  SparseMatrix(std::vector<std::shared_ptr<AxisLayout>>, std::vector<std::shared_ptr<AxisLayout>>);
-  SparseMatrix(SparseTensorList,
-               std::vector<std::shared_ptr<AxisLayout>>,
-               std::vector<std::shared_ptr<AxisLayout>>);
+struct SparseMatrixView;
 
-private:
+/// Sparse representation of a matrix consisting of a 2D-list of tensors and their layout
+struct SparseMatrix
+{
+  SparseMatrix(std::shared_ptr<AxisLayout>, std::shared_ptr<AxisLayout>);
+  SparseMatrix(std::vector<Tensor>, std::shared_ptr<AxisLayout>, std::shared_ptr<AxisLayout>);
+
+  /// Number of variables
+  std::size_t size() const;
+  /// Number of row variables
+  std::size_t nrow() const;
+  /// Number of column variables
+  std::size_t ncol() const;
+  /// Number of row variable groups
+  std::size_t nrowgrp() const;
+  /// Number of column variable groups
+  std::size_t ncolgrp() const;
+  /// Contiguous view of the sparse matrix
+  SparseMatrixView grp(std::size_t, std::size_t) const;
   /// List of tensors
-  SparseTensorList _tensors;
+  std::vector<Tensor> tensors;
   /// Row layout of the tensors, partitioned by variable groups
-  std::vector<std::shared_ptr<AxisLayout>> _row_layout;
+  std::shared_ptr<AxisLayout> row_layout;
   /// Column layout of the tensors, partitioned by variable groups
-  std::vector<std::shared_ptr<AxisLayout>> _col_layout;
+  std::shared_ptr<AxisLayout> col_layout;
 };
+
+struct SparseMatrixView
+{
+  /// Number of variables
+  std::size_t size() const;
+  /// Assemble into a Tensor with two base dimensions
+  Tensor assemble() const;
+  /// Disassemble a Tensor according to the axis layouts
+  void disassemble(const Tensor &);
+  /// View of the list of list of tensors
+  std::vector<ArrayRef<Tensor>> tensors;
+  /// View of the row layout of the tensors
+  AxisLayoutView row_layout;
+  /// View of the column layout of the tensors
+  AxisLayoutView col_layout;
+};
+
 } // namespace neml2

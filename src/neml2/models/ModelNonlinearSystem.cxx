@@ -78,11 +78,8 @@ ModelNonlinearSystem::setup()
   }
 
   // unknown variables should be marked mutable, as they will be updated during the nonlinear solve
-  const auto & uls = ulayout();
-  for (const auto & ul : uls)
-    for (std::size_t i = 0; i < ul->size(); ++i)
-      for (const auto & vname : ul->vars[i])
-        _model->input_variable(vname).set_mutable(true);
+  for (const auto & vname : ulayout()->vars)
+    _model->input_variable(vname).set_mutable(true);
 }
 
 void
@@ -93,25 +90,21 @@ ModelNonlinearSystem::to(const TensorOptions & options)
   send_buffers_to(options);
 }
 
-std::vector<std::shared_ptr<AxisLayout>>
+std::shared_ptr<AxisLayout>
 ModelNonlinearSystem::setup_ulayout()
 {
-  // one single group if unknowns not specified
-  if (_unknown_groups.empty())
+  auto var_groups = _unknown_groups;
+  if (var_groups.empty())
   {
-    _unknown_groups.resize(1);
+    var_groups.resize(1);
     for (const auto & [vname, var] : _model->input_variables())
       if (vname.is_state())
-        _unknown_groups[0].push_back(vname);
+        var_groups[0].push_back(vname);
   }
 
-  // create layout for each variable group
-  std::vector<std::shared_ptr<AxisLayout>> layout;
-  for (const auto & vars : _unknown_groups)
-  {
-    std::vector<TensorShape> intmd_shapes, base_shapes;
-    intmd_shapes.reserve(vars.size());
-    base_shapes.reserve(vars.size());
+  // gather intmd/base shapes for each variable in the layout
+  std::vector<TensorShape> intmd_shapes, base_shapes;
+  for (const auto & vars : var_groups)
     for (const auto & vname : vars)
     {
       neml_assert(vname.is_state(), vname, " is not a state variable.");
@@ -119,9 +112,8 @@ ModelNonlinearSystem::setup_ulayout()
       intmd_shapes.emplace_back(var.intmd_sizes());
       base_shapes.emplace_back(var.base_sizes());
     }
-    layout.emplace_back(std::make_shared<AxisLayout>(AxisLayout{vars, intmd_shapes, base_shapes}));
-  }
-  return layout;
+
+  return std::make_shared<AxisLayout>(var_groups, intmd_shapes, base_shapes);
 }
 
 std::shared_ptr<AxisLayout>
@@ -137,28 +129,24 @@ ModelNonlinearSystem::setup_glayout()
       base_shapes.emplace_back(var->base_sizes());
     }
 
-  return std::make_shared<AxisLayout>(AxisLayout{vars, intmd_shapes, base_shapes});
+  return std::make_shared<AxisLayout>(AxisLayout({vars}, intmd_shapes, base_shapes));
 }
 
-std::vector<std::shared_ptr<AxisLayout>>
+std::shared_ptr<AxisLayout>
 ModelNonlinearSystem::setup_blayout()
 {
-  // one single group if residuals not specified
-  if (_residual_groups.empty())
+  auto var_groups = _residual_groups;
+  if (var_groups.empty())
   {
-    _residual_groups.resize(1);
-    for (const auto & [vname, var] : _model->input_variables())
-      if (vname.is_state())
-        _residual_groups[0].push_back(vname);
+    var_groups.resize(1);
+    for (const auto & [vname, var] : _model->output_variables())
+      if (vname.is_residual())
+        var_groups[0].push_back(vname);
   }
 
-  // create layout for each variable group
-  std::vector<std::shared_ptr<AxisLayout>> layout;
-  for (const auto & vars : _residual_groups)
-  {
-    std::vector<TensorShape> intmd_shapes, base_shapes;
-    intmd_shapes.reserve(vars.size());
-    base_shapes.reserve(vars.size());
+  // gather intmd/base shapes for each variable in the layout
+  std::vector<TensorShape> intmd_shapes, base_shapes;
+  for (const auto & vars : var_groups)
     for (const auto & vname : vars)
     {
       neml_assert(vname.is_residual(), vname, " is not a residual variable.");
@@ -166,9 +154,8 @@ ModelNonlinearSystem::setup_blayout()
       intmd_shapes.emplace_back(var.intmd_sizes());
       base_shapes.emplace_back(var.base_sizes());
     }
-    layout.emplace_back(std::make_shared<AxisLayout>(AxisLayout{vars, intmd_shapes, base_shapes}));
-  }
-  return layout;
+
+  return std::make_shared<AxisLayout>(var_groups, intmd_shapes, base_shapes);
 }
 
 void

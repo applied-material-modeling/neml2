@@ -25,7 +25,6 @@
 #pragma once
 
 #include "neml2/equation_systems/AxisLayout.h"
-#include "neml2/equation_systems/SparseTensorList.h"
 #include "neml2/equation_systems/SparseVector.h"
 #include "neml2/equation_systems/SparseMatrix.h"
 
@@ -74,19 +73,19 @@ public:
   std::tuple<SparseMatrix, SparseMatrix, SparseVector> A_and_B_and_b();
 
   /// Get the unknown-variable layout
-  const std::vector<std::shared_ptr<AxisLayout>> & ulayout() const;
+  const std::shared_ptr<AxisLayout> & ulayout() const;
   /// Get the given-variable layout
   const std::shared_ptr<AxisLayout> & glayout() const;
   /// Get the RHS variable layout
-  const std::vector<std::shared_ptr<AxisLayout>> & blayout() const;
+  const std::shared_ptr<AxisLayout> & blayout() const;
 
 protected:
   /// Setup the unknown layout, partitioned by variable group.
-  virtual std::vector<std::shared_ptr<AxisLayout>> setup_ulayout() = 0;
+  virtual std::shared_ptr<AxisLayout> setup_ulayout() = 0;
   /// Setup the given variable layout
   virtual std::shared_ptr<AxisLayout> setup_glayout() = 0;
   /// Setup the RHS variable layout
-  virtual std::vector<std::shared_ptr<AxisLayout>> setup_blayout() = 0;
+  virtual std::shared_ptr<AxisLayout> setup_blayout() = 0;
 
   /**
    * @brief Compute the operator and right-hand side
@@ -128,11 +127,11 @@ protected:
   bool _b_up_to_date = false;
 
   /// Layout of unknowns, partitioned by variable groups
-  std::vector<std::shared_ptr<AxisLayout>> _ulayout;
+  std::shared_ptr<AxisLayout> _ulayout;
   /// Layout of given variables
   std::shared_ptr<AxisLayout> _glayout;
   /// Layout of RHS variables, partitioned by variable groups
-  std::vector<std::shared_ptr<AxisLayout>> _blayout;
+  std::shared_ptr<AxisLayout> _blayout;
 };
 
 } // namespace neml2
