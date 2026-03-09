@@ -26,6 +26,7 @@
 
 #include "neml2/equation_systems/AxisLayout.h"
 #include "neml2/tensors/Tensor.h"
+#include "neml2/base/MutableArrayRef.h"
 
 namespace neml2
 {
@@ -40,9 +41,9 @@ struct SparseVector
   /// Number of variables
   std::size_t size() const;
   /// Number of variable groups
-  std::size_t ngrp() const;
+  std::size_t ngroup() const;
   /// Contiguous view of the sparse vector
-  SparseVectorView grp(std::size_t) const;
+  SparseVectorView group(std::size_t);
   /// List of tensors
   std::vector<Tensor> tensors;
   /// Layout of the tensors
@@ -54,11 +55,11 @@ struct SparseVectorView
   /// Number of variables
   std::size_t size() const;
   /// Assemble into a Tensor with one base dimension
-  Tensor assemble() const;
+  Tensor assemble(bool assemble_intmd) const;
   /// Disassemble a Tensor according to the axis layout
-  void disassemble(const Tensor &);
+  void disassemble(const Tensor &, bool assemble_intmd);
   /// View of the list of tensors
-  ArrayRef<Tensor> tensors;
+  MutableArrayRef<Tensor> tensors;
   /// View of the layout of the tensors
   AxisLayoutView layout;
 };

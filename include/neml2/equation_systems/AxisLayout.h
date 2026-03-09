@@ -42,14 +42,14 @@ struct AxisLayout
    * @param intmd_shapes ID-to-variable intermediate shape mapping
    * @param base_shapes ID-to-variable base shape mapping
    */
-  AxisLayout(std::vector<std::vector<LabeledAxisAccessor>>,
+  AxisLayout(const std::vector<std::vector<LabeledAxisAccessor>> &,
              std::vector<TensorShape>,
              std::vector<TensorShape>);
 
   /// Number of variables
   std::size_t size() const;
   /// Number of variable groups
-  std::size_t ngrp() const;
+  std::size_t ngroup() const;
   /// Contiguous view of the variable group
   AxisLayoutView group(std::size_t) const;
 
@@ -67,6 +67,8 @@ struct AxisLayoutView
 {
   /// Number of variables
   std::size_t size() const;
+  /// Storage sizes of each variable
+  std::vector<Size> storage_sizes(bool include_intmd) const;
   /// ID-to-variable mapping
   ArrayRef<LabeledAxisAccessor> vars;
   /// ID-to-variable intermediate shape mapping
