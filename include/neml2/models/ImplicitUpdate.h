@@ -50,6 +50,12 @@ protected:
   /// The nonlinear solver used to solve the nonlinear system
   std::shared_ptr<NonlinearSolver> _solver;
 
+  /// Optional model that provides a custom initial guess for the Newton solve.
+  /// If provided, it is evaluated once before Newton starts; its outputs for the
+  /// Newton variables (umap) are extracted and passed to _sys->set_u(), replacing
+  /// the default predictor (old_state) as the starting point.
+  std::shared_ptr<Model> _initial_guess_model;
+
   /// Last solve result
   std::size_t _last_iterations = 0;
 };
