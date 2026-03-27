@@ -23,11 +23,6 @@
 // THE SOFTWARE.
 
 #include "neml2/equation_systems/SparseMatrix.h"
-
-#include <numeric>
-#include <utility>
-
-#include "neml2/base/MutableArrayRef.h"
 #include "neml2/equation_systems/assembly.h"
 #include "neml2/misc/assertions.h"
 #include "neml2/misc/defaults.h"
@@ -37,27 +32,59 @@
 namespace neml2
 {
 
-SparseMatrix::SparseMatrix(std::shared_ptr<AxisLayout> row_layout, std::shared_ptr<AxisLayout> col_layout)
-  : tensors(row_layout->size() * col_layout->size()),
-    row_layout(std::move(row_layout)),
-    col_layout(std::move(col_layout))
+SparseMatrix::SparseMatrix(const AxisLayout & rl, const AxisLayout & cl)
+  : tensors(rl.size() * cl.size()),
+    row_layout(rl),
+    col_layout(cl)
 {
 }
 
-SparseMatrix::SparseMatrix(std::vector<Tensor> tensors,
-                           std::shared_ptr<AxisLayout> row_layout,
-                           std::shared_ptr<AxisLayout> col_layout)
-  : tensors(std::move(tensors)),
-    row_layout(std::move(row_layout)),
-    col_layout(std::move(col_layout))
+SparseMatrix::SparseMatrix(const AxisLayout & rl,
+                           const AxisLayout & cl,
+                           std::vector<std::vector<Tensor>> ts)
+  : tensors(std::move(ts)),
+    row_layout(rl),
+    col_layout(cl)
 {
-  neml_assert_dbg(this->tensors.size() == this->row_layout->size() * this->col_layout->size(),
-                  "Number of tensors must match row_layout->size() * col_layout->size() = ",
-                  this->row_layout->size(),
-                  " * ",
-                  this->col_layout->size(),
-                  ", got ",
-                  this->tensors.size());
+  neml_assert_dbg(tensors.size() == row_layout.size(),
+                  "Number of matrix rows does not match row layout size");
+  for (std::size_t i = 0; i < row_layout.size(); ++i)
+    neml_assert_dbg(tensors[i].size() == col_layout.size(),
+                    "Number of matrix columns does not match column layout size");
+}
+
+std::size_t
+SparseMatrix::row_ngroup() const
+{
+  return row_layout.ngroup();
+}
+
+std::size_t
+SparseMatrix::col_ngroup() const
+{
+  return col_layout.ngroup();
+}
+
+SparseMatrix
+SparseMatrix::group(std::size_t i, std::size_t j) const
+{
+  neml_assert_dbg(i < row_ngroup(), "Row group index out of range");
+  neml_assert_dbg(j < col_ngroup(), "Column group index out of range");
+
+  auto [row_start, row_end] = row_layout.group_offsets(i);
+  auto [col_start, col_end] = col_layout.group_offsets(j);
+
+  std::vector<std::vector<Tensor>> rows;
+  rows.reserve(row_end - row_start);
+
+  for (auto i = row_start; i < row_end; ++i)
+  {
+    std::vector<Tensor> row(tensors[i].begin() + Size(col_start),
+                            tensors[i].begin() + Size(col_end));
+    rows.push_back(std::move(row));
+  }
+
+  return SparseMatrix(row_layout.group(i), col_layout.group(j), std::move(rows));
 }
 
 std::size_t
@@ -69,68 +96,22 @@ SparseMatrix::size() const
 std::size_t
 SparseMatrix::nrow() const
 {
-  return row_layout->size();
+  return row_layout.size();
 }
 
 std::size_t
 SparseMatrix::ncol() const
 {
-  return col_layout->size();
-}
-
-std::size_t
-SparseMatrix::row_ngroup() const
-{
-  return row_layout->ngroup();
-}
-
-std::size_t
-SparseMatrix::col_ngroup() const
-{
-  return col_layout->ngroup();
-}
-
-SparseMatrixView
-SparseMatrix::group(std::size_t i, std::size_t j) const
-{
-  neml_assert_dbg(i < row_ngroup(), "Row group index out of range");
-  neml_assert_dbg(j < col_ngroup(), "Column group index out of range");
-
-  const auto & row_offsets = row_layout->offsets;
-  const auto & col_offsets = col_layout->offsets;
-  const auto row_start = row_offsets[i];
-  const auto row_end = row_offsets[i + 1];
-  const auto col_start = col_offsets[j];
-  const auto col_end = col_offsets[j + 1];
-
-  std::vector<MutableArrayRef<Tensor>> block_rows;
-  block_rows.reserve(row_end - row_start);
-
-  auto * data = const_cast<Tensor *>(tensors.data());
-  for (auto row = row_start; row < row_end; ++row)
-  {
-    auto * row_data = data + row * ncol() + col_start;
-    block_rows.emplace_back(row_data, col_end - col_start);
-  }
-
-  return SparseMatrixView{std::move(block_rows), row_layout->group(i), col_layout->group(j)};
-}
-
-std::size_t
-SparseMatrixView::size() const
-{
-  return row_layout.size() * col_layout.size();
+  return col_layout.size();
 }
 
 Tensor
-SparseMatrixView::assemble(bool assemble_intmd) const
+SparseMatrix::assemble(bool assemble_intmd) const
 {
   const auto row_ss = row_layout.storage_sizes(assemble_intmd);
   const auto col_ss = col_layout.storage_sizes(assemble_intmd);
   const auto m = row_ss.size();
   const auto n = col_ss.size();
-
-  neml_assert_dbg(tensors.size() == m, "Number of matrix rows does not match row layout size");
 
   auto opt = default_tensor_options();
   bool found_opt = false;
@@ -138,8 +119,6 @@ SparseMatrixView::assemble(bool assemble_intmd) const
   std::vector<Tensor> tf_rows(m);
   for (std::size_t i = 0; i < m; ++i)
   {
-    neml_assert_dbg(tensors[i].size() == n, "Number of matrix columns does not match column layout size");
-
     std::vector<Tensor> tf_cols(n);
     for (std::size_t j = 0; j < n; ++j)
     {
@@ -154,12 +133,12 @@ SparseMatrixView::assemble(bool assemble_intmd) const
       }
 
       if (!assemble_intmd)
-        tf_cols[j] = tij.base_reshape({utils::numel(row_layout.base_shapes[i]),
-                                       utils::numel(col_layout.base_shapes[j])});
+        tf_cols[j] = tij.base_reshape(
+            {utils::numel(row_layout.base_sizes(i)), utils::numel(col_layout.base_sizes(j))});
       else
         tf_cols[j] = to_assembly<2>(tij,
-                                    {row_layout.intmd_shapes[i], col_layout.intmd_shapes[j]},
-                                    {row_layout.base_shapes[i], col_layout.base_shapes[j]});
+                                    {row_layout.intmd_sizes(i), col_layout.intmd_sizes(j)},
+                                    {row_layout.base_sizes(i), col_layout.base_sizes(j)});
     }
 
     const auto dynamic_sizes = utils::broadcast_dynamic_sizes(tf_cols);
@@ -192,7 +171,7 @@ SparseMatrixView::assemble(bool assemble_intmd) const
 }
 
 void
-SparseMatrixView::disassemble(const Tensor & t, bool assemble_intmd)
+SparseMatrix::disassemble(const Tensor & t, bool assemble_intmd)
 {
   neml_assert_dbg(t.base_dim() == 2, "disassemble expects base dimension of 2, got ", t.base_dim());
   if (assemble_intmd)
@@ -207,24 +186,20 @@ SparseMatrixView::disassemble(const Tensor & t, bool assemble_intmd)
   const auto m = row_ss.size();
   const auto n = col_ss.size();
 
-  neml_assert_dbg(tensors.size() == m, "Number of matrix rows does not match row layout size");
-
   auto t_rows = t.split(row_ss, -2);
   for (std::size_t i = 0; i < m; ++i)
   {
-    neml_assert_dbg(tensors[i].size() == n, "Number of matrix columns does not match column layout size");
-
     auto t_cols = t_rows[i].split(col_ss, -1);
     for (std::size_t j = 0; j < n; ++j)
     {
       auto tij = Tensor(t_cols[j], D, I);
       if (!assemble_intmd)
-        tensors[i][j] = tij.base_reshape(utils::add_shapes(row_layout.base_shapes[i],
-                                                           col_layout.base_shapes[j]));
+        tensors[i][j] =
+            tij.base_reshape(utils::add_shapes(row_layout.base_sizes(i), col_layout.base_sizes(j)));
       else
         tensors[i][j] = from_assembly<2>(tij,
-                                         {row_layout.intmd_shapes[i], col_layout.intmd_shapes[j]},
-                                         {row_layout.base_shapes[i], col_layout.base_shapes[j]});
+                                         {row_layout.intmd_sizes(i), col_layout.intmd_sizes(j)},
+                                         {row_layout.base_sizes(i), col_layout.base_sizes(j)});
     }
   }
 }

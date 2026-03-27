@@ -32,62 +32,101 @@ namespace neml2
 AxisLayout::AxisLayout(const std::vector<std::vector<LabeledAxisAccessor>> & vars,
                        std::vector<TensorShape> intmd_shapes,
                        std::vector<TensorShape> base_shapes)
-  : intmd_shapes(std::move(intmd_shapes)),
-    base_shapes(std::move(base_shapes))
+  : _intmd_shapes(std::move(intmd_shapes)),
+    _base_shapes(std::move(base_shapes))
 {
-  offsets.push_back(0);
+  _offsets.push_back(0);
   for (const auto & grp : vars)
   {
-    offsets.push_back(offsets.back() + grp.size());
-    this->vars.insert(this->vars.end(), grp.begin(), grp.end());
+    _offsets.push_back(_offsets.back() + grp.size());
+    _vars.insert(_vars.end(), grp.begin(), grp.end());
+    _end += grp.size();
   }
-  neml_assert_dbg(this->vars.size() == this->intmd_shapes.size(),
+  neml_assert_dbg(_vars.size() == _intmd_shapes.size(),
                   "Number of variables must match the number of intermediate shapes");
-  neml_assert_dbg(this->vars.size() == this->base_shapes.size(),
+  neml_assert_dbg(_vars.size() == _base_shapes.size(),
                   "Number of variables must match the number of base shapes");
 }
 
-std::size_t
-AxisLayout::size() const
+AxisLayout::AxisLayout(const AxisLayout * const parent,
+                       std::size_t start,
+                       std::size_t end,
+                       std::vector<std::size_t> offsets)
+  : _offsets(std::move(offsets)),
+    _parent(parent),
+    _start(start),
+    _end(end)
 {
-  return vars.size();
+  neml_assert_dbg(start <= end && end <= parent->size(), "Invalid view range");
 }
 
 std::size_t
 AxisLayout::ngroup() const
 {
-  return offsets.size() - 1;
+  neml_assert(!_offsets.empty(), "Cannot call ngroup() on a sub-group view");
+  return _offsets.size() - 1;
 }
 
-AxisLayoutView
+std::pair<std::size_t, std::size_t>
+AxisLayout::group_offsets(std::size_t idx) const
+{
+  neml_assert(!_offsets.empty(), "Cannot call group_offsets() on a sub-group view");
+  neml_assert_dbg(idx < ngroup(), "Group index out of range");
+  return {_offsets[idx], _offsets[idx + 1]};
+}
+
+AxisLayout
 AxisLayout::group(std::size_t idx) const
 {
-  neml_assert_dbg(idx < ngroup(), "Group index out of range");
-  auto start = offsets[idx];
-  auto end = offsets[idx + 1];
-  return AxisLayoutView{ArrayRef<LabeledAxisAccessor>(vars.data() + start, end - start),
-                        ArrayRef<TensorShape>(intmd_shapes.data() + start, end - start),
-                        ArrayRef<TensorShape>(base_shapes.data() + start, end - start)};
+  auto [start, end] = group_offsets(idx);
+  return AxisLayout(_parent ? _parent : this, start, end);
+}
+
+AxisLayout
+AxisLayout::view() const
+{
+  return AxisLayout(_parent ? _parent : this, _start, _end, _offsets);
 }
 
 std::size_t
-AxisLayoutView::size() const
+AxisLayout::size() const
 {
-  return vars.size();
+  return _parent ? _end - _start : _vars.size();
 }
 
 std::vector<Size>
-AxisLayoutView::storage_sizes(bool include_intmd) const
+AxisLayout::storage_sizes(bool include_intmd) const
 {
-  std::vector<Size> ss(vars.size());
-  for (std::size_t i = 0; i < vars.size(); ++i)
+  std::vector<Size> ss(size());
+  for (std::size_t i = 0; i < size(); ++i)
   {
-    auto s = utils::numel(base_shapes[i]);
+    auto s = utils::numel(base_sizes(i));
     if (include_intmd)
-      s *= utils::numel(intmd_shapes[i]);
+      s *= utils::numel(intmd_sizes(i));
     ss[i] = s;
   }
   return ss;
+}
+
+const LabeledAxisAccessor &
+AxisLayout::var(std::size_t idx) const
+{
+  neml_assert_dbg(idx < size(), "Variable index out of range");
+  return _parent ? _parent->var(_start + idx) : _vars[idx];
+}
+
+const TensorShape &
+AxisLayout::intmd_sizes(std::size_t idx) const
+{
+  neml_assert_dbg(idx < size(), "Variable index out of range");
+  return _parent ? _parent->intmd_sizes(_start + idx) : _intmd_shapes[idx];
+}
+
+const TensorShape &
+AxisLayout::base_sizes(std::size_t idx) const
+{
+  neml_assert_dbg(idx < size(), "Variable index out of range");
+  return _parent ? _parent->base_sizes(_start + idx) : _base_shapes[idx];
 }
 
 } // namespace neml2

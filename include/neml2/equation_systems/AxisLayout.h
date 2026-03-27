@@ -31,8 +31,6 @@
 
 namespace neml2
 {
-struct AxisLayoutView;
-
 struct AxisLayout
 {
   /**
@@ -46,34 +44,57 @@ struct AxisLayout
              std::vector<TensorShape>,
              std::vector<TensorShape>);
 
-  /// Number of variables
-  std::size_t size() const;
+  /**
+   * @brief Construct a new Axis Layout object by viewing into a parent layout
+   *
+   * @param parent The axis layout this is viewing into
+   * @param start The starting offset of the view (inclusive)
+   * @param end The ending offset of the view (exclusive)
+   * @param offsets The offsets of the variable groups in the view
+   */
+  AxisLayout(const AxisLayout * const parent,
+             std::size_t start,
+             std::size_t end,
+             std::vector<std::size_t> offsets = {});
+
   /// Number of variable groups
   std::size_t ngroup() const;
+  /// Starting and ending offsets of a variable group
+  std::pair<std::size_t, std::size_t> group_offsets(std::size_t) const;
   /// Contiguous view of the variable group
-  AxisLayoutView group(std::size_t) const;
+  AxisLayout group(std::size_t) const;
+  /// Contiguous view of the entire layout
+  AxisLayout view() const;
+  /// Whether this is a view into a parent layout
+  bool is_view() const { return _parent != nullptr; }
 
-  /// ID-to-variable mapping
-  std::vector<LabeledAxisAccessor> vars;
-  /// ID-to-variable intermediate shape mapping
-  std::vector<TensorShape> intmd_shapes;
-  /// ID-to-variable base shape mapping
-  std::vector<TensorShape> base_shapes;
-  /// Offset of each variable group in the layout
-  std::vector<std::size_t> offsets;
-};
-
-struct AxisLayoutView
-{
   /// Number of variables
   std::size_t size() const;
   /// Storage sizes of each variable
   std::vector<Size> storage_sizes(bool include_intmd) const;
+
+  /// Accessor for variable name
+  const LabeledAxisAccessor & var(std::size_t) const;
+  /// Accessor for variable intermediate shape
+  const TensorShape & intmd_sizes(std::size_t) const;
+  /// Accessor for variable base shape
+  const TensorShape & base_sizes(std::size_t) const;
+
+private:
   /// ID-to-variable mapping
-  ArrayRef<LabeledAxisAccessor> vars;
+  std::vector<LabeledAxisAccessor> _vars;
   /// ID-to-variable intermediate shape mapping
-  ArrayRef<TensorShape> intmd_shapes;
+  std::vector<TensorShape> _intmd_shapes;
   /// ID-to-variable base shape mapping
-  ArrayRef<TensorShape> base_shapes;
+  std::vector<TensorShape> _base_shapes;
+  /// Offset of each variable group in the layout
+  std::vector<std::size_t> _offsets;
+
+  /// The axis layout this is viewing into
+  const AxisLayout * const _parent = nullptr;
+  /// The starting offset of the view (inclusive)
+  std::size_t _start = 0;
+  /// The ending offset of the view (exclusive)
+  std::size_t _end = 0;
 };
 } // namespace neml2

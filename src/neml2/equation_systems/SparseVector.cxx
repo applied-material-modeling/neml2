@@ -23,7 +23,6 @@
 // THE SOFTWARE.
 
 #include "neml2/equation_systems/SparseVector.h"
-#include "neml2/base/MutableArrayRef.h"
 #include "neml2/misc/assertions.h"
 #include "neml2/equation_systems/assembly.h"
 #include "neml2/misc/defaults.h"
@@ -33,17 +32,31 @@
 namespace neml2
 {
 
-SparseVector::SparseVector(std::shared_ptr<AxisLayout> layout)
-  : tensors(layout->size()),
-    layout(std::move(layout))
+SparseVector::SparseVector(const AxisLayout & l)
+  : tensors(l.size()),
+    layout(l)
 {
 }
 
-SparseVector::SparseVector(std::vector<Tensor> tensors, std::shared_ptr<AxisLayout> layout)
-  : tensors(std::move(tensors)),
-    layout(std::move(layout))
+SparseVector::SparseVector(const AxisLayout & l, std::vector<Tensor> t)
+  : tensors(std::move(t)),
+    layout(l)
 {
-  neml_assert_dbg(tensors.size() == layout->size(), "Number of tensors must match the layout size");
+  neml_assert_dbg(tensors.size() == layout.size(), "Number of tensors must match the layout size");
+}
+
+std::size_t
+SparseVector::ngroup() const
+{
+  return layout.ngroup();
+}
+
+SparseVector
+SparseVector::group(std::size_t i)
+{
+  auto [start, end] = layout.group_offsets(i);
+  std::vector<Tensor> ts(tensors.begin() + Size(start), tensors.begin() + Size(end));
+  return SparseVector(layout.group(i), std::move(ts));
 }
 
 std::size_t
@@ -52,31 +65,8 @@ SparseVector::size() const
   return tensors.size();
 }
 
-std::size_t
-SparseVector::ngroup() const
-{
-  return layout->ngroup();
-}
-
-SparseVectorView
-SparseVector::group(std::size_t i)
-{
-  neml_assert_dbg(i < ngroup(), "Group index out of range");
-  const auto & offsets = layout->offsets;
-  auto start = offsets[i];
-  auto end = offsets[i + 1];
-  return SparseVectorView{MutableArrayRef<Tensor>(tensors.data() + start, end - start),
-                          layout->group(i)};
-}
-
-std::size_t
-SparseVectorView::size() const
-{
-  return tensors.size();
-}
-
 Tensor
-SparseVectorView::assemble(bool assemble_intmd) const
+SparseVector::assemble(bool assemble_intmd) const
 {
   // convert to assembly format
   std::vector<Tensor> tf(tensors.size());
@@ -88,7 +78,7 @@ SparseVectorView::assemble(bool assemble_intmd) const
     if (!assemble_intmd)
       tf[i] = ti.base_flatten();
     else
-      tf[i] = to_assembly<1>(ti, {layout.intmd_shapes[i]}, {layout.base_shapes[i]});
+      tf[i] = to_assembly<1>(ti, {layout.intmd_sizes(i)}, {layout.base_sizes(i)});
   }
 
   // determine tensor options
@@ -110,9 +100,9 @@ SparseVectorView::assemble(bool assemble_intmd) const
       tfi = tfi.batch_expand(new_dynamic_sizes, new_intmd_sizes);
     else
     {
-      auto s = utils::numel(layout.base_shapes[i]);
+      auto s = utils::numel(layout.base_sizes(i));
       if (assemble_intmd)
-        s *= utils::numel(layout.intmd_shapes[i]);
+        s *= utils::numel(layout.intmd_sizes(i));
       tfi = Tensor::zeros(new_dynamic_sizes, new_intmd_sizes, s, opt);
     }
   }
@@ -121,7 +111,7 @@ SparseVectorView::assemble(bool assemble_intmd) const
 }
 
 void
-SparseVectorView::disassemble(const Tensor & t, bool assemble_intmd)
+SparseVector::disassemble(const Tensor & t, bool assemble_intmd)
 {
   neml_assert_dbg(t.base_dim() == 1, "disassemble expects base dimension of 1, got ", t.base_dim());
   if (assemble_intmd)
@@ -139,9 +129,9 @@ SparseVectorView::disassemble(const Tensor & t, bool assemble_intmd)
   {
     auto ti = Tensor(vs[i], D, I);
     if (!assemble_intmd)
-      tensors[i] = ti.base_reshape(layout.base_shapes[i]);
+      tensors[i] = ti.base_reshape(layout.base_sizes(i));
     else
-      tensors[i] = from_assembly<1>(ti, {layout.intmd_shapes[i]}, {layout.base_shapes[i]});
+      tensors[i] = from_assembly<1>(ti, {layout.intmd_sizes(i)}, {layout.base_sizes(i)});
   }
 }
 

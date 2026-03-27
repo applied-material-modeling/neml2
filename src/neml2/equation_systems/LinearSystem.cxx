@@ -32,8 +32,8 @@ namespace neml2
 void
 LinearSystem::init()
 {
-  // Note: These data structures we are setting here serve the same purpose as LabeledAxis, and yes,
-  // we are storing redundant information. This is because we are transitioning away from
+  // Note: These data structures we are setting up here serve the same purpose as LabeledAxis, and
+  // yes, we are storing redundant information. This is because we are transitioning away from
   // LabeledAxis. In future versions, we will remove LabeledAxis and only use these data structures.
   //
   // Also note: only models that are wrapped as equation systems need to define these maps. Regular
@@ -115,7 +115,7 @@ LinearSystem::A_and_B_and_b()
   return {A, B, b};
 }
 
-const std::vector<std::shared_ptr<AxisLayout>> &
+const std::shared_ptr<AxisLayout> &
 LinearSystem::ulayout() const
 {
   return _ulayout;
@@ -127,7 +127,7 @@ LinearSystem::glayout() const
   return _glayout;
 }
 
-const std::vector<std::shared_ptr<AxisLayout>> &
+const std::shared_ptr<AxisLayout> &
 LinearSystem::blayout() const
 {
   return _blayout;

@@ -26,17 +26,21 @@
 
 #include "neml2/equation_systems/AxisLayout.h"
 #include "neml2/tensors/Tensor.h"
-#include "neml2/base/MutableArrayRef.h"
 
 namespace neml2
 {
-struct SparseMatrixView;
-
 /// Sparse representation of a matrix consisting of a 2D-list of tensors and their layout
 struct SparseMatrix
 {
-  SparseMatrix(std::shared_ptr<AxisLayout>, std::shared_ptr<AxisLayout>);
-  SparseMatrix(std::vector<Tensor>, std::shared_ptr<AxisLayout>, std::shared_ptr<AxisLayout>);
+  SparseMatrix(const AxisLayout &, const AxisLayout &);
+  SparseMatrix(const AxisLayout &, const AxisLayout &, std::vector<std::vector<Tensor>>);
+
+  /// Number of row variable groups
+  std::size_t row_ngroup() const;
+  /// Number of column variable groups
+  std::size_t col_ngroup() const;
+  /// Semi-contiguous view of a block of the sparse matrix
+  SparseMatrix group(std::size_t, std::size_t) const;
 
   /// Number of variables
   std::size_t size() const;
@@ -44,34 +48,16 @@ struct SparseMatrix
   std::size_t nrow() const;
   /// Number of column variables
   std::size_t ncol() const;
-  /// Number of row variable groups
-  std::size_t row_ngroup() const;
-  /// Number of column variable groups
-  std::size_t col_ngroup() const;
-  /// Semi-contiguous view of a block of the sparse matrix
-  SparseMatrixView group(std::size_t, std::size_t) const;
-  /// List of tensors
-  std::vector<Tensor> tensors;
-  /// Row layout of the tensors, partitioned by variable groups
-  std::shared_ptr<AxisLayout> row_layout;
-  /// Column layout of the tensors, partitioned by variable groups
-  std::shared_ptr<AxisLayout> col_layout;
-};
-
-struct SparseMatrixView
-{
-  /// Number of variables
-  std::size_t size() const;
   /// Assemble into a Tensor with two base dimensions
   Tensor assemble(bool assemble_intmd) const;
   /// Disassemble a Tensor according to the axis layouts
   void disassemble(const Tensor &, bool assemble_intmd);
-  /// View of the list of list of tensors
-  std::vector<MutableArrayRef<Tensor>> tensors;
-  /// View of the row layout of the tensors
-  AxisLayoutView row_layout;
-  /// View of the column layout of the tensors
-  AxisLayoutView col_layout;
+  /// 2D-list of tensors
+  std::vector<std::vector<Tensor>> tensors;
+  /// Row layout of the tensors, partitioned by variable groups
+  const AxisLayout & row_layout;
+  /// Column layout of the tensors, partitioned by variable groups
+  const AxisLayout & col_layout;
 };
 
 } // namespace neml2

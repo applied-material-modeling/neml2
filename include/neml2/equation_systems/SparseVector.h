@@ -26,41 +26,46 @@
 
 #include "neml2/equation_systems/AxisLayout.h"
 #include "neml2/tensors/Tensor.h"
-#include "neml2/base/MutableArrayRef.h"
 
 namespace neml2
 {
-struct SparseVectorView;
-
 /// Sparse representation of a vector consisting of a list of tensors and their layout
 struct SparseVector
 {
-  SparseVector(std::shared_ptr<AxisLayout>);
-  SparseVector(std::vector<Tensor>, std::shared_ptr<AxisLayout>);
+  SparseVector(const AxisLayout &);
+  SparseVector(const AxisLayout &, std::vector<Tensor>);
 
-  /// Number of variables
-  std::size_t size() const;
   /// Number of variable groups
   std::size_t ngroup() const;
   /// Contiguous view of the sparse vector
-  SparseVectorView group(std::size_t);
-  /// List of tensors
-  std::vector<Tensor> tensors;
-  /// Layout of the tensors
-  std::shared_ptr<AxisLayout> layout;
-};
+  SparseVector group(std::size_t);
 
-struct SparseVectorView
-{
   /// Number of variables
   std::size_t size() const;
   /// Assemble into a Tensor with one base dimension
   Tensor assemble(bool assemble_intmd) const;
   /// Disassemble a Tensor according to the axis layout
   void disassemble(const Tensor &, bool assemble_intmd);
-  /// View of the list of tensors
-  MutableArrayRef<Tensor> tensors;
-  /// View of the layout of the tensors
-  AxisLayoutView layout;
+
+  /// List of tensors
+  std::vector<Tensor> tensors;
+  /// Layout of the tensors
+  const AxisLayout & layout;
 };
+
+///@{
+/// Unary negation
+SparseVector operator-(const SparseVector &);
+/// Binary addition
+SparseVector operator+(const SparseVector &, const SparseVector &);
+/// Multiplication with scalar
+SparseVector operator*(const Scalar &, const SparseVector &);
+SparseVector operator*(const SparseVector &, const Scalar &);
+/// Inner product
+Scalar inner(const SparseVector &, const SparseVector &);
+/// Norm-squared
+Scalar norm_sq(const SparseVector &);
+/// Norm
+Scalar norm(const SparseVector &);
+///@}
 } // namespace neml2
