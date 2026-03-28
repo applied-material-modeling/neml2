@@ -50,10 +50,6 @@ DenseLU::DenseLU(const OptionSet & options)
 SparseVector
 DenseLU::solve(const SparseMatrix & A, const SparseVector & b) const
 {
-  neml_assert_dbg(A.row_ngroup() == 1,
-                  "DenseLU solver only supports matrix with a single row group.");
-  neml_assert_dbg(A.col_ngroup() == 1,
-                  "DenseLU solver only supports matrix with a single column group.");
 
   // solve
   const auto xf =
@@ -68,11 +64,6 @@ DenseLU::solve(const SparseMatrix & A, const SparseVector & b) const
 SparseMatrix
 DenseLU::solve(const SparseMatrix & A, const SparseMatrix & B) const
 {
-  neml_assert_dbg(A.row_ngroup() == 1,
-                  "DenseLU solver only supports matrix with a single row group.");
-  neml_assert_dbg(A.col_ngroup() == 1,
-                  "DenseLU solver only supports matrix with a single column group.");
-
   // solve
   const auto Xf =
       linalg::solve(A.assemble(/*assemble_intmd=*/false), B.assemble(/*assemble_intmd=*/false));

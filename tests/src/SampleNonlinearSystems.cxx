@@ -30,20 +30,25 @@
 
 namespace neml2
 {
-TestNonlinearSystem::TestNonlinearSystem(std::size_t n)
-  : _n(n)
+TestNonlinearSystem::TestNonlinearSystem(std::size_t n, std::vector<std::size_t> group_sizes)
+  : _n(n),
+    _group_sizes(group_sizes.empty() ? std::vector<std::size_t>{n} : std::move(group_sizes))
 {
 }
 
 std::shared_ptr<AxisLayout>
 TestNonlinearSystem::setup_ulayout()
 {
-  std::vector<std::vector<LabeledAxisAccessor>> vars(1);
-  vars[0].resize(_n);
-  for (std::size_t i = 0; i < _n; i++)
-    vars[0][i] = LabeledAxisAccessor(STATE, "u_" + std::to_string(i));
-  auto intmd_shapes = std::vector<TensorShape>(_n, TensorShape{});
-  auto base_shapes = std::vector<TensorShape>(_n, TensorShape{});
+  std::vector<std::vector<LabeledAxisAccessor>> vars(_group_sizes.size());
+  std::vector<TensorShape> intmd_shapes(_n, TensorShape{});
+  std::vector<TensorShape> base_shapes(_n, TensorShape{});
+  std::size_t idx = 0;
+  for (std::size_t g = 0; g < _group_sizes.size(); g++)
+  {
+    vars[g].resize(_group_sizes[g]);
+    for (std::size_t i = 0; i < _group_sizes[g]; i++, idx++)
+      vars[g][i] = LabeledAxisAccessor(STATE, "u_" + std::to_string(idx));
+  }
   return std::make_shared<AxisLayout>(vars, intmd_shapes, base_shapes);
 }
 
@@ -58,12 +63,16 @@ TestNonlinearSystem::setup_glayout()
 std::shared_ptr<AxisLayout>
 TestNonlinearSystem::setup_blayout()
 {
-  std::vector<std::vector<LabeledAxisAccessor>> vars(1);
-  vars[0].resize(_n);
-  for (std::size_t i = 0; i < _n; i++)
-    vars[0][i] = LabeledAxisAccessor(STATE, "r_" + std::to_string(i));
-  auto intmd_shapes = std::vector<TensorShape>(_n, TensorShape{});
-  auto base_shapes = std::vector<TensorShape>(_n, TensorShape{});
+  std::vector<std::vector<LabeledAxisAccessor>> vars(_group_sizes.size());
+  std::vector<TensorShape> intmd_shapes(_n, TensorShape{});
+  std::vector<TensorShape> base_shapes(_n, TensorShape{});
+  std::size_t idx = 0;
+  for (std::size_t g = 0; g < _group_sizes.size(); g++)
+  {
+    vars[g].resize(_group_sizes[g]);
+    for (std::size_t i = 0; i < _group_sizes[g]; i++, idx++)
+      vars[g][i] = LabeledAxisAccessor(STATE, "r_" + std::to_string(idx));
+  }
   return std::make_shared<AxisLayout>(vars, intmd_shapes, base_shapes);
 }
 

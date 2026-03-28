@@ -65,7 +65,11 @@ solve(const Tensor & A, const Tensor & B)
         .base_squeeze(-1);
   }
   auto [aligned_A, aligned_B, i] = utils::align_intmd_dim(A, B);
-  return Tensor(at::linalg_solve(aligned_A.contiguous(), aligned_B.contiguous(), /*left=*/true),
+  // at::linalg_solve interprets B as batched vectors when B.ndim == A.ndim - 1.
+  // Prepend size-1 batch dims to B so it is always treated as a matrix RHS.
+  const auto n_missing = aligned_A.dim() - aligned_B.dim();
+  const auto padded_B = n_missing > 0 ? aligned_B.dynamic_unsqueeze(0, n_missing) : aligned_B;
+  return Tensor(at::linalg_solve(aligned_A.contiguous(), padded_B.contiguous(), /*left=*/true),
                 utils::broadcast_dynamic_dim(aligned_A, aligned_B),
                 i);
 }

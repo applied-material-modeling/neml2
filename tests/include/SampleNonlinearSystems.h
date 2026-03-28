@@ -33,7 +33,10 @@ namespace neml2
 class TestNonlinearSystem : public NonlinearSystem
 {
 public:
-  TestNonlinearSystem(std::size_t n);
+  /// @param n Total number of DOFs.
+  /// @param group_sizes Number of DOFs in each variable group.  When empty
+  ///        (the default) all DOFs are placed in a single group.
+  TestNonlinearSystem(std::size_t n, std::vector<std::size_t> group_sizes = {});
 
   void set_u(const SparseVector & u) override { _u = u; }
   void set_g(const SparseVector & /*g*/) override {}
@@ -49,6 +52,8 @@ protected:
   std::shared_ptr<AxisLayout> setup_blayout() override;
 
   const std::size_t _n;
+  /// DOFs per group (always at least one entry)
+  const std::vector<std::size_t> _group_sizes;
   SparseVector _u;
 };
 
