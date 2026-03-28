@@ -33,7 +33,7 @@ namespace neml2
 {
 
 SparseMatrix::SparseMatrix(const AxisLayout & rl, const AxisLayout & cl)
-  : tensors(rl.size() * cl.size()),
+  : tensors(rl.size(), std::vector<Tensor>(cl.size())),
     row_layout(rl),
     col_layout(cl)
 {

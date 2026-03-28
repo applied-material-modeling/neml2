@@ -24,25 +24,25 @@
   [two_groups]
     type = NonlinearSystem
     model = 'implicit_rate'
-    unknown_groups = 'state/foo state/bar; state/baz'
-    residual_groups = 'residual/foo residual/bar; residual/baz'
+    unknowns = 'state/foo state/bar; state/baz'
+    residuals = 'residual/foo residual/bar; residual/baz'
   []
   [three_groups]
     type = NonlinearSystem
     model = 'implicit_rate'
-    unknown_groups = 'state/foo; state/bar; state/baz'
-    residual_groups = 'residual/foo; residual/bar; residual/baz'
+    unknowns = 'state/foo; state/bar; state/baz'
+    residuals = 'residual/foo; residual/bar; residual/baz'
   []
   [single_group]
     type = NonlinearSystem
     model = 'implicit_rate'
-    unknown_groups = 'state/foo state/bar state/baz'
-    residual_groups = 'residual/foo residual/bar residual/baz'
+    unknowns = 'state/foo state/bar state/baz'
+    residuals = 'residual/foo residual/bar residual/baz'
   []
   [reordered]
     type = NonlinearSystem
     model = 'implicit_rate'
-    unknown_groups = 'state/baz; state/bar state/foo'
-    residual_groups = 'residual/baz; residual/bar residual/foo'
+    unknowns = 'state/baz; state/bar state/foo'
+    residuals = 'residual/baz; residual/bar residual/foo'
   []
 []

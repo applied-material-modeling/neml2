@@ -30,144 +30,128 @@
 
 using namespace neml2;
 
-// TEST_CASE("NestedNonlinearSystem", "[equation_systems]")
-// {
-//   SECTION("two groups")
-//   {
-//     auto factory = load_input("equation_systems/test_NestedNonlinearSystem.i");
-//     auto eq_sys = factory->get_es<ModelNonlinearSystem>("two_groups");
-//     REQUIRE(eq_sys != nullptr);
+TEST_CASE("ModelNonlinearSystem", "[equation_systems]")
+{
+  SECTION("two groups")
+  {
+    auto factory = load_input("equation_systems/test_NestedNonlinearSystem.i");
+    auto eq_sys = factory->get_es<ModelNonlinearSystem>("two_groups");
+    REQUIRE(eq_sys != nullptr);
 
-//     REQUIRE(eq_sys->n_ugroup() == 2);
+    // unknown layout: group 0 = {state/foo, state/bar}, group 1 = {state/baz}
+    const auto & ul = *eq_sys->ulayout();
+    REQUIRE(ul.ngroup() == 2);
 
-//     const auto & umap0 = eq_sys->umap(0);
-//     REQUIRE(umap0.size() == 2);
-//     REQUIRE(umap0[0] == VariableName("state", "foo"));
-//     REQUIRE(umap0[1] == VariableName("state", "bar"));
+    const auto ug0 = ul.group(0);
+    REQUIRE(ug0.size() == 2);
+    REQUIRE(ug0.var(0) == VariableName("state", "foo"));
+    REQUIRE(ug0.var(1) == VariableName("state", "bar"));
+    REQUIRE(ug0.base_sizes(0) == TensorShape{}); // Scalar
+    REQUIRE(ug0.base_sizes(1) == TensorShape{}); // Scalar
 
-//     const auto & ulayout0 = eq_sys->ulayout(0);
-//     REQUIRE(ulayout0.size() == 2);
-//     REQUIRE(ulayout0[0] == TensorShape{});
-//     REQUIRE(ulayout0[1] == TensorShape{});
+    const auto ug1 = ul.group(1);
+    REQUIRE(ug1.size() == 1);
+    REQUIRE(ug1.var(0) == VariableName("state", "baz"));
+    REQUIRE(ug1.base_sizes(0) == TensorShape{6}); // SR2
 
-//     const auto & bmap0 = eq_sys->bmap(0);
-//     REQUIRE(bmap0.size() == 2);
-//     REQUIRE(bmap0[0] == VariableName("residual", "foo"));
-//     REQUIRE(bmap0[1] == VariableName("residual", "bar"));
+    // residual layout: group 0 = {residual/foo, residual/bar}, group 1 = {residual/baz}
+    const auto & bl = *eq_sys->blayout();
+    REQUIRE(bl.ngroup() == 2);
 
-//     const auto & blayout0 = eq_sys->blayout(0);
-//     REQUIRE(blayout0.size() == 2);
-//     REQUIRE(blayout0[0] == TensorShape{});
-//     REQUIRE(blayout0[1] == TensorShape{});
+    const auto bg0 = bl.group(0);
+    REQUIRE(bg0.size() == 2);
+    REQUIRE(bg0.var(0) == VariableName("residual", "foo"));
+    REQUIRE(bg0.var(1) == VariableName("residual", "bar"));
+    REQUIRE(bg0.base_sizes(0) == TensorShape{}); // Scalar
+    REQUIRE(bg0.base_sizes(1) == TensorShape{}); // Scalar
 
-//     const auto & umap1 = eq_sys->umap(1);
-//     REQUIRE(umap1.size() == 1);
-//     REQUIRE(umap1[0] == VariableName("state", "baz"));
+    const auto bg1 = bl.group(1);
+    REQUIRE(bg1.size() == 1);
+    REQUIRE(bg1.var(0) == VariableName("residual", "baz"));
+    REQUIRE(bg1.base_sizes(0) == TensorShape{6}); // SR2
+  }
 
-//     const auto & ulayout1 = eq_sys->ulayout(1);
-//     REQUIRE(ulayout1.size() == 1);
-//     REQUIRE(ulayout1[0] == TensorShape{6});
+  SECTION("three groups")
+  {
+    auto factory = load_input("equation_systems/test_NestedNonlinearSystem.i");
+    auto eq_sys = factory->get_es<ModelNonlinearSystem>("three_groups");
+    REQUIRE(eq_sys != nullptr);
 
-//     const auto & bmap1 = eq_sys->bmap(1);
-//     REQUIRE(bmap1.size() == 1);
-//     REQUIRE(bmap1[0] == VariableName("residual", "baz"));
+    const auto & ul = *eq_sys->ulayout();
+    REQUIRE(ul.ngroup() == 3);
 
-//     const auto & blayout1 = eq_sys->blayout(1);
-//     REQUIRE(blayout1.size() == 1);
-//     REQUIRE(blayout1[0] == TensorShape{6});
+    REQUIRE(ul.group(0).size() == 1);
+    REQUIRE(ul.group(0).var(0) == VariableName("state", "foo"));
 
-//     // Intermediate layouts are lazily initialized after first assembly.
-//   }
+    REQUIRE(ul.group(1).size() == 1);
+    REQUIRE(ul.group(1).var(0) == VariableName("state", "bar"));
 
-//   SECTION("three groups")
-//   {
-//     auto factory = load_input("equation_systems/test_NestedNonlinearSystem.i");
-//     auto eq_sys = factory->get_es<ModelNonlinearSystem>("three_groups");
-//     REQUIRE(eq_sys != nullptr);
+    REQUIRE(ul.group(2).size() == 1);
+    REQUIRE(ul.group(2).var(0) == VariableName("state", "baz"));
+    REQUIRE(ul.group(2).base_sizes(0) == TensorShape{6}); // SR2
+  }
 
-//     REQUIRE(eq_sys->n_ugroup() == 3);
+  SECTION("single group")
+  {
+    auto factory = load_input("equation_systems/test_NestedNonlinearSystem.i");
+    auto eq_sys = factory->get_es<ModelNonlinearSystem>("single_group");
+    REQUIRE(eq_sys != nullptr);
 
-//     const auto & umap0 = eq_sys->umap(0);
-//     REQUIRE(umap0.size() == 1);
-//     REQUIRE(umap0[0] == VariableName("state", "foo"));
+    const auto & ul = *eq_sys->ulayout();
+    REQUIRE(ul.ngroup() == 1);
 
-//     const auto & umap1 = eq_sys->umap(1);
-//     REQUIRE(umap1.size() == 1);
-//     REQUIRE(umap1[0] == VariableName("state", "bar"));
+    const auto g = ul.group(0);
+    REQUIRE(g.size() == 3);
+    REQUIRE(g.var(0) == VariableName("state", "foo"));
+    REQUIRE(g.var(1) == VariableName("state", "bar"));
+    REQUIRE(g.var(2) == VariableName("state", "baz"));
+  }
 
-//     const auto & umap2 = eq_sys->umap(2);
-//     REQUIRE(umap2.size() == 1);
-//     REQUIRE(umap2[0] == VariableName("state", "baz"));
-//   }
+  SECTION("reordered groups")
+  {
+    auto factory = load_input("equation_systems/test_NestedNonlinearSystem.i");
+    auto eq_sys = factory->get_es<ModelNonlinearSystem>("reordered");
+    REQUIRE(eq_sys != nullptr);
 
-//   SECTION("single group")
-//   {
-//     auto factory = load_input("equation_systems/test_NestedNonlinearSystem.i");
-//     auto eq_sys = factory->get_es<ModelNonlinearSystem>("single_group");
-//     REQUIRE(eq_sys != nullptr);
+    const auto & ul = *eq_sys->ulayout();
+    REQUIRE(ul.ngroup() == 2);
 
-//     REQUIRE(eq_sys->n_ugroup() == 1);
+    const auto ug0 = ul.group(0);
+    REQUIRE(ug0.size() == 1);
+    REQUIRE(ug0.var(0) == VariableName("state", "baz"));
 
-//     const auto & umap0 = eq_sys->umap(0);
-//     REQUIRE(umap0.size() == 3);
-//     REQUIRE(umap0[0] == VariableName("state", "foo"));
-//     REQUIRE(umap0[1] == VariableName("state", "bar"));
-//     REQUIRE(umap0[2] == VariableName("state", "baz"));
-//   }
+    const auto ug1 = ul.group(1);
+    REQUIRE(ug1.size() == 2);
+    REQUIRE(ug1.var(0) == VariableName("state", "bar"));
+    REQUIRE(ug1.var(1) == VariableName("state", "foo"));
 
-//   SECTION("reordered groups")
-//   {
-//     auto factory = load_input("equation_systems/test_NestedNonlinearSystem.i");
-//     auto eq_sys = factory->get_es<ModelNonlinearSystem>("reordered");
-//     REQUIRE(eq_sys != nullptr);
+    const auto & bl = *eq_sys->blayout();
 
-//     REQUIRE(eq_sys->n_ugroup() == 2);
+    const auto bg0 = bl.group(0);
+    REQUIRE(bg0.size() == 1);
+    REQUIRE(bg0.var(0) == VariableName("residual", "baz"));
 
-//     const auto & umap0 = eq_sys->umap(0);
-//     REQUIRE(umap0.size() == 1);
-//     REQUIRE(umap0[0] == VariableName("state", "baz"));
+    const auto bg1 = bl.group(1);
+    REQUIRE(bg1.size() == 2);
+    REQUIRE(bg1.var(0) == VariableName("residual", "bar"));
+    REQUIRE(bg1.var(1) == VariableName("residual", "foo"));
+  }
 
-//     const auto & umap1 = eq_sys->umap(1);
-//     REQUIRE(umap1.size() == 2);
-//     REQUIRE(umap1[0] == VariableName("state", "bar"));
-//     REQUIRE(umap1[1] == VariableName("state", "foo"));
+  SECTION("invalid group index throws")
+  {
+    auto factory = load_input("equation_systems/test_NestedNonlinearSystem.i");
+    auto eq_sys = factory->get_es<ModelNonlinearSystem>("two_groups");
+    REQUIRE(eq_sys != nullptr);
 
-//     const auto & bmap0 = eq_sys->bmap(0);
-//     REQUIRE(bmap0.size() == 1);
-//     REQUIRE(bmap0[0] == VariableName("residual", "baz"));
+    REQUIRE_THROWS_AS(eq_sys->ulayout()->group(2), NEMLException);
+    REQUIRE_THROWS_AS(eq_sys->blayout()->group(2), NEMLException);
+    REQUIRE_THROWS_AS(eq_sys->ulayout()->group(100), NEMLException);
+  }
 
-//     const auto & bmap1 = eq_sys->bmap(1);
-//     REQUIRE(bmap1.size() == 2);
-//     REQUIRE(bmap1[0] == VariableName("residual", "bar"));
-//     REQUIRE(bmap1[1] == VariableName("residual", "foo"));
-//   }
-
-//   SECTION("invalid group_id throws")
-//   {
-//     auto factory = load_input("equation_systems/test_NestedNonlinearSystem.i");
-//     auto eq_sys = factory->get_es<ModelNonlinearSystem>("two_groups");
-//     REQUIRE(eq_sys != nullptr);
-
-//     REQUIRE_THROWS_AS(eq_sys->umap(2), NEMLException);
-//     REQUIRE_THROWS_AS(eq_sys->ulayout(2), NEMLException);
-//     REQUIRE_THROWS_AS(eq_sys->bmap(2), NEMLException);
-//     REQUIRE_THROWS_AS(eq_sys->blayout(2), NEMLException);
-
-//     REQUIRE_THROWS_AS(eq_sys->umap(100), NEMLException);
-//   }
-
-//   SECTION("missing state variable throws")
-//   {
-//     auto factory = load_input("equation_systems/test_NestedNonlinearSystem_errors.i");
-//     REQUIRE_THROWS_WITH(factory->get_es<ModelNonlinearSystem>("missing_variable"),
-//                         Catch::Matchers::ContainsSubstring("is not included in
-//                         'unknown_groups'"));
-//   }
-
-//   SECTION("nonexistent variable throws")
-//   {
-//     auto factory = load_input("equation_systems/test_NestedNonlinearSystem_errors.i");
-//     REQUIRE_THROWS_WITH(factory->get_es<ModelNonlinearSystem>("nonexistent_variable"),
-//                         Catch::Matchers::ContainsSubstring("is not a state variable"));
-//   }
-// }
+  SECTION("nonexistent variable throws")
+  {
+    auto factory = load_input("equation_systems/test_NestedNonlinearSystem_errors.i");
+    REQUIRE_THROWS_WITH(factory->get_es<ModelNonlinearSystem>("nonexistent_variable"),
+                        Catch::Matchers::ContainsSubstring("does not exist"));
+  }
+}

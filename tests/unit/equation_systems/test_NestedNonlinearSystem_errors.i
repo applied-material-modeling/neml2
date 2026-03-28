@@ -24,13 +24,13 @@
   [missing_variable]
     type = NonlinearSystem
     model = 'implicit_rate'
-    unknown_groups = 'state/foo state/bar'
-    residual_groups = 'residual/foo residual/bar residual/baz'
+    unknowns = 'state/foo state/bar'
+    residuals = 'residual/foo residual/bar residual/baz'
   []
   [nonexistent_variable]
     type = NonlinearSystem
     model = 'implicit_rate'
-    unknown_groups = 'state/foo state/bar state/baz state/nonexistent'
-    residual_groups = 'residual/foo residual/bar residual/baz'
+    unknowns = 'state/foo state/bar state/baz state/nonexistent'
+    residuals = 'residual/foo residual/bar residual/baz'
   []
 []
