@@ -196,7 +196,7 @@ Scalar
 operator*(const SparseVector & a, const SparseVector & b)
 {
   neml_assert(a.size() == b.size(),
-              "Incompatible sizes in SparseTensorList inner product, got ",
+              "Incompatible sizes in SparseVector inner product, got ",
               a.size(),
               " and ",
               b.size());

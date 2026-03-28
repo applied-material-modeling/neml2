@@ -29,8 +29,8 @@
 namespace neml2
 {
 class Tensor;
-class SparseVector;
-class SparseMatrix;
+struct SparseVector;
+struct SparseMatrix;
 
 /**
  * @brief The linear solver solves a linear system of equations.

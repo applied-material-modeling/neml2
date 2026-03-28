@@ -33,6 +33,8 @@ namespace neml2
 {
 struct AxisLayout
 {
+  AxisLayout() = default;
+
   /**
    * @brief Construct a new Axis Layout object
    *

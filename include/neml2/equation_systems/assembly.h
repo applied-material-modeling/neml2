@@ -29,7 +29,6 @@
 namespace neml2
 {
 class Tensor;
-struct SparseTensorList;
 template <std::size_t N>
 class Derivative;
 

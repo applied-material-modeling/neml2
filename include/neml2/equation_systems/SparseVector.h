@@ -32,6 +32,7 @@ namespace neml2
 /// Sparse representation of a vector consisting of a list of tensors and their layout
 struct SparseVector
 {
+  SparseVector() = default;
   SparseVector(const AxisLayout &);
   SparseVector(const AxisLayout &, std::vector<Tensor>);
 

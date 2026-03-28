@@ -25,7 +25,8 @@
 #pragma once
 
 #include "neml2/equation_systems/NonlinearSystem.h"
-#include "neml2/equation_systems/SparseTensorList.h"
+#include "neml2/equation_systems/SparseVector.h"
+#include "neml2/equation_systems/SparseMatrix.h"
 
 namespace neml2
 {
@@ -34,48 +35,40 @@ class TestNonlinearSystem : public NonlinearSystem
 public:
   TestNonlinearSystem(std::size_t n);
 
-  void set_u(const SparseTensorList & u) override { _u = u; }
-  void set_g(const SparseTensorList & /*g*/) override {}
+  void set_u(const SparseVector & u) override { _u = u; }
+  void set_g(const SparseVector & /*g*/) override {}
 
-  SparseTensorList u() const override { return _u; }
-  SparseTensorList g() const override { return {}; }
+  SparseVector u() const override { return _u; }
+  SparseVector g() const override { return {}; }
 
-  virtual SparseTensorList exact_solution(const SparseTensorList & u) const = 0;
+  virtual SparseVector exact_solution(const SparseVector & u) const = 0;
 
 protected:
-  std::vector<std::vector<LabeledAxisAccessor>> setup_umap() override;
-  std::vector<std::vector<TensorShape>> setup_intmd_ulayout() override;
-  std::vector<std::vector<TensorShape>> setup_ulayout() override;
-
-  std::vector<std::vector<LabeledAxisAccessor>> setup_bmap() override;
-  std::vector<std::vector<TensorShape>> setup_intmd_blayout() override;
-  std::vector<std::vector<TensorShape>> setup_blayout() override;
-
-  std::vector<LabeledAxisAccessor> setup_gmap() override { return {}; }
-  std::vector<TensorShape> setup_intmd_glayout() override { return {}; }
-  std::vector<TensorShape> setup_glayout() override { return {}; }
+  std::shared_ptr<AxisLayout> setup_ulayout() override;
+  std::shared_ptr<AxisLayout> setup_glayout() override;
+  std::shared_ptr<AxisLayout> setup_blayout() override;
 
   const std::size_t _n;
-  SparseTensorList _u;
+  SparseVector _u;
 };
 
 class PowerTestSystem : public TestNonlinearSystem
 {
 public:
   using TestNonlinearSystem::TestNonlinearSystem;
-  SparseTensorList exact_solution(const SparseTensorList &) const override;
+  SparseVector exact_solution(const SparseVector &) const override;
 
 protected:
-  void assemble(SparseTensorList *, SparseTensorList *, SparseTensorList *) override;
+  void assemble(SparseMatrix *, SparseMatrix *, SparseVector *) override;
 };
 
 class RosenbrockTestSystem : public TestNonlinearSystem
 {
 public:
   using TestNonlinearSystem::TestNonlinearSystem;
-  SparseTensorList exact_solution(const SparseTensorList &) const override;
+  SparseVector exact_solution(const SparseVector &) const override;
 
 protected:
-  void assemble(SparseTensorList *, SparseTensorList *, SparseTensorList *) override;
+  void assemble(SparseMatrix *, SparseMatrix *, SparseVector *) override;
 };
 }

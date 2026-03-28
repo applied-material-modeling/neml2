@@ -23,8 +23,7 @@
 // THE SOFTWARE.
 
 #include "SampleNonlinearSystems.h"
-#include "neml2/base/LabeledAxisAccessor.h"
-#include "neml2/equation_systems/SparseTensorList.h"
+#include "neml2/equation_systems/SparseVector.h"
 #include "neml2/misc/types.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/functions/pow.h"
@@ -36,117 +35,100 @@ TestNonlinearSystem::TestNonlinearSystem(std::size_t n)
 {
 }
 
-std::vector<std::vector<LabeledAxisAccessor>>
-TestNonlinearSystem::setup_umap()
-{
-  std::vector<LabeledAxisAccessor> umap(_n);
-  for (std::size_t i = 0; i < _n; i++)
-    umap[i] = LabeledAxisAccessor(STATE, "u" + std::to_string(i));
-  return {std::move(umap)};
-}
-
-std::vector<std::vector<TensorShape>>
-TestNonlinearSystem::setup_intmd_ulayout()
-{
-  return {std::vector<TensorShape>(_n, TensorShape{})};
-}
-
-std::vector<std::vector<TensorShape>>
+std::shared_ptr<AxisLayout>
 TestNonlinearSystem::setup_ulayout()
 {
-  return {std::vector<TensorShape>(_n, TensorShape{})};
-}
-
-std::vector<std::vector<LabeledAxisAccessor>>
-TestNonlinearSystem::setup_bmap()
-{
-  std::vector<LabeledAxisAccessor> bmap(_n);
+  std::vector<std::vector<LabeledAxisAccessor>> vars(1);
+  vars[0].resize(_n);
   for (std::size_t i = 0; i < _n; i++)
-    bmap[i] = LabeledAxisAccessor(RESIDUAL, "r" + std::to_string(i));
-  return {std::move(bmap)};
+    vars[0][i] = LabeledAxisAccessor(STATE, "u_" + std::to_string(i));
+  auto intmd_shapes = std::vector<TensorShape>(_n, TensorShape{});
+  auto base_shapes = std::vector<TensorShape>(_n, TensorShape{});
+  return std::make_shared<AxisLayout>(vars, intmd_shapes, base_shapes);
 }
 
-std::vector<std::vector<TensorShape>>
-TestNonlinearSystem::setup_intmd_blayout()
+std::shared_ptr<AxisLayout>
+TestNonlinearSystem::setup_glayout()
 {
-  return {std::vector<TensorShape>(_n, TensorShape{})};
+  std::vector<std::vector<LabeledAxisAccessor>> vars;
+  std::vector<TensorShape> intmd_shapes, base_shapes;
+  return std::make_shared<AxisLayout>(vars, intmd_shapes, base_shapes);
 }
 
-std::vector<std::vector<TensorShape>>
+std::shared_ptr<AxisLayout>
 TestNonlinearSystem::setup_blayout()
 {
-  return {std::vector<TensorShape>(_n, TensorShape{})};
+  std::vector<std::vector<LabeledAxisAccessor>> vars(1);
+  vars[0].resize(_n);
+  for (std::size_t i = 0; i < _n; i++)
+    vars[0][i] = LabeledAxisAccessor(STATE, "r_" + std::to_string(i));
+  auto intmd_shapes = std::vector<TensorShape>(_n, TensorShape{});
+  auto base_shapes = std::vector<TensorShape>(_n, TensorShape{});
+  return std::make_shared<AxisLayout>(vars, intmd_shapes, base_shapes);
 }
 
 void
-PowerTestSystem::assemble(SparseTensorList * A, SparseTensorList * /*B*/, SparseTensorList * b)
+PowerTestSystem::assemble(SparseMatrix * A, SparseMatrix * /*B*/, SparseVector * b)
 {
-  const auto n = _u.size();
   const auto opts = _u.options();
 
   if (b)
   {
-    b->resize(n);
-    for (std::size_t i = 0; i < n; i++)
-      (*b)[i] = 1.0 - pow(_u[i], Scalar(double(i) + 1, opts));
+    for (std::size_t i = 0; i < _n; i++)
+      b->tensors[i] = 1.0 - pow(_u.tensors[i], Scalar(double(i) + 1, opts));
   }
 
   if (A)
   {
-    A->resize(n * n);
-    for (std::size_t i = 0; i < n; i++)
-      (*A)[i * n + i] = (double(i) + 1) * pow(_u[i], Scalar(double(i), opts));
+    for (std::size_t i = 0; i < _n; i++)
+      A->tensors[i][i] = (double(i) + 1) * pow(_u.tensors[i], Scalar(double(i), opts));
   }
 }
 
-SparseTensorList
-PowerTestSystem::exact_solution(const SparseTensorList & u) const
+SparseVector
+PowerTestSystem::exact_solution(const SparseVector & u) const
 {
-  const auto n = u.size();
-  SparseTensorList sol(n);
-  for (std::size_t i = 0; i < n; i++)
-    sol[i] = Tensor::ones_like(u[i]);
+  SparseVector sol(ulayout()->view());
+  for (std::size_t i = 0; i < _n; i++)
+    sol.tensors[i] = Tensor::ones_like(u.tensors[i]);
   return sol;
 }
 
 void
-RosenbrockTestSystem::assemble(SparseTensorList * A, SparseTensorList * /*B*/, SparseTensorList * b)
+RosenbrockTestSystem::assemble(SparseMatrix * A, SparseMatrix * /*B*/, SparseVector * b)
 {
-  const auto n = _u.size();
-
   if (b)
   {
-    b->resize(n);
-    for (std::size_t i = 1; i < n - 1; i++)
-      (*b)[i] = -200 * (_u[i] - pow(_u[i - 1], 2.0)) + 400 * (_u[i + 1] - pow(_u[i], 2.0)) * _u[i] +
-                2 * (1 - _u[i]);
-    (*b)[0] = 400 * _u[0] * (_u[1] - pow(_u[0], 2.0)) + 2 * (1 - _u[0]);
-    (*b)[n - 1] = -200.0 * (_u[n - 1] - pow(_u[n - 2], 2.0));
+    for (std::size_t i = 1; i < _n - 1; i++)
+      b->tensors[i] = -200 * (_u.tensors[i] - pow(_u.tensors[i - 1], 2.0)) +
+                      400 * (_u.tensors[i + 1] - pow(_u.tensors[i], 2.0)) * _u.tensors[i] +
+                      2 * (1 - _u.tensors[i]);
+    b->tensors[0] =
+        400 * _u.tensors[0] * (_u.tensors[1] - pow(_u.tensors[0], 2.0)) + 2 * (1 - _u.tensors[0]);
+    b->tensors[_n - 1] = -200.0 * (_u.tensors[_n - 1] - pow(_u.tensors[_n - 2], 2.0));
   }
 
   if (A)
   {
-    A->resize(n * n);
-    for (std::size_t i = 1; i < n - 1; i++)
+    for (std::size_t i = 1; i < _n - 1; i++)
     {
-      (*A)[i * n + i - 1] = -400 * _u[i - 1];
-      (*A)[i * n + i] = 202 + 1200 * pow(_u[i], 2.0) - 400 * _u[i + 1];
-      (*A)[i * n + i + 1] = -400 * _u[i];
+      A->tensors[i][i - 1] = -400 * _u.tensors[i - 1];
+      A->tensors[i][i] = 202 + 1200 * pow(_u.tensors[i], 2.0) - 400 * _u.tensors[i + 1];
+      A->tensors[i][i + 1] = -400 * _u.tensors[i];
     }
-    (*A)[0 * n + 0] = 1200 * pow(_u[0], 2.0) - 400 * _u[1] + 2;
-    (*A)[0 * n + 1] = -400 * _u[0];
-    (*A)[(n - 1) * n + (n - 2)] = -400 * _u[n - 2];
-    (*A)[(n - 1) * n + (n - 1)] = Scalar(200.0, _u.options());
+    A->tensors[0][0] = 1200 * pow(_u.tensors[0], 2.0) - 400 * _u.tensors[1] + 2;
+    A->tensors[0][1] = -400 * _u.tensors[0];
+    A->tensors[_n - 1][_n - 2] = -400 * _u.tensors[_n - 2];
+    A->tensors[_n - 1][_n - 1] = Scalar(200.0, _u.options());
   }
 }
 
-SparseTensorList
-RosenbrockTestSystem::exact_solution(const SparseTensorList & u) const
+SparseVector
+RosenbrockTestSystem::exact_solution(const SparseVector & u) const
 {
-  const auto n = u.size();
-  SparseTensorList sol(n);
-  for (std::size_t i = 0; i < n; i++)
-    sol[i] = Tensor::ones_like(u[i]);
+  SparseVector sol(ulayout()->view());
+  for (std::size_t i = 0; i < _n; i++)
+    sol.tensors[i] = Tensor::ones_like(u.tensors[i]);
   return sol;
 }
 }

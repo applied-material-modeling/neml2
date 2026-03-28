@@ -32,6 +32,7 @@ namespace neml2
 /// Sparse representation of a matrix consisting of a 2D-list of tensors and their layout
 struct SparseMatrix
 {
+  SparseMatrix() = default;
   SparseMatrix(const AxisLayout &, const AxisLayout &);
   SparseMatrix(const AxisLayout &, const AxisLayout &, std::vector<std::vector<Tensor>>);
 
