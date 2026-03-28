@@ -23,7 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/VariableStore.h"
-#include "neml2/equation_systems/EquationSystem.h"
+#include "neml2/equation_systems/SparseVector.h"
 #include "neml2/misc/types.h"
 #include "neml2/models/Model.h"
 #include "neml2/misc/assertions.h"
@@ -356,17 +356,10 @@ VariableStore::assign_input(const ValueMap & vals)
 }
 
 void
-VariableStore::assign_input(const std::vector<VariableName> & names, const SparseTensorList & v)
+VariableStore::assign_input(const SparseVector & v)
 {
-  neml_assert_dbg(names.size() == v.size(),
-                  "Number of input variable names (",
-                  names.size(),
-                  ") does not match number of values (",
-                  v.size(),
-                  ").");
-
-  for (std::size_t i = 0; i < names.size(); i++)
-    input_variable(names[i]) = v[i];
+  for (std::size_t i = 0; i < v.size(); i++)
+    input_variable(v.layout.var(i)) = v.tensors[i];
 }
 
 void
@@ -377,17 +370,10 @@ VariableStore::assign_output(const ValueMap & vals)
 }
 
 void
-VariableStore::assign_output(const std::vector<VariableName> & names, const SparseTensorList & v)
+VariableStore::assign_output(const SparseVector & v)
 {
-  neml_assert_dbg(names.size() == v.size(),
-                  "Number of output variable names (",
-                  names.size(),
-                  ") does not match number of values (",
-                  v.size(),
-                  ").");
-
-  for (std::size_t i = 0; i < names.size(); i++)
-    output_variable(names[i]) = v[i];
+  for (std::size_t i = 0; i < v.size(); i++)
+    output_variable(v.layout.var(i)) = v.tensors[i];
 }
 
 void
@@ -405,25 +391,16 @@ VariableStore::assign_output_derivatives(const DerivMap & derivs)
 }
 
 void
-VariableStore::assign_output_derivatives(const std::vector<VariableName> & ynames,
-                                         const std::vector<VariableName> & xnames,
-                                         const SparseTensorList & J)
+VariableStore::assign_output_derivatives(const SparseMatrix & J)
 {
-  neml_assert_dbg(ynames.size() * xnames.size() == J.size(),
-                  "Number of derivatives (",
-                  ynames.size() * xnames.size(),
-                  ") does not match number of values (",
-                  J.size(),
-                  ").");
-
-  const auto m = ynames.size();
-  const auto n = xnames.size();
+  const auto m = J.row_layout.size();
+  const auto n = J.col_layout.size();
   for (std::size_t i = 0; i < m; i++)
   {
-    auto & yvar = output_variable(ynames[i]);
+    auto & yvar = output_variable(J.row_layout.var(i));
     for (std::size_t j = 0; j < n; j++)
-      if (J[i * n + j].defined())
-        yvar.d(input_variable(xnames[j])) = J[i * n + j];
+      if (J.tensors[i][j].defined())
+        yvar.d(input_variable(J.col_layout.var(j))) = J.tensors[i][j];
   }
 }
 
@@ -490,13 +467,13 @@ VariableStore::collect_input() const
   return vals;
 }
 
-SparseTensorList
-VariableStore::collect_input(const std::vector<VariableName> & names) const
+SparseVector
+VariableStore::collect_input(const AxisLayout & layout) const
 {
-  SparseTensorList vals(names.size());
-  for (std::size_t i = 0; i < names.size(); i++)
-    vals[i] = input_variable(names[i]).tensor();
-  return vals;
+  std::vector<Tensor> vals(layout.size());
+  for (std::size_t i = 0; i < layout.size(); i++)
+    vals[i] = input_variable(layout.var(i)).tensor();
+  return SparseVector(layout, vals);
 }
 
 ValueMap
@@ -508,13 +485,13 @@ VariableStore::collect_output() const
   return vals;
 }
 
-SparseTensorList
-VariableStore::collect_output(const std::vector<VariableName> & names) const
+SparseVector
+VariableStore::collect_output(const AxisLayout & layout) const
 {
-  SparseTensorList vals(names.size());
-  for (std::size_t i = 0; i < names.size(); i++)
-    vals[i] = output_variable(names[i]).tensor();
-  return vals;
+  std::vector<Tensor> vals(layout.size());
+  for (std::size_t i = 0; i < layout.size(); i++)
+    vals[i] = output_variable(layout.var(i)).tensor();
+  return SparseVector(layout, vals);
 }
 
 DerivMap
@@ -528,23 +505,23 @@ VariableStore::collect_output_derivatives() const
   return derivs;
 }
 
-SparseTensorList
-VariableStore::collect_output_derivatives(const std::vector<VariableName> & ynames,
-                                          const std::vector<VariableName> & xnames) const
+SparseMatrix
+VariableStore::collect_output_derivatives(const AxisLayout & row_layout,
+                                          const AxisLayout & col_layout) const
 {
-  const auto m = ynames.size();
-  const auto n = xnames.size();
-  SparseTensorList derivs(m * n);
+  const auto m = row_layout.size();
+  const auto n = col_layout.size();
+  std::vector<std::vector<Tensor>> derivs(m, std::vector<Tensor>(n));
   for (std::size_t i = 0; i < m; i++)
   {
-    const auto & yvar = output_variable(ynames[i]);
+    const auto & yvar = output_variable(row_layout.var(i));
     const auto & dy = yvar.derivatives();
     for (std::size_t j = 0; j < n; j++)
       for (const auto & [deriv, arg] : dy)
-        if (arg->name() == xnames[j] && deriv.defined())
-          derivs[i * n + j] = deriv.tensor();
+        if (arg->name() == col_layout.var(j) && deriv.defined())
+          derivs[i][j] = deriv.tensor();
   }
-  return derivs;
+  return SparseMatrix(row_layout, col_layout, derivs);
 }
 
 SecDerivMap

@@ -35,6 +35,9 @@ struct SparseVector
   SparseVector(const AxisLayout &);
   SparseVector(const AxisLayout &, std::vector<Tensor>);
 
+  /// Tensor options
+  TensorOptions options() const;
+
   /// Number of variable groups
   std::size_t ngroup() const;
   /// Contiguous view of the sparse vector
@@ -50,7 +53,7 @@ struct SparseVector
   /// List of tensors
   std::vector<Tensor> tensors;
   /// Layout of the tensors
-  const AxisLayout & layout;
+  AxisLayout layout;
 };
 
 ///@{
@@ -62,7 +65,7 @@ SparseVector operator+(const SparseVector &, const SparseVector &);
 SparseVector operator*(const Scalar &, const SparseVector &);
 SparseVector operator*(const SparseVector &, const Scalar &);
 /// Inner product
-Scalar inner(const SparseVector &, const SparseVector &);
+Scalar operator*(const SparseVector &, const SparseVector &);
 /// Norm-squared
 Scalar norm_sq(const SparseVector &);
 /// Norm

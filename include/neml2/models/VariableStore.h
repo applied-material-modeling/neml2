@@ -132,14 +132,13 @@ public:
   ///@{
   /// Collect input variable values
   ValueMap collect_input() const;
-  SparseVector collect_input(const std::shared_ptr<AxisLayout> &) const;
+  SparseVector collect_input(const AxisLayout &) const;
   /// Collect output variable values
   ValueMap collect_output() const;
-  SparseVector collect_output(const std::shared_ptr<AxisLayout> &) const;
+  SparseVector collect_output(const AxisLayout &) const;
   /// Collect variable derivatives
   DerivMap collect_output_derivatives() const;
-  SparseMatrix collect_output_derivatives(const std::shared_ptr<AxisLayout> &,
-                                          const std::shared_ptr<AxisLayout> &) const;
+  SparseMatrix collect_output_derivatives(const AxisLayout &, const AxisLayout &) const;
   /// Collect variable second derivatives
   SecDerivMap collect_output_second_derivatives() const;
   ///@}

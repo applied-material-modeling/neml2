@@ -25,11 +25,12 @@
 #pragma once
 
 #include "neml2/equation_systems/AxisLayout.h"
-#include "neml2/equation_systems/SparseVector.h"
-#include "neml2/equation_systems/SparseMatrix.h"
 
 namespace neml2
 {
+struct SparseVector;
+struct SparseMatrix;
+
 /**
  * @brief Definition of a linear system of equations, Au = b.
  *

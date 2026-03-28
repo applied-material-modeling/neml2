@@ -35,6 +35,9 @@ struct SparseMatrix
   SparseMatrix(const AxisLayout &, const AxisLayout &);
   SparseMatrix(const AxisLayout &, const AxisLayout &, std::vector<std::vector<Tensor>>);
 
+  /// Tensor options
+  TensorOptions options() const;
+
   /// Number of row variable groups
   std::size_t row_ngroup() const;
   /// Number of column variable groups
@@ -55,9 +58,12 @@ struct SparseMatrix
   /// 2D-list of tensors
   std::vector<std::vector<Tensor>> tensors;
   /// Row layout of the tensors, partitioned by variable groups
-  const AxisLayout & row_layout;
+  AxisLayout row_layout;
   /// Column layout of the tensors, partitioned by variable groups
-  const AxisLayout & col_layout;
+  AxisLayout col_layout;
 };
+
+/// Unary negation
+SparseMatrix operator-(const SparseMatrix &);
 
 } // namespace neml2

@@ -26,7 +26,8 @@
 #include <iomanip>
 
 #include "neml2/solvers/NewtonWithLineSearch.h"
-#include "neml2/equation_systems/SparseTensorList.h"
+#include "neml2/equation_systems/SparseVector.h"
+#include "neml2/equation_systems/SparseMatrix.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/functions/sqrt.h"
 
@@ -80,11 +81,12 @@ NewtonWithLineSearch::NewtonWithLineSearch(const OptionSet & options)
 void
 NewtonWithLineSearch::update(NonlinearSystem & sys)
 {
-  auto du = linear_solver->solve(sys);
+  auto [A, b] = sys.A_and_b();
+  auto du = linear_solver->solve(A, b);
   auto u = sys.u();
   auto alpha = Scalar::ones(u.options());
-  const auto b0 = sys.b();
-  const auto nb0 = neml2::norm_sq(b0);
+  auto b0 = sys.b();
+  auto nb0 = neml2::norm_sq(b0);
   auto crit = nb0;
 
   for (std::size_t i = 1; i < _linesearch_miter; i++)
@@ -95,7 +97,7 @@ NewtonWithLineSearch::update(NonlinearSystem & sys)
     auto nb = norm_sq(b);
 
     if (_type == "BACKTRACKING")
-      crit = nb0 - 2.0 * _linesearch_c * alpha * neml2::inner(b0, du);
+      crit = nb0 - 2.0 * _linesearch_c * alpha * (b0 * du);
     else if (_type == "STRONG_WOLFE")
       crit = (1.0 - _linesearch_c * alpha) * nb0;
 

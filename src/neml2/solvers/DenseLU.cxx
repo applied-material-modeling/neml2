@@ -23,11 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/solvers/DenseLU.h"
-#include "neml2/tensors/Tensor.h"
-#include "neml2/equation_systems/LinearSystem.h"
 #include "neml2/equation_systems/SparseVector.h"
 #include "neml2/equation_systems/SparseMatrix.h"
-#include "neml2/equation_systems/assembly.h"
 #include "neml2/tensors/functions/linalg/solve.h"
 #include "neml2/misc/assertions.h"
 
@@ -53,49 +50,37 @@ DenseLU::DenseLU(const OptionSet & options)
 SparseVector
 DenseLU::solve(const SparseMatrix & A, const SparseVector & b) const
 {
-  neml_assert_dbg(A.n_bgroup() == 1, "DenseLU solver only supports a single RHS group.");
-  neml_assert_dbg(A.n_ugroup() == 1, "DenseLU solver only supports a single unknown group.");
-
-  const auto & bilayout = sys.intmd_blayout();
-  const auto & uilayout = sys.intmd_ulayout();
-  const auto & blayout = sys.blayout();
-  const auto & ulayout = sys.ulayout();
-
-  // assemble A and b into flat tensors
-  const auto [A, b] = sys.A_and_b();
-  const auto Af = assemble(A, bilayout, uilayout, blayout, ulayout);
-  const auto bf = assemble(b, bilayout, blayout);
+  neml_assert_dbg(A.row_ngroup() == 1,
+                  "DenseLU solver only supports matrix with a single row group.");
+  neml_assert_dbg(A.col_ngroup() == 1,
+                  "DenseLU solver only supports matrix with a single column group.");
 
   // solve
-  const auto xf = linalg::solve(Af, bf);
+  const auto xf =
+      linalg::solve(A.assemble(/*assemble_intmd=*/false), b.assemble(/*assemble_intmd=*/false));
 
   // disassemble the solution
-  return disassemble(xf, sys.intmd_ulayout(), sys.ulayout());
+  SparseVector x(A.col_layout);
+  x.disassemble(xf, /*assemble_intmd=*/false);
+  return x;
 }
 
-SparseTensorList
-DenseLU::ift(LinearSystem & sys) const
+SparseMatrix
+DenseLU::solve(const SparseMatrix & A, const SparseMatrix & B) const
 {
-  neml_assert_dbg(sys.n_bgroup() == 1, "DenseLU solver only supports a single RHS group.");
-  neml_assert_dbg(sys.n_ugroup() == 1, "DenseLU solver only supports a single unknown group.");
-
-  const auto & bilayout = sys.intmd_blayout();
-  const auto & uilayout = sys.intmd_ulayout();
-  const auto & gilayout = sys.intmd_glayout();
-  const auto & blayout = sys.blayout();
-  const auto & ulayout = sys.ulayout();
-  const auto & glayout = sys.glayout();
-
-  // assemble A and B into flat tensors
-  const auto [A, B] = sys.A_and_B();
-  const auto Af = assemble(A, bilayout, uilayout, blayout, ulayout);
-  const auto Bf = assemble(B, bilayout, gilayout, blayout, glayout);
+  neml_assert_dbg(A.row_ngroup() == 1,
+                  "DenseLU solver only supports matrix with a single row group.");
+  neml_assert_dbg(A.col_ngroup() == 1,
+                  "DenseLU solver only supports matrix with a single column group.");
 
   // solve
-  const auto Xf = -linalg::solve(Af, Bf);
+  const auto Xf =
+      linalg::solve(A.assemble(/*assemble_intmd=*/false), B.assemble(/*assemble_intmd=*/false));
 
   // disassemble the solution
-  return disassemble(Xf, uilayout, gilayout, ulayout, glayout);
+  SparseMatrix X(A.col_layout, B.col_layout);
+  X.disassemble(Xf, /*assemble_intmd=*/false);
+  return X;
 }
 
 }

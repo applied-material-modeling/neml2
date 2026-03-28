@@ -27,7 +27,8 @@
 
 #include "neml2/solvers/Newton.h"
 #include "neml2/tensors/Scalar.h"
-#include "neml2/equation_systems/SparseTensorList.h"
+#include "neml2/equation_systems/SparseVector.h"
+#include "neml2/equation_systems/SparseMatrix.h"
 
 namespace neml2
 {
@@ -108,14 +109,25 @@ Newton::converged(size_t itr, const Scalar & nb, const Scalar & nb0) const
 void
 Newton::update(NonlinearSystem & sys)
 {
-  auto du = linear_solver->solve(sys);
-  sys.set_u(sys.u().data() + du);
+  auto [A, b] = sys.A_and_b();
+  auto du = linear_solver->solve(A, b);
+
+  // We need to discard the function graph of the trial solution
+  auto u0 = sys.u();
+  auto t = u0.tensors;
+  for (auto & t_i : t)
+    if (t_i.defined() && t_i.requires_grad())
+      t_i = t_i.variable_data();
+  SparseVector u(u0.layout, t);
+
+  sys.set_u(u + du);
 }
 
 void
 Newton::final_update(NonlinearSystem & sys)
 {
-  auto du = linear_solver->solve(sys);
+  auto [A, b] = sys.A_and_b();
+  auto du = linear_solver->solve(A, b);
   sys.set_u(sys.u() + du);
 }
 

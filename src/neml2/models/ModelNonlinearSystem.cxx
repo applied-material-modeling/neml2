@@ -78,8 +78,9 @@ ModelNonlinearSystem::setup()
   }
 
   // unknown variables should be marked mutable, as they will be updated during the nonlinear solve
-  for (const auto & vname : ulayout()->vars)
-    _model->input_variable(vname).set_mutable(true);
+  const auto & ul = *ulayout();
+  for (std::size_t i = 0; i < ul.size(); i++)
+    _model->input_variable(ul.var(i)).set_mutable(true);
 }
 
 void
@@ -175,13 +176,13 @@ ModelNonlinearSystem::set_g(const SparseVector & g)
 SparseVector
 ModelNonlinearSystem::u() const
 {
-  return _model->collect_input(_ulayout);
+  return _model->collect_input(*_ulayout);
 }
 
 SparseVector
 ModelNonlinearSystem::g() const
 {
-  return _model->collect_input({_glayout});
+  return _model->collect_input(*_glayout);
 }
 
 void
@@ -195,13 +196,13 @@ ModelNonlinearSystem::assemble(SparseMatrix * A, SparseMatrix * B, SparseVector 
 
   if (b)
     // remember b := -r
-    *b = -_model->collect_output(_blayout);
+    *b = -_model->collect_output(*_blayout);
 
   if (A)
-    *A = _model->collect_output_derivatives(_blayout, _ulayout);
+    *A = _model->collect_output_derivatives(*_blayout, *_ulayout);
 
   if (B)
-    *B = _model->collect_output_derivatives(_blayout, {_glayout});
+    *B = _model->collect_output_derivatives(*_blayout, {*_glayout});
 }
 
 void

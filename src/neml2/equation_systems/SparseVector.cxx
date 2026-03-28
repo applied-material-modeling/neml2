@@ -28,6 +28,9 @@
 #include "neml2/misc/defaults.h"
 #include "neml2/tensors/shape_utils.h"
 #include "neml2/tensors/functions/cat.h"
+#include "neml2/tensors/functions/inner.h"
+#include "neml2/tensors/functions/sqrt.h"
+#include "neml2/tensors/Scalar.h"
 
 namespace neml2
 {
@@ -43,6 +46,15 @@ SparseVector::SparseVector(const AxisLayout & l, std::vector<Tensor> t)
     layout(l)
 {
   neml_assert_dbg(tensors.size() == layout.size(), "Number of tensors must match the layout size");
+}
+
+TensorOptions
+SparseVector::options() const
+{
+  for (const auto & t : tensors)
+    if (t.defined())
+      return t.options();
+  return default_tensor_options();
 }
 
 std::size_t
@@ -133,6 +145,86 @@ SparseVector::disassemble(const Tensor & t, bool assemble_intmd)
     else
       tensors[i] = from_assembly<1>(ti, {layout.intmd_sizes(i)}, {layout.base_sizes(i)});
   }
+}
+
+SparseVector
+operator-(const SparseVector & a)
+{
+  std::vector<Tensor> t(a.size());
+  for (std::size_t i = 0; i < t.size(); i++)
+    if (a.tensors[i].defined())
+      t[i] = -a.tensors[i];
+  return SparseVector(a.layout, std::move(t));
+}
+
+SparseVector
+operator+(const SparseVector & a, const SparseVector & b)
+{
+  neml_assert(a.size() == b.size(),
+              "Incompatible sizes in SparseVector addition, got ",
+              a.size(),
+              " and ",
+              b.size());
+  std::vector<Tensor> t(a.size());
+  for (std::size_t i = 0; i < t.size(); i++)
+    if (a.tensors[i].defined() && b.tensors[i].defined())
+      t[i] = a.tensors[i] + b.tensors[i];
+    else if (a.tensors[i].defined())
+      t[i] = a.tensors[i];
+    else if (b.tensors[i].defined())
+      t[i] = b.tensors[i];
+  return SparseVector(a.layout, std::move(t));
+}
+
+SparseVector
+operator*(const Scalar & s, const SparseVector & a)
+{
+  std::vector<Tensor> t(a.size());
+  for (std::size_t i = 0; i < a.size(); i++)
+    if (a.tensors[i].defined())
+      t[i] = s * a.tensors[i];
+  return SparseVector(a.layout, std::move(t));
+}
+
+SparseVector
+operator*(const SparseVector & a, const Scalar & s)
+{
+  return s * a;
+}
+
+Scalar
+operator*(const SparseVector & a, const SparseVector & b)
+{
+  neml_assert(a.size() == b.size(),
+              "Incompatible sizes in SparseTensorList inner product, got ",
+              a.size(),
+              " and ",
+              b.size());
+  Scalar s;
+  for (std::size_t i = 0; i < a.size(); i++)
+    if (a.tensors[i].defined() && b.tensors[i].defined())
+    {
+      auto ab = neml2::inner(a.tensors[i], b.tensors[i]);
+      if (!s.defined())
+        s = ab;
+      else
+        s = s + ab;
+    }
+  if (s.defined())
+    return s;
+  return Scalar::zeros();
+}
+
+Scalar
+norm_sq(const SparseVector & a)
+{
+  return a * a;
+}
+
+Scalar
+norm(const SparseVector & a)
+{
+  return neml2::sqrt(norm_sq(a));
 }
 
 } // namespace neml2

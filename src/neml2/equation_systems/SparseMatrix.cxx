@@ -53,6 +53,16 @@ SparseMatrix::SparseMatrix(const AxisLayout & rl,
                     "Number of matrix columns does not match column layout size");
 }
 
+TensorOptions
+SparseMatrix::options() const
+{
+  for (const auto & row : tensors)
+    for (const auto & t : row)
+      if (t.defined())
+        return t.options();
+  return default_tensor_options();
+}
+
 std::size_t
 SparseMatrix::row_ngroup() const
 {
@@ -202,6 +212,19 @@ SparseMatrix::disassemble(const Tensor & t, bool assemble_intmd)
                                          {row_layout.base_sizes(i), col_layout.base_sizes(j)});
     }
   }
+}
+
+SparseMatrix
+operator-(const SparseMatrix & a)
+{
+  auto m = a.row_layout.size();
+  auto n = a.col_layout.size();
+  std::vector<std::vector<Tensor>> t(m, std::vector<Tensor>(n));
+  for (std::size_t i = 0; i < m; i++)
+    for (std::size_t j = 0; j < n; j++)
+      if (a.tensors[i][j].defined())
+        t[i][j] = -a.tensors[i][j];
+  return SparseMatrix(a.row_layout, a.col_layout, std::move(t));
 }
 
 } // namespace neml2

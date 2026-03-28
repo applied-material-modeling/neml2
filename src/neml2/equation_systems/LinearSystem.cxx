@@ -64,7 +64,7 @@ LinearSystem::g_changed()
 SparseMatrix
 LinearSystem::A()
 {
-  SparseMatrix A(_blayout, _ulayout);
+  SparseMatrix A(_blayout->view(), _ulayout->view());
   pre_assemble(true, false, false);
   assemble(&A, nullptr, nullptr);
   post_assemble(true, false, false);
@@ -74,7 +74,7 @@ LinearSystem::A()
 SparseVector
 LinearSystem::b()
 {
-  SparseVector b(_blayout);
+  SparseVector b(_blayout->view());
   pre_assemble(false, false, true);
   assemble(nullptr, nullptr, &b);
   post_assemble(false, false, true);
@@ -84,8 +84,8 @@ LinearSystem::b()
 std::tuple<SparseMatrix, SparseVector>
 LinearSystem::A_and_b()
 {
-  SparseMatrix A(_blayout, _ulayout);
-  SparseVector b(_blayout);
+  SparseMatrix A(_blayout->view(), _ulayout->view());
+  SparseVector b(_blayout->view());
   pre_assemble(true, false, true);
   assemble(&A, nullptr, &b);
   post_assemble(true, false, true);
@@ -95,8 +95,8 @@ LinearSystem::A_and_b()
 std::tuple<SparseMatrix, SparseMatrix>
 LinearSystem::A_and_B()
 {
-  SparseMatrix A(_blayout, _ulayout);
-  SparseMatrix B(_blayout, {_glayout});
+  SparseMatrix A(_blayout->view(), _ulayout->view());
+  SparseMatrix B(_blayout->view(), _glayout->view());
   pre_assemble(true, true, false);
   assemble(&A, &B, nullptr);
   post_assemble(true, true, false);
@@ -106,9 +106,9 @@ LinearSystem::A_and_B()
 std::tuple<SparseMatrix, SparseMatrix, SparseVector>
 LinearSystem::A_and_B_and_b()
 {
-  SparseMatrix A(_blayout, _ulayout);
-  SparseMatrix B(_blayout, {_glayout});
-  SparseVector b(_blayout);
+  SparseMatrix A(_blayout->view(), _ulayout->view());
+  SparseMatrix B(_blayout->view(), _glayout->view());
+  SparseVector b(_blayout->view());
   pre_assemble(true, true, true);
   assemble(&A, &B, &b);
   post_assemble(true, true, true);

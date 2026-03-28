@@ -52,7 +52,7 @@ struct AxisLayout
    * @param end The ending offset of the view (exclusive)
    * @param offsets The offsets of the variable groups in the view
    */
-  AxisLayout(const AxisLayout * const parent,
+  AxisLayout(const AxisLayout * parent,
              std::size_t start,
              std::size_t end,
              std::vector<std::size_t> offsets = {});
@@ -91,7 +91,7 @@ private:
   std::vector<std::size_t> _offsets;
 
   /// The axis layout this is viewing into
-  const AxisLayout * const _parent = nullptr;
+  const AxisLayout * _parent = nullptr;
   /// The starting offset of the view (inclusive)
   std::size_t _start = 0;
   /// The ending offset of the view (exclusive)

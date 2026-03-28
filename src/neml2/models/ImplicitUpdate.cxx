@@ -24,23 +24,10 @@
 
 #include "neml2/models/ImplicitUpdate.h"
 #include "neml2/misc/assertions.h"
-#include "neml2/equation_systems/LinearSystem.h"
 #include "neml2/models/ModelNonlinearSystem.h"
 
 namespace neml2
 {
-namespace
-{
-std::vector<LabeledAxisAccessor>
-flatten_umap(const LinearSystem & sys)
-{
-  std::vector<LabeledAxisAccessor> flattened;
-  for (std::size_t i = 0; i < sys.n_ugroup(); ++i)
-    for (const auto & vname : sys.umap(i))
-      flattened.push_back(vname);
-  return flattened;
-}
-}
 
 register_NEML2_object(ImplicitUpdate);
 
@@ -110,15 +97,16 @@ ImplicitUpdate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
   neml_assert(res.ret == NonlinearSolver::RetCode::SUCCESS, "Nonlinear solve failed.");
 
   if (out)
-    assign_output(flatten_umap(*_sys), _sys->u());
+    assign_output(_sys->u());
 
   // Use the implicit function theorem (IFT) to calculate the other derivatives
   if (dout_din)
   {
-    const auto du_dg = _solver->linear_solver->ift(*_sys);
+    auto [A, B] = _sys->A_and_B();
+    auto du_dg = -_solver->linear_solver->solve(A, B);
 
     // assign derivatives back
-    assign_output_derivatives(flatten_umap(*_sys), _sys->gmap(), du_dg);
+    assign_output_derivatives(du_dg);
   }
 }
 } // namespace neml2

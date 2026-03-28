@@ -48,7 +48,7 @@ AxisLayout::AxisLayout(const std::vector<std::vector<LabeledAxisAccessor>> & var
                   "Number of variables must match the number of base shapes");
 }
 
-AxisLayout::AxisLayout(const AxisLayout * const parent,
+AxisLayout::AxisLayout(const AxisLayout * parent,
                        std::size_t start,
                        std::size_t end,
                        std::vector<std::size_t> offsets)
