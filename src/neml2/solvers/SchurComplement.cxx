@@ -68,9 +68,8 @@ SchurComplement::SchurComplement(const OptionSet & options)
 SparseVector
 SchurComplement::solve(const SparseMatrix & A, const SparseVector & b) const
 {
-  neml_assert_dbg(A.row_ngroup() >= 2,
-                  "SchurComplement requires at least 2 row groups, got ",
-                  A.row_ngroup());
+  neml_assert_dbg(
+      A.row_ngroup() >= 2, "SchurComplement requires at least 2 row groups, got ", A.row_ngroup());
   neml_assert_dbg(A.col_ngroup() >= 2,
                   "SchurComplement requires at least 2 column groups, got ",
                   A.col_ngroup());
@@ -84,12 +83,12 @@ SchurComplement::solve(const SparseMatrix & A, const SparseVector & b) const
   // Extract the two b groups by slicing tensors
   const auto [p_s, p_e] = A.row_layout.group_offsets(_primary_group);
   const auto [s_s, s_e] = A.row_layout.group_offsets(_schur_group);
-  const SparseVector b_p(A.row_layout.group(_primary_group),
-                         std::vector<Tensor>(b.tensors.begin() + Size(p_s),
-                                             b.tensors.begin() + Size(p_e)));
-  const SparseVector b_s(A.row_layout.group(_schur_group),
-                         std::vector<Tensor>(b.tensors.begin() + Size(s_s),
-                                             b.tensors.begin() + Size(s_e)));
+  const SparseVector b_p(
+      A.row_layout.group(_primary_group),
+      std::vector<Tensor>(b.tensors.begin() + Size(p_s), b.tensors.begin() + Size(p_e)));
+  const SparseVector b_s(
+      A.row_layout.group(_schur_group),
+      std::vector<Tensor>(b.tensors.begin() + Size(s_s), b.tensors.begin() + Size(s_e)));
 
   // Step 1: Y = A_pp^{-1} A_ps
   const auto Y = _primary_solver->solve(A_pp, A_ps);
@@ -137,9 +136,8 @@ SchurComplement::solve(const SparseMatrix & A, const SparseVector & b) const
 SparseMatrix
 SchurComplement::solve(const SparseMatrix & A, const SparseMatrix & B) const
 {
-  neml_assert_dbg(A.row_ngroup() >= 2,
-                  "SchurComplement requires at least 2 row groups, got ",
-                  A.row_ngroup());
+  neml_assert_dbg(
+      A.row_ngroup() >= 2, "SchurComplement requires at least 2 row groups, got ", A.row_ngroup());
   neml_assert_dbg(A.col_ngroup() >= 2,
                   "SchurComplement requires at least 2 column groups, got ",
                   A.col_ngroup());
