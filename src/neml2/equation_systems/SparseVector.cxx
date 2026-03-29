@@ -64,7 +64,7 @@ SparseVector::ngroup() const
 }
 
 SparseVector
-SparseVector::group(std::size_t i)
+SparseVector::group(std::size_t i) const
 {
   auto [start, end] = layout.group_offsets(i);
   std::vector<Tensor> ts(tensors.begin() + Size(start), tensors.begin() + Size(end));
@@ -155,6 +155,12 @@ operator-(const SparseVector & a)
     if (a.tensors[i].defined())
       t[i] = -a.tensors[i];
   return SparseVector(a.layout, std::move(t));
+}
+
+SparseVector
+operator-(const SparseVector & a, const SparseVector & b)
+{
+  return a + (-b);
 }
 
 SparseVector

@@ -60,10 +60,14 @@ public:
   SparseMatrix solve(const SparseMatrix &, const SparseMatrix &) const override;
 
 private:
-  /// Index of the primary variable group
-  const std::size_t _primary_group;
-  /// Index of the Schur complement variable group
-  const std::size_t _schur_group;
+  /// Row (residual) group index for the primary block
+  const std::size_t _residual_primary;
+  /// Row (residual) group index for the Schur complement block
+  const std::size_t _residual_schur;
+  /// Column (unknown) group index for the primary block
+  const std::size_t _unknown_primary;
+  /// Column (unknown) group index for the Schur complement block
+  const std::size_t _unknown_schur;
   /// Linear solver for the primary block A_pp
   std::shared_ptr<LinearSolver> _primary_solver;
   /// Linear solver for the Schur complement block S

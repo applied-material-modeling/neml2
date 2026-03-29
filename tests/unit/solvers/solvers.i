@@ -16,9 +16,9 @@
   []
   [schur]
     type = SchurComplement
-    primary_group = '0'
+    residual_primary_group = '0'
+    unknown_primary_group = '0'
     primary_solver = 'lu'
-    schur_group = '1'
     schur_solver = 'lu'
   []
 []

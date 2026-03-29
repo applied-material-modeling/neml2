@@ -29,6 +29,8 @@
 
 namespace neml2
 {
+struct SparseVector;
+
 /// Sparse representation of a matrix consisting of a 2D-list of tensors and their layout
 struct SparseMatrix
 {
@@ -43,6 +45,10 @@ struct SparseMatrix
   std::size_t row_ngroup() const;
   /// Number of column variable groups
   std::size_t col_ngroup() const;
+  /// Rows belonging to row group i, all columns
+  SparseMatrix row_group(std::size_t i) const;
+  /// All rows, columns belonging to column group j
+  SparseMatrix col_group(std::size_t j) const;
   /// Semi-contiguous view of a block of the sparse matrix
   SparseMatrix group(std::size_t, std::size_t) const;
 
@@ -66,5 +72,11 @@ struct SparseMatrix
 
 /// Unary negation
 SparseMatrix operator-(const SparseMatrix &);
+/// Binary subtraction
+SparseMatrix operator-(const SparseMatrix &, const SparseMatrix &);
+/// Matrix-matrix product
+SparseMatrix operator*(const SparseMatrix &, const SparseMatrix &);
+/// Matrix-vector product
+SparseVector operator*(const SparseMatrix &, const SparseVector &);
 
 } // namespace neml2

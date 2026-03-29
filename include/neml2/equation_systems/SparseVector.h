@@ -42,7 +42,7 @@ struct SparseVector
   /// Number of variable groups
   std::size_t ngroup() const;
   /// Contiguous view of the sparse vector
-  SparseVector group(std::size_t);
+  SparseVector group(std::size_t) const;
 
   /// Number of variables
   std::size_t size() const;
@@ -62,6 +62,8 @@ struct SparseVector
 SparseVector operator-(const SparseVector &);
 /// Binary addition
 SparseVector operator+(const SparseVector &, const SparseVector &);
+/// Binary subtraction
+SparseVector operator-(const SparseVector &, const SparseVector &);
 /// Multiplication with scalar
 SparseVector operator*(const Scalar &, const SparseVector &);
 SparseVector operator*(const SparseVector &, const Scalar &);

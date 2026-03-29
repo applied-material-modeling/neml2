@@ -23,10 +23,13 @@
 // THE SOFTWARE.
 
 #include "neml2/equation_systems/SparseMatrix.h"
+#include "neml2/equation_systems/SparseVector.h"
 #include "neml2/equation_systems/assembly.h"
 #include "neml2/misc/assertions.h"
 #include "neml2/misc/defaults.h"
 #include "neml2/tensors/functions/cat.h"
+#include "neml2/tensors/functions/mm.h"
+#include "neml2/tensors/functions/mv.h"
 #include "neml2/tensors/shape_utils.h"
 
 namespace neml2
@@ -76,25 +79,32 @@ SparseMatrix::col_ngroup() const
 }
 
 SparseMatrix
-SparseMatrix::group(std::size_t i, std::size_t j) const
+SparseMatrix::row_group(std::size_t i) const
 {
   neml_assert_dbg(i < row_ngroup(), "Row group index out of range");
+  auto [start, end] = row_layout.group_offsets(i);
+  return SparseMatrix(
+      row_layout.group(i),
+      col_layout,
+      std::vector<std::vector<Tensor>>(tensors.begin() + Size(start), tensors.begin() + Size(end)));
+}
+
+SparseMatrix
+SparseMatrix::col_group(std::size_t j) const
+{
   neml_assert_dbg(j < col_ngroup(), "Column group index out of range");
+  auto [start, end] = col_layout.group_offsets(j);
+  auto m = row_layout.size();
+  std::vector<std::vector<Tensor>> rows(m);
+  for (std::size_t i = 0; i < m; ++i)
+    rows[i] = std::vector<Tensor>(tensors[i].begin() + Size(start), tensors[i].begin() + Size(end));
+  return SparseMatrix(row_layout, col_layout.group(j), std::move(rows));
+}
 
-  auto [row_start, row_end] = row_layout.group_offsets(i);
-  auto [col_start, col_end] = col_layout.group_offsets(j);
-
-  std::vector<std::vector<Tensor>> rows;
-  rows.reserve(row_end - row_start);
-
-  for (auto i = row_start; i < row_end; ++i)
-  {
-    std::vector<Tensor> row(tensors[i].begin() + Size(col_start),
-                            tensors[i].begin() + Size(col_end));
-    rows.push_back(std::move(row));
-  }
-
-  return SparseMatrix(row_layout.group(i), col_layout.group(j), std::move(rows));
+SparseMatrix
+SparseMatrix::group(std::size_t i, std::size_t j) const
+{
+  return row_group(i).col_group(j);
 }
 
 std::size_t
@@ -225,6 +235,47 @@ operator-(const SparseMatrix & a)
       if (a.tensors[i][j].defined())
         t[i][j] = -a.tensors[i][j];
   return SparseMatrix(a.row_layout, a.col_layout, std::move(t));
+}
+
+SparseMatrix
+operator-(const SparseMatrix & a, const SparseMatrix & b)
+{
+  neml_assert_dbg(a.nrow() == b.nrow() && a.ncol() == b.ncol(),
+                  "Incompatible sizes in SparseMatrix subtraction");
+  auto m = a.row_layout.size();
+  auto n = a.col_layout.size();
+  std::vector<std::vector<Tensor>> t(m, std::vector<Tensor>(n));
+  for (std::size_t i = 0; i < m; i++)
+    for (std::size_t j = 0; j < n; j++)
+    {
+      const auto & aij = a.tensors[i][j];
+      const auto & bij = b.tensors[i][j];
+      if (aij.defined() && bij.defined())
+        t[i][j] = aij - bij;
+      else if (aij.defined())
+        t[i][j] = aij;
+      else if (bij.defined())
+        t[i][j] = -bij;
+    }
+  return SparseMatrix(a.row_layout, a.col_layout, std::move(t));
+}
+
+SparseMatrix
+operator*(const SparseMatrix & a, const SparseMatrix & b)
+{
+  SparseMatrix c(a.row_layout, b.col_layout);
+  c.disassemble(mm(a.assemble(/*assemble_intmd=*/false), b.assemble(/*assemble_intmd=*/false)),
+                /*assemble_intmd=*/false);
+  return c;
+}
+
+SparseVector
+operator*(const SparseMatrix & a, const SparseVector & x)
+{
+  SparseVector y(a.row_layout);
+  y.disassemble(mv(a.assemble(/*assemble_intmd=*/false), x.assemble(/*assemble_intmd=*/false)),
+                /*assemble_intmd=*/false);
+  return y;
 }
 
 } // namespace neml2
