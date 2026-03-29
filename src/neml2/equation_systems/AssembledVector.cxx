@@ -22,94 +22,71 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/equation_systems/SparseVector.h"
+#include "neml2/equation_systems/AssembledVector.h"
 #include "neml2/misc/assertions.h"
 #include "neml2/equation_systems/assembly.h"
-#include "neml2/misc/defaults.h"
-#include "neml2/tensors/shape_utils.h"
-#include "neml2/tensors/functions/cat.h"
-#include "neml2/equation_systems/AssembledVector.h"
+#include "neml2/equation_systems/SparseVector.h"
 
 namespace neml2
 {
 
-SparseVector::SparseVector(AxisLayout l)
-  : tensors(l.nvar()),
+AssembledVector::AssembledVector(AxisLayout l)
+  : tensors(l.ngroup()),
     layout(std::move(l))
 {
 }
 
-SparseVector::SparseVector(AxisLayout l, std::vector<Tensor> t)
+AssembledVector::AssembledVector(AxisLayout l, std::vector<Tensor> t)
   : tensors(std::move(t)),
     layout(std::move(l))
 {
-  neml_assert_dbg(tensors.size() == layout.nvar(), "Number of tensors must match the layout size");
-}
-
-SparseVector
-SparseVector::group(std::size_t i) const
-{
-  auto [start, end] = layout.group_offsets(i);
-  std::vector<Tensor> ts(tensors.begin() + Size(start), tensors.begin() + Size(end));
-  return SparseVector(layout.group(i), std::move(ts));
+  neml_assert_dbg(tensors.size() == layout.ngroup(),
+                  "Number of tensors must match the layout group size");
 }
 
 AssembledVector
-SparseVector::assemble() const
+AssembledVector::group(std::size_t i) const
 {
-  std::vector<Tensor> asm_tensors(layout.ngroup());
+  auto [start, end] = layout.group_offsets(i);
+  std::vector<Tensor> ts(tensors.begin() + Size(start), tensors.begin() + Size(end));
+  return AssembledVector(layout.group(i), std::move(ts));
+}
+
+SparseVector
+AssembledVector::disassemble() const
+{
+  std::vector<Tensor> sp_tensors(layout.nvar());
 
   for (std::size_t grp = 0; grp < layout.ngroup(); ++grp)
   {
+    const auto & t = tensors[grp];
     const auto [istart, iend] = layout.group_offsets(grp);
     const auto istr = layout.group_istr(grp);
     const bool assemble_intmd = (istr == AxisLayout::IStructure::DENSE);
 
-    // convert to assembly format
-    std::vector<Tensor> tf(iend - istart);
-    std::size_t cnt = 0;
+    neml_assert_dbg(
+        t.base_dim() == 1, "disassemble expects base dimension of 1, got ", t.base_dim());
+    if (assemble_intmd)
+      neml_assert_dbg(t.intmd_dim() == 0,
+                      "disassemble with intermediate shapes expects intmd dimension of 0, got ",
+                      t.intmd_dim());
+
+    const auto ss = layout.group(grp).storage_sizes(assemble_intmd);
+    const auto & D = t.dynamic_sizes();
+    const auto I = t.intmd_dim();
+    const auto vs = t.split(ss, -1);
+
     for (std::size_t i = istart; i < iend; ++i)
     {
-      const auto & ti = tensors[i];
-      if (!ti.defined())
-        continue;
+      auto ti = Tensor(vs[i - istart], D, I);
       if (!assemble_intmd)
-        tf[cnt++] = ti.base_flatten();
+        sp_tensors[i] = ti.base_reshape(layout.base_sizes(i));
       else
-        tf[cnt++] = to_assembly<1>(ti, {layout.intmd_sizes(i)}, {layout.base_sizes(i)});
+        sp_tensors[i] = from_assembly<1>(ti, {layout.intmd_sizes(i)}, {layout.base_sizes(i)});
     }
-
-    // determine tensor options
-    auto opt = default_tensor_options();
-    for (const auto & t : tf)
-      if (t.defined())
-      {
-        opt = t.options();
-        break;
-      }
-
-    // Expand defined tensors with the broadcast dynamic shape and fill undefined tensors with
-    // zeros.
-    const auto new_dynamic_sizes = utils::broadcast_dynamic_sizes(tf);
-    const auto new_intmd_sizes = utils::broadcast_intmd_sizes(tf);
-    for (std::size_t i = 0; i < tf.size(); ++i)
-    {
-      auto & tfi = tf[i];
-      if (tfi.defined())
-        tfi = tfi.batch_expand(new_dynamic_sizes, new_intmd_sizes);
-      else
-      {
-        auto s = utils::numel(layout.base_sizes(i));
-        if (assemble_intmd)
-          s *= utils::numel(layout.intmd_sizes(i));
-        tfi = Tensor::zeros(new_dynamic_sizes, new_intmd_sizes, s, opt);
-      }
-    }
-
-    asm_tensors[grp] = base_cat(tf, -1);
   }
 
-  return AssembledVector(layout, std::move(asm_tensors));
+  return SparseVector(layout, std::move(sp_tensors));
 }
 
 } // namespace neml2

@@ -31,9 +31,11 @@ namespace neml2
 
 AxisLayout::AxisLayout(const std::vector<std::vector<LabeledAxisAccessor>> & vars,
                        std::vector<TensorShape> intmd_shapes,
-                       std::vector<TensorShape> base_shapes)
+                       std::vector<TensorShape> base_shapes,
+                       std::vector<IStructure> istrs)
   : _intmd_shapes(std::move(intmd_shapes)),
-    _base_shapes(std::move(base_shapes))
+    _base_shapes(std::move(base_shapes)),
+    _istrs(std::move(istrs))
 {
   _offsets.push_back(0);
   for (const auto & grp : vars)
@@ -46,6 +48,8 @@ AxisLayout::AxisLayout(const std::vector<std::vector<LabeledAxisAccessor>> & var
                   "Number of variables must match the number of intermediate shapes");
   neml_assert_dbg(_vars.size() == _base_shapes.size(),
                   "Number of variables must match the number of base shapes");
+  neml_assert_dbg(ngroup() == _istrs.size(),
+                  "Number of variable groups must match the number of IStructure entries");
 }
 
 AxisLayout::AxisLayout(const AxisLayout * parent,
@@ -57,7 +61,7 @@ AxisLayout::AxisLayout(const AxisLayout * parent,
     _start(start),
     _end(end)
 {
-  neml_assert_dbg(start <= end && end <= parent->size(), "Invalid view range");
+  neml_assert_dbg(start <= end && end <= parent->nvar(), "Invalid view range");
 }
 
 std::size_t
@@ -71,7 +75,7 @@ std::pair<std::size_t, std::size_t>
 AxisLayout::group_offsets(std::size_t idx) const
 {
   neml_assert(!_offsets.empty(), "Cannot call group_offsets() on a sub-group view");
-  neml_assert_dbg(idx < ngroup(), "Group index out of range");
+  neml_assert(idx < ngroup(), "Group index out of range");
   return {_offsets[idx], _offsets[idx + 1]};
 }
 
@@ -82,6 +86,14 @@ AxisLayout::group(std::size_t idx) const
   return AxisLayout(_parent ? _parent : this, start, end);
 }
 
+AxisLayout::IStructure
+AxisLayout::group_istr(std::size_t idx) const
+{
+  neml_assert(!_offsets.empty(), "Cannot call group_istr() on a sub-group view");
+  neml_assert(idx < ngroup(), "Group index out of range");
+  return _parent ? _parent->group_istr(idx) : _istrs[idx];
+}
+
 AxisLayout
 AxisLayout::view() const
 {
@@ -89,7 +101,7 @@ AxisLayout::view() const
 }
 
 std::size_t
-AxisLayout::size() const
+AxisLayout::nvar() const
 {
   return _parent ? _end - _start : _vars.size();
 }
@@ -97,8 +109,8 @@ AxisLayout::size() const
 std::vector<Size>
 AxisLayout::storage_sizes(bool include_intmd) const
 {
-  std::vector<Size> ss(size());
-  for (std::size_t i = 0; i < size(); ++i)
+  std::vector<Size> ss(nvar());
+  for (std::size_t i = 0; i < nvar(); ++i)
   {
     auto s = utils::numel(base_sizes(i));
     if (include_intmd)
@@ -111,21 +123,21 @@ AxisLayout::storage_sizes(bool include_intmd) const
 const LabeledAxisAccessor &
 AxisLayout::var(std::size_t idx) const
 {
-  neml_assert_dbg(idx < size(), "Variable index out of range");
+  neml_assert(idx < nvar(), "Variable index out of range");
   return _parent ? _parent->var(_start + idx) : _vars[idx];
 }
 
 const TensorShape &
 AxisLayout::intmd_sizes(std::size_t idx) const
 {
-  neml_assert_dbg(idx < size(), "Variable index out of range");
+  neml_assert(idx < nvar(), "Variable index out of range");
   return _parent ? _parent->intmd_sizes(_start + idx) : _intmd_shapes[idx];
 }
 
 const TensorShape &
 AxisLayout::base_sizes(std::size_t idx) const
 {
-  neml_assert_dbg(idx < size(), "Variable index out of range");
+  neml_assert(idx < nvar(), "Variable index out of range");
   return _parent ? _parent->base_sizes(_start + idx) : _base_shapes[idx];
 }
 

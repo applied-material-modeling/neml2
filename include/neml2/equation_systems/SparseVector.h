@@ -24,62 +24,30 @@
 
 #pragma once
 
-#include <cstdint>
 #include "neml2/equation_systems/AxisLayout.h"
 #include "neml2/tensors/Tensor.h"
 
 namespace neml2
 {
+struct AssembledVector;
+
 /// Sparse representation of a vector consisting of a list of tensors and their layout
 struct SparseVector
 {
-  enum class IStructure : uint8_t;
   SparseVector() = default;
-  SparseVector(AxisLayout, IStructure = IStructure::DENSE);
-  SparseVector(AxisLayout, std::vector<Tensor>, IStructure = IStructure::DENSE);
+  SparseVector(AxisLayout);
+  SparseVector(AxisLayout, std::vector<Tensor>);
 
-  /// Tensor options
-  TensorOptions options() const;
-
-  /// Number of variable groups
-  std::size_t ngroup() const;
   /// Contiguous view of the sparse vector
   SparseVector group(std::size_t) const;
 
-  /// Number of variables
-  std::size_t size() const;
-  /// Assemble into a Tensor with one base dimension
-  Tensor assemble() const;
-  /// Disassemble a Tensor according to the axis layout
-  void disassemble(const Tensor &);
+  /// Assemble the tensors for each variable group
+  AssembledVector assemble() const;
 
   /// List of tensors
   std::vector<Tensor> tensors;
   /// Layout of the tensors
   AxisLayout layout;
-  /// Structure represented by intermediate dimensions (if any)
-  enum class IStructure : uint8_t
-  {
-    DENSE, ///< All intermediate dimensions are grouped into base dimensions
-    BLOCK, ///< Intermediate dimensions represent blocks of variables
-  } istr = IStructure::DENSE;
 };
 
-///@{
-/// Unary negation
-SparseVector operator-(const SparseVector &);
-/// Binary addition
-SparseVector operator+(const SparseVector &, const SparseVector &);
-/// Binary subtraction
-SparseVector operator-(const SparseVector &, const SparseVector &);
-/// Multiplication with scalar
-SparseVector operator*(const Scalar &, const SparseVector &);
-SparseVector operator*(const SparseVector &, const Scalar &);
-/// Inner product
-Scalar operator*(const SparseVector &, const SparseVector &);
-/// Norm-squared
-Scalar norm_sq(const SparseVector &);
-/// Norm
-Scalar norm(const SparseVector &);
-///@}
 } // namespace neml2

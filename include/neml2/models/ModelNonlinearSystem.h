@@ -52,18 +52,18 @@ public:
 
   void to(const TensorOptions &) override;
 
-  void set_u(const SparseVector &) override;
-  void set_g(const SparseVector &) override;
+  void set_u(const AssembledVector &) override;
+  void set_g(const AssembledVector &) override;
 
-  SparseVector u() const override;
-  SparseVector g() const override;
+  AssembledVector u() const override;
+  AssembledVector g() const override;
 
 protected:
   std::shared_ptr<AxisLayout> setup_ulayout() override;
   std::shared_ptr<AxisLayout> setup_glayout() override;
   std::shared_ptr<AxisLayout> setup_blayout() override;
 
-  void assemble(SparseMatrix * A, SparseMatrix * B, SparseVector * b) override;
+  void assemble(AssembledMatrix * A, AssembledMatrix * B, AssembledVector * b) override;
   void pre_assemble(bool A, bool B, bool b) override;
   void post_assemble(bool A, bool B, bool b) override;
 

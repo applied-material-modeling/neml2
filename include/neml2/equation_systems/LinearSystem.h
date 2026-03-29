@@ -28,8 +28,8 @@
 
 namespace neml2
 {
-struct SparseVector;
-struct SparseMatrix;
+struct AssembledVector;
+struct AssembledMatrix;
 
 /**
  * @brief Definition of a linear system of equations, Au = b.
@@ -49,13 +49,13 @@ public:
   virtual void init();
 
   /// Set the unknown u
-  virtual void set_u(const SparseVector &) = 0;
+  virtual void set_u(const AssembledVector &) = 0;
   /// Set the given variables g from the current step
-  virtual void set_g(const SparseVector &) = 0;
+  virtual void set_g(const AssembledVector &) = 0;
   /// Get the unknown u
-  virtual SparseVector u() const = 0;
+  virtual AssembledVector u() const = 0;
   /// Get the given variables g from the current step
-  virtual SparseVector g() const = 0;
+  virtual AssembledVector g() const = 0;
 
   /// Trigger when unknown variables changed
   virtual void u_changed();
@@ -63,15 +63,15 @@ public:
   virtual void g_changed();
 
   /// Assemble and return the operator, A
-  SparseMatrix A();
+  AssembledMatrix A();
   /// Assemble and return the right-hand side, b
-  SparseVector b();
+  AssembledVector b();
   /// Assemble and return the right-hand side and operator
-  std::tuple<SparseMatrix, SparseVector> A_and_b();
+  std::tuple<AssembledMatrix, AssembledVector> A_and_b();
   /// Assemble the auxiliary matrix B = dr/dg along with A
-  std::tuple<SparseMatrix, SparseMatrix> A_and_B();
+  std::tuple<AssembledMatrix, AssembledMatrix> A_and_B();
   /// Assemble the auxiliary matrix B = dr/dg along with A and b
-  std::tuple<SparseMatrix, SparseMatrix, SparseVector> A_and_B_and_b();
+  std::tuple<AssembledMatrix, AssembledMatrix, AssembledVector> A_and_B_and_b();
 
   /// Get the unknown-variable layout
   const std::shared_ptr<AxisLayout> & ulayout() const;
@@ -95,7 +95,7 @@ protected:
    * @param B Pointer to the auxiliary matrix -- nullptr if not requested
    * @param b Pointer to the RHS vector -- nullptr if not requested
    */
-  virtual void assemble(SparseMatrix * A, SparseMatrix * B, SparseVector * b) = 0;
+  virtual void assemble(AssembledMatrix * A, AssembledMatrix * B, AssembledVector * b) = 0;
 
   /**
    * @brief Callback before assembly to perform

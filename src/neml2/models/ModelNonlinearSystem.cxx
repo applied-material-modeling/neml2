@@ -27,6 +27,8 @@
 #include "neml2/equation_systems/AxisLayout.h"
 #include "neml2/equation_systems/EquationSystem.h"
 #include "neml2/equation_systems/NonlinearSystem.h"
+#include "neml2/equation_systems/AssembledVector.h"
+#include "neml2/equation_systems/AssembledMatrix.h"
 #include "neml2/misc/types.h"
 #include "neml2/models/Model.h"
 
@@ -79,7 +81,7 @@ ModelNonlinearSystem::setup()
 
   // unknown variables should be marked mutable, as they will be updated during the nonlinear solve
   const auto & ul = *ulayout();
-  for (std::size_t i = 0; i < ul.size(); i++)
+  for (std::size_t i = 0; i < ul.nvar(); i++)
     _model->input_variable(ul.var(i)).set_mutable(true);
 }
 
@@ -114,23 +116,29 @@ ModelNonlinearSystem::setup_ulayout()
       base_shapes.emplace_back(var.base_sizes());
     }
 
-  return std::make_shared<AxisLayout>(var_groups, intmd_shapes, base_shapes);
+  // TODO: take IStructure from input file options
+  std::vector<AxisLayout::IStructure> istrs(var_groups.size(), AxisLayout::IStructure::DENSE);
+
+  return std::make_shared<AxisLayout>(var_groups, intmd_shapes, base_shapes, istrs);
 }
 
 std::shared_ptr<AxisLayout>
 ModelNonlinearSystem::setup_glayout()
 {
-  std::vector<VariableName> vars;
+  std::vector<std::vector<VariableName>> vars(1);
   std::vector<TensorShape> intmd_shapes, base_shapes;
   for (const auto & [vname, var] : _model->input_variables())
     if (!vname.is_state())
     {
-      vars.push_back(vname);
+      vars[0].push_back(vname);
       intmd_shapes.emplace_back(var->intmd_sizes());
       base_shapes.emplace_back(var->base_sizes());
     }
 
-  return std::make_shared<AxisLayout>(AxisLayout({vars}, intmd_shapes, base_shapes));
+  // TODO: take IStructure from input file options
+  std::vector<AxisLayout::IStructure> istrs(1, AxisLayout::IStructure::DENSE);
+
+  return std::make_shared<AxisLayout>(vars, intmd_shapes, base_shapes, istrs);
 }
 
 std::shared_ptr<AxisLayout>
@@ -156,37 +164,40 @@ ModelNonlinearSystem::setup_blayout()
       base_shapes.emplace_back(var.base_sizes());
     }
 
-  return std::make_shared<AxisLayout>(var_groups, intmd_shapes, base_shapes);
+  // TODO: take IStructure from input file options
+  std::vector<AxisLayout::IStructure> istrs(var_groups.size(), AxisLayout::IStructure::DENSE);
+
+  return std::make_shared<AxisLayout>(var_groups, intmd_shapes, base_shapes, istrs);
 }
 
 void
-ModelNonlinearSystem::set_u(const SparseVector & u)
+ModelNonlinearSystem::set_u(const AssembledVector & u)
 {
-  _model->assign_input(u);
+  _model->assign_input(u.disassemble());
   u_changed();
 }
 
 void
-ModelNonlinearSystem::set_g(const SparseVector & g)
+ModelNonlinearSystem::set_g(const AssembledVector & g)
 {
-  _model->assign_input(g);
+  _model->assign_input(g.disassemble());
   g_changed();
 }
 
-SparseVector
+AssembledVector
 ModelNonlinearSystem::u() const
 {
-  return _model->collect_input(*_ulayout);
+  return _model->collect_input(*_ulayout).assemble();
 }
 
-SparseVector
+AssembledVector
 ModelNonlinearSystem::g() const
 {
-  return _model->collect_input(*_glayout);
+  return _model->collect_input(*_glayout).assemble();
 }
 
 void
-ModelNonlinearSystem::assemble(SparseMatrix * A, SparseMatrix * B, SparseVector * b)
+ModelNonlinearSystem::assemble(AssembledMatrix * A, AssembledMatrix * B, AssembledVector * b)
 {
   {
     AssemblyingNonlinearSystem assembling_nl_sys(!B);
@@ -196,13 +207,13 @@ ModelNonlinearSystem::assemble(SparseMatrix * A, SparseMatrix * B, SparseVector 
 
   if (b)
     // remember b := -r
-    *b = -_model->collect_output(*_blayout);
+    *b = -_model->collect_output(*_blayout).assemble();
 
   if (A)
-    *A = _model->collect_output_derivatives(*_blayout, *_ulayout);
+    *A = _model->collect_output_derivatives(*_blayout, *_ulayout).assemble();
 
   if (B)
-    *B = _model->collect_output_derivatives(*_blayout, {*_glayout});
+    *B = _model->collect_output_derivatives(*_blayout, {*_glayout}).assemble();
 }
 
 void

@@ -35,16 +35,25 @@ struct AxisLayout
 {
   AxisLayout() = default;
 
+  /// Enum for the structure represented by intermediate dimensions (if any)
+  enum class IStructure : uint8_t
+  {
+    DENSE, ///< All intermediate dimensions are grouped into base dimensions
+    BLOCK, ///< Intermediate dimensions represent blocks of variables
+  };
+
   /**
    * @brief Construct a new Axis Layout object
    *
    * @param vars ID-to-variable mapping, partitioned by variable groups
    * @param intmd_shapes ID-to-variable intermediate shape mapping
    * @param base_shapes ID-to-variable base shape mapping
+   * @param istrs IStructure for each variable group
    */
   AxisLayout(const std::vector<std::vector<LabeledAxisAccessor>> &,
              std::vector<TensorShape>,
-             std::vector<TensorShape>);
+             std::vector<TensorShape>,
+             std::vector<IStructure>);
 
   /**
    * @brief Construct a new Axis Layout object by viewing into a parent layout
@@ -65,14 +74,16 @@ struct AxisLayout
   std::pair<std::size_t, std::size_t> group_offsets(std::size_t) const;
   /// Contiguous view of the variable group
   AxisLayout group(std::size_t) const;
+  /// Variable group IStructure
+  IStructure group_istr(std::size_t) const;
   /// Contiguous view of the entire layout
   AxisLayout view() const;
   /// Whether this is a view into a parent layout
   bool is_view() const { return _parent != nullptr; }
 
   /// Number of variables
-  std::size_t size() const;
-  /// Storage sizes of each variable
+  std::size_t nvar() const;
+  /// Storage sizes of variables
   std::vector<Size> storage_sizes(bool include_intmd) const;
 
   /// Accessor for variable name
@@ -91,6 +102,8 @@ private:
   std::vector<TensorShape> _base_shapes;
   /// Offset of each variable group in the layout
   std::vector<std::size_t> _offsets;
+  /// IStructure for each variable group
+  std::vector<IStructure> _istrs;
 
   /// The axis layout this is viewing into
   const AxisLayout * _parent = nullptr;

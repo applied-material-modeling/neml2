@@ -29,26 +29,24 @@
 
 namespace neml2
 {
-struct AssembledMatrix;
+struct SparseVector;
 
-/// Sparse representation of a matrix consisting of a 2D-list of tensors and their layout
-struct SparseMatrix
+/// Dense representation of a tensor assembled from a list of tensors and their layout
+struct AssembledVector
 {
-  SparseMatrix() = default;
-  SparseMatrix(AxisLayout, AxisLayout);
-  SparseMatrix(AxisLayout, AxisLayout, std::vector<std::vector<Tensor>>);
+  AssembledVector() = default;
+  AssembledVector(AxisLayout);
+  AssembledVector(AxisLayout, std::vector<Tensor>);
 
-  /// Semi-contiguous view of a block of the sparse matrix
-  SparseMatrix group(std::size_t, std::size_t) const;
+  /// Contiguous view of the sparse vector
+  AssembledVector group(std::size_t) const;
 
-  /// Assemble into a Tensor with two base dimensions
-  AssembledMatrix assemble() const;
-  /// 2D-list of tensors
-  std::vector<std::vector<Tensor>> tensors;
-  /// Row layout of the tensors
-  AxisLayout row_layout;
-  /// Column layout of the tensors
-  AxisLayout col_layout;
+  /// Disassemble the tensors for each variable group
+  SparseVector disassemble() const;
+
+  /// Assembled tensors for each variable group
+  std::vector<Tensor> tensors;
+  /// Layout of the tensors
+  AxisLayout layout;
 };
-
 } // namespace neml2
