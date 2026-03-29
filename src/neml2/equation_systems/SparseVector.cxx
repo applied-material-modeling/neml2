@@ -35,15 +35,17 @@
 namespace neml2
 {
 
-SparseVector::SparseVector(const AxisLayout & l)
+SparseVector::SparseVector(AxisLayout l, IStructure istr)
   : tensors(l.size()),
-    layout(l)
+    layout(std::move(l)),
+    istr(istr)
 {
 }
 
-SparseVector::SparseVector(const AxisLayout & l, std::vector<Tensor> t)
+SparseVector::SparseVector(AxisLayout l, std::vector<Tensor> t, IStructure istr)
   : tensors(std::move(t)),
-    layout(l)
+    layout(std::move(l)),
+    istr(istr)
 {
   neml_assert_dbg(tensors.size() == layout.size(), "Number of tensors must match the layout size");
 }
@@ -68,7 +70,7 @@ SparseVector::group(std::size_t i) const
 {
   auto [start, end] = layout.group_offsets(i);
   std::vector<Tensor> ts(tensors.begin() + Size(start), tensors.begin() + Size(end));
-  return SparseVector(layout.group(i), std::move(ts));
+  return SparseVector(layout.group(i), std::move(ts), istr);
 }
 
 std::size_t
@@ -78,8 +80,13 @@ SparseVector::size() const
 }
 
 Tensor
-SparseVector::assemble(bool assemble_intmd) const
+SparseVector::assemble() const
 {
+  // Determine whether to assemble intermediate dimensions into the base dimension based on the
+  // structure type. For DENSE, we always assemble intermediate dimensions. For BLOCK, we should
+  // just check to make sure there's at most one intermediate dimension per variable.
+  const bool assemble_intmd = (istr == IStructure::DENSE);
+
   // convert to assembly format
   std::vector<Tensor> tf(tensors.size());
   for (std::size_t i = 0; i < tensors.size(); ++i)
@@ -123,8 +130,13 @@ SparseVector::assemble(bool assemble_intmd) const
 }
 
 void
-SparseVector::disassemble(const Tensor & t, bool assemble_intmd)
+SparseVector::disassemble(const Tensor & t)
 {
+  // Determine whether to assemble intermediate dimensions into the base dimension based on the
+  // structure type. For DENSE, we always assemble intermediate dimensions. For BLOCK, we should
+  // just check to make sure there's at most one intermediate dimension per variable.
+  const bool assemble_intmd = (istr == IStructure::DENSE);
+
   neml_assert_dbg(t.base_dim() == 1, "disassemble expects base dimension of 1, got ", t.base_dim());
   if (assemble_intmd)
     neml_assert_dbg(t.intmd_dim() == 0,
@@ -154,18 +166,13 @@ operator-(const SparseVector & a)
   for (std::size_t i = 0; i < t.size(); i++)
     if (a.tensors[i].defined())
       t[i] = -a.tensors[i];
-  return SparseVector(a.layout, std::move(t));
-}
-
-SparseVector
-operator-(const SparseVector & a, const SparseVector & b)
-{
-  return a + (-b);
+  return SparseVector(a.layout, std::move(t), a.istr);
 }
 
 SparseVector
 operator+(const SparseVector & a, const SparseVector & b)
 {
+  neml_assert(a.istr == b.istr, "Incompatible structure types in SparseVector addition");
   neml_assert(a.size() == b.size(),
               "Incompatible sizes in SparseVector addition, got ",
               a.size(),
@@ -179,7 +186,13 @@ operator+(const SparseVector & a, const SparseVector & b)
       t[i] = a.tensors[i];
     else if (b.tensors[i].defined())
       t[i] = b.tensors[i];
-  return SparseVector(a.layout, std::move(t));
+  return SparseVector(a.layout, std::move(t), a.istr);
+}
+
+SparseVector
+operator-(const SparseVector & a, const SparseVector & b)
+{
+  return a + (-b);
 }
 
 SparseVector
@@ -189,7 +202,7 @@ operator*(const Scalar & s, const SparseVector & a)
   for (std::size_t i = 0; i < a.size(); i++)
     if (a.tensors[i].defined())
       t[i] = s * a.tensors[i];
-  return SparseVector(a.layout, std::move(t));
+  return SparseVector(a.layout, std::move(t), a.istr);
 }
 
 SparseVector
@@ -201,6 +214,7 @@ operator*(const SparseVector & a, const Scalar & s)
 Scalar
 operator*(const SparseVector & a, const SparseVector & b)
 {
+  neml_assert(a.istr == b.istr, "Incompatible structure types in SparseVector addition");
   neml_assert(a.size() == b.size(),
               "Incompatible sizes in SparseVector inner product, got ",
               a.size(),

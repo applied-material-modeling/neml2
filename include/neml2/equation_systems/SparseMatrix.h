@@ -34,9 +34,13 @@ struct SparseVector;
 /// Sparse representation of a matrix consisting of a 2D-list of tensors and their layout
 struct SparseMatrix
 {
+  enum class IStructure : std::uint8_t;
   SparseMatrix() = default;
-  SparseMatrix(const AxisLayout &, const AxisLayout &);
-  SparseMatrix(const AxisLayout &, const AxisLayout &, std::vector<std::vector<Tensor>>);
+  SparseMatrix(AxisLayout, AxisLayout, IStructure = IStructure::DENSE);
+  SparseMatrix(AxisLayout,
+               AxisLayout,
+               std::vector<std::vector<Tensor>>,
+               IStructure = IStructure::DENSE);
 
   /// Tensor options
   TensorOptions options() const;
@@ -59,15 +63,21 @@ struct SparseMatrix
   /// Number of column variables
   std::size_t ncol() const;
   /// Assemble into a Tensor with two base dimensions
-  Tensor assemble(bool assemble_intmd) const;
+  Tensor assemble() const;
   /// Disassemble a Tensor according to the axis layouts
-  void disassemble(const Tensor &, bool assemble_intmd);
+  void disassemble(const Tensor &);
   /// 2D-list of tensors
   std::vector<std::vector<Tensor>> tensors;
   /// Row layout of the tensors, partitioned by variable groups
   AxisLayout row_layout;
   /// Column layout of the tensors, partitioned by variable groups
   AxisLayout col_layout;
+  /// Structure represented by intermediate dimensions (if any)
+  enum class IStructure : std::uint8_t
+  {
+    DENSE,          ///< All intermediate dimensions are grouped into base dimensions
+    BLOCK_DIAGONAL, ///< Intermediate dimensions represent diagonal blocks of variables
+  } istr = IStructure::DENSE;
 };
 
 /// Unary negation

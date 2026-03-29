@@ -24,6 +24,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include "neml2/equation_systems/AxisLayout.h"
 #include "neml2/tensors/Tensor.h"
 
@@ -32,9 +33,10 @@ namespace neml2
 /// Sparse representation of a vector consisting of a list of tensors and their layout
 struct SparseVector
 {
+  enum class IStructure : uint8_t;
   SparseVector() = default;
-  SparseVector(const AxisLayout &);
-  SparseVector(const AxisLayout &, std::vector<Tensor>);
+  SparseVector(AxisLayout, IStructure = IStructure::DENSE);
+  SparseVector(AxisLayout, std::vector<Tensor>, IStructure = IStructure::DENSE);
 
   /// Tensor options
   TensorOptions options() const;
@@ -47,14 +49,20 @@ struct SparseVector
   /// Number of variables
   std::size_t size() const;
   /// Assemble into a Tensor with one base dimension
-  Tensor assemble(bool assemble_intmd) const;
+  Tensor assemble() const;
   /// Disassemble a Tensor according to the axis layout
-  void disassemble(const Tensor &, bool assemble_intmd);
+  void disassemble(const Tensor &);
 
   /// List of tensors
   std::vector<Tensor> tensors;
   /// Layout of the tensors
   AxisLayout layout;
+  /// Structure represented by intermediate dimensions (if any)
+  enum class IStructure : uint8_t
+  {
+    DENSE, ///< All intermediate dimensions are grouped into base dimensions
+    BLOCK, ///< Intermediate dimensions represent blocks of variables
+  } istr = IStructure::DENSE;
 };
 
 ///@{

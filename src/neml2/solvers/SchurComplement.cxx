@@ -107,7 +107,7 @@ SchurComplement::solve(const SparseMatrix & A, const SparseVector & b) const
   const auto x_p = z - Y * x_s;
 
   // Assemble the full solution
-  SparseVector x(A.col_layout);
+  SparseVector x(A.col_layout, b.istr);
   const auto [pp_s, pp_e] = A.col_layout.group_offsets(_unknown_primary);
   const auto [ss_s, ss_e] = A.col_layout.group_offsets(_unknown_schur);
   for (std::size_t i = 0; i < pp_e - pp_s; ++i)
@@ -156,7 +156,7 @@ SchurComplement::solve(const SparseMatrix & A, const SparseMatrix & B) const
   const auto X_p = Z - Y * X_s;
 
   // Assemble the full solution
-  SparseMatrix X(A.col_layout, B.col_layout);
+  SparseMatrix X(A.col_layout, B.col_layout, A.istr);
   const auto [pp_s, pp_e] = A.col_layout.group_offsets(_unknown_primary);
   const auto [ss_s, ss_e] = A.col_layout.group_offsets(_unknown_schur);
   for (std::size_t i = 0; i < pp_e - pp_s; ++i)

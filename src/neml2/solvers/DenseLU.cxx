@@ -50,14 +50,12 @@ DenseLU::DenseLU(const OptionSet & options)
 SparseVector
 DenseLU::solve(const SparseMatrix & A, const SparseVector & b) const
 {
-
   // solve
-  const auto xf =
-      linalg::solve(A.assemble(/*assemble_intmd=*/false), b.assemble(/*assemble_intmd=*/false));
+  const auto xf = linalg::solve(A.assemble(), b.assemble());
 
   // disassemble the solution
-  SparseVector x(A.col_layout);
-  x.disassemble(xf, /*assemble_intmd=*/false);
+  SparseVector x(A.col_layout, b.istr);
+  x.disassemble(xf);
   return x;
 }
 
@@ -65,12 +63,11 @@ SparseMatrix
 DenseLU::solve(const SparseMatrix & A, const SparseMatrix & B) const
 {
   // solve
-  const auto Xf =
-      linalg::solve(A.assemble(/*assemble_intmd=*/false), B.assemble(/*assemble_intmd=*/false));
+  const auto Xf = linalg::solve(A.assemble(), B.assemble());
 
   // disassemble the solution
-  SparseMatrix X(A.col_layout, B.col_layout);
-  X.disassemble(Xf, /*assemble_intmd=*/false);
+  SparseMatrix X(A.col_layout, B.col_layout, A.istr);
+  X.disassemble(Xf);
   return X;
 }
 

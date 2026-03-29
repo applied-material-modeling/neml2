@@ -35,19 +35,22 @@
 namespace neml2
 {
 
-SparseMatrix::SparseMatrix(const AxisLayout & rl, const AxisLayout & cl)
+SparseMatrix::SparseMatrix(AxisLayout rl, AxisLayout cl, IStructure istr)
   : tensors(rl.size(), std::vector<Tensor>(cl.size())),
-    row_layout(rl),
-    col_layout(cl)
+    row_layout(std::move(rl)),
+    col_layout(std::move(cl)),
+    istr(istr)
 {
 }
 
-SparseMatrix::SparseMatrix(const AxisLayout & rl,
-                           const AxisLayout & cl,
-                           std::vector<std::vector<Tensor>> ts)
+SparseMatrix::SparseMatrix(AxisLayout rl,
+                           AxisLayout cl,
+                           std::vector<std::vector<Tensor>> ts,
+                           IStructure istr)
   : tensors(std::move(ts)),
-    row_layout(rl),
-    col_layout(cl)
+    row_layout(std::move(rl)),
+    col_layout(std::move(cl)),
+    istr(istr)
 {
   neml_assert_dbg(tensors.size() == row_layout.size(),
                   "Number of matrix rows does not match row layout size");
@@ -86,7 +89,8 @@ SparseMatrix::row_group(std::size_t i) const
   return SparseMatrix(
       row_layout.group(i),
       col_layout,
-      std::vector<std::vector<Tensor>>(tensors.begin() + Size(start), tensors.begin() + Size(end)));
+      std::vector<std::vector<Tensor>>(tensors.begin() + Size(start), tensors.begin() + Size(end)),
+      istr);
 }
 
 SparseMatrix
@@ -98,7 +102,7 @@ SparseMatrix::col_group(std::size_t j) const
   std::vector<std::vector<Tensor>> rows(m);
   for (std::size_t i = 0; i < m; ++i)
     rows[i] = std::vector<Tensor>(tensors[i].begin() + Size(start), tensors[i].begin() + Size(end));
-  return SparseMatrix(row_layout, col_layout.group(j), std::move(rows));
+  return SparseMatrix(row_layout, col_layout.group(j), std::move(rows), istr);
 }
 
 SparseMatrix
@@ -116,7 +120,7 @@ SparseMatrix::group(std::size_t i, std::size_t j) const
                             tensors[r].begin() + Size(col_end));
     rows.push_back(std::move(row));
   }
-  return SparseMatrix(row_layout.group(i), col_layout.group(j), std::move(rows));
+  return SparseMatrix(row_layout.group(i), col_layout.group(j), std::move(rows), istr);
 }
 
 std::size_t
@@ -138,8 +142,13 @@ SparseMatrix::ncol() const
 }
 
 Tensor
-SparseMatrix::assemble(bool assemble_intmd) const
+SparseMatrix::assemble() const
 {
+  // Determine whether to assemble intermediate dimensions into the base dimension based on the
+  // structure type. For DENSE, we always assemble intermediate dimensions. For BLOCK, we should
+  // just check to make sure there's at most one intermediate dimension per variable.
+  const bool assemble_intmd = (istr == IStructure::DENSE);
+
   const auto row_ss = row_layout.storage_sizes(assemble_intmd);
   const auto col_ss = col_layout.storage_sizes(assemble_intmd);
   const auto m = row_ss.size();
@@ -203,8 +212,13 @@ SparseMatrix::assemble(bool assemble_intmd) const
 }
 
 void
-SparseMatrix::disassemble(const Tensor & t, bool assemble_intmd)
+SparseMatrix::disassemble(const Tensor & t)
 {
+  // Determine whether to assemble intermediate dimensions into the base dimension based on the
+  // structure type. For DENSE, we always assemble intermediate dimensions. For BLOCK, we should
+  // just check to make sure there's at most one intermediate dimension per variable.
+  const bool assemble_intmd = (istr == IStructure::DENSE);
+
   neml_assert_dbg(t.base_dim() == 2, "disassemble expects base dimension of 2, got ", t.base_dim());
   if (assemble_intmd)
     neml_assert_dbg(t.intmd_dim() == 0,
@@ -246,14 +260,15 @@ operator-(const SparseMatrix & a)
     for (std::size_t j = 0; j < n; j++)
       if (a.tensors[i][j].defined())
         t[i][j] = -a.tensors[i][j];
-  return SparseMatrix(a.row_layout, a.col_layout, std::move(t));
+  return SparseMatrix(a.row_layout, a.col_layout, std::move(t), a.istr);
 }
 
 SparseMatrix
 operator-(const SparseMatrix & a, const SparseMatrix & b)
 {
-  neml_assert_dbg(a.nrow() == b.nrow() && a.ncol() == b.ncol(),
-                  "Incompatible sizes in SparseMatrix subtraction");
+  neml_assert(a.istr == b.istr, "Incompatible structure types in SparseVector addition");
+  neml_assert(a.nrow() == b.nrow() && a.ncol() == b.ncol(),
+              "Incompatible sizes in SparseMatrix subtraction");
   auto m = a.row_layout.size();
   auto n = a.col_layout.size();
   std::vector<std::vector<Tensor>> t(m, std::vector<Tensor>(n));
@@ -269,24 +284,28 @@ operator-(const SparseMatrix & a, const SparseMatrix & b)
       else if (bij.defined())
         t[i][j] = -bij;
     }
-  return SparseMatrix(a.row_layout, a.col_layout, std::move(t));
+  return SparseMatrix(a.row_layout, a.col_layout, std::move(t), a.istr);
 }
 
 SparseMatrix
 operator*(const SparseMatrix & a, const SparseMatrix & b)
 {
-  SparseMatrix c(a.row_layout, b.col_layout);
-  c.disassemble(mm(a.assemble(/*assemble_intmd=*/false), b.assemble(/*assemble_intmd=*/false)),
-                /*assemble_intmd=*/false);
+  neml_assert(a.istr == SparseMatrix::IStructure::DENSE &&
+                  b.istr == SparseMatrix::IStructure::DENSE,
+              "SparseMatrix multiplication only implemented for DENSE structure type");
+  SparseMatrix c(a.row_layout, b.col_layout, a.istr);
+  c.disassemble(mm(a.assemble(), b.assemble()));
   return c;
 }
 
 SparseVector
 operator*(const SparseMatrix & a, const SparseVector & x)
 {
-  SparseVector y(a.row_layout);
-  y.disassemble(mv(a.assemble(/*assemble_intmd=*/false), x.assemble(/*assemble_intmd=*/false)),
-                /*assemble_intmd=*/false);
+  neml_assert(a.istr == SparseMatrix::IStructure::DENSE &&
+                  x.istr == SparseVector::IStructure::DENSE,
+              "SparseMatrix multiplication only implemented for DENSE structure type");
+  SparseVector y(a.row_layout, x.istr);
+  y.disassemble(mv(a.assemble(), x.assemble()));
   return y;
 }
 

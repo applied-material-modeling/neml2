@@ -190,12 +190,15 @@ TEST_CASE("SparseMatrix", "[equation_systems]")
 
   SECTION("assemble")
   {
-    SECTION("assemble_intmd false")
+    SECTION("IStructure::BLOCK_DIAGONAL")
     {
       SECTION("all tensors defined")
       {
-        SparseMatrix sm(row_layout, col_layout, {{t00, t01}, {t10, t11}});
-        const auto assembled = sm.assemble(/*assemble_intmd=*/false);
+        SparseMatrix sm(row_layout,
+                        col_layout,
+                        {{t00, t01}, {t10, t11}},
+                        SparseMatrix::IStructure::BLOCK_DIAGONAL);
+        const auto assembled = sm.assemble();
         REQUIRE(assembled.base_dim() == 2);
         REQUIRE(assembled.base_sizes() == TensorShapeRef{3, 4}); // (2+1) x (3+1)
         REQUIRE_THAT(assembled,
@@ -208,8 +211,11 @@ TEST_CASE("SparseMatrix", "[equation_systems]")
       SECTION("undefined tensors are filled with zeros")
       {
         // only [0][0] is defined; the rest are zeros
-        SparseMatrix sm(row_layout, col_layout, {{t00, {}}, {{}, {}}});
-        const auto assembled = sm.assemble(/*assemble_intmd=*/false);
+        SparseMatrix sm(row_layout,
+                        col_layout,
+                        {{t00, {}}, {{}, {}}},
+                        SparseMatrix::IStructure::BLOCK_DIAGONAL);
+        const auto assembled = sm.assemble();
         REQUIRE(assembled.base_sizes() == TensorShapeRef{3, 4});
         REQUIRE_THAT(assembled,
                      test::allclose(Tensor::create(
@@ -219,7 +225,7 @@ TEST_CASE("SparseMatrix", "[equation_systems]")
       }
     }
 
-    SECTION("assemble_intmd true")
+    SECTION("IStructure::DENSE")
     {
       // 1×1 matrix with non-trivial intermediate shapes:
       //   row "p": intmd_sizes={2}, base_sizes={2}
@@ -236,7 +242,7 @@ TEST_CASE("SparseMatrix", "[equation_systems]")
           /*intmd_dim=*/2);
       SparseMatrix sm(row_intmd, col_intmd, {{block}});
 
-      const auto assembled = sm.assemble(/*assemble_intmd=*/true);
+      const auto assembled = sm.assemble();
       // intermediate and base dims are both folded into flat base dims
       REQUIRE(assembled.intmd_dim() == 0);
       REQUIRE(assembled.base_sizes() == TensorShapeRef{4, 6}); // (2*2) x (3*2)
@@ -245,16 +251,19 @@ TEST_CASE("SparseMatrix", "[equation_systems]")
 
   SECTION("disassemble")
   {
-    SECTION("assemble_intmd false")
+    SECTION("IStructure::BLOCK_DIAGONAL")
     {
-      SparseMatrix sm(row_layout, col_layout, {{t00, t01}, {t10, t11}});
-      const auto assembled = sm.assemble(/*assemble_intmd=*/false);
+      SparseMatrix sm(row_layout,
+                      col_layout,
+                      {{t00, t01}, {t10, t11}},
+                      SparseMatrix::IStructure::BLOCK_DIAGONAL);
+      const auto assembled = sm.assemble();
 
       // Use the 2-arg constructor (layout-only) to create the output shell — this is
       // exactly the pattern used by DenseLU::solve. A bug in the 2-arg constructor
       // (e.g., wrong inner-vector sizing) would be caught here.
-      SparseMatrix sm2(row_layout, col_layout);
-      sm2.disassemble(assembled, /*assemble_intmd=*/false);
+      SparseMatrix sm2(row_layout, col_layout, SparseMatrix::IStructure::BLOCK_DIAGONAL);
+      sm2.disassemble(assembled);
 
       REQUIRE_THAT(sm2.tensors[0][0], test::allclose(t00));
       REQUIRE_THAT(sm2.tensors[0][1], test::allclose(t01));
@@ -262,7 +271,7 @@ TEST_CASE("SparseMatrix", "[equation_systems]")
       REQUIRE_THAT(sm2.tensors[1][1], test::allclose(t11));
     }
 
-    SECTION("assemble_intmd true")
+    SECTION("IStructure::DENSE")
     {
       const AxisLayout row_intmd({{LabeledAxisAccessor("p")}}, {TensorShape{2}}, {TensorShape{2}});
       const AxisLayout col_intmd({{LabeledAxisAccessor("x")}}, {TensorShape{3}}, {TensorShape{2}});
@@ -273,12 +282,12 @@ TEST_CASE("SparseMatrix", "[equation_systems]")
             {{20.0, 21.0}, {22.0, 23.0}}}},
           /*dynamic_dim=*/0,
           /*intmd_dim=*/2);
-      SparseMatrix sm(row_intmd, col_intmd, {{block}});
+      SparseMatrix sm(row_intmd, col_intmd, {{block}}, SparseMatrix::IStructure::DENSE);
 
-      const auto assembled = sm.assemble(/*assemble_intmd=*/true);
+      const auto assembled = sm.assemble();
       // Also use 2-arg constructor here to cover the intermediate-shapes path
-      SparseMatrix sm2(row_intmd, col_intmd);
-      sm2.disassemble(assembled, /*assemble_intmd=*/true);
+      SparseMatrix sm2(row_intmd, col_intmd, SparseMatrix::IStructure::DENSE);
+      sm2.disassemble(assembled);
 
       REQUIRE_THAT(sm2.tensors[0][0], test::allclose(block));
     }
@@ -286,7 +295,8 @@ TEST_CASE("SparseMatrix", "[equation_systems]")
 
   SECTION("operator-")
   {
-    SparseMatrix sm(row_layout, col_layout, {{t00, {}}, {t10, {}}});
+    SparseMatrix sm(
+        row_layout, col_layout, {{t00, {}}, {t10, {}}}, SparseMatrix::IStructure::DENSE);
     const auto neg = -sm;
 
     // defined entries are negated

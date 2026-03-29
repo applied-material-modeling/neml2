@@ -118,7 +118,7 @@ Newton::update(NonlinearSystem & sys)
   for (auto & t_i : t)
     if (t_i.defined() && t_i.requires_grad())
       t_i = t_i.variable_data();
-  SparseVector u(u0.layout, t);
+  SparseVector u(u0.layout, t, u0.istr);
 
   sys.set_u(u + du);
 }

@@ -205,15 +205,15 @@ TEST_CASE("SparseVector", "[equation_systems]")
 
   SECTION("assemble")
   {
-    SECTION("assemble_intmd false")
+    SECTION("IStructure::BLOCK")
     {
       SECTION("all tensors defined")
       {
-        SparseVector sv(layout);
+        SparseVector sv(layout, SparseVector::IStructure::BLOCK);
         sv.tensors[0] = Tensor::create({1.0, 2.0}, /*dynamic_dim=*/0, /*intmd_dim=*/0);
         sv.tensors[1] = Tensor::create({5.0}, /*dynamic_dim=*/0, /*intmd_dim=*/0);
 
-        const auto assembled = sv.assemble(/*assemble_intmd=*/false);
+        const auto assembled = sv.assemble();
         REQUIRE(assembled.base_dim() == 1);
         REQUIRE(assembled.base_sizes() == TensorShapeRef{3});
         REQUIRE_THAT(assembled, test::allclose(Tensor::create({1.0, 2.0, 5.0}, 0, 0)));
@@ -221,26 +221,26 @@ TEST_CASE("SparseVector", "[equation_systems]")
 
       SECTION("undefined tensors are filled with zeros")
       {
-        SparseVector sv(layout);
+        SparseVector sv(layout, SparseVector::IStructure::BLOCK);
         sv.tensors[0] = Tensor::create({1.0, 2.0}, /*dynamic_dim=*/0, /*intmd_dim=*/0);
         // sv.tensors[1] is undefined
 
-        const auto assembled = sv.assemble(/*assemble_intmd=*/false);
+        const auto assembled = sv.assemble();
         REQUIRE(assembled.base_sizes() == TensorShapeRef{3});
         REQUIRE_THAT(assembled, test::allclose(Tensor::create({1.0, 2.0, 0.0}, 0, 0)));
       }
     }
 
-    SECTION("assemble_intmd true")
+    SECTION("IStructure::DENSE")
     {
       // A layout with a non-trivial intermediate shape: intmd_sizes={2}, base_sizes={3}
       const AxisLayout layout_intmd(
           {{LabeledAxisAccessor("z")}}, {TensorShape{2}}, {TensorShape{3}});
-      SparseVector sv(layout_intmd);
+      SparseVector sv(layout_intmd, SparseVector::IStructure::DENSE);
       sv.tensors[0] =
           Tensor::create({{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}}, /*dynamic_dim=*/0, /*intmd_dim=*/1);
 
-      const auto assembled = sv.assemble(/*assemble_intmd=*/true);
+      const auto assembled = sv.assemble();
       // intermediate and base dims are both folded into a single flat base dim
       REQUIRE(assembled.intmd_dim() == 0);
       REQUIRE(assembled.base_sizes() == TensorShapeRef{6}); // 2 * 3
@@ -249,31 +249,31 @@ TEST_CASE("SparseVector", "[equation_systems]")
 
   SECTION("disassemble")
   {
-    SECTION("assemble_intmd false")
+    SECTION("IStructure::BLOCK")
     {
-      SparseVector sv(layout);
+      SparseVector sv(layout, SparseVector::IStructure::BLOCK);
       sv.tensors[0] = Tensor::create({1.0, 2.0}, /*dynamic_dim=*/0, /*intmd_dim=*/0);
       sv.tensors[1] = Tensor::create({5.0}, /*dynamic_dim=*/0, /*intmd_dim=*/0);
 
-      const auto assembled = sv.assemble(/*assemble_intmd=*/false);
-      SparseVector sv2(layout);
-      sv2.disassemble(assembled, /*assemble_intmd=*/false);
+      const auto assembled = sv.assemble();
+      SparseVector sv2(layout, SparseVector::IStructure::BLOCK);
+      sv2.disassemble(assembled);
 
       REQUIRE_THAT(sv2.tensors[0], test::allclose(sv.tensors[0]));
       REQUIRE_THAT(sv2.tensors[1], test::allclose(sv.tensors[1]));
     }
 
-    SECTION("assemble_intmd true")
+    SECTION("IStructure::DENSE")
     {
       const AxisLayout layout_intmd(
           {{LabeledAxisAccessor("z")}}, {TensorShape{2}}, {TensorShape{3}});
-      SparseVector sv(layout_intmd);
+      SparseVector sv(layout_intmd, SparseVector::IStructure::DENSE);
       sv.tensors[0] =
           Tensor::create({{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}}, /*dynamic_dim=*/0, /*intmd_dim=*/1);
 
-      const auto assembled = sv.assemble(/*assemble_intmd=*/true);
-      SparseVector sv2(layout_intmd);
-      sv2.disassemble(assembled, /*assemble_intmd=*/true);
+      const auto assembled = sv.assemble();
+      SparseVector sv2(layout_intmd, SparseVector::IStructure::DENSE);
+      sv2.disassemble(assembled);
 
       REQUIRE_THAT(sv2.tensors[0], test::allclose(sv.tensors[0]));
     }
