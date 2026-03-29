@@ -25,8 +25,8 @@
 #pragma once
 
 #include "neml2/equation_systems/NonlinearSystem.h"
-#include "neml2/equation_systems/SparseVector.h"
-#include "neml2/equation_systems/SparseMatrix.h"
+#include "neml2/equation_systems/AssembledVector.h"
+#include "neml2/equation_systems/AssembledMatrix.h"
 
 namespace neml2
 {
@@ -34,46 +34,72 @@ class TestNonlinearSystem : public NonlinearSystem
 {
 public:
   /// @param n Total number of DOFs.
-  /// @param group_sizes Number of DOFs in each variable group.  When empty
+  /// @param residual_group_sizes Number of DOFs in each residual group.  When empty
   ///        (the default) all DOFs are placed in a single group.
-  TestNonlinearSystem(std::size_t n, std::vector<std::size_t> group_sizes = {});
+  /// @param unknown_group_sizes Number of DOFs in each unknown group.  When empty
+  ///        (the default) all DOFs are placed in a single group.
+  TestNonlinearSystem(std::size_t n,
+                      std::vector<std::size_t> residual_group_sizes = {},
+                      std::vector<std::size_t> unknown_group_sizes = {});
 
-  void set_u(const SparseVector & u) override { _u = u; }
-  void set_g(const SparseVector & /*g*/) override {}
+  void set_u(const AssembledVector & u) override { _u = u; }
+  void set_g(const AssembledVector & /*g*/) override {}
 
-  SparseVector u() const override { return _u; }
-  SparseVector g() const override { return {}; }
+  AssembledVector u() const override { return _u; }
+  AssembledVector g() const override { return {}; }
 
-  virtual SparseVector exact_solution(const SparseVector & u) const = 0;
+  virtual AssembledVector exact_solution(const AssembledVector & u) const = 0;
 
 protected:
+  void assemble(AssembledMatrix *, AssembledMatrix *, AssembledVector *) override;
+
   std::shared_ptr<AxisLayout> setup_ulayout() override;
   std::shared_ptr<AxisLayout> setup_glayout() override;
   std::shared_ptr<AxisLayout> setup_blayout() override;
 
-  const std::size_t _n;
-  /// DOFs per group (always at least one entry)
-  const std::vector<std::size_t> _group_sizes;
-  SparseVector _u;
+  /// residual for DOF i
+  virtual Scalar residual() const = 0;
+  /// Jacobian for DOF i w.r.t. DOF j
+  virtual Scalar jacobian() const = 0;
+
+  /// DOF index
+  Size _i = 0, _j = 0;
+  /// group index
+  std::size_t _I = 0, _J = 0;
+
+  /// Number of DOFs in the system.
+  const Size _n;
+  /// DOFs per residual group (always at least one entry)
+  const std::vector<std::size_t> _residual_group_sizes;
+  /// DOFs per unknown group (always at least one entry)
+  const std::vector<std::size_t> _unknown_group_sizes;
+  /// Current solution vector.
+  AssembledVector _u;
 };
 
 class PowerTestSystem : public TestNonlinearSystem
 {
 public:
   using TestNonlinearSystem::TestNonlinearSystem;
-  SparseVector exact_solution(const SparseVector &) const override;
+  AssembledVector exact_solution(const AssembledVector &) const override;
 
 protected:
-  void assemble(SparseMatrix *, SparseMatrix *, SparseVector *) override;
+  /// residual for DOF i
+  Scalar residual() const override;
+  /// Jacobian for DOF i w.r.t. DOF j
+  Scalar jacobian() const override;
 };
 
 class RosenbrockTestSystem : public TestNonlinearSystem
 {
 public:
   using TestNonlinearSystem::TestNonlinearSystem;
-  SparseVector exact_solution(const SparseVector &) const override;
+  AssembledVector exact_solution(const AssembledVector &) const override;
 
 protected:
-  void assemble(SparseMatrix *, SparseMatrix *, SparseVector *) override;
+  /// residual for DOF i
+  Scalar residual() const override;
+  /// Jacobian for DOF i w.r.t. DOF j
+  Scalar jacobian() const override;
 };
 }

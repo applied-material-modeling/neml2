@@ -23,8 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/solvers/DenseLU.h"
-#include "neml2/equation_systems/SparseVector.h"
-#include "neml2/equation_systems/SparseMatrix.h"
+#include "neml2/equation_systems/AssembledVector.h"
+#include "neml2/equation_systems/AssembledMatrix.h"
 #include "neml2/tensors/functions/linalg/solve.h"
 #include "neml2/misc/assertions.h"
 
@@ -47,28 +47,23 @@ DenseLU::DenseLU(const OptionSet & options)
 {
 }
 
-SparseVector
-DenseLU::solve(const SparseMatrix & A, const SparseVector & b) const
+AssembledVector
+DenseLU::solve(const AssembledMatrix & A, const AssembledVector & b) const
 {
-  // solve
-  const auto xf = linalg::solve(A.assemble(), b.assemble());
-
-  // disassemble the solution
-  SparseVector x(A.col_layout, b.istr);
-  x.disassemble(xf);
-  return x;
+  neml_assert(A.row_layout.ngroup() == 1 && A.col_layout.ngroup() == 1 && b.layout.ngroup() == 1,
+              "DenseLU only supports single-group layouts.");
+  const auto xf = linalg::solve(A.tensors[0][0], b.tensors[0]);
+  return AssembledVector(b.layout, {xf});
 }
 
-SparseMatrix
-DenseLU::solve(const SparseMatrix & A, const SparseMatrix & B) const
+AssembledMatrix
+DenseLU::solve(const AssembledMatrix & A, const AssembledMatrix & B) const
 {
-  // solve
-  const auto Xf = linalg::solve(A.assemble(), B.assemble());
-
-  // disassemble the solution
-  SparseMatrix X(A.col_layout, B.col_layout, A.istr);
-  X.disassemble(Xf);
-  return X;
+  neml_assert(A.row_layout.ngroup() == 1 && A.col_layout.ngroup() == 1 &&
+                  B.col_layout.ngroup() == 1 && B.row_layout.ngroup() == 1,
+              "DenseLU only supports single-group layouts.");
+  const auto Xf = linalg::solve(A.tensors[0][0], B.tensors[0][0]);
+  return AssembledMatrix(A.col_layout, B.col_layout, {{Xf}});
 }
 
 }

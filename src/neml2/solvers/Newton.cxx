@@ -27,8 +27,8 @@
 
 #include "neml2/solvers/Newton.h"
 #include "neml2/tensors/Scalar.h"
-#include "neml2/equation_systems/SparseVector.h"
-#include "neml2/equation_systems/SparseMatrix.h"
+#include "neml2/equation_systems/AssembledVector.h"
+#include "neml2/equation_systems/AssembledMatrix.h"
 
 namespace neml2
 {
@@ -112,13 +112,11 @@ Newton::update(NonlinearSystem & sys)
   auto [A, b] = sys.A_and_b();
   auto du = linear_solver->solve(A, b);
 
-  // We need to discard the function graph of the trial solution
-  auto u0 = sys.u();
-  auto t = u0.tensors;
-  for (auto & t_i : t)
+  // discard the function graph of the trial solution
+  auto u = sys.u();
+  for (auto & t_i : u.tensors)
     if (t_i.defined() && t_i.requires_grad())
       t_i = t_i.variable_data();
-  SparseVector u(u0.layout, t, u0.istr);
 
   sys.set_u(u + du);
 }

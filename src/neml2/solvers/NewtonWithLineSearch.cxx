@@ -26,8 +26,8 @@
 #include <iomanip>
 
 #include "neml2/solvers/NewtonWithLineSearch.h"
-#include "neml2/equation_systems/SparseVector.h"
-#include "neml2/equation_systems/SparseMatrix.h"
+#include "neml2/equation_systems/AssembledMatrix.h"
+#include "neml2/equation_systems/AssembledVector.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/functions/sqrt.h"
 
@@ -94,7 +94,7 @@ NewtonWithLineSearch::update(NonlinearSystem & sys)
     auto up = u + alpha * du;
     sys.set_u(up);
     auto b = sys.b();
-    auto nb = norm_sq(b);
+    auto nb = neml2::norm_sq(b);
 
     if (_type == "BACKTRACKING")
       crit = nb0 - 2.0 * _linesearch_c * alpha * (b0 * du);

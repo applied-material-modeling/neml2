@@ -52,6 +52,16 @@ SparseMatrix::SparseMatrix(AxisLayout rl, AxisLayout cl, std::vector<std::vector
                     "Number of matrix columns does not match column layout size");
 }
 
+TensorOptions
+SparseMatrix::options() const
+{
+  for (const auto & row : tensors)
+    for (const auto & t : row)
+      if (t.defined())
+        return t.options();
+  return default_tensor_options();
+}
+
 SparseMatrix
 SparseMatrix::group(std::size_t i, std::size_t j) const
 {

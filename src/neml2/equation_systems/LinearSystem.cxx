@@ -24,8 +24,8 @@
 
 #include "neml2/equation_systems/LinearSystem.h"
 #include "neml2/equation_systems/AxisLayout.h"
-#include "neml2/equation_systems/SparseMatrix.h"
-#include "neml2/equation_systems/SparseVector.h"
+#include "neml2/equation_systems/AssembledMatrix.h"
+#include "neml2/equation_systems/AssembledVector.h"
 
 namespace neml2
 {
@@ -61,54 +61,54 @@ LinearSystem::g_changed()
   _b_up_to_date = false;
 }
 
-SparseMatrix
+AssembledMatrix
 LinearSystem::A()
 {
-  SparseMatrix A(_blayout->view(), _ulayout->view(), SparseMatrix::IStructure::DENSE);
+  AssembledMatrix A(_blayout->view(), _ulayout->view());
   pre_assemble(true, false, false);
   assemble(&A, nullptr, nullptr);
   post_assemble(true, false, false);
   return A;
 }
 
-SparseVector
+AssembledVector
 LinearSystem::b()
 {
-  SparseVector b(_blayout->view(), SparseVector::IStructure::DENSE);
+  AssembledVector b(_blayout->view());
   pre_assemble(false, false, true);
   assemble(nullptr, nullptr, &b);
   post_assemble(false, false, true);
   return b;
 }
 
-std::tuple<SparseMatrix, SparseVector>
+std::tuple<AssembledMatrix, AssembledVector>
 LinearSystem::A_and_b()
 {
-  SparseMatrix A(_blayout->view(), _ulayout->view(), SparseMatrix::IStructure::DENSE);
-  SparseVector b(_blayout->view(), SparseVector::IStructure::DENSE);
+  AssembledMatrix A(_blayout->view(), _ulayout->view());
+  AssembledVector b(_blayout->view());
   pre_assemble(true, false, true);
   assemble(&A, nullptr, &b);
   post_assemble(true, false, true);
   return {A, b};
 }
 
-std::tuple<SparseMatrix, SparseMatrix>
+std::tuple<AssembledMatrix, AssembledMatrix>
 LinearSystem::A_and_B()
 {
-  SparseMatrix A(_blayout->view(), _ulayout->view(), SparseMatrix::IStructure::DENSE);
-  SparseMatrix B(_blayout->view(), _glayout->view(), SparseMatrix::IStructure::DENSE);
+  AssembledMatrix A(_blayout->view(), _ulayout->view());
+  AssembledMatrix B(_blayout->view(), _glayout->view());
   pre_assemble(true, true, false);
   assemble(&A, &B, nullptr);
   post_assemble(true, true, false);
   return {A, B};
 }
 
-std::tuple<SparseMatrix, SparseMatrix, SparseVector>
+std::tuple<AssembledMatrix, AssembledMatrix, AssembledVector>
 LinearSystem::A_and_B_and_b()
 {
-  SparseMatrix A(_blayout->view(), _ulayout->view(), SparseMatrix::IStructure::DENSE);
-  SparseMatrix B(_blayout->view(), _glayout->view(), SparseMatrix::IStructure::DENSE);
-  SparseVector b(_blayout->view(), SparseVector::IStructure::DENSE);
+  AssembledMatrix A(_blayout->view(), _ulayout->view());
+  AssembledMatrix B(_blayout->view(), _glayout->view());
+  AssembledVector b(_blayout->view());
   pre_assemble(true, true, true);
   assemble(&A, &B, &b);
   post_assemble(true, true, true);

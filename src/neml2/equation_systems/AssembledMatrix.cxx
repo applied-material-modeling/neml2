@@ -23,10 +23,13 @@
 // THE SOFTWARE.
 
 #include "neml2/equation_systems/AssembledMatrix.h"
+#include "neml2/equation_systems/AssembledVector.h"
 #include "neml2/equation_systems/SparseMatrix.h"
 #include "neml2/equation_systems/assembly.h"
 #include "neml2/misc/assertions.h"
 #include "neml2/tensors/shape_utils.h"
+#include "neml2/tensors/functions/mm.h"
+#include "neml2/tensors/functions/mv.h"
 
 namespace neml2
 {
@@ -48,6 +51,16 @@ AssembledMatrix::AssembledMatrix(AxisLayout rl, AxisLayout cl, std::vector<std::
   for (std::size_t i = 0; i < row_layout.ngroup(); ++i)
     neml_assert_dbg(tensors[i].size() == col_layout.ngroup(),
                     "Number of matrix columns does not match column layout group size");
+}
+
+TensorOptions
+AssembledMatrix::options() const
+{
+  for (const auto & row : tensors)
+    for (const auto & t : row)
+      if (t.defined())
+        return t.options();
+  return default_tensor_options();
 }
 
 AssembledMatrix
@@ -109,6 +122,96 @@ AssembledMatrix::disassemble() const
     }
 
   return SparseMatrix(row_layout, col_layout, std::move(sp_tensors));
+}
+
+AssembledMatrix
+operator+(const AssembledMatrix & A, const AssembledMatrix & B)
+{
+  std::vector<std::vector<Tensor>> tensors(A.row_layout.ngroup(),
+                                           std::vector<Tensor>(A.col_layout.ngroup()));
+  for (std::size_t i = 0; i < A.row_layout.ngroup(); ++i)
+    for (std::size_t j = 0; j < A.col_layout.ngroup(); ++j)
+    {
+      const auto & aij = A.tensors[i][j];
+      const auto & bij = B.tensors[i][j];
+      if (aij.defined() && bij.defined())
+        tensors[i][j] = aij + bij;
+      else if (aij.defined())
+        tensors[i][j] = aij;
+      else if (bij.defined())
+        tensors[i][j] = bij;
+    }
+  return AssembledMatrix(A.row_layout, A.col_layout, std::move(tensors));
+}
+
+AssembledMatrix
+operator-(const AssembledMatrix & A, const AssembledMatrix & B)
+{
+  std::vector<std::vector<Tensor>> tensors(A.row_layout.ngroup(),
+                                           std::vector<Tensor>(A.col_layout.ngroup()));
+  for (std::size_t i = 0; i < A.row_layout.ngroup(); ++i)
+    for (std::size_t j = 0; j < A.col_layout.ngroup(); ++j)
+    {
+      const auto & aij = A.tensors[i][j];
+      const auto & bij = B.tensors[i][j];
+      if (aij.defined() && bij.defined())
+        tensors[i][j] = aij - bij;
+      else if (aij.defined())
+        tensors[i][j] = aij;
+      else if (bij.defined())
+        tensors[i][j] = -bij;
+    }
+  return AssembledMatrix(A.row_layout, A.col_layout, std::move(tensors));
+}
+
+AssembledMatrix
+operator*(const AssembledMatrix & A, const AssembledMatrix & B)
+{
+  std::vector<std::vector<Tensor>> tensors(A.row_layout.ngroup(),
+                                           std::vector<Tensor>(B.col_layout.ngroup()));
+  // Cij = sum_k Aik * Bkj
+  for (std::size_t i = 0; i < A.row_layout.ngroup(); ++i)
+    for (std::size_t j = 0; j < B.col_layout.ngroup(); ++j)
+    {
+      Tensor cij;
+      for (std::size_t k = 0; k < A.col_layout.ngroup(); ++k)
+      {
+        const auto & aik = A.tensors[i][k];
+        const auto & bkj = B.tensors[k][j];
+        if (!aik.defined() || !bkj.defined())
+          continue;
+        if (k == 0)
+          cij = neml2::mm(aik, bkj);
+        else
+          cij = cij + neml2::mm(aik, bkj);
+      }
+      tensors[i][j] = cij;
+    }
+  return AssembledMatrix(A.row_layout, B.col_layout, std::move(tensors));
+}
+
+AssembledVector
+operator*(const AssembledMatrix & A, const AssembledVector & b)
+{
+  std::vector<Tensor> tensors(A.row_layout.ngroup());
+  // ci = sum_j Aij * bj
+  for (std::size_t i = 0; i < A.row_layout.ngroup(); ++i)
+  {
+    Tensor cij;
+    for (std::size_t j = 0; j < b.layout.ngroup(); ++j)
+    {
+      const auto & aij = A.tensors[i][j];
+      const auto & bj = b.tensors[j];
+      if (!aij.defined() || !bj.defined())
+        continue;
+      if (j == 0)
+        cij = neml2::mv(aij, bj);
+      else
+        cij = cij + neml2::mv(aij, bj);
+    }
+    tensors[i] = cij;
+  }
+  return AssembledVector(A.row_layout, std::move(tensors));
 }
 
 } // namespace neml2

@@ -23,8 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/solvers/SchurComplement.h"
-#include "neml2/equation_systems/SparseMatrix.h"
-#include "neml2/equation_systems/SparseVector.h"
+#include "neml2/equation_systems/AssembledMatrix.h"
+#include "neml2/equation_systems/AssembledVector.h"
 #include "neml2/misc/assertions.h"
 
 namespace neml2
@@ -60,33 +60,37 @@ SchurComplement::expected_options()
 
 SchurComplement::SchurComplement(const OptionSet & options)
   : LinearSolver(options),
-    _residual_primary(options.get<unsigned int>("residual_primary_group")),
-    _residual_schur(1 - options.get<unsigned int>("residual_primary_group")),
-    _unknown_primary(options.get<unsigned int>("unknown_primary_group")),
-    _unknown_schur(1 - options.get<unsigned int>("unknown_primary_group"))
+    _rp(options.get<unsigned int>("residual_primary_group")),
+    _rs(1 - options.get<unsigned int>("residual_primary_group")),
+    _up(options.get<unsigned int>("unknown_primary_group")),
+    _us(1 - options.get<unsigned int>("unknown_primary_group"))
 {
   _primary_solver = get_solver<LinearSolver>("primary_solver");
   _schur_solver = get_solver<LinearSolver>("schur_solver");
 }
 
-SparseVector
-SchurComplement::solve(const SparseMatrix & A, const SparseVector & b) const
+AssembledVector
+SchurComplement::solve(const AssembledMatrix & A, const AssembledVector & b) const
 {
-  neml_assert_dbg(
-      A.row_ngroup() == 2, "SchurComplement requires exactly 2 row groups, got ", A.row_ngroup());
-  neml_assert_dbg(A.col_ngroup() == 2,
-                  "SchurComplement requires exactly 2 column groups, got ",
-                  A.col_ngroup());
+  neml_assert_dbg(A.row_layout.ngroup() == 2,
+                  "SchurComplement requires exactly 2 row groups in A, got ",
+                  A.row_layout.ngroup());
+  neml_assert_dbg(A.col_layout.ngroup() == 2,
+                  "SchurComplement requires exactly 2 column groups in A, got ",
+                  A.col_layout.ngroup());
+  neml_assert_dbg(b.layout.ngroup() == 2,
+                  "SchurComplement requires exactly 2 vector groups in b, got ",
+                  b.layout.ngroup());
 
   // Extract the four blocks using view layouts
-  const auto A_pp = A.group(_residual_primary, _unknown_primary);
-  const auto A_ps = A.group(_residual_primary, _unknown_schur);
-  const auto A_sp = A.group(_residual_schur, _unknown_primary);
-  const auto A_ss = A.group(_residual_schur, _unknown_schur);
+  const auto A_pp = A.group(_rp, _up);
+  const auto A_ps = A.group(_rp, _us);
+  const auto A_sp = A.group(_rs, _up);
+  const auto A_ss = A.group(_rs, _us);
 
   // Extract the two b groups
-  const auto b_p = b.group(_residual_primary);
-  const auto b_s = b.group(_residual_schur);
+  const auto b_p = b.group(_rp);
+  const auto b_s = b.group(_rs);
 
   // Step 1: Y = A_pp^{-1} A_ps
   const auto Y = _primary_solver->solve(A_pp, A_ps);
@@ -107,9 +111,9 @@ SchurComplement::solve(const SparseMatrix & A, const SparseVector & b) const
   const auto x_p = z - Y * x_s;
 
   // Assemble the full solution
-  SparseVector x(A.col_layout, b.istr);
-  const auto [pp_s, pp_e] = A.col_layout.group_offsets(_unknown_primary);
-  const auto [ss_s, ss_e] = A.col_layout.group_offsets(_unknown_schur);
+  AssembledVector x(A.col_layout);
+  const auto [pp_s, pp_e] = A.col_layout.group_offsets(_up);
+  const auto [ss_s, ss_e] = A.col_layout.group_offsets(_us);
   for (std::size_t i = 0; i < pp_e - pp_s; ++i)
     x.tensors[pp_s + i] = x_p.tensors[i];
   for (std::size_t i = 0; i < ss_e - ss_s; ++i)
@@ -118,24 +122,31 @@ SchurComplement::solve(const SparseMatrix & A, const SparseVector & b) const
   return x;
 }
 
-SparseMatrix
-SchurComplement::solve(const SparseMatrix & A, const SparseMatrix & B) const
+AssembledMatrix
+SchurComplement::solve(const AssembledMatrix & A, const AssembledMatrix & B) const
 {
-  neml_assert_dbg(
-      A.row_ngroup() == 2, "SchurComplement requires exactly 2 row groups, got ", A.row_ngroup());
-  neml_assert_dbg(A.col_ngroup() == 2,
-                  "SchurComplement requires exactly 2 column groups, got ",
-                  A.col_ngroup());
+  neml_assert_dbg(A.row_layout.ngroup() == 2,
+                  "SchurComplement requires exactly 2 row groups in A, got ",
+                  A.row_layout.ngroup());
+  neml_assert_dbg(A.col_layout.ngroup() == 2,
+                  "SchurComplement requires exactly 2 column groups in A, got ",
+                  A.col_layout.ngroup());
+  neml_assert_dbg(B.row_layout.ngroup() == 2,
+                  "SchurComplement requires exactly 2 row groups in B, got ",
+                  B.row_layout.ngroup());
+  neml_assert_dbg(B.col_layout.ngroup() == 1,
+                  "SchurComplement requires exactly 1 column group in B, got ",
+                  B.col_layout.ngroup());
 
   // Extract the four blocks using view layouts
-  const auto A_pp = A.group(_residual_primary, _unknown_primary);
-  const auto A_ps = A.group(_residual_primary, _unknown_schur);
-  const auto A_sp = A.group(_residual_schur, _unknown_primary);
-  const auto A_ss = A.group(_residual_schur, _unknown_schur);
+  const auto A_pp = A.group(_rp, _up);
+  const auto A_ps = A.group(_rp, _us);
+  const auto A_sp = A.group(_rs, _up);
+  const auto A_ss = A.group(_rs, _us);
 
   // Extract the two row groups of B
-  const auto B_p = B.row_group(_residual_primary);
-  const auto B_s = B.row_group(_residual_schur);
+  const auto B_p = B.group(_rp, 0);
+  const auto B_s = B.group(_rs, 0);
 
   // Step 1: Y = A_pp^{-1} A_ps
   const auto Y = _primary_solver->solve(A_pp, A_ps);
@@ -156,9 +167,9 @@ SchurComplement::solve(const SparseMatrix & A, const SparseMatrix & B) const
   const auto X_p = Z - Y * X_s;
 
   // Assemble the full solution
-  SparseMatrix X(A.col_layout, B.col_layout, A.istr);
-  const auto [pp_s, pp_e] = A.col_layout.group_offsets(_unknown_primary);
-  const auto [ss_s, ss_e] = A.col_layout.group_offsets(_unknown_schur);
+  AssembledMatrix X(A.col_layout, B.col_layout);
+  const auto [pp_s, pp_e] = A.col_layout.group_offsets(_up);
+  const auto [ss_s, ss_e] = A.col_layout.group_offsets(_us);
   for (std::size_t i = 0; i < pp_e - pp_s; ++i)
     X.tensors[pp_s + i] = X_p.tensors[i];
   for (std::size_t i = 0; i < ss_e - ss_s; ++i)

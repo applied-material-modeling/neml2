@@ -56,18 +56,18 @@ public:
 
   SchurComplement(const OptionSet & options);
 
-  SparseVector solve(const SparseMatrix &, const SparseVector &) const override;
-  SparseMatrix solve(const SparseMatrix &, const SparseMatrix &) const override;
+  AssembledVector solve(const AssembledMatrix &, const AssembledVector &) const override;
+  AssembledMatrix solve(const AssembledMatrix &, const AssembledMatrix &) const override;
 
 private:
   /// Row (residual) group index for the primary block
-  const std::size_t _residual_primary;
+  const std::size_t _rp;
   /// Row (residual) group index for the Schur complement block
-  const std::size_t _residual_schur;
+  const std::size_t _rs;
   /// Column (unknown) group index for the primary block
-  const std::size_t _unknown_primary;
+  const std::size_t _up;
   /// Column (unknown) group index for the Schur complement block
-  const std::size_t _unknown_schur;
+  const std::size_t _us;
   /// Linear solver for the primary block A_pp
   std::shared_ptr<LinearSolver> _primary_solver;
   /// Linear solver for the Schur complement block S

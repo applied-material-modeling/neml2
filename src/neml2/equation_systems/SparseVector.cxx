@@ -46,6 +46,15 @@ SparseVector::SparseVector(AxisLayout l, std::vector<Tensor> t)
   neml_assert_dbg(tensors.size() == layout.nvar(), "Number of tensors must match the layout size");
 }
 
+TensorOptions
+SparseVector::options() const
+{
+  for (const auto & t : tensors)
+    if (t.defined())
+      return t.options();
+  return default_tensor_options();
+}
+
 SparseVector
 SparseVector::group(std::size_t i) const
 {

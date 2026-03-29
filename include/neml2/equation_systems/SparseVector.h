@@ -38,6 +38,9 @@ struct SparseVector
   SparseVector(AxisLayout);
   SparseVector(AxisLayout, std::vector<Tensor>);
 
+  /// Tensor options
+  TensorOptions options() const;
+
   /// Contiguous view of the sparse vector
   SparseVector group(std::size_t) const;
 

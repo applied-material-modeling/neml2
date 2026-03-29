@@ -38,6 +38,9 @@ struct AssembledVector
   AssembledVector(AxisLayout);
   AssembledVector(AxisLayout, std::vector<Tensor>);
 
+  /// Tensor options
+  TensorOptions options() const;
+
   /// Contiguous view of the sparse vector
   AssembledVector group(std::size_t) const;
 
@@ -49,4 +52,21 @@ struct AssembledVector
   /// Layout of the tensors
   AxisLayout layout;
 };
+
+/// Unary negation of an AssembledVector
+AssembledVector operator-(const AssembledVector &);
+/// binary addition
+AssembledVector operator+(const AssembledVector &, const AssembledVector &);
+/// binary subtraction
+AssembledVector operator-(const AssembledVector &, const AssembledVector &);
+/// binary scalar multiplication
+AssembledVector operator*(const Scalar &, const AssembledVector &);
+AssembledVector operator*(const AssembledVector &, const Scalar &);
+/// binary inner product
+Scalar operator*(const AssembledVector &, const AssembledVector &);
+/// squared-norm
+Scalar norm_sq(const AssembledVector &);
+/// norm
+Scalar norm(const AssembledVector &);
+
 } // namespace neml2

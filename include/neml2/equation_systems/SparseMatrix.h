@@ -38,6 +38,9 @@ struct SparseMatrix
   SparseMatrix(AxisLayout, AxisLayout);
   SparseMatrix(AxisLayout, AxisLayout, std::vector<std::vector<Tensor>>);
 
+  /// Tensor options
+  TensorOptions options() const;
+
   /// Semi-contiguous view of a block of the sparse matrix
   SparseMatrix group(std::size_t, std::size_t) const;
 

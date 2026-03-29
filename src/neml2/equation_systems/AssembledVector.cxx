@@ -26,6 +26,11 @@
 #include "neml2/misc/assertions.h"
 #include "neml2/equation_systems/assembly.h"
 #include "neml2/equation_systems/SparseVector.h"
+#include "neml2/misc/defaults.h"
+#include "neml2/misc/types.h"
+#include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/functions/inner.h"
+#include "neml2/tensors/functions/sqrt.h"
 
 namespace neml2
 {
@@ -42,6 +47,15 @@ AssembledVector::AssembledVector(AxisLayout l, std::vector<Tensor> t)
 {
   neml_assert_dbg(tensors.size() == layout.ngroup(),
                   "Number of tensors must match the layout group size");
+}
+
+TensorOptions
+AssembledVector::options() const
+{
+  for (const auto & t : tensors)
+    if (t.defined())
+      return t.options();
+  return default_tensor_options();
 }
 
 AssembledVector
@@ -87,6 +101,91 @@ AssembledVector::disassemble() const
   }
 
   return SparseVector(layout, std::move(sp_tensors));
+}
+
+AssembledVector
+operator-(const AssembledVector & v)
+{
+  auto r = v;
+  for (auto & t : r.tensors)
+    if (t.defined())
+      t = -t;
+  return r;
+}
+
+AssembledVector
+operator+(const AssembledVector & a, const AssembledVector & b)
+{
+  std::vector<Tensor> tensors(a.tensors.size());
+  for (std::size_t i = 0; i < a.tensors.size(); ++i)
+  {
+    if (a.tensors[i].defined() && b.tensors[i].defined())
+      tensors[i] = a.tensors[i] + b.tensors[i];
+    else if (a.tensors[i].defined())
+      tensors[i] = a.tensors[i];
+    else if (b.tensors[i].defined())
+      tensors[i] = b.tensors[i];
+  }
+  return AssembledVector(a.layout, std::move(tensors));
+}
+
+AssembledVector
+operator-(const AssembledVector & a, const AssembledVector & b)
+{
+  std::vector<Tensor> tensors(a.tensors.size());
+  for (std::size_t i = 0; i < a.tensors.size(); ++i)
+  {
+    if (a.tensors[i].defined() && b.tensors[i].defined())
+      tensors[i] = a.tensors[i] - b.tensors[i];
+    else if (a.tensors[i].defined())
+      tensors[i] = a.tensors[i];
+    else if (b.tensors[i].defined())
+      tensors[i] = -b.tensors[i];
+  }
+  return AssembledVector(a.layout, std::move(tensors));
+}
+
+AssembledVector
+operator*(const Scalar & s, const AssembledVector & v)
+{
+  std::vector<Tensor> tensors(v.tensors.size());
+  for (std::size_t i = 0; i < v.tensors.size(); ++i)
+    if (v.tensors[i].defined())
+      tensors[i] = s * v.tensors[i];
+  return AssembledVector(v.layout, std::move(tensors));
+}
+
+AssembledVector
+operator*(const AssembledVector & v, const Scalar & s)
+{
+  return s * v;
+}
+
+Scalar
+operator*(const AssembledVector & a, const AssembledVector & b)
+{
+  neml_assert(a.layout.ngroup() == b.layout.ngroup(),
+              "Inner product requires vectors with the same number of groups, got ",
+              a.layout.ngroup(),
+              " and ",
+              b.layout.ngroup());
+  auto result = Scalar::zeros(a.options());
+  for (std::size_t i = 0; i < a.layout.ngroup(); ++i)
+    if (a.tensors[i].defined() && b.tensors[i].defined())
+      result = result + neml2::inner(a.tensors[i], b.tensors[i]);
+  return result;
+}
+
+Scalar
+norm_sq(const AssembledVector & v)
+{
+  return v * v;
+}
+
+Scalar
+norm(const AssembledVector & v)
+{
+  return neml2::sqrt(norm_sq(v));
 }
 
 } // namespace neml2
