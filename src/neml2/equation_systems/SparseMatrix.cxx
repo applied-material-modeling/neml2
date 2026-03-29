@@ -104,7 +104,19 @@ SparseMatrix::col_group(std::size_t j) const
 SparseMatrix
 SparseMatrix::group(std::size_t i, std::size_t j) const
 {
-  return row_group(i).col_group(j);
+  neml_assert_dbg(i < row_ngroup(), "Row group index out of range");
+  neml_assert_dbg(j < col_ngroup(), "Column group index out of range");
+  auto [row_start, row_end] = row_layout.group_offsets(i);
+  auto [col_start, col_end] = col_layout.group_offsets(j);
+  std::vector<std::vector<Tensor>> rows;
+  rows.reserve(row_end - row_start);
+  for (auto r = row_start; r < row_end; ++r)
+  {
+    std::vector<Tensor> row(tensors[r].begin() + Size(col_start),
+                            tensors[r].begin() + Size(col_end));
+    rows.push_back(std::move(row));
+  }
+  return SparseMatrix(row_layout.group(i), col_layout.group(j), std::move(rows));
 }
 
 std::size_t
