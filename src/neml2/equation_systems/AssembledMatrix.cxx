@@ -83,8 +83,8 @@ AssembledMatrix::disassemble() const
       const auto & t = tensors[grp_i][grp_j];
       const auto [istart, iend] = row_layout.group_offsets(grp_i);
       const auto [jstart, jend] = col_layout.group_offsets(grp_j);
-      const auto istr = row_layout.group_istr(grp_i);
-      const auto jstr = col_layout.group_istr(grp_j);
+      const auto istr = row_layout.istr(grp_i);
+      const auto jstr = col_layout.istr(grp_j);
       neml_assert(
           istr == jstr,
           "Current implementation requires matching structure types for row and column groups");
@@ -122,6 +122,17 @@ AssembledMatrix::disassemble() const
     }
 
   return SparseMatrix(row_layout, col_layout, std::move(sp_tensors));
+}
+
+AssembledMatrix
+operator-(const AssembledMatrix & A)
+{
+  auto B = A;
+  for (std::size_t i = 0; i < B.row_layout.ngroup(); ++i)
+    for (std::size_t j = 0; j < B.col_layout.ngroup(); ++j)
+      if (B.tensors[i][j].defined())
+        B.tensors[i][j] = -B.tensors[i][j];
+  return B;
 }
 
 AssembledMatrix

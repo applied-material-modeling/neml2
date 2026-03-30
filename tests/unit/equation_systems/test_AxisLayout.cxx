@@ -36,7 +36,8 @@ TEST_CASE("AxisLayout", "[equation_systems]")
   const AxisLayout layout(
       {{LabeledAxisAccessor("a"), LabeledAxisAccessor("b")}, {LabeledAxisAccessor("c")}},
       {TensorShape{2}, TensorShape{}, TensorShape{}},
-      {TensorShape{3}, TensorShape{6}, TensorShape{}});
+      {TensorShape{3}, TensorShape{6}, TensorShape{}},
+      {AxisLayout::IStructure::DENSE, AxisLayout::IStructure::BLOCK});
 
   SECTION("ngroup")
   {
@@ -57,12 +58,18 @@ TEST_CASE("AxisLayout", "[equation_systems]")
     REQUIRE(e1 == 3);
   }
 
+  SECTION("istr")
+  {
+    REQUIRE(layout.istr(0) == AxisLayout::IStructure::DENSE);
+    REQUIRE(layout.istr(1) == AxisLayout::IStructure::BLOCK);
+  }
+
   SECTION("group")
   {
     SECTION("group 0")
     {
       const auto g = layout.group(0);
-      REQUIRE(g.size() == 2);
+      REQUIRE(g.nvar() == 2);
       REQUIRE(g.is_view());
       REQUIRE(g.var(0) == LabeledAxisAccessor("a"));
       REQUIRE(g.var(1) == LabeledAxisAccessor("b"));
@@ -75,7 +82,7 @@ TEST_CASE("AxisLayout", "[equation_systems]")
     SECTION("group 1")
     {
       const auto g = layout.group(1);
-      REQUIRE(g.size() == 1);
+      REQUIRE(g.nvar() == 1);
       REQUIRE(g.is_view());
       REQUIRE(g.var(0) == LabeledAxisAccessor("c"));
       REQUIRE(g.intmd_sizes(0) == TensorShape{});
@@ -86,7 +93,7 @@ TEST_CASE("AxisLayout", "[equation_systems]")
     SECTION("group of group")
     {
       const auto g = layout.view().group(0);
-      REQUIRE(g.size() == 2);
+      REQUIRE(g.nvar() == 2);
       REQUIRE(g.var(0) == LabeledAxisAccessor("a"));
     }
   }
@@ -97,7 +104,7 @@ TEST_CASE("AxisLayout", "[equation_systems]")
     REQUIRE(v.is_view());
     // view() preserves group structure, so ngroup() still works
     REQUIRE(v.ngroup() == 2);
-    REQUIRE(v.size() == 3);
+    REQUIRE(v.nvar() == 3);
     REQUIRE(v.var(0) == LabeledAxisAccessor("a"));
     REQUIRE(v.var(1) == LabeledAxisAccessor("b"));
     REQUIRE(v.var(2) == LabeledAxisAccessor("c"));
@@ -110,12 +117,12 @@ TEST_CASE("AxisLayout", "[equation_systems]")
     REQUIRE(layout.group(0).is_view());
   }
 
-  SECTION("size")
+  SECTION("nvar")
   {
-    REQUIRE(layout.size() == 3);
-    REQUIRE(layout.group(0).size() == 2);
-    REQUIRE(layout.group(1).size() == 1);
-    REQUIRE(layout.view().size() == 3);
+    REQUIRE(layout.nvar() == 3);
+    REQUIRE(layout.group(0).nvar() == 2);
+    REQUIRE(layout.group(1).nvar() == 1);
+    REQUIRE(layout.view().nvar() == 3);
   }
 
   SECTION("storage_sizes")

@@ -75,7 +75,7 @@ struct AxisLayout
   /// Contiguous view of the variable group
   AxisLayout group(std::size_t) const;
   /// Variable group IStructure
-  IStructure group_istr(std::size_t) const;
+  IStructure istr(std::size_t) const;
   /// Contiguous view of the entire layout
   AxisLayout view() const;
   /// Whether this is a view into a parent layout

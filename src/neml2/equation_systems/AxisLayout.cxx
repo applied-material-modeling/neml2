@@ -67,7 +67,8 @@ AxisLayout::AxisLayout(const AxisLayout * parent,
 std::size_t
 AxisLayout::ngroup() const
 {
-  neml_assert(!_offsets.empty(), "Cannot call ngroup() on a sub-group view");
+  if (_offsets.empty())
+    return 1;
   return _offsets.size() - 1;
 }
 
@@ -87,11 +88,11 @@ AxisLayout::group(std::size_t idx) const
 }
 
 AxisLayout::IStructure
-AxisLayout::group_istr(std::size_t idx) const
+AxisLayout::istr(std::size_t idx) const
 {
-  neml_assert(!_offsets.empty(), "Cannot call group_istr() on a sub-group view");
+  neml_assert(!_offsets.empty(), "Cannot call istr() on a sub-group view");
   neml_assert(idx < ngroup(), "Group index out of range");
-  return _parent ? _parent->group_istr(idx) : _istrs[idx];
+  return _parent ? _parent->istr(idx) : _istrs[idx];
 }
 
 AxisLayout

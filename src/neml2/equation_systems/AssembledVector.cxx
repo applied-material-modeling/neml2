@@ -61,9 +61,8 @@ AssembledVector::options() const
 AssembledVector
 AssembledVector::group(std::size_t i) const
 {
-  auto [start, end] = layout.group_offsets(i);
-  std::vector<Tensor> ts(tensors.begin() + Size(start), tensors.begin() + Size(end));
-  return AssembledVector(layout.group(i), std::move(ts));
+  neml_assert(i < layout.ngroup(), "Group index out of range");
+  return AssembledVector(layout.group(i), {tensors[i]});
 }
 
 SparseVector
@@ -75,7 +74,7 @@ AssembledVector::disassemble() const
   {
     const auto & t = tensors[grp];
     const auto [istart, iend] = layout.group_offsets(grp);
-    const auto istr = layout.group_istr(grp);
+    const auto istr = layout.istr(grp);
     const bool assemble_intmd = (istr == AxisLayout::IStructure::DENSE);
 
     neml_assert_dbg(

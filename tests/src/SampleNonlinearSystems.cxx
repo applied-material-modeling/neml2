@@ -31,13 +31,15 @@
 
 namespace neml2
 {
-TestNonlinearSystem::TestNonlinearSystem(std::size_t n,
-                                         std::vector<std::size_t> residual_group_sizes,
-                                         std::vector<std::size_t> unknown_group_sizes)
-  : _n((Size)n),
-    _residual_group_sizes(residual_group_sizes.empty() ? std::vector<std::size_t>{n}
+TestNonlinearSystem::TestNonlinearSystem(TensorShape B,
+                                         Size n,
+                                         std::vector<Size> residual_group_sizes,
+                                         std::vector<Size> unknown_group_sizes)
+  : _B(std::move(B)),
+    _n(n),
+    _residual_group_sizes(residual_group_sizes.empty() ? std::vector<Size>{n}
                                                        : std::move(residual_group_sizes)),
-    _unknown_group_sizes(unknown_group_sizes.empty() ? std::vector<std::size_t>{n}
+    _unknown_group_sizes(unknown_group_sizes.empty() ? std::vector<Size>{n}
                                                      : std::move(unknown_group_sizes))
 {
 }
@@ -52,7 +54,7 @@ TestNonlinearSystem::setup_ulayout()
   for (std::size_t g = 0; g < _unknown_group_sizes.size(); g++)
   {
     vars[g].resize(_unknown_group_sizes[g]);
-    for (std::size_t i = 0; i < _unknown_group_sizes[g]; i++, idx++)
+    for (Size i = 0; i < _unknown_group_sizes[g]; i++, idx++)
       vars[g][i] = LabeledAxisAccessor(STATE, "u_" + std::to_string(idx));
   }
   std::vector<AxisLayout::IStructure> istr(_unknown_group_sizes.size(),
@@ -79,7 +81,7 @@ TestNonlinearSystem::setup_blayout()
   for (std::size_t g = 0; g < _residual_group_sizes.size(); g++)
   {
     vars[g].resize(_residual_group_sizes[g]);
-    for (std::size_t i = 0; i < _residual_group_sizes[g]; i++, idx++)
+    for (Size i = 0; i < _residual_group_sizes[g]; i++, idx++)
       vars[g][i] = LabeledAxisAccessor(STATE, "r_" + std::to_string(idx));
   }
   std::vector<AxisLayout::IStructure> istr(_residual_group_sizes.size(),
@@ -90,40 +92,36 @@ TestNonlinearSystem::setup_blayout()
 void
 TestNonlinearSystem::assemble(AssembledMatrix * A, AssembledMatrix * /*B*/, AssembledVector * b)
 {
-  const auto opts = _u.options();
-
   if (b)
   {
-    _i = 0;
     for (_I = 0; _I < blayout()->ngroup(); _I++)
     {
       auto group_ndof = (Size)blayout()->group(_I).nvar();
-      b->tensors[_I] = Tensor::empty({Size(group_ndof)}, opts);
-      for (Size i = 0; i < group_ndof; i++, _i++)
+      b->tensors[_I] = Tensor::zeros(_B, {}, group_ndof, _u.options());
+      for (_i = 0; _i < group_ndof; _i++)
       {
         auto res = residual();
         if (res.defined())
-          b->tensors[_I].base_index_put_({i}, res);
+          b->tensors[_I].base_index_put_({_i}, res);
       }
     }
   }
 
   if (A)
   {
-    _i = 0;
-    _j = 0;
     for (_I = 0; _I < blayout()->ngroup(); _I++)
       for (_J = 0; _J < ulayout()->ngroup(); _J++)
       {
         auto row_group_ndof = (Size)blayout()->group(_I).nvar();
         auto col_group_ndof = (Size)ulayout()->group(_J).nvar();
-        A->tensors[_I][_J] = Tensor::empty({Size(row_group_ndof), Size(col_group_ndof)}, opts);
-        for (Size i = 0; i < row_group_ndof; i++, _i++)
-          for (Size j = 0; j < col_group_ndof; j++, _j++)
+        A->tensors[_I][_J] =
+            Tensor::zeros(_B, {}, {Size(row_group_ndof), Size(col_group_ndof)}, _u.options());
+        for (_i = 0; _i < row_group_ndof; _i++)
+          for (_j = 0; _j < col_group_ndof; _j++)
           {
             auto jac = jacobian();
             if (jac.defined())
-              A->tensors[_I][_J].base_index_put_({i, j}, jac);
+              A->tensors[_I][_J].base_index_put_({_i, _j}, jac);
           }
       }
   }
@@ -133,7 +131,7 @@ AssembledVector
 PowerTestSystem::exact_solution(const AssembledVector & u) const
 {
   AssembledVector sol(ulayout()->view());
-  for (Size i = 0; i < _n; i++)
+  for (std::size_t i = 0; i < u.layout.ngroup(); i++)
     sol.tensors[i] = Tensor::ones_like(u.tensors[i]);
   return sol;
 }
@@ -141,22 +139,24 @@ PowerTestSystem::exact_solution(const AssembledVector & u) const
 Scalar
 PowerTestSystem::residual() const
 {
-  return 1.0 - pow(_u.tensors[_i], Scalar(double(_i) + 1, _u.options()));
+  const auto & u = _u.tensors[_I];
+  return 1.0 - pow(u.base_index({_i}), Scalar(double(_i) + 1, _u.options()));
 }
 
 Scalar
 PowerTestSystem::jacobian() const
 {
-  if (_i != _j)
+  if (_I != _J || _i != _j)
     return Scalar();
-  return (double(_i) + 1) * pow(_u.tensors[_i], Scalar(double(_i), _u.options()));
+  const auto & u = _u.tensors[_I];
+  return (double(_i) + 1) * pow(u.base_index({_i}), Scalar(double(_i), _u.options()));
 }
 
 AssembledVector
 RosenbrockTestSystem::exact_solution(const AssembledVector & u) const
 {
   AssembledVector sol(ulayout()->view());
-  for (Size i = 0; i < _n; i++)
+  for (std::size_t i = 0; i < u.layout.ngroup(); i++)
     sol.tensors[i] = Tensor::ones_like(u.tensors[i]);
   return sol;
 }
@@ -164,35 +164,42 @@ RosenbrockTestSystem::exact_solution(const AssembledVector & u) const
 Scalar
 RosenbrockTestSystem::residual() const
 {
-  const auto & u = _u.tensors;
+  const auto & u = _u.tensors[_I];
+  const auto m = (Size)_u.layout.group(_I).nvar();
   if (_i == 0)
-    return 400 * u[0] * (u[1] - pow(u[0], 2.0)) + 2 * (1 - u[0]);
-  else if (_i == _n - 1)
-    return -200.0 * (u[_n - 1] - pow(u[_n - 2], 2.0));
+    return 400 * u.base_index({_i}) * (u.base_index({_i + 1}) - pow(u.base_index({_i}), 2.0)) +
+           2 * (1 - u.base_index({_i}));
+  else if (_i == m - 1)
+    return -200.0 * (u.base_index({_i}) - pow(u.base_index({_i - 1}), 2.0));
   else
-    return -200 * (u[_i] - pow(u[_i - 1], 2.0)) + 400 * (u[_i + 1] - pow(u[_i], 2.0)) * u[_i] +
-           2 * (1 - u[_i]);
+    return -200 * (u.base_index({_i}) - pow(u.base_index({_i - 1}), 2.0)) +
+           400 * (u.base_index({_i + 1}) - pow(u.base_index({_i}), 2.0)) * u.base_index({_i}) +
+           2 * (1 - u.base_index({_i}));
 }
 
 Scalar
 RosenbrockTestSystem::jacobian() const
 {
-  const auto & u = _u.tensors;
+  if (_I != _J)
+    return Scalar();
+
+  const auto & u = _u.tensors[_I];
+  const auto m = (Size)_u.layout.group(_I).nvar();
 
   if (_i == 0 && _j == 0)
-    return 1200 * pow(u[0], 2.0) - 400 * u[1] + 2;
+    return 1200 * pow(u.base_index({_i}), 2.0) - 400 * u.base_index({_i + 1}) + 2;
   else if (_i == 0 && _j == 1)
-    return -400 * u[0];
-  else if (_i == _n - 1 && _j == _n - 2)
-    return -400 * u[_n - 2];
-  else if (_i == _n - 1 && _j == _n - 1)
-    return Scalar(200.0, u[0].options());
+    return -400 * u.base_index({_i});
+  else if (_i == m - 1 && _j == m - 2)
+    return -400 * u.base_index({_j});
+  else if (_i == m - 1 && _j == m - 1)
+    return Scalar(200.0, u.base_index({_i}).options());
   else if (_j == _i - 1)
-    return -400 * u[_j];
+    return -400 * u.base_index({_j});
   else if (_j == _i)
-    return 202 + 1200 * pow(u[_i], 2.0) - 400 * u[_i + 1];
+    return 202 + 1200 * pow(u.base_index({_i}), 2.0) - 400 * u.base_index({_i + 1});
   else if (_j == _i + 1)
-    return -400 * u[_i];
+    return -400 * u.base_index({_i});
 
   return Scalar();
 }

@@ -55,6 +55,8 @@ struct AssembledMatrix
   AxisLayout col_layout;
 };
 
+/// unary negation
+AssembledMatrix operator-(const AssembledMatrix &);
 /// binary addition
 AssembledMatrix operator+(const AssembledMatrix &, const AssembledMatrix &);
 /// binary subtraction

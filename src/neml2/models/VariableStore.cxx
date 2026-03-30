@@ -358,7 +358,7 @@ VariableStore::assign_input(const ValueMap & vals)
 void
 VariableStore::assign_input(const SparseVector & v)
 {
-  for (std::size_t i = 0; i < v.size(); i++)
+  for (std::size_t i = 0; i < v.layout.nvar(); i++)
     input_variable(v.layout.var(i)) = v.tensors[i];
 }
 
@@ -372,7 +372,7 @@ VariableStore::assign_output(const ValueMap & vals)
 void
 VariableStore::assign_output(const SparseVector & v)
 {
-  for (std::size_t i = 0; i < v.size(); i++)
+  for (std::size_t i = 0; i < v.layout.nvar(); i++)
     output_variable(v.layout.var(i)) = v.tensors[i];
 }
 
@@ -393,8 +393,8 @@ VariableStore::assign_output_derivatives(const DerivMap & derivs)
 void
 VariableStore::assign_output_derivatives(const SparseMatrix & J)
 {
-  const auto m = J.row_layout.size();
-  const auto n = J.col_layout.size();
+  const auto m = J.row_layout.nvar();
+  const auto n = J.col_layout.nvar();
   for (std::size_t i = 0; i < m; i++)
   {
     auto & yvar = output_variable(J.row_layout.var(i));
@@ -470,8 +470,8 @@ VariableStore::collect_input() const
 SparseVector
 VariableStore::collect_input(const AxisLayout & layout) const
 {
-  std::vector<Tensor> vals(layout.size());
-  for (std::size_t i = 0; i < layout.size(); i++)
+  std::vector<Tensor> vals(layout.nvar());
+  for (std::size_t i = 0; i < layout.nvar(); i++)
     vals[i] = input_variable(layout.var(i)).tensor();
   return SparseVector(layout, vals);
 }
@@ -488,8 +488,8 @@ VariableStore::collect_output() const
 SparseVector
 VariableStore::collect_output(const AxisLayout & layout) const
 {
-  std::vector<Tensor> vals(layout.size());
-  for (std::size_t i = 0; i < layout.size(); i++)
+  std::vector<Tensor> vals(layout.nvar());
+  for (std::size_t i = 0; i < layout.nvar(); i++)
     vals[i] = output_variable(layout.var(i)).tensor();
   return SparseVector(layout, vals);
 }
@@ -509,8 +509,8 @@ SparseMatrix
 VariableStore::collect_output_derivatives(const AxisLayout & row_layout,
                                           const AxisLayout & col_layout) const
 {
-  const auto m = row_layout.size();
-  const auto n = col_layout.size();
+  const auto m = row_layout.nvar();
+  const auto n = col_layout.nvar();
   std::vector<std::vector<Tensor>> derivs(m, std::vector<Tensor>(n));
   for (std::size_t i = 0; i < m; i++)
   {

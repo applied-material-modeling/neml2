@@ -112,12 +112,10 @@ SchurComplement::solve(const AssembledMatrix & A, const AssembledVector & b) con
 
   // Assemble the full solution
   AssembledVector x(A.col_layout);
-  const auto [pp_s, pp_e] = A.col_layout.group_offsets(_up);
-  const auto [ss_s, ss_e] = A.col_layout.group_offsets(_us);
-  for (std::size_t i = 0; i < pp_e - pp_s; ++i)
-    x.tensors[pp_s + i] = x_p.tensors[i];
-  for (std::size_t i = 0; i < ss_e - ss_s; ++i)
-    x.tensors[ss_s + i] = x_s.tensors[i];
+  const auto & x0 = _up < _us ? x_p.tensors[0] : x_s.tensors[0];
+  const auto & x1 = _up < _us ? x_s.tensors[0] : x_p.tensors[0];
+  x.tensors[0] = x0;
+  x.tensors[1] = x1;
 
   return x;
 }
@@ -168,12 +166,10 @@ SchurComplement::solve(const AssembledMatrix & A, const AssembledMatrix & B) con
 
   // Assemble the full solution
   AssembledMatrix X(A.col_layout, B.col_layout);
-  const auto [pp_s, pp_e] = A.col_layout.group_offsets(_up);
-  const auto [ss_s, ss_e] = A.col_layout.group_offsets(_us);
-  for (std::size_t i = 0; i < pp_e - pp_s; ++i)
-    X.tensors[pp_s + i] = X_p.tensors[i];
-  for (std::size_t i = 0; i < ss_e - ss_s; ++i)
-    X.tensors[ss_s + i] = X_s.tensors[i];
+  const auto & X0 = _up < _us ? X_p.tensors[0] : X_s.tensors[0];
+  const auto & X1 = _up < _us ? X_s.tensors[0] : X_p.tensors[0];
+  X.tensors[0] = X0;
+  X.tensors[1] = X1;
 
   return X;
 }

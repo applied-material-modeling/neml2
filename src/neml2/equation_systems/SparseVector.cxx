@@ -71,7 +71,7 @@ SparseVector::assemble() const
   for (std::size_t grp = 0; grp < layout.ngroup(); ++grp)
   {
     const auto [istart, iend] = layout.group_offsets(grp);
-    const auto istr = layout.group_istr(grp);
+    const auto istr = layout.istr(grp);
     const bool assemble_intmd = (istr == AxisLayout::IStructure::DENSE);
 
     // convert to assembly format
