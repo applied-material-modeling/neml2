@@ -188,17 +188,13 @@ RosenbrockTestSystem::jacobian() const
 
   if (_i == 0 && _j == 0)
     return 1200 * pow(u.base_index({_i}), 2.0) - 400 * u.base_index({_i + 1}) + 2;
-  else if (_i == 0 && _j == 1)
-    return -400 * u.base_index({_i});
-  else if (_i == m - 1 && _j == m - 2)
-    return -400 * u.base_index({_j});
   else if (_i == m - 1 && _j == m - 1)
     return Scalar(200.0, u.base_index({_i}).options());
-  else if (_j == _i - 1)
+  else if (_j + 1 == _i)
     return -400 * u.base_index({_j});
   else if (_j == _i)
     return 202 + 1200 * pow(u.base_index({_i}), 2.0) - 400 * u.base_index({_i + 1});
-  else if (_j == _i + 1)
+  else if (_i + 1 == _j)
     return -400 * u.base_index({_i});
 
   return Scalar();
