@@ -31,6 +31,7 @@
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/functions/inner.h"
 #include "neml2/tensors/functions/sqrt.h"
+#include "neml2/tensors/functions/sum.h"
 
 namespace neml2
 {
@@ -115,6 +116,7 @@ operator-(const AssembledVector & v)
 AssembledVector
 operator+(const AssembledVector & a, const AssembledVector & b)
 {
+  neml_assert_dbg(a.layout == b.layout, "Addition requires vectors with the same layout");
   std::vector<Tensor> tensors(a.tensors.size());
   for (std::size_t i = 0; i < a.tensors.size(); ++i)
   {
@@ -131,6 +133,7 @@ operator+(const AssembledVector & a, const AssembledVector & b)
 AssembledVector
 operator-(const AssembledVector & a, const AssembledVector & b)
 {
+  neml_assert_dbg(a.layout == b.layout, "Subtraction requires vectors with the same layout");
   std::vector<Tensor> tensors(a.tensors.size());
   for (std::size_t i = 0; i < a.tensors.size(); ++i)
   {
@@ -171,7 +174,26 @@ operator*(const AssembledVector & a, const AssembledVector & b)
   auto result = Scalar::zeros(a.options());
   for (std::size_t i = 0; i < a.layout.ngroup(); ++i)
     if (a.tensors[i].defined() && b.tensors[i].defined())
-      result = result + neml2::inner(a.tensors[i], b.tensors[i]);
+    {
+      auto r = neml2::inner(a.tensors[i], b.tensors[i]);
+
+      // If the reduction is performed on IStructure::BLOCK, we also need to reduce along
+      // the block intermediate dimensions
+      const auto istr = a.layout.istr(i);
+      if (istr == AxisLayout::IStructure::BLOCK)
+      {
+        neml_assert_dbg(
+            r.intmd_dim() <= 2,
+            "Expected at most 2 intermediate dimensions for BLOCK/BLOCK structure, got ",
+            r.intmd_dim());
+        if (r.intmd_dim() == 1)
+          r = intmd_sum(r, {0}, /*keepdim=*/false);
+        else if (r.intmd_dim() == 2)
+          r = intmd_sum(r, {0, 1}, /*keepdim=*/false);
+      }
+
+      result = result + r;
+    }
   return result;
 }
 

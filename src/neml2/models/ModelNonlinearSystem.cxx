@@ -24,6 +24,7 @@
 
 #include "neml2/models/ModelNonlinearSystem.h"
 #include "neml2/base/LabeledAxisAccessor.h"
+#include "neml2/base/MultiEnumSelection.h"
 #include "neml2/equation_systems/AxisLayout.h"
 #include "neml2/equation_systems/EquationSystem.h"
 #include "neml2/equation_systems/NonlinearSystem.h"
@@ -54,6 +55,19 @@ ModelNonlinearSystem::expected_options()
   options.set("residuals").doc() = "Optional ordering and grouping of residual variables. Each "
                                    "inner list defines one variable group.";
 
+  MultiEnumSelection istr_selection({"DENSE", "BLOCK"},
+                                    {static_cast<int>(AxisLayout::IStructure::DENSE),
+                                     static_cast<int>(AxisLayout::IStructure::BLOCK)},
+                                    {"DENSE"});
+  options.set<MultiEnumSelection>("unknown_istr") = istr_selection;
+  options.set("unknown_istr").doc() =
+      "Optional IStructure for each variable group. If not provided, defaults to DENSE. If only "
+      "one IStructure is provided, it will be applied to all groups.";
+  options.set<MultiEnumSelection>("residual_istr") = istr_selection;
+  options.set("residual_istr").doc() =
+      "Optional IStructure for each residual group. If not provided, defaults to DENSE. If only "
+      "one IStructure is provided, it will be applied to all groups.";
+
   return options;
 }
 
@@ -63,6 +77,8 @@ ModelNonlinearSystem::ModelNonlinearSystem(const OptionSet & options)
     BufferStore(this),
     _unknown_groups(options.get<std::vector<std::vector<VariableName>>>("unknowns")),
     _residual_groups(options.get<std::vector<std::vector<VariableName>>>("residuals")),
+    _unknown_istrs(options.get<MultiEnumSelection>("unknown_istr").as<AxisLayout::IStructure>()),
+    _residual_istrs(options.get<MultiEnumSelection>("residual_istr").as<AxisLayout::IStructure>()),
     _model(get_model("model"))
 {
 }
@@ -116,8 +132,10 @@ ModelNonlinearSystem::setup_ulayout()
       base_shapes.emplace_back(var.base_sizes());
     }
 
-  // TODO: take IStructure from input file options
-  std::vector<AxisLayout::IStructure> istrs(var_groups.size(), AxisLayout::IStructure::DENSE);
+  // IStructure
+  std::vector<AxisLayout::IStructure> istrs = _unknown_istrs;
+  if (istrs.size() == 1 && var_groups.size() > 1)
+    istrs.resize(var_groups.size(), istrs[0]);
 
   return std::make_shared<AxisLayout>(var_groups, intmd_shapes, base_shapes, istrs);
 }
@@ -164,8 +182,10 @@ ModelNonlinearSystem::setup_blayout()
       base_shapes.emplace_back(var.base_sizes());
     }
 
-  // TODO: take IStructure from input file options
-  std::vector<AxisLayout::IStructure> istrs(var_groups.size(), AxisLayout::IStructure::DENSE);
+  // IStructure
+  std::vector<AxisLayout::IStructure> istrs = _residual_istrs;
+  if (istrs.size() == 1 && var_groups.size() > 1)
+    istrs.resize(var_groups.size(), istrs[0]);
 
   return std::make_shared<AxisLayout>(var_groups, intmd_shapes, base_shapes, istrs);
 }

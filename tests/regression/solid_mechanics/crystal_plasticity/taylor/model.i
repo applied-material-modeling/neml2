@@ -95,7 +95,6 @@ ncrystal = 5
 
     predictor = 'PREVIOUS_STATE'
     save_as = 'result.pt'
-    verbose = true
   []
   [regression]
     type = TransientRegression
@@ -347,6 +346,8 @@ ncrystal = 5
     model = 'implicit_model'
     unknowns = 'state/elastic_strain state/orientation state/internal/slip_hardening; state/mixed_state'
     residuals = 'residual/elastic_strain residual/orientation residual/internal/slip_hardening; residual/mixed_state'
+    unknown_istr = 'BLOCK DENSE'
+    residual_istr = 'BLOCK DENSE'
   []
 []
 
@@ -355,7 +356,6 @@ ncrystal = 5
     type = NewtonWithLineSearch
     max_linesearch_iterations = 5
     linear_solver = 'schur'
-    verbose = true
   []
   [lu]
     type = DenseLU

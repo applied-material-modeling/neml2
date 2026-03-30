@@ -92,23 +92,23 @@ SchurComplement::solve(const AssembledMatrix & A, const AssembledVector & b) con
   const auto b_p = b.group(_rp);
   const auto b_s = b.group(_rs);
 
-  // Step 1: Y = A_pp^{-1} A_ps
-  const auto Y = _primary_solver->solve(A_pp, A_ps);
+  // Step 1: Y_ps = A_pp^{-1} A_ps
+  const auto Y_ps = _primary_solver->solve(A_pp, A_ps);
 
-  // Step 2: z = A_pp^{-1} b_p
-  const auto z = _primary_solver->solve(A_pp, b_p);
+  // Step 2: z_p = A_pp^{-1} b_p
+  const auto z_p = _primary_solver->solve(A_pp, b_p);
 
-  // Step 3: S = A_ss - A_sp Y
-  const auto S = A_ss - A_sp * Y;
+  // Step 3: S_ss = A_ss - A_sp Y_ps
+  const auto S_ss = A_ss - A_sp * Y_ps;
 
-  // Step 4: d = b_s - A_sp z
-  const auto d = b_s - A_sp * z;
+  // Step 4: d_s = b_s - A_sp z_p
+  const auto d_s = b_s - A_sp * z_p;
 
   // Step 5: x_s = S^{-1} d
-  const auto x_s = _schur_solver->solve(S, d);
+  const auto x_s = _schur_solver->solve(S_ss, d_s);
 
   // Step 6: x_p = z - Y x_s
-  const auto x_p = z - Y * x_s;
+  const auto x_p = z_p - Y_ps * x_s;
 
   // Assemble the full solution
   AssembledVector x(A.col_layout);
@@ -146,23 +146,23 @@ SchurComplement::solve(const AssembledMatrix & A, const AssembledMatrix & B) con
   const auto B_p = B.group(_rp, 0);
   const auto B_s = B.group(_rs, 0);
 
-  // Step 1: Y = A_pp^{-1} A_ps
-  const auto Y = _primary_solver->solve(A_pp, A_ps);
+  // Step 1: Y_ps = A_pp^{-1} A_ps
+  const auto Y_ps = _primary_solver->solve(A_pp, A_ps);
 
-  // Step 2: Z = A_pp^{-1} B_p
-  const auto Z = _primary_solver->solve(A_pp, B_p);
+  // Step 2: Z_p = A_pp^{-1} B_p
+  const auto Z_p = _primary_solver->solve(A_pp, B_p);
 
-  // Step 3: S = A_ss - A_sp Y
-  const auto S = A_ss - A_sp * Y;
+  // Step 3: S_ss = A_ss - A_sp Y_ps
+  const auto S_ss = A_ss - A_sp * Y_ps;
 
-  // Step 4: D = B_s - A_sp Z
-  const auto D = B_s - A_sp * Z;
+  // Step 4: D_s = B_s - A_sp Z_p
+  const auto D_s = B_s - A_sp * Z_p;
 
-  // Step 5: X_s = S^{-1} D
-  const auto X_s = _schur_solver->solve(S, D);
+  // Step 5: X_s = S_ss^{-1} D_s
+  const auto X_s = _schur_solver->solve(S_ss, D_s);
 
-  // Step 6: X_p = Z - Y X_s
-  const auto X_p = Z - Y * X_s;
+  // Step 6: X_p = Z_p - Y_ps X_s
+  const auto X_p = Z_p - Y_ps * X_s;
 
   // Assemble the full solution
   AssembledMatrix X(A.col_layout, B.col_layout);

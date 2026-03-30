@@ -24,6 +24,7 @@
 
 #pragma once
 
+#include "neml2/equation_systems/AxisLayout.h"
 #include "neml2/equation_systems/EquationSystem.h"
 #include "neml2/equation_systems/NonlinearSystem.h"
 #include "neml2/models/ParameterStore.h"
@@ -72,6 +73,10 @@ private:
   const std::vector<std::vector<VariableName>> _unknown_groups;
   /// Optional user-defined partition of residual variables.
   const std::vector<std::vector<VariableName>> _residual_groups;
+  /// IStructure for unknown groups
+  const std::vector<AxisLayout::IStructure> _unknown_istrs;
+  /// IStructure for residual groups
+  const std::vector<AxisLayout::IStructure> _residual_istrs;
 
   std::shared_ptr<Model> _model;
 };

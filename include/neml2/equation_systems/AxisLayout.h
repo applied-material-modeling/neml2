@@ -59,11 +59,13 @@ struct AxisLayout
    * @brief Construct a new Axis Layout object by viewing into a parent layout
    *
    * @param parent The axis layout this is viewing into
+   * @param group_idx The group index of the view
    * @param start The starting offset of the view (inclusive)
    * @param end The ending offset of the view (exclusive)
    * @param offsets The offsets of the variable groups in the view
    */
   AxisLayout(const AxisLayout * parent,
+             std::size_t group_idx,
              std::size_t start,
              std::size_t end,
              std::vector<std::size_t> offsets = {});
@@ -75,7 +77,7 @@ struct AxisLayout
   /// Contiguous view of the variable group
   AxisLayout group(std::size_t) const;
   /// Variable group IStructure
-  IStructure istr(std::size_t) const;
+  IStructure istr(std::size_t = 0) const;
   /// Contiguous view of the entire layout
   AxisLayout view() const;
   /// Whether this is a view into a parent layout
@@ -107,9 +109,14 @@ private:
 
   /// The axis layout this is viewing into
   const AxisLayout * _parent = nullptr;
+  /// Group idx of the view
+  std::size_t _group_idx = 0;
   /// The starting offset of the view (inclusive)
   std::size_t _start = 0;
   /// The ending offset of the view (exclusive)
   std::size_t _end = 0;
 };
+
+/// comparison operator
+bool operator==(const AxisLayout &, const AxisLayout &);
 } // namespace neml2

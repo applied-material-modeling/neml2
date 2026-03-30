@@ -95,10 +95,8 @@ SparseMatrix::assemble() const
       const auto [jstart, jend] = col_layout.group_offsets(grp_j);
       const auto istr = row_layout.istr(grp_i);
       const auto jstr = col_layout.istr(grp_j);
-      neml_assert(
-          istr == jstr,
-          "Current implementation requires matching structure types for row and column groups");
-      const bool assemble_intmd = (istr == AxisLayout::IStructure::DENSE);
+      const bool assemble_intmd =
+          (istr == AxisLayout::IStructure::DENSE) && (jstr == AxisLayout::IStructure::DENSE);
 
       const auto row_ss = row_glayout.storage_sizes(assemble_intmd);
       const auto col_ss = col_glayout.storage_sizes(assemble_intmd);

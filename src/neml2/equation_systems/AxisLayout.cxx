@@ -53,11 +53,13 @@ AxisLayout::AxisLayout(const std::vector<std::vector<LabeledAxisAccessor>> & var
 }
 
 AxisLayout::AxisLayout(const AxisLayout * parent,
+                       std::size_t group_idx,
                        std::size_t start,
                        std::size_t end,
                        std::vector<std::size_t> offsets)
   : _offsets(std::move(offsets)),
     _parent(parent),
+    _group_idx(group_idx),
     _start(start),
     _end(end)
 {
@@ -75,7 +77,11 @@ AxisLayout::ngroup() const
 std::pair<std::size_t, std::size_t>
 AxisLayout::group_offsets(std::size_t idx) const
 {
-  neml_assert(!_offsets.empty(), "Cannot call group_offsets() on a sub-group view");
+  if (_offsets.empty())
+  {
+    neml_assert(idx == 0, "Group index out of range");
+    return {0, _end - _start};
+  }
   neml_assert(idx < ngroup(), "Group index out of range");
   return {_offsets[idx], _offsets[idx + 1]};
 }
@@ -84,13 +90,17 @@ AxisLayout
 AxisLayout::group(std::size_t idx) const
 {
   auto [start, end] = group_offsets(idx);
-  return AxisLayout(_parent ? _parent : this, start, end);
+  return AxisLayout(_parent ? _parent : this, idx, start, end);
 }
 
 AxisLayout::IStructure
 AxisLayout::istr(std::size_t idx) const
 {
-  neml_assert(!_offsets.empty(), "Cannot call istr() on a sub-group view");
+  if (_offsets.empty())
+  {
+    neml_assert(idx == 0, "Group index out of range");
+    return _parent->istr(_group_idx);
+  }
   neml_assert(idx < ngroup(), "Group index out of range");
   return _parent ? _parent->istr(idx) : _istrs[idx];
 }
@@ -98,7 +108,7 @@ AxisLayout::istr(std::size_t idx) const
 AxisLayout
 AxisLayout::view() const
 {
-  return AxisLayout(_parent ? _parent : this, _start, _end, _offsets);
+  return AxisLayout(_parent ? _parent : this, 0, _start, _end, _offsets);
 }
 
 std::size_t
@@ -140,6 +150,34 @@ AxisLayout::base_sizes(std::size_t idx) const
 {
   neml_assert(idx < nvar(), "Variable index out of range");
   return _parent ? _parent->base_sizes(_start + idx) : _base_shapes[idx];
+}
+
+bool
+operator==(const AxisLayout & a, const AxisLayout & b)
+{
+  // check variable groups
+  if (a.ngroup() != b.ngroup())
+    return false;
+  for (std::size_t i = 0; i < a.ngroup(); ++i)
+  {
+    if (a.istr(i) != b.istr(i))
+      return false;
+    if (a.group_offsets(i) != b.group_offsets(i))
+      return false;
+  }
+  // check layouts
+  if (a.nvar() != b.nvar())
+    return false;
+  for (std::size_t i = 0; i < a.nvar(); ++i)
+  {
+    if (a.var(i) != b.var(i))
+      return false;
+    if (a.intmd_sizes(i) != b.intmd_sizes(i))
+      return false;
+    if (a.base_sizes(i) != b.base_sizes(i))
+      return false;
+  }
+  return true;
 }
 
 } // namespace neml2

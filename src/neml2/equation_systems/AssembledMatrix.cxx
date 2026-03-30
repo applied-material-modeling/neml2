@@ -30,6 +30,7 @@
 #include "neml2/tensors/shape_utils.h"
 #include "neml2/tensors/functions/mm.h"
 #include "neml2/tensors/functions/mv.h"
+#include "neml2/tensors/functions/sum.h"
 
 namespace neml2
 {
@@ -85,10 +86,8 @@ AssembledMatrix::disassemble() const
       const auto [jstart, jend] = col_layout.group_offsets(grp_j);
       const auto istr = row_layout.istr(grp_i);
       const auto jstr = col_layout.istr(grp_j);
-      neml_assert(
-          istr == jstr,
-          "Current implementation requires matching structure types for row and column groups");
-      const bool assemble_intmd = (istr == AxisLayout::IStructure::DENSE);
+      const bool assemble_intmd =
+          (istr == AxisLayout::IStructure::DENSE) && (jstr == AxisLayout::IStructure::DENSE);
 
       neml_assert_dbg(
           t.base_dim() == 2, "disassemble expects base dimension of 2, got ", t.base_dim());
@@ -138,6 +137,8 @@ operator-(const AssembledMatrix & A)
 AssembledMatrix
 operator+(const AssembledMatrix & A, const AssembledMatrix & B)
 {
+  neml_assert_dbg(A.row_layout == B.row_layout, "Row layouts do not match");
+  neml_assert_dbg(A.col_layout == B.col_layout, "Column layouts do not match");
   std::vector<std::vector<Tensor>> tensors(A.row_layout.ngroup(),
                                            std::vector<Tensor>(A.col_layout.ngroup()));
   for (std::size_t i = 0; i < A.row_layout.ngroup(); ++i)
@@ -158,6 +159,8 @@ operator+(const AssembledMatrix & A, const AssembledMatrix & B)
 AssembledMatrix
 operator-(const AssembledMatrix & A, const AssembledMatrix & B)
 {
+  neml_assert_dbg(A.row_layout == B.row_layout, "Row layouts do not match");
+  neml_assert_dbg(A.col_layout == B.col_layout, "Column layouts do not match");
   std::vector<std::vector<Tensor>> tensors(A.row_layout.ngroup(),
                                            std::vector<Tensor>(A.col_layout.ngroup()));
   for (std::size_t i = 0; i < A.row_layout.ngroup(); ++i)
@@ -178,6 +181,7 @@ operator-(const AssembledMatrix & A, const AssembledMatrix & B)
 AssembledMatrix
 operator*(const AssembledMatrix & A, const AssembledMatrix & B)
 {
+  neml_assert_dbg(A.col_layout == B.row_layout, "Mismatched layouts for matrix multiplication");
   std::vector<std::vector<Tensor>> tensors(A.row_layout.ngroup(),
                                            std::vector<Tensor>(B.col_layout.ngroup()));
   // Cij = sum_k Aik * Bkj
@@ -191,11 +195,29 @@ operator*(const AssembledMatrix & A, const AssembledMatrix & B)
         const auto & bkj = B.tensors[k][j];
         if (!aik.defined() || !bkj.defined())
           continue;
+        auto r = neml2::mm(aik, bkj);
+
+        // If the reduction along k is performed on IStructure::BLOCK, we also need to reduce along
+        // the block intermediate dimensions
+        const auto istr = A.col_layout.istr(k);
+        if (istr == AxisLayout::IStructure::BLOCK)
+        {
+          neml_assert_dbg(
+              r.intmd_dim() <= 2,
+              "Expected at most 2 intermediate dimensions for BLOCK/BLOCK structure, got ",
+              r.intmd_dim());
+          if (r.intmd_dim() == 1)
+            r = intmd_sum(r, {0}, /*keepdim=*/false);
+          else if (r.intmd_dim() == 2)
+            r = intmd_sum(r, {0, 1}, /*keepdim=*/false);
+        }
+
         if (k == 0)
-          cij = neml2::mm(aik, bkj);
+          cij = r;
         else
-          cij = cij + neml2::mm(aik, bkj);
+          cij = cij + r;
       }
+
       tensors[i][j] = cij;
     }
   return AssembledMatrix(A.row_layout, B.col_layout, std::move(tensors));
@@ -204,6 +226,7 @@ operator*(const AssembledMatrix & A, const AssembledMatrix & B)
 AssembledVector
 operator*(const AssembledMatrix & A, const AssembledVector & b)
 {
+  neml_assert_dbg(A.col_layout == b.layout, "Mismatched layouts for matrix multiplication");
   std::vector<Tensor> tensors(A.row_layout.ngroup());
   // ci = sum_j Aij * bj
   for (std::size_t i = 0; i < A.row_layout.ngroup(); ++i)
@@ -215,10 +238,27 @@ operator*(const AssembledMatrix & A, const AssembledVector & b)
       const auto & bj = b.tensors[j];
       if (!aij.defined() || !bj.defined())
         continue;
+      auto r = neml2::mv(aij, bj);
+
+      // If the reduction along j is performed on IStructure::BLOCK, we also need to reduce along
+      // the block intermediate dimensions
+      const auto istr = A.col_layout.istr(j);
+      if (istr == AxisLayout::IStructure::BLOCK)
+      {
+        neml_assert_dbg(
+            r.intmd_dim() <= 2,
+            "Expected at most 2 intermediate dimensions for BLOCK/BLOCK structure, got ",
+            r.intmd_dim());
+        if (r.intmd_dim() == 1)
+          r = intmd_sum(r, {0}, /*keepdim=*/false);
+        else if (r.intmd_dim() == 2)
+          r = intmd_sum(r, {0, 1}, /*keepdim=*/false);
+      }
+
       if (j == 0)
-        cij = neml2::mv(aij, bj);
+        cij = r;
       else
-        cij = cij + neml2::mv(aij, bj);
+        cij = cij + r;
     }
     tensors[i] = cij;
   }
