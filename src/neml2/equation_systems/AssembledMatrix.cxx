@@ -97,8 +97,8 @@ AssembledMatrix::disassemble() const
                         "disassemble with intermediate shapes expects intmd dimension of 0, got ",
                         t.intmd_dim());
 
-      const auto row_ss = row_layout.storage_sizes(assemble_intmd);
-      const auto col_ss = col_layout.storage_sizes(assemble_intmd);
+      const auto row_ss = row_layout.group(grp_i).storage_sizes(assemble_intmd);
+      const auto col_ss = col_layout.group(grp_j).storage_sizes(assemble_intmd);
       const auto & D = t.dynamic_sizes();
       const auto I = t.intmd_dim();
 
