@@ -25,6 +25,7 @@ macro(add_submodule mname malias)
   add_library(${mname} MODULE ${msrcs})
   target_include_directories(${mname} PUBLIC ${NEML2_SOURCE_DIR}/python/src ${Python3_INCLUDE_DIRS})
   target_link_libraries(${mname} PUBLIC torch::python Python3::Module)
+  target_compile_definitions(${mname} PRIVATE "PYBIND11_DETAILED_ERROR_MESSAGES")
   set_target_properties(${mname} PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY neml2
     OUTPUT_NAME ${malias}
@@ -68,6 +69,9 @@ target_link_libraries(pytensors PUBLIC tensor)
 
 add_submodule(pymath math)
 target_link_libraries(pymath PUBLIC tensor)
+
+add_submodule(pyes es)
+target_link_libraries(pyes PUBLIC neml2)
 
 add_submodule(pycrystallography crystallography)
 target_link_libraries(pycrystallography PUBLIC tensor)

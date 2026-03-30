@@ -22,41 +22,33 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "csrc/core/types.h"
-#include "csrc/core/utils.h"
-#include "csrc/tensors/types.h"
+#include "neml2/equation_systems/SparseMatrix.h"
+#include "neml2/equation_systems/AssembledMatrix.h"
+
+#include "csrc/es/types.h"
 
 namespace py = pybind11;
 using namespace neml2;
 
 void
-def(py::module_ & m, py::class_<neml2::LabeledAxis> & c)
+def(py::module_ & m, py::class_<SparseMatrix> & c)
 {
-  c.def("size", py::overload_cast<>(&LabeledAxis::size, py::const_))
+  c.def(py::init<>())
+      .def(py::init<AxisLayout, AxisLayout>(), py::arg("row_layout"), py::arg("col_layout"))
+      .def(py::init<AxisLayout, AxisLayout, std::vector<std::vector<Tensor>>>(),
+           py::arg("row_layout"),
+           py::arg("col_layout"),
+           py::arg("tensors"))
+      .def_readwrite("tensors",
+                     &SparseMatrix::tensors,
+                     "2D list of tensors, indexed by [row group][col group]")
+      .def_readwrite("row_layout", &SparseMatrix::row_layout, "Row layout of the tensors")
+      .def_readwrite("col_layout", &SparseMatrix::col_layout, "Column layout of the tensors")
+      .def("group",
+           &SparseMatrix::group,
+           py::arg("i"),
+           py::arg("j"),
+           "Semi-contiguous view of block (i, j)")
       .def(
-          "size",
-          [](const LabeledAxis & self, const py::object & name)
-          { return self.size(unpack_variable_name(name)); },
-          py::arg("name"))
-      .def("variable_names", &LabeledAxis::variable_names_unsrt)
-      .def("nvariable", &LabeledAxis::nvariable)
-      .def(
-          "has_variable",
-          [](const LabeledAxis & self, const py::object & name)
-          { return self.has_variable(unpack_variable_name(name)); },
-          py::arg("name"))
-      .def("subaxis_names", &LabeledAxis::subaxis_names_unsrt)
-      .def("nsubaxis", &LabeledAxis::nsubaxis)
-      .def(
-          "has_subaxis",
-          [](const LabeledAxis & self, const py::object & name)
-          { return self.has_subaxis(unpack_variable_name(name)); },
-          py::arg("name"))
-      .def(
-          "subaxis",
-          [](const LabeledAxis & self, const py::object & name)
-          { return &self.subaxis(unpack_variable_name(name)); },
-          py::arg("name"),
-          py::return_value_policy::reference)
-      .def("__repr__", [](const LabeledAxis & self) { return utils::stringify(self); });
+          "assemble", &SparseMatrix::assemble, "Assemble the tensors into a dense AssembledMatrix");
 }

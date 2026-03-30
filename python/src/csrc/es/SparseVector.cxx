@@ -22,32 +22,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "csrc/core/types.h"
+#include "neml2/equation_systems/SparseVector.h"
+#include "neml2/equation_systems/AssembledVector.h"
+
 #include "csrc/es/types.h"
 
 namespace py = pybind11;
 using namespace neml2;
 
 void
-def(py::module_ & m, py::class_<neml2::Factory> & c)
+def(py::module_ & m, py::class_<SparseVector> & c)
 {
-  c.def(
-       "get_model",
-       [](Factory * self, const std::string & name) { return self->get_model(name); },
-       py::arg("name"),
-       R"(
-  Create a core.Model.
-
-  :param name:        Name of the model
-  )")
+  c.def(py::init<>())
+      .def(py::init<AxisLayout>(), py::arg("layout"))
+      .def(py::init<AxisLayout, std::vector<Tensor>>(), py::arg("layout"), py::arg("tensors"))
+      .def_readwrite("tensors", &SparseVector::tensors, "List of tensors, one per variable group")
+      .def_readwrite("layout", &SparseVector::layout, "Layout of the tensors")
+      .def("group", &SparseVector::group, py::arg("i"), "Contiguous view of variable group i")
       .def(
-          "get_nonlinear_system",
-          [](Factory * self, const std::string & name)
-          { return self->get_es<ModelNonlinearSystem>(name); },
-          py::arg("name"),
-          R"(
-  Create a core.NonlinearSystem.
-
-  :param name:        Name of the nonlinear system
-  )");
+          "assemble", &SparseVector::assemble, "Assemble the tensors into a dense AssembledVector");
 }

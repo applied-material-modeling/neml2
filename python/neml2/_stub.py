@@ -59,6 +59,6 @@ def _generate_stub(*args: str) -> int:
         print(f"Generating stubs for {module}")
         result = subprocess.run(cmd_base + [module])
         if result.returncode != 0:
-            return result.returncode
+            print(f"Failed to generate stubs for {module}")
 
     return 0

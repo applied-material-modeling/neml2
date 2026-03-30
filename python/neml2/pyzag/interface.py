@@ -29,7 +29,6 @@ import torch
 import neml2
 from neml2.tensors import Tensor
 from neml2.reserved import *
-from neml2.core import VariableName
 
 
 class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
@@ -78,11 +77,11 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
 
     @property
     def nstate(self) -> int:
-        return self.model.input_axis().subaxis(STATE).size()
+        return self.sys.ulayout().nvar()
 
     @property
     def nforce(self) -> int:
-        return self.model.input_axis().subaxis(FORCES).size()
+        return self.sys.glayout().nvar()
 
     def forward(
         self, state: torch.Tensor, forces: torch.Tensor
@@ -218,14 +217,11 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         """
 
         # Helper function to get index map from one variable list to another
-        def _index_map_from_to(
-            from_map: list[typing.Union[VariableName, str]],
-            to_map: list[typing.Union[VariableName, str]],
-        ) -> list[int]:
+        def _index_map_from_to(from_map: list[str], to_map: list[str]) -> list[int]:
             index_map = []
             for v in from_map:
                 for i, vt in enumerate(to_map):
-                    if VariableName(v) == VariableName(vt):
+                    if v == vt:
                         index_map.append(i)
                         break
                 else:
@@ -234,7 +230,7 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
 
         # state --> unknowns
         # this mapping is just identity
-        self.smap = self.sys.umap()
+        self.smap = self.sys.ulayout().vars
         self.slayout = self.sys.ulayout()
 
         # old state --> given variables

@@ -92,7 +92,7 @@ build-verbosity = 1
 before-all = ""
 before-build = "python -m pip install torch"
 
-test-requires = "pytest torch pyzag==1.1.1 graphviz"
+test-requires = "pytest torch pyzag==1.1.1"
 test-command = "pytest -v {project}/python/tests"
 
 [tool.cibuildwheel.linux]

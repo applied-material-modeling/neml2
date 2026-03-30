@@ -24,61 +24,35 @@
 
 #pragma once
 
-#include "neml2/neml2.h"
-#include "neml2/tensors/TensorValue.h"
+#include "neml2/models/ModelNonlinearSystem.h"
+#include "neml2/equation_systems/AxisLayout.h"
+#include "neml2/equation_systems/SparseVector.h"
+#include "neml2/equation_systems/SparseMatrix.h"
+#include "neml2/equation_systems/AssembledVector.h"
+#include "neml2/equation_systems/AssembledMatrix.h"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/pytypes.h>
+#include <pybind11/stl.h>
 
 #include "macros.h"
+#include "csrc/core/types.h"
 
 // Forward declarations
-void def(pybind11::module_ &, pybind11::class_<neml2::TensorValueBase> &);
-void def(pybind11::module_ &, pybind11::class_<neml2::Factory> &);
-void def(pybind11::module_ &, pybind11::class_<neml2::Model, std::shared_ptr<neml2::Model>> &);
+void
+def(pybind11::module_ &,
+    pybind11::class_<neml2::ModelNonlinearSystem, std::shared_ptr<neml2::ModelNonlinearSystem>> &);
+void def(pybind11::module_ &, pybind11::class_<neml2::AxisLayout> &);
+void def(pybind11::module_ &, pybind11::class_<neml2::SparseVector> &);
+void def(pybind11::module_ &, pybind11::class_<neml2::SparseMatrix> &);
+void def(pybind11::module_ &, pybind11::class_<neml2::AssembledVector> &);
+void def(pybind11::module_ &, pybind11::class_<neml2::AssembledMatrix> &);
 
 // Type casters are only for cross-module types used in function signatures
-DEFAULT_TYPECASTER(neml2::TensorValueBase, "neml2.core.TensorValue");
-DEFAULT_TYPECASTER(neml2::Factory, "neml2.core.Factory");
-DEFAULT_TYPECASTER(neml2::Model, "neml2.core.Model");
-DEFAULT_TYPECASTER_SHARED_PTR(neml2::Model, "neml2.core.Model");
-
-namespace pybind11::detail
-{
-/**
- * @brief This specialization exposes neml2::TensorShape
- */
-template <>
-struct type_caster<neml2::TensorShape>
-{
-public:
-  PYBIND11_TYPE_CASTER(neml2::TensorShape, const_name("tuple[int, ...]"));
-
-  bool load(handle src, bool)
-  {
-    if (!src)
-      return false;
-
-    // Accept any Python sequence (tuple/list/torch.Size behaves like a sequence)
-    if (!isinstance<sequence>(src))
-      return false;
-
-    sequence seq = reinterpret_borrow<sequence>(src);
-    value.clear();
-    value.reserve(len(seq));
-    for (handle item : seq)
-      value.push_back(item.cast<neml2::Size>());
-
-    return true;
-  }
-
-  static handle
-  cast(const neml2::TensorShape & src, return_value_policy /*policy*/, handle /*parent*/)
-  {
-    tuple t(src.size());
-    for (size_t i = 0; i < src.size(); ++i)
-      t[i] = pybind11::int_(src[i]);
-    return t.release();
-  }
-};
-} // namespace pybind11::detail
+DEFAULT_TYPECASTER(neml2::ModelNonlinearSystem, "neml2.es.NonlinearSystem");
+DEFAULT_TYPECASTER_SHARED_PTR(neml2::ModelNonlinearSystem, "neml2.es.NonlinearSystem");
+DEFAULT_TYPECASTER(neml2::AxisLayout, "neml2.es.AxisLayout");
+DEFAULT_TYPECASTER(neml2::SparseVector, "neml2.es.SparseVector");
+DEFAULT_TYPECASTER(neml2::SparseMatrix, "neml2.es.SparseMatrix");
+DEFAULT_TYPECASTER(neml2::AssembledVector, "neml2.es.AssembledVector");
+DEFAULT_TYPECASTER(neml2::AssembledMatrix, "neml2.es.AssembledMatrix");

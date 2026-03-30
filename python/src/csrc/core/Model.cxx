@@ -42,29 +42,25 @@ def(py::module_ & m, py::class_<Model, std::shared_ptr<Model>> & c)
       .def_property_readonly("type", &Model::type, "Type of the model")
       .def("__str__", [](const Model & self) { return utils::stringify(self); })
       .def(
-          "input_axis",
-          [](Model & self, bool setup)
+          "input_variables",
+          [](Model & self)
           {
-            if (setup)
-              self.input_axis().setup_layout();
-            return &std::as_const(self).input_axis();
+            std::vector<std::string> vnames;
+            for (const auto & [name, var] : self.input_variables())
+              vnames.push_back(name.str());
+            return vnames;
           },
-          py::arg("setup") = false,
-          py::return_value_policy::reference,
-          "Input axis of the model. The axis contains information on variable names and their "
-          "associated slicing indices.")
+          "Input variables of the model.")
       .def(
-          "output_axis",
-          [](Model & self, bool setup)
+          "output_variables",
+          [](Model & self)
           {
-            if (setup)
-              self.output_axis().setup_layout();
-            return &std::as_const(self).output_axis();
+            std::vector<std::string> vnames;
+            for (const auto & [name, var] : self.output_variables())
+              vnames.push_back(name.str());
+            return vnames;
           },
-          py::arg("setup") = false,
-          py::return_value_policy::reference,
-          "Output axis of the model. The axis contains information on variable names and their "
-          "associated slicing indices.")
+          "Output variables of the model.")
       .def(
           "input_type",
           [](const Model & self, const std::string & name)
@@ -130,32 +126,24 @@ def(py::module_ & m, py::class_<Model, std::shared_ptr<Model>> & c)
            {
              auto base_shape_lookup = [model = &self](const VariableName & key) -> TensorShapeRef
              { return model->input_variable(key).base_sizes(); };
-             return self.value(unpack_value_map(pyinputs, false, base_shape_lookup));
+             return pack_value_map(
+                 self.value(unpack_value_map(pyinputs, false, base_shape_lookup)));
            })
       .def("dvalue",
            [](Model & self, const py::dict & pyinputs)
            {
              auto base_shape_lookup = [model = &self](const VariableName & key) -> TensorShapeRef
              { return model->input_variable(key).base_sizes(); };
-             return self.dvalue(unpack_value_map(pyinputs, false, base_shape_lookup));
+             return pack_deriv_map(
+                 self.dvalue(unpack_value_map(pyinputs, false, base_shape_lookup)));
            })
       .def("value_and_dvalue",
            [](Model & self, const py::dict & pyinputs)
            {
              auto base_shape_lookup = [model = &self](const VariableName & key) -> TensorShapeRef
              { return model->input_variable(key).base_sizes(); };
-             return self.value_and_dvalue(unpack_value_map(pyinputs, false, base_shape_lookup));
-           })
-      .def(
-          "dependency",
-          [](const Model & self)
-          {
-            std::map<std::string, const Model *> deps;
-            for (auto && [name, var] : self.input_variables())
-              if (var->ref() != var.get())
-                deps[utils::stringify(name)] = &var->ref()->owner();
-            return deps;
-          },
-          py::return_value_policy::reference,
-          "Get the dictionary describing this model's dependency information, if any.");
+             auto [values, derivs] =
+                 self.value_and_dvalue(unpack_value_map(pyinputs, false, base_shape_lookup));
+             return std::make_pair(pack_value_map(values), pack_deriv_map(derivs));
+           });
 }

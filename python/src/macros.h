@@ -27,10 +27,10 @@
 #define NEML2_TENSOR_OPTIONS_VARGS const Dtype &dtype, const Device &device, bool requires_grad
 
 #define NEML2_TENSOR_OPTIONS                                                                       \
-  torch::TensorOptions().dtype(dtype).device(device).requires_grad(requires_grad)
+  neml2::TensorOptions().dtype(dtype).device(device).requires_grad(requires_grad)
 
 #define PY_ARG_TENSOR_OPTIONS                                                                      \
-  pybind11::arg("dtype") = Dtype(torch::kFloat64), pybind11::arg("device") = Device(torch::kCPU),  \
+  pybind11::arg("dtype") = Dtype(neml2::kFloat64), pybind11::arg("device") = Device(neml2::kCPU),  \
   pybind11::arg("requires_grad") = false
 
 #define DEFAULT_TYPECASTER(cpptype, pyname)                                                        \
