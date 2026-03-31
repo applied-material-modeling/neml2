@@ -29,10 +29,10 @@ with the following roles:
 - Auxiliary matrix \f$B = \partial r / \partial g\f$: assembled by `A_and_B` or
   `A_and_B_and_b` when available.
 
-The assembled objects are stored in [SparseTensorList](@ref neml2::SparseTensorList), which is
-a vector of tensors where missing entries represent zeros in a sparse representation. The order of
-entries is controlled by the ID-to-variable maps returned by `umap`, `gmap`, and `bmap`, with
-associated layouts (`ulayout`, `glayout`, `blayout`) and optional intermediate layouts.
+The assembled objects are stored in [SparseVector](@ref neml2::SparseVector) and
+[SparseMatrix](@ref neml2::SparseMatrix), which are vectors of tensors where missing entries
+represent zeros in a sparse representation. The order of entries is controlled by predefined
+layouts (of type [AxisLayout](@ref neml2::AxisLayout)).
 
 `LinearSystem` tracks whether \f$A\f$, \f$B\f$, and \f$b\f$ are up-to-date. By default,
 `g_changed` invalidates all cached assemblies, while `u_changed` is a no-op for linear systems.
