@@ -171,8 +171,9 @@ Reconstruct the ODF from the discrete data.  This example optimizes the kernel h
 odf = neml2.postprocessing.odf.KDEODF(
     orientations, neml2.postprocessing.odf.DeLaValleePoussinKernel(torch.tensor(0.1))
 )
-odf.optimize_kernel(verbose=True)
-print(odf.kernel.h)
+# odf.optimize_kernel(verbose=True)
+# print(odf.kernel.h)
+odf.kernel.h = torch.tensor(0.07)
 ```
 
 ## Plot a continuous polefigure

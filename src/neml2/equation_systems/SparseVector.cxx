@@ -70,22 +70,22 @@ SparseVector::assemble() const
 
   for (std::size_t grp = 0; grp < layout.ngroup(); ++grp)
   {
+    const auto glayout = layout.group(grp);
     const auto [istart, iend] = layout.group_offsets(grp);
     const auto istr = layout.istr(grp);
     const bool assemble_intmd = (istr == AxisLayout::IStructure::DENSE);
 
     // convert to assembly format
     std::vector<Tensor> tf(iend - istart);
-    std::size_t cnt = 0;
-    for (std::size_t i = istart; i < iend; ++i)
+    for (std::size_t i = 0; i < iend - istart; ++i)
     {
-      const auto & ti = tensors[i];
+      const auto & ti = tensors[istart + i];
       if (!ti.defined())
         continue;
       if (!assemble_intmd)
-        tf[cnt++] = ti.base_flatten();
+        tf[i] = ti.base_flatten();
       else
-        tf[cnt++] = to_assembly<1>(ti, {layout.intmd_sizes(i)}, {layout.base_sizes(i)});
+        tf[i] = to_assembly<1>(ti, {glayout.intmd_sizes(i)}, {glayout.base_sizes(i)});
     }
 
     // determine tensor options
@@ -99,6 +99,7 @@ SparseVector::assemble() const
 
     // Expand defined tensors with the broadcast dynamic shape and fill undefined tensors with
     // zeros.
+    const auto ss = glayout.storage_sizes(assemble_intmd);
     const auto new_dynamic_sizes = utils::broadcast_dynamic_sizes(tf);
     const auto new_intmd_sizes = utils::broadcast_intmd_sizes(tf);
     for (std::size_t i = 0; i < tf.size(); ++i)
@@ -107,12 +108,7 @@ SparseVector::assemble() const
       if (tfi.defined())
         tfi = tfi.batch_expand(new_dynamic_sizes, new_intmd_sizes);
       else
-      {
-        auto s = utils::numel(layout.base_sizes(i));
-        if (assemble_intmd)
-          s *= utils::numel(layout.intmd_sizes(i));
-        tfi = Tensor::zeros(new_dynamic_sizes, new_intmd_sizes, s, opt);
-      }
+        tfi = Tensor::zeros(new_dynamic_sizes, new_intmd_sizes, ss[i], opt);
     }
 
     asm_tensors[grp] = base_cat(tf, -1);

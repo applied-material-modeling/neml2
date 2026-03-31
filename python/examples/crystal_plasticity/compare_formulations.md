@@ -166,14 +166,16 @@ Simulate the rolling deformation and extract the final crystal orientations
 
 ```{code-cell} ipython3
 nmodel_separate = neml2.load_nonlinear_system("crystal.i", "eq_sys")
-nmodel_separate.to(device = device)
-model_separate = SolveSeparate(neml2.pyzag.NEML2PyzagModel(nmodel_separate), nchunk = nchunk)
+nmodel_separate.to(device=device)
+model_separate = SolveSeparate(neml2.pyzag.NEML2PyzagModel(nmodel_separate), nchunk=nchunk)
 ```
 
 ```{code-cell} ipython3
 with torch.no_grad():
-    results_seperate = model_separate(times, deformation_rate, vorticity, initial_orientations = initial_orientations)
-orientations_separate = neml2.tensors.Rot(results_seperate[-1,:,6:9])
+    results_seperate = model_separate(
+        times, deformation_rate, vorticity, initial_orientations=initial_orientations
+    )
+orientations_separate = neml2.tensors.Rot(results_seperate[-1, :, 6:9])
 ```
 
 ## ODF reconstruction for the seperated model
@@ -184,8 +186,9 @@ Reconstruct the ODF from the discrete data.  Uncommenting the two lines will opt
 odf_separate = neml2.postprocessing.odf.KDEODF(
     orientations_separate, neml2.postprocessing.odf.DeLaValleePoussinKernel(torch.tensor(0.2))
 )
-odf_separate.optimize_kernel(verbose = True)
-print(odf_separate.kernel.h)
+# odf_separate.optimize_kernel(verbose=True)
+# print(odf_separate.kernel.h)
+odf_separate.kernel.h = torch.tensor(0.23)
 ```
 
 ## pyzag driver for the integrated model
@@ -232,14 +235,24 @@ class SolveIntegrated(torch.nn.Module):
             "forces/F": neml2.R2(deformation_gradient, 0),
             "forces/r": neml2.Rot(initial_orientations, 0),
         }
-        forces = [forces[key] for key in self.discrete_equations.fmap]
-        forces = neml2.assemble_vector(forces, self.discrete_equations.flayout).torch()
-        state0 = [neml2.Tensor()] * len(self.discrete_equations.smap)
-        i = self.discrete_equations.smap.index("state/Fp")
+        forces = [forces[key] for key in self.discrete_equations.fvars]
+        forces = (
+            neml2.SparseVector(self.discrete_equations.flayout, forces)
+            .assemble()
+            .tensors[0]
+            .torch()
+        )
+        state0 = [neml2.Tensor()] * len(self.discrete_equations.svars)
+        i = self.discrete_equations.svars.index("state/Fp")
         state0[i] = neml2.tensors.Tensor(
             torch.eye(3, device=time.device).unsqueeze(0).expand(time.shape[1:2] + (3, 3)), 1
         )
-        state0 = neml2.assemble_vector(state0, self.discrete_equations.slayout).torch()
+        state0 = (
+            neml2.SparseVector(self.discrete_equations.slayout, state0)
+            .assemble()
+            .tensors[0]
+            .torch()
+        )
 
         result = nonlinear.solve_adjoint(solver, state0, len(forces), forces)
 
@@ -266,10 +279,14 @@ end_results_integrated = results_integrated[-1]
 This takes some doing.  We first need to get $F_p$ from the state, then calculate $F_e = F F_p^{-1}$, then do a polar decomposition to get the rotation as a matrix, then convert to modified Rodrigues parameters.  Finally compose with the original texture to get the final, deformed texture.
 
 ```{code-cell} ipython3
-split_state = neml2.disassemble_vector(
-    neml2.Tensor(end_results_integrated, 1), model_integrated.discrete_equations.slayout
+split_state = (
+    neml2.AssembledVector(
+        model_integrated.discrete_equations.slayout, [neml2.Tensor(end_results_integrated, 1)]
+    )
+    .disassemble()
+    .tensors
 )
-iFp = model_integrated.discrete_equations.smap.index("state/Fp")
+iFp = model_integrated.discrete_equations.svars.index("state/Fp")
 Fp = split_state[iFp].torch().reshape(-1, 3, 3)
 Flast = F[-1]
 Fe = Flast @ torch.linalg.inv(Fp)
@@ -290,8 +307,9 @@ Basically the same as for the separated approach.
 odf_integrated = neml2.postprocessing.odf.KDEODF(
     Q, neml2.postprocessing.odf.DeLaValleePoussinKernel(torch.tensor(0.2))
 )
-odf_integrated.optimize_kernel(verbose = True)
-print(odf_integrated.kernel.h)
+# odf_integrated.optimize_kernel(verbose=True)
+# print(odf_integrated.kernel.h)
+odf_integrated.kernel.h = torch.tensor(0.23)
 ```
 
 ## Plot the pole figures
@@ -324,21 +342,29 @@ Extract the elastic strains from each model and plot:
 The averages are consistent but there are some differences in stress/elastic strain history between crystals when calculated this way.
 
 ```{code-cell} ipython3
-state_history_split = neml2.disassemble_vector(
-    neml2.Tensor(results_seperate, 2), model_separate.discrete_equations.slayout
+state_history_split = (
+    neml2.AssembledVector(
+        model_separate.discrete_equations.slayout, [neml2.Tensor(results_seperate, 2)]
+    )
+    .disassemble()
+    .tensors
 )
-state_history_mult = neml2.disassemble_vector(
-    neml2.Tensor(results_integrated, 2), model_integrated.discrete_equations.slayout
+state_history_mult = (
+    neml2.AssembledVector(
+        model_integrated.discrete_equations.slayout, [neml2.Tensor(results_integrated, 2)]
+    )
+    .disassemble()
+    .tensors
 )
 
-iFp = model_integrated.discrete_equations.smap.index("state/Fp")
+iFp = model_integrated.discrete_equations.svars.index("state/Fp")
 Fp_mult = state_history_mult[iFp].torch().reshape(F.shape[:-2] + (3, 3))
 Fe_mult = F @ torch.linalg.inv(Fp_mult)
 U_mult, S_mult, Vh_mult = torch.linalg.svd(Fe_mult)
 Re_mult = U_mult @ Vh_mult
 Ue_mult = Vh_mult.transpose(-2, -1).conj() @ torch.diag_embed(S_mult, dim1=-2, dim2=-1) @ Vh_mult
 E_mult = 0.5 * (Ue_mult.transpose(-2, -1) @ Ue_mult - torch.eye(3, device=device))
-ie = model_separate.discrete_equations.smap.index("state/elastic_strain")
+ie = model_separate.discrete_equations.svars.index("state/elastic_strain")
 
 plt.plot(times[:, 0, 0].cpu(), state_history_split[ie].torch()[:, :, 2].cpu(), "k-", alpha=0.5)
 plt.plot(times[:, 0, 0].cpu(), E_mult[:, :, 2, 2].cpu(), "r--", alpha=0.5)
