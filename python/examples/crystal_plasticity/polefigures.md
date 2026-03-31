@@ -5,7 +5,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.16.7
+    jupytext_version: 1.19.1
 kernelspec:
   display_name: neml2
   language: python
@@ -108,13 +108,23 @@ class Solve(torch.nn.Module):
             "forces/vorticity": neml2.WR2(vorticity, 0),
             "forces/initial_orientation": neml2.Rot(initial_orientations, 0),
         }
-        forces = [forces[key] for key in self.discrete_equations.fmap]
-        forces = neml2.assemble_vector(forces, self.discrete_equations.flayout).torch()
-        state0 = [neml2.Tensor()] * len(self.discrete_equations.smap)
+        forces = [forces[key] for key in self.discrete_equations.fvars]
+        forces = (
+            neml2.SparseVector(self.discrete_equations.flayout, forces)
+            .assemble()
+            .tensors[0]
+            .torch()
+        )
+        state0 = [neml2.Tensor()] * len(self.discrete_equations.svars)
         if initial_orientations is not None:
-            i = self.discrete_equations.smap.index("state/orientation")
+            i = self.discrete_equations.svars.index("state/orientation")
             state0[i] = neml2.Tensor(initial_orientations, 1)
-        state0 = neml2.assemble_vector(state0, self.discrete_equations.slayout).torch()
+        state0 = (
+            neml2.SparseVector(self.discrete_equations.slayout, state0)
+            .assemble()
+            .tensors[0]
+            .torch()
+        )
 
         result = nonlinear.solve_adjoint(solver, state0, len(forces), forces)
 

@@ -12,10 +12,4 @@ after building the NEML2 python package and installing the main set of python re
 
 ## Version control for Jupyter notebook examples
 
-We track these notebooks with the `nbdime` python tool, installed as part of the package requirements.  The first time you install this for use in a new repository you need to run
-
-```
-git-nbdiffdriver config --enable
-```
-
-to enable the hooks.
+See [these instructions](../../doc/content/tutorials/contributing.md#jupyter-notebooks) for details.
