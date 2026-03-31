@@ -68,7 +68,7 @@ def(py::module_ & m, py::class_<AxisLayout> & c)
            R"(
 Construct an AxisLayout.
 
-:param vars:         List of variable groups; each group is a list of slash-separated variable names
+:param vars:         List of variable groups; each group is a list of variable names
 :param intmd_shapes: Intermediate shape for each variable (flattened across all groups)
 :param base_shapes:  Base shape for each variable (flattened across all groups)
 :param istrs:        IStructure for each variable group
@@ -98,10 +98,20 @@ Construct an AxisLayout.
            "Storage size of each variable; pass include_intmd=True to include intermediate "
            "dimensions")
       .def(
+          "vars",
+          [](const AxisLayout & self)
+          {
+            std::vector<std::string> result;
+            for (const auto & v : self.vars())
+              result.push_back(v.str());
+            return result;
+          },
+          "List of variable names")
+      .def(
           "var",
           [](const AxisLayout & self, std::size_t i) { return self.var(i).str(); },
           py::arg("i"),
-          "Slash-separated name of variable i")
+          "Name of variable i")
       .def(
           "intmd_sizes", &AxisLayout::intmd_sizes, py::arg("i"), "Intermediate shape of variable i")
       .def("base_sizes", &AxisLayout::base_sizes, py::arg("i"), "Base shape of variable i")

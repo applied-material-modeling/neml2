@@ -29,6 +29,7 @@ from pathlib import Path
 import torch
 import neml2
 from neml2.tensors import Scalar, SR2, Tensor
+from neml2.es import SparseVector
 from pyzag import nonlinear
 import math
 
@@ -111,8 +112,8 @@ class TestElasticModel(DerivativeCheck):
         strain = SR2.dynamic_linspace(start_strain, end_strain, self.nstep).dynamic.unsqueeze(-1)
 
         # Prescribed forces
-        forces = dict_to_list({"forces/t": time, "forces/E": strain}, self.model.fmap)
-        self.forces = neml2.assemble_vector(forces, self.model.flayout).torch()
+        forces = dict_to_list({"forces/t": time, "forces/E": strain}, self.model.fvars)
+        self.forces = SparseVector(self.model.flayout, forces).assemble().tensors[0].torch()
 
         # Initial state
         self.initial_state = torch.zeros((self.nbatch, self.model.nstate))
@@ -143,8 +144,8 @@ class TestViscoplasticModel(DerivativeCheck):
         strain = SR2.dynamic_linspace(start_strain, end_strain, self.nstep).dynamic.unsqueeze(-1)
 
         # Prescribed forces
-        forces = dict_to_list({"forces/t": time, "forces/E": strain}, self.model.fmap)
-        self.forces = neml2.assemble_vector(forces, self.model.flayout).torch()
+        forces = dict_to_list({"forces/t": time, "forces/E": strain}, self.model.fvars)
+        self.forces = SparseVector(self.model.flayout, forces).assemble().tensors[0].torch()
 
         # Initial state
         self.initial_state = torch.zeros((self.nbatch, self.model.nstate))
@@ -196,9 +197,9 @@ class TestKocksMeckingMixedControlModel(DerivativeCheck):
                 "forces/fixed_values": condition,
                 "forces/T": temperature,
             },
-            self.model.fmap,
+            self.model.fvars,
         )
-        self.forces = neml2.assemble_vector(forces, self.model.flayout).torch()
+        self.forces = SparseVector(self.model.flayout, forces).assemble().tensors[0].torch()
 
         # Initial state
         self.initial_state = torch.zeros((self.nbatch, self.model.nstate))

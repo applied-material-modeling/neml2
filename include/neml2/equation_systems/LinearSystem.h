@@ -74,11 +74,11 @@ public:
   std::tuple<AssembledMatrix, AssembledMatrix, AssembledVector> A_and_B_and_b();
 
   /// Get the unknown-variable layout
-  const std::shared_ptr<AxisLayout> & ulayout() const;
+  AxisLayout ulayout() const;
   /// Get the given-variable layout
-  const std::shared_ptr<AxisLayout> & glayout() const;
+  AxisLayout glayout() const;
   /// Get the RHS variable layout
-  const std::shared_ptr<AxisLayout> & blayout() const;
+  AxisLayout blayout() const;
 
 protected:
   /// Setup the unknown layout, partitioned by variable group.

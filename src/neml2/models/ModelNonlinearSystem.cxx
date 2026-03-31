@@ -96,7 +96,7 @@ ModelNonlinearSystem::setup()
   }
 
   // unknown variables should be marked mutable, as they will be updated during the nonlinear solve
-  const auto & ul = *ulayout();
+  const auto ul = ulayout();
   for (std::size_t i = 0; i < ul.nvar(); i++)
     _model->input_variable(ul.var(i)).set_mutable(true);
 }
@@ -200,7 +200,7 @@ ModelNonlinearSystem::set_u(const AssembledVector & u)
 void
 ModelNonlinearSystem::set_g(const AssembledVector & g)
 {
-  _model->assign_input(g.disassemble());
+  _model->assign_input(g.disassemble(), /*allow_nonexistent=*/true);
   g_changed();
 }
 

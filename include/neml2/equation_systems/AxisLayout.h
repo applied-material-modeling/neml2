@@ -88,6 +88,8 @@ struct AxisLayout
   /// Storage sizes of variables
   std::vector<Size> storage_sizes(bool include_intmd) const;
 
+  /// Accessor for variable names
+  std::vector<LabeledAxisAccessor> vars() const;
   /// Accessor for variable name
   const LabeledAxisAccessor & var(std::size_t) const;
   /// Accessor for variable intermediate shape

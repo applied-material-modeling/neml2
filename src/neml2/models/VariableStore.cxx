@@ -349,17 +349,39 @@ VariableStore::second_derivative_sparsity() const
 }
 
 void
-VariableStore::assign_input(const ValueMap & vals)
+VariableStore::assign_input(const ValueMap & vals, bool allow_nonexistent)
 {
   for (const auto & [name, val] : vals)
-    input_variable(name) = val.clone();
+  {
+    auto it = _input_variables.find(name);
+    if (it == _input_variables.end())
+    {
+      if (allow_nonexistent)
+        continue;
+      else
+        throw NEMLException("Trying to assign value to input variable '" + name.str() +
+                            "', but no such variable exists in model '" + _object->name() + "'.");
+    }
+    *it->second = val.clone();
+  }
 }
 
 void
-VariableStore::assign_input(const SparseVector & v)
+VariableStore::assign_input(const SparseVector & v, bool allow_nonexistent)
 {
   for (std::size_t i = 0; i < v.layout.nvar(); i++)
-    input_variable(v.layout.var(i)) = v.tensors[i];
+  {
+    auto it = _input_variables.find(v.layout.var(i));
+    if (it == _input_variables.end())
+    {
+      if (allow_nonexistent)
+        continue;
+      else
+        throw NEMLException("Trying to assign value to input variable '" + v.layout.var(i).str() +
+                            "', but no such variable exists in model '" + _object->name() + "'.");
+    }
+    *it->second = v.tensors[i];
+  }
 }
 
 void

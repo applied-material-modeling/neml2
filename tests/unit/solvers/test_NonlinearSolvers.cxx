@@ -54,7 +54,7 @@ TEST_CASE("NonlinearSolver", "[solvers]")
       eq_sys.init();
 
       // Initial guess
-      AssembledVector u0(eq_sys.ulayout()->view(), {Tensor::full(batch_sz, {}, n, 2.0)});
+      AssembledVector u0(eq_sys.ulayout(), {Tensor::full(batch_sz, {}, n, 2.0)});
       eq_sys.set_u(u0);
 
       // Solve
@@ -74,7 +74,7 @@ TEST_CASE("NonlinearSolver", "[solvers]")
       eq_sys.init();
 
       // Initial guess
-      AssembledVector u0(eq_sys.ulayout()->view(), {Tensor::full(batch_sz, {}, n, 0.75)});
+      AssembledVector u0(eq_sys.ulayout(), {Tensor::full(batch_sz, {}, n, 0.75)});
       eq_sys.set_u(u0);
 
       // Solve
@@ -106,7 +106,7 @@ TEST_CASE("NonlinearSolver/SchurComplement", "[solvers]")
     PowerTestSystem eq_sys(batch_sz, n, group_sizes, group_sizes);
     eq_sys.init();
 
-    AssembledVector u0(eq_sys.ulayout()->view(),
+    AssembledVector u0(eq_sys.ulayout(),
                        {Tensor::full(batch_sz, {}, 5, 2.0), Tensor::full(batch_sz, {}, 3, 2.0)});
     eq_sys.set_u(u0);
 
@@ -124,7 +124,7 @@ TEST_CASE("NonlinearSolver/SchurComplement", "[solvers]")
     RosenbrockTestSystem eq_sys(batch_sz, n, group_sizes, group_sizes);
     eq_sys.init();
 
-    AssembledVector u0(eq_sys.ulayout()->view(),
+    AssembledVector u0(eq_sys.ulayout(),
                        {Tensor::full(batch_sz, {}, 5, 0.75), Tensor::full(batch_sz, {}, 3, 0.75)});
     eq_sys.set_u(u0);
 

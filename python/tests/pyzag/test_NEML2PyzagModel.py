@@ -78,8 +78,8 @@ def test_compare(input):
     ref = torch.jit.load(pwd / "gold" / "{}.pt".format(input))
     input = dict(ref.input.named_buffers())
     output = dict(ref.output.named_buffers())
-    forces = torch.cat([input[v] for v in pmodel.fmap], -1)
-    state = torch.cat([output[v] for v in pmodel.smap], -1)
+    forces = torch.cat([input[v] for v in pmodel.fvars], -1)
+    state = torch.cat([output[v] for v in pmodel.svars], -1)
     nstep = forces.shape[0]
 
     solver = nonlinear.RecursiveNonlinearEquationSolver(

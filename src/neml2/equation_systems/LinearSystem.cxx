@@ -115,22 +115,22 @@ LinearSystem::A_and_B_and_b()
   return {A, B, b};
 }
 
-const std::shared_ptr<AxisLayout> &
+AxisLayout
 LinearSystem::ulayout() const
 {
-  return _ulayout;
+  return _ulayout->view();
 }
 
-const std::shared_ptr<AxisLayout> &
+AxisLayout
 LinearSystem::glayout() const
 {
-  return _glayout;
+  return _glayout->view();
 }
 
-const std::shared_ptr<AxisLayout> &
+AxisLayout
 LinearSystem::blayout() const
 {
-  return _blayout;
+  return _blayout->view();
 }
 
 void

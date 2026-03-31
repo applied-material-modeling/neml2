@@ -119,8 +119,8 @@ public:
 
   ///@{
   /// Assign input variable values
-  void assign_input(const ValueMap &);
-  void assign_input(const SparseVector &);
+  void assign_input(const ValueMap &, bool allow_nonexistent = false);
+  void assign_input(const SparseVector &, bool allow_nonexistent = false);
   /// Assign output variable values
   void assign_output(const ValueMap &);
   void assign_output(const SparseVector &);

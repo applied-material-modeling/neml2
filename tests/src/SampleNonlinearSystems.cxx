@@ -94,9 +94,9 @@ TestNonlinearSystem::assemble(AssembledMatrix * A, AssembledMatrix * /*B*/, Asse
 {
   if (b)
   {
-    for (_I = 0; _I < blayout()->ngroup(); _I++)
+    for (_I = 0; _I < blayout().ngroup(); _I++)
     {
-      auto group_ndof = (Size)blayout()->group(_I).nvar();
+      auto group_ndof = (Size)blayout().group(_I).nvar();
       b->tensors[_I] = Tensor::zeros(_B, {}, group_ndof, _u.options());
       for (_i = 0; _i < group_ndof; _i++)
       {
@@ -109,11 +109,11 @@ TestNonlinearSystem::assemble(AssembledMatrix * A, AssembledMatrix * /*B*/, Asse
 
   if (A)
   {
-    for (_I = 0; _I < blayout()->ngroup(); _I++)
-      for (_J = 0; _J < ulayout()->ngroup(); _J++)
+    for (_I = 0; _I < blayout().ngroup(); _I++)
+      for (_J = 0; _J < ulayout().ngroup(); _J++)
       {
-        auto row_group_ndof = (Size)blayout()->group(_I).nvar();
-        auto col_group_ndof = (Size)ulayout()->group(_J).nvar();
+        auto row_group_ndof = (Size)blayout().group(_I).nvar();
+        auto col_group_ndof = (Size)ulayout().group(_J).nvar();
         A->tensors[_I][_J] =
             Tensor::zeros(_B, {}, {Size(row_group_ndof), Size(col_group_ndof)}, _u.options());
         for (_i = 0; _i < row_group_ndof; _i++)
@@ -130,7 +130,7 @@ TestNonlinearSystem::assemble(AssembledMatrix * A, AssembledMatrix * /*B*/, Asse
 AssembledVector
 PowerTestSystem::exact_solution(const AssembledVector & u) const
 {
-  AssembledVector sol(ulayout()->view());
+  AssembledVector sol(ulayout());
   for (std::size_t i = 0; i < u.layout.ngroup(); i++)
     sol.tensors[i] = Tensor::ones_like(u.tensors[i]);
   return sol;
@@ -155,7 +155,7 @@ PowerTestSystem::jacobian() const
 AssembledVector
 RosenbrockTestSystem::exact_solution(const AssembledVector & u) const
 {
-  AssembledVector sol(ulayout()->view());
+  AssembledVector sol(ulayout());
   for (std::size_t i = 0; i < u.layout.ngroup(); i++)
     sol.tensors[i] = Tensor::ones_like(u.tensors[i]);
   return sol;

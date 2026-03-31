@@ -131,6 +131,15 @@ AxisLayout::storage_sizes(bool include_intmd) const
   return ss;
 }
 
+std::vector<LabeledAxisAccessor>
+AxisLayout::vars() const
+{
+  std::vector<LabeledAxisAccessor> result(nvar());
+  for (std::size_t i = 0; i < nvar(); ++i)
+    result[i] = var(i);
+  return result;
+}
+
 const LabeledAxisAccessor &
 AxisLayout::var(std::size_t idx) const
 {

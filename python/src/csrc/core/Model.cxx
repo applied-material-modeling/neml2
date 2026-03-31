@@ -33,12 +33,11 @@ using namespace neml2;
 void
 def(py::module_ & m, py::class_<Model, std::shared_ptr<Model>> & c)
 {
-  c.def_property_readonly("name", &Model::name, "Name of the model")
-      .def(
-          "to",
-          [](Model & self, NEML2_TENSOR_OPTIONS_VARGS) { return self.to(NEML2_TENSOR_OPTIONS); },
-          py::kw_only(),
-          PY_ARG_TENSOR_OPTIONS)
+  c.def(
+       "to",
+       [](Model & self, NEML2_TENSOR_OPTIONS_VARGS) { return self.to(NEML2_TENSOR_OPTIONS); },
+       py::kw_only(),
+       PY_ARG_TENSOR_OPTIONS)
       .def_property_readonly("type", &Model::type, "Type of the model")
       .def("__str__", [](const Model & self) { return utils::stringify(self); })
       .def(

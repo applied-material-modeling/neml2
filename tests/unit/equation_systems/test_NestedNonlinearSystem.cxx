@@ -39,7 +39,7 @@ TEST_CASE("ModelNonlinearSystem", "[equation_systems]")
     REQUIRE(eq_sys != nullptr);
 
     // unknown layout: group 0 = {state/foo, state/bar}, group 1 = {state/baz}
-    const auto & ul = *eq_sys->ulayout();
+    const auto ul = eq_sys->ulayout();
     REQUIRE(ul.ngroup() == 2);
 
     const auto ug0 = ul.group(0);
@@ -55,7 +55,7 @@ TEST_CASE("ModelNonlinearSystem", "[equation_systems]")
     REQUIRE(ug1.base_sizes(0) == TensorShape{6}); // SR2
 
     // residual layout: group 0 = {residual/foo, residual/bar}, group 1 = {residual/baz}
-    const auto & bl = *eq_sys->blayout();
+    const auto bl = eq_sys->blayout();
     REQUIRE(bl.ngroup() == 2);
 
     const auto bg0 = bl.group(0);
@@ -77,7 +77,7 @@ TEST_CASE("ModelNonlinearSystem", "[equation_systems]")
     auto eq_sys = factory->get_es<ModelNonlinearSystem>("three_groups");
     REQUIRE(eq_sys != nullptr);
 
-    const auto & ul = *eq_sys->ulayout();
+    const auto ul = eq_sys->ulayout();
     REQUIRE(ul.ngroup() == 3);
 
     REQUIRE(ul.group(0).nvar() == 1);
@@ -97,7 +97,7 @@ TEST_CASE("ModelNonlinearSystem", "[equation_systems]")
     auto eq_sys = factory->get_es<ModelNonlinearSystem>("single_group");
     REQUIRE(eq_sys != nullptr);
 
-    const auto & ul = *eq_sys->ulayout();
+    const auto ul = eq_sys->ulayout();
     REQUIRE(ul.ngroup() == 1);
 
     const auto g = ul.group(0);
@@ -113,7 +113,7 @@ TEST_CASE("ModelNonlinearSystem", "[equation_systems]")
     auto eq_sys = factory->get_es<ModelNonlinearSystem>("reordered");
     REQUIRE(eq_sys != nullptr);
 
-    const auto & ul = *eq_sys->ulayout();
+    const auto ul = eq_sys->ulayout();
     REQUIRE(ul.ngroup() == 2);
 
     const auto ug0 = ul.group(0);
@@ -125,7 +125,7 @@ TEST_CASE("ModelNonlinearSystem", "[equation_systems]")
     REQUIRE(ug1.var(0) == VariableName("state", "bar"));
     REQUIRE(ug1.var(1) == VariableName("state", "foo"));
 
-    const auto & bl = *eq_sys->blayout();
+    const auto bl = eq_sys->blayout();
 
     const auto bg0 = bl.group(0);
     REQUIRE(bg0.nvar() == 1);
@@ -143,9 +143,9 @@ TEST_CASE("ModelNonlinearSystem", "[equation_systems]")
     auto eq_sys = factory->get_es<ModelNonlinearSystem>("two_groups");
     REQUIRE(eq_sys != nullptr);
 
-    REQUIRE_THROWS_AS(eq_sys->ulayout()->group(2), NEMLException);
-    REQUIRE_THROWS_AS(eq_sys->blayout()->group(2), NEMLException);
-    REQUIRE_THROWS_AS(eq_sys->ulayout()->group(100), NEMLException);
+    REQUIRE_THROWS_AS(eq_sys->ulayout().group(2), NEMLException);
+    REQUIRE_THROWS_AS(eq_sys->blayout().group(2), NEMLException);
+    REQUIRE_THROWS_AS(eq_sys->ulayout().group(100), NEMLException);
   }
 
   SECTION("nonexistent variable throws")
