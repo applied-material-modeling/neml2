@@ -51,7 +51,7 @@ dev = [
   "pytest-xdist",
   "nbmake",
   # doc
-  "pybind11-stubgen",
+  "pybind11-stubgen>=2.5.5",
   "PyYAML",
   "matplotlib",
   "numpy",

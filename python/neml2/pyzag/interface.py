@@ -23,6 +23,7 @@
 # THE SOFTWARE.
 
 import math
+import typing
 
 from pyzag import nonlinear
 
@@ -188,7 +189,7 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
 
         # Helper function to extract a sublayout given a prefix
         def _extract_sublayout(
-            layout: AxisLayout, prefix: str, new_prefix: str | None = None
+            layout: AxisLayout, prefix: str, new_prefix: typing.Union[str, None] = None
         ) -> AxisLayout:
             subvars = []
             intmd_shapes = []

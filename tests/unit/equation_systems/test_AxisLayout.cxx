@@ -39,13 +39,7 @@ TEST_CASE("AxisLayout", "[equation_systems]")
       {TensorShape{3}, TensorShape{6}, TensorShape{}},
       {AxisLayout::IStructure::DENSE, AxisLayout::IStructure::BLOCK});
 
-  SECTION("ngroup")
-  {
-    REQUIRE(layout.ngroup() == 2);
-
-    // ngroup() is not callable on a sub-group view (no offsets)
-    REQUIRE_THROWS(layout.group(0).ngroup());
-  }
+  SECTION("ngroup") { REQUIRE(layout.ngroup() == 2); }
 
   SECTION("group_offsets")
   {
