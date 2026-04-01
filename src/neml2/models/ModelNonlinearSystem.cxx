@@ -23,9 +23,13 @@
 // THE SOFTWARE.
 
 #include "neml2/models/ModelNonlinearSystem.h"
+#include "neml2/base/LabeledAxisAccessor.h"
+#include "neml2/base/MultiEnumSelection.h"
+#include "neml2/equation_systems/AxisLayout.h"
 #include "neml2/equation_systems/EquationSystem.h"
 #include "neml2/equation_systems/NonlinearSystem.h"
-#include "neml2/equation_systems/SparseTensorList.h"
+#include "neml2/equation_systems/AssembledVector.h"
+#include "neml2/equation_systems/AssembledMatrix.h"
 #include "neml2/misc/types.h"
 #include "neml2/models/Model.h"
 
@@ -43,6 +47,27 @@ ModelNonlinearSystem::expected_options()
   options.set<std::string>("model") = "model";
   options.set("model").doc() = "The Model defining this nonlinear system.";
 
+  options.set<std::vector<std::vector<VariableName>>>("unknowns");
+  options.set("unknowns").doc() =
+      "Optional ordering and grouping of unknowns. Each inner list defines one variable group.";
+
+  options.set<std::vector<std::vector<VariableName>>>("residuals");
+  options.set("residuals").doc() = "Optional ordering and grouping of residual variables. Each "
+                                   "inner list defines one variable group.";
+
+  MultiEnumSelection istr_selection({"DENSE", "BLOCK"},
+                                    {static_cast<int>(AxisLayout::IStructure::DENSE),
+                                     static_cast<int>(AxisLayout::IStructure::BLOCK)},
+                                    {"DENSE"});
+  options.set<MultiEnumSelection>("unknown_istr") = istr_selection;
+  options.set("unknown_istr").doc() =
+      "Optional IStructure for each variable group. If not provided, defaults to DENSE. If only "
+      "one IStructure is provided, it will be applied to all groups.";
+  options.set<MultiEnumSelection>("residual_istr") = istr_selection;
+  options.set("residual_istr").doc() =
+      "Optional IStructure for each residual group. If not provided, defaults to DENSE. If only "
+      "one IStructure is provided, it will be applied to all groups.";
+
   return options;
 }
 
@@ -50,6 +75,10 @@ ModelNonlinearSystem::ModelNonlinearSystem(const OptionSet & options)
   : EquationSystem(options),
     ParameterStore(this),
     BufferStore(this),
+    _unknown_groups(options.get<std::vector<std::vector<VariableName>>>("unknowns")),
+    _residual_groups(options.get<std::vector<std::vector<VariableName>>>("residuals")),
+    _unknown_istrs(options.get<MultiEnumSelection>("unknown_istr").as<AxisLayout::IStructure>()),
+    _residual_istrs(options.get<MultiEnumSelection>("residual_istr").as<AxisLayout::IStructure>()),
     _model(get_model("model"))
 {
 }
@@ -67,8 +96,9 @@ ModelNonlinearSystem::setup()
   }
 
   // unknown variables should be marked mutable, as they will be updated during the nonlinear solve
-  for (const auto & vname : umap())
-    _model->input_variable(vname).set_mutable(true);
+  const auto ul = ulayout();
+  for (std::size_t i = 0; i < ul.nvar(); i++)
+    _model->input_variable(ul.var(i)).set_mutable(true);
 }
 
 void
@@ -79,124 +109,141 @@ ModelNonlinearSystem::to(const TensorOptions & options)
   send_buffers_to(options);
 }
 
-std::vector<LabeledAxisAccessor>
-ModelNonlinearSystem::setup_umap()
-{
-  std::vector<LabeledAxisAccessor> umap;
-  for (const auto & [vname, var] : _model->input_variables())
-    if (var->is_state())
-      umap.push_back(vname);
-  return umap;
-}
-
-std::vector<TensorShape>
-ModelNonlinearSystem::setup_intmd_ulayout()
-{
-  std::vector<TensorShape> intmd_ulayout;
-  for (const auto & [vname, var] : _model->input_variables())
-    if (var->is_state())
-      intmd_ulayout.emplace_back(var->intmd_sizes());
-  return intmd_ulayout;
-}
-
-std::vector<TensorShape>
+std::shared_ptr<AxisLayout>
 ModelNonlinearSystem::setup_ulayout()
 {
-  std::vector<TensorShape> ulayout;
-  for (const auto & [vname, var] : _model->input_variables())
-    if (var->is_state())
-      ulayout.emplace_back(var->base_sizes());
-  return ulayout;
+  auto var_groups = _unknown_groups;
+  if (var_groups.empty())
+  {
+    var_groups.resize(1);
+    for (const auto & [vname, var] : _model->input_variables())
+      if (vname.is_state())
+        var_groups[0].push_back(vname);
+  }
+
+  // gather intmd/base shapes for each variable in the layout
+  std::vector<TensorShape> intmd_shapes, base_shapes;
+  for (const auto & vars : var_groups)
+    for (const auto & vname : vars)
+    {
+      neml_assert(vname.is_state(), vname, " is not a state variable.");
+      const auto & var = model().input_variable(vname);
+      intmd_shapes.emplace_back(var.intmd_sizes());
+      base_shapes.emplace_back(var.base_sizes());
+    }
+
+  // IStructure
+  std::vector<AxisLayout::IStructure> istrs = _unknown_istrs;
+  if (istrs.size() == 1 && var_groups.size() > 1)
+    istrs.resize(var_groups.size(), istrs[0]);
+
+  return std::make_shared<AxisLayout>(var_groups, intmd_shapes, base_shapes, istrs);
 }
 
-std::vector<LabeledAxisAccessor>
-ModelNonlinearSystem::setup_bmap()
-{
-  std::vector<LabeledAxisAccessor> bmap;
-  for (const auto & [vname, var] : _model->output_variables())
-    if (var->is_residual())
-      bmap.push_back(vname);
-  return bmap;
-}
-
-std::vector<TensorShape>
-ModelNonlinearSystem::setup_intmd_blayout()
-{
-  std::vector<TensorShape> intmd_blayout;
-  for (const auto & [vname, var] : _model->output_variables())
-    if (var->is_residual())
-      intmd_blayout.emplace_back(var->intmd_sizes());
-  return intmd_blayout;
-}
-
-std::vector<TensorShape>
-ModelNonlinearSystem::setup_blayout()
-{
-  std::vector<TensorShape> blayout;
-  for (const auto & [vname, var] : _model->output_variables())
-    if (var->is_residual())
-      blayout.emplace_back(var->base_sizes());
-  return blayout;
-}
-
-std::vector<LabeledAxisAccessor>
-ModelNonlinearSystem::setup_gmap()
-{
-  std::vector<LabeledAxisAccessor> gmap;
-  for (const auto & [vname, var] : _model->input_variables())
-    if (!var->is_state())
-      gmap.push_back(vname);
-  return gmap;
-}
-
-std::vector<TensorShape>
-ModelNonlinearSystem::setup_intmd_glayout()
-{
-  std::vector<TensorShape> intmd_glayout;
-  for (const auto & [vname, var] : _model->input_variables())
-    if (!var->is_state())
-      intmd_glayout.emplace_back(var->intmd_sizes());
-  return intmd_glayout;
-}
-
-std::vector<TensorShape>
+std::shared_ptr<AxisLayout>
 ModelNonlinearSystem::setup_glayout()
 {
-  std::vector<TensorShape> glayout;
+  std::vector<std::vector<VariableName>> vars(1);
+  std::vector<TensorShape> intmd_shapes, base_shapes;
   for (const auto & [vname, var] : _model->input_variables())
-    if (!var->is_state())
-      glayout.emplace_back(var->base_sizes());
-  return glayout;
+    if (!vname.is_state())
+    {
+      vars[0].push_back(vname);
+      intmd_shapes.emplace_back(var->intmd_sizes());
+      base_shapes.emplace_back(var->base_sizes());
+    }
+
+  // TODO: take IStructure from input file options
+  std::vector<AxisLayout::IStructure> istrs(1, AxisLayout::IStructure::DENSE);
+
+  return std::make_shared<AxisLayout>(vars, intmd_shapes, base_shapes, istrs);
+}
+
+std::shared_ptr<AxisLayout>
+ModelNonlinearSystem::setup_blayout()
+{
+  auto var_groups = _residual_groups;
+  if (var_groups.empty())
+  {
+    var_groups.resize(1);
+    for (const auto & [vname, var] : _model->output_variables())
+      if (vname.is_residual())
+        var_groups[0].push_back(vname);
+  }
+
+  // gather intmd/base shapes for each variable in the layout
+  std::vector<TensorShape> intmd_shapes, base_shapes;
+  for (const auto & vars : var_groups)
+    for (const auto & vname : vars)
+    {
+      neml_assert(vname.is_residual(), vname, " is not a residual variable.");
+      const auto & var = model().output_variable(vname);
+      intmd_shapes.emplace_back(var.intmd_sizes());
+      base_shapes.emplace_back(var.base_sizes());
+    }
+
+  // IStructure
+  std::vector<AxisLayout::IStructure> istrs = _residual_istrs;
+  if (istrs.size() == 1 && var_groups.size() > 1)
+    istrs.resize(var_groups.size(), istrs[0]);
+
+  return std::make_shared<AxisLayout>(var_groups, intmd_shapes, base_shapes, istrs);
 }
 
 void
-ModelNonlinearSystem::set_u(const SparseTensorList & u)
+ModelNonlinearSystem::update_layouts()
 {
-  _model->assign_input(umap(), u);
+  if (_layouts_updated)
+    return;
+
+  // After the first evaluation, we have the correct intmd shapes for the variables, so we can
+  // update layouts accordingly. We need to do this before assembling which depends on the accurate
+  // layouts.
+  const auto & m = this->model();
+  auto & ul = *_ulayout;
+  auto & gl = *_glayout;
+  auto & bl = *_blayout;
+  std::vector<TensorShape> uis(ul.nvar()), gis(gl.nvar()), bis(bl.nvar());
+  for (std::size_t i = 0; i < ul.nvar(); i++)
+    uis[i] = m.input_variable(ul.var(i)).intmd_sizes();
+  for (std::size_t i = 0; i < gl.nvar(); i++)
+    gis[i] = m.input_variable(gl.var(i)).intmd_sizes();
+  for (std::size_t i = 0; i < bl.nvar(); i++)
+    bis[i] = m.output_variable(bl.var(i)).intmd_sizes();
+  ul.update_intmd_shapes(uis);
+  gl.update_intmd_shapes(gis);
+  bl.update_intmd_shapes(bis);
+  _layouts_updated = true;
+}
+
+void
+ModelNonlinearSystem::set_u(const AssembledVector & u)
+{
+  _model->assign_input(u.disassemble());
   u_changed();
 }
 
 void
-ModelNonlinearSystem::set_g(const SparseTensorList & g)
+ModelNonlinearSystem::set_g(const AssembledVector & g)
 {
-  _model->assign_input(gmap(), g);
+  _model->assign_input(g.disassemble(), /*allow_nonexistent=*/true);
   g_changed();
 }
 
-SparseTensorList
+AssembledVector
 ModelNonlinearSystem::u() const
 {
-  return _model->collect_input(umap());
+  return _model->collect_input(ulayout()).assemble();
 }
 
-SparseTensorList
+AssembledVector
 ModelNonlinearSystem::g() const
 {
-  return _model->collect_input(gmap());
+  return _model->collect_input(glayout()).assemble();
 }
 
 void
-ModelNonlinearSystem::assemble(SparseTensorList * A, SparseTensorList * B, SparseTensorList * b)
+ModelNonlinearSystem::assemble(AssembledMatrix * A, AssembledMatrix * B, AssembledVector * b)
 {
   {
     AssemblyingNonlinearSystem assembling_nl_sys(!B);
@@ -204,15 +251,17 @@ ModelNonlinearSystem::assemble(SparseTensorList * A, SparseTensorList * B, Spars
         b && !_b_up_to_date, (A && !_A_up_to_date) || (B && !_B_up_to_date), false);
   }
 
+  update_layouts();
+
   if (b)
     // remember b := -r
-    *b = -_model->collect_output(bmap());
+    *b = -_model->collect_output(blayout()).assemble();
 
   if (A)
-    *A = _model->collect_output_derivatives(bmap(), umap());
+    *A = _model->collect_output_derivatives(blayout(), ulayout()).assemble();
 
   if (B)
-    *B = _model->collect_output_derivatives(bmap(), gmap());
+    *B = _model->collect_output_derivatives(blayout(), glayout()).assemble();
 }
 
 void

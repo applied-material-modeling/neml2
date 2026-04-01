@@ -25,9 +25,12 @@
 #include "neml2/models/ImplicitUpdate.h"
 #include "neml2/misc/assertions.h"
 #include "neml2/models/ModelNonlinearSystem.h"
+#include "neml2/equation_systems/AssembledVector.h"
+#include "neml2/equation_systems/AssembledMatrix.h"
 
 namespace neml2
 {
+
 register_NEML2_object(ImplicitUpdate);
 
 OptionSet
@@ -96,15 +99,16 @@ ImplicitUpdate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
   neml_assert(res.ret == NonlinearSolver::RetCode::SUCCESS, "Nonlinear solve failed.");
 
   if (out)
-    assign_output(_sys->umap(), _sys->u());
+    assign_output(_sys->u().disassemble());
 
   // Use the implicit function theorem (IFT) to calculate the other derivatives
   if (dout_din)
   {
-    const auto du_dg = _solver->linear_solver->ift(*_sys);
+    auto [A, B] = _sys->A_and_B();
+    auto du_dg = -_solver->linear_solver->solve(A, B);
 
     // assign derivatives back
-    assign_output_derivatives(_sys->umap(), _sys->gmap(), du_dg);
+    assign_output_derivatives(du_dg.disassemble());
   }
 }
 } // namespace neml2

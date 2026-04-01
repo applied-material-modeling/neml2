@@ -29,9 +29,8 @@
 namespace neml2
 {
 class Tensor;
-class LinearSystem;
-class NonlinearSystem;
-struct SparseTensorList;
+struct AssembledVector;
+struct AssembledMatrix;
 
 /**
  * @brief The linear solver solves a linear system of equations.
@@ -45,9 +44,13 @@ public:
   LinearSolver(const OptionSet & options);
 
   /// Solve Ax = b for x
-  virtual SparseTensorList solve(LinearSystem &) const = 0;
+  virtual AssembledVector solve(const AssembledMatrix &, const AssembledVector &) const = 0;
 
-  /// Solve dr/du du/dg = -dr/dg
-  virtual SparseTensorList ift(NonlinearSystem &) const = 0;
+  /// Solve AX = B for X
+  virtual AssembledMatrix solve(const AssembledMatrix &, const AssembledMatrix &) const = 0;
+
+protected:
+  /// Whether to check for errors after solving
+  bool check_errors() const;
 };
 } // namespace neml2

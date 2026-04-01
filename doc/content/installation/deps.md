@@ -41,7 +41,7 @@ Documentation:
 
 - [Doxygen](https://github.com/doxygen/doxygen) for building the documentation.
 - [Doxygen Awesome](https://github.com/jothepro/doxygen-awesome-css) the documentation theme.
-- [graphviz](https://github.com/xflr6/graphviz) for model visualization.
+- [graphviz](https://github.com/xflr6/graphviz) for DOT inheritance graph.
 - [PyYAML](https://pyyaml.org/) for extracting syntax documentation.
 
 Work dispatcher:

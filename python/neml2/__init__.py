@@ -46,6 +46,7 @@ Number = typing.Union[int, float, bool]
 from .core import *
 from .tensors import *
 from .math import *
+from .es import *
 
 # pybind11-stubgen generates incorrect type annotations for Unions
 # so unfortunately we need to maintain this list

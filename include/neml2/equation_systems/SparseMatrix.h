@@ -24,47 +24,34 @@
 
 #pragma once
 
-#include <vector>
-
-#include "neml2/misc/types.h"
+#include "neml2/equation_systems/AxisLayout.h"
 #include "neml2/tensors/Tensor.h"
 
 namespace neml2
 {
-class Scalar;
+struct AssembledMatrix;
 
-/**
- * @brief Alias for a list of Tensors
- *
- * Undefined entries represent zeros in a sparse representation
- */
-struct SparseTensorList : public std::vector<Tensor>
+/// Sparse representation of a matrix consisting of a 2D-list of tensors and their layout
+struct SparseMatrix
 {
-  using std::vector<Tensor>::vector;
-
-  /// Construct from a vector of Tensors
-  explicit SparseTensorList(const std::vector<Tensor> &);
+  SparseMatrix() = default;
+  SparseMatrix(AxisLayout, AxisLayout);
+  SparseMatrix(AxisLayout, AxisLayout, std::vector<std::vector<Tensor>>);
 
   /// Tensor options
   TensorOptions options() const;
 
-  /// Start a SparseTensorList with fresh function graph
-  SparseTensorList data() const;
+  /// Semi-contiguous view of a block of the sparse matrix
+  SparseMatrix group(std::size_t, std::size_t) const;
+
+  /// Assemble into a Tensor with two base dimensions
+  AssembledMatrix assemble() const;
+  /// 2D-list of tensors
+  std::vector<std::vector<Tensor>> tensors;
+  /// Row layout of the tensors
+  AxisLayout row_layout;
+  /// Column layout of the tensors
+  AxisLayout col_layout;
 };
 
-///@{
-/// Unary negation
-SparseTensorList operator-(const SparseTensorList &);
-/// Binary addition
-SparseTensorList operator+(const SparseTensorList &, const SparseTensorList &);
-/// Multiplication with scalar
-SparseTensorList operator*(const Scalar &, const SparseTensorList &);
-SparseTensorList operator*(const SparseTensorList &, const Scalar &);
-/// Inner product
-Scalar inner(const SparseTensorList &, const SparseTensorList &);
-/// Norm-squared
-Scalar norm_sq(const SparseTensorList &);
-/// Norm
-Scalar norm(const SparseTensorList &);
-///@}
 } // namespace neml2

@@ -34,11 +34,11 @@ mv(const Tensor & a, const Tensor & v)
 {
   neml_assert_dynamic_broadcastable_dbg(a, v);
   neml_assert_dbg(a.base_dim() == 2,
-                  "The first tensor in bmv has base dimension ",
+                  "The first tensor in mv has base dimension ",
                   a.base_dim(),
                   " instead of 2.");
   neml_assert_dbg(v.base_dim() == 1,
-                  "The second tensor in bmv has base dimension ",
+                  "The second tensor in mv has base dimension ",
                   v.base_dim(),
                   " instead of 1.");
   const auto [aa, bb, i] = utils::align_intmd_dim(a, v);

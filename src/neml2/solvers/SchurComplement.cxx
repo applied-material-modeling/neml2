@@ -1,0 +1,179 @@
+// Copyright 2024, UChicago Argonne, LLC
+// All Rights Reserved
+// Software Name: NEML2 -- the New Engineering material Model Library, version 2
+// By: Argonne National Laboratory
+// OPEN SOURCE LICENSE (MIT)
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+
+#include "neml2/solvers/SchurComplement.h"
+#include "neml2/equation_systems/AssembledMatrix.h"
+#include "neml2/equation_systems/AssembledVector.h"
+#include "neml2/misc/assertions.h"
+
+namespace neml2
+{
+register_NEML2_object(SchurComplement);
+
+OptionSet
+SchurComplement::expected_options()
+{
+  OptionSet options = LinearSolver::expected_options();
+  options.doc() =
+      "Schur complement linear solver. Solves a block-partitioned system A x = b by forming and "
+      "solving the Schur complement of the primary block.";
+
+  options.set<unsigned int>("residual_primary_group") = 0;
+  options.set("residual_primary_group").doc() =
+      "Row (residual) group index of the primary block. The system must have exactly 2 residual "
+      "groups; the other group is automatically the Schur complement residual group.";
+
+  options.set<unsigned int>("unknown_primary_group") = 0;
+  options.set("unknown_primary_group").doc() =
+      "Column (unknown) group index of the primary block. The system must have exactly 2 unknown "
+      "groups; the other group is automatically the Schur complement unknown group.";
+
+  options.set<std::string>("primary_solver");
+  options.set("primary_solver").doc() = "Linear solver used for the primary block A_pp";
+
+  options.set<std::string>("schur_solver");
+  options.set("schur_solver").doc() = "Linear solver used for the Schur complement block S";
+
+  return options;
+}
+
+SchurComplement::SchurComplement(const OptionSet & options)
+  : LinearSolver(options),
+    _rp(options.get<unsigned int>("residual_primary_group")),
+    _rs(_rp == 0 ? 1 : 0),
+    _up(options.get<unsigned int>("unknown_primary_group")),
+    _us(_up == 0 ? 1 : 0),
+    _primary_solver(get_solver<LinearSolver>("primary_solver")),
+    _schur_solver(get_solver<LinearSolver>("schur_solver"))
+{
+  neml_assert(_rp + _rs == 1, "Residual primary group index must be 0 or 1");
+  neml_assert(_up + _us == 1, "Unknown primary group index must be 0 or 1");
+}
+
+AssembledVector
+SchurComplement::solve(const AssembledMatrix & A, const AssembledVector & b) const
+{
+  neml_assert_dbg(A.row_layout.ngroup() == 2,
+                  "SchurComplement requires exactly 2 row groups in A, got ",
+                  A.row_layout.ngroup());
+  neml_assert_dbg(A.col_layout.ngroup() == 2,
+                  "SchurComplement requires exactly 2 column groups in A, got ",
+                  A.col_layout.ngroup());
+  neml_assert_dbg(b.layout.ngroup() == 2,
+                  "SchurComplement requires exactly 2 vector groups in b, got ",
+                  b.layout.ngroup());
+
+  // Extract the four blocks using view layouts
+  const auto A_pp = A.group(_rp, _up);
+  const auto A_ps = A.group(_rp, _us);
+  const auto A_sp = A.group(_rs, _up);
+  const auto A_ss = A.group(_rs, _us);
+
+  // Extract the two b groups
+  const auto b_p = b.group(_rp);
+  const auto b_s = b.group(_rs);
+
+  // Step 1: Y_ps = A_pp^{-1} A_ps
+  const auto Y_ps = _primary_solver->solve(A_pp, A_ps);
+
+  // Step 2: z_p = A_pp^{-1} b_p
+  const auto z_p = _primary_solver->solve(A_pp, b_p);
+
+  // Step 3: S_ss = A_ss - A_sp Y_ps
+  const auto S_ss = A_ss - A_sp * Y_ps;
+
+  // Step 4: d_s = b_s - A_sp z_p
+  const auto d_s = b_s - A_sp * z_p;
+
+  // Step 5: x_s = S^{-1} d
+  const auto x_s = _schur_solver->solve(S_ss, d_s);
+
+  // Step 6: x_p = z - Y x_s
+  const auto x_p = z_p - Y_ps * x_s;
+
+  // Assemble the full solution
+  AssembledVector x(A.col_layout);
+  const auto & x0 = _up < _us ? x_p.tensors[0] : x_s.tensors[0];
+  const auto & x1 = _up < _us ? x_s.tensors[0] : x_p.tensors[0];
+  x.tensors[0] = x0;
+  x.tensors[1] = x1;
+
+  return x;
+}
+
+AssembledMatrix
+SchurComplement::solve(const AssembledMatrix & A, const AssembledMatrix & B) const
+{
+  neml_assert_dbg(A.row_layout.ngroup() == 2,
+                  "SchurComplement requires exactly 2 row groups in A, got ",
+                  A.row_layout.ngroup());
+  neml_assert_dbg(A.col_layout.ngroup() == 2,
+                  "SchurComplement requires exactly 2 column groups in A, got ",
+                  A.col_layout.ngroup());
+  neml_assert_dbg(B.row_layout.ngroup() == 2,
+                  "SchurComplement requires exactly 2 row groups in B, got ",
+                  B.row_layout.ngroup());
+  neml_assert_dbg(B.col_layout.ngroup() == 1,
+                  "SchurComplement requires exactly 1 column group in B, got ",
+                  B.col_layout.ngroup());
+
+  // Extract the four blocks using view layouts
+  const auto A_pp = A.group(_rp, _up);
+  const auto A_ps = A.group(_rp, _us);
+  const auto A_sp = A.group(_rs, _up);
+  const auto A_ss = A.group(_rs, _us);
+
+  // Extract the two row groups of B
+  const auto B_p = B.group(_rp, 0);
+  const auto B_s = B.group(_rs, 0);
+
+  // Step 1: Y_ps = A_pp^{-1} A_ps
+  const auto Y_ps = _primary_solver->solve(A_pp, A_ps);
+
+  // Step 2: Z_p = A_pp^{-1} B_p
+  const auto Z_p = _primary_solver->solve(A_pp, B_p);
+
+  // Step 3: S_ss = A_ss - A_sp Y_ps
+  const auto S_ss = A_ss - A_sp * Y_ps;
+
+  // Step 4: D_s = B_s - A_sp Z_p
+  const auto D_s = B_s - A_sp * Z_p;
+
+  // Step 5: X_s = S_ss^{-1} D_s
+  const auto X_s = _schur_solver->solve(S_ss, D_s);
+
+  // Step 6: X_p = Z_p - Y_ps X_s
+  const auto X_p = Z_p - Y_ps * X_s;
+
+  // Assemble the full solution
+  AssembledMatrix X(A.col_layout, B.col_layout);
+  const auto & X0 = _up < _us ? X_p.tensors[0] : X_s.tensors[0];
+  const auto & X1 = _up < _us ? X_s.tensors[0] : X_p.tensors[0];
+  X.tensors[0] = X0;
+  X.tensors[1] = X1;
+
+  return X;
+}
+
+} // namespace neml2

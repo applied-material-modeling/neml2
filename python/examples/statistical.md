@@ -5,7 +5,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.16.7
+    jupytext_version: 1.19.1
 kernelspec:
   display_name: neml2
   language: python
@@ -155,8 +155,13 @@ class SolveStrain(torch.nn.Module):
             "forces/fixed_values": neml2.SR2(loading, 0),
             "forces/control": neml2.SR2(control, 0),
         }
-        forces = [forces[key] for key in self.discrete_equations.fmap]
-        forces = neml2.assemble_vector(forces, self.discrete_equations.flayout).torch()
+        forces = [forces[key] for key in self.discrete_equations.fvars]
+        forces = (
+            neml2.SparseVector(self.discrete_equations.flayout, forces)
+            .assemble()
+            .tensors[0]
+            .torch()
+        )
         state0 = torch.zeros(
             forces.shape[1:-1] + (self.discrete_equations.nstate,), device=forces.device
         )

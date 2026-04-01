@@ -24,10 +24,7 @@
 
 #pragma once
 
-#include "neml2/models/ModelNonlinearSystem.h"
 #include "neml2/neml2.h"
-#include "neml2/base/LabeledAxisAccessor.h"
-#include "neml2/base/LabeledAxis.h"
 #include "neml2/tensors/TensorValue.h"
 
 #include <pybind11/pybind11.h>
@@ -36,24 +33,15 @@
 #include "macros.h"
 
 // Forward declarations
-void def(pybind11::module_ &, pybind11::class_<neml2::LabeledAxisAccessor> &);
-void def(pybind11::module_ &, pybind11::class_<neml2::LabeledAxis> &);
 void def(pybind11::module_ &, pybind11::class_<neml2::TensorValueBase> &);
 void def(pybind11::module_ &, pybind11::class_<neml2::Factory> &);
 void def(pybind11::module_ &, pybind11::class_<neml2::Model, std::shared_ptr<neml2::Model>> &);
-void def(pybind11::module_ &,
-         pybind11::class_<neml2::ModelNonlinearSystem,
-                          std::shared_ptr<neml2::ModelNonlinearSystem>> &);
 
 // Type casters are only for cross-module types used in function signatures
-DEFAULT_TYPECASTER(neml2::LabeledAxisAccessor, "Union[neml2.core.VariableName, str]");
-DEFAULT_TYPECASTER(neml2::LabeledAxis, "neml2.core.LabeledAxis");
 DEFAULT_TYPECASTER(neml2::TensorValueBase, "neml2.core.TensorValue");
 DEFAULT_TYPECASTER(neml2::Factory, "neml2.core.Factory");
 DEFAULT_TYPECASTER(neml2::Model, "neml2.core.Model");
 DEFAULT_TYPECASTER_SHARED_PTR(neml2::Model, "neml2.core.Model");
-DEFAULT_TYPECASTER(neml2::ModelNonlinearSystem, "neml2.core.NonlinearSystem");
-DEFAULT_TYPECASTER_SHARED_PTR(neml2::ModelNonlinearSystem, "neml2.core.NonlinearSystem");
 
 namespace pybind11::detail
 {

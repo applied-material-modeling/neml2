@@ -22,14 +22,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+import math
 import typing
+
 from pyzag import nonlinear
 
 import torch
 import neml2
 from neml2.tensors import Tensor
-from neml2.reserved import *
-from neml2.core import VariableName
+from neml2.es import AssembledVector, AssembledMatrix, AxisLayout, SparseMatrix
+from neml2.reserved import FORCES, OLD_FORCES, OLD_STATE, STATE
 
 
 class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
@@ -62,9 +64,9 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         self.model = sys.model()
         self._lookback = 1
 
+        self._setup_maps()
         self._check_model()
         self._setup_parameters(exclude_parameters)
-        self._setup_maps()
 
     @property
     def lookback(self) -> int:
@@ -78,11 +80,11 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
 
     @property
     def nstate(self) -> int:
-        return self.model.input_axis().subaxis(STATE).size()
+        return sum([math.prod(self.slayout.base_sizes(i)) for i in range(self.slayout.nvar())])
 
     @property
     def nforce(self) -> int:
-        return self.model.input_axis().subaxis(FORCES).size()
+        return sum([math.prod(self.flayout.base_sizes(i)) for i in range(self.flayout.nvar())])
 
     def forward(
         self, state: torch.Tensor, forces: torch.Tensor
@@ -100,13 +102,16 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         self._update_sys(state, forces)
 
         # Call the model
+        # A := dr/ds
+        # B := dr/dg, where g includes s_n, f, and f_n
+        # b := -r
         A, B, b = self.sys.A_and_B_and_b()
 
-        # Assemble residual and Jacobians
-        r, J, Jn = self._assemble(A, B, b)
-
-        # At this point, the residual and Jacobians should be good to go
-        return self._adapt_for_pyzag(r, J, Jn)
+        # Pyzag needs
+        # r := -b
+        # J := dr/ds
+        # Jn := dr/ds_n
+        return self._adapt_for_pyzag(A, B, b)
 
     def _check_model(self):
         """Simple consistency checks, could be a debug check but we only call this once"""
@@ -119,56 +124,21 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         # hack, some changes are required in pyzag.
         # neml2.diagnose(self.model)
 
-        # Then pyzag specific checks
-        input_axis = self.model.input_axis()
-        output_axis = self.model.output_axis()
+        # Helper function to replace the variable prefix
+        def _replace_prefix(vars: list[str], new_prefix: str) -> list[str]:
+            return [f"{new_prefix}/{v.split('/', 1)[1]}" for v in vars]
 
-        # 1. Input axis should have state, old_state, forces, old_forces
-        model_input_subaxes = input_axis.subaxis_names()
-        expected_input_subaxes = [FORCES, OLD_FORCES, OLD_STATE, STATE]
-        if model_input_subaxes != expected_input_subaxes:
-            raise ValueError(
-                "Wrapped NEML2 model should have {} as (the only) input subaxes. Got {}".format(
-                    expected_input_subaxes, model_input_subaxes
-                )
-            )
-
-        # 2. Output axis should just have the residual (and only the residual)
-        model_output_subaxes = output_axis.subaxis_names()
-        expected_output_subaxes = [RESIDUAL]
-        if model_output_subaxes != expected_output_subaxes:
-            raise ValueError(
-                "Wrapped NEML2 model should have {} as (the only) output subaxes. Got {}".format(
-                    expected_output_subaxes, model_output_subaxes
-                )
-            )
-
-        # 3. All the variables on state should match the variables in the residual
-        input_state_vars = input_axis.subaxis(STATE).variable_names()
-        output_residual_vars = output_axis.subaxis(RESIDUAL).variable_names()
-        if input_state_vars != output_residual_vars:
-            raise ValueError(
-                "Input state variables should match output residual variables. However, input state variables are {}, and output residual variables are {}".format(
-                    input_state_vars, output_residual_vars
-                )
-            )
-
-        # 4. Everything in old_state should be in state (but not the other way around)
-        input_old_state_vars = input_axis.subaxis(OLD_STATE).variable_names()
-        if not set(input_old_state_vars) <= set(input_state_vars):
+        # Every old variable (state or force) should have a corresponding (current) variable (but not the other way around)
+        if not set(_replace_prefix(self.snlayout.vars(), STATE)) <= set(self.slayout.vars()):
             raise ValueError(
                 "Input old state variables should be a subset of input state variables. However, input state variables are {}, and input old state variables are {}".format(
-                    input_state_vars, input_old_state_vars
+                    self.slayout.vars(), self.snlayout.vars()
                 )
             )
-
-        # 5. Everything in old_forces should be in forces (but not the other way around)
-        input_forces_vars = input_axis.subaxis(FORCES).variable_names()
-        input_old_forces_vars = input_axis.subaxis(OLD_FORCES).variable_names()
-        if not set(input_old_forces_vars) <= set(input_forces_vars):
+        if not set(_replace_prefix(self.fnlayout.vars(), FORCES)) <= set(self.flayout.vars()):
             raise ValueError(
-                "Input old forces should be a subset of input forces. However, input forces are {}, and input old forces are {}".format(
-                    input_forces_vars, input_old_forces_vars
+                "Input old force variables should be a subset of input force variables. However, input force variables are {}, and input old force variables are {}".format(
+                    self.flayout.vars(), self.fnlayout.vars()
                 )
             )
 
@@ -217,52 +187,48 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         the pyzag representation to the nonlinear system representation for both unknowns and given variables.
         """
 
-        # Helper function to get index map from one variable list to another
-        def _index_map_from_to(
-            from_map: list[typing.Union[VariableName, str]],
-            to_map: list[typing.Union[VariableName, str]],
-        ) -> list[int]:
-            index_map = []
-            for v in from_map:
-                for i, vt in enumerate(to_map):
-                    if VariableName(v) == VariableName(vt):
-                        index_map.append(i)
-                        break
-                else:
-                    index_map.append(-1)
-            return index_map
+        # Helper function to extract a sublayout given a prefix
+        def _extract_sublayout(
+            layout: AxisLayout, prefix: str, new_prefix: typing.Union[str, None] = None
+        ) -> AxisLayout:
+            subvars = []
+            intmd_shapes = []
+            base_shapes = []
+            for i in range(layout.nvar()):
+                v = layout.var(i)
+                if v.startswith(prefix):
+                    if not new_prefix:
+                        subvars.append(v)
+                    else:
+                        subvars.append(f"{new_prefix}/{v.split('/', 1)[1]}")
+                    intmd_shapes.append(layout.intmd_sizes(i))
+                    base_shapes.append(layout.base_sizes(i))
+            return AxisLayout([subvars], intmd_shapes, base_shapes, [AxisLayout.IStructure.DENSE])
 
-        # state --> unknowns
-        # this mapping is just identity
-        self.smap = self.sys.umap()
+        # given variables (from neml2, includes old unknowns, forces, and old forces))
+        glayout = self.sys.glayout()
+        gvars = glayout.vars()
+
+        # setup layouts for assembly purposes
+        self.rlayout = self.sys.blayout()
         self.slayout = self.sys.ulayout()
+        self.snlayout = _extract_sublayout(self.slayout, STATE, OLD_STATE)
+        self.flayout = _extract_sublayout(glayout, FORCES)
+        self.fnlayout = _extract_sublayout(glayout, FORCES, OLD_FORCES)
 
-        # old state --> given variables
-        snmap = [VariableName(v).old() for v in self.smap]
-        self._sn_to_g_map = _index_map_from_to(snmap, self.sys.gmap())
+        # state variables (unknowns)
+        self.svars = self.slayout.vars()
 
-        # forces --> given variables
-        self.fmap = [v for v in self.sys.gmap() if VariableName(v).start_with(FORCES)]
-        self.flayout = [
-            self.sys.glayout()[i]
-            for i, v in enumerate(self.sys.gmap())
-            if VariableName(v).start_with(FORCES)
-        ]
-        self._f_to_g_map = _index_map_from_to(self.fmap, self.sys.gmap())
+        # forces
+        self.fvars = [v for v in gvars if v.startswith(FORCES)]
 
-        # old forces --> given variables
-        fn_map = [VariableName(v).old() for v in self.fmap]
-        self._fn_to_g_map = _index_map_from_to(fn_map, self.sys.gmap())
-
-        # make sure we have full coverage of the given variables
-        g_coverage = set(self._sn_to_g_map + self._f_to_g_map + self._fn_to_g_map)
-        g_coverage = list(g_coverage - {-1})
-        assert g_coverage == list(
-            range(len(self.sys.gmap()))
-        ), "Internal error: Not all given variables are covered!"
-
-        # given variables --> state
-        self._g_to_sn_map = _index_map_from_to(self.sys.gmap(), snmap)
+        # figure out how gvars map to snvars
+        self._sn_to_g_map = [-1] * self.snlayout.nvar()
+        for i, snv in enumerate(self.snlayout.vars()):
+            for j, gv in enumerate(gvars):
+                if snv == gv:
+                    self._sn_to_g_map[i] = j
+                    break
 
     def _update_sys(self, state: torch.Tensor, forces: torch.Tensor):
         """
@@ -278,86 +244,49 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         batch_shape = (state.shape[0] - self.lookback,) + state.shape[1:-1]
         bdim = len(batch_shape)
 
-        # Disassemble state and old_state
+        # Convert the input tensors to NEML2 tensors
         sf = Tensor(state, bdim)
-        sf_np1 = sf.dynamic[self.lookback :]
-        sf_n = sf.dynamic[: -self.lookback]
-        s_np1 = neml2.disassemble_vector(sf_np1, self.slayout)
-        s_n = neml2.disassemble_vector(sf_n, self.slayout)
-
-        # Disassemble forces and old_forces
         ff = Tensor(forces, bdim)
-        ff_np1 = ff.dynamic[self.lookback :]
-        ff_n = ff.dynamic[: -self.lookback]
-        f_np1 = neml2.disassemble_vector(ff_np1, self.flayout)
-        f_n = neml2.disassemble_vector(ff_n, self.flayout)
 
-        # Update the current unknowns in the nonlinear system
-        self.sys.set_u(s_np1)
+        # Update current state
+        sf_np1 = AssembledVector(self.slayout, [sf.dynamic[self.lookback :]])
+        self.sys.set_u(sf_np1)
 
-        # Update the given variables in the nonlinear system
-        g = [neml2.Tensor()] * len(self.sys.gmap())
-        for i, j in enumerate(self._sn_to_g_map):
-            if j != -1:
-                g[j] = s_n[i]
-        for i, j in enumerate(self._f_to_g_map):
-            if j != -1:
-                g[j] = f_np1[i]
-        for i, j in enumerate(self._fn_to_g_map):
-            if j != -1:
-                g[j] = f_n[i]
-        self.sys.set_g(g)
+        # Update old state, forces, and old forces
+        sf_n = AssembledVector(self.snlayout, [sf.dynamic[: -self.lookback]])
+        ff_np1 = AssembledVector(self.flayout, [ff.dynamic[self.lookback :]])
+        ff_n = AssembledVector(self.fnlayout, [ff.dynamic[: -self.lookback]])
+        self.sys.set_g(sf_n)
+        self.sys.set_g(ff_np1)
+        self.sys.set_g(ff_n)
 
-    def _assemble(
-        self, A: list[neml2.Tensor], B: list[neml2.Tensor], b: list[neml2.Tensor]
-    ) -> tuple[neml2.Tensor, neml2.Tensor, neml2.Tensor]:
+    def _adapt_for_pyzag(
+        self, A: AssembledMatrix, B: AssembledMatrix, b: AssembledVector
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         """Assemble the residual and Jacobians from A, B, and b
 
         Args:
-            A (list of neml2.Tensor): list of Jacobians w.r.t. unknowns
-            B (list of neml2.Tensor): list of Jacobians w.r.t. given variables
-            b (list of neml2.Tensor): list of (negative) residuals
+            A (AssembledMatrix): Jacobians w.r.t. unknowns
+            B (AssembledMatrix): Jacobians w.r.t. given variables
+            b (AssembledVector): (negative) residuals
 
         Returns:
             tuple of neml2.Tensor: residual, Jacobian w.r.t. unknowns, Jacobian w.r.t. old state
         """
-        # Assemble residual
-        r = -neml2.assemble_vector(b, self.slayout)
 
-        # Assemble Jacobian w.r.t. unknowns
-        J = neml2.assemble_matrix(A, self.slayout, self.slayout)
+        r = -b.tensors[0]
+        J = A.tensors[0][0]
 
-        # Assemble Jacobian w.r.t. old state
-        n = len(self.smap)
-        Jn = [neml2.Tensor()] * n * n
-        for i in range(n):
-            for j in range(self.sys.p):
-                k = self._g_to_sn_map[j]
-                if k != -1:
-                    Jn[i * n + k] = B[i * self.sys.p + j]
-        Jn = neml2.assemble_matrix(Jn, self.slayout, self.slayout)
+        # We need to extract the Jacobian w.r.t. old state from B
+        B_sp = B.disassemble().tensors
+        Jn_sp = [[Tensor()] * self.snlayout.nvar() for _ in range(self.rlayout.nvar())]
+        for i in range(self.rlayout.nvar()):
+            for j in range(self.snlayout.nvar()):
+                g_idx = self._sn_to_g_map[j]
+                if g_idx != -1:
+                    Jn_sp[i][j] = B_sp[i][g_idx]
+        Jn = SparseMatrix(self.rlayout, self.snlayout, Jn_sp).assemble().tensors[0][0]
 
-        return r, J, Jn
-
-    def _adapt_for_pyzag(
-        self, r: neml2.Tensor, J: neml2.Tensor, Jn: neml2.Tensor
-    ) -> tuple[torch.Tensor, torch.Tensor]:
-        """Adapt the residual and Jacobians for pyzag
-
-        pyzag has additional requirements on residual and Jacobians:
-          1. The residual and Jacobians should have the same batch shape
-          2. The Jacobians should be square
-
-        The second requirement has been taken care of by the previous _assemble call.
-
-        Args:
-            r (neml2.Tensor): residual
-            J (neml2.Tensor): Jacobian
-            Jn (neml2.Tensor): Jacobian for the old state
-
-        Returns:
-            tuple of torch.Tensor: residual, Jacobian
-        """
         # Make the residual and Jacobian have the same batch shape
         J = J.dynamic.expand(r.dynamic.shape)
         Jn = Jn.dynamic.expand(r.dynamic.shape)

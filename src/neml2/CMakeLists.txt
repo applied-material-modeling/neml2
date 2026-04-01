@@ -161,15 +161,9 @@ configure_file(
 # ----------------------------------------------------------------------------
 find_package(Git)
 
-if(Git_FOUND)
-  execute_process(
-    COMMAND ${GIT_EXECUTABLE} describe --abbrev=0
-    WORKING_DIRECTORY ${NEML2_SOURCE_DIR}
-    OUTPUT_VARIABLE NEML2_VERSION
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-  )
-  file(WRITE ${NEML2_BINARY_DIR}/version "${NEML2_VERSION}\n")
+file(WRITE ${NEML2_BINARY_DIR}/version "v${PROJECT_VERSION}\n")
 
+if(Git_FOUND)
   execute_process(
     COMMAND ${GIT_EXECUTABLE} rev-parse HEAD
     WORKING_DIRECTORY ${NEML2_SOURCE_DIR}

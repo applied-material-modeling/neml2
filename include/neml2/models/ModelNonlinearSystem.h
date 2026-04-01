@@ -24,9 +24,9 @@
 
 #pragma once
 
+#include "neml2/equation_systems/AxisLayout.h"
 #include "neml2/equation_systems/EquationSystem.h"
 #include "neml2/equation_systems/NonlinearSystem.h"
-#include "neml2/equation_systems/SparseTensorList.h"
 #include "neml2/models/ParameterStore.h"
 #include "neml2/models/BufferStore.h"
 
@@ -53,30 +53,36 @@ public:
 
   void to(const TensorOptions &) override;
 
-  void set_u(const SparseTensorList &) override;
-  void set_g(const SparseTensorList &) override;
+  void set_u(const AssembledVector &) override;
+  void set_g(const AssembledVector &) override;
 
-  SparseTensorList u() const override;
-  SparseTensorList g() const override;
+  AssembledVector u() const override;
+  AssembledVector g() const override;
 
 protected:
-  std::vector<LabeledAxisAccessor> setup_umap() override;
-  std::vector<TensorShape> setup_intmd_ulayout() override;
-  std::vector<TensorShape> setup_ulayout() override;
+  std::shared_ptr<AxisLayout> setup_ulayout() override;
+  std::shared_ptr<AxisLayout> setup_glayout() override;
+  std::shared_ptr<AxisLayout> setup_blayout() override;
 
-  std::vector<LabeledAxisAccessor> setup_bmap() override;
-  std::vector<TensorShape> setup_intmd_blayout() override;
-  std::vector<TensorShape> setup_blayout() override;
-
-  std::vector<LabeledAxisAccessor> setup_gmap() override;
-  std::vector<TensorShape> setup_intmd_glayout() override;
-  std::vector<TensorShape> setup_glayout() override;
-
-  void assemble(SparseTensorList * A, SparseTensorList * B, SparseTensorList * b) override;
+  void assemble(AssembledMatrix * A, AssembledMatrix * B, AssembledVector * b) override;
   void pre_assemble(bool A, bool B, bool b) override;
   void post_assemble(bool A, bool B, bool b) override;
 
 private:
+  /// Update layouts after the first evaluation
+  void update_layouts();
+  /// Whether layouts have been updated
+  bool _layouts_updated = false;
+
+  /// Optional user-defined partition of unknown/state variables.
+  const std::vector<std::vector<VariableName>> _unknown_groups;
+  /// Optional user-defined partition of residual variables.
+  const std::vector<std::vector<VariableName>> _residual_groups;
+  /// IStructure for unknown groups
+  const std::vector<AxisLayout::IStructure> _unknown_istrs;
+  /// IStructure for residual groups
+  const std::vector<AxisLayout::IStructure> _residual_istrs;
+
   std::shared_ptr<Model> _model;
 };
 

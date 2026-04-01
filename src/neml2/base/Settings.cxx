@@ -67,6 +67,12 @@ Settings::expected_options()
       "enable/disable JIT. When set to true, JIT is disabled globally, and it is an error to "
       "explicitly set jit to true for any model.";
 
+  options.set<bool>("linalg_solve_check_errors") = false;
+  options.set("linalg_solve_check_errors").doc() =
+      "Whether to check for errors after solving linear systems. This is disabled by default for "
+      "performance reasons, but it can be enabled to get better error messages when the solve "
+      "fails.";
+
   return options;
 }
 
@@ -75,7 +81,8 @@ Settings::Settings(const OptionSet & options)
     _parameter_name_separator(options.get<std::string>("parameter_name_separator")),
     _require_double_precision(options.get<bool>("require_double_precision")),
     _additional_libraries(options.get<std::vector<std::string>>("additional_libraries")),
-    _disable_jit(options.get<bool>("disable_jit"))
+    _disable_jit(options.get<bool>("disable_jit")),
+    _linalg_solve_check_errors(options.get<bool>("linalg_solve_check_errors"))
 {
   // Load additional libraries which may contain custom objects
   for (const auto & lib : _additional_libraries)

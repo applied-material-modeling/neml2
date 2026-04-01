@@ -23,12 +23,10 @@
 // THE SOFTWARE.
 
 #include "neml2/solvers/DenseLU.h"
-#include "neml2/tensors/Tensor.h"
-#include "neml2/equation_systems/LinearSystem.h"
-#include "neml2/equation_systems/NonlinearSystem.h"
-#include "neml2/equation_systems/SparseTensorList.h"
-#include "neml2/equation_systems/assembly.h"
+#include "neml2/equation_systems/AssembledVector.h"
+#include "neml2/equation_systems/AssembledMatrix.h"
 #include "neml2/tensors/functions/linalg/solve.h"
+#include "neml2/misc/assertions.h"
 
 namespace neml2
 {
@@ -49,46 +47,23 @@ DenseLU::DenseLU(const OptionSet & options)
 {
 }
 
-SparseTensorList
-DenseLU::solve(LinearSystem & sys) const
+AssembledVector
+DenseLU::solve(const AssembledMatrix & A, const AssembledVector & b) const
 {
-  const auto & bilayout = sys.intmd_blayout();
-  const auto & uilayout = sys.intmd_ulayout();
-  const auto & blayout = sys.blayout();
-  const auto & ulayout = sys.ulayout();
-
-  // assemble A and b into flat tensors
-  const auto [A, b] = sys.A_and_b();
-  const auto Af = assemble(A, bilayout, uilayout, blayout, ulayout);
-  const auto bf = assemble(b, bilayout, blayout);
-
-  // solve
-  const auto xf = linalg::solve(Af, bf);
-
-  // disassemble the solution
-  return disassemble(xf, sys.intmd_ulayout(), sys.ulayout());
+  neml_assert(A.row_layout.ngroup() == 1 && A.col_layout.ngroup() == 1 && b.layout.ngroup() == 1,
+              "DenseLU only supports single-group layouts.");
+  const auto xf = linalg::solve(A.tensors[0][0], b.tensors[0], check_errors());
+  return AssembledVector(A.col_layout, {xf});
 }
 
-SparseTensorList
-DenseLU::ift(NonlinearSystem & sys) const
+AssembledMatrix
+DenseLU::solve(const AssembledMatrix & A, const AssembledMatrix & B) const
 {
-  const auto & bilayout = sys.intmd_blayout();
-  const auto & uilayout = sys.intmd_ulayout();
-  const auto & gilayout = sys.intmd_glayout();
-  const auto & blayout = sys.blayout();
-  const auto & ulayout = sys.ulayout();
-  const auto & glayout = sys.glayout();
-
-  // assemble A and B into flat tensors
-  const auto [A, B] = sys.A_and_B();
-  const auto Af = assemble(A, bilayout, uilayout, blayout, ulayout);
-  const auto Bf = assemble(B, bilayout, gilayout, blayout, glayout);
-
-  // solve
-  const auto Xf = -linalg::solve(Af, Bf);
-
-  // disassemble the solution
-  return disassemble(Xf, uilayout, gilayout, ulayout, glayout);
+  neml_assert(A.row_layout.ngroup() == 1 && A.col_layout.ngroup() == 1 &&
+                  B.col_layout.ngroup() == 1 && B.row_layout.ngroup() == 1,
+              "DenseLU only supports single-group layouts.");
+  const auto Xf = linalg::solve(A.tensors[0][0], B.tensors[0][0], check_errors());
+  return AssembledMatrix(A.col_layout, B.col_layout, {{Xf}});
 }
 
 }

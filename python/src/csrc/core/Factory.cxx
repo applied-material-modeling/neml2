@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "csrc/core/types.h"
+#include "csrc/es/types.h"
 
 namespace py = pybind11;
 using namespace neml2;

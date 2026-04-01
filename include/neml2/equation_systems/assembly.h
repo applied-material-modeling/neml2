@@ -24,14 +24,11 @@
 
 #pragma once
 
-#include <vector>
-
 #include "neml2/misc/types.h"
 
 namespace neml2
 {
 class Tensor;
-struct SparseTensorList;
 template <std::size_t N>
 class Derivative;
 
@@ -84,41 +81,4 @@ template <std::size_t N>
 Tensor to_assembly(const Tensor & from,
                    const std::array<TensorShape, N> & intmd_shapes,
                    const std::array<TensorShape, N> & base_shapes);
-
-/**
- * Disassemble a Tensor with one base dimension into a vector of Tensors according to base shapes
- * and optionally intermediate shapes.
- */
-SparseTensorList disassemble(const Tensor &,
-                             const std::optional<std::vector<TensorShape>> & intmd_shapes,
-                             const std::vector<TensorShape> & base_shapes);
-
-/**
- * Assemble a vector of Tensors into a Tensor with one base dimension according to base shapes
- * and optionally intermediate shapes.
- */
-Tensor assemble(const SparseTensorList &,
-                const std::optional<std::vector<TensorShape>> & intmd_shapes,
-                const std::vector<TensorShape> & base_shapes);
-
-/**
- * Disassemble (in row-major order) a Tensor with two base dimension into a vector of Tensors
- * according to base shapes and optionally intermediate shapes.
- */
-SparseTensorList disassemble(const Tensor &,
-                             const std::optional<std::vector<TensorShape>> & row_intmd_shapes,
-                             const std::optional<std::vector<TensorShape>> & col_intmd_shapes,
-                             const std::vector<TensorShape> & row_base_shapes,
-                             const std::vector<TensorShape> & col_base_shapes);
-
-/**
- * Assemble a vector of Tensors (in row-major order) into a Tensor with two base dimension according
- * to base shapes and optionally intermediate shapes.
- */
-Tensor assemble(const SparseTensorList &,
-                const std::optional<std::vector<TensorShape>> & row_intmd_shapes,
-                const std::optional<std::vector<TensorShape>> & col_intmd_shapes,
-                const std::vector<TensorShape> & row_base_shapes,
-                const std::vector<TensorShape> & col_base_shapes);
-
 }
