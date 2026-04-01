@@ -161,6 +161,15 @@ AxisLayout::base_sizes(std::size_t idx) const
   return _parent ? _parent->base_sizes(_start + idx) : _base_shapes[idx];
 }
 
+void
+AxisLayout::update_intmd_shapes(const std::vector<TensorShape> & new_intmd_shapes)
+{
+  neml_assert(!is_view(), "Cannot update intermediate shapes on a view of a layout");
+  neml_assert(new_intmd_shapes.size() == nvar(),
+              "Number of new intermediate shapes must match the number of variables");
+  _intmd_shapes = new_intmd_shapes;
+}
+
 bool
 operator==(const AxisLayout & a, const AxisLayout & b)
 {

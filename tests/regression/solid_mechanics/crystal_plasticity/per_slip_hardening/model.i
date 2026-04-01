@@ -103,7 +103,7 @@
 
   [initial_dislocation_density]
     type = FullScalar
-    batch_shape = '(20, 12)'
+    batch_shape = '(20,12)'
     value = 1.0e1
     intermediate_dimension = 1
   []

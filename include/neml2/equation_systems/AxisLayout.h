@@ -50,10 +50,10 @@ struct AxisLayout
    * @param base_shapes ID-to-variable base shape mapping
    * @param istrs IStructure for each variable group
    */
-  AxisLayout(const std::vector<std::vector<LabeledAxisAccessor>> &,
-             std::vector<TensorShape>,
-             std::vector<TensorShape>,
-             std::vector<IStructure>);
+  AxisLayout(const std::vector<std::vector<LabeledAxisAccessor>> & vars,
+             std::vector<TensorShape> intmd_shapes,
+             std::vector<TensorShape> base_shapes,
+             std::vector<IStructure> istrs);
 
   /**
    * @brief Construct a new Axis Layout object by viewing into a parent layout
@@ -96,6 +96,9 @@ struct AxisLayout
   const TensorShape & intmd_sizes(std::size_t) const;
   /// Accessor for variable base shape
   const TensorShape & base_sizes(std::size_t) const;
+
+  /// Update intermediate shapes
+  void update_intmd_shapes(const std::vector<TensorShape> &);
 
 private:
   /// ID-to-variable mapping

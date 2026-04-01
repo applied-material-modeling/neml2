@@ -69,6 +69,11 @@ protected:
   void post_assemble(bool A, bool B, bool b) override;
 
 private:
+  /// Update layouts after the first evaluation
+  void update_layouts();
+  /// Whether layouts have been updated
+  bool _layouts_updated = false;
+
   /// Optional user-defined partition of unknown/state variables.
   const std::vector<std::vector<VariableName>> _unknown_groups;
   /// Optional user-defined partition of residual variables.

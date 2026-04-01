@@ -191,6 +191,32 @@ ModelNonlinearSystem::setup_blayout()
 }
 
 void
+ModelNonlinearSystem::update_layouts()
+{
+  if (_layouts_updated)
+    return;
+
+  // After the first evaluation, we have the correct intmd shapes for the variables, so we can
+  // update layouts accordingly. We need to do this before assembling which depends on the accurate
+  // layouts.
+  const auto & m = this->model();
+  auto & ul = *_ulayout;
+  auto & gl = *_glayout;
+  auto & bl = *_blayout;
+  std::vector<TensorShape> uis(ul.nvar()), gis(gl.nvar()), bis(bl.nvar());
+  for (std::size_t i = 0; i < ul.nvar(); i++)
+    uis[i] = m.input_variable(ul.var(i)).intmd_sizes();
+  for (std::size_t i = 0; i < gl.nvar(); i++)
+    gis[i] = m.input_variable(gl.var(i)).intmd_sizes();
+  for (std::size_t i = 0; i < bl.nvar(); i++)
+    bis[i] = m.output_variable(bl.var(i)).intmd_sizes();
+  ul.update_intmd_shapes(uis);
+  gl.update_intmd_shapes(gis);
+  bl.update_intmd_shapes(bis);
+  _layouts_updated = true;
+}
+
+void
 ModelNonlinearSystem::set_u(const AssembledVector & u)
 {
   _model->assign_input(u.disassemble());
@@ -207,13 +233,13 @@ ModelNonlinearSystem::set_g(const AssembledVector & g)
 AssembledVector
 ModelNonlinearSystem::u() const
 {
-  return _model->collect_input(*_ulayout).assemble();
+  return _model->collect_input(ulayout()).assemble();
 }
 
 AssembledVector
 ModelNonlinearSystem::g() const
 {
-  return _model->collect_input(*_glayout).assemble();
+  return _model->collect_input(glayout()).assemble();
 }
 
 void
@@ -225,15 +251,17 @@ ModelNonlinearSystem::assemble(AssembledMatrix * A, AssembledMatrix * B, Assembl
         b && !_b_up_to_date, (A && !_A_up_to_date) || (B && !_B_up_to_date), false);
   }
 
+  update_layouts();
+
   if (b)
     // remember b := -r
-    *b = -_model->collect_output(*_blayout).assemble();
+    *b = -_model->collect_output(blayout()).assemble();
 
   if (A)
-    *A = _model->collect_output_derivatives(*_blayout, *_ulayout).assemble();
+    *A = _model->collect_output_derivatives(blayout(), ulayout()).assemble();
 
   if (B)
-    *B = _model->collect_output_derivatives(*_blayout, {*_glayout}).assemble();
+    *B = _model->collect_output_derivatives(blayout(), glayout()).assemble();
 }
 
 void
