@@ -31,8 +31,7 @@ from neml2.reader._parser import ModelEntry, parse_input
 
 # Path to the Chaboche regression model used as the primary fixture
 CHABOCHE = (
-    Path(__file__).parents[3]
-    / "tests/regression/solid_mechanics/viscoplasticity/chaboche/model.i"
+    Path(__file__).parents[3] / "tests/regression/solid_mechanics/viscoplasticity/chaboche/model.i"
 )
 
 
@@ -44,7 +43,8 @@ def chaboche(tmp_path):
 @pytest.fixture
 def simple(tmp_path):
     """A minimal hand-crafted input file written to a temp file."""
-    content = textwrap.dedent("""\
+    content = textwrap.dedent(
+        """\
         [Models]
           [elastic]
             type = LinearIsotropicElasticity
@@ -56,7 +56,8 @@ def simple(tmp_path):
             yield_stress = 'params/ys'
           []
         []
-    """)
+    """
+    )
     p = tmp_path / "simple.i"
     p.write_text(content)
     return parse_input(p)
@@ -136,14 +137,16 @@ def test_quoted_value_with_spaces(chaboche):
 
 
 def test_inline_comment_stripped(tmp_path):
-    content = textwrap.dedent("""\
+    content = textwrap.dedent(
+        """\
         [Models]
           [m]
             type = Foo
             key = 42  # an inline comment
           []
         []
-    """)
+    """
+    )
     p = tmp_path / "comment.i"
     p.write_text(content)
     result = parse_input(p)
@@ -156,7 +159,8 @@ def test_inline_comment_stripped(tmp_path):
 
 
 def test_duplicate_sections_merged(tmp_path):
-    content = textwrap.dedent("""\
+    content = textwrap.dedent(
+        """\
         [Models]
           [a]
             type = Foo
@@ -167,7 +171,8 @@ def test_duplicate_sections_merged(tmp_path):
             type = Bar
           []
         []
-    """)
+    """
+    )
     p = tmp_path / "dup.i"
     p.write_text(content)
     result = parse_input(p)

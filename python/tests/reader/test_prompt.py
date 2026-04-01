@@ -33,7 +33,8 @@ from neml2.reader._syntax import SyntaxDB
 from neml2.reader._prompt import build_prompt
 from neml2.reader import describe, explain
 
-SYNTAX_CONTENT = textwrap.dedent("""\
+SYNTAX_CONTENT = textwrap.dedent(
+    """\
     neml2::LinearIsotropicElasticity:
       section: Models
       doc: |-
@@ -50,9 +51,11 @@ SYNTAX_CONTENT = textwrap.dedent("""\
         doc: Poisson's ratio.
         suppressed: 0
         value:
-""")
+"""
+)
 
-INPUT_CONTENT = textwrap.dedent("""\
+INPUT_CONTENT = textwrap.dedent(
+    """\
     [Models]
       [elastic]
         type = LinearIsotropicElasticity
@@ -64,7 +67,8 @@ INPUT_CONTENT = textwrap.dedent("""\
         param = value
       []
     []
-""")
+"""
+)
 
 
 @pytest.fixture

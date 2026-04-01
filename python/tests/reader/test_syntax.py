@@ -30,7 +30,8 @@ yaml = pytest.importorskip("yaml")
 
 from neml2.reader._syntax import SyntaxDB, TypeInfo, ParamInfo
 
-SYNTAX_CONTENT = textwrap.dedent("""\
+SYNTAX_CONTENT = textwrap.dedent(
+    """\
     neml2::LinearIsotropicElasticity:
       section: Models
       doc: |-
@@ -100,7 +101,8 @@ SYNTAX_CONTENT = textwrap.dedent("""\
           Hardening saturation rate.
         suppressed: 0
         value:
-""")
+"""
+)
 
 
 @pytest.fixture
