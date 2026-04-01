@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/solvers/LinearSolver.h"
+#include "neml2/base/Settings.h"
 
 namespace neml2
 {
@@ -42,7 +43,7 @@ LinearSolver::LinearSolver(const OptionSet & options)
 bool
 LinearSolver::check_errors() const
 {
-  // at::linalg_solve_ex skips device synchronization unless check_errors is set to false. This is
+  // at::linalg_solve_ex skips device synchronization unless check_errors is set to true. This is
   // much faster when the system of equations is well-conditioned, but it can lead to silent
   // failures when the system is ill-conditioned.
   //
