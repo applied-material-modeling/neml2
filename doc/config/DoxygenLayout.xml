@@ -43,6 +43,7 @@
         <tab type="user" url="@ref tutorials-optimization-pyzag" title="pyzag"/>
       </tab>
       <tab type="usergroup" url="@ref tutorials-notebooks" title="Jupyter Notebooks">
+        <tab type="user" url="@ref python-examples-explain" title="Use LLM to explain NEML2 input file in natural language"/>
         <tab type="user" url="@ref python-examples-deterministic" title="Deterministic material model calibration"/>
         <tab type="user" url="@ref python-examples-statistical" title="Statistical material model calibration"/>
         <tab type="user" url="@ref python-examples-crystal_plasticity-compare_formulations" title="Crystal plasticity formulations"/>
