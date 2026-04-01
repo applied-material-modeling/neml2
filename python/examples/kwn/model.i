@@ -44,34 +44,10 @@ N0 = 1e24
     type = DifferenceScalar
     points = 'edges'
   []
-
-  [ic]
-    type = LinspaceScalar
-    start = 1e-12
-    end = 1e-12
-    nstep = 300
-    dim = 0
-    group = 'intermediate'
-  []
-
-  [time]
-    type = LogspaceScalar
-    start = -4
-    end = 2
-    nstep = 500
-  []
-
   [x0_Cu]
     type = Scalar
     values = ${x0_Cu}
   []
-
-  [T]
-    type = FullScalar
-    batch_shape = '(500)'
-    value = 300.0
-  []
-
 
   [temperatures_for_interpolation]
     type = Scalar
@@ -79,6 +55,7 @@ N0 = 1e24
     values = '299.0 320.0 340.0 360.0 380.0 400.0 420.0 440.0 460.0 480.0 500.0 520.0 540.0 560.0 580.0 600.0 620.0 640.0 660.0 680.0 700.0 720.0 740.0 760.0 780.0'
     intermediate_dimension = 1
   []
+
   [Cu_in_p_y]
     type = Scalar
     batch_shape = '(25)'
@@ -141,7 +118,6 @@ N0 = 1e24
   [newton]
     type = Newton
     linear_solver = 'lu'
-    verbose = true
     rel_tol = 1e-10
     abs_tol = 1e-10
   []

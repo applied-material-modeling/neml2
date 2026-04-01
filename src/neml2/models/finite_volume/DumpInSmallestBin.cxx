@@ -67,10 +67,12 @@ DumpInSmallestBin::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 
   const auto N = _cell_centers.intmd_size(-1);
   const auto tail = _cell_centers.intmd_slice(-1, Slice(1, N));
-  const auto zero_tail = Scalar::zeros_like(tail);
-  const auto mag = (_magnitude.intmd_dim() == 0
-                        ? Scalar(_magnitude().unsqueeze(0), /*batch_dim=*/0, /*intmd_dim=*/1)
-                        : _magnitude().intmd_slice(-1, Slice(0, 1)));
+  const auto mag_raw = _magnitude();
+  const auto mag = (_magnitude.intmd_dim() == 0 ? Scalar(mag_raw.unsqueeze(mag_raw.dynamic_dim()),
+                                                         /*batch_dim=*/mag_raw.dynamic_dim(),
+                                                         /*intmd_dim=*/1)
+                                                : mag_raw.intmd_slice(-1, Slice(0, 1)));
+  const auto zero_tail = Scalar::zeros_like(tail).dynamic_expand_as(mag);
   const auto source = intmd_cat({mag, zero_tail}, 0);
 
   if (out)
