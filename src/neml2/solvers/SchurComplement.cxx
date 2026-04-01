@@ -61,12 +61,14 @@ SchurComplement::expected_options()
 SchurComplement::SchurComplement(const OptionSet & options)
   : LinearSolver(options),
     _rp(options.get<unsigned int>("residual_primary_group")),
-    _rs(1 - options.get<unsigned int>("residual_primary_group")),
+    _rs(_rp == 0 ? 1 : 0),
     _up(options.get<unsigned int>("unknown_primary_group")),
-    _us(1 - options.get<unsigned int>("unknown_primary_group"))
+    _us(_up == 0 ? 1 : 0),
+    _primary_solver(get_solver<LinearSolver>("primary_solver")),
+    _schur_solver(get_solver<LinearSolver>("schur_solver"))
 {
-  _primary_solver = get_solver<LinearSolver>("primary_solver");
-  _schur_solver = get_solver<LinearSolver>("schur_solver");
+  neml_assert(_rp + _rs == 1, "Residual primary group index must be 0 or 1");
+  neml_assert(_up + _us == 1, "Unknown primary group index must be 0 or 1");
 }
 
 AssembledVector
