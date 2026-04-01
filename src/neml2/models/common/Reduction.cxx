@@ -22,30 +22,34 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <catch2/catch_test_macros.hpp>
+#include "neml2/models/common/Reduction.h"
+#include "neml2/tensors/macros.h"
+#include "neml2/tensors/tensors.h"
 
-#include "neml2/base/Settings.h"
-#include "neml2/models/common/LinearCombination.h"
-
-using namespace neml2;
-using ScalarLinearCombination = LinearCombination<Scalar>;
-
-TEST_CASE("Factory", "[base]")
+namespace neml2
 {
-  auto options = ScalarLinearCombination::expected_options();
-  options.name() = "example";
-  options.type() = "ScalarLinearCombination";
-  options.set<std::vector<VariableName>>("from_var") = {VariableName(STATE, "A"),
-                                                        VariableName(STATE, "substate", "B")};
-  options.set<VariableName>("to_var") = VariableName(STATE, "outsub", "C");
+template <typename T>
+OptionSet
+Reduction<T>::expected_options()
+{
+  OptionSet options = Model::expected_options();
 
-  InputFile inp(Settings::expected_options());
-  inp["Models"]["example"] = options;
-  Factory factory(inp);
+  options.set_input("from");
+  options.set("from").doc() = "Variable to reduce";
 
-  SECTION("get_object")
-  {
-    auto summodel = factory.get_model("example");
-    REQUIRE(summodel);
-  }
+  options.set_output("to");
+  options.set("to").doc() = "The reduced variable";
+
+  return options;
 }
+
+template <typename T>
+Reduction<T>::Reduction(const OptionSet & options)
+  : Model(options),
+    _to(declare_output_variable<T>("to"))
+{
+}
+
+#define INSTANTIATE_REDUCTION(T) template class Reduction<T>
+FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_REDUCTION);
+} // namespace neml2

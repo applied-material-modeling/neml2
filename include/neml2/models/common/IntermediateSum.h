@@ -22,30 +22,26 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <catch2/catch_test_macros.hpp>
+#pragma once
 
-#include "neml2/base/Settings.h"
-#include "neml2/models/common/LinearCombination.h"
+#include "neml2/models/common/Reduction.h"
 
-using namespace neml2;
-using ScalarLinearCombination = LinearCombination<Scalar>;
-
-TEST_CASE("Factory", "[base]")
+namespace neml2
 {
-  auto options = ScalarLinearCombination::expected_options();
-  options.name() = "example";
-  options.type() = "ScalarLinearCombination";
-  options.set<std::vector<VariableName>>("from_var") = {VariableName(STATE, "A"),
-                                                        VariableName(STATE, "substate", "B")};
-  options.set<VariableName>("to_var") = VariableName(STATE, "outsub", "C");
+template <typename T>
+class IntermediateSum : public Reduction<T>
+{
+public:
+  static OptionSet expected_options();
 
-  InputFile inp(Settings::expected_options());
-  inp["Models"]["example"] = options;
-  Factory factory(inp);
+  IntermediateSum(const OptionSet & options);
 
-  SECTION("get_object")
-  {
-    auto summodel = factory.get_model("example");
-    REQUIRE(summodel);
-  }
-}
+protected:
+  void set_value(bool out, bool dout_din, bool d2out_din2) override;
+
+  /// Original variable to be reduced
+  const Variable<T> & _from;
+
+  using Reduction<T>::_to;
+};
+} // namespace neml2

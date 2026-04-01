@@ -24,7 +24,7 @@
 
 #include "neml2/models/ParameterStore.h"
 #include "neml2/models/Model.h"
-#include "neml2/models/InputParameter.h"
+#include "neml2/models/common/InputParameter.h"
 #include "neml2/misc/assertions.h"
 #include "neml2/base/TensorName.h"
 #include "neml2/base/Parser.h"

@@ -22,30 +22,36 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <catch2/catch_test_macros.hpp>
+#pragma once
 
-#include "neml2/base/Settings.h"
-#include "neml2/models/common/LinearCombination.h"
+#include "neml2/models/common/Interpolation.h"
+#include "neml2/tensors/Scalar.h"
 
-using namespace neml2;
-using ScalarLinearCombination = LinearCombination<Scalar>;
-
-TEST_CASE("Factory", "[base]")
+namespace neml2
 {
-  auto options = ScalarLinearCombination::expected_options();
-  options.name() = "example";
-  options.type() = "ScalarLinearCombination";
-  options.set<std::vector<VariableName>>("from_var") = {VariableName(STATE, "A"),
-                                                        VariableName(STATE, "substate", "B")};
-  options.set<VariableName>("to_var") = VariableName(STATE, "outsub", "C");
+/**
+ * @brief Linearly interpolate the parameter along on a 2D grid.
+ */
+template <typename T>
+class BilinearInterpolation : public Interpolation<T>
+{
+public:
+  static OptionSet expected_options();
 
-  InputFile inp(Settings::expected_options());
-  inp["Models"]["example"] = options;
-  Factory factory(inp);
+  BilinearInterpolation(const OptionSet & options);
 
-  SECTION("get_object")
-  {
-    auto summodel = factory.get_model("example");
-    REQUIRE(summodel);
-  }
-}
+protected:
+  void set_value(bool out, bool dout_din, bool d2out_din2) override;
+
+  /// The abscissa values of the interpolant
+  const Scalar & _X1;
+  const Scalar & _X2;
+
+  /// Argument of interpolation
+  const Variable<Scalar> & _x1;
+  const Variable<Scalar> & _x2;
+
+  /// Intermediate dimension to interpolate
+  const Size _dim;
+};
+} // namespace neml2

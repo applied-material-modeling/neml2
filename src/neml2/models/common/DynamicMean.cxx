@@ -22,30 +22,45 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <catch2/catch_test_macros.hpp>
+#include "neml2/models/common/DynamicMean.h"
+#include "neml2/tensors/macros.h"
+#include "neml2/tensors/tensors.h"
+#include "neml2/tensors/functions/mean.h"
 
-#include "neml2/base/Settings.h"
-#include "neml2/models/common/LinearCombination.h"
-
-using namespace neml2;
-using ScalarLinearCombination = LinearCombination<Scalar>;
-
-TEST_CASE("Factory", "[base]")
+namespace neml2
 {
-  auto options = ScalarLinearCombination::expected_options();
-  options.name() = "example";
-  options.type() = "ScalarLinearCombination";
-  options.set<std::vector<VariableName>>("from_var") = {VariableName(STATE, "A"),
-                                                        VariableName(STATE, "substate", "B")};
-  options.set<VariableName>("to_var") = VariableName(STATE, "outsub", "C");
+template <typename T>
+OptionSet
+DynamicMean<T>::expected_options()
+{
+  OptionSet options = Reduction<T>::expected_options();
+  options.doc() = "Average a dynamic dimension";
 
-  InputFile inp(Settings::expected_options());
-  inp["Models"]["example"] = options;
-  Factory factory(inp);
+  options.set<Size>("dim");
+  options.set("dim").doc() = "The dimension to average over";
 
-  SECTION("get_object")
-  {
-    auto summodel = factory.get_model("example");
-    REQUIRE(summodel);
-  }
+  return options;
 }
+
+template <typename T>
+DynamicMean<T>::DynamicMean(const OptionSet & options)
+  : Reduction<T>(options),
+    _from(this->template declare_input_variable<T>("from")),
+    _dim(options.get<Size>("dim"))
+{
+}
+
+template <typename T>
+void
+DynamicMean<T>::set_value(bool out, bool /*dout_din*/, bool /*d2out_din2*/)
+{
+  if (out)
+    _to = dynamic_mean(_from(), _dim);
+}
+
+#define REGISTER_DYNAMICMEAN(T)                                                                    \
+  using T##DynamicMean = DynamicMean<T>;                                                           \
+  register_NEML2_object(T##DynamicMean);                                                           \
+  template class DynamicMean<T>
+FOR_ALL_PRIMITIVETENSOR(REGISTER_DYNAMICMEAN);
+} // namespace neml2
