@@ -36,7 +36,7 @@ def(py::module_ & m, py::class_<SparseVector> & c)
   c.def(py::init<>())
       .def(py::init<AxisLayout>(), py::arg("layout"))
       .def(py::init<AxisLayout, std::vector<Tensor>>(), py::arg("layout"), py::arg("tensors"))
-      .def_readwrite("tensors", &SparseVector::tensors, "List of tensors, one per variable group")
+      .def_readwrite("tensors", &SparseVector::tensors, "List of tensors, one per variable")
       .def_readwrite("layout", &SparseVector::layout, "Layout of the tensors")
       .def("group", &SparseVector::group, py::arg("i"), "Contiguous view of variable group i")
       .def(

@@ -96,6 +96,7 @@ def _generate_stub(*args: str) -> int:
     site_packages = Path(neml2.__path__[0]).resolve().parent
     argv_base = ["-o", str(site_packages), *args]
 
+    retcode = 0
     for module in _discover_modules():
         print(f"Generating stubs for {module}")
         try:
@@ -103,7 +104,8 @@ def _generate_stub(*args: str) -> int:
         except SystemExit as e:
             if e.code:
                 print(f"Failed to generate stubs for {module}")
+                retcode = int(e.code)
 
     _fixup_stubs(site_packages)
 
-    return 0
+    return retcode

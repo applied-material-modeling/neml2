@@ -22,6 +22,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <numeric>
+#include <functional>
+
 #include "neml2/equation_systems/SparseMatrix.h"
 #include "neml2/equation_systems/AssembledMatrix.h"
 #include "neml2/equation_systems/assembly.h"

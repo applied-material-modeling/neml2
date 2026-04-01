@@ -52,7 +52,7 @@ DenseLU::solve(const AssembledMatrix & A, const AssembledVector & b) const
 {
   neml_assert(A.row_layout.ngroup() == 1 && A.col_layout.ngroup() == 1 && b.layout.ngroup() == 1,
               "DenseLU only supports single-group layouts.");
-  const auto xf = linalg::solve(A.tensors[0][0], b.tensors[0]);
+  const auto xf = linalg::solve(A.tensors[0][0], b.tensors[0], check_errors());
   return AssembledVector(A.col_layout, {xf});
 }
 
@@ -62,7 +62,7 @@ DenseLU::solve(const AssembledMatrix & A, const AssembledMatrix & B) const
   neml_assert(A.row_layout.ngroup() == 1 && A.col_layout.ngroup() == 1 &&
                   B.col_layout.ngroup() == 1 && B.row_layout.ngroup() == 1,
               "DenseLU only supports single-group layouts.");
-  const auto Xf = linalg::solve(A.tensors[0][0], B.tensors[0][0]);
+  const auto Xf = linalg::solve(A.tensors[0][0], B.tensors[0][0], check_errors());
   return AssembledMatrix(A.col_layout, B.col_layout, {{Xf}});
 }
 

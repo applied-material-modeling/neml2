@@ -48,5 +48,9 @@ public:
 
   /// Solve AX = B for X
   virtual AssembledMatrix solve(const AssembledMatrix &, const AssembledMatrix &) const = 0;
+
+protected:
+  /// Whether to check for errors after solving
+  bool check_errors() const;
 };
 } // namespace neml2

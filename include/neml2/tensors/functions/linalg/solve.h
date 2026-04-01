@@ -31,6 +31,6 @@ class Tensor;
 namespace linalg
 {
 /// Solve the linear system A X = B
-Tensor solve(const Tensor & A, const Tensor & B);
+Tensor solve(const Tensor & A, const Tensor & B, bool check_errors = false);
 } // namespace linalg
 } // namespace neml2

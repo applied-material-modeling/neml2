@@ -45,6 +45,7 @@ public:
   bool require_double_precision() const { return _require_double_precision; }
   const std::vector<std::string> & additional_libraries() const { return _additional_libraries; }
   bool disable_jit() const { return _disable_jit; }
+  bool linalg_solve_check_errors() const { return _linalg_solve_check_errors; }
   ///@}
 
 private:
@@ -62,5 +63,8 @@ private:
 
   /// Disable JIT compilation
   const bool _disable_jit;
+
+  /// Whether to check errors in linalg_solve
+  const bool _linalg_solve_check_errors;
 };
 } // namespace neml2

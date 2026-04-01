@@ -212,7 +212,7 @@ operator*(const AssembledMatrix & A, const AssembledMatrix & B)
             r = intmd_sum(r, {0, 1}, /*keepdim=*/false);
         }
 
-        if (k == 0)
+        if (!cij.defined())
           cij = r;
         else
           cij = cij + r;
@@ -255,7 +255,7 @@ operator*(const AssembledMatrix & A, const AssembledVector & b)
           r = intmd_sum(r, {0, 1}, /*keepdim=*/false);
       }
 
-      if (j == 0)
+      if (!cij.defined())
         cij = r;
       else
         cij = cij + r;

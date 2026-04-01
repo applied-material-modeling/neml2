@@ -82,7 +82,7 @@ TestNonlinearSystem::setup_blayout()
   {
     vars[g].resize(_residual_group_sizes[g]);
     for (Size i = 0; i < _residual_group_sizes[g]; i++, idx++)
-      vars[g][i] = LabeledAxisAccessor(STATE, "r_" + std::to_string(idx));
+      vars[g][i] = LabeledAxisAccessor(RESIDUAL, "r_" + std::to_string(idx));
   }
   std::vector<AxisLayout::IStructure> istr(_residual_group_sizes.size(),
                                            AxisLayout::IStructure::DENSE);

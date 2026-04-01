@@ -39,4 +39,23 @@ LinearSolver::LinearSolver(const OptionSet & options)
 {
 }
 
+bool
+LinearSolver::check_errors() const
+{
+  // at::linalg_solve_ex skips device synchronization unless check_errors is set to false. This is
+  // much faster when the system of equations is well-conditioned, but it can lead to silent
+  // failures when the system is ill-conditioned.
+  //
+  // We always set check_errors to true in debug mode, so that we can catch potential issues
+  // without sacrificing performance in production.
+  //
+  // In non-debug modes, check_errors default to false. User can turn on error checking using
+  // Settings/linalg_solve_check_errors=true.
+#ifndef NDEBUG
+  return true;
+#else
+  return settings().linalg_solve_check_errors();
+#endif
+}
+
 }

@@ -41,7 +41,7 @@ def(py::module_ & m, py::class_<SparseMatrix> & c)
            py::arg("tensors"))
       .def_readwrite("tensors",
                      &SparseMatrix::tensors,
-                     "2D list of tensors, indexed by [row group][col group]")
+                     "2D list of tensors, indexed by [row variable][col variable]")
       .def_readwrite("row_layout", &SparseMatrix::row_layout, "Row layout of the tensors")
       .def_readwrite("col_layout", &SparseMatrix::col_layout, "Column layout of the tensors")
       .def("group",
