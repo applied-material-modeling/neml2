@@ -101,7 +101,7 @@ SYNTAX_CONTENT = textwrap.dedent(
           Hardening saturation rate.
         suppressed: 0
         value:
-"""
+""",
 )
 
 

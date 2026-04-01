@@ -56,7 +56,7 @@ def simple(tmp_path):
             yield_stress = 'params/ys'
           []
         []
-    """
+    """,
     )
     p = tmp_path / "simple.i"
     p.write_text(content)
@@ -145,7 +145,7 @@ def test_inline_comment_stripped(tmp_path):
             key = 42  # an inline comment
           []
         []
-    """
+    """,
     )
     p = tmp_path / "comment.i"
     p.write_text(content)
@@ -171,7 +171,7 @@ def test_duplicate_sections_merged(tmp_path):
             type = Bar
           []
         []
-    """
+    """,
     )
     p = tmp_path / "dup.i"
     p.write_text(content)

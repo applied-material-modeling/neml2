@@ -51,7 +51,7 @@ SYNTAX_CONTENT = textwrap.dedent(
         doc: Poisson's ratio.
         suppressed: 0
         value:
-"""
+""",
 )
 
 INPUT_CONTENT = textwrap.dedent(
@@ -67,7 +67,7 @@ INPUT_CONTENT = textwrap.dedent(
         param = value
       []
     []
-"""
+""",
 )
 
 
