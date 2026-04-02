@@ -31,14 +31,6 @@ explanations using an LLM.
 
 Quick start::
 
-    from neml2.reader import explain
-
-    # Requires ANTHROPIC_API_KEY or OPENAI_API_KEY in environment
-    text = explain("path/to/model.i", provider="anthropic")
-    print(text)
-
-For finer control (inspect the prompt without calling an LLM)::
-
     from neml2.reader import describe
 
     system, user = describe("path/to/model.i", syntax_db="build/doc/syntax.yml")
@@ -75,8 +67,6 @@ def describe(
     Args:
         input_file: Path to the HIT input file.
         syntax_db: Path to ``syntax.yml`` or a :class:`SyntaxDB` instance.
-        sections: Limit to these top-level section names (e.g.
-            ``["Models"]``). Defaults to all sections.
         include_params: Whether to include per-parameter details in the
             prompt.
 
@@ -119,8 +109,6 @@ def explain(
         FileNotFoundError: If ``input_file`` does not exist.
         ValueError: If the input file has invalid HIT syntax or the provider
             is unrecognised.
-        ImportError: If the required package for the chosen provider is not
-            installed.
     """
     parsed = parse_input(input_file)
     db = _resolve_db(syntax_db)

@@ -71,10 +71,7 @@ class SyntaxDB:
     including parameter descriptions.
 
     Args:
-        syntax_path: Explicit path to ``syntax.yml``. If ``None``, the
-            database is auto-discovered by checking the ``NEML2_SYNTAX_DB``
-            environment variable and then ``build/doc/syntax.yml`` relative
-            to the repository root.
+        syntax_path: Explicit path to ``syntax.yml``.
     """
 
     def __init__(self, syntax_path: Union[str, Path]):
@@ -96,8 +93,7 @@ class SyntaxDB:
         if not self.available:
             warnings.warn(
                 "NEML2 syntax database (syntax.yml) not found. "
-                "Type descriptions will be unavailable. "
-                "Set the NEML2_SYNTAX_DB environment variable to the path of syntax.yml.",
+                "Type descriptions will be unavailable. ",
                 stacklevel=3,
             )
             self._by_qualified = {}
@@ -118,6 +114,14 @@ class SyntaxDB:
 
         with open(self._path, "r") as f:
             raw = yaml.safe_load(f)
+
+        if not isinstance(raw, dict):
+            warnings.warn(
+                f"Unexpected format in syntax database {self._path}. "
+                "Expected a mapping of type names to documentation.",
+                stacklevel=3,
+            )
+            raw = {}
 
         self._by_qualified = {}
         self._by_short = {}
