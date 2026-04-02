@@ -22,30 +22,49 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <catch2/catch_test_macros.hpp>
+#include "neml2/models/common/R2toSR2.h"
+#include "neml2/tensors/functions/symmetrization.h"
+#include "neml2/tensors/R2.h"
+#include "neml2/tensors/SR2.h"
+#include "neml2/tensors/SSR4.h"
 
-#include "neml2/base/Settings.h"
-#include "neml2/models/common/LinearCombination.h"
-
-using namespace neml2;
-using ScalarLinearCombination = LinearCombination<Scalar>;
-
-TEST_CASE("Factory", "[base]")
+namespace neml2
 {
-  auto options = ScalarLinearCombination::expected_options();
-  options.name() = "example";
-  options.type() = "ScalarLinearCombination";
-  options.set<std::vector<VariableName>>("from_var") = {VariableName(STATE, "A"),
-                                                        VariableName(STATE, "substate", "B")};
-  options.set<VariableName>("to_var") = VariableName(STATE, "outsub", "C");
+register_NEML2_object(R2toSR2);
 
-  InputFile inp(Settings::expected_options());
-  inp["Models"]["example"] = options;
-  Factory factory(inp);
+OptionSet
+R2toSR2::expected_options()
+{
+  OptionSet options = Model::expected_options();
+  options.doc() = "Extract the symmetric part of a R2 tensor";
 
-  SECTION("get_object")
-  {
-    auto summodel = factory.get_model("example");
-    REQUIRE(summodel);
-  }
+  options.set<bool>("define_second_derivatives") = true;
+
+  options.set_input("input");
+  options.set("input").doc() = "Rank two tensor to split";
+
+  options.set_output("output");
+  options.set("output").doc() = "Output symmetric rank two tensor";
+
+  return options;
 }
+
+R2toSR2::R2toSR2(const OptionSet & options)
+  : Model(options),
+    _input(declare_input_variable<R2>("input")),
+    _output(declare_output_variable<SR2>("output"))
+{
+}
+
+void
+R2toSR2::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
+{
+  const auto & A = _input();
+
+  if (out)
+    _output = SR2(A);
+
+  if (dout_din)
+    _output.d(_input) = mandel_to_full(SSR4::identity_sym(A.options()), 1);
+}
+} // namespace neml2

@@ -22,30 +22,45 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <catch2/catch_test_macros.hpp>
+#include "neml2/models/common/DynamicSum.h"
+#include "neml2/tensors/macros.h"
+#include "neml2/tensors/tensors.h"
+#include "neml2/tensors/functions/sum.h"
 
-#include "neml2/base/Settings.h"
-#include "neml2/models/common/LinearCombination.h"
-
-using namespace neml2;
-using ScalarLinearCombination = LinearCombination<Scalar>;
-
-TEST_CASE("Factory", "[base]")
+namespace neml2
 {
-  auto options = ScalarLinearCombination::expected_options();
-  options.name() = "example";
-  options.type() = "ScalarLinearCombination";
-  options.set<std::vector<VariableName>>("from_var") = {VariableName(STATE, "A"),
-                                                        VariableName(STATE, "substate", "B")};
-  options.set<VariableName>("to_var") = VariableName(STATE, "outsub", "C");
+template <typename T>
+OptionSet
+DynamicSum<T>::expected_options()
+{
+  OptionSet options = Reduction<T>::expected_options();
+  options.doc() = "Sum a dynamic dimension";
 
-  InputFile inp(Settings::expected_options());
-  inp["Models"]["example"] = options;
-  Factory factory(inp);
+  options.set<Size>("dim");
+  options.set("dim").doc() = "The dimension to sum";
 
-  SECTION("get_object")
-  {
-    auto summodel = factory.get_model("example");
-    REQUIRE(summodel);
-  }
+  return options;
 }
+
+template <typename T>
+DynamicSum<T>::DynamicSum(const OptionSet & options)
+  : Reduction<T>(options),
+    _from(this->template declare_input_variable<T>("from")),
+    _dim(options.get<Size>("dim"))
+{
+}
+
+template <typename T>
+void
+DynamicSum<T>::set_value(bool out, bool /*dout_din*/, bool /*d2out_din2*/)
+{
+  if (out)
+    _to = dynamic_sum(_from(), _dim);
+}
+
+#define REGISTER_DYNAMICSUM(T)                                                                     \
+  using T##DynamicSum = DynamicSum<T>;                                                             \
+  register_NEML2_object(T##DynamicSum);                                                            \
+  template class DynamicSum<T>
+FOR_ALL_PRIMITIVETENSOR(REGISTER_DYNAMICSUM);
+} // namespace neml2

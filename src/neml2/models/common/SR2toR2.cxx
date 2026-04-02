@@ -22,30 +22,52 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <catch2/catch_test_macros.hpp>
+#include "neml2/models/common/SR2toR2.h"
+#include "neml2/tensors/functions/symmetrization.h"
+#include "neml2/tensors/SR2.h"
+#include "neml2/tensors/R2.h"
+#include "neml2/tensors/SSR4.h"
 
-#include "neml2/base/Settings.h"
-#include "neml2/models/common/LinearCombination.h"
-
-using namespace neml2;
-using ScalarLinearCombination = LinearCombination<Scalar>;
-
-TEST_CASE("Factory", "[base]")
+namespace neml2
 {
-  auto options = ScalarLinearCombination::expected_options();
-  options.name() = "example";
-  options.type() = "ScalarLinearCombination";
-  options.set<std::vector<VariableName>>("from_var") = {VariableName(STATE, "A"),
-                                                        VariableName(STATE, "substate", "B")};
-  options.set<VariableName>("to_var") = VariableName(STATE, "outsub", "C");
+register_NEML2_object(SR2toR2);
 
-  InputFile inp(Settings::expected_options());
-  inp["Models"]["example"] = options;
-  Factory factory(inp);
+OptionSet
+SR2toR2::expected_options()
+{
+  OptionSet options = Model::expected_options();
+  options.doc() = "Convert a symmetric rank two tensor to a full tensor";
 
-  SECTION("get_object")
-  {
-    auto summodel = factory.get_model("example");
-    REQUIRE(summodel);
-  }
+  options.set<bool>("define_second_derivatives") = true;
+
+  options.set_input("input");
+  options.set("input").doc() = "Symmetric tensor to convert";
+
+  options.set_output("output");
+  options.set("output").doc() = "Output full rank two tensor";
+
+  return options;
 }
+
+SR2toR2::SR2toR2(const OptionSet & options)
+  : Model(options),
+    _input(declare_input_variable<SR2>("input")),
+    _output(declare_output_variable<R2>("output"))
+{
+}
+
+void
+SR2toR2::set_value(bool out, bool dout_din, bool d2out_din2)
+{
+  const auto & A = _input();
+
+  if (out)
+    _output = R2(A);
+
+  if (dout_din)
+    _output.d(_input) = mandel_to_full(SSR4::identity_sym(A.options()), 0);
+
+  // Second derivative is zero
+  (void)d2out_din2;
+}
+} // namespace neml2

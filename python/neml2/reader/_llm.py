@@ -22,58 +22,21 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import torch
 import typing
-from pathlib import Path
 
-# Determine version
-version_file = Path(__file__).parent / "version"
-if version_file.exists():
-    __version__ = version_file.read_text().strip()
-else:
-    __version__ = "unknown"
 
-# Determine hash
-hash_file = Path(__file__).parent / "hash"
-if hash_file.exists():
-    __hash__ = hash_file.read_text().strip()
-else:
-    __hash__ = "unknown"
+class LLMClient(typing.Protocol):
+    """Protocol that all LLM backend clients must satisfy."""
 
-Number = typing.Union[int, float, bool]
+    def complete(self, system: str, user: str) -> str:
+        """
+        Send a completion request and return the response text.
 
-# Bring core functionality and tensors into the main namespace
-from .core import *
-from .tensors import *
-from .math import *
-from .es import *
+        Args:
+            system: The system prompt.
+            user: The user prompt.
 
-# pybind11-stubgen generates incorrect type annotations for Unions
-# so unfortunately we need to maintain this list
-# see issue https://github.com/sizmailov/pybind11-stubgen/issues/276
-TensorLike = typing.Union[
-    Vec,
-    Rot,
-    WR2,
-    R2,
-    Scalar,
-    SR2,
-    R3,
-    SFR3,
-    R4,
-    SFFR4,
-    WFFR4,
-    SSR4,
-    SWR4,
-    WSR4,
-    WWR4,
-    Quaternion,
-    MillerIndex,
-    Tensor,
-]
-
-# Other submodules
-from . import pyzag
-from . import crystallography
-from . import reserved
-from . import reader
+        Returns:
+            The model's response as a plain string.
+        """
+        ...

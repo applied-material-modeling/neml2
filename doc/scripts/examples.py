@@ -29,7 +29,7 @@ import argparse
 import os
 from pathlib import Path
 import shutil
-from utils import quiet_run_and_log
+from utils import quiet_run_and_log, fix_math_for_doxygen
 import subprocess
 import concurrent.futures
 import nbformat
@@ -356,6 +356,7 @@ if __name__ == "__main__":
                 .replace(".ipynb", "")
             )
             append_page_ref(md, ref)
+            fix_math_for_doxygen(md)
         if nfail > 0:
             logger.error("")
             logger.error("{}/{} jupyter notebook examples failed", nfail, len(nbs))

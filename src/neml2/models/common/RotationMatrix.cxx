@@ -22,30 +22,46 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <catch2/catch_test_macros.hpp>
+#include "neml2/models/common/RotationMatrix.h"
+#include "neml2/tensors/Rot.h"
+#include "neml2/tensors/R2.h"
+#include "neml2/tensors/R3.h"
 
-#include "neml2/base/Settings.h"
-#include "neml2/models/common/LinearCombination.h"
-
-using namespace neml2;
-using ScalarLinearCombination = LinearCombination<Scalar>;
-
-TEST_CASE("Factory", "[base]")
+namespace neml2
 {
-  auto options = ScalarLinearCombination::expected_options();
-  options.name() = "example";
-  options.type() = "ScalarLinearCombination";
-  options.set<std::vector<VariableName>>("from_var") = {VariableName(STATE, "A"),
-                                                        VariableName(STATE, "substate", "B")};
-  options.set<VariableName>("to_var") = VariableName(STATE, "outsub", "C");
+register_NEML2_object(RotationMatrix);
 
-  InputFile inp(Settings::expected_options());
-  inp["Models"]["example"] = options;
-  Factory factory(inp);
+OptionSet
+RotationMatrix::expected_options()
+{
+  OptionSet options = Model::expected_options();
+  options.doc() =
+      "Convert a Rot (rotation represented in Rodrigues format) to R2 (a full rotation matrix).";
 
-  SECTION("get_object")
-  {
-    auto summodel = factory.get_model("example");
-    REQUIRE(summodel);
-  }
+  options.set_input("from");
+  options.set("from").doc() = "Rot to convert";
+
+  options.set_output("to");
+  options.set("to").doc() = "R2 to store the resulting rotation matrix";
+
+  return options;
 }
+
+RotationMatrix::RotationMatrix(const OptionSet & options)
+  : Model(options),
+    _from(declare_input_variable<Rot>("from")),
+    _to(declare_output_variable<R2>("to"))
+{
+}
+
+void
+RotationMatrix::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
+{
+  if (out)
+    _to = _from().euler_rodrigues();
+
+  if (dout_din)
+    if (_from.is_dependent())
+      _to.d(_from) = _from().deuler_rodrigues();
+}
+} // namespace neml2

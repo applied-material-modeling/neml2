@@ -24,6 +24,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+import re
 import subprocess
 from loguru import logger
 import shutil
@@ -67,6 +68,28 @@ def merge_files(files: list[Path], dest: Path):
             with open(file, "r") as f:
                 out.write(f.read())
                 out.write("\n")
+
+
+def fix_math_for_doxygen(md_path: Path):
+    """Convert LaTeX math delimiters in a markdown file to Doxygen-compatible format.
+
+    Conversions applied (in order):
+      \\[ ... \\]   ->  \\f[ ... \\f]   (display math)
+      $$ ... $$    ->  \\f[ ... \\f]   (display math)
+      $ ... $      ->  \\f$ ... \\f$   (inline math)
+    """
+    content = md_path.read_text()
+
+    # \[ ... \] -> \f[ ... \f]  (may span multiple lines)
+    content = re.sub(r"\\\[(.+?)\\\]", r"\\f[\1\\f]", content, flags=re.DOTALL)
+
+    # $$ ... $$ -> \f[ ... \f]  (may span multiple lines; process before single $)
+    content = re.sub(r"\$\$(.+?)\$\$", r"\\f[\1\\f]", content, flags=re.DOTALL)
+
+    # $ ... $ -> \f$ ... \f$  (inline, single line only; skip $$ by lookaround)
+    content = re.sub(r"(?<!\$)\$(?!\$)(.+?)(?<!\$)\$(?!\$)", r"\\f$\1\\f$", content)
+
+    md_path.write_text(content)
 
 
 def render_file(template_path: Path, output_path: Path, variables: dict[str, str]):

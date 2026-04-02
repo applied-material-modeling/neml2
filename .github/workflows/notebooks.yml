@@ -29,4 +29,4 @@ jobs:
             echo "No tracked notebooks found."
             exit 0
           fi
-          pytest -v -s --nbmake --nbmake-timeout=14400 $NOTEBOOKS
+          pytest -v -s --nbmake --nbmake-timeout=14400 --ignore=python/examples/explain.ipynb $NOTEBOOKS
