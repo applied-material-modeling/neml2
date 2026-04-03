@@ -35,19 +35,14 @@ VolumeChangeEigenstrain::expected_options()
   OptionSet options = Eigenstrain::expected_options();
   options.doc() =
       "Define the (cummulative, as opposed to instantaneous) linear isotropic volume expansion "
-      "eigenstrain, "
-      "i.e. \\f$ \\boldsymbol{\\varepsilon}_V = (\\frac{V}{V0})^(1/3)-1 \\boldsymbol{I} \\f$, "
-      "where "
-      " \\f$ V \\f$ is the current volume, "
-      "and \\f$ V0 \\f$ is the reference (initial) volume.";
+      "eigenstrain, i.e. \\f$ \\boldsymbol{\\varepsilon}_V = (\\frac{V}{V0})^(1/3)-1 "
+      "\\boldsymbol{I} \\f$, where \\f$ V \\f$ is the current volume, and \\f$ V0 \\f$ is the "
+      "reference (initial) volume.";
 
-  options.set_input("volume") = VariableName(STATE, "V");
-  options.set("volume").doc() = "Volume";
+  options.add_input("volume", "Volume");
+  options.add_parameter<Scalar>("reference_volume", "Reference (initial) volume");
 
-  options.set_parameter<TensorName<Scalar>>("reference_volume");
-  options.set("reference_volume").doc() = "Reference (initial) volume";
-
-  options.set<bool>("define_second_derivatives") = true;
+  options.set_private<bool>("define_second_derivatives", true);
 
   return options;
 }
@@ -66,17 +61,11 @@ VolumeChangeEigenstrain::set_value(bool out, bool dout_din, bool d2out_din2)
     _eg = (pow(_V / _V0, (1.0 / 3.0)) - 1.0) * SR2::identity(_V.options());
 
   if (dout_din)
-  {
-    if (_V.is_dependent())
-      _eg.d(_V) = 1.0 / (3 * _V0) * pow(_V / _V0, (-2.0 / 3.0)) * SR2::identity(_V.options());
-  }
+    _eg.d(_V) = 1.0 / (3 * _V0) * pow(_V / _V0, (-2.0 / 3.0)) * SR2::identity(_V.options());
 
   if (d2out_din2)
-  {
-    if (_V.is_dependent())
-      _eg.d2(_V, _V) =
-          -2.0 / (9.0 * _V0 * _V0) * pow(_V / _V0, (-5.0 / 3.0)) * SR2::identity(_V.options());
-  }
+    _eg.d2(_V, _V) =
+        -2.0 / (9.0 * _V0 * _V0) * pow(_V / _V0, (-5.0 / 3.0)) * SR2::identity(_V.options());
 }
 }
 // namespace neml2

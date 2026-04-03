@@ -23,11 +23,8 @@
 // THE SOFTWARE.
 
 #include "neml2/models/porous_flow/VanGenuchtenCapillaryPressure.h"
-#include "neml2/tensors/functions/clamp.h"
 #include "neml2/tensors/functions/pow.h"
-#include "neml2/tensors/functions/log10.h"
 #include "neml2/tensors/functions/where.h"
-#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
@@ -41,13 +38,10 @@ VanGenuchtenCapillaryPressure::expected_options()
       "a \\left( S_e^{-\\frac{1}{m}} - 1 \\right)^{1-m} \\f$. Here \\f$ S_e \\f$ is the "
       "effective saturation,\\f$ a \\f$ and \\f$ m \\f$ are shape parameters";
 
-  options.set<bool>("define_second_derivatives") = true;
+  options.set_private<bool>("define_second_derivatives", true);
 
-  options.set_parameter<TensorName<Scalar>>("a");
-  options.set("a").doc() = "Shape parameter a";
-
-  options.set_parameter<TensorName<Scalar>>("m");
-  options.set("m").doc() = "Shape parameter m";
+  options.add_parameter<Scalar>("a", "Shape parameter a");
+  options.add_parameter<Scalar>("m", "Shape parameter m");
 
   return options;
 }

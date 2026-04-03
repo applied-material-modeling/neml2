@@ -22,5 +22,45 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-// Deprecated implementation file retained for compatibility; implementation moved to
-// FiniteVolumeAppendBoundaryCondition.
+#include "neml2/models/common/R2ToWR2.h"
+#include "neml2/tensors/functions/symmetrization.h"
+#include "neml2/tensors/R2.h"
+#include "neml2/tensors/WR2.h"
+
+namespace neml2
+{
+register_NEML2_object(R2ToWR2);
+
+OptionSet
+R2ToWR2::expected_options()
+{
+  OptionSet options = Model::expected_options();
+  options.doc() = "Extract the skew symmetric part of a second order tensor";
+
+  options.set_private<bool>("define_second_derivatives", true);
+
+  options.add_input("input", "Second order tensor to split");
+  options.add_output("output", "Output skew symmetric second order tensor");
+
+  return options;
+}
+
+R2ToWR2::R2ToWR2(const OptionSet & options)
+  : Model(options),
+    _input(declare_input_variable<R2>("input")),
+    _output(declare_output_variable<WR2>("output"))
+{
+}
+
+void
+R2ToWR2::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
+{
+  const auto & A = _input();
+
+  if (out)
+    _output = WR2(A);
+
+  if (dout_din)
+    _output.d(_input) = 0.5 * skew_to_full(R2::identity(A.options()), 1);
+}
+} // namespace neml2

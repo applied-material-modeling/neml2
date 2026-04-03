@@ -48,36 +48,33 @@ LinearCombination<T>::expected_options()
       "\\f$ are the coefficients, and \\f$ v_i \\f$ are the variables to be summed. \\f$ s \\f$ is "
       "a constant offset.";
 
-  options.set<bool>("define_second_derivatives") = true;
+  options.set_private<bool>("define_second_derivatives", true);
 
-  options.set<std::vector<VariableName>>("from_var");
-  options.set("from_var").doc() = tensor_type + " tensors to be summed";
+  options.add<std::vector<VariableName>, FType::INPUT>("from_var",
+                                                       tensor_type + " tensors to be summed");
+  options.add_output("to_var", "The sum");
 
-  options.set_output("to_var");
-  options.set("to_var").doc() = "The sum";
-
-  options.set_parameter<std::vector<TensorName<Scalar>>>("coefficients") = {
-      TensorName<Scalar>("1")};
-  options.set("coefficients").doc() =
+  options.add<std::vector<TensorName<Scalar>>, FType::BUFFER>(
+      "coefficients",
+      {TensorName<Scalar>("1")},
       "Weights associated with each variable. This option takes a list of weights, one for each "
       "coefficient. When the length of this list is 1, the same weight applies to all "
-      "coefficients.";
+      "coefficients.");
 
-  options.set_parameter<TensorName<Scalar>>("constant_coefficient") = {TensorName<Scalar>("0")};
-  options.set("constant_coefficient").doc() =
-      "The constant coefficient added to the final summation";
+  options.add<TensorName<Scalar>, FType::BUFFER>(
+      "offset", {TensorName<Scalar>("0")}, "The constant coefficient added to the final summation");
 
-  options.set<bool>("constant_coefficient_as_parameter") = false;
-  options.set("constant_coefficient_as_parameter").doc() =
-      "By default, the constant_coefficient are declared as buffers. Set this option to true to "
-      "declare "
-      "them as (trainable) parameters.";
+  options.add<bool>("offset_as_parameter",
+                    false,
+                    "By default, the offset is declared as a buffer. Set this option to true to "
+                    "declare it as a (trainable) parameter.");
 
-  options.set<std::vector<bool>>("coefficient_as_parameter") = {false};
-  options.set("coefficient_as_parameter").doc() =
+  options.add<std::vector<bool>>(
+      "coefficient_as_parameter",
+      {false},
       "By default, the coefficients are declared as buffers. Set this option to true to declare "
       "them as (trainable) parameters. This option takes a list of booleans, one for each "
-      "coefficient. When the length of this list is 1, the boolean applies to all coefficients.";
+      "coefficient. When the length of this list is 1, the boolean applies to all coefficients.");
 
   return options;
 }
@@ -122,19 +119,17 @@ LinearCombination<T>::LinearCombination(const OptionSet & options)
       _coefs[i] = &declare_buffer<Scalar>("c_" + std::to_string(i), coef_ref);
   }
 
-  if (options.user_specified("constant_coefficient"))
+  if (options.user_specified("offset"))
   {
-    auto s_as_param = options.get<bool>("constant_coefficient_as_parameter");
-    if (s_as_param)
-      _s = &declare_parameter<Scalar>("s", "constant_coefficient", /*allow_nonlinear=*/true);
-    else
-      _s = &declare_buffer<Scalar>("s", "constant_coefficient");
+    auto s_as_param = options.get<bool>("offset_as_parameter");
+    _s = s_as_param ? &declare_parameter<Scalar>("s", "offset", /*allow_nonlinear=*/true)
+                    : &declare_buffer<Scalar>("s", "offset");
   }
 }
 
 template <typename T>
 void
-LinearCombination<T>::set_value(bool out, bool dout_din, bool d2out_din2)
+LinearCombination<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   if (out)
   {
@@ -149,19 +144,13 @@ LinearCombination<T>::set_value(bool out, bool dout_din, bool d2out_din2)
     const auto I = imap_v<T>(_from[0]->options());
     for (std::size_t i = 0; i < _from.size(); i++)
     {
-      if (_from[i]->is_dependent())
-        _to.d(*_from[i]) += (*_coefs[i]) * I;
+      _to.d(*_from[i]) += (*_coefs[i]) * I;
 
       if (const auto * const pi = nl_param("c_" + std::to_string(i)))
         _to.d(*pi) += (*_from[i])();
     }
     if (const auto * const s = nl_param("s"))
       _to.d(*s) += neml2::Scalar::full(1.0, _from[0]->options());
-  }
-
-  if (d2out_din2)
-  {
-    // zero
   }
 }
 

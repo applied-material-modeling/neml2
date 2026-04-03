@@ -32,21 +32,20 @@ Elasticity::expected_options()
   OptionSet options = Model::expected_options();
   options.doc() = "Relate elastic strain to stress";
 
-  options.set_input("strain") = VariableName(STATE, "internal", "Ee");
-  options.set("strain").doc() = "Elastic strain";
+  options.add_input("strain", "Elastic strain");
+  options.add_output("stress", "Stress");
 
-  options.set_output("stress") = VariableName(STATE, "S");
-  options.set("stress").doc() = "Stress";
-
-  options.set<bool>("compliance") = false;
-  options.set("compliance").doc() =
+  options.add<bool>(
+      "compliance",
+      false,
       "Whether the model defines the compliance relationship, i.e., mapping from stress to elastic "
-      "strain. When set to false (default), the model maps elastic strain to stress.";
+      "strain. When set to false (default), the model maps elastic strain to stress.");
 
-  options.set<bool>("rate_form") = false;
-  options.set("rate_form").doc() =
+  options.add<bool>(
+      "rate_form",
+      false,
       "Whether the model defines the stress-strain relationship in rate form. When set to true, "
-      "the model maps elastic strain *rate* to stress *rate*.";
+      "the model maps elastic strain *rate* to stress *rate*.");
 
   return options;
 }
@@ -55,10 +54,12 @@ Elasticity::Elasticity(const OptionSet & options)
   : Model(options),
     _compliance(options.get<bool>("compliance")),
     _rate_form(options.get<bool>("rate_form")),
-    _strain(options.get<VariableName>("strain").with_suffix(_rate_form ? "_rate" : "")),
-    _stress(options.get<VariableName>("stress").with_suffix(_rate_form ? "_rate" : "")),
-    _from(declare_input_variable<SR2>(_compliance ? _stress : _strain)),
-    _to(declare_output_variable<SR2>(_compliance ? _strain : _stress))
+    _strain(options.get<VariableName>("strain")),
+    _stress(options.get<VariableName>("stress")),
+    _from(declare_input_variable<SR2>(_compliance ? (_rate_form ? rate_name(_stress) : _stress)
+                                                  : (_rate_form ? rate_name(_strain) : _strain))),
+    _to(declare_output_variable<SR2>(_compliance ? (_rate_form ? rate_name(_strain) : _strain)
+                                                 : (_rate_form ? rate_name(_stress) : _stress)))
 {
 }
 } // namespace neml2

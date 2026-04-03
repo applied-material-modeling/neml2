@@ -41,22 +41,16 @@ SwellingAndPhaseChangeDeformationJacobian::expected_options()
       "\\f$ "
       "is the fluid fraction associated with swelling, and \\f$ c \\f$ is the phase fraction.";
 
-  options.set_input("fluid_fraction") = VariableName(STATE, "phi_f");
-  options.set("fluid_fraction").doc() = "Volume fraction of the fluid phase.";
+  options.add_input("fluid_fraction", "Volume fraction of the fluid phase.");
+  options.add_output("jacobian", "Phase change deformation Jacobian");
 
-  options.set_parameter<TensorName<Scalar>>("phase_fraction");
-  options.set("phase_fraction").doc() =
-      "Phase fraction during the phase change. 0 means all solid, 1 means all liquid.";
-
-  options.set_parameter<TensorName<Scalar>>("swelling_coefficient");
-  options.set("swelling_coefficient").doc() = "Coefficient of phase expansion";
-
-  options.set_parameter<TensorName<Scalar>>("reference_volume_difference");
-  options.set("reference_volume_difference").doc() =
-      "Relative difference between the reference volumes of the two phases.";
-
-  options.set<VariableName>("jacobian") = VariableName(STATE, "J");
-  options.set("jacobian").doc() = "Phase change deformation Jacobian";
+  options.add_parameter<Scalar>(
+      "phase_fraction",
+      "Phase fraction during the phase change. 0 means all solid, 1 means all liquid.");
+  options.add_parameter<Scalar>("swelling_coefficient", "Coefficient of phase expansion");
+  options.add_parameter<Scalar>(
+      "reference_volume_difference",
+      "Relative difference between the reference volumes of the two phases.");
 
   return options;
 }
@@ -80,8 +74,7 @@ SwellingAndPhaseChangeDeformationJacobian::set_value(bool out, bool dout_din, bo
 
   if (dout_din)
   {
-    if (_vf.is_dependent())
-      _J.d(_vf) = (_alpha * _c + (1 - _c) * _dOmega);
+    _J.d(_vf) = (_alpha * _c + (1 - _c) * _dOmega);
 
     if (const auto * const c = nl_param("c"))
       _J.d(*c) = (_alpha * _vf - _vf * _dOmega);

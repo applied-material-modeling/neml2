@@ -33,29 +33,24 @@ CSVReader::expected_options()
 {
   OptionSet options;
 
-  options.set<std::string>("csv_file");
-  options.set("csv_file").doc() = "Path to the CSV file";
-
-  options.set<std::vector<std::string>>("column_names") = {};
-  options.set("column_names").doc() = "Names of CSV columns.";
-
-  options.set<std::vector<unsigned int>>("column_indices") = {};
-  options.set("column_indices").doc() = "Indices of CSV columns.";
+  options.add<std::string>("csv_file", "Path to the CSV file");
+  options.add<std::vector<std::string>>("column_names", {}, "Names of CSV columns.");
+  options.add<std::vector<unsigned int>>("column_indices", {}, "Indices of CSV columns.");
 
   EnumSelection delimiter_selection(
       {"COMMA", "SEMICOLON", "SPACE", "TAB"}, {',', ';', ' ', '\t'}, "COMMA");
-  options.set<EnumSelection>("delimiter") = delimiter_selection;
-  options.set("delimiter").doc() =
-      "Delimiter used to parse the CSV file. Options are " + delimiter_selection.join();
+  options.add<EnumSelection>("delimiter",
+                             delimiter_selection,
+                             "Delimiter used to parse the CSV file. Options are " +
+                                 delimiter_selection.join());
 
-  options.set<bool>("no_header") = false;
-  options.set("no_header").doc() = "Whether the CSV file has a header row.";
-
-  options.set<int>("starting_row") = 0;
-  options.set("starting_row").doc() =
+  options.add<bool>("no_header", false, "Whether the CSV file has a header row.");
+  options.add<int>(
+      "starting_row",
+      0,
       "Starting row of the CSV file (0-indexed). Rows before this row are ignored. This should be "
       "the header row if the CSV file has a header, otherwise it should be the first row of the "
-      "data. By default the starting row is the 0th row.";
+      "data. By default the starting row is the 0th row.");
 
   return options;
 }

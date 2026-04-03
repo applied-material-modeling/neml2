@@ -39,11 +39,8 @@ IntermediateDiff<T>::expected_options()
   OptionSet options = Reduction<T>::expected_options();
   options.doc() = "Finite difference along an intermediate dimension";
 
-  options.set<Size>("dim");
-  options.set("dim").doc() = "Intermediate dimension to take the finite difference";
-
-  options.set<Size>("n") = 1;
-  options.set("n").doc() = "Order of the finite difference";
+  options.add<Size>("dim", "Intermediate dimension to take the finite difference");
+  options.add<Size>("n", 1, "Order of the differentiation");
 
   return options;
 }
@@ -65,13 +62,12 @@ IntermediateDiff<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
     _to = intmd_diff(_from(), _n, _dim);
 
   if (dout_din)
-    if (_from.is_dependent())
-    {
-      const auto dim = utils::normalize_dim(_dim, 0, _from.intmd_dim());
-      const auto I = imap_v<T>(_from.options()).intmd_expand(_from.intmd_sizes());
-      const auto Id = intmd_diagonalize(I, dim);
-      _to.d(_from) = intmd_diff(Id, _n, dim);
-    }
+  {
+    const auto dim = utils::normalize_dim(_dim, 0, _from.intmd_dim());
+    const auto I = imap_v<T>(_from.options()).intmd_expand(_from.intmd_sizes());
+    const auto Id = intmd_diagonalize(I, dim);
+    _to.d(_from) = intmd_diff(Id, _n, dim);
+  }
 }
 
 #define REGISTER_INTERMEDIATEDIFF(T)                                                               \

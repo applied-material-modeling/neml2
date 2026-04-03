@@ -31,12 +31,8 @@ OptionSet
 DegradationFunction::expected_options()
 {
   OptionSet options = Model::expected_options();
-  options.set_input("phase") = VariableName(STATE, "d");
-  options.set("phase").doc() = "Phase-field variable";
-
-  options.set_output("degradation") = VariableName(STATE, "g");
-  options.set("degradation").doc() = "Value of the dedgradation function";
-
+  options.add_input("phase", "Phase-field variable");
+  options.add_output("degradation", "Value of the degradation function");
   return options;
 }
 

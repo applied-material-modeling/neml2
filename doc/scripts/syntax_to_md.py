@@ -66,7 +66,6 @@ def demangle(type):
     type = normalize_vector_types(type)
     type = re.sub(r",\s*(?:[\w:]+::)?allocator<[^>]+>\s*", "", type)
     type = remove_namespace(type)
-    type = type.replace("LabeledAxisAccessor", "variable name")
     type = re.sub("TensorName<(.+)>", r"\1 🔗", type)
     type = re.sub("vector<(.+)>", r"list of \1", type)
     # Call all integral/floating point types "number", as this syntax documentation faces the general audience potentially without computer science background

@@ -38,18 +38,37 @@ register_NEML2_object(SampleRateModel);
 register_NEML2_object(ADSampleRateModel);
 
 template <bool AD>
+OptionSet
+SampleRateModelTmpl<AD>::expected_options()
+{
+  auto options = Model::expected_options();
+  options.doc() = "A sample model that computes rates for a set of variables.";
+
+  options.add_input("foo", "foo", "A variable of type Scalar");
+  options.add_input("bar", "bar", "A variable of type Scalar");
+  options.add_input("baz", "baz", "A variable of type SR2");
+  options.add_input("temperature", "T", "Temperature variable");
+
+  options.add_parameter<Scalar>("a", TensorName<Scalar>("-0.05"), "Parameter a");
+  options.add_parameter<Scalar>("b", TensorName<Scalar>("-0.5"), "Parameter b");
+  options.add_parameter<Scalar>("c", TensorName<Scalar>("-0.9"), "Parameter c");
+
+  return options;
+}
+
+template <bool AD>
 SampleRateModelTmpl<AD>::SampleRateModelTmpl(const OptionSet & options)
   : Model(options),
-    foo(declare_input_variable<Scalar>(VariableName{STATE, "foo"})),
-    bar(declare_input_variable<Scalar>(VariableName{STATE, "bar"})),
-    baz(declare_input_variable<SR2>(VariableName{STATE, "baz"})),
-    T(declare_input_variable<Scalar>(VariableName{FORCES, "temperature"})),
-    foo_dot(declare_output_variable<Scalar>(VariableName{STATE, "foo_rate"})),
-    bar_dot(declare_output_variable<Scalar>(VariableName{STATE, "bar_rate"})),
-    baz_dot(declare_output_variable<SR2>(VariableName{STATE, "baz_rate"})),
-    _a(declare_parameter<Scalar>("a", Scalar(-0.01, default_tensor_options()))),
-    _b(declare_parameter<Scalar>("b", Scalar(-0.5, default_tensor_options()))),
-    _c(declare_parameter<Scalar>("c", Scalar(-0.9, default_tensor_options())))
+    foo(declare_input_variable<Scalar>("foo")),
+    bar(declare_input_variable<Scalar>("bar")),
+    baz(declare_input_variable<SR2>("baz")),
+    T(declare_input_variable<Scalar>("temperature")),
+    foo_dot(declare_output_variable<Scalar>(rate_name(foo.name()))),
+    bar_dot(declare_output_variable<Scalar>(rate_name(bar.name()))),
+    baz_dot(declare_output_variable<SR2>(rate_name(baz.name()))),
+    _a(declare_parameter<Scalar>("a", "a")),
+    _b(declare_parameter<Scalar>("b", "b")),
+    _c(declare_parameter<Scalar>("c", "c"))
 {
 }
 
@@ -80,12 +99,9 @@ SampleRateModelTmpl<false>::set_value(bool out, bool dout_din, bool /*d2out_din2
     baz_dot.d(bar) = baz * (T - 3);
     baz_dot.d(baz) = (foo + bar) * (T - 3) * imap_v<SR2>(foo.options());
 
-    if (T.is_dependent())
-    {
-      foo_dot.d(T) = foo * foo + bar;
-      bar_dot.d(T) = _c;
-      baz_dot.d(T) = (foo + bar) * baz;
-    }
+    foo_dot.d(T) = foo * foo + bar;
+    bar_dot.d(T) = _c;
+    baz_dot.d(T) = (foo + bar) * baz;
   }
 }
 

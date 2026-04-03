@@ -76,7 +76,9 @@ public:
   template <typename T>
   static char add(const std::string & name)
   {
-    add_inner(name, utils::demangle(typeid(T).name()), T::expected_options(), &build<T>);
+    auto opts = T::expected_options();
+    opts.template set_private<std::string>("type", name);
+    add_inner(name, utils::demangle(typeid(T).name()), opts, &build<T>);
     return 0;
   }
 

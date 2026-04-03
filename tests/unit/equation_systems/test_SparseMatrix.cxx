@@ -44,11 +44,11 @@ TEST_CASE("SparseMatrix", "[equation_systems]")
   //   [[ 1,  2,  3,  7],
   //    [ 4,  5,  6,  8],
   //    [ 9, 10, 11, 12]]
-  const AxisLayout row_layout({{LabeledAxisAccessor("p"), LabeledAxisAccessor("q")}},
+  const AxisLayout row_layout({{VariableName("p"), VariableName("q")}},
                               {TensorShape{}, TensorShape{}},
                               {TensorShape{2}, TensorShape{1}},
                               {AxisLayout::IStructure::DENSE});
-  const AxisLayout col_layout({{LabeledAxisAccessor("x"), LabeledAxisAccessor("y")}},
+  const AxisLayout col_layout({{VariableName("x"), VariableName("y")}},
                               {TensorShape{}, TensorShape{}},
                               {TensorShape{3}, TensorShape{1}},
                               {AxisLayout::IStructure::DENSE});
@@ -105,11 +105,11 @@ TEST_CASE("SparseMatrix", "[equation_systems]")
   SECTION("group")
   {
     // 2-group row and 2-group col layouts so each block contains exactly one variable pair
-    const AxisLayout row_layout2({{LabeledAxisAccessor("p")}, {LabeledAxisAccessor("q")}},
+    const AxisLayout row_layout2({{VariableName("p")}, {VariableName("q")}},
                                  {TensorShape{}, TensorShape{}},
                                  {TensorShape{2}, TensorShape{1}},
                                  {AxisLayout::IStructure::DENSE, AxisLayout::IStructure::DENSE});
-    const AxisLayout col_layout2({{LabeledAxisAccessor("x")}, {LabeledAxisAccessor("y")}},
+    const AxisLayout col_layout2({{VariableName("x")}, {VariableName("y")}},
                                  {TensorShape{}, TensorShape{}},
                                  {TensorShape{3}, TensorShape{1}},
                                  {AxisLayout::IStructure::DENSE, AxisLayout::IStructure::DENSE});

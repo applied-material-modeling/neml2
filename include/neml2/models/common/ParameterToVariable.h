@@ -24,32 +24,23 @@
 
 #pragma once
 
-#include "neml2/drivers/TransientDriver.h"
+#include "neml2/models/Model.h"
 
 namespace neml2
 {
-/**
- * @brief The transient driver specialized for solid mechanics problems.
- *
- *  This version is driven by the spatial velocity gradient
- */
-class SpatialVelocityDriver : public TransientDriver
+template <typename T>
+class ParameterToVariable : public Model
 {
 public:
   static OptionSet expected_options();
 
-  SpatialVelocityDriver(const OptionSet & options);
-
-  void diagnose() const override;
+  ParameterToVariable(const OptionSet & options);
 
 protected:
-  void update_forces() override;
+  void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  ///@{
-  /// The name of the driving force
-  VariableName _driving_force_name;
-  /// The value of the driving force
-  R2 _driving_force;
-  ///@}
+  const T & _input_param;
+
+  Variable<T> & _var;
 };
-}
+} // namespace neml2

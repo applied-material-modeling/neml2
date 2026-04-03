@@ -40,11 +40,8 @@ AssociativeJ2FlowDirection::expected_options()
   auto options = Model::expected_options();
   options.doc() = "The plastic flow direction assuming an associative J2 flow.";
 
-  options.set<VariableName>("mandel_stress") = VariableName(STATE, "M");
-  options.set("mandel_stress").doc() = "Mandel stress";
-
-  options.set<VariableName>("flow_direction") = VariableName(STATE, "NM");
-  options.set("flow_direction").doc() = "Flow direction";
+  options.add_input("mandel_stress", "Mandel stress");
+  options.add_output("flow_direction", "Flow direction");
 
   return options;
 }
@@ -70,12 +67,11 @@ AssociativeJ2FlowDirection::set_value(bool out, bool dout_din, bool /*d2out_din2
   }
 
   if (dout_din)
-    if (_M.is_dependent())
-    {
-      auto I = SSR4::identity_sym(_M.options());
-      auto J = SSR4::identity_dev(_M.options());
+  {
+    auto I = SSR4::identity_sym(_M.options());
+    auto J = SSR4::identity_dev(_M.options());
 
-      _N.d(_M) = 3.0 / 2.0 * (I - 2.0 / 3.0 * neml2::outer(dvm_dM)) * J / vm;
-    }
+    _N.d(_M) = 3.0 / 2.0 * (I - 2.0 / 3.0 * neml2::outer(dvm_dM)) * J / vm;
+  }
 }
 } // namespace neml2

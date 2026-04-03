@@ -47,15 +47,15 @@ protected:
   /// Actual input control signal
   const Variable<SR2> & _control;
 
-  /// Driving forces to pull the "controlled" entries from
-  const Variable<SR2> & _fixed_values;
-  /// Conjugate state containing the mixed, unknown variables
-  const Variable<SR2> & _mixed_state;
+  /// Values used when _control > _threshold
+  const Variable<SR2> & _x_above;
+  /// Values used when _control <= _threshold
+  const Variable<SR2> & _x_below;
 
-  /// Variable to target when the control signal is above the threshold
-  Variable<SR2> & _above_var;
-  /// Variable to target when the control signal is below the threshold
-  Variable<SR2> & _below_var;
+  /// Output variable (those selected by the control signal)
+  Variable<SR2> & _y;
+  /// Output variable (those not selected by the control signal)
+  Variable<SR2> & _z;
 
 private:
   /// Construct the derivative operators from the control signal

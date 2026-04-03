@@ -35,18 +35,14 @@ CapillaryPressure::expected_options()
   OptionSet options = Model::expected_options();
   options.doc() = "Relate the porous flow capillary pressure to the effective saturation";
 
-  options.set_input("effective_saturation") = VariableName(STATE, "S");
-  options.set("effective_saturation").doc() = "The effective saturation";
+  options.add_input("effective_saturation", "The effective saturation");
+  options.add_output("capillary_pressure", "Capillary pressure.");
 
-  options.set_output("capillary_pressure") = VariableName(STATE, "Pc");
-  options.set("capillary_pressure").doc() = "Capillary pressure.";
-
-  options.set<bool>("log_extension") = false;
-  options.set("log_extension").doc() = "Whether to apply logarithmic extension";
-
-  options.set<double>("transition_saturation") = 0.0;
-  options.set("transition_saturation").doc() = "The transistion value of the effective saturation "
-                                               "below which to apply the logarithmic extension";
+  options.add<bool>("log_extension", false, "Whether to apply logarithmic extension");
+  options.add<double>("transition_saturation",
+                      0.0,
+                      "The transistion value of the effective saturation below which to apply the "
+                      "logarithmic extension");
 
   return options;
 }

@@ -42,28 +42,31 @@ NewtonWithLineSearch::expected_options()
   options.doc() = "The Newton-Raphson solver with line search.";
 
   EnumSelection linesearch_type({"BACKTRACKING", "STRONG_WOLFE"}, "BACKTRACKING");
-  options.set<EnumSelection>("linesearch_type") = linesearch_type;
-  options.set("linesearch_type").doc() = "The type of linesearch used."
-                                         "Default: BACKTRACKING. Options are " +
-                                         linesearch_type.join();
+  options.add<EnumSelection>("linesearch_type",
+                             linesearch_type,
+                             "The type of linesearch used. Options are " + linesearch_type.join());
 
-  options.set<unsigned int>("max_linesearch_iterations") = 10;
-  options.set("max_linesearch_iterations").doc() =
-      "Maximum allowable linesearch iterations. No error is produced upon reaching the maximum "
-      "number of iterations, and the scale factor in the last iteration is used to scale the step.";
+  options.add<unsigned int>("max_linesearch_iterations",
+                            10,
+                            "Maximum allowable linesearch iterations. No error is produced upon "
+                            "reaching the maximum number of iterations, and the scale factor in "
+                            "the last iteration is used to scale the step.");
 
-  options.set<double>("linesearch_cutback") = 2.0;
-  options.set("linesearch_cutback").doc() = "Linesearch cut-back factor when the current scale "
-                                            "factor cannot sufficiently reduce the residual.";
+  options.add<double>("linesearch_cutback",
+                      2.0,
+                      "Linesearch cut-back factor when the current scale factor cannot "
+                      "sufficiently reduce the residual.");
 
-  options.set<double>("linesearch_stopping_criteria") = 1.0e-3;
-  options.set("linesearch_stopping_criteria").doc() =
-      "The lineseach tolerance slightly relaxing the definition of residual decrease";
+  options.add<double>(
+      "linesearch_stopping_criteria",
+      1.0e-3,
+      "The lineseach tolerance slightly relaxing the definition of residual decrease");
 
-  options.set<bool>("check_negative_criterion") = false;
-  options.set("check_negative_criterion").doc() =
+  options.add<bool>(
+      "check_negative_criterion",
+      false,
       "Whether to check if the threshold used in the convergence criterion for line search becomes "
-      "negative. If true, and a negative value is detected, a warning message is printed to cerr.";
+      "negative. If true, and a negative value is detected, a warning message is printed to cerr.");
 
   return options;
 }

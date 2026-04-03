@@ -42,36 +42,36 @@ SampleParserTestingModel::expected_options()
   //   string
   //
   // We also support vector of and vector of vector of each integral type.
-  options.set<bool>("bool");
-  options.set<std::vector<bool>>("bool_vec");
-  options.set<std::vector<std::vector<bool>>>("bool_vec_vec");
+  options.add<bool>("bool", "");
+  options.add<std::vector<bool>>("bool_vec", "");
+  options.add<std::vector<std::vector<bool>>>("bool_vec_vec", "");
 
-  options.set<int>("int");
-  options.set<std::vector<int>>("int_vec");
-  options.set<std::vector<std::vector<int>>>("int_vec_vec");
+  options.add<int>("int", "");
+  options.add<std::vector<int>>("int_vec", "");
+  options.add<std::vector<std::vector<int>>>("int_vec_vec", "");
 
-  options.set<unsigned int>("uint");
-  options.set<std::vector<unsigned int>>("uint_vec");
-  options.set<std::vector<std::vector<unsigned int>>>("uint_vec_vec");
+  options.add<unsigned int>("uint", "");
+  options.add<std::vector<unsigned int>>("uint_vec", "");
+  options.add<std::vector<std::vector<unsigned int>>>("uint_vec_vec", "");
 
-  options.set<double>("double");
-  options.set<std::vector<double>>("double_vec");
-  options.set<std::vector<std::vector<double>>>("double_vec_vec");
+  options.add<double>("double", "");
+  options.add<std::vector<double>>("double_vec", "");
+  options.add<std::vector<std::vector<double>>>("double_vec_vec", "");
 
-  options.set<std::string>("string");
-  options.set<std::vector<std::string>>("string_vec");
-  options.set<std::vector<std::vector<std::string>>>("string_vec_vec");
+  options.add<std::string>("string", "");
+  options.add<std::vector<std::string>>("string_vec", "");
+  options.add<std::vector<std::vector<std::string>>>("string_vec_vec", "");
 
-  options.set<TensorShape>("shape");
-  options.set<std::vector<TensorShape>>("shape_vec");
-  options.set<std::vector<std::vector<TensorShape>>>("shape_vec_vec");
+  options.add<TensorShape>("shape", "");
+  options.add<std::vector<TensorShape>>("shape_vec", "");
+  options.add<std::vector<std::vector<TensorShape>>>("shape_vec_vec", "");
 
-  options.set<Device>("device");
-  options.set<std::vector<Device>>("device_vec");
-  options.set<std::vector<std::vector<Device>>>("device_vec_vec");
+  options.add<Device>("device", "");
+  options.add<std::vector<Device>>("device_vec", "");
+  options.add<std::vector<std::vector<Device>>>("device_vec_vec", "");
 
-  options.set<std::string>("suppressed_option") = "suppress me";
-  options.set("suppressed_option").suppressed() = true;
+  options.add<std::string>("suppressed_option", "suppress me", "");
+  options.suppress("suppressed_option");
 
   return options;
 }

@@ -47,20 +47,15 @@ PlasticSpatialVelocityGradient::expected_options()
       "\\f$ the slip rate on the ith slip system, \\f$Q \\f$ the orientation, \\f$ d_i "
       "\\f$ the slip system direction, and \\f$ n_i \\f$ the slip system normal.";
 
-  options.set_output("plastic_spatial_velocity_gradient") =
-      VariableName(STATE, "internal", "plastic_spatial_velocity_gradient");
-  options.set("plastic_spatial_velocity_gradient").doc() =
-      "The name of the plastic spatial velocity gradient";
+  options.add_output("plastic_spatial_velocity_gradient",
+                     "The name of the plastic spatial velocity gradient");
+  options.add_input("orientation_matrix", "The name of the orientation matrix");
+  options.add_input("slip_rates", "The name of the tensor containg the current slip rates");
 
-  options.set_input("orientation") = VariableName(STATE, "orientation_matrix");
-  options.set("orientation").doc() = "The name of the orientation matrix tensor";
-
-  options.set_input("slip_rates") = VariableName(STATE, "internal", "slip_rates");
-  options.set("slip_rates").doc() = "The name of the tensor containg the current slip rates";
-
-  options.set<std::string>("crystal_geometry") = "crystal_geometry";
-  options.set("crystal_geometry").doc() =
-      "The name of the Data object containing the crystallographic information for the material";
+  options.add<std::string>(
+      "crystal_geometry",
+      "crystal_geometry",
+      "The name of the Data object containing the crystallographic information for the material");
 
   return options;
 }
@@ -70,7 +65,7 @@ PlasticSpatialVelocityGradient::PlasticSpatialVelocityGradient(const OptionSet &
     _crystal_geometry(register_data<crystallography::CrystalGeometry>(
         options.get<std::string>("crystal_geometry"))),
     _lp(declare_output_variable<R2>("plastic_spatial_velocity_gradient")),
-    _R(declare_input_variable<R2>("orientation")),
+    _R(declare_input_variable<R2>("orientation_matrix")),
     _g(declare_input_variable<Scalar>("slip_rates"))
 {
 }
@@ -85,11 +80,8 @@ PlasticSpatialVelocityGradient::set_value(bool out, bool dout_din, bool /*d2out_
 
   if (dout_din)
   {
-    if (_g.is_dependent())
-      _lp.d(_g, 1, 0, 1) = _crystal_geometry.A().rotate(_R().intmd_unsqueeze(-1));
-
-    if (_R.is_dependent())
-      _lp.d(_R) = lp_crystal.drotate(_R());
+    _lp.d(_g, 1, 0, 1) = _crystal_geometry.A().rotate(_R().intmd_unsqueeze(-1));
+    _lp.d(_R) = lp_crystal.drotate(_R());
   }
 }
 } // namespace neml2

@@ -65,27 +65,33 @@ public:
 
   /// A readonly reference to the option's ftype
   const FType & ftype() const { return _metadata.ftype; }
-
   /// A writable reference to the option's ftype
   FType & ftype() { return _metadata.ftype; }
 
   /// A readonly reference to the option's docstring
   const std::string & doc() const { return _metadata.doc; }
-
   /// A writable reference to the option's docstring
   std::string & doc() { return _metadata.doc; }
 
-  /// A readonly reference to the option's suppression status
-  const bool & suppressed() const { return _metadata.suppressed; }
+  /// Whether this option is required
+  bool required() const { return _metadata.required; }
+  /// A writable reference to the option's required status
+  bool & required() { return _metadata.required; }
 
+  /// Whether this option is suppressed
+  bool suppressed() const { return _metadata.suppressed; }
   /// A writable reference to the option's suppression status
   bool & suppressed() { return _metadata.suppressed; }
 
-  /// A readonly reference to the option's user_specified status
-  const bool & user_specified() const { return _metadata.user_specified; }
-
+  /// Whether this option is user-specified
+  bool user_specified() const { return _metadata.user_specified; }
   /// A writable reference to the option's user_specified status
   bool & user_specified() { return _metadata.user_specified; }
+
+  /// Whether this option is defined
+  bool defined() const { return _metadata.defined; }
+  /// A writable reference to the option's defined status
+  bool & defined() { return _metadata.defined; }
 
   /**
    * Prints the option value to the specified stream.
@@ -150,6 +156,15 @@ protected:
      */
     std::string doc = "";
     /**
+     * @brief Whether this option is required
+     *
+     * By default an option is not required. A required option must be specified by the user. It is
+     * up to the specific Parser to decide what happens when a required option is not specified by
+     * the user, e.g., the parser can choose to throw an exception or print a warning and use the
+     * default value.
+     */
+    bool required = false;
+    /**
      * @brief Whether this option is suppressed
      *
      * By default an option is not suppressed. However, it is sometimes desirable for a derived
@@ -168,11 +183,19 @@ protected:
      * optional options.
      */
     bool user_specified = false;
+    /**
+     * @brief Whether this option is defined
+     *
+     * This field is used to determine whether the option is defined. For example, if an option
+     * is optional and the user has not specified it, then the option is considered undefined.
+     */
+    bool defined = false;
 
     bool operator==(const Metadata & other) const
     {
       return name == other.name && type == other.type && ftype == other.ftype && doc == other.doc &&
-             suppressed == other.suppressed && user_specified == other.user_specified;
+             required == other.required && suppressed == other.suppressed &&
+             user_specified == other.user_specified && defined == other.defined;
     }
 
     bool operator!=(const Metadata & other) const { return !(*this == other); }

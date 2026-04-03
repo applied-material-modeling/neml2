@@ -40,10 +40,8 @@ PowerLawIsotropicHardeningStaticRecovery::expected_options()
                   "\\f$ \\dot{k} = -\\left(\\frac{\\lVert k \\rVert}{\\tau}\\right)^{n-1} "
                   "\\frac{k}{\\tau} \\f$";
 
-  options.set_parameter<TensorName<Scalar>>("tau");
-  options.set("tau").doc() = "Recovery rate";
-  options.set_parameter<TensorName<Scalar>>("n");
-  options.set("n").doc() = "Recovery exponent";
+  options.add_parameter<Scalar>("tau", "Recovery rate");
+  options.add_parameter<Scalar>("n", "Recovery exponent");
 
   return options;
 }
@@ -64,8 +62,7 @@ PowerLawIsotropicHardeningStaticRecovery::set_value(bool out, bool dout_din, boo
 
   if (dout_din)
   {
-    if (_h.is_dependent())
-      _h_dot.d(_h) = -_n * pow(abs(_h / _tau), _n - 1) / abs(_tau);
+    _h_dot.d(_h) = -_n * pow(abs(_h / _tau), _n - 1) / abs(_tau);
 
     if (const auto * const tau = nl_param("tau"))
       _h_dot.d(*tau) = _n * _h * pow(_tau, -1 - _n) * pow(abs(_h()), _n - 1);

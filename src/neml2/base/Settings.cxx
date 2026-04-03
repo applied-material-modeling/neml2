@@ -35,43 +35,71 @@ Settings::expected_options()
   options.section() = "Settings";
   options.doc() = "Global settings for tensors, models, etc.";
 
-  options.set<std::string>("type") = "Settings";
+  options.add_private<std::string>("type", "Settings");
 
-  options.set<std::string>("buffer_name_separator") = "_";
-  options.set("buffer_name_separator").doc() = "Nested buffer name separator. The default is '_'. "
-                                               "For example, a sub-model 'foo' which declares "
-                                               "a buffer 'bar' will have a buffer named 'foo_bar'.";
+  options.add<std::string>(
+      "buffer_name_separator",
+      "_",
+      "Nested buffer name separator. The default is '_'. For example, a sub-model 'foo' which "
+      "declares a buffer 'bar' will have a buffer named 'foo_bar'.");
 
-  options.set<std::string>("parameter_name_separator") = "_";
-  options.set("parameter_name_separator").doc() =
+  options.add<std::string>(
+      "parameter_name_separator",
+      "_",
       "Parameter name separator. The default is '_'. For example, a sub-model 'foo' which declares "
-      "a parameter 'bar' will have a parameter named 'foo_bar'.";
+      "a parameter 'bar' will have a parameter named 'foo_bar'.");
 
-  options.set<bool>("require_double_precision") = true;
-  options.set("require_double_precision").doc() =
-      "Require double precision for all computations. An error will be thrown when Model forward "
-      "operators are called if the default dtype is not Float64. Set this option to false to allow "
-      "other precisions.";
+  options.add<std::string>(
+      "rate_prefix",
+      "",
+      "Prefix for rate variables. The default is an empty string. For example, if the prefix is "
+      "'rate_', then a variable named 'x' will have its rate variable named 'rate_x'.");
+  options.add<std::string>(
+      "rate_suffix",
+      "_rate",
+      "Suffix for rate variables. The default is '_rate'. For example, if the suffix is "
+      "'_rate', then a variable named 'x' will have its rate variable named 'x_rate'.");
 
-  options.set<std::vector<std::string>>("additional_libraries");
-  options.set("additional_libraries").doc() =
+  options.add<std::string>(
+      "residual_prefix",
+      "",
+      "Prefix for residual variables. The default is an empty string. For example, if the prefix "
+      "is 'residual_', then a variable named 'x' will have its residual variable named "
+      "'residual_x'.");
+  options.add<std::string>(
+      "residual_suffix",
+      "_residual",
+      "Suffix for residual variables. The default is '_residual'. For example, if the suffix is "
+      "'_residual', then a variable named 'x' will have its residual variable named 'x_residual'.");
+
+  options.add<bool>("require_double_precision",
+                    true,
+                    "Require double precision for all computations. An error will be thrown when "
+                    "Model forward operators are called if the default dtype is not Float64. Set "
+                    "this option to false to allow other precisions.");
+
+  options.add<std::vector<std::string>>(
+      "additional_libraries",
+      {},
       "Additional dynamic libraries to load at runtime. The Registry from these libraries are "
       "merged into the current Registry singleton. This is required for using custom models "
       "defined in dynamic libraries not directly linked to libneml2. The paths are either absolute "
-      "or relative to the current working directory.";
+      "or relative to the current working directory.");
 
-  options.set<bool>("disable_jit") = false;
-  options.set("disable_jit").doc() =
+  options.add<bool>(
+      "disable_jit",
+      false,
       "Disable JIT compilation of models. This is useful for debugging or when the JIT compiler is "
       "not available. When set to false, each individual model can still selectively "
       "enable/disable JIT. When set to true, JIT is disabled globally, and it is an error to "
-      "explicitly set jit to true for any model.";
+      "explicitly set jit to true for any model.");
 
-  options.set<bool>("linalg_solve_check_errors") = false;
-  options.set("linalg_solve_check_errors").doc() =
+  options.add<bool>(
+      "linalg_solve_check_errors",
+      false,
       "Whether to check for errors after solving linear systems. This is disabled by default for "
       "performance reasons, but it can be enabled to get better error messages when the solve "
-      "fails.";
+      "fails.");
 
   return options;
 }
@@ -79,6 +107,10 @@ Settings::expected_options()
 Settings::Settings(const OptionSet & options)
   : _buffer_name_separator(options.get<std::string>("buffer_name_separator")),
     _parameter_name_separator(options.get<std::string>("parameter_name_separator")),
+    _rate_prefix(options.get<std::string>("rate_prefix")),
+    _rate_suffix(options.get<std::string>("rate_suffix")),
+    _residual_prefix(options.get<std::string>("residual_prefix")),
+    _residual_suffix(options.get<std::string>("residual_suffix")),
     _require_double_precision(options.get<bool>("require_double_precision")),
     _additional_libraries(options.get<std::vector<std::string>>("additional_libraries")),
     _disable_jit(options.get<bool>("disable_jit")),

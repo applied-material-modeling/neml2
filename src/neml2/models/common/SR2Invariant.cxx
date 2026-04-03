@@ -43,13 +43,10 @@ SR2Invariant::expected_options()
   OptionSet options = Model::expected_options();
   options.doc() = "Calculate the invariant of a symmetric second order tensor (of type SR2).";
 
-  options.set<bool>("define_second_derivatives") = true;
+  options.set_private<bool>("define_second_derivatives", true);
 
-  options.set_input("tensor");
-  options.set("tensor").doc() = "SR2 which is used to calculate the invariant of";
-
-  options.set_output("invariant");
-  options.set("invariant").doc() = "Invariant";
+  options.add_input("tensor", "Symmetric second order tensor to take the invariant of");
+  options.add_output("invariant", "Invariant");
 
   EnumSelection type_selection({"I1", "I2", "VONMISES", "EFFECTIVE_STRAIN", "INVALID"},
                                {static_cast<int>(SR2Invariant::IType::I1),
@@ -58,8 +55,8 @@ SR2Invariant::expected_options()
                                 static_cast<int>(SR2Invariant::IType::EFFECTIVE_STRAIN),
                                 static_cast<int>(SR2Invariant::IType::INVALID)},
                                "INVALID");
-  options.set<EnumSelection>("invariant_type") = type_selection;
-  options.set("invariant_type").doc() = "Type of invariant. Options are: " + type_selection.join();
+  options.add<EnumSelection>(
+      "invariant_type", type_selection, "Type of invariant. Options are: " + type_selection.join());
 
   return options;
 }
@@ -82,9 +79,6 @@ SR2Invariant::set_value(bool out, bool dout_din, bool d2out_din2)
     if (out)
       _invariant = neml2::tr(A);
 
-    if (!_A.is_dependent())
-      return;
-
     if (dout_din)
       _invariant.d(_A) = SR2::identity(_A.options());
 
@@ -99,9 +93,6 @@ SR2Invariant::set_value(bool out, bool dout_din, bool d2out_din2)
 
     if (out)
       _invariant = (trA * trA - neml2::inner(A, A)) / 2.0;
-
-    if (!_A.is_dependent())
-      return;
 
     if (dout_din || d2out_din2)
     {
@@ -127,9 +118,6 @@ SR2Invariant::set_value(bool out, bool dout_din, bool d2out_din2)
     if (out)
       _invariant = vm;
 
-    if (!_A.is_dependent())
-      return;
-
     if (dout_din || d2out_din2)
     {
       auto dvm_dA = 3.0 / 2.0 * S / vm;
@@ -152,9 +140,6 @@ SR2Invariant::set_value(bool out, bool dout_din, bool d2out_din2)
 
     if (out)
       _invariant = r;
-
-    if (!_A.is_dependent())
-      return;
 
     if (dout_din || d2out_din2)
     {

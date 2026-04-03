@@ -38,22 +38,16 @@ LinspaceTensorTmpl<T>::expected_options()
       " linearly spaced on the batch/intermediate dimensions. See neml2::dynamic_linspace, "
       "neml2::intmd_linspace, or neml2::base_linspace for a detailed explanation.";
 
-  options.set<TensorName<T>>("start");
-  options.set("start").doc() = "The starting tensor";
-
-  options.set<TensorName<T>>("end");
-  options.set("end").doc() = "The ending tensor";
-
-  options.set<Size>("nstep");
-  options.set("nstep").doc() = "The number of steps with even spacing along the new dimension";
-
-  options.set<Size>("dim") = 0;
-  options.set("dim").doc() = "Where to insert the new dimension";
+  options.add<TensorName<T>>("start", "The starting tensor");
+  options.add<TensorName<T>>("end", "The ending tensor");
+  options.add<Size>("nstep", "The number of steps with even spacing along the new dimension");
+  options.add<Size>("dim", 0, "Where to insert the new dimension");
 
   EnumSelection selection({"dynamic", "intermediate"}, "dynamic");
-  options.set<EnumSelection>("group") = selection;
-  options.set("group").doc() =
-      "Dimension group to apply the operation. Options are: " + selection.join();
+  options.add<EnumSelection>("group",
+                             selection,
+                             "Dimension group to apply the operation. Options are: " +
+                                 selection.join());
 
   return options;
 }

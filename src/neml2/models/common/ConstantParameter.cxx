@@ -36,8 +36,9 @@ ConstantParameter<T>::expected_options()
   options.doc() = "A parameter that is just a constant value, generally used to refer to a "
                   "parameter in more than one downstream object.";
 
-  options.set_parameter<TensorName<T>>("value");
-  options.set("value").doc() = "The constant value of the parameter";
+  options.add_parameter<T>("value", "The constant value of the parameter");
+  options.add_output("parameter", "The output parameter");
+
   return options;
 }
 
@@ -45,7 +46,7 @@ template <typename T>
 ConstantParameter<T>::ConstantParameter(const OptionSet & options)
   : Model(options),
     _value(this->template declare_parameter<T>("value", "value", /*allow_nonlinear=*/true)),
-    _p(this->template declare_output_variable<T>(VariableName(PARAMETERS, name())))
+    _p(this->template declare_output_variable<T>("parameter"))
 {
 }
 

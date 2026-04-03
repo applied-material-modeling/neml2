@@ -24,7 +24,6 @@
 
 #include "neml2/models/common/FischerBurmeister.h"
 #include "neml2/tensors/functions/sqrt.h"
-#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
@@ -33,45 +32,28 @@ OptionSet
 FischerBurmeister::expected_options()
 {
   OptionSet options = Model::expected_options();
-  options.doc() = "By default,  if \\f$ a \\ge 0, "
-                  "b \\ge 0, ab = 0 \\f$ then  the Fischer Burmeister (FB) condition is:\\f$"
-                  "a+b-\\sqrt(a^2+b^2)\\f$, where a, b is the first_var and second_var "
-                  "respectively and first_inequality = second_inequality = 'GE'. One could set "
-                  "first_inequality = 'LE' (i.e. \\f$ a \\le 0, "
-                  "b \\ge 0, ab = 0 \\f$, FB conditions is \\f$"
-                  "-a+b-\\sqrt(a^2+b^2) \\f$). Same goes for second_inequality = 'LE'.";
+  options.doc() = "If \\f$ a \\ge 0, b \\ge 0, ab = 0 \\f$ then the Fischer Burmeister (FB) "
+                  "complementarity condition is:\\f$ r = a+b-\\sqrt(a^2+b^2) = 0 \\f$.";
 
-  options.set_input("first_var") = VariableName(STATE, "a");
-  options.set("first_var").doc() = "First condition";
+  options.add_input("a", "First condition");
+  options.add_input("b", "Second condition");
+  options.add_output("complementarity", "The Fischer Burmeister complementarity condition");
 
-  options.set_input("second_var") = VariableName(STATE, "b");
-  options.set("second_var").doc() = "Second condition";
-
-  EnumSelection conda({"GE", "LE"}, "GE");
-  options.set<EnumSelection>("first_inequality") = conda;
-  options.set("first_inequality").doc() = "Type of inequality for the first variable."
-                                          "Default: GE. Options are " +
-                                          conda.join();
-
-  EnumSelection condb({"GE", "LE"}, "GE");
-  options.set<EnumSelection>("second_inequality") = condb;
-  options.set("second_inequality").doc() = "Type of inequality for the second variable."
-                                           "Default: GE. Options are " +
-                                           condb.join();
-
-  options.set_output("fischer_burmeister") = VariableName(STATE, "fb");
-  options.set("fischer_burmeister").doc() = "Fischer Burmeister condition";
+  EnumSelection ineq({"GE", "LE"}, "GE");
+  options.add<EnumSelection>(
+      "a_inequality", ineq, "Type of the inequality for the first variable a.");
+  options.add<EnumSelection>("b_inequality", ineq, "Type of inequality for the second variable b.");
 
   return options;
 }
 
 FischerBurmeister::FischerBurmeister(const OptionSet & options)
   : Model(options),
-    _a(declare_input_variable<Scalar>("first_var")),
-    _b(declare_input_variable<Scalar>("second_var")),
-    _conda(options.get<EnumSelection>("first_inequality")),
-    _condb(options.get<EnumSelection>("second_inequality")),
-    _fb(declare_output_variable<Scalar>("fischer_burmeister"))
+    _a(declare_input_variable<Scalar>("a")),
+    _b(declare_input_variable<Scalar>("b")),
+    _a_ineq(options.get<EnumSelection>("a_inequality")),
+    _b_ineq(options.get<EnumSelection>("b_inequality")),
+    _c(declare_output_variable<Scalar>("complementarity"))
 {
 }
 
@@ -79,23 +61,21 @@ void
 FischerBurmeister::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   auto ia = 1.0;
-  if (_conda == "LE")
+  if (_a_ineq == "LE")
     ia = -1.0;
 
   auto ib = 1.0;
-  if (_condb == "LE")
+  if (_b_ineq == "LE")
     ib = -1.0;
 
   if (out)
-  {
-    _fb = _a * ia + _b * ib - sqrt(_a * _a + _b * _b);
-  }
+    _c = _a * ia + _b * ib - sqrt(_a * _a + _b * _b);
 
   if (dout_din)
   {
     const auto eps = machine_precision(_a.scalar_type());
-    _fb.d(_a) = ia - _a / sqrt(_a * _a + _b * _b + eps);
-    _fb.d(_b) = ib - _b / sqrt(_a * _a + _b * _b + eps);
+    _c.d(_a) = ia - _a / sqrt(_a * _a + _b * _b + eps);
+    _c.d(_b) = ib - _b / sqrt(_a * _a + _b * _b + eps);
   }
 }
 }

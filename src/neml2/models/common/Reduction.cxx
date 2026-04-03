@@ -34,11 +34,8 @@ Reduction<T>::expected_options()
 {
   OptionSet options = Model::expected_options();
 
-  options.set_input("from");
-  options.set("from").doc() = "Variable to reduce";
-
-  options.set_output("to");
-  options.set("to").doc() = "The reduced variable";
+  options.add_input("from", "Variable to reduce");
+  options.add_output("to", "The reduced variable");
 
   return options;
 }

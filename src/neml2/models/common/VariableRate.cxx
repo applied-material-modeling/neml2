@@ -26,7 +26,9 @@
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/Vec.h"
 #include "neml2/tensors/SR2.h"
+#include "neml2/tensors/R2.h"
 #include "neml2/tensors/SSR4.h"
+#include "neml2/tensors/R4.h"
 #include "neml2/tensors/functions/imap.h"
 
 namespace neml2
@@ -36,18 +38,13 @@ OptionSet
 VariableRate<T>::expected_options()
 {
   OptionSet options = Model::expected_options();
-  options.doc() = "Calculate the first order discrete time derivative of a variable as \\f$ "
-                  "\\dot{f} = \\frac{f-f_n}{t-t_n} \\f$, where \\f$ f \\f$ is the force variable, "
-                  "and \\f$ t \\f$ is time.";
+  options.doc() =
+      "Calculate the first order discrete time derivative of a variable as \\f$ "
+      "\\dot{f} = \\frac{f-f_n}{t-t_n} \\f$, where \\f$ f \\f$ is the variable, "
+      "\\f$ f_n \\f$ is the variable at the previous time step, and \\f$ t \\f$ is time.";
 
-  options.set_output("rate");
-  options.set("rate").doc() = "The variable's rate of change";
-
-  options.set_input("variable");
-  options.set("variable").doc() = "The variable to take time derivative with";
-
-  options.set_input("time") = VariableName(FORCES, "t");
-  options.set("time").doc() = "Time";
+  options.add_input("variable", "The variable being differentiated");
+  options.add_input("time", "Time");
 
   return options;
 }
@@ -56,48 +53,30 @@ template <typename T>
 VariableRate<T>::VariableRate(const OptionSet & options)
   : Model(options),
     _v(declare_input_variable<T>("variable")),
-    _vn(declare_input_variable<T>(_v.name().old())),
+    _vn(declare_variable_history(_v, /*nstep=*/1)),
     _t(declare_input_variable<Scalar>("time")),
-    _tn(declare_input_variable<Scalar>(_t.name().old())),
-    _dv_dt(options.get<VariableName>("rate").empty()
-               ? declare_output_variable<T>(_v.name().with_suffix("_rate"))
-               : declare_output_variable<T>("rate"))
+    _tn(declare_variable_history(_t, /*nstep=*/1)),
+    _rate(declare_output_variable<T>(rate_name(_v.name())))
 {
-}
-
-template <typename T>
-void
-VariableRate<T>::diagnose() const
-{
-  Model::diagnose();
-  diagnostic_assert_force(_t);
 }
 
 template <typename T>
 void
 VariableRate<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  auto dv = _v - _vn;
   auto dt = _t - _tn;
+  auto dv = _v - _vn;
+  auto rate = dv / dt;
 
   if (out)
-    _dv_dt = dv / dt;
+    _rate = rate;
 
   if (dout_din)
   {
-    auto I = imap_v<T>(_v.options());
-
-    if (_v.is_dependent())
-      _dv_dt.d(_v) = I / dt;
-
-    if (_vn.is_dependent())
-      _dv_dt.d(_vn) = -I / dt;
-
-    if (currently_assembling_nonlinear_system())
-      return;
-
-    _dv_dt.d(_t) = -dv / dt / dt;
-    _dv_dt.d(_tn) = dv / dt / dt;
+    _rate.d(_v) = imap_v<T>(_v.options()) / dt;
+    _rate.d(_vn) = -imap_v<T>(_v.options()) / dt;
+    _rate.d(_t) = -rate / dt;
+    _rate.d(_tn) = rate / dt;
   }
 }
 
@@ -108,4 +87,5 @@ VariableRate<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 REGISTER(Scalar);
 REGISTER(Vec);
 REGISTER(SR2);
+REGISTER(R2);
 } // namespace neml2

@@ -34,16 +34,13 @@ InputParameter<T>::expected_options()
 {
   OptionSet options = Model::expected_options();
   options.doc() =
-      "A parameter that is defined through an input variable. This object is not intended "
+      "A parameter whose value is provided by an input variable. This object is not intended "
       "to be used directly in the input file.";
 
-  options.set<bool>("define_second_derivatives") = true;
+  options.set_private<bool>("define_second_derivatives", true);
 
-  options.set_input("from");
-  options.set("from").doc() = "The input variable that defines this parameter";
-
-  options.set_output("to");
-  options.set("to").doc() = "The name of the parameter, default to 'parameters/object_name'";
+  options.add_input("variable", "The input variable that defines this parameter");
+  options.add_output("parameter", "Output parameter");
 
   return options;
 }
@@ -51,10 +48,8 @@ InputParameter<T>::expected_options()
 template <typename T>
 InputParameter<T>::InputParameter(const OptionSet & options)
   : Model(options),
-    _input_var(this->template declare_input_variable<T>("from")),
-    _p(options.get("to").user_specified()
-           ? this->template declare_output_variable<T>("to")
-           : this->template declare_output_variable<T>(VariableName(PARAMETERS, this->name())))
+    _input_var(this->template declare_input_variable<T>("variable")),
+    _p(this->template declare_output_variable<T>("parameter"))
 {
 }
 
@@ -66,8 +61,7 @@ InputParameter<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
     this->_p = _input_var();
 
   if (dout_din)
-    if (_input_var.is_dependent())
-      this->_p.d(_input_var) = imap_v<T>(_input_var.options());
+    this->_p.d(_input_var) = imap_v<T>(_input_var.options());
 }
 
 #define REGISTER(T)                                                                                \

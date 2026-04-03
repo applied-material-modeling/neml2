@@ -36,9 +36,9 @@ TEST_CASE("WorkDispatcher SliceGenerator SimpleScheduler", "[dispatchers]")
   SliceGenerator generator(50, 2000);
 
   OptionSet options = SimpleScheduler::expected_options();
-  options.set<std::string>("device") = "cpu";
-  options.set<size_t>("batch_size") = 345;
-  options.set<size_t>("capacity") = 800;
+  options.set<std::string>("device", "cpu");
+  options.set<size_t>("batch_size", 345);
+  options.set<size_t>("capacity", 800);
 
   SimpleScheduler scheduler(options);
 

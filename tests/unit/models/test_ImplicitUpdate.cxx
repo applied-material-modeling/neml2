@@ -35,11 +35,12 @@ TEST_CASE("ImplicitUpdate", "[models]")
 {
   auto model0 = load_model("models/ImplicitUpdate.i", "model");
   auto model = std::dynamic_pointer_cast<ImplicitUpdate>(model0);
-  ValueMap in = {{VariableName(OLD_STATE, "foo"), Scalar::full(0.0)},
-                 {VariableName(OLD_STATE, "bar"), Scalar::full(0.0)},
-                 {VariableName(FORCES, "temperature"), Scalar::full(15.0)},
-                 {VariableName(FORCES, "t"), Scalar::full(1.3)},
-                 {VariableName(OLD_FORCES, "t"), Scalar::full(1.1)}};
+
+  model->input_variable("foo").history(1) = Scalar::full(0.0);
+  model->input_variable("bar").history(1) = Scalar::full(0.0);
+  model->input_variable("t").history(1) = Scalar::full(1.1);
+
+  ValueMap in = {{"temperature", Scalar::full(15.0)}, {"t", Scalar::full(1.3)}};
   auto out = model->value(in);
   REQUIRE(model->last_iterations() == 7);
 

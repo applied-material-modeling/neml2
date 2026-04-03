@@ -33,11 +33,10 @@ TEST_CASE("AxisLayout", "[equation_systems]")
   // A 3-variable, 2-group layout:
   //   group 0: "a" (intmd={2}, base={3}), "b" (intmd={}, base={6})
   //   group 1: "c" (intmd={}, base={})
-  const AxisLayout layout(
-      {{LabeledAxisAccessor("a"), LabeledAxisAccessor("b")}, {LabeledAxisAccessor("c")}},
-      {TensorShape{2}, TensorShape{}, TensorShape{}},
-      {TensorShape{3}, TensorShape{6}, TensorShape{}},
-      {AxisLayout::IStructure::DENSE, AxisLayout::IStructure::BLOCK});
+  const AxisLayout layout({{VariableName("a"), VariableName("b")}, {VariableName("c")}},
+                          {TensorShape{2}, TensorShape{}, TensorShape{}},
+                          {TensorShape{3}, TensorShape{6}, TensorShape{}},
+                          {AxisLayout::IStructure::DENSE, AxisLayout::IStructure::BLOCK});
 
   SECTION("ngroup") { REQUIRE(layout.ngroup() == 2); }
 
@@ -65,8 +64,8 @@ TEST_CASE("AxisLayout", "[equation_systems]")
       const auto g = layout.group(0);
       REQUIRE(g.nvar() == 2);
       REQUIRE(g.is_view());
-      REQUIRE(g.var(0) == LabeledAxisAccessor("a"));
-      REQUIRE(g.var(1) == LabeledAxisAccessor("b"));
+      REQUIRE(g.var(0) == VariableName("a"));
+      REQUIRE(g.var(1) == VariableName("b"));
       REQUIRE(g.intmd_sizes(0) == TensorShape{2});
       REQUIRE(g.base_sizes(0) == TensorShape{3});
       REQUIRE(g.intmd_sizes(1) == TensorShape{});
@@ -78,7 +77,7 @@ TEST_CASE("AxisLayout", "[equation_systems]")
       const auto g = layout.group(1);
       REQUIRE(g.nvar() == 1);
       REQUIRE(g.is_view());
-      REQUIRE(g.var(0) == LabeledAxisAccessor("c"));
+      REQUIRE(g.var(0) == VariableName("c"));
       REQUIRE(g.intmd_sizes(0) == TensorShape{});
       REQUIRE(g.base_sizes(0) == TensorShape{});
     }
@@ -88,7 +87,7 @@ TEST_CASE("AxisLayout", "[equation_systems]")
     {
       const auto g = layout.view().group(0);
       REQUIRE(g.nvar() == 2);
-      REQUIRE(g.var(0) == LabeledAxisAccessor("a"));
+      REQUIRE(g.var(0) == VariableName("a"));
     }
   }
 
@@ -99,9 +98,9 @@ TEST_CASE("AxisLayout", "[equation_systems]")
     // view() preserves group structure, so ngroup() still works
     REQUIRE(v.ngroup() == 2);
     REQUIRE(v.nvar() == 3);
-    REQUIRE(v.var(0) == LabeledAxisAccessor("a"));
-    REQUIRE(v.var(1) == LabeledAxisAccessor("b"));
-    REQUIRE(v.var(2) == LabeledAxisAccessor("c"));
+    REQUIRE(v.var(0) == VariableName("a"));
+    REQUIRE(v.var(1) == VariableName("b"));
+    REQUIRE(v.var(2) == VariableName("c"));
   }
 
   SECTION("is_view")
@@ -153,13 +152,13 @@ TEST_CASE("AxisLayout", "[equation_systems]")
 
   SECTION("var")
   {
-    REQUIRE(layout.var(0) == LabeledAxisAccessor("a"));
-    REQUIRE(layout.var(1) == LabeledAxisAccessor("b"));
-    REQUIRE(layout.var(2) == LabeledAxisAccessor("c"));
+    REQUIRE(layout.var(0) == VariableName("a"));
+    REQUIRE(layout.var(1) == VariableName("b"));
+    REQUIRE(layout.var(2) == VariableName("c"));
 
     // var() works through views
-    REQUIRE(layout.group(0).var(0) == LabeledAxisAccessor("a"));
-    REQUIRE(layout.group(1).var(0) == LabeledAxisAccessor("c"));
+    REQUIRE(layout.group(0).var(0) == VariableName("a"));
+    REQUIRE(layout.group(1).var(0) == VariableName("c"));
   }
 
   SECTION("intmd_sizes")

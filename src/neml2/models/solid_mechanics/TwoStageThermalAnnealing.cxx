@@ -50,33 +50,19 @@ TwoStageThermalAnnealing<T>::expected_options()
   OptionSet options = Model::expected_options();
   options.doc() =
       "Thermal annealing recovery for a hardening variable of type " + tensor_type +
-      "."
-      "For temperatures below \\f$ T_1 \\f$ the model keeps the base model hardenign rate."
-      "For temperatures above \\f$T_1\\f$ but below \\f$T_2 \\f$ the model zeros the hardening "
-      "rate."
-      "For temperatures above \\f$T_2\\f$ the model replaces the hardening rate with "
-      "\\f$ \\dot{h} = \\frac{-h}{\\tau} \\f$ where \\f$ \\tau \\f$ is the rate of recovery.";
+      ". For temperatures below \\f$ T_1 \\f$ the model keeps the base model hardenign rate. For "
+      "temperatures above \\f$T_1\\f$ but below \\f$T_2 \\f$ the model zeros the hardening rate. "
+      "For temperatures above \\f$T_2\\f$ the model replaces the hardening rate with \\f$ \\dot{h} "
+      "= \\frac{-h}{\\tau} \\f$ where \\f$ \\tau \\f$ is the rate of recovery.";
 
-  options.set_input("base_rate");
-  options.set("base_rate").doc() = "Base hardening rate";
+  options.add_input("base_rate", "Base hardening rate");
+  options.add_input("base", "Underlying base hardening variable");
+  options.add_input("temperature", "Temperature");
+  options.add_output("modified_rate", "Output for the modified hardening rate.");
 
-  options.set_input("base");
-  options.set("base").doc() = "Underlying base hardening variable";
-
-  options.set_output("modified_rate");
-  options.set("modified_rate").doc() = "Output for the modified hardening rate.";
-
-  options.set_input("temperature") = VariableName(FORCES, "T");
-  options.set("temperature").doc() = "Temperature";
-
-  options.set_parameter<TensorName<Scalar>>("T1");
-  options.set("T1").doc() = "First stage annealing temperature";
-
-  options.set_parameter<TensorName<Scalar>>("T2");
-  options.set("T2").doc() = "Second stage annealing temperature";
-
-  options.set_parameter<TensorName<Scalar>>("tau");
-  options.set("tau").doc() = "Recovery rate for second stage annealing.";
+  options.add_parameter<Scalar>("T1", "First stage annealing temperature");
+  options.add_parameter<Scalar>("T2", "Second stage annealing temperature");
+  options.add_parameter<Scalar>("tau", "Recovery rate for second stage annealing.");
 
   return options;
 }
@@ -110,11 +96,8 @@ TwoStageThermalAnnealing<T>::set_value(bool out, bool dout_din, bool /*d2out_din
   {
     auto I = imap_v<T>(_T.options());
 
-    if (_base_rate.is_dependent())
-      _modified_rate.d(_base_rate) = base_region * I;
-
-    if (_base_h.is_dependent())
-      _modified_rate.d(_base_h) = -recover_region * I / _tau;
+    _modified_rate.d(_base_rate) = base_region * I;
+    _modified_rate.d(_base_h) = -recover_region * I / _tau;
   }
 }
 } // namespace neml2

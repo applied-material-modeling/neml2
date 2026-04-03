@@ -39,14 +39,9 @@ GursonCavitation::expected_options()
   options.doc() = "Local mass balance used in conjunction with the GTNYieldFunction, \\f$ "
                   "\\dot{\\phi} = (1-\\phi) \\dot{\\varepsilon}_p \\f$.";
 
-  options.set_input("plastic_strain_rate") = VariableName(STATE, "internal", "Ep_rate");
-  options.set("plastic_strain_rate").doc() = "Plastic strain rate";
-
-  options.set_input("void_fraction") = VariableName(STATE, "internal", "f");
-  options.set("void_fraction").doc() = "Void fraction (porosity)";
-
-  options.set_output("void_fraction_rate") = VariableName(STATE, "internal", "f_rate");
-  options.set("void_fraction_rate").doc() = "Rate of void evolution";
+  options.add_input("plastic_strain_rate", "Plastic strain rate");
+  options.add_input("void_fraction", "Void fraction (porosity)");
+  options.add_output("void_fraction_rate", "Rate of void evolution");
 
   return options;
 }
@@ -71,11 +66,8 @@ GursonCavitation::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
   {
     const auto I = SR2::identity(_phi.options());
 
-    if (_phi.is_dependent())
-      _phi_dot.d(_phi) = -ep_dot;
-
-    if (_Ep_dot.is_dependent())
-      _phi_dot.d(_Ep_dot) = I * (1 - _phi);
+    _phi_dot.d(_phi) = -ep_dot;
+    _phi_dot.d(_Ep_dot) = I * (1 - _phi);
   }
 }
 } // namespace neml2

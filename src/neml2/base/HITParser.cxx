@@ -32,7 +32,8 @@
 #include "neml2/base/Settings.h"
 #include "neml2/base/EnumSelection.h"
 #include "neml2/base/MultiEnumSelection.h"
-#include "neml2/base/LabeledAxisAccessor.h"
+#include "neml2/base/VariableName.h"
+#include "neml2/tensors/tensors.h"
 #include "neml2/misc/assertions.h"
 #include "neml2/misc/types.h"
 
@@ -106,16 +107,18 @@ HITParser::parse(nmhit::Node * root) const
 OptionSet
 HITParser::extract_object_options(nmhit::Node * object, nmhit::Node * /*section*/) const
 {
-  // There is a special field reserved for object type
+  // Get the object type
   std::string type = object->param<std::string>("type");
-  // Extract the options
-  auto options = Registry::info(type).expected_options;
-  extract_options(object, options);
 
-  // Also fill in the metadata
+  // Get the expected options for this object type from the registry
+  auto options = Registry::info(type).expected_options;
+
+  // Fill in the metadata
   options.name() = object->path();
-  options.type() = type;
   options.path() = object->fullpath();
+
+  // Extract the options
+  extract_options(object, options);
 
   return options;
 }
@@ -126,6 +129,14 @@ HITParser::extract_options(nmhit::Node * object, OptionSet & options) const
   for (auto * node : object->children(nmhit::NodeType::Field))
     if (node->path() != "type")
       extract_option(node, options);
+
+  // check if all required options are defined
+  std::stringstream ss;
+  for (const auto & [name, option] : options)
+    if (option->required() && !option->defined())
+      ss << options.path() << ": Option '" << option->name()
+         << "' is required but not specified. Description: " << option->doc() << "\n";
+  neml_assert(ss.str().empty(), ss.str());
 }
 
 // NOLINTBEGIN
@@ -194,10 +205,12 @@ HITParser::extract_option(nmhit::Node * n, OptionSet & options) const
       // LCOV_EXCL_STOP
 
       option->user_specified() = true;
+      option->defined() = true;
 
       break;
     }
   neml_assert(found, "Unused option ", n->fullpath());
 }
 // NOLINTEND
+
 } // namespace neml2

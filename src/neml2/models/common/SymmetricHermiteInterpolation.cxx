@@ -41,19 +41,13 @@ SymmetricHermiteInterpolation::expected_options()
       "\\frac{x-x_l}{x_h-x_l} \\f$ where \\f$x_l\\f$ and \\f$x_h\\f$ are the lower and upper bound "
       "for rescaling the input argument.";
 
-  options.set_input("argument");
-  options.set("argument").doc() = "Argument of the smooth step function";
+  options.set_private<bool>("define_second_derivatives", true);
 
-  options.set<bool>("define_second_derivatives") = true;
+  options.add_input("argument", "Argument of the smooth step function");
+  options.add_output("output", "Value of the smooth step function");
 
-  options.set_output("value");
-  options.set("value").doc() = "Value of the smooth step function";
-
-  options.set_buffer<TensorName<Scalar>>("lower_bound");
-  options.set("lower_bound").doc() = "Lower bound of the argument";
-
-  options.set_buffer<TensorName<Scalar>>("upper_bound");
-  options.set("upper_bound").doc() = "Upper bound of the argument";
+  options.add_buffer<Scalar>("lower_bound", "Lower bound of the argument");
+  options.add_buffer<Scalar>("upper_bound", "Upper bound of the argument");
 
   return options;
 }
@@ -61,7 +55,7 @@ SymmetricHermiteInterpolation::expected_options()
 SymmetricHermiteInterpolation::SymmetricHermiteInterpolation(const OptionSet & options)
   : Model(options),
     _x(declare_input_variable<Scalar>("argument")),
-    _y(declare_output_variable<Scalar>("value")),
+    _y(declare_output_variable<Scalar>("output")),
     _x0(declare_buffer<Scalar>("lb", "lower_bound")),
     _x1(declare_buffer<Scalar>("ub", "upper_bound"))
 {

@@ -39,19 +39,16 @@ AvramiErofeevNucleation::expected_options()
       "\\f$ k \\f$ is the reaction coefficient, \\f$ n \\f$ is the reaction order, and "
       "\\f$ a \\f$ is the degree of conversion";
 
-  options.set_parameter<TensorName<Scalar>>("reaction_coef");
-  options.set("reaction_coef").doc() = "Reaction coefficient";
-
-  options.set_parameter<TensorName<Scalar>>("reaction_order");
-  options.set("reaction_order").doc() = "Reaction order";
+  options.add_parameter<Scalar>("coef", "Reaction coefficient");
+  options.add_parameter<Scalar>("order", "Reaction order");
 
   return options;
 }
 
 AvramiErofeevNucleation::AvramiErofeevNucleation(const OptionSet & options)
   : ReactionMechanism(options),
-    _k(declare_parameter<Scalar>("k", "reaction_coef")),
-    _n(declare_parameter<Scalar>("n", "reaction_order"))
+    _k(declare_parameter<Scalar>("k", "coef")),
+    _n(declare_parameter<Scalar>("n", "order"))
 {
 }
 

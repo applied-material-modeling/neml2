@@ -23,7 +23,6 @@
 // THE SOFTWARE.
 
 #include "neml2/models/VariableBase.h"
-#include "neml2/base/LabeledAxisAccessor.h"
 #include "neml2/tensors/Derivative.h"
 #include "neml2/misc/types.h"
 #include "neml2/models/Model.h"
@@ -57,54 +56,6 @@ VariableBase::owner()
 {
   neml_assert_dbg(_owner, "Owner of variable '", name(), "' has not been defined.");
   return *_owner;
-}
-
-bool
-VariableBase::is_state() const
-{
-  return _name.is_state();
-}
-
-bool
-VariableBase::is_old_state() const
-{
-  return _name.is_old_state();
-}
-
-bool
-VariableBase::is_force() const
-{
-  return _name.is_force();
-}
-
-bool
-VariableBase::is_old_force() const
-{
-  return _name.is_old_force();
-}
-
-bool
-VariableBase::is_residual() const
-{
-  return _name.is_residual();
-}
-
-bool
-VariableBase::is_parameter() const
-{
-  return _name.is_parameter();
-}
-
-bool
-VariableBase::is_solve_dependent() const
-{
-  return is_state() || is_residual() || is_parameter();
-}
-
-bool
-VariableBase::is_dependent() const
-{
-  return !currently_assembling_nonlinear_system() || is_solve_dependent();
 }
 
 Size
@@ -289,8 +240,8 @@ get_deriv(VariableBase::DerivContainer & derivs,
                                                    {var_intrsc_intmd_dim, arg_intrsc_intmd_dim},
                                                    intmd_sizes,
                                                    base_sizes,
-                                                   var.name().str(),
-                                                   {arg.name().str()}),
+                                                   var.name(),
+                                                   {arg.name()}),
                                      &arg);
   return std::get<0>(deriv);
 }
@@ -338,8 +289,8 @@ get_secderiv(VariableBase::SecDerivContainer & secderivs,
                     {var_intrsc_intmd_dim, arg1_intrsc_intmd_dim, arg2_intrsc_intmd_dim},
                     intmd_sizes,
                     base_sizes,
-                    var.name().str(),
-                    {arg1.name().str(), arg2.name().str()}),
+                    var.name(),
+                    {arg1.name(), arg2.name()}),
       &arg1,
       &arg2);
   return std::get<0>(deriv);
@@ -440,7 +391,7 @@ VariableBase::provider(const DependencyResolver<Model, VariableName> & deps) con
   if (deps.item_providers().count({_owner, name()}) == 0)
   {
     std::stringstream ss;
-    ss << "Variable '" << name() << "' declared by model '" << owner().name()
+    ss << "Variable '" << name().str() << "' declared by model '" << owner().name()
        << "' has no provider in the dependency resolver. The dependency graph knows the providers "
           "for the following variables:\n";
     for (const auto & item : deps.item_providers())

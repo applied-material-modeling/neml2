@@ -49,14 +49,14 @@ def(py::module_ & m, py::class_<AxisLayout> & c)
                   const std::vector<TensorShape> & base_shapes,
                   const std::vector<AxisLayout::IStructure> & istrs)
                {
-                 std::vector<std::vector<LabeledAxisAccessor>> vars;
+                 std::vector<std::vector<VariableName>> vars;
                  vars.reserve(var_strings.size());
                  for (const auto & group : var_strings)
                  {
-                   std::vector<LabeledAxisAccessor> cpp_group;
+                   std::vector<VariableName> cpp_group;
                    cpp_group.reserve(group.size());
                    for (const auto & s : group)
-                     cpp_group.emplace_back(utils::parse<VariableName>(s));
+                     cpp_group.emplace_back(s);
                    vars.push_back(std::move(cpp_group));
                  }
                  return AxisLayout(vars, intmd_shapes, base_shapes, istrs);

@@ -55,7 +55,10 @@ main(int argc, char * argv[])
   {
     ofs.open(program.get<std::string>("yaml"));
     if (!ofs.is_open())
-      throw std::runtime_error("Failed to open output file: " + program.get<std::string>("yaml"));
+    {
+      std::cerr << "Failed to open output file: " + program.get<std::string>("yaml") << std::endl;
+      return 1;
+    }
     out = &ofs;
   }
 
@@ -67,7 +70,6 @@ main(int argc, char * argv[])
   {
     *out << info.type_name << ":\n";
     auto options = info.expected_options;
-    options.set<std::string>("type") = type;
     *out << options << '\n';
   }
 

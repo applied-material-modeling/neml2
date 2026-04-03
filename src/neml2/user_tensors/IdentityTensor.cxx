@@ -34,12 +34,10 @@ IdentityTensor::expected_options()
   OptionSet options = UserTensorBase<Tensor>::expected_options();
   options.doc() = "Construct an identity Tensor with given batch shape.";
 
-  options.set<TensorShape>("batch_shape") = {};
-  options.set("batch_shape").doc() = "Batch shape";
-
-  options.set<Size>("n");
-  options.set("n").doc() =
-      "Diagonal size of the identity tensor, i.e., base shape of the identity tensor will be (n,n)";
+  options.add<TensorShape>("batch_shape", {}, "Batch shape");
+  options.add<Size>("n",
+                    "Diagonal size of the identity tensor, i.e., base shape of the "
+                    "identity tensor will be (n,n)");
 
   return options;
 }

@@ -65,12 +65,7 @@ set_ic(ValueMap & storage,
               "Internal error: factory is null while resolving tensor names. Ensure this driver "
               "is created via the NEML2 factory.");
   for (std::size_t i = 0; i < names.size(); i++)
-  {
-    neml_assert(names[i].is_state(),
-                "Initial condition names should start with 'state' but instead got ",
-                names[i]);
     storage[names[i]] = vals[i].resolve(factory).to(device);
-  }
 }
 
 template <typename T>
@@ -100,9 +95,6 @@ get_force(std::vector<VariableName> & names,
               "is created via the NEML2 factory.");
   for (std::size_t i = 0; i < force_names.size(); i++)
   {
-    neml_assert(force_names[i].is_force(),
-                "Driving force names should start with 'forces' but instead got ",
-                force_names[i]);
     names.push_back(force_names[i]);
     values.push_back(vals[i].resolve(factory).to(device));
   }
@@ -114,36 +106,35 @@ TransientDriver::expected_options()
   OptionSet options = ModelDriver::expected_options();
   options.doc() = "Driver for simulating the transient response of an autonomous system.";
 
-  options.set<VariableName>("time") = VariableName(FORCES, "t");
-  options.set("time").doc() = "Time";
-  options.set<TensorName<Scalar>>("prescribed_time");
-  options.set("prescribed_time").doc() =
-      "Time steps to perform the material update. The times tensor must "
-      "have at least one batch dimension representing time steps";
+  options.add<VariableName>("time", "Time");
+  options.add<TensorName<Scalar>>(
+      "prescribed_time",
+      "Time steps to perform the material update. The times tensor must have at least one batch "
+      "dimension representing time steps");
 
   EnumSelection predictor_selection({"PREVIOUS_STATE", "LINEAR_EXTRAPOLATION"}, "PREVIOUS_STATE");
-  options.set<EnumSelection>("predictor") = predictor_selection;
-  options.set("predictor").doc() =
+  options.add<EnumSelection>(
+      "predictor",
+      predictor_selection,
       "Predictor used to set the initial guess for each time step. Options are " +
-      predictor_selection.join();
+          predictor_selection.join());
 
 #define OPTION_IC_(T)                                                                              \
-  options.set<std::vector<VariableName>>("ic_" #T "_names");                                       \
-  options.set("ic_" #T "_names").doc() = "Apply initial conditions to these " #T " variables";     \
-  options.set<std::vector<TensorName<T>>>("ic_" #T "_values");                                     \
-  options.set("ic_" #T "_values").doc() = "Initial condition values for the " #T " variables"
+  options.add<std::vector<VariableName>>(                                                          \
+      "ic_" #T "_names", {}, "Apply initial conditions to these " #T " variables");                \
+  options.add<std::vector<TensorName<T>>>(                                                         \
+      "ic_" #T "_values", {}, "Initial condition values for the " #T " variables");
   FOR_ALL_TENSORBASE(OPTION_IC_);
 
 #define OPTION_FORCE_(T)                                                                           \
-  options.set<std::vector<VariableName>>("force_" #T "_names");                                    \
-  options.set("force_" #T "_names").doc() = "Prescribed driving force of tensor type " #T;         \
-  options.set<std::vector<TensorName<T>>>("force_" #T "_values");                                  \
-  options.set("force_" #T "_values").doc() = "Prescribed driving force values of tensor type " #T
+  options.add<std::vector<VariableName>>(                                                          \
+      "force_" #T "_names", {}, "Prescribed driving force of tensor type " #T);                    \
+  options.add<std::vector<TensorName<T>>>(                                                         \
+      "force_" #T "_values", {}, "Prescribed driving force values of tensor type " #T);
   FOR_ALL_TENSORBASE(OPTION_FORCE_);
 
-  options.set<std::string>("save_as");
-  options.set("save_as").doc() =
-      "File path (absolute or relative to the working directory) to store the results";
+  options.add_optional<std::string>(
+      "save_as", "File path (absolute or relative to the working directory) to store the results");
 
   return options;
 }
@@ -156,7 +147,7 @@ TransientDriver::TransientDriver(const OptionSet & options)
     _predictor(options.get<EnumSelection>("predictor")),
     _result_in(_nsteps),
     _result_out(_nsteps),
-    _save_as(options.get<std::string>("save_as"))
+    _save_as(options.defined("save_as") ? options.get<std::string>("save_as") : "")
 {
   _time = _time.to(_device);
 
@@ -174,13 +165,6 @@ void
 TransientDriver::setup()
 {
   ModelDriver::setup();
-
-  for (const auto & [vname, var] : _model->input_variables())
-    if (var->is_state())
-    {
-      _has_input_state = true;
-      break;
-    }
 }
 
 void
@@ -208,23 +192,6 @@ TransientDriver::diagnose() const
                       _driving_forces[i].dynamic_size(0),
                       " steps");
   }
-
-  // Check for statefulness
-  bool has_old_state = false;
-  for (const auto & [vname, var] : _model->input_variables())
-    if (var->is_old_state())
-    {
-      has_old_state = true;
-      break;
-    }
-
-  if (has_old_state)
-    for (const auto & [vname, var] : _model->input_variables())
-      if (var->is_old_state())
-        diagnostic_assert(_model->output_variables().count(vname.remount(STATE)),
-                          "Input has old state variable ",
-                          vname,
-                          ", but the corresponding output state variable doesn't exist.");
 }
 
 bool
@@ -276,15 +243,7 @@ TransientDriver::solve()
 void
 TransientDriver::advance_step()
 {
-  // State from the previous time step becomes the old state in the current time step
-  for (const auto & [var, val] : _result_out[_step_count - 1])
-    if (var.is_state() && _model->input_variables().count(var.remount(OLD_STATE)))
-      _in[var.remount(OLD_STATE)] = val;
-
-  // Forces from the previous time step become the old forces in the current time step
-  for (const auto & [var, val] : _result_in[_step_count - 1])
-    if (var.is_force() && _model->input_variables().count(var.remount(OLD_FORCES)))
-      _in[var.remount(OLD_FORCES)] = val;
+  // TODO pending implementation. I need to first implement variable history tracking.
 }
 
 void
@@ -313,37 +272,33 @@ TransientDriver::apply_ic()
 void
 TransientDriver::apply_predictor()
 {
-  if (!_has_input_state)
-    return;
-
   for (const auto & [vname, var] : _model->input_variables())
-    if (vname.is_state())
-      if (_model->output_variables().count(vname))
+    if (_model->output_variables().count(vname))
+    {
+      if (_predictor == "PREVIOUS_STATE")
+        _in[vname] = _result_out[_step_count - 1][vname];
+      else if (_predictor == "LINEAR_EXTRAPOLATION")
       {
-        if (_predictor == "PREVIOUS_STATE")
+        // Fall back to PREVIOUS_STATE predictor at the 1st time step
+        if (_step_count == 1)
           _in[vname] = _result_out[_step_count - 1][vname];
-        else if (_predictor == "LINEAR_EXTRAPOLATION")
-        {
-          // Fall back to PREVIOUS_STATE predictor at the 1st time step
-          if (_step_count == 1)
-            _in[vname] = _result_out[_step_count - 1][vname];
-          // Otherwise linearly extrapolate in time
-          else
-          {
-            const auto t = Scalar(_in[_time_name]);
-            const auto t_n = Scalar(_result_in[_step_count - 1][_time_name]);
-            const auto t_nm1 = Scalar(_result_in[_step_count - 2][_time_name]);
-            const auto dt = t - t_n;
-            const auto dt_n = t_n - t_nm1;
-
-            const auto s_n = _result_out[_step_count - 1][vname];
-            const auto s_nm1 = _result_out[_step_count - 2][vname];
-            _in[vname] = s_n + (s_n - s_nm1) / dt_n * dt;
-          }
-        }
+        // Otherwise linearly extrapolate in time
         else
-          throw NEMLException("Unrecognized predictor type: " + _predictor.selection());
+        {
+          const auto t = Scalar(_in[_time_name]);
+          const auto t_n = Scalar(_result_in[_step_count - 1][_time_name]);
+          const auto t_nm1 = Scalar(_result_in[_step_count - 2][_time_name]);
+          const auto dt = t - t_n;
+          const auto dt_n = t_n - t_nm1;
+
+          const auto s_n = _result_out[_step_count - 1][vname];
+          const auto s_nm1 = _result_out[_step_count - 2][vname];
+          _in[vname] = s_n + (s_n - s_nm1) / dt_n * dt;
+        }
       }
+      else
+        throw NEMLException("Unrecognized predictor type: " + _predictor.selection());
+    }
 }
 
 void

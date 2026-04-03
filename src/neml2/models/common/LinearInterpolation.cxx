@@ -27,7 +27,6 @@
 #include "neml2/tensors/Vec.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/indexing.h"
-#include "neml2/tensors/shape_utils.h"
 #include "neml2/misc/assertions.h"
 
 namespace neml2
@@ -39,13 +38,10 @@ LinearInterpolation<T>::expected_options()
   OptionSet options = Interpolation<T>::expected_options();
   options.doc() += " This object performs a _linear interpolation_.";
 
-  options.set<bool>("define_second_derivatives") = true;
+  options.set_private<bool>("define_second_derivatives", true);
 
-  options.set<TensorName<Scalar>>("abscissa");
-  options.set("abscissa").doc() = "Scalar defining the abscissa values of the interpolant";
-
-  options.set_input("argument");
-  options.set("argument").doc() = "Argument used to query the interpolant";
+  options.add_buffer<Scalar>("abscissa", "Scalar defining the abscissa values of the interpolant");
+  options.add_input("argument", "Argument used to query the interpolant");
 
   return options;
 }
@@ -53,14 +49,14 @@ LinearInterpolation<T>::expected_options()
 template <typename T>
 LinearInterpolation<T>::LinearInterpolation(const OptionSet & options)
   : Interpolation<T>(options),
-    _X(this->template declare_parameter<Scalar>("X", "abscissa")),
+    _X(this->template declare_buffer<Scalar>("X", "abscissa")),
     _x(this->template declare_input_variable<Scalar>("argument"))
 {
 }
 
 template <typename T>
 void
-LinearInterpolation<T>::set_value(bool out, bool dout_din, bool d2out_din2)
+LinearInterpolation<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   using namespace indexing;
 
@@ -94,13 +90,7 @@ LinearInterpolation<T>::set_value(bool out, bool dout_din, bool d2out_din2)
     this->_p = Y1 + xi * dY;
 
   if (dout_din)
-    if (this->_x.is_dependent())
-      this->_p.d(this->_x) = dxi_dx * dY;
-
-  if (d2out_din2)
-  {
-    // zero
-  }
+    this->_p.d(this->_x) = dxi_dx * dY;
 }
 
 #define REGISTER(T)                                                                                \

@@ -26,7 +26,7 @@
 
 #include <memory>
 
-#include "neml2/base/LabeledAxisAccessor.h"
+#include "neml2/base/VariableName.h"
 
 namespace neml2
 {

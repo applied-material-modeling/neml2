@@ -24,9 +24,11 @@
 
 #pragma once
 
+#include <optional>
+
 #include "neml2/models/map_types_fwd.h"
 #include "neml2/models/utils.h"
-#include "neml2/base/LabeledAxisAccessor.h"
+#include "neml2/base/VariableName.h"
 #include "neml2/misc/types.h"
 #include "neml2/tensors/Tensor.h"
 
@@ -81,20 +83,6 @@ public:
   /// Variable tensor type
   virtual TensorType type() const = 0;
 
-  /// @name Subaxis
-  ///@{
-  bool is_state() const;
-  bool is_old_state() const;
-  bool is_force() const;
-  bool is_old_force() const;
-  bool is_residual() const;
-  bool is_parameter() const;
-  bool is_solve_dependent() const;
-  /// Check if the derivative with respect to this variable should be evaluated
-  // Note that the check depends on whether we are currently solving nonlinear system
-  bool is_dependent() const;
-  ///@}
-
   /// @name Tensor information
   // These methods mirror TensorBase
   ///@{
@@ -139,7 +127,7 @@ public:
   ///@}
 
   /// Clone this variable
-  virtual std::unique_ptr<VariableBase> clone(const VariableName & name = {},
+  virtual std::unique_ptr<VariableBase> clone(std::optional<VariableName> name = std::nullopt,
                                               Model * owner = nullptr) const = 0;
 
   /// Reference another variable
@@ -176,6 +164,10 @@ public:
 
   /// Mark this variable as a leaf variable in tracing function graph for AD
   virtual void requires_grad_(bool req = true) = 0;
+
+  /// Get the variable from @p nstep steps ago in history
+  virtual VariableBase & history(std::size_t nstep) = 0;
+  virtual const VariableBase & history(std::size_t nstep) const = 0;
 
   /// Assignment operator (with TracerPrivilege)
   virtual void assign(const Tensor & val,

@@ -37,15 +37,11 @@ PhaseTransformationEigenstrain::expected_options()
       "(from phase A to phase B) eigenstrain, i.e. \\f$ \\boldsymbol{\\varepsilon}_\\mathrm{PT} = "
       "\\Delta V f \\boldsymbol{I} \\f$, where \\f$ \\Delta V \\f$ is the volume fraction change "
       "when going from phase A to B, \\f$ f \\f$ is the phase fraction (0 to 1, A to B).";
+  options.set_private<bool>("define_second_derivatives", true);
 
-  options.set_input("volume_fraction_change") = VariableName(STATE, "dv");
-  options.set("volume_fraction_change").doc() =
-      "Change in volume fraction going from phase A to phase B";
-
-  options.set_input("phase_fraction") = VariableName(STATE, "f");
-  options.set("phase_fraction").doc() = "Phase fraction";
-
-  options.set<bool>("define_second_derivatives") = true;
+  options.add_input("volume_fraction_change",
+                    "Change in volume fraction going from phase A to phase B");
+  options.add_input("phase_fraction", "Phase fraction");
 
   return options;
 }

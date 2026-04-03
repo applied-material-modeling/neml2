@@ -43,22 +43,18 @@ FixOrientation::expected_options()
       "to 1.0 by default and replacing all the orientations that exceed this limit "
       "with their shadow parameters values.";
 
-  options.set_input("input_orientation") = VariableName(STATE, "orientation");
-  options.set("input_orientation").doc() = "Name of input tensor of orientations to operate on.";
+  options.add_input("input", "Name of input tensor of orientations to operate on.");
+  options.add_output("output", "Name of output tensor");
 
-  options.set_output("output_orientation") = VariableName(STATE, "orientation");
-  options.set("output_orientation").doc() = "Name of output tensor";
-
-  options.set<double>("threshold") = 1.0;
-  options.set("threshold").doc() = "Threshold value for translating to the shadow parameters";
+  options.add<double>("threshold", 1.0, "Threshold value for translating to the shadow parameters");
 
   return options;
 }
 
 FixOrientation::FixOrientation(const OptionSet & options)
   : Model(options),
-    _output(declare_output_variable<Rot>("output_orientation")),
-    _input(declare_input_variable<Rot>("input_orientation")),
+    _output(declare_output_variable<Rot>("output")),
+    _input(declare_input_variable<Rot>("input")),
     _threshold(options.get<double>("threshold"))
 {
 }
@@ -70,10 +66,9 @@ FixOrientation::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
     _output = neml2::where(norm_sq(_input()) < _threshold, _input(), _input().shadow());
 
   if (dout_din)
-    if (_input.is_dependent())
-    {
-      const auto I = R2::identity(_input.options());
-      _output.d(_input) = neml2::where(norm_sq(_input()) < _threshold, I, _input().dshadow());
-    }
+  {
+    const auto I = R2::identity(_input.options());
+    _output.d(_input) = neml2::where(norm_sq(_input()) < _threshold, I, _input().dshadow());
+  }
 }
 } // namespace neml2

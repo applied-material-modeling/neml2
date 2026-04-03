@@ -36,10 +36,7 @@ UserTensorTmpl<T>::expected_options()
   options.doc() =
       "Construct a " + FactoryMethodBase<T>::tensor_type() +
       " from a vector values. The vector will be reshaped according to the specified batch shape.";
-
-  options.set<std::vector<double>>("values");
-  options.set("values").doc() = "Values in this (flattened) tensor";
-
+  options.add<std::vector<double>>("values", "Values in this (flattened) tensor");
   return options;
 }
 

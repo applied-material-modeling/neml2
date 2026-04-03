@@ -23,7 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/ModelNonlinearSystem.h"
-#include "neml2/base/LabeledAxisAccessor.h"
+#include "neml2/base/VariableName.h"
 #include "neml2/base/MultiEnumSelection.h"
 #include "neml2/equation_systems/AxisLayout.h"
 #include "neml2/equation_systems/EquationSystem.h"
@@ -44,29 +44,23 @@ ModelNonlinearSystem::expected_options()
 
   options.doc() = "A nonlinear system defined by a Model.";
 
-  options.set<std::string>("model") = "model";
-  options.set("model").doc() = "The Model defining this nonlinear system.";
+  options.add<std::string>("model", "The Model defining this nonlinear system.");
 
-  options.set<std::vector<std::vector<VariableName>>>("unknowns");
-  options.set("unknowns").doc() =
-      "Optional ordering and grouping of unknowns. Each inner list defines one variable group.";
-
-  options.set<std::vector<std::vector<VariableName>>>("residuals");
-  options.set("residuals").doc() = "Optional ordering and grouping of residual variables. Each "
-                                   "inner list defines one variable group.";
+  options.add<std::vector<std::vector<VariableName>>>(
+      "unknowns", "Ordering and grouping of unknowns. Each inner list defines one variable group.");
+  options.add<std::vector<std::vector<VariableName>>>(
+      "residuals",
+      "Ordering and grouping of residual variables. Each inner list defines one variable group.");
 
   MultiEnumSelection istr_selection({"DENSE", "BLOCK"},
                                     {static_cast<int>(AxisLayout::IStructure::DENSE),
                                      static_cast<int>(AxisLayout::IStructure::BLOCK)},
                                     {"DENSE"});
-  options.set<MultiEnumSelection>("unknown_istr") = istr_selection;
-  options.set("unknown_istr").doc() =
+  options.add<MultiEnumSelection>(
+      "istructure",
+      istr_selection,
       "Optional IStructure for each variable group. If not provided, defaults to DENSE. If only "
-      "one IStructure is provided, it will be applied to all groups.";
-  options.set<MultiEnumSelection>("residual_istr") = istr_selection;
-  options.set("residual_istr").doc() =
-      "Optional IStructure for each residual group. If not provided, defaults to DENSE. If only "
-      "one IStructure is provided, it will be applied to all groups.";
+      "one IStructure is provided, it will be applied to all groups.");
 
   return options;
 }
@@ -77,8 +71,8 @@ ModelNonlinearSystem::ModelNonlinearSystem(const OptionSet & options)
     BufferStore(this),
     _unknown_groups(options.get<std::vector<std::vector<VariableName>>>("unknowns")),
     _residual_groups(options.get<std::vector<std::vector<VariableName>>>("residuals")),
-    _unknown_istrs(options.get<MultiEnumSelection>("unknown_istr").as<AxisLayout::IStructure>()),
-    _residual_istrs(options.get<MultiEnumSelection>("residual_istr").as<AxisLayout::IStructure>()),
+    _unknown_istrs(options.get<MultiEnumSelection>("istructure").as<AxisLayout::IStructure>()),
+    _residual_istrs(options.get<MultiEnumSelection>("istructure").as<AxisLayout::IStructure>()),
     _model(get_model("model"))
 {
 }
@@ -112,21 +106,11 @@ ModelNonlinearSystem::to(const TensorOptions & options)
 std::shared_ptr<AxisLayout>
 ModelNonlinearSystem::setup_ulayout()
 {
-  auto var_groups = _unknown_groups;
-  if (var_groups.empty())
-  {
-    var_groups.resize(1);
-    for (const auto & [vname, var] : _model->input_variables())
-      if (vname.is_state())
-        var_groups[0].push_back(vname);
-  }
-
   // gather intmd/base shapes for each variable in the layout
   std::vector<TensorShape> intmd_shapes, base_shapes;
-  for (const auto & vars : var_groups)
+  for (const auto & vars : _unknown_groups)
     for (const auto & vname : vars)
     {
-      neml_assert(vname.is_state(), vname, " is not a state variable.");
       const auto & var = model().input_variable(vname);
       intmd_shapes.emplace_back(var.intmd_sizes());
       base_shapes.emplace_back(var.base_sizes());
@@ -134,10 +118,10 @@ ModelNonlinearSystem::setup_ulayout()
 
   // IStructure
   std::vector<AxisLayout::IStructure> istrs = _unknown_istrs;
-  if (istrs.size() == 1 && var_groups.size() > 1)
-    istrs.resize(var_groups.size(), istrs[0]);
+  if (istrs.size() == 1 && _unknown_groups.size() > 1)
+    istrs.resize(_unknown_groups.size(), istrs[0]);
 
-  return std::make_shared<AxisLayout>(var_groups, intmd_shapes, base_shapes, istrs);
+  return std::make_shared<AxisLayout>(_unknown_groups, intmd_shapes, base_shapes, istrs);
 }
 
 std::shared_ptr<AxisLayout>
@@ -146,12 +130,22 @@ ModelNonlinearSystem::setup_glayout()
   std::vector<std::vector<VariableName>> vars(1);
   std::vector<TensorShape> intmd_shapes, base_shapes;
   for (const auto & [vname, var] : _model->input_variables())
-    if (!vname.is_state())
-    {
-      vars[0].push_back(vname);
-      intmd_shapes.emplace_back(var->intmd_sizes());
-      base_shapes.emplace_back(var->base_sizes());
-    }
+  {
+    // skip if this variable is already in ulayout
+    bool in_ulayout = false;
+    for (const auto & uvars : _unknown_groups)
+      if (std::find(uvars.begin(), uvars.end(), vname) != uvars.end())
+      {
+        in_ulayout = true;
+        break;
+      }
+    if (in_ulayout)
+      continue;
+
+    vars[0].push_back(vname);
+    intmd_shapes.emplace_back(var->intmd_sizes());
+    base_shapes.emplace_back(var->base_sizes());
+  }
 
   // TODO: take IStructure from input file options
   std::vector<AxisLayout::IStructure> istrs(1, AxisLayout::IStructure::DENSE);
@@ -162,21 +156,11 @@ ModelNonlinearSystem::setup_glayout()
 std::shared_ptr<AxisLayout>
 ModelNonlinearSystem::setup_blayout()
 {
-  auto var_groups = _residual_groups;
-  if (var_groups.empty())
-  {
-    var_groups.resize(1);
-    for (const auto & [vname, var] : _model->output_variables())
-      if (vname.is_residual())
-        var_groups[0].push_back(vname);
-  }
-
   // gather intmd/base shapes for each variable in the layout
   std::vector<TensorShape> intmd_shapes, base_shapes;
-  for (const auto & vars : var_groups)
+  for (const auto & vars : _residual_groups)
     for (const auto & vname : vars)
     {
-      neml_assert(vname.is_residual(), vname, " is not a residual variable.");
       const auto & var = model().output_variable(vname);
       intmd_shapes.emplace_back(var.intmd_sizes());
       base_shapes.emplace_back(var.base_sizes());
@@ -184,10 +168,10 @@ ModelNonlinearSystem::setup_blayout()
 
   // IStructure
   std::vector<AxisLayout::IStructure> istrs = _residual_istrs;
-  if (istrs.size() == 1 && var_groups.size() > 1)
-    istrs.resize(var_groups.size(), istrs[0]);
+  if (istrs.size() == 1 && _residual_groups.size() > 1)
+    istrs.resize(_residual_groups.size(), istrs[0]);
 
-  return std::make_shared<AxisLayout>(var_groups, intmd_shapes, base_shapes, istrs);
+  return std::make_shared<AxisLayout>(_residual_groups, intmd_shapes, base_shapes, istrs);
 }
 
 void

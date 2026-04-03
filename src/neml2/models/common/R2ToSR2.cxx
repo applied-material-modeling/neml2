@@ -22,30 +22,46 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
-
-#include "neml2/models/Model.h"
+#include "neml2/models/common/R2ToSR2.h"
+#include "neml2/tensors/functions/symmetrization.h"
+#include "neml2/tensors/R2.h"
+#include "neml2/tensors/SR2.h"
+#include "neml2/tensors/SSR4.h"
 
 namespace neml2
 {
-class SR2;
-class R2;
+register_NEML2_object(R2ToSR2);
 
-/// Convert symmetric rank two tensor to full
-class SR2toR2 : public Model
+OptionSet
+R2ToSR2::expected_options()
 {
-public:
-  static OptionSet expected_options();
+  OptionSet options = Model::expected_options();
+  options.doc() = "Extract the symmetric part of a R2 tensor";
 
-  SR2toR2(const OptionSet & options);
+  options.set_private<bool>("define_second_derivatives", true);
 
-protected:
-  void set_value(bool out, bool dout_din, bool d2out_din2) override;
+  options.add_input("input", "Second order tensor to split");
+  options.add_output("output", "Output symmetric second order tensor");
 
-  /// Input symmetric rank two tensor
-  const Variable<SR2> & _input;
+  return options;
+}
 
-  /// Output full rank two tensor
-  Variable<R2> & _output;
-};
+R2ToSR2::R2ToSR2(const OptionSet & options)
+  : Model(options),
+    _input(declare_input_variable<R2>("input")),
+    _output(declare_output_variable<SR2>("output"))
+{
+}
+
+void
+R2ToSR2::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
+{
+  const auto & A = _input();
+
+  if (out)
+    _output = SR2(A);
+
+  if (dout_din)
+    _output.d(_input) = mandel_to_full(SSR4::identity_sym(A.options()), 1);
+}
 } // namespace neml2

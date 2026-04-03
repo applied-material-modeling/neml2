@@ -344,8 +344,10 @@ ncrystal = 5
   [eq_sys]
     type = NonlinearSystem
     model = 'implicit_model'
-    unknowns = 'state/elastic_strain state/orientation state/internal/slip_hardening; state/mixed_state'
-    residuals = 'residual/elastic_strain residual/orientation residual/internal/slip_hardening; residual/mixed_state'
+    unknowns = "state/elastic_strain state/orientation state/internal/slip_hardening;
+                state/mixed_state"
+    residuals = "residual/elastic_strain residual/orientation residual/internal/slip_hardening;
+                 residual/mixed_state"
     unknown_istr = 'BLOCK DENSE'
     residual_istr = 'BLOCK DENSE'
   []

@@ -70,22 +70,21 @@ OptionSet
 VTestVerification::expected_options()
 {
   OptionSet options = Driver::expected_options();
-  options.set<std::string>("driver");
+  options.add<std::string>("driver", "The transient driver to run for the verification");
 
 #define OPTION_VAR_(T)                                                                             \
-  options.set<std::vector<std::string>>(#T "_names");                                              \
-  options.set(#T "_names").doc() = "Variables of type " #T " to compare";                          \
-  options.set<std::vector<TensorName<T>>>(#T "_values");                                           \
-  options.set(#T "_values").doc() = "Reference variables of type " #T " to be compared against"
+  options.add<std::vector<std::string>>(#T "_names", {}, "Variables of type " #T " to compare");   \
+  options.add<std::vector<TensorName<T>>>(                                                         \
+      #T "_values", {}, "Reference variables of type " #T " to be compared against")
   FOR_ALL_TENSORBASE(OPTION_VAR_);
 
-  options.set<double>("rtol") = 1e-5;
-  options.set<double>("atol") = 1e-8;
+  options.add<double>(
+      "rtol", 1e-5, "The relative tolerance for comparing the result to the reference");
+  options.add<double>(
+      "atol", 1e-8, "The absolute tolerance for comparing the result to the reference");
 
-  options.set<std::vector<size_t>>("time_steps") = {};
-  options.set("time_steps").doc() =
-      "Time steps provided in the provided reference solutions to verify. If empty, all time steps "
-      "must be provided and will be verified.";
+  options.add<std::vector<size_t>>(
+      "time_steps", {}, "Time steps to verify. If empty, all time steps will be verified.");
   return options;
 }
 

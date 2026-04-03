@@ -38,22 +38,22 @@ ComposedModel::expected_options()
       "treated as a new model and composed with others. The [system documentation](@ref "
       "model-composition) provides in-depth explanation on how the models are composed together.";
 
-  options.set<std::vector<std::string>>("models");
-  options.set("models").doc() = "Models being composed together";
+  options.add<std::vector<std::string>>("models", "Models being composed together");
 
-  options.set<std::vector<VariableName>>("additional_outputs");
-  options.set("additional_outputs").doc() =
+  options.add<std::vector<VariableName>>(
+      "additional_outputs",
+      {},
       "Extra output variables to be extracted from the composed model in addition to the ones "
-      "identified through dependency resolution.";
+      "identified through dependency resolution.");
 
-  options.set<std::vector<std::string>>("priority");
-  options.set("priority").doc() =
+  options.add_optional<std::vector<std::string>>(
+      "priority",
       "Priorities of models in decreasing order. A model with higher priority will be evaluated "
-      "first. This is useful for breaking cyclic dependency.";
+      "first. This is useful for breaking cyclic dependency.");
 
-  options.set<bool>("automatic_nonlinear_parameter") = true;
-  options.set("automatic_nonlinear_parameter").doc() =
-      "Whether to automatically add dependent nonlinear parameters";
+  options.add<bool>("automatic_nonlinear_parameter",
+                    true,
+                    "Whether to automatically add dependent nonlinear parameters");
 
   return options;
 }
@@ -76,7 +76,7 @@ ComposedModel::ComposedModel(const OptionSet & options)
   //
   // Registering nonlinear parameters here ensures dependency resolution. And if a nonlinear
   // parameter is registered by multiple models (which is very possible), we won't have to
-  // evaluate the nonlinar parameter over and over again!
+  // evaluate the nonlinear parameter over and over again!
   auto submodels = registered_models();
   if (_auto_nl_param)
     for (auto & submodel : submodels)
@@ -92,7 +92,9 @@ ComposedModel::ComposedModel(const OptionSet & options)
     _dependency.add_additional_outbound_item(var);
 
   // Define priority in the event of cyclic dependency
-  auto priority_order = options.get<std::vector<std::string>>("priority");
+  auto priority_order = options.defined("priority")
+                            ? options.get<std::vector<std::string>>("priority")
+                            : std::vector<std::string>{};
   size_t priority = priority_order.empty() ? 0 : priority_order.size() - 1;
   for (const auto & model_name : priority_order)
     _dependency.set_priority(registered_model(model_name).get(), priority--);

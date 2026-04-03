@@ -35,20 +35,16 @@ FactoryMethodBase<T>::expected_options()
 {
   OptionSet options = UserTensorBase<T>::expected_options();
 
-  options.set<TensorShape>("batch_shape") = {};
-  options.set("batch_shape").doc() = "Batch shape";
-
-  options.set<unsigned int>("intermediate_dimension") = 0;
-  options.set("intermediate_dimension").doc() = "Intermediate dimension";
-
-  options.set<TensorShape>("base_shape") = {};
-  options.set("base_shape").doc() = "Base shape";
+  options.add<TensorShape>("batch_shape", {}, "Batch shape");
+  options.add<unsigned int>("intermediate_dimension", 0, "Intermediate dimension");
 
   if constexpr (!std::is_same_v<T, Tensor>)
   {
-    options.set<TensorShape>("base_shape") = T::const_base_sizes;
-    options.set("base_shape").suppressed() = true;
+    options.add<TensorShape>("base_shape", T::const_base_sizes, "Base shape");
+    options.suppress("base_shape");
   }
+  else
+    options.add<TensorShape>("base_shape", {}, "Base shape");
 
   return options;
 }

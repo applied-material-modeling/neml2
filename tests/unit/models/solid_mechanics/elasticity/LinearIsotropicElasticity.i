@@ -23,6 +23,8 @@
 [Models]
   [model]
     type = LinearIsotropicElasticity
+    strain = 'strain'
+    stress = 'stress'
     coefficients = '100 0.3'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
   []

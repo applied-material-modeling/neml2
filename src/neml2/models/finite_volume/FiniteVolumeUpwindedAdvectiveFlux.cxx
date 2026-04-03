@@ -40,14 +40,9 @@ FiniteVolumeUpwindedAdvectiveFlux::expected_options()
   OptionSet options = Model::expected_options();
   options.doc() = "Compute upwinded advective fluxes at cell edges.";
 
-  options.set_input("u") = VariableName(STATE, "u");
-  options.set("u").doc() = "Cell-averaged field values.";
-
-  options.set_input("v_edge") = VariableName(STATE, "v_edge");
-  options.set("v_edge").doc() = "Cell-edge advection velocity values.";
-
-  options.set_output("flux") = VariableName(STATE, "J_advection");
-  options.set("flux").doc() = "Cell-edge advective fluxes.";
+  options.add_input("u", "Cell-averaged field values.");
+  options.add_input("v_edge", "Cell-edge advection velocity values.");
+  options.add_output("flux", "Cell-edge advective fluxes.");
 
   return options;
 }
@@ -84,25 +79,21 @@ FiniteVolumeUpwindedAdvectiveFlux::set_value(bool out, bool dout_din, bool /*d2o
     const auto S_left_u = diag_u.intmd_slice(0, indexing::Slice(0, N - 1));
     const auto S_right_u = diag_u.intmd_slice(0, indexing::Slice(1, N));
 
-    if (_u.is_dependent())
-      _J.d(_u, 2, 1, 1) =
-          v_plus.intmd_unsqueeze(1) * S_left_u + v_minus.intmd_unsqueeze(1) * S_right_u;
+    _J.d(_u, 2, 1, 1) =
+        v_plus.intmd_unsqueeze(1) * S_left_u + v_minus.intmd_unsqueeze(1) * S_right_u;
 
-    if (_v_edge.is_dependent())
+    const auto s = neml2::sign(v_vec);
+    const auto dvp = 0.5 * (1.0 + s);
+    const auto dvm = 0.5 * (1.0 - s);
+    const auto dJ_dvedge = dvp * u_left + dvm * u_right;
+
+    if (_v_edge.intmd_dim() == 0)
+      _J.d(_v_edge, 1, 1, 0) = dJ_dvedge;
+    else
     {
-      const auto s = neml2::sign(v_vec);
-      const auto dvp = 0.5 * (1.0 + s);
-      const auto dvm = 0.5 * (1.0 - s);
-      const auto dJ_dvedge = dvp * u_left + dvm * u_right;
-
-      if (_v_edge.intmd_dim() == 0)
-        _J.d(_v_edge, 1, 1, 0) = dJ_dvedge;
-      else
-      {
-        const auto v_map = imap_v<Scalar>(_v_edge.options()).intmd_expand(M);
-        const auto diag_v = intmd_diagonalize(v_map);
-        _J.d(_v_edge, 2, 1, 1) = dJ_dvedge.intmd_unsqueeze(1) * diag_v;
-      }
+      const auto v_map = imap_v<Scalar>(_v_edge.options()).intmd_expand(M);
+      const auto diag_v = intmd_diagonalize(v_map);
+      _J.d(_v_edge, 2, 1, 1) = dJ_dvedge.intmd_unsqueeze(1) * diag_v;
     }
   }
 }

@@ -17,15 +17,18 @@
   []
   [integrate_foo]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/foo'
+    variable = 'foo'
+    time = 't'
   []
   [integrate_bar]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/bar'
+    variable = 'bar'
+    time = 't'
   []
   [integrate_baz]
     type = SR2BackwardEulerTimeIntegration
-    variable = 'state/baz'
+    variable = 'baz'
+    time = 't'
   []
   [implicit_rate]
     type = ComposedModel
@@ -37,6 +40,8 @@
   [eq_sys]
     type = NonlinearSystem
     model = 'implicit_rate'
+    unknowns = 'foo bar baz'
+    residuals = 'foo_residual bar_residual baz_residual'
   []
 []
 
@@ -61,14 +66,14 @@
   []
   [baz_tr]
     type = SR2Invariant
-    tensor = 'state/baz'
-    invariant = 'state/baz_tr'
+    tensor = 'baz'
+    invariant = 'baz_tr'
     invariant_type = 'I1'
   []
   [sum]
     type = ScalarLinearCombination
-    from_var = 'state/foo state/bar state/baz_tr'
-    to_var = 'state/sum'
+    from_var = 'foo bar baz_tr'
+    to_var = 'sum'
   []
   [model]
     type = ComposedModel

@@ -50,14 +50,17 @@ TEST_CASE("training")
   p.requires_grad_(true);
 
   // Variables
-  VariableName strain(FORCES, "E");
-  VariableName time(FORCES, "t");
-  VariableName stress(STATE, "S");
-  VariableName ep(STATE, "internal", "ep");
+  auto strain = "E"_var;
+  auto time = "t"_var;
+  auto stress = "S"_var;
+  auto ep = "ep"_var;
+  auto stress_res = "S_residual"_var;
+  auto ep_res = "ep_residual"_var;
 
   // Evaluate the model for the first time
   ValueMap x1;
-  x1[strain.old()] = SR2::fill(0.0, 0.0, 0.01, -0.01, -0.01, 0.02).dynamic_expand(nbatch);
+  model->input_variable(strain).history(1) =
+      SR2::fill(0.0, 0.0, 0.01, -0.01, -0.01, 0.02).dynamic_expand(nbatch);
   x1[strain] = SR2::fill(0.01, 0.01, 0.01, -0.02, -0.03, 0.04).dynamic_expand(nbatch);
   x1[time] = Scalar::full(1.0).dynamic_expand(nbatch);
   x1[stress] = SR2::fill(100.0, 100.0, 200.0, -50.0, -150.0, 50.0).dynamic_expand(nbatch);
@@ -66,10 +69,10 @@ TEST_CASE("training")
 
   // Evaluate the model for the second time
   ValueMap x2;
-  x2[strain.old()] = x1[strain];
-  x2[time.old()] = x1[time];
-  x2[stress.old()] = r1.at(stress.remount(RESIDUAL)) * 1e-2;
-  x2[ep.old()] = r1.at(ep.remount(RESIDUAL)) * 1e-2;
+  model->input_variable(strain).history(1) = x1[strain];
+  model->input_variable(time).history(1) = x1[time];
+  model->input_variable(stress).history(1) = r1.at(stress_res) * 1e-2;
+  model->input_variable(ep).history(1) = r1.at(ep_res) * 1e-2;
   x2[strain] = SR2::fill(0.02, 0.02, 0.03, -0.02, -0.01, 0.01).dynamic_expand(nbatch);
   x2[time] = Scalar::full(5.0).dynamic_expand(nbatch);
   x2[stress] = SR2::fill(100.0, 100.0, 200.0, -50.0, -150.0, 50.0).dynamic_expand(nbatch);
@@ -77,8 +80,8 @@ TEST_CASE("training")
   const auto r2 = model->value(x2);
 
   // Evaluate the objective function
-  const auto s2 = r2.at(stress.remount(RESIDUAL)) * 1e-2;
-  const auto ep2 = r2.at(ep.remount(RESIDUAL)) * 1e-2;
+  const auto s2 = r2.at(stress_res) * 1e-2;
+  const auto ep2 = r2.at(ep_res) * 1e-2;
   const auto f = at::norm(at::cat({s2.base_flatten(), ep2.base_flatten()}, -1));
 
   // Check the parameter gradient

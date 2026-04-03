@@ -41,25 +41,15 @@ KocksMeckingActivationEnergy::expected_options()
       "temperature, \\f$ b \\f$ the Burgers vector length, \\f$ \\dot{\\varepsilon}_0 \\f$ a "
       "reference strain rate, and \\f$ \\dot{\\varepsilon} \\f$ the current strain rate.";
 
-  options.set_parameter<TensorName<Scalar>>("shear_modulus");
-  options.set("shear_modulus").doc() = "The shear modulus";
+  options.add_parameter<Scalar>("shear_modulus", "The shear modulus");
 
-  options.set<double>("eps0");
-  options.set("eps0").doc() = "Reference strain rate";
+  options.add<double>("eps0", "Reference strain rate");
+  options.add<double>("k", "The Boltzmann constant");
+  options.add<double>("b", "Magnitude of the Burgers vector");
 
-  options.set<double>("k");
-  options.set("k").doc() = "The Boltzmann constant";
-  options.set<double>("b");
-  options.set("b").doc() = "Magnitude of the Burgers vector";
-
-  options.set_input("temperature") = VariableName(FORCES, "T");
-  options.set("temperature").doc() = "Absolute temperature";
-
-  options.set_input("strain_rate") = VariableName(FORCES, "effective_strain_rate");
-  options.set("strain_rate").doc() = "Name of the effective strain rate";
-
-  options.set_output("activation_energy") = VariableName(FORCES, "g");
-  options.set("activation_energy").doc() = "Output name of the activation energy";
+  options.add_input("temperature", "Absolute temperature");
+  options.add_input("strain_rate", "Effective strain rate");
+  options.add_output("activation_energy", "Output name of the activation energy");
   return options;
 }
 
@@ -83,11 +73,8 @@ KocksMeckingActivationEnergy::set_value(bool out, bool dout_din, bool /*d2out_di
 
   if (dout_din)
   {
-    if (_T.is_dependent())
-      _g.d(_T) = _k / (_mu * _b3) * log(_eps0 / _eps_dot);
-
-    if (_eps_dot.is_dependent())
-      _g.d(_eps_dot) = -_k * _T / (_mu * _b3 * _eps_dot);
+    _g.d(_T) = _k / (_mu * _b3) * log(_eps0 / _eps_dot);
+    _g.d(_eps_dot) = -_k * _T / (_mu * _b3 * _eps_dot);
 
     if (const auto * const mu = nl_param("mu"))
       _g.d(*mu) = -_k * _T / (_b3 * _mu * _mu) * log(_eps0 / _eps_dot);

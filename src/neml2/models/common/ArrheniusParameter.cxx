@@ -39,22 +39,13 @@ ArrheniusParameter::expected_options()
                   "the reference value, \\f$ Q \\f$ is the activation energy, \\f$ R \\f$ is the "
                   "ideal gas constant, and \\f$ T \\f$ is the temperature.";
 
-  options.set<bool>("define_second_derivatives") = true;
+  options.set_private<bool>("define_second_derivatives", true);
 
-  options.set_parameter<TensorName<Scalar>>("reference_value");
-  options.set("reference_value").doc() = "Reference value";
-
-  options.set_parameter<TensorName<Scalar>>("activation_energy");
-  options.set("activation_energy").doc() = "Activation energy";
-
-  options.set<double>("ideal_gas_constant");
-  options.set("ideal_gas_constant").doc() = "The ideal gas constant";
-
-  options.set_input("temperature") = VariableName(FORCES, "T");
-  options.set("temperature").doc() = "Temperature";
-
-  options.set_output("parameter") = VariableName(PARAMETERS, "p");
-  options.set("parameter").doc() = "The output parameter";
+  options.add_parameter<Scalar>("reference_value", "Reference value");
+  options.add_parameter<Scalar>("activation_energy", "Activation energy");
+  options.add<double>("ideal_gas_constant", "The ideal gas constant");
+  options.add_input("temperature", "Temperature");
+  options.add_output("parameter", "The output parameter");
 
   return options;
 }
@@ -77,16 +68,15 @@ ArrheniusParameter::set_value(bool out, bool dout_din, bool d2out_din2)
   if (out)
     _p = p;
 
-  if (_T.is_dependent())
-    if (dout_din || d2out_din2)
-    {
-      const auto dp_dT = p * _Q / _R / _T / _T;
+  if (dout_din || d2out_din2)
+  {
+    const auto dp_dT = p * _Q / _R / _T / _T;
 
-      if (dout_din)
-        _p.d(_T) = dp_dT;
+    if (dout_din)
+      _p.d(_T) = dp_dT;
 
-      if (d2out_din2)
-        _p.d2(_T, _T) = dp_dT * _Q / _R / _T / _T - 2 * p * _Q / _R / _T / _T / _T;
-    }
+    if (d2out_din2)
+      _p.d2(_T, _T) = dp_dT * _Q / _R / _T / _T - 2 * p * _Q / _R / _T / _T / _T;
+  }
 }
 } // namespace neml2

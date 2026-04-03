@@ -29,7 +29,7 @@
 namespace neml2
 {
 
-AxisLayout::AxisLayout(const std::vector<std::vector<LabeledAxisAccessor>> & vars,
+AxisLayout::AxisLayout(const std::vector<std::vector<VariableName>> & vars,
                        std::vector<TensorShape> intmd_shapes,
                        std::vector<TensorShape> base_shapes,
                        std::vector<IStructure> istrs)
@@ -131,16 +131,16 @@ AxisLayout::storage_sizes(bool include_intmd) const
   return ss;
 }
 
-std::vector<LabeledAxisAccessor>
+std::vector<VariableName>
 AxisLayout::vars() const
 {
-  std::vector<LabeledAxisAccessor> result(nvar());
+  std::vector<VariableName> result(nvar());
   for (std::size_t i = 0; i < nvar(); ++i)
     result[i] = var(i);
   return result;
 }
 
-const LabeledAxisAccessor &
+const VariableName &
 AxisLayout::var(std::size_t idx) const
 {
   neml_assert(idx < nvar(), "Variable index out of range");

@@ -35,11 +35,8 @@ DifferenceTensorTmpl<T>::expected_options()
   OptionSet options = UserTensorBase<T>::expected_options();
   options.doc() = "Compute finite differences along an intermediate dimension.";
 
-  options.set<TensorName<T>>("points");
-  options.set("points").doc() = "The input tensor to be differenced";
-
-  options.set<Size>("dim") = 0;
-  options.set("dim").doc() = "Intermediate dimension to take the finite difference";
+  options.add<TensorName<T>>("points", "The input tensor to be differenced");
+  options.add<Size>("dim", 0, "Intermediate dimension to take the finite difference");
 
   return options;
 }

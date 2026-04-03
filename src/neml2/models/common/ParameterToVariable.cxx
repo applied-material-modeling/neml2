@@ -22,32 +22,47 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#pragma once
+#include <torch/csrc/jit/frontend/tracer.h>
 
-#include "neml2/models/Model.h"
+#include "neml2/models/common/ParameterToVariable.h"
+#include "neml2/tensors/tensors.h"
 
 namespace neml2
 {
-class Scalar;
-
-class RateIndependentPlasticFlowConstraint : public Model
+template <typename T>
+OptionSet
+ParameterToVariable<T>::expected_options()
 {
-public:
-  static OptionSet expected_options();
+  OptionSet options = Model::expected_options();
+  options.doc() = "Convert the parameter to variable.";
 
-  RateIndependentPlasticFlowConstraint(const OptionSet & options);
+  options.set_private<bool>("define_second_derivatives", true);
 
-protected:
-  void set_value(bool out, bool dout_din, bool d2out_din2) override;
+  options.add_parameter<T>("from", "The input parameter");
+  options.add_output("to", "The name of the variable");
 
-  /// Plastic yield function
-  const Variable<Scalar> & _fp;
+  return options;
+}
 
-  /// Flow rate (rate of the consistency parameter)
-  const Variable<Scalar> & _gamma_dot;
+template <typename T>
+ParameterToVariable<T>::ParameterToVariable(const OptionSet & options)
+  : Model(options),
+    _input_param(this->template declare_parameter<T>("param", "from")),
+    _var(this->template declare_output_variable<T>("to"))
+{
+}
 
-  /// The residual for the consistency parameter equation
-  Variable<Scalar> & _r;
-};
+template <typename T>
+void
+ParameterToVariable<T>::set_value(bool out, bool /*dout_din*/, bool /*d2out_din2*/)
+{
+  if (out)
+    this->_var = _input_param;
+}
 
+#define REGISTER(T)                                                                                \
+  using T##ParameterToVariable = ParameterToVariable<T>;                                           \
+  register_NEML2_object(T##ParameterToVariable);                                                   \
+  template class ParameterToVariable<T>
+FOR_ALL_PRIMITIVETENSOR(REGISTER);
 } // namespace neml2

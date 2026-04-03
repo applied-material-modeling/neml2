@@ -38,11 +38,8 @@ RotationMatrix::expected_options()
   options.doc() =
       "Convert a Rot (rotation represented in Rodrigues format) to R2 (a full rotation matrix).";
 
-  options.set_input("from");
-  options.set("from").doc() = "Rot to convert";
-
-  options.set_output("to");
-  options.set("to").doc() = "R2 to store the resulting rotation matrix";
+  options.add_input("from", "Rot to convert");
+  options.add_output("to", "R2 to store the resulting rotation matrix");
 
   return options;
 }
@@ -61,7 +58,6 @@ RotationMatrix::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
     _to = _from().euler_rodrigues();
 
   if (dout_din)
-    if (_from.is_dependent())
-      _to.d(_from) = _from().deuler_rodrigues();
+    _to.d(_from) = _from().deuler_rodrigues();
 }
 } // namespace neml2

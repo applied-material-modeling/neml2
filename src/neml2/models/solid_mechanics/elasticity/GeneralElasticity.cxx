@@ -37,10 +37,7 @@ GeneralElasticity::expected_options()
   OptionSet options = AnisotropicElasticity::expected_options();
   options.doc() += " This verion implements a general relation using the elasticity tensor, "
                    "expressed as an SSR4 object";
-
-  options.set_parameter<TensorName<SSR4>>("elastic_stiffness_tensor");
-  options.set("elastic_stiffness_tensor").doc() = "Elastic stiffness tensor";
-
+  options.add_parameter<SSR4>("elastic_stiffness_tensor", "Elastic stiffness tensor");
   return options;
 }
 
@@ -61,17 +58,13 @@ GeneralElasticity::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 
   if (dout_din)
   {
-    if (_from.is_dependent())
-      _to.d(_from) = _compliance ? Ainv : A;
+    _to.d(_from) = _compliance ? Ainv : A;
 
-    if (_R.is_dependent())
-    {
-      const auto dA_dR = _T.drotate(_R());
-      if (_compliance)
-        _to.d(_R) = -einsum("...ik,...lj,...klm,...j", {Ainv, Ainv, dA_dR, _from()});
-      else
-        _to.d(_R) = einsum("...ijk,...j", {dA_dR, _from()});
-    }
+    const auto dA_dR = _T.drotate(_R());
+    if (_compliance)
+      _to.d(_R) = -einsum("...ik,...lj,...klm,...j", {Ainv, Ainv, dA_dR, _from()});
+    else
+      _to.d(_R) = einsum("...ijk,...j", {dA_dR, _from()});
 
     if (const auto * const T = nl_param("T"))
     {

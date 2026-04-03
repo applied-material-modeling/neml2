@@ -35,8 +35,7 @@ CrackGeometricFunctionAT2::expected_options()
   OptionSet options = CrackGeometricFunction::expected_options();
   options.doc() =
       "Crack geometric function associated with the AT-2 functional, \\f$ \\alpha = d^2 \\f$";
-
-  options.set<bool>("define_second_derivatives") = true;
+  options.set_private<bool>("define_second_derivatives", true);
   return options;
 }
 

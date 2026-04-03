@@ -58,9 +58,6 @@ endmacro()
 # ----------------------------------------------------------------------------
 # Python submodules
 # ----------------------------------------------------------------------------
-add_submodule(pyreserved reserved)
-target_link_libraries(pyreserved PRIVATE base)
-
 add_submodule(pycore core)
 target_link_libraries(pycore PUBLIC neml2)
 

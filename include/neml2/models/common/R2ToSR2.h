@@ -32,12 +32,12 @@ class R2;
 class SR2;
 
 /// Get the symmetric part of a full rank two tensor
-class R2toSR2 : public Model
+class R2ToSR2 : public Model
 {
 public:
   static OptionSet expected_options();
 
-  R2toSR2(const OptionSet & options);
+  R2ToSR2(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;

@@ -41,15 +41,6 @@ public:
 
   WR2ImplicitExponentialTimeIntegration(const OptionSet & options);
 
-  void diagnose() const override;
-
-private:
-  /// Variable name
-  const VariableName _var_name;
-
-  /// Variable rate name
-  const VariableName _var_rate_name;
-
 protected:
   /// Perform the update by defining the nonlinear residual and it's derivatives
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
@@ -61,7 +52,7 @@ protected:
   const Variable<Rot> & _sn;
 
   /// Current variable spin rate
-  const Variable<WR2> & _s_dot;
+  const Variable<WR2> & _rate;
 
   /// Current time
   const Variable<Scalar> & _t;

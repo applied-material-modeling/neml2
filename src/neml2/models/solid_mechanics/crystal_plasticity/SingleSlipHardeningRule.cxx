@@ -36,24 +36,16 @@ SingleSlipHardeningRule::expected_options()
   options.doc() =
       "Parent class of slip hardening rules where all slip systems share the same strength.";
 
-  options.set_output("slip_hardening_rate") =
-      VariableName(STATE, "internal", "slip_hardening_rate");
-  options.set("slip_hardening_rate").doc() =
-      "Name of tensor to output the slip system hardening rates into";
-
-  options.set_input("slip_hardening") = VariableName(STATE, "internal", "slip_hardening");
-  options.set("slip_hardening").doc() = "Name of current values of slip hardening";
-
-  options.set_input("sum_slip_rates") = VariableName(STATE, "internal", "sum_slip_rates");
-  options.set("sum_slip_rates").doc() = "Name of tensor containing the sum of the slip rates";
+  options.add_input("slip_hardening", "Name of current values of slip hardening");
+  options.add_input("sum_slip_rates", "Name of tensor containing the sum of the slip rates");
 
   return options;
 }
 
 SingleSlipHardeningRule::SingleSlipHardeningRule(const OptionSet & options)
   : Model(options),
-    _tau_dot(declare_output_variable<Scalar>("slip_hardening_rate")),
     _tau(declare_input_variable<Scalar>("slip_hardening")),
+    _tau_dot(declare_output_variable<Scalar>(rate_name(_tau.name()))),
     _gamma_dot_sum(declare_input_variable<Scalar>("sum_slip_rates"))
 {
 }

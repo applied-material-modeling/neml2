@@ -31,12 +31,15 @@
 #include "neml2/base/Option.h"
 #include "neml2/misc/errors.h"
 #include "neml2/misc/string_utils.h"
+#include "neml2/misc/types.h"
 
 namespace neml2
 {
 // Forward decl
 class OptionSet;
-class LabeledAxisAccessor;
+class VariableName;
+template <typename T>
+struct TensorName;
 
 bool options_compatible(const OptionSet & opts, const OptionSet & additional_opts);
 
@@ -75,10 +78,8 @@ public:
   const std::string & name() const { return _metadata.name; }
   /// A writable reference to the option set's name
   std::string & name() { return _metadata.name; }
-  /// A readonly reference to the option set's type
-  const std::string & type() const { return _metadata.type; }
-  /// A writable reference to the option set's type
-  std::string & type() { return _metadata.type; }
+  /// Object type of this option set
+  std::string type() const { return get<std::string>("type"); }
   /// A readonly reference to the option set's path
   const std::string & path() const { return _metadata.path; }
   /// A writable reference to the option set's path
@@ -92,11 +93,17 @@ public:
   /// A writable reference to the option set's section
   std::string & section() { return _metadata.section; }
 
-  /// @return \p true if an option with a specified name exists, \p false otherwise.
+  /// @return true if an option with a specified name exists, false otherwise.
   bool contains(const std::string &) const;
 
-  /// @return \p true if an option is specified by the user (i.e., from the input file), \p false otherwise.
+  /// @return true if an option is specified by the user (i.e., from the input file), false otherwise.
   bool user_specified(const std::string & name) const;
+
+  /// @return true if an option is defined (i.e., value has been set either from the input file or programmatically), false otherwise.
+  bool defined(const std::string & name) const;
+
+  /// Suppress an option.
+  void suppress(const std::string & name);
 
   /// @return The total number of options
   std::size_t size() const { return _values.size(); }
@@ -117,13 +124,8 @@ public:
   /// @brief Get a const reference to the specified option value.
   const OptionBase & get(const std::string &) const;
 
-  /// Get two options and bind them to find a map
-  ///
-  /// @tparam K Key type
-  /// @tparam V Value type
-
   /**
-   * @brief Get two options and bind them to find a map
+   * @brief Get two options and bind them to form a map
    *
    * The two options are expected to be of type std::vector<K> and std::vector<V>, respectively.
    * Keys shall be unique. Otherwise, an exception is thrown.
@@ -135,27 +137,146 @@ public:
   template <typename K, typename V>
   std::map<K, V> get_map(const std::string &, const std::string &) const;
 
-  ///@{
   /**
-   * @return A writable reference to the specified option value. This method will create the option
-   * if it does not exist, so it can be used to define options which will later be accessed with the
-   * \p get() member.
+   * @brief Create an option with its default value and its docstring.
+   *
+   * Throws an exception if the option already exists.
+   *
+   * Calling this method sets the following metadata for the option:
+   *  - required: false
+   *  - suppressed: false
+   *  - user_specified: false
+   *  - defined: true
+   *
+   * Note that later on when a Parser parses the input file, if the user has specified a value for
+   * this option, the option value will be overwritten and the user_specified flag will be set to
+   * true. If the user has not specified a value for this option, the default value will be used.
+   *
+   * @tparam T Type of the option value
+   * @tparam f Option type (e.g., parameter, buffer, input, output)
+   * @param default_value The default value to set
+   * @param doc The docstring for the option
    */
   template <typename T, FType f = FType::NONE>
-  T & set(const std::string &);
-  OptionBase & set(const std::string &);
-  ///@}
+  void add(const std::string &, const T & default_value, std::string doc);
 
-  /// @name Convenient methods to request an input variable
-  LabeledAxisAccessor & set_input(const std::string &);
-  /// @name Convenient methods to request an output variable
-  LabeledAxisAccessor & set_output(const std::string &);
-  /// Convenient method to request a parameter
+  /**
+   * @brief Create a required option with its docstring, without a default value. User must specify
+   * a value for this option from the input file.
+   *
+   * Throws an exception if the option already exists.
+   *
+   * Calling this method sets the following metadata for the option:
+   *  - required: true
+   *  - suppressed: false
+   *  - user_specified: false
+   *  - defined: false
+   *
+   * Note that later on when a Parser parses the input file, if the user has specified a value for
+   * this option, the option value will be overwritten and both the user_specified flag and the
+   * defined flag will be set to true. The Parser should consider it an error if the user has not
+   * specified a value for this option.
+   *
+   * @tparam T Type of the option value
+   * @tparam f Option type (e.g., parameter, buffer, input, output)
+   * @param doc The docstring for the option
+   */
+  template <typename T, FType f = FType::NONE>
+  void add(const std::string &, std::string doc);
+
+  /**
+   * @brief Create an optional option with its docstring, without a default value.
+   *
+   * Throws an exception if the option already exists.
+   *
+   * Calling this method sets the following metadata for the option:
+   *  - required: false
+   *  - suppressed: false
+   *  - user_specified: false
+   *  - defined: false
+   *
+   * Note that later on when a Parser parses the input file, if the user has specified a value for
+   * this option, the option value will be overwritten and both the user_specified flag and the
+   * defined flag will be set to true. If the user has not specified a value for this option, the
+   * option is considered undefined and an exception will be thrown when attempting to retrieve the
+   * option value.
+   *
+   * @tparam T Type of the option value
+   * @tparam f Option type (e.g., parameter, buffer, input, output)
+   * @param doc The docstring for the option
+   */
+  template <typename T, FType f = FType::NONE>
+  void add_optional(const std::string &, std::string doc);
+
+  /**
+   * @brief Create a private option with its default value.
+   *
+   * Throws an exception if the option already exists.
+   *
+   * Calling this method sets the following metadata for the option:
+   *  - required: false
+   *  - suppressed: true
+   *  - user_specified: false
+   *  - defined: true
+   *
+   * @tparam T Type of the option value
+   * @param default_value The default value to set
+   */
   template <typename T>
-  T & set_parameter(const std::string &);
-  /// Convenient method to request a buffer
+  void add_private(const std::string &, const T & default_value);
+
+  /**
+   * @brief Set an option.
+   *
+   * The option must already exist. Otherwise, an exception is thrown. The option value is
+   * overridden if it already exists.
+   *
+   * Calling this method sets the following metadata for the option:
+   *  - user_specified: false
+   *  - defined: true
+   *
+   * @tparam T Type of the option value
+   * @param value The value to set
+   */
   template <typename T>
-  T & set_buffer(const std::string &);
+  void set(const std::string &, const T & value);
+
+  /**
+   * @brief Set a private option.
+   *
+   * The option must already exist. Otherwise, an exception is thrown. The option value is
+   * overridden if it already exists.
+   *
+   * Calling this method sets the following metadata for the option:
+   *  - user_specified: false
+   *  - defined: true
+   *
+   * @tparam T Type of the option value
+   * @param value The value to set
+   */
+  template <typename T>
+  void set_private(const std::string &, const T & value);
+
+  ///@{
+  /// Convenient methods to add input variable
+  void add_input(const std::string &, const VariableName &, std::string);
+  void add_input(const std::string &, std::string);
+  void add_optional_input(const std::string &, std::string);
+  /// Convenient methods to add output variable
+  void add_output(const std::string &, const VariableName &, std::string);
+  void add_output(const std::string &, std::string);
+  void add_optional_output(const std::string &, std::string);
+  /// Convenient methods to add parameter
+  template <typename T>
+  void add_parameter(const std::string &, const TensorName<T> &, std::string);
+  template <typename T>
+  void add_parameter(const std::string &, std::string);
+  /// Convenient methods to add buffer
+  template <typename T>
+  void add_buffer(const std::string &, const TensorName<T> &, std::string);
+  template <typename T>
+  void add_buffer(const std::string &, std::string);
+  ///@}
 
   /// The type of the map that we store internally
   using map_type = std::map<std::string, std::unique_ptr<OptionBase>, std::less<>>;
@@ -193,21 +314,6 @@ protected:
      * where "foo" is the name of the option set
      */
     std::string name = "";
-    /**
-     * @brief Type of the option set
-     *
-     * For example, in a HIT input file, a special field is reserved for the type of the option
-     * set
-     * ~~~~~~~~~~~~~~~~~python
-     * [foo]
-     *   type = SomeModel
-     *   bar = 123
-     * []
-     * ~~~~~~~~~~~~~~~~~
-     * where "SomeModel" is the option name. The type is registered to the Registry using
-     * register_NEML2_object and its variants.
-     */
-    std::string type = "";
     /**
      * @brief Path to the option set
      *
@@ -265,6 +371,10 @@ OptionSet::get(const std::string & name) const
                         to_str());
 
   auto * opt_base = _values.at(name).get();
+  if (!opt_base->defined())
+    throw NEMLException("ERROR: option named \"" + name +
+                        "\" is being accessed before it is defined.");
+
   auto ptr = dynamic_cast<Option<T> *>(opt_base);
   if (!ptr)
     throw NEMLException("ERROR: option named \"" + name +
@@ -294,27 +404,161 @@ OptionSet::get_map(const std::string & key_option, const std::string & value_opt
 }
 
 template <typename T, FType F>
-T &
-OptionSet::set(const std::string & name)
+void
+OptionSet::add(const std::string & name, const T & default_value, std::string doc)
+{
+  if (this->contains(name))
+    throw NEMLException("Trying to add option '" + name +
+                        "', but an option with the same name already exists.");
+  _values[name] = std::make_unique<Option<T>>(name);
+  auto ptr = dynamic_cast<Option<T> *>(_values[name].get());
+
+  // docstring and Ftype are always needed
+  ptr->doc() = std::move(doc);
+  ptr->ftype() = F;
+
+  // default value
+  ptr->set() = default_value;
+
+  // metadata
+  ptr->required() = false;
+  ptr->suppressed() = false;
+  ptr->user_specified() = false;
+  ptr->defined() = true;
+}
+
+template <typename T, FType F>
+void
+OptionSet::add(const std::string & name, std::string doc)
+{
+  if (this->contains(name))
+    throw NEMLException("Trying to add option '" + name +
+                        "', but an option with the same name already exists.");
+  _values[name] = std::make_unique<Option<T>>(name);
+  auto ptr = dynamic_cast<Option<T> *>(_values[name].get());
+
+  // docstring and Ftype are always needed
+  ptr->doc() = std::move(doc);
+  ptr->ftype() = F;
+
+  // metadata
+  ptr->required() = true;
+  ptr->suppressed() = false;
+  ptr->user_specified() = false;
+  ptr->defined() = false;
+}
+
+template <typename T, FType F>
+void
+OptionSet::add_optional(const std::string & name, std::string doc)
+{
+  if (this->contains(name))
+    throw NEMLException("Trying to add option '" + name +
+                        "', but an option with the same name already exists.");
+  _values[name] = std::make_unique<Option<T>>(name);
+  auto ptr = dynamic_cast<Option<T> *>(_values[name].get());
+
+  // docstring and Ftype are always needed
+  ptr->doc() = std::move(doc);
+  ptr->ftype() = F;
+
+  // metadata
+  ptr->required() = false;
+  ptr->suppressed() = false;
+  ptr->user_specified() = false;
+  ptr->defined() = false;
+}
+
+template <typename T>
+void
+OptionSet::add_private(const std::string & name, const T & default_value)
+{
+  if (this->contains(name))
+    throw NEMLException("Trying to add a private option '" + name +
+                        "', but an option with the same name already exists.");
+  _values[name] = std::make_unique<Option<T>>(name);
+  auto ptr = dynamic_cast<Option<T> *>(_values[name].get());
+
+  // default value
+  ptr->set() = default_value;
+
+  // metadata
+  ptr->required() = false;
+  ptr->suppressed() = true;
+  ptr->user_specified() = false;
+  ptr->defined() = true;
+}
+
+template <typename T>
+void
+OptionSet::set(const std::string & name, const T & value)
 {
   if (!this->contains(name))
-    _values[name] = std::make_unique<Option<T>>(name);
+    throw NEMLException("Trying to set option '" + name + "', but it does not exist.");
+
   auto ptr = dynamic_cast<Option<T> *>(_values[name].get());
-  ptr->ftype() = F;
-  return ptr->set();
+
+  if (ptr->suppressed())
+    throw NEMLException("Trying to set private option '" + name +
+                        "', which is not allowed. Use set_private() instead.");
+
+  // value
+  ptr->set() = value;
+
+  // metadata
+  ptr->user_specified() = false;
+  ptr->defined() = true;
 }
 
 template <typename T>
-T &
-OptionSet::set_parameter(const std::string & name)
+void
+OptionSet::set_private(const std::string & name, const T & value)
 {
-  return set<T, FType::PARAMETER>(name);
+  if (!this->contains(name))
+    throw NEMLException("Trying to set private option '" + name + "', but it does not exist.");
+
+  auto ptr = dynamic_cast<Option<T> *>(_values[name].get());
+
+  if (!ptr->suppressed())
+    throw NEMLException("Trying to set private option '" + name +
+                        "', but it is not marked as private.");
+
+  // value
+  ptr->set() = value;
+
+  // metadata
+  ptr->user_specified() = false;
+  ptr->defined() = true;
 }
 
 template <typename T>
-T &
-OptionSet::set_buffer(const std::string & name)
+void
+OptionSet::add_parameter(const std::string & name,
+                         const TensorName<T> & tensor_name,
+                         std::string doc)
 {
-  return set<T, FType::BUFFER>(name);
+  add<TensorName<T>, FType::PARAMETER>(name, tensor_name, std::move(doc));
 }
+
+template <typename T>
+void
+OptionSet::add_parameter(const std::string & name, std::string doc)
+{
+  add<TensorName<T>, FType::PARAMETER>(name, std::move(doc));
+}
+
+template <typename T>
+void
+OptionSet::add_buffer(const std::string & name, const TensorName<T> & tensor_name, std::string doc)
+{
+  add<TensorName<T>, FType::BUFFER>(name, tensor_name, std::move(doc));
+}
+
+template <typename T>
+void
+OptionSet::add_buffer(const std::string & name, std::string doc)
+{
+  add<TensorName<T>, FType::BUFFER>(name, std::move(doc));
+}
+
 } // namespace neml2

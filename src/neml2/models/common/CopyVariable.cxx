@@ -35,11 +35,8 @@ CopyVariable<T>::expected_options()
   OptionSet options = Model::expected_options();
   options.doc() = "Copy the value from one variable to another.";
 
-  options.set_input("from");
-  options.set("from").doc() = "Variable to copy value from";
-
-  options.set_output("to");
-  options.set("to").doc() = "Variable to copy value to";
+  options.add_input("from", "Variable to copy value from");
+  options.add_output("to", "Variable to copy value to");
 
   return options;
 }
@@ -54,19 +51,13 @@ CopyVariable<T>::CopyVariable(const OptionSet & options)
 
 template <typename T>
 void
-CopyVariable<T>::set_value(bool out, bool dout_din, bool d2out_din2)
+CopyVariable<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   if (out)
     _to = _from();
 
-  if (_from.is_dependent())
-    if (dout_din)
-      _to.d(_from) = imap_v<T>(_from.options());
-
-  if (d2out_din2)
-  {
-    // zero
-  }
+  if (dout_din)
+    _to.d(_from) = imap_v<T>(_from.options());
 }
 
 #define REGISTER_COPYVARIABLE(T)                                                                   \

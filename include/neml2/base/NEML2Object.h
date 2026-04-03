@@ -82,8 +82,8 @@ public:
 
   /// A readonly reference to the object's name
   const std::string & name() const { return _input_options.name(); }
-  /// A readonly reference to the object's type
-  const std::string & type() const { return _input_options.type(); }
+  /// The object's type
+  std::string type() const { return _input_options.type(); }
   /// A readonly reference to the object's path
   const std::string & path() const { return _input_options.path(); }
   /// A readonly reference to the object's docstring
@@ -191,7 +191,7 @@ NEML2Object::get_object(const std::string & section, const std::string & name)
   }
 
   OptionSet extra_opts;
-  extra_opts.set<NEML2Object *>("_host") = host();
+  extra_opts.add_private<NEML2Object *>("_host", host());
   return _factory->get_object<T>(section, obj_name, extra_opts, /*force_create=*/false);
 }
 

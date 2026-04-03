@@ -135,39 +135,4 @@ Since a composed model uses chain rule to efficiently evaluate the total derivat
 
 ## Model assembly {#model-assembly}
 
-NEML2 stores each variable in contiguous memory, but does not guarantee contiguity across variables. This choice is made to allow for asynchronous evaluation (with the help of lazy tensors) and to reduce memory consumption (since variables can have different number of batch shapes). However, this choice is not ideal for a family of nonlinear material models whose constitutive updates require solving one (or more) implicit system of equations. To address such issue, NEML2 implements semi-contiguous variable and derivative containers in neml2::HVector and neml2::HMatrix. These containers store discontiguous tensor values in sparse, contiguous sequences. Please refer to the corresponding Doxygen documentation for implementation details. In the regular model development process, there is typically no need to directly interact with these internal containers.
-
-### Axis labeling {#axis-labeling}
-
-NEML2 provides a data structure named [LabeledAxis](@ref neml2::LabeledAxis) to create a contiguous layout for scattered input/output variables. Typically, each model contains an input axis for input variables and an output axis for output variables.
-
-The [LabeledAxis](@ref neml2::LabeledAxis) contains all information regarding how the variables of interest should be contiguously laid out. In other words, the labeled axis maintains the mapping between variables and their contiguous slice along an axis. The following naming convention is used:
-- Item: A labelable slice of data
-- Variable: An item that is also of a [NEML2 primitive tensor type](@ref tensor-types)
-- Sub-axis: An item of type `LabeledAxis`
-
-An axis can be labeled recursively, e.g.,
-
-```
-     0 1 2 3 4 5     6     7 8 9 10 11 12   13   14
-/// |-----------| |-----| |              | |  | |  |
-///       a          b    |              | |  | |  |
-/// |-------------------| |--------------| |--| |--|
-///          sub                  a          b    c
-```
-The above example represents an axis of size 15. This axis has 4 items: `a`, `b`, `c`, and `sub`.
-- "a" is a variable of storage size 6 (possibly of type `SR2`).
-- "b" is a variable of type `Scalar`.
-- "c" is a variable of type `Scalar`.
-- "sub" is a sub-axis of type `LabeledAxis`. "sub" by itself represents an axis of size 7, containing 2 items:
-  - "a" is a variable of storage size 6.
-  - "b" is a variable of type `Scalar`.
-
-Duplicate labels are *not* allowed on the same level of the axis, e.g. "a", "b", "c", and "sub" share the same level and so must be different. However, items on different levels of an axis can share the same label, e.g., "a" on the sub-axis "sub" has the same label as "a" on the main axis. In NEML2 convention, item names are always fully qualified, and a sub-axis is prefixed with a left slash, e.g. item "b" on the sub-axis "sub" can be denoted as "sub/b" on the main axis.
-
-\note
-A label cannot contain: white spaces, quotes, left slash (`/`), or new line.
-
-Due to performance considerations, a `LabeledAxis` can only be modified, e.g., adding/removing variables and sub-axis, at the time a model is constructed. After the model construction phase, the `LabeledAxis` associated with that model can no longer be modified over the entire course of the simulation.
-
-Refer to the documentation for a complete list of APIs for creating and modifying a [LabeledAxis](@ref neml2::LabeledAxis).
+NEML2 stores each variable in contiguous memory, but does not guarantee contiguity across variables. This choice is made to allow for asynchronous evaluation (with the help of lazy tensors) and to reduce memory consumption (since variables can have different number of batch shapes). However, this choice is not ideal for a family of nonlinear material models whose constitutive updates require solving one (or more) implicit system of equations. To address such issue, NEML2 implements semi-contiguous variable and derivative containers in neml2::SparseVector and neml2::SparseMatrix. These containers store discontiguous tensor values in sparse, contiguous sequences. They can be respectively assembled into neml2::AssembledVector and neml2::AssembledMatrix for linear algebra routines. Please refer to the corresponding documentation for implementation details. In the regular model development process, there is typically no need to directly interact with these internal containers.

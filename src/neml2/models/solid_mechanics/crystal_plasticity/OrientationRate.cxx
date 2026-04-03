@@ -46,27 +46,18 @@ OrientationRate::expected_options()
       "plastic vorticity, \\f$ d^p \\f$ is the plastic deformation rate, and \\f$ \\varepsilon "
       "\\f$ is the elastic stretch.";
 
-  options.set_output("orientation_rate") = VariableName(STATE, "orientation_rate");
-  options.set("orientation_rate").doc() = "The name of the orientation rate (spin)";
+  options.add_input("orientation", "The name of the orientation");
+  options.add_input("elastic_strain", "The name of the elastic strain tensor");
+  options.add_input("vorticity", "The name of the vorticity tensor");
+  options.add_input("plastic_deformation_rate", "The name of the plastic deformation rate");
+  options.add_input("plastic_vorticity", "The name of the plastic vorticity");
 
-  options.set_input("elastic_strain") = VariableName(STATE, "elastic_strain");
-  options.set("elastic_strain").doc() = "The name of the elastic strain tensor";
-
-  options.set_input("vorticity") = VariableName(FORCES, "vorticity");
-  options.set("vorticity").doc() = "The name of the voriticty tensor";
-
-  options.set_input("plastic_deformation_rate") =
-      VariableName(STATE, "internal", "plastic_deformation_rate");
-  options.set("plastic_deformation_rate").doc() = "The name of the plastic deformation rate";
-
-  options.set_input("plastic_vorticity") = VariableName(STATE, "internal", "plastic_vorticity");
-  options.set("plastic_vorticity").doc() = "The name of the plastic vorticity";
   return options;
 }
 
 OrientationRate::OrientationRate(const OptionSet & options)
   : Model(options),
-    _R_dot(declare_output_variable<WR2>("orientation_rate")),
+    _R_dot(declare_output_variable<WR2>(rate_name(options.get<VariableName>("orientation")))),
     _e(declare_input_variable<SR2>("elastic_strain")),
     _w(declare_input_variable<WR2>("vorticity")),
     _dp(declare_input_variable<SR2>("plastic_deformation_rate")),
@@ -109,17 +100,10 @@ OrientationRate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
   {
     const auto I = WWR4::identity(_w.options());
 
-    if (_e.is_dependent())
-      _R_dot.d(_e) = d_multiply_and_make_skew_d_second(_dp());
-
-    if (_w.is_dependent())
-      _R_dot.d(_w) = I;
-
-    if (_dp.is_dependent())
-      _R_dot.d(_dp) = d_multiply_and_make_skew_d_first(_e());
-
-    if (_wp.is_dependent())
-      _R_dot.d(_wp) = -I;
+    _R_dot.d(_e) = d_multiply_and_make_skew_d_second(_dp());
+    _R_dot.d(_w) = I;
+    _R_dot.d(_dp) = d_multiply_and_make_skew_d_first(_e());
+    _R_dot.d(_wp) = -I;
   }
 }
 } // namespace neml2

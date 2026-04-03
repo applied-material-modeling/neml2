@@ -29,8 +29,8 @@
 namespace neml2
 {
 class Tensor;
-class LabeledAxisAccessor;
-using ValueMap = std::map<LabeledAxisAccessor, Tensor>;
-using DerivMap = std::map<LabeledAxisAccessor, ValueMap>;
-using SecDerivMap = std::map<LabeledAxisAccessor, DerivMap>;
+class VariableName;
+using ValueMap = std::map<VariableName, Tensor>;
+using DerivMap = std::map<VariableName, ValueMap>;
+using SecDerivMap = std::map<VariableName, DerivMap>;
 } // namespace neml2

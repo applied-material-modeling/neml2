@@ -40,11 +40,10 @@ CubicCrystal::expected_options()
   options.doc() =
       "A specialization of the general CrystalGeometry class defining a cubic crystal system.";
 
-  options.set("crystal_class").suppressed() = true;
-  options.set("lattice_vectors").suppressed() = true;
+  options.suppress("crystal_class");
+  options.suppress("lattice_vectors");
 
-  options.set<TensorName<Scalar>>("lattice_parameter");
-  options.set("lattice_parameter").doc() = "The lattice parameter";
+  options.add_buffer<Scalar>("lattice_parameter", "The lattice parameter");
 
   return options;
 }

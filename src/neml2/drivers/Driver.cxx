@@ -35,11 +35,8 @@ Driver::expected_options()
   OptionSet options = NEML2Object::expected_options();
   options.section() = "Drivers";
 
-  options.set<bool>("verbose") = false;
-  options.set("verbose").doc() = "Whether to output additional logging information";
-
-  options.set<Size>("random_seed");
-  options.set("random_seed").doc() = "Random seed for any random number generation";
+  options.add<bool>("verbose", false, "Whether to output additional logging information");
+  options.add_optional<Size>("random_seed", "Random seed for any random number generation");
 
   return options;
 }
@@ -49,7 +46,7 @@ Driver::Driver(const OptionSet & options)
     DiagnosticsInterface(this),
     _verbose(options.get<bool>("verbose"))
 {
-  if (options.get("random_seed").user_specified())
+  if (options.defined("random_seed"))
     at::manual_seed(options.get<Size>("random_seed"));
 }
 } // namespace neml2

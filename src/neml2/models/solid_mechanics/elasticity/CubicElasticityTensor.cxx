@@ -42,7 +42,7 @@ CubicElasticityTensor::expected_options()
 CubicElasticityTensor::CubicElasticityTensor(const OptionSet & options)
   : ElasticityInterface<Model, 3>(options),
     _converter(_constant_types, _need_derivs),
-    _C(declare_output_variable<SSR4>(VariableName(PARAMETERS, name())))
+    _C(declare_output_variable<SSR4>(name()))
 {
 }
 

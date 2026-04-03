@@ -22,12 +22,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <iomanip>
-
 #include "TransientRegression.h"
 #include "neml2/base/Factory.h"
 #include "neml2/drivers/TransientDriver.h"
-#include "neml2/misc/string_utils.h"
 #include "neml2/misc/assertions.h"
 
 namespace fs = std::filesystem;
@@ -40,10 +37,12 @@ OptionSet
 TransientRegression::expected_options()
 {
   OptionSet options = Driver::expected_options();
-  options.set<std::string>("driver");
-  options.set<std::string>("reference");
-  options.set<double>("rtol") = 1e-5;
-  options.set<double>("atol") = 1e-8;
+  options.add<std::string>("driver", "The transient driver to run for the regression test");
+  options.add<std::string>("reference", "The reference result to compare against");
+  options.add<double>(
+      "rtol", 1e-5, "The relative tolerance for comparing the result to the reference");
+  options.add<double>(
+      "atol", 1e-8, "The absolute tolerance for comparing the result to the reference");
   return options;
 }
 

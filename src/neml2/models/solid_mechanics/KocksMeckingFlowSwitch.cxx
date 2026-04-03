@@ -42,23 +42,18 @@ KocksMeckingFlowSwitch::expected_options()
                   "greater than the threshold use the rate dependent flow rule.  This version uses "
                   "a soft switch between the models, based on a tanh sigmoid function.";
 
-  options.set_parameter<TensorName<Scalar>>("g0");
-  options.set("g0").doc() = "Critical value of activation energy";
+  options.add_parameter<Scalar>("g0", "Critical value of activation energy");
+  options.add_input("activation_energy", "The input name of the activation energy");
+  options.add<double>(
+      "sharpness",
+      1.0,
+      "A steepness parameter that controls the tanh mixing of the models.  Higher values gives a "
+      "sharper transition.");
 
-  options.set_input("activation_energy") = VariableName(FORCES, "g");
-  options.set("activation_energy").doc() = "The input name of the activation energy";
+  options.add_input("rate_independent_flow_rate", "Input name of the rate independent flow rate");
+  options.add_input("rate_dependent_flow_rate", "Input name of the rate dependent flow rate");
+  options.add_output("flow_rate", "Output name for the mixed flow rate");
 
-  options.set<double>("sharpness") = 1.0;
-  options.set("sharpness").doc() = "A steepness parameter that controls the tanh mixing of the "
-                                   "models.  Higher values gives a sharper transition.";
-
-  options.set_input("rate_independent_flow_rate") = VariableName(STATE, "internal", "ri_rate");
-  options.set("rate_independent_flow_rate").doc() = "Input name of the rate independent flow rate";
-  options.set_input("rate_dependent_flow_rate") = VariableName(STATE, "internal", "rd_rate");
-  options.set("rate_dependent_flow_rate").doc() = "Input name of the rate dependent flow rate";
-
-  options.set_output("flow_rate") = VariableName(STATE, "internal", "gamma_rate");
-  options.set("flow_rate").doc() = "Output name for the mixed flow rate";
   return options;
 }
 
@@ -89,8 +84,7 @@ KocksMeckingFlowSwitch::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
     auto partial = 0.5 * _sharp * pow(1.0 / cosh(_sharp * (_g - _g0)), 2.0);
     auto deriv = partial * (_rd_flow - _ri_flow);
 
-    if (_g.is_dependent())
-      _gamma_dot.d(_g) = deriv;
+    _gamma_dot.d(_g) = deriv;
 
     if (const auto * const g0 = nl_param("g0"))
       _gamma_dot.d(*g0) = -deriv;

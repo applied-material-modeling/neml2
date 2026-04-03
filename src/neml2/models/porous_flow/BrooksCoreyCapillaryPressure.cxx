@@ -28,6 +28,7 @@
 namespace neml2
 {
 register_NEML2_object(BrooksCoreyCapillaryPressure);
+
 OptionSet
 BrooksCoreyCapillaryPressure::expected_options()
 {
@@ -37,13 +38,10 @@ BrooksCoreyCapillaryPressure::expected_options()
       "\\f$. Here \\f$ S_e \\f$ is the effective saturation,\\f$ P_t \\f$ is the threshold "
       "pressure at zero saturation, and \\f$ p \\f$ is the shape parameter";
 
-  options.set<bool>("define_second_derivatives") = true;
+  options.set_private<bool>("define_second_derivatives", true);
 
-  options.set_parameter<TensorName<Scalar>>("threshold_pressure");
-  options.set("threshold_pressure").doc() = "The threshold entry pressure";
-
-  options.set_parameter<TensorName<Scalar>>("exponent");
-  options.set("exponent").doc() = "The shape parameter p";
+  options.add_parameter<Scalar>("threshold_pressure", "The threshold entry pressure");
+  options.add_parameter<Scalar>("exponent", "The shape parameter p");
 
   return options;
 }

@@ -23,7 +23,7 @@
 
 [Models]
   [model]
-    type = R2toWR2
+    type = R2ToWR2
     input = 'state/full'
     output = 'state/notfull'
   []

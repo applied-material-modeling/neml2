@@ -27,6 +27,8 @@
 #include "neml2/models/solid_mechanics/elasticity/ElasticityConverter.h"
 #include "neml2/base/MultiEnumSelection.h"
 #include "neml2/tensors/Scalar.h"
+#include "neml2/base/OptionSet.h"
+#include "neml2/base/TensorName.h"
 
 namespace neml2
 {
@@ -99,17 +101,19 @@ ElasticityInterface<Derived, N>::expected_options()
                                      static_cast<int>(ElasticConstant::P_WAVE_MODULUS),
                                      static_cast<int>(ElasticConstant::INVALID)},
                                     {"INVALID"});
-  options.set<MultiEnumSelection>("coefficient_types") = type_selection;
-  options.set("coefficient_types").doc() =
-      "Types for each parameter, options are: " + type_selection.join();
+  options.add<MultiEnumSelection>("coefficient_types",
+                                  type_selection,
+                                  "Types for each parameter, options are: " +
+                                      type_selection.join());
 
-  options.set_parameter<std::vector<TensorName<Scalar>>>("coefficients");
-  options.set("coefficients").doc() = "Coefficients used to define the elasticity tensor";
+  options.add<std::vector<TensorName<Scalar>>, FType::PARAMETER>(
+      "coefficients", "Coefficients used to define the elasticity tensor");
 
-  options.set<std::vector<bool>>("coefficient_as_parameter") = {true};
-  options.set("coefficient_as_parameter").doc() =
+  options.add<std::vector<bool>>(
+      "coefficient_as_parameter",
+      {true},
       "Whether to treat the coefficients as (trainable) parameters. Default is true. Setting this "
-      "option to false will treat the coefficients as buffers.";
+      "option to false will treat the coefficients as buffers.");
 
   return options;
 }

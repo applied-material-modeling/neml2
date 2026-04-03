@@ -37,19 +37,12 @@ KocksMeckingIntercept::expected_options()
   options.doc() = "The critical value of the normalized activation energy given by \\f$ g_0 "
                   "\\frac{C-B}{A} \\f$";
 
-  options.set<bool>("define_second_derivatives") = true;
+  options.set_private<bool>("define_second_derivatives", true);
 
-  options.set_parameter<TensorName<Scalar>>("A");
-  options.set("A").doc() = "The Kocks-Mecking slope";
-
-  options.set_parameter<TensorName<Scalar>>("B");
-  options.set("B").doc() = "The Kocks-Mecking intercept";
-
-  options.set_parameter<TensorName<Scalar>>("C");
-  options.set("C").doc() = "The Kocks-Mecking horizontal value";
-
-  options.set_output("intercept");
-  options.set("intercept").doc() = "The intercept";
+  options.add_parameter<Scalar>("A", "The Kocks-Mecking slope");
+  options.add_parameter<Scalar>("B", "The Kocks-Mecking intercept");
+  options.add_parameter<Scalar>("C", "The Kocks-Mecking horizontal value");
+  options.add_output("intercept", "The intercept");
 
   return options;
 }
@@ -59,7 +52,7 @@ KocksMeckingIntercept::KocksMeckingIntercept(const OptionSet & options)
     _A(declare_parameter<Scalar>("A", "A", true)),
     _B(declare_parameter<Scalar>("B", "B", true)),
     _C(declare_parameter<Scalar>("C", "C", true)),
-    _b(declare_output_variable<Scalar>(VariableName(PARAMETERS, name())))
+    _b(declare_output_variable<Scalar>("intercept"))
 {
 }
 

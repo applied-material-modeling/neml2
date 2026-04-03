@@ -32,11 +32,8 @@ PorosityPermeabilityRelation::expected_options()
   OptionSet options = Model::expected_options();
   options.doc() = "Define the relationship between non-dimensionalized porosity and permeability.";
 
-  options.set_input("porosity") = VariableName(STATE, "porosity");
-  options.set("porosity").doc() = "porosity";
-
-  options.set_output("permeability") = VariableName(STATE, "permeability");
-  options.set("permeability").doc() = "Porous flow permeability";
+  options.add_input("porosity", "The porosity");
+  options.add_output("permeability", "The porosity-dependent permeability");
 
   return options;
 }

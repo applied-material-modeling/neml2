@@ -31,10 +31,7 @@ OptionSet
 Eigenstrain::expected_options()
 {
   OptionSet options = Model::expected_options();
-
-  options.set_output("eigenstrain") = VariableName(FORCES, "Eg");
-  options.set("eigenstrain").doc() = "Eigenstrain";
-
+  options.add_output("eigenstrain", "Eigenstrain");
   return options;
 }
 

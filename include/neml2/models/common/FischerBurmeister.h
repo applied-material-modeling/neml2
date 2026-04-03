@@ -29,9 +29,6 @@
 
 namespace neml2
 {
-/**
- * @brief Define the Fischer Burmeister Complementary Conditions.
- */
 class FischerBurmeister : public Model
 {
 public:
@@ -42,15 +39,15 @@ public:
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  // variables
+  /// variables
   const Variable<Scalar> & _a;
   const Variable<Scalar> & _b;
 
-  /// Seclect inequality type
-  EnumSelection _conda;
-  EnumSelection _condb;
+  /// Select inequality type
+  EnumSelection _a_ineq;
+  EnumSelection _b_ineq;
 
-  // Residual Variables
-  Variable<Scalar> & _fb;
+  /// FB complementarity condition
+  Variable<Scalar> & _c;
 };
 }

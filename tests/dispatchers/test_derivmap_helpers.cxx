@@ -33,8 +33,8 @@ using namespace neml2;
 
 TEST_CASE("derivmap_helpers", "[dispatchers]")
 {
-  const auto scalar1_name = VariableName{"state", "s1"};
-  const auto scalar2_name = VariableName{"state", "s2"};
+  const auto scalar1_name = "s1"_var;
+  const auto scalar2_name = "s2"_var;
   const auto deriv_value_1 = Scalar::full(300).dynamic_expand({5, 10});
   const auto deriv_value_2 = Scalar::full(500).dynamic_expand({7, 10});
   auto dvalue_map_1 = DerivMap({{scalar2_name, ValueMap({{scalar1_name, deriv_value_1}})}});
@@ -52,7 +52,7 @@ TEST_CASE("derivmap_helpers", "[dispatchers]")
     REQUIRE(result[scalar2_name].size() == 1);
     REQUIRE(result[scalar2_name][scalar1_name].sizes() == TensorShape({5, 10}));
   }
-  /* Fill this in when we have GPU tests
+  /* TODO: Fill this in when we have GPU tests
   SECTION("move device")
   {
 

@@ -35,6 +35,7 @@
     argument = 'forces/T'
     abscissa = 'T_vals'
     ordinate = 'c_A_vals'
+    output = 'c_A'
   []
   [model0]
     type = ScalarLinearCombination

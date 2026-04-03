@@ -32,11 +32,8 @@ PlasticFlowRate::expected_options()
 {
   OptionSet options = Model::expected_options();
 
-  options.set_input("yield_function") = VariableName(STATE, "internal", "fp");
-  options.set("yield_function").doc() = "Yield function";
-
-  options.set_output("flow_rate") = VariableName(STATE, "internal", "gamma_rate");
-  options.set("flow_rate").doc() = "Flow rate";
+  options.add_input("yield_function", "Yield function");
+  options.add_output("flow_rate", "Flow rate");
 
   return options;
 }

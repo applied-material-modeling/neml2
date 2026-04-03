@@ -41,25 +41,18 @@ AdvectiveStress::expected_options()
       "1st Piola-Kirchhoff stress and the defomration gradient. \\f$ c \\f$ is the volume change "
       "coefficient.";
 
-  options.set_parameter<TensorName<Scalar>>("coefficient");
-  options.set("coefficient").doc() = "Coefficient c";
+  options.add_parameter<Scalar>("coefficient", "Coefficient c");
 
-  options.set_input("js");
-  options.set("js").doc() =
-      "The Jacobian of the deformation gradient associated with the swelling and phase change";
+  options.add_optional_input(
+      "js",
+      "The Jacobian of the deformation gradient associated with the swelling and phase change");
+  options.add_optional_input(
+      "jt",
+      "The Jacobian of the deformation gradient associated with the thermal and volume expansion");
 
-  options.set_input("jt");
-  options.set("jt").doc() =
-      "The Jacobian of the deformation gradient associated with the thermal and volume expansion";
-
-  options.set_input("deformation_gradient") = VariableName(FORCES, "F");
-  options.set("deformation_gradient").doc() = "The deformation gradient";
-
-  options.set_input("pk1_stress") = VariableName(STATE, "P");
-  options.set("pk1_stress").doc() = "1st Piola-Kirchhoff stress";
-
-  options.set_output("advective_stress") = VariableName(STATE, "advective_stress");
-  options.set("advective_stress").doc() = "The average advective stress";
+  options.add_input("deformation_gradient", "The deformation gradient");
+  options.add_input("pk1_stress", "1st Piola-Kirchhoff stress");
+  options.add_output("advective_stress", "The average advective stress");
 
   return options;
 }
@@ -67,8 +60,8 @@ AdvectiveStress::expected_options()
 AdvectiveStress::AdvectiveStress(const OptionSet & options)
   : Model(options),
     _coeff(declare_parameter<Scalar>("coeff", "coefficient")),
-    _Js(options.get("js").user_specified() ? &declare_input_variable<Scalar>("js") : nullptr),
-    _Jt(options.get("jt").user_specified() ? &declare_input_variable<Scalar>("jt") : nullptr),
+    _Js(options.defined("js") ? &declare_input_variable<Scalar>("js") : nullptr),
+    _Jt(options.defined("jt") ? &declare_input_variable<Scalar>("jt") : nullptr),
     _P(declare_input_variable<R2>("pk1_stress")),
     _F(declare_input_variable<R2>("deformation_gradient")),
     _ps(declare_output_variable<Scalar>("advective_stress"))
@@ -90,19 +83,16 @@ AdvectiveStress::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
   {
     const auto I = R2::identity(_P.options());
 
-    if (_Js && _Js->is_dependent())
+    if (_Js)
       _ps.d(*_Js) = 5.0 / 3.0 * _coeff / 3.0 * pow(Js, -8.0 / 3.0) * pow(Jt, -2.0 / 3.0) *
                     neml2::inner(_P(), _F());
 
-    if (_Jt && _Jt->is_dependent())
+    if (_Jt)
       _ps.d(*_Jt) = 2.0 / 3.0 * _coeff / 3.0 * pow(Js, -5.0 / 3.0) * pow(Jt, -5.0 / 3.0) *
                     neml2::inner(_P(), _F());
 
-    if (_P.is_dependent())
-      _ps.d(_P) = -_coeff / 3.0 * pow(Js, -5.0 / 3.0) * pow(Jt, -2.0 / 3.0) * _F;
-
-    if (_F.is_dependent())
-      _ps.d(_F) = -_coeff / 3.0 * pow(Js, -5.0 / 3.0) * pow(Jt, -2.0 / 3.0) * _P;
+    _ps.d(_P) = -_coeff / 3.0 * pow(Js, -5.0 / 3.0) * pow(Jt, -2.0 / 3.0) * _F;
+    _ps.d(_F) = -_coeff / 3.0 * pow(Js, -5.0 / 3.0) * pow(Jt, -2.0 / 3.0) * _P;
   }
 }
 } // namespace neml2

@@ -37,7 +37,7 @@ TEST_CASE("SparseVector", "[equation_systems]")
   // A simple 2-variable, 1-group layout:
   //   var 0 "x": base_sizes={2}, intmd_sizes={}
   //   var 1 "y": base_sizes={1}, intmd_sizes={}
-  const AxisLayout layout({{LabeledAxisAccessor("x"), LabeledAxisAccessor("y")}},
+  const AxisLayout layout({{VariableName("x"), VariableName("y")}},
                           {TensorShape{}, TensorShape{}},
                           {TensorShape{2}, TensorShape{1}},
                           {AxisLayout::IStructure::DENSE});
@@ -75,7 +75,7 @@ TEST_CASE("SparseVector", "[equation_systems]")
   SECTION("group")
   {
     // A 2-variable, 2-group layout so that group(i) extracts a single variable each
-    const AxisLayout layout2({{LabeledAxisAccessor("x")}, {LabeledAxisAccessor("y")}},
+    const AxisLayout layout2({{VariableName("x")}, {VariableName("y")}},
                              {TensorShape{}, TensorShape{}},
                              {TensorShape{2}, TensorShape{1}},
                              {AxisLayout::IStructure::DENSE, AxisLayout::IStructure::DENSE});

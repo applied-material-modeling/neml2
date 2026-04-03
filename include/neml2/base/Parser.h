@@ -31,8 +31,9 @@
 namespace neml2
 {
 class InputFile;
-class LabeledAxisAccessor;
-using VariableName = LabeledAxisAccessor;
+class VariableName;
+class EnumSelection;
+class MultiEnumSelection;
 
 /**
  * @brief A parser is responsible for parsing an input file into a collection of options which

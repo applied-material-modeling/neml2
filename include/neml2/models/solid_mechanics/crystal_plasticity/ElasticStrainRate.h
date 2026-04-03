@@ -44,19 +44,16 @@ protected:
   /// Set elastic strain rate and derivatives
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  /// Elastic strain rate
-  Variable<SR2> & _e_dot;
-
   /// Current strain
   const Variable<SR2> & _e;
-
   /// Current deformation rate
   const Variable<SR2> & _d;
-
   /// Current vorticity
   const Variable<WR2> & _w;
-
   /// Plastic deformation rate
   const Variable<SR2> & _dp;
+
+  /// Elastic strain rate
+  Variable<SR2> & _e_dot;
 };
 } // namespace neml2

@@ -30,7 +30,6 @@
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SFFR4.h"
 #include "neml2/tensors/functions/inner.h"
-#include "neml2/tensors/functions/diagonalize.h"
 
 namespace neml2
 {
@@ -47,18 +46,14 @@ ResolvedShear::expected_options()
                   "stress \\f$ Q \\f$ is the orientation matrix, \\f$ d_i \\f$ is the slip "
                   "direction, and \\f$ n_i \\f$ is the slip system normal.";
 
-  options.set_output("resolved_shears") = VariableName(STATE, "internal", "resolved_shears");
-  options.set("resolved_shears").doc() = "The name of the resolved shears";
+  options.add_output("resolved_shears", "The name of the resolved shears");
+  options.add_input("stress", "The name of the Cauchy stress tensor");
+  options.add_input("orientation_matrix", "The name of the orientation matrix");
 
-  options.set_input("stress") = VariableName(STATE, "internal", "cauchy_stress");
-  options.set("stress").doc() = "The name of the Cauchy stress tensor";
+  options.add<std::string>("crystal_geometry",
+                           "crystal_geometry",
+                           "The name of the data object with the crystallographic information");
 
-  options.set_input("orientation") = VariableName(STATE, "orientation_matrix");
-  options.set("orientation").doc() = "The name of the orientation matrix";
-
-  options.set<std::string>("crystal_geometry") = "crystal_geometry";
-  options.set("crystal_geometry").doc() =
-      "The name of the data object with the crystallographic information";
   return options;
 }
 
@@ -68,7 +63,7 @@ ResolvedShear::ResolvedShear(const OptionSet & options)
         options.get<std::string>("crystal_geometry"))),
     _rss(declare_output_variable<Scalar>("resolved_shears")),
     _S(declare_input_variable<SR2>("stress")),
-    _R(declare_input_variable<R2>("orientation"))
+    _R(declare_input_variable<R2>("orientation_matrix"))
 {
 }
 
@@ -86,11 +81,8 @@ ResolvedShear::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 
   if (dout_din)
   {
-    if (_S.is_dependent())
-      _rss.d(_S, 1, 1, 0) = M.rotate(R);
-
-    if (_R.is_dependent())
-      _rss.d(_R, 1, 1, 0) = R2::einsum("...ijk,...i->...jk", {M.drotate(R), S});
+    _rss.d(_S, 1, 1, 0) = M.rotate(R);
+    _rss.d(_R, 1, 1, 0) = R2::einsum("...ijk,...i->...jk", {M.drotate(R), S});
   }
 }
 

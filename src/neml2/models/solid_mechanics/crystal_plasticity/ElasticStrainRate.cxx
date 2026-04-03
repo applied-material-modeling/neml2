@@ -45,32 +45,21 @@ ElasticStrainRate::expected_options()
                   "deformation rate, \\f$ w \\f$ is the vorticity, and \\f$ \\varepsilon \\f$ is "
                   "the elastic strain.";
 
-  options.set_output("elastic_strain_rate") = VariableName(STATE, "elastic_strain_rate");
-  options.set("elastic_strain_rate").doc() = "Name of the elastic strain rate";
-
-  options.set_input("elastic_strain") = VariableName(STATE, "elastic_strain");
-  options.set("elastic_strain").doc() = "Name of the elastic strain";
-
-  options.set_input("deformation_rate") = VariableName(FORCES, "deformation_rate");
-  options.set("deformation_rate").doc() = "Name of the deformation rate";
-
-  options.set_input("vorticity") = VariableName(FORCES, "vorticity");
-  options.set("vorticity").doc() = "Name of the vorticity";
-
-  options.set_input("plastic_deformation_rate") =
-      VariableName(STATE, "internal", "plastic_deformation_rate");
-  options.set("plastic_deformation_rate").doc() = "Name of the plastic deformation rate";
+  options.add_input("elastic_strain", "Name of the elastic strain");
+  options.add_input("deformation_rate", "Name of the deformation rate");
+  options.add_input("vorticity", "Name of the vorticity");
+  options.add_input("plastic_deformation_rate", "Name of the plastic deformation rate");
 
   return options;
 }
 
 ElasticStrainRate::ElasticStrainRate(const OptionSet & options)
   : Model(options),
-    _e_dot(declare_output_variable<SR2>("elastic_strain_rate")),
     _e(declare_input_variable<SR2>("elastic_strain")),
     _d(declare_input_variable<SR2>("deformation_rate")),
     _w(declare_input_variable<WR2>("vorticity")),
-    _dp(declare_input_variable<SR2>("plastic_deformation_rate"))
+    _dp(declare_input_variable<SR2>("plastic_deformation_rate")),
+    _e_dot(declare_output_variable<SR2>(rate_name(_e.name())))
 {
 }
 
@@ -110,17 +99,10 @@ ElasticStrainRate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
   {
     const auto I = SSR4::identity_sym(_d.options());
 
-    if (_e.is_dependent())
-      _e_dot.d(_e) = d_skew_and_sym_to_sym_d_sym(_w());
-
-    if (_d.is_dependent())
-      _e_dot.d(_d) = I;
-
-    if (_w.is_dependent())
-      _e_dot.d(_w) = d_skew_and_sym_to_sym_d_skew(_e());
-
-    if (_dp.is_dependent())
-      _e_dot.d(_dp) = -I;
+    _e_dot.d(_e) = d_skew_and_sym_to_sym_d_sym(_w());
+    _e_dot.d(_d) = I;
+    _e_dot.d(_w) = d_skew_and_sym_to_sym_d_skew(_e());
+    _e_dot.d(_dp) = -I;
   }
 }
 } // namespace neml2

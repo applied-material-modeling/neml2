@@ -124,16 +124,13 @@ public:
   TracingInterface & operator=(const TracingInterface &) = delete;
   TracingInterface & operator=(TracingInterface &&) = delete;
 
-  bool event_tracing_enabled() const { return _enabled; }
+  bool event_tracing_enabled() const { return _writer != nullptr; }
 
   /// Get the event trace writer
   TraceWriter & event_trace_writer() const;
 
 private:
   TraceWriter & init_writer(std::string);
-
-  /// Whether event tracing is enabled
-  bool _enabled;
 
   /// The trace file to write to
   TraceWriter * _writer;

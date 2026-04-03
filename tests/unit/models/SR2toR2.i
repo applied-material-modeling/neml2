@@ -23,7 +23,7 @@
 
 [Models]
   [model]
-    type = SR2toR2
+    type = SR2ToR2
     input = 'state/sym'
     output = 'state/full'
   []

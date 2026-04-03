@@ -26,7 +26,7 @@
 
 #include "neml2/base/Option.h"
 #include "neml2/misc/string_utils.h"
-#include "neml2/base/LabeledAxisAccessor.h"
+#include "neml2/base/VariableName.h"
 #include "neml2/base/EnumSelection.h"
 #include "neml2/base/MultiEnumSelection.h"
 #include "neml2/base/TensorName.h"

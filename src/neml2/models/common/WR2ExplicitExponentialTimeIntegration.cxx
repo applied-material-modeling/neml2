@@ -40,14 +40,8 @@ WR2ExplicitExponentialTimeIntegration::expected_options()
                   "update can be written as \\f$ s = \\exp\\left[ (t-t_n)\\dot{s}\\right] \\circ "
                   "s_n \\f$, where \\f$ \\circ \\f$ denotes the rotation operator.";
 
-  options.set_output("variable");
-  options.set("variable").doc() = "Variable being integrated";
-
-  options.set_input("rate");
-  options.set("rate").doc() = "Variable rate of change";
-
-  options.set_input("time") = VariableName(FORCES, "t");
-  options.set("time").doc() = "Time";
+  options.add_output("variable", "Variable being integrated");
+  options.add_input("time", "Time");
 
   return options;
 }
@@ -56,22 +50,11 @@ WR2ExplicitExponentialTimeIntegration::WR2ExplicitExponentialTimeIntegration(
     const OptionSet & options)
   : Model(options),
     _s(declare_output_variable<Rot>("variable")),
-    _sn(declare_input_variable<Rot>(_s.name().old())),
-    _s_dot(options.get<VariableName>("rate").empty()
-               ? declare_input_variable<WR2>(_s.name().with_suffix("_rate"))
-               : declare_input_variable<WR2>("rate")),
+    _sn(declare_variable_history(_s, /*nstep=*/1)),
+    _rate(declare_input_variable<WR2>(rate_name(_s.name()))),
     _t(declare_input_variable<Scalar>("time")),
-    _tn(declare_input_variable<Scalar>(_t.name().old()))
+    _tn(declare_variable_history(_t, /*nstep=*/1))
 {
-}
-
-void
-WR2ExplicitExponentialTimeIntegration::diagnose() const
-{
-  Model::diagnose();
-  diagnostic_assert_state(_s);
-  diagnostic_assert_state(_s_dot);
-  diagnostic_assert_force(_t);
 }
 
 void
@@ -80,21 +63,17 @@ WR2ExplicitExponentialTimeIntegration::set_value(bool out, bool dout_din, bool /
   const auto dt = _t - _tn;
 
   // Incremental rotation
-  const auto inc = (_s_dot * dt).exp_map();
+  const auto inc = (_rate * dt).exp_map();
 
   if (out)
     _s = _sn().rotate(inc);
 
   if (dout_din)
   {
-    const auto de = (_s_dot * dt).dexp_map();
-    _s.d(_s_dot) = _sn().drotate(inc) * de * dt;
-
-    if (currently_assembling_nonlinear_system())
-      return;
-
+    const auto de = (_rate * dt).dexp_map();
+    _s.d(_rate) = _sn().drotate(inc) * de * dt;
     _s.d(_sn) = _sn().drotate_self(inc);
-    _s.d(_t) = _sn().drotate(inc) * de * Vec(_s_dot());
+    _s.d(_t) = _sn().drotate(inc) * de * Vec(_rate());
     _s.d(_tn) = -_s.d(_t).tensor();
   }
 }

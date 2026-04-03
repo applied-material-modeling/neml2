@@ -24,36 +24,41 @@
 
 #pragma once
 
-#include "neml2/models/Model.h"
+#include <string>
+#include <cctype>
+#include <ostream>
 
 namespace neml2
 {
-class Scalar;
-class Vec;
-class SR2;
-class R2;
-
-template <typename T>
-class IncrementToRate : public Model
+class VariableName
 {
 public:
-  static OptionSet expected_options();
+  VariableName() = default;
+  VariableName(std::string value);
+  VariableName(const char * value);
 
-  IncrementToRate(const OptionSet & options);
+  operator std::string() const { return _value; }
+  const std::string & str() const { return _value; }
+  const char * c_str() const noexcept { return _value.c_str(); }
 
-protected:
-  void set_value(bool out, bool dout_din, bool d2out_din2) override;
+  friend bool operator==(const VariableName & a, const VariableName & b) noexcept;
+  friend bool operator!=(const VariableName & a, const VariableName & b) noexcept;
+  friend bool operator<(const VariableName & a, const VariableName & b) noexcept;
+  friend std::ostream & operator<<(std::ostream & os, const VariableName & name);
 
-  /// Current variable value
-  const Variable<T> & _dv;
+private:
+  static void validate(const std::string & s);
 
-  /// Current time
-  const Variable<Scalar> & _t;
-
-  /// Old time
-  const Variable<Scalar> & _tn;
-
-  /// Variable rate
-  Variable<T> & _dv_dt;
+  static constexpr const char * invalid_c_str = "__invalid_variable_name__";
+  std::string _value = invalid_c_str;
 };
+
+bool operator==(const VariableName & a, const VariableName & b) noexcept;
+bool operator!=(const VariableName & a, const VariableName & b) noexcept;
+bool operator<(const VariableName & a, const VariableName & b) noexcept;
+std::ostream & operator<<(std::ostream & os, const VariableName & name);
+std::stringstream & operator>>(std::stringstream & ss, VariableName & name);
+
+/// User-defined literal for VariableName, e.g., "strain"_var
+VariableName operator""_var(const char * str, size_t len);
 } // namespace neml2

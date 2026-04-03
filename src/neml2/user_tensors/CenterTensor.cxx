@@ -35,11 +35,8 @@ CenterTensorTmpl<T>::expected_options()
   OptionSet options = UserTensorBase<T>::expected_options();
   options.doc() = "Compute interval centers along an intermediate dimension.";
 
-  options.set<TensorName<T>>("points");
-  options.set("points").doc() = "The input tensor to be centered";
-
-  options.set<Size>("dim") = 0;
-  options.set("dim").doc() = "Intermediate dimension to compute centers";
+  options.add<TensorName<T>>("points", "The input tensor to be centered");
+  options.add<Size>("dim", 0, "Intermediate dimension to compute centers");
 
   return options;
 }

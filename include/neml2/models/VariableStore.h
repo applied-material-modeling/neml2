@@ -25,9 +25,10 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 
 #include "neml2/models/map_types_fwd.h"
-#include "neml2/base/LabeledAxisAccessor.h"
+#include "neml2/base/VariableName.h"
 #include "neml2/misc/types.h"
 #include "neml2/tensors/jit.h"
 #include "neml2/equation_systems/SparseMatrix.h"
@@ -37,15 +38,11 @@ namespace neml2
 {
 // Foward declarations
 class Model;
-class LabeledAxis;
 class VariableBase;
 template <typename T>
 class Variable;
 template <typename T>
 struct TensorName;
-
-/// Bind a vector of tensors to variable names
-ValueMap bind(const std::vector<VariableName> &, const std::vector<Tensor> &);
 
 class VariableStore
 {
@@ -57,20 +54,6 @@ public:
   VariableStore & operator=(const VariableStore &) = delete;
   VariableStore & operator=(VariableStore &&) = delete;
   virtual ~VariableStore() = default;
-
-  LabeledAxis & declare_axis(const std::string & name);
-
-  ///@{
-  /// Input axis describing the assembly layout of input variables
-  LabeledAxis & input_axis();
-  const LabeledAxis & input_axis() const;
-  ///@}
-
-  ///@{
-  /// Output axis describing the assembly layout of output variables
-  LabeledAxis & output_axis();
-  const LabeledAxis & output_axis() const;
-  ///@}
 
   using VariableStorage = std::map<VariableName, std::unique_ptr<VariableBase>>;
   using DerivSparsity = std::vector<std::pair<VariableBase *, const VariableBase *>>;
@@ -152,6 +135,30 @@ protected:
   virtual void send_variables_to(const TensorOptions & options);
 
   /**
+   * @brief Helper method to wrap a variable name into its rate form
+   *
+   * This is a personal preference in the end. The idea is to have a consistent way to name the rate
+   * form of a variable, which is commonly used in time integration. The behavior can be controlled
+   * via Settings::rate_prefix and Settings::rate_suffix.
+   *
+   * @param var The variable name
+   * @return The rate form of the variable name
+   */
+  VariableName rate_name(const VariableName & var) const;
+
+  /**
+   * @brief Helper method to wrap a variable name into its residual form
+   *
+   * Similar to rate_name, this is for consistent naming of residual variables, which are commonly
+   * used in nonlinear systems. The behavior can be controlled via Settings::residual_prefix and
+   * Settings::residual_suffix.
+   *
+   * @param var The variable name
+   * @return The residual form of the variable name
+   */
+  VariableName residual_name(const VariableName & var) const;
+
+  /**
    * @brief Declare an input variable
    *
    * @tparam T Tensor type
@@ -194,13 +201,17 @@ protected:
   template <typename T>
   Variable<T> & declare_output_variable(const VariableName & name);
 
+  /// Declare a variable that holds the value of @p var from @p nstep steps back.
+  template <typename T>
+  const Variable<T> & declare_variable_history(const Variable<T> & var, std::size_t nstep);
+
   /// Clone a variable and put it on the input axis
   const VariableBase * clone_input_variable(const VariableBase & var,
-                                            const VariableName & new_name = {});
+                                            std::optional<VariableName> new_name = std::nullopt);
 
   /// Clone a variable and put it on the output axis
   VariableBase * clone_output_variable(const VariableBase & var,
-                                       const VariableName & new_name = {});
+                                       std::optional<VariableName> new_name = std::nullopt);
 
   /// Assign stack to input variables
   void assign_input_stack(jit::Stack & stack);
@@ -228,20 +239,14 @@ private:
   /// Model using this interface
   Model * _object;
 
-  /// All the declared axes
-  std::map<std::string, std::unique_ptr<LabeledAxis>> _axes;
-
-  /// The input axis
-  LabeledAxis & _input_axis;
-
-  /// The output axis
-  LabeledAxis & _output_axis;
-
   /// Input variables
   VariableStorage _input_variables;
 
   /// Output variables
   VariableStorage _output_variables;
+
+  /// Variable histories
+  std::vector<VariableStorage> _histories;
 
   /// Current tensor options for padding variables
   TensorOptions _options;

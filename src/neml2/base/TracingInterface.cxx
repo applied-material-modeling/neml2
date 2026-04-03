@@ -142,20 +142,19 @@ OptionSet
 TracingInterface::expected_options()
 {
   OptionSet options;
-  options.set<std::string>("trace_file") = "";
-  options.set("trace_file").doc() =
-      "The file to write the trace to. If not set, tracing will be disabled.";
+  options.add_optional<std::string>(
+      "trace_file", "The file to write the trace to. If not set, tracing will be disabled.");
   return options;
 }
 
-TracingInterface::TracingInterface(std::string trace_file)
-  : _enabled(!trace_file.empty()),
-    _writer(_enabled ? &init_writer(std::move(trace_file)) : nullptr)
+TracingInterface::TracingInterface(std::string filename)
+  : _writer(&init_writer(std::move(filename)))
 {
 }
 
 TracingInterface::TracingInterface(const OptionSet & options)
-  : TracingInterface(options.get<std::string>("trace_file"))
+  : _writer(options.defined("trace_file") ? &init_writer(options.get<std::string>("trace_file"))
+                                          : nullptr)
 {
 }
 
@@ -185,8 +184,7 @@ TracingInterface::init_writer(std::string filename)
 TraceWriter &
 TracingInterface::event_trace_writer() const
 {
-  neml_assert(_enabled, "Event tracing is not enabled");
-  neml_assert(_writer != nullptr, "Event trace writer is not initialized");
+  neml_assert(event_tracing_enabled(), "Event tracing is not enabled");
   return *_writer;
 }
 } // namespace neml2

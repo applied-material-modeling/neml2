@@ -137,12 +137,12 @@
 
 [Models]
   [split_to_deformation_rate]
-    type = R2toSR2
+    type = R2ToSR2
     input = 'forces/spatial_velocity_gradient'
     output = 'forces/deformation_rate'
   []
   [split_to_vorticity]
-    type = R2toWR2
+    type = R2ToWR2
     input = 'forces/spatial_velocity_gradient'
     output = 'forces/vorticity'
   []
@@ -237,7 +237,7 @@
     solver = 'newton'
   []
   [full_stress]
-    type = SR2toR2
+    type = SR2ToR2
     input = 'state/internal/cauchy_stress'
     output = 'state/internal/full_cauchy_stress'
   []

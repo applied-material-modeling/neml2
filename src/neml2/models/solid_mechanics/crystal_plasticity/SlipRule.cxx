@@ -36,14 +36,9 @@ SlipRule::expected_options()
   options.doc() = "Parent class for all slip rules, which define the slip rate in terms of the "
                   "resolved shear and the slip system strength";
 
-  options.set_output("slip_rates") = VariableName(STATE, "internal", "slip_rates");
-  options.set("slip_rates").doc() = "Name of the slip rate tensor";
-
-  options.set_input("resolved_shears") = VariableName(STATE, "internal", "resolved_shears");
-  options.set("resolved_shears").doc() = "Name of the resolved shear tensor";
-
-  options.set_input("slip_strengths") = VariableName(STATE, "internal", "slip_strengths");
-  options.set("slip_strengths").doc() = "Name of the tensor containing the slip system strengths";
+  options.add_output("slip_rates", "Name of the slip rate tensor");
+  options.add_input("resolved_shears", "Name of the resolved shear tensor");
+  options.add_input("slip_strengths", "Name of the tensor containing the slip system strengths");
 
   return options;
 }

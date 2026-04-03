@@ -26,8 +26,8 @@
 
 #include <vector>
 
+#include "neml2/base/VariableName.h"
 #include "neml2/misc/types.h"
-#include "neml2/base/LabeledAxisAccessor.h"
 
 namespace neml2
 {
@@ -50,7 +50,7 @@ struct AxisLayout
    * @param base_shapes ID-to-variable base shape mapping
    * @param istrs IStructure for each variable group
    */
-  AxisLayout(const std::vector<std::vector<LabeledAxisAccessor>> & vars,
+  AxisLayout(const std::vector<std::vector<VariableName>> & vars,
              std::vector<TensorShape> intmd_shapes,
              std::vector<TensorShape> base_shapes,
              std::vector<IStructure> istrs);
@@ -89,9 +89,9 @@ struct AxisLayout
   std::vector<Size> storage_sizes(bool include_intmd) const;
 
   /// Accessor for variable names
-  std::vector<LabeledAxisAccessor> vars() const;
+  std::vector<VariableName> vars() const;
   /// Accessor for variable name
-  const LabeledAxisAccessor & var(std::size_t) const;
+  const VariableName & var(std::size_t) const;
   /// Accessor for variable intermediate shape
   const TensorShape & intmd_sizes(std::size_t) const;
   /// Accessor for variable base shape
@@ -102,7 +102,7 @@ struct AxisLayout
 
 private:
   /// ID-to-variable mapping
-  std::vector<LabeledAxisAccessor> _vars;
+  std::vector<VariableName> _vars;
   /// ID-to-variable intermediate shape mapping
   std::vector<TensorShape> _intmd_shapes;
   /// ID-to-variable base shape mapping
