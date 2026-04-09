@@ -20,7 +20,7 @@ Documentation flows from source to website. Work in this order:
 1. `expected_options()` in `.cxx` — **primary documentation target, feeds the website**
 2. Per-option `.doc()` strings — shown per parameter on the website
 3. Header `/// @brief` or `/** @brief */` — brief API reference, matched to local style
-4. `doc/content/` pages — narrative documentation
+4. `doc/content/` pages — **mandatory for new models and constitutive laws** (see section 4)
 
 ---
 
@@ -98,6 +98,43 @@ Full model documentation lives in `expected_options()`, not here.
 
 ---
 
+## 4. Narrative documentation (`doc/content/`) — mandatory for new models
+
+When the task involves a new model, constitutive law, or physics object, check whether
+`doc/content/` needs to be updated. This is **not optional**.
+
+**Step 1 — find the right page:**
+- New solid mechanics model → `doc/content/modules/solid_mechanics.md`
+- New physics domain → check `doc/content/modules/` for an existing page, or create one
+- Use Glob: `doc/content/modules/*.md`
+
+**Step 2 — add a section to the module page** (or create a new page if none fits).
+
+Follow the conventions of the surrounding content:
+- Use LaTeX `\f[ ... \f]` for block equations, `\f$ ... \f$` inline
+- List all input/output variables with their axis paths and physical meaning
+- Include a minimal HIT input example using the `@list-input` directive:
+  ```
+  @list-input:tests/unit/models/<path>/ModelName.i:Models
+  ```
+  (point to the unit test `.i` file if a dedicated example does not yet exist)
+
+For new constitutive laws, the section must include:
+- governing equations
+- variable definitions and sign conventions
+- parameter descriptions and units
+- any special behavior (piecewise, unloading/reloading, irreversibility, compression cutoff)
+- the `@list-input` HIT example
+
+**Step 3 — if creating a new page:**
+- Place it under `doc/content/modules/<domain>.md`
+- Report the intended link location (e.g. which navigation file or index page should reference it)
+
+Do NOT duplicate long theory text into headers — the header gets a one-line `/** @brief */`
+and the full formulation lives here in `doc/content/`.
+
+---
+
 ## 3. Python docstrings (Google-style)
 
 ```python
@@ -118,10 +155,11 @@ def load_model(path: str, name: str) -> "Model":
 
 ---
 
-## Workflow
+## 5. Workflow
 
 1. Read the `.cxx` to understand what the model computes.
 2. Read `expected_options()` — identify missing or incomplete `.doc()` strings and fill them in first.
 3. Check the header — read ≥3 neighbors, infer style, then add or trim header comments to match.
-4. Write documentation. When in doubt, write less.
-5. After writing, suggest running `/docs-verify` to validate website output.
+4. For new models or constitutive laws: update the relevant `doc/content/` page (see section 4).
+5. Write documentation. When in doubt, write less.
+6. After writing, suggest running `/docs-verify` to validate website output.
