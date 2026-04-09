@@ -74,7 +74,16 @@ The test-writer will:
 
 Then run `/build dev unit_tests` and `/test "Foo"` to verify the new test passes.
 
-**If tests fail:** report the failure — do NOT auto-fix production code. Stop and ask the user.
+**If tests fail — iterative fix loop (max 3 rounds):**
+
+1. Diagnose the root cause of each failure:
+   - **Test logic** (wrong expected value, bad input setup, stale reference data): fix the test directly and re-run.
+   - **Production code** (crash in library code, wrong model output, assertion failure in `set_value`/`set_dvalue`): do NOT modify — stop immediately, report the exact file and line, and ask the user.
+   - **Unclear**: do NOT modify anything. Explain your reasoning and ask the user before proceeding.
+
+2. After each fix attempt, re-run the tests. If the same failure repeats unchanged, stop — do not loop further.
+
+3. After 3 rounds of test-side fixes, if tests still fail, stop and report all outstanding failures to the user.
 
 **Only proceed to Step 5 when tests pass.**
 
