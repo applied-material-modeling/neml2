@@ -98,11 +98,18 @@ Implement a new model class end-to-end (the full pipeline):
 
 Runs in order — stops if any step fails:
 
+0. **Design spec lookup** — searches `design/` for a spec matching the description.
+   - One spec found → read it as source of truth.
+   - Multiple specs in the same directory → implement each variant; consider a shared base class.
+   - No spec found → proceed using the description and existing similar models as guide.
 1. **code-writer agent** — header + `.cxx` + `register_NEML2_object`; no CMakeLists.txt edit needed
 2. **`/build dev`** — verify it compiles
-3. **doc-writer agent** — complete `expected_options()` docstrings
+3. **doc-writer agent** — complete `expected_options()` docstrings + update `doc/content/` narrative page
 4. **test-writer agent** — write unit tests; run `/build dev unit_tests` + `/test "ClassName"`
 5. **Remind** — suggests `/docs-verify`
+
+**Design specs** live under `design/<module>/ModelName.md` and serve as the authoritative
+implementation spec. Place a spec there before running `/implement` to guide code generation.
 
 ---
 
@@ -147,7 +154,11 @@ Agents are invoked by Claude Code for specialized tasks. Each has a defined scop
 
 - Primary: `expected_options()` `.doc()` strings in `.cxx` (shown on the website)
 - Secondary: brief `/** @brief */` header comment, matched to the style of neighboring files
+- **For new models and constitutive laws:** updates the relevant `doc/content/modules/` page
+  with governing equations, variable definitions, parameter descriptions, and a HIT example
+  using `@list-input` — this is mandatory, not optional
 - Does NOT write `### Physics`, `### Variables`, or HIT example sections in headers
+  (full formulation lives in `doc/content/`, not in headers)
 - Always reads ≥3 neighboring headers to infer local style before writing anything
 
 ### `test-writer`
@@ -215,7 +226,7 @@ for the full policy.
 /implement PowerLawCreep
 ```
 
-This runs the full pipeline: code-writer → build → doc-writer → test-writer → remind about docs-verify.
+This runs the full pipeline: code-writer → build → doc-writer (docstrings + `doc/content/`) → test-writer → remind about docs-verify.
 
 ### Debug a failing test
 
