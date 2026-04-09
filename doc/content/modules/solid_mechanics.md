@@ -363,3 +363,159 @@ where now \f$ \dot{\gamma}_i \f$, the slip rate on each system, is the constitut
 Ancillary classes automatically generate lists of slip and twin systems from the crystal sytem, so the user does not need to manually provide these themselves.
 
 NEML2 uses *modified* Rodrigues parameters to define orientations internally.  These can be converted to Euler angles, quaternions, etc. for output.
+
+## Cohesive Zone Models
+
+Cohesive zone models (CZMs) describe the constitutive response of an interface between two material regions. All NEML2 CZMs derive from `TractionSeparationModel`, which declares the standard interface: a displacement jump vector
+
+\f[
+  \boldsymbol{\delta} = [\delta_n,\; \delta_{s1},\; \delta_{s2}]
+\f]
+
+expressed in the local interface frame (normal \f$ n \f$ plus two tangential directions \f$ s_1, s_2 \f$), and an interface traction vector
+
+\f[
+  \mathbf{T} = [T_n,\; T_{s1},\; T_{s2}].
+\f]
+
+The displacement jump is read from `forces/displacement_jump` and the traction is written to `state/traction`. Positive \f$ \delta_n \f$ denotes interface opening; negative values correspond to compression.
+
+### PureElasticTractionSeparation
+
+The simplest traction-separation law assumes a linear elastic relationship with independent normal and tangential stiffnesses:
+
+\f[
+  T_n    = K_n\, \delta_n, \qquad
+  T_{s1} = K_t\, \delta_{s1}, \qquad
+  T_{s2} = K_t\, \delta_{s2}.
+\f]
+
+In matrix form, \f$ \mathbf{T} = \operatorname{diag}(K_n, K_t, K_t)\, \boldsymbol{\delta} \f$. The model is stateless (no history variables) and provides an exact analytic Jacobian.
+
+| Parameter | Description | Units |
+|-----------|-------------|-------|
+| `normal_stiffness` \f$ K_n \f$ | Penalty stiffness in the opening direction | stress / length |
+| `tangent_stiffness` \f$ K_t \f$ | Penalty stiffness in both sliding directions | stress / length |
+
+@list-input:tests/unit/models/solid_mechanics/cohesive/PureElasticTractionSeparation.i:Models
+
+### SalehaniIrani3DCTraction
+
+This model implements the 3D exponential cohesive law of Salehani & Irani (2018). The traction components decay exponentially with interface opening:
+
+\f[
+  T_i = a_i \frac{\delta_i}{\delta_{i,0}} \exp(-x),
+\f]
+
+where the coupling exponent is
+
+\f[
+  x = \frac{\delta_n}{\delta_{n,0}} + \left(\frac{\delta_{s1}}{\delta_{t,0}}\right)^2 + \left(\frac{\delta_{s2}}{\delta_{t,0}}\right)^2,
+\f]
+
+and the prefactors are
+
+\f[
+  a_0 = e\, T_{n,\max}, \qquad a_{12} = \sqrt{2e}\, T_{s,\max}.
+\f]
+
+The characteristic tangential gap used internally is \f$ \delta_{t,0} = \sqrt{2}\, \delta_{t,\text{in}} \f$, where \f$ \delta_{t,\text{in}} \f$ is the user-supplied input. The model provides a full \f$ 3 \times 3 \f$ analytic Jacobian (not diagonal because \f$ x \f$ couples all three components).
+
+| Parameter | Description | Units |
+|-----------|-------------|-------|
+| `normal_gap_at_maximum_normal_traction` \f$ \delta_{n,0} \f$ | Characteristic normal gap at peak normal traction | length |
+| `tangential_gap_at_maximum_shear_traction` \f$ \delta_{t,\text{in}} \f$ | Characteristic tangential gap input (stored as \f$ \delta_{t,0} = \sqrt{2}\,\delta_{t,\text{in}} \f$) | length |
+| `maximum_normal_traction` \f$ T_{n,\max} \f$ | Peak normal traction | stress |
+| `maximum_shear_traction` \f$ T_{s,\max} \f$ | Peak shear traction | stress |
+
+@list-input:tests/unit/models/solid_mechanics/cohesive/SalehaniIrani3DCTraction.i:Models
+
+### BiLinearMixedModeTraction
+
+This model implements the bilinear mixed-mode damage law of Camanho & Davila (NASA/TM-2002-211737). It tracks a scalar damage variable \f$ d \in [0, 1] \f$ that is stored in `state/damage` and evolves irreversibly (it can only increase) with optional viscous regularization.
+
+#### Bilinear damage law
+
+The effective mixed-mode displacement jump is
+
+\f[
+  \delta_m = \sqrt{\langle \delta_n \rangle^2 + \delta_{s1}^2 + \delta_{s2}^2},
+\f]
+
+where \f$ \langle \cdot \rangle \f$ denotes the Macaulay bracket (zero for compression). Two characteristic values depend on the mode-mixity ratio \f$ \beta = \delta_s / \delta_n \f$:
+
+- **Damage-initiation jump** \f$ \delta_{\text{init}} \f$ (Benzeggagh-Kenane mixed-mode onset criterion):
+\f[
+  \delta_{\text{init}} = \frac{\delta_{n,0}\,\delta_{s,0}\,\sqrt{1+\beta^2}}{\sqrt{\delta_{s,0}^2 + (\beta\,\delta_{n,0})^2}},
+\f]
+  where \f$ \delta_{n,0} = N/K \f$ and \f$ \delta_{s,0} = S/K \f$.
+
+- **Full-degradation jump** \f$ \delta_{\text{final}} \f$ from the selected fracture criterion (see below).
+
+The bilinear damage variable is
+
+\f[
+  d_{\text{bilinear}} = \frac{\delta_{\text{final}}\,(\delta_m - \delta_{\text{init}})}{\delta_m\,(\delta_{\text{final}} - \delta_{\text{init}})}.
+\f]
+
+#### Irreversibility and viscous regularization
+
+The irreversibility constraint \f$ d \geq d_{\text{old}} \f$ is enforced by taking the maximum of the trial damage and the previous-step damage. Viscous regularization with coefficient \f$ \mu \f$ then gives the updated damage:
+
+\f[
+  d = \frac{d_{\text{irreversible}} + (\mu / \Delta t)\, d_{\text{old}}}{\mu / \Delta t + 1}.
+\f]
+
+Setting \f$ \mu = 0 \f$ disables regularization.
+
+#### Traction
+
+The traction follows a standard continuum damage form with compression cutoff (the normal traction is not degraded under compression):
+
+\f[
+  T_n    = (1-d)\,K\,\langle\delta_n\rangle + K\,(\delta_n - \langle\delta_n\rangle), \qquad
+  T_{si} = (1-d)\,K\,\delta_{si}.
+\f]
+
+#### Mixed-mode fracture criteria
+
+Two criteria are available via the `criterion` option:
+
+- **BK** (Benzeggagh-Kenane, default):
+\f[
+  \delta_{\text{final}} = \frac{2}{K\,\delta_{\text{init}}} \left[ G_{\mathrm{Ic}} + (G_{\mathrm{IIc}} - G_{\mathrm{Ic}}) \left(\frac{\beta^2}{1+\beta^2}\right)^\eta \right].
+\f]
+
+- **POWER_LAW**:
+\f[
+  \delta_{\text{final}} = \frac{2(1+\beta^2)}{K\,\delta_{\text{init}}} \left[ G_{\mathrm{Ic}}^{-\eta} + \left(\frac{\beta^2}{G_{\mathrm{IIc}}}\right)^\eta \right]^{-1/\eta}.
+\f]
+
+#### Variables
+
+| Variable | Axis path | Description |
+|----------|-----------|-------------|
+| `displacement_jump` (input) | `forces/displacement_jump` | Current displacement jump \f$ \boldsymbol{\delta} \f$ |
+| `traction` (output) | `state/traction` | Interface traction \f$ \mathbf{T} \f$ |
+| `damage` (output) | `state/damage` | Damage variable \f$ d \f$ after irreversibility and regularization |
+| `damage_old` (input) | `old_state/damage` | Damage variable from the previous step |
+| `displacement_jump_old` (input) | `old_forces/displacement_jump` | Displacement jump from the previous step |
+| `time` (input) | `forces/t` | Current time |
+| `time_old` (input) | `old_forces/t` | Time at start of the step |
+
+#### Parameters
+
+| Parameter | Symbol | Description | Units |
+|-----------|--------|-------------|-------|
+| `penalty_stiffness` | \f$ K \f$ | Elastic penalty stiffness | stress / length |
+| `mode_I_critical_fracture_energy` | \f$ G_{\mathrm{Ic}} \f$ | Mode I critical energy release rate | energy / area |
+| `mode_II_critical_fracture_energy` | \f$ G_{\mathrm{IIc}} \f$ | Mode II critical energy release rate | energy / area |
+| `normal_strength` | \f$ N \f$ | Tensile interface strength | stress |
+| `shear_strength` | \f$ S \f$ | Shear interface strength | stress |
+| `mixed_mode_exponent` | \f$ \eta \f$ | Exponent for BK or power-law criterion | dimensionless |
+| `viscosity` | \f$ \mu \f$ | Viscous regularization coefficient (0 = off) | time |
+| `criterion` | — | `"BK"` or `"POWER_LAW"` | — |
+| `lag_mode_mixity` | — | Use previous-step \f$ \boldsymbol{\delta} \f$ when computing \f$ \beta \f$, \f$ \delta_{\text{init}} \f$, \f$ \delta_{\text{final}} \f$ (default `true`) | — |
+| `lag_displacement_jump` | — | Use previous-step \f$ \boldsymbol{\delta} \f$ when computing \f$ \delta_m \f$ (default `false`) | — |
+
+@list-input:tests/unit/models/solid_mechanics/cohesive/BiLinearMixedModeTraction.i:Models
