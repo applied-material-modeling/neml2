@@ -149,7 +149,7 @@ available_projections = {
 }
 
 
-def symmetry_operators_as_R2(orbifold, device=torch.device("cpu")):
+def symmetry_operators_as_R2(orbifold, device=torch.device("cpu"), include_inversion=False):
     """Return the symmetry operators for a given symmetry group as a batch of rank two tensors
 
     Args:
@@ -157,8 +157,12 @@ def symmetry_operators_as_R2(orbifold, device=torch.device("cpu")):
 
     Keyword Args:
         device (torch.device): which device to place the tensors
+        include_inversion (bool): whether to include inversion in the symmetry operators, default False
     """
-    return tensors.R2(crystallography.symmetry(orbifold, device=device).torch(), 0)
+    candidates = crystallography.symmetry(orbifold, device=device).torch()
+    if include_inversion:
+        candidates = torch.cat([candidates, -candidates], dim=0)
+    return tensors.R2(candidates, 0)
 
 
 def pole_figure_odf(
@@ -444,8 +448,24 @@ class IPFReduction:
         v1 = v1 / v1.norm()
         v2 = v2 / v2.norm()
 
+        if v0.dim() != 1 or v1.dim() != 1 or v2.dim() != 1:
+            raise ValueError("v0, v1, and v2 must be 1D tensors")
+
         self.v = [v0, v1, v2]
-        self.n = [v0.cross(v1), v1.cross(v2), v2.cross(v0)]
+
+        n01 = v0.cross(v1)
+        if n01.dot(v2).torch() < 0:
+            n01 = -n01
+
+        n12 = v1.cross(v2)
+        if n12.dot(v0).torch() < 0:
+            n12 = -n12
+
+        n20 = v2.cross(v0)
+        if n20.dot(v1).torch() < 0:
+            n20 = -n20
+
+        self.n = [n01, n12, n20]
 
     def __call__(self, v):
         """Apply the reduction to a set of poles"""
@@ -487,7 +507,7 @@ def inverse_pole_figure_points(
 
     # Do the projection
     sample_symmetry_operators = symmetry_operators_as_R2(
-        sample_symmetry, device=orientations.device
+        sample_symmetry, device=orientations.device, include_inversion=True
     )
     sample_directions = sample_symmetry_operators * direction
     crystal_directions = sample_directions.rotate(orientations.inv().dynamic.unsqueeze(-1))
