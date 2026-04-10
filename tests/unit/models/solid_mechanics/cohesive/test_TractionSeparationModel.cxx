@@ -278,3 +278,106 @@ TEST_CASE("BiLinearMixedModeTraction damage regime set_dvalue", "[solid_mechanic
     REQUIRE(at::allclose(dT_ddelta, dT_ddelta_fd, /*rtol=*/1e-5, /*atol=*/1e-5));
   }
 }
+
+// ===========================================================================
+// ExpTractionSeparation — reversible (no damage history)
+// ===========================================================================
+TEST_CASE("ExpTractionSeparation reversible", "[solid_mechanics/cohesive]")
+{
+  // Parameters: Gc=1.0, delta0=0.5, beta=0.5, irreversible_damage=false
+  // delta = [0.3, 0.2, 0.1], old_max = 0.0
+  //   delta_eff = sqrt(0.3^2 + 0.5*(0.2^2+0.1^2)) = sqrt(0.09+0.025) = sqrt(0.115)
+  //   one_m_d   = exp(-sqrt(0.115)/0.5)
+  //   c         = 1.0 / 0.5^2 = 4.0
+  //   T_i       = one_m_d * 4.0 * delta_i
+  auto model = load_model(
+      "models/solid_mechanics/cohesive/ExpTractionSeparation_reversible.i", "model");
+
+  const ValueMap in = {
+      {VariableName(FORCES, "displacement_jump"), Vec::fill(0.3, 0.2, 0.1)},
+      {VariableName(OLD_STATE, "effective_displacement_jump_scalar_max"), Scalar::full(0.0)},
+  };
+
+  SECTION("set_value")
+  {
+    const auto out = model->value(in);
+    const auto & T = out.at(VariableName(STATE, "traction"));
+    const auto & delta_eff_max =
+        out.at(VariableName(STATE, "effective_displacement_jump_scalar_max"));
+
+    const double delta_eff = std::sqrt(0.115);
+    const double one_m_d = std::exp(-delta_eff / 0.5);
+    const double c = 4.0;
+    const auto T_expected = Vec::fill(one_m_d * c * 0.3, one_m_d * c * 0.2, one_m_d * c * 0.1);
+
+    REQUIRE(at::allclose(T, T_expected, /*rtol=*/1e-6, /*atol=*/1e-6));
+    REQUIRE(at::allclose(
+        delta_eff_max, Scalar::full(delta_eff), /*rtol=*/1e-6, /*atol=*/1e-6));
+  }
+
+  SECTION("set_dvalue")
+  {
+    const auto [out, dout] = model->value_and_dvalue(in);
+
+    const auto & dT_ddelta =
+        dout.at(VariableName(STATE, "traction")).at(VariableName(FORCES, "displacement_jump"));
+
+    const auto dT_ddelta_fd =
+        fd_jacobian(*model, in, {FORCES, "displacement_jump"}, {STATE, "traction"});
+
+    REQUIRE(at::allclose(dT_ddelta, dT_ddelta_fd, /*rtol=*/1e-5, /*atol=*/1e-5));
+  }
+}
+
+// ===========================================================================
+// ExpTractionSeparation — irreversible, clamped by old_max
+// ===========================================================================
+TEST_CASE("ExpTractionSeparation irreversible clamped", "[solid_mechanics/cohesive]")
+{
+  // Parameters: Gc=1.0, delta0=0.5, beta=0.5, irreversible_damage=true
+  // delta = [0.3, 0.2, 0.1], old_max = 0.5
+  //   delta_eff_raw = sqrt(0.115) ~ 0.33912 < 0.5 => delta_eff clamped to 0.5
+  //   one_m_d = exp(-0.5/0.5) = exp(-1)
+  //   c = 4.0
+  //   T_i = exp(-1) * 4.0 * delta_i
+  //   effective_displacement_jump_scalar_max = 0.5 (unchanged)
+  // When clamped, dT/d(delta) = one_m_d * c * I (delta_eff is constant w.r.t. delta)
+  auto model = load_model(
+      "models/solid_mechanics/cohesive/ExpTractionSeparation_irreversible.i", "model");
+
+  const ValueMap in = {
+      {VariableName(FORCES, "displacement_jump"), Vec::fill(0.3, 0.2, 0.1)},
+      {VariableName(OLD_STATE, "effective_displacement_jump_scalar_max"), Scalar::full(0.5)},
+  };
+
+  SECTION("set_value")
+  {
+    const auto out = model->value(in);
+    const auto & T = out.at(VariableName(STATE, "traction"));
+    const auto & delta_eff_max =
+        out.at(VariableName(STATE, "effective_displacement_jump_scalar_max"));
+
+    const double one_m_d = std::exp(-1.0);
+    const double c = 4.0;
+    const auto T_expected = Vec::fill(one_m_d * c * 0.3, one_m_d * c * 0.2, one_m_d * c * 0.1);
+
+    REQUIRE(at::allclose(T, T_expected, /*rtol=*/1e-6, /*atol=*/1e-6));
+    REQUIRE(at::allclose(
+        delta_eff_max, Scalar::full(0.5), /*rtol=*/1e-6, /*atol=*/1e-6));
+  }
+
+  SECTION("set_dvalue")
+  {
+    // Clamped regime: delta_eff is constant w.r.t. delta, so
+    // dT/d(delta) = one_m_d * c * I (a scaled identity).
+    const auto [out, dout] = model->value_and_dvalue(in);
+
+    const auto & dT_ddelta =
+        dout.at(VariableName(STATE, "traction")).at(VariableName(FORCES, "displacement_jump"));
+
+    const auto dT_ddelta_fd =
+        fd_jacobian(*model, in, {FORCES, "displacement_jump"}, {STATE, "traction"});
+
+    REQUIRE(at::allclose(dT_ddelta, dT_ddelta_fd, /*rtol=*/1e-5, /*atol=*/1e-5));
+  }
+}
