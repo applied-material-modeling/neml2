@@ -163,6 +163,16 @@ neml2.postprocessing.pretty_plot_pole_figure_points(
 )
 ```
 
+## Plot a discrete inverse pole figure
+
+Use the built-in routines to plot a discrete IPF in the rolling direction
+
+```{code-cell} ipython3
+neml2.postprocessing.pretty_plot_inverse_pole_figure(
+    orientations, torch.tensor([0.0, 1.0, 0.0], device=device), crystal_symmetry="432"
+)
+```
+
 ## ODF reconstruction
 
 Reconstruct the ODF from the discrete data.  This example optimizes the kernel half-width with the build in routine (which uses a cross-validation approach).  Print the final, optimal half width.
@@ -171,9 +181,8 @@ Reconstruct the ODF from the discrete data.  This example optimizes the kernel h
 odf = neml2.postprocessing.odf.KDEODF(
     orientations, neml2.postprocessing.odf.DeLaValleePoussinKernel(torch.tensor(0.1))
 )
-# odf.optimize_kernel(verbose=True)
-# print(odf.kernel.h)
-odf.kernel.h = torch.tensor(0.07)
+odf.optimize_kernel(verbose=True)
+print(odf.kernel.h)
 ```
 
 ## Plot a continuous polefigure
