@@ -49,21 +49,7 @@ running `/fix-build` manually before retrying `/implement`.
 
 ---
 
-### Step 3 — Complete documentation
-
-Invoke the **doc-writer agent** with the path to the new `.cxx` file.
-
-The doc-writer will:
-1. Fill in complete `options.doc()` and per-option `.doc()` strings in `expected_options()`
-2. Check neighboring headers and add a brief class comment to the header if local style warrants it
-3. Locate the relevant narrative page under `doc/content/` (e.g. `doc/content/modules/solid_mechanics.md`)
-   and add a section for the new model covering governing equations, variable definitions,
-   parameter descriptions, and a minimal HIT input example using `@list-input`
-4. If no suitable narrative page exists, create one and report where it should be linked
-
----
-
-### Step 4 — Write unit tests
+### Step 3 — Write unit tests
 
 Invoke the **test-writer agent** with the path to the new header.
 
@@ -85,7 +71,21 @@ Then run `/build dev unit_tests` and `/test "Foo"` to verify the new test passes
 
 3. After 3 rounds of test-side fixes, if tests still fail, stop and report all outstanding failures to the user.
 
-**Only proceed to Step 5 when tests pass.**
+**Only proceed to Step 4 when tests pass.**
+
+---
+
+### Step 4 — Complete documentation
+
+Invoke the **doc-writer agent** with the path to the new `.cxx` file.
+
+The doc-writer will:
+1. Fill in complete `options.doc()` and per-option `.doc()` strings in `expected_options()`
+2. Check neighboring headers and add a brief class comment to the header if local style warrants it
+3. Locate the relevant narrative page under `doc/content/` (e.g. `doc/content/modules/solid_mechanics.md`)
+   and add a section for the new model covering governing equations, variable definitions,
+   parameter descriptions, and a minimal HIT input example using `@list-input`
+4. If no suitable narrative page exists, create one and report where it should be linked
 
 ---
 
