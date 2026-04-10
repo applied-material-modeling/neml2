@@ -519,3 +519,53 @@ Two criteria are available via the `criterion` option:
 | `lag_displacement_jump` | — | Use previous-step \f$ \boldsymbol{\delta} \f$ when computing \f$ \delta_m \f$ (default `false`) | — |
 
 @list-input:tests/unit/models/solid_mechanics/cohesive/BiLinearMixedModeTraction.i:Models
+
+### ExpTractionSeparation
+
+This model implements an exponential cohesive zone law in which the traction decays smoothly from a finite peak to zero as the interface opens. The softening behaviour is controlled by the critical fracture energy \f$ G_c \f$ and the characteristic softening length \f$ \delta_0 \f$.
+
+#### Governing equations
+
+The regularized effective scalar displacement jump couples normal and shear opening through the dimensionless weight \f$ \beta \f$:
+
+\f[
+  \delta_{\mathrm{eff}} = \sqrt{\delta_n^2 + \beta\!\left(\delta_{s1}^2 + \delta_{s2}^2\right) + \varepsilon},
+\f]
+
+where \f$ \varepsilon \f$ is a small regularization constant that prevents singular gradients when the jump is exactly zero. The exponential damage factor is
+
+\f[
+  1 - d = \exp\!\left(-\frac{\delta_{\mathrm{eff}}}{\delta_0}\right),
+\f]
+
+and the traction in each component direction \f$ i \f$ is
+
+\f[
+  T_i = (1-d)\,\frac{G_c}{\delta_0^2}\,\delta_i
+       = \frac{G_c}{\delta_0^2}\,\exp\!\left(-\frac{\delta_{\mathrm{eff}}}{\delta_0}\right)\delta_i.
+\f]
+
+The peak traction in pure mode-I (\f$ \beta = 0 \f$, \f$ \delta_{s1} = \delta_{s2} = 0 \f$) is \f$ T_{\max} = G_c / (e\,\delta_0) \f$, reached at \f$ \delta_n = \delta_0 \f$.
+
+When `irreversible_damage = true`, \f$ \delta_{\mathrm{eff}} \f$ is replaced by \f$ \max(\delta_{\mathrm{eff}}, \delta_{\mathrm{eff,max}}^{\mathrm{old}}) \f$ before evaluating the damage factor, so that the traction cannot recover upon unloading.
+
+#### Variables
+
+| Variable | Axis path | Description |
+|----------|-----------|-------------|
+| `displacement_jump` (input) | `forces/displacement_jump` | Current displacement jump \f$ \boldsymbol{\delta} = [\delta_n, \delta_{s1}, \delta_{s2}] \f$ |
+| `traction` (output) | `state/traction` | Interface traction \f$ \mathbf{T} \f$ |
+| `effective_displacement_jump_scalar_max` (output) | `state/effective_displacement_jump_scalar_max` | Updated historical maximum of \f$ \delta_{\mathrm{eff}} \f$ |
+| `effective_displacement_jump_scalar_max_old` (input) | `old_state/effective_displacement_jump_scalar_max` | Historical maximum of \f$ \delta_{\mathrm{eff}} \f$ from the previous step (used when `irreversible_damage = true`) |
+
+#### Parameters
+
+| Parameter | Symbol | Description | Units |
+|-----------|--------|-------------|-------|
+| `fracture_energy` | \f$ G_c \f$ | Critical fracture energy | energy / area |
+| `softening_length_scale` | \f$ \delta_0 \f$ | Characteristic softening length; smaller values give faster traction decay | length |
+| `tangential_weight` | \f$ \beta \f$ | Weight of shear components in \f$ \delta_{\mathrm{eff}} \f$; \f$ \beta=1 \f$ gives equal normal/shear weighting | dimensionless |
+| `regularization_eps` | \f$ \varepsilon \f$ | Small constant added under the square root to avoid singular gradients at zero jump (default \f$ 10^{-16} \f$) | length\f$^2\f$ |
+| `irreversible_damage` | — | If `true`, damage is monotonically increasing (no traction recovery on unloading); default `false` | — |
+
+@list-input:tests/unit/models/solid_mechanics/cohesive/ExpTractionSeparation_reversible.i:Models

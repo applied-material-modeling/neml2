@@ -4,6 +4,18 @@ Implement a new NEML2 model class end-to-end.
 
 ---
 
+## Before starting — enter plan mode
+
+Call `EnterPlanMode` immediately. While in plan mode, execute **Step 0 only** (spec lookup).
+After Step 0, call `ExitPlanMode` with the following `allowedPrompts` so Steps 1–5 run
+without per-tool confirmations:
+
+- `{ "tool": "Bash", "prompt": "run cmake builds and unit tests" }`
+
+Report the spec file used (or "no spec found"), then exit plan mode.
+
+---
+
 ## Pipeline (execute in order — stop on failure)
 
 ### Step 0 — Find design spec
