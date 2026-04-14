@@ -46,13 +46,14 @@ protected:
 
   ///@{
   /// Model parameters
-  const Scalar & _K;       ///< Penalty elastic stiffness
-  const Scalar & _GI_c;   ///< Mode I critical energy release rate
-  const Scalar & _GII_c;  ///< Mode II critical energy release rate
-  const Scalar & _N;       ///< Tensile (normal) strength
-  const Scalar & _S;       ///< Shear strength
-  const Scalar & _eta;     ///< Mixed-mode propagation exponent
+  const Scalar & _K;         ///< Penalty elastic stiffness
+  const Scalar & _GI_c;      ///< Mode I critical energy release rate
+  const Scalar & _GII_c;     ///< Mode II critical energy release rate
+  const Scalar & _N;         ///< Tensile (normal) strength
+  const Scalar & _S;         ///< Shear strength
+  const Scalar & _eta;       ///< Mixed-mode propagation exponent
   const Scalar & _viscosity; ///< Viscous regularization coefficient (0 = none)
+  const Scalar & _alpha;     ///< Regularization width for the Macaulay bracket (matches MOOSE alpha)
   ///@}
 
   ///@{
@@ -71,9 +72,9 @@ protected:
 
   ///@{
   /// Control flags read from options at construction
-  bool _lag_mode_mixity;   ///< Use lagged delta for mode-mixity ratio
-  bool _lag_disp_jump;     ///< Use lagged delta for effective displacement jump
-  std::string _criterion;  ///< "BK" or "POWER_LAW"
+  bool _lag_mode_mixity;  ///< Use lagged delta for mode-mixity ratio
+  bool _lag_disp_jump;    ///< Use lagged delta for effective displacement jump
+  std::string _criterion; ///< "BK" or "POWER_LAW"
   ///@}
 };
 } // namespace neml2

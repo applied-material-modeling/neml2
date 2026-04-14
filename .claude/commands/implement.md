@@ -21,13 +21,15 @@ Report the spec file used (or "no spec found"), then exit plan mode.
 ### Step 0 — Find design spec
 
 Before writing any code, list all files under `design/` and find specs matching `$ARGUMENTS`
-by module or model name. If `design/` does not exist, skip this step.
+by module or model name. Supported spec formats are `.md` and `.pdf`. If `design/` does not
+exist, skip this step.
 
-- **If one spec is found:** read it and use it as the source of truth. Report which file
-  was used before proceeding.
+- **If one spec is found:** read it and use it as the source of truth. For PDFs, use the
+  `Read` tool (which supports PDF natively); read all pages if the file is short (≤10 pages),
+  or read relevant page ranges if it is long. Report which file was used before proceeding.
 
 - **If multiple specs are found in the same directory** (e.g. `design/traction_separation_law/BilinearMixed.md`,
-  `design/traction_separation_law/SI.md`, `design/traction_separation_law/Linear.md`):
+  `design/traction_separation_law/SI.pdf`, `design/traction_separation_law/Linear.md`):
   read all of them. Implement each variant described by its own spec file.
   Decide whether a shared base class is appropriate based on the specs — if the variants
   share a common interface or governing structure, implement a base class first and have each

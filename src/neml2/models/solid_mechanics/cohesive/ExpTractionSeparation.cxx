@@ -139,6 +139,7 @@ ExpTractionSeparation::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
   }
 
   if (dout_din)
+  {
     if (_delta.is_dependent())
     {
       // Gradient of delta_eff w.r.t. delta components
@@ -192,5 +193,22 @@ ExpTractionSeparation::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 
       _delta_eff_max.d(_delta) = Vec::fill(ddeff_ddn, ddeff_dds1, ddeff_dds2);
     }
+
+    if (_irreversible_damage && _delta_eff_max_old.is_dependent())
+    {
+      const auto use_raw = delta_eff_raw > old_max;
+      const auto zero_s = Scalar::zeros_like(dn);
+      const auto one_s = Scalar::ones_like(dn);
+      const auto factor = -(one_m_d / _delta0);
+
+      // d(delta_eff_max)/d(old_max): 0 when loading (raw wins), 1 when unloading (clamped)
+      _delta_eff_max.d(_delta_eff_max_old) = where(use_raw, zero_s, one_s);
+
+      // d(T_i)/d(old_max) = c * factor * d(delta_eff)/d(old_max) * delta_i
+      const auto dT_factor = c * factor * where(use_raw, zero_s, one_s);
+      _traction.d(_delta_eff_max_old) =
+          Vec::fill(dT_factor * dn, dT_factor * ds1, dT_factor * ds2);
+    }
+  }
 }
 } // namespace neml2
