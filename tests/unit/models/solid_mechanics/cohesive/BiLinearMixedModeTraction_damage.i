@@ -36,6 +36,7 @@
     shear_strength = 100
     mixed_mode_exponent = 2.0
     viscosity = 0.0
+    alpha = 1e-6
     lag_mode_mixity = true
     lag_displacement_jump = false
     criterion = 'BK'

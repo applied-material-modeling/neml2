@@ -28,8 +28,7 @@
 #include "neml2/tensors/R2.h"
 #include "neml2/tensors/functions/sqrt.h"
 #include "neml2/tensors/functions/pow.h"
-#include "neml2/tensors/functions/macaulay.h"
-#include "neml2/tensors/functions/heaviside.h"
+#include "neml2/tensors/functions/tanh.h"
 #include "neml2/tensors/functions/where.h"
 
 #include <cmath>
@@ -43,9 +42,8 @@ OptionSet
 BiLinearMixedModeTraction::expected_options()
 {
   OptionSet options = TractionSeparationModel::expected_options();
-  options.doc() +=
-      " following a bilinear mixed-mode damage law with irreversible damage evolution "
-      "and optional viscous regularization (Camanho & Davila, NASA/TM-2002-211737).";
+  options.doc() += " following a bilinear mixed-mode damage law with irreversible damage evolution "
+                   "and optional viscous regularization (Camanho & Davila, NASA/TM-2002-211737).";
 
   options.set_parameter<TensorName<Scalar>>("penalty_stiffness");
   options.set("penalty_stiffness").doc() = "Penalty elastic stiffness \\f$ K \\f$";
@@ -69,8 +67,7 @@ BiLinearMixedModeTraction::expected_options()
       "Mixed-mode propagation exponent \\f$ \\eta \\f$ for BK or power-law criterion";
 
   options.set_parameter<TensorName<Scalar>>("viscosity");
-  options.set("viscosity").doc() =
-      "Viscous regularization coefficient (0 disables regularization)";
+  options.set("viscosity").doc() = "Viscous regularization coefficient (0 disables regularization)";
 
   options.set_input("damage_old") = VariableName(OLD_STATE, "damage");
   options.set("damage_old").doc() = "Damage variable from the previous time step";
@@ -104,6 +101,11 @@ BiLinearMixedModeTraction::expected_options()
   options.set("criterion").doc() =
       "Mixed-mode propagation criterion: \"BK\" (Benzeggagh-Kenane) or \"POWER_LAW\"";
 
+  options.set_parameter<TensorName<Scalar>>("alpha");
+  options.set("alpha").doc() =
+      "Regularization width for the Macaulay bracket (normal opening/closing split). "
+      "Matches MOOSE's \\c alpha parameter.";
+
   return options;
 }
 
@@ -116,6 +118,7 @@ BiLinearMixedModeTraction::BiLinearMixedModeTraction(const OptionSet & options)
     _S(declare_parameter<Scalar>("S", "shear_strength")),
     _eta(declare_parameter<Scalar>("eta", "mixed_mode_exponent")),
     _viscosity(declare_parameter<Scalar>("viscosity", "viscosity")),
+    _alpha(declare_parameter<Scalar>("alpha", "alpha")),
     _d_old(declare_input_variable<Scalar>("damage_old")),
     _delta_old(declare_input_variable<Vec>("displacement_jump_old")),
     _t_old(declare_input_variable<Scalar>("time_old")),
@@ -201,11 +204,11 @@ BiLinearMixedModeTraction::set_value(bool out, bool dout_din, bool /*d2out_din2*
   // ddelta_init_open/dbeta = delta_init_open * beta * (1/(1+beta^2) - delta_n0^2/delta_mixed^2)
   Scalar ddelta_init_dbeta;
   if (dout_din && !_lag_mode_mixity)
-    ddelta_init_dbeta = where(normal_open,
-                              delta_init_open * beta *
-                                  (one / one_plus_beta_sq -
-                                   delta_n0 * delta_n0 / (safe_delta_mixed * safe_delta_mixed)),
-                              zero);
+    ddelta_init_dbeta = where(
+        normal_open,
+        delta_init_open * beta *
+            (one / one_plus_beta_sq - delta_n0 * delta_n0 / (safe_delta_mixed * safe_delta_mixed)),
+        zero);
   else
     ddelta_init_dbeta = zero;
 
@@ -226,8 +229,7 @@ BiLinearMixedModeTraction::set_value(bool out, bool dout_din, bool /*d2out_din2*
     const auto beta_sq_ratio = where(one_plus_beta_sq > zero, beta_sq / one_plus_beta_sq, zero);
     const auto mix_factor = neml2::pow(beta_sq_ratio, _eta);
     const auto safe_delta_init = where(delta_init > zero, delta_init, one);
-    delta_final_open =
-        2 / (_K * safe_delta_init) * (_GI_c + (_GII_c - _GI_c) * mix_factor);
+    delta_final_open = 2 / (_K * safe_delta_init) * (_GI_c + (_GII_c - _GI_c) * mix_factor);
 
     if (dout_din && !_lag_mode_mixity)
     {
@@ -235,12 +237,11 @@ BiLinearMixedModeTraction::set_value(bool out, bool dout_din, bool /*d2out_din2*
       const auto dbeta_sq_ratio_dbeta =
           where(one_plus_beta_sq > zero, 2 * beta / (one_plus_beta_sq * one_plus_beta_sq), zero);
       const auto dmix_dbeta =
-          where(mix_factor > zero, _eta * neml2::pow(beta_sq_ratio, _eta - one) *
-                                       dbeta_sq_ratio_dbeta,
+          where(mix_factor > zero,
+                _eta * neml2::pow(beta_sq_ratio, _eta - one) * dbeta_sq_ratio_dbeta,
                 zero);
-      ddelta_final_dbeta = where(normal_open,
-                                 2 / (_K * safe_delta_init) * (_GII_c - _GI_c) * dmix_dbeta,
-                                 zero);
+      ddelta_final_dbeta =
+          where(normal_open, 2 / (_K * safe_delta_init) * (_GII_c - _GI_c) * dmix_dbeta, zero);
     }
     else
     {
@@ -257,8 +258,7 @@ BiLinearMixedModeTraction::set_value(bool out, bool dout_din, bool /*d2out_din2*
     const auto safe_Gc = where(Gc_mixed > zero, Gc_mixed, one);
     const auto safe_delta_init = where(delta_init > zero, delta_init, one);
     const auto Gc_neg_inv_eta = neml2::pow(safe_Gc, -one / _eta);
-    delta_final_open =
-        (2 + 2 * beta_sq) / (_K * safe_delta_init) * Gc_neg_inv_eta;
+    delta_final_open = (2 + 2 * beta_sq) / (_K * safe_delta_init) * Gc_neg_inv_eta;
 
     if (dout_din && !_lag_mode_mixity)
     {
@@ -302,14 +302,17 @@ BiLinearMixedModeTraction::set_value(bool out, bool dout_din, bool /*d2out_din2*
 
   // ---------------------------------------------------------------
   // Step 4: Effective mixed-mode displacement jump delta_m
+  // Regularized normal opening matches MOOSE regularizedHeavyside(dn, alpha):
+  //   H_alpha(x) = 0.5*(1 + tanh(x/alpha)),  dn_pos = H_alpha * dn
   // ---------------------------------------------------------------
   const auto delta_dj = _lag_disp_jump ? _delta_old() : delta_cur;
   const auto dn_dj = delta_dj(0);
   const auto ds1_dj = delta_dj(1);
   const auto ds2_dj = delta_dj(2);
 
-  // Positive normal part (Macaulay bracket)
-  const auto dn_pos = macaulay(dn_dj);
+  const auto tanh_dn_dj = neml2::tanh(dn_dj / _alpha);
+  const auto H_dn_dj = (one + tanh_dn_dj) / 2; // regularized Heaviside of dn_dj
+  const auto dn_pos = H_dn_dj * dn_dj;
   const auto delta_m = neml2::sqrt(ds1_dj * ds1_dj + ds2_dj * ds2_dj + dn_pos * dn_pos);
 
   // Gradient of delta_m w.r.t. current delta (only when not lagged)
@@ -318,8 +321,12 @@ BiLinearMixedModeTraction::set_value(bool out, bool dout_din, bool /*d2out_din2*
   {
     const auto nonzero_m = delta_m > zero;
     const auto inv_dm = where(nonzero_m, one / delta_m, zero);
-    const auto H_n = heaviside(dn_dj);
-    const auto ddm_ddn = dn_pos * H_n * inv_dm;
+    // d(dn_pos)/d(dn) = H_alpha + dn * dH_alpha/dn
+    //                 = H_alpha + dn * (1 - tanh²) / (2*alpha)
+    // matches MOOSE: H + delta_n * dH (regularizedHeavysideDerivative)
+    const auto dHdn_dj = (one - tanh_dn_dj * tanh_dn_dj) / (2 * _alpha);
+    const auto ddnpos_ddn_dj = H_dn_dj + dn_dj * dHdn_dj;
+    const auto ddm_ddn = dn_pos * ddnpos_ddn_dj * inv_dm;
     const auto ddm_dds1 = ds1_dj * inv_dm;
     const auto ddm_dds2 = ds2_dj * inv_dm;
     ddelta_m_ddelta = Vec::fill(ddm_ddn, ddm_dds1, ddm_dds2);
@@ -338,8 +345,10 @@ BiLinearMixedModeTraction::set_value(bool out, bool dout_din, bool /*d2out_din2*
   const auto safe_denom = where(denom > zero, denom, one);
   const auto d_bilinear = safe_delta_final * (delta_m - safe_delta_init) / safe_denom;
 
-  const auto in_elastic = delta_m <= safe_delta_init;
-  const auto fully_damaged = delta_m >= safe_delta_final;
+  // Strict inequalities match MOOSE: d=0 for delta_m < delta_init,
+  // d=1 for delta_m > delta_final, bilinear otherwise (including boundaries).
+  const auto in_elastic = delta_m < safe_delta_init;
+  const auto fully_damaged = delta_m > safe_delta_final;
 
   const auto d_trial = where(in_elastic, zero, where(fully_damaged, one, d_bilinear));
 
@@ -355,50 +364,24 @@ BiLinearMixedModeTraction::set_value(bool out, bool dout_din, bool /*d2out_din2*
   Vec dd_visc_ddelta;
   if (dout_din && _delta.is_dependent())
   {
-    // dd_bilinear/ddelta via chain rule through delta_m, delta_init, delta_final
-    // dd_bilinear/ddelta_m = delta_final*delta_init / (delta_m^2 * (delta_final - delta_init))
-    const auto dd_bilinear_ddm =
-        safe_delta_final * safe_delta_init / (delta_m * delta_m * (safe_delta_final - safe_delta_init));
-    const auto dd_bilinear_ddelta_m = dd_bilinear_ddm * ddelta_m_ddelta;
-    // ddelta_init and ddelta_final contributions (zero when lagged)
-    // dd_bilinear/ddelta_init = delta_final*(delta_m*(delta_final-delta_init) - (delta_m-delta_init)*delta_m) / ...
-    //                         = -delta_final / ((delta_final - delta_init)) * (1 - delta_final*(delta_m-delta_init)/(delta_m*(delta_final-delta_init)))
-    // Simplified: dd_bilinear/ddelta_init = -(delta_final/delta_m) / (delta_final - delta_init)
-    const auto dd_bilinear_ddelta_init_scalar =
-        -safe_delta_final / (safe_denom * safe_dt / safe_dt); // simplify; recompute below
-    // Actually just use the clean form:
+    // dd_bilinear/ddelta via chain rule through delta_m, delta_init, delta_final.
     // d_bilinear = df * (dm - di) / (dm * (df - di))
-    // dd/ddi = df * (-dm) / (dm*(df-di))  - df*(dm-di)*(-dm)/(dm*(df-di))^2
-    //        = df/(df-di) * [-1/dm + (dm-di)/(dm*(df-di))]
-    //        = df/(df-di) * [-(df-di) + (dm-di)] / (dm*(df-di))
-    //        = df * [-df + dm] / (dm*(df-di)^2)   ... this is getting messy
-
-    // Use the simpler quotient-rule result directly:
-    // Let A = df*(dm - di), B = dm*(df - di)
-    // d_bilinear = A/B
-    // dA/ddi = -df, dA/ddf = dm - di
-    // dB/ddi = 0,   dB/ddf = dm
-    // d(A/B)/ddi = (dA/ddi * B - A * dB/ddi) / B^2 = -df / (dm*(df-di)) - 0 ... wait
-    // actually dB/ddi = -dm, not 0:
-    // B = dm*(df - di), dB/ddi = -dm
-    // d(A/B)/ddi = (-df * B - A * (-dm)) / B^2
-    //            = (-df * dm*(df-di) + df*(dm-di)*dm) / (dm*(df-di))^2
-    //            = df * dm * (-(df-di) + (dm-di)) / (dm*(df-di))^2
-    //            = df * (dm - df) / (dm * (df-di)^2)
+    // Partial derivatives (holding the other two fixed):
+    //   ∂d/∂dm = df * di / (dm² * (df - di))
+    //   ∂d/∂di = df * (dm - df) / (dm * (df - di)²)
+    //   ∂d/∂df = -(dm - di) * di / (dm * (df - di)²)
     const auto df_minus_di = safe_delta_final - safe_delta_init;
+    const auto dd_bilinear_ddm =
+        safe_delta_final * safe_delta_init / (delta_m * delta_m * df_minus_di);
+    const auto dd_bilinear_ddelta_m = dd_bilinear_ddm * ddelta_m_ddelta;
     const auto dd_bilinear_ddelta_init_s =
         safe_delta_final * (delta_m - safe_delta_final) / (delta_m * df_minus_di * df_minus_di);
-    // d(A/B)/ddf = ((dm-di)*B - A*dm) / B^2
-    //           = ((dm-di)*dm*(df-di) - df*(dm-di)*dm) / (dm*(df-di))^2
-    //           = (dm-di)*dm*(-(df)) / (dm*(df-di))^2  ... wait
-    //           = dm*(dm-di)*(df-di-df) / (dm*(df-di))^2
-    //           = -(dm-di)*di / (dm*(df-di)^2)
     const auto dd_bilinear_ddelta_final_s =
         -(delta_m - safe_delta_init) * safe_delta_init / (delta_m * df_minus_di * df_minus_di);
 
-    const auto dd_bilinear_ddelta_contrib =
-        dd_bilinear_ddelta_m + dd_bilinear_ddelta_init_s * ddelta_init_ddelta +
-        dd_bilinear_ddelta_final_s * ddelta_final_ddelta;
+    const auto dd_bilinear_ddelta_contrib = dd_bilinear_ddelta_m +
+                                            dd_bilinear_ddelta_init_s * ddelta_init_ddelta +
+                                            dd_bilinear_ddelta_final_s * ddelta_final_ddelta;
 
     // Zero out in elastic and fully-damaged regimes
     const auto dd_trial_ddelta =
@@ -423,7 +406,9 @@ BiLinearMixedModeTraction::set_value(bool out, bool dout_din, bool /*d2out_din2*
     _d = d_visc;
 
     // T = (1-d)*K*(dn_pos_cur, ds1_cur, ds2_cur) + K*(dn_neg_cur, 0, 0)
-    const auto H_n_cur = heaviside(dn_cur);
+    // Use the same regularized Heaviside as in the delta_m computation (alpha matching MOOSE).
+    const auto tanh_dn_cur = neml2::tanh(dn_cur / _alpha);
+    const auto H_n_cur = (one + tanh_dn_cur) / 2;
     const auto dn_pos_cur = H_n_cur * dn_cur;
     const auto dn_neg_cur = dn_cur - dn_pos_cur;
     const auto one_m_d = one - d_visc;
@@ -440,16 +425,19 @@ BiLinearMixedModeTraction::set_value(bool out, bool dout_din, bool /*d2out_din2*
   {
     _d.d(_delta) = dd_visc_ddelta;
 
-    const auto H_n_cur = heaviside(dn_cur);
+    const auto tanh_dn_cur = neml2::tanh(dn_cur / _alpha);
+    const auto H_n_cur = (one + tanh_dn_cur) / 2;
     const auto dn_pos_cur = H_n_cur * dn_cur;
+    // d(dn_pos_cur)/d(dn_cur) = H + dn * dH/dn  (matches MOOSE ddelta_n_pos_ddelta_n)
+    const auto dHdn_cur = (one - tanh_dn_cur * tanh_dn_cur) / (2 * _alpha);
+    const auto ddnpos_ddn_cur = H_n_cur + dn_cur * dHdn_cur;
 
     // dT_n/d(dn, ds1, ds2):
-    //   T_n = (1-d)*K*dn_pos + K*dn_neg = K*dn - K*d*dn_pos
-    //   dT_n/ddn  = K*(1 - d*H_n) - K*dn_pos*dd/ddn
+    //   T_n = (1-d)*K*dn_pos + K*dn_neg
+    //   dT_n/ddn  = K*(1 - d * d(dn_pos)/d(dn)) - K*dn_pos*dd/ddn
     //   dT_n/dds1 = -K*dn_pos * dd/dds1
     //   dT_n/dds2 = -K*dn_pos * dd/dds2
-    const auto dTn_ddn =
-        _K * (one - d_visc * H_n_cur) - _K * dn_pos_cur * dd_visc_ddelta(0);
+    const auto dTn_ddn = _K * (one - d_visc * ddnpos_ddn_cur) - _K * dn_pos_cur * dd_visc_ddelta(0);
     const auto dTn_dds1 = -_K * dn_pos_cur * dd_visc_ddelta(1);
     const auto dTn_dds2 = -_K * dn_pos_cur * dd_visc_ddelta(2);
 
@@ -468,9 +456,15 @@ BiLinearMixedModeTraction::set_value(bool out, bool dout_din, bool /*d2out_din2*
     const auto dTs2_dds2 = (one - d_visc) * _K - _K * ds2_cur * dd_visc_ddelta(2);
 
     // Row-major 3x3 Jacobian
-    _traction.d(_delta) =
-        R2::fill(dTn_ddn, dTn_dds1, dTn_dds2, dTs1_ddn, dTs1_dds1, dTs1_dds2, dTs2_ddn,
-                 dTs2_dds1, dTs2_dds2);
+    _traction.d(_delta) = R2::fill(dTn_ddn,
+                                   dTn_dds1,
+                                   dTn_dds2,
+                                   dTs1_ddn,
+                                   dTs1_dds1,
+                                   dTs1_dds2,
+                                   dTs2_ddn,
+                                   dTs2_dds1,
+                                   dTs2_dds2);
   }
 }
 } // namespace neml2
