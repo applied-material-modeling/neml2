@@ -71,8 +71,7 @@ set(NEML2_WHEEL OFF CACHE INTERNAL "Build NEML2 as a Python wheel. This is suppo
 # Dependencies and 3rd party packages
 # ----------------------------------------------------------------------------
 set(torch_SEARCH_SITE_PACKAGES ON CACHE BOOL "Search for libTorch in Python site-packages")
-set(wasp_VERSION "78e8705d3743cee12cb0b024a51a98db2c3713bc" CACHE STRING "Default WASP version to download (if not found)")
-set(hit_VERSION "df7e49e95e5ea9ebef0e7578408221d3aeaf7513" CACHE STRING "Default HIT version to download")
+set(nmhit_VERSION "5159ab7f06d4b2a63ec4ba74a07621a5e896463a" CACHE STRING "Default neml2-hit version to download (if not found)")
 set(catch2_VERSION "v3.5.4" CACHE STRING "Default Catch2 version to download (if not found)")
 set(gperftools_VERSION "gperftools-2.17" CACHE STRING "Default gperftools version to download")
 set(argparse_VERSION "v3.2" CACHE STRING "Default argparse version to download")
@@ -152,63 +151,30 @@ if(NOT SKBUILD_STATE STREQUAL "editable")
 endif()
 
 # ----------------------------------------------------------------------------
-# wasp
+# nmhit (neml2-hit)
 # ----------------------------------------------------------------------------
-find_package(wasp MODULE COMPONENTS core hit)
+find_package(nmhit CONFIG HINTS ${NEML2_CONTRIB_PREFIX}/nmhit)
 
-if(NOT wasp_FOUND)
-      download_from_git(wasp https://code.ornl.gov/neams-workbench/wasp.git ${NEML2_CONTRIB_PREFIX} ${wasp_VERSION})
-      set(wasp_INSTALL_PREFIX ${NEML2_CONTRIB_PREFIX}/wasp CACHE PATH "wasp install prefix")
-      custom_install(wasp contrib/install_wasp.sh ${NEML2_CONTRIB_PREFIX}/wasp-src ${NEML2_CONTRIB_PREFIX}/wasp-build ${wasp_INSTALL_PREFIX})
-      find_package(wasp MODULE REQUIRED COMPONENTS core hit)
+if(NOT nmhit_FOUND)
+      download_from_git(nmhit https://github.com/applied-material-modeling/neml2-hit.git ${NEML2_CONTRIB_PREFIX} ${nmhit_VERSION})
+      set(nmhit_INSTALL_PREFIX ${NEML2_CONTRIB_PREFIX}/nmhit CACHE PATH "nmhit install prefix")
+      custom_install(nmhit contrib/install_nmhit.sh ${NEML2_CONTRIB_PREFIX}/nmhit-src ${NEML2_CONTRIB_PREFIX}/nmhit-build ${nmhit_INSTALL_PREFIX})
+      find_package(nmhit CONFIG REQUIRED PATHS ${nmhit_INSTALL_PREFIX} NO_DEFAULT_PATH)
 endif()
 
-# check if wasp is downloaded
-path_has_prefix(${wasp_ROOT} ${NEML2_CONTRIB_PREFIX} wasp_CONTRIB)
+# extract library path and include dir from the imported target
+get_target_property(nmhit_LIBRARY nmhit::nmhit LOCATION)
+get_target_property(nmhit_INCLUDE_DIR nmhit::nmhit INTERFACE_INCLUDE_DIRECTORIES)
 
-# wasp will be packaged as part of the NEML2 installation if it was downloaded by us (or if it is being built as a wheel).
-if(wasp_CONTRIB OR NEML2_WHEEL)
-      install_glob(${wasp_core_LIBRARY} ${INSTALL_LIBDIR} libneml2)
-      install_glob(${wasp_hit_LIBRARY} ${INSTALL_LIBDIR} libneml2)
+# check if nmhit is downloaded
+path_has_prefix(${nmhit_DIR} ${NEML2_CONTRIB_PREFIX} nmhit_CONTRIB)
+
+# nmhit will be packaged as part of the NEML2 installation if it was downloaded by us (or if it is being built as a wheel).
+if(nmhit_CONTRIB OR NEML2_WHEEL)
+      install_glob(${nmhit_LIBRARY} ${INSTALL_LIBDIR} libneml2)
       if(NOT SKBUILD_STATE STREQUAL "editable")
-            install(DIRECTORY ${wasp_core_INCLUDE_DIR}/waspcore ${wasp_hit_INCLUDE_DIR}/wasphit TYPE INCLUDE COMPONENT libneml2)
+            install(DIRECTORY ${nmhit_INCLUDE_DIR}/nmhit TYPE INCLUDE COMPONENT libneml2)
       endif()
-endif()
-if(NOT SKBUILD_STATE STREQUAL "editable")
-      install(FILES ${NEML2_SOURCE_DIR}/cmake/Modules/Findwasp.cmake DESTINATION share/cmake/neml2/Modules COMPONENT libneml2)
-endif()
-
-# ----------------------------------------------------------------------------
-# hit
-# ----------------------------------------------------------------------------
-find_package(hit MODULE)
-
-if(NOT hit_FOUND)
-      if(NOT hit_SOURCE_DIR)
-            download_from_git(hit https://github.com/idaholab/hit.git ${NEML2_CONTRIB_PREFIX} ${hit_VERSION})
-            set(hit_SOURCE_DIR ${NEML2_CONTRIB_PREFIX}/hit-src)
-      endif()
-
-      file(COPY ${hit_SOURCE_DIR}/include DESTINATION ${NEML2_CONTRIB_PREFIX}/hit-build FILES_MATCHING PATTERN "*.h")
-      file(COPY ${hit_SOURCE_DIR}/src DESTINATION ${NEML2_CONTRIB_PREFIX}/hit-build FILES_MATCHING PATTERN "*.cpp" PATTERN "*.cc")
-      configure_file(contrib/install_hit.cmake ${NEML2_CONTRIB_PREFIX}/hit-build/CMakeLists.txt @ONLY)
-      set(hit_INSTALL_PREFIX ${NEML2_CONTRIB_PREFIX}/hit CACHE PATH "hit install prefix")
-      custom_install(hit contrib/install_hit.sh ${NEML2_CONTRIB_PREFIX}/hit-build ${NEML2_CONTRIB_PREFIX}/hit-build ${hit_INSTALL_PREFIX})
-      find_package(hit MODULE REQUIRED)
-endif()
-
-# check if hit is downloaded
-path_has_prefix(${hit_ROOT} ${NEML2_CONTRIB_PREFIX} hit_CONTRIB)
-
-# hit will be packaged as part of the NEML2 installation if it was downloaded by us (or if it is being built as a wheel).
-if(hit_CONTRIB OR NEML2_WHEEL)
-      install(FILES ${hit_LIBRARY} DESTINATION ${INSTALL_LIBDIR} COMPONENT libneml2)
-      if(NOT SKBUILD_STATE STREQUAL "editable")
-            install(DIRECTORY ${hit_INCLUDE_DIR}/hit TYPE INCLUDE COMPONENT libneml2)
-      endif()
-endif()
-if(NOT SKBUILD_STATE STREQUAL "editable")
-      install(FILES ${NEML2_SOURCE_DIR}/cmake/Modules/Findhit.cmake DESTINATION share/cmake/neml2/Modules COMPONENT libneml2)
 endif()
 
 # ----------------------------------------------------------------------------

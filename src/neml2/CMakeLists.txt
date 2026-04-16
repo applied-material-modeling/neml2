@@ -107,7 +107,7 @@ endif()
 
 # libneml2_base
 neml2_add_submodule(base SHARED base)
-target_link_libraries(base PUBLIC tensor hit)
+target_link_libraries(base PUBLIC tensor nmhit::nmhit)
 
 if(NEML2_PCH)
   target_precompile_headers(base PUBLIC
