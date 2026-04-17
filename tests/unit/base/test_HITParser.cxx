@@ -48,14 +48,6 @@ TEST_CASE("HITParser", "[base]")
           utils::parse<TensorShape>("1"),
           Catch::Matchers::ContainsSubstring("must begin with '(' and end with ')'"));
     }
-
-    SECTION("bool")
-    {
-      REQUIRE(utils::parse<bool>("true"));
-      REQUIRE(!utils::parse<bool>("false"));
-      REQUIRE_THROWS_WITH(utils::parse<bool>("off"),
-                          Catch::Matchers::ContainsSubstring("Failed to parse 'off' as a boolean"));
-    }
   }
 
   SECTION("class HITParser")

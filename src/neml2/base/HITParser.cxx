@@ -24,9 +24,6 @@
 
 #include "neml2/base/HITParser.h"
 
-#include <fstream>
-#include <sstream>
-
 #include "nmhit/nmhit.h"
 
 #include "neml2/base/Registry.h"
@@ -43,19 +40,19 @@ namespace neml2
 {
 namespace
 {
-struct _NmhitRegistrar
+/**
+ * This class is used to register parsers for custom types with the nmhit library. It is
+ * instantiated as a static variable, so its constructor is called before main() is executed,
+ * ensuring that the parsers are registered before any parsing is attempted.
+ */
+struct NMHITRegistrar
 {
-  _NmhitRegistrar()
+  NMHITRegistrar()
   {
     nmhit::TypeRegistry::register_parser<TensorShape>([](const std::string & s)
                                                       { return utils::parse<TensorShape>(s); });
-
-    nmhit::TypeRegistry::register_parser<std::size_t>([](const std::string & s)
-                                                      { return utils::parse<std::size_t>(s); });
-
     nmhit::TypeRegistry::register_parser<VariableName>([](const std::string & s)
                                                        { return utils::parse<VariableName>(s); });
-
     nmhit::TypeRegistry::register_parser<Device>([](const std::string & s)
                                                  { return utils::parse<Device>(s); });
 
@@ -72,7 +69,7 @@ struct _NmhitRegistrar
 #undef register_tensor_name
   }
 };
-static _NmhitRegistrar _nmhit_registrar;
+static NMHITRegistrar _nmhit_registrar;
 } // namespace
 
 InputFile
@@ -180,16 +177,22 @@ HITParser::extract_option(nmhit::Node * n, OptionSet & options) const
       try_param_t(Device);
       FOR_ALL_TENSORBASE(try_tensor_name);
       try_tensor_name(ATensor);
-      else if (tp ==
-               utils::demangle(typeid(EnumSelection)
-                                   .name())) dynamic_cast<Option<EnumSelection> *>(option.get())
-          ->set()
-          .select(n->param<std::string>());
-      else if (tp == utils::demangle(
-                         typeid(MultiEnumSelection)
-                             .name())) dynamic_cast<Option<MultiEnumSelection> *>(option.get())
-          ->set()
-          .select(utils::parse_vector<std::string>(n->param<std::string>()));
+      else if (tp == utils::demangle(typeid(EnumSelection).name()))
+      {
+        auto * option_enum = dynamic_cast<Option<EnumSelection> *>(option.get());
+        neml_assert(
+            option_enum, "Option named '", option->name(), "' is not of type EnumSelection.");
+        option_enum->set().select(n->param<std::string>());
+      }
+      else if (tp == utils::demangle(typeid(MultiEnumSelection).name()))
+      {
+        auto * option_multi_enum = dynamic_cast<Option<MultiEnumSelection> *>(option.get());
+        neml_assert(option_multi_enum,
+                    "Option named '",
+                    option->name(),
+                    "' is not of type MultiEnumSelection.");
+        option_multi_enum->set().select(n->param<std::vector<std::string>>());
+      }
       // LCOV_EXCL_START
       else neml_assert(false, "Unsupported option type for option ", n->fullpath());
       // LCOV_EXCL_STOP

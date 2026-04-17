@@ -22,8 +22,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <iterator>
+#include <sstream>
+
 #include "neml2/base/MultiEnumSelection.h"
-#include "neml2/base/Parser.h"
 #include "neml2/misc/assertions.h"
 
 namespace neml2
@@ -46,7 +48,9 @@ operator<<(std::ostream & os, const MultiEnumSelection & es)
 std::stringstream &
 operator>>(std::stringstream & ss, MultiEnumSelection & es)
 {
-  es.select(utils::parse_vector<std::string>(ss.str()));
+  std::vector<std::string> tokens{std::istream_iterator<std::string>{ss},
+                                  std::istream_iterator<std::string>{}};
+  es.select(tokens);
   return ss;
 }
 
