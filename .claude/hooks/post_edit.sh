@@ -24,6 +24,12 @@ case "$FILE" in
         /usr/local/opt/llvm/bin/clang-format; do
       if command -v "$candidate" &>/dev/null 2>&1; then CF="$candidate"; break; fi
     done
+    if [ -z "$CF" ] && command -v brew &>/dev/null; then
+      echo "[neml2] clang-format not found — installing via brew install llvm ..."
+      brew install llvm 2>&1
+      CF="$(brew --prefix llvm 2>/dev/null)/bin/clang-format"
+      command -v "$CF" &>/dev/null 2>&1 || CF=""
+    fi
     [ -z "$CF" ] && exit 0
     if "$CF" --dry-run -Werror "$FILE" 2>/dev/null; then
       echo "[neml2] clang-format OK: ${FILE#$REPO_ROOT/}"
@@ -33,6 +39,10 @@ case "$FILE" in
     fi
     ;;
   *.py)
+    if ! command -v black &>/dev/null; then
+      echo "[neml2] black not found — installing via pip ..."
+      python3 -m pip install black 2>&1
+    fi
     if ! command -v black &>/dev/null; then exit 0; fi
     if black --check --line-length 100 --quiet "$FILE" 2>/dev/null; then
       echo "[neml2] black OK: ${FILE#$REPO_ROOT/}"

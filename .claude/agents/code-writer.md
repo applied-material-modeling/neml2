@@ -45,6 +45,22 @@ Before touching `CMakeLists.txt`:
 
 Always place `register_NEML2_object(ClassName)` at the bottom of every new `.cxx`.
 
+## Variable assignment in set_value
+
+`Variable<T>` has a **deleted copy assignment operator** — you cannot assign one variable to
+another directly. Call `operator()` to get the underlying tensor value:
+
+```cpp
+// WRONG — does not compile: Variable copy assignment is deleted
+_y = _x;
+
+// CORRECT — call operator() to obtain the tensor value
+_y = _x();
+```
+
+The same rule applies to derivative assignments: the RHS must be a tensor value, not a
+`Variable`. Use `_y.d(_x) = _x()` or `_y.d(_x) = Scalar(1.0, _x.options())`; never `_y.d(_x) = _x`.
+
 ## NEML2 Model pattern
 
 ```cpp
@@ -90,15 +106,24 @@ register_NEML2_object(Foo);
 
 ## Cross-file consistency
 
-When adding or modifying any model, check all four locations:
+When adding or modifying any model, check all relevant locations:
 - `include/neml2/.../Foo.h`
 - `src/neml2/.../Foo.cxx`
 - the relevant `CMakeLists.txt`
 - `tests/unit/.../test_Foo.cxx` — flag to test-writer if missing
+- `tests/unit/models/**/*.i` — if the model has `.i`-based unit tests, check whether any have `check_derivatives = false` or `check_second_derivatives = false` that were disabled to hide a now-fixed Jacobian gap; re-enable them after the fix
 
 ## Workflow
 
+### New model
 1. Read the header and an existing similar model for patterns.
 2. Implement the minimal correct code.
 3. Check CMake wiring (GLOB vs explicit).
 4. After writing: suggest `/build dev` to verify compilation, then hand off to test-writer for tests.
+
+### Fix or complete an existing implementation (e.g. missing Jacobian terms)
+1. Read the full `.cxx` to understand the existing `set_value` structure.
+2. Identify every output-input derivative pair that is not set but should be (check by reasoning through which inputs each output depends on).
+3. Implement the missing terms following the same chain-rule pattern already in the file.
+4. Check whether any `.i` unit tests have `check_derivatives = false` that was hiding the gap — re-enable derivative checking once the terms are added.
+5. Suggest `/build dev` then `/test` to verify.

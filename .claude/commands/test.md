@@ -57,15 +57,55 @@ Replace `<preset>` with the resolved preset name (see above).
 ./build/<preset>/tests/dispatchers/dispatcher_tests
 ```
 
+## Python environment resolution
+
+Before running any Python tests, find a usable interpreter using this escalating procedure:
+
+**Step A — scan for a Python binary that has both `torch` and `neml2`:**
+```bash
+for py in python3 python \
+    $(conda env list 2>/dev/null | awk 'NR>2 && $NF!="*" {print $NF"/bin/python"}') \
+    $(find /usr /opt/homebrew ~/.local -maxdepth 6 -name python3 2>/dev/null); do
+  command -v "$py" &>/dev/null || continue
+  "$py" -c "import torch, neml2" 2>/dev/null && echo "$py" && break
+done
+```
+If a match is found, call it `<py>` and skip to Step C.
+
+**Step B — if no env has `neml2` yet, but one has `torch`:**
+```bash
+for py in python3 python \
+    $(conda env list 2>/dev/null | awk 'NR>2 && $NF!="*" {print $NF"/bin/python"}') \
+    $(find /usr /opt/homebrew ~/.local -maxdepth 6 -name python3 2>/dev/null); do
+  command -v "$py" &>/dev/null || continue
+  "$py" -c "import torch" 2>/dev/null && echo "$py" && break
+done
+```
+If found, `neml2` just isn't installed yet — invoke `/setup` to build and install the Python
+package, then repeat Step A. Do this **once**; if Step A still fails after `/setup`, fall
+through to the error below.
+
+**Step C — if `<py>` lacks `pytest`:** auto-install it (low-risk per CLAUDE.md policy):
+```bash
+<py> -m pip install pytest
+```
+
+**If no Python with `torch` is found at all** — stop and report:
+> Python tests skipped: no Python environment with `torch` found.
+> `torch` must be installed manually (it is a large framework — not auto-installed).
+> Once available, run `/setup` to install the neml2 package, then `/test python` again.
+
+Do **not** attempt to install `torch` automatically.
+
 ## Python commands
 
 ```bash
-# All Python tests
-pytest -v python/tests
+# All Python tests  (<py> = resolved interpreter from above)
+<py> -m pytest -v python/tests
 
 # Single test file or function
-pytest -v python/tests/test_foo.py
-pytest -v python/tests/test_foo.py::test_bar
+<py> -m pytest -v python/tests/test_foo.py
+<py> -m pytest -v python/tests/test_foo.py::test_bar
 ```
 
 ---

@@ -48,9 +48,12 @@ Record changed files before: `git diff --name-only`
 Invoke the test-writer agent for:
 `include/neml2/models/solid_mechanics/elasticity/LinearIsotropicElasticity.h`
 
-PASS if the agent produces a complete test file with:
-- `set_value` section with analytic reference values
-- `set_dvalue` section using finite differences at `atol=rtol=1e-5`
+PASS if the agent:
+- Reads the surrounding test directory before deciding what to write
+- Produces a `.i` file under `tests/unit/models/solid_mechanics/elasticity/` using `ModelUnitTest` as the driver (`.cxx` is acceptable only if it gives a clear procedural reason)
+- Includes analytic reference values in `output_*_names/values`
+- Does NOT hand-code a finite-difference derivative section (ModelUnitTest handles that)
+- Does NOT write a `test_LinearIsotropicElasticity.cxx` without justification
 - No TODO comments
 
 After evaluating: `git restore` all files changed by this step.

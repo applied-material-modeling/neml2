@@ -5,7 +5,7 @@
   []
   [T_expected]
     type = Vec
-    values = '10.0 0.0 0.0'
+    values = '7.0 0.0 0.0'
   []
 []
 
@@ -16,13 +16,11 @@
     input_Vec_names = 'forces/displacement_jump old_forces/displacement_jump'
     input_Vec_values = 'delta delta'
     input_Scalar_names = 'old_state/damage forces/t old_forces/t'
-    input_Scalar_values = '0.0 1.0 0.0'
+    input_Scalar_values = '0.3 1.0 0.0'
     output_Vec_names = 'state/traction'
     output_Vec_values = 'T_expected'
     output_Scalar_names = 'state/damage'
-    output_Scalar_values = '0.0'
-    check_derivatives = false
-    check_second_derivatives = false
+    output_Scalar_values = '0.3'
   []
 []
 

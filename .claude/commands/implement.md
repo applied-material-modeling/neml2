@@ -68,9 +68,10 @@ running `/fix-build` manually before retrying `/implement`.
 Invoke the **test-writer agent** with the path to the new header.
 
 The test-writer will:
-1. Write `tests/unit/models/<path>/test_Foo.cxx` with `set_value` and `set_dvalue` sections
-2. Use finite-difference derivative check at `atol=rtol=1e-5`
-3. Confirm no CMakeLists.txt edit is needed (GLOB_RECURSE picks it up)
+1. Read the surrounding test directory to choose the appropriate form
+2. Default to a `.i` file under `tests/unit/models/<path>/` using `ModelUnitTest` as the driver — this already verifies values, first derivatives (AD + FD), and second derivatives
+3. Write a `test_*.cxx` only if the behavior requires procedural logic that cannot be expressed in a `.i` (exception handling, axis checks, multi-step flows, etc.)
+4. Confirm no `CMakeLists.txt` edit is needed — `.cxx` files are picked up by `GLOB_RECURSE`; `.i` files are discovered at runtime
 
 Then run `/build dev unit_tests` and `/test "Foo"` to verify the new test passes.
 
