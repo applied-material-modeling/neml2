@@ -167,8 +167,12 @@ BiLinearMixedModeTraction::set_value(bool out, bool dout_din, bool /*d2out_din2*
   // dbeta/ddn  = -delta_s / dn^2
   // dbeta/dds1 = ds1 / (delta_s * dn)  (when delta_s > 0)
   // dbeta/dds2 = ds2 / (delta_s * dn)
+  const bool need_beta_deriv_cur = dout_din && !_lag_mode_mixity && _delta.is_dependent();
+  const bool need_beta_deriv_old = dout_din && _lag_mode_mixity && _delta_old.is_dependent();
+  const bool need_beta_deriv = need_beta_deriv_cur || need_beta_deriv_old;
+
   Vec dbeta_ddelta;
-  if (dout_din && !_lag_mode_mixity && _delta.is_dependent())
+  if (need_beta_deriv_cur)
   {
     const auto safe_delta_s = where(delta_s > zero, delta_s, one);
     const auto safe_dn2 = where(normal_open, dn_m * dn_m, one);
@@ -183,6 +187,26 @@ BiLinearMixedModeTraction::set_value(bool out, bool dout_din, bool /*d2out_din2*
   else
   {
     dbeta_ddelta = Vec::fill(zero, zero, zero);
+  }
+
+  // Gradient of beta w.r.t. old displacement jump (only when lag_mode_mixity=true)
+  // Same formula as dbeta_ddelta — delta_mix == delta_old in this branch.
+  Vec dbeta_ddelta_old;
+  if (need_beta_deriv_old)
+  {
+    const auto safe_delta_s = where(delta_s > zero, delta_s, one);
+    const auto safe_dn2 = where(normal_open, dn_m * dn_m, one);
+    const auto nonzero_s = delta_s > zero;
+    const auto dbeta_ddn = where(normal_open, -delta_s / safe_dn2, zero);
+    const auto dbeta_dds1 =
+        where(normal_open && nonzero_s, ds1_m / (safe_delta_s * safe_dn_m), zero);
+    const auto dbeta_dds2 =
+        where(normal_open && nonzero_s, ds2_m / (safe_delta_s * safe_dn_m), zero);
+    dbeta_ddelta_old = Vec::fill(dbeta_ddn, dbeta_dds1, dbeta_dds2);
+  }
+  else
+  {
+    dbeta_ddelta_old = Vec::fill(zero, zero, zero);
   }
 
   // ---------------------------------------------------------------
@@ -203,7 +227,7 @@ BiLinearMixedModeTraction::set_value(bool out, bool dout_din, bool /*d2out_din2*
   // ddelta_init/dbeta (analytic, for chain rule)
   // ddelta_init_open/dbeta = delta_init_open * beta * (1/(1+beta^2) - delta_n0^2/delta_mixed^2)
   Scalar ddelta_init_dbeta;
-  if (dout_din && !_lag_mode_mixity)
+  if (need_beta_deriv)
     ddelta_init_dbeta = where(
         normal_open,
         delta_init_open * beta *
@@ -231,7 +255,7 @@ BiLinearMixedModeTraction::set_value(bool out, bool dout_din, bool /*d2out_din2*
     const auto safe_delta_init = where(delta_init > zero, delta_init, one);
     delta_final_open = 2 / (_K * safe_delta_init) * (_GI_c + (_GII_c - _GI_c) * mix_factor);
 
-    if (dout_din && !_lag_mode_mixity)
+    if (need_beta_deriv)
     {
       ddelta_final_ddelta_init = where(normal_open, -delta_final_open / safe_delta_init, zero);
       const auto dbeta_sq_ratio_dbeta =
@@ -260,7 +284,7 @@ BiLinearMixedModeTraction::set_value(bool out, bool dout_din, bool /*d2out_din2*
     const auto Gc_neg_inv_eta = neml2::pow(safe_Gc, -one / _eta);
     delta_final_open = (2 + 2 * beta_sq) / (_K * safe_delta_init) * Gc_neg_inv_eta;
 
-    if (dout_din && !_lag_mode_mixity)
+    if (need_beta_deriv)
     {
       ddelta_final_ddelta_init = where(normal_open, -delta_final_open / safe_delta_init, zero);
       const auto dGc_dbeta =
@@ -288,7 +312,7 @@ BiLinearMixedModeTraction::set_value(bool out, bool dout_din, bool /*d2out_din2*
   // Chain rule: ddelta_final/ddelta and ddelta_init/ddelta (via beta)
   Vec ddelta_final_ddelta;
   Vec ddelta_init_ddelta;
-  if (dout_din && !_lag_mode_mixity)
+  if (need_beta_deriv_cur)
   {
     ddelta_init_ddelta = ddelta_init_dbeta * dbeta_ddelta;
     ddelta_final_ddelta =
@@ -298,6 +322,21 @@ BiLinearMixedModeTraction::set_value(bool out, bool dout_din, bool /*d2out_din2*
   {
     ddelta_init_ddelta = Vec::fill(zero, zero, zero);
     ddelta_final_ddelta = Vec::fill(zero, zero, zero);
+  }
+
+  // Chain rule: ddelta_final/ddelta_old and ddelta_init/ddelta_old (via beta, lag_mode_mixity path)
+  Vec ddelta_final_ddelta_old;
+  Vec ddelta_init_ddelta_old;
+  if (need_beta_deriv_old)
+  {
+    ddelta_init_ddelta_old = ddelta_init_dbeta * dbeta_ddelta_old;
+    ddelta_final_ddelta_old = ddelta_final_ddelta_init * ddelta_init_ddelta_old +
+                              ddelta_final_dbeta * dbeta_ddelta_old;
+  }
+  else
+  {
+    ddelta_init_ddelta_old = Vec::fill(zero, zero, zero);
+    ddelta_final_ddelta_old = Vec::fill(zero, zero, zero);
   }
 
   // ---------------------------------------------------------------
@@ -398,20 +437,61 @@ BiLinearMixedModeTraction::set_value(bool out, bool dout_din, bool /*d2out_din2*
     dd_visc_ddelta = Vec::fill(zero, zero, zero);
   }
 
+  // Gradient of d_visc w.r.t. old displacement jump (Vec)
+  // Only non-zero when lag_mode_mixity=true and lag_displacement_jump=false:
+  // delta_mix == delta_old drives beta → delta_init → delta_final → d_bilinear.
+  Vec dd_visc_ddelta_old;
+  if (need_beta_deriv_old && !_lag_disp_jump)
+  {
+    const auto df_minus_di_o = safe_delta_final - safe_delta_init;
+    const auto dd_bi_ddi_o =
+        safe_delta_final * (delta_m - safe_delta_final) / (delta_m * df_minus_di_o * df_minus_di_o);
+    const auto dd_bi_ddf_o =
+        -(delta_m - safe_delta_init) * safe_delta_init / (delta_m * df_minus_di_o * df_minus_di_o);
+    const auto dd_bi_ddelta_old =
+        dd_bi_ddi_o * ddelta_init_ddelta_old + dd_bi_ddf_o * ddelta_final_ddelta_old;
+    const auto dd_trial_ddelta_old =
+        where(in_elastic || fully_damaged, Vec::fill(zero, zero, zero), dd_bi_ddelta_old);
+    const auto dd_irr_ddelta_old =
+        where(d_trial < d_old, Vec::fill(zero, zero, zero), dd_trial_ddelta_old);
+    dd_visc_ddelta_old = dd_irr_ddelta_old / (visc_over_dt + one);
+  }
+  else
+  {
+    dd_visc_ddelta_old = Vec::fill(zero, zero, zero);
+  }
+
+  // Gradient of d_visc w.r.t. old damage (Scalar)
+  // d_irreversible = where(d_trial < d_old, d_old, d_trial)
+  // d_visc = (d_irreversible + visc*d_old/dt) / (visc/dt + 1)
+  // ∂d_visc/∂d_old = (dd_irr/dd_old + visc/dt) / (visc/dt + 1)
+  // dd_irr/dd_old = 1 when clamping is active (d_trial < d_old), else 0.
+  Scalar dd_visc_dd_old;
+  if (dout_din && _d_old.is_dependent())
+  {
+    const auto dd_irr_dd_old = where(d_trial < d_old, one, zero);
+    dd_visc_dd_old = (dd_irr_dd_old + visc_over_dt) / (visc_over_dt + one);
+  }
+  else
+    dd_visc_dd_old = zero;
+
   // ---------------------------------------------------------------
-  // Step 6: Traction
+  // Step 6: Shared traction quantities (used by both output and Jacobians)
+  // ---------------------------------------------------------------
+  // T = (1-d)*K*(dn_pos_cur, ds1_cur, ds2_cur) + K*(dn_neg_cur, 0, 0)
+  // Use the same regularized Heaviside as in the delta_m computation (alpha matching MOOSE).
+  const auto tanh_dn_cur = neml2::tanh(dn_cur / _alpha);
+  const auto H_n_cur = (one + tanh_dn_cur) / 2;
+  const auto dn_pos_cur = H_n_cur * dn_cur;
+  const auto dn_neg_cur = dn_cur - dn_pos_cur;
+  const auto one_m_d = one - d_visc;
+
+  // ---------------------------------------------------------------
+  // Step 7: Traction output
   // ---------------------------------------------------------------
   if (out)
   {
     _d = d_visc;
-
-    // T = (1-d)*K*(dn_pos_cur, ds1_cur, ds2_cur) + K*(dn_neg_cur, 0, 0)
-    // Use the same regularized Heaviside as in the delta_m computation (alpha matching MOOSE).
-    const auto tanh_dn_cur = neml2::tanh(dn_cur / _alpha);
-    const auto H_n_cur = (one + tanh_dn_cur) / 2;
-    const auto dn_pos_cur = H_n_cur * dn_cur;
-    const auto dn_neg_cur = dn_cur - dn_pos_cur;
-    const auto one_m_d = one - d_visc;
 
     _traction = Vec::fill(one_m_d * _K * dn_pos_cur + _K * dn_neg_cur,
                           one_m_d * _K * ds1_cur,
@@ -419,15 +499,14 @@ BiLinearMixedModeTraction::set_value(bool out, bool dout_din, bool /*d2out_din2*
   }
 
   // ---------------------------------------------------------------
-  // Step 7: Traction Jacobian
+  // Step 8: Traction Jacobians
   // ---------------------------------------------------------------
+
+  // Jacobian w.r.t. forces/displacement_jump
   if (dout_din && _delta.is_dependent())
   {
     _d.d(_delta) = dd_visc_ddelta;
 
-    const auto tanh_dn_cur = neml2::tanh(dn_cur / _alpha);
-    const auto H_n_cur = (one + tanh_dn_cur) / 2;
-    const auto dn_pos_cur = H_n_cur * dn_cur;
     // d(dn_pos_cur)/d(dn_cur) = H + dn * dH/dn  (matches MOOSE ddelta_n_pos_ddelta_n)
     const auto dHdn_cur = (one - tanh_dn_cur * tanh_dn_cur) / (2 * _alpha);
     const auto ddnpos_ddn_cur = H_n_cur + dn_cur * dHdn_cur;
@@ -465,6 +544,32 @@ BiLinearMixedModeTraction::set_value(bool out, bool dout_din, bool /*d2out_din2*
                                    dTs2_ddn,
                                    dTs2_dds1,
                                    dTs2_dds2);
+  }
+
+  // Jacobian w.r.t. old_state/damage
+  if (dout_din && _d_old.is_dependent())
+  {
+    _d.d(_d_old) = dd_visc_dd_old;
+    _traction.d(_d_old) = Vec::fill(-_K * dn_pos_cur * dd_visc_dd_old,
+                                    -_K * ds1_cur * dd_visc_dd_old,
+                                    -_K * ds2_cur * dd_visc_dd_old);
+  }
+
+  // Jacobian w.r.t. old_forces/displacement_jump
+  // (only non-trivial when lag_mode_mixity=true and lag_displacement_jump=false)
+  if (need_beta_deriv_old && !_lag_disp_jump)
+  {
+    _d.d(_delta_old) = dd_visc_ddelta_old;
+    _traction.d(_delta_old) = R2::fill(
+        -_K * dn_pos_cur * dd_visc_ddelta_old(0),
+        -_K * dn_pos_cur * dd_visc_ddelta_old(1),
+        -_K * dn_pos_cur * dd_visc_ddelta_old(2),
+        -_K * ds1_cur * dd_visc_ddelta_old(0),
+        -_K * ds1_cur * dd_visc_ddelta_old(1),
+        -_K * ds1_cur * dd_visc_ddelta_old(2),
+        -_K * ds2_cur * dd_visc_ddelta_old(0),
+        -_K * ds2_cur * dd_visc_ddelta_old(1),
+        -_K * ds2_cur * dd_visc_ddelta_old(2));
   }
 }
 } // namespace neml2

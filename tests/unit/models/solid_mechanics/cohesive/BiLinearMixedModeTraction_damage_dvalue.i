@@ -1,13 +1,19 @@
-# Pure mode I damage-growth test (delta_s = 0).
+# Mixed-mode derivative test for BiLinearMixedModeTraction.
+# Input is away from all degenerate points:
+#   delta_s > 0  (avoids cusp in d(delta_m)/d(delta_s) at delta_s=0)
+#   d_old = 0, d_trial >> h  (avoids kink in max(d_trial, d_old) at d_trial=d_old)
+# This exercises the new d(damage)/d(delta_old) and d(traction)/d(delta_old) Jacobians.
+# derivative_rel_tol = 1e-4 accounts for O(h) forward-difference error on the large
+# second derivative of d_bilinear (~3000) at this input point.
 
 [Tensors]
   [delta]
     type = Vec
-    values = '0.02 0.0 0.0'
+    values = '0.015 0.01 0.005'
   []
   [T_expected]
     type = Vec
-    values = '99.94997498749373 0.0 0.0'
+    values = '80.147397211404737 53.431598140936494 26.715799070468247'
   []
 []
 
@@ -22,13 +28,11 @@
     output_Vec_names = 'state/traction'
     output_Vec_values = 'T_expected'
     output_Scalar_names = 'state/damage'
-    output_Scalar_values = '0.5002501250625313'
-    # check_derivatives = false — delta_s = 0 is a cusp of delta_m = sqrt(dn² + ds²);
-    # d(delta_m)/d(ds)|_FD = h/(2·dn) ≠ 0 analytically, artifact ~0.12 on traction,
-    # too large for any reasonable tolerance. See _damage_dvalue.i for derivative coverage.
-    check_derivatives = false
-    # check_second_derivatives = false — same cusp artifact applies to second derivatives.
+    output_Scalar_values = '0.46568401859063496'
+    # check_second_derivatives = false — forward FD truncation on f''' is O(h·|f'''|);
+    # the large curvature of d_bilinear (~3000) makes the artifact too large to verify.
     check_second_derivatives = false
+    derivative_rel_tol = 1e-4
   []
 []
 
