@@ -35,7 +35,9 @@ Unit test tags correspond to folder path relative to `tests/unit/`.
 - **C++:** clang-format version 20 — applied to `src/`, `include/`, `tests/`
 - **Python:** black with `--line-length 100` — applied to `python/neml2` and `python/tests`
 
-CI enforces both. A post-edit hook runs the formatter automatically on every file Claude Code edits.
+CI enforces both. Post-edit hooks run automatically on every file Claude Code edits:
+- formatting checks via `clang-format` / `black`
+- targeted unit-test reruns for edited C++ source/header files when a matching test exists
 
 ## Developer tools policy
 
@@ -90,9 +92,13 @@ C++ functionality is exposed via pybind11 extensions in `python/neml2/`. The Pyt
 
 ## Test Organization
 
-Unit tests in `tests/unit/` mirror the `include/neml2/` folder structure. Each header `Foo.h` has a corresponding `test_Foo.cxx` with:
-- One `TEST_CASE` named after the header
+Unit tests in `tests/unit/` generally mirror the `include/neml2/` folder structure, but model
+tests often use declarative `.i` files under `tests/unit/models/` instead of a dedicated
+`test_Foo.cxx`.
+
+When a dedicated Catch2 source file is used, the usual convention is:
+- One `TEST_CASE` named after the header/class
 - Tagged `[folder/path]` matching its location under `tests/unit/`
-- Top-level `SECTION`s per function/method
+- Top-level `SECTION`s per function/method or behavior
 
 Regression tests cover model combinations for result consistency across releases. Verification tests check mathematical correctness.
