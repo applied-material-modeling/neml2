@@ -12,7 +12,7 @@ The workflow is organized into three layers:
 |-------|-----------|---------|
 | **Commands** (`/name`) | Slash commands Claude Code executes | `/build`, `/test`, `/implement` |
 | **Agents** | Specialized sub-agents invoked by Claude Code | `code-writer`, `doc-writer`, `test-writer`, `build-engineer` |
-| **Hook** | Automatic post-edit linting | runs `clang-format` / `black` on every Edit |
+| **Hook** | Automatic post-edit checks | runs formatting checks, plus targeted unit-test reruns for edited C++ files |
 
 Claude Code orchestrates everything. Agents are invoked when a task matches their specialty.
 
@@ -104,8 +104,8 @@ Runs in order — stops if any step fails:
    - No spec found → proceed using the description and existing similar models as guide.
 1. **code-writer agent** — header + `.cxx` + `register_NEML2_object`; no CMakeLists.txt edit needed
 2. **`/build dev`** — verify it compiles
-3. **doc-writer agent** — complete `expected_options()` docstrings + update `doc/content/` narrative page
-4. **test-writer agent** — write unit tests; run `/build dev unit_tests` + `/test "ClassName"`
+3. **test-writer agent** — usually add a `ModelUnitTest` `.i` under `tests/unit/models/`; use `test_*.cxx` only when procedural logic is needed; run `/build dev unit_tests` + `/test "ClassName"`
+4. **doc-writer agent** — complete `expected_options()` docstrings + update `doc/content/` narrative page
 5. **Remind** — suggests `/docs-verify`
 
 **Design specs** live under `design/<module>/ModelName.md` and serve as the authoritative
@@ -162,12 +162,13 @@ Agents are invoked by Claude Code for specialized tasks. Each has a defined scop
 - Always reads ≥3 neighboring headers to infer local style before writing anything
 
 ### `test-writer`
-**Writes Catch2 unit tests and pytest tests. Does not touch production code.**
+**Writes unit/regression tests and pytest tests. Does not touch production code.**
 
-- Writes `tests/unit/<path>/test_Foo.cxx` mirroring `include/neml2/<path>/Foo.h`
-- Mandatory: `set_value` (analytic reference) and `set_dvalue` (finite diff at `atol=rtol=1e-5`) sections
-- No TODO stubs — every section is fully implemented
-- Locates headers via Glob if the provided path doesn't exist directly
+- For `Model` subclasses, defaults to declarative `.i` tests under `tests/unit/models/` using `ModelUnitTest`
+- Writes `test_*.cxx` only when the behavior requires procedural logic not expressible in a `.i`
+- Relies on existing harness discovery (`GLOB_RECURSE` for `.cxx`, runtime discovery for model `.i` files)
+- No TODO stubs — every test must be complete
+- Locates headers and neighboring tests via Glob when needed
 
 ### `build-engineer`
 **Diagnoses and fixes build failures. Makes minimal, targeted changes.**
@@ -196,7 +197,7 @@ Agents are invoked by Claude Code for specialized tasks. Each has a defined scop
 
 ## Post-edit hook
 
-Every time Claude Code edits a `.h`, `.cxx`, or `.py` file, a hook runs automatically:
+Every time Claude Code edits a `.h`, `.cxx`, or `.py` file, hooks run automatically:
 
 - **C++ files:** `clang-format --dry-run -Werror` (tries `clang-format`, then `clang-format-20`,
   `clang-format-19`, brew llvm path, `/usr/local/opt/llvm/bin/clang-format`)
@@ -205,6 +206,10 @@ Every time Claude Code edits a `.h`, `.cxx`, or `.py` file, a hook runs automati
 - **Python files:** `black --check --line-length 100`
   - Clean: `[neml2] black OK: python/neml2/...`
   - Issue: `[neml2] Style issue — run: black --line-length 100 <file>`
+- **C++ source/header files:** when a matching unit test exists and `build/dev/tests/unit/unit_tests` is present,
+  `test_on_edit.sh` reruns the associated test case and guides follow-up:
+  - If the test passes: reports `[neml2-test] PASSED: <TestName>`
+  - If it fails: first asks for test-side fixes, and only escalates to source fixes after repeated failures
 
 If no formatter is installed, the hook exits silently.
 
@@ -226,7 +231,7 @@ for the full policy.
 /implement PowerLawCreep
 ```
 
-This runs the full pipeline: code-writer → build → doc-writer (docstrings + `doc/content/`) → test-writer → remind about docs-verify.
+This runs the full pipeline: code-writer → build → test-writer → doc-writer (docstrings + `doc/content/`) → remind about docs-verify.
 
 ### Debug a failing test
 
