@@ -305,12 +305,27 @@ if __name__ == "__main__":
             logger.success("successfully ran all {} python examples", total)
 
     if not args.skip_ipynb:
-        # run jupyter notebook examples
+        # sort tutorials so that the behavior is deterministic
+        nbs = list((root_dir / "python" / "examples").rglob("*.ipynb"))
+        nbs.sort()
+        # run the pre-commit hook to check if paired .md and .ipynb files are in sync with jupytext
+        logger.info("")
+        logger.info("checking if paired .md and .ipynb files are in sync with jupytext...")
+        result = subprocess.run(
+            ["pre-commit", "run", "jupytext-sync", "--files"] + [str(nb) for nb in nbs],
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0:
+            logger.error(
+                "jupytext --sync failed with return code {}: {}".format(
+                    result.returncode, result.stderr
+                )
+            )
+            exit(1)
+        # convert notebooks to markdown for doxygen
         logger.info("")
         logger.info("converting jupyter notebooks to markdowns...")
-        # sort tutorials so that the behavior is deterministic
-        nbs = list(root_dir.rglob("*.ipynb"))
-        nbs.sort()
         nfail = 0
         for nb in nbs:
             logger.info("")

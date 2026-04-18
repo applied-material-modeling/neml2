@@ -6,10 +6,4 @@ repos:
         language: system
         files: ^python/examples/.*\.ipynb$
         pass_filenames: true
-        entry: bash -c 'jupytext --sync "$@" && git add -u' --
-      - id: jupytext-sync-check
-        name: jupytext check if paired notebooks are synced
-        language: system
-        files: ^python/examples/.*\.ipynb$
-        pass_filenames: true
-        entry: bash -c 'jupytext --sync --check "$@" -- '
+        entry: jupytext --sync
