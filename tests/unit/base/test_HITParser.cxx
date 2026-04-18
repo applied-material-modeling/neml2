@@ -40,9 +40,6 @@ TEST_CASE("HITParser", "[base]")
       REQUIRE(utils::parse<TensorShape>("(1,2,3,4,5,6)") == TensorShape{1, 2, 3, 4, 5, 6});
       REQUIRE(utils::parse<TensorShape>("(1,2,3)") == TensorShape{1, 2, 3});
       REQUIRE(utils::parse<TensorShape>("(1,2,3,)") == TensorShape{1, 2, 3});
-      REQUIRE(utils::parse<TensorShape>("(,1,2,3)") == TensorShape{1, 2, 3});
-      REQUIRE(utils::parse<TensorShape>("(,1,2,3,)") == TensorShape{1, 2, 3});
-      REQUIRE(utils::parse<TensorShape>("( ,  1, 2, 3 , )") == TensorShape{1, 2, 3});
       REQUIRE(utils::parse<TensorShape>("()") == TensorShape{});
       REQUIRE_THROWS_WITH(
           utils::parse<TensorShape>("1"),

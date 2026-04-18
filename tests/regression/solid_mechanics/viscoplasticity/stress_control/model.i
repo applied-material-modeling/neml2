@@ -36,11 +36,6 @@
     end = max_stress
     nstep = 100
   []
-  [szz]
-    type = FullScalar
-    batch_shape = '(20)'
-    value = 0
-  []
 []
 
 [Drivers]

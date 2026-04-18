@@ -43,8 +43,8 @@ TensorShape
 parse<TensorShape>(const std::string & raw_str)
 {
   if (!start_with(raw_str, "(") || !end_with(raw_str, ")"))
-    throw ParserException("Invalid tensor shape format: " + raw_str +
-                          ". Expected format: (d1,d2,...).");
+    throw ParserException("Invalid tensor shape: " + raw_str +
+                          ". Tensor shapes must begin with '(' and end with ')'.");
 
   auto inner = trim(raw_str, "()");
   auto tokens = split(inner, ",");
@@ -57,11 +57,13 @@ parse<TensorShape>(const std::string & raw_str)
     {
       val[i] = std::stoll(tokens[i], &pos);
       if (pos != tokens[i].size())
-        throw ParserException("Invalid integer value in tensor shape: " + tokens[i]);
+        throw ParserException("Invalid integer value '" + tokens[i] +
+                              "' in tensor shape: " + raw_str);
     }
     catch (...)
     {
-      throw ParserException("Invalid integer value in tensor shape: " + tokens[i]);
+      throw ParserException("Invalid integer value '" + tokens[i] +
+                            "' in tensor shape: " + raw_str);
     }
   }
   return val;
@@ -86,7 +88,14 @@ template <>
 Device
 parse<Device>(const std::string & raw_str)
 {
-  return Device(raw_str);
+  try
+  {
+    return Device(raw_str);
+  }
+  catch (...)
+  {
+    throw ParserException("Invalid device spec: " + raw_str);
+  }
 }
 
 } // namespace utils

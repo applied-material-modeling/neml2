@@ -71,7 +71,7 @@ set(NEML2_WHEEL OFF CACHE INTERNAL "Build NEML2 as a Python wheel. This is suppo
 # Dependencies and 3rd party packages
 # ----------------------------------------------------------------------------
 set(torch_SEARCH_SITE_PACKAGES ON CACHE BOOL "Search for libTorch in Python site-packages")
-set(nmhit_VERSION "3e5692b44abfee7e8a473b3552609630a380bc0f" CACHE STRING "Default neml2-hit version to download (if not found)")
+set(nmhit_VERSION "581e2fcb2957636e7739bf5934e56513dabfb1f4" CACHE STRING "Default neml2-hit version to download (if not found)")
 set(catch2_VERSION "v3.5.4" CACHE STRING "Default Catch2 version to download (if not found)")
 set(gperftools_VERSION "gperftools-2.17" CACHE STRING "Default gperftools version to download")
 set(argparse_VERSION "v3.2" CACHE STRING "Default argparse version to download")

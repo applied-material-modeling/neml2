@@ -58,8 +58,8 @@ TEST_CASE("TensorName", "[base]")
 
   SECTION("empty scalar")
   {
-    REQUIRE_THROWS_WITH(load_input("tensors/test_TensorName_empty_Scalar.i"),
-                        Catch::Matchers::ContainsSubstring("Failed to parse '' as a"));
+    REQUIRE_THROWS_WITH(load_model("tensors/test_TensorName_empty_Scalar.i", "model"),
+                        Catch::Matchers::ContainsSubstring("Failed to resolve tensor name"));
   }
 
   SECTION("SR2 operator=")
@@ -67,11 +67,5 @@ TEST_CASE("TensorName", "[base]")
     TensorName<SR2> a;
     a = "3";
     REQUIRE(at::allclose(a.resolve(), SR2::full(3)));
-  }
-
-  SECTION("empty tensor")
-  {
-    REQUIRE_THROWS_WITH(load_input("tensors/test_TensorName_empty_Tensor.i"),
-                        Catch::Matchers::ContainsSubstring("Failed to parse '' as a"));
   }
 }

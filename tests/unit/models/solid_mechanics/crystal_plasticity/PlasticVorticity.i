@@ -32,12 +32,12 @@
   []
   [gamma_a]
     type = FullScalar
-    value = '-0.1 -0.1 -0.1'
+    value = '-0.1'
     batch_shape = (3)
   []
   [gamma_b]
     type = FullScalar
-    value = '0.2 0.2 0.2'
+    value = '0.2'
     batch_shape = (3)
   []
   [gamma]

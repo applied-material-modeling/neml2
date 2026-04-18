@@ -57,15 +57,11 @@ struct NMHITRegistrar
                                                  { return utils::parse<Device>(s); });
 
 #define register_tensor_name(T)                                                                    \
-  nmhit::TypeRegistry::register_parser<TensorName<T>>(                                             \
-      [](const std::string & s)                                                                    \
-      {                                                                                            \
-        TensorName<T> t;                                                                           \
-        t.raw() = s;                                                                               \
-        return t;                                                                                  \
-      });
-    FOR_ALL_TENSORBASE(register_tensor_name)
-    register_tensor_name(ATensor)
+  nmhit::TypeRegistry::register_parser<TensorName<T>>([](const std::string & s)                    \
+                                                      { return TensorName<T>(s); });               \
+  static_assert(true)
+    FOR_ALL_TENSORBASE(register_tensor_name);
+    register_tensor_name(ATensor);
 #undef register_tensor_name
   }
 };
