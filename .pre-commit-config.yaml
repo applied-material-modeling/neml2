@@ -1,9 +1,8 @@
 repos:
-  - repo: local
+  - repo: https://github.com/mwouts/jupytext
+    rev: v1.19.1
     hooks:
-      - id: jupytext-sync
-        name: jupytext sync paired notebooks
-        language: system
+      - id: jupytext
+        args: [--sync]
         files: ^python/examples/.*\.ipynb$
         pass_filenames: true
-        entry: jupytext --sync
