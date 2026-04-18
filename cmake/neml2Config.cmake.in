@@ -5,15 +5,6 @@ include(CMakeFindDependencyMacro)
 include("${CMAKE_CURRENT_LIST_DIR}/neml2targets.cmake")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/Modules")
 
-# Compute the installation prefix relative to this file.
-get_filename_component(_IMPORT_PREFIX "${CMAKE_CURRENT_LIST_FILE}" PATH)
-get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
-get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
-get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
-if(_IMPORT_PREFIX STREQUAL "/")
-  set(_IMPORT_PREFIX "")
-endif()
-
 # torch
 set(torch_ROOT @torch_ROOT@)
 if(@torch_cuda_FOUND@)
@@ -22,35 +13,26 @@ else()
   find_dependency(torch MODULE REQUIRED COMPONENTS core)
 endif()
 
-# wasp
-if(@wasp_CONTRIB@)
-  set(wasp_ROOT ${_IMPORT_PREFIX})
-endif()
-find_dependency(wasp MODULE REQUIRED COMPONENTS core hit)
-
 # hit
-if(@hit_CONTRIB@)
-  set(hit_ROOT ${_IMPORT_PREFIX})
+if(@_nmhit_bundled@)
+  find_dependency(nmhit CONFIG REQUIRED PATHS ${PACKAGE_PREFIX_DIR} NO_DEFAULT_PATH)
+else()
+  find_dependency(nmhit CONFIG REQUIRED)
 endif()
-find_dependency(hit MODULE REQUIRED)
 
 # json
 if(@NEML2_JSON@)
-  find_dependency(nlohmann_json CONFIG REQUIRED PATHS ${_IMPORT_PREFIX} NO_DEFAULT_PATH)
-endif()
-
-# gperftools
-if(@gperftools_FOUND@)
-  if(@gperftools_CONTRIB@)
-    set(gperftools_ROOT ${_IMPORT_PREFIX})
+  if(@_nlohmann_json_bundled@)
+    find_dependency(nlohmann_json CONFIG REQUIRED PATHS ${PACKAGE_PREFIX_DIR} NO_DEFAULT_PATH)
+  else()
+    find_dependency(nlohmann_json CONFIG REQUIRED)
   endif()
-  find_dependency(gperftools MODULE REQUIRED COMPONENTS profiler)
 endif()
 
 # csv-parser
 if(@NEML2_CSV@)
-  if(@csvparser_CONTRIB@)
-    set(csvparser ${_IMPORT_PREFIX})
+  if(@_csvparser_bundled@)
+    set(csvparser_ROOT ${PACKAGE_PREFIX_DIR})
   endif()
   find_dependency(csvparser MODULE REQUIRED)
 endif()

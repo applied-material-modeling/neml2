@@ -19,7 +19,7 @@ Please refer to the [CMake documentation](https://cmake.org/cmake/help/latest/co
 C++ backend:
 
 - [PyTorch](https://pytorch.org/get-started/locally/), version 2.8.0.
-- [WASP](https://code.ornl.gov/neams-workbench/wasp) as the lexing and parsing backend for HIT.
+- [neml2-hit](https://github.com/applied-material-modeling/neml2-hit) as the lexing and parsing backend for HIT.
 - Testing:
   - [Catch2](https://github.com/catchorg/Catch2) for unit and regression testing.
 
@@ -73,7 +73,7 @@ The following table summarizes the configure options that determine when a depen
 | Dependency | Dependent configure option(s)               |
 | :--------- | :------------------------------------------ |
 | Torch      |                                             |
-| WASP       |                                             |
+| neml2-hit  |                                             |
 | Catch2     | NEML2_TESTS                                 |
 | argparse   | NEML2_TOOLS                                 |
 | Gperftools | NEML2_TOOLS & CMAKE_BUILD_TYPE == Profiling |

@@ -22,10 +22,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include <iostream>
-
 #include "neml2/base/Parser.h"
 #include "neml2/base/LabeledAxisAccessor.h"
+#include "neml2/misc/errors.h"
+#include "neml2/misc/types.h"
+
+#include "neml2/misc/string_utils.h"
+#include "neml2/misc/errors.h"
 
 namespace neml2
 {
@@ -34,99 +37,66 @@ const std::vector<std::string> Parser::sections = {
 
 namespace utils
 {
-template <>
-bool
-parse_(bool & val, const std::string & raw_str)
-{
-  std::string str_val;
-  auto success = parse_<std::string>(str_val, raw_str);
-  if (!success)
-    return false;
-
-  if (str_val == "true")
-  {
-    val = true;
-    return true;
-  }
-
-  if (str_val == "false")
-  {
-    val = false;
-    return true;
-  }
-
-  return false;
-}
 
 template <>
-bool
-parse_vector_(std::vector<bool> & vals, const std::string & raw_str)
-{
-  auto tokens = split(raw_str, " \t\n\v\f\r");
-  vals.resize(tokens.size());
-  for (std::size_t i = 0; i < tokens.size(); i++)
-  {
-    bool val = false;
-    auto success = parse_<bool>(val, tokens[i]);
-    if (!success)
-      return false;
-    vals[i] = val;
-  }
-  return true;
-}
-
-template <>
-bool
-parse_(VariableName & val, const std::string & raw_str)
-{
-  auto tokens = split(raw_str, "/ \t\n\v\f\r");
-  val = VariableName(tokens);
-  return true;
-}
-
-template <>
-bool
-parse_(TensorShape & val, const std::string & raw_str)
+TensorShape
+parse<TensorShape>(const std::string & raw_str)
 {
   if (!start_with(raw_str, "(") || !end_with(raw_str, ")"))
-    return false;
+    throw ParserException("Invalid tensor shape: " + raw_str +
+                          ". Tensor shapes must begin with '(' and end with ')'.");
 
-  auto inner = trim(raw_str, "() \t\n\v\f\r");
-  auto tokens = split(inner, ", \t\n\v\f\r");
+  auto inner = trim(raw_str, "()");
+  auto tokens = split(inner, ",");
 
-  val.resize(tokens.size());
+  TensorShape val(tokens.size());
   for (std::size_t i = 0; i < tokens.size(); i++)
   {
-    auto success = parse_<Size>(val[i], tokens[i]);
-    if (!success)
-      return false;
+    std::size_t pos = 0;
+    try
+    {
+      val[i] = std::stoll(tokens[i], &pos);
+      if (pos != tokens[i].size())
+        throw ParserException("Invalid integer value '" + tokens[i] +
+                              "' in tensor shape: " + raw_str);
+    }
+    catch (...)
+    {
+      throw ParserException("Invalid integer value '" + tokens[i] +
+                            "' in tensor shape: " + raw_str);
+    }
   }
-  return true;
+  return val;
+}
+
+template <>
+VariableName
+parse<VariableName>(const std::string & raw_str)
+{
+  auto tokens = split(raw_str, "/");
+  try
+  {
+    return VariableName(tokens);
+  }
+  catch (const NEMLException & err)
+  {
+    throw ParserException(err.what());
+  }
 }
 
 template <>
 Device
-parse(const std::string & raw_str)
+parse<Device>(const std::string & raw_str)
 {
-  return Device(parse<std::string>(raw_str));
-}
-
-template <>
-bool
-parse_(Device & val, const std::string & raw_str)
-{
-  const auto str_val = parse<std::string>(raw_str);
   try
   {
-    val = Device(str_val);
-    return true;
+    return Device(raw_str);
   }
-  catch (const std::exception & e)
+  catch (...)
   {
-    std::cerr << "Failed to parse '" << raw_str << "' as a device. Error message:\n"
-              << e.what() << std::endl;
-    return false;
+    throw ParserException("Invalid device spec: " + raw_str);
   }
 }
+
 } // namespace utils
 } // namespace neml2

@@ -23,6 +23,7 @@
 // THE SOFTWARE.
 
 #include "neml2/models/ParameterStore.h"
+#include "neml2/misc/errors.h"
 #include "neml2/models/Model.h"
 #include "neml2/models/common/InputParameter.h"
 #include "neml2/misc/assertions.h"
@@ -174,14 +175,20 @@ resolve_tensor_name(const TensorName<T> & tn, Model * caller, const std::string 
     // Try to parse it as a variable name
     else
     {
-      auto success = utils::parse_<VariableName>(var_name, tokens[0]);
-      if (!success)
+      try
+      {
+        var_name = utils::parse<VariableName>(tokens[0]);
+      }
+      catch (const ParserException & err)
+      {
         throw ParserException(
-            "Invalid variable specifier '" + tn.raw() +
-            "'. It should take the form 'model_name', 'variable_name', or "
+            "Invalid variable specifier '" + tn.raw() + "'. Parsing failed with error message:\n" +
+            err.what() +
+            "\n\nIt should take the form 'model_name', 'variable_name', or "
             "'model_name.variable_name'. Since there is no '.' delimiter, it can either be a model "
             "name or a variable name. A model with this name does not exist. It also cannot be "
             "parsed as a valid variable name.");
+      }
 
       // Create a dummy model that defines this parameter
       const auto obj_name = "__parameter_" + var_name.str() + "__";
@@ -230,10 +237,17 @@ resolve_tensor_name(const TensorName<T> & tn, Model * caller, const std::string 
       provider =
           caller->factory()->get_object<Model>("Models", mname, extra_opts, /*force_create=*/false);
       // The second token is the variable name
-      auto success = utils::parse_<VariableName>(var_name, tokens[1]);
-      if (!success)
-        throw ParserException("Invalid variable specifier '" + tn.raw() + "'. '" + tokens[1] +
-                              "' cannot be parsed as a valid variable name.");
+      try
+      {
+        var_name = utils::parse<VariableName>(tokens[1]);
+      }
+      catch (const ParserException & err)
+      {
+        throw ParserException(
+            "Invalid variable specifier '" + tn.raw() + "'. '" + tokens[1] +
+            "' cannot be parsed as a valid variable name. Parsing failed with error message:\n" +
+            err.what());
+      }
       if (!provider->output_axis().has_variable(var_name))
         throw ParserException("Invalid variable specifier '" + tn.raw() + "'. Model '" + mname +
                               "' does not have an output variable named '" +

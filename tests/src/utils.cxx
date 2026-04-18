@@ -315,9 +315,14 @@ init_test_devices(const std::string & additional_devs)
   for (const auto & token : tokens)
   {
     neml2::Device device = neml2::kCPU;
-    auto success = neml2::utils::parse_<neml2::Device>(device, token);
-    if (!success)
+    try
+    {
+      device = neml2::utils::parse<neml2::Device>(token);
+    }
+    catch (const neml2::ParserException &)
+    {
       return 1;
+    }
 
     if (device == neml2::kCPU)
       return 2;

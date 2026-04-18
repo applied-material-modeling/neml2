@@ -2,10 +2,9 @@
 contrib/argparse*
 contrib/Catch2*
 contrib/csvparser*
-contrib/hit*
+contrib/nmhit*
 contrib/nlohmann_json*
 contrib/torch*
-contrib/wasp*
 contrib/gperftools*
 
 # CMake
@@ -60,3 +59,6 @@ Testing
 *.pdf
 *.gv
 *.json
+
+# Agents
+.claude
