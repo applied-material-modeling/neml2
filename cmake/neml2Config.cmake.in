@@ -14,7 +14,11 @@ else()
 endif()
 
 # hit
-find_dependency(nmhit CONFIG REQUIRED PATHS ${PACKAGE_PREFIX_DIR} NO_DEFAULT_PATH)
+if(@_nmhit_bundled@)
+  find_dependency(nmhit CONFIG REQUIRED PATHS ${PACKAGE_PREFIX_DIR} NO_DEFAULT_PATH)
+else()
+  find_dependency(nmhit CONFIG REQUIRED)
+endif()
 
 # json
 if(@NEML2_JSON@)
