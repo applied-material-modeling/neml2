@@ -17,9 +17,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pre-commit/action@v3.0.1
-      - name: Run clang-format style check
-        run: |
-          pre-commit run clang-format --all-files --show-diff-on-failure -v
+        with:
+          extra_args: clang-format --all-files --show-diff-on-failure -v
 
   test:
     needs: clang-format

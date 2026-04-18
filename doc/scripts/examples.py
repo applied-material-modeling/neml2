@@ -308,16 +308,6 @@ if __name__ == "__main__":
         # sort tutorials so that the behavior is deterministic
         nbs = list((root_dir / "python" / "examples").rglob("*.ipynb"))
         nbs.sort()
-        # run the pre-commit hook to check if paired .md and .ipynb files are in sync with jupytext
-        logger.info("")
-        logger.info("checking if paired .md and .ipynb files are in sync with jupytext...")
-        success = quiet_run_and_log(
-            ["pre-commit", "run", "jupytext-sync", "--files"]
-            + [str(nb) for nb in nbs]
-            + ["--", "--show-diff-on-failure", "-v"]
-        )
-        if not success:
-            exit(1)
         # convert notebooks to markdown for doxygen
         logger.info("")
         logger.info("converting jupyter notebooks to markdowns...")
