@@ -1,19 +1,21 @@
 ---
-jupytext:
-  text_representation:
-    extension: .md
-    format_name: myst
-    format_version: 0.13
-    jupytext_version: 1.19.1
-kernelspec:
-  display_name: neml2
-  language: python
-  name: python3
+jupyter:
+  jupytext:
+    cell_metadata_filter: tags,raises-exception
+    notebook_metadata_filter: jupytext
+    text_representation:
+      extension: .md
+      format_name: markdown
+      format_version: '1.3'
+      jupytext_version: 1.19.1
+  kernelspec:
+    display_name: neml2
+    language: python
+    name: python3
 ---
 
 # Use LLM to explain NEML2 input file in natural language
 
-+++
 
 ## Overall workflow
 
@@ -25,7 +27,7 @@ kernelspec:
 6. Post the prompt to the client
 7. Receive the response from the chat client
 
-```{code-cell} ipython3
+```python
 import json
 import os
 import requests
@@ -46,7 +48,7 @@ In this example, we will use Argonne's Argo as the chat client. If you are not o
 
 > For ANL employees, the request body requires a field "user" which should be your ANL domain username
 
-```{code-cell} ipython3
+```python
 ARGO_URL = "https://apps-dev.inside.anl.gov/argoapi/api/v1/resource/chat/"
 
 
@@ -82,7 +84,7 @@ class ArgoClient(LLMClient):
 
 ## Extract the syntax database
 
-```{code-cell} ipython3
+```python
 # use the neml2-syntax tool to extract the syntax database from the C++ backend
 bin = Path(neml2.__path__[0]) / "bin"
 result = subprocess.run([str(bin / "neml2-syntax")], capture_output=True, text=True)
@@ -94,13 +96,13 @@ syntax_db = SyntaxDB(syntax=syntax)
 
 The `describe` method parses the input file and looks up object and parameter descriptions from the syntax database.
 
-```{code-cell} ipython3
+```python
 prompt = describe("demo_model.i", syntax_db, include_params=True)
 ```
 
 ## Call the LLM chat client
 
-```{code-cell} ipython3
+```python
 client = ArgoClient(model="gpt54", api_key="thu") # replace with your actual API key
 response = client.complete(*prompt)
 
