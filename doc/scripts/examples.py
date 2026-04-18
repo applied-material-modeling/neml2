@@ -318,8 +318,8 @@ if __name__ == "__main__":
         )
         if result.returncode != 0:
             logger.error(
-                "jupytext --sync failed with return code {}: {}".format(
-                    result.returncode, result.stderr
+                "jupytext --sync failed with return code {}: \nstdout: {}\nstderr: {}".format(
+                    result.returncode, result.stdout, result.stderr
                 )
             )
             exit(1)
