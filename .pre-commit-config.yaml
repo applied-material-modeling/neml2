@@ -12,3 +12,5 @@ repos:
         args: [--sync]
         files: ^python/examples/.*\.ipynb$
         pass_filenames: true
+        additional_dependencies:
+          - nbformat==5.10.4
