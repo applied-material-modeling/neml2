@@ -196,6 +196,26 @@ if(NOT SKBUILD_STATE STREQUAL "editable")
   install(EXPORT neml2targets NAMESPACE neml2:: DESTINATION share/cmake/neml2 COMPONENT libneml2)
 endif()
 
+# Whether dependencies are bundled with neml2
+# torch is never installed as part of a standard NEML2 installation.
+set(_torch_bundled OFF)
+set(_nmhit_bundled OFF)
+if(nmhit_CONTRIB OR NEML2_WHEEL)
+  set(_nmhit_bundled ON)
+endif()
+if(NEML2_JSON)
+  set(_nlohmann_json_bundled OFF)
+  if(nlohmann_json_CONTRIB OR NEML2_WHEEL)
+    set(_nlohmann_json_bundled ON)
+  endif()
+endif()
+if(NEML2_CSV)
+  set(_csvparser_bundled OFF)
+  if(csvparser_CONTRIB OR NEML2_WHEEL)
+    set(_csvparser_bundled ON)
+  endif()
+endif()
+
 # cmake config
 include(CMakePackageConfigHelpers)
 configure_package_config_file(
@@ -269,37 +289,27 @@ set(NEML2_PKGCONFIG_DEP_INCLUDE_DIRS
 set(NEML2_PKGCONFIG_DEP_LINK_DIRS)
 set(NEML2_PKGCONFIG_DEP_LIB_FLAGS)
 
-# torch is never installed as part of a standard NEML2 installation.
-neml2_pkgconfig_add_dep_library("${c10_LIBRARY}" OFF)
-neml2_pkgconfig_add_dep_library("${torch_LIBRARY}" OFF)
-neml2_pkgconfig_add_dep_library("${torch_cpu_LIBRARY}" OFF)
+# torch
+neml2_pkgconfig_add_dep_library("${c10_LIBRARY}" ${_torch_bundled})
+neml2_pkgconfig_add_dep_library("${torch_LIBRARY}" ${_torch_bundled})
+neml2_pkgconfig_add_dep_library("${torch_cpu_LIBRARY}" ${_torch_bundled})
 if(TARGET torch::cuda)
-  neml2_pkgconfig_add_dep_library("${c10_cuda_LIBRARY}" OFF)
-  neml2_pkgconfig_add_dep_library("${torch_cuda_LIBRARY}" OFF)
-  neml2_pkgconfig_add_dep_library("${torch_cuda_linalg_LIBRARY}" OFF)
+  neml2_pkgconfig_add_dep_library("${c10_cuda_LIBRARY}" ${_torch_bundled})
+  neml2_pkgconfig_add_dep_library("${torch_cuda_LIBRARY}" ${_torch_bundled})
+  neml2_pkgconfig_add_dep_library("${torch_cuda_linalg_LIBRARY}" ${_torch_bundled})
 endif()
 
 # nmhit
-set(_nmhit_bundled OFF)
-if(nmhit_CONTRIB OR NEML2_WHEEL)
-  set(_nmhit_bundled ON)
-endif()
 neml2_pkgconfig_add_dep_include("${nmhit_INCLUDE_DIR}" ${_nmhit_bundled})
 neml2_pkgconfig_add_dep_library("${nmhit_LIBRARY}" ${_nmhit_bundled})
 
+# json
 if(NEML2_JSON)
-  set(_nlohmann_json_bundled OFF)
-  if(nlohmann_json_CONTRIB OR NEML2_WHEEL)
-    set(_nlohmann_json_bundled ON)
-  endif()
   neml2_pkgconfig_add_dep_include("${nlohmann_json_DIR}/include" ${_nlohmann_json_bundled})
 endif()
 
+# csvparser
 if(NEML2_CSV)
-  set(_csvparser_bundled OFF)
-  if(csvparser_CONTRIB OR NEML2_WHEEL)
-    set(_csvparser_bundled ON)
-  endif()
   neml2_pkgconfig_add_dep_include("${csvparser_INCLUDE_DIR}" ${_csvparser_bundled})
 endif()
 

@@ -25,14 +25,14 @@
   [K]
     type = ScalarLinearInterpolation
     argument = 'forces/T'
-    abscissa = '300 350 400 450'
-    ordinate = '1.4e5 1.35e5 1.32e5 1.25e5'
+    abscissa = 'K_x'
+    ordinate = 'K_y'
   []
   [G]
     type = ScalarLinearInterpolation
     argument = 'forces/T'
-    abscissa = '300 500'
-    ordinate = '7.8e4 7e4'
+    abscissa = 'G_x'
+    ordinate = 'G_y'
   []
   [eq1]
     type = ThermalEigenstrain

@@ -254,17 +254,6 @@ if(NEML2_TOOLS)
                   custom_install(gperftools contrib/install_gperftools.sh ${NEML2_CONTRIB_PREFIX}/gperftools-src ${NEML2_CONTRIB_PREFIX}/gperftools-build ${gperftools_INSTALL_PREFIX})
                   find_package(gperftools MODULE REQUIRED COMPONENTS profiler)
             endif()
-
-            # check if gperftools is downloaded
-            path_has_prefix(${gperftools_ROOT} ${NEML2_CONTRIB_PREFIX} gperftools_CONTRIB)
-
-            # gperftools will be packaged as part of the NEML2 installation if it was downloaded by us (or if it is being built as a wheel).
-            if(gperftools_CONTRIB OR NEML2_WHEEL)
-                  install_glob(${gperftools_profiler_LIBRARY} ${INSTALL_LIBDIR} libneml2)
-            endif()
-            if(NOT SKBUILD_STATE STREQUAL "editable")
-                  install(FILES ${NEML2_SOURCE_DIR}/cmake/Modules/Findgperftools.cmake DESTINATION share/cmake/neml2/Modules COMPONENT libneml2)
-            endif()
       endif()
 endif()
 
