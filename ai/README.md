@@ -2,8 +2,8 @@
 
 This directory contains the cross-LLM wrapper structure for this repository.
 
-Behavior is defined in [`AGENTS.md`](../AGENTS.md). Files under `ai/` are only named entry points
-and indexes so users and LLMs can refer to the same workflows, skills, and checks consistently.
+[`AGENTS.md`](../AGENTS.md) defines the global execution rules and points to the canonical SOPs in
+`ai/`. Files under `ai/` contain the task-specific procedures that users and LLMs should execute.
 
 ## Mental Model
 
@@ -13,7 +13,10 @@ The same repository should work across Claude Code, Codex, and Gemini:
 - Codex: ask it to execute a named workflow
 - Gemini: ask it to read `AGENTS.md` and run a named workflow
 
-The actual logic still comes from `AGENTS.md`.
+The decision model is:
+
+- `AGENTS.md`: repository constitution and global rules
+- `ai/workflows/`, `ai/skills/`, `ai/hooks/`: canonical task procedures
 
 ## Workflow Shortcuts
 
@@ -29,8 +32,8 @@ In Claude Code, `/{workflow}` may be used as a convenience shortcut for any work
 - `/naming`
 - `/smoke-test`
 
-These shortcuts are wrappers only. They must execute the matching workflow from `AGENTS.md` or
-`ai/workflows/`, not invent a different process.
+These shortcuts are wrappers only. They must execute the matching workflow from `AGENTS.md` and the
+matching SOP in `ai/workflows/`, not invent a different process.
 
 ## Workflow Options
 
@@ -106,5 +109,4 @@ Simulate hooks explicitly using ai/hooks/.
   `TEST-WRITER`, and `BUILD-ENGINEER`
 - `ai/hooks/`: explicit checks that replace old automatic hooks
 
-These are not separate sources of truth. They point back to `AGENTS.md`.
-
+These procedures are authoritative within the bounds set by `AGENTS.md`.
