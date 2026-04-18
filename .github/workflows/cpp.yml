@@ -14,19 +14,12 @@ concurrency:
 jobs:
   clang-format:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        path:
-          - "src"
-          - "include"
-          - "tests"
     steps:
       - uses: actions/checkout@v4
+      - uses: pre-commit/action@v3.0.1
       - name: Run clang-format style check
-        uses: jidicula/clang-format-action@v4.11.0
-        with:
-          clang-format-version: "22"
-          check-path: ${{ matrix.path }}
+        run: |
+          pre-commit run clang-format --all-files --show-diff-on-failure -v
 
   test:
     needs: clang-format
