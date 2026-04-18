@@ -22,17 +22,8 @@ else()
   find_dependency(torch MODULE REQUIRED COMPONENTS core)
 endif()
 
-# wasp
-if(@wasp_CONTRIB@)
-  set(wasp_ROOT ${_IMPORT_PREFIX})
-endif()
-find_dependency(wasp MODULE REQUIRED COMPONENTS core hit)
-
 # hit
-if(@hit_CONTRIB@)
-  set(hit_ROOT ${_IMPORT_PREFIX})
-endif()
-find_dependency(hit MODULE REQUIRED)
+find_dependency(nmhit CONFIG REQUIRED PATHS ${_IMPORT_PREFIX} NO_DEFAULT_PATH)
 
 # json
 if(@NEML2_JSON@)

@@ -279,6 +279,14 @@ if(TARGET torch::cuda)
   neml2_pkgconfig_add_dep_library("${torch_cuda_linalg_LIBRARY}" OFF)
 endif()
 
+# nmhit
+set(_nmhit_bundled OFF)
+if(nmhit_CONTRIB OR NEML2_WHEEL)
+  set(_nmhit_bundled ON)
+endif()
+neml2_pkgconfig_add_dep_include("${nmhit_INCLUDE_DIR}" ${_nmhit_bundled})
+neml2_pkgconfig_add_dep_library("${nmhit_LIBRARY}" ${_nmhit_bundled})
+
 if(NEML2_JSON)
   set(_nlohmann_json_bundled OFF)
   if(nlohmann_json_CONTRIB OR NEML2_WHEEL)

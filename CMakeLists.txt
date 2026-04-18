@@ -71,7 +71,7 @@ set(NEML2_WHEEL OFF CACHE INTERNAL "Build NEML2 as a Python wheel. This is suppo
 # Dependencies and 3rd party packages
 # ----------------------------------------------------------------------------
 set(torch_SEARCH_SITE_PACKAGES ON CACHE BOOL "Search for libTorch in Python site-packages")
-set(nmhit_VERSION "581e2fcb2957636e7739bf5934e56513dabfb1f4" CACHE STRING "Default neml2-hit version to download (if not found)")
+set(nmhit_VERSION "19769ceb89f9ab9bd2cdfd4cd4a72cb1f1392805" CACHE STRING "Default neml2-hit version to download (if not found)")
 set(catch2_VERSION "v3.5.4" CACHE STRING "Default Catch2 version to download (if not found)")
 set(gperftools_VERSION "gperftools-2.17" CACHE STRING "Default gperftools version to download")
 set(argparse_VERSION "v3.2" CACHE STRING "Default argparse version to download")
@@ -175,6 +175,9 @@ if(nmhit_CONTRIB OR NEML2_WHEEL)
       if(NOT SKBUILD_STATE STREQUAL "editable")
             install(DIRECTORY ${nmhit_INCLUDE_DIR}/nmhit TYPE INCLUDE COMPONENT libneml2)
       endif()
+endif()
+if(NOT SKBUILD_STATE STREQUAL "editable")
+      install(DIRECTORY ${nmhit_DIR} DESTINATION share/cmake COMPONENT libneml2)
 endif()
 
 # ----------------------------------------------------------------------------
