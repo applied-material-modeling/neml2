@@ -25,7 +25,8 @@ jobs:
       - name: Install NEML2 Python package
         run: pip install ".[dev]" -v
       - uses: pre-commit/action@v3.0.1
-        extra_args: jupytext --all-files --show-diff-on-failure -v
+        with:
+          extra_args: jupytext --all-files --show-diff-on-failure -v
       - name: Generate stubs for documentation
         run: neml2-stub
       - name: Install graphviz
