@@ -46,7 +46,7 @@ def(py::module_ & m, py::class_<Model, std::shared_ptr<Model>> & c)
           {
             std::vector<std::string> vnames;
             for (const auto & [name, var] : self.input_variables())
-              vnames.push_back(name.str());
+              vnames.push_back(name);
             return vnames;
           },
           "Input variables of the model.")
@@ -56,7 +56,7 @@ def(py::module_ & m, py::class_<Model, std::shared_ptr<Model>> & c)
           {
             std::vector<std::string> vnames;
             for (const auto & [name, var] : self.output_variables())
-              vnames.push_back(name.str());
+              vnames.push_back(name);
             return vnames;
           },
           "Output variables of the model.")

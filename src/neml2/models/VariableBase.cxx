@@ -262,8 +262,8 @@ VariableBase::d(const VariableBase & arg) const
   for (const auto & [deriv, a] : _derivs)
     if (a->name() == arg.name())
       return deriv;
-  throw NEMLException("Variable '" + name().str() + "' does not have derivative with respect to '" +
-                      arg.name().str() + "'.");
+  throw NEMLException("Variable '" + name() + "' does not have derivative with respect to '" +
+                      arg.name() + "'.");
 }
 
 static Derivative<2> &
@@ -320,8 +320,8 @@ VariableBase::d2(const VariableBase & arg1, const VariableBase & arg2) const
   for (const auto & [deriv, a1, a2] : _sec_derivs)
     if (a1->name() == arg1.name() && a2->name() == arg2.name())
       return deriv;
-  throw NEMLException("Variable '" + name().str() + "' does not have derivative with respect to '" +
-                      arg1.name().str() + "' and '" + arg2.name().str() + "'.");
+  throw NEMLException("Variable '" + name() + "' does not have derivative with respect to '" +
+                      arg1.name() + "' and '" + arg2.name() + "'.");
 }
 
 void
@@ -391,7 +391,7 @@ VariableBase::provider(const DependencyResolver<Model, VariableName> & deps) con
   if (deps.item_providers().count({_owner, name()}) == 0)
   {
     std::stringstream ss;
-    ss << "Variable '" << name().str() << "' declared by model '" << owner().name()
+    ss << "Variable '" << name() << "' declared by model '" << owner().name()
        << "' has no provider in the dependency resolver. The dependency graph knows the providers "
           "for the following variables:\n";
     for (const auto & item : deps.item_providers())

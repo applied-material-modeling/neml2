@@ -49,8 +49,8 @@ derivmap_cat_reduce(std::vector<DerivMap> && results, Size dynamic_dim)
 #ifndef NDEBUG
         for (auto && value : values)
           if (value.dynamic_dim() != values.front().dynamic_dim())
-            throw neml2::NEMLException("Some Jacobian entries for " + name1.str() + " and " +
-                                       name2.str() + " have different dynamic dimensions");
+            throw neml2::NEMLException("Some Jacobian entries for " + name1 + " and " + name2 +
+                                       " have different dynamic dimensions");
 #endif
         ret[name1][name2] = values.front();
       }
