@@ -32,4 +32,8 @@ Purpose: Write tests only.
 2. Read a neighboring test in the same area.
 3. Choose `.i` or `test_*.cxx` based on the behavior.
 4. Write a complete test with no TODOs.
-5. Build and run the targeted test.
+5. Build and run:
+   ```
+   cmake --build build/dev --target unit_tests
+   ./build/dev/tests/unit/unit_tests "models"
+   ```
