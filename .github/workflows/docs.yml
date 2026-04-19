@@ -16,7 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        fetch-depth: 0 # jupytext in pre-commit mode relies on git commit timestamps to determine which files to sync
+        with:
+          fetch-depth: 0 # jupytext in pre-commit mode relies on git commit timestamps to determine which files to sync
       - uses: pre-commit/action@v3.0.1
         with:
           extra_args: jupytext --all-files --show-diff-on-failure -v
