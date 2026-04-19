@@ -4,35 +4,61 @@ Purpose: Implement a new NEML2 model end-to-end.
 
 Execute these steps in order. Stop on failure.
 
+---
+
 ## Step 0: Design Spec
-1. Search `design/` for matching `.md` or `.pdf` specs.
-2. If one spec matches, use it as the source of truth.
-3. If multiple specs in the same directory match, read all of them and implement each variant.
-4. If variants share a common structure, introduce a shared base class only if justified by the specs.
-5. If matching specs span different directories, choose the closest module and model match.
-6. If no spec exists, proceed using the user request and similar existing models.
+
+1. Run `find design/ -type f` (or `ls`) to discover all spec files.
+2. **Single match**: read it; use it as the source of truth.
+3. **Multiple specs in the same directory** (e.g. four files under `design/traction_separation_law/`):
+   - Read ALL of them before writing any code.
+   - Compare their **Input** and **Output** sections.
+   - If every spec shares the same primary input type and the same primary output type
+     (e.g. all receive `Vec displacement_jump` and all produce `Vec traction`), that shared
+     interface IS sufficient justification for an abstract base class.
+     Introduce the base class first, then implement each variant.
+   - If the specs have divergent inputs or outputs, implement separate independent classes.
+4. **Specs in different directories**: implement only the closest module/model match.
+5. **No spec found**: proceed from the user request and similar existing models.
+
+Before moving to Step 1, state:
+- which spec files were used
+- the planned class hierarchy (base + variants, or independent classes)
+
+---
 
 ## Step 1: Production Code
+
 Execute the [CODE-WRITER](../skills/code-writer.md) skill.
 
+---
+
 ## Step 2: Build
+
 Execute the [BUILD](./build.md) workflow with preset `dev`.
 
+---
+
 ## Step 3: Tests
+
 Execute the [TEST-WRITER](../skills/test-writer.md) skill.
 
-## Step 4: Verification
-1. `cmake --build --preset dev --target unit_tests`
-2. run the most relevant test or tests
+---
 
-## Step 5: Iteration (if tests fail)
-1. fix test logic only when clearly appropriate
-2. if failure is in production code, stop and report rather than silently changing production logic here
-3. stop if the same failure repeats unchanged
-4. stop after 3 rounds of test-side fixes
+## Step 4: Iteration (if tests fail)
 
-## Step 6: Documentation
+1. Fix test logic only when clearly appropriate (wrong expected value, wrong tolerance, wrong input setup).
+2. If the failure is in production code, stop and report — do not silently change production logic here.
+3. Stop after 3 rounds of test-side fixes if failures persist; report all outstanding failures.
+
+---
+
+## Step 5: Documentation
+
 Execute the [DOC-WRITER](../skills/doc-writer.md) skill.
 
-## Step 7: Final Check
+---
+
+## Step 6: Final Check
+
 Remind the user to run or review [DOCS-VERIFY](./docs-verify.md).
