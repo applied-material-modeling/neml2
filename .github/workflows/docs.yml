@@ -14,6 +14,7 @@ concurrency:
 jobs:
   notebook-sync:
     runs-on: ubuntu-latest
+    if: github.event.workflow_run.event == 'pull_request'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -22,7 +23,6 @@ jobs:
         with:
           extra_args: jupytext --all-files --show-diff-on-failure -v
   documentation:
-    needs: notebook-sync
     runs-on: ubuntu-latest
     steps:
       - uses: applied-material-modeling/neml2-ci@main
