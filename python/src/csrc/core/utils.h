@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include "neml2/models/map_types_fwd.h"
+#include "neml2/tensors/Tensor.h"
 
 #include <pybind11/pybind11.h>
 

@@ -22,8 +22,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/map_types.h"
 #include "neml2/base/Parser.h"
+#include "neml2/tensors/Tensor.h"
 #include "neml2/tensors/shape_utils.h"
 
 #include <pybind11/pytypes.h>
@@ -85,7 +85,7 @@ unpack_tensor(const py::handle & pyval,
               const std::function<TensorShapeRef(const VariableName &)> & base_shape_fn_j,
               const std::array<VariableName, D> & key)
 {
-  const auto key_str = key[0].str() + (D > 1 ? '/' + key[1].str() : "");
+  const auto key_str = key[0] + (D > 1 ? '/' + key[1] : "");
   std::array<TensorShapeRef, D> base_shapes;
   base_shapes[0] = base_shape_fn_i ? base_shape_fn_i(key[0]) : TensorShapeRef{};
   if constexpr (D > 1)
@@ -152,7 +152,7 @@ pack_value_map(const ValueMap & vals)
 {
   std::map<std::string, Tensor> dict;
   for (const auto & [key, val] : vals)
-    dict[key.str()] = val;
+    dict[key] = val;
   return dict;
 }
 
@@ -161,7 +161,7 @@ pack_deriv_map(const DerivMap & derivs)
 {
   std::map<std::string, std::map<std::string, Tensor>> dict;
   for (const auto & [keyi, vals] : derivs)
-    dict[keyi.str()] = pack_value_map(vals);
+    dict[keyi] = pack_value_map(vals);
   return dict;
 }
 

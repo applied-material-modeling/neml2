@@ -26,7 +26,6 @@
 
 #include <vector>
 
-#include "neml2/base/VariableName.h"
 #include "neml2/misc/types.h"
 
 namespace neml2

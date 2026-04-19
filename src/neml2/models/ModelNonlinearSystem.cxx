@@ -23,7 +23,6 @@
 // THE SOFTWARE.
 
 #include "neml2/models/ModelNonlinearSystem.h"
-#include "neml2/base/VariableName.h"
 #include "neml2/base/MultiEnumSelection.h"
 #include "neml2/equation_systems/AxisLayout.h"
 #include "neml2/equation_systems/EquationSystem.h"

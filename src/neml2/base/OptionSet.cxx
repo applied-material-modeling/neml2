@@ -26,7 +26,6 @@
 
 #include "neml2/base/OptionSet.h"
 #include "neml2/misc/assertions.h"
-#include "neml2/base/VariableName.h"
 
 namespace neml2
 {

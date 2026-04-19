@@ -27,7 +27,6 @@
 #include "neml2/tensors/functions/cat.h"
 #include "neml2/tensors/functions/diagonalize.h"
 #include "neml2/tensors/functions/imap.h"
-#include "neml2/base/VariableName.h"
 
 namespace neml2
 {
@@ -59,11 +58,10 @@ FiniteVolumeAppendBoundaryCondition::FiniteVolumeAppendBoundaryCondition(const O
     _input(declare_input_variable<Scalar>("input")),
     _bc_value(declare_parameter<Scalar>("bc_value", "bc_value", true)),
     _side(options.get<EnumSelection>("side").as<Side>()),
-    _output(
-        options.defined("output")
-            ? declare_output_variable<Scalar>("output")
-            : declare_output_variable<Scalar>(
-                  _input.name().str() + (_side == Side::LEFT ? "_with_bc_left" : "_with_bc_right")))
+    _output(options.defined("output")
+                ? declare_output_variable<Scalar>("output")
+                : declare_output_variable<Scalar>(
+                      _input.name() + (_side == Side::LEFT ? "_with_bc_left" : "_with_bc_right")))
 {
 }
 

@@ -25,8 +25,6 @@
 #pragma once
 
 #include "neml2/drivers/Driver.h"
-#include "neml2/models/map_types.h"
-#include "neml2/tensors/tensors.h"
 
 #ifdef NEML2_WORK_DISPATCHER
 #include "neml2/dispatchers/WorkScheduler.h"

@@ -37,7 +37,6 @@ namespace neml2
 {
 // Forward decl
 class OptionSet;
-class VariableName;
 template <typename T>
 struct TensorName;
 

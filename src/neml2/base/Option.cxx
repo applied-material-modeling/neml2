@@ -26,7 +26,6 @@
 
 #include "neml2/base/Option.h"
 #include "neml2/misc/string_utils.h"
-#include "neml2/base/VariableName.h"
 #include "neml2/base/EnumSelection.h"
 #include "neml2/base/MultiEnumSelection.h"
 #include "neml2/base/TensorName.h"
@@ -116,10 +115,6 @@ template class Option<std::vector<std::vector<double>>>;
 template class Option<std::string>;
 template class Option<std::vector<std::string>>;
 template class Option<std::vector<std::vector<std::string>>>;
-
-template class Option<VariableName>;
-template class Option<std::vector<VariableName>>;
-template class Option<std::vector<std::vector<VariableName>>>;
 
 template class Option<TensorShape>;
 template class Option<std::vector<TensorShape>>;

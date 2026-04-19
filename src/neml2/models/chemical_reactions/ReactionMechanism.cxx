@@ -23,7 +23,6 @@
 // THE SOFTWARE.
 
 #include "neml2/models/chemical_reactions/ReactionMechanism.h"
-#include "neml2/base/VariableName.h"
 
 namespace neml2
 {

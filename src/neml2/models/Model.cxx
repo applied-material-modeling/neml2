@@ -35,7 +35,6 @@
 #include "neml2/tensors/tensors.h"
 #include "neml2/tensors/TensorValue.h"
 #include "neml2/models/Model.h"
-#include "neml2/models/map_types_fwd.h"
 
 namespace neml2
 {

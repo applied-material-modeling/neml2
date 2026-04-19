@@ -32,7 +32,6 @@
 #include "neml2/base/Settings.h"
 #include "neml2/base/EnumSelection.h"
 #include "neml2/base/MultiEnumSelection.h"
-#include "neml2/base/VariableName.h"
 #include "neml2/tensors/tensors.h"
 #include "neml2/misc/assertions.h"
 #include "neml2/misc/types.h"
@@ -52,8 +51,6 @@ struct NMHITRegistrar
   {
     nmhit::TypeRegistry::register_parser<TensorShape>([](const std::string & s)
                                                       { return utils::parse<TensorShape>(s); });
-    nmhit::TypeRegistry::register_parser<VariableName>([](const std::string & s)
-                                                       { return utils::parse<VariableName>(s); });
     nmhit::TypeRegistry::register_parser<Device>([](const std::string & s)
                                                  { return utils::parse<Device>(s); });
 
@@ -180,7 +177,6 @@ HITParser::extract_option(nmhit::Node * n, OptionSet & options) const
       try_param_t(Size);
       try_param_t(double);
       try_param_t(std::string);
-      try_param_t(VariableName);
       try_param_t(Device);
       FOR_ALL_TENSORBASE(try_tensor_name);
       try_tensor_name(ATensor);

@@ -36,6 +36,10 @@ class Tensor;
 using TensorDataContainer = torch::detail::TensorDataContainer;
 using TensorList = c10::ArrayRef<neml2::Tensor>;
 
+using ValueMap = std::map<VariableName, Tensor>;
+using DerivMap = std::map<VariableName, ValueMap>;
+using SecDerivMap = std::map<VariableName, DerivMap>;
+
 namespace utils
 {
 /// @brief Find the broadcast dynamic shape of all the tensors

@@ -26,7 +26,6 @@
 #include "neml2/tensors/Scalar.h"
 #include "neml2/misc/assertions.h"
 #include "neml2/tensors/functions/pow.h"
-#include "neml2/base/VariableName.h"
 
 namespace neml2
 {

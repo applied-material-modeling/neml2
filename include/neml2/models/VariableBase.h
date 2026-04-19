@@ -26,9 +26,7 @@
 
 #include <optional>
 
-#include "neml2/models/map_types_fwd.h"
 #include "neml2/models/utils.h"
-#include "neml2/base/VariableName.h"
 #include "neml2/misc/types.h"
 #include "neml2/tensors/Tensor.h"
 

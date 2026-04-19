@@ -31,7 +31,6 @@
 namespace neml2
 {
 class InputFile;
-class VariableName;
 class EnumSelection;
 class MultiEnumSelection;
 
@@ -74,8 +73,6 @@ T parse(const std::string & raw_str);
 // template specializations for special option types
 template <>
 TensorShape parse<TensorShape>(const std::string & raw_str);
-template <>
-VariableName parse<VariableName>(const std::string & raw_str);
 template <>
 Device parse<Device>(const std::string & raw_str);
 } // namespace utils
