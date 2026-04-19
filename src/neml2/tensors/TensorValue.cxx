@@ -54,7 +54,8 @@ TensorValue<T>::requires_grad_(bool req)
 }
 
 template <typename T>
-TensorValue<T>::operator Tensor() const
+TensorValue<T>::
+operator Tensor() const
 {
   return _value;
 }

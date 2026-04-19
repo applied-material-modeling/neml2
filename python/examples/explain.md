@@ -1,5 +1,7 @@
 ---
 jupytext:
+  cell_metadata_filter: tags,raises-exception
+  notebook_metadata_filter: jupytext
   text_representation:
     extension: .md
     format_name: myst

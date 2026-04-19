@@ -64,7 +64,6 @@ dev = [
   "nbformat",
   "livereload",
   # git
-  "jupytext",
   "pre-commit",
 ]
 

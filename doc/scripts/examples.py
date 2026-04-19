@@ -305,18 +305,12 @@ if __name__ == "__main__":
             logger.success("successfully ran all {} python examples", total)
 
     if not args.skip_ipynb:
-        #         jupyter nbconvert notebook.ipynb \
-        #   --to markdown \
-        #   --output notebook.md \
-        #   --ExtractOutputPreprocessor.enabled=True \
-        #   --TemplateExporter.exclude_input_prompt=True \
-        #   --TemplateExporter.exclude_output_prompt=True
-        # run jupyter notebook examples
+        # sort tutorials so that the behavior is deterministic
+        nbs = list((root_dir / "python" / "examples").rglob("*.ipynb"))
+        nbs.sort()
+        # convert notebooks to markdown for doxygen
         logger.info("")
         logger.info("converting jupyter notebooks to markdowns...")
-        # sort tutorials so that the behavior is deterministic
-        nbs = list(root_dir.rglob("*.ipynb"))
-        nbs.sort()
         nfail = 0
         for nb in nbs:
             logger.info("")

@@ -12,7 +12,17 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  notebook-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # jupytext in pre-commit mode relies on git commit timestamps to determine which files to sync
+      - uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: jupytext --all-files --show-diff-on-failure -v
   documentation:
+    needs: notebook-sync
     runs-on: ubuntu-latest
     steps:
       - uses: applied-material-modeling/neml2-ci@main
