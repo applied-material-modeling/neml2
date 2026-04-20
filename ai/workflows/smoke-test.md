@@ -10,8 +10,8 @@ Purpose: verify the workflow still works without `.claude/`.
    - [BUILD](./build.md) variants
    - [TEST](./test.md) variants
    - [Post-Edit](../hooks/post-edit.md) procedure
-   - [TEST-WRITER](../skills/test-writer.md) procedure on an existing model
-   - [BUILD-ENGINEER](../skills/build-engineer.md) procedure on new-file registration reasoning
-   - [DOC-WRITER](../skills/doc-writer.md) procedure on an existing model
+   - [TEST-WRITER](../roles/test-writer.md) procedure on an existing model
+   - [BUILD-ENGINEER](../roles/build-engineer.md) procedure on new-file registration reasoning
+   - [DOC-WRITER](../roles/doc-writer.md) procedure on an existing model
    - full [IMPLEMENT](./implement.md) pipeline on a disposable stub model
 4. **Report:** `PASS`, `FAIL`, or `PARTIAL` for each check and summarize at the end.
