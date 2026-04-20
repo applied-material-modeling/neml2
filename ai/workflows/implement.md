@@ -33,8 +33,8 @@ Before moving to Step 1, state:
 Execute the [CODE-WRITER](../roles/code-writer.md) role guide.
 
 **Jacobian Strategy**: 
-- If analytical derivatives are complex, consider using NEML2's Automatic Differentiation (AD) initially (by calling `request_AD()` in the model's constructor) OR implement an explicit Jacobian and use AD as a temporary verification baseline.
-- **Verification using AD**: To isolate derivation errors, implement the model logic in `set_value` without explicit derivatives first. Run tests with `check_derivatives = true` to get the ground truth from FD/AD. Then implement the analytical Jacobian and ensure it matches.
+- Default to implementing the production Jacobian explicitly. Do not treat `request_AD()` as a peer implementation path unless the user or spec explicitly asks for an AD-backed model.
+- **Use AD only as a verification aid**: when derivative derivation is error-prone, first make `set_value` correct, enable derivative checks to obtain the FD/AD reference, then implement the analytical Jacobian and confirm it matches before considering the model complete.
 
 ---
 
