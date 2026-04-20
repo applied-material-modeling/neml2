@@ -14,19 +14,31 @@ small local loop.
    - **Jacobians**: If the spec provides analytical Jacobians, prioritize implementing them exactly as specified.
 3. **Multiple specs in the same directory** (e.g. four files under `design/traction_separation_law/`):
    - Read ALL of them before writing any code.
+   - Treat the directory as a candidate model family, not as a menu to cherry-pick from.
    - Compare their **Input** and **Output** sections.
    - If every spec shares the same primary input type and the same primary output type
      (e.g. all receive `Vec displacement_jump` and all produce `Vec traction`), that shared
      interface IS sufficient justification for an abstract base class.
-     Introduce the base class first, then implement each variant.
+     Introduce the base class first, then implement each variant in that directory as part of the
+     same implementation scope by default.
    - If the specs have divergent inputs or outputs, implement separate independent classes.
 4. **Specs in different directories**: implement only the closest module/model match.
 5. **No spec found**: proceed from the user request and similar existing models.
+6. **Scope narrowing is opt-in, never implicit**:
+   - If multiple same-directory specs define one family, the default scope is the FULL family.
+   - Do not silently stop after implementing only the easiest/common/base variant.
+   - Do not redefine the task as MVP/subset unless the user explicitly requested that narrower
+     scope.
+   - If you intend to defer any variant, stop and report it as an explicit omission before writing
+     code.
 
 Before moving to Step 1, state:
 - which spec files were used
 - the planned class hierarchy (base + variants, or independent classes)
 - the implementation scope for this turn: full family or an explicitly named subset/MVP
+- the exact variant list covered by this scope, naming every spec-derived class/model explicitly
+- any deferred variant, explicitly marked as `DEFERRED`, with a user-approved reason; otherwise
+  there must be no deferred variants
 
 ---
 
@@ -61,6 +73,8 @@ Read [NEML2-GUIDELINES](../roles/neml2-guidelines.md) before any NEML2 C++ edit 
 - Restrict the loop to one feature and one responsibility boundary at a time. Do not use the active
   loop to expand into adjacent features, neighboring model families, or unrelated infrastructure
   cleanup. (Steps 2-4 define this loop.)
+- If Step 0 identified a same-directory model family as the active feature, that family is the
+  feature boundary. Do not claim completion while any declared variant remains unimplemented.
 - Do not use "co-evolution" to blur responsibility. If a failure is clearly caused by production
   logic, fix production logic. If a failure is clearly caused by test setup or expected values, fix
   only the test.
