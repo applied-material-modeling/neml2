@@ -2,7 +2,7 @@
 
 This file is the **Constitution** and single source of truth for repository-specific agent behavior.
 
-All workflows, roles, and procedures are delegated to the `ai/` directory. Files in `GEMINI.md`, `CLAUDE.md`, and `CLAUDE_WORKFLOW.md` are wrappers that must defer to this document and the linked SOPs.
+All workflows, roles, and procedures are delegated to the `ai/` directory. Files in `GEMINI.md` and `CLAUDE.md` are wrappers that must defer to this document and the linked SOPs.
 
 ## Repository Context
 
