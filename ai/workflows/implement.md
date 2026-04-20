@@ -89,6 +89,9 @@ Execute the [TEST-WRITER](../roles/test-writer.md) role guide.
 4. If the next plausible fix would touch unrelated tests, shared fixtures, or neighboring features, stop and report instead of silently widening scope.
 5. Stop after 3 rounds of test-side fixes if failures persist; report all outstanding failures.
 
+**When all tests pass: proceed immediately to Step 5. Tests passing is not the end of IMPLEMENT.
+Do not stop, do not summarize, do not wait. Steps 5 and 6 are mandatory.**
+
 ---
 
 ## Step 5: Documentation

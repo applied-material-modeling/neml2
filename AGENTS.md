@@ -32,6 +32,8 @@ These rules apply to every task. **Zero exceptions.**
 5. **Stop on Ambiguity:** When a step says "stop" or logic is unclear, report instead of guessing.
 6. **SOP Authority:** The linked files in `ai/` are the absolute authorities for their respective tasks.
 7. **No Procedure Duplication:** Task execution details must live in `ai/`. `AGENTS.md` may define global rules, priorities, and routing, but should only summarize task procedures rather than duplicate them.
+8. **Complete Workflows:** When a `/workflow` is invoked, execute ALL numbered steps in sequence. Do not stop at an intermediate step because it "feels done" (e.g., tests passing is not the end of IMPLEMENT — Steps 5 and 6 remain). A workflow is complete only when its final step is done.
+9. **Context Resumption:** If this session is a continuation of a prior session (summarized context), re-read the active workflow at the start, identify the last completed step from the summary, and continue from the next uncompleted step. Do not re-derive what was done — trust the summary and move forward.
 
 ## Build Environment
 
