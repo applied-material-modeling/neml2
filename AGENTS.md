@@ -21,6 +21,31 @@ Primary design goals:
 - `python/neml2/`: Python bindings
 - `doc/content/`: narrative docs
 
+### Core API Map
+
+Read these files **before** implementing or modifying any model. They define the interfaces every model depends on.
+
+| Concern | Header |
+|---|---|
+| Base model class (`set_value`, variable declaration, parameter declaration) | `include/neml2/models/Model.h` |
+| Variable template (`Variable<T>`, `is_dependent()`, `.d()`) | `include/neml2/models/Variable.h` |
+| Option registration (`expected_options`, `.doc()`, `set_parameter`) | `include/neml2/base/OptionSet.h` |
+| Scalar tensor | `include/neml2/tensors/Scalar.h` |
+| 3-vector | `include/neml2/tensors/Vec.h` |
+| Symmetric 2nd-order tensor | `include/neml2/tensors/SR2.h` |
+| Full 2nd-order tensor | `include/neml2/tensors/R2.h` |
+| All math functions (where, inv, dev, norm, …) | `include/neml2/tensors/functions/` |
+
+### Model Boilerplate Templates
+
+`ai/templates/` contains copy-paste starting points for new models:
+
+- `SkeletonModel.h` — header with correct license, pragma once, variable/parameter members
+- `SkeletonModel.cxx` — implementation with `register_NEML2_object`, `expected_options`, constructor, and `set_value` structure
+- `SkeletonModelTest.i` — `ModelUnitTest` fixture with `[Tensors]` block, derivative check flags, and usage comments
+
+Before writing any new model file, read the nearest existing model in the same subdirectory to confirm local conventions, then use the template as a structural guide — not a copy.
+
 ## Global Execution Rules
 
 These rules apply to every task. **Zero exceptions.**
@@ -79,7 +104,16 @@ AI agents must execute these explicitly after modifications.
 
 Specialized guidance for specific agent roles.
 
+- [NEML2-GUIDELINES](ai/roles/neml2-guidelines.md): Repository-specific C++ idioms and gotchas to read before editing NEML2 code.
 - [BUILD-ENGINEER](ai/roles/build-engineer.md): Build failure diagnosis.
 - [CODE-WRITER](ai/roles/code-writer.md): Production C++ implementation.
 - [DOC-WRITER](ai/roles/doc-writer.md): Documentation authoring.
 - [TEST-WRITER](ai/roles/test-writer.md): Test suite authoring.
+
+## Templates
+
+Boilerplate starters for new models — always read the nearest existing model first to confirm local style.
+
+- [SkeletonModel.h](ai/templates/SkeletonModel.h): Header with license, `expected_options`, variable/parameter members.
+- [SkeletonModel.cxx](ai/templates/SkeletonModel.cxx): Implementation with `register_NEML2_object`, constructor, `set_value`.
+- [SkeletonModelTest.i](ai/templates/SkeletonModelTest.i): `ModelUnitTest` fixture with `[Tensors]` block and derivative flags.
