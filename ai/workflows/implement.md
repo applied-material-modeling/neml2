@@ -10,6 +10,7 @@ Execute these steps in order. Stop on failure.
 
 1. Run `find design/ -type f` (or `ls`) to discover all spec files.
 2. **Single match**: read it; use it as the source of truth.
+   - **Jacobians**: If the spec provides analytical Jacobians, prioritize implementing them exactly as specified.
 3. **Multiple specs in the same directory** (e.g. four files under `design/traction_separation_law/`):
    - Read ALL of them before writing any code.
    - Compare their **Input** and **Output** sections.
@@ -30,6 +31,10 @@ Before moving to Step 1, state:
 ## Step 1: Production Code
 
 Execute the [CODE-WRITER](../roles/code-writer.md) role guide.
+
+**Jacobian Strategy**: 
+- If analytical derivatives are complex, consider using NEML2's Automatic Differentiation (AD) initially (by calling `request_AD()` in the model's constructor) OR implement an explicit Jacobian and use AD as a temporary verification baseline.
+- **Verification using AD**: To isolate derivation errors, implement the model logic in `set_value` without explicit derivatives first. Run tests with `check_derivatives = true` to get the ground truth from FD/AD. Then implement the analytical Jacobian and ensure it matches.
 
 ---
 

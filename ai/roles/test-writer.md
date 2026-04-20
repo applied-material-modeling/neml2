@@ -26,6 +26,11 @@ Purpose: Write tests only.
 3. Any `check_values = false`, `check_derivatives = false`, or `check_second_derivatives = false` must have an explanatory comment immediately above it.
 4. If a point is degenerate for forward finite differences, keep the check disabled there, explain why, and add a non-degenerate coverage case elsewhere.
 
+## Test Scaffolding
+
+- **Accuracy**: For complex models, do NOT calculate expected tensor values by hand. Write a temporary Python script (using `numpy` or `torch`) to implement the model's math and print the precise expected values for your `.i` file.
+- **Tensors**: Use the `[Tensors]` section in `.i` files to define `Vec` or `R2` inputs/outputs, avoiding character splitting errors in `input_Vec_values`.
+
 ## Workflow
 
 1. Read the target header.

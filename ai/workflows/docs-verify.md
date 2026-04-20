@@ -2,8 +2,13 @@
 
 Purpose: Verify documentation builds cleanly.
 
-## Procedure
+## Fast Path (Lightweight Check)
 
+Before running the full build, use this to quickly verify `@list-input` and `@list` paths:
+- `./doc/scripts/lightweight_check.py`
+
+## Full Procedure
+...
 1. Run:
    - `./doc/scripts/examples.py --log-level INFO --cmake-configure-args="-GNinja"`
    - `./doc/scripts/genhtml.py --log-level INFO`
