@@ -6,16 +6,12 @@ Purpose: Mandatory procedure after any code edit.
 
 For edited C++ files (`.h`, `.cxx`, `.cpp`):
 
-1. Locate a usable formatter in this order:
-   - `clang-format`
-   - `clang-format-20`
-   - `clang-format-19`
-   - `$(brew --prefix llvm)/bin/clang-format`
-   - `/usr/local/opt/llvm/bin/clang-format`
+1. Resolve the formatter path using:
+   - `bash ai/scripts/find-clang-format.sh`
 2. If no formatter exists, install a low-risk formatter per the tool policy in AGENTS.md.
 3. Run a formatting check:
-   - `clang-format --dry-run -Werror <file>`
-4. If the check fails, format the file and re-check.
+   - ``$(bash ai/scripts/find-clang-format.sh) --dry-run -Werror <file>``
+4. If the check fails, format the file and re-check with the same resolved binary.
 
 For edited Python files (`.py`):
 
