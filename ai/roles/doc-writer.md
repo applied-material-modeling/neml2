@@ -1,20 +1,61 @@
-# Skill: DOC-WRITER
+# Role: DOC-WRITER
 
-Purpose: Write documentation only.
+Purpose: Write and update documentation only — not production code, not tests.
 
-## Rules
+---
 
-1. Primary target is `expected_options()` in `.cxx`.
-2. Header comments are brief and only added if local style supports them.
-3. Read at least 3 neighboring headers before modifying a header.
-4. For new models, update `doc/content/modules/` or create a suitable new page.
-5. Do not move detailed formulation text into headers.
-6. For Python docstrings, use Google style with `Args:`, `Returns:`, and `Raises:` when applicable.
+## Documentation Targets
+
+### 1. Option docstrings (`expected_options()`)
+
+- Fill in missing or weak `.doc()` strings in every `.cxx` touched.
+- One-line strings only; describe what the parameter controls.
+- This is the minimum viable output for any task.
+
+### 2. Header comments
+
+- Add only if the local header style already uses them.
+- Read at least 3 neighboring headers before deciding.
+- One-line `/** @brief ... */` maximum; never duplicate formulation text here.
+
+### 3. Narrative documentation (`doc/content/`) — mandatory for new models
+
+When the task introduces a new model, constitutive law, or physics object, `doc/content/` **must** be updated. This is not optional.
+
+**Find the right page:**
+- New solid mechanics model → `doc/content/modules/solid_mechanics.md`
+- New physics domain → check for an existing page via `Glob: doc/content/modules/*.md`, or create one
+
+**Add a section** (or create a new page if none fits), following the conventions of surrounding content:
+- Use LaTeX `\f[ ... \f]` for block equations, `\f$ ... \f$` inline
+- List all input/output variables with their axis paths and physical meaning
+- Include a minimal HIT input example using the `@list-input` directive:
+  ```
+  @list-input:tests/unit/models/<path>/ModelName.i:Models
+  ```
+  (use the unit test `.i` file if no dedicated example exists yet)
+
+For new constitutive laws, the section must cover:
+- governing equations
+- variable definitions and sign conventions
+- parameter descriptions and units
+- any special behavior (piecewise, unloading/reloading, irreversibility, compression cutoff)
+- the `@list-input` HIT example
+
+**If creating a new page:**
+- Place it under `doc/content/modules/<domain>.md`
+- Report the intended link location (which navigation file or index page should reference it)
+
+### 4. Python docstrings
+
+Use Google style with `Args:`, `Returns:`, and `Raises:` when applicable.
+
+---
 
 ## Workflow
 
-1. Read the `.cxx`.
-2. Fill in missing or weak `.doc()` strings.
-3. Infer header style from neighbors and add only minimal header docs if warranted.
-4. Update narrative docs for new models.
+1. Read every `.cxx` touched by this task.
+2. Fill in missing or weak `.doc()` strings (→ Target 1).
+3. Check local header style; add a brief comment only if warranted (→ Target 2).
+4. For new models: locate or create the `doc/content/modules/` page and write the required section (→ Target 3). **Do not skip this step.**
 5. Run [DOCS-VERIFY](../workflows/docs-verify.md).
