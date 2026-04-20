@@ -29,7 +29,7 @@ Before moving to Step 1, state:
 
 ## Step 1: Production Code
 
-Execute the [CODE-WRITER](../skills/code-writer.md) skill.
+Execute the [CODE-WRITER](../roles/code-writer.md) role guide.
 
 ---
 
@@ -41,7 +41,7 @@ Execute the [BUILD](./build.md) workflow with preset `dev`.
 
 ## Step 3: Tests
 
-Execute the [TEST-WRITER](../skills/test-writer.md) skill.
+Execute the [TEST-WRITER](../roles/test-writer.md) role guide.
 
 ---
 
@@ -55,7 +55,7 @@ Execute the [TEST-WRITER](../skills/test-writer.md) skill.
 
 ## Step 5: Documentation
 
-Execute the [DOC-WRITER](../skills/doc-writer.md) skill.
+Execute the [DOC-WRITER](../roles/doc-writer.md) role guide.
 
 ---
 

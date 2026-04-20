@@ -16,7 +16,7 @@ The same repository should work across Claude Code, Codex, and Gemini:
 The decision model is:
 
 - `AGENTS.md`: repository constitution and global rules
-- `ai/workflows/`, `ai/skills/`, `ai/hooks/`: canonical task procedures
+- `ai/workflows/`, `ai/roles/`, `ai/hooks/`: canonical task procedures
 
 ## Workflow Shortcuts
 
@@ -103,9 +103,9 @@ Run the TEST workflow for python.
 Simulate hooks explicitly using ai/hooks/.
 ```
 
-## Skills And Hooks
+## Roles And Hooks
 
-- `ai/skills/`: reusable specialized behavior such as `CODE-WRITER`, `DOC-WRITER`,
+- `ai/roles/`: specialized role guidance such as `CODE-WRITER`, `DOC-WRITER`,
   `TEST-WRITER`, and `BUILD-ENGINEER`
 - `ai/hooks/`: explicit checks that replace old automatic hooks
 

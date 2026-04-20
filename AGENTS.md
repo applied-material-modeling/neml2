@@ -73,11 +73,11 @@ AI agents must execute these explicitly after modifications.
 - [NAMING](ai/workflows/naming.md): Audit naming consistency.
 - [SMOKE-TEST](ai/workflows/smoke-test.md): Workflow integrity verification.
 
-## Skill Procedures (Roles)
+## Role Guides
 
 Specialized guidance for specific agent roles.
 
-- [BUILD-ENGINEER](ai/skills/build-engineer.md): Build failure diagnosis.
-- [CODE-WRITER](ai/skills/code-writer.md): Production C++ implementation.
-- [DOC-WRITER](ai/skills/doc-writer.md): Documentation authoring.
-- [TEST-WRITER](ai/skills/test-writer.md): Test suite authoring.
+- [BUILD-ENGINEER](ai/roles/build-engineer.md): Build failure diagnosis.
+- [CODE-WRITER](ai/roles/code-writer.md): Production C++ implementation.
+- [DOC-WRITER](ai/roles/doc-writer.md): Documentation authoring.
+- [TEST-WRITER](ai/roles/test-writer.md): Test suite authoring.
