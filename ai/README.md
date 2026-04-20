@@ -106,7 +106,7 @@ Simulate hooks explicitly using ai/hooks/.
 ## Roles And Hooks
 
 - `ai/roles/`: specialized role guidance such as `CODE-WRITER`, `DOC-WRITER`,
-  `TEST-WRITER`, and `BUILD-ENGINEER`
+  `TEST-WRITER`, `BUILD-ENGINEER`, and `NEML2-GUIDELINES` for repository-specific C++ idioms
 - `ai/hooks/`: explicit checks that replace old automatic hooks
 
 These procedures are authoritative within the bounds set by `AGENTS.md`.
