@@ -52,10 +52,10 @@ template <typename T>
 ForwardEulerTimeIntegration<T>::ForwardEulerTimeIntegration(const OptionSet & options)
   : Model(options),
     _s(declare_output_variable<T>("variable")),
-    _sn(declare_variable_history(_s, /*nstep=*/1)),
+    _sn(declare_input_variable<T>(history_name(_s.name(), /*nstep=*/1))),
     _rate(declare_input_variable<T>(rate_name(_s.name()))),
     _t(declare_input_variable<Scalar>("time")),
-    _tn(declare_variable_history(_t, /*nstep=*/1))
+    _tn(declare_input_variable<Scalar>(history_name(_t.name(), /*nstep=*/1)))
 {
 }
 

@@ -44,14 +44,14 @@ TEST_CASE("ModelNonlinearSystem", "[equation_systems]")
 
     const auto ug0 = ul.group(0);
     REQUIRE(ug0.nvar() == 2);
-    REQUIRE(ug0.var(0) == "foo"_var);
-    REQUIRE(ug0.var(1) == "bar"_var);
+    REQUIRE(ug0.var(0) == "foo");
+    REQUIRE(ug0.var(1) == "bar");
     REQUIRE(ug0.base_sizes(0) == TensorShape{}); // Scalar
     REQUIRE(ug0.base_sizes(1) == TensorShape{}); // Scalar
 
     const auto ug1 = ul.group(1);
     REQUIRE(ug1.nvar() == 1);
-    REQUIRE(ug1.var(0) == "baz"_var);
+    REQUIRE(ug1.var(0) == "baz");
     REQUIRE(ug1.base_sizes(0) == TensorShape{6}); // SR2
 
     // residual layout: group 0 = {residual/foo, residual/bar}, group 1 = {residual/baz}
@@ -60,14 +60,14 @@ TEST_CASE("ModelNonlinearSystem", "[equation_systems]")
 
     const auto bg0 = bl.group(0);
     REQUIRE(bg0.nvar() == 2);
-    REQUIRE(bg0.var(0) == "foo"_var);
-    REQUIRE(bg0.var(1) == "bar"_var);
+    REQUIRE(bg0.var(0) == "foo");
+    REQUIRE(bg0.var(1) == "bar");
     REQUIRE(bg0.base_sizes(0) == TensorShape{}); // Scalar
     REQUIRE(bg0.base_sizes(1) == TensorShape{}); // Scalar
 
     const auto bg1 = bl.group(1);
     REQUIRE(bg1.nvar() == 1);
-    REQUIRE(bg1.var(0) == "baz"_var);
+    REQUIRE(bg1.var(0) == "baz");
     REQUIRE(bg1.base_sizes(0) == TensorShape{6}); // SR2
   }
 
@@ -81,13 +81,13 @@ TEST_CASE("ModelNonlinearSystem", "[equation_systems]")
     REQUIRE(ul.ngroup() == 3);
 
     REQUIRE(ul.group(0).nvar() == 1);
-    REQUIRE(ul.group(0).var(0) == "foo"_var);
+    REQUIRE(ul.group(0).var(0) == "foo");
 
     REQUIRE(ul.group(1).nvar() == 1);
-    REQUIRE(ul.group(1).var(0) == "bar"_var);
+    REQUIRE(ul.group(1).var(0) == "bar");
 
     REQUIRE(ul.group(2).nvar() == 1);
-    REQUIRE(ul.group(2).var(0) == "baz"_var);
+    REQUIRE(ul.group(2).var(0) == "baz");
     REQUIRE(ul.group(2).base_sizes(0) == TensorShape{6}); // SR2
   }
 
@@ -102,9 +102,9 @@ TEST_CASE("ModelNonlinearSystem", "[equation_systems]")
 
     const auto g = ul.group(0);
     REQUIRE(g.nvar() == 3);
-    REQUIRE(g.var(0) == "foo"_var);
-    REQUIRE(g.var(1) == "bar"_var);
-    REQUIRE(g.var(2) == "baz"_var);
+    REQUIRE(g.var(0) == "foo");
+    REQUIRE(g.var(1) == "bar");
+    REQUIRE(g.var(2) == "baz");
   }
 
   SECTION("reordered groups")
@@ -118,23 +118,23 @@ TEST_CASE("ModelNonlinearSystem", "[equation_systems]")
 
     const auto ug0 = ul.group(0);
     REQUIRE(ug0.nvar() == 1);
-    REQUIRE(ug0.var(0) == "baz"_var);
+    REQUIRE(ug0.var(0) == "baz");
 
     const auto ug1 = ul.group(1);
     REQUIRE(ug1.nvar() == 2);
-    REQUIRE(ug1.var(0) == "bar"_var);
-    REQUIRE(ug1.var(1) == "foo"_var);
+    REQUIRE(ug1.var(0) == "bar");
+    REQUIRE(ug1.var(1) == "foo");
 
     const auto bl = eq_sys->blayout();
 
     const auto bg0 = bl.group(0);
     REQUIRE(bg0.nvar() == 1);
-    REQUIRE(bg0.var(0) == "baz"_var);
+    REQUIRE(bg0.var(0) == "baz");
 
     const auto bg1 = bl.group(1);
     REQUIRE(bg1.nvar() == 2);
-    REQUIRE(bg1.var(0) == "bar"_var);
-    REQUIRE(bg1.var(1) == "foo"_var);
+    REQUIRE(bg1.var(0) == "bar");
+    REQUIRE(bg1.var(1) == "foo");
   }
 
   SECTION("invalid group index throws")

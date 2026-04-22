@@ -131,6 +131,44 @@ public:
   std::shared_ptr<T> get_scheduler(const std::string & name);
   ///@}
 
+protected:
+  /**
+   * @brief Helper method to wrap a variable name into its history form
+   *
+   * This is a personal preference in the end. The idea is to have a consistent way to name the
+   * history form of a variable, which is commonly used in time integration. The behavior can be
+   * controlled via Settings::history_separator.
+   *
+   * @param var The variable name
+   * @param nstep The history step (0 for current, 1 for previous, etc.)
+   * @return The history form of the variable name
+   */
+  VariableName history_name(const VariableName & var, std::size_t nstep) const;
+
+  /**
+   * @brief Helper method to wrap a variable name into its rate form
+   *
+   * This is a personal preference in the end. The idea is to have a consistent way to name the rate
+   * form of a variable, which is commonly used in time integration. The behavior can be controlled
+   * via Settings::rate_prefix and Settings::rate_suffix.
+   *
+   * @param var The variable name
+   * @return The rate form of the variable name
+   */
+  VariableName rate_name(const VariableName & var) const;
+
+  /**
+   * @brief Helper method to wrap a variable name into its residual form
+   *
+   * Similar to rate_name, this is for consistent naming of residual variables, which are commonly
+   * used in nonlinear systems. The behavior can be controlled via Settings::residual_prefix and
+   * Settings::residual_suffix.
+   *
+   * @param var The variable name
+   * @return The residual form of the variable name
+   */
+  VariableName residual_name(const VariableName & var) const;
+
 private:
   const OptionSet _input_options;
 

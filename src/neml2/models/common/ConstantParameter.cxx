@@ -37,7 +37,8 @@ ConstantParameter<T>::expected_options()
                   "parameter in more than one downstream object.";
 
   options.add_parameter<T>("value", "The constant value of the parameter");
-  options.add_output("parameter", "The output parameter");
+  options.add_optional_output(
+      "parameter", "The output parameter. If not specified, the object name will be used.");
 
   return options;
 }
@@ -46,7 +47,8 @@ template <typename T>
 ConstantParameter<T>::ConstantParameter(const OptionSet & options)
   : Model(options),
     _value(this->template declare_parameter<T>("value", "value", /*allow_nonlinear=*/true)),
-    _p(this->template declare_output_variable<T>("parameter"))
+    _p(options.defined("parameter") ? declare_output_variable<T>("parameter")
+                                    : declare_output_variable<T>(name()))
 {
 }
 

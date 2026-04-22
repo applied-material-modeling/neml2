@@ -13,9 +13,9 @@
   [unit]
     type = ModelUnitTest
     model = 'E'
-    input_Scalar_names = 'forces/T forces/eps'
+    input_Scalar_names = 'T eps'
     input_Scalar_values = 'T eps'
-    output_Scalar_names = 'parameters/E'
+    output_Scalar_names = 'E'
     output_Scalar_values = 'E_correct'
     check_second_derivatives = true
     check_AD_parameter_derivatives = false
@@ -25,8 +25,8 @@
 [Models]
   [E]
     type = ScalarBilinearInterpolation
-    argument1 = 'forces/T'
-    argument2 = 'forces/eps'
+    argument1 = 'T'
+    argument2 = 'eps'
     abscissa1 = 'T_vals'
     abscissa2 = 'eps_vals'
     ordinate = 'S'

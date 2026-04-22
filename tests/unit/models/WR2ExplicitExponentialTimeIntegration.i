@@ -2,13 +2,13 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_WR2_names = 'state/foo_rate'
+    input_WR2_names = 'foo_rate'
     input_WR2_values = 'w'
-    input_Rot_names = 'old_state/foo'
+    input_Rot_names = 'foo~1'
     input_Rot_values = 'old_foo'
-    input_Scalar_names = 'forces/t old_forces/t'
+    input_Scalar_names = 't t~1'
     input_Scalar_values = '1.3 1.1'
-    output_Rot_names = 'state/foo'
+    output_Rot_names = 'foo'
     output_Rot_values = 'foo'
   []
 []
@@ -16,7 +16,8 @@
 [Models]
   [model]
     type = WR2ExplicitExponentialTimeIntegration
-    variable = 'state/foo'
+    variable = 'foo'
+    time = 't'
   []
 []
 

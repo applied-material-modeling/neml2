@@ -47,7 +47,7 @@ ModelNonlinearSystem::expected_options()
 
   options.add<std::vector<std::vector<VariableName>>>(
       "unknowns", "Ordering and grouping of unknowns. Each inner list defines one variable group.");
-  options.add<std::vector<std::vector<VariableName>>>(
+  options.add_optional<std::vector<std::vector<VariableName>>>(
       "residuals",
       "Ordering and grouping of residual variables. Each inner list defines one variable group.");
 
@@ -69,7 +69,9 @@ ModelNonlinearSystem::ModelNonlinearSystem(const OptionSet & options)
     ParameterStore(this),
     BufferStore(this),
     _unknown_groups(options.get<std::vector<std::vector<VariableName>>>("unknowns")),
-    _residual_groups(options.get<std::vector<std::vector<VariableName>>>("residuals")),
+    _residual_groups(options.defined("residuals")
+                         ? options.get<std::vector<std::vector<VariableName>>>("residuals")
+                         : std::vector<std::vector<VariableName>>()),
     _unknown_istrs(options.get<MultiEnumSelection>("istructure").as<AxisLayout::IStructure>()),
     _residual_istrs(options.get<MultiEnumSelection>("istructure").as<AxisLayout::IStructure>()),
     _model(get_model("model"))
@@ -155,6 +157,27 @@ ModelNonlinearSystem::setup_glayout()
 std::shared_ptr<AxisLayout>
 ModelNonlinearSystem::setup_blayout()
 {
+  // infer residual groups from unknowns if not provided
+  if (_residual_groups.empty())
+  {
+    _residual_groups = _unknown_groups;
+    for (auto & group : _residual_groups)
+      for (auto & vname : group)
+      {
+        vname = residual_name(vname);
+        // check if the residual variable exists in the model's output variables
+        if (!model().output_variables().count(vname))
+          throw NEMLException(
+              "`residuals` not specified, therefore tried to infer residual variables following "
+              "the naming convention. Expected residual variable '" +
+              vname +
+              "' not found in model's output variables. Please either specify `residuals` "
+              "explicitly or make sure the model's output variables follow the naming convention "
+              "for residual variables. Note the residual naming convention can be controlled via "
+              "Settings::residual_prefix and Settings::residual_suffix.");
+      }
+  }
+
   // gather intmd/base shapes for each variable in the layout
   std::vector<TensorShape> intmd_shapes, base_shapes;
   for (const auto & vars : _residual_groups)

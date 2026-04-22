@@ -66,8 +66,8 @@ TEST_CASE("Registry", "[base]")
     auto model = load_model(lib_dir / "FooModel.i", "foo");
 
     const auto x = Scalar::full(5);
-    const auto out = model->value({{"x"_var, x}});
-    const auto & y = out.at("y"_var);
+    const auto out = model->value({{"x", x}});
+    const auto & y = out.at("y");
     REQUIRE(at::allclose(y, Scalar::full(5.6)));
   }
 }

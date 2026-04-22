@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_SR2_names = 'state/mixed_state forces/fixed_values forces/control'
+    input_SR2_names = 'x_below x_above control'
     input_SR2_values = 'mvals vals control'
-    output_SR2_names = 'state/S state/E'
+    output_SR2_names = 'y z'
     output_SR2_values = 'stress strain'
   []
 []
@@ -35,7 +35,5 @@
 [Models]
   [model]
     type = MixedControlSetup
-    above_variable = 'state/S'
-    below_variable = 'state/E'
   []
 []

@@ -44,7 +44,9 @@ SymmetricHermiteInterpolation::expected_options()
   options.set_private<bool>("define_second_derivatives", true);
 
   options.add_input("argument", "Argument of the smooth step function");
-  options.add_output("output", "Value of the smooth step function");
+  options.add_optional_output("output",
+                              "Value of the smooth step function. If not specified, the object "
+                              "name will be used as the output name.");
 
   options.add_buffer<Scalar>("lower_bound", "Lower bound of the argument");
   options.add_buffer<Scalar>("upper_bound", "Upper bound of the argument");
@@ -55,7 +57,8 @@ SymmetricHermiteInterpolation::expected_options()
 SymmetricHermiteInterpolation::SymmetricHermiteInterpolation(const OptionSet & options)
   : Model(options),
     _x(declare_input_variable<Scalar>("argument")),
-    _y(declare_output_variable<Scalar>("output")),
+    _y(options.defined("output") ? declare_output_variable<Scalar>("output")
+                                 : declare_output_variable<Scalar>(name())),
     _x0(declare_buffer<Scalar>("lb", "lower_bound")),
     _x1(declare_buffer<Scalar>("ub", "upper_bound"))
 {

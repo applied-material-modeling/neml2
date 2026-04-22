@@ -50,7 +50,8 @@ LinearIsotropicElasticJ2TrialStressUpdate::LinearIsotropicElasticJ2TrialStressUp
   : ElasticityInterface<Model, 2>(options),
     _elastic_trial_stress(declare_input_variable<Scalar>("elastic_trial_stress")),
     _inelastic_strain(declare_input_variable<Scalar>("equivalent_plastic_strain")),
-    _inelastic_strain_old(declare_variable_history(_inelastic_strain, /*nstep=*/1)),
+    _inelastic_strain_old(
+        declare_input_variable<Scalar>(history_name(_inelastic_strain.name(), /*nstep=*/1))),
     _updated_trial_stress(declare_output_variable<Scalar>("updated_trial_stress")),
     _converter(_constant_types, _need_derivs)
 {

@@ -2,7 +2,7 @@
   [unit]
     type = ModelUnitTest
     model = 'E'
-    output_SR2_names = 'parameters/E'
+    output_SR2_names = 'E'
     output_SR2_values = 'T'
   []
 []

@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'p'
-    input_Scalar_names = 'forces/T'
+    input_Scalar_names = 'T'
     input_Scalar_values = '1000'
-    output_Scalar_names = 'parameters/p'
+    output_Scalar_names = 'p'
     output_Scalar_values = 'p_correct'
     check_second_derivatives = true
   []
@@ -13,7 +13,7 @@
 [Models]
   [p]
     type = ArrheniusParameter
-    temperature = 'forces/T'
+    temperature = 'T'
     reference_value = 'p0'
     activation_energy = 'Q'
     ideal_gas_constant = 8.314

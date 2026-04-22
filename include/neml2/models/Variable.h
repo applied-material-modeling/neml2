@@ -76,11 +76,6 @@ public:
 
   void requires_grad_(bool req = true) override;
 
-  /// Register a history variable
-  void register_history(Variable<T> * hist_var, std::size_t nstep) const;
-  VariableBase & history(std::size_t nstep) override;
-  const VariableBase & history(std::size_t nstep) const override;
-
   void assign(const Tensor & val,
               [[maybe_unused]] std::optional<TracerPrivilege> key = std::nullopt) override;
 
@@ -100,8 +95,5 @@ protected:
 
   /// Variable value (undefined if this is a referencing variable)
   T _value;
-
-  /// Histories, i.e., variables from previous steps (empty if no history is declared)
-  mutable std::vector<Variable<T> *> _histories;
 };
 } // namespace neml2

@@ -42,6 +42,7 @@ public:
   /// Getters for the settings
   const std::string & buffer_name_separator() const { return _buffer_name_separator; }
   const std::string & parameter_name_separator() const { return _parameter_name_separator; }
+  const std::string & history_separator() const { return _history_separator; }
 
   const std::string & rate_prefix() const { return _rate_prefix; }
   const std::string & rate_suffix() const { return _rate_suffix; }
@@ -64,6 +65,9 @@ private:
 
   /// Separator for parameter names
   const std::string _parameter_name_separator;
+
+  /// Separator for history variable names
+  const std::string _history_separator;
 
   /// Prefix for rate variables
   const std::string _rate_prefix;

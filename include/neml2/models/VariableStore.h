@@ -103,16 +103,13 @@ public:
   void assign_input(const ValueMap &, bool allow_nonexistent = false);
   void assign_input(const SparseVector &, bool allow_nonexistent = false);
   /// Assign output variable values
-  void assign_output(const ValueMap &);
   void assign_output(const SparseVector &);
   /// Assign variable derivatives
-  void assign_output_derivatives(const DerivMap & derivs);
   void assign_output_derivatives(const SparseMatrix &);
   ///@}
 
   ///@{
   /// Collect input variable values
-  ValueMap collect_input() const;
   SparseVector collect_input(const AxisLayout &) const;
   /// Collect output variable values
   ValueMap collect_output() const;
@@ -131,30 +128,6 @@ protected:
    * @param options The target options
    */
   virtual void send_variables_to(const TensorOptions & options);
-
-  /**
-   * @brief Helper method to wrap a variable name into its rate form
-   *
-   * This is a personal preference in the end. The idea is to have a consistent way to name the rate
-   * form of a variable, which is commonly used in time integration. The behavior can be controlled
-   * via Settings::rate_prefix and Settings::rate_suffix.
-   *
-   * @param var The variable name
-   * @return The rate form of the variable name
-   */
-  VariableName rate_name(const VariableName & var) const;
-
-  /**
-   * @brief Helper method to wrap a variable name into its residual form
-   *
-   * Similar to rate_name, this is for consistent naming of residual variables, which are commonly
-   * used in nonlinear systems. The behavior can be controlled via Settings::residual_prefix and
-   * Settings::residual_suffix.
-   *
-   * @param var The variable name
-   * @return The residual form of the variable name
-   */
-  VariableName residual_name(const VariableName & var) const;
 
   /**
    * @brief Declare an input variable
@@ -199,10 +172,6 @@ protected:
   template <typename T>
   Variable<T> & declare_output_variable(const VariableName & name);
 
-  /// Declare a variable that holds the value of @p var from @p nstep steps back.
-  template <typename T>
-  const Variable<T> & declare_variable_history(const Variable<T> & var, std::size_t nstep);
-
   /// Clone a variable and put it on the input axis
   const VariableBase * clone_input_variable(const VariableBase & var,
                                             std::optional<VariableName> new_name = std::nullopt);
@@ -211,17 +180,17 @@ protected:
   VariableBase * clone_output_variable(const VariableBase & var,
                                        std::optional<VariableName> new_name = std::nullopt);
 
+  /// JIT-specific methods for stack assignment and collection
+  ///@{
   /// Assign stack to input variables
   void assign_input_stack(jit::Stack & stack);
-
   /// Assign stack to output variables and derivatives
   void assign_output_stack(jit::Stack & stack, bool out, bool dout, bool d2out);
-
   /// Collect stack from input variables
   jit::Stack collect_input_stack() const;
-
   /// Collect stack from output variables and derivatives
   jit::Stack collect_output_stack(bool out, bool dout, bool d2out) const;
+  ///@}
 
   // TensorName resolution may require declare_input_variable
   template <typename T>
@@ -242,9 +211,6 @@ private:
 
   /// Output variables
   VariableStorage _output_variables;
-
-  /// Variable histories
-  std::vector<VariableStorage> _histories;
 
   /// Current tensor options for padding variables
   TensorOptions _options;

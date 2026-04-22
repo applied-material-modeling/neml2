@@ -77,8 +77,10 @@ public:
   const std::string & name() const { return _metadata.name; }
   /// A writable reference to the option set's name
   std::string & name() { return _metadata.name; }
-  /// Object type of this option set
-  std::string type() const { return get<std::string>("type"); }
+  /// A readonly reference to the option set's type
+  const std::string & type() const { return _metadata.type; }
+  /// A writable reference to the option set's type
+  std::string & type() { return _metadata.type; }
   /// A readonly reference to the option set's path
   const std::string & path() const { return _metadata.path; }
   /// A writable reference to the option set's path
@@ -313,6 +315,13 @@ protected:
      * where "foo" is the name of the option set
      */
     std::string name = "";
+    /**
+     * @brief Type of the option set
+     *
+     * This is the type of the object that this option set represents. For example, in a HIT input
+     * file, this is the value of the "type" field.
+     */
+    std::string type = "";
     /**
      * @brief Path to the option set
      *

@@ -2,13 +2,13 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'old_state/foo old_state/bar forces/temperature forces/t old_forces/t'
+    input_Scalar_names = 'foo~1 bar~1 temperature t t~1'
     input_Scalar_values = '0 0 15 1.3 1.1'
-    input_SR2_names = 'old_state/baz'
+    input_SR2_names = 'baz~1'
     input_SR2_values = '0'
-    output_Scalar_names = 'state/foo state/bar'
+    output_Scalar_names = 'foo bar'
     output_Scalar_values = '-1.43918 -2.55098'
-    output_SR2_names = 'state/baz'
+    output_SR2_names = 'baz'
     output_SR2_values = '0'
   []
 []
@@ -19,15 +19,18 @@
   []
   [integrate_foo]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/foo'
+    variable = 'foo'
+    time = 't'
   []
   [integrate_bar]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/bar'
+    variable = 'bar'
+    time = 't'
   []
   [integrate_baz]
     type = SR2BackwardEulerTimeIntegration
-    variable = 'state/baz'
+    variable = 'baz'
+    time = 't'
   []
   [implicit_rate]
     type = ComposedModel
@@ -39,6 +42,7 @@
   [eq_sys]
     type = NonlinearSystem
     model = 'implicit_rate'
+    unknowns = 'foo bar baz'
   []
 []
 

@@ -63,13 +63,13 @@ def(py::module_ & m, py::class_<Model, std::shared_ptr<Model>> & c)
       .def(
           "input_type",
           [](const Model & self, const std::string & name)
-          { return self.input_variable(utils::parse<VariableName>(name)).type(); },
+          { return self.input_variable(name).type(); },
           py::arg("variable"),
           "Introspect the underlying tensor type of an input variable. @returns tensors.TensorType")
       .def(
           "output_type",
           [](const Model & self, const std::string & name)
-          { return self.output_variable(utils::parse<VariableName>(name)).type(); },
+          { return self.output_variable(name).type(); },
           py::arg("variable"),
           "Introspect the underlying tensor type of an output variable. @returns "
           "tensors.TensorType")

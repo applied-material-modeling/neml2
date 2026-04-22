@@ -10,9 +10,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'old_state/foo state/foo forces/t old_forces/t'
+    input_Scalar_names = 'foo~1 foo t t~1'
     input_Scalar_values = '0 foo 1.3 1.1'
-    output_Scalar_names = 'state/foo'
+    output_Scalar_names = 'foo'
     output_Scalar_values = '0'
   []
 []
@@ -20,12 +20,13 @@
 [Models]
   [foo_rate]
     type = CopyScalar
-    from = 'state/foo'
-    to = 'state/foo_rate'
+    from = 'foo'
+    to = 'foo_rate'
   []
   [integrate_foo]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/foo'
+    variable = 'foo'
+    time = 't'
   []
   [implicit_model]
     type = ComposedModel
@@ -37,6 +38,7 @@
   [eq_sys]
     type = NonlinearSystem
     model = 'implicit_model'
+    unknowns = 'foo'
   []
 []
 

@@ -90,7 +90,7 @@ ImplicitUpdate::ImplicitUpdate(const OptionSet & options)
   for (std::size_t i = 0; i < blayout.nvar(); ++i)
   {
     const auto & u = model->input_variable(ulayout.var(i));
-    clone_output_variable(u, blayout.var(i));
+    clone_output_variable(u);
   }
 }
 

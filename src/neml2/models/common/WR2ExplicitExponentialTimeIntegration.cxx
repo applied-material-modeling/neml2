@@ -50,10 +50,10 @@ WR2ExplicitExponentialTimeIntegration::WR2ExplicitExponentialTimeIntegration(
     const OptionSet & options)
   : Model(options),
     _s(declare_output_variable<Rot>("variable")),
-    _sn(declare_variable_history(_s, /*nstep=*/1)),
+    _sn(declare_input_variable<Rot>(history_name(_s.name(), /*nstep=*/1))),
     _rate(declare_input_variable<WR2>(rate_name(_s.name()))),
     _t(declare_input_variable<Scalar>("time")),
-    _tn(declare_variable_history(_t, /*nstep=*/1))
+    _tn(declare_input_variable<Scalar>(history_name(_t.name(), /*nstep=*/1)))
 {
 }
 

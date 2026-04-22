@@ -34,7 +34,6 @@ NEML2Object::expected_options()
 {
   auto options = OptionSet();
 
-  options.add_private<std::string>("type", "");
   options.add_private<Factory *>("_factory", nullptr);
   options.add_private<std::shared_ptr<Settings>>("_settings", nullptr);
   options.add_private<NEML2Object *>("_host", nullptr);
@@ -48,6 +47,26 @@ NEML2Object::NEML2Object(const OptionSet & options)
     _settings(options.get<std::shared_ptr<Settings>>("_settings")),
     _host(options.get<NEML2Object *>("_host"))
 {
+}
+
+VariableName
+NEML2Object::history_name(const VariableName & var, std::size_t nstep) const
+{
+  if (nstep == 0)
+    return var;
+  return VariableName(var + settings().history_separator() + std::to_string(nstep));
+}
+
+VariableName
+NEML2Object::rate_name(const VariableName & var) const
+{
+  return VariableName(settings().rate_prefix() + var + settings().rate_suffix());
+}
+
+VariableName
+NEML2Object::residual_name(const VariableName & var) const
+{
+  return VariableName(settings().residual_prefix() + var + settings().residual_suffix());
 }
 
 template <typename T>

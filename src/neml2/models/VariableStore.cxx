@@ -82,27 +82,6 @@ VariableStore::declare_output_variable(const VariableName & name)
   template Variable<T> & VariableStore::declare_output_variable<T>(const VariableName &)
 FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_DECLARE_OUTPUT_VARIABLE);
 
-template <typename T>
-const Variable<T> &
-VariableStore::declare_variable_history(const Variable<T> & var, std::size_t nstep)
-{
-  neml_assert(nstep > 0,
-              "Trying to declare variable history for '",
-              var.name(),
-              "' with nstep = ",
-              nstep,
-              ". nstep should be positive.");
-  if (nstep > _histories.size())
-    _histories.resize(nstep);
-  auto * var_hist = create_variable<T>(_histories[nstep - 1], var.name());
-  var.register_history(var_hist, nstep);
-  return *var_hist;
-}
-#define INSTANTIATE_DECLARE_VARIABLE_HISTORY(T)                                                    \
-  template const Variable<T> & VariableStore::declare_variable_history<T>(const Variable<T> &,     \
-                                                                          std::size_t)
-FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_DECLARE_VARIABLE_HISTORY);
-
 const VariableBase *
 VariableStore::clone_input_variable(const VariableBase & var, std::optional<VariableName> new_name)
 {
@@ -211,20 +190,6 @@ void
 VariableStore::send_variables_to(const TensorOptions & options)
 {
   _options = options;
-}
-
-VariableName
-VariableStore::rate_name(const VariableName & var_name) const
-{
-  return VariableName(_object->settings().rate_prefix() + var_name +
-                      _object->settings().rate_suffix());
-}
-
-VariableName
-VariableStore::residual_name(const VariableName & var_name) const
-{
-  return VariableName(_object->settings().residual_prefix() + var_name +
-                      _object->settings().residual_suffix());
 }
 
 void
@@ -341,31 +306,10 @@ VariableStore::assign_input(const SparseVector & v, bool allow_nonexistent)
 }
 
 void
-VariableStore::assign_output(const ValueMap & vals)
-{
-  for (const auto & [name, val] : vals)
-    output_variable(name) = val;
-}
-
-void
 VariableStore::assign_output(const SparseVector & v)
 {
   for (std::size_t i = 0; i < v.layout.nvar(); i++)
     output_variable(v.layout.var(i)) = v.tensors[i];
-}
-
-void
-VariableStore::assign_output_derivatives(const DerivMap & derivs)
-{
-  for (const auto & [yname, deriv] : derivs)
-  {
-    auto & yvar = output_variable(yname);
-    for (const auto & [xname, val] : deriv)
-    {
-      const auto & xvar = input_variable(xname);
-      yvar.d(xvar) = val;
-    }
-  }
 }
 
 void
@@ -434,15 +378,6 @@ VariableStore::assign_output_stack(jit::Stack & stack, bool out, bool dout, bool
     }
 
   jit::drop(stack, 1);
-}
-
-ValueMap
-VariableStore::collect_input() const
-{
-  ValueMap vals;
-  for (auto && [name, var] : input_variables())
-    vals[name] = var->tensor();
-  return vals;
 }
 
 SparseVector

@@ -17,9 +17,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_SR2_names = 'state/A state/B'
+    input_SR2_names = 'A B'
     input_SR2_values = 'A B'
-    output_SR2_names = 'state/C'
+    output_SR2_names = 'C'
     output_SR2_values = 'C'
   []
 []
@@ -27,9 +27,9 @@
 [Models]
   [model]
     type = SR2LinearCombination
-    from_var = 'state/A state/B'
-    to_var = 'state/C'
-    coefficients = '0.5 8'
-    constant_coefficient = '1.0'
+    from = 'A B'
+    to = 'C'
+    weights = '0.5 8'
+    offset = '1.0'
   []
 []

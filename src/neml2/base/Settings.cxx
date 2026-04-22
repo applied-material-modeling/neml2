@@ -50,6 +50,13 @@ Settings::expected_options()
       "a parameter 'bar' will have a parameter named 'foo_bar'.");
 
   options.add<std::string>(
+      "history_separator",
+      "~",
+      "History variable name separator. The default is '~'. For example, a variable 'x' will have "
+      "its history variable for the previous time step named 'x~1', for the time step before that "
+      "named 'x~2', etc.");
+
+  options.add<std::string>(
       "rate_prefix",
       "",
       "Prefix for rate variables. The default is an empty string. For example, if the prefix is "
@@ -107,6 +114,7 @@ Settings::expected_options()
 Settings::Settings(const OptionSet & options)
   : _buffer_name_separator(options.get<std::string>("buffer_name_separator")),
     _parameter_name_separator(options.get<std::string>("parameter_name_separator")),
+    _history_separator(options.get<std::string>("history_separator")),
     _rate_prefix(options.get<std::string>("rate_prefix")),
     _rate_suffix(options.get<std::string>("rate_suffix")),
     _residual_prefix(options.get<std::string>("residual_prefix")),

@@ -2,11 +2,11 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'old_state/foo old_state/bar forces/temperature forces/t old_forces/t'
+    input_Scalar_names = 'foo~1 bar~1 temperature t t~1'
     input_Scalar_values = '0 0 15 1.3 1.1'
-    input_SR2_names = 'old_state/baz'
+    input_SR2_names = 'baz~1'
     input_SR2_values = '0'
-    output_Scalar_names = 'state/sum'
+    output_Scalar_names = 'sum'
     output_Scalar_values = '-3.9902'
   []
 []
@@ -41,7 +41,6 @@
     type = NonlinearSystem
     model = 'implicit_rate'
     unknowns = 'foo bar baz'
-    residuals = 'foo_residual bar_residual baz_residual'
   []
 []
 
@@ -72,8 +71,8 @@
   []
   [sum]
     type = ScalarLinearCombination
-    from_var = 'foo bar baz_tr'
-    to_var = 'sum'
+    from = 'foo bar baz_tr'
+    to = 'sum'
   []
   [model]
     type = ComposedModel

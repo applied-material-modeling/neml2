@@ -15,9 +15,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/foo'
+    input_Scalar_names = 'foo'
     input_Scalar_values = 'foo'
-    output_Scalar_names = 'state/bar'
+    output_Scalar_names = 'bar'
     output_Scalar_values = 'bar'
     derivative_rel_tol = 0
     derivative_abs_tol = 1e-3
@@ -28,8 +28,8 @@
 [Models]
   [model]
     type = SymmetricHermiteInterpolation
-    argument = 'state/foo'
-    value = 'state/bar'
+    argument = 'foo'
+    output = 'bar'
     lower_bound = '0.1'
     upper_bound = '1.1'
   []

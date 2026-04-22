@@ -78,7 +78,10 @@ OptionSet::suppress(const std::string & name)
               name,
               "' found.\n\nKnown options:\n",
               *this);
-  _values.at(name)->suppressed() = true;
+  auto & opt = _values.at(name);
+  opt->suppressed() = true;
+  opt->required() = false;
+  opt->user_specified() = false;
 }
 
 const OptionBase &
@@ -148,7 +151,7 @@ OptionSet::add_input(const std::string & name, const VariableName & variable_nam
 void
 OptionSet::add_input(const std::string & name, std::string doc)
 {
-  add<VariableName, FType::INPUT>(name, std::move(doc));
+  add<VariableName, FType::INPUT>(name, name, std::move(doc));
 }
 
 void
@@ -166,7 +169,7 @@ OptionSet::add_output(const std::string & name, const VariableName & variable_na
 void
 OptionSet::add_output(const std::string & name, std::string doc)
 {
-  add<VariableName, FType::OUTPUT>(name, std::move(doc));
+  add<VariableName, FType::OUTPUT>(name, name, std::move(doc));
 }
 
 void

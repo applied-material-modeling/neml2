@@ -74,11 +74,9 @@ public:
 
   /// Add information on a NEML2Object to the registry.
   template <typename T>
-  static char add(const std::string & name)
+  static char add(const std::string & type)
   {
-    auto opts = T::expected_options();
-    opts.template set_private<std::string>("type", name);
-    add_inner(name, utils::demangle(typeid(T).name()), opts, &build<T>);
+    add_inner(type, utils::demangle(typeid(T).name()), T::expected_options(), &build<T>);
     return 0;
   }
 
@@ -88,13 +86,13 @@ public:
   /// Get information of all registered objects.
   static const std::map<std::string, NEML2ObjectInfo> & info();
 
-  /// Get the information of an object given its syntax type
-  static const NEML2ObjectInfo & info(const std::string &);
+  /// Get the information of an object given its syntax type, nullptr if not found.
+  static const NEML2ObjectInfo * info(const std::string &);
 
 private:
   Registry() = default;
 
-  static void add_inner(const std::string &, const std::string &, const OptionSet &, BuildPtr);
+  static void add_inner(const std::string &, const std::string &, OptionSet, BuildPtr);
 
   template <typename T>
   static std::shared_ptr<NEML2Object> build(const OptionSet & options)

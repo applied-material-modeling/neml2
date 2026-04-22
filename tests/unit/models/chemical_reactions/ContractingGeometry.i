@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/alpha'
+    input_Scalar_names = 'alpha'
     input_Scalar_values = 'alpha'
-    output_Scalar_names = 'state/out'
+    output_Scalar_names = 'out'
     output_Scalar_values = 'out'
     check_AD_parameter_derivatives = false
   []
@@ -26,9 +26,9 @@
 [Models]
   [model]
     type = ContractingGeometry
-    reaction_coef = 0.7
-    reaction_order = 2.75
-    conversion_degree = 'state/alpha'
-    reaction_rate = 'state/out'
+    coef = 0.7
+    order = 2.75
+    conversion_degree = 'alpha'
+    reaction_rate = 'out'
   []
 []

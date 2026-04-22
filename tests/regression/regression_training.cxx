@@ -50,16 +50,17 @@ TEST_CASE("training")
   p.requires_grad_(true);
 
   // Variables
-  auto strain = "E"_var;
-  auto time = "t"_var;
-  auto stress = "S"_var;
-  auto ep = "ep"_var;
-  auto stress_res = "S_residual"_var;
-  auto ep_res = "ep_residual"_var;
+  using namespace std::string_literals;
+  auto strain = "E"s;
+  auto time = "t"s;
+  auto stress = "S"s;
+  auto ep = "ep"s;
+  auto stress_res = "S_residual"s;
+  auto ep_res = "ep_residual"s;
 
   // Evaluate the model for the first time
   ValueMap x1;
-  model->input_variable(strain).history(1) =
+  model->input_variable(strain + "~1") =
       SR2::fill(0.0, 0.0, 0.01, -0.01, -0.01, 0.02).dynamic_expand(nbatch);
   x1[strain] = SR2::fill(0.01, 0.01, 0.01, -0.02, -0.03, 0.04).dynamic_expand(nbatch);
   x1[time] = Scalar::full(1.0).dynamic_expand(nbatch);
@@ -69,10 +70,10 @@ TEST_CASE("training")
 
   // Evaluate the model for the second time
   ValueMap x2;
-  model->input_variable(strain).history(1) = x1[strain];
-  model->input_variable(time).history(1) = x1[time];
-  model->input_variable(stress).history(1) = r1.at(stress_res) * 1e-2;
-  model->input_variable(ep).history(1) = r1.at(ep_res) * 1e-2;
+  model->input_variable(strain + "~1") = x1[strain];
+  model->input_variable(time + "~1") = x1[time];
+  model->input_variable(stress + "~1") = r1.at(stress_res) * 1e-2;
+  model->input_variable(ep + "~1") = r1.at(ep_res) * 1e-2;
   x2[strain] = SR2::fill(0.02, 0.02, 0.03, -0.02, -0.01, 0.01).dynamic_expand(nbatch);
   x2[time] = Scalar::full(5.0).dynamic_expand(nbatch);
   x2[stress] = SR2::fill(100.0, 100.0, 200.0, -50.0, -150.0, 50.0).dynamic_expand(nbatch);

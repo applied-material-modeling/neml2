@@ -185,8 +185,8 @@ TEST_CASE("discretization", "[tensors][functions]")
   //                             Nelem__|  |
   //                                 Nqp___|
   auto model = load_model("models/solid_mechanics/elasticity/LinearIsotropicElasticity.i", "model");
-  auto strain_name = "strain"_var;
-  auto stress_name = "stress"_var;
+  auto strain_name = "strain";
+  auto stress_name = "stress";
   auto stress = model->value({{strain_name, strain}})[stress_name];
   stress = R2(SR2(stress)); // Convert from symmetric to full R2
   REQUIRE(stress.dynamic_sizes() == TensorShape{nelem, nqp});

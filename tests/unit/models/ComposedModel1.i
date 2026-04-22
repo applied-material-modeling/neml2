@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/foo state/bar state/foo_rate state/bar_rate old_state/foo old_state/bar forces/t old_forces/t'
+    input_Scalar_names = 'foo bar foo_rate bar_rate foo~1 bar~1 t t~1'
     input_Scalar_values = '2 -1 5 -3 0 0 1.3 1.1'
-    output_Scalar_names = 'residual/foo_bar'
+    output_Scalar_names = 'foo_bar_residual'
     output_Scalar_values = '0.6'
   []
 []
@@ -12,16 +12,18 @@
 [Models]
   [integrate_foo]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/foo'
+    variable = 'foo'
+    time = 't'
   []
   [integrate_bar]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/bar'
+    variable = 'bar'
+    time = 't'
   []
   [residual_sum]
     type = ScalarLinearCombination
-    from_var = 'residual/foo residual/bar'
-    to_var = 'residual/foo_bar'
+    from = 'foo_residual bar_residual'
+    to = 'foo_bar_residual'
   []
   [model]
     type = ComposedModel

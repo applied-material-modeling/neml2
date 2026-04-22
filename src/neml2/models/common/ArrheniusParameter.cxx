@@ -45,7 +45,8 @@ ArrheniusParameter::expected_options()
   options.add_parameter<Scalar>("activation_energy", "Activation energy");
   options.add<double>("ideal_gas_constant", "The ideal gas constant");
   options.add_input("temperature", "Temperature");
-  options.add_output("parameter", "The output parameter");
+  options.add_optional_output(
+      "parameter", "The output parameter. If not provided, the object name will be used.");
 
   return options;
 }
@@ -56,7 +57,8 @@ ArrheniusParameter::ArrheniusParameter(const OptionSet & options)
     _Q(declare_parameter<Scalar>("Q", "activation_energy")),
     _R(options.get<double>("ideal_gas_constant")),
     _T(declare_input_variable<Scalar>("temperature")),
-    _p(declare_output_variable<Scalar>("parameter"))
+    _p(options.defined("parameter") ? declare_output_variable<Scalar>("parameter")
+                                    : declare_output_variable<Scalar>(name()))
 {
 }
 

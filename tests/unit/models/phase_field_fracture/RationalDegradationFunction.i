@@ -1,12 +1,11 @@
-
 [Drivers]
   [unit]
     type = ModelUnitTest
     model = 'degrade'
-    input_Scalar_names = 'state/d'
+    input_Scalar_names = 'd'
     input_Scalar_values = '0.787'
-    output_Scalar_names = 'state/g'
-    output_Scalar_values = '0.0212478' 
+    output_Scalar_names = 'g'
+    output_Scalar_values = '0.0212478'
     derivative_abs_tol = 1e-06
     check_second_derivatives = true
   []
@@ -22,11 +21,11 @@
 [Models]
   [degrade]
     type = RationalDegradationFunction
-    phase = 'state/d'
-    degradation = 'state/g'
+    phase = 'd'
+    degradation = 'g'
     power = 'p'
-    fitting_param_1 = 1
-    fitting_param_2 = 1.3868
-    fitting_param_3 = 0.6567
+    b1 = 1
+    b2 = 1.3868
+    b3 = 0.6567
   []
 []

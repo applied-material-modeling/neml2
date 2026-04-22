@@ -26,10 +26,9 @@
 
 [Models]
   [comb]
-      type = ScalarLinearCombination
-      from_var = 'A'
-      to_var = 'U'
-      coefficients = '1'
+    type = ScalarLinearCombination
+    from = 'A'
+    to = 'U'
   []
   [sum]
     type = ScalarIntermediateSum

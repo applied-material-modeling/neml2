@@ -88,6 +88,10 @@ ModelUnitTest::expected_options()
 
 #define OPTION_SET_(T)                                                                             \
   options.add<std::vector<VariableName>>(                                                          \
+      "history_" #T "_names", {}, "History " #T " variable names.");                               \
+  options.add<std::vector<std::size_t>>("history_" #T "_steps", {}, "History " #T " steps.");      \
+  options.add<std::vector<TensorName<T>>>("history_" #T "_values", {}, "History " #T " values.");  \
+  options.add<std::vector<VariableName>>(                                                          \
       "input_" #T "_names", {}, "Input " #T " variable names.");                                   \
   options.add<std::vector<TensorName<T>>>("input_" #T "_values", {}, "Input " #T " values.");      \
   options.add<std::vector<VariableName>>(                                                          \

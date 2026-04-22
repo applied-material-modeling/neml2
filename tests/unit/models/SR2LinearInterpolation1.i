@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'D'
-    input_Scalar_names = 'forces/T'
+    input_Scalar_names = 'T'
     input_Scalar_values = '300'
-    output_SR2_names = 'parameters/D'
+    output_SR2_names = 'D'
     output_SR2_values = 'DT'
     check_second_derivatives = true
     check_AD_parameter_derivatives = false
@@ -14,7 +14,7 @@
 [Models]
   [D]
     type = SR2LinearInterpolation
-    argument = 'forces/T'
+    argument = 'T'
     abscissa = 'T'
     ordinate = 'D'
   []

@@ -44,22 +44,21 @@ LinearCombination<T>::expected_options()
   OptionSet options = Model::expected_options();
   options.doc() =
       "Calculate linear combination of multiple " + tensor_type +
-      " tensors as \\f$ u = c_i v_i + s \\f$ (Einstein summation assumed), where \\f$ c_i "
-      "\\f$ are the coefficients, and \\f$ v_i \\f$ are the variables to be summed. \\f$ s \\f$ is "
+      " tensors as \\f$ u = w_i v_i + b \\f$ (Einstein summation assumed), where \\f$ w_i "
+      "\\f$ are the weights, and \\f$ v_i \\f$ are the variables to be summed. \\f$ b \\f$ is "
       "a constant offset.";
 
   options.set_private<bool>("define_second_derivatives", true);
 
-  options.add<std::vector<VariableName>, FType::INPUT>("from_var",
+  options.add<std::vector<VariableName>, FType::INPUT>("from",
                                                        tensor_type + " tensors to be summed");
-  options.add_output("to_var", "The sum");
+  options.add_output("to", "The sum");
 
   options.add<std::vector<TensorName<Scalar>>, FType::BUFFER>(
-      "coefficients",
+      "weights",
       {TensorName<Scalar>("1")},
       "Weights associated with each variable. This option takes a list of weights, one for each "
-      "coefficient. When the length of this list is 1, the same weight applies to all "
-      "coefficients.");
+      "coefficient. When the length of this list is 1, the same weight applies to all");
 
   options.add<TensorName<Scalar>, FType::BUFFER>(
       "offset", {TensorName<Scalar>("0")}, "The constant coefficient added to the final summation");
@@ -70,11 +69,11 @@ LinearCombination<T>::expected_options()
                     "declare it as a (trainable) parameter.");
 
   options.add<std::vector<bool>>(
-      "coefficient_as_parameter",
+      "weight_as_parameter",
       {false},
-      "By default, the coefficients are declared as buffers. Set this option to true to declare "
+      "By default, the weights are declared as buffers. Set this option to true to declare "
       "them as (trainable) parameters. This option takes a list of booleans, one for each "
-      "coefficient. When the length of this list is 1, the boolean applies to all coefficients.");
+      "weight. When the length of this list is 1, the boolean applies to all weights.");
 
   return options;
 }
@@ -82,16 +81,16 @@ LinearCombination<T>::expected_options()
 template <typename T>
 LinearCombination<T>::LinearCombination(const OptionSet & options)
   : Model(options),
-    _to(declare_output_variable<T>("to_var"))
+    _to(declare_output_variable<T>("to"))
 {
-  for (const auto & fv : options.get<std::vector<VariableName>>("from_var"))
+  for (const auto & fv : options.get<std::vector<VariableName>>("from"))
     _from.push_back(&declare_input_variable<T>(fv));
 
-  auto coef_as_param = options.get<std::vector<bool>>("coefficient_as_parameter");
+  auto coef_as_param = options.get<std::vector<bool>>("weight_as_parameter");
   neml_assert(coef_as_param.size() == 1 || coef_as_param.size() == _from.size(),
               "Expected 1 or ",
               _from.size(),
-              " entries in coefficient_as_parameter, got ",
+              " entries in weight_as_parameter, got ",
               coef_as_param.size(),
               ".");
 
@@ -99,11 +98,11 @@ LinearCombination<T>::LinearCombination(const OptionSet & options)
   if (coef_as_param.size() == 1)
     coef_as_param = std::vector<bool>(_from.size(), coef_as_param[0]);
 
-  const auto coef_refs = options.get<std::vector<TensorName<Scalar>>>("coefficients");
+  const auto coef_refs = options.get<std::vector<TensorName<Scalar>>>("weights");
   neml_assert(coef_refs.size() == 1 || coef_refs.size() == _from.size(),
               "Expected 1 or ",
               _from.size(),
-              " coefficients, got ",
+              " weights, got ",
               coef_refs.size(),
               ".");
 
@@ -114,16 +113,16 @@ LinearCombination<T>::LinearCombination(const OptionSet & options)
     const auto & coef_ref = coef_refs.size() == 1 ? coef_refs[0] : coef_refs[i];
     if (coef_as_param[i])
       _coefs[i] =
-          &declare_parameter<Scalar>("c_" + std::to_string(i), coef_ref, /*allow_nonlinear=*/true);
+          &declare_parameter<Scalar>("w_" + std::to_string(i), coef_ref, /*allow_nonlinear=*/true);
     else
-      _coefs[i] = &declare_buffer<Scalar>("c_" + std::to_string(i), coef_ref);
+      _coefs[i] = &declare_buffer<Scalar>("w_" + std::to_string(i), coef_ref);
   }
 
   if (options.user_specified("offset"))
   {
     auto s_as_param = options.get<bool>("offset_as_parameter");
-    _s = s_as_param ? &declare_parameter<Scalar>("s", "offset", /*allow_nonlinear=*/true)
-                    : &declare_buffer<Scalar>("s", "offset");
+    _s = s_as_param ? &declare_parameter<Scalar>("b", "offset", /*allow_nonlinear=*/true)
+                    : &declare_buffer<Scalar>("b", "offset");
   }
 }
 
@@ -146,10 +145,10 @@ LinearCombination<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
     {
       _to.d(*_from[i]) += (*_coefs[i]) * I;
 
-      if (const auto * const pi = nl_param("c_" + std::to_string(i)))
+      if (const auto * const pi = nl_param("w_" + std::to_string(i)))
         _to.d(*pi) += (*_from[i])();
     }
-    if (const auto * const s = nl_param("s"))
+    if (const auto * const s = nl_param("b"))
       _to.d(*s) += neml2::Scalar::full(1.0, _from[0]->options());
   }
 }

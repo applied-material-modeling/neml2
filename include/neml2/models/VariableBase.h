@@ -163,10 +163,6 @@ public:
   /// Mark this variable as a leaf variable in tracing function graph for AD
   virtual void requires_grad_(bool req = true) = 0;
 
-  /// Get the variable from @p nstep steps ago in history
-  virtual VariableBase & history(std::size_t nstep) = 0;
-  virtual const VariableBase & history(std::size_t nstep) const = 0;
-
   /// Assignment operator (with TracerPrivilege)
   virtual void assign(const Tensor & val,
                       [[maybe_unused]] std::optional<TracerPrivilege> key = std::nullopt) = 0;

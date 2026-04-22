@@ -92,7 +92,9 @@ Interpolation<T>::expected_options()
 
   options.add_parameter<T>("ordinate",
                            tensor_type + " defining the ordinate values of the interpolant");
-  options.add_output("output", tensor_type + " output of the interpolant");
+  options.add_optional_output("output",
+                              tensor_type + " output of the interpolant. If not specified, the "
+                                            "object name will be used as the output name.");
 
   return options;
 }
@@ -101,7 +103,8 @@ template <typename T>
 Interpolation<T>::Interpolation(const OptionSet & options)
   : Model(options),
     _Y(this->template declare_parameter<T>("Y", "ordinate")),
-    _p(this->template declare_output_variable<T>("output"))
+    _p(options.defined("output") ? this->template declare_output_variable<T>("output")
+                                 : this->template declare_output_variable<T>(this->name()))
 {
 }
 

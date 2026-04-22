@@ -17,9 +17,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_SR2_names = 'state/A state/substate/B'
+    input_SR2_names = 'A B'
     input_SR2_values = 'foo bar'
-    output_SR2_names = 'state/outsub/C'
+    output_SR2_names = 'C'
     output_SR2_values = 'baz'
   []
 []
@@ -27,7 +27,7 @@
 [Models]
   [model]
     type = SR2LinearCombination
-    from_var = 'state/A state/substate/B'
-    to_var = 'state/outsub/C'
+    from = 'A B'
+    to = 'C'
   []
 []

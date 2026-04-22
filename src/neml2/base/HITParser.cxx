@@ -66,16 +66,21 @@ struct NMHITRegistrar
 static NMHITRegistrar _nmhit_registrar;
 } // namespace
 
+// Forward declarations
+static InputFile parse_hit(const nmhit::Node * root);
+static void extract_options(const nmhit::Node * object, OptionSet & options);
+static void extract_option(const nmhit::Node * node, OptionSet & options);
+
 InputFile
 HITParser::parse(const std::filesystem::path & filename, const std::string & additional_input) const
 {
   // Parse the file; additional_input is appended as a post-snippet (use := for overrides)
   auto root = nmhit::parse_file(filename, {}, {additional_input});
-  return parse(root.get());
+  return parse_hit(root.get());
 }
 
 InputFile
-HITParser::parse(nmhit::Node * root) const
+parse_hit(const nmhit::Node * root)
 {
   // Extract global settings
   OptionSet settings = Settings::expected_options();
@@ -92,7 +97,22 @@ HITParser::parse(nmhit::Node * root) const
       auto objects = section_node->children(nmhit::NodeType::Section);
       for (auto * object : objects)
       {
-        auto options = extract_object_options(object, section_node);
+        std::string type = object->param<std::string>("type");
+        const auto * info = Registry::info(type);
+        if (!info)
+        {
+          std::cerr << "Warning: Object of type '" << type
+                    << "' is not registered in the NEML2 registry. This object will be ignored.\n";
+          continue;
+        }
+
+        // Fill in the metadata
+        auto options = info->expected_options;
+        options.name() = object->path();
+        options.type() = type;
+        options.path() = object->fullpath();
+
+        extract_options(object, options);
         inp[section][options.name()] = options;
       }
     }
@@ -101,27 +121,8 @@ HITParser::parse(nmhit::Node * root) const
   return inp;
 }
 
-OptionSet
-HITParser::extract_object_options(nmhit::Node * object, nmhit::Node * /*section*/) const
-{
-  // Get the object type
-  std::string type = object->param<std::string>("type");
-
-  // Get the expected options for this object type from the registry
-  auto options = Registry::info(type).expected_options;
-
-  // Fill in the metadata
-  options.name() = object->path();
-  options.path() = object->fullpath();
-
-  // Extract the options
-  extract_options(object, options);
-
-  return options;
-}
-
 void
-HITParser::extract_options(nmhit::Node * object, OptionSet & options) const
+extract_options(const nmhit::Node * object, OptionSet & options)
 {
   for (auto * node : object->children(nmhit::NodeType::Field))
     if (node->path() != "type")
@@ -138,7 +139,7 @@ HITParser::extract_options(nmhit::Node * object, OptionSet & options) const
 
 // NOLINTBEGIN
 void
-HITParser::extract_option(nmhit::Node * n, OptionSet & options) const
+extract_option(const nmhit::Node * n, OptionSet & options)
 {
 #define try_param(ptype)                                                                           \
   else if (tp ==                                                                                   \

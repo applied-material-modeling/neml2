@@ -2,31 +2,28 @@
   [unit]
     type = ModelUnitTest
     model = 'ABC'
-    input_Scalar_names = 'state/v'
+    input_Scalar_names = 'v'
     input_Scalar_values = '3'
-    output_Scalar_names = 'residual/x residual/v'
+    output_Scalar_names = 'x_residual v_residual'
     output_Scalar_values = '3 6'
   []
 []
 
 [Models]
   [A]
-    type = ScalarLinearCombination
-    from_var = 'state/v'
-    to_var = 'state/a'
-    coefficients = '1'
+    type = CopyScalar
+    from = 'v'
+    to = 'a'
   []
   [B]
-    type = ScalarLinearCombination
-    from_var = 'state/v'
-    to_var = 'residual/x'
-    coefficients = '1'
+    type = CopyScalar
+    from = 'v'
+    to = 'x_residual'
   []
   [C]
     type = ScalarLinearCombination
-    from_var = 'state/a state/v'
-    to_var = 'residual/v'
-    coefficients = '1 1'
+    from = 'a v'
+    to = 'v_residual'
   []
   [BC]
     type = ComposedModel

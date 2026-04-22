@@ -23,7 +23,6 @@
 // THE SOFTWARE.
 
 #include <ATen/ExpandUtils.h>
-#include <cstddef>
 #include <torch/csrc/jit/frontend/tracer.h>
 
 #include "neml2/models/Variable.h"
@@ -172,50 +171,6 @@ Variable<T>::requires_grad_(bool req)
     _value.requires_grad_(req);
   else
     ref()->requires_grad_(req);
-}
-
-template <typename T>
-void
-Variable<T>::register_history(Variable<T> * hist_var, std::size_t nstep) const
-{
-  neml_assert(nstep > 0,
-              "Trying to register variable history for '",
-              name(),
-              "' with nstep = ",
-              nstep,
-              ". nstep should be positive.");
-  if (_histories.size() < nstep)
-    _histories.resize(nstep);
-  _histories[nstep - 1] = hist_var;
-}
-
-template <typename T>
-VariableBase &
-Variable<T>::history(std::size_t nstep)
-{
-  neml_assert(nstep > 0,
-              "Trying to access variable history for '",
-              name(),
-              "' from nstep=",
-              nstep,
-              " step(s) ago. nstep should be positive.");
-  neml_assert(_histories.size() >= nstep,
-              "Trying to access variable history for '",
-              name(),
-              "' from nstep=",
-              nstep,
-              " step(s) ago, but only ",
-              _histories.size(),
-              " step(s) of history have been requested.");
-  return *_histories[nstep - 1];
-}
-
-template <typename T>
-const VariableBase &
-Variable<T>::history(std::size_t nstep) const
-{
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-  return const_cast<Variable<T> *>(this)->history(nstep);
 }
 
 template <typename T>

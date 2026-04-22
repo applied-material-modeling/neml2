@@ -77,7 +77,7 @@ private:
   /// Optional user-defined partition of unknown/state variables.
   const std::vector<std::vector<VariableName>> _unknown_groups;
   /// Optional user-defined partition of residual variables.
-  const std::vector<std::vector<VariableName>> _residual_groups;
+  std::vector<std::vector<VariableName>> _residual_groups;
   /// IStructure for unknown groups
   const std::vector<AxisLayout::IStructure> _unknown_istrs;
   /// IStructure for residual groups

@@ -36,9 +36,9 @@ TEST_CASE("ImplicitUpdate", "[models]")
   auto model0 = load_model("models/ImplicitUpdate.i", "model");
   auto model = std::dynamic_pointer_cast<ImplicitUpdate>(model0);
 
-  model->input_variable("foo").history(1) = Scalar::full(0.0);
-  model->input_variable("bar").history(1) = Scalar::full(0.0);
-  model->input_variable("t").history(1) = Scalar::full(1.1);
+  model->input_variable("foo~1") = Scalar::full(0.0);
+  model->input_variable("bar~1") = Scalar::full(0.0);
+  model->input_variable("t~1") = Scalar::full(1.1);
 
   ValueMap in = {{"temperature", Scalar::full(15.0)}, {"t", Scalar::full(1.3)}};
   auto out = model->value(in);

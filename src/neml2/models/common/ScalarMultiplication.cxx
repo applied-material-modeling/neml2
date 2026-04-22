@@ -60,7 +60,7 @@ ScalarMultiplication::expected_options()
 ScalarMultiplication::ScalarMultiplication(const OptionSet & options)
   : Model(options),
     _to(declare_output_variable<Scalar>("to")),
-    _A(declare_parameter<Scalar>("scaling", "scaling coefficient"))
+    _A(declare_parameter<Scalar>("scaling", "scaling"))
 {
   for (const auto & fv : options.get<std::vector<VariableName>>("from"))
     _from.push_back(&declare_input_variable<Scalar>(fv));

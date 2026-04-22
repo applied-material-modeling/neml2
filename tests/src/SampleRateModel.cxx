@@ -44,14 +44,10 @@ SampleRateModelTmpl<AD>::expected_options()
   auto options = Model::expected_options();
   options.doc() = "A sample model that computes rates for a set of variables.";
 
-  options.add_input("foo", "foo", "A variable of type Scalar");
-  options.add_input("bar", "bar", "A variable of type Scalar");
-  options.add_input("baz", "baz", "A variable of type SR2");
-  options.add_input("temperature", "T", "Temperature variable");
-
-  options.add_parameter<Scalar>("a", TensorName<Scalar>("-0.05"), "Parameter a");
-  options.add_parameter<Scalar>("b", TensorName<Scalar>("-0.5"), "Parameter b");
-  options.add_parameter<Scalar>("c", TensorName<Scalar>("-0.9"), "Parameter c");
+  options.add_input("foo", "A variable of type Scalar");
+  options.add_input("bar", "A variable of type Scalar");
+  options.add_input("baz", "A variable of type SR2");
+  options.add_input("temperature", "Temperature variable");
 
   return options;
 }
@@ -66,9 +62,9 @@ SampleRateModelTmpl<AD>::SampleRateModelTmpl(const OptionSet & options)
     foo_dot(declare_output_variable<Scalar>(rate_name(foo.name()))),
     bar_dot(declare_output_variable<Scalar>(rate_name(bar.name()))),
     baz_dot(declare_output_variable<SR2>(rate_name(baz.name()))),
-    _a(declare_parameter<Scalar>("a", "a")),
-    _b(declare_parameter<Scalar>("b", "b")),
-    _c(declare_parameter<Scalar>("c", "c"))
+    _a(declare_parameter<Scalar>("a", Scalar::full(-0.01))),
+    _b(declare_parameter<Scalar>("b", Scalar::full(-0.5))),
+    _c(declare_parameter<Scalar>("c", Scalar::full(-0.9)))
 {
 }
 

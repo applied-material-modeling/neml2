@@ -53,9 +53,9 @@ template <typename T>
 VariableRate<T>::VariableRate(const OptionSet & options)
   : Model(options),
     _v(declare_input_variable<T>("variable")),
-    _vn(declare_variable_history(_v, /*nstep=*/1)),
+    _vn(declare_input_variable<T>(history_name(_v.name(), /*nstep=*/1))),
     _t(declare_input_variable<Scalar>("time")),
-    _tn(declare_variable_history(_t, /*nstep=*/1)),
+    _tn(declare_input_variable<Scalar>(history_name(_t.name(), /*nstep=*/1))),
     _rate(declare_output_variable<T>(rate_name(_v.name())))
 {
 }

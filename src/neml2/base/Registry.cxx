@@ -72,28 +72,28 @@ Registry::info()
   return get()._info;
 }
 
-const NEML2ObjectInfo &
+const NEML2ObjectInfo *
 Registry::info(const std::string & name)
 {
   const auto & reg = get();
-  neml_assert(
-      reg._info.count(name) > 0,
-      name,
-      " is not a registered object. Did you forget to register it with register_NEML2_object?");
-  return reg._info.at(name);
+  const auto it = reg._info.find(name);
+  if (it == reg._info.end())
+    return nullptr;
+  return &it->second;
 }
 
 void
-Registry::add_inner(const std::string & name,
-                    const std::string & type,
-                    const OptionSet & options,
+Registry::add_inner(const std::string & type,
+                    const std::string & ctype,
+                    OptionSet options,
                     BuildPtr build_ptr)
 {
+  options.type() = type;
   auto & reg = get();
-  neml_assert(reg._info.count(name) == 0,
+  neml_assert(reg._info.count(type) == 0,
               "Duplicate registration found. Object of type ",
-              name,
+              type,
               " is being registered multiple times.");
-  reg._info[name] = NEML2ObjectInfo{type, options, build_ptr};
+  reg._info[type] = NEML2ObjectInfo{ctype, options, build_ptr};
 }
 } // namespace neml2
