@@ -72,6 +72,12 @@ public:
   /// Name of this variable
   const VariableName & name() const { return _name; }
 
+  /// History order: 0 for current variables, 1 for "foo~1", 2 for "foo~2", etc.
+  std::size_t history_order() const { return _history_order; }
+
+  /// Base name without the history suffix (e.g. "stress" for "stress~1")
+  const VariableName & base_name() const { return _base_name; }
+
   ///@{
   /// The Model who declared this variable
   const Model & owner() const;
@@ -243,6 +249,12 @@ protected:
 
   /// The model which declared this variable
   Model * const _owner = nullptr;
+
+  /// History order parsed from the variable name (0 = current, 1 = "foo~1", etc.)
+  std::size_t _history_order = 0;
+
+  /// Base name without history suffix (equals _name when history_order == 0)
+  VariableName _base_name = {};
 
   /// Cached intermediate shape that this variable last saw
   /// @note: set() and operator=() are the only methods that cache this. clear() does not invalidate the cache.
