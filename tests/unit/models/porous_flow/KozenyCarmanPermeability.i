@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/phi'
+    input_Scalar_names = 'phi'
     input_Scalar_values = 'phi'
-    output_Scalar_names = 'state/K'
+    output_Scalar_names = 'K'
     output_Scalar_values = 'K'
     check_AD_parameter_derivatives = false
     derivative_abs_tol = 1e-7
@@ -41,7 +41,7 @@
     reference_porosity = 'phi0'
     n = 0.8
     m = 'm'
-    porosity = 'state/phi'
-    permeability = 'state/K'
+    porosity = 'phi'
+    permeability = 'K'
   []
 []

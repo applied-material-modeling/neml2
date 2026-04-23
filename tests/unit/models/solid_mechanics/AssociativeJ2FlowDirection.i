@@ -13,9 +13,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_SR2_names = 'state/M'
+    input_SR2_names = 'mandel_stress'
     input_SR2_values = 'M'
-    output_SR2_names = 'state/NM'
+    output_SR2_names = 'flow_direction'
     output_SR2_values = 'NM'
     derivative_abs_tol = 1e-6
   []
@@ -24,7 +24,7 @@
 [Models]
   [model]
     type = AssociativeJ2FlowDirection
-    mandel_stress = 'state/M'
-    flow_direction = 'state/NM'
+    mandel_stress = 'mandel_stress'
+    flow_direction = 'flow_direction'
   []
 []

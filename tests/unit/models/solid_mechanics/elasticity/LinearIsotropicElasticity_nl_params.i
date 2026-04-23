@@ -2,11 +2,11 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/E state/nu'
+    input_Scalar_names = 'E nu'
     input_Scalar_values = '100 0.3'
-    input_SR2_names = 'state/internal/Ee'
+    input_SR2_names = 'strain'
     input_SR2_values = 'Ee'
-    output_SR2_names = 'state/S'
+    output_SR2_names = 'stress'
     output_SR2_values = 'S'
   []
 []
@@ -25,7 +25,7 @@
 [Models]
   [model0]
     type = LinearIsotropicElasticity
-    coefficients = 'state/E state/nu'
+    coefficients = 'E nu'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
   []
   [model]

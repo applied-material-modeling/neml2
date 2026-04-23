@@ -106,7 +106,7 @@ TransientDriver::expected_options()
   OptionSet options = ModelDriver::expected_options();
   options.doc() = "Driver for simulating the transient response of an autonomous system.";
 
-  options.add<VariableName>("time", "Time");
+  options.add<VariableName>("time", "t", "Time");
   options.add<TensorName<Scalar>>(
       "prescribed_time",
       "Time steps to perform the material update. The times tensor must have at least one batch "

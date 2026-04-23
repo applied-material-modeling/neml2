@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_R2_names = 'state/F'
+    input_R2_names = 'F'
     input_R2_values = 'F'
-    output_Scalar_names = 'state/J'
+    output_Scalar_names = 'J'
     output_Scalar_values = '3.3'
     derivative_abs_tol = 1e-06
   []
@@ -20,7 +20,7 @@
 [Models]
   [model]
     type = R2Determinant
-    input = 'state/F'
-    determinant = 'state/J'
+    input = 'F'
+    determinant = 'J'
   []
 []

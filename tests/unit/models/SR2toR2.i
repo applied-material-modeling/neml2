@@ -13,9 +13,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_SR2_names = 'state/sym'
+    input_SR2_names = 'sym'
     input_SR2_values = 'foo'
-    output_R2_names = 'state/full'
+    output_R2_names = 'full'
     output_R2_values = 'bar'
     check_second_derivatives = true
   []
@@ -24,7 +24,7 @@
 [Models]
   [model]
     type = SR2ToR2
-    input = 'state/sym'
-    output = 'state/full'
+    input = 'sym'
+    output = 'full'
   []
 []

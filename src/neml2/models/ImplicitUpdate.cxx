@@ -44,6 +44,7 @@ ImplicitUpdate::expected_options()
   options.add<std::string>("solver", "Solver used to solve the nonlinear system of equations");
 
   // No jitting :/
+  options.set<bool>("jit", false);
   options.suppress("jit");
 
   // deprecated

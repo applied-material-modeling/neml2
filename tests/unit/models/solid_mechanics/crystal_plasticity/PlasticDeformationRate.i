@@ -2,17 +2,17 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    output_SR2_names = 'state/internal/plastic_deformation_rate'
+    output_SR2_names = 'plastic_deformation_rate'
     output_SR2_values = 'dp'
-    input_Rot_names = 'state/orientation'
+    input_Rot_names = 'orientation'
     input_Rot_values = 'R'
-    input_Scalar_names = 'state/internal/slip_rates'
+    input_Scalar_names = 'slip_rates'
     input_Scalar_values = 'gamma'
     derivative_rel_tol = 0
     derivative_abs_tol = 1e-5
     second_derivative_rel_tol = 0
     second_derivative_abs_tol = 1e-4
-    input_with_intrsc_intmd_dims = 'state/internal/slip_rates'
+    input_with_intrsc_intmd_dims = 'slip_rates'
     input_intrsc_intmd_dims = '1'
   []
 []
@@ -55,8 +55,8 @@
 [Models]
   [euler_rodrigues]
     type = RotationMatrix
-    from = 'state/orientation'
-    to = 'state/orientation_matrix'
+    from = 'orientation'
+    to = 'orientation_matrix'
   []
   [wp]
     type = PlasticDeformationRate

@@ -2,7 +2,7 @@
   [unit]
     type = ModelUnitTest
     model = 'p'
-    output_Scalar_names = 'parameters/p'
+    output_Scalar_names = 'yield_stress'
     output_Scalar_values = 'p_correct'
   []
 []

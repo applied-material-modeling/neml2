@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'forces/T'
+    input_Scalar_names = 'temperature'
     input_Scalar_values = '400'
-    output_SR2_names = 'forces/Eg'
+    output_SR2_names = 'eigenstrain'
     output_SR2_values = 'Eg_correct'
   []
 []

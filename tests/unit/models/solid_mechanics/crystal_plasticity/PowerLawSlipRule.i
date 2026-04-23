@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/internal/resolved_shears state/internal/slip_strengths'
+    input_Scalar_names = 'resolved_shears slip_strengths'
     input_Scalar_values = 'tau tau_bar'
-    output_Scalar_names = 'state/internal/slip_rates'
+    output_Scalar_names = 'slip_rates'
     output_Scalar_values = 'rates'
     check_AD_parameter_derivatives = false
     derivative_rel_tol = 0

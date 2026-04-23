@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'forces/g state/internal/ri_rate state/internal/rd_rate state/g0'
+    input_Scalar_names = 'activation_energy rate_independent_flow_rate rate_dependent_flow_rate g0'
     input_Scalar_values = 'g 0.5 0.75 0.5'
-    output_Scalar_names = 'state/internal/gamma_rate'
+    output_Scalar_names = 'flow_rate'
     output_Scalar_values = 'fr_correct'
   []
 []
@@ -12,7 +12,7 @@
 [Models]
   [model0]
     type = KocksMeckingFlowSwitch
-    g0 = 'state/g0'
+    g0 = 'g0'
     sharpness = 2.1
   []
   [model]

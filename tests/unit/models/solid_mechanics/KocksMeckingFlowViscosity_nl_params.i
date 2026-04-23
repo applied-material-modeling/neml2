@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'forces/T state/A state/B state/mu'
+    input_Scalar_names = 'temperature A B mu'
     input_Scalar_values = '1000 A_in B_in mu_in'
-    output_Scalar_names = 'parameters/p'
+    output_Scalar_names = 'p'
     output_Scalar_values = 'p_correct'
     check_second_derivatives = true
     derivative_abs_tol = 0.01
@@ -15,13 +15,13 @@
 [Models]
   [p]
     type = KocksMeckingFlowViscosity
-    shear_modulus = 'state/mu'
-    A = 'state/A'
-    B = 'state/B'
+    shear_modulus = 'mu'
+    A = 'A'
+    B = 'B'
     eps0 = 1e10
     k = 1.38064e-20
     b = 2.019e-7
-    temperature = 'forces/T'
+    temperature = 'temperature'
   []
   [model]
     type = ComposedModel

@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/mu state/C'
+    input_Scalar_names = 'mu C'
     input_Scalar_values = 'mu_in C_in'
-    output_Scalar_names = 'parameters/p'
+    output_Scalar_names = 'yield_stress'
     output_Scalar_values = 'p_correct'
     check_second_derivatives = true
   []
@@ -13,8 +13,8 @@
 [Models]
   [p]
     type = KocksMeckingYieldStress
-    C = 'state/C'
-    shear_modulus = 'state/mu'
+    C = 'C'
+    shear_modulus = 'mu'
   []
   [model]
     type = ComposedModel

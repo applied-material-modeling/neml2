@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/V'
+    input_Scalar_names = 'volume'
     input_Scalar_values = '412'
-    output_SR2_names = 'forces/Eg'
+    output_SR2_names = 'eigenstrain'
     output_SR2_values = 'EV_correct'
   []
 []
@@ -20,7 +20,7 @@
   [model]
     type = VolumeChangeEigenstrain
     reference_volume = 211
-    volume = 'state/V'
-    eigenstrain = 'forces/Eg'
+    volume = 'volume'
+    eigenstrain = 'eigenstrain'
   []
 []

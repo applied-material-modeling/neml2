@@ -44,7 +44,7 @@ VariableRate<T>::expected_options()
       "\\f$ f_n \\f$ is the variable at the previous time step, and \\f$ t \\f$ is time.";
 
   options.add_input("variable", "The variable being differentiated");
-  options.add_input("time", "Time");
+  options.add_input("time", "t", "Time");
 
   return options;
 }

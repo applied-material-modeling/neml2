@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/input'
+    input_Scalar_names = 'input'
     input_Scalar_values = 'input'
-    output_SR2_names = 'state/output'
+    output_SR2_names = 'output'
     output_SR2_values = 'output'
     check_second_derivatives = true
   []
@@ -24,7 +24,7 @@
 [Models]
   [model]
     type = ScalarToDiagonalSR2
-    input = 'state/input'
-    output = 'state/output'
+    input = 'input'
+    output = 'output'
   []
 []

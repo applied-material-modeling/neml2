@@ -2,11 +2,11 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_SR2_names = 'state/elastic_strain state/internal/plastic_deformation_rate'
+    input_SR2_names = 'elastic_strain plastic_deformation_rate'
     input_SR2_values = 'e dp'
-    input_WR2_names = 'forces/vorticity state/internal/plastic_vorticity'
+    input_WR2_names = 'vorticity plastic_vorticity'
     input_WR2_values = 'w wp'
-    output_WR2_names = 'state/orientation_rate'
+    output_WR2_names = 'orientation_rate'
     output_WR2_values = 'r_rate'
   []
 []

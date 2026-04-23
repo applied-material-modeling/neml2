@@ -35,8 +35,8 @@ TEST_CASE("Factory", "[base]")
   auto options = ScalarLinearCombination::expected_options();
   options.name() = "example";
   options.type() = "ScalarLinearCombination";
-  options.set<std::vector<VariableName>>("from_var", {"A", "B"});
-  options.set<VariableName>("to_var", "C");
+  options.set<std::vector<VariableName>>("from", {"A", "B"});
+  options.set<VariableName>("to", "C");
 
   InputFile inp(Settings::expected_options());
   inp["Models"]["example"] = options;

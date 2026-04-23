@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/E state/nu state/mu'
+    input_Scalar_names = 'E nu mu'
     input_Scalar_values = '100000.0 0.3 60000.0'
-    output_SSR4_names = 'parameters/p'
+    output_SSR4_names = 'p'
     output_SSR4_values = 'p_correct'
   []
 []
@@ -23,7 +23,7 @@
   [p]
     type = CubicElasticityTensor
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO SHEAR_MODULUS'
-    coefficients = 'state/E state/nu state/mu'
+    coefficients = 'E nu mu'
   []
   [model]
     type = ComposedModel

@@ -14,9 +14,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_SR2_names = 'state/internal/O'
+    input_SR2_names = 'internal/O'
     input_SR2_values = 'foo'
-    output_Scalar_names = 'state/internal/VM'
+    output_Scalar_names = 'internal/VM'
     output_Scalar_values = '15.2970585408'
     derivative_abs_tol = 1e-6
     check_second_derivatives = true
@@ -27,7 +27,7 @@
   [model]
     type = SR2Invariant
     invariant_type = 'VONMISES'
-    tensor = 'state/internal/O'
-    invariant = 'state/internal/VM'
+    tensor = 'internal/O'
+    invariant = 'internal/VM'
   []
 []

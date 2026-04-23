@@ -3,13 +3,13 @@
     type = ModelUnitTest
     model = 'model'
     check_AD_parameter_derivatives = false
-    input_Scalar_names = 'state/u state/v_edge'
+    input_Scalar_names = 'u v_edge'
     input_Scalar_values = 'u v_edge'
-    output_Scalar_names = 'state/J'
+    output_Scalar_names = 'J'
     output_Scalar_values = 'J'
-    input_with_intrsc_intmd_dims = 'state/u'
+    input_with_intrsc_intmd_dims = 'u'
     input_intrsc_intmd_dims = '1'
-    output_with_intrsc_intmd_dims = 'state/J'
+    output_with_intrsc_intmd_dims = 'J'
     output_intrsc_intmd_dims = '1'
   []
 []
@@ -36,8 +36,8 @@
 [Models]
   [model]
     type = FiniteVolumeUpwindedAdvectiveFlux
-    u = 'state/u'
-    v_edge = 'state/v_edge'
-    flux = 'state/J'
+    u = 'u'
+    v_edge = 'v_edge'
+    flux = 'J'
   []
 []

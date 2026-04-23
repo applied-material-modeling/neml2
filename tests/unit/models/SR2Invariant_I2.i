@@ -14,9 +14,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_SR2_names = 'state/internal/O'
+    input_SR2_names = 'internal/O'
     input_SR2_values = 'foo'
-    output_Scalar_names = 'state/internal/I2'
+    output_Scalar_names = 'internal/I2'
     output_Scalar_values = '-66'
     check_second_derivatives = true
   []
@@ -26,7 +26,7 @@
   [model]
     type = SR2Invariant
     invariant_type = 'I2'
-    tensor = 'state/internal/O'
-    invariant = 'state/internal/I2'
+    tensor = 'internal/O'
+    invariant = 'internal/I2'
   []
 []

@@ -2,13 +2,13 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/A'
+    input_Scalar_names = 'A'
     input_Scalar_values = 'A'
-    output_Scalar_names = 'state/B'
+    output_Scalar_names = 'B'
     output_Scalar_values = 'B'
-    input_with_intrsc_intmd_dims = 'state/A'
+    input_with_intrsc_intmd_dims = 'A'
     input_intrsc_intmd_dims = '1'
-    output_with_intrsc_intmd_dims = 'state/B'
+    output_with_intrsc_intmd_dims = 'B'
     output_intrsc_intmd_dims = '1'
     check_AD_parameter_derivatives = false
   []
@@ -38,8 +38,8 @@
 [Models]
   [model]
     type = ScalarIntermediateDiff
-    from = 'state/A'
-    to = 'state/B'
+    from = 'A'
+    to = 'B'
     dim = -1
   []
 []

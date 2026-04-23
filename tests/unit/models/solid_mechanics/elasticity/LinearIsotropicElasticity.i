@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_SR2_names = 'state/internal/Ee'
+    input_SR2_names = 'strain'
     input_SR2_values = 'Ee'
-    output_SR2_names = 'state/S'
+    output_SR2_names = 'stress'
     output_SR2_values = 'S'
   []
 []

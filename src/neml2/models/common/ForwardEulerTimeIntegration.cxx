@@ -43,7 +43,7 @@ ForwardEulerTimeIntegration<T>::expected_options()
       "step.";
 
   options.add_output("variable", "Variable being integrated");
-  options.add_input("time", "Time");
+  options.add_input("time", "t", "Time");
 
   return options;
 }

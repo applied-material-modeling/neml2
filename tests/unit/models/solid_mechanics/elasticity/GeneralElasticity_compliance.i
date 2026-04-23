@@ -2,11 +2,11 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_SR2_names = 'state/S'
+    input_SR2_names = 'stress'
     input_SR2_values = 'S'
-    input_Rot_names = 'state/orientation'
+    input_Rot_names = 'orientation'
     input_Rot_values = 'R'
-    output_SR2_names = 'state/internal/Ee'
+    output_SR2_names = 'strain'
     output_SR2_values = 'Ee'
     derivative_abs_tol = 1e-6
     derivative_rel_tol = 1e-4

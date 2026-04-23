@@ -5,9 +5,9 @@
     check_AD_parameter_derivatives = false
     input_Scalar_names = ''
     input_Scalar_values = ''
-    output_Scalar_names = 'state/q_edge'
+    output_Scalar_names = 'q_edge'
     output_Scalar_values = 'q_edge'
-    output_with_intrsc_intmd_dims = 'state/q_edge'
+    output_with_intrsc_intmd_dims = 'q_edge'
     output_intrsc_intmd_dims = '1'
   []
 []
@@ -43,6 +43,6 @@
     cell_values = 'cell_values'
     cell_centers = 'cell_centers'
     cell_edges = 'cell_edges'
-    edge_values = 'state/q_edge'
+    edge_values = 'q_edge'
   []
 []

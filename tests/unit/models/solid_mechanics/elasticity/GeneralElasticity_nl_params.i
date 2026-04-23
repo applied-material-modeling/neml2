@@ -2,13 +2,13 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_SR2_names = 'state/internal/Ee'
+    input_SR2_names = 'strain'
     input_SR2_values = 'Ee'
-    input_Rot_names = 'state/orientation'
+    input_Rot_names = 'orientation'
     input_Rot_values = 'R'
-    output_SR2_names = 'state/S'
+    output_SR2_names = 'stress'
     output_SR2_values = 'S'
-    input_SSR4_names = 'params/C'
+    input_SSR4_names = 'variable'
     input_SSR4_values = 'C_values'
     derivative_abs_tol = 1e-6
     derivative_rel_tol = 1e-4
@@ -42,7 +42,7 @@
 [Models]
   [C]
     type = SSR4InputParameter
-    from = 'params/C'
+    variable = 'variable'
   []
   [model0]
     type = GeneralElasticity

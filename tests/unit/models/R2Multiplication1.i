@@ -17,9 +17,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_R2_names = 'state/A state/B'
+    input_R2_names = 'A B'
     input_R2_values = 'A B'
-    output_R2_names = 'state/C'
+    output_R2_names = 'C'
     output_R2_values = 'C'
   []
 []
@@ -27,8 +27,8 @@
 [Models]
   [model]
     type = R2Multiplication
-    A = 'state/A'
-    B = 'state/B'
-    to = 'state/C'
+    A = 'A'
+    B = 'B'
+    to = 'C'
   []
 []

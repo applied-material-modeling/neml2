@@ -3,11 +3,11 @@
     [unit]
         type = ModelUnitTest
         model = 'model'
-        input_R2_names = 'state/F'
+        input_R2_names = 'input'
         input_R2_values = 'input'
-        input_Scalar_names = 'state/J'
+        input_Scalar_names = 'jacobian'
         input_Scalar_values = 0.5
-        output_R2_names = 'state/Fe'
+        output_R2_names = 'output'
         output_R2_values = 'output'
     []
 []
@@ -30,9 +30,9 @@
 [Models]
     [model]
         type = VolumeAdjustDeformationGradient
-        input = 'state/F'
-        output = 'state/Fe'
-        jacobian = 'state/J'
+        input = 'input'
+        output = 'output'
+        jacobian = 'jacobian'
     []
 []
   

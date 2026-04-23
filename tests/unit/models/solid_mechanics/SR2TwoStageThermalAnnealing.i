@@ -2,11 +2,11 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'forces/T'
+    input_Scalar_names = 'temperature'
     input_Scalar_values = 'temperature_in'
-    input_SR2_names = 'state/internal/k_rate_unmodified state/internal/k'
+    input_SR2_names = 'base_rate base'
     input_SR2_values = 'k_rate_in k_values_in'
-    output_SR2_names = 'state/internal/k_rate'
+    output_SR2_names = 'modified_rate'
     output_SR2_values = 'correct_values'
     check_second_derivatives = false
     check_AD_parameter_derivatives = false
@@ -17,10 +17,10 @@
 [Models]
   [model]
     type = SR2TwoStageThermalAnnealing
-    base_rate = 'state/internal/k_rate_unmodified'
-    base = 'state/internal/k'
-    modified_rate = 'state/internal/k_rate'
-    temperature = 'forces/T'
+    base_rate = 'base_rate'
+    base = 'base'
+    modified_rate = 'modified_rate'
+    temperature = 'temperature'
 
     T1 = 1000.0
     T2 = 1200.0

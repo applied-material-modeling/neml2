@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/A state/B state/C'
+    input_Scalar_names = 'A B C'
     input_Scalar_values = 'A_in B_in C_in'
-    output_Scalar_names = 'parameters/p'
+    output_Scalar_names = 'intercept'
     output_Scalar_values = 'p_correct'
     check_second_derivatives = true
   []
@@ -13,9 +13,9 @@
 [Models]
   [p]
     type = KocksMeckingIntercept
-    A = 'state/A'
-    B = 'state/B'
-    C = 'state/C'
+    A = 'A'
+    B = 'B'
+    C = 'C'
   []
   [model]
     type = ComposedModel

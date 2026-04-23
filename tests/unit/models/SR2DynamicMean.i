@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_SR2_names = 'state/S'
+    input_SR2_names = 'S'
     input_SR2_values = 'S'
-    output_SR2_names = 'state/S_mean'
+    output_SR2_names = 'S_mean'
     output_SR2_values = 'S_mean'
     check_derivatives = false
   []
@@ -40,8 +40,8 @@
 [Models]
   [model]
     type = SR2DynamicMean
-    from = 'state/S'
-    to = 'state/S_mean'
+    from = 'S'
+    to = 'S_mean'
     dim = 1
   []
 []

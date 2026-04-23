@@ -2,11 +2,11 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/H'
+    input_Scalar_names = 'H'
     input_Scalar_values = '1000'
-    input_SR2_names = 'state/internal/Kp'
+    input_SR2_names = 'Kp'
     input_SR2_values = 'Kp'
-    output_SR2_names = 'state/internal/X'
+    output_SR2_names = 'X'
     output_SR2_values = 'X'
   []
 []
@@ -25,7 +25,9 @@
 [Models]
   [model0]
     type = LinearKinematicHardening
-    hardening_modulus = 'state/H'
+    hardening_modulus = 'H'
+    kinematic_plastic_strain = 'Kp'
+    back_stress = 'X'
   []
   [model]
     type = ComposedModel

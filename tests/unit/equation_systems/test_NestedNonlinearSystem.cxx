@@ -38,7 +38,7 @@ TEST_CASE("ModelNonlinearSystem", "[equation_systems]")
     auto eq_sys = factory->get_es<ModelNonlinearSystem>("two_groups");
     REQUIRE(eq_sys != nullptr);
 
-    // unknown layout: group 0 = {state/foo, state/bar}, group 1 = {state/baz}
+    // unknown layout: group 0 = {foo, bar}, group 1 = {baz}
     const auto ul = eq_sys->ulayout();
     REQUIRE(ul.ngroup() == 2);
 
@@ -54,20 +54,20 @@ TEST_CASE("ModelNonlinearSystem", "[equation_systems]")
     REQUIRE(ug1.var(0) == "baz");
     REQUIRE(ug1.base_sizes(0) == TensorShape{6}); // SR2
 
-    // residual layout: group 0 = {residual/foo, residual/bar}, group 1 = {residual/baz}
+    // residual layout: group 0 = {foo, bar}, group 1 = {baz}
     const auto bl = eq_sys->blayout();
     REQUIRE(bl.ngroup() == 2);
 
     const auto bg0 = bl.group(0);
     REQUIRE(bg0.nvar() == 2);
-    REQUIRE(bg0.var(0) == "foo");
-    REQUIRE(bg0.var(1) == "bar");
+    REQUIRE(bg0.var(0) == "foo_residual");
+    REQUIRE(bg0.var(1) == "bar_residual");
     REQUIRE(bg0.base_sizes(0) == TensorShape{}); // Scalar
     REQUIRE(bg0.base_sizes(1) == TensorShape{}); // Scalar
 
     const auto bg1 = bl.group(1);
     REQUIRE(bg1.nvar() == 1);
-    REQUIRE(bg1.var(0) == "baz");
+    REQUIRE(bg1.var(0) == "baz_residual");
     REQUIRE(bg1.base_sizes(0) == TensorShape{6}); // SR2
   }
 
@@ -129,12 +129,12 @@ TEST_CASE("ModelNonlinearSystem", "[equation_systems]")
 
     const auto bg0 = bl.group(0);
     REQUIRE(bg0.nvar() == 1);
-    REQUIRE(bg0.var(0) == "baz");
+    REQUIRE(bg0.var(0) == "baz_residual");
 
     const auto bg1 = bl.group(1);
     REQUIRE(bg1.nvar() == 2);
-    REQUIRE(bg1.var(0) == "bar");
-    REQUIRE(bg1.var(1) == "foo");
+    REQUIRE(bg1.var(0) == "bar_residual");
+    REQUIRE(bg1.var(1) == "foo_residual");
   }
 
   SECTION("invalid group index throws")

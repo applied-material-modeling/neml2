@@ -2,7 +2,7 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'foo~1 bar~1 temperature t t~1'
+    input_Scalar_names = 'foo~1 bar~1 T t t~1'
     input_Scalar_values = '0 0 15 1.3 1.1'
     input_SR2_names = 'baz~1'
     input_SR2_values = '0'
@@ -14,6 +14,7 @@
 [Models]
   [rate]
     type = SampleRateModel
+    temperature = 'T'
   []
   [integrate_foo]
     type = ScalarBackwardEulerTimeIntegration

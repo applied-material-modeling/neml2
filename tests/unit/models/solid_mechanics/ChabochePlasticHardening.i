@@ -2,11 +2,11 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/internal/gamma_rate'
+    input_Scalar_names = 'flow_rate'
     input_Scalar_values = '0.01'
-    input_SR2_names = 'state/internal/NM state/internal/X'
+    input_SR2_names = 'flow_direction back_stress'
     input_SR2_values = 'NM X'
-    output_SR2_names = 'state/internal/X_rate'
+    output_SR2_names = 'back_stress_rate'
     output_SR2_values = 'X_rate'
     value_abs_tol = 1e-4
   []

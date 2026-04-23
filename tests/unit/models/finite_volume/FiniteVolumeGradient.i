@@ -3,13 +3,13 @@
     type = ModelUnitTest
     model = 'model'
     check_AD_parameter_derivatives = false
-    input_Scalar_names = 'state/u'
+    input_Scalar_names = 'u'
     input_Scalar_values = 'u'
-    output_Scalar_names = 'state/grad_u'
+    output_Scalar_names = 'grad_u'
     output_Scalar_values = 'grad_u'
-    input_with_intrsc_intmd_dims = 'state/u'
+    input_with_intrsc_intmd_dims = 'u'
     input_intrsc_intmd_dims = '1'
-    output_with_intrsc_intmd_dims = 'state/grad_u'
+    output_with_intrsc_intmd_dims = 'grad_u'
     output_intrsc_intmd_dims = '1'
   []
 []
@@ -44,9 +44,9 @@
 [Models]
   [model]
     type = FiniteVolumeGradient
-    u = 'state/u'
+    u = 'u'
     prefactor = 'prefactor'
     dx = 'dx'
-    grad_u = 'state/grad_u'
+    grad_u = 'grad_u'
   []
 []

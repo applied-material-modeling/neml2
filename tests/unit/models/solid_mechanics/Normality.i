@@ -2,13 +2,13 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/internal/k'
+    input_Scalar_names = 'k'
     input_Scalar_values = '20'
-    input_SR2_names = 'state/internal/M state/internal/X'
+    input_SR2_names = 'M X'
     input_SR2_values = 'M X'
-    output_Scalar_names = 'state/internal/Nk'
+    output_Scalar_names = 'Nk'
     output_Scalar_values = '-0.8165'
-    output_SR2_names = 'state/internal/NM state/internal/NX'
+    output_SR2_names = 'NM NX'
     output_SR2_values = 'NM NX'
     value_abs_tol = 1e-4
   []
@@ -36,20 +36,22 @@
 [Models]
   [overstress]
     type = SR2LinearCombination
-    to_var = 'state/internal/O'
-    from_var = 'state/internal/M state/internal/X'
-    coefficients = '1 -1'
+    to = 'O'
+    from = 'M X'
+    weights = '1 -1'
   []
   [vonmises]
     type = SR2Invariant
     invariant_type = 'VONMISES'
-    tensor = 'state/internal/O'
-    invariant = 'state/internal/s'
+    tensor = 'O'
+    invariant = 's'
   []
   [yield]
     type = YieldFunction
     yield_stress = 50
-    isotropic_hardening = 'state/internal/k'
+    effective_stress = 's'
+    isotropic_hardening = 'k'
+    yield_function = 'fp'
   []
   [flow]
     type = ComposedModel
@@ -58,8 +60,8 @@
   [model]
     type = Normality
     model = 'flow'
-    function = 'state/internal/fp'
-    from = 'state/internal/k state/internal/X state/internal/M'
-    to = 'state/internal/Nk state/internal/NX state/internal/NM'
+    function = 'fp'
+    from = 'k X M'
+    to = 'Nk NX NM'
   []
 []

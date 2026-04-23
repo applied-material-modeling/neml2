@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'forces/T forces/effective_strain_rate state/mu'
+    input_Scalar_names = 'temperature strain_rate mu'
     input_Scalar_values = 'T 1.1 75000'
-    output_Scalar_names = 'forces/g'
+    output_Scalar_names = 'activation_energy'
     output_Scalar_values = 'g_correct'
   []
 []
@@ -15,7 +15,7 @@
     eps0 = 1e10
     k = 1.38064e-20
     b = 2.019e-7
-    shear_modulus = 'state/mu'
+    shear_modulus = 'mu'
   []
   [model]
     type = ComposedModel

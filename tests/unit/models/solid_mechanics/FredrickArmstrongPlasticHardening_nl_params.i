@@ -2,11 +2,11 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/internal/gamma_rate state/C state/g'
+    input_Scalar_names = 'flow_rate C g'
     input_Scalar_values = '0.01 1000.0 10.0'
-    input_SR2_names = 'state/internal/NM state/internal/X'
+    input_SR2_names = 'flow_direction back_stress'
     input_SR2_values = 'NM X'
-    output_SR2_names = 'state/internal/X_rate'
+    output_SR2_names = 'back_stress_rate'
     output_SR2_values = 'X_rate'
     value_abs_tol = 1.0e-4
   []
@@ -30,8 +30,8 @@
 [Models]
   [model0]
     type = FredrickArmstrongPlasticHardening
-    C = 'state/C'
-    g = 'state/g'
+    C = 'C'
+    g = 'g'
   []
   [model]
     type = ComposedModel

@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_SR2_names = 'state/S'
+    input_SR2_names = 'S'
     input_SR2_values = 'S'
-    output_SR2_names = 'state/S_sum'
+    output_SR2_names = 'S_sum'
     output_SR2_values = 'S_sum'
     check_derivatives = false
   []
@@ -40,8 +40,8 @@
 [Models]
   [model]
     type = SR2DynamicSum
-    from = 'state/S'
-    to = 'state/S_sum'
+    from = 'S'
+    to = 'S_sum'
     dim = 1
   []
 []

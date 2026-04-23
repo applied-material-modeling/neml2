@@ -2,11 +2,11 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_SR2_names = 'state/internal/M'
+    input_SR2_names = 'M'
     input_SR2_values = 'M'
-    input_Scalar_names = 'forces/T'
+    input_Scalar_names = 'T'
     input_Scalar_values = '550'
-    output_Scalar_names = 'state/internal/fp'
+    output_Scalar_names = 'fp'
     output_Scalar_values = '102.5057'
     derivative_abs_tol = 1e-06
     check_second_derivatives = true
@@ -41,18 +41,20 @@
   [vonmises]
     type = SR2Invariant
     invariant_type = 'VONMISES'
-    tensor = 'state/internal/M'
-    invariant = 'state/internal/s'
+    tensor = 'M'
+    invariant = 's'
   []
   [s0]
     type = ScalarLinearInterpolation
-    argument = 'forces/T'
+    argument = 'T'
     abscissa = 'T_data'
     ordinate = 's0_data'
   []
   [yield]
     type = YieldFunction
     yield_stress = 's0'
+    effective_stress = 's'
+    yield_function = 'fp'
   []
   [model]
     type = ComposedModel

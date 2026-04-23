@@ -3,13 +3,13 @@
     type = ModelUnitTest
     model = 'model'
     check_AD_parameter_derivatives = false
-    input_Scalar_names = 'state/u_bar'
+    input_Scalar_names = 'u_bar'
     input_Scalar_values = 'u_bar'
-    output_Scalar_names = 'state/u_bar_with_bc_right'
+    output_Scalar_names = 'u_bar_with_bc_right'
     output_Scalar_values = 'u_bar_with_bc_right'
-    input_with_intrsc_intmd_dims = 'state/u_bar'
+    input_with_intrsc_intmd_dims = 'u_bar'
     input_intrsc_intmd_dims = '1'
-    output_with_intrsc_intmd_dims = 'state/u_bar_with_bc_right'
+    output_with_intrsc_intmd_dims = 'u_bar_with_bc_right'
     output_intrsc_intmd_dims = '1'
   []
 []
@@ -38,7 +38,7 @@
 [Models]
   [model]
     type = FiniteVolumeAppendBoundaryCondition
-    input = 'state/u_bar'
+    input = 'u_bar'
     bc_value = 'u_bc'
     side = 'right'
   []

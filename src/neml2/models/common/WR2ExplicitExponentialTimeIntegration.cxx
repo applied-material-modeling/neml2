@@ -41,7 +41,7 @@ WR2ExplicitExponentialTimeIntegration::expected_options()
                   "s_n \\f$, where \\f$ \\circ \\f$ denotes the rotation operator.";
 
   options.add_output("variable", "Variable being integrated");
-  options.add_input("time", "Time");
+  options.add_input("time", "t", "Time");
 
   return options;
 }
