@@ -110,11 +110,12 @@
 
 [Drivers]
   [driver]
-    type = SpatialVelocityDriver
+    type = TransientDriver
     model = 'model_with_stress'
     prescribed_time = 'times'
-    prescribed_spatial_velocity_gradient = 'L'
-    ic_Rot_names = 'state/orientation'
+    force_R2_names = 'spatial_velocity_gradient'
+    force_R2_values = 'L'
+    ic_Rot_names = 'orientation'
     ic_Rot_values = 'initial_orientation'
     predictor = 'PREVIOUS_STATE'
     save_as = 'result.pt'
@@ -138,28 +139,29 @@
 [Models]
   [split_to_deformation_rate]
     type = R2ToSR2
-    input = 'forces/spatial_velocity_gradient'
-    output = 'forces/deformation_rate'
+    input = 'spatial_velocity_gradient'
+    output = 'deformation_rate'
   []
   [split_to_vorticity]
     type = R2ToWR2
-    input = 'forces/spatial_velocity_gradient'
-    output = 'forces/vorticity'
+    input = 'spatial_velocity_gradient'
+    output = 'vorticity'
   []
   [euler_rodrigues]
     type = RotationMatrix
-    from = 'state/orientation'
-    to = 'state/orientation_matrix'
+    from = 'orientation'
+    to = 'orientation_matrix'
   []
   [elasticity]
     type = LinearIsotropicElasticity
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
     coefficients = '1e5 0.25'
-    strain = 'state/elastic_strain'
-    stress = 'state/internal/cauchy_stress'
+    strain = 'elastic_strain'
+    stress = 'cauchy_stress'
   []
   [resolved_shear]
     type = ResolvedShear
+    stress = 'cauchy_stress'
   []
   [elastic_stretch]
     type = ElasticStrainRate
@@ -192,15 +194,15 @@
   []
   [integrate_slip_hardening]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/internal/slip_hardening'
+    variable = 'slip_hardening'
   []
   [integrate_elastic_strain]
     type = SR2BackwardEulerTimeIntegration
-    variable = 'state/elastic_strain'
+    variable = 'elastic_strain'
   []
   [integrate_orientation]
     type = WR2ImplicitExponentialTimeIntegration
-    variable = 'state/orientation'
+    variable = 'orientation'
   []
   [implicit_rate]
     type = ComposedModel
@@ -216,6 +218,8 @@
   [eq_sys]
     type = NonlinearSystem
     model = 'implicit_rate'
+    unknowns = 'elastic_strain slip_hardening orientation'
+    residuals = 'elastic_strain_residual slip_hardening_residual orientation_residual'
   []
 []
 
@@ -238,12 +242,12 @@
   []
   [full_stress]
     type = SR2ToR2
-    input = 'state/internal/cauchy_stress'
-    output = 'state/internal/full_cauchy_stress'
+    input = 'cauchy_stress'
+    output = 'full_cauchy_stress'
   []
   [model_with_stress]
     type = ComposedModel
     models = 'model elasticity full_stress'
-    additional_outputs = 'state/elastic_strain'
+    additional_outputs = 'elastic_strain'
   []
 []

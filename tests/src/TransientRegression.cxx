@@ -72,14 +72,45 @@ TransientRegression::run()
 {
   _driver->run();
 
-  // Verify the result
   auto res = jit::load(_driver->save_as_path());
   auto res_ref = jit::load(_reference);
-  auto err_msg = diff(res.named_buffers(), res_ref.named_buffers(), _rtol, _atol);
 
+  auto err_msg = diff(res.named_buffers(), res_ref.named_buffers(), _rtol, _atol);
   neml_assert(err_msg.empty(), err_msg);
 
   return true;
+}
+
+std::string
+diff(const std::map<std::string, ATensor> & res_map,
+     const std::map<std::string, ATensor> & ref_map,
+     double rtol,
+     double atol)
+{
+  std::ostringstream err_msg;
+
+  for (auto && [key, value] : res_map)
+    if (ref_map.count(key) == 0)
+      err_msg << "Result has extra variable " << key << ".\n";
+
+  for (auto && [key, value] : ref_map)
+  {
+    if (res_map.count(key) == 0)
+    {
+      err_msg << "Result is missing variable " << key << ".\n";
+      continue;
+    }
+
+    if (!at::allclose(res_map.at(key), value, rtol, atol))
+    {
+      auto d = at::abs(res_map.at(key) - value) - rtol * at::abs(value);
+      err_msg << "Result has wrong value for variable " << key
+              << ". Maximum mixed difference = " << std::scientific << d.max().item<double>()
+              << " > atol = " << std::scientific << atol << "\n";
+    }
+  }
+
+  return err_msg.str();
 }
 
 std::string
@@ -96,29 +127,6 @@ diff(const jit::named_buffer_list & res,
   for (auto item : ref)
     ref_map.emplace(item.name, item.value);
 
-  std::ostringstream err_msg;
-
-  for (auto && [key, value] : res_map)
-    if (ref_map.count(key) == 0)
-      err_msg << "Result has extra variable " << key << ".\n";
-
-  for (auto && [key, value] : ref_map)
-  {
-    if (res_map.count(key) == 0)
-    {
-      err_msg << "Result is missing variable " << key << ".\n";
-      continue;
-    }
-
-    if (!at::allclose(res_map[key], value, rtol, atol))
-    {
-      auto diff = at::abs(res_map[key] - value) - rtol * at::abs(value);
-      err_msg << "Result has wrong value for variable " << key
-              << ". Maximum mixed difference = " << std::scientific << diff.max().item<double>()
-              << " > atol = " << std::scientific << atol << "\n";
-    }
-  }
-
-  return err_msg.str();
+  return diff(res_map, ref_map, rtol, atol);
 }
 }

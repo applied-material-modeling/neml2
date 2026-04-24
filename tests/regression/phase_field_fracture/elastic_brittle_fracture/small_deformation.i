@@ -5,7 +5,7 @@
     type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    force_SR2_names = 'forces/E'
+    force_SR2_names = 'E'
     force_SR2_values = 'strains'
     predictor = LINEAR_EXTRAPOLATION
     save_as = 'fb_pff_result.pt'
@@ -60,15 +60,15 @@
   # strain energy density: g * psie0
   [degrade]
     type = PowerDegradationFunction
-    phase = 'state/d'
-    degradation = 'state/g'
+    phase = 'd'
+    degradation = 'g'
     power = 'p'
   []
   [sed0]
     type = LinearIsotropicStrainEnergyDensity
-    strain = 'forces/E'
-    strain_energy_density_active = 'state/psie_active'
-    strain_energy_density_inactive = 'state/psie_inactive'
+    strain = 'E'
+    active_strain_energy_density = 'psie_active'
+    inactive_strain_energy_density = 'psie_inactive'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
     coefficients = '25.84e3 0.18'
     # decomposition = 'NONE'
@@ -76,27 +76,27 @@
   []
   [sed1]
     type = ScalarMultiplication
-    from_var = 'state/g state/psie_active'
-    to_var = 'state/psie_degraded'
+    from = 'g psie_active'
+    to = 'psie_degraded'
   []
   [sed]
     type = ScalarLinearCombination
-    from_var = 'state/psie_degraded state/psie_inactive'
-    to_var = 'state/psie'
-    coefficients = '1 1'
+    from = 'psie_degraded psie_inactive'
+    to = 'psie'
+    weights = '1 1'
   []
   # crack geometric function: alpha
   [cracked]
     type = CrackGeometricFunctionAT2
-    phase = 'state/d'
-    crack = 'state/alpha'
+    phase = 'd'
+    crack = 'alpha'
   []
   # total energy
   [sum]
     type = ScalarLinearCombination
-    from_var = 'state/alpha state/psie'
-    to_var = 'state/psi'
-    coefficients = 'GcbylbyCo 1'
+    from = 'alpha psie'
+    to = 'psi'
+    weights = 'GcbylbyCo 1'
   []
   [energy] # this guy maps from (strain, d) -> energy
     type = ComposedModel
@@ -106,29 +106,29 @@
   [dpsidd]
     type = Normality
     model = 'energy'
-    function = 'state/psi'
-    from = 'state/d'
-    to = 'state/dpsi_dd'
+    function = 'psi'
+    from = 'd'
+    to = 'dpsi_dd'
   []
   # obtain d_rate
   [drate]
     type = ScalarVariableRate
-    variable = 'state/d'
-    rate = 'state/d_rate'
+    variable = 'd'
   []
   # define functional
   [functional]
     type = ScalarLinearCombination
-    from_var = 'state/dpsi_dd state/d_rate'
-    to_var = 'state/F'
-    coefficients = '1 1'
+    from = 'dpsi_dd d_rate'
+    to = 'F'
+    weights = '1 1'
   []
   # Fisher Burmeister Complementary Condition
   [Fish_Burm]
     type = FischerBurmeister
-    first_var = 'state/F'
-    second_var = 'state/d_rate'
-    fischer_burmeister = 'residual/d'
+    a = 'F'
+    b = 'd_rate'
+    complementarity = 'd_residual'
+    a_inequality = 'LE'
   []
   # system of equations
   [eq]
@@ -141,6 +141,7 @@
   [eq_sys]
     type = NonlinearSystem
     model = 'eq'
+    unknowns = 'd'
   []
 []
 
@@ -168,13 +169,13 @@
   [stress]
     type = Normality
     model = 'energy'
-    function = 'state/psi'
-    from = 'forces/E'
-    to = 'state/S'
+    function = 'psi'
+    from = 'E'
+    to = 'S'
   []
   [model]
     type = ComposedModel
     models = 'solve_d stress'
-    additional_outputs = 'state/d'
+    additional_outputs = 'd'
   []
 []

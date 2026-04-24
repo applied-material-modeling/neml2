@@ -40,10 +40,11 @@
 
 [Drivers]
   [driver]
-    type = SDTSolidMechanicsDriver
+    type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    prescribed_strain = 'strains'
+    force_SR2_names = 'E'
+    force_SR2_values = 'strains'
     save_as = 'result.pt'
   []
   [regression]
@@ -60,18 +61,19 @@
   []
   [mandel_stress]
     type = IsotropicMandelStress
+    cauchy_stress = 'stress'
   []
   [overstress]
     type = SR2LinearCombination
-    to_var = 'state/internal/O'
-    from_var = 'state/internal/M state/internal/X'
-    coefficients = '1 -1'
+    to = 'overstress'
+    from = 'mandel_stress back_stress'
+    weights = '1 -1'
   []
   [vonmises]
     type = SR2Invariant
     invariant_type = 'VONMISES'
-    tensor = 'state/internal/O'
-    invariant = 'state/internal/s'
+    tensor = 'overstress'
+    invariant = 'effective_stress'
   []
   [yield]
     type = YieldFunction
@@ -84,9 +86,9 @@
   [normality]
     type = Normality
     model = 'flow'
-    function = 'state/internal/fp'
-    from = 'state/internal/M state/internal/X'
-    to = 'state/internal/NM state/internal/NX'
+    function = 'yield_function'
+    from = 'mandel_stress back_stress'
+    to = 'flow_direction kinematic_hardening_direction'
   []
   [flow_rate]
     type = PerzynaPlasticFlowRate
@@ -101,14 +103,13 @@
   []
   [Erate]
     type = SR2VariableRate
-    variable = 'forces/E'
-    rate = 'forces/E_rate'
+    variable = 'E'
   []
   [Eerate]
     type = SR2LinearCombination
-    from_var = 'forces/E_rate state/internal/Ep_rate'
-    to_var = 'state/internal/Ee_rate'
-    coefficients = '1 -1'
+    from = 'E_rate plastic_strain_rate'
+    to = 'strain_rate'
+    weights = '1 -1'
   []
   [elasticity]
     type = LinearIsotropicElasticity
@@ -118,11 +119,11 @@
   []
   [integrate_Kp]
     type = SR2BackwardEulerTimeIntegration
-    variable = 'state/internal/Kp'
+    variable = 'kinematic_plastic_strain'
   []
   [integrate_stress]
     type = SR2BackwardEulerTimeIntegration
-    variable = 'state/S'
+    variable = 'stress'
   []
   [implicit_rate]
     type = ComposedModel
@@ -134,6 +135,8 @@
   [eq_sys]
     type = NonlinearSystem
     model = 'implicit_rate'
+    unknowns = 'stress kinematic_plastic_strain'
+    residuals = 'stress_residual kinematic_plastic_strain_residual'
   []
 []
 

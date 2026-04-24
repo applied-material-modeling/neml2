@@ -1,50 +1,47 @@
-nbatch = 10
-nstep = 100
-
 [Tensors]
   [end_time]
     type = LogspaceScalar
     start = 3
     end = 3
-    nstep = ${nbatch}
+    nstep = 10
   []
   [times]
     type = LinspaceScalar
     start = 0
     end = end_time
-    nstep = ${nstep}
+    nstep = 100
   []
   [start_temperature]
     type = LinspaceScalar
     start = 300
     end = 300
-    nstep = ${nbatch}
+    nstep = 10
   []
   [end_temperature]
     type = LinspaceScalar
     start = 1800
     end = 1800
-    nstep = ${nbatch}
+    nstep = 10
   []
   [temperatures]
     type = LinspaceScalar
     start = start_temperature
     end = end_temperature
-    nstep = ${nstep}
+    nstep = 100
   []
   [exx]
     type = FullScalar
-    batch_shape = '(${nbatch})'
+    batch_shape = '(10)'
     value = 0
   []
   [eyy]
     type = FullScalar
-    batch_shape = '(${nbatch})'
+    batch_shape = '(10)'
     value = 0
   []
   [ezz]
     type = FullScalar
-    batch_shape = '(${nbatch})'
+    batch_shape = '(10)'
     value = 0
   []
   [max_strain]
@@ -55,29 +52,31 @@ nstep = 100
     type = LinspaceSR2
     start = 0
     end = max_strain
-    nstep = ${nstep}
+    nstep = 100
   []
   [f0]
     type = FullScalar
     value = '0.36'
-    batch_shape = '(${nbatch})'
+    batch_shape = '(10)'
   []
   [gamma]
     type = LinspaceScalar
     start = 0
     end = 150
-    nstep = ${nbatch}
+    nstep = 10
   []
 []
 
 [Drivers]
   [driver]
-    type = SDTSolidMechanicsDriver
+    type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    prescribed_strain = 'strains'
-    prescribed_temperature = 'temperatures'
-    ic_Scalar_names = 'state/internal/f'
+    force_SR2_names = 'E'
+    force_SR2_values = 'strains'
+    force_Scalar_names = 'temperature'
+    force_Scalar_values = 'temperatures'
+    ic_Scalar_names = 'void_fraction'
     ic_Scalar_values = 'f0'
     save_as = 'result.pt'
   []
@@ -106,39 +105,41 @@ nstep = 100
   []
   [elastic_strain]
     type = SR2LinearCombination
-    to_var = 'state/internal/Ee'
-    from_var = 'forces/E state/internal/Ep forces/Eg'
-    coefficients = '1 -1 -1'
+    from = 'E plastic_strain eigenstrain'
+    to = 'elastic_strain'
+    weights = '1 -1 -1'
   []
   [elasticity]
     type = LinearIsotropicElasticity
     coefficients = '3e4 0.3'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
+    strain = 'elastic_strain'
   []
   [mandel_stress]
     type = IsotropicMandelStress
+    cauchy_stress = 'stress'
   []
   [j2]
     type = SR2Invariant
     invariant_type = 'VONMISES'
-    tensor = 'state/internal/M'
-    invariant = 'state/internal/se'
+    tensor = 'mandel_stress'
+    invariant = 'flow_invariant'
   []
   [sh]
     type = SR2Invariant
     invariant_type = 'I1'
-    tensor = 'state/internal/M'
-    invariant = 'state/internal/sh'
+    tensor = 'mandel_stress'
+    invariant = 'hydrostatic_stress'
   []
   [sp]
     type = ScalarLinearCombination
-    to_var = 'state/internal/sp'
-    from_var = 'state/internal/sh state/internal/ss'
-    coefficients = '1 -1'
+    from = 'hydrostatic_stress sintering_stress'
+    to = 'poro_invariant'
+    weights = '1 -1'
   []
   [q1]
     type = ArrheniusParameter
-    temperature = 'forces/T'
+    temperature = 'temperature'
     reference_value = 8000
     activation_energy = 5e4
     ideal_gas_constant = 8.314
@@ -149,7 +150,7 @@ nstep = 100
     q1 = 'q1'
     q2 = 0.01
     q3 = 1.57
-    isotropic_hardening = 'state/internal/k'
+    isotropic_hardening = 'isotropic_hardening'
   []
   [flow]
     type = ComposedModel
@@ -164,9 +165,9 @@ nstep = 100
   [normality]
     type = Normality
     model = 'flow'
-    function = 'state/internal/fp'
-    from = 'state/internal/M state/internal/k'
-    to = 'state/internal/NM state/internal/Nk'
+    function = 'yield_function'
+    from = 'mandel_stress isotropic_hardening'
+    to = 'flow_direction isotropic_hardening_direction'
   []
   [Eprate]
     type = AssociativePlasticFlow
@@ -179,23 +180,19 @@ nstep = 100
   []
   [integrate_Ep]
     type = SR2BackwardEulerTimeIntegration
-    variable = 'state/internal/Ep'
+    variable = 'plastic_strain'
   []
   [integrate_ep]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/internal/ep'
+    variable = 'equivalent_plastic_strain'
   []
   [integrate_void]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/internal/f'
+    variable = 'void_fraction'
   []
   [surface]
     type = ComposedModel
-    models = "isoharden sintering_stress elastic_strain elasticity
-              mandel_stress flow flow_rate
-              normality
-              Eprate eprate voidrate
-              integrate_Ep integrate_ep integrate_void"
+    models = 'isoharden sintering_stress elastic_strain elasticity mandel_stress flow flow_rate normality Eprate eprate voidrate integrate_Ep integrate_ep integrate_void'
   []
 []
 
@@ -203,6 +200,8 @@ nstep = 100
   [eq_sys]
     type = NonlinearSystem
     model = 'surface'
+    unknowns = 'plastic_strain equivalent_plastic_strain void_fraction'
+    residuals = 'plastic_strain_residual equivalent_plastic_strain_residual void_fraction_residual'
   []
 []
 
@@ -225,6 +224,6 @@ nstep = 100
   [model]
     type = ComposedModel
     models = 'eigenstrain return_map elastic_strain elasticity'
-    additional_outputs = 'state/internal/Ep state/internal/ep state/internal/f'
+    additional_outputs = 'plastic_strain equivalent_plastic_strain void_fraction'
   []
 []

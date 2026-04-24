@@ -25,6 +25,7 @@
 #pragma once
 
 #include <filesystem>
+#include <map>
 
 #include "neml2/drivers/Driver.h"
 #include "neml2/tensors/jit.h"
@@ -57,6 +58,11 @@ private:
 
 std::string diff(const jit::named_buffer_list & res,
                  const jit::named_buffer_list & ref,
+                 double rtol = 1e-5,
+                 double atol = 1e-8);
+
+std::string diff(const std::map<std::string, ATensor> & res,
+                 const std::map<std::string, ATensor> & ref,
                  double rtol = 1e-5,
                  double atol = 1e-8);
 } // namespace neml2

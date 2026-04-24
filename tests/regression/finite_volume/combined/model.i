@@ -20,7 +20,7 @@
     points = 'edges'
   []
   [ic]
-    type = GaussianScalar 
+    type = GaussianScalar
     points = 'centers'
     width = 0.05
     height = 1.0
@@ -39,7 +39,7 @@
     type = TransientDriver
     model = 'model'
     prescribed_time = 'time'
-    ic_Scalar_names = 'state/concentration'
+    ic_Scalar_names = 'concentration'
     ic_Scalar_values = 'ic'
     save_as = 'result.pt'
   []
@@ -54,6 +54,7 @@
   [eq_sys]
     type = NonlinearSystem
     model = 'implicit_rate'
+    unknowns = 'concentration'
   []
 []
 
@@ -73,65 +74,65 @@
     cell_values = 0.5
     cell_centers = 'centers'
     cell_edges = 'edges'
-    edge_values = 'state/D'
+    edge_values = 'D'
   []
   [advection_velocity]
     type = LinearlyInterpolateToCellEdges
     cell_values = 0.4
     cell_centers = 'centers'
     cell_edges = 'edges'
-    edge_values = 'state/v_edge'
+    edge_values = 'v_edge'
   []
   [diffusive_flux]
     type = FiniteVolumeGradient
-    u = 'state/concentration'
-    prefactor = 'state/D'
+    u = 'concentration'
+    prefactor = 'D'
     dx = 'dx_centers'
   []
   [advective_flux]
     type = FiniteVolumeUpwindedAdvectiveFlux
-    u = 'state/concentration'
-    v_edge = 'state/v_edge'
+    u = 'concentration'
+    v_edge = 'v_edge'
   []
   [reaction]
     type = ScalarLinearCombination
-    from_var = 'state/concentration'
-    to_var = 'state/R'
-    coefficients = '-0.05'
+    from = 'concentration'
+    to = 'R'
+    weights = '-0.05'
   []
   [total_flux]
     type = ScalarLinearCombination
-    from_var = 'state/grad_u state/J_advection'
-    to_var = 'state/J'
-    coefficients = '1 1'
+    from = 'grad_u flux'
+    to = 'J'
+    weights = '1 1'
   []
   [left_bc]
     type = FiniteVolumeAppendBoundaryCondition
-    input = 'state/J'
+    input = 'J'
     bc_value = 0.0
     side = 'left'
   []
   [right_bc]
     type = FiniteVolumeAppendBoundaryCondition
-    input = 'state/J_with_bc_left'
+    input = 'J_with_bc_left'
     bc_value = 0.0
     side = 'right'
   []
   [flux_divergence]
     type = FiniteVolumeGradient
-    u = 'state/J_with_bc_left_with_bc_right'
+    u = 'J_with_bc_left_with_bc_right'
     dx = 'dx'
-    grad_u = 'state/flux_div'
+    grad_u = 'flux_div'
   []
   [rate_of_change]
     type = ScalarLinearCombination
-    from_var = 'state/R state/flux_div'
-    to_var = 'state/concentration_rate'
-    coefficients = '1 1'
+    from = 'R flux_div'
+    to = 'concentration_rate'
+    weights = '1 1'
   []
   [integrate_u]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/concentration'
+    variable = 'concentration'
   []
   [implicit_rate]
     type = ComposedModel

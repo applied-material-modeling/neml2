@@ -1,50 +1,47 @@
-ntime = 100
-nbatch = 20
-
 [Tensors]
   [end_time]
     type = LogspaceScalar
     start = 0
     end = 1
-    nstep = ${nbatch}
+    nstep = 20
   []
   [times]
     type = LinspaceScalar
     start = 0
     end = end_time
-    nstep = ${ntime}
+    nstep = 100
   []
   [start_temperature]
     type = LinspaceScalar
     start = 300
     end = 500
-    nstep = ${nbatch}
+    nstep = 20
   []
   [end_temperature]
     type = LinspaceScalar
     start = 1800
     end = 1200
-    nstep = ${nbatch}
+    nstep = 20
   []
   [temperatures]
     type = LinspaceScalar
     start = start_temperature
     end = end_temperature
-    nstep = ${ntime}
+    nstep = 100
   []
   [exx]
     type = FullScalar
-    batch_shape = '(${nbatch})'
+    batch_shape = '(20)'
     value = 0.1
   []
   [eyy]
     type = FullScalar
-    batch_shape = '(${nbatch})'
+    batch_shape = '(20)'
     value = -0.05
   []
   [ezz]
     type = FullScalar
-    batch_shape = '(${nbatch})'
+    batch_shape = '(20)'
     value = -0.05
   []
   [max_strain]
@@ -55,28 +52,20 @@ nbatch = 20
     type = LinspaceSR2
     start = 0
     end = max_strain
-    nstep = ${ntime}
-  []
-  [G0]
-    type = Scalar
-    values = '0.0'
-    batch_shape = '(${nbatch})'
-  []
-  [C0]
-    type = Scalar
-    values = '0.0'
-    batch_shape = '(${nbatch})'
+    nstep = 100
   []
 []
 
 [Drivers]
   [driver]
-    type = SDTSolidMechanicsDriver
+    type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    prescribed_strain = 'strains'
-    prescribed_temperature = 'temperatures'
-    predictor = LINEAR_EXTRAPOLATION
+    force_SR2_names = 'E'
+    force_SR2_values = 'strains'
+    force_Scalar_names = 'temperature'
+    force_Scalar_values = 'temperatures'
+    predictor = 'LINEAR_EXTRAPOLATION'
     save_as = 'result.pt'
   []
   [regression]
@@ -88,98 +77,58 @@ nbatch = 20
 
 [Models]
   #####################################################################################
-  # Compute the invariant plastic flow direction since we are doing J2 radial return
+  # Compute the invariant plastic flow direction and scalar trial stress
   #####################################################################################
   [trial_elastic_strain]
     type = SR2LinearCombination
-    to_var = 'forces/Ee'
-    from_var = 'forces/E old_state/Ep'
-    coefficients = '1 -1'
+    from = 'E plastic_strain~1'
+    to = 'Ee_trial'
+    weights = '1 -1'
   []
   [trial_cauchy_stress]
     type = LinearIsotropicElasticity
     coefficients = '1e5 0.3'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
-    strain = 'forces/Ee'
-    stress = 'forces/S'
+    strain = 'Ee_trial'
+    stress = 'S_trial'
   []
   [trial_flow_direction]
     type = AssociativeJ2FlowDirection
-    mandel_stress = 'forces/S'
-    flow_direction = 'forces/N'
+    mandel_stress = 'S_trial'
+    flow_direction = 'N_trial'
   []
-  [vonmises]
+  [vonmises_trial]
     type = SR2Invariant
     invariant_type = 'VONMISES'
-    tensor = 'forces/S'
-    invariant = 'forces/s'
+    tensor = 'S_trial'
+    invariant = 's_trial'
   []
   [trial_state]
     type = ComposedModel
-    models = 'trial_elastic_strain trial_cauchy_stress trial_flow_direction vonmises'
+    models = 'trial_elastic_strain trial_cauchy_stress trial_flow_direction vonmises_trial'
   []
 
   #####################################################################################
-  # Stress update
-  #####################################################################################
-  [ep_rate]
-    type = ScalarVariableRate
-    variable = 'state/ep'
-    rate = 'state/ep_rate'
-  []
-  [plastic_strain_rate]
-    type = AssociativePlasticFlow
-    flow_direction = 'forces/N'
-    flow_rate = 'state/ep_rate'
-    plastic_strain_rate = 'state/Ep_rate'
-  []
-  [plastic_strain]
-    type = SR2ForwardEulerTimeIntegration
-    variable = 'state/Ep'
-  []
-  [plastic_update]
-    type = ComposedModel
-    models = 'ep_rate plastic_strain_rate plastic_strain'
-  []
-  [elastic_strain]
-    type = SR2LinearCombination
-    from_var = 'forces/E state/Ep'
-    to_var = 'state/Ee'
-    coefficients = '1 -1'
-  []
-  [cauchy_stress]
-    type = LinearIsotropicElasticity
-    coefficients = '1e5 0.3'
-    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
-    strain = 'state/Ee'
-    stress = 'state/S'
-  []
-  [stress_update]
-    type = ComposedModel
-    models = 'elastic_strain cauchy_stress'
-  []
-
-  #####################################################################################
-  # Compute the rates of equivalent plastic strain and internal variables
+  # Scalar-level stress update for the implicit solve
   #####################################################################################
   [trial_stress_update]
     type = LinearIsotropicElasticJ2TrialStressUpdate
     coefficients = '1e5 0.3'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
-    elastic_trial_stress = 'forces/s'
-    equivalent_plastic_strain = 'state/ep'
-    updated_trial_stress = 'state/s'
+    elastic_trial_stress = 's_trial'
+    equivalent_plastic_strain = 'equivalent_plastic_strain'
+    updated_trial_stress = 'vonmises_stress'
   []
   [rom]
     type = TorchScriptFlowRate
-    von_mises_stress = 'state/s'
-    temperature = 'forces/T'
-    equivalent_plastic_strain_rate = 'state/ep_rate'
+    von_mises_stress = 'vonmises_stress'
+    temperature = 'temperature'
+    equivalent_plastic_strain_rate = 'equivalent_plastic_strain_rate'
     torch_script = 'gold/surrogate.pt'
   []
   [integrate_ep]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/ep'
+    variable = 'equivalent_plastic_strain'
   []
   [rate]
     type = ComposedModel
@@ -191,6 +140,8 @@ nbatch = 20
   [eq_sys]
     type = NonlinearSystem
     model = 'rate'
+    unknowns = 'equivalent_plastic_strain'
+    residuals = 'equivalent_plastic_strain_residual'
   []
 []
 
@@ -214,11 +165,46 @@ nbatch = 20
   []
 
   #####################################################################################
-  # Put the models together
+  # Full tensor plastic strain update after the scalar solve
   #####################################################################################
+  [ep_rate]
+    type = ScalarVariableRate
+    variable = 'equivalent_plastic_strain'
+    time = 't'
+  []
+  [plastic_strain_rate_model]
+    type = AssociativePlasticFlow
+    flow_direction = 'N_trial'
+    flow_rate = 'equivalent_plastic_strain_rate'
+    plastic_strain_rate = 'plastic_strain_rate'
+  []
+  [plastic_strain_update]
+    type = SR2ForwardEulerTimeIntegration
+    variable = 'plastic_strain'
+  []
+  [plastic_update]
+    type = ComposedModel
+    models = 'ep_rate plastic_strain_rate_model plastic_strain_update'
+  []
+  [elastic_strain]
+    type = SR2LinearCombination
+    from = 'E plastic_strain'
+    to = 'elastic_strain'
+    weights = '1 -1'
+  []
+  [cauchy_stress]
+    type = LinearIsotropicElasticity
+    coefficients = '1e5 0.3'
+    coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
+    strain = 'elastic_strain'
+  []
+  [stress_update]
+    type = ComposedModel
+    models = 'elastic_strain cauchy_stress'
+  []
   [model]
     type = ComposedModel
-    models = 'trial_state radial_return plastic_update stress_update trial_stress_update rom'
-    additional_outputs = 'state/s state/ep_rate state/ep state/S state/Ep'
+    models = 'trial_state radial_return plastic_update stress_update'
+    additional_outputs = 'equivalent_plastic_strain plastic_strain'
   []
 []

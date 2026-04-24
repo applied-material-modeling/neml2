@@ -45,12 +45,11 @@ zeta = 0.05
     type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    time = 'forces/t'
 
-    force_Scalar_names = 'forces/T'
+    force_Scalar_names = 'T'
     force_Scalar_values = 'T'
 
-    ic_Scalar_names = 'state/wb state/wc'
+    ic_Scalar_names = 'wb wc'
     ic_Scalar_values = '${wb0} ${wc0}'
     save_as = 'result.pt'
   []
@@ -67,23 +66,22 @@ zeta = 0.05
     reference_value = '${k0}'
     activation_energy = '${Q}'
     ideal_gas_constant = '${R}'
-    temperature = 'forces/T'
-    parameter = 'state/k'
+    temperature = 'T'
   []
   [reaction_rate]
     type = ContractingGeometry
-    reaction_coef = 'reaction_coef'
-    reaction_order = '${n}'
-    conversion_degree = 'state/alpha'
-    reaction_rate = 'state/alpha_rate'
+    coef = 'reaction_coef'
+    order = '${n}'
+    conversion_degree = 'alpha'
+    reaction_rate = 'alpha_rate'
   []
   [reaction_ode]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/alpha'
+    variable = 'alpha'
   []
   [reaction]
     type = ComposedModel
-    models = 'reaction_rate reaction_ode'
+    models = 'reaction_coef reaction_rate reaction_ode'
   []
 []
 
@@ -91,6 +89,7 @@ zeta = 0.05
   [eq_sys]
     type = NonlinearSystem
     model = 'reaction'
+    unknowns = 'alpha'
   []
 []
 
@@ -112,49 +111,49 @@ zeta = 0.05
   []
   [binder_rate]
     type = ScalarLinearCombination
-    from_var = 'state/alpha_rate'
-    coefficients = '-1'
-    to_var = 'state/wb_rate'
+    from = 'alpha_rate'
+    weights = '-1'
+    to = 'wb_rate'
   []
   [char_rate]
     type = ScalarLinearCombination
-    from_var = 'state/alpha_rate'
-    coefficients = '${Y}'
-    to_var = 'state/wc_rate'
+    from = 'alpha_rate'
+    weights = '${Y}'
+    to = 'wc_rate'
   []
   [gas_rate]
     type = ScalarLinearCombination
-    from_var = 'state/wb_rate state/wc_rate'
-    coefficients = '-${mu} -${mu}'
-    to_var = 'state/wg_rate'
+    from = 'wb_rate wc_rate'
+    weights = '-0.2 -0.2'
+    to = 'wg_rate'
   []
   [open_pore_rate]
     type = ScalarLinearCombination
-    from_var = 'state/alpha_rate'
-    coefficients = '${zeta}'
-    to_var = 'state/phio_rate'
+    from = 'alpha_rate'
+    weights = '${zeta}'
+    to = 'phio_rate'
   []
   [binder]
     type = ScalarForwardEulerTimeIntegration
-    variable = 'state/wb'
+    variable = 'wb'
   []
   [char]
     type = ScalarForwardEulerTimeIntegration
-    variable = 'state/wc'
+    variable = 'wc'
   []
   [gas]
     type = ScalarForwardEulerTimeIntegration
-    variable = 'state/wg'
+    variable = 'wg'
   []
   [open_pore]
     type = ScalarForwardEulerTimeIntegration
-    variable = 'state/phio'
+    variable = 'phio'
   []
   [model]
     type = ComposedModel
     models = "solve_reaction reaction_rate
               binder_rate char_rate gas_rate open_pore_rate
               binder char gas open_pore"
-    additional_outputs = 'state/alpha'
+    additional_outputs = 'alpha'
   []
 []

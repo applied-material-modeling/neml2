@@ -40,10 +40,11 @@
 
 [Drivers]
   [driver]
-    type = SDTSolidMechanicsDriver
+    type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    prescribed_strain = 'strains'
+    force_SR2_names = 'E'
+    force_SR2_values = 'strains'
     save_as = 'result.pt'
   []
   [regression]
@@ -61,39 +62,42 @@
   []
   [kinharden]
     type = SR2LinearCombination
-    from_var = 'state/internal/X1 state/internal/X2'
-    to_var = 'state/internal/X'
+    from = 'X1 X2'
+    to = 'back_stress'
+    weights = '1 1'
   []
   [mandel_stress]
     type = IsotropicMandelStress
+    cauchy_stress = 'stress'
   []
   [overstress]
     type = SR2LinearCombination
-    to_var = 'state/internal/O'
-    from_var = 'state/internal/M state/internal/X'
-    coefficients = '1 -1'
+    from = 'mandel_stress back_stress'
+    to = 'overstress'
+    weights = '1 -1'
   []
   [vonmises]
     type = SR2Invariant
     invariant_type = 'VONMISES'
-    tensor = 'state/internal/O'
-    invariant = 'state/internal/s'
+    tensor = 'overstress'
+    invariant = 'effective_stress'
   []
   [yield]
     type = YieldFunction
     yield_stress = 5
-    isotropic_hardening = 'state/internal/k'
+    isotropic_hardening = 'isotropic_hardening'
   []
   [flow]
     type = ComposedModel
     models = 'overstress vonmises yield'
+    automatic_nonlinear_parameter = false
   []
   [normality]
     type = Normality
     model = 'flow'
-    function = 'state/internal/fp'
-    from = 'state/internal/M'
-    to = 'state/internal/NM'
+    function = 'yield_function'
+    from = 'mandel_stress'
+    to = 'flow_direction'
   []
   [flow_rate]
     type = PerzynaPlasticFlowRate
@@ -102,13 +106,15 @@
   []
   [X1rate]
     type = FredrickArmstrongPlasticHardening
-    back_stress = 'state/internal/X1'
+    back_stress = 'X1'
+    flow_direction = 'flow_direction'
     C = 10000
     g = 100
   []
   [X2rate]
     type = FredrickArmstrongPlasticHardening
-    back_stress = 'state/internal/X2'
+    back_stress = 'X2'
+    flow_direction = 'flow_direction'
     C = 1000
     g = 9
   []
@@ -117,14 +123,13 @@
   []
   [Erate]
     type = SR2VariableRate
-    variable = 'forces/E'
-    rate = 'forces/E_rate'
+    variable = 'E'
   []
   [Eerate]
     type = SR2LinearCombination
-    from_var = 'forces/E_rate state/internal/Ep_rate'
-    to_var = 'state/internal/Ee_rate'
-    coefficients = '1 -1'
+    from = 'E_rate plastic_strain_rate'
+    to = 'strain_rate'
+    weights = '1 -1'
   []
   [elasticity]
     type = LinearIsotropicElasticity
@@ -132,25 +137,28 @@
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
     rate_form = true
   []
+  [integrate_stress]
+    type = SR2BackwardEulerTimeIntegration
+    variable = 'stress'
+  []
   [integrate_k]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/internal/k'
+    variable = 'isotropic_hardening'
   []
   [integrate_X1]
     type = SR2BackwardEulerTimeIntegration
-    variable = 'state/internal/X1'
+    variable = 'X1'
   []
   [integrate_X2]
     type = SR2BackwardEulerTimeIntegration
-    variable = 'state/internal/X2'
-  []
-  [integrate_stress]
-    type = SR2BackwardEulerTimeIntegration
-    variable = 'state/S'
+    variable = 'X2'
   []
   [implicit_rate]
     type = ComposedModel
-    models = 'isoharden kinharden mandel_stress overstress vonmises yield normality flow_rate Eprate X1rate X2rate Erate Eerate elasticity integrate_stress integrate_k integrate_X1 integrate_X2'
+    models = 'isoharden kinharden mandel_stress overstress vonmises yield
+              normality flow_rate Eprate X1rate X2rate
+              Erate Eerate elasticity
+              integrate_stress integrate_k integrate_X1 integrate_X2'
   []
 []
 
@@ -158,6 +166,8 @@
   [eq_sys]
     type = NonlinearSystem
     model = 'implicit_rate'
+    unknowns = 'stress isotropic_hardening X1 X2'
+    residuals = 'stress_residual isotropic_hardening_residual X1_residual X2_residual'
   []
 []
 
