@@ -150,10 +150,10 @@ class SolveStrain(torch.nn.Module):
 
         # Setup
         forces = {
-            "forces/t": neml2.Scalar(time.squeeze(-1), 0),
-            "forces/T": neml2.Scalar(temperature.squeeze(-1), 0),
-            "forces/fixed_values": neml2.SR2(loading, 0),
-            "forces/control": neml2.SR2(control, 0),
+            "t": neml2.Scalar(time.squeeze(-1), 0),
+            "temperature": neml2.Scalar(temperature.squeeze(-1), 0),
+            "fixed_values": neml2.SR2(loading, 0),
+            "control": neml2.SR2(control, 0),
         }
         forces = [forces[key] for key in self.discrete_equations.fvars]
         forces = (

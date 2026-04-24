@@ -26,36 +26,35 @@
   # Orientation remains constant as we work with the reference configuration
   [euler_rodrigues]
     type = RotationMatrix
-    from = 'forces/r'
-    to = 'forces/R'
+    from = 'r'
+    to = 'R'
   []
   # Hardening (this is just a very simple hardening model)
   [slip_strength]
     type = SingleSlipStrengthMap
     constant_strength = 180.0
-    slip_hardening = 'state/tauc'
-    slip_strengths = 'state/tauc_i'
+    slip_hardening = 'tauc'
+    slip_strengths = 'tauc_i'
   []
   [voce_hardening]
     type = VoceSingleSlipHardeningRule
     initial_slope = 2000.0
     saturated_hardening = 500.0
-    slip_hardening_rate = 'state/tauc_rate'
-    slip_hardening = 'state/tauc'
-    sum_slip_rates = 'state/gamma_rate'
+    slip_hardening = 'tauc'
+    sum_slip_rates = 'gamma_rate'
   []
   # Elasticity: St. Venant-Kirchhoff with Green-Lagrange strain
   [mult_decomp]
     type = R2Multiplication
-    A = 'forces/F'
-    B = 'state/Fp'
-    to = 'state/Fe'
+    A = 'F'
+    B = 'Fp'
+    to = 'Fe'
     invert_B = true
   []
   [gl_strain]
     type = GreenLagrangeStrain
-    deformation_gradient = 'state/Fe'
-    strain = 'state/E'
+    deformation_gradient = 'Fe'
+    strain = 'E'
   []
   [elastic_tensor]
     type = CubicElasticityTensor
@@ -65,50 +64,50 @@
   [svk]
     type = GeneralElasticity
     elastic_stiffness_tensor = 'elastic_tensor'
-    strain = 'state/E'
-    stress = 'state/S'
-    orientation = 'forces/r'
+    strain = 'E'
+    stress = 'S'
+    orientation = 'r'
   []
   # CP flow rule
   [resolved_shear]
     type = ResolvedShear
-    resolved_shears = 'state/tau_i'
-    stress = 'state/S'
-    orientation = 'forces/R'
+    resolved_shears = 'tau_i'
+    stress = 'S'
+    orientation_matrix = 'R'
   []
   [slip_rule]
     type = PowerLawSlipRule
     n = 6
     gamma0 = 0.0001
-    slip_rates = 'state/gamma_rate_i'
-    resolved_shears = 'state/tau_i'
-    slip_strengths = 'state/tauc_i'
+    slip_rates = 'gamma_rate_i'
+    resolved_shears = 'tau_i'
+    slip_strengths = 'tauc_i'
   []
   [sum_slip_rates]
     type = SumSlipRates
-    slip_rates = 'state/gamma_rate_i'
-    sum_slip_rates = 'state/gamma_rate'
+    slip_rates = 'gamma_rate_i'
+    sum_slip_rates = 'gamma_rate'
   []
   [plastic_velgrad]
     type = PlasticSpatialVelocityGradient
-    plastic_spatial_velocity_gradient = 'state/Lp'
-    slip_rates = 'state/gamma_rate_i'
-    orientation = 'forces/R'
+    plastic_spatial_velocity_gradient = 'Lp'
+    slip_rates = 'gamma_rate_i'
+    orientation_matrix = 'R'
   []
   [plastic_defgrad_rate]
     type = R2Multiplication
-    A = 'state/Lp'
-    B = 'state/Fp'
-    to = 'state/Fp_rate'
+    A = 'Lp'
+    B = 'Fp'
+    to = 'Fp_rate'
   []
   # Definition of residuals
   [integrate_slip_hardening]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/tauc'
+    variable = 'tauc'
   []
   [integrate_plastic_defgrad]
     type = R2BackwardEulerTimeIntegration
-    variable = 'state/Fp'
+    variable = 'Fp'
   []
   # The implicit model that we solve for
   [implicit_rate]
@@ -125,5 +124,6 @@
   [eq_sys]
     type = NonlinearSystem
     model = 'implicit_rate'
+    unknowns = 'tauc Fp'
   []
 []
