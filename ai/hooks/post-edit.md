@@ -2,6 +2,16 @@
 
 Purpose: Mandatory procedure after any code edit.
 
+## After Any New File Is Created
+
+For any new file with extension `.h`, `.cxx`, `.py`, `.sh`, or `.js`:
+
+1. Run:
+   - `python scripts/check_copyright.py`
+2. If the check reports missing headers, fix them automatically:
+   - `python scripts/check_copyright.py -m`
+3. Re-run the check to confirm it passes before committing.
+
 ## After Any Code Edit
 
 For edited C++ files (`.h`, `.cxx`, `.cpp`):

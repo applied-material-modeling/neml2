@@ -36,7 +36,7 @@ namespace neml2
  *
  * Optional: add one sentence on the governing equation if non-obvious.
  */
-class SkeletonModel : public Model  // Replace Model with actual base class
+class SkeletonModel : public Model // Replace Model with actual base class
 {
 public:
   static OptionSet expected_options();

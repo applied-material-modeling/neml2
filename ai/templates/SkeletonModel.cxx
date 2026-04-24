@@ -34,7 +34,7 @@ OptionSet
 SkeletonModel::expected_options()
 {
   // Always call parent first
-  OptionSet options = Model::expected_options();  // Replace with actual base class
+  OptionSet options = Model::expected_options(); // Replace with actual base class
   options.doc() = "One-line description for the input file parser / user docs.";
 
   // Set this if the model provides analytical second derivatives in set_value.
@@ -53,8 +53,8 @@ SkeletonModel::expected_options()
 }
 
 SkeletonModel::SkeletonModel(const OptionSet & options)
-  : Model(options),  // Replace with actual base class
-    // declare_input_variable: axis path matches the variable name in the .i file
+  : Model(options), // Replace with actual base class
+                    // declare_input_variable: axis path matches the variable name in the .i file
     _input_var(declare_input_variable<Scalar>("forces/input_name")),
     // declare_output_variable: axis path for the output
     _output_var(declare_output_variable<Scalar>("state/output_name")),
