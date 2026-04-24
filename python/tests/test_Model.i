@@ -1,16 +1,16 @@
 [Models]
   [foo]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/foo'
+    variable = 'foo'
   []
   [bar]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/bar'
+    variable = 'bar'
   []
   [baz]
     type = ScalarLinearCombination
-    from_var = 'residual/foo residual/bar'
-    to_var = 'residual/foo_bar'
+    from = 'foo_residual bar_residual'
+    to = 'foo_bar_residual'
   []
   [model]
     type = ComposedModel

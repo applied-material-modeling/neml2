@@ -1,19 +1,18 @@
 [Models]
   [Erate]
     type = SR2VariableRate
-    variable = 'forces/E'
-    rate = 'forces/E_rate'
+    variable = 'strain'
   []
   [elasticity]
     type = LinearIsotropicElasticity
     coefficients = '1e5 0.3'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
     rate_form = true
-    strain = 'forces/E'
+    strain = 'strain'
   []
   [integrate_stress]
     type = SR2BackwardEulerTimeIntegration
-    variable = 'state/S'
+    variable = 'stress'
   []
   [implicit_rate]
     type = ComposedModel
@@ -25,5 +24,6 @@
   [eq_sys]
     type = NonlinearSystem
     model = 'implicit_rate'
+    unknowns = 'stress'
   []
 []

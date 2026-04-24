@@ -75,5 +75,4 @@ TensorLike = typing.Union[
 # Other submodules
 from . import pyzag
 from . import crystallography
-from . import reserved
 from . import reader
