@@ -24,10 +24,9 @@ jobs:
         run: pip install ".[dev]" -v
       - name: Run all notebooks with nbmake
         run: |
-          # Skip demo notebooks that depend on non-CI environment requirements.
-          NOTEBOOKS="$(git ls-files '*.ipynb' ':!:python/examples/explain.ipynb')"
+          NOTEBOOKS="$(git ls-files '*.ipynb')"
           if [ -z "$NOTEBOOKS" ]; then
             echo "No tracked notebooks found."
             exit 0
           fi
-          pytest -v -s --nbmake --nbmake-timeout=14400 $NOTEBOOKS
+          pytest -v -s --nbmake --nbmake-timeout=14400 --ignore=python/examples/explain.ipynb $NOTEBOOKS
