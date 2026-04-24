@@ -98,7 +98,8 @@
     to = 'psi'
     weights = 'GcbylbyCo 1'
   []
-  [energy] # this guy maps from (strain, d) -> energy
+  # this guy maps from (strain, d) -> energy
+  [energy]
     type = ComposedModel
     models = 'degrade sed0 sed1 sed cracked sum'
   []
