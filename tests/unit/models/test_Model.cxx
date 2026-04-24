@@ -37,7 +37,7 @@ TEST_CASE("Model", "[models]")
 {
   SECTION("variable type")
   {
-    auto model = load_model("models/ComposedModel3.i", "model");
+    auto model = load_model("models/common/ComposedModel3.i", "model");
 
     REQUIRE(model->input_variable("t").type() == TensorType::kScalar);
     REQUIRE(model->input_variable("T").type() == TensorType::kScalar);

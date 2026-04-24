@@ -33,7 +33,7 @@ using namespace neml2;
 
 TEST_CASE("ImplicitUpdate", "[models]")
 {
-  auto model0 = load_model("models/ImplicitUpdate.i", "model");
+  auto model0 = load_model("models/common/ImplicitUpdate.i", "model");
   auto model = std::dynamic_pointer_cast<ImplicitUpdate>(model0);
 
   ValueMap in = {{"foo~1", Scalar::full(0.0)},
