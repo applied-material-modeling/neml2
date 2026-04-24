@@ -35,7 +35,7 @@ By going through this exercise, we have effectively identified the *expected* in
 
 ## Registry
 
-The registry is a [RAII-style](https://en.wikipedia.org/wiki/Resource_acquisition_is_initialization) singleton responsible for storing the mapping from the string identification of each runtime-manufacturable object to the constructor pointer along with the expected input file options.
+The registry is a RAII-style singleton responsible for storing the mapping from the string identification of each runtime-manufacturable object to the constructor pointer along with the expected input file options.
 
 The registration is accomplished by the static method neml2::Registry::add templated on the class type. The static registration method combined with the singleton enables distributed class registration in each translation unit. The convenience macro register_NEML2_object and its variants wrap around neml2::Registry::add to provide syntatic simplification of the registration call.
 

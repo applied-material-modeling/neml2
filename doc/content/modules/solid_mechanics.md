@@ -75,7 +75,7 @@ The effective stress is a measure of stress describing how the plastic deformati
 
 Commonly used stress measures are defined using `SR2Invariant`.
 
-@list-input:tests/unit/models/SR2Invariant_VONMISES.i:Models
+@list-input:tests/unit/models/common/SR2Invariant_VONMISES.i:Models
 
 ### Perfectly Plastic Yield function
 

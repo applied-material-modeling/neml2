@@ -24,7 +24,7 @@ NEML2 models, including those composed from submodels, can only be used to descr
 
 ## Simulating the stress-strain curve
 
-Reusing the viscoplasticity model defined in the previous tutorial, along with the Newton-Raphson solver, a predefined driver [SDTSolidMechanicsDriver](#sdtsolidmechanicsdriver) can be used to obtain the stress-strain curve.
+Reusing the viscoplasticity model defined in the previous tutorial, along with the Newton-Raphson solver, a predefined driver [TransientDriver](#transientdriver) can be used to obtain the stress-strain curve.
 
 @list-input:transient_driver/input.i:Drivers
 
@@ -32,7 +32,7 @@ with tensors defined as
 
 @list-input:transient_driver/input.i:Tensors
 
-The [SDTSolidMechanicsDriver](#sdtsolidmechanicsdriver) performs the recursive constitutive update using strain control, suitable for solid mechanics models using the small strain formulation. It asks the user to specify "prescribed_time" and "prescribed_strain" which define the discretization of the transient. Two predictors are implemented for all transient drivers:
+The [TransientDriver](#transientdriver) performs the recursive constitutive update. Two types of predictors are implemented:
 - PREVIOUS_STATE, using the converged solution from the previous step as the initial guess for the current solve;
 - LINEAR_EXTRAPOLATION, linearly extrapolates the converged solutions from the previous two steps as the initial guess for the current solve.
 

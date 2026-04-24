@@ -155,11 +155,12 @@ public:
    *
    * @tparam T Type of the option value
    * @tparam f Option type (e.g., parameter, buffer, input, output)
+   * @param name The name of the option
    * @param default_value The default value to set
    * @param doc The docstring for the option
    */
   template <typename T, FType f = FType::NONE>
-  void add(const std::string &, const T & default_value, std::string doc);
+  void add(const std::string & name, const T & default_value, std::string doc);
 
   /**
    * @brief Create a required option with its docstring, without a default value. User must specify
@@ -180,10 +181,11 @@ public:
    *
    * @tparam T Type of the option value
    * @tparam f Option type (e.g., parameter, buffer, input, output)
+   * @param name The name of the option
    * @param doc The docstring for the option
    */
   template <typename T, FType f = FType::NONE>
-  void add(const std::string &, std::string doc);
+  void add(const std::string & name, std::string doc);
 
   /**
    * @brief Create an optional option with its docstring, without a default value.
@@ -204,10 +206,11 @@ public:
    *
    * @tparam T Type of the option value
    * @tparam f Option type (e.g., parameter, buffer, input, output)
+   * @param name The name of the option
    * @param doc The docstring for the option
    */
   template <typename T, FType f = FType::NONE>
-  void add_optional(const std::string &, std::string doc);
+  void add_optional(const std::string & name, std::string doc);
 
   /**
    * @brief Create a private option with its default value.
@@ -221,10 +224,11 @@ public:
    *  - defined: true
    *
    * @tparam T Type of the option value
+   * @param name The name of the option
    * @param default_value The default value to set
    */
   template <typename T>
-  void add_private(const std::string &, const T & default_value);
+  void add_private(const std::string & name, const T & default_value);
 
   /**
    * @brief Set an option.
@@ -237,10 +241,11 @@ public:
    *  - defined: true
    *
    * @tparam T Type of the option value
+   * @param name The name of the option
    * @param value The value to set
    */
   template <typename T>
-  void set(const std::string &, const T & value);
+  void set(const std::string & name, const T & value);
 
   /**
    * @brief Set a private option.
@@ -253,10 +258,11 @@ public:
    *  - defined: true
    *
    * @tparam T Type of the option value
+   * @param name The name of the option
    * @param value The value to set
    */
   template <typename T>
-  void set_private(const std::string &, const T & value);
+  void set_private(const std::string & name, const T & value);
 
   ///@{
   /// Convenient methods to add input variable

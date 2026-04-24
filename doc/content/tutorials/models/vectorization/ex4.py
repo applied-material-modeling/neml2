@@ -16,4 +16,4 @@ strain_max = SR2.fill(0.5, 0.4, -0.2, 0.2, 0.3, 0.1, device=device)
 strain = SR2.dynamic_linspace(strain_min, strain_max, N)
 
 # Evaluate the model N times
-output = model.value({"forces/E": strain})
+output = model.value({"strain": strain})

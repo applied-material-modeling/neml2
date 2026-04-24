@@ -1,15 +1,15 @@
 [Models]
   [eq1]
     type = ScalarVariableRate
-    variable = 'state/a'
+    variable = 'a'
   []
   [eq2]
     type = ScalarVariableRate
-    variable = 'state/b'
+    variable = 'b'
   []
   [eq3]
     type = ScalarVariableRate
-    variable = 'state/c'
+    variable = 'c'
   []
   [eq]
     type = ComposedModel

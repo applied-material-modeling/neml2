@@ -21,7 +21,7 @@ A device is uniquely identified by a type, which specifies the type of machine i
 
 In NEML2, the device can be specified using either a string or or a predefined device type.
 
-The string follows the schema `(cpu|cuda)[:<device-index>]`, where `cpu` or `cuda` specifies the device type, and `:<device-index>` optionally specifies a device index. For example, "cpu" represents the CPU and "cuda:1" specifies CUDA with device ID 1.
+The string follows the schema `(type)[:<device-index>]`, where `type` specifies the device type, and `:<device-index>` optionally specifies a device index. For example, "cpu" represents the CPU and "cuda:1" specifies CUDA with device ID 1.
 
 Two predefined device types are supported:
 - `neml2::kCPU` which is equivalent to the string "cpu"

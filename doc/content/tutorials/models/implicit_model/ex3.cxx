@@ -11,12 +11,12 @@ main()
 
   // Create input variables
   // Unspecified variables are assumed to be zero
-  auto E = SR2::fill(0.01, 0.005, -0.001);
+  auto strain = SR2::fill(0.01, 0.005, -0.001);
   auto t = Scalar::full(1);
 
   // Solve the implicit model
-  auto outputs = model->value({{VariableName("forces", "E"), E}, {VariableName("forces", "t"), t}});
+  auto outputs = model->value({{"strain", strain}, {"t", t}});
 
   // Get the solution
-  std::cout << "\nPlastic strain:\n" << outputs[VariableName("state", "Ep")] << std::endl;
+  std::cout << "\nPlastic strain:\n" << outputs["plastic_strain"] << std::endl;
 }

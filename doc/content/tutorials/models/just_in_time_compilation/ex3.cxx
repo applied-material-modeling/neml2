@@ -21,14 +21,14 @@ main()
 
   // Evaluate the model for the first time
   // This is when tracing takes place
-  model->value({{VariableName("state", "a"), a},
-                {VariableName("state", "b"), b},
-                {VariableName("state", "c"), c},
-                {VariableName("forces", "t"), t},
-                {VariableName("old_state", "a"), a_n},
-                {VariableName("old_state", "b"), b_n},
-                {VariableName("old_state", "c"), c_n},
-                {VariableName("old_forces", "t"), t_n}});
+  model->value({{"a", a},
+                {"b", b},
+                {"c", c},
+                {"t", t},
+                {"a~1", a_n},
+                {"b~1", b_n},
+                {"c~1", c_n},
+                {"t~1", t_n}});
 
   utils::last_executed_optimized_graph()->dump();
 }

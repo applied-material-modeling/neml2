@@ -32,10 +32,10 @@ OptionSet
 ProjectileAcceleration::expected_options()
 {
   OptionSet options = Model::expected_options();
-  options.add_optional<VariableName>("velocity");
-  options.add_optional<VariableName>("acceleration");
-  options.add_optional<TensorName<Vec>>("gravitational_acceleration");
-  options.add_optional<TensorName<Scalar>>("dynamic_viscosity");
+  options.add_input("velocity", "The velocity of the projectile");
+  options.add_output("acceleration", "The acceleration of the projectile");
+  options.add_buffer<Vec>("gravitational_acceleration", "The gravitational acceleration");
+  options.add_parameter<Scalar>("dynamic_viscosity", "The dynamic viscosity");
   return options;
 }
 
@@ -75,15 +75,13 @@ main()
   auto model = load_model("input.i", "accel");
 
   // Input velocity
-  auto vel_name = VariableName("state", "v");
   auto vel = Vec::fill(10, 2, 0);
 
   // Evaluate the model
-  auto output = model->value({{vel_name, vel}});
+  auto output = model->value({{"v", vel}});
 
   // Output acceleration
-  auto accel_name = VariableName("state", "a");
-  auto & accel = output[accel_name];
+  auto & accel = output["a"];
 
   std::cout << "Acceleration: \n" << accel << std::endl;
 }

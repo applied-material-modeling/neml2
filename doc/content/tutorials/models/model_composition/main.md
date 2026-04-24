@@ -82,13 +82,13 @@ However, that is not ideal because we had to
 - Manually evaluate the equations and figure out the evaluation order, and
 - Manually set the parameters in \f$ \eqref{3} \f$ as outputs from \f$ \eqref{1}\&\eqref{2} \f$.
 
-This manual method is not scalable when the number of equations, variables, and parameters increase.
+This manual setup is not scalable when the number of equations, variables, and parameters increase.
 
 Using NEML2's model composition capability can address these issues without sacrificing modularity. [ComposedModel](#composedmodel) allows us to compose a new model from the three existing models:
 @list-input:models/model_composition/input_composed.i
 
 \note
-The names of the other two models are used to specify the coefficients of \f$ \eqref{3} \f$, i.e. `coefficients = 'eq2 eq1'`. This syntax is different from what was covered in the [previous tutorial](#tutorials-models-model-parameters) on model parameters and will be explained in more details in the [next tutorial](#tutorials-models-model-parameters-revisited).
+The names of the other two models are used to specify the weights in \f$ \eqref{3} \f$, i.e. `weights = 'eq2 eq1'`. This syntax is different from what was covered in the [previous tutorial](#tutorials-models-model-parameters) on model parameters and will be explained in more details in the [next tutorial](#tutorials-models-model-parameters-revisited).
 
 Let us first inspect the composed model and compare it against the three sub-models:
 

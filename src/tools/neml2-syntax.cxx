@@ -63,12 +63,10 @@ main(int argc, char * argv[])
   }
 
   auto settings = neml2::Settings::expected_options();
-  *out << "neml2::Settings:\n";
   *out << settings << '\n';
 
   for (const auto & [type, info] : neml2::Registry::info())
   {
-    *out << info.type_name << ":\n";
     auto options = info.expected_options;
     *out << options << '\n';
   }

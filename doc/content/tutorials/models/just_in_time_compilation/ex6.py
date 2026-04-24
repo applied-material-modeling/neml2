@@ -18,14 +18,14 @@ t_n = Scalar.full(0.0)
 # Evaluate the model for the first time
 # This is when tracing takes place
 inputs = {
-    "state/a": a,
-    "state/b": b,
-    "state/c": c,
-    "forces/t": t,
-    "old_state/a": a_n,
-    "old_state/b": b_n,
-    "old_state/c": c_n,
-    "old_forces/t": t_n,
+    "a": a,
+    "b": b,
+    "c": c,
+    "t": t,
+    "a~1": a_n,
+    "b~1": b_n,
+    "c~1": c_n,
+    "t~1": t_n,
 }
 for i in range(10):
     model.value(inputs)

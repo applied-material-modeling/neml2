@@ -12,8 +12,8 @@
 [Models]
   [accel]
     type = ProjectileAcceleration
-    velocity = 'state/v'
-    acceleration = 'state/a'
+    velocity = 'v'
+    acceleration = 'a'
     gravitational_acceleration = 'g'
     dynamic_viscosity = 'mu'
   []

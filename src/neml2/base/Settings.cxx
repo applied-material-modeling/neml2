@@ -33,9 +33,11 @@ Settings::expected_options()
 {
   OptionSet options;
   options.section() = "Settings";
-  options.doc() = "Global settings for tensors, models, etc.";
 
-  options.add_private<std::string>("type", "Settings");
+  // Settings is a special block that does not need a "type" field
+  options.type() = "Settings";
+
+  options.doc() = "Global settings for tensors, models, etc.";
 
   options.add<std::string>(
       "buffer_name_separator",

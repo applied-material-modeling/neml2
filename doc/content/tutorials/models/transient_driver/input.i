@@ -1,9 +1,10 @@
 [Drivers]
   [driver]
-    type = SDTSolidMechanicsDriver
+    type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    prescribed_strain = 'strains'
+    force_SR2_names = 'strain'
+    force_SR2_values = 'strains'
     save_as = 'result.pt'
   []
 []
@@ -42,28 +43,25 @@
 [Models]
   [eq1]
     type = SR2LinearCombination
-    from_var = 'forces/E state/Ep'
-    to_var = 'state/Ee'
-    coefficients = '1 -1'
+    from = 'strain plastic_strain'
+    to = 'elastic_strain'
+    weights = '1 -1'
   []
   [eq2]
     type = LinearIsotropicElasticity
     coefficients = '1e5 0.3'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
-    strain = 'state/Ee'
-    stress = 'state/S'
+    strain = 'elastic_strain'
   []
   [eq3]
     type = SR2Invariant
     invariant_type = 'VONMISES'
-    tensor = 'state/S'
-    invariant = 'state/s'
+    tensor = 'stress'
+    invariant = 'effective_stress'
   []
   [eq4]
     type = YieldFunction
     yield_stress = 5
-    yield_function = 'state/fp'
-    effective_stress = 'state/s'
   []
   [surface]
     type = ComposedModel
@@ -72,26 +70,21 @@
   [eq5]
     type = Normality
     model = 'surface'
-    function = 'state/fp'
-    from = 'state/S'
-    to = 'state/N'
+    function = 'yield_function'
+    from = 'stress'
+    to = 'flow_direction'
   []
   [eq6]
     type = PerzynaPlasticFlowRate
     reference_stress = 100
     exponent = 2
-    yield_function = 'state/fp'
-    flow_rate = 'state/gamma_rate'
   []
   [eq7]
     type = AssociativePlasticFlow
-    flow_rate = 'state/gamma_rate'
-    flow_direction = 'state/N'
-    plastic_strain_rate = 'state/Ep_rate'
   []
   [eq8]
     type = SR2BackwardEulerTimeIntegration
-    variable = 'state/Ep'
+    variable = 'plastic_strain'
   []
   [system]
     type = ComposedModel
@@ -103,6 +96,7 @@
   [eq_sys]
     type = NonlinearSystem
     model = 'system'
+    unknowns = 'plastic_strain'
   []
 []
 
@@ -129,6 +123,6 @@
   [model]
     type = ComposedModel
     models = 'model0 eq1 eq2'
-    additional_outputs = 'state/Ep'
+    additional_outputs = 'plastic_strain'
   []
 []

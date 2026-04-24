@@ -33,10 +33,10 @@ OptionSet
 ProjectileAcceleration::expected_options()
 {
   OptionSet options = Model::expected_options();
-  options.add_optional<VariableName>("velocity");
-  options.add_optional<VariableName>("acceleration");
-  options.add_optional<TensorName<Vec>>("gravitational_acceleration");
-  options.add_optional<TensorName<Scalar>>("dynamic_viscosity");
+  options.add_input("velocity", "The velocity of the projectile");
+  options.add_output("acceleration", "The acceleration of the projectile");
+  options.add_buffer<Vec>("gravitational_acceleration", "The gravitational acceleration");
+  options.add_parameter<Scalar>("dynamic_viscosity", "The dynamic viscosity");
   return options;
 }
 

@@ -186,6 +186,7 @@ OptionSet::to_str() const
 
   OptionSet::const_iterator it = _values.begin();
 
+  os << type() << ":\n";
   os << "  section: " << section() << '\n';
   if (doc().empty())
     os << "  doc:\n";
