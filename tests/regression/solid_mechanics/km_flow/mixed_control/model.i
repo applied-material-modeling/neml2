@@ -195,12 +195,12 @@
   []
   [Erate]
     type = SR2VariableRate
-    variable = 'E'
+    variable = 'strain'
   []
   [effective_strain_rate]
     type = SR2Invariant
     invariant_type = 'EFFECTIVE_STRAIN'
-    tensor = 'E_rate'
+    tensor = 'strain_rate'
     invariant = 'effective_strain_rate'
   []
   [g]
@@ -227,14 +227,15 @@
   []
   [Eerate]
     type = SR2LinearCombination
-    from = 'E_rate plastic_strain_rate'
-    to = 'strain_rate'
+    from = 'strain_rate plastic_strain_rate'
+    to = 'elastic_strain_rate'
     weights = '1 -1'
   []
   [elasticity]
     type = LinearIsotropicElasticity
     coefficients = '1e5 0.3'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
+    strain = 'elastic_strain'
     rate_form = true
   []
   [integrate_stress]
@@ -247,14 +248,10 @@
   []
   [mixed]
     type = MixedControlSetup
-    x_above = 'stress'
-    x_below = 'E'
-  []
-  [y_constraint]
-    type = SR2LinearCombination
-    from = 'y fixed_values'
-    to = 'y_residual'
-    weights = '1 -1'
+    x_above = 'fixed_values'
+    x_below = 'mixed_state'
+    y = 'stress'
+    z = 'strain'
   []
   [implicit_rate]
     type = ComposedModel
@@ -262,7 +259,7 @@
               mandel_stress vonmises
               yield yield_zero normality eprate Eprate Erate Eerate
               ri_flowrate rd_flowrate flowrate integrate_ep integrate_stress effective_strain_rate
-              mixed y_constraint'
+              mixed'
   []
 []
 
@@ -270,8 +267,8 @@
   [eq_sys]
     type = NonlinearSystem
     model = 'implicit_rate'
-    unknowns = 'stress E equivalent_plastic_strain gamma_rate_ri'
-    residuals = 'stress_residual y_residual equivalent_plastic_strain_residual complementarity'
+    unknowns = 'mixed_state equivalent_plastic_strain gamma_rate_ri'
+    residuals = 'stress_residual equivalent_plastic_strain_residual complementarity'
   []
 []
 
@@ -286,9 +283,14 @@
 []
 
 [Models]
-  [model]
+  [update]
     type = ImplicitUpdate
     equation_system = 'eq_sys'
     solver = 'newton'
+  []
+  [model]
+    type = ComposedModel
+    models = 'update mixed'
+    additional_outputs = 'mixed_state'
   []
 []

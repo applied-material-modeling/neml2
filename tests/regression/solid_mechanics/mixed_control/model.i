@@ -108,8 +108,8 @@
     type = Normality
     model = 'flow'
     function = 'yield_function'
-    from = 'mandel_stress isotropic_hardening X'
-    to = 'flow_direction isotropic_hardening_direction kinematic_hardening_direction'
+    from = 'mandel_stress isotropic_hardening'
+    to = 'flow_direction isotropic_hardening_direction'
   []
   [flow_rate]
     type = PerzynaPlasticFlowRate
@@ -140,18 +140,19 @@
   []
   [Erate]
     type = SR2VariableRate
-    variable = 'E'
+    variable = 'strain'
   []
   [Eerate]
     type = SR2LinearCombination
-    from = 'E_rate plastic_strain_rate'
-    to = 'strain_rate'
+    from = 'strain_rate plastic_strain_rate'
+    to = 'elastic_strain_rate'
     weights = '1 -1'
   []
   [elasticity]
     type = LinearIsotropicElasticity
     coefficients = '1e5 0.3'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
+    strain = 'elastic_strain'
     rate_form = true
   []
   [integrate_ep]
@@ -172,18 +173,14 @@
   []
   [mixed]
     type = MixedControlSetup
-    x_above = 'stress'
-    x_below = 'E'
-  []
-  [y_constraint]
-    type = SR2LinearCombination
-    from = 'y fixed_values'
-    to = 'y_residual'
-    weights = '1 -1'
+    x_above = 'fixed_values'
+    x_below = 'mixed_state'
+    y = 'stress'
+    z = 'strain'
   []
   [implicit_rate]
     type = ComposedModel
-    models = 'isoharden kinharden mandel_stress overstress vonmises yield normality flow_rate eprate Eprate X1rate X2rate Erate Eerate elasticity integrate_stress integrate_ep integrate_X1 integrate_X2 mixed y_constraint'
+    models = 'isoharden kinharden mandel_stress overstress vonmises yield normality flow_rate eprate Eprate X1rate X2rate Erate Eerate elasticity integrate_stress integrate_ep integrate_X1 integrate_X2 mixed'
   []
 []
 
@@ -191,8 +188,8 @@
   [eq_sys]
     type = NonlinearSystem
     model = 'implicit_rate'
-    unknowns = 'stress E equivalent_plastic_strain X1 X2'
-    residuals = 'stress_residual y_residual equivalent_plastic_strain_residual X1_residual X2_residual'
+    unknowns = 'mixed_state equivalent_plastic_strain X1 X2'
+    residuals = 'stress_residual equivalent_plastic_strain_residual X1_residual X2_residual'
   []
 []
 
@@ -207,9 +204,14 @@
 []
 
 [Models]
-  [model]
+  [update]
     type = ImplicitUpdate
     equation_system = 'eq_sys'
     solver = 'newton'
+  []
+  [model]
+    type = ComposedModel
+    models = 'update mixed'
+    additional_outputs = 'mixed_state'
   []
 []
