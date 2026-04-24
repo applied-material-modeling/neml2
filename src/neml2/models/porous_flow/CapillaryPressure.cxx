@@ -41,7 +41,7 @@ CapillaryPressure::expected_options()
   options.add<bool>("log_extension", false, "Whether to apply logarithmic extension");
   options.add<double>("transition_saturation",
                       0.0,
-                      "The transistion value of the effective saturation below which to apply the "
+                      "The transition value of the effective saturation below which to apply the "
                       "logarithmic extension");
 
   return options;

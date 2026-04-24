@@ -34,7 +34,7 @@ VolumeChangeEigenstrain::expected_options()
 {
   OptionSet options = Eigenstrain::expected_options();
   options.doc() =
-      "Define the (cummulative, as opposed to instantaneous) linear isotropic volume expansion "
+      "Define the (cumulative, as opposed to instantaneous) linear isotropic volume expansion "
       "eigenstrain, i.e. \\f$ \\boldsymbol{\\varepsilon}_V = (\\frac{V}{V0})^(1/3)-1 "
       "\\boldsymbol{I} \\f$, where \\f$ V \\f$ is the current volume, and \\f$ V0 \\f$ is the "
       "reference (initial) volume.";
