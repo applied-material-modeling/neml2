@@ -22,14 +22,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/common/FischerBurmeister.h"
+#include "neml2/models/common/FBComplementarity.h"
 #include "neml2/tensors/functions/sqrt.h"
 
 namespace neml2
 {
-register_NEML2_object(FischerBurmeister);
+register_NEML2_object(FBComplementarity);
 OptionSet
-FischerBurmeister::expected_options()
+FBComplementarity::expected_options()
 {
   OptionSet options = Model::expected_options();
   options.doc() = "If \\f$ a \\ge 0, b \\ge 0, ab = 0 \\f$ then the Fischer Burmeister (FB) "
@@ -47,7 +47,7 @@ FischerBurmeister::expected_options()
   return options;
 }
 
-FischerBurmeister::FischerBurmeister(const OptionSet & options)
+FBComplementarity::FBComplementarity(const OptionSet & options)
   : Model(options),
     _a(declare_input_variable<Scalar>("a")),
     _b(declare_input_variable<Scalar>("b")),
@@ -58,15 +58,10 @@ FischerBurmeister::FischerBurmeister(const OptionSet & options)
 }
 
 void
-FischerBurmeister::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
+FBComplementarity::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
-  auto ia = 1.0;
-  if (_a_ineq == "LE")
-    ia = -1.0;
-
-  auto ib = 1.0;
-  if (_b_ineq == "LE")
-    ib = -1.0;
+  double ia = _a_ineq == "LE" ? -1.0 : 1.0;
+  double ib = _b_ineq == "LE" ? -1.0 : 1.0;
 
   if (out)
     _c = _a * ia + _b * ib - sqrt(_a * _a + _b * _b);

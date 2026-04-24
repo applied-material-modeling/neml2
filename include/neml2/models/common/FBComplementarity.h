@@ -29,12 +29,12 @@
 
 namespace neml2
 {
-class FischerBurmeister : public Model
+class FBComplementarity : public Model
 {
 public:
   static OptionSet expected_options();
 
-  FischerBurmeister(const OptionSet & options);
+  FBComplementarity(const OptionSet & options);
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;

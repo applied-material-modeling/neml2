@@ -128,7 +128,7 @@
     variable = 'plastic_strain'
   []
   [consistency]
-    type = FischerBurmeister
+    type = FBComplementarity
     a = 'yield_function'
     a_inequality = 'LE'
     b = 'flow_rate'

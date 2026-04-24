@@ -124,7 +124,7 @@
   []
   # Fisher Burmeister Complementary Condition
   [Fish_Burm]
-    type = FischerBurmeister
+    type = FBComplementarity
     a = 'F'
     b = 'd_rate'
     complementarity = 'd_residual'

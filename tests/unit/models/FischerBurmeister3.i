@@ -11,7 +11,7 @@
 
 [Models]
   [model]
-    type = FischerBurmeister
+    type = FBComplementarity
     a_inequality = 'LE'
     b_inequality = 'LE'
   []

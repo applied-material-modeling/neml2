@@ -171,7 +171,7 @@ The complementarity condition can be implicitly solved for the phase field, \f$ 
   []
   # Fischer Burmeister Complementary Condition
   [Fisch_Burm]
-    type = FischerBurmeister
+    type = FBComplementarity
     first_var = 'state/F'
     second_var = 'state/d_rate'
     fischer_burmeister = 'residual/d'

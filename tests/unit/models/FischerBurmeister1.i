@@ -11,6 +11,6 @@
 
 [Models]
   [model]
-    type = FischerBurmeister
+    type = FBComplementarity
   []
 []

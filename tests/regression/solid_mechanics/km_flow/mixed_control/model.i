@@ -165,7 +165,7 @@
     to = 'flow_direction isotropic_hardening_direction'
   []
   [ri_flowrate]
-    type = FischerBurmeister
+    type = FBComplementarity
     a = 'yield_function'
     a_inequality = 'LE'
     b = 'gamma_rate_ri'
