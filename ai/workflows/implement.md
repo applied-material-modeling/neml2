@@ -9,10 +9,15 @@ small local loop.
 
 ## Step 0: Design Spec
 
-1. Run `find design/ -type f` (or `ls`) to discover all spec files.
-2. **Single match**: read it; use it as the source of truth.
-   - **Jacobians**: If the spec provides analytical Jacobians, prioritize implementing them exactly as specified.
-3. **Multiple specs in the same directory** (e.g. four files under `design/traction_separation_law/`):
+Spec files are **Markdown (`.md`)** — this is the required format. Markdown is diffable, LLM-native, and reviewable in PRs. If you find a non-`.md` file (PDF, DOCX, etc.), stop and ask the user to provide a `.md` spec before proceeding.
+
+### Decision Tree
+
+**A. Spec found** — Run `find design/ -name "*.md"` and one or more files match:
+
+1. **Single match**: read it; use it as the source of truth.
+   - **Jacobians**: If the spec provides analytical Jacobians, implement them exactly as specified.
+2. **Multiple specs in the same directory**:
    - Read ALL of them before writing any code.
    - Treat the directory as a candidate model family, not as a menu to cherry-pick from.
    - Compare their **Input** and **Output** sections.
@@ -22,23 +27,28 @@ small local loop.
      Introduce the base class first, then implement each variant in that directory as part of the
      same implementation scope by default.
    - If the specs have divergent inputs or outputs, implement separate independent classes.
-4. **Specs in different directories**: implement only the closest module/model match.
-5. **No spec found**: proceed from the user request and similar existing models.
-6. **Scope narrowing is opt-in, never implicit**:
-   - If multiple same-directory specs define one family, the default scope is the FULL family.
-   - Do not silently stop after implementing only the easiest/common/base variant.
-   - Do not redefine the task as MVP/subset unless the user explicitly requested that narrower
-     scope.
-   - If you intend to defer any variant, stop and report it as an explicit omission before writing
-     code.
+3. **Specs in different directories**: implement only the closest module/model match.
+
+**B. No spec found, request is straightforward** — single model, clear math, unambiguous interface:
+
+- Proceed directly from the user prompt and the nearest existing similar model.
+- No spec file needs to be created.
+
+**C. No spec found, request is complex** — multiple variants, ambiguous interface, non-trivial math, or a model family:
+
+- Before writing any code, generate a `.md` spec using existing specs in `design/` as format reference.
+- Present the draft spec to the user and wait for confirmation before proceeding to Step 1.
+
+### Scope Rule (applies to all cases)
+
+Scope narrowing is opt-in, never implicit. If multiple same-directory specs or a complex request implies a full model family, the default scope is the FULL family. Do not silently stop after the easiest variant. If you intend to defer any variant, explicitly mark it `DEFERRED` and get user approval before writing code.
 
 Before moving to Step 1, state:
-- which spec files were used
+- which spec files were used (or that none was found and the request is straightforward)
 - the planned class hierarchy (base + variants, or independent classes)
 - the implementation scope for this turn: full family or an explicitly named subset/MVP
 - the exact variant list covered by this scope, naming every spec-derived class/model explicitly
-- any deferred variant, explicitly marked as `DEFERRED`, with a user-approved reason; otherwise
-  there must be no deferred variants
+- any deferred variant, explicitly marked as `DEFERRED`, with a user-approved reason; otherwise there must be no deferred variants
 
 ---
 
