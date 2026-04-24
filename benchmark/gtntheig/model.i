@@ -68,12 +68,14 @@
 
 [Drivers]
   [driver]
-    type = SDTSolidMechanicsDriver
+    type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    prescribed_strain = 'strains'
-    prescribed_temperature = 'temperatures'
-    ic_Scalar_names = 'state/internal/f'
+    force_SR2_names = 'strain'
+    force_SR2_values = 'strains'
+    force_Scalar_names = 'temperature'
+    force_Scalar_values = 'temperatures'
+    ic_Scalar_names = 'void_fraction'
     ic_Scalar_values = 'f0'
     device = ${device}
   []
@@ -97,39 +99,41 @@
   []
   [elastic_strain]
     type = SR2LinearCombination
-    to_var = 'state/internal/Ee'
-    from_var = 'forces/E state/internal/Ep forces/Eg'
-    coefficients = '1 -1 -1'
+    from = 'strain plastic_strain eigenstrain'
+    to = 'elastic_strain'
+    weights = '1 -1 -1'
   []
   [elasticity]
     type = LinearIsotropicElasticity
     coefficients = '3e4 0.3'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
+    strain = 'elastic_strain'
   []
   [mandel_stress]
     type = IsotropicMandelStress
+    cauchy_stress = 'stress'
   []
   [j2]
     type = SR2Invariant
     invariant_type = 'VONMISES'
-    tensor = 'state/internal/M'
-    invariant = 'state/internal/se'
+    tensor = 'mandel_stress'
+    invariant = 'flow_invariant'
   []
   [sh]
     type = SR2Invariant
     invariant_type = 'I1'
-    tensor = 'state/internal/M'
-    invariant = 'state/internal/sh'
+    tensor = 'mandel_stress'
+    invariant = 'hydrostatic_stress'
   []
   [sp]
     type = ScalarLinearCombination
-    to_var = 'state/internal/sp'
-    from_var = 'state/internal/sh state/internal/ss'
-    coefficients = '1 -1'
+    from = 'hydrostatic_stress sintering_stress'
+    to = 'poro_invariant'
+    weights = '1 -1'
   []
   [q1]
     type = ArrheniusParameter
-    temperature = 'forces/T'
+    temperature = 'temperature'
     reference_value = 8000
     activation_energy = 5e4
     ideal_gas_constant = 8.314
@@ -140,7 +144,7 @@
     q1 = 'q1'
     q2 = 0.01
     q3 = 1.57
-    isotropic_hardening = 'state/internal/k'
+    isotropic_hardening = 'isotropic_hardening'
   []
   [flow]
     type = ComposedModel
@@ -155,9 +159,9 @@
   [normality]
     type = Normality
     model = 'flow'
-    function = 'state/internal/fp'
-    from = 'state/internal/M state/internal/k'
-    to = 'state/internal/NM state/internal/Nk'
+    function = 'yield_function'
+    from = 'mandel_stress isotropic_hardening'
+    to = 'flow_direction isotropic_hardening_direction'
   []
   [Eprate]
     type = AssociativePlasticFlow
@@ -170,15 +174,15 @@
   []
   [integrate_Ep]
     type = SR2BackwardEulerTimeIntegration
-    variable = 'state/internal/Ep'
+    variable = 'plastic_strain'
   []
   [integrate_ep]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/internal/ep'
+    variable = 'equivalent_plastic_strain'
   []
   [integrate_void]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/internal/f'
+    variable = 'void_fraction'
   []
   [surface]
     type = ComposedModel
@@ -194,6 +198,7 @@
   [eq_sys]
     type = NonlinearSystem
     model = 'surface'
+    unknowns = 'plastic_strain equivalent_plastic_strain void_fraction'
   []
 []
 
@@ -216,6 +221,6 @@
   [model]
     type = ComposedModel
     models = 'eigenstrain return_map elastic_strain elasticity'
-    additional_outputs = 'state/internal/Ep state/internal/ep state/internal/f'
+    additional_outputs = 'plastic_strain equivalent_plastic_strain void_fraction'
   []
 []

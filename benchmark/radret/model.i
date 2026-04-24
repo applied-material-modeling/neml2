@@ -40,10 +40,11 @@
 
 [Drivers]
   [driver]
-    type = SDTSolidMechanicsDriver
+    type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    prescribed_strain = 'strains'
+    force_SR2_names = 'strain'
+    force_SR2_values = 'strains'
     predictor = 'LINEAR_EXTRAPOLATION'
     device = ${device}
   []
@@ -56,52 +57,52 @@
   ###############################################################################
   [trial_elastic_strain]
     type = SR2LinearCombination
-    from_var = 'forces/E old_state/internal/Ep'
-    to_var = 'forces/Ee_trial'
-    coefficients = '1 -1'
+    from = 'strain plastic_strain~1'
+    to = 'trial_elastic_strain'
+    weights = '1 -1'
   []
   [trial_cauchy_stress]
     type = LinearIsotropicElasticity
     coefficients = '1e5 0.3'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
-    strain = 'forces/Ee_trial'
-    stress = 'forces/S_trial'
+    strain = 'trial_elastic_strain'
+    stress = 'trial_stress'
   []
   [trial_mandel_stress]
     type = IsotropicMandelStress
-    cauchy_stress = 'forces/S_trial'
-    mandel_stress = 'forces/M_trial'
+    cauchy_stress = 'trial_stress'
+    mandel_stress = 'trial_mandel_stress'
   []
   [trial_isoharden]
     type = LinearIsotropicHardening
-    equivalent_plastic_strain = 'old_state/internal/ep'
-    isotropic_hardening = 'forces/k_trial'
+    equivalent_plastic_strain = 'equivalent_plastic_strain~1'
+    isotropic_hardening = 'trial_isoharden'
     hardening_modulus = 1000
   []
   [trial_kinharden]
     type = LinearKinematicHardening
-    kinematic_plastic_strain = 'old_state/internal/Kp'
-    back_stress = 'forces/X_trial'
+    kinematic_plastic_strain = 'kinematic_plastic_strain~1'
+    back_stress = 'trial_backstress'
     hardening_modulus = 1000
   []
   [trial_overstress]
     type = SR2LinearCombination
-    to_var = 'forces/O_trial'
-    from_var = 'forces/M_trial forces/X_trial'
-    coefficients = '1 -1'
+    from = 'trial_mandel_stress trial_backstress'
+    to = 'trial_overstress'
+    weights = '1 -1'
   []
   [trial_vonmises]
     type = SR2Invariant
     invariant_type = 'VONMISES'
-    tensor = 'forces/O_trial'
-    invariant = 'forces/s_trial'
+    tensor = 'trial_overstress'
+    invariant = 'trial_effective_stress'
   []
   [trial_yield]
     type = YieldFunction
     yield_stress = 5
-    yield_function = 'forces/fp_trial'
-    effective_stress = 'forces/s_trial'
-    isotropic_hardening = 'forces/k_trial'
+    yield_function = 'trial_yield_function'
+    effective_stress = 'trial_effective_stress'
+    isotropic_hardening = 'trial_isoharden'
   []
   [trial_flow]
     type = ComposedModel
@@ -110,9 +111,9 @@
   [trial_normality]
     type = Normality
     model = 'trial_flow'
-    function = 'forces/fp_trial'
-    from = 'forces/M_trial forces/k_trial forces/X_trial'
-    to = 'forces/NM forces/Nk forces/NX'
+    function = 'trial_yield_function'
+    from = 'trial_mandel_stress trial_isoharden trial_backstress'
+    to = 'NM Nk NX'
   []
   [trial_state]
     type = ComposedModel
@@ -134,62 +135,78 @@
   []
   [trial_flow_rate]
     type = ScalarVariableRate
-    variable = 'state/internal/gamma'
+    variable = 'gamma'
   []
   [plastic_strain_rate]
     type = AssociativePlasticFlow
-    flow_direction = 'forces/NM'
+    flow_direction = 'NM'
+    flow_rate = 'gamma_rate'
   []
   [plastic_strain]
     type = SR2ForwardEulerTimeIntegration
-    variable = 'state/internal/Ep'
+    variable = 'plastic_strain'
   []
   [elastic_strain]
     type = SR2LinearCombination
-    from_var = 'forces/E state/internal/Ep'
-    to_var = 'state/internal/Ee'
-    coefficients = '1 -1'
+    from = 'strain plastic_strain'
+    to = 'elastic_strain'
+    weights = '1 -1'
   []
   [cauchy_stress]
     type = LinearIsotropicElasticity
     coefficients = '1e5 0.3'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
+    strain = 'elastic_strain'
   []
   [mandel_stress]
     type = IsotropicMandelStress
+    cauchy_stress = 'stress'
   []
   [overstress]
     type = SR2LinearCombination
-    to_var = 'state/internal/O'
-    from_var = 'state/internal/M state/internal/X'
-    coefficients = '1 -1'
+    to = 'overstress'
+    from = 'mandel_stress back_stress'
+    weights = '1 -1'
   []
   [vonmises]
     type = SR2Invariant
     invariant_type = 'VONMISES'
-    tensor = 'state/internal/O'
-    invariant = 'state/internal/s'
+    tensor = 'overstress'
+    invariant = 'effective_stress'
   []
   [yield]
     type = YieldFunction
     yield_stress = 5
-    isotropic_hardening = 'state/internal/k'
+    isotropic_hardening = 'isotropic_hardening'
   []
   [equivalent_plastic_strain_rate]
     type = AssociativeIsotropicPlasticHardening
-    isotropic_hardening_direction = 'forces/Nk'
+    isotropic_hardening_direction = 'Nk'
+    flow_rate = 'gamma_rate'
   []
   [equivalent_plastic_strain]
     type = ScalarForwardEulerTimeIntegration
-    variable = 'state/internal/ep'
+    variable = 'equivalent_plastic_strain'
   []
   [kinematic_plastic_strain_rate]
     type = AssociativeKinematicPlasticHardening
-    kinematic_hardening_direction = 'forces/NX'
+    kinematic_hardening_direction = 'NX'
+    flow_rate = 'gamma_rate'
   []
   [kinematic_plastic_strain]
     type = SR2ForwardEulerTimeIntegration
-    variable = 'state/internal/Kp'
+    variable = 'kinematic_plastic_strain'
+  []
+  [flow_rate]
+    type = PerzynaPlasticFlowRate
+    reference_stress = 100
+    exponent = 2
+  []
+  [consistency]
+    type = ScalarLinearCombination
+    from = 'gamma_rate flow_rate'
+    to = 'gamma_residual'
+    weights = '1 -1'
   []
   [surface]
     type = ComposedModel
@@ -197,27 +214,16 @@
               plastic_strain_rate plastic_strain elastic_strain cauchy_stress mandel_stress
               kinematic_plastic_strain_rate kinematic_plastic_strain kinharden
               equivalent_plastic_strain_rate equivalent_plastic_strain isoharden
-              overstress vonmises yield"
-  []
-  [flow_rate]
-    type = PerzynaPlasticFlowRate
-    reference_stress = 100
-    exponent = 2
-  []
-  [integrate_gamma]
-    type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/internal/gamma'
-  []
-  [implicit_rate]
-    type = ComposedModel
-    models = "surface flow_rate integrate_gamma"
+              overstress vonmises yield
+              flow_rate consistency"
   []
 []
 
 [EquationSystems]
   [eq_sys]
     type = NonlinearSystem
-    model = 'implicit_rate'
+    model = 'surface'
+    unknowns = 'gamma'
   []
 []
 
@@ -243,11 +249,11 @@
               plastic_strain_rate plastic_strain
               equivalent_plastic_strain_rate equivalent_plastic_strain
               kinematic_plastic_strain_rate kinematic_plastic_strain"
-    additional_outputs = 'state/internal/gamma'
+    additional_outputs = 'gamma'
   []
   [model]
     type = ComposedModel
     models = 'model0 elastic_strain cauchy_stress'
-    additional_outputs = 'state/internal/Ep state/internal/ep state/internal/Kp'
+    additional_outputs = 'plastic_strain equivalent_plastic_strain kinematic_plastic_strain'
   []
 []

@@ -40,10 +40,11 @@
 
 [Drivers]
   [driver]
-    type = SDTSolidMechanicsDriver
+    type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    prescribed_strain = 'strains'
+    force_SR2_names = 'strain'
+    force_SR2_values = 'strains'
     device = ${device}
   []
 []
@@ -53,7 +54,5 @@
     type = LinearIsotropicElasticity
     coefficients = '1e3 0.3'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
-    strain = 'forces/E'
-    stress = 'state/S'
   []
 []

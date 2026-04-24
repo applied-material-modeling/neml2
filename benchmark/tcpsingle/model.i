@@ -83,17 +83,27 @@
 
 [Drivers]
   [driver]
-    type = LDISolidMechanicsDriver
+    type = TransientDriver
     model = 'model_with_stress'
     prescribed_time = 'times'
-    prescribed_deformation_rate = 'deformation_rate'
-    prescribed_vorticity = 'vorticity'
-    ic_Rot_names = 'state/orientation'
+    force_SR2_names = 'deformation_rate'
+    force_SR2_values = 'deformation_rate'
+    force_WR2_names = 'vorticity'
+    force_WR2_values = 'vorticity'
+    ic_Rot_names = 'orientation'
     ic_Rot_values = 'initial_orientation'
     predictor = 'PREVIOUS_STATE'
-    cp_warmup = true
-    cp_warmup_elastic_scale = 0.05
+    custom_predictor = 'cp_warmup'
+    custom_predictor_apply = 'FIRST_STEP'
     device = ${device}
+  []
+[]
+
+# predictor
+[Models]
+  [cp_warmup]
+    type = CrystalPlasticityStrainPredictor
+    scale = 0.05
   []
 []
 
@@ -109,15 +119,14 @@
 [Models]
   [euler_rodrigues]
     type = RotationMatrix
-    from = 'state/orientation'
-    to = 'state/orientation_matrix'
+    from = 'orientation'
+    to = 'orientation_matrix'
   []
   [elasticity]
     type = LinearIsotropicElasticity
     coefficients = '1e5 0.3'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
-    strain = 'state/elastic_strain'
-    stress = 'state/internal/cauchy_stress'
+    strain = 'elastic_strain'
   []
   [resolved_shear]
     type = ResolvedShear
@@ -153,15 +162,15 @@
   []
   [integrate_slip_hardening]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/internal/slip_hardening'
+    variable = 'slip_hardening'
   []
   [integrate_elastic_strain]
     type = SR2BackwardEulerTimeIntegration
-    variable = 'state/elastic_strain'
+    variable = 'elastic_strain'
   []
   [integrate_orientation]
     type = WR2ImplicitExponentialTimeIntegration
-    variable = 'state/orientation'
+    variable = 'orientation'
   []
   [implicit_rate]
     type = ComposedModel
@@ -173,6 +182,7 @@
   [eq_sys]
     type = NonlinearSystem
     model = 'implicit_rate'
+    unknowns = 'elastic_strain slip_hardening orientation'
   []
 []
 
@@ -200,6 +210,6 @@
   [model_with_stress]
     type = ComposedModel
     models = 'model elasticity'
-    additional_outputs = 'state/elastic_strain'
+    additional_outputs = 'elastic_strain'
   []
 []

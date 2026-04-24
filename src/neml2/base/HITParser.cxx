@@ -33,7 +33,6 @@
 #include "neml2/base/EnumSelection.h"
 #include "neml2/base/MultiEnumSelection.h"
 #include "neml2/tensors/tensors.h"
-#include "neml2/misc/assertions.h"
 #include "neml2/misc/types.h"
 
 namespace neml2
@@ -129,12 +128,17 @@ extract_options(const nmhit::Node * object, OptionSet & options)
       extract_option(node, options);
 
   // check if all required options are defined
-  std::stringstream ss;
+  std::vector<nmhit::ErrorMessage> errors;
   for (const auto & [name, option] : options)
     if (option->required() && !option->defined())
-      ss << options.path() << ": Option '" << option->name()
-         << "' is required but not specified. Description: " << option->doc() << "\n";
-  neml_assert(ss.str().empty(), ss.str());
+      errors.push_back(nmhit::ErrorMessage{
+          object->filename(),
+          object->line(),
+          object->column(),
+          options.path() + ": Option '" + option->name() +
+              "' is required but not specified. Description: " + option->doc()});
+  if (!errors.empty())
+    throw nmhit::Error(errors);
 }
 
 // NOLINTBEGIN
@@ -160,10 +164,10 @@ extract_option(const nmhit::Node * n, OptionSet & options)
   for (auto & [name, option] : options)
     if (name == n->path())
     {
-      neml_assert(!option->suppressed(),
-                  "Option named '",
-                  option->name(),
-                  "' is suppressed, and its value cannot be modified.");
+      if (option->suppressed())
+        throw nmhit::Error("Option named '" + option->name() +
+                               "' is suppressed, and its value cannot be modified.",
+                           n);
 
       found = true;
       const auto & tp = option->type();
@@ -184,21 +188,21 @@ extract_option(const nmhit::Node * n, OptionSet & options)
       else if (tp == utils::demangle(typeid(EnumSelection).name()))
       {
         auto * option_enum = dynamic_cast<Option<EnumSelection> *>(option.get());
-        neml_assert(
-            option_enum, "Option named '", option->name(), "' is not of type EnumSelection.");
+        if (!option_enum)
+          throw nmhit::Error("Option named '" + option->name() + "' is not of type EnumSelection.",
+                             n);
         option_enum->set().select(n->param<std::string>());
       }
       else if (tp == utils::demangle(typeid(MultiEnumSelection).name()))
       {
         auto * option_multi_enum = dynamic_cast<Option<MultiEnumSelection> *>(option.get());
-        neml_assert(option_multi_enum,
-                    "Option named '",
-                    option->name(),
-                    "' is not of type MultiEnumSelection.");
+        if (!option_multi_enum)
+          throw nmhit::Error(
+              "Option named '" + option->name() + "' is not of type MultiEnumSelection.", n);
         option_multi_enum->set().select(n->param<std::vector<std::string>>());
       }
       // LCOV_EXCL_START
-      else neml_assert(false, "Unsupported option type for option ", n->fullpath());
+      else throw nmhit::Error("Unsupported option type for option " + n->fullpath(), n);
       // LCOV_EXCL_STOP
 
       option->user_specified() = true;
@@ -206,7 +210,8 @@ extract_option(const nmhit::Node * n, OptionSet & options)
 
       break;
     }
-  neml_assert(found, "Unused option ", n->fullpath());
+  if (!found)
+    throw nmhit::Error("Unused option " + n->fullpath(), n);
 }
 // NOLINTEND
 

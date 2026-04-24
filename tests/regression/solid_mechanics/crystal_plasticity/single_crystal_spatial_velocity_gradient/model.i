@@ -130,9 +130,9 @@
 [Data]
   [crystal_geometry]
     type = CubicCrystal
-    lattice_parameter = "a"
-    slip_directions = "sdirs"
-    slip_planes = "splanes"
+    lattice_parameter = 'a'
+    slip_directions = 'sdirs'
+    slip_planes = 'splanes'
   []
 []
 

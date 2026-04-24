@@ -40,10 +40,11 @@
 
 [Drivers]
   [driver]
-    type = SDTSolidMechanicsDriver
+    type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    prescribed_strain = 'strains'
+    force_SR2_names = 'strain'
+    force_SR2_values = 'strains'
     device = ${device}
   []
 []
@@ -51,12 +52,13 @@
 [Models]
   [mandel_stress]
     type = IsotropicMandelStress
+    cauchy_stress = 'stress'
   []
   [vonmises]
     type = SR2Invariant
     invariant_type = 'VONMISES'
-    tensor = 'state/internal/M'
-    invariant = 'state/internal/s'
+    tensor = 'mandel_stress'
+    invariant = 'effective_stress'
   []
   [isoharden]
     type = LinearIsotropicHardening
@@ -65,7 +67,7 @@
   [yield]
     type = YieldFunction
     yield_stress = 5
-    isotropic_hardening = 'state/internal/k'
+    isotropic_hardening = 'isotropic_hardening'
   []
   [flow]
     type = ComposedModel
@@ -74,9 +76,9 @@
   [normality]
     type = Normality
     model = 'flow'
-    function = 'state/internal/fp'
-    from = 'state/internal/M state/internal/k'
-    to = 'state/internal/NM state/internal/Nk'
+    function = 'yield_function'
+    from = 'mandel_stress isotropic_hardening'
+    to = 'flow_direction isotropic_hardening_direction'
   []
   [flow_rate]
     type = PerzynaPlasticFlowRate
@@ -91,28 +93,28 @@
   []
   [Erate]
     type = SR2VariableRate
-    variable = 'forces/E'
-    rate = 'forces/E_rate'
+    variable = 'strain'
   []
   [Eerate]
     type = SR2LinearCombination
-    from_var = 'forces/E_rate state/internal/Ep_rate'
-    to_var = 'state/internal/Ee_rate'
-    coefficients = '1 -1'
+    from = 'strain_rate plastic_strain_rate'
+    to = 'elastic_strain_rate'
+    weights = '1 -1'
   []
   [elasticity]
     type = LinearIsotropicElasticity
     coefficients = '1e5 0.3'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
+    strain = 'elastic_strain'
     rate_form = true
   []
   [integrate_stress]
     type = SR2BackwardEulerTimeIntegration
-    variable = 'state/S'
+    variable = 'stress'
   []
   [integrate_ep]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/internal/ep'
+    variable = 'equivalent_plastic_strain'
   []
   [implicit_rate]
     type = ComposedModel
@@ -124,6 +126,7 @@
   [eq_sys]
     type = NonlinearSystem
     model = 'implicit_rate'
+    unknowns = 'stress equivalent_plastic_strain'
   []
 []
 
