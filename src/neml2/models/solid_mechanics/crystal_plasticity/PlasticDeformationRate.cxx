@@ -30,7 +30,6 @@
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/SFFR4.h"
 #include "neml2/tensors/functions/sum.h"
-#include "neml2/tensors/functions/diagonalize.h"
 
 namespace neml2
 {
@@ -47,19 +46,14 @@ PlasticDeformationRate::expected_options()
                   "\\f$ the slip rate on the ith slip system, \\f$Q \\f$ the orientation, \\f$ d_i "
                   "\\f$ the slip system direction, and \\f$ n_i \\f$ the slip system normal.";
 
-  options.set_output("plastic_deformation_rate") =
-      VariableName(STATE, "internal", "plastic_deformation_rate");
-  options.set("plastic_deformation_rate").doc() = "The name of the plastic deformation rate tensor";
+  options.add_output("plastic_deformation_rate", "The name of the plastic deformation rate tensor");
+  options.add_input("orientation_matrix", "The name of the orientation matrix");
+  options.add_input("slip_rates", "The name of the tensor containg the current slip rates");
 
-  options.set_input("orientation") = VariableName(STATE, "orientation_matrix");
-  options.set("orientation").doc() = "The name of the orientation matrix tensor";
-
-  options.set_input("slip_rates") = VariableName(STATE, "internal", "slip_rates");
-  options.set("slip_rates").doc() = "The name of the tensor containg the current slip rates";
-
-  options.set<std::string>("crystal_geometry") = "crystal_geometry";
-  options.set("crystal_geometry").doc() =
-      "The name of the Data object containing the crystallographic information for the material";
+  options.add<std::string>(
+      "crystal_geometry",
+      "crystal_geometry",
+      "The name of the Data object containing the crystallographic information for the material");
 
   return options;
 }
@@ -69,7 +63,7 @@ PlasticDeformationRate::PlasticDeformationRate(const OptionSet & options)
     _crystal_geometry(register_data<crystallography::CrystalGeometry>(
         options.get<std::string>("crystal_geometry"))),
     _dp(declare_output_variable<SR2>("plastic_deformation_rate")),
-    _R(declare_input_variable<R2>("orientation")),
+    _R(declare_input_variable<R2>("orientation_matrix")),
     _g(declare_input_variable<Scalar>("slip_rates"))
 {
 }
@@ -85,11 +79,8 @@ PlasticDeformationRate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 
   if (dout_din)
   {
-    if (_g.is_dependent())
-      _dp.d(_g, 1, 0, 1) = M.rotate(_R().intmd_unsqueeze(-1));
-
-    if (_R.is_dependent())
-      _dp.d(_R) = dp_crystal.drotate(_R());
+    _dp.d(_g, 1, 0, 1) = M.rotate(_R().intmd_unsqueeze(-1));
+    _dp.d(_R) = dp_crystal.drotate(_R());
   }
 }
 } // namespace neml2

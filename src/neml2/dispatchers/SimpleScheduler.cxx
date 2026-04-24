@@ -36,15 +36,11 @@ SimpleScheduler::expected_options()
   OptionSet options = WorkScheduler::expected_options();
   options.doc() = "Dispatch work to a single device in given batch sizes.";
 
-  options.set<std::string>("device");
-  options.set("device").doc() = "Torch device to run on";
-
-  options.set<std::size_t>("batch_size");
-  options.set("batch_size").doc() = "Number of batches to dispatch at once";
-
-  options.set<std::size_t>("capacity");
-  options.set("capacity").doc() =
-      "Maximum number of batches that can be dispatched simultaneously, default to batch_size";
+  options.add<std::string>("device", "device to run on");
+  options.add<std::size_t>("batch_size", "Number of batches to dispatch at once");
+  options.add_optional<std::size_t>(
+      "capacity",
+      "Maximum number of batches that can be dispatched simultaneously, default to batch_size");
 
   return options;
 }
@@ -53,8 +49,7 @@ SimpleScheduler::SimpleScheduler(const OptionSet & options)
   : WorkScheduler(options),
     _device(Device(options.get<std::string>("device"))),
     _batch_size(options.get<std::size_t>("batch_size")),
-    _capacity(options.get("capacity").user_specified() ? options.get<std::size_t>("capacity")
-                                                       : _batch_size)
+    _capacity(options.defined("capacity") ? options.get<std::size_t>("capacity") : _batch_size)
 {
 }
 

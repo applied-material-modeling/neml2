@@ -23,7 +23,6 @@
 // THE SOFTWARE.
 
 #include "neml2/user_tensors/FromTorchScript.h"
-#include "neml2/tensors/assertions.h"
 
 #include <torch/script.h>
 #include <torch/serialize.h>
@@ -45,26 +44,18 @@ FromTorchScript<T>::expected_options()
                   "named_buffers that stores the tensor to load. Refer to "
                   "tests/regression/liquid_infiltration/gold/generate_load_file.py for an example";
 
-  options.set<std::string>("torch_script");
-  options.set("torch_script").doc() = "Name of the torch script file.";
-
-  options.set<std::string>("tensor_name");
-  options.set("tensor_name").doc() = "Key of named_buffers to extract the tensor from.";
-
-  options.set<TensorShape>("batch_shape") = {};
-  options.set("batch_shape").doc() = "Batch shape";
-
-  options.set<unsigned int>("intermediate_dimension") = 0;
-  options.set("intermediate_dimension").doc() = "Intermediate dimension";
-
-  options.set<TensorShape>("base_shape") = {};
-  options.set("base_shape").doc() = "Base shape";
+  options.add<std::string>("torch_script", "Name of the torch script file.");
+  options.add<std::string>("tensor_name", "Key of named_buffers to extract the tensor from.");
+  options.add<TensorShape>("batch_shape", {}, "Batch shape");
+  options.add<unsigned int>("intermediate_dimension", 0, "Intermediate dimension");
 
   if constexpr (!std::is_same_v<T, Tensor>)
   {
-    options.set<TensorShape>("base_shape") = T::const_base_sizes;
-    options.set("base_shape").suppressed() = true;
+    options.add<TensorShape>("base_shape", T::const_base_sizes, "Base shape");
+    options.suppress("base_shape");
   }
+  else
+    options.add<TensorShape>("base_shape", {}, "Base shape");
 
   return options;
 }

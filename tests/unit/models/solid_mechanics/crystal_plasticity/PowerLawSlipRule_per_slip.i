@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/internal/resolved_shears state/internal/slip_strengths forces/T'
+    input_Scalar_names = 'resolved_shears slip_strengths T'
     input_Scalar_values = 'tau tau_bar T'
-    output_Scalar_names = 'state/internal/slip_rates'
+    output_Scalar_names = 'slip_rates'
     output_Scalar_values = 'rates'
     check_AD_parameter_derivatives = false
     derivative_rel_tol = 0
@@ -60,7 +60,7 @@
 [Models]
   [gamma0_per_slip]
     type = ScalarLinearInterpolation
-    argument = 'forces/T'
+    argument = 'T'
     abscissa = 'gamma0_x'
     ordinate = 'gamma0_y'
   []

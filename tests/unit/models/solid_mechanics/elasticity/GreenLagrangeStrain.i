@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_R2_names = 'forces/F'
+    input_R2_names = 'deformation_gradient'
     input_R2_values = 'F'
-    output_SR2_names = 'state/E'
+    output_SR2_names = 'strain'
     output_SR2_values = 'E'
     derivative_abs_tol = 1e-5
     derivative_rel_tol = 0
@@ -25,7 +25,7 @@
 [Models]
   [model]
     type = GreenLagrangeStrain
-    deformation_gradient = 'forces/F'
-    strain = 'state/E'
+    deformation_gradient = 'deformation_gradient'
+    strain = 'strain'
   []
 []

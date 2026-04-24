@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'forces/T state/mu state/A'
+    input_Scalar_names = 'temperature mu A'
     input_Scalar_values = '1000 mu_in A_in'
-    output_Scalar_names = 'parameters/p'
+    output_Scalar_names = 'rate_sensitivity'
     output_Scalar_values = 'p_correct'
     check_second_derivatives = true
   []
@@ -13,11 +13,11 @@
 [Models]
   [p]
     type = KocksMeckingRateSensitivity
-    shear_modulus = 'state/mu'
-    A = 'state/A'
+    shear_modulus = 'mu'
+    A = 'A'
     k = 1.38064e-20
     b = 2.019e-7
-    temperature = 'forces/T'
+    temperature = 'temperature'
   []
   [model]
     type = ComposedModel

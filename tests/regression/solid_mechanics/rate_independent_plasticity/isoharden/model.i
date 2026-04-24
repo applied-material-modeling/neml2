@@ -40,10 +40,11 @@
 
 [Drivers]
   [driver]
-    type = SDTSolidMechanicsDriver
+    type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    prescribed_strain = 'strains'
+    force_SR2_names = 'E'
+    force_SR2_values = 'strains'
     save_as = 'result.pt'
   []
   [regression]
@@ -61,28 +62,30 @@
   []
   [elastic_strain]
     type = SR2LinearCombination
-    from_var = 'forces/E state/internal/Ep'
-    to_var = 'state/internal/Ee'
-    coefficients = '1 -1'
+    from = 'E plastic_strain'
+    to = 'elastic_strain'
+    weights = '1 -1'
   []
   [elasticity]
     type = LinearIsotropicElasticity
     coefficients = '1e5 0.3'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
+    strain = 'elastic_strain'
   []
   [mandel_stress]
     type = IsotropicMandelStress
+    cauchy_stress = 'stress'
   []
   [vonmises]
     type = SR2Invariant
     invariant_type = 'VONMISES'
-    tensor = 'state/internal/M'
-    invariant = 'state/internal/s'
+    tensor = 'mandel_stress'
+    invariant = 'effective_stress'
   []
   [yield]
     type = YieldFunction
     yield_stress = 1000
-    isotropic_hardening = 'state/internal/k'
+    isotropic_hardening = 'isotropic_hardening'
   []
   [flow]
     type = ComposedModel
@@ -91,9 +94,9 @@
   [normality]
     type = Normality
     model = 'flow'
-    function = 'state/internal/fp'
-    from = 'state/internal/M state/internal/k'
-    to = 'state/internal/NM state/internal/Nk'
+    function = 'yield_function'
+    from = 'mandel_stress isotropic_hardening'
+    to = 'flow_direction isotropic_hardening_direction'
   []
   [eprate]
     type = AssociativeIsotropicPlasticHardening
@@ -103,14 +106,17 @@
   []
   [integrate_ep]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/internal/ep'
+    variable = 'equivalent_plastic_strain'
   []
   [integrate_Ep]
     type = SR2BackwardEulerTimeIntegration
-    variable = 'state/internal/Ep'
+    variable = 'plastic_strain'
   []
   [consistency]
-    type = RateIndependentPlasticFlowConstraint
+    type = FBComplementarity
+    a = 'yield_function'
+    a_inequality = 'LE'
+    b = 'flow_rate'
   []
   [surface]
     type = ComposedModel
@@ -125,6 +131,8 @@
   [eq_sys]
     type = NonlinearSystem
     model = 'surface'
+    unknowns = 'plastic_strain equivalent_plastic_strain flow_rate'
+    residuals = 'plastic_strain_residual equivalent_plastic_strain_residual complementarity'
   []
 []
 
@@ -147,6 +155,6 @@
   [model]
     type = ComposedModel
     models = 'return_map elastic_strain elasticity'
-    additional_outputs = 'state/internal/Ep state/internal/ep'
+    additional_outputs = 'plastic_strain equivalent_plastic_strain'
   []
 []

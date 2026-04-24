@@ -40,11 +40,8 @@ SumSlipRates::expected_options()
   options.doc() = "Calculates the sum of the absolute value of all the slip rates as \\f$ "
                   "\\sum_{i=1}^{n_{slip}} \\left| \\dot{\\gamma}_i \\right| \\f$.";
 
-  options.set_input("slip_rates") = VariableName(STATE, "internal", "slip_rates");
-  options.set("slip_rates").doc() = "The name of individual slip rates";
-
-  options.set_output("sum_slip_rates") = VariableName(STATE, "internal", "sum_slip_rates");
-  options.set("sum_slip_rates").doc() = "The output name for the scalar sum of the slip rates";
+  options.add_input("slip_rates", "The name of individual slip rates");
+  options.add_output("sum_slip_rates", "The output name for the scalar sum of the slip rates");
 
   return options;
 }
@@ -62,8 +59,7 @@ SumSlipRates::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
   if (out)
     _sg = intmd_sum(abs(_g()), -1, /*keepdim=*/false);
   if (dout_din)
-    if (_g.is_dependent())
-      _sg.d(_g, 1, 0, 1) = sign(_g());
+    _sg.d(_g, 1, 0, 1) = sign(_g());
 }
 
 } // namespace neml2

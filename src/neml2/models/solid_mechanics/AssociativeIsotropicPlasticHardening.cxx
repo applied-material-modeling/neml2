@@ -40,12 +40,10 @@ AssociativeIsotropicPlasticHardening::expected_options()
       "is the equivalent plastic strain, \\f$ \\dot{\\gamma} \\f$ is the flow rate, "
       "\\f$ f \\f$ is the yield function, and \\f$ k \\f$ is the isotropic hardening.";
 
-  options.set_input("isotropic_hardening_direction") = VariableName(STATE, "internal", "Nk");
-  options.set("isotropic_hardening_direction").doc() =
-      "Direction of associative isotropic hardening which can be calculated using Normality.";
-
-  options.set_output("equivalent_plastic_strain_rate") = VariableName(STATE, "internal", "ep_rate");
-  options.set("equivalent_plastic_strain_rate").doc() = "Rate of equivalent plastic strain";
+  options.add_input(
+      "isotropic_hardening_direction",
+      "Direction of associative isotropic hardening which can be calculated using Normality.");
+  options.add_output("equivalent_plastic_strain_rate", "Rate of equivalent plastic strain");
 
   return options;
 }
@@ -70,11 +68,8 @@ AssociativeIsotropicPlasticHardening::set_value(bool out, bool dout_din, bool /*
 
   if (dout_din)
   {
-    if (_gamma_dot.is_dependent())
-      _ep_dot.d(_gamma_dot) = -_Nk;
-
-    if (_Nk.is_dependent())
-      _ep_dot.d(_Nk) = -_gamma_dot;
+    _ep_dot.d(_gamma_dot) = -_Nk;
+    _ep_dot.d(_Nk) = -_gamma_dot;
   }
 }
 } // namespace neml2

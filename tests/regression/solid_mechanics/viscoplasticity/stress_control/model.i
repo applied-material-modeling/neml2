@@ -40,13 +40,13 @@
 
 [Drivers]
   [driver]
-    type = SDTSolidMechanicsDriver
+    type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    control = 'STRESS'
-    prescribed_stress = 'stresses'
-    predictor = LINEAR_EXTRAPOLATION
+    force_SR2_names = 'S'
+    force_SR2_values = 'stresses'
     save_as = 'result.pt'
+    predictor = 'LINEAR_EXTRAPOLATION'
   []
   [regression]
     type = TransientRegression
@@ -58,14 +58,14 @@
 [Models]
   [mandel_stress]
     type = IsotropicMandelStress
-    cauchy_stress = 'forces/S'
-    mandel_stress = 'forces/M'
+    cauchy_stress = 'S'
+    mandel_stress = 'M'
   []
   [vonmises]
     type = SR2Invariant
-    tensor = 'forces/M'
-    invariant = 'forces/s'
     invariant_type = 'VONMISES'
+    tensor = 'M'
+    invariant = 'effective_stress'
   []
   [isoharden]
     type = LinearIsotropicHardening
@@ -74,8 +74,8 @@
   [yield]
     type = YieldFunction
     yield_stress = 60
-    effective_stress = 'forces/s'
-    isotropic_hardening = 'state/internal/k'
+    effective_stress = 'effective_stress'
+    isotropic_hardening = 'isotropic_hardening'
   []
   [flow_rate]
     type = PerzynaPlasticFlowRate
@@ -89,9 +89,9 @@
   [normality]
     type = Normality
     model = 'flow'
-    function = 'state/internal/fp'
-    from = 'state/internal/k forces/M'
-    to = 'state/internal/Nk state/internal/NM'
+    function = 'yield_function'
+    from = 'isotropic_hardening M'
+    to = 'isotropic_hardening_direction flow_direction'
   []
   [eprate]
     type = AssociativeIsotropicPlasticHardening
@@ -101,17 +101,15 @@
   []
   [integrate_ep]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/internal/ep'
+    variable = 'equivalent_plastic_strain'
   []
   [integrate_Ep]
     type = SR2BackwardEulerTimeIntegration
-    variable = 'state/internal/Ep'
+    variable = 'plastic_strain'
   []
   [surface]
     type = ComposedModel
-    models = "isoharden yield flow_rate normality
-              eprate Eprate
-              integrate_ep integrate_Ep"
+    models = 'isoharden yield flow_rate normality eprate Eprate integrate_ep integrate_Ep'
   []
 []
 
@@ -119,6 +117,8 @@
   [eq_sys]
     type = NonlinearSystem
     model = 'surface'
+    unknowns = 'plastic_strain equivalent_plastic_strain'
+    residuals = 'plastic_strain_residual equivalent_plastic_strain_residual'
   []
 []
 
@@ -147,16 +147,18 @@
     coefficients = '3e4 0.3'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
     compliance = true
-    stress = 'forces/S'
+    stress = 'S'
+    strain = 'elastic_strain'
   []
   [total_strain]
     type = SR2LinearCombination
-    to_var = 'state/E'
-    from_var = 'state/internal/Ee state/internal/Ep'
+    to = 'total_strain'
+    from = 'elastic_strain plastic_strain'
+    weights = '1 1'
   []
   [model]
     type = ComposedModel
     models = 'stress_update elastic_strain total_strain'
-    additional_outputs = 'state/internal/ep state/internal/Ep'
+    additional_outputs = 'equivalent_plastic_strain plastic_strain'
   []
 []

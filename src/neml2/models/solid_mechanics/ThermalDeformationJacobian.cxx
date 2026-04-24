@@ -38,17 +38,10 @@ ThermalDeformationJacobian::expected_options()
       "T_0) \\f$, where \\f$ \\alpha \\f$ is the coefficient of thermal expansion (CTE), \\f$ T "
       "\\f$ is the temperature, and \\f$ T_0 \\f$ is the reference (stress-free) temperature.";
 
-  options.set_input("temperature") = VariableName(FORCES, "T");
-  options.set("temperature").doc() = "Temperature";
-
-  options.set_buffer<TensorName<Scalar>>("reference_temperature");
-  options.set("reference_temperature").doc() = "Reference (stress-free) temperature";
-
-  options.set_parameter<TensorName<Scalar>>("CTE");
-  options.set("CTE").doc() = "Coefficient of thermal expansion";
-
-  options.set<VariableName>("jacobian") = VariableName(STATE, "J");
-  options.set("jacobian").doc() = "Thermal deformation Jacobian";
+  options.add_input("temperature", "Temperature");
+  options.add_buffer<Scalar>("reference_temperature", "Reference (stress-free) temperature");
+  options.add_parameter<Scalar>("CTE", "Coefficient of thermal expansion");
+  options.add_output("jacobian", "Thermal deformation Jacobian");
 
   return options;
 }
@@ -70,8 +63,7 @@ ThermalDeformationJacobian::set_value(bool out, bool dout_din, bool /*d2out_din2
 
   if (dout_din)
   {
-    if (_T.is_dependent())
-      _J.d(_T) = _alpha;
+    _J.d(_T) = _alpha;
 
     if (const auto * const alpha = nl_param("alpha"))
       _J.d(*alpha) = (_T - _T0);

@@ -46,11 +46,8 @@ ChabochePlasticHardening::expected_options()
       "recovery, and static recovery.  \\f$ A \\f$ and \\f$ a \\f$ are additional material "
       "parameters.";
 
-  options.set_parameter<TensorName<Scalar>>("A");
-  options.set("A").doc() = "Static recovery prefactor";
-
-  options.set_parameter<TensorName<Scalar>>("a");
-  options.set("a").doc() = "Static recovery exponent";
+  options.add_parameter<Scalar>("A", "Static recovery prefactor");
+  options.add_parameter<Scalar>("a", "Static recovery exponent");
 
   return options;
 }
@@ -80,15 +77,10 @@ ChabochePlasticHardening::set_value(bool out, bool dout_din, bool /*d2out_din2*/
   {
     auto I = imap_v<SR2>(_X.options());
 
-    if (_gamma_dot.is_dependent())
-      _X_dot.d(_gamma_dot) = g_term;
-
-    if (_NM.is_dependent())
-      _X_dot.d(_NM) = 2.0 / 3.0 * _C * _gamma_dot * I;
-
-    if (_X.is_dependent())
-      _X_dot.d(_X) =
-          -_g * _gamma_dot * I - _A * pow(s, _a - 3) * ((_a - 1) * neml2::outer(_X()) + s * s * I);
+    _X_dot.d(_gamma_dot) = g_term;
+    _X_dot.d(_NM) = 2.0 / 3.0 * _C * _gamma_dot * I;
+    _X_dot.d(_X) =
+        -_g * _gamma_dot * I - _A * pow(s, _a - 3) * ((_a - 1) * neml2::outer(_X()) + s * s * I);
 
     if (const auto * const C = nl_param("C"))
       _X_dot.d(*C) = 2.0 / 3.0 * _NM * _gamma_dot;

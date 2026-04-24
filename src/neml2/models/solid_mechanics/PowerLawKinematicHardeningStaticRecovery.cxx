@@ -47,11 +47,8 @@ PowerLawKinematicHardeningStaticRecovery::expected_options()
       "where \\f$ n \\f$ is the power law recovery exponent and \\f$\\tau\\f$ is the recovery "
       "rate.";
 
-  options.set_parameter<TensorName<Scalar>>("tau");
-  options.set("tau").doc() = "Static recovery rate";
-
-  options.set_parameter<TensorName<Scalar>>("n");
-  options.set("n").doc() = "Static recovery exponent";
+  options.add_parameter<Scalar>("tau", "Static recovery rate");
+  options.add_parameter<Scalar>("n", "Static recovery exponent");
 
   return options;
 }
@@ -77,9 +74,7 @@ PowerLawKinematicHardeningStaticRecovery::set_value(bool out, bool dout_din, boo
   if (dout_din)
   {
     auto I = imap_v<SR2>(_X.options());
-
-    if (_X.is_dependent())
-      _X_dot.d(_X) = -pow(s, _n - 3) * ((_n - 1) * neml2::outer(_X()) + s * s * I) / pow(_tau, _n);
+    _X_dot.d(_X) = -pow(s, _n - 3) * ((_n - 1) * neml2::outer(_X()) + s * s * I) / pow(_tau, _n);
 
     if (const auto * const tau = nl_param("tau"))
       _X_dot.d(*tau) = _n * pow(s / _tau, _n - 1) * _X / (_tau * _tau);

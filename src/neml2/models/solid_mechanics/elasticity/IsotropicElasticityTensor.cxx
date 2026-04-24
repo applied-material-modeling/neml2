@@ -42,7 +42,7 @@ IsotropicElasticityTensor::expected_options()
 IsotropicElasticityTensor::IsotropicElasticityTensor(const OptionSet & options)
   : ElasticityInterface<Model, 2>(options),
     _converter(_constant_types, _need_derivs),
-    _C(declare_output_variable<SSR4>(VariableName(PARAMETERS, name())))
+    _C(declare_output_variable<SSR4>(name()))
 {
 }
 

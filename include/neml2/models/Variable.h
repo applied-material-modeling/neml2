@@ -59,7 +59,7 @@ public:
 
   const TraceableTensorShape & dynamic_sizes() const override;
 
-  std::unique_ptr<VariableBase> clone(const VariableName & name = {},
+  std::unique_ptr<VariableBase> clone(std::optional<VariableName> name = std::nullopt,
                                       Model * owner = nullptr) const override;
 
   void ref(VariableBase & var) override;

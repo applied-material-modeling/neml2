@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    output_Scalar_names = 'state/internal/slip_hardening_rate'
+    output_Scalar_names = 'slip_hardening_rate'
     output_Scalar_values = 'rate'
-    input_Scalar_names = 'state/internal/slip_hardening state/internal/sum_slip_rates'
+    input_Scalar_names = 'slip_hardening sum_slip_rates'
     input_Scalar_values = 'tau_bar sum_slip'
   []
 []

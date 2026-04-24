@@ -75,14 +75,10 @@ public:
 
   bool operator!=(const OptionBase & other) const override;
 
-  /**
-   * \returns A read-only reference to the option value
-   */
+  /// @returns A read-only reference to the option value
   const T & get() const { return _value; }
 
-  /**
-   * \returns A writable reference to the option value
-   */
+  /// @returns A writable reference to the option value
   T & set() { return _value; }
 
   void print(std::ostream &) const override;

@@ -23,12 +23,9 @@
 // THE SOFTWARE.
 
 #include "neml2/base/Parser.h"
-#include "neml2/base/LabeledAxisAccessor.h"
 #include "neml2/misc/errors.h"
 #include "neml2/misc/types.h"
-
 #include "neml2/misc/string_utils.h"
-#include "neml2/misc/errors.h"
 
 namespace neml2
 {
@@ -67,21 +64,6 @@ parse<TensorShape>(const std::string & raw_str)
     }
   }
   return val;
-}
-
-template <>
-VariableName
-parse<VariableName>(const std::string & raw_str)
-{
-  auto tokens = split(raw_str, "/");
-  try
-  {
-    return VariableName(tokens);
-  }
-  catch (const NEMLException & err)
-  {
-    throw ParserException(err.what());
-  }
 }
 
 template <>

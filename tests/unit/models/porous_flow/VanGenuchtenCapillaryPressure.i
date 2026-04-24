@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/S'
+    input_Scalar_names = 'S'
     input_Scalar_values = 'S'
-    output_Scalar_names = 'state/Pc'
+    output_Scalar_names = 'Pc'
     output_Scalar_values = 'Pc'
     check_AD_parameter_derivatives = false
     derivative_abs_tol = 1e-7
@@ -31,8 +31,8 @@
     type = VanGenuchtenCapillaryPressure
     a = 0.333333333333333
     m = 0.7
-    effective_saturation = 'state/S'
-    capillary_pressure = 'state/Pc'
+    effective_saturation = 'S'
+    capillary_pressure = 'Pc'
     log_extension = true
     transition_saturation = 0.1
   []

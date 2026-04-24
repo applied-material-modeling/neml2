@@ -22,7 +22,7 @@ for i in range(100):
     model.G.requires_grad_()
 
     # Calculate loss
-    stress = model.value({"forces/E": strain_exp})["state/S"]
+    stress = model.value({"strain": strain_exp})["stress"]
     l = torch.linalg.norm(stress.torch() - stress_exp.torch()) ** 2
 
     # Record state

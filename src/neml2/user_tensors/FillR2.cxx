@@ -41,8 +41,7 @@ FillR2::expected_options()
                   "the tensor following the Voigt notation; when vector length is 9, the Scalar "
                   "values are used to fill the tensor in the row-major fashion.";
 
-  options.set<std::vector<TensorName<Scalar>>>("values");
-  options.set("values").doc() = "Scalars used to fill the R2";
+  options.add<std::vector<TensorName<Scalar>>>("values", "Scalars used to fill the R2");
 
   return options;
 }

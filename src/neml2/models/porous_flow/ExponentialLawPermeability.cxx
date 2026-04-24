@@ -24,7 +24,6 @@
 
 #include "neml2/models/porous_flow/ExponentialLawPermeability.h"
 #include "neml2/tensors/functions/exp.h"
-#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
@@ -38,14 +37,9 @@ ExponentialLawPermeability::expected_options()
       "a(\\varphi_o-\\varphi) \\right] \\f$ where \\f$ a \\f$ is the scaling parameter; \\f$ "
       "\\varphi_0 \\f$ and \\f$ K_0 \\f$ are the reference porosity and permeability respectively.";
 
-  options.set_parameter<TensorName<Scalar>>("reference_permeability");
-  options.set("reference_permeability").doc() = "the reference permeability";
-
-  options.set_parameter<TensorName<Scalar>>("reference_porosity");
-  options.set("reference_porosity").doc() = "the reference porosity";
-
-  options.set_parameter<TensorName<Scalar>>("scale");
-  options.set("scale").doc() = "Scaling constant in the exponential law";
+  options.add_parameter<Scalar>("reference_permeability", "The reference permeability");
+  options.add_parameter<Scalar>("reference_porosity", "The reference porosity");
+  options.add_parameter<Scalar>("scale", "Scaling constant in the exponential law");
 
   return options;
 }

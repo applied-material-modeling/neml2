@@ -25,13 +25,13 @@
 #pragma once
 
 #include <memory>
-
-#include "neml2/base/LabeledAxisAccessor.h"
+#include <string>
 
 namespace neml2
 {
 class Model;
 class VariableBase;
+using VariableName = std::string;
 
 /**
  * @brief Nonlinear parameter

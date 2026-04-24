@@ -40,19 +40,16 @@ ImplicitUpdate::expected_options()
   options.doc() =
       "Update an implicit model by solving the underlying nonlinear system of equations.";
 
-  options.set<std::string>("equation_system");
-  options.set("equation_system").doc() = "The nonlinear system of equations to solve";
-
-  options.set<std::string>("solver");
-  options.set("solver").doc() = "Solver used to solve the nonlinear system of equations";
+  options.add<std::string>("equation_system", "The nonlinear system of equations to solve");
+  options.add<std::string>("solver", "Solver used to solve the nonlinear system of equations");
 
   // No jitting :/
-  options.set<bool>("jit") = false;
-  options.set("jit").suppressed() = true;
+  options.set<bool>("jit", false);
+  options.suppress("jit");
 
   // deprecated
-  options.set<std::string>("implicit_model");
-  options.set("implicit_model").doc() = "Deprecated option. Use 'equation_system' instead.";
+  options.add_optional<std::string>("implicit_model",
+                                    "Deprecated option. Use 'equation_system' instead.");
 
   return options;
 }
@@ -67,14 +64,35 @@ ImplicitUpdate::ImplicitUpdate(const OptionSet & options)
               "https://applied-material-modeling.github.io/neml2/migration-200-210.html#eqsys for "
               "more information.");
 
+  auto ulayout = _sys->ulayout();
+  auto blayout = _sys->blayout();
+  neml_assert(
+      blayout.ngroup() == ulayout.ngroup(),
+      "The unknown variables and residuals of the nonlinear system must have the same number of "
+      "groups. Got ",
+      ulayout.ngroup(),
+      " and ",
+      blayout.ngroup(),
+      ".");
+  neml_assert(blayout.nvar() == ulayout.nvar(),
+              "The number of unknown variables and residuals of the nonlinear system must be the "
+              "same. Got ",
+              ulayout.nvar(),
+              " and ",
+              blayout.nvar(),
+              ".");
+
   // Take care of dependency registration:
   //   1. Input variables of the "implicit_model" should be *consumed* by *this* model.
   //   2. Output variables of the "implicit_model" on the "residual" subaxis should be *provided* by
   //      *this* model.
   const auto model = _sys->model_ptr();
   register_model(model, /*merge_input=*/true);
-  for (auto && [name, var] : model->output_variables())
-    clone_output_variable(*var, name.remount(STATE));
+  for (std::size_t i = 0; i < blayout.nvar(); ++i)
+  {
+    const auto & u = model->input_variable(ulayout.var(i));
+    clone_output_variable(u);
+  }
 }
 
 void

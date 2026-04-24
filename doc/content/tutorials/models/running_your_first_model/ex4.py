@@ -9,10 +9,10 @@ model = neml2.load_model("input.i", "my_model")
 strain = SR2.fill(0.1, 0.05, -0.03, 0.02, 0.06, 0.03)
 
 # Evaluate the model
-output = model.value({"forces/E": strain})
+output = model.value({"strain": strain})
 
 # Get the stress
-stress = output["state/S"]
+stress = output["stress"]
 
 print("strain:")
 print(strain)

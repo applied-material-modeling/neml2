@@ -42,29 +42,19 @@ PerSlipForestDislocationEvolution::expected_options()
       "Standard forest hardening model per slip system defined by \\f$ \\dot{\\rho}_i = "
       "(k_1 \\sqrt{\\rho_i} - k_2 \\rho_i) \\left| \\dot{\\gamma}_i \\right| \\f$.";
 
-  options.set_output("dislocation_density_rate") =
-      VariableName(STATE, "internal", "dislocation_density_rate");
-  options.set("dislocation_density_rate").doc() = "Per-slip dislocation density rate";
+  options.add_input("dislocation_density", "Per-slip dislocation density");
+  options.add_input("slip_rates", "Per-slip system slip rates");
 
-  options.set_input("dislocation_density") = VariableName(STATE, "internal", "dislocation_density");
-  options.set("dislocation_density").doc() = "Per-slip dislocation density";
-
-  options.set_input("slip_rates") = VariableName(STATE, "internal", "slip_rates");
-  options.set("slip_rates").doc() = "Per-slip system slip rates";
-
-  options.set_parameter<TensorName<Scalar>>("k1");
-  options.set("k1").doc() = "Hardening coefficient";
-
-  options.set_parameter<TensorName<Scalar>>("k2");
-  options.set("k2").doc() = "Recovery coefficient";
+  options.add_parameter<Scalar>("k1", "Hardening coefficient");
+  options.add_parameter<Scalar>("k2", "Recovery coefficient");
 
   return options;
 }
 
 PerSlipForestDislocationEvolution::PerSlipForestDislocationEvolution(const OptionSet & options)
   : Model(options),
-    _rho_dot(declare_output_variable<Scalar>("dislocation_density_rate")),
     _rho(declare_input_variable<Scalar>("dislocation_density")),
+    _rho_dot(declare_output_variable<Scalar>(rate_name(_rho.name()))),
     _gamma_dot(declare_input_variable<Scalar>("slip_rates")),
     _k1(declare_parameter<Scalar>("k1", "k1", true)),
     _k2(declare_parameter<Scalar>("k2", "k2", true))
@@ -83,11 +73,8 @@ PerSlipForestDislocationEvolution::set_value(bool out, bool dout_din, bool /*d2o
 
   if (dout_din)
   {
-    if (_rho.is_dependent())
-      _rho_dot.d(_rho) = (_k1 * 0.5 / sqrt_rho - _k2) * abs_gamma;
-
-    if (_gamma_dot.is_dependent())
-      _rho_dot.d(_gamma_dot) = hardening * sign(_gamma_dot());
+    _rho_dot.d(_rho) = (_k1 * 0.5 / sqrt_rho - _k2) * abs_gamma;
+    _rho_dot.d(_gamma_dot) = hardening * sign(_gamma_dot());
 
     if (const auto * const k1 = nl_param("k1"))
       _rho_dot.d(*k1) = sqrt_rho * abs_gamma;

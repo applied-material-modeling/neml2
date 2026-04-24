@@ -33,23 +33,14 @@ KinematicHardeningStaticRecovery::expected_options()
 {
   OptionSet options = Model::expected_options();
   options.doc() += "This object defines kinematic hardening static recovery on a backstress term.";
-
-  options.set_input("back_stress") = VariableName(STATE, "internal", "X");
-  options.set("back_stress").doc() = "Back stress";
-
-  options.set_output("back_stress_rate");
-  options.set("back_stress_rate").doc() =
-      "Back stress rate, defaults to back_stress + _recovery_rate";
-
+  options.add_input("back_stress", "Back stress");
   return options;
 }
 
 KinematicHardeningStaticRecovery::KinematicHardeningStaticRecovery(const OptionSet & options)
   : Model(options),
     _X(declare_input_variable<SR2>("back_stress")),
-    _X_dot(declare_output_variable<SR2>(options.get<VariableName>("back_stress_rate").empty()
-                                            ? _X.name().with_suffix("_recovery_rate")
-                                            : options.get<VariableName>("back_stress_rate")))
+    _X_dot(declare_output_variable<SR2>(rate_name(_X.name())))
 {
 }
 

@@ -39,20 +39,20 @@ def test_get_model():
 def test_input_type():
     pwd = Path(__file__).parent
     model = neml2.load_model(pwd / "test_Model.i", "model")
-    assert model.input_type("forces/t") == TensorType.Scalar
-    assert model.input_type("old_forces/t") == TensorType.Scalar
-    assert model.input_type("state/foo_rate") == TensorType.Scalar
-    assert model.input_type("state/foo") == TensorType.Scalar
-    assert model.input_type("old_state/foo") == TensorType.Scalar
-    assert model.input_type("state/bar_rate") == TensorType.Scalar
-    assert model.input_type("state/bar") == TensorType.Scalar
-    assert model.input_type("old_state/bar") == TensorType.Scalar
+    assert model.input_type("t") == TensorType.Scalar
+    assert model.input_type("t~1") == TensorType.Scalar
+    assert model.input_type("foo_rate") == TensorType.Scalar
+    assert model.input_type("foo") == TensorType.Scalar
+    assert model.input_type("foo~1") == TensorType.Scalar
+    assert model.input_type("bar_rate") == TensorType.Scalar
+    assert model.input_type("bar") == TensorType.Scalar
+    assert model.input_type("bar~1") == TensorType.Scalar
 
 
 def test_output_type():
     pwd = Path(__file__).parent
     model = neml2.load_model(pwd / "test_Model.i", "model")
-    assert model.output_type("residual/foo_bar") == TensorType.Scalar
+    assert model.output_type("foo_bar_residual") == TensorType.Scalar
 
 
 def test_forward():
@@ -61,51 +61,51 @@ def test_forward():
 
     # Note input variables can have different batch shapes
     x = {
-        "forces/t": Scalar.full((1, 2), (), 0.1),
-        "old_forces/t": Scalar.zeros((3, 1, 1)),
-        "state/foo_rate": Scalar.full(0.1),
-        "state/foo": Scalar.full(1.5),
-        "old_state/foo": Scalar.full((5, 2), (), 2),
-        "state/bar_rate": Scalar.full(-0.2),
-        "state/bar": Scalar.full(1.5),
-        "old_state/bar": Scalar.full(2.0),
+        "t": Scalar.full((1, 2), (), 0.1),
+        "t~1": Scalar.zeros((3, 1, 1)),
+        "foo_rate": Scalar.full(0.1),
+        "foo": Scalar.full(1.5),
+        "foo~1": Scalar.full((5, 2), (), 2),
+        "bar_rate": Scalar.full(-0.2),
+        "bar": Scalar.full(1.5),
+        "bar~1": Scalar.full(2.0),
     }
 
     def check_y(y):
-        val = y["residual/foo_bar"].torch()
+        val = y["foo_bar_residual"].torch()
         assert val.shape == (3, 5, 2)
         assert torch.allclose(val, torch.full((3, 5, 2), -0.99))
 
     def check_dy_dx(dy_dx):
-        val = dy_dx["residual/foo_bar"]["forces/t"].torch()
+        val = dy_dx["foo_bar_residual"]["t"].torch()
         assert val.shape == ()
         assert torch.allclose(val, torch.tensor(0.1))
 
-        val = dy_dx["residual/foo_bar"]["old_forces/t"].torch()
+        val = dy_dx["foo_bar_residual"]["t~1"].torch()
         assert val.shape == ()
         assert torch.allclose(val, torch.tensor(-0.1))
 
-        val = dy_dx["residual/foo_bar"]["old_state/bar"].torch()
+        val = dy_dx["foo_bar_residual"]["bar~1"].torch()
         assert val.shape == ()
         assert torch.allclose(val, torch.tensor(-1.0))
 
-        val = dy_dx["residual/foo_bar"]["old_state/foo"].torch()
+        val = dy_dx["foo_bar_residual"]["foo~1"].torch()
         assert val.shape == ()
         assert torch.allclose(val, torch.tensor(-1.0))
 
-        val = dy_dx["residual/foo_bar"]["state/bar"].torch()
+        val = dy_dx["foo_bar_residual"]["bar"].torch()
         assert val.shape == ()
         assert torch.allclose(val, torch.tensor(1.0))
 
-        val = dy_dx["residual/foo_bar"]["state/bar_rate"].torch()
+        val = dy_dx["foo_bar_residual"]["bar_rate"].torch()
         assert val.shape == (3, 1, 2)
         assert torch.allclose(val, torch.tensor(-0.1))
 
-        val = dy_dx["residual/foo_bar"]["state/foo"].torch()
+        val = dy_dx["foo_bar_residual"]["foo"].torch()
         assert val.shape == ()
         assert torch.allclose(val, torch.tensor(1.0))
 
-        val = dy_dx["residual/foo_bar"]["state/foo_rate"].torch()
+        val = dy_dx["foo_bar_residual"]["foo_rate"].torch()
         assert val.shape == (3, 1, 2)
         assert torch.allclose(val, torch.tensor(-0.1))
 

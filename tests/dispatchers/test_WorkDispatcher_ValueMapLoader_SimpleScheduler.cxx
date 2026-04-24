@@ -42,16 +42,16 @@ TEST_CASE("WorkDispatcher ValueMapLoader SimpleScheduler", "[dispatchers]")
   // Along which batch dimension to dispatch work
   const Size dynamic_dim = 1;
 
-  const auto strain_name = VariableName{"state", "strain"};
+  const auto strain_name = "strain";
   const auto strain0 = SR2::fill(0.1, 0.05, -0.01).dynamic_expand({5, 5});
   const auto strain1 = SR2::fill(0.2, 0.1, 0).dynamic_expand({5, 5});
   const auto strain = dynamic_linspace(strain0, strain1, 100, dynamic_dim);
 
-  const auto temperature_name = VariableName{"forces", "temperature"};
+  const auto temperature_name = "temperature";
   const auto temperature = Scalar::full(300).dynamic_expand({5, 1, 5});
   const auto x = ValueMap{{strain_name, strain}, {temperature_name, temperature}};
 
-  const auto stress_name = VariableName{"state", "stress"};
+  const auto stress_name = "stress";
   const auto stress = strain * temperature; // Not a "stress" but...
 
   auto func = [&strain_name, &temperature_name, &stress_name](ValueMap && x,
@@ -69,9 +69,9 @@ TEST_CASE("WorkDispatcher ValueMapLoader SimpleScheduler", "[dispatchers]")
   SECTION("cpu")
   {
     OptionSet options = SimpleScheduler::expected_options();
-    options.set<std::string>("device") = "cpu";
-    options.set<size_t>("batch_size") = 23;
-    options.set<size_t>("capacity") = 55;
+    options.set<std::string>("device", "cpu");
+    options.set<size_t>("batch_size", 23);
+    options.set<size_t>("capacity", 55);
     SimpleScheduler scheduler(options);
 
     SECTION("device") { REQUIRE(scheduler.devices() == std::vector<Device>{Device("cpu")}); }
@@ -108,9 +108,9 @@ TEST_CASE("WorkDispatcher ValueMapLoader SimpleScheduler", "[dispatchers]")
 
     auto device = Device("cuda:0");
     OptionSet options = SimpleScheduler::expected_options();
-    options.set<std::string>("device") = "cuda:0";
-    options.set<size_t>("batch_size") = 23;
-    options.set<size_t>("capacity") = 55;
+    options.set<std::string>("device", "cuda:0");
+    options.set<size_t>("batch_size", 23);
+    options.set<size_t>("capacity", 55);
     SimpleScheduler scheduler(options);
 
     SECTION("device") { REQUIRE(scheduler.devices() == std::vector<Device>{Device("cuda:0")}); }

@@ -35,11 +35,11 @@ TEST_CASE("OptionSet", "[base]")
   SECTION("class OptionSet")
   {
     auto options = OptionSet();
-    options.set<double>("p1") = 1.5;
-    options.set<std::string>("p2") = "foo";
-    options.set<unsigned int>("p3") = 3;
-    options.set<std::vector<std::string>>("p4") = {"a", "b", "c", "d", "e"};
-    options.set<std::vector<double>>("p5") = {1.2, -1.1, 100, 5.3};
+    options.add<double>("p1", 1.5, "");
+    options.add<std::string>("p2", "foo", "");
+    options.add<unsigned int>("p3", 3, "");
+    options.add<std::vector<std::string>>("p4", {"a", "b", "c", "d", "e"}, "");
+    options.add<std::vector<double>>("p5", {1.2, -1.1, 100, 5.3}, "");
 
     SECTION("size") { REQUIRE(options.size() == 5); }
 
@@ -60,19 +60,9 @@ TEST_CASE("OptionSet", "[base]")
       REQUIRE(!options.get("p1").suppressed());
     }
 
-    SECTION("set")
-    {
-      // The non-template version should allome to alter the metadata
-      std::string docstr = "This is an option named p1 with type double.";
-      options.set("p1").doc() = docstr;
-      options.set("p1").suppressed() = true;
-      REQUIRE(options.get("p1").doc() == docstr);
-      REQUIRE(options.get("p1").suppressed());
-    }
-
     SECTION("copy")
     {
-      OptionSet options2(options);
+      const auto options2 = options;
       REQUIRE(options2.get<double>("p1") == Catch::Approx(1.5));
       REQUIRE(options2.get<std::string>("p2") == "foo");
       REQUIRE(options2.get<unsigned int>("p3") == 3);

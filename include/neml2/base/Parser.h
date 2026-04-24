@@ -31,8 +31,8 @@
 namespace neml2
 {
 class InputFile;
-class LabeledAxisAccessor;
-using VariableName = LabeledAxisAccessor;
+class EnumSelection;
+class MultiEnumSelection;
 
 /**
  * @brief A parser is responsible for parsing an input file into a collection of options which
@@ -73,8 +73,6 @@ T parse(const std::string & raw_str);
 // template specializations for special option types
 template <>
 TensorShape parse<TensorShape>(const std::string & raw_str);
-template <>
-VariableName parse<VariableName>(const std::string & raw_str);
 template <>
 Device parse<Device>(const std::string & raw_str);
 } // namespace utils

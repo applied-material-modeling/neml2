@@ -35,36 +35,34 @@ ScalarMultiplication::expected_options()
 {
 
   OptionSet options = Model::expected_options();
-  options.doc() = "Calculate the multiplication (product) of multiple Scalar variable with a "
-                  "constant coefficient. Using reciprocal, one can have the reciprocity of "
-                  "variable 'a', aka. '1/a'";
+  options.doc() = "Calculate the product of multiple Scalar variables with a constant scaling "
+                  "coefficient. Using reciprocal, one can have the reciprocity of each variable";
 
-  options.set<std::vector<VariableName>>("from_var");
-  options.set("from_var").doc() = "Scalar variables to be multiplied";
+  options.set_private<bool>("define_second_derivatives", true);
 
-  options.set_output("to_var");
-  options.set("to_var").doc() = "The multiplicative product";
+  options.add<std::vector<VariableName>, FType::INPUT>("from", "Scalar variables to be multiplied");
+  options.add_output("to", "The multiplicative product");
 
-  options.set_parameter<TensorName<Scalar>>("coefficient") = {TensorName<Scalar>("1")};
-  options.set("coefficient").doc() = "The coefficient multiply to the final product";
+  options.add_parameter<Scalar>("scaling",
+                                {TensorName<Scalar>("1")},
+                                "The scaling coefficient to multiply to the final product");
 
-  options.set<std::vector<bool>>("reciprocal") = {false};
-  options.set("reciprocal").doc() =
+  options.add<std::vector<bool>>(
+      "reciprocal",
+      {false},
       "List of boolens, one for each variable, in which the reciprocity of the corresponding "
       "variable is taken. When the length of this list is 1, the same reciprocal condition applies "
-      "to all variables.";
-
-  options.set<bool>("define_second_derivatives") = true;
+      "to all variables.");
 
   return options;
 }
 
 ScalarMultiplication::ScalarMultiplication(const OptionSet & options)
   : Model(options),
-    _to(declare_output_variable<Scalar>("to_var")),
-    _A(declare_parameter<Scalar>("A", "coefficient"))
+    _to(declare_output_variable<Scalar>("to")),
+    _A(declare_parameter<Scalar>("scaling", "scaling"))
 {
-  for (const auto & fv : options.get<std::vector<VariableName>>("from_var"))
+  for (const auto & fv : options.get<std::vector<VariableName>>("from"))
     _from.push_back(&declare_input_variable<Scalar>(fv));
 
   _inv = options.get<std::vector<bool>>("reciprocal");
@@ -99,52 +97,47 @@ ScalarMultiplication::set_value(bool out, bool dout_din, bool d2out_din2)
   if (dout_din)
   {
     for (std::size_t i = 0; i < _from.size(); i++)
-      if (_from[i]->is_dependent())
-      {
-        auto r = _inv[i] ? -_A / (*_from[i]) / (*_from[i]) : _A;
-        for (std::size_t j = 0; j < _from.size(); j++)
-          if (i != j)
-          {
-            if (_inv[j])
-              r = r / (*_from[j]);
-            else
-              r = r * (*_from[j]);
-          }
-        _to.d(*_from[i]) = r;
-      }
+    {
+      auto r = _inv[i] ? -_A / (*_from[i]) / (*_from[i]) : _A;
+      for (std::size_t j = 0; j < _from.size(); j++)
+        if (i != j)
+        {
+          if (_inv[j])
+            r = r / (*_from[j]);
+          else
+            r = r * (*_from[j]);
+        }
+      _to.d(*_from[i]) = r;
+    }
   }
 
   if (d2out_din2)
   {
     for (std::size_t i = 0; i < _from.size(); i++)
-      if (_from[i]->is_dependent())
+    {
+      auto p = (_inv[i] ? -1.0 : 1.0);
+      for (std::size_t j = 0; j < _from.size(); j++)
       {
-        auto p = (_inv[i] ? -1.0 : 1.0);
-        for (std::size_t j = 0; j < _from.size(); j++)
+        auto q = (_inv[j] ? -1.0 : 1.0);
+        if (i != j)
         {
-          if (_from[j]->is_dependent())
-          {
-            auto q = (_inv[j] ? -1.0 : 1.0);
-            if (i != j)
-            {
-              auto r = _A * p * neml2::pow((*_from[i])(), (p - 1)) * q *
-                       neml2::pow((*_from[j])(), (q - 1));
-              for (std::size_t k = 0; k < _from.size(); k++)
-                if (k != i && k != j)
-                  r = r * (_inv[k] ? 1. / (*_from[k])() : (*_from[k])());
-              _to.d2(*_from[i], *_from[j]) = r;
-            }
-            else if (_inv[i])
-            {
-              auto r = _A * p * (p - 1) * neml2::pow((*_from[i])(), (p - 2));
-              for (std::size_t k = 0; k < _from.size(); k++)
-                if (k != i)
-                  r = r * (_inv[k] ? 1. / (*_from[k])() : (*_from[k])());
-              _to.d2(*_from[i], *_from[j]) = r;
-            }
-          }
+          auto r =
+              _A * p * neml2::pow((*_from[i])(), (p - 1)) * q * neml2::pow((*_from[j])(), (q - 1));
+          for (std::size_t k = 0; k < _from.size(); k++)
+            if (k != i && k != j)
+              r = r * (_inv[k] ? 1. / (*_from[k])() : (*_from[k])());
+          _to.d2(*_from[i], *_from[j]) = r;
+        }
+        else if (_inv[i])
+        {
+          auto r = _A * p * (p - 1) * neml2::pow((*_from[i])(), (p - 2));
+          for (std::size_t k = 0; k < _from.size(); k++)
+            if (k != i)
+              r = r * (_inv[k] ? 1. / (*_from[k])() : (*_from[k])());
+          _to.d2(*_from[i], *_from[j]) = r;
         }
       }
+    }
   }
 }
 } // namespace neml2

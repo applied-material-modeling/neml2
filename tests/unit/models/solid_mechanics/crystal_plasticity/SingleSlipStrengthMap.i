@@ -2,11 +2,11 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/internal/slip_hardening'
+    input_Scalar_names = 'slip_hardening'
     input_Scalar_values = 'hardening'
-    output_Tensor_names = 'state/internal/slip_strengths'
+    output_Tensor_names = 'slip_strengths'
     output_Tensor_values = '150'
-    output_with_intrsc_intmd_dims = 'state/internal/slip_strengths'
+    output_with_intrsc_intmd_dims = 'slip_strengths'
     output_intrsc_intmd_dims = '1'
     check_AD_parameter_derivatives = false
   []

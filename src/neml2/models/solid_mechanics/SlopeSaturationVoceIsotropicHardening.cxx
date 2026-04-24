@@ -43,17 +43,9 @@ SlopeSaturationVoceIsotropicHardening::expected_options()
                   "non-assocative manner.  This is sometimes handy, for example in supplementing "
                   "the model with static recovery.";
 
-  options.set_input("isotropic_hardening") = VariableName(STATE, "internal", "k");
-  options.set("isotropic_hardening").doc() = "Isotropic hardening variable";
-
-  options.set_input("isotropic_hardening_rate");
-  options.set("isotropic_hardening_rate").doc() =
-      "Rate of isotropic hardening, defaults to isotropic_hardening + _rate";
-
-  options.set_parameter<TensorName<Scalar>>("saturated_hardening");
-  options.set("saturated_hardening").doc() = "Saturated isotropic hardening";
-  options.set_parameter<TensorName<Scalar>>("initial_hardening_rate");
-  options.set("initial_hardening_rate").doc() = "Initial hardening rate";
+  options.add_input("isotropic_hardening", "Isotropic hardening variable");
+  options.add_parameter<Scalar>("saturated_hardening", "Saturated isotropic hardening");
+  options.add_parameter<Scalar>("initial_hardening_rate", "Initial hardening rate");
 
   return options;
 }
@@ -62,10 +54,7 @@ SlopeSaturationVoceIsotropicHardening::SlopeSaturationVoceIsotropicHardening(
     const OptionSet & options)
   : FlowRule(options),
     _h(declare_input_variable<Scalar>("isotropic_hardening")),
-    _h_dot(declare_output_variable<Scalar>(
-        options.get<VariableName>("isotropic_hardening_rate").empty()
-            ? _h.name().with_suffix("_rate")
-            : options.get<VariableName>("isotropic_hardening_rate"))),
+    _h_dot(declare_output_variable<Scalar>(rate_name(_h.name()))),
     _R(declare_parameter<Scalar>("R", "saturated_hardening", true)),
     _theta0(declare_parameter<Scalar>("theta0", "initial_hardening_rate", true))
 {
@@ -79,11 +68,8 @@ SlopeSaturationVoceIsotropicHardening::set_value(bool out, bool dout_din, bool /
 
   if (dout_din)
   {
-    if (_gamma_dot.is_dependent())
-      _h_dot.d(_gamma_dot) = sign(_R) * _theta0 * (1.0 - _h / _R);
-
-    if (_h.is_dependent())
-      _h_dot.d(_h) = -sign(_R) * _theta0 / _R * _gamma_dot;
+    _h_dot.d(_gamma_dot) = sign(_R) * _theta0 * (1.0 - _h / _R);
+    _h_dot.d(_h) = -sign(_R) * _theta0 / _R * _gamma_dot;
 
     if (const auto * const R = nl_param("R"))
       _h_dot.d(*R) = _gamma_dot * _h * sign(_R) * _theta0 / (_R * _R);

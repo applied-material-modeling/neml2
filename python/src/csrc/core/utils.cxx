@@ -22,8 +22,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "neml2/models/map_types.h"
 #include "neml2/base/Parser.h"
+#include "neml2/tensors/Tensor.h"
 #include "neml2/tensors/shape_utils.h"
 
 #include <pybind11/pytypes.h>
@@ -85,7 +85,7 @@ unpack_tensor(const py::handle & pyval,
               const std::function<TensorShapeRef(const VariableName &)> & base_shape_fn_j,
               const std::array<VariableName, D> & key)
 {
-  const auto key_str = key[0].str() + (D > 1 ? '/' + key[1].str() : "");
+  const auto key_str = key[0] + (D > 1 ? '/' + key[1] : "");
   std::array<TensorShapeRef, D> base_shapes;
   base_shapes[0] = base_shape_fn_i ? base_shape_fn_i(key[0]) : TensorShapeRef{};
   if constexpr (D > 1)
@@ -115,7 +115,7 @@ unpack_value_map(const py::dict & pyvals,
   ValueMap unpacked;
   for (const auto & [pykey, pyval] : pyvals)
   {
-    const auto key = unpack_variable_name(pykey);
+    const auto key = pykey.cast<VariableName>();
     const auto val = unpack_tensor<1>(pyval, assembly, base_shape_fn, base_shape_fn, {key});
     unpacked[key] = val;
   }
@@ -131,14 +131,14 @@ unpack_deriv_map(const py::dict & pyderivs,
   DerivMap unpacked;
   for (const auto & [pykeyi, pyvals] : pyderivs)
   {
-    const auto keyi = unpack_variable_name(pykeyi);
+    const auto keyi = pykeyi.cast<VariableName>();
 
     if (!py::isinstance<py::dict>(pyvals))
       throw py::value_error("Dictionary values must be convertible to dict");
 
     for (const auto & [pykeyj, pyval] : pyvals.cast<py::dict>())
     {
-      const auto keyj = unpack_variable_name(pykeyj);
+      const auto keyj = pykeyj.cast<VariableName>();
       const auto val =
           unpack_tensor<2>(pyval, assembly, base_shape_fn_i, base_shape_fn_j, {keyi, keyj});
       unpacked[keyi][keyj] = val;
@@ -152,7 +152,7 @@ pack_value_map(const ValueMap & vals)
 {
   std::map<std::string, Tensor> dict;
   for (const auto & [key, val] : vals)
-    dict[key.str()] = val;
+    dict[key] = val;
   return dict;
 }
 
@@ -161,17 +161,6 @@ pack_deriv_map(const DerivMap & derivs)
 {
   std::map<std::string, std::map<std::string, Tensor>> dict;
   for (const auto & [keyi, vals] : derivs)
-    dict[keyi.str()] = pack_value_map(vals);
+    dict[keyi] = pack_value_map(vals);
   return dict;
-}
-
-VariableName
-unpack_variable_name(const py::handle & obj)
-{
-  if (py::isinstance<py::str>(obj))
-    return utils::parse<VariableName>(obj.cast<std::string>());
-  else if (py::isinstance<VariableName>(obj))
-    return obj.cast<VariableName>();
-  else
-    throw py::cast_error("Cannot convert object to VariableName");
 }

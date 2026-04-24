@@ -41,17 +41,11 @@ LinearlyInterpolateToCellEdges::expected_options()
       "Linearly interpolate cell-centered values to cell edges using cell center and edge "
       "positions.";
 
-  options.set_parameter<TensorName<Scalar>>("cell_values");
-  options.set("cell_values").doc() = "Cell-centered values to interpolate.";
+  options.add_parameter<Scalar>("cell_values", "Cell-centered values to interpolate.");
+  options.add_parameter<Scalar>("cell_centers", "Cell center positions.");
+  options.add_parameter<Scalar>("cell_edges", "Cell edge positions.");
 
-  options.set_parameter<TensorName<Scalar>>("cell_centers");
-  options.set("cell_centers").doc() = "Cell center positions.";
-
-  options.set_parameter<TensorName<Scalar>>("cell_edges");
-  options.set("cell_edges").doc() = "Cell edge positions.";
-
-  options.set_output("edge_values") = VariableName(STATE, "q_edge");
-  options.set("edge_values").doc() = "Linearly interpolated cell-edge values.";
+  options.add_output("edge_values", "Linearly interpolated cell-edge values.");
 
   return options;
 }

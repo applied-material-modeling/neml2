@@ -47,7 +47,7 @@ TestNonlinearSystem::TestNonlinearSystem(TensorShape B,
 std::shared_ptr<AxisLayout>
 TestNonlinearSystem::setup_ulayout()
 {
-  std::vector<std::vector<LabeledAxisAccessor>> vars(_unknown_group_sizes.size());
+  std::vector<std::vector<VariableName>> vars(_unknown_group_sizes.size());
   std::vector<TensorShape> intmd_shapes(_n, TensorShape{});
   std::vector<TensorShape> base_shapes(_n, TensorShape{});
   std::size_t idx = 0;
@@ -55,7 +55,7 @@ TestNonlinearSystem::setup_ulayout()
   {
     vars[g].resize(_unknown_group_sizes[g]);
     for (Size i = 0; i < _unknown_group_sizes[g]; i++, idx++)
-      vars[g][i] = LabeledAxisAccessor(STATE, "u_" + std::to_string(idx));
+      vars[g][i] = "u_" + std::to_string(idx);
   }
   std::vector<AxisLayout::IStructure> istr(_unknown_group_sizes.size(),
                                            AxisLayout::IStructure::DENSE);
@@ -65,7 +65,7 @@ TestNonlinearSystem::setup_ulayout()
 std::shared_ptr<AxisLayout>
 TestNonlinearSystem::setup_glayout()
 {
-  std::vector<std::vector<LabeledAxisAccessor>> vars;
+  std::vector<std::vector<VariableName>> vars;
   std::vector<TensorShape> intmd_shapes, base_shapes;
   std::vector<AxisLayout::IStructure> istr;
   return std::make_shared<AxisLayout>(vars, intmd_shapes, base_shapes, istr);
@@ -74,7 +74,7 @@ TestNonlinearSystem::setup_glayout()
 std::shared_ptr<AxisLayout>
 TestNonlinearSystem::setup_blayout()
 {
-  std::vector<std::vector<LabeledAxisAccessor>> vars(_residual_group_sizes.size());
+  std::vector<std::vector<VariableName>> vars(_residual_group_sizes.size());
   std::vector<TensorShape> intmd_shapes(_n, TensorShape{});
   std::vector<TensorShape> base_shapes(_n, TensorShape{});
   std::size_t idx = 0;
@@ -82,7 +82,7 @@ TestNonlinearSystem::setup_blayout()
   {
     vars[g].resize(_residual_group_sizes[g]);
     for (Size i = 0; i < _residual_group_sizes[g]; i++, idx++)
-      vars[g][i] = LabeledAxisAccessor(RESIDUAL, "r_" + std::to_string(idx));
+      vars[g][i] = "r_" + std::to_string(idx);
   }
   std::vector<AxisLayout::IStructure> istr(_residual_group_sizes.size(),
                                            AxisLayout::IStructure::DENSE);

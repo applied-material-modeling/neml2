@@ -27,7 +27,6 @@
 #include "neml2/tensors/functions/diagonalize.h"
 #include "neml2/tensors/functions/diff.h"
 #include "neml2/tensors/functions/imap.h"
-#include "neml2/tensors/indexing.h"
 
 namespace neml2
 {
@@ -40,17 +39,11 @@ FiniteVolumeGradient::expected_options()
   options.doc() =
       "Compute prefactor-weighted gradients at cell edges using first-order reconstruction.";
 
-  options.set_input("u") = VariableName(STATE, "u");
-  options.set("u").doc() = "Cell-averaged field values.";
-
-  options.set_parameter<TensorName<Scalar>>("prefactor") = "1";
-  options.set("prefactor").doc() = "Cell-edge prefactor values (defaults to 1).";
-
-  options.set_parameter<TensorName<Scalar>>("dx");
-  options.set("dx").doc() = "Cell center spacing between adjacent cells.";
-
-  options.set_output("grad_u") = VariableName(STATE, "grad_u");
-  options.set("grad_u").doc() = "Cell-edge prefactor-weighted gradients.";
+  options.add_input("u", "Cell-averaged field values.");
+  options.add_parameter<Scalar>(
+      "prefactor", TensorName<Scalar>("1"), "Cell-edge prefactor values (defaults to 1).");
+  options.add_parameter<Scalar>("dx", "Cell center spacing between adjacent cells.");
+  options.add_output("grad_u", "Cell-edge prefactor-weighted gradients.");
 
   return options;
 }
@@ -87,8 +80,7 @@ FiniteVolumeGradient::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
     const auto S_diff = intmd_diff(diag_u, 1, 0);
 
     // dgrad_u/du = -prefactor / dx * (S_right - S_left)
-    if (_u.is_dependent())
-      _grad_u.d(_u, 2, 1, 1) = (-prefactor_vec * inv_dx).intmd_unsqueeze(1) * S_diff;
+    _grad_u.d(_u, 2, 1, 1) = (-prefactor_vec * inv_dx).intmd_unsqueeze(1) * S_diff;
 
     // dgrad_u/dprefactor = -du / dx * I
     if (const auto * const prefactor = nl_param("prefactor"))

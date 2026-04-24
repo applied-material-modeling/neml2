@@ -54,6 +54,16 @@
     end = max_strain
     nstep = 100
   []
+  [s1_0]
+    type = FullScalar
+    batch_shape = '(20)'
+    value = 0
+  []
+  [s2_0]
+    type = FullScalar
+    batch_shape = '(20)'
+    value = 0
+  []
   [A0]
     type = Tensor
     values = "1e-6 1e-6 1e-6 1e-6 1e-6 1e-6 1e-6 1e-6 1e-6
@@ -104,11 +114,15 @@
 
 [Drivers]
   [driver]
-    type = SDTSolidMechanicsDriver
+    type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    prescribed_strain = 'strains'
-    prescribed_temperature = 'temperatures'
+    force_SR2_names = 'E'
+    force_SR2_values = 'strains'
+    force_Scalar_names = 'temperature'
+    force_Scalar_values = 'temperatures'
+    ic_Scalar_names = 's1 s2'
+    ic_Scalar_values = 's1_0 s2_0'
     save_as = 'result.pt'
   []
   [regression]
@@ -124,21 +138,21 @@
   #####################################################################################
   [trial_elastic_strain]
     type = SR2LinearCombination
-    from_var = 'forces/E old_state/Ep'
-    to_var = 'forces/Ee'
-    coefficients = '1 -1'
+    from = 'E plastic_strain~1'
+    to = 'Ee_trial'
+    weights = '1 -1'
   []
   [trial_cauchy_stress]
     type = LinearIsotropicElasticity
     coefficients = '1e5 0.3'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
-    strain = 'forces/Ee'
-    stress = 'forces/S'
+    strain = 'Ee_trial'
+    stress = 'S_trial'
   []
   [trial_flow_direction]
     type = AssociativeJ2FlowDirection
-    mandel_stress = 'forces/S'
-    flow_direction = 'forces/N'
+    mandel_stress = 'S_trial'
+    flow_direction = 'N_trial'
   []
   [trial_state]
     type = ComposedModel
@@ -146,39 +160,38 @@
   []
 
   #####################################################################################
-  # Stress update
+  # Stress update (forward Euler in plastic strain using trial flow direction)
   #####################################################################################
   [ep_rate]
     type = ScalarVariableRate
-    variable = 'state/ep'
-    rate = 'state/ep_rate'
+    variable = 'equivalent_plastic_strain'
+    time = 't'
   []
-  [plastic_strain_rate]
+  [plastic_strain_rate_model]
     type = AssociativePlasticFlow
-    flow_direction = 'forces/N'
-    flow_rate = 'state/ep_rate'
-    plastic_strain_rate = 'state/Ep_rate'
+    flow_direction = 'N_trial'
+    flow_rate = 'equivalent_plastic_strain_rate'
+    plastic_strain_rate = 'plastic_strain_rate'
   []
-  [plastic_strain]
+  [plastic_strain_update]
     type = SR2ForwardEulerTimeIntegration
-    variable = 'state/Ep'
+    variable = 'plastic_strain'
   []
   [plastic_update]
     type = ComposedModel
-    models = 'ep_rate plastic_strain_rate plastic_strain'
+    models = 'ep_rate plastic_strain_rate_model plastic_strain_update'
   []
   [elastic_strain]
     type = SR2LinearCombination
-    from_var = 'forces/E state/Ep'
-    to_var = 'state/Ee'
-    coefficients = '1 -1'
+    from = 'E plastic_strain'
+    to = 'elastic_strain'
+    weights = '1 -1'
   []
   [cauchy_stress]
     type = LinearIsotropicElasticity
     coefficients = '1e5 0.3'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
-    strain = 'state/Ee'
-    stress = 'state/S'
+    strain = 'elastic_strain'
   []
   [stress_update]
     type = ComposedModel
@@ -186,23 +199,24 @@
   []
 
   #####################################################################################
-  # Compute the rates of equivalent plastic strain and internal variables
+  # ROM rate model and residuals
   #####################################################################################
   [vonmises]
     type = SR2Invariant
     invariant_type = 'VONMISES'
-    tensor = 'state/S'
-    invariant = 'state/s'
+    tensor = 'stress'
+    invariant = 'vonmises_stress'
   []
   [rom]
     type = TabulatedPolynomialModel
-    von_mises_stress = 'state/s'
-    temperature = 'forces/T'
-    internal_state_1 = 'state/s1'
-    internal_state_2 = 'state/s2'
-    equivalent_plastic_strain_rate = 'state/ep_rate'
-    internal_state_1_rate = 'state/s1_rate'
-    internal_state_2_rate = 'state/s2_rate'
+    jit = false
+    von_mises_stress = 'vonmises_stress'
+    temperature = 'temperature'
+    internal_state_1 = 's1'
+    internal_state_2 = 's2'
+    equivalent_plastic_strain_rate = 'ep_rate_from_rom'
+    internal_state_1_rate = 's1_rate'
+    internal_state_2_rate = 's2_rate'
     A0 = 'A0'
     A1 = 'A1'
     A2 = 'A2'
@@ -211,22 +225,23 @@
     temperature_tile_lower_bounds = 'T_lb'
     temperature_tile_upper_bounds = 'T_ub'
   []
-  [integrate_ep]
-    type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/ep'
+  [ep_residual]
+    type = ScalarLinearCombination
+    from = 'equivalent_plastic_strain_rate ep_rate_from_rom'
+    to = 'equivalent_plastic_strain_residual'
+    weights = '1 -1'
   []
   [integrate_s1]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/s1'
+    variable = 's1'
   []
   [integrate_s2]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/s2'
+    variable = 's2'
   []
   [rate]
     type = ComposedModel
-    models = "plastic_update stress_update vonmises rom
-              integrate_ep integrate_s1 integrate_s2"
+    models = 'ep_rate plastic_strain_rate_model plastic_strain_update elastic_strain cauchy_stress vonmises rom ep_residual integrate_s1 integrate_s2'
   []
 []
 
@@ -234,6 +249,8 @@
   [eq_sys]
     type = NonlinearSystem
     model = 'rate'
+    unknowns = 'equivalent_plastic_strain s1 s2'
+    residuals = 'equivalent_plastic_strain_residual s1_residual s2_residual'
   []
 []
 
@@ -255,13 +272,9 @@
     equation_system = 'eq_sys'
     solver = 'newton'
   []
-
-  #####################################################################################
-  # Put the models together
-  #####################################################################################
   [model]
     type = ComposedModel
     models = 'trial_state radial_return plastic_update stress_update'
-    additional_outputs = 'state/ep state/Ep'
+    additional_outputs = 'equivalent_plastic_strain plastic_strain s1 s2'
   []
 []

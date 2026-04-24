@@ -37,10 +37,9 @@ LinearIsotropicHardening::expected_options()
       " following a linear relationship, i.e., \\f$ h = K \\bar{\\varepsilon}_p \\f$ where "
       "\\f$ K \\f$ is the hardening modulus.";
 
-  options.set<bool>("define_second_derivatives") = true;
+  options.set_private<bool>("define_second_derivatives", true);
 
-  options.set_parameter<TensorName<Scalar>>("hardening_modulus");
-  options.set("hardening_modulus").doc() = "Hardening modulus";
+  options.add_parameter<Scalar>("hardening_modulus", "Hardening modulus");
 
   return options;
 }
@@ -52,18 +51,12 @@ LinearIsotropicHardening::LinearIsotropicHardening(const OptionSet & options)
 }
 
 void
-LinearIsotropicHardening::set_value(bool out, bool dout_din, bool d2out_din2)
+LinearIsotropicHardening::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   if (out)
     _h = _K * _ep;
 
   if (dout_din)
-    if (_ep.is_dependent())
-      _h.d(_ep) = _K;
-
-  if (d2out_din2)
-  {
-    // zero
-  }
+    _h.d(_ep) = _K;
 }
 } // namespace neml2

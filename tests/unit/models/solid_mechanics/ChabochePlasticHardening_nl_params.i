@@ -2,11 +2,11 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/internal/gamma_rate state/C state/g state/A state/a'
+    input_Scalar_names = 'flow_rate C g A a'
     input_Scalar_values = '0.01 1000.0 10.0 1.0e-6 2.1'
-    input_SR2_names = 'state/internal/NM state/internal/X'
+    input_SR2_names = 'flow_direction back_stress'
     input_SR2_values = 'NM X'
-    output_SR2_names = 'state/internal/X_rate'
+    output_SR2_names = 'back_stress_rate'
     output_SR2_values = 'X_rate'
     value_abs_tol = 1.0e-4
   []
@@ -30,10 +30,10 @@
 [Models]
   [model0]
     type = ChabochePlasticHardening
-    C = 'state/C'
-    g = 'state/g'
-    A = 'state/A'
-    a = 'state/a'
+    C = 'C'
+    g = 'g'
+    A = 'A'
+    a = 'a'
   []
   [model]
     type = ComposedModel

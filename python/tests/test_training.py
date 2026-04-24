@@ -31,7 +31,7 @@ import neml2
 def test_parameter_gradient():
     """
     Test that we can compute parameter gradients through a model.
-    This test case is setup mimicking pyzag workflow where the input and output are represented as dense, flat vector.
+    This test case is setup mimicking pyzag workflow.
     """
     pwd = Path(__file__).parent
     model = neml2.load_model(pwd / "test_training.i", "model")
@@ -43,12 +43,12 @@ def test_parameter_gradient():
     xv = torch.linspace(0, 0.2, 26).expand(*B, -1)
     xv = neml2.Tensor(xv, len(B))
     x = {
-        "forces/E": xv.base[:6],
-        "forces/t": xv.base[6],
-        "old_forces/E": xv.base[7:13],
-        "old_forces/t": xv.base[13],
-        "old_state/S": xv.base[14:20],
-        "state/S": xv.base[20:26],
+        "strain": xv.base[:6],
+        "t": xv.base[6],
+        "strain~1": xv.base[7:13],
+        "t~1": xv.base[13],
+        "stress~1": xv.base[14:20],
+        "stress": xv.base[20:26],
     }
 
     # Say I want to get the parameter gradient on the flow viscosity
@@ -56,7 +56,7 @@ def test_parameter_gradient():
     p.requires_grad_(True)
 
     # Evaluate the model and the loss function
-    y = model.value(x)["state/S"]
+    y = model.value(x)["stress"]
 
     # Calculate the loss function
     f = torch.norm(y.torch())

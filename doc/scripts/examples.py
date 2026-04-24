@@ -67,8 +67,8 @@ if not "site-packages" in neml2.__path__[0]:
 
 def run_example(path: Path, cmd_gen) -> tuple[bool, str]:
     msg = "\n"
-    msg += "running example: {}\n".format(path.name)
     msg += "changing directory to: {}\n".format(path.parent)
+    msg += "running example: {}\n".format(path.name)
     cmd = cmd_gen(path)
     result = subprocess.run(cmd, cwd=path.parent, capture_output=True, text=True)
     if result.returncode == 0:

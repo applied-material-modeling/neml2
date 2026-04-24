@@ -39,10 +39,9 @@ LinearKinematicHardening::expected_options()
   options.doc() += " following a linear relationship, i.e., \\f$ \\boldsymbol{X} = H "
                    "\\boldsymbol{K}_p \\f$ where \\f$ H \\f$ is the hardening modulus.";
 
-  options.set<bool>("define_second_derivatives") = true;
+  options.set_private<bool>("define_second_derivatives", true);
 
-  options.set_parameter<TensorName<Scalar>>("hardening_modulus");
-  options.set("hardening_modulus").doc() = "Hardening modulus";
+  options.add_parameter<Scalar>("hardening_modulus", "Hardening modulus");
 
   return options;
 }
@@ -54,23 +53,17 @@ LinearKinematicHardening::LinearKinematicHardening(const OptionSet & options)
 }
 
 void
-LinearKinematicHardening::set_value(bool out, bool dout_din, bool d2out_din2)
+LinearKinematicHardening::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   if (out)
     _X = _H * _Kp;
 
   if (dout_din)
   {
-    if (_Kp.is_dependent())
-      _X.d(_Kp) = _H * imap_v<SR2>(_H.options());
+    _X.d(_Kp) = _H * imap_v<SR2>(_H.options());
 
     if (const auto * const H = nl_param("H"))
       _X.d(*H) = _Kp();
-  }
-
-  if (d2out_din2)
-  {
-    // zero
   }
 }
 } // namespace neml2

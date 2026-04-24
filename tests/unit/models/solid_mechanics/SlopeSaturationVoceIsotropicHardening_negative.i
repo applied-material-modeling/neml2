@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/internal/gamma_rate state/internal/k'
+    input_Scalar_names = 'flow_rate isotropic_hardening'
     input_Scalar_values = '0.1 50.0'
-    output_Scalar_names = 'state/internal/k_rate'
+    output_Scalar_names = 'isotropic_hardening_rate'
     output_Scalar_values = '-16.5'
   []
 []

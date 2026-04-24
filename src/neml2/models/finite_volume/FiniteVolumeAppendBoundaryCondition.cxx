@@ -38,34 +38,30 @@ FiniteVolumeAppendBoundaryCondition::expected_options()
   OptionSet options = Model::expected_options();
   options.doc() = "Append a boundary condition value to the intermediate dimension.";
 
-  options.set<VariableName>("input");
-  options.set("input").doc() = "Input tensor to append the boundary condition to.";
-
-  options.set_parameter<TensorName<Scalar>>("bc_value");
-  options.set("bc_value").doc() = "Boundary condition value to append.";
-
-  options.set_output("output");
-  options.set("output").doc() =
-      "Output tensor name. Defaults to input + '_with_bc_left' or '_with_bc_right'.";
+  options.add_input("input", "Input tensor to append the boundary condition to.");
+  options.add_parameter<Scalar>("bc_value", "Boundary condition value to append.");
+  options.add_optional_output(
+      "output", "Output tensor name. Defaults to input + '_with_bc_left' or '_with_bc_right'.");
 
   EnumSelection side_selection(
       {"left", "right"}, {static_cast<int>(Side::LEFT), static_cast<int>(Side::RIGHT)}, "left");
-  options.set<EnumSelection>("side") = side_selection;
-  options.set("side").doc() =
-      "Which side to append the boundary condition value to. Options are: " + side_selection.join();
+  options.add<EnumSelection>("side",
+                             side_selection,
+                             "Which side to append the boundary condition value to. Options are: " +
+                                 side_selection.join());
 
   return options;
 }
 
 FiniteVolumeAppendBoundaryCondition::FiniteVolumeAppendBoundaryCondition(const OptionSet & options)
   : Model(options),
-    _input(declare_input_variable<Scalar>(options.get<VariableName>("input"))),
+    _input(declare_input_variable<Scalar>("input")),
     _bc_value(declare_parameter<Scalar>("bc_value", "bc_value", true)),
     _side(options.get<EnumSelection>("side").as<Side>()),
-    _output(options.get("output").user_specified()
+    _output(options.defined("output")
                 ? declare_output_variable<Scalar>("output")
-                : declare_output_variable<Scalar>(options.get<VariableName>("input").with_suffix(
-                      _side == Side::LEFT ? "_with_bc_left" : "_with_bc_right")))
+                : declare_output_variable<Scalar>(
+                      _input.name() + (_side == Side::LEFT ? "_with_bc_left" : "_with_bc_right")))
 {
 }
 
@@ -101,13 +97,10 @@ FiniteVolumeAppendBoundaryCondition::set_value(bool out, bool dout_din, bool /*d
         (_side == Side::LEFT ? intmd_cat({bc_map, zero_vec}, 0) : intmd_cat({zero_vec, bc_map}, 0));
     const auto bc_mat = bc_vec.intmd_unsqueeze(1); // (N+1) x 1
 
-    if (_input.is_dependent())
-    {
-      if (_side == Side::LEFT)
-        _output.d(_input, 2, 1, 1) = intmd_cat({zero_row, diag_in}, 0);
-      else
-        _output.d(_input, 2, 1, 1) = intmd_cat({diag_in, zero_row}, 0);
-    }
+    if (_side == Side::LEFT)
+      _output.d(_input, 2, 1, 1) = intmd_cat({zero_row, diag_in}, 0);
+    else
+      _output.d(_input, 2, 1, 1) = intmd_cat({diag_in, zero_row}, 0);
 
     if (const auto * const bc = nl_param("bc_value"))
       _output.d(*bc, 2, 1, 1) = bc_mat;

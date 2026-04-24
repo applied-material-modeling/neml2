@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    output_Scalar_names = 'state/internal/slip_rates'
+    output_Scalar_names = 'slip_rates'
     output_Scalar_values = 'rates'
-    input_Scalar_names = 'state/internal/resolved_shears state/internal/slip_strengths state/gamma0 state/n'
+    input_Scalar_names = 'resolved_shears slip_strengths gamma0 n'
     input_Scalar_values = 'tau tau_bar 1.0e-3 5.1'
     check_AD_parameter_derivatives = false
     derivative_rel_tol = 0
@@ -40,8 +40,8 @@
 [Models]
   [model0]
     type = PowerLawSlipRule
-    n = 'state/n'
-    gamma0 = 'state/gamma0'
+    n = 'n'
+    gamma0 = 'gamma0'
   []
   [model]
     type = ComposedModel

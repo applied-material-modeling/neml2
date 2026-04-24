@@ -23,7 +23,6 @@
 // THE SOFTWARE.
 
 #include "TorchScriptFlowRate.h"
-#include "neml2/misc/assertions.h"
 #include "neml2/tensors/Scalar.h"
 
 using namespace neml2;
@@ -35,15 +34,15 @@ TorchScriptFlowRate::expected_options()
 {
   auto options = Model::expected_options();
   // Model inputs
-  options.set<VariableName>("von_mises_stress") = VariableName(STATE, "s");
-  options.set<VariableName>("temperature") = VariableName(FORCES, "T");
+  options.add_input("von_mises_stress", "The von Mises stress");
+  options.add_input("temperature", "The temperature");
   // Model outputs
-  options.set<VariableName>("equivalent_plastic_strain_rate") = VariableName(STATE, "ep_rate");
+  options.add_output("equivalent_plastic_strain_rate", "The equivalent plastic strain rate");
   // The machine learning model
-  options.set<std::string>("torch_script");
+  options.add<std::string>("torch_script", "The path to the TorchScript model");
   // No jitting :/
-  options.set<bool>("jit") = false;
-  options.set("jit").suppressed() = true;
+  options.set<bool>("jit", false);
+  options.suppress("jit");
   return options;
 }
 

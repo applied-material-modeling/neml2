@@ -37,12 +37,11 @@ IsotropicMandelStress::expected_options()
   OptionSet options = MandelStress::expected_options();
   options.doc() += " For isotropic material under small deformation, the Mandel stress and the "
                    "Cauchy stress coincide.";
-
   return options;
 }
 
 void
-IsotropicMandelStress::set_value(bool out, bool dout_din, bool d2out_din2)
+IsotropicMandelStress::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   // Isotropic mandel stress is just the Cauchy stress
 
@@ -50,12 +49,6 @@ IsotropicMandelStress::set_value(bool out, bool dout_din, bool d2out_din2)
     _M = _S();
 
   if (dout_din)
-    if (_S.is_dependent())
-      _M.d(_S) = imap_v<SR2>(_S.options());
-
-  if (d2out_din2)
-  {
-    // zero
-  }
+    _M.d(_S) = imap_v<SR2>(_S.options());
 }
 } // namespace neml2

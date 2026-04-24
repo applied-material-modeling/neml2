@@ -1,0 +1,48 @@
+[Drivers]
+  [unit]
+    type = ModelUnitTest
+    model = 'E'
+    input_Scalar_names = 'T'
+    input_Scalar_values = '300'
+    output_Scalar_names = 'E'
+    output_Scalar_values = '188911.6020499754'
+    check_second_derivatives = true
+    check_AD_parameter_derivatives = false
+  []
+[]
+
+[Models]
+  [E]
+    type = ScalarLinearInterpolation
+    argument = 'T'
+    abscissa = 'T'
+    ordinate = 'E'
+  []
+[]
+
+[Tensors]
+  [T0]
+    type = FullScalar
+    batch_shape = '(7,8,1)'
+    value = 273.15
+  []
+  [T1]
+    type = FullScalar
+    batch_shape = '(7,8,1)'
+    value = 2000
+  []
+  [T]
+    type = LinspaceScalar
+    start = 'T0'
+    end = 'T1'
+    nstep = 100
+    group = 'intermediate'
+  []
+  [E]
+    type = LinspaceScalar
+    start = 1.9e5
+    end = 1.2e5
+    nstep = 100
+    group = 'intermediate'
+  []
+[]

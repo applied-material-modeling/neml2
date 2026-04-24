@@ -1,18 +1,19 @@
 [Models]
   [rate]
     type = SampleRateModel
+    temperature = 'T'
   []
   [integrate_foo]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/foo'
+    variable = 'foo'
   []
   [integrate_bar]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/bar'
+    variable = 'bar'
   []
   [integrate_baz]
     type = SR2BackwardEulerTimeIntegration
-    variable = 'state/baz'
+    variable = 'baz'
   []
   [implicit_rate]
     type = ComposedModel
@@ -24,25 +25,21 @@
   [two_groups]
     type = NonlinearSystem
     model = 'implicit_rate'
-    unknowns = 'state/foo state/bar; state/baz'
-    residuals = 'residual/foo residual/bar; residual/baz'
+    unknowns = 'foo bar; baz'
   []
   [three_groups]
     type = NonlinearSystem
     model = 'implicit_rate'
-    unknowns = 'state/foo; state/bar; state/baz'
-    residuals = 'residual/foo; residual/bar; residual/baz'
+    unknowns = 'foo; bar; baz'
   []
   [single_group]
     type = NonlinearSystem
     model = 'implicit_rate'
-    unknowns = 'state/foo state/bar state/baz'
-    residuals = 'residual/foo residual/bar residual/baz'
+    unknowns = 'foo bar baz'
   []
   [reordered]
     type = NonlinearSystem
     model = 'implicit_rate'
-    unknowns = 'state/baz; state/bar state/foo'
-    residuals = 'residual/baz; residual/bar residual/foo'
+    unknowns = 'baz; bar foo'
   []
 []

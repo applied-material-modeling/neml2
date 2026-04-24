@@ -2,7 +2,7 @@
   [unit]
     type = ModelUnitTest
     model = 'p'
-    output_Scalar_names = 'parameters/p'
+    output_Scalar_names = 'intercept'
     output_Scalar_values = 'p_correct'
     check_second_derivatives = true
   []

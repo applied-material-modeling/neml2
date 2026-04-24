@@ -31,6 +31,7 @@ namespace neml2
 class Scalar;
 class Vec;
 class SR2;
+class R2;
 
 template <typename T>
 class VariableRate : public Model
@@ -39,8 +40,6 @@ public:
   static OptionSet expected_options();
 
   VariableRate(const OptionSet & options);
-
-  void diagnose() const override;
 
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
@@ -58,6 +57,6 @@ protected:
   const Variable<Scalar> & _tn;
 
   /// Variable rate
-  Variable<T> & _dv_dt;
+  Variable<T> & _rate;
 };
 } // namespace neml2

@@ -25,7 +25,6 @@
 #include <iostream>
 
 #include "neml2/base/OptionSet.h"
-#include "neml2/base/LabeledAxisAccessor.h"
 #include "neml2/misc/assertions.h"
 
 namespace neml2
@@ -60,6 +59,31 @@ OptionSet::user_specified(const std::string & name) const
   return _values.at(name)->user_specified();
 }
 
+bool
+OptionSet::defined(const std::string & name) const
+{
+  neml_assert(this->contains(name),
+              "ERROR: no option named '",
+              name,
+              "' found.\n\nKnown options:\n",
+              *this);
+  return _values.at(name)->defined();
+}
+
+void
+OptionSet::suppress(const std::string & name)
+{
+  neml_assert(this->contains(name),
+              "ERROR: no option named '",
+              name,
+              "' found.\n\nKnown options:\n",
+              *this);
+  auto & opt = _values.at(name);
+  opt->suppressed() = true;
+  opt->required() = false;
+  opt->user_specified() = false;
+}
+
 const OptionBase &
 OptionSet::get(const std::string & name) const
 {
@@ -69,31 +93,11 @@ OptionSet::get(const std::string & name) const
               "\" found.\n\nKnown options:\n",
               *this);
 
-  return *_values.at(name);
-}
-
-OptionBase &
-OptionSet::set(const std::string & name)
-{
-  neml_assert(this->contains(name),
-              "ERROR: no option named \"",
-              name,
-              "\" found.\n\nKnown options:\n",
-              *this);
-
-  return *_values[name];
-}
-
-LabeledAxisAccessor &
-OptionSet::set_input(const std::string & name)
-{
-  return set<LabeledAxisAccessor, FType::INPUT>(name);
-}
-
-LabeledAxisAccessor &
-OptionSet::set_output(const std::string & name)
-{
-  return set<LabeledAxisAccessor, FType::OUTPUT>(name);
+  auto * opt_base = _values.at(name).get();
+  if (!opt_base->defined())
+    throw NEMLException("ERROR: option named \"" + name +
+                        "\" is being accessed before it is defined.");
+  return *opt_base;
 }
 
 void
@@ -138,6 +142,42 @@ OptionSet::operator+=(OptionSet && source)
     _values[key] = value->clone();
 }
 
+void
+OptionSet::add_input(const std::string & name, const VariableName & variable_name, std::string doc)
+{
+  add<VariableName, FType::INPUT>(name, variable_name, std::move(doc));
+}
+
+void
+OptionSet::add_input(const std::string & name, std::string doc)
+{
+  add<VariableName, FType::INPUT>(name, name, std::move(doc));
+}
+
+void
+OptionSet::add_optional_input(const std::string & name, std::string doc)
+{
+  add_optional<VariableName, FType::INPUT>(name, std::move(doc));
+}
+
+void
+OptionSet::add_output(const std::string & name, const VariableName & variable_name, std::string doc)
+{
+  add<VariableName, FType::OUTPUT>(name, variable_name, std::move(doc));
+}
+
+void
+OptionSet::add_output(const std::string & name, std::string doc)
+{
+  add<VariableName, FType::OUTPUT>(name, name, std::move(doc));
+}
+
+void
+OptionSet::add_optional_output(const std::string & name, std::string doc)
+{
+  add_optional<VariableName, FType::OUTPUT>(name, std::move(doc));
+}
+
 // LCOV_EXCL_START
 std::string
 OptionSet::to_str() const
@@ -146,6 +186,7 @@ OptionSet::to_str() const
 
   OptionSet::const_iterator it = _values.begin();
 
+  os << type() << ":\n";
   os << "  section: " << section() << '\n';
   if (doc().empty())
     os << "  doc:\n";
@@ -167,6 +208,7 @@ OptionSet::to_str() const
       os << "    doc: |-\n";
       os << "      " << it->second->doc() << '\n';
     }
+    os << "    required: " << it->second->required() << '\n';
     os << "    suppressed: " << it->second->suppressed() << '\n';
     os << "    value: ";
     it->second->print(os);

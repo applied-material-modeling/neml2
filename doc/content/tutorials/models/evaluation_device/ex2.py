@@ -15,7 +15,7 @@ model.to(device=device)
 strain = SR2.fill(0.1, 0.05, -0.03, 0.02, 0.06, 0.03, device=device)
 
 # Evaluate the model
-output = model.value({"forces/E": strain})
+output = model.value({"strain": strain})
 
 # Get the stress back to CPU
-stress = output["state/S"].to(device=torch.device("cpu"))
+stress = output["stress"].to(device=torch.device("cpu"))

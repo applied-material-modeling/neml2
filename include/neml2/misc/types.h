@@ -72,6 +72,8 @@ using Size = int64_t;
 using TensorShape = c10::SmallVector<Size, 8>;
 using TensorShapeRef = c10::ArrayRef<Size>;
 
+using VariableName = std::string;
+
 // Machine precision depending on the dtype
 double machine_precision(Dtype);
 

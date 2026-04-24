@@ -6,38 +6,45 @@
   [E1]
     type = ScalarConstantParameter
     value = 1e3
+    parameter = 'E1'
   []
   [E2]
     type = ScalarConstantParameter
     value = 2e3
+    parameter = 'E2'
   []
   [E3]
     type = ScalarConstantParameter
     value = 3e3
+    parameter = 'E3'
   []
   [elasticity1]
     type = LinearIsotropicElasticity
+    strain = 'strain'
+    stress = 'stress1'
     coefficients = 'E1 0.3'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
-    stress = 'state/S1'
   []
   [elasticity2]
     type = LinearIsotropicElasticity
+    strain = 'strain'
+    stress = 'stress2'
     coefficients = 'E2 0.3'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
-    stress = 'state/S2'
   []
   [elasticity2_another]
     type = LinearIsotropicElasticity
+    strain = 'strain'
+    stress = 'stress2_another'
     coefficients = 'E2 0.3'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
-    stress = 'state/S2_another'
   []
   [elasticity3]
     type = LinearIsotropicElasticity
+    strain = 'strain'
+    stress = 'stress3_another'
     coefficients = 'E3 0.3'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
-    stress = 'state/S3'
   []
   [model1]
     type = ComposedModel

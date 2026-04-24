@@ -23,7 +23,6 @@
 // THE SOFTWARE.
 #pragma once
 
-#include "nmhit/Node.h"
 #include "neml2/base/Parser.h"
 
 namespace neml2
@@ -49,22 +48,6 @@ public:
   /// Parse a HIT input file from a filename.
   InputFile parse(const std::filesystem::path & filename,
                   const std::string & additional_input = "") const override;
-
-  /// Parse a HIT input file from a root node.
-  InputFile parse(nmhit::Node * root) const;
-
-private:
-  /**
-   * @brief Extract options for a specific object.
-   *
-   * @param object The object whose options are to be extracted.
-   * @param section The current section node.
-   * @return OptionSet The options of the object.
-   */
-  virtual OptionSet extract_object_options(nmhit::Node * object, nmhit::Node * section) const;
-
-  void extract_options(nmhit::Node * object, OptionSet & options) const;
-  void extract_option(nmhit::Node * node, OptionSet & options) const;
 };
 
 } // namespace neml2

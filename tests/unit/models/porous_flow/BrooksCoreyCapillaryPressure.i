@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/S'
+    input_Scalar_names = 'S'
     input_Scalar_values = 'S'
-    output_Scalar_names = 'state/Pc'
+    output_Scalar_names = 'Pc'
     output_Scalar_values = 'Pc'
     check_AD_parameter_derivatives = false
     check_second_derivatives = true
@@ -29,8 +29,8 @@
     type = BrooksCoreyCapillaryPressure
     threshold_pressure = 2.3
     exponent = 0.7
-    effective_saturation = 'state/S'
-    capillary_pressure = 'state/Pc'
+    effective_saturation = 'S'
+    capillary_pressure = 'Pc'
     log_extension = true
     transition_saturation = 0.1
   []

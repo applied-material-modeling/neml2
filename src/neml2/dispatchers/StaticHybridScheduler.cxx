@@ -38,17 +38,11 @@ StaticHybridScheduler::expected_options()
   OptionSet options = WorkScheduler::expected_options();
   options.doc() = "Dispatch work to multiple devices based on provided batch sizes and priorities.";
 
-  options.set<std::vector<Device>>("devices");
-  options.set("devices").doc() = "List of devices to dispatch work to";
-
-  options.set<std::vector<std::size_t>>("batch_sizes");
-  options.set("batch_sizes").doc() = "List of batch sizes for each device";
-
-  options.set<std::vector<std::size_t>>("capacities") = {};
-  options.set("capacities").doc() = "List of capacities for each device, default to batch_sizes";
-
-  options.set<std::vector<double>>("priorities") = {};
-  options.set("priorities").doc() = "List of priorities for each device";
+  options.add<std::vector<Device>>("devices", "List of devices to dispatch work to");
+  options.add<std::vector<std::size_t>>("batch_sizes", "List of batch sizes for each device");
+  options.add_optional<std::vector<std::size_t>>(
+      "capacities", "List of capacities for each device, default to batch_sizes");
+  options.add_optional<std::vector<double>>("priorities", "List of priorities for each device");
 
   return options;
 }
@@ -66,8 +60,12 @@ StaticHybridScheduler::setup()
 
   const auto & device_list = input_options().get<std::vector<Device>>("devices");
   const auto & batch_sizes = input_options().get<std::vector<std::size_t>>("batch_sizes");
-  const auto & capacities = input_options().get<std::vector<std::size_t>>("capacities");
-  const auto & priorities = input_options().get<std::vector<double>>("priorities");
+  const auto & capacities = input_options().defined("capacities")
+                                ? input_options().get<std::vector<std::size_t>>("capacities")
+                                : std::vector<std::size_t>{};
+  const auto & priorities = input_options().defined("priorities")
+                                ? input_options().get<std::vector<double>>("priorities")
+                                : std::vector<double>{};
 
   // First pass:
   // - Check if any CPU device is present

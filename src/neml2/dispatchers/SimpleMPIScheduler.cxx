@@ -41,14 +41,10 @@ SimpleMPIScheduler::expected_options()
   options.doc() =
       "Dispatch work to a single device selected based on processor ID in given batch sizes.";
 
-  options.set<std::vector<Device>>("devices");
-  options.set("devices").doc() = "List of devices to dispatch work to";
-
-  options.set<std::vector<std::size_t>>("batch_sizes");
-  options.set("batch_sizes").doc() = "List of batch sizes for each device";
-
-  options.set<std::vector<std::size_t>>("capacities") = {};
-  options.set("capacities").doc() = "List of capacities for each device, default to batch_sizes";
+  options.add<std::vector<Device>>("devices", "List of devices to dispatch work to");
+  options.add<std::vector<std::size_t>>("batch_sizes", "List of batch sizes for each device");
+  options.add_optional<std::vector<std::size_t>>(
+      "capacities", "List of capacities for each device, default to batch_sizes");
 
   return options;
 }
@@ -57,9 +53,8 @@ SimpleMPIScheduler::SimpleMPIScheduler(const OptionSet & options)
   : WorkScheduler(options),
     _available_devices(options.get<std::vector<Device>>("devices")),
     _batch_sizes(options.get<std::vector<std::size_t>>("batch_sizes")),
-    _capacities(options.get("capacities").user_specified()
-                    ? options.get<std::vector<std::size_t>>("capacities")
-                    : _batch_sizes),
+    _capacities(options.defined("capacities") ? options.get<std::vector<std::size_t>>("capacities")
+                                              : _batch_sizes),
     _comm(MPI_COMM_WORLD)
 {
   neml_assert(_available_devices.size() == _batch_sizes.size(),

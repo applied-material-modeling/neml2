@@ -37,16 +37,10 @@ LinearIsotropicElasticJ2TrialStressUpdate::expected_options()
   options.doc() = "Update the trial stress under the assumptions of J2 plasticity and isotropic "
                   "linear elasticity";
 
-  options.set_input("elastic_trial_stress") = VariableName(FORCES, "s");
-  options.set("elastic_trial_stress").doc() = "Initial trial stress assuming a purely elastic step";
-
-  options.set_input("equivalent_plastic_strain") = VariableName(STATE, "ep");
-  options.set("equivalent_plastic_strain").doc() =
-      "Current guess for the equivalent plastic strain";
-
-  options.set_output("updated_trial_stress") = VariableName(STATE, "s");
-  options.set("updated_trial_stress").doc() =
-      "Trial stress corrected for the current increment of plastic deformation";
+  options.add_input("elastic_trial_stress", "Initial trial stress assuming a purely elastic step");
+  options.add_input("equivalent_plastic_strain", "Current guess for the equivalent plastic strain");
+  options.add_output("updated_trial_stress",
+                     "Trial stress corrected for the current increment of plastic deformation");
 
   return options;
 }
@@ -56,7 +50,8 @@ LinearIsotropicElasticJ2TrialStressUpdate::LinearIsotropicElasticJ2TrialStressUp
   : ElasticityInterface<Model, 2>(options),
     _elastic_trial_stress(declare_input_variable<Scalar>("elastic_trial_stress")),
     _inelastic_strain(declare_input_variable<Scalar>("equivalent_plastic_strain")),
-    _inelastic_strain_old(declare_input_variable<Scalar>(_inelastic_strain.name().old())),
+    _inelastic_strain_old(
+        declare_input_variable<Scalar>(history_name(_inelastic_strain.name(), /*nstep=*/1))),
     _updated_trial_stress(declare_output_variable<Scalar>("updated_trial_stress")),
     _converter(_constant_types, _need_derivs)
 {
@@ -74,15 +69,10 @@ LinearIsotropicElasticJ2TrialStressUpdate::set_value(bool out, bool dout_din, bo
 
   if (dout_din)
   {
-    if (_elastic_trial_stress.is_dependent())
-      _updated_trial_stress.d(_elastic_trial_stress) =
-          imap_v<Scalar>(_elastic_trial_stress.options());
-
-    if (_inelastic_strain.is_dependent())
-      _updated_trial_stress.d(_inelastic_strain) = -three_shear;
-
-    if (_inelastic_strain_old.is_dependent())
-      _updated_trial_stress.d(_inelastic_strain_old) = three_shear;
+    _updated_trial_stress.d(_elastic_trial_stress) =
+        imap_v<Scalar>(_elastic_trial_stress.options());
+    _updated_trial_stress.d(_inelastic_strain) = -three_shear;
+    _updated_trial_stress.d(_inelastic_strain_old) = three_shear;
 
     if (const auto * const p1 = nl_param(neml2::name(_constant_types[0])))
       _updated_trial_stress.d(*p1) = -3.0 * dG[0] * (_inelastic_strain - _inelastic_strain_old);

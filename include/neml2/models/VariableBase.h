@@ -24,9 +24,9 @@
 
 #pragma once
 
-#include "neml2/models/map_types_fwd.h"
+#include <optional>
+
 #include "neml2/models/utils.h"
-#include "neml2/base/LabeledAxisAccessor.h"
 #include "neml2/misc/types.h"
 #include "neml2/tensors/Tensor.h"
 
@@ -72,6 +72,12 @@ public:
   /// Name of this variable
   const VariableName & name() const { return _name; }
 
+  /// History order: 0 for current variables, 1 for "foo~1", 2 for "foo~2", etc.
+  std::size_t history_order() const { return _history_order; }
+
+  /// Base name without the history suffix (e.g. "stress" for "stress~1")
+  const VariableName & base_name() const { return _base_name; }
+
   ///@{
   /// The Model who declared this variable
   const Model & owner() const;
@@ -80,20 +86,6 @@ public:
 
   /// Variable tensor type
   virtual TensorType type() const = 0;
-
-  /// @name Subaxis
-  ///@{
-  bool is_state() const;
-  bool is_old_state() const;
-  bool is_force() const;
-  bool is_old_force() const;
-  bool is_residual() const;
-  bool is_parameter() const;
-  bool is_solve_dependent() const;
-  /// Check if the derivative with respect to this variable should be evaluated
-  // Note that the check depends on whether we are currently solving nonlinear system
-  bool is_dependent() const;
-  ///@}
 
   /// @name Tensor information
   // These methods mirror TensorBase
@@ -139,7 +131,7 @@ public:
   ///@}
 
   /// Clone this variable
-  virtual std::unique_ptr<VariableBase> clone(const VariableName & name = {},
+  virtual std::unique_ptr<VariableBase> clone(std::optional<VariableName> name = std::nullopt,
                                               Model * owner = nullptr) const = 0;
 
   /// Reference another variable
@@ -257,6 +249,12 @@ protected:
 
   /// The model which declared this variable
   Model * const _owner = nullptr;
+
+  /// History order parsed from the variable name (0 = current, 1 = "foo~1", etc.)
+  std::size_t _history_order = 0;
+
+  /// Base name without history suffix (equals _name when history_order == 0)
+  VariableName _base_name = {};
 
   /// Cached intermediate shape that this variable last saw
   /// @note: set() and operator=() are the only methods that cache this. clear() does not invalidate the cache.

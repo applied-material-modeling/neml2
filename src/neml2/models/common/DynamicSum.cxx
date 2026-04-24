@@ -35,10 +35,7 @@ DynamicSum<T>::expected_options()
 {
   OptionSet options = Reduction<T>::expected_options();
   options.doc() = "Sum a dynamic dimension";
-
-  options.set<Size>("dim");
-  options.set("dim").doc() = "The dimension to sum";
-
+  options.add<Size>("dim", "The dimension to sum");
   return options;
 }
 

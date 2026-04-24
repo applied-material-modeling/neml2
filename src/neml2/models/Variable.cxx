@@ -27,7 +27,6 @@
 
 #include "neml2/models/Variable.h"
 #include "neml2/tensors/jit.h"
-#include "neml2/tensors/Derivative.h"
 #include "neml2/misc/assertions.h"
 #include "neml2/models/Model.h"
 
@@ -77,9 +76,10 @@ Variable<T>::dynamic_sizes() const
 
 template <typename T>
 std::unique_ptr<VariableBase>
-Variable<T>::clone(const VariableName & name, Model * owner) const
+Variable<T>::clone(std::optional<VariableName> name, Model * owner) const
 {
-  return std::make_unique<Variable<T>>(name.empty() ? this->name() : name, owner ? owner : _owner);
+  return std::make_unique<Variable<T>>(name.has_value() ? name.value() : this->name(),
+                                       owner ? owner : _owner);
 }
 
 template <typename T>

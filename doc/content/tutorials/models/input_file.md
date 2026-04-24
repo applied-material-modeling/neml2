@@ -4,7 +4,7 @@
 
 The user interface of NEML2 is designed in such a way that no programing experience is required to compose custom material models and define how they are solved. This is achieved using _input files_. The input files are simply text files with a specific format that NEML2 can understand. NEML2 can _deserialize_ an input file, i.e., parse and create material models specified within the input file.
 
-Since the input files are nothing more than text files saved on the disk, they can be used in any application that supports standard IO, easily exchanged among different devices running different operating systems, and archived for future reference.
+Since the input files are nothing more than text files saved on the disk, they can be used in any application that supports standard IO, easily exchanged among different devices running different operating systems, and archived for future reference. Refer to [the format documentation](https://github.com/applied-material-modeling/neml2-hit) for full details.
 
 ## Syntax {#input-file-syntax}
 
@@ -44,15 +44,12 @@ defines a tensor named "E" under the `[Tensors]` block and a model named "elasti
 \note
 The ordering of objects, i.e., the sequence objects appear in the input file, does not change their behavior.
 
-## Special syntax
+## Custom types
 
-**Boolean**: Oftentimes the behavior of the object is preferrably controlled by a boolean flag. However, since the HIT format only allows (array of) integer, floating-point number, and string, a special syntax shall be reserved for boolean values. In NEML2 input files, a string with value "true" can be parsed into a boolean `true`, and a string with value "false" can be parsed into a boolean `false`.
+In addition to the native value types supported by the HIT format, such as integer, floating-point number, boolean, strings, and arrays, NEML2 defines a few custom value types listed below.
 
-\note
-On the other hand, other commonly used boolean flags such as "on"/"off", "1"/"0", "True"/"False", etc., cannot be parsed into boolean values.
+**Tensor shape**: A tensor shape must start with "(" and end with ")". An array of comma-separated integers must be enclosed by the parentheses. For example, "(5,6,7)" can be parsed into a shape tuple of value `(5, 6, 7)`. Note that white spaces are not allowed between the parentheses and could lead to undefined behavior. An empty array, i.e. "()", however, is allowed and fully supported. Refer to @ref tutorials-tensors for a more in-depth description of tensor shape.
 
-**Variable name**: NEML2 material models work with named variables to assign physical meanings to different slices of a tensor. A fully qualified variable name can be parsed from a string, and the delimiter "/" signifies nested sub-axes. For example, the string "forces/t" can be parsed into a variable named "t" defined on the sub-axis named "forces". Refer to @ref tutorials-naming-conventions for more detailed explanation on variable naming convention.
-
-**Tensor shape**: The shape of a tensor can also be parsed from a string. The string must start with "(" and end with ")". An array of comma-separated integers must be enclosed by the parentheses. For example, the string "(5,6,7)" can be parsed into a shape tuple of value `(5, 6, 7)`. Note that white spaces are not allowed between the parentheses and could lead to undefined behavior. An empty array, i.e. "()", however, is allowed and fully supported. Refer to @ref tutorials-tensors for a more in-depth description of tensor shape.
+**Device**: A device string must follow the schema: `(type)[:<device-index>]`, where type can be cpu, cuda, etc., and `:<device-index>` optionally specifies a device index. Some examples are "cpu", "cuda", "cuda:0", "cuda:1", "xpu", etc.
 
 @insert-page-navigation

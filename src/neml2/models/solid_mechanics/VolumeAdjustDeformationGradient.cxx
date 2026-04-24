@@ -41,15 +41,11 @@ VolumeAdjustDeformationGradient::expected_options()
                   "gradient and \\f$ J \\f$ is the total jacobian of the volumetric deformation "
                   "gradients to be removed.";
 
-  options.set_input("input");
-  options.set("input").doc() = "Input deformation gradient";
-
-  options.set_input("jacobian");
-  options.set("jacobian").doc() =
-      "The jacobian that controls the volume adjustment of the input deformation gradient";
-
-  options.set_output("output");
-  options.set("output").doc() = "Output adjusted deformation gradient";
+  options.add_input("input", "Input deformation gradient");
+  options.add_input(
+      "jacobian",
+      "The Jacobian that controls the volume adjustment of the input deformation gradient");
+  options.add_output("output", "Output adjusted deformation gradient");
 
   return options;
 }
@@ -70,14 +66,9 @@ VolumeAdjustDeformationGradient::set_value(bool out, bool dout_din, bool /*d2out
 
   if (dout_din)
   {
-    if (_J.is_dependent())
-      _Fe.d(_J) = _F * -1.0 / 3.0 * pow(_J(), -4.0 / 3.0);
-
-    if (_F.is_dependent())
-    {
-      auto I = imap_v<R2>(_F.options());
-      _Fe.d(_F) = pow(_J(), -1.0 / 3.0) * I;
-    }
+    _Fe.d(_J) = _F * -1.0 / 3.0 * pow(_J(), -4.0 / 3.0);
+    auto I = imap_v<R2>(_F.options());
+    _Fe.d(_F) = pow(_J(), -1.0 / 3.0) * I;
   }
 }
 } // namespace neml2

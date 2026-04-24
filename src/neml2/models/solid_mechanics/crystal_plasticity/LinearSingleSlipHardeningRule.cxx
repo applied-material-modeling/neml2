@@ -38,8 +38,7 @@ LinearSingleSlipHardeningRule::expected_options()
                   "\\sum_{i=1}^{n_{slip}} \\left| \\dot{\\gamma}_i \\right| \\f$ where \\f$ "
                   "\\theta \\f$ is the hardening slope.";
 
-  options.set_parameter<TensorName<Scalar>>("hardening_slope");
-  options.set("hardening_slope").doc() = "Hardening rate";
+  options.add_parameter<Scalar>("hardening_slope", "Hardening rate");
 
   return options;
 }
@@ -58,8 +57,7 @@ LinearSingleSlipHardeningRule::set_value(bool out, bool dout_din, bool /*d2out_d
 
   if (dout_din)
   {
-    if (_gamma_dot_sum.is_dependent())
-      _tau_dot.d(_gamma_dot_sum) = _theta;
+    _tau_dot.d(_gamma_dot_sum) = _theta;
 
     if (const auto * const theta = nl_param("hardening_slope"))
       _tau_dot.d(*theta) = _gamma_dot_sum();

@@ -42,9 +42,9 @@ MultiColumnCSVScalar::expected_options()
       "behavior can be altered via the `indexing` option.";
 
   EnumSelection indexing_selection({"COLUMN_MAJOR", "ROW_MAJOR"}, "COLUMN_MAJOR");
-  options.set<EnumSelection>("indexing") = indexing_selection;
-  options.set("indexing").doc() =
-      "Indexing interpretation. Options are " + indexing_selection.join();
+  options.add<EnumSelection>("indexing",
+                             indexing_selection,
+                             "Indexing interpretation. Options are " + indexing_selection.join());
 
   return options;
 }

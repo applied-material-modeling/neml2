@@ -25,7 +25,6 @@
 #include "neml2/models/common/HermiteSmoothStep.h"
 #include "neml2/misc/types.h"
 #include "neml2/tensors/functions/clamp.h"
-#include "neml2/tensors/assertions.h"
 
 namespace neml2
 {
@@ -37,20 +36,15 @@ HermiteSmoothStep::expected_options()
   OptionSet options = Model::expected_options();
   options.doc() = "The smooth step function defined by Hermite polynomials";
 
-  options.set_input("argument");
-  options.set("argument").doc() = "Argument of the smooth step function";
+  options.add_input("argument", "Argument of the smooth step function");
+  options.add_output("value", "Value of the smooth step function");
+  options.add_buffer<Scalar>("lower_bound", "Lower bound of the argument");
+  options.add_buffer<Scalar>("upper_bound", "Upper bound of the argument");
 
-  options.set_output("value");
-  options.set("value").doc() = "Value of the smooth step function";
-
-  options.set_buffer<TensorName<Scalar>>("lower_bound");
-  options.set("lower_bound").doc() = "Lower bound of the argument";
-
-  options.set_buffer<TensorName<Scalar>>("upper_bound");
-  options.set("upper_bound").doc() = "Upper bound of the argument";
-
-  options.set<bool>("complement") = false;
-  options.set("complement").doc() = "Whether takes 1 to subtract the function.";
+  options.add<bool>(
+      "complement",
+      false,
+      "Whether to take the complement of the smooth step function, i.e. 1 - smooth_step");
 
   return options;
 }
@@ -73,18 +67,14 @@ HermiteSmoothStep::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 
   if (out)
   {
-    if (!_comp_cond)
-      _y = 3 * x * x - 2 * x * x * x;
-    else
-      _y = 1 - (3 * x * x - 2 * x * x * x);
+    auto y = 3 * x * x - 2 * x * x * x;
+    _y = _comp_cond ? 1 - y : y;
   }
 
   if (dout_din)
   {
-    if (!_comp_cond)
-      _y.d(_x) = 6 * x * (1 - x) / (_x1 - _x0);
-    else
-      _y.d(_x) = -(6 * x * (1 - x) / (_x1 - _x0));
+    auto dy_dx = 6 * x * (1 - x) / (_x1 - _x0);
+    _y.d(_x) = _comp_cond ? -dy_dx : dy_dx;
   }
 }
 } // namespace neml2

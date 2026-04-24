@@ -21,9 +21,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'forces/T state/A state/B'
+    input_Scalar_names = 'T A B'
     input_Scalar_values = '100 0.5 1.5'
-    output_Scalar_names = 'state/C'
+    output_Scalar_names = 'C'
     output_Scalar_values = '9.25'
     check_AD_parameter_derivatives = false
   []
@@ -32,16 +32,16 @@
 [Models]
   [c_A]
     type = ScalarLinearInterpolation
-    argument = 'forces/T'
+    argument = 'T'
     abscissa = 'T_vals'
     ordinate = 'c_A_vals'
   []
   [model0]
     type = ScalarLinearCombination
-    from_var = 'state/A state/B'
-    to_var = 'state/C'
-    coefficients = 'c_A 5.5'
-    coefficient_as_parameter = 'true true'
+    from = 'A B'
+    to = 'C'
+    weights = 'c_A 5.5'
+    weight_as_parameter = 'true true'
   []
   [model]
     type = ComposedModel

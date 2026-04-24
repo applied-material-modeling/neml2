@@ -22,10 +22,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <ATen/TensorIndexing.h>
+
 #include "neml2/models/common/Interpolation.h"
 #include "neml2/misc/string_utils.h"
 #include "neml2/tensors/tensors.h"
-#include <ATen/TensorIndexing.h>
 
 namespace neml2
 {
@@ -89,11 +90,11 @@ Interpolation<T>::expected_options()
                   " as a function of the given argument. See neml2::Interpolation for rules on "
                   "shapes of the interpolant and the argument.";
 
-  options.set<TensorName<T>>("ordinate");
-  options.set("ordinate").doc() = tensor_type + " defining the ordinate values of the interpolant";
-
-  options.set_output("output");
-  options.set("output").doc() = tensor_type + " output of the interpolant";
+  options.add_parameter<T>("ordinate",
+                           tensor_type + " defining the ordinate values of the interpolant");
+  options.add_optional_output("output",
+                              tensor_type + " output of the interpolant. If not specified, the "
+                                            "object name will be used as the output name.");
 
   return options;
 }
@@ -102,9 +103,8 @@ template <typename T>
 Interpolation<T>::Interpolation(const OptionSet & options)
   : Model(options),
     _Y(this->template declare_parameter<T>("Y", "ordinate")),
-    _p(options.get("output").user_specified()
-           ? this->template declare_output_variable<T>("output")
-           : this->template declare_output_variable<T>(VariableName(PARAMETERS, name())))
+    _p(options.defined("output") ? this->template declare_output_variable<T>("output")
+                                 : this->template declare_output_variable<T>(this->name()))
 {
 }
 

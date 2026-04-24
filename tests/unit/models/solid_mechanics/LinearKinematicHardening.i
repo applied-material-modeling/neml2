@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_SR2_names = 'state/internal/Kp'
+    input_SR2_names = 'Kp'
     input_SR2_values = 'Kp'
-    output_SR2_names = 'state/internal/X'
+    output_SR2_names = 'X'
     output_SR2_values = 'X'
   []
 []
@@ -24,5 +24,7 @@
   [model]
     type = LinearKinematicHardening
     hardening_modulus = 1000
+    kinematic_plastic_strain = 'Kp'
+    back_stress = 'X'
   []
 []

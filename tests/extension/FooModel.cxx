@@ -36,9 +36,9 @@ neml2::OptionSet
 FooModel::expected_options()
 {
   auto options = neml2::Model::expected_options();
-  options.set_input("x");
-  options.set_output("y");
-  options.set<double>("c");
+  options.add<neml2::VariableName, neml2::FType::INPUT>("x", "The input variable");
+  options.add<neml2::VariableName, neml2::FType::OUTPUT>("y", "The output variable");
+  options.add<double>("c", "The coefficient");
   return options;
 }
 

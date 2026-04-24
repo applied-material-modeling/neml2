@@ -33,19 +33,20 @@ using namespace neml2;
 
 TEST_CASE("ImplicitUpdate", "[models]")
 {
-  auto model0 = load_model("models/ImplicitUpdate.i", "model");
+  auto model0 = load_model("models/common/ImplicitUpdate.i", "model");
   auto model = std::dynamic_pointer_cast<ImplicitUpdate>(model0);
-  ValueMap in = {{VariableName(OLD_STATE, "foo"), Scalar::full(0.0)},
-                 {VariableName(OLD_STATE, "bar"), Scalar::full(0.0)},
-                 {VariableName(FORCES, "temperature"), Scalar::full(15.0)},
-                 {VariableName(FORCES, "t"), Scalar::full(1.3)},
-                 {VariableName(OLD_FORCES, "t"), Scalar::full(1.1)}};
+
+  ValueMap in = {{"foo~1", Scalar::full(0.0)},
+                 {"bar~1", Scalar::full(0.0)},
+                 {"temperature", Scalar::full(15.0)},
+                 {"t", Scalar::full(1.3)},
+                 {"t~1", Scalar::full(1.1)}};
   auto out = model->value(in);
   REQUIRE(model->last_iterations() == 7);
 
   // Re-run the update with the solution being the initial guess
   for (auto && [vname, var] : out)
     in[vname] = var;
-  model->value(in);
+  out = model->value(in);
   REQUIRE(model->last_iterations() == 0);
 }

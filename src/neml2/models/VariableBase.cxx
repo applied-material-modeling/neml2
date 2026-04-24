@@ -23,7 +23,6 @@
 // THE SOFTWARE.
 
 #include "neml2/models/VariableBase.h"
-#include "neml2/base/LabeledAxisAccessor.h"
 #include "neml2/tensors/Derivative.h"
 #include "neml2/misc/types.h"
 #include "neml2/models/Model.h"
@@ -33,6 +32,7 @@
 #include "neml2/tensors/jit.h"
 #include "neml2/tensors/TraceableTensorShape.h"
 #include "neml2/models/DependencyResolver.h"
+#include "neml2/base/Settings.h"
 
 namespace neml2
 {
@@ -41,6 +41,23 @@ VariableBase::VariableBase(VariableName name_in, Model * owner, TensorShapeRef b
     _owner(owner),
     _base_sizes(base_shape)
 {
+  const auto sep = _owner ? _owner->settings().history_separator() : std::string("~");
+  const auto sep_pos = _name.rfind(sep);
+  if (sep_pos != std::string::npos && sep_pos + sep.size() < _name.size())
+  {
+    const auto suffix = _name.substr(sep_pos + sep.size());
+    bool is_digits = !suffix.empty();
+    for (const char c : suffix)
+      is_digits = is_digits && (std::isdigit(static_cast<unsigned char>(c)) != 0);
+    if (is_digits)
+    {
+      _history_order = std::stoull(suffix);
+      _base_name = _name.substr(0, sep_pos);
+      return;
+    }
+  }
+  _history_order = 0;
+  _base_name = _name;
 }
 
 VariableBase::~VariableBase() = default;
@@ -57,54 +74,6 @@ VariableBase::owner()
 {
   neml_assert_dbg(_owner, "Owner of variable '", name(), "' has not been defined.");
   return *_owner;
-}
-
-bool
-VariableBase::is_state() const
-{
-  return _name.is_state();
-}
-
-bool
-VariableBase::is_old_state() const
-{
-  return _name.is_old_state();
-}
-
-bool
-VariableBase::is_force() const
-{
-  return _name.is_force();
-}
-
-bool
-VariableBase::is_old_force() const
-{
-  return _name.is_old_force();
-}
-
-bool
-VariableBase::is_residual() const
-{
-  return _name.is_residual();
-}
-
-bool
-VariableBase::is_parameter() const
-{
-  return _name.is_parameter();
-}
-
-bool
-VariableBase::is_solve_dependent() const
-{
-  return is_state() || is_residual() || is_parameter();
-}
-
-bool
-VariableBase::is_dependent() const
-{
-  return !currently_assembling_nonlinear_system() || is_solve_dependent();
 }
 
 Size
@@ -289,8 +258,8 @@ get_deriv(VariableBase::DerivContainer & derivs,
                                                    {var_intrsc_intmd_dim, arg_intrsc_intmd_dim},
                                                    intmd_sizes,
                                                    base_sizes,
-                                                   var.name().str(),
-                                                   {arg.name().str()}),
+                                                   var.name(),
+                                                   {arg.name()}),
                                      &arg);
   return std::get<0>(deriv);
 }
@@ -311,8 +280,8 @@ VariableBase::d(const VariableBase & arg) const
   for (const auto & [deriv, a] : _derivs)
     if (a->name() == arg.name())
       return deriv;
-  throw NEMLException("Variable '" + name().str() + "' does not have derivative with respect to '" +
-                      arg.name().str() + "'.");
+  throw NEMLException("Variable '" + name() + "' does not have derivative with respect to '" +
+                      arg.name() + "'.");
 }
 
 static Derivative<2> &
@@ -338,8 +307,8 @@ get_secderiv(VariableBase::SecDerivContainer & secderivs,
                     {var_intrsc_intmd_dim, arg1_intrsc_intmd_dim, arg2_intrsc_intmd_dim},
                     intmd_sizes,
                     base_sizes,
-                    var.name().str(),
-                    {arg1.name().str(), arg2.name().str()}),
+                    var.name(),
+                    {arg1.name(), arg2.name()}),
       &arg1,
       &arg2);
   return std::get<0>(deriv);
@@ -369,8 +338,8 @@ VariableBase::d2(const VariableBase & arg1, const VariableBase & arg2) const
   for (const auto & [deriv, a1, a2] : _sec_derivs)
     if (a1->name() == arg1.name() && a2->name() == arg2.name())
       return deriv;
-  throw NEMLException("Variable '" + name().str() + "' does not have derivative with respect to '" +
-                      arg1.name().str() + "' and '" + arg2.name().str() + "'.");
+  throw NEMLException("Variable '" + name() + "' does not have derivative with respect to '" +
+                      arg1.name() + "' and '" + arg2.name() + "'.");
 }
 
 void

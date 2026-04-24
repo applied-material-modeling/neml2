@@ -39,19 +39,16 @@ ContractingGeometry::expected_options()
       "reaction coefficient (often temperature-dependent), \\f$ n \\f$ is the reaction order, and "
       "\\f$ a \\f$ is the degree of conversion.";
 
-  options.set_parameter<TensorName<Scalar>>("reaction_coef");
-  options.set("reaction_coef").doc() = "Reaction coefficient, k";
-
-  options.set_parameter<TensorName<Scalar>>("reaction_order");
-  options.set("reaction_order").doc() = "Reaction order, n";
+  options.add_parameter<Scalar>("coef", "Reaction coefficient, k");
+  options.add_parameter<Scalar>("order", "Reaction order, n");
 
   return options;
 }
 
 ContractingGeometry::ContractingGeometry(const OptionSet & options)
   : ReactionMechanism(options),
-    _k(declare_parameter<Scalar>("k", "reaction_coef", /*allow_nonlinear=*/true)),
-    _n(declare_parameter<Scalar>("n", "reaction_order"))
+    _k(declare_parameter<Scalar>("k", "coef", /*allow_nonlinear=*/true)),
+    _n(declare_parameter<Scalar>("n", "order"))
 {
 }
 
@@ -66,8 +63,7 @@ ContractingGeometry::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 
   if (dout_din)
   {
-    if (_a.is_dependent())
-      _f.d(_a) = -1.0 * _k * _n * pow(aclamp, _n - 1);
+    _f.d(_a) = -1.0 * _k * _n * pow(aclamp, _n - 1);
 
     if (const auto * const k = nl_param("k"))
       _f.d(*k) = pow(aclamp, _n);

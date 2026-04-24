@@ -70,12 +70,14 @@
 
 [Drivers]
   [driver]
-    type = SDTSolidMechanicsDriver
+    type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    prescribed_strain = 'strains'
+    force_SR2_names = 'E'
+    force_SR2_values = 'strains'
+    force_Scalar_names = 'temperature'
+    force_Scalar_values = 'temperatures'
     save_as = 'result.pt'
-    prescribed_temperature = 'temperatures'
   []
   [regression]
     type = TransientRegression
@@ -87,12 +89,13 @@
 [Models]
   [mandel_stress]
     type = IsotropicMandelStress
+    cauchy_stress = 'stress'
   []
   [vonmises]
     type = SR2Invariant
     invariant_type = 'VONMISES'
-    tensor = 'state/internal/M'
-    invariant = 'state/internal/s'
+    tensor = 'mandel_stress'
+    invariant = 'effective_stress'
   []
   [isoharden]
     type = LinearIsotropicHardening
@@ -100,7 +103,7 @@
   []
   [mu]
     type = ScalarLinearInterpolation
-    argument = 'forces/T'
+    argument = 'temperature'
     abscissa = 'T_controls'
     ordinate = 'mu_values'
   []
@@ -112,13 +115,13 @@
   [yield]
     type = YieldFunction
     yield_stress = 'ys'
-    isotropic_hardening = 'state/internal/k'
+    isotropic_hardening = 'isotropic_hardening'
   []
   [yield_zero]
     type = YieldFunction
     yield_stress = 0
-    isotropic_hardening = 'state/internal/k'
-    yield_function = 'state/internal/fp_alt'
+    isotropic_hardening = 'isotropic_hardening'
+    yield_function = 'fp_alt'
   []
   [flow]
     type = ComposedModel
@@ -128,13 +131,15 @@
   [normality]
     type = Normality
     model = 'flow'
-    function = 'state/internal/fp'
-    from = 'state/internal/M state/internal/k'
-    to = 'state/internal/NM state/internal/Nk'
+    function = 'yield_function'
+    from = 'mandel_stress isotropic_hardening'
+    to = 'flow_direction isotropic_hardening_direction'
   []
   [ri_flowrate]
-    type = RateIndependentPlasticFlowConstraint
-    flow_rate = 'state/internal/gamma_rate_ri'
+    type = FBComplementarity
+    a = 'yield_function'
+    a_inequality = 'LE'
+    b = 'gamma_rate_ri'
   []
   [km_sensitivity]
     type = KocksMeckingRateSensitivity
@@ -156,18 +161,22 @@
     type = PerzynaPlasticFlowRate
     reference_stress = 'km_viscosity'
     exponent = 'km_sensitivity'
-    yield_function = 'state/internal/fp_alt'
-    flow_rate = 'state/internal/gamma_rate_rd'
+    yield_function = 'fp_alt'
+    flow_rate = 'gamma_rate_rd'
+  []
+  [Erate]
+    type = SR2VariableRate
+    variable = 'E'
   []
   [effective_strain_rate]
     type = SR2Invariant
     invariant_type = 'EFFECTIVE_STRAIN'
-    tensor = 'forces/E_rate'
-    invariant = 'forces/effective_strain_rate'
+    tensor = 'E_rate'
+    invariant = 'effective_strain_rate'
   []
   [g]
     type = KocksMeckingActivationEnergy
-    activation_energy = 'state/g'
+    strain_rate = 'effective_strain_rate'
     shear_modulus = 'mu'
     k = 1.38064e-20
     b = 2.474e-7
@@ -175,10 +184,10 @@
   []
   [flowrate]
     type = KocksMeckingFlowSwitch
-    activation_energy = 'state/g'
+    activation_energy = 'activation_energy'
     g0 = 0.538
-    rate_independent_flow_rate = 'state/internal/gamma_rate_ri'
-    rate_dependent_flow_rate = 'state/internal/gamma_rate_rd'
+    rate_independent_flow_rate = 'gamma_rate_ri'
+    rate_dependent_flow_rate = 'gamma_rate_rd'
     sharpness = 100.0
   []
   [Eprate]
@@ -187,16 +196,11 @@
   [eprate]
     type = AssociativeIsotropicPlasticHardening
   []
-  [Erate]
-    type = SR2VariableRate
-    variable = 'forces/E'
-    rate = 'forces/E_rate'
-  []
   [Eerate]
     type = SR2LinearCombination
-    from_var = 'forces/E_rate state/internal/Ep_rate'
-    to_var = 'state/internal/Ee_rate'
-    coefficients = '1 -1'
+    from = 'E_rate plastic_strain_rate'
+    to = 'strain_rate'
+    weights = '1 -1'
   []
   [elasticity]
     type = LinearIsotropicElasticity
@@ -206,18 +210,18 @@
   []
   [integrate_stress]
     type = SR2BackwardEulerTimeIntegration
-    variable = 'state/S'
+    variable = 'stress'
   []
   [integrate_ep]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/internal/ep'
+    variable = 'equivalent_plastic_strain'
   []
   [surface]
     type = ComposedModel
-    models = "isoharden elasticity g
+    models = 'isoharden elasticity g
               mandel_stress vonmises
               yield yield_zero normality eprate Eprate Erate Eerate
-              ri_flowrate rd_flowrate flowrate integrate_ep integrate_stress effective_strain_rate"
+              ri_flowrate rd_flowrate flowrate integrate_ep integrate_stress effective_strain_rate'
   []
 []
 
@@ -225,6 +229,8 @@
   [eq_sys]
     type = NonlinearSystem
     model = 'surface'
+    unknowns = 'stress equivalent_plastic_strain gamma_rate_ri'
+    residuals = 'stress_residual equivalent_plastic_strain_residual complementarity'
   []
 []
 

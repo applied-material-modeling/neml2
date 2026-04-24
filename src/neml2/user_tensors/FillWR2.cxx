@@ -35,8 +35,7 @@ FillWR2::expected_options()
   OptionSet options = UserTensorBase::expected_options();
   options.doc() = "Construct a WR2 from a vector of Scalars.";
 
-  options.set<std::vector<TensorName<Scalar>>>("values");
-  options.set("values").doc() = "Scalars used to fill the WR2";
+  options.add<std::vector<TensorName<Scalar>>>("values", "Scalars used to fill the WR2");
 
   return options;
 }

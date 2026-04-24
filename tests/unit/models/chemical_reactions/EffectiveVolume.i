@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/wb state/ws state/wp state/wg state/phiop'
+    input_Scalar_names = 'wb ws wp wg phiop'
     input_Scalar_values = 'wb ws wp wg phiop'
-    output_Scalar_names = 'state/V'
+    output_Scalar_names = 'V'
     output_Scalar_values = 'Vref'
     check_AD_parameter_derivatives = false
   []
@@ -47,9 +47,9 @@
   [model]
     type = EffectiveVolume
     reference_mass = 4.1
-    open_volume_fraction = 'state/phiop'
-    mass_fractions = 'state/wb state/ws state/wp state/wg'
+    open_volume_fraction = 'phiop'
+    mass_fractions = 'wb ws wp wg'
     densities = '1123 576 988 11'
-    composite_volume = 'state/V'
+    composite_volume = 'V'
   []
 []

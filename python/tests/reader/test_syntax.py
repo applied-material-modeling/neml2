@@ -70,14 +70,14 @@ SYNTAX_CONTENT = textwrap.dedent(
         suppressed: 0
         value:
       strain:
-        type: neml2::LabeledAxisAccessor
+        type: neml2::VariableName
         ftype: INPUT
         doc: |-
           Mechanical strain input.
         suppressed: 0
         value: forces/E
       stress:
-        type: neml2::LabeledAxisAccessor
+        type: neml2::VariableName
         ftype: OUTPUT
         doc: |-
           Cauchy stress output.

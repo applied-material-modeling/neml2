@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/E state/nu'
+    input_Scalar_names = 'E nu'
     input_Scalar_values = '100000.0 0.3'
-    output_SSR4_names = 'parameters/C'
+    output_SSR4_names = 'C'
     output_SSR4_values = 'C_correct'
   []
 []
@@ -23,7 +23,7 @@
   [C]
     type = IsotropicElasticityTensor
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
-    coefficients = 'state/E state/nu'
+    coefficients = 'E nu'
   []
   [model]
     type = ComposedModel

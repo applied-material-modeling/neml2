@@ -26,7 +26,6 @@
 #include "neml2/tensors/functions/sqrt.h"
 #include "neml2/tensors/functions/clamp.h"
 #include "neml2/tensors/functions/where.h"
-#include "neml2/misc/assertions.h"
 
 namespace neml2
 {
@@ -38,15 +37,11 @@ CylindricalChannelGeometry::expected_options()
   OptionSet options = Model::expected_options();
   options.doc() = "Calculate the dimensionless inner and outer radii of the reaction product";
 
-  options.set_input("solid_fraction") = VariableName{"state", "phi_s"};
-  options.set("solid_fraction").doc() = "Volume fraction of the solid phase";
-  options.set_input("product_fraction") = VariableName{"state", "phi_p"};
-  options.set("product_fraction").doc() = "Volume fraction of the product phase";
+  options.add_input("solid_fraction", "Volume fraction of the solid phase");
+  options.add_input("product_fraction", "Volume fraction of the product phase");
 
-  options.set_output("inner_radius") = VariableName{"state", "ri"};
-  options.set("inner_radius").doc() = "Dimensionless inner radius of the product phase";
-  options.set_output("outer_radius") = VariableName{"state", "ro"};
-  options.set("outer_radius").doc() = "Dimensionless outer radius of the product phase";
+  options.add_output("inner_radius", "Dimensionless inner radius of the product phase");
+  options.add_output("outer_radius", "Dimensionless outer radius of the product phase");
 
   return options;
 }

@@ -36,14 +36,9 @@ PowerLawPermeability::expected_options()
                    "\\left( \\frac{\\varphi}{\\varphi_0} \\right)^p \\f$. \\f$ varphi_0 \\f$ and "
                    "\\f$ K_0 \\f$ are the reference porosity and permeability respectively.";
 
-  options.set_parameter<TensorName<Scalar>>("reference_permeability");
-  options.set("reference_permeability").doc() = "the reference permeability";
-
-  options.set_parameter<TensorName<Scalar>>("reference_porosity");
-  options.set("reference_porosity").doc() = "the reference porosity";
-
-  options.set_parameter<TensorName<Scalar>>("exponent");
-  options.set("exponent").doc() = "Exponent in the power law";
+  options.add_parameter<Scalar>("reference_permeability", "The reference permeability");
+  options.add_parameter<Scalar>("reference_porosity", "The reference porosity");
+  options.add_parameter<Scalar>("exponent", "The exponent in the power law");
 
   return options;
 }

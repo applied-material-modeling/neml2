@@ -40,20 +40,14 @@ EffectiveVolume::expected_options()
       "component; \\f$ \\phi_{o} \\f$ is the volume fraction accounting for leakage from the "
       "control mass; \\f$ M \\f$ is the reference mass of the composite.";
 
-  options.set_parameter<TensorName<Scalar>>("reference_mass");
-  options.set("reference_mass").doc() = "Reference mass of the composite";
+  options.add_input("open_volume_fraction", "Open volume fraction accounting for leakage");
+  options.add<std::vector<VariableName>, FType::INPUT>(
+      "mass_fractions", "Mass fractions of the components in the composite");
+  options.add_output("composite_volume", "Volume of the composite");
 
-  options.set_input("open_volume_fraction");
-  options.set("open_volume_fraction").doc() = "Open volume fraction accounting for leakage";
-
-  options.set<std::vector<VariableName>>("mass_fractions");
-  options.set("mass_fractions").doc() = "Mass fractions of the components in the composite";
-
-  options.set_parameter<std::vector<TensorName<Scalar>>>("densities");
-  options.set("densities").doc() = "Densities of the components in the composite";
-
-  options.set_output("composite_volume") = VariableName(STATE, "V");
-  options.set("composite_volume").doc() = "Volume of the composite";
+  options.add<std::vector<TensorName<Scalar>>, FType::PARAMETER>(
+      "densities", "Densities of the components in the composite");
+  options.add_parameter<Scalar>("reference_mass", "Reference mass of the composite");
 
   return options;
 }
@@ -61,7 +55,7 @@ EffectiveVolume::expected_options()
 EffectiveVolume::EffectiveVolume(const OptionSet & options)
   : Model(options),
     _M(declare_parameter<Scalar>("M", "reference_mass")),
-    _phio(options.get("open_volume_fraction").user_specified()
+    _phio(options.defined("open_volume_fraction")
               ? &declare_input_variable<Scalar>("open_volume_fraction")
               : nullptr),
     _V(declare_output_variable<Scalar>("composite_volume"))
@@ -103,10 +97,9 @@ EffectiveVolume::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
   if (dout_din)
   {
     for (std::size_t i = 0; i < _ws.size(); i++)
-      if (_ws[i]->is_dependent())
-        _V.d(*_ws[i]) = coef / *_rhos[i];
+      _V.d(*_ws[i]) = coef / *_rhos[i];
 
-    if (_phio && _phio->is_dependent())
+    if (_phio)
       _V.d(*_phio) = _M * sum / ((1 - *_phio) * (1 - *_phio));
   }
 }

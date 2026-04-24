@@ -24,8 +24,9 @@
 
 #pragma once
 
-#include "neml2/dispatchers/TensorLoader.h"
-#include "neml2/models/map_types.h"
+#include "neml2/dispatchers/FixedSizeWorkGenerator.h"
+#include "neml2/dispatchers/SliceGenerator.h"
+#include "neml2/tensors/Tensor.h"
 
 namespace neml2
 {

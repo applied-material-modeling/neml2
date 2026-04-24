@@ -20,14 +20,14 @@ main()
   auto t_n = Scalar::full(0.0);
 
   // Evaluate the model for multiple times
-  auto inputs = ValueMap({{VariableName("state", "a"), a},
-                          {VariableName("state", "b"), b},
-                          {VariableName("state", "c"), c},
-                          {VariableName("forces", "t"), t},
-                          {VariableName("old_state", "a"), a_n},
-                          {VariableName("old_state", "b"), b_n},
-                          {VariableName("old_state", "c"), c_n},
-                          {VariableName("old_forces", "t"), t_n}});
+  auto inputs = ValueMap({{"a", a},
+                          {"b", b},
+                          {"c", c},
+                          {"t", t},
+                          {"a~1", a_n},
+                          {"b~1", b_n},
+                          {"c~1", c_n},
+                          {"t~1", t_n}});
   for (int i = 0; i < 10; i++)
     model->value(inputs);
 

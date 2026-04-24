@@ -29,7 +29,6 @@
 #include "neml2/tensors/functions/abs.h"
 #include "neml2/tensors/functions/log.h"
 #include "neml2/tensors/functions/abs.h"
-#include "neml2/tensors/functions/diagonalize.h"
 
 namespace neml2
 {
@@ -46,11 +45,8 @@ PowerLawSlipRule::expected_options()
       "resolved shear, \\f$ \\hat{\\tau}_i \\f$ the slip system strength, \\f$ n \\f$ the rate "
       "senstivity, and \\f$ \\dot{\\gamma}_0 \\f$ a reference slip rate.";
 
-  options.set_parameter<TensorName<Scalar>>("gamma0");
-  options.set("gamma0").doc() = "Reference slip rate";
-
-  options.set_parameter<TensorName<Scalar>>("n");
-  options.set("n").doc() = "Rate sensitivity exponent";
+  options.add_parameter<Scalar>("gamma0", "Reference slip rate");
+  options.add_parameter<Scalar>("n", "Rate sensitivity exponent");
 
   return options;
 }
@@ -70,11 +66,8 @@ PowerLawSlipRule::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 
   if (dout_din)
   {
-    if (_rss.is_dependent())
-      _g.d(_rss) = _gamma0 * _n * pow(abs(_rss / _tau), _n - 1.0) / _tau;
-
-    if (_tau.is_dependent())
-      _g.d(_tau) = -_n * _gamma0 * _rss * pow(abs(_rss()), _n - 1.0) / pow(_tau(), _n + 1);
+    _g.d(_rss) = _gamma0 * _n * pow(abs(_rss / _tau), _n - 1.0) / _tau;
+    _g.d(_tau) = -_n * _gamma0 * _rss * pow(abs(_rss()), _n - 1.0) / pow(_tau(), _n + 1);
 
     if (const auto * const gamma0 = nl_param("gamma0"))
       _g.d(*gamma0) = pow(abs(_rss / _tau), _n - 1.0) * _rss / _tau;

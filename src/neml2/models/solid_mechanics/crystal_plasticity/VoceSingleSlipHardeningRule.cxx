@@ -40,11 +40,10 @@ VoceSingleSlipHardeningRule::expected_options()
                   "saturated, maximum value of the slip system strength, and \\f$ \\dot{\\gamma}_i "
                   "\\f$ is the slip rate on each system.";
 
-  options.set_parameter<TensorName<Scalar>>("initial_slope");
-  options.set("initial_slope").doc() = "The initial rate of hardening";
-  options.set_parameter<TensorName<Scalar>>("saturated_hardening");
-  options.set("saturated_hardening").doc() =
-      "The final, saturated value of the slip system strength";
+  options.add_parameter<Scalar>("initial_slope", "The initial rate of hardening");
+  options.add_parameter<Scalar>("saturated_hardening",
+                                "The final, saturated value of the slip system strength");
+
   return options;
 }
 
@@ -63,11 +62,8 @@ VoceSingleSlipHardeningRule::set_value(bool out, bool dout_din, bool /*d2out_din
 
   if (dout_din)
   {
-    if (_tau.is_dependent())
-      _tau_dot.d(_tau) = -_theta_0 / _tau_f * _gamma_dot_sum;
-
-    if (_gamma_dot_sum.is_dependent())
-      _tau_dot.d(_gamma_dot_sum) = _theta_0 * (1 - _tau / _tau_f);
+    _tau_dot.d(_tau) = -_theta_0 / _tau_f * _gamma_dot_sum;
+    _tau_dot.d(_gamma_dot_sum) = _theta_0 * (1 - _tau / _tau_f);
 
     if (const auto * const theta_0 = nl_param("initial_slope"))
       _tau_dot.d(*theta_0) = (1 - _tau / _tau_f) * _gamma_dot_sum;

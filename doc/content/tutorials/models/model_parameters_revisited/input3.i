@@ -40,19 +40,19 @@
 [Models]
   [alpha]
     type = ScalarLinearInterpolation
-    argument = 'forces/T'
+    argument = 'temperature'
     abscissa = 'alpha_x'
     ordinate = 'alpha_y'
   []
   [K]
     type = ScalarLinearInterpolation
-    argument = 'forces/T'
+    argument = 'temperature'
     abscissa = 'K_x'
     ordinate = 'K_y'
   []
   [G]
     type = ScalarLinearInterpolation
-    argument = 'forces/T'
+    argument = 'temperature'
     abscissa = 'G_x'
     ordinate = 'G_y'
   []
@@ -60,18 +60,16 @@
     type = ThermalEigenstrain
     reference_temperature = '300'
     CTE = 'alpha'
-    eigenstrain = 'forces/Eg'
   []
   [eq2]
     type = SR2LinearCombination
-    from_var = 'forces/E forces/Eg'
-    to_var = 'forces/Ee'
-    coefficients = '1 -1'
+    from = 'strain eigenstrain'
+    to = 'elastic_strain'
+    weights = '1 -1'
   []
   [eq3]
     type = LinearIsotropicElasticity
-    strain = 'forces/Ee'
-    stress = 'state/S'
+    strain = 'elastic_strain'
     coefficient_types = 'BULK_MODULUS SHEAR_MODULUS'
     coefficients = 'K G'
   []

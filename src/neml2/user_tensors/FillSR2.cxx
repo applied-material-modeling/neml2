@@ -41,8 +41,7 @@ FillSR2::expected_options()
                   "entries; when vector length is 6, the Scalar values are used to fill the tensor "
                   "following the Voigt notation.";
 
-  options.set<std::vector<TensorName<Scalar>>>("values");
-  options.set("values").doc() = "Scalars used to fill the SR2";
+  options.add<std::vector<TensorName<Scalar>>>("values", "Scalars used to fill the SR2");
 
   return options;
 }

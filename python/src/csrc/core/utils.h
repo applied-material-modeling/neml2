@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include "neml2/models/map_types_fwd.h"
+#include "neml2/tensors/Tensor.h"
 
 #include <pybind11/pybind11.h>
 
@@ -60,6 +60,3 @@ std::map<std::string, neml2::Tensor> pack_value_map(const neml2::ValueMap & vals
 /// Pack a neml2::DerivMap into a std::map<std::string, std::map<std::string, neml2::Tensor>>
 std::map<std::string, std::map<std::string, neml2::Tensor>>
 pack_deriv_map(const neml2::DerivMap & derivs);
-
-/// Unpack a Python object into a neml2::VariableName (i.e., either a VariableName or a string)
-neml2::VariableName unpack_variable_name(const pybind11::handle & obj);

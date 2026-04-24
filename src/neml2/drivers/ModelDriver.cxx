@@ -37,25 +37,22 @@ ModelDriver::expected_options()
 {
   OptionSet options = Driver::expected_options();
 
-  options.set<std::string>("model");
-  options.set("model").doc() = "The material model to be updated by the driver";
+  options.add<std::string>("model", "The model to be updated by the driver");
+  options.add_optional<std::string>("postprocessor",
+                                    "The postprocessor model to be applied on the model output");
 
-  options.set<std::string>("postprocessor");
-  options.set("postprocessor").doc() = "The postprocessor model to be applied on the model output";
-
-  options.set<std::string>("device") = "cpu";
-  options.set("device").doc() =
+  options.add<std::string>(
+      "device",
+      "cpu",
       "Device on which to evaluate the material model. The string supplied must follow the "
       "following schema: (cpu|cuda)[:<device-index>] where cpu or cuda specifies the device type, "
       "and :<device-index> optionally specifies a device index. For example, device='cpu' sets the "
       "target compute device to be CPU, and device='cuda:1' sets the target compute device to be "
-      "CUDA with device ID 1.";
+      "CUDA with device ID 1.");
 
 #ifdef NEML2_WORK_DISPATCHER
-  options.set<std::string>("scheduler");
-  options.set("scheduler").doc() = "The work scheduler to use";
-  options.set<bool>("async_dispatch") = true;
-  options.set("async_dispatch").doc() = "Whether to dispatch work asynchronously";
+  options.add_optional<std::string>("scheduler", "The work scheduler to use");
+  options.add<bool>("async_dispatch", true, "Whether to dispatch work asynchronously");
 #endif
 
   return options;
@@ -64,13 +61,13 @@ ModelDriver::expected_options()
 ModelDriver::ModelDriver(const OptionSet & options)
   : Driver(options),
     _model(factory()->get_model(options.get<std::string>("model"))),
-    _postprocessor(options.get("postprocessor").user_specified()
+    _postprocessor(options.defined("postprocessor")
                        ? factory()->get_model(options.get<std::string>("postprocessor"))
                        : nullptr),
     _device(options.get<std::string>("device"))
 #ifdef NEML2_WORK_DISPATCHER
     ,
-    _scheduler(options.get("scheduler").user_specified()
+    _scheduler(options.defined("scheduler")
                    ? factory()->get_scheduler(options.get<std::string>("scheduler"))
                    : nullptr),
     _async_dispatch(options.get<bool>("async_dispatch"))

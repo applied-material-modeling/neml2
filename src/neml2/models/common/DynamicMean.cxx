@@ -35,10 +35,7 @@ DynamicMean<T>::expected_options()
 {
   OptionSet options = Reduction<T>::expected_options();
   options.doc() = "Average a dynamic dimension";
-
-  options.set<Size>("dim");
-  options.set("dim").doc() = "The dimension to average over";
-
+  options.add<Size>("dim", "The dimension to average over");
   return options;
 }
 

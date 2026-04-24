@@ -38,22 +38,14 @@ RationalDegradationFunction::expected_options()
       "Power degradation function to degrade the elastic strain energy density, \\f$ g "
       "= \\frac{\\left( 1-d \\right)^p}{\\left( 1-d \\right)^p + Q\\left(d \\right)} \\f$ where, "
       "\\f$ Q\\left(d \\right) = b_{1}d\\left( 1+b_{2}d+b_{2}b_{3}d^2 \\right)\\f$";
-  options.set<TensorName<Scalar>>("power");
-  options.set("power").doc() = "Power of the degradation function";
+  options.set_private<bool>("define_second_derivatives", true);
 
-  options.set<double>("eta") = 0;
-  options.set("eta").doc() = "Residual degradation when d = 1";
+  options.add<double>("eta", 0, "Residual degradation when d = 1");
 
-  options.set<TensorName<Scalar>>("fitting_param_1");
-  options.set("fitting_param_1").doc() = "Material dependent fitting parameter 1";
-
-  options.set<TensorName<Scalar>>("fitting_param_2");
-  options.set("fitting_param_2").doc() = "Material dependent fitting parameter 2";
-
-  options.set<TensorName<Scalar>>("fitting_param_3");
-  options.set("fitting_param_3").doc() = "Material dependent fitting parameter 3";
-
-  options.set<bool>("define_second_derivatives") = true;
+  options.add_parameter<Scalar>("power", "Power of the degradation function");
+  options.add_parameter<Scalar>("b1", "Degradation parameter b_1");
+  options.add_parameter<Scalar>("b2", "Degradation parameter b_2");
+  options.add_parameter<Scalar>("b3", "Degradation parameter b_3");
 
   return options;
 }
@@ -62,10 +54,9 @@ RationalDegradationFunction::RationalDegradationFunction(const OptionSet & optio
   : DegradationFunction(options),
     _p(declare_parameter<Scalar>("p", "power")),
     _eta(options.get<double>("eta")),
-    _b1(declare_parameter<Scalar>("b1", "fitting_param_1")),
-    _b2(declare_parameter<Scalar>("b2", "fitting_param_2")),
-    _b3(declare_parameter<Scalar>("b3", "fitting_param_3"))
-
+    _b1(declare_parameter<Scalar>("b1", "b1")),
+    _b2(declare_parameter<Scalar>("b2", "b2")),
+    _b3(declare_parameter<Scalar>("b3", "b3"))
 {
 }
 

@@ -35,23 +35,26 @@ TabulatedPolynomialModel::expected_options()
 {
   auto options = Model::expected_options();
   // Model inputs
-  options.set<VariableName>("von_mises_stress") = VariableName(STATE, "s");
-  options.set<VariableName>("temperature") = VariableName(FORCES, "T");
-  options.set<VariableName>("internal_state_1") = VariableName(STATE, "s1");
-  options.set<VariableName>("internal_state_2") = VariableName(STATE, "s2");
+  options.add_input("von_mises_stress", "von Mises stress");
+  options.add_input("temperature", "temperature");
+  options.add_input("internal_state_1", "internal state 1");
+  options.add_input("internal_state_2", "internal state 2");
   // Model outputs
-  options.set<VariableName>("equivalent_plastic_strain_rate") = VariableName(STATE, "ep_rate");
-  options.set<VariableName>("internal_state_1_rate") = VariableName(STATE, "s1_rate");
-  options.set<VariableName>("internal_state_2_rate") = VariableName(STATE, "s2_rate");
+  options.add_output("equivalent_plastic_strain_rate", "equivalent plastic strain rate");
+  options.add_output("internal_state_1_rate", "internal state 1 rate");
+  options.add_output("internal_state_2_rate", "internal state 2 rate");
   // Model constants
-  options.set<TensorName<Tensor>>("A0");
-  options.set<TensorName<Tensor>>("A1");
-  options.set<TensorName<Tensor>>("A2");
-  options.set<TensorName<Tensor>>("stress_tile_lower_bounds");
-  options.set<TensorName<Tensor>>("stress_tile_upper_bounds");
-  options.set<TensorName<Tensor>>("temperature_tile_lower_bounds");
-  options.set<TensorName<Tensor>>("temperature_tile_upper_bounds");
-  options.set<double>("index_sharpness") = 1.0;
+  options.add_buffer<Tensor>("A0", "Constant term in the polynomial");
+  options.add_buffer<Tensor>("A1", "Linear term in the polynomial");
+  options.add_buffer<Tensor>("A2", "Quadratic term in the polynomial");
+  options.add_buffer<Tensor>("stress_tile_lower_bounds", "Lower bounds for stress tiles");
+  options.add_buffer<Tensor>("stress_tile_upper_bounds", "Upper bounds for stress tiles");
+  options.add_buffer<Tensor>("temperature_tile_lower_bounds", "Lower bounds for temperature tiles");
+  options.add_buffer<Tensor>("temperature_tile_upper_bounds", "Upper bounds for temperature tiles");
+  options.add<double>("index_sharpness",
+                      1.0,
+                      "Sharpness of the smooth index function, higher value means sharper "
+                      "transition between cells. Default is 1.0.");
   return options;
 }
 
@@ -111,7 +114,7 @@ TabulatedPolynomialModel::set_value(bool out, bool /*dout_din*/, bool /*d2out_di
   //
   // First concatenate them together and unsqueeze to shape (...; 1, 1, 4, 1) so that we can do
   // batched matrix vector product
-  ATensor x = base_stack(inputs, /*dim=*/-1);
+  ATensor x = base_stack(inputs, /*d=*/-1);
   x = x.unsqueeze(-2).unsqueeze(-2).unsqueeze(-1);
 
   // The smooth index ij is of shape (...; 2, 3)

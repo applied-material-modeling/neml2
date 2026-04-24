@@ -36,26 +36,15 @@ R2Multiplication::expected_options()
   options.doc() = "Multiplication of form \\f$ A B \\f$, where \\f$ A \\f$ and \\f$ B \\f$ are "
                   "second order tensors. A and B can be inverted and/or transposed per request.";
 
-  options.set<VariableName>("A");
-  options.set("A").doc() = "Variable A";
+  options.add_input("A", "Variable A");
+  options.add<bool>("invert_A", false, "Whether to invert A");
+  options.add<bool>("transpose_A", false, "Whether to transpose A");
 
-  options.set<bool>("invert_A") = false;
-  options.set("invert_A").doc() = "Whether to invert A";
+  options.add_input("B", "Variable B");
+  options.add<bool>("invert_B", false, "Whether to invert B");
+  options.add<bool>("transpose_B", false, "Whether to transpose B");
 
-  options.set<bool>("transpose_A") = false;
-  options.set("transpose_A").doc() = "Whether to transpose A";
-
-  options.set<VariableName>("B");
-  options.set("B").doc() = "Variable B";
-
-  options.set<bool>("invert_B") = false;
-  options.set("invert_B").doc() = "Whether to invert B";
-
-  options.set<bool>("transpose_B") = false;
-  options.set("transpose_B").doc() = "Whether to transpose B";
-
-  options.set_output("to");
-  options.set("to").doc() = "The result of the multiplication";
+  options.add_output("to", "The result of the multiplication");
 
   return options;
 }

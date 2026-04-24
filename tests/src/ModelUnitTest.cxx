@@ -61,32 +61,59 @@ ModelUnitTest::expected_options()
 {
   OptionSet options = Driver::expected_options();
 
-  options.set<std::string>("model");
-  options.set<bool>("check_values") = true;
-  options.set<bool>("check_derivatives") = true;
-  options.set<bool>("check_second_derivatives") = false;
-  options.set<bool>("check_AD_parameter_derivatives") = true;
+  options.add<std::string>("model", "The name of the model to be unit tested.");
 
-  options.set<double>("value_rel_tol") = 1e-5;
-  options.set<double>("value_abs_tol") = 1e-8;
-  options.set<double>("derivative_rel_tol") = 1e-5;
-  options.set<double>("derivative_abs_tol") = 1e-8;
-  options.set<double>("second_derivative_rel_tol") = 1e-5;
-  options.set<double>("second_derivative_abs_tol") = 1e-8;
-  options.set<double>("parameter_derivative_rel_tol") = 1e-5;
-  options.set<double>("parameter_derivative_abs_tol") = 1e-8;
+  options.add<bool>("check_values", true, "Whether to check the values of the model outputs.");
+  options.add<bool>(
+      "check_derivatives", true, "Whether to check the derivatives of the model outputs.");
+  options.add<bool>("check_second_derivatives",
+                    false,
+                    "Whether to check the second derivatives of the model outputs.");
+  options.add<bool>("check_AD_parameter_derivatives",
+                    true,
+                    "Whether to check the automatic differentiation parameter derivatives.");
+
+  options.add<double>("value_rel_tol", 1e-5, "Relative tolerance for value checks.");
+  options.add<double>("value_abs_tol", 1e-8, "Absolute tolerance for value checks.");
+  options.add<double>("derivative_rel_tol", 1e-5, "Relative tolerance for derivative checks.");
+  options.add<double>("derivative_abs_tol", 1e-8, "Absolute tolerance for derivative checks.");
+  options.add<double>(
+      "second_derivative_rel_tol", 1e-5, "Relative tolerance for second derivative checks.");
+  options.add<double>(
+      "second_derivative_abs_tol", 1e-8, "Absolute tolerance for second derivative checks.");
+  options.add<double>(
+      "parameter_derivative_rel_tol", 1e-5, "Relative tolerance for parameter derivative checks.");
+  options.add<double>(
+      "parameter_derivative_abs_tol", 1e-8, "Absolute tolerance for parameter derivative checks.");
 
 #define OPTION_SET_(T)                                                                             \
-  options.set<std::vector<VariableName>>("input_" #T "_names");                                    \
-  options.set<std::vector<TensorName<T>>>("input_" #T "_values");                                  \
-  options.set<std::vector<VariableName>>("output_" #T "_names");                                   \
-  options.set<std::vector<TensorName<T>>>("output_" #T "_values")
+  options.add<std::vector<VariableName>>(                                                          \
+      "history_" #T "_names", {}, "History " #T " variable names.");                               \
+  options.add<std::vector<std::size_t>>("history_" #T "_steps", {}, "History " #T " steps.");      \
+  options.add<std::vector<TensorName<T>>>("history_" #T "_values", {}, "History " #T " values.");  \
+  options.add<std::vector<VariableName>>(                                                          \
+      "input_" #T "_names", {}, "Input " #T " variable names.");                                   \
+  options.add<std::vector<TensorName<T>>>("input_" #T "_values", {}, "Input " #T " values.");      \
+  options.add<std::vector<VariableName>>(                                                          \
+      "output_" #T "_names", {}, "Output " #T " variable names.");                                 \
+  options.add<std::vector<TensorName<T>>>("output_" #T "_values", {}, "Output " #T " values.")
   FOR_ALL_TENSORBASE(OPTION_SET_);
 
-  options.set<std::vector<VariableName>>("input_with_intrsc_intmd_dims");
-  options.set<std::vector<Size>>("input_intrsc_intmd_dims");
-  options.set<std::vector<VariableName>>("output_with_intrsc_intmd_dims");
-  options.set<std::vector<Size>>("output_intrsc_intmd_dims");
+  options.add<std::vector<VariableName>>(
+      "input_with_intrsc_intmd_dims",
+      {},
+      "Input variables with intersecting intermediate dimensions.");
+  options.add<std::vector<Size>>("input_intrsc_intmd_dims",
+                                 {},
+                                 "Intermediate dimensions for input variables with intersections.");
+  options.add<std::vector<VariableName>>(
+      "output_with_intrsc_intmd_dims",
+      {},
+      "Output variables with intersecting intermediate dimensions.");
+  options.add<std::vector<Size>>(
+      "output_intrsc_intmd_dims",
+      {},
+      "Intermediate dimensions for output variables with intersections.");
 
   return options;
 }
@@ -238,16 +265,16 @@ ModelUnitTest::check_dvalue()
                     " while the finite differencing derivative shape is ",
                     numerical.sizes(),
                     ".");
-        neml_assert(
-            at::allclose(exact_val, numerical, _deriv_rtol, _deriv_atol),
-            "The model gives derivatives that are different from finite differencing for output '",
-            yname,
-            "' with respect to '",
-            xname,
-            "'. The model gives:\n",
-            exact.at(yname).at(xname),
-            "\nFinite differencing gives:\n",
-            numerical);
+        neml_assert(at::allclose(exact_val, numerical, _deriv_rtol, _deriv_atol),
+                    "The model gives derivatives that are different from finite differencing for "
+                    "output '",
+                    yname,
+                    "' with respect to '",
+                    xname,
+                    "'. The model gives:\n",
+                    exact.at(yname).at(xname),
+                    "\nFinite differencing gives:\n",
+                    numerical);
       }
     }
 }

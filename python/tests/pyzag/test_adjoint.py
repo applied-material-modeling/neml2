@@ -112,7 +112,7 @@ class TestElasticModel(DerivativeCheck):
         strain = SR2.dynamic_linspace(start_strain, end_strain, self.nstep).dynamic.unsqueeze(-1)
 
         # Prescribed forces
-        forces = dict_to_list({"forces/t": time, "forces/E": strain}, self.model.fvars)
+        forces = dict_to_list({"t": time, "strain": strain}, self.model.fvars)
         self.forces = SparseVector(self.model.flayout, forces).assemble().tensors[0].torch()
 
         # Initial state
@@ -144,7 +144,7 @@ class TestViscoplasticModel(DerivativeCheck):
         strain = SR2.dynamic_linspace(start_strain, end_strain, self.nstep).dynamic.unsqueeze(-1)
 
         # Prescribed forces
-        forces = dict_to_list({"forces/t": time, "forces/E": strain}, self.model.fvars)
+        forces = dict_to_list({"t": time, "strain": strain}, self.model.fvars)
         self.forces = SparseVector(self.model.flayout, forces).assemble().tensors[0].torch()
 
         # Initial state
@@ -192,10 +192,10 @@ class TestKocksMeckingMixedControlModel(DerivativeCheck):
         # Prescribed forces
         forces = dict_to_list(
             {
-                "forces/t": time,
-                "forces/control": control,
-                "forces/fixed_values": condition,
-                "forces/T": temperature,
+                "t": time,
+                "control": control,
+                "mixed_control": condition,
+                "temperature": temperature,
             },
             self.model.fvars,
         )

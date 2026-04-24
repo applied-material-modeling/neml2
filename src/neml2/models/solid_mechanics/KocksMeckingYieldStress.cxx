@@ -39,12 +39,11 @@ KocksMeckingYieldStress::expected_options()
                   "\\mu \\f$ with \\f$ \\mu \\f$ the shear modulus and \\f$ C \\f$ the horizontal "
                   "intercept from the Kocks-Mecking diagram.";
 
-  options.set<bool>("define_second_derivatives") = true;
+  options.set_private<bool>("define_second_derivatives", true);
 
-  options.set_parameter<TensorName<Scalar>>("C");
-  options.set("C").doc() = "The Kocks-Mecking horizontal intercept";
-  options.set_parameter<TensorName<Scalar>>("shear_modulus");
-  options.set("shear_modulus").doc() = "The shear modulus";
+  options.add_parameter<Scalar>("C", "The Kocks-Mecking horizontal intercept");
+  options.add_parameter<Scalar>("shear_modulus", "The shear modulus");
+  options.add_output("yield_stress", "Output name of the yield stress");
 
   return options;
 }
@@ -53,7 +52,7 @@ KocksMeckingYieldStress::KocksMeckingYieldStress(const OptionSet & options)
   : Model(options),
     _C(declare_parameter<Scalar>("C", "C", /*allow_nonlinear=*/true)),
     _mu(declare_parameter<Scalar>("mu", "shear_modulus", /*allow_nonlinear=*/true)),
-    _tau(declare_output_variable<Scalar>(VariableName(PARAMETERS, name())))
+    _tau(declare_output_variable<Scalar>("yield_stress"))
 {
 }
 

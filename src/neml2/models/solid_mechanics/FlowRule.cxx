@@ -33,10 +33,7 @@ FlowRule::expected_options()
   OptionSet options = Model::expected_options();
   options.doc() = "Map the flow rate (i.e., the consistency parameter in the KKT conditions) to "
                   "the rate of internal variables.";
-
-  options.set_input("flow_rate") = VariableName(STATE, "internal", "gamma_rate");
-  options.set("flow_rate").doc() = "Flow rate";
-
+  options.add_input("flow_rate", "Flow rate");
   return options;
 }
 

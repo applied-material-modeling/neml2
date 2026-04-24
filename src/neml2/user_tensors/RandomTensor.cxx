@@ -39,10 +39,8 @@ RandomTensorImpl<T>::expected_options()
 
   if constexpr (!std::is_same_v<T, Rot>)
   {
-    options.set<double>("min");
-    options.set("min").doc() = "Minimum random value.";
-    options.set<double>("max");
-    options.set("max").doc() = "Maximum random value.";
+    options.add<double>("min", "Minimum random value.");
+    options.add<double>("max", "Maximum random value.");
   }
 
   return options;

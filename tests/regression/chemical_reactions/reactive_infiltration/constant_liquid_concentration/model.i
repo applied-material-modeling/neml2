@@ -17,7 +17,7 @@ oSiCm1 = 0.08 # 1/Omega_SiC
   []
   [alpha]
     type = FullScalar
-    batch_shape = '(${ntime})'
+    batch_shape = '(200)'
     value = 0.01
   []
 []
@@ -27,10 +27,9 @@ oSiCm1 = 0.08 # 1/Omega_SiC
     type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    time = 'forces/t'
-    force_Scalar_names = 'forces/alpha'
+    force_Scalar_names = 'alpha'
     force_Scalar_values = 'alpha'
-    ic_Scalar_names = 'state/phi_P state/phi_S state/alpha_P state/alpha_S'
+    ic_Scalar_names = 'phi_P phi_S alpha_P alpha_S'
     ic_Scalar_values = '0 0.3 0 0.05660377358'
     save_as = 'result.pt'
   []
@@ -44,28 +43,28 @@ oSiCm1 = 0.08 # 1/Omega_SiC
 [Models]
   [liquid_volume_fraction]
     type = ScalarLinearCombination
-    from_var = 'forces/alpha'
-    to_var = 'state/phi_L'
-    coefficients = '${omega_Si}'
+    from = 'alpha'
+    to = 'phi_L'
+    weights = '${omega_Si}'
   []
   [outer_radius]
     type = CylindricalChannelGeometry
-    solid_fraction = 'state/phi_S'
-    product_fraction = 'state/phi_P'
-    inner_radius = 'state/ri'
-    outer_radius = 'state/ro'
+    solid_fraction = 'phi_S'
+    product_fraction = 'phi_P'
+    inner_radius = 'ri'
+    outer_radius = 'ro'
   []
   [liquid_reactivity]
     type = HermiteSmoothStep
-    argument = 'state/phi_L'
-    value = 'state/R_L'
+    argument = 'phi_L'
+    value = 'R_L'
     lower_bound = 0
     upper_bound = 0.1
   []
   [solid_reactivity]
     type = HermiteSmoothStep
-    argument = 'state/phi_S'
-    value = 'state/R_S'
+    argument = 'phi_S'
+    value = 'R_S'
     lower_bound = 0
     upper_bound = 0.1
   []
@@ -73,50 +72,46 @@ oSiCm1 = 0.08 # 1/Omega_SiC
     type = DiffusionLimitedReaction
     diffusion_coefficient = '${D}'
     molar_volume = '${omega_Si}'
-    product_inner_radius = 'state/ri'
-    solid_inner_radius = 'state/ro'
-    liquid_reactivity = 'state/R_L'
-    solid_reactivity = 'state/R_S'
-    reaction_rate = 'state/react'
+    product_inner_radius = 'ri'
+    solid_inner_radius = 'ro'
+    liquid_reactivity = 'R_L'
+    solid_reactivity = 'R_S'
+    reaction_rate = 'react'
   []
   [substance_product]
     type = ScalarLinearCombination
-    from_var = 'state/phi_P'
-    to_var = 'state/alpha_P'
-    coefficients = '${oSiCm1}'
+    from = 'phi_P'
+    to = 'alpha_P'
+    weights = '${oSiCm1}'
   []
   [product_rate]
     type = ScalarVariableRate
-    variable = 'state/alpha_P'
-    rate = 'state/adot_P'
-    time = 'forces/t'
+    variable = 'alpha_P'
   []
   [substance_solid]
     type = ScalarLinearCombination
-    from_var = 'state/phi_S'
-    to_var = 'state/alpha_S'
-    coefficients = '${oCm1}'
+    from = 'phi_S'
+    to = 'alpha_S'
+    weights = '${oCm1}'
   []
   [solid_rate]
     type = ScalarVariableRate
-    variable = 'state/alpha_S'
-    rate = 'state/adot_S'
-    time = 'forces/t'
+    variable = 'alpha_S'
   []
   ##############################################
   ### IVP
   ##############################################
   [residual_phiP]
     type = ScalarLinearCombination
-    from_var = 'state/adot_P state/react'
-    to_var = 'residual/phi_P'
-    coefficients = '1.0 -1.0'
+    from = 'alpha_P_rate react'
+    to = 'phi_P_residual'
+    weights = '1.0 -1.0'
   []
   [residual_phiL]
     type = ScalarLinearCombination
-    from_var = 'state/adot_P state/adot_S'
-    to_var = 'residual/phi_S'
-    coefficients = '1.0 ${chem_ratio}'
+    from = 'alpha_P_rate alpha_S_rate'
+    to = 'phi_S_residual'
+    weights = '1.0 ${chem_ratio}'
   []
   [model_residual]
     type = ComposedModel
@@ -130,6 +125,8 @@ oSiCm1 = 0.08 # 1/Omega_SiC
   [eq_sys]
     type = NonlinearSystem
     model = 'model_residual'
+    unknowns = 'phi_P phi_S'
+    residuals = 'phi_P_residual phi_S_residual'
   []
 []
 
@@ -152,19 +149,19 @@ oSiCm1 = 0.08 # 1/Omega_SiC
   []
   [substance_product_new]
     type = ScalarLinearCombination
-    from_var = 'state/phi_P'
-    to_var = 'state/alpha_P'
-    coefficients = '${oSiCm1}'
+    from = 'phi_P'
+    to = 'alpha_P'
+    weights = '${oSiCm1}'
   []
   [substance_solid_new]
     type = ScalarLinearCombination
-    from_var = 'state/phi_S'
-    to_var = 'state/alpha_S'
-    coefficients = '${oCm1}'
+    from = 'phi_S'
+    to = 'alpha_S'
+    weights = '${oCm1}'
   []
   [model]
     type = ComposedModel
     models = 'model_update liquid_volume_fraction substance_solid_new substance_product_new'
-    additional_outputs = 'state/phi_P state/phi_S'
+    additional_outputs = 'phi_P phi_S'
   []
 []

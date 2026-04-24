@@ -24,9 +24,6 @@
 
 #pragma once
 
-#include <filesystem>
-#include <iostream>
-
 #include "neml2/misc/errors.h"
 #include "neml2/base/InputFile.h"
 
@@ -173,8 +170,8 @@ Factory::get_object(const std::string & section,
     if (options.first == name)
     {
       auto new_options = options.second;
-      new_options.set<Factory *>("_factory") = this;
-      new_options.set<std::shared_ptr<Settings>>("_settings") = settings();
+      new_options.set_private<Factory *>("_factory", this);
+      new_options.set_private<std::shared_ptr<Settings>>("_settings", settings());
       new_options += additional_options;
       create_object(section, new_options);
       break;

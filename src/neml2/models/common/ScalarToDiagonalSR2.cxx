@@ -35,13 +35,10 @@ ScalarToDiagonalSR2::expected_options()
   OptionSet options = Model::expected_options();
   options.doc() = "Create a diagonal symmetric rank 2 tensor with values filled by a scalar";
 
-  options.set<bool>("define_second_derivatives") = true;
+  options.set_private<bool>("define_second_derivatives", true);
 
-  options.set_input("input");
-  options.set("input").doc() = "Symmetric tensor to convert";
-
-  options.set_output("output");
-  options.set("output").doc() = "Output full rank two tensor";
+  options.add_input("input", "Scalar to convert");
+  options.add_output("output", "Output diagonal symmetric second order tensor");
 
   return options;
 }

@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/internal/dislocation_density'
+    input_Scalar_names = 'dislocation_density'
     input_Scalar_values = 'rho'
-    output_Scalar_names = 'state/internal/slip_strengths'
+    output_Scalar_names = 'slip_strengths'
     output_Scalar_values = 'tau'
     derivative_rel_tol = 0
     derivative_abs_tol = 5e-6

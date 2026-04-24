@@ -35,11 +35,11 @@ using namespace neml2;
 
 TEST_CASE("valuemap_helpers", "[dispatchers]")
 {
-  const auto strain_name = VariableName{"state", "strain"};
+  const auto strain_name = "strain";
   const auto strain0 = SR2::fill(0.1, 0.05, -0.01).dynamic_expand({5});
   const auto strain1 = SR2::fill(0.2, 0.1, 0).dynamic_expand({5});
   const auto strain = dynamic_linspace(strain0, strain1, 100, 1);
-  const auto temperature_name = VariableName{"forces", "temperature"};
+  const auto temperature_name = "temperature";
   const auto temperature = Scalar::full(300).dynamic_expand({5, 1});
   auto value_map_1 = ValueMap{{strain_name, strain}, {temperature_name, temperature}};
   auto value_map_2 = ValueMap{{strain_name, strain}, {temperature_name, temperature}};

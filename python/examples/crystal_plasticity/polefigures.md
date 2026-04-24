@@ -103,10 +103,10 @@ class Solve(torch.nn.Module):
 
         # Setup
         forces = {
-            "forces/t": neml2.Scalar(time.squeeze(-1), 0),
-            "forces/deformation_rate": neml2.SR2(deformation_rate, 0),
-            "forces/vorticity": neml2.WR2(vorticity, 0),
-            "forces/initial_orientation": neml2.Rot(initial_orientations, 0),
+            "t": neml2.Scalar(time.squeeze(-1), 0),
+            "deformation_rate": neml2.SR2(deformation_rate, 0),
+            "vorticity": neml2.WR2(vorticity, 0),
+            "initial_orientation": neml2.Rot(initial_orientations, 0),
         }
         forces = [forces[key] for key in self.discrete_equations.fvars]
         forces = (
@@ -117,7 +117,7 @@ class Solve(torch.nn.Module):
         )
         state0 = [neml2.Tensor()] * len(self.discrete_equations.svars)
         if initial_orientations is not None:
-            i = self.discrete_equations.svars.index("state/orientation")
+            i = self.discrete_equations.svars.index("orientation")
             state0[i] = neml2.Tensor(initial_orientations, 1)
         state0 = (
             neml2.SparseVector(self.discrete_equations.slayout, state0)

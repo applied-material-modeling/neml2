@@ -48,7 +48,10 @@ Factory::create_object(const std::string & section, const OptionSet & options)
   const std::string & name = options.name();
   const std::string & type = options.type();
 
-  auto build = Registry::info(type).build;
+  const auto * info = Registry::info(type);
+  if (!info)
+    throw FactoryException("No object of type '" + type + "' found in registry.");
+  auto build = info->build;
   auto object = (*build)(options);
   _objects[section][name].push_back(object);
 

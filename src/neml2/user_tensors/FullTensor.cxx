@@ -35,8 +35,7 @@ FullTensorTmpl<T>::expected_options()
   OptionSet options = FactoryMethodBase<T>::expected_options();
   options.doc() = "Construct a full " + FactoryMethodBase<T>::tensor_type() +
                   " with given batch shape. Tensor values are set to the specified value.";
-  options.set<double>("value");
-  options.set("value").doc() = "Value to fill the tensor with";
+  options.add<double>("value", "Value to fill the tensor with");
   return options;
 }
 

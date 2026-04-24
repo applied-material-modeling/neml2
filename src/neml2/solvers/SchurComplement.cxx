@@ -39,21 +39,19 @@ SchurComplement::expected_options()
       "Schur complement linear solver. Solves a block-partitioned system A x = b by forming and "
       "solving the Schur complement of the primary block.";
 
-  options.set<unsigned int>("residual_primary_group") = 0;
-  options.set("residual_primary_group").doc() =
+  options.add<unsigned int>(
+      "residual_primary_group",
+      0,
       "Row (residual) group index of the primary block. The system must have exactly 2 residual "
-      "groups; the other group is automatically the Schur complement residual group.";
-
-  options.set<unsigned int>("unknown_primary_group") = 0;
-  options.set("unknown_primary_group").doc() =
+      "groups; the other group is automatically the Schur complement residual group.");
+  options.add<unsigned int>(
+      "unknown_primary_group",
+      0,
       "Column (unknown) group index of the primary block. The system must have exactly 2 unknown "
-      "groups; the other group is automatically the Schur complement unknown group.";
+      "groups; the other group is automatically the Schur complement unknown group.");
 
-  options.set<std::string>("primary_solver");
-  options.set("primary_solver").doc() = "Linear solver used for the primary block A_pp";
-
-  options.set<std::string>("schur_solver");
-  options.set("schur_solver").doc() = "Linear solver used for the Schur complement block S";
+  options.add<std::string>("primary_solver", "Linear solver used for the primary block A_pp");
+  options.add<std::string>("schur_solver", "Linear solver used for the Schur complement block S");
 
   return options;
 }

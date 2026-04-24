@@ -37,17 +37,13 @@ EffectiveSaturation::expected_options()
       "volume fraction of the flowing fluid, \\f$ \\phi_\\mathrm{max} \\f$ is the maximum "
       "allowable volume fraction and \\f$ S_r \\f$ is the residual saturation.";
 
-  options.set_parameter<TensorName<Scalar>>("residual_saturation") = "0";
-  options.set("residual_saturation").doc() = "Liquid's residual volume fraction";
+  options.add_parameter<Scalar>(
+      "residual_saturation", TensorName<Scalar>("0"), "Liquid's residual volume fraction");
+  options.add_parameter<Scalar>(
+      "max_fraction", TensorName<Scalar>("1"), "Maximum allowable volume fraction of the fluid");
 
-  options.set_input("fluid_fraction") = VariableName(FORCES, "fluid_fraction");
-  options.set("fluid_fraction").doc() = "Volume fraction of the fluid";
-
-  options.set_parameter<TensorName<Scalar>>("max_fraction") = "1";
-  options.set("max_fraction").doc() = "Maximum allowable volume fraction of the fluid";
-
-  options.set_output("effective_saturation") = VariableName(STATE, "effective_saturation");
-  options.set("effective_saturation").doc() = "Effective saturation";
+  options.add_input("fluid_fraction", "Volume fraction of the fluid");
+  options.add_output("effective_saturation", "Effective saturation");
 
   return options;
 }
@@ -71,8 +67,7 @@ EffectiveSaturation::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 
   if (dout_din)
   {
-    if (_phi.is_dependent())
-      _S.d(_phi) = 1.0 / (_phimax * (1 - _Sr));
+    _S.d(_phi) = 1.0 / (_phimax * (1 - _Sr));
 
     if (const auto * const phimax = nl_param("phi_max"))
       _S.d(*phimax) = -_phi / (_phimax * _phimax * (1 - _Sr));

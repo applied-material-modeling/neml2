@@ -44,11 +44,11 @@ protected:
   /// Set the slip hardening rate
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  /// Forest hardening rate
-  Variable<Scalar> & _rho_dot;
-
   /// Current dislocation density
   const Variable<Scalar> & _rho;
+
+  /// Forest hardening rate
+  Variable<Scalar> & _rho_dot;
 
   /// Slip rates
   const Variable<Scalar> & _gamma_dot;

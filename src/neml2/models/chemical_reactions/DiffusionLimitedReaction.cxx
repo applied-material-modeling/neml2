@@ -23,7 +23,6 @@
 // THE SOFTWARE.
 
 #include "neml2/models/chemical_reactions/DiffusionLimitedReaction.h"
-#include "neml2/misc/assertions.h"
 
 namespace neml2
 {
@@ -35,27 +34,21 @@ DiffusionLimitedReaction::expected_options()
   OptionSet options = Model::expected_options();
   options.doc() = "Calculate the void fraction rate of change";
 
-  options.set_input("product_inner_radius") = VariableName{"state", "ri"};
-  options.set("product_inner_radius").doc() = "Inner radius of the product phase";
-  options.set_input("solid_inner_radius") = VariableName{"state", "ro"};
-  options.set("solid_inner_radius").doc() = "Inner raidus of the solid phase";
-  options.set<double>("product_dummy_thickness") = 0.01;
-  options.set("product_dummy_thickness").doc() = "Minimum product thickness to avoid division by 0";
+  options.add_input("product_inner_radius", "Inner radius of the product phase");
+  options.add_input("solid_inner_radius", "Inner radius of the solid phase");
+  options.add<double>(
+      "product_dummy_thickness", 0.01, "Minimum product thickness to avoid division by 0");
 
-  options.set_input("liquid_reactivity") = VariableName{"state", "R_l"};
-  options.set("liquid_reactivity").doc() = "Reactivity of the liquid phase, between 0 and 1";
-  options.set_input("solid_reactivity") = VariableName{"state", "R_s"};
-  options.set("solid_reactivity").doc() = "Reactivity of the solid phase, between 0 and 1";
+  options.add_input("liquid_reactivity", "Reactivity of the liquid phase, between 0 and 1");
+  options.add_input("solid_reactivity", "Reactivity of the solid phase, between 0 and 1");
 
-  options.set_output("reaction_rate") = VariableName{"state", "alpha_rate"};
-  options.set("reaction_rate").doc() = "Product phase substance (mol/V) rate of change";
+  options.add_output("reaction_rate", "Product phase substance volumetric rate of change");
 
-  options.set_parameter<TensorName<Scalar>>("diffusion_coefficient");
-  options.set("diffusion_coefficient").doc() =
-      "Diffusion coefficient of the rate-limiting species in the product phase";
+  options.add_parameter<Scalar>(
+      "diffusion_coefficient",
+      "Diffusion coefficient of the rate-limiting species in the product phase");
 
-  options.set<double>("molar_volume");
-  options.set("molar_volume").doc() = "Molar volume of the rate-limiting (liquid) species";
+  options.add<double>("molar_volume", "Molar volume of the rate-limiting (liquid) species");
 
   return options;
 }

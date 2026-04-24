@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_SR2_names = 'state/internal/M'
+    input_SR2_names = 'M'
     input_SR2_values = 'M'
-    output_Scalar_names = 'state/internal/fp'
+    output_Scalar_names = 'fp'
     output_Scalar_values = '99.8876'
     check_second_derivatives = true
     derivative_abs_tol = 1e-06
@@ -22,12 +22,14 @@
   [vonmises]
     type = SR2Invariant
     invariant_type = 'VONMISES'
-    tensor = 'state/internal/M'
-    invariant = 'state/internal/s'
+    tensor = 'M'
+    invariant = 's'
   []
   [yield]
     type = YieldFunction
     yield_stress = 50
+    effective_stress = 's'
+    yield_function = 'fp'
   []
   [model]
     type = ComposedModel

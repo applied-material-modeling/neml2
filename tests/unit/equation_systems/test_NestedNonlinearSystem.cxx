@@ -38,36 +38,36 @@ TEST_CASE("ModelNonlinearSystem", "[equation_systems]")
     auto eq_sys = factory->get_es<ModelNonlinearSystem>("two_groups");
     REQUIRE(eq_sys != nullptr);
 
-    // unknown layout: group 0 = {state/foo, state/bar}, group 1 = {state/baz}
+    // unknown layout: group 0 = {foo, bar}, group 1 = {baz}
     const auto ul = eq_sys->ulayout();
     REQUIRE(ul.ngroup() == 2);
 
     const auto ug0 = ul.group(0);
     REQUIRE(ug0.nvar() == 2);
-    REQUIRE(ug0.var(0) == VariableName("state", "foo"));
-    REQUIRE(ug0.var(1) == VariableName("state", "bar"));
+    REQUIRE(ug0.var(0) == "foo");
+    REQUIRE(ug0.var(1) == "bar");
     REQUIRE(ug0.base_sizes(0) == TensorShape{}); // Scalar
     REQUIRE(ug0.base_sizes(1) == TensorShape{}); // Scalar
 
     const auto ug1 = ul.group(1);
     REQUIRE(ug1.nvar() == 1);
-    REQUIRE(ug1.var(0) == VariableName("state", "baz"));
+    REQUIRE(ug1.var(0) == "baz");
     REQUIRE(ug1.base_sizes(0) == TensorShape{6}); // SR2
 
-    // residual layout: group 0 = {residual/foo, residual/bar}, group 1 = {residual/baz}
+    // residual layout: group 0 = {foo, bar}, group 1 = {baz}
     const auto bl = eq_sys->blayout();
     REQUIRE(bl.ngroup() == 2);
 
     const auto bg0 = bl.group(0);
     REQUIRE(bg0.nvar() == 2);
-    REQUIRE(bg0.var(0) == VariableName("residual", "foo"));
-    REQUIRE(bg0.var(1) == VariableName("residual", "bar"));
+    REQUIRE(bg0.var(0) == "foo_residual");
+    REQUIRE(bg0.var(1) == "bar_residual");
     REQUIRE(bg0.base_sizes(0) == TensorShape{}); // Scalar
     REQUIRE(bg0.base_sizes(1) == TensorShape{}); // Scalar
 
     const auto bg1 = bl.group(1);
     REQUIRE(bg1.nvar() == 1);
-    REQUIRE(bg1.var(0) == VariableName("residual", "baz"));
+    REQUIRE(bg1.var(0) == "baz_residual");
     REQUIRE(bg1.base_sizes(0) == TensorShape{6}); // SR2
   }
 
@@ -81,13 +81,13 @@ TEST_CASE("ModelNonlinearSystem", "[equation_systems]")
     REQUIRE(ul.ngroup() == 3);
 
     REQUIRE(ul.group(0).nvar() == 1);
-    REQUIRE(ul.group(0).var(0) == VariableName("state", "foo"));
+    REQUIRE(ul.group(0).var(0) == "foo");
 
     REQUIRE(ul.group(1).nvar() == 1);
-    REQUIRE(ul.group(1).var(0) == VariableName("state", "bar"));
+    REQUIRE(ul.group(1).var(0) == "bar");
 
     REQUIRE(ul.group(2).nvar() == 1);
-    REQUIRE(ul.group(2).var(0) == VariableName("state", "baz"));
+    REQUIRE(ul.group(2).var(0) == "baz");
     REQUIRE(ul.group(2).base_sizes(0) == TensorShape{6}); // SR2
   }
 
@@ -102,9 +102,9 @@ TEST_CASE("ModelNonlinearSystem", "[equation_systems]")
 
     const auto g = ul.group(0);
     REQUIRE(g.nvar() == 3);
-    REQUIRE(g.var(0) == VariableName("state", "foo"));
-    REQUIRE(g.var(1) == VariableName("state", "bar"));
-    REQUIRE(g.var(2) == VariableName("state", "baz"));
+    REQUIRE(g.var(0) == "foo");
+    REQUIRE(g.var(1) == "bar");
+    REQUIRE(g.var(2) == "baz");
   }
 
   SECTION("reordered groups")
@@ -118,23 +118,23 @@ TEST_CASE("ModelNonlinearSystem", "[equation_systems]")
 
     const auto ug0 = ul.group(0);
     REQUIRE(ug0.nvar() == 1);
-    REQUIRE(ug0.var(0) == VariableName("state", "baz"));
+    REQUIRE(ug0.var(0) == "baz");
 
     const auto ug1 = ul.group(1);
     REQUIRE(ug1.nvar() == 2);
-    REQUIRE(ug1.var(0) == VariableName("state", "bar"));
-    REQUIRE(ug1.var(1) == VariableName("state", "foo"));
+    REQUIRE(ug1.var(0) == "bar");
+    REQUIRE(ug1.var(1) == "foo");
 
     const auto bl = eq_sys->blayout();
 
     const auto bg0 = bl.group(0);
     REQUIRE(bg0.nvar() == 1);
-    REQUIRE(bg0.var(0) == VariableName("residual", "baz"));
+    REQUIRE(bg0.var(0) == "baz_residual");
 
     const auto bg1 = bl.group(1);
     REQUIRE(bg1.nvar() == 2);
-    REQUIRE(bg1.var(0) == VariableName("residual", "bar"));
-    REQUIRE(bg1.var(1) == VariableName("residual", "foo"));
+    REQUIRE(bg1.var(0) == "bar_residual");
+    REQUIRE(bg1.var(1) == "foo_residual");
   }
 
   SECTION("invalid group index throws")

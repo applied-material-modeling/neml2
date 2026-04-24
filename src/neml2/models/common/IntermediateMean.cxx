@@ -54,11 +54,10 @@ IntermediateMean<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
     _to = intmd_mean(_from(), -1);
 
   if (dout_din)
-    if (_from.is_dependent())
-    {
-      const auto n = _from.intmd_size(-1);
-      _to.d(_from, 1, 0, 1) = imap_v<T>(_from.options()).intmd_expand(n) / n;
-    }
+  {
+    const auto n = _from.intmd_size(-1);
+    _to.d(_from, 1, 0, 1) = imap_v<T>(_from.options()).intmd_expand(n) / n;
+  }
 }
 
 #define REGISTER_INTERMEDIATEMEAN(T)                                                               \

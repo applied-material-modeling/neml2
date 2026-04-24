@@ -32,24 +32,14 @@ IsotropicHardeningStaticRecovery::expected_options()
 {
   OptionSet options = Model::expected_options();
   options.doc() = "Static recovery for isotropic hardening.";
-
-  options.set_input("isotropic_hardening") = VariableName(STATE, "internal", "k");
-  options.set("isotropic_hardening").doc() = "Isotropic hardening variable";
-
-  options.set_input("isotropic_hardening_rate");
-  options.set("isotropic_hardening_rate").doc() =
-      "Rate of isotropic hardening, defaults to isotropic_hardening + _recovery_rate";
-
+  options.add_input("isotropic_hardening", "Isotropic hardening variable");
   return options;
 }
 
 IsotropicHardeningStaticRecovery::IsotropicHardeningStaticRecovery(const OptionSet & options)
   : Model(options),
     _h(declare_input_variable<Scalar>("isotropic_hardening")),
-    _h_dot(declare_output_variable<Scalar>(
-        options.get<VariableName>("isotropic_hardening_rate").empty()
-            ? _h.name().with_suffix("_recovery_rate")
-            : options.get<VariableName>("isotropic_hardening_rate")))
+    _h_dot(declare_output_variable<Scalar>(rate_name(_h.name())))
 {
 }
 

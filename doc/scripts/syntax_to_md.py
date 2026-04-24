@@ -66,7 +66,6 @@ def demangle(type):
     type = normalize_vector_types(type)
     type = re.sub(r",\s*(?:[\w:]+::)?allocator<[^>]+>\s*", "", type)
     type = remove_namespace(type)
-    type = type.replace("LabeledAxisAccessor", "variable name")
     type = re.sub("TensorName<(.+)>", r"\1 🔗", type)
     type = re.sub("vector<(.+)>", r"list of \1", type)
     # Call all integral/floating point types "number", as this syntax documentation faces the general audience potentially without computer science background
@@ -217,17 +216,14 @@ def syntax_to_md(syntax_file: Path, outdir: Path, logfile: Path) -> int:
                 for type, params in syntax.items():
                     if params["section"] != section:
                         continue
-                    input_type = remove_namespace(params["type"]["value"])
-                    stream.write("### {} {{#{}}}\n\n".format(input_type, input_type.lower()))
+                    stream.write("### {} {{#{}}}\n\n".format(type, type.lower()))
                     if params["doc"]:
                         stream.write("{}\n".format(params["doc"]))
                     else:
                         missing += 1
 
                         log.write(
-                            "  * '{}/{}' is missing object description\n".format(
-                                section, input_type
-                            )
+                            "  * '{}/{}' is missing object description\n".format(section, type)
                         )
                     for param_name, info in params.items():
                         if param_name == "section":
@@ -249,11 +245,10 @@ def syntax_to_md(syntax_file: Path, outdir: Path, logfile: Path) -> int:
                             missing += 1
                             log.write(
                                 "  * '{}/{}/{}' is missing option description\n".format(
-                                    section, input_type, param_name
+                                    section, type, param_name
                                 )
                             )
                         else:
-
                             stream.write(
                                 "  <summary>`{}` {} {}</summary>\n\n".format(
                                     param_name, ftype_icon(info["ftype"]), info["doc"]
@@ -262,15 +257,18 @@ def syntax_to_md(syntax_file: Path, outdir: Path, logfile: Path) -> int:
                             if "\\f" in info["doc"]:
                                 log.write(
                                     "  * '{}/{}/{}' has formula in its option description\n".format(
-                                        section, input_type, param_name
+                                        section, type, param_name
                                     )
                                 )
                         stream.write("  - <u>Type</u>: {}\n".format(param_type))
+                        stream.write(
+                            "  - <u>Required</u>: {}\n".format("Yes" if info["required"] else "No")
+                        )
                         if param_value:
                             stream.write("  - <u>Default</u>: {}\n".format(param_value))
                         stream.write("</details>\n")
                     stream.write("\n")
-                    stream.write("Detailed documentation [link](@ref {})\n\n".format(type))
+                    stream.write("Detailed documentation [link](@ref {})\n\n".format(type.lower()))
 
         if missing == 0:
             log.write("No syntax error, good job! :purple_heart:")

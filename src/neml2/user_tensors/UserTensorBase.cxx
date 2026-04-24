@@ -49,17 +49,19 @@ UserTensorBase<T>::expected_options()
                                         "intmd_flatten",
                                         "INVALID"},
                                        {"INVALID"});
-  options.set<MultiEnumSelection>("shape_manipulations") = shape_manip_types;
-  options.set("shape_manipulations").doc() = "A list of shape manipulation operations to apply to "
-                                             "the created tensor. Supported operations are: " +
-                                             shape_manip_types.join();
+  options.add<MultiEnumSelection>("shape_manipulations",
+                                  shape_manip_types,
+                                  "A list of shape manipulation operations to apply to "
+                                  "the created tensor. Supported operations are: " +
+                                      shape_manip_types.join());
 
-  options.set<std::vector<TensorShape>>("shape_manipulation_args") = {};
-  options.set("shape_manipulation_args").doc() =
+  options.add<std::vector<TensorShape>>(
+      "shape_manipulation_args",
+      {},
       "A list of arguments corresponding to each shape manipulation operation. The number of "
       "entries should match the number of operations in 'shape_manipulations'. Each entry is a "
       "tensor shape that encodes the arguments for the corresponding operation. For operations "
-      "that do not require any argument, an empty shape, i.e. (), should be used.";
+      "that do not require any argument, an empty shape, i.e. (), should be used.");
 
   return options;
 }

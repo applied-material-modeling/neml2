@@ -39,17 +39,11 @@ ThermalEigenstrain::expected_options()
       "i.e. \\f$ \\boldsymbol{\\varepsilon}_T = \\alpha (T - T_0) \\boldsymbol{I} \\f$, where \\f$ "
       "\\alpha \\f$ is the coefficient of thermal expansion (CTE), \\f$ T \\f$ is the temperature, "
       "and \\f$ T_0 \\f$ is the reference (stress-free) temperature.";
+  options.set_private<bool>("define_second_derivatives", true);
 
-  options.set_input("temperature") = VariableName(FORCES, "T");
-  options.set("temperature").doc() = "Temperature";
-
-  options.set_buffer<TensorName<Scalar>>("reference_temperature");
-  options.set("reference_temperature").doc() = "Reference (stress-free) temperature";
-
-  options.set_parameter<TensorName<Scalar>>("CTE");
-  options.set("CTE").doc() = "Coefficient of thermal expansion";
-
-  options.set<bool>("define_second_derivatives") = true;
+  options.add_input("temperature", "Temperature");
+  options.add_buffer<Scalar>("reference_temperature", "Reference (stress-free) temperature");
+  options.add_parameter<Scalar>("CTE", "Coefficient of thermal expansion");
 
   return options;
 }
@@ -70,8 +64,7 @@ ThermalEigenstrain::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (dout_din)
   {
-    if (_T.is_dependent())
-      _eg.d(_T) = _alpha * SR2::identity(_T.options());
+    _eg.d(_T) = _alpha * SR2::identity(_T.options());
 
     if (const auto * const alpha = nl_param("alpha"))
       _eg.d(*alpha) = (_T - _T0) * SR2::identity(_T.options());
@@ -79,12 +72,11 @@ ThermalEigenstrain::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (d2out_din2)
   {
-    if (_T.is_dependent())
-      if (const auto * const alpha = nl_param("alpha"))
-      {
-        _eg.d2(_T, *alpha) = SR2::identity(_T.options());
-        _eg.d2(*alpha, _T) = SR2::identity(_T.options());
-      }
+    if (const auto * const alpha = nl_param("alpha"))
+    {
+      _eg.d2(_T, *alpha) = SR2::identity(_T.options());
+      _eg.d2(*alpha, _T) = SR2::identity(_T.options());
+    }
   }
 }
 } // namespace neml2

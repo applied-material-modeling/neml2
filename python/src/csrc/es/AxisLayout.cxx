@@ -23,7 +23,6 @@
 // THE SOFTWARE.
 
 #include "neml2/equation_systems/AxisLayout.h"
-#include "neml2/base/Parser.h"
 
 #include "csrc/es/types.h"
 
@@ -49,14 +48,14 @@ def(py::module_ & m, py::class_<AxisLayout> & c)
                   const std::vector<TensorShape> & base_shapes,
                   const std::vector<AxisLayout::IStructure> & istrs)
                {
-                 std::vector<std::vector<LabeledAxisAccessor>> vars;
+                 std::vector<std::vector<VariableName>> vars;
                  vars.reserve(var_strings.size());
                  for (const auto & group : var_strings)
                  {
-                   std::vector<LabeledAxisAccessor> cpp_group;
+                   std::vector<VariableName> cpp_group;
                    cpp_group.reserve(group.size());
                    for (const auto & s : group)
-                     cpp_group.emplace_back(utils::parse<VariableName>(s));
+                     cpp_group.emplace_back(s);
                    vars.push_back(std::move(cpp_group));
                  }
                  return AxisLayout(vars, intmd_shapes, base_shapes, istrs);
@@ -103,13 +102,13 @@ Construct an AxisLayout.
           {
             std::vector<std::string> result;
             for (const auto & v : self.vars())
-              result.push_back(v.str());
+              result.push_back(v);
             return result;
           },
           "List of variable names")
       .def(
           "var",
-          [](const AxisLayout & self, std::size_t i) { return self.var(i).str(); },
+          [](const AxisLayout & self, std::size_t i) { return self.var(i); },
           py::arg("i"),
           "Name of variable i")
       .def(

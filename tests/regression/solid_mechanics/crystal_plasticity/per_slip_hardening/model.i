@@ -111,18 +111,20 @@
 
 [Drivers]
   [driver]
-    type = LDISolidMechanicsDriver
+    type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    prescribed_deformation_rate = 'deformation_rate'
-    prescribed_vorticity = 'vorticity'
-    ic_Scalar_names = 'state/internal/dislocation_density'
+    force_SR2_names = 'deformation_rate'
+    force_SR2_values = 'deformation_rate'
+    force_WR2_names = 'vorticity'
+    force_WR2_values = 'vorticity'
+    ic_Scalar_names = 'dislocation_density'
     ic_Scalar_values = 'initial_dislocation_density'
-    ic_Rot_names = 'state/orientation'
+    ic_Rot_names = 'orientation'
     ic_Rot_values = 'initial_orientation'
     predictor = 'PREVIOUS_STATE'
-    cp_warmup = true
-    cp_warmup_elastic_scale = 0.1
+    custom_predictor = 'cp_warmup'
+    custom_predictor_apply = 'FIRST_STEP'
     save_as = 'result.pt'
   []
   [regression]
@@ -144,18 +146,19 @@
 [Models]
   [euler_rodrigues]
     type = RotationMatrix
-    from = 'state/orientation'
-    to = 'state/orientation_matrix'
+    from = 'orientation'
+    to = 'orientation_matrix'
   []
   [elasticity]
     type = LinearIsotropicElasticity
     coefficients = '1e5 0.25'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
-    strain = 'state/elastic_strain'
-    stress = 'state/internal/cauchy_stress'
+    strain = 'elastic_strain'
+    stress = 'cauchy_stress'
   []
   [resolved_shear]
     type = ResolvedShear
+    stress = 'cauchy_stress'
   []
   [elastic_stretch]
     type = ElasticStrainRate
@@ -176,37 +179,39 @@
   []
   [slip_strength]
     type = DislocationObstacleStrengthMap
-    dislocation_density = 'state/internal/dislocation_density'
+    dislocation_density = 'dislocation_density'
     alpha = 0.3
     mu = 1.0e5
     b = 1.0e-4
     constant_strength = 50.0
   []
-  [dislocation_density]
+  [dislocation_density_rate]
     type = PerSlipForestDislocationEvolution
-    dislocation_density = 'state/internal/dislocation_density'
-    slip_rates = 'state/internal/slip_rates'
+    dislocation_density = 'dislocation_density'
     k1 = 1e2
     k2 = 40.0
   []
   [integrate_dislocation_density]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/internal/dislocation_density'
+    variable = 'dislocation_density'
   []
   [integrate_elastic_strain]
     type = SR2BackwardEulerTimeIntegration
-    variable = 'state/elastic_strain'
+    variable = 'elastic_strain'
   []
   [integrate_orientation]
     type = WR2ImplicitExponentialTimeIntegration
-    variable = 'state/orientation'
+    variable = 'orientation'
   []
-
+  [cp_warmup]
+    type = CrystalPlasticityStrainPredictor
+    scale = 0.1
+  []
   [implicit_rate]
     type = ComposedModel
     models = "euler_rodrigues elasticity orientation_rate resolved_shear
               elastic_stretch plastic_deformation_rate plastic_spin
-              slip_rule slip_strength dislocation_density
+              slip_rule slip_strength dislocation_density_rate
               integrate_dislocation_density integrate_elastic_strain integrate_orientation"
   []
 []
@@ -215,6 +220,8 @@
   [es]
     type = NonlinearSystem
     model = 'implicit_rate'
+    unknowns = 'elastic_strain orientation dislocation_density'
+    residuals = 'elastic_strain_residual orientation_residual dislocation_density_residual'
   []
 []
 
@@ -238,6 +245,6 @@
   [model]
     type = ComposedModel
     models = 'update elasticity'
-    additional_outputs = 'state/elastic_strain'
+    additional_outputs = 'elastic_strain'
   []
 []

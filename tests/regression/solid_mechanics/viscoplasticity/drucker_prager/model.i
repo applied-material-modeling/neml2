@@ -40,10 +40,11 @@
 
 [Drivers]
   [driver]
-    type = SDTSolidMechanicsDriver
+    type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    prescribed_strain = 'strains'
+    force_SR2_names = 'E'
+    force_SR2_values = 'strains'
     save_as = 'result.pt'
   []
   [regression]
@@ -56,39 +57,35 @@
 [Models]
   [mandel_stress]
     type = IsotropicMandelStress
-    cauchy_stress = 'state/S'
-    mandel_stress = 'state/M'
+    cauchy_stress = 'stress'
   []
   [vonmises]
     type = SR2Invariant
     invariant_type = 'VONMISES'
-    tensor = 'state/M'
-    invariant = 'state/svm'
+    tensor = 'mandel_stress'
+    invariant = 'vonmises_stress'
   []
   [first_invariant]
     type = SR2Invariant
     invariant_type = 'I1'
-    tensor = 'state/M'
-    invariant = 'state/i1'
+    tensor = 'mandel_stress'
+    invariant = 'hydrostatic_stress'
   []
   [effective_stress]
     type = ScalarLinearCombination
-    from_var = 'state/svm state/i1'
-    to_var = 'state/s'
-    coefficients = '1 -0.5' # coefficients for Drucker-Prager, note that von Mises stress is sqrt(3 J2)
+    from = 'vonmises_stress hydrostatic_stress'
+    to = 'effective_stress'
+    weights = '1 -0.5'
   []
   [isoharden]
     type = LinearIsotropicHardening
-    equivalent_plastic_strain = 'state/ep'
-    isotropic_hardening = 'state/k'
     hardening_modulus = 1000
   []
   [yield]
     type = YieldFunction
     yield_stress = 50
-    effective_stress = 'state/s'
-    isotropic_hardening = 'state/k'
-    yield_function = 'state/fp'
+    effective_stress = 'effective_stress'
+    isotropic_hardening = 'isotropic_hardening'
   []
   [flow]
     type = ComposedModel
@@ -97,62 +94,48 @@
   [normality]
     type = Normality
     model = 'flow'
-    function = 'state/fp'
-    from = 'state/M state/k'
-    to = 'state/NM state/Nk'
+    function = 'yield_function'
+    from = 'mandel_stress isotropic_hardening'
+    to = 'flow_direction isotropic_hardening_direction'
   []
   [flow_rate]
     type = PerzynaPlasticFlowRate
-    yield_function = 'state/fp'
-    flow_rate = 'state/gamma_rate'
     reference_stress = 100
     exponent = 2
   []
   [Eprate]
     type = AssociativePlasticFlow
-    flow_rate = 'state/gamma_rate'
-    flow_direction = 'state/NM'
-    plastic_strain_rate = 'state/Ep_rate'
   []
   [eprate]
     type = AssociativeIsotropicPlasticHardening
-    flow_rate = 'state/gamma_rate'
-    isotropic_hardening_direction = 'state/Nk'
-    equivalent_plastic_strain_rate = 'state/ep_rate'
   []
   [Erate]
     type = SR2VariableRate
-    variable = 'forces/E'
-    rate = 'forces/E_rate'
+    variable = 'E'
   []
   [Eerate]
     type = SR2LinearCombination
-    from_var = 'forces/E_rate state/Ep_rate'
-    to_var = 'state/Ee_rate'
-    coefficients = '1 -1'
+    from = 'E_rate plastic_strain_rate'
+    to = 'strain_rate'
+    weights = '1 -1'
   []
   [elasticity]
     type = LinearIsotropicElasticity
     coefficients = '1e5 0.3'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
-    strain = 'state/Ee'
-    stress = 'state/S'
     rate_form = true
   []
   [integrate_stress]
     type = SR2BackwardEulerTimeIntegration
-    variable = 'state/S'
+    variable = 'stress'
   []
   [integrate_ep]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/ep'
+    variable = 'equivalent_plastic_strain'
   []
   [implicit_rate]
     type = ComposedModel
-    models = "mandel_stress isoharden flow normality
-              flow_rate
-              Eprate eprate Erate Eerate elasticity
-              integrate_stress integrate_ep"
+    models = 'mandel_stress isoharden flow normality flow_rate Eprate eprate Erate Eerate elasticity integrate_stress integrate_ep'
   []
 []
 
@@ -160,6 +143,8 @@
   [eq_sys]
     type = NonlinearSystem
     model = 'implicit_rate'
+    unknowns = 'stress equivalent_plastic_strain'
+    residuals = 'stress_residual equivalent_plastic_strain_residual'
   []
 []
 

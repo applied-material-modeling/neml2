@@ -23,7 +23,6 @@
 // THE SOFTWARE.
 
 #include "neml2/models/common/BilinearInterpolation.h"
-#include "neml2/tensors/Tensor.h"
 #include "neml2/tensors/Scalar.h"
 #include "neml2/tensors/Vec.h"
 #include "neml2/tensors/SR2.h"
@@ -38,26 +37,19 @@ BilinearInterpolation<T>::expected_options()
   OptionSet options = Interpolation<T>::expected_options();
   options.doc() += " This object performs a _bilinear interpolation_.";
 
-  options.set<bool>("define_second_derivatives") = true;
+  options.set_private<bool>("define_second_derivatives", true);
 
-  options.set<TensorName<Scalar>>("abscissa1");
-  options.set("abscissa1").doc() =
-      "Scalar defining the abscissa values of the first interpolation axis";
+  options.add_buffer<Scalar>("abscissa1",
+                             "Scalar defining the abscissa values of the first interpolation axis");
+  options.add_buffer<Scalar>(
+      "abscissa2", "Scalar defining the abscissa values of the second interpolation axis");
 
-  options.set<TensorName<Scalar>>("abscissa2");
-  options.set("abscissa2").doc() =
-      "Scalar defining the abscissa values of the second interpolation axis";
+  options.add_input("argument1",
+                    "First argument used to query the interpolant along the first axis");
+  options.add_input("argument2",
+                    "Second argument used to query the interpolant along the second axis");
 
-  options.set_input("argument1");
-  options.set("argument1").doc() =
-      "First argument used to query the interpolant along the first axis";
-
-  options.set_input("argument2");
-  options.set("argument2").doc() =
-      "Second argument used to query the interpolant along the second axis";
-
-  options.set<Size>("dim") = 0;
-  options.set("dim").doc() = "Intermediate dimension along which to interpolate";
+  options.add<Size>("dim", 0, "Intermediate dimension along which to interpolate");
 
   return options;
 }
@@ -65,8 +57,8 @@ BilinearInterpolation<T>::expected_options()
 template <typename T>
 BilinearInterpolation<T>::BilinearInterpolation(const OptionSet & options)
   : Interpolation<T>(options),
-    _X1(this->template declare_parameter<Scalar>("X1", "abscissa1")),
-    _X2(this->template declare_parameter<Scalar>("X2", "abscissa2")),
+    _X1(this->template declare_buffer<Scalar>("X1", "abscissa1")),
+    _X2(this->template declare_buffer<Scalar>("X2", "abscissa2")),
     _x1(this->template declare_input_variable<Scalar>("argument1")),
     _x2(this->template declare_input_variable<Scalar>("argument2")),
     _dim(options.get<Size>("dim"))
@@ -146,18 +138,15 @@ BilinearInterpolation<T>::set_value(bool out, bool dout_din, bool d2out_din2)
 
   if (dout_din)
   {
-    if (this->_x1.is_dependent())
-      this->_p.d(this->_x1) = (c1 + c3 * eta) * dxi_dx1;
-    if (this->_x2.is_dependent())
-      this->_p.d(this->_x2) = (c2 + c3 * xi) * deta_dx2;
+    this->_p.d(this->_x1) = (c1 + c3 * eta) * dxi_dx1;
+    this->_p.d(this->_x2) = (c2 + c3 * xi) * deta_dx2;
   }
 
   if (d2out_din2)
-    if (this->_x1.is_dependent() && this->_x2.is_dependent())
-    {
-      this->_p.d2(this->_x1, this->_x2) = c3 * dxi_dx1 * deta_dx2;
-      this->_p.d2(this->_x2, this->_x1) = c3 * dxi_dx1 * deta_dx2;
-    }
+  {
+    this->_p.d2(this->_x1, this->_x2) = c3 * dxi_dx1 * deta_dx2;
+    this->_p.d2(this->_x2, this->_x1) = c3 * dxi_dx1 * deta_dx2;
+  }
 }
 
 #define REGISTER(T)                                                                                \

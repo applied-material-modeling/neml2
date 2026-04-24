@@ -38,17 +38,10 @@ KozenyCarmanPermeability::expected_options()
       "\\f$ n \\f$ and \\f$ m \\f$ are shape parameters. \\f$ varphi_0 \\f$ and \\f$ "
       "K_0 \\f$ are the reference porosity and permeability respectively.";
 
-  options.set_parameter<TensorName<Scalar>>("reference_permeability");
-  options.set("reference_permeability").doc() = "the reference permeability";
-
-  options.set_parameter<TensorName<Scalar>>("reference_porosity");
-  options.set("reference_porosity").doc() = "the reference porosity";
-
-  options.set_parameter<TensorName<Scalar>>("n");
-  options.set("n").doc() = "Shape parameter n";
-
-  options.set_parameter<TensorName<Scalar>>("m");
-  options.set("m").doc() = "Shape parameter m";
+  options.add_parameter<Scalar>("reference_permeability", "the reference permeability");
+  options.add_parameter<Scalar>("reference_porosity", "the reference porosity");
+  options.add_parameter<Scalar>("n", "Shape parameter n");
+  options.add_parameter<Scalar>("m", "Shape parameter m");
 
   return options;
 }

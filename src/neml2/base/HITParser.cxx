@@ -32,8 +32,7 @@
 #include "neml2/base/Settings.h"
 #include "neml2/base/EnumSelection.h"
 #include "neml2/base/MultiEnumSelection.h"
-#include "neml2/base/LabeledAxisAccessor.h"
-#include "neml2/misc/assertions.h"
+#include "neml2/tensors/tensors.h"
 #include "neml2/misc/types.h"
 
 namespace neml2
@@ -51,8 +50,6 @@ struct NMHITRegistrar
   {
     nmhit::TypeRegistry::register_parser<TensorShape>([](const std::string & s)
                                                       { return utils::parse<TensorShape>(s); });
-    nmhit::TypeRegistry::register_parser<VariableName>([](const std::string & s)
-                                                       { return utils::parse<VariableName>(s); });
     nmhit::TypeRegistry::register_parser<Device>([](const std::string & s)
                                                  { return utils::parse<Device>(s); });
 
@@ -68,16 +65,21 @@ struct NMHITRegistrar
 static NMHITRegistrar _nmhit_registrar;
 } // namespace
 
+// Forward declarations
+static InputFile parse_hit(const nmhit::Node * root);
+static void extract_options(const nmhit::Node * object, OptionSet & options);
+static void extract_option(const nmhit::Node * node, OptionSet & options);
+
 InputFile
 HITParser::parse(const std::filesystem::path & filename, const std::string & additional_input) const
 {
   // Parse the file; additional_input is appended as a post-snippet (use := for overrides)
   auto root = nmhit::parse_file(filename, {}, {additional_input});
-  return parse(root.get());
+  return parse_hit(root.get());
 }
 
 InputFile
-HITParser::parse(nmhit::Node * root) const
+parse_hit(const nmhit::Node * root)
 {
   // Extract global settings
   OptionSet settings = Settings::expected_options();
@@ -94,7 +96,22 @@ HITParser::parse(nmhit::Node * root) const
       auto objects = section_node->children(nmhit::NodeType::Section);
       for (auto * object : objects)
       {
-        auto options = extract_object_options(object, section_node);
+        std::string type = object->param<std::string>("type");
+        const auto * info = Registry::info(type);
+        if (!info)
+        {
+          std::cerr << "Warning: Object of type '" << type
+                    << "' is not registered in the NEML2 registry. This object will be ignored.\n";
+          continue;
+        }
+
+        // Fill in the metadata
+        auto options = info->expected_options;
+        options.name() = object->path();
+        options.type() = type;
+        options.path() = object->fullpath();
+
+        extract_options(object, options);
         inp[section][options.name()] = options;
       }
     }
@@ -103,34 +120,30 @@ HITParser::parse(nmhit::Node * root) const
   return inp;
 }
 
-OptionSet
-HITParser::extract_object_options(nmhit::Node * object, nmhit::Node * /*section*/) const
-{
-  // There is a special field reserved for object type
-  std::string type = object->param<std::string>("type");
-  // Extract the options
-  auto options = Registry::info(type).expected_options;
-  extract_options(object, options);
-
-  // Also fill in the metadata
-  options.name() = object->path();
-  options.type() = type;
-  options.path() = object->fullpath();
-
-  return options;
-}
-
 void
-HITParser::extract_options(nmhit::Node * object, OptionSet & options) const
+extract_options(const nmhit::Node * object, OptionSet & options)
 {
   for (auto * node : object->children(nmhit::NodeType::Field))
     if (node->path() != "type")
       extract_option(node, options);
+
+  // check if all required options are defined
+  std::vector<nmhit::ErrorMessage> errors;
+  for (const auto & [name, option] : options)
+    if (option->required() && !option->defined())
+      errors.push_back(nmhit::ErrorMessage{
+          object->filename(),
+          object->line(),
+          object->column(),
+          options.path() + ": Option '" + option->name() +
+              "' is required but not specified. Description: " + option->doc()});
+  if (!errors.empty())
+    throw nmhit::Error(errors);
 }
 
 // NOLINTBEGIN
 void
-HITParser::extract_option(nmhit::Node * n, OptionSet & options) const
+extract_option(const nmhit::Node * n, OptionSet & options)
 {
 #define try_param(ptype)                                                                           \
   else if (tp ==                                                                                   \
@@ -151,10 +164,10 @@ HITParser::extract_option(nmhit::Node * n, OptionSet & options) const
   for (auto & [name, option] : options)
     if (name == n->path())
     {
-      neml_assert(!option->suppressed(),
-                  "Option named '",
-                  option->name(),
-                  "' is suppressed, and its value cannot be modified.");
+      if (option->suppressed())
+        throw nmhit::Error("Option named '" + option->name() +
+                               "' is suppressed, and its value cannot be modified.",
+                           n);
 
       found = true;
       const auto & tp = option->type();
@@ -169,35 +182,37 @@ HITParser::extract_option(nmhit::Node * n, OptionSet & options) const
       try_param_t(Size);
       try_param_t(double);
       try_param_t(std::string);
-      try_param_t(VariableName);
       try_param_t(Device);
       FOR_ALL_TENSORBASE(try_tensor_name);
       try_tensor_name(ATensor);
       else if (tp == utils::demangle(typeid(EnumSelection).name()))
       {
         auto * option_enum = dynamic_cast<Option<EnumSelection> *>(option.get());
-        neml_assert(
-            option_enum, "Option named '", option->name(), "' is not of type EnumSelection.");
+        if (!option_enum)
+          throw nmhit::Error("Option named '" + option->name() + "' is not of type EnumSelection.",
+                             n);
         option_enum->set().select(n->param<std::string>());
       }
       else if (tp == utils::demangle(typeid(MultiEnumSelection).name()))
       {
         auto * option_multi_enum = dynamic_cast<Option<MultiEnumSelection> *>(option.get());
-        neml_assert(option_multi_enum,
-                    "Option named '",
-                    option->name(),
-                    "' is not of type MultiEnumSelection.");
+        if (!option_multi_enum)
+          throw nmhit::Error(
+              "Option named '" + option->name() + "' is not of type MultiEnumSelection.", n);
         option_multi_enum->set().select(n->param<std::vector<std::string>>());
       }
       // LCOV_EXCL_START
-      else neml_assert(false, "Unsupported option type for option ", n->fullpath());
+      else throw nmhit::Error("Unsupported option type for option " + n->fullpath(), n);
       // LCOV_EXCL_STOP
 
       option->user_specified() = true;
+      option->defined() = true;
 
       break;
     }
-  neml_assert(found, "Unused option ", n->fullpath());
+  if (!found)
+    throw nmhit::Error("Unused option " + n->fullpath(), n);
 }
 // NOLINTEND
+
 } // namespace neml2

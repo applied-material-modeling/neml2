@@ -32,17 +32,6 @@ namespace neml2
 void
 LinearSystem::init()
 {
-  // Note: These data structures we are setting up here serve the same purpose as LabeledAxis, and
-  // yes, we are storing redundant information. This is because we are transitioning away from
-  // LabeledAxis. In future versions, we will remove LabeledAxis and only use these data structures.
-  //
-  // Also note: only models that are wrapped as equation systems need to define these maps. Regular
-  // feed-forward models do not need to define these maps. This is an important distinction from
-  // LabeledAxis which is always defined for any model.
-  //
-  // Another note: Right now we can "smartly" determine these maps based on variable subaxes. In the
-  // future, since we are removing LabeledAxis, we will need let the user explicitly define these
-  // maps, i.e., from within the input files.
   _ulayout = setup_ulayout();
   _glayout = setup_glayout();
   _blayout = setup_blayout();

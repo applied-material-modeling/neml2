@@ -4,15 +4,15 @@
   []
   [integrate_foo]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/foo'
+    variable = 'foo'
   []
   [integrate_bar]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/bar'
+    variable = 'bar'
   []
   [integrate_baz]
     type = SR2BackwardEulerTimeIntegration
-    variable = 'state/baz'
+    variable = 'baz'
   []
   [implicit_rate]
     type = ComposedModel
@@ -24,13 +24,11 @@
   [missing_variable]
     type = NonlinearSystem
     model = 'implicit_rate'
-    unknowns = 'state/foo state/bar'
-    residuals = 'residual/foo residual/bar residual/baz'
+    unknowns = 'foo bar'
   []
   [nonexistent_variable]
     type = NonlinearSystem
     model = 'implicit_rate'
-    unknowns = 'state/foo state/bar state/baz state/nonexistent'
-    residuals = 'residual/foo residual/bar residual/baz'
+    unknowns = 'foo bar baz nonexistent'
   []
 []

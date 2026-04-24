@@ -5,8 +5,8 @@
 [Models]
   [foo]
     type = FooModel
-    x = 'forces/x'
-    y = 'state/y'
+    x = 'x'
+    y = 'y'
     c = 1.1
   []
 []

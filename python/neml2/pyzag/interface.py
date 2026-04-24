@@ -31,7 +31,43 @@ import torch
 import neml2
 from neml2.tensors import Tensor
 from neml2.es import AssembledVector, AssembledMatrix, AxisLayout, SparseMatrix
-from neml2.reserved import FORCES, OLD_FORCES, OLD_STATE, STATE
+
+
+def lag_order(var: str) -> typing.Tuple[str, int]:
+    """
+    Extracts the base variable name and its lag order from a variable string.
+
+    Args:
+        var (str): The variable string, which can be in the format "var" or "var~n" where n is an integer.
+
+    Returns:
+        tuple: A tuple containing the base variable name and its lag order.
+    """
+    tokens = var.split("~")
+    if len(tokens) == 1:
+        return tokens[0], 0
+    elif len(tokens) == 2:
+        return tokens[0], int(tokens[1])
+    else:
+        raise ValueError(
+            f"Variable {var} has invalid format, should be either var or var~n where n is an integer"
+        )
+
+
+def change_lag_order(var: str, new_order: int) -> str:
+    """
+    Change the lag order of a variable name.
+
+    Args:
+        var (str): The variable string, which can be in the format "var" or "var~n" where n is an integer.
+        new_order (int): The new lag order to set.
+
+    Returns:
+        str: The variable string with the updated lag order.
+    """
+    v0, _ = lag_order(var)
+    suffix = f"~{new_order}" if new_order != 0 else ""
+    return f"{v0}{suffix}"
 
 
 class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
@@ -124,18 +160,18 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         # hack, some changes are required in pyzag.
         # neml2.diagnose(self.model)
 
-        # Helper function to replace the variable prefix
-        def _replace_prefix(vars: list[str], new_prefix: str) -> list[str]:
-            return [f"{new_prefix}/{v.split('/', 1)[1]}" for v in vars]
+        # Helper function to manipulate variable lag order
+        def _change_lag_order(vars: list[str], new_order: int) -> list[str]:
+            return [change_lag_order(v, new_order) for v in vars]
 
         # Every old variable (state or force) should have a corresponding (current) variable (but not the other way around)
-        if not set(_replace_prefix(self.snlayout.vars(), STATE)) <= set(self.slayout.vars()):
+        if not set(_change_lag_order(self.snlayout.vars(), 0)) <= set(self.slayout.vars()):
             raise ValueError(
                 "Input old state variables should be a subset of input state variables. However, input state variables are {}, and input old state variables are {}".format(
                     self.slayout.vars(), self.snlayout.vars()
                 )
             )
-        if not set(_replace_prefix(self.fnlayout.vars(), FORCES)) <= set(self.flayout.vars()):
+        if not set(_change_lag_order(self.fnlayout.vars(), 0)) <= set(self.flayout.vars()):
             raise ValueError(
                 "Input old force variables should be a subset of input force variables. However, input force variables are {}, and input old force variables are {}".format(
                     self.flayout.vars(), self.fnlayout.vars()
@@ -189,20 +225,20 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
 
         # Helper function to extract a sublayout given a prefix
         def _extract_sublayout(
-            layout: AxisLayout, prefix: str, new_prefix: typing.Union[str, None] = None
+            layout: AxisLayout, order: int, new_order: typing.Union[int, None] = None
         ) -> AxisLayout:
             subvars = []
             intmd_shapes = []
             base_shapes = []
             for i in range(layout.nvar()):
                 v = layout.var(i)
-                if v.startswith(prefix):
-                    if not new_prefix:
-                        subvars.append(v)
-                    else:
-                        subvars.append(f"{new_prefix}/{v.split('/', 1)[1]}")
-                    intmd_shapes.append(layout.intmd_sizes(i))
-                    base_shapes.append(layout.base_sizes(i))
+                v0, lag = lag_order(v)
+                if lag != order:
+                    continue
+                suffix = f"~{new_order}" if new_order is not None and new_order != 0 else ""
+                subvars.append(f"{v0}{suffix}")
+                intmd_shapes.append(layout.intmd_sizes(i))
+                base_shapes.append(layout.base_sizes(i))
             return AxisLayout([subvars], intmd_shapes, base_shapes, [AxisLayout.IStructure.DENSE])
 
         # given variables (from neml2, includes old unknowns, forces, and old forces))
@@ -212,15 +248,15 @@ class NEML2PyzagModel(nonlinear.NonlinearRecursiveFunction):
         # setup layouts for assembly purposes
         self.rlayout = self.sys.blayout()
         self.slayout = self.sys.ulayout()
-        self.snlayout = _extract_sublayout(self.slayout, STATE, OLD_STATE)
-        self.flayout = _extract_sublayout(glayout, FORCES)
-        self.fnlayout = _extract_sublayout(glayout, FORCES, OLD_FORCES)
+        self.snlayout = _extract_sublayout(self.slayout, 0, 1)
+        self.flayout = _extract_sublayout(glayout, 0)
+        self.fnlayout = _extract_sublayout(glayout, 0, 1)
 
         # state variables (unknowns)
         self.svars = self.slayout.vars()
 
         # forces
-        self.fvars = [v for v in gvars if v.startswith(FORCES)]
+        self.fvars = self.flayout.vars()
 
         # figure out how gvars map to snvars
         self._sn_to_g_map = [-1] * self.snlayout.nvar()

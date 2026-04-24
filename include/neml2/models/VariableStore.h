@@ -25,9 +25,8 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 
-#include "neml2/models/map_types_fwd.h"
-#include "neml2/base/LabeledAxisAccessor.h"
 #include "neml2/misc/types.h"
 #include "neml2/tensors/jit.h"
 #include "neml2/equation_systems/SparseMatrix.h"
@@ -37,15 +36,11 @@ namespace neml2
 {
 // Foward declarations
 class Model;
-class LabeledAxis;
 class VariableBase;
 template <typename T>
 class Variable;
 template <typename T>
 struct TensorName;
-
-/// Bind a vector of tensors to variable names
-ValueMap bind(const std::vector<VariableName> &, const std::vector<Tensor> &);
 
 class VariableStore
 {
@@ -57,20 +52,6 @@ public:
   VariableStore & operator=(const VariableStore &) = delete;
   VariableStore & operator=(VariableStore &&) = delete;
   virtual ~VariableStore() = default;
-
-  LabeledAxis & declare_axis(const std::string & name);
-
-  ///@{
-  /// Input axis describing the assembly layout of input variables
-  LabeledAxis & input_axis();
-  const LabeledAxis & input_axis() const;
-  ///@}
-
-  ///@{
-  /// Output axis describing the assembly layout of output variables
-  LabeledAxis & output_axis();
-  const LabeledAxis & output_axis() const;
-  ///@}
 
   using VariableStorage = std::map<VariableName, std::unique_ptr<VariableBase>>;
   using DerivSparsity = std::vector<std::pair<VariableBase *, const VariableBase *>>;
@@ -122,16 +103,13 @@ public:
   void assign_input(const ValueMap &, bool allow_nonexistent = false);
   void assign_input(const SparseVector &, bool allow_nonexistent = false);
   /// Assign output variable values
-  void assign_output(const ValueMap &);
   void assign_output(const SparseVector &);
   /// Assign variable derivatives
-  void assign_output_derivatives(const DerivMap & derivs);
   void assign_output_derivatives(const SparseMatrix &);
   ///@}
 
   ///@{
   /// Collect input variable values
-  ValueMap collect_input() const;
   SparseVector collect_input(const AxisLayout &) const;
   /// Collect output variable values
   ValueMap collect_output() const;
@@ -196,23 +174,23 @@ protected:
 
   /// Clone a variable and put it on the input axis
   const VariableBase * clone_input_variable(const VariableBase & var,
-                                            const VariableName & new_name = {});
+                                            std::optional<VariableName> new_name = std::nullopt);
 
   /// Clone a variable and put it on the output axis
   VariableBase * clone_output_variable(const VariableBase & var,
-                                       const VariableName & new_name = {});
+                                       std::optional<VariableName> new_name = std::nullopt);
 
+  /// JIT-specific methods for stack assignment and collection
+  ///@{
   /// Assign stack to input variables
   void assign_input_stack(jit::Stack & stack);
-
   /// Assign stack to output variables and derivatives
   void assign_output_stack(jit::Stack & stack, bool out, bool dout, bool d2out);
-
   /// Collect stack from input variables
   jit::Stack collect_input_stack() const;
-
   /// Collect stack from output variables and derivatives
   jit::Stack collect_output_stack(bool out, bool dout, bool d2out) const;
+  ///@}
 
   // TensorName resolution may require declare_input_variable
   template <typename T>
@@ -227,15 +205,6 @@ private:
 
   /// Model using this interface
   Model * _object;
-
-  /// All the declared axes
-  std::map<std::string, std::unique_ptr<LabeledAxis>> _axes;
-
-  /// The input axis
-  LabeledAxis & _input_axis;
-
-  /// The output axis
-  LabeledAxis & _output_axis;
 
   /// Input variables
   VariableStorage _input_variables;

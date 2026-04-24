@@ -48,12 +48,13 @@ LinearIsotropicStrainEnergyDensity::expected_options()
   OptionSet options = ElasticityInterface<StrainEnergyDensity, 2>::expected_options();
   options.doc() =
       "Calculates elastic strain energy density based on linear elastic isotropic response";
-  options.set<bool>("define_second_derivatives") = true;
+  options.set_private<bool>("define_second_derivatives", true);
 
   EnumSelection type_selection({"NONE", "SPECTRAL", "VOLDEV"}, "NONE");
-  options.set<EnumSelection>("decomposition") = type_selection;
-  options.set("decomposition").doc() =
-      "Strain energy density decomposition types, options are: " + type_selection.join();
+  options.add<EnumSelection>("decomposition",
+                             type_selection,
+                             "Strain energy density decomposition types, options are: " +
+                                 type_selection.join());
 
   return options;
 }

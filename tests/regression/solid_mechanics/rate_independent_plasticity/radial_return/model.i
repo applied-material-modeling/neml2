@@ -1,32 +1,29 @@
-nb = 20
-nt = 100
-
 [Tensors]
   [end_time]
     type = LogspaceScalar
     start = -1
     end = 5
-    nstep = ${nb}
+    nstep = 20
   []
   [times]
     type = LinspaceScalar
     start = 0
     end = end_time
-    nstep = ${nt}
+    nstep = 100
   []
   [exx]
     type = FullScalar
-    batch_shape = '(${nb})'
+    batch_shape = '(20)'
     value = 0.1
   []
   [eyy]
     type = FullScalar
-    batch_shape = '(${nb})'
+    batch_shape = '(20)'
     value = -0.05
   []
   [ezz]
     type = FullScalar
-    batch_shape = '(${nb})'
+    batch_shape = '(20)'
     value = -0.05
   []
   [max_strain]
@@ -37,16 +34,17 @@ nt = 100
     type = LinspaceSR2
     start = 0
     end = max_strain
-    nstep = ${nt}
+    nstep = 100
   []
 []
 
 [Drivers]
   [driver]
-    type = SDTSolidMechanicsDriver
+    type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    prescribed_strain = 'strains'
+    force_SR2_names = 'E'
+    force_SR2_values = 'strains'
     save_as = 'result.pt'
   []
   [regression]
@@ -63,52 +61,52 @@ nt = 100
   ###############################################################################
   [trial_elastic_strain]
     type = SR2LinearCombination
-    from_var = 'forces/E old_state/internal/Ep'
-    to_var = 'forces/Ee_trial'
-    coefficients = '1 -1'
+    from = 'E plastic_strain~1'
+    to = 'Ee_trial'
+    weights = '1 -1'
   []
   [trial_cauchy_stress]
     type = LinearIsotropicElasticity
     coefficients = '1e5 0.3'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
-    strain = 'forces/Ee_trial'
-    stress = 'forces/S_trial'
+    strain = 'Ee_trial'
+    stress = 'S_trial'
   []
   [trial_mandel_stress]
     type = IsotropicMandelStress
-    cauchy_stress = 'forces/S_trial'
-    mandel_stress = 'forces/M_trial'
+    cauchy_stress = 'S_trial'
+    mandel_stress = 'M_trial'
   []
   [trial_isoharden]
     type = LinearIsotropicHardening
-    equivalent_plastic_strain = 'old_state/internal/ep'
-    isotropic_hardening = 'forces/k_trial'
+    equivalent_plastic_strain = 'equivalent_plastic_strain~1'
+    isotropic_hardening = 'k_trial'
     hardening_modulus = 1000
   []
   [trial_kinharden]
     type = LinearKinematicHardening
-    kinematic_plastic_strain = 'old_state/internal/Kp'
-    back_stress = 'forces/X_trial'
+    kinematic_plastic_strain = 'kinematic_plastic_strain~1'
+    back_stress = 'X_trial'
     hardening_modulus = 1000
   []
   [trial_overstress]
     type = SR2LinearCombination
-    to_var = 'forces/O_trial'
-    from_var = 'forces/M_trial forces/X_trial'
-    coefficients = '1 -1'
+    to = 'O_trial'
+    from = 'M_trial X_trial'
+    weights = '1 -1'
   []
   [trial_vonmises]
     type = SR2Invariant
     invariant_type = 'VONMISES'
-    tensor = 'forces/O_trial'
-    invariant = 'forces/s_trial'
+    tensor = 'O_trial'
+    invariant = 's_trial'
   []
   [trial_yield]
     type = YieldFunction
     yield_stress = 1000
-    yield_function = 'forces/fp_trial'
-    effective_stress = 'forces/s_trial'
-    isotropic_hardening = 'forces/k_trial'
+    yield_function = 'fp_trial'
+    effective_stress = 's_trial'
+    isotropic_hardening = 'k_trial'
   []
   [trial_flow]
     type = ComposedModel
@@ -117,9 +115,9 @@ nt = 100
   [trial_normality]
     type = Normality
     model = 'trial_flow'
-    function = 'forces/fp_trial'
-    from = 'forces/M_trial forces/k_trial forces/X_trial'
-    to = 'forces/NM forces/Nk forces/NX'
+    function = 'fp_trial'
+    from = 'M_trial k_trial X_trial'
+    to = 'NM Nk NX'
   []
   [trial_state]
     type = ComposedModel
@@ -141,61 +139,66 @@ nt = 100
   []
   [plastic_strain_rate]
     type = AssociativePlasticFlow
-    flow_direction = 'forces/NM'
+    flow_direction = 'NM'
   []
   [plastic_strain]
     type = SR2ForwardEulerTimeIntegration
-    variable = 'state/internal/Ep'
+    variable = 'plastic_strain'
   []
   [elastic_strain]
     type = SR2LinearCombination
-    from_var = 'forces/E state/internal/Ep'
-    to_var = 'state/internal/Ee'
-    coefficients = '1 -1'
+    from = 'E plastic_strain'
+    to = 'elastic_strain'
+    weights = '1 -1'
   []
   [cauchy_stress]
     type = LinearIsotropicElasticity
     coefficients = '1e5 0.3'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
+    strain = 'elastic_strain'
   []
   [mandel_stress]
     type = IsotropicMandelStress
+    cauchy_stress = 'stress'
   []
   [overstress]
     type = SR2LinearCombination
-    to_var = 'state/internal/O'
-    from_var = 'state/internal/M state/internal/X'
-    coefficients = '1 -1'
+    to = 'overstress'
+    from = 'mandel_stress back_stress'
+    weights = '1 -1'
   []
   [vonmises]
     type = SR2Invariant
     invariant_type = 'VONMISES'
-    tensor = 'state/internal/O'
-    invariant = 'state/internal/s'
+    tensor = 'overstress'
+    invariant = 'effective_stress'
   []
   [yield]
     type = YieldFunction
     yield_stress = 1000
-    isotropic_hardening = 'state/internal/k'
+    isotropic_hardening = 'isotropic_hardening'
   []
   [equivalent_plastic_strain_rate]
     type = AssociativeIsotropicPlasticHardening
-    isotropic_hardening_direction = 'forces/Nk'
+    isotropic_hardening_direction = 'Nk'
   []
   [equivalent_plastic_strain]
     type = ScalarForwardEulerTimeIntegration
-    variable = 'state/internal/ep'
+    variable = 'equivalent_plastic_strain'
   []
   [kinematic_plastic_strain_rate]
     type = AssociativeKinematicPlasticHardening
-    kinematic_hardening_direction = 'forces/NX'
+    kinematic_hardening_direction = 'NX'
   []
   [kinematic_plastic_strain]
     type = SR2ForwardEulerTimeIntegration
-    variable = 'state/internal/Kp'
+    variable = 'kinematic_plastic_strain'
   []
   [consistency]
-    type = RateIndependentPlasticFlowConstraint
+    type = FBComplementarity
+    a = 'yield_function'
+    a_inequality = 'LE'
+    b = 'flow_rate'
     jit = false
   []
   [surface]
@@ -211,6 +214,8 @@ nt = 100
   [eq_sys]
     type = NonlinearSystem
     model = 'surface'
+    unknowns = 'flow_rate'
+    residuals = 'complementarity'
   []
 []
 
@@ -240,6 +245,6 @@ nt = 100
   [model]
     type = ComposedModel
     models = 'model0 elastic_strain cauchy_stress'
-    additional_outputs = 'state/internal/Ep state/internal/ep state/internal/Kp'
+    additional_outputs = 'plastic_strain equivalent_plastic_strain kinematic_plastic_strain'
   []
 []

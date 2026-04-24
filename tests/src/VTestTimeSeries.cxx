@@ -35,8 +35,8 @@ OptionSet
 VTestTimeSeries<T>::expected_options()
 {
   OptionSet options = UserTensorBase<T>::expected_options();
-  options.set<std::string>("vtest");
-  options.set<std::string>("variable");
+  options.add<std::string>("vtest", "The VTest time series");
+  options.add<std::string>("variable", "The variable from the VTest time series to use");
   return options;
 }
 

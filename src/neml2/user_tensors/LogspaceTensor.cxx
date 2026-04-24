@@ -37,25 +37,17 @@ LogspaceTensorTmpl<T>::expected_options()
                   " logarithmically spaced on the batch dimensions. See neml2::dynamic_logspace, "
                   "neml2::intmd_logspace, or neml2::base_logspace for a detailed explanation.";
 
-  options.set<TensorName<T>>("start");
-  options.set("start").doc() = "The starting tensor";
-
-  options.set<TensorName<T>>("end");
-  options.set("end").doc() = "The ending tensor";
-
-  options.set<Size>("nstep");
-  options.set("nstep").doc() = "The number of steps with even spacing along the new dimension";
-
-  options.set<Size>("dim") = 0;
-  options.set("dim").doc() = "Where to insert the new dimension";
-
-  options.set<double>("base") = 10.0;
-  options.set("base").doc() = "The base of the logarithm";
+  options.add<TensorName<T>>("start", "The starting tensor");
+  options.add<TensorName<T>>("end", "The ending tensor");
+  options.add<Size>("nstep", "The number of steps with even spacing along the new dimension");
+  options.add<Size>("dim", 0, "Where to insert the new dimension");
+  options.add<double>("base", 10.0, "The base of the logarithm");
 
   EnumSelection selection({"dynamic", "intermediate"}, "dynamic");
-  options.set<EnumSelection>("group") = selection;
-  options.set("group").doc() =
-      "Dimension group to apply the operation. Options are: " + selection.join();
+  options.add<EnumSelection>("group",
+                             selection,
+                             "Dimension group to apply the operation. Options are: " +
+                                 selection.join());
 
   return options;
 }

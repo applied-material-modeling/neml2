@@ -37,58 +37,21 @@ TEST_CASE("Model", "[models]")
 {
   SECTION("variable type")
   {
-    auto model = load_model("models/ComposedModel3.i", "model");
+    auto model = load_model("models/common/ComposedModel3.i", "model");
 
-    REQUIRE(model->input_variable({FORCES, "t"}).type() == TensorType::kScalar);
-    REQUIRE(model->input_variable({FORCES, "temperature"}).type() == TensorType::kScalar);
-    REQUIRE(model->input_variable({OLD_FORCES, "t"}).type() == TensorType::kScalar);
-    REQUIRE(model->input_variable({OLD_STATE, "bar"}).type() == TensorType::kScalar);
-    REQUIRE(model->input_variable({OLD_STATE, "baz"}).type() == TensorType::kSR2);
-    REQUIRE(model->input_variable({OLD_STATE, "foo"}).type() == TensorType::kScalar);
-    REQUIRE(model->input_variable({STATE, "bar"}).type() == TensorType::kScalar);
-    REQUIRE(model->input_variable({STATE, "baz"}).type() == TensorType::kSR2);
-    REQUIRE(model->input_variable({STATE, "foo"}).type() == TensorType::kScalar);
-    REQUIRE(model->output_variable({STATE, "sum"}).type() == TensorType::kScalar);
+    REQUIRE(model->input_variable("t").type() == TensorType::kScalar);
+    REQUIRE(model->input_variable("T").type() == TensorType::kScalar);
+    REQUIRE(model->input_variable("bar").type() == TensorType::kScalar);
+    REQUIRE(model->input_variable("baz").type() == TensorType::kSR2);
+    REQUIRE(model->input_variable("foo").type() == TensorType::kScalar);
+    REQUIRE(model->output_variable("sum").type() == TensorType::kScalar);
 
-    REQUIRE(utils::stringify(model->input_variable({FORCES, "t"}).type()) == "Scalar");
-    REQUIRE(utils::stringify(model->input_variable({FORCES, "temperature"}).type()) == "Scalar");
-    REQUIRE(utils::stringify(model->input_variable({OLD_FORCES, "t"}).type()) == "Scalar");
-    REQUIRE(utils::stringify(model->input_variable({OLD_STATE, "bar"}).type()) == "Scalar");
-    REQUIRE(utils::stringify(model->input_variable({OLD_STATE, "baz"}).type()) == "SR2");
-    REQUIRE(utils::stringify(model->input_variable({OLD_STATE, "foo"}).type()) == "Scalar");
-    REQUIRE(utils::stringify(model->input_variable({STATE, "bar"}).type()) == "Scalar");
-    REQUIRE(utils::stringify(model->input_variable({STATE, "baz"}).type()) == "SR2");
-    REQUIRE(utils::stringify(model->input_variable({STATE, "foo"}).type()) == "Scalar");
-    REQUIRE(utils::stringify(model->output_variable({STATE, "sum"}).type()) == "Scalar");
-  }
-
-  SECTION("diagnose")
-  {
-    SECTION("input variables")
-    {
-      auto model = load_model("models/test_Model_diagnose1.i", "model");
-      auto diagnoses = diagnose(*model);
-
-      REQUIRE(diagnoses.size() == 2);
-      REQUIRE_THAT(
-          diagnoses[0].what(),
-          Catch::Matchers::ContainsSubstring(
-              "Input variable whatever/foo_rate must be on one of the following sub-axes"));
-      REQUIRE_THAT(diagnoses[1].what(),
-                   Catch::Matchers::ContainsSubstring(
-                       "Variable whatever/foo_rate must be on the state sub-axis"));
-    }
-
-    SECTION("output variables")
-    {
-      auto model = load_model("models/test_Model_diagnose2.i", "model");
-      auto diagnoses = diagnose(*model);
-
-      REQUIRE(diagnoses.size() == 1);
-      REQUIRE_THAT(diagnoses[0].what(),
-                   Catch::Matchers::ContainsSubstring(
-                       "Output variable whatever/foo must be on one of the following sub-axes"));
-    }
+    REQUIRE(utils::stringify(model->input_variable("t").type()) == "Scalar");
+    REQUIRE(utils::stringify(model->input_variable("T").type()) == "Scalar");
+    REQUIRE(utils::stringify(model->input_variable("bar").type()) == "Scalar");
+    REQUIRE(utils::stringify(model->input_variable("baz").type()) == "SR2");
+    REQUIRE(utils::stringify(model->input_variable("foo").type()) == "Scalar");
+    REQUIRE(utils::stringify(model->output_variable("sum").type()) == "Scalar");
   }
 
   SECTION("graph execution exception")

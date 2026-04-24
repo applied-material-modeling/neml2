@@ -36,7 +36,6 @@
 // These headers are not directly used by Model, but are included here so that derived classes do
 // not have to include them separately. This is a convenience for the user, and is a reasonable
 // choice since these headers are light and bring in little dependency.
-#include "neml2/base/LabeledAxis.h"
 #include "neml2/models/Variable.h"
 #include "neml2/tensors/Derivative.h"
 
@@ -182,21 +181,11 @@ public:
   /// Convenient shortcut to construct and return the model value
   virtual ValueMap value(const ValueMap & in);
 
-  /// Convenient shortcut to construct and return the model value and its derivative
-  virtual std::tuple<ValueMap, DerivMap> value_and_dvalue(const ValueMap & in);
-
   /// Convenient shortcut to construct and return the derivative
   virtual DerivMap dvalue(const ValueMap & in);
 
-  /// Convenient shortcut to construct and return the model's value, first and second derivative
-  virtual std::tuple<ValueMap, DerivMap, SecDerivMap>
-  value_and_dvalue_and_d2value(const ValueMap & in);
-
-  /// Convenient shortcut to construct and return the model's second derivative
-  virtual SecDerivMap d2value(const ValueMap & in);
-
-  /// Convenient shortcut to construct and return the model's first and second derivative
-  virtual std::tuple<DerivMap, SecDerivMap> dvalue_and_d2value(const ValueMap & in);
+  /// Convenient shortcut to construct and return the model value and its derivative
+  virtual std::tuple<ValueMap, DerivMap> value_and_dvalue(const ValueMap & in);
 
   /// Declaration of nonlinear parameters may require manipulation of input
   friend class ParameterStore;
@@ -208,14 +197,6 @@ public:
   friend class ModelNonlinearSystem;
 
 protected:
-  void diagnostic_assert_state(const VariableBase & v) const;
-  void diagnostic_assert_old_state(const VariableBase & v) const;
-  void diagnostic_assert_force(const VariableBase & v) const;
-  void diagnostic_assert_old_force(const VariableBase & v) const;
-  void diagnostic_assert_residual(const VariableBase & v) const;
-  void diagnostic_check_input_variable(const VariableBase & v) const;
-  void diagnostic_check_output_variable(const VariableBase & v) const;
-
   virtual void link_input_variables();
   virtual void link_input_variables(Model * submodel);
   virtual void link_output_variables();
@@ -269,7 +250,7 @@ protected:
                            "' is trying to register itself as a sub-model. This is not allowed.");
 
     OptionSet extra_opts;
-    extra_opts.set<NEML2Object *>("_host") = host();
+    extra_opts.add_private<NEML2Object *>("_host", host());
 
     if (!host()->factory())
       throw SetupException("Internal error: Host object '" + host()->name() +

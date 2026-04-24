@@ -27,91 +27,18 @@
 #include "neml2/misc/types.h"
 #include "neml2/models/Model.h"
 #include "neml2/misc/assertions.h"
-#include "neml2/models/map_types.h"
 #include "neml2/models/Variable.h"
-#include "neml2/tensors/Derivative.h"
-#include "neml2/base/LabeledAxis.h"
-#include "neml2/models/utils.h"
 #include "neml2/tensors/Tensor.h"
 #include "neml2/tensors/tensors.h"
+#include "neml2/base/Settings.h"
 
 namespace neml2
 {
-ValueMap
-bind(const std::vector<VariableName> & vars, const std::vector<Tensor> & vec)
-{
-  neml_assert(vars.size() == vec.size(),
-              "Number of variable names (",
-              vars.size(),
-              ") does not match number of sub-tensors in vector (",
-              vec.size(),
-              ").");
-
-  ValueMap result;
-  for (std::size_t i = 0; i < vars.size(); i++)
-    result.emplace(vars[i], vec[i]);
-  return result;
-}
 
 VariableStore::VariableStore(Model * object)
   : _object(object),
-    _input_axis(declare_axis("input")),
-    _output_axis(declare_axis("output")),
     _options(default_tensor_options())
 {
-}
-
-LabeledAxis &
-VariableStore::declare_axis(const std::string & name)
-{
-  neml_assert(!_axes.count(name),
-              "Trying to declare an axis named ",
-              name,
-              ", but an axis with the same name already exists.");
-
-  auto axis = std::make_unique<LabeledAxis>();
-  auto [it, success] = _axes.emplace(name, std::move(axis));
-  return *it->second;
-}
-
-LabeledAxis &
-VariableStore::input_axis()
-{
-  if (_input_axis.is_setup())
-    return _input_axis;
-
-  _input_axis.clear();
-  for (const auto & [name, var] : _input_variables)
-    _input_axis.add_variable(name, var->intmd_sizes(), var->base_sizes());
-
-  _input_axis.setup_layout();
-  return _input_axis;
-}
-
-const LabeledAxis &
-VariableStore::input_axis() const
-{
-  return _input_axis;
-}
-
-LabeledAxis &
-VariableStore::output_axis()
-{
-  if (_output_axis.is_setup())
-    return _output_axis;
-
-  _output_axis.clear();
-  for (const auto & [name, var] : _output_variables)
-    _output_axis.add_variable(name, var->intmd_sizes(), var->base_sizes());
-
-  _output_axis.setup_layout();
-  return _output_axis;
-}
-
-const LabeledAxis &
-VariableStore::output_axis() const
-{
-  return _output_axis;
 }
 
 template <typename T>
@@ -128,8 +55,6 @@ template <typename T>
 const Variable<T> &
 VariableStore::declare_input_variable(const VariableName & name, bool allow_duplicate)
 {
-  if (!allow_duplicate || (allow_duplicate && !_input_axis.has_variable(name)))
-    _input_axis.add_variable(name, {}, T::const_base_sizes);
   return *create_variable<T>(_input_variables, name, allow_duplicate);
 }
 #define INSTANTIATE_DECLARE_INPUT_VARIABLE(T)                                                      \
@@ -150,7 +75,6 @@ template <typename T>
 Variable<T> &
 VariableStore::declare_output_variable(const VariableName & name)
 {
-  _output_axis.add_variable(name, {}, T::const_base_sizes);
   return *create_variable<T>(_output_variables, name);
 }
 #define INSTANTIATE_DECLARE_OUTPUT_VARIABLE(T)                                                     \
@@ -159,31 +83,28 @@ VariableStore::declare_output_variable(const VariableName & name)
 FOR_ALL_PRIMITIVETENSOR(INSTANTIATE_DECLARE_OUTPUT_VARIABLE);
 
 const VariableBase *
-VariableStore::clone_input_variable(const VariableBase & var, const VariableName & new_name)
+VariableStore::clone_input_variable(const VariableBase & var, std::optional<VariableName> new_name)
 {
   neml_assert(&var.owner() != _object, "Trying to clone a variable from the same model.");
 
-  const auto var_name = new_name.empty() ? var.name() : new_name;
-  neml_assert(
-      !_input_variables.count(var_name), "Input variable '", var_name.str(), "' already exists.");
+  const auto var_name = new_name.has_value() ? new_name.value() : var.name();
+  neml_assert(!_input_variables.count(var_name), "Input variable '", var_name, "' already exists.");
   auto var_clone = var.clone(var_name, _object);
 
-  _input_axis.add_variable(var_name, {}, var_clone->base_sizes());
   auto [it, success] = _input_variables.emplace(var_name, std::move(var_clone));
   return it->second.get();
 }
 
 VariableBase *
-VariableStore::clone_output_variable(const VariableBase & var, const VariableName & new_name)
+VariableStore::clone_output_variable(const VariableBase & var, std::optional<VariableName> new_name)
 {
   neml_assert(&var.owner() != _object, "Trying to clone a variable from the same model.");
 
-  const auto var_name = new_name.empty() ? var.name() : new_name;
+  const auto var_name = new_name.has_value() ? new_name.value() : var.name();
   neml_assert(
       !_output_variables.count(var_name), "Output variable '", var_name, "' already exists.");
   auto var_clone = var.clone(var_name, _object);
 
-  _output_axis.add_variable(var_name, {}, var_clone->base_sizes());
   auto [it, success] = _output_variables.emplace(var_name, std::move(var_clone));
   return it->second.get();
 }
@@ -217,7 +138,7 @@ VariableStore::create_variable(VariableStorage & variables,
   // Cast it to the concrete type
   auto var_ptr = dynamic_cast<Variable<T> *>(var_base_ptr);
   if (!var_ptr)
-    throw NEMLException("Internal error: Failed to cast variable '" + name.str() +
+    throw NEMLException("Internal error: Failed to cast variable '" + name +
                         "' to its concrete type.");
 
   return var_ptr;
@@ -308,7 +229,7 @@ VariableStore::cache_derivative_sparsity()
   std::vector<std::pair<VariableBase *, const VariableBase *>> sparsity;
   for (auto && [yname, yvar] : output_variables())
     for (const auto & [dy_dx, xvar] : yvar->derivatives())
-      if (xvar->is_dependent() && dy_dx.defined())
+      if (dy_dx.defined())
         sparsity.emplace_back(yvar.get(), xvar);
 
   if (currently_assembling_nonlinear_system())
@@ -359,7 +280,7 @@ VariableStore::assign_input(const ValueMap & vals, bool allow_nonexistent)
       if (allow_nonexistent)
         continue;
       else
-        throw NEMLException("Trying to assign value to input variable '" + name.str() +
+        throw NEMLException("Trying to assign value to input variable '" + name +
                             "', but no such variable exists in model '" + _object->name() + "'.");
     }
     *it->second = val.clone();
@@ -377,7 +298,7 @@ VariableStore::assign_input(const SparseVector & v, bool allow_nonexistent)
       if (allow_nonexistent)
         continue;
       else
-        throw NEMLException("Trying to assign value to input variable '" + v.layout.var(i).str() +
+        throw NEMLException("Trying to assign value to input variable '" + v.layout.var(i) +
                             "', but no such variable exists in model '" + _object->name() + "'.");
     }
     *it->second = v.tensors[i];
@@ -385,31 +306,10 @@ VariableStore::assign_input(const SparseVector & v, bool allow_nonexistent)
 }
 
 void
-VariableStore::assign_output(const ValueMap & vals)
-{
-  for (const auto & [name, val] : vals)
-    output_variable(name) = val;
-}
-
-void
 VariableStore::assign_output(const SparseVector & v)
 {
   for (std::size_t i = 0; i < v.layout.nvar(); i++)
     output_variable(v.layout.var(i)) = v.tensors[i];
-}
-
-void
-VariableStore::assign_output_derivatives(const DerivMap & derivs)
-{
-  for (const auto & [yname, deriv] : derivs)
-  {
-    auto & yvar = output_variable(yname);
-    for (const auto & [xname, val] : deriv)
-    {
-      const auto & xvar = input_variable(xname);
-      yvar.d(xvar) = val;
-    }
-  }
 }
 
 void
@@ -478,15 +378,6 @@ VariableStore::assign_output_stack(jit::Stack & stack, bool out, bool dout, bool
     }
 
   jit::drop(stack, 1);
-}
-
-ValueMap
-VariableStore::collect_input() const
-{
-  ValueMap vals;
-  for (auto && [name, var] : input_variables())
-    vals[name] = var->tensor();
-  return vals;
 }
 
 SparseVector

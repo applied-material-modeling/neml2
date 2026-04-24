@@ -46,20 +46,10 @@ FredrickArmstrongPlasticHardening::expected_options()
       "direction, \\f$ \\dot{\\gamma} \\f$ is the flow rate, and \\f$ C \\f$ and \\f$ g \\f$ are "
       "material parameters.";
 
-  options.set_input("back_stress") = VariableName(STATE, "internal", "X");
-  options.set("back_stress").doc() = "Back stress";
-
-  options.set_output("back_stress_rate");
-  options.set("back_stress_rate").doc() = "Back stress rate, defaults to back_stress + _rate";
-
-  options.set_input("flow_direction") = VariableName(STATE, "internal", "NM");
-  options.set("flow_direction").doc() = "Flow direction";
-
-  options.set_parameter<TensorName<Scalar>>("C");
-  options.set("C").doc() = "Kinematic hardening coefficient";
-
-  options.set_parameter<TensorName<Scalar>>("g");
-  options.set("g").doc() = "Dynamic recovery coefficient";
+  options.add_input("back_stress", "Back stress");
+  options.add_input("flow_direction", "Flow direction");
+  options.add_parameter<Scalar>("C", "Kinematic hardening coefficient");
+  options.add_parameter<Scalar>("g", "Dynamic recovery coefficient");
 
   return options;
 }
@@ -68,9 +58,7 @@ FredrickArmstrongPlasticHardening::FredrickArmstrongPlasticHardening(const Optio
   : FlowRule(options),
     _X(declare_input_variable<SR2>("back_stress")),
     _NM(declare_input_variable<SR2>("flow_direction")),
-    _X_dot(declare_output_variable<SR2>(options.get<VariableName>("back_stress_rate").empty()
-                                            ? _X.name().with_suffix("_rate")
-                                            : options.get<VariableName>("back_stress_rate"))),
+    _X_dot(declare_output_variable<SR2>(rate_name(_X.name()))),
     _C(declare_parameter<Scalar>("C", "C", true)),
     _g(declare_parameter<Scalar>("g", "g", true))
 {
@@ -92,14 +80,9 @@ FredrickArmstrongPlasticHardening::set_value(bool out, bool dout_din, bool /*d2o
   {
     auto I = imap_v<SR2>(_X.options());
 
-    if (_gamma_dot.is_dependent())
-      _X_dot.d(_gamma_dot) = g_term;
-
-    if (_NM.is_dependent())
-      _X_dot.d(_NM) = 2.0 / 3.0 * _C * _gamma_dot * I;
-
-    if (_X.is_dependent())
-      _X_dot.d(_X) = -_g * _gamma_dot * I;
+    _X_dot.d(_gamma_dot) = g_term;
+    _X_dot.d(_NM) = 2.0 / 3.0 * _C * _gamma_dot * I;
+    _X_dot.d(_X) = -_g * _gamma_dot * I;
 
     if (const auto * const C = nl_param("C"))
       _X_dot.d(*C) = 2.0 / 3.0 * _NM * _gamma_dot;

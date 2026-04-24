@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'p'
-    input_Scalar_names = 'forces/T'
+    input_Scalar_names = 'temperature'
     input_Scalar_values = '1000'
-    output_Scalar_names = 'parameters/p'
+    output_Scalar_names = 'rate_sensitivity'
     output_Scalar_values = 'p_correct'
     check_second_derivatives = true
   []
@@ -17,7 +17,7 @@
     A = 'A'
     k = 1.38064e-20
     b = 2.019e-7
-    temperature = 'forces/T'
+    temperature = 'temperature'
   []
 []
 

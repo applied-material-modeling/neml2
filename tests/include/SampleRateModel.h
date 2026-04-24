@@ -35,6 +35,8 @@ template <bool AD>
 class SampleRateModelTmpl : public Model
 {
 public:
+  static OptionSet expected_options();
+
   SampleRateModelTmpl(const OptionSet & options);
 
   const Variable<Scalar> & foo;

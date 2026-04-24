@@ -31,11 +31,8 @@ ReactionMechanism::expected_options()
 {
   OptionSet options = Model::expected_options();
 
-  options.set_input("conversion_degree") = VariableName("state", "a");
-  options.set("conversion_degree").doc() = "Degree of conversion";
-
-  options.set_output("reaction_rate") = VariableName("state", "f");
-  options.set("reaction_rate").doc() = "Reaction rate";
+  options.add_input("conversion_degree", "Degree of conversion");
+  options.add_output("reaction_rate", "Reaction rate");
 
   return options;
 }

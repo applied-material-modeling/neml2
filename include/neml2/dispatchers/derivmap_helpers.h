@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include "neml2/models/map_types.h"
+#include "neml2/tensors/Tensor.h"
 
 namespace neml2
 {

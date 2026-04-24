@@ -35,7 +35,6 @@
 #include "neml2/tensors/tensors.h"
 #include "neml2/tensors/TensorValue.h"
 #include "neml2/models/Model.h"
-#include "neml2/models/map_types_fwd.h"
 
 namespace neml2
 {
@@ -89,21 +88,17 @@ Model::expected_options()
   options.section() = "Models";
 
   // Model defaults to defining value and dvalue, but not d2value
-  options.set<bool>("define_values") = true;
-  options.set<bool>("define_derivatives") = true;
-  options.set<bool>("define_second_derivatives") = false;
-  options.set("define_values").suppressed() = true;
-  options.set("define_derivatives").suppressed() = true;
-  options.set("define_second_derivatives").suppressed() = true;
+  options.add_private<bool>("define_values", true);
+  options.add_private<bool>("define_derivatives", true);
+  options.add_private<bool>("define_second_derivatives", false);
 
-  options.set<bool>("jit") = true;
-  options.set("jit").doc() = "Use JIT compilation for the forward operator";
-
-  options.set<bool>("production") = false;
-  options.set("production").doc() =
+  options.add<bool>("jit", true, "Use JIT compilation for the forward operator");
+  options.add<bool>(
+      "production",
+      false,
       "Production mode. This option is used to disable features like function graph tracking and "
       "tensor version tracking which are useful for training (i.e., calibrating model parameters) "
-      "but are not necessary in production runs.";
+      "but are not necessary in production runs.");
 
   return options;
 }
@@ -153,89 +148,11 @@ Model::diagnose() const
   for (auto & submodel : registered_models())
     neml2::diagnose(*submodel);
 
-  // Make sure variables are defined on the reserved subaxes
-  for (auto && [name, var] : input_variables())
-    diagnostic_check_input_variable(*var);
-  for (auto && [name, var] : output_variables())
-    diagnostic_check_output_variable(*var);
-
   if (settings().disable_jit())
     if (input_options().user_specified("jit"))
       diagnostic_assert(!input_options().get<bool>("jit"),
                         "JIT compilation is disabled globally by Settings/disable_jit=true, and it "
                         "is an error to explicitly set jit to true for any model.");
-}
-
-void
-Model::diagnostic_assert_state(const VariableBase & v) const
-{
-  diagnostic_assert(v.is_state(), "Variable ", v.name(), " must be on the ", STATE, " sub-axis.");
-}
-
-void
-Model::diagnostic_assert_old_state(const VariableBase & v) const
-{
-  diagnostic_assert(
-      v.is_old_state(), "Variable ", v.name(), " must be on the ", OLD_STATE, " sub-axis.");
-}
-
-void
-Model::diagnostic_assert_force(const VariableBase & v) const
-{
-  diagnostic_assert(v.is_force(), "Variable ", v.name(), " must be on the ", FORCES, " sub-axis.");
-}
-
-void
-Model::diagnostic_assert_old_force(const VariableBase & v) const
-{
-  diagnostic_assert(
-      v.is_old_force(), "Variable ", v.name(), " must be on the ", OLD_FORCES, " sub-axis.");
-}
-
-void
-Model::diagnostic_assert_residual(const VariableBase & v) const
-{
-  diagnostic_assert(
-      v.is_residual(), "Variable ", v.name(), " must be on the ", RESIDUAL, " sub-axis.");
-}
-
-void
-Model::diagnostic_check_input_variable(const VariableBase & v) const
-{
-  diagnostic_assert(v.is_state() || v.is_old_state() || v.is_force() || v.is_old_force() ||
-                        v.is_residual() || v.is_parameter(),
-                    "Input variable ",
-                    v.name(),
-                    " must be on one of the following sub-axes: ",
-                    STATE,
-                    ", ",
-                    OLD_STATE,
-                    ", ",
-                    FORCES,
-                    ", ",
-                    OLD_FORCES,
-                    ", ",
-                    RESIDUAL,
-                    ", ",
-                    PARAMETERS,
-                    ".");
-}
-
-void
-Model::diagnostic_check_output_variable(const VariableBase & v) const
-{
-  diagnostic_assert(v.is_state() || v.is_force() || v.is_residual() || v.is_parameter(),
-                    "Output variable ",
-                    v.name(),
-                    " must be on one of the following sub-axes: ",
-                    STATE,
-                    ", ",
-                    FORCES,
-                    ", ",
-                    RESIDUAL,
-                    ", ",
-                    PARAMETERS,
-                    ".");
 }
 
 void
@@ -519,70 +436,21 @@ ValueMap
 Model::value(const ValueMap & in)
 {
   forward_helper(in, true, false, false);
-
-  auto values = collect_output();
-  clear_input();
-  clear_output();
-  return values;
-}
-
-std::tuple<ValueMap, DerivMap>
-Model::value_and_dvalue(const ValueMap & in)
-{
-  forward_helper(in, true, true, false);
-
-  const auto values = collect_output();
-  const auto derivs = collect_output_derivatives();
-  clear_input();
-  clear_output();
-  return {values, derivs};
+  return collect_output();
 }
 
 DerivMap
 Model::dvalue(const ValueMap & in)
 {
   forward_helper(in, false, true, false);
-
-  auto derivs = collect_output_derivatives();
-  clear_input();
-  clear_output();
-  return derivs;
+  return collect_output_derivatives();
 }
 
-std::tuple<ValueMap, DerivMap, SecDerivMap>
-Model::value_and_dvalue_and_d2value(const ValueMap & in)
+std::tuple<ValueMap, DerivMap>
+Model::value_and_dvalue(const ValueMap & in)
 {
-  forward_helper(in, true, true, true);
-
-  const auto values = collect_output();
-  const auto derivs = collect_output_derivatives();
-  const auto secderivs = collect_output_second_derivatives();
-  clear_input();
-  clear_output();
-  return {values, derivs, secderivs};
-}
-
-std::tuple<DerivMap, SecDerivMap>
-Model::dvalue_and_d2value(const ValueMap & in)
-{
-  forward_helper(in, false, true, true);
-
-  const auto derivs = collect_output_derivatives();
-  const auto secderivs = collect_output_second_derivatives();
-  clear_input();
-  clear_output();
-  return {derivs, secderivs};
-}
-
-SecDerivMap
-Model::d2value(const ValueMap & in)
-{
-  forward_helper(in, false, false, true);
-
-  auto secderivs = collect_output_second_derivatives();
-  clear_input();
-  clear_output();
-  return secderivs;
+  forward_helper(in, true, true, false);
+  return {collect_output(), collect_output_derivatives()};
 }
 
 std::shared_ptr<Model>
@@ -715,16 +583,14 @@ Model::extract_AD_derivatives(bool dout, bool d2out)
     // Gather all dependent variables
     std::vector<Tensor> uts;
     for (const auto * u : us)
-      if (u->is_dependent())
-        uts.push_back(u->tensor());
+      uts.push_back(u->tensor());
 
     // Check if we need to create the graph (i.e., if any of the second derivatives are requested)
     bool create_graph = false;
     for (const auto * u : us)
-      if (u->is_dependent())
-        if (!create_graph && !dout && d2out)
-          if (_ad_secderivs.at(y).count(u))
-            create_graph = true;
+      if (!create_graph && !dout && d2out)
+        if (_ad_secderivs.at(y).count(u))
+          create_graph = true;
 
     const auto dy_dus = jacrev(y->tensor(),
                                uts,
@@ -734,12 +600,11 @@ Model::extract_AD_derivatives(bool dout, bool d2out)
 
     std::size_t i = 0;
     for (const auto * u : us)
-      if (u->is_dependent())
-      {
-        if (dy_dus[i].defined())
-          y->d(*u) = dy_dus[i];
-        i++;
-      }
+    {
+      if (dy_dus[i].defined())
+        y->d(*u) = dy_dus[i];
+      i++;
+    }
   }
 
   if (d2out)
@@ -747,9 +612,6 @@ Model::extract_AD_derivatives(bool dout, bool d2out)
     for (auto && [y, u1u2s] : _ad_secderivs)
       for (auto && [u1, u2s] : u1u2s)
       {
-        if (!u1->is_dependent())
-          continue;
-
         const auto & dy_du1 = y->d(*u1).tensor();
 
         if (!dy_du1.defined() || !dy_du1.requires_grad())
@@ -757,8 +619,7 @@ Model::extract_AD_derivatives(bool dout, bool d2out)
 
         std::vector<Tensor> u2ts;
         for (const auto * u2 : u2s)
-          if (u2->is_dependent())
-            u2ts.push_back(u2->tensor());
+          u2ts.push_back(u2->tensor());
 
         const auto d2y_du1u2s = jacrev(dy_du1,
                                        u2ts,
@@ -768,12 +629,11 @@ Model::extract_AD_derivatives(bool dout, bool d2out)
 
         std::size_t i = 0;
         for (const auto * u2 : u2s)
-          if (u2->is_dependent())
-          {
-            if (d2y_du1u2s[i].defined())
-              y->d2(*u1, *u2) = d2y_du1u2s[i];
-            i++;
-          }
+        {
+          if (d2y_du1u2s[i].defined())
+            y->d2(*u1, *u2) = d2y_du1u2s[i];
+          i++;
+        }
       }
   }
 }

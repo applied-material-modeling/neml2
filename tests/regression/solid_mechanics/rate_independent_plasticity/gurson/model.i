@@ -60,11 +60,12 @@
 
 [Drivers]
   [driver]
-    type = SDTSolidMechanicsDriver
+    type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    prescribed_strain = 'strains'
-    ic_Scalar_names = 'state/internal/f'
+    force_SR2_names = 'E'
+    force_SR2_values = 'strains'
+    ic_Scalar_names = 'void_fraction'
     ic_Scalar_values = 'f0'
     save_as = 'result.pt'
   []
@@ -83,29 +84,31 @@
   []
   [elastic_strain]
     type = SR2LinearCombination
-    from_var = 'forces/E state/internal/Ep'
-    to_var = 'state/internal/Ee'
-    coefficients = '1 -1'
+    from = 'E plastic_strain'
+    to = 'elastic_strain'
+    weights = '1 -1'
   []
   [elasticity]
     type = LinearIsotropicElasticity
     coefficients = '3e4 0.3'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
+    strain = 'elastic_strain'
   []
   [mandel_stress]
     type = IsotropicMandelStress
+    cauchy_stress = 'stress'
   []
   [j2]
     type = SR2Invariant
     invariant_type = 'VONMISES'
-    tensor = 'state/internal/M'
-    invariant = 'state/internal/se'
+    tensor = 'mandel_stress'
+    invariant = 'flow_invariant'
   []
   [i1]
     type = SR2Invariant
     invariant_type = 'I1'
-    tensor = 'state/internal/M'
-    invariant = 'state/internal/sp'
+    tensor = 'mandel_stress'
+    invariant = 'poro_invariant'
   []
   [yield]
     type = GTNYieldFunction
@@ -113,7 +116,7 @@
     q1 = 1.25
     q2 = 1.0
     q3 = 1.57
-    isotropic_hardening = 'state/internal/k'
+    isotropic_hardening = 'isotropic_hardening'
   []
   [flow]
     type = ComposedModel
@@ -122,9 +125,9 @@
   [normality]
     type = Normality
     model = 'flow'
-    function = 'state/internal/fp'
-    from = 'state/internal/M state/internal/k'
-    to = 'state/internal/NM state/internal/Nk'
+    function = 'yield_function'
+    from = 'mandel_stress isotropic_hardening'
+    to = 'flow_direction isotropic_hardening_direction'
   []
   [Eprate]
     type = AssociativePlasticFlow
@@ -134,21 +137,24 @@
   []
   [integrate_Ep]
     type = SR2BackwardEulerTimeIntegration
-    variable = 'state/internal/Ep'
+    variable = 'plastic_strain'
   []
   [integrate_ep]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/internal/ep'
+    variable = 'equivalent_plastic_strain'
   []
   [consistency]
-    type = RateIndependentPlasticFlowConstraint
+    type = FBComplementarity
+    a = 'yield_function'
+    a_inequality = 'LE'
+    b = 'flow_rate'
   []
   [voidrate]
     type = GursonCavitation
   []
   [integrate_voidrate]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/internal/f'
+    variable = 'void_fraction'
   []
   [surface]
     type = ComposedModel
@@ -163,6 +169,8 @@
   [eq_sys]
     type = NonlinearSystem
     model = 'surface'
+    unknowns = 'plastic_strain equivalent_plastic_strain void_fraction flow_rate'
+    residuals = 'plastic_strain_residual equivalent_plastic_strain_residual void_fraction_residual complementarity'
   []
 []
 
@@ -185,6 +193,6 @@
   [model]
     type = ComposedModel
     models = 'return_map elastic_strain elasticity'
-    additional_outputs = 'state/internal/Ep'
+    additional_outputs = 'plastic_strain equivalent_plastic_strain void_fraction'
   []
 []

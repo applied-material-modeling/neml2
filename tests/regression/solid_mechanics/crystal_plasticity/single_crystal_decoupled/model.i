@@ -104,16 +104,18 @@
 
 [Drivers]
   [driver]
-    type = LDISolidMechanicsDriver
+    type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    prescribed_deformation_rate = 'deformation_rate'
-    prescribed_vorticity = 'vorticity'
-    ic_Rot_names = 'state/orientation'
+    force_SR2_names = 'deformation_rate'
+    force_SR2_values = 'deformation_rate'
+    force_WR2_names = 'vorticity'
+    force_WR2_values = 'vorticity'
+    ic_Rot_names = 'orientation'
     ic_Rot_values = 'initial_orientation'
     predictor = 'PREVIOUS_STATE'
-    cp_warmup = true
-    cp_warmup_elastic_scale = 0.1
+    custom_predictor = 'cp_warmup'
+    custom_predictor_apply = 'FIRST_STEP'
     save_as = 'result.pt'
   []
   [regression]
@@ -138,18 +140,19 @@
   ############################################################################
   [euler_rodrigues_1]
     type = RotationMatrix
-    from = 'forces/tmp/orientation'
-    to = 'state/orientation_matrix'
+    from = 'tmp_orientation'
+    to = 'orientation_matrix'
   []
   [elasticity_1]
     type = LinearIsotropicElasticity
     coefficients = '1e5 0.25'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
-    strain = 'state/elastic_strain'
-    stress = 'state/internal/cauchy_stress'
+    strain = 'elastic_strain'
+    stress = 'cauchy_stress'
   []
   [resolved_shear]
     type = ResolvedShear
+    stress = 'cauchy_stress'
   []
   [elastic_stretch]
     type = ElasticStrainRate
@@ -176,11 +179,11 @@
   []
   [integrate_slip_hardening]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/internal/slip_hardening'
+    variable = 'slip_hardening'
   []
   [integrate_elastic_strain]
     type = SR2BackwardEulerTimeIntegration
-    variable = 'state/elastic_strain'
+    variable = 'elastic_strain'
   []
   [implicit_rate_1]
     type = ComposedModel
@@ -195,19 +198,19 @@
   ############################################################################
   [euler_rodrigues_2]
     type = RotationMatrix
-    from = 'state/orientation'
-    to = 'state/orientation_matrix'
+    from = 'orientation'
+    to = 'orientation_matrix'
   []
   [elasticity_2]
     type = LinearIsotropicElasticity
     coefficients = '1e5 0.25'
     coefficient_types = 'YOUNGS_MODULUS POISSONS_RATIO'
-    strain = 'forces/tmp/elastic_strain'
-    stress = 'state/internal/cauchy_stress'
+    strain = 'tmp_elastic_strain'
+    stress = 'cauchy_stress'
   []
   [orientation_rate]
     type = OrientationRate
-    elastic_strain = 'forces/tmp/elastic_strain'
+    elastic_strain = 'tmp_elastic_strain'
   []
   [plastic_spin]
     type = PlasticVorticity
@@ -215,11 +218,11 @@
   [slip_strength_2]
     type = SingleSlipStrengthMap
     constant_strength = 50.0
-    slip_hardening = 'forces/tmp/internal/slip_hardening'
+    slip_hardening = 'tmp_slip_hardening'
   []
   [integrate_orientation]
     type = WR2ImplicitExponentialTimeIntegration
-    variable = 'state/orientation'
+    variable = 'orientation'
   []
   [implicit_rate_2]
     type = ComposedModel
@@ -234,10 +237,14 @@
   [eq_sys_1]
     type = NonlinearSystem
     model = 'implicit_rate_1'
+    unknowns = 'elastic_strain slip_hardening'
+    residuals = 'elastic_strain_residual slip_hardening_residual'
   []
   [eq_sys_2]
     type = NonlinearSystem
     model = 'implicit_rate_2'
+    unknowns = 'orientation'
+    residuals = 'orientation_residual'
   []
 []
 
@@ -269,13 +276,13 @@
   ############################################################################
   [cache_elastic_strain]
     type = CopySR2
-    from = 'state/elastic_strain'
-    to = 'forces/tmp/elastic_strain'
+    from = 'elastic_strain'
+    to = 'tmp_elastic_strain'
   []
   [cache_slip_hardening]
     type = CopyScalar
-    from = 'state/internal/slip_hardening'
-    to = 'forces/tmp/internal/slip_hardening'
+    from = 'slip_hardening'
+    to = 'tmp_slip_hardening'
   []
   [cache1]
     type = ComposedModel
@@ -287,17 +294,21 @@
   ############################################################################
   [cache2]
     type = CopyRot
-    from = 'state/orientation'
-    to = 'forces/tmp/orientation'
+    from = 'orientation'
+    to = 'tmp_orientation'
   []
 
   ############################################################################
   # Sequentially update sub-system #1 and sub-system #2
   ############################################################################
+  [cp_warmup]
+    type = CrystalPlasticityStrainPredictor
+    scale = 0.1
+  []
   [model]
     type = ComposedModel
     models = 'cache2 subsystem1 cache1 subsystem2'
     priority = 'cache2 subsystem1 cache1 subsystem2'
-    additional_outputs = 'state/elastic_strain state/internal/slip_hardening'
+    additional_outputs = 'elastic_strain slip_hardening'
   []
 []

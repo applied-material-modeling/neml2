@@ -39,11 +39,11 @@ public:
   SingleSlipHardeningRule(const OptionSet & options);
 
 protected:
-  /// Hardening rate
-  Variable<Scalar> & _tau_dot;
-
   /// Current slip hardening value
   const Variable<Scalar> & _tau;
+
+  /// Hardening rate
+  Variable<Scalar> & _tau_dot;
 
   /// Sum of the absolute value of the slip rates
   const Variable<Scalar> & _gamma_dot_sum;

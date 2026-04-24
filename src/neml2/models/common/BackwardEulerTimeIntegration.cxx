@@ -24,7 +24,6 @@
 
 #include "neml2/models/common/BackwardEulerTimeIntegration.h"
 #include "neml2/tensors/functions/imap.h"
-#include <torch/csrc/jit/frontend/tracer.h>
 
 namespace neml2
 {
@@ -39,14 +38,9 @@ BackwardEulerTimeIntegration<T>::expected_options()
       "rate, and \\f$t\\f$ is time. Subscripts \\f$n\\f$ denote quantities from the previous time "
       "step.";
 
-  options.set_input("variable");
-  options.set("variable").doc() = "Variable being integrated";
-
-  options.set_input("rate");
-  options.set("rate").doc() = "Variable rate";
-
-  options.set_input("time") = VariableName(FORCES, "t");
-  options.set("time").doc() = "Time";
+  options.add_input("variable", "Variable being integrated");
+  options.add_input("time", "t", "Time");
+  options.add_optional_input("rate", "Name of the variable rate.");
 
   return options;
 }
@@ -55,24 +49,13 @@ template <typename T>
 BackwardEulerTimeIntegration<T>::BackwardEulerTimeIntegration(const OptionSet & options)
   : Model(options),
     _s(declare_input_variable<T>("variable")),
-    _sn(declare_input_variable<T>(_s.name().old())),
-    _ds_dt(options.get<VariableName>("rate").empty()
-               ? declare_input_variable<T>(_s.name().with_suffix("_rate"))
-               : declare_input_variable<T>("rate")),
+    _sn(declare_input_variable<T>(history_name(_s.name(), /*nstep=*/1))),
+    _rate(options.defined("rate") ? declare_input_variable<T>("rate")
+                                  : declare_input_variable<T>(rate_name(_s.name()))),
     _t(declare_input_variable<Scalar>("time")),
-    _tn(declare_input_variable<Scalar>(_t.name().old())),
-    _r(declare_output_variable<T>(_s.name().remount(RESIDUAL)))
+    _tn(declare_input_variable<Scalar>(history_name(_t.name(), /*nstep=*/1))),
+    _r(declare_output_variable<T>(residual_name(_s.name())))
 {
-}
-
-template <typename T>
-void
-BackwardEulerTimeIntegration<T>::diagnose() const
-{
-  Model::diagnose();
-  diagnostic_assert_state(_s);
-  diagnostic_assert_state(_ds_dt);
-  diagnostic_assert_force(_t);
 }
 
 template <typename T>
@@ -80,21 +63,17 @@ void
 BackwardEulerTimeIntegration<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
   if (out)
-    _r = _s - _sn - _ds_dt * (_t - _tn);
+    _r = _s - _sn - _rate * (_t - _tn);
 
   if (dout_din)
   {
     auto I = imap_v<T>(_s.options());
 
     _r.d(_s) = I;
-    _r.d(_ds_dt) = -I * (_t - _tn);
-
-    if (currently_assembling_nonlinear_system())
-      return;
-
+    _r.d(_rate) = -I * (_t - _tn);
     _r.d(_sn) = -I;
-    _r.d(_t) = -_ds_dt;
-    _r.d(_tn) = _ds_dt();
+    _r.d(_t) = -_rate;
+    _r.d(_tn) = _rate();
   }
 }
 

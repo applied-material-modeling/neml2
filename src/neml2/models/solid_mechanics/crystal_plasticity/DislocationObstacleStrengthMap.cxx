@@ -35,25 +35,15 @@ OptionSet
 DislocationObstacleStrengthMap::expected_options()
 {
   OptionSet options = SlipStrengthMap::expected_options();
-
   options.doc() =
       "Dislocation density to strength as in Taylor \\f$ \\tau_i = \\tau_{const} + \\alpha \\mu "
       "b \\sqrt{\\rho_i} \\f$.";
 
-  options.set_input("dislocation_density") = VariableName(STATE, "internal", "dislocation_density");
-  options.set("dislocation_density").doc() = "Per-slip dislocation density";
-
-  options.set_parameter<TensorName<Scalar>>("constant_strength");
-  options.set("constant_strength").doc() = "Constant strength offset";
-
-  options.set_parameter<TensorName<Scalar>>("alpha");
-  options.set("alpha").doc() = "Interaction coefficient";
-
-  options.set_parameter<TensorName<Scalar>>("mu");
-  options.set("mu").doc() = "Shear modulus";
-
-  options.set_parameter<TensorName<Scalar>>("b");
-  options.set("b").doc() = "Burgers vector";
+  options.add_input("dislocation_density", "Per-slip dislocation density");
+  options.add_parameter<Scalar>("constant_strength", "Constant strength offset");
+  options.add_parameter<Scalar>("alpha", "Interaction coefficient");
+  options.add_parameter<Scalar>("mu", "Shear modulus");
+  options.add_parameter<Scalar>("b", "Burgers vector");
 
   return options;
 }
@@ -79,8 +69,7 @@ DislocationObstacleStrengthMap::set_value(bool out, bool dout_din, bool /*d2out_
 
   if (dout_din)
   {
-    if (_rho.is_dependent())
-      _tau.d(_rho) = coeff * 0.5 / sqrt_rho;
+    _tau.d(_rho) = coeff * 0.5 / sqrt_rho;
 
     if (const auto * const tau_const = nl_param("constant_strength"))
       _tau.d(*tau_const) = Scalar::ones(_tau.options());

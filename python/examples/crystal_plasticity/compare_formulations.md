@@ -132,10 +132,10 @@ class SolveSeparate(torch.nn.Module):
 
         # Setup
         forces = {
-            "forces/t": neml2.Scalar(time.squeeze(-1), 0),
-            "forces/deformation_rate": neml2.SR2(deformation_rate, 0),
-            "forces/vorticity": neml2.WR2(vorticity, 0),
-            "forces/initial_orientation": neml2.Rot(initial_orientations, 0),
+            "t": neml2.Scalar(time.squeeze(-1), 0),
+            "deformation_rate": neml2.SR2(deformation_rate, 0),
+            "vorticity": neml2.WR2(vorticity, 0),
+            "initial_orientation": neml2.Rot(initial_orientations, 0),
         }
         forces = [forces[key] for key in self.discrete_equations.fvars]
         forces = (
@@ -146,7 +146,7 @@ class SolveSeparate(torch.nn.Module):
         )
         state0 = [neml2.Tensor()] * len(self.discrete_equations.svars)
         if initial_orientations is not None:
-            i = self.discrete_equations.svars.index("state/orientation")
+            i = self.discrete_equations.svars.index("orientation")
             state0[i] = neml2.Tensor(initial_orientations, 1)
         state0 = (
             neml2.SparseVector(self.discrete_equations.slayout, state0)
@@ -231,9 +231,9 @@ class SolveIntegrated(torch.nn.Module):
 
         # Setup
         forces = {
-            "forces/t": neml2.Scalar(time.squeeze(-1), 0),
-            "forces/F": neml2.R2(deformation_gradient, 0),
-            "forces/r": neml2.Rot(initial_orientations, 0),
+            "t": neml2.Scalar(time.squeeze(-1), 0),
+            "F": neml2.R2(deformation_gradient, 0),
+            "r": neml2.Rot(initial_orientations, 0),
         }
         forces = [forces[key] for key in self.discrete_equations.fvars]
         forces = (
@@ -243,7 +243,7 @@ class SolveIntegrated(torch.nn.Module):
             .torch()
         )
         state0 = [neml2.Tensor()] * len(self.discrete_equations.svars)
-        i = self.discrete_equations.svars.index("state/Fp")
+        i = self.discrete_equations.svars.index("Fp")
         state0[i] = neml2.tensors.Tensor(
             torch.eye(3, device=time.device).unsqueeze(0).expand(time.shape[1:2] + (3, 3)), 1
         )
@@ -286,7 +286,7 @@ split_state = (
     .disassemble()
     .tensors
 )
-iFp = model_integrated.discrete_equations.svars.index("state/Fp")
+iFp = model_integrated.discrete_equations.svars.index("Fp")
 Fp = split_state[iFp].torch().reshape(-1, 3, 3)
 Flast = F[-1]
 Fe = Flast @ torch.linalg.inv(Fp)
@@ -357,14 +357,14 @@ state_history_mult = (
     .tensors
 )
 
-iFp = model_integrated.discrete_equations.svars.index("state/Fp")
+iFp = model_integrated.discrete_equations.svars.index("Fp")
 Fp_mult = state_history_mult[iFp].torch().reshape(F.shape[:-2] + (3, 3))
 Fe_mult = F @ torch.linalg.inv(Fp_mult)
 U_mult, S_mult, Vh_mult = torch.linalg.svd(Fe_mult)
 Re_mult = U_mult @ Vh_mult
 Ue_mult = Vh_mult.transpose(-2, -1).conj() @ torch.diag_embed(S_mult, dim1=-2, dim2=-1) @ Vh_mult
 E_mult = 0.5 * (Ue_mult.transpose(-2, -1) @ Ue_mult - torch.eye(3, device=device))
-ie = model_separate.discrete_equations.svars.index("state/elastic_strain")
+ie = model_separate.discrete_equations.svars.index("elastic_strain")
 
 plt.plot(times[:, 0, 0].cpu(), state_history_split[ie].torch()[:, :, 2].cpu(), "k-", alpha=0.5)
 plt.plot(times[:, 0, 0].cpu(), E_mult[:, :, 2, 2].cpu(), "r--", alpha=0.5)

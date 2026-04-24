@@ -39,22 +39,24 @@
 
 [Drivers]
   [driver]
-    type = SDTSolidMechanicsDriver
+    type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    prescribed_strain = 'strains'
+    force_SR2_names = 'E'
+    force_SR2_values = 'strains'
   []
 []
 
 [Models]
   [mandel_stress]
     type = IsotropicMandelStress
+    cauchy_stress = 'stress'
   []
   [vonmises]
     type = SR2Invariant
     invariant_type = 'VONMISES'
-    tensor = 'state/internal/M'
-    invariant = 'state/internal/s'
+    tensor = 'mandel_stress'
+    invariant = 'effective_stress'
   []
   [yield]
     type = YieldFunction
@@ -67,9 +69,9 @@
   [normality]
     type = Normality
     model = 'flow'
-    function = 'state/internal/fp'
-    from = 'state/internal/M'
-    to = 'state/internal/NM'
+    function = 'yield_function'
+    from = 'mandel_stress'
+    to = 'flow_direction'
   []
   [flow_rate]
     type = PerzynaPlasticFlowRate
@@ -81,18 +83,18 @@
   []
   [Erate]
     type = SR2VariableRate
-    variable = 'forces/E'
-    rate = 'forces/E_rate'
+    variable = 'E'
+    time = 't'
   []
   [Eerate]
     type = SR2LinearCombination
-    from_var = 'forces/E_rate state/internal/Ep_rate'
-    to_var = 'state/internal/Ee_rate'
-    coefficients = '1 -1'
+    from = 'E_rate plastic_strain_rate'
+    to = 'strain_rate'
+    weights = '1 -1'
   []
   [youngs_modulus]
     type = ScalarLinearInterpolation
-    argument = 'forces/t'
+    argument = 't'
     abscissa = 'E_times'
     ordinate = 'E_values'
   []
@@ -104,7 +106,8 @@
   []
   [integrate_stress]
     type = SR2BackwardEulerTimeIntegration
-    variable = 'state/S'
+    variable = 'stress'
+    time = 't'
   []
   [implicit_rate]
     type = ComposedModel
@@ -116,6 +119,7 @@
   [eq_sys]
     type = NonlinearSystem
     model = 'implicit_rate'
+    unknowns = 'stress'
   []
 []
 

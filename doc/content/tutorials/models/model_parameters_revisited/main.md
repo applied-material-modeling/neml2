@@ -113,19 +113,7 @@ The composed model automatically reflects such restructuring:
 
 </div>
 
-When the referenced model has more than one output variable, the variable specification becomes ambiguous. A more precise variable specifier in the form of `<model-name>.<variable-name>` can be used to remove such ambiguity. For example, although unncessary (as [ScalarLinearInterpolation](#scalarlinearinterpolation) defines one and only one output variable), the above example input is equivalent to
-```
-[Models]
-  # ...
-  [eq1]
-    type = ThermalEigenstrain
-    reference_temperature = '300'
-    CTE = 'alpha.parameters/alpha'
-    eigenstrain = 'forces/Eg'
-  []
-  # ...
-[]
-```
+When the referenced model has more than one output variable, the variable specification becomes ambiguous. A more precise variable specifier in the form of `<model-name>.<variable-name>` can be used to remove such ambiguity.
 
 Finally, a special form of variable specifier can be used to effectively transform a model parameter into an **input variable**. For example, the following input file converts the coefficient of thermal expansion into an input variable.
 @list-input:model_parameters_revisited/input4.i

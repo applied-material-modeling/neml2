@@ -38,17 +38,11 @@ GaussianTensorTmpl<T>::expected_options()
                   "\\f$g(x) = h \\exp(-\\tfrac{1}{2} z^2)\\f$ with \\f$z = (x - c) / w\\f$, where "
                   "\\f$h\\f$ is the height, \\f$w\\f$ is the width, and \\f$c\\f$ is the center.";
 
-  options.set<TensorName<T>>("points");
-  options.set("points").doc() = "The coordinates to evaluate the Gaussian at";
-
-  options.set<TensorName<Scalar>>("width");
-  options.set("width").doc() = "The Gaussian width";
-
-  options.set<TensorName<Scalar>>("height");
-  options.set("height").doc() = "The Gaussian height";
-
-  options.set<TensorName<Scalar>>("center") = TensorName<Scalar>("0");
-  options.set("center").doc() = "The Gaussian center in the domain";
+  options.add<TensorName<T>>("points", "The coordinates to evaluate the Gaussian at");
+  options.add<TensorName<Scalar>>("width", "The Gaussian width");
+  options.add<TensorName<Scalar>>("height", "The Gaussian height");
+  options.add<TensorName<Scalar>>(
+      "center", TensorName<Scalar>("0"), "The Gaussian center in the domain");
 
   return options;
 }

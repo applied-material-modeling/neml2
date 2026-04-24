@@ -42,11 +42,8 @@ Determinant<T>::expected_options()
   auto options = Model::expected_options();
   options.doc() = "Calculate the Jacobian of a second order tensor.";
 
-  options.set_input("input") = VariableName(STATE, "F");
-  options.set("input").doc() = "The second order tensor to calculate the determinant of";
-
-  options.set_output("determinant") = VariableName(STATE, "J");
-  options.set("determinant").doc() = "The determinant of the input tensor";
+  options.add_input("input", "The second order tensor to calculate the determinant of");
+  options.add_output("determinant", "The determinant of the input tensor");
 
   return options;
 }
@@ -67,8 +64,7 @@ Determinant<T>::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
     _J = neml2::det(_F());
 
   if (dout_din)
-    if (_F.is_dependent())
-      _J.d(_F) = neml2::det(_F()) * neml2::inv(_F()).transpose();
+    _J.d(_F) = neml2::det(_F()) * neml2::inv(_F()).transpose();
 }
 
 template class Determinant<R2>;

@@ -2,11 +2,11 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'state/internal/gamma_rate'
+    input_Scalar_names = 'flow_rate'
     input_Scalar_values = '0.0015'
-    input_SR2_names = 'state/internal/NM'
+    input_SR2_names = 'flow_direction'
     input_SR2_values = 'NX'
-    output_SR2_names = 'state/internal/Ep_rate'
+    output_SR2_names = 'plastic_strain_rate'
     output_SR2_values = 'Ep_rate'
   []
 []

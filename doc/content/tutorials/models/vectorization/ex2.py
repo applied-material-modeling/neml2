@@ -17,4 +17,4 @@ strain = SR2.dynamic_linspace(strain_min, strain_max, N)
 
 # Evaluate the model N times
 for i in range(N):
-    output = model.value({"forces/E": strain.dynamic[i]})
+    output = model.value({"strain": strain.dynamic[i]})

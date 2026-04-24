@@ -30,14 +30,13 @@ Tf = 1700
     type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-    time = 'forces/t'
 
-    force_Scalar_names = 'forces/T'
+    force_Scalar_names = 'T'
     force_Scalar_values = 'T'
 
     save_as = 'result.pt'
 
-    ic_Scalar_names = 'state/phif'
+    ic_Scalar_names = 'phif'
     ic_Scalar_values = '1.0'
   []
   [regression]
@@ -58,66 +57,64 @@ Tf = 1700
 []
 
 [Models]
-  # this portion is to make sure the regression test runs by adding a dummy model
+  # dummy model: phif stays constant (rate = 0)
   [phifrate]
-    type = ScalarParameterToState
-    from = 0.0
-    to = 'state/phif_rate'
+    type = ScalarConstantParameter
+    value = 0.0
+    parameter = 'phif_rate'
   []
   [phif]
     type = ScalarForwardEulerTimeIntegration
-    variable = 'state/phif'
+    variable = 'phif'
   []
   ## end dummy portion
   [liquid_phase_portion]
     type = HermiteSmoothStep
-    argument = 'forces/T'
-    value = 'state/cliquid'
+    argument = 'T'
+    value = 'cliquid'
     lower_bound = '${Ts}'
     upper_bound = '${Tf}'
     complement = false
   []
   [solid_phase_portion]
     type = ScalarLinearCombination
-    from_var = 'state/cliquid'
-    to_var = 'state/omcliquid'
-    coefficients = -1.0
-    constant_coefficient = 1.0
+    from = 'cliquid'
+    to = 'omcliquid'
+    weights = -1.0
+    offset = 1.0
   []
   [phase_regularization]
     type = SymmetricHermiteInterpolation
-    argument = 'forces/T'
-    value = 'state/eta'
+    argument = 'T'
+    output = 'eta'
     lower_bound = '${Ts}'
     upper_bound = '${Tf}'
   []
   [Tdot]
     type = ScalarVariableRate
-    variable = 'forces/T'
-    rate = 'state/Tdot'
-    time = 'forces/t'
+    variable = 'T'
   []
   [heatrelease]
     type = ScalarMultiplication
-    from_var = 'state/eta state/Tdot'
-    to_var = 'state/q'
-    coefficient = '${mL}'
+    from = 'eta T_rate'
+    to = 'q'
+    scaling = '${mL}'
   []
   [liquid_phase_fluid]
     type = ScalarMultiplication
-    from_var = 'state/cliquid state/phif'
-    to_var = 'state/phif_l'
+    from = 'cliquid phif'
+    to = 'phif_l'
   []
   [solid_phase_fluid]
     type = ScalarMultiplication
-    from_var = 'state/omcliquid state/phif'
-    to_var = 'state/phif_s'
+    from = 'omcliquid phif'
+    to = 'phif_s'
   []
   [model]
     type = ComposedModel
     models = 'phifrate phif liquid_phase_portion solid_phase_portion
               liquid_phase_fluid solid_phase_fluid
               phase_regularization Tdot heatrelease'
-    additional_outputs = 'state/phif state/eta'
+    additional_outputs = 'phif eta'
   []
 []

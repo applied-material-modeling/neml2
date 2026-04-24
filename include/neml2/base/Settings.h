@@ -42,9 +42,20 @@ public:
   /// Getters for the settings
   const std::string & buffer_name_separator() const { return _buffer_name_separator; }
   const std::string & parameter_name_separator() const { return _parameter_name_separator; }
+  const std::string & history_separator() const { return _history_separator; }
+
+  const std::string & rate_prefix() const { return _rate_prefix; }
+  const std::string & rate_suffix() const { return _rate_suffix; }
+
+  const std::string & residual_prefix() const { return _residual_prefix; }
+  const std::string & residual_suffix() const { return _residual_suffix; }
+
   bool require_double_precision() const { return _require_double_precision; }
+
   const std::vector<std::string> & additional_libraries() const { return _additional_libraries; }
+
   bool disable_jit() const { return _disable_jit; }
+
   bool linalg_solve_check_errors() const { return _linalg_solve_check_errors; }
   ///@}
 
@@ -54,6 +65,21 @@ private:
 
   /// Separator for parameter names
   const std::string _parameter_name_separator;
+
+  /// Separator for history variable names
+  const std::string _history_separator;
+
+  /// Prefix for rate variables
+  const std::string _rate_prefix;
+
+  /// Suffix for rate variables
+  const std::string _rate_suffix;
+
+  /// Prefix for residual variables
+  const std::string _residual_prefix;
+
+  /// Suffix for residual variables
+  const std::string _residual_suffix;
 
   /// Whether to enforce the use of double precision for floating point tensors
   const bool _require_double_precision;

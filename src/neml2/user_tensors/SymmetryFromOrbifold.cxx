@@ -35,11 +35,10 @@ SymmetryFromOrbifold::expected_options()
   OptionSet options = UserTensorBase<R2>::expected_options();
   options.doc() = "Returns a tensor of symmetry operations for a given symmetr group represented "
                   "in orbifold notation.";
-
-  options.set<std::string>("orbifold");
-  options.set("orbifold").doc() =
+  options.add<std::string>(
+      "orbifold",
       "A string giving the orbifold representation of the group, for example 432 for the typical "
-      "cubic crystal system defined by chiral octahedral symmetry";
+      "cubic crystal system defined by chiral octahedral symmetry");
   return options;
 }
 

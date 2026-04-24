@@ -2,9 +2,9 @@
   [unit]
     type = ModelUnitTest
     model = 'model'
-    input_Scalar_names = 'forces/T state/internal/k_rate_unmodified state/internal/k'
+    input_Scalar_names = 'temperature base_rate base'
     input_Scalar_values = 'temperature_in 20.0 100.0'
-    output_Scalar_names = 'state/internal/k_rate'
+    output_Scalar_names = 'modified_rate'
     output_Scalar_values = 'correct_values'
     check_second_derivatives = false
     check_AD_parameter_derivatives = false
@@ -14,10 +14,10 @@
 [Models]
   [model]
     type = ScalarTwoStageThermalAnnealing
-    base_rate = 'state/internal/k_rate_unmodified'
-    base = 'state/internal/k'
-    modified_rate = 'state/internal/k_rate'
-    temperature = 'forces/T'
+    base_rate = 'base_rate'
+    base = 'base'
+    modified_rate = 'modified_rate'
+    temperature = 'temperature'
 
     T1 = 1000.0
     T2 = 1200.0
