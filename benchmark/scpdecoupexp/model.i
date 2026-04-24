@@ -232,6 +232,7 @@
   [eq_sys_1]
     type = NonlinearSystem
     model = 'implicit_rate_1'
+    unknowns = 'elastic_strain slip_hardening'
   []
 []
 

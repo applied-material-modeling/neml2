@@ -46,7 +46,7 @@ Residual associated with the KKT conditions can be written as the Fischer-Burmei
   r = \dot{\gamma} - f^p - \sqrt{{\dot{\gamma}}^2 + {f^p}^2}.
 \f}
 
-This complementarity condition is implemented by the object `RateIndependentPlasticFlowConstraint`. A complete example input file for consistent plasticity is shown below, and the composition and possible modifications are explained in the following subsections.
+This complementarity condition is implemented by `FBComplementarity` with `a_inequality = 'LE'`. A complete example input file for consistent plasticity is shown below, and the composition and possible modifications are explained in the following subsections.
 
 @list-input:tests/regression/solid_mechanics/rate_independent_plasticity/perfect/model.i:Models,EquationSystems,Solvers
 
@@ -104,8 +104,8 @@ Below is an example input file defining a yield function with \f$ J_2 \f$ flow a
   [vonmises]
     type = SR2Invariant
     invariant_type = 'VONMISES'
-    tensor = 'state/internal/S'
-    invariant = 'state/internal/s'
+    tensor = 'S'
+    invariant = 'effective_stress'
   []
   [isoharden]
     type = LinearIsotropicHardening
@@ -114,7 +114,7 @@ Below is an example input file defining a yield function with \f$ J_2 \f$ flow a
   [yield_function]
     type = YieldFunction
     yield_stress = 5
-    isotropic_hardening = 'state/internal/k'
+    isotropic_hardening = 'isotropic_hardening'
   []
 []
 ```
@@ -139,15 +139,15 @@ Below is an example input file defining a yield function with \f$ J_2 \f$ flow a
   []
   [overstress]
     type = SR2LinearCombination
-    from_var = 'state/internal/S state/internal/X'
-    to_var = 'state/internal/O'
-    coefficients = '1 -1'
+    from = 'S X'
+    to = 'O'
+    weights = '1 -1'
   []
   [vonmises]
     type = SR2Invariant
     invariant_type = 'VONMISES'
-    tensor = 'state/internal/O'
-    invariant = 'state/internal/s'
+    tensor = 'O'
+    invariant = 'effective_stress'
   []
   [yield_function]
     type = YieldFunction
@@ -164,15 +164,15 @@ An alternative way of introducing hardening is through back stresses. Instead of
 [Models]
   [overstress]
     type = SR2LinearCombination
-    from_var = 'state/internal/S state/internal/X1 state/internal/X2'
-    to_var = 'state/internal/O'
-    coefficients = '1 -1 -1'
+    from = 'S X1 X2'
+    to = 'O'
+    weights = '1 -1 -1'
   []
   [vonmises]
     type = SR2Invariant
     invariant_type = 'VONMISES'
-    tensor = 'state/internal/O'
-    invariant = 'state/internal/s'
+    tensor = 'O'
+    invariant = 'effective_stress'
   []
   [yield_function]
     type = YieldFunction
@@ -194,24 +194,24 @@ Isotropic hardening, kinematic hardening, and back stresses are all optional and
   [kinharden]
     type = LinearKinematicHardening
     hardening_modulus = 1000
-    back_stress = 'state/internal/X0'
+    back_stress = 'X0'
   []
   [overstress]
     type = SR2LinearCombination
-    from_var = 'state/internal/S state/internal/X0 state/internal/X1 state/internal/X2'
-    to_var = 'state/internal/O'
-    coefficients = '1 -1 -1 -1'
+    from = 'S X0 X1 X2'
+    to = 'O'
+    weights = '1 -1 -1 -1'
   []
   [vonmises]
     type = SR2Invariant
     invariant_type = 'VONMISES'
-    tensor = 'state/internal/O'
-    invariant = 'state/internal/s'
+    tensor = 'O'
+    invariant = 'effective_stress'
   []
   [yield_function]
     type = YieldFunction
     yield_stress = 5
-    isotropic_hardening = 'state/internal/k'
+    isotropic_hardening = 'isotropic_hardening'
   []
 []
 ```
@@ -237,9 +237,9 @@ The example input file below defines associative \f$ J_2 \f$ flow rules
   [normality]
     type = Normality
     model = 'flow'
-    function = 'state/internal/fp'
-    from = 'state/internal/S state/internal/k state/internal/X'
-    to = 'state/internal/NM state/internal/Nk state/internal/NX'
+    function = 'yield_function'
+    from = 'mandel_stress isotropic_hardening X'
+    to = 'flow_direction isotropic_hardening_direction kinematic_hardening_direction'
   []
   [eprate]
     type = AssociativeIsotropicPlasticHardening
@@ -264,44 +264,31 @@ Mixed control here means that some components of the strain tensor and some comp
 
 Mathematically, at each time step consider a tensor of applied, mixed strain or stress conditions \f$ f_{ij}  \f$ and a control signal \f$ c_{ij} \f$.  When \f$ c_{ij} < h \f$ for some threshold \f$ h \f$ we consider the corresponding component of the input \f$ f_{ij} \f$ to be a strain value and the model must solve for the corresponding value of stress.  If \f$ c_{ij} \ge h \f$ we consider the corresponding component of the input \f$ f_{ij} \f$ to be a stress value and the model must solve for the corresponding value of strain.
 
-Modifying a model for mixed control only requires a few additional objects.  The first maps from the mixed input and a conjugate mixed state vector into the actual model stress and strain input axes:
+Modifying a model for mixed control only requires one additional object, `MixedControlSetup`, which maps the mixed input and conjugate state vector to the model's stress and strain variables:
 
 ```python
   [mixed]
     type = MixedControlSetup
-    above_variable = "state/S"
-    below_variable = "forces/E"
-  []
-  [mixed_old]
-    type = MixedControlSetup
-    control = "old_forces/control"
-    mixed_state = "old_state/mixed_state"
-    fixed_values = "old_forces/fixed_values"
-    above_variable = "old_state/S"
-    below_variable = "old_forces/E"
+    x_above = 'fixed_values'
+    x_below = 'mixed_state'
+    y = 'stress'
+    z = 'strain'
   []
 ```
 
-The second modification renames the resulting residual to map to the correct name for the mixed state:
+Here `fixed_values` is the prescribed mixed input (force), `mixed_state` is the unknown conjugate variable that the solver determines, `y` is the stress variable name, and `z` is the strain variable name. The components of `mixed_state` that are active (i.e., the unknowns being solved) are determined by the `control` signal tensor provided to the driver.
+
+The `mixed_state` unknown must be listed in the `NonlinearSystem`, with its residual mapped to the stress residual:
 
 ```python
-  [rename]
-    type = CopySR2
-    from = "residual/S"
-    to = "residual/mixed_state"
+[EquationSystems]
+  [eq_sys]
+    type = NonlinearSystem
+    model = 'implicit_rate'
+    unknowns = 'mixed_state ...'
+    residuals = 'stress_residual ...'
   []
-```
-
-In this example the "base" model is setup for strain control, so that the residual is formed on stress.  For "base" stress control the only change would be the name of the `from` parameter in this object.
-
-These two modifications will allow the model to be run in mixed control.  One additional modification clarifies the output by mapping the mixed input and state back to stress and strain tensors
-
-```python
-  [mixed_output]
-    type = MixedControlSetup
-    above_variable = 'output/stress'
-    below_variable = 'output/strain'
-  []
+[]
 ```
 
 ## Crystal plasticity
