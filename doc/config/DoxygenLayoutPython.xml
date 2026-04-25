@@ -82,6 +82,7 @@
     </tab>
     <tab type="usergroup" title="Migration Guides">
       <tab type="user" url="../migration-200-210.html" title="Migrating from v2.0.0 to v2.1.0"/>
+      <tab type="user" url="../migration-211-212.html" title="Migrating from v2.1.1 to v2.1.2"/>
     </tab>
     <tab type="topics" title="Aditional Documentation"/>
     <tab type="usergroup" title="C++ API Reference">
