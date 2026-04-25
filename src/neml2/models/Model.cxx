@@ -453,6 +453,31 @@ Model::value_and_dvalue(const ValueMap & in)
   return {collect_output(), collect_output_derivatives()};
 }
 
+void
+Model::set_output_derivative_filter(
+    const std::vector<std::pair<VariableName, VariableName>> & derivs)
+{
+  // Stores the filter and resets _deriv_sparsity (not nl_sys — those are independent).
+  VariableStore::set_output_derivative_filter(derivs);
+
+  // Invalidate only the regular traced graphs for dout=true indices (2, 3, 6, 7).
+  // The nl_sys graphs are independent and are not affected by this filter.
+  for (const std::size_t idx : {2ul, 3ul, 6ul, 7ul})
+    _traced_functions[idx].clear();
+}
+
+void
+Model::set_output_derivative_filter_nl_sys(
+    const std::vector<std::pair<VariableName, VariableName>> & derivs)
+{
+  // Stores the nl_sys filter and resets _deriv_sparsity_nl_sys.
+  VariableStore::set_output_derivative_filter_nl_sys(derivs);
+
+  // Invalidate only the nl_sys traced graphs for dout=true indices (2, 3, 6, 7).
+  for (const std::size_t idx : {2ul, 3ul, 6ul, 7ul})
+    _traced_functions_nl_sys[idx].clear();
+}
+
 std::shared_ptr<Model>
 Model::registered_model(const std::string & name) const
 {

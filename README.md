@@ -23,6 +23,8 @@ NEML2 is provided as open source software under a MIT [license](https://raw.gith
 
 Building should be as easy as cloning the repository, configuring with CMake, compiling with `make`, and installing with `make install`. Refer to the [installation guide](https://applied-material-modeling.github.io/neml2/install.html) for more detailed instructions and finer control over various dependencies as well as other build customization.
 
+Once NEML2 is built/installed, refer to the [getting started](https://applied-material-modeling.github.io/neml2/tutorials-getting-started.html) guide for commonly used APIs.
+
 ### Features and design philosophy
 
 #### Vectorization

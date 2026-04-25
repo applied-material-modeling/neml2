@@ -224,15 +224,49 @@ VariableStore::zero_undefined_input()
 }
 
 void
+VariableStore::set_output_derivative_filter(
+    const std::vector<std::pair<VariableName, VariableName>> & derivs)
+{
+  _requested_derivs = derivs.empty() ? std::nullopt : std::make_optional(derivs);
+  _deriv_sparsity = std::nullopt;
+  // _deriv_sparsity_nl_sys is independent — use set_output_derivative_filter_nl_sys to change it
+}
+
+void
+VariableStore::set_output_derivative_filter_nl_sys(
+    const std::vector<std::pair<VariableName, VariableName>> & derivs)
+{
+  _requested_derivs_nl_sys = derivs.empty() ? std::nullopt : std::make_optional(derivs);
+  _deriv_sparsity_nl_sys = std::nullopt;
+}
+
+void
 VariableStore::cache_derivative_sparsity()
 {
+  const bool nl_sys = currently_assembling_nonlinear_system();
+  const auto & filter = nl_sys ? _requested_derivs_nl_sys : _requested_derivs;
+
   std::vector<std::pair<VariableBase *, const VariableBase *>> sparsity;
   for (auto && [yname, yvar] : output_variables())
     for (const auto & [dy_dx, xvar] : yvar->derivatives())
-      if (dy_dx.defined())
-        sparsity.emplace_back(yvar.get(), xvar);
+    {
+      if (!dy_dx.defined())
+        continue;
+      if (filter.has_value())
+      {
+        const auto & yn = yname;
+        const auto & xn = xvar->name();
+        auto it =
+            std::find_if(filter->begin(),
+                         filter->end(),
+                         [&](const auto & req) { return req.first == yn && req.second == xn; });
+        if (it == filter->end())
+          continue;
+      }
+      sparsity.emplace_back(yvar.get(), xvar);
+    }
 
-  if (currently_assembling_nonlinear_system())
+  if (nl_sys)
     _deriv_sparsity_nl_sys = std::move(sparsity);
   else
     _deriv_sparsity = std::move(sparsity);
@@ -413,8 +447,24 @@ VariableStore::collect_output_derivatives() const
   DerivMap derivs;
   for (auto && [name, var] : output_variables())
     for (const auto & [deriv, xvar] : var->derivatives())
-      if (deriv.defined())
-        derivs[name][xvar->name()] = deriv.tensor();
+    {
+      if (!deriv.defined())
+        continue;
+      const auto & filter =
+          currently_assembling_nonlinear_system() ? _requested_derivs_nl_sys : _requested_derivs;
+      if (filter.has_value())
+      {
+        const auto & yn = name;
+        const auto & xn = xvar->name();
+        auto it =
+            std::find_if(filter->begin(),
+                         filter->end(),
+                         [&](const auto & req) { return req.first == yn && req.second == xn; });
+        if (it == filter->end())
+          continue;
+      }
+      derivs[name][xvar->name()] = deriv.tensor();
+    }
   return derivs;
 }
 

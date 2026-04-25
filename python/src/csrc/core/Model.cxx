@@ -144,5 +144,12 @@ def(py::module_ & m, py::class_<Model, std::shared_ptr<Model>> & c)
              auto [values, derivs] =
                  self.value_and_dvalue(unpack_value_map(pyinputs, false, base_shape_lookup));
              return std::make_pair(pack_value_map(values), pack_deriv_map(derivs));
-           });
+           })
+      .def(
+          "set_output_derivative_filter",
+          [](Model & self, const std::vector<std::pair<std::string, std::string>> & derivs)
+          { self.set_output_derivative_filter(derivs); },
+          py::arg("derivs"),
+          "Filter which (output, input) derivative pairs are computed and returned by dvalue and "
+          "value_and_dvalue. Pass an empty list to clear the filter and compute all derivatives.");
 }

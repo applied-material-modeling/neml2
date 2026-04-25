@@ -35,6 +35,72 @@ using namespace neml2;
 
 TEST_CASE("Model", "[models]")
 {
+  SECTION("set_output_derivative_filter")
+  {
+    auto model = load_model("models/common/ScalarLinearCombination.i", "model");
+
+    set_default_dtype(kFloat64);
+    ValueMap in;
+    in["A"] = Scalar::full(3.0);
+    in["B"] = Scalar::full(2.0);
+
+    SECTION("no filter returns all derivatives")
+    {
+      auto derivs = model->dvalue(in);
+      REQUIRE(derivs.count("C") == 1);
+      REQUIRE(derivs.at("C").count("A") == 1);
+      REQUIRE(derivs.at("C").count("B") == 1);
+    }
+
+    SECTION("filter restricts to requested pair")
+    {
+      model->set_output_derivative_filter({{"C", "A"}});
+      auto derivs = model->dvalue(in);
+      REQUIRE(derivs.count("C") == 1);
+      REQUIRE(derivs.at("C").count("A") == 1);
+      REQUIRE(derivs.at("C").count("B") == 0);
+    }
+
+    SECTION("clearing filter restores all derivatives")
+    {
+      model->set_output_derivative_filter({{"C", "A"}});
+      model->set_output_derivative_filter({});
+      auto derivs = model->dvalue(in);
+      REQUIRE(derivs.count("C") == 1);
+      REQUIRE(derivs.at("C").count("A") == 1);
+      REQUIRE(derivs.at("C").count("B") == 1);
+    }
+
+    SECTION("filter applies to value_and_dvalue")
+    {
+      model->set_output_derivative_filter({{"C", "B"}});
+      auto [vals, derivs] = model->value_and_dvalue(in);
+      REQUIRE(vals.count("C") == 1);
+      REQUIRE(derivs.count("C") == 1);
+      REQUIRE(derivs.at("C").count("A") == 0);
+      REQUIRE(derivs.at("C").count("B") == 1);
+    }
+
+    SECTION("changing filter after evaluation uses the new filter")
+    {
+      // First evaluation with filter on A — traces the JIT graph
+      model->set_output_derivative_filter({{"C", "A"}});
+      {
+        auto derivs = model->dvalue(in);
+        REQUIRE(derivs.at("C").count("A") == 1);
+        REQUIRE(derivs.at("C").count("B") == 0);
+      }
+
+      // Change filter to B — must invalidate the old traced graph and re-trace
+      model->set_output_derivative_filter({{"C", "B"}});
+      {
+        auto derivs = model->dvalue(in);
+        REQUIRE(derivs.at("C").count("A") == 0);
+        REQUIRE(derivs.at("C").count("B") == 1);
+      }
+    }
+  }
+
   SECTION("variable type")
   {
     auto model = load_model("models/common/ComposedModel3.i", "model");

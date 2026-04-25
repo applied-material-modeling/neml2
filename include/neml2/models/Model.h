@@ -187,6 +187,11 @@ public:
   /// Convenient shortcut to construct and return the model value and its derivative
   virtual std::tuple<ValueMap, DerivMap> value_and_dvalue(const ValueMap & in);
 
+  /// Set the (output, input) pairs whose derivatives should be computed and returned by dvalue and
+  /// value_and_dvalue. Pass an empty vector to clear the filter and compute all derivatives.
+  void
+  set_output_derivative_filter(const std::vector<std::pair<VariableName, VariableName>> & derivs);
+
   /// Declaration of nonlinear parameters may require manipulation of input
   friend class ParameterStore;
 
@@ -196,7 +201,15 @@ public:
   /// ModelNonlinearSystem needs access to some setup methods
   friend class ModelNonlinearSystem;
 
+  /// ImplicitUpdate sets the nl_sys derivative filter on its sub-model at construction time
+  friend class ImplicitUpdate;
+
 protected:
+  /// Same as set_output_derivative_filter but applies only during nonlinear system assembly.
+  /// Only invalidates the nl_sys JIT graph cache; the regular graph cache is untouched.
+  void set_output_derivative_filter_nl_sys(
+      const std::vector<std::pair<VariableName, VariableName>> & derivs);
+
   virtual void link_input_variables();
   virtual void link_input_variables(Model * submodel);
   virtual void link_output_variables();
