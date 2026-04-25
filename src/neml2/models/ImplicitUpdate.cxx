@@ -93,6 +93,18 @@ ImplicitUpdate::ImplicitUpdate(const OptionSet & options)
     const auto & u = model->input_variable(ulayout.var(i));
     clone_output_variable(u);
   }
+
+  // During the iterative nonlinear solve, the sub-model's nl_sys JIT graph only needs residual
+  // derivatives w.r.t. unknowns (for the Jacobian A = dr/du). Derivatives w.r.t. given variables
+  // (dr/dg) are never used during the solve — only once post-convergence for the IFT step, which
+  // runs outside the nl_sys assembly context. Pre-setting this filter here ensures the nl_sys JIT
+  // graph is built correctly from the very first assembly and is never invalidated again.
+  std::vector<std::pair<VariableName, VariableName>> nl_sys_pairs;
+  nl_sys_pairs.reserve(blayout.nvar() * ulayout.nvar());
+  for (std::size_t i = 0; i < blayout.nvar(); i++)
+    for (std::size_t j = 0; j < ulayout.nvar(); j++)
+      nl_sys_pairs.emplace_back(blayout.var(i), ulayout.var(j));
+  model->set_output_derivative_filter_nl_sys(nl_sys_pairs);
 }
 
 void

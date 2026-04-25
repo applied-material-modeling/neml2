@@ -98,6 +98,30 @@ public:
   const std::optional<SecDerivSparsity> & second_derivative_sparsity() const;
   ///@}
 
+  /// Set the (output, input) pairs whose derivatives should be computed and returned.
+  /// Pass an empty vector to clear the filter and compute all derivatives.
+  void
+  set_output_derivative_filter(const std::vector<std::pair<VariableName, VariableName>> & derivs);
+
+  /// The currently active output derivative filter, or nullopt if all derivatives are requested.
+  const std::optional<std::vector<std::pair<VariableName, VariableName>>> &
+  requested_output_derivatives() const
+  {
+    return _requested_derivs;
+  }
+
+  /// Same as set_output_derivative_filter but applies only during nonlinear system assembly.
+  /// Pass an empty vector to clear the filter. Independent from the regular filter.
+  void set_output_derivative_filter_nl_sys(
+      const std::vector<std::pair<VariableName, VariableName>> & derivs);
+
+  /// The currently active nl_sys output derivative filter.
+  const std::optional<std::vector<std::pair<VariableName, VariableName>>> &
+  requested_output_derivatives_nl_sys() const
+  {
+    return _requested_derivs_nl_sys;
+  }
+
   ///@{
   /// Assign input variable values
   void assign_input(const ValueMap &, bool allow_nonexistent = false);
@@ -232,5 +256,13 @@ private:
 
   /// Second derivative sparsity for the nonlinear system
   std::optional<SecDerivSparsity> _secderiv_sparsity_nl_sys = std::nullopt;
+
+  /// User-requested subset of (output, input) derivative pairs; nullopt means compute all.
+  std::optional<std::vector<std::pair<VariableName, VariableName>>> _requested_derivs =
+      std::nullopt;
+
+  /// Same as _requested_derivs but applies only during nonlinear system assembly.
+  std::optional<std::vector<std::pair<VariableName, VariableName>>> _requested_derivs_nl_sys =
+      std::nullopt;
 };
 } // namespace neml2
