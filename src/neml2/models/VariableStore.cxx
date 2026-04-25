@@ -254,10 +254,12 @@ VariableStore::cache_derivative_sparsity()
         continue;
       if (filter.has_value())
       {
-        auto it = std::find_if(filter->begin(),
-                               filter->end(),
-                               [&](const auto & req)
-                               { return req.first == yname && req.second == xvar->name(); });
+        const auto & yn = yname;
+        const auto & xn = xvar->name();
+        auto it =
+            std::find_if(filter->begin(),
+                         filter->end(),
+                         [&](const auto & req) { return req.first == yn && req.second == xn; });
         if (it == filter->end())
           continue;
       }
@@ -448,13 +450,17 @@ VariableStore::collect_output_derivatives() const
     {
       if (!deriv.defined())
         continue;
-      if (_requested_derivs.has_value())
+      const auto & filter =
+          currently_assembling_nonlinear_system() ? _requested_derivs_nl_sys : _requested_derivs;
+      if (filter.has_value())
       {
-        auto it = std::find_if(_requested_derivs->begin(),
-                               _requested_derivs->end(),
-                               [&](const auto & req)
-                               { return req.first == name && req.second == xvar->name(); });
-        if (it == _requested_derivs->end())
+        const auto & yn = name;
+        const auto & xn = xvar->name();
+        auto it =
+            std::find_if(filter->begin(),
+                         filter->end(),
+                         [&](const auto & req) { return req.first == yn && req.second == xn; });
+        if (it == filter->end())
           continue;
       }
       derivs[name][xvar->name()] = deriv.tensor();

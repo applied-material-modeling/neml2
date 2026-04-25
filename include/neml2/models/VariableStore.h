@@ -110,18 +110,6 @@ public:
     return _requested_derivs;
   }
 
-  /// Same as set_output_derivative_filter but applies only during nonlinear system assembly.
-  /// Pass an empty vector to clear the filter. Independent from the regular filter.
-  void set_output_derivative_filter_nl_sys(
-      const std::vector<std::pair<VariableName, VariableName>> & derivs);
-
-  /// The currently active nl_sys output derivative filter.
-  const std::optional<std::vector<std::pair<VariableName, VariableName>>> &
-  requested_output_derivatives_nl_sys() const
-  {
-    return _requested_derivs_nl_sys;
-  }
-
   ///@{
   /// Assign input variable values
   void assign_input(const ValueMap &, bool allow_nonexistent = false);
@@ -146,6 +134,11 @@ public:
   ///@}
 
 protected:
+  /// Same as set_output_derivative_filter but applies only during nonlinear system assembly.
+  /// Pass an empty vector to clear the filter. Independent from the regular filter.
+  void set_output_derivative_filter_nl_sys(
+      const std::vector<std::pair<VariableName, VariableName>> & derivs);
+
   /**
    * @brief Send padding variables to options
    *
