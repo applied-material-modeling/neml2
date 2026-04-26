@@ -2,7 +2,8 @@
 contrib/argparse*
 contrib/Catch2*
 contrib/csvparser*
-contrib/nmhit*
+contrib/nmhit
+contrib/nmhit-build
 contrib/nlohmann_json*
 contrib/torch*
 contrib/gperftools*

@@ -156,7 +156,11 @@ endif()
 find_package(nmhit CONFIG HINTS ${NEML2_CONTRIB_PREFIX}/nmhit)
 
 if(NOT nmhit_FOUND)
-      download_from_git(nmhit https://github.com/applied-material-modeling/neml2-hit.git ${NEML2_CONTRIB_PREFIX} ${nmhit_VERSION})
+      # nmhit is a git submodule, so we can just check it out and build it if it's not found.
+      if(NOT EXISTS ${NEML2_SOURCE_DIR}/contrib/nmhit-src)
+            message(STATUS "nmhit not found, checking out submodule...")
+            execute_process(COMMAND git submodule update --init --recursive -- contrib/nmhit-src)
+      endif()
       set(nmhit_INSTALL_PREFIX ${NEML2_CONTRIB_PREFIX}/nmhit CACHE PATH "nmhit install prefix")
       custom_install(nmhit contrib/install_nmhit.sh ${NEML2_CONTRIB_PREFIX}/nmhit-src ${NEML2_CONTRIB_PREFIX}/nmhit-build ${nmhit_INSTALL_PREFIX})
       find_package(nmhit CONFIG REQUIRED PATHS ${nmhit_INSTALL_PREFIX} NO_DEFAULT_PATH)
