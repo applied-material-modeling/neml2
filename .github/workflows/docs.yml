@@ -82,11 +82,12 @@ jobs:
         run: cmake --build --preset coverage
       - name: Code coverage check
         run: build/coverage/scripts/coverage.sh
-      - name: Upload coverage
-        uses: actions/upload-artifact@v4
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
         with:
-          name: coverage
-          path: build/coverage/coverage
+          files: build/coverage/coverage/coverage.info
+          fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   clang-tidy:
     if: github.event_name == 'pull_request'

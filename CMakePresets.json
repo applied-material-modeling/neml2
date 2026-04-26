@@ -124,7 +124,8 @@
       "description": "C++ backend compiled with coverage flags",
       "configurePreset": "coverage",
       "targets": [
-        "unit_tests"
+        "unit_tests",
+        "dispatcher_tests"
       ]
     },
     {
