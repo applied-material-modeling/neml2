@@ -87,7 +87,6 @@ jobs:
         with:
           files: build/coverage/coverage/coverage.info
           fail_ci_if_error: true
-          token: ${{ secrets.CODECOV_TOKEN }}
 
   clang-tidy:
     if: github.event_name == 'pull_request'
