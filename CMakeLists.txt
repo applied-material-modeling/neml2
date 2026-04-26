@@ -44,7 +44,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
       endif()
 
       set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE ON)
-      configure_file(scripts/coverage.sh.in ${NEML2_BINARY_DIR}/scripts/coverage.sh)
+      configure_file(scripts/coverage.sh.in ${NEML2_BINARY_DIR}/scripts/coverage.sh @ONLY)
 endif()
 
 # ----------------------------------------------------------------------------
