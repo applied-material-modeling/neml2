@@ -24,6 +24,7 @@
 
 #include "neml2/models/ImplicitUpdate.h"
 #include "neml2/misc/assertions.h"
+#include "neml2/misc/errors.h"
 #include "neml2/models/ModelNonlinearSystem.h"
 #include "neml2/equation_systems/AssembledVector.h"
 #include "neml2/equation_systems/AssembledMatrix.h"
@@ -42,14 +43,12 @@ ImplicitUpdate::expected_options()
 
   options.add<std::string>("equation_system", "The nonlinear system of equations to solve");
   options.add<std::string>("solver", "Solver used to solve the nonlinear system of equations");
+  options.add_optional<std::string>(
+      "predictor", "An optional predictor to provide an initial guess for the nonlinear solve.");
 
   // No jitting :/
   options.set<bool>("jit", false);
   options.suppress("jit");
-
-  // deprecated
-  options.add_optional<std::string>("implicit_model",
-                                    "Deprecated option. Use 'equation_system' instead.");
 
   return options;
 }
@@ -59,11 +58,6 @@ ImplicitUpdate::ImplicitUpdate(const OptionSet & options)
     _sys(get_es<ModelNonlinearSystem>("equation_system")),
     _solver(get_solver<NonlinearSolver>("solver"))
 {
-  neml_assert(!options.user_specified("implicit_model"),
-              "The 'implicit_model' option is deprecated. Use 'equation_system' instead. Refer to "
-              "https://applied-material-modeling.github.io/neml2/migration-200-210.html#eqsys for "
-              "more information.");
-
   auto ulayout = _sys->ulayout();
   auto blayout = _sys->blayout();
   neml_assert(
@@ -92,6 +86,13 @@ ImplicitUpdate::ImplicitUpdate(const OptionSet & options)
   {
     const auto & u = model->input_variable(ulayout.var(i));
     clone_output_variable(u);
+  }
+
+  // Register the predictor if provided
+  if (options.defined("predictor"))
+  {
+    _predictor = get_model<Predictor>(options.get<std::string>("predictor"));
+    register_model(_predictor, /*merge_input=*/true);
   }
 
   // During the iterative nonlinear solve, the sub-model's nl_sys JIT graph only needs residual
@@ -123,6 +124,10 @@ ImplicitUpdate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
   _sys->u_changed();
   _sys->g_changed();
 
+  // Apply the predictor
+  if (_predictor)
+    apply_predictor();
+
   // Solve for the next state
   const auto res = _solver->solve(*_sys);
   _last_iterations = res.iterations;
@@ -139,6 +144,25 @@ ImplicitUpdate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 
     // assign derivatives back
     assign_output_derivatives(du_dg.disassemble());
+  }
+}
+
+void
+ImplicitUpdate::apply_predictor()
+{
+  neml_assert_dbg(_predictor != nullptr,
+                  "No predictor model is registered for this ImplicitUpdate.");
+  _predictor->forward_maybe_jit(true, false, false);
+  for (const auto & [vname, var] : _predictor->output_variables())
+  {
+    auto ivar = _sys->model_ptr()->input_variables().find(vname);
+    if (ivar == _sys->model_ptr()->input_variables().end())
+      throw NEMLException("Predictor variable '" + vname +
+                          "' is not an input variable of the implicit model.");
+    if (!ivar->second->is_mutable())
+      throw NEMLException("Predictor variable '" + vname +
+                          "' is not a mutable input variable of the implicit model.");
+    *ivar->second = var->tensor();
   }
 }
 } // namespace neml2

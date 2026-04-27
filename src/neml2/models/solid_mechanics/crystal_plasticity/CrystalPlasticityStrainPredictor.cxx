@@ -33,24 +33,23 @@ register_NEML2_object(CrystalPlasticityStrainPredictor);
 OptionSet
 CrystalPlasticityStrainPredictor::expected_options()
 {
-  OptionSet options = Model::expected_options();
+  OptionSet options = Predictor::expected_options();
   options.doc() =
       "Warm-up predictor for crystal plasticity models. Computes an initial guess for the elastic "
       "strain as \\f$ \\varepsilon^e = s \\cdot \\Delta t \\cdot d \\f$ where \\f$ \\Delta t = t "
       "- t_n \\f$ is the time increment, \\f$ d \\f$ is the deformation rate, and \\f$ s \\f$ is "
       "a scale factor.";
 
-  options.add_input("deformation_rate", "deformation_rate", "Deformation rate tensor");
+  options.add_input("deformation_rate", "Deformation rate tensor");
   options.add_input("time", "t", "Current time");
-  options.add_output("elastic_strain", "elastic_strain", "Elastic strain initial guess");
-  options.add_parameter<Scalar>(
-      "scale", TensorName<Scalar>("1"), "Scale factor applied to the strain increment");
+  options.add_output("elastic_strain", "Elastic strain initial guess");
+  options.add_parameter<Scalar>("scale", "Scale factor applied to the strain increment");
 
   return options;
 }
 
 CrystalPlasticityStrainPredictor::CrystalPlasticityStrainPredictor(const OptionSet & options)
-  : Model(options),
+  : Predictor(options),
     _D(declare_input_variable<SR2>("deformation_rate")),
     _t(declare_input_variable<Scalar>("time")),
     _tn(declare_input_variable<Scalar>(history_name(_t.name(), 1))),
@@ -60,9 +59,8 @@ CrystalPlasticityStrainPredictor::CrystalPlasticityStrainPredictor(const OptionS
 }
 
 void
-CrystalPlasticityStrainPredictor::set_value(bool out, bool /*dout_din*/, bool /*d2out_din2*/)
+CrystalPlasticityStrainPredictor::predict()
 {
-  if (out)
-    _Ee = _scale * _D() * (_t() - _tn());
+  _Ee = _scale * _D * (_t - _tn);
 }
 } // namespace neml2

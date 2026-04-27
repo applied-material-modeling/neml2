@@ -27,6 +27,7 @@
 #include "neml2/models/Model.h"
 #include "neml2/models/ModelNonlinearSystem.h"
 #include "neml2/solvers/NonlinearSolver.h"
+#include "neml2/models/Predictor.h"
 
 namespace neml2
 {
@@ -44,8 +45,14 @@ public:
 protected:
   void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
+  /// Apply the predictor to set the initial guess for the nonlinear solve.
+  void apply_predictor();
+
   /// The underlying nonlinear system that wraps around a Model
   std::shared_ptr<ModelNonlinearSystem> _sys;
+
+  /// The predictor model to provide an initial guess for the nonlinear solve (optional)
+  std::shared_ptr<Predictor> _predictor;
 
   /// The nonlinear solver used to solve the nonlinear system
   std::shared_ptr<NonlinearSolver> _solver;

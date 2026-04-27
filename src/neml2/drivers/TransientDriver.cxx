@@ -137,19 +137,6 @@ TransientDriver::expected_options()
   options.add_optional<std::string>(
       "save_as", "File path (absolute or relative to the working directory) to store the results");
 
-  options.add_optional<std::string>(
-      "custom_predictor",
-      "Name of a model to use as an additional predictor before each solve step. Its outputs "
-      "override state variable initial guesses.");
-
-  EnumSelection custom_predictor_apply_selection({"FIRST_STEP", "ALL_STEPS"}, "FIRST_STEP");
-  options.add<EnumSelection>(
-      "custom_predictor_apply",
-      custom_predictor_apply_selection,
-      "When to apply the custom predictor: FIRST_STEP (only the first step) or ALL_STEPS (every "
-      "step). Options are " +
-          custom_predictor_apply_selection.join());
-
   return options;
 }
 
@@ -159,10 +146,6 @@ TransientDriver::TransientDriver(const OptionSet & options)
     _time(resolve_tensor<Scalar>("prescribed_time")),
     _nsteps(_time.dynamic_size(0).concrete()),
     _predictor(options.get<EnumSelection>("predictor")),
-    _custom_predictor_model(options.defined("custom_predictor")
-                                ? factory()->get_model(options.get<std::string>("custom_predictor"))
-                                : nullptr),
-    _custom_predictor_apply(options.get<EnumSelection>("custom_predictor_apply")),
     _result_in(_nsteps),
     _result_out(_nsteps),
     _save_as(options.defined("save_as") ? options.get<std::string>("save_as") : "")
@@ -343,20 +326,6 @@ TransientDriver::apply_predictor()
       else
         throw NEMLException("Unrecognized predictor type: " + _predictor.selection());
     }
-
-  if (_custom_predictor_model && (_custom_predictor_apply == "ALL_STEPS" || _step_count == 1))
-  {
-    // Build a filtered input map for the custom predictor (only its declared inputs)
-    ValueMap predictor_in;
-    for (const auto & [vname, var] : _custom_predictor_model->input_variables())
-      if (_in.count(vname))
-        predictor_in[vname] = _in.at(vname);
-
-    const auto predictor_out = _custom_predictor_model->value(predictor_in);
-    for (const auto & [vname, val] : predictor_out)
-      if (_model->input_variables().count(vname))
-        _in[vname] = val;
-  }
 }
 
 void

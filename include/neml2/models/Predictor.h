@@ -24,39 +24,24 @@
 
 #pragma once
 
-#include "neml2/models/Predictor.h"
+#include "neml2/models/Model.h"
 
 namespace neml2
 {
-class SR2;
-
 /**
- * @brief Warm-up predictor for crystal plasticity models.
- *
- * Computes an initial guess for the elastic strain as
- * \f$ \varepsilon^e = \Delta t \cdot d \cdot s \f$
- * where \f$ \Delta t = t - t_n \f$ is the time increment, \f$ d \f$ is the deformation rate,
- * and \f$ s \f$ is a user-supplied scale factor.
+ * Base class for models that are used as predictors
  */
-class CrystalPlasticityStrainPredictor : public Predictor
+class Predictor : public Model
 {
 public:
   static OptionSet expected_options();
 
-  CrystalPlasticityStrainPredictor(const OptionSet & options);
+  Predictor(const OptionSet & options);
 
 protected:
-  void predict() override;
+  void set_value(bool out, bool dout_din, bool d2out_din2) override;
 
-  /// Deformation rate
-  const Variable<SR2> & _D;
-  /// Current time
-  const Variable<Scalar> & _t;
-  /// Previous time (t~1)
-  const Variable<Scalar> & _tn;
-  /// Scale factor
-  const Scalar & _scale;
-  /// Elastic strain output (initial guess)
-  Variable<SR2> & _Ee;
+  /// Apply the predictor to compute the initial guess for the output variable(s)
+  virtual void predict() = 0;
 };
 } // namespace neml2

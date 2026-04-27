@@ -87,12 +87,6 @@ protected:
   /// The predictor used to set the initial guess
   const EnumSelection _predictor;
 
-  /// Optional custom predictor model (may be nullptr)
-  std::shared_ptr<Model> _custom_predictor_model;
-
-  /// When to apply the custom predictor
-  const EnumSelection _custom_predictor_apply;
-
   /// Inputs from all time steps
   std::vector<ValueMap> _result_in;
   /// Outputs from all time steps

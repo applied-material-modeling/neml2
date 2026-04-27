@@ -157,9 +157,9 @@ find_package(nmhit CONFIG HINTS ${NEML2_CONTRIB_PREFIX}/nmhit)
 
 if(NOT nmhit_FOUND)
       # nmhit is a git submodule, so we can just check it out and build it if it's not found.
-      if(NOT EXISTS ${NEML2_SOURCE_DIR}/contrib/nmhit-src)
+      if(NOT EXISTS ${NEML2_SOURCE_DIR}/contrib/nmhit-src/CMakeLists.txt)
             message(STATUS "nmhit not found, checking out submodule...")
-            execute_process(COMMAND git submodule update --init --recursive -- contrib/nmhit-src)
+            execute_process(COMMAND git submodule update --init --recursive -- contrib/nmhit-src WORKING_DIRECTORY ${NEML2_SOURCE_DIR})
       endif()
       set(nmhit_INSTALL_PREFIX ${NEML2_CONTRIB_PREFIX}/nmhit CACHE PATH "nmhit install prefix")
       custom_install(nmhit contrib/install_nmhit.sh ${NEML2_CONTRIB_PREFIX}/nmhit-src ${NEML2_CONTRIB_PREFIX}/nmhit-build ${nmhit_INSTALL_PREFIX})
