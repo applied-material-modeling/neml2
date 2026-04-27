@@ -114,17 +114,7 @@
     ic_Rot_names = 'orientation'
     ic_Rot_values = 'initial_orientation'
     predictor = 'PREVIOUS_STATE'
-    custom_predictor = 'cp_warmup'
-    custom_predictor_apply = 'FIRST_STEP'
     device = ${device}
-  []
-[]
-
-# predictor
-[Models]
-  [cp_warmup]
-    type = CrystalPlasticityStrainPredictor
-    scale = 0.1
   []
 []
 
@@ -222,10 +212,15 @@
 []
 
 [Models]
+  [cp_warmup]
+    type = CrystalPlasticityStrainPredictor
+    scale = 0.1
+  []
   [model]
     type = ImplicitUpdate
     equation_system = 'eq_sys'
     solver = 'newton'
+    predictor = 'cp_warmup'
   []
   [model_with_stress]
     type = ComposedModel

@@ -114,8 +114,6 @@
     ic_Rot_names = 'orientation'
     ic_Rot_values = 'initial_orientation'
     predictor = 'PREVIOUS_STATE'
-    custom_predictor = 'cp_warmup'
-    custom_predictor_apply = 'FIRST_STEP'
     save_as = 'result.pt'
   []
   [regression]
@@ -192,10 +190,6 @@
     type = WR2ImplicitExponentialTimeIntegration
     variable = 'orientation'
   []
-  [cp_warmup]
-    type = CrystalPlasticityStrainPredictor
-    scale = 0.1
-  []
   [implicit_rate]
     type = ComposedModel
     models = "euler_rodrigues elasticity orientation_rate resolved_shear
@@ -226,10 +220,15 @@
 []
 
 [Models]
+  [cp_warmup]
+    type = CrystalPlasticityStrainPredictor
+    scale = 0.1
+  []
   [model]
     type = ImplicitUpdate
     equation_system = 'eq_sys'
     solver = 'newton'
+    predictor = 'cp_warmup'
   []
   [model_with_stress]
     type = ComposedModel

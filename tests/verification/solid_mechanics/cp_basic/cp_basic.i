@@ -49,8 +49,6 @@
     ic_Rot_names = 'orientation'
     ic_Rot_values = 'initial_orientation'
     predictor = 'PREVIOUS_STATE'
-    custom_predictor = 'cp_warmup'
-    custom_predictor_apply = 'FIRST_STEP'
     save_as = 'result.pt'
   []
   [verification]
@@ -140,10 +138,6 @@
               plastic_spin sum_slip_rates slip_rule slip_strength voce_hardening
               integrate_slip_hardening integrate_elastic_strain integrate_orientation"
   []
-  [cp_warmup]
-    type = CrystalPlasticityStrainPredictor
-    scale = 0.05
-  []
 []
 
 [EquationSystems]
@@ -168,10 +162,15 @@
 []
 
 [Models]
+  [cp_warmup]
+    type = CrystalPlasticityStrainPredictor
+    scale = 0.05
+  []
   [model]
     type = ImplicitUpdate
     equation_system = 'eq_sys'
     solver = 'newton'
+    predictor = 'cp_warmup'
   []
   [model_with_stress]
     type = ComposedModel

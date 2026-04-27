@@ -58,5 +58,9 @@ protected:
   const Scalar & _scale;
   /// Elastic strain output (initial guess)
   Variable<SR2> & _Ee;
+  /// Previous elastic strain (history variable)
+  const Variable<SR2> & _Ee_n;
+  /// Threshold for the elastic strain norm to determine whether to apply the predictor
+  const Scalar & _threshold;
 };
 } // namespace neml2

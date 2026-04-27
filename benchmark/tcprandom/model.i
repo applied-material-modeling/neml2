@@ -93,18 +93,8 @@
     ic_Rot_names = 'orientation'
     ic_Rot_values = 'initial_orientation'
     predictor = 'PREVIOUS_STATE'
-    custom_predictor = 'cp_warmup'
-    custom_predictor_apply = 'FIRST_STEP'
     device = ${device}
     random_seed = 25
-  []
-[]
-
-# predictor
-[Models]
-  [cp_warmup]
-    type = CrystalPlasticityStrainPredictor
-    scale = 0.05
   []
 []
 
@@ -201,10 +191,15 @@
 []
 
 [Models]
+  [cp_warmup]
+    type = CrystalPlasticityStrainPredictor
+    scale = 0.05
+  []
   [model]
     type = ImplicitUpdate
     equation_system = 'eq_sys'
     solver = 'newton'
+    predictor = 'cp_warmup'
   []
   [fix_orientation]
     type = FixOrientation

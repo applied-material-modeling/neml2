@@ -53,8 +53,6 @@
     ic_Rot_names = 'orientation'
     ic_Rot_values = 'initial_orientation'
     predictor = 'PREVIOUS_STATE'
-    custom_predictor = 'cp_warmup'
-    custom_predictor_apply = 'FIRST_STEP'
     save_as = 'result.pt'
   []
   [verification]
@@ -164,18 +162,20 @@
 []
 
 [Models]
+  [cp_warmup]
+    type = CrystalPlasticityStrainPredictor
+    scale = 1
+  []
   [model]
     type = ImplicitUpdate
     equation_system = 'eq_sys'
     solver = 'newton'
+    predictor = 'cp_warmup'
   []
 []
 
 # Postprocessing
 [Models]
-  [cp_warmup]
-    type = CrystalPlasticityStrainPredictor
-  []
   [average_stress]
     type = SR2DynamicMean
     from = 'cauchy_stress'

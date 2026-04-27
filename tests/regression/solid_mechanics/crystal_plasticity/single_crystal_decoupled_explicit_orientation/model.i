@@ -114,8 +114,6 @@
     ic_Rot_names = 'orientation'
     ic_Rot_values = 'initial_orientation'
     predictor = 'PREVIOUS_STATE'
-    custom_predictor = 'cp_warmup'
-    custom_predictor_apply = 'FIRST_STEP'
     save_as = 'result.pt'
   []
   [regression]
@@ -215,10 +213,15 @@
 []
 
 [Models]
+  [cp_warmup]
+    type = CrystalPlasticityStrainPredictor
+    scale = 0.1
+  []
   [subsystem1]
     type = ImplicitUpdate
     equation_system = 'eq_sys'
     solver = 'newton'
+    predictor = 'cp_warmup'
   []
 
   ############################################################################
@@ -290,10 +293,6 @@
   ############################################################################
   # Sequentially update sub-system #1 and sub-system #2
   ############################################################################
-  [cp_warmup]
-    type = CrystalPlasticityStrainPredictor
-    scale = 0.1
-  []
   [model]
     type = ComposedModel
     models = 'cache2 subsystem1 cache1 subsystem2'

@@ -294,7 +294,8 @@ protected:
 
     if (merge_input)
       for (auto && [name, var] : model->input_variables())
-        clone_input_variable(*var);
+        if (input_variables().find(name) == input_variables().end())
+          clone_input_variable(*var);
 
     _registered_models.push_back(model);
   }
