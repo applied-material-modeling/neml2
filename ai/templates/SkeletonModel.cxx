@@ -37,28 +37,33 @@ SkeletonModel::expected_options()
   OptionSet options = Model::expected_options(); // Replace with actual base class
   options.doc() = "One-line description for the input file parser / user docs.";
 
-  // Set this if the model provides analytical second derivatives in set_value.
-  // Remove entirely if second derivatives are not implemented.
-  options.set<bool>("define_second_derivatives") = true;
+  // Enable this only if the model provides analytical second derivatives in set_value.
+  // Omit entirely if second derivatives are not implemented.
+  options.set_private<bool>("define_second_derivatives", true);
 
-  // Declare a scalar parameter backed by the input file key "my_parameter"
-  options.set_parameter<TensorName<Scalar>>("my_parameter");
-  options.set("my_parameter").doc() = "Description of the parameter and its physical units";
+  // Declare a scalar parameter exposed under the input file key "my_parameter".
+  options.add_parameter<Scalar>("my_parameter",
+                                "Description of the parameter and its physical units");
 
-  // Declare a boolean option (not a parameter — not tracked for AD)
-  // options.set<bool>("my_flag") = false;
-  // options.set("my_flag").doc() = "What this flag controls";
+  // Declare an input variable exposed under the input file key "input_name".
+  options.add_input("input_name", "Description of the input variable");
+
+  // Declare an output variable exposed under the input file key "output_name".
+  options.add_output("output_name", "Description of the output variable");
+
+  // Plain (non-parameter, non-variable) options use add<T>:
+  // options.add<bool>("my_flag", "What this flag controls");
+  // options.add<double>("my_const", "Description");
 
   return options;
 }
 
 SkeletonModel::SkeletonModel(const OptionSet & options)
   : Model(options), // Replace with actual base class
-                    // declare_input_variable: axis path matches the variable name in the .i file
-    _input_var(declare_input_variable<Scalar>("forces/input_name")),
-    // declare_output_variable: axis path for the output
-    _output_var(declare_output_variable<Scalar>("state/output_name")),
-    // declare_parameter: short internal name "p", bound to option key "my_parameter"
+    _input_var(declare_input_variable<Scalar>("input_name")),
+    _output_var(declare_output_variable<Scalar>("output_name")),
+    // declare_parameter: short internal name "p" bound to option key "my_parameter".
+    // Pass /*allow_nonlinear=*/true to expose the parameter as nonlinear (AD-tracked).
     _param(declare_parameter<Scalar>("p", "my_parameter"))
 {
 }

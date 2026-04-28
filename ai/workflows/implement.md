@@ -57,14 +57,14 @@ Before moving to Step 1, state:
 Before writing any code, orient yourself in the local physics domain.
 
 1. **Find the reference model.** In the same subdirectory where the new model will live, identify the simplest complete existing model (e.g. `LinearIsotropicHardening` in `solid_mechanics/`, `TractionSeparation` in `solid_mechanics/traction_separation/`). Read its `.h` and `.cxx`.
-2. **Confirm local conventions.** Note: which base class is used, how input/output variable axis paths are named (e.g. `state/equivalent_plastic_strain`), and how parameters are declared.
+2. **Confirm local conventions.** Note: which base class is used, the bare variable names used for inputs/outputs (e.g. `equivalent_plastic_strain`; history variables use the `~N` suffix), and how parameters are declared (`add_parameter<T>(...)` + `declare_parameter<T>(...)`).
 3. **Confirm CMake collection.** Run `grep -rn "GLOB\|glob_recurse" src/neml2/models/$(dirname of new model)/CMakeLists.txt` to verify sources are auto-collected. If auto-collected, no CMake edit is needed.
 4. **Load the template.** Read `ai/templates/SkeletonModel.h` and `ai/templates/SkeletonModel.cxx` for structural reference.
 
 Before moving to Step 2, state:
 - Which reference model was read and its file path
 - The parent class that will be used
-- The axis paths for all inputs and outputs
+- The bare variable names for all inputs and outputs (and any `~N` history names)
 - Whether CMake collection is by glob (no edit needed) or explicit (edit needed)
 
 ---

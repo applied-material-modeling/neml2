@@ -15,7 +15,7 @@ Purpose: Write tests only.
 3. Write a dedicated `test_*.cxx` only for procedural behaviors such as:
    - exception handling
    - parser/factory wiring checks
-   - axis metadata checks
+   - variable layout / store metadata checks
    - multi-step or driver workflows
 4. Do not edit `CMakeLists.txt` if globbing already discovers new `.cxx` files.
 
@@ -30,7 +30,7 @@ Purpose: Write tests only.
 
 - **Accuracy**: For complex models, do NOT calculate expected tensor values by hand. Write a temporary Python script (using `numpy` or `torch`) to implement the model's math and print the precise expected values for your `.i` file.
 - **Tensors**: Use the `[Tensors]` section in `.i` files to define `Vec`, `SR2`, or `R2` inputs/outputs. Passing multi-component values as inline strings in `input_Vec_values` causes character-splitting parse errors.
-- **Template**: Start from `ai/templates/SkeletonModelTest.i` — it contains correct `[Tensors]` structure, derivative flag comments, and axis-path conventions.
+- **Template**: Start from `ai/templates/SkeletonModelTest.i` — it contains correct `[Tensors]` structure, derivative flag comments, and the bare-name / `~N` history variable conventions.
 
 ### `[Tensors]` block patterns
 
