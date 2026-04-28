@@ -155,10 +155,14 @@ Public Attributes</h2></td></tr>
 <tr class="memdesc:a8f30f8cfc6898bad232af60cf74fff99"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classneml2_1_1Option.html">Option</a>'s role in defining the function.  <br /></td></tr>
 <tr class="memitem:ac8e209bb8281e6d4f33902463115f4aa" id="r_ac8e209bb8281e6d4f33902463115f4aa"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#ac8e209bb8281e6d4f33902463115f4aa">doc</a> = &quot;&quot;</td></tr>
 <tr class="memdesc:ac8e209bb8281e6d4f33902463115f4aa"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classneml2_1_1Option.html">Option</a>'s doc string.  <br /></td></tr>
+<tr class="memitem:a89ebe0265f74c9919a622df7dccbfe5c" id="r_a89ebe0265f74c9919a622df7dccbfe5c"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a89ebe0265f74c9919a622df7dccbfe5c">required</a> = false</td></tr>
+<tr class="memdesc:a89ebe0265f74c9919a622df7dccbfe5c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether this option is required.  <br /></td></tr>
 <tr class="memitem:a1ff2134cf6cbb111f94cc3f99af04af1" id="r_a1ff2134cf6cbb111f94cc3f99af04af1"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a1ff2134cf6cbb111f94cc3f99af04af1">suppressed</a> = false</td></tr>
 <tr class="memdesc:a1ff2134cf6cbb111f94cc3f99af04af1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether this option is suppressed.  <br /></td></tr>
 <tr class="memitem:ad0dad440c5621dbbf1afb3db44f478fe" id="r_ad0dad440c5621dbbf1afb3db44f478fe"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#ad0dad440c5621dbbf1afb3db44f478fe">user_specified</a> = false</td></tr>
 <tr class="memdesc:ad0dad440c5621dbbf1afb3db44f478fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether this option has been specified by the user from the input file.  <br /></td></tr>
+<tr class="memitem:a509014a43807c7ead9395235bce125e0" id="r_a509014a43807c7ead9395235bce125e0"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a509014a43807c7ead9395235bce125e0">defined</a> = false</td></tr>
+<tr class="memdesc:a509014a43807c7ead9395235bce125e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether this option is defined.  <br /></td></tr>
 </table>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
 <a id="a199574c97b9317e5c68ff987e45da24a" name="a199574c97b9317e5c68ff987e45da24a"></a>
@@ -212,6 +216,23 @@ Public Attributes</h2></td></tr>
 </div>
 </div>
 <a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a id="a509014a43807c7ead9395235bce125e0" name="a509014a43807c7ead9395235bce125e0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a509014a43807c7ead9395235bce125e0">&#9670;&#160;</a></span>defined</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool defined = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Whether this option is defined. </p>
+<p>This field is used to determine whether the option is defined. For example, if an option is optional and the user has not specified it, then the option is considered undefined. </p>
+
+</div>
+</div>
 <a id="ac8e209bb8281e6d4f33902463115f4aa" name="ac8e209bb8281e6d4f33902463115f4aa"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac8e209bb8281e6d4f33902463115f4aa">&#9670;&#160;</a></span>doc</h2>
 
@@ -264,6 +285,23 @@ Public Attributes</h2></td></tr>
 <div class="line">  bar = 123</div>
 <div class="line">[]</div>
 </div><!-- fragment --><p> where "bar" is the option name </p>
+
+</div>
+</div>
+<a id="a89ebe0265f74c9919a622df7dccbfe5c" name="a89ebe0265f74c9919a622df7dccbfe5c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a89ebe0265f74c9919a622df7dccbfe5c">&#9670;&#160;</a></span>required</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool required = false</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Whether this option is required. </p>
+<p>By default an option is not required. A required option must be specified by the user. It is up to the specific <a class="el" href="classneml2_1_1Parser.html" title="A parser is responsible for parsing an input file into a collection of options which can be used by t...">Parser</a> to decide what happens when a required option is not specified by the user, e.g., the parser can choose to throw an exception or print a warning and use the default value. </p>
 
 </div>
 </div>

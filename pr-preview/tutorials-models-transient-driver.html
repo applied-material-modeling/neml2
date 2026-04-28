@@ -134,15 +134,15 @@ $(function(){initNavTree('tutorials-models-transient-driver.html','',''); });
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md146">Problem description </a>
+    <a href="#autotoc_md150">Problem description </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md147">Simulating the stress-strain curve </a>
+    <a href="#autotoc_md151">Simulating the stress-strain curve </a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_build_2doc_2content_2tutorials_2models_2transient__driver_2main"></a></p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md146"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md150"></a>
 Problem description</h1>
 <p>In the previous tutorial, we demonstrated the use of <a class="el" href="syntax-models.html#implicitupdate" title="ImplicitUpdate">ImplicitUpdate</a> to perform constitutive update by solving an implicit system of equations. In particular, we have addressed the constitutive update in the following form   </p><p class="formulaDsp">
 \begin{align}  \mathbf{s}_{n+1} = f(\mathbf{f}_{n+1}, \mathbf{s}_n, \mathbf{f}_n; \mathbf{p}). \label{form1}
@@ -157,15 +157,16 @@ Problem description</h1>
 </p>
 <p> where \(N\) is the total number of steps used to discretize the "transient".</p>
 <p>NEML2 models, including those composed from submodels, can only be used to describe the first form of constitutive \(\eqref{form1}\), i.e., a single step constitutive update. In order to simulate the initial-value problem defined in \(\eqref{form2}\), a <a class="el" href="classneml2_1_1TransientDriver.html" title="The driver for a transient initial-value problem.">neml2::TransientDriver</a> can be used to perform the recursive constitutive update to obtain the transient response.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md147"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md151"></a>
 Simulating the stress-strain curve</h1>
-<p>Reusing the viscoplasticity model defined in the previous tutorial, along with the Newton-Raphson solver, a predefined driver <a class="el" href="syntax-drivers.html#sdtsolidmechanicsdriver" title="SDTSolidMechanicsDriver">SDTSolidMechanicsDriver</a> can be used to obtain the stress-strain curve.</p>
+<p>Reusing the viscoplasticity model defined in the previous tutorial, along with the Newton-Raphson solver, a predefined driver <a class="el" href="syntax-drivers.html#transientdriver" title="TransientDriver">TransientDriver</a> can be used to obtain the stress-strain curve.</p>
 <div class="fragment"><div class="line">[Drivers]</div>
 <div class="line">  [driver]</div>
-<div class="line">    type = SDTSolidMechanicsDriver</div>
+<div class="line">    type = TransientDriver</div>
 <div class="line">    model = &#39;model&#39;</div>
 <div class="line">    prescribed_time = &#39;times&#39;</div>
-<div class="line">    prescribed_strain = &#39;strains&#39;</div>
+<div class="line">    force_SR2_names = &#39;strain&#39;</div>
+<div class="line">    force_SR2_values = &#39;strains&#39;</div>
 <div class="line">    save_as = &#39;result.pt&#39;</div>
 <div class="line">  []</div>
 <div class="line">[]</div>
@@ -200,7 +201,7 @@ Simulating the stress-strain curve</h1>
 <div class="line">    nstep = 20</div>
 <div class="line">  []</div>
 <div class="line">[]</div>
-</div><!-- fragment --><p>The <a class="el" href="syntax-drivers.html#sdtsolidmechanicsdriver" title="SDTSolidMechanicsDriver">SDTSolidMechanicsDriver</a> performs the recursive constitutive update using strain control, suitable for solid mechanics models using the small strain formulation. It asks the user to specify "prescribed_time" and "prescribed_strain" which define the discretization of the transient. Two predictors are implemented for all transient drivers:</p><ul>
+</div><!-- fragment --><p>The <a class="el" href="syntax-drivers.html#transientdriver" title="TransientDriver">TransientDriver</a> performs the recursive constitutive update. Two types of predictors are implemented:</p><ul>
 <li>PREVIOUS_STATE, using the converged solution from the previous step as the initial guess for the current solve;</li>
 <li>LINEAR_EXTRAPOLATION, linearly extrapolates the converged solutions from the previous two steps as the initial guess for the current solve.</li>
 </ul>
@@ -232,8 +233,8 @@ Simulating the stress-strain curve</h1>
 <div class="line"> </div>
 <div class="line"><span class="comment"># Strain and stress</span></div>
 <div class="line">nstep = 20</div>
-<div class="line">strain = [I[<span class="stringliteral">&quot;{}.forces/E&quot;</span>.format(i)][0].item() <span class="keywordflow">for</span> i <span class="keywordflow">in</span> range(nstep)]</div>
-<div class="line">stress = [O[<span class="stringliteral">&quot;{}.state/S&quot;</span>.format(i)][0].item() <span class="keywordflow">for</span> i <span class="keywordflow">in</span> range(nstep)]</div>
+<div class="line">strain = [I[<span class="stringliteral">&quot;{}.strain&quot;</span>.format(i)][0].item() <span class="keywordflow">for</span> i <span class="keywordflow">in</span> range(nstep)]</div>
+<div class="line">stress = [O[<span class="stringliteral">&quot;{}.stress&quot;</span>.format(i)][0].item() <span class="keywordflow">for</span> i <span class="keywordflow">in</span> range(nstep)]</div>
 <div class="line"> </div>
 <div class="line"><span class="comment"># Plot</span></div>
 <div class="line">plt.plot(strain, stress, <span class="stringliteral">&quot;ko-&quot;</span>)</div>

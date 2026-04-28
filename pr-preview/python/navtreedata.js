@@ -110,7 +110,8 @@ var NAVTREE =
       [ "Finite Volume", "../finite-volume.html", null ]
     ] ],
     [ "Migration Guides", "usergroup4.html", [
-      [ "Migrating from v2.0.0 to v2.1.0", "../migration-200-210.html", null ]
+      [ "Migrating from v2.0.0 to v2.1.0", "../migration-200-210.html", null ],
+      [ "Migrating from v2.1.1 to v2.1.2", "../migration-211-212.html", null ]
     ] ],
     [ "C++ API Reference", "usergroup5.html", [
       [ "Namespaces", "../namespaces.html", null ],
@@ -126,31 +127,31 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "../annotated.html",
-"classneml2_1_1es_1_1AxisLayout_1_1IStructure.html#ae27a7920f84bb5c804c9615ef57874e5",
-"classneml2_1_1tensors_1_1MillerIndex.html#a4bc72eec3158b3c468e31c7802766d4b",
-"classneml2_1_1tensors_1_1MillerIndexIntmdView.html#acab3712394f25c3692f41ff86d28c843",
-"classneml2_1_1tensors_1_1QuaternionDynamicView.html",
-"classneml2_1_1tensors_1_1R2BaseView.html#a0b57f01bc06c5e68408481dc83576dfa",
-"classneml2_1_1tensors_1_1R3.html#aa29879cd7288410c6dcf2cca2e37aa0f",
-"classneml2_1_1tensors_1_1R4.html#a1a8caf90f52d06f25c588b546657cb6a",
-"classneml2_1_1tensors_1_1R4DynamicView.html#ad68db21075549b67ca5abe4aac6fe54c",
-"classneml2_1_1tensors_1_1RotBaseView.html#ab70b327ac1568e759edffe44efcbdb39",
-"classneml2_1_1tensors_1_1SFFR4.html#abefe892aff1c15c2ce6b54fa742d4aac",
-"classneml2_1_1tensors_1_1SFR3.html#a3905ba6a9da4b050efeacca2d43e2d3f",
-"classneml2_1_1tensors_1_1SFR3IntmdView.html#ab4973ccd3471aeea90223cc67068d92d",
-"classneml2_1_1tensors_1_1SR2BatchView.html#acfb02681b8c3ef5c283a070707fc63e3",
-"classneml2_1_1tensors_1_1SSR4.html#afabb6efe1c8dbf8b0666c87c28a1d3e5",
-"classneml2_1_1tensors_1_1SWR4.html#a8cb0fd3d1780e0c3f8d38144c3445c6e",
-"classneml2_1_1tensors_1_1Scalar.html#a0df997f47a43db615baf432109ebe819",
-"classneml2_1_1tensors_1_1ScalarIntmdView.html#a291cf91b893b7bf50a66d4a6702149e7",
-"classneml2_1_1tensors_1_1TensorBatchView.html#a0c8539426e04233f3d88504f4ce4609d",
-"classneml2_1_1tensors_1_1Vec.html#abefe892aff1c15c2ce6b54fa742d4aac",
-"classneml2_1_1tensors_1_1WFFR4.html#a113c0b1b566e5c4f45ebd87d82fd664b",
-"classneml2_1_1tensors_1_1WFFR4IntmdView.html#a0b2e59f04ff41521cfd8a8351701539f",
-"classneml2_1_1tensors_1_1WR2BatchView.html#a0cb5ab66794d4eaf3c838d9d7c267863",
-"classneml2_1_1tensors_1_1WSR4.html#ad70034c195809576c443c10088f03ef2",
-"classneml2_1_1tensors_1_1WWR4.html#a50f79423ed67e5304b7e06321e3c83b9",
-"classneml2_1_1tensors_1_1WWR4StaticView.html"
+"classneml2_1_1es_1_1AxisLayout_1_1IStructure.html#ae07f7930f92d3591c93e2381cd5be285",
+"classneml2_1_1tensors_1_1MillerIndex.html#a49584abb4d4e5742175a0050660f5f42",
+"classneml2_1_1tensors_1_1MillerIndexIntmdView.html#a9165f6815046e426aed7c3b0b2528f9e",
+"classneml2_1_1tensors_1_1QuaternionBatchView.html#af7ee7b0e519de58a7af795e329cd9b11",
+"classneml2_1_1tensors_1_1R2BaseView.html#a00fe50a730823d7f44e5a3829d08f8da",
+"classneml2_1_1tensors_1_1R3.html#aa1a3de34385d28143de1134f1c42fb6c",
+"classneml2_1_1tensors_1_1R4.html#a124b157a3811cd1c1355737346d6651e",
+"classneml2_1_1tensors_1_1R4DynamicView.html#ad58d234e08e9b6d7dc889cdd7ad6c514",
+"classneml2_1_1tensors_1_1RotBaseView.html#a95eead28e759283cda43d3c7da7193db",
+"classneml2_1_1tensors_1_1SFFR4.html#abeed8fee8ffb6a2b0ec596b1ebcac98f",
+"classneml2_1_1tensors_1_1SFR3.html#a33d9ba2dbf5cd92847217c6866ea2d81",
+"classneml2_1_1tensors_1_1SFR3IntmdView.html#a88e6e12d5d56512d33190007539410a3",
+"classneml2_1_1tensors_1_1SR2BatchView.html#acab3712394f25c3692f41ff86d28c843",
+"classneml2_1_1tensors_1_1SSR4.html#af9e124a866905bc83855e1ddf7b4b13f",
+"classneml2_1_1tensors_1_1SWR4.html#a8c749341f083fbf3677c020ab20a9597",
+"classneml2_1_1tensors_1_1Scalar.html#a0bbc506d4684d80f0036972f7d9ba9f5",
+"classneml2_1_1tensors_1_1ScalarIntmdView.html#a0b57f01bc06c5e68408481dc83576dfa",
+"classneml2_1_1tensors_1_1TensorBatchView.html#a0b57f01bc06c5e68408481dc83576dfa",
+"classneml2_1_1tensors_1_1Vec.html#abeed8fee8ffb6a2b0ec596b1ebcac98f",
+"classneml2_1_1tensors_1_1WFFR4.html#a0b8149a07e96f214ddddc702c22e1df7",
+"classneml2_1_1tensors_1_1WFFR4IntmdView.html",
+"classneml2_1_1tensors_1_1WR2BatchView.html#a0b57f01bc06c5e68408481dc83576dfa",
+"classneml2_1_1tensors_1_1WSR4.html#ad62edbd21b7ff2e29639660a826963c3",
+"classneml2_1_1tensors_1_1WWR4.html#a4c28ec04bdc3198e3d799c8419067d22",
+"classneml2_1_1tensors_1_1WWR4IntmdView.html#ae2681bba0208b9259e7fb62b258d9ec8"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronization';

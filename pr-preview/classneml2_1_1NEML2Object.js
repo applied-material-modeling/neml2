@@ -14,6 +14,7 @@ var classneml2_1_1NEML2Object =
     [ "get_object", "classneml2_1_1NEML2Object.html#a66379a24dc74ad3bb22b346bcabe273f", null ],
     [ "get_scheduler", "classneml2_1_1NEML2Object.html#aa43e8583d62351df6bb699c640d2a696", null ],
     [ "get_solver", "classneml2_1_1NEML2Object.html#adb931c218966158e867d8af1438d6bc0", null ],
+    [ "history_name", "classneml2_1_1NEML2Object.html#aa6903c47f28cb2d74fb124ca37835a3a", null ],
     [ "host", "classneml2_1_1NEML2Object.html#aaeee19eb1c12dcdf793e38464d038f12", null ],
     [ "host", "classneml2_1_1NEML2Object.html#a253b40cc691e6ea7d49648f990242573", null ],
     [ "input_options", "classneml2_1_1NEML2Object.html#a441bfc4cd7b2e4831decc43a22f828c4", null ],
@@ -21,8 +22,10 @@ var classneml2_1_1NEML2Object =
     [ "operator=", "classneml2_1_1NEML2Object.html#a7edc71d132547c713a16b9a11fea3043", null ],
     [ "operator=", "classneml2_1_1NEML2Object.html#a9c73ca27dbcd955c1243d38979776951", null ],
     [ "path", "classneml2_1_1NEML2Object.html#ab00e03d2eef5a496bd9c62006fcaf9e1", null ],
+    [ "rate_name", "classneml2_1_1NEML2Object.html#ad5e95b911ec141a73c7f507b5e74369b", null ],
+    [ "residual_name", "classneml2_1_1NEML2Object.html#a1b046b443edae84cb91b3865479ce8a7", null ],
     [ "resolve_tensor", "classneml2_1_1NEML2Object.html#a222f5c29e59e7a8094eea809adbf50b2", null ],
     [ "settings", "classneml2_1_1NEML2Object.html#ac2eeef88cc9640a1da51dd9434aac74c", null ],
     [ "setup", "classneml2_1_1NEML2Object.html#a43128fa8695ca9394ba69cd759d04b99", null ],
-    [ "type", "classneml2_1_1NEML2Object.html#a4acb75b8abcd83a41915c116edbd003c", null ]
+    [ "type", "classneml2_1_1NEML2Object.html#a9d92a94608e07bd972d6eb7f64cf6871", null ]
 ];

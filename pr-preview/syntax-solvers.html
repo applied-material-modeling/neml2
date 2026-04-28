@@ -134,7 +134,7 @@ $(function(){initNavTree('syntax-solvers.html','',''); });
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md71">Available objects and their input file syntax </a>
+    <a href="#autotoc_md72">Available objects and their input file syntax </a>
     <ul>
       <li class="level2">
         <a href="#denselu">DenseLU </a>
@@ -160,7 +160,7 @@ Type name written in PascalCase typically refer to a NEML2 object type, oftentim
 The 🔗 symbol means that the tensor value can be cross-reference another object. See <a class="el" href="tutorials-models-model-parameters-revisited.html" title="Model parameters (revisited)">Model parameters (revisited)</a> for details.</dd>
 <dd>
 You can always use <span class="tt">Ctrl</span>+<span class="tt">F</span> or <span class="tt">Cmd</span>+<span class="tt">F</span> to search the entire page.</dd></dl>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md71"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md72"></a>
 Available objects and their input file syntax</h1>
 <p>Refer to <a class="el" href="system-solvers.html" title="Solver">System Documentation</a> for detailed explanation about this system.</p>
 <h2 class="doxsection"><a class="anchor" id="denselu"></a>
@@ -171,10 +171,11 @@ DenseLU</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: bool</li>
+<li><u>Required</u>: No</li>
 <li><u>Default</u>: false </li>
 </ul>
 </details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1DenseLU.html" title="DenseLU">link</a></p>
+<p>Detailed documentation <a class="el" href="#denselu" title="DenseLU">link</a></p>
 <h2 class="doxsection"><a class="anchor" id="newton"></a>
 Newton</h2>
 <p>The standard Newton-Raphson solver which always takes the 'full' Newton step. </p><details >
@@ -183,6 +184,7 @@ Newton</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: number</li>
+<li><u>Required</u>: No</li>
 <li><u>Default</u>: 1e-10 </li>
 </ul>
 </details>
@@ -191,7 +193,8 @@ Newton</h2>
 <span class="tt">linear_solver</span> The linear solver to use within the nonlinear solver</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: string </li>
+<li><u>Type</u>: string</li>
+<li><u>Required</u>: Yes </li>
 </ul>
 </details>
 <details >
@@ -200,6 +203,7 @@ Newton</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: non-negative number</li>
+<li><u>Required</u>: No</li>
 <li><u>Default</u>: 100 </li>
 </ul>
 </details>
@@ -209,6 +213,7 @@ Newton</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: number</li>
+<li><u>Required</u>: No</li>
 <li><u>Default</u>: 1e-08 </li>
 </ul>
 </details>
@@ -218,10 +223,11 @@ Newton</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: bool</li>
+<li><u>Required</u>: No</li>
 <li><u>Default</u>: false </li>
 </ul>
 </details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1Newton.html" title="Newton">link</a></p>
+<p>Detailed documentation <a class="el" href="#newton" title="Newton">link</a></p>
 <h2 class="doxsection"><a class="anchor" id="newtonwithlinesearch"></a>
 NewtonWithLineSearch</h2>
 <p>The Newton-Raphson solver with line search. </p><details >
@@ -230,6 +236,7 @@ NewtonWithLineSearch</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: number</li>
+<li><u>Required</u>: No</li>
 <li><u>Default</u>: 1e-10 </li>
 </ul>
 </details>
@@ -239,6 +246,7 @@ NewtonWithLineSearch</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: bool</li>
+<li><u>Required</u>: No</li>
 <li><u>Default</u>: false </li>
 </ul>
 </details>
@@ -247,7 +255,8 @@ NewtonWithLineSearch</h2>
 <span class="tt">linear_solver</span> The linear solver to use within the nonlinear solver</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: string </li>
+<li><u>Type</u>: string</li>
+<li><u>Required</u>: Yes </li>
 </ul>
 </details>
 <details >
@@ -256,6 +265,7 @@ NewtonWithLineSearch</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: number</li>
+<li><u>Required</u>: No</li>
 <li><u>Default</u>: 2 </li>
 </ul>
 </details>
@@ -265,15 +275,17 @@ NewtonWithLineSearch</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: number</li>
+<li><u>Required</u>: No</li>
 <li><u>Default</u>: 0.001 </li>
 </ul>
 </details>
 <details >
 <summary >
-<span class="tt">linesearch_type</span> The type of linesearch used.Default: BACKTRACKING. Options are STRONG_WOLFE, BACKTRACKING</summary>
+<span class="tt">linesearch_type</span> The type of linesearch used. Options are STRONG_WOLFE, BACKTRACKING</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: EnumSelection</li>
+<li><u>Required</u>: No</li>
 <li><u>Default</u>: BACKTRACKING </li>
 </ul>
 </details>
@@ -283,6 +295,7 @@ NewtonWithLineSearch</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: non-negative number</li>
+<li><u>Required</u>: No</li>
 <li><u>Default</u>: 100 </li>
 </ul>
 </details>
@@ -292,6 +305,7 @@ NewtonWithLineSearch</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: non-negative number</li>
+<li><u>Required</u>: No</li>
 <li><u>Default</u>: 10 </li>
 </ul>
 </details>
@@ -301,6 +315,7 @@ NewtonWithLineSearch</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: number</li>
+<li><u>Required</u>: No</li>
 <li><u>Default</u>: 1e-08 </li>
 </ul>
 </details>
@@ -310,10 +325,11 @@ NewtonWithLineSearch</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: bool</li>
+<li><u>Required</u>: No</li>
 <li><u>Default</u>: false </li>
 </ul>
 </details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1NewtonWithLineSearch.html" title="NewtonWithLineSearch">link</a></p>
+<p>Detailed documentation <a class="el" href="#newtonwithlinesearch" title="NewtonWithLineSearch">link</a></p>
 <h2 class="doxsection"><a class="anchor" id="schurcomplement"></a>
 SchurComplement</h2>
 <p>Schur complement linear solver. Solves a block-partitioned system A x = b by forming and solving the Schur complement of the primary block. </p><details >
@@ -321,7 +337,8 @@ SchurComplement</h2>
 <span class="tt">primary_solver</span> Linear solver used for the primary block A_pp</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: string </li>
+<li><u>Type</u>: string</li>
+<li><u>Required</u>: Yes </li>
 </ul>
 </details>
 <details >
@@ -329,7 +346,8 @@ SchurComplement</h2>
 <span class="tt">residual_primary_group</span> Row (residual) group index of the primary block. The system must have exactly 2 residual groups; the other group is automatically the Schur complement residual group.</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: non-negative number </li>
+<li><u>Type</u>: non-negative number</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -337,7 +355,8 @@ SchurComplement</h2>
 <span class="tt">schur_solver</span> Linear solver used for the Schur complement block S</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: string </li>
+<li><u>Type</u>: string</li>
+<li><u>Required</u>: Yes </li>
 </ul>
 </details>
 <details >
@@ -345,7 +364,8 @@ SchurComplement</h2>
 <span class="tt">unknown_primary_group</span> Column (unknown) group index of the primary block. The system must have exactly 2 unknown groups; the other group is automatically the Schur complement unknown group.</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: non-negative number </li>
+<li><u>Type</u>: non-negative number</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -354,10 +374,11 @@ SchurComplement</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: bool</li>
+<li><u>Required</u>: No</li>
 <li><u>Default</u>: false </li>
 </ul>
 </details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1SchurComplement.html" title="SchurComplement">link</a> </p>
+<p>Detailed documentation <a class="el" href="#schurcomplement" title="SchurComplement">link</a> </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

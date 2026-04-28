@@ -134,15 +134,15 @@ $(function(){initNavTree('tutorials-optimization-parameter-calibration.html','',
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md159">Problem definition </a>
+    <a href="#autotoc_md162">Problem definition </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md160">Calibration </a>
+    <a href="#autotoc_md163">Calibration </a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_build_2doc_2content_2tutorials_2optimization_2parameter__calibration_2main"></a></p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md159"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md162"></a>
 Problem definition</h1>
 <p>Suppose we are given the experimental data of one pair of strain \(\boldsymbol{\varepsilon}^*\) and stress \(\boldsymbol{\sigma}^*\) measurement of a specimen, and we are tasked to infer the bulk \(K\) and shear \(G\) modulus of the material.</p>
 <p>Let us define the loss function as the <em>distance</em> between the stress prediction and the stress measurement, i.e.   </p><p class="formulaDsp">
@@ -153,7 +153,7 @@ Problem definition</h1>
 \[  \left( K^*, G^* \right) = \mathop{\mathrm{argmin}}\limits_{K, G} \ l.
 \]
 </p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md160"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md163"></a>
 Calibration</h1>
 <p>The following Python script uses the simple gradient descent algorithm to find \(K^*\) and \(G^*\):    </p><p class="formulaDsp">
 \begin{align*}  K_{i+1} &amp;= K_i - \gamma \pdv{l}{K_i}, \\
@@ -185,7 +185,7 @@ Calibration</h1>
 <div class="line">    model.G.requires_grad_()</div>
 <div class="line"> </div>
 <div class="line">    <span class="comment"># Calculate loss</span></div>
-<div class="line">    stress = model.value({<span class="stringliteral">&quot;forces/E&quot;</span>: strain_exp})[<span class="stringliteral">&quot;state/S&quot;</span>]</div>
+<div class="line">    stress = model.value({<span class="stringliteral">&quot;strain&quot;</span>: strain_exp})[<span class="stringliteral">&quot;stress&quot;</span>]</div>
 <div class="line">    l = torch.linalg.norm(stress.torch() - stress_exp.torch()) ** 2</div>
 <div class="line"> </div>
 <div class="line">    <span class="comment"># Record state</span></div>

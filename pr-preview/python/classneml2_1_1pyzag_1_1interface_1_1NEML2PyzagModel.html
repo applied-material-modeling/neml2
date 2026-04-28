@@ -174,11 +174,11 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:aa40e846bf593e5f142f4b9884f6bcc6f" id="r_aa40e846bf593e5f142f4b9884f6bcc6f"><td class="memItemLeft">list&#160;</td><td class="memItemRight"><a class="el" href="#aa40e846bf593e5f142f4b9884f6bcc6f">parameter_names</a> = []</td></tr>
 <tr class="memitem:aba3c4ac18f283493b92ddede316f8a42" id="r_aba3c4ac18f283493b92ddede316f8a42"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#aba3c4ac18f283493b92ddede316f8a42">rlayout</a> = self.sys.blayout()</td></tr>
 <tr class="memitem:adcd7e38c22c7f3024050998a73b074e8" id="r_adcd7e38c22c7f3024050998a73b074e8"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#adcd7e38c22c7f3024050998a73b074e8">slayout</a> = self.sys.ulayout()</td></tr>
-<tr class="memitem:ad5da09a8a016b53440844a30bd9b976a" id="r_ad5da09a8a016b53440844a30bd9b976a"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#ad5da09a8a016b53440844a30bd9b976a">snlayout</a> = _extract_sublayout(self.slayout, STATE, OLD_STATE)</td></tr>
-<tr class="memitem:aea6af6765778dae0a4868f195511c9de" id="r_aea6af6765778dae0a4868f195511c9de"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#aea6af6765778dae0a4868f195511c9de">flayout</a> = _extract_sublayout(glayout, FORCES)</td></tr>
-<tr class="memitem:a063210db1a48274bb16f365e836f145f" id="r_a063210db1a48274bb16f365e836f145f"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a063210db1a48274bb16f365e836f145f">fnlayout</a> = _extract_sublayout(glayout, FORCES, OLD_FORCES)</td></tr>
+<tr class="memitem:ad5da09a8a016b53440844a30bd9b976a" id="r_ad5da09a8a016b53440844a30bd9b976a"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#ad5da09a8a016b53440844a30bd9b976a">snlayout</a> = _extract_sublayout(self.slayout, 0, 1)</td></tr>
+<tr class="memitem:aea6af6765778dae0a4868f195511c9de" id="r_aea6af6765778dae0a4868f195511c9de"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#aea6af6765778dae0a4868f195511c9de">flayout</a> = _extract_sublayout(glayout, 0)</td></tr>
+<tr class="memitem:a063210db1a48274bb16f365e836f145f" id="r_a063210db1a48274bb16f365e836f145f"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a063210db1a48274bb16f365e836f145f">fnlayout</a> = _extract_sublayout(glayout, 0, 1)</td></tr>
 <tr class="memitem:a91d4f5a3ddd42fb86c0d8025a8d5214a" id="r_a91d4f5a3ddd42fb86c0d8025a8d5214a"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a91d4f5a3ddd42fb86c0d8025a8d5214a">svars</a> = self.slayout.vars()</td></tr>
-<tr class="memitem:a74c30af6758aab9a849a671844b6ded9" id="r_a74c30af6758aab9a849a671844b6ded9"><td class="memItemLeft">list&#160;</td><td class="memItemRight"><a class="el" href="#a74c30af6758aab9a849a671844b6ded9">fvars</a> = [v for v in gvars if v.startswith(FORCES)]</td></tr>
+<tr class="memitem:a822a92c43d5f7953ba5dae874b80840d" id="r_a822a92c43d5f7953ba5dae874b80840d"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a822a92c43d5f7953ba5dae874b80840d">fvars</a> = self.flayout.vars()</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pro-methods" class="groupheader"><a id="pro-methods" name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
@@ -593,7 +593,7 @@ Args:
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">flayout = _extract_sublayout(glayout, FORCES)</td>
+          <td class="memname">flayout = _extract_sublayout(glayout, 0)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -607,21 +607,21 @@ Args:
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">fnlayout = _extract_sublayout(glayout, FORCES, OLD_FORCES)</td>
+          <td class="memname">fnlayout = _extract_sublayout(glayout, 0, 1)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a id="a74c30af6758aab9a849a671844b6ded9" name="a74c30af6758aab9a849a671844b6ded9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a74c30af6758aab9a849a671844b6ded9">&#9670;&#160;</a></span>fvars</h2>
+<a id="a822a92c43d5f7953ba5dae874b80840d" name="a822a92c43d5f7953ba5dae874b80840d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a822a92c43d5f7953ba5dae874b80840d">&#9670;&#160;</a></span>fvars</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">list fvars = [v for v in gvars if v.startswith(FORCES)]</td>
+          <td class="memname">fvars = self.flayout.vars()</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -691,7 +691,7 @@ Args:
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">snlayout = _extract_sublayout(self.slayout, STATE, OLD_STATE)</td>
+          <td class="memname">snlayout = _extract_sublayout(self.slayout, 0, 1)</td>
         </tr>
       </table>
 </div><div class="memdoc">

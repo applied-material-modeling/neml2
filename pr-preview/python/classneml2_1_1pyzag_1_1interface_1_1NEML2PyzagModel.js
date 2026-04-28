@@ -16,7 +16,7 @@ var classneml2_1_1pyzag_1_1interface_1_1NEML2PyzagModel =
     [ "_sn_to_g_map", "classneml2_1_1pyzag_1_1interface_1_1NEML2PyzagModel.html#abe531f31a44b1d33144ed447987ba9a4", null ],
     [ "flayout", "classneml2_1_1pyzag_1_1interface_1_1NEML2PyzagModel.html#aea6af6765778dae0a4868f195511c9de", null ],
     [ "fnlayout", "classneml2_1_1pyzag_1_1interface_1_1NEML2PyzagModel.html#a063210db1a48274bb16f365e836f145f", null ],
-    [ "fvars", "classneml2_1_1pyzag_1_1interface_1_1NEML2PyzagModel.html#a74c30af6758aab9a849a671844b6ded9", null ],
+    [ "fvars", "classneml2_1_1pyzag_1_1interface_1_1NEML2PyzagModel.html#a822a92c43d5f7953ba5dae874b80840d", null ],
     [ "model", "classneml2_1_1pyzag_1_1interface_1_1NEML2PyzagModel.html#a508cc3106d2c29fe07dc87cbe3ea6927", null ],
     [ "parameter_names", "classneml2_1_1pyzag_1_1interface_1_1NEML2PyzagModel.html#aa40e846bf593e5f142f4b9884f6bcc6f", null ],
     [ "rlayout", "classneml2_1_1pyzag_1_1interface_1_1NEML2PyzagModel.html#aba3c4ac18f283493b92ddede316f8a42", null ],

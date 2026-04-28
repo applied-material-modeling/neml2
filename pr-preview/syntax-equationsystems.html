@@ -134,7 +134,7 @@ $(function(){initNavTree('syntax-equationsystems.html','',''); });
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md67">Available objects and their input file syntax </a>
+    <a href="#autotoc_md68">Available objects and their input file syntax </a>
     <ul>
       <li class="level2">
         <a href="#nonlinearsystem">NonlinearSystem </a>
@@ -151,55 +151,49 @@ Type name written in PascalCase typically refer to a NEML2 object type, oftentim
 The 🔗 symbol means that the tensor value can be cross-reference another object. See <a class="el" href="tutorials-models-model-parameters-revisited.html" title="Model parameters (revisited)">Model parameters (revisited)</a> for details.</dd>
 <dd>
 You can always use <span class="tt">Ctrl</span>+<span class="tt">F</span> or <span class="tt">Cmd</span>+<span class="tt">F</span> to search the entire page.</dd></dl>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md67"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md68"></a>
 Available objects and their input file syntax</h1>
 <p>Refer to <a class="el" href="system-equationsystems.html" title="Equation System">System Documentation</a> for detailed explanation about this system.</p>
 <h2 class="doxsection"><a class="anchor" id="nonlinearsystem"></a>
 NonlinearSystem</h2>
 <p>A nonlinear system defined by a Model. </p><details >
 <summary >
+<span class="tt">istructure</span> Optional IStructure for each variable group. If not provided, defaults to DENSE. If only one IStructure is provided, it will be applied to all groups.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: MultiEnumSelection</li>
+<li><u>Required</u>: No</li>
+<li><u>Default</u>: (DENSE) </li>
+</ul>
+</details>
+<details >
+<summary >
 <span class="tt">model</span> The Model defining this nonlinear system.</summary>
 <p></p>
 <ul>
 <li><u>Type</u>: string</li>
-<li><u>Default</u>: model </li>
+<li><u>Required</u>: Yes </li>
 </ul>
 </details>
 <details >
 <summary >
-<span class="tt">residual_istr</span> Optional IStructure for each residual group. If not provided, defaults to DENSE. If only one IStructure is provided, it will be applied to all groups.</summary>
+<span class="tt">residuals</span> Ordering and grouping of residual variables. Each inner list defines one variable group.</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: MultiEnumSelection</li>
-<li><u>Default</u>: (DENSE) </li>
+<li><u>Type</u>: list of vector&lt;string&gt;&gt;</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
 <summary >
-<span class="tt">residuals</span> Optional ordering and grouping of residual variables. Each inner list defines one variable group.</summary>
+<span class="tt">unknowns</span> Ordering and grouping of unknowns. Each inner list defines one variable group.</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of vector&lt;variable name&gt;&gt; </li>
+<li><u>Type</u>: list of vector&lt;string&gt;&gt;</li>
+<li><u>Required</u>: Yes </li>
 </ul>
 </details>
-<details >
-<summary >
-<span class="tt">unknown_istr</span> Optional IStructure for each variable group. If not provided, defaults to DENSE. If only one IStructure is provided, it will be applied to all groups.</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: MultiEnumSelection</li>
-<li><u>Default</u>: (DENSE) </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">unknowns</span> Optional ordering and grouping of unknowns. Each inner list defines one variable group.</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of vector&lt;variable name&gt;&gt; </li>
-</ul>
-</details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1ModelNonlinearSystem.html" title="ModelNonlinearSystem">link</a> </p>
+<p>Detailed documentation <a class="el" href="#nonlinearsystem" title="NonlinearSystem">link</a> </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

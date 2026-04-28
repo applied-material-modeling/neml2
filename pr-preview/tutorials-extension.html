@@ -134,20 +134,20 @@ $(function(){initNavTree('tutorials-extension.html','',''); });
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md101">Problem description </a>
+    <a href="#autotoc_md102">Problem description </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md102">Seaching for available models </a>
+    <a href="#autotoc_md103">Seaching for available models </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md103">Outline </a>
+    <a href="#autotoc_md104">Outline </a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_build_2doc_2content_2tutorials_2extension_2extension"></a></p>
 <dl class="section note"><dt>Note</dt><dd>Before diving into the following tutorials we recommend reading the <a class="el" href="tutorials-contributing.html" title="Contributing">Contributing</a> guide.</dd></dl>
 <p>NEML2 models can be easily extended or adapted to model the material behavior of your interest.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md101"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md102"></a>
 Problem description</h1>
 <p>This set of tutorials define a custom equation to model the conventional <em>projectile motion</em> problem:    </p><p class="formulaDsp">
 \begin{align}  \dot{\boldsymbol{x}} &amp; = \boldsymbol{v}, \label{1} \\
@@ -169,14 +169,14 @@ Problem description</h1>
 \end{align}
 </p>
 <p> subject to appropriate initial conditions \(\boldsymbol{x}_0\) and \(\boldsymbol{v}_0\)</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md102"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md103"></a>
 Seaching for available models</h1>
 <p>Among these equations:</p><ul>
 <li>\(\eqref{1}\) and \(\eqref{3}\) can be defined using <a class="el" href="syntax-models.html#vecbackwardeulertimeintegration" title="VecBackwardEulerTimeIntegration">VecBackwardEulerTimeIntegration</a>.</li>
 <li>\(\eqref{2}\) is not available in NEML2, and is the focus of this set of tutorials. We will name it <span class="tt">ProjectileAcceleration</span>.</li>
 <li>\(\eqref{4}\) is the <a class="el" href="syntax-models.html#implicitupdate" title="ImplicitUpdate">ImplicitUpdate</a>.</li>
 </ul>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md103"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md104"></a>
 Outline</h1>
 <p>Each tutorial builds on top of the previous tutorials, introduces and explains one small piece in model development. It is therefore recommended to follow these tutorials in order.</p>
 <ul>

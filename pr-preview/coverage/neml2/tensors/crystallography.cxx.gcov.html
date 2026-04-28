@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2026-04-24 15:34:55</td>
+            <td class="headerValue">2026-04-28 19:32:22</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">87.5&nbsp;%</td>
@@ -139,26 +139,26 @@
 <span id="L77"><span class="lineNum">      77</span> <span class="tlaGNC">       40650 : }</span></span>
 <span id="L78"><span class="lineNum">      78</span>              : </span>
 <span id="L79"><span class="lineNum">      79</span>              : Quaternion</span>
-<span id="L80"><span class="lineNum">      80</span> <span class="tlaGNC">        2207 : cubic(const TensorOptions &amp; options)</span></span>
+<span id="L80"><span class="lineNum">      80</span> <span class="tlaGNC">        2206 : cubic(const TensorOptions &amp; options)</span></span>
 <span id="L81"><span class="lineNum">      81</span>              : {</span>
-<span id="L82"><span class="lineNum">      82</span> <span class="tlaGNC">      269254 :   return Quaternion::create({{o, z, z, z},   {h, h, h, h},    {-h, h, h, h},  {h, -h, h, h},</span></span>
+<span id="L82"><span class="lineNum">      82</span> <span class="tlaGNC">      269132 :   return Quaternion::create({{o, z, z, z},   {h, h, h, h},    {-h, h, h, h},  {h, -h, h, h},</span></span>
 <span id="L83"><span class="lineNum">      83</span>              :                              {h, h, -h, h},  {-h, -h, -h, h}, {h, -h, -h, h}, {-h, -h, h, h},</span>
 <span id="L84"><span class="lineNum">      84</span>              :                              {-h, h, -h, h}, {z, z, o, z},    {z, z, z, o},   {z, o, z, z},</span>
 <span id="L85"><span class="lineNum">      85</span>              :                              {z, -a, z, a},  {z, a, z, a},    {a, z, a, z},   {a, z, -a, z},</span>
 <span id="L86"><span class="lineNum">      86</span>              :                              {z, z, -a, a},  {a, a, z, z},    {a, -a, z, z},  {z, z, a, a},</span>
 <span id="L87"><span class="lineNum">      87</span>              :                              {z, -a, a, z},  {a, z, z, -a},   {z, a, a, z},   {a, z, z, a}},</span>
 <span id="L88"><span class="lineNum">      88</span>              :                             /*intmd_dim=*/1,</span>
-<span id="L89"><span class="lineNum">      89</span> <span class="tlaGNC">       59589 :                             options);</span></span>
-<span id="L90"><span class="lineNum">      90</span> <span class="tlaGNC">      216286 : }</span></span>
+<span id="L89"><span class="lineNum">      89</span> <span class="tlaGNC">       59562 :                             options);</span></span>
+<span id="L90"><span class="lineNum">      90</span> <span class="tlaGNC">      216188 : }</span></span>
 <span id="L91"><span class="lineNum">      91</span>              : } // namespace symmetry_operators</span>
 <span id="L92"><span class="lineNum">      92</span>              : </span>
 <span id="L93"><span class="lineNum">      93</span>              : R2</span>
-<span id="L94"><span class="lineNum">      94</span> <span class="tlaGNC">        3239 : symmetry(const std::string &amp; orbifold, const TensorOptions &amp; options)</span></span>
+<span id="L94"><span class="lineNum">      94</span> <span class="tlaGNC">        3238 : symmetry(const std::string &amp; orbifold, const TensorOptions &amp; options)</span></span>
 <span id="L95"><span class="lineNum">      95</span>              : {</span>
 <span id="L96"><span class="lineNum">      96</span>              :   using namespace symmetry_operators;</span>
 <span id="L97"><span class="lineNum">      97</span>              : </span>
-<span id="L98"><span class="lineNum">      98</span> <span class="tlaGNC">        3239 :   if (orbifold == &quot;432&quot;)</span></span>
-<span id="L99"><span class="lineNum">      99</span> <span class="tlaGNC">        1769 :     return transform_from_quaternion(cubic(options));</span></span>
+<span id="L98"><span class="lineNum">      98</span> <span class="tlaGNC">        3238 :   if (orbifold == &quot;432&quot;)</span></span>
+<span id="L99"><span class="lineNum">      99</span> <span class="tlaGNC">        1768 :     return transform_from_quaternion(cubic(options));</span></span>
 <span id="L100"><span class="lineNum">     100</span>              : </span>
 <span id="L101"><span class="lineNum">     101</span> <span class="tlaGNC">        1470 :   if (orbifold == &quot;23&quot;)</span></span>
 <span id="L102"><span class="lineNum">     102</span> <span class="tlaGNC">        1752 :     return transform_from_quaternion(cubic(options).intmd_index({indexing::Slice(0, 12)}));</span></span>
@@ -198,30 +198,30 @@
 <span id="L136"><span class="lineNum">     136</span> <span class="tlaGNC tlaBgGNC">        2844 : }</span></span>
 <span id="L137"><span class="lineNum">     137</span>              : </span>
 <span id="L138"><span class="lineNum">     138</span>              : Vec</span>
-<span id="L139"><span class="lineNum">     139</span> <span class="tlaGNC">          54 : unique_bidirectional(const R2 &amp; ops, const Vec &amp; inp)</span></span>
+<span id="L139"><span class="lineNum">     139</span> <span class="tlaGNC">          52 : unique_bidirectional(const R2 &amp; ops, const Vec &amp; inp)</span></span>
 <span id="L140"><span class="lineNum">     140</span>              : {</span>
-<span id="L141"><span class="lineNum">     141</span> <span class="tlaGNC">          54 :   neml_assert_dbg(inp.intmd_dim() == 0, &quot;inp must be a single Vec without intermediate dimensions&quot;);</span></span>
+<span id="L141"><span class="lineNum">     141</span> <span class="tlaGNC">          52 :   neml_assert_dbg(inp.intmd_dim() == 0, &quot;inp must be a single Vec without intermediate dimensions&quot;);</span></span>
 <span id="L142"><span class="lineNum">     142</span>              :   // Batched tensor with all possible answers</span>
-<span id="L143"><span class="lineNum">     143</span> <span class="tlaGNC">          54 :   auto options = ops * inp;</span></span>
+<span id="L143"><span class="lineNum">     143</span> <span class="tlaGNC">          52 :   auto options = ops * inp;</span></span>
 <span id="L144"><span class="lineNum">     144</span>              :   // I think we have to go one by one...</span>
 <span id="L145"><span class="lineNum">     145</span>              :   // Slightly annoying that while Vec and ATensor are convertible a</span>
 <span id="L146"><span class="lineNum">     146</span>              :   // list of Vecs aren't convertable into a TensorList</span>
-<span id="L147"><span class="lineNum">     147</span> <span class="tlaGNC">         216 :   std::vector&lt;Vec&gt; unique{options.intmd_index({0})};</span></span>
-<span id="L148"><span class="lineNum">     148</span> <span class="tlaGNC">          54 :   Vec unique_vecs = intmd_stack(unique);</span></span>
-<span id="L149"><span class="lineNum">     149</span> <span class="tlaGNC">        1296 :   for (Size i = 1; i &lt; options.intmd_size(0); i++)</span></span>
+<span id="L147"><span class="lineNum">     147</span> <span class="tlaGNC">         208 :   std::vector&lt;Vec&gt; unique{options.intmd_index({0})};</span></span>
+<span id="L148"><span class="lineNum">     148</span> <span class="tlaGNC">          52 :   Vec unique_vecs = intmd_stack(unique);</span></span>
+<span id="L149"><span class="lineNum">     149</span> <span class="tlaGNC">        1248 :   for (Size i = 1; i &lt; options.intmd_size(0); i++)</span></span>
 <span id="L150"><span class="lineNum">     150</span>              :   {</span>
-<span id="L151"><span class="lineNum">     151</span> <span class="tlaGNC">        2484 :     auto vi = options.intmd_index({i});</span></span>
+<span id="L151"><span class="lineNum">     151</span> <span class="tlaGNC">        2392 :     auto vi = options.intmd_index({i});</span></span>
 <span id="L152"><span class="lineNum">     152</span>              :     // Compares list of vectors to vector to figure out if any are the same</span>
-<span id="L153"><span class="lineNum">     153</span> <span class="tlaGNC">        2106 :     auto same = [](const Vec &amp; a, const Vec &amp; b) { return at::any(at::all(at::isclose(a, b), 1)); };</span></span>
-<span id="L154"><span class="lineNum">     154</span> <span class="tlaGNC">        1242 :     if (!(same(unique_vecs, vi).item&lt;bool&gt;() || same(unique_vecs, -vi).item&lt;bool&gt;()))</span></span>
+<span id="L153"><span class="lineNum">     153</span> <span class="tlaGNC">        2028 :     auto same = [](const Vec &amp; a, const Vec &amp; b) { return at::any(at::all(at::isclose(a, b), 1)); };</span></span>
+<span id="L154"><span class="lineNum">     154</span> <span class="tlaGNC">        1196 :     if (!(same(unique_vecs, vi).item&lt;bool&gt;() || same(unique_vecs, -vi).item&lt;bool&gt;()))</span></span>
 <span id="L155"><span class="lineNum">     155</span>              :     {</span>
-<span id="L156"><span class="lineNum">     156</span> <span class="tlaGNC">         216 :       unique.emplace_back(vi);</span></span>
-<span id="L157"><span class="lineNum">     157</span> <span class="tlaGNC">         216 :       unique_vecs = intmd_stack(unique);</span></span>
+<span id="L156"><span class="lineNum">     156</span> <span class="tlaGNC">         208 :       unique.emplace_back(vi);</span></span>
+<span id="L157"><span class="lineNum">     157</span> <span class="tlaGNC">         208 :       unique_vecs = intmd_stack(unique);</span></span>
 <span id="L158"><span class="lineNum">     158</span>              :     }</span>
-<span id="L159"><span class="lineNum">     159</span> <span class="tlaGNC">        1242 :   }</span></span>
+<span id="L159"><span class="lineNum">     159</span> <span class="tlaGNC">        1196 :   }</span></span>
 <span id="L160"><span class="lineNum">     160</span>              :   // Get the batch of all possible answers</span>
-<span id="L161"><span class="lineNum">     161</span> <span class="tlaGNC">         108 :   return unique_vecs;</span></span>
-<span id="L162"><span class="lineNum">     162</span> <span class="tlaGNC">        1458 : }</span></span>
+<span id="L161"><span class="lineNum">     161</span> <span class="tlaGNC">         104 :   return unique_vecs;</span></span>
+<span id="L162"><span class="lineNum">     162</span> <span class="tlaGNC">        1404 : }</span></span>
 <span id="L163"><span class="lineNum">     163</span>              : </span>
 <span id="L164"><span class="lineNum">     164</span>              : Scalar</span>
 <span id="L165"><span class="lineNum">     165</span> <span class="tlaGNC">        3157 : misorientation(const Rot &amp; r1, const Rot &amp; r2, const std::string &amp; orbifold)</span></span>

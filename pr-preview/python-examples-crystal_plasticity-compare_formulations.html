@@ -139,7 +139,7 @@ $(function(){initNavTree('python-examples-crystal_plasticity-compare_formulation
 <p>Both formulations are based on the usual multiplicative decomposition of the deformation gradient into elastic and plastic parts \(F = F_e F_p\). This notebook calls the first approach the "separated" method and the second the "integrated" method (because the first splits the kinematics into two coupled equations and the second integrates a single equation for \(F_p\)).</p>
 <p>It's easy to formulate a crystal model either way in NEML2 reusing most of detailed constitutive model objects like the hardening law, the slip law, and the crystal geometry. In fact the vast majority of the objects are shared between the two models with only a few specialized submodels required for each.</p>
 <p>This example runs equivalent separated and integrated models through the same deformation history (rolling to 50% rolling strain) and plots a comparison. You can also use this notebook to look at differences in performance, though we have not done detailed performance optimization on either.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md164"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md167"></a>
 Importing required libraries and setting up</h1>
 <p>This example will run on the GPU with CUDA if available. <span class="tt">nchunk</span> is the chunk size for the <span class="tt">pyzag</span> integration, <span class="tt">ncrystal</span> is the number of random initial crystal orientations to use.</p>
 <p>This example simulates rolling in an FCC material. <span class="tt">rate</span> sets the strain rate, <span class="tt">total_rolling_strain</span> the reduction strain, and <span class="tt">ntime</span> the number of time steps to take.</p>
@@ -187,7 +187,7 @@ Importing required libraries and setting up</h1>
 <div class="line">Finc = torch.linalg.matrix_exp(full_spatial_velocity_gradient[:-1] * dt.unsqueeze(-1))</div>
 <div class="line"><span class="keywordflow">for</span> i <span class="keywordflow">in</span> range(1, ntime):</div>
 <div class="line">    F[i] = Finc[i - 1] @ F[i - 1]</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md165"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md168"></a>
 pyzag driver for the separated model</h1>
 <p>For more details on the pyzag driver used here see the deterministic and stochastic inference examples. This helper object just lets us integrate the crystal model using pyzag</p>
 <div class="fragment"><div class="line"><span class="keyword">class </span>SolveSeparate(torch.nn.Module):</div>
@@ -226,10 +226,10 @@ pyzag driver for the separated model</h1>
 <div class="line"> </div>
 <div class="line">        <span class="comment"># Setup</span></div>
 <div class="line">        forces = {</div>
-<div class="line">            <span class="stringliteral">&quot;forces/t&quot;</span>: <a class="code hl_class" href="classneml2_1_1Scalar.html">neml2.Scalar</a>(time.squeeze(-1), 0),</div>
-<div class="line">            <span class="stringliteral">&quot;forces/deformation_rate&quot;</span>: <a class="code hl_class" href="classneml2_1_1SR2.html">neml2.SR2</a>(deformation_rate, 0),</div>
-<div class="line">            <span class="stringliteral">&quot;forces/vorticity&quot;</span>: <a class="code hl_class" href="classneml2_1_1WR2.html">neml2.WR2</a>(vorticity, 0),</div>
-<div class="line">            <span class="stringliteral">&quot;forces/initial_orientation&quot;</span>: <a class="code hl_class" href="classneml2_1_1Rot.html">neml2.Rot</a>(initial_orientations, 0),</div>
+<div class="line">            <span class="stringliteral">&quot;t&quot;</span>: <a class="code hl_class" href="classneml2_1_1Scalar.html">neml2.Scalar</a>(time.squeeze(-1), 0),</div>
+<div class="line">            <span class="stringliteral">&quot;deformation_rate&quot;</span>: <a class="code hl_class" href="classneml2_1_1SR2.html">neml2.SR2</a>(deformation_rate, 0),</div>
+<div class="line">            <span class="stringliteral">&quot;vorticity&quot;</span>: <a class="code hl_class" href="classneml2_1_1WR2.html">neml2.WR2</a>(vorticity, 0),</div>
+<div class="line">            <span class="stringliteral">&quot;initial_orientation&quot;</span>: <a class="code hl_class" href="classneml2_1_1Rot.html">neml2.Rot</a>(initial_orientations, 0),</div>
 <div class="line">        }</div>
 <div class="line">        forces = [forces[key] <span class="keywordflow">for</span> key <span class="keywordflow">in</span> self.discrete_equations.fvars]</div>
 <div class="line">        forces = (</div>
@@ -240,7 +240,7 @@ pyzag driver for the separated model</h1>
 <div class="line">        )</div>
 <div class="line">        state0 = [<a class="code hl_class" href="classneml2_1_1Tensor.html">neml2.Tensor</a>()] * len(self.discrete_equations.svars)</div>
 <div class="line">        <span class="keywordflow">if</span> initial_orientations <span class="keywordflow">is</span> <span class="keywordflow">not</span> <span class="keywordtype">None</span>:</div>
-<div class="line">            i = self.discrete_equations.svars.index(<span class="stringliteral">&quot;state/orientation&quot;</span>)</div>
+<div class="line">            i = self.discrete_equations.svars.index(<span class="stringliteral">&quot;orientation&quot;</span>)</div>
 <div class="line">            state0[i] = <a class="code hl_class" href="classneml2_1_1Tensor.html">neml2.Tensor</a>(initial_orientations, 1)</div>
 <div class="line">        state0 = (</div>
 <div class="line">            <a class="code hl_struct" href="structneml2_1_1SparseVector.html">neml2.SparseVector</a>(self.discrete_equations.slayout, state0)</div>
@@ -255,10 +255,10 @@ pyzag driver for the separated model</h1>
 <div class="ttc" id="aclassneml2_1_1Rot_html"><div class="ttname"><a href="classneml2_1_1Rot.html">neml2::Rot</a></div><div class="ttdoc">Rotation stored as modified Rodrigues parameters.</div><div class="ttdef"><b>Definition</b> Rot.h:49</div></div>
 <div class="ttc" id="aclassneml2_1_1SR2_html"><div class="ttname"><a href="classneml2_1_1SR2.html">neml2::SR2</a></div><div class="ttdoc">The symmetric second order tensor.</div><div class="ttdef"><b>Definition</b> SR2.h:46</div></div>
 <div class="ttc" id="aclassneml2_1_1Scalar_html"><div class="ttname"><a href="classneml2_1_1Scalar.html">neml2::Scalar</a></div><div class="ttdoc">Scalar.</div><div class="ttdef"><b>Definition</b> Scalar.h:38</div></div>
-<div class="ttc" id="aclassneml2_1_1Tensor_html"><div class="ttname"><a href="classneml2_1_1Tensor.html">neml2::Tensor</a></div><div class="ttdef"><b>Definition</b> Tensor.h:49</div></div>
+<div class="ttc" id="aclassneml2_1_1Tensor_html"><div class="ttname"><a href="classneml2_1_1Tensor.html">neml2::Tensor</a></div><div class="ttdef"><b>Definition</b> Tensor.h:53</div></div>
 <div class="ttc" id="aclassneml2_1_1WR2_html"><div class="ttname"><a href="classneml2_1_1WR2.html">neml2::WR2</a></div><div class="ttdoc">A skew-symmetric second order tensor, represented as an axial vector.</div><div class="ttdef"><b>Definition</b> WR2.h:43</div></div>
 <div class="ttc" id="astructneml2_1_1SparseVector_html"><div class="ttname"><a href="structneml2_1_1SparseVector.html">neml2::SparseVector</a></div><div class="ttdoc">Sparse representation of a vector consisting of a list of tensors and their layout.</div><div class="ttdef"><b>Definition</b> SparseVector.h:36</div></div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md166"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md169"></a>
 Simulate rolling deformation for the seperated model</h1>
 <p>Simulate the rolling deformation and extract the final crystal orientations</p>
 <div class="fragment"><div class="line">nmodel_separate = neml2.load_nonlinear_system(<span class="stringliteral">&quot;crystal.i&quot;</span>, <span class="stringliteral">&quot;eq_sys&quot;</span>)</div>
@@ -269,7 +269,7 @@ Simulate rolling deformation for the seperated model</h1>
 <div class="line">        times, deformation_rate, vorticity, initial_orientations=initial_orientations</div>
 <div class="line">    )</div>
 <div class="line">orientations_separate = neml2.tensors.Rot(results_seperate[-1, :, 6:9])</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md167"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md170"></a>
 ODF reconstruction for the seperated model</h1>
 <p>Reconstruct the ODF from the discrete data. Uncommenting the two lines will optimize the kernel half-width with the built in routine (which uses a cross-validation approach). However, for consistency between the two methods, we'll use a fixed half width for both.</p>
 <div class="fragment"><div class="line">odf_separate = neml2.postprocessing.odf.KDEODF(</div>
@@ -278,7 +278,7 @@ ODF reconstruction for the seperated model</h1>
 <div class="line"><span class="comment"># odf_separate.optimize_kernel(verbose=True)</span></div>
 <div class="line"><span class="comment"># print(odf_separate.kernel.h)</span></div>
 <div class="line">odf_separate.kernel.h = torch.tensor(0.23)</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md168"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md171"></a>
 pyzag driver for the integrated model</h1>
 <p>Same thing as for the separated model, just now for the integrated form where we take the deformation gradient as input. Don't forget to set the initial plastic deformation gradient to the identity!</p>
 <div class="fragment"><div class="line"><span class="keyword">class </span>SolveIntegrated(torch.nn.Module):</div>
@@ -316,9 +316,9 @@ pyzag driver for the integrated model</h1>
 <div class="line"> </div>
 <div class="line">        <span class="comment"># Setup</span></div>
 <div class="line">        forces = {</div>
-<div class="line">            <span class="stringliteral">&quot;forces/t&quot;</span>: <a class="code hl_class" href="classneml2_1_1Scalar.html">neml2.Scalar</a>(time.squeeze(-1), 0),</div>
-<div class="line">            <span class="stringliteral">&quot;forces/F&quot;</span>: <a class="code hl_class" href="classneml2_1_1R2.html">neml2.R2</a>(deformation_gradient, 0),</div>
-<div class="line">            <span class="stringliteral">&quot;forces/r&quot;</span>: <a class="code hl_class" href="classneml2_1_1Rot.html">neml2.Rot</a>(initial_orientations, 0),</div>
+<div class="line">            <span class="stringliteral">&quot;t&quot;</span>: <a class="code hl_class" href="classneml2_1_1Scalar.html">neml2.Scalar</a>(time.squeeze(-1), 0),</div>
+<div class="line">            <span class="stringliteral">&quot;F&quot;</span>: <a class="code hl_class" href="classneml2_1_1R2.html">neml2.R2</a>(deformation_gradient, 0),</div>
+<div class="line">            <span class="stringliteral">&quot;r&quot;</span>: <a class="code hl_class" href="classneml2_1_1Rot.html">neml2.Rot</a>(initial_orientations, 0),</div>
 <div class="line">        }</div>
 <div class="line">        forces = [forces[key] <span class="keywordflow">for</span> key <span class="keywordflow">in</span> self.discrete_equations.fvars]</div>
 <div class="line">        forces = (</div>
@@ -328,7 +328,7 @@ pyzag driver for the integrated model</h1>
 <div class="line">            .<a class="code hl_namespace" href="namespacetorch.html">torch</a>()</div>
 <div class="line">        )</div>
 <div class="line">        state0 = [<a class="code hl_class" href="classneml2_1_1Tensor.html">neml2.Tensor</a>()] * len(self.discrete_equations.svars)</div>
-<div class="line">        i = self.discrete_equations.svars.index(<span class="stringliteral">&quot;state/Fp&quot;</span>)</div>
+<div class="line">        i = self.discrete_equations.svars.index(<span class="stringliteral">&quot;Fp&quot;</span>)</div>
 <div class="line">        state0[i] = neml2.tensors.Tensor(</div>
 <div class="line">            torch.eye(3, device=time.device).unsqueeze(0).expand(time.shape[1:2] + (3, 3)), 1</div>
 <div class="line">        )</div>
@@ -343,7 +343,7 @@ pyzag driver for the integrated model</h1>
 <div class="line"> </div>
 <div class="line">        <span class="keywordflow">return</span> result</div>
 <div class="ttc" id="aclassneml2_1_1R2_html"><div class="ttname"><a href="classneml2_1_1R2.html">neml2::R2</a></div><div class="ttdoc">Base class for second order tensor.</div><div class="ttdef"><b>Definition</b> R2.h:49</div></div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md169"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md172"></a>
 Simulate for the multiplicative model</h1>
 <p>Again, simulate rolling deformation</p>
 <div class="fragment"><div class="line">nmodel_integrated = neml2.load_nonlinear_system(<span class="stringliteral">&quot;crystal_integrated.i&quot;</span>, <span class="stringliteral">&quot;eq_sys&quot;</span>)</div>
@@ -352,7 +352,7 @@ Simulate for the multiplicative model</h1>
 </div><!-- fragment --><div class="fragment"><div class="line"><span class="keyword">with</span> torch.no_grad():</div>
 <div class="line">    results_integrated = model_integrated(times, F, initial_orientations=initial_orientations)</div>
 <div class="line">end_results_integrated = results_integrated[-1]</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md170"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md173"></a>
 Extract the orientations for the multiplicative model</h1>
 <p>This takes some doing. We first need to get \(F_p\) from the state, then calculate \(F_e = F F_p^{-1}\), then do a polar decomposition to get the rotation as a matrix, then convert to modified Rodrigues parameters. Finally compose with the original texture to get the final, deformed texture.</p>
 <div class="fragment"><div class="line">split_state = (</div>
@@ -362,7 +362,7 @@ Extract the orientations for the multiplicative model</h1>
 <div class="line">    .disassemble()</div>
 <div class="line">    .tensors</div>
 <div class="line">)</div>
-<div class="line">iFp = model_integrated.discrete_equations.svars.index(<span class="stringliteral">&quot;state/Fp&quot;</span>)</div>
+<div class="line">iFp = model_integrated.discrete_equations.svars.index(<span class="stringliteral">&quot;Fp&quot;</span>)</div>
 <div class="line">Fp = split_state[iFp].<a class="code hl_namespace" href="namespacetorch.html">torch</a>().reshape(-1, 3, 3)</div>
 <div class="line">Flast = F[-1]</div>
 <div class="line">Fe = Flast @ torch.linalg.inv(Fp)</div>
@@ -374,7 +374,7 @@ Extract the orientations for the multiplicative model</h1>
 <div class="line">Q0 = neml2.tensors.Rot(initial_orientations)</div>
 <div class="line">Q = Re_mrp * Q0</div>
 <div class="ttc" id="astructneml2_1_1AssembledVector_html"><div class="ttname"><a href="structneml2_1_1AssembledVector.html">neml2::AssembledVector</a></div><div class="ttdoc">Dense representation of a tensor assembled from a list of tensors and their layout.</div><div class="ttdef"><b>Definition</b> AssembledVector.h:36</div></div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md171"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md174"></a>
 Construct the ODF for the multiplicative model results</h1>
 <p>Basically the same as for the separated approach.</p>
 <div class="fragment"><div class="line">odf_integrated = neml2.postprocessing.odf.KDEODF(</div>
@@ -383,7 +383,7 @@ Construct the ODF for the multiplicative model results</h1>
 <div class="line"><span class="comment"># odf_integrated.optimize_kernel(verbose=True)</span></div>
 <div class="line"><span class="comment"># print(odf_integrated.kernel.h)</span></div>
 <div class="line">odf_integrated.kernel.h = torch.tensor(0.23)</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md172"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md175"></a>
 Plot the pole figures</h1>
 <p>Use the reconstructed ODFs to plot continuous 111 polefigure</p>
 <div class="fragment"><div class="line">neml2.postprocessing.pretty_plot_pole_figure_odf(</div>
@@ -408,7 +408,7 @@ png</div></div>
 <img src="compare_formulations_24_1.png" alt=""/>
 <div class="caption">
 png</div></div>
-    <h1 class="doxsection"><a class="anchor" id="autotoc_md173"></a>
+    <h1 class="doxsection"><a class="anchor" id="autotoc_md176"></a>
 Plot some comparisons of the elastic strains</h1>
 <p>Extract the elastic strains from each model and plot:</p><ol type="1">
 <li>The history of each crystal over time</li>
@@ -430,14 +430,14 @@ Plot some comparisons of the elastic strains</h1>
 <div class="line">    .tensors</div>
 <div class="line">)</div>
 <div class="line"> </div>
-<div class="line">iFp = model_integrated.discrete_equations.svars.index(<span class="stringliteral">&quot;state/Fp&quot;</span>)</div>
+<div class="line">iFp = model_integrated.discrete_equations.svars.index(<span class="stringliteral">&quot;Fp&quot;</span>)</div>
 <div class="line">Fp_mult = state_history_mult[iFp].<a class="code hl_namespace" href="namespacetorch.html">torch</a>().reshape(F.shape[:-2] + (3, 3))</div>
 <div class="line">Fe_mult = F @ torch.linalg.inv(Fp_mult)</div>
 <div class="line">U_mult, S_mult, Vh_mult = torch.linalg.svd(Fe_mult)</div>
 <div class="line">Re_mult = U_mult @ Vh_mult</div>
 <div class="line">Ue_mult = Vh_mult.transpose(-2, -1).conj() @ torch.diag_embed(S_mult, dim1=-2, dim2=-1) @ Vh_mult</div>
 <div class="line">E_mult = 0.5 * (Ue_mult.transpose(-2, -1) @ Ue_mult - torch.eye(3, device=device))</div>
-<div class="line">ie = model_separate.discrete_equations.svars.index(<span class="stringliteral">&quot;state/elastic_strain&quot;</span>)</div>
+<div class="line">ie = model_separate.discrete_equations.svars.index(<span class="stringliteral">&quot;elastic_strain&quot;</span>)</div>
 <div class="line"> </div>
 <div class="line">plt.plot(times[:, 0, 0].cpu(), state_history_split[ie].<a class="code hl_namespace" href="namespacetorch.html">torch</a>()[:, :, 2].cpu(), <span class="stringliteral">&quot;k-&quot;</span>, alpha=0.5)</div>
 <div class="line">plt.plot(times[:, 0, 0].cpu(), E_mult[:, :, 2, 2].cpu(), <span class="stringliteral">&quot;r--&quot;</span>, alpha=0.5)</div>
@@ -451,7 +451,7 @@ Plot some comparisons of the elastic strains</h1>
 <div class="line">    [<span class="stringliteral">&quot;Seperate&quot;</span>, <span class="stringliteral">&quot;Integrated&quot;</span>],</div>
 <div class="line">    loc=<span class="stringliteral">&quot;best&quot;</span>,</div>
 <div class="line">)</div>
-</div><!-- fragment --><pre class="fragment">&lt;matplotlib.legend.Legend at 0x437d8d290&gt;
+</div><!-- fragment --><pre class="fragment">&lt;matplotlib.legend.Legend at 0x7253c41c6e70&gt;
 </pre><div class="image">
 <img src="compare_formulations_26_1.png" alt=""/>
 <div class="caption">
@@ -474,7 +474,7 @@ png</div></div>
 <div class="line">    [<span class="stringliteral">&quot;Seperate&quot;</span>, <span class="stringliteral">&quot;Integrated&quot;</span>],</div>
 <div class="line">    loc=<span class="stringliteral">&quot;best&quot;</span>,</div>
 <div class="line">)</div>
-</div><!-- fragment --><pre class="fragment">&lt;matplotlib.legend.Legend at 0x47094f050&gt;
+</div><!-- fragment --><pre class="fragment">&lt;matplotlib.legend.Legend at 0x7253c41c4cb0&gt;
 </pre><div class="image">
 <img src="compare_formulations_27_1.png" alt=""/>
 <div class="caption">

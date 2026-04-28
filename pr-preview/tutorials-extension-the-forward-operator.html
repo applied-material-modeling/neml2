@@ -134,28 +134,25 @@ $(function(){initNavTree('tutorials-extension-the-forward-operator.html','','');
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md107">Method signature </a>
+    <a href="#autotoc_md108">Method signature </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md108">Implementation </a>
+    <a href="#autotoc_md109">Implementation </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md109">Evaluation </a>
+    <a href="#autotoc_md110">Evaluation </a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_build_2doc_2content_2tutorials_2extension_2the__forward__operator_2main"></a></p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md107"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md108"></a>
 Method signature</h1>
 <p>The base class <a class="el" href="classneml2_1_1Model.html" title="The base class for all constitutive models.">neml2::Model</a> declares a pure virtual method <a class="el" href="classneml2_1_1Model.html#a6a028925dc10166ea6426fc4d7635ad2" title="The map between input -&gt; output, and optionally its derivatives.">neml2::Model::set_value</a> for derived classes to define the forward operator. The forward operator is responsible for calculating output variables given input variables, parameters, and buffers. Optionally, the <a class="el" href="classneml2_1_1Model.html#a6a028925dc10166ea6426fc4d7635ad2" title="The map between input -&gt; output, and optionally its derivatives.">neml2::Model::set_value</a> method can define derivatives and second derivatives, if requested.</p>
 <p>The signature of the method is </p><div class="fragment"><div class="line"><span class="keyword">virtual</span> <span class="keywordtype">void</span> set_value(<span class="keywordtype">bool</span>, <span class="keywordtype">bool</span>, <span class="keywordtype">bool</span>) = 0;</div>
 </div><!-- fragment --><p> The three boolean arguments denote whether the caller is requesting output variable values, their derivatives, or their second derivatives. Derived classes should therefore override this method, i.e. </p><div class="fragment"><div class="line"><span class="keywordtype">void</span> set_value(<span class="keywordtype">bool</span>, <span class="keywordtype">bool</span>, <span class="keywordtype">bool</span>) <span class="keyword">override</span>;</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md108"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md109"></a>
 Implementation</h1>
-<p>By default, the model forward operator is responsible for calculating the output variable values and their first derivatives. Definition of second order derivatives is not required. Such default behavior can be changed by modifying the corresponding input file option in <a class="el" href="classneml2_1_1Model.html#ad8c7c9b5e7f03325e3dd601a39264bdb">neml2::Model::expected_options</a>, i.e. </p><div class="fragment"><div class="line">options.set&lt;<span class="keywordtype">bool</span>&gt;(<span class="stringliteral">&quot;define_values&quot;</span>) = <span class="keyword">true</span>;</div>
-<div class="line">options.set&lt;<span class="keywordtype">bool</span>&gt;(<span class="stringliteral">&quot;define_derivatives&quot;</span>) = <span class="keyword">true</span>;</div>
-<div class="line">options.set&lt;<span class="keywordtype">bool</span>&gt;(<span class="stringliteral">&quot;define_second_derivatives&quot;</span>) = <span class="keyword">false</span>;</div>
-</div><!-- fragment --><p> In other words, the default configuration guarantees the third boolean argument of <a class="el" href="classneml2_1_1Model.html#a6a028925dc10166ea6426fc4d7635ad2" title="The map between input -&gt; output, and optionally its derivatives.">neml2::Model::set_value</a> to always be false, while at least one of the first two boolean arguments is true.</p>
+<p>By default, the model forward operator is responsible for calculating the output variable values and their first derivatives. Definition of second order derivatives is not required.</p>
 <p>Recall that the equation for this model is   </p><p class="formulaDsp">
 \[  \boldsymbol{a} = \boldsymbol{g} - \mu \boldsymbol{v}.
 \]
@@ -176,7 +173,7 @@ Implementation</h1>
 <div class="line">}</div>
 <div class="ttc" id="anamespaceneml2_html"><div class="ttname"><a href="namespaceneml2.html">neml2</a></div><div class="ttdef"><b>Definition</b> DiagnosticsInterface.h:31</div></div>
 <div class="ttc" id="anamespaceneml2_html_a3d1edda955512723d63a7f93bb6b8103"><div class="ttname"><a href="namespaceneml2.html#a3d1edda955512723d63a7f93bb6b8103">neml2::imap_v</a></div><div class="ttdeci">imap_t&lt; T &gt;::type imap_v(const TensorOptions &amp;options=default_tensor_options())</div><div class="ttdoc">Get the identity map interpreted as the concrete primitive tensor type.</div><div class="ttdef"><b>Definition</b> imap.h:66</div></div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md109"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md110"></a>
 Evaluation</h1>
 <p>The model definition is said to be <em>complete</em> once all components are properly defined. Custom models can be evaluated in the same way as existing models that come with NEML2.</p>
 <div class="fragment"><div class="line"><span class="keywordtype">int</span></div>
@@ -187,22 +184,19 @@ Evaluation</h1>
 <div class="line">  <span class="keyword">auto</span> model = <a class="code hl_function" href="namespaceneml2.html#aa98735f2ffd7c3ae8b0b339621eb8ab3">load_model</a>(<span class="stringliteral">&quot;input.i&quot;</span>, <span class="stringliteral">&quot;accel&quot;</span>);</div>
 <div class="line"> </div>
 <div class="line">  <span class="comment">// Input velocity</span></div>
-<div class="line">  <span class="keyword">auto</span> vel_name = <a class="code hl_typedef" href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">VariableName</a>(<span class="stringliteral">&quot;state&quot;</span>, <span class="stringliteral">&quot;v&quot;</span>);</div>
 <div class="line">  <span class="keyword">auto</span> vel = <a class="code hl_function" href="classneml2_1_1PrimitiveTensor.html#aac8740b7591985dd6c32edb1a2881f97">Vec::fill</a>(10, 2, 0);</div>
 <div class="line"> </div>
 <div class="line">  <span class="comment">// Evaluate the model</span></div>
-<div class="line">  <span class="keyword">auto</span> output = model-&gt;value({{vel_name, vel}});</div>
+<div class="line">  <span class="keyword">auto</span> output = model-&gt;value({{<span class="stringliteral">&quot;v&quot;</span>, vel}});</div>
 <div class="line"> </div>
 <div class="line">  <span class="comment">// Output acceleration</span></div>
-<div class="line">  <span class="keyword">auto</span> accel_name = <a class="code hl_typedef" href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">VariableName</a>(<span class="stringliteral">&quot;state&quot;</span>, <span class="stringliteral">&quot;a&quot;</span>);</div>
-<div class="line">  <span class="keyword">auto</span> &amp; accel = output[accel_name];</div>
+<div class="line">  <span class="keyword">auto</span> &amp; accel = output[<span class="stringliteral">&quot;a&quot;</span>];</div>
 <div class="line"> </div>
 <div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;Acceleration: \n&quot;</span> &lt;&lt; accel &lt;&lt; std::endl;</div>
 <div class="line">}</div>
 <div class="ttc" id="aclassneml2_1_1PrimitiveTensor_html_aac8740b7591985dd6c32edb1a2881f97"><div class="ttname"><a href="classneml2_1_1PrimitiveTensor.html#aac8740b7591985dd6c32edb1a2881f97">neml2::PrimitiveTensor&lt; Vec, 3 &gt;::fill</a></div><div class="ttdeci">static Vec fill(Args &amp;&amp;... args)</div><div class="ttdef"><b>Definition</b> PrimitiveTensor.h:332</div></div>
 <div class="ttc" id="anamespaceneml2_html_a16c96ec35672a72196d72131d3f5f8c3"><div class="ttname"><a href="namespaceneml2.html#a16c96ec35672a72196d72131d3f5f8c3">neml2::kFloat64</a></div><div class="ttdeci">constexpr auto kFloat64</div><div class="ttdef"><b>Definition</b> types.h:54</div></div>
 <div class="ttc" id="anamespaceneml2_html_a3c266b437e28eb7adec97c12b9a7e7d2"><div class="ttname"><a href="namespaceneml2.html#a3c266b437e28eb7adec97c12b9a7e7d2">neml2::set_default_dtype</a></div><div class="ttdeci">void set_default_dtype(Dtype dtype)</div></div>
-<div class="ttc" id="anamespaceneml2_html_a9e1488821b46ffc106c90ab80036b7aa"><div class="ttname"><a href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">neml2::VariableName</a></div><div class="ttdeci">LabeledAxisAccessor VariableName</div><div class="ttdef"><b>Definition</b> LabeledAxisAccessor.h:185</div></div>
 <div class="ttc" id="anamespaceneml2_html_aa98735f2ffd7c3ae8b0b339621eb8ab3"><div class="ttname"><a href="namespaceneml2.html#aa98735f2ffd7c3ae8b0b339621eb8ab3">neml2::load_model</a></div><div class="ttdeci">std::shared_ptr&lt; Model &gt; load_model(const std::filesystem::path &amp;path, const std::string &amp;mname)</div><div class="ttdoc">A convenient function to load an input file and get a model.</div></div>
 </div><!-- fragment --><p>Output: </p><div class="fragment"><div class="line">Acceleration: </div>
 <div class="line">-0.0100</div>

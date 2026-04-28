@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['operator_3c_3c_0',['operator&lt;&lt;',['../classneml2_1_1LabeledAxis.html#a6fa377c963f85d494232051f922d51f8',1,'neml2::LabeledAxis']]]
+  ['modelnonlinearsystem_0',['ModelNonlinearSystem',['../classneml2_1_1Model.html#a4d8be46d96f249e78cb63f9b1428c459',1,'neml2::Model']]]
 ];

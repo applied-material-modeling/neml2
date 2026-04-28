@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2026-04-24 15:34:55</td>
+            <td class="headerValue">2026-04-28 19:32:22</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryMed">50.0&nbsp;%</td>
@@ -89,18 +89,18 @@
 <span id="L27"><span class="lineNum">      27</span>              : namespace neml2::utils</span>
 <span id="L28"><span class="lineNum">      28</span>              : {</span>
 <span id="L29"><span class="lineNum">      29</span>              : std::pair&lt;std::vector&lt;Tensor&gt;, Size&gt;</span>
-<span id="L30"><span class="lineNum">      30</span> <span class="tlaGNC tlaBgGNC">         595 : align_intmd_dim(TensorList tensors)</span></span>
+<span id="L30"><span class="lineNum">      30</span> <span class="tlaGNC tlaBgGNC">         520 : align_intmd_dim(TensorList tensors)</span></span>
 <span id="L31"><span class="lineNum">      31</span>              : {</span>
-<span id="L32"><span class="lineNum">      32</span> <span class="tlaGNC">         595 :   Size dmax = 0;</span></span>
-<span id="L33"><span class="lineNum">      33</span> <span class="tlaGNC">        2362 :   for (const auto &amp; tensor : tensors)</span></span>
-<span id="L34"><span class="lineNum">      34</span> <span class="tlaGNC">        1767 :     if (tensor.intmd_dim() &gt; dmax)</span></span>
-<span id="L35"><span class="lineNum">      35</span> <span class="tlaGNC">         102 :       dmax = tensor.intmd_dim();</span></span>
+<span id="L32"><span class="lineNum">      32</span> <span class="tlaGNC">         520 :   Size dmax = 0;</span></span>
+<span id="L33"><span class="lineNum">      33</span> <span class="tlaGNC">        2128 :   for (const auto &amp; tensor : tensors)</span></span>
+<span id="L34"><span class="lineNum">      34</span> <span class="tlaGNC">        1608 :     if (tensor.intmd_dim() &gt; dmax)</span></span>
+<span id="L35"><span class="lineNum">      35</span> <span class="tlaGNC">          93 :       dmax = tensor.intmd_dim();</span></span>
 <span id="L36"><span class="lineNum">      36</span>              : </span>
-<span id="L37"><span class="lineNum">      37</span> <span class="tlaGNC">         595 :   std::vector&lt;Tensor&gt; aligned(tensors.size());</span></span>
-<span id="L38"><span class="lineNum">      38</span> <span class="tlaGNC">        2362 :   for (size_t i = 0; i &lt; tensors.size(); ++i)</span></span>
-<span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">        1767 :     aligned[i] = tensors[i].intmd_unsqueeze(0, dmax - tensors[i].intmd_dim());</span></span>
-<span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC">        1190 :   return {aligned, dmax};</span></span>
-<span id="L41"><span class="lineNum">      41</span> <span class="tlaGNC">         595 : }</span></span>
+<span id="L37"><span class="lineNum">      37</span> <span class="tlaGNC">         520 :   std::vector&lt;Tensor&gt; aligned(tensors.size());</span></span>
+<span id="L38"><span class="lineNum">      38</span> <span class="tlaGNC">        2128 :   for (size_t i = 0; i &lt; tensors.size(); ++i)</span></span>
+<span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">        1608 :     aligned[i] = tensors[i].intmd_unsqueeze(0, dmax - tensors[i].intmd_dim());</span></span>
+<span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC">        1040 :   return {aligned, dmax};</span></span>
+<span id="L41"><span class="lineNum">      41</span> <span class="tlaGNC">         520 : }</span></span>
 <span id="L42"><span class="lineNum">      42</span>              : </span>
 <span id="L43"><span class="lineNum">      43</span>              : std::pair&lt;std::vector&lt;Tensor&gt;, Size&gt;</span>
 <span id="L44"><span class="lineNum">      44</span> <span class="tlaUNC tlaBgUNC">           0 : align_static_dim(TensorList tensors)</span></span>

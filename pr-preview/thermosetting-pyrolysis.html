@@ -134,25 +134,25 @@ $(function(){initNavTree('thermosetting-pyrolysis.html','',''); });
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md60">Framework </a>
+    <a href="#autotoc_md61">Framework </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md61">Reaction kinetics </a>
+    <a href="#autotoc_md62">Reaction kinetics </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md62">Control volume </a>
+    <a href="#autotoc_md63">Control volume </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md63">Implementation details </a>
+    <a href="#autotoc_md64">Implementation details </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md64">Example Input File </a>
+    <a href="#autotoc_md65">Example Input File </a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_build_2doc_2content_2modules_2thermosetting__pyrolysis"></a></p>
 <p>This example demonstrates the use of the chemical reactions physics module to compose models for pyrolysis kinetics of a thermoset material, where a binder is burnt into char. The framework and usage of the model is explained below, with both mathematical formulations and example input files.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md60"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md61"></a>
 Framework</h1>
 <p>The thermosetting pyroslysis processs of a binder-particle composite is shown schematically in the <a class="el" href="#controlmass" title="controlmass">figure below</a>. This is a temperature-controlled process in which the precursor (the binder) gets decomposed into gas and a residue solid. A portion of the gas is trapped inside the binder and/or the solid. It is assumed that the particle phase does not participate in the reaction and its mass remains constant. It is also assumed that the residue does not further decompose or react.</p>
 <p><a class="anchor" id="controlmass"></a> </p><div class="image">
@@ -160,14 +160,14 @@ Framework</h1>
 <div class="caption">
 Mass conservative system of a binder-particle composite under the pyrolysis process at the (a) initial, (b) intermediate, and (c) final state.</div></div>
     <p>Let \( \omega_i \) with \(i=p,b,g,c\) denote the current weight fraction of the particle, binder, gas, and char, respectively. When the reaction is complete, all of the binder gets converted to char with final yield (often experimentally measured using thermogravimetric analysis, or TGA).</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md61"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md62"></a>
 Reaction kinetics</h1>
 <p>In this example, the reaction kinetics is defined by the <a class="el" href="syntax-models.html#contractinggeometry" title="ContractingGeometry">contracting geometry model</a>, i.e.   </p><p class="formulaDsp">
 \[    \dot{\alpha} = k \left( 1-\alpha \right)^n,
 \]
 </p>
 <p> where the reaction coefficient \(k\) is temperature dependent following an Arrhenius relation.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md62"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md63"></a>
 Control volume</h1>
 <p>To couple with other physics based on control volume, we consider the control volume shown in <a class="el" href="#pyrolysis_rve" title="pyrolysis_rve">figure below</a>,</p>
 <p><a class="anchor" id="pyrolysis_rve"></a> </p><div class="image">
@@ -193,7 +193,7 @@ Schematics of the Representative Volume Element (RVE) (solid line) at a given st
 \]
 </p>
 <p> where \( \zeta \) is total volume fraction of the open pore upon reaction completion.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md63"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md64"></a>
 Implementation details</h1>
 <p>The following table summarizes the relationship between the mathematical expressions and the NEML2 models. </p><table class="markdownTable">
 <tr class="markdownTableHead">
@@ -206,7 +206,7 @@ Implementation details</h1>
 <td class="markdownTableBodyLeft">\(V = \dfrac{M_\mathrm{ref}}{1-\varphi_o} \left( \dfrac{\omega_b}{\rho_b} + \dfrac{\omega_p}{\rho_p} + \dfrac{\omega_c}{\rho_s} + \dfrac{\omega_g}{\rho_g} \right) \)  </td><td class="markdownTableBodyLeft"><a class="el" href="syntax-models.html#effectivevolume" title="EffectiveVolume">EffectiveVolume</a>  </td></tr>
 </table>
 <p>The state variables are integrated in time using the backward-Euler scheme.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md64"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md65"></a>
 Example Input File</h1>
 <div class="fragment"><div class="line">nbatch = &#39;(1)&#39;</div>
 <div class="line">nstep = 100</div>
@@ -255,28 +255,18 @@ Example Input File</h1>
 <div class="line">    type = TransientDriver</div>
 <div class="line">    model = &#39;model&#39;</div>
 <div class="line">    prescribed_time = &#39;times&#39;</div>
-<div class="line">    time = &#39;forces/t&#39;</div>
 <div class="line"> </div>
-<div class="line">    force_Scalar_names = &#39;forces/T&#39;</div>
+<div class="line">    force_Scalar_names = &#39;T&#39;</div>
 <div class="line">    force_Scalar_values = &#39;T&#39;</div>
 <div class="line"> </div>
-<div class="line">    ic_Scalar_names = &#39;state/wb state/wc&#39;</div>
+<div class="line">    ic_Scalar_names = &#39;wb wc&#39;</div>
 <div class="line">    ic_Scalar_values = &#39;${wb0} ${wc0}&#39;</div>
 <div class="line">    save_as = &#39;result.pt&#39;</div>
-<div class="line"> </div>
-<div class="line">    verbose = false</div>
 <div class="line">  []</div>
 <div class="line">  [regression]</div>
 <div class="line">    type = TransientRegression</div>
 <div class="line">    driver = &#39;driver&#39;</div>
 <div class="line">    reference = &#39;gold/result.pt&#39;</div>
-<div class="line">  []</div>
-<div class="line">[]</div>
-<div class="line"> </div>
-<div class="line">[Solvers]</div>
-<div class="line">  [newton]</div>
-<div class="line">    type = Newton</div>
-<div class="line">    verbose = false</div>
 <div class="line">  []</div>
 <div class="line">[]</div>
 <div class="line"> </div>
@@ -286,30 +276,30 @@ Example Input File</h1>
 <div class="line">    reference_value = &#39;${k0}&#39;</div>
 <div class="line">    activation_energy = &#39;${Q}&#39;</div>
 <div class="line">    ideal_gas_constant = &#39;${R}&#39;</div>
-<div class="line">    temperature = &#39;forces/T&#39;</div>
-<div class="line">    parameter = &#39;state/k&#39;</div>
+<div class="line">    temperature = &#39;T&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [reaction_rate]</div>
 <div class="line">    type = ContractingGeometry</div>
-<div class="line">    reaction_coef = &#39;reaction_coef&#39;</div>
-<div class="line">    reaction_order = &#39;${n}&#39;</div>
-<div class="line">    conversion_degree = &#39;state/alpha&#39;</div>
-<div class="line">    reaction_rate = &#39;state/alpha_rate&#39;</div>
+<div class="line">    coef = &#39;reaction_coef&#39;</div>
+<div class="line">    order = &#39;${n}&#39;</div>
+<div class="line">    conversion_degree = &#39;alpha&#39;</div>
+<div class="line">    reaction_rate = &#39;alpha_rate&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [reaction_ode]</div>
 <div class="line">    type = ScalarBackwardEulerTimeIntegration</div>
-<div class="line">    variable = &#39;state/alpha&#39;</div>
+<div class="line">    variable = &#39;alpha&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [reaction]</div>
 <div class="line">    type = ComposedModel</div>
-<div class="line">    models = &#39;reaction_rate reaction_ode&#39;</div>
+<div class="line">    models = &#39;reaction_coef reaction_rate reaction_ode&#39;</div>
 <div class="line">  []</div>
 <div class="line">[]</div>
 <div class="line"> </div>
 <div class="line">[EquationSystems]</div>
-<div class="line">  [solve_reaction_sys]</div>
+<div class="line">  [eq_sys]</div>
 <div class="line">    type = NonlinearSystem</div>
 <div class="line">    model = &#39;reaction&#39;</div>
+<div class="line">    unknowns = &#39;alpha&#39;</div>
 <div class="line">  []</div>
 <div class="line">[]</div>
 <div class="line"> </div>
@@ -326,55 +316,55 @@ Example Input File</h1>
 <div class="line">[Models]</div>
 <div class="line">  [solve_reaction]</div>
 <div class="line">    type = ImplicitUpdate</div>
-<div class="line">    equation_system = &#39;solve_reaction_sys&#39;</div>
+<div class="line">    equation_system = &#39;eq_sys&#39;</div>
 <div class="line">    solver = &#39;newton&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [binder_rate]</div>
 <div class="line">    type = ScalarLinearCombination</div>
-<div class="line">    from_var = &#39;state/alpha_rate&#39;</div>
-<div class="line">    coefficients = &#39;-1&#39;</div>
-<div class="line">    to_var = &#39;state/wb_rate&#39;</div>
+<div class="line">    from = &#39;alpha_rate&#39;</div>
+<div class="line">    weights = &#39;-1&#39;</div>
+<div class="line">    to = &#39;wb_rate&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [char_rate]</div>
 <div class="line">    type = ScalarLinearCombination</div>
-<div class="line">    from_var = &#39;state/alpha_rate&#39;</div>
-<div class="line">    coefficients = &#39;${Y}&#39;</div>
-<div class="line">    to_var = &#39;state/wc_rate&#39;</div>
+<div class="line">    from = &#39;alpha_rate&#39;</div>
+<div class="line">    weights = &#39;${Y}&#39;</div>
+<div class="line">    to = &#39;wc_rate&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [gas_rate]</div>
 <div class="line">    type = ScalarLinearCombination</div>
-<div class="line">    from_var = &#39;state/wb_rate state/wc_rate&#39;</div>
-<div class="line">    coefficients = &#39;-${mu} -${mu}&#39;</div>
-<div class="line">    to_var = &#39;state/wg_rate&#39;</div>
+<div class="line">    from = &#39;wb_rate wc_rate&#39;</div>
+<div class="line">    weights = &#39;-0.2 -0.2&#39;</div>
+<div class="line">    to = &#39;wg_rate&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [open_pore_rate]</div>
 <div class="line">    type = ScalarLinearCombination</div>
-<div class="line">    from_var = &#39;state/alpha_rate&#39;</div>
-<div class="line">    coefficients = &#39;${zeta}&#39;</div>
-<div class="line">    to_var = &#39;state/phio_rate&#39;</div>
+<div class="line">    from = &#39;alpha_rate&#39;</div>
+<div class="line">    weights = &#39;${zeta}&#39;</div>
+<div class="line">    to = &#39;phio_rate&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [binder]</div>
 <div class="line">    type = ScalarForwardEulerTimeIntegration</div>
-<div class="line">    variable = &#39;state/wb&#39;</div>
+<div class="line">    variable = &#39;wb&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [char]</div>
 <div class="line">    type = ScalarForwardEulerTimeIntegration</div>
-<div class="line">    variable = &#39;state/wc&#39;</div>
+<div class="line">    variable = &#39;wc&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [gas]</div>
 <div class="line">    type = ScalarForwardEulerTimeIntegration</div>
-<div class="line">    variable = &#39;state/wg&#39;</div>
+<div class="line">    variable = &#39;wg&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [open_pore]</div>
 <div class="line">    type = ScalarForwardEulerTimeIntegration</div>
-<div class="line">    variable = &#39;state/phio&#39;</div>
+<div class="line">    variable = &#39;phio&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [model]</div>
 <div class="line">    type = ComposedModel</div>
 <div class="line">    models = &quot;solve_reaction reaction_rate</div>
 <div class="line">              binder_rate char_rate gas_rate open_pore_rate</div>
 <div class="line">              binder char gas open_pore&quot;</div>
-<div class="line">    additional_outputs = &#39;state/alpha&#39;</div>
+<div class="line">    additional_outputs = &#39;alpha&#39;</div>
 <div class="line">  []</div>
 <div class="line">[]</div>
 </div><!-- fragment --> </div></div><!-- contents -->

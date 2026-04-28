@@ -134,20 +134,20 @@ $(function(){initNavTree('tutorials-tensors-tensor-view.html','',''); });
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md248">View versus copy </a>
+    <a href="#autotoc_md251">View versus copy </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md249">Who touched my data? </a>
+    <a href="#autotoc_md252">Who touched my data? </a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_build_2doc_2content_2tutorials_2tensors_2tensor__view_2main"></a></p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md248"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md251"></a>
 View versus copy</h1>
 <p>NEML2 allows a tensor to be a view of an existing tensor. As the name suggests, a tensor view shares the same underlying data with the tensor it is viewing into. In other words, supporting tensor view avoids data copy. Moreover, tensor views optionally (and often) reinterpret the shape and/or striding of the original data, allowing for fast and memory efficient reshaping, slicing, and element-wise operations.</p>
 <dl class="section remark"><dt>Remarks</dt><dd>Tensor views enable efficient assembly of implicit systems.</dd></dl>
 <p>In fact, all indexing mechanisms covered in the <a class="el" href="tutorials-tensors-indexing.html" title="Indexing">previous tutorial</a> are creating tensor views, i.e., zero copy, negligible allocation. In addition to those indexing API, NEML2 also provides flexible tensor reshaping API (documented in <a class="el" href="classneml2_1_1TensorBase.html" title="NEML2&#39;s enhanced tensor type.">neml2::TensorBase</a>).</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md249"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md252"></a>
 Who touched my data?</h1>
 <p>Tensor views avoid explicit data copying, which means:</p><ul>
 <li>Modification in the original data will be reflected by the tensor view</li>

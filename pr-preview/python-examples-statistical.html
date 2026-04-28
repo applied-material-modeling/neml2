@@ -153,9 +153,7 @@ $(function(){initNavTree('python-examples-statistical.html','',''); });
 <div class="line"> </div>
 <div class="line"><span class="keyword">import</span> pyro</div>
 <div class="line"><span class="keyword">from</span> pyro.infer <span class="keyword">import</span> SVI, Trace_ELBO, Predictive</div>
-</div><!-- fragment --> <pre class="fragment">/home/gary/micromamba/envs/neml2/lib/python3.11/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
-  from .autonotebook import tqdm as notebook_tqdm
-</pre><h1 class="doxsection"><a class="anchor" id="autotoc_md218"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md221"></a>
 Setup parameters related to <em>how</em> we train the model</h1>
 <p>Choose which device to use. The <span class="tt">nchunk</span> parameter controls the time integration in <span class="tt">pyzag</span>. <span class="tt">pyzag</span> can vectorize the time integration itself, providing a larger bandwidth to the compute device. This helps speed up the calculation, particularly when running on a GPU. The optimal value will depend on your compute device.</p>
 <div class="fragment"><div class="line">torch.manual_seed(42)</div>
@@ -168,7 +166,7 @@ Setup parameters related to <em>how</em> we train the model</h1>
 <div class="line">device = torch.device(dev)</div>
 <div class="line"> </div>
 <div class="line">nchunk = 100</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md219"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md222"></a>
 Setup the synthetic experimental conditions</h1>
 <p>Setup the loading conditions for the "experiments" we're going to run. These will span several strain rates (<span class="tt">nrate</span>) and temperatures (<span class="tt">ntemperature</span>). Overall, we'll run <span class="tt">nbatch</span> experiments. Also setup the maximum strain to pull the material through <span class="tt">max_strain</span> and the number of time steps we're going to use for integration <span class="tt">ntime</span>.</p>
 <div class="fragment"><div class="line">nrate = 5</div>
@@ -178,13 +176,13 @@ Setup the synthetic experimental conditions</h1>
 <div class="line">ntime = 100</div>
 <div class="line">rates = torch.logspace(-6, 0, nrate, device=device)</div>
 <div class="line">temperatures = torch.linspace(310.0, 1190.0, ntemperature, device=device)</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md220"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md223"></a>
 Conditions for the repeated experiment</h1>
 <p>Also choose a single condition to repeat multiple times to give a clearer idea of the variability captured in the synthetic data and model.</p>
 <div class="fragment"><div class="line">nrepeat = 100</div>
 <div class="line">single_temperature = 600.0</div>
 <div class="line">single_rate = 1.0e-3</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md221"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md224"></a>
 Define the variability in the synthetic data and for our initial guess at the parameters</h1>
 <p>These control the variability in the synthetic data (<span class="tt">actual_cov</span>) and the variability of the initial guess at the parameter values (<span class="tt">guess_cov</span>). Also provide the actual values and a prior on the white noise included on top of the experimental measurements.</p>
 <div class="fragment"><div class="line">actual_cov = 0.02</div>
@@ -193,7 +191,7 @@ Define the variability in the synthetic data and for our initial guess at the pa
 <div class="line">prior_noise_scale = 10.0</div>
 <div class="line"> </div>
 <div class="line">guess_cov = 0.1  <span class="comment"># On the means of the priors</span></div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md222"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md225"></a>
 Setup the actual model</h1>
 <p>This class is a thin wrapper around the underlying <span class="tt">pyzag</span> wrapper for NEML2. All it does is take the input conditions (time, temperature, and strain), combine them into a single tensor, call the <span class="tt">pyzag</span> wrapper, and return the stress.</p>
 <div class="fragment"><div class="line"><span class="keyword">class </span>SolveStrain(torch.nn.Module):</div>
@@ -246,10 +244,10 @@ Setup the actual model</h1>
 <div class="line"> </div>
 <div class="line">        <span class="comment"># Setup</span></div>
 <div class="line">        forces = {</div>
-<div class="line">            <span class="stringliteral">&quot;forces/t&quot;</span>: <a class="code hl_class" href="classneml2_1_1Scalar.html">neml2.Scalar</a>(time.squeeze(-1), 0),</div>
-<div class="line">            <span class="stringliteral">&quot;forces/T&quot;</span>: <a class="code hl_class" href="classneml2_1_1Scalar.html">neml2.Scalar</a>(temperature.squeeze(-1), 0),</div>
-<div class="line">            <span class="stringliteral">&quot;forces/fixed_values&quot;</span>: <a class="code hl_class" href="classneml2_1_1SR2.html">neml2.SR2</a>(loading, 0),</div>
-<div class="line">            <span class="stringliteral">&quot;forces/control&quot;</span>: <a class="code hl_class" href="classneml2_1_1SR2.html">neml2.SR2</a>(control, 0),</div>
+<div class="line">            <span class="stringliteral">&quot;t&quot;</span>: <a class="code hl_class" href="classneml2_1_1Scalar.html">neml2.Scalar</a>(time.squeeze(-1), 0),</div>
+<div class="line">            <span class="stringliteral">&quot;temperature&quot;</span>: <a class="code hl_class" href="classneml2_1_1Scalar.html">neml2.Scalar</a>(temperature.squeeze(-1), 0),</div>
+<div class="line">            <span class="stringliteral">&quot;fixed_values&quot;</span>: <a class="code hl_class" href="classneml2_1_1SR2.html">neml2.SR2</a>(loading, 0),</div>
+<div class="line">            <span class="stringliteral">&quot;control&quot;</span>: <a class="code hl_class" href="classneml2_1_1SR2.html">neml2.SR2</a>(control, 0),</div>
 <div class="line">        }</div>
 <div class="line">        forces = [forces[key] <span class="keywordflow">for</span> key <span class="keywordflow">in</span> self.discrete_equations.fvars]</div>
 <div class="line">        forces = (</div>
@@ -272,7 +270,7 @@ Setup the actual model</h1>
 <div class="ttc" id="aclassneml2_1_1Scalar_html"><div class="ttname"><a href="classneml2_1_1Scalar.html">neml2::Scalar</a></div><div class="ttdoc">Scalar.</div><div class="ttdef"><b>Definition</b> Scalar.h:38</div></div>
 <div class="ttc" id="anamespacetorch_html"><div class="ttname"><a href="namespacetorch.html">torch</a></div><div class="ttdef"><b>Definition</b> TransientDriver.h:32</div></div>
 <div class="ttc" id="astructneml2_1_1SparseVector_html"><div class="ttname"><a href="structneml2_1_1SparseVector.html">neml2::SparseVector</a></div><div class="ttdoc">Sparse representation of a vector consisting of a list of tensors and their layout.</div><div class="ttdef"><b>Definition</b> SparseVector.h:36</div></div>
-</div><!-- fragment --><h2 class="doxsection"><a class="anchor" id="autotoc_md223"></a>
+</div><!-- fragment --><h2 class="doxsection"><a class="anchor" id="autotoc_md226"></a>
 Actually setup the model</h2>
 <p>Load the NEML model from disk, wrap it in both the <span class="tt">pyzag</span> wrapper and our thin wrapper class above. Exclude some of the model parameters we don't want to train.</p>
 <div class="fragment"><div class="line">nmodel = neml2.load_nonlinear_system(<span class="stringliteral">&quot;demo_model.i&quot;</span>, <span class="stringliteral">&quot;eq_sys&quot;</span>)</div>
@@ -290,7 +288,7 @@ Actually setup the model</h2>
 <div class="line">    ],</div>
 <div class="line">)</div>
 <div class="line">model = SolveStrain(pmodel)</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md224"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md227"></a>
 Create the input tendors</h1>
 <p>Actually setup the full input tensors based on the parameters above</p>
 <div class="fragment"><div class="line">time = torch.zeros((ntime, nrate, ntemperature), device=device)</div>
@@ -315,7 +313,7 @@ Create the input tendors</h1>
 <div class="line">single_temperatures = torch.full_like(single_times, single_temperature)</div>
 <div class="line">single_loading = torch.zeros((ntime, nrepeat, 6), device=device)</div>
 <div class="line">single_loading[..., 0] = torch.linspace(0, max_strain, ntime, device=device).unsqueeze(-1)</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md225"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md228"></a>
 Replace the model parameters with random values</h1>
 <p>Sampled from a normal distribution controlled by the <span class="tt">actual_cov</span> parameter.</p>
 <p>This controls the randomness in the input synthetic test data</p>
@@ -325,12 +323,12 @@ Replace the model parameters with random values</h1>
 <div class="line">    actual_parameter_values[n] = p.data.detach().clone().cpu()</div>
 <div class="line">    ndist = dist.Normal(p.data, torch.abs(p.data) * actual_cov).expand((nbatch,) + p.shape)</div>
 <div class="line">    p.data = ndist.sample().to(device)</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md226"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md229"></a>
 Run the model to generate the synthetic data</h1>
 <div class="fragment"><div class="line"><span class="keyword">with</span> torch.no_grad():</div>
 <div class="line">    data = model(time, temperature, loading)</div>
 <div class="line">    data = torch.normal(data, actual_noise_scale)</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md227"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md230"></a>
 Plot the synthetic data</h1>
 <div class="fragment"><div class="line">plt.figure()</div>
 <div class="line">plt.plot(loading.cpu()[..., 0], data[..., 0].cpu())</div>
@@ -342,7 +340,7 @@ Plot the synthetic data</h1>
 <img src="statistical_21_0.png" alt=""/>
 <div class="caption">
 png</div></div>
-    <h1 class="doxsection"><a class="anchor" id="autotoc_md228"></a>
+    <h1 class="doxsection"><a class="anchor" id="autotoc_md231"></a>
 Now sample at run at a fixed condition</h1>
 <p>The idea being to clearly see the variability in repeated trials at a fix condition.</p>
 <div class="fragment"><div class="line"><span class="comment"># Replace with samples from normal</span></div>
@@ -366,7 +364,7 @@ Now sample at run at a fixed condition</h1>
 <img src="statistical_23_0.png" alt=""/>
 <div class="caption">
 png</div></div>
-    <h1 class="doxsection"><a class="anchor" id="autotoc_md229"></a>
+    <h1 class="doxsection"><a class="anchor" id="autotoc_md232"></a>
 Setup the model for training</h1>
 <p>Replace the parameter values with random initial guesses, with variability controlled by the <span class="tt">guess_cov</span> parameter.</p>
 <div class="fragment"><div class="line"><span class="comment"># Now replace our original parameter with random values over a range</span></div>
@@ -377,7 +375,7 @@ Setup the model for training</h1>
 <div class="line">    ).to(device)</div>
 <div class="line">    guess_parameter_values[n] = p.data.detach().clone()</div>
 <div class="line">model.discrete_equations._update_parameter_values()</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md230"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md233"></a>
 Scale the model parameters</h1>
 <p>Our material model parameters have units. In general, the parameter values will have different magnitudes from each other, which affects the scale of the gradients. Unbalanced gradients in turn affect the convergence of gradient descent optimization methods.</p>
 <p>Typically we'd scale the training data to fix this problem. However, again our data has units and a physical meaning we want to preserve.</p>
@@ -412,14 +410,14 @@ Scale the model parameters</h1>
 <div class="line">    error_not_provided=<span class="keyword">True</span>,</div>
 <div class="line">)</div>
 <div class="line">model_reparameterizer(model)</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md231"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md234"></a>
 Convert the model to a hierarchical statistical model</h1>
 <p>We now convert the model from deterministic to a hierarchnical statistical model. We use the <span class="tt">pyzag</span> mapper functionality to convert the model with two levels. The top level statistics are common to the entire data set, i.e. all tests in the synthetic data, while the lower-level distributions provide statistics for each individual sample of material. Each parameter is converted to a prior with the initial mean value selected based on the (random) deterministic values assigned above. We also provide a prior on the level of white noise included in the experimental measurements.</p>
 <div class="fragment"><div class="line">mapper = stochastic.MapNormal(prior_cov)</div>
 <div class="line">hsmodel = stochastic.HierarchicalStatisticalModel(</div>
 <div class="line">    model, mapper, torch.tensor(prior_noise_scale, device=device)</div>
 <div class="line">)</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md232"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md235"></a>
 Sample the prior model to compare to the repeated test</h1>
 <p>This is just for visualization, to see how far away our prior model starts from the true distribution</p>
 <div class="fragment"><div class="line">nreps = 5</div>
@@ -468,7 +466,7 @@ Sample the prior model to compare to the repeated test</h1>
 <img src="statistical_32_0.png" alt=""/>
 <div class="caption">
 png</div></div>
-    <h2 class="doxsection"><a class="anchor" id="autotoc_md233"></a>
+    <h2 class="doxsection"><a class="anchor" id="autotoc_md236"></a>
 Setup a guide and training hyperparameters</h2>
 <p>Use <span class="tt">AutoDelta</span> to get a MAP estimate of the parameters.</p>
 <p>Setup the SVI problem and the usual sorts of training hyperparameters</p>
@@ -480,7 +478,7 @@ Setup a guide and training hyperparameters</h2>
 <div class="line">optimizer = pyro.optim.ClippedAdam({<span class="stringliteral">&quot;lr&quot;</span>: lr})</div>
 <div class="line">loss = Trace_ELBO(num_particles=num_samples)</div>
 <div class="line">svi = SVI(hsmodel, guide, optimizer, loss=loss)</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md234"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md237"></a>
 Run the training loop</h1>
 <div class="fragment"><div class="line">titer = tqdm.tqdm(</div>
 <div class="line">    range(niter),</div>
@@ -505,7 +503,7 @@ Run the training loop</h1>
 <img src="statistical_36_1.png" alt=""/>
 <div class="caption">
 png</div></div>
-    <h1 class="doxsection"><a class="anchor" id="autotoc_md235"></a>
+    <h1 class="doxsection"><a class="anchor" id="autotoc_md238"></a>
 Go back and sample our repeated case</h1>
 <div class="fragment"><div class="line">nreps = 5</div>
 <div class="line">predict = Predictive(hsmodel, guide=guide, num_samples=nreps)</div>
@@ -547,7 +545,7 @@ Go back and sample our repeated case</h1>
 <img src="statistical_39_0.png" alt=""/>
 <div class="caption">
 png</div></div>
-    <h1 class="doxsection"><a class="anchor" id="autotoc_md236"></a>
+    <h1 class="doxsection"><a class="anchor" id="autotoc_md239"></a>
 Compare priors, true posteriors, and inferred posteriors</h1>
 <div class="fragment"><div class="line"><span class="keywordflow">for</span> _, _, n <span class="keywordflow">in</span> hsmodel.bot:</div>
 <div class="line">    simple_name = <span class="stringliteral">&quot;.&quot;</span>.join([n.split(<span class="stringliteral">&quot;.&quot;</span>)[i] <span class="keywordflow">for</span> i <span class="keywordflow">in</span> [0, 2]])</div>

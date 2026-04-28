@@ -134,17 +134,17 @@ $(function(){initNavTree('system-solvers.html','',''); });
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md86">Nonlinear solver </a>
+    <a href="#autotoc_md87">Nonlinear solver </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md87">Nonlinear system </a>
+    <a href="#autotoc_md88">Nonlinear system </a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_build_2doc_2content_2system_2solver"></a></p>
 <p>Refer to <a class="el" href="syntax-solvers.html" title="[Solvers]">Syntax Documentation</a> for the list of available objects.</p>
 <p>Many material models are <em>implicit</em>, meaning that the update of the material model is the solution to one or more nonlinear systems of equations. While a model or a composition of models can define such nonlinear system, a solver is required to actually <em>solve</em> the system.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md86"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md87"></a>
 Nonlinear solver</h1>
 <p>All nonlinear solvers derive from the common base class <span class="tt">NonlinearSolver</span>. The base class defines 3 public members: <span class="tt">atol</span> for the absolute tolerance, <span class="tt">rtol</span> for the relative tolerance, and <span class="tt">miters</span> for the maximum number of iterations.</p>
 <p>Derived classes must override the method </p><div class="fragment"><div class="line">NonlinearSolver::Result solve(NonlinearSystem &amp; system)</div>
@@ -156,7 +156,7 @@ Nonlinear solver</h1>
 <div class="line">  <span class="keywordflow">return</span> at::all(at::logical_or(nR &lt; atol, nR / nR0 &lt; rtol)).item&lt;<span class="keywordtype">bool</span>&gt;();</div>
 <div class="line">}</div>
 </div><!-- fragment --><p> where <span class="tt">nR</span> is the vector norm of the current residual, and <span class="tt">nR0</span> is the vector norm of the initial residual (evaluated at the initial guess). The above statement makes sure the current residual is either below the absolute tolerance or has been sufficiently reduced, and the condition is applied to <em>all</em> batches of the residual norm.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md87"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md88"></a>
 Nonlinear system</h1>
 <p>The first argument passed to the <span class="tt">NonlinearSolver::solve</span> method is of type <span class="tt">NonlinearSystem &amp;</span>. Nonlinear systems are defined under the <span class="tt">EquationSystems</span> section in input files. NEML2 provides <span class="tt">ModelNonlinearSystem</span> (use <span class="tt">type = NonlinearSystem</span>) to wrap a <span class="tt">Model</span> as a nonlinear system. The wrapped model must satisfy the following requirements:</p><ol type="1">
 <li>The input axis must have a sub-axis named "state".</li>

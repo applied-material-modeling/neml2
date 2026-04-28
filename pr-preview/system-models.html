@@ -161,11 +161,6 @@ $(function(){initNavTree('system-models.html','',''); });
   </li>
   <li class="level1">
     <a href="#model-assembly">Model assembly </a>
-    <ul>
-      <li class="level2">
-        <a href="#axis-labeling">Axis labeling </a>
-      </li>
-    </ul>
   </li>
 </ul>
 </div>
@@ -285,35 +280,7 @@ Automatic differentiation</h1>
 <p>Since a composed model uses chain rule to efficiently evaluate the total derivatives, automatic differentiation is disabled for <span class="tt">ComposedModel</span>. However, each of the child model can still use AD to calculate the <em>partial</em> derivatives of its own forward operator. Moreover, AD and non-AD models can be composed together.</p>
 <h1 class="doxsection"><a class="anchor" id="model-assembly"></a>
 Model assembly</h1>
-<p>NEML2 stores each variable in contiguous memory, but does not guarantee contiguity across variables. This choice is made to allow for asynchronous evaluation (with the help of lazy tensors) and to reduce memory consumption (since variables can have different number of batch shapes). However, this choice is not ideal for a family of nonlinear material models whose constitutive updates require solving one (or more) implicit system of equations. To address such issue, NEML2 implements semi-contiguous variable and derivative containers in neml2::HVector and neml2::HMatrix. These containers store discontiguous tensor values in sparse, contiguous sequences. Please refer to the corresponding Doxygen documentation for implementation details. In the regular model development process, there is typically no need to directly interact with these internal containers.</p>
-<h2 class="doxsection"><a class="anchor" id="axis-labeling"></a>
-Axis labeling</h2>
-<p>NEML2 provides a data structure named <a class="el" href="classneml2_1_1LabeledAxis.html" title="LabeledAxis">LabeledAxis</a> to create a contiguous layout for scattered input/output variables. Typically, each model contains an input axis for input variables and an output axis for output variables.</p>
-<p>The <a class="el" href="classneml2_1_1LabeledAxis.html" title="LabeledAxis">LabeledAxis</a> contains all information regarding how the variables of interest should be contiguously laid out. In other words, the labeled axis maintains the mapping between variables and their contiguous slice along an axis. The following naming convention is used:</p><ul>
-<li>Item: A labelable slice of data</li>
-<li>Variable: An item that is also of a <a class="el" href="system-tensors.html#tensor-types" title="Tensor types">NEML2 primitive tensor type</a></li>
-<li>Sub-axis: An item of type <span class="tt">LabeledAxis</span></li>
-</ul>
-<p>An axis can be labeled recursively, e.g.,</p>
-<div class="fragment"><div class="line">     0 1 2 3 4 5     6     7 8 9 10 11 12   13   14</div>
-<div class="line">/// |-----------| |-----| |              | |  | |  |</div>
-<div class="line">///       a          b    |              | |  | |  |</div>
-<div class="line">/// |-------------------| |--------------| |--| |--|</div>
-<div class="line">///          sub                  a          b    c</div>
-</div><!-- fragment --><p> The above example represents an axis of size 15. This axis has 4 items: <span class="tt">a</span>, <span class="tt">b</span>, <span class="tt">c</span>, and <span class="tt">sub</span>.</p><ul>
-<li>"a" is a variable of storage size 6 (possibly of type <span class="tt">SR2</span>).</li>
-<li>"b" is a variable of type <span class="tt">Scalar</span>.</li>
-<li>"c" is a variable of type <span class="tt">Scalar</span>.</li>
-<li>"sub" is a sub-axis of type <span class="tt">LabeledAxis</span>. "sub" by itself represents an axis of size 7, containing 2 items:<ul>
-<li>"a" is a variable of storage size 6.</li>
-<li>"b" is a variable of type <span class="tt">Scalar</span>.</li>
-</ul>
-</li>
-</ul>
-<p>Duplicate labels are <em>not</em> allowed on the same level of the axis, e.g. "a", "b", "c", and "sub" share the same level and so must be different. However, items on different levels of an axis can share the same label, e.g., "a" on the sub-axis "sub" has the same label as "a" on the main axis. In NEML2 convention, item names are always fully qualified, and a sub-axis is prefixed with a left slash, e.g. item "b" on the sub-axis "sub" can be denoted as "sub/b" on the main axis.</p>
-<dl class="section note"><dt>Note</dt><dd>A label cannot contain: white spaces, quotes, left slash (<span class="tt">/</span>), or new line.</dd></dl>
-<p>Due to performance considerations, a <span class="tt">LabeledAxis</span> can only be modified, e.g., adding/removing variables and sub-axis, at the time a model is constructed. After the model construction phase, the <span class="tt">LabeledAxis</span> associated with that model can no longer be modified over the entire course of the simulation.</p>
-<p>Refer to the documentation for a complete list of APIs for creating and modifying a <a class="el" href="classneml2_1_1LabeledAxis.html" title="LabeledAxis">LabeledAxis</a>. </p>
+<p>NEML2 stores each variable in contiguous memory, but does not guarantee contiguity across variables. This choice is made to allow for asynchronous evaluation (with the help of lazy tensors) and to reduce memory consumption (since variables can have different number of batch shapes). However, this choice is not ideal for a family of nonlinear material models whose constitutive updates require solving one (or more) implicit system of equations. To address such issue, NEML2 implements semi-contiguous variable and derivative containers in <a class="el" href="structneml2_1_1SparseVector.html" title="Sparse representation of a vector consisting of a list of tensors and their layout.">neml2::SparseVector</a> and <a class="el" href="structneml2_1_1SparseMatrix.html" title="Sparse representation of a matrix consisting of a 2D-list of tensors and their layout.">neml2::SparseMatrix</a>. These containers store discontiguous tensor values in sparse, contiguous sequences. They can be respectively assembled into <a class="el" href="structneml2_1_1AssembledVector.html" title="Dense representation of a tensor assembled from a list of tensors and their layout.">neml2::AssembledVector</a> and <a class="el" href="structneml2_1_1AssembledMatrix.html" title="Dense representation of a matrix assembled from a 2D-list of tensors and their layout.">neml2::AssembledMatrix</a> for linear algebra routines. Please refer to the corresponding documentation for implementation details. In the regular model development process, there is typically no need to directly interact with these internal containers. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2026-04-24 15:34:55</td>
+            <td class="headerValue">2026-04-28 19:32:22</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">80.0&nbsp;%</td>
@@ -97,24 +97,24 @@
 <span id="L35"><span class="lineNum">      35</span>              : namespace neml2</span>
 <span id="L36"><span class="lineNum">      36</span>              : {</span>
 <span id="L37"><span class="lineNum">      37</span>              : </span>
-<span id="L38"><span class="lineNum">      38</span> <span class="tlaGNC tlaBgGNC">         862 : AssembledMatrix::AssembledMatrix(AxisLayout rl, AxisLayout cl)</span></span>
-<span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">        2586 :   : tensors(rl.ngroup(), std::vector&lt;Tensor&gt;(cl.ngroup())),</span></span>
-<span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC">         862 :     row_layout(std::move(rl)),</span></span>
-<span id="L41"><span class="lineNum">      41</span> <span class="tlaGNC">         862 :     col_layout(std::move(cl))</span></span>
+<span id="L38"><span class="lineNum">      38</span> <span class="tlaGNC tlaBgGNC">         730 : AssembledMatrix::AssembledMatrix(AxisLayout rl, AxisLayout cl)</span></span>
+<span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">        2190 :   : tensors(rl.ngroup(), std::vector&lt;Tensor&gt;(cl.ngroup())),</span></span>
+<span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC">         730 :     row_layout(std::move(rl)),</span></span>
+<span id="L41"><span class="lineNum">      41</span> <span class="tlaGNC">         730 :     col_layout(std::move(cl))</span></span>
 <span id="L42"><span class="lineNum">      42</span>              : {</span>
-<span id="L43"><span class="lineNum">      43</span> <span class="tlaGNC">         862 : }</span></span>
+<span id="L43"><span class="lineNum">      43</span> <span class="tlaGNC">         730 : }</span></span>
 <span id="L44"><span class="lineNum">      44</span>              : </span>
-<span id="L45"><span class="lineNum">      45</span> <span class="tlaGNC">        1801 : AssembledMatrix::AssembledMatrix(AxisLayout rl, AxisLayout cl, std::vector&lt;std::vector&lt;Tensor&gt;&gt; ts)</span></span>
-<span id="L46"><span class="lineNum">      46</span> <span class="tlaGNC">        1801 :   : tensors(std::move(ts)),</span></span>
-<span id="L47"><span class="lineNum">      47</span> <span class="tlaGNC">        1801 :     row_layout(std::move(rl)),</span></span>
-<span id="L48"><span class="lineNum">      48</span> <span class="tlaGNC">        1801 :     col_layout(std::move(cl))</span></span>
+<span id="L45"><span class="lineNum">      45</span> <span class="tlaGNC">        1669 : AssembledMatrix::AssembledMatrix(AxisLayout rl, AxisLayout cl, std::vector&lt;std::vector&lt;Tensor&gt;&gt; ts)</span></span>
+<span id="L46"><span class="lineNum">      46</span> <span class="tlaGNC">        1669 :   : tensors(std::move(ts)),</span></span>
+<span id="L47"><span class="lineNum">      47</span> <span class="tlaGNC">        1669 :     row_layout(std::move(rl)),</span></span>
+<span id="L48"><span class="lineNum">      48</span> <span class="tlaGNC">        1669 :     col_layout(std::move(cl))</span></span>
 <span id="L49"><span class="lineNum">      49</span>              : {</span>
-<span id="L50"><span class="lineNum">      50</span> <span class="tlaGNC">        1801 :   neml_assert_dbg(tensors.size() == row_layout.ngroup(),</span></span>
+<span id="L50"><span class="lineNum">      50</span> <span class="tlaGNC">        1669 :   neml_assert_dbg(tensors.size() == row_layout.ngroup(),</span></span>
 <span id="L51"><span class="lineNum">      51</span>              :                   &quot;Number of matrix rows does not match row layout group size&quot;);</span>
-<span id="L52"><span class="lineNum">      52</span> <span class="tlaGNC">        3726 :   for (std::size_t i = 0; i &lt; row_layout.ngroup(); ++i)</span></span>
-<span id="L53"><span class="lineNum">      53</span> <span class="tlaGNC">        1925 :     neml_assert_dbg(tensors[i].size() == col_layout.ngroup(),</span></span>
+<span id="L52"><span class="lineNum">      52</span> <span class="tlaGNC">        3462 :   for (std::size_t i = 0; i &lt; row_layout.ngroup(); ++i)</span></span>
+<span id="L53"><span class="lineNum">      53</span> <span class="tlaGNC">        1793 :     neml_assert_dbg(tensors[i].size() == col_layout.ngroup(),</span></span>
 <span id="L54"><span class="lineNum">      54</span>              :                     &quot;Number of matrix columns does not match column layout group size&quot;);</span>
-<span id="L55"><span class="lineNum">      55</span> <span class="tlaGNC">        1801 : }</span></span>
+<span id="L55"><span class="lineNum">      55</span> <span class="tlaGNC">        1669 : }</span></span>
 <span id="L56"><span class="lineNum">      56</span>              : </span>
 <span id="L57"><span class="lineNum">      57</span>              : TensorOptions</span>
 <span id="L58"><span class="lineNum">      58</span> <span class="tlaUNC tlaBgUNC">           0 : AssembledMatrix::options() const</span></span>

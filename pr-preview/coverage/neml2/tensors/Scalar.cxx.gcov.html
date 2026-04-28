@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2026-04-24 15:34:55</td>
+            <td class="headerValue">2026-04-28 19:32:22</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -89,14 +89,14 @@
 <span id="L27"><span class="lineNum">      27</span>              : </span>
 <span id="L28"><span class="lineNum">      28</span>              : namespace neml2</span>
 <span id="L29"><span class="lineNum">      29</span>              : {</span>
-<span id="L30"><span class="lineNum">      30</span> <span class="tlaGNC tlaBgGNC">         948 : Scalar::Scalar(const CScalar &amp; init, const TensorOptions &amp; options)</span></span>
-<span id="L31"><span class="lineNum">      31</span> <span class="tlaGNC">         948 :   : Scalar(at::scalar_tensor(init, options), 0)</span></span>
+<span id="L30"><span class="lineNum">      30</span> <span class="tlaGNC tlaBgGNC">         909 : Scalar::Scalar(const CScalar &amp; init, const TensorOptions &amp; options)</span></span>
+<span id="L31"><span class="lineNum">      31</span> <span class="tlaGNC">         909 :   : Scalar(at::scalar_tensor(init, options), 0)</span></span>
 <span id="L32"><span class="lineNum">      32</span>              : {</span>
-<span id="L33"><span class="lineNum">      33</span> <span class="tlaGNC">         948 :   neml_assert_dbg(</span></span>
+<span id="L33"><span class="lineNum">      33</span> <span class="tlaGNC">         909 :   neml_assert_dbg(</span></span>
 <span id="L34"><span class="lineNum">      34</span>              :       !options.requires_grad(),</span>
 <span id="L35"><span class="lineNum">      35</span>              :       &quot;When creating a Scalar from a constant, requires_grad must be false. If you are &quot;</span>
 <span id="L36"><span class="lineNum">      36</span>              :       &quot;trying to create a Scalar as a leaf variable, use Scalar::create or Scalar::full.&quot;);</span>
-<span id="L37"><span class="lineNum">      37</span> <span class="tlaGNC">         948 : }</span></span>
+<span id="L37"><span class="lineNum">      37</span> <span class="tlaGNC">         909 : }</span></span>
 <span id="L38"><span class="lineNum">      38</span>              : } // namespace neml2</span>
         </pre>
               </td>

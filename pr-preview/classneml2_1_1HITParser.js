@@ -6,6 +6,5 @@ var classneml2_1_1HITParser =
     [ "~HITParser", "classneml2_1_1HITParser.html#a0553d4dd18d956da476705f64e14df33", null ],
     [ "operator=", "classneml2_1_1HITParser.html#a2865adf9de0d53eb7bfa1899e948b8c0", null ],
     [ "operator=", "classneml2_1_1HITParser.html#aed9dbf9a4289de55a75b6484f5e6f31d", null ],
-    [ "parse", "classneml2_1_1HITParser.html#a4b11ea9c93525db285e41e7bd0680b1c", null ],
-    [ "parse", "classneml2_1_1HITParser.html#adeff45cdeab80a331a2ccc0a7ecdd276", null ]
+    [ "parse", "classneml2_1_1HITParser.html#a4b11ea9c93525db285e41e7bd0680b1c", null ]
 ];

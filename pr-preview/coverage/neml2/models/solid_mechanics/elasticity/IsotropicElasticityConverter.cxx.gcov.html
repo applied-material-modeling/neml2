@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2026-04-24 15:34:55</td>
+            <td class="headerValue">2026-04-28 19:32:22</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -118,30 +118,30 @@
 <span id="L56"><span class="lineNum">      56</span> <span class="tlaGNC">          60 : }</span></span>
 <span id="L57"><span class="lineNum">      57</span>              : </span>
 <span id="L58"><span class="lineNum">      58</span>              : IsotropicElasticityConverter::ConversionType</span>
-<span id="L59"><span class="lineNum">      59</span> <span class="tlaGNC">          54 : IsotropicElasticityConverter::E_nu_to_K(const InputType &amp; input, const DerivativeFlagType &amp; deriv)</span></span>
+<span id="L59"><span class="lineNum">      59</span> <span class="tlaGNC">          35 : IsotropicElasticityConverter::E_nu_to_K(const InputType &amp; input, const DerivativeFlagType &amp; deriv)</span></span>
 <span id="L60"><span class="lineNum">      60</span>              : {</span>
-<span id="L61"><span class="lineNum">      61</span> <span class="tlaGNC">          54 :   const auto &amp; E = input[0];</span></span>
-<span id="L62"><span class="lineNum">      62</span> <span class="tlaGNC">          54 :   const auto &amp; nu = input[1];</span></span>
+<span id="L61"><span class="lineNum">      61</span> <span class="tlaGNC">          35 :   const auto &amp; E = input[0];</span></span>
+<span id="L62"><span class="lineNum">      62</span> <span class="tlaGNC">          35 :   const auto &amp; nu = input[1];</span></span>
 <span id="L63"><span class="lineNum">      63</span>              : </span>
-<span id="L64"><span class="lineNum">      64</span> <span class="tlaGNC">          54 :   const auto K = E / 3 / (1 - 2 * nu);</span></span>
-<span id="L65"><span class="lineNum">      65</span> <span class="tlaGNC">          54 :   const auto dK_dE = deriv[0] ? K / E : Scalar();</span></span>
-<span id="L66"><span class="lineNum">      66</span> <span class="tlaGNC">          54 :   const auto dK_dnu = deriv[1] ? 6 * K * K / E : Scalar();</span></span>
+<span id="L64"><span class="lineNum">      64</span> <span class="tlaGNC">          35 :   const auto K = E / 3 / (1 - 2 * nu);</span></span>
+<span id="L65"><span class="lineNum">      65</span> <span class="tlaGNC">          35 :   const auto dK_dE = deriv[0] ? K / E : Scalar();</span></span>
+<span id="L66"><span class="lineNum">      66</span> <span class="tlaGNC">          35 :   const auto dK_dnu = deriv[1] ? 6 * K * K / E : Scalar();</span></span>
 <span id="L67"><span class="lineNum">      67</span>              : </span>
-<span id="L68"><span class="lineNum">      68</span> <span class="tlaGNC">         108 :   return {K, {dK_dE, dK_dnu}};</span></span>
-<span id="L69"><span class="lineNum">      69</span> <span class="tlaGNC">         108 : }</span></span>
+<span id="L68"><span class="lineNum">      68</span> <span class="tlaGNC">          70 :   return {K, {dK_dE, dK_dnu}};</span></span>
+<span id="L69"><span class="lineNum">      69</span> <span class="tlaGNC">          70 : }</span></span>
 <span id="L70"><span class="lineNum">      70</span>              : </span>
 <span id="L71"><span class="lineNum">      71</span>              : IsotropicElasticityConverter::ConversionType</span>
-<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC">          56 : IsotropicElasticityConverter::E_nu_to_G(const InputType &amp; input, const DerivativeFlagType &amp; deriv)</span></span>
+<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC">          37 : IsotropicElasticityConverter::E_nu_to_G(const InputType &amp; input, const DerivativeFlagType &amp; deriv)</span></span>
 <span id="L73"><span class="lineNum">      73</span>              : {</span>
-<span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">          56 :   const auto &amp; E = input[0];</span></span>
-<span id="L75"><span class="lineNum">      75</span> <span class="tlaGNC">          56 :   const auto &amp; nu = input[1];</span></span>
+<span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">          37 :   const auto &amp; E = input[0];</span></span>
+<span id="L75"><span class="lineNum">      75</span> <span class="tlaGNC">          37 :   const auto &amp; nu = input[1];</span></span>
 <span id="L76"><span class="lineNum">      76</span>              : </span>
-<span id="L77"><span class="lineNum">      77</span> <span class="tlaGNC">          56 :   const auto G = E / (2 * (1 + nu));</span></span>
-<span id="L78"><span class="lineNum">      78</span> <span class="tlaGNC">          56 :   const auto dG_dE = deriv[0] ? G / E : Scalar();</span></span>
-<span id="L79"><span class="lineNum">      79</span> <span class="tlaGNC">          56 :   const auto dG_dnu = deriv[1] ? -G / (1 + nu) : Scalar();</span></span>
+<span id="L77"><span class="lineNum">      77</span> <span class="tlaGNC">          37 :   const auto G = E / (2 * (1 + nu));</span></span>
+<span id="L78"><span class="lineNum">      78</span> <span class="tlaGNC">          37 :   const auto dG_dE = deriv[0] ? G / E : Scalar();</span></span>
+<span id="L79"><span class="lineNum">      79</span> <span class="tlaGNC">          37 :   const auto dG_dnu = deriv[1] ? -G / (1 + nu) : Scalar();</span></span>
 <span id="L80"><span class="lineNum">      80</span>              : </span>
-<span id="L81"><span class="lineNum">      81</span> <span class="tlaGNC">         112 :   return {G, {dG_dE, dG_dnu}};</span></span>
-<span id="L82"><span class="lineNum">      82</span> <span class="tlaGNC">         112 : }</span></span>
+<span id="L81"><span class="lineNum">      81</span> <span class="tlaGNC">          74 :   return {G, {dG_dE, dG_dnu}};</span></span>
+<span id="L82"><span class="lineNum">      82</span> <span class="tlaGNC">          74 : }</span></span>
 <span id="L83"><span class="lineNum">      83</span>              : </span>
 <span id="L84"><span class="lineNum">      84</span>              : } // namespace neml2</span>
         </pre>

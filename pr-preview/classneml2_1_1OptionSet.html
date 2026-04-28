@@ -130,7 +130,9 @@ $(function(){initNavTree('classneml2_1_1OptionSet.html','','classneml2_1_1Option
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="classneml2_1_1OptionSet-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">OptionSet Class Reference</div></div>
 </div><!--header-->
@@ -146,6 +148,15 @@ $(function(){initNavTree('classneml2_1_1OptionSet.html','','classneml2_1_1Option
 <tr class="heading"><td colspan="2"><h2 id="header-nested-classes" class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:Metadata" id="r_Metadata"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structneml2_1_1OptionSet_1_1Metadata.html">Metadata</a></td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-pub-types" class="groupheader"><a id="pub-types" name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a7ba45a0deb7ed53d4fe528f09773c6f9" id="r_a7ba45a0deb7ed53d4fe528f09773c6f9"><td class="memItemLeft">using&#160;</td><td class="memItemRight"><a class="el" href="#a7ba45a0deb7ed53d4fe528f09773c6f9">map_type</a> = std::map&lt;std::string, std::unique_ptr&lt;<a class="el" href="classneml2_1_1OptionBase.html">OptionBase</a>&gt;, std::less&lt;&gt;&gt;</td></tr>
+<tr class="memdesc:a7ba45a0deb7ed53d4fe528f09773c6f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">The type of the map that we store internally.  <br /></td></tr>
+<tr class="memitem:a028b78fa2fe8cb2bc7140d017ac19245" id="r_a028b78fa2fe8cb2bc7140d017ac19245"><td class="memItemLeft">using&#160;</td><td class="memItemRight"><a class="el" href="#a028b78fa2fe8cb2bc7140d017ac19245">iterator</a> = map_type::iterator</td></tr>
+<tr class="memdesc:a028b78fa2fe8cb2bc7140d017ac19245"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classneml2_1_1Option.html">Option</a> map iterator.  <br /></td></tr>
+<tr class="memitem:a78244f2d5532b183199824064dde36ce" id="r_a78244f2d5532b183199824064dde36ce"><td class="memItemLeft">using&#160;</td><td class="memItemRight"><a class="el" href="#a78244f2d5532b183199824064dde36ce">const_iterator</a> = map_type::const_iterator</td></tr>
+<tr class="memdesc:a78244f2d5532b183199824064dde36ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constant option map iterator.  <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -177,6 +188,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:ada54d880aaa4413ba670eebaf3a4667b"><td class="mdescLeft">&#160;</td><td class="mdescRight">A writable reference to the option set's section.  <br /></td></tr>
 <tr class="memitem:adf8549346580e1da32a26f913e264abc" id="r_adf8549346580e1da32a26f913e264abc"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#adf8549346580e1da32a26f913e264abc">contains</a> (const std::string &amp;) const</td></tr>
 <tr class="memitem:abcfa1971365153e2c3dcbb67418e302c" id="r_abcfa1971365153e2c3dcbb67418e302c"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#abcfa1971365153e2c3dcbb67418e302c">user_specified</a> (const std::string &amp;<a class="el" href="#a24dcbf29c0d6cd766009a182a6484e3b">name</a>) const</td></tr>
+<tr class="memitem:a6d08a46b2827b4a4bb635e1611e22863" id="r_a6d08a46b2827b4a4bb635e1611e22863"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a6d08a46b2827b4a4bb635e1611e22863">defined</a> (const std::string &amp;<a class="el" href="#a24dcbf29c0d6cd766009a182a6484e3b">name</a>) const</td></tr>
+<tr class="memitem:a9a1d2634b138ebc495bb66c8600b68c8" id="r_a9a1d2634b138ebc495bb66c8600b68c8"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a9a1d2634b138ebc495bb66c8600b68c8">suppress</a> (const std::string &amp;<a class="el" href="#a24dcbf29c0d6cd766009a182a6484e3b">name</a>)</td></tr>
+<tr class="memdesc:a9a1d2634b138ebc495bb66c8600b68c8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Suppress an option.  <br /></td></tr>
 <tr class="memitem:ade1601ccf1fa3bcf050867f0852ca4e5" id="r_ade1601ccf1fa3bcf050867f0852ca4e5"><td class="memItemLeft">std::size_t&#160;</td><td class="memItemRight"><a class="el" href="#ade1601ccf1fa3bcf050867f0852ca4e5">size</a> () const</td></tr>
 <tr class="memitem:ac8bb3912a3ce86b15842e79d0b421204" id="r_ac8bb3912a3ce86b15842e79d0b421204"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ac8bb3912a3ce86b15842e79d0b421204">clear</a> ()</td></tr>
 <tr class="memdesc:ac8bb3912a3ce86b15842e79d0b421204"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clear internal data structures &amp; frees any allocated memory.  <br /></td></tr>
@@ -188,35 +202,25 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a8d539aebcbe1c92120aba8caf0c954bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a const reference to the specified option value.  <br /></td></tr>
 <tr class="memitem:a18fa0385a22be9ded5fca7ebd733c454" id="r_a18fa0385a22be9ded5fca7ebd733c454"><td class="memTemplParams" colspan="2">template&lt;typename K, typename V&gt; </td></tr>
 <tr class="memitem:a18fa0385a22be9ded5fca7ebd733c454 template"><td class="memItemLeft">std::map&lt; K, V &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a18fa0385a22be9ded5fca7ebd733c454">get_map</a> (const std::string &amp;, const std::string &amp;) const</td></tr>
-<tr class="memdesc:a18fa0385a22be9ded5fca7ebd733c454"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get two options and bind them to find a map.  <br /></td></tr>
-<tr id="pub-methods-0" class="groupHeader"><td colspan="2"><div class="groupHeader"></div></td></tr>
-<tr class="memitem:abf66b5d5efcdc0d044a2b719d8c2b574" id="r_abf66b5d5efcdc0d044a2b719d8c2b574"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#abf66b5d5efcdc0d044a2b719d8c2b574">operator+=</a> (const <a class="el" href="#a2b62c41884e5037879ab543da76c1f62">OptionSet</a> &amp;source)</td></tr>
-<tr class="memitem:ac7c769d376def9b64c8f204c19b015a6" id="r_ac7c769d376def9b64c8f204c19b015a6"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ac7c769d376def9b64c8f204c19b015a6">operator+=</a> (<a class="el" href="#a2b62c41884e5037879ab543da76c1f62">OptionSet</a> &amp;&amp;source)</td></tr>
-<tr id="pub-methods-1" class="groupHeader"><td colspan="2"><div class="groupHeader"></div></td></tr>
-<tr class="memitem:ae684692ef2eb93221318a3691be5d86f" id="r_ae684692ef2eb93221318a3691be5d86f"><td class="memTemplParams" colspan="2">template&lt;typename T, <a class="el" href="namespaceneml2.html#ab600865ffa5d3681d723ef019d109535">FType</a> f = FType::NONE&gt; </td></tr>
-<tr class="memitem:ae684692ef2eb93221318a3691be5d86f template"><td class="memItemLeft">T &amp;&#160;</td><td class="memItemRight"><a class="el" href="#ae684692ef2eb93221318a3691be5d86f">set</a> (const std::string &amp;)</td></tr>
-<tr class="memitem:a4efab3e8fee40211c6e9034cc23b64eb" id="r_a4efab3e8fee40211c6e9034cc23b64eb"><td class="memItemLeft"><a class="el" href="classneml2_1_1OptionBase.html">OptionBase</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a4efab3e8fee40211c6e9034cc23b64eb">set</a> (const std::string &amp;)</td></tr>
-<tr id="pub-methods-2" class="groupHeader"><td colspan="2"><div class="groupHeader">Convenient methods to request an input variable</div></td></tr>
-<tr class="memitem:a889bc1d4053ec1497d5dec239b30467d" id="r_a889bc1d4053ec1497d5dec239b30467d"><td class="memItemLeft"><a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a889bc1d4053ec1497d5dec239b30467d">set_input</a> (const std::string &amp;)</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-member-group" class="groupheader"><a id="member-group" name="member-group"></a>
-Convenient methods to request an output variable</h2></td></tr>
-<tr class="memitem:a7ba45a0deb7ed53d4fe528f09773c6f9" id="r_a7ba45a0deb7ed53d4fe528f09773c6f9"><td class="memItemLeft">using&#160;</td><td class="memItemRight"><a class="el" href="#a7ba45a0deb7ed53d4fe528f09773c6f9">map_type</a> = std::map&lt;std::string, std::unique_ptr&lt;<a class="el" href="classneml2_1_1OptionBase.html">OptionBase</a>&gt;, std::less&lt;&gt;&gt;</td></tr>
-<tr class="memdesc:a7ba45a0deb7ed53d4fe528f09773c6f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">The type of the map that we store internally.  <br /></td></tr>
-<tr class="memitem:a028b78fa2fe8cb2bc7140d017ac19245" id="r_a028b78fa2fe8cb2bc7140d017ac19245"><td class="memItemLeft">using&#160;</td><td class="memItemRight"><a class="el" href="#a028b78fa2fe8cb2bc7140d017ac19245">iterator</a> = map_type::iterator</td></tr>
-<tr class="memdesc:a028b78fa2fe8cb2bc7140d017ac19245"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classneml2_1_1Option.html">Option</a> map iterator.  <br /></td></tr>
-<tr class="memitem:a78244f2d5532b183199824064dde36ce" id="r_a78244f2d5532b183199824064dde36ce"><td class="memItemLeft">using&#160;</td><td class="memItemRight"><a class="el" href="#a78244f2d5532b183199824064dde36ce">const_iterator</a> = map_type::const_iterator</td></tr>
-<tr class="memdesc:a78244f2d5532b183199824064dde36ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constant option map iterator.  <br /></td></tr>
-<tr class="memitem:ac7e7050b19c1a64b6fd31d0dda2f70bc" id="r_ac7e7050b19c1a64b6fd31d0dda2f70bc"><td class="memItemLeft">struct <a class="el" href="structneml2_1_1OptionSet_1_1Metadata.html">neml2::OptionSet::Metadata</a>&#160;</td><td class="memItemRight"><a class="el" href="#ac7e7050b19c1a64b6fd31d0dda2f70bc">_metadata</a></td></tr>
-<tr class="memitem:a037220bd48c34722e66bc0ed458e28af" id="r_a037220bd48c34722e66bc0ed458e28af"><td class="memItemLeft"><a class="el" href="#a7ba45a0deb7ed53d4fe528f09773c6f9">map_type</a>&#160;</td><td class="memItemRight"><a class="el" href="#a037220bd48c34722e66bc0ed458e28af">_values</a></td></tr>
-<tr class="memdesc:a037220bd48c34722e66bc0ed458e28af"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classneml2_1_1Data.html">Data</a> structure to map names with values.  <br /></td></tr>
-<tr class="memitem:a693ecff21e01db0f9239e23d346a596a" id="r_a693ecff21e01db0f9239e23d346a596a"><td class="memItemLeft"><a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a693ecff21e01db0f9239e23d346a596a">set_output</a> (const std::string &amp;)</td></tr>
-<tr class="memitem:aa06a67ba2f5a8439a0cd7e830e79488c" id="r_aa06a67ba2f5a8439a0cd7e830e79488c"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
-<tr class="memitem:aa06a67ba2f5a8439a0cd7e830e79488c template"><td class="memItemLeft">T &amp;&#160;</td><td class="memItemRight"><a class="el" href="#aa06a67ba2f5a8439a0cd7e830e79488c">set_parameter</a> (const std::string &amp;)</td></tr>
-<tr class="memdesc:aa06a67ba2f5a8439a0cd7e830e79488c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convenient method to request a parameter.  <br /></td></tr>
-<tr class="memitem:a1ac544a6dcc1d2866b30732975c9a577" id="r_a1ac544a6dcc1d2866b30732975c9a577"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
-<tr class="memitem:a1ac544a6dcc1d2866b30732975c9a577 template"><td class="memItemLeft">T &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a1ac544a6dcc1d2866b30732975c9a577">set_buffer</a> (const std::string &amp;)</td></tr>
-<tr class="memdesc:a1ac544a6dcc1d2866b30732975c9a577"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convenient method to request a buffer.  <br /></td></tr>
+<tr class="memdesc:a18fa0385a22be9ded5fca7ebd733c454"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get two options and bind them to form a map.  <br /></td></tr>
+<tr class="memitem:ad9fb5b1c90208e8d6b3ef84a79467741" id="r_ad9fb5b1c90208e8d6b3ef84a79467741"><td class="memTemplParams" colspan="2">template&lt;typename T, <a class="el" href="namespaceneml2.html#ab600865ffa5d3681d723ef019d109535">FType</a> f = FType::NONE&gt; </td></tr>
+<tr class="memitem:ad9fb5b1c90208e8d6b3ef84a79467741 template"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ad9fb5b1c90208e8d6b3ef84a79467741">add</a> (const std::string &amp;<a class="el" href="#a24dcbf29c0d6cd766009a182a6484e3b">name</a>, const T &amp;default_value, std::string <a class="el" href="#a95ddf7f84b4944b035c3f05fab305f99">doc</a>)</td></tr>
+<tr class="memdesc:ad9fb5b1c90208e8d6b3ef84a79467741"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create an option with its default value and its docstring.  <br /></td></tr>
+<tr class="memitem:aa4bea47972375e864e419dee238d2f93" id="r_aa4bea47972375e864e419dee238d2f93"><td class="memTemplParams" colspan="2">template&lt;typename T, <a class="el" href="namespaceneml2.html#ab600865ffa5d3681d723ef019d109535">FType</a> f = FType::NONE&gt; </td></tr>
+<tr class="memitem:aa4bea47972375e864e419dee238d2f93 template"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#aa4bea47972375e864e419dee238d2f93">add</a> (const std::string &amp;<a class="el" href="#a24dcbf29c0d6cd766009a182a6484e3b">name</a>, std::string <a class="el" href="#a95ddf7f84b4944b035c3f05fab305f99">doc</a>)</td></tr>
+<tr class="memdesc:aa4bea47972375e864e419dee238d2f93"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a required option with its docstring, without a default value. User must specify a value for this option from the input file.  <br /></td></tr>
+<tr class="memitem:a9cc3fe733c3f00f7530cb273578b6943" id="r_a9cc3fe733c3f00f7530cb273578b6943"><td class="memTemplParams" colspan="2">template&lt;typename T, <a class="el" href="namespaceneml2.html#ab600865ffa5d3681d723ef019d109535">FType</a> f = FType::NONE&gt; </td></tr>
+<tr class="memitem:a9cc3fe733c3f00f7530cb273578b6943 template"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a9cc3fe733c3f00f7530cb273578b6943">add_optional</a> (const std::string &amp;<a class="el" href="#a24dcbf29c0d6cd766009a182a6484e3b">name</a>, std::string <a class="el" href="#a95ddf7f84b4944b035c3f05fab305f99">doc</a>)</td></tr>
+<tr class="memdesc:a9cc3fe733c3f00f7530cb273578b6943"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create an optional option with its docstring, without a default value.  <br /></td></tr>
+<tr class="memitem:aac5936de6a45ef7acaa4477dbd9cb16e" id="r_aac5936de6a45ef7acaa4477dbd9cb16e"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
+<tr class="memitem:aac5936de6a45ef7acaa4477dbd9cb16e template"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#aac5936de6a45ef7acaa4477dbd9cb16e">add_private</a> (const std::string &amp;<a class="el" href="#a24dcbf29c0d6cd766009a182a6484e3b">name</a>, const T &amp;default_value)</td></tr>
+<tr class="memdesc:aac5936de6a45ef7acaa4477dbd9cb16e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a private option with its default value.  <br /></td></tr>
+<tr class="memitem:a9e6ace298c0ac062fb355f3fd6066b18" id="r_a9e6ace298c0ac062fb355f3fd6066b18"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
+<tr class="memitem:a9e6ace298c0ac062fb355f3fd6066b18 template"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a9e6ace298c0ac062fb355f3fd6066b18">set</a> (const std::string &amp;<a class="el" href="#a24dcbf29c0d6cd766009a182a6484e3b">name</a>, const T &amp;value)</td></tr>
+<tr class="memdesc:a9e6ace298c0ac062fb355f3fd6066b18"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set an option.  <br /></td></tr>
+<tr class="memitem:ab3c578a8b5b68d2fefe877a8790645ce" id="r_ab3c578a8b5b68d2fefe877a8790645ce"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
+<tr class="memitem:ab3c578a8b5b68d2fefe877a8790645ce template"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ab3c578a8b5b68d2fefe877a8790645ce">set_private</a> (const std::string &amp;<a class="el" href="#a24dcbf29c0d6cd766009a182a6484e3b">name</a>, const T &amp;value)</td></tr>
+<tr class="memdesc:ab3c578a8b5b68d2fefe877a8790645ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set a private option.  <br /></td></tr>
 <tr class="memitem:ad69bd11391be1a1dba5c8202259664f8" id="r_ad69bd11391be1a1dba5c8202259664f8"><td class="memItemLeft"><a class="el" href="#a028b78fa2fe8cb2bc7140d017ac19245">iterator</a>&#160;</td><td class="memItemRight"><a class="el" href="#ad69bd11391be1a1dba5c8202259664f8">begin</a> ()</td></tr>
 <tr class="memdesc:ad69bd11391be1a1dba5c8202259664f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Iterator pointing to the beginning of the set of options.  <br /></td></tr>
 <tr class="memitem:a29305669b60ca1680752e2fc3592ba99" id="r_a29305669b60ca1680752e2fc3592ba99"><td class="memItemLeft"><a class="el" href="#a78244f2d5532b183199824064dde36ce">const_iterator</a>&#160;</td><td class="memItemRight"><a class="el" href="#a29305669b60ca1680752e2fc3592ba99">begin</a> () const</td></tr>
@@ -225,6 +229,33 @@ Convenient methods to request an output variable</h2></td></tr>
 <tr class="memdesc:acad38d52497a975bfb6f2f6acd76631f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Iterator pointing to the end of the set of options.  <br /></td></tr>
 <tr class="memitem:accf9a4bd0c34d4a5f6a7dab66ea10cdc" id="r_accf9a4bd0c34d4a5f6a7dab66ea10cdc"><td class="memItemLeft"><a class="el" href="#a78244f2d5532b183199824064dde36ce">const_iterator</a>&#160;</td><td class="memItemRight"><a class="el" href="#accf9a4bd0c34d4a5f6a7dab66ea10cdc">end</a> () const</td></tr>
 <tr class="memdesc:accf9a4bd0c34d4a5f6a7dab66ea10cdc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Iterator pointing to the end of the set of options.  <br /></td></tr>
+<tr id="pub-methods-0" class="groupHeader"><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:abf66b5d5efcdc0d044a2b719d8c2b574" id="r_abf66b5d5efcdc0d044a2b719d8c2b574"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#abf66b5d5efcdc0d044a2b719d8c2b574">operator+=</a> (const <a class="el" href="#a2b62c41884e5037879ab543da76c1f62">OptionSet</a> &amp;source)</td></tr>
+<tr class="memitem:ac7c769d376def9b64c8f204c19b015a6" id="r_ac7c769d376def9b64c8f204c19b015a6"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ac7c769d376def9b64c8f204c19b015a6">operator+=</a> (<a class="el" href="#a2b62c41884e5037879ab543da76c1f62">OptionSet</a> &amp;&amp;source)</td></tr>
+<tr id="pub-methods-1" class="groupHeader"><td colspan="2"><div class="groupHeader"></div></td></tr>
+<tr class="memitem:a209799cc4cd0b677a31f7c526110fb54" id="r_a209799cc4cd0b677a31f7c526110fb54"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a209799cc4cd0b677a31f7c526110fb54">add_input</a> (const std::string &amp;, const <a class="el" href="namespaceneml2.html#a91319ab6bb319a4576924e091ce64d52">VariableName</a> &amp;, std::string)</td></tr>
+<tr class="memitem:af880a2ddc4eac872f08210f656983197" id="r_af880a2ddc4eac872f08210f656983197"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#af880a2ddc4eac872f08210f656983197">add_input</a> (const std::string &amp;, std::string)</td></tr>
+<tr class="memitem:ae3a2ad3eafefb3c65c5784f07393a575" id="r_ae3a2ad3eafefb3c65c5784f07393a575"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ae3a2ad3eafefb3c65c5784f07393a575">add_optional_input</a> (const std::string &amp;, std::string)</td></tr>
+<tr class="memitem:a82ce6fa42bb268e08e292cf7449e2f7e" id="r_a82ce6fa42bb268e08e292cf7449e2f7e"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a82ce6fa42bb268e08e292cf7449e2f7e">add_output</a> (const std::string &amp;, const <a class="el" href="namespaceneml2.html#a91319ab6bb319a4576924e091ce64d52">VariableName</a> &amp;, std::string)</td></tr>
+<tr class="memdesc:a82ce6fa42bb268e08e292cf7449e2f7e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convenient methods to add output variable.  <br /></td></tr>
+<tr class="memitem:af705fc01984f6565528c7d06e7d68d3d" id="r_af705fc01984f6565528c7d06e7d68d3d"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#af705fc01984f6565528c7d06e7d68d3d">add_output</a> (const std::string &amp;, std::string)</td></tr>
+<tr class="memitem:afd5a2ebad6f5f7ef38bbe51c4c4b50fa" id="r_afd5a2ebad6f5f7ef38bbe51c4c4b50fa"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#afd5a2ebad6f5f7ef38bbe51c4c4b50fa">add_optional_output</a> (const std::string &amp;, std::string)</td></tr>
+<tr class="memitem:a51a77e4c32a5de089e375b185a15fd76" id="r_a51a77e4c32a5de089e375b185a15fd76"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
+<tr class="memitem:a51a77e4c32a5de089e375b185a15fd76 template"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a51a77e4c32a5de089e375b185a15fd76">add_parameter</a> (const std::string &amp;, const <a class="el" href="structneml2_1_1TensorName.html">TensorName</a>&lt; T &gt; &amp;, std::string)</td></tr>
+<tr class="memdesc:a51a77e4c32a5de089e375b185a15fd76"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convenient methods to add parameter.  <br /></td></tr>
+<tr class="memitem:ac003e00e5f6085f2e783e5dd83c695d0" id="r_ac003e00e5f6085f2e783e5dd83c695d0"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
+<tr class="memitem:ac003e00e5f6085f2e783e5dd83c695d0 template"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ac003e00e5f6085f2e783e5dd83c695d0">add_parameter</a> (const std::string &amp;, std::string)</td></tr>
+<tr class="memitem:ab04f8b3915e1fc3288254df8cf691950" id="r_ab04f8b3915e1fc3288254df8cf691950"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
+<tr class="memitem:ab04f8b3915e1fc3288254df8cf691950 template"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ab04f8b3915e1fc3288254df8cf691950">add_buffer</a> (const std::string &amp;, const <a class="el" href="structneml2_1_1TensorName.html">TensorName</a>&lt; T &gt; &amp;, std::string)</td></tr>
+<tr class="memdesc:ab04f8b3915e1fc3288254df8cf691950"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convenient methods to add buffer.  <br /></td></tr>
+<tr class="memitem:ab6e3f5e4c81904d67661f5b9126ba316" id="r_ab6e3f5e4c81904d67661f5b9126ba316"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
+<tr class="memitem:ab6e3f5e4c81904d67661f5b9126ba316 template"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ab6e3f5e4c81904d67661f5b9126ba316">add_buffer</a> (const std::string &amp;, std::string)</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-pro-attribs" class="groupheader"><a id="pro-attribs" name="pro-attribs"></a>
+Protected Attributes</h2></td></tr>
+<tr class="memitem:ac7e7050b19c1a64b6fd31d0dda2f70bc" id="r_ac7e7050b19c1a64b6fd31d0dda2f70bc"><td class="memItemLeft">struct <a class="el" href="structneml2_1_1OptionSet_1_1Metadata.html">neml2::OptionSet::Metadata</a>&#160;</td><td class="memItemRight"><a class="el" href="#ac7e7050b19c1a64b6fd31d0dda2f70bc">_metadata</a></td></tr>
+<tr class="memitem:a037220bd48c34722e66bc0ed458e28af" id="r_a037220bd48c34722e66bc0ed458e28af"><td class="memItemLeft"><a class="el" href="#a7ba45a0deb7ed53d4fe528f09773c6f9">map_type</a>&#160;</td><td class="memItemRight"><a class="el" href="#a037220bd48c34722e66bc0ed458e28af">_values</a></td></tr>
+<tr class="memdesc:a037220bd48c34722e66bc0ed458e28af"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classneml2_1_1Data.html">Data</a> structure to map names with values.  <br /></td></tr>
 </table>
 <a name="doc-typedef-members" id="doc-typedef-members"></a><h2 id="header-doc-typedef-members" class="groupheader">Member Typedef Documentation</h2>
 <a id="a78244f2d5532b183199824064dde36ce" name="a78244f2d5532b183199824064dde36ce"></a>
@@ -369,6 +400,443 @@ Convenient methods to request an output variable</h2></td></tr>
 </div>
 </div>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a id="ad9fb5b1c90208e8d6b3ef84a79467741" name="ad9fb5b1c90208e8d6b3ef84a79467741"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad9fb5b1c90208e8d6b3ef84a79467741">&#9670;&#160;</a></span>add() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T, <a class="el" href="namespaceneml2.html#ab600865ffa5d3681d723ef019d109535">FType</a> F&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void add </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>name</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const T &amp;</td>          <td class="paramname"><span class="paramname"><em>default_value</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>doc</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Create an option with its default value and its docstring. </p>
+<p>Throws an exception if the option already exists.</p>
+<p>Calling this method sets the following metadata for the option:</p><ul>
+<li>required: false</li>
+<li>suppressed: false</li>
+<li>user_specified: false</li>
+<li>defined: true</li>
+</ul>
+<p>Note that later on when a <a class="el" href="classneml2_1_1Parser.html" title="A parser is responsible for parsing an input file into a collection of options which can be used by t...">Parser</a> parses the input file, if the user has specified a value for this option, the option value will be overwritten and the user_specified flag will be set to true. If the user has not specified a value for this option, the default value will be used.</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">T</td><td>Type of the option value </td></tr>
+    <tr><td class="paramname">f</td><td><a class="el" href="classneml2_1_1Option.html">Option</a> type (e.g., parameter, buffer, input, output) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname"><a class="el" href="#a24dcbf29c0d6cd766009a182a6484e3b" title="A readonly reference to the option set&#39;s name.">name</a></td><td>The name of the option </td></tr>
+    <tr><td class="paramname">default_value</td><td>The default value to set </td></tr>
+    <tr><td class="paramname"><a class="el" href="#a95ddf7f84b4944b035c3f05fab305f99" title="A readonly reference to the option set&#39;s docstring.">doc</a></td><td>The docstring for the option </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="aa4bea47972375e864e419dee238d2f93" name="aa4bea47972375e864e419dee238d2f93"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa4bea47972375e864e419dee238d2f93">&#9670;&#160;</a></span>add() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T, <a class="el" href="namespaceneml2.html#ab600865ffa5d3681d723ef019d109535">FType</a> F&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void add </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>name</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>doc</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Create a required option with its docstring, without a default value. User must specify a value for this option from the input file. </p>
+<p>Throws an exception if the option already exists.</p>
+<p>Calling this method sets the following metadata for the option:</p><ul>
+<li>required: true</li>
+<li>suppressed: false</li>
+<li>user_specified: false</li>
+<li>defined: false</li>
+</ul>
+<p>Note that later on when a <a class="el" href="classneml2_1_1Parser.html" title="A parser is responsible for parsing an input file into a collection of options which can be used by t...">Parser</a> parses the input file, if the user has specified a value for this option, the option value will be overwritten and both the user_specified flag and the defined flag will be set to true. The <a class="el" href="classneml2_1_1Parser.html" title="A parser is responsible for parsing an input file into a collection of options which can be used by t...">Parser</a> should consider it an error if the user has not specified a value for this option.</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">T</td><td>Type of the option value </td></tr>
+    <tr><td class="paramname">f</td><td><a class="el" href="classneml2_1_1Option.html">Option</a> type (e.g., parameter, buffer, input, output) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname"><a class="el" href="#a24dcbf29c0d6cd766009a182a6484e3b" title="A readonly reference to the option set&#39;s name.">name</a></td><td>The name of the option </td></tr>
+    <tr><td class="paramname"><a class="el" href="#a95ddf7f84b4944b035c3f05fab305f99" title="A readonly reference to the option set&#39;s docstring.">doc</a></td><td>The docstring for the option </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ab04f8b3915e1fc3288254df8cf691950" name="ab04f8b3915e1fc3288254df8cf691950"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab04f8b3915e1fc3288254df8cf691950">&#9670;&#160;</a></span>add_buffer() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void add_buffer </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>name</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structneml2_1_1TensorName.html">TensorName</a>&lt; T &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>tensor_name</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>doc</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Convenient methods to add buffer. </p>
+
+</div>
+</div>
+<a id="ab6e3f5e4c81904d67661f5b9126ba316" name="ab6e3f5e4c81904d67661f5b9126ba316"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab6e3f5e4c81904d67661f5b9126ba316">&#9670;&#160;</a></span>add_buffer() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void add_buffer </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>name</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>doc</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a209799cc4cd0b677a31f7c526110fb54" name="a209799cc4cd0b677a31f7c526110fb54"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a209799cc4cd0b677a31f7c526110fb54">&#9670;&#160;</a></span>add_input() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void add_input </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceneml2.html#a91319ab6bb319a4576924e091ce64d52">VariableName</a> &amp;</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em></em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Convenient methods to add input variable </p>
+
+</div>
+</div>
+<a id="af880a2ddc4eac872f08210f656983197" name="af880a2ddc4eac872f08210f656983197"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af880a2ddc4eac872f08210f656983197">&#9670;&#160;</a></span>add_input() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void add_input </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em></em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a9cc3fe733c3f00f7530cb273578b6943" name="a9cc3fe733c3f00f7530cb273578b6943"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9cc3fe733c3f00f7530cb273578b6943">&#9670;&#160;</a></span>add_optional()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T, <a class="el" href="namespaceneml2.html#ab600865ffa5d3681d723ef019d109535">FType</a> F&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void add_optional </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>name</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>doc</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Create an optional option with its docstring, without a default value. </p>
+<p>Throws an exception if the option already exists.</p>
+<p>Calling this method sets the following metadata for the option:</p><ul>
+<li>required: false</li>
+<li>suppressed: false</li>
+<li>user_specified: false</li>
+<li>defined: false</li>
+</ul>
+<p>Note that later on when a <a class="el" href="classneml2_1_1Parser.html" title="A parser is responsible for parsing an input file into a collection of options which can be used by t...">Parser</a> parses the input file, if the user has specified a value for this option, the option value will be overwritten and both the user_specified flag and the defined flag will be set to true. If the user has not specified a value for this option, the option is considered undefined and an exception will be thrown when attempting to retrieve the option value.</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">T</td><td>Type of the option value </td></tr>
+    <tr><td class="paramname">f</td><td><a class="el" href="classneml2_1_1Option.html">Option</a> type (e.g., parameter, buffer, input, output) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname"><a class="el" href="#a24dcbf29c0d6cd766009a182a6484e3b" title="A readonly reference to the option set&#39;s name.">name</a></td><td>The name of the option </td></tr>
+    <tr><td class="paramname"><a class="el" href="#a95ddf7f84b4944b035c3f05fab305f99" title="A readonly reference to the option set&#39;s docstring.">doc</a></td><td>The docstring for the option </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ae3a2ad3eafefb3c65c5784f07393a575" name="ae3a2ad3eafefb3c65c5784f07393a575"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae3a2ad3eafefb3c65c5784f07393a575">&#9670;&#160;</a></span>add_optional_input()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void add_optional_input </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em></em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="afd5a2ebad6f5f7ef38bbe51c4c4b50fa" name="afd5a2ebad6f5f7ef38bbe51c4c4b50fa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afd5a2ebad6f5f7ef38bbe51c4c4b50fa">&#9670;&#160;</a></span>add_optional_output()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void add_optional_output </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em></em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a82ce6fa42bb268e08e292cf7449e2f7e" name="a82ce6fa42bb268e08e292cf7449e2f7e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a82ce6fa42bb268e08e292cf7449e2f7e">&#9670;&#160;</a></span>add_output() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void add_output </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="namespaceneml2.html#a91319ab6bb319a4576924e091ce64d52">VariableName</a> &amp;</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em></em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Convenient methods to add output variable. </p>
+
+</div>
+</div>
+<a id="af705fc01984f6565528c7d06e7d68d3d" name="af705fc01984f6565528c7d06e7d68d3d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af705fc01984f6565528c7d06e7d68d3d">&#9670;&#160;</a></span>add_output() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void add_output </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em></em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em></em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a51a77e4c32a5de089e375b185a15fd76" name="a51a77e4c32a5de089e375b185a15fd76"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a51a77e4c32a5de089e375b185a15fd76">&#9670;&#160;</a></span>add_parameter() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void add_parameter </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>name</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structneml2_1_1TensorName.html">TensorName</a>&lt; T &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>tensor_name</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>doc</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Convenient methods to add parameter. </p>
+
+</div>
+</div>
+<a id="ac003e00e5f6085f2e783e5dd83c695d0" name="ac003e00e5f6085f2e783e5dd83c695d0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac003e00e5f6085f2e783e5dd83c695d0">&#9670;&#160;</a></span>add_parameter() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void add_parameter </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>name</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string</td>          <td class="paramname"><span class="paramname"><em>doc</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aac5936de6a45ef7acaa4477dbd9cb16e" name="aac5936de6a45ef7acaa4477dbd9cb16e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aac5936de6a45ef7acaa4477dbd9cb16e">&#9670;&#160;</a></span>add_private()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void add_private </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>name</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const T &amp;</td>          <td class="paramname"><span class="paramname"><em>default_value</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Create a private option with its default value. </p>
+<p>Throws an exception if the option already exists.</p>
+<p>Calling this method sets the following metadata for the option:</p><ul>
+<li>required: false</li>
+<li>suppressed: true</li>
+<li>user_specified: false</li>
+<li>defined: true</li>
+</ul>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">T</td><td>Type of the option value </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname"><a class="el" href="#a24dcbf29c0d6cd766009a182a6484e3b" title="A readonly reference to the option set&#39;s name.">name</a></td><td>The name of the option </td></tr>
+    <tr><td class="paramname">default_value</td><td>The default value to set </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="ad69bd11391be1a1dba5c8202259664f8" name="ad69bd11391be1a1dba5c8202259664f8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad69bd11391be1a1dba5c8202259664f8">&#9670;&#160;</a></span>begin() <span class="overload">[1/2]</span></h2>
 
@@ -440,7 +908,25 @@ Convenient methods to request an output variable</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<dl class="section return"><dt>Returns</dt><dd><code class="param">true</code> if an option with a specified name exists, <code class="param">false</code> otherwise. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>true if an option with a specified name exists, false otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="a6d08a46b2827b4a4bb635e1611e22863" name="a6d08a46b2827b4a4bb635e1611e22863"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6d08a46b2827b4a4bb635e1611e22863">&#9670;&#160;</a></span>defined()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool defined </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>name</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="section return"><dt>Returns</dt><dd>true if an option is defined (i.e., value has been set either from the input file or programmatically), false otherwise. </dd></dl>
 
 </div>
 </div>
@@ -596,15 +1082,7 @@ template&lt;typename K, typename V&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p>Get two options and bind them to find a map. </p>
-<p>Get two options and bind them to find a map</p>
-<dl class="tparams"><dt>Template Parameters</dt><dd>
-  <table class="tparams">
-    <tr><td class="paramname">K</td><td>Key type </td></tr>
-    <tr><td class="paramname">V</td><td>Value type </td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Get two options and bind them to form a map. </p>
 <p>The two options are expected to be of type std::vector&lt;K&gt; and std::vector&lt;V&gt;, respectively. Keys shall be unique. Otherwise, an exception is thrown.</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
@@ -857,45 +1335,8 @@ template&lt;typename K, typename V&gt; </div>
 
 </div>
 </div>
-<a id="a4efab3e8fee40211c6e9034cc23b64eb" name="a4efab3e8fee40211c6e9034cc23b64eb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4efab3e8fee40211c6e9034cc23b64eb">&#9670;&#160;</a></span>set() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classneml2_1_1OptionBase.html">OptionBase</a> &amp; set </td>
-          <td>(</td>
-          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="ae684692ef2eb93221318a3691be5d86f" name="ae684692ef2eb93221318a3691be5d86f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae684692ef2eb93221318a3691be5d86f">&#9670;&#160;</a></span>set() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename T, <a class="el" href="namespaceneml2.html#ab600865ffa5d3681d723ef019d109535">FType</a> F&gt; </div>
-      <table class="memname">
-        <tr>
-          <td class="memname">T &amp; set </td>
-          <td>(</td>
-          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>name</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<dl class="section return"><dt>Returns</dt><dd>A writable reference to the specified option value. This method will create the option if it does not exist, so it can be used to define options which will later be accessed with the <code class="param"><a class="el" href="#a72f6cb3878f66a117f1bcba505a5b76e">get()</a></code> member. </dd></dl>
-
-</div>
-</div>
-<a id="a1ac544a6dcc1d2866b30732975c9a577" name="a1ac544a6dcc1d2866b30732975c9a577"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1ac544a6dcc1d2866b30732975c9a577">&#9670;&#160;</a></span>set_buffer()</h2>
+<a id="a9e6ace298c0ac062fb355f3fd6066b18" name="a9e6ace298c0ac062fb355f3fd6066b18"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9e6ace298c0ac062fb355f3fd6066b18">&#9670;&#160;</a></span>set()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -903,54 +1344,42 @@ template&lt;typename T, <a class="el" href="namespaceneml2.html#ab600865ffa5d368
 template&lt;typename T&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">T &amp; set_buffer </td>
+          <td class="memname">void set </td>
           <td>(</td>
-          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>name</em></span></td><td>)</td>
-          <td></td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>name</em></span>, </td>
         </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Convenient method to request a buffer. </p>
-
-</div>
-</div>
-<a id="a889bc1d4053ec1497d5dec239b30467d" name="a889bc1d4053ec1497d5dec239b30467d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a889bc1d4053ec1497d5dec239b30467d">&#9670;&#160;</a></span>set_input()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a> &amp; set_input </td>
-          <td>(</td>
-          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const T &amp;</td>          <td class="paramname"><span class="paramname"><em>value</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-</div>
-</div>
-<a id="a693ecff21e01db0f9239e23d346a596a" name="a693ecff21e01db0f9239e23d346a596a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a693ecff21e01db0f9239e23d346a596a">&#9670;&#160;</a></span>set_output()</h2>
+<p>Set an option. </p>
+<p>The option must already exist. Otherwise, an exception is thrown. The option value is overridden if it already exists.</p>
+<p>Calling this method sets the following metadata for the option:</p><ul>
+<li>user_specified: false</li>
+<li>defined: true</li>
+</ul>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">T</td><td>Type of the option value </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname"><a class="el" href="#a24dcbf29c0d6cd766009a182a6484e3b" title="A readonly reference to the option set&#39;s name.">name</a></td><td>The name of the option </td></tr>
+    <tr><td class="paramname">value</td><td>The value to set </td></tr>
+  </table>
+  </dd>
+</dl>
 
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a> &amp; set_output </td>
-          <td>(</td>
-          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
 </div>
 </div>
-<a id="aa06a67ba2f5a8439a0cd7e830e79488c" name="aa06a67ba2f5a8439a0cd7e830e79488c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa06a67ba2f5a8439a0cd7e830e79488c">&#9670;&#160;</a></span>set_parameter()</h2>
+<a id="ab3c578a8b5b68d2fefe877a8790645ce" name="ab3c578a8b5b68d2fefe877a8790645ce"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab3c578a8b5b68d2fefe877a8790645ce">&#9670;&#160;</a></span>set_private()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -958,15 +1387,37 @@ template&lt;typename T&gt; </div>
 template&lt;typename T&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">T &amp; set_parameter </td>
+          <td class="memname">void set_private </td>
           <td>(</td>
-          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>name</em></span></td><td>)</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>name</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const T &amp;</td>          <td class="paramname"><span class="paramname"><em>value</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Convenient method to request a parameter. </p>
+<p>Set a private option. </p>
+<p>The option must already exist. Otherwise, an exception is thrown. The option value is overridden if it already exists.</p>
+<p>Calling this method sets the following metadata for the option:</p><ul>
+<li>user_specified: false</li>
+<li>defined: true</li>
+</ul>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">T</td><td>Type of the option value </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname"><a class="el" href="#a24dcbf29c0d6cd766009a182a6484e3b" title="A readonly reference to the option set&#39;s name.">name</a></td><td>The name of the option </td></tr>
+    <tr><td class="paramname">value</td><td>The value to set </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -993,6 +1444,25 @@ template&lt;typename T&gt; </div>
 </table>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>The total number of options </dd></dl>
+
+</div>
+</div>
+<a id="a9a1d2634b138ebc495bb66c8600b68c8" name="a9a1d2634b138ebc495bb66c8600b68c8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9a1d2634b138ebc495bb66c8600b68c8">&#9670;&#160;</a></span>suppress()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void suppress </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>name</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Suppress an option. </p>
 
 </div>
 </div>
@@ -1083,7 +1553,7 @@ template&lt;typename T&gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
-<dl class="section return"><dt>Returns</dt><dd><code class="param">true</code> if an option is specified by the user (i.e., from the input file), <code class="param">false</code> otherwise. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>true if an option is specified by the user (i.e., from the input file), false otherwise. </dd></dl>
 
 </div>
 </div>

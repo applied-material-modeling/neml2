@@ -134,38 +134,38 @@ $(function(){initNavTree('tutorials-models-vectorization.html','',''); });
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md148">What is vectorization? </a>
+    <a href="#autotoc_md152">What is vectorization? </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md149">For loop versus vectorization: A numerical experiment </a>
+    <a href="#autotoc_md153">For loop versus vectorization: A numerical experiment </a>
     <ul>
       <li class="level2">
-        <a href="#autotoc_md150">For loop </a>
+        <a href="#autotoc_md154">For loop </a>
       </li>
       <li class="level2">
-        <a href="#autotoc_md151">Vectorization </a>
+        <a href="#autotoc_md155">Vectorization </a>
       </li>
     </ul>
   </li>
   <li class="level1">
-    <a href="#autotoc_md152">Remarks </a>
+    <a href="#autotoc_md156">Remarks </a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_build_2doc_2content_2tutorials_2models_2vectorization_2main"></a></p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md148"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md152"></a>
 What is vectorization?</h1>
 <p>Vectorization refers to <em>array programming</em>. Both SIMD (single instruction, multiple data) operation and SIMT (single instruction, multiple threads) operation are implementations of array programming. These terms all refer to the methods that apply operations to an entire set of values at once.</p>
 <p>While the benefit of vectorization depends on the instruction support, instruction throughput, and register size, among other factors, it is generally expected that vectorization can provide a considerable amount of speedup to many operations. For example, given a device's instruction set with 1024-bit registers. These can be used to operate on 16 operands of 64-bits apiece. More specifically, if we are dealing with double-precision floating point numbers, a single instruction can do 16 operations at once. In other words, ideally, \( N \) operations can be completed using \( N/16 \) instructions. And again, ideally, this leads to 16 times faster execution than operations without vectorization.</p>
 <p>Although the implementation varies, both CPU and CUDA supports vectorization. NEML2 supports vectorization of model evaluation on both CPU and CUDA. All NEML2 models ensure that the data being processed, e.g., variables, parameters, buffers, are contiguously allocated, and that the same set of operations are applied to those contiguous chunks of data.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md149"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md153"></a>
 For loop versus vectorization: A numerical experiment</h1>
 <p>Given the material model we have been working with in the previous tutorials, how much (wall clock) time would it take to perform 100,000 forward evaluations?</p>
 <p>There are two ways of completing this task:</p><ul>
 <li>using a for loop, or</li>
 <li>using vectorization</li>
 </ul>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md150"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md154"></a>
 For loop</h2>
 <p>The following code snippet shows how to use a for loop to perform the \( N \) evaluations. For convenience, the \( N \) strains are evenly spaced.</p>
 <div class="tabbed"></div><div class="tabbed"><ul>
@@ -187,14 +187,13 @@ For loop</h2>
 <div class="line">  model-&gt;to(device);</div>
 <div class="line"> </div>
 <div class="line">  <span class="comment">// Create the strain on the device</span></div>
-<div class="line">  <span class="keyword">auto</span> strain_name = <a class="code hl_typedef" href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">VariableName</a>(<span class="stringliteral">&quot;forces&quot;</span>, <span class="stringliteral">&quot;E&quot;</span>);</div>
 <div class="line">  <span class="keyword">auto</span> strain_min = <a class="code hl_function" href="classneml2_1_1SR2.html#a1cbf1c79b56c0216faa5d7795c44f05d">SR2::fill</a>(0.1, 0.05, -0.03, 0.02, 0.06, 0.03, device);</div>
 <div class="line">  <span class="keyword">auto</span> strain_max = <a class="code hl_function" href="classneml2_1_1SR2.html#a1cbf1c79b56c0216faa5d7795c44f05d">SR2::fill</a>(0.5, 0.4, -0.2, 0.2, 0.3, 0.1, device);</div>
 <div class="line">  <span class="keyword">auto</span> strain = <a class="code hl_function" href="namespaceneml2.html#a60ca5a6978d349863e81a877b5e1892e">dynamic_linspace</a>(strain_min, strain_max, N);</div>
 <div class="line"> </div>
 <div class="line">  <span class="comment">// Evaluate the model N times</span></div>
 <div class="line">  <span class="keywordflow">for</span> (<a class="code hl_typedef" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> i = 0; i &lt; N; i++)</div>
-<div class="line">    <span class="keyword">auto</span> output = model-&gt;value({{strain_name, strain.dynamic_index({i})}});</div>
+<div class="line">    <span class="keyword">auto</span> output = model-&gt;value({{<span class="stringliteral">&quot;strain&quot;</span>, strain.dynamic_index({i})}});</div>
 <div class="line">}</div>
 <div class="ttc" id="aclassneml2_1_1SR2_html_a1cbf1c79b56c0216faa5d7795c44f05d"><div class="ttname"><a href="classneml2_1_1SR2.html#a1cbf1c79b56c0216faa5d7795c44f05d">neml2::SR2::fill</a></div><div class="ttdeci">static SR2 fill(const CScalar &amp;a, const TensorOptions &amp;options=default_tensor_options())</div><div class="ttdoc">Fill the diagonals with a11 = a22 = a33 = a.</div></div>
 <div class="ttc" id="anamespaceneml2_html"><div class="ttname"><a href="namespaceneml2.html">neml2</a></div><div class="ttdef"><b>Definition</b> DiagnosticsInterface.h:31</div></div>
@@ -202,7 +201,6 @@ For loop</h2>
 <div class="ttc" id="anamespaceneml2_html_a3c266b437e28eb7adec97c12b9a7e7d2"><div class="ttname"><a href="namespaceneml2.html#a3c266b437e28eb7adec97c12b9a7e7d2">neml2::set_default_dtype</a></div><div class="ttdeci">void set_default_dtype(Dtype dtype)</div></div>
 <div class="ttc" id="anamespaceneml2_html_a60ca5a6978d349863e81a877b5e1892e"><div class="ttname"><a href="namespaceneml2.html#a60ca5a6978d349863e81a877b5e1892e">neml2::dynamic_linspace</a></div><div class="ttdeci">Vec dynamic_linspace(const Vec &amp;start, const Vec &amp;end, Size nstep, Size dim=0)</div></div>
 <div class="ttc" id="anamespaceneml2_html_a90023c4b9c19cd471d4603a07a52954e"><div class="ttname"><a href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">neml2::Size</a></div><div class="ttdeci">int64_t Size</div><div class="ttdef"><b>Definition</b> types.h:71</div></div>
-<div class="ttc" id="anamespaceneml2_html_a9e1488821b46ffc106c90ab80036b7aa"><div class="ttname"><a href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">neml2::VariableName</a></div><div class="ttdeci">LabeledAxisAccessor VariableName</div><div class="ttdef"><b>Definition</b> LabeledAxisAccessor.h:185</div></div>
 <div class="ttc" id="anamespaceneml2_html_aa98735f2ffd7c3ae8b0b339621eb8ab3"><div class="ttname"><a href="namespaceneml2.html#aa98735f2ffd7c3ae8b0b339621eb8ab3">neml2::load_model</a></div><div class="ttdeci">std::shared_ptr&lt; Model &gt; load_model(const std::filesystem::path &amp;path, const std::string &amp;mname)</div><div class="ttdoc">A convenient function to load an input file and get a model.</div></div>
 <div class="ttc" id="anamespaceneml2_html_af1bcf14cba8c3bce7445b5661fffd658"><div class="ttname"><a href="namespaceneml2.html#af1bcf14cba8c3bce7445b5661fffd658">neml2::kCPU</a></div><div class="ttdeci">constexpr auto kCPU</div><div class="ttdef"><b>Definition</b> types.h:57</div></div>
 </div><!-- fragment --></li>
@@ -225,10 +223,10 @@ For loop</h2>
 <div class="line"> </div>
 <div class="line"><span class="comment"># Evaluate the model N times</span></div>
 <div class="line"><span class="keywordflow">for</span> i <span class="keywordflow">in</span> range(N):</div>
-<div class="line">    output = model.value({<span class="stringliteral">&quot;forces/E&quot;</span>: strain.dynamic[i]})</div>
+<div class="line">    output = model.value({<span class="stringliteral">&quot;strain&quot;</span>: strain.dynamic[i]})</div>
 </div><!-- fragment --></li>
 </ul>
-</div><div class="tabbed"></div><h2 class="doxsection"><a class="anchor" id="autotoc_md151"></a>
+</div><div class="tabbed"></div><h2 class="doxsection"><a class="anchor" id="autotoc_md155"></a>
 Vectorization</h2>
 <p>The following code snippet shows how to rely on NEML2 internal vectorization to perform the \( N \) evaluations.</p>
 <div class="tabbed"></div><div class="tabbed"><ul>
@@ -250,13 +248,12 @@ Vectorization</h2>
 <div class="line">  model-&gt;to(device);</div>
 <div class="line"> </div>
 <div class="line">  <span class="comment">// Create the strain on the device</span></div>
-<div class="line">  <span class="keyword">auto</span> strain_name = <a class="code hl_typedef" href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">VariableName</a>(<span class="stringliteral">&quot;forces&quot;</span>, <span class="stringliteral">&quot;E&quot;</span>);</div>
 <div class="line">  <span class="keyword">auto</span> strain_min = <a class="code hl_function" href="classneml2_1_1SR2.html#a1cbf1c79b56c0216faa5d7795c44f05d">SR2::fill</a>(0.1, 0.05, -0.03, 0.02, 0.06, 0.03, device);</div>
 <div class="line">  <span class="keyword">auto</span> strain_max = <a class="code hl_function" href="classneml2_1_1SR2.html#a1cbf1c79b56c0216faa5d7795c44f05d">SR2::fill</a>(0.5, 0.4, -0.2, 0.2, 0.3, 0.1, device);</div>
 <div class="line">  <span class="keyword">auto</span> strain = <a class="code hl_function" href="namespaceneml2.html#a60ca5a6978d349863e81a877b5e1892e">dynamic_linspace</a>(strain_min, strain_max, N);</div>
 <div class="line"> </div>
 <div class="line">  <span class="comment">// Evaluate the model N times</span></div>
-<div class="line">  <span class="keyword">auto</span> output = model-&gt;value({{strain_name, strain}});</div>
+<div class="line">  <span class="keyword">auto</span> output = model-&gt;value({{<span class="stringliteral">&quot;strain&quot;</span>, strain}});</div>
 <div class="line">}</div>
 </div><!-- fragment --></li>
 <li><b class="tab-title">Python</b> <div class="fragment"><div class="line"><span class="keyword">import</span> torch</div>
@@ -277,7 +274,7 @@ Vectorization</h2>
 <div class="line">strain = SR2.dynamic_linspace(strain_min, strain_max, N)</div>
 <div class="line"> </div>
 <div class="line"><span class="comment"># Evaluate the model N times</span></div>
-<div class="line">output = model.value({<span class="stringliteral">&quot;forces/E&quot;</span>: strain})</div>
+<div class="line">output = model.value({<span class="stringliteral">&quot;strain&quot;</span>: strain})</div>
 </div><!-- fragment --></li>
 </ul>
 </div><div class="tabbed"></div><p>For a fair comparison, the input variables are allocated prior to model evaluation, and only the model evaluation part is timed. The timing study was performed with \( N = \{10, 1000, 100000\} \) on both CPU and CUDA. Results are summarized in the following table.</p>
@@ -297,7 +294,7 @@ Vectorization</h2>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyLeft"></td><td class="markdownTableBodyLeft">100000  </td><td class="markdownTableBodyLeft">26.176  </td><td class="markdownTableBodyLeft">0.005  </td></tr>
 </table>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md152"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md156"></a>
 Remarks</h1>
 <p>While there are many other factors contributing to the performance difference between the for loop approach and the vectorization approach, we hope this simple experiment serves as a reasonable introduction to the benefit of vectorization.</p>
 <p>It is worth noting that, in the above code snippets,</p><ul>

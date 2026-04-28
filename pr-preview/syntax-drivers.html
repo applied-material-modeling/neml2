@@ -134,14 +134,8 @@ $(function(){initNavTree('syntax-drivers.html','',''); });
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md66">Available objects and their input file syntax </a>
+    <a href="#autotoc_md67">Available objects and their input file syntax </a>
     <ul>
-      <li class="level2">
-        <a href="#ldisolidmechanicsdriver">LDISolidMechanicsDriver </a>
-      </li>
-      <li class="level2">
-        <a href="#sdtsolidmechanicsdriver">SDTSolidMechanicsDriver </a>
-      </li>
       <li class="level2">
         <a href="#transientdriver">TransientDriver </a>
       </li>
@@ -157,1585 +151,9 @@ Type name written in PascalCase typically refer to a NEML2 object type, oftentim
 The 🔗 symbol means that the tensor value can be cross-reference another object. See <a class="el" href="tutorials-models-model-parameters-revisited.html" title="Model parameters (revisited)">Model parameters (revisited)</a> for details.</dd>
 <dd>
 You can always use <span class="tt">Ctrl</span>+<span class="tt">F</span> or <span class="tt">Cmd</span>+<span class="tt">F</span> to search the entire page.</dd></dl>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md66"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md67"></a>
 Available objects and their input file syntax</h1>
 <p>Refer to <a class="el" href="system-drivers.html" title="Driver">System Documentation</a> for detailed explanation about this system.</p>
-<h2 class="doxsection"><a class="anchor" id="ldisolidmechanicsdriver"></a>
-LDISolidMechanicsDriver</h2>
-<p>Driver for solid mechanics material model with optional thermal coupling. This driver is specialized for large deformation models using the incremental formulation. </p><details >
-<summary >
-<span class="tt">async_dispatch</span> Whether to dispatch work asynchronously</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: true </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">cauchy_stress_rate</span> Cauchy stress rate</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name</li>
-<li><u>Default</u>: forces/cauchy_stress_rate </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">control</span> External control of the material update. Options are MIXED, STRESS, STRAIN</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: EnumSelection</li>
-<li><u>Default</u>: STRAIN </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">cp_warmup</span> Whether to perform a warm-up step for crystal plasticity models. The warm-up step uses a relaxed/damped elastic predictor for the very first time step.</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: false </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">cp_warmup_elastic_scale</span> Elastic step scale factor used for the crystal plasticity warm-up step</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: number</li>
-<li><u>Default</u>: 1 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">cp_warmup_elastic_strain</span> Elastic strain name used for the CP warm-up step</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name</li>
-<li><u>Default</u>: state/elastic_strain </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">deformation_rate</span> Deformation rate</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name</li>
-<li><u>Default</u>: forces/deformation_rate </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">device</span> Device on which to evaluate the material model. The string supplied must follow the following schema: (cpu|cuda)[:&lt;device-index&gt;] where cpu or cuda specifies the device type, and :&lt;device-index&gt; optionally specifies a device index. For example, device='cpu' sets the target compute device to be CPU, and device='cuda:1' sets the target compute device to be CUDA with device ID 1.</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: string</li>
-<li><u>Default</u>: cpu </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_MillerIndex_names</span> Prescribed driving force of tensor type MillerIndex</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_MillerIndex_values</span> Prescribed driving force values of tensor type MillerIndex</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of MillerIndex&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_Quaternion_names</span> Prescribed driving force of tensor type Quaternion</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_Quaternion_values</span> Prescribed driving force values of tensor type Quaternion</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of Quaternion&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_R2_names</span> Prescribed driving force of tensor type R2</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_R2_values</span> Prescribed driving force values of tensor type R2</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of R2&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_R3_names</span> Prescribed driving force of tensor type R3</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_R3_values</span> Prescribed driving force values of tensor type R3</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of R3&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_R4_names</span> Prescribed driving force of tensor type R4</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_R4_values</span> Prescribed driving force values of tensor type R4</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of R4&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_Rot_names</span> Prescribed driving force of tensor type Rot</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_Rot_values</span> Prescribed driving force values of tensor type Rot</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of Rot&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_SFFR4_names</span> Prescribed driving force of tensor type SFFR4</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_SFFR4_values</span> Prescribed driving force values of tensor type SFFR4</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SFFR4&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_SFR3_names</span> Prescribed driving force of tensor type SFR3</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_SFR3_values</span> Prescribed driving force values of tensor type SFR3</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SFR3&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_SR2_names</span> Prescribed driving force of tensor type SR2</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_SR2_values</span> Prescribed driving force values of tensor type SR2</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SR2&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_SSR4_names</span> Prescribed driving force of tensor type SSR4</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_SSR4_values</span> Prescribed driving force values of tensor type SSR4</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SSR4&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_SWR4_names</span> Prescribed driving force of tensor type SWR4</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_SWR4_values</span> Prescribed driving force values of tensor type SWR4</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SWR4&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_Scalar_names</span> Prescribed driving force of tensor type Scalar</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_Scalar_values</span> Prescribed driving force values of tensor type Scalar</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of Scalar&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_Tensor_names</span> Prescribed driving force of tensor type Tensor</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_Tensor_values</span> Prescribed driving force values of tensor type Tensor</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of Tensor&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_Vec_names</span> Prescribed driving force of tensor type Vec</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_Vec_values</span> Prescribed driving force values of tensor type Vec</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of Vec&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_WFFR4_names</span> Prescribed driving force of tensor type WFFR4</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_WFFR4_values</span> Prescribed driving force values of tensor type WFFR4</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of WFFR4&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_WR2_names</span> Prescribed driving force of tensor type WR2</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_WR2_values</span> Prescribed driving force values of tensor type WR2</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of WR2&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_WSR4_names</span> Prescribed driving force of tensor type WSR4</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_WSR4_values</span> Prescribed driving force values of tensor type WSR4</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of WSR4&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_WWR4_names</span> Prescribed driving force of tensor type WWR4</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_WWR4_values</span> Prescribed driving force values of tensor type WWR4</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of WWR4&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_MillerIndex_names</span> Apply initial conditions to these MillerIndex variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_MillerIndex_values</span> Initial condition values for the MillerIndex variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of MillerIndex&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_Quaternion_names</span> Apply initial conditions to these Quaternion variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_Quaternion_values</span> Initial condition values for the Quaternion variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of Quaternion&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_R2_names</span> Apply initial conditions to these R2 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_R2_values</span> Initial condition values for the R2 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of R2&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_R3_names</span> Apply initial conditions to these R3 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_R3_values</span> Initial condition values for the R3 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of R3&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_R4_names</span> Apply initial conditions to these R4 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_R4_values</span> Initial condition values for the R4 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of R4&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_Rot_names</span> Apply initial conditions to these Rot variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_Rot_values</span> Initial condition values for the Rot variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of Rot&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_SFFR4_names</span> Apply initial conditions to these SFFR4 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_SFFR4_values</span> Initial condition values for the SFFR4 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SFFR4&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_SFR3_names</span> Apply initial conditions to these SFR3 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_SFR3_values</span> Initial condition values for the SFR3 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SFR3&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_SR2_names</span> Apply initial conditions to these SR2 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_SR2_values</span> Initial condition values for the SR2 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SR2&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_SSR4_names</span> Apply initial conditions to these SSR4 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_SSR4_values</span> Initial condition values for the SSR4 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SSR4&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_SWR4_names</span> Apply initial conditions to these SWR4 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_SWR4_values</span> Initial condition values for the SWR4 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SWR4&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_Scalar_names</span> Apply initial conditions to these Scalar variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_Scalar_values</span> Initial condition values for the Scalar variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of Scalar&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_Tensor_names</span> Apply initial conditions to these Tensor variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_Tensor_values</span> Initial condition values for the Tensor variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of Tensor&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_Vec_names</span> Apply initial conditions to these Vec variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_Vec_values</span> Initial condition values for the Vec variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of Vec&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_WFFR4_names</span> Apply initial conditions to these WFFR4 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_WFFR4_values</span> Initial condition values for the WFFR4 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of WFFR4&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_WR2_names</span> Apply initial conditions to these WR2 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_WR2_values</span> Initial condition values for the WR2 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of WR2&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_WSR4_names</span> Apply initial conditions to these WSR4 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_WSR4_values</span> Initial condition values for the WSR4 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of WSR4&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_WWR4_names</span> Apply initial conditions to these WWR4 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_WWR4_values</span> Initial condition values for the WWR4 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of WWR4&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">mixed_control_signal</span> The name of the control signal for mixed control on the input axis</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name</li>
-<li><u>Default</u>: forces/control </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">mixed_driving_force</span> Name of mixed driving force when using mixed control</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name</li>
-<li><u>Default</u>: forces/fixed_values </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">model</span> The material model to be updated by the driver</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: string </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">postprocessor</span> The postprocessor model to be applied on the model output</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: string </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">predictor</span> Predictor used to set the initial guess for each time step. Options are LINEAR_EXTRAPOLATION, PREVIOUS_STATE</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: EnumSelection</li>
-<li><u>Default</u>: PREVIOUS_STATE </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">prescribed_cauchy_stress_rate</span> Prescribed cauchy stress rate (when control = STRESS)</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: SR2 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">prescribed_deformation_rate</span> Prescribed deformation rate (when control = STRAIN)</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: SR2 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">prescribed_mixed_control_signal</span> The actual values of the control signal for mixed control. 0 implies strain/deformation control, 1 implies stress control</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: SR2 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">prescribed_mixed_driving_force</span> The fixed, controlled values provided as user input for the mixed control case. Where the control signal is 0 these are strain/deformation values, where it is 1 these are stress values</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: SR2 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">prescribed_temperature</span> Actual prescibed temperature values, when providing temperatures to the model</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: Scalar 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">prescribed_time</span> Time steps to perform the material update. The times tensor must have at least one batch dimension representing time steps</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: Scalar 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">prescribed_vorticity</span> Prescribed vorticity</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: WR2 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">random_seed</span> Random seed for any random number generation</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: number </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">save_as</span> File path (absolute or relative to the working directory) to store the results</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: string </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">scheduler</span> The work scheduler to use</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: string </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">temperature</span> Name of temperature</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name</li>
-<li><u>Default</u>: forces/T </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">time</span> Time</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name</li>
-<li><u>Default</u>: forces/t </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">verbose</span> Whether to output additional logging information</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: false </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">vorticity</span> Vorticity</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name</li>
-<li><u>Default</u>: forces/vorticity </li>
-</ul>
-</details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1LDISolidMechanicsDriver.html" title="LDISolidMechanicsDriver">link</a></p>
-<h2 class="doxsection"><a class="anchor" id="sdtsolidmechanicsdriver"></a>
-SDTSolidMechanicsDriver</h2>
-<p>Driver for solid mechanics material model with optional thermal coupling. This driver is specialized for small deformation models using the total formulation. </p><details >
-<summary >
-<span class="tt">async_dispatch</span> Whether to dispatch work asynchronously</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: true </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">control</span> External control of the material update. Options are MIXED, STRESS, STRAIN</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: EnumSelection</li>
-<li><u>Default</u>: STRAIN </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">device</span> Device on which to evaluate the material model. The string supplied must follow the following schema: (cpu|cuda)[:&lt;device-index&gt;] where cpu or cuda specifies the device type, and :&lt;device-index&gt; optionally specifies a device index. For example, device='cpu' sets the target compute device to be CPU, and device='cuda:1' sets the target compute device to be CUDA with device ID 1.</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: string</li>
-<li><u>Default</u>: cpu </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_MillerIndex_names</span> Prescribed driving force of tensor type MillerIndex</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_MillerIndex_values</span> Prescribed driving force values of tensor type MillerIndex</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of MillerIndex&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_Quaternion_names</span> Prescribed driving force of tensor type Quaternion</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_Quaternion_values</span> Prescribed driving force values of tensor type Quaternion</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of Quaternion&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_R2_names</span> Prescribed driving force of tensor type R2</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_R2_values</span> Prescribed driving force values of tensor type R2</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of R2&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_R3_names</span> Prescribed driving force of tensor type R3</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_R3_values</span> Prescribed driving force values of tensor type R3</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of R3&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_R4_names</span> Prescribed driving force of tensor type R4</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_R4_values</span> Prescribed driving force values of tensor type R4</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of R4&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_Rot_names</span> Prescribed driving force of tensor type Rot</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_Rot_values</span> Prescribed driving force values of tensor type Rot</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of Rot&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_SFFR4_names</span> Prescribed driving force of tensor type SFFR4</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_SFFR4_values</span> Prescribed driving force values of tensor type SFFR4</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SFFR4&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_SFR3_names</span> Prescribed driving force of tensor type SFR3</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_SFR3_values</span> Prescribed driving force values of tensor type SFR3</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SFR3&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_SR2_names</span> Prescribed driving force of tensor type SR2</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_SR2_values</span> Prescribed driving force values of tensor type SR2</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SR2&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_SSR4_names</span> Prescribed driving force of tensor type SSR4</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_SSR4_values</span> Prescribed driving force values of tensor type SSR4</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SSR4&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_SWR4_names</span> Prescribed driving force of tensor type SWR4</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_SWR4_values</span> Prescribed driving force values of tensor type SWR4</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SWR4&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_Scalar_names</span> Prescribed driving force of tensor type Scalar</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_Scalar_values</span> Prescribed driving force values of tensor type Scalar</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of Scalar&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_Tensor_names</span> Prescribed driving force of tensor type Tensor</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_Tensor_values</span> Prescribed driving force values of tensor type Tensor</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of Tensor&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_Vec_names</span> Prescribed driving force of tensor type Vec</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_Vec_values</span> Prescribed driving force values of tensor type Vec</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of Vec&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_WFFR4_names</span> Prescribed driving force of tensor type WFFR4</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_WFFR4_values</span> Prescribed driving force values of tensor type WFFR4</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of WFFR4&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_WR2_names</span> Prescribed driving force of tensor type WR2</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_WR2_values</span> Prescribed driving force values of tensor type WR2</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of WR2&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_WSR4_names</span> Prescribed driving force of tensor type WSR4</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_WSR4_values</span> Prescribed driving force values of tensor type WSR4</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of WSR4&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_WWR4_names</span> Prescribed driving force of tensor type WWR4</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">force_WWR4_values</span> Prescribed driving force values of tensor type WWR4</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of WWR4&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_MillerIndex_names</span> Apply initial conditions to these MillerIndex variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_MillerIndex_values</span> Initial condition values for the MillerIndex variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of MillerIndex&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_Quaternion_names</span> Apply initial conditions to these Quaternion variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_Quaternion_values</span> Initial condition values for the Quaternion variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of Quaternion&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_R2_names</span> Apply initial conditions to these R2 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_R2_values</span> Initial condition values for the R2 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of R2&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_R3_names</span> Apply initial conditions to these R3 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_R3_values</span> Initial condition values for the R3 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of R3&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_R4_names</span> Apply initial conditions to these R4 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_R4_values</span> Initial condition values for the R4 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of R4&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_Rot_names</span> Apply initial conditions to these Rot variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_Rot_values</span> Initial condition values for the Rot variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of Rot&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_SFFR4_names</span> Apply initial conditions to these SFFR4 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_SFFR4_values</span> Initial condition values for the SFFR4 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SFFR4&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_SFR3_names</span> Apply initial conditions to these SFR3 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_SFR3_values</span> Initial condition values for the SFR3 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SFR3&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_SR2_names</span> Apply initial conditions to these SR2 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_SR2_values</span> Initial condition values for the SR2 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SR2&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_SSR4_names</span> Apply initial conditions to these SSR4 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_SSR4_values</span> Initial condition values for the SSR4 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SSR4&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_SWR4_names</span> Apply initial conditions to these SWR4 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_SWR4_values</span> Initial condition values for the SWR4 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of SWR4&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_Scalar_names</span> Apply initial conditions to these Scalar variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_Scalar_values</span> Initial condition values for the Scalar variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of Scalar&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_Tensor_names</span> Apply initial conditions to these Tensor variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_Tensor_values</span> Initial condition values for the Tensor variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of Tensor&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_Vec_names</span> Apply initial conditions to these Vec variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_Vec_values</span> Initial condition values for the Vec variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of Vec&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_WFFR4_names</span> Apply initial conditions to these WFFR4 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_WFFR4_values</span> Initial condition values for the WFFR4 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of WFFR4&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_WR2_names</span> Apply initial conditions to these WR2 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_WR2_values</span> Initial condition values for the WR2 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of WR2&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_WSR4_names</span> Apply initial conditions to these WSR4 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_WSR4_values</span> Initial condition values for the WSR4 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of WSR4&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_WWR4_names</span> Apply initial conditions to these WWR4 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of variable name </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">ic_WWR4_values</span> Initial condition values for the WWR4 variables</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: list of WWR4&gt; 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">mixed_control_signal</span> The name of the control signal for mixed control on the input axis</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name</li>
-<li><u>Default</u>: forces/control </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">mixed_driving_force</span> Name of mixed driving force when using mixed control</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name</li>
-<li><u>Default</u>: forces/fixed_values </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">model</span> The material model to be updated by the driver</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: string </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">postprocessor</span> The postprocessor model to be applied on the model output</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: string </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">predictor</span> Predictor used to set the initial guess for each time step. Options are LINEAR_EXTRAPOLATION, PREVIOUS_STATE</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: EnumSelection</li>
-<li><u>Default</u>: PREVIOUS_STATE </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">prescribed_mixed_control_signal</span> The actual values of the control signal for mixed control. 0 implies strain/deformation control, 1 implies stress control</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: SR2 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">prescribed_mixed_driving_force</span> The fixed, controlled values provided as user input for the mixed control case. Where the control signal is 0 these are strain/deformation values, where it is 1 these are stress values</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: SR2 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">prescribed_strain</span> Prescribed strain (when control = STRAIN)</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: SR2 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">prescribed_stress</span> Prescribed stress (when control = STRESS)</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: SR2 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">prescribed_temperature</span> Actual prescibed temperature values, when providing temperatures to the model</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: Scalar 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">prescribed_time</span> Time steps to perform the material update. The times tensor must have at least one batch dimension representing time steps</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: Scalar 🔗 </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">random_seed</span> Random seed for any random number generation</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: number </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">save_as</span> File path (absolute or relative to the working directory) to store the results</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: string </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">scheduler</span> The work scheduler to use</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: string </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">strain</span> Name of the strain used to drive the update</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name</li>
-<li><u>Default</u>: forces/E </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">stress</span> Name of the stress used to drive the update</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name</li>
-<li><u>Default</u>: forces/S </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">temperature</span> Name of temperature</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name</li>
-<li><u>Default</u>: forces/T </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">time</span> Time</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: variable name</li>
-<li><u>Default</u>: forces/t </li>
-</ul>
-</details>
-<details >
-<summary >
-<span class="tt">verbose</span> Whether to output additional logging information</summary>
-<p></p>
-<ul>
-<li><u>Type</u>: bool</li>
-<li><u>Default</u>: false </li>
-</ul>
-</details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1SDTSolidMechanicsDriver.html" title="SDTSolidMechanicsDriver">link</a></p>
 <h2 class="doxsection"><a class="anchor" id="transientdriver"></a>
 TransientDriver</h2>
 <p>Driver for simulating the transient response of an autonomous system. </p><details >
@@ -1744,7 +162,27 @@ TransientDriver</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: bool</li>
+<li><u>Required</u>: No</li>
 <li><u>Default</u>: true </li>
+</ul>
+</details>
+<details >
+<summary >
+<span class="tt">custom_predictor</span> Name of a model to use as an additional predictor before each solve step. Its outputs override state variable initial guesses.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: string</li>
+<li><u>Required</u>: No </li>
+</ul>
+</details>
+<details >
+<summary >
+<span class="tt">custom_predictor_apply</span> When to apply the custom predictor: FIRST_STEP (only the first step) or ALL_STEPS (every step). Options are ALL_STEPS, FIRST_STEP</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: EnumSelection</li>
+<li><u>Required</u>: No</li>
+<li><u>Default</u>: FIRST_STEP </li>
 </ul>
 </details>
 <details >
@@ -1753,6 +191,7 @@ TransientDriver</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: string</li>
+<li><u>Required</u>: No</li>
 <li><u>Default</u>: cpu </li>
 </ul>
 </details>
@@ -1761,7 +200,8 @@ TransientDriver</h2>
 <span class="tt">force_MillerIndex_names</span> Prescribed driving force of tensor type MillerIndex</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -1769,7 +209,8 @@ TransientDriver</h2>
 <span class="tt">force_MillerIndex_values</span> Prescribed driving force values of tensor type MillerIndex</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of MillerIndex&gt; 🔗 </li>
+<li><u>Type</u>: list of MillerIndex&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -1777,7 +218,8 @@ TransientDriver</h2>
 <span class="tt">force_Quaternion_names</span> Prescribed driving force of tensor type Quaternion</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -1785,7 +227,8 @@ TransientDriver</h2>
 <span class="tt">force_Quaternion_values</span> Prescribed driving force values of tensor type Quaternion</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of Quaternion&gt; 🔗 </li>
+<li><u>Type</u>: list of Quaternion&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -1793,7 +236,8 @@ TransientDriver</h2>
 <span class="tt">force_R2_names</span> Prescribed driving force of tensor type R2</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -1801,7 +245,8 @@ TransientDriver</h2>
 <span class="tt">force_R2_values</span> Prescribed driving force values of tensor type R2</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of R2&gt; 🔗 </li>
+<li><u>Type</u>: list of R2&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -1809,7 +254,8 @@ TransientDriver</h2>
 <span class="tt">force_R3_names</span> Prescribed driving force of tensor type R3</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -1817,7 +263,8 @@ TransientDriver</h2>
 <span class="tt">force_R3_values</span> Prescribed driving force values of tensor type R3</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of R3&gt; 🔗 </li>
+<li><u>Type</u>: list of R3&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -1825,7 +272,8 @@ TransientDriver</h2>
 <span class="tt">force_R4_names</span> Prescribed driving force of tensor type R4</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -1833,7 +281,8 @@ TransientDriver</h2>
 <span class="tt">force_R4_values</span> Prescribed driving force values of tensor type R4</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of R4&gt; 🔗 </li>
+<li><u>Type</u>: list of R4&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -1841,7 +290,8 @@ TransientDriver</h2>
 <span class="tt">force_Rot_names</span> Prescribed driving force of tensor type Rot</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -1849,7 +299,8 @@ TransientDriver</h2>
 <span class="tt">force_Rot_values</span> Prescribed driving force values of tensor type Rot</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of Rot&gt; 🔗 </li>
+<li><u>Type</u>: list of Rot&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -1857,7 +308,8 @@ TransientDriver</h2>
 <span class="tt">force_SFFR4_names</span> Prescribed driving force of tensor type SFFR4</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -1865,7 +317,8 @@ TransientDriver</h2>
 <span class="tt">force_SFFR4_values</span> Prescribed driving force values of tensor type SFFR4</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of SFFR4&gt; 🔗 </li>
+<li><u>Type</u>: list of SFFR4&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -1873,7 +326,8 @@ TransientDriver</h2>
 <span class="tt">force_SFR3_names</span> Prescribed driving force of tensor type SFR3</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -1881,7 +335,8 @@ TransientDriver</h2>
 <span class="tt">force_SFR3_values</span> Prescribed driving force values of tensor type SFR3</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of SFR3&gt; 🔗 </li>
+<li><u>Type</u>: list of SFR3&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -1889,7 +344,8 @@ TransientDriver</h2>
 <span class="tt">force_SR2_names</span> Prescribed driving force of tensor type SR2</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -1897,7 +353,8 @@ TransientDriver</h2>
 <span class="tt">force_SR2_values</span> Prescribed driving force values of tensor type SR2</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of SR2&gt; 🔗 </li>
+<li><u>Type</u>: list of SR2&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -1905,7 +362,8 @@ TransientDriver</h2>
 <span class="tt">force_SSR4_names</span> Prescribed driving force of tensor type SSR4</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -1913,7 +371,8 @@ TransientDriver</h2>
 <span class="tt">force_SSR4_values</span> Prescribed driving force values of tensor type SSR4</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of SSR4&gt; 🔗 </li>
+<li><u>Type</u>: list of SSR4&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -1921,7 +380,8 @@ TransientDriver</h2>
 <span class="tt">force_SWR4_names</span> Prescribed driving force of tensor type SWR4</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -1929,7 +389,8 @@ TransientDriver</h2>
 <span class="tt">force_SWR4_values</span> Prescribed driving force values of tensor type SWR4</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of SWR4&gt; 🔗 </li>
+<li><u>Type</u>: list of SWR4&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -1937,7 +398,8 @@ TransientDriver</h2>
 <span class="tt">force_Scalar_names</span> Prescribed driving force of tensor type Scalar</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -1945,7 +407,8 @@ TransientDriver</h2>
 <span class="tt">force_Scalar_values</span> Prescribed driving force values of tensor type Scalar</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of Scalar&gt; 🔗 </li>
+<li><u>Type</u>: list of Scalar&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -1953,7 +416,8 @@ TransientDriver</h2>
 <span class="tt">force_Tensor_names</span> Prescribed driving force of tensor type Tensor</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -1961,7 +425,8 @@ TransientDriver</h2>
 <span class="tt">force_Tensor_values</span> Prescribed driving force values of tensor type Tensor</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of Tensor&gt; 🔗 </li>
+<li><u>Type</u>: list of Tensor&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -1969,7 +434,8 @@ TransientDriver</h2>
 <span class="tt">force_Vec_names</span> Prescribed driving force of tensor type Vec</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -1977,7 +443,8 @@ TransientDriver</h2>
 <span class="tt">force_Vec_values</span> Prescribed driving force values of tensor type Vec</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of Vec&gt; 🔗 </li>
+<li><u>Type</u>: list of Vec&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -1985,7 +452,8 @@ TransientDriver</h2>
 <span class="tt">force_WFFR4_names</span> Prescribed driving force of tensor type WFFR4</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -1993,7 +461,8 @@ TransientDriver</h2>
 <span class="tt">force_WFFR4_values</span> Prescribed driving force values of tensor type WFFR4</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of WFFR4&gt; 🔗 </li>
+<li><u>Type</u>: list of WFFR4&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2001,7 +470,8 @@ TransientDriver</h2>
 <span class="tt">force_WR2_names</span> Prescribed driving force of tensor type WR2</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2009,7 +479,8 @@ TransientDriver</h2>
 <span class="tt">force_WR2_values</span> Prescribed driving force values of tensor type WR2</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of WR2&gt; 🔗 </li>
+<li><u>Type</u>: list of WR2&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2017,7 +488,8 @@ TransientDriver</h2>
 <span class="tt">force_WSR4_names</span> Prescribed driving force of tensor type WSR4</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2025,7 +497,8 @@ TransientDriver</h2>
 <span class="tt">force_WSR4_values</span> Prescribed driving force values of tensor type WSR4</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of WSR4&gt; 🔗 </li>
+<li><u>Type</u>: list of WSR4&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2033,7 +506,8 @@ TransientDriver</h2>
 <span class="tt">force_WWR4_names</span> Prescribed driving force of tensor type WWR4</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2041,7 +515,8 @@ TransientDriver</h2>
 <span class="tt">force_WWR4_values</span> Prescribed driving force values of tensor type WWR4</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of WWR4&gt; 🔗 </li>
+<li><u>Type</u>: list of WWR4&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2049,7 +524,8 @@ TransientDriver</h2>
 <span class="tt">ic_MillerIndex_names</span> Apply initial conditions to these MillerIndex variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2057,7 +533,8 @@ TransientDriver</h2>
 <span class="tt">ic_MillerIndex_values</span> Initial condition values for the MillerIndex variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of MillerIndex&gt; 🔗 </li>
+<li><u>Type</u>: list of MillerIndex&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2065,7 +542,8 @@ TransientDriver</h2>
 <span class="tt">ic_Quaternion_names</span> Apply initial conditions to these Quaternion variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2073,7 +551,8 @@ TransientDriver</h2>
 <span class="tt">ic_Quaternion_values</span> Initial condition values for the Quaternion variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of Quaternion&gt; 🔗 </li>
+<li><u>Type</u>: list of Quaternion&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2081,7 +560,8 @@ TransientDriver</h2>
 <span class="tt">ic_R2_names</span> Apply initial conditions to these R2 variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2089,7 +569,8 @@ TransientDriver</h2>
 <span class="tt">ic_R2_values</span> Initial condition values for the R2 variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of R2&gt; 🔗 </li>
+<li><u>Type</u>: list of R2&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2097,7 +578,8 @@ TransientDriver</h2>
 <span class="tt">ic_R3_names</span> Apply initial conditions to these R3 variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2105,7 +587,8 @@ TransientDriver</h2>
 <span class="tt">ic_R3_values</span> Initial condition values for the R3 variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of R3&gt; 🔗 </li>
+<li><u>Type</u>: list of R3&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2113,7 +596,8 @@ TransientDriver</h2>
 <span class="tt">ic_R4_names</span> Apply initial conditions to these R4 variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2121,7 +605,8 @@ TransientDriver</h2>
 <span class="tt">ic_R4_values</span> Initial condition values for the R4 variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of R4&gt; 🔗 </li>
+<li><u>Type</u>: list of R4&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2129,7 +614,8 @@ TransientDriver</h2>
 <span class="tt">ic_Rot_names</span> Apply initial conditions to these Rot variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2137,7 +623,8 @@ TransientDriver</h2>
 <span class="tt">ic_Rot_values</span> Initial condition values for the Rot variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of Rot&gt; 🔗 </li>
+<li><u>Type</u>: list of Rot&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2145,7 +632,8 @@ TransientDriver</h2>
 <span class="tt">ic_SFFR4_names</span> Apply initial conditions to these SFFR4 variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2153,7 +641,8 @@ TransientDriver</h2>
 <span class="tt">ic_SFFR4_values</span> Initial condition values for the SFFR4 variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of SFFR4&gt; 🔗 </li>
+<li><u>Type</u>: list of SFFR4&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2161,7 +650,8 @@ TransientDriver</h2>
 <span class="tt">ic_SFR3_names</span> Apply initial conditions to these SFR3 variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2169,7 +659,8 @@ TransientDriver</h2>
 <span class="tt">ic_SFR3_values</span> Initial condition values for the SFR3 variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of SFR3&gt; 🔗 </li>
+<li><u>Type</u>: list of SFR3&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2177,7 +668,8 @@ TransientDriver</h2>
 <span class="tt">ic_SR2_names</span> Apply initial conditions to these SR2 variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2185,7 +677,8 @@ TransientDriver</h2>
 <span class="tt">ic_SR2_values</span> Initial condition values for the SR2 variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of SR2&gt; 🔗 </li>
+<li><u>Type</u>: list of SR2&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2193,7 +686,8 @@ TransientDriver</h2>
 <span class="tt">ic_SSR4_names</span> Apply initial conditions to these SSR4 variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2201,7 +695,8 @@ TransientDriver</h2>
 <span class="tt">ic_SSR4_values</span> Initial condition values for the SSR4 variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of SSR4&gt; 🔗 </li>
+<li><u>Type</u>: list of SSR4&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2209,7 +704,8 @@ TransientDriver</h2>
 <span class="tt">ic_SWR4_names</span> Apply initial conditions to these SWR4 variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2217,7 +713,8 @@ TransientDriver</h2>
 <span class="tt">ic_SWR4_values</span> Initial condition values for the SWR4 variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of SWR4&gt; 🔗 </li>
+<li><u>Type</u>: list of SWR4&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2225,7 +722,8 @@ TransientDriver</h2>
 <span class="tt">ic_Scalar_names</span> Apply initial conditions to these Scalar variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2233,7 +731,8 @@ TransientDriver</h2>
 <span class="tt">ic_Scalar_values</span> Initial condition values for the Scalar variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of Scalar&gt; 🔗 </li>
+<li><u>Type</u>: list of Scalar&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2241,7 +740,8 @@ TransientDriver</h2>
 <span class="tt">ic_Tensor_names</span> Apply initial conditions to these Tensor variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2249,7 +749,8 @@ TransientDriver</h2>
 <span class="tt">ic_Tensor_values</span> Initial condition values for the Tensor variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of Tensor&gt; 🔗 </li>
+<li><u>Type</u>: list of Tensor&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2257,7 +758,8 @@ TransientDriver</h2>
 <span class="tt">ic_Vec_names</span> Apply initial conditions to these Vec variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2265,7 +767,8 @@ TransientDriver</h2>
 <span class="tt">ic_Vec_values</span> Initial condition values for the Vec variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of Vec&gt; 🔗 </li>
+<li><u>Type</u>: list of Vec&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2273,7 +776,8 @@ TransientDriver</h2>
 <span class="tt">ic_WFFR4_names</span> Apply initial conditions to these WFFR4 variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2281,7 +785,8 @@ TransientDriver</h2>
 <span class="tt">ic_WFFR4_values</span> Initial condition values for the WFFR4 variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of WFFR4&gt; 🔗 </li>
+<li><u>Type</u>: list of WFFR4&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2289,7 +794,8 @@ TransientDriver</h2>
 <span class="tt">ic_WR2_names</span> Apply initial conditions to these WR2 variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2297,7 +803,8 @@ TransientDriver</h2>
 <span class="tt">ic_WR2_values</span> Initial condition values for the WR2 variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of WR2&gt; 🔗 </li>
+<li><u>Type</u>: list of WR2&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2305,7 +812,8 @@ TransientDriver</h2>
 <span class="tt">ic_WSR4_names</span> Apply initial conditions to these WSR4 variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2313,7 +821,8 @@ TransientDriver</h2>
 <span class="tt">ic_WSR4_values</span> Initial condition values for the WSR4 variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of WSR4&gt; 🔗 </li>
+<li><u>Type</u>: list of WSR4&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2321,7 +830,8 @@ TransientDriver</h2>
 <span class="tt">ic_WWR4_names</span> Apply initial conditions to these WWR4 variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of variable name </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2329,15 +839,17 @@ TransientDriver</h2>
 <span class="tt">ic_WWR4_values</span> Initial condition values for the WWR4 variables</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of WWR4&gt; 🔗 </li>
+<li><u>Type</u>: list of WWR4&gt; 🔗</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
 <summary >
-<span class="tt">model</span> The material model to be updated by the driver</summary>
+<span class="tt">model</span> The model to be updated by the driver</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: string </li>
+<li><u>Type</u>: string</li>
+<li><u>Required</u>: Yes </li>
 </ul>
 </details>
 <details >
@@ -2345,7 +857,8 @@ TransientDriver</h2>
 <span class="tt">postprocessor</span> The postprocessor model to be applied on the model output</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: string </li>
+<li><u>Type</u>: string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2354,6 +867,7 @@ TransientDriver</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: EnumSelection</li>
+<li><u>Required</u>: No</li>
 <li><u>Default</u>: PREVIOUS_STATE </li>
 </ul>
 </details>
@@ -2362,7 +876,8 @@ TransientDriver</h2>
 <span class="tt">prescribed_time</span> Time steps to perform the material update. The times tensor must have at least one batch dimension representing time steps</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: Scalar 🔗 </li>
+<li><u>Type</u>: Scalar 🔗</li>
+<li><u>Required</u>: Yes </li>
 </ul>
 </details>
 <details >
@@ -2370,7 +885,8 @@ TransientDriver</h2>
 <span class="tt">random_seed</span> Random seed for any random number generation</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: number </li>
+<li><u>Type</u>: number</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2378,7 +894,8 @@ TransientDriver</h2>
 <span class="tt">save_as</span> File path (absolute or relative to the working directory) to store the results</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: string </li>
+<li><u>Type</u>: string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2386,7 +903,8 @@ TransientDriver</h2>
 <span class="tt">scheduler</span> The work scheduler to use</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: string </li>
+<li><u>Type</u>: string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -2394,8 +912,9 @@ TransientDriver</h2>
 <span class="tt">time</span> Time</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: variable name</li>
-<li><u>Default</u>: forces/t </li>
+<li><u>Type</u>: string</li>
+<li><u>Required</u>: No</li>
+<li><u>Default</u>: t </li>
 </ul>
 </details>
 <details >
@@ -2404,10 +923,11 @@ TransientDriver</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: bool</li>
+<li><u>Required</u>: No</li>
 <li><u>Default</u>: false </li>
 </ul>
 </details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1TransientDriver.html" title="TransientDriver">link</a> </p>
+<p>Detailed documentation <a class="el" href="#transientdriver" title="TransientDriver">link</a> </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

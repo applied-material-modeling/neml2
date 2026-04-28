@@ -5,6 +5,5 @@ var searchData=
   ['skew_5ffactor_2',['skew_factor',['../namespaceneml2.html#a5b40a1ce1df82bf54d1b9fd14a4da091',1,'neml2']]],
   ['skew_5freverse_5findex_3',['skew_reverse_index',['../namespaceneml2.html#ad5caed3be984fbb32a81c463689aafd9',1,'neml2']]],
   ['sqrt2_4',['sqrt2',['../namespaceneml2.html#adb265f76c6b5b0c20d46df3a797d9e22',1,'neml2']]],
-  ['state_5',['STATE',['../namespaceneml2.html#a4edce20446c110419b57e4376b9b8527',1,'neml2']]],
-  ['suppressed_6',['suppressed',['../structneml2_1_1OptionBase_1_1Metadata.html#a1ff2134cf6cbb111f94cc3f99af04af1',1,'neml2::OptionBase::Metadata']]]
+  ['suppressed_5',['suppressed',['../structneml2_1_1OptionBase_1_1Metadata.html#a1ff2134cf6cbb111f94cc3f99af04af1',1,'neml2::OptionBase::Metadata']]]
 ];

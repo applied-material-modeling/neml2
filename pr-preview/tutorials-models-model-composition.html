@@ -134,21 +134,21 @@ $(function(){initNavTree('tutorials-models-model-composition.html','',''); });
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md126">Problem description </a>
+    <a href="#autotoc_md130">Problem description </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md127">Writing the input file </a>
+    <a href="#autotoc_md131">Writing the input file </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md128">Evaluating the models: The hard way </a>
+    <a href="#autotoc_md132">Evaluating the models: The hard way </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md129">Evaluating the models: The easy way </a>
+    <a href="#autotoc_md133">Evaluating the models: The easy way </a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_build_2doc_2content_2tutorials_2models_2model__composition_2main"></a></p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md126"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md130"></a>
 Problem description</h1>
 <p>We have been working with the linear, isotropic elasticity model in the previous tutorials. We started with that example because it is arguably the simplest possible material model in the context of solid mechanics. It is simple not just because of the simplicity in the description of the material behavior, but also due to the fact that its mathematical formulation only involves one linear equation.</p>
 <p>Much more complicated, nonlinear models can be created using NEML2.</p>
@@ -182,7 +182,7 @@ Problem description</h1>
 \end{align}
 </p>
 <p> where \( \boldsymbol{a} \) and \( \boldsymbol{b} \) are symmetric second order tensors.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md127"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md131"></a>
 Writing the input file</h1>
 <p>Let us first search for available models describing this set of equations:</p><ul>
 <li>\( \eqref{1} \&amp; \eqref{2} \) correspond to <a class="el" href="syntax-models.html#sr2invariant" title="SR2Invariant">SR2Invariant</a>;</li>
@@ -191,25 +191,25 @@ Writing the input file</h1>
 <p>The input file then looks like </p><div class="fragment"><div class="line">[Models]</div>
 <div class="line">  [eq1]</div>
 <div class="line">    type = SR2Invariant</div>
-<div class="line">    tensor = &#39;forces/a&#39;</div>
-<div class="line">    invariant = &#39;state/a_bar&#39;</div>
+<div class="line">    tensor = &#39;a&#39;</div>
+<div class="line">    invariant = &#39;a_bar&#39;</div>
 <div class="line">    invariant_type = I1</div>
 <div class="line">  []</div>
 <div class="line">  [eq2]</div>
 <div class="line">    type = SR2Invariant</div>
-<div class="line">    tensor = &#39;state/b&#39;</div>
-<div class="line">    invariant = &#39;state/b_bar&#39;</div>
+<div class="line">    tensor = &#39;b&#39;</div>
+<div class="line">    invariant = &#39;b_bar&#39;</div>
 <div class="line">    invariant_type = VONMISES</div>
 <div class="line">  []</div>
 <div class="line">  [eq3]</div>
 <div class="line">    type = SR2LinearCombination</div>
-<div class="line">    from_var = &#39;forces/a state/b&#39;</div>
-<div class="line">    to_var = &#39;state/b_rate&#39;</div>
-<div class="line">    coefficients = &#39;1 1&#39;</div>
-<div class="line">    coefficient_as_parameter = true</div>
+<div class="line">    from = &#39;a b&#39;</div>
+<div class="line">    to = &#39;b_rate&#39;</div>
+<div class="line">    weights = &#39;1 1&#39;</div>
+<div class="line">    weight_as_parameter = true</div>
 <div class="line">  []</div>
 <div class="line">[]</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md128"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md132"></a>
 Evaluating the models: The hard way</h1>
 <p>Now that all three models are defined in the input file, we can load and evaluate them in sequence, with a bit of effort:</p>
 <div class="tabbed"></div><div class="tabbed"><ul>
@@ -227,24 +227,19 @@ Evaluating the models: The hard way</h1>
 <div class="line">  <span class="keyword">auto</span> eq3 = factory-&gt;get_model(<span class="stringliteral">&quot;eq3&quot;</span>);</div>
 <div class="line"> </div>
 <div class="line">  <span class="comment">// Create the input variables</span></div>
-<div class="line">  <span class="keyword">auto</span> a_name = <a class="code hl_typedef" href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">VariableName</a>(<span class="stringliteral">&quot;forces&quot;</span>, <span class="stringliteral">&quot;a&quot;</span>);</div>
-<div class="line">  <span class="keyword">auto</span> b_name = <a class="code hl_typedef" href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">VariableName</a>(<span class="stringliteral">&quot;state&quot;</span>, <span class="stringliteral">&quot;b&quot;</span>);</div>
 <div class="line">  <span class="keyword">auto</span> a = <a class="code hl_function" href="classneml2_1_1SR2.html#a1cbf1c79b56c0216faa5d7795c44f05d">SR2::fill</a>(0.1, 0.05, -0.03, 0.02, 0.06, 0.03);</div>
 <div class="line">  <span class="keyword">auto</span> b = <a class="code hl_function" href="classneml2_1_1SR2.html#a1cbf1c79b56c0216faa5d7795c44f05d">SR2::fill</a>(100, 20, 10, 5, -30, -20);</div>
 <div class="line"> </div>
 <div class="line">  <span class="comment">// Evaluate the first model to get a_bar</span></div>
-<div class="line">  <span class="keyword">auto</span> a_bar_name = <a class="code hl_typedef" href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">VariableName</a>(<span class="stringliteral">&quot;state&quot;</span>, <span class="stringliteral">&quot;a_bar&quot;</span>);</div>
-<div class="line">  <span class="keyword">auto</span> a_bar = eq1-&gt;value({{a_name, a}})[a_bar_name];</div>
+<div class="line">  <span class="keyword">auto</span> a_bar = eq1-&gt;value({{<span class="stringliteral">&quot;a&quot;</span>, a}})[<span class="stringliteral">&quot;a_bar&quot;</span>];</div>
 <div class="line"> </div>
 <div class="line">  <span class="comment">// Evaluate the second model to get b_bar</span></div>
-<div class="line">  <span class="keyword">auto</span> b_bar_name = <a class="code hl_typedef" href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">VariableName</a>(<span class="stringliteral">&quot;state&quot;</span>, <span class="stringliteral">&quot;b_bar&quot;</span>);</div>
-<div class="line">  <span class="keyword">auto</span> b_bar = eq2-&gt;value({{b_name, <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1symmetry__operators.html#aa93a189fb7bbbf87be54bcc7bd11bb6f">b</a>}})[b_bar_name];</div>
+<div class="line">  <span class="keyword">auto</span> b_bar = eq2-&gt;value({{<span class="stringliteral">&quot;b&quot;</span>, <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1symmetry__operators.html#aa93a189fb7bbbf87be54bcc7bd11bb6f">b</a>}})[<span class="stringliteral">&quot;b_bar&quot;</span>];</div>
 <div class="line"> </div>
 <div class="line">  <span class="comment">// Evaluate the third model to get b_rate</span></div>
-<div class="line">  eq3-&gt;set_parameter(<span class="stringliteral">&quot;c_0&quot;</span>, b_bar);</div>
-<div class="line">  eq3-&gt;set_parameter(<span class="stringliteral">&quot;c_1&quot;</span>, a_bar);</div>
-<div class="line">  <span class="keyword">auto</span> b_rate_name = <a class="code hl_typedef" href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">VariableName</a>(<span class="stringliteral">&quot;state&quot;</span>, <span class="stringliteral">&quot;b_rate&quot;</span>);</div>
-<div class="line">  <span class="keyword">auto</span> b_rate = eq3-&gt;value({{a_name, <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a>}, {b_name, <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1symmetry__operators.html#aa93a189fb7bbbf87be54bcc7bd11bb6f">b</a>}})[b_rate_name];</div>
+<div class="line">  eq3-&gt;set_parameter(<span class="stringliteral">&quot;w_0&quot;</span>, b_bar);</div>
+<div class="line">  eq3-&gt;set_parameter(<span class="stringliteral">&quot;w_1&quot;</span>, a_bar);</div>
+<div class="line">  <span class="keyword">auto</span> b_rate = eq3-&gt;value({{<span class="stringliteral">&quot;a&quot;</span>, <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1symmetry__operators.html#a188caae18b60b66f9f44214c7e28ac1f">a</a>}, {<span class="stringliteral">&quot;b&quot;</span>, <a class="code hl_variable" href="namespaceneml2_1_1crystallography_1_1symmetry__operators.html#aa93a189fb7bbbf87be54bcc7bd11bb6f">b</a>}})[<span class="stringliteral">&quot;b_rate&quot;</span>];</div>
 <div class="line"> </div>
 <div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;b_rate: \n&quot;</span> &lt;&lt; b_rate &lt;&lt; std::endl;</div>
 <div class="line">}</div>
@@ -255,7 +250,6 @@ Evaluating the models: The hard way</h1>
 <div class="ttc" id="anamespaceneml2_html_a16c96ec35672a72196d72131d3f5f8c3"><div class="ttname"><a href="namespaceneml2.html#a16c96ec35672a72196d72131d3f5f8c3">neml2::kFloat64</a></div><div class="ttdeci">constexpr auto kFloat64</div><div class="ttdef"><b>Definition</b> types.h:54</div></div>
 <div class="ttc" id="anamespaceneml2_html_a3c266b437e28eb7adec97c12b9a7e7d2"><div class="ttname"><a href="namespaceneml2.html#a3c266b437e28eb7adec97c12b9a7e7d2">neml2::set_default_dtype</a></div><div class="ttdeci">void set_default_dtype(Dtype dtype)</div></div>
 <div class="ttc" id="anamespaceneml2_html_a95bfc866ea59a23929617ab7ec620a3e"><div class="ttname"><a href="namespaceneml2.html#a95bfc866ea59a23929617ab7ec620a3e">neml2::load_input</a></div><div class="ttdeci">std::unique_ptr&lt; Factory &gt; load_input(const std::filesystem::path &amp;path, const std::string &amp;additional_input=&quot;&quot;)</div><div class="ttdoc">A convenient function to parse all options from an input file.</div></div>
-<div class="ttc" id="anamespaceneml2_html_a9e1488821b46ffc106c90ab80036b7aa"><div class="ttname"><a href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">neml2::VariableName</a></div><div class="ttdeci">LabeledAxisAccessor VariableName</div><div class="ttdef"><b>Definition</b> LabeledAxisAccessor.h:185</div></div>
 </div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">b_rate: </div>
 <div class="line"> 22.6184</div>
 <div class="line">  7.7092</div>
@@ -280,15 +274,15 @@ Evaluating the models: The hard way</h1>
 <div class="line">b = SR2.fill(100.0, 20.0, 10.0, 5.0, -30.0, -20.0)</div>
 <div class="line"> </div>
 <div class="line"><span class="comment"># Evaluate the first model to get a_bar</span></div>
-<div class="line">a_bar = eq1.value({<span class="stringliteral">&quot;forces/a&quot;</span>: a})[<span class="stringliteral">&quot;state/a_bar&quot;</span>]</div>
+<div class="line">a_bar = eq1.value({<span class="stringliteral">&quot;a&quot;</span>: a})[<span class="stringliteral">&quot;a_bar&quot;</span>]</div>
 <div class="line"> </div>
 <div class="line"><span class="comment"># Evaluate the second model to get b_bar</span></div>
-<div class="line">b_bar = eq2.value({<span class="stringliteral">&quot;state/b&quot;</span>: b})[<span class="stringliteral">&quot;state/b_bar&quot;</span>]</div>
+<div class="line">b_bar = eq2.value({<span class="stringliteral">&quot;b&quot;</span>: b})[<span class="stringliteral">&quot;b_bar&quot;</span>]</div>
 <div class="line"> </div>
 <div class="line"><span class="comment"># Evaluate the third model to get b_rate</span></div>
-<div class="line">eq3.c_0 = b_bar</div>
-<div class="line">eq3.c_1 = a_bar</div>
-<div class="line">b_rate = eq3.value({<span class="stringliteral">&quot;forces/a&quot;</span>: a, <span class="stringliteral">&quot;state/b&quot;</span>: b})[<span class="stringliteral">&quot;state/b_rate&quot;</span>]</div>
+<div class="line">eq3.w_0 = b_bar</div>
+<div class="line">eq3.w_1 = a_bar</div>
+<div class="line">b_rate = eq3.value({<span class="stringliteral">&quot;a&quot;</span>: a, <span class="stringliteral">&quot;b&quot;</span>: b})[<span class="stringliteral">&quot;b_rate&quot;</span>]</div>
 <div class="line"> </div>
 <div class="line">print(<span class="stringliteral">&quot;b_rate:&quot;</span>)</div>
 <div class="line">print(b_rate)</div>
@@ -303,7 +297,7 @@ Evaluating the models: The hard way</h1>
 <div class="line">&lt;Tensor of shape [][][6]&gt;</div>
 </div><!-- fragment --></li>
 </ul>
-</div><div class="tabbed"></div><h1 class="doxsection"><a class="anchor" id="autotoc_md129"></a>
+</div><div class="tabbed"></div><h1 class="doxsection"><a class="anchor" id="autotoc_md133"></a>
 Evaluating the models: The easy way</h1>
 <p>We were able to successfully calculate \( \dot{\boldsymbol{b}} \) by</p><ol type="1">
 <li>calculating \( \bar{a} \) by evaluating \( \eqref{1} \),</li>
@@ -315,33 +309,33 @@ Evaluating the models: The easy way</h1>
 <li>Manually evaluate the equations and figure out the evaluation order, and</li>
 <li>Manually set the parameters in \( \eqref{3} \) as outputs from \( \eqref{1}\&amp;\eqref{2} \).</li>
 </ul>
-<p>This manual method is not scalable when the number of equations, variables, and parameters increase.</p>
+<p>This manual setup is not scalable when the number of equations, variables, and parameters increase.</p>
 <p>Using NEML2's model composition capability can address these issues without sacrificing modularity. <a class="el" href="syntax-models.html#composedmodel" title="ComposedModel">ComposedModel</a> allows us to compose a new model from the three existing models: </p><div class="fragment"><div class="line">[Models]</div>
 <div class="line">  [eq1]</div>
 <div class="line">    type = SR2Invariant</div>
-<div class="line">    tensor = &#39;forces/a&#39;</div>
-<div class="line">    invariant = &#39;state/a_bar&#39;</div>
+<div class="line">    tensor = &#39;a&#39;</div>
+<div class="line">    invariant = &#39;a_bar&#39;</div>
 <div class="line">    invariant_type = I1</div>
 <div class="line">  []</div>
 <div class="line">  [eq2]</div>
 <div class="line">    type = SR2Invariant</div>
-<div class="line">    tensor = &#39;state/b&#39;</div>
-<div class="line">    invariant = &#39;state/b_bar&#39;</div>
+<div class="line">    tensor = &#39;b&#39;</div>
+<div class="line">    invariant = &#39;b_bar&#39;</div>
 <div class="line">    invariant_type = VONMISES</div>
 <div class="line">  []</div>
 <div class="line">  [eq3]</div>
 <div class="line">    type = SR2LinearCombination</div>
-<div class="line">    from_var = &#39;forces/a state/b&#39;</div>
-<div class="line">    to_var = &#39;state/b_rate&#39;</div>
-<div class="line">    coefficients = &#39;eq2 eq1&#39;</div>
-<div class="line">    coefficient_as_parameter = true</div>
+<div class="line">    from = &#39;a b&#39;</div>
+<div class="line">    to = &#39;b_rate&#39;</div>
+<div class="line">    weights = &#39;eq2 eq1&#39;</div>
+<div class="line">    weight_as_parameter = true</div>
 <div class="line">  []</div>
 <div class="line">  [eq]</div>
 <div class="line">    type = ComposedModel</div>
 <div class="line">    models = &#39;eq1 eq2 eq3&#39;</div>
 <div class="line">  []</div>
 <div class="line">[]</div>
-</div><!-- fragment --><dl class="section note"><dt>Note</dt><dd>The names of the other two models are used to specify the coefficients of \( \eqref{3} \), i.e. <span class="tt">coefficients = 'eq2 eq1'</span>. This syntax is different from what was covered in the <a class="el" href="tutorials-models-model-parameters.html" title="Model parameters">previous tutorial</a> on model parameters and will be explained in more details in the <a class="el" href="tutorials-models-model-parameters-revisited.html" title="Model parameters (revisited)">next tutorial</a>.</dd></dl>
+</div><!-- fragment --><dl class="section note"><dt>Note</dt><dd>The names of the other two models are used to specify the weights in \( \eqref{3} \), i.e. <span class="tt">weights = 'eq2 eq1'</span>. This syntax is different from what was covered in the <a class="el" href="tutorials-models-model-parameters.html" title="Model parameters">previous tutorial</a> on model parameters and will be explained in more details in the <a class="el" href="tutorials-models-model-parameters-revisited.html" title="Model parameters (revisited)">next tutorial</a>.</dd></dl>
 <p>Let us first inspect the composed model and compare it against the three sub-models:</p>
 <div class="tabbed"></div><div class="tabbed"><ul>
 <li><p class="startli"><b class="tab-title">C++</b> </p><div class="fragment"><div class="line"><span class="preprocessor">#include &quot;neml2/neml2.h&quot;</span></div>
@@ -365,30 +359,30 @@ Evaluating the models: The easy way</h1>
 <div class="ttc" id="anamespaceneml2_html_a550135ce2c5d93d73c439a59cba33876"><div class="ttname"><a href="namespaceneml2.html#a550135ce2c5d93d73c439a59cba33876">neml2::eq</a></div><div class="ttdeci">Vec eq(const Vec &amp;a, const Vec &amp;b)</div></div>
 </div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">eq1:</div>
 <div class="line">Name:       eq1</div>
-<div class="line">Input:      forces/a [SR2]</div>
-<div class="line">Output:     state/a_bar [Scalar]</div>
+<div class="line">Input:      a [SR2]</div>
+<div class="line">Output:     a_bar [Scalar]</div>
 <div class="line"> </div>
 <div class="line"> </div>
 <div class="line">eq2:</div>
 <div class="line">Name:       eq2</div>
-<div class="line">Input:      state/b [SR2]</div>
-<div class="line">Output:     state/b_bar [Scalar]</div>
+<div class="line">Input:      b [SR2]</div>
+<div class="line">Output:     b_bar [Scalar]</div>
 <div class="line"> </div>
 <div class="line"> </div>
 <div class="line">eq3:</div>
 <div class="line">Name:       eq3</div>
-<div class="line">Input:      forces/a [SR2]</div>
-<div class="line">            state/a_bar [Scalar]</div>
-<div class="line">            state/b [SR2]</div>
-<div class="line">            state/b_bar [Scalar]</div>
-<div class="line">Output:     state/b_rate [SR2]</div>
+<div class="line">Input:      a [SR2]</div>
+<div class="line">            a_bar [Scalar]</div>
+<div class="line">            b [SR2]</div>
+<div class="line">            b_bar [Scalar]</div>
+<div class="line">Output:     b_rate [SR2]</div>
 <div class="line"> </div>
 <div class="line"> </div>
 <div class="line">eq:</div>
 <div class="line">Name:       eq</div>
-<div class="line">Input:      forces/a [SR2]</div>
-<div class="line">            state/b [SR2]</div>
-<div class="line">Output:     state/b_rate [SR2]</div>
+<div class="line">Input:      a [SR2]</div>
+<div class="line">            b [SR2]</div>
+<div class="line">Output:     b_rate [SR2]</div>
 </div><!-- fragment --></li>
 <li><p class="startli"><b class="tab-title">Python</b> </p><div class="fragment"><div class="line"><span class="keyword">import</span> neml2</div>
 <div class="line"><span class="keyword">from</span> neml2.tensors <span class="keyword">import</span> SR2</div>
@@ -409,30 +403,30 @@ Evaluating the models: The easy way</h1>
 <div class="line">print(eq, <span class="stringliteral">&quot;\n&quot;</span>)</div>
 </div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">eq1:</div>
 <div class="line">Name:       eq1</div>
-<div class="line">Input:      forces/a [SR2]</div>
-<div class="line">Output:     state/a_bar [Scalar]</div>
+<div class="line">Input:      a [SR2]</div>
+<div class="line">Output:     a_bar [Scalar]</div>
 <div class="line"> </div>
 <div class="line"> </div>
 <div class="line">eq2:</div>
 <div class="line">Name:       eq2</div>
-<div class="line">Input:      state/b [SR2]</div>
-<div class="line">Output:     state/b_bar [Scalar]</div>
+<div class="line">Input:      b [SR2]</div>
+<div class="line">Output:     b_bar [Scalar]</div>
 <div class="line"> </div>
 <div class="line"> </div>
 <div class="line">eq3:</div>
 <div class="line">Name:       eq3</div>
-<div class="line">Input:      forces/a [SR2]</div>
-<div class="line">            state/a_bar [Scalar]</div>
-<div class="line">            state/b [SR2]</div>
-<div class="line">            state/b_bar [Scalar]</div>
-<div class="line">Output:     state/b_rate [SR2]</div>
+<div class="line">Input:      a [SR2]</div>
+<div class="line">            a_bar [Scalar]</div>
+<div class="line">            b [SR2]</div>
+<div class="line">            b_bar [Scalar]</div>
+<div class="line">Output:     b_rate [SR2]</div>
 <div class="line"> </div>
 <div class="line"> </div>
 <div class="line">eq:</div>
 <div class="line">Name:       eq</div>
-<div class="line">Input:      forces/a [SR2]</div>
-<div class="line">            state/b [SR2]</div>
-<div class="line">Output:     state/b_rate [SR2]</div>
+<div class="line">Input:      a [SR2]</div>
+<div class="line">            b [SR2]</div>
+<div class="line">Output:     b_rate [SR2]</div>
 </div><!-- fragment --></li>
 </ul>
 </div><div class="tabbed"></div><p>Note that the composed model "eq" automatically:</p><ul>
@@ -454,14 +448,11 @@ Evaluating the models: The easy way</h1>
 <div class="line">  <span class="keyword">auto</span> <a class="code hl_function" href="namespaceneml2.html#a550135ce2c5d93d73c439a59cba33876">eq</a> = <a class="code hl_function" href="namespaceneml2.html#aa98735f2ffd7c3ae8b0b339621eb8ab3">load_model</a>(<span class="stringliteral">&quot;input_composed.i&quot;</span>, <span class="stringliteral">&quot;eq&quot;</span>);</div>
 <div class="line"> </div>
 <div class="line">  <span class="comment">// Create the input variables</span></div>
-<div class="line">  <span class="keyword">auto</span> a_name = <a class="code hl_typedef" href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">VariableName</a>(<span class="stringliteral">&quot;forces&quot;</span>, <span class="stringliteral">&quot;a&quot;</span>);</div>
-<div class="line">  <span class="keyword">auto</span> b_name = <a class="code hl_typedef" href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">VariableName</a>(<span class="stringliteral">&quot;state&quot;</span>, <span class="stringliteral">&quot;b&quot;</span>);</div>
 <div class="line">  <span class="keyword">auto</span> a = <a class="code hl_function" href="classneml2_1_1SR2.html#a1cbf1c79b56c0216faa5d7795c44f05d">SR2::fill</a>(0.1, 0.05, -0.03, 0.02, 0.06, 0.03);</div>
 <div class="line">  <span class="keyword">auto</span> b = <a class="code hl_function" href="classneml2_1_1SR2.html#a1cbf1c79b56c0216faa5d7795c44f05d">SR2::fill</a>(100, 20, 10, 5, -30, -20);</div>
 <div class="line"> </div>
 <div class="line">  <span class="comment">// Evaluate the composed model</span></div>
-<div class="line">  <span class="keyword">auto</span> b_rate_name = <a class="code hl_typedef" href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">VariableName</a>(<span class="stringliteral">&quot;state&quot;</span>, <span class="stringliteral">&quot;b_rate&quot;</span>);</div>
-<div class="line">  <span class="keyword">auto</span> b_rate = <a class="code hl_function" href="namespaceneml2.html#a550135ce2c5d93d73c439a59cba33876">eq</a>-&gt;value({{a_name, a}, {b_name, b}})[b_rate_name];</div>
+<div class="line">  <span class="keyword">auto</span> b_rate = <a class="code hl_function" href="namespaceneml2.html#a550135ce2c5d93d73c439a59cba33876">eq</a>-&gt;value({{<span class="stringliteral">&quot;a&quot;</span>, a}, {<span class="stringliteral">&quot;b&quot;</span>, b}})[<span class="stringliteral">&quot;b_rate&quot;</span>];</div>
 <div class="line"> </div>
 <div class="line">  std::cout &lt;&lt; <span class="stringliteral">&quot;b_rate: \n&quot;</span> &lt;&lt; b_rate &lt;&lt; std::endl;</div>
 <div class="line">}</div>
@@ -487,7 +478,7 @@ Evaluating the models: The easy way</h1>
 <div class="line">b = SR2.fill(100.0, 20.0, 10.0, 5.0, -30.0, -20.0)</div>
 <div class="line"> </div>
 <div class="line"><span class="comment"># Evaluate the composed model</span></div>
-<div class="line">b_rate = eq.value({<span class="stringliteral">&quot;forces/a&quot;</span>: a, <span class="stringliteral">&quot;state/b&quot;</span>: b})[<span class="stringliteral">&quot;state/b_rate&quot;</span>]</div>
+<div class="line">b_rate = eq.value({<span class="stringliteral">&quot;a&quot;</span>: a, <span class="stringliteral">&quot;b&quot;</span>: b})[<span class="stringliteral">&quot;b_rate&quot;</span>]</div>
 <div class="line"> </div>
 <div class="line">print(<span class="stringliteral">&quot;b_rate:&quot;</span>)</div>
 <div class="line">print(b_rate)</div>

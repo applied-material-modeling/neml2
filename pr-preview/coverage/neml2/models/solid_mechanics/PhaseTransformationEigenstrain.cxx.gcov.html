@@ -31,13 +31,13 @@
             <td class="headerValue">coverage.info</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntryHi">88.5&nbsp;%</td>
-            <td class="headerCovTableEntry">26</td>
+            <td class="headerCovTableEntryHi">87.0&nbsp;%</td>
             <td class="headerCovTableEntry">23</td>
+            <td class="headerCovTableEntry">20</td>
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2026-04-24 15:34:55</td>
+            <td class="headerValue">2026-04-28 19:32:22</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -99,46 +99,42 @@
 <span id="L37"><span class="lineNum">      37</span>              :       &quot;(from phase A to phase B) eigenstrain, i.e. \\f$ \\boldsymbol{\\varepsilon}_\\mathrm{PT} = &quot;</span>
 <span id="L38"><span class="lineNum">      38</span>              :       &quot;\\Delta V f \\boldsymbol{I} \\f$, where \\f$ \\Delta V \\f$ is the volume fraction change &quot;</span>
 <span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">           1 :       &quot;when going from phase A to B, \\f$ f \\f$ is the phase fraction (0 to 1, A to B).&quot;;</span></span>
-<span id="L40"><span class="lineNum">      40</span>              : </span>
-<span id="L41"><span class="lineNum">      41</span> <span class="tlaGNC">           3 :   options.set_input(&quot;volume_fraction_change&quot;) = VariableName(STATE, &quot;dv&quot;);</span></span>
-<span id="L42"><span class="lineNum">      42</span> <span class="tlaGNC">           2 :   options.set(&quot;volume_fraction_change&quot;).doc() =</span></span>
-<span id="L43"><span class="lineNum">      43</span> <span class="tlaGNC">           1 :       &quot;Change in volume fraction going from phase A to phase B&quot;;</span></span>
-<span id="L44"><span class="lineNum">      44</span>              : </span>
-<span id="L45"><span class="lineNum">      45</span> <span class="tlaGNC">           3 :   options.set_input(&quot;phase_fraction&quot;) = VariableName(STATE, &quot;f&quot;);</span></span>
-<span id="L46"><span class="lineNum">      46</span> <span class="tlaGNC">           2 :   options.set(&quot;phase_fraction&quot;).doc() = &quot;Phase fraction&quot;;</span></span>
-<span id="L47"><span class="lineNum">      47</span>              : </span>
-<span id="L48"><span class="lineNum">      48</span> <span class="tlaGNC">           1 :   options.set&lt;bool&gt;(&quot;define_second_derivatives&quot;) = true;</span></span>
-<span id="L49"><span class="lineNum">      49</span>              : </span>
-<span id="L50"><span class="lineNum">      50</span> <span class="tlaGNC">           1 :   return options;</span></span>
-<span id="L51"><span class="lineNum">      51</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
-<span id="L52"><span class="lineNum">      52</span>              : </span>
-<span id="L53"><span class="lineNum">      53</span> <span class="tlaGNC tlaBgGNC">           1 : PhaseTransformationEigenstrain::PhaseTransformationEigenstrain(const OptionSet &amp; options)</span></span>
-<span id="L54"><span class="lineNum">      54</span>              :   : Eigenstrain(options),</span>
-<span id="L55"><span class="lineNum">      55</span> <span class="tlaGNC">           2 :     _f(declare_input_variable&lt;Scalar&gt;(&quot;phase_fraction&quot;)),</span></span>
-<span id="L56"><span class="lineNum">      56</span> <span class="tlaGNC">           1 :     _dv(declare_input_variable&lt;Scalar&gt;(&quot;volume_fraction_change&quot;))</span></span>
-<span id="L57"><span class="lineNum">      57</span>              : {</span>
-<span id="L58"><span class="lineNum">      58</span> <span class="tlaGNC">           1 : }</span></span>
-<span id="L59"><span class="lineNum">      59</span>              : </span>
-<span id="L60"><span class="lineNum">      60</span>              : void</span>
-<span id="L61"><span class="lineNum">      61</span> <span class="tlaGNC">           2 : PhaseTransformationEigenstrain::set_value(bool out, bool dout_din, bool d2out_din2)</span></span>
-<span id="L62"><span class="lineNum">      62</span>              : {</span>
-<span id="L63"><span class="lineNum">      63</span> <span class="tlaGNC">           2 :   if (out)</span></span>
-<span id="L64"><span class="lineNum">      64</span> <span class="tlaGNC">           2 :     _eg = _f * _dv * SR2::identity(_f.options());</span></span>
-<span id="L65"><span class="lineNum">      65</span>              : </span>
-<span id="L66"><span class="lineNum">      66</span> <span class="tlaGNC">           2 :   if (dout_din)</span></span>
-<span id="L67"><span class="lineNum">      67</span>              :   {</span>
-<span id="L68"><span class="lineNum">      68</span> <span class="tlaGNC">           1 :     _eg.d(_f) = _dv * SR2::identity(_f.options());</span></span>
-<span id="L69"><span class="lineNum">      69</span> <span class="tlaGNC">           1 :     _eg.d(_dv) = _f * SR2::identity(_f.options());</span></span>
-<span id="L70"><span class="lineNum">      70</span>              :   }</span>
-<span id="L71"><span class="lineNum">      71</span>              : </span>
-<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC">           2 :   if (d2out_din2)</span></span>
-<span id="L73"><span class="lineNum">      73</span>              :   {</span>
-<span id="L74"><span class="lineNum">      74</span> <span class="tlaUNC tlaBgUNC">           0 :     _eg.d2(_f, _dv) = SR2::identity(_f.options());</span></span>
-<span id="L75"><span class="lineNum">      75</span> <span class="tlaUNC">           0 :     _eg.d2(_dv, _f) = SR2::identity(_f.options());</span></span>
-<span id="L76"><span class="lineNum">      76</span>              :   }</span>
-<span id="L77"><span class="lineNum">      77</span> <span class="tlaGNC tlaBgGNC">           2 : }</span></span>
-<span id="L78"><span class="lineNum">      78</span>              : }</span>
-<span id="L79"><span class="lineNum">      79</span>              : // namespace neml2</span>
+<span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC">           3 :   options.set_private&lt;bool&gt;(&quot;define_second_derivatives&quot;, true);</span></span>
+<span id="L41"><span class="lineNum">      41</span>              : </span>
+<span id="L42"><span class="lineNum">      42</span> <span class="tlaGNC">           4 :   options.add_input(&quot;volume_fraction_change&quot;,</span></span>
+<span id="L43"><span class="lineNum">      43</span>              :                     &quot;Change in volume fraction going from phase A to phase B&quot;);</span>
+<span id="L44"><span class="lineNum">      44</span> <span class="tlaGNC">           3 :   options.add_input(&quot;phase_fraction&quot;, &quot;Phase fraction&quot;);</span></span>
+<span id="L45"><span class="lineNum">      45</span>              : </span>
+<span id="L46"><span class="lineNum">      46</span> <span class="tlaGNC">           1 :   return options;</span></span>
+<span id="L47"><span class="lineNum">      47</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
+<span id="L48"><span class="lineNum">      48</span>              : </span>
+<span id="L49"><span class="lineNum">      49</span> <span class="tlaGNC tlaBgGNC">           1 : PhaseTransformationEigenstrain::PhaseTransformationEigenstrain(const OptionSet &amp; options)</span></span>
+<span id="L50"><span class="lineNum">      50</span>              :   : Eigenstrain(options),</span>
+<span id="L51"><span class="lineNum">      51</span> <span class="tlaGNC">           2 :     _f(declare_input_variable&lt;Scalar&gt;(&quot;phase_fraction&quot;)),</span></span>
+<span id="L52"><span class="lineNum">      52</span> <span class="tlaGNC">           1 :     _dv(declare_input_variable&lt;Scalar&gt;(&quot;volume_fraction_change&quot;))</span></span>
+<span id="L53"><span class="lineNum">      53</span>              : {</span>
+<span id="L54"><span class="lineNum">      54</span> <span class="tlaGNC">           1 : }</span></span>
+<span id="L55"><span class="lineNum">      55</span>              : </span>
+<span id="L56"><span class="lineNum">      56</span>              : void</span>
+<span id="L57"><span class="lineNum">      57</span> <span class="tlaGNC">           2 : PhaseTransformationEigenstrain::set_value(bool out, bool dout_din, bool d2out_din2)</span></span>
+<span id="L58"><span class="lineNum">      58</span>              : {</span>
+<span id="L59"><span class="lineNum">      59</span> <span class="tlaGNC">           2 :   if (out)</span></span>
+<span id="L60"><span class="lineNum">      60</span> <span class="tlaGNC">           2 :     _eg = _f * _dv * SR2::identity(_f.options());</span></span>
+<span id="L61"><span class="lineNum">      61</span>              : </span>
+<span id="L62"><span class="lineNum">      62</span> <span class="tlaGNC">           2 :   if (dout_din)</span></span>
+<span id="L63"><span class="lineNum">      63</span>              :   {</span>
+<span id="L64"><span class="lineNum">      64</span> <span class="tlaGNC">           1 :     _eg.d(_f) = _dv * SR2::identity(_f.options());</span></span>
+<span id="L65"><span class="lineNum">      65</span> <span class="tlaGNC">           1 :     _eg.d(_dv) = _f * SR2::identity(_f.options());</span></span>
+<span id="L66"><span class="lineNum">      66</span>              :   }</span>
+<span id="L67"><span class="lineNum">      67</span>              : </span>
+<span id="L68"><span class="lineNum">      68</span> <span class="tlaGNC">           2 :   if (d2out_din2)</span></span>
+<span id="L69"><span class="lineNum">      69</span>              :   {</span>
+<span id="L70"><span class="lineNum">      70</span> <span class="tlaUNC tlaBgUNC">           0 :     _eg.d2(_f, _dv) = SR2::identity(_f.options());</span></span>
+<span id="L71"><span class="lineNum">      71</span> <span class="tlaUNC">           0 :     _eg.d2(_dv, _f) = SR2::identity(_f.options());</span></span>
+<span id="L72"><span class="lineNum">      72</span>              :   }</span>
+<span id="L73"><span class="lineNum">      73</span> <span class="tlaGNC tlaBgGNC">           2 : }</span></span>
+<span id="L74"><span class="lineNum">      74</span>              : }</span>
+<span id="L75"><span class="lineNum">      75</span>              : // namespace neml2</span>
         </pre>
               </td>
             </tr>

@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2026-04-24 15:34:55</td>
+            <td class="headerValue">2026-04-28 19:32:22</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -96,16 +96,16 @@
 <span id="L34"><span class="lineNum">      34</span>              : FOR_ALL_TENSORBASE(INSTANTIATE_TENSORBASE);</span>
 <span id="L35"><span class="lineNum">      35</span>              : </span>
 <span id="L36"><span class="lineNum">      36</span>              : std::ostream &amp;</span>
-<span id="L37"><span class="lineNum">      37</span> <span class="tlaGNC tlaBgGNC">          10 : operator&lt;&lt;(std::ostream &amp; os, const TensorType &amp; t)</span></span>
+<span id="L37"><span class="lineNum">      37</span> <span class="tlaGNC tlaBgGNC">           6 : operator&lt;&lt;(std::ostream &amp; os, const TensorType &amp; t)</span></span>
 <span id="L38"><span class="lineNum">      38</span>              : {</span>
 <span id="L39"><span class="lineNum">      39</span>              : #define _stringify_tensor_type(T) else if (t == TensorType::k##T) os &lt;&lt; #T</span>
 <span id="L40"><span class="lineNum">      40</span>              : </span>
 <span id="L41"><span class="lineNum">      41</span>              :   // NOLINTNEXTLINE(readability-simplify-boolean-expr)</span>
 <span id="L42"><span class="lineNum">      42</span>              :   if (false)</span>
 <span id="L43"><span class="lineNum">      43</span>              :     ;</span>
-<span id="L44"><span class="lineNum">      44</span> <span class="tlaGNC">          10 :   FOR_ALL_TENSORBASE(_stringify_tensor_type);</span></span>
+<span id="L44"><span class="lineNum">      44</span> <span class="tlaGNC">           6 :   FOR_ALL_TENSORBASE(_stringify_tensor_type);</span></span>
 <span id="L45"><span class="lineNum">      45</span> <span class="tlaUNC tlaBgUNC">           0 :   else os &lt;&lt; &quot;Unknown&quot;;</span></span>
-<span id="L46"><span class="lineNum">      46</span> <span class="tlaGNC tlaBgGNC">          10 :   return os;</span></span>
+<span id="L46"><span class="lineNum">      46</span> <span class="tlaGNC tlaBgGNC">           6 :   return os;</span></span>
 <span id="L47"><span class="lineNum">      47</span>              : }</span>
 <span id="L48"><span class="lineNum">      48</span>              : }</span>
         </pre>

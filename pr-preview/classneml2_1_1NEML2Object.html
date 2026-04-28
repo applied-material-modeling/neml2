@@ -131,6 +131,7 @@ $(function(){initNavTree('classneml2_1_1NEML2Object.html','','classneml2_1_1NEML
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="classneml2_1_1NEML2Object-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">NEML2Object Class Reference</div></div>
 </div><!--header-->
@@ -263,8 +264,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a43128fa8695ca9394ba69cd759d04b99"><td class="mdescLeft">&#160;</td><td class="mdescRight">Setup this object.  <br /></td></tr>
 <tr class="memitem:a24dcbf29c0d6cd766009a182a6484e3b" id="r_a24dcbf29c0d6cd766009a182a6484e3b"><td class="memItemLeft">const std::string &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a24dcbf29c0d6cd766009a182a6484e3b">name</a> () const</td></tr>
 <tr class="memdesc:a24dcbf29c0d6cd766009a182a6484e3b"><td class="mdescLeft">&#160;</td><td class="mdescRight">A readonly reference to the object's name.  <br /></td></tr>
-<tr class="memitem:a4acb75b8abcd83a41915c116edbd003c" id="r_a4acb75b8abcd83a41915c116edbd003c"><td class="memItemLeft">const std::string &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a4acb75b8abcd83a41915c116edbd003c">type</a> () const</td></tr>
-<tr class="memdesc:a4acb75b8abcd83a41915c116edbd003c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A readonly reference to the object's type.  <br /></td></tr>
+<tr class="memitem:a9d92a94608e07bd972d6eb7f64cf6871" id="r_a9d92a94608e07bd972d6eb7f64cf6871"><td class="memItemLeft">std::string&#160;</td><td class="memItemRight"><a class="el" href="#a9d92a94608e07bd972d6eb7f64cf6871">type</a> () const</td></tr>
+<tr class="memdesc:a9d92a94608e07bd972d6eb7f64cf6871"><td class="mdescLeft">&#160;</td><td class="mdescRight">The object's type.  <br /></td></tr>
 <tr class="memitem:ab00e03d2eef5a496bd9c62006fcaf9e1" id="r_ab00e03d2eef5a496bd9c62006fcaf9e1"><td class="memItemLeft">const std::string &amp;&#160;</td><td class="memItemRight"><a class="el" href="#ab00e03d2eef5a496bd9c62006fcaf9e1">path</a> () const</td></tr>
 <tr class="memdesc:ab00e03d2eef5a496bd9c62006fcaf9e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">A readonly reference to the object's path.  <br /></td></tr>
 <tr class="memitem:a95ddf7f84b4944b035c3f05fab305f99" id="r_a95ddf7f84b4944b035c3f05fab305f99"><td class="memItemLeft">const std::string &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a95ddf7f84b4944b035c3f05fab305f99">doc</a> () const</td></tr>
@@ -307,6 +308,15 @@ Public Member Functions</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 id="header-pub-static-methods" class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
 <tr class="memitem:ad8c7c9b5e7f03325e3dd601a39264bdb" id="r_ad8c7c9b5e7f03325e3dd601a39264bdb"><td class="memItemLeft">static <a class="el" href="classneml2_1_1OptionSet.html">OptionSet</a>&#160;</td><td class="memItemRight"><a class="el" href="#ad8c7c9b5e7f03325e3dd601a39264bdb">expected_options</a> ()</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-pro-methods" class="groupheader"><a id="pro-methods" name="pro-methods"></a>
+Protected Member Functions</h2></td></tr>
+<tr class="memitem:aa6903c47f28cb2d74fb124ca37835a3a" id="r_aa6903c47f28cb2d74fb124ca37835a3a"><td class="memItemLeft"><a class="el" href="namespaceneml2.html#a91319ab6bb319a4576924e091ce64d52">VariableName</a>&#160;</td><td class="memItemRight"><a class="el" href="#aa6903c47f28cb2d74fb124ca37835a3a">history_name</a> (const <a class="el" href="namespaceneml2.html#a91319ab6bb319a4576924e091ce64d52">VariableName</a> &amp;var, std::size_t nstep) const</td></tr>
+<tr class="memdesc:aa6903c47f28cb2d74fb124ca37835a3a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper method to wrap a variable name into its history form.  <br /></td></tr>
+<tr class="memitem:ad5e95b911ec141a73c7f507b5e74369b" id="r_ad5e95b911ec141a73c7f507b5e74369b"><td class="memItemLeft"><a class="el" href="namespaceneml2.html#a91319ab6bb319a4576924e091ce64d52">VariableName</a>&#160;</td><td class="memItemRight"><a class="el" href="#ad5e95b911ec141a73c7f507b5e74369b">rate_name</a> (const <a class="el" href="namespaceneml2.html#a91319ab6bb319a4576924e091ce64d52">VariableName</a> &amp;var) const</td></tr>
+<tr class="memdesc:ad5e95b911ec141a73c7f507b5e74369b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper method to wrap a variable name into its rate form.  <br /></td></tr>
+<tr class="memitem:a1b046b443edae84cb91b3865479ce8a7" id="r_a1b046b443edae84cb91b3865479ce8a7"><td class="memItemLeft"><a class="el" href="namespaceneml2.html#a91319ab6bb319a4576924e091ce64d52">VariableName</a>&#160;</td><td class="memItemRight"><a class="el" href="#a1b046b443edae84cb91b3865479ce8a7">residual_name</a> (const <a class="el" href="namespaceneml2.html#a91319ab6bb319a4576924e091ce64d52">VariableName</a> &amp;var) const</td></tr>
+<tr class="memdesc:a1b046b443edae84cb91b3865479ce8a7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper method to wrap a variable name into its residual form.  <br /></td></tr>
 </table>
 <a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="aa77de4636be987478f296806157d3a1c" name="aa77de4636be987478f296806157d3a1c"></a>
@@ -664,6 +674,46 @@ template&lt;class T&gt; </div>
 
 </div>
 </div>
+<a id="aa6903c47f28cb2d74fb124ca37835a3a" name="aa6903c47f28cb2d74fb124ca37835a3a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa6903c47f28cb2d74fb124ca37835a3a">&#9670;&#160;</a></span>history_name()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceneml2.html#a91319ab6bb319a4576924e091ce64d52">VariableName</a> history_name </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceneml2.html#a91319ab6bb319a4576924e091ce64d52">VariableName</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>var</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::size_t</td>          <td class="paramname"><span class="paramname"><em>nstep</em></span>&#160;) const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Helper method to wrap a variable name into its history form. </p>
+<p>This is a personal preference in the end. The idea is to have a consistent way to name the history form of a variable, which is commonly used in time integration. The behavior can be controlled via <a class="el" href="classneml2_1_1Settings.html#a84f72a6233d3ecdc25babba8339615e8">Settings::history_separator</a>.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">var</td><td>The variable name </td></tr>
+    <tr><td class="paramname">nstep</td><td>The history step (0 for current, 1 for previous, etc.) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The history form of the variable name </dd></dl>
+
+</div>
+</div>
 <a id="aaeee19eb1c12dcdf793e38464d038f12" name="aaeee19eb1c12dcdf793e38464d038f12"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aaeee19eb1c12dcdf793e38464d038f12">&#9670;&#160;</a></span>host() <span class="overload">[1/2]</span></h2>
 
@@ -835,6 +885,76 @@ template&lt;typename T&gt; </div>
 
 </div>
 </div>
+<a id="ad5e95b911ec141a73c7f507b5e74369b" name="ad5e95b911ec141a73c7f507b5e74369b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad5e95b911ec141a73c7f507b5e74369b">&#9670;&#160;</a></span>rate_name()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceneml2.html#a91319ab6bb319a4576924e091ce64d52">VariableName</a> rate_name </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceneml2.html#a91319ab6bb319a4576924e091ce64d52">VariableName</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>var</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Helper method to wrap a variable name into its rate form. </p>
+<p>This is a personal preference in the end. The idea is to have a consistent way to name the rate form of a variable, which is commonly used in time integration. The behavior can be controlled via <a class="el" href="classneml2_1_1Settings.html#ab9771acc68ae73f2d32ae0636d8f69e7">Settings::rate_prefix</a> and <a class="el" href="classneml2_1_1Settings.html#ac47818f431f23569abcf1e6a79752930">Settings::rate_suffix</a>.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">var</td><td>The variable name </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The rate form of the variable name </dd></dl>
+
+</div>
+</div>
+<a id="a1b046b443edae84cb91b3865479ce8a7" name="a1b046b443edae84cb91b3865479ce8a7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1b046b443edae84cb91b3865479ce8a7">&#9670;&#160;</a></span>residual_name()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceneml2.html#a91319ab6bb319a4576924e091ce64d52">VariableName</a> residual_name </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="namespaceneml2.html#a91319ab6bb319a4576924e091ce64d52">VariableName</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>var</em></span></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel protected">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Helper method to wrap a variable name into its residual form. </p>
+<p>Similar to rate_name, this is for consistent naming of residual variables, which are commonly used in nonlinear systems. The behavior can be controlled via <a class="el" href="classneml2_1_1Settings.html#a4cf861fe6133eec64aee0bcc79f3ac57">Settings::residual_prefix</a> and <a class="el" href="classneml2_1_1Settings.html#a01ef5b1997e062b88b307ed21a725acc">Settings::residual_suffix</a>.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">var</td><td>The variable name </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The residual form of the variable name </dd></dl>
+
+</div>
+</div>
 <a id="a222f5c29e59e7a8094eea809adbf50b2" name="a222f5c29e59e7a8094eea809adbf50b2"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a222f5c29e59e7a8094eea809adbf50b2">&#9670;&#160;</a></span>resolve_tensor()</h2>
 
@@ -909,12 +1029,12 @@ template&lt;typename T&gt; </div>
 <p>Setup this object. </p>
 <p>This method is called automatically if you use the <a class="el" href="classneml2_1_1Factory.html">Factory</a> method get_object or get_object, right after construction. This serves as the entry point for things that are not convenient/possible to do at construction time, but are necessary before this object can be used (by others). </p>
 
-<p>Reimplemented in <a class="el" href="classneml2_1_1LDISolidMechanicsDriver.html#ac0b73dc40ca33ff933c1f351578a00d0">LDISolidMechanicsDriver</a>, <a class="el" href="classneml2_1_1Model.html#ac0b73dc40ca33ff933c1f351578a00d0">Model</a>, <a class="el" href="classneml2_1_1ModelDriver.html#ac0b73dc40ca33ff933c1f351578a00d0">ModelDriver</a>, <a class="el" href="classneml2_1_1ModelNonlinearSystem.html#ac0b73dc40ca33ff933c1f351578a00d0">ModelNonlinearSystem</a>, <a class="el" href="classneml2_1_1SimpleMPIScheduler.html#ac0b73dc40ca33ff933c1f351578a00d0">SimpleMPIScheduler</a>, <a class="el" href="classneml2_1_1SolidMechanicsDriver.html#ac0b73dc40ca33ff933c1f351578a00d0">SolidMechanicsDriver</a>, <a class="el" href="classneml2_1_1StaticHybridScheduler.html#ac0b73dc40ca33ff933c1f351578a00d0">StaticHybridScheduler</a>, <a class="el" href="classneml2_1_1TransientDriver.html#ac0b73dc40ca33ff933c1f351578a00d0">TransientDriver</a>, <a class="el" href="classneml2_1_1UserTensorBase.html#ac0b73dc40ca33ff933c1f351578a00d0">UserTensorBase&lt; T &gt;</a>, <a class="el" href="classneml2_1_1UserTensorBase.html#ac0b73dc40ca33ff933c1f351578a00d0">UserTensorBase&lt; R2 &gt;</a>, <a class="el" href="classneml2_1_1UserTensorBase.html#ac0b73dc40ca33ff933c1f351578a00d0">UserTensorBase&lt; Rot &gt;</a>, <a class="el" href="classneml2_1_1UserTensorBase.html#ac0b73dc40ca33ff933c1f351578a00d0">UserTensorBase&lt; Scalar &gt;</a>, <a class="el" href="classneml2_1_1UserTensorBase.html#ac0b73dc40ca33ff933c1f351578a00d0">UserTensorBase&lt; SR2 &gt;</a>, <a class="el" href="classneml2_1_1UserTensorBase.html#ac0b73dc40ca33ff933c1f351578a00d0">UserTensorBase&lt; Tensor &gt;</a>, and <a class="el" href="classneml2_1_1UserTensorBase.html#ac0b73dc40ca33ff933c1f351578a00d0">UserTensorBase&lt; WR2 &gt;</a>.</p>
+<p>Reimplemented in <a class="el" href="classneml2_1_1Model.html#ac0b73dc40ca33ff933c1f351578a00d0">Model</a>, <a class="el" href="classneml2_1_1ModelDriver.html#ac0b73dc40ca33ff933c1f351578a00d0">ModelDriver</a>, <a class="el" href="classneml2_1_1ModelNonlinearSystem.html#ac0b73dc40ca33ff933c1f351578a00d0">ModelNonlinearSystem</a>, <a class="el" href="classneml2_1_1SimpleMPIScheduler.html#ac0b73dc40ca33ff933c1f351578a00d0">SimpleMPIScheduler</a>, <a class="el" href="classneml2_1_1StaticHybridScheduler.html#ac0b73dc40ca33ff933c1f351578a00d0">StaticHybridScheduler</a>, <a class="el" href="classneml2_1_1TransientDriver.html#ac0b73dc40ca33ff933c1f351578a00d0">TransientDriver</a>, <a class="el" href="classneml2_1_1UserTensorBase.html#ac0b73dc40ca33ff933c1f351578a00d0">UserTensorBase&lt; T &gt;</a>, <a class="el" href="classneml2_1_1UserTensorBase.html#ac0b73dc40ca33ff933c1f351578a00d0">UserTensorBase&lt; R2 &gt;</a>, <a class="el" href="classneml2_1_1UserTensorBase.html#ac0b73dc40ca33ff933c1f351578a00d0">UserTensorBase&lt; Rot &gt;</a>, <a class="el" href="classneml2_1_1UserTensorBase.html#ac0b73dc40ca33ff933c1f351578a00d0">UserTensorBase&lt; Scalar &gt;</a>, <a class="el" href="classneml2_1_1UserTensorBase.html#ac0b73dc40ca33ff933c1f351578a00d0">UserTensorBase&lt; SR2 &gt;</a>, <a class="el" href="classneml2_1_1UserTensorBase.html#ac0b73dc40ca33ff933c1f351578a00d0">UserTensorBase&lt; Tensor &gt;</a>, and <a class="el" href="classneml2_1_1UserTensorBase.html#ac0b73dc40ca33ff933c1f351578a00d0">UserTensorBase&lt; WR2 &gt;</a>.</p>
 
 </div>
 </div>
-<a id="a4acb75b8abcd83a41915c116edbd003c" name="a4acb75b8abcd83a41915c116edbd003c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4acb75b8abcd83a41915c116edbd003c">&#9670;&#160;</a></span>type()</h2>
+<a id="a9d92a94608e07bd972d6eb7f64cf6871" name="a9d92a94608e07bd972d6eb7f64cf6871"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9d92a94608e07bd972d6eb7f64cf6871">&#9670;&#160;</a></span>type()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -923,7 +1043,7 @@ template&lt;typename T&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const std::string &amp; type </td>
+          <td class="memname">std::string type </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td> const</td>
@@ -936,7 +1056,7 @@ template&lt;typename T&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>A readonly reference to the object's type. </p>
+<p>The object's type. </p>
 
 </div>
 </div>

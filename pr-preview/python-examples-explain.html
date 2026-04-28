@@ -132,7 +132,7 @@ $(function(){initNavTree('python-examples-explain.html','',''); });
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p><a class="anchor" id="md_build_2doc_2content_2tutorials_2python_2examples_2explain"></a></p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md196"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md199"></a>
 Overall workflow</h1>
 <ol type="1">
 <li>Generate the NEML2 syntax database</li>
@@ -153,7 +153,7 @@ Overall workflow</h1>
 <div class="line"><span class="keyword">from</span> neml2.reader <span class="keyword">import</span> describe</div>
 <div class="line"><span class="keyword">from</span> neml2.reader._syntax <span class="keyword">import</span> SyntaxDB</div>
 <div class="line"><span class="keyword">from</span> neml2.reader._llm <span class="keyword">import</span> LLMClient</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md197"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md200"></a>
 Client</h1>
 <p><span class="tt">neml2.reader._llm.LLMClient</span> defines the protocol for chat-completion client. It can be extended to define custom clients, e.g., OpenAI clients, Anthropic clients, etc.</p>
 <p>In this example, we will use Argonne's Argo as the chat client. If you are not on Argonne's internal network, this example will not work. However, you can still use this example as a reference when wrapping your own chat clients.</p>
@@ -191,18 +191,18 @@ Client</h1>
 <div class="line">        <span class="keywordflow">if</span> status != 200:</div>
 <div class="line">            <span class="keywordflow">raise</span> RuntimeError(f<span class="stringliteral">&quot;Argo API request failed with status {status}: {response.text}&quot;</span>)</div>
 <div class="line">        <span class="keywordflow">return</span> response.json()[<span class="stringliteral">&quot;response&quot;</span>]</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md198"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md201"></a>
 Extract the syntax database</h1>
 <div class="fragment"><div class="line"><span class="comment"># use the neml2-syntax tool to extract the syntax database from the C++ backend</span></div>
 <div class="line">bin = Path(neml2.__path__[0]) / <span class="stringliteral">&quot;bin&quot;</span></div>
 <div class="line">result = subprocess.run([str(bin / <span class="stringliteral">&quot;neml2-syntax&quot;</span>)], capture_output=<span class="keyword">True</span>, text=<span class="keyword">True</span>)</div>
 <div class="line">syntax = result.stdout</div>
 <div class="line">syntax_db = SyntaxDB(syntax=syntax)</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md199"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md202"></a>
 Build the prompt</h1>
 <p>The <span class="tt">describe</span> method parses the input file and looks up object and parameter descriptions from the syntax database.</p>
 <div class="fragment"><div class="line">prompt = describe(<span class="stringliteral">&quot;demo_model.i&quot;</span>, syntax_db, include_params=<span class="keyword">True</span>)</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md200"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md203"></a>
 Call the LLM chat client</h1>
 <div class="fragment"><div class="line">client = ArgoClient(model=<span class="stringliteral">&quot;gpt54&quot;</span>, api_key=<span class="stringliteral">&quot;thu&quot;</span>) <span class="comment"># replace with your actual API key</span></div>
 <div class="line">response = client.complete(*prompt)</div>
@@ -218,7 +218,7 @@ Call the LLM chat client</h1>
 <li>and a temperature/rate-sensitive plastic flow law based on Kocks–Mecking ideas.</li>
 </ul>
 <p>Its intended use is for metals where plastic flow changes character with temperature and strain rate: essentially rate-independent plasticity in one regime, but smooth transition to viscoplastic (Perzyna-type) flow when thermal activation becomes important.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md201"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md204"></a>
 High-level picture</h1>
 <p>You can think of the model as a standard J2 metal plasticity framework, but with a “smart gearbox” for the plastic multiplier:</p>
 <ul>
@@ -227,16 +227,16 @@ High-level picture</h1>
 <li>the switch is smooth, not abrupt.</li>
 </ul>
 <p>So the backbone is familiar: <b>elastic predictor + von Mises yield check + isotropic hardening + associative flow</b>, but the flow rate is governed by a Kocks–Mecking-based transition between two regimes.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md202"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md205"></a>
 Key components and how they interact</h1>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md203"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md206"></a>
 1. Stress measure and equivalent stress</h2>
 <ul>
 <li><span class="tt">mandel_stress</span> maps Cauchy stress to Mandel stress. Under small strain isotropic conditions, these are effectively the same.</li>
 <li><span class="tt">vonmises</span> computes the von Mises equivalent stress <span class="tt">s</span> from the internal stress tensor <span class="tt">M</span>.</li>
 </ul>
 <p>This provides the scalar driving stress for yielding.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md204"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md207"></a>
 2. Yield stress from Kocks–Mecking scaling</h2>
 <p>Three constants are defined:</p><ul>
 <li><span class="tt">A = -8.679</span></li>
@@ -250,7 +250,7 @@ Key components and how they interact</h1>
 </p>
 <p> where <span class="tt">mu</span> is the shear modulus, interpolated from temperature.</p>
 <p>So the initial yield stress scales with the temperature-dependent shear modulus, which is physically reasonable for metals.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md205"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md208"></a>
 3. Isotropic hardening</h2>
 <p><span class="tt">isoharden</span> is a Voce hardening law:   </p><p class="formulaDsp">
 \[h = R \left(1 - e^{-d \bar{\varepsilon}_p}\right)
@@ -263,7 +263,7 @@ Key components and how they interact</h1>
 </ul>
 <p>This means the hardening response evolves with temperature: both the amount of hardening and how fast it saturates can change across the training temperatures.</p>
 <p>The internal hardening variable <span class="tt">k</span> enters the yield condition as an additive resistance.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md206"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md209"></a>
 4. Yield function</h2>
 <p><span class="tt">yield</span> defines the usual overstress function:   </p><p class="formulaDsp">
 \[f = \bar{\sigma} - \sigma_y - k
@@ -275,7 +275,7 @@ Key components and how they interact</h1>
 <li><span class="tt">k</span> is isotropic hardening.</li>
 </ul>
 <p>There is also <span class="tt">yield_zero</span>, which sets the yield stress term to zero and writes an alternative yield function <span class="tt">fp_alt</span>. From the structure, this appears to be used specifically for the rate-dependent flow law, likely so the overstress expression is built in a convenient form using only hardening resistance. It is a modeling/implementation detail rather than a different physical mechanism.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md207"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md210"></a>
 5. Flow direction: associative plasticity</h2>
 <p><span class="tt">normality</span> computes derivatives of the yield function with respect to:</p><ul>
 <li>stress <span class="tt">M</span>, giving the plastic flow direction <span class="tt">NM</span>,</li>
@@ -294,7 +294,7 @@ Key components and how they interact</h1>
 </li>
 </ul>
 <p>So this is classical associative J2 plasticity: plastic flow is normal to the yield surface.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md208"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md211"></a>
 6. Rate-independent and rate-dependent flow rules</h2>
 <p>Two possible plastic flow rates are computed.</p>
 <h3>Rate-independent branch</h3>
@@ -309,7 +309,7 @@ Key components and how they interact</h1>
 <li><span class="tt">\eta</span> is from <span class="tt">km_viscosity</span>.</li>
 </ul>
 <p>Both <span class="tt">n</span> and <span class="tt">\eta</span> depend on temperature and shear modulus through Kocks–Mecking relations, so the viscous response is physically informed rather than purely phenomenological.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md209"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md212"></a>
 7. Kocks–Mecking transition criterion</h2>
 <p>The model computes a normalized activation energy <span class="tt">g</span>:   </p><p class="formulaDsp">
 \[g = \frac{kT}{\mu b^3}\ln\left(\frac{\dot{\varepsilon}_0}{\dot{\varepsilon}}\right)
@@ -323,7 +323,7 @@ Key components and how they interact</h1>
 </ul>
 <p>with a sharpness of <span class="tt">100</span>, meaning the transition is quite steep but still continuous.</p>
 <p>Physically, this says: when thermal activation is below a critical level, use classical plasticity; above it, use thermally activated viscoplastic flow.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md210"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md213"></a>
 Elasticity and strain decomposition</h1>
 <p><span class="tt">elasticity</span> is standard small-strain isotropic linear elasticity with:</p><ul>
 <li>Young’s modulus = <span class="tt">1e5</span></li>
@@ -336,7 +336,7 @@ Elasticity and strain decomposition</h1>
 </p>
 <p>So total strain rate is split into elastic and plastic parts in the usual additive small-strain sense.</p>
 <p><span class="tt">Erate</span>, <span class="tt">integrate_stress</span>, and <span class="tt">integrate_ep</span> indicate backward-Euler time integration of total strain, stress, and equivalent plastic strain/internal variables.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md211"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md214"></a>
 Temperature dependence</h1>
 <p>Several quantities are interpolated from temperature:</p><ul>
 <li><span class="tt">mu(T)</span> shear modulus,</li>
@@ -344,7 +344,7 @@ Temperature dependence</h1>
 <li><span class="tt">d(T)</span> Voce saturation rate.</li>
 </ul>
 <p>This means the model is explicitly thermomechanically coupled through prescribed temperature-dependent properties, though not through heat generation or full thermodynamic temperature evolution. Temperature acts as an input field affecting stiffness, strength, hardening, and rate sensitivity.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md212"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md215"></a>
 Physical meaning of notable parameters</h1>
 <ul>
 <li><span class="tt">A</span>, <span class="tt">B</span>, <span class="tt">C</span>: Kocks–Mecking constants controlling rate sensitivity, flow viscosity, threshold activation energy, and base yield level.</li>
@@ -358,9 +358,9 @@ Physical meaning of notable parameters</h1>
 <li><span class="tt">sharpness = 100</span>: makes the RI/RD switch fairly abrupt.</li>
 </ul>
 <p>The magnitude of the constants suggests a specific unit system is being used consistently; that matters a lot for interpreting the Boltzmann constant, Burgers vector, stress, and strain-rate scales.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md213"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md216"></a>
 Assumptions, limitations, and special features</h1>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md214"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md217"></a>
 Assumptions</h2>
 <ul>
 <li><b>Small strain</b> formulation.</li>
@@ -369,7 +369,7 @@ Assumptions</h2>
 <li><b>Associative flow</b>.</li>
 <li>Temperature is an <b>input</b>, not a solved thermodynamic variable.</li>
 </ul>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md215"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md218"></a>
 Limitations</h2>
 <ul>
 <li>No kinematic hardening, so cyclic phenomena like Bauschinger effect are not captured.</li>
@@ -377,14 +377,14 @@ Limitations</h2>
 <li>No finite-strain plasticity.</li>
 <li>No damage, softening, or creep mechanism separate from the overstress law.</li>
 </ul>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md216"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md219"></a>
 Special features</h2>
 <ul>
 <li>The most distinctive feature is the <b>Kocks–Mecking-based smooth switch</b> between rate-independent and rate-dependent plasticity.</li>
 <li>Hardening and modulus are <b>temperature-interpolated</b>, allowing calibration to tabulated data.</li>
 <li>The formulation is designed for <b>mixed control</b>, so it can handle combinations of prescribed stress and strain components in simulations.</li>
 </ul>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md217"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md220"></a>
 In one sentence</h1>
 <p>This is a temperature-dependent small-strain J2 metal plasticity model with linear elasticity, Voce isotropic hardening, and a Kocks–Mecking-informed transition from classical rate-independent plasticity to Perzyna viscoplasticity as thermal activation and strain-rate effects become important. </p>
 </div></div><!-- contents -->

@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2026-04-24 15:34:55</td>
+            <td class="headerValue">2026-04-28 19:32:22</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -91,16 +91,16 @@
 <span id="L29"><span class="lineNum">      29</span>              : </span>
 <span id="L30"><span class="lineNum">      30</span>              : namespace neml2</span>
 <span id="L31"><span class="lineNum">      31</span>              : {</span>
-<span id="L32"><span class="lineNum">      32</span> <span class="tlaGNC tlaBgGNC">         227 : EnumSelectionBase::EnumSelectionBase(const std::vector&lt;std::string&gt; &amp; choices)</span></span>
+<span id="L32"><span class="lineNum">      32</span> <span class="tlaGNC tlaBgGNC">         222 : EnumSelectionBase::EnumSelectionBase(const std::vector&lt;std::string&gt; &amp; choices)</span></span>
 <span id="L33"><span class="lineNum">      33</span>              : {</span>
-<span id="L34"><span class="lineNum">      34</span> <span class="tlaGNC">         227 :   std::set&lt;std::string&gt; choices_set(choices.begin(), choices.end());</span></span>
-<span id="L35"><span class="lineNum">      35</span> <span class="tlaGNC">         227 :   neml_assert(choices_set.size() == choices.size(),</span></span>
+<span id="L34"><span class="lineNum">      34</span> <span class="tlaGNC">         222 :   std::set&lt;std::string&gt; choices_set(choices.begin(), choices.end());</span></span>
+<span id="L35"><span class="lineNum">      35</span> <span class="tlaGNC">         222 :   neml_assert(choices_set.size() == choices.size(),</span></span>
 <span id="L36"><span class="lineNum">      36</span>              :               &quot;Choices of (Multi)EnumSelection must be unique.&quot;);</span>
 <span id="L37"><span class="lineNum">      37</span>              : </span>
-<span id="L38"><span class="lineNum">      38</span> <span class="tlaGNC">         226 :   int count = 0;</span></span>
-<span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">        2936 :   for (const auto &amp; candidate : choices)</span></span>
-<span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC">        2710 :     _choice_map.emplace(candidate, count++);</span></span>
-<span id="L41"><span class="lineNum">      41</span> <span class="tlaGNC">         228 : }</span></span>
+<span id="L38"><span class="lineNum">      38</span> <span class="tlaGNC">         221 :   int count = 0;</span></span>
+<span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">        2919 :   for (const auto &amp; candidate : choices)</span></span>
+<span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC">        2698 :     _choice_map.emplace(candidate, count++);</span></span>
+<span id="L41"><span class="lineNum">      41</span> <span class="tlaGNC">         223 : }</span></span>
 <span id="L42"><span class="lineNum">      42</span>              : </span>
 <span id="L43"><span class="lineNum">      43</span> <span class="tlaGNC">          35 : EnumSelectionBase::EnumSelectionBase(const std::vector&lt;std::string&gt; &amp; choices,</span></span>
 <span id="L44"><span class="lineNum">      44</span> <span class="tlaGNC">          35 :                                      const std::vector&lt;int&gt; &amp; values)</span></span>
@@ -120,19 +120,19 @@
 <span id="L58"><span class="lineNum">      58</span> <span class="tlaGNC">          37 : }</span></span>
 <span id="L59"><span class="lineNum">      59</span>              : </span>
 <span id="L60"><span class="lineNum">      60</span>              : std::string</span>
-<span id="L61"><span class="lineNum">      61</span> <span class="tlaGNC">         698 : EnumSelectionBase::join(const std::string &amp; separator) const</span></span>
+<span id="L61"><span class="lineNum">      61</span> <span class="tlaGNC">         673 : EnumSelectionBase::join(const std::string &amp; separator) const</span></span>
 <span id="L62"><span class="lineNum">      62</span>              : {</span>
-<span id="L63"><span class="lineNum">      63</span> <span class="tlaGNC">         698 :   std::stringstream ss;</span></span>
-<span id="L64"><span class="lineNum">      64</span> <span class="tlaGNC">         698 :   std::size_t count = 0;</span></span>
-<span id="L65"><span class="lineNum">      65</span> <span class="tlaGNC">        7244 :   for (const auto &amp; [e, v] : _choice_map)</span></span>
+<span id="L63"><span class="lineNum">      63</span> <span class="tlaGNC">         673 :   std::stringstream ss;</span></span>
+<span id="L64"><span class="lineNum">      64</span> <span class="tlaGNC">         673 :   std::size_t count = 0;</span></span>
+<span id="L65"><span class="lineNum">      65</span> <span class="tlaGNC">        7110 :   for (const auto &amp; [e, v] : _choice_map)</span></span>
 <span id="L66"><span class="lineNum">      66</span>              :   {</span>
-<span id="L67"><span class="lineNum">      67</span> <span class="tlaGNC">        6546 :     ss &lt;&lt; e;</span></span>
-<span id="L68"><span class="lineNum">      68</span> <span class="tlaGNC">        6546 :     if (count &lt; _choice_map.size() - 1)</span></span>
-<span id="L69"><span class="lineNum">      69</span> <span class="tlaGNC">        5848 :       ss &lt;&lt; separator;</span></span>
-<span id="L70"><span class="lineNum">      70</span> <span class="tlaGNC">        6546 :     count++;</span></span>
+<span id="L67"><span class="lineNum">      67</span> <span class="tlaGNC">        6437 :     ss &lt;&lt; e;</span></span>
+<span id="L68"><span class="lineNum">      68</span> <span class="tlaGNC">        6437 :     if (count &lt; _choice_map.size() - 1)</span></span>
+<span id="L69"><span class="lineNum">      69</span> <span class="tlaGNC">        5764 :       ss &lt;&lt; separator;</span></span>
+<span id="L70"><span class="lineNum">      70</span> <span class="tlaGNC">        6437 :     count++;</span></span>
 <span id="L71"><span class="lineNum">      71</span>              :   }</span>
-<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC">        1396 :   return ss.str();</span></span>
-<span id="L73"><span class="lineNum">      73</span> <span class="tlaGNC">         698 : }</span></span>
+<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC">        1346 :   return ss.str();</span></span>
+<span id="L73"><span class="lineNum">      73</span> <span class="tlaGNC">         673 : }</span></span>
 <span id="L74"><span class="lineNum">      74</span>              : } // namespace neml2</span>
         </pre>
               </td>

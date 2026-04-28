@@ -134,13 +134,13 @@ $(function(){initNavTree('tutorials-extension-argument-declaration.html','','');
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md94">Variable declaration </a>
+    <a href="#autotoc_md95">Variable declaration </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md95">Parameter declaration </a>
+    <a href="#autotoc_md96">Parameter declaration </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md96">Model inspection </a>
+    <a href="#autotoc_md97">Model inspection </a>
   </li>
 </ul>
 </div>
@@ -156,7 +156,7 @@ $(function(){initNavTree('tutorials-extension-argument-declaration.html','','');
 <li>defining the forward operator \(f\).</li>
 </ol>
 <p>The first three are introduced in this tutorial.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md94"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md95"></a>
 Variable declaration</h1>
 <p>The API <a class="el" href="classneml2_1_1VariableStore.html#abe525f0612ff23024cfabe6aab5ad131" title="Declare an input variable.">neml2::Model::declare_input_variable</a> can be used to declare input variables. This method should be called in the constructor of the model. It allocate storage for the underlying tensor and returns a const-reference i.e., <span class="tt">const Variable&lt;T&gt; &amp;</span>, to the variable, where <span class="tt">T</span> is the variable tensor type. Similarly, the method <a class="el" href="classneml2_1_1VariableStore.html#a6a9254a07912357e3d148a7d37a21eb6" title="Declare an output variable.">neml2::Model::declare_output_variable</a> is for declaring output variables which returns a non-const-reference i.e., <span class="tt">Variable&lt;T&gt; &amp;</span>, to the variable.</p>
 <p>In our example, the only input variable is \(\boldsymbol{v}\), and the only output variable is \(\boldsymbol{a}\). To declare them, first create the corresponding members in the class like </p><div class="fragment"><div class="line"><span class="comment">// Velocity of the projectile (input variable)</span></div>
@@ -173,7 +173,7 @@ Variable declaration</h1>
 <div class="line">{</div>
 <div class="line">}</div>
 </div><!-- fragment --><p>NEML2 will look for an input option named "velocity" and declare a vector-valued input variable with the user-specified variable name. Similarly, another input option named "acceleration" will be used to declare a vector-valued output variable.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md95"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md96"></a>
 Parameter declaration</h1>
 <p>Parameter (and buffer) declaration is semantically similarly to variable declaration.</p><ul>
 <li><a class="el" href="classneml2_1_1ParameterStore.html#ac44196489c29d0a5f8e1c6d6399d6b4e" title="Declare a parameter.">neml2::Model::declare_parameter</a> is used to declare parameters, and</li>
@@ -195,7 +195,7 @@ Parameter declaration</h1>
 <div class="line">}</div>
 </div><!-- fragment --><p>The first argument of the parameter/buffer declaration method takes a string specifying the name of the parameter/buffer used internally. These names will then become the "handles" for retrieving and updating parameter/buffer values.</p>
 <p>NEML2 will look for input options named "gravitational_acceleration" and "dynamic_viscosity" and declare the corresponding parameter and buffer.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md96"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md97"></a>
 Model inspection</h1>
 <p>Once all arguments are successfully declared, the <em>structure</em> of the model is determined. NEML2 handles the allocation and arrangement of variables, parameters, buffers, and their underlying tensors. The structure of the model can be inspected by printing out the summary: </p><div class="fragment"><div class="line"><span class="keywordtype">int</span></div>
 <div class="line">main()</div>
@@ -210,8 +210,8 @@ Model inspection</h1>
 <div class="ttc" id="anamespaceneml2_html_a3c266b437e28eb7adec97c12b9a7e7d2"><div class="ttname"><a href="namespaceneml2.html#a3c266b437e28eb7adec97c12b9a7e7d2">neml2::set_default_dtype</a></div><div class="ttdeci">void set_default_dtype(Dtype dtype)</div></div>
 <div class="ttc" id="anamespaceneml2_html_aa98735f2ffd7c3ae8b0b339621eb8ab3"><div class="ttname"><a href="namespaceneml2.html#aa98735f2ffd7c3ae8b0b339621eb8ab3">neml2::load_model</a></div><div class="ttdeci">std::shared_ptr&lt; Model &gt; load_model(const std::filesystem::path &amp;path, const std::string &amp;mname)</div><div class="ttdoc">A convenient function to load an input file and get a model.</div></div>
 </div><!-- fragment --><p>Output: </p><div class="fragment"><div class="line">Name:       accel</div>
-<div class="line">Input:      state/v [Vec]</div>
-<div class="line">Output:     state/a [Vec]</div>
+<div class="line">Input:      v [Vec]</div>
+<div class="line">Output:     a [Vec]</div>
 <div class="line">Parameters: mu [Scalar][Double][cpu]</div>
 <div class="line">Buffers:    g [Vec][Double][cpu]</div>
 </div><!-- fragment --><div class="section_buttons"></div><div class="section_buttons"><table class="markdownTable">

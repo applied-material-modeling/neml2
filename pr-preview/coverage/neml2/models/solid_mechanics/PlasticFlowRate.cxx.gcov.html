@@ -31,13 +31,13 @@
             <td class="headerValue">coverage.info</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntryHi">91.7&nbsp;%</td>
-            <td class="headerCovTableEntry">12</td>
-            <td class="headerCovTableEntry">11</td>
+            <td class="headerCovTableEntryHi">90.0&nbsp;%</td>
+            <td class="headerCovTableEntry">10</td>
+            <td class="headerCovTableEntry">9</td>
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2026-04-24 15:34:55</td>
+            <td class="headerValue">2026-04-28 19:32:22</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -94,22 +94,19 @@
 <span id="L32"><span class="lineNum">      32</span>              : {</span>
 <span id="L33"><span class="lineNum">      33</span> <span class="tlaGNC">           1 :   OptionSet options = Model::expected_options();</span></span>
 <span id="L34"><span class="lineNum">      34</span>              : </span>
-<span id="L35"><span class="lineNum">      35</span> <span class="tlaGNC">           3 :   options.set_input(&quot;yield_function&quot;) = VariableName(STATE, &quot;internal&quot;, &quot;fp&quot;);</span></span>
-<span id="L36"><span class="lineNum">      36</span> <span class="tlaGNC">           1 :   options.set(&quot;yield_function&quot;).doc() = &quot;Yield function&quot;;</span></span>
+<span id="L35"><span class="lineNum">      35</span> <span class="tlaGNC">           4 :   options.add_input(&quot;yield_function&quot;, &quot;Yield function&quot;);</span></span>
+<span id="L36"><span class="lineNum">      36</span> <span class="tlaGNC">           3 :   options.add_output(&quot;flow_rate&quot;, &quot;Flow rate&quot;);</span></span>
 <span id="L37"><span class="lineNum">      37</span>              : </span>
-<span id="L38"><span class="lineNum">      38</span> <span class="tlaGNC">           3 :   options.set_output(&quot;flow_rate&quot;) = VariableName(STATE, &quot;internal&quot;, &quot;gamma_rate&quot;);</span></span>
-<span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">           1 :   options.set(&quot;flow_rate&quot;).doc() = &quot;Flow rate&quot;;</span></span>
+<span id="L38"><span class="lineNum">      38</span> <span class="tlaGNC">           1 :   return options;</span></span>
+<span id="L39"><span class="lineNum">      39</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
 <span id="L40"><span class="lineNum">      40</span>              : </span>
-<span id="L41"><span class="lineNum">      41</span> <span class="tlaGNC">           1 :   return options;</span></span>
-<span id="L42"><span class="lineNum">      42</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
-<span id="L43"><span class="lineNum">      43</span>              : </span>
-<span id="L44"><span class="lineNum">      44</span> <span class="tlaGNC tlaBgGNC">           6 : PlasticFlowRate::PlasticFlowRate(const OptionSet &amp; options)</span></span>
-<span id="L45"><span class="lineNum">      45</span>              :   : Model(options),</span>
-<span id="L46"><span class="lineNum">      46</span> <span class="tlaGNC">          12 :     _f(declare_input_variable&lt;Scalar&gt;(&quot;yield_function&quot;)),</span></span>
-<span id="L47"><span class="lineNum">      47</span> <span class="tlaGNC">           6 :     _gamma_dot(declare_output_variable&lt;Scalar&gt;(&quot;flow_rate&quot;))</span></span>
-<span id="L48"><span class="lineNum">      48</span>              : {</span>
-<span id="L49"><span class="lineNum">      49</span> <span class="tlaGNC">           6 : }</span></span>
-<span id="L50"><span class="lineNum">      50</span>              : } // namespace neml2</span>
+<span id="L41"><span class="lineNum">      41</span> <span class="tlaGNC tlaBgGNC">           5 : PlasticFlowRate::PlasticFlowRate(const OptionSet &amp; options)</span></span>
+<span id="L42"><span class="lineNum">      42</span>              :   : Model(options),</span>
+<span id="L43"><span class="lineNum">      43</span> <span class="tlaGNC">          10 :     _f(declare_input_variable&lt;Scalar&gt;(&quot;yield_function&quot;)),</span></span>
+<span id="L44"><span class="lineNum">      44</span> <span class="tlaGNC">           5 :     _gamma_dot(declare_output_variable&lt;Scalar&gt;(&quot;flow_rate&quot;))</span></span>
+<span id="L45"><span class="lineNum">      45</span>              : {</span>
+<span id="L46"><span class="lineNum">      46</span> <span class="tlaGNC">           5 : }</span></span>
+<span id="L47"><span class="lineNum">      47</span>              : } // namespace neml2</span>
         </pre>
               </td>
             </tr>

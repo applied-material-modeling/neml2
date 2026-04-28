@@ -32,12 +32,12 @@
             <td></td>
             <td class="headerItem">Lines:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
-            <td class="headerCovTableEntry">29</td>
-            <td class="headerCovTableEntry">29</td>
+            <td class="headerCovTableEntry">28</td>
+            <td class="headerCovTableEntry">28</td>
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2026-04-24 15:34:55</td>
+            <td class="headerValue">2026-04-28 19:32:22</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -104,9 +104,9 @@
 <span id="L42"><span class="lineNum">      42</span> <span class="tlaGNC">           1 :       &quot;behavior can be altered via the `indexing` option.&quot;;</span></span>
 <span id="L43"><span class="lineNum">      43</span>              : </span>
 <span id="L44"><span class="lineNum">      44</span> <span class="tlaGNC">           4 :   EnumSelection indexing_selection({&quot;COLUMN_MAJOR&quot;, &quot;ROW_MAJOR&quot;}, &quot;COLUMN_MAJOR&quot;);</span></span>
-<span id="L45"><span class="lineNum">      45</span> <span class="tlaGNC">           2 :   options.set&lt;EnumSelection&gt;(&quot;indexing&quot;) = indexing_selection;</span></span>
-<span id="L46"><span class="lineNum">      46</span> <span class="tlaGNC">           2 :   options.set(&quot;indexing&quot;).doc() =</span></span>
-<span id="L47"><span class="lineNum">      47</span> <span class="tlaGNC">           3 :       &quot;Indexing interpretation. Options are &quot; + indexing_selection.join();</span></span>
+<span id="L45"><span class="lineNum">      45</span> <span class="tlaGNC">           1 :   options.add&lt;EnumSelection&gt;(&quot;indexing&quot;,</span></span>
+<span id="L46"><span class="lineNum">      46</span>              :                              indexing_selection,</span>
+<span id="L47"><span class="lineNum">      47</span> <span class="tlaGNC">           2 :                              &quot;Indexing interpretation. Options are &quot; + indexing_selection.join());</span></span>
 <span id="L48"><span class="lineNum">      48</span>              : </span>
 <span id="L49"><span class="lineNum">      49</span> <span class="tlaGNC">           2 :   return options;</span></span>
 <span id="L50"><span class="lineNum">      50</span> <span class="tlaGNC">           1 : }</span></span>

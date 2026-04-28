@@ -134,33 +134,33 @@ $(function(){initNavTree('finite-volume.html','',''); });
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md32">Finite volume discretization </a>
+    <a href="#autotoc_md33">Finite volume discretization </a>
     <ul>
       <li class="level2">
-        <a href="#autotoc_md33">Cell-edge interpolation </a>
+        <a href="#autotoc_md34">Cell-edge interpolation </a>
       </li>
       <li class="level2">
-        <a href="#autotoc_md34">Gradients </a>
+        <a href="#autotoc_md35">Gradients </a>
       </li>
       <li class="level2">
-        <a href="#autotoc_md35">Advective flux </a>
+        <a href="#autotoc_md36">Advective flux </a>
       </li>
     </ul>
   </li>
   <li class="level1">
-    <a href="#autotoc_md36">Finite volume transport model building blocks </a>
+    <a href="#autotoc_md37">Finite volume transport model building blocks </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md37">Example: combined advection–diffusion–reaction </a>
+    <a href="#autotoc_md38">Example: combined advection–diffusion–reaction </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md38">Verification and regression tests </a>
+    <a href="#autotoc_md39">Verification and regression tests </a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_build_2doc_2content_2modules_2finite__volume"></a></p>
 <p>The finite volume module provides composable building blocks for solving 1D PDEs with the finite volume method. The models are designed for arbitrary batch dimensions and integrate with the standard NEML2 time integration and nonlinear solve infrastructure. The module could be used for arbitrary PDEs, but the provided examples and tests focus on 1D transport (advection-diffusion-reaction) PDEs.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md32"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md33"></a>
 Finite volume discretization</h1>
 <p>We consider a conserved quantity \(u(x,t)\) with total flux \(J\) and reaction term \(R\):</p>
 <p class="formulaDsp">
@@ -183,7 +183,7 @@ Finite volume discretization</h1>
 \[  \frac{d \bar{u}_i}{dt} + \frac{1}{\Delta x_i}\left(J\big\rvert_{x_{i+\frac{1}{2}}} - J\big\rvert_{x_{i-\frac{1}{2}}}\right) = \bar{R}_i.
 \]
 </p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md33"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md34"></a>
 Cell-edge interpolation</h2>
 <p>For nonuniform grids, cell-edge values are obtained by linear interpolation:</p>
 <p class="formulaDsp">
@@ -191,14 +191,14 @@ Cell-edge interpolation</h2>
   + \frac{x_{i+\frac{1}{2}}-x_i}{x_{i+1}-x_i} q_{i+1}.
 \]
 </p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md34"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md35"></a>
 Gradients</h2>
 <p>Gradient (and in 1D divergence) terms are handled with the first order expression</p>
 <p class="formulaDsp">
 \[  \mathrm{grad}_{u, i+\frac{1}{2}} = -p_{i+\frac{1}{2}} \frac{\bar{u}_{i+1}-\bar{u}_i}{x_{i+1}-x_i}.
 \]
 </p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md35"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md36"></a>
 Advective flux</h2>
 <p>The module provides an expression for stabilized advective fluxes via simple upwinding:</p>
 <p class="formulaDsp">
@@ -210,7 +210,7 @@ Advective flux</h2>
 \[  v^\pm_{i+\frac{1}{2}} = \frac{1}{2}\left(v_{i+\frac{1}{2}} \pm |v_{i+\frac{1}{2}}|\right).
 \]
 </p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md36"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md37"></a>
 Finite volume transport model building blocks</h1>
 <p>The finite volume transport module introduces several small models intended to be composed together:</p>
 <ul>
@@ -226,7 +226,7 @@ Finite volume transport model building blocks</h1>
 <li><b>DifferenceScalar</b>: Cell sizes from edge locations.</li>
 <li><b>GaussianScalar</b>: Convenient for initializing Gaussian initial conditions.</li>
 </ul>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md37"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md38"></a>
 Example: combined advection–diffusion–reaction</h1>
 <p>Below is a compact example that assembles a full transport system, applies boundary conditions, and advances in time using backward Euler. The full regression test can be found in tests/regression/finite_volume/combined/model.i.</p>
 <div class="fragment"><div class="line">[Tensors]</div>
@@ -251,7 +251,7 @@ Example: combined advection–diffusion–reaction</h1>
 <div class="line">    points = &#39;edges&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [ic]</div>
-<div class="line">    type = GaussianScalar </div>
+<div class="line">    type = GaussianScalar</div>
 <div class="line">    points = &#39;centers&#39;</div>
 <div class="line">    width = 0.05</div>
 <div class="line">    height = 1.0</div>
@@ -271,65 +271,65 @@ Example: combined advection–diffusion–reaction</h1>
 <div class="line">    cell_values = 0.5</div>
 <div class="line">    cell_centers = &#39;centers&#39;</div>
 <div class="line">    cell_edges = &#39;edges&#39;</div>
-<div class="line">    edge_values = &#39;state/D&#39;</div>
+<div class="line">    edge_values = &#39;D&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [advection_velocity]</div>
 <div class="line">    type = LinearlyInterpolateToCellEdges</div>
 <div class="line">    cell_values = 0.4</div>
 <div class="line">    cell_centers = &#39;centers&#39;</div>
 <div class="line">    cell_edges = &#39;edges&#39;</div>
-<div class="line">    edge_values = &#39;state/v_edge&#39;</div>
+<div class="line">    edge_values = &#39;v_edge&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [diffusive_flux]</div>
 <div class="line">    type = FiniteVolumeGradient</div>
-<div class="line">    u = &#39;state/concentration&#39;</div>
-<div class="line">    prefactor = &#39;state/D&#39;</div>
+<div class="line">    u = &#39;concentration&#39;</div>
+<div class="line">    prefactor = &#39;D&#39;</div>
 <div class="line">    dx = &#39;dx_centers&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [advective_flux]</div>
 <div class="line">    type = FiniteVolumeUpwindedAdvectiveFlux</div>
-<div class="line">    u = &#39;state/concentration&#39;</div>
-<div class="line">    v_edge = &#39;state/v_edge&#39;</div>
+<div class="line">    u = &#39;concentration&#39;</div>
+<div class="line">    v_edge = &#39;v_edge&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [reaction]</div>
 <div class="line">    type = ScalarLinearCombination</div>
-<div class="line">    from_var = &#39;state/concentration&#39;</div>
-<div class="line">    to_var = &#39;state/R&#39;</div>
-<div class="line">    coefficients = &#39;-0.05&#39;</div>
+<div class="line">    from = &#39;concentration&#39;</div>
+<div class="line">    to = &#39;R&#39;</div>
+<div class="line">    weights = &#39;-0.05&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [total_flux]</div>
 <div class="line">    type = ScalarLinearCombination</div>
-<div class="line">    from_var = &#39;state/grad_u state/J_advection&#39;</div>
-<div class="line">    to_var = &#39;state/J&#39;</div>
-<div class="line">    coefficients = &#39;1 1&#39;</div>
+<div class="line">    from = &#39;grad_u flux&#39;</div>
+<div class="line">    to = &#39;J&#39;</div>
+<div class="line">    weights = &#39;1 1&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [left_bc]</div>
 <div class="line">    type = FiniteVolumeAppendBoundaryCondition</div>
-<div class="line">    input = &#39;state/J&#39;</div>
+<div class="line">    input = &#39;J&#39;</div>
 <div class="line">    bc_value = 0.0</div>
 <div class="line">    side = &#39;left&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [right_bc]</div>
 <div class="line">    type = FiniteVolumeAppendBoundaryCondition</div>
-<div class="line">    input = &#39;state/J_with_bc_left&#39;</div>
+<div class="line">    input = &#39;J_with_bc_left&#39;</div>
 <div class="line">    bc_value = 0.0</div>
 <div class="line">    side = &#39;right&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [flux_divergence]</div>
 <div class="line">    type = FiniteVolumeGradient</div>
-<div class="line">    u = &#39;state/J_with_bc_left_with_bc_right&#39;</div>
+<div class="line">    u = &#39;J_with_bc_left_with_bc_right&#39;</div>
 <div class="line">    dx = &#39;dx&#39;</div>
-<div class="line">    grad_u = &#39;state/flux_div&#39;</div>
+<div class="line">    grad_u = &#39;flux_div&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [rate_of_change]</div>
 <div class="line">    type = ScalarLinearCombination</div>
-<div class="line">    from_var = &#39;state/R state/flux_div&#39;</div>
-<div class="line">    to_var = &#39;state/concentration_rate&#39;</div>
-<div class="line">    coefficients = &#39;1 1&#39;</div>
+<div class="line">    from = &#39;R flux_div&#39;</div>
+<div class="line">    to = &#39;concentration_rate&#39;</div>
+<div class="line">    weights = &#39;1 1&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [integrate_u]</div>
 <div class="line">    type = ScalarBackwardEulerTimeIntegration</div>
-<div class="line">    variable = &#39;state/concentration&#39;</div>
+<div class="line">    variable = &#39;concentration&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [implicit_rate]</div>
 <div class="line">    type = ComposedModel</div>
@@ -341,10 +341,12 @@ Example: combined advection–diffusion–reaction</h1>
 <div class="line">    solver = &#39;newton&#39;</div>
 <div class="line">  []</div>
 <div class="line">[]</div>
+<div class="line"> </div>
 <div class="line">[EquationSystems]</div>
 <div class="line">  [eq_sys]</div>
 <div class="line">    type = NonlinearSystem</div>
 <div class="line">    model = &#39;implicit_rate&#39;</div>
+<div class="line">    unknowns = &#39;concentration&#39;</div>
 <div class="line">  []</div>
 <div class="line">[]</div>
 <div class="line"> </div>
@@ -357,7 +359,7 @@ Example: combined advection–diffusion–reaction</h1>
 <div class="line">    type = DenseLU</div>
 <div class="line">  []</div>
 <div class="line">[]</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md38"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md39"></a>
 Verification and regression tests</h1>
 <p>The module includes unit tests for each component and verification tests for advection, diffusion, and combined advection–diffusion–reaction problems. These are located under tests/unit/models/finite_volume and tests/verification/finite_volume. </p>
 </div></div><!-- contents -->

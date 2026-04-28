@@ -6,7 +6,7 @@ var searchData=
   ['dependencydefinition_3',['DependencyDefinition',['../classneml2_1_1DependencyDefinition.html',1,'neml2']]],
   ['dependencydefinition_3c_20variablename_20_3e_4',['DependencyDefinition&lt; VariableName &gt;',['../classneml2_1_1DependencyDefinition.html',1,'neml2']]],
   ['dependencyresolver_5',['DependencyResolver',['../classneml2_1_1DependencyResolver.html',1,'neml2']]],
-  ['dependencyresolver_3c_20neml2_3a_3amodel_2c_20neml2_3a_3alabeledaxisaccessor_20_3e_6',['DependencyResolver&lt; neml2::Model, neml2::LabeledAxisAccessor &gt;',['../classneml2_1_1DependencyResolver.html',1,'neml2']]],
+  ['dependencyresolver_3c_20neml2_3a_3amodel_2c_20variablename_20_3e_6',['DependencyResolver&lt; neml2::Model, VariableName &gt;',['../classneml2_1_1DependencyResolver.html',1,'neml2']]],
   ['derivative_7',['Derivative',['../classneml2_1_1Derivative.html',1,'neml2']]],
   ['determinant_8',['Determinant',['../classneml2_1_1Determinant.html',1,'neml2']]],
   ['devicestatus_9',['DeviceStatus',['../structneml2_1_1StaticHybridScheduler_1_1DeviceStatus.html',1,'neml2::StaticHybridScheduler']]],

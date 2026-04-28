@@ -31,13 +31,13 @@
             <td class="headerValue">coverage.info</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntryHi">96.0&nbsp;%</td>
-            <td class="headerCovTableEntry">25</td>
-            <td class="headerCovTableEntry">24</td>
+            <td class="headerCovTableEntryHi">95.7&nbsp;%</td>
+            <td class="headerCovTableEntry">23</td>
+            <td class="headerCovTableEntry">22</td>
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2026-04-24 15:34:55</td>
+            <td class="headerValue">2026-04-28 19:32:22</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -85,61 +85,55 @@
 <span id="L23"><span class="lineNum">      23</span>              : // THE SOFTWARE.</span>
 <span id="L24"><span class="lineNum">      24</span>              : </span>
 <span id="L25"><span class="lineNum">      25</span>              : #include &quot;neml2/models/porous_flow/VanGenuchtenCapillaryPressure.h&quot;</span>
-<span id="L26"><span class="lineNum">      26</span>              : #include &quot;neml2/tensors/functions/clamp.h&quot;</span>
-<span id="L27"><span class="lineNum">      27</span>              : #include &quot;neml2/tensors/functions/pow.h&quot;</span>
-<span id="L28"><span class="lineNum">      28</span>              : #include &quot;neml2/tensors/functions/log10.h&quot;</span>
-<span id="L29"><span class="lineNum">      29</span>              : #include &quot;neml2/tensors/functions/where.h&quot;</span>
-<span id="L30"><span class="lineNum">      30</span>              : #include &quot;neml2/tensors/assertions.h&quot;</span>
-<span id="L31"><span class="lineNum">      31</span>              : </span>
-<span id="L32"><span class="lineNum">      32</span>              : namespace neml2</span>
-<span id="L33"><span class="lineNum">      33</span>              : {</span>
-<span id="L34"><span class="lineNum">      34</span>              : register_NEML2_object(VanGenuchtenCapillaryPressure);</span>
-<span id="L35"><span class="lineNum">      35</span>              : OptionSet</span>
-<span id="L36"><span class="lineNum">      36</span> <span class="tlaGNC tlaBgGNC">           1 : VanGenuchtenCapillaryPressure::expected_options()</span></span>
-<span id="L37"><span class="lineNum">      37</span>              : {</span>
-<span id="L38"><span class="lineNum">      38</span> <span class="tlaGNC">           1 :   OptionSet options = CapillaryPressure::expected_options();</span></span>
-<span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">           1 :   options.doc() +=</span></span>
-<span id="L40"><span class="lineNum">      40</span>              :       &quot; using the van Genuchten correlation for capillary pressure, taking the form of \\f$ &quot;</span>
-<span id="L41"><span class="lineNum">      41</span>              :       &quot;a \\left( S_e^{-\\frac{1}{m}} - 1 \\right)^{1-m} \\f$. Here \\f$ S_e \\f$ is the &quot;</span>
-<span id="L42"><span class="lineNum">      42</span> <span class="tlaGNC">           1 :       &quot;effective saturation,\\f$ a \\f$ and \\f$ m \\f$ are shape parameters&quot;;</span></span>
-<span id="L43"><span class="lineNum">      43</span>              : </span>
-<span id="L44"><span class="lineNum">      44</span> <span class="tlaGNC">           2 :   options.set&lt;bool&gt;(&quot;define_second_derivatives&quot;) = true;</span></span>
+<span id="L26"><span class="lineNum">      26</span>              : #include &quot;neml2/tensors/functions/pow.h&quot;</span>
+<span id="L27"><span class="lineNum">      27</span>              : #include &quot;neml2/tensors/functions/where.h&quot;</span>
+<span id="L28"><span class="lineNum">      28</span>              : </span>
+<span id="L29"><span class="lineNum">      29</span>              : namespace neml2</span>
+<span id="L30"><span class="lineNum">      30</span>              : {</span>
+<span id="L31"><span class="lineNum">      31</span>              : register_NEML2_object(VanGenuchtenCapillaryPressure);</span>
+<span id="L32"><span class="lineNum">      32</span>              : OptionSet</span>
+<span id="L33"><span class="lineNum">      33</span> <span class="tlaGNC tlaBgGNC">           1 : VanGenuchtenCapillaryPressure::expected_options()</span></span>
+<span id="L34"><span class="lineNum">      34</span>              : {</span>
+<span id="L35"><span class="lineNum">      35</span> <span class="tlaGNC">           1 :   OptionSet options = CapillaryPressure::expected_options();</span></span>
+<span id="L36"><span class="lineNum">      36</span> <span class="tlaGNC">           1 :   options.doc() +=</span></span>
+<span id="L37"><span class="lineNum">      37</span>              :       &quot; using the van Genuchten correlation for capillary pressure, taking the form of \\f$ &quot;</span>
+<span id="L38"><span class="lineNum">      38</span>              :       &quot;a \\left( S_e^{-\\frac{1}{m}} - 1 \\right)^{1-m} \\f$. Here \\f$ S_e \\f$ is the &quot;</span>
+<span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">           1 :       &quot;effective saturation,\\f$ a \\f$ and \\f$ m \\f$ are shape parameters&quot;;</span></span>
+<span id="L40"><span class="lineNum">      40</span>              : </span>
+<span id="L41"><span class="lineNum">      41</span> <span class="tlaGNC">           3 :   options.set_private&lt;bool&gt;(&quot;define_second_derivatives&quot;, true);</span></span>
+<span id="L42"><span class="lineNum">      42</span>              : </span>
+<span id="L43"><span class="lineNum">      43</span> <span class="tlaGNC">           4 :   options.add_parameter&lt;Scalar&gt;(&quot;a&quot;, &quot;Shape parameter a&quot;);</span></span>
+<span id="L44"><span class="lineNum">      44</span> <span class="tlaGNC">           3 :   options.add_parameter&lt;Scalar&gt;(&quot;m&quot;, &quot;Shape parameter m&quot;);</span></span>
 <span id="L45"><span class="lineNum">      45</span>              : </span>
-<span id="L46"><span class="lineNum">      46</span> <span class="tlaGNC">           2 :   options.set_parameter&lt;TensorName&lt;Scalar&gt;&gt;(&quot;a&quot;);</span></span>
-<span id="L47"><span class="lineNum">      47</span> <span class="tlaGNC">           2 :   options.set(&quot;a&quot;).doc() = &quot;Shape parameter a&quot;;</span></span>
+<span id="L46"><span class="lineNum">      46</span> <span class="tlaGNC">           1 :   return options;</span></span>
+<span id="L47"><span class="lineNum">      47</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
 <span id="L48"><span class="lineNum">      48</span>              : </span>
-<span id="L49"><span class="lineNum">      49</span> <span class="tlaGNC">           2 :   options.set_parameter&lt;TensorName&lt;Scalar&gt;&gt;(&quot;m&quot;);</span></span>
-<span id="L50"><span class="lineNum">      50</span> <span class="tlaGNC">           1 :   options.set(&quot;m&quot;).doc() = &quot;Shape parameter m&quot;;</span></span>
-<span id="L51"><span class="lineNum">      51</span>              : </span>
-<span id="L52"><span class="lineNum">      52</span> <span class="tlaGNC">           1 :   return options;</span></span>
-<span id="L53"><span class="lineNum">      53</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
-<span id="L54"><span class="lineNum">      54</span>              : </span>
-<span id="L55"><span class="lineNum">      55</span> <span class="tlaGNC tlaBgGNC">           1 : VanGenuchtenCapillaryPressure::VanGenuchtenCapillaryPressure(const OptionSet &amp; options)</span></span>
-<span id="L56"><span class="lineNum">      56</span>              :   : CapillaryPressure(options),</span>
-<span id="L57"><span class="lineNum">      57</span> <span class="tlaGNC">           3 :     _a(declare_parameter&lt;Scalar&gt;(&quot;a&quot;, &quot;a&quot;)),</span></span>
-<span id="L58"><span class="lineNum">      58</span> <span class="tlaGNC">           5 :     _m(declare_parameter&lt;Scalar&gt;(&quot;m&quot;, &quot;m&quot;))</span></span>
-<span id="L59"><span class="lineNum">      59</span>              : {</span>
-<span id="L60"><span class="lineNum">      60</span> <span class="tlaGNC">           1 : }</span></span>
-<span id="L61"><span class="lineNum">      61</span>              : </span>
-<span id="L62"><span class="lineNum">      62</span>              : std::tuple&lt;Scalar, Scalar, Scalar&gt;</span>
-<span id="L63"><span class="lineNum">      63</span> <span class="tlaGNC">           6 : VanGenuchtenCapillaryPressure::calculate_pressure(const Scalar &amp; S,</span></span>
-<span id="L64"><span class="lineNum">      64</span>              :                                                   bool out,</span>
-<span id="L65"><span class="lineNum">      65</span>              :                                                   bool dout_din,</span>
-<span id="L66"><span class="lineNum">      66</span>              :                                                   bool d2out_din2) const</span>
-<span id="L67"><span class="lineNum">      67</span>              : {</span>
-<span id="L68"><span class="lineNum">      68</span> <span class="tlaGNC">           6 :   const auto eps = machine_precision(S.scalar_type());</span></span>
-<span id="L69"><span class="lineNum">      69</span> <span class="tlaGNC">           6 :   auto Sc = where(S &gt; (1.0 - eps), Scalar::ones_like(S) - eps, S);</span></span>
+<span id="L49"><span class="lineNum">      49</span> <span class="tlaGNC tlaBgGNC">           1 : VanGenuchtenCapillaryPressure::VanGenuchtenCapillaryPressure(const OptionSet &amp; options)</span></span>
+<span id="L50"><span class="lineNum">      50</span>              :   : CapillaryPressure(options),</span>
+<span id="L51"><span class="lineNum">      51</span> <span class="tlaGNC">           3 :     _a(declare_parameter&lt;Scalar&gt;(&quot;a&quot;, &quot;a&quot;)),</span></span>
+<span id="L52"><span class="lineNum">      52</span> <span class="tlaGNC">           5 :     _m(declare_parameter&lt;Scalar&gt;(&quot;m&quot;, &quot;m&quot;))</span></span>
+<span id="L53"><span class="lineNum">      53</span>              : {</span>
+<span id="L54"><span class="lineNum">      54</span> <span class="tlaGNC">           1 : }</span></span>
+<span id="L55"><span class="lineNum">      55</span>              : </span>
+<span id="L56"><span class="lineNum">      56</span>              : std::tuple&lt;Scalar, Scalar, Scalar&gt;</span>
+<span id="L57"><span class="lineNum">      57</span> <span class="tlaGNC">           6 : VanGenuchtenCapillaryPressure::calculate_pressure(const Scalar &amp; S,</span></span>
+<span id="L58"><span class="lineNum">      58</span>              :                                                   bool out,</span>
+<span id="L59"><span class="lineNum">      59</span>              :                                                   bool dout_din,</span>
+<span id="L60"><span class="lineNum">      60</span>              :                                                   bool d2out_din2) const</span>
+<span id="L61"><span class="lineNum">      61</span>              : {</span>
+<span id="L62"><span class="lineNum">      62</span> <span class="tlaGNC">           6 :   const auto eps = machine_precision(S.scalar_type());</span></span>
+<span id="L63"><span class="lineNum">      63</span> <span class="tlaGNC">           6 :   auto Sc = where(S &gt; (1.0 - eps), Scalar::ones_like(S) - eps, S);</span></span>
+<span id="L64"><span class="lineNum">      64</span>              : </span>
+<span id="L65"><span class="lineNum">      65</span> <span class="tlaGNC">           6 :   auto f_s = _a * pow((pow(Sc, -1.0 / _m) - 1.0), 1 - _m);</span></span>
+<span id="L66"><span class="lineNum">      66</span> <span class="tlaGNC">           6 :   auto dfds_s = -_a / _m * (1 - _m) * pow(pow(Sc, -1 / _m) - 1, -_m) * pow(Sc, -1 / _m - 1);</span></span>
+<span id="L67"><span class="lineNum">      67</span> <span class="tlaGNC">          12 :   auto d2fds2_s = -_a * ((_m - 1) * (_m * pow(Sc, (1 / _m)) + pow(Sc, (1 / _m)) - 1)) /</span></span>
+<span id="L68"><span class="lineNum">      68</span> <span class="tlaGNC">          12 :                   (_m * _m * pow(Sc, (1 / _m + 2)) * pow((1 / pow(Sc, (1 / _m)) - 1), _m) *</span></span>
+<span id="L69"><span class="lineNum">      69</span> <span class="tlaGNC">          18 :                    (pow(Sc, (1 / _m)) - 1));</span></span>
 <span id="L70"><span class="lineNum">      70</span>              : </span>
-<span id="L71"><span class="lineNum">      71</span> <span class="tlaGNC">           6 :   auto f_s = _a * pow((pow(Sc, -1.0 / _m) - 1.0), 1 - _m);</span></span>
-<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC">           6 :   auto dfds_s = -_a / _m * (1 - _m) * pow(pow(Sc, -1 / _m) - 1, -_m) * pow(Sc, -1 / _m - 1);</span></span>
-<span id="L73"><span class="lineNum">      73</span> <span class="tlaGNC">          12 :   auto d2fds2_s = -_a * ((_m - 1) * (_m * pow(Sc, (1 / _m)) + pow(Sc, (1 / _m)) - 1)) /</span></span>
-<span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">          12 :                   (_m * _m * pow(Sc, (1 / _m + 2)) * pow((1 / pow(Sc, (1 / _m)) - 1), _m) *</span></span>
-<span id="L75"><span class="lineNum">      75</span> <span class="tlaGNC">          18 :                    (pow(Sc, (1 / _m)) - 1));</span></span>
-<span id="L76"><span class="lineNum">      76</span>              : </span>
-<span id="L77"><span class="lineNum">      77</span>              :   return std::make_tuple(</span>
-<span id="L78"><span class="lineNum">      78</span> <span class="tlaGNC">          12 :       out ? f_s : Scalar(), dout_din ? dfds_s : Scalar(), d2out_din2 ? d2fds2_s : Scalar());</span></span>
-<span id="L79"><span class="lineNum">      79</span> <span class="tlaGNC">           6 : }</span></span>
-<span id="L80"><span class="lineNum">      80</span>              : }</span>
+<span id="L71"><span class="lineNum">      71</span>              :   return std::make_tuple(</span>
+<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC">          12 :       out ? f_s : Scalar(), dout_din ? dfds_s : Scalar(), d2out_din2 ? d2fds2_s : Scalar());</span></span>
+<span id="L73"><span class="lineNum">      73</span> <span class="tlaGNC">           6 : }</span></span>
+<span id="L74"><span class="lineNum">      74</span>              : }</span>
         </pre>
               </td>
             </tr>

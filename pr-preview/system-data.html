@@ -134,20 +134,20 @@ $(function(){initNavTree('system-data.html','',''); });
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md73">Buffer </a>
+    <a href="#autotoc_md74">Buffer </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md74">Data </a>
+    <a href="#autotoc_md75">Data </a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_build_2doc_2content_2system_2data"></a></p>
 <p>Refer to <a class="el" href="syntax-data.html" title="[Data]">Syntax Documentation</a> for the list of available objects.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md73"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md74"></a>
 Buffer</h1>
 <p>The term "buffer" is inherited from PyTorch. In a <span class="tt">torch.nn.Module</span> (which can be thought of the PyTorch equivalent of NEML2's <span class="tt">Model</span>), a set of <em>parameters</em> and <em>buffer</em> can be declared. Both parameters and buffer are tensors registered to the model. When the model is sent to a different device, i.e., from CPU to GPU, the parameters and buffer registered with the model are sent to the target device.</p>
 <p>The only notable difference between buffer and parameter is that buffer tensors are <em>NOT</em> meant to part of the function graph (while calling the model's forward operator), while parameters are expected to be differentiated. Some examples of buffer, in the context of crystal plasticity, include crystal class, lattice vectors, slip planes, and slip directions of a crystal.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md74"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md75"></a>
 Data</h1>
 <p>NEML2 provides the Data system to predefine commonly used buffer tensors that are oftentimes shared among material models. Data objects shall inherit from the base class <span class="tt">Data</span> and can register as many buffer tensors as necessary.</p>
 <p>Objects that are defined as part of the Data system are different from models in several ways:</p><ol type="1">

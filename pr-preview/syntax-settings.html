@@ -134,7 +134,7 @@ $(function(){initNavTree('syntax-settings.html','',''); });
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md70">Available objects and their input file syntax </a>
+    <a href="#autotoc_md71">Available objects and their input file syntax </a>
     <ul>
       <li class="level2">
         <a href="#settings">Settings </a>
@@ -151,7 +151,7 @@ Type name written in PascalCase typically refer to a NEML2 object type, oftentim
 The 🔗 symbol means that the tensor value can be cross-reference another object. See <a class="el" href="tutorials-models-model-parameters-revisited.html" title="Model parameters (revisited)">Model parameters (revisited)</a> for details.</dd>
 <dd>
 You can always use <span class="tt">Ctrl</span>+<span class="tt">F</span> or <span class="tt">Cmd</span>+<span class="tt">F</span> to search the entire page.</dd></dl>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md70"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md71"></a>
 Available objects and their input file syntax</h1>
 <p>Refer to <a class="el" href="system-settings.html" title="Settings">System Documentation</a> for detailed explanation about this system.</p>
 <h2 class="doxsection"><a class="anchor" id="settings"></a>
@@ -161,7 +161,8 @@ Settings</h2>
 <span class="tt">additional_libraries</span> Additional dynamic libraries to load at runtime. The Registry from these libraries are merged into the current Registry singleton. This is required for using custom models defined in dynamic libraries not directly linked to libneml2. The paths are either absolute or relative to the current working directory.</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of string </li>
+<li><u>Type</u>: list of string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -170,6 +171,7 @@ Settings</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: string</li>
+<li><u>Required</u>: No</li>
 <li><u>Default</u>: _ </li>
 </ul>
 </details>
@@ -179,7 +181,17 @@ Settings</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: bool</li>
+<li><u>Required</u>: No</li>
 <li><u>Default</u>: false </li>
+</ul>
+</details>
+<details >
+<summary >
+<span class="tt">history_separator</span> History variable name separator. The default is '~'. For example, a variable 'x' will have its history variable for the previous time step named 'x~1', for the time step before that named 'x~2', etc.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -188,6 +200,7 @@ Settings</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: bool</li>
+<li><u>Required</u>: No</li>
 <li><u>Default</u>: false </li>
 </ul>
 </details>
@@ -197,7 +210,27 @@ Settings</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: string</li>
+<li><u>Required</u>: No</li>
 <li><u>Default</u>: _ </li>
+</ul>
+</details>
+<details >
+<summary >
+<span class="tt">rate_prefix</span> Prefix for rate variables. The default is an empty string. For example, if the prefix is 'rate_', then a variable named 'x' will have its rate variable named 'rate_x'.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: string</li>
+<li><u>Required</u>: No </li>
+</ul>
+</details>
+<details >
+<summary >
+<span class="tt">rate_suffix</span> Suffix for rate variables. The default is '_rate'. For example, if the suffix is '_rate', then a variable named 'x' will have its rate variable named 'x_rate'.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: string</li>
+<li><u>Required</u>: No</li>
+<li><u>Default</u>: _rate </li>
 </ul>
 </details>
 <details >
@@ -206,10 +239,30 @@ Settings</h2>
 <p></p>
 <ul>
 <li><u>Type</u>: bool</li>
+<li><u>Required</u>: No</li>
 <li><u>Default</u>: true </li>
 </ul>
 </details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1Settings.html" title="Settings">link</a> </p>
+<details >
+<summary >
+<span class="tt">residual_prefix</span> Prefix for residual variables. The default is an empty string. For example, if the prefix is 'residual_', then a variable named 'x' will have its residual variable named 'residual_x'.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: string</li>
+<li><u>Required</u>: No </li>
+</ul>
+</details>
+<details >
+<summary >
+<span class="tt">residual_suffix</span> Suffix for residual variables. The default is '_residual'. For example, if the suffix is '_residual', then a variable named 'x' will have its residual variable named 'x_residual'.</summary>
+<p></p>
+<ul>
+<li><u>Type</u>: string</li>
+<li><u>Required</u>: No</li>
+<li><u>Default</u>: _residual </li>
+</ul>
+</details>
+<p>Detailed documentation <a class="el" href="#settings" title="Settings">link</a> </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

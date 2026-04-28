@@ -134,46 +134,30 @@ $(function(){initNavTree('tutorials-naming-conventions.html','',''); });
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md153">Naming conventions </a>
+    <a href="#autotoc_md157">Naming conventions </a>
     <ul>
       <li class="level2">
-        <a href="#autotoc_md154">Reserved axis names </a>
+        <a href="#autotoc_md158">Variable naming conventions </a>
       </li>
       <li class="level2">
-        <a href="#autotoc_md155">Variable naming conventions </a>
-      </li>
-      <li class="level2">
-        <a href="#autotoc_md156">Source code naming conventions </a>
+        <a href="#autotoc_md159">Source code naming conventions </a>
       </li>
     </ul>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_build_2doc_2content_2tutorials_2naming__conventions"></a></p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md153"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md157"></a>
 Naming conventions</h1>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md154"></a>
-Reserved axis names</h2>
-<p>NEML2 models group variables onto different axes by their names, and the collection of variable names (with their corresponding layout) is called a labeled axis (<a class="el" href="classneml2_1_1LabeledAxis.html" title="LabeledAxis">LabeledAxis</a>). NEML2 predefines six sub-axes to categorize all the input, output and intermediate variables:</p><ul>
-<li>State \(\mathcal{S}\) (axis name <span class="tt">state</span>): Variables collectively characterizing the current <em>state</em> of the material subject to given external forces. The state variables are usually the output of a physically meaningful material model.</li>
-<li>Forces \(\mathcal{F}\) (axis name <span class="tt">forces</span>): Variables defining the <em>external</em> forces that drive the response of the material.</li>
-<li>Old state \(\mathcal{S}_n\) (axis name <span class="tt">old_state</span>): The state variables <em>prior to</em> the current material update. In the time-discrete setting, these are the state variables from the previous time step.</li>
-<li>Old forces \(\mathcal{F}_n\) (axis name <span class="tt">old_forces</span>): The external forces <em>prior to</em> the current material update. In the time-discrete setting, these are the forces from the previous time step.</li>
-<li>Residual \(\mathcal{R}\) (axis name <span class="tt">residual</span>): The residual defines an <em>implicit</em> model/function. An implicit model is updated by solving for the state variables that result in zero residual.</li>
-<li>Parameters \(\mathcal{P}\) (axis name <span class="tt">parameters</span>): The (nonlinear) parameters.</li>
-</ul>
-<dl class="section note"><dt>Note</dt><dd>When authoring C++ source code, it is recommended to avoid hard-coding reserved axis names as pure strings. Instead, inlined <span class="tt">const</span> string names (defined in <span class="tt">neml2/models/LabeledAxisAccessor.h</span>) should be used wherever possible, i.e. <span class="tt">STATE</span>, <span class="tt">OLD_STATE</span>, <span class="tt">FORCES</span>, <span class="tt">OLD_FORCES</span>, <span class="tt">RESIDUAL</span>, and <span class="tt">PARAMETERS</span>.</dd></dl>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md155"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md158"></a>
 Variable naming conventions</h2>
-<p>Variable names have the type <a class="el" href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">neml2::VariableName</a> which is an alias to <a class="el" href="classneml2_1_1LabeledAxisAccessor.html" title="The accessor containing all the information needed to access an item in a LabeledAxis.">neml2::LabeledAxisAccessor</a>. The following characters are not allowed in variable names:</p><ul>
+<p>The following characters are not allowed in variable names:</p><ul>
 <li>whitespace characters: input file parsing ambiguity</li>
 <li><span class="tt">,</span>: input file parsing ambiguity</li>
 <li><span class="tt">;</span>: input file parsing ambiguity</li>
 <li><span class="tt">.</span>: clash with PyTorch parameter/buffer naming convention</li>
-<li><span class="tt">/</span>: separator reserved for nested variable name</li>
 </ul>
-<p>In the input file, the separator <span class="tt">/</span> is used to denote nested variable names. For example, <span class="tt">A/B/foo</span> specifies a variable named "foo" defined on the sub-axis named "B" which is a nested sub-axis of "A".</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md156"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md159"></a>
 Source code naming conventions</h2>
 <p>In NEML2 source code, the following naming conventions are recommended:</p><ul>
 <li>User-facing variables and option names should be <em>as descriptive as possible</em>. For example, the equivalent plastic strain is named "equivalent_plastic_strain". Note that white spaces, quotes, and left slashes are not allowed in the names. Underscores are recommended as a replacement for white spaces.</li>

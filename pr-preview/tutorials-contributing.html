@@ -134,7 +134,7 @@ $(function(){initNavTree('tutorials-contributing.html','',''); });
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md88">Model development </a>
+    <a href="#autotoc_md89">Model development </a>
   </li>
   <li class="level1">
     <a href="#testing-cpp">C++ backend </a>
@@ -152,12 +152,12 @@ $(function(){initNavTree('tutorials-contributing.html','',''); });
         <a href="#testing-verification-tests">Verification tests </a>
       </li>
       <li class="level2">
-        <a href="#autotoc_md89">Command-line arguments </a>
+        <a href="#autotoc_md90">Command-line arguments </a>
       </li>
     </ul>
   </li>
   <li class="level1">
-    <a href="#autotoc_md90">Python package </a>
+    <a href="#autotoc_md91">Python package </a>
     <ul>
       <li class="level2">
         <a href="#testing-python">Setup </a>
@@ -171,18 +171,18 @@ $(function(){initNavTree('tutorials-contributing.html','',''); });
     </ul>
   </li>
   <li class="level1">
-    <a href="#autotoc_md91">Jupyter notebooks </a>
+    <a href="#autotoc_md92">Jupyter notebooks </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md92">Documentation </a>
+    <a href="#autotoc_md93">Documentation </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md93">Code formatting and static analysis </a>
+    <a href="#autotoc_md94">Code formatting and static analysis </a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_build_2doc_2content_2tutorials_2contributing"></a></p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md88"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md89"></a>
 Model development</h1>
 <p>Although NEML2 comes with a large collection of modular building blocks for composing material models, it is sometimes necessary to write your own material models (and integrate them with existing NEML2 models). The <a class="el" href="tutorials-extension.html" title="Extension">extension</a> tutorial set demonstrates how a custom model can be implemented within the NEML2 framework and provides an in-depth explanation for each step in the development process.</p>
 <h1 class="doxsection"><a class="anchor" id="testing-cpp"></a>
@@ -218,13 +218,13 @@ Verification tests</h2>
 <p>Each input file for model verification tests should be stored inside a separate folder inside <span class="tt">tests/verification</span>. Every input file with the <span class="tt">.i</span> extension will be automatically discovered and executed. To run all the model verification tests, use the <span class="tt">verification_tests</span> executable followed by the physics module, i.e. </p><div class="fragment"><div class="line">../build/dev/verification/verification_tests &quot;solid mechanics&quot;</div>
 </div><!-- fragment --><p>To run a specific model verification test, use the <span class="tt">-c</span> command line option followed by the relative location of the input file, i.e. </p><div class="fragment"><div class="line">./build/dev/verification/verification_tests &quot;solid mechanics&quot; -c chaboche/chaboche.i</div>
 </div><!-- fragment --><p> The regression test compares variables (specified using the <span class="tt">variables</span> option) against reference values (specified using the <span class="tt">references</span> option). The reference variables can be read using input objects with type <span class="tt">VTestTimeSeries</span>.</p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md89"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md90"></a>
 Command-line arguments</h2>
 <p>The above test suites, including unit tests, regression tests, verification tests, and dispatcher tests, support a variety of configuration options that can be controlled from the command line. See <a href="https://github.com/catchorg/Catch2/blob/devel/docs/command-line.md">Catch2 command line</a> documentation for a list of useful command-line options. In addition, NEML2 test suites support the following options:</p><ul>
 <li><span class="tt">-p</span>, <span class="tt">--path</span>: working directory. This argument is optional and is only needed when the default guessing mechanism fails to locate the test input files.</li>
 <li><span class="tt">-d</span>, <span class="tt">--devices</span>: list of additional (non-CPU) devices to test.</li>
 </ul>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md90"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md91"></a>
 Python package</h1>
 <h2 class="doxsection"><a class="anchor" id="testing-python"></a>
 Setup</h2>
@@ -248,7 +248,7 @@ pytest</h2>
 </div><!-- fragment --><p>To run a specific test case, use</p>
 <div class="fragment"><div class="line">pytest -v &quot;python/tests/test_Model.py::test_forward&quot;</div>
 </div><!-- fragment --><p> which runs the function named <span class="tt">test_forward</span> defined in the <span class="tt">python/tests/test_Model.py</span> file.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md91"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md92"></a>
 Jupyter notebooks</h1>
 <p>NEML2 tracks notebooks with a paired-text workflow so notebook changes remain reviewable and reproducible.</p>
 <ol type="1">
@@ -259,7 +259,7 @@ Jupyter notebooks</h1>
 <li>Install pre-commit hooks so notebook/markdown pairs are synced automatically on commit: <div class="fragment"><div class="line">pre-commit install</div>
 </div><!-- fragment --> The repository hook <span class="tt">jupytext-sync</span> keeps paired files in sync for notebook examples.</li>
 </ol>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md92"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md93"></a>
 Documentation</h1>
 <p>It is of paramount importance to write documentation as the library is being developed. While NEML2 supports both Doxygen-style in-code documentation mechanisms and runtime syntax documentation mechanisms, it is still sometimes necessary to write standalone, self-contained documentation.</p>
 <p>The documentation workflow is driven by scripts in <span class="tt">doc/scripts</span>:</p><ol type="1">
@@ -274,7 +274,7 @@ Documentation</h1>
 <p>Once built, preview the site locally: </p><div class="fragment"><div class="line">firefox build/doc/build/html/index.html</div>
 </div><!-- fragment --><p>For live preview during editing: </p><div class="fragment"><div class="line">./doc/scripts/genhtml.py --serve</div>
 </div><!-- fragment --><p> This starts a local server (default <span class="tt"><a href="http://127.0.0.1:8000/">http://127.0.0.1:8000/</a></span>) and automatically rebuilds docs when tracked content changes.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md93"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md94"></a>
 Code formatting and static analysis</h1>
 <p>The C++ source code is formatted using <span class="tt">clang-format</span>. A <span class="tt">.clang-format</span> file is provided at the repository root specifying the formatting requirements. When using an IDE providing plugins or extensions to format C++ source code, it is important to</p><ol type="1">
 <li>Point the plugin/extension to use the <span class="tt">.clang-format</span> file located at NEML2's repository root.</li>

@@ -144,19 +144,19 @@ $(function(){initNavTree('classneml2_1_1Registry.html','','classneml2_1_1Registr
 Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a4e60f622be2e9f483e0c2f2f07274816" id="r_a4e60f622be2e9f483e0c2f2f07274816"><td class="memItemLeft">static Registry &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a4e60f622be2e9f483e0c2f2f07274816">get</a> ()</td></tr>
 <tr class="memdesc:a4e60f622be2e9f483e0c2f2f07274816"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the global <a class="el" href="classneml2_1_1Registry.html">Registry</a> singleton.  <br /></td></tr>
-<tr class="memitem:adadcce9759678b439278443b8caea939" id="r_adadcce9759678b439278443b8caea939"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
-<tr class="memitem:adadcce9759678b439278443b8caea939 template"><td class="memItemLeft">static char&#160;</td><td class="memItemRight"><a class="el" href="#adadcce9759678b439278443b8caea939">add</a> (const std::string &amp;<a class="el" href="namespaceneml2.html#a5424759a4a25bd0e2f60628d260abb81">name</a>)</td></tr>
-<tr class="memdesc:adadcce9759678b439278443b8caea939"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add information on a <a class="el" href="classneml2_1_1NEML2Object.html" title="The base class of all &quot;manufacturable&quot; objects in the NEML2 library.">NEML2Object</a> to the registry.  <br /></td></tr>
+<tr class="memitem:a94870eb73a5005d9999773c0b4f551e6" id="r_a94870eb73a5005d9999773c0b4f551e6"><td class="memTemplParams" colspan="2">template&lt;typename T&gt; </td></tr>
+<tr class="memitem:a94870eb73a5005d9999773c0b4f551e6 template"><td class="memItemLeft">static char&#160;</td><td class="memItemRight"><a class="el" href="#a94870eb73a5005d9999773c0b4f551e6">add</a> (const std::string &amp;type)</td></tr>
+<tr class="memdesc:a94870eb73a5005d9999773c0b4f551e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add information on a <a class="el" href="classneml2_1_1NEML2Object.html" title="The base class of all &quot;manufacturable&quot; objects in the NEML2 library.">NEML2Object</a> to the registry.  <br /></td></tr>
 <tr class="memitem:a0f49b26a59fbe8967db52d406d51d9a3" id="r_a0f49b26a59fbe8967db52d406d51d9a3"><td class="memItemLeft">static void&#160;</td><td class="memItemRight"><a class="el" href="#a0f49b26a59fbe8967db52d406d51d9a3">load</a> (const std::filesystem::path &amp;)</td></tr>
 <tr class="memdesc:a0f49b26a59fbe8967db52d406d51d9a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Load registry from a dynamic library.  <br /></td></tr>
 <tr class="memitem:af4e76c486bec11e6cbb03a25c8a58dd4" id="r_af4e76c486bec11e6cbb03a25c8a58dd4"><td class="memItemLeft">static const std::map&lt; std::string, <a class="el" href="structneml2_1_1NEML2ObjectInfo.html">NEML2ObjectInfo</a> &gt; &amp;&#160;</td><td class="memItemRight"><a class="el" href="#af4e76c486bec11e6cbb03a25c8a58dd4">info</a> ()</td></tr>
 <tr class="memdesc:af4e76c486bec11e6cbb03a25c8a58dd4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get information of all registered objects.  <br /></td></tr>
-<tr class="memitem:ad387b6add39c06c564c6e7ae3a5fd3fa" id="r_ad387b6add39c06c564c6e7ae3a5fd3fa"><td class="memItemLeft">static const <a class="el" href="structneml2_1_1NEML2ObjectInfo.html">NEML2ObjectInfo</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#ad387b6add39c06c564c6e7ae3a5fd3fa">info</a> (const std::string &amp;)</td></tr>
-<tr class="memdesc:ad387b6add39c06c564c6e7ae3a5fd3fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the information of an object given its syntax type.  <br /></td></tr>
+<tr class="memitem:a761ce3980a7cfd2916e58b3df55fff52" id="r_a761ce3980a7cfd2916e58b3df55fff52"><td class="memItemLeft">static const <a class="el" href="structneml2_1_1NEML2ObjectInfo.html">NEML2ObjectInfo</a> *&#160;</td><td class="memItemRight"><a class="el" href="#a761ce3980a7cfd2916e58b3df55fff52">info</a> (const std::string &amp;)</td></tr>
+<tr class="memdesc:a761ce3980a7cfd2916e58b3df55fff52"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the information of an object given its syntax type, nullptr if not found.  <br /></td></tr>
 </table>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
-<a id="adadcce9759678b439278443b8caea939" name="adadcce9759678b439278443b8caea939"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adadcce9759678b439278443b8caea939">&#9670;&#160;</a></span>add()</h2>
+<a id="a94870eb73a5005d9999773c0b4f551e6" name="a94870eb73a5005d9999773c0b4f551e6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a94870eb73a5005d9999773c0b4f551e6">&#9670;&#160;</a></span>add()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -169,7 +169,7 @@ template&lt;typename T&gt; </div>
         <tr>
           <td class="memname">char add </td>
           <td>(</td>
-          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>name</em></span></td><td>)</td>
+          <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em>type</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -238,8 +238,8 @@ template&lt;typename T&gt; </div>
 
 </div>
 </div>
-<a id="ad387b6add39c06c564c6e7ae3a5fd3fa" name="ad387b6add39c06c564c6e7ae3a5fd3fa"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad387b6add39c06c564c6e7ae3a5fd3fa">&#9670;&#160;</a></span>info() <span class="overload">[2/2]</span></h2>
+<a id="a761ce3980a7cfd2916e58b3df55fff52" name="a761ce3980a7cfd2916e58b3df55fff52"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a761ce3980a7cfd2916e58b3df55fff52">&#9670;&#160;</a></span>info() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -248,7 +248,7 @@ template&lt;typename T&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const <a class="el" href="structneml2_1_1NEML2ObjectInfo.html">NEML2ObjectInfo</a> &amp; info </td>
+          <td class="memname">const <a class="el" href="structneml2_1_1NEML2ObjectInfo.html">NEML2ObjectInfo</a> * info </td>
           <td>(</td>
           <td class="paramtype">const std::string &amp;</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td></td>
@@ -261,7 +261,7 @@ template&lt;typename T&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Get the information of an object given its syntax type. </p>
+<p>Get the information of an object given its syntax type, nullptr if not found. </p>
 
 </div>
 </div>

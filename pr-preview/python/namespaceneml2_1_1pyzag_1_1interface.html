@@ -129,7 +129,8 @@ $(function(){initNavTree('namespaceneml2_1_1pyzag_1_1interface.html','',''); });
 
 <div class="header">
   <div class="summary">
-<a href="#nested-classes">Classes</a>  </div>
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">neml2.pyzag.interface Namespace Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -137,7 +138,66 @@ $(function(){initNavTree('namespaceneml2_1_1pyzag_1_1interface.html','',''); });
 <tr class="heading"><td colspan="2"><h2 id="header-nested-classes" class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:NEML2PyzagModel" id="r_NEML2PyzagModel"><td class="memItemLeft">class &#160;</td><td class="memItemRight"><a class="el" href="classneml2_1_1pyzag_1_1interface_1_1NEML2PyzagModel.html">NEML2PyzagModel</a></td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ad4d760d69e5e0a924dbc6d4702e3c35e" id="r_ad4d760d69e5e0a924dbc6d4702e3c35e"><td class="memItemLeft">typing.Tuple[str, int]&#160;</td><td class="memItemRight"><a class="el" href="#ad4d760d69e5e0a924dbc6d4702e3c35e">lag_order</a> (str var)</td></tr>
+<tr class="memitem:a6d0684004307a42d7f69bdcba392dabf" id="r_a6d0684004307a42d7f69bdcba392dabf"><td class="memItemLeft">str&#160;</td><td class="memItemRight"><a class="el" href="#a6d0684004307a42d7f69bdcba392dabf">change_lag_order</a> (str var, int new_order)</td></tr>
 </table>
+<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
+<a id="a6d0684004307a42d7f69bdcba392dabf" name="a6d0684004307a42d7f69bdcba392dabf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6d0684004307a42d7f69bdcba392dabf">&#9670;&#160;</a></span>change_lag_order()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"> str change_lag_order </td>
+          <td>(</td>
+          <td class="paramtype">str</td>          <td class="paramname"><span class="paramname"><em>var</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>new_order</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<pre class="fragment">Change the lag order of a variable name.
+
+Args:
+    var (str): The variable string, which can be in the format "var" or "var~n" where n is an integer.
+    new_order (int): The new lag order to set.
+
+Returns:
+    str: The variable string with the updated lag order.
+</pre> 
+</div>
+</div>
+<a id="ad4d760d69e5e0a924dbc6d4702e3c35e" name="ad4d760d69e5e0a924dbc6d4702e3c35e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad4d760d69e5e0a924dbc6d4702e3c35e">&#9670;&#160;</a></span>lag_order()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"> typing.Tuple[str, int] lag_order </td>
+          <td>(</td>
+          <td class="paramtype">str</td>          <td class="paramname"><span class="paramname"><em>var</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<pre class="fragment">Extracts the base variable name and its lag order from a variable string.
+
+Args:
+    var (str): The variable string, which can be in the format "var" or "var~n" where n is an integer.
+
+Returns:
+    tuple: A tuple containing the base variable name and its lag order.
+</pre> 
+</div>
+</div>
 </div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->

@@ -39,8 +39,6 @@ var searchData=
   ['nslip_36',['nslip',['../classneml2_1_1crystallography_1_1CrystalGeometry.html#aa63e379f76e36296fce9dfe991eceba8',1,'neml2::crystallography::CrystalGeometry']]],
   ['nslip_5fgroups_37',['nslip_groups',['../classneml2_1_1crystallography_1_1CrystalGeometry.html#ab720de7f1de5b40b20d7bcc67a8fbf25',1,'neml2::crystallography::CrystalGeometry']]],
   ['nslip_5fin_5fgroup_38',['nslip_in_group',['../classneml2_1_1crystallography_1_1CrystalGeometry.html#aaacc7ffad04337bcf7fff32c8648caba',1,'neml2::crystallography::CrystalGeometry']]],
-  ['nsubaxis_39',['nsubaxis',['../classneml2_1_1LabeledAxis.html#a0a2bd698150626713afe8f591833d86c',1,'neml2::LabeledAxis']]],
-  ['numel_40',['numel',['../namespaceneml2_1_1utils.html#aa17c056bd38d6149904d2189daefcf6d',1,'neml2::utils']]],
-  ['nvar_41',['nvar',['../structneml2_1_1AxisLayout.html#aeac99863a2c86e9ab229cdcb00127982',1,'neml2::AxisLayout']]],
-  ['nvariable_42',['nvariable',['../classneml2_1_1LabeledAxis.html#a77c8aab005ddbad5779ab778bf98dfa7',1,'neml2::LabeledAxis']]]
+  ['numel_39',['numel',['../namespaceneml2_1_1utils.html#aa17c056bd38d6149904d2189daefcf6d',1,'neml2::utils']]],
+  ['nvar_40',['nvar',['../structneml2_1_1AxisLayout.html#aeac99863a2c86e9ab229cdcb00127982',1,'neml2::AxisLayout']]]
 ];

@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2026-04-24 15:34:55</td>
+            <td class="headerValue">2026-04-28 19:32:22</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
@@ -111,8 +111,8 @@
 <span id="L49"><span class="lineNum">      49</span>              : #ifndef NDEBUG</span>
 <span id="L50"><span class="lineNum">      50</span> <span class="tlaUNC">           0 :         for (auto &amp;&amp; value : values)</span></span>
 <span id="L51"><span class="lineNum">      51</span> <span class="tlaUNC">           0 :           if (value.dynamic_dim() != values.front().dynamic_dim())</span></span>
-<span id="L52"><span class="lineNum">      52</span> <span class="tlaUNC">           0 :             throw neml2::NEMLException(&quot;Some Jacobian entries for &quot; + name1.str() + &quot; and &quot; +</span></span>
-<span id="L53"><span class="lineNum">      53</span> <span class="tlaUNC">           0 :                                        name2.str() + &quot; have different dynamic dimensions&quot;);</span></span>
+<span id="L52"><span class="lineNum">      52</span> <span class="tlaUNC">           0 :             throw neml2::NEMLException(&quot;Some Jacobian entries for &quot; + name1 + &quot; and &quot; + name2 +</span></span>
+<span id="L53"><span class="lineNum">      53</span> <span class="tlaUNC">           0 :                                        &quot; have different dynamic dimensions&quot;);</span></span>
 <span id="L54"><span class="lineNum">      54</span>              : #endif</span>
 <span id="L55"><span class="lineNum">      55</span> <span class="tlaUNC">           0 :         ret[name1][name2] = values.front();</span></span>
 <span id="L56"><span class="lineNum">      56</span>              :       }</span>

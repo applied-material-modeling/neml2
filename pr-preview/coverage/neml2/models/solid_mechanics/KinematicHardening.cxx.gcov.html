@@ -31,13 +31,13 @@
             <td class="headerValue">coverage.info</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntryHi">92.3&nbsp;%</td>
-            <td class="headerCovTableEntry">13</td>
-            <td class="headerCovTableEntry">12</td>
+            <td class="headerCovTableEntryHi">90.9&nbsp;%</td>
+            <td class="headerCovTableEntry">11</td>
+            <td class="headerCovTableEntry">10</td>
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2026-04-24 15:34:55</td>
+            <td class="headerValue">2026-04-28 19:32:22</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -95,22 +95,19 @@
 <span id="L33"><span class="lineNum">      33</span> <span class="tlaGNC">           1 :   OptionSet options = Model::expected_options();</span></span>
 <span id="L34"><span class="lineNum">      34</span> <span class="tlaGNC">           1 :   options.doc() = &quot;Map kinematic plastic strain to back stress&quot;;</span></span>
 <span id="L35"><span class="lineNum">      35</span>              : </span>
-<span id="L36"><span class="lineNum">      36</span> <span class="tlaGNC">           3 :   options.set_input(&quot;kinematic_plastic_strain&quot;) = VariableName(STATE, &quot;internal&quot;, &quot;Kp&quot;);</span></span>
-<span id="L37"><span class="lineNum">      37</span> <span class="tlaGNC">           1 :   options.set(&quot;kinematic_plastic_strain&quot;).doc() = &quot;Kinematic plastic strain&quot;;</span></span>
+<span id="L36"><span class="lineNum">      36</span> <span class="tlaGNC">           4 :   options.add_input(&quot;kinematic_plastic_strain&quot;, &quot;Kinematic plastic strain&quot;);</span></span>
+<span id="L37"><span class="lineNum">      37</span> <span class="tlaGNC">           3 :   options.add_output(&quot;back_stress&quot;, &quot;Back stress&quot;);</span></span>
 <span id="L38"><span class="lineNum">      38</span>              : </span>
-<span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">           3 :   options.set_output(&quot;back_stress&quot;) = VariableName(STATE, &quot;internal&quot;, &quot;X&quot;);</span></span>
-<span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC">           1 :   options.set(&quot;back_stress&quot;).doc() = &quot;Back stress&quot;;</span></span>
+<span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">           1 :   return options;</span></span>
+<span id="L40"><span class="lineNum">      40</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
 <span id="L41"><span class="lineNum">      41</span>              : </span>
-<span id="L42"><span class="lineNum">      42</span> <span class="tlaGNC">           1 :   return options;</span></span>
-<span id="L43"><span class="lineNum">      43</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
-<span id="L44"><span class="lineNum">      44</span>              : </span>
-<span id="L45"><span class="lineNum">      45</span> <span class="tlaGNC tlaBgGNC">           2 : KinematicHardening::KinematicHardening(const OptionSet &amp; options)</span></span>
-<span id="L46"><span class="lineNum">      46</span>              :   : Model(options),</span>
-<span id="L47"><span class="lineNum">      47</span> <span class="tlaGNC">           4 :     _Kp(declare_input_variable&lt;SR2&gt;(&quot;kinematic_plastic_strain&quot;)),</span></span>
-<span id="L48"><span class="lineNum">      48</span> <span class="tlaGNC">           2 :     _X(declare_output_variable&lt;SR2&gt;(&quot;back_stress&quot;))</span></span>
-<span id="L49"><span class="lineNum">      49</span>              : {</span>
-<span id="L50"><span class="lineNum">      50</span> <span class="tlaGNC">           2 : }</span></span>
-<span id="L51"><span class="lineNum">      51</span>              : } // namespace neml2</span>
+<span id="L42"><span class="lineNum">      42</span> <span class="tlaGNC tlaBgGNC">           2 : KinematicHardening::KinematicHardening(const OptionSet &amp; options)</span></span>
+<span id="L43"><span class="lineNum">      43</span>              :   : Model(options),</span>
+<span id="L44"><span class="lineNum">      44</span> <span class="tlaGNC">           4 :     _Kp(declare_input_variable&lt;SR2&gt;(&quot;kinematic_plastic_strain&quot;)),</span></span>
+<span id="L45"><span class="lineNum">      45</span> <span class="tlaGNC">           2 :     _X(declare_output_variable&lt;SR2&gt;(&quot;back_stress&quot;))</span></span>
+<span id="L46"><span class="lineNum">      46</span>              : {</span>
+<span id="L47"><span class="lineNum">      47</span> <span class="tlaGNC">           2 : }</span></span>
+<span id="L48"><span class="lineNum">      48</span>              : } // namespace neml2</span>
         </pre>
               </td>
             </tr>

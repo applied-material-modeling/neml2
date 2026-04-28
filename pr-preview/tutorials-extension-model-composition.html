@@ -134,18 +134,18 @@ $(function(){initNavTree('tutorials-extension-model-composition.html','',''); })
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md104">Problem definition </a>
+    <a href="#autotoc_md105">Problem definition </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md105">Input file </a>
+    <a href="#autotoc_md106">Input file </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md106">Lauching the projectiles </a>
+    <a href="#autotoc_md107">Lauching the projectiles </a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_build_2doc_2content_2tutorials_2extension_2model__composition_2main"></a></p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md104"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md105"></a>
 Problem definition</h1>
 <p>Recall that the complete model for simulating the projectile trajectory is            </p><p class="formulaDsp">
 \begin{align}  \dot{\boldsymbol{x}} &amp; = \boldsymbol{v}, \label{1} \\
@@ -167,26 +167,26 @@ Problem definition</h1>
 <li>\(\eqref{4}\) is the <a class="el" href="syntax-models.html#implicitupdate" title="ImplicitUpdate">ImplicitUpdate</a>.</li>
 </ul>
 <p>This tutorial demonstrates that our custom model <span class="tt">ProjectileAcceleration</span> can be composed with other existing, predefined NEML2 models.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md105"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md106"></a>
 Input file</h1>
 <p>The following input file composes the constitutive model for a single-step update for 5 projectiles each with a different dynamic viscosity, i.e., the shape of "mu" is \((5;)\).</p>
 <div class="fragment"><div class="line">[Models]</div>
 <div class="line">  [eq2]</div>
 <div class="line">    type = ProjectileAcceleration</div>
-<div class="line">    velocity = &#39;state/v&#39;</div>
-<div class="line">    acceleration = &#39;state/a&#39;</div>
+<div class="line">    velocity = &#39;v&#39;</div>
+<div class="line">    acceleration = &#39;a&#39;</div>
 <div class="line">    gravitational_acceleration = &#39;g&#39;</div>
 <div class="line">    dynamic_viscosity = &#39;mu&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [eq3a]</div>
 <div class="line">    type = VecBackwardEulerTimeIntegration</div>
-<div class="line">    variable = &#39;state/x&#39;</div>
-<div class="line">    rate = &#39;state/v&#39;</div>
+<div class="line">    variable = &#39;x&#39;</div>
+<div class="line">    rate = &#39;v&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [eq3b]</div>
 <div class="line">    type = VecBackwardEulerTimeIntegration</div>
-<div class="line">    variable = &#39;state/v&#39;</div>
-<div class="line">    rate = &#39;state/a&#39;</div>
+<div class="line">    variable = &#39;v&#39;</div>
+<div class="line">    rate = &#39;a&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [eq3]</div>
 <div class="line">    type = ComposedModel</div>
@@ -230,14 +230,14 @@ Input file</h1>
 <div class="line">    batch_shape = (5)</div>
 <div class="line">  []</div>
 <div class="line">[]</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md106"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md107"></a>
 Lauching the projectiles</h1>
 <p>To obtain the entire trajectory, the constitutive model need to be recursively integrated. As discussed in a previous <a class="el" href="tutorials-models-transient-driver.html" title="Transient driver">tutorial</a>, a transient driver should be used to perform the recursive constitutive update. Conveniently, in this example, since we are dealing with an autonomous system (i.e., no external "forces" are needed to drive the constitutive update), the vanilla <a class="el" href="syntax-drivers.html#transientdriver" title="TransientDriver">TransientDriver</a> can be used: </p><div class="fragment"><div class="line">[Drivers]</div>
 <div class="line">  [driver]</div>
 <div class="line">    type = TransientDriver</div>
 <div class="line">    model = &#39;eq4&#39;</div>
 <div class="line">    prescribed_time = &#39;times&#39;</div>
-<div class="line">    ic_Vec_names = &#39;state/x state/v&#39;</div>
+<div class="line">    ic_Vec_names = &#39;x v&#39;</div>
 <div class="line">    ic_Vec_values = &#39;x0 v0&#39;</div>
 <div class="line">    save_as = &#39;result.pt&#39;</div>
 <div class="line">  []</div>
@@ -296,8 +296,8 @@ Lauching the projectiles</h1>
 <div class="line">nproj = 5  <span class="comment"># five projectiles (with different dynamic viscosity)</span></div>
 <div class="line"><span class="keywordflow">for</span> i <span class="keywordflow">in</span> range(nvel):</div>
 <div class="line">    <span class="keywordflow">for</span> j <span class="keywordflow">in</span> range(nproj):</div>
-<div class="line">        x = [O[<span class="stringliteral">&quot;{}.state/x&quot;</span>.format(n)][i, j, 0].item() <span class="keywordflow">for</span> n <span class="keywordflow">in</span> range(1, nstep)]</div>
-<div class="line">        y = [O[<span class="stringliteral">&quot;{}.state/x&quot;</span>.format(n)][i, j, 1].item() <span class="keywordflow">for</span> n <span class="keywordflow">in</span> range(1, nstep)]</div>
+<div class="line">        x = [O[<span class="stringliteral">&quot;{}.x&quot;</span>.format(n)][i, j, 0].item() <span class="keywordflow">for</span> n <span class="keywordflow">in</span> range(1, nstep)]</div>
+<div class="line">        y = [O[<span class="stringliteral">&quot;{}.x&quot;</span>.format(n)][i, j, 1].item() <span class="keywordflow">for</span> n <span class="keywordflow">in</span> range(1, nstep)]</div>
 <div class="line">        ax[i].plot(x, y, <span class="stringliteral">&quot;--&quot;</span>)</div>
 <div class="line">    ax[i].set_xlabel(<span class="stringliteral">&quot;x&quot;</span>)</div>
 <div class="line">    ax[i].set_ylabel(<span class="stringliteral">&quot;y&quot;</span>)</div>

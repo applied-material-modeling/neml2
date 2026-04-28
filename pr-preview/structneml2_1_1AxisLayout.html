@@ -148,8 +148,8 @@ Public Types</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:aa0415f17b3fa1cca528d4a03e3505467" id="r_aa0415f17b3fa1cca528d4a03e3505467"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#aa0415f17b3fa1cca528d4a03e3505467">AxisLayout</a> ()=default</td></tr>
-<tr class="memitem:ad91b54ae593c826f4e42054e3bae65b0" id="r_ad91b54ae593c826f4e42054e3bae65b0"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#ad91b54ae593c826f4e42054e3bae65b0">AxisLayout</a> (const std::vector&lt; std::vector&lt; <a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a> &gt; &gt; &amp;<a class="el" href="#a9cb3bb5aaad30c1d235c65d3020e7809">vars</a>, std::vector&lt; <a class="el" href="namespaceneml2.html#a1456b5c3b8814c9aa2e7269af73c059d">TensorShape</a> &gt; intmd_shapes, std::vector&lt; <a class="el" href="namespaceneml2.html#a1456b5c3b8814c9aa2e7269af73c059d">TensorShape</a> &gt; base_shapes, std::vector&lt; <a class="el" href="#ac98b5a903e4cccd1c8e7b71d05f9b756">IStructure</a> &gt; istrs)</td></tr>
-<tr class="memdesc:ad91b54ae593c826f4e42054e3bae65b0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a new Axis Layout object.  <br /></td></tr>
+<tr class="memitem:a1aff51ff40ca91681bb5ba2206640c50" id="r_a1aff51ff40ca91681bb5ba2206640c50"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a1aff51ff40ca91681bb5ba2206640c50">AxisLayout</a> (const std::vector&lt; std::vector&lt; <a class="el" href="namespaceneml2.html#a91319ab6bb319a4576924e091ce64d52">VariableName</a> &gt; &gt; &amp;<a class="el" href="#a0f2090e84b2cd63ec718ee1fb178f429">vars</a>, std::vector&lt; <a class="el" href="namespaceneml2.html#a1456b5c3b8814c9aa2e7269af73c059d">TensorShape</a> &gt; intmd_shapes, std::vector&lt; <a class="el" href="namespaceneml2.html#a1456b5c3b8814c9aa2e7269af73c059d">TensorShape</a> &gt; base_shapes, std::vector&lt; <a class="el" href="#ac98b5a903e4cccd1c8e7b71d05f9b756">IStructure</a> &gt; istrs)</td></tr>
+<tr class="memdesc:a1aff51ff40ca91681bb5ba2206640c50"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a new Axis Layout object.  <br /></td></tr>
 <tr class="memitem:a524034b5c77330cb0eef5351f2b5efd3" id="r_a524034b5c77330cb0eef5351f2b5efd3"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#a524034b5c77330cb0eef5351f2b5efd3">AxisLayout</a> (const AxisLayout *parent, std::size_t group_idx, std::size_t start, std::size_t end, std::vector&lt; std::size_t &gt; offsets={})</td></tr>
 <tr class="memdesc:a524034b5c77330cb0eef5351f2b5efd3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a new Axis Layout object by viewing into a parent layout.  <br /></td></tr>
 <tr class="memitem:a469fba1cd69a384f5052def0602df7b5" id="r_a469fba1cd69a384f5052def0602df7b5"><td class="memItemLeft">std::size_t&#160;</td><td class="memItemRight"><a class="el" href="#a469fba1cd69a384f5052def0602df7b5">ngroup</a> () const</td></tr>
@@ -168,10 +168,10 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:aeac99863a2c86e9ab229cdcb00127982"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of variables.  <br /></td></tr>
 <tr class="memitem:ac2ded53768a52ca37647e19a437a7be1" id="r_ac2ded53768a52ca37647e19a437a7be1"><td class="memItemLeft">std::vector&lt; <a class="el" href="namespaceneml2.html#a90023c4b9c19cd471d4603a07a52954e">Size</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#ac2ded53768a52ca37647e19a437a7be1">storage_sizes</a> (bool include_intmd) const</td></tr>
 <tr class="memdesc:ac2ded53768a52ca37647e19a437a7be1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Storage sizes of variables.  <br /></td></tr>
-<tr class="memitem:a9cb3bb5aaad30c1d235c65d3020e7809" id="r_a9cb3bb5aaad30c1d235c65d3020e7809"><td class="memItemLeft">std::vector&lt; <a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a9cb3bb5aaad30c1d235c65d3020e7809">vars</a> () const</td></tr>
-<tr class="memdesc:a9cb3bb5aaad30c1d235c65d3020e7809"><td class="mdescLeft">&#160;</td><td class="mdescRight">Accessor for variable names.  <br /></td></tr>
-<tr class="memitem:a965ef4707bddfa42509aef55408e369a" id="r_a965ef4707bddfa42509aef55408e369a"><td class="memItemLeft">const <a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a965ef4707bddfa42509aef55408e369a">var</a> (std::size_t) const</td></tr>
-<tr class="memdesc:a965ef4707bddfa42509aef55408e369a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Accessor for variable name.  <br /></td></tr>
+<tr class="memitem:a0f2090e84b2cd63ec718ee1fb178f429" id="r_a0f2090e84b2cd63ec718ee1fb178f429"><td class="memItemLeft">std::vector&lt; <a class="el" href="namespaceneml2.html#a91319ab6bb319a4576924e091ce64d52">VariableName</a> &gt;&#160;</td><td class="memItemRight"><a class="el" href="#a0f2090e84b2cd63ec718ee1fb178f429">vars</a> () const</td></tr>
+<tr class="memdesc:a0f2090e84b2cd63ec718ee1fb178f429"><td class="mdescLeft">&#160;</td><td class="mdescRight">Accessor for variable names.  <br /></td></tr>
+<tr class="memitem:a51266f99dc8e3a71d4bffb3fe770016e" id="r_a51266f99dc8e3a71d4bffb3fe770016e"><td class="memItemLeft">const <a class="el" href="namespaceneml2.html#a91319ab6bb319a4576924e091ce64d52">VariableName</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#a51266f99dc8e3a71d4bffb3fe770016e">var</a> (std::size_t) const</td></tr>
+<tr class="memdesc:a51266f99dc8e3a71d4bffb3fe770016e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Accessor for variable name.  <br /></td></tr>
 <tr class="memitem:af7e7c7c9b202f9fa44efb5ccffac4856" id="r_af7e7c7c9b202f9fa44efb5ccffac4856"><td class="memItemLeft">const <a class="el" href="namespaceneml2.html#a1456b5c3b8814c9aa2e7269af73c059d">TensorShape</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#af7e7c7c9b202f9fa44efb5ccffac4856">intmd_sizes</a> (std::size_t) const</td></tr>
 <tr class="memdesc:af7e7c7c9b202f9fa44efb5ccffac4856"><td class="mdescLeft">&#160;</td><td class="mdescRight">Accessor for variable intermediate shape.  <br /></td></tr>
 <tr class="memitem:aa17c44322ce795e10159b34ea09dfda2" id="r_aa17c44322ce795e10159b34ea09dfda2"><td class="memItemLeft">const <a class="el" href="namespaceneml2.html#a1456b5c3b8814c9aa2e7269af73c059d">TensorShape</a> &amp;&#160;</td><td class="memItemRight"><a class="el" href="#aa17c44322ce795e10159b34ea09dfda2">base_sizes</a> (std::size_t) const</td></tr>
@@ -236,8 +236,8 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ad91b54ae593c826f4e42054e3bae65b0" name="ad91b54ae593c826f4e42054e3bae65b0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad91b54ae593c826f4e42054e3bae65b0">&#9670;&#160;</a></span>AxisLayout() <span class="overload">[2/3]</span></h2>
+<a id="a1aff51ff40ca91681bb5ba2206640c50" name="a1aff51ff40ca91681bb5ba2206640c50"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1aff51ff40ca91681bb5ba2206640c50">&#9670;&#160;</a></span>AxisLayout() <span class="overload">[2/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -245,7 +245,7 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="memname">AxisLayout </td>
           <td>(</td>
-          <td class="paramtype">const std::vector&lt; std::vector&lt; <a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a> &gt; &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>vars</em></span>, </td>
+          <td class="paramtype">const std::vector&lt; std::vector&lt; <a class="el" href="namespaceneml2.html#a91319ab6bb319a4576924e091ce64d52">VariableName</a> &gt; &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>vars</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -268,7 +268,7 @@ Public Member Functions</h2></td></tr>
 <p>Construct a new Axis Layout object. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname"><a class="el" href="#a9cb3bb5aaad30c1d235c65d3020e7809" title="Accessor for variable names.">vars</a></td><td>ID-to-variable mapping, partitioned by variable groups </td></tr>
+    <tr><td class="paramname"><a class="el" href="#a0f2090e84b2cd63ec718ee1fb178f429" title="Accessor for variable names.">vars</a></td><td>ID-to-variable mapping, partitioned by variable groups </td></tr>
     <tr><td class="paramname">intmd_shapes</td><td>ID-to-variable intermediate shape mapping </td></tr>
     <tr><td class="paramname">base_shapes</td><td>ID-to-variable base shape mapping </td></tr>
     <tr><td class="paramname">istrs</td><td><a class="el" href="#ac98b5a903e4cccd1c8e7b71d05f9b756" title="Enum for the structure represented by intermediate dimensions (if any).">IStructure</a> for each variable group </td></tr>
@@ -525,14 +525,14 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a965ef4707bddfa42509aef55408e369a" name="a965ef4707bddfa42509aef55408e369a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a965ef4707bddfa42509aef55408e369a">&#9670;&#160;</a></span>var()</h2>
+<a id="a51266f99dc8e3a71d4bffb3fe770016e" name="a51266f99dc8e3a71d4bffb3fe770016e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a51266f99dc8e3a71d4bffb3fe770016e">&#9670;&#160;</a></span>var()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">const <a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a> &amp; var </td>
+          <td class="memname">const <a class="el" href="namespaceneml2.html#a91319ab6bb319a4576924e091ce64d52">VariableName</a> &amp; var </td>
           <td>(</td>
           <td class="paramtype">std::size_t</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td> const</td>
@@ -544,14 +544,14 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a9cb3bb5aaad30c1d235c65d3020e7809" name="a9cb3bb5aaad30c1d235c65d3020e7809"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9cb3bb5aaad30c1d235c65d3020e7809">&#9670;&#160;</a></span>vars()</h2>
+<a id="a0f2090e84b2cd63ec718ee1fb178f429" name="a0f2090e84b2cd63ec718ee1fb178f429"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0f2090e84b2cd63ec718ee1fb178f429">&#9670;&#160;</a></span>vars()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">std::vector&lt; <a class="el" href="classneml2_1_1LabeledAxisAccessor.html">LabeledAxisAccessor</a> &gt; vars </td>
+          <td class="memname">std::vector&lt; <a class="el" href="namespaceneml2.html#a91319ab6bb319a4576924e091ce64d52">VariableName</a> &gt; vars </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td> const</td>

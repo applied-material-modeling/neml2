@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2026-04-24 15:34:55</td>
+            <td class="headerValue">2026-04-28 19:32:22</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -92,13 +92,13 @@
 <span id="L30"><span class="lineNum">      30</span>              : namespace neml2</span>
 <span id="L31"><span class="lineNum">      31</span>              : {</span>
 <span id="L32"><span class="lineNum">      32</span>              : Vec</span>
-<span id="L33"><span class="lineNum">      33</span> <span class="tlaGNC tlaBgGNC">         468 : cross(const Vec &amp; u, const Vec &amp; v)</span></span>
+<span id="L33"><span class="lineNum">      33</span> <span class="tlaGNC tlaBgGNC">         447 : cross(const Vec &amp; u, const Vec &amp; v)</span></span>
 <span id="L34"><span class="lineNum">      34</span>              : {</span>
-<span id="L35"><span class="lineNum">      35</span> <span class="tlaGNC">         468 :   neml_assert_dynamic_broadcastable_dbg(u, v);</span></span>
-<span id="L36"><span class="lineNum">      36</span> <span class="tlaGNC">         468 :   const auto [uu, vv, i] = utils::align_intmd_dim(u, v);</span></span>
-<span id="L37"><span class="lineNum">      37</span> <span class="tlaGNC">        1404 :   auto pair = at::broadcast_tensors({uu, vv});</span></span>
-<span id="L38"><span class="lineNum">      38</span> <span class="tlaGNC">        1404 :   return Vec(at::linalg_cross(pair[0], pair[1]), i);</span></span>
-<span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">         936 : }</span></span>
+<span id="L35"><span class="lineNum">      35</span> <span class="tlaGNC">         447 :   neml_assert_dynamic_broadcastable_dbg(u, v);</span></span>
+<span id="L36"><span class="lineNum">      36</span> <span class="tlaGNC">         447 :   const auto [uu, vv, i] = utils::align_intmd_dim(u, v);</span></span>
+<span id="L37"><span class="lineNum">      37</span> <span class="tlaGNC">        1341 :   auto pair = at::broadcast_tensors({uu, vv});</span></span>
+<span id="L38"><span class="lineNum">      38</span> <span class="tlaGNC">        1341 :   return Vec(at::linalg_cross(pair[0], pair[1]), i);</span></span>
+<span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">         894 : }</span></span>
 <span id="L40"><span class="lineNum">      40</span>              : } // namespace neml2</span>
         </pre>
               </td>

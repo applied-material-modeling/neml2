@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2026-04-24 15:34:55</td>
+            <td class="headerValue">2026-04-28 19:32:22</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">86.4&nbsp;%</td>
@@ -256,52 +256,52 @@
 <span id="L194"><span class="lineNum">     194</span> <span class="tlaGNC">           1 : }</span></span>
 <span id="L195"><span class="lineNum">     195</span>              : </span>
 <span id="L196"><span class="lineNum">     196</span>              : R2</span>
-<span id="L197"><span class="lineNum">     197</span> <span class="tlaGNC">        8622 : Rot::euler_rodrigues() const</span></span>
+<span id="L197"><span class="lineNum">     197</span> <span class="tlaGNC">        8616 : Rot::euler_rodrigues() const</span></span>
 <span id="L198"><span class="lineNum">     198</span>              : {</span>
-<span id="L199"><span class="lineNum">     199</span> <span class="tlaGNC">        8622 :   auto rr = norm_sq(*this);</span></span>
-<span id="L200"><span class="lineNum">     200</span> <span class="tlaGNC">        8622 :   auto E = R3::levi_civita(options());</span></span>
-<span id="L201"><span class="lineNum">     201</span> <span class="tlaGNC">        8622 :   auto W = R2::skew(*this);</span></span>
+<span id="L199"><span class="lineNum">     199</span> <span class="tlaGNC">        8616 :   auto rr = norm_sq(*this);</span></span>
+<span id="L200"><span class="lineNum">     200</span> <span class="tlaGNC">        8616 :   auto E = R3::levi_civita(options());</span></span>
+<span id="L201"><span class="lineNum">     201</span> <span class="tlaGNC">        8616 :   auto W = R2::skew(*this);</span></span>
 <span id="L202"><span class="lineNum">     202</span>              : </span>
-<span id="L203"><span class="lineNum">     203</span> <span class="tlaGNC">       17244 :   return 1.0 / neml2::pow(1 + rr, 2.0) *</span></span>
-<span id="L204"><span class="lineNum">     204</span> <span class="tlaGNC">       34488 :          (neml2::pow(1 + rr, 2.0) * R2::identity(options()) + 4 * (1.0 - rr) * W + 8.0 * W * W);</span></span>
-<span id="L205"><span class="lineNum">     205</span> <span class="tlaGNC">        8622 : }</span></span>
+<span id="L203"><span class="lineNum">     203</span> <span class="tlaGNC">       17232 :   return 1.0 / neml2::pow(1 + rr, 2.0) *</span></span>
+<span id="L204"><span class="lineNum">     204</span> <span class="tlaGNC">       34464 :          (neml2::pow(1 + rr, 2.0) * R2::identity(options()) + 4 * (1.0 - rr) * W + 8.0 * W * W);</span></span>
+<span id="L205"><span class="lineNum">     205</span> <span class="tlaGNC">        8616 : }</span></span>
 <span id="L206"><span class="lineNum">     206</span>              : </span>
 <span id="L207"><span class="lineNum">     207</span>              : R3</span>
-<span id="L208"><span class="lineNum">     208</span> <span class="tlaGNC">          19 : Rot::deuler_rodrigues() const</span></span>
+<span id="L208"><span class="lineNum">     208</span> <span class="tlaGNC">          16 : Rot::deuler_rodrigues() const</span></span>
 <span id="L209"><span class="lineNum">     209</span>              : {</span>
-<span id="L210"><span class="lineNum">     210</span> <span class="tlaGNC">          19 :   auto rr = norm_sq(*this);</span></span>
-<span id="L211"><span class="lineNum">     211</span> <span class="tlaGNC">          19 :   auto I = R2::identity(options());</span></span>
-<span id="L212"><span class="lineNum">     212</span> <span class="tlaGNC">          19 :   auto E = R3::levi_civita(options());</span></span>
-<span id="L213"><span class="lineNum">     213</span> <span class="tlaGNC">          19 :   auto W = R2::skew(*this);</span></span>
+<span id="L210"><span class="lineNum">     210</span> <span class="tlaGNC">          16 :   auto rr = norm_sq(*this);</span></span>
+<span id="L211"><span class="lineNum">     211</span> <span class="tlaGNC">          16 :   auto I = R2::identity(options());</span></span>
+<span id="L212"><span class="lineNum">     212</span> <span class="tlaGNC">          16 :   auto E = R3::levi_civita(options());</span></span>
+<span id="L213"><span class="lineNum">     213</span> <span class="tlaGNC">          16 :   auto W = R2::skew(*this);</span></span>
 <span id="L214"><span class="lineNum">     214</span>              : </span>
-<span id="L215"><span class="lineNum">     215</span> <span class="tlaGNC">          76 :   return 8.0 * (rr - 3.0) / neml2::pow(1.0 + rr, 3.0) * R3::einsum(&quot;...ij,...k&quot;, {W, *this}) -</span></span>
-<span id="L216"><span class="lineNum">     216</span> <span class="tlaGNC">         114 :          32.0 / neml2::pow(1 + rr, 3.0) * R3::einsum(&quot;...ij,...k&quot;, {(W * W), *this}) -</span></span>
-<span id="L217"><span class="lineNum">     217</span> <span class="tlaGNC">          57 :          4.0 * (1 - rr) / neml2::pow(1.0 + rr, 2.0) * R3::einsum(&quot;...kij-&gt;...ijk&quot;, {E}) -</span></span>
-<span id="L218"><span class="lineNum">     218</span> <span class="tlaGNC">          38 :          8.0 / neml2::pow(1.0 + rr, 2.0) *</span></span>
-<span id="L219"><span class="lineNum">     219</span> <span class="tlaGNC">         171 :              (R3::einsum(&quot;...kim,...mj&quot;, {E, W}) + R3::einsum(&quot;...im,...kmj&quot;, {W, E}));</span></span>
-<span id="L220"><span class="lineNum">     220</span> <span class="tlaGNC">         114 : }</span></span>
+<span id="L215"><span class="lineNum">     215</span> <span class="tlaGNC">          64 :   return 8.0 * (rr - 3.0) / neml2::pow(1.0 + rr, 3.0) * R3::einsum(&quot;...ij,...k&quot;, {W, *this}) -</span></span>
+<span id="L216"><span class="lineNum">     216</span> <span class="tlaGNC">          96 :          32.0 / neml2::pow(1 + rr, 3.0) * R3::einsum(&quot;...ij,...k&quot;, {(W * W), *this}) -</span></span>
+<span id="L217"><span class="lineNum">     217</span> <span class="tlaGNC">          48 :          4.0 * (1 - rr) / neml2::pow(1.0 + rr, 2.0) * R3::einsum(&quot;...kij-&gt;...ijk&quot;, {E}) -</span></span>
+<span id="L218"><span class="lineNum">     218</span> <span class="tlaGNC">          32 :          8.0 / neml2::pow(1.0 + rr, 2.0) *</span></span>
+<span id="L219"><span class="lineNum">     219</span> <span class="tlaGNC">         144 :              (R3::einsum(&quot;...kim,...mj&quot;, {E, W}) + R3::einsum(&quot;...im,...kmj&quot;, {W, E}));</span></span>
+<span id="L220"><span class="lineNum">     220</span> <span class="tlaGNC">          96 : }</span></span>
 <span id="L221"><span class="lineNum">     221</span>              : </span>
 <span id="L222"><span class="lineNum">     222</span>              : Rot</span>
-<span id="L223"><span class="lineNum">     223</span> <span class="tlaGNC">          30 : Rot::rotate(const Rot &amp; r) const</span></span>
+<span id="L223"><span class="lineNum">     223</span> <span class="tlaGNC">          21 : Rot::rotate(const Rot &amp; r) const</span></span>
 <span id="L224"><span class="lineNum">     224</span>              : {</span>
-<span id="L225"><span class="lineNum">     225</span> <span class="tlaGNC">          30 :   return r * (*this);</span></span>
+<span id="L225"><span class="lineNum">     225</span> <span class="tlaGNC">          21 :   return r * (*this);</span></span>
 <span id="L226"><span class="lineNum">     226</span>              : }</span>
 <span id="L227"><span class="lineNum">     227</span>              : </span>
 <span id="L228"><span class="lineNum">     228</span>              : R2</span>
-<span id="L229"><span class="lineNum">     229</span> <span class="tlaGNC">           8 : Rot::drotate(const Rot &amp; r) const</span></span>
+<span id="L229"><span class="lineNum">     229</span> <span class="tlaGNC">           5 : Rot::drotate(const Rot &amp; r) const</span></span>
 <span id="L230"><span class="lineNum">     230</span>              : {</span>
-<span id="L231"><span class="lineNum">     231</span> <span class="tlaGNC">           8 :   auto r1 = *this;</span></span>
+<span id="L231"><span class="lineNum">     231</span> <span class="tlaGNC">           5 :   auto r1 = *this;</span></span>
 <span id="L232"><span class="lineNum">     232</span>              : </span>
-<span id="L233"><span class="lineNum">     233</span> <span class="tlaGNC">           8 :   auto rr1 = norm_sq(r1);</span></span>
-<span id="L234"><span class="lineNum">     234</span> <span class="tlaGNC">           8 :   auto rr2 = norm_sq(r);</span></span>
-<span id="L235"><span class="lineNum">     235</span> <span class="tlaGNC">           8 :   auto d = 1.0 + rr1 * rr2 - 2 * neml2::vdot(r1, r);</span></span>
-<span id="L236"><span class="lineNum">     236</span> <span class="tlaGNC">           8 :   auto r3 = rotate(r);</span></span>
-<span id="L237"><span class="lineNum">     237</span> <span class="tlaGNC">           8 :   auto I = R2::identity(options());</span></span>
+<span id="L233"><span class="lineNum">     233</span> <span class="tlaGNC">           5 :   auto rr1 = norm_sq(r1);</span></span>
+<span id="L234"><span class="lineNum">     234</span> <span class="tlaGNC">           5 :   auto rr2 = norm_sq(r);</span></span>
+<span id="L235"><span class="lineNum">     235</span> <span class="tlaGNC">           5 :   auto d = 1.0 + rr1 * rr2 - 2 * neml2::vdot(r1, r);</span></span>
+<span id="L236"><span class="lineNum">     236</span> <span class="tlaGNC">           5 :   auto r3 = rotate(r);</span></span>
+<span id="L237"><span class="lineNum">     237</span> <span class="tlaGNC">           5 :   auto I = R2::identity(options());</span></span>
 <span id="L238"><span class="lineNum">     238</span>              : </span>
-<span id="L239"><span class="lineNum">     239</span> <span class="tlaGNC">          16 :   return 1.0 / d *</span></span>
-<span id="L240"><span class="lineNum">     240</span> <span class="tlaGNC">          16 :          (-neml2::outer(Vec(r3), 2 * rr1 * Vec(r) - 2.0 * Vec(r1)) -</span></span>
-<span id="L241"><span class="lineNum">     241</span> <span class="tlaGNC">          48 :           2 * neml2::outer(Vec(r1), Vec(r)) + (1 - rr1) * I - 2 * R2::skew(r1));</span></span>
-<span id="L242"><span class="lineNum">     242</span> <span class="tlaGNC">           8 : }</span></span>
+<span id="L239"><span class="lineNum">     239</span> <span class="tlaGNC">          10 :   return 1.0 / d *</span></span>
+<span id="L240"><span class="lineNum">     240</span> <span class="tlaGNC">          10 :          (-neml2::outer(Vec(r3), 2 * rr1 * Vec(r) - 2.0 * Vec(r1)) -</span></span>
+<span id="L241"><span class="lineNum">     241</span> <span class="tlaGNC">          30 :           2 * neml2::outer(Vec(r1), Vec(r)) + (1 - rr1) * I - 2 * R2::skew(r1));</span></span>
+<span id="L242"><span class="lineNum">     242</span> <span class="tlaGNC">           5 : }</span></span>
 <span id="L243"><span class="lineNum">     243</span>              : </span>
 <span id="L244"><span class="lineNum">     244</span>              : R2</span>
 <span id="L245"><span class="lineNum">     245</span> <span class="tlaGNC">           3 : Rot::drotate_self(const Rot &amp; r) const</span></span>
@@ -389,14 +389,14 @@
 <span id="L327"><span class="lineNum">     327</span> <span class="tlaGNC">          72 : }</span></span>
 <span id="L328"><span class="lineNum">     328</span>              : </span>
 <span id="L329"><span class="lineNum">     329</span>              : Rot</span>
-<span id="L330"><span class="lineNum">     330</span> <span class="tlaGNC">          31 : operator*(const Rot &amp; r1, const Rot &amp; r2)</span></span>
+<span id="L330"><span class="lineNum">     330</span> <span class="tlaGNC">          22 : operator*(const Rot &amp; r1, const Rot &amp; r2)</span></span>
 <span id="L331"><span class="lineNum">     331</span>              : {</span>
-<span id="L332"><span class="lineNum">     332</span> <span class="tlaGNC">          31 :   auto rr1 = norm_sq(r1);</span></span>
-<span id="L333"><span class="lineNum">     333</span> <span class="tlaGNC">          31 :   auto rr2 = norm_sq(r2);</span></span>
+<span id="L332"><span class="lineNum">     332</span> <span class="tlaGNC">          22 :   auto rr1 = norm_sq(r1);</span></span>
+<span id="L333"><span class="lineNum">     333</span> <span class="tlaGNC">          22 :   auto rr2 = norm_sq(r2);</span></span>
 <span id="L334"><span class="lineNum">     334</span>              : </span>
-<span id="L335"><span class="lineNum">     335</span> <span class="tlaGNC">          62 :   return Rot((1 - rr2) * Vec(r1) + (1.0 - rr1) * Vec(r2) - 2.0 * neml2::cross(Vec(r2), r1)) /</span></span>
-<span id="L336"><span class="lineNum">     336</span> <span class="tlaGNC">         124 :          (1.0 + rr1 * rr2 - 2 * neml2::vdot(r1, r2));</span></span>
-<span id="L337"><span class="lineNum">     337</span> <span class="tlaGNC">          31 : }</span></span>
+<span id="L335"><span class="lineNum">     335</span> <span class="tlaGNC">          44 :   return Rot((1 - rr2) * Vec(r1) + (1.0 - rr1) * Vec(r2) - 2.0 * neml2::cross(Vec(r2), r1)) /</span></span>
+<span id="L336"><span class="lineNum">     336</span> <span class="tlaGNC">          88 :          (1.0 + rr1 * rr2 - 2 * neml2::vdot(r1, r2));</span></span>
+<span id="L337"><span class="lineNum">     337</span> <span class="tlaGNC">          22 : }</span></span>
 <span id="L338"><span class="lineNum">     338</span>              : </span>
 <span id="L339"><span class="lineNum">     339</span>              : Vec</span>
 <span id="L340"><span class="lineNum">     340</span> <span class="tlaGNC">           6 : convert_euler_angles_from_kocks(const Vec &amp; angles, const std::string &amp; to_convention)</span></span>

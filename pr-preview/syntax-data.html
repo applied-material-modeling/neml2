@@ -134,7 +134,7 @@ $(function(){initNavTree('syntax-data.html','',''); });
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md65">Available objects and their input file syntax </a>
+    <a href="#autotoc_md66">Available objects and their input file syntax </a>
     <ul>
       <li class="level2">
         <a href="#crystalgeometry">CrystalGeometry </a>
@@ -154,7 +154,7 @@ Type name written in PascalCase typically refer to a NEML2 object type, oftentim
 The 🔗 symbol means that the tensor value can be cross-reference another object. See <a class="el" href="tutorials-models-model-parameters-revisited.html" title="Model parameters (revisited)">Model parameters (revisited)</a> for details.</dd>
 <dd>
 You can always use <span class="tt">Ctrl</span>+<span class="tt">F</span> or <span class="tt">Cmd</span>+<span class="tt">F</span> to search the entire page.</dd></dl>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md65"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md66"></a>
 Available objects and their input file syntax</h1>
 <p>Refer to <a class="el" href="system-data.html" title="Data">System Documentation</a> for detailed explanation about this system.</p>
 <h2 class="doxsection"><a class="anchor" id="crystalgeometry"></a>
@@ -164,7 +164,8 @@ CrystalGeometry</h2>
 <span class="tt">crystal_class</span> 🇧 The set of symmetry operations defining the crystal class.</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: R2 🔗 </li>
+<li><u>Type</u>: R2 🔗</li>
+<li><u>Required</u>: Yes </li>
 </ul>
 </details>
 <details >
@@ -172,7 +173,8 @@ CrystalGeometry</h2>
 <span class="tt">lattice_vectors</span> 🇧 The three lattice vectors defining the crystal translational symmetry</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: Vec 🔗 </li>
+<li><u>Type</u>: Vec 🔗</li>
+<li><u>Required</u>: Yes </li>
 </ul>
 </details>
 <details >
@@ -180,7 +182,8 @@ CrystalGeometry</h2>
 <span class="tt">slip_directions</span> 🇧 A list of Miller indices defining the slip directions</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: MillerIndex 🔗 </li>
+<li><u>Type</u>: MillerIndex 🔗</li>
+<li><u>Required</u>: Yes </li>
 </ul>
 </details>
 <details >
@@ -188,18 +191,20 @@ CrystalGeometry</h2>
 <span class="tt">slip_planes</span> 🇧 A list of Miller indices defining the slip planes</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: MillerIndex 🔗 </li>
+<li><u>Type</u>: MillerIndex 🔗</li>
+<li><u>Required</u>: Yes </li>
 </ul>
 </details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1crystallography_1_1CrystalGeometry.html" title="CrystalGeometry">link</a></p>
+<p>Detailed documentation <a class="el" href="#crystalgeometry" title="CrystalGeometry">link</a></p>
 <h2 class="doxsection"><a class="anchor" id="cubiccrystal"></a>
 CubicCrystal</h2>
 <p>A specialization of the general CrystalGeometry class defining a cubic crystal system. </p><details >
 <summary >
-<span class="tt">lattice_parameter</span> The lattice parameter</summary>
+<span class="tt">lattice_parameter</span> 🇧 The lattice parameter</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: Scalar 🔗 </li>
+<li><u>Type</u>: Scalar 🔗</li>
+<li><u>Required</u>: Yes </li>
 </ul>
 </details>
 <details >
@@ -207,7 +212,8 @@ CubicCrystal</h2>
 <span class="tt">slip_directions</span> 🇧 A list of Miller indices defining the slip directions</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: MillerIndex 🔗 </li>
+<li><u>Type</u>: MillerIndex 🔗</li>
+<li><u>Required</u>: Yes </li>
 </ul>
 </details>
 <details >
@@ -215,10 +221,11 @@ CubicCrystal</h2>
 <span class="tt">slip_planes</span> 🇧 A list of Miller indices defining the slip planes</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: MillerIndex 🔗 </li>
+<li><u>Type</u>: MillerIndex 🔗</li>
+<li><u>Required</u>: Yes </li>
 </ul>
 </details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1crystallography_1_1CubicCrystal.html" title="CubicCrystal">link</a> </p>
+<p>Detailed documentation <a class="el" href="#cubiccrystal" title="CubicCrystal">link</a> </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

@@ -12,6 +12,7 @@ var classneml2_1_1core_1_1Model =
     [ "named_submodels", "classneml2_1_1core_1_1Model.html#a20340a66454e8dd64b8269d54e525950", null ],
     [ "output_type", "classneml2_1_1core_1_1Model.html#abd6d72b87b4526a1a58862b1a1a78cfd", null ],
     [ "output_variables", "classneml2_1_1core_1_1Model.html#ac537c4b4926b8197e1ac94e8fb716843", null ],
+    [ "set_output_derivative_filter", "classneml2_1_1core_1_1Model.html#a107536d39fb15dec4f8c002988614a35", null ],
     [ "set_parameter", "classneml2_1_1core_1_1Model.html#a330bbb90ac230a1668a74c5bc1d299f5", null ],
     [ "set_parameters", "classneml2_1_1core_1_1Model.html#a75a85ff408fa6fbdbf7b8670a23295d7", null ],
     [ "to", "classneml2_1_1core_1_1Model.html#ab3925e1cf827893105a200c7fa9b5b59", null ],

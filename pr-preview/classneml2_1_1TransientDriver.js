@@ -15,6 +15,8 @@ var classneml2_1_1TransientDriver =
     [ "solve_step", "classneml2_1_1TransientDriver.html#a641853bc46372e114cf15d9a0ae4191d", null ],
     [ "store_input", "classneml2_1_1TransientDriver.html#af77dcbc79e68efc5825809825614a42b", null ],
     [ "update_forces", "classneml2_1_1TransientDriver.html#a5cd8cdcd3f1b834d8498e52f4f350053", null ],
+    [ "_custom_predictor_apply", "classneml2_1_1TransientDriver.html#a75fa0d6f4ebeb79ec3528cf75c7dfb61", null ],
+    [ "_custom_predictor_model", "classneml2_1_1TransientDriver.html#a6c4764f3b82aa7f8eaf48aed47d253f8", null ],
     [ "_driving_force_names", "classneml2_1_1TransientDriver.html#aeff5de558dd713c3e421b63e0373e9f3", null ],
     [ "_driving_forces", "classneml2_1_1TransientDriver.html#a10fb8adcdbc18cab2609dffc3b08d0af", null ],
     [ "_in", "classneml2_1_1TransientDriver.html#a9ffff1ca14f2ae95c1ff2e41820c879f", null ],

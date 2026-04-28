@@ -134,22 +134,22 @@ $(function(){initNavTree('reactive-infiltration.html','',''); });
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md43">Representative Volume Element </a>
+    <a href="#autotoc_md44">Representative Volume Element </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md44">Governing equations </a>
+    <a href="#autotoc_md45">Governing equations </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md45">Implementation details </a>
+    <a href="#autotoc_md46">Implementation details </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md46">Complete input file </a>
+    <a href="#autotoc_md47">Complete input file </a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_build_2doc_2content_2modules_2reactive__infiltration"></a></p>
 <p>This example demonstrates the use of the chemical reactions physics module to compose models for reactive infiltration kinetics, as a solid \((S)\) material is infiltrated by a liquid \((L)\) to create a product \((P)\). The framework and usage of the model is explained below, with both mathematical formulations and example input files.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md43"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md44"></a>
 Representative Volume Element</h1>
 <p>The infiltration process for a material considers a cylindrical Representative Volume Element (RVE) with radius \(R\) and span \(H\), depicting a solid capillary of radius \(r_o\), corresponding to the initial porosity of \(\varphi_0\). The mathematical description of the model uses cylindrical coordinates and assumes axisymmetry around \(r = 0\).</p>
 <p>As the liquid enters the cylinder, it reacts with a solid to form a product with thickness \(\delta_P\), as shown schematically in the <a class="el" href="#infiltration_rve" title="infiltration_rve">figure below</a>.</p>
@@ -182,7 +182,7 @@ The (a) top and (b) cross-section view of the Representative Volume Element (RVE
 <blockquote class="doxtable">
 <p>Mathematically, it is possible that \( \varphi_L + \varphi_P + \varphi_S \ge 1 \). Physically, this implies "overflow", aka the prescribed \(\alpha_L\) is larger than the available voids. Care must be taken at the macroscopic model to avoid or resolve this issue. </p>
 </blockquote>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md44"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md45"></a>
 Governing equations</h1>
 <p>The initial-value problem (IVP) corresponding to the constitutive model is      </p><p class="formulaDsp">
 \[    \mathbf{r} = \begin{Bmatrix}
@@ -204,7 +204,7 @@ Governing equations</h1>
 </p>
 </li>
 </ul>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md45"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md46"></a>
 Implementation details</h1>
 <p>The above governing equations are fairly general for a wide range of reactive infiltration systems within this framework given the chemical reaction kinetics with appropriate reaction coefficient ( \(k_i\)) and the corresponding molar volume \(\Omega_i\) of the materials.</p>
 <p>Example for determining \(k_i\) and \(\Omega_i\): Consider a reactive infiltration process of liquid (chemical formula \(L_x\)) and solid ( \(S_y\)), with the molar mass \(M_L\) and \(M_S\). The chemical reaction creates a product with chemical formula \(L_m S_n\), with reaction coefficients \(k_S\) and \(k_P\).   </p><p class="formulaDsp">
@@ -242,7 +242,7 @@ Implementation details</h1>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyLeft">\(r_{\varphi_S} = \dfrac{\alpha_{S, n+1} - \alpha_{S, n}}{t_{n+1}-t_n} + \dfrac{k_P}{k_S} \dfrac{\alpha_{P, n+1} - \alpha_{P, n}}{t_{n+1}-t_n}\)  </td><td class="markdownTableBodyLeft"><a class="el" href="syntax-models.html#scalarlinearcombination" title="ScalarLinearCombination">Linear Combination</a>, <a class="el" href="syntax-models.html#scalarvariablerate" title="ScalarVariableRate">Variable Rate</a>  </td></tr>
 </table>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md46"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md47"></a>
 Complete input file</h1>
 <p>A complete example input file for the reactive infiltration is shown below with the appropriate model composition.</p>
 <div class="fragment"><div class="line">ntime = 200</div>
@@ -264,20 +264,19 @@ Complete input file</h1>
 <div class="line">  []</div>
 <div class="line">  [alpha]</div>
 <div class="line">    type = FullScalar</div>
-<div class="line">    batch_shape = &#39;(${ntime})&#39;</div>
+<div class="line">    batch_shape = &#39;(200)&#39;</div>
 <div class="line">    value = 0.01</div>
 <div class="line">  []</div>
 <div class="line">[]</div>
 <div class="line"> </div>
 <div class="line">[Drivers]</div>
 <div class="line">  [driver]</div>
-<div class="line">    type = InfiltrationDriver</div>
+<div class="line">    type = TransientDriver</div>
 <div class="line">    model = &#39;model&#39;</div>
 <div class="line">    prescribed_time = &#39;times&#39;</div>
-<div class="line">    time = &#39;forces/t&#39;</div>
-<div class="line">    prescribed_liquid_species_concentration = &#39;alpha&#39;</div>
-<div class="line">    liquid_species_concentration = &#39;forces/alpha&#39;</div>
-<div class="line">    ic_Scalar_names = &#39;state/phi_P state/phi_S state/alpha_P state/alpha_S&#39;</div>
+<div class="line">    force_Scalar_names = &#39;alpha&#39;</div>
+<div class="line">    force_Scalar_values = &#39;alpha&#39;</div>
+<div class="line">    ic_Scalar_names = &#39;phi_P phi_S alpha_P alpha_S&#39;</div>
 <div class="line">    ic_Scalar_values = &#39;0 0.3 0 0.05660377358&#39;</div>
 <div class="line">    save_as = &#39;result.pt&#39;</div>
 <div class="line">  []</div>
@@ -288,37 +287,31 @@ Complete input file</h1>
 <div class="line">  []</div>
 <div class="line">[]</div>
 <div class="line"> </div>
-<div class="line">[Solvers]</div>
-<div class="line">  [newton]</div>
-<div class="line">    type = Newton</div>
-<div class="line">  []</div>
-<div class="line">[]</div>
-<div class="line"> </div>
 <div class="line">[Models]</div>
 <div class="line">  [liquid_volume_fraction]</div>
 <div class="line">    type = ScalarLinearCombination</div>
-<div class="line">    from_var = &#39;forces/alpha&#39;</div>
-<div class="line">    to_var = &#39;state/phi_L&#39;</div>
-<div class="line">    coefficients = &#39;${omega_Si}&#39;</div>
+<div class="line">    from = &#39;alpha&#39;</div>
+<div class="line">    to = &#39;phi_L&#39;</div>
+<div class="line">    weights = &#39;${omega_Si}&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [outer_radius]</div>
 <div class="line">    type = CylindricalChannelGeometry</div>
-<div class="line">    solid_fraction = &#39;state/phi_S&#39;</div>
-<div class="line">    product_fraction = &#39;state/phi_P&#39;</div>
-<div class="line">    inner_radius = &#39;state/ri&#39;</div>
-<div class="line">    outer_radius = &#39;state/ro&#39;</div>
+<div class="line">    solid_fraction = &#39;phi_S&#39;</div>
+<div class="line">    product_fraction = &#39;phi_P&#39;</div>
+<div class="line">    inner_radius = &#39;ri&#39;</div>
+<div class="line">    outer_radius = &#39;ro&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [liquid_reactivity]</div>
 <div class="line">    type = HermiteSmoothStep</div>
-<div class="line">    argument = &#39;state/phi_L&#39;</div>
-<div class="line">    value = &#39;state/R_L&#39;</div>
+<div class="line">    argument = &#39;phi_L&#39;</div>
+<div class="line">    value = &#39;R_L&#39;</div>
 <div class="line">    lower_bound = 0</div>
 <div class="line">    upper_bound = 0.1</div>
 <div class="line">  []</div>
 <div class="line">  [solid_reactivity]</div>
 <div class="line">    type = HermiteSmoothStep</div>
-<div class="line">    argument = &#39;state/phi_S&#39;</div>
-<div class="line">    value = &#39;state/R_S&#39;</div>
+<div class="line">    argument = &#39;phi_S&#39;</div>
+<div class="line">    value = &#39;R_S&#39;</div>
 <div class="line">    lower_bound = 0</div>
 <div class="line">    upper_bound = 0.1</div>
 <div class="line">  []</div>
@@ -326,50 +319,46 @@ Complete input file</h1>
 <div class="line">    type = DiffusionLimitedReaction</div>
 <div class="line">    diffusion_coefficient = &#39;${D}&#39;</div>
 <div class="line">    molar_volume = &#39;${omega_Si}&#39;</div>
-<div class="line">    product_inner_radius = &#39;state/ri&#39;</div>
-<div class="line">    solid_inner_radius = &#39;state/ro&#39;</div>
-<div class="line">    liquid_reactivity = &#39;state/R_L&#39;</div>
-<div class="line">    solid_reactivity = &#39;state/R_S&#39;</div>
-<div class="line">    reaction_rate = &#39;state/react&#39;</div>
+<div class="line">    product_inner_radius = &#39;ri&#39;</div>
+<div class="line">    solid_inner_radius = &#39;ro&#39;</div>
+<div class="line">    liquid_reactivity = &#39;R_L&#39;</div>
+<div class="line">    solid_reactivity = &#39;R_S&#39;</div>
+<div class="line">    reaction_rate = &#39;react&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [substance_product]</div>
 <div class="line">    type = ScalarLinearCombination</div>
-<div class="line">    from_var = &#39;state/phi_P&#39;</div>
-<div class="line">    to_var = &#39;state/alpha_P&#39;</div>
-<div class="line">    coefficients = &#39;${oSiCm1}&#39;</div>
+<div class="line">    from = &#39;phi_P&#39;</div>
+<div class="line">    to = &#39;alpha_P&#39;</div>
+<div class="line">    weights = &#39;${oSiCm1}&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [product_rate]</div>
 <div class="line">    type = ScalarVariableRate</div>
-<div class="line">    variable = &#39;state/alpha_P&#39;</div>
-<div class="line">    rate = &#39;state/adot_P&#39;</div>
-<div class="line">    time = &#39;forces/t&#39;</div>
+<div class="line">    variable = &#39;alpha_P&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [substance_solid]</div>
 <div class="line">    type = ScalarLinearCombination</div>
-<div class="line">    from_var = &#39;state/phi_S&#39;</div>
-<div class="line">    to_var = &#39;state/alpha_S&#39;</div>
-<div class="line">    coefficients = &#39;${oCm1}&#39;</div>
+<div class="line">    from = &#39;phi_S&#39;</div>
+<div class="line">    to = &#39;alpha_S&#39;</div>
+<div class="line">    weights = &#39;${oCm1}&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [solid_rate]</div>
 <div class="line">    type = ScalarVariableRate</div>
-<div class="line">    variable = &#39;state/alpha_S&#39;</div>
-<div class="line">    rate = &#39;state/adot_S&#39;</div>
-<div class="line">    time = &#39;forces/t&#39;</div>
+<div class="line">    variable = &#39;alpha_S&#39;</div>
 <div class="line">  []</div>
 <div class="line">  ##############################################</div>
 <div class="line">  ### IVP</div>
 <div class="line">  ##############################################</div>
 <div class="line">  [residual_phiP]</div>
 <div class="line">    type = ScalarLinearCombination</div>
-<div class="line">    from_var = &#39;state/adot_P state/react&#39;</div>
-<div class="line">    to_var = &#39;residual/phi_P&#39;</div>
-<div class="line">    coefficients = &#39;1.0 -1.0&#39;</div>
+<div class="line">    from = &#39;alpha_P_rate react&#39;</div>
+<div class="line">    to = &#39;phi_P_residual&#39;</div>
+<div class="line">    weights = &#39;1.0 -1.0&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [residual_phiL]</div>
 <div class="line">    type = ScalarLinearCombination</div>
-<div class="line">    from_var = &#39;state/adot_P state/adot_S&#39;</div>
-<div class="line">    to_var = &#39;residual/phi_S&#39;</div>
-<div class="line">    coefficients = &#39;1.0 ${chem_ratio}&#39;</div>
+<div class="line">    from = &#39;alpha_P_rate alpha_S_rate&#39;</div>
+<div class="line">    to = &#39;phi_S_residual&#39;</div>
+<div class="line">    weights = &#39;1.0 ${chem_ratio}&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [model_residual]</div>
 <div class="line">    type = ComposedModel</div>
@@ -380,15 +369,18 @@ Complete input file</h1>
 <div class="line">[]</div>
 <div class="line"> </div>
 <div class="line">[EquationSystems]</div>
-<div class="line">  [model_update_sys]</div>
+<div class="line">  [eq_sys]</div>
 <div class="line">    type = NonlinearSystem</div>
 <div class="line">    model = &#39;model_residual&#39;</div>
+<div class="line">    unknowns = &#39;phi_P phi_S&#39;</div>
+<div class="line">    residuals = &#39;phi_P_residual phi_S_residual&#39;</div>
 <div class="line">  []</div>
 <div class="line">[]</div>
 <div class="line"> </div>
 <div class="line">[Solvers]</div>
 <div class="line">  [newton]</div>
 <div class="line">    type = Newton</div>
+<div class="line">    verbose = false</div>
 <div class="line">    linear_solver = &#39;lu&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [lu]</div>
@@ -399,25 +391,25 @@ Complete input file</h1>
 <div class="line">[Models]</div>
 <div class="line">  [model_update]</div>
 <div class="line">    type = ImplicitUpdate</div>
-<div class="line">    equation_system = &#39;model_update_sys&#39;</div>
+<div class="line">    equation_system = &#39;eq_sys&#39;</div>
 <div class="line">    solver = &#39;newton&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [substance_product_new]</div>
 <div class="line">    type = ScalarLinearCombination</div>
-<div class="line">    from_var = &#39;state/phi_P&#39;</div>
-<div class="line">    to_var = &#39;state/alpha_P&#39;</div>
-<div class="line">    coefficients = &#39;${oSiCm1}&#39;</div>
+<div class="line">    from = &#39;phi_P&#39;</div>
+<div class="line">    to = &#39;alpha_P&#39;</div>
+<div class="line">    weights = &#39;${oSiCm1}&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [substance_solid_new]</div>
 <div class="line">    type = ScalarLinearCombination</div>
-<div class="line">    from_var = &#39;state/phi_S&#39;</div>
-<div class="line">    to_var = &#39;state/alpha_S&#39;</div>
-<div class="line">    coefficients = &#39;${oCm1}&#39;</div>
+<div class="line">    from = &#39;phi_S&#39;</div>
+<div class="line">    to = &#39;alpha_S&#39;</div>
+<div class="line">    weights = &#39;${oCm1}&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [model]</div>
 <div class="line">    type = ComposedModel</div>
 <div class="line">    models = &#39;model_update liquid_volume_fraction substance_solid_new substance_product_new&#39;</div>
-<div class="line">    additional_outputs = &#39;state/phi_P state/phi_S&#39;</div>
+<div class="line">    additional_outputs = &#39;phi_P phi_S&#39;</div>
 <div class="line">  []</div>
 <div class="line">[]</div>
 </div><!-- fragment --> </div></div><!-- contents -->

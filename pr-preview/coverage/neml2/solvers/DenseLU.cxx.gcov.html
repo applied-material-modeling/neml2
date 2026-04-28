@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2026-04-24 15:34:55</td>
+            <td class="headerValue">2026-04-28 19:32:22</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -104,19 +104,19 @@
 <span id="L42"><span class="lineNum">      42</span> <span class="tlaGNC">           1 :   return options;</span></span>
 <span id="L43"><span class="lineNum">      43</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
 <span id="L44"><span class="lineNum">      44</span>              : </span>
-<span id="L45"><span class="lineNum">      45</span> <span class="tlaGNC tlaBgGNC">          17 : DenseLU::DenseLU(const OptionSet &amp; options)</span></span>
-<span id="L46"><span class="lineNum">      46</span> <span class="tlaGNC">          17 :   : LinearSolver(options)</span></span>
+<span id="L45"><span class="lineNum">      45</span> <span class="tlaGNC tlaBgGNC">          15 : DenseLU::DenseLU(const OptionSet &amp; options)</span></span>
+<span id="L46"><span class="lineNum">      46</span> <span class="tlaGNC">          15 :   : LinearSolver(options)</span></span>
 <span id="L47"><span class="lineNum">      47</span>              : {</span>
-<span id="L48"><span class="lineNum">      48</span> <span class="tlaGNC">          17 : }</span></span>
+<span id="L48"><span class="lineNum">      48</span> <span class="tlaGNC">          15 : }</span></span>
 <span id="L49"><span class="lineNum">      49</span>              : </span>
 <span id="L50"><span class="lineNum">      50</span>              : AssembledVector</span>
-<span id="L51"><span class="lineNum">      51</span> <span class="tlaGNC">         992 : DenseLU::solve(const AssembledMatrix &amp; A, const AssembledVector &amp; b) const</span></span>
+<span id="L51"><span class="lineNum">      51</span> <span class="tlaGNC">         860 : DenseLU::solve(const AssembledMatrix &amp; A, const AssembledVector &amp; b) const</span></span>
 <span id="L52"><span class="lineNum">      52</span>              : {</span>
-<span id="L53"><span class="lineNum">      53</span> <span class="tlaGNC">         992 :   neml_assert(A.row_layout.ngroup() == 1 &amp;&amp; A.col_layout.ngroup() == 1 &amp;&amp; b.layout.ngroup() == 1,</span></span>
+<span id="L53"><span class="lineNum">      53</span> <span class="tlaGNC">         860 :   neml_assert(A.row_layout.ngroup() == 1 &amp;&amp; A.col_layout.ngroup() == 1 &amp;&amp; b.layout.ngroup() == 1,</span></span>
 <span id="L54"><span class="lineNum">      54</span>              :               &quot;DenseLU only supports single-group layouts.&quot;);</span>
-<span id="L55"><span class="lineNum">      55</span> <span class="tlaGNC">         992 :   const auto xf = linalg::solve(A.tensors[0][0], b.tensors[0], check_errors());</span></span>
-<span id="L56"><span class="lineNum">      56</span> <span class="tlaGNC">        3968 :   return AssembledVector(A.col_layout, {xf});</span></span>
-<span id="L57"><span class="lineNum">      57</span> <span class="tlaGNC">        1984 : }</span></span>
+<span id="L55"><span class="lineNum">      55</span> <span class="tlaGNC">         860 :   const auto xf = linalg::solve(A.tensors[0][0], b.tensors[0], check_errors());</span></span>
+<span id="L56"><span class="lineNum">      56</span> <span class="tlaGNC">        3440 :   return AssembledVector(A.col_layout, {xf});</span></span>
+<span id="L57"><span class="lineNum">      57</span> <span class="tlaGNC">        1720 : }</span></span>
 <span id="L58"><span class="lineNum">      58</span>              : </span>
 <span id="L59"><span class="lineNum">      59</span>              : AssembledMatrix</span>
 <span id="L60"><span class="lineNum">      60</span> <span class="tlaGNC">         145 : DenseLU::solve(const AssembledMatrix &amp; A, const AssembledMatrix &amp; B) const</span></span>

@@ -133,7 +133,7 @@ $(function(){initNavTree('python-examples-crystal_plasticity-polefigures.html','
 <div class="contents">
 <div class="textblock"><p><a class="anchor" id="md_build_2doc_2content_2tutorials_2python_2examples_2crystal__plasticity_2polefigures"></a></p>
 <p>This example shows how to plot pole figures using the built-in <a class="el" href="namespaceneml2.html">neml2</a> postprocessing regimes. Specifically, this example load a crystal plasticity model, uses that model to generate reorientation data, and then plots two types of pole figures: discrete points and a contour plot from a reconstructed Orientation Distribution Function (ODF). In the process then this also demonstrates how to reconstruct a continuous ODF from discrete data.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md174"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md177"></a>
 Importing required libraries and setting up</h1>
 <p>This example will run on the GPU with CUDA if available. <span class="tt">nchunk</span> is the chunk size for the <span class="tt">pyzag</span> integration, <span class="tt">ncrystal</span> is the number of random initial crystal orientations to use.</p>
 <p>This example simulates rolling in an FCC material. <span class="tt">rate</span> sets the strain rate, <span class="tt">total_rolling_strain</span> the reduction strain, and <span class="tt">ntime</span> the number of time steps to take.</p>
@@ -164,7 +164,7 @@ Importing required libraries and setting up</h1>
 <div class="line">deformation_rate[:, :, 2] = -rate</div>
 <div class="line">times = torch.linspace(0, end_time, ntime, device = device).unsqueeze(-1).unsqueeze(-1).expand((ntime, ncrystal, 1))</div>
 <div class="line">vorticity = torch.zeros((ntime, ncrystal, 3), device = device)</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md175"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md178"></a>
 pyzag driver</h1>
 <p>For more details on the pyzag driver used here see the deterministic and stochastic inference examples. This helper object just lets us integrate the crystal model using pyzag</p>
 <div class="fragment"><div class="line"><span class="keyword">class </span>Solve(torch.nn.Module):</div>
@@ -204,10 +204,10 @@ pyzag driver</h1>
 <div class="line"> </div>
 <div class="line">        <span class="comment"># Setup</span></div>
 <div class="line">        forces = {</div>
-<div class="line">            <span class="stringliteral">&quot;forces/t&quot;</span>: <a class="code hl_class" href="classneml2_1_1Scalar.html">neml2.Scalar</a>(time.squeeze(-1), 0),</div>
-<div class="line">            <span class="stringliteral">&quot;forces/deformation_rate&quot;</span>: <a class="code hl_class" href="classneml2_1_1SR2.html">neml2.SR2</a>(deformation_rate, 0),</div>
-<div class="line">            <span class="stringliteral">&quot;forces/vorticity&quot;</span>: <a class="code hl_class" href="classneml2_1_1WR2.html">neml2.WR2</a>(vorticity, 0),</div>
-<div class="line">            <span class="stringliteral">&quot;forces/initial_orientation&quot;</span>: <a class="code hl_class" href="classneml2_1_1Rot.html">neml2.Rot</a>(initial_orientations, 0),</div>
+<div class="line">            <span class="stringliteral">&quot;t&quot;</span>: <a class="code hl_class" href="classneml2_1_1Scalar.html">neml2.Scalar</a>(time.squeeze(-1), 0),</div>
+<div class="line">            <span class="stringliteral">&quot;deformation_rate&quot;</span>: <a class="code hl_class" href="classneml2_1_1SR2.html">neml2.SR2</a>(deformation_rate, 0),</div>
+<div class="line">            <span class="stringliteral">&quot;vorticity&quot;</span>: <a class="code hl_class" href="classneml2_1_1WR2.html">neml2.WR2</a>(vorticity, 0),</div>
+<div class="line">            <span class="stringliteral">&quot;initial_orientation&quot;</span>: <a class="code hl_class" href="classneml2_1_1Rot.html">neml2.Rot</a>(initial_orientations, 0),</div>
 <div class="line">        }</div>
 <div class="line">        forces = [forces[key] <span class="keywordflow">for</span> key <span class="keywordflow">in</span> self.discrete_equations.fvars]</div>
 <div class="line">        forces = (</div>
@@ -218,7 +218,7 @@ pyzag driver</h1>
 <div class="line">        )</div>
 <div class="line">        state0 = [<a class="code hl_class" href="classneml2_1_1Tensor.html">neml2.Tensor</a>()] * len(self.discrete_equations.svars)</div>
 <div class="line">        <span class="keywordflow">if</span> initial_orientations <span class="keywordflow">is</span> <span class="keywordflow">not</span> <span class="keywordtype">None</span>:</div>
-<div class="line">            i = self.discrete_equations.svars.index(<span class="stringliteral">&quot;state/orientation&quot;</span>)</div>
+<div class="line">            i = self.discrete_equations.svars.index(<span class="stringliteral">&quot;orientation&quot;</span>)</div>
 <div class="line">            state0[i] = <a class="code hl_class" href="classneml2_1_1Tensor.html">neml2.Tensor</a>(initial_orientations, 1)</div>
 <div class="line">        state0 = (</div>
 <div class="line">            <a class="code hl_struct" href="structneml2_1_1SparseVector.html">neml2.SparseVector</a>(self.discrete_equations.slayout, state0)</div>
@@ -236,10 +236,10 @@ pyzag driver</h1>
 <div class="ttc" id="aclassneml2_1_1Rot_html"><div class="ttname"><a href="classneml2_1_1Rot.html">neml2::Rot</a></div><div class="ttdoc">Rotation stored as modified Rodrigues parameters.</div><div class="ttdef"><b>Definition</b> Rot.h:49</div></div>
 <div class="ttc" id="aclassneml2_1_1SR2_html"><div class="ttname"><a href="classneml2_1_1SR2.html">neml2::SR2</a></div><div class="ttdoc">The symmetric second order tensor.</div><div class="ttdef"><b>Definition</b> SR2.h:46</div></div>
 <div class="ttc" id="aclassneml2_1_1Scalar_html"><div class="ttname"><a href="classneml2_1_1Scalar.html">neml2::Scalar</a></div><div class="ttdoc">Scalar.</div><div class="ttdef"><b>Definition</b> Scalar.h:38</div></div>
-<div class="ttc" id="aclassneml2_1_1Tensor_html"><div class="ttname"><a href="classneml2_1_1Tensor.html">neml2::Tensor</a></div><div class="ttdef"><b>Definition</b> Tensor.h:49</div></div>
+<div class="ttc" id="aclassneml2_1_1Tensor_html"><div class="ttname"><a href="classneml2_1_1Tensor.html">neml2::Tensor</a></div><div class="ttdef"><b>Definition</b> Tensor.h:53</div></div>
 <div class="ttc" id="aclassneml2_1_1WR2_html"><div class="ttname"><a href="classneml2_1_1WR2.html">neml2::WR2</a></div><div class="ttdoc">A skew-symmetric second order tensor, represented as an axial vector.</div><div class="ttdef"><b>Definition</b> WR2.h:43</div></div>
 <div class="ttc" id="astructneml2_1_1SparseVector_html"><div class="ttname"><a href="structneml2_1_1SparseVector.html">neml2::SparseVector</a></div><div class="ttdoc">Sparse representation of a vector consisting of a list of tensors and their layout.</div><div class="ttdef"><b>Definition</b> SparseVector.h:36</div></div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md176"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md179"></a>
 Simulate rolling deformation</h1>
 <p>Simulate the rolling deformation and extract the final crystal orientations</p>
 <div class="fragment"><div class="line">nmodel = neml2.load_nonlinear_system(<span class="stringliteral">&quot;crystal.i&quot;</span>, <span class="stringliteral">&quot;eq_sys&quot;</span>)</div>
@@ -251,7 +251,7 @@ Simulate rolling deformation</h1>
 <div class="line">            -1, :, 6:9</div>
 <div class="line">        ]</div>
 <div class="line">    )</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md177"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md180"></a>
 Plot a discrete pole figure</h1>
 <p>Use the built-in routines to plot a discerete 111 pole figure of the final orientations.</p>
 <div class="fragment"><div class="line">neml2.postprocessing.pretty_plot_pole_figure_points(</div>
@@ -261,7 +261,7 @@ Plot a discrete pole figure</h1>
 <img src="polefigures_12_0.png" alt=""/>
 <div class="caption">
 png</div></div>
-    <h1 class="doxsection"><a class="anchor" id="autotoc_md178"></a>
+    <h1 class="doxsection"><a class="anchor" id="autotoc_md181"></a>
 Plot a discrete inverse pole figure</h1>
 <p>Use the built-in routines to plot a discrete IPF in the rolling direction</p>
 <div class="fragment"><div class="line">neml2.postprocessing.pretty_plot_inverse_pole_figure(</div>
@@ -271,7 +271,7 @@ Plot a discrete inverse pole figure</h1>
 <img src="polefigures_14_0.png" alt=""/>
 <div class="caption">
 png</div></div>
-    <h1 class="doxsection"><a class="anchor" id="autotoc_md179"></a>
+    <h1 class="doxsection"><a class="anchor" id="autotoc_md182"></a>
 ODF reconstruction</h1>
 <p>Reconstruct the ODF from the discrete data. This example optimizes the kernel half-width with the build in routine (which uses a cross-validation approach). Print the final, optimal half width.</p>
 <div class="fragment"><div class="line">odf = neml2.postprocessing.odf.KDEODF(</div>
@@ -279,11 +279,11 @@ ODF reconstruction</h1>
 <div class="line">)</div>
 <div class="line">odf.optimize_kernel(verbose=<span class="keyword">True</span>)</div>
 <div class="line">print(odf.kernel.h)</div>
-</div><!-- fragment --> <pre class="fragment">loss: -8.73262e-01: 100%|██████████| 50/50 [00:45&lt;00:00,  1.11it/s]
+</div><!-- fragment --> <pre class="fragment">loss: -9.31230e-01: 100%|██████████| 50/50 [00:57&lt;00:00,  1.15s/it]
 
 Parameter containing:
-tensor(0.1528, requires_grad=True)
-</pre><h1 class="doxsection"><a class="anchor" id="autotoc_md180"></a>
+tensor(0.1412, requires_grad=True)
+</pre><h1 class="doxsection"><a class="anchor" id="autotoc_md183"></a>
 Plot a continuous polefigure</h1>
 <p>Use the reconstructed ODF to plot a continuous 111 polefigure</p>
 <div class="fragment"><div class="line">neml2.postprocessing.pretty_plot_pole_figure_odf(</div>

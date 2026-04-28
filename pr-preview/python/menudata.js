@@ -92,7 +92,8 @@ var menudata={children:[
 {text:"Phase-Field Fracture",url:"../phase-field-fracture.html"},
 {text:"Finite Volume",url:"../finite-volume.html"}]},
 {text:"Migration Guides",url:"usergroup4.html",children:[
-{text:"Migrating from v2.0.0 to v2.1.0",url:"../migration-200-210.html"}]},
+{text:"Migrating from v2.0.0 to v2.1.0",url:"../migration-200-210.html"},
+{text:"Migrating from v2.1.1 to v2.1.2",url:"../migration-211-212.html"}]},
 {text:"C++ API Reference",url:"usergroup5.html",children:[
 {text:"Namespaces",url:"../namespaces.html"},
 {text:"Classes",url:"../annotated.html"}]},

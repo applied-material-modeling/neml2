@@ -31,13 +31,13 @@
             <td class="headerValue">coverage.info</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntryHi">93.8&nbsp;%</td>
-            <td class="headerCovTableEntry">16</td>
-            <td class="headerCovTableEntry">15</td>
+            <td class="headerCovTableEntryHi">92.3&nbsp;%</td>
+            <td class="headerCovTableEntry">13</td>
+            <td class="headerCovTableEntry">12</td>
           </tr>
           <tr>
             <td class="headerItem">Test Date:</td>
-            <td class="headerValue">2026-04-24 15:34:55</td>
+            <td class="headerValue">2026-04-28 19:32:22</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
@@ -96,30 +96,28 @@
 <span id="L34"><span class="lineNum">      34</span> <span class="tlaGNC">           1 :   OptionSet options = UserTensorBase&lt;Tensor&gt;::expected_options();</span></span>
 <span id="L35"><span class="lineNum">      35</span> <span class="tlaGNC">           1 :   options.doc() = &quot;Construct an identity Tensor with given batch shape.&quot;;</span></span>
 <span id="L36"><span class="lineNum">      36</span>              : </span>
-<span id="L37"><span class="lineNum">      37</span> <span class="tlaGNC">           3 :   options.set&lt;TensorShape&gt;(&quot;batch_shape&quot;) = {};</span></span>
-<span id="L38"><span class="lineNum">      38</span> <span class="tlaGNC">           2 :   options.set(&quot;batch_shape&quot;).doc() = &quot;Batch shape&quot;;</span></span>
-<span id="L39"><span class="lineNum">      39</span>              : </span>
-<span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC">           2 :   options.set&lt;Size&gt;(&quot;n&quot;);</span></span>
-<span id="L41"><span class="lineNum">      41</span> <span class="tlaGNC">           2 :   options.set(&quot;n&quot;).doc() =</span></span>
-<span id="L42"><span class="lineNum">      42</span> <span class="tlaGNC">           1 :       &quot;Diagonal size of the identity tensor, i.e., base shape of the identity tensor will be (n,n)&quot;;</span></span>
-<span id="L43"><span class="lineNum">      43</span>              : </span>
-<span id="L44"><span class="lineNum">      44</span> <span class="tlaGNC">           1 :   return options;</span></span>
-<span id="L45"><span class="lineNum">      45</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
-<span id="L46"><span class="lineNum">      46</span>              : </span>
-<span id="L47"><span class="lineNum">      47</span> <span class="tlaGNC tlaBgGNC">           1 : IdentityTensor::IdentityTensor(const OptionSet &amp; options)</span></span>
-<span id="L48"><span class="lineNum">      48</span>              :   : UserTensorBase&lt;Tensor&gt;(options),</span>
-<span id="L49"><span class="lineNum">      49</span> <span class="tlaGNC">           2 :     _batch_sizes(options.get&lt;TensorShape&gt;(&quot;batch_shape&quot;)),</span></span>
-<span id="L50"><span class="lineNum">      50</span> <span class="tlaGNC">           2 :     _n(options.get&lt;Size&gt;(&quot;n&quot;))</span></span>
-<span id="L51"><span class="lineNum">      51</span>              : {</span>
-<span id="L52"><span class="lineNum">      52</span> <span class="tlaGNC">           1 : }</span></span>
-<span id="L53"><span class="lineNum">      53</span>              : </span>
-<span id="L54"><span class="lineNum">      54</span>              : Tensor</span>
-<span id="L55"><span class="lineNum">      55</span> <span class="tlaGNC">           1 : IdentityTensor::make() const</span></span>
-<span id="L56"><span class="lineNum">      56</span>              : {</span>
-<span id="L57"><span class="lineNum">      57</span> <span class="tlaGNC">           1 :   return Tensor::identity(_n, default_tensor_options()).dynamic_expand(_batch_sizes);</span></span>
-<span id="L58"><span class="lineNum">      58</span>              : }</span>
-<span id="L59"><span class="lineNum">      59</span>              : </span>
-<span id="L60"><span class="lineNum">      60</span>              : } // namespace neml2</span>
+<span id="L37"><span class="lineNum">      37</span> <span class="tlaGNC">           4 :   options.add&lt;TensorShape&gt;(&quot;batch_shape&quot;, {}, &quot;Batch shape&quot;);</span></span>
+<span id="L38"><span class="lineNum">      38</span> <span class="tlaGNC">           3 :   options.add&lt;Size&gt;(&quot;n&quot;,</span></span>
+<span id="L39"><span class="lineNum">      39</span>              :                     &quot;Diagonal size of the identity tensor, i.e., base shape of the &quot;</span>
+<span id="L40"><span class="lineNum">      40</span>              :                     &quot;identity tensor will be (n,n)&quot;);</span>
+<span id="L41"><span class="lineNum">      41</span>              : </span>
+<span id="L42"><span class="lineNum">      42</span> <span class="tlaGNC">           1 :   return options;</span></span>
+<span id="L43"><span class="lineNum">      43</span> <span class="tlaUNC tlaBgUNC">           0 : }</span></span>
+<span id="L44"><span class="lineNum">      44</span>              : </span>
+<span id="L45"><span class="lineNum">      45</span> <span class="tlaGNC tlaBgGNC">           1 : IdentityTensor::IdentityTensor(const OptionSet &amp; options)</span></span>
+<span id="L46"><span class="lineNum">      46</span>              :   : UserTensorBase&lt;Tensor&gt;(options),</span>
+<span id="L47"><span class="lineNum">      47</span> <span class="tlaGNC">           2 :     _batch_sizes(options.get&lt;TensorShape&gt;(&quot;batch_shape&quot;)),</span></span>
+<span id="L48"><span class="lineNum">      48</span> <span class="tlaGNC">           2 :     _n(options.get&lt;Size&gt;(&quot;n&quot;))</span></span>
+<span id="L49"><span class="lineNum">      49</span>              : {</span>
+<span id="L50"><span class="lineNum">      50</span> <span class="tlaGNC">           1 : }</span></span>
+<span id="L51"><span class="lineNum">      51</span>              : </span>
+<span id="L52"><span class="lineNum">      52</span>              : Tensor</span>
+<span id="L53"><span class="lineNum">      53</span> <span class="tlaGNC">           1 : IdentityTensor::make() const</span></span>
+<span id="L54"><span class="lineNum">      54</span>              : {</span>
+<span id="L55"><span class="lineNum">      55</span> <span class="tlaGNC">           1 :   return Tensor::identity(_n, default_tensor_options()).dynamic_expand(_batch_sizes);</span></span>
+<span id="L56"><span class="lineNum">      56</span>              : }</span>
+<span id="L57"><span class="lineNum">      57</span>              : </span>
+<span id="L58"><span class="lineNum">      58</span>              : } // namespace neml2</span>
         </pre>
               </td>
             </tr>

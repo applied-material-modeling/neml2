@@ -134,24 +134,24 @@ $(function(){initNavTree('tutorials-models-just-in-time-compilation.html','','')
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md121">Problem description </a>
+    <a href="#autotoc_md125">Problem description </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md122">Model structure </a>
+    <a href="#autotoc_md126">Model structure </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md123">Tracing </a>
+    <a href="#autotoc_md127">Tracing </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md124">JIT optimization </a>
+    <a href="#autotoc_md128">JIT optimization </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md125">Limitations </a>
+    <a href="#autotoc_md129">Limitations </a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_build_2doc_2content_2tutorials_2models_2just__in__time__compilation_2main"></a></p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md121"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md125"></a>
 Problem description</h1>
 <p>In NEML2, all tensor operations are traceable. The trace of an operation records the operator type, a stack of arguments and outputs, together with additional context. Multiple operations performed in sequence can be traced together into a <em>graph</em> representing the flow of data through operators. Such graph representation is primarily used for two purposes:</p><ul>
 <li>Just-in-time (JIT) compilation and optimization of the operations</li>
@@ -165,21 +165,21 @@ Problem description</h1>
 \end{align}
 </p>
 <p> where the subscript \( n \) represents the variable value from the previous time step.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md122"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md126"></a>
 Model structure</h1>
 <p>All three equations can be translated to <a class="el" href="syntax-models.html#scalarvariablerate" title="ScalarVariableRate">ScalarVariableRate</a>. The input file looks like</p>
 <div class="fragment"><div class="line">[Models]</div>
 <div class="line">  [eq1]</div>
 <div class="line">    type = ScalarVariableRate</div>
-<div class="line">    variable = &#39;state/a&#39;</div>
+<div class="line">    variable = &#39;a&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [eq2]</div>
 <div class="line">    type = ScalarVariableRate</div>
-<div class="line">    variable = &#39;state/b&#39;</div>
+<div class="line">    variable = &#39;b&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [eq3]</div>
 <div class="line">    type = ScalarVariableRate</div>
-<div class="line">    variable = &#39;state/c&#39;</div>
+<div class="line">    variable = &#39;c&#39;</div>
 <div class="line">  []</div>
 <div class="line">  [eq]</div>
 <div class="line">    type = ComposedModel</div>
@@ -200,37 +200,37 @@ Model structure</h1>
 <div class="ttc" id="anamespaceneml2_html"><div class="ttname"><a href="namespaceneml2.html">neml2</a></div><div class="ttdef"><b>Definition</b> DiagnosticsInterface.h:31</div></div>
 <div class="ttc" id="anamespaceneml2_html_aa98735f2ffd7c3ae8b0b339621eb8ab3"><div class="ttname"><a href="namespaceneml2.html#aa98735f2ffd7c3ae8b0b339621eb8ab3">neml2::load_model</a></div><div class="ttdeci">std::shared_ptr&lt; Model &gt; load_model(const std::filesystem::path &amp;path, const std::string &amp;mname)</div><div class="ttdoc">A convenient function to load an input file and get a model.</div></div>
 </div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">Name:       eq</div>
-<div class="line">Input:      forces/t [Scalar]</div>
-<div class="line">            old_forces/t [Scalar]</div>
-<div class="line">            old_state/a [Scalar]</div>
-<div class="line">            old_state/b [Scalar]</div>
-<div class="line">            old_state/c [Scalar]</div>
-<div class="line">            state/a [Scalar]</div>
-<div class="line">            state/b [Scalar]</div>
-<div class="line">            state/c [Scalar]</div>
-<div class="line">Output:     state/a_rate [Scalar]</div>
-<div class="line">            state/b_rate [Scalar]</div>
-<div class="line">            state/c_rate [Scalar]</div>
+<div class="line">Input:      a [Scalar]</div>
+<div class="line">            a~1 [Scalar]</div>
+<div class="line">            b [Scalar]</div>
+<div class="line">            b~1 [Scalar]</div>
+<div class="line">            c [Scalar]</div>
+<div class="line">            c~1 [Scalar]</div>
+<div class="line">            t [Scalar]</div>
+<div class="line">            t~1 [Scalar]</div>
+<div class="line">Output:     a_rate [Scalar]</div>
+<div class="line">            b_rate [Scalar]</div>
+<div class="line">            c_rate [Scalar]</div>
 </div><!-- fragment --></li>
 <li><p class="startli"><b class="tab-title">Python</b> </p><div class="fragment"><div class="line"><span class="keyword">import</span> neml2</div>
 <div class="line"> </div>
 <div class="line">model = <a class="code hl_function" href="namespaceneml2.html#aa98735f2ffd7c3ae8b0b339621eb8ab3">neml2.load_model</a>(<span class="stringliteral">&quot;input.i&quot;</span>, <span class="stringliteral">&quot;eq&quot;</span>)</div>
 <div class="line">print(model)</div>
 </div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">Name:       eq</div>
-<div class="line">Input:      forces/t [Scalar]</div>
-<div class="line">            old_forces/t [Scalar]</div>
-<div class="line">            old_state/a [Scalar]</div>
-<div class="line">            old_state/b [Scalar]</div>
-<div class="line">            old_state/c [Scalar]</div>
-<div class="line">            state/a [Scalar]</div>
-<div class="line">            state/b [Scalar]</div>
-<div class="line">            state/c [Scalar]</div>
-<div class="line">Output:     state/a_rate [Scalar]</div>
-<div class="line">            state/b_rate [Scalar]</div>
-<div class="line">            state/c_rate [Scalar]</div>
+<div class="line">Input:      a [Scalar]</div>
+<div class="line">            a~1 [Scalar]</div>
+<div class="line">            b [Scalar]</div>
+<div class="line">            b~1 [Scalar]</div>
+<div class="line">            c [Scalar]</div>
+<div class="line">            c~1 [Scalar]</div>
+<div class="line">            t [Scalar]</div>
+<div class="line">            t~1 [Scalar]</div>
+<div class="line">Output:     a_rate [Scalar]</div>
+<div class="line">            b_rate [Scalar]</div>
+<div class="line">            c_rate [Scalar]</div>
 </div><!-- fragment --></li>
 </ul>
-</div><div class="tabbed"></div><h1 class="doxsection"><a class="anchor" id="autotoc_md123"></a>
+</div><div class="tabbed"></div><h1 class="doxsection"><a class="anchor" id="autotoc_md127"></a>
 Tracing</h1>
 <p>NEML2 enables tracing of tensor operations lazily. No tracing is performed when the model is first loaded from the input file. Tracing takes place when the model is being evaluated for the first time. The following code can be used to view the traced graph in text format.</p>
 <div class="tabbed"></div><div class="tabbed"><ul>
@@ -257,14 +257,14 @@ Tracing</h1>
 <div class="line"> </div>
 <div class="line">  <span class="comment">// Evaluate the model for the first time</span></div>
 <div class="line">  <span class="comment">// This is when tracing takes place</span></div>
-<div class="line">  model-&gt;value({{<a class="code hl_typedef" href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">VariableName</a>(<span class="stringliteral">&quot;state&quot;</span>, <span class="stringliteral">&quot;a&quot;</span>), a},</div>
-<div class="line">                {<a class="code hl_typedef" href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">VariableName</a>(<span class="stringliteral">&quot;state&quot;</span>, <span class="stringliteral">&quot;b&quot;</span>), b},</div>
-<div class="line">                {<a class="code hl_typedef" href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">VariableName</a>(<span class="stringliteral">&quot;state&quot;</span>, <span class="stringliteral">&quot;c&quot;</span>), c},</div>
-<div class="line">                {<a class="code hl_typedef" href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">VariableName</a>(<span class="stringliteral">&quot;forces&quot;</span>, <span class="stringliteral">&quot;t&quot;</span>), t},</div>
-<div class="line">                {<a class="code hl_typedef" href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">VariableName</a>(<span class="stringliteral">&quot;old_state&quot;</span>, <span class="stringliteral">&quot;a&quot;</span>), a_n},</div>
-<div class="line">                {<a class="code hl_typedef" href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">VariableName</a>(<span class="stringliteral">&quot;old_state&quot;</span>, <span class="stringliteral">&quot;b&quot;</span>), b_n},</div>
-<div class="line">                {<a class="code hl_typedef" href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">VariableName</a>(<span class="stringliteral">&quot;old_state&quot;</span>, <span class="stringliteral">&quot;c&quot;</span>), c_n},</div>
-<div class="line">                {<a class="code hl_typedef" href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">VariableName</a>(<span class="stringliteral">&quot;old_forces&quot;</span>, <span class="stringliteral">&quot;t&quot;</span>), t_n}});</div>
+<div class="line">  model-&gt;value({{<span class="stringliteral">&quot;a&quot;</span>, a},</div>
+<div class="line">                {<span class="stringliteral">&quot;b&quot;</span>, b},</div>
+<div class="line">                {<span class="stringliteral">&quot;c&quot;</span>, c},</div>
+<div class="line">                {<span class="stringliteral">&quot;t&quot;</span>, t},</div>
+<div class="line">                {<span class="stringliteral">&quot;a~1&quot;</span>, a_n},</div>
+<div class="line">                {<span class="stringliteral">&quot;b~1&quot;</span>, b_n},</div>
+<div class="line">                {<span class="stringliteral">&quot;c~1&quot;</span>, c_n},</div>
+<div class="line">                {<span class="stringliteral">&quot;t~1&quot;</span>, t_n}});</div>
 <div class="line"> </div>
 <div class="line">  <a class="code hl_function" href="namespaceneml2_1_1utils.html#ae79086faa3db17f6d9f27ef215808b0e">utils::last_executed_optimized_graph</a>()-&gt;dump();</div>
 <div class="line">}</div>
@@ -272,36 +272,35 @@ Tracing</h1>
 <div class="ttc" id="anamespaceneml2_1_1utils_html_ae79086faa3db17f6d9f27ef215808b0e"><div class="ttname"><a href="namespaceneml2_1_1utils.html#ae79086faa3db17f6d9f27ef215808b0e">neml2::utils::last_executed_optimized_graph</a></div><div class="ttdeci">std::shared_ptr&lt; jit::Graph &gt; last_executed_optimized_graph()</div><div class="ttdoc">Print last evaluated optimized graph.</div></div>
 <div class="ttc" id="anamespaceneml2_html_a16c96ec35672a72196d72131d3f5f8c3"><div class="ttname"><a href="namespaceneml2.html#a16c96ec35672a72196d72131d3f5f8c3">neml2::kFloat64</a></div><div class="ttdeci">constexpr auto kFloat64</div><div class="ttdef"><b>Definition</b> types.h:54</div></div>
 <div class="ttc" id="anamespaceneml2_html_a3c266b437e28eb7adec97c12b9a7e7d2"><div class="ttname"><a href="namespaceneml2.html#a3c266b437e28eb7adec97c12b9a7e7d2">neml2::set_default_dtype</a></div><div class="ttdeci">void set_default_dtype(Dtype dtype)</div></div>
-<div class="ttc" id="anamespaceneml2_html_a9e1488821b46ffc106c90ab80036b7aa"><div class="ttname"><a href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">neml2::VariableName</a></div><div class="ttdeci">LabeledAxisAccessor VariableName</div><div class="ttdef"><b>Definition</b> LabeledAxisAccessor.h:185</div></div>
-</div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">graph(%eq::forces/t : Tensor,</div>
-<div class="line">      %eq::old_forces/t : Tensor,</div>
-<div class="line">      %eq::old_state/a : Tensor,</div>
-<div class="line">      %eq::old_state/b : Tensor,</div>
-<div class="line">      %eq::old_state/c : Tensor,</div>
-<div class="line">      %eq::state/a : Tensor,</div>
-<div class="line">      %eq::state/b : Tensor,</div>
-<div class="line">      %eq::state/c : Tensor):</div>
+</div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">graph(%eq::a : Tensor,</div>
+<div class="line">      %eq::a~1 : Tensor,</div>
+<div class="line">      %eq::b : Tensor,</div>
+<div class="line">      %eq::b~1 : Tensor,</div>
+<div class="line">      %eq::c : Tensor,</div>
+<div class="line">      %eq::c~1 : Tensor,</div>
+<div class="line">      %eq::t : Tensor,</div>
+<div class="line">      %eq::t~1 : Tensor):</div>
 <div class="line">  %8 : int = prim::Constant[value=1]()</div>
-<div class="line">  %17 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::state/a)</div>
-<div class="line">  %18 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::old_state/a)</div>
+<div class="line">  %17 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::t)</div>
+<div class="line">  %18 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::t~1)</div>
 <div class="line">  %9 : Tensor = aten::sub(%17, %18, %8)</div>
-<div class="line">  %19 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::forces/t)</div>
-<div class="line">  %20 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::old_forces/t)</div>
+<div class="line">  %19 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::a)</div>
+<div class="line">  %20 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::a~1)</div>
 <div class="line">  %10 : Tensor = aten::sub(%19, %20, %8)</div>
-<div class="line">  %21 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%9)</div>
-<div class="line">  %22 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%10)</div>
+<div class="line">  %21 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%10)</div>
+<div class="line">  %22 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%9)</div>
 <div class="line">  %11 : Tensor = aten::div(%21, %22)</div>
-<div class="line">  %23 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::state/b)</div>
-<div class="line">  %24 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::old_state/b)</div>
+<div class="line">  %23 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::b)</div>
+<div class="line">  %24 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::b~1)</div>
 <div class="line">  %12 : Tensor = aten::sub(%23, %24, %8)</div>
 <div class="line">  %25 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%12)</div>
-<div class="line">  %26 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%10)</div>
+<div class="line">  %26 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%9)</div>
 <div class="line">  %13 : Tensor = aten::div(%25, %26)</div>
-<div class="line">  %27 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::state/c)</div>
-<div class="line">  %28 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::old_state/c)</div>
+<div class="line">  %27 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::c)</div>
+<div class="line">  %28 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::c~1)</div>
 <div class="line">  %14 : Tensor = aten::sub(%27, %28, %8)</div>
 <div class="line">  %29 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%14)</div>
-<div class="line">  %30 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%10)</div>
+<div class="line">  %30 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%9)</div>
 <div class="line">  %15 : Tensor = aten::div(%29, %30)</div>
 <div class="line">  %31 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%11)</div>
 <div class="line">  %32 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%13)</div>
@@ -331,47 +330,47 @@ Tracing</h1>
 <div class="line"><span class="comment"># This is when tracing takes place</span></div>
 <div class="line">model.value(</div>
 <div class="line">    {</div>
-<div class="line">        <span class="stringliteral">&quot;state/a&quot;</span>: a,</div>
-<div class="line">        <span class="stringliteral">&quot;state/b&quot;</span>: b,</div>
-<div class="line">        <span class="stringliteral">&quot;state/c&quot;</span>: c,</div>
-<div class="line">        <span class="stringliteral">&quot;forces/t&quot;</span>: t,</div>
-<div class="line">        <span class="stringliteral">&quot;old_state/a&quot;</span>: a_n,</div>
-<div class="line">        <span class="stringliteral">&quot;old_state/b&quot;</span>: b_n,</div>
-<div class="line">        <span class="stringliteral">&quot;old_state/c&quot;</span>: c_n,</div>
-<div class="line">        <span class="stringliteral">&quot;old_forces/t&quot;</span>: t_n,</div>
+<div class="line">        <span class="stringliteral">&quot;a&quot;</span>: a,</div>
+<div class="line">        <span class="stringliteral">&quot;b&quot;</span>: b,</div>
+<div class="line">        <span class="stringliteral">&quot;c&quot;</span>: c,</div>
+<div class="line">        <span class="stringliteral">&quot;t&quot;</span>: t,</div>
+<div class="line">        <span class="stringliteral">&quot;a~1&quot;</span>: a_n,</div>
+<div class="line">        <span class="stringliteral">&quot;b~1&quot;</span>: b_n,</div>
+<div class="line">        <span class="stringliteral">&quot;c~1&quot;</span>: c_n,</div>
+<div class="line">        <span class="stringliteral">&quot;t~1&quot;</span>: t_n,</div>
 <div class="line">    }</div>
 <div class="line">)</div>
 <div class="line"> </div>
 <div class="line">print(torch.jit.last_executed_optimized_graph())  <span class="comment"># type: ignore[attr-defined]</span></div>
-</div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">graph(%eq::forces/t : Tensor,</div>
-<div class="line">      %eq::old_forces/t : Tensor,</div>
-<div class="line">      %eq::old_state/a : Tensor,</div>
-<div class="line">      %eq::old_state/b : Tensor,</div>
-<div class="line">      %eq::old_state/c : Tensor,</div>
-<div class="line">      %eq::state/a : Tensor,</div>
-<div class="line">      %eq::state/b : Tensor,</div>
-<div class="line">      %eq::state/c : Tensor):</div>
+</div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">graph(%eq::a : Tensor,</div>
+<div class="line">      %eq::a~1 : Tensor,</div>
+<div class="line">      %eq::b : Tensor,</div>
+<div class="line">      %eq::b~1 : Tensor,</div>
+<div class="line">      %eq::c : Tensor,</div>
+<div class="line">      %eq::c~1 : Tensor,</div>
+<div class="line">      %eq::t : Tensor,</div>
+<div class="line">      %eq::t~1 : Tensor):</div>
 <div class="line">  %8 : int = prim::Constant[value=1]() # /home/runner/work/neml2/neml2/build/tutorials/models/just_in_time_compilation/ex4.py:20:0</div>
-<div class="line">  %17 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::state/a)</div>
-<div class="line">  %18 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::old_state/a)</div>
+<div class="line">  %17 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::t)</div>
+<div class="line">  %18 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::t~1)</div>
 <div class="line">  %9 : Tensor = aten::sub(%17, %18, %8) # /home/runner/work/neml2/neml2/build/tutorials/models/just_in_time_compilation/ex4.py:20:0</div>
-<div class="line">  %19 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::forces/t)</div>
-<div class="line">  %20 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::old_forces/t)</div>
+<div class="line">  %19 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::a)</div>
+<div class="line">  %20 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::a~1)</div>
 <div class="line">  %10 : Tensor = aten::sub(%19, %20, %8) # /home/runner/work/neml2/neml2/build/tutorials/models/just_in_time_compilation/ex4.py:20:0</div>
-<div class="line">  %21 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%9)</div>
-<div class="line">  %22 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%10)</div>
+<div class="line">  %21 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%10)</div>
+<div class="line">  %22 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%9)</div>
 <div class="line">  %11 : Tensor = aten::div(%21, %22) # /home/runner/work/neml2/neml2/build/tutorials/models/just_in_time_compilation/ex4.py:20:0</div>
-<div class="line">  %23 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::state/b)</div>
-<div class="line">  %24 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::old_state/b)</div>
+<div class="line">  %23 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::b)</div>
+<div class="line">  %24 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::b~1)</div>
 <div class="line">  %12 : Tensor = aten::sub(%23, %24, %8) # /home/runner/work/neml2/neml2/build/tutorials/models/just_in_time_compilation/ex4.py:20:0</div>
 <div class="line">  %25 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%12)</div>
-<div class="line">  %26 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%10)</div>
+<div class="line">  %26 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%9)</div>
 <div class="line">  %13 : Tensor = aten::div(%25, %26) # /home/runner/work/neml2/neml2/build/tutorials/models/just_in_time_compilation/ex4.py:20:0</div>
-<div class="line">  %27 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::state/c)</div>
-<div class="line">  %28 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::old_state/c)</div>
+<div class="line">  %27 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::c)</div>
+<div class="line">  %28 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::c~1)</div>
 <div class="line">  %14 : Tensor = aten::sub(%27, %28, %8) # /home/runner/work/neml2/neml2/build/tutorials/models/just_in_time_compilation/ex4.py:20:0</div>
 <div class="line">  %29 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%14)</div>
-<div class="line">  %30 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%10)</div>
+<div class="line">  %30 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%9)</div>
 <div class="line">  %15 : Tensor = aten::div(%29, %30) # /home/runner/work/neml2/neml2/build/tutorials/models/just_in_time_compilation/ex4.py:20:0</div>
 <div class="line">  %31 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%11)</div>
 <div class="line">  %32 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%13)</div>
@@ -382,17 +381,17 @@ Tracing</h1>
 </div><!-- fragment --></li>
 </ul>
 </div><div class="tabbed"></div><p>Note that the above graph is called a <em>profiling</em> graph. While it is not the most human-friendly to read, let us highlight some lines of the text output to try to associated it with the equations.</p>
-<p>The following lines </p><div class="fragment"><div class="line">%18 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::state/a)</div>
-<div class="line">%19 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::old_state/a)</div>
+<p>The following lines </p><div class="fragment"><div class="line">%18 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::a)</div>
+<div class="line">%19 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::a~1)</div>
 <div class="line">%10 : Tensor = aten::sub(%18, %19, %8)</div>
-<div class="line">%20 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::forces/t)</div>
-<div class="line">%21 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::old_forces/t)</div>
+<div class="line">%20 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::t)</div>
+<div class="line">%21 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%eq::t~1)</div>
 <div class="line">%11 : Tensor = aten::sub(%20, %21, %8)</div>
 <div class="line">%22 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%10)</div>
 <div class="line">%23 : Tensor = prim::profile[profiled_type=Double(requires_grad=0, device=cpu), seen_none=0](%11)</div>
 <div class="line">%12 : Tensor = aten::div(%22, %23)</div>
 </div><!-- fragment --><p> cover three tensor operations: two <span class="tt">aten::sub</span>s and one <span class="tt">aten::div</span>, which correspond to \( \eqref{1} \). Note that each variable is wrapped inside a profiling node denoted as <span class="tt">prim::profile</span>. These wrappers allow the graph executor to record and analyze the runtime statistics of tensor operations, in order to identify hot spots to optimize.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md124"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md128"></a>
 JIT optimization</h1>
 <p>With the profiling graph, further execution of the same traced graph automatically identifies opportunities for optimization. In summary, the following types of optimizations are enabled in NEML2 by default:</p><ul>
 <li>Inlining</li>
@@ -431,36 +430,36 @@ JIT optimization</h1>
 <div class="line">  <span class="keyword">auto</span> t_n = <a class="code hl_function" href="classneml2_1_1PrimitiveTensor.html#a0eb4c776dfa03b8189246d2e8b0f7990">Scalar::full</a>(0.0);</div>
 <div class="line"> </div>
 <div class="line">  <span class="comment">// Evaluate the model for multiple times</span></div>
-<div class="line">  <span class="keyword">auto</span> inputs = <a class="code hl_typedef" href="namespaceneml2.html#a22b998dd10e5127283599bc49bee5d16">ValueMap</a>({{<a class="code hl_typedef" href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">VariableName</a>(<span class="stringliteral">&quot;state&quot;</span>, <span class="stringliteral">&quot;a&quot;</span>), a},</div>
-<div class="line">                          {<a class="code hl_typedef" href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">VariableName</a>(<span class="stringliteral">&quot;state&quot;</span>, <span class="stringliteral">&quot;b&quot;</span>), b},</div>
-<div class="line">                          {<a class="code hl_typedef" href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">VariableName</a>(<span class="stringliteral">&quot;state&quot;</span>, <span class="stringliteral">&quot;c&quot;</span>), c},</div>
-<div class="line">                          {<a class="code hl_typedef" href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">VariableName</a>(<span class="stringliteral">&quot;forces&quot;</span>, <span class="stringliteral">&quot;t&quot;</span>), t},</div>
-<div class="line">                          {<a class="code hl_typedef" href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">VariableName</a>(<span class="stringliteral">&quot;old_state&quot;</span>, <span class="stringliteral">&quot;a&quot;</span>), a_n},</div>
-<div class="line">                          {<a class="code hl_typedef" href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">VariableName</a>(<span class="stringliteral">&quot;old_state&quot;</span>, <span class="stringliteral">&quot;b&quot;</span>), b_n},</div>
-<div class="line">                          {<a class="code hl_typedef" href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">VariableName</a>(<span class="stringliteral">&quot;old_state&quot;</span>, <span class="stringliteral">&quot;c&quot;</span>), c_n},</div>
-<div class="line">                          {<a class="code hl_typedef" href="namespaceneml2.html#a9e1488821b46ffc106c90ab80036b7aa">VariableName</a>(<span class="stringliteral">&quot;old_forces&quot;</span>, <span class="stringliteral">&quot;t&quot;</span>), t_n}});</div>
+<div class="line">  <span class="keyword">auto</span> inputs = <a class="code hl_typedef" href="namespaceneml2.html#a5d706421c419830327471cfa2b23136f">ValueMap</a>({{<span class="stringliteral">&quot;a&quot;</span>, a},</div>
+<div class="line">                          {<span class="stringliteral">&quot;b&quot;</span>, b},</div>
+<div class="line">                          {<span class="stringliteral">&quot;c&quot;</span>, c},</div>
+<div class="line">                          {<span class="stringliteral">&quot;t&quot;</span>, t},</div>
+<div class="line">                          {<span class="stringliteral">&quot;a~1&quot;</span>, a_n},</div>
+<div class="line">                          {<span class="stringliteral">&quot;b~1&quot;</span>, b_n},</div>
+<div class="line">                          {<span class="stringliteral">&quot;c~1&quot;</span>, c_n},</div>
+<div class="line">                          {<span class="stringliteral">&quot;t~1&quot;</span>, t_n}});</div>
 <div class="line">  <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; 10; i++)</div>
 <div class="line">    model-&gt;value(inputs);</div>
 <div class="line"> </div>
 <div class="line">  <a class="code hl_function" href="namespaceneml2_1_1utils.html#ae79086faa3db17f6d9f27ef215808b0e">utils::last_executed_optimized_graph</a>()-&gt;dump();</div>
 <div class="line">}</div>
-<div class="ttc" id="anamespaceneml2_html_a22b998dd10e5127283599bc49bee5d16"><div class="ttname"><a href="namespaceneml2.html#a22b998dd10e5127283599bc49bee5d16">neml2::ValueMap</a></div><div class="ttdeci">std::map&lt; LabeledAxisAccessor, Tensor &gt; ValueMap</div><div class="ttdef"><b>Definition</b> map_types_fwd.h:33</div></div>
-</div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">graph(%eq::forces/t : Tensor,</div>
-<div class="line">      %eq::old_forces/t : Tensor,</div>
-<div class="line">      %eq::old_state/a : Tensor,</div>
-<div class="line">      %eq::old_state/b : Tensor,</div>
-<div class="line">      %eq::old_state/c : Tensor,</div>
-<div class="line">      %eq::state/a : Tensor,</div>
-<div class="line">      %eq::state/b : Tensor,</div>
-<div class="line">      %eq::state/c : Tensor):</div>
+<div class="ttc" id="anamespaceneml2_html_a5d706421c419830327471cfa2b23136f"><div class="ttname"><a href="namespaceneml2.html#a5d706421c419830327471cfa2b23136f">neml2::ValueMap</a></div><div class="ttdeci">std::map&lt; VariableName, Tensor &gt; ValueMap</div><div class="ttdef"><b>Definition</b> Tensor.h:39</div></div>
+</div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">graph(%eq::a : Tensor,</div>
+<div class="line">      %eq::a~1 : Tensor,</div>
+<div class="line">      %eq::b : Tensor,</div>
+<div class="line">      %eq::b~1 : Tensor,</div>
+<div class="line">      %eq::c : Tensor,</div>
+<div class="line">      %eq::c~1 : Tensor,</div>
+<div class="line">      %eq::t : Tensor,</div>
+<div class="line">      %eq::t~1 : Tensor):</div>
 <div class="line">  %8 : int = prim::Constant[value=1]()</div>
-<div class="line">  %11 : Tensor = aten::sub(%eq::state/a, %eq::old_state/a, %8)</div>
-<div class="line">  %14 : Tensor = aten::sub(%eq::forces/t, %eq::old_forces/t, %8)</div>
-<div class="line">  %17 : Tensor = aten::div(%11, %14)</div>
-<div class="line">  %20 : Tensor = aten::sub(%eq::state/b, %eq::old_state/b, %8)</div>
-<div class="line">  %23 : Tensor = aten::div(%20, %14)</div>
-<div class="line">  %26 : Tensor = aten::sub(%eq::state/c, %eq::old_state/c, %8)</div>
-<div class="line">  %29 : Tensor = aten::div(%26, %14)</div>
+<div class="line">  %11 : Tensor = aten::sub(%eq::t, %eq::t~1, %8)</div>
+<div class="line">  %14 : Tensor = aten::sub(%eq::a, %eq::a~1, %8)</div>
+<div class="line">  %17 : Tensor = aten::div(%14, %11)</div>
+<div class="line">  %20 : Tensor = aten::sub(%eq::b, %eq::b~1, %8)</div>
+<div class="line">  %23 : Tensor = aten::div(%20, %11)</div>
+<div class="line">  %26 : Tensor = aten::sub(%eq::c, %eq::c~1, %8)</div>
+<div class="line">  %29 : Tensor = aten::div(%26, %11)</div>
 <div class="line">  %33 : Tensor[] = prim::ListConstruct(%17, %23, %29)</div>
 <div class="line">  return (%33)</div>
 </div><!-- fragment --></li>
@@ -484,41 +483,41 @@ JIT optimization</h1>
 <div class="line"><span class="comment"># Evaluate the model for the first time</span></div>
 <div class="line"><span class="comment"># This is when tracing takes place</span></div>
 <div class="line">inputs = {</div>
-<div class="line">    <span class="stringliteral">&quot;state/a&quot;</span>: a,</div>
-<div class="line">    <span class="stringliteral">&quot;state/b&quot;</span>: b,</div>
-<div class="line">    <span class="stringliteral">&quot;state/c&quot;</span>: c,</div>
-<div class="line">    <span class="stringliteral">&quot;forces/t&quot;</span>: t,</div>
-<div class="line">    <span class="stringliteral">&quot;old_state/a&quot;</span>: a_n,</div>
-<div class="line">    <span class="stringliteral">&quot;old_state/b&quot;</span>: b_n,</div>
-<div class="line">    <span class="stringliteral">&quot;old_state/c&quot;</span>: c_n,</div>
-<div class="line">    <span class="stringliteral">&quot;old_forces/t&quot;</span>: t_n,</div>
+<div class="line">    <span class="stringliteral">&quot;a&quot;</span>: a,</div>
+<div class="line">    <span class="stringliteral">&quot;b&quot;</span>: b,</div>
+<div class="line">    <span class="stringliteral">&quot;c&quot;</span>: c,</div>
+<div class="line">    <span class="stringliteral">&quot;t&quot;</span>: t,</div>
+<div class="line">    <span class="stringliteral">&quot;a~1&quot;</span>: a_n,</div>
+<div class="line">    <span class="stringliteral">&quot;b~1&quot;</span>: b_n,</div>
+<div class="line">    <span class="stringliteral">&quot;c~1&quot;</span>: c_n,</div>
+<div class="line">    <span class="stringliteral">&quot;t~1&quot;</span>: t_n,</div>
 <div class="line">}</div>
 <div class="line"><span class="keywordflow">for</span> i <span class="keywordflow">in</span> range(10):</div>
 <div class="line">    model.value(inputs)</div>
 <div class="line"> </div>
 <div class="line">print(torch.jit.last_executed_optimized_graph())  <span class="comment"># type: ignore[attr-defined]</span></div>
-</div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">graph(%eq::forces/t : Tensor,</div>
-<div class="line">      %eq::old_forces/t : Tensor,</div>
-<div class="line">      %eq::old_state/a : Tensor,</div>
-<div class="line">      %eq::old_state/b : Tensor,</div>
-<div class="line">      %eq::old_state/c : Tensor,</div>
-<div class="line">      %eq::state/a : Tensor,</div>
-<div class="line">      %eq::state/b : Tensor,</div>
-<div class="line">      %eq::state/c : Tensor):</div>
+</div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">graph(%eq::a : Tensor,</div>
+<div class="line">      %eq::a~1 : Tensor,</div>
+<div class="line">      %eq::b : Tensor,</div>
+<div class="line">      %eq::b~1 : Tensor,</div>
+<div class="line">      %eq::c : Tensor,</div>
+<div class="line">      %eq::c~1 : Tensor,</div>
+<div class="line">      %eq::t : Tensor,</div>
+<div class="line">      %eq::t~1 : Tensor):</div>
 <div class="line">  %8 : int = prim::Constant[value=1]() # /home/runner/work/neml2/neml2/build/tutorials/models/just_in_time_compilation/ex6.py:31:0</div>
-<div class="line">  %11 : Tensor = aten::sub(%eq::state/a, %eq::old_state/a, %8) # /home/runner/work/neml2/neml2/build/tutorials/models/just_in_time_compilation/ex6.py:31:0</div>
-<div class="line">  %14 : Tensor = aten::sub(%eq::forces/t, %eq::old_forces/t, %8) # /home/runner/work/neml2/neml2/build/tutorials/models/just_in_time_compilation/ex6.py:31:0</div>
-<div class="line">  %17 : Tensor = aten::div(%11, %14) # /home/runner/work/neml2/neml2/build/tutorials/models/just_in_time_compilation/ex6.py:31:0</div>
-<div class="line">  %20 : Tensor = aten::sub(%eq::state/b, %eq::old_state/b, %8) # /home/runner/work/neml2/neml2/build/tutorials/models/just_in_time_compilation/ex6.py:31:0</div>
-<div class="line">  %23 : Tensor = aten::div(%20, %14) # /home/runner/work/neml2/neml2/build/tutorials/models/just_in_time_compilation/ex6.py:31:0</div>
-<div class="line">  %26 : Tensor = aten::sub(%eq::state/c, %eq::old_state/c, %8) # /home/runner/work/neml2/neml2/build/tutorials/models/just_in_time_compilation/ex6.py:31:0</div>
-<div class="line">  %29 : Tensor = aten::div(%26, %14) # /home/runner/work/neml2/neml2/build/tutorials/models/just_in_time_compilation/ex6.py:31:0</div>
+<div class="line">  %11 : Tensor = aten::sub(%eq::t, %eq::t~1, %8) # /home/runner/work/neml2/neml2/build/tutorials/models/just_in_time_compilation/ex6.py:31:0</div>
+<div class="line">  %14 : Tensor = aten::sub(%eq::a, %eq::a~1, %8) # /home/runner/work/neml2/neml2/build/tutorials/models/just_in_time_compilation/ex6.py:31:0</div>
+<div class="line">  %17 : Tensor = aten::div(%14, %11) # /home/runner/work/neml2/neml2/build/tutorials/models/just_in_time_compilation/ex6.py:31:0</div>
+<div class="line">  %20 : Tensor = aten::sub(%eq::b, %eq::b~1, %8) # /home/runner/work/neml2/neml2/build/tutorials/models/just_in_time_compilation/ex6.py:31:0</div>
+<div class="line">  %23 : Tensor = aten::div(%20, %11) # /home/runner/work/neml2/neml2/build/tutorials/models/just_in_time_compilation/ex6.py:31:0</div>
+<div class="line">  %26 : Tensor = aten::sub(%eq::c, %eq::c~1, %8) # /home/runner/work/neml2/neml2/build/tutorials/models/just_in_time_compilation/ex6.py:31:0</div>
+<div class="line">  %29 : Tensor = aten::div(%26, %11) # /home/runner/work/neml2/neml2/build/tutorials/models/just_in_time_compilation/ex6.py:31:0</div>
 <div class="line">  %33 : Tensor[] = prim::ListConstruct(%17, %23, %29)</div>
 <div class="line">  return (%33)</div>
 </div><!-- fragment --></li>
 </ul>
 </div><div class="tabbed"></div><p>Note how the optimized graph successfully identifies the common subexpression \( t - t_n \) and reuses it in all three equations.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md125"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md129"></a>
 Limitations</h1>
 <p>JIT optimization and compilation isn't the holy grail for improving performance of all models. For tensor operations that branch based on variable data, the traced graph cannot capture such data dependency and would potentially produce wrong results. NEML2 is unable to generate traced graphs for models that include derivatives of other models in the forward evaluation when those derivatives are defined with automatic differentiation.</p>
 <p>Due to these limitations, certain models disable the use of JIT compilation. The most notable case is <a class="el" href="syntax-models.html#implicitupdate" title="ImplicitUpdate">ImplicitUpdate</a> due to its use of Newton-Raphson solvers which are in general data dependent. However, the portions of the complete model defining the implicit function to solve can often benefit from JIT compilation.</p>

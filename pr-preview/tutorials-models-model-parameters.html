@@ -134,21 +134,21 @@ $(function(){initNavTree('tutorials-models-model-parameters.html','',''); });
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md130">Problem description </a>
+    <a href="#autotoc_md134">Problem description </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md131">Parameter vs buffer </a>
+    <a href="#autotoc_md135">Parameter vs buffer </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md132">Retrieving the parameter value </a>
+    <a href="#autotoc_md136">Retrieving the parameter value </a>
   </li>
   <li class="level1">
-    <a href="#autotoc_md133">Updating the parameter value </a>
+    <a href="#autotoc_md137">Updating the parameter value </a>
   </li>
 </ul>
 </div>
 <div class="textblock"><p><a class="anchor" id="md_build_2doc_2content_2tutorials_2models_2model__parameters_2main"></a></p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md130"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md134"></a>
 Problem description</h1>
 <p>In this tutorial, we will revisit the problem defined in the previous tutorial and demonstrate how to work with model parameters.</p>
 <p>Recall that the linear elasticity material model can be mathematically written as   </p><p class="formulaDsp">
@@ -163,7 +163,7 @@ Problem description</h1>
 \[  x = \left\{ \boldsymbol{\varepsilon} \right\}, \quad y = \left\{ \boldsymbol{\sigma} \right\}, \quad p = \left\{ K, G \right\}, \quad b = \varnothing.
 \]
 </p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md131"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md135"></a>
 Parameter vs buffer</h1>
 <p>Both \( K \) and \( G \) are here categorized as model parameters. The major differences between parameters and buffers are</p><ul>
 <li>Parameters are "trainable", whereas buffers are not. NEML2 can use automatic differentiation to calculate the derivative of output variables with respect to the model parameters, but not for the model buffers.</li>
@@ -171,7 +171,7 @@ Parameter vs buffer</h1>
 </ul>
 <p>In summary, parameter is a more powerful superset of buffer. However, there is overhead cost associated with maintaining a parameter that buffers avoid.</p>
 <dl class="section note"><dt>Note</dt><dd>Some models allow users to choose whether to declare data as parameters or buffers.</dd></dl>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md132"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md136"></a>
 Retrieving the parameter value</h1>
 <p>All model parameters are associated with a unique name, either predefined by the model itself or chosen by the user. The following code iterates through all parameters in the model and print out their values:</p>
 <div class="tabbed"></div><div class="tabbed"><ul>
@@ -188,7 +188,7 @@ Retrieving the parameter value</h1>
 <div class="line">  <span class="keywordflow">for</span> (<span class="keyword">auto</span> &amp;&amp; [pname, pval] : model-&gt;named_parameters())</div>
 <div class="line">    std::cout &lt;&lt; pname &lt;&lt; <span class="stringliteral">&quot;:\n&quot;</span> &lt;&lt; <a class="code hl_class" href="classneml2_1_1Tensor.html">Tensor</a>(*pval) &lt;&lt; std::endl;</div>
 <div class="line">}</div>
-<div class="ttc" id="aclassneml2_1_1Tensor_html"><div class="ttname"><a href="classneml2_1_1Tensor.html">neml2::Tensor</a></div><div class="ttdef"><b>Definition</b> Tensor.h:49</div></div>
+<div class="ttc" id="aclassneml2_1_1Tensor_html"><div class="ttname"><a href="classneml2_1_1Tensor.html">neml2::Tensor</a></div><div class="ttdef"><b>Definition</b> Tensor.h:53</div></div>
 <div class="ttc" id="anamespaceneml2_html"><div class="ttname"><a href="namespaceneml2.html">neml2</a></div><div class="ttdef"><b>Definition</b> DiagnosticsInterface.h:31</div></div>
 <div class="ttc" id="anamespaceneml2_html_aa98735f2ffd7c3ae8b0b339621eb8ab3"><div class="ttname"><a href="namespaceneml2.html#aa98735f2ffd7c3ae8b0b339621eb8ab3">neml2::load_model</a></div><div class="ttdeci">std::shared_ptr&lt; Model &gt; load_model(const std::filesystem::path &amp;path, const std::string &amp;mname)</div><div class="ttdoc">A convenient function to load an input file and get a model.</div></div>
 </div><!-- fragment --><p class="startli">Output: </p><div class="fragment"><div class="line">G:</div>
@@ -262,7 +262,7 @@ Retrieving the parameter value</h1>
 <div class="line">&lt;Tensor of shape [][][]&gt;</div>
 </div><!-- fragment --></li>
 </ul>
-</div><div class="tabbed"></div><h1 class="doxsection"><a class="anchor" id="autotoc_md133"></a>
+</div><div class="tabbed"></div><h1 class="doxsection"><a class="anchor" id="autotoc_md137"></a>
 Updating the parameter value</h1>
 <p>Model parameters can always be changed by changing the input file. However, in certain cases (e.g., training and optimization), the parameter values should preferrably be updated at runtime (e.g., after each epoch or optimization iteration).</p>
 <p>The <a class="el" href="classneml2_1_1ParameterStore.html#a1fdcb02ea1c3d6e1828424ccd400fa36" title="Set the value for a parameter.">neml2::Model::set_parameter</a> and <a class="el" href="classneml2_1_1ParameterStore.html#a2d96d9f92a985de65651abf452cb49a2" title="Set values for parameters.">neml2::Model::set_parameters</a> methods can be used for that purpose:</p>

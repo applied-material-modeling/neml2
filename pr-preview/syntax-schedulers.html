@@ -134,7 +134,7 @@ $(function(){initNavTree('syntax-schedulers.html','',''); });
 <div class="toc"><h3>Table of Contents</h3>
 <ul>
   <li class="level1">
-    <a href="#autotoc_md69">Available objects and their input file syntax </a>
+    <a href="#autotoc_md70">Available objects and their input file syntax </a>
     <ul>
       <li class="level2">
         <a href="#simplempischeduler">SimpleMPIScheduler </a>
@@ -157,7 +157,7 @@ Type name written in PascalCase typically refer to a NEML2 object type, oftentim
 The 🔗 symbol means that the tensor value can be cross-reference another object. See <a class="el" href="tutorials-models-model-parameters-revisited.html" title="Model parameters (revisited)">Model parameters (revisited)</a> for details.</dd>
 <dd>
 You can always use <span class="tt">Ctrl</span>+<span class="tt">F</span> or <span class="tt">Cmd</span>+<span class="tt">F</span> to search the entire page.</dd></dl>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md69"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md70"></a>
 Available objects and their input file syntax</h1>
 <p>Refer to <a class="el" href="system-schedulers.html" title="Scheduler">System Documentation</a> for detailed explanation about this system.</p>
 <h2 class="doxsection"><a class="anchor" id="simplempischeduler"></a>
@@ -167,7 +167,8 @@ SimpleMPIScheduler</h2>
 <span class="tt">batch_sizes</span> List of batch sizes for each device</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of non-negative number </li>
+<li><u>Type</u>: list of non-negative number</li>
+<li><u>Required</u>: Yes </li>
 </ul>
 </details>
 <details >
@@ -175,7 +176,8 @@ SimpleMPIScheduler</h2>
 <span class="tt">capacities</span> List of capacities for each device, default to batch_sizes</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of non-negative number </li>
+<li><u>Type</u>: list of non-negative number</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -183,7 +185,8 @@ SimpleMPIScheduler</h2>
 <span class="tt">devices</span> List of devices to dispatch work to</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of Device </li>
+<li><u>Type</u>: list of Device</li>
+<li><u>Required</u>: Yes </li>
 </ul>
 </details>
 <details >
@@ -191,10 +194,11 @@ SimpleMPIScheduler</h2>
 <span class="tt">trace_file</span> The file to write the trace to. If not set, tracing will be disabled.</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: string </li>
+<li><u>Type</u>: string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1SimpleMPIScheduler.html" title="SimpleMPIScheduler">link</a></p>
+<p>Detailed documentation <a class="el" href="#simplempischeduler" title="SimpleMPIScheduler">link</a></p>
 <h2 class="doxsection"><a class="anchor" id="simplescheduler"></a>
 SimpleScheduler</h2>
 <p>Dispatch work to a single device in given batch sizes. </p><details >
@@ -202,7 +206,8 @@ SimpleScheduler</h2>
 <span class="tt">batch_size</span> Number of batches to dispatch at once</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: non-negative number </li>
+<li><u>Type</u>: non-negative number</li>
+<li><u>Required</u>: Yes </li>
 </ul>
 </details>
 <details >
@@ -210,15 +215,17 @@ SimpleScheduler</h2>
 <span class="tt">capacity</span> Maximum number of batches that can be dispatched simultaneously, default to batch_size</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: non-negative number </li>
+<li><u>Type</u>: non-negative number</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
 <summary >
-<span class="tt">device</span> Torch device to run on</summary>
+<span class="tt">device</span> device to run on</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: string </li>
+<li><u>Type</u>: string</li>
+<li><u>Required</u>: Yes </li>
 </ul>
 </details>
 <details >
@@ -226,10 +233,11 @@ SimpleScheduler</h2>
 <span class="tt">trace_file</span> The file to write the trace to. If not set, tracing will be disabled.</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: string </li>
+<li><u>Type</u>: string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1SimpleScheduler.html" title="SimpleScheduler">link</a></p>
+<p>Detailed documentation <a class="el" href="#simplescheduler" title="SimpleScheduler">link</a></p>
 <h2 class="doxsection"><a class="anchor" id="statichybridscheduler"></a>
 StaticHybridScheduler</h2>
 <p>Dispatch work to multiple devices based on provided batch sizes and priorities. </p><details >
@@ -237,7 +245,8 @@ StaticHybridScheduler</h2>
 <span class="tt">batch_sizes</span> List of batch sizes for each device</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of non-negative number </li>
+<li><u>Type</u>: list of non-negative number</li>
+<li><u>Required</u>: Yes </li>
 </ul>
 </details>
 <details >
@@ -245,7 +254,8 @@ StaticHybridScheduler</h2>
 <span class="tt">capacities</span> List of capacities for each device, default to batch_sizes</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of non-negative number </li>
+<li><u>Type</u>: list of non-negative number</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -253,7 +263,8 @@ StaticHybridScheduler</h2>
 <span class="tt">devices</span> List of devices to dispatch work to</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of Device </li>
+<li><u>Type</u>: list of Device</li>
+<li><u>Required</u>: Yes </li>
 </ul>
 </details>
 <details >
@@ -261,7 +272,8 @@ StaticHybridScheduler</h2>
 <span class="tt">priorities</span> List of priorities for each device</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: list of number </li>
+<li><u>Type</u>: list of number</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
 <details >
@@ -269,10 +281,11 @@ StaticHybridScheduler</h2>
 <span class="tt">trace_file</span> The file to write the trace to. If not set, tracing will be disabled.</summary>
 <p></p>
 <ul>
-<li><u>Type</u>: string </li>
+<li><u>Type</u>: string</li>
+<li><u>Required</u>: No </li>
 </ul>
 </details>
-<p>Detailed documentation <a class="el" href="classneml2_1_1StaticHybridScheduler.html" title="StaticHybridScheduler">link</a> </p>
+<p>Detailed documentation <a class="el" href="#statichybridscheduler" title="StaticHybridScheduler">link</a> </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->

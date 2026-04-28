@@ -3,7 +3,7 @@ var classneml2_1_1Variable =
     [ "Variable", "classneml2_1_1Variable.html#a4cce960c4a78d50816e4ade414f35bbd", null ],
     [ "assign", "classneml2_1_1Variable.html#a729014c7f6062981ad180dc01cc69a25", null ],
     [ "clear", "classneml2_1_1Variable.html#aee7cb2065b88d21ac4ad05bc997ecf82", null ],
-    [ "clone", "classneml2_1_1Variable.html#ad5d754c7bbbbdf1d66fbd17f175d9e60", null ],
+    [ "clone", "classneml2_1_1Variable.html#a4a6a7c595af668e237eaa08114515840", null ],
     [ "defined", "classneml2_1_1Variable.html#a03327bb048788b1753f3a182df668086", null ],
     [ "device", "classneml2_1_1Variable.html#a42a4f615dcb385c55c2c7716d9eaf775", null ],
     [ "direct_ref", "classneml2_1_1Variable.html#aea3bc1d714ba9dc2fd0f8c9baac06021", null ],
