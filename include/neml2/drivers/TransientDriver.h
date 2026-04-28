@@ -63,8 +63,6 @@ protected:
   virtual void update_forces();
   /// Apply the initial conditions.
   virtual void apply_ic();
-  /// Apply the predictor to calculate the initial guess for the current time step.
-  virtual void apply_predictor();
   /// Perform the constitutive update for the current time step.
   virtual void solve_step();
   /// Postprocess the output of the current time step.
@@ -83,9 +81,6 @@ protected:
   const Size _nsteps;
   /// The input to the constitutive model
   ValueMap _in;
-
-  /// The predictor used to set the initial guess
-  const EnumSelection _predictor;
 
   /// Inputs from all time steps
   std::vector<ValueMap> _result_in;

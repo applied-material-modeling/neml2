@@ -113,13 +113,6 @@ TransientDriver::expected_options()
       "Time steps to perform the material update. The times tensor must have at least one batch "
       "dimension representing time steps");
 
-  EnumSelection predictor_selection({"PREVIOUS_STATE", "LINEAR_EXTRAPOLATION"}, "PREVIOUS_STATE");
-  options.add<EnumSelection>(
-      "predictor",
-      predictor_selection,
-      "Predictor used to set the initial guess for each time step. Options are " +
-          predictor_selection.join());
-
 #define OPTION_IC_(T)                                                                              \
   options.add<std::vector<VariableName>>(                                                          \
       "ic_" #T "_names", {}, "Apply initial conditions to these " #T " variables");                \
@@ -145,7 +138,6 @@ TransientDriver::TransientDriver(const OptionSet & options)
     _time_name(options.get<VariableName>("time")),
     _time(resolve_tensor<Scalar>("prescribed_time")),
     _nsteps(_time.dynamic_size(0).concrete()),
-    _predictor(options.get<EnumSelection>("predictor")),
     _result_in(_nsteps),
     _result_out(_nsteps),
     _save_as(options.defined("save_as") ? options.get<std::string>("save_as") : "")
@@ -226,7 +218,6 @@ TransientDriver::solve()
     }
     else
     {
-      apply_predictor();
       store_input();
       solve_step();
       postprocess();
@@ -254,22 +245,14 @@ TransientDriver::advance_step()
       continue;
 
     const auto & base = var->base_name();
-    if (order == 1)
-    {
-      // Prefer model output (state variables) over input (forces like time)
-      if (prev_out.count(base))
-        _in[vname] = prev_out.at(base);
-      else if (prev_in.count(base))
-        _in[vname] = prev_in.at(base);
-    }
-    else
-    {
-      // For higher-order history, look up the lower-order history from the previous step's input
-      const auto & sep = _model->settings().history_separator();
-      const auto prev_history_name = base + sep + std::to_string(order - 1);
-      if (prev_in.count(prev_history_name))
-        _in[vname] = prev_in.at(prev_history_name);
-    }
+    const auto prev_history_name =
+        order == 1 ? base
+                   : base + _model->settings().history_separator() + std::to_string(order - 1);
+
+    if (prev_out.count(prev_history_name))
+      _in[vname] = prev_out.at(prev_history_name);
+    else if (prev_in.count(prev_history_name))
+      _in[vname] = prev_in.at(prev_history_name);
   }
 }
 
@@ -294,38 +277,6 @@ TransientDriver::apply_ic()
   for (auto && [name, var] : _model->output_variables())
     if (!_result_out[0].count(name))
       _result_out[0][name] = var->zeros(_device);
-}
-
-void
-TransientDriver::apply_predictor()
-{
-  for (const auto & [vname, var] : _model->input_variables())
-    if (_model->output_variables().count(vname))
-    {
-      if (_predictor == "PREVIOUS_STATE")
-        _in[vname] = _result_out[_step_count - 1][vname];
-      else if (_predictor == "LINEAR_EXTRAPOLATION")
-      {
-        // Fall back to PREVIOUS_STATE predictor at the 1st time step
-        if (_step_count == 1)
-          _in[vname] = _result_out[_step_count - 1][vname];
-        // Otherwise linearly extrapolate in time
-        else
-        {
-          const auto t = Scalar(_in[_time_name]);
-          const auto t_n = Scalar(_result_in[_step_count - 1][_time_name]);
-          const auto t_nm1 = Scalar(_result_in[_step_count - 2][_time_name]);
-          const auto dt = t - t_n;
-          const auto dt_n = t_n - t_nm1;
-
-          const auto s_n = _result_out[_step_count - 1][vname];
-          const auto s_nm1 = _result_out[_step_count - 2][vname];
-          _in[vname] = s_n + (s_n - s_nm1) / dt_n * dt;
-        }
-      }
-      else
-        throw NEMLException("Unrecognized predictor type: " + _predictor.selection());
-    }
 }
 
 void
