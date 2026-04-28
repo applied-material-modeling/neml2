@@ -28,7 +28,7 @@ When the task introduces a new model, constitutive law, or physics object, `doc/
 
 **Add a section** (or create a new page if none fits), following the conventions of surrounding content:
 - Use LaTeX `\f[ ... \f]` for block equations, `\f$ ... \f$` inline
-- List all input/output variables with their axis paths and physical meaning
+- List all input/output variables (bare names, no subspace prefix) and their physical meaning
 - Include a minimal HIT input example using the `@list-input` directive:
   ```
   @list-input:tests/unit/models/<path>/ModelName.i:Models

@@ -28,13 +28,22 @@ Read these files **before** implementing or modifying any model. They define the
 | Concern | Header |
 |---|---|
 | Base model class (`set_value`, variable declaration, parameter declaration) | `include/neml2/models/Model.h` |
-| Variable template (`Variable<T>`, `is_dependent()`, `.d()`) | `include/neml2/models/Variable.h` |
-| Option registration (`expected_options`, `.doc()`, `set_parameter`) | `include/neml2/base/OptionSet.h` |
+| Variable template (`Variable<T>`, `is_dependent()`, `.d()`, history/rate/residual name helpers) | `include/neml2/models/Variable.h`, `include/neml2/models/VariableBase.h` |
+| Option registration (`expected_options`, `.doc()`, `add_input/add_output/add_parameter/add_buffer`) | `include/neml2/base/OptionSet.h` |
 | Scalar tensor | `include/neml2/tensors/Scalar.h` |
 | 3-vector | `include/neml2/tensors/Vec.h` |
 | Symmetric 2nd-order tensor | `include/neml2/tensors/SR2.h` |
 | Full 2nd-order tensor | `include/neml2/tensors/R2.h` |
 | All math functions (where, inv, dev, norm, …) | `include/neml2/tensors/functions/` |
+
+### Variable Naming
+
+Use bare variable names everywhere — both in C++ (`declare_input_variable<T>("strain_rate")`) and in `.i` files (`input_Scalar_names = 'strain_rate'`). No subspace prefixes.
+
+- **History (old-state)** variables use a `~N` suffix where `N` is the lag order. Use the `history_name(name, /*nstep=*/N)` helper from `Variable.h` rather than building the string yourself.
+- **Rate** variables use the `rate_name(name)` helper.
+- **Residual** of unknown `u` defaults to `u_residual` via `residual_name(name)`.
+- `NonlinearSystem` requires explicit `unknowns = '...'` in input files; residuals default to `<unknown>_residual` per unknown.
 
 ### Model Boilerplate Templates
 
