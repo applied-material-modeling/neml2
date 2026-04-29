@@ -119,14 +119,14 @@ ImplicitUpdate::to(const TensorOptions & options)
 void
 ImplicitUpdate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
+  // Apply the predictor
+  if (_predictor)
+    apply_predictor();
+
   // Input variable values may have been changed outside the forward operator, so let's notify the
   // system about the potential changes, just to stay on the safe side.
   _sys->u_changed();
   _sys->g_changed();
-
-  // Apply the predictor
-  if (_predictor)
-    apply_predictor();
 
   // Solve for the next state
   const auto res = _solver->solve(*_sys);

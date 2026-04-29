@@ -104,10 +104,15 @@ zeta = 0.05
 []
 
 [Models]
+  [predictor]
+    type = ConstantExtrapolationPredictor
+    unknowns_Scalar = 'alpha'
+  []
   [solve_reaction]
     type = ImplicitUpdate
     equation_system = 'eq_sys'
     solver = 'newton'
+    predictor = 'predictor'
   []
   [binder_rate]
     type = ScalarLinearCombination

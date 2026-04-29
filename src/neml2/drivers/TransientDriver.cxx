@@ -274,9 +274,7 @@ TransientDriver::apply_ic()
   FOR_ALL_TENSORBASE(SET_IC_);
 
   // Variables without a user-defined IC are initialized to zeros
-  for (auto && [name, var] : _model->output_variables())
-    if (!_result_out[0].count(name))
-      _result_out[0][name] = var->zeros(_device);
+  // ...which is handled by the forward operator
 }
 
 void
