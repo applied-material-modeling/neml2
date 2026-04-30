@@ -146,9 +146,15 @@
 []
 
 [Models]
+  [predictor]
+    type = ConstantExtrapolationPredictor
+    unknowns_SR2 = 'stress'
+    unknowns_Scalar = 'equivalent_plastic_strain'
+  []
   [model]
     type = ImplicitUpdate
     equation_system = 'eq_sys'
     solver = 'newton'
+    predictor = 'predictor'
   []
 []

@@ -79,7 +79,7 @@ ImplicitUpdate::ImplicitUpdate(const OptionSet & options)
   // Register the predictor if provided
   if (options.defined("predictor"))
   {
-    _predictor = get_model<Predictor>(options.get<std::string>("predictor"));
+    _predictor = get_model<Model>(options.get<std::string>("predictor"));
     register_model(_predictor, /*merge_input=*/true);
   }
 

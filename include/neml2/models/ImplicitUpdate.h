@@ -54,7 +54,7 @@ protected:
   std::shared_ptr<ModelNonlinearSystem> _sys;
 
   /// The predictor model to provide an initial guess for the nonlinear solve (optional)
-  std::shared_ptr<Predictor> _predictor;
+  std::shared_ptr<Model> _predictor;
 
   /// The nonlinear solver used to solve the nonlinear system
   std::shared_ptr<NonlinearSolver> _solver;

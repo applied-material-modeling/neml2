@@ -267,10 +267,15 @@
 []
 
 [Models]
+  [predictor]
+    type = ConstantExtrapolationPredictor
+    unknowns_Scalar = 'equivalent_plastic_strain s1 s2'
+  []
   [radial_return]
     type = ImplicitUpdate
     equation_system = 'eq_sys'
     solver = 'newton'
+    predictor = 'predictor'
   []
   [model]
     type = ComposedModel

@@ -283,10 +283,16 @@
 []
 
 [Models]
+  [predictor]
+    type = ConstantExtrapolationPredictor
+    unknowns_SR2 = 'mixed_state'
+    unknowns_Scalar = 'equivalent_plastic_strain gamma_rate_ri'
+  []
   [update]
     type = ImplicitUpdate
     equation_system = 'eq_sys'
     solver = 'newton'
+    predictor = 'predictor'
   []
   [model]
     type = ComposedModel

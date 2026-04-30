@@ -88,7 +88,6 @@
     ic_Scalar_names = 'slip_hardening'
     ic_Scalar_values = 'initial_slip_hardening'
 
-    predictor = 'PREVIOUS_STATE'
     save_as = 'result.pt'
   []
   [regression]
@@ -256,10 +255,17 @@
 []
 
 [Models]
+  [predictor]
+    type = ConstantExtrapolationPredictor
+    unknowns_SR2 = 'elastic_strain deformation_rate target_cauchy_stress'
+    unknowns_Rot = 'orientation'
+    unknowns_Scalar = 'slip_hardening'
+  []
   [model_bare]
     type = ImplicitUpdate
     equation_system = 'eq_sys'
     solver = 'newton'
+    predictor = 'predictor'
   []
   [compute_mixed_state]
     type = MixedControlSetup

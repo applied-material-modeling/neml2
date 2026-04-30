@@ -230,10 +230,15 @@
 []
 
 [Models]
+  [predictor]
+    type = ConstantExtrapolationPredictor
+    unknowns_Scalar = 'flow_rate'
+  []
   [return_map]
     type = ImplicitUpdate
     equation_system = 'eq_sys'
     solver = 'newton'
+    predictor = 'predictor'
   []
   [model0]
     type = ComposedModel

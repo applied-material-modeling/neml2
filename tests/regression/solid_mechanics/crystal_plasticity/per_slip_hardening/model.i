@@ -122,7 +122,6 @@
     ic_Scalar_values = 'initial_dislocation_density'
     ic_Rot_names = 'orientation'
     ic_Rot_values = 'initial_orientation'
-    predictor = 'PREVIOUS_STATE'
     save_as = 'result.pt'
   []
   [regression]
@@ -231,15 +230,24 @@
 []
 
 [Models]
-  [cp_warmup]
+  [cp_warmup_1]
     type = CrystalPlasticityStrainPredictor
     scale = 0.1
+  []
+  [cp_warmup_2]
+    type = ConstantExtrapolationPredictor
+    unknowns_Rot = 'orientation'
+    unknowns_Scalar = 'dislocation_density'
+  []
+  [predictor]
+    type = ComposedModel
+    models = 'cp_warmup_1 cp_warmup_2'
   []
   [update]
     type = ImplicitUpdate
     equation_system = 'es'
     solver = 'newton'
-    predictor = 'cp_warmup'
+    predictor = 'predictor'
   []
   [model]
     type = ComposedModel
