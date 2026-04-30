@@ -7,13 +7,12 @@
     prescribed_time = 'times'
     force_SR2_names = 'E'
     force_SR2_values = 'strains'
-    predictor = LINEAR_EXTRAPOLATION
-    save_as = 'fb_pff_result.pt'
+    save_as = 'result.pt'
   []
   [regression]
     type = TransientRegression
     driver = 'driver'
-    reference = 'gold/pff_result.pt'
+    reference = 'gold/result.pt'
   []
 []
 
@@ -161,10 +160,15 @@
 
 [Models]
   # solve for d
+  [predictor]
+    type = LinearExtrapolationPredictor
+    unknowns_Scalar = 'd'
+  []
   [solve_d]
     type = ImplicitUpdate
     equation_system = 'eq_sys'
     solver = 'newton'
+    predictor = 'predictor'
   []
   # after the solve take derivative of the total energy w.r.t. strain to get stress
   [stress]

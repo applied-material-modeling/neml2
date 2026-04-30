@@ -25,6 +25,8 @@
 #include "neml2/models/common/LinearExtrapolationPredictor.h"
 #include "neml2/tensors/macros.h"
 #include "neml2/tensors/tensors.h"
+#include "neml2/tensors/functions/where.h"
+#include "neml2/tensors/functions/abs.h"
 
 namespace neml2
 {
@@ -48,8 +50,8 @@ LinearExtrapolationPredictor::expected_options()
 LinearExtrapolationPredictor::LinearExtrapolationPredictor(const OptionSet & options)
   : ConstantExtrapolationPredictor(options),
     _t(declare_input_variable<Scalar>("time")),
-    _t_n(declare_input_variable<Scalar>(history_name("time", 1))),
-    _t_nm1(declare_input_variable<Scalar>(history_name("time", 2)))
+    _t_n(declare_input_variable<Scalar>(history_name(_t.name(), 1))),
+    _t_nm1(declare_input_variable<Scalar>(history_name(_t.name(), 2)))
 {
 #define getVar(T)                                                                                  \
   if (options.defined("unknowns_" #T))                                                             \
@@ -68,8 +70,14 @@ LinearExtrapolationPredictor::predict()
 {
 #define predictVar(T)                                                                              \
   for (std::size_t i = 0; i < _var_n_##T.size(); i++)                                              \
-    *_var_##T[i] =                                                                                 \
+  {                                                                                                \
+    auto v_extrap =                                                                                \
         *_var_n_##T[i] + (*_var_n_##T[i] - *_var_nm1_##T[i]) * (_t - _t_n) / (_t_n - _t_nm1);      \
+    *_var_##T[i] = neml2::where(neml2::abs(_t_n - _t_nm1).batch_expand_as(v_extrap) >              \
+                                    machine_precision(v_extrap.scalar_type()),                     \
+                                v_extrap,                                                          \
+                                (*_var_n_##T[i])());                                               \
+  }                                                                                                \
   static_assert(true)
   FOR_ALL_PRIMITIVETENSOR(predictVar);
 #undef predictVar

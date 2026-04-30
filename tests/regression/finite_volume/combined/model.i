@@ -50,24 +50,6 @@
   []
 []
 
-[EquationSystems]
-  [eq_sys]
-    type = NonlinearSystem
-    model = 'implicit_rate'
-    unknowns = 'concentration'
-  []
-[]
-
-[Solvers]
-  [newton]
-    type = Newton
-    linear_solver = 'lu'
-  []
-  [lu]
-    type = DenseLU
-  []
-[]
-
 [Models]
   [diffusivity]
     type = LinearlyInterpolateToCellEdges
@@ -138,9 +120,35 @@
     type = ComposedModel
     models = 'diffusivity advection_velocity diffusive_flux advective_flux reaction total_flux left_bc right_bc flux_divergence rate_of_change integrate_u'
   []
+[]
+
+[EquationSystems]
+  [eq_sys]
+    type = NonlinearSystem
+    model = 'implicit_rate'
+    unknowns = 'concentration'
+  []
+[]
+
+[Solvers]
+  [newton]
+    type = Newton
+    linear_solver = 'lu'
+  []
+  [lu]
+    type = DenseLU
+  []
+[]
+
+[Models]
+  [predictor]
+    type = ConstantExtrapolationPredictor
+    unknowns_Scalar = 'concentration'
+  []
   [model]
     type = ImplicitUpdate
     equation_system = 'eq_sys'
     solver = 'newton'
+    predictor = 'predictor'
   []
 []

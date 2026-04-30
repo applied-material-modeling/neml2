@@ -76,23 +76,30 @@ ImplicitUpdate::ImplicitUpdate(const OptionSet & options)
               blayout.nvar(),
               ".");
 
-  // Take care of dependency registration:
-  //   1. Input variables of the "implicit_model" should be *consumed* by *this* model.
-  //   2. Output variables of the "implicit_model" on the "residual" subaxis should be *provided* by
-  //      *this* model.
-  const auto model = _sys->model_ptr();
-  register_model(model, /*merge_input=*/true);
-  for (std::size_t i = 0; i < blayout.nvar(); ++i)
-  {
-    const auto & u = model->input_variable(ulayout.var(i));
-    clone_output_variable(u);
-  }
-
   // Register the predictor if provided
   if (options.defined("predictor"))
   {
     _predictor = get_model<Predictor>(options.get<std::string>("predictor"));
     register_model(_predictor, /*merge_input=*/true);
+  }
+
+  // Take care of dependency registration:
+  //   1. Input variables of the "implicit_model" should be *consumed* by *this* model.
+  //   2. Output variables of the "implicit_model" on the "residual" subaxis should be *provided* by
+  //      *this* model.
+  const auto model = _sys->model_ptr();
+  register_model(model, /*merge_input=*/false);
+  for (const auto & [name, var] : model->input_variables())
+  {
+    if (_predictor && _predictor->output_variables().count(name))
+      continue; // This variable will be provided by the predictor
+    if (input_variables().find(name) == input_variables().end())
+      clone_input_variable(*var);
+  }
+  for (std::size_t i = 0; i < blayout.nvar(); ++i)
+  {
+    const auto & u = model->input_variable(ulayout.var(i));
+    clone_output_variable(u);
   }
 
   // During the iterative nonlinear solve, the sub-model's nl_sys JIT graph only needs residual
@@ -106,6 +113,20 @@ ImplicitUpdate::ImplicitUpdate(const OptionSet & options)
     for (std::size_t j = 0; j < ulayout.nvar(); j++)
       nl_sys_pairs.emplace_back(blayout.var(i), ulayout.var(j));
   model->set_output_derivative_filter_nl_sys(nl_sys_pairs);
+}
+
+void
+ImplicitUpdate::link_input_variables(Model * submodel)
+{
+  // if a predictor is given, sub-model's input unknowns are directly set by the predictor
+  if (_predictor && submodel == _sys->model_ptr().get())
+  {
+    for (auto && [name, var] : submodel->input_variables())
+      if (input_variables().count(name))
+        var->ref(input_variable(name));
+    return;
+  }
+  Model::link_input_variables(submodel);
 }
 
 void

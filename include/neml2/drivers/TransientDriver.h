@@ -67,8 +67,6 @@ protected:
   virtual void solve_step();
   /// Postprocess the output of the current time step.
   virtual void postprocess();
-  /// Save the input of the current time step.
-  virtual void store_input();
   // @}
 
   /// VariableName for the time
@@ -79,8 +77,6 @@ protected:
   Size _step_count = 0;
   /// Total number of steps
   const Size _nsteps;
-  /// The input to the constitutive model
-  ValueMap _in;
 
   /// Inputs from all time steps
   std::vector<ValueMap> _result_in;

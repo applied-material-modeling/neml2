@@ -38,6 +38,8 @@ public:
 
   ImplicitUpdate(const OptionSet & options);
 
+  void link_input_variables(Model * submodel) override;
+
   void to(const TensorOptions & options) override;
 
   std::size_t last_iterations() const { return _last_iterations; }

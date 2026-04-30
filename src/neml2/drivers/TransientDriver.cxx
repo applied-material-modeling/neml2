@@ -43,30 +43,27 @@ register_NEML2_object(TransientDriver);
 
 template <typename T>
 static void
-set_ic(ValueMap & storage,
+set_ic(ValueMap & input_storage,
+       ValueMap & output_storage,
        const OptionSet & options,
        const std::string & name_opt,
        const std::string & value_opt,
        const Device & device)
 {
-  const auto & names = options.get<std::vector<VariableName>>(name_opt);
-  const auto & vals = options.get<std::vector<TensorName<T>>>(value_opt);
-  neml_assert(names.size() == vals.size(),
-              "Number of initial condition names ",
-              name_opt,
-              " and number of initial condition values ",
-              value_opt,
-              " should be the same but instead have ",
-              names.size(),
-              " and ",
-              vals.size(),
-              " respectively.");
+  const auto & ics = options.get_map<VariableName, TensorName<T>>(name_opt, value_opt);
   auto * factory = options.get<Factory *>("_factory");
   neml_assert(factory,
               "Internal error: factory is null while resolving tensor names. Ensure this driver "
               "is created via the NEML2 factory.");
-  for (std::size_t i = 0; i < names.size(); i++)
-    storage[names[i]] = vals[i].resolve(factory).to(device);
+  for (auto & [name, val] : ics)
+  {
+    const auto [base_name, history_order] =
+        parse_history(name, factory->settings()->history_separator());
+    if (history_order == 0)
+      output_storage[name] = val.resolve(factory).to(device);
+    else
+      input_storage[name] = val.resolve(factory).to(device);
+  }
 }
 
 template <typename T>
@@ -210,15 +207,13 @@ TransientDriver::solve()
 
     if (_step_count > 0)
       advance_step();
+
     update_forces();
+
     if (_step_count == 0)
-    {
-      store_input();
       apply_ic();
-    }
     else
     {
-      store_input();
       solve_step();
       postprocess();
     }
@@ -235,6 +230,8 @@ TransientDriver::solve()
 void
 TransientDriver::advance_step()
 {
+  neml_assert_dbg(_step_count > 0,
+                  "Internal error: advance_step() should only be called after the first step.");
   const auto & prev_out = _result_out[_step_count - 1];
   const auto & prev_in = _result_in[_step_count - 1];
 
@@ -245,14 +242,14 @@ TransientDriver::advance_step()
       continue;
 
     const auto & base = var->base_name();
-    const auto prev_history_name =
+    const auto prev_vname =
         order == 1 ? base
                    : base + _model->settings().history_separator() + std::to_string(order - 1);
 
-    if (prev_out.count(prev_history_name))
-      _in[vname] = prev_out.at(prev_history_name);
-    else if (prev_in.count(prev_history_name))
-      _in[vname] = prev_in.at(prev_history_name);
+    if (prev_out.count(prev_vname))
+      _result_in[_step_count][vname] = prev_out.at(prev_vname);
+    else if (prev_in.count(prev_vname))
+      _result_in[_step_count][vname] = prev_in.at(prev_vname);
   }
 }
 
@@ -260,17 +257,23 @@ void
 TransientDriver::update_forces()
 {
   if (_model->input_variables().count(_time_name))
-    _in[_time_name] = _time.dynamic_index({_step_count});
+    _result_in[_step_count][_time_name] = _time.dynamic_index({_step_count});
 
   for (std::size_t i = 0; i < _driving_force_names.size(); i++)
-    _in[_driving_force_names[i]] = _driving_forces[i].dynamic_index({_step_count});
+    _result_in[_step_count][_driving_force_names[i]] =
+        _driving_forces[i].dynamic_index({_step_count});
 }
 
 void
 TransientDriver::apply_ic()
 {
 #define SET_IC_(T)                                                                                 \
-  set_ic<T>(_result_out[0], input_options(), "ic_" #T "_names", "ic_" #T "_values", _device)
+  set_ic<T>(_result_in[0],                                                                         \
+            _result_out[0],                                                                        \
+            input_options(),                                                                       \
+            "ic_" #T "_names",                                                                     \
+            "ic_" #T "_values",                                                                    \
+            _device)
   FOR_ALL_TENSORBASE(SET_IC_);
 
   // Variables without a user-defined IC are initialized to zeros
@@ -283,13 +286,13 @@ TransientDriver::solve_step()
 #ifdef NEML2_WORK_DISPATCHER
   if (_dispatcher)
   {
-    ValueMapLoader loader(_in, 0);
+    ValueMapLoader loader(_result_in[_step_count], 0);
     _result_out[_step_count] = _dispatcher->run(loader);
     return;
   }
 #endif
 
-  _result_out[_step_count] = _model->value((_in));
+  _result_out[_step_count] = _model->value(_result_in[_step_count]);
 }
 
 void
@@ -311,12 +314,6 @@ TransientDriver::postprocess()
   const auto pp_out = _postprocessor->value(pp_in);
   for (const auto & [name, val] : pp_out)
     _result_out[_step_count][name] = val;
-}
-
-void
-TransientDriver::store_input()
-{
-  _result_in[_step_count] = _in;
 }
 
 std::string

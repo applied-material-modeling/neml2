@@ -42,6 +42,11 @@ class DependencyResolver;
 struct TraceableSize;
 struct TraceableTensorShape;
 
+/// Helper function to extract base name and history order from variable name
+/// @returns a pair of (base name, history order)
+std::pair<VariableName, std::size_t> parse_history(const VariableName & name,
+                                                   const std::string & sep);
+
 /**
  * @brief Base class of variable
  *
