@@ -113,7 +113,6 @@
     force_WR2_values = 'vorticity'
     ic_Rot_names = 'orientation'
     ic_Rot_values = 'initial_orientation'
-    predictor = 'PREVIOUS_STATE'
     device = ${device}
   []
 []
@@ -250,20 +249,33 @@
 []
 
 [Models]
-  [cp_warmup]
+  [cp_warmup_1]
     type = CrystalPlasticityStrainPredictor
     scale = 0.1
+  []
+  [cp_warmup_2]
+    type = ConstantExtrapolationPredictor
+    unknowns_Scalar = 'slip_hardening'
+  []
+  [predictor1]
+    type = ComposedModel
+    models = 'cp_warmup_1 cp_warmup_2'
   []
   [subsystem1]
     type = ImplicitUpdate
     equation_system = 'eq_sys_1'
     solver = 'newton'
-    predictor = 'cp_warmup'
+    predictor = 'predictor1'
+  []
+  [predictor2]
+    type = ConstantExtrapolationPredictor
+    unknowns_Rot = 'orientation'
   []
   [subsystem2]
     type = ImplicitUpdate
     equation_system = 'eq_sys_2'
     solver = 'newton'
+    predictor = 'predictor2'
   []
 
   ############################################################################
