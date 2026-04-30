@@ -32,6 +32,9 @@ Purpose: configure and build the C++ backend using a CMake preset.
 
 Maximum 3 attempts total including the first build:
 
+If BUILD is running inside IMPLEMENT, all repair must stay inside the active IMPLEMENT feature
+boundary.
+
 1. Extract the first meaningful compiler error.
 2. If the error is trivial, limited to 1-2 files, apply the minimal fix and retry.
 3. Trivial means cases such as:

@@ -4,6 +4,7 @@ Purpose: Mandatory procedure after any C++ Source or Header edit.
 
 ## After Any C++ Source or Header Edit
 
+Inside IMPLEMENT, this hook is subordinate to IMPLEMENT Step 5 failure repair.
 If the edited file has a matching dedicated Catch2 test file, explicitly run the associated test.
 If the edit introduces or materially changes declarative model tests under `tests/unit/models/**/*.i`,
 run the model suite entry point instead of relying only on basename matching.
@@ -14,7 +15,7 @@ run the model suite entry point instead of relying only on basename matching.
 2. Otherwise search `tests/unit/` for `test_<basename>.cxx`.
 3. Also inspect whether the current change added or updated any declarative tests under `tests/unit/models/**/*.i`.
 4. If declarative model tests were added or changed, first choose the narrowest available scope:
-   - if all changed `.i` files lie under one subdirectory such as `tests/unit/models/solid_mechanics/traction_separation/`, prefer a sub-area command or future tag/filter dedicated to that subtree
+   - if all changed `.i` files lie under one subdirectory such as `tests/unit/models/solid_mechanics/elasticity/`, prefer a sub-area command or future tag/filter dedicated to that subtree
    - if the repo does not yet provide a narrower runnable filter for that subtree, record that limitation and fall back to the model-suite entry point
 5. The fallback command for declarative model tests is:
    - `build/dev/tests/unit/unit_tests "models"`

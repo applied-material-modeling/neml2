@@ -54,9 +54,13 @@ Always report totals, passed, failed, elapsed time, and failing test names with 
 
 ## Failure Triage
 
+Outside IMPLEMENT:
+
 1. If the problem is clearly test logic, fix the test.
 2. If the problem is clearly production code, report the file and lines; do not modify production code during test triage.
 3. If unclear, stop and report the ambiguity instead of guessing.
+
+Inside IMPLEMENT, use [IMPLEMENT Step 5](./implement.md#step-5-iteration-if-tests-fail).
 
 When production-code consistency matters, inspect all relevant locations:
 - `include/neml2/...`

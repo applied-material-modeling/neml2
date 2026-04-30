@@ -17,6 +17,8 @@ The decision model is:
 
 - `AGENTS.md`: repository constitution and global rules
 - `ai/workflows/`, `ai/roles/`, `ai/hooks/`: canonical task procedures
+- "Implement/add/create a model" routes to [`IMPLEMENT`](./workflows/implement.md) unless told
+  otherwise.
 
 ## Workflow Shortcuts
 
@@ -74,6 +76,8 @@ You may use workflow shortcuts:
 /docs src/neml2/models/solid_mechanics/...
 ```
 
+Natural-language model implementation requests are equivalent to `/implement`.
+
 ### Codex
 
 Use natural language and name the workflow explicitly:
@@ -87,6 +91,8 @@ Then execute the IMPLEMENT workflow for SalehaniIrani3DCTraction.
 Follow AGENTS.md.
 Run the TEST workflow for [tensors].
 ```
+
+Natural-language model implementation requests run [`IMPLEMENT`](./workflows/implement.md).
 
 ### Gemini
 
@@ -102,6 +108,8 @@ Read AGENTS.md and ai/workflows/test.md.
 Run the TEST workflow for python.
 Simulate hooks explicitly using ai/hooks/.
 ```
+
+Natural-language model implementation requests run [`IMPLEMENT`](./workflows/implement.md).
 
 ## Roles And Hooks
 

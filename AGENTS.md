@@ -99,6 +99,8 @@ AI agents must execute these explicitly after modifications.
 
 ## Workflow Procedures (SOPs)
 
+- **Default implementation routing:** "Implement/add/create a model" means run
+  [IMPLEMENT](ai/workflows/implement.md), unless told otherwise.
 - [BUILD](ai/workflows/build.md): Configure and build the C++ backend.
 - [FIX-BUILD](ai/workflows/fix-build.md): Diagnose and repair a failing build.
 - [TEST](ai/workflows/test.md): Run C++ and/or Python tests.
