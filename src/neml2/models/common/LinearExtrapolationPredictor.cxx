@@ -38,9 +38,9 @@ LinearExtrapolationPredictor::expected_options()
   OptionSet options = ConstantExtrapolationPredictor::expected_options();
   options.doc() =
       "Use temporal extrapolation assuming constant rate of change as the initial guess for the "
-      "unknowns at the current time step. The linear extrapolation can be written as \f$u = u_n + "
-      "(u_n - u_{n-1}) \\frac{t - t_n}{t_n - t_{n-1}}\f$, where \f$u\f$ is the unknown and \f$n\f$ "
-      "is the time step counter, respectively.";
+      "unknowns at the current time step. The linear extrapolation can be written as \\f$u = u_n + "
+      "(u_n - u_{n-1}) \\frac{t - t_n}{t_n - t_{n-1}}\\f$, where \\f$u\\f$ is the unknown and "
+      "\\f$n\\f$ is the time step counter, respectively.";
 
   options.add_input("time", "t", "Time");
 
