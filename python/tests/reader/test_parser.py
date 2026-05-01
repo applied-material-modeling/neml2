@@ -30,9 +30,7 @@ import pytest
 from neml2.reader._parser import ModelEntry, parse_input
 
 # Path to the Chaboche regression model used as the primary fixture
-CHABOCHE = (
-    Path(__file__).parents[3] / "tests/regression/solid_mechanics/viscoplasticity/chaboche/model.i"
-)
+CHABOCHE = Path(__file__).parent / "test_parser.i"
 
 
 @pytest.fixture
@@ -69,7 +67,7 @@ def simple(tmp_path):
 
 
 def test_chaboche_sections(chaboche):
-    assert set(chaboche.keys()) == {"Tensors", "Drivers", "Models", "EquationSystems", "Solvers"}
+    assert set(chaboche.keys()) == {"Tensors", "Models", "EquationSystems", "Solvers"}
 
 
 def test_simple_sections(simple):
@@ -82,7 +80,7 @@ def test_simple_sections(simple):
 
 
 def test_chaboche_models_count(chaboche):
-    assert len(chaboche["Models"]) == 22
+    assert len(chaboche["Models"]) == 23
 
 
 def test_simple_models_count(simple):
