@@ -194,6 +194,7 @@
   [cp_warmup_1]
     type = CrystalPlasticityStrainPredictor
     scale = 0.05
+    threshold = 1e-6
   []
   [cp_warmup_2]
     type = ConstantExtrapolationPredictor

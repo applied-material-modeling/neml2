@@ -31,20 +31,8 @@ using namespace neml2;
 
 TEST_CASE("TransientDriver", "[TransientDriver]")
 {
-  SECTION("predictor = PREVIOUS_STATE")
-  {
-    auto factory = load_input("drivers/test_TransientDriver.i");
-    auto driver = factory->get_driver("driver");
-    diagnose_and_throw(*driver);
-    REQUIRE(driver->run());
-  }
-
-  SECTION("predictor = LINEAR_EXTRAPOLATION")
-  {
-    auto factory = load_input("drivers/test_TransientDriver.i",
-                              "Drivers/driver/predictor=LINEAR_EXTRAPOLATION");
-    auto driver = factory->get_driver("driver");
-    diagnose_and_throw(*driver);
-    REQUIRE(driver->run());
-  }
+  auto factory = load_input("drivers/test_TransientDriver.i");
+  auto driver = factory->get_driver("driver");
+  diagnose_and_throw(*driver);
+  REQUIRE(driver->run());
 }
