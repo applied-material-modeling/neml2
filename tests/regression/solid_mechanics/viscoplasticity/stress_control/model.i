@@ -46,7 +46,6 @@
     force_SR2_names = 'S'
     force_SR2_values = 'stresses'
     save_as = 'result.pt'
-    predictor = 'LINEAR_EXTRAPOLATION'
   []
   [regression]
     type = TransientRegression
@@ -133,10 +132,16 @@
 []
 
 [Models]
+  [predictor]
+    type = LinearExtrapolationPredictor
+    unknowns_SR2 = 'plastic_strain'
+    unknowns_Scalar = 'equivalent_plastic_strain'
+  []
   [return_map]
     type = ImplicitUpdate
     equation_system = 'eq_sys'
     solver = 'newton'
+    predictor = 'predictor'
   []
   [stress_update]
     type = ComposedModel

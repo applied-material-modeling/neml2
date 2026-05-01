@@ -25,6 +25,8 @@
 #include "neml2/models/solid_mechanics/crystal_plasticity/CrystalPlasticityStrainPredictor.h"
 #include "neml2/tensors/SR2.h"
 #include "neml2/tensors/Scalar.h"
+#include "neml2/tensors/functions/where.h"
+#include "neml2/tensors/functions/norm.h"
 
 namespace neml2
 {
@@ -33,36 +35,44 @@ register_NEML2_object(CrystalPlasticityStrainPredictor);
 OptionSet
 CrystalPlasticityStrainPredictor::expected_options()
 {
-  OptionSet options = Model::expected_options();
+  OptionSet options = Predictor::expected_options();
   options.doc() =
       "Warm-up predictor for crystal plasticity models. Computes an initial guess for the elastic "
       "strain as \\f$ \\varepsilon^e = s \\cdot \\Delta t \\cdot d \\f$ where \\f$ \\Delta t = t "
       "- t_n \\f$ is the time increment, \\f$ d \\f$ is the deformation rate, and \\f$ s \\f$ is "
       "a scale factor.";
 
-  options.add_input("deformation_rate", "deformation_rate", "Deformation rate tensor");
+  options.add_input("deformation_rate", "Deformation rate tensor");
   options.add_input("time", "t", "Current time");
-  options.add_output("elastic_strain", "elastic_strain", "Elastic strain initial guess");
-  options.add_parameter<Scalar>(
-      "scale", TensorName<Scalar>("1"), "Scale factor applied to the strain increment");
+  options.add_output("elastic_strain", "Elastic strain initial guess");
+  options.add_buffer<Scalar>("scale", "Scale factor applied to the strain increment");
+  options.add_buffer<Scalar>(
+      "threshold",
+      TensorName<Scalar>("1e-3"),
+      "Only apply the predictor if the old elastic strain norm is below this threshold. When the "
+      "old elastic strain norm is above this threshold, fall back to use the old elastic strain as "
+      "the initial guess for the nonlinear solve.");
 
   return options;
 }
 
 CrystalPlasticityStrainPredictor::CrystalPlasticityStrainPredictor(const OptionSet & options)
-  : Model(options),
+  : Predictor(options),
     _D(declare_input_variable<SR2>("deformation_rate")),
     _t(declare_input_variable<Scalar>("time")),
     _tn(declare_input_variable<Scalar>(history_name(_t.name(), 1))),
-    _scale(declare_parameter<Scalar>("scale", "scale")),
-    _Ee(declare_output_variable<SR2>("elastic_strain"))
+    _scale(declare_buffer<Scalar>("scale", "scale")),
+    _Ee(declare_output_variable<SR2>("elastic_strain")),
+    _Ee_n(declare_input_variable<SR2>(history_name(_Ee.name(), 1))),
+    _threshold(declare_buffer<Scalar>("threshold", "threshold"))
 {
 }
 
 void
-CrystalPlasticityStrainPredictor::set_value(bool out, bool /*dout_din*/, bool /*d2out_din2*/)
+CrystalPlasticityStrainPredictor::predict()
 {
-  if (out)
-    _Ee = _scale * _D() * (_t() - _tn());
+  auto Ee_np1 = _Ee_n + _scale * _D * (_t - _tn);
+  auto Ee_n = _Ee_n().batch_expand_as(Ee_np1);
+  _Ee = neml2::where(neml2::norm(Ee_n) < _threshold, Ee_np1, Ee_n);
 }
 } // namespace neml2

@@ -46,7 +46,6 @@
     force_SR2_names = 'E'
     force_SR2_values = 'strains'
     save_as = 'result.pt'
-    predictor = 'LINEAR_EXTRAPOLATION'
   []
   [regression]
     type = TransientRegression
@@ -238,10 +237,15 @@
 []
 
 [Models]
+  [predictor]
+    type = LinearExtrapolationPredictor
+    unknowns_Scalar = 'gamma'
+  []
   [return_map]
     type = ImplicitUpdate
     equation_system = 'eq_sys'
     solver = 'newton'
+    predictor = 'predictor'
   []
   [model0]
     type = ComposedModel

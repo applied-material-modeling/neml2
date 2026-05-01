@@ -117,7 +117,6 @@
     force_R2_values = 'L'
     ic_Rot_names = 'orientation'
     ic_Rot_values = 'initial_orientation'
-    predictor = 'PREVIOUS_STATE'
     save_as = 'result.pt'
   []
   [regression]
@@ -235,10 +234,17 @@
 []
 
 [Models]
+  [predictor]
+    type = ConstantExtrapolationPredictor
+    unknowns_SR2 = 'elastic_strain'
+    unknowns_Scalar = 'slip_hardening'
+    unknowns_Rot = 'orientation'
+  []
   [model]
     type = ImplicitUpdate
     equation_system = 'eq_sys'
     solver = 'newton'
+    predictor = 'predictor'
   []
   [full_stress]
     type = SR2ToR2

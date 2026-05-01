@@ -45,10 +45,8 @@ zeta = 0.05
     type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-
     force_Scalar_names = 'T'
     force_Scalar_values = 'T'
-
     ic_Scalar_names = 'wb wc'
     ic_Scalar_values = '${wb0} ${wc0}'
     save_as = 'result.pt'
@@ -104,10 +102,15 @@ zeta = 0.05
 []
 
 [Models]
+  [predictor]
+    type = ConstantExtrapolationPredictor
+    unknowns_Scalar = 'alpha'
+  []
   [solve_reaction]
     type = ImplicitUpdate
     equation_system = 'eq_sys'
     solver = 'newton'
+    predictor = 'predictor'
   []
   [binder_rate]
     type = ScalarLinearCombination

@@ -171,9 +171,14 @@ final_center = 0.75
     type = ComposedModel
     models = 'diffusivity advection_velocity diffusive_flux advective_flux reaction total_flux left_bc right_bc flux_divergence rate_of_change integrate_u'
   []
+  [predictor]
+    type = ConstantExtrapolationPredictor
+    unknowns_Scalar = 'concentration'
+  []
   [model]
     type = ImplicitUpdate
     equation_system = 'eq_sys'
     solver = 'newton'
+    predictor = 'predictor'
   []
 []

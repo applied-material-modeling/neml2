@@ -45,7 +45,6 @@
     prescribed_time = 'times'
     force_SR2_names = 'strain'
     force_SR2_values = 'strains'
-    predictor = 'LINEAR_EXTRAPOLATION'
     device = ${device}
   []
 []
@@ -238,10 +237,15 @@
 []
 
 [Models]
+  [predictor]
+    type = LinearExtrapolationPredictor
+    unknowns_Scalar = 'gamma'
+  []
   [return_map]
     type = ImplicitUpdate
     equation_system = 'eq_sys'
     solver = 'newton'
+    predictor = 'predictor'
   []
   [model0]
     type = ComposedModel

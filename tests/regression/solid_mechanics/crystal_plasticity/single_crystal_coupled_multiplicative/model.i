@@ -98,7 +98,6 @@ nbatch = 20
     force_Rot_values = 'r'
     ic_R2_names = 'Fp'
     ic_R2_values = 'Fp0'
-    predictor = 'LINEAR_EXTRAPOLATION'
     save_as = 'result.pt'
   []
   [regression]
@@ -232,10 +231,16 @@ nbatch = 20
 []
 
 [Models]
+  [predictor]
+    type = LinearExtrapolationPredictor
+    unknowns_Scalar = 'tauc'
+    unknowns_R2 = 'Fp'
+  []
   [model]
     type = ImplicitUpdate
     equation_system = 'eq_sys'
     solver = 'newton'
+    predictor = 'predictor'
   []
   [model_with_pk2_stress]
     type = ComposedModel

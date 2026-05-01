@@ -65,7 +65,6 @@
     force_SR2_values = 'strains'
     force_Scalar_names = 'temperature'
     force_Scalar_values = 'temperatures'
-    predictor = 'LINEAR_EXTRAPOLATION'
     save_as = 'result.pt'
   []
   [regression]
@@ -192,10 +191,15 @@
 []
 
 [Models]
+  [predictor]
+    type = LinearExtrapolationPredictor
+    unknowns_Scalar = 'equivalent_plastic_strain'
+  []
   [radial_return]
     type = ImplicitUpdate
     equation_system = 'eq_sys'
     solver = 'newton'
+    predictor = 'predictor'
   []
   [model]
     type = ComposedModel

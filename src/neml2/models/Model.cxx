@@ -436,21 +436,34 @@ ValueMap
 Model::value(const ValueMap & in)
 {
   forward_helper(in, true, false, false);
-  return collect_output();
+
+  auto values = collect_output();
+  clear_input();
+  clear_output();
+  return values;
 }
 
 DerivMap
 Model::dvalue(const ValueMap & in)
 {
   forward_helper(in, false, true, false);
-  return collect_output_derivatives();
+
+  auto derivs = collect_output_derivatives();
+  clear_input();
+  clear_output();
+  return derivs;
 }
 
 std::tuple<ValueMap, DerivMap>
 Model::value_and_dvalue(const ValueMap & in)
 {
   forward_helper(in, true, true, false);
-  return {collect_output(), collect_output_derivatives()};
+
+  const auto values = collect_output();
+  const auto derivs = collect_output_derivatives();
+  clear_input();
+  clear_output();
+  return {values, derivs};
 }
 
 void

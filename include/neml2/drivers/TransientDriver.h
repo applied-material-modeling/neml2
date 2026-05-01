@@ -63,14 +63,10 @@ protected:
   virtual void update_forces();
   /// Apply the initial conditions.
   virtual void apply_ic();
-  /// Apply the predictor to calculate the initial guess for the current time step.
-  virtual void apply_predictor();
   /// Perform the constitutive update for the current time step.
   virtual void solve_step();
   /// Postprocess the output of the current time step.
   virtual void postprocess();
-  /// Save the input of the current time step.
-  virtual void store_input();
   // @}
 
   /// VariableName for the time
@@ -81,17 +77,6 @@ protected:
   Size _step_count = 0;
   /// Total number of steps
   const Size _nsteps;
-  /// The input to the constitutive model
-  ValueMap _in;
-
-  /// The predictor used to set the initial guess
-  const EnumSelection _predictor;
-
-  /// Optional custom predictor model (may be nullptr)
-  std::shared_ptr<Model> _custom_predictor_model;
-
-  /// When to apply the custom predictor
-  const EnumSelection _custom_predictor_apply;
 
   /// Inputs from all time steps
   std::vector<ValueMap> _result_in;

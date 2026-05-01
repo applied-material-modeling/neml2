@@ -24,6 +24,7 @@
 
 #include "neml2/models/ImplicitUpdate.h"
 #include "neml2/misc/assertions.h"
+#include "neml2/misc/errors.h"
 #include "neml2/models/ModelNonlinearSystem.h"
 #include "neml2/equation_systems/AssembledVector.h"
 #include "neml2/equation_systems/AssembledMatrix.h"
@@ -42,14 +43,12 @@ ImplicitUpdate::expected_options()
 
   options.add<std::string>("equation_system", "The nonlinear system of equations to solve");
   options.add<std::string>("solver", "Solver used to solve the nonlinear system of equations");
+  options.add_optional<std::string>(
+      "predictor", "An optional predictor to provide an initial guess for the nonlinear solve.");
 
   // No jitting :/
   options.set<bool>("jit", false);
   options.suppress("jit");
-
-  // deprecated
-  options.add_optional<std::string>("implicit_model",
-                                    "Deprecated option. Use 'equation_system' instead.");
 
   return options;
 }
@@ -59,11 +58,6 @@ ImplicitUpdate::ImplicitUpdate(const OptionSet & options)
     _sys(get_es<ModelNonlinearSystem>("equation_system")),
     _solver(get_solver<NonlinearSolver>("solver"))
 {
-  neml_assert(!options.user_specified("implicit_model"),
-              "The 'implicit_model' option is deprecated. Use 'equation_system' instead. Refer to "
-              "https://applied-material-modeling.github.io/neml2/migration-200-210.html#eqsys for "
-              "more information.");
-
   auto ulayout = _sys->ulayout();
   auto blayout = _sys->blayout();
   neml_assert(
@@ -82,12 +76,26 @@ ImplicitUpdate::ImplicitUpdate(const OptionSet & options)
               blayout.nvar(),
               ".");
 
+  // Register the predictor if provided
+  if (options.defined("predictor"))
+  {
+    _predictor = get_model<Model>(options.get<std::string>("predictor"));
+    register_model(_predictor, /*merge_input=*/true);
+  }
+
   // Take care of dependency registration:
   //   1. Input variables of the "implicit_model" should be *consumed* by *this* model.
   //   2. Output variables of the "implicit_model" on the "residual" subaxis should be *provided* by
   //      *this* model.
   const auto model = _sys->model_ptr();
-  register_model(model, /*merge_input=*/true);
+  register_model(model, /*merge_input=*/false);
+  for (const auto & [name, var] : model->input_variables())
+  {
+    if (_predictor && _predictor->output_variables().count(name))
+      continue; // This variable will be provided by the predictor
+    if (input_variables().find(name) == input_variables().end())
+      clone_input_variable(*var);
+  }
   for (std::size_t i = 0; i < blayout.nvar(); ++i)
   {
     const auto & u = model->input_variable(ulayout.var(i));
@@ -108,6 +116,20 @@ ImplicitUpdate::ImplicitUpdate(const OptionSet & options)
 }
 
 void
+ImplicitUpdate::link_input_variables(Model * submodel)
+{
+  // if a predictor is given, sub-model's input unknowns are directly set by the predictor
+  if (_predictor && submodel == _sys->model_ptr().get())
+  {
+    for (auto && [name, var] : submodel->input_variables())
+      if (input_variables().count(name))
+        var->ref(input_variable(name));
+    return;
+  }
+  Model::link_input_variables(submodel);
+}
+
+void
 ImplicitUpdate::to(const TensorOptions & options)
 {
   Model::to(options);
@@ -118,6 +140,10 @@ ImplicitUpdate::to(const TensorOptions & options)
 void
 ImplicitUpdate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 {
+  // Apply the predictor
+  if (_predictor)
+    apply_predictor();
+
   // Input variable values may have been changed outside the forward operator, so let's notify the
   // system about the potential changes, just to stay on the safe side.
   _sys->u_changed();
@@ -139,6 +165,25 @@ ImplicitUpdate::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 
     // assign derivatives back
     assign_output_derivatives(du_dg.disassemble());
+  }
+}
+
+void
+ImplicitUpdate::apply_predictor()
+{
+  neml_assert_dbg(_predictor != nullptr,
+                  "No predictor model is registered for this ImplicitUpdate.");
+  _predictor->forward_maybe_jit(true, false, false);
+  for (const auto & [vname, var] : _predictor->output_variables())
+  {
+    auto ivar = _sys->model_ptr()->input_variables().find(vname);
+    if (ivar == _sys->model_ptr()->input_variables().end())
+      throw NEMLException("Predictor variable '" + vname +
+                          "' is not an input variable of the implicit model.");
+    if (!ivar->second->is_mutable())
+      throw NEMLException("Predictor variable '" + vname +
+                          "' is not a mutable input variable of the implicit model.");
+    *ivar->second = var->tensor();
   }
 }
 } // namespace neml2

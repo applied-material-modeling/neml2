@@ -126,7 +126,6 @@ oSiCm1 = 0.08 # 1/Omega_SiC
     type = NonlinearSystem
     model = 'model_residual'
     unknowns = 'phi_P phi_S'
-    residuals = 'phi_P_residual phi_S_residual'
   []
 []
 
@@ -142,10 +141,15 @@ oSiCm1 = 0.08 # 1/Omega_SiC
 []
 
 [Models]
+  [predictor]
+    type = ConstantExtrapolationPredictor
+    unknowns_Scalar = 'phi_P phi_S'
+  []
   [model_update]
     type = ImplicitUpdate
     equation_system = 'eq_sys'
     solver = 'newton'
+    predictor = 'predictor'
   []
   [substance_product_new]
     type = ScalarLinearCombination

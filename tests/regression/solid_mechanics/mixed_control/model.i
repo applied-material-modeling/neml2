@@ -204,10 +204,16 @@
 []
 
 [Models]
+  [predictor]
+    type = ConstantExtrapolationPredictor
+    unknowns_SR2 = 'mixed_state X1 X2'
+    unknowns_Scalar = 'equivalent_plastic_strain'
+  []
   [update]
     type = ImplicitUpdate
     equation_system = 'eq_sys'
     solver = 'newton'
+    predictor = 'predictor'
   []
   [model]
     type = ComposedModel

@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include "neml2/models/Model.h"
+#include "neml2/models/Predictor.h"
 
 namespace neml2
 {
@@ -38,7 +38,7 @@ class SR2;
  * where \f$ \Delta t = t - t_n \f$ is the time increment, \f$ d \f$ is the deformation rate,
  * and \f$ s \f$ is a user-supplied scale factor.
  */
-class CrystalPlasticityStrainPredictor : public Model
+class CrystalPlasticityStrainPredictor : public Predictor
 {
 public:
   static OptionSet expected_options();
@@ -46,7 +46,7 @@ public:
   CrystalPlasticityStrainPredictor(const OptionSet & options);
 
 protected:
-  void set_value(bool out, bool dout_din, bool d2out_din2) override;
+  void predict() override;
 
   /// Deformation rate
   const Variable<SR2> & _D;
@@ -58,5 +58,9 @@ protected:
   const Scalar & _scale;
   /// Elastic strain output (initial guess)
   Variable<SR2> & _Ee;
+  /// Previous elastic strain (history variable)
+  const Variable<SR2> & _Ee_n;
+  /// Threshold for the elastic strain norm to determine whether to apply the predictor
+  const Scalar & _threshold;
 };
 } // namespace neml2

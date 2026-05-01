@@ -36,28 +36,30 @@
 
 namespace neml2
 {
+std::pair<VariableName, std::size_t>
+parse_history(const VariableName & name, const std::string & sep)
+{
+  const auto sep_pos = name.rfind(sep);
+  if (sep_pos != std::string::npos && sep_pos + sep.size() < name.size())
+  {
+    const auto suffix = name.substr(sep_pos + sep.size());
+    bool is_digits = !suffix.empty();
+    for (const char c : suffix)
+      is_digits = is_digits && (std::isdigit(static_cast<unsigned char>(c)) != 0);
+    if (is_digits)
+      return {name.substr(0, sep_pos), std::stoull(suffix)};
+  }
+  return {name, 0};
+}
+
 VariableBase::VariableBase(VariableName name_in, Model * owner, TensorShapeRef base_shape)
   : _name(std::move(name_in)),
     _owner(owner),
     _base_sizes(base_shape)
 {
-  const auto sep = _owner ? _owner->settings().history_separator() : std::string("~");
-  const auto sep_pos = _name.rfind(sep);
-  if (sep_pos != std::string::npos && sep_pos + sep.size() < _name.size())
-  {
-    const auto suffix = _name.substr(sep_pos + sep.size());
-    bool is_digits = !suffix.empty();
-    for (const char c : suffix)
-      is_digits = is_digits && (std::isdigit(static_cast<unsigned char>(c)) != 0);
-    if (is_digits)
-    {
-      _history_order = std::stoull(suffix);
-      _base_name = _name.substr(0, sep_pos);
-      return;
-    }
-  }
-  _history_order = 0;
-  _base_name = _name;
+  neml_assert_dbg(owner, "Owner model must be provided when constructing variable '", name(), "'.");
+  const auto sep = _owner->settings().history_separator();
+  std::tie(_base_name, _history_order) = parse_history(_name, sep);
 }
 
 VariableBase::~VariableBase() = default;

@@ -30,29 +30,16 @@ Tf = 1700
     type = TransientDriver
     model = 'model'
     prescribed_time = 'times'
-
     force_Scalar_names = 'T'
     force_Scalar_values = 'T'
-
-    save_as = 'result.pt'
-
     ic_Scalar_names = 'phif'
     ic_Scalar_values = '1.0'
+    save_as = 'result.pt'
   []
   [regression]
     type = TransientRegression
     driver = 'driver'
     reference = 'gold/result.pt'
-  []
-[]
-
-[Solvers]
-  [newton]
-    type = Newton
-    linear_solver = 'lu'
-  []
-  [lu]
-    type = DenseLU
   []
 []
 
