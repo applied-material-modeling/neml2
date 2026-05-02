@@ -47,6 +47,14 @@ struct TraceableTensorShape;
 std::pair<VariableName, std::size_t> parse_history(const VariableName & name,
                                                    const std::string & sep);
 
+/// Helper function to create a variable name with a history suffix
+/// @param base_name The base name of the variable
+/// @param history_order The history order (0 for current, 1 for ~1, etc.)
+/// @param sep The separator to use (e.g., "~")
+/// @returns The variable name with the history suffix
+VariableName
+history_name(const VariableName & base_name, std::size_t history_order, const std::string & sep);
+
 /**
  * @brief Base class of variable
  *
