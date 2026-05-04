@@ -254,94 +254,145 @@ foreach(_lib_target IN LISTS NEML2_PKGCONFIG_LIB_TARGETS)
   string(APPEND NEML2_PKGCONFIG_LIBS " -l$<TARGET_FILE_BASE_NAME:${_lib_target}>")
 endforeach()
 
-# Helper to append include and link flags for dependencies.
-function(neml2_pkgconfig_add_dep_include _include_dir _bundled)
-  if(NOT "${_include_dir}" STREQUAL "" AND NOT "${_include_dir}" MATCHES "-NOTFOUND$")
-    if(_bundled)
-      list(APPEND NEML2_PKGCONFIG_DEP_INCLUDE_DIRS "\${includedir}")
-    else()
-      list(APPEND NEML2_PKGCONFIG_DEP_INCLUDE_DIRS "${_include_dir}")
-    endif()
-    set(NEML2_PKGCONFIG_DEP_INCLUDE_DIRS "${NEML2_PKGCONFIG_DEP_INCLUDE_DIRS}" PARENT_SCOPE)
+# Generates a per-dependency .pc file.
+# Uses the bundled template (with relocatable ${prefix}) when BUNDLED is TRUE,
+# otherwise the external template with absolute paths.
+function(neml2_pkgconfig_generate_dep_pc)
+  cmake_parse_arguments(ARG "" "OUTPUT_NAME;NAME;DESCRIPTION;VERSION;LIBS;CFLAGS;BUNDLED" "" ${ARGN})
+  set(NEML2_DEP_PC_NAME        "${ARG_NAME}")
+  set(NEML2_DEP_PC_DESCRIPTION "${ARG_DESCRIPTION}")
+  set(NEML2_DEP_PC_VERSION     "${ARG_VERSION}")
+  set(NEML2_DEP_PC_LIBS        "${ARG_LIBS}")
+  set(NEML2_DEP_PC_CFLAGS      "${ARG_CFLAGS}")
+  if(ARG_BUNDLED)
+    configure_file(
+      ${NEML2_SOURCE_DIR}/cmake/neml2-dep-bundled.pc.in
+      ${NEML2_BINARY_DIR}/${ARG_OUTPUT_NAME}.pc
+      @ONLY
+    )
+  else()
+    configure_file(
+      ${NEML2_SOURCE_DIR}/cmake/neml2-dep-external.pc.in
+      ${NEML2_BINARY_DIR}/${ARG_OUTPUT_NAME}.pc
+      @ONLY
+    )
   endif()
 endfunction()
 
-function(neml2_pkgconfig_add_dep_library _library_path _bundled)
-  if(NOT "${_library_path}" STREQUAL "" AND NOT "${_library_path}" MATCHES "-NOTFOUND$")
-    get_filename_component(_dep_lib_dir "${_library_path}" DIRECTORY)
-    get_filename_component(_dep_lib_name "${_library_path}" NAME_WE)
-    string(REGEX REPLACE "^lib" "" _dep_lib_name "${_dep_lib_name}")
-    if(_bundled)
-      list(APPEND NEML2_PKGCONFIG_DEP_LINK_DIRS "\${libdir}")
-    else()
-      list(APPEND NEML2_PKGCONFIG_DEP_LINK_DIRS "${_dep_lib_dir}")
-    endif()
-    list(APPEND NEML2_PKGCONFIG_DEP_LIB_FLAGS "-l${_dep_lib_name}")
-    set(NEML2_PKGCONFIG_DEP_LINK_DIRS "${NEML2_PKGCONFIG_DEP_LINK_DIRS}" PARENT_SCOPE)
-    set(NEML2_PKGCONFIG_DEP_LIB_FLAGS "${NEML2_PKGCONFIG_DEP_LIB_FLAGS}" PARENT_SCOPE)
-  endif()
-endfunction()
-
-set(NEML2_PKGCONFIG_DEP_INCLUDE_DIRS
-  "${torch_INCLUDE_DIR}"
-  "${torch_csrc_INCLUDE_DIR}"
-)
-set(NEML2_PKGCONFIG_DEP_LINK_DIRS)
-set(NEML2_PKGCONFIG_DEP_LIB_FLAGS)
-
-# torch
-neml2_pkgconfig_add_dep_library("${c10_LIBRARY}" ${_torch_bundled})
-neml2_pkgconfig_add_dep_library("${torch_LIBRARY}" ${_torch_bundled})
-neml2_pkgconfig_add_dep_library("${torch_cpu_LIBRARY}" ${_torch_bundled})
+# neml2-torch.pc (torch is always external)
+get_filename_component(_torch_link_dir "${torch_LIBRARY}" DIRECTORY)
+set(_torch_pc_libs "-L${_torch_link_dir} -lc10 -ltorch -ltorch_cpu")
 if(TARGET torch::cuda)
-  neml2_pkgconfig_add_dep_library("${c10_cuda_LIBRARY}" ${_torch_bundled})
-  neml2_pkgconfig_add_dep_library("${torch_cuda_LIBRARY}" ${_torch_bundled})
-  neml2_pkgconfig_add_dep_library("${torch_cuda_linalg_LIBRARY}" ${_torch_bundled})
+  get_filename_component(_c10_cuda_link_dir "${c10_cuda_LIBRARY}" DIRECTORY)
+  if(NOT _c10_cuda_link_dir STREQUAL _torch_link_dir)
+    string(APPEND _torch_pc_libs " -L${_c10_cuda_link_dir}")
+  endif()
+  string(APPEND _torch_pc_libs " -lc10_cuda -ltorch_cuda -ltorch_cuda_linalg")
 endif()
+neml2_pkgconfig_generate_dep_pc(
+  OUTPUT_NAME  neml2-torch
+  NAME         "neml2-torch"
+  DESCRIPTION  "LibTorch dependency for NEML2"
+  VERSION      ""
+  LIBS         "${_torch_pc_libs}"
+  CFLAGS       "-I${torch_INCLUDE_DIR} -I${torch_csrc_INCLUDE_DIR}"
+  BUNDLED      FALSE
+)
 
-# nmhit
-neml2_pkgconfig_add_dep_include("${nmhit_INCLUDE_DIR}" ${_nmhit_bundled})
-neml2_pkgconfig_add_dep_library("${nmhit_LIBRARY}" ${_nmhit_bundled})
+# neml2-nmhit.pc
+get_filename_component(_nmhit_lib_name "${nmhit_LIBRARY}" NAME_WE)
+string(REGEX REPLACE "^lib" "" _nmhit_lib_name "${_nmhit_lib_name}")
+if(_nmhit_bundled)
+  set(_nmhit_pc_libs   "-L\${libdir} -l${_nmhit_lib_name}")
+  set(_nmhit_pc_cflags "-I\${includedir}")
+else()
+  get_filename_component(_nmhit_lib_dir "${nmhit_LIBRARY}" DIRECTORY)
+  set(_nmhit_pc_libs   "-L${_nmhit_lib_dir} -l${_nmhit_lib_name}")
+  set(_nmhit_pc_cflags "-I${nmhit_INCLUDE_DIR}")
+endif()
+neml2_pkgconfig_generate_dep_pc(
+  OUTPUT_NAME  neml2-nmhit
+  NAME         "neml2-nmhit"
+  DESCRIPTION  "nmhit dependency for NEML2"
+  VERSION      ""
+  LIBS         "${_nmhit_pc_libs}"
+  CFLAGS       "${_nmhit_pc_cflags}"
+  BUNDLED      ${_nmhit_bundled}
+)
 
-# json
+# neml2-nlohmann-json.pc (header-only; always generated, empty when NEML2_JSON is OFF)
+if(NEML2_JSON AND _nlohmann_json_bundled)
+  set(_json_pc_cflags "-I\${includedir}")
+  set(_json_pc_bundled TRUE)
+elseif(NEML2_JSON)
+  set(_json_pc_cflags "-I${nlohmann_json_DIR}/include")
+  set(_json_pc_bundled FALSE)
+else()
+  set(_json_pc_cflags "")
+  set(_json_pc_bundled FALSE)
+endif()
+neml2_pkgconfig_generate_dep_pc(
+  OUTPUT_NAME  neml2-nlohmann-json
+  NAME         "neml2-nlohmann-json"
+  DESCRIPTION  "nlohmann/json dependency for NEML2"
+  VERSION      ""
+  LIBS         ""
+  CFLAGS       "${_json_pc_cflags}"
+  BUNDLED      ${_json_pc_bundled}
+)
+
+# neml2-csvparser.pc (header-only; always generated, empty when NEML2_CSV is OFF)
+if(NEML2_CSV AND _csvparser_bundled)
+  set(_csv_pc_cflags "-I\${includedir}")
+  set(_csv_pc_bundled TRUE)
+elseif(NEML2_CSV)
+  set(_csv_pc_cflags "-I${csvparser_INCLUDE_DIR}")
+  set(_csv_pc_bundled FALSE)
+else()
+  set(_csv_pc_cflags "")
+  set(_csv_pc_bundled FALSE)
+endif()
+neml2_pkgconfig_generate_dep_pc(
+  OUTPUT_NAME  neml2-csvparser
+  NAME         "neml2-csvparser"
+  DESCRIPTION  "csvparser dependency for NEML2"
+  VERSION      ""
+  LIBS         ""
+  CFLAGS       "${_csv_pc_cflags}"
+  BUNDLED      ${_csv_pc_bundled}
+)
+
+# Build Requires: list for neml2.pc (only enabled features contribute flags)
+set(NEML2_PKGCONFIG_REQUIRES "neml2-torch neml2-nmhit")
 if(NEML2_JSON)
-  neml2_pkgconfig_add_dep_include("${nlohmann_json_DIR}/include" ${_nlohmann_json_bundled})
+  string(APPEND NEML2_PKGCONFIG_REQUIRES " neml2-nlohmann-json")
 endif()
-
-# csvparser
 if(NEML2_CSV)
-  neml2_pkgconfig_add_dep_include("${csvparser_INCLUDE_DIR}" ${_csvparser_bundled})
+  string(APPEND NEML2_PKGCONFIG_REQUIRES " neml2-csvparser")
 endif()
 
-list(REMOVE_DUPLICATES NEML2_PKGCONFIG_DEP_INCLUDE_DIRS)
-list(REMOVE_DUPLICATES NEML2_PKGCONFIG_DEP_LINK_DIRS)
-list(REMOVE_DUPLICATES NEML2_PKGCONFIG_DEP_LIB_FLAGS)
+set(NEML2_PKGCONFIG_SUFFIX "$<IF:$<CONFIG:Release>,,_$<CONFIG>>")
 
-foreach(_dep_link_dir IN LISTS NEML2_PKGCONFIG_DEP_LINK_DIRS)
-  if(NOT "${_dep_link_dir}" STREQUAL "\${libdir}")
-    string(APPEND NEML2_PKGCONFIG_LIBS " -L${_dep_link_dir}")
-  endif()
-endforeach()
-foreach(_dep_lib_flag IN LISTS NEML2_PKGCONFIG_DEP_LIB_FLAGS)
-  string(APPEND NEML2_PKGCONFIG_LIBS " ${_dep_lib_flag}")
-endforeach()
-
-set(NEML2_PKGCONFIG_CFLAGS "-I\${includedir}")
-foreach(_dep_include_dir IN LISTS NEML2_PKGCONFIG_DEP_INCLUDE_DIRS)
-  if(NOT "${_dep_include_dir}" STREQUAL "\${includedir}")
-    string(APPEND NEML2_PKGCONFIG_CFLAGS " -I${_dep_include_dir}")
-  endif()
-endforeach()
-
+# neml2.pc (meta: pulls in core + all deps via Requires)
 configure_file(
   ${NEML2_SOURCE_DIR}/cmake/neml2.pc.in
   ${NEML2_BINARY_DIR}/neml2.pc.in
   @ONLY
 )
-set(NEML2_PKGCONFIG_SUFFIX "$<IF:$<CONFIG:Release>,,_$<CONFIG>>")
 file(GENERATE
   OUTPUT ${NEML2_BINARY_DIR}/neml2${NEML2_PKGCONFIG_SUFFIX}.pc
   INPUT ${NEML2_BINARY_DIR}/neml2.pc.in
+)
+
+# neml2-core.pc (just NEML2's own libraries, no dependency flags)
+configure_file(
+  ${NEML2_SOURCE_DIR}/cmake/neml2-core.pc.in
+  ${NEML2_BINARY_DIR}/neml2-core.pc.in
+  @ONLY
+)
+file(GENERATE
+  OUTPUT ${NEML2_BINARY_DIR}/neml2-core${NEML2_PKGCONFIG_SUFFIX}.pc
+  INPUT ${NEML2_BINARY_DIR}/neml2-core.pc.in
 )
 
 if(NOT SKBUILD_STATE STREQUAL "editable")
@@ -355,6 +406,11 @@ if(NOT SKBUILD_STATE STREQUAL "editable")
   install(
     FILES
     ${NEML2_BINARY_DIR}/neml2${NEML2_PKGCONFIG_SUFFIX}.pc
+    ${NEML2_BINARY_DIR}/neml2-core${NEML2_PKGCONFIG_SUFFIX}.pc
+    ${NEML2_BINARY_DIR}/neml2-torch.pc
+    ${NEML2_BINARY_DIR}/neml2-nmhit.pc
+    ${NEML2_BINARY_DIR}/neml2-nlohmann-json.pc
+    ${NEML2_BINARY_DIR}/neml2-csvparser.pc
     DESTINATION share/pkgconfig
     COMPONENT libneml2
   )

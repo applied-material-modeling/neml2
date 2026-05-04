@@ -1,0 +1,10 @@
+prefix=${pcfiledir}/../..
+exec_prefix=${prefix}
+libdir=@NEML2_PKGCONFIG_LIBDIR@
+includedir=${prefix}/include
+
+Name: @NEML2_DEP_PC_NAME@
+Description: @NEML2_DEP_PC_DESCRIPTION@
+Version: @NEML2_DEP_PC_VERSION@
+Libs: @NEML2_DEP_PC_LIBS@
+Cflags: @NEML2_DEP_PC_CFLAGS@

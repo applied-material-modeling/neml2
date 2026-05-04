@@ -111,7 +111,7 @@ public:
    *
    * @param os The stream to write to.
    */
-  void print(std::ostream & os = std::cout);
+  void print(std::ostream & os) const;
 
 protected:
   /**

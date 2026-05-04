@@ -3,9 +3,8 @@ exec_prefix=${prefix}
 libdir=@NEML2_PKGCONFIG_LIBDIR@
 includedir=${prefix}/include
 
-Name: neml2
-Description: NEML2 - New Engineering material Model Library
+Name: neml2-core
+Description: NEML2 core libraries (without dependencies)
 Version: @PROJECT_VERSION@
-Requires: @NEML2_PKGCONFIG_REQUIRES@
 Libs: @NEML2_PKGCONFIG_LIBS@
 Cflags: -I${includedir}

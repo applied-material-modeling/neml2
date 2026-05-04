@@ -74,7 +74,7 @@ Factory::options_compatible(const std::shared_ptr<NEML2Object> & obj, const Opti
 
 // LCOV_EXCL_START
 void
-Factory::print(std::ostream & os)
+Factory::print(std::ostream & os) const
 {
   const auto & all_objects = _objects;
   for (const auto & [section, objects] : all_objects)
