@@ -60,7 +60,7 @@ jobs:
     strategy:
       fail-fast: false
     runs-on:
-      - labels: gpu_runner
+      labels: gpu_runner
     steps:
       - uses: applied-material-modeling/neml2-ci@main
         with:
