@@ -1,0 +1,94 @@
+# Dependency registry for neml2.
+# Use scripts/dep_manager.py to check and update these dependencies.
+#
+# Schema per entry:
+#   DEP_NAME:
+#     FIELD: VALUE          # any scalar field (version, version_min, ...)
+#     files:                # source files that embed this dep's value fields
+#       - RELATIVE_PATH     # one entry per file; all # dependencies: DEP.FIELD
+#                           # annotations within it are updated automatically
+#
+# Annotation convention in source files:
+#   # dependencies: DEP_NAME.FIELD
+#   <line containing the version value>
+
+# ---- Python packages ----
+torch:
+  version: "2.8.0"
+  files:
+    - .github/workflows/cpp.yml
+    - .github/workflows/python.yml
+    - .github/workflows/notebooks.yml
+    - .github/workflows/docs.yml
+    - .github/workflows/integration.yml
+    - doc/content/installation/install.md
+
+pyzag:
+  version: "1.1.1"
+  files:
+    - pyproject.toml
+
+# ---- C++ libraries ----
+catch2:
+  version: "v3.5.4"
+  files:
+    - CMakeLists.txt
+
+nlohmann_json:
+  version: "v3.11.3"
+  files:
+    - CMakeLists.txt
+
+csvparser:
+  version: "2.3.0"
+  files:
+    - CMakeLists.txt
+
+argparse:
+  version: "v3.2"
+  files:
+    - CMakeLists.txt
+
+gperftools:
+  version: "gperftools-2.17"
+  files:
+    - CMakeLists.txt
+
+# ---- Build tools ----
+cmake:
+  version_min: "3.26.1"
+  files:
+    - CMakeLists.txt
+    - .github/workflows/cpp.yml
+    - .github/workflows/python.yml
+    - .github/workflows/notebooks.yml
+    - .github/workflows/docs.yml
+    - .github/workflows/integration.yml
+    - pyproject.toml
+    - doc/content/installation/install.md
+
+python:
+  version_min: "3.9"
+  files:
+    - .github/workflows/deps.yml
+    - .github/workflows/copyright.yml
+    - .github/workflows/cpp.yml
+    - .github/workflows/python.yml
+    - .github/workflows/notebooks.yml
+    - .github/workflows/docs.yml
+    - .github/workflows/integration.yml
+    - pyproject.toml
+    - doc/content/installation/install.md
+
+doxygen:
+  version: "1.16.1"
+  files:
+    - .github/workflows/docs.yml
+
+# ---- Project version ----
+neml2:
+  version: "2.1.2"
+  files:
+    - CMakeLists.txt
+    - pyproject.toml
+    - doc/content/installation/integration.md

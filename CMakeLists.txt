@@ -1,8 +1,10 @@
 # ----------------------------------------------------------------------------
 # Project metadata
 # ----------------------------------------------------------------------------
-cmake_minimum_required(VERSION 3.26)
-project(NEML2 VERSION 2.1.0 LANGUAGES C CXX)
+# dependencies: cmake.version_min
+cmake_minimum_required(VERSION 3.26.1)
+# dependencies: neml2.version
+project(NEML2 VERSION 2.1.2 LANGUAGES C CXX)
 
 # ----------------------------------------------------------------------------
 # Policy
@@ -71,11 +73,15 @@ set(NEML2_WHEEL OFF CACHE INTERNAL "Build NEML2 as a Python wheel. This is suppo
 # Dependencies and 3rd party packages
 # ----------------------------------------------------------------------------
 set(torch_SEARCH_SITE_PACKAGES ON CACHE BOOL "Search for libTorch in Python site-packages")
-set(nmhit_VERSION "85470c38b898acfab951b8cec0eb5f5f77c28c8c" CACHE STRING "Default neml2-hit version to download (if not found)")
+# dependencies: catch2.version
 set(catch2_VERSION "v3.5.4" CACHE STRING "Default Catch2 version to download (if not found)")
+# dependencies: gperftools.version
 set(gperftools_VERSION "gperftools-2.17" CACHE STRING "Default gperftools version to download")
+# dependencies: argparse.version
 set(argparse_VERSION "v3.2" CACHE STRING "Default argparse version to download")
+# dependencies: nlohmann_json.version
 set(nlohmann_json_VERSION "v3.11.3" CACHE STRING "Default nlohmann json version to download")
+# dependencies: csvparser.version
 set(csvparser_VERSION "2.3.0" CACHE STRING "Default csv-parser version to download")
 
 # ----------------------------------------------------------------------------
