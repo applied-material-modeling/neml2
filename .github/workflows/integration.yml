@@ -18,8 +18,11 @@ jobs:
       - uses: applied-material-modeling/neml2-ci@main
         with:
           path: neml2
+          # dependencies: python.version_min
           python-version: 3.9
-          cmake-version: 3.26.0
+          # dependencies: cmake.version_min
+          cmake-version: 3.26.1
+          # dependencies: torch.version
           torch-version: 2.8.0
       - name: Create an example CMake project
         run: |
@@ -37,8 +40,11 @@ jobs:
       - uses: applied-material-modeling/neml2-ci@main
         with:
           path: neml2-src
+          # dependencies: python.version_min
           python-version: 3.9
-          cmake-version: 3.26.0
+          # dependencies: cmake.version_min
+          cmake-version: 3.26.1
+          # dependencies: torch.version
           torch-version: 2.8.0
       - name: Install neml2
         run: |
@@ -61,8 +67,11 @@ jobs:
       - uses: applied-material-modeling/neml2-ci@main
         with:
           path: neml2-src
+          # dependencies: python.version_min
           python-version: 3.9
-          cmake-version: 3.26.0
+          # dependencies: cmake.version_min
+          cmake-version: 3.26.1
+          # dependencies: torch.version
           torch-version: 2.8.0
       - name: Install neml2
         run: |

@@ -52,6 +52,14 @@ parse_history(const VariableName & name, const std::string & sep)
   return {name, 0};
 }
 
+VariableName
+history_name(const VariableName & base_name, std::size_t history_order, const std::string & sep)
+{
+  if (history_order == 0)
+    return base_name;
+  return base_name + sep + std::to_string(history_order);
+}
+
 VariableBase::VariableBase(VariableName name_in, Model * owner, TensorShapeRef base_shape)
   : _name(std::move(name_in)),
     _owner(owner),

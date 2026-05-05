@@ -22,6 +22,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include <iostream>
+
 #include "neml2/base/HITParser.h"
 
 #include "nmhit/nmhit.h"

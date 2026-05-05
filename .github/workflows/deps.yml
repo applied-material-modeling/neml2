@@ -1,0 +1,26 @@
+name: Dependency consistency
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Newer commits should cancel old runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          # dependencies: python.version_min
+          python-version: "3.9"
+      - name: Install PyYAML
+        run: pip install pyyaml
+      - name: Check dependency consistency
+        run: python scripts/dep_manager.py check

@@ -31,8 +31,11 @@ jobs:
     steps:
       - uses: applied-material-modeling/neml2-ci@main
         with:
+          # dependencies: python.version_min
           python-version: 3.9
-          cmake-version: 3.26.0
+          # dependencies: cmake.version_min
+          cmake-version: 3.26.1
+          # dependencies: torch.version
           torch-version: 2.8.0
       - name: Configure
         if: matrix.btype == 'Release'
@@ -68,8 +71,11 @@ jobs:
     steps:
       - uses: applied-material-modeling/neml2-ci@main
         with:
+          # dependencies: python.version_min
           python-version: 3.9
-          cmake-version: 3.26.0
+          # dependencies: cmake.version_min
+          cmake-version: 3.26.1
+          # dependencies: torch.version
           torch-version: 2.8.0
       - name: Configure
         run: cmake --preset dev -GNinja -DNEML2_PCH=OFF -S .
@@ -82,8 +88,11 @@ jobs:
     steps:
       - uses: applied-material-modeling/neml2-ci@main
         with:
+          # dependencies: python.version_min
           python-version: 3.9
-          cmake-version: 3.26.0
+          # dependencies: cmake.version_min
+          cmake-version: 3.26.1
+          # dependencies: torch.version
           torch-version: 2.8.0
       - name: Configure
         run: cmake --preset dev -GNinja -DNEML2_JSON=OFF -DNEML2_CSV=OFF -DNEML2_WORK_DISPATCHER=OFF -S .
@@ -99,8 +108,11 @@ jobs:
     steps:
       - uses: applied-material-modeling/neml2-ci@main
         with:
+          # dependencies: python.version_min
           python-version: 3.9
-          cmake-version: 3.26.0
+          # dependencies: cmake.version_min
+          cmake-version: 3.26.1
+          # dependencies: torch.version
           torch-version: 2.8.0
       - name: Configure
         run: cmake --preset release -GNinja -S .
@@ -118,8 +130,11 @@ jobs:
     steps:
       - uses: applied-material-modeling/neml2-ci@main
         with:
+          # dependencies: python.version_min
           python-version: 3.9
-          cmake-version: 3.26.0
+          # dependencies: cmake.version_min
+          cmake-version: 3.26.1
+          # dependencies: torch.version
           torch-version: 2.8.0
       - name: Configure
         run: cmake --preset profiling -GNinja -S .
@@ -139,8 +154,11 @@ jobs:
     steps:
       - uses: applied-material-modeling/neml2-ci@main
         with:
+          # dependencies: python.version_min
           python-version: 3.9
-          cmake-version: 3.26.0
+          # dependencies: cmake.version_min
+          cmake-version: 3.26.1
+          # dependencies: torch.version
           torch-version: 2.8.0
       - name: Configure
         run: cmake --preset tsan -GNinja -S .
