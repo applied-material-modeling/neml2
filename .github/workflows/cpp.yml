@@ -25,9 +25,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        runner: [ubuntu-latest, macos-latest, gpu_runner]
         btype: [Debug, Release]
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: applied-material-modeling/neml2-ci@main
         with:
@@ -45,52 +45,15 @@ jobs:
         run: cmake --preset dev -GNinja -DCMAKE_BUILD_TYPE=${{ matrix.btype }} -DCMAKE_CXX_FLAGS="-Werror" -S .
       - name: Build
         run: cmake --build --preset dev
-      - name: Run tests
+      - name: Run tests (CPU)
+        if: matrix.runner != 'gpu_runner'
         run: |
           ./build/dev/tests/unit/unit_tests -r JUnit::out=unit_tests.xml -r console::out=-::colour-mode=ansi
           ./build/dev/tests/regression/regression_tests -r JUnit::out=regression_tests.xml -r console::out=-::colour-mode=ansi
           ./build/dev/tests/verification/verification_tests -r JUnit::out=verification_tests.xml -r console::out=-::colour-mode=ansi
           ./build/dev/tests/dispatchers/dispatcher_tests -r JUnit::out=dispatcher_tests.xml -r console::out=-::colour-mode=ansi
-      - name: Test results
-        uses: EnricoMi/publish-unit-test-result-action/linux@v2
-        if: always()
-        with:
-          files: |
-            tests/unit/unit_tests.xml
-            tests/regression/regression_tests.xml
-            tests/verification/verification_tests.xml
-            tests/dispatchers/dispatcher_tests.xml
-          check_name: CPU Test Results
-          check_run: false
-          action_fail: true
-          comment_mode: off
-
-  test-gpu:
-    needs: clang-format
-    strategy:
-      fail-fast: false
-      matrix:
-        btype: [Debug, Release]
-    runs-on:
-      labels: gpu_runner
-    steps:
-      - uses: applied-material-modeling/neml2-ci@main
-        with:
-          # dependencies: python.version_min
-          python-version: 3.9
-          # dependencies: cmake.version_min
-          cmake-version: 3.26.1
-          # dependencies: torch.version
-          torch-version: 2.8.0
-      - name: Configure
-        if: matrix.btype == 'Release'
-        run: cmake --preset dev -GNinja -DCMAKE_BUILD_TYPE=Release -S .
-      - name: Configure (Werror)
-        if: matrix.btype != 'Release'
-        run: cmake --preset dev -GNinja -DCMAKE_BUILD_TYPE=${{ matrix.btype }} -DCMAKE_CXX_FLAGS="-Werror" -S .
-      - name: Build
-        run: cmake --build --preset dev
-      - name: Run tests
+      - name: Run tests (GPU)
+        if: matrix.runner == 'gpu_runner'
         run: |
           ./build/dev/tests/unit/unit_tests --devices cuda -r JUnit::out=unit_tests.xml -r console::out=-::colour-mode=ansi
           ./build/dev/tests/regression/regression_tests --devices cuda -r JUnit::out=regression_tests.xml -r console::out=-::colour-mode=ansi
@@ -102,8 +65,9 @@ jobs:
           files: |
             tests/unit/unit_tests.xml
             tests/regression/regression_tests.xml
+            tests/verification/verification_tests.xml
             tests/dispatchers/dispatcher_tests.xml
-          check_name: GPU Test Results
+          check_name: Test Results
           check_run: false
           action_fail: true
           comment_mode: off
