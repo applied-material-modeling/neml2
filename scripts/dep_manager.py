@@ -38,7 +38,6 @@ Annotation convention in source files:
 
 import argparse
 import re
-import subprocess
 import sys
 from pathlib import Path
 
@@ -154,7 +153,9 @@ def cmd_check(deps: dict, _args) -> None:
                         ok_count += 1
 
     if errors:
-        print(_c(RED, "FAIL") + f": {len(errors)} inconsistency/ies found:")
+        count = len(errors)
+        label = "inconsistency" if count == 1 else "inconsistencies"
+        print(_c(RED, "FAIL") + f": {count} {label} found:")
         for e in errors:
             print(f"  {_c(RED, '✗')} {e}")
         sys.exit(1)

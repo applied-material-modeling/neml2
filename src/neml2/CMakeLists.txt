@@ -308,7 +308,9 @@ if(_nmhit_bundled)
 else()
   get_filename_component(_nmhit_lib_dir "${nmhit_LIBRARY}" DIRECTORY)
   set(_nmhit_pc_libs   "-L${_nmhit_lib_dir} -l${_nmhit_lib_name}")
-  set(_nmhit_pc_cflags "-I${nmhit_INCLUDE_DIR}")
+  set(_nmhit_pc_include_dirs ${nmhit_INCLUDE_DIR})
+  string(JOIN " -I" _nmhit_pc_cflags ${_nmhit_pc_include_dirs})
+  set(_nmhit_pc_cflags "-I${_nmhit_pc_cflags}")
 endif()
 neml2_pkgconfig_generate_dep_pc(
   OUTPUT_NAME  neml2-nmhit
