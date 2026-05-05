@@ -164,10 +164,14 @@ generate_tensor_shape(const std::optional<std::vector<neml2::TensorShape>> & dyn
 bool
 match_tensor_config(const neml2::Tensor & tensor, const GeneratedTensorConfig & config)
 {
-  if (tensor.dtype() != config.dtype)
+  if (tensor.scalar_type() != config.dtype)
     return false;
-  if (tensor.device() != config.device)
+  // The allocated device index doesn't have to match if config has a wildcard device
+  if (tensor.device().type() != config.device.type())
     return false;
+  if (config.device.has_index())
+    if (tensor.device().index() != config.device.index())
+      return false;
   return true;
 }
 

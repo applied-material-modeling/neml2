@@ -39,7 +39,7 @@ using namespace neml2;
 TEST_CASE("mv", "[tensors/functions]")
 {
   at::manual_seed(42);
-  auto cfg = test::generate_tensor_config();
+  auto cfg = test::generate_tensor_config(test::fp_dtypes());
   auto shape1 = test::generate_tensor_shape<Scalar>();
   auto shape2 = test::generate_tensor_shape<Scalar>();
   auto m = GENERATE(1, 2);

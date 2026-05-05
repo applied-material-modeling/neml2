@@ -265,7 +265,7 @@ TEST_CASE("PrimitiveTensor", "[tensors]")
 
   SECTION("einsum")
   {
-    auto cfg = test::generate_tensor_config();
+    auto cfg = test::generate_tensor_config(test::fp_dtypes());
     auto shape_a = test::generate_tensor_shape<R3>();
     auto shape_b = test::generate_tensor_shape<R4>();
     DYNAMIC_SECTION(cfg.desc() << " " << shape_a.desc() << " " << shape_b.desc())

@@ -277,6 +277,9 @@ ModelUnitTest::check_dvalue()
                     numerical);
       }
     }
+
+  _model->clear_input();
+  _model->clear_output();
 }
 
 void
@@ -342,6 +345,9 @@ ModelUnitTest::check_d2value()
               "\nFinite differencing gives:\n",
               numerical);
       }
+
+  _model->clear_input();
+  _model->clear_output();
 }
 
 void
@@ -410,6 +416,9 @@ ModelUnitTest::check_AD_parameter_derivatives()
                     numerical);
     }
   }
+
+  _model->clear_input();
+  _model->clear_output();
 }
 
 } // namespace neml2
