@@ -6,6 +6,4 @@ includedir=${prefix}/include
 Name: neml2
 Description: NEML2 - New Engineering material Model Library
 Version: @PROJECT_VERSION@
-Requires: @NEML2_PKGCONFIG_REQUIRES@
-Libs: @NEML2_PKGCONFIG_LIBS@
-Cflags: -I${includedir}
+Requires: neml2-core$<IF:$<CONFIG:Release>,,_$<CONFIG>> @NEML2_PKGCONFIG_REQUIRES@
