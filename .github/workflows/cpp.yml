@@ -46,20 +46,15 @@ jobs:
         run: cmake --preset dev -GNinja -DCMAKE_BUILD_TYPE=${{ matrix.btype }} -DCMAKE_CXX_FLAGS="-Werror" -S .
       - name: Build
         run: cmake --build --preset dev
-      - name: Set test device args
-        run: |
-          if [[ "${{ matrix.runner }}" == "gpu_runner" ]]; then
-            echo "TEST_DEVICE_ARGS=--devices cuda" >> "$GITHUB_ENV"
-          else
-            echo "TEST_DEVICE_ARGS=" >> "$GITHUB_ENV"
-          fi
       - name: Run tests
+        env:
+          TEST_DEVICE_ARGS: ${{ matrix.runner == 'gpu_runner' && '--devices cuda' || '' }}
         run: |
-          ./build/dev/tests/unit/tensor_tests ${{ env.TEST_DEVICE_ARGS }} -r JUnit::out=tensor_tests.xml -r console::out=-::colour-mode=ansi
-          ./build/dev/tests/unit/unit_tests ${{ env.TEST_DEVICE_ARGS }} -r JUnit::out=unit_tests.xml -r console::out=-::colour-mode=ansi
-          ./build/dev/tests/regression/regression_tests ${{ env.TEST_DEVICE_ARGS }} -r JUnit::out=regression_tests.xml -r console::out=-::colour-mode=ansi
-          ./build/dev/tests/verification/verification_tests ${{ env.TEST_DEVICE_ARGS }} -r JUnit::out=verification_tests.xml -r console::out=-::colour-mode=ansi
-          ./build/dev/tests/dispatchers/dispatcher_tests ${{ env.TEST_DEVICE_ARGS }} -r JUnit::out=dispatcher_tests.xml -r console::out=-::colour-mode=ansi
+          ./build/dev/tests/unit/tensor_tests $TEST_DEVICE_ARGS -r JUnit::out=tensor_tests.xml -r console::out=-::colour-mode=ansi
+          ./build/dev/tests/unit/unit_tests $TEST_DEVICE_ARGS -r JUnit::out=unit_tests.xml -r console::out=-::colour-mode=ansi
+          ./build/dev/tests/regression/regression_tests $TEST_DEVICE_ARGS -r JUnit::out=regression_tests.xml -r console::out=-::colour-mode=ansi
+          ./build/dev/tests/verification/verification_tests $TEST_DEVICE_ARGS -r JUnit::out=verification_tests.xml -r console::out=-::colour-mode=ansi
+          ./build/dev/tests/dispatchers/dispatcher_tests $TEST_DEVICE_ARGS -r JUnit::out=dispatcher_tests.xml -r console::out=-::colour-mode=ansi
       - name: Test results
         uses: EnricoMi/publish-unit-test-result-action/linux@v2
         if: always()
