@@ -30,8 +30,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+        runner: [ubuntu-latest, macos-latest, gpu_runner]
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: applied-material-modeling/neml2-ci@main
         with:
@@ -41,6 +41,7 @@ jobs:
           cmake-version: 3.26.1
           # dependencies: torch.version
           torch-version: 2.8.0
+          cpu-torch: ${{ matrix.runner != 'gpu_runner' }}
       - name: Install
         run: pip install ".[dev]" -v
       - name: Run tests

@@ -25,9 +25,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        runner: [ubuntu-latest, macos-latest, gpu_runner]
         btype: [Debug, Release]
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: applied-material-modeling/neml2-ci@main
         with:
@@ -37,6 +37,7 @@ jobs:
           cmake-version: 3.26.1
           # dependencies: torch.version
           torch-version: 2.8.0
+          cpu-torch: ${{ matrix.runner != 'gpu_runner' && 'true' || 'false' }}
       - name: Configure
         if: matrix.btype == 'Release'
         run: cmake --preset dev -GNinja -DCMAKE_BUILD_TYPE=Release -S .
@@ -46,16 +47,20 @@ jobs:
       - name: Build
         run: cmake --build --preset dev
       - name: Run tests
+        env:
+          TEST_DEVICE_ARGS: ${{ matrix.runner == 'gpu_runner' && '--devices cuda' || '' }}
         run: |
-          ./build/dev/tests/unit/unit_tests -r JUnit::out=unit_tests.xml -r console::out=-::colour-mode=ansi
-          ./build/dev/tests/regression/regression_tests -r JUnit::out=regression_tests.xml -r console::out=-::colour-mode=ansi
-          ./build/dev/tests/verification/verification_tests -r JUnit::out=verification_tests.xml -r console::out=-::colour-mode=ansi
-          ./build/dev/tests/dispatchers/dispatcher_tests -r JUnit::out=dispatcher_tests.xml -r console::out=-::colour-mode=ansi
+          ./build/dev/tests/unit/tensor_tests $TEST_DEVICE_ARGS -r JUnit::out=tensor_tests.xml -r console::out=-::colour-mode=ansi
+          ./build/dev/tests/unit/unit_tests $TEST_DEVICE_ARGS -r JUnit::out=unit_tests.xml -r console::out=-::colour-mode=ansi
+          ./build/dev/tests/regression/regression_tests $TEST_DEVICE_ARGS -r JUnit::out=regression_tests.xml -r console::out=-::colour-mode=ansi
+          ./build/dev/tests/verification/verification_tests $TEST_DEVICE_ARGS -r JUnit::out=verification_tests.xml -r console::out=-::colour-mode=ansi
+          ./build/dev/tests/dispatchers/dispatcher_tests $TEST_DEVICE_ARGS -r JUnit::out=dispatcher_tests.xml -r console::out=-::colour-mode=ansi
       - name: Test results
         uses: EnricoMi/publish-unit-test-result-action/linux@v2
         if: always()
         with:
           files: |
+            tests/unit/tensor_tests.xml
             tests/unit/unit_tests.xml
             tests/regression/regression_tests.xml
             tests/verification/verification_tests.xml

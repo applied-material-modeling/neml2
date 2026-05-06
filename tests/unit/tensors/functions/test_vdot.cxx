@@ -36,7 +36,7 @@ using namespace neml2;
 TEST_CASE("vdot", "[tensors/functions]")
 {
   at::manual_seed(42);
-  auto cfg = test::generate_tensor_config(test::fp_dtypes());
+  auto cfg = test::generate_tensor_config();
   auto shape1 = test::generate_tensor_shape<Vec>();
   auto shape2 = test::generate_tensor_shape<Vec>();
 

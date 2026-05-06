@@ -60,8 +60,8 @@ AssemblyingNonlinearSystem::~AssemblyingNonlinearSystem()
 bool
 Model::EvaluationSchema::operator==(const EvaluationSchema & other) const
 {
-  return dynamic_dims == other.dynamic_dims && intmd_shapes == other.intmd_shapes &&
-         dispatch_key == other.dispatch_key;
+  return device == other.device && dtype == other.dtype && dynamic_dims == other.dynamic_dims &&
+         intmd_shapes == other.intmd_shapes && dispatch_key == other.dispatch_key;
 }
 
 bool
@@ -73,6 +73,10 @@ Model::EvaluationSchema::operator!=(const EvaluationSchema & other) const
 bool
 Model::EvaluationSchema::operator<(const EvaluationSchema & other) const
 {
+  if (device != other.device)
+    return device.str() < other.device.str();
+  if (dtype != other.dtype)
+    return c10::toString(dtype) < c10::toString(other.dtype);
   if (dispatch_key != other.dispatch_key)
     return dispatch_key < other.dispatch_key;
   if (dynamic_dims != other.dynamic_dims)
@@ -264,7 +268,11 @@ Model::calculate_eval_schema() const
 
   const auto dispatch_key = variable_options().computeDispatchKey();
 
-  return EvaluationSchema{dynamic_dims, intmd_shapes, dispatch_key};
+  return EvaluationSchema{variable_options().device(),
+                          at::typeMetaToScalarType(variable_options().dtype()),
+                          dynamic_dims,
+                          intmd_shapes,
+                          dispatch_key};
 }
 
 std::size_t

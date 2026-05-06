@@ -107,10 +107,9 @@ fp_dtypes()
 std::vector<neml2::Dtype>
 dtypes()
 {
-  auto types = int_dtypes();
-  auto fp_types = fp_dtypes();
-  types.insert(types.end(), fp_types.begin(), fp_types.end());
-  return types;
+  // torch frequently changes their support for different dtypes, so our default dtype is just
+  // double, which is the one we care the most about
+  return {neml2::kFloat64};
 }
 
 std::vector<neml2::Device>
@@ -164,10 +163,14 @@ generate_tensor_shape(const std::optional<std::vector<neml2::TensorShape>> & dyn
 bool
 match_tensor_config(const neml2::Tensor & tensor, const GeneratedTensorConfig & config)
 {
-  if (tensor.dtype() != config.dtype)
+  if (tensor.scalar_type() != config.dtype)
     return false;
-  if (tensor.device() != config.device)
+  // The allocated device index doesn't have to match if config has a wildcard device
+  if (tensor.device().type() != config.device.type())
     return false;
+  if (config.device.has_index())
+    if (tensor.device().index() != config.device.index())
+      return false;
   return true;
 }
 

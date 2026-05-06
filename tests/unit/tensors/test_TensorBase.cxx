@@ -135,7 +135,7 @@ TEST_CASE("TensorBase", "[tensors]")
 
   SECTION("rand_like")
   {
-    auto cfg = test::generate_tensor_config(test::fp_dtypes());
+    auto cfg = test::generate_tensor_config();
     auto shape = test::generate_tensor_shape();
     DYNAMIC_SECTION(cfg.desc() << " " << shape.desc())
     {

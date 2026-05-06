@@ -13,7 +13,9 @@ add_subdirectory(extension)
 # Unit tests
 add_subdirectory(unit)
 add_dependencies(unit_tests extension)
+add_dependencies(tensor_tests extension)
 add_dependencies(tests unit_tests)
+add_dependencies(tests tensor_tests)
 
 # Regression tests
 add_subdirectory(regression)

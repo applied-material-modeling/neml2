@@ -41,7 +41,7 @@ TEMPLATE_TEST_CASE("normalize_gcd", "[tensors/functions]", FOR_ALL_TENSORBASE_CO
   at::manual_seed(42);
 
   // Test both integer and floating-point inputs
-  auto cfg = test::generate_tensor_config(test::fp_dtypes());
+  auto cfg = test::generate_tensor_config();
   auto shape = test::generate_tensor_shape<TestType>();
 
   DYNAMIC_SECTION(cfg.desc() << " " << shape.desc())

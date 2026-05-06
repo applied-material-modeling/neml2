@@ -88,6 +88,8 @@ public:
    */
   struct EvaluationSchema
   {
+    Device device;
+    Dtype dtype;
     std::vector<Size> dynamic_dims;
     std::vector<TensorShape> intmd_shapes;
     at::DispatchKey dispatch_key;
