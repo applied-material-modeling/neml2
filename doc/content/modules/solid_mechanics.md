@@ -24,6 +24,18 @@ Below is an example input file that defines a linear elasticity model.
 
 @list-input:tests/unit/models/solid_mechanics/elasticity/LinearIsotropicElasticity.i:Models
 
+## Viscoelasticity
+
+Viscoelastic models describe time-dependent stress-strain behavior in which the response is partially elastic (recoverable) and partially viscous (rate-dependent). Unlike elasticity, viscoelastic models retain a memory of past loading through internal strain variables, but unlike plasticity the response is linear in the constitutive sense — there is no yield surface and no consistency parameter.
+
+NEML2 builds viscoelastic models from two primitive rheological elements — a linear *spring* with modulus \f$ E \f$, and a Newtonian *dashpot* with viscosity \f$ \eta \f$ — combined in series and parallel. Each model treats the spring and dashpot relations component-wise on \f$ \boldsymbol{\sigma} \f$ and \f$ \boldsymbol{\varepsilon} \f$, so the same parameters describe both the deviatoric and volumetric response (a common simplification when only one effective modulus is available from experiment). Internal strain variables evolve as rates and are time-integrated implicitly with `SR2BackwardEulerTimeIntegration` inside an `ImplicitUpdate` Newton solve.
+
+Standard textbook configurations are pre-assembled as named objects — for example `MaxwellViscoelasticity` (spring + dashpot in series), `KelvinVoigtViscoelasticity` (spring + dashpot in parallel), `ZenerViscoelasticity` (Standard Linear Solid), `WiechertViscoelasticity` (generalized Maxwell), and `BurgersViscoelasticity` (Maxwell in series with Kelvin-Voigt). Refer to [Syntax Documentation](@ref syntax-models) for the complete catalog of viscoelastic objects, including each one's parameters, inputs, and outputs.
+
+The example input file below shows the typical composition for a model with internal viscous strain — here the Standard Linear Solid (Zener model). The constitutive object provides both the stress and the viscous-strain rate; `SR2BackwardEulerTimeIntegration` turns the rate into an implicit residual; and the resulting nonlinear system is solved at each time step by a Newton solver.
+
+@list-input:tests/regression/solid_mechanics/viscoelasticity/zener/model.i:Models,EquationSystems,Solvers
+
 ## Plasticity (macroscale)
 
 Generally speaking, plasticity models describe (oftentimes irreversible and dissipative) history-dependent deformation of solid materials. The plastic deformation is governed by the plastic loading/unloading conditions (or more generally the Karush-Kuhn-Tucker conditions):
