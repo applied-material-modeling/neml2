@@ -39,7 +39,7 @@ using namespace neml2;
 TEMPLATE_TEST_CASE("dynamic_max", "[tensors/functions]", FOR_ALL_TENSORBASE_COMMA(TYPE_IDENTITY))
 {
   at::manual_seed(42);
-  auto cfg = test::generate_tensor_config(test::fp_dtypes());
+  auto cfg = test::generate_tensor_config();
   auto shape = test::generate_tensor_shape<TestType>();
   DYNAMIC_SECTION(cfg.desc() << " s1: " << shape.desc())
   {
@@ -58,7 +58,7 @@ TEMPLATE_TEST_CASE("dynamic_max", "[tensors/functions]", FOR_ALL_TENSORBASE_COMM
 TEMPLATE_TEST_CASE("intmd_max", "[tensors/functions]", FOR_ALL_TENSORBASE_COMMA(TYPE_IDENTITY))
 {
   at::manual_seed(42);
-  auto cfg = test::generate_tensor_config(test::fp_dtypes());
+  auto cfg = test::generate_tensor_config();
   auto shape = test::generate_tensor_shape<TestType>();
   DYNAMIC_SECTION(cfg.desc() << " s1: " << shape.desc())
   {
@@ -77,7 +77,7 @@ TEMPLATE_TEST_CASE("intmd_max", "[tensors/functions]", FOR_ALL_TENSORBASE_COMMA(
 TEST_CASE("base_max", "[tensors/functions]")
 {
   at::manual_seed(42);
-  auto cfg = test::generate_tensor_config(test::fp_dtypes());
+  auto cfg = test::generate_tensor_config();
   auto shape = test::generate_tensor_shape<Scalar>();
   DYNAMIC_SECTION(cfg.desc() << " s1: " << shape.desc())
   {

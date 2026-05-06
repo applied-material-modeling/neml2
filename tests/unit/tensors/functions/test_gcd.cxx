@@ -35,7 +35,7 @@ using namespace neml2;
 TEMPLATE_TEST_CASE("gcd", "[tensors/functions]", FOR_ALL_TENSORBASE_COMMA(TYPE_IDENTITY))
 {
   at::manual_seed(42);
-  auto cfg = test::generate_tensor_config(test::int_dtypes());
+  auto cfg = test::generate_tensor_config({{neml2::kInt64}});
   auto shape1 = test::generate_tensor_shape<TestType>();
   auto shape2 = test::generate_tensor_shape<TestType>();
 

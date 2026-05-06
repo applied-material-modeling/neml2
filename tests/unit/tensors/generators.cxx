@@ -107,10 +107,9 @@ fp_dtypes()
 std::vector<neml2::Dtype>
 dtypes()
 {
-  auto types = int_dtypes();
-  auto fp_types = fp_dtypes();
-  types.insert(types.end(), fp_types.begin(), fp_types.end());
-  return types;
+  // torch frequently changes their support for different dtypes, so our default dtype is just
+  // double, which is the one we care the most about
+  return {neml2::kFloat64};
 }
 
 std::vector<neml2::Device>

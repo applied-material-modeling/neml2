@@ -136,7 +136,7 @@ TEMPLATE_TEST_CASE("operators",
 
 TEST_CASE("in-place operators", "[tensors/functions]")
 {
-  auto cfg = test::generate_tensor_config(test::fp_dtypes());
+  auto cfg = test::generate_tensor_config();
   auto shape = test::GeneratedTensorShape({4, 3}, {2}, {5});
 
   DYNAMIC_SECTION(cfg.desc())

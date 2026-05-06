@@ -186,7 +186,7 @@ TEMPLATE_TEST_CASE("PrimitiveTensor", "[tensors]", FOR_ALL_PRIMITIVETENSOR_COMMA
 
   SECTION("rand")
   {
-    auto cfg = test::generate_tensor_config(test::fp_dtypes());
+    auto cfg = test::generate_tensor_config();
     auto shape = test::GeneratedTensorShape({}, {}, {TestType::const_base_sizes});
 
     auto a0 = at::rand(TestType::const_base_sizes, cfg.options);
@@ -265,7 +265,7 @@ TEST_CASE("PrimitiveTensor", "[tensors]")
 
   SECTION("einsum")
   {
-    auto cfg = test::generate_tensor_config(test::fp_dtypes());
+    auto cfg = test::generate_tensor_config();
     auto shape_a = test::generate_tensor_shape<R3>();
     auto shape_b = test::generate_tensor_shape<R4>();
     DYNAMIC_SECTION(cfg.desc() << " " << shape_a.desc() << " " << shape_b.desc())

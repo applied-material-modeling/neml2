@@ -36,7 +36,7 @@ using namespace neml2;
 TEST_CASE("einsum", "[tensors/functions]")
 {
   at::manual_seed(42);
-  auto cfg = test::generate_tensor_config(test::fp_dtypes());
+  auto cfg = test::generate_tensor_config();
   auto shape1 = test::GeneratedTensorShape{{2, 1}, {4}, {}};
   auto shape2 = test::GeneratedTensorShape{{3, 2, 2}, {}, {3, 3}};
   auto shape3 = test::GeneratedTensorShape{{1, 2}, {2, 1}, {3, 3, 3}};

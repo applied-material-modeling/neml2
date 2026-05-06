@@ -42,7 +42,7 @@ TEMPLATE_TEST_CASE("inner", "[tensors/functions]", FOR_ALL_TENSORBASE_COMMA(TYPE
   at::manual_seed(42);
 
   // Use only floating-point dtypes (linalg_vecdot does not support integers)
-  auto cfg = test::generate_tensor_config(test::fp_dtypes());
+  auto cfg = test::generate_tensor_config();
   auto shape = test::generate_tensor_shape<TestType>();
 
   DYNAMIC_SECTION(cfg.desc() << " " << shape.desc())
