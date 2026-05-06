@@ -37,27 +37,20 @@ NucleationFluxMagnitude::expected_options()
   OptionSet options = Model::expected_options();
   options.doc() = "Compute the nucleation flux magnitude excluding the Dirac delta term.";
 
-  options.set_input("zeldovich_factor");
-  options.set("zeldovich_factor").doc() = "Zeldovich factor";
+  options.add_input("zeldovich_factor", "Zeldovich factor");
 
-  options.set_input("kinetic_factor");
-  options.set("kinetic_factor").doc() = "Kinetic factor";
+  options.add_input("kinetic_factor", "Kinetic factor");
 
-  options.set_input("nucleation_barrier");
-  options.set("nucleation_barrier").doc() = "Nucleation barrier";
+  options.add_input("nucleation_barrier", "Nucleation barrier");
 
-  options.set_input("temperature");
-  options.set("temperature").doc() = "Temperature";
+  options.add_input("temperature", "Temperature");
 
-  options.set_parameter<TensorName<Scalar>>("nucleation_site_density");
-  options.set("nucleation_site_density").doc() = "Nucleation site density";
+  options.add_parameter<Scalar>("nucleation_site_density", "Nucleation site density");
 
-  options.set_parameter<TensorName<Scalar>>("boltzmann_constant");
-  options.set("boltzmann_constant").doc() = "Boltzmann constant";
+  options.add_parameter<Scalar>("boltzmann_constant", "Boltzmann constant");
 
-  options.set_output("nucleation_flux_magnitude");
-  options.set("nucleation_flux_magnitude").doc() =
-      "Nucleation flux magnitude excluding the Dirac delta term";
+  options.add_output("nucleation_flux_magnitude",
+                     "Nucleation flux magnitude excluding the Dirac delta term");
 
   return options;
 }
@@ -95,17 +88,10 @@ NucleationFluxMagnitude::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 
   if (dout_din)
   {
-    if (_Z.is_dependent())
-      _J.d(_Z) = beta * N0 * exp_raw;
-
-    if (_beta.is_dependent())
-      _J.d(_beta) = Z * N0 * exp_raw;
-
-    if (_dg.is_dependent())
-      _J.d(_dg) = -prefactor * exp_raw / (k * T);
-
-    if (_T.is_dependent())
-      _J.d(_T) = prefactor * exp_raw * dg / (k * T * T);
+    _J.d(_Z) = beta * N0 * exp_raw;
+    _J.d(_beta) = Z * N0 * exp_raw;
+    _J.d(_dg) = -prefactor * exp_raw / (k * T);
+    _J.d(_T) = prefactor * exp_raw * dg / (k * T * T);
 
     if (const auto * const N0_param = nl_param("N0"))
       _J.d(*N0_param) = Z * beta * exp_raw;

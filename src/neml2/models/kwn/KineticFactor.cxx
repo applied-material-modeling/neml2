@@ -38,20 +38,15 @@ KineticFactor::expected_options()
   OptionSet options = Model::expected_options();
   options.doc() = "Compute the nucleation kinetic factor.";
 
-  options.set_input("critical_radius");
-  options.set("critical_radius").doc() = "Critical radius for nucleation";
+  options.add_input("critical_radius", "Critical radius for nucleation");
 
-  options.set_input("projected_diffusivity_sum");
-  options.set("projected_diffusivity_sum").doc() = "Projected diffusivity sum";
+  options.add_input("projected_diffusivity_sum", "Projected diffusivity sum");
 
-  options.set_parameter<TensorName<Scalar>>("molar_volume");
-  options.set("molar_volume").doc() = "Molar volume of the precipitate";
+  options.add_parameter<Scalar>("molar_volume", "Molar volume of the precipitate");
 
-  options.set_parameter<TensorName<Scalar>>("avogadro_number");
-  options.set("avogadro_number").doc() = "Avogadro's number";
+  options.add_parameter<Scalar>("avogadro_number", "Avogadro's number");
 
-  options.set_output("kinetic_factor");
-  options.set("kinetic_factor").doc() = "Kinetic factor for nucleation";
+  options.add_output("kinetic_factor", "Kinetic factor for nucleation");
 
   return options;
 }
@@ -82,11 +77,8 @@ KineticFactor::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 
   if (dout_din)
   {
-    if (_R_crit.is_dependent())
-      _beta.d(_R_crit) = 2.0 * beta / R_crit;
-
-    if (_sum.is_dependent())
-      _beta.d(_sum) = -beta / sum;
+    _beta.d(_R_crit) = 2.0 * beta / R_crit;
+    _beta.d(_sum) = -beta / sum;
   }
 }
 } // namespace neml2

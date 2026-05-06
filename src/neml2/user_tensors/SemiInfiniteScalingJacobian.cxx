@@ -35,18 +35,15 @@ SemiInfiniteScalingJacobianTmpl<T>::expected_options()
   options.doc() = "Construct a " + UserTensorBase<T>::tensor_type() +
                   " using the semi-infinite scaling Jacobian $s / (1 - x)^2$.";
 
-  options.set<TensorName<T>>("x");
-  options.set("x").doc() = "The input tensor x";
+  options.add<TensorName<T>>("x", "The input tensor x");
 
-  options.set<TensorName<T>>("s");
-  options.set("s").doc() = "The scaling tensor s";
+  options.add<TensorName<T>>("s", "The scaling tensor s");
 
   return options;
 }
 
 template <typename T>
-SemiInfiniteScalingJacobianTmpl<T>::SemiInfiniteScalingJacobianTmpl(
-    const OptionSet & options)
+SemiInfiniteScalingJacobianTmpl<T>::SemiInfiniteScalingJacobianTmpl(const OptionSet & options)
   : UserTensorBase<T>(options),
     _x(options.get<TensorName<T>>("x")),
     _s(options.get<TensorName<T>>("s"))

@@ -35,11 +35,9 @@ InverseSemiInfiniteScalingJacobianTmpl<T>::expected_options()
   options.doc() = "Construct a " + UserTensorBase<T>::tensor_type() +
                   " using the inverse semi-infinite scaling Jacobian $(1 - x)^2 / s$.";
 
-  options.set<TensorName<T>>("x");
-  options.set("x").doc() = "The input tensor x";
+  options.add<TensorName<T>>("x", "The input tensor x");
 
-  options.set<TensorName<T>>("s");
-  options.set("s").doc() = "The scaling tensor s";
+  options.add<TensorName<T>>("s", "The scaling tensor s");
 
   return options;
 }

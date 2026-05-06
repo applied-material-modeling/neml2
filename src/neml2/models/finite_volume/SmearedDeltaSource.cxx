@@ -42,20 +42,15 @@ SmearedDeltaSource::expected_options()
   OptionSet options = Model::expected_options();
   options.doc() = "Compute a smeared Gaussian source term for a Dirac delta distribution.";
 
-  options.set_input("magnitude");
-  options.set("magnitude").doc() = "Source magnitude.";
+  options.add_input("magnitude", "Source magnitude.");
 
-  options.set_input("location");
-  options.set("location").doc() = "Source location.";
+  options.add_input("location", "Source location.");
 
-  options.set_parameter<TensorName<Scalar>>("width");
-  options.set("width").doc() = "Gaussian width.";
+  options.add_parameter<Scalar>("width", "Gaussian width.");
 
-  options.set_parameter<TensorName<Scalar>>("cell_centers");
-  options.set("cell_centers").doc() = "Cell center locations.";
+  options.add_parameter<Scalar>("cell_centers", "Cell center locations.");
 
-  options.set_output("smeared_source") = VariableName(STATE, "smeared_source");
-  options.set("smeared_source").doc() = "Smeared Gaussian source.";
+  options.add_output("smeared_source", "state/smeared_source", "Smeared Gaussian source.");
 
   return options;
 }
@@ -90,7 +85,6 @@ SmearedDeltaSource::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 
   if (dout_din)
   {
-    if (_magnitude.is_dependent())
     {
       if (_magnitude.intmd_dim() == 0)
         _source.d(_magnitude, 1, 1, 0) = gauss;
@@ -103,7 +97,6 @@ SmearedDeltaSource::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
       }
     }
 
-    if (_location.is_dependent())
     {
       const auto dsource_dloc = magnitude * gauss * arg * inv_width;
       if (_location.intmd_dim() == 0)

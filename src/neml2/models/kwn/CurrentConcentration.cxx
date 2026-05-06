@@ -37,17 +37,15 @@ CurrentConcentration::expected_options()
   OptionSet options = Model::expected_options();
   options.doc() = "Compute the current matrix concentration from precipitate volume fractions.";
 
-  options.set_parameter<TensorName<Scalar>>("initial_concentration");
-  options.set("initial_concentration").doc() = "Initial concentration in solution";
+  options.add_parameter<Scalar>("initial_concentration", "Initial concentration in solution");
 
-  options.set<std::vector<VariableName>>("precipitate_volume_fractions");
-  options.set("precipitate_volume_fractions").doc() = "Precipitate volume fraction variables";
+  options.add<std::vector<VariableName>>("precipitate_volume_fractions",
+                                         "Precipitate volume fraction variables");
 
-  options.set_parameter<std::vector<TensorName<Scalar>>>("precipitate_concentrations");
-  options.set("precipitate_concentrations").doc() = "Precipitate concentrations";
+  options.add<std::vector<TensorName<Scalar>>>("precipitate_concentrations",
+                                               "Precipitate concentrations");
 
-  options.set_output("current_concentration");
-  options.set("current_concentration").doc() = "Current concentration in solution";
+  options.add_output("current_concentration", "Current concentration in solution");
 
   return options;
 }
@@ -95,8 +93,7 @@ CurrentConcentration::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
   if (dout_din)
   {
     for (std::size_t i = 0; i < _fs.size(); i++)
-      if (_fs[i]->is_dependent())
-        _x.d(*_fs[i]) = (numer - denom * (*_xps[i])) / (denom * denom);
+      _x.d(*_fs[i]) = (numer - denom * (*_xps[i])) / (denom * denom);
 
     if (const auto * const x0 = nl_param("x0"))
       _x.d(*x0) = 1.0 / denom;

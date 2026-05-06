@@ -38,23 +38,17 @@ SFFKGPrecipitationGrowthRate::expected_options()
   OptionSet options = Model::expected_options();
   options.doc() = "Compute the SFFK precipitate growth rate.";
 
-  options.set_parameter<TensorName<Scalar>>("radius");
-  options.set("radius").doc() = "Precipitate radius per size bin";
+  options.add_parameter<Scalar>("radius", "Precipitate radius per size bin");
 
-  options.set_input("projected_diffusivity_sum");
-  options.set("projected_diffusivity_sum").doc() = "Projected diffusivity sum";
+  options.add_input("projected_diffusivity_sum", "Projected diffusivity sum");
 
-  options.set_parameter<TensorName<Scalar>>("gibbs_free_energy_difference");
-  options.set("gibbs_free_energy_difference").doc() = "Gibbs free energy difference";
+  options.add_parameter<Scalar>("gibbs_free_energy_difference", "Gibbs free energy difference");
 
-  options.set_input("temperature");
-  options.set("temperature").doc() = "Temperature";
+  options.add_input("temperature", "Temperature");
 
-  options.set_parameter<TensorName<Scalar>>("gas_constant");
-  options.set("gas_constant").doc() = "Gas constant";
+  options.add_parameter<Scalar>("gas_constant", "Gas constant");
 
-  options.set_output("growth_rate");
-  options.set("growth_rate").doc() = "Precipitate growth rate per size bin";
+  options.add_output("growth_rate", "Precipitate growth rate per size bin");
 
   return options;
 }
@@ -98,14 +92,12 @@ SFFKGPrecipitationGrowthRate::set_value(bool out, bool dout_din, bool /*d2out_di
       _R_dot.d(*R_param, 2, 1, 1) = d_rate_dR.intmd_unsqueeze(1) * diag_r;
     }
 
-    if (_proj_sum.is_dependent())
-      _R_dot.d(_proj_sum, 1, 1, 0) = -rate / proj_sum;
+    _R_dot.d(_proj_sum, 1, 1, 0) = -rate / proj_sum;
 
     if (const auto * const dg_param = nl_param("dg"))
       _R_dot.d(*dg_param, 1, 1, 0) = inv_denom;
 
-    if (_T.is_dependent())
-      _R_dot.d(_T, 1, 1, 0) = -rate / T;
+    _R_dot.d(_T, 1, 1, 0) = -rate / T;
 
     if (const auto * const Rg_param = nl_param("R_g"))
       _R_dot.d(*Rg_param, 1, 1, 0) = -rate / Rg;

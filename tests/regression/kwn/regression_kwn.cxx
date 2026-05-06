@@ -45,30 +45,16 @@ TEST_CASE("kwn")
 
   for (const auto & test : tests)
   {
-    // Change current working directory to the parent directory of the input file
-    fs::current_path(test.parent_path());
-
-    auto section_name = (pwd / test).lexically_relative(search_path).string();
+    const auto input = pwd / test;
+    auto section_name = input.lexically_relative(search_path).string();
 
     DYNAMIC_SECTION(section_name)
     {
-      try
-      {
-        // Load and run the model
-        auto factory = load_input(test.filename());
-        auto driver = factory->get_driver("regression");
-        diagnose_and_throw(*driver);
-        REQUIRE(driver->run());
-      }
-      catch (...)
-      {
-        fs::current_path(pwd);
-        throw;
-      }
+      // Load and run the model
+      auto factory = load_input(input);
+      auto driver = factory->get_driver("regression");
+      diagnose_and_throw(*driver);
+      REQUIRE(driver->run());
     }
-
-    // Catch2 will split dynamic sections into different test cases, so we need to set the current
-    // path back to where we were. Otherwise the next test case will start from the wrong directory.
-    fs::current_path(pwd);
   }
 }

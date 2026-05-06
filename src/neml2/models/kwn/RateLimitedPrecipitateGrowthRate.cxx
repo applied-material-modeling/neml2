@@ -38,24 +38,19 @@ RateLimitedPrecipitateGrowthRate::expected_options()
   OptionSet options = Model::expected_options();
   options.doc() = "Compute the rate-limited precipitate growth rate for a single species.";
 
-  options.set_parameter<TensorName<Scalar>>("radius");
-  options.set("radius").doc() = "Precipitate radius per size bin";
+  options.add_parameter<Scalar>("radius", "Precipitate radius per size bin");
 
-  options.set_input("current_concentration");
-  options.set("current_concentration").doc() = "Current concentration in solution";
+  options.add_input("current_concentration", "Current concentration in solution");
 
-  options.set_parameter<TensorName<Scalar>>("equilibrium_concentration");
-  options.set("equilibrium_concentration").doc() = "Equilibrium concentration in solution";
+  options.add_parameter<Scalar>("equilibrium_concentration",
+                                "Equilibrium concentration in solution");
 
-  options.set_parameter<TensorName<Scalar>>("concentration_difference");
-  options.set("concentration_difference").doc() =
-      "Concentration difference between precipitate and equilibrium";
+  options.add_parameter<Scalar>("concentration_difference",
+                                "Concentration difference between precipitate and equilibrium");
 
-  options.set_parameter<TensorName<Scalar>>("diffusivity");
-  options.set("diffusivity").doc() = "Species diffusivity in solution";
+  options.add_parameter<Scalar>("diffusivity", "Species diffusivity in solution");
 
-  options.set_output("growth_rate");
-  options.set("growth_rate").doc() = "Precipitate growth rate per size bin";
+  options.add_output("growth_rate", "Precipitate growth rate per size bin");
 
   return options;
 }
@@ -100,7 +95,6 @@ RateLimitedPrecipitateGrowthRate::set_value(bool out, bool dout_din, bool /*d2ou
       _R_dot.d(*R_param, 2, 1, 1) = d_rate_dR.intmd_unsqueeze(1) * diag_r;
     }
 
-    if (_x.is_dependent())
     {
       const auto d_rate_dx = coef / denom;
       if (_x.intmd_dim() == 0)

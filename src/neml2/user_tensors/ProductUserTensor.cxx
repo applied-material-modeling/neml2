@@ -34,11 +34,9 @@ ProductUserTensorTmpl<T>::expected_options()
   OptionSet options = UserTensorBase<T>::expected_options();
   options.doc() = "Construct a " + UserTensorBase<T>::tensor_type() + " using the product $a b$.";
 
-  options.set<TensorName<T>>("a");
-  options.set("a").doc() = "The input tensor a";
+  options.add<TensorName<T>>("a", "The input tensor a");
 
-  options.set<TensorName<T>>("b");
-  options.set("b").doc() = "The input tensor b";
+  options.add<TensorName<T>>("b", "The input tensor b");
 
   return options;
 }

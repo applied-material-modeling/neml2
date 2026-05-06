@@ -117,7 +117,7 @@ N0 = 1e16
     type = TransientDriver
     model = 'model'
     prescribed_time = 'time'
-    ic_Scalar_names = 'state/number_density'
+    ic_Scalar_names = 'number_density'
     ic_Scalar_values = 'ic'
     save_as = 'result.pt'
   []
@@ -132,6 +132,7 @@ N0 = 1e16
   [eq_sys]
     type = NonlinearSystem
     model = 'implicit_rate'
+    unknowns = 'number_density'
   []
 []
 
@@ -147,28 +148,28 @@ N0 = 1e16
 
 [Models]
   [input_temperature]
-    type = ScalarParameterToState
-    from = '${T}'
-    to = 'forces/T'
+    type = ScalarConstantParameter
+    value = ${T}
+    parameter = 'forces/T'
   []
 
   [volume_fraction]
     type = PrecipitateVolumeFraction
     radius = 'true_centers'
-    number_density = 'state/true_number_density'
-    volume_fraction = 'state/vf'
+    number_density = 'true_number_density'
+    volume_fraction = 'vf'
   []
   [x_Cu]
     type = CurrentConcentration
     initial_concentration = 'x0_Cu'
-    precipitate_volume_fractions = 'state/vf'
+    precipitate_volume_fractions = 'vf'
     precipitate_concentrations = 'xp_Cu'
-    current_concentration = 'state/x_Cu'
+    current_concentration = 'x_Cu'
   []
 
   [chemical_potential_difference]
     type = ScalarLinearInterpolation
-    argument = 'state/x_Cu'
+    argument = 'x_Cu'
     abscissa = 'X_Cu_vary'
     ordinate = 'chem_diff'
   []
@@ -177,80 +178,85 @@ N0 = 1e16
     type = ProjectedDiffusivitySum
     concentration_differences = ${diff_FCC_Cu}
     diffusivities = ${D}
-    far_field_concentrations = 'state/x_Cu'
-    projected_diffusivity_sum = 'state/diff_sum'
+    far_field_concentrations = 'x_Cu'
+    projected_diffusivity_sum = 'diff_sum'
   []
   [growth_rate]
     type = SFFKGPrecipitationGrowthRate
     radius = 'true_centers'
-    projected_diffusivity_sum = 'state/diff_sum'
+    projected_diffusivity_sum = 'diff_sum'
     gibbs_free_energy_difference = chemical_potential_difference
     temperature = 'forces/T'
     gas_constant = 8.314
-    growth_rate = 'state/growth_rate'
+    growth_rate = 'growth_rate'
   []
 
   [scaled_cell_velocity]
     type = ScalarMultiplication
-    from_var = 'state/growth_rate'
-    coefficient = 'center_inverse_jacobian'
-    to_var = 'state/internal/scaled_cell_velocity'
+    from = 'growth_rate'
+    scaling = 'center_inverse_jacobian'
+    to = 'internal/scaled_cell_velocity'
   []
   [advection_velocity]
     type = LinearlyInterpolateToCellEdges
-    cell_values = 'state/internal/scaled_cell_velocity'
+    cell_values = 'internal/scaled_cell_velocity'
     cell_centers = 'centers'
     cell_edges = 'edges'
-    edge_values = 'state/v_edge'
+    edge_values = 'v_edge'
   []
   [advective_flux]
     type = FiniteVolumeUpwindedAdvectiveFlux
-    u = 'state/number_density'
-    v_edge = 'state/v_edge'
-    flux = 'state/J'
+    u = 'number_density'
+    v_edge = 'v_edge'
+    flux = 'J'
   []
   [left_bc]
     type = FiniteVolumeAppendBoundaryCondition
-    input = 'state/J'
+    input = 'J'
     bc_value = 0.0
     side = 'left'
   []
   [right_bc]
     type = FiniteVolumeAppendBoundaryCondition
-    input = 'state/J_with_bc_left'
+    input = 'J_with_bc_left'
     bc_value = 0.0
     side = 'right'
   []
   [flux_divergence]
     type = FiniteVolumeGradient
-    u = 'state/J_with_bc_left_with_bc_right'
+    u = 'J_with_bc_left_with_bc_right'
     dx = 'dx'
-    grad_u = 'state/flux_div'
+    grad_u = 'flux_div'
   []
   [rate_of_change]
     type = ScalarLinearCombination
-    from_var = 'state/nucleation_flux state/flux_div'
-    to_var = 'state/number_density_rate'
-    coefficients = '1 1'
+    from = 'nucleation_flux flux_div'
+    to = 'number_density_rate'
+    weights = '1 1'
   []
   [integrate_u]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/number_density'
+    variable = 'number_density'
   []
   [implicit_rate]
     type = ComposedModel
     models = 'input_temperature growth_rate scaled_cell_velocity advection_velocity advective_flux left_bc right_bc flux_divergence integrate_u unscale volume_fraction x_Cu diffusivity_sum zeldovich_factor kinetic_factor nucleation_barrier_and_critical_radius nucleation_flux_magnitude nucleation_flux rate_of_change'
   []
+  [predictor]
+    type = ConstantExtrapolationPredictor
+    unknowns_Scalar = 'number_density'
+  []
   [model_scaled]
     type = ImplicitUpdate
     equation_system = 'eq_sys'
     solver = 'newton'
+    predictor = 'predictor'
   []
   [unscale]
     type = ScalarMultiplication
-    from_var = 'state/number_density'
-    coefficient = 'center_inverse_jacobian'
-    to_var = 'state/true_number_density'
+    from = 'number_density'
+    scaling = 'center_inverse_jacobian'
+    to = 'true_number_density'
   []
 
 
@@ -259,47 +265,47 @@ N0 = 1e16
     surface_energy = ${gamma}
     total_gibbs_free_energy_difference = chemical_potential_difference
     molar_volume = ${Vm}
-    nucleation_barrier = 'state/barrier'
-    critical_radius = 'state/R_crit'
+    nucleation_barrier = 'barrier'
+    critical_radius = 'R_crit'
   []
   [zeldovich_factor]
     type = ZeldovichFactor
-    critical_radius = 'state/R_crit'
+    critical_radius = 'R_crit'
     surface_energy = ${gamma}
     temperature = 'forces/T'
     molar_volume = ${Vm}
     avogadro_number = 6.02214076e23
     boltzmann_constant = 1.380649e-23
-    zeldovich_factor = 'state/Z'
+    zeldovich_factor = 'Z'
   []
   [kinetic_factor]
     type = KineticFactor
-    critical_radius = 'state/R_crit'
-    projected_diffusivity_sum = 'state/diff_sum'
+    critical_radius = 'R_crit'
+    projected_diffusivity_sum = 'diff_sum'
     molar_volume = ${Vm}
     avogadro_number = 6.02214076e23
-    kinetic_factor = 'state/beta'
+    kinetic_factor = 'beta'
   []
   [nucleation_flux_magnitude]
     type = NucleationFluxMagnitude
-    zeldovich_factor = 'state/Z'
-    kinetic_factor = 'state/beta'
-    nucleation_barrier = 'state/barrier'
+    zeldovich_factor = 'Z'
+    kinetic_factor = 'beta'
+    nucleation_barrier = 'barrier'
     temperature = 'forces/T'
     nucleation_site_density = ${N0}
     boltzmann_constant = 1.380649e-23
-    nucleation_flux_magnitude = 'state/nucleation_magnitude'
+    nucleation_flux_magnitude = 'nucleation_magnitude'
   []
   [nucleation_flux]
     type = DumpInSmallestBin
-    magnitude = 'state/nucleation_magnitude'
+    magnitude = 'nucleation_magnitude'
     cell_centers = 'true_centers'
-    dumped_source = 'state/nucleation_flux'
+    dumped_source = 'nucleation_flux'
   []
 
   [model]
     type = ComposedModel
     models = 'model_scaled unscale volume_fraction x_Cu'
-    additional_outputs = 'state/number_density state/true_number_density state/vf state/x_Cu'
+    additional_outputs = 'number_density true_number_density vf x_Cu'
    []
 []
