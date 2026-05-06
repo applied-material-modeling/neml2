@@ -1,0 +1,228 @@
+---
+name: add-domain
+description: Stand up a new *domain* of related Models inside an existing NEML2 submodule — e.g., `models/solid_mechanics/viscoelasticity/`, `models/solid_mechanics/damage/`, `models/chemical_reactions/<new-family>/`. Use this skill whenever the user wants to add a *family* of related models at once (more than one class on a shared theme), introduce a new physical theory area to NEML2, or scaffold an end-to-end set of models + unit tests + regression tests for a constitutive framework. Trigger on phrases like "add fundamental viscoelasticity models", "create a damage mechanics subfolder", "implement a family of yield surfaces", "scaffold creep models under solid_mechanics", or any request that names a *theory* rather than a single model. For a single new Model class, use `add-model` instead.
+---
+
+# add-domain
+
+Add a new *domain* (subfolder) of related Models inside an existing submodule of NEML2 — header tree, source tree, unit tests, and regression tests. The single-class scaffolding is delegated to `add-model`; this skill handles the planning, composition, and verification work that single-class scaffolding doesn't cover.
+
+## When to use
+
+Trigger this skill when the user wants to introduce a *theme* of models, not just one. A few clues:
+
+- They name a physical theory ("viscoelasticity", "damage", "creep", "phase transformation kinetics") rather than a single class name.
+- They list multiple models in one breath ("Maxwell, Kelvin-Voigt, Zener, …").
+- They mention end-to-end testing alongside the models.
+
+For a **single new Model**, use `add-model` directly — the planning overhead in this skill is wasted on one class.
+For a **brand-new top-level submodule** (a sibling of `models/`, `solvers/`, `drivers/`, etc.) — that needs `neml2_add_submodule(...)`, a `link_anchor.cxx`, and a force-link symbol declared in `include/neml2/neml2.h`. Surface that to the user instead of attempting it; this skill targets *domain subfolders inside an existing submodule*, not new submodules.
+
+## The workflow
+
+1. **Plan the math and the composition** — interactively, with the user, before writing code.
+2. **Scaffold each model** via `add-model`, then fill in the constitutive equations and analytic derivatives.
+3. **Verify each model in isolation** with `ModelUnitTest` (`.i` files) — both forward values and derivatives.
+4. **Verify the composition** with `neml2-inspect` *before* trying to time-step — confirm the wiring before the simulation.
+5. **Stand up regression tests** by driving once with `neml2-run`, promoting `result.pt` to `gold/result.pt`, and verifying with the `regression_tests` binary.
+6. **Document the new domain** under `doc/content/modules/` so that the physics, the equations, and a worked input file land in the user-facing docs.
+
+The first step is where this skill earns its keep. The rest is mechanical, but the gotchas in steps 4–6 are easy to miss.
+
+---
+
+## Step 1 — Plan the math and composition (do this BEFORE writing code)
+
+The hardest part of adding a domain is not C++ — it's deciding **which equations belong in which Model**, **which variables are inputs vs outputs vs internal state**, and **what already exists in NEML2 that you can reuse**. Get this wrong and you'll re-design midway through, throwing away code.
+
+NEML2 models are small composable pieces, not monoliths. A constitutive theory typically becomes 3–5 small Models that compose with existing utilities to form a complete simulation. Pick the wrong split and you either (a) build a god-object that's hard to reuse, or (b) build pieces that don't compose with the rest of NEML2.
+
+**For each model the user wants, draft a short specification and ask the user to confirm before writing code:**
+
+```
+Model: <Name>
+Physics:        <one-sentence description, ideally with the governing equation>
+Inputs:         <variable name : tensor type, e.g. "stress : SR2", "viscous_strain : SR2">
+Outputs:        <variable name : tensor type>
+Parameters:     <name : tensor type — e.g. "viscosity : Scalar">
+Internal state: <which outputs are *rates* of variables that the framework will time-integrate>
+Equation:       <the actual equation, in LaTeX-ish form, that set_value will implement>
+```
+
+Then list the **composition plan** — what existing NEML2 pieces this model needs to plug into to form a complete simulation. Common reusable pieces:
+
+- `LinearIsotropicElasticity` (and friends) — stress ↔ elastic strain
+- `SR2VariableRate` / `ScalarVariableRate` — turn a state variable into its rate via finite differencing in time
+- `SR2LinearCombination` / `ScalarLinearCombination` — sum / subtract variables (e.g. `elastic_strain = strain - viscous_strain`)
+- `SR2BackwardEulerTimeIntegration` / `ScalarBackwardEulerTimeIntegration` — turn a rate into an implicit residual on the underlying state variable
+- `ComposedModel` — glue several Models into one
+- `NonlinearSystem` + `Newton` + `DenseLU` + `ImplicitUpdate` — solve for unknowns at each time step
+- `ConstantExtrapolationPredictor` — initial guess for the implicit solve
+- `TransientDriver` + `TransientRegression` — drive a load history and compare against a gold reference
+
+Survey the target subdirectory (`ls include/neml2/models/<submodule>/`) and any obviously-related subdirectories before drafting. Often a domain interface already exists (e.g., `IsotropicHardening`, `FlowRule`, `Elasticity`) that the new models should subclass instead of `Model` directly. **Check before deciding** — copying the wrong base class is the most common architectural mistake.
+
+For a structured catalog of *every* registered object — type names, doc strings, every option's type/default/required-flag — dump the registry with `neml2-syntax`:
+
+```bash
+./build/dev/src/tools/neml2-syntax --yaml /tmp/syntax.yml   # writes a YAML catalog
+./build/dev/src/tools/neml2-syntax | less                   # or read on stdout
+```
+
+Grep this for likely candidates before assuming you need a new Model — `grep -A3 -B1 'Strain' /tmp/syntax.yml` will surface every object whose docs mention "Strain", along with its option list. This is much faster than browsing headers, and it catches utilities that `ls` misses (e.g., the `*BackwardEulerTimeIntegration` and `*VariableRate` helpers live under `models/common/`, not where you'd guess from a physics theme).
+
+**Why this step exists:** it is far cheaper to revise an ASCII spec in chat than to revise five `.h`/`.cxx`/`.i` triples that already compile. Skipping the spec step doesn't make you faster; it makes you re-do work. *Do not start writing code until the user has signed off on the spec.*
+
+### Example spec (from a real session)
+
+```
+Model: ZenerViscoelasticity
+Physics:        Standard Linear Solid — equilibrium spring in parallel with a Maxwell branch
+Inputs:         strain : SR2, viscous_strain : SR2 (Maxwell-branch internal state)
+Outputs:        stress : SR2, viscous_strain_rate : SR2
+Parameters:     equilibrium_modulus, maxwell_modulus, maxwell_viscosity (all Scalar)
+Internal state: viscous_strain (the framework will time-integrate viscous_strain_rate via SR2BackwardEulerTimeIntegration)
+Equation:       sigma_M = E_M * (eps - eps_v)
+                sigma   = E_inf * eps + sigma_M
+                d(eps_v)/dt = sigma_M / eta_M
+
+Composition (no new pieces beyond this Model):
+  - SR2BackwardEulerTimeIntegration on viscous_strain
+  - NonlinearSystem unknown = viscous_strain, residual = viscous_strain_residual
+  - ImplicitUpdate + Newton + DenseLU + ConstantExtrapolationPredictor
+  - TransientDriver prescribes strain over time
+```
+
+If the user provides handwavy physics ("just add Maxwell"), translate it into a spec like the above and confirm. If they provide an explicit governing equation, lift it directly into the spec. Either way, get sign-off before scaffolding.
+
+---
+
+## Step 2 — Scaffold each model
+
+For each model in the spec, follow the `add-model` skill — do not duplicate its file templates here. The high-level shape is unchanged: `include/neml2/models/<submodule>/<domain>/<Name>.h`, `src/.../<Name>.cxx`, `tests/unit/models/<submodule>/<domain>/<Name>.i`. CMake `file(GLOB_RECURSE)` picks up new files automatically — no CMake edits.
+
+Two things specific to a multi-model domain:
+
+- **Use the same naming and parameter conventions across the family.** If one model in the domain calls its dashpot parameter `viscosity`, every model in the family should call it `viscosity` (not `eta` or `damping`). Inputs and parameter names show up in user-facing input files; inconsistency forces users to context-switch.
+- **Provide analytic derivatives** unless you have a strong reason not to. The `ModelUnitTest` cross-checks them against finite differencing; getting them right pays off immediately and never has to be revisited. If you can't derive them quickly, scaffold with `check_first_derivatives = false` in the `.i`, but treat that as a TODO, not a long-term state.
+
+---
+
+## Step 3 — Unit-test every model
+
+Each `.i` file under `tests/unit/models/<submodule>/<domain>/` is auto-discovered by the `unit_tests` binary. Use `ModelUnitTest` and provide:
+
+- Hand-computed reference outputs (don't accept whatever the model produces — that defeats the test)
+- `check_first_derivatives = true` (the default) so analytic derivatives are cross-checked against FD
+
+After building (`cmake --build --preset dev`), run each test by section name:
+
+```bash
+./build/dev/tests/unit/unit_tests "models" -c "<submodule>/<domain>/<Name>.i"
+```
+
+The `-c` flag selects a Catch2 dynamic section. If your section path is wrong, you'll get "1 test case passed, 0 assertions" — the test silently no-ops instead of failing. If you see that, double-check the `-c` path matches the file's relative path from `tests/unit/models/`.
+
+Run the whole family at the end to confirm nothing regressed.
+
+---
+
+## Step 4 — Verify the composition with `neml2-inspect` BEFORE running
+
+This is the step most people skip and then regret. Once your unit tests pass, you have working pieces — but nothing has yet checked that they *fit together correctly*. `neml2-inspect` (built when `NEML2_TOOLS=ON`, i.e., almost always) prints what each Model declares as inputs, outputs, and parameters, and how a `ComposedModel` resolves the dependency graph.
+
+```bash
+./build/dev/src/tools/neml2-inspect <input-file.i>
+```
+
+Use it to confirm, before launching `neml2-run`:
+
+- Each submodel sees the inputs it expects (no typos in variable names).
+- Outputs of one submodel match the inputs of the next (e.g., `viscous_strain_rate` from your model matches what `SR2BackwardEulerTimeIntegration` expects, named `viscous_strain_rate`).
+- The `NonlinearSystem`'s `unknowns` and `residuals` correspond to outputs your composed model actually produces.
+- Nothing is left dangling — every input is sourced, every output is consumed or surfaced as `additional_outputs`.
+
+If `neml2-inspect` shows a problem, you haven't started time-stepping yet — fix the wiring at zero cost. If you skip this step and run `neml2-run` instead, the failure mode is often a cryptic shape mismatch deep inside Newton, which is much harder to localize.
+
+`neml2-diagnose <file.i>` is the companion check: it runs each model's `diagnose()` method to catch misconfigurations the parser cannot detect statically. (`neml2-syntax` is for dumping the registry — see Step 1; it doesn't take an input file.)
+
+---
+
+## Step 5 — Stand up regression tests
+
+The `regression_tests` binary auto-discovers any `.i` file under `tests/regression/<submodule>/`. The convention is one directory per scenario:
+
+```
+tests/regression/<submodule>/<domain>/<scenario>/
+  ├── model.i
+  └── gold/
+      └── result.pt
+```
+
+`model.i` declares both a `TransientDriver` (saving to `result.pt`) and a `TransientRegression` (reading from `gold/result.pt`).
+
+**Bootstrap the gold file** by running the driver alone first:
+
+```bash
+cd tests/regression/<submodule>/<domain>/<scenario>
+neml2-run model.i driver        # produces result.pt; ignore the warning about TransientRegression
+mv result.pt gold/result.pt
+```
+
+`neml2-run` will print a benign warning that `TransientRegression` is not a registered driver — that's expected, since `TransientRegression` only exists inside the `regression_tests` binary. The warning means "I'm skipping that block," not "something failed."
+
+**Then verify** with the regression binary:
+
+```bash
+./build/dev/tests/regression/regression_tests "<submodule-test-name>" -c "<domain>/<scenario>/model.i"
+```
+
+The test-case name is the string passed to `TEST_CASE(…)` in `tests/regression/<submodule>/regression_<submodule>.cxx` — usually a phrase like `"solid mechanics"`. Find it with `grep TEST_CASE tests/regression/<submodule>/*.cxx`.
+
+**Clean up** any stray `result.pt` left in the scenario directory after generating gold — only `model.i` and `gold/result.pt` should be checked in. Easy to forget; checked-in `result.pt` files muddle diffs.
+
+For a multi-model domain, add at least one regression test per *qualitatively distinct* model — typically:
+
+- One scenario per model that has internal state (these exercise the `ImplicitUpdate` path).
+- One scenario for each "pure forward" model, if any (e.g., a constitutive law that has no internal state).
+- For models that need composition with elasticity (Maxwell-style dashpots), include the composition in the scenario file — that's the more useful regression.
+
+---
+
+## Step 6 — Document the new domain
+
+Add a new `##` section to the appropriate `doc/content/modules/<submodule>.md` — for a domain inside an existing submodule (e.g. viscoelasticity inside `solid_mechanics`), no XML edits are needed; the in-page TOC builds itself. For a brand-new top-level physics module, both `doc/config/DoxygenLayout.xml` and `doc/config/DoxygenLayoutPython.xml` must be updated to make the page appear in the sidebar.
+
+The full editorial guidance — what to write at what level of detail, the `@list-input:` directive and its `git ls-files` quirk, layout-XML registration, build verification gotchas — is in the `add-doc` skill. The short version: a domain doc should be a high-level intro + canonical names + pointer to `[Syntax Documentation](@ref syntax-models)` + one worked input-file example. Per-class detail belongs in `expected_options()` doc strings, not in the narrative — it ages out of sync with the registry otherwise.
+
+The regression tests you wrote in step 5 are the right inputs to point `@list-input:` at — but `git add` them first, otherwise the doc build will fail to resolve the path.
+
+---
+
+## Pre-commit and CI
+
+Before reporting done:
+
+```bash
+pre-commit run --files \
+  include/neml2/models/<submodule>/<domain>/*.h \
+  src/neml2/models/<submodule>/<domain>/*.cxx
+```
+
+`clang-format` and `check_copyright.py` are enforced by CI. `clang-format` *will* rewrite lines (e.g., wrap long doc strings); that's expected, just rebuild and rerun the tests after.
+
+---
+
+## Common failure modes and how to recognize them
+
+- **"unknown type Foo"** when running an `.i` test — missing `register_NEML2_object(Foo);` in the `.cxx`, or the macro is inside a function instead of at namespace scope.
+- **Catch2 reports "1 test case passed, 0 assertions"** — the `-c` section pattern didn't match anything. Check the path is the relative path from `tests/unit/models/`.
+- **"unknown variable" or shape-mismatch deep inside Newton** — a composition wiring bug that `neml2-inspect` would have caught. Go back to step 4.
+- **Regression test compares against an old `gold/result.pt`** that doesn't reflect a recent equation change — you have to regenerate with `neml2-run` and re-verify.
+- **Model takes a tensor by value but only forward-declares the type in the header** — fine in the `.h`, but the `.cxx` needs the full `#include "neml2/tensors/<T>.h"`.
+
+---
+
+## Reference: anatomy of a domain (real example)
+
+`models/solid_mechanics/viscoelasticity/` ships five Models — `MaxwellViscoelasticity`, `KelvinVoigtViscoelasticity`, `ZenerViscoelasticity`, `WiechertViscoelasticity`, `BurgersViscoelasticity` — with one `.i` unit test each and five regression scenarios under `tests/regression/solid_mechanics/viscoelasticity/{maxwell,kelvin_voigt,zener,burgers,wiechert}/`. Browse it for a working layout — the family-level naming conventions (`viscosity`, `modulus`, `viscous_strain`, `viscous_strain_rate`) are a good template for any new constitutive-theory domain.
