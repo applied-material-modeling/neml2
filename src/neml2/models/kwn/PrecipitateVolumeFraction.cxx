@@ -39,14 +39,11 @@ PrecipitateVolumeFraction::expected_options()
   OptionSet options = Model::expected_options();
   options.doc() = "Compute the precipitate volume fraction from a discrete size distribution.";
 
-  options.set_parameter<TensorName<Scalar>>("radius");
-  options.set("radius").doc() = "Precipitate radius per size bin";
+  options.add_parameter<Scalar>("radius", "Precipitate radius per size bin");
 
-  options.set_input("number_density");
-  options.set("number_density").doc() = "Number density per size bin";
+  options.add_input("number_density", "Number density per size bin");
 
-  options.set_output("volume_fraction");
-  options.set("volume_fraction").doc() = "Precipitate volume fraction";
+  options.add_output("volume_fraction", "Precipitate volume fraction");
 
   return options;
 }
@@ -73,8 +70,7 @@ PrecipitateVolumeFraction::set_value(bool out, bool dout_din, bool /*d2out_din2*
     const auto r = _R();
     const auto n = _n();
 
-    if (_n.is_dependent())
-      _f.d(_n, 1, 0, 1) = (4.0 / 3.0) * neml2::pi * pow(r, 3.0);
+    _f.d(_n, 1, 0, 1) = (4.0 / 3.0) * neml2::pi * pow(r, 3.0);
 
     if (const auto * const radius = nl_param("radius"))
     {

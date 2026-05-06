@@ -38,26 +38,19 @@ ZeldovichFactor::expected_options()
   OptionSet options = Model::expected_options();
   options.doc() = "Compute the Zeldovich factor for nucleation.";
 
-  options.set_input("critical_radius");
-  options.set("critical_radius").doc() = "Critical radius for nucleation";
+  options.add_input("critical_radius", "Critical radius for nucleation");
 
-  options.set_parameter<TensorName<Scalar>>("surface_energy");
-  options.set("surface_energy").doc() = "Surface energy of the precipitate";
+  options.add_parameter<Scalar>("surface_energy", "Surface energy of the precipitate");
 
-  options.set_input("temperature");
-  options.set("temperature").doc() = "Temperature";
+  options.add_input("temperature", "Temperature");
 
-  options.set_parameter<TensorName<Scalar>>("molar_volume");
-  options.set("molar_volume").doc() = "Molar volume of the precipitate";
+  options.add_parameter<Scalar>("molar_volume", "Molar volume of the precipitate");
 
-  options.set_parameter<TensorName<Scalar>>("avogadro_number");
-  options.set("avogadro_number").doc() = "Avogadro's number";
+  options.add_parameter<Scalar>("avogadro_number", "Avogadro's number");
 
-  options.set_parameter<TensorName<Scalar>>("boltzmann_constant");
-  options.set("boltzmann_constant").doc() = "Boltzmann constant";
+  options.add_parameter<Scalar>("boltzmann_constant", "Boltzmann constant");
 
-  options.set_output("zeldovich_factor");
-  options.set("zeldovich_factor").doc() = "Zeldovich factor for nucleation";
+  options.add_output("zeldovich_factor", "Zeldovich factor for nucleation");
 
   return options;
 }
@@ -93,14 +86,12 @@ ZeldovichFactor::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 
   if (dout_din)
   {
-    if (_R_crit.is_dependent())
-      _Z.d(_R_crit) = -2.0 * Z / R_crit;
+    _Z.d(_R_crit) = -2.0 * Z / R_crit;
 
     if (const auto * const gamma_param = nl_param("gamma"))
       _Z.d(*gamma_param) = 0.5 * Z / gamma;
 
-    if (_T.is_dependent())
-      _Z.d(_T) = -0.5 * Z / T;
+    _Z.d(_T) = -0.5 * Z / T;
   }
 }
 } // namespace neml2

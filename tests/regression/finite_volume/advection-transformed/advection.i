@@ -85,7 +85,7 @@ t = 1.0
     type = TransientDriver
     model = 'model'
     prescribed_time = 'time'
-    ic_Scalar_names = 'state/concentration'
+    ic_Scalar_names = 'concentration'
     ic_Scalar_values = 'ic'
     save_as = 'result.pt'
   []
@@ -100,6 +100,7 @@ t = 1.0
   [eq_sys]
     type = NonlinearSystem
     model = 'implicit_rate'
+    unknowns = 'concentration'
   []
 []
 
@@ -118,67 +119,70 @@ t = 1.0
     type = ScalarConstantParameter
     value = 'cell_velocity'
   []
-  [scaling]
-    type = ScalarConstantParameter
-    value = 'center_inverse_jacobian'
-  []
   [scaled_cell_velocity]
     type = ScalarMultiplication
-    from_var = 'parameters/velocity parameters/scaling'
-    to_var = 'state/internal/scaled_cell_velocity'
+    from = 'velocity'
+    scaling = 'center_inverse_jacobian'
+    to = 'scaled_cell_velocity'
   []
   [advection_velocity]
     type = LinearlyInterpolateToCellEdges
-    cell_values = 'state/internal/scaled_cell_velocity'
+    cell_values = 'scaled_cell_velocity'
     cell_centers = 'centers'
     cell_edges = 'edges'
-    edge_values = 'state/v_edge'
+    edge_values = 'v_edge'
   []
   [advective_flux]
     type = FiniteVolumeUpwindedAdvectiveFlux
-    u = 'state/concentration'
-    v_edge = 'state/v_edge'
-    flux = 'state/J'
+    u = 'concentration'
+    v_edge = 'v_edge'
+    flux = 'J'
   []
   [left_bc]
     type = FiniteVolumeAppendBoundaryCondition
-    input = 'state/J'
+    input = 'J'
     bc_value = 0.0
     side = 'left'
   []
   [right_bc]
     type = FiniteVolumeAppendBoundaryCondition
-    input = 'state/J_with_bc_left'
+    input = 'J_with_bc_left'
     bc_value = 0.0
     side = 'right'
   []
   [flux_divergence]
     type = FiniteVolumeGradient
-    u = 'state/J_with_bc_left_with_bc_right'
+    u = 'J_with_bc_left_with_bc_right'
     dx = 'dx'
-    grad_u = 'state/concentration_rate'
+    grad_u = 'concentration_rate'
   []
   [integrate_u]
     type = ScalarBackwardEulerTimeIntegration
-    variable = 'state/concentration'
+    variable = 'concentration'
   []
   [implicit_rate]
     type = ComposedModel
-    models = 'velocity scaling scaled_cell_velocity advection_velocity advective_flux left_bc right_bc flux_divergence integrate_u'
+    models = 'velocity scaled_cell_velocity advection_velocity advective_flux left_bc right_bc flux_divergence integrate_u'
+  []
+  [predictor]
+    type = ConstantExtrapolationPredictor
+    unknowns_Scalar = 'concentration'
   []
   [model_scaled]
     type = ImplicitUpdate
     equation_system = 'eq_sys'
     solver = 'newton'
+    predictor = 'predictor'
   []
   [unscale]
     type = ScalarMultiplication
-    from_var = 'state/concentration parameters/scaling'
-    to_var = 'state/true_concentration'
+    from = 'concentration'
+    scaling = 'center_inverse_jacobian'
+    to = 'true_concentration'
   []
   [model]
     type = ComposedModel
-    models = 'model_scaled unscale scaling'
-    additional_outputs = 'state/concentration'
+    models = 'model_scaled unscale'
+    additional_outputs = 'concentration'
    []
 []

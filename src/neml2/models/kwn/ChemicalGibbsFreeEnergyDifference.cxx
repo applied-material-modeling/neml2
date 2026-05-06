@@ -37,18 +37,16 @@ ChemicalGibbsFreeEnergyDifference::expected_options()
   OptionSet options = Model::expected_options();
   options.doc() = "Compute the chemical Gibbs free energy difference.";
 
-  options.set<std::vector<VariableName>>("concentration_differences");
-  options.set("concentration_differences").doc() =
-      "Concentration differences for each species";
+  options.add<std::vector<VariableName>>("concentration_differences",
+                                         "Concentration differences for each species");
 
-  options.set_parameter<std::vector<TensorName<Scalar>>>("chemical_potentials");
-  options.set("chemical_potentials").doc() = "Chemical potentials in the matrix";
+  options.add<std::vector<TensorName<Scalar>>>("chemical_potentials",
+                                               "Chemical potentials in the matrix");
 
-  options.set_parameter<std::vector<TensorName<Scalar>>>("equilibrium_potentials");
-  options.set("equilibrium_potentials").doc() = "Equilibrium chemical potentials";
+  options.add<std::vector<TensorName<Scalar>>>("equilibrium_potentials",
+                                               "Equilibrium chemical potentials");
 
-  options.set_output("chemical_gibbs_free_energy");
-  options.set("chemical_gibbs_free_energy").doc() = "Chemical Gibbs free energy difference";
+  options.add_output("chemical_gibbs_free_energy", "Chemical Gibbs free energy difference");
 
   return options;
 }
@@ -81,8 +79,8 @@ ChemicalGibbsFreeEnergyDifference::ChemicalGibbsFreeEnergyDifference(const Optio
   _mu_eqs.resize(_dxs.size());
   for (std::size_t i = 0; i < _dxs.size(); i++)
   {
-    _mus[i] = &declare_parameter<Scalar>(
-        "mu_" + std::to_string(i), mu_refs[i], /*allow_nonlinear=*/true);
+    _mus[i] =
+        &declare_parameter<Scalar>("mu_" + std::to_string(i), mu_refs[i], /*allow_nonlinear=*/true);
     _mu_eqs[i] = &declare_parameter<Scalar>(
         "mu_eq_" + std::to_string(i), mu_eq_refs[i], /*allow_nonlinear=*/true);
   }
@@ -105,8 +103,7 @@ ChemicalGibbsFreeEnergyDifference::set_value(bool out, bool dout_din, bool /*d2o
     {
       const auto coef = (*_mus[i] - *_mu_eqs[i]);
 
-      if (_dxs[i]->is_dependent())
-        _dg.d(*_dxs[i]) = coef;
+      _dg.d(*_dxs[i]) = coef;
 
       if (const auto * const mu = nl_param("mu_" + std::to_string(i)))
         _dg.d(*mu) += (*_dxs[i])();

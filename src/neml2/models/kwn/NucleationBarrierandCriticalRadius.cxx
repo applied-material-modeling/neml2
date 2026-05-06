@@ -38,21 +38,16 @@ NucleationBarrierandCriticalRadius::expected_options()
   OptionSet options = Model::expected_options();
   options.doc() = "Compute the nucleation critical radius and Gibbs free energy barrier.";
 
-  options.set_parameter<TensorName<Scalar>>("surface_energy");
-  options.set("surface_energy").doc() = "Surface energy of the precipitate";
+  options.add_parameter<Scalar>("surface_energy", "Surface energy of the precipitate");
 
-  options.set_parameter<TensorName<Scalar>>("total_gibbs_free_energy_difference");
-  options.set("total_gibbs_free_energy_difference").doc() =
-      "Total Gibbs free energy difference driving nucleation";
+  options.add_parameter<Scalar>("total_gibbs_free_energy_difference",
+                                "Total Gibbs free energy difference driving nucleation");
 
-  options.set_parameter<TensorName<Scalar>>("molar_volume");
-  options.set("molar_volume").doc() = "Molar volume of the precipitate";
+  options.add_parameter<Scalar>("molar_volume", "Molar volume of the precipitate");
 
-  options.set_output("nucleation_barrier");
-  options.set("nucleation_barrier").doc() = "Gibbs free energy barrier for nucleation";
+  options.add_output("nucleation_barrier", "Gibbs free energy barrier for nucleation");
 
-  options.set_output("critical_radius");
-  options.set("critical_radius").doc() = "Critical radius for nucleation";
+  options.add_output("critical_radius", "Critical radius for nucleation");
 
   return options;
 }

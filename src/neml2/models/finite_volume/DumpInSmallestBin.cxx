@@ -40,14 +40,12 @@ DumpInSmallestBin::expected_options()
   OptionSet options = Model::expected_options();
   options.doc() = "Dump the source magnitude into the smallest cell-center bin.";
 
-  options.set_input("magnitude");
-  options.set("magnitude").doc() = "Source magnitude.";
+  options.add_input("magnitude", "Source magnitude.");
 
-  options.set_parameter<TensorName<Scalar>>("cell_centers");
-  options.set("cell_centers").doc() = "Cell center locations.";
+  options.add_parameter<Scalar>("cell_centers", "Cell center locations.");
 
-  options.set_output("dumped_source") = VariableName(STATE, "dumped_source");
-  options.set("dumped_source").doc() = "Source dumped into the smallest bin.";
+  options.add_output(
+      "dumped_source", "state/dumped_source", "Source dumped into the smallest bin.");
 
   return options;
 }
@@ -80,7 +78,6 @@ DumpInSmallestBin::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
 
   if (dout_din)
   {
-    if (_magnitude.is_dependent())
     {
       const auto zero_tail_vec = Scalar::zeros_like(zero_tail);
       if (_magnitude.intmd_dim() == 0)

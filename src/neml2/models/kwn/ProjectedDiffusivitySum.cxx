@@ -38,17 +38,14 @@ ProjectedDiffusivitySum::expected_options()
   OptionSet options = Model::expected_options();
   options.doc() = "Compute the projected diffusivity sum for SFFK and nucleation.";
 
-  options.set_parameter<std::vector<TensorName<Scalar>>>("concentration_differences");
-  options.set("concentration_differences").doc() = "Concentration differences for each species";
+  options.add<std::vector<TensorName<Scalar>>>("concentration_differences",
+                                               "Concentration differences for each species");
 
-  options.set_parameter<std::vector<TensorName<Scalar>>>("diffusivities");
-  options.set("diffusivities").doc() = "Species diffusivities";
+  options.add<std::vector<TensorName<Scalar>>>("diffusivities", "Species diffusivities");
 
-  options.set<std::vector<VariableName>>("far_field_concentrations");
-  options.set("far_field_concentrations").doc() = "Far-field concentrations";
+  options.add<std::vector<VariableName>>("far_field_concentrations", "Far-field concentrations");
 
-  options.set_output("projected_diffusivity_sum");
-  options.set("projected_diffusivity_sum").doc() = "Projected diffusivity sum";
+  options.add_output("projected_diffusivity_sum", "Projected diffusivity sum");
 
   return options;
 }
@@ -109,8 +106,7 @@ ProjectedDiffusivitySum::set_value(bool out, bool dout_din, bool /*d2out_din2*/)
       if (const auto * const dx_param = nl_param("dx_" + std::to_string(i)))
         _sum.d(*dx_param) = 2.0 * dx / (D * xinf);
 
-      if (_x_infs[i]->is_dependent())
-        _sum.d(*_x_infs[i]) = -pow(dx, 2.0) / (D * xinf * xinf);
+      _sum.d(*_x_infs[i]) = -pow(dx, 2.0) / (D * xinf * xinf);
 
       if (const auto * const D_param = nl_param("D_" + std::to_string(i)))
         _sum.d(*D_param) = -pow(dx, 2.0) / (D * D * xinf);

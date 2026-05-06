@@ -38,14 +38,11 @@ SemiInfiniteCoordinateTransform::expected_options()
   OptionSet options = Model::expected_options();
   options.doc() = "Transform a semi-infinite coordinate to x / (x + s).";
 
-  options.set_input("coordinate");
-  options.set("coordinate").doc() = "Input coordinate.";
+  options.add_input("coordinate", "Input coordinate.");
 
-  options.set_parameter<TensorName<Scalar>>("shift");
-  options.set("shift").doc() = "Shift parameter.";
+  options.add_parameter<Scalar>("shift", "Shift parameter.");
 
-  options.set_output("transformed_coordinate") = VariableName(STATE, "x_hat");
-  options.set("transformed_coordinate").doc() = "Transformed coordinate.";
+  options.add_output("transformed_coordinate", "state/x_hat", "Transformed coordinate.");
 
   return options;
 }
@@ -72,7 +69,6 @@ SemiInfiniteCoordinateTransform::set_value(bool out, bool dout_din, bool /*d2out
 
   if (dout_din)
   {
-    if (_x.is_dependent())
     {
       const auto dx = s * inv * inv;
       if (_x.intmd_dim() == 0)
